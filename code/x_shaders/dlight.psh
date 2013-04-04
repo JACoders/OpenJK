@@ -1,0 +1,38 @@
+xps.1.1
+
+tex t0					; base map
+tex t1					; normal map
+tex t2					; ranged point light vector
+tex t3					; tangent space vector 
+
+#include "../win32/shader_constants.h"
+
+; dot product bump and cube maps
+dp3 r1.rgb, t1_bx2, t3_bx2
+ 
+; factor in falloff
+mul r0.rgb, r1.rgb, t2.a
+
+; factor in the light color
+mul r0.rgb, r0.rgb, c[CP_DIFFUSE_COLOR] 
+ 
+; factor in base texture
+mul r0, r0, t0
+
+xfc zero, zero, r0, zero, zero, zero, zero
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

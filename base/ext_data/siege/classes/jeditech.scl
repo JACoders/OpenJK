@@ -1,0 +1,22 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Jedi Tech"
+	weapons		WP_SABER
+	saber1		single_2
+	sabercolor		0
+	saberstyle		SS_FAST|SS_MEDIUM
+	forcepowers		FP_SABER_OFFENSE,2|FP_SABER_DEFENSE,2|FP_SABERTHROW,1|FP_LEVITATION,2|FP_PUSH,1|FP_PULL,1|FP_SEE,2
+	classflags		CFL_STATVIEWER|CFL_EXTRA_AMMO
+	maxhealth		100
+	maxarmor		0
+	startarmor		0
+	model			"jedi" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/jedi/icon_default"
+	class_shader	"gfx/mp/c_icon_support"
+	holdables		HI_HEALTHDISP|HI_AMMODISP
+}
+
+description	"@SIEGE_JEDI_JEDI_TECH"

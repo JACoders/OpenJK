@@ -1,0 +1,19 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Rebel Supply"
+	weapons			WP_BLASTER_PISTOL|WP_BLASTER
+	classflags		CFL_STATVIEWER|CFL_EXTRA_AMMO
+	maxhealth		100
+	maxarmor		100
+	startarmor		0
+	model			"jan" 				//this is optional, if it's here it forces the model to this.
+	skin			"blue"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/jan/icon_blue"
+	holdables		HI_HEALTHDISP|HI_AMMODISP
+	class_shader	"gfx/mp/c_icon_support"
+}
+
+description	
+"@SIEGE_SUPP_REBEL_SUPPLY"

@@ -1,0 +1,27 @@
+Noghri
+{
+	playerModel	noghri
+	weapon	WP_NOGHRI_STICK
+	reactions	4
+	aim		2
+	move		5
+	aggression	3
+	evasion	5
+	intelligence	3
+	rank		crewman
+	health 	100
+	playerTeam	TEAM_FREE
+	enemyTeam	TEAM_FREE
+	class		CLASS_NOGHRI
+	snd		noghri1
+	sndcombat	noghri1
+	sndextra	noghri1
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

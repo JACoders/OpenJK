@@ -1,0 +1,190 @@
+//----------------------------------------------------------------------------------------------
+// Mission Select Menu
+//
+//----------------------------------------------------------------------------------------------
+{
+					   
+	menuDef 
+	{
+		name					"demo_GotoTier"
+		fullScreen				1		
+		rect					0 0 640 480	
+		visible					1
+		focusColor				1 1 1 1
+		descX					320
+		descY					426
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER	
+		disablecolor				.5 .5 .5 1
+		fadeClamp				1.0					// sets the fadeup alpha
+		fadeCycle				20					// how often fade happens in milliseconds
+		fadeAmount				0.1					// amount to adjust alpha per cycle	
+		onOpen 
+		{
+			fadein				background
+			playVoice		"sound/chars/storyinfo/1.mp3"
+		}							
+		onESC 
+		{ 
+		}
+
+//----------------------------------------------------------------------------------------------
+//	MENU BACKGROUND
+//----------------------------------------------------------------------------------------------	
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/mission_back"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				eyecandy1
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				17 309 357 153
+			background			"gfx/menus/mission_bottomleft_grid"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				botlf
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 300 80 180
+			background			"gfx/menus/mission_bottom_left"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+//	MODELS FOR V-O
+//----------------------------------------------------------------------------------------------
+		itemDef
+		{
+			name				luke
+			group				storyheads
+			type 				ITEM_TYPE_MODEL
+			rect				415 285 149 149
+			model_g2anim 			"BOTH_STAND1_TALK2"
+			model_g2skin			"models/players/luke/model_menu.skin"
+			asset_model			"models/players/luke/model.glm"
+			model_angle			180
+			//mins maxs format is apparently z x y (hmmm... y x z?)
+			model_g2mins			15 -20 18
+			model_g2maxs			60 20 55
+			model_rotation			0
+			model_fovx			10
+			model_fovy			10
+			isCharacter			1
+			visible				1
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+//
+//	BUTTONS
+//
+//----------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------
+//Sound is automatic
+//----------------------------------------------------------------------------------------------
+
+//----------------------------------------------------------------------------------------------
+//coming from Yavin2
+//----------------------------------------------------------------------------------------------
+		itemDef
+		{
+			name				story1
+			type				ITEM_TYPE_BUTTON
+			rect				550 440 172 24
+			text				@MENUS_OKAY
+			font				2
+			forecolor			1 1 1 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible			1
+			mouseEnter 
+			{ 
+			}
+			mouseExit 
+			{ 
+			}
+			action
+			{
+				close		all
+				open		demo_MissionSelect
+			}
+		}
+
+		itemDef
+		{
+			name				story1text
+			type				ITEM_TYPE_TEXTSCROLL
+			rect				44 313 304 145
+			text				@TIER1_1
+			font				2
+			forecolor			1 1 1 1
+			textscale			.8
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			2
+			textaligny			-1
+			lineHeight			18
+			visible			1
+			autowrapped
+		}
+
+		itemDef 
+		{
+			name				starwars
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				107 48 428 112
+			background			"gfx/menus/jediacademy"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+//	SCANLINES OVER WHOLE MENU
+//----------------------------------------------------------------------------------------------
+
+		itemDef 
+		{
+			name				scan
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 640
+			background			"gfx/menus/scanlines"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+

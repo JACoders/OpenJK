@@ -1,0 +1,21 @@
+mark2
+{
+	playerModel	mark2
+	weapon		WP_BOT_LASER
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		bot
+	class		CLASS_MARK2
+	yawSpeed	60
+	runSpeed	150
+	walkSpeed	75
+	hFOV		120
+	vfov		45
+	snd			mark2
+}

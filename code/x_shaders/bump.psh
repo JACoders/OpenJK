@@ -1,0 +1,30 @@
+xps.1.1
+
+tex t0					; color map
+tex t1					; normal map
+
+#include "../win32/shader_constants.h"
+
+; Dot product the bump with the light and halfangle vectors
+xdd r0, r1, t1_bx2, v0_bx2, t1_bx2, v1_bx2
+
+; Factor in the light color and add ambient
+mad r0, r0_sat, c[CP_DIFFUSE_COLOR], c[CP_AMBIENT_COLOR]
+ 
+; Raise N.H^2
+mul r1.a, r1_sat.a, r1_sat.a 
+ 
+; Modulate against base texture 
+mul r0.rgb, r0.rgb, t0.rgb   
++mov r0.a, t0.a
+  
+; N.H^4,^16,^64
+mul r1.a, r1.a, r1.a
+mul r1.a, r1.a, r1.a
+mul r1.a, r1.a, r1.a 
+
+; Modulate the specular highlight by the gloss map
+mul r1.a, t1.a, r1.a 
+
+; Add the specular to the color
+xfc zero, zero, r0.rgb, prod, t1.a, r1.a, r0.a

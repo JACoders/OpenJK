@@ -1,0 +1,37 @@
+// menu defs
+// 
+{	
+	loadMenu { "ui/jamp/main.menu" }
+ 	loadMenu { "ui/jamp/joinserver.menu" }
+ 	loadMenu { "ui/jamp/player.menu" }
+ 	loadMenu { "ui/jamp/player2.menu" }
+ 	loadMenu { "ui/jamp/createserver.menu" }
+	loadMenu { "ui/jamp/connect.menu" }
+ 	loadMenu { "ui/jamp/rules.menu" }
+ 	loadMenu { "ui/jamp/rules_games.menu" }
+ 	loadMenu { "ui/jamp/rules_force.menu" }
+ 	loadMenu { "ui/jamp/rules_weapons.menu" }
+ 	loadMenu { "ui/jamp/rules_items.menu" }
+ 	loadMenu { "ui/jamp/rules_moves.menu" }
+	loadMenu { "ui/jamp/controls.menu" }
+ 	loadMenu { "ui/jamp/setup.menu" }
+	loadMenu { "ui/jamp/demo.menu" }
+	loadMenu { "ui/jamp/password.menu" }
+	loadMenu { "ui/jamp/quit.menu" }
+	loadMenu { "ui/jamp/error.menu" }
+	loadMenu { "ui/jamp/serverinfo.menu" }
+	loadMenu { "ui/jamp/findplayer.menu" }
+	loadMenu { "ui/jamp/createfavorite.menu" }
+ 	loadMenu { "ui/jamp/multiplayer.menu" }
+ 	loadMenu { "ui/jamp/advancedcreateserver.menu" }
+ 	loadMenu { "ui/jamp/saber.menu" }
+ 	loadMenu { "ui/jamp/quickgame.menu" }
+ 	loadMenu { "ui/jamp/quickgame2.menu" }
+ 	loadMenu { "ui/jamp/quickbots.menu" }
+
+
+	loadMenu { "ui/jamp/vid_warning.menu" }
+	loadMenu { "ui/jamp/videodriver.menu" }
+	loadMenu { "ui/jamp/password_request.menu" }
+
+}

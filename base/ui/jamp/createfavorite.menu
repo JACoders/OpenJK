@@ -1,0 +1,222 @@
+//----------------------------------------------------------------------------------------------
+//
+//	PASSWORD POPUP MENU
+//
+//----------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name					"createfavorite_popmenu"
+		visible					0
+		fullscreen				0
+		outOfBoundsClick									// this closes the window if it gets a click out of the rectangle
+		rect					200 150 240 180
+		focusColor				1 1 1 1								// Focus color for text and items
+		style					1
+		border					1
+		descX					320
+		descY					314
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER		
+		popup
+
+		onOpen
+		{
+			setfocus			addressEntry
+		}
+		onESC 
+		{ 
+			play				"sound/interface/esc.wav" ; 
+			close				createfavorite_popmenu
+		}
+
+//----------------------------------------------------------------------------------------------
+//	MENU BACKGROUND
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				0 0 240 180
+			backcolor			0 0 .35 .9
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .8 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				title_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 4 270 22
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		//	SCREEN TITLE	
+		itemDef 
+		{
+			name				title
+			text				@MENUS_FAVORITE_SERVER_INFO
+			style				WINDOW_STYLE_EMPTY
+			rect				5 5 220 20
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			110
+			textaligny			1
+			forecolor			.549 .854 1 1
+	      		visible			1 
+      			decoration 
+		}
+
+		itemDef 
+		{
+			name				button_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 0 0
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		//---------------------------------------------
+		//	ENTER NAME AND ADDRESS
+		//---------------------------------------------
+/*
+		itemDef 
+		{
+			name				nameTitle
+			text				@MENUS_FAVE_NAME
+			style				0
+			decoration
+			font				1
+			textscale			.8
+			rect				177 126 110 20
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			1
+			textaligny			3
+			forecolor			1 1 1 1
+			visible				1
+		}
+
+		itemDef 
+		{
+			name				nameEntry
+			style				1
+			maxchars			15
+			text				@MENUS_BLANK_1
+			descText			@MENUS_FAVE_NAME_DESC
+			font				1
+			textscale			.8
+			TYPE				4
+			cvar				"ui_favoriteName"
+			rect				265 126 150 20
+			textalign			0
+			textalignx			-16
+			textaligny			3
+			forecolor			1 1 1 1
+			backcolor			.25 .25 .25 .5
+			visible				1
+			mouseenter 
+			{ 
+				setitemcolor	nameEntry backcolor .25 .25 .25 .75 
+			}
+			mouseexit 
+			{ 
+				setitemcolor	nameEntry backcolor .25 .25 .25 .5 
+			}
+		}
+*/
+
+
+		itemDef 
+		{
+			name				addressTitle
+			text				@MENUS_ENTER_IP_ADDRESS
+			style				0
+			decoration
+			font				2
+			textscale			.8
+			rect				10 35 220 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			110
+			textaligny			3
+			forecolor			.549 .854 1 1
+			visible				1
+		}
+
+		itemDef 
+		{
+			name				addressEntry
+			style				1
+			maxPaintChars			21
+			text				" "
+			descText			@MENUS_INPUT_IP_ADDRESS_OF_SERVER
+			font				2
+			textscale			.8
+			TYPE				4
+			maxchars			21
+			cvar				"ui_favoriteAddress"
+			rect				10 59 220 20
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			42
+			textaligny			-2
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			.79 .64 .22 1
+			backcolor			.25 .25 .25 .5
+			visible				1
+			mouseenter 
+			{ 
+				setitemcolor	addressEntry backcolor .25 .25 .25 .75 
+			}
+
+			mouseexit 
+			{ 
+				setitemcolor	addressEntry backcolor .25 .25 .25 .5 
+			}
+		}
+
+		itemDef 
+		{
+			name				doneText
+			text				@MENUS_DONE
+			descText			@MENUS_FINISHED_INPUTTING_INFO
+			type				1
+			font				3
+			textscale			.8
+			style				WINDOW_STYLE_FILLED
+			rect				20 110 200 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			100
+			textaligny			5
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				uiScript		CreateFavorite
+				close			createfavorite_popmenu
+			}
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	10 113 240 26
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}	  	  
+		}
+	}
+}

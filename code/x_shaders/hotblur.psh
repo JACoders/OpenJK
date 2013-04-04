@@ -1,0 +1,30 @@
+;------------------------------------------------------------------------------
+; Filter to blur and image.
+;
+; Copyright (C) 2002 Microsoft Corporation
+; All rights reserved.
+;------------------------------------------------------------------------------
+xps.1.1
+
+; Default filter is box filter, but this is easily overwritten using SetPixelShaderConstant
+
+; When setting a pixel shader constant in the main application, we must check to see if the
+; filter coefficient is negative, in which case we set the constant as a positive
+; number and negate the constant in the expression below.
+
+def c0, 0.25f, 0.25f, 0.25f, 0.25f
+def c1, 0.25f, 0.25f, 0.25f, 0.25f 
+def c2, 0.25f, 0.25f, 0.25f, 0.25f 
+def c3, 0.25f, 0.25f, 0.25f, 0.25f 
+
+; source textures
+tex t0
+tex t1
+tex t2
+tex t3
+
+xmma discard, discard, r0, c0, t0, c1, t1	;r0 = (c0 * t0 + c1 * t1)
+xmma discard, discard, r1, c2, t2, c3, t3	;r1 = (c2 * t2 + c3 * t3)
+add r0, r0_sat, r1_sat                      ;r0 = r0 + r1
+
+xfc zero, zero, zero, r0, zero, zero, r0.a	

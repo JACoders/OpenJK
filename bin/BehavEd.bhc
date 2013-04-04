@@ -1,0 +1,471 @@
+/*
+        BehavEd Command List
+
+	(Note that anything involving floats must be (eg) "1.0", not just "1")
+*/
+//=== TYPES ================================================================
+//header file type includes
+
+<%s="ITEM_NAMES">
+{
+#include "g_items.h" item_e
+}
+
+<%s="MISSIONFAILED">
+{
+#include "objectives.h" MissionFailed_e
+}
+
+<%s="OBJECTIVES">
+{
+#include "objectives.h" Objective_e
+}
+
+<%s="ANIM_NAMES">
+{
+#include "anims.h" animNumber_e
+}
+
+<%s="BSTATE_STRINGS">
+{
+#include "bstate.h" bState_e
+}
+
+<%s="STATUSTEXT">
+{
+#include "objectives.h" StatusText_e
+}
+
+<%s="WEAPON_NAMES">
+{
+	"drop"
+#include "weapons.h" weapon_e
+}
+
+// TREKSPECIFIC: this typeset now MUST be present for BehavEd to present GET-helper combos!
+<%s="SET_TYPES">
+{
+#include "q3_interface.h" setType_e
+}
+
+<%i="CHANNELS">
+{
+#include "channels.h" soundChannel_e
+}
+
+<%s="EVENT_NAMES">
+{
+#include "events.h" eventType_e
+}
+
+<%s="MUSIC_STATES">
+{
+#include "dmstates.h" dynamicMusic_e
+}
+
+<%s="LEAN_TYPES">
+{
+	"none"
+	"left"
+	"right"
+}
+
+<%s="BOOL_TYPES">
+{
+	"false"
+	"true"
+}
+
+<%s="MENUSCREENS">
+{
+	"mainMenu"
+	"ingameMainMenu"
+	"ingameloadMenu"
+}
+
+<%s="TEAM_NAMES">
+{
+#include "teams.h" team_e
+}
+
+<%i="GET_TYPE">
+{
+	FIELD
+	VAR
+}
+
+<%i="AFFECT_TYPE">
+{
+	FLUSH
+	INSERT
+}
+
+// TREKSPECIFIC: this typeset now MUST be present for BehavEd to present GET-helper combos!
+<%i="TAG_TYPE">
+{
+	ORIGIN
+	ANGLES
+}
+
+<%i="CAMERA_COMMANDS">
+{
+	ENABLE//## %% # Puts game in camera mode // no more parms
+	DISABLE//## %% # Takes game out of camera mode //no more parms
+	ZOOM//## %f="0.0" %d="0" # Normal is 80, 10 is zoomed in, max is 120.  Second value is time in ms to take to zoom to the new FOV
+	MOVE//## %v="0.0 0.0 0.0" %d="0" # Move to a absolute vector origin or TAG("targetname", ORIGIN) over time over number of milliseconds
+	PAN//## %v="0.0 0.0 0.0" %v="0.0 0.0 0.0" %d="0" # Pan to absolute angle from current angle in dir (no dir will use shortest) over number of milliseconds
+	ROLL//## %f="0.0" %d="0" # Roll to relative angle offsets of current angle over number of milliseconds
+	TRACK//## %s="trackName" %f="0.0" %d="0" # Get on track and move at speed, last number is whether or not to lerp to the start pos
+	FOLLOW//## %s="cameraGroup" %f="0.0" %d="0" # Follow ents with matching cameraGroup at angleSpeed, last number is whether or not to lerp to the start angle
+	DISTANCE//## %f="0.0" %d="0" # Keep this distance from cameraGroup (if any), last number is whether or not to lerp to the start angle
+	FADE//## %v="0.0 0.0 0.0" %f="0.0" %v="0.0 0.0 0.0" %f="0.0" %d="0" # Fade from [start Red Green Blue], [Opacity] to [end Red Green Blue], [Opacity] (all fields valid ranges are 0 to 1) over [number of milliseconds]
+	SHAKE//## %f="0.0" %d="0" # Intensity (0-16) and duration, in milliseconds
+	PATH  //## %s="filename" !!"w:\game\base\scripts\!!#*.rof"   # Path to ROF file
+}
+
+// TREKSPECIFIC: this typeset now MUST be present for BehavEd to present GET-helper combos!
+<%i="DECLARE_TYPE">
+{
+	FLOAT//## %s="" # A number
+	STRING//## %s="" # A string
+	VECTOR//## %s="" # A vector
+}
+
+<%s="PLAY_TYPES">
+{
+#include "q3_interface.h" playType_e
+}
+
+// these must be left in this order, since they mirror the order of icons in res/bitmap1.bmp
+//
+<%i="ICON_OVERRIDES">
+{
+	I_BRACE
+	I_EVENT
+	I_MACRO
+	I_SPACE
+	//
+	I_SOUND
+	I_CAMERA
+	I_ROTATE
+	I_REMOVE
+	I_SET
+	I_MOVE
+	I_IF
+	I_LOOP
+	I_DO
+	I_WAIT
+	I_DOWAIT
+	I_SIGNAL
+	I_WAITSIGNAL
+	I_FLUSH
+	I_WAITCLOCK
+}
+
+<%d="FORCE_LEVELS">
+{
+	0
+	1
+	2
+	3
+}
+
+<%d="SABER_STYLES">
+{
+	0
+	1
+	2
+	3
+	4
+	5
+	6
+	7
+}
+
+<%s="SABER_COLORS">
+{
+	"red"
+	"orange"
+	"yellow"
+	"green"
+	"blue"
+	"purple"
+	"random"
+}
+
+//#=== Flow control commands ============================================
+
+[I_FLUSH] flush();//# clear all previous script commands on ent
+//[I_IF] if ( $test expression =,<,>,! xxx$ ) {}	//# if condition true, execute block of commands
+[I_IF] if ( $exp1$, $ < > ! = $, $exp2$ ) {}	//# if condition true, execute block of commands
+
+[I_IF] else () {} //# must immediately follow and else, will execute if the if condition is false
+
+[I_LOOP] loop ( %d=-1 ) {}	//# execute block of commands any number of times (-1 = forever)
+
+affect( %s="DEFAULT", %t="AFFECT_TYPE" )  {}//# switch script affect to ent with specified name, flush old commands or insert the new block of commands into current commands
+
+run ( %s="DEFAULT" ); //# ent runs specified script
+
+//#=== Standard commands ================================================
+
+[I_WAITCLOCK] wait( %f=1000.0 );//# script will wait specified number of milliseconds
+[I_WAITSIGNAL] waitsignal( %s="signalname" );//# wait until a signal() command is given with the name name - only one ent can wait for a particular signal
+[I_SIGNAL] signal( %s="signalname" );//# The ent waiting for this signal will continue with it's script
+
+//action( %s="DEFAULT", %s="DEFAULT" );//# no longer valid, but I'll leave it in for the moment for testing
+[I_SOUND] sound( %t="CHANNELS", %s="FILENAME" );//# play sound on specified channel of ent
+
+[I_MOVE] move ( %v=<0.0 0.0 0.0>, %v=<0.0 0.0 0.0>, %f=1000.0 );//move ent from point to point at speed
+//move ( $default$, $default$, %f=1000.0 );//move ent from point to point at speed
+//[I_MOVE] move ( $default$, %f=1000.0 );//move ent from point to point at speed
+[I_MOVE] move ( $default$, $default$ );//move ent from point to point at speed
+[I_ROTATE] rotate( %v=<0.0 0.0 0.0>, %f=1000.0 );//# rotate ent to target angles at speed
+
+use ( %s="DEFAULT" );//# uses specified ent
+use ( $get(STRING,"targetname")$ );//# uses specified ent from a get(STRING) command
+kill ( %s="DEFAULT" );//# kills ent with specified name
+[I_REMOVE] remove ( %s="DEFAULT" ); //# removes ent with specified name from game
+
+print( %s="DEFAULT" );//# Prints text to center of screen
+rem(%s="comment");//# Just a comment for script, no actual effect in-game
+
+//#=== Variable Handling ===============================================
+declare( %t="DECLARE_TYPE", %s="variablename" );	//# declare a global variable here, limit of 16 per map
+
+free( %s="variablename" );	//# free a global variable so you can make more
+
+//get( %t="DECLARE_TYPE", %s="variablename" );	//# OF NO USE BY ITSELF - this will be removed soon, but is still usable inside other commands
+
+//random( %f=0.0, %f=0.0 );//# use a random float between 2 specified values. OF NO USE BY ITSELF - this will be removed soon, but is still usable inside other commands
+
+//#=== Set commands =====================================================
+
+//# standard strings
+[I_SET] set( %t="SET_TYPES", %s="DEFAULT" );//# standard set commands
+[I_SET] set( %s="variablename", %s="value" );//# set for variables
+//set( %s="variablename", $value$ );//# set a variable to a get
+//set( $value$, $value$ );//# set a get to a get
+
+//#Camera functions
+[I_CAMERA] camera( %t="CAMERA_COMMANDS" );
+
+//#Task functions
+
+task( %s="DEFAULT" ) {}
+[I_DO] do( %s="DEFAULT" )
+[I_WAIT] wait( %s="DEFAULT" )		//# wait until task "taskname" is complete
+//wait( $random( 0, 1 )$ )	//# wait a specified amount of time
+
+[I_DOWAIT] dowait( %s="DEFAULT" );	//# shorthand form of:   do("taskname");      wait("taskname")
+
+play (%t="PLAY_TYPES", %s="default");
+
+//#=== Macros ===========================================================
+"standOnly"//# simply stands, ignores enemies & alerts
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_IGNOREALERTS", %r%s="true" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="false" );
+}
+
+"walkOnly"//# simply walks, ignores enemies & alerts
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_WALKING", %r%s="true" );
+	set( %r%s="SET_RUNNING", %r%s="false" );
+	set( %r%s="SET_IGNOREALERTS", %r%s="true" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="false" );
+}
+
+"runOnly"//# simply runs, ignores enemies & alerts
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_WALKING", %r%s="false" );
+	set( %r%s="SET_RUNNING", %r%s="true" );
+	set( %r%s="SET_IGNOREALERTS", %r%s="true" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="false" );
+}
+
+"standNoAlerts"//# simply stands, ignores alerts
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_IGNOREALERTS", %r%s="true" );
+}
+
+"walkNoAlerts"//# simply walks, ignores alerts
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_WALKING", %r%s="true" );
+	set( %r%s="SET_RUNNING", %r%s="false" );
+	set( %r%s="SET_IGNOREALERTS", %r%s="true" );
+}
+
+"runNoAlerts"//# simply runs, ignores alerts
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_WALKING", %r%s="false" );
+	set( %r%s="SET_RUNNING", %r%s="true" );
+	set( %r%s="SET_IGNOREALERTS", %r%s="true" );
+}
+
+"standNoEnemies"//# simply stands, ignores enemies
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="false" );
+}
+
+"walkNoEnemies"//# simply walks, ignores enemies
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_WALKING", %r%s="true" );
+	set( %r%s="SET_RUNNING", %r%s="false" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="false" );
+}
+
+"runNoEnemies"//# simply runs, ignores enemies
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_WALKING", %r%s="false" );
+	set( %r%s="SET_RUNNING", %r%s="true" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="false" );
+}
+
+"standGuardNoChase"//# looks for enemies, shoots at but doesn't chase them
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="true" );
+	set( %r%s="SET_CHASE_ENEMIES", %r%s="false" );
+}
+
+"patrolRun"//# patrols in a run, chases enemies
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_WALKING", %r%s="false" );
+	set( %r%s="SET_RUNNING", %r%s="true" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="true" );
+	set( %r%s="SET_CHASE_ENEMIES", %r%s="true" );
+}
+
+"patrolNoChase"//# patrols, sticks to patrol route even when shooting enemy
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="true" );
+	set( %r%s="SET_CHASE_ENEMIES", %r%s="false" );
+}
+
+"patrolWalkNoChase"//# patrols in a walk, sticks to walking patrol route even when shooting enemy
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_WALKING", %r%s="true" );
+	set( %r%s="SET_RUNNING", %r%s="false" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="true" );
+	set( %r%s="SET_CHASE_ENEMIES", %r%s="false" );
+}
+
+"patrolRunNoChase"//# patrols in a run, sticks to running patrol route even when shooting enemy
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_WALKING", %r%s="false" );
+	set( %r%s="SET_RUNNING", %r%s="true" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="true" );
+	set( %r%s="SET_CHASE_ENEMIES", %r%s="false" );
+}
+
+"default"//# resets to default behavior
+{
+	set( %r%s="SET_BEHAVIOR_STATE", %r%s="BS_DEFAULT" );
+	set( %r%s="SET_CHASE_ENEMIES", %r%s="true" );
+	set( %r%s="SET_LOOK_FOR_ENEMIES", %r%s="true" );
+	set( %r%s="SET_IGNOREALERTS", %r%s="false" );
+	set( %r%s="SET_WALKING", %r%s="false" );
+	set( %r%s="SET_RUNNING", %r%s="false" );
+}
+
+// Old 1st parm locked set commands, not needed any more:
+/*
+//# vectors
+set( %r%s="SET_ORIGIN", %v=<0.0 0.0 0.0>);
+set( %r%s="SET_ANGLES", %v=<0.0 0.0 0.0>);
+set( %r%s="SET_COPY_ORIGIN", %v=<0.0 0.0 0.0>);
+
+//# floats
+set( %r%s="SET_VELOCITY",%f=0.0);
+set( %r%s="SET_XVELOCITY",%f=0.0);
+set( %r%s="SET_YVELOCITY",%f=0.0);
+set( %r%s="SET_ZVELOCITY",%f=0.0);
+set( %r%s="SET_AVELOCITY",%f=0.0);
+set( %r%s="SET_DPITCH",%f=0.0);
+set( %r%s="SET_DYAW",%f=0.0);
+set( %r%s="SET_TIMESCALE",%f=0.0);
+set( %r%s="SET_VISRANGE",%f=0.0);
+set( %r%s="SET_EARSHOT",%f=0.0);
+set( %r%s="SET_VIGILANCE",%f=0.0);
+
+//# ints
+set( %r%s="SET_ANIM_HOLDTIME_LOWER",%d=0);
+set( %r%s="SET_ANIM_HOLDTIME_UPPER",%d=0);
+set( %r%s="SET_HEALTH",%d=0);
+set( %r%s="SET_WALKSPEED",%d=0);
+set( %r%s="SET_RUNSPEED",%d=0);
+set( %r%s="SET_YAWSPEED",%d=0);
+set( %r%s="SET_FRICTION",%d=0);
+set( %r%s="SET_SHOOTDIST",%d=0);
+set( %r%s="SET_HFOV",%d=0);
+set( %r%s="SET_VFOV",%d=0);
+set( %r%s="SET_DELAYSCRIPTTIME",%d=0);
+set( %r%s="SET_FORWARDMOVE",%d=0);
+set( %r%s="SET_RIGHTMOVE",%d=0);
+set( %r%s="SET_AGGRESSION",%d=0);//# 1 - 5
+set( %r%s="SET_AIM",%d=0);//# 1 - 5
+
+//# booleans and simple calls
+set( %r%s="SET_SCRIPTED",%t="BOOL_TYPES");
+set( %r%s="SET_HIDING",%t="BOOL_TYPES");
+set( %r%s="SET_IGNOREPAIN",%t="BOOL_TYPES");
+set( %r%s="SET_IGNOREENEMIES",%t="BOOL_TYPES");
+set( %r%s="SET_STRAIGHTTOGOAL",%t="BOOL_TYPES");
+set( %r%s="SET_DONTSHOOT",%t="BOOL_TYPES");
+set( %r%s="SET_NOTARGET",%t="BOOL_TYPES");
+set( %r%s="SET_CROUCHED",%t="BOOL_TYPES");
+set( %r%s="SET_WALKING",%t="BOOL_TYPES");
+set( %r%s="SET_CAREFUL",%t="BOOL_TYPES");
+set( %r%s="SET_UNDYING",%t="BOOL_TYPES");
+set( %r%s="SET_NOAVOID",%t="BOOL_TYPES");
+set( %r%s="SET_BEAM",%t="BOOL_TYPES");
+set( %r%s="SET_CREATEFORMATION",%t="BOOL_TYPES");
+
+//# Behavior state settings
+set( %r%s="BSTATE", %t="BSTATE_STRINGS" );
+set( %r%s="defaultBState", %t="BSTATE_STRINGS" );
+set( %r%s="tempBehavior", %t="BSTATE_STRINGS" );
+
+//# Animation settings
+set( %r%s="anim_upper", %t="ANIM_NAMES" );
+set( %r%s="anim_lower", %t="ANIM_NAMES" );
+set( %r%s="anim_both", %t="ANIM_NAMES" );
+
+//#Enemy team table
+set( %r%s="playerTeam", %t="TEAM_NAMES" );
+set( %r%s="enemyTeam", %t="TEAM_NAMES" );
+
+//#Weapon table
+set( %r%s="weapon", %t="WEAPON_NAMES" );
+
+//#Lean side table
+set( %r%s="LEAN", %t="LEAN_TYPES" );//# left, right, or none
+
+//#Event/effect table
+set( %r%s="event", %s="default" );//# not implemented
+
+//Old hardcoded camera commands
+camera( %r%s="ORIGIN", %v=<0.0 0.0 0.0> );
+camera( %r%s="ANGLES", %v=<0.0 0.0 0.0> );
+camera( %r%s="FOV", %f=0.0 );
+camera( %r%s="MOVE", %v=<0.0 0.0 0.0>, %f=0.0 );
+camera( %r%s="PAN", %v=<0.0 0.0 0.0>, %f=0.0 );
+camera( %r%s="ZOOM", %f=0.0, %f=0.0 );
+camera( %r%s="FADE", %v=<0.0 0.0 0.0>, %f=0.0, %v=<0.0 0.0 0.0>, %f=0.0, %f=0.0 );
+camera( %r%s="ENABLE" );
+camera( %r%s="DISABLE" );
+*/

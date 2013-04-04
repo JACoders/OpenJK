@@ -1,0 +1,124 @@
+rosh_penin_noforce
+{
+	playerModel	rosh_penin
+	weapon	WP_MELEE
+	FP_HEAL			0
+	FP_LEVITATION	0
+	FP_SPEED		0
+	FP_PUSH			0
+	FP_PULL			1
+	FP_TELEPATHY	0
+	FP_GRIP			0
+	FP_LIGHTNING	0
+	FP_RAGE			0
+	FP_PROTECT		0
+	FP_ABSORB		0
+	FP_DRAIN		0
+	FP_SEE			0
+	FP_SABERTHROW	0
+	FP_SABER_DEFENSE 0
+	FP_SABER_OFFENSE 0
+	rank		crewman
+	reactions	1
+	aim		1
+	move		1
+	aggression	1
+	evasion		1
+	intelligence	1
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+	class		CLASS_REBEL
+	snd		rosh
+	sndcombat	rosh
+	sndjedi		rosh
+	dismemberProbHead	0
+	dismemberProbArms	0
+	dismemberProbHands	0
+	dismemberProbLegs	0
+	dismemberProbWaist	0
+}
+
+rosh_penin
+{
+	playerModel	rosh_penin
+	saber		training
+	weapon	WP_SABER
+	saberStyle	3
+	FP_HEAL			0
+	FP_LEVITATION	3
+	FP_SPEED		3
+	FP_PUSH			2
+	FP_PULL			3
+	FP_TELEPATHY	0
+	FP_GRIP			0
+	FP_LIGHTNING	0
+	FP_RAGE			0
+	FP_PROTECT		0
+	FP_ABSORB		0
+	FP_DRAIN		0
+	FP_SEE			0
+	FP_SABERTHROW	2
+	FP_SABER_DEFENSE 3
+	FP_SABER_OFFENSE 3
+	rank		lt
+	reactions	2
+	aim		2
+	move		3
+	aggression	5
+	evasion		3
+	intelligence	2
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+	class		CLASS_JEDI
+	snd		rosh
+	sndcombat	rosh
+	sndjedi		rosh
+	dismemberProbHead	0
+	dismemberProbArms	0
+	dismemberProbHands	0
+	dismemberProbLegs	0
+	dismemberProbWaist	0
+}
+
+rosh_dark
+{
+	playerModel	rosh_penin
+	saber		shadowtrooper
+	weapon	WP_SABER
+	saberStyle		3
+	health		500
+	FP_HEAL		0
+	FP_LEVITATION	2
+	FP_SPEED		2
+	FP_PUSH		2
+	FP_PULL		2
+	FP_TELEPATHY	0
+	FP_GRIP		2
+	FP_LIGHTNING	1
+	FP_RAGE		1
+	FP_PROTECT		1
+	FP_ABSORB		1
+	FP_DRAIN		0
+	FP_SEE		0
+	FP_SABERTHROW	2
+	FP_SABER_DEFENSE 	2
+	FP_SABER_OFFENSE 	2
+	rank		lt
+	reactions	2
+	aim			2
+	move		3
+	aggression	5
+	evasion		3
+	intelligence	2
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_REBORN
+	snd		rosh_boss
+	sndcombat	rosh_boss
+	sndjedi		rosh_boss
+	dismemberProbHead	0
+	dismemberProbArms	0
+	dismemberProbHands	0
+	dismemberProbLegs	0
+	dismemberProbWaist	0
+}

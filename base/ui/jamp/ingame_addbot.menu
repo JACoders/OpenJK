@@ -1,0 +1,153 @@
+//----------------------------------------------------------------------------------------------
+// ADDBOT MENU 
+//----------------------------------------------------------------------------------------------
+{
+	menuDef  
+	{
+		name					"ingame_addbot"
+		visible					0
+		fullscreen				0
+		outOfBoundsClick									// this closes the window if it gets a click out of the rectangle
+		rect					105 40 240 128
+		disableColor				.5 .5 .5 1 
+		focusColor				1 1 1 1								// Focus color for text and items
+		style					1
+		border					1
+
+		// Overall window backdrop
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 240 128
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				gametypefield
+			style				0
+			text				@MENUS_NAME1
+			ownerdraw			UI_BOTNAME
+			rect				2 4 236 30 
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			80
+			textaligny			0   
+			font				2
+			textscale			.9
+			forecolor			1 .682 0 1
+			border				0
+			bordercolor			0 0 0 0
+			visible				1 
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+
+		}
+
+		itemDef 
+		{
+			name				gametypefield
+			style				0
+			text				@MENUS_TEAM
+			ownerdraw			UI_REDBLUE
+			rect				2 34 236 30 
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			80
+			textaligny			0    
+			font				2
+			textscale			.9
+			forecolor			1 .682 0 1
+			cvarTest			"g_gametype"
+			disableCvar 
+			{ 
+				"0" ; 
+				"1" ;
+				"2" ;
+				"3" ;
+				"4" ;
+				"5"  
+			}     
+			border				0
+			bordercolor			0 0 0 0
+			visible				1 
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+		}
+
+		itemDef 
+		{
+			name				gametypefield
+			style				0	
+			text				@MENUS_SKILL1
+			ownerdraw			UI_BOTSKILL
+			rect				2 64 236 30 
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			80
+			textaligny			0    
+			font				2
+			textscale			.9
+			forecolor			1 .682 0 1
+			border				0
+			bordercolor			0 0 0 0
+			visible				1 
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+		}
+
+		itemDef 
+		{
+			name				okButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				20 94 200 30 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				ok
+			text				@MENUS_ADD_BOT
+			type				1
+			style				WINDOW_STYLE_EMPTY
+			rect				20 94 200 30 
+			textalignx			80
+			textaligny			2
+			font				2
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript		addBot ; 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			okButton
+			}
+			mouseExit 
+			{ 
+				hide			okButton
+			}
+		}
+	}
+}
+
+
+
+

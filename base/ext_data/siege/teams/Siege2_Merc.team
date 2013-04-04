@@ -1,0 +1,22 @@
+//Siege team definition file.
+
+name "Siege2_Mercs"
+FriendlyShader "sprites/imperial_defend" //Name of shader to display above heads of teammates (to others on this team)
+
+Classes
+{
+//Infantry Class
+	class1		"Bounty Hunter"
+//	class1		"Mercenary"
+//Heavy Class
+	class2		"Merc Assault Specialist"
+//	class2		"Merc Heavy Weapons Specialist"
+//Demo Class
+	class3		"Merc Demolitionist"
+//Vanguard Class
+	class4		"Merc Sniper"
+//Support Class
+	class5		"Smuggler"
+//Jedi Class
+	class6		"Dark Side Marauder"
+}

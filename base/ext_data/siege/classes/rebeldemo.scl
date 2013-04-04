@@ -1,0 +1,20 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Rebel Demolitionist"
+	weapons			WP_BLASTER_PISTOL|WP_THERMAL|WP_TRIP_MINE|WP_DET_PACK
+	forcepowers		0
+	classflags		CFL_EXTRA_AMMO
+	maxhealth		100
+	maxarmor		100
+	startarmor		0
+	model			"bespin_cop" 				//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/bespin_cop/icon_default"
+	class_shader	"gfx/mp/c_icon_demolitionist"
+	holdables		HI_MEDPAC
+}
+
+description	
+"@SIEGE_DEMO_REBEL_DEMO"

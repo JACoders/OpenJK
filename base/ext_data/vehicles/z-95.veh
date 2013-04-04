@@ -1,0 +1,129 @@
+//NOTE: this really acts more like an A-Wing right now, for variety's sake
+
+Z-95
+{
+name			Z-95
+type			VH_FIGHTER
+numHands		2
+hideRider		1
+killRiderOnDeath 	1
+lookYaw			45
+length			420
+width			460
+height			128
+g2radius		460
+centerOfGravity		"-0.222 0 0"
+//speedMax		2200
+//turboSpeed	4400
+speedMax		2400
+turboSpeed		4600
+turboDuration	3000
+turboRecharge	6000
+speedMin		0
+acceleration	26
+decelIdle		10
+accelIdle		15
+speedIdle		1000
+//test: speed stays at whatever you last set it to...
+throttleSticks	1
+strafePerc		0.1
+bankingSpeed	0.5
+rollLimit		40
+pitchLimit		70
+braking		25
+//mouseYaw		0.0025
+//mousePitch	0.0025
+mouseYaw		0.00275
+mousePitch		0.00275
+//turningSpeed	5
+turningSpeed	5.25
+turnWhenStopped		0
+traction		14
+friction		0.5
+speedDependantTurning	1
+maxSlope		0.65
+mass			800
+//armor 		1000
+//malfunctionArmorLevel	666
+//health_front	300
+//health_back		300
+//health_right	200
+//health_left		200
+//shields			300
+armor 		900
+malfunctionArmorLevel	800
+//armor 		2000
+//malfunctionArmorLevel	1300
+health_front	300
+health_back		300
+health_right	300
+health_left		300
+shields		450
+toughness 		85.0
+model			Z-95
+riderAnim		BOTH_VS_IDLE
+radarIcon		"gfx/menus/radar/Z95"
+dmgIndicFrame	"gfx/menus/radar/circle_base_frame_reb"
+dmgIndicShield	"gfx/menus/radar/circle_base_shield"
+dmgIndicBackground "gfx/menus/radar/circle_base"
+icon_front		"gfx/menus/radar/Z95_front"
+icon_back		"gfx/menus/radar/Z95_back"
+icon_right		"gfx/menus/radar/Z95_right"
+icon_left		"gfx/menus/radar/Z95_left"
+crosshairShader	"gfx/menus/radar/z95_reticle"
+//shieldShader	"gfx/misc/shields_green"
+shieldShader	"gfx/misc/shields_blue"
+soundOn 		"sound/vehicles/z-95/on.wav"
+soundLoop 		"sound/vehicles/z-95/loop.wav"
+soundOff 		"sound/vehicles/z-95/off.wav"
+soundFlyBy 		"sound/vehicles/z-95/flyby.wav"
+soundFlyBy2 	"sound/vehicles/z-95/flyby2.wav"
+soundHyper		"sound/vehicles/common/hyperstartreb.wav"
+soundTurbo 		"sound/vehicles/z-95/flyby.wav"
+exhaustFX		"ships/z95_exhaust"
+turboFX			"ships/z95_exhaust_turbo"
+impactFX		"ships/scrape_sparks"
+explodeFX		"ships/Z95_explosion"
+//trailFX		"ships/wingtrail"
+dmgFX			"ships/heavydmg"
+injureFX		"ships/lightdmg"
+noseFX		"ships/Z95_nose"
+lwingFX		"ships/Z95_lwing"
+rwingFX		"ships/Z95_rwing"
+flammable		1
+hoverHeight		80
+hoverStrength		10
+explosionRadius 	400
+explosionDamage 	1000
+
+landingHeight		300.0
+
+surfDestruction		1
+
+weap1			rebel_laser
+weap1Delay		100
+weap2			conc_missile_straight
+weap2Delay		1000
+
+weap1AmmoMax	30
+weap1AmmoRechargeMS	400
+
+weap2AmmoMax	6
+
+weap1Aim		1
+weap2Aim		1
+
+weapMuzzle1		rebel_laser
+weapMuzzle2		rebel_laser
+weapMuzzle3		conc_missile_straight
+
+//should *all* ships really be able to do this?
+weap1Link		1
+
+cameraOverride		1
+cameraRange			500
+cameraVertOffset	110
+cameraPitchOffset	0
+cameraFOV			100
+cameraAlpha			0
+}

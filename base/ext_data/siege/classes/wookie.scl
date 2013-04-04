@@ -1,0 +1,22 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Wookie"
+	weapons		WP_MELEE|WP_BOWCASTER|WP_ROCKET_LAUNCHER|WP_CONCUSSION_RIFLE
+	//classflags		CFL_HEAVYMELEE|CFL_SPEED_75
+	// removing heavymelee for now because apparently it's WAY overpowered - it tears through walls far too quickly.  Maybe some other way to fix later???
+	classflags		CFL_SPEED_75
+	maxhealth		100
+	starthealth		100
+	maxarmor		0
+	startarmor		0
+	model			"chewbacca" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/chewbacca/icon_default"
+	class_shader	"gfx/mp/c_icon_heavy_weapons"
+	speed			0.75
+}
+
+description	
+"@SIEGE_HVY_REBEL_SPECIALIST"

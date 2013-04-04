@@ -1,0 +1,86 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_exe", "x_exe\x_exe.vcproj", "{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA} = {E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB} = {68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "goblib", "goblib\goblib.vcproj", "{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_game", "x_game\x_game.vcproj", "{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		DemoDebug = DemoDebug
+		DemoFinal = DemoFinal
+		DemoRelease = DemoRelease
+		FinalBuild = FinalBuild
+		Release = Release
+		SHDebug = SHDebug
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.Debug.ActiveCfg = Debug|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.Debug.Build.0 = Debug|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.DemoDebug.ActiveCfg = DemoDebug|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.DemoDebug.Build.0 = DemoDebug|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.DemoFinal.ActiveCfg = DemoFinal|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.DemoFinal.Build.0 = DemoFinal|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.DemoRelease.ActiveCfg = DemoRelease|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.DemoRelease.Build.0 = DemoRelease|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.FinalBuild.ActiveCfg = FinalBuild|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.FinalBuild.Build.0 = FinalBuild|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.Release.ActiveCfg = Release|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.Release.Build.0 = Release|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.SHDebug.ActiveCfg = Debug|Xenon
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.SHDebug.Build.0 = Debug|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.Debug.ActiveCfg = Debug|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.Debug.Build.0 = Debug|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.DemoDebug.ActiveCfg = DemoDebug|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.DemoDebug.Build.0 = DemoDebug|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.DemoFinal.ActiveCfg = DemoFinal|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.DemoFinal.Build.0 = DemoFinal|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.DemoRelease.ActiveCfg = DemoRelease|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.DemoRelease.Build.0 = DemoRelease|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.FinalBuild.ActiveCfg = FinalBuild|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.FinalBuild.Build.0 = FinalBuild|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.Release.ActiveCfg = Release|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.Release.Build.0 = Release|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.SHDebug.ActiveCfg = Debug|Xenon
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.SHDebug.Build.0 = Debug|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.Debug.ActiveCfg = Debug|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.Debug.Build.0 = Debug|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.DemoDebug.ActiveCfg = DemoDebug|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.DemoDebug.Build.0 = DemoDebug|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.DemoFinal.ActiveCfg = DemoFinal|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.DemoFinal.Build.0 = DemoFinal|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.DemoRelease.ActiveCfg = DemoRelease|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.DemoRelease.Build.0 = DemoRelease|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.FinalBuild.ActiveCfg = FinalBuild|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.FinalBuild.Build.0 = FinalBuild|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.Release.ActiveCfg = Release|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.Release.Build.0 = Release|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.SHDebug.ActiveCfg = Debug|Xenon
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.SHDebug.Build.0 = Debug|Xenon
+	EndGlobalSection
+	GlobalSection(SolutionItems) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+	GlobalSection(DevPartner) = postSolution
+	EndGlobalSection
+	GlobalSection(DevPartner) = postSolution
+	EndGlobalSection
+EndGlobal

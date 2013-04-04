@@ -1,0 +1,18 @@
+// menu defs
+// 
+{
+	loadMenu { "ui/main.menu"						}
+	loadMenu { "ui/newgame.menu"						}
+	loadMenu { "ui/newgame_first.menu"					}
+	loadMenu { "ui/character.menu"						}
+	loadMenu { "ui/saber.menu"						}
+	loadMenu { "ui/loadgame.menu"						}
+	loadMenu { "ui/controls.menu"						}
+	loadMenu { "ui/setup.menu"						}
+	loadMenu { "ui/quit.menu"						}
+
+	loadMenu { "ui/error.menu" }
+	loadMenu { "ui/vid_warning.menu"					}
+	loadMenu { "ui/videodriver.menu"					}
+
+}

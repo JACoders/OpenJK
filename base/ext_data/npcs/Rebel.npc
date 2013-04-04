@@ -1,0 +1,61 @@
+Rebel
+{
+	playerModel rebel
+	weapon		WP_BLASTER
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+//	race		human
+	class		CLASS_REBEL
+//	snd			rebel1
+//	sndcombat	rebel1
+//	sndextra	rebel1
+	snd		rebel_pilot1
+	sndcombat	rebel_pilot1
+	sndextra	rebel_pilot1
+	yawspeed	120
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+Rebel2
+{
+	playerModel rebel
+	weapon		WP_BLASTER
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+//	race		human
+	class		CLASS_REBEL
+//	snd			rebel2
+//	sndcombat	rebel2
+//	sndextra	rebel2
+	snd		rebel_pilot1
+	sndcombat	rebel_pilot1
+	sndextra	rebel_pilot1
+	yawspeed	120
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

@@ -1,0 +1,92 @@
+hazardtrooper
+{
+	playerModel 	hazardtrooper
+	weapon		WP_REPEATER
+	health		150
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_HAZARD_TROOPER
+	height		80
+	crouchheight 48
+	snd			st1
+	sndcombat	st1
+	sndextra	st1
+	yawspeed	100
+	walkSpeed	55
+	runSpeed	65
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+hazardtrooperconcussion
+{
+	playerModel 	hazardtrooper
+	weapon		WP_CONCUSSION
+	health		150
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_HAZARD_TROOPER
+	height		80
+	crouchheight 48
+	snd			st1
+	sndcombat	st1
+	sndextra	st1
+	yawspeed	100
+	walkSpeed	55
+	runSpeed	65
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+hazardtrooperofficer
+{
+	playerModel 	hazardtrooper
+	weapon		WP_FLECHETTE
+	health		150
+	headPitchRangeDown 30
+	reactions	4
+	aim			3
+	move		4
+	aggression	5
+	evasion		2
+	intelligence	5
+	rank		lt
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_HAZARD_TROOPER
+	height		64
+	crouchheight 48
+	snd			stofficer1
+	sndcombat	stofficer1
+	sndextra	stofficer1
+	yawspeed	100
+	walkSpeed	55
+	runSpeed	65
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

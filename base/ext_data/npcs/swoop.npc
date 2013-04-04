@@ -1,0 +1,115 @@
+
+//NOTE: for vehicle-class NPCs, the playerModel key is actually their entry in the vehicles.dat
+
+Swoop
+{
+	weapon		WP_BLASTER
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width			24
+	height			32
+}
+
+Swoop_black
+{
+	weapon		WP_BLASTER
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width			24
+	height			32
+}
+
+Swoop_blue
+{
+	weapon		WP_BLASTER
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width			24
+	height			32
+}
+
+Swoop_gold
+{
+	weapon		WP_BLASTER
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width			24
+	height			32
+}
+
+Swoop_green
+{
+	weapon		WP_BLASTER
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width			24
+	height			32
+}
+
+Swoop_purple
+{
+	weapon		WP_BLASTER
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width			24
+	height			32
+}
+
+Swoop_red
+{
+	weapon		WP_BLASTER
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width			24
+	height			32
+}
+
+Swoop_silver
+{
+	weapon		WP_BLASTER
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width			24
+	height			32
+}
+
+Swoop_cin
+{
+	weapon		WP_BLASTER
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width			24
+	height			32
+}
+
+swoop_mp
+{
+	weapon		WP_BLASTER
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width			24
+	height			32
+}
+
+swoop_mp2
+{
+	weapon		WP_BLASTER
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width			24
+	height			32
+}
+
+
+

@@ -1,0 +1,101 @@
+ImpWorker
+{
+	playerModel imperial_worker
+	weapon		WP_BLASTER_PISTOL
+	headPitchRangeDown 30
+	health 		30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		imperial
+	class		CLASS_IMPWORKER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			worker1
+	sndcombat	worker1
+	sndextra	worker1
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+ImpWorker2
+{
+	playerModel imperial_worker
+	weapon		WP_BLASTER_PISTOL
+	headPitchRangeDown 30
+	health 		30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		imperial
+	class		CLASS_IMPWORKER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			worker2
+	sndcombat	worker2
+	sndextra	worker2
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+ImpWorker3
+{
+	playerModel imperial_worker
+	weapon		WP_BLASTER_PISTOL
+	headPitchRangeDown 30
+	health 		30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		imperial
+	class		CLASS_IMPWORKER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			worker3
+	sndcombat	worker3
+	sndextra	worker3
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

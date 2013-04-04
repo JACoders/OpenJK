@@ -1,0 +1,25 @@
+/adler32.c/1.1/Sun Mar 23 20:22:38 2003//
+/compress.c/1.1/Sun Mar 23 20:22:38 2003//
+/crc32.c/1.1/Sun Mar 23 20:22:38 2003//
+/deflate.c/1.1/Sun Mar 23 20:22:39 2003//
+/deflate.h/1.1/Sun Mar 23 20:22:39 2003//
+/infblock.c/1.1/Sun Mar 23 20:22:39 2003//
+/infblock.h/1.1/Sun Mar 23 20:22:39 2003//
+/infcodes.c/1.1/Sun Mar 23 20:22:39 2003//
+/infcodes.h/1.1/Sun Mar 23 20:22:39 2003//
+/inffast.c/1.1/Sun Mar 23 20:22:39 2003//
+/inffast.h/1.1/Sun Mar 23 20:22:39 2003//
+/inffixed.h/1.1/Sun Mar 23 20:22:39 2003//
+/inflate.c/1.1/Sun Mar 23 20:22:39 2003//
+/inftrees.c/1.1/Sun Mar 23 20:22:39 2003//
+/inftrees.h/1.1/Sun Mar 23 20:22:39 2003//
+/infutil.c/1.1/Sun Mar 23 20:22:39 2003//
+/infutil.h/1.1/Sun Mar 23 20:22:39 2003//
+/trees.c/1.1/Sun Mar 23 20:22:39 2003//
+/trees.h/1.1/Sun Mar 23 20:22:39 2003//
+/uncompr.c/1.1/Sun Mar 23 20:22:39 2003//
+/zconf.h/1.1/Sun Mar 23 20:22:39 2003//
+/zlib.h/1.1/Sun Mar 23 20:22:39 2003//
+/zutil.c/1.1/Sun Mar 23 20:22:39 2003//
+/zutil.h/1.1/Sun Mar 23 20:22:39 2003//
+D

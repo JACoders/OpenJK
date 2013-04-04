@@ -1,0 +1,20 @@
+//Siege team definition file.
+
+name "Siege3_Jedi"
+FriendlyShader "sprites/rebel_attack" //Name of shader to display above heads of teammates (to others on this team)
+
+Classes
+{
+//Infantry
+	class1	"Jedi Warrior"
+//Heavy
+	class2	"Jedi Knight"
+//Demo
+	class3	"Jedi Demolitionist"
+//Vanguard
+	class4	"Jedi Scout"
+//Support
+	class5	"Jedi Healer"
+//Jedi
+	class6	"Jedi Lightsaber Master"
+}

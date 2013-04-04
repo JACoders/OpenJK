@@ -1,0 +1,549 @@
+//----------------------------------------------------------------------------------------------
+//
+// MAIN MENU - called when game is first started
+//
+//----------------------------------------------------------------------------------------------
+{
+	assetGlobalDef 
+	{
+		smallFont				"aurabesh" 	18	
+		mediumFont				"ergoec" 	18
+		bigFont					"anewhope" 	20
+		smallFont				"arialnb" 	14	
+
+		cursor					"cursor"	
+		itemFocusSound				"sound/interface/menuroam.wav"
+		itemFocusForce				"fffx/interface/menuroam"
+
+		fadeClamp				1.0						// sets the fadeup alpha
+		fadeCycle				1						// how often fade happens in milliseconds
+		fadeAmount				0.1						// amount to adjust alpha per cycle
+		precacheSound
+		{
+			"sound/interface/choose_color.wav"
+			"sound/interface/choose_head.wav"
+			"sound/interface/choose_torso.wav"
+			"sound/interface/choose_saber.wav"
+			"sound/interface/choose_hilt.wav"
+			"sound/interface/choose_blade.wav"
+			"sound/interface/transition.wav" 
+			"sound/interface/esc.wav"
+			"sound/interface/sub_select.wav"
+		}
+		focuscolor				0 0 1 1
+		shadowColor				0.1 0.1 0.1 0.0				// shadow color
+  	}
+
+							   
+	menuDef 
+	{
+		name					"mainMenu"
+		fullScreen				1		
+		rect					0 0 640 480	
+		visible					1
+		focusColor				1 1 1 1
+		descX					320
+		descY					426
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER		
+		onOpen 
+		{
+			setfocus			newgamebutton 
+		}							
+		onESC 
+		{ 
+			play				"sound/interface/menuroam.wav" ; 
+			close				mainMenu ; 
+			open				quitMenu ;
+		}
+
+//----------------------------------------------------------------------------------------------
+//
+//	MENU BACKGROUND
+//
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				background_video
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				200 144 256 256
+			background			"gfx/menus/videologo"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 160 480
+			background			"gfx/menus/menu_side_text"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text_b
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				480 0 160 480
+			background			"gfx/menus/menu_side_text_right"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}	
+	
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/main_background"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				ring
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				193 145 256 256
+			background			"gfx/menus/main_ring"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				centerwindow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				156 154 320 240
+			background			"gfx/menus/main_centerwindow"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				leftwindow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 150 320 240
+			background			"gfx/menus/main_leftwindow"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				rightwindow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				320 150 320 240
+			background			"gfx/menus/main_rightwindow"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				starwars
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				107 8 428 112
+			background			"gfx/menus/jediacademy"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+
+//----------------------------------------------------------------------------------------------
+//	TOP MAIN MENU BUTTONS
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				button_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 0 0
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+
+		// Big button "NEW"
+		itemDef 
+		{
+			name				newgamebutton_undertext
+			group				toprow
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				36 194 130 24
+			text				@MENUS_NEW
+			font				1
+			textscale			.7
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			forecolor			.02 0 .33 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				newgamebutton
+			group				toprow
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				36 212 130 24
+			text				@MENUS_NEW
+			descText			@MENUS_START_A_NEW_GAME
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	16 210 210 32
+				show 			newgamebutton_undertext 
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+				hide 			newgamebutton_undertext
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			newgamefirstMenu 
+			}
+		}
+
+		// Big button "LOAD"
+		itemDef 
+		{
+			name				loadgamebutton_undertext
+			group				toprow
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				36 293 130 24
+			text				@MENUS_LOAD
+			font				1
+			textscale			.7
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			forecolor			.02 0 .33 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				loadgamebutton
+			group				toprow
+			text				@MENUS_LOAD
+			descText			@MENUS_LOAD_A_SAVED_GAME
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				36 310 130 24
+			textaligny			0
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	16 308 210 32
+				show			loadgamebutton_undertext
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+				hide			loadgamebutton_undertext
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			loadgameMenu 
+			}
+		}
+
+		// Big button "CONTROLS"
+		itemDef 
+		{
+			name				controlsbutton_undertext
+			group				toprow
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				448 194 146 24
+			text				@MENUS_CONTROLS2
+			font				1
+			textscale			.7
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			forecolor			.02 0 .33 1
+			visible				0
+			decoration
+		}
+
+		itemDef {
+			name				controlsbutton
+			group				toprow
+			text				@MENUS_CONTROLS
+			descText			@MENUS_CONFIGURE_GAME_CONTROLS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				456 212 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible				1
+			 
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	416 210 210 32
+				show			controlsbutton_undertext
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+				hide			controlsbutton_undertext
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			controlsMenu ; 
+			}
+		}
+
+		// Big button "SETUP"
+		itemDef 
+		{
+			name				setupbutton_undertext
+			group				toprow
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				456 292 130 24
+			text				@MENUS_SETUP
+			font				1
+			textscale			.7
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			forecolor			.02 0 .33 1
+			visible				0
+			decoration
+		}
+
+		itemDef {
+			name				setupbutton
+			group				toprow
+			text				@MENUS_SETUP
+			descText			@MENUS_CONFIGURE_GAME_SETTINGS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				456 310 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible				1
+			 
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	416 308 210 32
+				show			setupbutton_undertext
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+				hide			setupbutton_undertext
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			setupMenu ; 
+			}
+		}
+
+
+//----------------------------------------------------------------------------------------------
+//	OTHER MAIN MENU BUTTONS
+//----------------------------------------------------------------------------------------------
+
+		// EXIT button in lower left corner
+		itemDef 
+		{
+			name				exitgamebutton
+			group				othermain
+			text				@MENUS_EXIT
+			descText			@MENUS_JEDI_KNIGHT_II
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				255 444 130 24 
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	215 440 210 32
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/weapons/saber/saberoff.mp3"; 
+				close			all ; 
+				open			quitMenu 
+			}
+		}
+
+		/*itemDef 
+		{
+			name				temp_mission_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				65 414 130 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				temp_mission
+			group				mission
+			text				"TEMP MISSION SELECT"
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				65 414 130 24 
+			font				2
+			textscale			.7
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			textaligny			-1
+			forecolor			.79 .64 .22 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			temp_mission_glow
+			}
+			mouseExit 
+			{ 
+				hide			temp_mission_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/weapons/saber/saberoff.mp3"; 
+				close			all ; 
+				open			ingameMissionSelect2
+			}
+		}
+
+		itemDef 
+		{
+			name				temp_story
+			group				mission
+			text				"AbCdEfGhIjKlMnOpQrStUvWxYz1234567890"
+			desctext			"Start this map and walk forward."
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				65 444 130 24 
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			textaligny			-1
+			forecolor			.79 .64 .22 1
+			visible				1
+
+			mouseEnter 
+			{ 
+			}
+			mouseExit 
+			{ 
+			}	  	  
+			action 
+			{ 
+				play			"sound/weapons/saber/saberoff.mp3"; 
+				close			all ; 
+				exec			"map mission" 
+			}
+		}*/
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,125 @@
+Gran
+{
+	playerModel	gran
+	customSkin	sp
+	customRGBA	random1
+	weapon		WP_THERMAL
+	weapon		WP_MELEE
+	reactions	3
+	aim		1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	health 		30
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_GRAN
+	snd		gran1
+	sndcombat	gran1
+	sndextra	gran1
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+Gran2
+{
+	playerModel	gran
+	customSkin	sp
+	customRGBA	random1
+	weapon		WP_THERMAL
+	weapon		WP_MELEE
+	reactions	3
+	aim		1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	health 		30
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_GRAN
+	snd		gran2
+	sndcombat	gran2
+	sndextra	gran2
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+GranBoxer
+{
+	playerModel	gran
+	customSkin	sp
+	customRGBA	random1
+	weapon		WP_MELEE
+	surfOff		"l_leg_kneeguard r_leg_kneeguard"
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	health 		50
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		klingon
+	class		CLASS_GRAN
+	snd			gran2
+	sndcombat	gran2
+	sndextra	gran2
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+GranShooter
+{
+	playerModel	gran
+	customSkin	sp
+	customRGBA	random1
+	weapon		WP_BLASTER
+	surfOff		"l_leg_kneeguard"
+	reactions	3
+	aim			5
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	health 		40
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		klingon
+	class		CLASS_GRAN
+	snd			gran1
+	sndcombat	gran1
+	sndextra	gran1
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

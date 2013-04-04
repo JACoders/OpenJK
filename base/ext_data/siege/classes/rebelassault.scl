@@ -1,0 +1,25 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Rebel Assault Specialist"
+//	weapons		WP_BLASTER_PISTOL|WP_BLASTER|WP_REPEATER|WP_THERMAL
+//	weapons		WP_BLASTER_PISTOL|WP_BLASTER|WP_FLECHETTE
+	weapons		WP_BLASTER_PISTOL|WP_BLASTER|WP_REPEATER
+//	classflags		CFL_EXTRA_AMMO
+	forcepowers		0
+	maxhealth		200
+	starthealth		200
+	maxarmor		100
+	startarmor		0
+	model			"rebel" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/rebel/icon_default"
+//	holdables		HI_MEDPAC|HI_SEEKER
+	holdables		HI_EWEB
+	speed			0.85
+	class_shader	"gfx/mp/c_icon_infantry"
+}
+
+description	
+"@SIEGE_INF_REBEL_ASSAULT"

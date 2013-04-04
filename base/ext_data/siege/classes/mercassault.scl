@@ -1,0 +1,21 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Merc Assault Specialist"
+	weapons			WP_BLASTER_PISTOL|WP_CONCUSSION
+//	classflags		CFL_EXTRA_AMMO
+	classflags		CFL_SPEED_75
+	forcepowers		0
+	maxhealth		100
+	maxarmor		100
+	startarmor		0
+	model			"trandoshan" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/trandoshan/icon_default"
+	class_shader	"gfx/mp/c_icon_heavy_weapons"
+	speed			0.75
+}
+
+description	"@SIEGE_HVY_MERC_ASSAULT"
+"

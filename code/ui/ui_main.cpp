@@ -1,0 +1,8580 @@
+// Copyright (C) 1999-2000 Id Software, Inc.
+//
+/*
+=======================================================================
+
+USER INTERFACE MAIN
+
+=======================================================================
+*/
+
+// leave this at the top of all UI_xxxx files for PCH reasons...
+//
+#include "../server/exe_headers.h"
+
+#include "ui_local.h"
+
+#include "menudef.h"
+
+#include "ui_shared.h"
+
+#include "../ghoul2/G2.h"
+
+#include "../game/bg_public.h"
+#include "../game/anims.h"
+extern stringID_table_t animTable [MAX_ANIMATIONS+1];
+
+#include "../qcommon/stv_version.h"
+
+#ifdef _XBOX
+#include <xtl.h>
+#define filepathlength 120
+#endif
+
+#include "../qcommon/xb_settings.h"
+
+//JLF 
+int gScrollAccum = 0;
+int gScrollDelta = 0;
+
+#define TEXTSCROLLDESCRETESTEP 50
+#define SCROLL_SENSITIVITY 2
+
+#define ARROW_SPACE 8
+
+
+extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
+extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
+extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName );
+extern qboolean UI_SaberModelForSaber( const char *saberName, char *saberModel );
+extern qboolean UI_SaberSkinForSaber( const char *saberName, char *saberSkin );
+extern void UI_SaberAttachToChar( itemDef_t *item );
+
+extern unsigned long SG_SaveGameSize();
+
+
+// VIRTUAL KEYBOARD DEFINES ETC
+//
+// Warning: These next values must work out so that there are at least 2 columns and/or
+// 2 rows. Otherwise you will not be able to compile because of divide by zero errors.
+// Not to mention the ugly keyboard you'd be designing
+
+#define SKB_NUM_LETTERS  (36)
+#define SKB_NUM_COLS  (10) // must be > 1 and < SKB_NUM_LETTERS-1
+#define SKB_NUM_ROWS  ((SKB_NUM_LETTERS%SKB_NUM_COLS)?(SKB_NUM_LETTERS/SKB_NUM_COLS+1):(SKB_NUM_LETTERS/SKB_NUM_COLS))
+#define SKB_TOP  (225)
+#define SKB_BOT  (350)
+#define SKB_LEFT (100)
+#define SKB_RIGHT  (540)
+#define SKB_STRING_LENGTH (10)
+#define SKB_STRING_TOP (150)
+#define SKB_STRING_LEFT (200)
+#define SKB_SPACE_H ((SKB_RIGHT-SKB_LEFT)/(SKB_NUM_COLS-1))
+#define SKB_SPACE_V ((SKB_BOT-SKB_TOP)/(SKB_NUM_ROWS-1))
+#define SKB_ACCEPT_NAME ("skb_accept")
+#define SKB_DELETE_NAME ("skb_delete")
+#define SKB_KEYBOARD_NAME ("skb_keyboard")
+#define SKB_OK_X (390)
+#define SKB_OK_Y (400)
+#define SKB_BACKSPACE_X (250)
+#define SKB_BACKSPACE_Y (400)
+
+
+char *letters[SKB_NUM_LETTERS] = {
+			"0", "1", "2", "3",
+			"4", "5", "6", "7",
+			"8", "9",		
+			"A", "B", "C", "D",
+			"E", "F", "G", "H",
+			"I", "J", "K", "L",
+			"M", "N", "O", "P",
+			"Q", "R", "S", "T",
+			"U", "V", "W", "X",
+			"Y", "Z",	};
+
+typedef struct
+{
+	short activeKey;
+	short curStringPos;
+	short curCol;
+	short curRow;
+} softkeyboardDef_t;
+
+softkeyboardDef_t skb;
+
+
+extern qboolean PC_Script_Parse(const char **out);
+
+#define LISTBUFSIZE 10240
+
+static struct 
+{
+	char	listBuf[LISTBUFSIZE];			//	The list of file names read in
+
+	// For scrolling through file names 
+	int				currentLine;		//	Index to currentSaveFileComments[] currently highlighted
+	int				saveFileCnt;		//	Number of save files read in
+
+	int				awaitingSave;		//	Flag to see if user wants to overwrite a game.
+
+	char			*savegameMap;
+	int				savegameFromFlag;
+} s_savegame;
+
+//JLF MPMOVED
+#ifdef _XBOX
+
+struct playerProfile_t
+{
+
+	// For scrolling through file names 
+	int				currentLine;		//	Index to currentSaveFileComments[] currently highlighted
+	int				fileCnt;		//	Number of save files read in
+	char			*modelName;
+};
+
+playerProfile_t s_playerProfile;
+
+void resetProfileFileCount()
+{
+	s_playerProfile.fileCnt = -1;
+
+};
+#endif
+
+
+
+#ifdef _XBOX
+#define MAX_SAVELOADFILES	100
+//JLF MPMOVED
+#define MAX_PROFILEFILES	8
+#else
+#define MAX_SAVELOADFILES	100
+#endif
+#define MAX_SAVELOADNAME	32
+
+//byte screenShotBuf[SG_SCR_WIDTH * SG_SCR_HEIGHT * 4];
+
+typedef struct 
+{
+	char *currentSaveFileName;						// file name of savegame
+	char currentSaveFileComments[iSG_COMMENT_SIZE];	// file comment
+	char currentSaveFileDateTimeString[iSG_COMMENT_SIZE];	// file time and date
+	time_t currentSaveFileDateTime;
+#ifdef _XBOX
+	char currentSaveFileMap[32];			// map save game is from
+#else
+	char currentSaveFileMap[MAX_TOKEN_CHARS];			// map save game is from
+#endif
+	char corrupt;
+	char screenshotNotify;
+} savedata_t;
+
+static savedata_t s_savedata[MAX_SAVELOADFILES];
+
+//JLF
+char  g_loadsaveGameName[MAX_SAVELOADNAME];
+qboolean  g_loadsaveGameNameInitialized = qfalse;
+
+extern unsigned long SG_BlocksLeft();
+
+//JLF used to tell if delete button should be shown
+static qboolean	ui_ShowDeleteActive =0	;
+
+void storeSGDataDatetoCvar();
+void storeSGDataTimetoCvar();
+void storeSGDataDiffLeveltoCvar();
+
+
+
+//JLF MPMOVED
+#ifdef _XBOX
+typedef struct 
+{
+	char currentProfileName[iSG_COMMENT_SIZE];						// file name of savegame
+	char currentProfileComments[iSG_COMMENT_SIZE];	// file comment
+	char currentProfileDateTimeString[iSG_COMMENT_SIZE];	// file time and date
+	time_t currentProfileDateTime;
+} profileData_t;
+
+static profileData_t s_ProfileData[MAX_PROFILEFILES];
+#endif
+
+
+void UI_SetActiveMenu( const char* menuname,const char *menuID );
+void ReadSaveDirectory (void);
+//JLF MPMOVED
+#ifdef _XBOX
+
+//void ReadSaveDirectoryProfiles(void);
+void UI_UpdateSettingsCvars(void);
+static void UI_UpdateVolume(const char* action, const char* type, const char* itemName, int width, int value );
+static void UI_UpdateMoves(void);
+static void UI_UpdateMoveTitles(void);
+
+#endif
+void Item_RunScript(itemDef_t *item, const char *s);
+qboolean Item_SetFocus(itemDef_t *item, float x, float y);
+
+qboolean		Asset_Parse(char **buffer);
+menuDef_t		*Menus_FindByName(const char *p);
+void			Menus_HideItems(const char *menuName);
+int				Text_Height(const char *text, float scale, int iFontIndex );
+int				Text_Width(const char *text, float scale, int iFontIndex );
+void			_UI_DrawTopBottom(float x, float y, float w, float h, float size);
+void			_UI_DrawSides(float x, float y, float w, float h, float size);
+void			UI_CheckVid1Data(const char *menuTo,const char *warningMenuName);
+void			UI_GetVideoSetup ( void );
+void			UI_UpdateVideoSetup ( void );
+static void		UI_UpdateCharacterCvars ( void );
+static void		UI_GetCharacterCvars ( void );
+static void		UI_UpdateSaberCvars ( void );
+static void		UI_GetSaberCvars ( void );
+static void		UI_ResetSaberCvars ( void );
+static void		UI_InitAllocForcePowers ( const char *forceName );
+static void		UI_AffectForcePowerLevel ( const char *forceName );
+static void		UI_SetUpForceSelect( void );
+static void		UI_ShowForceLevelDesc ( const char *forceName );
+static void		UI_ResetForceLevels ( void );
+static void		UI_ClearWeapons ( void );
+static void		UI_GiveWeapon ( const int weaponIndex );
+static void		UI_EquipWeapon ( const int weaponIndex );
+static void		UI_LoadMissionSelectMenu( const char *cvarName );
+static void		UI_AddWeaponSelection ( const int weaponIndex, const int ammoIndex, const int ammoAmount, const char *iconItemName,const char *litIconItemName, const char *hexBackground, const char *soundfile );
+static void		UI_AddThrowWeaponSelection ( const int weaponIndex, const int ammoIndex, const int ammoAmount, const char *iconItemName,const char *litIconItemName, const char *hexBackground, const char *soundfile );
+static void		UI_RemoveWeaponSelection ( const int weaponIndex );
+static void		UI_RemoveThrowWeaponSelection ( void );
+static void		UI_HighLightWeaponSelection ( const int selectionslot );
+static void		UI_NormalWeaponSelection ( const int selectionslot );
+static void		UI_NormalThrowSelection ( void );
+static void		UI_HighLightThrowSelection( void );
+static void		UI_ClearInventory ( void );
+static void		UI_GiveInventory ( const int itemIndex, const int amount );
+static void		UI_ForcePowerWeaponsButton(qboolean activeFlag);
+static void		UI_UpdateCharacterSkin( void );
+static void		UI_UpdateCharacter( qboolean changedModel );
+static void		UI_UpdateSaberType( void );
+static void		UI_UpdateSaberHilt( qboolean secondSaber );
+//static void		UI_UpdateSaberColor( qboolean secondSaber );
+static void		UI_InitWeaponSelect( void );
+static void		UI_DisableWeapon( void );
+static void		UI_WeaponHelpActive( void );
+static void		UI_UpdateFightingStyle ( void );
+static void		UI_UpdateFightingStyleChoices ( void );
+static void		UI_CalcForceStatus(void);
+static void		UI_DecrementForcePowerLevel( void );
+static void		UI_DecrementCurrentForcePower ( void );
+static void		UI_ShutdownForceHelp( void );
+static void		UI_ForceHelpActive( void );
+static void		UI_ResetCharacterListBoxes( void );
+static void		UI_CheckForForceCheat( void );
+
+void			UI_LoadMenus(const char *menuFile, qboolean reset);
+static void		UI_OwnerDraw(float x, float y, float w, float h, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, int align, float special, float scale, vec4_t color, qhandle_t shader, int textStyle, int iFontIndex);
+static qboolean UI_OwnerDrawVisible(int flags);
+int				UI_OwnerDrawWidth(int ownerDraw, float scale);
+static void		UI_Update(const char *name);
+void			UI_UpdateCvars( void );
+void			UI_ResetDefaults( void );
+void			UI_AdjustSaveGameListBox( int currentLine );
+static void		UI_FeederSelection(float feederID, int index, itemDef_t *item);
+
+void			Menus_CloseByName(const char *p);
+
+static qboolean	UI_SoftKeyboard_HandleKey(int flags, float *special, int key);
+static qboolean	UI_SoftKeyboardDelete_HandleKey(int flags, float *special, int key);
+static qboolean	UI_SoftKeyboardAccept_HandleKey(int flags, float *special, int key);
+static void		UI_SoftKeyboardInit();
+static void		UI_SoftKeyboardDelete();
+static void		UI_SoftKeyboardAccept();
+static void		UI_SoftKeyboard_Draw();
+static void		UI_SoftKeyboardDelete_Draw();
+static void		UI_SoftKeyboardAccept_Draw();
+
+// Level select screen data
+struct levelSelect_t
+{
+	char	mapname[MAX_QPATH];	// Map name to use when loading
+	char	displayName[32];	// Text to show in the listbox
+	int		forceLevel;			// Level of neutral force powers
+};
+
+const levelSelect_t levelSelectData[] = {
+	{ "yavin1b",		"@MENUS_YAVIN1B",		0 },
+	{ "yavin2",			"@MENUS_YAVIN2",		1 },
+
+	{ "t1_danger",		"@MENUS_T1_DANGER",		1 },
+	{ "t1_fatal",		"@MENUS_T1_FATAL",		1 },
+	{ "t1_rail",		"@MENUS_T1_RAIL",		1 },
+	{ "t1_sour",		"@MENUS_T1_SOUR",		1 },
+	{ "t1_surprise",	"@MENUS_T1_SURPRISE",	1 },
+
+	{ "hoth2",			"@MENUS_HOTH2",			1 },
+	{ "hoth3",			"@MENUS_HOTH3",			1 },
+
+	{ "t2_dpred",		"@MENUS_T2_DPRED",		2 },
+	{ "t2_rancor",		"@MENUS_T2_RANCOR",		2 },
+	{ "t2_rogue",		"@MENUS_T2_ROGUE",		2 },
+	{ "t2_trip",		"@MENUS_T2_TRIP",		2 },
+	{ "t2_wedge",		"@MENUS_T2_WEDGE",		2 },
+
+	{ "vjun1",			"@MENUS_VJUN1",			2 },
+	{ "vjun2",			"@MENUS_VJUN2",			2 },
+	{ "vjun3",			"@MENUS_VJUN3",			2 },
+
+	{ "t3_bounty",		"@MENUS_T3_BOUNTY",		3 },
+	{ "t3_byss",		"@MENUS_T3_BYSS",		3 },
+	{ "t3_hevil",		"@MENUS_T3_HEVIL",		3 },
+	{ "t3_rift",		"@MENUS_T3_RIFT",		3 },
+	{ "t3_stamp",		"@MENUS_T3_STAMP",		3 },
+
+	{ "taspir1",		"@MENUS_TASPIR1",		3 },
+	{ "taspir2",		"@MENUS_TASPIR2",		3 },
+	{ "kor1",			"@MENUS_KOR1",			3 },
+	{ "kor2",			"@MENUS_KOR2",			3 },
+};
+
+const int levelSelectSize = sizeof(levelSelectData) / sizeof(levelSelectData[0]);
+
+// Currently selected map in level select cheat screen
+int levelSelectChoice = 0;
+
+// Movedata Sounds
+typedef enum
+{
+	MDS_NONE = 0,
+	MDS_FORCE_JUMP,
+	MDS_ROLL,
+	MDS_SABER,
+	MDS_MOVE_SOUNDS_MAX
+};
+
+typedef enum
+{
+	MD_ACROBATICS = 0,
+	MD_SINGLE_FAST,
+	MD_SINGLE_MEDIUM,
+	MD_SINGLE_STRONG,
+	MD_DUAL_SABERS,
+	MD_SABER_STAFF,
+	MD_MOVE_TITLE_MAX
+};
+
+// Some hard coded badness
+// At some point maybe this should be externalized to a .dat file
+char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
+{
+"@MENUS_ACROBATICS",
+"@MENUS_SINGLE_FAST",
+"@MENUS_SINGLE_MEDIUM",
+"@MENUS_SINGLE_STRONG",
+"@MENUS_DUAL_SABERS",
+"@MENUS_SABER_STAFF",
+};
+
+char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
+{
+"BOTH_RUN1",
+"BOTH_SABERFAST_STANCE",
+"BOTH_STAND2",
+"BOTH_SABERSLOW_STANCE",
+"BOTH_SABERDUAL_STANCE",
+"BOTH_SABERSTAFF_STANCE",
+};
+
+#define MAX_MOVES 16
+
+typedef struct 
+{
+	char	*title;	
+	char	*desc;	
+	char	*anim;
+	short	sound;
+} datpadmovedata_t;
+
+static datpadmovedata_t datapadMoveData[MD_MOVE_TITLE_MAX][MAX_MOVES] = 
+{
+// Acrobatics
+"@MENUS_FORCE_JUMP1",				"@MENUS_FORCE_JUMP1_DESC",			"BOTH_FORCEJUMP1",				MDS_FORCE_JUMP,
+"@MENUS_FORCE_FLIP",				"@MENUS_FORCE_FLIP_DESC",			"BOTH_FLIP_F",					MDS_FORCE_JUMP,
+"@MENUS_ROLL",						"@MENUS_ROLL_DESC",					"BOTH_ROLL_F",					MDS_ROLL,
+"@MENUS_BACKFLIP_OFF_WALL",			"@MENUS_BACKFLIP_OFF_WALL_DESC",	"BOTH_WALL_FLIP_BACK1",			MDS_FORCE_JUMP,
+"@MENUS_SIDEFLIP_OFF_WALL",			"@MENUS_SIDEFLIP_OFF_WALL_DESC",	"BOTH_WALL_FLIP_RIGHT",			MDS_FORCE_JUMP,
+"@MENUS_WALL_RUN",					"@MENUS_WALL_RUN_DESC",				"BOTH_WALL_RUN_RIGHT",			MDS_FORCE_JUMP,
+"@MENUS_LONG_JUMP",					"@MENUS_LONG_JUMP_DESC",			"BOTH_FORCELONGLEAP_START",		MDS_FORCE_JUMP,
+"@MENUS_WALL_GRAB_JUMP",			"@MENUS_WALL_GRAB_JUMP_DESC",		"BOTH_FORCEWALLREBOUND_FORWARD",MDS_FORCE_JUMP,
+"@MENUS_RUN_UP_WALL_BACKFLIP",		"@MENUS_RUN_UP_WALL_BACKFLIP_DESC",	"BOTH_FORCEWALLRUNFLIP_START",	MDS_FORCE_JUMP,
+"@MENUS_JUMPUP_FROM_KNOCKDOWN",		"@MENUS_JUMPUP_FROM_KNOCKDOWN_DESC","BOTH_KNOCKDOWN3",				MDS_NONE,
+"@MENUS_JUMPKICK_FROM_KNOCKDOWN",	"@MENUS_JUMPKICK_FROM_KNOCKDOWN_DESC","BOTH_KNOCKDOWN2",			MDS_NONE,
+"@MENUS_ROLL_FROM_KNOCKDOWN",		"@MENUS_ROLL_FROM_KNOCKDOWN_DESC",	"BOTH_KNOCKDOWN1",				MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+
+//Single Saber, Fast Style
+"@MENUS_STAB_BACK",					"@MENUS_STAB_BACK_DESC",			"BOTH_A2_STABBACK1",			MDS_SABER,
+"@MENUS_LUNGE_ATTACK",				"@MENUS_LUNGE_ATTACK_DESC",			"BOTH_LUNGE2_B__T_",			MDS_SABER,
+"@MENUS_FORCE_PULL_IMPALE",			"@MENUS_FORCE_PULL_IMPALE_DESC",	"BOTH_PULL_IMPALE_STAB",		MDS_SABER,
+"@MENUS_FAST_ATTACK_KATA",			"@MENUS_FAST_ATTACK_KATA_DESC",		"BOTH_A1_SPECIAL",				MDS_SABER,
+"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP,
+"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
+"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+
+//Single Saber, Medium Style
+"@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER,
+"@MENUS_FLIP_ATTACK",				"@MENUS_FLIP_ATTACK_DESC",			"BOTH_JUMPFLIPSLASHDOWN1",		MDS_FORCE_JUMP,
+"@MENUS_FORCE_PULL_SLASH",			"@MENUS_FORCE_PULL_SLASH_DESC",		"BOTH_PULL_IMPALE_SWING",		MDS_SABER,
+"@MENUS_MEDIUM_ATTACK_KATA",		"@MENUS_MEDIUM_ATTACK_KATA_DESC",	"BOTH_A2_SPECIAL",				MDS_SABER,
+"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP,
+"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
+"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+
+//Single Saber, Strong Style
+"@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER,
+"@MENUS_JUMP_ATTACK",				"@MENUS_JUMP_ATTACK_DESC",			"BOTH_FORCELEAP2_T__B_",		MDS_FORCE_JUMP,
+"@MENUS_FORCE_PULL_SLASH",			"@MENUS_FORCE_PULL_SLASH_DESC",		"BOTH_PULL_IMPALE_SWING",		MDS_SABER,
+"@MENUS_STRONG_ATTACK_KATA",		"@MENUS_STRONG_ATTACK_KATA_DESC",	"BOTH_A3_SPECIAL",				MDS_SABER,
+"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP,
+"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
+"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+
+//Dual Sabers
+"@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER,
+"@MENUS_FLIP_FORWARD_ATTACK",		"@MENUS_FLIP_FORWARD_ATTACK_DESC",	"BOTH_JUMPATTACK6",				MDS_FORCE_JUMP,
+"@MENUS_DUAL_SABERS_TWIRL",			"@MENUS_DUAL_SABERS_TWIRL_DESC",	"BOTH_SPINATTACK6",				MDS_SABER,
+"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN_DUAL",			MDS_FORCE_JUMP,
+"@MENUS_DUAL_SABER_BARRIER",		"@MENUS_DUAL_SABER_BARRIER_DESC",	"BOTH_A6_SABERPROTECT",			MDS_SABER,
+"@MENUS_DUAL_STAB_FRONT_BACK",		"@MENUS_DUAL_STAB_FRONT_BACK_DESC", "BOTH_A6_FB",					MDS_SABER,
+"@MENUS_DUAL_STAB_LEFT_RIGHT",		"@MENUS_DUAL_STAB_LEFT_RIGHT_DESC", "BOTH_A6_LR",					MDS_SABER,
+"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
+"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+
+// Saber Staff
+"@MENUS_STAB_BACK",					"@MENUS_STAB_BACK_DESC",			"BOTH_A2_STABBACK1",			MDS_SABER,
+"@MENUS_BACK_FLIP_ATTACK",			"@MENUS_BACK_FLIP_ATTACK_DESC",		"BOTH_JUMPATTACK7",				MDS_FORCE_JUMP,
+"@MENUS_SABER_STAFF_TWIRL",			"@MENUS_SABER_STAFF_TWIRL_DESC",	"BOTH_SPINATTACK7",				MDS_SABER,
+"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN_STAFF",			MDS_FORCE_JUMP,
+"@MENUS_SPINNING_KATA",				"@MENUS_SPINNING_KATA_DESC",		"BOTH_A7_SOULCAL",				MDS_SABER,
+"@MENUS_KICK1",						"@MENUS_KICK1_DESC",				"BOTH_A7_KICK_F",				MDS_FORCE_JUMP,
+"@MENUS_JUMP_KICK",					"@MENUS_JUMP_KICK_DESC",			"BOTH_A7_KICK_F_AIR",			MDS_FORCE_JUMP,
+"@MENUS_SPLIT_KICK",				"@MENUS_SPLIT_KICK_DESC",			"BOTH_A7_KICK_RL",				MDS_FORCE_JUMP,
+"@MENUS_SPIN_KICK",					"@MENUS_SPIN_KICK_DESC",			"BOTH_A7_KICK_S",				MDS_FORCE_JUMP,
+"@MENUS_FLIP_KICK",					"@MENUS_FLIP_KICK_DESC",			"BOTH_A7_KICK_BF",				MDS_FORCE_JUMP,
+"@MENUS_BUTTERFLY_ATTACK",			"@MENUS_BUTTERFLY_ATTACK_DESC",		"BOTH_BUTTERFLY_FR1",			MDS_SABER,
+"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+NULL, NULL, 0,	MDS_NONE,
+};
+
+
+static int gamecodetoui[] = {4,2,3,0,5,1,6};
+
+uiInfo_t uiInfo;
+
+static void UI_RegisterCvars( void );
+void UI_Load(void);
+
+
+typedef struct {
+	vmCvar_t	*vmCvar;
+	char		*cvarName;
+	char		*defaultString;
+	int			cvarFlags;
+} cvarTable_t;
+
+
+vmCvar_t	ui_menuFiles;
+vmCvar_t	ui_hudFiles;
+
+vmCvar_t	ui_char_anim;
+vmCvar_t	ui_char_model;
+vmCvar_t	ui_char_skin_head;
+vmCvar_t	ui_char_skin_torso;
+vmCvar_t	ui_char_skin_legs;
+vmCvar_t	ui_saber_type;
+vmCvar_t	ui_saber;
+vmCvar_t	ui_saber2;
+vmCvar_t	ui_saber_color;
+vmCvar_t	ui_saber2_color;
+vmCvar_t	ui_char_color_red;
+vmCvar_t	ui_char_color_green;
+vmCvar_t	ui_char_color_blue;
+vmCvar_t	ui_PrecacheModels;
+
+//JLFCALLOUT MPMOVED
+vmCvar_t	ui_hideAcallout;
+vmCvar_t	ui_hideBcallout;
+vmCvar_t	ui_hideXcallout;
+
+//END JLFCALLOUT
+vmCvar_t    saveGameCount;
+vmCvar_t    overwriteAvailable;
+vmCvar_t    ui_newGameActive;
+vmCvar_t    noNewSaveGameAvailable;
+vmCvar_t	ui_BlocksAvailable;
+vmCvar_t	ui_BlocksNeeded;
+
+vmCvar_t	ui_ShowDelete	;
+vmCvar_t	ui_cancelYScript	;
+
+//controller menu
+vmCvar_t	ControllerOutNum	;
+
+
+
+// Version of startup state machine function used when we came from MP XBE:
+void XB_FastStartup( XBStartupState startupState )
+{
+	if( startupState <= STARTUP_LOAD_SETTINGS )
+	{
+		bool bSuccess = Settings.Load();
+		if( !bSuccess )
+		{
+			// Odd. If saving was disabled, then Load will appear to work.
+			UI_xboxErrorPopup( XB_POPUP_CORRUPT_SETTINGS );
+			return;
+		}
+	}
+
+	if( startupState <= STARTUP_FINISH )
+	{
+		// Restore settings from stored (or default) settings:
+		Settings.SetAll();
+		// Save them out, in case user just deleted (and is now restoring) them:
+		Settings.Save();
+
+		// mainMenu has already been opened
+	}
+}
+
+/*
+	MASTER Startup function for saved games, invite checks, etc...
+	Modeled after XBL_Login
+*/
+int blocksNeeded = 0;	// 40/44 - Blocks free
+extern bool Sys_QuickStart( void );
+void XB_Startup( XBStartupState startupState )
+{
+	// If we came from MP - use the express version
+	if( Sys_QuickStart() && Cvar_Get("inSplashMenu", "0", 0)->integer == 0 )
+	{
+		XB_FastStartup( startupState );
+		return;
+	}
+
+	if( startupState <= STARTUP_LOAD_SETTINGS )
+	{
+		bool bSuccess = Settings.Load();
+		if( !bSuccess )
+		{
+			if( Settings.Corrupt() )
+			{
+				UI_xboxErrorPopup( XB_POPUP_CORRUPT_SETTINGS );
+				return;
+			}
+
+			// Otherwise, file doesn't exist - continue to space checking below
+		}
+		else
+		{
+			// Skip checking space for settings
+			startupState = STARTUP_GAME_SPACE_CHECK;
+		}
+	}
+
+	if( startupState <= STARTUP_COMBINED_SPACE_CHECK )
+	{
+		// Is there enough room for both settings and a savegame?
+		if ( SG_BlocksLeft() < SG_SaveGameSize() + SETTINGS_NUM_BLOCKS )
+		{
+			blocksNeeded = (SG_SaveGameSize() + SETTINGS_NUM_BLOCKS) - SG_BlocksLeft();
+			UI_xboxErrorPopup( XB_POPUP_DISKFULL_BOTH );
+			return;
+		}
+
+		// OK. There's enough room for settings - make a file:
+		Settings.Save();
+	}
+
+	if( startupState <= STARTUP_GAME_SPACE_CHECK )
+	{
+#ifndef XBOX_DEMO	// No space checks in demo
+		// Is there enough room for another savegame?
+		if( SG_BlocksLeft() < SG_SaveGameSize() )
+		{
+			blocksNeeded = SG_SaveGameSize() - SG_BlocksLeft();
+			UI_xboxErrorPopup( XB_POPUP_DISKFULL );
+			return;
+		}
+#endif
+	}
+
+	if( startupState <= STARTUP_INVITE_CHECK )
+	{
+		// Do we have a pending invitation? This can only return true ONCE!
+		extern bool Sys_InviteExists();
+		if( Sys_InviteExists() )
+		{
+			UI_xboxErrorPopup( XB_POPUP_CONFIRM_INVITE );
+			return;
+		}
+	}
+
+	if( startupState <= STARTUP_FINISH )
+	{
+		// Restore settings from stored (or default) settings:
+		Settings.SetAll();
+
+		// All done! Open the menu!
+		Menus_CloseAll();
+		Menus_ActivateByName( Cvar_VariableString( "returnMenu" ) );
+	}
+}
+
+
+
+
+
+static cvarTable_t cvarTable[] = 
+{
+	{ &ui_menuFiles,			"ui_menuFiles",			"ui/menus.txt", CVAR_ARCHIVE },
+	{ &ui_hudFiles,				"cg_hudFiles",			"ui/jahud.txt",CVAR_ARCHIVE}, 
+
+	{ &ui_char_anim,			"ui_char_anim",			"BOTH_WALK1",0}, 
+
+	{ &ui_char_model,			"ui_char_model",		"",0},	//these are filled in by the "g_*" versions on load
+	{ &ui_char_skin_head,		"ui_char_skin_head",	"",0},	//the "g_*" versions are initialized in UI_Init, ui_atoms.cpp
+	{ &ui_char_skin_torso,		"ui_char_skin_torso",	"",0}, 
+	{ &ui_char_skin_legs,		"ui_char_skin_legs",	"",0}, 
+
+	{ &ui_saber_type,			"ui_saber_type",		"",0},
+	{ &ui_saber,				"ui_saber",				"",0}, 
+	{ &ui_saber2,				"ui_saber2",			"",0}, 
+	{ &ui_saber_color,			"ui_saber_color",		"",0}, 
+	{ &ui_saber2_color,			"ui_saber2_color",		"",0}, 
+
+	{ &ui_char_color_red,		"ui_char_color_red",	"", 0}, 
+	{ &ui_char_color_green,		"ui_char_color_green",	"", 0}, 
+	{ &ui_char_color_blue,		"ui_char_color_blue",	"", 0}, 
+
+	{ &ui_PrecacheModels,		"ui_PrecacheModels",	"1", CVAR_ARCHIVE}, 
+//JLFCALLOUT MPMOVED
+	{ &ui_hideAcallout,		"ui_hideAcallout",	"", 0}, 
+	{ &ui_hideBcallout,		"ui_hideBcallout",	"", 0}, 
+	{ &ui_hideXcallout,		"ui_hideXcallout",	"", 0}, 
+	
+//END JLFCALLOUT
+	{ &saveGameCount,		"saveGameCount",	"", 0}, 
+	{ &overwriteAvailable,	"overwriteAvailable",	"0", 0}, 
+	{ &ui_newGameActive,	"ui_newGameActive",	"", 0}, 
+	{ &noNewSaveGameAvailable,	"noNewSaveGameAvailable",	"", 0}, 
+	{ &ui_BlocksAvailable,	"ui_BlocksAvailable",	"0", 0}, 
+	{ &ui_BlocksNeeded,	"ui_BlocksNeeded",	"0", 0}, 
+	{ &ui_ShowDelete,	"ui_ShowDelete", "0", 0}, 
+	{ &ui_cancelYScript,	"ui_cancelYScript", "0", 0}, 
+	{ &ControllerOutNum,	"ControllerOutNum", "-1", 0}, 
+	
+
+
+
+
+};
+
+
+#define FP_UPDATED_NONE -1
+#define NOWEAPON -1
+
+static int cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);
+
+void Text_Paint(float x, float y, float scale, vec4_t color, const char *text, int iMaxPixelWidth, int style, int iFontIndex);
+int Key_GetCatcher( void );
+
+#define	UI_FPS_FRAMES	4
+void _UI_Refresh( int realtime )
+{
+	static int index;
+	static int	previousTimes[UI_FPS_FRAMES];
+
+	if ( !( Key_GetCatcher() & KEYCATCH_UI ) ) 
+	{
+		return;
+	}
+
+	extern void SE_CheckForLanguageUpdates(void);
+	SE_CheckForLanguageUpdates();
+
+	if ( Menus_AnyFullScreenVisible() )
+	{//if not in full screen, don't mess with ghoul2
+		//rww - ghoul2 needs to know what time it is even if the client/server are not running
+		//FIXME: this screws up the game when you go back to the game...
+		G2API_SetTime(realtime, 0);
+		G2API_SetTime(realtime, 1);
+	}
+
+	uiInfo.uiDC.frameTime = realtime - uiInfo.uiDC.realTime;
+	uiInfo.uiDC.realTime = realtime;
+
+	previousTimes[index % UI_FPS_FRAMES] = uiInfo.uiDC.frameTime;
+	index++;
+	if ( index > UI_FPS_FRAMES ) 
+	{
+		int i, total;
+		// average multiple frames together to smooth changes out a bit
+		total = 0;
+		for ( i = 0 ; i < UI_FPS_FRAMES ; i++ ) 
+		{
+			total += previousTimes[i];
+		}
+		if ( !total ) 
+		{
+			total = 1;
+		}
+		uiInfo.uiDC.FPS = 1000 * UI_FPS_FRAMES / total;
+	}
+
+
+
+	UI_UpdateCvars();
+
+	if (Menu_Count() > 0) 
+	{
+		// paint all the menus
+		Menu_PaintAll();
+		// refresh server browser list
+//		UI_DoServerRefresh();
+		// refresh server status
+//		UI_BuildServerStatus(qfalse);
+		// refresh find player list
+//		UI_BuildFindPlayerList(qfalse);
+	} 
+
+#ifdef _XBOX
+	// display current map name
+	if (Cvar_VariableIntegerValue( "cl_maphack" ))
+	{
+		float rgba[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
+		extern cvar_t *cl_mapname;
+		Text_Paint(130, 100, /* UI_FONT_DEFAULT, */ 0.9f, rgba, cl_mapname->string, 0, ITEM_TEXTSTYLE_NORMAL, 3);
+	}
+#endif
+
+#ifndef _XBOX
+	// draw cursor
+	UI_SetColor( NULL );
+	if (Menu_Count() > 0)
+	{
+		if (uiInfo.uiDC.cursorShow == qtrue)
+		{
+			UI_DrawHandlePic( uiInfo.uiDC.cursorx, uiInfo.uiDC.cursory, 48, 48, uiInfo.uiDC.Assets.cursor);
+		}
+	}
+#endif
+}
+
+#ifdef _XBOX
+static void UI_SetVis(menuDef_t* menu, const char* name,  bool activeFlag)
+{
+	itemDef_t* item = Menu_FindItemByName(menu, name);
+	if (item)
+	{
+		// Make it active
+		if (activeFlag)
+		{
+			item->window.flags |= WINDOW_VISIBLE;
+		}
+		else
+		{
+			item->window.flags &= ~WINDOW_VISIBLE;
+		}
+	}
+}
+#endif
+
+/*
+===============
+UI_LoadMods
+===============
+*/
+static void UI_LoadMods() {
+	int		numdirs;
+	char	dirlist[2048];
+	char	*dirptr;
+  char  *descptr;
+	int		i;
+	int		dirlen;
+
+	uiInfo.modCount = 0;
+	numdirs = FS_GetFileList( "$modlist", "", dirlist, sizeof(dirlist) );
+	dirptr  = dirlist;
+	for( i = 0; i < numdirs; i++ ) {
+		dirlen = strlen( dirptr ) + 1;
+		descptr = dirptr + dirlen;
+		uiInfo.modList[uiInfo.modCount].modName = String_Alloc(dirptr);
+		uiInfo.modList[uiInfo.modCount].modDescr = String_Alloc(descptr);
+		dirptr += dirlen + strlen(descptr) + 1;
+		uiInfo.modCount++;
+		if (uiInfo.modCount >= MAX_MODS) {
+			break;
+		}
+	}
+
+}
+
+/*
+================
+vmMain
+
+This is the only way control passes into the module.
+This must be the very first function compiled into the .qvm file
+================
+*/
+int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) 
+{
+	return 0;
+}
+
+
+
+/*
+================
+Text_PaintChar
+================
+*/
+/*
+static void Text_PaintChar(float x, float y, float width, float height, float scale, float s, float t, float s2, float t2, qhandle_t hShader) 
+{
+	float w, h;
+
+	w = width * scale;
+	h = height * scale;
+	ui.R_DrawStretchPic((int)x, (int)y, w, h, s, t, s2, t2, hShader );	//make the coords (int) or else the chars bleed
+}
+*/
+
+/*
+================
+Text_Paint
+================
+*/
+// iMaxPixelWidth is 0 here for no limit (but gets converted to -1), else max printable pixel width relative to start pos
+//
+void Text_Paint(float x, float y, float scale, vec4_t color, const char *text, int iMaxPixelWidth, int style, int iFontIndex)
+{
+	if (iFontIndex == 0)
+	{
+		iFontIndex = uiInfo.uiDC.Assets.qhMediumFont;
+	}
+	// kludge.. convert JK2 menu styles to SOF2 printstring ctrl codes...
+	//
+	int iStyleOR = 0;
+	switch (style)
+	{
+//	case  ITEM_TEXTSTYLE_NORMAL:			iStyleOR = 0;break;					// JK2 normal text
+//	case  ITEM_TEXTSTYLE_BLINK:				iStyleOR = STYLE_BLINK;break;		// JK2 fast blinking
+	case  ITEM_TEXTSTYLE_PULSE:				iStyleOR = STYLE_BLINK;break;		// JK2 slow pulsing
+	case  ITEM_TEXTSTYLE_SHADOWED:			iStyleOR = STYLE_DROPSHADOW;break;	// JK2 drop shadow ( need a color for this )
+	case  ITEM_TEXTSTYLE_OUTLINED:			iStyleOR = STYLE_DROPSHADOW;break;	// JK2 drop shadow ( need a color for this )
+	case  ITEM_TEXTSTYLE_OUTLINESHADOWED:	iStyleOR = STYLE_DROPSHADOW;break;	// JK2 drop shadow ( need a color for this )
+	case  ITEM_TEXTSTYLE_SHADOWEDMORE:		iStyleOR = STYLE_DROPSHADOW;break;	// JK2 drop shadow ( need a color for this )
+	}
+
+	ui.R_Font_DrawString(	x,		// int ox
+							y,		// int oy
+							text,	// const char *text
+							color,	// paletteRGBA_c c
+							iStyleOR | iFontIndex,	// const int iFontHandle
+							!iMaxPixelWidth?-1:iMaxPixelWidth,	// iMaxPixelWidth (-1 = none)
+							scale	// const float scale = 1.0f
+							);
+}
+
+
+/*
+================
+Text_PaintWithCursor
+================
+*/
+// iMaxPixelWidth is 0 here for no-limit
+void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const char *text, int cursorPos, char cursor, int iMaxPixelWidth, int style, int iFontIndex) 
+{
+	Text_Paint(x, y, scale, color, text, iMaxPixelWidth, style, iFontIndex);
+
+	// now print the cursor as well...
+	//
+	char sTemp[1024];
+	int iCopyCount = min(strlen(text), cursorPos);
+		iCopyCount = min(iCopyCount,sizeof(sTemp));
+
+	// copy text into temp buffer for pixel measure...
+	//
+	strncpy(sTemp,text,iCopyCount);
+			sTemp[iCopyCount] = '\0';
+	
+	int iNextXpos  = ui.R_Font_StrLenPixels(sTemp, iFontIndex, scale );
+
+	Text_Paint(x+iNextXpos, y, scale, color, va("%c",cursor), iMaxPixelWidth, style|ITEM_TEXTSTYLE_BLINK, iFontIndex);
+}
+
+
+const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *handle) 
+{
+	*handle = -1;
+
+	if (feederID == FEEDER_SAVEGAMES) 
+	{
+		if (column==0)
+		{
+			return s_savedata[index].currentSaveFileName;//currentSaveFileComments;
+		}
+		else
+		{
+			return s_savedata[index].currentSaveFileDateTimeString;
+		}
+	}
+//JLF MPMOVED
+#ifdef _XBOX
+	else if (feederID == FEEDER_PROFILES)
+	{
+		if (column == 0)
+		{
+			return s_ProfileData[index].currentProfileName;
+		}
+	}
+#endif
+	else if (feederID == FEEDER_MOVES) 
+	{
+		return datapadMoveData[uiInfo.movesTitleIndex][index].title;
+	}
+	else if (feederID == FEEDER_MOVES_TITLES) 
+	{
+		return datapadMoveTitleData[index];
+	}
+	else if (feederID == FEEDER_PLAYER_SPECIES) 
+	{
+		return uiInfo.playerSpecies[index].Name;
+	} 
+	else if (feederID == FEEDER_LANGUAGES) 
+	{
+		assert( 0 );
+		return NULL;
+//		return SE_GetLanguageName( index );
+	} 
+	else if (feederID == FEEDER_PLAYER_SKIN_HEAD)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount) 
+		{
+			*handle = ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]));
+			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index];
+		}
+	}
+	else if (feederID == FEEDER_PLAYER_SKIN_TORSO)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount) 
+		{
+			*handle = ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoNames[index]));
+			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoNames[index];
+		}
+	}
+	else if (feederID == FEEDER_PLAYER_SKIN_LEGS)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount) 
+		{
+			*handle = ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[index]));
+			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[index];
+		}
+	}
+	else if (feederID == FEEDER_COLORCHOICES)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount) 
+		{
+			*handle = ui.R_RegisterShaderNoMip( uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorShader[index]);
+			return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorShader[index];
+		}
+	}
+	else if (feederID == FEEDER_MODS) 
+	{
+		if (index >= 0 && index < uiInfo.modCount) 
+		{
+			if (uiInfo.modList[index].modDescr && *uiInfo.modList[index].modDescr) 
+			{
+				return uiInfo.modList[index].modDescr;
+			} 
+			else 
+			{
+				return uiInfo.modList[index].modName;
+			}
+		}
+	} 
+	else if (feederID == FEEDER_LEVELSELECT)
+	{
+		if (index >= 0 && index < levelSelectSize)
+			return levelSelectData[index].displayName;
+	}
+
+	return "";
+}
+
+qhandle_t UI_FeederItemImage(float feederID, int index) 
+{
+	if (feederID == FEEDER_PLAYER_SKIN_HEAD) 
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount) 
+		{
+			//return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadIcons[index];
+			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]));
+		}
+	} 
+	else if (feederID == FEEDER_PLAYER_SKIN_TORSO) 
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount) 
+		{
+			//return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoIcons[index];
+			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoNames[index]));
+		}
+	} 
+	else if (feederID == FEEDER_PLAYER_SKIN_LEGS) 
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount) 
+		{
+			//return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegIcons[index];
+			return ui.R_RegisterShaderNoMip(va("models/players/%s/icon_%s.jpg", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[index]));
+		}
+	} 
+	else if (feederID == FEEDER_COLORCHOICES)
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount) 
+		{
+			return ui.R_RegisterShaderNoMip( uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorShader[index]);
+		}
+	}
+/*	else if (feederID == FEEDER_ALLMAPS || feederID == FEEDER_MAPS) 
+	{
+		int actual;
+		UI_SelectedMap(index, &actual);
+		index = actual;
+		if (index >= 0 && index < uiInfo.mapCount) 
+		{
+			if (uiInfo.mapList[index].levelShot == -1) 
+			{
+				uiInfo.mapList[index].levelShot = trap_R_RegisterShaderNoMip(uiInfo.mapList[index].imageName);
+			}
+			return uiInfo.mapList[index].levelShot;
+		}
+	}
+*/
+	return 0;
+}
+
+
+void setArrowX(itemDef_t * arrowcontrol, int xloc)
+{
+	
+	arrowcontrol->window.rect.x = xloc;
+
+}
+
+/*
+=================
+CreateNextSaveName
+=================
+*/
+static int CreateNextSaveName(char *fileName)
+{
+	int i;
+
+	// Loop through all the save games and look for the first open name
+	for (i=0;i<MAX_SAVELOADFILES;i++)
+	{
+		Com_sprintf( fileName, MAX_SAVELOADNAME, "jedi_%02d", i );
+
+		if (!ui.SG_GetSaveGameComment(fileName, NULL, NULL))
+		{
+			return qtrue;
+		}
+	}
+
+	return qfalse;
+}
+
+/*
+===============
+UI_DeferMenuScript
+
+Return true if the menu script should be deferred for later
+===============
+*/
+static qboolean UI_DeferMenuScript ( const char **args )
+{
+	const char* name;
+
+	// Whats the reason for being deferred?
+	if (!String_Parse(args, &name)) 
+	{
+		return qfalse;
+	}
+
+	if( !Q_stricmp ( name, "always" ) )
+	{
+		return qtrue;
+	}
+	// Handle the custom cases
+	if ( !Q_stricmp ( name, "VideoSetup" ) )
+	{
+		const char* warningMenuName;
+		qboolean	deferred;
+
+		// No warning menu specified
+		if ( !String_Parse(args, &warningMenuName) )
+		{
+			return qfalse;
+		}
+
+		// Defer if the video options were modified
+		deferred = Cvar_VariableIntegerValue( "ui_r_modified" ) ? qtrue : qfalse;
+
+		if ( deferred )
+		{
+			// Open the warning menu
+			Menus_OpenByName(warningMenuName);
+		}
+
+		return deferred;
+	}
+//JLF
+#ifdef _XBOX
+
+/*
+	if ( !Q_stricmp ( name, "ProfileSave" ) )
+	{
+		const char* warningMenuName;
+		qboolean	deferred;
+
+		// No warning menu specified
+		if ( !String_Parse(args, &warningMenuName) )
+		{
+			return qfalse;
+		}
+
+		// Defer if the video options were modified
+		deferred = Cvar_VariableIntegerValue( "ui_profileSaveNeeded" ) ? qtrue : qfalse;
+
+		if ( deferred )
+		{
+			// Open the warning menu
+			Menus_OpenByName(warningMenuName);
+		}
+
+		return deferred;
+	}
+*/
+#endif
+
+	return qfalse;
+}
+
+
+void ui_DeleteGame()
+{
+	if (s_savedata[s_savegame.currentLine].currentSaveFileName)	// A line was chosen
+			{
+#ifndef FINAL_BUILD
+				ui.Printf( va("%s\n","Attempting to delete game"));
+#endif
+				strcpy(g_loadsaveGameName,s_savedata[s_savegame.currentLine].currentSaveFileName);
+				g_loadsaveGameNameInitialized = qtrue;
+				ui.Cmd_ExecuteText( EXEC_NOW, va("wipe file\n"));//%s\n", s_savedata[s_savegame.currentLine].currentSaveFileName));
+				
+				
+				if( (s_savegame.currentLine>0) && ((s_savegame.currentLine+1) == s_savegame.saveFileCnt) )
+				{
+					s_savegame.currentLine--;
+					// yeah this is a pretty bad hack
+					// adjust cursor position of listbox so correct item is highlighted
+					UI_AdjustSaveGameListBox( s_savegame.currentLine );			
+				}
+		
+//				ReadSaveDirectory();	//refresh
+				s_savegame.saveFileCnt = -1;	//force a refresh at drawtime
+
+			}
+
+}
+void ui_SaveGame()
+{
+		char fileName[MAX_SAVELOADNAME];
+			char description[64];
+			// Create a new save game
+//			if ( !s_savedata[s_savegame.currentLine].currentSaveFileName)	// No line was chosen
+			{
+//JLF MPNOTUSED
+#ifdef _XBOX
+				strcpy(fileName, "JKSG3");
+#else
+			CreateNextSaveName(fileName);
+	
+#endif
+			}
+//			else	// Overwrite a current save game? Ask first.
+			{
+//				s_savegame.yes.generic.flags	= QMF_HIGHLIGHT_IF_FOCUS;
+//				s_savegame.no.generic.flags		= QMF_HIGHLIGHT_IF_FOCUS;
+
+//				strcpy(fileName,s_savedata[s_savegame.currentLine].currentSaveFileName);
+//				s_savegame.awaitingSave = qtrue;
+//				s_savegame.deletegame.generic.flags	= QMF_GRAYED;	// Turn off delete button
+//				break;
+			}
+
+			// Save description line
+			ui.Cvar_VariableStringBuffer("ui_gameDesc",description,sizeof(description));
+			ui.SG_StoreSaveGameComment(description);
+
+			ui.Cmd_ExecuteText( EXEC_APPEND, va("save %s\n", fileName));
+		//	s_savegame.saveFileCnt = -1;	//force a refresh the next time around
+}
+
+
+void openDashBoardMemory()
+{
+// TCR C4-3 Cleanup Support
+    // Launch to the Dash memory area to clean up
+        // Reboot to Dash
+	LAUNCH_DATA ld;
+	memset(&ld, 0, sizeof(ld));
+	PLD_LAUNCH_DASHBOARD pDash	= (PLD_LAUNCH_DASHBOARD) &ld;
+	pDash->dwReason				= XLD_LAUNCH_DASHBOARD_MEMORY;
+	char * path					= NULL;
+	pDash->dwContext = 0;
+	pDash->dwParameter1 = 'U';
+	pDash->dwParameter2 = SG_SaveGameSize() + SETTINGS_NUM_BLOCKS;
+
+	S_Shutdown();
+	// Similarly, kill off the streaming thread
+	extern void Sys_StreamShutdown(void);
+	Sys_StreamShutdown();
+
+	XLaunchNewImage(path, &ld);
+
+
+//    LD_LAUNCH_DASHBOARD LaunchDash;
+//   LaunchDash.dwReason = XLD_LAUNCH_DASHBOARD_MEMORY;
+//    LaunchDash.dwContext = 0;
+//    LaunchDash.dwParameter1 = DWORD( 'U');
+//    LaunchDash.dwParameter2 = SG_SaveGameSize();
+
+//    XLaunchNewImage( NULL, (PLAUNCH_DATA)(&LaunchDash) );
+
+    // We never get here
+}
+
+#ifdef XBOX_DEMO
+
+// Bleh.
+int demoForcePowerLevel[NUM_FORCE_POWERS];
+
+void UI_DemoSetForceLevels( void )
+{
+	if( Cvar_VariableIntegerValue( "t1_mission" ) == 0 )	// Sour
+	{// NOTE : always set the uiInfo powers
+		// level 1 in all core powers
+		demoForcePowerLevel[FP_LEVITATION]=1; 
+		demoForcePowerLevel[FP_SPEED]=1;		 
+		demoForcePowerLevel[FP_PUSH]=1;		
+		demoForcePowerLevel[FP_PULL]=1;
+		demoForcePowerLevel[FP_SEE]=1;
+		demoForcePowerLevel[FP_SABER_OFFENSE]=1;
+		demoForcePowerLevel[FP_SABER_DEFENSE]=1;
+		demoForcePowerLevel[FP_SABERTHROW]=1;
+		// plus these extras
+		demoForcePowerLevel[FP_HEAL]=1;
+		demoForcePowerLevel[FP_TELEPATHY]=1;
+		demoForcePowerLevel[FP_GRIP]=1;
+
+		// and set the rest to zero
+		demoForcePowerLevel[FP_ABSORB]=0;
+		demoForcePowerLevel[FP_PROTECT]=0;
+		demoForcePowerLevel[FP_DRAIN]=0;
+		demoForcePowerLevel[FP_LIGHTNING]=0;
+		demoForcePowerLevel[FP_RAGE]=0;
+	}
+	else // Rift
+	{
+		// level 3 in all core powers
+		demoForcePowerLevel[FP_LEVITATION]=3; 
+		demoForcePowerLevel[FP_SPEED]=3;		 
+		demoForcePowerLevel[FP_PUSH]=3;		
+		demoForcePowerLevel[FP_PULL]=3;
+		demoForcePowerLevel[FP_SEE]=3;
+		demoForcePowerLevel[FP_SABER_OFFENSE]=3;
+		demoForcePowerLevel[FP_SABER_DEFENSE]=3;
+		demoForcePowerLevel[FP_SABERTHROW]=3;
+
+		// plus these extras
+		demoForcePowerLevel[FP_HEAL]=1;
+		demoForcePowerLevel[FP_TELEPATHY]=1;
+		demoForcePowerLevel[FP_GRIP]=2;
+		demoForcePowerLevel[FP_LIGHTNING]=1;
+		demoForcePowerLevel[FP_PROTECT]=1;
+				
+		// and set the rest to zero
+		
+		demoForcePowerLevel[FP_ABSORB]=0;
+		demoForcePowerLevel[FP_DRAIN]=0;
+		demoForcePowerLevel[FP_RAGE]=0;	
+	}
+}
+
+#endif
+
+/*
+===============
+UI_RunMenuScript
+===============
+*/
+static qboolean UI_RunMenuScript ( const char **args ) 
+{
+	const char *name, *name2,*mapName,*menuName,*warningMenuName;
+
+	if (String_Parse(args, &name)) 
+	{
+		if (Q_stricmp(name, "resetdefaults") == 0)		
+		{
+			UI_ResetDefaults();
+		}
+		else if (Q_stricmp(name, "saveControls") == 0) 
+		{
+			Controls_SetConfig(qtrue);
+		} 
+		else if (Q_stricmp(name, "loadControls") == 0) 
+		{
+			Controls_GetConfig();
+		} 
+		else if (Q_stricmp(name, "clearError") == 0) 
+		{
+			Cvar_Set("com_errorMessage", "");
+		} 
+		//possibly make a separate readsavedirectory call that does it immediately
+		else if (Q_stricmp(name, "ReadSaveDirectory") == 0) 
+		{
+			s_savegame.saveFileCnt = -1;	//force a refresh at drawtime
+		} 
+		else if (Q_stricmp(name, "loadAuto") == 0) 
+		{
+//			Menus_CloseAll();
+			UI_xboxErrorPopup( XB_POPUP_TESTING_SAVE );
+			ui.Cmd_ExecuteText( EXEC_APPEND, "wait ; wait ; wait ; wait ; load auto\n");	//load game menu
+		}
+		else if (Q_stricmp(name, "loadgame") == 0) 
+		{
+			if (s_savedata[s_savegame.currentLine].currentSaveFileName)
+			{
+//				Menus_CloseAll();
+				UI_xboxErrorPopup( XB_POPUP_TESTING_SAVE );
+				// the 'load' call is broken for levelnames that have spaces
+				// the global variable 'g_loadGameName' will carry the level name through
+				ui.Cmd_ExecuteText( EXEC_APPEND, va("wait ; wait ; wait ; wait ; load level\n"));
+				strcpy(g_loadsaveGameName,s_savedata[s_savegame.currentLine].currentSaveFileName);
+				g_loadsaveGameNameInitialized = qtrue;
+			}
+		}
+		else if (Q_stricmp(name, "deletegame") == 0) 
+		{
+			ui_DeleteGame();
+		}
+		else if (Q_stricmp(name, "savegame") == 0) 
+		{
+			ui_SaveGame();
+		}
+		else if (Q_stricmp(name, "checkforoverwrite") == 0) 
+		{
+			if(s_savegame.saveFileCnt == MAX_SAVELOADFILES && !s_savegame.currentLine) // check to see if there are enough slots
+			{
+				// No free slots
+				Cvar_Set( "ui_overwriting", "3");
+			}
+			else
+			{
+				char fileName[MAX_SAVELOADNAME];
+				char description[64];
+				if (svs.clients[0].frames[svs.clients[0].netchan.outgoingSequence & PACKET_MASK].ps.stats[STAT_HEALTH] <= 0)
+				{
+					Cvar_Set( "ui_overwriting", "666");
+				}
+				else if ( s_savegame.currentLine || (1== Cvar_VariableIntegerValue("noNewSaveGameAvailable")&& s_savegame.saveFileCnt>0))	
+				{
+					// On an existing savegame
+					Cvar_Set( "ui_overwriting", "1");		 
+				}
+				else if ( SG_BlocksLeft() < SG_SaveGameSize())
+				{
+					// Insufficient space
+					blocksNeeded = SG_SaveGameSize() - SG_BlocksLeft();
+					Cvar_Set( "ui_overwriting", "2");
+				}
+				else
+				{
+					// Everything ok
+					Cvar_Set( "ui_overwriting", "0");
+				}
+			}
+		}
+		else if (Q_stricmp(name, "loadgameselect") == 0) 
+		{
+			if ( trap_Cvar_VariableValue("cl_paused")>0 )
+			{	//popup the confirmation
+				UI_xboxErrorPopup( XB_POPUP_LOAD_CONFIRM );
+			}
+			else
+			{
+				itemDef_t item;
+				item.parent = Menu_GetFocused();
+				item.window.flags = 0;
+				Item_RunScript(&item, "uiScript loadgame");
+			}
+		}
+
+
+
+
+		
+		else if (Q_stricmp(name, "LoadMods") == 0) 
+		{
+			UI_LoadMods();
+		} 
+		else if (Q_stricmp(name, "RunMod") == 0) 
+		{
+			if (uiInfo.modList[uiInfo.modIndex].modName)
+			{
+				Cvar_Set( "fs_game", uiInfo.modList[uiInfo.modIndex].modName);
+				extern	void FS_Restart( void );
+				FS_Restart();
+				Cbuf_ExecuteText( EXEC_APPEND, "vid_restart;" );
+			}
+		} 
+		else if (Q_stricmp(name, "Quit") == 0) 
+		{
+			Cbuf_ExecuteText( EXEC_NOW, "quit");
+		} 
+		else if (Q_stricmp(name, "Controls") == 0) 
+		{
+			Cvar_Set( "cl_paused", "1" );
+			trap_Key_SetCatcher( KEYCATCH_UI );
+			Menus_CloseAll();
+			Menus_ActivateByName("setup_menu2");
+		} 
+		else if (Q_stricmp(name, "Leave") == 0) 
+		{
+			Cbuf_ExecuteText( EXEC_APPEND, "disconnect\n" );
+			trap_Key_SetCatcher( KEYCATCH_UI );
+			Menus_CloseAll();
+			//Menus_ActivateByName("mainMenu");
+		} 
+		else if (Q_stricmp(name, "getvideosetup") == 0) 
+		{
+			UI_GetVideoSetup ( );
+		}
+		else if (Q_stricmp(name, "updatevideosetup") == 0)
+		{
+			UI_UpdateVideoSetup ( );
+		}
+		else if (Q_stricmp(name, "nextDataPadForcePower") == 0)		
+		{
+			ui.Cmd_ExecuteText( EXEC_NOW, "dpforcenext\n");
+			extern void CG_SetDataPadForceText( void );
+			CG_SetDataPadForceText();
+		}
+		else if (Q_stricmp(name, "prevDataPadForcePower") == 0)		
+		{
+			ui.Cmd_ExecuteText( EXEC_NOW, "dpforceprev\n");
+			extern void CG_SetDataPadForceText( void );
+			CG_SetDataPadForceText();
+		}
+		else if (Q_stricmp(name, "nextDataPadWeapon") == 0)		
+		{
+			ui.Cmd_ExecuteText( EXEC_NOW, "dpweapnext\n");
+			extern void CG_SetDataPadWeaponText( void );
+			CG_SetDataPadWeaponText();
+		}
+		else if (Q_stricmp(name, "prevDataPadWeapon") == 0)		
+		{
+			ui.Cmd_ExecuteText( EXEC_NOW, "dpweapprev\n");
+			extern void CG_SetDataPadWeaponText( void );
+			CG_SetDataPadWeaponText();
+		}
+		else if (Q_stricmp(name, "nextDataPadInventory") == 0)		
+		{
+			ui.Cmd_ExecuteText( EXEC_APPEND, "dpinvnext\n");
+		}
+		else if (Q_stricmp(name, "prevDataPadInventory") == 0)		
+		{
+			ui.Cmd_ExecuteText( EXEC_APPEND, "dpinvprev\n");
+		}
+		else if (Q_stricmp(name, "checkvid1data") == 0)		// Warn user data has changed before leaving screen?
+		{
+			String_Parse(args, &menuName);
+
+			String_Parse(args, &warningMenuName);
+
+			UI_CheckVid1Data(menuName,warningMenuName);
+		}
+		else if (Q_stricmp(name, "startgame") == 0) 
+		{
+			Menus_CloseAll();
+			if ( Cvar_VariableIntegerValue("com_demo") )
+			{
+				ui.Cmd_ExecuteText( EXEC_APPEND, "map demo\n");
+			}
+			else
+			{
+				ui.Cmd_ExecuteText( EXEC_APPEND, "map yavin1\n");
+			}
+		} 
+		else if (Q_stricmp(name, "startmap") == 0) 
+		{
+			Menus_CloseAll();
+
+			String_Parse(args, &mapName);
+
+			ui.Cmd_ExecuteText( EXEC_APPEND, va("maptransition %s\n",mapName));
+		} 
+		else if (Q_stricmp(name, "closeingame") == 0) 
+		{
+			trap_Key_SetCatcher( trap_Key_GetCatcher() & ~KEYCATCH_UI );
+			trap_Key_ClearStates();
+			Cvar_Set( "cl_paused", "0" );
+			Menus_CloseAll();
+
+			if (1 == Cvar_VariableIntegerValue("ui_missionfailed"))
+			{
+				Menus_ActivateByName("missionfailed_menu");
+				ui.Key_SetCatcher( KEYCATCH_UI );
+			}
+			else
+			{
+				Menus_ActivateByName("mainhud");
+			}
+		} 
+		else if (Q_stricmp(name, "closedatapad") == 0) 
+		{
+			trap_Key_SetCatcher( trap_Key_GetCatcher() & ~KEYCATCH_UI );
+			trap_Key_ClearStates();
+			Cvar_Set( "cl_paused", "0" );
+			Menus_CloseAll();
+			Menus_ActivateByName("mainhud");
+
+			Cvar_Set( "cg_updatedDataPadForcePower1", "0" );
+			Cvar_Set( "cg_updatedDataPadForcePower2", "0" );
+			Cvar_Set( "cg_updatedDataPadForcePower3", "0" );
+			Cvar_Set( "cg_updatedDataPadObjective", "0" );
+		} 
+		else if (Q_stricmp(name, "closesabermenu") == 0) 
+		{
+			// if we're in the saber menu when creating a character, close this down
+			if( !Cvar_VariableIntegerValue( "saber_menu" ) )
+			{
+				Menus_CloseByName( "saberMenu" );
+				Menus_OpenByName( "characterMenu" );
+			}
+		}
+		else if (Q_stricmp(name, "clearmouseover") == 0) 
+		{
+			itemDef_t *item;
+			menuDef_t *menu = Menu_GetFocused();
+
+			if (menu) 
+			{
+				const char *itemName;
+				String_Parse(args, &itemName);
+				item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, itemName);
+				if (item)
+				{
+					item->window.flags &= ~WINDOW_MOUSEOVER;
+				}
+			}
+		}
+		else if (Q_stricmp(name, "setMovesListDefault") == 0) 
+		{
+			uiInfo.movesTitleIndex = 2;
+		}
+		else if (Q_stricmp(name, "resetMovesDesc") == 0) 
+		{
+			menuDef_t *menu = Menu_GetFocused();
+			itemDef_t *item;
+
+			if (menu) 
+			{
+				item = (itemDef_s *) Menu_FindItemByName(menu, "item_desc");
+				if (item)
+				{
+					listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+					if( listPtr )
+					{
+						listPtr->cursorPos = 0;
+						listPtr->startPos = 0;
+					}
+					item->cursorPos = 0;					
+				}
+			}
+
+		}
+		else if (Q_stricmp(name, "resetMovesList") == 0) 
+		{
+			menuDef_t *menu;
+			menu = Menus_FindByName("datapadMovesMenu");
+			//update saber models
+			if (menu)
+			{
+				itemDef_t *item;
+				item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, "character");
+				if (item)
+				{
+					UI_SaberAttachToChar( item );
+				}
+			}
+
+			Cvar_Set( "ui_move_desc", " " );
+		}
+//		else if (Q_stricmp(name, "setanisotropicmax") == 0) 
+//		{
+//			r_ext_texture_filter_anisotropic->value;
+//		}
+		else if (Q_stricmp(name, "setMoveCharacter") == 0) 
+		{
+			itemDef_t *item;
+			menuDef_t *menu;
+			modelDef_t *modelPtr;
+			char skin[MAX_QPATH];
+
+			UI_GetCharacterCvars();
+			UI_GetSaberCvars();
+
+			uiInfo.movesTitleIndex = 0;
+
+			menu = Menus_FindByName("datapadMovesMenu");
+
+			if (menu)
+			{
+				item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, "character");
+				if (item)
+				{
+					modelPtr = (modelDef_t*)item->typeData;
+					if (modelPtr)
+					{
+						uiInfo.movesBaseAnim = datapadMoveTitleBaseAnims[uiInfo.movesTitleIndex];
+						ItemParse_model_g2anim_go( item, uiInfo.movesBaseAnim );
+
+						uiInfo.moveAnimTime = 0 ;
+						DC->g2hilev_SetAnim(&item->ghoul2[0], "model_root", modelPtr->g2anim, qtrue);
+						Com_sprintf( skin, sizeof( skin ), "models/players/%s/|%s|%s|%s", 
+															Cvar_VariableString ( "g_char_model"), 
+															Cvar_VariableString ( "g_char_skin_head"), 
+															Cvar_VariableString ( "g_char_skin_torso"), 
+															Cvar_VariableString ( "g_char_skin_legs") 
+									);
+
+						ItemParse_model_g2skin_go( item, skin );
+						UI_SaberAttachToChar( item );
+					}
+				}
+			}
+		}
+		else if (Q_stricmp(name, "glCustom") == 0) 
+		{
+			Cvar_Set("ui_r_glCustom", "4");
+		} 
+		else if (Q_stricmp(name, "character") == 0) 
+		{
+			UI_UpdateCharacter( qfalse );
+		}
+		else if (Q_stricmp(name, "characterchanged") == 0) 
+		{
+			UI_UpdateCharacter( qtrue );
+		}
+		else if (Q_stricmp(name, "char_skin") == 0) 
+		{
+			UI_UpdateCharacterSkin();
+		}
+		else if (Q_stricmp(name, "saber_type") == 0) 
+		{
+			UI_UpdateSaberType();
+		}
+		else if (Q_stricmp(name, "saber_hilt") == 0) 
+		{
+			UI_UpdateSaberHilt( qfalse );
+		}
+		else if (Q_stricmp(name, "saber_color") == 0) 
+		{
+//			UI_UpdateSaberColor( qfalse );
+		}
+		else if (Q_stricmp(name, "saber2_hilt") == 0) 
+		{
+			UI_UpdateSaberHilt( qtrue );
+		}
+		else if (Q_stricmp(name, "saber2_color") == 0) 
+		{
+//			UI_UpdateSaberColor( qtrue );
+		}
+		else if (Q_stricmp(name, "updatecharcvars") == 0) 
+		{
+			UI_UpdateCharacterCvars();
+		}
+		else if (Q_stricmp(name, "getcharcvars") == 0) 
+		{
+			UI_GetCharacterCvars();
+		}
+		else if (Q_stricmp(name, "updatesabercvars") == 0) 
+		{
+			UI_UpdateSaberCvars();
+		}
+		else if (Q_stricmp(name, "getsabercvars") == 0) 
+		{
+			UI_GetSaberCvars();
+		}
+		else if (Q_stricmp(name, "resetsabercvardefaults") == 0) 
+		{
+			// NOTE : ONLY do this if saber menu is set properly (ie. first time we enter this menu)
+			if( !Cvar_VariableIntegerValue( "saber_menu" ) )
+			{
+				UI_ResetSaberCvars();
+			}
+    	}
+		else if( Q_stricmp(name, "fixforsabercheat") == 0)
+		{
+			if(strstr(Cvar_Get("g_saber2"," ", 0)->string, "single"))
+			{
+				extern bool Cheat_ChangeSaber( void );
+				Cheat_ChangeSaber();
+				Cheat_ChangeSaber();
+			}
+		}
+		else if (Q_stricmp(name, "updatefightingstylechoices") == 0) 
+		{
+			UI_UpdateFightingStyleChoices();
+		}
+		else if (Q_stricmp(name, "initallocforcepower") == 0) 
+		{
+			const char *forceName;
+			String_Parse(args, &forceName);
+
+			UI_InitAllocForcePowers(forceName);
+		}
+		else if (Q_stricmp(name, "affectforcepowerlevel") == 0) 
+		{
+			const char *forceName;
+			String_Parse(args, &forceName);
+
+			UI_AffectForcePowerLevel(forceName);
+		}
+		else if (Q_stricmp(name, "decrementcurrentforcepower") == 0) 
+		{
+			UI_DecrementCurrentForcePower();
+		}
+		else if (Q_stricmp(name, "shutdownforcehelp") == 0) 
+		{
+			UI_ShutdownForceHelp();
+		}
+		else if (Q_stricmp(name, "forcehelpactive") == 0) 
+		{
+			UI_ForceHelpActive();
+		}
+		else if (Q_stricmp(name, "showforceleveldesc") == 0) 
+		{
+			const char *forceName;
+			String_Parse(args, &forceName);
+
+			UI_ShowForceLevelDesc(forceName);
+		}
+		else if (Q_stricmp(name, "resetforcelevels") == 0) 
+		{
+			UI_ResetForceLevels();
+		}
+		else if (Q_stricmp(name, "checkforforcecheat") == 0)
+		{
+			UI_CheckForForceCheat();
+		}
+		else if (Q_stricmp(name, "weaponhelpactive") == 0) 
+		{
+			UI_WeaponHelpActive();
+		}
+		// initialize weapon selection screen
+		else if (Q_stricmp(name, "initweaponselect") == 0) 
+		{
+			UI_InitWeaponSelect();
+		}
+		else if(Q_stricmp(name, "setupForceSelect") == 0)
+		{
+			UI_SetUpForceSelect();
+		}
+		else if (Q_stricmp(name, "clearweapons") == 0) 
+		{
+			UI_ClearWeapons();
+		}
+		else if (Q_stricmp(name, "stopgamesounds") == 0) 
+		{
+			trap_S_StopSounds();
+		}
+		else if (Q_stricmp(name, "loadmissionselectmenu") == 0) 
+		{
+			const char *cvarName;
+			String_Parse(args, &cvarName);
+
+			if (cvarName)
+			{
+				UI_LoadMissionSelectMenu(cvarName);
+			}
+		}
+		else if (Q_stricmp(name, "calcforcestatus") == 0) 
+		{
+			UI_CalcForceStatus();
+		}
+		else if (Q_stricmp(name, "giveweapon") == 0) 
+		{
+			const char *weaponIndex;
+			String_Parse(args, &weaponIndex);
+			UI_GiveWeapon(atoi(weaponIndex));
+		}
+		else if (Q_stricmp(name, "equipweapon") == 0) 
+		{
+			const char *weaponIndex;
+			String_Parse(args, &weaponIndex);
+			UI_EquipWeapon(atoi(weaponIndex));
+		}
+		else if (Q_stricmp(name, "addweaponselection") == 0) 
+		{
+			const char *weaponIndex;
+			String_Parse(args, &weaponIndex);
+			if (!weaponIndex)
+			{ 
+				return qfalse;
+			}
+
+			const char *ammoIndex;
+			String_Parse(args, &ammoIndex);
+			if (!ammoIndex)
+			{ 
+				return qfalse;
+			}
+
+			const char *ammoAmount;
+			String_Parse(args, &ammoAmount);
+			if (!ammoAmount)
+			{ 
+				return qfalse;
+			}
+
+			const char *itemName;
+			String_Parse(args, &itemName);
+			if (!itemName)
+			{ 
+				return qfalse;
+			}
+
+			const char *litItemName;
+			String_Parse(args, &litItemName);
+			if (!litItemName)
+			{ 
+				return qfalse;
+			}
+
+			const char *backgroundName;
+			String_Parse(args, &backgroundName);
+			if (!backgroundName)
+			{ 
+				return qfalse;
+			}
+
+			const char *soundfile = NULL;
+			String_Parse(args, &soundfile);
+			
+			UI_AddWeaponSelection(atoi(weaponIndex),atoi(ammoIndex),atoi(ammoAmount),itemName,litItemName, backgroundName, soundfile);
+		}
+		else if (Q_stricmp(name, "addthrowweaponselection") == 0) 
+		{
+			const char *weaponIndex;
+			String_Parse(args, &weaponIndex);
+			if (!weaponIndex)
+			{ 
+				return qfalse;
+			}
+
+			const char *ammoIndex;
+			String_Parse(args, &ammoIndex);
+			if (!ammoIndex)
+			{ 
+				return qfalse;
+			}
+
+			const char *ammoAmount;
+			String_Parse(args, &ammoAmount);
+			if (!ammoAmount)
+			{ 
+				return qfalse;
+			}
+
+			const char *itemName;
+			String_Parse(args, &itemName);
+			if (!itemName)
+			{ 
+				return qfalse;
+			}
+
+			const char *litItemName;
+			String_Parse(args, &litItemName);
+			if (!litItemName)
+			{ 
+				return qfalse;
+			}
+
+			const char *backgroundName;
+			String_Parse(args, &backgroundName);
+			if (!backgroundName)
+			{ 
+				return qfalse;
+			}
+
+			const char *soundfile;
+			String_Parse(args, &soundfile);
+
+			UI_AddThrowWeaponSelection(atoi(weaponIndex),atoi(ammoIndex),atoi(ammoAmount),itemName,litItemName,backgroundName, soundfile);
+		}
+		else if (Q_stricmp(name, "removeweaponselection") == 0) 
+		{
+			const char *weaponIndex;
+			String_Parse(args, &weaponIndex);
+			if (weaponIndex)
+			{
+				UI_RemoveWeaponSelection(atoi(weaponIndex));
+			}
+		}
+		else if (Q_stricmp(name, "removethrowweaponselection") == 0) 
+		{
+			UI_RemoveThrowWeaponSelection();
+		}
+		else if (Q_stricmp(name, "normalthrowselection") == 0) 
+		{
+			UI_NormalThrowSelection();
+		}
+		else if (Q_stricmp(name, "highlightthrowselection") == 0) 
+		{
+			UI_HighLightThrowSelection();
+		}
+		else if (Q_stricmp(name, "normalweaponselection") == 0) 
+		{
+			const char *slotIndex;
+			String_Parse(args, &slotIndex);
+			if (!slotIndex)
+			{ 
+				return qfalse;
+			}
+
+			UI_NormalWeaponSelection(atoi(slotIndex));
+		}
+		else if (Q_stricmp(name, "highlightweaponselection") == 0) 
+		{
+			const char *slotIndex;
+			String_Parse(args, &slotIndex);
+			if (!slotIndex)
+			{ 
+				return qfalse;
+			}
+
+			UI_HighLightWeaponSelection(atoi(slotIndex));
+		}
+		else if (Q_stricmp(name, "clearinventory") == 0) 
+		{
+			UI_ClearInventory();
+		}
+		else if (Q_stricmp(name, "giveinventory") == 0) 
+		{
+			const char *inventoryIndex,*amount;
+			String_Parse(args, &inventoryIndex);
+			String_Parse(args, &amount);
+			UI_GiveInventory(atoi(inventoryIndex),atoi(amount));
+		}
+		else if (Q_stricmp(name, "updatefightingstyle") == 0) 
+		{
+			UI_UpdateFightingStyle();
+		}
+		else if (Q_stricmp(name, "update") == 0) 
+		{
+			if (String_Parse(args, &name2)) 
+			{
+				UI_Update(name2);
+			}
+			else 
+			{
+				Com_Printf("update missing cmd\n");
+			}
+		}
+		else if (Q_stricmp(name, "load_quick") == 0) 
+		{
+			ui.Cmd_ExecuteText(EXEC_APPEND,"load quick\n");
+		}
+		else if (Q_stricmp(name, "load_auto") == 0) 
+		{
+			if ( trap_Cvar_VariableValue("cl_paused")>0 )
+			{	//popup the confirmation
+				UI_xboxErrorPopup( XB_POPUP_LOAD_CONFIRM_CHECKPOINT );
+			}
+			else
+			{
+				ui.Cmd_ExecuteText(EXEC_APPEND,"load *respawn\n");	//death menu, might load a saved game instead if they just loaded on this map
+			}			
+		}
+		else if (Q_stricmp(name, "load_auto_failed") == 0) 
+		{
+			// Crazy case, we put up the Load Game screen here, then the popup over it.
+			Menus_CloseAll();
+
+			Cvar_Set( "returnmenu", "missionfailed_menu" );
+			Cvar_Set( "cl_paused", "1" );
+			Cvar_Set( "ui_missionfailed", "1" );
+			Cvar_Set( "ui_frontEnd", "1" );
+#ifdef XBOX_DEMO
+			// For the demo (which should never show the load game screen)
+			// we show the pause menu instead:
+			Menus_ActivateByName( "ingameMainMenu" );
+#else
+			Menus_ActivateByName( "loadMenu" );
+#endif
+			UI_xboxErrorPopup( XB_POPUP_TESTING_SAVE );
+			ui.Cmd_ExecuteText(EXEC_APPEND,"wait ; wait ; wait ; wait ; load *respawn\n");	//death menu, might load a saved game instead if they just loaded on this map
+		}
+		else if (Q_stricmp(name, "decrementforcepowerlevel") == 0) 
+		{
+			UI_DecrementForcePowerLevel();
+		}
+		else if (Q_stricmp(name, "resetcharacterlistboxes") == 0)
+		{
+			UI_ResetCharacterListBoxes();
+		}
+#ifdef _XBOX
+		else if (Q_stricmp(name, "multiplayer") == 0)
+		{
+			extern void Sys_Reboot( const char *reason, const void *pData );
+			Sys_Reboot("multiplayer", NULL);
+		}
+//JLF MPMOVED
+#if 0
+		else if (Q_stricmp(name, "loadprofile") == 0)
+		{
+			if (s_ProfileData[s_playerProfile.currentLine].currentProfileName)// && (*s_file_desc_field.field.buffer))
+			{
+				Menus_CloseAll();
+				ui.Cmd_ExecuteText( EXEC_APPEND, va("loadprofile %s\n", s_ProfileData[s_playerProfile.currentLine].currentProfileName));
+			}
+		}
+		else if (Q_stricmp(name, "saveprofile") == 0)
+		{
+			//if (s_ProfileData[s_playerProfile.currentLine].currentProfileName)// && (*s_file_desc_field.field.buffer))
+			{
+				Menus_CloseAll();
+			//	ui.Cmd_ExecuteText( EXEC_APPEND, va("saveprofile %s\n", "test"/*s_ProfileData[s_playerProfile.currentLine].currentProfileName*/));
+			}
+		}
+		else if (Q_stricmp(name, "initprofile") == 0)
+		{
+			//if (s_ProfileData[s_playerProfile.currentLine].currentProfileName)// && (*s_file_desc_field.field.buffer))
+			{
+				Menus_CloseAll();
+				ui.Cmd_ExecuteText( EXEC_APPEND, va("initprofile \n" ));
+			}
+		}
+		else if (Q_stricmp(name, "deleteprofile") == 0)
+		{
+			//if (s_ProfileData[s_playerProfile.currentLine].currentProfileName)// && (*s_file_desc_field.field.buffer))
+			{
+				Menus_CloseAll();
+				ui.Cmd_ExecuteText( EXEC_APPEND, va("deleteprofile %s\n","test" ));
+			}
+		}
+		else if (Q_stricmp(name, "testandsaveprofile") == 0)
+		{
+			if (Cvar_VariableIntegerValue("ui_profileSaveNeeded"))// && (*s_file_desc_field.field.buffer))
+			{
+				ui.Cmd_ExecuteText( EXEC_APPEND, va("saveprofile %s\n",s_ProfileData[s_playerProfile.currentLine].currentProfileName ));
+				Cvar_Set("ui_profileSaveNeeded","0");
+			}
+		}
+#endif
+//JLF
+		else if (Q_stricmp(name, "processForDiskSpace") == 0)
+		{
+			// Kick off the crazy sequence!
+			XB_Startup( STARTUP_LOAD_SETTINGS );
+		}
+		else if (Q_stricmp(name, "initListBoxes") == 0)
+		{
+			ui_ShowDeleteActive = qfalse;
+
+			//find the listboxes for this level
+			menuDef_t *	menu = Menu_GetFocused();	// Get current menu
+		
+			if (menu)
+			{
+				int i;
+	
+				for (i = 0; i < menu->itemCount; i++) 
+				{
+					listBoxDef_t *listPtr;
+					//Item_ValidateTypeData(item);
+
+					if (menu->items[i]->type == ITEM_TYPE_LISTBOX)
+					{
+						listPtr = (listBoxDef_t*)menu->items[i]->typeData;
+						if (listPtr) 
+						{
+							listPtr->cursorPos = 0;
+							listPtr->startPos = 0;
+							menu->items[i]->cursorPos =0;
+							if (menu->items[i]->special== FEEDER_SAVEGAMES)
+							{
+								UI_FeederSelection( FEEDER_SAVEGAMES , 0, NULL );
+							}
+						}
+					}
+				}
+			}
+		}
+		else if (Q_stricmp(name, "confirmdelete") == 0)
+		{
+			// User is already logged on - is trying to back out. Get confirmation
+			UI_xboxErrorPopup( XB_POPUP_DELETE_CONFIRM );
+		}
+		else if (Q_stricmp(name, "xboxErrorResponse") == 0)
+		{
+			// User closed the Xbox Error Popup in some way. Do TheRightThing(TM)
+			UI_xboxPopupResponse();
+		}
+		else if (Q_stricmp(name, "genericpopup") == 0)
+		{
+			const char *menuid;
+			String_Parse(args, &menuid);
+			if(Q_stricmp(menuid, "savecomplete") == 0)
+			{
+				UI_xboxErrorPopup( XB_POPUP_SAVE_COMPLETE );
+			}
+			else if(Q_stricmp(menuid, "overwriteconfirm") == 0)
+			{
+				int confirmType = Cvar_VariableIntegerValue( "ui_overwriting" );
+
+				if( confirmType == 3 )
+				{
+					UI_xboxErrorPopup( XB_POPUP_TOO_MANY_SAVES );
+				}
+				else if( confirmType == 1 )
+				{
+					UI_xboxErrorPopup( XB_POPUP_OVERWRITE_CONFIRM );
+				}
+				else if( confirmType == 2 )
+				{
+					UI_xboxErrorPopup( XB_POPUP_DISKFULL_DURING_SAVE );
+				}
+				else if( confirmType == 666)
+				{
+					UI_xboxErrorPopup( XB_POPUP_YOU_ARE_DEAD );
+				}
+			}
+			else if(Q_stricmp(menuid, "quitconfirm") == 0)
+			{
+				UI_xboxErrorPopup( XB_POPUP_QUIT_CONFIRM );
+			}
+			else if(Q_stricmp(menuid, "saving") == 0)
+			{
+				UI_xboxErrorPopup( XB_POPUP_SAVING );
+			}
+			else if(Q_stricmp(menuid, "confirmNewMission1") == 0)
+			{
+				UI_xboxErrorPopup( XB_POPUP_CONFIRM_NEW_1 );
+			}
+			else if(Q_stricmp(menuid, "confirmNewMission2") == 0)
+			{
+				UI_xboxErrorPopup( XB_POPUP_CONFIRM_NEW_2 );
+			}
+			else if(Q_stricmp(menuid, "confirmNewMission3") == 0)
+			{
+				UI_xboxErrorPopup( XB_POPUP_CONFIRM_NEW_3 );
+			}
+		}
+
+		else if (Q_stricmp(name, "setarrow")==0)
+		{
+			const char *controlName ;
+			const char *arrowControlName ;
+			const char * controlText;
+			int textwidth;
+			int startx;
+			itemDef_t * item;
+			itemDef_t * arrowControl;
+			menuDef_t *menu;
+			menu = Menu_GetFocused();
+			
+			String_Parse(args, &controlName);
+			String_Parse(args, &arrowControlName);
+			//get the textwidth from control
+			if (menu)
+			{
+				itemDef_t *item;
+				item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, controlName);
+				if (*(item->text) == '@')	// string reference
+				{		
+					controlText = SE_GetString( &(item->text[1]) );
+				}
+				else
+					controlText = item->text;
+				textwidth = DC->textWidth( controlText, item->textscale, item->font );
+				startx = item->window.rect.x;
+				arrowControl = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, arrowControlName);
+				setArrowX(arrowControl, textwidth + startx+ ARROW_SPACE);
+			}
+			
+
+		}
+		else if (Q_stricmp(name, "getControls") == 0)
+		{
+			// Fetches all controls on the basic controls screen into ui cvars:
+
+			// Inverted aim:
+			Cvar_SetValue("ui_mousePitch", (Cvar_VariableValue("m_pitch") >= 0) ? 0 : 1);
+
+			// Thumbstick, buttons, triggers are automatic
+		}
+		else if (Q_stricmp(name, "setControls") == 0)
+		{
+			// Assigns all changes made on the basic controls screen:
+			char token[MAX_QPATH];
+
+			// Update inverted aim:
+			Settings.invertAim[0] = Cvar_VariableIntegerValue( "ui_mousePitch" ) ? false : true;
+			Cvar_SetValue( "m_pitch", Settings.invertAim[0] ? 0.022f : -0.022f );
+
+			// update thumbsticks in settings file:
+			Settings.thumbstickMode[0] = DC->getCVarValue( "ui_thumbStickMode" );
+			
+			// update triggers
+			DC->getCVarString( "ui_triggerconfig", token, sizeof(token) );
+			if( !Q_stricmp(token, "default") )
+			{
+				Cbuf_ExecuteText( EXEC_NOW, "exec cfg/triggersConfig0.cfg" );
+				Settings.triggerMode[0] = 0;
+			}
+			else if( !Q_stricmp(token, "southpaw") )
+			{
+				Cbuf_ExecuteText( EXEC_NOW, "exec cfg/triggersConfig1.cfg" );
+				Settings.triggerMode[0] = 1;
+			}
+
+			// update buttons
+			DC->getCVarString( "ui_buttonconfig", token, sizeof(token) );
+			if( !Q_stricmp(token, "weaponsbias") )
+			{
+				Cbuf_ExecuteText( EXEC_NOW, "exec cfg/spbuttonConfig0.cfg" );
+				Settings.buttonMode[0] = 0;
+			}
+			else if( !Q_stricmp(token, "forcebias") )
+			{
+				Cbuf_ExecuteText( EXEC_NOW, "exec cfg/spbuttonConfig1.cfg" );
+				Settings.buttonMode[0] = 1;
+			}
+			else if( !Q_stricmp(token, "southpaw") )
+			{
+				Cbuf_ExecuteText( EXEC_NOW, "exec cfg/spbuttonConfig2.cfg" );
+				Settings.buttonMode[0] = 2;
+			}
+
+			Settings.Save();
+		}
+		else if (Q_stricmp(name, "getsettingscvars") == 0)
+		{
+			// Fetches everything on the advanced controls screen:
+			Cvar_SetValue( "ui_useRumble", Cvar_VariableIntegerValue( "in_useRumble" ) );
+			Cvar_SetValue( "ui_autolevel", Cvar_VariableIntegerValue( "cl_autolevel" ) );
+			Cvar_SetValue( "ui_autoswitch", Cvar_VariableIntegerValue( "cg_autoswitch" ) );
+			
+			// Horizontal/vertical
+			Cvar_SetValue( "ui_sensitivity", Cvar_VariableValue( "sensitivity" ) );
+			Cvar_SetValue( "ui_sensitivityY", Cvar_VariableValue( "sensitivityY" ) );
+		}
+		else if (Q_stricmp(name, "updatesettingscvars") == 0)
+		{
+			// Rumble
+			Settings.rumble[0] = Cvar_VariableIntegerValue( "ui_useRumble" );
+			Cvar_SetValue( "in_useRumble", Settings.rumble[0] );
+
+			// Auto-level
+			Settings.autolevel[0] = Cvar_VariableIntegerValue( "ui_autolevel" );
+			Cvar_SetValue( "cl_autolevel", Settings.autolevel[0] );
+
+			// Weapon switch
+			Settings.autoswitch[0] = Cvar_VariableIntegerValue( "ui_autoswitch" );
+			Cvar_SetValue( "cg_autoswitch", Settings.autoswitch[0] );
+
+			// Turn/look
+			Settings.sensitivityX[0] = Cvar_VariableValue( "ui_sensitivity" );
+			Settings.sensitivityY[0] = Cvar_VariableValue( "ui_sensitivityY" );
+			Cvar_SetValue( "sensitivity", Settings.sensitivityX[0] );
+			Cvar_SetValue( "sensitivityY", Settings.sensitivityY[0] );
+
+			Settings.Save();
+		}
+		else if (Q_stricmp(name, "softkeyboardinit") == 0)
+		{
+			UI_SoftKeyboardInit();
+		}
+
+		else if (Q_stricmp(name, "updatevolume") == 0)
+		{
+			// Store all settings from the audio page:
+			Settings.effectsVolume = Cvar_VariableValue( "s_effects_volume" );
+			Settings.musicVolume = Cvar_VariableValue( "s_music_volume" );
+			Settings.voiceVolume = Cvar_VariableValue( "s_voice_volume" );
+
+			Settings.subtitles = Cvar_VariableIntegerValue( "g_subtitles" );
+			Settings.brightness = Cvar_VariableValue( "s_brightness_volume" );
+
+			extern void GLimp_SetGamma(float);
+			GLimp_SetGamma(Cvar_VariableValue( "s_brightness_volume" ) / 5.0f);
+
+			Settings.Save();
+		}
+		else if (Q_stricmp(name, "brightnessChanged") == 0)
+		{
+			extern void GLimp_SetGamma(float);
+			GLimp_SetGamma(Cvar_VariableValue( "s_brightness_volume" ) / 5.0f);
+		}
+		else if(Q_stricmp(name,"updatemoves") == 0)
+		{
+			menuDef_t *menu;
+			menu = Menus_FindByName("datapadMovesMenu");
+			//update saber models
+			if (menu)
+			{
+				itemDef_t *item;
+				item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, "character");
+				if (item)
+				{
+					UI_SaberAttachToChar( item );
+				}
+			}
+
+			UI_UpdateMoves();
+		}
+		else if(Q_stricmp(name,"updatemovetitles") == 0)
+		{
+			UI_UpdateMoveTitles();
+		}
+		else if(Q_stricmp(name, "resetscroll") == 0)
+		{
+			menuDef_t *menu = Menu_GetFocused();
+			if(!menu)
+				return qfalse;
+			for( int i = 0; i < menu->itemCount; ++i )
+			{
+				if( menu->items[i]->type == ITEM_TYPE_TEXTSCROLL )
+				{
+					textScrollDef_t *scrollPtr = (textScrollDef_t*)menu->items[i]->typeData;
+					scrollPtr->startPos = 0;
+				}
+			}
+		}
+		else if(Q_stricmp(name, "levelselect") == 0)
+		{
+			const char *action;
+			String_Parse(args, &action);
+			if (!action)
+				return qfalse;
+
+			if (Q_stricmp(action, "init") == 0)
+			{
+				UI_FeederSelection( FEEDER_LEVELSELECT, 0, NULL );
+			}
+			else if (Q_stricmp(action, "load") == 0)
+			{
+				int levelSelectCheat = levelSelectData[levelSelectChoice].forceLevel;
+				Cvar_Set("levelSelectCheat", va("%d", levelSelectCheat));
+				Cbuf_ExecuteText( EXEC_APPEND, va("map %s\n", levelSelectData[levelSelectChoice].mapname) );
+			}
+		}
+		else if(Q_stricmp(name,"simulateuppress") == 0) 
+		{ 
+			extern itemDef_t *Menu_SetNextCursorItem(menuDef_t *menu); 
+			menuDef_t *menu = Menu_GetFocused(); 
+			Menu_SetNextCursorItem(menu); 
+		} 
+		else if(Q_stricmp(name,"simulatedownpress") == 0) 
+		{ 
+			extern itemDef_t *Menu_SetPrevCursorItem(menuDef_t *menu); 
+			menuDef_t *menu = Menu_GetFocused(); 
+			Menu_SetPrevCursorItem(menu); 
+		}
+		else if(Q_stricmp(name,"setMainController") == 0)
+		{
+			extern char	lastControllerUsed;
+			extern void IN_SetMainController(int id);
+
+			IN_SetMainController(lastControllerUsed);
+		}
+#endif
+#ifdef XBOX_DEMO
+		else if(Q_stricmp(name, "initdemoforce") == 0)
+		{
+			UI_DemoSetForceLevels();
+		}
+		else if(Q_stricmp(name, "leaveDemo") == 0)
+		{
+			extern void Sys_Reboot( const char *reason, const void *pData );
+			Sys_Reboot( "demo", NULL );
+		}
+		else if(Q_stricmp(name, "kioskCheck") == 0)
+		{
+			// Only do this check once
+			static bool firstTime = true;
+
+			// If we were started in kiosk mode (this is a filthy way to determine that)
+			// then we should start attract mode immediately:
+			extern bool demoTimerAlways;
+			extern void PlayDemo( void );
+
+			if( firstTime && demoTimerAlways )
+			{
+				firstTime = false;	// Bad fix for an awful recursion bug
+				PlayDemo();
+			}
+
+			firstTime = false;
+		}
+		else if(Q_stricmp(name, "clearplayersave") == 0)
+		{
+			Cvar_Set( "playersave", "" );
+		}
+#endif
+		else 
+		{
+			Com_Printf("unknown UI script %s\n", name);
+		}
+	}
+
+	return qtrue;
+}
+
+/*
+=================
+UI_GetValue
+=================
+*/
+static float UI_GetValue(int ownerDraw) 
+{
+  return 0;
+}
+
+//Force Warnings
+typedef enum
+{
+	FW_VERY_LIGHT = 0,
+	FW_SEMI_LIGHT,
+	FW_NEUTRAL,
+	FW_SEMI_DARK,
+	FW_VERY_DARK
+};
+
+const char *lukeForceStatusSounds[] =
+{
+"sound/chars/luke/misc/MLUK_03.mp3",	// Very Light
+"sound/chars/luke/misc/MLUK_04.mp3",	// Semi Light
+"sound/chars/luke/misc/MLUK_05.mp3",	// Neutral
+"sound/chars/luke/misc/MLUK_01.mp3",	// Semi dark
+"sound/chars/luke/misc/MLUK_02.mp3",	// Very dark
+};
+
+const char *kyleForceStatusSounds[] =
+{
+"sound/chars/kyle/misc/MKYK_05.mp3",	// Very Light
+"sound/chars/kyle/misc/MKYK_04.mp3",	// Semi Light
+"sound/chars/kyle/misc/MKYK_03.mp3",	// Neutral
+"sound/chars/kyle/misc/MKYK_01.mp3",	// Semi dark
+"sound/chars/kyle/misc/MKYK_02.mp3",	// Very dark
+};
+
+
+static void UI_CalcForceStatus(void)
+{
+	float		lightSide,darkSide,total;
+	short		who, index=FW_VERY_LIGHT;
+	qboolean	lukeFlag=qtrue;
+	float		percent;
+	client_t*	cl = &svs.clients[0];	// 0 because only ever us as a player	
+	char		value[256];
+
+	if (!cl)
+	{
+		return;
+	}
+	playerState_t*		pState = cl->gentity->client;
+
+	if (!cl->gentity || !cl->gentity->client)
+	{
+		return;
+	}
+
+	memset(value, 0, sizeof(value));
+
+	lightSide = pState->forcePowerLevel[FP_HEAL] + 
+		pState->forcePowerLevel[FP_TELEPATHY] +
+		pState->forcePowerLevel[FP_PROTECT] +
+		pState->forcePowerLevel[FP_ABSORB];
+	
+	darkSide = pState->forcePowerLevel[FP_GRIP] + 
+		pState->forcePowerLevel[FP_LIGHTNING] +
+		pState->forcePowerLevel[FP_RAGE] +
+		pState->forcePowerLevel[FP_DRAIN];
+	
+	total = lightSide + darkSide;
+
+	percent = lightSide / total;
+
+	who = Q_irand( 0, 100 );
+	if (percent >= 0.90f)	//  90 - 100%
+	{
+		index = FW_VERY_LIGHT;
+		if (who <50)
+		{
+			strcpy(value,"vlk");	// Very light Kyle
+			lukeFlag = qfalse;
+		}
+		else
+		{
+			strcpy(value,"vll");	// Very light Luke
+		}
+
+	}
+	else if (percent > 0.60f )
+	{
+		index = FW_SEMI_LIGHT;
+		if ( who<50 )
+		{
+			strcpy(value,"slk");	// Semi-light Kyle
+			lukeFlag = qfalse;
+		}
+		else
+		{
+			strcpy(value,"sll");	// Semi-light light Luke
+		}
+	}
+	else if (percent > 0.40f )
+	{
+		index = FW_NEUTRAL;
+		if ( who<50 )
+		{
+			strcpy(value,"ntk");	// Neutral Kyle
+			lukeFlag = qfalse;
+		}
+		else
+		{
+			strcpy(value,"ntl");	// Netural Luke
+		}
+	}
+	else if (percent > 0.10f )
+	{
+		index = FW_SEMI_DARK;
+		if ( who<50 )
+		{
+			strcpy(value,"sdk");	// Semi-dark Kyle
+			lukeFlag = qfalse;
+		}
+		else
+		{
+			strcpy(value,"sdl");	// Semi-Dark Luke
+		}
+	}
+	else 
+	{
+		index = FW_VERY_DARK;
+		if ( who<50 )
+		{
+			strcpy(value,"vdk");	// Very dark Kyle
+			lukeFlag = qfalse;
+		}
+		else
+		{
+			strcpy(value,"vdl");	// Very Dark Luke
+		}
+	}
+
+	Cvar_Set("ui_forcestatus", value );
+
+	if (lukeFlag)
+	{
+		DC->startLocalSound(DC->registerSound(lukeForceStatusSounds[index], qfalse), CHAN_VOICE );
+	}
+	else
+	{
+		DC->startLocalSound(DC->registerSound(kyleForceStatusSounds[index], qfalse), CHAN_VOICE );
+	}
+}
+
+/*
+=================
+UI_StopCinematic
+=================
+*/
+static void UI_StopCinematic(int handle) 
+{
+	if (handle >= 0) 
+	{
+		trap_CIN_StopCinematic(handle);
+	} 
+	else 
+	{
+		handle = abs(handle);
+		if (handle == UI_MAPCINEMATIC) 
+		{
+			// FIXME - BOB do we need this?
+//			if (uiInfo.mapList[ui_currentMap.integer].cinematic >= 0) 
+//			{
+//				trap_CIN_StopCinematic(uiInfo.mapList[ui_currentMap.integer].cinematic);
+//				uiInfo.mapList[ui_currentMap.integer].cinematic = -1;
+//			}
+		} 
+		else if (handle == UI_NETMAPCINEMATIC) 
+		{
+			// FIXME - BOB do we need this?
+//			if (uiInfo.serverStatus.currentServerCinematic >= 0) 
+//			{
+//				trap_CIN_StopCinematic(uiInfo.serverStatus.currentServerCinematic);
+//				uiInfo.serverStatus.currentServerCinematic = -1;
+//			}
+		} 
+		else if (handle == UI_CLANCINEMATIC) 
+		{
+			// FIXME - BOB do we need this?
+//			int i = UI_TeamIndexFromName(UI_Cvar_VariableString("ui_teamName"));
+//			if (i >= 0 && i < uiInfo.teamCount) 
+//			{
+//				if (uiInfo.teamList[i].cinematic >= 0) 
+//				{
+//					trap_CIN_StopCinematic(uiInfo.teamList[i].cinematic);
+//					uiInfo.teamList[i].cinematic = -1;
+//				}
+//			}
+		}
+	}
+}
+
+static void UI_HandleLoadSelection()
+{
+	Cvar_Set("ui_SelectionOK", va("%d",(s_savegame.currentLine < s_savegame.saveFileCnt)) );
+	if (s_savegame.currentLine >= s_savegame.saveFileCnt)
+		return;
+//	Cvar_Set("ui_gameDesc", s_savedata[s_savegame.currentLine].currentSaveFileComments );	// set comment 
+
+
+	bool R_UpdateSaveGameImage(const char *filename);
+	//create the correctfilename
+	unsigned short saveGameName[filepathlength];
+	char directoryInfo[filepathlength];
+	char psLocalFilename[filepathlength];
+
+	mbstowcs(saveGameName, s_savedata[s_savegame.currentLine].currentSaveFileName, filepathlength);
+
+	if (ERROR_SUCCESS ==XCreateSaveGame("U:\\", saveGameName, OPEN_EXISTING, 0,directoryInfo, filepathlength))
+	{
+		strcpy (psLocalFilename , directoryInfo);
+		strcat (psLocalFilename , "screenshot.xbx");
+		if( !R_UpdateSaveGameImage(psLocalFilename) &&
+			!s_savedata[s_savegame.currentLine].screenshotNotify )
+		{
+			s_savedata[s_savegame.currentLine].screenshotNotify = 1;
+			UI_xboxErrorPopup( XB_POPUP_CORRUPT_SCREENSHOT );
+		}
+	}
+	else
+		R_UpdateSaveGameImage( "z:\\screenshot.xbx" );
+}
+
+/*
+=================
+UI_FeederCount
+=================
+*/
+static int UI_FeederCount(float feederID) 
+{
+#ifdef _XBOX 
+//JLF MPNOTNEEDED
+	static bool firstSaveRequest = true;
+//JLF MPMOVED
+	static bool firstProfileListRequest = true;
+#endif
+
+	if (feederID == FEEDER_SAVEGAMES ) 
+	{
+//JLF MPNOTNEEDED
+#ifdef _XBOX 
+		if (s_savegame.saveFileCnt == -1 || firstSaveRequest)
+		{
+			firstSaveRequest = false;
+#else
+		if (s_savegame.saveFileCnt == -1)
+		{
+#endif
+
+			ReadSaveDirectory();	//refresh
+			UI_HandleLoadSelection();
+			UI_AdjustSaveGameListBox(s_savegame.currentLine);
+		}
+		return s_savegame.saveFileCnt;
+	} 
+//JLF MPMOVED
+#ifdef _XBOX
+	else if (feederID == FEEDER_PROFILES ) 
+	{
+	//	if (s_playerProfile.fileCnt == -1 || firstProfileListRequest)
+	//	{
+			firstProfileListRequest = false;
+	//		ReadSaveDirectoryProfiles();	//refresh
+		//	UI_HandleLoadSelection();
+	//	}
+		return s_playerProfile.fileCnt;
+	} 
+#endif
+	// count number of moves for the current title
+	else if (feederID == FEEDER_MOVES) 
+	{
+		int count=0,i;
+
+		for (i=0;i<MAX_MOVES;i++)
+		{
+			if (datapadMoveData[uiInfo.movesTitleIndex][i].title)
+			{
+				count++;
+			}
+		}
+
+		return count;
+	}
+	else if (feederID == FEEDER_MOVES_TITLES) 
+	{
+		return (MD_MOVE_TITLE_MAX);
+	}
+	else if (feederID == FEEDER_MODS) 
+	{
+		return uiInfo.modCount;
+	} 
+	else if (feederID == FEEDER_LANGUAGES) 
+	{
+		assert( 0 );
+//		return uiInfo.languageCount;
+	} 
+	else if (feederID == FEEDER_PLAYER_SPECIES) 
+	{
+		return uiInfo.playerSpeciesCount;
+	} 
+	else if (feederID == FEEDER_PLAYER_SKIN_HEAD) 
+	{
+		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount;
+	} 
+	else if (feederID == FEEDER_PLAYER_SKIN_TORSO) 
+	{
+		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount;
+	} 
+	else if (feederID == FEEDER_PLAYER_SKIN_LEGS) 
+	{
+		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount;
+	} 
+	else if (feederID == FEEDER_COLORCHOICES)
+	{
+		return uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount;
+	}
+	else if (feederID == FEEDER_LEVELSELECT)
+	{
+		return levelSelectSize;
+	}
+
+	return 0;
+}
+
+/*
+=================
+UI_FeederSelection
+=================
+*/
+static void UI_FeederSelection(float feederID, int index, itemDef_t *item) 
+{
+	static char info[MAX_STRING_CHARS];
+
+
+	if (feederID == FEEDER_SAVEGAMES) 
+	{
+		s_savegame.currentLine = index;
+		if (s_savedata[s_savegame.saveFileCnt].corrupt = true)
+			Cvar_SetValue("ui_FileCorrupt", 1);
+		else
+			Cvar_SetValue("ui_FileCorrupt", 0);
+		if (index ==0 && noNewSaveGameAvailable.integer == 0)
+		{
+			if (!ui_ShowDeleteActive)
+			{
+				//there is a 'new save game' index that is highlighted
+
+				Cvar_SetValue("ui_ShowDelete",trap_Cvar_VariableValue("ui_showYdel"));
+				Cvar_SetValue("ui_showYdel",0);
+				ui_ShowDeleteActive = qtrue;
+				Cvar_SetValue( "ui_cancelYScript",1);
+				
+
+			}
+
+		}
+		else if (ui_ShowDeleteActive)
+		{
+			
+			Cvar_SetValue("ui_showYdel",trap_Cvar_VariableValue("ui_ShowDelete"));
+			ui_ShowDeleteActive = qfalse;
+			Cvar_SetValue("ui_cancelYScript",0);
+		}
+		storeSGDataDatetoCvar();
+		storeSGDataTimetoCvar();
+		storeSGDataDiffLeveltoCvar();
+
+		UI_HandleLoadSelection();
+	} 
+	else if (feederID == FEEDER_MOVES) 
+	{
+		itemDef_t *item;
+		menuDef_t *menu;
+		modelDef_t *modelPtr;
+		char skin[MAX_QPATH];
+
+		menu = Menus_FindByName("datapadMovesMenu");
+
+		if (menu)
+		{
+			item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, "character");
+			if (item)
+			{
+				modelPtr = (modelDef_t*)item->typeData;
+				if (modelPtr)
+				{
+					if (datapadMoveData[uiInfo.movesTitleIndex][index].anim)
+					{
+						ItemParse_model_g2anim_go( item, datapadMoveData[uiInfo.movesTitleIndex][index].anim );
+						uiInfo.moveAnimTime = DC->g2hilev_SetAnim(&item->ghoul2[0], "model_root", modelPtr->g2anim, qtrue);
+
+						uiInfo.moveAnimTime += uiInfo.uiDC.realTime;
+
+						// Play sound for anim
+						if (datapadMoveData[uiInfo.movesTitleIndex][index].sound == MDS_FORCE_JUMP)
+						{
+							DC->startLocalSound(uiInfo.uiDC.Assets.datapadmoveJumpSound, CHAN_LOCAL );
+						}
+						else if (datapadMoveData[uiInfo.movesTitleIndex][index].sound == MDS_ROLL)
+						{
+							DC->startLocalSound(uiInfo.uiDC.Assets.datapadmoveRollSound, CHAN_LOCAL );
+						}
+						else if (datapadMoveData[uiInfo.movesTitleIndex][index].sound == MDS_SABER)
+						{
+							// Randomly choose one sound
+							int soundI = Q_irand( 1, 6 );
+							sfxHandle_t *soundPtr;
+							soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound1;
+							if (soundI == 2)
+							{
+								soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound2;
+							}
+							else if (soundI == 3)
+							{
+								soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound3;
+							}
+							else if (soundI == 4)
+							{
+								soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound4;
+							}
+							else if (soundI == 5)
+							{
+								soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound5;
+							}
+							else if (soundI == 6)
+							{
+								soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound6;
+							}
+
+							DC->startLocalSound(*soundPtr, CHAN_LOCAL );
+						}
+
+						if (datapadMoveData[uiInfo.movesTitleIndex][index].desc)
+						{
+							Cvar_Set( "ui_move_desc", datapadMoveData[uiInfo.movesTitleIndex][index].desc);
+						}
+
+						Com_sprintf( skin, sizeof( skin ), "models/players/%s/|%s|%s|%s", 
+															Cvar_VariableString ( "g_char_model"), 
+															Cvar_VariableString ( "g_char_skin_head"), 
+															Cvar_VariableString ( "g_char_skin_torso"), 
+															Cvar_VariableString ( "g_char_skin_legs") 
+									);
+
+						ItemParse_model_g2skin_go( item, skin );
+
+					}
+				}
+			}
+		}
+	} 
+	else if (feederID == FEEDER_MOVES_TITLES) 
+	{
+		itemDef_t *item;
+		menuDef_t *menu;
+		modelDef_t *modelPtr;
+
+		uiInfo.movesTitleIndex = index;
+		uiInfo.movesBaseAnim = datapadMoveTitleBaseAnims[uiInfo.movesTitleIndex];
+		menu = Menus_FindByName("datapadMovesMenu");
+
+		if (menu)
+		{
+			item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, "character");
+			if (item)
+			{
+				modelPtr = (modelDef_t*)item->typeData;
+				if (modelPtr)
+				{
+					ItemParse_model_g2anim_go( item, uiInfo.movesBaseAnim );
+					uiInfo.moveAnimTime = DC->g2hilev_SetAnim(&item->ghoul2[0], "model_root", modelPtr->g2anim, qtrue);
+				}
+			}
+		}
+	}
+	else if (feederID == FEEDER_MODS) 
+	{
+		uiInfo.modIndex = index;
+	} 
+	else if (feederID == FEEDER_PLAYER_SPECIES) 
+	{
+		uiInfo.playerSpeciesIndex = index;
+	} 
+	else if (feederID == FEEDER_LANGUAGES) 
+	{
+		uiInfo.languageCountIndex = index;
+	} 
+	else if (feederID == FEEDER_PLAYER_SKIN_HEAD) 
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount)
+		{
+			Cvar_Set("ui_char_skin_head", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[index]);
+		}
+	} 
+	else if (feederID == FEEDER_PLAYER_SKIN_TORSO) 
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount)
+		{
+			Cvar_Set("ui_char_skin_torso", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoNames[index]);
+		}
+	} 
+	else if (feederID == FEEDER_PLAYER_SKIN_LEGS) 
+	{
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount)
+		{
+			Cvar_Set("ui_char_skin_legs", uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[index]);
+		}
+	} 
+	else if (feederID == FEEDER_COLORCHOICES)
+	{
+extern void	Item_RunScript(itemDef_t *item, const char *s);		//from ui_shared;
+		if (index >= 0 && index < uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount)
+		{
+			Item_RunScript(item, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorActionText[index]);
+		}
+	}
+	else if (feederID == FEEDER_LEVELSELECT)
+	{
+		if (index >= 0 && index < levelSelectSize)
+			levelSelectChoice = index;
+	}
+/*	else if (feederID == FEEDER_CINEMATICS) 
+	{
+		uiInfo.movieIndex = index;
+		if (uiInfo.previewMovie >= 0) 
+		{
+			trap_CIN_StopCinematic(uiInfo.previewMovie);
+		}
+		uiInfo.previewMovie = -1;
+	} 
+	else if (feederID == FEEDER_DEMOS) 
+	{
+		uiInfo.demoIndex = index;
+	}
+*/
+}
+
+void Key_KeynumToStringBuf( int keynum, char *buf, int buflen );
+void Key_GetBindingBuf( int keynum, char *buf, int buflen );
+
+static qboolean UI_Crosshair_HandleKey(int flags, float *special, int key) 
+{
+  if (key == A_MOUSE1 || key == A_MOUSE2 || key == A_ENTER || key == A_KP_ENTER) 
+  {
+		if (key == A_MOUSE2) 
+		{
+			uiInfo.currentCrosshair--;
+		} else {
+			uiInfo.currentCrosshair++;
+		}
+
+		if (uiInfo.currentCrosshair >= NUM_CROSSHAIRS) {
+			uiInfo.currentCrosshair = 0;
+		} else if (uiInfo.currentCrosshair < 0) {
+			uiInfo.currentCrosshair = NUM_CROSSHAIRS - 1;
+		}
+		Cvar_Set("cg_drawCrosshair", va("%d", uiInfo.currentCrosshair)); 
+		return qtrue;
+	}
+	return qfalse;
+}
+
+
+static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key) 
+{
+
+	switch (ownerDraw) 
+	{
+		case UI_CROSSHAIR:
+			UI_Crosshair_HandleKey(flags, special, key);
+			break;
+		case UI_SOFT_KEYBOARD:
+			return UI_SoftKeyboard_HandleKey(flags, special, key);
+			break;
+		case UI_SOFT_KEYBOARD_DELETE:
+			return UI_SoftKeyboardDelete_HandleKey(flags, special, key);
+			break;
+		case UI_SOFT_KEYBOARD_ACCEPT:
+			return UI_SoftKeyboardAccept_HandleKey(flags, special, key);
+			break;
+		default:
+			break;
+	}
+
+  return qfalse;
+}
+
+//unfortunately we cannot rely on any game/cgame module code to do our animation stuff,
+//because the ui can be loaded while the game/cgame are not loaded. So we're going to recreate what we need here.
+// On Xbox, we need all the RAM we can get, and this is huge. So we just borrow the one from level. I hope
+// this doesn't cause some apocalypse. Getting access to level in here is nigh impossible, as we'd have to
+// include g_local.h, and the consequences of that are bad. So: This pointer is initialized in a global constructor
+// in class UIAnimFileSetInitializer in g_main.cpp! Look there! Don't forget!
+//#ifdef _XBOX
+//animFileSet_t	*ui_knownAnimFileSets = NULL;
+//#else
+#undef MAX_ANIM_FILES
+#define MAX_ANIM_FILES 4
+typedef struct
+{
+	char			filename[MAX_QPATH];
+	animation_t		animations[MAX_ANIMATIONS];
+} animFileSet_t;
+static animFileSet_t	ui_knownAnimFileSets[MAX_ANIM_FILES];
+//#endif
+
+int				ui_numKnownAnimFileSets;
+
+qboolean UI_ParseAnimationFile( const char *af_filename ) 
+{
+	const char		*text_p;
+	int			len;
+	int			i;
+	const char		*token;
+	float		fps;
+	int			skip;
+	char		text[80000];
+	int			animNum;
+	animation_t	*animations = ui_knownAnimFileSets[ui_numKnownAnimFileSets].animations;
+
+	len = re.GetAnimationCFG(af_filename, text, sizeof(text));
+	if ( len <= 0 ) 
+	{
+		return qfalse;
+	}
+	if ( len >= sizeof( text ) - 1 ) 
+	{
+		Com_Error( ERR_FATAL, "UI_ParseAnimationFile: File %s too long\n (%d > %d)", af_filename, len, sizeof( text ) - 1);
+		return qfalse;
+	}
+
+	// parse the text
+	text_p = text;
+	skip = 0;	// quiet the compiler warning
+
+	//FIXME: have some way of playing anims backwards... negative numFrames?
+
+	//initialize anim array so that from 0 to MAX_ANIMATIONS, set default values of 0 1 0 100
+	for(i = 0; i < MAX_ANIMATIONS; i++)
+	{
+		animations[i].firstFrame = 0;
+		animations[i].numFrames = 0;
+		animations[i].loopFrames = -1;
+		animations[i].frameLerp = 100;
+//		animations[i].initialLerp = 100;
+	}
+
+	// read information for each frame
+	while(1) 
+	{
+		token = COM_Parse( &text_p );
+
+		if ( !token || !token[0]) 
+		{
+			break;
+		}
+
+		animNum = GetIDForString(animTable, token);
+		if(animNum == -1)
+		{
+//#ifndef FINAL_BUILD
+#ifdef _DEBUG
+			if (strcmp(token,"ROOT"))
+			{
+				Com_Printf(S_COLOR_RED"WARNING: Unknown token %s in %s\n", token, af_filename);
+			}
+#endif
+			while (token[0])
+			{
+				token = COM_ParseExt( &text_p, qfalse );	//returns empty string when next token is EOL
+			}
+			continue;
+		}
+
+		token = COM_Parse( &text_p );
+		if ( !token ) 
+		{
+			break;
+		}
+		animations[animNum].firstFrame = atoi( token );
+
+		token = COM_Parse( &text_p );
+		if ( !token ) 
+		{
+			break;
+		}
+		animations[animNum].numFrames = atoi( token );
+
+		token = COM_Parse( &text_p );
+		if ( !token ) 
+		{
+			break;
+		}
+		animations[animNum].loopFrames = atoi( token );
+
+		token = COM_Parse( &text_p );
+		if ( !token ) 
+		{
+			break;
+		}
+		fps = atof( token );
+		if ( fps == 0 ) 
+		{
+			fps = 1;//Don't allow divide by zero error
+		}
+		if ( fps < 0 )
+		{//backwards
+			animations[animNum].frameLerp = floor(1000.0f / fps);
+		}
+		else
+		{
+			animations[animNum].frameLerp = ceil(1000.0f / fps);
+		}
+
+//		animations[animNum].initialLerp = ceil(1000.0f / fabs(fps));
+	}
+
+	return qtrue;
+}
+
+qboolean UI_ParseAnimFileSet( const char *animCFG, int *animFileIndex )
+{ //Not going to bother parsing the sound config here.
+	char		afilename[MAX_QPATH];
+	char		strippedName[MAX_QPATH];
+	int			i;
+	char		*slash;
+
+	Q_strncpyz( strippedName, animCFG, sizeof(strippedName), qtrue);
+	slash = strrchr( strippedName, '/' );
+	if ( slash ) 
+	{
+		// truncate modelName to find just the dir not the extension
+		*slash = 0;
+	}
+
+	//if this anims file was loaded before, don't parse it again, just point to the correct table of info
+	for ( i = 0; i < ui_numKnownAnimFileSets; i++ )
+	{
+		if ( Q_stricmp(ui_knownAnimFileSets[i].filename, strippedName ) == 0 )
+		{
+			*animFileIndex = i;
+			return qtrue;
+		}
+	}
+
+	if ( ui_numKnownAnimFileSets == MAX_ANIM_FILES )
+	{//TOO MANY!
+		for (i = 0; i < MAX_ANIM_FILES; i++)
+		{
+			Com_Printf("animfile[%d]: %s\n", i, ui_knownAnimFileSets[i].filename);
+		}
+		Com_Error( ERR_FATAL, "UI_ParseAnimFileSet: %d == MAX_ANIM_FILES == %d", ui_numKnownAnimFileSets, MAX_ANIM_FILES);
+	}
+
+	//Okay, time to parse in a new one
+	Q_strncpyz( ui_knownAnimFileSets[ui_numKnownAnimFileSets].filename, strippedName, sizeof( ui_knownAnimFileSets[ui_numKnownAnimFileSets].filename ) );
+
+	// Load and parse animations.cfg file
+	Com_sprintf( afilename, sizeof( afilename ), "%s/animation.cfg", strippedName );
+	if ( !UI_ParseAnimationFile( afilename ) )
+	{
+		*animFileIndex = -1;
+		return qfalse;
+	}
+
+	//set index and increment
+	*animFileIndex = ui_numKnownAnimFileSets++;
+
+	return qtrue;
+}
+
+int UI_G2SetAnim(CGhoul2Info *ghlInfo, const char *boneName, int animNum, const qboolean freeze)
+{
+	int animIndex,blendTime;
+	char *GLAName;
+
+	GLAName = G2API_GetGLAName(ghlInfo);
+
+	if (!GLAName || !GLAName[0])
+	{
+		return 0;
+	}
+
+	UI_ParseAnimFileSet(GLAName, &animIndex);
+
+	if (animIndex != -1)
+	{
+		animation_t *anim = &ui_knownAnimFileSets[animIndex].animations[animNum];
+		if (anim->numFrames <= 0)
+		{
+			return 0;
+		}
+		int sFrame = anim->firstFrame;
+		int eFrame = anim->firstFrame + anim->numFrames;
+		int flags = BONE_ANIM_OVERRIDE;
+		int time = uiInfo.uiDC.realTime;
+		float animSpeed = (50.0f / anim->frameLerp);
+
+		blendTime = 150;
+
+		// Freeze anim if it's not looping, special hack for datapad moves menu
+		if (freeze)
+		{
+			if (anim->loopFrames == -1)
+			{
+				flags = BONE_ANIM_OVERRIDE_FREEZE;			
+			}
+			else
+			{
+				flags = BONE_ANIM_OVERRIDE_LOOP;
+			}
+		}
+		else if (anim->loopFrames != -1)
+		{
+			flags = BONE_ANIM_OVERRIDE_LOOP;
+		}
+		flags |= BONE_ANIM_BLEND;
+		blendTime = 150;
+
+
+		G2API_SetBoneAnim(ghlInfo, boneName, sFrame, eFrame, flags, animSpeed, time, -1, blendTime);
+
+		return ((anim->frameLerp * (anim->numFrames-2)));
+	}
+
+	return 0;
+}
+
+static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
+{
+	const char	*token;
+	const char	*p;
+
+	p = buf;
+	COM_BeginParseSession();
+	species.ColorCount = 0;
+
+	while ( p )
+	{
+		token = COM_ParseExt( &p, qtrue );	//looking for the shader
+		if ( token[0] == 0 )
+		{
+			return species.ColorCount;
+		}
+		Q_strncpyz( species.ColorShader[species.ColorCount], token, sizeof(species.ColorShader[0]), qtrue );
+
+		token = COM_ParseExt( &p, qtrue );	//looking for action block {
+		if ( token[0] != '{' )
+		{
+			return qfalse;
+		}
+
+		assert(!species.ColorActionText[species.ColorCount][0]);
+		token = COM_ParseExt( &p, qtrue );	//looking for action commands
+		while (token[0] != '}')
+		{
+			if ( token[0] == 0)
+			{	//EOF
+				return qfalse;
+			}
+			assert(species.ColorCount < sizeof(species.ColorActionText)/sizeof(species.ColorActionText[0]) );
+			Q_strcat(species.ColorActionText[species.ColorCount], sizeof(species.ColorActionText[0]), token);
+			Q_strcat(species.ColorActionText[species.ColorCount], sizeof(species.ColorActionText[0]), " ");
+			token = COM_ParseExt( &p, qtrue );	//looking for action commands or final }
+		}
+		species.ColorCount++;	//next color please
+	}
+	return qtrue;//never get here
+}
+
+/*
+=================
+bIsImageFile
+builds path and scans for valid image extentions
+=================
+*/
+static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean building)
+{
+	char fpath[MAX_QPATH];
+	int f;
+
+#ifdef _XBOX
+	Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.dds", dirptr, skinname);
+#else
+	Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.jpg", dirptr, skinname);
+#endif
+	ui.FS_FOpenFile(fpath, &f, FS_READ);
+#if !defined(_XBOX) || defined(_DEBUG)
+	if (!f)
+	{ //not there, try png
+		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.png", dirptr, skinname);
+		ui.FS_FOpenFile(fpath, &f, FS_READ);
+	}
+	if (!f)
+	{ //not there, try tga
+		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.tga", dirptr, skinname);
+		ui.FS_FOpenFile(fpath, &f, FS_READ);
+	}
+#endif
+	if (f) 
+	{
+		ui.FS_FCloseFile(f);
+		if ( building ) ui.R_RegisterShaderNoMip(fpath);
+		return true;
+	}
+
+	return false;
+}
+
+/*
+=================
+PlayerModel_BuildList
+=================
+*/
+static void UI_BuildPlayerModel_List( qboolean inGameLoad )
+{
+	int		numdirs;
+	char	dirlist[2048];
+	char*	dirptr;
+	int		dirlen;
+	int		i;
+	const int building = Cvar_VariableIntegerValue("com_buildscript");
+
+	uiInfo.playerSpeciesCount = 0;
+	uiInfo.playerSpeciesIndex = 0;
+	memset(uiInfo.playerSpecies, 0, sizeof (uiInfo.playerSpecies) );
+
+	// iterate directory of all player models
+	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, 2048 );
+	dirptr  = dirlist;
+	for (i=0; i<numdirs; i++,dirptr+=dirlen+1)
+	{
+		char	filelist[2048];
+		char*	fileptr;
+		int		filelen;
+		int f = 0;
+		char fpath[2048];
+
+		dirlen = strlen(dirptr);
+		
+		if (dirlen && dirptr[dirlen-1]=='/') dirptr[dirlen-1]='\0';
+
+		if (!strcmp(dirptr,".") || !strcmp(dirptr,".."))
+			continue;
+			
+		Com_sprintf(fpath, 2048, "models/players/%s/PlayerChoice.txt", dirptr);
+		filelen = ui.FS_FOpenFile(fpath, &f, FS_READ);
+
+		if (f)
+		{ 
+			char buffer[2048];
+			ui.FS_Read(&buffer, filelen, f);
+			ui.FS_FCloseFile(f);
+			buffer[filelen] = 0;	//ensure trailing NULL
+			
+			//record this species
+			Q_strncpyz( uiInfo.playerSpecies[uiInfo.playerSpeciesCount].Name, dirptr, sizeof(uiInfo.playerSpecies[0].Name), qtrue );
+
+			if (!UI_ParseColorData(buffer,uiInfo.playerSpecies[uiInfo.playerSpeciesCount]))
+			{
+				ui.Printf( "UI_BuildPlayerModel_List: Errors parsing '%s'\n", fpath );
+			}
+
+			int		j;
+			char	skinname[64];
+			int		numfiles;
+			int		iSkinParts=0;
+
+			numfiles = ui.FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, 2048 );
+			fileptr  = filelist;
+			for (j=0; j<numfiles; j++,fileptr+=filelen+1)
+			{
+				if ( building )
+				{
+					ui.FS_FOpenFile(va("models/players/%s/%s",dirptr,fileptr), &f, FS_READ);
+					if (f) ui.FS_FCloseFile(f);
+					ui.FS_FOpenFile(va("models/players/%s/sounds.cfg", dirptr), &f, FS_READ);
+					if (f) ui.FS_FCloseFile(f);
+					ui.FS_FOpenFile(va("models/players/%s/animevents.cfg", dirptr), &f, FS_READ);
+					if (f) ui.FS_FCloseFile(f);
+				}
+
+				filelen = strlen(fileptr);
+				COM_StripExtension(fileptr,skinname);
+
+				if (bIsImageFile(dirptr, skinname, building))
+				{ //if it exists
+					if (strnicmp(skinname,"head_",5) == 0)
+					{
+						if (uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinHeadCount < MAX_PLAYERMODELS) 
+						{
+							Q_strncpyz(uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinHeadNames[uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinHeadCount++], skinname, sizeof(uiInfo.playerSpecies[0].SkinHeadNames[0]), qtrue);
+							iSkinParts |= 1<<0;
+						}
+					} else
+					if (strnicmp(skinname,"torso_",6) == 0)
+					{
+						if (uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinTorsoCount < MAX_PLAYERMODELS) 
+						{
+							Q_strncpyz(uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinTorsoNames[uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinTorsoCount++], skinname, sizeof(uiInfo.playerSpecies[0].SkinTorsoNames[0]), qtrue);
+							iSkinParts |= 1<<1;
+						}
+					} else
+					if (strnicmp(skinname,"lower_",6) == 0)
+					{
+						if (uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinLegCount < MAX_PLAYERMODELS) 
+						{
+							Q_strncpyz(uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinLegNames[uiInfo.playerSpecies[uiInfo.playerSpeciesCount].SkinLegCount++], skinname, sizeof(uiInfo.playerSpecies[0].SkinLegNames[0]), qtrue);
+							iSkinParts |= 1<<2;
+						}
+					}
+					
+				}
+			}
+			if (iSkinParts != 7)
+			{	//didn't get a skin for each, then skip this model.
+				memset(&uiInfo.playerSpecies[uiInfo.playerSpeciesCount], 0, sizeof(uiInfo.playerSpecies[uiInfo.playerSpeciesCount]));//undo the colors
+				continue;
+			}
+			uiInfo.playerSpeciesCount++;
+			if (!inGameLoad && ui_PrecacheModels.integer)
+			{
+				CGhoul2Info_v ghoul2;
+				Com_sprintf( fpath, sizeof( fpath ), "models/players/%s/model.glm", dirptr );
+				int g2Model = DC->g2_InitGhoul2Model(ghoul2, fpath, 0, 0, 0, 0, 0);
+				if (g2Model >= 0)
+				{
+					DC->g2_RemoveGhoul2Model( ghoul2, 0 );
+				}
+			}
+			if (uiInfo.playerSpeciesCount >= MAX_PLAYERMODELS)
+			{
+				return;
+			}
+		}
+	}	
+
+}
+
+/*
+=================
+UI_Init
+=================
+*/
+void _UI_Init( qboolean inGameLoad ) 
+{
+	uiInfo.inGameLoad = inGameLoad;
+
+	UI_RegisterCvars();
+
+	UI_InitMemory();
+
+	// cache redundant calulations
+	trap_GetGlconfig( &uiInfo.uiDC.glconfig );
+
+	// for 640x480 virtualized screen
+	uiInfo.uiDC.yscale = uiInfo.uiDC.glconfig.vidHeight * (1.0/480.0);
+	uiInfo.uiDC.xscale = uiInfo.uiDC.glconfig.vidWidth * (1.0/640.0);
+	if ( uiInfo.uiDC.glconfig.vidWidth * 480 > uiInfo.uiDC.glconfig.vidHeight * 640 ) 
+	{
+		// wide screen
+		uiInfo.uiDC.bias = 0.5 * ( uiInfo.uiDC.glconfig.vidWidth - ( uiInfo.uiDC.glconfig.vidHeight * (640.0/480.0) ) );
+	}
+	else 
+	{
+		// no wide screen
+		uiInfo.uiDC.bias = 0;
+	}
+
+	Init_Display(&uiInfo.uiDC);
+
+	uiInfo.uiDC.drawText			= &Text_Paint;
+	uiInfo.uiDC.drawHandlePic		= &UI_DrawHandlePic;
+	uiInfo.uiDC.drawRect			= &_UI_DrawRect;
+	uiInfo.uiDC.drawSides			= &_UI_DrawSides;
+	uiInfo.uiDC.drawTextWithCursor	= &Text_PaintWithCursor;
+	uiInfo.uiDC.executeText			= &Cbuf_ExecuteText;
+	uiInfo.uiDC.drawTopBottom		= &_UI_DrawTopBottom;
+	uiInfo.uiDC.feederCount			= &UI_FeederCount;
+	uiInfo.uiDC.feederSelection		= &UI_FeederSelection;
+	uiInfo.uiDC.fillRect			= &UI_FillRect;
+	uiInfo.uiDC.getBindingBuf		= &Key_GetBindingBuf;
+	uiInfo.uiDC.getCVarString		= Cvar_VariableStringBuffer;
+	uiInfo.uiDC.getCVarValue		= trap_Cvar_VariableValue;
+	uiInfo.uiDC.getOverstrikeMode	= &trap_Key_GetOverstrikeMode;
+	uiInfo.uiDC.getValue			= &UI_GetValue;
+	uiInfo.uiDC.keynumToStringBuf	= &Key_KeynumToStringBuf;
+	uiInfo.uiDC.modelBounds			= &trap_R_ModelBounds;
+	uiInfo.uiDC.ownerDrawVisible	= &UI_OwnerDrawVisible;
+	uiInfo.uiDC.ownerDrawWidth		= &UI_OwnerDrawWidth;
+	uiInfo.uiDC.ownerDrawItem		= &UI_OwnerDraw;
+	uiInfo.uiDC.Print				= &Com_Printf; 
+	uiInfo.uiDC.registerSound		= &trap_S_RegisterSound;
+	uiInfo.uiDC.registerModel		= ui.R_RegisterModel;
+	uiInfo.uiDC.clearScene			= &trap_R_ClearScene;
+	uiInfo.uiDC.addRefEntityToScene = &trap_R_AddRefEntityToScene;
+	uiInfo.uiDC.renderScene			= &trap_R_RenderScene;
+	uiInfo.uiDC.runScript			= &UI_RunMenuScript;
+	uiInfo.uiDC.deferScript			= &UI_DeferMenuScript;
+	uiInfo.uiDC.setBinding			= &trap_Key_SetBinding;
+	uiInfo.uiDC.setColor			= &UI_SetColor;
+	uiInfo.uiDC.setCVar				= Cvar_Set;
+	uiInfo.uiDC.setOverstrikeMode	= &trap_Key_SetOverstrikeMode;
+	uiInfo.uiDC.startLocalSound		= &trap_S_StartLocalSound;
+	uiInfo.uiDC.stopCinematic		= &UI_StopCinematic;
+	uiInfo.uiDC.textHeight			= &Text_Height;
+	uiInfo.uiDC.textWidth			= &Text_Width;
+	uiInfo.uiDC.feederItemImage		= &UI_FeederItemImage;
+	uiInfo.uiDC.feederItemText		= &UI_FeederItemText;
+#ifdef _IMMERSION
+	uiInfo.uiDC.registerForce		= &trap_FF_Register;
+	uiInfo.uiDC.startForce			= &trap_FF_Start;
+#endif // _IMMERSION
+	uiInfo.uiDC.ownerDrawHandleKey	= &UI_OwnerDrawHandleKey;
+
+	uiInfo.uiDC.registerSkin		= re.RegisterSkin;
+
+#ifndef _XBOX
+	uiInfo.uiDC.g2_SetSkin = G2API_SetSkin;
+	uiInfo.uiDC.g2_SetBoneAnim = G2API_SetBoneAnim;
+#endif
+	uiInfo.uiDC.g2_RemoveGhoul2Model = G2API_RemoveGhoul2Model;
+	uiInfo.uiDC.g2_InitGhoul2Model = G2API_InitGhoul2Model;
+	uiInfo.uiDC.g2_CleanGhoul2Models = G2API_CleanGhoul2Models;
+	uiInfo.uiDC.g2_AddBolt = G2API_AddBolt;
+	uiInfo.uiDC.g2_GetBoltMatrix = G2API_GetBoltMatrix;
+	uiInfo.uiDC.g2_GiveMeVectorFromMatrix = G2API_GiveMeVectorFromMatrix;
+
+	uiInfo.uiDC.g2hilev_SetAnim = UI_G2SetAnim;
+
+	UI_BuildPlayerModel_List(inGameLoad);
+
+	String_Init();
+
+	char *menuSet = UI_Cvar_VariableString("ui_menuFiles");
+
+	if (menuSet == NULL || menuSet[0] == '\0') 
+	{
+		menuSet = "ui/menus.txt";
+	}
+	if (inGameLoad)
+	{
+		UI_LoadMenus("ui/ingame.txt", qtrue);
+	}
+	else 
+	{
+		UI_LoadMenus(menuSet, qtrue);
+	}
+
+	Menus_CloseAll();
+
+	uiInfo.uiDC.whiteShader = ui.R_RegisterShaderNoMip( "white" );
+
+	AssetCache();
+
+	uis.debugMode = qfalse;
+	
+	// sets defaults for ui temp cvars
+	uiInfo.effectsColor = (int)trap_Cvar_VariableValue("color")-1;
+	if (uiInfo.effectsColor < 0)
+	{
+		uiInfo.effectsColor = 0;
+	}
+	uiInfo.effectsColor = gamecodetoui[uiInfo.effectsColor];
+	uiInfo.currentCrosshair = (int)trap_Cvar_VariableValue("cg_drawCrosshair");
+
+	Cvar_Set("cg_endcredits", "0");	// Reset value
+	Cvar_Set("ui_missionfailed","0"); // reset
+
+	uiInfo.forcePowerUpdated = FP_UPDATED_NONE;
+	uiInfo.selectedWeapon1 = NOWEAPON;
+	uiInfo.selectedWeapon2 = NOWEAPON;
+	uiInfo.selectedThrowWeapon = NOWEAPON;
+
+	uiInfo.uiDC.Assets.nullSound = trap_S_RegisterSound("sound/null", qfalse);
+
+	trap_S_RegisterSound("sound/interface/weapon_deselect", qfalse);
+
+
+}
+
+
+/*
+=================
+UI_RegisterCvars
+=================
+*/
+static void UI_RegisterCvars( void ) 
+{
+	int			i;
+	cvarTable_t	*cv;
+
+	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) 
+	{
+		Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
+	}
+}
+
+#ifdef _XBOX
+//JLFCALLOUT  MPNOTNEEDED->(INCLUDE WORKS)
+qboolean Menu_Parse(char *buffer, menuDef_t *menu);
+
+char * UI_ParseInclude(const char *menuFile, menuDef_t * menu) 
+{
+	char	* buffer;
+	int len;
+//	pc_token_t token;
+
+	//Com_DPrintf("Parsing menu file:%s\n", menuFile);
+
+	len = PC_StartParseSession(menuFile,&buffer, true);
+
+	if (len<=0) 
+	{
+		Com_Printf("UI_ParseMenu: Unable to load menu %s\n", menuFile);
+		return NULL;
+	}
+
+	//	PC_EndParseSession(buffer);
+	return buffer;
+}
+#endif
+
+/*
+=================
+UI_ParseMenu
+=================
+*/
+void UI_ParseMenu(const char *menuFile) 
+{
+	char	*buffer,*holdBuffer,*token2;
+	int len;
+//	pc_token_t token;
+
+	//Com_DPrintf("Parsing menu file:%s\n", menuFile);
+
+	len = PC_StartParseSession(menuFile,&buffer);
+
+	holdBuffer = buffer;
+
+	if (len<=0) 
+	{
+		Com_Printf("UI_ParseMenu: Unable to load menu %s\n", menuFile);
+		return;
+	}
+
+	while ( 1 ) 
+	{
+
+		token2 = PC_ParseExt();
+
+		if (!*token2)
+		{
+			break;
+		}
+/*
+		if ( menuCount == MAX_MENUS ) 
+		{
+			PC_ParseWarning("Too many menus!");		
+			break;
+		}
+*/
+		if ( *token2 == '{') 
+		{
+			continue;
+		}
+		else if ( *token2 == '}' ) 
+		{
+			break;
+		}
+		else if (Q_stricmp(token2, "assetGlobalDef") == 0) 
+		{
+			if (Asset_Parse(&holdBuffer)) 
+			{
+				continue;
+			} 
+			else 
+			{
+				break;
+			}
+		}
+		else if (Q_stricmp(token2, "menudef") == 0) 
+		{
+			// start a new menu
+			Menu_New(holdBuffer);
+			continue;
+		}
+
+		PC_ParseWarning(va("Invalid keyword '%s'",token2));		
+	}
+
+	PC_EndParseSession(buffer);
+	
+}
+
+/*
+=================
+Load_Menu
+	Load current menu file
+=================
+*/
+qboolean Load_Menu(const char **holdBuffer) 
+{
+	const char	*token2;
+
+	token2 = COM_ParseExt( holdBuffer, qtrue );
+
+	if (!token2[0])
+	{
+		return qfalse;
+	}
+
+	if (*token2 != '{') 
+	{
+		return qfalse;
+	}
+
+	while ( 1 ) 
+	{
+		token2 = COM_ParseExt( holdBuffer, qtrue );
+
+		if ((!token2) || (token2 == 0))
+		{
+			return qfalse;
+		}
+			
+		if ( *token2 == '}' ) 
+		{
+			return qtrue;
+		}
+
+//#ifdef _DEBUG
+//		extern void UI_Debug_AddMenuFilePath(const char *);
+//		UI_Debug_AddMenuFilePath(token2);
+//#endif
+		UI_ParseMenu(token2); 
+
+	}
+	return qfalse;
+}
+
+/*
+=================
+UI_LoadMenus
+	Load all menus based on the files listed in the data file in menuFile (default "ui/menus.txt")
+=================
+*/
+void UI_LoadMenus(const char *menuFile, qboolean reset) 
+{
+//	pc_token_t token;
+//	int handle;
+	int start;
+
+	char *buffer;
+	const char *holdBuffer;
+	int len;
+
+	start = Sys_Milliseconds();
+
+	len = ui.FS_ReadFile(menuFile,(void **) &buffer);
+
+	if (len<1) 
+	{
+		Com_Printf( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );
+		len = ui.FS_ReadFile("ui/menus.txt",(void **) &buffer);
+
+		if (len<1) 
+		{
+			Com_Error( ERR_FATAL, "%s", va("default menu file not found: ui/menus.txt, unable to continue!\n", menuFile ));
+			return;
+		}
+	}
+
+	if (reset) 
+	{
+		Menu_Reset();
+	}
+
+	const char	*token2;
+	holdBuffer = buffer;
+	while ( 1 ) 
+	{
+		token2 = COM_ParseExt( &holdBuffer, qtrue );
+		if (!*token2)
+		{
+			break;
+		}
+
+		if( *token2 == 0 || *token2 == '}')			// End of the menus file 
+		{
+			break;
+		}
+
+		if (*token2 == '{') 
+		{
+				continue;
+		}
+		else if (Q_stricmp(token2, "loadmenu") == 0) 
+		{
+			if (Load_Menu(&holdBuffer)) 
+			{
+				continue;
+			} 
+			else 
+			{
+				break;
+			}
+		} 
+		else
+		{
+			Com_Printf("Unknown keyword '%s' in menus file %s\n", token2, menuFile);
+		} 
+	}
+
+	//Com_Printf("UI menu load time = %d milli seconds\n", Sys_Milliseconds() - start);
+
+	ui.FS_FreeFile( buffer );	//let go of the buffer
+}
+
+/*
+=================
+UI_Load
+=================
+*/
+void UI_Load(void) 
+{
+	char *menuSet;
+	char lastName[1024];
+	menuDef_t *menu = Menu_GetFocused();
+
+	if (menu && menu->window.name) 
+	{
+		strcpy(lastName, menu->window.name);
+	}
+	else
+	{
+		lastName[0] = 0;
+	}
+
+	if (uiInfo.inGameLoad)
+	{
+		menuSet= "ui/ingame.txt";
+	}
+	else 
+	{
+		menuSet= UI_Cvar_VariableString("ui_menuFiles");
+	}
+	if (menuSet == NULL || menuSet[0] == '\0') 
+	{
+		menuSet = "ui/menus.txt";
+	}
+
+	String_Init();
+
+
+	UI_LoadMenus(menuSet, qtrue);
+	Menus_CloseAll();
+	Menus_ActivateByName(lastName);
+}
+
+/*
+=================
+Asset_Parse
+=================
+*/
+qboolean Asset_Parse(char **buffer) 
+{
+	char		*token;
+	const char	*tempStr;
+	int			pointSize;
+
+	token = PC_ParseExt();
+
+	if (!token)
+	{
+		return qfalse;
+	}
+
+	if (*token != '{') 
+	{
+		return qfalse;
+	}
+    
+	while ( 1 ) 
+	{
+
+		token = PC_ParseExt();
+
+		if (!token)
+		{
+			return qfalse;
+		}
+
+		if (*token == '}') 
+		{
+			return qtrue;
+		}
+
+		// fonts
+		if (Q_stricmp(token, "smallFont") == 0)		//legacy, really it only matters which order they are registered
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'smallFont'");
+				return qfalse;
+			}
+
+			UI_RegisterFont(tempStr);
+
+			//not used anymore
+			if (PC_ParseInt(&pointSize))
+			{
+//				PC_ParseWarning("Bad 2nd parameter for keyword 'smallFont'");
+			}
+
+			continue;
+		}
+
+		if (Q_stricmp(token, "mediumFont") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'font'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.qhMediumFont = UI_RegisterFont(tempStr);
+			uiInfo.uiDC.Assets.fontRegistered = qtrue;
+
+			//not used
+			if (PC_ParseInt(&pointSize))
+			{
+//				PC_ParseWarning("Bad 2nd parameter for keyword 'font'");
+			}
+			continue;
+		}
+
+		if (Q_stricmp(token, "bigFont") == 0) //legacy
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'bigFont'");
+				return qfalse;
+			}
+
+			UI_RegisterFont(tempStr);
+
+			if (PC_ParseInt(&pointSize))
+			{
+//				PC_ParseWarning("Bad 2nd parameter for keyword 'bigFont'");
+			}
+
+			continue;
+		}
+
+		// gradientbar
+		if (Q_stricmp(token, "gradientbar") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'gradientbar'");
+				return qfalse;
+			}
+			uiInfo.uiDC.Assets.gradientBar = ui.R_RegisterShaderNoMip(tempStr);
+			continue;
+		}
+
+		// enterMenuSound
+		if (Q_stricmp(token, "menuEnterSound") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'menuEnterSound'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.menuEnterSound = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		// exitMenuSound
+		if (Q_stricmp(token, "menuExitSound") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'menuExitSound'");
+				return qfalse;
+			}
+			uiInfo.uiDC.Assets.menuExitSound = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		// itemFocusSound
+		if (Q_stricmp(token, "itemFocusSound") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'itemFocusSound'");
+				return qfalse;
+			}
+			uiInfo.uiDC.Assets.itemFocusSound = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		// menuBuzzSound
+		if (Q_stricmp(token, "menuBuzzSound") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'menuBuzzSound'");
+				return qfalse;
+			}
+			uiInfo.uiDC.Assets.menuBuzzSound = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		// Chose a force power from the ingame force allocation screen (the one where you get to allocate a force power point)
+		if (Q_stricmp(token, "forceChosenSound") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'forceChosenSound'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.forceChosenSound = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+
+		// Unchose a force power from the ingame force allocation screen (the one where you get to allocate a force power point)
+		if (Q_stricmp(token, "forceUnchosenSound") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'forceUnchosenSound'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.forceUnchosenSound = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		if (Q_stricmp(token, "datapadmoveRollSound") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'datapadmoveRollSound'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.datapadmoveRollSound = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		if (Q_stricmp(token, "datapadmoveJumpSound") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'datapadmoveRoll'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.datapadmoveJumpSound = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		if (Q_stricmp(token, "datapadmoveSaberSound1") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'datapadmoveSaberSound1'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.datapadmoveSaberSound1 = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		if (Q_stricmp(token, "datapadmoveSaberSound2") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'datapadmoveSaberSound2'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.datapadmoveSaberSound2 = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		if (Q_stricmp(token, "datapadmoveSaberSound3") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'datapadmoveSaberSound3'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.datapadmoveSaberSound3 = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		if (Q_stricmp(token, "datapadmoveSaberSound4") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'datapadmoveSaberSound4'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.datapadmoveSaberSound4 = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		if (Q_stricmp(token, "datapadmoveSaberSound5") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'datapadmoveSaberSound5'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.datapadmoveSaberSound5 = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+		if (Q_stricmp(token, "datapadmoveSaberSound6") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'datapadmoveSaberSound6'");
+				return qfalse;
+			}
+
+			uiInfo.uiDC.Assets.datapadmoveSaberSound6 = trap_S_RegisterSound( tempStr, qfalse );
+			continue;
+		}
+
+#ifdef _IMMERSION
+
+		if (Q_stricmp(token, "menuEnterForce") == 0)
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'menuEnterForce'");
+				return qfalse;
+			}
+			uiInfo.uiDC.Assets.menuEnterForce = trap_FF_Register( tempStr );
+			continue;
+		}
+
+		if (Q_stricmp(token, "menuExitForce") == 0)
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'menuExitForce'");
+				return qfalse;
+			}
+			uiInfo.uiDC.Assets.menuExitForce = trap_FF_Register( tempStr );
+			continue;
+		}
+
+		if (Q_stricmp(token, "itemFocusForce") == 0)
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'itemFocusForce'");
+				return qfalse;
+			}
+			uiInfo.uiDC.Assets.itemFocusForce = trap_FF_Register( tempStr );
+			continue;
+		}
+
+		if (Q_stricmp(token, "menuBuzzForce") == 0)
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'menuBuzzForce'");
+				return qfalse;
+			}
+			uiInfo.uiDC.Assets.menuBuzzForce = trap_FF_Register( tempStr );
+			continue;
+		}
+
+#endif // _IMMERSION
+		if (Q_stricmp(token, "cursor") == 0) 
+		{
+			if (PC_ParseString(&tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'cursor'");
+				return qfalse;
+			}
+//			uiInfo.uiDC.Assets.cursor = ui.R_RegisterShaderNoMip( tempStr);
+			continue;
+		}
+
+		if (Q_stricmp(token, "fadeClamp") == 0) 
+		{
+			if (PC_ParseFloat(&uiInfo.uiDC.Assets.fadeClamp))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'fadeClamp'");
+				return qfalse;
+			}
+			continue;
+		}
+
+		if (Q_stricmp(token, "fadeCycle") == 0) 
+		{
+			if (PC_ParseInt(&uiInfo.uiDC.Assets.fadeCycle)) 
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'fadeCycle'");
+				return qfalse;
+			}
+			continue;
+		}
+
+		if (Q_stricmp(token, "fadeAmount") == 0) 
+		{
+			if (PC_ParseFloat(&uiInfo.uiDC.Assets.fadeAmount)) 
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'fadeAmount'");
+				return qfalse;
+			}
+			continue;
+		}
+
+		if (Q_stricmp(token, "shadowX") == 0) 
+		{
+			if (PC_ParseFloat(&uiInfo.uiDC.Assets.shadowX)) 
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'shadowX'");
+				return qfalse;
+			}
+			continue;
+		}
+
+		if (Q_stricmp(token, "shadowY") == 0) 
+		{
+			if (PC_ParseFloat(&uiInfo.uiDC.Assets.shadowY)) 
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'shadowY'");
+				return qfalse;
+			}
+			continue;
+		}
+
+		if (Q_stricmp(token, "shadowColor") == 0) 
+		{
+			if (PC_ParseColor(&uiInfo.uiDC.Assets.shadowColor)) 
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'shadowColor'");
+				return qfalse;
+			}
+			uiInfo.uiDC.Assets.shadowFadeClamp = uiInfo.uiDC.Assets.shadowColor[3];
+			continue;
+		}
+
+		// precaching various sound files used in the menus
+		if (Q_stricmp(token, "precacheSound") == 0)
+		{
+			if (PC_Script_Parse(&tempStr)) 
+			{
+				char *soundFile;
+				do
+				{
+					soundFile = COM_ParseExt(&tempStr, qfalse);	
+					if (soundFile[0] != 0 && soundFile[0] != ';') {
+						if (!trap_S_RegisterSound( soundFile, qfalse ))
+						{
+							PC_ParseWarning("Can't locate precache sound");
+						}
+					}
+				} while (soundFile[0]);
+			}
+			continue;
+		}
+	}
+
+	PC_ParseWarning(va("Invalid keyword '%s'",token));
+	return qfalse;
+}
+
+/*
+=================
+UI_Update
+=================
+*/
+static void UI_Update(const char *name) 
+{
+	int	val = trap_Cvar_VariableValue(name);
+
+
+	if (Q_stricmp(name, "s_khz") == 0) 
+	{
+		ui.Cmd_ExecuteText( EXEC_APPEND, "snd_restart\n" );
+		return;
+	}
+#ifdef _IMMERSION
+	if (Q_stricmp(name, "ff") == 0) 
+	{
+		ui.Cmd_ExecuteText( EXEC_APPEND, "ff_restart\n");
+		return;
+	}
+#endif // _IMMERSION
+
+	if (Q_stricmp(name, "ui_SetName") == 0) 
+	{
+		Cvar_Set( "name", UI_Cvar_VariableString("ui_Name"));
+ 	} 
+	else if (Q_stricmp(name, "ui_setRate") == 0) 
+	{
+		float rate = trap_Cvar_VariableValue("rate");
+		if (rate >= 5000) 
+		{
+			Cvar_Set("cl_maxpackets", "30");
+			Cvar_Set("cl_packetdup", "1");
+		} 
+		else if (rate >= 4000) 
+		{
+			Cvar_Set("cl_maxpackets", "15");
+			Cvar_Set("cl_packetdup", "2");		// favor less prediction errors when there's packet loss
+		} 
+		else 
+		{
+			Cvar_Set("cl_maxpackets", "15");
+			Cvar_Set("cl_packetdup", "1");		// favor lower bandwidth
+		}
+	} 
+	else if (Q_stricmp(name, "ui_GetName") == 0) 
+	{
+		Cvar_Set( "ui_Name", UI_Cvar_VariableString("name"));
+ 	} 
+	else if (Q_stricmp(name, "ui_r_colorbits") == 0) 
+	{
+		switch (val) 
+		{
+			case 0:
+				Cvar_SetValue( "ui_r_depthbits", 0 );
+				break;
+
+			case 16:
+				Cvar_SetValue( "ui_r_depthbits", 16 );
+				break;
+
+			case 32:
+				Cvar_SetValue( "ui_r_depthbits", 24 );
+				break;
+		}
+	} 
+	else if (Q_stricmp(name, "ui_r_lodbias") == 0) 
+	{
+		switch (val) 
+		{
+			case 0:
+				Cvar_SetValue( "ui_r_subdivisions", 4 );
+				break;
+			case 1:
+				Cvar_SetValue( "ui_r_subdivisions", 12 );
+				break;
+
+			case 2:
+				Cvar_SetValue( "ui_r_subdivisions", 20 );
+				break;
+		}
+	} 
+	else if (Q_stricmp(name, "ui_r_glCustom") == 0) 
+	{
+		switch (val) 
+		{
+			case 0:	// high quality
+
+				Cvar_SetValue( "ui_r_fullScreen", 1 );
+				Cvar_SetValue( "ui_r_subdivisions", 4 );
+				Cvar_SetValue( "ui_r_lodbias", 0 );
+				Cvar_SetValue( "ui_r_colorbits", 32 );
+				Cvar_SetValue( "ui_r_depthbits", 24 );
+				Cvar_SetValue( "ui_r_picmip", 0 );
+				Cvar_SetValue( "ui_r_mode", 4 );
+				Cvar_SetValue( "ui_r_texturebits", 32 );
+				Cvar_SetValue( "ui_r_fastSky", 0 );
+				Cvar_SetValue( "ui_r_inGameVideo", 1 );
+				//Cvar_SetValue( "ui_cg_shadows", 2 );//stencil
+				Cvar_Set( "ui_r_texturemode", "GL_LINEAR_MIPMAP_LINEAR" );
+				break;
+
+			case 1: // normal 
+				Cvar_SetValue( "ui_r_fullScreen", 1 );
+				Cvar_SetValue( "ui_r_subdivisions", 4 );
+				Cvar_SetValue( "ui_r_lodbias", 0 );
+				Cvar_SetValue( "ui_r_colorbits", 0 );
+				Cvar_SetValue( "ui_r_depthbits", 24 );
+				Cvar_SetValue( "ui_r_picmip", 1 );
+				Cvar_SetValue( "ui_r_mode", 3 );
+				Cvar_SetValue( "ui_r_texturebits", 0 );
+				Cvar_SetValue( "ui_r_fastSky", 0 );
+				Cvar_SetValue( "ui_r_inGameVideo", 1 );
+				//Cvar_SetValue( "ui_cg_shadows", 2 );
+				Cvar_Set( "ui_r_texturemode", "GL_LINEAR_MIPMAP_LINEAR" );
+				break;
+
+			case 2: // fast
+
+				Cvar_SetValue( "ui_r_fullScreen", 1 );
+				Cvar_SetValue( "ui_r_subdivisions", 12 );
+				Cvar_SetValue( "ui_r_lodbias", 1 );
+				Cvar_SetValue( "ui_r_colorbits", 0 );
+				Cvar_SetValue( "ui_r_depthbits", 0 );
+				Cvar_SetValue( "ui_r_picmip", 2 );
+				Cvar_SetValue( "ui_r_mode", 3 );
+				Cvar_SetValue( "ui_r_texturebits", 0 );
+				Cvar_SetValue( "ui_r_fastSky", 1 );
+				Cvar_SetValue( "ui_r_inGameVideo", 0 );
+				//Cvar_SetValue( "ui_cg_shadows", 1 );
+				Cvar_Set( "ui_r_texturemode", "GL_LINEAR_MIPMAP_NEAREST" );
+				break;
+
+			case 3: // fastest
+
+				Cvar_SetValue( "ui_r_fullScreen", 1 );
+				Cvar_SetValue( "ui_r_subdivisions", 20 );
+				Cvar_SetValue( "ui_r_lodbias", 2 );
+				Cvar_SetValue( "ui_r_colorbits", 16 );
+				Cvar_SetValue( "ui_r_depthbits", 16 );
+				Cvar_SetValue( "ui_r_mode", 3 );
+				Cvar_SetValue( "ui_r_picmip", 3 );
+				Cvar_SetValue( "ui_r_texturebits", 16 );
+				Cvar_SetValue( "ui_r_fastSky", 1 );
+				Cvar_SetValue( "ui_r_inGameVideo", 0 );
+				//Cvar_SetValue( "ui_cg_shadows", 0 );
+				Cvar_Set( "ui_r_texturemode", "GL_LINEAR_MIPMAP_NEAREST" );
+			break;
+		}
+	} 
+	else
+	{//failure!!
+		Com_Printf("unknown UI script UPDATE %s\n", name);
+	}
+}
+
+#define ASSET_SCROLLBAR             "gfx/menus/scrollbar.tga"
+#define ASSET_SCROLLBAR_ARROWDOWN   "gfx/menus/scrollbar_arrow_dwn_a.tga"
+#define ASSET_SCROLLBAR_ARROWUP     "gfx/menus/scrollbar_arrow_up_a.tga"
+#define ASSET_SCROLLBAR_ARROWLEFT   "gfx/menus/scrollbar_arrow_left.tga"
+#define ASSET_SCROLLBAR_ARROWRIGHT  "gfx/menus/scrollbar_arrow_right.tga"
+#define ASSET_SCROLL_THUMB          "gfx/menus/scrollbar_thumb.tga"
+
+
+/*
+=================
+AssetCache
+=================
+*/
+void AssetCache(void) 
+{
+//	int n;
+	uiInfo.uiDC.Assets.scrollBar = ui.R_RegisterShaderNoMip( ASSET_SCROLLBAR );
+	uiInfo.uiDC.Assets.scrollBarArrowDown = ui.R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWDOWN );
+	uiInfo.uiDC.Assets.scrollBarArrowUp = ui.R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWUP );
+	uiInfo.uiDC.Assets.scrollBarArrowLeft = ui.R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWLEFT );
+	uiInfo.uiDC.Assets.scrollBarArrowRight = ui.R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWRIGHT );
+	uiInfo.uiDC.Assets.scrollBarThumb = ui.R_RegisterShaderNoMip( ASSET_SCROLL_THUMB );
+
+	uiInfo.uiDC.Assets.sliderBar = ui.R_RegisterShaderNoMip( "gfx/menus/newFront/slider" );
+//	uiInfo.uiDC.Assets.sliderThumb = ui.R_RegisterShaderNoMip( "menu/new/sliderthumb");
+
+	
+	/*
+	for( n = 0; n < NUM_CROSSHAIRS; n++ ) 
+	{
+		uiInfo.uiDC.Assets.crosshairShader[n] = ui.R_RegisterShaderNoMip( va("gfx/2d/crosshair%c", 'a' + n ) );
+	}
+	*/
+}
+
+/*
+================
+_UI_DrawSides
+=================
+*/
+void _UI_DrawSides(float x, float y, float w, float h, float size) 
+{
+	size *= uiInfo.uiDC.xscale;
+	trap_R_DrawStretchPic( x, y, size, h, 0, 0, 0, 0, uiInfo.uiDC.whiteShader );
+	trap_R_DrawStretchPic( x + w - size, y, size, h, 0, 0, 0, 0, uiInfo.uiDC.whiteShader );
+}
+
+/*
+================
+_UI_DrawTopBottom
+=================
+*/
+void _UI_DrawTopBottom(float x, float y, float w, float h, float size) 
+{
+	size *= uiInfo.uiDC.yscale;
+	trap_R_DrawStretchPic( x, y, w, size, 0, 0, 0, 0, uiInfo.uiDC.whiteShader );
+	trap_R_DrawStretchPic( x, y + h - size, w, size, 0, 0, 0, 0, uiInfo.uiDC.whiteShader );
+}
+/*
+================
+UI_DrawRect
+
+Coordinates are 640*480 virtual values
+=================
+*/
+void _UI_DrawRect( float x, float y, float width, float height, float size, const float *color ) 
+{
+	trap_R_SetColor( color );
+
+	_UI_DrawTopBottom(x, y, width, height, size);
+	_UI_DrawSides(x, y, width, height, size);
+
+	trap_R_SetColor( NULL );
+}
+
+/*
+=================
+UI_UpdateCvars
+=================
+*/
+void UI_UpdateCvars( void ) 
+{
+	int			i;
+	cvarTable_t	*cv;
+
+	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) 
+	{
+		Cvar_Update( cv->vmCvar );
+	}
+}
+
+/*
+=================
+UI_DrawEffects
+=================
+*/
+static void UI_DrawEffects(rectDef_t *rect, float scale, vec4_t color) 
+{
+	UI_DrawHandlePic( rect->x, rect->y - 14, 128, 8, 0/*uiInfo.uiDC.Assets.fxBasePic*/ );
+	UI_DrawHandlePic( rect->x + uiInfo.effectsColor * 16 + 8, rect->y - 16, 16, 12, 0/*uiInfo.uiDC.Assets.fxPic[uiInfo.effectsColor]*/ );
+}
+
+/*
+=================
+UI_Version
+=================
+*/
+static void UI_Version(rectDef_t *rect, float scale, vec4_t color, int iFontIndex) 
+{
+	int width;
+	
+	width = DC->textWidth(Q3_VERSION, scale, 0);
+
+	DC->drawText(rect->x - width, rect->y, scale, color, Q3_VERSION, 0, ITEM_TEXTSTYLE_SHADOWED, iFontIndex);
+}
+
+/*
+=================
+UI_DrawKeyBindStatus
+=================
+*/
+static void UI_DrawKeyBindStatus(rectDef_t *rect, float scale, vec4_t color, int textStyle, int iFontIndex) 
+{
+	if (Display_KeyBindPending()) 
+	{
+		Text_Paint(rect->x, rect->y, scale, color, SE_GetString("MENUS_WAITINGFORKEY"), 0, textStyle, iFontIndex);
+	} 
+	else 
+	{
+//		Text_Paint(rect->x, rect->y, scale, color, ui.SP_GetStringTextString("MENUS_ENTERTOCHANGE"), 0, textStyle, iFontIndex);
+	}
+}
+
+/*
+=================
+UI_DrawKeyBindStatus
+=================
+*/
+static void UI_DrawGLInfo(rectDef_t *rect, float scale, vec4_t color, int textStyle, int iFontIndex) 
+{
+#define MAX_LINES 64
+	char buff[4096];
+	char * eptr = buff;
+	const char *lines[MAX_LINES];
+	int y, numLines=0, i=0;
+
+	y = rect->y;	
+	Text_Paint(rect->x, y, scale, color, va("GL_VENDOR: %s",uiInfo.uiDC.glconfig.vendor_string), rect->w, textStyle, iFontIndex);
+	y += 15;
+	Text_Paint(rect->x, y, scale, color, va("GL_VERSION: %s: %s", uiInfo.uiDC.glconfig.version_string,uiInfo.uiDC.glconfig.renderer_string), rect->w, textStyle, iFontIndex);
+	y += 15;
+	Text_Paint(rect->x, y, scale, color, "GL_PIXELFORMAT:", rect->w, textStyle, iFontIndex);
+	y += 15;
+	Text_Paint(rect->x, y, scale, color, va ("Color(%d-bits) Z(%d-bits) stencil(%d-bits)",uiInfo.uiDC.glconfig.colorBits, uiInfo.uiDC.glconfig.depthBits, uiInfo.uiDC.glconfig.stencilBits), rect->w, textStyle, iFontIndex);
+	y += 15;
+	// build null terminated extension strings
+	Q_strncpyz(buff, uiInfo.uiDC.glconfig.extensions_string, sizeof(buff));
+	int testy=y-16;
+	while ( testy <= rect->y + rect->h && *eptr && (numLines < MAX_LINES) )
+	{
+		while ( *eptr && *eptr == ' ' )
+			*eptr++ = '\0';
+
+		// track start of valid string
+		if (*eptr && *eptr != ' ') 
+		{
+			lines[numLines++] = eptr;
+			testy+=16;
+		}
+
+		while ( *eptr && *eptr != ' ' )
+			eptr++;
+	}
+
+	numLines--;
+	while (i < numLines) 
+	{
+		Text_Paint(rect->x, y, scale, color, lines[i++], rect->w, textStyle, iFontIndex);
+		y += 16;
+	}
+}
+
+/*
+=================
+UI_DataPad_Inventory
+=================
+*/
+/*
+static void UI_DataPad_Inventory(rectDef_t *rect, float scale, vec4_t color, int iFontIndex) 
+{
+	Text_Paint(rect->x, rect->y, scale, color, "INVENTORY", 0, 1, iFontIndex);
+}
+*/
+/*
+=================
+UI_DataPad_ForcePowers
+=================
+*/
+/*
+static void UI_DataPad_ForcePowers(rectDef_t *rect, float scale, vec4_t color, int iFontIndex) 
+{
+	Text_Paint(rect->x, rect->y, scale, color, "FORCE POWERS", 0, 1, iFontIndex);
+}
+*/
+
+static void UI_DrawCrosshair(rectDef_t *rect, float scale, vec4_t color) {
+ 	trap_R_SetColor( color );
+	if (uiInfo.currentCrosshair < 0 || uiInfo.currentCrosshair >= NUM_CROSSHAIRS) {
+		uiInfo.currentCrosshair = 0;
+	}
+	UI_DrawHandlePic( rect->x, rect->y, rect->w, rect->h, uiInfo.uiDC.Assets.crosshairShader[uiInfo.currentCrosshair]);
+ 	trap_R_SetColor( NULL );
+}
+
+/*
+=================
+UI_SoftKeyboard
+=================
+*/
+static void UI_SoftKeyboardInit()
+{
+	char strtmp[] = "";
+	DC->setCVar("keyboardinput", strtmp);
+
+	skb.activeKey=0;
+	skb.curCol=0;
+	skb.curRow=0;
+	skb.curStringPos=0;
+}
+
+static void UI_SoftKeyboardDelete()
+{
+	char strtmp[SKB_STRING_LENGTH+1];
+	DC->getCVarString("keyboardinput", strtmp, SKB_STRING_LENGTH+1);
+	if(skb.curStringPos > 0)
+	{
+		skb.curStringPos--;
+		strtmp[skb.curStringPos] = 0;
+	}
+	DC->setCVar("keyboardinput", strtmp);
+}
+
+static void UI_SoftKeyboardAccept()
+{
+	menuDef_t *menu = Menu_GetFocused();
+	itemDef_t *item	= Menu_FindItemByName(menu, SKB_ACCEPT_NAME);
+	if (menu->onAccept) 
+	{
+		Item_RunScript(item, menu->onAccept);
+	}
+}
+
+static qboolean UI_SoftKeyboardDelete_HandleKey(int flags, float *special, int key) 
+{
+	menuDef_t *menu = Menu_GetFocused();
+	itemDef_t *item;
+	switch(key)
+	{
+	case A_CURSOR_UP:
+		skb.curRow = SKB_NUM_ROWS - 1;
+		if((skb.curRow * SKB_NUM_COLS + skb.curCol) >= SKB_NUM_LETTERS)
+			skb.curRow--;
+		item = Menu_FindItemByName(menu, SKB_KEYBOARD_NAME);
+		Item_SetFocus(item, 0, 0);
+		break;
+	case A_CURSOR_DOWN:
+		skb.curRow = 0;
+		item = Menu_FindItemByName(menu, SKB_KEYBOARD_NAME);
+		Item_SetFocus(item, 0, 0);
+		break;
+	case A_CURSOR_LEFT:
+		skb.curCol = SKB_NUM_COLS/2;
+		item = Menu_FindItemByName(menu, SKB_ACCEPT_NAME);
+		Item_SetFocus(item, 0, 0);
+		break;
+	case A_CURSOR_RIGHT:
+		skb.curCol = SKB_NUM_COLS/2;
+		item = Menu_FindItemByName(menu, SKB_ACCEPT_NAME);
+		Item_SetFocus(item, 0, 0);
+		break;
+	case A_MOUSE1:
+		UI_SoftKeyboardDelete();
+		break;
+	default:
+		break;
+	}
+	skb.activeKey = skb.curRow * SKB_NUM_COLS + skb.curCol;
+	return qtrue;
+}
+
+static qboolean UI_SoftKeyboardAccept_HandleKey(int flags, float *special, int key) 
+{
+	menuDef_t *menu = Menu_GetFocused();
+	itemDef_t *item;
+	switch(key)
+	{
+	case A_CURSOR_UP:
+		skb.curRow = SKB_NUM_ROWS - 1;
+		if((skb.curRow * SKB_NUM_COLS + skb.curCol) >= SKB_NUM_LETTERS)
+			skb.curRow--;
+		item = Menu_FindItemByName(menu, SKB_KEYBOARD_NAME);
+		Item_SetFocus(item, 0, 0);
+		break;
+	case A_CURSOR_DOWN:
+		skb.curRow = 0;
+		item = Menu_FindItemByName(menu, SKB_KEYBOARD_NAME);
+		Item_SetFocus(item, 0, 0);
+		break;
+	case A_CURSOR_LEFT:
+		skb.curCol = SKB_NUM_COLS/2-1;
+		item = Menu_FindItemByName(menu, SKB_DELETE_NAME);
+		Item_SetFocus(item, 0, 0);
+		break;
+	case A_CURSOR_RIGHT:
+		skb.curCol = SKB_NUM_COLS/2-1;
+		item = Menu_FindItemByName(menu, SKB_DELETE_NAME);
+		Item_SetFocus(item, 0, 0);
+		break;
+	case A_MOUSE1:
+		UI_SoftKeyboardAccept();
+		break;
+	default:
+		break;
+	}
+	skb.activeKey = skb.curRow * SKB_NUM_COLS + skb.curCol;
+	return qtrue;
+}
+
+
+static qboolean UI_SoftKeyboard_HandleKey(int flags, float *special, int key) 
+{
+	char strtmp[SKB_STRING_LENGTH+1];
+	menuDef_t *menu = Menu_GetFocused();
+	itemDef_t *item;
+
+// If the user pressed A (mouse 1), just add a letter to our string and return
+	if(key == A_MOUSE1)
+	{
+		DC->getCVarString("keyboardinput", strtmp, SKB_STRING_LENGTH+1);
+		if(skb.curStringPos < SKB_STRING_LENGTH)
+		{
+			strtmp[skb.curStringPos] = letters[skb.activeKey][0];
+			skb.curStringPos++;
+		}
+		DC->setCVar("keyboardinput", strtmp);
+		return qtrue;
+	}
+
+// Assuming the user pressed the D-pad, adjust the current row and column,
+// and the associated active key position.
+	switch(key)
+	{
+	case A_CURSOR_UP:
+		skb.curRow-=1;
+		break;
+	case A_CURSOR_DOWN:
+		skb.curRow+=1;
+		break;
+	case A_CURSOR_LEFT:
+		skb.curCol-=1;
+		break;
+	case A_CURSOR_RIGHT:
+		skb.curCol+=1;
+		break;
+	default:
+		// We didn't handle this keypress.
+		return qfalse;
+		break;
+	}
+	skb.activeKey = skb.curRow * SKB_NUM_COLS + skb.curCol;
+
+// Now make sure that the new active key is actually on the keyboard
+// This means that the row and columns must be within bounds, and we
+// must be on a letter (not on an empty space)
+	if(skb.activeKey < 0 || skb.activeKey >=SKB_NUM_LETTERS || skb.curCol >= SKB_NUM_COLS || skb.curCol < 0)
+	{
+		switch(key)
+		{
+		case A_CURSOR_UP:
+			// Wrap to bottom of KB
+			skb.curRow = SKB_NUM_ROWS - 1;
+			if(skb.curCol < SKB_NUM_COLS/2)
+				item = Menu_FindItemByName(menu, SKB_DELETE_NAME);
+			else
+				item = Menu_FindItemByName(menu, SKB_ACCEPT_NAME);
+			Item_SetFocus(item, 0, 0);
+			break;
+
+		case A_CURSOR_DOWN:
+			// Move to the next item below this
+			skb.curRow--;
+			if(skb.curCol < SKB_NUM_COLS/2)
+				item = Menu_FindItemByName(menu, SKB_DELETE_NAME);
+			else
+				item = Menu_FindItemByName(menu, SKB_ACCEPT_NAME);
+			Item_SetFocus(item, 0, 0);
+			break;
+
+		case A_CURSOR_LEFT:
+			// Wrap to the right side of the KB
+			if(skb.curRow == SKB_NUM_ROWS-1)
+				skb.curCol = SKB_NUM_LETTERS % SKB_NUM_COLS - 1;
+			else
+				skb.curCol = SKB_NUM_COLS - 1;
+			break;
+
+		case A_CURSOR_RIGHT:
+			// Wrap to the left side of the KB
+			skb.curCol=0;
+			break;
+		default:
+			break;
+		}
+		skb.activeKey = skb.curRow * SKB_NUM_COLS + skb.curCol;
+	}
+
+	return qtrue;
+}
+
+
+
+vec4_t color_unfocus = {0.7f, 0.7f, 0.8f, 1.0f};
+vec4_t color_focus = {0.78f, 0.471f, 0.161f, 1.0f};
+
+static void UI_SoftKeyboardAccept_Draw()
+{
+	menuDef_t *menu = Menu_GetFocused();
+	itemDef_t *item = Menu_FindItemByName(menu, SKB_ACCEPT_NAME);
+	int x = SKB_OK_X;
+	int y = SKB_OK_Y;
+	x -= DC->textWidth("OK", 1.0f, 2) / 2;
+	y -= DC->textHeight("OK", 1.0f, 2) / 2;
+	if(item->window.flags & WINDOW_HASFOCUS)
+		DC->drawText(x, y, 1.0f, color_focus, "OK", 1000, 0, 2);
+	else
+		DC->drawText(x, y, 1.0f, color_unfocus, "OK", 1000, 0, 2);
+}
+
+static void UI_SoftKeyboardDelete_Draw()
+{
+	menuDef_t *menu = Menu_GetFocused();
+	itemDef_t *item = Menu_FindItemByName(menu, SKB_DELETE_NAME);
+	int x = SKB_BACKSPACE_X;
+	int y = SKB_BACKSPACE_Y;
+	x -= DC->textWidth("Backspace", 1.0f, 2) / 2;
+	y -= DC->textHeight("Backspace", 1.0f, 2) / 2;
+	if(item->window.flags & WINDOW_HASFOCUS)
+        DC->drawText(x, y, 1.0f, color_focus, "Backspace", 1000, 0, 2);
+	else
+        DC->drawText(x, y, 1.0f, color_unfocus, "Backspace", 1000, 0, 2);
+}
+
+static void UI_SoftKeyboard_Draw()
+{
+	menuDef_t *menu = Menu_GetFocused();
+	itemDef_t *item = Menu_FindItemByName(menu, SKB_KEYBOARD_NAME);
+
+//draw each letter on the screen at the appropriate coordinates
+	int x,y;
+	float size;
+	vec4_t *color;
+	for(int cl=0; cl<SKB_NUM_LETTERS; cl++)
+	{
+		if(skb.activeKey == cl && (item->window.flags & WINDOW_HASFOCUS))
+		{
+			color = &color_focus;
+			size = 3.0f;
+		}
+		else
+		{
+			color = &color_unfocus;
+			size = 1.0f;
+		}
+
+		x = (cl%SKB_NUM_COLS) * SKB_SPACE_H + SKB_LEFT;
+		x -= (DC->textWidth(letters[cl], size, 2)) / 2;
+		y = (cl/SKB_NUM_COLS) * SKB_SPACE_V + SKB_TOP;
+		y -= ((DC->textHeight(letters[cl], size, 2)) / 2) * 1.5;
+
+		DC->drawText(x, y, size, *color, letters[cl], 1000, 0, 2);
+	}
+
+	char *strtmp = new char[SKB_STRING_LENGTH];
+	DC->getCVarString("keyboardinput", strtmp, SKB_STRING_LENGTH+1);
+	DC->drawText(SKB_STRING_LEFT, SKB_STRING_TOP, 1.5f, color_unfocus, strtmp, 1000, 0, 2);
+}
+
+
+
+/*
+=================
+UI_OwnerDraw
+=================
+*/
+static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float text_y, int ownerDraw, int ownerDrawFlags, int align, float special, float scale, vec4_t color, qhandle_t shader, int textStyle, int iFontIndex) 
+{
+	rectDef_t rect;
+
+	rect.x = x + text_x;
+	rect.y = y + text_y;
+	rect.w = w;
+	rect.h = h;
+
+	switch (ownerDraw) 
+	{
+		case UI_SOFT_KEYBOARD:
+			UI_SoftKeyboard_Draw();
+			break;
+		case UI_SOFT_KEYBOARD_ACCEPT:
+			UI_SoftKeyboardAccept_Draw();
+			break;
+		case UI_SOFT_KEYBOARD_DELETE:
+			UI_SoftKeyboardDelete_Draw();
+			break;
+		case UI_EFFECTS:
+			UI_DrawEffects(&rect, scale, color);
+			break;
+		case UI_VERSION:
+			UI_Version(&rect, scale, color, iFontIndex);
+			break;
+
+		case UI_DATAPAD_MISSION:
+			ui.Draw_DataPad(DP_OBJECTIVES);
+			break;
+
+		case UI_DATAPAD_WEAPONS:
+			ui.Draw_DataPad(DP_WEAPONS);
+			break;
+
+/*
+		case UI_DATAPAD_INVENTORY:
+			ui.Draw_DataPad(DP_HUD);
+			ui.Draw_DataPad(DP_INVENTORY);
+			break;
+*/
+
+		case UI_DATAPAD_FORCEPOWERS:
+			ui.Draw_DataPad(DP_FORCEPOWERS);
+			break;
+
+		case UI_ALLMAPS_SELECTION://saved game thumbnail
+
+//JLF MAPIMAGE MPNOTUSED
+#ifdef _XBOX
+			//create a shader
+			UI_DrawHandlePic(x, y, w, h, shader);
+		
+#else
+			int levelshot;
+			levelshot = ui.R_RegisterShaderNoMip( va( "levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap ) );
+			if (levelshot)
+			{
+				ui.R_DrawStretchPic( x, y, w, h, 0, 0, 1, 1, levelshot );
+			}
+			else
+			{
+				UI_DrawHandlePic(x, y, w, h, uis.menuBackShader);
+			}
+#endif
+/*
+			ui.R_Font_DrawString(	x,		// int ox
+									y+h,	// int oy
+									s_savedata[s_savegame.currentLine].currentSaveFileMap,	// const char *text
+									color,	// paletteRGBA_c c
+									iFontIndex,	// const int iFontHandle
+									w,//-1,		// iMaxPixelWidth (-1 = none)
+									scale	// const float scale = 1.0f
+									);
+*/
+			break;
+		case UI_PREVIEWCINEMATIC:
+			// FIXME BOB - make this work?
+//			UI_DrawPreviewCinematic(&rect, scale, color);
+			break;
+		case UI_CROSSHAIR:
+			UI_DrawCrosshair(&rect, scale, color);
+			break;
+		case UI_GLINFO:
+			UI_DrawGLInfo(&rect,scale, color, textStyle, iFontIndex);
+			break;
+		case UI_KEYBINDSTATUS:
+			UI_DrawKeyBindStatus(&rect,scale, color, textStyle, iFontIndex);
+			break;
+		default:
+		  break;
+	}
+
+}
+
+/*
+=================
+UI_OwnerDrawVisible
+=================
+*/
+static qboolean UI_OwnerDrawVisible(int flags) 
+{
+	qboolean vis = qtrue;
+
+	while (flags) 
+	{
+/*		if (flags & UI_SHOW_DEMOAVAILABLE) 
+		{
+			if (!uiInfo.demoAvailable) 
+			{
+				vis = qfalse;
+			}
+			flags &= ~UI_SHOW_DEMOAVAILABLE;
+		} 
+		else 
+*/		{
+			flags = 0;
+		}
+	}
+	return vis;
+}
+
+/*
+=================
+Text_Width
+=================
+*/
+int Text_Width(const char *text, float scale, int iFontIndex) 
+{
+	// temp code until Bob retro-fits all menus to have font specifiers...
+	//
+	if ( iFontIndex == 0 )
+	{
+		iFontIndex = uiInfo.uiDC.Assets.qhMediumFont;
+	}
+	return ui.R_Font_StrLenPixels(text, iFontIndex, scale);
+}
+
+/*
+=================
+UI_OwnerDrawWidth
+=================
+*/
+int UI_OwnerDrawWidth(int ownerDraw, float scale) 
+{
+//	int i, h, value;
+//	const char *text;
+	const char *s = NULL;
+
+
+	switch (ownerDraw) 
+	{
+	case UI_KEYBINDSTATUS:
+		if (Display_KeyBindPending()) 
+		{
+			s = SE_GetString("MENUS_WAITINGFORKEY");
+		} 
+		else 
+		{
+//			s = ui.SP_GetStringTextString("MENUS_ENTERTOCHANGE");
+		}
+		break;
+	
+	// FIXME BOB
+//	case UI_SERVERREFRESHDATE:
+//		s = UI_Cvar_VariableString(va("ui_lastServerRefresh_%i", ui_netSource.integer));
+//		break;
+    default:
+      break;
+	}
+
+	if (s) 
+	{
+		return Text_Width(s, scale, 0);
+	}
+	return 0;
+}
+
+/*
+=================
+Text_Height
+=================
+*/
+int Text_Height(const char *text, float scale, int iFontIndex) 
+{
+	// temp until Bob retro-fits all menu files with font specifiers...
+	//
+	if ( iFontIndex == 0 )
+	{
+		iFontIndex = uiInfo.uiDC.Assets.qhMediumFont;
+	}
+	return ui.R_Font_HeightPixels(iFontIndex, scale);
+}
+
+
+/*
+=================
+UI_MouseEvent
+=================
+*/
+//JLFMOUSE  CALLED EACH FRAME IN UI
+void _UI_MouseEvent( int dx, int dy )
+{
+	// update mouse screen position
+	uiInfo.uiDC.cursorx += dx;
+	if (uiInfo.uiDC.cursorx < 0)
+	{
+		uiInfo.uiDC.cursorx = 0;
+	}
+	else if (uiInfo.uiDC.cursorx > SCREEN_WIDTH)
+	{
+		uiInfo.uiDC.cursorx = SCREEN_WIDTH;
+	}
+
+	uiInfo.uiDC.cursory += dy;
+	if (uiInfo.uiDC.cursory < 0)
+	{
+		uiInfo.uiDC.cursory = 0;
+	}
+	else if (uiInfo.uiDC.cursory > SCREEN_HEIGHT)
+	{
+		uiInfo.uiDC.cursory = SCREEN_HEIGHT;
+	}
+
+	if ( dy > SCROLL_SENSITIVITY || dy < -SCROLL_SENSITIVITY)
+		gScrollAccum += dy;
+	gScrollDelta =0;
+
+	if (gScrollAccum > 	TEXTSCROLLDESCRETESTEP)
+	{
+		gScrollDelta =1;
+		gScrollAccum =0;
+	}
+	else if (gScrollAccum <0)
+	{
+		gScrollDelta = -1;
+		gScrollAccum = TEXTSCROLLDESCRETESTEP;
+	}
+	
+
+	if (Menu_Count() > 0) 
+	{
+    //menuDef_t *menu = Menu_GetFocused();
+    //Menu_HandleMouseMove(menu, uiInfo.uiDC.cursorx, uiInfo.uiDC.cursory);
+		Display_MouseMove(NULL, uiInfo.uiDC.cursorx, uiInfo.uiDC.cursory);
+	}
+
+}
+
+/*
+=================
+UI_KeyEvent
+=================
+*/
+void _UI_KeyEvent( int key, qboolean down ) 
+{
+/*	extern qboolean SwallowBadNumLockedKPKey( int iKey );
+	if (SwallowBadNumLockedKPKey(key)){
+		return;
+	}
+*/
+
+	if (Menu_Count() > 0) 
+	{
+		menuDef_t *menu = Menu_GetFocused();
+		if (menu) 
+		{
+			//DemoEnd();
+//JLF MPMOVED
+#ifdef _XBOX
+//			extern void G_DemoKeypress();//JLF new
+//			G_DemoKeypress();			//JLF new
+			extern void UpdateDemoTimer();
+			UpdateDemoTimer();
+
+#endif
+			if (key == A_ESCAPE && down && !Menus_AnyFullScreenVisible() && !(menu->window.flags & WINDOW_IGNORE_ESCAPE)) 
+			{
+				Menus_CloseAll();
+			} 
+			else 
+			{
+				Menu_HandleKey(menu, key, down );
+			}
+		} 
+		else 
+		{
+			trap_Key_SetCatcher( trap_Key_GetCatcher() & ~KEYCATCH_UI );
+			trap_Key_ClearStates();
+			Cvar_Set( "cl_paused", "0" );
+		}
+	}
+}
+
+/*
+=================
+UI_Report
+=================
+*/
+void UI_Report(void) 
+{
+  String_Report();
+}
+
+
+
+/*
+=================
+UI_DataPadMenu
+=================
+*/
+void UI_DataPadMenu(void)
+{
+	int	newForcePower,newObjective;
+
+	Menus_CloseByName("mainhud");
+
+	newForcePower = (int)trap_Cvar_VariableValue("cg_updatedDataPadForcePower1");
+	newObjective = (int)trap_Cvar_VariableValue("cg_updatedDataPadObjective");
+
+	if (newForcePower)
+	{
+		Menus_ActivateByName("datapadForcePowersMenu");
+	}
+	else if (newObjective)
+	{
+		Menus_ActivateByName("datapadMissionMenu");
+	}
+	else
+	{
+		Menus_ActivateByName("datapadMissionMenu");
+	}
+	ui.Key_SetCatcher( KEYCATCH_UI );
+
+}
+
+/*
+=================
+UI_InGameMenu
+=================
+*/
+extern void S_StopAllSoundsExceptMusic(void);
+void UI_InGameMenu(const char*menuID)
+{
+	// don't allow this if you are dead
+	if( menuID && !strcmp(menuID, "noController"))
+	{
+		// do nothing
+	}
+	else if ( svs.clients[0].frames[svs.clients[0].netchan.outgoingSequence & PACKET_MASK].ps.stats[STAT_HEALTH] <= 0)
+	{
+		ui.Cvar_Set( "cl_paused", "0" );
+		return;
+	}
+
+#ifdef _XBOX
+	ui.PrecacheScreenshot();
+#endif
+
+	Menus_CloseByName("mainhud");
+
+	if (menuID)
+	{
+
+		Menus_ActivateByName(menuID);
+	}
+	else
+	{
+		S_StopAllSoundsExceptMusic();
+		Menus_ActivateByName("ingameMainMenu");
+	}
+	ui.Key_SetCatcher( KEYCATCH_UI );
+}
+
+qboolean _UI_IsFullscreen( void ) 
+{
+	return Menus_AnyFullScreenVisible();
+}
+
+/*
+=======================================================================
+
+MAIN MENU
+
+=======================================================================
+*/
+
+
+/*
+===============
+UI_MainMenu
+
+The main menu only comes up when not in a game,
+so make sure that the attract loop server is down
+and that local cinematics are killed
+===============
+*/
+void UI_MainMenu(void)
+{
+	char buf[256];
+	ui.Cvar_Set("sv_killserver", "1");	// let the demo server know it should shut down
+
+	ui.Key_SetCatcher( KEYCATCH_UI );
+
+	menuDef_t *m = Menus_ActivateByName("mainMenu");
+	if (!m)
+	{	//wha? try again
+		UI_LoadMenus("ui/menus.txt",qfalse);
+	}
+	ui.Cvar_VariableStringBuffer("com_errorMessage", buf, sizeof(buf));
+	if (strlen(buf)) {
+		Menus_ActivateByName("error_popmenu");
+	}
+}
+
+
+/*
+=================
+Menu_Cache
+=================
+*/
+void Menu_Cache( void )
+{
+//	uis.cursor		= ui.R_RegisterShaderNoMip( "menu/new/crosshairb");
+	// Common menu graphics
+	uis.whiteShader = ui.R_RegisterShader( "white" );
+//	uis.menuBackShader = ui.R_RegisterShaderNoMip( "menu/art/unknownmap" );
+}
+
+/*
+=================
+UI_UpdateVideoSetup
+
+Copies the temporary user interface version of the video cvars into
+their real counterparts.  This is to create a interface which allows 
+you to discard your changes if you did something you didnt want
+=================
+*/
+void UI_UpdateVideoSetup ( void )
+{
+	Cvar_Set ( "r_mode", Cvar_VariableString ( "ui_r_mode" ) );
+	Cvar_Set ( "r_fullscreen", Cvar_VariableString ( "ui_r_fullscreen" ) );
+	Cvar_Set ( "r_colorbits", Cvar_VariableString ( "ui_r_colorbits" ) );
+	Cvar_Set ( "r_lodbias", Cvar_VariableString ( "ui_r_lodbias" ) );
+	Cvar_Set ( "r_picmip", Cvar_VariableString ( "ui_r_picmip" ) );
+	Cvar_Set ( "r_texturebits", Cvar_VariableString ( "ui_r_texturebits" ) );
+	Cvar_Set ( "r_texturemode", Cvar_VariableString ( "ui_r_texturemode" ) );
+	Cvar_Set ( "r_detailtextures", Cvar_VariableString ( "ui_r_detailtextures" ) );
+	Cvar_Set ( "r_ext_compress_textures", Cvar_VariableString ( "ui_r_ext_compress_textures" ) );
+	Cvar_Set ( "r_depthbits", Cvar_VariableString ( "ui_r_depthbits" ) );
+	Cvar_Set ( "r_subdivisions", Cvar_VariableString ( "ui_r_subdivisions" ) );
+	Cvar_Set ( "r_fastSky", Cvar_VariableString ( "ui_r_fastSky" ) );
+	Cvar_Set ( "r_inGameVideo", Cvar_VariableString ( "ui_r_inGameVideo" ) );
+	Cvar_Set ( "r_allowExtensions", Cvar_VariableString ( "ui_r_allowExtensions" ) );
+//	Cvar_Set ( "cg_shadows", Cvar_VariableString ( "ui_cg_shadows" ) );
+	Cvar_Set ( "ui_r_modified", "0" );
+
+	Cbuf_ExecuteText( EXEC_APPEND, "vid_restart;" );
+}
+
+/*
+=================
+UI_GetVideoSetup
+
+Retrieves the current actual video settings into the temporary user
+interface versions of the cvars.
+=================
+*/
+void UI_GetVideoSetup ( void )
+{
+	// Make sure the cvars are registered as read only.
+	Cvar_Register ( NULL, "ui_r_glCustom",				"4", CVAR_ROM|CVAR_ARCHIVE );
+
+	Cvar_Register ( NULL, "ui_r_mode",					"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_fullscreen",			"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_colorbits",				"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_lodbias",				"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_picmip",				"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_texturebits",			"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_texturemode",			"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_detailtextures",		"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_ext_compress_textures",	"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_depthbits",				"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_subdivisions",			"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_fastSky",				"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_inGameVideo",			"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_allowExtensions",		"0", CVAR_ROM );
+//	Cvar_Register ( NULL, "ui_cg_shadows",				"0", CVAR_ROM );
+	Cvar_Register ( NULL, "ui_r_modified",				"0", CVAR_ROM );
+	
+	// Copy over the real video cvars into their temporary counterparts
+	Cvar_Set ( "ui_r_mode", Cvar_VariableString ( "r_mode" ) );
+	Cvar_Set ( "ui_r_colorbits", Cvar_VariableString ( "r_colorbits" ) );
+	Cvar_Set ( "ui_r_fullscreen", Cvar_VariableString ( "r_fullscreen" ) );
+	Cvar_Set ( "ui_r_lodbias", Cvar_VariableString ( "r_lodbias" ) );
+	Cvar_Set ( "ui_r_picmip", Cvar_VariableString ( "r_picmip" ) );
+	Cvar_Set ( "ui_r_texturebits", Cvar_VariableString ( "r_texturebits" ) );
+	Cvar_Set ( "ui_r_texturemode", Cvar_VariableString ( "r_texturemode" ) );
+	Cvar_Set ( "ui_r_detailtextures", Cvar_VariableString ( "r_detailtextures" ) );
+	Cvar_Set ( "ui_r_ext_compress_textures", Cvar_VariableString ( "r_ext_compress_textures" ) );
+	Cvar_Set ( "ui_r_depthbits", Cvar_VariableString ( "r_depthbits" ) );
+	Cvar_Set ( "ui_r_subdivisions", Cvar_VariableString ( "r_subdivisions" ) );
+	Cvar_Set ( "ui_r_fastSky", Cvar_VariableString ( "r_fastSky" ) );
+	Cvar_Set ( "ui_r_inGameVideo", Cvar_VariableString ( "r_inGameVideo" ) );
+	Cvar_Set ( "ui_r_allowExtensions", Cvar_VariableString ( "r_allowExtensions" ) );
+//	Cvar_Set ( "ui_cg_shadows", Cvar_VariableString ( "cg_shadows" ) );
+	Cvar_Set ( "ui_r_modified", "0" );
+}
+
+static void UI_SetSexandSoundForModel(const char* char_model)
+{
+	int			f,i;
+	char		soundpath[MAX_QPATH];
+	qboolean	isFemale = qfalse;
+
+	i = ui.FS_FOpenFile(va("models/players/%s/sounds.cfg", char_model), &f, FS_READ);
+	if ( !f ) 
+	{//no?  oh bother.
+		Cvar_Reset("snd");
+		Cvar_Reset("sex");
+		return;
+	}
+
+	soundpath[0] = 0;
+
+	ui.FS_Read(&soundpath, i, f);
+
+	while (i >= 0 && soundpath[i] != '\n')
+	{
+		if (soundpath[i] == 'f')
+		{
+			isFemale = qtrue;
+			soundpath[i] = 0;
+		}
+
+		i--;
+	}
+
+	i = 0;
+
+	while (soundpath[i] && soundpath[i] != '\r' && soundpath[i] != '\n')
+	{
+		i++;
+	}
+	soundpath[i] = 0;
+
+	ui.FS_FCloseFile(f);
+
+	Cvar_Set ( "snd", soundpath);
+	if (isFemale)
+	{
+		Cvar_Set ( "sex", "f");
+	}
+	else
+	{
+		Cvar_Set ( "sex", "m");
+	}
+}
+static void UI_UpdateCharacterCvars ( void )
+{
+	const char *char_model = Cvar_VariableString ( "ui_char_model" );
+	UI_SetSexandSoundForModel(char_model);
+	Cvar_Set ( "g_char_model", char_model );
+	Cvar_Set ( "g_char_skin_head", Cvar_VariableString ( "ui_char_skin_head" ) );
+	Cvar_Set ( "g_char_skin_torso", Cvar_VariableString ( "ui_char_skin_torso" ) );
+	Cvar_Set ( "g_char_skin_legs", Cvar_VariableString ( "ui_char_skin_legs" ) );
+	Cvar_Set ( "g_char_color_red", Cvar_VariableString ( "ui_char_color_red" ) );
+	Cvar_Set ( "g_char_color_green", Cvar_VariableString ( "ui_char_color_green" ) );
+	Cvar_Set ( "g_char_color_blue", Cvar_VariableString ( "ui_char_color_blue" ) );
+}
+
+static void UI_GetCharacterCvars ( void )
+{
+	Cvar_Set ( "ui_char_skin_head", Cvar_VariableString ( "g_char_skin_head" ) );
+	Cvar_Set ( "ui_char_skin_torso", Cvar_VariableString ( "g_char_skin_torso" ) );
+	Cvar_Set ( "ui_char_skin_legs", Cvar_VariableString ( "g_char_skin_legs" ) );
+	Cvar_Set ( "ui_char_color_red", Cvar_VariableString ( "g_char_color_red" ) );
+	Cvar_Set ( "ui_char_color_green", Cvar_VariableString ( "g_char_color_green" ) );
+	Cvar_Set ( "ui_char_color_blue", Cvar_VariableString ( "g_char_color_blue" ) );
+
+	char* model = Cvar_VariableString ( "g_char_model" );
+	Cvar_Set ( "ui_char_model", model );
+
+	for (int i = 0; i < uiInfo.playerSpeciesCount; i++)
+	{
+		if ( !stricmp(model, uiInfo.playerSpecies[i].Name) )
+		{
+			uiInfo.playerSpeciesIndex = i;
+		}
+	}
+}
+
+static void UI_UpdateSaberCvars ( void )
+{
+	Cvar_Set ( "g_saber_type", Cvar_VariableString ( "ui_saber_type" ) );
+	Cvar_Set ( "g_saber", Cvar_VariableString ( "ui_saber" ) );
+	Cvar_Set ( "g_saber2", Cvar_VariableString ( "ui_saber2" ) );
+	Cvar_Set ( "g_saber_color", Cvar_VariableString ( "ui_saber_color" ) );
+	Cvar_Set ( "g_saber2_color", Cvar_VariableString ( "ui_saber2_color" ) );
+}
+
+static void UI_UpdateFightingStyleChoices ( void )
+{
+	// 
+	if (!strcmpi("staff",Cvar_VariableString ( "ui_saber_type" )))
+	{
+		Cvar_Set ( "ui_fightingstylesallowed", "0" );
+		Cvar_Set ( "ui_newfightingstyle", "1" );		// Default, MEDIUM
+	}
+	else if (!strcmpi("dual",Cvar_VariableString ( "ui_saber_type" )))
+	{
+		Cvar_Set ( "ui_fightingstylesallowed", "0" );
+		Cvar_Set ( "ui_newfightingstyle", "1" );		// Default, MEDIUM
+	}
+	else
+	{
+		// Get player state
+		client_t	*cl = &svs.clients[0];	// 0 because only ever us as a player	
+		playerState_t	*pState;
+
+		if (cl && cl->gentity && cl->gentity->client)
+		{
+			pState = cl->gentity->client;
+
+
+			// Knows Fast style?
+			if (pState->saberStylesKnown & (1<<SS_FAST)) 
+			{
+				// And Medium?
+				if (pState->saberStylesKnown & (1<<SS_MEDIUM)) 
+				{
+					Cvar_Set ( "ui_fightingstylesallowed", "6" );	// Has FAST and MEDIUM, so can only choose STRONG
+					Cvar_Set ( "ui_newfightingstyle", "2" );		// STRONG
+				}
+				else	
+				{
+					Cvar_Set ( "ui_fightingstylesallowed", "1" );	// Has FAST, so can choose from MEDIUM and STRONG
+					Cvar_Set ( "ui_newfightingstyle", "1" );		// MEDIUM
+				}
+			}
+			// Knows Medium style?
+			else if (pState->saberStylesKnown & (1<<SS_MEDIUM))
+			{
+				// And Strong?
+				if (pState->saberStylesKnown & (1<<SS_STRONG)) 
+				{
+					Cvar_Set ( "ui_fightingstylesallowed", "4" );	// Has MEDIUM and STRONG, so can only choose FAST
+					Cvar_Set ( "ui_newfightingstyle", "0" );		// FAST
+				}
+				else	
+				{
+					Cvar_Set ( "ui_fightingstylesallowed", "2" );	// Has MEDIUM, so can choose from FAST and STRONG
+					Cvar_Set ( "ui_newfightingstyle", "0" );		// FAST
+				}
+			}
+			// Knows Strong style?
+			else if (pState->saberStylesKnown & (1<<SS_STRONG))
+			{
+				// And Fast
+				if (pState->saberStylesKnown & (1<<SS_FAST)) 
+				{
+					Cvar_Set ( "ui_fightingstylesallowed", "5" );	// Has STRONG and FAST, so can only take MEDIUM 
+					Cvar_Set ( "ui_newfightingstyle", "1" );		// MEDIUM
+				}
+				else	
+				{
+					Cvar_Set ( "ui_fightingstylesallowed", "3" );	// Has STRONG, so can choose from FAST and MEDIUM
+					Cvar_Set ( "ui_newfightingstyle", "1" );		// MEDIUM
+				}
+			}
+			else		// They have nothing, which should not happen
+			{
+				Cvar_Set ( "ui_currentfightingstyle", "1" );		// Default MEDIUM
+				Cvar_Set ( "ui_newfightingstyle", "0" );			// FAST??
+				Cvar_Set ( "ui_fightingstylesallowed", "0" );		// Default to no new styles allowed
+			}
+
+			// Determine current style
+			if (pState->saberAnimLevel == SS_FAST)
+			{
+				Cvar_Set ( "ui_currentfightingstyle", "0" );			// FAST
+			}
+			else if (pState->saberAnimLevel == SS_STRONG)
+			{
+				Cvar_Set ( "ui_currentfightingstyle", "2" );			// STRONG
+			}
+			else 
+			{
+				Cvar_Set ( "ui_currentfightingstyle", "1" );			// default MEDIUM
+			}
+		}
+		else	// No client so this must be first time
+		{
+			Cvar_Set ( "ui_currentfightingstyle", "1" );		// Default to MEDIUM
+			Cvar_Set ( "ui_fightingstylesallowed", "0" );		// Default to no new styles allowed
+			Cvar_Set ( "ui_newfightingstyle", "1" );			// MEDIUM
+		}
+	}
+}
+
+#define MAX_POWER_ENUMS 16
+
+typedef struct {
+	char	*title;
+	short	powerEnum;
+} powerEnum_t;
+
+static powerEnum_t powerEnums[MAX_POWER_ENUMS] = 
+{
+"absorb",		FP_ABSORB,			
+"heal",			FP_HEAL,			
+"mindtrick",	FP_TELEPATHY,		
+"protect",		FP_PROTECT,			
+
+			// Core powers
+"jump",			FP_LEVITATION,		
+"pull",			FP_PULL,			
+"push",			FP_PUSH,			
+"sense",		FP_SEE,				
+"speed",		FP_SPEED,			
+"sabdef",		FP_SABER_DEFENSE,	
+"saboff",		FP_SABER_OFFENSE,	
+"sabthrow",		FP_SABERTHROW,		
+
+			// Dark powers
+"drain",		FP_DRAIN,			
+"grip",			FP_GRIP,			
+"lightning",	FP_LIGHTNING,		
+"rage",			FP_RAGE				
+};
+
+
+// Find the index to the Force Power in powerEnum array
+static qboolean UI_GetForcePowerIndex ( const char *forceName, short *forcePowerI )
+{
+	int i;
+
+	// Find a match for the forceName passed in
+	for (i=0;i<MAX_POWER_ENUMS;i++)
+	{
+		if ( !Q_stricmp(forceName, powerEnums[i].title ) )
+		{
+			*forcePowerI = i;
+			return(qtrue);
+		}
+	}
+
+	*forcePowerI = FP_UPDATED_NONE;	// Didn't find it
+
+	return(qfalse);
+}
+
+// Set the fields for the allocation of force powers (Used by Force Power Allocation screen) 
+static void UI_InitAllocForcePowers ( const char *forceName )
+{
+	menuDef_t	*menu;
+	itemDef_t	*item;
+	short		forcePowerI=0;
+
+	menu = Menu_GetFocused();	// Get current menu
+
+	if (!menu)
+	{
+		return;
+	}
+
+	if (!UI_GetForcePowerIndex ( forceName, &forcePowerI ))
+	{
+		return;
+	}
+
+#ifndef XBOX_DEMO
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)
+	{
+		return;
+	}
+	playerState_t*		pState = cl->gentity->client;
+#endif
+
+	char itemName[128];
+	Com_sprintf (itemName, sizeof(itemName), "%s_hexpic", powerEnums[forcePowerI].title);
+	item = (itemDef_s *) Menu_FindItemByName(menu, itemName);
+	
+	if (item)
+	{
+		char itemGraphic[128];
+		Com_sprintf (itemGraphic, sizeof(itemGraphic), "gfx/menus/hex_pattern_%d",
+#ifdef XBOX_DEMO
+			demoForcePowerLevel[powerEnums[forcePowerI].powerEnum]);
+#else
+			pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum]);
+#endif
+		item->window.background = ui.R_RegisterShaderNoMip(itemGraphic);
+
+		// If maxed out on power - don't allow update
+/*		if (pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum]>=3)
+		{
+			Com_sprintf (itemName, sizeof(itemName), "%s_fbutton", powerEnums[forcePowerI].title);
+			item = (itemDef_s *) Menu_FindItemByName(menu, itemName);
+			if (item)		// This is okay, because core powers don't have a hex button
+			{
+				item->window.flags &= ~WINDOW_VISIBLE;
+			}
+		} */
+	}
+
+	// Set weapons button to inactive
+	if( Q_stricmp(menu->window.name, "ingameForceStatus") != 0 )
+		UI_ForcePowerWeaponsButton(qfalse);
+}
+
+// Flip flop between being able to see the text showing the Force Point has or hasn't been allocated (Used by Force Power Allocation screen) 
+static void UI_SetPowerTitleText ( qboolean showAllocated )
+{
+	menuDef_t	*menu;
+	itemDef_t	*item;
+
+	menu = Menu_GetFocused();	// Get current menu
+
+	if (!menu)
+	{
+		return;
+	}
+
+	if (showAllocated)
+	{
+		// Show the text saying the force point has been allocated
+		item = (itemDef_s *) Menu_FindItemByName(menu, "allocated_text");
+		if (item)
+		{
+			item->window.flags |= WINDOW_VISIBLE;
+		}
+
+		// Hide text saying the force point needs to be allocated
+		item = (itemDef_s *) Menu_FindItemByName(menu, "allocate_text");
+		if (item)
+		{
+			item->window.flags &= ~WINDOW_VISIBLE;
+		}
+	}
+	else
+	{
+		// Hide the text saying the force point has been allocated
+		item = (itemDef_s *) Menu_FindItemByName(menu, "allocated_text");
+		if (item)
+		{
+			item->window.flags &= ~WINDOW_VISIBLE;
+		}
+
+		// Show text saying the force point needs to be allocated
+		item = (itemDef_s *) Menu_FindItemByName(menu, "allocate_text");
+		if (item)
+		{
+			item->window.flags |= WINDOW_VISIBLE;
+		}
+	}
+}
+
+//. Find weapons button and make active/inactive  (Used by Force Power Allocation screen) 
+static void UI_ForcePowerWeaponsButton(qboolean activeFlag)
+{
+	menuDef_t	*menu;
+	menu = Menu_GetFocused();	// Get current menu
+
+	if (!menu)
+	{
+		return;
+	}
+
+	// Find weaponsbutton
+	itemDef_t	*item;
+	item = (itemDef_s *) Menu_FindItemByName(menu, "weaponbutton");
+
+	if (item)
+	{
+		// Make it active
+		if (activeFlag)
+		{
+			item->window.flags |= WINDOW_VISIBLE;
+			Item_SetFocus(item, 0, 0);
+		}
+		else
+		{
+			item->window.flags &= ~WINDOW_VISIBLE;
+		}
+	}
+
+	//UI_SetVis(menu, "tab_Force", !activeFlag);
+
+	if(activeFlag)
+		DC->setCVar("ui_hideAcallout", "0");
+	else
+		DC->setCVar("ui_hideAcallout", "1");	
+}
+
+void UI_SetItemColor(itemDef_t *item,const char *itemname,const char *name,vec4_t color);
+
+static void UI_SetHexPicLevel( const menuDef_t	*menu,const int forcePowerI,const int powerLevel, const qboolean	goldFlag )
+{
+	char itemName[128];
+	itemDef_t	*item;
+
+	// Find proper hex picture on menu
+	Com_sprintf (itemName, sizeof(itemName), "%s_hexpic", powerEnums[forcePowerI].title);
+	item = (itemDef_s *) Menu_FindItemByName((menuDef_t	*) menu, itemName);
+	
+	// Now give it the proper hex graphic
+	if (item)
+	{
+		char itemGraphic[128];
+		if (goldFlag)
+		{
+			Com_sprintf (itemGraphic, sizeof(itemGraphic), "gfx/menus/hex_pattern_%d_gold",powerLevel);
+		}
+		else
+		{
+			Com_sprintf (itemGraphic, sizeof(itemGraphic),  "gfx/menus/hex_pattern_%d",powerLevel);
+		}
+
+		item->window.background = ui.R_RegisterShaderNoMip(itemGraphic);
+/*
+		Com_sprintf (itemName, sizeof(itemName), "%s_fbutton", powerEnums[forcePowerI].title);
+		item = (itemDef_s *) Menu_FindItemByName((menuDef_t	*)menu, itemName);
+		if (item)
+		{
+			if (goldFlag)
+			{
+				// Change description text to tell player they can decrement the force point
+				item->descText = "@MENUS_REMOVEFP";
+			}
+			else
+			{
+				// Change description text to tell player they can increment the force point
+				item->descText = "@MENUS_ADDFP";
+			}
+		}
+*/
+	}
+}
+
+void UI_SetItemVisible(menuDef_t *menu,const char *itemname,qboolean visible);
+
+// if this is the first time into the force power allocation screen, show the INSTRUCTION screen 
+static void	UI_ForceHelpActive( void )
+{
+	int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
+
+	// First time, show instructions
+	if (tier_storyinfo==1)
+	{
+//		Menus_OpenByName("ingameForceHelp");
+		Menus_ActivateByName("ingameForceHelp");
+	}
+}
+
+
+// Shut down the help screen in the force power allocation screen
+static void UI_ShutdownForceHelp( void )
+{
+	int i;
+	char itemName[128];
+	menuDef_t	*menu;
+	itemDef_t	*item;
+	vec4_t color = { 0.65f, 0.65f, 0.65f, 1.0f};
+
+	menu = Menu_GetFocused();	// Get current menu
+
+	if (!menu)
+	{
+		return;
+	}
+
+	// Not in upgrade mode so turn on all the force buttons, the big forceicon and description text
+	if (uiInfo.forcePowerUpdated == FP_UPDATED_NONE)
+	{
+		// We just decremented a field so turn all buttons back on
+		// Make it so all  buttons can be clicked
+		for (i=0;i<MAX_POWER_ENUMS;i++)
+		{
+			Com_sprintf (itemName, sizeof(itemName), "%s_fbutton", powerEnums[i].title);
+
+			UI_SetItemVisible(menu,itemName,qtrue);
+		}
+
+		UI_SetItemVisible(menu,"force_icon",qtrue);
+		UI_SetItemVisible(menu,"force_desc",qtrue);
+		UI_SetItemVisible(menu,"leveltext",qtrue);
+
+		// Set focus on the top left button
+		item = (itemDef_s *) Menu_FindItemByName(menu, "absorb_fbutton");
+		item->window.flags |= WINDOW_HASFOCUS;
+
+		if (item->onFocus) 
+		{
+			Item_RunScript(item, item->onFocus);
+		}
+
+	}
+	// In upgrade mode so just turn the deallocate button on
+	else
+	{
+		UI_SetItemVisible(menu,"force_icon",qtrue);
+		UI_SetItemVisible(menu,"force_desc",qtrue);
+		UI_SetItemVisible(menu,"deallocate_fbutton",qtrue);
+
+		item = (itemDef_s *) Menu_FindItemByName(menu, va("%s_fbutton",powerEnums[uiInfo.forcePowerUpdated].title));
+		if (item)
+		{
+	#ifdef _XBOX
+			Item_SetFocus(item, 0,0); 
+	#else
+			item->window.flags |= WINDOW_HASFOCUS;
+	#endif
+		}
+
+		// Get player state
+		client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+		if (!cl)	// No client, get out
+		{
+			return;
+		}
+
+		playerState_t*		pState = cl->gentity->client;
+
+
+		if (uiInfo.forcePowerUpdated == FP_UPDATED_NONE)
+		{
+			return;
+		}
+
+		// Update level description
+		Com_sprintf (
+			itemName, 
+			sizeof(itemName), 
+			"%s_level%ddesc", 
+			powerEnums[uiInfo.forcePowerUpdated].title,
+			pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]
+			);
+
+		item = (itemDef_s *) Menu_FindItemByName(menu, itemName);
+		if (item)		
+		{
+			item->window.flags |= WINDOW_VISIBLE;
+		}
+	}
+
+	// If one was a chosen force power, high light it again.
+	if (uiInfo.forcePowerUpdated>FP_UPDATED_NONE)
+	{
+		char itemhexName[128];
+		char itemiconName[128];
+		vec4_t color2 = { 1.0f, 1.0f, 1.0f, 1.0f};
+
+		Com_sprintf (itemhexName, sizeof(itemhexName), "%s_hexpic", powerEnums[uiInfo.forcePowerUpdated].title);
+		Com_sprintf (itemiconName, sizeof(itemiconName), "%s_iconpic", powerEnums[uiInfo.forcePowerUpdated].title);
+		
+		UI_SetItemColor(item,itemhexName,"forecolor",color2);
+		UI_SetItemColor(item,itemiconName,"forecolor",color2);
+	}
+	else
+	{
+		// Un-grey-out all icons
+		UI_SetItemColor(item,"hexpic","forecolor",color);
+		UI_SetItemColor(item,"iconpic","forecolor",color);
+	}
+}
+
+// Decrement force power level (Used by Force Power Allocation screen) 
+static void UI_DecrementCurrentForcePower ( void )
+{
+	menuDef_t	*menu;
+	itemDef_t	*item;
+	short i;
+	vec4_t color = { 0.65f, 0.65f, 0.65f, 1.0f};
+	char itemName[128];
+
+	menu = Menu_GetFocused();	// Get current menu
+
+	if (!menu)
+	{
+		return;
+	}
+
+#ifndef XBOX_DEMO
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+
+	playerState_t*		pState = cl->gentity->client;
+#endif
+
+	if (uiInfo.forcePowerUpdated == FP_UPDATED_NONE)
+	{
+		return;
+	}
+
+	DC->startLocalSound(uiInfo.uiDC.Assets.forceUnchosenSound, CHAN_AUTO );
+
+#ifdef XBOX_DEMO
+	if (demoForcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]>0)
+	{
+		demoForcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]--;	// Decrement it
+	}
+
+	UI_SetHexPicLevel( menu,uiInfo.forcePowerUpdated,demoForcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum],qfalse );	
+#else
+	if (pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]>0)
+	{
+		pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]--;	// Decrement it
+		// Turn off power if level is 0
+		if (pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]<1)
+		{
+			pState->forcePowersKnown &= ~( 1 << powerEnums[uiInfo.forcePowerUpdated].powerEnum );
+		}
+	}
+
+	UI_SetHexPicLevel( menu,uiInfo.forcePowerUpdated,pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum],qfalse );	
+#endif
+
+	UI_ShowForceLevelDesc ( powerEnums[uiInfo.forcePowerUpdated].title );
+
+	// We just decremented a field so turn all buttons back on
+	// Make it so all  buttons can be clicked
+	for (i=0;i<MAX_POWER_ENUMS;i++)
+	{
+		Com_sprintf (itemName, sizeof(itemName), "%s_fbutton", powerEnums[i].title);
+		item = (itemDef_s *) Menu_FindItemByName(menu, itemName);
+		if (item)		// This is okay, because core powers don't have a hex button
+		{
+			item->window.flags |= WINDOW_VISIBLE;
+		}
+	}
+
+	// Show point has not been allocated
+	UI_SetPowerTitleText( qfalse);
+
+	// Make weapons button active
+	UI_ForcePowerWeaponsButton(qfalse);
+
+	// Hide the deallocate button
+	item = (itemDef_s *) Menu_FindItemByName(menu, "deallocate_fbutton");
+	if (item)
+	{
+		item->window.flags &= ~WINDOW_VISIBLE;	// 
+
+		// Un-grey-out all icons
+		UI_SetItemColor(item,"hexpic","forecolor",color);
+		UI_SetItemColor(item,"iconpic","forecolor",color);
+	}
+
+	item = (itemDef_s *) Menu_FindItemByName(menu, va("%s_fbutton",powerEnums[uiInfo.forcePowerUpdated].title));
+	if (item)
+	{
+#ifdef _XBOX
+		Item_SetFocus(item, 0,0); 
+#else
+		item->window.flags |= WINDOW_HASFOCUS;
+#endif
+	}
+
+	uiInfo.forcePowerUpdated = FP_UPDATED_NONE;			// It's as if nothing happened.
+}
+
+void Item_MouseEnter(itemDef_t *item, float x, float y);
+
+static void UI_SetUpForceSelect( void )
+{
+	menuDef_t*		menu;
+	itemDef_t*		item;
+	client_t*		client;
+	playerState_t*	player;
+
+	// get a ptr to the force select menu
+	menu	= Menu_GetFocused();
+	if(!menu)
+	{
+		return;
+	}
+
+#ifdef XBOX_DEMO
+	Item_SetFocus(Menu_FindItemByName(menu, "absorb_fbutton"), 0, 0);
+	return;
+#else
+	// get a ptr to the player
+	client	 = &svs.clients[0];
+	if(!client)
+	{
+		return;
+	}
+	player	= client->gentity->client;
+
+	// look for the first force power in the force powers screen
+	// that doesn't have all three points filled
+	if(player->forcePowerLevel[FP_ABSORB] < 3)
+	{
+		item	= Menu_FindItemByName(menu, "absorb_fbutton");
+		if(item)
+		{
+			Item_SetFocus(item, 0, 0);
+		}
+		return;
+	}
+
+	if(player->forcePowerLevel[FP_HEAL] < 3)
+	{
+		item	= Menu_FindItemByName(menu, "heal_fbutton");
+		if(item)
+		{
+			Item_SetFocus(item, 0, 0);
+		}
+		return;
+	}
+
+	if(player->forcePowerLevel[FP_TELEPATHY] < 3)
+	{
+		item	= Menu_FindItemByName(menu, "mindtrick_fbutton");
+		if(item)
+		{
+			Item_SetFocus(item, 0, 0);
+		}
+		return;
+	}
+
+	if(player->forcePowerLevel[FP_PROTECT] < 3)
+	{
+		item	= Menu_FindItemByName(menu, "protect_fbutton");
+		if(item)
+		{
+			Item_SetFocus(item, 0, 0);
+		}
+		return;
+	}
+
+	if(player->forcePowerLevel[FP_DRAIN] < 3)
+	{
+		item	= Menu_FindItemByName(menu, "drain_fbutton");
+		if(item)
+		{
+			Item_SetFocus(item, 0, 0);
+		}
+		return;
+	}
+
+	if(player->forcePowerLevel[FP_GRIP] < 3)
+	{
+		item	= Menu_FindItemByName(menu, "grip_fbutton");
+		if(item)
+		{
+			Item_SetFocus(item, 0, 0);
+		}
+		return;
+	}
+
+	if(player->forcePowerLevel[FP_LIGHTNING] < 3)
+	{
+		item	= Menu_FindItemByName(menu, "lightning_fbutton");
+		if(item)
+		{
+			Item_SetFocus(item, 0, 0);
+		}
+		return;
+	}
+
+	if(player->forcePowerLevel[FP_RAGE] < 3)
+	{
+		item	= Menu_FindItemByName(menu, "rage_fbutton");
+		if(item)
+		{
+			Item_SetFocus(item, 0, 0);
+		}
+		return;
+	}
+#endif
+}
+// Try to increment force power level (Used by Force Power Allocation screen) 
+static void UI_AffectForcePowerLevel ( const char *forceName )
+{
+	short forcePowerI=0,i;
+	menuDef_t	*menu;
+	itemDef_t	*item;
+
+	menu = Menu_GetFocused();	// Get current menu
+
+	if (!menu)
+	{
+		return;
+	}
+
+	if (!UI_GetForcePowerIndex ( forceName, &forcePowerI ))
+	{
+		return;
+	}
+
+#ifndef XBOX_DEMO
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+	playerState_t*		pState = cl->gentity->client;
+#endif
+
+#ifdef XBOX_DEMO
+	if (demoForcePowerLevel[powerEnums[forcePowerI].powerEnum]>2)
+	{	// Too big, can't be incremented
+		Cvar_Set("ui_deallocate_button","0");
+		item	= Menu_FindItemByName(menu, Cvar_VariableString("ui_forceButton"));
+		
+		if(!item)
+			return;
+		item->window.flags	&= ~WINDOW_DECORATION;
+		return;
+	}
+#else
+	if (pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum]>2)
+	{	// Too big, can't be incremented
+		Cvar_Set("ui_deallocate_button","0");
+		item	= Menu_FindItemByName(menu, Cvar_VariableString("ui_forceButton"));
+		
+		if(!item)
+			return;
+		item->window.flags	&= ~WINDOW_DECORATION;
+		return;
+	}
+#endif
+
+	Cvar_Set("ui_deallocate_button","1");
+
+	// Increment power level.
+	DC->startLocalSound(uiInfo.uiDC.Assets.forceChosenSound, CHAN_AUTO );
+
+	uiInfo.forcePowerUpdated = forcePowerI;	// Remember which power was updated
+
+#ifdef XBOX_DEMO
+	demoForcePowerLevel[powerEnums[forcePowerI].powerEnum]++;	// Increment it
+
+	UI_SetHexPicLevel( menu,uiInfo.forcePowerUpdated,demoForcePowerLevel[powerEnums[forcePowerI].powerEnum],qtrue );
+#else
+	pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum]++;	// Increment it
+	pState->forcePowersKnown |= ( 1 << powerEnums[forcePowerI].powerEnum );
+
+	UI_SetHexPicLevel( menu,uiInfo.forcePowerUpdated,pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum],qtrue );
+#endif
+
+	UI_ShowForceLevelDesc ( forceName );
+
+	// A field was updated, so make it so others can't be
+	if (uiInfo.forcePowerUpdated>FP_UPDATED_NONE)
+	{
+		vec4_t color = { 0.25f, 0.25f, 0.25f, 1.0f};
+		char itemName[128];
+
+		// Make it so none of the other buttons can be clicked
+		for (i=0;i<MAX_POWER_ENUMS;i++)
+		{
+			if (i==uiInfo.forcePowerUpdated)
+			{
+				continue;
+			}
+
+			Com_sprintf (itemName, sizeof(itemName), "%s_fbutton", powerEnums[i].title);
+			item = (itemDef_s *) Menu_FindItemByName(menu, itemName);
+			if (item)		// This is okay, because core powers don't have a hex button
+			{
+				item->window.flags &= ~WINDOW_VISIBLE;
+			}
+		}
+
+		// Show point has been allocated
+		UI_SetPowerTitleText ( qtrue );
+
+		// Make weapons button active
+		UI_ForcePowerWeaponsButton(qtrue);
+
+		// Make user_info 
+		Cvar_Set ( "ui_forcepower_inc", va("%d",uiInfo.forcePowerUpdated) );		
+
+		// Just grab an item to hand it to the function.
+		item = (itemDef_s *) Menu_FindItemByName(menu, "deallocate_fbutton");
+
+		if (item)
+		{
+			// Show all icons as greyed-out
+			UI_SetItemColor(item,"hexpic","forecolor",color);
+			UI_SetItemColor(item,"iconpic","forecolor",color);
+
+#ifdef _XBOX
+			Item_SetFocus(item, 0,0); 
+#else
+			item->window.flags |= WINDOW_HASFOCUS;
+#endif
+		}
+	}
+
+}
+
+static void UI_DecrementForcePowerLevel( void )
+{
+	int	forcePowerI = Cvar_VariableIntegerValue( "ui_forcepower_inc" );
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+
+	playerState_t*		pState = cl->gentity->client;
+
+	pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum]--;	// Decrement it
+
+}
+
+// Show force level description that matches current player level (Used by Force Power Allocation screen) 
+static void UI_ShowForceLevelDesc ( const char *forceName )
+{
+	short forcePowerI=0;
+	menuDef_t	*menu;
+	itemDef_t	*item;
+	menu = Menu_GetFocused();	// Get current menu
+
+	if (!menu)
+	{
+		return;
+	}
+
+	
+	if (!UI_GetForcePowerIndex ( forceName, &forcePowerI ))
+	{
+		return;
+	}
+
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+	playerState_t*		pState = cl->gentity->client;
+
+	char itemName[128];
+
+	// Update level description
+	Com_sprintf (
+		itemName, 
+		sizeof(itemName), 
+		"%s_level%ddesc", 
+		powerEnums[forcePowerI].title,
+		pState->forcePowerLevel[powerEnums[forcePowerI].powerEnum]
+		);
+
+	item = (itemDef_s *) Menu_FindItemByName(menu, itemName);
+	if (item)		
+	{
+		item->window.flags |= WINDOW_VISIBLE;
+	}
+
+}
+
+// Reset force level powers screen to what it was before player upgraded them (Used by Force Power Allocation screen) 
+static void UI_ResetForceLevels ( void )
+{
+
+	// What force ppower had the point added to it?
+	if (uiInfo.forcePowerUpdated!=FP_UPDATED_NONE)
+	{
+		// Get player state
+		client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+		if (!cl)	// No client, get out
+		{
+			return;
+		}
+		playerState_t*		pState = cl->gentity->client;
+
+		// Decrement that power
+		pState->forcePowerLevel[powerEnums[uiInfo.forcePowerUpdated].powerEnum]--;
+
+		menuDef_t	*menu;
+		itemDef_t	*item;
+
+		menu = Menu_GetFocused();	// Get current menu
+
+		if (!menu)
+		{
+			return;
+		}
+
+		int i;
+		char itemName[128];
+
+		// Make it so all  buttons can be clicked
+		for (i=0;i<MAX_POWER_ENUMS;i++)
+		{
+			Com_sprintf (itemName, sizeof(itemName), "%s_fbutton", powerEnums[i].title);
+			item = (itemDef_s *) Menu_FindItemByName(menu, itemName);
+			if (item)		// This is okay, because core powers don't have a hex button
+			{
+				item->window.flags |= WINDOW_VISIBLE;
+			}
+		}
+
+		UI_SetPowerTitleText( qfalse );
+/*
+		Com_sprintf (itemName, sizeof(itemName), "%s_fbutton", powerEnums[uiInfo.forcePowerUpdated].title);
+		item = (itemDef_s *) Menu_FindItemByName(menu, itemName);
+		if (item)
+		{
+			// Change description text to tell player they can increment the force point
+			item->descText = "@MENUS_ADDFP";
+		}
+*/
+		uiInfo.forcePowerUpdated = FP_UPDATED_NONE;
+	}
+
+	UI_ForcePowerWeaponsButton(qfalse);
+}
+
+// If the user has entered the force cheat (and thus has every force power)
+// make sure that they don't get stuck on the force config screen
+static void UI_CheckForForceCheat( void )
+{
+	// Get player state
+	client_t* cl = &svs.clients[0];
+	if (!cl)
+		return;
+
+	playerState_t *pState = cl->gentity->client;
+
+	// If there is ANY light/dark power that they don't have at max rank, we don't do anything
+	if( (pState->forcePowerLevel[FP_HEAL] < 3) ||
+		(pState->forcePowerLevel[FP_TELEPATHY] < 3) ||
+		(pState->forcePowerLevel[FP_GRIP] < 3) ||
+		(pState->forcePowerLevel[FP_LIGHTNING] < 3) ||
+		(pState->forcePowerLevel[FP_RAGE] < 3) ||
+		(pState->forcePowerLevel[FP_PROTECT] < 3) ||
+		(pState->forcePowerLevel[FP_ABSORB] < 3) ||
+		(pState->forcePowerLevel[FP_DRAIN] < 3) )
+		return;
+
+	// Twiddling controls was a mess. Instead, just skip this menu and go to weapons:
+	Menus_CloseAll();
+	Menus_OpenByName( "ingameWpnSelect" );
+}
+
+// Used by the cheat system to prevent the give all force powers cheat while
+// the config screen is active
+bool UI_ForceConfigUIActive( void )
+{
+	menuDef_t *menu = Menu_GetFocused();
+	if( menu && (Q_stricmp(menu->window.name, "progress_FConfig") == 0) )
+		return true;
+	return false;
+}
+
+// Set the Players known saber style
+static void UI_UpdateFightingStyle ( void )
+{
+	playerState_t	*pState;
+	int				fightingStyle,saberStyle;
+
+
+	fightingStyle = Cvar_VariableIntegerValue( "ui_newfightingstyle" );
+
+	if (fightingStyle == 1)
+	{
+		saberStyle = SS_MEDIUM;
+	}
+	else if (fightingStyle == 2)
+	{
+		saberStyle = SS_STRONG;
+	}
+	else // 0 is Fast
+	{
+		saberStyle = SS_FAST;
+	}
+
+	// Get player state
+	client_t	*cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	// No client, get out
+	if (cl && cl->gentity && cl->gentity->client)
+	{
+		pState = cl->gentity->client;
+		pState->saberStylesKnown |= (1<<saberStyle);
+	}
+	else	// Must be at the beginning of the game so the client hasn't been created, shove data in a cvar
+	{
+		Cvar_Set ( "g_fighting_style", va("%d",saberStyle) );		
+	}
+}
+
+static void UI_ResetCharacterListBoxes( void )
+{
+
+	itemDef_t *item;
+	menuDef_t *menu;
+	listBoxDef_t *listPtr;
+
+	menu = Menus_FindByName("characterMenu");
+	
+
+	if (menu)
+	{
+		item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, "headlistbox");
+		if (item)
+		{
+			listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+			if( listPtr )
+			{
+				listPtr->cursorPos = 0;
+			}
+			item->cursorPos = 0;
+		}
+
+		item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, "torsolistbox");
+		if (item)
+		{
+			listPtr = (listBoxDef_t*)item->typeData;
+			if( listPtr )
+			{
+				listPtr->cursorPos = 0;
+			}
+			item->cursorPos = 0;
+		}
+
+		item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, "lowerlistbox");
+		if (item)
+		{
+			listPtr = (listBoxDef_t*)item->typeData;
+			if( listPtr )
+			{
+				listPtr->cursorPos = 0;
+			}
+			item->cursorPos = 0;
+		}
+
+		item = (itemDef_t *) Menu_FindItemByName((menuDef_t *) menu, "colorbox");
+		if (item)
+		{
+			listPtr = (listBoxDef_t*)item->typeData;
+			if( listPtr )
+			{
+				listPtr->cursorPos = 0;
+			}
+			item->cursorPos = 0;
+		}
+	}
+}
+
+static void UI_ClearInventory ( void )
+{
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+
+	if (cl->gentity && cl->gentity->client)
+	{
+		playerState_t*		pState = cl->gentity->client;
+
+		// Clear out inventory for the player
+		int i;
+		for (i=0;i<MAX_INVENTORY;i++)
+		{
+			pState->inventory[i] = 0;
+		}
+	}
+}
+
+static void UI_GiveInventory ( const int itemIndex, const int amount )
+{
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+
+	if (cl->gentity && cl->gentity->client)
+	{
+		playerState_t*	pState = cl->gentity->client;
+
+		if (itemIndex < MAX_INVENTORY)
+		{
+			pState->inventory[itemIndex]=amount;
+		}
+	}
+
+}
+
+//. Find weapons allocation screen BEGIN button and make active/inactive 
+/*
+static void UI_WeaponAllocBeginButton(qboolean activeFlag)
+{
+	menuDef_t	*menu;
+	menu = Menu_GetFocused();	// Get current menu
+
+	if (!menu)
+	{
+		return;
+	}
+
+	int weap =	Cvar_VariableIntegerValue( "weapon_menu" );
+	
+	// Find begin button
+	itemDef_t	*item;
+	item = Menu_GetMatchingItemByNumber(menu, weap, "beginmission");
+
+#ifndef _XBOX
+
+	if (item)
+	{
+		// Make it active
+		if (activeFlag)
+		{
+			item->window.flags &= ~WINDOW_INACTIVE;
+		}
+		else
+		{
+			item->window.flags |= WINDOW_INACTIVE;
+		}
+	}
+
+#else
+	if (item)
+	{
+		// Make it active
+		if (activeFlag)
+		{
+			item->window.flags |= WINDOW_VISIBLE;
+			Item_SetFocus(item, 0, 0);
+		}
+		else
+		{
+			item->window.flags &= ~WINDOW_VISIBLE;
+		}
+	}
+
+	UI_SetVis(menu, "tab_Weapon", !activeFlag);
+	UI_SetVis(menu, "tab_WeaponShadow", !activeFlag);
+	UI_SetVis(menu, "beginmissionShadow", activeFlag);
+
+	if(activeFlag)
+		DC->setCVar("ui_hideAcallout", "0");
+	else
+		DC->setCVar("ui_hideAcallout", "1");	
+#endif
+
+}
+*/
+
+// If we have both weapons and the throwable weapon, turn on the begin mission button, 
+// otherwise, turn it off
+/*
+static void UI_WeaponsSelectionsComplete( void )
+{
+	// We need two weapons and one throwable
+	if (( uiInfo.selectedWeapon1 != NOWEAPON ) &&
+		( uiInfo.selectedWeapon2 != NOWEAPON ) &&
+		( uiInfo.selectedThrowWeapon != NOWEAPON ))
+	{
+		UI_WeaponAllocBeginButton(qtrue);	// Turn it on
+	}
+	else
+	{
+		UI_WeaponAllocBeginButton(qfalse);	// Turn it off
+	}
+}
+*/
+
+// if this is the first time into the weapon allocation screen, show the INSTRUCTION screen 
+static void	UI_WeaponHelpActive( void )
+{
+	int	tier_storyinfo = Cvar_VariableIntegerValue( "tier_storyinfo" );
+	menuDef_t	*menu;
+
+	menu = Menu_GetFocused();	// Get current menu
+
+	if (!menu)
+	{
+		return;
+	}
+
+	// First time, show instructions
+	if (tier_storyinfo==1)
+	{
+		UI_SetItemVisible(menu,"weapon_button",qfalse);
+
+		UI_SetItemVisible(menu,"inst_stuff",qtrue);
+
+	}
+	// just act like normal
+	else
+	{
+		UI_SetItemVisible(menu,"weapon_button",qtrue);
+
+		UI_SetItemVisible(menu,"inst_stuff",qfalse);
+	}
+}
+
+static void UI_InitWeaponSelect( void )
+{
+	menuDef_t *menu = Menu_GetFocused();
+	if( !menu || !menu->window.name )
+		return;
+
+	if (Q_stricmp(menu->window.name, "ingameWpnSelect") == 0)
+	{
+		// First screen - reset all weapon selections
+		uiInfo.selectedWeapon1 = NOWEAPON;
+		uiInfo.selectedWeapon2 = NOWEAPON;
+		uiInfo.selectedThrowWeapon = NOWEAPON;
+	}
+	else if(Q_stricmp(menu->window.name, "ingameWpnSelect2") == 0)
+	{
+		// Second screen. Disable whatever needs to be disabled, re-enable the rest:
+		UI_DisableWeapon();
+
+		// Now put focus on the first item that isn't disabled:
+		itemDef_t *item;
+		if( uiInfo.selectedWeapon1 == WP_BLASTER )
+			item = Menu_FindItemByName( menu, "R1_C2_button" );
+		else
+			item = Menu_FindItemByName( menu, "R1_C1_button" );
+
+		if( !item )
+			return;
+
+		Item_SetFocus( item, 0, 0 );
+	}
+	else if(Q_stricmp(menu->window.name, "ingameWpnSelect3") == 0)
+	{
+		// Third screen, nothing to do.
+	}
+}
+
+// Called by the second weapon select screen to disable and gray out the
+// weapon that was chosen on the first screen
+static void UI_DisableWeapon( void )
+{
+	// Get weapon chosen on first screen - adjust by one, as itemDefs use 1-based index
+	int firstWeapon = Cvar_VariableIntegerValue( "weaponSelect" ) + 1;
+	assert( firstWeapon >= 1 && firstWeapon <= 8 );
+
+	menuDef_t *menu = Menu_GetFocused();
+	if( !menu )
+		return;
+
+	itemDef_t *greyItem = Menu_FindItemByName( menu, "selectionSlotFill" );
+	if( !greyItem )
+		return;
+
+	for( int i = 1; i <= 8; ++i )
+	{
+		itemDef_t *butItem = Menu_FindItemByName( menu, va("R1_C%d_button", i) );
+		if( !butItem )
+			continue;
+
+		if( i == firstWeapon )
+		{
+			// Copy rect so that disabled weapon has a gray background
+			greyItem->window.rect = butItem->window.rect;
+			greyItem->window.rect.x--;
+			greyItem->window.rect.y--;
+			greyItem->window.rect.w += 2;
+			greyItem->window.rect.h += 2;
+
+			// Disable button for already selected weapon
+			butItem->window.flags |= WINDOW_DECORATION;
+		}
+		else
+		{
+			// Make sure all other weapons ARE selectable
+			butItem->window.flags &= ~WINDOW_DECORATION;
+		}
+	}
+}
+
+static void UI_ClearWeapons ( void )
+{
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+
+	if (cl->gentity && cl->gentity->client)
+	{
+		playerState_t*		pState = cl->gentity->client;
+
+		// Clear out any weapons for the player
+		pState->stats[ STAT_WEAPONS ] = 0;
+
+		pState->weapon = WP_NONE;
+		
+	}
+
+}
+
+static void UI_GiveWeapon ( const int weaponIndex )
+{
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+
+	if (cl->gentity && cl->gentity->client)
+	{
+		playerState_t*	pState = cl->gentity->client;
+
+		if (weaponIndex<WP_NUM_WEAPONS)
+		{
+			pState->stats[ STAT_WEAPONS ] |= ( 1 << weaponIndex );
+		}
+	}
+}
+
+static void UI_EquipWeapon ( const int weaponIndex )
+{
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+
+	if (cl->gentity && cl->gentity->client)
+	{
+		playerState_t*	pState = cl->gentity->client;
+
+		if (weaponIndex<WP_NUM_WEAPONS)
+		{
+			pState->weapon = weaponIndex;
+			//force it to change
+			//CG_ChangeWeapon( wp );
+		}
+	}
+}
+
+static void	UI_LoadMissionSelectMenu( const char *cvarName )
+{
+	int holdLevel = (int)trap_Cvar_VariableValue(cvarName);
+
+	// Figure out which tier menu to load 
+	if ((holdLevel > 0) && (holdLevel < 5))
+	{
+		UI_LoadMenus("ui/tier1.txt",qfalse);
+
+		Menus_CloseByName("ingameMissionSelect1");
+	}
+	else if ((holdLevel > 6) && (holdLevel < 10))
+	{
+		UI_LoadMenus("ui/tier2.txt",qfalse);
+
+		Menus_CloseByName("ingameMissionSelect2");
+	}
+	else if ((holdLevel > 11) && (holdLevel < 15))
+	{
+		UI_LoadMenus("ui/tier3.txt",qfalse);
+
+		Menus_CloseByName("ingameMissionSelect3");
+	}
+
+}
+
+#ifdef XBOX_DEMO
+int demoWeapon1;
+int demoWeapon2;
+int demoThrowable;
+#endif
+
+// Update the player weapons with the chosen weapon
+static void	UI_AddWeaponSelection ( const int weaponIndex, const int ammoIndex, const int ammoAmount, const char *iconItemName,const char *litIconItemName, const char *hexBackground, const char *soundfile )
+{
+	if( uiInfo.selectedWeapon1 == NOWEAPON )
+	{
+		uiInfo.selectedWeapon1 = weaponIndex;
+#ifdef XBOX_DEMO
+		demoWeapon1 = weaponIndex;
+#endif
+	}
+	else
+	{
+		uiInfo.selectedWeapon2 = weaponIndex;
+#ifdef XBOX_DEMO
+		demoWeapon2 = weaponIndex;
+#endif
+	}
+
+	if( soundfile )
+	{
+		DC->startLocalSound(DC->registerSound(soundfile, qfalse), CHAN_LOCAL );	
+	}
+
+	// Get player state
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+
+	// Add weapon
+	if (cl->gentity && cl->gentity->client)
+	{
+		playerState_t*	pState = cl->gentity->client;
+
+		if ((weaponIndex>0) && (weaponIndex<WP_NUM_WEAPONS))
+		{
+			pState->stats[ STAT_WEAPONS ] |= ( 1 << weaponIndex );
+		}
+
+		// Give them ammo too
+		if ((ammoIndex>0) && (ammoIndex<AMMO_MAX))
+		{
+			pState->ammo[ ammoIndex ] = ammoAmount;
+		}
+	}
+
+//	UI_WeaponsSelectionsComplete();	// Test to see if the mission begin button should turn on or off
+
+
+}
+
+
+// Update the player weapons with the chosen weapon
+static void UI_RemoveWeaponSelection ( const int weaponSelectionIndex )
+{
+
+}
+
+static void	UI_NormalWeaponSelection ( const int selectionslot )
+{
+	itemDef_s  *item;
+	menuDef_t	*menu;
+
+	menu = Menu_GetFocused();	// Get current menu
+	if (!menu)
+	{
+		return;
+	}
+
+	if (selectionslot == 1)
+	{
+		item = (itemDef_s *) Menu_FindItemByName( menu, "chosenweapon1_icon" );
+		if (item)
+		{
+			item->window.background = uiInfo.unlitWeapon1Icon;
+		}
+	}
+
+	if (selectionslot == 2)
+	{
+		item = (itemDef_s *) Menu_FindItemByName( menu, "chosenweapon2_icon" );
+		if (item)
+		{
+			item->window.background = uiInfo.unlitWeapon2Icon;
+		}
+	}
+}
+
+static void	UI_HighLightWeaponSelection ( const int selectionslot )
+{
+	itemDef_s  *item;
+	menuDef_t	*menu;
+
+	menu = Menu_GetFocused();	// Get current menu
+	if (!menu)
+	{
+		return;
+	}
+
+	if (selectionslot == 1)
+	{
+		item = (itemDef_s *) Menu_FindItemByName( menu, "chosenweapon1_icon" );
+		if (item)
+		{
+			item->window.background = uiInfo.litWeapon1Icon;
+		}
+	}
+
+	if (selectionslot == 2)
+	{
+		item = (itemDef_s *) Menu_FindItemByName( menu, "chosenweapon2_icon" );
+		if (item)
+		{
+			item->window.background = uiInfo.litWeapon2Icon;
+		}
+	}
+}
+
+// Update the player throwable weapons (okay it's a bad description) with the chosen weapon
+static void	UI_AddThrowWeaponSelection ( const int weaponIndex, const int ammoIndex, const int ammoAmount, const char *iconItemName,const char *litIconItemName, const char *hexBackground, const char *soundfile )
+{
+	uiInfo.selectedThrowWeapon = weaponIndex;
+
+#ifdef XBOX_DEMO
+	demoThrowable = weaponIndex;
+#endif
+
+	if( soundfile )
+	{
+		DC->startLocalSound(DC->registerSound(soundfile, qfalse), CHAN_LOCAL );	
+	}
+
+	// Get player state
+
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+
+	if (!cl)	// No client, get out
+	{
+		return;
+	}
+
+	// Add weapon
+	if (cl->gentity && cl->gentity->client)
+	{
+		playerState_t*	pState = cl->gentity->client;
+
+		if ((weaponIndex>0) && (weaponIndex<WP_NUM_WEAPONS))
+		{
+			pState->stats[ STAT_WEAPONS ] |= ( 1 << weaponIndex );
+		}
+
+		// Give them ammo too
+		if ((ammoIndex>0) && (ammoIndex<AMMO_MAX))
+		{
+			pState->ammo[ ammoIndex ] = ammoAmount;
+		}
+	}
+
+//	UI_WeaponsSelectionsComplete();	// Test to see if the mission begin button should turn on or off
+
+}
+
+
+// Update the player weapons with the chosen throw weapon
+static void UI_RemoveThrowWeaponSelection ( void )
+{
+
+}
+
+static void	UI_NormalThrowSelection ( void )
+{
+	itemDef_s  *item;
+	menuDef_t	*menu;
+
+	menu = Menu_GetFocused();	// Get current menu
+	if (!menu)
+	{
+		return;
+	}
+
+	item = (itemDef_s *) Menu_FindItemByName( menu, "chosenthrowweapon_icon" );
+	item->window.background = uiInfo.unlitThrowableIcon;
+}
+
+static void	UI_HighLightThrowSelection ( void )
+{
+	itemDef_s  *item;
+	menuDef_t	*menu;
+
+	menu = Menu_GetFocused();	// Get current menu
+	if (!menu)
+	{
+		return;
+	}
+
+	item = (itemDef_s *) Menu_FindItemByName( menu, "chosenthrowweapon_icon" );
+	item->window.background = uiInfo.litThrowableIcon;
+}
+
+static void UI_GetSaberCvars ( void )
+{
+	Cvar_Set ( "ui_saber_type", Cvar_VariableString ( "g_saber_type" ) );
+	Cvar_Set ( "ui_saber", Cvar_VariableString ( "g_saber" ) );
+	Cvar_Set ( "ui_saber2", Cvar_VariableString ( "g_saber2" ) );
+	Cvar_Set ( "ui_saber_color", Cvar_VariableString ( "g_saber_color" ) );
+	Cvar_Set ( "ui_saber2_color", Cvar_VariableString ( "g_saber2_color" ) );
+
+	Cvar_Set ( "ui_newfightingstyle", "0");
+
+}
+
+static void UI_ResetSaberCvars ( void )
+{
+	Cvar_Set ( "g_saber_type", "single" );
+	Cvar_Set ( "g_saber", "single_1" );
+	Cvar_Set ( "g_saber2", "" );
+
+	Cvar_Set ( "ui_saber_type", "single" );
+	Cvar_Set ( "ui_saber", "single_1" );
+	Cvar_Set ( "ui_saber2", "" );
+}
+
+extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
+extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName );
+static void UI_UpdateCharacterSkin( void )
+{
+	menuDef_t *menu;
+	itemDef_t *item;
+	char skin[MAX_QPATH];
+
+	menu = Menu_GetFocused();	// Get current menu
+
+	if (!menu)
+	{
+		return;
+	}
+
+	item = (itemDef_s *) Menu_FindItemByName(menu, "character");
+
+	if (!item)
+	{
+		Com_Error( ERR_FATAL, "UI_UpdateCharacterSkin: Could not find item (character) in menu (%s)", menu->window.name);
+	}
+
+	Com_sprintf( skin, sizeof( skin ), "models/players/%s/|%s|%s|%s", 
+										Cvar_VariableString ( "ui_char_model"), 
+										Cvar_VariableString ( "ui_char_skin_head"), 
+										Cvar_VariableString ( "ui_char_skin_torso"), 
+										Cvar_VariableString ( "ui_char_skin_legs") 
+				);
+
+	ItemParse_model_g2skin_go( item, skin );
+}
+
+static void UI_UpdateCharacter( qboolean changedModel )
+{
+	menuDef_t *menu;
+	itemDef_t *item;
+	char modelPath[MAX_QPATH];
+
+	menu = Menu_GetFocused();	// Get current menu
+
+	if (!menu)
+	{
+		return;
+	}
+
+	item = (itemDef_s *) Menu_FindItemByName(menu, "character");
+
+	if (!item)
+	{
+		Com_Error( ERR_FATAL, "UI_UpdateCharacter: Could not find item (character) in menu (%s)", menu->window.name);
+	}
+
+	ItemParse_model_g2anim_go( item, ui_char_anim.string );
+
+	Com_sprintf( modelPath, sizeof( modelPath ), "models/players/%s/model.glm", Cvar_VariableString ( "ui_char_model" ) );
+	ItemParse_asset_model_go( item, modelPath );
+
+	if ( changedModel )
+	{//set all skins to first skin since we don't know you always have all skins
+		//FIXME: could try to keep the same spot in each list as you swtich models
+		UI_FeederSelection(FEEDER_PLAYER_SKIN_HEAD, 0, item);	//fixme, this is not really the right item!!
+		UI_FeederSelection(FEEDER_PLAYER_SKIN_TORSO, 0, item);
+		UI_FeederSelection(FEEDER_PLAYER_SKIN_LEGS, 0, item);
+		UI_FeederSelection(FEEDER_COLORCHOICES, 0, item);
+	}
+	UI_UpdateCharacterSkin();
+}
+
+void UI_UpdateSaberType( void )
+{
+	char sType[MAX_QPATH];
+	DC->getCVarString( "ui_saber_type", sType, sizeof(sType) );
+	if ( Q_stricmp( "single", sType ) == 0 ||
+		Q_stricmp( "staff", sType ) == 0 )
+	{
+		DC->setCVar( "ui_saber2", "" );
+	}
+}
+
+static void UI_UpdateSaberHilt( qboolean secondSaber )
+{
+	menuDef_t *menu;
+	itemDef_t *item;
+	char model[MAX_QPATH];
+	char modelPath[MAX_QPATH];
+	char skinPath[MAX_QPATH];
+	menu = Menu_GetFocused();	// Get current menu (either video or ingame video, I would assume)
+
+	if (!menu)
+	{
+		return;
+	}
+
+	char *itemName;
+	char *saberCvarName;
+	if ( secondSaber )
+	{
+		itemName = "saber2";
+		saberCvarName = "ui_saber2";
+	}
+	else
+	{
+		itemName = "saber";
+		saberCvarName = "ui_saber";
+	}
+
+	item = (itemDef_s *) Menu_FindItemByName(menu, itemName );
+
+	if(!item)
+	{
+		Com_Error( ERR_FATAL, "UI_UpdateSaberHilt: Could not find item (%s) in menu (%s)", itemName, menu->window.name);
+	}
+	DC->getCVarString( saberCvarName, model, sizeof(model) );
+	//read this from the sabers.cfg
+	if ( UI_SaberModelForSaber( model, modelPath ) )
+	{//successfully found a model
+		ItemParse_asset_model_go( item, modelPath );//set the model
+		//get the customSkin, if any
+		//COM_StripExtension( modelPath, skinPath );
+		//COM_DefaultExtension( skinPath, sizeof( skinPath ), ".skin" );
+		if ( UI_SaberSkinForSaber( model, skinPath ) )
+		{
+			ItemParse_model_g2skin_go( item, skinPath );//apply the skin
+		}
+		else
+		{
+			ItemParse_model_g2skin_go( item, NULL );//apply the skin
+		}
+	}
+}
+
+/*
+static void UI_UpdateSaberColor( qboolean secondSaber )
+{
+	int sabernumber;
+	if (secondSaber)
+		sabernumber = 2;
+	else
+		sabernumber = 1;
+
+	ui.Cmd_ExecuteText( EXEC_APPEND, va("sabercolor %i %s\n",sabernumber, Cvar_VariableString("g_saber_color")));
+}
+*/
+char GoToMenu[1024];
+
+/*
+=================
+Menus_SaveGoToMenu
+=================
+*/
+void Menus_SaveGoToMenu(const char *menuTo)
+{
+	memcpy(GoToMenu, menuTo, sizeof(GoToMenu));
+}
+
+/*
+=================
+UI_CheckVid1Data
+=================
+*/
+void UI_CheckVid1Data(const char *menuTo,const char *warningMenuName)
+{
+	menuDef_t *menu;
+	itemDef_t *applyChanges;
+
+	menu = Menu_GetFocused();	// Get current menu (either video or ingame video, I would assume)
+
+	if (!menu)
+	{
+		Com_Printf(S_COLOR_YELLOW"WARNING: No videoMenu was found. Video data could not be checked\n");
+		return;
+	}
+
+	applyChanges = (itemDef_s *) Menu_FindItemByName(menu, "applyChanges");
+
+	if (!applyChanges)
+	{
+//		Menus_CloseAll();
+		Menus_OpenByName(menuTo);
+		return;
+	}
+
+	if ((applyChanges->window.flags & WINDOW_VISIBLE))	// Is the APPLY CHANGES button active?
+	{
+//		Menus_SaveGoToMenu(menuTo);							// Save menu you're going to
+//		Menus_HideItems(menu->window.name);					// HIDE videMenu in case you have to come back
+		Menus_OpenByName(warningMenuName);				// Give warning
+	}
+	else
+	{
+//		Menus_CloseAll();
+//		Menus_OpenByName(menuTo);
+	}
+}
+
+/*
+=================
+UI_ResetDefaults
+=================
+*/
+void UI_ResetDefaults( void )
+{
+	ui.Cmd_ExecuteText( EXEC_APPEND, "cvar_restart\n");
+	ui.Cmd_ExecuteText( EXEC_APPEND, "exec default.cfg\n");
+	ui.Cmd_ExecuteText( EXEC_APPEND, "vid_restart\n" );
+}
+
+/*
+=======================
+UI_SortSaveGames
+=======================
+*/
+static int UI_SortSaveGames( const void *A, const void *B ) 
+{
+
+	const int &a = ((savedata_t*)A)->currentSaveFileDateTime;
+	const int &b = ((savedata_t*)B)->currentSaveFileDateTime;
+
+	if (a > b)
+	{
+		return -1;
+	}
+	else
+	{
+		return (a < b);
+	}
+}
+
+/*
+=======================
+UI_AdjustSaveGameListBox
+=======================
+*/
+// Yeah I could get fired for this... in a world of good and bad, this is bad
+// I wish we passed in the menu item to RunScript(), oh well...
+void UI_AdjustSaveGameListBox( int currentLine ) 
+{
+	menuDef_t *menu;
+	itemDef_t *item;
+
+	// could be in either the ingame or shell load menu (I know, I know it's bad)
+	menu = Menus_FindByName("loadgameMenu");
+	if( !menu )
+	{
+		menu = Menus_FindByName("ingameloadMenu");
+	}
+
+	if (menu)
+	{
+		item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, "loadgamelist");
+		if (item)
+		{
+			listBoxDef_t *listPtr = (listBoxDef_t*)item->typeData;
+			if( listPtr )
+			{
+				listPtr->cursorPos = currentLine;
+			}
+			
+			item->cursorPos = currentLine;
+		}
+	}
+	
+}
+
+
+void setBlockDisplayCvar()
+{
+	unsigned long blocks;
+	blocks = SG_BlocksLeft();
+	if (blocks > 50000)
+		Cvar_Set("ui_BlocksAvailable","50000+");
+	else 
+		Cvar_SetValue("ui_BlocksAvailable",(int)blocks);
+	
+	Cvar_SetValue("ui_BlocksNeeded", SG_SaveGameSize());
+
+}
+
+				
+
+void storeSGDataDatetoCvar()
+{
+	char timeBuffer[128];
+	char * timeBufferPtr;
+	char  filetime[64],*tokentimeptr;
+	
+	strcpy (filetime,s_savedata[s_savegame.currentLine].currentSaveFileDateTimeString);
+	if(!filetime[0])
+	{
+		Cvar_Set("ui_DateString", "");
+		return;
+	}
+	timeBuffer[0] = 0;
+	timeBufferPtr = &(timeBuffer[0]);
+
+	//Wed
+	tokentimeptr = strtok(filetime," ");
+
+	//Jan
+	tokentimeptr = strtok(NULL," ");
+	strcpy(timeBufferPtr,tokentimeptr);
+	timeBufferPtr+=strlen(tokentimeptr);
+
+	*timeBufferPtr = ' ';
+	timeBufferPtr ++;
+
+	//02
+	tokentimeptr = strtok(NULL," ");
+	strcpy(timeBufferPtr,tokentimeptr);
+	timeBufferPtr+=strlen(tokentimeptr);
+
+	*timeBufferPtr = ' ';
+	timeBufferPtr ++;
+
+	//02:
+	tokentimeptr = strtok(NULL,":");
+	//strcpy(timeBufferPtr,tokentimeptr);
+	//timeBufferPtr+=strlen(tokentimeptr);
+
+	//*timeBufferPtr = ':';
+	//timeBufferPtr ++;
+	
+	//03:
+	tokentimeptr = strtok(NULL,":");
+	//strcpy(timeBufferPtr,tokentimeptr);
+	//timeBufferPtr+=strlen(tokentimeptr);
+
+	//*timeBufferPtr = ' ';
+	//timeBufferPtr ++;
+
+	//55
+	tokentimeptr = strtok(NULL," ");
+	//strcpy(timeBufferPtr,tokentimeptr);
+	//timeBufferPtr+=strlen(tokentimeptr);
+
+	//*timeBufferPtr = '_';
+	//timeBufferPtr ++;
+
+	//1980
+	tokentimeptr = strtok(NULL,"\n");
+	strcpy(timeBufferPtr,tokentimeptr);
+	timeBufferPtr+=strlen(tokentimeptr);
+
+	*timeBufferPtr = 0;
+	Cvar_Set("ui_DateString", timeBuffer);
+				
+
+}
+
+void storeSGDataTimetoCvar()
+{
+	char timeBuffer[128];
+	char * timeBufferPtr;
+	char  filetime[64],*tokentimeptr;
+	
+	strcpy (filetime,s_savedata[s_savegame.currentLine].currentSaveFileDateTimeString);
+	if(!filetime[0])
+	{
+		Cvar_Set("ui_TimeString", "");
+		return;
+	}
+
+
+	timeBuffer[0] = 0;
+	timeBufferPtr = &(timeBuffer[0]);
+
+	//Wed
+	tokentimeptr = strtok(filetime," ");
+
+	//Jan
+	tokentimeptr = strtok(NULL," ");
+	
+	//02
+	tokentimeptr = strtok(NULL," ");
+	
+	//02:
+	tokentimeptr = strtok(NULL,":");
+	strcpy(timeBufferPtr,tokentimeptr);
+	timeBufferPtr+=strlen(tokentimeptr);
+
+	*timeBufferPtr = ':';
+	timeBufferPtr ++;
+	
+	//03:
+	tokentimeptr = strtok(NULL,":");
+	strcpy(timeBufferPtr,tokentimeptr);
+	timeBufferPtr+=strlen(tokentimeptr);
+
+	*timeBufferPtr = ':';
+	timeBufferPtr ++;
+
+	//55
+	tokentimeptr = strtok(NULL," ");
+	strcpy(timeBufferPtr,tokentimeptr);
+	timeBufferPtr+=strlen(tokentimeptr);
+
+	//*timeBufferPtr = '_';
+	//timeBufferPtr ++;
+
+	//1980
+	tokentimeptr = strtok(NULL,"\n");
+	//strcpy(timeBufferPtr,tokentimeptr);
+	//timeBufferPtr+=strlen(tokentimeptr);
+
+	*timeBufferPtr = 0;
+	Cvar_Set("ui_TimeString", timeBuffer);
+				
+
+	
+	
+}
+
+void storeSGDataDiffLeveltoCvar()
+{
+	char * difflevel;
+	difflevel = s_savedata[s_savegame.currentLine].currentSaveFileComments;
+	if (!difflevel[0])
+	{
+		Cvar_Set("ui_DiffLevel", "");
+		return;
+	}
+	if ( difflevel[0] == '@')
+        Cvar_Set("ui_DiffLevel", SE_GetString(&difflevel[1]));
+	else
+		Cvar_Set("ui_DiffLevel", "");
+	
+
+}
+
+
+
+void ui_resetSaveGameList()
+{
+	s_savegame.saveFileCnt = -1;
+}
+/*
+=================
+ReadSaveDirectory
+=================
+*/
+//for the xbox reading the save directory will consist of 
+//iterating through the save game folders
+
+void ReadSaveDirectory (void)
+{
+
+	char	*holdChar;
+	char	*filetime,*tokentimeptr;
+	const char * newgame;
+	qboolean newGameActive,newGameAvailable;
+	char saveGameName[filepathlength];
+	//char timeBuffer[128];
+	//char * timeBufferPtr;
+	
+
+	// Clear out save data
+	memset(s_savedata,0,sizeof(s_savedata));
+	s_savegame.saveFileCnt = 0;
+	Cvar_Set("ui_gameDesc", "" );	// Blank out comment 
+	Cvar_Set("ui_SelectionOK", "0" );
+
+
+	//memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4)); //blank out sshot
+
+	// Get everything in saves directory
+//	fileCnt = ui.FS_GetFileList("saves", ".sav", s_savegame.listBuf, LISTBUFSIZE );
+
+	Cvar_Set("ui_ResumeOK", "0" );
+	holdChar = s_savegame.listBuf;
+	XGAME_FIND_DATA SaveGameData;
+	HANDLE searchhandle;
+	BOOL retval;
+
+	newGameActive =	(Cvar_VariableIntegerValue( "ui_newGameActive" )) ? qtrue : qfalse;
+	newGameAvailable = qfalse;
+	extern unsigned long SG_BlocksLeft();
+	if (newGameActive)
+	{
+//		if (SG_BlocksLeft() < SG_SaveGameSize())
+//		{
+//			Cvar_SetValue("noNewSaveGameAvailable", 1);
+//			newGameAvailable = qfalse;	
+//		}
+//		else
+//		{
+			Cvar_SetValue("noNewSaveGameAvailable", 0);
+			newGameAvailable = qtrue;	
+//		}
+	}
+	else
+		Cvar_SetValue("noNewSaveGameAvailable", 1);
+
+	if ( newGameAvailable)
+	{
+		strcpy(s_savedata[s_savegame.saveFileCnt].currentSaveFileComments,"New Game");
+		strcpy(s_savedata[s_savegame.saveFileCnt].currentSaveFileMap, "New Game");
+		newgame = SE_GetString( "MENUS", "newSaveGame" );
+	//JLF debug code
+		if ( !newgame)
+			newgame = "New Game";
+	//END JLF
+		strcpy (holdChar, newgame);
+		s_savedata[s_savegame.saveFileCnt].currentSaveFileName = holdChar;
+		holdChar += strlen(holdChar)+1;
+		s_savedata[s_savegame.saveFileCnt].currentSaveFileDateTime = 0;
+		s_savedata[s_savegame.saveFileCnt].currentSaveFileDateTimeString[0] = 0;
+
+		s_savegame.saveFileCnt++;
+	}
+
+    // Any saves?
+	searchhandle = XFindFirstSaveGame( "U:\\", &SaveGameData );
+	if ( searchhandle != INVALID_HANDLE_VALUE )
+	{
+		do
+		{
+			// At least one; count up the rest
+			DWORD dwCount = 1;
+			//get the name of the file
+			
+			wcstombs(saveGameName, SaveGameData.szSaveGameName, filepathlength);
+
+			// Skip over Settings
+			if( Q_stricmp( saveGameName, "Settings" ) == 0 )
+			{
+				retval = XFindNextSaveGame( searchhandle, &SaveGameData );
+				continue;
+			}
+
+			strcpy( holdChar, saveGameName);
+			
+
+			// Is this a valid file??? & Get comment of file
+					//create full path name
+			time_t result;
+			result = ui.SG_GetSaveGameComment(saveGameName, s_savedata[s_savegame.saveFileCnt].currentSaveFileComments, s_savedata[s_savegame.saveFileCnt].currentSaveFileMap);
+			if (result != 0) // ignore Bad save game 
+			{
+				s_savedata[s_savegame.saveFileCnt].corrupt = false;
+			}
+			else
+			{
+				s_savedata[s_savegame.saveFileCnt].corrupt = true;
+			}
+			{
+				s_savedata[s_savegame.saveFileCnt].currentSaveFileName = holdChar;
+				s_savedata[s_savegame.saveFileCnt].currentSaveFileDateTime = result;
+				holdChar += strlen(holdChar)+1;
+				
+				struct tm *localTime;
+				localTime = localtime( &result );
+
+				// Wed Jan 02 02:03:55 1980\n\0
+				filetime = asctime (localTime);
+				
+				
+				
+				strcpy(s_savedata[s_savegame.saveFileCnt].currentSaveFileDateTimeString, filetime );
+				s_savegame.saveFileCnt++;
+				if (s_savegame.saveFileCnt == MAX_SAVELOADFILES)
+				{
+					break;
+				}
+
+			}
+			
+			retval =XFindNextSaveGame( searchhandle, &SaveGameData );
+		}while(retval);
+	}
+
+	if ( newGameAvailable)
+		qsort( &(s_savedata[1]), s_savegame.saveFileCnt-1, sizeof(savedata_t), UI_SortSaveGames );
+	else
+		qsort( s_savedata, s_savegame.saveFileCnt, sizeof(savedata_t), UI_SortSaveGames );
+
+	Cvar_SetValue("saveGameCount", s_savegame.saveFileCnt);
+	
+
+	if ((s_savegame.saveFileCnt>1 && newGameAvailable) ||
+			(s_savegame.saveFileCnt>0 && !newGameAvailable))
+		Cvar_SetValue("overwriteAvailable", 1);
+	else
+		Cvar_SetValue("overwriteAvailable", 0);
+
+	setBlockDisplayCvar();
+
+	if (s_savegame.currentLine == 0)
+	{
+		if (ui_ShowDeleteActive)
+		{
+			Cvar_SetValue("ui_showYdel",trap_Cvar_VariableValue("ui_ShowDelete"));
+			ui_ShowDeleteActive = qfalse;
+			Cvar_SetValue( "ui_cancelYScript",0);
+		}
+		if ( newGameAvailable)
+		{
+			//there is a 'new save game' index that is highlighted
+			Cvar_SetValue("ui_ShowDelete",trap_Cvar_VariableValue("ui_showYdel"));
+			Cvar_SetValue("ui_showYdel",0);
+			Cvar_SetValue( "ui_cancelYScript",1);
+			ui_ShowDeleteActive =qtrue;
+
+		}
+	}	
+	storeSGDataDatetoCvar();
+	storeSGDataTimetoCvar();
+	storeSGDataDiffLeveltoCvar();
+}
+
+
+
+#ifdef _XBOX
+void UI_UpdateSettingsCvars( void )
+{
+}
+
+static void _UI_SetVol(const char* type, float value)
+{
+	if(!Q_stricmp(type, "effects") )
+	{
+		if(value < 0.1f)
+			value	= 0.0f;
+		DC->setCVar("s_effects_volume", va("%f",value) );
+	}
+	else if(!Q_stricmp(type, "voice") )
+	{
+		if(value < 0.1f)
+			value	= 0.0f;
+		DC->setCVar("s_voice_volume", va("%f",value) );
+	}
+	else if(!Q_stricmp(type, "music") )
+	{
+		if(value < 0.1f)
+			value	= 0.0f;
+		DC->setCVar("s_music_volume", va("%f",value) );
+	}
+	else if(!Q_stricmp(type, "horizontal") )
+	{
+		DC->setCVar("sensitivity", va("%f",value*10.0f) );
+	}
+	else if(!Q_stricmp(type, "vertical") )
+	{
+		DC->setCVar("sensitivityY", va("%f",value*10.0f) );
+	}
+}
+
+static float _UI_GetVol(const char* type)
+{
+	if(!Q_stricmp(type, "effects") )
+	{
+		return DC->getCVarValue("s_effects_volume");
+	}
+	else if(!Q_stricmp(type, "voice") )
+	{
+		return DC->getCVarValue("s_voice_volume");
+	}
+	else if(!Q_stricmp(type, "music") )
+	{
+		return DC->getCVarValue("s_music_volume");
+	}
+	else if(!Q_stricmp(type, "horizontal") )
+	{
+		return DC->getCVarValue("sensitivity") / 10.0f;
+	}
+	else if(!Q_stricmp(type, "vertical") )
+	{
+		return DC->getCVarValue("sensitivityY") / 10.0f;
+	}
+	return 1.0f;
+}
+
+static void UI_UpdateVolume(const char* action, const char* type, const char* itemName, int width, int value )
+{
+	itemDef_s*	mask;
+	menuDef_t*	menu;
+	int			amount;
+
+	// get the current menu
+	menu	= Menu_GetFocused();
+	if (!menu)
+	{
+		return;
+	}
+
+	// get the masking item to change
+	mask	= (itemDef_s*) Menu_FindItemByName(menu, itemName );
+
+	// figure out what to do
+	if(!Q_stricmp(action, "set") ) // set the volume level
+	{
+		amount	= value;
+	}
+	else if(!Q_stricmp(action, "actual") )
+	{
+		float mult;
+
+		// get the requested volume
+		mult	= _UI_GetVol(type);
+
+		// set the mask
+		mask->window.rect.w = (int)(mult * width);
+		
+		return;
+
+	}
+	else if(!Q_stricmp(action, "increment") ) // increment the volume level
+	{
+		amount	= mask->window.rect.w + value;
+	}
+	else if(!Q_stricmp(action, "decrement") ) // decrement the volume level
+	{
+		amount	= mask->window.rect.w - value;
+	}
+
+	// make sure we're in bounds
+	if(amount <= width && amount >= 0)
+	{
+		float volume;
+
+		// compute the volume
+		volume	= (float)amount / (float)width;
+
+		// alter the mask
+		mask->window.rect.w	= amount;
+
+		// update the volume
+		_UI_SetVol(type, volume);
+	}
+}
+
+/*
+==========
+UI_UpdateMoveTitles()
+==========
+*/
+static void UI_UpdateMoveTitles(void)
+{
+	itemDef_t *item;
+	menuDef_t *menu;
+	modelDef_t *modelPtr;
+
+	uiInfo.movesTitleIndex	= (short)DC->getCVarValue("ui_move_title");
+	if(uiInfo.movesTitleIndex > 5 || uiInfo.movesTitleIndex < 0)
+		uiInfo.movesTitleIndex = 0;
+
+	uiInfo.movesBaseAnim = datapadMoveTitleBaseAnims[uiInfo.movesTitleIndex];
+	menu = Menus_FindByName("datapadMovesMenu");
+
+	if (menu)
+	{
+		item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, "character");
+		if (item)
+		{
+			modelPtr = (modelDef_t*)item->typeData;
+			if (modelPtr)
+			{
+				ItemParse_model_g2anim_go( item, uiInfo.movesBaseAnim );
+				uiInfo.moveAnimTime = DC->g2hilev_SetAnim(&item->ghoul2[0], "model_root", modelPtr->g2anim, qtrue);
+			}
+		}
+	}
+}
+/*
+==========
+UI_UpdateMoves()
+==========
+*/
+static void UI_UpdateMoves( void )
+{
+	itemDef_t *item;
+	menuDef_t *menu;
+	modelDef_t *modelPtr;
+	char skin[MAX_QPATH];
+
+	uiInfo.movesTitleIndex	= (short)DC->getCVarValue("ui_move_title");
+	if(uiInfo.movesTitleIndex > 5 || uiInfo.movesTitleIndex < 0)
+		uiInfo.movesTitleIndex = 0;
+
+	short index	= (short)DC->getCVarValue("ui_moves");
+	if(index > 15 || index < 0)
+		index = 0;
+
+	menu = Menus_FindByName("datapadMovesMenu");
+
+	if (menu)
+	{
+		item = (itemDef_s *) Menu_FindItemByName((menuDef_t *) menu, "character");
+		if (item)
+		{
+			modelPtr = (modelDef_t*)item->typeData;
+			if (modelPtr)
+			{
+				if (datapadMoveData[uiInfo.movesTitleIndex][index].anim)
+				{
+					ItemParse_model_g2anim_go( item, datapadMoveData[uiInfo.movesTitleIndex][index].anim );
+					uiInfo.moveAnimTime = DC->g2hilev_SetAnim(&item->ghoul2[0], "model_root", modelPtr->g2anim, qtrue);
+
+					uiInfo.moveAnimTime += uiInfo.uiDC.realTime;
+
+					// Play sound for anim
+					if (datapadMoveData[uiInfo.movesTitleIndex][index].sound == MDS_FORCE_JUMP)
+					{
+						DC->startLocalSound(uiInfo.uiDC.Assets.datapadmoveJumpSound, CHAN_LOCAL );
+					}
+					else if (datapadMoveData[uiInfo.movesTitleIndex][index].sound == MDS_ROLL)
+					{
+						DC->startLocalSound(uiInfo.uiDC.Assets.datapadmoveRollSound, CHAN_LOCAL );
+					}
+					else if (datapadMoveData[uiInfo.movesTitleIndex][index].sound == MDS_SABER)
+					{
+						// Randomly choose one sound
+						int soundI = Q_irand( 1, 6 );
+						sfxHandle_t *soundPtr;
+						soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound1;
+						if (soundI == 2)
+						{
+							soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound2;
+						}
+						else if (soundI == 3)
+						{
+							soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound3;
+						}
+						else if (soundI == 4)
+						{
+							soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound4;
+						}
+						else if (soundI == 5)
+						{
+							soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound5;
+						}
+						else if (soundI == 6)
+						{
+							soundPtr = &uiInfo.uiDC.Assets.datapadmoveSaberSound6;
+						}
+
+						DC->startLocalSound(*soundPtr, CHAN_LOCAL );
+					}
+
+					if (datapadMoveData[uiInfo.movesTitleIndex][index].desc)
+					{
+						Cvar_Set( "ui_move_desc", datapadMoveData[uiInfo.movesTitleIndex][index].desc);
+					}
+
+					Com_sprintf( skin, sizeof( skin ), "models/players/%s/|%s|%s|%s", 
+						Cvar_VariableString ( "g_char_model"), 
+						Cvar_VariableString ( "g_char_skin_head"), 
+						Cvar_VariableString ( "g_char_skin_torso"), 
+						Cvar_VariableString ( "g_char_skin_legs") 
+						);
+
+					ItemParse_model_g2skin_go( item, skin );
+
+				}
+			}
+		}
+	}
+}
+#endif
+
+//JLF error popup
+// What popup is active at the moment?
+static xbErrorPopupType sPopup = XB_POPUP_NONE;
+
+// Creates the requested popup, then displays it.
+// Establishes context so proper action will be taken on a selection.
+void UI_xboxErrorPopup(xbErrorPopupType popup)
+{
+	// Set our context
+
+	//store all these values
+/*
+	DC->setCVar("ui_showWbtsel", "0");
+	DC->setCVar("ui_showWmove", "0");
+	DC->setCVar("ui_showXadv", "0");
+	DC->setCVar("ui_showXNew", "0");
+	DC->setCVar("ui_showXchk", "0");
+	DC->setCVar("ui_showXforce", "0");
+	DC->setCVar("ui_showXcstm", "0");
+	DC->setCVar("ui_showYref", "0");
+	DC->setCVar("ui_showYdel", "0");
+	DC->setCVar("ui_showYbtrule", "0");
+	DC->setCVar("ui_showYsaber", "0");
+	DC->setCVar("ui_showYwpn", "0");
+	DC->setCVar("ui_showAcallout", "0");
+	DC->setCVar("ui_showBcallout", "0");
+
+	
+*/
+	sPopup = popup;
+	Cvar_Set( "xb_errMessage", "" );
+	Cvar_Set( "xb_PopupTitle", "" );
+//	Cvar_Set( "xb_PopupStringX", "" );
+
+	// Set the menu cvars
+	switch( popup )
+	{
+		case XB_POPUP_DELETE_CONFIRM:
+			Cvar_Set( "xb_errMessage", "@MENUS_DELETE_SAVE_PROMPT" );
+			Cvar_Set( "xb_PopupTitle", "" );
+			break;
+	
+		case XB_POPUP_DISKFULL:
+			Cvar_Set( "xb_errMessage", va( SE_GetString("MENUS_NO_SPACE_PLEASE_FREE"), blocksNeeded ) );
+			break;
+
+		case XB_POPUP_DISKFULL_DURING_SAVE:
+			Cvar_Set( "xb_errMessage", "@MENUS_NO_SPACE" );
+			break;
+
+		case XB_POPUP_YOU_ARE_DEAD:
+			Cvar_Set( "xb_errMessage", "@MENUS_SAVE_WHEN_DEAD");
+			break;
+
+		case XB_POPUP_SAVE_COMPLETE:
+			Cvar_Set( "xb_errMessage", "@MENUS_SAVE_GAME_COMPLETE" );
+			Cvar_Set( "xb_PopupTitle", "" );
+			break;
+
+		case XB_POPUP_OVERWRITE_CONFIRM:
+			Cvar_Set( "xb_errMessage", "@MENUS_OVERWRITE_PROMPT" );
+			Cvar_Set( "xb_PopupTitle", "" );
+			break;
+
+		case XB_POPUP_LOAD_FAILED:
+			{  	
+				Cvar_Set( "xb_errMessage", "@MENUS_DAMAGED_SAVE" );	
+			}
+			break;
+
+		case XB_POPUP_LOAD_CHECKPOINT_FAILED:
+			{  char messagebuffer[128];
+				
+				strcpy (messagebuffer,SE_GetString("MENUS_NO_LOAD_1"));
+				strcat (messagebuffer, " ");
+				strcat (messagebuffer, SE_GetString("MENUS_CHECKPOINT_LOWER"));
+				strcat (messagebuffer, " ");
+				strcat (messagebuffer,SE_GetString("MENUS_NO_LOAD_2"));
+				Cvar_Set( "xb_errMessage", messagebuffer );
+				Cvar_Set( "xb_PopupTitle", "" );
+			}
+			break;
+		case XB_POPUP_QUIT_CONFIRM:
+			{  
+				Cvar_Set( "xb_errMessage", "@MENUS_QUIT_CURRENT_GAME_AND");
+				Cvar_Set( "xb_PopupTitle",  "@MENUS_QUIT" );
+			}
+			break;
+
+		case XB_POPUP_SAVING:
+			{  
+				Cvar_Set( "xb_errMessage", "@MENUS_SAVING");
+			}
+			break;
+
+
+		case XB_POPUP_LOAD_CONFIRM:
+			{
+				if ( svs.clients[0].frames[svs.clients[0].netchan.outgoingSequence & PACKET_MASK].ps.stats[STAT_HEALTH] <= 0)
+				{
+					// player dead
+					Cvar_Set( "xb_errMessage", "@MENUS_LOAD_CONFIRM2");
+				}
+				else
+				{
+					Cvar_Set( "xb_errMessage", "@MENUS_LOAD_CONFIRM");
+				}
+			}
+			break;
+		case XB_POPUP_LOAD_CONFIRM_CHECKPOINT:
+			{
+				if ( svs.clients[0].frames[svs.clients[0].netchan.outgoingSequence & PACKET_MASK].ps.stats[STAT_HEALTH] <= 0)
+				{
+					// player dead
+					Cvar_Set( "xb_errMessage", "@MENUS_LOAD_CONFIRM2");
+				}
+				else
+				{
+					Cvar_Set( "xb_errMessage", "@MENUS_LOAD_CONFIRM");
+				}
+				break;
+			}
+		case XB_POPUP_TOO_MANY_SAVES:
+			{
+				Cvar_Set( "xb_errMessage", "@MENUS_TOO_MANY_SAVES");
+			}
+			break;
+		case XB_POPUP_CONFIRM_INVITE:
+			{
+				Cvar_Set( "xb_errMessage", "@MENUS_CONFIRM_JOIN" );
+				break;
+			}
+		case XB_POPUP_CORRUPT_SETTINGS:
+			{
+				Cvar_Set( "xb_errMessage", "@MENUS_CORRUPT_SETTINGS" );
+				break;
+			}
+		case XB_POPUP_DISKFULL_BOTH:
+			{
+				Cvar_Set( "xb_errMessage", va( SE_GetString("MENUS_NO_SPACE_PLEASE_FREE"), blocksNeeded ) );
+				break;
+			}
+
+		case XB_POPUP_TESTING_SAVE:
+			{
+				Cvar_Set( "xb_errMessage", "@MENUS_LOADING_SAVEGAME" );
+				break;
+			}
+
+		case XB_POPUP_CORRUPT_SCREENSHOT:
+			{
+				Cvar_Set( "xb_errMessage", "@MENUS_CORRUPT_SCREENSHOT" );
+				break;
+			}
+
+		case XB_POPUP_CONFIRM_NEW_1:
+		case XB_POPUP_CONFIRM_NEW_2:
+		case XB_POPUP_CONFIRM_NEW_3:
+			{
+				Cvar_Set( "xb_errMessage", "@MENUS_CONFIRM_NEW_MISSION" );
+				break;
+			}
+
+		default:
+			Com_Error( ERR_FATAL, "ERROR: Invalid popup type %i\n", popup );
+	}
+
+	// Display the menu - but first make sure to close it, in case it's open.
+	// Fixes a bug where openMenuCount gets screwed up.
+	Menus_CloseByName( "xbox_error_popup" );
+	Menus_ActivateByName( "xbox_error_popup" );
+}
+
+extern unsigned long getGameBlocks(char * filename);
+// Accepts a response to the currently dislpayed popup.
+// Does whatever is necessary based on which popup was visible, and what the response was.
+void UI_xboxPopupResponse( void )
+{
+	if( sPopup == XB_POPUP_NONE )
+		Com_Error( ERR_FATAL, "ERROR: Got a popup response with no valid context\n" );
+
+	int response = Cvar_VariableIntegerValue( "xb_errResponse" );
+
+	if(response == 2)
+		return;
+
+
+	switch( sPopup )
+	{
+
+		case XB_POPUP_DELETE_CONFIRM:
+			if( response == 0 )			// A
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+				ui_DeleteGame();
+			}
+			else if( response == 1 )	// B
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+			}
+			break;
+
+		case XB_POPUP_DISKFULL:
+			if( response == 0 )			// A continue
+			{
+				// Continue without saving
+				Menus_CloseByName( "xbox_error_popup" );
+				XB_Startup( STARTUP_INVITE_CHECK );
+				return;
+			}
+			else if( response == 1 )	// B 
+			{
+				openDashBoardMemory();
+			}
+			break;
+
+		case XB_POPUP_DISKFULL_DURING_SAVE:
+			if( response == 0 )			// A continue
+			{
+				// Continue (without saving)
+				Menus_CloseByName( "xbox_error_popup" );
+			}
+			else if( response == 1 )	// B 
+			{
+				return;
+			}
+			break;
+		case XB_POPUP_YOU_ARE_DEAD:
+			if( response == 0)
+			{
+				// Continue without saving
+				Menus_CloseByName( "xbox_error_popup" );
+			}
+			else
+			{
+				return;
+			}
+			break;
+		case XB_POPUP_SAVE_COMPLETE	:
+			if( response == 0 )			// A continue
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+			}
+			else
+			{
+				return;
+			}
+			break;
+		case XB_POPUP_OVERWRITE_CONFIRM:
+			if( response == 0 )			// A
+			{
+				unsigned long blocks;
+				unsigned long gameblocks;
+				blocks = SG_BlocksLeft();
+				if ( blocks < SG_SaveGameSize())
+				{
+					//read the blocks out of the game?
+					//gameblocks = getGameBlocks(s_savedata[s_savegame.currentLine].currentSaveFileName);
+				//	if ( blocks + gameblocks >= SG_SaveGameSize())
+					{
+						itemDef_t item;
+						item.parent = Menu_GetFocused();
+						item.window.flags = 0;	//err, item is fake here, but we want a valid flag before calling runscript
+						Item_RunScript( &item, "uiscript genericpopup saving ; delay 1 ;  uiScript deletegame ; uiScript savegame ; defer always ; close xbox_error_popup ; uiScript genericpopup savecomplete" );
+						return;
+					//	UI_xboxErrorPopup(XB_POPUP_DISKFULL);
+					}
+				//	else
+				//	{
+				//		Menus_CloseByName( "xbox_error_popup" );
+				//		UI_xboxErrorPopup(XB_POPUP_DISKFULL);
+				//		return;
+				//	}
+				}
+				else
+				{
+					itemDef_t item;
+					item.parent = Menu_GetFocused();
+					item.window.flags = 0;	//err, item is fake here, but we want a valid flag before calling runscript
+					Item_RunScript( &item, "uiscript genericpopup saving ; delay 1 ;  uiScript deletegame ; uiScript savegame ; defer always ; close xbox_error_popup ; uiScript genericpopup savecomplete" );
+					return;
+					//DELETE
+		//				ui_DeleteGame();
+						//SAVE
+		//				ui_SaveGame();
+		//				//call to show save success
+
+				}
+			//	Menus_CloseByName( "xbox_error_popup" );
+				
+			}
+			else if( response == 1 )	// B
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+			}
+			break;
+		
+		case XB_POPUP_LOAD_FAILED:
+			if( response == 0 )			// A continue
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+			}
+			else
+			{
+				return;
+			}
+			break;
+
+		case XB_POPUP_LOAD_CHECKPOINT_FAILED:
+			if( response == 0 )			// A continue
+			{
+				
+				if ( cls.state == CA_ACTIVE ) 
+				{
+					Menus_CloseAll();
+					UI_SetActiveMenu( "ingame",NULL );
+				}
+				else
+					Menus_CloseByName( "xbox_error_popup" );
+			
+			}
+			else
+			{
+				return;
+			}
+			break;
+		case XB_POPUP_QUIT_CONFIRM:
+			if( response == 0 )			// A continue
+			{		
+				Cbuf_ExecuteText( EXEC_APPEND, "disconnect\n" );
+				trap_Key_SetCatcher( KEYCATCH_UI );
+				Menus_CloseAll();
+			}
+			else
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+			}
+			break;
+
+		case XB_POPUP_SAVING:
+			return;
+		case XB_POPUP_LOAD_CONFIRM:
+			if( response == 0 )			// A continue
+			{		
+				itemDef_t item;
+				item.parent = Menu_GetFocused();
+				item.window.flags = 0;	//err, item is fake here, but we want a valid flag before calling runscript
+				Item_RunScript( &item, "uiscript loadgame" );
+				return;
+			}
+			else
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+			}
+			break;
+		case XB_POPUP_LOAD_CONFIRM_CHECKPOINT:
+			if( response == 0 )
+			{
+				// Hackery
+				Menus_CloseByName( "xbox_error_popup" );
+				UI_xboxErrorPopup( XB_POPUP_TESTING_SAVE );
+				ui.Cmd_ExecuteText(EXEC_APPEND,"wait ; wait ; wait ; wait ; load *respawn\n");
+				return;
+			}
+			else
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+
+			}
+			break;
+		case XB_POPUP_TOO_MANY_SAVES:
+			if(response == 0)
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+			}
+			else
+			{
+				return;
+			}
+			break;
+
+		case XB_POPUP_CONFIRM_INVITE:
+			if( response == 0 )		// A - join game
+			{
+				// Never returns
+				extern void Sys_JoinInvite( void );
+				Sys_JoinInvite();
+			}
+			else
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+				XB_Startup( STARTUP_FINISH );
+				return;
+			}
+		
+		case XB_POPUP_CORRUPT_SETTINGS:
+			if( response == 0 )		// A - accept
+			{
+				Settings.Delete();
+				Menus_CloseByName( "xbox_error_popup" );
+				XB_Startup( STARTUP_COMBINED_SPACE_CHECK );
+				return;
+			}
+			else
+			{
+				return;
+			}
+
+		case XB_POPUP_DISKFULL_BOTH:
+			if( response == 0 )
+			{
+				// Continue without saving
+				Settings.Disable();
+				Menus_CloseByName( "xbox_error_popup" );
+				XB_Startup( STARTUP_INVITE_CHECK );
+				return;
+			}
+			else
+			{
+				// Go to dashboard to free up memory
+				openDashBoardMemory();
+			}
+
+		case XB_POPUP_TESTING_SAVE:
+			// No response is valid, this is just informational while the save is read/checked
+			return;
+
+		case XB_POPUP_CORRUPT_SCREENSHOT:
+			if( response == 0 )		// A - continue
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+				break;
+			}
+			else
+			{
+				// Invalid response
+				return;
+			}
+
+		case XB_POPUP_CONFIRM_NEW_1:
+		case XB_POPUP_CONFIRM_NEW_2:
+		case XB_POPUP_CONFIRM_NEW_3:
+			if( response == 0 )		// A - continue
+			{
+				Cvar_SetValue( "cl_paused", 1 );
+				UI_DecrementForcePowerLevel();
+				Menus_CloseAll();
+				Menus_OpenByName( va("ingameMissionSelect%d", (sPopup - XB_POPUP_CONFIRM_NEW_1) + 1) );
+			}
+			else
+			{
+				Menus_CloseByName( "xbox_error_popup" );
+			}
+			break;
+
+		default:
+			Com_Error( ERR_FATAL, "ERROR: Invalid popup type %i\n", sPopup );
+	}
+
+	// If we get here, the user gave a valid response to our popup. Clear the context:
+	sPopup = XB_POPUP_NONE;
+}
+
+

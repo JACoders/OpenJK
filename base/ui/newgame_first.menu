@@ -1,0 +1,926 @@
+//-----------------------------------------------------------------------
+//	NEWGAME MENU
+//
+//	Called only from main menu. Has the transition of fields from main menu 
+//	to new game menu
+//
+//-----------------------------------------------------------------------
+{
+						   
+	menuDef 
+	{
+		name					"newgamefirstMenu"
+		fullScreen				1						// MENU_TRUE				
+		rect					0 0 640 480					// Size and position of the menu
+		visible					1						// Visible on open
+		focusColor				1 1 1 1						// Focus color for text and items
+		descX					320
+		descY					426
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER		
+
+		onOpen
+		{ 
+				play			"sound/interface/transition.wav" 
+				setcvar			g_spskill 1
+				setcvar			cg_crosshairForceHint 1
+				setcvar			handicap 100
+				setfocus		medbut
+				hide			diff1
+				show			diff2
+				hide			diff3
+				hide			diff4
+				setitemcolor		easybut	forecolor	1 .682 0 1
+				setitemcolor		medbut	forecolor	1  1   1 1
+				setitemcolor		hardbut	forecolor 	1 .682 0 1
+				setitemcolor		vhardbut forecolor	1 .682 0 1
+				transition		ring	161 114 320 320 321 273 0 0 20 25
+				transition		vid	200 144 320 320 321 273 0 0 10 15
+				transition		cwin	156 154 320 240 321 273 0 0 20 25
+				transition		lwin	0 150 320 240 -320 150 320 240 20 25
+				transition		lbut	36 310 130 24 170 126 130 24 20 25
+				transition		lbut_u	36 293 130 24 -284 293 130 24 20 25
+				transition		nbut	36 212 130 24 7 126 130 24 20 25
+				transition		nbut_u	36 194 130 24 -284 194 130 24 20 25
+				transition		rwin	320 150 320 240 640 150 320 240 20 25
+				transition		cbut	456 212 130 24 340 126 130 24 20 25	
+				transition		cbut_u	448 194 146 24 768 194 146 24 20 25
+				transition		sbut	456 310 130 24 502 126 130 24 20 25
+				transition		sbut_u	456 292 130 24 776 310 130 24 20 25
+				//newgame stuff
+				//transition	but_fr		160 480 320 320 160 160 320 320 15 25
+				transition		easy	225 526 190 40 225 196 190 40 15 25 
+				transition		med	225 578 190 40 225 243 190 40 15 25
+				transition		hard	225 629 190 40 225 289 190 40 15 25
+				transition		vhard	225 680 190 40 225 335 190 40 15 25
+				//menu bar
+//				transition		lf_fr	-320 50 320 160 0 50 320 160 20 25
+				transition		lf_fr	-320 50 320 160 0 50 320 160 2 25
+				transition		rt_fr	640 50 320 160 320 50 320 160 20 25
+				//transition	exit		255 444 130 24 59 444 130 24 20 25
+				
+				transition		backbutton -320 444 130 24    59 444 130 24	20 25  
+				transition		nextbutton 834 444 130 24    455 444 130 24	20 25  
+
+				fadein			newgame_title
+				fadein			difficulty_background
+
+		}
+									
+		onESC 
+		{ 
+			setitemcolor			newgame_title		forecolor .549 .854 1 0
+			setitemcolor			difficulty_background	backcolor 0 0 .6 0.5
+			play				"sound/interface/esc.wav" 
+			close				newgamefirstMenu
+			open				mainMenu
+		}
+
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	MENU BACKGROUND
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				really_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				156 154 320 240
+			background			"gfx/menus/main_centerblue"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				vid
+			group				center
+			style				WINDOW_STYLE_SHADER
+			rect				200 144 256 256
+			background			"gfx/menus/videologo"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 160 480
+			background			"gfx/menus/menu_side_text"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text_b
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				480 0 160 480
+			background			"gfx/menus/menu_side_text_right"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}	
+	
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/main_background"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				ring
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				161 114 320 320
+			background			"gfx/menus/menu_rotate_ring_b"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				cwin
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				156 154 320 240
+			background			"gfx/menus/main_centerwindow"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				lwin
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 150 320 240
+			background			"gfx/menus/main_leftwindow"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				rwin
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				320 150 320 240
+			background			"gfx/menus/main_rightwindow"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		// The starwars logo on the top
+		itemDef 
+		{
+			name				starwars
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				107 8 428 112
+			background			"gfx/menus/jediacademy"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		
+		//----------------------------------------------------------------------------------------------
+		//
+		//	TOP MENU BUTTONS
+		//
+		//----------------------------------------------------------------------------------------------
+
+		// Big button "NEW"
+		itemDef 
+		{
+			name				newbutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			//rect				36 212 130 24
+			rect				7 126 130 24
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				newgamebutton_undertext
+			group				nbut_u
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				36 194 130 24
+			text				@MENUS_NEW
+			font				1
+			textscale			.7
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			forecolor			.79 .64 .22 .2
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				newgamebutton
+			group				nbut
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				7 126 130 24
+			text				@MENUS_NEW
+			descText			@MENUS_START_A_NEW_GAME
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			//forecolor			.79 .64 .22 1
+			forecolor			1 1 1 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			newbutton_glow
+			}
+			mouseExit 
+			{ 
+				hide			newbutton_glow 
+			}	  	  
+		}
+
+		// Big button "LOAD"
+		itemDef 
+		{
+			name				loadgamebutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			//rect				36 310 130 24
+			rect				170 126 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				loadgamebutton_undertext
+			group				lbut_u
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				36 293 130 24
+			text				@MENUS_LOAD
+			font				1
+			textscale			.7
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			forecolor			.79 .64 .22 .2
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				loadgamebutton
+			group				lbut
+			text				@MENUS_LOAD
+			descText			@MENUS_LOAD_A_SAVED_GAME
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				36 310 130 24
+			textaligny			0
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			loadgamebutton_glow 
+				show			loadgamebutton_undertext
+			}
+			mouseExit 
+			{ 
+				hide			loadgamebutton_glow 
+				hide			loadgamebutton_undertext
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" 
+				close			all 
+				open			loadgameMenu 
+			}
+		}
+
+		// Big button "CONTROLS"
+		itemDef 
+		{
+			name				controlsbutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			//rect				441 212 160 24
+			rect				340 126 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				controlsbutton_undertext
+			group				cbut_u
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				448 194 146 24
+			text				@MENUS_CONTROLS2
+			font				1
+			textscale			.7
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			forecolor			.79 .64 .22 .2
+			visible				0
+			decoration
+		}
+
+		itemDef {
+			name				controlsbutton
+			group				cbut
+			text				@MENUS_CONTROLS
+			descText			@MENUS_CONFIGURE_GAME_CONTROLS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				456 212 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible				1
+			 
+			mouseEnter 
+			{ 
+				show			controlsbutton_glow 
+				show			controlsbutton_undertext
+			}
+			mouseExit 
+			{ 
+				hide			controlsbutton_glow 
+				hide			controlsbutton_undertext
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" 
+				close			all 
+				open			controlsMenu 
+			}
+		}
+
+		// Big button "SETUP"
+		itemDef 
+		{
+			name				setupbutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			//rect				456 310 130 24
+			rect				502 126 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				setupbutton_undertext
+			group				sbut_u
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				456 292 130 24
+			text				@MENUS_SETUP
+			font				1
+			textscale			.7
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			forecolor			.79 .64 .22 .2
+			visible				0
+			decoration
+		}
+
+		itemDef {
+			name				setupbutton
+			group				sbut
+			text				@MENUS_SETUP
+			descText			@MENUS_CONFIGURE_GAME_SETTINGS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				456 310 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible				1
+			 
+			mouseEnter 
+			{ 
+				show			setupbutton_glow 
+				show			setupbutton_undertext
+			}
+			mouseExit 
+			{ 
+				hide			setupbutton_glow 
+				hide			setupbutton_undertext
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" 
+				close			all 
+				open			setupMenu 
+			}
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//   NEW GAME MENU specific stuff
+		//
+		//----------------------------------------------------------------------------------------------		
+		/*itemDef 
+		{
+			name				button_frame
+			group				but_fr
+			style				WINDOW_STYLE_SHADER
+			rect				160 160 320 320
+			background			"gfx/menus/newgame_boxes"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}*/
+
+		itemDef 
+		{
+			name				left_frame
+			group				lf_fr
+			style				WINDOW_STYLE_SHADER
+			rect				0 50 320 160
+			background			"gfx/menus/menu_boxes_left"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				right_frame
+			group				rt_fr
+			style				WINDOW_STYLE_SHADER
+			rect				320 50 320 160
+			background			"gfx/menus/menu_boxes_right"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		// Select a skill level title
+		itemDef 
+		{
+			name				newgame_title
+			group				none
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS_SELECT_SKILL
+      			rect				100 164 440 16
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			225
+			textaligny			-1	
+			forecolor			.549 .854 1 0
+      			visible				1 
+      			decoration 
+		}
+
+		itemDef 
+		{
+			name				diff1
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				225 196 190 40 
+			background			"gfx/menus/menu_buttonback"			// Box around difficulty 1
+			forecolor			1 1 1 1
+			visible				0 
+			decoration
+		}
+
+		// EASY difficulty button
+		itemDef 
+		{
+			name				easybut
+			group				easy
+			text				@MENUS_APPRENTICE
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			font				3
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			rect				225 196 190 40 
+			textalignx			95
+			textaligny			8
+			forecolor			1 .682 0 1
+			visible				1		
+			descText			@MENUS_EASY_GAME_SETTINGS
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				setcvar			g_spskill 0
+				setcvar			cg_crosshairForceHint 1
+				setcvar			handicap 100
+				show			diff1 
+				hide			diff2
+				hide			diff3
+				hide			diff4
+				setitemcolor		easybut		forecolor 	 1   1  1 1
+				setitemcolor		medbut		forecolor 	 1 .682 0 1
+				setitemcolor		hardbut		forecolor 	 1 .682 0 1
+				setitemcolor		vhardbut 	forecolor 	 1 .682 0 1
+			}
+
+		}
+
+		itemDef 
+		{
+			name				diff2
+			group				med
+			style				WINDOW_STYLE_SHADER
+			rect				225 243 190 40 
+			background			"gfx/menus/menu_buttonback"		// Box around difficulty 2
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		// MEDIUM difficulty button
+		itemDef 
+		{
+			name				medbut
+			group				med
+			text				@MENUS_JEDI
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			font				3
+			textscale			1
+			rect				225 243 190 40 
+			textalignx			95
+			textaligny			8
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			forecolor			1 .682 0 1
+			visible			1
+			descText			@MENUS_NORMAL_GAME_SETTINGS
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				setcvar			g_spskill 1
+				setcvar			cg_crosshairForceHint 1
+				setcvar			handicap 100
+				hide			diff1
+				show			diff2
+				hide			diff3
+				hide			diff4
+				setitemcolor		easybut		forecolor 	 1 .682 0 1
+				setitemcolor		medbut		forecolor 	  1   1  1   1
+				setitemcolor		hardbut		forecolor 	 1 .682 0 1
+				setitemcolor		vhardbut 	forecolor 	 1 .682 0 1
+			}
+
+		}
+
+		itemDef 
+		{
+			name				diff3
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				225 289 190 40 
+			background			"gfx/menus/menu_buttonback"		// Box around difficulty 3
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+	
+		// HARD difficulty button
+		itemDef 
+		{
+			name				hardbut
+			group				hard
+			text				@MENUS_JEDI_KNIGHT
+			font				3
+			textscale			1
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				225 289 190 40 
+			textalignx			95
+			textaligny			8
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DIFFICULT_GAME_SETTINGS
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				setcvar			g_spskill 2
+				setcvar			cg_crosshairForceHint 0
+				setcvar			handicap 100
+				hide			diff1
+				hide			diff2
+				show			diff3
+				hide			diff4
+				setitemcolor		easybut		forecolor 	 1 .682 0 1
+				setitemcolor		medbut		forecolor 	 1 .682 0 1
+				setitemcolor		hardbut		forecolor 	  1   1  1 1
+				setitemcolor		vhardbut 	forecolor 	1 .682 0 1
+			}
+
+		}
+
+		itemDef 
+		{
+			name				diff4
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				225 335 190 40 
+			background			"gfx/menus/menu_buttonback"			// Box around difficulty 4
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+	
+		// VERY HARD difficulty button
+		itemDef 
+		{
+			name				vhardbut
+			group				vhard
+			text				@MENUS_JEDI_MASTER
+			font				3
+			textscale			1
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				225 335 190 40 
+			textalignx			95
+			textaligny			8
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			forecolor			1 .682 0 1
+			visible				1	
+			descText			@MENUS_EXTREMELY_DIFFICULT_GAME
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				setcvar			g_spskill 2
+				setcvar			cg_crosshairForceHint 0
+				setcvar			handicap 50
+				hide			diff1
+				hide			diff2
+				hide			diff3
+				show			diff4
+				setitemcolor		easybut		forecolor 	 1 .682 0 1
+				setitemcolor		medbut		forecolor 	 1 .682 0 1
+				setitemcolor		hardbut		forecolor 	 1 .682 0 1
+				setitemcolor		vhardbut 	forecolor 	  1   1  1 1
+			}
+
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	OTHER MAIN MENU BUTTONS
+		//
+		//----------------------------------------------------------------------------------------------
+		// BACK button in lower left corner
+		itemDef 
+		{
+			name				backbutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				59 444 130 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				backbutton
+			group				fade_buttons
+			text				@MENUS_BACK
+			descText			@MENUS_BACKTOMAIN
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				59 444 130 24  
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			backbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			backbutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/esc.wav" 
+				close			all ; 
+				open			mainMenu 
+			}
+		}
+		// EXIT button in lower left corner
+		itemDef 
+		{
+			name				exitgamebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				255 444 130 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				exitgamebutton
+			group				exit
+			text				@MENUS_EXIT
+			descText			@MENUS_JEDI_KNIGHT_II
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				255 444 130 24 
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			exitgamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			exitgamebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/weapons/saber/saberoff.mp3" 
+				close			all 
+				open			quitMenu 
+			}
+		}
+
+		// NEXT button
+		itemDef 
+		{
+			name				next_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				455 444 130 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				nextbutton
+			group				fade_buttons
+			text				@MENUS_NEXT
+			descText			@MENUS_NEXT_DESC
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				455 444 130 24 
+			font				3
+			textscale			1
+			textalignx			65
+			textaligny			-1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			forecolor			1 .682 0 1
+			visible				1
+	      		action 
+			{ 
+				play			"sound/interface/button1.wav" 
+				close			all 
+				open			characterMenu 
+			}
+			mouseEnter 
+			{ 
+				show			next_glow
+			}
+			mouseExit 
+			{ 
+				hide			next_glow
+			}	  	  
+		}
+
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

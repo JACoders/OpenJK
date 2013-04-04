@@ -1,0 +1,38 @@
+cultist
+{
+	playerModel	cultist
+	weapon	WP_BLASTER
+	altfire 1
+	FP_LEVITATION	3
+	FP_SPEED		2
+	FP_PUSH		2
+	FP_PULL		2
+	FP_GRIP		1
+	FP_LIGHTNING	1
+	FP_DRAIN		1
+	rank		ltcomm
+	reactions	1
+	aim			1
+	move		1
+	aggression	1
+	evasion		1
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		human
+	class		CLASS_REBORN
+	snd			cultist1
+	sndcombat	cultist1
+	sndjedi		cultist1
+	yawSpeed	60
+	walkSpeed	45
+	runSpeed	180
+	health		50
+	dismemberProbHead	0
+	dismemberProbArms	20
+	dismemberProbLegs	0
+	dismemberProbHands	30
+	dismemberProbWaist	0
+}

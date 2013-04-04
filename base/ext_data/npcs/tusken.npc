@@ -1,0 +1,27 @@
+tusken
+{
+	playerModel	tusken
+	weapon		WP_TUSKEN_STAFF
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	health 		50
+	rank		crewman
+	playerTeam	TEAM_FREE
+	enemyTeam	TEAM_FREE
+	class		CLASS_TUSKEN
+	snd			tusken
+	sndcombat	tusken
+	sndextra	tusken
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

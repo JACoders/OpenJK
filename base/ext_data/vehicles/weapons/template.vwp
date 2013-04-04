@@ -1,0 +1,26 @@
+//name		//(STRING)name of weapon, use same name in .veh file, use no spaces or special characters
+//{
+//name			//(STRING) Unique name of weapon, must be same as the name above
+//projectile	//(INT)0 = traceline, 1 = projectile (missile entity)
+//hasGravity	//(INT)0 = no grav, 1 = normal grav (on projectiles only)
+//ionWeapon		//(INT) 0 = not an ion weapon, 1 = disables ship shields and sends them out of control
+//muzzleFX	//(STRING)path to Muzzle Effect, starting from "effects"
+//shotFX		//(STRING)path to Shot Effect, starting from "effects"
+//impactFX	//(STRING)path to Impact Effect, starting from "effects"
+//g2MarkShaderHandle	//(STRING) name of shader to use for G2 marks made on other models when hit by this projectile
+//g2MarkSize		//(FLOAT) size (diameter) of the ghoul2 mark
+//loopSound	//(STRING)path to loopSound, starting from "base"
+//speed		//(FLOAT)speed of projectile/range of traceline
+//homing		//(FLOAT)0.0 = not homing, 0.5 = half vel to targ, half cur vel, 1.0 = all vel to targ
+//homingFOV		//(FLOAT, -1.0 to 1.0) default 0.  Missile will lose lock on if DotProduct of missile direction and direction to target ever drops below this (-1 to 1, -1 = never lose target, 0 = lose if ship gets behind missile, 1 = pretty much will lose it's target right away)
+//lockOnTime	//(INT)0 = no lock time needed, else # of ms needed to lock on
+//damage		//(INT)damage done when traceline or projectile directly hits target
+//splashDamage	//(INT)damage done to ents in splashRadius of end of traceline or projectile origin on impact
+//splashRadius	//(FLOAT)radius that ent must be in to take splashDamage (linear fall-off)
+//ammoPerShot	//(INT)how much "ammo" each shot takes
+//health		//(INT)if non-zero, projectile can be shot, takes this much damage before being destroyed
+//width		//(FLOAT)width of traceline or bounding box of projecile (non-rotating!)
+//height  	//(FLOAT)height of traceline or bounding box of projecile (non-rotating!)
+//lifetime	//(INT) after this many milliseconds, it will remove itself
+//explodeOnExpire	//(INT) if set to 1, it will explode when lifetime is up, not just remove itself
+//}

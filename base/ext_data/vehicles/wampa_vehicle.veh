@@ -1,0 +1,41 @@
+wampa_vehicle
+{
+name			wampa_vehicle
+type			VH_ANIMAL
+numHands		2
+lookYaw			45
+lookPitch		45
+length			128
+width			32
+height			32
+centerOfGravity	"-0.222 0 0"
+speedMax		350
+speedMin		-80
+acceleration	8
+decelIdle		20
+strafePerc		0.0
+bankingSpeed	0.0
+rollLimit		2
+pitchLimit		0
+braking			10
+mouseYaw		0.006
+turningSpeed	5
+turnWhenStopped	0
+traction		100
+friction		100
+maxSlope		0.65
+mass			200
+armor 			200
+toughness 		30.0
+model			wampa
+riderAnim		BOTH_FORCEHEAL_START
+radarIcon		"gfx/menus/radar/wampa"
+soundOn 		"sound/vehicles/wampa/on.mp3"
+
+cameraOverride		1
+cameraRange			150
+cameraVertOffset	0
+cameraPitchOffset	-30
+cameraFOV			80
+cameraAlpha			0
+}

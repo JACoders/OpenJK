@@ -1,0 +1,21 @@
+//Siege team definition file.
+
+name "Siege1_Imperials"
+FriendlyShader "sprites/imperial_attack" //Name of shader to display above heads of teammates (to others on this team)
+
+Classes
+{
+//Infantry
+	class1		"Imperial Snowtrooper"
+//Heavy
+	class2		"Rocket Trooper"
+//Demo
+	class3		"Imperial Demolitionist"
+//Vanguard
+	class4		"Imperial Sniper"
+//Support
+	class5		"Imperial Tech"
+//Jedi
+	class6		"Dark Jedi Invader"
+//	class7		"Dark Side Marauder"
+}

@@ -1,0 +1,35 @@
+//---------------------------------------------------------
+// jk2mpingame.txt 
+// 
+// .menu files to load for the JAMP ingame menu system
+//
+//---------------------------------------------------------
+{
+	loadMenu { "ui/jamp/connect.menu"			}
+
+	loadMenu { "ui/jamp/ingame_about.menu" 		}
+	loadMenu { "ui/jamp/ingame_addbot.menu" 		}
+	loadMenu { "ui/jamp/ingame_callvote.menu" 		}
+	loadMenu { "ui/jamp/ingame_controls.menu" 		}
+	loadMenu { "ui/jamp/ingame_join.menu" 			}
+
+	loadMenu { "ui/jamp/ingame_leave.menu" 		}
+ 	loadMenu { "ui/jamp/ingame.menu" 			}
+	loadMenu { "ui/jamp/ingame_player.menu" 		}
+	loadMenu { "ui/jamp/ingame_player2.menu" 		}
+	loadMenu { "ui/jamp/ingame_playerforce.menu" 		}
+
+	loadMenu { "ui/jamp/ingame_saber.menu" 		}
+	loadMenu { "ui/jamp/ingame_setup.menu" 		}
+	loadMenu { "ui/jamp/ingame_siegeobjectives.menu"	}
+	loadMenu { "ui/jamp/ingame_vote.menu" 			}
+	loadMenu { "ui/jamp/ingame_orders.menu" 		}
+
+	loadMenu { "ui/jamp/ingame_voicechat.menu" 		}
+	loadMenu { "ui/jamp/siege_msg.menu" 			}
+	loadMenu { "ui/jamp/siege_class.menu" 			}
+	loadMenu { "ui/jamp/vid_warning.menu" 			}
+
+	loadMenu { "ui/jamp/ingame_objectives.menu" 		}
+}
+

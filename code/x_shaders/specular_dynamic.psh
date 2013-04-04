@@ -1,0 +1,15 @@
+xps.1.1
+
+tex t0					; normal map + gloss map
+
+texm3x2pad t1, t0_bx2   ; u = t0 dot (t1) light vector
+texm3x2tex t2, t0_bx2   ; v = t0 dot (t2) half vector
+						; fetch texture 4 at u, v
+						; t2.a = (N dot H)^16
+						
+tex t3					; ranged point light vector
+
+mul_x4 r1, t0.a, t2.a		; (N dot H)^16 * gloss value
+
+; Factor in falloff
+mul r0.rgb, r1, t3.a

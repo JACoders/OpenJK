@@ -1,0 +1,76 @@
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_botlib", "x_botlib\x_botlib.vcproj", "{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_exe", "x_exe\x_exe.vcproj", "{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_jk2cgame", "x_jk2cgame\x_jk2cgame.vcproj", "{C79C9037-8F32-4833-A276-96B2FB96CCA5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_jk2game", "x_jk2game\x_jk2game.vcproj", "{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_ui", "x_ui\x_ui.vcproj", "{613EA919-780E-416D-90A9-67D3EB27F899}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "goblib", "goblib\goblib.vcproj", "{0959DD50-BCBA-4551-9617-E6FD4DF85298}"
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = Final
+		ConfigName.2 = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.0 = {613EA919-780E-416D-90A9-67D3EB27F899}
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.1 = {A0451C0A-0B2F-400A-BBB1-98F517FAB30B}
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.2 = {C79C9037-8F32-4833-A276-96B2FB96CCA5}
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.3 = {ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.4 = {0959DD50-BCBA-4551-9617-E6FD4DF85298}
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Debug.ActiveCfg = Debug|Xbox
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Debug.Build.0 = Debug|Xbox
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Final.ActiveCfg = FinalBuild|Xbox
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Final.Build.0 = FinalBuild|Xbox
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Release.ActiveCfg = Release|Xbox
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Release.Build.0 = Release|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Debug.ActiveCfg = Debug|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Debug.Build.0 = Debug|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Final.ActiveCfg = FinalBuild|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Final.Build.0 = FinalBuild|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Release.ActiveCfg = Release|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Release.Build.0 = Release|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Debug.ActiveCfg = Debug|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Debug.Build.0 = Debug|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Final.ActiveCfg = FinalBuild|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Final.Build.0 = FinalBuild|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Release.ActiveCfg = Release|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Release.Build.0 = Release|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Debug.ActiveCfg = Debug|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Debug.Build.0 = Debug|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Final.ActiveCfg = FinalBuild|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Final.Build.0 = FinalBuild|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Release.ActiveCfg = Release|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Release.Build.0 = Release|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Debug.ActiveCfg = Debug|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Debug.Build.0 = Debug|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Final.ActiveCfg = FinalBuild|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Final.Build.0 = FinalBuild|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Release.ActiveCfg = Release|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Release.Build.0 = Release|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Debug.ActiveCfg = Debug|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Debug.Build.0 = Debug|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Final.ActiveCfg = FinalBuild|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Final.Build.0 = FinalBuild|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Release.ActiveCfg = Release|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Release.Build.0 = Release|Xbox
+	EndGlobalSection
+	GlobalSection(SolutionItems) = postSolution
+		Item:1 = CommandLine.txt
+		Item:2 = install.bat
+		Item:3 = VU.bat
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+	GlobalSection(DevPartner) = postSolution
+	EndGlobalSection
+EndGlobal

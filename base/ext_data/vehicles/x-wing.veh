@@ -1,0 +1,125 @@
+X-Wing
+{
+name			X-Wing
+type			VH_FIGHTER
+numHands		2
+hideRider		1
+killRiderOnDeath 	1
+lookYaw			45
+length			460
+width			460
+height			128
+g2radius		460
+centerOfGravity		"-0.222 0 0"
+speedMax		2600
+turboSpeed		4000
+turboDuration	2000
+turboRecharge	6000
+speedMin		0
+acceleration	15
+decelIdle		8
+accelIdle		10
+speedIdle		800
+//test: speed stays at whatever you last set it to...
+throttleSticks	1
+strafePerc		0.085
+bankingSpeed		0.5
+rollLimit		35
+pitchLimit		60
+braking			20
+mouseYaw		0.0022
+mousePitch		0.0022
+turningSpeed		4.2
+turnWhenStopped		0
+traction		12
+friction		0.4
+speedDependantTurning	1
+maxSlope		0.65
+mass			1000
+//armor 			1000
+//malfunctionArmorLevel	666
+//health_front	300
+//health_back		200
+//health_right	250
+//health_left		250
+//shields		600
+armor 		1200
+malfunctionArmorLevel	750
+//armor 		2400
+//malfunctionArmorLevel	1200
+health_front	450
+health_back		350
+health_right	450
+health_left		450
+shields		500
+//ms per point of recharge
+shieldRechargeMS	600
+toughness 		90.0
+model			x-wing
+riderAnim		BOTH_VS_IDLE
+droidNPC		"random"
+radarIcon		"gfx/menus/radar/XW"
+dmgIndicFrame	"gfx/menus/radar/circle_base_frame_reb"
+dmgIndicShield	"gfx/menus/radar/circle_base_shield"
+dmgIndicBackground "gfx/menus/radar/circle_base"
+icon_front		"gfx/menus/radar/XW_front"
+icon_back		"gfx/menus/radar/XW_back"
+icon_right		"gfx/menus/radar/XW_right"
+icon_left		"gfx/menus/radar/XW_left"
+crosshairShader	"gfx/menus/radar/XW_reticle"
+//shieldShader	"gfx/misc/shields_green"
+shieldShader	"gfx/misc/shields_blue"
+soundOn 		"sound/vehicles/x-wing/on.wav"
+soundLoop 		"sound/vehicles/x-wing/loop.wav"
+soundOff 		"sound/vehicles/x-wing/off.wav"
+soundFlyBy 		"sound/vehicles/x-wing/flyby.wav"
+soundFlyBy2 	"sound/vehicles/x-wing/flyby2.wav"
+soundHyper		"sound/vehicles/common/hyperstartreb.wav"
+soundTurbo 		"sound/vehicles/x-wing/xwingby.wav"
+exhaustFX		"ships/xwing_exhaust"
+turboFX			"ships/xwing_exhaust_turbo"
+impactFX		"ships/scrape_sparks"
+explodeFX		"ships/XW_explosion"
+//trailFX		"ships/wingtrail"
+dmgFX			"ships/heavydmg"
+injureFX		"ships/lightdmg"
+noseFX		"ships/XW_nose"
+lwingFX		"ships/XW_lwing"
+rwingFX		"ships/XW_rwing"
+flammable		1
+hoverHeight		80
+hoverStrength		10
+explosionRadius 	400
+explosionDamage 	1000
+
+landingHeight		300.0
+
+surfDestruction		1
+
+weap1			rebel_laser
+weap1Delay		150
+weap1Aim		1
+weap1AmmoMax	40
+weap1AmmoRechargeMS	500
+weap1Link		1
+
+weap2			concussion_missile
+weap2Delay		2000
+weap2Aim		1
+weap2AmmoMax	8
+weap2Link		1
+
+weapMuzzle1		rebel_laser
+weapMuzzle2		rebel_laser
+weapMuzzle3		rebel_laser
+weapMuzzle4		rebel_laser
+weapMuzzle5		concussion_missile
+weapMuzzle6		concussion_missile
+
+cameraOverride		1
+cameraRange			500
+cameraVertOffset	110
+cameraPitchOffset	0
+cameraFOV			100
+cameraAlpha			0
+}

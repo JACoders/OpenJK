@@ -1,0 +1,21 @@
+Glider
+{
+	playerModel glider
+	weapon		WP_MELEE
+	reactions	3
+	aim		1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+//	race		harvester
+	class		CLASS_GLIDER
+	yawSpeed	60
+	runSpeed	150
+	walkSpeed	50
+	hFOV		120
+	vfov		45
+	snd			glider
+}

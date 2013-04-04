@@ -1,0 +1,20 @@
+//Siege team definition file.
+
+name "Siege3_DarkJedi"
+FriendlyShader "sprites/imperial_defend" //Name of shader to display above heads of teammates (to others on this team)
+
+Classes
+{
+//Infantry
+	class1	"Dark Side Mauler"
+//Heavy
+	class2	"Dark Jedi Destroyer"
+//Demo
+	class3	"Dark Jedi Demolitionist"
+//Vanguard
+	class4	"Dark Jedi Interceptor"
+//Support
+	class5	"Dark Jedi Tech"
+//Jedi
+	class6	"Dark Jedi Duelist"
+}

@@ -1,0 +1,127 @@
+{
+\\ END OF GAME \\
+	menuDef 
+	{
+		name					"error_popmenu"
+	   	visible					0
+	   	fullscreen				0
+	   	rect					158 80 320 320
+		focusColor				1 1 1 1					   	
+		style					WINDOW_STYLE_FILLED
+	   	border					1
+		popup
+		outOfBoundsClick
+
+		onClose 
+		{ 
+			uiScript			clearError 
+		}
+		
+		onOpen 
+		{ 
+		}
+		
+		onESC 
+		{ 
+			close				error_popmenu ; 
+			open				main 
+		}
+
+
+
+		itemDef 
+		{
+			name				window
+			rect				10 15 300 320
+			style 				WINDOW_STYLE_FILLED
+			backcolor			.015 .015 .229 1
+			forecolor			0 0 0 1
+			border				1
+			bordercolor			.988 .984 .121 1
+			bordersize			5
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				errorinfo
+			rect				0 50 320 20	
+			text 				@MENUS_ERROR
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			6
+			textscale			1
+			textalignx			160
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		itemDef 
+		{
+			name				errorinfo
+			rect				60 80 200 270
+			type				ITEM_TYPE_TEXT
+			style				WINDOW_STYLE_FILLED
+			textstyle			3
+			autowrapped
+			cvar 				"com_errorMessage"
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			90
+			textscale			1
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+	
+//	BUTTON	//
+//--------------------------------------------------------------------------------
+//	BUTTON	
+//--------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				button_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				118 295 85 26
+			background			"gfx/menus/menu_buttonback"							forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				exit
+			group				grpControlbutton
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				138 295 45 26
+			text				@MENUS_OKAY
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textalignx 			22
+			forecolor			1 .682 0 1
+
+			visible				1
+						
+			action 
+			{ 
+				play			"sound/misc/nomenu.wav"  
+				close			error_popmenu  
+				open			main
+			}
+			
+			mouseEnter 
+			{ 
+				show			button_glow 
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	  	  
+		}	
+	}
+}
+
+
+
+

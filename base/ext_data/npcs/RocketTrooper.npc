@@ -1,0 +1,37 @@
+RocketTrooper
+{
+	playerModel stormtrooper
+//	surfOn		torso_pauldron
+//	surfOff		"torso_armor_neck_augment torso_body_neck_augment"
+	customSkin		officer
+	weapon		WP_ROCKET_LAUNCHER
+	health		60
+	headPitchRangeDown 30
+	reactions	5
+	aim			5
+	move		5
+	aggression	5
+	evasion		5
+	intelligence	5
+	rank		ensign
+	scale		110
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		klingon
+	class		CLASS_STORMTROOPER
+	height		68
+	crouchheight 52
+	walkSpeed	51
+	runSpeed	200
+	snd			stofficer1
+	sndcombat	stofficer1
+	sndextra	stofficer1
+	yawspeed	100
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

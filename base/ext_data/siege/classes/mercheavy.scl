@@ -1,0 +1,19 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Merc Heavy Weapons Specialist"
+	weapons			WP_BLASTER_PISTOL|WP_BOWCASTER|WP_ROCKET_LAUNCHER
+	classflags		CFL_SPEED_75
+	forcepowers		0
+	maxhealth		100
+	maxarmor		100
+	startarmor		0
+	model			"weequay" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/weequay/icon_default"
+	class_shader	"gfx/mp/c_icon_heavy_weapons"
+	speed			0.75
+}
+
+description	"@SIEGE_HVY_MERC_SPECIALIST"

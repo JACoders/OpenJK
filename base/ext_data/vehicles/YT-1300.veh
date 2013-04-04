@@ -1,0 +1,157 @@
+YT-1300
+{
+name			YT-1300
+type			VH_FIGHTER
+numHands		2
+hideRider		1
+killRiderOnDeath 1
+lookYaw		45
+length		1280
+width		1024
+height		323
+g2radius		1280
+centerOfGravity	"-0.222 0 0"
+speedMax		2100
+turboSpeed		4000
+turboDuration	6000
+turboRecharge	8000
+speedMin		0
+acceleration	20
+decelIdle		5
+accelIdle		5
+speedIdle		0
+//test: speed stays at whatever you last set it to...
+throttleSticks	1
+strafePerc		0.1
+bankingSpeed	4
+rollLimit		85
+pitchLimit		85
+braking			20
+mouseYaw		0.004
+mousePitch		0.004
+turningSpeed	8
+turnWhenStopped	0
+traction		18
+friction		1.5
+speedDependantTurning	1
+maxSlope		0.65
+mass			8000
+//armor 		4000
+//malfunctionArmorLevel	1000
+//health_front	1000
+//health_back		1000
+//health_right	1000
+//health_left		1000
+//shields		3000
+armor 		5000
+malfunctionArmorLevel	1200
+//armor 		8000
+//malfunctionArmorLevel	2000
+health_front	1800
+health_back		1800
+health_right	1800
+health_left		1800
+shields		2500
+toughness 		95.0
+model			YT-1300
+//skin			generic
+riderAnim		BOTH_VS_IDLE
+radarIcon		"gfx/menus/radar/yt-1300"
+dmgIndicFrame	"gfx/menus/radar/circle_base_frame_reb"
+dmgIndicShield	"gfx/menus/radar/circle_base_shield"
+dmgIndicBackground "gfx/menus/radar/circle_base"
+icon_front		"gfx/menus/radar/yt-1300_front"
+icon_back		"gfx/menus/radar/yt-1300_back"
+icon_right		"gfx/menus/radar/yt-1300_right"
+icon_left		"gfx/menus/radar/yt-1300_left"
+//shieldShader	"gfx/misc/shields_green"
+shieldShader	"gfx/misc/shields_blue"
+soundOn 		"sound/vehicles/yt-1300/on.wav"
+soundLoop 		"sound/vehicles/yt-1300/loop.wav"
+soundOff 		"sound/vehicles/yt-1300/off.wav"
+soundFlyBy 		"sound/vehicles/yt-1300/flyby.wav"
+soundFlyBy2 	"sound/vehicles/yt-1300/flyby2.wav"
+soundEngineStart		"sound/vehicles/yt-1300/enginestart.wav"
+soundHyper		"sound/vehicles/common/hyperstartreb.wav"
+soundTurbo 		"sound/vehicles/yt-1300/flyby.wav"
+exhaustFX		"ships/yt_exhaust"
+turboFX			"ships/yt_exhaust_turbo"
+impactFX		"ships/scrape_sparks"
+explodeFX		"ships/ship_explosion2"
+dmgFX			"ships/heavydmg"
+injureFX		"ships/lightdmg"
+noseFX		"ships/YT_nose"
+lwingFX		"ships/YT_lwing"
+rwingFX		"ships/YT_rwing"
+hoverHeight		80
+hoverStrength	10
+explosionRadius 1000
+explosionDamage 1800
+maxPassengers	8
+
+landingHeight	300
+
+weap1			conc_missile_straight
+weap1Delay		500
+weap1AmmoMax	30
+
+weapMuzzle5		conc_missile_straight
+weapMuzzle6		conc_missile_straight
+
+//turret 1
+turret1Weap			yt_turbolaser
+turret1Delay		100
+turret1AmmoMax		240
+turret1AmmoRechargeMS	500
+turret1YawBone		guntop_yaw
+//NOTE: we're setting YAW on ROLL because NPC_SetBoneAngles makes assumptions about our bone orientation that aren't true in this case
+turret1YawAxis		2
+turret1PitchBone		guntop_pitch
+//NOTE: we're setting PITCH on YAW because NPC_SetBoneAngles makes assumptions about our bone orientation that aren't true in this case
+turret1PitchAxis		1
+//turret1ClampYawL
+//turret1ClampYawR
+turret1ClampPitchU	-90
+turret1ClampPitchD	20
+turret1Muzzle1		3
+turret1Muzzle2		4
+turret1TurnSpeed	10
+turret1Delay		100
+turret1AmmoMax		120
+turret1AI			1
+turret1AILead		1
+turret1AIRange		15000		
+turret1PassengerNum	1
+turret1GunnerViewTag	"*turretview_t"
+
+//turret 2
+turret2Weap			yt_turbolaser
+turret2Delay		100
+turret2AmmoMax		240
+turret2AmmoRechargeMS	500
+turret2YawBone		gunbot_yaw
+turret2YawAxis		2
+turret2PitchBone		gunbot_pitch
+turret2PitchAxis		1
+//turret2ClampYawL
+//turret2ClampYawR
+turret2ClampPitchU	-20
+turret2ClampPitchD	90
+turret2Muzzle1		1
+turret2Muzzle2		2
+turret2TurnSpeed	10
+turret2Delay		100
+turret2AmmoMax		120
+turret2AI			1
+turret2AILead		1
+turret2AIRange		15000		
+turret2PassengerNum	2
+turret2GunnerViewTag	"*turretview_b"
+
+cameraOverride		1
+cameraRange			1000
+cameraVertOffset	220
+cameraPitchOffset	0
+cameraFOV			90
+cameraAlpha			0
+}

@@ -1,0 +1,10 @@
+xps.1.1
+
+tex t0	       		// normal texture lookup in t0
+
+;mov r0.a, v0.a		// Move alpha channel into r0
+
+// blend modulated colors
+;xfc r0.a, t0, zero, Zero, zero, zero, r0.a
+
+mul r0, v0, t0

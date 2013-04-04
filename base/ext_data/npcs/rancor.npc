@@ -1,0 +1,70 @@
+
+rancor
+{
+	playerModel 	rancor
+	weapon		WP_MELEE
+	health		2000
+	headPitchRangeDown 30
+	reactions		3
+	aim			1
+	move			3
+	aggression		3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_FREE
+	enemyTeam	TEAM_FREE
+	class		CLASS_RANCOR
+	height	160
+	crouchheight 	128
+	width		60
+	snd		rancor
+	sndcombat	rancor
+	sndextra	rancor
+	yawspeed	40
+//	walkSpeed	173
+//	runSpeed	173
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead		0
+	dismemberProbArms		0
+	dismemberProbLegs		0
+	dismemberProbHands	0
+	dismemberProbWaist	0
+}
+
+mutant_rancor
+{
+	playerModel 	mutant_rancor
+	weapon		WP_MELEE
+	health		10000
+	headPitchRangeDown 30
+	reactions		3
+	aim			1
+	move			3
+	aggression		3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_FREE
+	enemyTeam	TEAM_FREE
+	class		CLASS_RANCOR
+	scale		200
+	height			350
+	crouchheight 	350
+	width		120
+	snd		mutant_rancor
+	sndcombat	mutant_rancor
+	sndextra	mutant_rancor
+	yawspeed	40
+//	walkSpeed	173
+//	runSpeed	173
+	walkSpeed	110
+	runSpeed	400
+	dismemberProbHead		0
+	dismemberProbArms		0
+	dismemberProbLegs		0
+	dismemberProbHands	0
+	dismemberProbWaist	0
+}
+

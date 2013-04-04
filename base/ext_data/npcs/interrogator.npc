@@ -1,0 +1,24 @@
+interrogator
+{
+	playermodel	interrogator
+	weapon		WP_NONE
+	health 		100
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		bot
+	class		CLASS_INTERROGATOR
+	yawSpeed	120
+	runSpeed	150
+	walkSpeed	50
+	height		24
+	width		12
+	hFOV		120
+	vfov		45
+	snd			interrogator
+}

@@ -1,0 +1,128 @@
+Weequay
+{
+	playerModel	weequay
+	customSkin	sp
+	customRGBA	random1
+	weapon		WP_BOWCASTER
+//FIXME: randomize these somehow, also belt...
+	surfOff		"hips_lowerarmor"
+	surfOn		"hips_torso_augment"
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	health		30
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_WEEQUAY
+	snd			weequay
+	sndcombat	weequay
+	sndextra	weequay
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+Weequay2
+{
+	playerModel	weequay
+	customSkin	sp
+	customRGBA	random1
+	weapon		WP_BOWCASTER
+	surfOff		"head_l_hairback hips_r_strap hips_r_packsmall"
+	surfOn		"head_r_hairshoulder hips_l_packsmall hips_l_strap"
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	health		30
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_WEEQUAY
+	snd			weequay
+	sndcombat	weequay
+	sndextra	weequay
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+Weequay3
+{
+	playerModel	weequay
+	customSkin	sp
+	customRGBA	random1
+	weapon		WP_BOWCASTER
+	surfOff		"head_l_hairback hips_l_packlarge hips_l_packwide hips_r_strap hips_r_packsmall"
+	surfOn		"head_r_hairback hips_l_packsmall hips_l_strap hips_r_packlarge hips_r_packwide"
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	health		30
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_WEEQUAY
+	snd			weequay
+	sndcombat	weequay
+	sndextra	weequay
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+Weequay4
+{
+	playerModel	weequay
+	customSkin	sp
+	customRGBA	random1
+	weapon		WP_BOWCASTER
+	surfOff		"head_l_hairback hips_l_packlarge hips_l_packwide"
+	surfOn		"head_l_hairshoulder hips_r_packlarge hips_r_packwide"
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	health		30
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_WEEQUAY
+	snd			weequay
+	sndcombat	weequay
+	sndextra	weequay
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

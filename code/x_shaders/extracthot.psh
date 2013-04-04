@@ -1,0 +1,25 @@
+;------------------------------------------------------------------------------
+; Filter to get extract "hot" parts of the image
+;
+; Copyright (C) 2002 Microsoft Corporation
+; All rights reserved.
+;------------------------------------------------------------------------------
+xps.1.1
+
+; source textures
+tex t0
+tex t1
+
+#include "../win32/shader_constants.h"
+
+; We've set our original depth/stencil as an ARGB texture, put stencil in A:
+mov r0, t1.b
+
+; Remove low end
+sub r1, t0, c[CP_EXTRACT_CUTOFF]	; Remove low end
+
+; Throw out pixels that weren't stenciled:
+cnd r0, r0.a, r1, zero
+
+; Output = r0 + SCALE*r0 = (1+SCALE) * r0
+xfc c[CP_EXTRACT_SCALE], r0_sat, zero, r0_sat, zero, zero, r0_sat.a

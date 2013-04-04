@@ -1,0 +1,307 @@
+// Data Pad : Inventory Screen
+// 
+// defines from ui_shared.h
+{
+	menuDef 
+	{
+		name					"datapadInventoryMenu"
+		fullScreen				1							// MENU_TRUE				
+		rect					0 0 640 480						// Size and position of the menu
+		visible				1							// Visible on open
+		focusColor				1 1 1 1						// Focus color for text and items
+		appearanceIncrement		75							// In miliseconds
+		descX					320
+		descY					441
+		descScale				1
+		descColor				.96 .933 .40 1					// Focus color for text and items
+		descAlignment			ITEM_ALIGN_CENTER		
+
+		onESC 
+		{ 
+				uiScript		closedatapad					// Close menu				
+		}
+
+		onOpen
+		{ 
+				uiScript		nextDataPadInventory
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	MENU BACKGROUND
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef										
+		{
+			name				frame_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"*white"
+			forecolor			0 0 0 1
+			visible			1
+			decoration
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	MISSION TEXT
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				mission2
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_OWNERDRAW
+			rect				50 40 95 40 
+			textscale			.4
+			forecolor			.509 .609 .847 1
+			visible			1
+			ownerdraw			205					// UI_DATAPAD_INVENTORY
+		}
+
+		itemDef
+		{
+			name				screen_title
+			type				ITEM_TYPE_TEXT
+			rect				170 8 300 26
+			text				@MENUS_DATAPADTITLE
+			font				3
+			forecolor			.509 .609 .847 1
+			textscale			1.25
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			150
+			visible			1
+			decoration
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	LOWER MENU BUTTONS
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				mission
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				22 417 100 25
+			text				@MENUS_DP_MISSION
+			descText			@MENUS_AN_OVERVIEW_OF_MISSION
+			font				2
+			textscale			1
+			textalignx			50
+			textalign			ITEM_ALIGN_CENTER
+			forecolor			.79 .64 .22 1
+			visible			1
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			datapadMissionMenu 
+			}
+		}
+
+	
+		itemDef 
+		{
+			name				weapons
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				142 417 100 25
+			text				@MENUS_WEAPONS
+			descText			@MENUS_VIEW_CURRENTLY_OWNED
+			font				2
+			textscale			1
+			textalignx			50
+			textalign			ITEM_ALIGN_CENTER
+			forecolor			.79 .64 .22 1
+			visible			1
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			datapadWeaponsMenu 
+			}
+		}
+
+		itemDef 
+		{
+			name				force
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				262 417 100 25 
+			text				@MENUS_DP_FORCE
+			descText			@MENUS_VIEW_CURRENT_FORCE_POWERS
+			font				2
+			textscale			1
+			textalignx			50
+			textalign			ITEM_ALIGN_CENTER
+			forecolor			.79 .64 .22 1
+			visible			1
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			datapadForcePowersMenu 
+			}
+		}
+
+		itemDef 
+		{
+			name				inventory
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				382 417 100 0 
+			text				@MENUS_INVENTORY
+			descText			@MENUS_VIEW_CURRENT_INVENTORY
+			font				2
+			textscale			1
+			textalignx			50
+			textalign			ITEM_ALIGN_CENTER
+			forecolor			.79 .64 .22 1
+			visible			1
+		}
+
+		itemDef 
+		{
+			name				exit
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				502 417 95 25 
+			text				@MENUS_RESUME
+			descText			@MENUS_RETURN_TO_GAME
+			font				2
+			textscale			1
+			textalignx			50
+			textalign			ITEM_ALIGN_CENTER
+			forecolor			.79 .64 .22 1
+			visible			1
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				uiScript		closedatapad			// Close menu				
+			}
+		}
+
+		itemDef 
+		{
+			name				previnv_on
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				245 382 32 26 
+			background			"gfx/menus/dp_arrow_lon"				// Frame
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				previnv_off
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				245 382 32 26 
+			background			"gfx/menus/dp_arrow_l"				// Frame
+			forecolor			1 1 1 1
+			decoration
+			visible			1
+		}
+
+		itemDef 
+		{
+			name				previnv
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				245 382 32 26 
+			font				2
+			textscale			1
+			textalignx			48
+			textalign			ITEM_ALIGN_CENTER
+			forecolor			.509 .609 .847 1
+			visible			1
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				uiScript		prevDataPadInventory
+			}
+			mouseEnter 
+			{ 
+				hide			previnv_off
+				show			previnv_on
+			}
+			mouseExit 
+			{ 
+				show			previnv_off
+				hide			previnv_on
+			}	  	  
+		}
+
+		itemDef 
+		{
+			name				nextinv_on
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				364 382 32 26 
+			background			"gfx/menus/dp_arrow_ron"				// Frame
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				nextinv_off
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				364 382 32 26 
+			background			"gfx/menus/dp_arrow_r"				// Frame
+			forecolor			1 1 1 1
+			decoration
+			visible			1
+		}
+
+		itemDef 
+		{
+			name				nextinv
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				364 382 32 26 
+			font				2
+			textscale			1
+			textalignx			48
+			textalign			ITEM_ALIGN_CENTER
+			forecolor			.509 .609 .847 1
+			visible			1
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				uiScript		nextDataPadInventory
+			}
+			mouseEnter 
+			{ 
+				hide			nextinv_off
+				show			nextinv_on
+			}
+			mouseExit 
+			{ 
+				show			nextinv_off
+				hide			nextinv_on
+			}	  	  
+		}
+	}
+}

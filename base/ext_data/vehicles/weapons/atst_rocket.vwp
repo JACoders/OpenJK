@@ -1,0 +1,24 @@
+atst_rocket
+{
+name		atst_rocket
+projectile	1
+model		"models/weapons2/merr_sonn/projectile.md3"
+muzzleFX	"atst/alt_muzzleflash"
+shotFX	"atst/side_alt_shot"
+impactFX	"atst/side_alt_explosion"
+g2MarkShader	"gfx/damage/bodybigburnmark1"
+g2MarkSize	48
+loopSound	"sound/weapons/rocket/missleloop.wav"
+speed		1100
+homing	0
+lockOnTime	0
+damage	150
+splashDamage	150
+splashRadius	250
+ammoPerShot	1
+health	10
+width		10
+height	10
+lifetime	10000
+explodeOnExpire	1
+}

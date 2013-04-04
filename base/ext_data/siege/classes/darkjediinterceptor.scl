@@ -1,0 +1,21 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Dark Jedi Interceptor"
+	weapons			WP_SABER
+	saber1			single_6
+	sabercolor		0
+	saberstyle		SS_FAST
+	forcepowers		FP_SABER_OFFENSE,2|FP_SABER_DEFENSE,1|FP_LEVITATION,2|FP_SPEED,3|FP_TELEPATHY,2|FP_DRAIN,1|FP_PUSH,1|FP_PULL,1
+	forcealignment	dark
+	maxhealth		85
+	maxarmor		0
+	speed			1.25
+	model			"reborn"			//this is optional, if it's here it forces the model to this.
+	skin			"boss"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/reborn/icon_boss"
+	class_shader	"gfx/mp/c_icon_vanguard"
+}
+
+description	"@SIEGE_VAN_DJEDI_INVADER"

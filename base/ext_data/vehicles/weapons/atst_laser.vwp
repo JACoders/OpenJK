@@ -1,0 +1,18 @@
+atst_laser
+{
+name		atst_laser
+projectile	1
+muzzleFX	"atst/main_muzzleflash"
+shotFX		"atst/shot_red"
+impactFX	"atst/wall_impact"
+g2MarkShader	"gfx/damage/bodyburnmark1"
+g2MarkSize	16
+speed		1300
+damage	75
+splashDamage	20
+splashRadius	50
+ammoPerShot	1
+width		8
+height	8
+lifetime	10000
+}

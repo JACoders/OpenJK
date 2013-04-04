@@ -1,0 +1,13 @@
+
+single_3
+{
+	name		@MENUS_SINGLE_HILT3
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_3/saber_3.glm"
+	soundOn		"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	random
+}
+

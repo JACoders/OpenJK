@@ -1,0 +1,33 @@
+
+SnowTrooper
+{
+	playerModel snowtrooper
+	weapon		WP_BLASTER
+	health		30
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			st1
+	sndcombat	st1
+	sndextra	st1
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

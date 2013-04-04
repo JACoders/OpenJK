@@ -1,0 +1,34 @@
+ImpCommander
+{
+	playerModel imperial
+	weapon		WP_BLASTER
+	altFire		1
+	surfOff		l_arm_key
+	customSkin	commander
+	health		80
+	reactions	4
+	aim			4
+	move		4
+	aggression	4
+	evasion		4
+	intelligence	4
+	rank		commander
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		klingon
+	class		CLASS_IMPERIAL
+//	snd			io3
+//	sndcombat	io3
+//	sndextra	io3
+	snd			io1
+	sndcombat	io1
+	sndextra	io1
+	yawspeed	110
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

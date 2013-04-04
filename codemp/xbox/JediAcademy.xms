@@ -1,0 +1,67 @@
+<matchsim ver="1.0.5558.1" hexver="0x1000015b60001">
+    <title id="0x4c41000b" name="Jedi Academy" sessionexpiration="86400">
+        <schema>
+            <attribute id="GameType" hexid="0x1" kind="int"/>
+            <attribute id="CurrentMap" hexid="0x2" kind="int"/>
+            <attribute id="SessionName" hexid="0x100003" kind="string" maxlen="16"/>
+            <attribute id="FriendlyFire" hexid="0x4" kind="int"/>
+            <attribute id="JediMastery" hexid="0x5" kind="int"/>
+            <attribute id="TotalPlayers" hexid="0x7" kind="int"/>
+            <attribute id="SaberOnly" hexid="0x8" kind="int"/>
+            <attribute id="Dedicated" hexid="0x9" kind="int"/>
+        </schema>
+
+        <queries>
+            <query id="0x1" name="OptiMatch" maxresults="25" nopubok="0" qosprobe="1">
+                <params>
+                    <param id="GameType" hexid="0x2000000" order="0" kind="int" nullok="1"/>
+                    <param id="CurrentMap" hexid="0x2000001" order="1" kind="int" nullok="1"/>
+                    <param id="MinimumPlayers" hexid="0x2000005" order="2" kind="int" nullok="0"/>
+                    <param id="MaximumPlayers" hexid="0x2000006" order="3" kind="int" nullok="0"/>
+                    <param id="FriendlyFire" hexid="0x2000002" order="4" kind="int" nullok="1"/>
+                    <param id="JediMastery" hexid="0x2000007" order="5" kind="int" nullok="1"/>
+                    <param id="SaberOnly" hexid="0x2000003" order="6" kind="int" nullok="1"/>
+                    <param id="Dedicated" hexid="0x2000004" order="7" kind="int" nullok="1"/>
+                </params>
+                <filters>
+                    <filter left="0x1" op="==" right="0x2000000"/>
+                    <filter left="0x2" op="==" right="0x2000001"/>
+                    <filter left="0x4" op="==" right="0x2000002"/>
+                    <filter left="0x7" op="&gt;=" right="0x2000005"/>
+                    <filter left="0x7" op="&lt;=" right="0x2000006"/>
+                    <filter left="0x5" op="==" right="0x2000007"/>
+                    <filter left="0x8" op="==" right="0x2000003"/>
+                    <filter left="0x9" op="==" right="0x2000004"/>
+                </filters>
+                <sortops>
+                    <sortop id="0x83000006" dir="ascending"/>
+                </sortops>
+                <returns>
+                    <return id="0x1"/>
+                    <return id="0x2"/>
+                    <return id="0x100003"/>
+                    <return id="0x4"/>
+                    <return id="0x5"/>
+                    <return id="0x8"/>
+                    <return id="0x9"/>
+                </returns>
+            </query>
+
+            <query id="0x2" name="JoinSessionByID" maxresults="1" nopubok="1" qosprobe="1">
+                <params>
+                    <param id="SessionID" hexid="0x2000000" order="0" kind="int" nullok="0"/>
+                </params>
+                <filters>
+                    <filter left="0x2000000" op="==" right="0x83000001"/>
+                </filters>
+                <sortops>
+                    <sortop id="0x83000006" dir="ascending"/>
+                </sortops>
+                <returns/>
+            </query>
+        </queries></title>
+    
+
+    
+    
+</matchsim>

@@ -1,0 +1,121 @@
+
+/*
+	char		*name;	//unique name of the vehicle
+
+	//general data
+	vehicleType_t	type;	//what kind of vehicle
+	int			numHands;	//if 2 hands, no weapons, if 1 hand, can use 1-handed weapons, if 0 hands, can use 2-handed weapons
+	float		lookPitch;	//How far you can look up and down off the forward of the vehicle
+	float		lookYaw;	//How far you can look left and right off the forward of the vehicle
+	float		length;		//how long it is - used for body length traces when turning/moving?
+	float		width;		//how wide it is - used for body length traces when turning/moving?
+	float		height;		//how tall it is - used for body length traces when turning/moving?
+	vec3_t		centerOfGravity;//offset from origin: {forward, right, up} as a modifier on that dimension (-1.0f is all the way back, 1.0f is all the way forward)
+
+	//speed stats
+	float		speedMax;		//top speed
+	float		turboSpeed;		//turbo speed
+	float		speedMin;		//if < 0, can go in reverse
+	float		speedIdle;		//what speed it drifts to when no accel/decel input is given
+	float		accelIdle;		//if speedIdle > 0, how quickly it goes up to that speed
+	float		acceleration;	//when pressing on accelerator
+	float		decelIdle;		//when giving no input, how quickly it drops to speedIdle
+	float		strafePerc;		//multiplier on current speed for strafing.  If 1.0f, you can strafe at the same speed as you're going forward, 0.5 is half, 0 is no strafing
+
+	//handling stats
+	float		bankingSpeed;	//how quickly it pitches and rolls (not under player control)
+	float		rollLimit;		//how far it can roll to either side
+	float		pitchLimit;		//how far it can roll forward or backward
+	float		braking;		//when pressing on decelerator
+	float		turningSpeed;	//how quickly you can turn
+	qboolean	turnWhenStopped;//whether or not you can turn when not moving
+	float		traction;		//how much your command input affects velocity
+	float		friction;		//how much velocity is cut on its own
+	float		maxSlope;		//the max slope that it can go up with control
+
+	//durability stats
+	int			mass;			//for momentum and impact force (player mass is 10)
+	int			armor;			//total points of damage it can take
+	float		toughness;		//modifies incoming damage, 1.0 is normal, 0.5 is half, etc.  Simulates being made of tougher materials/construction
+
+	//visuals & sounds
+	char		*model;			//what model to use - if make it an NPC's primary model, don't need this?
+	char		*skin;			//what skin to use - if make it an NPC's primary model, don't need this?
+	int			riderAnim;		//what animation the rider uses
+
+	char		*soundOn;		//sound to play when get on it
+	char		*soundLoop;		//sound to loop while riding it
+	char		*soundOff;		//sound to play when get off
+	char		*exhaustFX;		//exhaust effect, played from "*exhaust" bolt(s)
+	char		*trailFX;		//trail effect, played from "*trail" bolt(s)
+	char		*impactFX;		//impact effect, for when it bumps into something
+	char		*explodeFX;		//explosion effect, for when it blows up (should have the sound built into explosion effect)
+
+	//other misc stats
+	int			gravity;		//normal is 800
+	float		hoverHeight;	//if 0, it's a ground vehicle
+	float		hoverStrength;	//how hard it pushes off ground when less than hover height... causes "bounce", like shocks
+	qboolean	waterProof;		//can drive underwater if it has to
+	float		bouyancy;		//when in water, how high it floats (1 is neutral bouyancy)
+	int			fuelMax;		//how much fuel it can hold (capacity)
+	int			fuelRate;		//how quickly is uses up fuel
+	int			visibility;		//for sight alerts
+	int			loudness;		//for sound alerts
+	float		explosionRadius;//range of explosion
+	int			explosionDamage;//damage of explosion
+
+	int			maxPassengers;	// The max number of passengers this vehicle may have (Default = 0).
+	qboolean	hideRider;		// rider (and passengers?) should not be drawn
+	qboolean	killRiderOnDeath;//if rider is on vehicle when it dies, they should die
+	qboolean	flammable;		//whether or not the vehicle should catch on fire before it explodes
+	int			explosionDelay;	//how long the vehicle should be on fire/dying before it explodes
+	//camera stuff
+	qboolean	cameraOverride;	//whether or not to use all of the following 3rd person camera override values
+	float		cameraRange;	//how far back the camera should be - normal is 80
+	float		cameraVertOffset;//how high over the vehicle origin the camera should be - normal is 16
+	float		cameraHorzOffset;//how far to left/right (negative/positive) of of the vehicle origin the camera should be - normal is 0
+	float		cameraPitchOffset;//a modifier on the camera's pitch (up/down angle) to the vehicle - normal is 0
+	float		cameraFOV;		//third person camera FOV, default is 80
+	qboolean	cameraAlpha;	//fade out the vehicle if it's in the way of the crosshair
+
+{
+name			tie-fighter
+type			VH_FIGHTER
+numHands		2
+lookYaw			45
+length			128
+width			32
+height			32
+centerOfGravity		"-0.222 0 0"
+speedMax		1400
+turboSpeed		2000
+speedMin		-100
+acceleration		20
+decelIdle		0
+strafePerc		0.0
+bankingSpeed		0.5
+rollLimit		45
+pitchLimit		80
+braking			20
+turningSpeed		5
+turnWhenStopped		0
+traction		12
+friction		0.5
+maxSlope		0.65
+mass			2000
+armor 			800
+toughness 		3.5
+model			x-wing
+riderAnim		BOTH_VS_IDLE
+soundOn 		"sound/ships/swoop/on.mp3"
+soundLoop 		"sound/ships/swoop/loop.wav"
+exhaustFX		"ships/burner"
+impactFX		"ships/scrape_sparks"
+explodeFX		"ships/ship_explosion2"
+hoverHeight		80
+hoverStrength		10
+explosionRadius 	400
+explosionDamage 	1000
+}
+
+*/

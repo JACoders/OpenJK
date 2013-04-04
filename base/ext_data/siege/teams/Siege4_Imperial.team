@@ -1,0 +1,20 @@
+//Siege team definition file.
+
+name "Siege4_Imperials"
+FriendlyShader "sprites/team_imperials" //Name of shader to display above heads of teammates (to others on this team)
+
+Classes
+{
+//Infantry
+	class1		"Imperial Pilot"
+//Heavy
+	class2		"Imperial Stormtrooper"
+//Demo
+	class3		"Imperial Light Demolitionist"
+//Vanguard
+	class4		"Imperial Light Sniper"
+//Support
+	class5		"Imperial Light Tech"
+//Jedi
+	class6		"Dark Jedi Apprentice"
+}

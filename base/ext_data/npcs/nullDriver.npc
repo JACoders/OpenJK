@@ -1,0 +1,10 @@
+
+nullDriver
+{
+	playerModel	kyle
+	weapon	WP_NONE
+	playerTeam	neutral
+	enemyTeam	neutral
+	class		kyle
+}
+

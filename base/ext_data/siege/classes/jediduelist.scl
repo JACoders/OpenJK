@@ -1,0 +1,26 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Jedi Duelist"
+	weapons			WP_SABER
+	saber1			single_5
+	sabercolor		5
+	saber2			single_5
+	saber2color		5
+	saberstyle		SS_DUAL
+	saberstyle		SS_FAST|SS_MEDIUM|SS_STRONG
+	// hmm - this is getting further and further from the idea of the jedi-duelist, isn't it?
+	forcepowers		FP_SABER_OFFENSE,3|FP_SABER_DEFENSE,1|FP_SABERTHROW,3|FP_LEVITATION,3|FP_TELEPATHY,2|FP_PROTECT,2|FP_ABSORB,2|FP_PUSH,3|FP_PULL,3
+	forcealignment	light
+	maxhealth		100
+	maxarmor		0
+	startarmor		0
+	speed			1.25
+	model			"jedi_zf" 					//this is optional, if it's here it forces the model to this.
+	skin			"siege"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/jedi_zf/icon_siege"
+	class_shader	"gfx/mp/c_icon_jedi_general"
+}
+
+description	"@SIEGE_JEDI_JEDI_DUELIST"

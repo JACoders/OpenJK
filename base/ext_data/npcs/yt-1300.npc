@@ -1,0 +1,12 @@
+
+//NOTE: for vehicle-class NPCs, the playerModel key is actually their entry in the vehicles.dat
+
+YT-1300
+{
+	weapon	WP_NONE
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width		565
+	height	323
+}
