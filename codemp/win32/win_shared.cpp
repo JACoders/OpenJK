@@ -385,7 +385,7 @@ int Sys_GetCPUSpeedOld()
 	unsigned long	time;
 	time = end - start;
 	int coarse = time / 100000;
-	int firsttry = floor((coarse + 25) / 50) * 50;
+	int firsttry = floor((coarse + 25) / 50.0) * 50;
 	if (abs(firsttry - coarse) < 10)
 	{
 		return firsttry;
@@ -517,9 +517,9 @@ int Sys_GetCPUSpeed()
 
 	} while ( (tries < 3 ) || 
 	          (tries < 20)&&
-	          ((abs(3 * freq -total) > 3*TOLERANCE )||
-	           (abs(3 * freq2-total) > 3*TOLERANCE )||
-	           (abs(3 * freq3-total) > 3*TOLERANCE )));	
+	          ((abs((long)(3 * freq -total)) > 3*TOLERANCE )||
+	           (abs((long)(3 * freq2-total)) > 3*TOLERANCE )||
+	           (abs((long)(3 * freq3-total)) > 3*TOLERANCE )));	
 				// Compare last three calculations to average of last three calculations.		
 
 	if (!total_ticks){

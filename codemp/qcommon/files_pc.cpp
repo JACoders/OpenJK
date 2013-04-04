@@ -606,7 +606,7 @@ bool Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataFileName
 		// timer res only accurate to within 2 seconds on FAT, so can't do exact compare...
 		//
 		//LONG l = CompareFileTime( &ftFinalFile, &ftDataFile );
-		if (  (abs(ftFinalFile.dwLowDateTime - ftDataFile.dwLowDateTime) <= 20000000 ) &&
+		if (  (abs((int)(ftFinalFile.dwLowDateTime - ftDataFile.dwLowDateTime)) <= 20000000 ) &&
 				  ftFinalFile.dwHighDateTime == ftDataFile.dwHighDateTime				
 			)
 		{
@@ -646,7 +646,7 @@ bool FS_FileCacheable(const char* const filename)
 FS_ShiftedStrStr
 ===========
 */
-char *FS_ShiftedStrStr(const char *string, const char *substring, int shift) {
+const char *FS_ShiftedStrStr(const char *string, const char *substring, int shift) {
 	char buf[MAX_STRING_TOKENS];
 	int i;
 
