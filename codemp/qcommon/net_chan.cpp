@@ -2,10 +2,7 @@
 //Anything above this #include will be ignored by the compiler
 #include "../qcommon/exe_headers.h"
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#endif
+
 /*
 
 packet header
@@ -57,19 +54,6 @@ Netchan_Init
 ===============
 */
 void Netchan_Init( int port ) {
-#ifdef _XBOX
-	CM_START_LOOP();
-		if (!ClientManager::ActiveClient().loopbacks)
-		{
-			Z_PushNewDeleteTag( TAG_CLIENT_MANAGER );
-
-			ClientManager::ActiveClient().loopbacks = new loopback_t[2];
-			memset(ClientManager::ActiveClient().loopbacks, 0, sizeof(loopback_t) * 2);
-
-			Z_PopNewDeleteTag();
-		}
-	CM_END_LOOP();
-#endif
 	port &= 0xffff;
 	showpackets = Cvar_Get ("showpackets", "0", CVAR_TEMP );
 	showdrop = Cvar_Get ("showdrop", "0", CVAR_TEMP );
@@ -101,7 +85,7 @@ Netchan_TransmitNextFragment
 Send one fragment of the current message
 =================
 */
-bool Netchan_TransmitNextFragment( netchan_t *chan ) {
+void Netchan_TransmitNextFragment( netchan_t *chan ) {
 	msg_t		send;
 	byte		send_buf[MAX_PACKETLEN];
 	int			fragmentLength;
@@ -113,10 +97,7 @@ bool Netchan_TransmitNextFragment( netchan_t *chan ) {
 
 	// send the qport if we are a client
 	if ( chan->sock == NS_CLIENT ) {
-		if(ClientManager::splitScreenMode == qtrue)
-			MSG_WriteShort( &send, ClientManager::ActivePort() );
-		else
-			MSG_WriteShort( &send, qport->integer );
+		MSG_WriteShort( &send, qport->integer );
 	}
 
 	// copy the reliable message to the packet first
@@ -130,7 +111,15 @@ bool Netchan_TransmitNextFragment( netchan_t *chan ) {
 	MSG_WriteData( &send, chan->unsentBuffer + chan->unsentFragmentStart, fragmentLength );
 
 	// send the datagram
-	bool retVal = NET_SendPacket( chan->sock, send.cursize, send.data, chan->remoteAddress );
+	NET_SendPacket( chan->sock, send.cursize, send.data, chan->remoteAddress );
+
+	if ( showpackets->integer ) {
+		Com_Printf ("%s send %4i : s=%i fragment=%i,%i\n"
+			, netsrcString[ chan->sock ]
+			, send.cursize
+			, chan->outgoingSequence - 1
+			, chan->unsentFragmentStart, fragmentLength);
+	}
 
 	chan->unsentFragmentStart += fragmentLength;
 
@@ -142,8 +131,6 @@ bool Netchan_TransmitNextFragment( netchan_t *chan ) {
 		chan->outgoingSequence++;
 		chan->unsentFragments = qfalse;
 	}
-
-	return retVal;
 }
 
 
@@ -155,7 +142,7 @@ Sends a message to a connection, fragmenting if necessary
 A 0 length will still generate a packet.
 ================
 */
-bool Netchan_Transmit( netchan_t *chan, int length, const byte *data ) {
+void Netchan_Transmit( netchan_t *chan, int length, const byte *data ) {
 	msg_t		send;
 	byte		send_buf[MAX_PACKETLEN];
 
@@ -176,7 +163,9 @@ bool Netchan_Transmit( netchan_t *chan, int length, const byte *data ) {
 		Com_Memcpy( chan->unsentBuffer, data, length );
 
 		// only send the first fragment now
-		return Netchan_TransmitNextFragment( chan );
+		Netchan_TransmitNextFragment( chan );
+
+		return;
 	}
 
 	// write the packet header
@@ -187,21 +176,14 @@ bool Netchan_Transmit( netchan_t *chan, int length, const byte *data ) {
 
 	// send the qport if we are a client
 	if ( chan->sock == NS_CLIENT ) {
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue)
-		{
-			MSG_WriteShort( &send, ClientManager::ActivePort() );
-		}
-		else
-#endif
 		MSG_WriteShort( &send, qport->integer );
 	}
 
 	MSG_WriteData( &send, data, length );
 
 	// send the datagram
-	return NET_SendPacket( chan->sock, send.cursize, send.data, chan->remoteAddress );
-/*
+	NET_SendPacket( chan->sock, send.cursize, send.data, chan->remoteAddress );
+
 	if ( showpackets->integer ) {
 		Com_Printf( "%s send %4i : s=%i ack=%i\n"
 			, netsrcString[ chan->sock ]
@@ -209,7 +191,6 @@ bool Netchan_Transmit( netchan_t *chan, int length, const byte *data ) {
 			, chan->outgoingSequence - 1
 			, chan->incomingSequence );
 	}
-*/
 }
 
 /*
@@ -318,6 +299,18 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 			}
 			// we can still keep the part that we have so far,
 			// so we don't need to clear chan->fragmentLength
+
+			//rww - not clearing this will allow us to piece together fragments belonging to other packets
+			//that happen to have the same sequence (or so it seems). I am just going to clear it and force
+			//the packet to be dropped.
+
+			// hell yeah we have to dump the whole thing -gil
+			// but I am scared - mw
+			/*
+			chan->fragmentLength = 0;
+			chan->incomingSequence = sequence;
+			chan->fragmentSequence = 0;
+			*/
 			return qfalse;
 		}
 
@@ -478,19 +471,19 @@ LOOPBACK BUFFERS FOR LOCAL PLAYER
 
 // there needs to be enough loopback messages to hold a complete
 // gamestate of maximum size
-//#define	MAX_LOOPBACK	16
+#define	MAX_LOOPBACK	16
 
-//typedef struct {
-//	byte	data[MAX_PACKETLEN];
-//	int		datalen;
-//} loopmsg_t;
+typedef struct {
+	byte	data[MAX_PACKETLEN];
+	int		datalen;
+} loopmsg_t;
 
-//typedef struct {
-//	loopmsg_t	msgs[MAX_LOOPBACK];
-//	int			get, send;
-//} loopback_t;
+typedef struct {
+	loopmsg_t	msgs[MAX_LOOPBACK];
+	int			get, send;
+} loopback_t;
 
-//loopback_t	loopbacks[2];
+loopback_t	loopbacks[2];
 
 
 qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_message)
@@ -498,7 +491,7 @@ qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_messag
 	int		i;
 	loopback_t	*loop;
 
-	loop = (loopback_t*)&ClientManager::ActiveClient().loopbacks[sock];
+	loop = &loopbacks[sock];
 
 	if (loop->send - loop->get > MAX_LOOPBACK)
 		loop->get = loop->send - MAX_LOOPBACK;
@@ -513,17 +506,6 @@ qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_messag
 	net_message->cursize = loop->msgs[i].datalen;
 	Com_Memset (net_from, 0, sizeof(*net_from));
 	net_from->type = NA_LOOPBACK;
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-	{
-        if (sock == NS_CLIENT)
-			net_from->port = 0;//	// server is on port 0;
-		else if (sock == NS_SERVER)
-			net_from->port = ClientManager::ActiveClientNum();	
-		else
-			assert(0 && "what happened????");
-	}
-#endif
 	return qtrue;
 
 }
@@ -534,7 +516,7 @@ void NET_SendLoopPacket (netsrc_t sock, int length, const void *data, netadr_t t
 	int		i;
 	loopback_t	*loop;
 
-	loop = (loopback_t*)&ClientManager::ActiveClient().loopbacks[sock^1];
+	loop = &loopbacks[sock^1];
 
 	i = loop->send & (MAX_LOOPBACK-1);
 	loop->send++;
@@ -546,7 +528,7 @@ void NET_SendLoopPacket (netsrc_t sock, int length, const void *data, netadr_t t
 //=============================================================================
 
 
-bool NET_SendPacket( netsrc_t sock, int length, const void *data, netadr_t to ) {
+void NET_SendPacket( netsrc_t sock, int length, const void *data, netadr_t to ) {
 
 	// sequenced packets are shown in netchan, so just show oob
 	if ( showpackets->integer && *(int *)data == -1 )	{
@@ -554,23 +536,18 @@ bool NET_SendPacket( netsrc_t sock, int length, const void *data, netadr_t to ) 
 	}
 
 	if ( to.type == NA_LOOPBACK ) {
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue)
-			to.port = ClientManager::ActiveClientNum();
-#endif
 		NET_SendLoopPacket (sock, length, data, to);
-		return true;
+		return;
 	}
 	if ( to.type == NA_BOT ) {
-		return true;
+		return;
 	}
 	if ( to.type == NA_BAD ) {
-		return false;
+		return;
 	}
 
-	return Sys_SendPacket( length, data, to );
+	Sys_SendPacket( length, data, to );
 }
-
 
 /*
 ===============
@@ -598,29 +575,6 @@ void QDECL NET_OutOfBandPrint( netsrc_t sock, netadr_t adr, const char *format, 
 	NET_SendPacket( sock, strlen( string ), string, adr );
 }
 
-// Used for packets that need to be broadcast. The only such
-// packets are "infoResponse"
-void QDECL NET_BroadcastPrint( netsrc_t sock, const char *format, ... ) 
-{
-	va_list		argptr;
-	char		string[MAX_MSGLEN];
-
-	// set the header
-	string[0] = -1;
-	string[1] = -1;
-	string[2] = -1;
-	string[3] = -1;
-
-	va_start( argptr, format );
-	vsprintf( string+4, format, argptr );
-	va_end( argptr );
-
-	// send the datagram
-	Sys_SendBroadcastPacket( strlen( string ), string );
-}
-
-
-
 /*
 ===============
 NET_OutOfBandPrint
@@ -628,8 +582,8 @@ NET_OutOfBandPrint
 Sends a data message in an out-of-band datagram (only used for "connect")
 ================
 */
-bool QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len ) {
-	byte		string[MAX_MSGLEN+4];
+void QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len ) {
+	byte		string[MAX_MSGLEN*2];
 	int			i;
 	msg_t		mbuf;
 
@@ -647,7 +601,7 @@ bool QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len
 	mbuf.cursize = len+4;
 	Huff_Compress( &mbuf, 12);
 	// send the datagram
-	return NET_SendPacket( sock, mbuf.cursize, mbuf.data, adr );
+	NET_SendPacket( sock, mbuf.cursize, mbuf.data, adr );
 }
 
 

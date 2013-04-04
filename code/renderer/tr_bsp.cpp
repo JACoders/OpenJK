@@ -321,7 +321,7 @@ qhandle_t R_GetShaderByNum(int shaderNum, world_t &worldData)
 ShaderForShaderNum
 ===============
 */
-static shader_t *ShaderForShaderNum( int shaderNum, const short *lightmapNum, const byte *lightmapStyles, const byte *vertexStyles, world_t &worldData ) {
+static shader_t *ShaderForShaderNum( int shaderNum, const int *lightmapNum, const byte *lightmapStyles, const byte *vertexStyles, world_t &worldData ) {
 	shader_t	*shader;
 	dshader_t	*dsh;
 	const byte	*styles;
@@ -371,7 +371,7 @@ static void ParseFace( dsurface_t *ds, mapVert_t *verts, msurface_t *surf, int *
 	int			i, j, k;
 	srfSurfaceFace_t	*cv;
 	int			numPoints, numIndexes;
-	short		lightmapNum[MAXLIGHTMAPS];
+	int			lightmapNum[MAXLIGHTMAPS];
 	int			sfaceSize, ofsIndexes;
 
 	for(i=0;i<MAXLIGHTMAPS;i++)
@@ -457,7 +457,7 @@ static void ParseMesh ( dsurface_t *ds, mapVert_t *verts, msurface_t *surf, worl
 	int				i, j, k;
 	int				width, height, numPoints;
 	MAC_STATIC drawVert_t points[MAX_PATCH_SIZE*MAX_PATCH_SIZE];
-	short			lightmapNum[MAXLIGHTMAPS];
+	int				lightmapNum[MAXLIGHTMAPS];
 	vec3_t			bounds[2];
 	vec3_t			tmpVec;
 	static surfaceType_t	skipData = SF_SKIP;
@@ -614,7 +614,7 @@ ParseFlare
 static void ParseFlare( dsurface_t *ds, mapVert_t *verts, msurface_t *surf, int *indexes, world_t &worldData, int index ) {
 	srfFlare_t		*flare;
 	int				i;
-	short			lightmaps[MAXLIGHTMAPS] = { LIGHTMAP_BY_VERTEX };
+	int		lightmaps[MAXLIGHTMAPS] = { LIGHTMAP_BY_VERTEX };
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
@@ -993,7 +993,7 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 	shader_t	*shader;
 	float		d;
 	int			firstSide=0;
-	short		lightmaps[MAXLIGHTMAPS] = { LIGHTMAP_NONE } ;
+	int			lightmaps[MAXLIGHTMAPS] = { LIGHTMAP_NONE } ;
 
 	fogs = (dfog_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*fogs)) {

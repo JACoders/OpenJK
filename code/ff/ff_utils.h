@@ -77,11 +77,11 @@ template< class T >
 class multimapIterator
 {
 protected:
-	T::iterator mIt;
+	typename T::iterator mIt;
 	T &mMap;
-	T::key_type mKey;
+	typename T::key_type mKey;
 public:
-	multimapIterator( T &map, T::key_type key )
+	multimapIterator( T &map, typename T::key_type key )
 	:	mMap( map )
 	,	mKey( key )
 	{
@@ -97,19 +97,19 @@ public:
 		}
 		return *this;
 	}
-	qboolean operator != ( T::iterator it )
+	qboolean operator != ( typename T::iterator it )
 	{
 		return qboolean( mIt != it );
 	}
-	qboolean operator == ( T::iterator it )
+	qboolean operator == ( typename T::iterator it )
 	{
 		return qboolean( mIt == it );
 	}
-	T::iterator operator * ()
+	typename T::iterator operator * ()
 	{
 		return mIt;				// must dereference twice to access first and second
 	}
-	T::iterator operator = ( T::iterator it )
+	typename T::iterator operator = ( typename T::iterator it )
 	{
 		mIt = it;
 		return mIt;

@@ -7,17 +7,10 @@
 
 
 // For printing objectives
-#ifdef _XBOX
-static const short objectiveStartingYpos = 100;		// Y starting position for objective text
-static const short objectiveStartingXpos = 130;		// X starting position for objective text
-static const int objectiveTextBoxWidth = 400;		// Width (in pixels) of text box
-static const int objectiveTextBoxHeight = 310;		// Height (in pixels) of text box
-#else
 static const short objectiveStartingYpos = 75;		// Y starting position for objective text
 static const short objectiveStartingXpos = 60;		// X starting position for objective text
 static const int objectiveTextBoxWidth = 500;		// Width (in pixels) of text box
 static const int objectiveTextBoxHeight = 300;		// Height (in pixels) of text box
-#endif // _XBOX
 
 const char *showLoadPowersName[] = 
 {
@@ -59,8 +52,14 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 
 	int iYPixelsPerLine = cgi_R_Font_HeightPixels(cgs.media.qhFontMedium, 1.0f);
 
-	cgi_SP_GetStringTextString( va("OBJECTIVES_%s",objectiveTable[objectIndex].name) , finalText, sizeof(finalText) );
-
+	if( gi.Cvar_VariableIntegerValue("com_demo") )
+	{
+		cgi_SP_GetStringTextString( va("OBJECTIVES_DEMO_%s",objectiveTable[objectIndex].name) , finalText, sizeof(finalText) );
+	}
+	else
+	{
+		cgi_SP_GetStringTextString( va("OBJECTIVES_%s",objectiveTable[objectIndex].name) , finalText, sizeof(finalText) );
+	}
 	// A hack to be able to count prisoners 
 	if (objectIndex==T2_RANCOR_OBJ5)
 	{
@@ -221,7 +220,7 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 			y += OBJ_GRAPHIC_SIZE + 4;
 		}
 		graphic = cgi_R_RegisterShaderNoMip("textures/system/viewscreen1");
-		CG_DrawPic( 105, 155, OBJ_GRAPHIC_SIZE * 0.90, OBJ_GRAPHIC_SIZE * 0.90, graphic );
+		CG_DrawPic( 355, 50, OBJ_GRAPHIC_SIZE, OBJ_GRAPHIC_SIZE, graphic );
 		obj_graphics[3] = qtrue;
 	}
 
@@ -397,20 +396,198 @@ static void CG_LoadScreen_PersonalInfo(void)
 
 static void CG_LoadBar(void)
 {
+	const int numticks = 9, tickwidth = 40, tickheight = 8;
+	const int tickpadx = 20, tickpady = 12;
+	const int capwidth = 8;
+	const int barwidth = numticks*tickwidth+tickpadx*2+capwidth*2, barleft = ((640-barwidth)/2);
+	const int barheight = tickheight + tickpady*2, bartop = 475-barheight;
+	const int capleft = barleft+tickpadx, tickleft = capleft+capwidth, ticktop = bartop+tickpady;
+
 	cgi_R_SetColor( colorTable[CT_WHITE]);
+	// Draw background
+	CG_DrawPic(barleft, bartop, barwidth, barheight, cgs.media.levelLoad);
 
-	int glowHeight = (cg.loadLCARSStage / 9.0f) * 147;
-	int glowTop = (280 + 147) - glowHeight;
+	// Draw left cap (backwards)
+	CG_DrawPic(tickleft, ticktop, -capwidth, tickheight, cgs.media.loadTickCap);
 
-	// Draw glow:
-	CG_DrawPic(280, glowTop, 73, glowHeight, cgs.media.loadTick);
+	// Draw bar
+	CG_DrawPic(tickleft, ticktop, tickwidth*cg.loadLCARSStage, tickheight, cgs.media.loadTick);
 
-	// Draw saber:
-	CG_DrawPic(280, 265, 73, 147, cgs.media.levelLoad);
+	// Draw right cap
+	CG_DrawPic(tickleft+tickwidth*cg.loadLCARSStage, ticktop, capwidth, tickheight, cgs.media.loadTickCap);
 }
 
 int CG_WeaponCheck( int weaponIndex );
 
+// For printing load screen icons
+const int	MAXLOADICONSPERROW = 8;		// Max icons displayed per row
+const int	MAXLOADWEAPONS = 16;
+const int	MAXLOADFORCEPOWERS = 12;	
+const int	MAXLOAD_FORCEICONSIZE = 40;	// Size of force power icons
+const int	MAXLOAD_FORCEICONPAD = 12;	// Padding space between icons
+
+static int CG_DrawLoadWeaponsPrintRow( const char *itemName, int weaponsBits,int rowIconCnt, int startIndex) 
+{
+	int		i,endIndex=0, printedIconCnt=0;
+	int		iconSize;
+	int		holdX,x,y,pad;
+	int		yOffset = 0;
+	int		width,height;
+	vec4_t	color;
+	qhandle_t	background;
+
+	if (!cgi_UI_GetMenuItemInfo(
+		"loadScreen",
+		itemName,
+		&x,
+		&y,
+		&width,
+		&height,
+		color,
+		&background))
+	{
+		return(0);
+	}
+
+	cgi_R_SetColor( color );
+
+	iconSize = 60;
+	pad = 12;
+
+	// calculate placement of weapon icons
+	holdX = x + (width - ((iconSize*rowIconCnt) + (pad * (rowIconCnt-1))))/2;
+
+	for (i=startIndex;i<MAXLOADWEAPONS;i++)
+	{
+		if ( !(weaponsBits & ( 1 << i )))	// Does he have this weapon?
+		{
+			continue;
+		}
+
+		if (weaponData[i].weaponIcon[0])
+		{
+			weaponInfo_t	*weaponInfo;
+			CG_RegisterWeapon( i );	
+			weaponInfo = &cg_weapons[i];
+			endIndex = i;
+
+	// NOTE : during loading screen always show the have ammo icon
+	//		if (!CG_WeaponCheck(i))
+	//		{
+	//			CG_DrawPic( holdX, y+yOffset, iconSize, iconSize, weaponInfo->weaponIconNoAmmo );
+	//		}
+	//		else
+			{
+				CG_DrawPic( holdX, y+yOffset, iconSize, iconSize, weaponInfo->weaponIcon );
+			}
+
+			printedIconCnt++;
+			if (printedIconCnt==MAXLOADICONSPERROW)
+			{
+				break;
+			}
+
+			holdX += (iconSize+pad);
+		}
+	}
+
+	return (endIndex);
+}
+
+// Print weapons the player is carrying
+// Two rows print if there are too many
+static void CG_DrawLoadWeapons( int weaponBits ) 
+{
+	int		i,endIndex=0;
+	int		iconCnt,rowIconCnt;
+
+	// count the number of weapons owned
+	iconCnt = 0;
+	for ( i = 1 ; i < MAXLOADWEAPONS ; i++ ) 
+	{
+		if ( weaponBits & ( 1 << i ) ) 
+		{
+			iconCnt++;
+		}
+	}
+
+	if (!iconCnt)	// If no weapons, don't display
+	{
+		return;
+	}
+
+	// Single line of icons
+	if (iconCnt<=MAXLOADICONSPERROW)
+	{
+		CG_DrawLoadWeaponsPrintRow("weaponicons_singlerow", weaponBits, iconCnt,0);
+	}
+	// Two lines of icons
+	else
+	{
+		// Print top row
+		endIndex = CG_DrawLoadWeaponsPrintRow("weaponicons_row1", weaponBits, MAXLOADICONSPERROW,0);
+
+		// Print second row
+		rowIconCnt = iconCnt - MAXLOADICONSPERROW;
+		CG_DrawLoadWeaponsPrintRow("weaponicons_row2", weaponBits, rowIconCnt,endIndex+1);
+	}
+
+	cgi_R_SetColor( NULL );
+}
+
+
+static int CG_DrawLoadForcePrintRow( const char *itemName, int forceBits,int rowIconCnt, int startIndex) 
+{
+	int		i,endIndex=0, printedIconCnt=0;
+	int		holdX,x,y;
+	int		yOffset = 0;
+	int		width,height;
+	vec4_t	color;
+	qhandle_t	background;
+
+	if (!cgi_UI_GetMenuItemInfo(
+		"loadScreen",
+		itemName,
+		&x,
+		&y,
+		&width,
+		&height,
+		color,
+		&background))
+	{
+		return(0);
+	}
+
+	cgi_R_SetColor( color );
+
+	// calculate placement of weapon icons
+	holdX = x + (width - ((MAXLOAD_FORCEICONSIZE*rowIconCnt) + (MAXLOAD_FORCEICONPAD * (rowIconCnt-1))))/2;
+
+	for (i=startIndex;i<MAX_SHOWPOWERS;i++)
+	{
+		if (!CG_ForcePower_Valid(forceBits,i))	// Does he have this power?
+		{
+			continue;
+		}
+
+		if (force_icons[showPowers[i]])
+		{
+			endIndex = i;
+
+			CG_DrawPic( holdX, y+yOffset, MAXLOAD_FORCEICONSIZE, MAXLOAD_FORCEICONSIZE, force_icons[showPowers[i]] );
+
+			printedIconCnt++;
+			if (printedIconCnt==MAXLOADICONSPERROW)
+			{
+				break;
+			}
+
+			holdX += (MAXLOAD_FORCEICONSIZE+MAXLOAD_FORCEICONPAD);
+		}
+	}
+
+	return (endIndex);
+}
 
 int			loadForcePowerLevel[NUM_FORCE_POWERS];
 
@@ -428,6 +605,46 @@ qboolean CG_ForcePower_Valid(int forceKnownBits, int index)
 	}
 
 	return qfalse;
+}
+
+// Print force powers the player is using
+// Two rows print if there are too many
+static void CG_DrawLoadForcePowers( int forceBits ) 
+{
+	int		i,endIndex=0;
+	int		iconCnt=0,rowIconCnt;
+
+	// Count the number of force powers known
+	for (i=0; i<MAX_SHOWPOWERS; ++i)
+	{
+		if (CG_ForcePower_Valid(forceBits, i)) 
+		{
+			iconCnt++;
+		}
+	}
+
+	if (!iconCnt)	// If no force powers, don't display
+	{
+		return;
+	}
+
+	// Single line of icons
+	if (iconCnt<=MAXLOADICONSPERROW)
+	{
+		CG_DrawLoadForcePrintRow("forceicons_singlerow", forceBits, iconCnt,0);
+	}
+	// Two lines of icons
+	else
+	{
+		// Print top row
+		endIndex = CG_DrawLoadForcePrintRow("forceicons_row1", forceBits, MAXLOADICONSPERROW,0);
+
+		// Print second row
+		rowIconCnt = iconCnt - MAXLOADICONSPERROW;
+		CG_DrawLoadForcePrintRow("forceicons_row2", forceBits, rowIconCnt,endIndex+1);
+	}
+
+	cgi_R_SetColor( NULL );
 }
 
 // Get the player weapons and force power info 
@@ -461,18 +678,57 @@ static void CG_GetLoadScreenInfo(int *weaponBits,int *forceBits)
 
 				);
 	}
-
-	// the new JK2 stuff - force powers, etc...
-	//
-	gi.Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
-	i=0;
-	var = strtok( s, " " );
-	while( var != NULL )
+	else
 	{
-		/* While there are tokens in "s" */
-		loadForcePowerLevel[i++] = atoi(var);
-		/* Get next token: */
-		var = strtok( NULL, " " );
+		// will also need to do this for weapons
+		if( gi.Cvar_VariableIntegerValue("com_demo") )
+		{
+			gi.Cvar_VariableStringBuffer( "demo_playerwpns", s, sizeof(s) );
+			
+			*weaponBits = atoi(s);
+
+		}
+
+	}
+
+    if( gi.Cvar_VariableIntegerValue("com_demo") )
+	{
+		// le Demo stuff...
+		// the new JK2 stuff - force powers, etc...
+		//
+		*forceBits = 0; // need to zero it out it might have already been set above if coming from a true
+						// map transition in the demo
+		gi.Cvar_VariableStringBuffer( "demo_playerfplvl", s, sizeof(s) );
+		int j=0;
+		var = strtok( s, " " );
+		while( var != NULL )
+		{
+			/* While there are tokens in "s" */
+			loadForcePowerLevel[j] = atoi(var);
+			if( loadForcePowerLevel[j] )
+			{
+				*forceBits |= (1<<j);
+			}
+			j++;
+			/* Get next token: */
+			var = strtok( NULL, " " );
+		}
+
+	}
+	else
+	{
+		// the new JK2 stuff - force powers, etc...
+		//
+		gi.Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
+		i=0;
+		var = strtok( s, " " );
+		while( var != NULL )
+		{
+			/* While there are tokens in "s" */
+			loadForcePowerLevel[i++] = atoi(var);
+			/* Get next token: */
+			var = strtok( NULL, " " );
+		}
 	}
 
 }
@@ -484,7 +740,7 @@ CG_DrawLoadingScreen
 Load screen displays the map pic, the mission briefing and weapons/force powers
 ====================
 */
-static void CG_DrawLoadingScreen( qhandle_t	levelshot, qhandle_t levelshot2, const char *mapName) 
+static void CG_DrawLoadingScreen( qhandle_t	levelshot ,const char *mapName) 
 {
 	int xPos,yPos,width,height;
 	vec4_t	color;
@@ -527,27 +783,18 @@ static void CG_DrawLoadingScreen( qhandle_t	levelshot, qhandle_t levelshot2, con
 		color,
 		&background))
 	{
-		cgi_R_SetColor( color );
-		CG_DrawPic( xPos, yPos, width, height, levelshot );
+		//if (!levelshot)
+		//{// No level shot so use screenshot.
+ 	//		CG_DrawPic( xPos, yPos, 1, 1, 0);	//force the tess to flush
+		//	cgi_R_DrawScreenShot( xPos, yPos+height, width, -height );
+		//}
+		//else
+		{
+			cgi_R_SetColor( color );
+			CG_DrawPic( xPos, yPos, width, height, levelshot );
+		}
 	}
 
-	// Print second level pic
-	if (cgi_UI_GetMenuItemInfo(
-		"loadScreen",
-		"mappic2",
-		&xPos,
-		&yPos,
-		&width,
-		&height,
-		color,
-		&background))
-	{
-		cgi_R_SetColor( color );
-		CG_DrawPic( xPos, yPos, width, height, levelshot2 );
-	}
-
-	// Removed by BTO - No more icons on the loading screen
-/*
 	// Get player weapons and force power info
 	CG_GetLoadScreenInfo(&weapons,&forcepowers);
 
@@ -562,7 +809,6 @@ static void CG_DrawLoadingScreen( qhandle_t	levelshot, qhandle_t levelshot2, con
 	{
 		CG_DrawLoadForcePowers(forcepowers);
 	}
-*/
 }
 
 /*
@@ -579,7 +825,28 @@ void CG_DrawInformation( void ) {
 	const char	*info	= CG_ConfigString( CS_SERVERINFO );
 	const char	*s		= Info_ValueForKey( info, "mapname" );
 
+	qhandle_t	levelshot;
+
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
+//#ifndef _XBOX
+//	if ( g_eSavedGameJustLoaded == eFULL ) 
+//	{
+//		levelshot = 0;	//use the loaded thumbnail instead of the levelshot
+//	} 
+//	else
+//#endif
+	{
+		levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );	
+	#ifndef FINAL_BUILD
+		if (!levelshot && !strncmp(s, "work/",5) )
+		{
+			levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s+5 ) );	
+		}
+	#endif
+		if (!levelshot) {
+			levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );	
+		}
+	}
 
 	if ( g_eSavedGameJustLoaded != eFULL && (!strcmp(s,"yavin1") || !strcmp(s,"demo")) )//special case for first map!
 	{
@@ -596,17 +863,7 @@ void CG_DrawInformation( void ) {
 	}
 	else
 	{
-		qhandle_t levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );
-		if (!levelshot) {
-			levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );	
-		}
-
-		qhandle_t levelshot2 = cgi_R_RegisterShaderNoMip( va( "levelshots/%s2", s ) );
-		if (!levelshot2) {
-			levelshot2 = levelshot;
-		}
-
-		CG_DrawLoadingScreen(levelshot, levelshot2, s);
+		CG_DrawLoadingScreen(levelshot, s);
 		cgi_UI_MenuPaintAll();
 	}
 

@@ -6,9 +6,6 @@
 #include <float.h>
 #include <stdio.h>
 #include "../game/g_public.h"
-#include <xonline.h>
-#include "glw_win_dx8.h"
-#include "../qcommon/xb_settings.h"
 
 #ifdef _XBOX
 #include <IO.h>
@@ -19,8 +16,6 @@
 #endif
 
 #endif
-
-int gLaunchController = 0;
 
 extern int eventHead, eventTail;
 extern sysEvent_t eventQue[MAX_QUED_EVENTS];
@@ -67,19 +62,18 @@ void Sys_Init( void )
 	Cmd_AddCommand ("net_restart", Sys_Net_Restart_f);
 }
 
-#ifdef XBOX_DEMO
-// When we're a demo, we're not running from D:\, so we need some hacks:
-char demoBasePath[64];
-#endif
 
-char *Sys_Cwd( void )
-{
+
+
+char *Sys_Cwd( void ) {
 	static char cwd[MAX_OSPATH];
 
-#ifdef XBOX_DEMO
-	strcpy( cwd, demoBasePath );
-#else
+#ifdef _XBOX
 	strcpy(cwd, "d:");
+#endif
+
+#ifdef _GAMECUBE
+	strcpy(cwd, ".");
 #endif
 
 	return cwd;
@@ -267,35 +261,10 @@ XBE SWITCHING SUPPORT
 =====================
 */
 
-#ifdef XBOX_DEMO
-// Filled in when we're launched from CDX
-LD_DEMO demoLaunchData;
-bool demoLaunchDataValid = false;
-
-// If we were launched by the user, or someone has pressed a key
-// then the timer should not count down during movies/loading:
-bool demoTimerAlways = false;
-int demoTimer = 0;
-#endif
-
-// Takes a filename (relative to ".") and pre-pends the right path. This
-// is needed for demos where the game won't be running from D:
-const char *Sys_RemapPath( const char *filename )
-{
-#ifdef XBOX_DEMO
-	return va( "%s\\%s", demoBasePath, filename );
-#else
-	return va( "D:\\%s", filename );
-#endif
-}
-
 // Despite what you may think, this function actually just returns
 // a value telling you if you *should* quick-boot -- ie skip intro
 // cinematics and such. Only supposed to XGetLaunchInfo once per
 // boot, so we cache the results.
-//
-// This function always gets called at startup, so we also use it
-// to retrieve the launch info for a demo
 #define LAUNCH_MAGIC "J3D1"
 bool Sys_QuickStart( void )
 {
@@ -307,114 +276,27 @@ bool Sys_QuickStart( void )
 
 	initialized = true;
 
-#ifdef XBOX_DEMO
-	// Default to D:\, this gets replaced below if CDX started us
-	strcpy( demoBasePath, "D:" );
-
-	gLaunchController = 0;	// Irrelevant in demo
-	retVal = false;			// We never come from MP (eg), so always false
-	DWORD launchType;
-
-	DWORD result = XGetLaunchInfo( &launchType, (LAUNCH_DATA *) &demoLaunchData );
-	if( result == ERROR_SUCCESS && launchType == LDT_TITLE )
-	{
-		// We were launched by CDX:
-		demoLaunchDataValid = true;
-
-		// How we were launched affects timer behavior:
-		demoTimerAlways = (demoLaunchData.dwRunmode == XLDEMO_RUNMODE_KIOSKMODE);
-
-		// Need to re-map paths, as D:\\ doesn't work now:
-		Q_strncpyz( demoBasePath, demoLaunchData.szLaunchedXBE, sizeof(demoBasePath), qtrue );
-
-		// Find our executable name in the path, and truncate the string there:
-		char *pXBE = strstr( demoBasePath, "\\default.xbe" );
-		if( !pXBE )
-			Com_Error( ERR_FATAL, "Error re-mapping D drive\n" );
-		*pXBE = 0;
-
-		// Fix the video path:
-		extern char XBOX_VIDEO_PATH[64];
-		strcpy( XBOX_VIDEO_PATH, demoBasePath );
-		strcat( XBOX_VIDEO_PATH, "\\base\\video\\" );
-	}
-
-	return retVal;
-#else
 	DWORD launchType;
 	LAUNCH_DATA ld;
 
 	if( (XGetLaunchInfo( &launchType, &ld ) != ERROR_SUCCESS) ||
 		(launchType != LDT_TITLE) ||
-		strcmp((const char *)&ld.Data[1], LAUNCH_MAGIC) )
+		strcmp((const char *)&ld.Data[0], LAUNCH_MAGIC) )
 		return (retVal = false);
-	
-	gLaunchController = ld.Data[0];
-
-	// Magic number to disable settings/saving
-	if( ld.Data[5] == 0x42 )
-		Settings.Disable();
 
 	return (retVal = true);
-#endif
 }
 
-extern int IN_GetMainController(void);
-extern void SP_DrawMPLoadScreen(void);
-
-// Takes an extra parameter so that the accepted invite code can pass
-// in the XONLINE_ACCEPTED_INVITE to be copied into launch data.
-//
-// For the demo, the only valid reason is "demo", and pData should be NULL
-void Sys_Reboot( const char *reason, const void *pData )
+void Sys_Reboot( const char *reason )
 {
-#ifdef XBOX_DEMO
-	if( pData || !demoLaunchDataValid || Q_stricmp( reason, "demo" ) != 0 )
-		Com_Error( ERR_DROP, "Invalid Sys_Reboot call\n" );
-
-	// Kill off the sound and stream threads:
-	S_Shutdown();
-	extern void Sys_StreamShutdown(void);
-	Sys_StreamShutdown();
-
-	// Now return to CDX
-	XLaunchNewImage( demoLaunchData.szLauncherXBE, (LAUNCH_DATA *) &demoLaunchData );
-	// Should never return!
-#else
 	LAUNCH_DATA ld;
 	const char *path = NULL;
-	int controller;
 
 	memset( &ld, 0, sizeof(ld) );
-	controller = IN_GetMainController();
-	ld.Data[0] = (byte) controller;
-	Com_Printf("\tController %d Passed\n",controller); 
 
 	if (!Q_stricmp(reason, "multiplayer"))
 	{
 		path = "d:\\jamp.xbe";
-		SP_DrawMPLoadScreen();
-
-		// Set a magic number if saving is disabled
-		if( Settings.IsDisabled() )
-			ld.Data[1] = 0x42;
-
-		// Flag that there is no invite in the launch data:
-		ld.Data[2] = 0;
-	}
-	else if (!Q_stricmp(reason, "invite"))
-	{
-		path = "d:\\jamp.xbe";
-		SP_DrawMPLoadScreen();
-
-		// Set a magic number if saving is disabled
-		if( Settings.IsDisabled() )
-			ld.Data[1] = 0x42;
-
-		// Flag that we're including an invite with the launch data:
-		ld.Data[2] = 1;
-
-		memcpy( &ld.Data[3], pData, sizeof(XONLINE_ACCEPTED_GAMEINVITE) );
 	}
 	else
 	{
@@ -428,110 +310,12 @@ void Sys_Reboot( const char *reason, const void *pData )
 	extern void Sys_StreamShutdown(void);
 	Sys_StreamShutdown();
 
-	// Keep the loading screen up while we reboot!
-	glw_state->device->PersistDisplay();
-
 	XLaunchNewImage(path, &ld);
 
 	// This function should not return!
 	Com_Error( ERR_FATAL, "ERROR: XLaunchNewImage returned\n" );
-#endif
 }
 
-static XONLINE_ACCEPTED_GAMEINVITE acceptedGameInvite;
-
-// Used to check for the presence of an accepted invite for our game on the HD.
-// Can only return true on the FIRST call.
-bool Sys_InviteExists( void )
-{
-#ifdef XBOX_DEMO
-	return false;
-#else
-	static bool initialized = false;
-	if( initialized )
-		return false;
-	initialized = true;
-
-	// If we just came from the MP XBE, don't auto-reboot again. That's just silly.
-	if( Sys_QuickStart() )
-		return false;
-
-	// Try to retrieve an invitation from the HD (this requires that we start XOnline):
-	XOnlineStartup( NULL );
-	HRESULT hr = XOnlineFriendsGetAcceptedGameInvite( &acceptedGameInvite );
-	XOnlineCleanup();
-
-	return (hr == S_OK);
-#endif
-}
-
-// Reboot to MP to join the game that we have an invite for:
-void Sys_JoinInvite( void )
-{
-	// Aha. Well, XTL seems to blow this away now, so we need to copy it to launch_data. Bleh.
-	Sys_Reboot( "invite", &acceptedGameInvite );
-	// Never returns!
-}
-
-#ifdef XBOX_DEMO
-// Timer code for the demo:
-static int lastTime = 0;
-static bool demoTimerPaused = false;
-
-// Notify the demo timer of a keypress, which resets the timer, and ensures
-// that the timer no longer runs during FMV/loading (if it was before)
-void Demo_TimerKeypress( void )
-{
-	demoTimerAlways = false;
-
-	// Reset the timer:
-	demoTimer = demoLaunchData.dwTimeout;
-
-	// Stamp the diff-timer
-	lastTime = Sys_Milliseconds();
-}
-
-// Update the timer, and check to see if we should reboot:
-void Demo_TimerUpdate( void )
-{
-	// Handle first call correctly
-	if( !lastTime )
-	{
-		demoTimer = demoLaunchData.dwTimeout;
-		lastTime = Sys_Milliseconds();
-	}
-
-	int newTime = Sys_Milliseconds();
-	int diffTime = newTime - lastTime;
-	lastTime = newTime;
-
-	// If the timer isn't supposed to run, and we're "paused", don't update:
-	extern bool in_camera;
-	if( !demoTimerAlways && (demoTimerPaused || in_camera) )
-		return;
-
-	// If we weren't even launched by CDX in the first place, or were given
-	// a zero timeout, do nothing:
-	if( !demoLaunchDataValid || !demoLaunchData.dwTimeout )
-		return;
-
-	// Time ran out?
-	if( demoTimer < diffTime )
-		Sys_Reboot( "demo", NULL );
-
-	demoTimer -= diffTime;
-}
-
-// Pause/unpause the demo timer when entering/exiting non-interactive state:
-void Demo_TimerPause( bool bPaused )
-{
-	// Always stamp the timer right before we change state:
-	Demo_TimerUpdate();
-
-	demoTimerPaused = bPaused;
-}
-
-#endif
 
 /*
 ==================
@@ -553,23 +337,8 @@ int main(int argc, char* argv[])
 	// get the initial time base
 	Sys_Milliseconds();
 
-	// Need to fetch this stuff REALLY early so that path re-mappnig works
-	// for renderer startup. Bleh.
-	Sys_QuickStart();
-
 	Win_Init();
 	Com_Init( "" );
-
-	// Run one frame, to finish loading (calls CL_StartHunkUsers)...
-	IN_Frame();
-	Com_Frame();
-
-	extern void G_AllocGentities( void );
-	G_AllocGentities();
-
-	// And then quickly copy all the planet binks to the Z: drive
-	extern void Sys_BinkCopyInit(void);
-	Sys_BinkCopyInit();
 
 	// main game loop
 	while( 1 ) {
@@ -636,14 +405,8 @@ char** Sys_ListFiles(const char *directory, const char *extension, int *numfiles
 	char	**retList;
 
 	// S00per hack
-#ifdef XBOX_DEMO
-	const char *basePath = Sys_RemapPath( "base\\" );
-	if (strstr(directory, basePath))
-		directory += strlen( basePath );
-#else
 	if (strstr(directory, "d:\\base\\"))
 		directory += 8;
-#endif
 
 	if (!extension)
 	{

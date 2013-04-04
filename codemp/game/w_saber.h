@@ -56,7 +56,7 @@ typedef enum
 	NUM_EVASION_TYPES
 } evasionType_t;
 
-//extern vmCvar_t g_MaxHolocronCarry;
+extern vmCvar_t g_MaxHolocronCarry;
 
 #define SABERMINS_X -3.0f//-24.0f
 #define SABERMINS_Y -3.0f//-24.0f

@@ -11,7 +11,7 @@ extern clientActive_t cl;
 
 void CL_InitFF( void )
 {
-	cvar_t *use_ff = Cvar_Get( "use_ff", "1", CVAR_ARCHIVE );
+	cvar_t *use_ff = Cvar_Get( "use_ff", "0", CVAR_ARCHIVE );
 
 	if (!use_ff
 	||	!use_ff->integer

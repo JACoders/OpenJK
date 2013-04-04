@@ -130,6 +130,8 @@ typedef enum
 #define MEF_MULTI_SPIN			0x000040	//spin once every second, until the effect stops
 #define	MEF_LOOK_AT_ENEMY		0x000200
 
+#define SABER_PITCH_HACK 90
+
 extern float forceJumpStrength[];
 extern float forceJumpHeight[];
 extern float forceJumpHeightMax[];
@@ -140,6 +142,7 @@ extern void ForceSpeed( gentity_t *self, int duration = 0 );
 extern float forceSpeedValue[];
 extern float forceSpeedRangeMod[];
 extern float forceSpeedFOVMod[];
+extern char *saberColorStringForColor[];
 #define FORCE_SPEED_DURATION 10000.0f
 #define FORCE_RAGE_DURATION 10000.0f
 
@@ -183,6 +186,7 @@ extern void WP_SaberFreeStrings( saberInfo_t &saber );
 extern qboolean G_EnoughPowerForSpecialMove( int forcePower, int cost, qboolean kataMove = qfalse );
 extern void G_DrainPowerForSpecialMove( gentity_t *self, forcePowers_t fp, int cost, qboolean kataMove = qfalse );
 extern int G_CostForSpecialMove( int cost, qboolean kataMove = qfalse );
+extern gentity_t *G_DropSaberItem( const char *saberType, saber_colors_t saberColor, vec3_t saberPos, vec3_t saberVel, vec3_t saberAngles, gentity_t *copySaber = NULL );
 
 typedef enum
 {

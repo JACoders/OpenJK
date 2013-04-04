@@ -856,23 +856,7 @@ void RB_CalcWaveAlpha( const waveForm_t *wf, unsigned char *dstColors )
 */
 #ifdef _XBOX
 void RB_CalcModulateColorsByFog( DWORD *colors ) {
-	int i;
-	float	texCoords[SHADER_MAX_VERTEXES][2];
 
-	// calculate texcoords so we can derive density
-	// this is not wasted, because it would only have
-	// been previously called if the surface was opaque
-	RB_CalcFogTexCoords( texCoords[0] );
-
-	for ( i = 0; i < tess.numVertexes; i++, colors ++ ) {
-		float f = 1.0 - R_FogFactor( texCoords[i][0], texCoords[i][1] );
-		DWORD a, r, g, b;
-		a = (*colors & 0xff000000) >> 24;
-		r = ((*colors & 0x00ff0000) >> 16) * f;
-		g = ((*colors & 0x0000ff00) >> 8) * f;
-		b = (*colors & 0x000000ff) * f;
-		*colors = (DWORD)((a << 24) | (r << 16) | (g << 8) | b);
-	}
 }
 #else
 void RB_CalcModulateColorsByFog( unsigned char *colors ) {
@@ -898,20 +882,7 @@ void RB_CalcModulateColorsByFog( unsigned char *colors ) {
 */
 #ifdef _XBOX
 void RB_CalcModulateAlphasByFog( DWORD *colors ) {
-	int i;
-	float	texCoords[SHADER_MAX_VERTEXES][2];
 
-	// calculate texcoords so we can derive density
-	// this is not wasted, because it would only have
-	// been previously called if the surface was opaque
-	RB_CalcFogTexCoords( texCoords[0] );
-
-	for ( i = 0; i < tess.numVertexes; i++, colors ++ ) {
-		float f = 1.0 - R_FogFactor( texCoords[i][0], texCoords[i][1] );
-		DWORD rgb = *colors & 0x00ffffff;
-		DWORD alpha = ((*colors & 0xff000000) >> 24) * f;
-		*colors = (alpha << 24) | rgb;
-	}
 }
 #else
 void RB_CalcModulateAlphasByFog( unsigned char *colors ) {
@@ -935,23 +906,7 @@ void RB_CalcModulateAlphasByFog( unsigned char *colors ) {
 */
 #ifdef _XBOX
 void RB_CalcModulateRGBAsByFog( DWORD *colors ) {
-	int i;
-	float	texCoords[SHADER_MAX_VERTEXES][2];
-
-	// calculate texcoords so we can derive density
-	// this is not wasted, because it would only have
-	// been previously called if the surface was opaque
-	RB_CalcFogTexCoords( texCoords[0] );
-
-	for ( i = 0; i < tess.numVertexes; i++, colors ++ ) {
-		float f = 1.0 - R_FogFactor( texCoords[i][0], texCoords[i][1] );
-		DWORD a, r, g, b;
-		a = ((*colors & 0xff000000) >> 24) * f;
-		r = ((*colors & 0x00ff0000) >> 16) * f;
-		g = ((*colors & 0x0000ff00) >> 8) * f;
-		b = (*colors & 0x000000ff) * f;
-		*colors = (DWORD)((a << 24) | (r << 16) | (g << 8) | b);
-	}
+	
 }
 #else
 void RB_CalcModulateRGBAsByFog( unsigned char *colors ) {

@@ -219,7 +219,6 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 	{//don't interrupt thermal throwing anim
 		return;
 	}
-/*
 	else if ( self->client->NPC_class == CLASS_GALAKMECH )
 	{
 		if ( hitLoc == HL_GENERIC1 )
@@ -243,7 +242,6 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 			pain_chance = (200.0f-self->health)/100.0f + damage/50.0f;
 		}
 	}
-*/
 	else if ( self->client && self->client->playerTeam == NPCTEAM_PLAYER && other && !other->s.number )
 	{//ally shot by player always complains
 		pain_chance = 1.1f;

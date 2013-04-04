@@ -3,10 +3,6 @@
 //Anything above this #include will be ignored by the compiler
 #include "../qcommon/exe_headers.h"
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#endif
 
 #define	MAX_CMD_BUFFER	16384
 #define	MAX_CMD_LINE	1024
@@ -34,26 +30,11 @@ bind g "cmd use rocket ; +attack ; wait ; -attack ; cmd use blaster"
 ============
 */
 void Cmd_Wait_f( void ) {
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-	{
-		if ( Cmd_Argc() == 2 ) {
-			ClientManager::ActiveClient().cmd_wait = atoi( Cmd_Argv( 1 ) );
-		} else {
-			ClientManager::ActiveClient().cmd_wait = 1;
-		}
-	}
-	else
-	{
-#endif
 	if ( Cmd_Argc() == 2 ) {
 		cmd_wait = atoi( Cmd_Argv( 1 ) );
 	} else {
 		cmd_wait = 1;
 	}
-#ifdef _XBOX
-	}
-#endif
 }
 
 
@@ -72,25 +53,9 @@ Cbuf_Init
 */
 void Cbuf_Init (void)
 {
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-	{
-		CM_START_LOOP();
-		MSG_Init (&ClientManager::ActiveClient().cmd_text, ClientManager::ActiveClient().cmd_text_buf, 
-			sizeof(ClientManager::ActiveClient().cmd_text_buf));
-		CM_END_LOOP();
-	}
-	else
-	{
-#endif
-
 	cmd_text.data = cmd_text_buf;
 	cmd_text.maxsize = MAX_CMD_BUFFER;
 	cmd_text.cursize = 0;
-
-#ifdef _XBOX
-	}
-#endif
 }
 
 /*
@@ -105,21 +70,6 @@ void Cbuf_AddText( const char *text ) {
 	
 	l = strlen (text);
 
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-	{
-		if (ClientManager::ActiveClient().cmd_text.cursize + l >= ClientManager::ActiveClient().cmd_text.maxsize)
-		{
-			Com_Printf ("Cbuf_AddText: overflow\n");
-			return;
-		}
-		Com_Memcpy (&ClientManager::ActiveClient().cmd_text.data[ClientManager::ActiveClient().cmd_text.cursize], text, strlen (text));
-		ClientManager::ActiveClient().cmd_text.cursize += l;
-	}
-	else
-	{
-#endif
-
 	if (cmd_text.cursize + l >= cmd_text.maxsize)
 	{
 		Com_Printf ("Cbuf_AddText: overflow\n");
@@ -127,10 +77,6 @@ void Cbuf_AddText( const char *text ) {
 	}
 	Com_Memcpy(&cmd_text.data[cmd_text.cursize], text, l);
 	cmd_text.cursize += l;
-
-#ifdef _XBOX
-	}
-#endif
 }
 
 
@@ -147,32 +93,6 @@ void Cbuf_InsertText( const char *text ) {
 	int		i;
 
 	len = strlen( text ) + 1;
-
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-	{
-		if ( len + ClientManager::ActiveClient().cmd_text.cursize > ClientManager::ActiveClient().cmd_text.maxsize ) {
-			Com_Printf( "Cbuf_InsertText overflowed\n" );
-			return;
-		}
-
-		// move the existing command text
-		for ( i = ClientManager::ActiveClient().cmd_text.cursize - 1 ; i >= 0 ; i-- ) {
-			ClientManager::ActiveClient().cmd_text.data[ i + len ] = ClientManager::ActiveClient().cmd_text.data[ i ];
-		}
-
-		// copy the new text in
-		memcpy( ClientManager::ActiveClient().cmd_text.data, text, len - 1 );
-
-		// add a \n
-		ClientManager::ActiveClient().cmd_text.data[ len - 1 ] = '\n';
-
-		ClientManager::ActiveClient().cmd_text.cursize += len;
-	}
-	else
-	{
-#endif
-
 	if ( len + cmd_text.cursize > cmd_text.maxsize ) {
 		Com_Printf( "Cbuf_InsertText overflowed\n" );
 		return;
@@ -190,10 +110,6 @@ void Cbuf_InsertText( const char *text ) {
 	cmd_text.data[ len - 1 ] = '\n';
 
 	cmd_text.cursize += len;
-
-#ifdef _XBOX
-	}
-#endif
 }
 
 
@@ -235,59 +151,6 @@ void Cbuf_Execute (void)
 	char	*text;
 	char	line[MAX_CMD_LINE];
 	int		quotes;
-
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-	{
-		CM_START_LOOP();
-		while (ClientManager::ActiveClient().cmd_text.cursize)
-		{
-			if ( ClientManager::ActiveClient().cmd_wait )	{
-				// skip out while text still remains in buffer, leaving it
-				// for next frame
-				ClientManager::ActiveClient().cmd_wait--;
-				break;
-			}
-
-			// find a \n or ; line break
-			text = (char *)ClientManager::ActiveClient().cmd_text.data;
-
-			quotes = 0;
-			for (i=0 ; i< ClientManager::ActiveClient().cmd_text.cursize ; i++)
-			{
-				if (text[i] == '"')
-					quotes++;
-				if ( !(quotes&1) &&  text[i] == ';')
-					break;	// don't break if inside a quoted string
-				if (text[i] == '\n' || text[i] == '\r' )
-					break;
-			}
-				
-					
-			memcpy (line, text, i);
-			line[i] = 0;
-		
-			// delete the text from the command buffer and move remaining commands down
-			// this is necessary because commands (exec) can insert data at the
-			// beginning of the text buffer
-
-			if (i == ClientManager::ActiveClient().cmd_text.cursize)
-				ClientManager::ActiveClient().cmd_text.cursize = 0;
-			else
-			{
-				i++;
-				ClientManager::ActiveClient().cmd_text.cursize -= i;
-				memmove (text, text+i, ClientManager::ActiveClient().cmd_text.cursize);
-			}
-
-			// execute the command line
-			Cmd_ExecuteString (line);		
-		}
-		CM_END_LOOP();
-	}
-	else
-	{
-#endif
 
 	while (cmd_text.cursize)
 	{
@@ -336,10 +199,6 @@ void Cbuf_Execute (void)
 
 		Cmd_ExecuteString (line);		
 	}
-
-#ifdef _XBOX
-	}
-#endif
 }
 
 
@@ -374,10 +233,8 @@ void Cmd_Exec_f( void ) {
 		Com_Printf ("couldn't exec %s\n",Cmd_Argv(1));
 		return;
 	}
-#ifndef FINAL_BUILD
 	Com_Printf ("execing %s\n",Cmd_Argv(1));
-#endif
-
+	
 	Cbuf_InsertText (f);
 
 	FS_FreeFile (f);

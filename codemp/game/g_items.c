@@ -1450,14 +1450,7 @@ void EWebDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int dam
 {
 	vec3_t fxDir;
 
-	static int recursionCount = 0;
-
-	++recursionCount;
-
-	// Hack to prevent E-webs in range of each other from causing stack overflow
-	if( recursionCount < 4 )
-		G_RadiusDamage(self->r.currentOrigin, self, EWEB_DEATH_DMG, EWEB_DEATH_RADIUS, self, self, MOD_SUICIDE);
-
+	G_RadiusDamage(self->r.currentOrigin, self, EWEB_DEATH_DMG, EWEB_DEATH_RADIUS, self, self, MOD_SUICIDE);
 
 	VectorSet(fxDir, 1.0f, 0.0f, 0.0f);
 	G_PlayEffect(EFFECT_EXPLOSION_DETPACK, self->r.currentOrigin, fxDir);
@@ -1485,8 +1478,6 @@ void EWebDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int dam
 			}
 		}
 	}
-
-	--recursionCount;
 }
 
 //e-web pain
@@ -1541,7 +1532,6 @@ void EWeb_SetBoneAngles(gentity_t *ent, char *bone, vec3_t angles)
 			thebone = &ent->s.boneIndex2;
 			boneVector = &ent->s.boneAngles2;
 			break;
-/*
 		case 1:
 			thebone = &ent->s.boneIndex3;
 			boneVector = &ent->s.boneAngles3;
@@ -1550,7 +1540,6 @@ void EWeb_SetBoneAngles(gentity_t *ent, char *bone, vec3_t angles)
 			thebone = &ent->s.boneIndex4;
 			boneVector = &ent->s.boneAngles4;
 			break;
-*/
 		default:
 			thebone = NULL;
 			boneVector = NULL;
@@ -1564,9 +1553,7 @@ void EWeb_SetBoneAngles(gentity_t *ent, char *bone, vec3_t angles)
 	{ //didn't find it, create it
 		if (!firstFree)
 		{ //no free bones.. can't do a thing then.
-#ifndef FINAL_BUILD
 			Com_Printf("WARNING: E-Web has no free bone indexes\n");
-#endif
 			return;
 		}
 
@@ -2045,7 +2032,7 @@ int Pickup_Powerup( gentity_t *ent, gentity_t *other ) {
 		other->client->ps.powerups[ent->item->giTag] = 
 			level.time - ( level.time % 1000 );
 
-//		G_LogWeaponPowerup(other->s.number, ent->item->giTag);
+		G_LogWeaponPowerup(other->s.number, ent->item->giTag);
 	}
 
 	if ( ent->count ) {
@@ -2120,7 +2107,7 @@ int Pickup_Holdable( gentity_t *ent, gentity_t *other ) {
 
 	other->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << ent->item->giTag);
 
-//	G_LogWeaponItem(other->s.number, ent->item->giTag);
+	G_LogWeaponItem(other->s.number, ent->item->giTag);
 
 	return adjustRespawnTime(RESPAWN_HOLDABLE, ent->item->giType, ent->item->giTag);
 }
@@ -2233,7 +2220,7 @@ int Pickup_Weapon (gentity_t *ent, gentity_t *other) {
 	//Add_Ammo( other, ent->item->giTag, quantity );
 	Add_Ammo( other, weaponData[ent->item->giTag].ammoIndex, quantity );
 
-//	G_LogWeaponPickup(other->s.number, ent->item->giTag);
+	G_LogWeaponPickup(other->s.number, ent->item->giTag);
 	
 	// team deathmatch has slow weapon respawns
 	if ( g_gametype.integer == GT_TEAM ) 

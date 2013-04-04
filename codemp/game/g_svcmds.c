@@ -170,7 +170,7 @@ qboolean G_FilterPacket (char *from)
 AddIP
 =================
 */
-static void AddIP( char *str )
+void AddIP( char *str )
 {
 	int		i;
 
@@ -271,6 +271,111 @@ void Svcmd_RemoveIP_f (void)
 	}
 
 	G_Printf ( "Didn't find %s.\n", str );
+}
+
+void Svcmd_ListIPs_f( void )
+{
+	int		i;
+	char	*str;
+	byte	b[4];
+
+	G_Printf ( "%d IP slots used.\n", numIPFilters );
+	for ( i = 0 ; i < numIPFilters ; i++ ) 
+	{
+		G_Printf ( "%d: ", i );
+		if (ipFilters[i].compare == 0xffffffff)
+		{
+			G_Printf ( "unused\n" );
+		}
+		else
+		{
+			*(unsigned *)b = ipFilters[i].compare;
+			str = va("%i.%i.%i.%i \n", b[0], b[1], b[2], b[3]);
+			G_Printf ( "%s\n", str );
+		}
+	}
+}
+
+void G_SaveBanIP( void )
+{//save out all the banned IPs
+	int		i;
+	char	*str;
+	fileHandle_t fh;
+	byte	b[4];
+
+	trap_FS_FOpenFile("banip.txt", &fh, FS_WRITE);
+	if ( !fh )
+	{
+		G_Printf ( "G_SaveBanIP - ERROR: can't open banip.txt\n" );
+		return;
+	}
+	
+	str = va("%d \n", numIPFilters);
+	trap_FS_Write(str, strlen(str), fh);
+	for ( i = 0 ; i < numIPFilters ; i++ ) 
+	{
+		if (ipFilters[i].compare == 0xffffffff)
+		{
+			str = "unused \n";
+			trap_FS_Write(str, strlen(str), fh);
+		}
+		else
+		{
+			*(unsigned *)b = ipFilters[i].compare;
+			str = va("%i.%i.%i.%i \n", b[0], b[1], b[2], b[3]);
+			trap_FS_Write(str, strlen(str), fh);
+		}
+	}
+
+	trap_FS_FCloseFile(fh);
+}
+
+void G_LoadIPBans( void )
+{//load in all the banned IPs
+	int		i, len;
+	char	*p, *token;
+	fileHandle_t fh;
+	char	banIPBuffer[MAX_IPFILTERS*32];			//	The list of file names read in
+	char	banIPFile[MAX_QPATH];
+
+	len = trap_FS_FOpenFile("banip.txt", &fh, FS_READ);
+	if ( !fh )
+	{
+		G_Printf ( "G_LoadBanIP - ERROR: can't open banip.txt\n" );
+		return;
+	}
+	
+	trap_FS_Read(banIPBuffer, len, fh);
+	banIPBuffer[len] = 0;
+	trap_FS_FCloseFile(fh);
+	p = banIPBuffer;
+	COM_BeginParseSession(banIPFile);
+
+	token = COM_ParseExt( &p, qtrue );
+	if ( token )
+	{
+		numIPFilters = atoi(token);
+
+		for ( i = 0 ; i < numIPFilters ; i++ ) 
+		{
+			token = COM_ParseExt( &p, qtrue );
+			if ( token )
+			{//have an ip
+				if ( !Q_stricmp("unused",token) )
+				{
+					ipFilters[i].compare = 0xffffffffu;
+				}
+				else
+				{
+					StringToFilter(token,&ipFilters[i]);
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
 }
 
 /*
@@ -451,7 +556,8 @@ qboolean	ConsoleCommand( void ) {
 	}
 
 	if (Q_stricmp (cmd, "listip") == 0) {
-		trap_SendConsoleCommand( EXEC_NOW, "g_banIPs\n" );
+		Svcmd_ListIPs_f();
+		//trap_SendConsoleCommand( EXEC_NOW, "g_banIPs\n" );
 		return qtrue;
 	}
 

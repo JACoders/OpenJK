@@ -1,8 +1,6 @@
 #ifndef _WIN_INPUT_H_
 #define _WIN_INPUT_H_
 
-#include "../client/keycodes.h"
-
 bool IN_ControllersChanged(int inserted[], int removed[]);
 
 #if defined (_XBOX ) || defined (_GAMECUBE)

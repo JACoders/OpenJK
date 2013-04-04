@@ -304,7 +304,6 @@ int SG_Read			(unsigned long chid, void *pvAddress, int iLength, void **ppvAddre
 int SG_ReadOptional	(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
 void SG_Shutdown();
 void SG_TestSave(void);
-
 //
 // note that this version number does not mean that a savegame with the same version can necessarily be loaded,
 //	since anyone can change any loadsave-affecting structure somewhere in a header and change a chunk size. 
@@ -318,4 +317,5 @@ extern SavedGameJustLoaded_e eSavedGameJustLoaded;
 extern qboolean qbLoadTransition;
 //
 ///////////////////////////////////////////////
+
 #endif	// #ifndef SERVER_H

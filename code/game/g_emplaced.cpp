@@ -20,7 +20,7 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 
 	if ( owner->s.number < MAX_CLIENTS )
 	{//extra checks
-		gi.trace(&tr, owner->currentOrigin, owner->mins, owner->maxs, owner->currentOrigin, owner->s.number, owner->clipmask);
+		gi.trace(&tr, owner->currentOrigin, owner->mins, owner->maxs, owner->currentOrigin, owner->s.number, owner->clipmask, (EG2_Collision)0, 0);
 		if ( tr.startsolid || tr.allsolid )
 		{//crap, they're already in solid somehow, don't bother tracing over
 			traceOver = qfalse;
@@ -30,7 +30,7 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 	{//trace up
 		VectorCopy( owner->currentOrigin, p2 );
 		p2[2] += STEPSIZE;
-		gi.trace(&tr, owner->currentOrigin, owner->mins, owner->maxs, p2, owner->s.number, owner->clipmask);
+		gi.trace(&tr, owner->currentOrigin, owner->mins, owner->maxs, p2, owner->s.number, owner->clipmask, (EG2_Collision)0, 0);
 		if (!tr.startsolid && !tr.allsolid )
 		{
 			VectorCopy( tr.endpos, p2 );
@@ -60,15 +60,15 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 		if ( owner->s.number < MAX_CLIENTS )
 		{//extra checks
 			//just see if end point is not in solid
-			gi.trace(&tr, p, owner->mins, owner->maxs, p, owner->s.number, owner->clipmask);
+			gi.trace(&tr, p, owner->mins, owner->maxs, p, owner->s.number, owner->clipmask, (EG2_Collision)0, 0);
 			if ( tr.startsolid || tr.allsolid )
 			{//would be in solid there, so just trace over, I guess?
-				gi.trace(&tr, p2, owner->mins, owner->maxs, p, owner->s.number, owner->clipmask);
+				gi.trace(&tr, p2, owner->mins, owner->maxs, p, owner->s.number, owner->clipmask, (EG2_Collision)0, 0);
 			}
 		}
 		else
 		{//trace over
-			gi.trace(&tr, p2, owner->mins, owner->maxs, p, owner->s.number, owner->clipmask);
+			gi.trace(&tr, p2, owner->mins, owner->maxs, p, owner->s.number, owner->clipmask, (EG2_Collision)0, 0);
 		}
 	}
 	if (!tr.startsolid && !tr.allsolid )
@@ -77,7 +77,7 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 		VectorCopy( tr.endpos, p );
 		VectorCopy( p, p2 );
 		p2[2] -= STEPSIZE;
-		gi.trace(&tr, p, owner->mins, owner->maxs, p2, owner->s.number, owner->clipmask);
+		gi.trace(&tr, p, owner->mins, owner->maxs, p2, owner->s.number, owner->clipmask, (EG2_Collision)0, 0);
 
 		if (!tr.startsolid && !tr.allsolid )//&& tr.fraction == 1.0f)
 		{ //all clear, we can move there
@@ -355,7 +355,7 @@ extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 	{
 		// we don't want for it to draw the weapon select stuff
 		cg.weaponSelect = WP_EMPLACED_GUN;
-		CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.87 );
+		CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.95 );
 	}
 
 	VectorCopy( activator->currentOrigin, self->pos4 );//keep this around so we know when to make them play the strafe anim
@@ -449,7 +449,7 @@ void SP_emplaced_eweb( gentity_t *ent )
 	ent->dflags |= DAMAGE_CUSTOM_HUD; // dumb, but we draw a custom hud
 
 	ent->s.modelindex = G_ModelIndex( name );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, name, ent->s.modelindex );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, name, ent->s.modelindex, NULL, NULL, 0, 0 );
 
 	// Activate our tags and bones
 	ent->handLBolt = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*cannonflash" ); //muzzle bolt
@@ -457,8 +457,8 @@ void SP_emplaced_eweb( gentity_t *ent )
 	ent->rootBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "model_root", qtrue );
 	ent->lowerLumbarBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "cannon_Yrot", qtrue );
 	ent->upperLumbarBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "cannon_Xrot", qtrue );
-	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->lowerLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_X, NEGATIVE_Y, NULL); 
-	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->upperLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_X, NEGATIVE_Y, NULL); 
+	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->lowerLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_X, NEGATIVE_Y, NULL, 0, 0); 
+	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->upperLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_X, NEGATIVE_Y, NULL, 0, 0); 
 	//gi.G2API_SetBoneAngles( &ent->ghoul2[0], "cannon_Yrot", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL); 
 	//set the constraints for this guy as an emplaced weapon, and his constraint angles
 	//ent->s.origin2[0] = 60.0f; //60 degrees in either direction
@@ -581,7 +581,7 @@ extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 		{
 			// we don't want for it to draw the weapon select stuff
 			cg.weaponSelect = WP_EMPLACED_GUN;
-			CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.87 );
+			CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.95 );
 		}
 		// Since we move the activator inside of the gun, we reserve a solid spot where they were standing in order to be able to get back out without being in solid
 		if ( self->nextTrain )
@@ -733,7 +733,7 @@ void emplaced_gun_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	ugly[YAW] = 4;
 	ugly[PITCH] = self->lastAngles[PITCH] * 0.8f + crandom() * 6;
 	ugly[ROLL] = crandom() * 7;
-	gi.G2API_SetBoneAnglesIndex( &self->ghoul2[self->playerModel], self->lowerLumbarBone, ugly, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL ); 
+	gi.G2API_SetBoneAnglesIndex( &self->ghoul2[self->playerModel], self->lowerLumbarBone, ugly, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 ); 
 
 	VectorCopy( self->currentOrigin,  org );
 	org[2] += 20;
@@ -817,7 +817,7 @@ void SP_emplaced_gun( gentity_t *ent )
 	ent->dflags |= DAMAGE_CUSTOM_HUD; // dumb, but we draw a custom hud
 
 	ent->s.modelindex = G_ModelIndex( name );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, name, ent->s.modelindex );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, name, ent->s.modelindex, NULL, NULL, 0, 0 );
 
 	// Activate our tags and bones
 	ent->headBolt = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*seat" );
@@ -825,7 +825,7 @@ void SP_emplaced_gun( gentity_t *ent )
 	ent->handRBolt = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*flash02" );
 	ent->rootBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "base_bone", qtrue );
 	ent->lowerLumbarBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "swivel_bone", qtrue );
-	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->lowerLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL); 
+	gi.G2API_SetBoneAnglesIndex( &ent->ghoul2[ent->playerModel], ent->lowerLumbarBone, vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0); 
 
 	RegisterItem( FindItemForWeapon( WP_EMPLACED_GUN ));
 	ent->s.weapon = WP_EMPLACED_GUN;
@@ -931,7 +931,7 @@ void ExitEmplacedWeapon( gentity_t *ent )
 					VectorCopy( start, end );
 					start[2] += 18;
 					end[2] -= 18;
-					gi.trace(&trace, start, ent->mins, ent->maxs, end, ent->s.number, ent->clipmask);
+					gi.trace(&trace, start, ent->mins, ent->maxs, end, ent->s.number, ent->clipmask, (EG2_Collision)0, 0);
 					if ( !trace.allsolid && !trace.startsolid )
 					{
 						G_SetOrigin( ent, trace.endpos );

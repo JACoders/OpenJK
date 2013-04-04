@@ -54,7 +54,7 @@ typedef struct dlight_s {
 typedef struct {
 	refEntity_t	e;
 
-//	float		axisLength;		// compensate for non-normalized axis
+	float		axisLength;		// compensate for non-normalized axis
 
 	qboolean	needDlights;	// true for bmodels that touch a dlight
 	qboolean	lightingCalculated;
@@ -63,16 +63,8 @@ typedef struct {
 	int			ambientLightInt;	// 32 bit rgba packed
 	vec3_t		directedLight;
 	int			dlightBits;
-#ifdef _XBOX
-	vec3_t		shadowDir;
-	int			visible;
-#endif
 } trRefEntity_t;
 
-#ifdef _XBOX
-extern char entityVisList[MAX_GENTITIES + 1000 + 256];//MAX_MISC_ENTS + MAX_FLARES];
-void RB_RunVisTest(int number, vec3_t bounds[2]);
-#endif
 
 // trRefdef_t holds everything that comes in refdef_t,
 // as well as the locally generated scene information
@@ -121,22 +113,28 @@ typedef struct {
 } orientationr_t;
 
 typedef struct image_s {
+#ifdef _XBOX
 	int			imgCode;
-
-#ifndef FINAL_BUILD
-	char		imgName[MAX_QPATH];		// Only in debug, so imagelist cmd is useful
+#else
+	char		imgName[MAX_QPATH];		// game path, including extension
+	int			frameUsed;			// for texture usage in frame statistics
 #endif
-
 	USHORT		width, height;				// source image
+//	int			imgfileSize;
 
 	GLuint		texnum;					// gl texture binding
 	int			internalFormat;
+	int			wrapClampMode;		// GL_CLAMP or GL_REPEAT
 
+#ifdef _XBOX
 	bool		isLightmap;
 	bool		isSystem;
 	short		mipcount;
+#else
+	bool		mipmap;
+#endif
 
-//	bool		allowPicmip;
+	bool		allowPicmip;
 	short		iLastLevelUsedOn;
 } image_t;
 
@@ -349,7 +347,6 @@ typedef struct {
 #define SURFSPRITE_FACING_DOWN		2
 #define SURFSPRITE_FACING_ANY		3
 
-
 typedef struct surfaceSprite_s
 {
 	int				surfaceSpriteType;
@@ -362,6 +359,7 @@ typedef struct surfaceSprite_s
 typedef struct {
 	image_t			*image;
 
+	texCoordGen_t	tcGen;
 	vec3_t			*tcGenVectors;
 
 	texModInfo_t	*texMods;
@@ -369,48 +367,49 @@ typedef struct {
 	short			numImageAnimations;
 	float			imageAnimationSpeed;
 
-//	texCoordGen_t	tcGen;
-	byte			tcGen;
-	byte			isLightmap;
-	byte			oneShotAnimMap;
-	byte			vertexLightmap;
-	byte			isVideoMap;
+	bool			isLightmap;
+	bool			oneShotAnimMap;
+	bool			vertexLightmap;
+	bool			isVideoMap;
 
-	char			videoMapHandle;
+	int				videoMapHandle;
 } textureBundle_t;
-
 
 #define NUM_TEXTURE_BUNDLES 2
 
 typedef struct {
-	byte			active;
-//	byte			isDetail;
+	bool			active;
+	bool			isDetail;
+#ifdef _XBOX
 	byte			isEnvironment;
+#endif
+#ifdef VV_LIGHTING
 	byte			isSpecular;
 	byte			isBumpMap;
-
+#endif 
 	byte			index;						// index of stage
 	byte			lightmapStyle;
-	byte			alphaGen;
-	byte			rgbGen;
 	
-	byte			adjustColorsForFog;
-	byte			mGLFogColorOverride;
-
-	// Whether this object emits a glow or not.
-	byte			glow;
-
 	textureBundle_t	bundle[NUM_TEXTURE_BUNDLES];
 
 	waveForm_t		rgbWave;
+	colorGen_t		rgbGen;
+
 	waveForm_t		alphaWave;
+	alphaGen_t		alphaGen;
 
 	byte			constantColor[4];			// for CGEN_CONST and AGEN_CONST
 
 	unsigned int	stateBits;					// GLS_xxxx mask
 
+	acff_t			adjustColorsForFog;
+
+	EGLFogOverride	mGLFogColorOverride;
+
 	surfaceSprite_t	*ss;
 
+	// Whether this object emits a glow or not.
+	bool			glow;
 } shaderStage_t;
 
 struct shaderCommands_s;
@@ -446,26 +445,31 @@ typedef struct {
 
 typedef struct shader_s {
 	char		name[MAX_QPATH];		// game path, including extension
-	short		lightmapIndex[MAXLIGHTMAPS];	// for a shader to match, both name and lightmapIndex must match
+	int			lightmapIndex[MAXLIGHTMAPS];	// for a shader to match, both name and lightmapIndex must match
 	byte		styles[MAXLIGHTMAPS];
 
-	short		index;					// this shader == tr.shaders[index]
-	short		sortedIndex;			// this shader == tr.sortedShaders[sortedIndex]
+	int			index;					// this shader == tr.shaders[index]
+	int			sortedIndex;			// this shader == tr.sortedShaders[sortedIndex]
 
 	float		sort;					// lower numbered shaders draw before higher numbered
 
 	int			surfaceFlags;			// if explicitlyDefined, this will have SURF_* flags
 	int			contentFlags;
 
-	char		defaultShader;			// we want to return index 0 if the shader failed to
+	bool		defaultShader;			// we want to return index 0 if the shader failed to
 										// load for some reason, but R_FindShader should
 										// still keep a name allocated for it, so if
 										// something calls RE_RegisterShader again with
 										// the same name, we don't try looking for it again
-	char		explicitlyDefined;		// found in a .shader file
-	char		entityMergable;			// merge across entites optimizable (smoke, blood)
+	bool		explicitlyDefined;		// found in a .shader file
+	bool		entityMergable;			// merge across entites optimizable (smoke, blood)
 
-	char		isBumpMap;
+	bool		isBumpMap;
+
+#ifdef _XBOX
+	bool		needsNormal;
+	bool		needsTangent;
+#endif
 
 	skyParms_t	*sky;
 	fogParms_t	*fogParms;
@@ -475,15 +479,10 @@ typedef struct shader_s {
 	int			multitextureEnv;		// 0, GL_MODULATE, GL_ADD (FIXME: put in stage)
 
 	cullType_t	cullType;				// CT_FRONT_SIDED, CT_BACK_SIDED, or CT_TWO_SIDED
-	char		polygonOffset;			// set for decals and other items that must be offset 
-	char		noMipMaps;				// for console fonts, 2D elements, etc.
-//	bool		noPicMip;				// for images that must always be full resolution
-//	bool		noTC;					// for images that don't want to be texture compressed (eg skies)
-#ifdef _XBOX
-	char		needsNormal;
-	char		needsTangent;
-#endif
-
+	bool		polygonOffset;			// set for decals and other items that must be offset 
+	bool		noMipMaps;				// for console fonts, 2D elements, etc.
+	bool		noPicMip;				// for images that must always be full resolution
+	bool		noTC;					// for images that don't want to be texture compressed (namely skies)
 
 	fogPass_t	fogPass;				// draw a blended pass, possibly with depth test equals
 
@@ -495,10 +494,10 @@ typedef struct shader_s {
 
 	float			timeOffset;                                 // current time offset for this shader
 
-//#ifndef _XBOX	// GLOWXXX
+#ifndef _XBOX	// GLOWXXX
 	// True if this shader has a stage with glow in it (just an optimization).
 	bool hasGlow;
-//#endif
+#endif
 
 //	struct shader_s		*remappedShader;                  // current shader this one is remapped too
 	struct	shader_s	*next;
@@ -597,6 +596,7 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+
 	SF_FLARE,
 	SF_ENTITY,				// beams, rails, lightning, etc that can be determined by entity
 	SF_DISPLAY_LIST,
@@ -636,8 +636,6 @@ typedef struct srfFlare_s {
 	unsigned short	origin[3];
 	unsigned short	normal[3];
 	byte			color[3];
-	byte			number;
-	int				visible;
 } srfFlare_t;
 
 #else // _XBOX
@@ -704,7 +702,6 @@ typedef struct srfGridMesh_s {
 #define POINTS_ST_SCALE 128.0f
 #define POINTS_LIGHT_SCALE 65536.0f
 #define GLM_COMP_SIZE 64.0f
-#define GLM_COMP_UV_SIZE 16384.0f
 
 #pragma pack (push, 1)
 typedef struct {
@@ -1121,16 +1118,10 @@ typedef struct srfTerrain_s
 ** by the frontend.
 */
 #ifdef _XBOX
-#define NUM_SCRATCH_IMAGES 1
+#define NUM_SCRATCH_IMAGES 2
 #else
 #define NUM_SCRATCH_IMAGES 16
 #endif
-
-#define SCREEN_IMAGE_MAX_WIDTH	512
-#define SCREEN_IMAGE_MAX_HEIGHT	256
-
-#define SAVE_GAME_IMAGE_W		256
-#define SAVE_GAME_IMAGE_H		128
 
 typedef struct {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
@@ -1576,16 +1567,16 @@ skin_t	*R_GetSkinByHandle( qhandle_t hSkin );
 //
 // tr_shader.c
 //
-extern	const short	lightmapsNone[MAXLIGHTMAPS];
-extern	const short	lightmaps2d[MAXLIGHTMAPS];
-extern	const short	lightmapsVertex[MAXLIGHTMAPS];
-extern	const short	lightmapsFullBright[MAXLIGHTMAPS];
+extern	const int	lightmapsNone[MAXLIGHTMAPS];
+extern	const int	lightmaps2d[MAXLIGHTMAPS];
+extern	const int	lightmapsVertex[MAXLIGHTMAPS];
+extern	const int	lightmapsFullBright[MAXLIGHTMAPS];
 extern	const byte	stylesDefault[MAXLIGHTMAPS];
 
 qhandle_t		 RE_RegisterShader( const char *name );
 qhandle_t		 RE_RegisterShaderNoMip( const char *name );
 
-shader_t	*R_FindShader( const char *name, const short *lightmapIndex, const byte *styles, qboolean mipRawImage );
+shader_t	*R_FindShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage );
 shader_t	*R_GetShaderByHandle( qhandle_t hShader );
 void		R_InitShaders( void );
 void		R_ShaderList_f( void );
@@ -1660,14 +1651,6 @@ struct shaderCommands_s
 	color4ub_t	vertexColors[SHADER_MAX_VERTEXES];
 	byte		vertexAlphas[SHADER_MAX_VERTEXES][4];
 	int			vertexDlightBits[SHADER_MAX_VERTEXES];
-
-#ifdef _XBOX
-	DWORD	*pXyz;
-	DWORD	*pNormal;
-	DWORD	*pColor;
-	DWORD	*pTex1;
-	DWORD	*pTex2;
-#endif
 
 	stageVars_t	svars;
 
@@ -2137,7 +2120,6 @@ int R_LoadImage( const char *name, byte **pic, int *width, int *height, GLenum *
 void		RE_InsertModelIntoHash(const char *name, model_t *mod);
 qboolean R_FogParmsMatch( int fog1, int fog2 );
 
-int R_SurfaceImageCount(const image_t*);
 /*
 Ghoul2 Insert Start
 */

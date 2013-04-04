@@ -1,10 +1,6 @@
 // #include "../server/exe_headers.h"
 
 #include "../client/client.h"
-
-//JLF
-//#include "../client/client_ui.h"
-
 #include "../qcommon/qcommon.h"
 #ifdef _JK2MP
 #include "../ui/keycodes.h"
@@ -15,10 +11,6 @@
 #include "win_local.h"
 #include "win_input.h"
 
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-
-#include "../qcommon/xb_settings.h"
 
 static void HandleDebugJoystickPress(fakeAscii_t button);
 
@@ -26,22 +18,16 @@ static bool _UIRunning = false;
 
 static bool IN_ControllerMustBePlugged(int controller);
 
-// By default, cheatpad is turned on except in final build. Just change
-// here to modify that.
-#ifndef FINAL_BUILD
-//#define DEBUG_CONTROLLER
+#ifdef _DEBUG
+bool cheatPadEnabled = 1;
+#else
+bool cheatPadEnabled = 1;
 #endif
 
 // Controller connection globals
-signed char uiControllerNotification = -1;
-extern int unpluggedcontrol2;
-
-
+static signed char uiControllerNotification = -1;
 bool noControllersConnected = false;
 bool wasPlugged[4];
-
-int mainControllerDelayedUnplug = 0;
-
 
 PadInfo _padInfo; // gamepad thumbstick buffer
 
@@ -55,7 +41,6 @@ PadInfo _padInfo; // gamepad thumbstick buffer
 static fakeAscii_t UIJoy2Key(fakeAscii_t button)
 {
 	switch(button) {
-	// D-Pad
 	case A_JOY7:
 		return A_CURSOR_DOWN;
 	case A_JOY5:
@@ -64,42 +49,41 @@ static fakeAscii_t UIJoy2Key(fakeAscii_t button)
 		return A_CURSOR_RIGHT;
 	case A_JOY8:
 		return A_CURSOR_LEFT;
-
-	// A and B
 	case A_JOY15:
 		return A_MOUSE1;
+#ifdef _GAMECUBE
+	case A_JOY16:
+		return A_ESCAPE;
+	case A_JOY14:
+		return A_DELETE;
+#else
 	case A_JOY14:
 		return A_ESCAPE;
-
-	// X and Y
 	case A_JOY16:
 		return A_DELETE;
+	// Arbitrary choice for X button - need it for passcodes.
 	case A_JOY13:
 		return A_BACKSPACE;
+#endif
 
-	// L and R triggers
+	//left and right trigger for scrolling
 	case A_JOY11:
 		return A_PAGE_UP;
 	case A_JOY12:
 		return A_PAGE_DOWN;
 
-	// Start and Back
-	case A_JOY4:
-		return A_MOUSE1;
+	// start and back button on xbox
 	case A_JOY1:
+		//JLF MPMOVED
 		return A_ESCAPE;
-
-	// White and Black
-	case A_JOY9:
-		return A_HOME;
-	case A_JOY10:
-		return A_END;
-
-	// Left and Right thumbstick - do nothing in the UI
 	case A_JOY2:
-		return A_SPACE;
+	case A_JOY4:
+		//JLF MPMOVED
+		return A_MOUSE1;
+		//return button;
+
 	case A_JOY3:
-		return A_SPACE;
+		return A_MOUSE1;
 	}
 
 	return A_SPACE; //Invalid button.
@@ -124,10 +108,10 @@ void IN_UIEmptyQueue()
 	}
 
 // BTO - No CM, bypass that logic.
-	for (int i = 0; i < ClientManager::NumClients(); i++)
-//	for (int i = 0; i < 1; ++i)
+//	for (int i = 0; i < ClientManager::NumClients(); i++)
+	for (int i = 0; i < 1; ++i)
 	{
-		ClientManager::ActivateClient(i);
+//		ClientManager::ActivateClient(i);
 		int found = 0;
 		int bCancel = 0;
 		for (int j = 0; j < uiQueueLen[i]; j++)
@@ -187,17 +171,11 @@ void IN_UIEmptyQueue()
 	// Reset the queue
 	uiQueueLen[0] = uiQueueLen[1] = 0;
 }
-extern int uiClientNum;
-extern int uiclientInputClosed;
-extern qboolean uiControllerMenu;
-extern vmCvar_t ControllerOutNum;
 
 // extern void G_DemoKeypress();
 // extern void CG_SkipCredits(void);
 void IN_CommonJoyPress(int controller, fakeAscii_t button, bool pressed)
 {
-	//int clientsClosedBitField;
-	int activeClient;
 	// Check for special cases for map hack
 #ifndef FINAL_BUILD
 	if (Cvar_VariableIntegerValue("cl_maphack"))
@@ -217,7 +195,7 @@ void IN_CommonJoyPress(int controller, fakeAscii_t button, bool pressed)
 		else if (_UIRunning && button == A_JOY4 && pressed)
 		{
 			// Start button -> F3
-		//	IN_SetMainController(controller);
+			IN_SetMainController(controller);
 			Sys_QueEvent( 0, SE_KEY, A_F3, pressed, 0, NULL );
 			return;
 		}
@@ -225,124 +203,134 @@ void IN_CommonJoyPress(int controller, fakeAscii_t button, bool pressed)
 #endif
 
 
-	// Don't allow any input to pass through if an important controller is
-	// disconnected
-	int controllerout	= ControllerOutNum.integer;
-	if(controllerout != -1)
-	{
-		if( (controllerout == controller) && (button == A_JOY4) )
-			Sys_QueEvent( 0, SE_KEY, _UIRunning ? UIJoy2Key(button) : button, pressed, 0, NULL );
-		return;
-	}
-
-//JLF
-	if (_UIRunning && cls.state != CA_ACTIVE && pressed )
-	{
-	int clientnum = ClientManager::ActiveClientNum();
-	int client1controller;
-		if ( ClientManager::splitScreenMode == qtrue)
-	{
-		int clientnum = ClientManager::ActiveClientNum();
-		ClientManager::ActivateClient(0);
-		client1controller = ClientManager::ActiveClient().controller;
-		if ( controller != client1controller)
-		{
-			ClientManager::ActivateClient(1);
-			ClientManager::SetActiveController(controller);
-		}
-
-				ClientManager::SetActiveController(controller);
-
-	ClientManager::ActivateClient(clientnum);
-	}
-	}
-
-//	clientsClosedBitField = Cvar_Get("clientInputClosed", "0" , 0)->integer;
-
-	activeClient = ClientManager::ActiveClientNum();
-	ClientManager::ActivateClient(0);
-
-	if ((uiclientInputClosed & 0x1) && controller == ClientManager::ActiveController()&& UIJoy2Key(button) !=A_ESCAPE)
-	{
-		ClientManager::ActivateClient(activeClient);
-		return;
-	}
-	else
-	{
-		if (ClientManager::splitScreenMode == qtrue)
-		{ 
-			ClientManager::ActivateClient(1);
-			if ((uiclientInputClosed & 0x02) && controller == ClientManager::ActiveController())
-			{
-				ClientManager::ActivateClient(activeClient);
-				return;
-			}
-		}
-		else
-		{
-			if (controller != ClientManager::ActiveController())
-			{
-				ClientManager::ActivateClient(activeClient);
-				return;
-			}
-		}
-	}
-	ClientManager::ActivateClient(activeClient);
-
-	if (!uiControllerMenu)
-	{
-		if (_UIRunning && cls.state == CA_ACTIVE )
-		{	if (ClientManager::ActiveClientNum()!= uiClientNum)
-			{
-				return;
-			}
-			if (ClientManager::ActiveController() != controller)
-			{
-				return;
-			}
-		}
-	}
-
-//END JLF
-
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-	{
-		// Always map start button to ESCAPE
-	//	if (!_UIRunning && controller != ClientManager::Controller(0) && controller != ClientManager::Controller(1))
-		if (!_UIRunning && controller != ClientManager::ActiveController())
-			return;
-
-		if (!_UIRunning && button == A_JOY4 && cls.state != CA_CINEMATIC)
-			Sys_QueEvent( 0, SE_KEY, A_ESCAPE, pressed, 0, NULL );
-
-		Sys_QueEvent( 0, SE_KEY, _UIRunning ? UIJoy2Key(button) : button, pressed, 0, NULL );
-	}
-	else
-#endif // _XBOX
-
-
 	if(IN_GetMainController() == controller || _UIRunning)
-//	if(ClientManager::ActiveController() == controller || _UIRunning)
-	
 	{
 		// Always map start button to ESCAPE
 		if (!_UIRunning && button == A_JOY4 && cls.state != CA_CINEMATIC)
 			Sys_QueEvent( 0, SE_KEY, A_ESCAPE, pressed, 0, NULL );
 
-#ifdef DEBUG_CONTROLLER
-		if (controller != 3)
+#ifndef FINAL_BUILD
+		if (controller != 3 || !cheatPadEnabled)
 #endif
 			Sys_QueEvent( 0, SE_KEY, _UIRunning ? UIJoy2Key(button) : button, pressed, 0, NULL );
 	}
 
-#ifdef DEBUG_CONTROLLER
-	if (controller == 3 && pressed)
+/*
+	if (pressed)
 	{
+		G_DemoKeypress();
+	}
+
+	//Hacky!  Skip the credits if start is pressed.
+	if(button == K_JOY4 && pressed) {
+		CG_SkipCredits();
+	}
+*/
+
+#ifndef FINAL_BUILD
+	if (controller == 3 && pressed && cheatPadEnabled) {
 		HandleDebugJoystickPress(button);
 		return;
 	}
 #endif
+
+/*
+	extern int player1ControllerId;
+	extern int player2ControllerId;
+	extern bool checkForPlayerControllers;
+	extern bool controllerUnplugged;
+
+
+	// If the game isn't started yet
+	if ((ClientManager::Shared().cls.cgameStarted == qfalse) &&
+		(!controllerUnplugged))
+	{
+		// and player1 doesnt have a controllerid, then assign client 1 to this controller
+		if (player1ControllerId == -1)
+		{
+			ClientManager::ActivateClient(0);
+			if (ClientManager::ActiveController() != controller)
+				ClientManager::SetActiveController(controller);
+		}
+		// player1 has a controller that is different then input recieved, and player2 doesnt have a controller and there are 2 clients
+		else if (player1ControllerId != controller && player2ControllerId == -1 && ClientManager::NumClients() > 1)
+		{
+			ClientManager::ActivateClient(1);
+			if (ClientManager::ActiveController() != controller)
+				ClientManager::SetActiveController(controller);			
+		}
+	}
+
+	if (ClientManager::ActivateByControllerId(controller))
+	{
+
+	#ifdef _XBOX
+		//Check the status of the white or black buttons.
+		if (button == K_JOY9) {
+			ClientManager::ActiveClient().whiteButtonDown = pressed;
+		} else if(button == K_JOY10) {
+			ClientManager::ActiveClient().blackButtonDown = pressed;
+		}
+
+		//Ignore white/black button presses if inv/force/weap select is up. 
+		//This is ugly.  It basically says return if the UI isn't running, if 
+		//we got a white or black button, and if the inv/force/weapon select is 
+		//running. 
+		if(!_UIRunning && 
+			(button == K_JOY9 ||  
+			button == K_JOY10) && 
+			(ClientManager::ActiveClient().cg.inventorySelectTime +  
+			WEAPON_SELECT_TIME > ClientManager::ActiveClient().cg.time || 
+			ClientManager::ActiveClient().cg.forcepowerSelectTime +  
+			WEAPON_SELECT_TIME > ClientManager::ActiveClient().cg.time || 
+			ClientManager::ActiveClient().cg.weaponSelectTime +  
+			WEAPON_SELECT_TIME > ClientManager::ActiveClient().cg.time)) { 
+
+			if(!pressed) {
+				//And it just gets hackier!  Is that a word?  It is now!
+				//If we've released the button and it wasn't down too long...
+				if((button == K_JOY9 && 
+						ClientManager::ActiveClient().whiteButtonHoldTime < 
+						MAX_WB_HOLD_TIME) ||
+					(button == K_JOY10 &&
+						ClientManager::ActiveClient().whiteButtonHoldTime < 
+						MAX_WB_HOLD_TIME)) {
+					//If we've already let the button press through previously,
+					//just send a release message.  Otherwise send both a press
+					//and release.
+					if(ClientManager::ActiveClient().keys[button].down) {
+						Sys_QueEvent( 0, SE_KEY, button, false, 0, NULL );
+					} else {
+						Sys_QueEvent( 0, SE_KEY, button, true, 0, NULL );
+						Sys_QueEvent( 0, SE_KEY, button, false, 0, NULL );
+					}
+				}
+			}
+			return; 
+		} 
+	#endif
+
+		if (!_UIRunning)
+		{
+			Sys_QueEvent( 0, SE_KEY, button, pressed, 0, NULL );
+		}
+		else
+		{
+//			int clientNum = ClientManager::ActiveClientNum();
+			int clientNum = 0; // VVFIXME
+			int qL = uiQueueLen[clientNum];
+			if(qL < 5) {
+				uiKeyQueue[clientNum][qL].button = UIJoy2Key(button);
+				uiKeyQueue[clientNum][qL].pressed = pressed;
+				uiQueueLen[clientNum]++;
+			}
+			//Sys_QueEvent(0, SE_KEY, UIJoy2Key(button), pressed, 0, NULL);
+		}
+*/
+/*
+	}
+*/
+
 }
 
 qboolean g_noCheckAxis = qfalse;
@@ -356,23 +344,13 @@ void IN_CommonUpdate()
 	extern int Key_GetCatcher( void );
 	_UIRunning = Key_GetCatcher() == KEYCATCH_UI;
 
-	// Even in the UI, only the main controller should be able to scroll:
-	if( _UIRunning && _padInfo.padId == IN_GetMainController() )
-	{
-		Sys_QueEvent( 0,
-					  SE_MOUSE,
-					  (_padInfo.joyInfo[0].x + _padInfo.joyInfo[1].x) *  4.0f,
-					  (_padInfo.joyInfo[0].y + _padInfo.joyInfo[1].y) *  -4.0f,
-					  0,
-					  NULL );
-	}
-	// Splitscreen mode has to have other controllers work
-	else if(_padInfo.padId == IN_GetMainController() || ClientManager::splitScreenMode == qtrue)
+	// if the UI is running, then let all gamepad sticks work, else only main controller
+	if(_UIRunning)
+		Sys_QueEvent( 0, SE_MOUSE, _padInfo.joyInfo[1].x *  4.0f, _padInfo.joyInfo[1].y *  -4.0f, 0, NULL );
+	else if(_padInfo.padId == IN_GetMainController())
 	{
 		// Find out how to configure the thumbsticks
-		//int thumbStickMode = Cvar_Get("ui_thumbStickMode", "0" , 0)->integer;
-		//int thumbStickMode = ClientManager::ActiveClient().cg_thumbsticks;
-		int thumbStickMode = Settings.thumbstickMode[ClientManager::ActiveClientNum()];
+		int thumbStickMode = Cvar_Get("ui_thumbStickMode", "0" , 0)->integer;
 
 		switch(thumbStickMode)
 		{
@@ -416,85 +394,17 @@ void IN_CommonUpdate()
 	}
 }
 
-void startsetMainController(int controller)
-{
-	IN_SetMainController(controller);
-	if ( !wasPlugged[controller])
-	{
-		mainControllerDelayedUnplug = 1 << controller;
-	}
-}
-
-
-
-extern void UI_SetActiveMenu( const char* menuname,const char *menuID );
 /*********
 IN_DisplayControllerUnplugged
 *********/
-void IN_DisplayControllerUnplugged(int controller)
+static void IN_DisplayControllerUnplugged(int controller)
 {
+	uiControllerNotification = controller;
 
-	int activeclient = ClientManager::ActiveClientNum();
-
-	if ( !( cls.keyCatchers & KEYCATCH_UI ) ) 
-	{
-		if ( cls.state == CA_ACTIVE ) 
-		{
-
-			Cvar_SetValue("ControllerOutNum", controller);
-			uiControllerNotification = controller;
-			VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_NOCONTROLLERINGAME);
-
-		}
-		else //picks up controller out while quiting
-		{
-			if (controller == IN_GetMainController())
-			{
-				mainControllerDelayedUnplug = 1 << controller;
-			}
-		}
-	}
-	else // UI
-	{	
-		{
-			if (ClientManager::splitScreenMode)
-			{
-				Cvar_SetValue("ControllerOutNum", controller);
-				uiControllerNotification = controller;
-				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_NOCONTROLLERINGAME);
-			}
-			else if (controller == IN_GetMainController())
-			{
-					Cvar_SetValue("ControllerOutNum", controller);
-					uiControllerNotification = controller;
-					VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_NOCONTROLLER);
-			}
-			
-		}
-	}
-// END JLF
+	//TODO Add a call to the UI that draws a controller disconnected message
+	// on the screen.
+//	VM_Call( uivm, UI_CONTROLLER_UNPLUGGED, true, controller);
 }
-
-void CheckForSecondPrompt( void )
-{
-	if(unpluggedcontrol2 != -1 && ControllerOutNum.integer == -1)
-		IN_DisplayControllerUnplugged(unpluggedcontrol2);
-}
-
-
-qboolean CurrentStateIsInteractive()
-{
-	 if (cls.state == CA_UNINITIALIZED ||
-			cls.state ==CA_CONNECTING||
-			cls.state ==CA_CONNECTED||
-			cls.state ==CA_CHALLENGING||
-			cls.state ==CA_PRIMED||
-			cls.state ==CA_CINEMATIC  ||
-			cls.state ==CA_LOADING)
-		return qfalse;
-	 return qtrue;
-}
-
 
 /*********
 IN_ClearControllerUnplugged
@@ -502,6 +412,10 @@ IN_ClearControllerUnplugged
 static void IN_ClearControllerUnplugged(void)
 {
 	uiControllerNotification = -1;
+
+	//TODO Add a call to the UI that removes the controller disconnected
+	// message from the screen.
+//	VM_Call( uivm, UI_CONTROLLER_UNPLUGGED, false, 0);
 }
 
 /*********
@@ -519,15 +433,12 @@ static bool IN_ControllerMustBePlugged(int controller)
 		return false;
 	}
 
-	if(	ClientManager::splitScreenMode == qtrue )
+	if(!_UIRunning && controller == IN_GetMainController())
 	{
-		if( controller == IN_GetMainController() )
-			return true;
-			
-		if( cls.state == CA_ACTIVE && ClientManager::Controller(1) == controller ) 
-			return true;
+		return true;
 	}
-	else if( controller == IN_GetMainController() )
+
+	if(noControllersConnected)
 	{
 		return true;
 	}
@@ -535,9 +446,6 @@ static bool IN_ControllerMustBePlugged(int controller)
 	return false;
 }
 
-
-
-extern void IN_CheckForNoControllers();
 /*********
 IN_PadUnplugged
 *********/
@@ -548,38 +456,15 @@ void IN_PadUnplugged(int controller)
 		Com_Printf("\tController %d unplugged\n",controller); 
 	}
 
-//JLF moved
-	wasPlugged[controller] = false;
-	Cvar_SetValue("ControllersConnectedCount", wasPlugged[0] + wasPlugged[1] + wasPlugged[2] + wasPlugged[3]);
-
-	//IN_CheckForNoControllers();
-
-	if(IN_ControllerMustBePlugged(controller)/*&& SG_GameAllowedToSaveHere(qtrue)*/)
+	if(IN_ControllerMustBePlugged(controller))
 	{
 		//If UI isn't busy, inform it about controller loss.
-		if(uiControllerNotification == -1 && Cvar_VariableIntegerValue("ControllerOutNum")<0)
+		if(uiControllerNotification == -1)
 		{
-			mainControllerDelayedUnplug &= ~( 1<< controller);
 			IN_DisplayControllerUnplugged(controller);
-			
-		}
-		else
-		{
-			if(ClientManager::splitScreenMode == qtrue)
-				if (controller != uiControllerNotification)
-					unpluggedcontrol2 = controller;
 		}
 	}
-	else
-	{
-		if ((noControllersConnected && _UIRunning) || controller == IN_GetMainController() || ( cls.state != CA_DISCONNECTED && ClientManager::splitScreenMode))
-		{
-			//store somehow for checking again later
-			mainControllerDelayedUnplug = 1 << controller;
-		}
-	}
-
-
+	wasPlugged[controller] = false;
 }
 
 /*********
@@ -592,29 +477,16 @@ void IN_PadPlugged(int controller)
 		Com_Printf("\tController %d plugged\n",controller); 
 	}
 
-	if(IN_ControllerMustBePlugged(controller)/*&& SG_GameAllowedToSaveHere(qtrue)*/)
+	if(IN_ControllerMustBePlugged(controller))
 	{
 		//If UI is dealing with this controller, tell it to stop.
-		if((uiControllerNotification == controller)|| (_UIRunning && cls.state != CA_ACTIVE ))
+		if(uiControllerNotification == controller)
 		{
 			IN_ClearControllerUnplugged();
 		}
-		if (unpluggedcontrol2 == controller)
-			unpluggedcontrol2 = -1;
-
 	}
-	else
-	{
-		if (controller == IN_GetMainController())
-		{
-			//store somehow for checking again later
-			mainControllerDelayedUnplug &= ~(1 << controller);
-		}
-	}
-
 	wasPlugged[controller] = true;
 	noControllersConnected = false;
-	Cvar_SetValue("ControllersConnectedCount", wasPlugged[0]+wasPlugged[1] + wasPlugged[2]+wasPlugged[3]);
 }
 
 /*********
@@ -630,10 +502,46 @@ IN_SetMainController
 *********/
 void IN_SetMainController(int id)
 {
-	ClientManager::SetActiveController(id);
-	ClientManager::ActivateByControllerId(id);
-	ClientManager::SetMainClient(ClientManager::ActiveClientNum());
 	cls.mainGamepad = id;
+}
+
+/*********
+IN_SetThumbStickConfig
+Sets the thumbstick configuration value
+*********/
+void IN_SetThumbStickConfig(int configValue)
+{
+	Cvar_Set("ui_thumbStickMode", va("%i", configValue));
+}
+
+/*********
+IN_SetButtonConfig
+Execs a button configuration script based on configValue
+*********/
+void IN_SetButtonConfig(int configValue)
+{
+	// Set the cvar
+	Cvar_Set("ui_buttonMode", va("%i", configValue));
+
+	// Exec the script
+	char				execString[40];
+	sprintf				(execString, "exec cfg\\buttonConfig%i.cfg\n", configValue);
+	Cbuf_ExecuteText	(EXEC_NOW, execString);
+}
+
+/*********
+IN_SetDpadConfig
+Execs a dpad configuration script based on configValue
+*********/
+void IN_SetDpadConfig(int configValue)
+{
+	// Set the cvar
+	Cvar_Set("ui_dpadMode", va("%i", configValue));
+
+	// Exec the script
+	char				execString[40];
+	sprintf				(execString, "exec cfg\\dpadConfig%i.cfg\n", configValue);
+	Cbuf_ExecuteText	(EXEC_NOW, execString);
 }
 
 /**********************************************************
@@ -641,46 +549,97 @@ void IN_SetMainController(int id)
 * DEBUGGING CODE
 *
 **********************************************************/
+bool debugSoundOff;
 
-#ifdef DEBUG_CONTROLLER
+#ifndef FINAL_BUILD
 static void HandleDebugJoystickPress(fakeAscii_t button)
 {
+	// Super hackalicious crap used below. Please remove this at some point.
+	static int curSaberSet = 0;
+	static int curPlayerSet = 0;
+	static short dpadmode = 0;
+	static short buttonmode = 0;
+	static short thumbmode = 0;
+
 	switch(button) {
-	case A_JOY13: // Right pad up (yellow)
+	case A_JOY13: // Right pad up
 		Cbuf_ExecuteText(EXEC_APPEND, "give all\n");
 		break;
-	case A_JOY16: // Right pad left (blue)
+	case A_JOY16: // Right pad left
 		Cbuf_ExecuteText(EXEC_APPEND, "viewpos\n");
 		break;
-	case A_JOY14: // Right pad right (red)
+	case A_JOY14: // Right pad right
 		Cbuf_ExecuteText(EXEC_APPEND, "noclip\n");
 		break;
-	case A_JOY15: // Right pad down (green)
+	case A_JOY15: // Right pad down
 		Cbuf_ExecuteText(EXEC_APPEND, "god\n");
 		break;
 	case A_JOY4: // Start
+		Cvar_SetValue("m_pitch", -Cvar_VariableValue("m_pitch"));
 		break;
 	case A_JOY1: // back
+		Cvar_SetValue("cl_autolevel", !Cvar_VariableIntegerValue("cl_autolevel"));
 		break;
 	case A_JOY2: // Left thumbstick
 		extern void Z_CompactStats(void);
 		Z_CompactStats();
 		break;
 	case A_JOY12: // Upper right trigger
+		Cbuf_ExecuteText(EXEC_APPEND, "load current\n");
 		break;
 	case A_JOY8: // Left pad left
+		thumbmode++;
+		if(thumbmode == 4)
+		{
+			thumbmode = 0;
+		}
+		IN_SetThumbStickConfig(thumbmode);
 		break;
 	case A_JOY6: // Left pad right
+		dpadmode++;
+		if(dpadmode == 4)
+		{
+			dpadmode = 0;
+		}
+		IN_SetDpadConfig(0);
 		break;
 	case A_JOY5: // Left pad up
+		buttonmode++;
+		if(buttonmode == 4)
+		{
+			buttonmode = 0;
+		}
+		IN_SetButtonConfig(buttonmode);
 		break;
 	case A_JOY7: // Left pad down
+		Cbuf_ExecuteText(EXEC_APPEND, "vid_restart\n");
 		break;
 	case A_JOY11: // Upper left trigger
+		// VVFIXME : This is totally bootleg. The above loads current, because the
+		// current SG system writes out to "current" and then uses FS to move the file
+		// to the name that we specify. Which we don't support. But we can't write to
+		// "current" as the SG system doesn't allow it. So we write to some arbitary
+		// name, and our game ends up in current.
+		Cbuf_ExecuteText(EXEC_APPEND, "save foo\n");
+#if 0	// VVFIXME
+		extern cvar_t *cl_safezonemask;
+		if(cl_safezonemask) {
+			if(cl_safezonemask->integer) {
+				Cbuf_ExecuteText(EXEC_APPEND, "safezonemask 0\n");
+			} else {
+				Cbuf_ExecuteText(EXEC_APPEND, "safezonemask 1\n");
+			}
+		}
+#endif
 		break;
 	case A_JOY9: // White button
+		// Hacky. Really hacky. No, hackier than that.
+		curSaberSet = (curSaberSet + 1) % 3;	// Number of xsaber strings in config file
+		Cbuf_ExecuteText(EXEC_APPEND, va("vstr xsaber%d\n", curSaberSet));
 		break;
 	case A_JOY10: // Black button
+		curPlayerSet = (curPlayerSet + 1) % 6;	// Number of xplayer strings in config file
+		Cbuf_ExecuteText(EXEC_APPEND, va("vstr xplayer%d\n", curPlayerSet));
 		break;
 	}
 }

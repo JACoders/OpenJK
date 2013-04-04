@@ -10,7 +10,9 @@
 #include "../ui/ui_splash.h"
 #endif
 
+#ifndef FINAL_BUILD
 #include "platform.h"
+#endif
 
 #define	MAXPRINTMSG	4096
 
@@ -26,10 +28,6 @@ static fileHandle_t	camerafile;
 fileHandle_t	com_journalFile;
 fileHandle_t	com_journalDataFile;		// config files are written here
 #endif
-
-// Global language setting - this should be used instead of the myriad language
-// cvars. Will be one of the Xbox values: XC_LANGUAGE_(ENGLISH|FRENCH|GERMAN)
-DWORD	g_dwLanguage;
 
 cvar_t	*com_viewlog;
 cvar_t	*com_speeds;
@@ -48,8 +46,6 @@ cvar_t	*cl_paused;
 cvar_t	*sv_paused;
 cvar_t	*com_skippingcin;
 cvar_t	*com_speedslog;		// 1 = buffer log, 2 = flush after each print
-extern cvar_t *inSplashMenu;
-extern cvar_t *controllerOut;
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 cvar_t	*com_G2Report;
@@ -75,6 +71,8 @@ qboolean	com_fullyInitialized = qfalse;
 char	com_errorMessage[MAXPRINTMSG];
 
 void Com_WriteConfig_f( void );
+//JLF
+//void G_DemoFrame();
 
 //============================================================================
 
@@ -120,7 +118,6 @@ A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 =============
 */
 void QDECL Com_Printf( const char *fmt, ... ) {
-#ifndef FINAL_BUILD
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
 
@@ -164,57 +161,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 		}
 	}
 #endif
-#endif
 }
-
-void QDECL Com_PrintfAlways( const char *fmt, ... ) {
-	va_list		argptr;
-	char		msg[MAXPRINTMSG];
-
-	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
-	va_end (argptr);
-
-#ifndef _XBOX
-	if ( rd_buffer ) {
-		if ((strlen (msg) + strlen(rd_buffer)) > (rd_buffersize - 1)) {
-			rd_flush(rd_buffer);
-			*rd_buffer = 0;
-		}
-		strcat (rd_buffer, msg);
-		return;
-	}
-#endif
-
-	CL_ConsolePrint( msg );
-
-	// echo to dedicated console and early console
-#ifndef FINAL_BUILD
-	Sys_Print( msg );
-
-#ifdef OUTPUT_TO_BUILD_WINDOW
-	OutputDebugString(msg);
-#endif
-#endif
-
-#ifndef _XBOX
-	// logfile
-	if ( com_logfile && com_logfile->integer ) {
-		if ( !logfile ) {
-			logfile = FS_FOpenFileWrite( "qconsole.log" );
-			if ( com_logfile->integer > 1 ) {
-				// force it to not buffer so we get valid
-				// data even if we are crashing
-				FS_ForceFlush(logfile);
-			}
-		}
-		if ( logfile ) {
-			FS_Write(msg, strlen(msg), logfile);
-		}
-	}
-#endif
-}
-
 
 
 /*
@@ -343,7 +290,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		throw ("DISCONNECTED\n");
 	} else if ( code == ERR_DROP ) {
 		// If loading/saving caused the crash/error - delete the temp file
-	//	SG_WipeSavegame("current");	// delete file
+		SG_WipeSavegame("current");	// delete file
 
 		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage));
 		CL_Disconnect();
@@ -701,7 +648,7 @@ The client calls this before starting a vid_restart or snd_restart
 void Hunk_ClearToMark( void ) 
 {
 	Z_TagFree(TAG_HUNKALLOC);	
-//	Z_TagFree(TAG_HUNKMISCMODELS);
+	Z_TagFree(TAG_HUNKMISCMODELS);
 }
 
 
@@ -716,7 +663,7 @@ The server calls this before shutting down or loading a new map
 void Hunk_Clear( void ) 
 {
 	Z_TagFree(TAG_HUNKALLOC);
-//	Z_TagFree(TAG_HUNKMISCMODELS);
+	Z_TagFree(TAG_HUNKMISCMODELS);
 
 	extern void CIN_CloseAllVideos();
 				CIN_CloseAllVideos();
@@ -1006,12 +953,6 @@ void Com_Init( char *commandLine ) {
 	Com_Printf( "%s %s %s\n", Q3_VERSION, CPUSTRING, __DATE__ );
 
 	try {
-		// Grab the user's langauge preference from the dashboard right away!
-		// We only support french/german/english (with english as default)
-		g_dwLanguage = XGetLanguage();
-		if( g_dwLanguage != XC_LANGUAGE_FRENCH && g_dwLanguage != XC_LANGUAGE_GERMAN )
-			g_dwLanguage = XC_LANGUAGE_ENGLISH;
-
 		// prepare enough of the subsystems to handle
 		// cvar and command buffer management
 		Com_ParseCommandLine( commandLine );
@@ -1055,12 +996,6 @@ void Com_Init( char *commandLine ) {
 
 		extern void Sys_StreamInit();
 		Sys_StreamInit();
-
-		// This just forces the static singleton in the function to call
-		// its constructor, which allocates a stupid 12 byte block of
-		// memory that never gets freed. Otherwise, it ends up stranded in
-		// the middle of the zone:
-		TheGhoul2InfoArray();
 #endif
 
 		FS_InitFilesystem ();	//uses z_malloc
@@ -1125,20 +1060,6 @@ void Com_Init( char *commandLine ) {
 		
 		s = va("%s %s %s", Q3_VERSION, CPUSTRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
-
-
-		// So any controller can skip the logo movies:
-		inSplashMenu = Cvar_Get( "inSplashMenu", "1", 0 );
-		controllerOut= Cvar_Get( "ControllerOutNum", "-1", 0);
-
-#ifdef XBOX_DEMO
-		// Cvar used to hide "QUIT TO DEMOS MENU" options if we weren't started by CDX
-		extern bool demoLaunchDataValid;
-		if( demoLaunchDataValid )
-			Cvar_SetValue( "ui_allowDemoQuit", 1 );
-		else
-			Cvar_SetValue( "ui_allowDemoQuit", 0 );
-#endif
 
 		SE_Init();	// Initialize StringEd
 	
@@ -1406,12 +1327,17 @@ try
 	// client system
 	//
 #ifdef _XBOX
+//	extern void G_DemoFrame();
+
+//	G_DemoFrame();
 	extern bool TestDemoTimer();
 	extern void PlayDemo();
 	if ( TestDemoTimer())
 	{
 		PlayDemo();
 	}
+
+
 #endif
 //	if ( !com_dedicated->integer ) 
 	{
@@ -1534,14 +1460,6 @@ try
 
 	G2Time_ResetTimers();
 #endif
-
-	Cvar_Get("levelSelectCheat", "-1", CVAR_SAVEGAME | CVAR_ARCHIVE);
-
-#ifdef XBOX_DEMO
-	// This is for the code that auto-reboots back to CDX after a timeout:
-	extern void Demo_TimerUpdate( void );
-	Demo_TimerUpdate();
-#endif
 }
 
 #pragma warning (default: 4701)	//local may have been used without init
@@ -1586,7 +1504,7 @@ void Com_Shutdown (void) {
 	Sys_ShutdownFileCodes();
 #endif
 
-//	SE_ShutDown();//close the string packages
+	SE_ShutDown();//close the string packages
 
 	extern void Netchan_Shutdown();
 	Netchan_Shutdown();

@@ -728,6 +728,49 @@ void Sys_UnloadDll( void *dllHandle ) {
 		Com_Error (ERR_FATAL, "Sys_UnloadDll FreeLibrary failed");
 	}
 }
+//make sure the dll can be opened by the file system, then write the
+//file back out again so it can be loaded is a library. If the read
+//fails then the dll is probably not in the pk3 and we are running
+//a pure server -rww
+bool Sys_UnpackDLL(const char *name)
+{
+	void *data;
+	fileHandle_t f;
+	int len = FS_ReadFile(name, &data);
+	int ck;
+
+	if (len < 1)
+	{ //failed to read the file (out of the pk3 if pure)
+		return false;
+	}
+
+	if (FS_FileIsInPAK(name, &ck) == -1)
+	{ //alright, it isn't in a pk3 anyway, so we don't need to write it.
+		//this is allowable when running non-pure.
+		FS_FreeFile(data);
+		return true;
+	}
+
+	f = FS_FOpenFileWrite( name );
+	if ( !f )
+	{ //can't open for writing? Might be in use.
+		//This is possibly a malicious user attempt to circumvent dll
+		//replacement so we won't allow it.
+		FS_FreeFile(data);
+		return false;
+	}
+
+	if (FS_Write( data, len, f ) < len)
+	{ //Failed to write the full length. Full disk maybe?
+		FS_FreeFile(data);
+		return false;
+	}
+
+	FS_FCloseFile( f );
+	FS_FreeFile(data);
+
+	return true;
+}
 
 /*
 =================
@@ -747,35 +790,14 @@ void * QDECL Sys_LoadDll( const char *name, int (QDECL **entryPoint)(int, ...),
 	char	*cdpath;
 	char	*gamedir;
 	char	*fn;
-#ifdef NDEBUG
-	int		timestamp;
-  int   ret;
-#endif
 	char	filename[MAX_QPATH];
 
 	Com_sprintf( filename, sizeof( filename ), "%sx86.dll", name );
 
-#ifdef NDEBUG
-	timestamp = Sys_Milliseconds();
-//	if( ((timestamp - lastWarning) > (5 * 60000)) && !Cvar_VariableIntegerValue( "dedicated" )
-//		&& !Cvar_VariableIntegerValue( "com_blindlyLoadDLLs" ) ) {
-	if (0) {
-		if (FS_FileExists(filename)) {
-			lastWarning = timestamp;
-			ret = MessageBoxEx( NULL, "You are about to load a .DLL executable that\n"
-				  "has not been verified for use with Quake III Arena.\n"
-				  "This type of file can compromise the security of\n"
-				  "your computer.\n\n"
-				  "Select 'OK' if you choose to load it anyway.",
-				  "Security Warning", MB_OKCANCEL | MB_ICONEXCLAMATION | MB_DEFBUTTON2 | MB_TOPMOST | MB_SETFOREGROUND,
-				  MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ) );
-			if( ret != IDOK ) {
-				return NULL;
-			}
-		}
+	if (!Sys_UnpackDLL(filename))
+	{
+		return NULL;
 	}
-#endif
-
 
 // rjr disable for final release #ifndef NDEBUG
 	libHandle = LoadLibrary( filename );

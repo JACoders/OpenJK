@@ -476,19 +476,6 @@ static void _dettachBuffer(ALuint source)
 	info->m_Buffer = 0;
 }
 
-static float rollOffPoint	= 0;
-
-void SetHeadroom( int source, float value)
-{
-	QALState::SourceInfo* info = s_pState->m_Sources[source];
-	for (QALState::SourceInfo::voice_t::iterator v = info->m_Voices.begin(); 
-		v != info->m_Voices.end(); ++v)
-	{
-		DWORD	dB	= 100 * value;
-		v->second->SetHeadroom(dB);
-	}
-}
-
 static void _sourceSetRefDist(QALState::SourceInfo* info, FLOAT value)
 {
 	for (QALState::SourceInfo::voice_t::iterator v = info->m_Voices.begin(); 
@@ -501,14 +488,9 @@ static void _sourceSetRefDist(QALState::SourceInfo* info, FLOAT value)
 
 		// New algorithm - ref dist is supposed to be dist at which sound is 1/2 volume,
 		// which happens at double min distance in DS, thus: (reverted)
-		v->second->SetMaxDistance(value * 2.f, DS3D_DEFERRED);
-//		v->second->SetMinDistance(value, DS3D_DEFERRED);
+		v->second->SetMaxDistance(value * 10.f, DS3D_DEFERRED);
+		v->second->SetMinDistance(value, DS3D_DEFERRED);
 //		v->second->SetMinDistance(value / 2.f, DS3D_DEFERRED);
-
-		v->second->SetRolloffCurve(
-			&rollOffPoint,
-			1,
-			DS3D_IMMEDIATE );
 	}
 }
 
@@ -888,22 +870,8 @@ static void _streamOpen(DWORD file, DWORD offset, bool loop)
 		s_pState->m_Stream.m_Open = false;
 	}
 
-	// Get the original name, not re-mapped:
 	const char* name = Sys_GetFileCodeName(file);
-
-#ifdef XBOX_DEMO
-	// Skip over "D:"
-	name += 2;
-
-	// Get the base path, then add the important part of the filename:
-	extern char demoBasePath[64];
-	char mappedName[128];
-
-	strcpy( mappedName, demoBasePath );
-	strcat( mappedName, name );
-	name = mappedName;
-#endif
-
+	
 	WaitForSingleObject(Sys_FileStreamMutex, INFINITE);
 
 	// open the file for streaming
@@ -1003,12 +971,9 @@ static DWORD WINAPI _streamThread(LPVOID lpParameter)
 static void _postStreamRequest(const QALState::StreamInfo::Request& req)
 {
 	// Add request to queue
-	extern void Z_SetNewDeleteTemporary( bool bTemp );
-	Z_SetNewDeleteTemporary( true );
 	WaitForSingleObject(s_pState->m_Stream.m_Mutex, INFINITE);
 	s_pState->m_Stream.m_Queue.push_back(req);
 	ReleaseMutex(s_pState->m_Stream.m_Mutex);
-	Z_SetNewDeleteTemporary( false );
 
 	// Let thread know it has one more pending request
 	ReleaseSemaphore(s_pState->m_Stream.m_QueueLen, 1, NULL);
@@ -1182,25 +1147,22 @@ static void _updateVoiceGain(IDirectSoundBuffer* voice, FLOAT gain)
 	// compute aggregate gain
 	FLOAT g = s_pState->m_Gain * gain;
 	
-	if (g <= 0.0f)
+	if (g <= 0.f)
 	{
 		// mute the sound
 		voice->SetVolume(DSBVOLUME_MIN);
 	}
 	else
 	{
-		if( g >= 0.98)
-			g	= 1.0f;
-
 		// convert to dB
-		g = 20.f * log10(g) * 100.0f;
+		g = 20.f * log10(g);
 
-		if(g < DSBVOLUME_HW_MIN) {
-			g = DSBVOLUME_HW_MIN;
+		if(g < -100.0f) {
+			g = -100.0f;
 		}
 
 		// set the volume
-		voice->SetVolume(g);
+		voice->SetVolume(g * 100.f);
 	}
 }
 
@@ -1251,25 +1213,22 @@ static void _updateStream(void)
 	{
 		// compute aggregate gain
 		FLOAT g = s_pState->m_Gain * s_pState->m_Stream.m_Gain;
-		if (g <= 0.0f)
+		if (g <= 0.f)
 		{
 			// mute the sound
 			s_pState->m_Stream.m_pVoice->SetVolume(DSBVOLUME_MIN);
 		}
 		else
 		{
-			if( g >= 0.98)
-				g	= 1.0f;
-
 			// convert to dB
-			g = 20.f * log10(g) * 100.0f;
+			g = 20.f * log10(g);
 
-			if(g < DSBVOLUME_HW_MIN) {
-				g = DSBVOLUME_HW_MIN;
+			if(g < -100.0f) {
+				g = -100.0f;
 			}
 
 			// set the volume
-			s_pState->m_Stream.m_pVoice->SetVolume(g);
+			s_pState->m_Stream.m_pVoice->SetVolume(g * 100.f);
 		}
 
 		s_pState->m_Stream.m_GainDirty = false;

@@ -9,12 +9,9 @@
 #include "client.h"
 #include "../win32/win_local.h"
 #include "../win32/win_input.h"
-#include "../win32/glw_win_dx8.h"
 #include "BinkVideo.h"
 
-//#define XBOX_VIDEO_PATH "d:\\base\\video\\"
-char XBOX_VIDEO_PATH[64] = "d:\\base\\video\\";
-#define SHADER_VIDEO_PATH "z:\\"
+#define XBOX_VIDEO_PATH "d:\\base\\video\\"
 
 BinkVideo bVideo;	// bink video object
 connstate_t	previousState = CA_UNINITIALIZED;	// previous cinematic state
@@ -32,8 +29,6 @@ struct CinematicData
 CinematicData cinFiles[] = {
 	// Opening logos
 	{ "logos", 0, 0, 0, 0, 0 },
-	// Attract sequence
-	{ "attract", 0, 0, 0, 0, 0 },
 
 	// Planet shaders
 	{ "cos", 0, 0, 0, 0, 0 },
@@ -52,32 +47,15 @@ CinematicData cinFiles[] = {
 	{ "zonju", 0, 0, 0, 0, 0 },
 
 	// Others
-//	{ "jk0101_sw", 0, 0, 0, 0, 0 },	// Folded into ja01!
-//	{ "ja01", 0, 0, 0, 0, 0 },		// Contains the text crawl, so must be localized:
-	{ "ja01_e", 0, 0, 0, 0, 0 },
-	{ "ja01_f", 0, 0, 0, 0, 0 },
-	{ "ja01_d", 0, 0, 0, 0, 0 },
-	{ "ja02", 0, 0, 0, 0, 0 },
-	{ "ja03", 0, 0, 0, 0, 0 },
-	{ "ja04", 0, 0, 0, 0, 0 },
-	{ "ja05", 0, 0, 0, 0, 0 },
-	{ "ja06", 0, 0, 0, 0, 0 },
-	{ "ja07", 0, 0, 0, 0, 0 },
-	{ "ja08", 0, 0, 0, 0, 0 },
-	{ "ja09", 0, 0, 0, 0, 0 },
-	{ "ja10", 0, 0, 0, 0, 0 },
-	{ "ja11", 0, 0, 0, 0, 0 },
-	{ "ja12", 0, 0, 0, 0, 0 },
+//	{ "jk1", 0, 0, 0, 0, 0 },
+//	{ "jk2", 0, 0, 0, 0, 0 },
+//	{ "jk3", 0, 0, 0, 0, 0 },
+//	{ "jk4", 0, 0, 0, 0, 0 },
+//	{ "jk5", 0, 0, 0, 0, 0 },
 };
 
 const int cinNumFiles = sizeof(cinFiles) / sizeof(cinFiles[0]);
 static int currentHandle = -1;
-
-// Stupid PC filth
-static qboolean qbInGameCinematicOnStandBy = qfalse;
-static char	 sInGameCinematicStandingBy[MAX_QPATH];
-
-bool CIN_PlayAllFrames( const char *arg, int x, int y, int w, int h, int systemBits, bool keyBreakAllowed );
 
 /********
 CIN_CloseAllVideos
@@ -134,15 +112,11 @@ e_status CIN_RunCinematic (int handle)
 	// If we weren't playing a movie, or playing the wrong one - start up
 	if (handle != currentHandle)
 	{
-		bool shader = cinFiles[handle].bits & CIN_shader;
-
 		CIN_StopCinematic(currentHandle);
 		if (!bVideo.Start(
-				va("%s%s.bik",
-					shader ? SHADER_VIDEO_PATH : XBOX_VIDEO_PATH,
-					cinFiles[handle].filename),
-				cinFiles[handle].x, cinFiles[handle].y,
-				cinFiles[handle].w, cinFiles[handle].h))
+					va(XBOX_VIDEO_PATH "%s.bik", cinFiles[handle].filename),
+					cinFiles[handle].x, cinFiles[handle].y,
+					cinFiles[handle].w, cinFiles[handle].h))
 		{
 			return FMV_EOF;
 		}
@@ -162,10 +136,10 @@ e_status CIN_RunCinematic (int handle)
 		}
 		else
 		{
-			bVideo.SetMasterVolume(16384);	//32768);	// Default Bink volume
+			bVideo.SetMasterVolume(32768);	// Default Bink volume
 		}
 
-		if (!shader)
+		if (!(cinFiles[handle].bits & CIN_shader))
 		{
 			previousState = cls.state;
 			cls.state = CA_CINEMATIC;
@@ -198,8 +172,13 @@ psAudioFile	- audio file for movie (not used)
 
 Starts playing the given bink video file
 *********/
+#ifdef _JK2MP
+int CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits)
+#else
 int CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits, const char *psAudioFile /* = NULL */)
+#endif
 {
+//	char	name[MAX_OSPATH];
 	char	arg[MAX_OSPATH];
 	char*	nameonly;
 	int		handle;
@@ -209,26 +188,6 @@ int CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int heig
 
 	// remove path, find in list
 	nameonly = COM_SkipPath(arg);
-
-	// ja01 contains the text crawl, so we need to add on the right language suffix
-	extern DWORD g_dwLanguage;
-	if( Q_stricmp(nameonly, "ja01") == 0)
-	{
-		switch( g_dwLanguage )
-		{
-			case XC_LANGUAGE_FRENCH:
-				strcat(nameonly, "_f");
-				break;
-			case XC_LANGUAGE_GERMAN:
-				strcat(nameonly, "_d");
-				break;
-			case XC_LANGUAGE_ENGLISH:
-			default:
-				strcat(nameonly, "_e");
-				break;
-		}
-	}
-
 	for (handle = 0; handle < cinNumFiles; ++handle)
 	{
 		if (!Q_stricmp(cinFiles[handle].filename, nameonly))
@@ -256,7 +215,7 @@ int CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int heig
 /*********
 CIN_SetExtents
 
-handle	- handle to a video
+handle	- handle to a video (not used)
 x		- x origin for window
 y		- y origin for window
 w		- width for window
@@ -276,32 +235,33 @@ void CIN_SetExtents (int handle, int x, int y, int w, int h)
 		bVideo.SetExtents(x,y,w,h);
 }
 
+/********
+CIN_DrawCinematic
+
+handle	- handle to a video (not used)
+
+Updates the current frame of the current video
+*********/
+void CIN_DrawCinematic (int handle)
+{
+	assert( handle == currentHandle );
+
+	bVideo.Run();
+}
 
 /*********
 SCR_DrawCinematic
-
-Externally-called only, and only if cls.state == CA_CINEMATIC (or CL_IsRunningInGameCinematic() == true now)
 *********/
 void SCR_DrawCinematic (void)
 {
-	if (CL_InGameCinematicOnStandBy())
-	{
-		CIN_PlayAllFrames( sInGameCinematicStandingBy, 0, 0, 640, 480, 0, true );
-	}
-	else
-	{
-		// Run and draw a frame:
-		bVideo.Run();
-	}
+	CIN_DrawCinematic(currentHandle);
 }
-
 /*********
 SCR_RunCinematic
 *********/
 void SCR_RunCinematic (void)
 {
 	// This is called every frame, even when we're not playing a movie
-	// VVFIXME - Check return val for EOF - then stop cinematic?
 	if (currentHandle > 0 && currentHandle < cinNumFiles)
 		CIN_RunCinematic(currentHandle);
 }
@@ -309,7 +269,11 @@ void SCR_RunCinematic (void)
 /*********
 SCR_StopCinematic
 *********/
+#ifdef _JK2MP
+void SCR_StopCinematic(void)
+#else
 void SCR_StopCinematic(qboolean bAllowRefusal /* = qfalse */)
+#endif
 {
 	CIN_StopCinematic(currentHandle);
 }
@@ -362,16 +326,11 @@ bool CIN_PlayAllFrames( const char *arg, int x, int y, int w, int h, int systemB
 	bool retval;
 	Key_ClearStates();
 
-	// PC hack
-	qbInGameCinematicOnStandBy = qfalse;
-
-#ifdef XBOX_DEMO
-	// When run from CDX, we can pause the timer during cutscenes:
-	extern void Demo_TimerPause( bool bPaused );
-	Demo_TimerPause( true );
-#endif
-
+#ifdef _JK2MP
+	int Handle = CIN_PlayCinematic(arg, x, y, w, h, systemBits);
+#else
 	int Handle = CIN_PlayCinematic(arg, x, y, w, h, systemBits, NULL);
+#endif
 	if (Handle != -1)
 	{
 		while (CIN_RunCinematic(Handle) == FMV_PLAY && !(keyBreakAllowed && kg.anykeydown))
@@ -381,31 +340,18 @@ bool CIN_PlayAllFrames( const char *arg, int x, int y, int w, int h, int systemB
 			Com_EventLoop		();
 		}
 #ifdef _XBOX
-//		while (CIN_RunCinematic(Handle) == FMV_PLAY && !(keyBreakAllowed && !kg.anykeydown))
-//		{
-//			SCR_UpdateScreen	();
-//			IN_Frame			();
-//			Com_EventLoop		();
-//		}
+		while (CIN_RunCinematic(Handle) == FMV_PLAY && !(keyBreakAllowed && !kg.anykeydown))
+		{
+			SCR_UpdateScreen	();
+			IN_Frame			();
+			Com_EventLoop		();
+		}
 #endif
 		CIN_StopCinematic(Handle);
 	}
 
-#ifdef XBOX_DEMO
-	Demo_TimerPause( false );
-#endif
-
 	retval =(keyBreakAllowed && kg.anykeydown);
 	Key_ClearStates();
-
-	// Soooper hack! Game ends up running for a couple frames after this cutscene. We don't want it to!
-	if( Q_stricmp(arg, "ja08") == 0 )
-	{
-		// Filth. Don't call Present until this gets cleared.
-		extern bool connectSwapOverride;
-		connectSwapOverride = true;
-	}
-
 	return retval;
 }
 
@@ -443,36 +389,25 @@ void CL_PlayCinematic_f(void)
 
 qboolean CL_IsRunningInGameCinematic(void)
 {
-	return qfalse; //qbPlayingInGameCinematic;
+	// Nothing
+	return qfalse;
+}
+
+qboolean CL_CheckPendingCinematic(void)
+{
+	// Nothing
+	return qfalse;
 }
 
 void CL_PlayInGameCinematic_f(void)
 {
-	if (cls.state == CA_ACTIVE)
-	{
-		// In some situations (during yavin1 intro) we move to a cutscene directly from
-		// a shaking camera - so rumble never gets killed.
-		IN_KillRumbleScripts();
-
-		char *arg = Cmd_Argv( 1 );
-		CIN_PlayAllFrames(arg, 48, 36, 544, 408, 0, true);
-	}
-	else
-	{
-		qbInGameCinematicOnStandBy = qtrue;
-		strcpy(sInGameCinematicStandingBy,Cmd_Argv(1));
-	}
+	// Nothing
 }
 
 qboolean CL_InGameCinematicOnStandBy(void)
 {
-	return qbInGameCinematicOnStandBy;
-}
-
-// Used by fatal error handler
-void MuteBinkSystem( void )
-{
-	bVideo.SetMasterVolume( 0 );
+	// Nothing
+	return qfalse;
 }
 /***** END *****/
 

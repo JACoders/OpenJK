@@ -5,8 +5,8 @@
  *
  * desc:		Game-side module for Siege gametype.
  *
- * $Author: osman $ 
- * $Revision: 1.19 $
+ * $Author: Rich Whitehouse $ 
+ * $Revision: 1.6 $
  *
  *****************************************************************************/
 #include "g_local.h"
@@ -35,6 +35,7 @@ int			imperial_attackers = 0;
 
 qboolean	gSiegeRoundBegun = qfalse;
 qboolean	gSiegeRoundEnded = qfalse;
+qboolean	gSiegeRoundWinningTeam = 0;
 int			gSiegeBeginTime = Q3_INFINITE;
 
 int			g_preroundState = 0; //default to starting as spec (1 is starting ingame)
@@ -112,22 +113,6 @@ void InitSiegeMode(void)
 	{
 		goto failure;
 	}
-
-	// Fix for various siege bugs where levels don't restart after match ends?
-	// This seems like a reasonable solution - BTO - 09/13/2003
-	imperial_goals_required = 0;
-	rebel_goals_required = 0;
-	imperial_time_limit = 0;
-	rebel_time_limit = 0;
-	gImperialCountdown = 0;
-	gRebelCountdown = 0;
-	rebel_attackers = 0;
-	imperial_attackers = 0;
-	gSiegeRoundBegun = qfalse;
-	gSiegeRoundEnded = qfalse;
-	gSiegeBeginTime = Q3_INFINITE;
-	g_preroundState = 0;
-	// End siege state bug fix - BTO
 
 	//reset
 	SiegeSetCompleteData(0);
@@ -700,6 +685,7 @@ void SiegeRoundComplete(int winningteam, int winningclient)
 	trap_SetConfigstring(CS_SIEGE_STATE, va("3|%i", level.time)); //ended
 	gSiegeRoundBegun = qfalse;
 	gSiegeRoundEnded = qtrue;
+	gSiegeRoundWinningTeam = winningteam;
 
 	if (BG_SiegeGetValueGroup(siege_info, teamstr, gParseObjectives))
 	{

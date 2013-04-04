@@ -22,7 +22,7 @@ void CG_CheckAmmo( void ) {
 	int		weapons;
 
 	// see about how many seconds of ammo we have remaining
-	weapons = cg->snap->ps.stats[ STAT_WEAPONS ];
+	weapons = cg.snap->ps.stats[ STAT_WEAPONS ];
 	total = 0;
 	for ( i = WP_BRYAR_PISTOL; i < WP_NUM_WEAPONS ; i++ ) {
 		if ( ! ( weapons & ( 1 << i ) ) ) {
@@ -44,33 +44,33 @@ void CG_CheckAmmo( void ) {
 		case WP_TRIP_MINE:
 		case WP_DET_PACK:
 		case WP_EMPLACED_GUN:
-			total += cg->snap->ps.ammo[weaponData[i].ammoIndex] * 1000;
+			total += cg.snap->ps.ammo[weaponData[i].ammoIndex] * 1000;
 			break;
 		default:
-			total += cg->snap->ps.ammo[weaponData[i].ammoIndex] * 200;
+			total += cg.snap->ps.ammo[weaponData[i].ammoIndex] * 200;
 			break;
 		}
 		if ( total >= 5000 ) {
-			cg->lowAmmoWarning = 0;
+			cg.lowAmmoWarning = 0;
 			return;
 		}
 	}
 
-	previous = cg->lowAmmoWarning;
+	previous = cg.lowAmmoWarning;
 
 	if ( total == 0 ) {
-		cg->lowAmmoWarning = 2;
+		cg.lowAmmoWarning = 2;
 	} else {
-		cg->lowAmmoWarning = 1;
+		cg.lowAmmoWarning = 1;
 	}
 
-	if (cg->snap->ps.weapon == WP_SABER)
+	if (cg.snap->ps.weapon == WP_SABER)
 	{
-		cg->lowAmmoWarning = 0;
+		cg.lowAmmoWarning = 0;
 	}
 
 	// play a sound on transitions
-	if ( cg->lowAmmoWarning != previous ) {
+	if ( cg.lowAmmoWarning != previous ) {
 		trap_S_StartLocalSound( cgs.media.noAmmoSound, CHAN_LOCAL_SOUND );
 	}
 #endif
@@ -83,7 +83,7 @@ CG_DamageFeedback
 ==============
 */
 void CG_DamageFeedback( int yawByte, int pitchByte, int damage ) {
-	float		left = 0.0f, front, up;
+	float		left, front, up;
 	float		kick;
 	int			health;
 	float		scale;
@@ -93,10 +93,10 @@ void CG_DamageFeedback( int yawByte, int pitchByte, int damage ) {
 	float		yaw, pitch;
 
 	// show the attacking player's head and name in corner
-	cg->attackerTime = cg->time;
+	cg.attackerTime = cg.time;
 
 	// the lower on health you are, the greater the view kick will be
-	health = cg->snap->ps.stats[STAT_HEALTH];
+	health = cg.snap->ps.stats[STAT_HEALTH];
 	if ( health < 40 ) {
 		scale = 1;
 	} else {
@@ -111,10 +111,10 @@ void CG_DamageFeedback( int yawByte, int pitchByte, int damage ) {
 
 	// if yaw and pitch are both 255, make the damage always centered (falling, etc)
 	if ( yawByte == 255 && pitchByte == 255 ) {
-		cg->damageX = 0;
-		cg->damageY = 0;
-		cg->v_dmg_roll = 0;
-		cg->v_dmg_pitch = -kick;
+		cg.damageX = 0;
+		cg.damageY = 0;
+		cg.v_dmg_roll = 0;
+		cg.v_dmg_pitch = -kick;
 	} else {
 		// positional
 		pitch = pitchByte / 255.0 * 360;
@@ -127,9 +127,9 @@ void CG_DamageFeedback( int yawByte, int pitchByte, int damage ) {
 		AngleVectors( angles, dir, NULL, NULL );
 		VectorSubtract( vec3_origin, dir, dir );
 
-		front = DotProduct (dir, cg->refdef.viewaxis[0] );
-		left = DotProduct (dir, cg->refdef.viewaxis[1] );
-		up = DotProduct (dir, cg->refdef.viewaxis[2] );
+		front = DotProduct (dir, cg.refdef.viewaxis[0] );
+		left = DotProduct (dir, cg.refdef.viewaxis[1] );
+		up = DotProduct (dir, cg.refdef.viewaxis[2] );
 
 		dir[0] = front;
 		dir[1] = left;
@@ -139,39 +139,39 @@ void CG_DamageFeedback( int yawByte, int pitchByte, int damage ) {
 			dist = 0.1f;
 		}
 
-		cg->v_dmg_roll = kick * left;
+		cg.v_dmg_roll = kick * left;
 		
-		cg->v_dmg_pitch = -kick * front;
+		cg.v_dmg_pitch = -kick * front;
 
 		if ( front <= 0.1 ) {
 			front = 0.1f;
 		}
-		cg->damageX = -left / front;
-		cg->damageY = up / dist;
+		cg.damageX = -left / front;
+		cg.damageY = up / dist;
 	}
 
 	// clamp the position
-	if ( cg->damageX > 1.0 ) {
-		cg->damageX = 1.0;
+	if ( cg.damageX > 1.0 ) {
+		cg.damageX = 1.0;
 	}
-	if ( cg->damageX < - 1.0 ) {
-		cg->damageX = -1.0;
+	if ( cg.damageX < - 1.0 ) {
+		cg.damageX = -1.0;
 	}
 
-	if ( cg->damageY > 1.0 ) {
-		cg->damageY = 1.0;
+	if ( cg.damageY > 1.0 ) {
+		cg.damageY = 1.0;
 	}
-	if ( cg->damageY < - 1.0 ) {
-		cg->damageY = -1.0;
+	if ( cg.damageY < - 1.0 ) {
+		cg.damageY = -1.0;
 	}
 
 	// don't let the screen flashes vary as much
 	if ( kick > 10 ) {
 		kick = 10;
 	}
-	cg->damageValue = kick;
-	cg->v_dmg_time = cg->time + DAMAGE_TIME;
-	cg->damageTime = cg->snap->serverTime;
+	cg.damageValue = kick;
+	cg.v_dmg_time = cg.time + DAMAGE_TIME;
+	cg.damageTime = cg.snap->serverTime;
 
 //JLFRUMBLE
 #ifdef _XBOX
@@ -198,13 +198,13 @@ A respawn happened this snapshot
 */
 void CG_Respawn( void ) {
 	// no error decay on player movement
-	cg->thisFrameTeleport = qtrue;
+	cg.thisFrameTeleport = qtrue;
 
 	// display weapons available
-	cg->weaponSelectTime = cg->time;
+	cg.weaponSelectTime = cg.time;
 
 	// select the weapon the server says we are using
-	cg->weaponSelect = cg->snap->ps.weapon;
+	cg.weaponSelect = cg.snap->ps.weapon;
 }
 
 extern char *eventnames[];
@@ -242,9 +242,9 @@ void CG_CheckPlayerstateEvents( playerState_t *ps, playerState_t *ops ) {
 			cent->playerState = ps;
 			CG_EntityEvent( cent, cent->lerpOrigin );
 
-			cg->predictableEvents[ i & (MAX_PREDICTED_EVENTS-1) ] = event;
+			cg.predictableEvents[ i & (MAX_PREDICTED_EVENTS-1) ] = event;
 
-			cg->eventSequence++;
+			cg.eventSequence++;
 		}
 	}
 }
@@ -262,25 +262,23 @@ void CG_CheckChangedPredictableEvents( playerState_t *ps ) {
 	cent = &cg_entities[ps->clientNum];
 	for ( i = ps->eventSequence - MAX_PS_EVENTS ; i < ps->eventSequence ; i++ ) {
 		//
-		if (i >= cg->eventSequence) {
+		if (i >= cg.eventSequence) {
 			continue;
 		}
 		// if this event is not further back in than the maximum predictable events we remember
-		if (i > cg->eventSequence - MAX_PREDICTED_EVENTS) {
+		if (i > cg.eventSequence - MAX_PREDICTED_EVENTS) {
 			// if the new playerstate event is different from a previously predicted one
-			if ( ps->events[i & (MAX_PS_EVENTS-1)] != cg->predictableEvents[i & (MAX_PREDICTED_EVENTS-1) ] ) {
+			if ( ps->events[i & (MAX_PS_EVENTS-1)] != cg.predictableEvents[i & (MAX_PREDICTED_EVENTS-1) ] ) {
 
 				event = ps->events[ i & (MAX_PS_EVENTS-1) ];
 				cent->currentState.event = event;
 				cent->currentState.eventParm = ps->eventParms[ i & (MAX_PS_EVENTS-1) ];
 				CG_EntityEvent( cent, cent->lerpOrigin );
 
-				cg->predictableEvents[ i & (MAX_PREDICTED_EVENTS-1) ] = event;
+				cg.predictableEvents[ i & (MAX_PREDICTED_EVENTS-1) ] = event;
 
 				if ( cg_showmiss.integer ) {
-#ifndef FINAL_BUILD
 					CG_Printf("WARNING: changed predicted event\n");
-#endif
 				}
 			}
 		}
@@ -294,11 +292,11 @@ pushReward
 */
 #ifdef JK2AWARDS
 static void pushReward(sfxHandle_t sfx, qhandle_t shader, int rewardCount) {
-	if (cg->rewardStack < (MAX_REWARDSTACK-1)) {
-		cg->rewardStack++;
-		cg->rewardSound[cg->rewardStack] = sfx;
-		cg->rewardShader[cg->rewardStack] = shader;
-		cg->rewardCount[cg->rewardStack] = rewardCount;
+	if (cg.rewardStack < (MAX_REWARDSTACK-1)) {
+		cg.rewardStack++;
+		cg.rewardSound[cg.rewardStack] = sfx;
+		cg.rewardShader[cg.rewardStack] = shader;
+		cg.rewardCount[cg.rewardStack] = rewardCount;
 	}
 }
 #endif
@@ -356,13 +354,13 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 		{
 			if ( ps->stats[STAT_HEALTH] > 0 )
 			{
-				CG_PainEvent( &cg_entities[cg->predictedPlayerState.clientNum], ps->stats[STAT_HEALTH] );
+				CG_PainEvent( &cg_entities[cg.predictedPlayerState.clientNum], ps->stats[STAT_HEALTH] );
 			}
 		}
 	}
 
 	// if we are going into the intermission, don't start any voices
-	if ( cg->intermissionStarted ) {
+	if ( cg.intermissionStarted ) {
 		return;
 	}
 
@@ -419,16 +417,16 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 	reward = qfalse;
 #endif
 	// lead changes
-	if (!reward && cgAnnouncerTime < cg->time) {
+	if (!reward && cgAnnouncerTime < cg.time) {
 		//
-		if ( !cg->warmup && cgs.gametype != GT_POWERDUEL ) {
+		if ( !cg.warmup && cgs.gametype != GT_POWERDUEL ) {
 			// never play lead changes during warmup and powerduel
 			if ( ps->persistant[PERS_RANK] != ops->persistant[PERS_RANK] ) {
 				if ( cgs.gametype < GT_TEAM) {
 					/*
 					if (  ps->persistant[PERS_RANK] == 0 ) {
 						CG_AddBufferedSound(cgs.media.takenLeadSound);
-						cgAnnouncerTime = cg->time + 3000;
+						cgAnnouncerTime = cg.time + 3000;
 					} else if ( ps->persistant[PERS_RANK] == RANK_TIED_FLAG ) {
 						//CG_AddBufferedSound(cgs.media.tiedLeadSound);
 					} else if ( ( ops->persistant[PERS_RANK] & ~RANK_TIED_FLAG ) == 0 ) {
@@ -437,7 +435,7 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 						if (ps->persistant[PERS_SCORE] > 0)
 						{
 							CG_AddBufferedSound(cgs.media.lostLeadSound);
-							cgAnnouncerTime = cg->time + 3000;
+							cgAnnouncerTime = cg.time + 3000;
 						}
 					}
 					*/
@@ -447,43 +445,43 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 	}
 
 	// timelimit warnings
-	if ( cgs.timelimit > 0 && cgAnnouncerTime < cg->time ) {
+	if ( cgs.timelimit > 0 && cgAnnouncerTime < cg.time ) {
 		int		msec;
 
-		msec = cg->time - cgs.levelStartTime;
-		if ( !( cg->timelimitWarnings & 4 ) && msec > ( cgs.timelimit * 60 + 2 ) * 1000 ) {
-			cg->timelimitWarnings |= 1 | 2 | 4;
+		msec = cg.time - cgs.levelStartTime;
+		if ( !( cg.timelimitWarnings & 4 ) && msec > ( cgs.timelimit * 60 + 2 ) * 1000 ) {
+			cg.timelimitWarnings |= 1 | 2 | 4;
 			//trap_S_StartLocalSound( cgs.media.suddenDeathSound, CHAN_ANNOUNCER );
 		}
-		else if ( !( cg->timelimitWarnings & 2 ) && msec > (cgs.timelimit - 1) * 60 * 1000 ) {
-			cg->timelimitWarnings |= 1 | 2;
+		else if ( !( cg.timelimitWarnings & 2 ) && msec > (cgs.timelimit - 1) * 60 * 1000 ) {
+			cg.timelimitWarnings |= 1 | 2;
 			trap_S_StartLocalSound( cgs.media.oneMinuteSound, CHAN_ANNOUNCER );
-			cgAnnouncerTime = cg->time + 3000;
+			cgAnnouncerTime = cg.time + 3000;
 		}
-		else if ( cgs.timelimit > 5 && !( cg->timelimitWarnings & 1 ) && msec > (cgs.timelimit - 5) * 60 * 1000 ) {
-			cg->timelimitWarnings |= 1;
+		else if ( cgs.timelimit > 5 && !( cg.timelimitWarnings & 1 ) && msec > (cgs.timelimit - 5) * 60 * 1000 ) {
+			cg.timelimitWarnings |= 1;
 			trap_S_StartLocalSound( cgs.media.fiveMinuteSound, CHAN_ANNOUNCER );
-			cgAnnouncerTime = cg->time + 3000;
+			cgAnnouncerTime = cg.time + 3000;
 		}
 	}
 
 	// fraglimit warnings
-	if ( cgs.fraglimit > 0 && cgs.gametype < GT_CTF && cgs.gametype != GT_DUEL && cgs.gametype != GT_POWERDUEL && cgs.gametype != GT_SIEGE && cgAnnouncerTime < cg->time) {
+	if ( cgs.fraglimit > 0 && cgs.gametype < GT_CTF && cgs.gametype != GT_DUEL && cgs.gametype != GT_POWERDUEL && cgs.gametype != GT_SIEGE && cgAnnouncerTime < cg.time) {
 		highScore = cgs.scores1;
-		if ( !( cg->fraglimitWarnings & 4 ) && highScore == (cgs.fraglimit - 1) ) {
-			cg->fraglimitWarnings |= 1 | 2 | 4;
+		if ( !( cg.fraglimitWarnings & 4 ) && highScore == (cgs.fraglimit - 1) ) {
+			cg.fraglimitWarnings |= 1 | 2 | 4;
 			CG_AddBufferedSound(cgs.media.oneFragSound);
-			cgAnnouncerTime = cg->time + 3000;
+			cgAnnouncerTime = cg.time + 3000;
 		}
-		else if ( cgs.fraglimit > 2 && !( cg->fraglimitWarnings & 2 ) && highScore == (cgs.fraglimit - 2) ) {
-			cg->fraglimitWarnings |= 1 | 2;
+		else if ( cgs.fraglimit > 2 && !( cg.fraglimitWarnings & 2 ) && highScore == (cgs.fraglimit - 2) ) {
+			cg.fraglimitWarnings |= 1 | 2;
 			CG_AddBufferedSound(cgs.media.twoFragSound);
-			cgAnnouncerTime = cg->time + 3000;
+			cgAnnouncerTime = cg.time + 3000;
 		}
-		else if ( cgs.fraglimit > 3 && !( cg->fraglimitWarnings & 1 ) && highScore == (cgs.fraglimit - 3) ) {
-			cg->fraglimitWarnings |= 1;
+		else if ( cgs.fraglimit > 3 && !( cg.fraglimitWarnings & 1 ) && highScore == (cgs.fraglimit - 3) ) {
+			cg.fraglimitWarnings |= 1;
 			CG_AddBufferedSound(cgs.media.threeFragSound);
-			cgAnnouncerTime = cg->time + 3000;
+			cgAnnouncerTime = cg.time + 3000;
 		}
 	}
 }
@@ -497,7 +495,7 @@ CG_TransitionPlayerState
 void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
 	// check for changing follow mode
 	if ( ps->clientNum != ops->clientNum ) {
-		cg->thisFrameTeleport = qtrue;
+		cg.thisFrameTeleport = qtrue;
 		// make sure we don't get any unwanted transition effects
 		*ops = *ps;
 	}
@@ -512,12 +510,12 @@ void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
 		CG_Respawn();
 	}
 
-	if ( cg->mapRestart ) {
+	if ( cg.mapRestart ) {
 		CG_Respawn();
-		cg->mapRestart = qfalse;
+		cg.mapRestart = qfalse;
 	}
 
-	if ( cg->snap->ps.pm_type != PM_INTERMISSION 
+	if ( cg.snap->ps.pm_type != PM_INTERMISSION 
 		&& ps->persistant[PERS_TEAM] != TEAM_SPECTATOR ) {
 		CG_CheckLocalSounds( ps, ops );
 	}
@@ -530,8 +528,8 @@ void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
 
 	// smooth the ducking viewheight change
 	if ( ps->viewheight != ops->viewheight ) {
-		cg->duckChange = ps->viewheight - ops->viewheight;
-		cg->duckTime = cg->time;
+		cg.duckChange = ps->viewheight - ops->viewheight;
+		cg.duckTime = cg.time;
 	}
 }
 

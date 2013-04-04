@@ -198,8 +198,9 @@ qboolean AI_FindSelfInPreviousGroup( gentity_t *self )
 
 void AI_InsertGroupMember( AIGroupInfo_t *group, gentity_t *member )
 {
+	int i;
 	//okay, you know what?  Check this damn group and make sure we're not already in here!
-	for ( int i = 0; i < group->numGroup; i++ )
+	for ( i = 0; i < group->numGroup; i++ )
 	{
 		if ( group->member[i].number == member->s.number )
 		{//already in here

@@ -28,7 +28,6 @@
 #endif
 
 #ifdef VV_LIGHTING
-#include "../win32/glw_win_dx8.h"
 #include "tr_lightmanager.h"
 #endif
 
@@ -724,11 +723,8 @@ static void TransformRenderSurface(const mdxmSurface_t *surf, CBoneCache *bones,
 		}
 
 #ifdef _XBOX
-		if(tess.shader != tr.shadowShader) {
-			// Don't need tex coords if doing a shadow
-            Q_CastShort2FloatScale(&out->texCoords[baseVert][0][0], &texCoord->texCoords[0], 1.f / GLM_COMP_UV_SIZE);
-			Q_CastShort2FloatScale(&out->texCoords[baseVert][0][1], &texCoord->texCoords[1], 1.f / GLM_COMP_UV_SIZE);
-		}
+		Q_CastShort2FloatScale(&out->texCoords[baseVert][0][0], &texCoord->texCoords[0], 1.f / GLM_COMP_SIZE);
+		Q_CastShort2FloatScale(&out->texCoords[baseVert][0][1], &texCoord->texCoords[1], 1.f / GLM_COMP_SIZE);
 #else
 		out->texCoords[baseVert][0][0] = texCoord->texCoords[0];
 		out->texCoords[baseVert][0][1] = texCoord->texCoords[1];
@@ -824,8 +820,8 @@ static void TransformCollideSurface(const mdxmSurface_t *surf, CBoneCache *bones
 		}
 
 #ifdef _XBOX
-		Q_CastShort2FloatScale(out + 3, &texCoord->texCoords[0], 1.f / GLM_COMP_UV_SIZE);
-		Q_CastShort2FloatScale(out + 4, &texCoord->texCoords[1], 1.f / GLM_COMP_UV_SIZE);
+		Q_CastShort2FloatScale(out + 3, &texCoord->texCoords[0], 1.f / GLM_COMP_SIZE);
+		Q_CastShort2FloatScale(out + 4, &texCoord->texCoords[1], 1.f / GLM_COMP_SIZE);
 #else
 		out[3] = texCoord->texCoords[0];
 		out[4] = texCoord->texCoords[1];
@@ -1271,11 +1267,6 @@ static int G2_ComputeLOD( trRefEntity_t *ent, const model_t *currentModel, int l
 		return(0);
 	}
 
-#ifdef _XBOX
-	if(strstr(currentModel->name, "jedi_") > 0)
-		return 0;
-#endif
-
 	if (r_lodbias->integer > lodBias) 
 	{
 		lodBias = r_lodbias->integer;
@@ -1370,340 +1361,11 @@ static int G2_GetBonePoolIndex(	const mdxaHeader_t *pMDXAHeader, int iFrame, int
 	return pIndex->iIndex & 0x00FFFFFF;	// this will cause problems for big-endian machines... ;-)
 }
 
-/*
-	Let the nastiness begin: Virtual memory for GLAs! We swap the bonePool for large
-	GLAs (humanoid and cinematic) to the HD, and then manage a pool of pages, swapping
-	in on demand. The theory is that a small portion of the animations are ever used,
-	or used on one level, and we can get away with this. I hope I'm right.
-*/
-struct vvBonePoolPage;
-struct vvBonePoolPageTableEntry;
-
-#define QUATS_PER_PAGE	1024
-#define PAGES_IN_RAM	100		// 1.4 MB - perhaps too small?
-
-struct vvBonePoolPage
-{
-	mdxaCompQuatBone_t			quats[QUATS_PER_PAGE];	// Data
-	vvBonePoolPageTableEntry	*owner;					// Bookkeeping
-	unsigned long				touch;					// For LRU
-};
-
-struct vvBonePoolPageTableEntry
-{
-	vvBonePoolPageTableEntry() : page(NULL) { }
-
-	vvBonePoolPage	*page;		// Data, or NULL if not in memory
-};
-
-struct vvBonePoolClient
-{
-	// Constructor takes the original size of the compBonePool from the GLA,
-	// and decides how many pages it will need and such:
-	vvBonePoolClient( mdxaHeader_t *mdxa, bool bCinematic )
-	{
-		// How big is the original bone pool, and how many pages do we need:
-		int bonePoolSize = mdxa->ofsEnd - mdxa->ofsCompBonePool;
-		int numQuats = bonePoolSize / sizeof(mdxaCompQuatBone_t);
-		assert( !(bonePoolSize % sizeof(mdxaCompQuatBone_t)) );
-
-		numPages = numQuats / QUATS_PER_PAGE;
-		if( numQuats % QUATS_PER_PAGE )
-			numPages++;
-
-		// Allocate our table that tracks which pages are in memory, and where:
-		Z_PushNewDeleteTag( TAG_MODEL_GLA );
-		pages = new vvBonePoolPageTableEntry[numPages];
-		Z_PopNewDeleteTag();
-
-		// Make the swap file:
-		h = CreateFile( bCinematic ? "Z:\\cinematicglaswap" : "Z:\\humanoidglaswap" ,
-						GENERIC_READ | GENERIC_WRITE,
-						0,
-						NULL,
-						CREATE_ALWAYS,
-						FILE_FLAG_RANDOM_ACCESS | FILE_FLAG_NO_BUFFERING,
-						NULL );
-		if( h == INVALID_HANDLE_VALUE )
-			assert( !"Couldn't create gla swap file" );
-
-		// Dump out the bone pool now, for later retrieval:
-		byte *pCompBonePool = (byte *)mdxa + mdxa->ofsCompBonePool;
-		// New (non-buffered IO) - need to round this up to sector size (512):
-		bonePoolSize = (bonePoolSize + 511) & ~511;
-		DWORD dwWritten = 0;
-		if( !WriteFile( h, pCompBonePool, bonePoolSize, &dwWritten, NULL ) || dwWritten != bonePoolSize )
-			assert( !"Couldn't write gla swap file" );
-
-		// Truncate the mdxa:
-		mdxa->ofsEnd = mdxa->ofsCompBonePool;
-	}
-
-	~vvBonePoolClient( void )
-	{
-		// Close our file, and remove the page table:
-		CloseHandle( h );
-		delete [] pages;
-	}
-
-	vvBonePoolPageTableEntry	*pages;
-	int							numPages;
-	HANDLE						h;		// We always keep our page file open
-};
-
-const int precachePages[] = {
-	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 20,
-	21, 26, 30, 34, 37, 39, 46, 51, 54, 55, 60, 63, 66, 67, 68, 70,
-	73, 74, 76, 77, 82, 83, 84, 88, 89, 92, 97, 101, 103, 104, 105,
-	111, 127, 128, 129, 130, 137, 138, 139, 140, 141, 142, 143, 146,
-	147, 148, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160,
-	161, 162, 176, 177, 178, 180, 184, 185, 188, 189, 190, 199, 200,
-	201, 202, 205, 208, 211, 212, 216, 223, 241, 242, 244, 251,
-};
-
-const int numPrecachePages = sizeof(precachePages) / sizeof(precachePages[0]);
-
-// This is getting silly.
-class vvBonePoolManager
-{
-public:
-	vvBonePoolManager( void )
-	{
-		clients[0] = clients[1] = NULL;
-		glaPages = PAGES_IN_RAM;
-		Clear();
-	}
-
-	// Loads a canned list of pages from humanoid.gla to try and eliminate start-of-level slowdown
-	void PrecacheBasicAnimations( void )
-	{
-		for( int i = 0; i < numPrecachePages; ++i )
-			fetchBone( 0, precachePages[i] * QUATS_PER_PAGE );
-	}
-
-	void Register( mdxaHeader_t *mdxa )
-	{
-		bool bCinematic = strstr( mdxa->name, "_humanoid_" );
-		int clientIndex = bCinematic ? 1 : 0;
-
-		Z_PushNewDeleteTag( TAG_MODEL_GLA );
-		clients[clientIndex] = new vvBonePoolClient( mdxa, bCinematic );
-		Z_PopNewDeleteTag();
-
-		// We're responsible for tagging the mdxa header so we know that we're in charge (0/-1):
-		mdxa->ofsCompBonePool = -clientIndex;
-
-		// Special: If we just registered the humanoid.gla, and we're on kor2, precache some stuff:
-		if( !bCinematic )
-			PrecacheBasicAnimations();
-	}
-
-	vvBonePoolPage *getFreePage( void )
-	{
-		unsigned long minAge = pages[0].touch;
-		int minIndex = 0;
-
-		// Find oldest page, or any page not in use:
-		for( int i = 0; i < glaPages; ++i )
-		{
-			// Return an unused page right away:
-			if( !pages[i].owner )
-				return &pages[i];
-
-			if( pages[i].touch < minAge )
-			{
-				minIndex = i;
-				minAge = pages[i].touch;
-			}
-		}
-
-		// Page was in use - update records:
-		pages[minIndex].owner->page = NULL;
-		pages[minIndex].owner = NULL;
-		return &pages[minIndex];
-	}
-
-	// Returns a pointer to the specified bone for the specified client
-	mdxaCompQuatBone_t *fetchBone( int clientIndex, int index )
-	{
-/*
-		static int crap = 0;
-		if( crap )
-			ActivePageList();
-*/
-		assert( clientIndex <= 0 && clientIndex >= -1 );
-		vvBonePoolClient *client = clients[-clientIndex];
-
-		int pageIndex = index / QUATS_PER_PAGE;
-		assert( pageIndex <= client->numPages );
-		int pageOffset = index % QUATS_PER_PAGE;
-
-		// Is the data already in memory?
-		if( client->pages[pageIndex].page )
-		{
-			vvBonePoolPage *p = client->pages[pageIndex].page;
-			p->touch = sv.time;
-			return &p->quats[pageOffset];
-		}
-
-		// Need to load from disk:
-		Com_Printf( "*" );
-		vvBonePoolPage *p = getFreePage();
-		DWORD dwRead = 0;
-		SetFilePointer( client->h, pageIndex * sizeof(p->quats), NULL, FILE_BEGIN );
-		if( !ReadFile( client->h, p->quats, sizeof(p->quats), &dwRead, NULL ) )	//|| dwRead != sizeof(p->quats) ) (fails on last page)
-			assert( !"Couldn't read from gla swap file" );
-		p->touch = sv.time;
-		p->owner = &client->pages[pageIndex];
-		p->owner->page = p;
-
-		return &p->quats[pageOffset];
-	}
-
-	// Called between levels to clean up after ourselves:
-	void Clear( void )
-	{
-		int i;
-
-		for( i = 0; i < PAGES_IN_RAM; ++i )
-			pages[i].owner = NULL;
-
-		for( i = 0; i < 2; ++i )
-			if( clients[i] )
-			{
-				delete clients[i];
-				clients[i] = NULL;
-			}
-
-		swappedPageCount = 0;
-	}
-
-	// Used by other code (Bink) to turn part of the pool into a temp buffer:
-	void *TempAlloc( unsigned long size )
-	{
-		// Make sure that we haven't already been called:
-		assert( glaPages == PAGES_IN_RAM );
-		if( glaPages != PAGES_IN_RAM )
-			return NULL;
-
-		// Make sure the requested allocation isn't too large for us:
-		int tempPages = (size / sizeof(vvBonePoolPage)) + 1;
-		assert( tempPages < glaPages );
-		if( tempPages >= glaPages )
-			return NULL;
-
-		// Move our end-of-valid-pages marker down:
-		glaPages -= tempPages;
-		// Invalidate all the pages that we're going to steal but remember
-		// which pages we had loaded, so we can reload them when we free this:
-		swappedPageCount = 0;
-		for( int i = glaPages; i < glaPages + tempPages; ++i )
-			if( pages[i].owner )
-			{
-				// Which client owns this page?
-				int clientNum = (clients[1] &&
-								 pages[i].owner >= clients[1]->pages &&
-								 pages[i].owner < clients[1]->pages + clients[1]->numPages) ? 1 : 0;
-				swappedClients[swappedPageCount] = clientNum;
-
-				// And what's the index?
-				int pageNum = pages[i].owner - clients[clientNum]->pages;
-				swappedPages[swappedPageCount] = pageNum;
-
-				swappedPageCount++;
-				assert( pageNum >= 0 && pageNum < clients[clientNum]->numPages );
-
-				// Mark the page as no longer loaded:
-				pages[i].owner->page = NULL;
-			}
-
-		// And return the start of the block:
-		return &pages[glaPages];
-	}
-
-	// Free the currently allocated TempAlloc space:
-	void TempFree( void *p )
-	{
-		// Sanity checks:
-		assert( (glaPages != PAGES_IN_RAM) && (p == &pages[glaPages]) );
-
-		// Fix up the data, who knows what kind of crap is in there now:
-		for( int i = glaPages; i < PAGES_IN_RAM; ++i )
-			pages[i].owner = NULL;
-
-		// And start re-using those pages again:
-		glaPages = PAGES_IN_RAM;
-
-		// Now we re-load anything we threw out to make room for this:
-		for( int j = 0; j < swappedPageCount; ++j )
-			fetchBone( -swappedClients[j], swappedPages[j] * QUATS_PER_PAGE );
-
-		swappedPageCount = 0;
-	}
-
-	// Dump out a list of the pages currently loaded:
-	void ActivePageList( void )
-	{
-		for( int c = 0; c < 2; ++c )
-		{
-			if( !clients[c] )
-				continue;
-
-			Sys_Log( "bone-pool.log", va( "Pages for client %d:\n", c ) );
-
-			for( int i = 0; i < clients[c]->numPages; ++i )
-				if( clients[c]->pages[i].page )
-					Sys_Log( "bone-pool.log", va( "%d\n", i ) );
-		}
-	}
-
-private:
-	vvBonePoolClient	*clients[2];		// One for _humanoid, one for cinematic
-	vvBonePoolPage		pages[PAGES_IN_RAM];
-	int					curTouch;
-
-	// How many pages are being used for GLA. Will be PAGES_IN_RAM, unless TempAlloc
-	// has been handed out, in which case it will be smaller:
-	int					glaPages;
-
-	// How many pages did we actually throw out when we did a tempalloc, and what
-	// were they?
-	int					swappedPageCount;
-	short				swappedClients[PAGES_IN_RAM];
-	short				swappedPages[PAGES_IN_RAM];
-};
-
-// Grand-unified bone pool manager thingy:
-vvBonePoolManager	TheBonePool;
-
-void ClearTheBonePool( void )
-{
-	TheBonePool.Clear();
-}
-
-void *BonePoolTempAlloc( unsigned long size )
-{
-	return TheBonePool.TempAlloc( size );
-}
-
-void BonePoolTempFree( void *p )
-{
-	TheBonePool.TempFree( p );
-}
-
-/*******************************************************************************************************************/
-
 
 /*static inline*/ void UnCompressBone(float mat[3][4], int iBoneIndex, const mdxaHeader_t *pMDXAHeader, int iFrame)
 {
-	// Check for GLAs that are swapped out:
-	if( pMDXAHeader->ofsCompBonePool <= 0 )
-		MC_UnCompressQuat(mat, TheBonePool.fetchBone(pMDXAHeader->ofsCompBonePool, G2_GetBonePoolIndex( pMDXAHeader, iFrame, iBoneIndex ))->Comp);
-	else
-	{
-		mdxaCompQuatBone_t *pCompBonePool = (mdxaCompQuatBone_t *) ((byte *)pMDXAHeader + pMDXAHeader->ofsCompBonePool);
-		MC_UnCompressQuat(mat, pCompBonePool[ G2_GetBonePoolIndex( pMDXAHeader, iFrame, iBoneIndex ) ].Comp);
-	}
+	mdxaCompQuatBone_t *pCompBonePool = (mdxaCompQuatBone_t *) ((byte *)pMDXAHeader + pMDXAHeader->ofsCompBonePool);
+	MC_UnCompressQuat(mat, pCompBonePool[ G2_GetBonePoolIndex( pMDXAHeader, iFrame, iBoneIndex ) ].Comp);
 }
 
 
@@ -3042,9 +2704,6 @@ void G2API_SetSurfaceOnOffFromSkin (CGhoul2Info *ghlInfo, qhandle_t renderSkin)
 	}
 }
 
-int zfFaceShaders[3] = { -1, -1, -1 };
-int tfTorsoShader = -1;
-
 // set up each surface ready for rendering in the back end
 void RenderSurfaces(CRenderSurface &RS)
 {
@@ -3106,22 +2765,15 @@ void RenderSurfaces(CRenderSurface &RS)
 		// we will add shadows even if the main object isn't visible in the view
 		// stencil shadows can't do personal models unless I polyhedron clip
 		//using z-fail now so can do personal models -rww
-		if ( !RS.personalModel
-			&& r_shadows->integer == 2 
+		if ( /*!RS.personalModel
+			&& */r_shadows->integer == 2 
+#ifndef VV_LIGHTING
+//			&& RS.fogNum == 0
+#endif
 			&& (RS.renderfx & RF_SHADOW_PLANE )
 			&& !(RS.renderfx & ( RF_NOSHADOW | RF_DEPTHHACK ) ) 
-			&& shader->sort == SS_OPAQUE) 
-		{
-#ifdef _XBOX
-			// I defy anyone to make a cheaper hack than this
-			if( (shader->index == zfFaceShaders[0] && RS.surfaceNum == 12) ||
-				(shader->index == zfFaceShaders[1] && RS.surfaceNum == 6) ||
-				(shader->index == zfFaceShaders[2] && RS.surfaceNum == 9) ||
-				(shader->index == 0)) {
-			}
-			else {
-#endif
-			// set the surface info to point at the where the transformed bone list is going to be for when the surface gets rendered out
+			&& shader->sort == SS_OPAQUE ) 
+		{		// set the surface info to point at the where the transformed bone list is going to be for when the surface gets rendered out
 			CRenderableSurface *newSurf = AllocRS();
 #ifdef _XBOX
 			// On Xbox, we always use the lowest LOD
@@ -3139,17 +2791,7 @@ void RenderSurfaces(CRenderSurface &RS)
 			}
 #endif
 			newSurf->boneCache = RS.boneCache;
-#ifdef _XBOX
-			// Sentry models screw up the stencil shadows....
-			if(strstr(shader->name, "sentry") > 0) {
-				R_AddDrawSurf( (surfaceType_t *)newSurf, tr.projectionShadowShader, 0, qfalse );
-			}
-			else
-#endif
 			R_AddDrawSurf( (surfaceType_t *)newSurf, tr.shadowShader, 0, qfalse );
-#ifdef _XBOX
-			}
-#endif
 		}
 
 		// projection shadows work fine with personal models
@@ -3167,19 +2809,9 @@ void RenderSurfaces(CRenderSurface &RS)
 
 		// don't add third_person objects if not viewing through a portal
 		if ( !RS.personalModel ) 
-		{
+		{		// set the surface info to point at the where the transformed bone list is going to be for when the surface gets rendered out
 			CRenderableSurface *newSurf = AllocRS();
-
-			extern bool in_camera;
-			if(shader->index == tfTorsoShader && in_camera == qtrue) {
-				mdxmSurface_t *lowsurface = (mdxmSurface_t *)G2_FindSurface(RS.currentModel, RS.surfaceNum, 1);
-				newSurf->surfaceData = lowsurface;
-			}
-			else {
-			// set the surface info to point at the where the transformed bone list is going to be for when the surface gets rendered out
-				newSurf->surfaceData = surface;
-			}
-
+			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
 			R_AddDrawSurf( (surfaceType_t *)newSurf, shader, RS.fogNum, qfalse );
 
@@ -3395,10 +3027,6 @@ static inline bool bInShadowRange(vec3_t location)
 	return (dist < r_shadowRange->value);
 }
 
-#ifdef _XBOX
-char entityVisList[MAX_GENTITIES + 1000 + 256];
-#endif
-
 /*
 ==============
 R_AddGHOULSurfaces
@@ -3441,7 +3069,6 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
 	{
 		return;
 	}
-
 	HackadelicOnClient=true;
 	// are any of these models setting a new origin?
 	RootMatrix(ghoul2,currentTime, ent->e.modelScale,rootMatrix);
@@ -3639,136 +3266,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	mdxmVertexTexCoord_t *pTexCoords;
 	int				*piBoneReferences;
 
-#ifdef _XBOX
-	UINT result;
-	HRESULT hr;
-	trRefEntity_t *ent = backEnd.currentEntity;
-	bool isPlayer = false;
-	vec3_t		bounds[2];
-	float		radius, largestScale;
-
-	isPlayer = strstr(tess.shader->name, "players") > 0 ? true : false;
-
-	// The main player will always be visible
-	if(ent->e.number == 0 || strstr(tess.shader->name, "rancor"))
-	{
-		ent->visible = 1;
-		entityVisList[0] = 1;
-	}
-
-	extern bool		in_camera;
-	if(in_camera)
-	{
-		entityVisList[ent->e.number] = 1;
-		ent->visible = 1;
-	}
-
-	if(ent->visible == -1 && isPlayer)
-	{
-		// Get the visibility test from the last frame
-		if(entityVisList[ent->e.number] == -1)
-			entityVisList[ent->e.number] = 0;
-		else {
-			hr = glw_state->device->GetVisibilityTestResult( ent->e.number, &result, NULL );
-			if( hr == D3D_OK)
-				entityVisList[ent->e.number] = ((int)result) ? 1 : 0;
-			else
-				entityVisList[ent->e.number] = 1;
-		}
-
-		ent->visible = entityVisList[ent->e.number];
-
-		// Run a visibility test to determine if this model should be rendered
-		vec3_t		v;
-		float		matrix[16];
-
-		// scale the radius if need be
-		largestScale = ent->e.modelScale[0];
-
-		if (ent->e.modelScale[1] > largestScale)
-		{
-			largestScale = ent->e.modelScale[1];
-		}
-		if (ent->e.modelScale[2] > largestScale)
-		{
-			largestScale = ent->e.modelScale[2];
-		}
-		if (!largestScale)
-		{
-			largestScale = 1;
-		}
-
-		// The mighty hack to prevent insanely huge bounding boxes
-		// A radius of 1000 for Kyle??????? What the hell...
-		// The rancors and the map objects are the only ones that
-		// should have a radius > 64
-		radius = ent->e.radius;
-		/*if(ent->e.radius > 300.0f && strstr(tess.shader->name, "rancor") == 0 )
-			radius = 64.0f;*/
-
-		bounds[0][0] = -(radius * largestScale);
-		bounds[0][1] = -(radius * largestScale);
-		bounds[0][2] = -(radius * largestScale);
-
-		bounds[1][0] = radius * largestScale;
-		bounds[1][1] = radius * largestScale;
-		bounds[1][2] = radius * largestScale;
-		
-		RB_RunVisTest(ent->e.number, bounds);
-	}
-
-	if(ent->visible == 0)
-	{
-		// It's possible for the camera to be inside a bounding volume and falsely
-		// report the object has failed it's vis test, test for that
-		vec3_t cameraOrigin;
-		VectorCopy(backEnd.ori.viewOrigin, cameraOrigin);
-
-		radius = ent->e.radius;
-
-		// scale the radius if need be
-		largestScale = ent->e.modelScale[0];
-
-		if (ent->e.modelScale[1] > largestScale)
-		{
-			largestScale = ent->e.modelScale[1];
-		}
-		if (ent->e.modelScale[2] > largestScale)
-		{
-			largestScale = ent->e.modelScale[2];
-		}
-		if (!largestScale)
-		{
-			largestScale = 1;
-		}
-
-		bounds[0][0] = -(radius * largestScale);
-		bounds[0][1] = -(radius * largestScale);
-		bounds[0][2] = -(radius * largestScale);
-
-		bounds[1][0] = radius * largestScale;
-		bounds[1][1] = radius * largestScale;
-		bounds[1][2] = radius * largestScale;
-
-		if(cameraOrigin[0] >= bounds[0][0] &&
-			cameraOrigin[0] <= bounds[1][0] &&
-			cameraOrigin[1] >= bounds[0][1] &&
-			cameraOrigin[1] <= bounds[1][1] &&
-			cameraOrigin[2] >= bounds[0][2] &&
-			cameraOrigin[2] <= bounds[1][2])
-			ent->visible = 1;
-		else
-		{
-			// Only do the camera/bounding check once per frame
-			ent->visible = -2;
-			return;
-		}
-	}
-
-	if(ent->visible == -2)
-		return;
-#endif
-
 #ifdef _G2_GORE
 	if (surf->alternateTex)
 	{
@@ -3892,8 +3389,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	// Set any dynamic lighting needed
 	if(backEnd.currentEntity->dlightBits)
 		tess.dlightBits = backEnd.currentEntity->dlightBits;
-	if(tess.shader == tr.shadowShader)
-		tess.dlightBits = 0;
 #endif
 
 	// first up, sanity check our numbers
@@ -4538,13 +4033,9 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		//
 		// Aaaargh. Kill me now...
 		//
-#ifdef _XBOX
-		// We don't support re-tagging memory
-		memcpy( mdxm, buffer, size );	// and don't do this now, since it's the same thing
-#else
 		bAlreadyCached = qtrue;
 		assert( mdxm == buffer );
-#endif
+//		memcpy( mdxm, buffer, size );	// and don't do this now, since it's the same thing
 
 		LL(mdxm->ident);
 		LL(mdxm->version);
@@ -4762,11 +4253,6 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	return qtrue;
 }
 
-// Hackery ensues - we keep a copy of the humanoid animation data pointer
-// so that Bink can do horrible things with it:
-//byte *humanoidGLA = NULL;
-//bool humanoidGLAInUse = false;
-
 /*
 =================
 R_LoadMDXA - load a Ghoul 2 animation file
@@ -4804,26 +4290,12 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		return qfalse;
 	}
 
-	// VV Hackx0ring! Humanoid and cinematic animations have some "fixups" done to them. Bwa ha ha!
-	if( pinmodel->ofsCompBonePool > 0 && strstr(pinmodel->name, "_humanoid") )
-	{
-		TheBonePool.Register( pinmodel );
-
-		// This number just changed:
-		size = pinmodel->ofsEnd;
-	}
-
 	mod->type		= MOD_MDXA;
 	mod->dataSize  += size;
 
 	qboolean bAlreadyFound = qfalse;
 	mdxa = mod->mdxa = (mdxaHeader_t*) //Hunk_Alloc( size );
 										RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLA);
-
-	// Save off the humanoid GLA's pointer when we load it - Bink does terrible
-	// things involving swapping that entire image to disk.
-//	if( strstr( mod_name, "_humanoid.gla" ) )
-//		humanoidGLA = (byte *) mdxa;
 
 	assert(bAlreadyCached == bAlreadyFound);
 
@@ -4835,13 +4307,9 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		//
 		// Aaaargh. Kill me now...
 		//
-#ifdef _XBOX
-		// No re-tagging
-		memcpy( mdxa, buffer, size );	// and don't do this now, since it's the same thing
-#else
 		bAlreadyCached = qtrue;
 		assert( mdxa == buffer );
-#endif
+//		memcpy( mdxa, buffer, size );	// and don't do this now, since it's the same thing
 
 		LL(mdxa->ident);
 		LL(mdxa->version);

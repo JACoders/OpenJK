@@ -4,24 +4,25 @@
 
 #define HOTSWAP_ID_WHITE 0
 #define HOTSWAP_ID_BLACK 1
-#define HOTSWAP_ID_YELLOW 2
 
 #define HOTSWAP_CAT_WEAPON 0
-#define HOTSWAP_CAT_ITEM   1024
-#define HOTSWAP_CAT_FORCE  2048
+#define HOTSWAP_CAT_ITEM   1
+#define HOTSWAP_CAT_FORCE  2
 
 
 class HotSwapManager
 {
 private:
 	bool down;		//Is the button down?
+	bool noExec;	//Don't execute the button's bind.
 	bool noBind;	//Don't bind the button.
+	bool forceBound;//Is a force power currently bound?
+	int downTime;	//How long the button has been held down.
 	int bindTime;	//How long the button has been down with the selection up.
 	int uniqueID;	//Unique ID for this button.
 
 	//Return the binding for the button, or NULL if none.
-	const char *GetBinding(void);
-	const char *GetBindingUp(void);
+	char *GetBinding(void);
 
 	//Returns true if the weapon/force/item select screen is up.
 	bool HUDInBindState(void);
@@ -36,7 +37,6 @@ private:
 
 	//Execute the current bind, if there is one.
 	void Execute(void);
-	void ExecuteUp(void);
 
 	//Reset the object to the default state.
 	void Reset(void);

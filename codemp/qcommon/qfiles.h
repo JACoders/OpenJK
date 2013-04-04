@@ -324,10 +324,9 @@ typedef struct {
 #define DRAWVERT_LIGHTMAP_SCALE 32768.0f
 // Change texture coordinates for TriSurfs to be even more fine grain.
 // See below for note about keeping MIN_ST and MAX_ST up to date with
-// ST_SCALE. These are in 4.12. OK, how about 5.11? Ick, 7.9
+// ST_SCALE. These are in 4.12. OK, how about 5.11?
 //#define DRAWVERT_ST_SCALE 4096.0f
-//#define DRAWVERT_ST_SCALE 2048.0f
-#define DRAWVERT_ST_SCALE 512.0f
+#define DRAWVERT_ST_SCALE 2048.0f
 
 // We use a slightly different format for the fixed point texture
 // coords in Grid/Mesh drawverts: 10.6 rather than 12.4

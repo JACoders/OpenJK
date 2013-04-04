@@ -9,7 +9,7 @@
 void *BAllocList[MAX_BALLOC];
 #endif
 
-//char gBotChatBuffer[MAX_CLIENTS][MAX_CHAT_BUFFER_SIZE];
+char gBotChatBuffer[MAX_CLIENTS][MAX_CHAT_BUFFER_SIZE];
 
 void *B_TempAlloc(int size)
 {
@@ -141,12 +141,6 @@ void B_InitAlloc(void)
 
 void B_CleanupAlloc(void)
 {
-	for(int i=0; i<MAX_WPARRAY_SIZE; i++) {
-		if(gWPArray[i]) {
-			Z_Free(gWPArray[i]);
-			gWPArray[i] = NULL;
-		}
-	}
 #ifdef BOT_ZMALLOC
 	int i = 0;
 
@@ -331,7 +325,6 @@ int GetPairedValue(char *buf, char *key, char *outbuf)
 	return 1;
 }
 
-/*
 int BotDoChat(bot_state_t *bs, char *section, int always)
 {
 	char *chatgroup;
@@ -520,7 +513,6 @@ int BotDoChat(bot_state_t *bs, char *section, int always)
 
 	return 1;
 }
-*/
 
 void ParseEmotionalAttachments(bot_state_t *bs, char *buf)
 {
@@ -579,7 +571,6 @@ void ParseEmotionalAttachments(bot_state_t *bs, char *buf)
 	}
 }
 
-/*
 int ReadChatGroups(bot_state_t *bs, char *buf)
 {
 	char *cgroupbegin;
@@ -619,7 +610,6 @@ int ReadChatGroups(bot_state_t *bs, char *buf)
 
 	return 1;
 }
-*/
 
 void BotUtilizePersonality(bot_state_t *bs)
 {
@@ -628,6 +618,7 @@ void BotUtilizePersonality(bot_state_t *bs)
 	int failed;
 	int i;
 	//char buf[131072];
+	char *buf = (char *)B_TempAlloc(131072);
 	char *readbuf, *group;
 
 	len = trap_FS_FOpenFile(bs->settings.personalityfile, &f, FS_READ);
@@ -637,16 +628,31 @@ void BotUtilizePersonality(bot_state_t *bs)
 	if (!f)
 	{
 		G_Printf(S_COLOR_RED "Error: Specified personality not found\n");
+		B_TempFree(131072); //buf
 		return;
 	}
 
-	char *buf = (char *)B_TempAlloc(len + 1);
+	if (len >= 131072)
+	{
+		G_Printf(S_COLOR_RED "Personality file exceeds maximum length\n");
+		B_TempFree(131072); //buf
+		return;
+	}
+
 	trap_FS_Read(buf, len, f);
 
-	buf[len] = 0;
+	rlen = len;
+
+	while (len < 131072)
+	{ //kill all characters after the file length, since sometimes FS_Read doesn't do that entirely (or so it seems)
+		buf[len] = '\0';
+		len++;
+	}
+
+	len = rlen;
 
 	readbuf = (char *)B_TempAlloc(1024);
-	group = (char *)B_TempAlloc(len);
+	group = (char *)B_TempAlloc(65536);
 
 	if (!GetValueGroup(buf, "GeneralBotInfo", group))
 	{
@@ -707,7 +713,7 @@ void BotUtilizePersonality(bot_state_t *bs)
 	{
 		bs->skills.perfectaim = 0; //default
 	}
-/*
+
 	if (!failed && GetPairedValue(group, "chatability", readbuf))
 	{
 		bs->canChat = atoi(readbuf);
@@ -725,7 +731,7 @@ void BotUtilizePersonality(bot_state_t *bs)
 	{
 		bs->chatFrequency = 5; //default
 	}
-*/
+
 	if (!failed && GetPairedValue(group, "hatelevel", readbuf))
 	{
 		bs->loved_death_thresh = atoi(readbuf);
@@ -764,7 +770,6 @@ void BotUtilizePersonality(bot_state_t *bs)
 
 	i = 0;
 
-/*
 	while (i < MAX_CHAT_BUFFER_SIZE)
 	{ //clear out the chat buffer for this bot
 		gBotChatBuffer[bs->client][i] = '\0';
@@ -778,7 +783,7 @@ void BotUtilizePersonality(bot_state_t *bs)
 			bs->canChat = 0;
 		}
 	}
-*/
+
 	if (GetValueGroup(buf, "BotWeaponWeights", group))
 	{
 		if (GetPairedValue(group, "WP_STUN_BATON", readbuf))
@@ -855,8 +860,8 @@ void BotUtilizePersonality(bot_state_t *bs)
 		ParseEmotionalAttachments(bs, group);
 	}
 
-	B_TempFree(len + 1); //buf
+	B_TempFree(131072); //buf
 	B_TempFree(1024); //readbuf
-	B_TempFree(len); //group
+	B_TempFree(65536); //group
 	trap_FS_FCloseFile(f);
 }

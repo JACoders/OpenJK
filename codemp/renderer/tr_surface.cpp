@@ -4,12 +4,6 @@
 // tr_surf.c
 #include "tr_local.h"
 
-#ifdef _XBOX
-#include "../win32/glw_win_dx8.h"
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#endif
-
 /*
 
   THIS ENTIRE FILE IS BACK END
@@ -783,12 +777,6 @@ static void RB_SurfaceLine( void )
 
 	e = &backEnd.currentEntity->e;
 
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() == 1)
-		if(e->skipForPlayer2 == true)
-			return;
-#endif
-
 	VectorCopy( e->oldorigin, end );
 	VectorCopy( e->origin, start );
 
@@ -1156,9 +1144,7 @@ static void RB_SurfaceElectricity()
 	// see if we should grow from start to end
 	if ( e->renderfx & RF_GROW )
 	{
-//		perc = 1.0f - ( e->axis[0][2]/*endTime*/ - tr.refdef.time ) / e->axis[0][1]/*duration*/;
-		// Hack to make this effect non-framerate dependant
-		perc = 1.0f - ( Q_irand(0, 5) ) / e->axis[0][1];
+		perc = 1.0f - ( e->axis[0][2]/*endTime*/ - tr.refdef.time ) / e->axis[0][1]/*duration*/;
 
 		if ( perc > 1.0f )
 		{
@@ -1372,13 +1358,6 @@ void RB_SurfaceMesh(md3Surface_t *surface) {
 	int				indexes;
 	int				Bob, Doug;
 	int				numVerts;
-
-#ifdef _XBOX
-	if(glw_state->viewport.Y == 240) {  // Can't use ActiveClientNum in render phase...
-		if( backEnd.currentEntity->e.skipForPlayer2 )
-			return;
-	}
-#endif
 
 	if (  backEnd.currentEntity->e.oldframe == backEnd.currentEntity->e.frame ) {
 		backlerp = 0;
@@ -1858,8 +1837,6 @@ void RB_SurfaceEntity( surfaceType_t *surfType ) {
 		break;
 	case RT_ENT_CHAIN:
 		{
-			assert ( 0 );
-/*
 			int				i, count, start;
 			static trRefEntity_t	tempEnt = *backEnd.currentEntity;
 			//rww - if not static then currentEntity is garbage because
@@ -1881,7 +1858,6 @@ void RB_SurfaceEntity( surfaceType_t *surfType ) {
 
 				RB_SurfaceEntity(surfType);
 			}
-*/
 		}
 		break;
 	default:
@@ -1902,11 +1878,7 @@ RB_TestZFlare
 This is called at surface tesselation time
 ==================
 */
-#ifdef _XBOX
-static bool RB_TestZFlare( vec3_t point, srfFlare_t *surf ) {
-#else
 static bool RB_TestZFlare( vec3_t point) {
-#endif
 	int				i;
 	vec4_t			eye, clip, normalized, window;
 
@@ -1930,46 +1902,14 @@ static bool RB_TestZFlare( vec3_t point) {
 	}
 
 //do test
-	// read back the z buffer contents
-#ifdef _XBOX
-	UINT result;
-	HRESULT hr;
-	DWORD zwrite, colorwrite;
-
-	// Get the visibility test from the last frame
-	if(surf->visible == -1)
-		surf->visible = 0;
-	else {
-		hr = glw_state->device->GetVisibilityTestResult( (int)surf->number, &result, NULL );
-		if( hr == D3D_OK)
-			surf->visible = (int)result;
-	}
-
-	glw_state->device->GetRenderState(D3DRS_ZWRITEENABLE, &zwrite);
-	glw_state->device->GetRenderState(D3DRS_COLORWRITEENABLE, &colorwrite);
-
-	glw_state->device->SetRenderState(D3DRS_ZWRITEENABLE, false);
-	glw_state->device->SetRenderState(D3DRS_COLORWRITEENABLE, 0);
-	GL_State( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE );
-	glw_state->device->SetTransform(D3DTS_VIEW, 
-			glw_state->matrixStack[glwstate_t::MatrixMode_Model]->GetTop());
-	glw_state->device->SetVertexShader(D3DFVF_XYZ);
-
-	glw_state->device->BeginVisibilityTest();
-	glw_state->device->Begin(D3DPT_POINTLIST);
-	glw_state->device->SetVertexData4f(D3DVSDE_VERTEX, point[0], point[1], point[2], 1.0f);
-	glw_state->device->End();
-	glw_state->device->EndVisibilityTest((int)surf->number);
-
-	glw_state->device->SetRenderState(D3DRS_ZWRITEENABLE, zwrite);
-	glw_state->device->SetRenderState(D3DRS_COLORWRITEENABLE, colorwrite);
-
-	return (surf->visible > 0);
-#else
 	float			depth = 0.0f;
 	bool			visible;
 	float			screenZ;
 
+	// read back the z buffer contents
+#ifdef _XBOX
+	depth = 0.0f;
+#else
 	if ( r_flares->integer !=1 ) {	//skipping the the z-test
 		return true;
 	}
@@ -1977,13 +1917,13 @@ static bool RB_TestZFlare( vec3_t point) {
 	// don't bother with another sync
 	glState.finishCalled = qfalse;
 	qglReadPixels( backEnd.viewParms.viewportX + window[0],backEnd.viewParms.viewportY + window[1], 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth );
+#endif
 
 	screenZ = backEnd.viewParms.projectionMatrix[14] / 
 		( ( 2*depth - 1 ) * backEnd.viewParms.projectionMatrix[11] - backEnd.viewParms.projectionMatrix[10] );
 
 	visible = ( -eye[2] - -screenZ ) < 24;
 	return visible;
-#endif
 }
 
 void RB_SurfaceFlare( srfFlare_t *surf ) {
@@ -2004,7 +1944,6 @@ void RB_SurfaceFlare( srfFlare_t *surf ) {
 	Q_CastShort2Float(&sorigin[0], (short*)&surf->origin[0]);
 	Q_CastShort2Float(&sorigin[1], (short*)&surf->origin[1]);
 	Q_CastShort2Float(&sorigin[2], (short*)&surf->origin[2]);
-
 	Q_CastShort2Float(&snormal[0], (short*)&surf->normal[0]);
 	Q_CastShort2Float(&snormal[1], (short*)&surf->normal[1]);
 	Q_CastShort2Float(&snormal[2], (short*)&surf->normal[2]);
@@ -2012,12 +1951,7 @@ void RB_SurfaceFlare( srfFlare_t *surf ) {
 	snormal[1] /= 32767.0f;
 	snormal[2] /= 32767.0f;
 
-	// Pull the vertex toward the viewer so we don't get any z-fighting on the vis test
-	VectorSubtract( backEnd.viewParms.ori.origin, sorigin, dir );
-	dist = VectorNormalize( dir );
-	VectorMA( sorigin, 20, dir, origin );
-
-	if (!RB_TestZFlare( origin, surf ) ) {
+	if (!RB_TestZFlare( sorigin) ) {
 		return;
 	}
 
@@ -2084,8 +2018,7 @@ void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_SurfaceGrid,			// SF_GRID,
 	(void(*)(void*))RB_SurfaceTriangles,	// SF_TRIANGLES,
 	(void(*)(void*))RB_SurfacePolychain,	// SF_POLY,
-	//(void(*)(void*))RB_SurfaceTerrain,		// SF_TERRAIN, //rwwRMG - added
-	(void(*)(void*))NULL,						// SF_TERRAIN, //rwwRMG - added
+	(void(*)(void*))RB_SurfaceTerrain,		// SF_TERRAIN, //rwwRMG - added
 	(void(*)(void*))RB_SurfaceMesh,			// SF_MD3,
 /*
 Ghoul2 Insert Start

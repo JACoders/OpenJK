@@ -483,7 +483,6 @@ Con_DrawSolidConsole
 Draws the console with the solid background
 ================
 */
-#ifndef _XBOX
 void Con_DrawSolidConsole( float frac ) 
 {
 	int				i, x, y;
@@ -629,7 +628,7 @@ void Con_DrawSolidConsole( float frac )
 
 	re.SetColor( NULL );
 }
-#endif
+
 
 
 /*
@@ -637,7 +636,6 @@ void Con_DrawSolidConsole( float frac )
 Con_DrawConsole
 ==================
 */
-#ifndef _XBOX
 void Con_DrawConsole( void ) {
 	// check for console width changes from a vid mode change
 	Con_CheckResize ();
@@ -659,7 +657,6 @@ void Con_DrawConsole( void ) {
 		}
 	}
 }
-#endif
 
 //================================================================
 

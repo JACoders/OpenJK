@@ -7,11 +7,6 @@
 #include "../ghoul2/ghoul2_shared.h"
 //rww - RAGDOLL_END
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#endif
-
 serverStatic_t	svs;				// persistant server info
 server_t		sv;					// local server
 vm_t			*gvm = NULL;				// game virtual machine // bk001212 init
@@ -42,11 +37,10 @@ cvar_t	*sv_maxPing;
 cvar_t	*sv_gametype;
 cvar_t	*sv_pure;
 cvar_t	*sv_floodProtect;
-cvar_t	*sv_allowAnonymous;
 cvar_t	*sv_needpass;
-
-cvar_t	*xb_gameType;
-
+#ifdef USE_CD_KEY
+cvar_t	*sv_allowAnonymous;
+#endif
 /*
 =============================================================================
 
@@ -134,15 +128,12 @@ void SV_AddServerCommand( client_t *client, const char *cmd ) {
 	// we check == instead of >= so a broadcast print added by SV_DropClient()
 	// doesn't cause a recursive drop client
 	if ( client->reliableSequence - client->reliableAcknowledge == MAX_RELIABLE_COMMANDS + 1 ) {
-#ifndef FINAL_BUILD
 		Com_Printf( "===== pending server commands =====\n" );
 		for ( i = client->reliableAcknowledge + 1 ; i <= client->reliableSequence ; i++ ) {
 			Com_Printf( "cmd %5d: %s\n", i, client->reliableCommands[ i & (MAX_RELIABLE_COMMANDS-1) ] );
 		}
 		Com_Printf( "cmd %5d: %s\n", i, cmd );
-#endif
-//		SV_DropClient( client, "Server command overflow" );
-		SV_DropClient( client, "@MENUS_LOST_CONNECTION" );
+		SV_DropClient( client, "Server command overflow" );
 		return;
 	}
 	index = client->reliableSequence & ( MAX_RELIABLE_COMMANDS - 1 );
@@ -383,41 +374,56 @@ void SVC_Status( netadr_t from ) {
 ================
 SVC_Info
 
-New Xbox version - sends a short broadcast packet about our game,
-only done in system link games, every THREE seconds.
+Responds with a short info message that should be enough to determine
+if a user is interested in a server to do a full status
 ================
 */
-void SVC_Info( void )
-{
+void SVC_Info( netadr_t from ) {
 	int		i, count, wDisable;
+	char	*gamedir;
 	char	infostring[MAX_INFO_STRING];
 
-	// We only send if we're in system link
-	if (xb_gameType->integer != 2)
+	// ignore if we are in single player
+	/*
+	if ( Cvar_VariableValue( "g_gametype" ) == GT_SINGLE_PLAYER || Cvar_VariableValue("ui_singlePlayerActive")) {
 		return;
+	}
+	*/
 
-	// Wait three seconds to send another
-	int now = Sys_Milliseconds();
-	if (now < svs.syslinkAdvertTime)
+#ifdef _XBOX
+	// don't send system link info if in Xbox Live
+	if (logged_on)
 		return;
-	svs.syslinkAdvertTime = now + 3000;
+#endif
 
-	// don't count bots!
+	if (Cvar_VariableValue("ui_singlePlayerActive"))
+	{
+		return;
+	}
+
+	// don't count privateclients
 	count = 0;
-	for ( i = 0 ; i < sv_maxclients->integer ; i++ ) {
-		if ( svs.clients[i].state >= CS_CONNECTED && svs.clients[i].netchan.remoteAddress.type != NA_BOT ) {
+	for ( i = sv_privateClients->integer ; i < sv_maxclients->integer ; i++ ) {
+		if ( svs.clients[i].state >= CS_CONNECTED ) {
 			count++;
 		}
 	}
 
 	infostring[0] = 0;
 
+	// echo back the parameter to status. so servers can use it as a challenge
+	// to prevent timed spoofed reply packets that add ghost servers
+	Info_SetValueForKey( infostring, "challenge", Cmd_Argv(1) );
+
+	Info_SetValueForKey( infostring, "protocol", va("%i", PROTOCOL_VERSION) );
 	Info_SetValueForKey( infostring, "hostname", sv_hostname->string );
 	Info_SetValueForKey( infostring, "mapname", sv_mapname->string );
 	Info_SetValueForKey( infostring, "clients", va("%i", count) );
-	Info_SetValueForKey( infostring, "sv_maxclients", va("%i", sv_maxclients->integer) );
+	Info_SetValueForKey( infostring, "sv_maxclients", 
+		va("%i", sv_maxclients->integer - sv_privateClients->integer ) );
 	Info_SetValueForKey( infostring, "gametype", va("%i", sv_gametype->integer ) );
-
+	Info_SetValueForKey( infostring, "needpass", va("%i", sv_needpass->integer ) );
+	Info_SetValueForKey( infostring, "truejedi", va("%i", Cvar_VariableIntegerValue( "g_jediVmerc" ) ) );
 	if ( sv_gametype->integer == GT_DUEL || sv_gametype->integer == GT_POWERDUEL )
 	{
 		wDisable = Cvar_VariableIntegerValue( "g_duelWeaponDisable" );
@@ -426,9 +432,23 @@ void SVC_Info( void )
 	{
 		wDisable = Cvar_VariableIntegerValue( "g_weaponDisable" );
 	}
-
 	Info_SetValueForKey( infostring, "wdisable", va("%i", wDisable ) );
 	Info_SetValueForKey( infostring, "fdisable", va("%i", Cvar_VariableIntegerValue( "g_forcePowerDisable" ) ) );
+	//Info_SetValueForKey( infostring, "pure", va("%i", sv_pure->integer ) );
+
+	if( sv_minPing->integer ) {
+		Info_SetValueForKey( infostring, "minPing", va("%i", sv_minPing->integer) );
+	}
+	if( sv_maxPing->integer ) {
+		Info_SetValueForKey( infostring, "maxPing", va("%i", sv_maxPing->integer) );
+	}
+	gamedir = Cvar_VariableString( "fs_game" );
+	if( *gamedir ) {
+		Info_SetValueForKey( infostring, "game", gamedir );
+	}
+#ifdef USE_CD_KEY
+	Info_SetValueForKey( infostring, "sv_allowAnonymous", va("%i", sv_allowAnonymous->integer) );
+#endif
 
 #ifdef _XBOX
 	// Include Xbox specific networking info
@@ -445,8 +465,7 @@ void SVC_Info( void )
 	Info_SetValueForKey(infostring, "xnaddr", sxnaddr);
 #endif
 
-//	NET_OutOfBandPrint( NS_SERVER, from, "infoResponse\n%s", infostring );
-	NET_BroadcastPrint( NS_SERVER, "infoResponse\n%s", infostring );
+	NET_OutOfBandPrint( NS_SERVER, from, "infoResponse\n%s", infostring );
 }
 
 /*
@@ -542,8 +561,8 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 
 	if (!Q_stricmp(c, "getstatus")) {
 		SVC_Status( from  );
-//	} else if (!Q_stricmp(c, "getinfo")) {
-//		SVC_Info( from );	// Pass along the client's nonce so we can echo
+	} else if (!Q_stricmp(c, "getinfo")) {
+		SVC_Info( from );
 	} else if (!Q_stricmp(c, "getchallenge")) {
 		SV_GetChallenge( from );
 	} else if (!Q_stricmp(c, "connect")) {
@@ -583,11 +602,6 @@ void SV_PacketEvent( netadr_t from, msg_t *msg ) {
 		return;
 	}
 
-	// Broadcast packets should never be treated as sequenced packets!
-	// Don't even bother telling them to go away. It's not our game!
-//	if ( broadcast )
-//		return;
-
 	// read the qport out of the message so we can fix up
 	// stupid address translating routers
 	MSG_BeginReadingOOB( msg );
@@ -596,9 +610,6 @@ void SV_PacketEvent( netadr_t from, msg_t *msg ) {
 
 	// find which client the message is from
 	for (i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++) {
-#ifdef _XBOX
-		ClientManager::ActivateClient(i);
-#endif
 		if (cl->state == CS_FREE) {
 			continue;
 		}
@@ -730,8 +741,7 @@ void SV_CheckTimeouts( void ) {
 			// wait several frames so a debugger session doesn't
 			// cause a timeout
 			if ( ++cl->timeoutCount > 5 ) {
-//				SV_DropClient (cl, "timed out"); 
-				SV_DropClient (cl, "@MENUS_LOST_CONNECTION"); 
+				SV_DropClient (cl, "timed out"); 
 				cl->state = CS_FREE;	// don't bother with zombie state
 			}
 		} else {
@@ -758,16 +768,12 @@ qboolean SV_CheckPaused( void ) {
 	// only pause if there is just a single client connected
 	count = 0;
 	for (i=0,cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++) {
-//		if ( cl->state >= CS_CONNECTED && cl->netchan.remoteAddress.type != NA_BOT ) {
-		// BTO - make the cutoff be zombie. This means that the server can hit START,
-		// kick a player, and the game will continue to run long enough to disconnect them.
-		if ( cl->state >= CS_ZOMBIE && cl->netchan.remoteAddress.type != NA_BOT ) {
+		if ( cl->state >= CS_CONNECTED && cl->netchan.remoteAddress.type != NA_BOT ) {
 			count++;
 		}
 	}
 
-//	if ( count > 1 ) {
-	if ( count > ClientManager::NumClients() ) {	// So we can pause split screen
+	if ( count > 1 ) {
 		// don't pause
 		sv_paused->integer = 0;
 		return qfalse;
@@ -831,9 +837,6 @@ void SV_Frame( int msec ) {
 	if ( !com_sv_running->integer ) {
 		return;
 	}
-
-	// Send a system link info packet if needed, even if paused!
-	SVC_Info();
 
 	// allow pause if only the local client is connected
 	if ( SV_CheckPaused() ) {

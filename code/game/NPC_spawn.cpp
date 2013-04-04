@@ -1396,6 +1396,7 @@ bool NPC_SafeSpawn( gentity_t *ent, float safeRadius )
 	float		distance = 999999;
 	int			numEnts = 0;
 	float		safeRadiusSquared = safeRadius*safeRadius;
+	int i;
 
 	if (!ent)
 	{
@@ -1403,7 +1404,7 @@ bool NPC_SafeSpawn( gentity_t *ent, float safeRadius )
 	}
 
 	//Setup the bbox to search in
-	for ( int i = 0; i < 3; i++ )
+	for ( i = 0; i < 3; i++ )
 	{
 		safeMins[i] = ent->currentOrigin[i] - safeRadius;
 		safeMaxs[i] = ent->currentOrigin[i] + safeRadius;
@@ -1474,7 +1475,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 		VectorCopy( ent->currentOrigin, saveOrg );
 		VectorCopy( ent->currentOrigin, bottom );
 		bottom[2] = MIN_WORLD_COORD;
-		gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, bottom, ent->s.number, MASK_NPCSOLID );
+		gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, bottom, ent->s.number, MASK_NPCSOLID, (EG2_Collision)0, 0 );
 		if ( !tr.allsolid && !tr.startsolid && tr.fraction < 1.0 )
 		{
 			G_SetOrigin( ent, tr.endpos );
@@ -2484,37 +2485,62 @@ SHY - Spawner is shy
 
 Ally Jedi NPC Buddy - tags along with player
 */
-static char *randomJedis[] = {
-	"jedi_hf1",
-	"jedi_rm1",
-	"jedi_zf1",
-	"jedi_hm1",
-	"jedi_tf1",
-	"jedi_kdm1",
-};
-
 extern cvar_t	*g_char_model;
 void SP_NPC_Jedi( gentity_t *self)
 {
 	if(!self->NPC_type)
 	{
-		if ( self->spawnflags & 4 )		// Random jedi student
-		{
-			static unsigned long jediSequence = 0;
-
-			int myIdx;
-			for (myIdx = 0; myIdx < 6; ++myIdx)
-				if (strstr(randomJedis[myIdx], g_char_model->string))
+		if ( self->spawnflags & 4 )
+		{//random!
+			int sanityCheck = 20;	//just in case
+			while ( sanityCheck-- )
+			{
+				switch( Q_irand( 0, 11 ) )
+				{
+				case 0:
+					self->NPC_type = "jedi_hf1";
 					break;
-			// Sanity check, if player doesn't have a jedi_xx model right now:
-			if (myIdx == 6)
-				myIdx = 0;
-
-			// Get one of the three after ours:
-			int idx = (myIdx + (jediSequence % 3) + 1) % 6;
-			jediSequence++;
-
-			self->NPC_type = randomJedis[idx];
+				case 1:
+					self->NPC_type = "jedi_hf2";
+					break;
+				case 2:
+					self->NPC_type = "jedi_hm1";
+					break;
+				case 3:
+					self->NPC_type = "jedi_hm2";
+					break;
+				case 4:
+					self->NPC_type = "jedi_kdm1";
+					break;
+				case 5:
+					self->NPC_type = "jedi_kdm2";
+					break;
+				case 6:
+					self->NPC_type = "jedi_rm1";
+					break;
+				case 7:
+					self->NPC_type = "jedi_rm2";
+					break;
+				case 8:
+					self->NPC_type = "jedi_tf1";
+					break;
+				case 9:
+					self->NPC_type = "jedi_tf2";
+					break;
+				case 10:
+					self->NPC_type = "jedi_zf1";
+					break;
+				case 11:
+				default://just in case
+					self->NPC_type = "jedi_zf2";
+					break;
+				}
+				if ( strstr( self->NPC_type, g_char_model->string ) != NULL )
+				{//bah, we're using this one, try again
+					continue;
+				}
+				break;	//get out of the while
+			}
 		}
 		else if ( self->spawnflags & 2 )
 		{
@@ -4076,10 +4102,10 @@ static void NPC_Spawn_f(void)
 	AngleVectors(g_entities[0].client->ps.viewangles, forward, NULL, NULL);
 	VectorNormalize(forward);
 	VectorMA(g_entities[0].currentOrigin, 64, forward, end);
-	gi.trace(&trace, g_entities[0].currentOrigin, NULL, NULL, end, 0, MASK_SOLID);
+	gi.trace(&trace, g_entities[0].currentOrigin, NULL, NULL, end, 0, MASK_SOLID, (EG2_Collision)0, 0);
 	VectorCopy(trace.endpos, end);
 	end[2] -= 24;
-	gi.trace(&trace, trace.endpos, NULL, NULL, end, 0, MASK_SOLID);
+	gi.trace(&trace, trace.endpos, NULL, NULL, end, 0, MASK_SOLID, (EG2_Collision)0, 0);
 	VectorCopy(trace.endpos, end);
 	end[2] += 24;
 	G_SetOrigin(NPCspawner, end);

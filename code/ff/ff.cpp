@@ -113,7 +113,7 @@ qboolean FF_Init( void )
 		Cmd_AddCommand( "ff_stopall",	CMD_FF_StopAll		);
 		Cmd_AddCommand( "ff_info",		CMD_FF_Info			);
 #endif
-		use_ff				= Cvar_Get( "use_ff",				"1",	CVAR_ARCHIVE /*| CVAR_LATCH*/); 
+		use_ff				= Cvar_Get( "use_ff",				"0",	CVAR_ARCHIVE /*| CVAR_LATCH*/); 
 		ensureShake			= Cvar_Get( "ff_ensureShake",		"1",	CVAR_TEMP);
 		ff_developer		= Cvar_Get( "ff_developer",			"0",	CVAR_TEMP);
 		ff_channels			= Cvar_Get( "ff_channels",		FF_CHANNEL,	CVAR_ARCHIVE);

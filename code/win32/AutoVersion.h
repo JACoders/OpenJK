@@ -3,15 +3,21 @@
 
 #define VERSION_MAJOR_RELEASE		1
 #define VERSION_MINOR_RELEASE		0
-#define VERSION_EXTERNAL_BUILD		0
+#define VERSION_EXTERNAL_BUILD		1
 #define VERSION_INTERNAL_BUILD		0
 
-#define VERSION_STRING				"1, 0, 0, 0"
-#define VERSION_STRING_DOTTED		"1.0.0.0"
+#define VERSION_STRING				"1, 0, 1, 0"
+#define VERSION_STRING_DOTTED		"1.0.1.0"
 
-#define VERSION_BUILD_NUMBER		73
+#define VERSION_BUILD_NUMBER		80
 
 // BEGIN COMMENTS
+// 1.0.1.0		10/24/2003 16:29:53		jmonroe		patch rc1
+// 1.0.0.4		10/17/2003 17:45:31		jmonroe		fix ati texture rect hack
+// 1.0.0.3		08/29/2003 18:17:37		jmonroe		hide saberrealisticcombat and g_dismemberment debug value
+// 1.0.0.2		08/12/2003 17:48:44		jmonroe		demo, take 3
+// 1.0.0.1		08/07/2003 19:53:23		jmonroe		demo round 2
+// 1.0.0.0		08/01/2003 16:59:44		jmonroe		push demo code changes
 // 1.0.0.0		07/21/2003 16:09:23		jmonroe		going gold
 // 0.0.12.0		07/20/2003 19:04:44		jmonroe		build 0.12 for qa
 // 0.0.11.0		07/19/2003 15:30:08		jmonroe		stuff

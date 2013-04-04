@@ -44,10 +44,10 @@ static void CL_Netchan_Encode( msg_t *msg ) {
         msg->bit = sbit;
         msg->readcount = srdc;
         
-	string = (byte *)clc->serverCommands[ reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ];
+	string = (byte *)clc.serverCommands[ reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ];
 	index = 0;
 	//
-	key = clc->challenge ^ serverId ^ messageAcknowledge;
+	key = clc.challenge ^ serverId ^ messageAcknowledge;
 	for (i = CL_ENCODE_START; i < msg->cursize; i++) {
 		// modify the key with the last received now acknowledged server command
 		if (!string[index])
@@ -95,10 +95,10 @@ static void CL_Netchan_Decode( msg_t *msg ) {
         msg->bit = sbit;
         msg->readcount = srdc;
 
-	string = (unsigned char *)clc->reliableCommands[ reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ];
+	string = (unsigned char *)clc.reliableCommands[ reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ];
 	index = 0;
 	// xor the client challenge with the netchan sequence number (need something that changes every message)
-	key = clc->challenge ^ LittleLong( *(unsigned *)msg->data );
+	key = clc.challenge ^ LittleLong( *(unsigned *)msg->data );
 	for (i = msg->readcount + CL_DECODE_START; i < msg->cursize; i++) {
 		// modify the key with the last sent and with this message acknowledged client command
 		if (!string[index])
@@ -134,20 +134,16 @@ void CL_Netchan_TransmitNextFragment( netchan_t *chan ) {
 CL_Netchan_Transmit
 ================
 */
-void CL_Netchan_Transmit( netchan_t *chan, msg_t* msg )
-{
+void CL_Netchan_Transmit( netchan_t *chan, msg_t* msg ) {
+//	int i;
 	MSG_WriteByte( msg, clc_EOF );
+//	for(i=CL_ENCODE_START;i<msg->cursize;i++) {
+//		chksum[i-CL_ENCODE_START] = msg->data[i];
+//	}
 
+//	Huff_Compress( msg, CL_ENCODE_START );
 	CL_Netchan_Encode( msg );
-	if( !Netchan_Transmit( chan, msg->cursize, msg->data ) )
-	{
-		// Don't call Com_Error if we're already disconnecting!
-		if( com_errorEntered )
-			return;
-
-		// Quickly detect dead connections: (may want to put in some relaxation here?)
-		Com_Error( ERR_DROP, "@MENUS_LOST_CONNECTION" );
-	}
+	Netchan_Transmit( chan, msg->cursize, msg->data );
 }
 
 extern 	int oldsize;

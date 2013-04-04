@@ -31,7 +31,7 @@
 #define false qfalse
 #define true qtrue
 
-#define sqrtf sqrt
+//#define sqrtf sqrt
 
 #define MOD_EXPLOSIVE MOD_SUICIDE
 #endif
@@ -42,9 +42,12 @@
 #endif
 
 #ifdef _JK2MP
-extern gentity_t *NPC_Spawn_Do( gentity_t *ent, bool vehicle );
+extern gentity_t *NPC_Spawn_Do( gentity_t *ent );
 extern void NPC_SetAnim(gentity_t	*ent,int setAnimParts,int anim,int setAnimFlags);
+extern void G_DamageFromKiller( gentity_t *pEnt, gentity_t *pVehEnt, gentity_t *attacker, vec3_t org, int damage, int dflags, int mod );
+
 #else
+
 extern gentity_t *NPC_Spawn_Do( gentity_t *pEnt, qboolean fullSpawnNow );
 extern qboolean G_ClearLineOfSight(const vec3_t point1, const vec3_t point2, int ignore, int clipmask);
 
@@ -87,14 +90,22 @@ extern qboolean BG_UnrestrainedPitchRoll( playerState_t *ps, Vehicle_t *pVeh );
 
 void Vehicle_SetAnim(gentity_t *ent,int setAnimParts,int anim,int setAnimFlags, int iBlend)
 {
+#ifdef _JK2MP
 	assert(ent->client);
 	BG_SetAnim(&ent->client->ps, bgAllAnims[ent->localAnimIndex].anims, setAnimParts, anim, setAnimFlags, iBlend);
 	ent->s.legsAnim = ent->client->ps.legsAnim;
+#else
+	NPC_SetAnim(ent, setAnimParts, anim, setAnimFlags, iBlend);
+#endif
 }
 
 void G_VehicleTrace( trace_t *results, const vec3_t start, const vec3_t tMins, const vec3_t tMaxs, const vec3_t end, int passEntityNum, int contentmask )
 {
+#ifdef _JK2MP
 	trap_Trace(results, start, tMins, tMaxs, end, passEntityNum, contentmask);
+#else
+	gi.trace( results, start, tMins, tMaxs, end, passEntityNum, contentmask );
+#endif
 }
 
 Vehicle_t *G_IsRidingVehicle( gentity_t *pEnt )
@@ -112,6 +123,62 @@ Vehicle_t *G_IsRidingVehicle( gentity_t *pEnt )
 
 float	G_CanJumpToEnemyVeh(Vehicle_t *pVeh, const usercmd_t *pUcmd )
 {
+#ifndef _JK2MP
+	gentity_t*	rider = pVeh->m_pPilot;
+
+	// If There Is An Enemy And We Are At The Same Z Height
+	//------------------------------------------------------
+	if (rider && 
+		rider->enemy && 
+		pUcmd->rightmove && 
+		fabsf(rider->enemy->currentOrigin[2] - rider->currentOrigin[2])<50.0f)
+	{
+		if (level.time<pVeh->m_safeJumpMountTime)
+		{
+			return pVeh->m_safeJumpMountRightDot;
+		}
+
+
+		// If The Enemy Is Riding Another Vehicle
+		//----------------------------------------
+		Vehicle_t*	enemyVeh = G_IsRidingVehicle(rider->enemy);
+		if (enemyVeh)
+		{
+			vec3_t	enemyFwd;
+			vec3_t	toEnemy;
+			float	toEnemyDistance;
+			vec3_t	riderFwd;
+			vec3_t	riderRight;
+			float	riderRightDot;
+
+			// If He Is Close Enough And Going The Same Speed
+			//------------------------------------------------
+			VectorSubtract(rider->enemy->currentOrigin, rider->currentOrigin, toEnemy);
+		 	toEnemyDistance = VectorNormalize(toEnemy);
+			if (toEnemyDistance<70.0f && 
+				pVeh->m_pParentEntity->resultspeed>100.0f &&
+				fabsf(pVeh->m_pParentEntity->resultspeed - enemyVeh->m_pParentEntity->resultspeed)<100.0f)
+			{
+				// If He Is Either To The Left Or Right Of Me
+				//--------------------------------------------
+				AngleVectors(rider->currentAngles, riderFwd, riderRight, 0);
+				riderRightDot = DotProduct(riderRight, toEnemy);
+				if ((pUcmd->rightmove>0 && riderRightDot>0.2) || (pUcmd->rightmove<0 &&riderRightDot<-0.2))
+				{
+					// If We Are Both Going About The Same Direction
+					//-----------------------------------------------
+					AngleVectors(rider->enemy->currentAngles, enemyFwd, 0, 0);
+					if (DotProduct(enemyFwd, riderFwd)>0.2f)
+					{
+						pVeh->m_safeJumpMountTime = level.time + Q_irand(3000, 4000);	// Ok, now you get a 3 sec window
+						pVeh->m_safeJumpMountRightDot = riderRightDot;
+						return riderRightDot;
+					}// Same Direction?
+				}// To Left Or Right?
+			}// Close Enough & Same Speed?
+		}// Enemy Riding A Vehicle?
+	}// Has Enemy And On Same Z-Height
+#endif
 	return 0.0f;
 }
 
@@ -123,7 +190,11 @@ void G_VehicleSpawn( gentity_t *self )
 
 	VectorCopy( self->currentOrigin, self->s.origin );
 
+#ifdef _JK2MP
 	trap_LinkEntity( self );
+#else
+	gi.linkentity( self );
+#endif
 
 	if ( !self->count )
 	{
@@ -133,7 +204,11 @@ void G_VehicleSpawn( gentity_t *self )
 	//save this because self gets removed in next func
 	yaw = self->s.angles[YAW];
 	
-	vehEnt = NPC_Spawn_Do( self, true );
+#ifdef _JK2MP
+	vehEnt = NPC_Spawn_Do( self );
+#else
+	vehEnt = NPC_Spawn_Do( self, qtrue );
+#endif
 	
 	if ( !vehEnt )
 	{
@@ -146,6 +221,7 @@ void G_VehicleSpawn( gentity_t *self )
 		vehEnt->NPC->behaviorState = BS_CINEMATIC;
 	}
 
+#ifdef _JK2MP //special check in case someone disconnects/dies while boarding
 	if (vehEnt->spawnflags & 1)
 	{ //die without pilot
 		if (!vehEnt->damage)
@@ -158,6 +234,12 @@ void G_VehicleSpawn( gentity_t *self )
 		}
 		vehEnt->m_pVehicle->m_iPilotTime = level.time + vehEnt->damage;
 	}
+#else
+	if (vehEnt->spawnflags & 1)
+	{ //die without pilot
+		vehEnt->m_pVehicle->m_iPilotTime = level.time + vehEnt->endFrame;
+	}
+#endif
 	//return vehEnt;
 }
 
@@ -167,19 +249,26 @@ void G_AttachToVehicle( gentity_t *pEnt, usercmd_t **ucmd )
 	gentity_t		*vehEnt;
 	mdxaBone_t		boltMatrix;
 	gentity_t		*ent;
+#ifdef _JK2MP
 	int				crotchBolt;
+#endif
 
 	if ( !pEnt || !ucmd )
 		return;
 
 	ent = (gentity_t *)pEnt;
 
+#ifdef _JK2MP
 	vehEnt = &g_entities[ent->r.ownerNum];
+#else
+	vehEnt = ent->owner;
+#endif
 	ent->waypoint = vehEnt->waypoint; // take the veh's waypoint as your own
 
 	if ( !vehEnt->m_pVehicle )
 		return;
 
+#ifdef _JK2MP
 	crotchBolt = trap_G2API_AddBolt(vehEnt->ghoul2, 0, "*driver");
 
 	// Get the driver tag.
@@ -189,7 +278,204 @@ void G_AttachToVehicle( gentity_t *pEnt, usercmd_t **ucmd )
 	BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, ent->client->ps.origin );
 	G_SetOrigin(ent, ent->client->ps.origin);
 	trap_LinkEntity( ent );
+#else
+	// Get the driver tag.
+	gi.G2API_GetBoltMatrix( vehEnt->ghoul2, vehEnt->playerModel, vehEnt->crotchBolt, &boltMatrix,
+							vehEnt->m_pVehicle->m_vOrientation, vehEnt->currentOrigin,
+							(cg.time?cg.time:level.time), NULL, vehEnt->s.modelScale );
+	gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, ent->client->ps.origin );
+	gi.linkentity( ent );
+#endif
 }
+
+#ifndef _JK2MP
+void G_KnockOffVehicle( gentity_t *pRider, gentity_t *self, qboolean bPull )
+{
+	Vehicle_t *pVeh = NULL;
+	vec3_t riderAngles, fDir, rDir, dir2Me;
+	float	fDot, rDot;
+
+	if ( !pRider || !pRider->client )
+	{
+		return;
+	}
+	
+	pVeh = G_IsRidingVehicle( pRider );
+
+	if ( !pVeh || !pVeh->m_pVehicleInfo )
+	{
+		return;
+	}
+
+	VectorCopy( pRider->currentAngles, riderAngles );
+	riderAngles[0] = 0;
+	AngleVectors( riderAngles, fDir, rDir, NULL );
+	VectorSubtract( self->currentOrigin, pRider->currentOrigin, dir2Me );
+	dir2Me[2] = 0;
+	VectorNormalize( dir2Me );
+	fDot = DotProduct( fDir, dir2Me );
+	if ( fDot >= 0.5f )
+	{//I'm in front of them
+		if ( bPull )
+		{//pull them foward
+			pVeh->m_EjectDir = VEH_EJECT_FRONT;
+		}
+		else
+		{//push them back
+			pVeh->m_EjectDir = VEH_EJECT_REAR;
+		}
+	}
+	else if ( fDot <= -0.5f )
+	{//I'm behind them
+		if ( bPull )
+		{//pull them back
+			pVeh->m_EjectDir = VEH_EJECT_REAR;
+		}
+		else
+		{//push them forward
+			pVeh->m_EjectDir = VEH_EJECT_FRONT;
+		}
+	}
+	else
+	{//to the side of them
+		rDot = DotProduct( fDir, dir2Me );
+		if ( rDot >= 0.0f )
+		{//to the right
+			if ( bPull )
+			{//pull them right
+				pVeh->m_EjectDir = VEH_EJECT_RIGHT;
+			}
+			else
+			{//push them left
+				pVeh->m_EjectDir = VEH_EJECT_LEFT;
+			}
+		}
+		else
+		{//to the left
+			if ( bPull )
+			{//pull them left
+				pVeh->m_EjectDir = VEH_EJECT_LEFT;
+			}
+			else
+			{//push them right
+				pVeh->m_EjectDir = VEH_EJECT_RIGHT;
+			}
+		}
+	}
+	//now forcibly eject them
+	pVeh->m_pVehicleInfo->Eject( pVeh, pRider, qtrue );
+}
+#endif
+
+#ifndef _JK2MP //don't want this in mp at least for now
+void G_DrivableATSTDie( gentity_t *self )
+{
+}
+
+void G_DriveATST( gentity_t *pEnt, gentity_t *atst )
+{
+	if ( pEnt->NPC_type && pEnt->client && (pEnt->client->NPC_class == CLASS_ATST) )
+	{//already an atst, switch back
+		//open hatch
+		G_RemovePlayerModel( pEnt );
+		pEnt->NPC_type = "player";
+		pEnt->client->NPC_class = CLASS_PLAYER;
+		pEnt->flags &= ~FL_SHIELDED;
+		pEnt->client->ps.eFlags &= ~EF_IN_ATST;
+		//size
+		VectorCopy( playerMins, pEnt->mins );
+		VectorCopy( playerMaxs, pEnt->maxs );
+		pEnt->client->crouchheight = CROUCH_MAXS_2;
+		pEnt->client->standheight = DEFAULT_MAXS_2;
+		G_ChangePlayerModel( pEnt, pEnt->NPC_type );
+		//G_SetG2PlayerModel( pEnt, pEnt->NPC_type, NULL, NULL, NULL );
+
+		//FIXME: reset/4 their weapon
+		pEnt->client->ps.stats[STAT_WEAPONS] &= ~(( 1 << WP_ATST_MAIN )|( 1 << WP_ATST_SIDE ));
+		pEnt->client->ps.ammo[weaponData[WP_ATST_MAIN].ammoIndex] = 0;
+		pEnt->client->ps.ammo[weaponData[WP_ATST_SIDE].ammoIndex] = 0;
+		CG_ChangeWeapon( WP_BLASTER );
+		//camera
+		//if ( pEnt->client->ps.weapon != WP_SABER )
+		{
+			gi.cvar_set( "cg_thirdperson", "0" );
+		}
+		cg.overrides.active &= ~(CG_OVERRIDE_3RD_PERSON_RNG|CG_OVERRIDE_3RD_PERSON_VOF|CG_OVERRIDE_3RD_PERSON_POF|CG_OVERRIDE_3RD_PERSON_APH);
+		cg.overrides.thirdPersonRange = cg.overrides.thirdPersonVertOffset = cg.overrides.thirdPersonPitchOffset = 0;
+		cg.overrides.thirdPersonAlpha = cg_thirdPersonAlpha.value;
+		pEnt->client->ps.viewheight = pEnt->maxs[2] + STANDARD_VIEWHEIGHT_OFFSET;
+		//pEnt->mass = 10;
+	}
+	else
+	{//become an atst
+		pEnt->NPC_type = "atst";
+		pEnt->client->NPC_class = CLASS_ATST;
+		pEnt->client->ps.eFlags |= EF_IN_ATST;
+		pEnt->flags |= FL_SHIELDED;
+		//size
+		VectorSet( pEnt->mins, ATST_MINS0, ATST_MINS1, ATST_MINS2 );
+		VectorSet( pEnt->maxs, ATST_MAXS0, ATST_MAXS1, ATST_MAXS2 );
+		pEnt->client->crouchheight = ATST_MAXS2;
+		pEnt->client->standheight = ATST_MAXS2;
+		if ( !atst )
+		{//no pEnt to copy from
+			G_ChangePlayerModel( pEnt, "atst" );
+			//G_SetG2PlayerModel( pEnt, "atst", NULL, NULL, NULL );
+			NPC_SetAnim( pEnt, SETANIM_BOTH, BOTH_STAND1, SETANIM_FLAG_OVERRIDE, 200 );
+		}
+		else
+		{
+			G_RemovePlayerModel( pEnt );
+			G_RemoveWeaponModels( pEnt );
+			gi.G2API_CopyGhoul2Instance( atst->ghoul2, pEnt->ghoul2 );
+			pEnt->playerModel = 0;
+			G_SetG2PlayerModelInfo( pEnt, "atst", NULL, NULL, NULL );
+			//turn off hatch underside
+			gi.G2API_SetSurfaceOnOff( &pEnt->ghoul2[pEnt->playerModel], "head_hatchcover", 0x00000002/*G2SURFACEFLAG_OFF*/ );
+			G_Sound( pEnt, G_SoundIndex( "sound/chars/atst/atst_hatch_close" ));
+		}
+		pEnt->s.radius = 320;
+		//weapon
+		gitem_t	*item = FindItemForWeapon( WP_ATST_MAIN );	//precache the weapon
+		CG_RegisterItemSounds( (item-bg_itemlist) );
+		CG_RegisterItemVisuals( (item-bg_itemlist) );
+		item = FindItemForWeapon( WP_ATST_SIDE );	//precache the weapon
+		CG_RegisterItemSounds( (item-bg_itemlist) );
+		CG_RegisterItemVisuals( (item-bg_itemlist) );
+		pEnt->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_ATST_MAIN )|( 1 << WP_ATST_SIDE );
+		pEnt->client->ps.ammo[weaponData[WP_ATST_MAIN].ammoIndex] = ammoData[weaponData[WP_ATST_MAIN].ammoIndex].max;
+		pEnt->client->ps.ammo[weaponData[WP_ATST_SIDE].ammoIndex] = ammoData[weaponData[WP_ATST_SIDE].ammoIndex].max;
+		CG_ChangeWeapon( WP_ATST_MAIN );
+		//HACKHACKHACKTEMP
+		item = FindItemForWeapon( WP_EMPLACED_GUN );
+		CG_RegisterItemSounds( (item-bg_itemlist) );
+		CG_RegisterItemVisuals( (item-bg_itemlist) );
+		item = FindItemForWeapon( WP_ROCKET_LAUNCHER );
+		CG_RegisterItemSounds( (item-bg_itemlist) );
+		CG_RegisterItemVisuals( (item-bg_itemlist) );
+		item = FindItemForWeapon( WP_BOWCASTER );
+		CG_RegisterItemSounds( (item-bg_itemlist) );
+		CG_RegisterItemVisuals( (item-bg_itemlist) );
+		//HACKHACKHACKTEMP
+		//FIXME: these get lost in load/save!  Must use variables that are set every frame or saved/loaded
+		//camera
+		gi.cvar_set( "cg_thirdperson", "1" );
+		cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_RNG;
+		cg.overrides.thirdPersonRange = 240;
+		//cg.overrides.thirdPersonVertOffset = 100;
+		//cg.overrides.thirdPersonPitchOffset = -30;
+		//FIXME: this gets stomped in pmove?
+		pEnt->client->ps.viewheight = 120;
+		//FIXME: setting these broke things very badly...?
+		//pEnt->client->standheight = 200;
+		//pEnt->client->crouchheight = 200;
+		//pEnt->mass = 300;
+		//movement
+		//pEnt->client->ps.speed = 0;//FIXME: override speed?
+		//FIXME: slow turn turning/can't turn if not moving?
+	}
+}
+#endif //_JK2MP
 
 // Animate the vehicle and it's riders.
 void Animate( Vehicle_t *pVeh )
@@ -307,6 +593,7 @@ bool ValidateBoard( Vehicle_t *pVeh, bgEntity_t *pEnt )
 	return true;
 }
 
+#ifdef VEH_CONTROL_SCHEME_4
 void FighterStorePilotViewAngles( Vehicle_t *pVeh, bgEntity_t *parent )
 {
 	playerState_t *riderPS;
@@ -337,6 +624,7 @@ void FighterStorePilotViewAngles( Vehicle_t *pVeh, bgEntity_t *parent )
 	VectorClear( pVeh->m_vPrevRiderViewAngles );
 	pVeh->m_vPrevRiderViewAngles[YAW] = AngleNormalize180(riderPS->viewangles[YAW]);
 }
+#endif// VEH_CONTROL_SCHEME_4
 
 // Board this Vehicle (get on). The first entity to board an empty vehicle becomes the Pilot.
 bool Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
@@ -569,10 +857,13 @@ bool Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 #endif
 	}
 
+#ifdef VEH_CONTROL_SCHEME_4
 	if ( pVeh->m_pVehicleInfo->type == VH_FIGHTER )
 	{//clear their angles
 		FighterStorePilotViewAngles( pVeh, (bgEntity_t *)parent );
 	}
+#endif //VEH_CONTROL_SCHEME_4
+
 	VectorCopy( pVeh->m_vOrientation, vPlayerDir );
 	vPlayerDir[ROLL] = 0;
 	SetClientViewAngle( ent, vPlayerDir );
@@ -1298,7 +1589,7 @@ static void DeathUpdate( Vehicle_t *pVeh )
 				bottom[2] += parent->mins[2] - 32;
 				G_VehicleTrace( &trace, parent->currentOrigin, lMins, lMaxs, bottom, parent->s.number, CONTENTS_SOLID );
 #ifdef _JK2MP
-				G_RadiusDamage( trace.endpos, NULL, pVeh->m_pVehicleInfo->explosionDamage, pVeh->m_pVehicleInfo->explosionRadius, NULL, NULL, MOD_EXPLOSIVE );//FIXME: extern damage and radius or base on fuel
+				G_RadiusDamage( trace.endpos, parent, pVeh->m_pVehicleInfo->explosionDamage, pVeh->m_pVehicleInfo->explosionRadius, NULL, NULL, MOD_VEH_EXPLOSION );//FIXME: extern damage and radius or base on fuel
 #else
 				G_RadiusDamage( trace.endpos, NULL, pVeh->m_pVehicleInfo->explosionDamage, pVeh->m_pVehicleInfo->explosionRadius, NULL, MOD_EXPLOSIVE );//FIXME: extern damage and radius or base on fuel
 #endif
@@ -2002,26 +2293,15 @@ maintainSelfDuringBoarding:
 	{
 		if (pVeh->m_iRemovedSurfaces)
 		{
-			gentity_t *killer = parent;
 			float	   dmg;
 			G_VehicleDamageBoxSizing(pVeh);
 
 			//damage him constantly if any chunks are currently taken off
-			if (parent->client->ps.otherKiller < ENTITYNUM_WORLD &&
-				parent->client->ps.otherKillerTime > level.time)
-			{
-				gentity_t *potentialKiller = &g_entities[parent->client->ps.otherKiller];
-
-				if (potentialKiller->inuse && potentialKiller->client)
-				{ //he's valid I guess
-					killer = potentialKiller;
-				}
-			}
-			//FIXME: aside from bypassing shields, maybe set m_iShields to 0, too... ?
 			
 			// 3 seconds max on death.
 			dmg = (float)parent->client->ps.stats[STAT_MAX_HEALTH] * pVeh->m_fTimeModifier / 180.0f;			
-			G_Damage(parent, killer, killer, NULL, parent->client->ps.origin, dmg, DAMAGE_NO_SELF_PROTECTION|DAMAGE_NO_HIT_LOC|DAMAGE_NO_PROTECTION|DAMAGE_NO_ARMOR, MOD_SUICIDE);
+			//FIXME: aside from bypassing shields, maybe set m_iShields to 0, too... ?
+			G_DamageFromKiller( parent, parent, parent, parent->client->ps.origin, dmg, DAMAGE_NO_SELF_PROTECTION|DAMAGE_NO_HIT_LOC|DAMAGE_NO_PROTECTION|DAMAGE_NO_ARMOR, MOD_SUICIDE );
 		}
 		
 		//make sure playerstate value stays in sync
@@ -2795,8 +3075,8 @@ void G_VehicleSetDamageLocFlags( gentity_t *veh, int impactDir, int deathPoint )
 			{
 				perc = 0.99f;
 			}
-			heavyDamagePoint = ceil( deathPoint*perc*0.25f );
-			lightDamagePoint = ceil( deathPoint*perc );
+			lightDamagePoint = ceil( deathPoint*perc*0.25f );
+			heavyDamagePoint = ceil( deathPoint*perc );
 		}
 		else
 		{
@@ -2808,13 +3088,13 @@ void G_VehicleSetDamageLocFlags( gentity_t *veh, int impactDir, int deathPoint )
 		{//destroyed
 			G_SetVehDamageFlags( veh, impactDir, 3 );
 		}
-		else if ( veh->locationDamage[impactDir] <= heavyDamagePoint )
-		{//heavy only
-			G_SetVehDamageFlags( veh, impactDir, 2 );
-		}
 		else if ( veh->locationDamage[impactDir] <= lightDamagePoint )
 		{//light only
 			G_SetVehDamageFlags( veh, impactDir, 1 );
+		}
+		else if ( veh->locationDamage[impactDir] <= heavyDamagePoint )
+		{//heavy only
+			G_SetVehDamageFlags( veh, impactDir, 2 );
 		}
 	}
 }
@@ -2899,7 +3179,7 @@ qboolean G_FlyVehicleDestroySurface( gentity_t *veh, int surface )
 	veh->m_pVehicle->m_iRemovedSurfaces |= smashedBits;
 
 	//do some explosive damage, but don't damage this ship with it
-	G_RadiusDamage(veh->client->ps.origin, veh, 100, 500, veh, NULL, MOD_SUICIDE);
+	G_RadiusDamage(veh->client->ps.origin, veh, 100, 500, veh, NULL, MOD_VEH_EXPLOSION);
 
 	//when spiraling to your death, do the electical shader
 	veh->client->ps.electrifyTime = level.time + 10000;

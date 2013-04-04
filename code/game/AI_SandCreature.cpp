@@ -86,7 +86,7 @@ void SandCreature_MoveEffect( void )
 		//FIXME: only do this while moving forward?
 		trace_t	trace;
 		//make him solid here so he can be hit/gets blocked on stuff. Check clear first.
-		gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, NPC->currentOrigin, NPC->s.number, MASK_NPCSOLID );
+		gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, NPC->currentOrigin, NPC->s.number, MASK_NPCSOLID, (EG2_Collision)0, 0 );
 		if ( !trace.allsolid && !trace.startsolid )
 		{
 			NPC->clipmask = MASK_NPCSOLID;//turn solid for a little bit
@@ -119,18 +119,18 @@ qboolean SandCreature_CheckAhead( vec3_t end )
 
 	//make sure our goal isn't underground (else the trace will fail)
 	vec3_t	bottom = {end[0],end[1],end[2]+NPC->mins[2]};
-	gi.trace( &trace, end, vec3_origin, vec3_origin, bottom, NPC->s.number, NPC->clipmask );
+	gi.trace( &trace, end, vec3_origin, vec3_origin, bottom, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );
 	if ( trace.fraction < 1.0f )
 	{//in the ground, raise it up
 		end[2] -= NPC->mins[2]*(1.0f-trace.fraction)-0.125f;
 	}
 
-	gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, end, NPC->s.number, clipmask );
+	gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, end, NPC->s.number, clipmask, (EG2_Collision)0, 0 );
 
 	if ( trace.startsolid&&(trace.contents&CONTENTS_BOTCLIP) )
 	{//started inside do not enter, so ignore them
 		clipmask &= ~CONTENTS_BOTCLIP;
-		gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, end, NPC->s.number, clipmask );
+		gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, end, NPC->s.number, clipmask, (EG2_Collision)0, 0 );
 	}
 	//Do a simple check
 	if ( ( trace.allsolid == qfalse ) && ( trace.startsolid == qfalse ) && ( trace.fraction == 1.0f ) )

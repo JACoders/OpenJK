@@ -80,11 +80,9 @@ typedef struct {
 	int				restartTime;
 
 	//rwwRMG - added:
-/*
 	int				mLocalSubBSPIndex;
 	int				mLocalSubBSPModelOffset;
 	char			*mLocalSubBSPEntityParsePoint;
-*/
 
 	char			*mSharedMemory;
 } server_t;
@@ -226,8 +224,6 @@ typedef struct {
 
 #ifdef _XBOX
 	int			clientRefNum;				// Index into xbonlineinfo array
-
-	int			syslinkAdvertTime;			// Time of next system link SVC_Info packet
 #endif
 } serverStatic_t;
 
@@ -263,10 +259,10 @@ extern	cvar_t	*sv_maxPing;
 extern	cvar_t	*sv_gametype;
 extern	cvar_t	*sv_pure;
 extern	cvar_t	*sv_floodProtect;
-extern	cvar_t	*sv_allowAnonymous;
 extern	cvar_t	*sv_needpass;
-extern	cvar_t	*xb_gameType;
-
+#ifdef USE_CD_KEY
+extern	cvar_t	*sv_allowAnonymous;
+#endif
 
 //===========================================================
 
@@ -438,6 +434,5 @@ void SV_ClipToEntity( trace_t *trace, const vec3_t start, const vec3_t mins, con
 void SV_Netchan_Transmit( client_t *client, msg_t *msg);	//int length, const byte *data );
 void SV_Netchan_TransmitNextFragment( netchan_t *chan );
 qboolean SV_Netchan_Process( client_t *client, msg_t *msg );
-
 
 #endif // SERVER_H_INC

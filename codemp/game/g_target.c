@@ -133,11 +133,8 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	if (!ent || !ent->inuse)
 	{
-		Com_Error(ERR_DROP, "Bad ent in Use_Target_Print");
-	}
-	else if (!activator || !activator->inuse)
-	{
-		Com_Error(ERR_DROP, "Bad activator in Use_Target_Print");
+		Com_Printf("ERROR: Bad ent in Use_Target_Print");
+		return;
 	}
 
 	if (ent->wait)
@@ -150,6 +147,15 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 	}
 
 #ifndef FINAL_BUILD
+	if (!ent || !ent->inuse)
+	{
+		Com_Error(ERR_DROP, "Bad ent in Use_Target_Print");
+	}
+	else if (!activator || !activator->inuse)
+	{
+		Com_Error(ERR_DROP, "Bad activator in Use_Target_Print");
+	}
+
 	if (ent->genericValue15 > level.time)
 	{
 		Com_Printf("TARGET PRINT ERRORS:\n");
@@ -175,15 +181,24 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 #endif
 
 	G_ActivateBehavior(ent,BSET_USE);
-	if ( activator->client && ( ent->spawnflags & 4 ) ) {
-		if (ent->message[0] == '@' && ent->message[1] != '@')
+	if ( ( ent->spawnflags & 4 ) ) 
+	{//private, to one client only
+		if (!activator || !activator->inuse)
 		{
-			trap_SendServerCommand( activator-g_entities, va("cps \"%s\"", ent->message ));
+			Com_Printf("ERROR: Bad activator in Use_Target_Print");
 		}
-		else
-		{
-			trap_SendServerCommand( activator-g_entities, va("cp \"%s\"", ent->message ));
+		if ( activator && activator->client )
+		{//make sure there's a valid client ent to send it to
+			if (ent->message[0] == '@' && ent->message[1] != '@')
+			{
+				trap_SendServerCommand( activator-g_entities, va("cps \"%s\"", ent->message ));
+			}
+			else
+			{
+				trap_SendServerCommand( activator-g_entities, va("cp \"%s\"", ent->message ));
+			}
 		}
+		//NOTE: change in functionality - if there *is* no valid client ent, it won't send it to anyone at all
 		return;
 	}
 

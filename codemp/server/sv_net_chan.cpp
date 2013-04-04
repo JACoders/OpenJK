@@ -136,24 +136,14 @@ SV_Netchan_Transmit
 
 //extern byte chksum[65536];
 void SV_Netchan_Transmit( client_t *client, msg_t *msg) {	//int length, const byte *data ) {
-
-	// To avoid endless recursion:
-	static bool droppingClient = false;
-
+//	int i;
 	MSG_WriteByte( msg, svc_EOF );
+//	for(i=SV_ENCODE_START;i<msg->cursize;i++) {
+//		chksum[i-SV_ENCODE_START] = msg->data[i];
+//	}
+//	Huff_Compress( msg, SV_ENCODE_START );
 	SV_Netchan_Encode( client, msg );
-
-	if( !Netchan_Transmit( &client->netchan, msg->cursize, msg->data ) &&
-		!droppingClient )
-	{
-		// Don't fail when we get around to sending the removepeer to this person again!
-		droppingClient = true;
-
-		// Quick detection of dropped clients!
-		SV_DropClient( client, "@MENUS_LOST_CONNECTION" );
-
-		droppingClient = false;
-	}
+	Netchan_Transmit( &client->netchan, msg->cursize, msg->data );
 }
 
 /*

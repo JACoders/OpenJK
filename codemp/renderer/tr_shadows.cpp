@@ -15,7 +15,6 @@
   1 0 light[x] / light[z]
 
 */
-#ifndef _XBOX
 
 #define _STENCIL_REVERSE
 
@@ -508,8 +507,6 @@ void RB_ProjectionShadowDeform( void ) {
 	}
 }
 
-#endif	// _XBOX
-
 //update tr.screenImage
 void RB_CaptureScreenImage(void)
 {
@@ -571,13 +568,8 @@ void RB_CaptureScreenImage(void)
 		cY = 0;
 	}
 
-#ifndef _XBOX
 	qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, cX, cY, radX, radY, 0);
-#else
-	qglCopyBackBufferToTexEXT(radX, radY, cX, cY, (cX + radX), (cY + radY));
-#endif // _XBOX
 }
-
 
 //yeah.. not really shadow-related.. but it's stencil-related. -rww
 float tr_distortionAlpha = 1.0f; //opaque
@@ -648,11 +640,7 @@ void RB_DistortionFill(void)
 		GL_State(0);
 	}
 
-#ifdef _XBOX
-	qglBeginEXT(GL_QUADS, 4, 0, 0, 4, 0);
-#else
 	qglBegin(GL_QUADS);
-#endif // _XBOX
 		qglColor4f(1.0f, 1.0f, 1.0f, alpha);
 		qglTexCoord2f(0+spost2, 1-spost);
 		qglVertex2f(0, 0);
@@ -694,11 +682,7 @@ void RB_DistortionFill(void)
 		}
 		spost2 *= 0.2f;
 
-#ifdef _XBOX
-		qglBeginEXT(GL_QUADS, 4, 0, 0, 4, 0);
-#else
 		qglBegin(GL_QUADS);
-#endif // _XBOX
 			qglColor4f(1.0f, 1.0f, 1.0f, alpha);
 			qglTexCoord2f(0+spost2, 1-spost);
 			qglVertex2f(0, 0);
@@ -722,3 +706,4 @@ void RB_DistortionFill(void)
 
 	qglDisable( GL_STENCIL_TEST );
 }
+

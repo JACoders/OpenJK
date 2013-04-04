@@ -12,11 +12,6 @@
 #endif 
 #endif
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#endif
-
 trGlobals_t		tr;
 
 static float	s_flipMatrix[16] = {
@@ -1384,12 +1379,6 @@ void R_AddEntitySurfaces (void) {
 		  tr.currentEntityNum++ ) {
 		ent = tr.currentEntity = &tr.refdef.entities[tr.currentEntityNum];
 
-#ifdef _XBOX
-		if(ClientManager::ActiveClientNum() == 1)
-			if(ent->e.skipForPlayer2 == true)
-				continue;
-#endif
-
 		assert(ent->e.renderfx >= 0);
 
 		ent->needDlights = qfalse;
@@ -1510,9 +1499,7 @@ void R_GenerateDrawSurfs( bool isPortal ) {
 
 	R_AddPolygonSurfaces();
 
-/*
 	R_AddTerrainSurfaces();
-*/
 
 	// set the projection matrix with the minimum zfar
 	// now that we have the world bounded
@@ -1531,9 +1518,7 @@ void R_GenerateDrawSurfs( void ) {
 
 	R_AddPolygonSurfaces();
 
-/*
 	R_AddTerrainSurfaces(); //rwwRMG - added
-*/
 
 	// set the projection matrix with the minimum zfar
 	// now that we have the world bounded

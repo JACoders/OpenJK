@@ -9,9 +9,8 @@
 #include "../ghoul2/G2_local.h"
 #include "MatComp.h"
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
+#ifdef VV_LIGHTING
+#include "tr_lightmanager.h"
 #endif
 
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
@@ -19,8 +18,8 @@
 
 static	int			r_firstSceneDrawSurf;
 
-int			r_numdlights;
-int			r_firstSceneDlight;
+static	int			r_numdlights;
+static	int			r_firstSceneDlight;
 
 static	int			r_numentities;
 static	int			r_firstSceneEntity;
@@ -47,6 +46,9 @@ void R_ToggleSmpFrame( void ) {
 
 	r_firstSceneDrawSurf = 0;
 
+#ifdef VV_LIGHTING
+	VVLightMan.num_dlights = 0;
+#endif
 	r_numdlights = 0;
 	r_firstSceneDlight = 0;
 
@@ -287,10 +289,6 @@ void RE_AddMiniRefEntityToScene( const miniRefEntity_t *ent )
 
 	memcpy(&tempEnt, ent, sizeof(*ent));
 	memset(((char *)&tempEnt)+sizeof(*ent), 0, sizeof(tempEnt) - sizeof(*ent));
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0)
-		tempEnt.skipForPlayer2 = true;
-#endif
 	RE_AddRefEntityToScene(&tempEnt);
 #else
 
@@ -324,6 +322,7 @@ RE_AddDynamicLightToScene
 
 =====================
 */
+#ifndef VV_LIGHTING
 void RE_AddDynamicLightToScene( const vec3_t org, float intensity, float r, float g, float b, int additive ) {
 	dlight_t	*dl;
 
@@ -344,6 +343,7 @@ void RE_AddDynamicLightToScene( const vec3_t org, float intensity, float r, floa
 	dl->color[2] = b;
 	dl->additive = additive;
 }
+#endif
 
 /*
 =====================
@@ -351,9 +351,11 @@ RE_AddLightToScene
 
 =====================
 */
+#ifndef VV_LIGHTING
 void RE_AddLightToScene( const vec3_t org, float intensity, float r, float g, float b ) {
 	RE_AddDynamicLightToScene( org, intensity, r, g, b, qfalse );
 }
+#endif
 
 /*
 =====================
@@ -361,9 +363,11 @@ RE_AddAdditiveLightToScene
 
 =====================
 */
+#ifndef VV_LIGHTING
 void RE_AddAdditiveLightToScene( const vec3_t org, float intensity, float r, float g, float b ) {
 	RE_AddDynamicLightToScene( org, intensity, r, g, b, qtrue );
 }
+#endif
 
 
 enum
@@ -793,8 +797,10 @@ void RE_RenderScene( const refdef_t *fd ) {
 	tr.refdef.entities = &backEndData->entities[r_firstSceneEntity];
 	tr.refdef.miniEntities = &backEndData->miniEntities[r_firstSceneMiniEntity];
 
+#ifndef VV_LIGHTING
 	tr.refdef.num_dlights = r_numdlights - r_firstSceneDlight;
 	tr.refdef.dlights = &backEndData->dlights[r_firstSceneDlight];
+#endif
 
 	// Add the decals here because decals add polys and we need to ensure
 	// that the polys are added before the the renderer is prepared
@@ -808,10 +814,12 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	// turn off dynamic lighting globally by clearing all the
 	// dlights if it needs to be disabled or if vertex lighting is enabled
+#ifndef VV_LIGHTING
 	if ( r_dynamiclight->integer == 0 ||
 		 r_vertexLight->integer == 1 ) {
 		tr.refdef.num_dlights = 0;
 	}
+#endif
 
 	// a single frame may have multiple scenes draw inside it --
 	// a 3D game view, 3D status bar renderings, 3D menus, etc.
@@ -848,11 +856,6 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	// the next scene rendered in this frame will tack on after this one
 	r_firstSceneDrawSurf = tr.refdef.numDrawSurfs;
-#ifdef _XBOX
-	const char *cstr = CG_ConfigString(CS_SKYBOXORG);
-	if(ClientManager::splitScreenMode == qfalse ||
-		(ClientManager::splitScreenMode == qtrue && (cstr && cstr[0])))
-#endif
 	r_firstSceneEntity = r_numentities;
 	r_firstSceneMiniEntity = r_numminientities;
 	r_firstSceneDlight = r_numdlights;

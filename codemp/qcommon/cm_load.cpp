@@ -4,7 +4,7 @@
 
 #include "cm_local.h"
 #include "cm_landscape.h" //rwwRMG - include
-//#include "../RMG/RM_Headers.h" //rwwRMG - include
+#include "../RMG/RM_Headers.h" //rwwRMG - include
 
 #ifdef BSPC
 

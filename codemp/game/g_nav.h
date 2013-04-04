@@ -6,8 +6,7 @@
 
 #define	WAYPOINT_NONE	-1
 
-//#define MAX_STORED_WAYPOINTS	512//???
-#define MAX_STORED_WAYPOINTS	64
+#define MAX_STORED_WAYPOINTS	512//???
 #define MAX_WAYPOINT_REACHED_DIST_SQUARED	1024	//32 squared
 #define	MAX_COLL_AVOID_DIST					128
 #define	NAVGOAL_USE_RADIUS					16384	//Used to force the waypoint_navgoals with a manually set radius to actually do a DistanceSquared check, not just bounds overlap

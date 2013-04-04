@@ -141,14 +141,14 @@ typedef struct {
 	short	forcePowerUpdated;					// Enum of which power had the point allocated
 	// Used by Weapon allocation screen
 	short	selectedWeapon1;					// 1st weapon chosen
-//	char 	selectedWeapon1ItemName[64];		// Item name of weapon chosen
-//	int		selectedWeapon1AmmoIndex;			// Holds index to ammo
+	char 	selectedWeapon1ItemName[64];		// Item name of weapon chosen
+	int		selectedWeapon1AmmoIndex;			// Holds index to ammo
 	short	selectedWeapon2;					// 2nd weapon chosen
-//	char 	selectedWeapon2ItemName[64];		// Item name of weapon chosen
-//	int		selectedWeapon2AmmoIndex;			// Holds index to ammo
+	char 	selectedWeapon2ItemName[64];		// Item name of weapon chosen
+	int		selectedWeapon2AmmoIndex;			// Holds index to ammo
 	short	selectedThrowWeapon;				// throwable weapon chosen
-//	char 	selectedThrowWeaponItemName[64];	// Item name of weapon chosen
-//	int		selectedThrowWeaponAmmoIndex;		// Holds index to ammo
+	char 	selectedThrowWeaponItemName[64];	// Item name of weapon chosen
+	int		selectedThrowWeaponAmmoIndex;		// Holds index to ammo
 
 	itemDef_t *weapon1ItemButton;
 	qhandle_t litWeapon1Icon;
@@ -163,8 +163,10 @@ typedef struct {
 	short		movesTitleIndex;
 	char		*movesBaseAnim;
 	int			moveAnimTime;
-//	int			languageCount;
+	int			languageCount;
 	int			languageCountIndex;
+
+	int			forcePowerLevel[NUM_FORCE_POWERS];
 }	uiInfo_t;
 
 extern uiInfo_t uiInfo;
@@ -215,45 +217,5 @@ int				PASSFLOAT( float x );
 
 
 void _UI_Refresh( int realtime );
-
-//from xboxcommon.h (from MP)
-//
-// Xbox Error Popup Constants
-//
-// The error popup system needs a context when it returns a value to know
-// what to do. One of these is saved off when we create the popup, and then it's
-// queried when we get a response so we know what we're doing.
-enum xbErrorPopupType
-{
-	XB_POPUP_NONE,
-
-	XB_POPUP_DELETE_CONFIRM,
-	XB_POPUP_DISKFULL,				// Only at startup
-	XB_POPUP_DISKFULL_DURING_SAVE,	// When trying to save a new game
-	XB_POPUP_SAVE_COMPLETE,
-	XB_POPUP_OVERWRITE_CONFIRM,
-	XB_POPUP_LOAD_FAILED,
-	XB_POPUP_LOAD_CHECKPOINT_FAILED,
-	XB_POPUP_QUIT_CONFIRM,
-	XB_POPUP_SAVING,
-	XB_POPUP_LOAD_CONFIRM,
-	XB_POPUP_TOO_MANY_SAVES,
-	XB_POPUP_LOAD_CONFIRM_CHECKPOINT,
-	XB_POPUP_CONFIRM_INVITE,
-	XB_POPUP_CORRUPT_SETTINGS,
-	XB_POPUP_DISKFULL_BOTH,
-	XB_POPUP_YOU_ARE_DEAD,
-	XB_POPUP_TESTING_SAVE,
-	XB_POPUP_CORRUPT_SCREENSHOT,
-	XB_POPUP_CONFIRM_NEW_1,
-	XB_POPUP_CONFIRM_NEW_2,
-	XB_POPUP_CONFIRM_NEW_3,
-};
-void UI_xboxErrorPopup(xbErrorPopupType popup);
-void UI_xboxPopupResponse(void);
-void UI_CheckForInvite( void );
-
-
-
 
 #endif

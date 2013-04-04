@@ -54,7 +54,6 @@
 
 #ifdef _XBOX
 #include <Xtl.h>
-#include "../win32/xbox_texture_man.h"
 #endif
 
 // Used to mark the start and end of blocks in debug mode
@@ -66,48 +65,26 @@
 // Indicates whether or not special (slow) debug code should be enabled
 #define ZONE_DEBUG 0
 
-// Allocate all available memory minus this amount - texture pools are
-// allocated before this, so just leave enough for framebuffer, etc...
-// Gah! I hate Bink! Stupid thing allocates physical memory (probably via
-// DSound) when starting. Need to leave just a little more.
-#ifdef FINAL_BUILD
-#	define ZONE_HEAP_FREE (1024*1024*6 + 512*1024 + 256*1024 + 64*1024)
+// Allocate all available memory minus this amount
+#ifdef _GAMECUBE
+#define ZONE_HEAP_FREE_DEBUG (64*1024*4)
+#define ZONE_HEAP_FREE_RELEASE (0)
+
+#ifdef _DEBUG
+#	define ZONE_HEAP_FREE ZONE_HEAP_FREE_DEBUG
 #else
-#	define ZONE_HEAP_FREE (1024*1024*16 + 16*1024*1024)
+#	define ZONE_HEAP_FREE ZONE_HEAP_FREE_RELEASE
 #endif
-
-#ifdef FINAL_BUILD
-#define TEXTURE_POOL_SIZE	16*1024*1024
 #else
-#define TEXTURE_POOL_SIZE	20*1024*1024
+//Game needs about 8 MB for framebuffers audio, bink, etc., plus 17 MB (?)
+//for textures. Leave lots more physical memory around when not in 64 MB
+//map, so the profiler and other things work.
+#ifdef FINAL_BUILD
+#	define ZONE_HEAP_FREE (1024*1024*8 + 17*1024*1024)
+#else
+#	define ZONE_HEAP_FREE (1024*1024*16 + 16*1024*1024 + 16*1024*1024)
 #endif
-
-// Two systems (Bink, and Savegames) need large, contiguous allocations once things
-// are running and fragmented. They get their own sandbox:
-#define TEMP_ALLOC_POOL_SIZE	(2*1024*1024 + 512*1024)
-
-__declspec (align(32)) char s_TempAllocPool[TEMP_ALLOC_POOL_SIZE];
-int s_TempAllocPoint = 0;
-
-void *TempAlloc( unsigned long size )
-{
-	if( s_TempAllocPoint + size > TEMP_ALLOC_POOL_SIZE )
-	{
-		Com_Printf( "WARNING: TempAlloc pool full!\n" );
-		return NULL;
-	}
-
-	void *retVal = &s_TempAllocPool[s_TempAllocPoint];
-
-	s_TempAllocPoint = (s_TempAllocPoint + size + 31) & ~31;
-
-	return retVal;
-}
-
-void TempFree( void )
-{
-	s_TempAllocPoint = 0;
-}
+#endif
 
 // Should we emulate the smaller memory footprint of actual release systems?
 #define ZONE_EMULATE_SPACE 0
@@ -182,11 +159,8 @@ static ZoneFreeBlock* s_FreeJumpTable[Z_JUMP_TABLE_SIZE];
 static unsigned int s_FreeJumpResolution;
 
 static void* s_PoolBase;
-static int s_PoolSize;
 static bool s_Initialized = false;
-
-static memtag_t s_newDeleteTagStack[32] = { TAG_NEWDEL };
-static int s_newDeleteTagStackTop = 0;
+static bool s_IsNewDeleteTemp = false;
 
 #ifndef _GAMECUBE
 static HANDLE s_Mutex = INVALID_HANDLE_VALUE;
@@ -195,19 +169,7 @@ static HANDLE s_Mutex = INVALID_HANDLE_VALUE;
 static void Z_Stats_f(void);
 void Z_Details_f(void);
 void Z_DumpMemMap_f(void);
-void Z_CompactStats(void);
 
-void Z_PushNewDeleteTag( memtag_t eTag )
-{
-	assert( s_newDeleteTagStackTop < 31 );
-	s_newDeleteTagStack[++s_newDeleteTagStackTop] = eTag;
-}
-
-void Z_PopNewDeleteTag( void )
-{
-	assert( s_newDeleteTagStackTop );
-	--s_newDeleteTagStackTop;
-}
 
 #ifdef _XBOX
 void ShowOSMemory(void)
@@ -231,6 +193,7 @@ int Z_MemFree(void)
 	return s_Stats.m_SizeFree;
 }
 
+
 void Com_InitZoneMemory(void)
 {
 //	assert(!s_Initialized);
@@ -245,20 +208,11 @@ void Com_InitZoneMemory(void)
 	memset(s_FreeOverflow, 0, sizeof(s_FreeOverflow));
 	s_LastOverflowIndex = 0;
 	s_LinkBase = NULL;
+	s_IsNewDeleteTemp = false;
 
 	// Alloc the pool
+#if defined(_XBOX)
 	MEMORYSTATUS status;
-	GlobalMemoryStatus(&status);
-
-	// BTO : VVFIXME - Extra little note to see how much memory
-	// is being used by globals/statics
-	Com_Printf("*** PhysRAM: %d used, %d free\n",
-				status.dwTotalPhys-status.dwAvailPhys,
-				status.dwAvailPhys);
-
-	// Allocate the texture pool:
-	gTextures.Initialize( TEXTURE_POOL_SIZE );
-
 	GlobalMemoryStatus(&status);
 
 	// BTO : VVFIXME - Extra little note to see how much memory
@@ -279,9 +233,11 @@ void Com_InitZoneMemory(void)
 #	else
 	size = status.dwAvailPhys - ZONE_HEAP_FREE;
 #	endif
-
 	s_PoolBase = GlobalAlloc(0, size);
-	s_PoolSize = size;
+#elif defined(_WINDOWS)
+	SIZE_T size = 50*1024*1024;
+	s_PoolBase = GlobalAlloc(0, size);
+#endif
 
 	// Setup the initial free block
 	ZoneFreeBlock* base = (ZoneFreeBlock*)s_PoolBase;
@@ -315,20 +271,10 @@ void Com_InitZoneMemory(void)
 	Cmd_AddCommand("zone_stats",	Z_Stats_f);
 	Cmd_AddCommand("zone_details",	Z_Details_f);
 	Cmd_AddCommand("zone_memmap",	Z_DumpMemMap_f);
-	Cmd_AddCommand("zone_cstats",	Z_CompactStats);
 
 #ifndef _GAMECUBE
 	s_Mutex = CreateMutex(NULL, FALSE, NULL);
 #endif
-
-	// Super-size my hack. With fries. We allocate enough space for g_entities at the
-	// end of the zone now. If it turns out (somehow) that there is no persisted surface,
-	// then we need to take g_entities from the zone, but we'd normally allocate it so late
-	// that we'll have a big chunk in the middle. That's bad. And if we reserve space at the
-	// front, then we might not need it, and we've got a 1.2MB chunk of empty space there.
-	// This works perfectly, though:
-	extern void G_ReserveZoneGentities( void );
-	G_ReserveZoneGentities();
 }
 
 void Com_ShutdownZoneMemory(void)
@@ -370,20 +316,37 @@ static bool Z_IsTagTemp(memtag_t eTag)
 {
 	return 
 		eTag == TAG_TEMP_WORKSPACE || 
+#ifndef _JK2MP
+		eTag == TAG_TEMP_SAVEGAME_WORKSPACE ||
+		eTag == TAG_STRING ||
+#endif
+//		eTag == TAG_TEMP_SND_RAWDATA ||
 		eTag == TAG_SND_RAWDATA ||
 		eTag == TAG_ICARUS ||
 		eTag == TAG_LISTFILES ||
+#ifdef _JK2MP
+		eTag == TAG_TEXTPOOL;
+#else
 		eTag == TAG_GP2;
+#endif
+//		eTag == TAG_BINK;
 }
 
 // Determine if a tag needs TagFree() support.
 static bool Z_IsTagLinked(memtag_t eTag)
 {
 	return
+//		eTag == TAG_BOTGAME ||
 		eTag == TAG_BSP ||
 		eTag == TAG_HUNKALLOC ||
-//		eTag == TAG_HUNKMISCMODELS ||
+#ifndef _JK2MP
+		eTag == TAG_HUNKMISCMODELS ||
 		eTag == TAG_G_ALLOC ||
+#endif
+#ifdef _JK2MP
+		eTag == TAG_CG_UI_ALLOC ||
+		eTag == TAG_BG_ALLOC ||
+#endif
 		eTag == TAG_UI_ALLOC;
 }
 
@@ -769,9 +732,9 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int iAlign)
 #endif
 	
 	// Make new/delete memory temporary if requested
-	if (eTag == TAG_NEWDEL )
+	if (eTag == TAG_NEWDEL && s_IsNewDeleteTemp)
 	{
-		eTag = s_newDeleteTagStack[s_newDeleteTagStackTop];
+		eTag = TAG_TEMP_WORKSPACE;
 	}
 
 	// Determine how much space we need with headers and footers
@@ -933,8 +896,8 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int iAlign)
 	if(eTag == TAG_CLIENTS) {
 		int suck = 0;
 	}
-
-	if ((unsigned)ablock >= 0x169b000 && (unsigned)ablock <= 0x169c000 && iSize == 20)
+	
+	if ((unsigned)ablock >= 0x1eb0000 && (unsigned)ablock <= 0x1ec0000 && iSize == 48)
 	{
 		int suck = 0;
 	}
@@ -1361,10 +1324,9 @@ void Z_TagFree(memtag_t eTag)
 
 void Z_SetNewDeleteTemporary(bool bTemp)
 {
-	if( bTemp )
-		Z_PushNewDeleteTag( TAG_TEMP_WORKSPACE );
-	else
-		Z_PopNewDeleteTag();
+	// Catch nested uses that break when unwinding the stack
+	assert(bTemp != s_IsNewDeleteTemp);
+	s_IsNewDeleteTemp = bTemp;
 }
 
 void *S_Malloc( int iSize ) 
@@ -1378,7 +1340,7 @@ int Z_GetLevelMemory(void)
 	return s_Stats.m_SizesPerTag[TAG_BSP];
 #else
 	return s_Stats.m_SizesPerTag[TAG_HUNKALLOC] +
-//		s_Stats.m_SizesPerTag[TAG_HUNKMISCMODELS] +
+		s_Stats.m_SizesPerTag[TAG_HUNKMISCMODELS] +
 		s_Stats.m_SizesPerTag[TAG_BSP];
 #endif
 }
@@ -1391,6 +1353,16 @@ int Z_GetHunkMemory(void)
 }
 #endif
 
+int Z_GetTerrainMemory(void)
+{
+	return s_Stats.m_SizesPerTag[TAG_CM_TERRAIN] +
+		s_Stats.m_SizesPerTag[TAG_CM_TERRAIN_TEMP] +
+#ifdef _JK2MP
+		s_Stats.m_SizesPerTag[TAG_TERRAIN] +
+#endif
+		s_Stats.m_SizesPerTag[TAG_R_TERRAIN];
+}
+
 int Z_GetMiscMemory(void)
 {
 	return s_Stats.m_SizeAlloc -
@@ -1398,6 +1370,7 @@ int Z_GetMiscMemory(void)
 #ifdef _JK2MP
 		Z_GetHunkMemory() +
 #endif
+		Z_GetTerrainMemory() +
 		s_Stats.m_SizesPerTag[TAG_MODEL_GLM] +
 		s_Stats.m_SizesPerTag[TAG_MODEL_GLA] +
 		s_Stats.m_SizesPerTag[TAG_MODEL_MD3] +
@@ -1409,29 +1382,47 @@ int Z_GetMiscMemory(void)
 static int texMemSize = 0;
 #else
 extern int texMemSize;
-//extern unsigned long texturePoint;
 #endif
 void Z_CompactStats(void)
 {
-	// New and improved, super version of CompactStats:
 	assert(s_Initialized);
 
-	static int printHeader = 1;
-	if( printHeader )
+	//This report is conservative.  Divides by 1000 instead of 1024 and
+	//then rounds up.
+	static int	printHeader = 1;
+	if (printHeader)
 	{
+		Sys_Log("memory-map.txt", "**Z_CompactStats Start**\n\n");
+		Sys_Log("memory-map.txt", "Map:\tOV:\tLVL:\tGLM:\tGLA:\tMD3:\tTER:\tSND:\tTEX:\tFMV:\tMSC:\tFrZN:\tFrPH:\n");
 		printHeader = 0;
-		Sys_Log("memory-map.txt", "Level:\tTextures:\tFreeZone:\tOverhead:\tTags...\n");
 	}
 
-	// No more being conservative and doing strange math. I want real numbers:
-	Sys_Log("memory-map.txt", va("%s\t%d\t%d\t%d",
-								 Cvar_VariableString( "mapname" ),
-								 gTextures.Size(),
-								 s_Stats.m_SizeFree,
-								 s_Stats.m_OverheadAlloc));
-	for( int t = 0; t < TAG_COUNT; ++t )
-		Sys_Log("memory-map.txt", va("\t%d", s_Stats.m_SizesPerTag[t]));
-	Sys_Log("memory-map.txt", "\n");
+	MEMORYSTATUS stat;
+	GlobalMemoryStatus(&stat);
+
+	Sys_Log("memory-map.txt", va("%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
+			Cvar_VariableString( "mapname" ),
+			(s_Stats.m_OverheadAlloc / 1000) + 1,
+			(Z_GetLevelMemory() / 1000) + 1,
+			(s_Stats.m_SizesPerTag[TAG_MODEL_GLM] / 1000) + 1,
+			(s_Stats.m_SizesPerTag[TAG_MODEL_GLA] / 1000) + 1,
+			(s_Stats.m_SizesPerTag[TAG_MODEL_MD3] / 1000) + 1,
+			(Z_GetTerrainMemory() / 1000) + 1,
+			(s_Stats.m_SizesPerTag[TAG_SND_RAWDATA] / 1000) + 1,
+			(texMemSize / 1000) + 1,
+			(s_Stats.m_SizesPerTag[TAG_BINK] / 1000) + 1,
+			(Z_GetMiscMemory() / 1000) + 1,
+			s_Stats.m_SizeFree,
+			stat.dwAvailPhys));
+
+#ifdef _JK2MP
+	Sys_Log("memory-map.txt", va("HUNK: %d, THUNK: %d\n",
+			(s_Stats.m_SizesPerTag[TAG_HUNKALLOC] / 1000) + 1,
+			(s_Stats.m_SizesPerTag[TAG_TEMP_HUNKALLOC] / 1000) + 1));
+#endif
+
+	//Sys_Log("memory-map.txt", va("Free Zone: %d\n", s_Stats.m_SizeFree));
+
 }
 
 
@@ -1628,25 +1619,29 @@ void Com_TouchMemory(void)
 	return;
 }
 
-
 qboolean Z_IsFromZone(void *pvAddress, memtag_t eTag)
 {
-	if(pvAddress >= s_PoolBase && pvAddress < (char*)s_PoolBase + s_PoolSize) {
-		return qtrue;
+	assert(s_Initialized);
+
+#ifdef _DEBUG
+	ZoneDebugHeader* debug = (ZoneDebugHeader*)pvAddress - 1;
+
+	if (*debug != ZONE_MAGIC)
+	{
+		return qfalse;
 	}
 
-	return qfalse;
-}
+	pvAddress = (void*)debug;
+#endif
 
+	ZoneHeader* header = (ZoneHeader*)pvAddress - 1;
 
-qboolean Z_IsFromTempPool(void *pvAddress)
-{
-	if(pvAddress >= s_TempAllocPool && pvAddress < s_TempAllocPool +
-			s_TempAllocPoint) {
-		return qtrue;
+	if (Z_GetTag(header) != eTag)
+	{
+		return qfalse;
 	}
-
-	return qfalse;
+	
+	return Z_GetSize(header);
 }
 
 
@@ -1744,16 +1739,6 @@ void Hunk_SetMark(void)
 #endif // _JK2MP
 
 /*
-XBOXAPI
-LPVOID
-WINAPI
-XMemAlloc(SIZE_T dwSize, DWORD dwAllocAttributes)
-{
-	return XMemAllocDefault(dwSize, dwAllocAttributes);
-}
-*/
-
-/*
 	XTL Replacement functions
 	XMemAlloc
 	XMemFree
@@ -1821,19 +1806,7 @@ XMemAlloc(SIZE_T dwSize, DWORD dwAllocAttributes)
 
 	return ptr;
 }
-*/
 
-/*
-XBOXAPI
-VOID
-WINAPI
-XMemFree(PVOID pAddress, DWORD dwAllocAttributes)
-{
-	XMemFreeDefault(pAddress, dwAllocAttributes);
-}
-*/
-
-/*
 XBOXAPI
 VOID
 WINAPI
@@ -1850,19 +1823,7 @@ XMemFree(PVOID pAddress, DWORD dwAllocAttributes)
 		XPhysicalFree(pAddress);
 	}
 }
-*/
 
-/*
-XBOXAPI
-SIZE_T
-WINAPI
-XMemSize(PVOID pAddress, DWORD dwAllocAttributes)
-{
-	return XMemSizeDefault(pAddress, dwAllocAttributes);
-}
-*/
-
-/*
 XBOXAPI
 SIZE_T
 WINAPI

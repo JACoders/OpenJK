@@ -242,7 +242,7 @@ void	Boba_DustFallNear(const vec3_t origin, int dustcount)
 		testDirection[2] = 1.0f;
 
 		VectorMA(origin, 1000.0f, testDirection, testEndPos);
-		gi.trace (&testTrace, origin, NULL, NULL, testEndPos, (player && player->inuse)?(0):(ENTITYNUM_NONE), MASK_SHOT );
+		gi.trace (&testTrace, origin, NULL, NULL, testEndPos, (player && player->inuse)?(0):(ENTITYNUM_NONE), MASK_SHOT, (EG2_Collision)0, 0 );
 
 		if (!testTrace.startsolid && 
 			!testTrace.allsolid && 
@@ -345,7 +345,7 @@ qboolean Boba_StopKnockdown( gentity_t *self, gentity_t *pusher, const vec3_t pu
 ////////////////////////////////////////////////////////////////////////////////////////
 qboolean Boba_Flying( gentity_t *self )
 {
-	assert(self && self->NPC && self->client && self->client->NPC_class==CLASS_BOBAFETT);
+	assert(self && self->client && self->client->NPC_class==CLASS_BOBAFETT);//self->NPC && 
 	return ((qboolean)(self->client->moveType==MT_FLYSWIM));
 }
 
@@ -463,7 +463,7 @@ void Boba_FireFlameThrower( gentity_t *self )
 	{
 		CG_DrawEdge(start, end, EDGE_IMPACT_POSSIBLE);
 	}
-	gi.trace( &tr, start, self->mins, self->maxs, end, self->s.number, MASK_SHOT);
+	gi.trace( &tr, start, self->mins, self->maxs, end, self->s.number, MASK_SHOT, (EG2_Collision)0, 0);
 
 	traceEnt = &g_entities[tr.entityNum];
 	if ( tr.entityNum < ENTITYNUM_WORLD && traceEnt->takedamage )
@@ -482,6 +482,12 @@ void Boba_FireFlameThrower( gentity_t *self )
 ////////////////////////////////////////////////////////////////////////////////////////
 void Boba_StopFlameThrower( gentity_t *self )
 {
+	if ( self->s.number < MAX_CLIENTS )
+	{
+		self->client->ps.torsoAnimTimer  =	0;
+		G_StopEffect( G_EffectIndex("boba/fthrw"), self->playerModel, self->genericBolt3, self->s.number);
+		return;
+	}
 	if ((NPCInfo->aiFlags&NPCAI_FLAMETHROW))
 	{
 		self->NPC->aiFlags				&= ~NPCAI_FLAMETHROW;
@@ -527,6 +533,22 @@ void Boba_StartFlameThrower( gentity_t *self )
 ////////////////////////////////////////////////////////////////////////////////////////
 void Boba_DoFlameThrower( gentity_t *self )
 {
+	if ( self->s.number < MAX_CLIENTS )
+	{
+		if ( self->client )
+		{
+			if ( !self->client->ps.forcePowerDuration[FP_LIGHTNING] )
+			{
+				NPC_SetAnim( self, SETANIM_TORSO, BOTH_FORCELIGHTNING_HOLD, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+	 			self->client->ps.torsoAnimTimer  =	BOBA_FLAMEDURATION;
+				G_SoundOnEnt( self, CHAN_WEAPON, "sound/weapons/boba/bf_flame.mp3" );
+				G_PlayEffect( G_EffectIndex("boba/fthrw"), self->playerModel, self->genericBolt3, self->s.number, self->s.origin, 1 );
+				self->client->ps.forcePowerDuration[FP_LIGHTNING] = 1;
+			}
+			Boba_FireFlameThrower( self );
+		}
+		return;
+	}
 	if (!(NPCInfo->aiFlags&NPCAI_FLAMETHROW) && TIMER_Done(self, "nextAttackDelay"))
 	{
 		Boba_StartFlameThrower( self );
@@ -987,7 +1009,7 @@ void	Boba_Update()
 			trace_t		testTrace;
 			vec3_t		eyes;
 			CalcEntitySpot( NPC, SPOT_HEAD_LEAN, eyes );
-			gi.trace (&testTrace, eyes, NULL, NULL, NPC->enemy->currentOrigin, NPC->s.number, MASK_SHOT);
+			gi.trace (&testTrace, eyes, NULL, NULL, NPC->enemy->currentOrigin, NPC->s.number, MASK_SHOT, (EG2_Collision)0, 0);
 
 			bool	wasSeen = Boba_CanSeeEnemy(NPC);
 

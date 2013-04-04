@@ -43,14 +43,8 @@ UI_SetActiveMenu -
  
 =================
 */
-extern void S_StopAllSoundsExceptMusic( void );
 void UI_SetActiveMenu( const char* menuname,const char *menuID ) 
 {
-	// Sooper-hack. After we play the ja08 cutscene, the game renders for a couple frames.
-	// So the cinematic code turns off Present(), and we have to turn it back on here:
-	extern bool connectSwapOverride;
-	connectSwapOverride = false;
-
 	// this should be the ONLY way the menu system is brought up (besides the UI_ConsoleCommand below)
 
 	if (cls.state != CA_DISCONNECTED && !ui.SG_GameAllowedToSaveHere(qtrue))	//don't check full sytem, only if incamera
@@ -80,15 +74,6 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 	if ( Q_stricmp (menuname, "ingame") == 0 ) 
 	{
 		ui.Cvar_Set( "cl_paused", "1" );
-	//	S_StopAllSounds();
-
-		//NOT USED
-		//JLF usually called with menuID == NULL but if 'noController' is the menuID
-		// this forces the pause menu open first and then opens the 'noController' menu
-		//basically forces the 'ingameMainMenu' open first
-	//	if (menuID)
-	//		UI_InGameMenu(NULL);
-		//END NOT USED
 		UI_InGameMenu(menuID);
 		return;
 	}
@@ -96,7 +81,6 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 	if ( Q_stricmp (menuname, "datapad") == 0 ) 
 	{
 		ui.Cvar_Set( "cl_paused", "1" );
-		S_StopAllSoundsExceptMusic();
 		UI_DataPadMenu();
 		return;
 	}
@@ -108,14 +92,6 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 		ui.Key_SetCatcher( KEYCATCH_UI );
 		return;
 	}
-//allows the 'noController' menu and similar menus to 'popup' over existing menu
-	if ( Q_stricmp (menuname, "ui_popup") == 0 ) 
-	{
-		
-		Menus_ActivateByName(menuID);	
-		return;
-	}
-	
 //JLF SPLASHMAIN MPSKIPPED
 #ifdef _XBOX
 	{
@@ -283,7 +259,7 @@ void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 
 	ui.Cvar_Create( "cg_drawCrosshair", "1", CVAR_ARCHIVE );
 	ui.Cvar_Create( "cg_marks", "1", CVAR_ARCHIVE );
-//	ui.Cvar_Create ("s_language",			"english",	CVAR_ARCHIVE | CVAR_NORESTART);
+	ui.Cvar_Create ("s_language",			"english",	CVAR_ARCHIVE | CVAR_NORESTART);
 	ui.Cvar_Create( "g_char_model",			"jedi_tf",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_char_skin_head",		"head_a1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_char_skin_torso",	"torso_a1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
@@ -303,7 +279,7 @@ void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 	ui.Cvar_Create( "ui_prisonerobj_currtotal", "0",	CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
 	ui.Cvar_Create( "ui_prisonerobj_mintotal",  "0",	CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
 
-	ui.Cvar_Create( "g_dismemberment", "3", CVAR_ARCHIVE );//0 = none, 1 = arms and hands, 2 = legs, 3 = waist and head, 4 = mega dismemberment
+	ui.Cvar_Create( "g_dismemberment", "3", CVAR_ARCHIVE );//0 = none, 1 = arms and hands, 2 = legs, 3 = waist and head
 	ui.Cvar_Create( "cg_gunAutoFirst", "1", CVAR_ARCHIVE );
 	ui.Cvar_Create( "cg_crosshairIdentifyTarget", "1", CVAR_ARCHIVE );
 	ui.Cvar_Create( "g_subtitles", "0", CVAR_ARCHIVE );

@@ -44,6 +44,7 @@ extern qboolean PM_LockedAnim( int anim );
 extern cvar_t	*g_dismemberment;
 extern cvar_t	*g_saberRealisticCombat;
 extern cvar_t	*g_corpseRemovalTime;
+extern cvar_t	*debug_subdivision;
 
 //Local Variables
 // ai debug cvars
@@ -93,7 +94,7 @@ void CorpsePhysics( gentity_t *self )
 
 	if ( level.time - self->s.time > 3000 )
 	{//been dead for 3 seconds
-		if ( g_dismemberment->integer < 11381138 && !g_saberRealisticCombat->integer )
+		if ( !debug_subdivision->integer && !g_saberRealisticCombat->integer )
 		{//can't be dismembered once dead
 			if ( self->client->NPC_class != CLASS_PROTOCOL )
 			{
@@ -463,7 +464,7 @@ and returns.
 ====================================================================
 */
 
-void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope, vec3_t storeAngles )
+void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope, vec3_t storeAngles, qboolean keepPitch )
 {
 	vec3_t	slope;
 	vec3_t	nvf, ovf, ovr, startspot, endspot, new_angles = { 0, 0, 0 };
@@ -478,7 +479,7 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope, vec3_t storeAn
 		startspot[2] += forwhom->mins[2] + 4;
 		VectorCopy( startspot, endspot );
 		endspot[2] -= 300;
-		gi.trace( &trace, forwhom->currentOrigin, vec3_origin, vec3_origin, endspot, forwhom->s.number, MASK_SOLID );
+		gi.trace( &trace, forwhom->currentOrigin, vec3_origin, vec3_origin, endspot, forwhom->s.number, MASK_SOLID, (EG2_Collision)0, 0 );
 //		if(trace_fraction>0.05&&forwhom.movetype==MOVETYPE_STEP)
 //			forwhom.flags(-)FL_ONGROUND;
 
@@ -498,6 +499,7 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope, vec3_t storeAn
 		VectorCopy( pass_slope, slope );
 	}
 
+	float oldPitch = 0;
 	if ( forwhom->client && forwhom->client->NPC_class == CLASS_VEHICLE )
 	{//special code for vehicles
 		Vehicle_t *pVeh = forwhom->m_pVehicle;
@@ -509,11 +511,16 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope, vec3_t storeAn
 	}
 	else
 	{
+		oldPitch = forwhom->currentAngles[PITCH];
 		AngleVectors( forwhom->currentAngles, ovf, ovr, NULL );
 	}
 
 	vectoangles( slope, new_angles );
 	pitch = new_angles[PITCH] + 90;
+	if ( keepPitch )
+	{
+		pitch += oldPitch;
+	}
 	new_angles[ROLL] = new_angles[PITCH] = 0;
 
 	AngleVectors( new_angles, nvf, NULL, NULL );
@@ -810,7 +817,7 @@ static void DeadThink ( void )
 	}
 	if ( NPC->maxs[2] > oldMaxs2 )
 	{//inflating maxs, make sure we're not inflating into solid
-		gi.trace (&trace, NPC->currentOrigin, NPC->mins, NPC->maxs, NPC->currentOrigin, NPC->s.number, NPC->clipmask );
+		gi.trace (&trace, NPC->currentOrigin, NPC->mins, NPC->maxs, NPC->currentOrigin, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );
 		if ( trace.allsolid )
 		{//must be inflating
 			NPC->maxs[2] = oldMaxs2;
@@ -1117,7 +1124,7 @@ void NPC_HandleAIFlags (void)
 				trace_t	trace;
 				VectorCopy(NPC->currentOrigin, ground);
 				ground[2] -= 60.0f;
-                gi.trace(&trace, NPC->currentOrigin, 0, 0, ground, NPC->s.number, NPC->clipmask);
+                gi.trace(&trace, NPC->currentOrigin, 0, 0, ground, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0);
 
 				IsInTheAir	= (!trace.allsolid && !trace.startsolid && trace.fraction>0.9f);
 			}
@@ -2385,7 +2392,7 @@ void NPC_CheckInSolid(void)
 	VectorCopy(NPC->currentOrigin, point);
 	point[2] -= 0.25;
 
-	gi.trace(&trace, NPC->currentOrigin, NPC->mins, NPC->maxs, point, NPC->s.number, NPC->clipmask);
+	gi.trace(&trace, NPC->currentOrigin, NPC->mins, NPC->maxs, point, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0);
 	if(!trace.startsolid && !trace.allsolid)
 	{
 		VectorCopy(NPC->currentOrigin, NPCInfo->lastClearOrigin);

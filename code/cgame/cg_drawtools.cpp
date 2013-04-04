@@ -394,45 +394,39 @@ void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charH
 	// FIXME: Might need to do something different for the chunky font??
 	switch(style)
 	{
-	default:
 	case NUM_FONT_SMALL:
 		xWidth = charWidth;
 		break;
-/*
 	case NUM_FONT_CHUNKY:
 		xWidth = (charWidth/1.2f) + 2;
 		break;
+	default:
 	case NUM_FONT_BIG:
 		xWidth = (charWidth/2) + 7;//(charWidth/6);
 		break;
-*/
 	}
 
-#ifndef _XBOX
 	if ( zeroFill )
 	{
 		for (int i = 0; i < (width - l); i++ )
 		{
 			switch(style)
 			{
-			default:
 			case NUM_FONT_SMALL:
 				CG_DrawPic( x,y, charWidth, charHeight, cgs.media.smallnumberShaders[0] );
 				break;
-/*
 			case NUM_FONT_CHUNKY:
 				CG_DrawPic( x,y, charWidth, charHeight, cgs.media.chunkyNumberShaders[0] );
 				break;
+			default:
 			case NUM_FONT_BIG:
 				CG_DrawPic( x,y, charWidth, charHeight, cgs.media.numberShaders[0] );
 				break;
-*/
 			}
 			x += 2 + (xWidth);
 		}
 	}
 	else
-#endif
 	{
 		x += 2 + (xWidth)*(width - l);
 	}
@@ -447,29 +441,17 @@ void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charH
 
 		switch(style)
 		{
-		default:
 		case NUM_FONT_SMALL:
-			if(zeroFill)
-			{
-				CG_DrawPic( x-2,y, charWidth, charHeight, cgs.media.smallnumberShaders[frame] );
-				CG_DrawPic( x+2,y, charWidth, charHeight, cgs.media.smallnumberShaders[frame] );
-				CG_DrawPic( x,y-2, charWidth, charHeight, cgs.media.smallnumberShaders[frame] );
-				CG_DrawPic( x,y+2, charWidth, charHeight, cgs.media.smallnumberShaders[frame] );
-				x++;	// For a one line gap
-			}
-			else {
-				CG_DrawPic( x,y, charWidth, charHeight, cgs.media.smallnumberShaders[frame] );
-				x++;	// For a one line gap
-			}
+			CG_DrawPic( x,y, charWidth, charHeight, cgs.media.smallnumberShaders[frame] );
+			x++;	// For a one line gap
 			break;
-/*
 		case NUM_FONT_CHUNKY:
 			CG_DrawPic( x,y, charWidth, charHeight, cgs.media.chunkyNumberShaders[frame] );
 			break;
+		default:
 		case NUM_FONT_BIG:
 			CG_DrawPic( x,y, charWidth, charHeight, cgs.media.numberShaders[frame] );
 			break;
-*/
 		}
 
 		x += (xWidth);

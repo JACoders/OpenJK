@@ -167,7 +167,7 @@ static char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 
 		assert(iStrlen+1<=sizeof(sString));
 		
-		gi.ReadFromSaveGame('STRG', sString, iStrlen);
+		gi.ReadFromSaveGame('STRG', sString, iStrlen, NULL);
 
 #ifndef _XBOX	// TAG_G_ALLOC is always blown away, we can never recycle
 		if (psOriginal && gi.bIsFromZone(psOriginal, TAG_G_ALLOC)) {
@@ -632,9 +632,82 @@ static LPCSTR SG_GetChidText(unsigned long chid)
 	return chidtext;
 }
 
+extern void WP_SaberSetDefaults( saberInfo_t *saber, qboolean setColors);
+static void SG_ConvertRetailSaberinfoToNewSaberinfo( void *sabData, saberInfo_t *saberNew )
+{
+	saberInfoRetail_t *saberRetail = ((saberInfoRetail_t *)(sabData));
+
+	for ( int saberNum = 0; saberNum < 2; saberNum++ )
+	{
+		WP_SaberSetDefaults( &saberNew[saberNum], qfalse );
+		if ( !saberRetail[saberNum].activeBlocking )
+		{
+			saberNew[saberNum].saberFlags |= SFL_NOT_ACTIVE_BLOCKING;
+		}
+		memcpy( saberNew[saberNum].blade, saberRetail[saberNum].blade, sizeof( saberRetail[saberNum].blade ) );
+		saberNew[saberNum].breakParryBonus = saberRetail[saberNum].breakParryBonus;
+		saberNew[saberNum].brokenSaber1 = saberRetail[saberNum].brokenSaber1;
+		saberNew[saberNum].brokenSaber2 = saberRetail[saberNum].brokenSaber2;
+		if ( !saberRetail[saberNum].disarmable )
+		{
+			saberNew[saberNum].saberFlags |= SFL_NOT_DISARMABLE;
+		}
+		saberNew[saberNum].disarmBonus = saberRetail[saberNum].disarmBonus;
+		saberNew[saberNum].forceRestrictions = saberRetail[saberNum].forceRestrictions;
+		saberNew[saberNum].fullName = saberRetail[saberNum].fullName;
+		if ( !saberRetail[saberNum].lockable )
+		{
+			saberNew[saberNum].saberFlags |= SFL_NOT_LOCKABLE;
+		}
+		saberNew[saberNum].lockBonus = saberRetail[saberNum].lockBonus;
+		saberNew[saberNum].maxChain = saberRetail[saberNum].maxChain;
+		saberNew[saberNum].model = saberRetail[saberNum].model;
+		saberNew[saberNum].name = saberRetail[saberNum].name;
+		saberNew[saberNum].numBlades = saberRetail[saberNum].numBlades;
+		saberNew[saberNum].parryBonus = saberRetail[saberNum].parryBonus;
+		if ( saberRetail[saberNum].returnDamage )
+		{
+			saberNew[saberNum].saberFlags |= SFL_RETURN_DAMAGE;
+		}
+		saberNew[saberNum].singleBladeStyle = saberRetail[saberNum].singleBladeStyle;
+		if ( saberRetail[saberNum].singleBladeThrowable )
+		{
+			saberNew[saberNum].saberFlags |= SFL_SINGLE_BLADE_THROWABLE;
+		}
+		saberNew[saberNum].skin = saberRetail[saberNum].skin;
+		saberNew[saberNum].soundLoop = saberRetail[saberNum].soundLoop;
+		saberNew[saberNum].soundOff = saberRetail[saberNum].soundOff;
+		saberNew[saberNum].soundOn = saberRetail[saberNum].soundOn;
+		if ( saberRetail[saberNum].style != SS_NONE
+			&& saberRetail[saberNum].style < SS_NUM_SABER_STYLES )
+		{//OLD WAY: only allowed ONE style
+			//learn only this style
+			saberNew[saberNum].stylesLearned = (1<<saberRetail[saberNum].style);
+			//forbid all other styles
+			saberNew[saberNum].stylesForbidden = 0;
+			for ( int styleNum = SS_NONE+1; styleNum < SS_NUM_SABER_STYLES; styleNum++ )
+			{
+				if ( styleNum != saberRetail[saberNum].style )
+				{
+					saberNew[saberNum].stylesForbidden |= (1<<styleNum);
+				}
+			}
+		}
+		if ( !saberRetail[saberNum].throwable )
+		{
+			saberNew[saberNum].saberFlags |= SFL_NOT_THROWABLE;
+		}
+		if ( saberRetail[saberNum].twoHanded )
+		{
+			saberNew[saberNum].saberFlags |= SFL_TWO_HANDED;
+		}
+		saberNew[saberNum].type = saberRetail[saberNum].type;
+	}
+} 
+
 static void EvaluateFields(const save_field_t *pFields, byte *pbData, byte *pbOriginalRefData, unsigned long ulChid, int iSize, qboolean bOkToSizeMisMatch)
 {	
-	int iReadSize = gi.ReadFromSaveGame(ulChid, pbData, bOkToSizeMisMatch?0:iSize);
+	int iReadSize = gi.ReadFromSaveGame(ulChid, pbData, bOkToSizeMisMatch?0:iSize, NULL);
 
 	if (iReadSize != iSize)
 	{
@@ -646,10 +719,21 @@ static void EvaluateFields(const save_field_t *pFields, byte *pbData, byte *pbOr
 			// example chunk handler...
 			//				
 			case 'GCLI':
-/*				assert(iSize>iReadSize);
-				memset(&pbData[iReadSize], 0, iSize-iReadSize);	// zero out new objectives that weren't in old-format save file			
+				if ( iSize == (int)(iReadSize+((sizeof(saberInfo_t)-sizeof(saberInfoRetail_t))*2)) )
+				{
+					gclient_t newClient;
+					const int	preSaberDataSize = ((int)&newClient.ps.saber[0]-(int)&newClient);
+					memcpy( &newClient, pbData, preSaberDataSize );
+					SG_ConvertRetailSaberinfoToNewSaberinfo( ((void *)(&((gclient_t *)(pbData))->ps.saber[0])), &newClient.ps.saber[0] ); 
+					memcpy( &newClient.ps.dualSabers, pbData+preSaberDataSize+(sizeof(saberInfoRetail_t)*2), sizeof(newClient)-(preSaberDataSize+(sizeof(saberInfo_t)*2)) );
+					memcpy( pbData, &newClient, sizeof(gclient_t) );
+				}
+				else
+				{//opps, not a saberInfo size mismatch, some other FUBAR-ness...
+					G_Error(va("EvaluateFields(): variable-sized chunk '%s' without handler!",SG_GetChidText(ulChid)));
+				}
 				break;
-*/
+
 			default:
 				// won't return...
 				//
@@ -708,8 +792,9 @@ static void ReadLevelLocals ()
 static void WriteGEntities(qboolean qbAutosave)
 {
 	int iCount = 0;
+	int i;
 
-	for (int i=0; i<(qbAutosave?1:globals.num_entities); i++)
+	for (i=0; i<(qbAutosave?1:globals.num_entities); i++)
 	{
 		gentity_t* ent = &g_entities[i];
 
@@ -798,14 +883,15 @@ static void WriteGEntities(qboolean qbAutosave)
 static void ReadGEntities(qboolean qbAutosave)
 {
 	int		iCount;
+	int		i;
 	
-	gi.ReadFromSaveGame('NMED', (void *)&iCount, sizeof(iCount));
+	gi.ReadFromSaveGame('NMED', (void *)&iCount, sizeof(iCount), NULL);
 
 	int iPreviousEntRead = -1;
-	for (int i=0; i<iCount; i++)
+	for (i=0; i<iCount; i++)
 	{
 		int iEntIndex;
-		gi.ReadFromSaveGame('EDNM', (void *)&iEntIndex, sizeof(iEntIndex));
+		gi.ReadFromSaveGame('EDNM', (void *)&iEntIndex, sizeof(iEntIndex), NULL);
 
 		if (iEntIndex >= globals.num_entities)
 		{
@@ -885,7 +971,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			gclient_t tempGClient;			
 
-			EvaluateFields(savefields_gClient, (byte *)&tempGClient, (byte *)pEntOriginal->client, 'GCLI', sizeof(*pEnt->client),qfalse);
+			EvaluateFields(savefields_gClient, (byte *)&tempGClient, (byte *)pEntOriginal->client, 'GCLI', sizeof(*pEnt->client),qtrue);//qfalse);
 
 			// can we pinch the original's client handle or do we have to alloc a new one?...
 			//
@@ -918,7 +1004,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			parms_t tempParms;
 			
-			gi.ReadFromSaveGame('PARM', &tempParms, sizeof(tempParms));
+			gi.ReadFromSaveGame('PARM', &tempParms, sizeof(tempParms), NULL);
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -1002,9 +1088,6 @@ static void ReadGEntities(qboolean qbAutosave)
 
 		// NPCs and other ents store waypoints that aren't valid after a load
 		pEnt->waypoint = 0;
-		// Hazard troopers store a troop value that isn't valid either:
-		if( pEnt->NPC )
-			pEnt->NPC->troop = 0;
 
 		qboolean qbLinked = pEnt->linked;
 		pEnt->linked = qfalse;
@@ -1038,7 +1121,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		// check that Icarus has loaded everything it saved out by having a marker chunk after it...
 		//
 		static int iBlah = 1234;
-		gi.ReadFromSaveGame('ICOK', &iBlah, sizeof(iBlah));
+		gi.ReadFromSaveGame('ICOK', &iBlah, sizeof(iBlah), NULL);
 	}
 	if (!qbAutosave)
 	{
@@ -1101,13 +1184,13 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 		
 		//Read & throw away gclient info
 		gclient_t junkClient;
-		EvaluateFields(savefields_gClient, (byte *)&junkClient, (byte *)&level.clients[0], 'GCLI', sizeof(*level.clients), qfalse);
+		EvaluateFields(savefields_gClient, (byte *)&junkClient, (byte *)&level.clients[0], 'GCLI', sizeof(*level.clients), qtrue);//qfalse);
+
+		ReadLevelLocals();	// level_locals_t level	
 
 		//Read & throw away objective info
 		objectives_t	junkObj[MAX_MISSION_OBJ];
-		gi.ReadFromSaveGame('OBJT', (void *) &junkObj, 0);
-
-		ReadLevelLocals();	// level_locals_t level	
+		gi.ReadFromSaveGame('OBJT', (void *) &junkObj, 0, NULL);
 	}
 	else
 	{
@@ -1116,7 +1199,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 			assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way things work
 		
 			gclient_t GClient;
-			EvaluateFields(savefields_gClient, (byte *)&GClient, (byte *)&level.clients[0], 'GCLI', sizeof(*level.clients), qfalse);
+			EvaluateFields(savefields_gClient, (byte *)&GClient, (byte *)&level.clients[0], 'GCLI', sizeof(*level.clients), qtrue);//qfalse);
 			level.clients[0] = GClient;	// struct copy
 			ReadLevelLocals();	// level_locals_t level	
 		}
@@ -1140,7 +1223,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 	// check that the whole file content was loaded by specifically requesting an end-marker...
 	//
 	static int iDONE = 1234;
-	gi.ReadFromSaveGame('DONE', &iDONE, sizeof(iDONE));
+	gi.ReadFromSaveGame('DONE', &iDONE, sizeof(iDONE), NULL);
 }
 
 extern int killPlayerTimer;

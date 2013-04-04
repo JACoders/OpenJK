@@ -18,10 +18,8 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#include "../renderer/modelmem.h"
+#ifdef VV_LIGHTING
+#include "../renderer/tr_lightmanager.h"
 #endif
 
 extern	botlib_export_t	*botlib_export;
@@ -41,15 +39,599 @@ GetClientState
 ====================
 */
 static void GetClientState( uiClientState_t *state ) {
-	state->connectPacketCount = clc->connectPacketCount;
-#ifdef _XBOX
-//	if(ClientManager::splitScreenMode == qtrue)
-//		cls.state = ClientManager::ActiveClient().state;
-#endif
+	state->connectPacketCount = clc.connectPacketCount;
 	state->connState = cls.state;
 	Q_strncpyz( state->servername, cls.servername, sizeof( state->servername ) );
-	Q_strncpyz( state->messageString, clc->serverMessage, sizeof( state->messageString ) );
-	state->clientNum = cl->snap.ps.clientNum;
+	Q_strncpyz( state->updateInfoString, cls.updateInfoString, sizeof( state->updateInfoString ) );
+	Q_strncpyz( state->messageString, clc.serverMessage, sizeof( state->messageString ) );
+	state->clientNum = cl.snap.ps.clientNum;
+}
+
+/*
+====================
+LAN_LoadCachedServers
+====================
+*/
+void LAN_LoadCachedServers( ) {
+	int size;
+	fileHandle_t fileIn;
+	cls.numglobalservers = cls.nummplayerservers = cls.numfavoriteservers = 0;
+	cls.numGlobalServerAddresses = 0;
+#ifndef _XBOX
+	if (FS_SV_FOpenFileRead("servercache.dat", &fileIn)) {
+		FS_Read(&cls.numglobalservers, sizeof(int), fileIn);
+		FS_Read(&cls.nummplayerservers, sizeof(int), fileIn);
+		FS_Read(&cls.numfavoriteservers, sizeof(int), fileIn);
+		FS_Read(&size, sizeof(int), fileIn);
+		if (size == sizeof(cls.globalServers) + sizeof(cls.favoriteServers) + sizeof(cls.mplayerServers)) {
+			FS_Read(&cls.globalServers, sizeof(cls.globalServers), fileIn);
+			FS_Read(&cls.mplayerServers, sizeof(cls.mplayerServers), fileIn);
+			FS_Read(&cls.favoriteServers, sizeof(cls.favoriteServers), fileIn);
+		} else {
+			cls.numglobalservers = cls.nummplayerservers = cls.numfavoriteservers = 0;
+			cls.numGlobalServerAddresses = 0;
+		}
+		FS_FCloseFile(fileIn);
+	}
+#endif
+}
+
+/*
+====================
+LAN_SaveServersToCache
+====================
+*/
+void LAN_SaveServersToCache( ) {
+#ifndef _XBOX
+	int size;
+	fileHandle_t fileOut = FS_SV_FOpenFileWrite("servercache.dat");
+	FS_Write(&cls.numglobalservers, sizeof(int), fileOut);
+	FS_Write(&cls.nummplayerservers, sizeof(int), fileOut);
+	FS_Write(&cls.numfavoriteservers, sizeof(int), fileOut);
+	size = sizeof(cls.globalServers) + sizeof(cls.favoriteServers) + sizeof(cls.mplayerServers);
+	FS_Write(&size, sizeof(int), fileOut);
+	FS_Write(&cls.globalServers, sizeof(cls.globalServers), fileOut);
+	FS_Write(&cls.mplayerServers, sizeof(cls.mplayerServers), fileOut);
+	FS_Write(&cls.favoriteServers, sizeof(cls.favoriteServers), fileOut);
+	FS_FCloseFile(fileOut);
+#endif
+}
+
+
+/*
+====================
+LAN_ResetPings
+====================
+*/
+static void LAN_ResetPings(int source) {
+	int count,i;
+	serverInfo_t *servers = NULL;
+	count = 0;
+
+	switch (source) {
+		case AS_LOCAL :
+			servers = &cls.localServers[0];
+			count = MAX_OTHER_SERVERS;
+			break;
+		case AS_MPLAYER :
+			servers = &cls.mplayerServers[0];
+			count = MAX_OTHER_SERVERS;
+			break;
+		case AS_GLOBAL :
+			servers = &cls.globalServers[0];
+			count = MAX_GLOBAL_SERVERS;
+			break;
+		case AS_FAVORITES :
+			servers = &cls.favoriteServers[0];
+			count = MAX_OTHER_SERVERS;
+			break;
+	}
+	if (servers) {
+		for (i = 0; i < count; i++) {
+			servers[i].ping = -1;
+		}
+	}
+}
+
+/*
+====================
+LAN_AddServer
+====================
+*/
+static int LAN_AddServer(int source, const char *name, const char *address) {
+	int max, *count, i;
+	netadr_t adr;
+	serverInfo_t *servers = NULL;
+	max = MAX_OTHER_SERVERS;
+	count = 0;
+
+	switch (source) {
+		case AS_LOCAL :
+			count = &cls.numlocalservers;
+			servers = &cls.localServers[0];
+			break;
+		case AS_MPLAYER :
+			count = &cls.nummplayerservers;
+			servers = &cls.mplayerServers[0];
+			break;
+		case AS_GLOBAL :
+			max = MAX_GLOBAL_SERVERS;
+			count = &cls.numglobalservers;
+			servers = &cls.globalServers[0];
+			break;
+		case AS_FAVORITES :
+			count = &cls.numfavoriteservers;
+			servers = &cls.favoriteServers[0];
+/*			if (!name || !*name)
+			{
+				name = "?";
+			}
+*/
+			break;
+	}
+	if (servers && *count < max) {
+		NET_StringToAdr( address, &adr );
+		if (adr.type == NA_BAD)
+		{
+			return -1;
+		}
+		for ( i = 0; i < *count; i++ ) {
+			if (NET_CompareAdr(servers[i].adr, adr)) {
+				break;
+			}
+		}
+		if (i >= *count) {
+			servers[*count].adr = adr;
+			Q_strncpyz(servers[*count].hostName, name, sizeof(servers[*count].hostName));
+			servers[*count].visible = qtrue;
+			(*count)++;
+			return 1;
+		}
+		return 0;
+	}
+	return -1;
+}
+
+/*
+====================
+LAN_RemoveServer
+====================
+*/
+static void LAN_RemoveServer(int source, const char *addr) {
+	int *count, i;
+	serverInfo_t *servers = NULL;
+	count = 0;
+	switch (source) {
+		case AS_LOCAL :
+			count = &cls.numlocalservers;
+			servers = &cls.localServers[0];
+			break;
+		case AS_MPLAYER :
+			count = &cls.nummplayerservers;
+			servers = &cls.mplayerServers[0];
+			break;
+		case AS_GLOBAL :
+			count = &cls.numglobalservers;
+			servers = &cls.globalServers[0];
+			break;
+		case AS_FAVORITES :
+			count = &cls.numfavoriteservers;
+			servers = &cls.favoriteServers[0];
+			break;
+	}
+	if (servers) {
+		netadr_t comp;
+		NET_StringToAdr( addr, &comp );
+		for (i = 0; i < *count; i++) {
+			if (servers[i].adr.type==NA_BAD || NET_CompareAdr( comp, servers[i].adr)) {
+				int j = i;
+				while (j < *count - 1) {
+					Com_Memcpy(&servers[j], &servers[j+1], sizeof(servers[j]));
+					j++;
+				}
+				(*count)--;
+				break;
+			}
+		}
+	}
+}
+
+
+/*
+====================
+LAN_GetServerCount
+====================
+*/
+static int LAN_GetServerCount( int source ) {
+	switch (source) {
+		case AS_LOCAL :
+			return cls.numlocalservers;
+			break;
+		case AS_MPLAYER :
+			return cls.nummplayerservers;
+			break;
+		case AS_GLOBAL :
+			return cls.numglobalservers;
+			break;
+		case AS_FAVORITES :
+			return cls.numfavoriteservers;
+			break;
+	}
+	return 0;
+}
+
+/*
+====================
+LAN_GetLocalServerAddressString
+====================
+*/
+static void LAN_GetServerAddressString( int source, int n, char *buf, int buflen ) {
+	switch (source) {
+		case AS_LOCAL :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				Q_strncpyz(buf, NET_AdrToString( cls.localServers[n].adr) , buflen );
+				return;
+			}
+			break;
+		case AS_MPLAYER :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				Q_strncpyz(buf, NET_AdrToString( cls.mplayerServers[n].adr) , buflen );
+				return;
+			}
+			break;
+		case AS_GLOBAL :
+			if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
+				Q_strncpyz(buf, NET_AdrToString( cls.globalServers[n].adr) , buflen );
+				return;
+			}
+			break;
+		case AS_FAVORITES :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				Q_strncpyz(buf, NET_AdrToString( cls.favoriteServers[n].adr) , buflen );
+				return;
+			}
+			break;
+	}
+	buf[0] = '\0';
+}
+
+/*
+====================
+LAN_GetServerInfo
+====================
+*/
+static void LAN_GetServerInfo( int source, int n, char *buf, int buflen ) {
+	char info[MAX_STRING_CHARS];
+	serverInfo_t *server = NULL;
+	info[0] = '\0';
+	switch (source) {
+		case AS_LOCAL :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				server = &cls.localServers[n];
+			}
+			break;
+		case AS_MPLAYER :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				server = &cls.mplayerServers[n];
+			}
+			break;
+		case AS_GLOBAL :
+			if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
+				server = &cls.globalServers[n];
+			}
+			break;
+		case AS_FAVORITES :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				server = &cls.favoriteServers[n];
+			}
+			break;
+	}
+	if (server && buf) {
+		buf[0] = '\0';
+		Info_SetValueForKey( info, "hostname", server->hostName);
+		Info_SetValueForKey( info, "mapname", server->mapName);
+		Info_SetValueForKey( info, "clients", va("%i",server->clients));
+		Info_SetValueForKey( info, "sv_maxclients", va("%i",server->maxClients));
+		Info_SetValueForKey( info, "ping", va("%i",server->ping));
+#ifndef _XBOX
+		Info_SetValueForKey( info, "minping", va("%i",server->minPing));
+		Info_SetValueForKey( info, "maxping", va("%i",server->maxPing));
+		Info_SetValueForKey( info, "nettype", va("%i",server->netType));
+		Info_SetValueForKey( info, "needpass", va("%i", server->needPassword ) );
+		Info_SetValueForKey( info, "truejedi", va("%i", server->trueJedi ) );
+		Info_SetValueForKey( info, "wdisable", va("%i", server->weaponDisable ) );
+		Info_SetValueForKey( info, "fdisable", va("%i", server->forceDisable ) );
+#else
+		Info_SetValueForKey( info, "saberonly", va("%i", server->saberOnly));
+#endif
+		Info_SetValueForKey( info, "game", server->game);
+		Info_SetValueForKey( info, "gametype", va("%i",server->gameType));
+		Info_SetValueForKey( info, "addr", NET_AdrToString(server->adr));
+//		Info_SetValueForKey( info, "sv_allowAnonymous", va("%i", server->allowAnonymous));
+//		Info_SetValueForKey( info, "pure", va("%i", server->pure ) );
+		Q_strncpyz(buf, info, buflen);
+	} else {
+		if (buf) {
+			buf[0] = '\0';
+		}
+	}
+}
+
+/*
+====================
+LAN_GetServerPing
+====================
+*/
+static int LAN_GetServerPing( int source, int n ) {
+	serverInfo_t *server = NULL;
+	switch (source) {
+		case AS_LOCAL :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				server = &cls.localServers[n];
+			}
+			break;
+		case AS_MPLAYER :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				server = &cls.mplayerServers[n];
+			}
+			break;
+		case AS_GLOBAL :
+			if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
+				server = &cls.globalServers[n];
+			}
+			break;
+		case AS_FAVORITES :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				server = &cls.favoriteServers[n];
+			}
+			break;
+	}
+	if (server) {
+		return server->ping;
+	}
+	return -1;
+}
+
+/*
+====================
+LAN_GetServerPtr
+====================
+*/
+static serverInfo_t *LAN_GetServerPtr( int source, int n ) {
+	switch (source) {
+		case AS_LOCAL :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				return &cls.localServers[n];
+			}
+			break;
+		case AS_MPLAYER :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				return &cls.mplayerServers[n];
+			}
+			break;
+		case AS_GLOBAL :
+			if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
+				return &cls.globalServers[n];
+			}
+			break;
+		case AS_FAVORITES :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				return &cls.favoriteServers[n];
+			}
+			break;
+	}
+	return NULL;
+}
+
+/*
+====================
+LAN_CompareServers
+====================
+*/
+static int LAN_CompareServers( int source, int sortKey, int sortDir, int s1, int s2 ) {
+	int res;
+	serverInfo_t *server1, *server2;
+
+	server1 = LAN_GetServerPtr(source, s1);
+	server2 = LAN_GetServerPtr(source, s2);
+	if (!server1 || !server2) {
+		return 0;
+	}
+
+	res = 0;
+	switch( sortKey ) {
+		case SORT_HOST:
+			res = Q_stricmp( server1->hostName, server2->hostName );
+			break;
+
+		case SORT_MAP:
+			res = Q_stricmp( server1->mapName, server2->mapName );
+			break;
+		case SORT_CLIENTS:
+			if (server1->clients < server2->clients) {
+				res = -1;
+			}
+			else if (server1->clients > server2->clients) {
+				res = 1;
+			}
+			else {
+				res = 0;
+			}
+			break;
+		case SORT_GAME:
+			if (server1->gameType < server2->gameType) {
+				res = -1;
+			}
+			else if (server1->gameType > server2->gameType) {
+				res = 1;
+			}
+			else {
+				res = 0;
+			}
+			break;
+		case SORT_PING:
+			if (server1->ping < server2->ping) {
+				res = -1;
+			}
+			else if (server1->ping > server2->ping) {
+				res = 1;
+			}
+			else {
+				res = 0;
+			}
+			break;
+	}
+
+	if (sortDir) {
+		if (res < 0)
+			return 1;
+		if (res > 0)
+			return -1;
+		return 0;
+	}
+	return res;
+}
+
+/*
+====================
+LAN_GetPingQueueCount
+====================
+*/
+static int LAN_GetPingQueueCount( void ) {
+	return (CL_GetPingQueueCount());
+}
+
+/*
+====================
+LAN_ClearPing
+====================
+*/
+static void LAN_ClearPing( int n ) {
+	CL_ClearPing( n );
+}
+
+/*
+====================
+LAN_GetPing
+====================
+*/
+static void LAN_GetPing( int n, char *buf, int buflen, int *pingtime ) {
+	CL_GetPing( n, buf, buflen, pingtime );
+}
+
+/*
+====================
+LAN_GetPingInfo
+====================
+*/
+static void LAN_GetPingInfo( int n, char *buf, int buflen ) {
+	CL_GetPingInfo( n, buf, buflen );
+}
+
+/*
+====================
+LAN_MarkServerVisible
+====================
+*/
+static void LAN_MarkServerVisible(int source, int n, qboolean visible ) {
+	if (n == -1) {
+		int count = MAX_OTHER_SERVERS;
+		serverInfo_t *server = NULL;
+		switch (source) {
+			case AS_LOCAL :
+				server = &cls.localServers[0];
+				break;
+			case AS_MPLAYER :
+				server = &cls.mplayerServers[0];
+				break;
+			case AS_GLOBAL :
+				server = &cls.globalServers[0];
+				count = MAX_GLOBAL_SERVERS;
+				break;
+			case AS_FAVORITES :
+				server = &cls.favoriteServers[0];
+				break;
+		}
+		if (server) {
+			for (n = 0; n < count; n++) {
+				server[n].visible = visible;
+			}
+		}
+
+	} else {
+		switch (source) {
+			case AS_LOCAL :
+				if (n >= 0 && n < MAX_OTHER_SERVERS) {
+					cls.localServers[n].visible = visible;
+				}
+				break;
+			case AS_MPLAYER :
+				if (n >= 0 && n < MAX_OTHER_SERVERS) {
+					cls.mplayerServers[n].visible = visible;
+				}
+				break;
+			case AS_GLOBAL :
+				if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
+					cls.globalServers[n].visible = visible;
+				}
+				break;
+			case AS_FAVORITES :
+				if (n >= 0 && n < MAX_OTHER_SERVERS) {
+					cls.favoriteServers[n].visible = visible;
+				}
+				break;
+		}
+	}
+}
+
+
+/*
+=======================
+LAN_ServerIsVisible
+=======================
+*/
+static int LAN_ServerIsVisible(int source, int n ) {
+	switch (source) {
+		case AS_LOCAL :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				return cls.localServers[n].visible;
+			}
+			break;
+		case AS_MPLAYER :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				return cls.mplayerServers[n].visible;
+			}
+			break;
+		case AS_GLOBAL :
+			if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
+				return cls.globalServers[n].visible;
+			}
+			break;
+		case AS_FAVORITES :
+			if (n >= 0 && n < MAX_OTHER_SERVERS) {
+				return cls.favoriteServers[n].visible;
+			}
+			break;
+	}
+	return qfalse;
+}
+
+/*
+=======================
+LAN_UpdateVisiblePings
+=======================
+*/
+qboolean LAN_UpdateVisiblePings(int source ) {
+	return CL_UpdateVisiblePings_f(source);
+}
+
+/*
+====================
+LAN_GetServerStatus
+====================
+*/
+int LAN_GetServerStatus( char *serverAddress, char *serverStatus, int maxLen ) {
+	return CL_ServerStatus( serverAddress, serverStatus, maxLen );
 }
 
 /*
@@ -134,26 +716,6 @@ Ket_SetCatcher
 */
 void Key_SetCatcher( int catcher ) {
 	cls.keyCatchers = catcher;
-
-#ifdef _XBOX
-	if(catcher == KEYCATCH_UI)
-	{
-//		ModelMem.EnterUI();
-		int i;
-
-		for(i=0; i<ClientManager::NumClients(); i++) {
-			ClientManager::GetClient(i).swapMan1.SetUp();
-			ClientManager::GetClient(i).swapMan2.SetUp();
-		}
-	}
-	else
-	{
-//		ModelMem.ExitUI();
-		//Horrible hack to make split screen work if force menus are skipped.
-		extern int uiclientInputClosed;
-		uiclientInputClosed = 0;
-	}
-#endif
 }
 
 
@@ -211,7 +773,7 @@ static int GetConfigString(int index, char *buf, int size)
 	if (index < 0 || index >= MAX_CONFIGSTRINGS)
 		return qfalse;
 
-	offset = cl->gameState.stringOffsets[index];
+	offset = cl.gameState.stringOffsets[index];
 	if (!offset) {
 		if( size ) {
 			buf[0] = 0;
@@ -219,7 +781,7 @@ static int GetConfigString(int index, char *buf, int size)
 		return qfalse;
 	}
 
-	Q_strncpyz( buf, cl->gameState.stringData+offset, size);
+	Q_strncpyz( buf, cl.gameState.stringData+offset, size);
  
 	return qtrue;
 }
@@ -404,7 +966,11 @@ int CL_UISystemCalls( int *args ) {
 		return 0;
 
 	case UI_R_ADDLIGHTTOSCENE:
+#ifdef VV_LIGHTING
+		VVLightMan.RE_AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
+#else
 		re.AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
+#endif
 		return 0;
 
 	case UI_R_RENDERSCENE:
@@ -486,6 +1052,70 @@ int CL_UISystemCalls( int *args ) {
 	case UI_GETCONFIGSTRING:
 		return GetConfigString( args[1], (char *)VMA(2), args[3] );
 
+	case UI_LAN_LOADCACHEDSERVERS:
+		LAN_LoadCachedServers();
+		return 0;
+
+	case UI_LAN_SAVECACHEDSERVERS:
+		LAN_SaveServersToCache();
+		return 0;
+
+	case UI_LAN_ADDSERVER:
+		return LAN_AddServer(args[1], (const char *)VMA(2), (const char *)VMA(3));
+
+	case UI_LAN_REMOVESERVER:
+		LAN_RemoveServer(args[1], (const char *)VMA(2));
+		return 0;
+
+	case UI_LAN_GETPINGQUEUECOUNT:
+		return LAN_GetPingQueueCount();
+
+	case UI_LAN_CLEARPING:
+		LAN_ClearPing( args[1] );
+		return 0;
+
+	case UI_LAN_GETPING:
+		LAN_GetPing( args[1], (char *)VMA(2), args[3], (int *)VMA(4) );
+		return 0;
+
+	case UI_LAN_GETPINGINFO:
+		LAN_GetPingInfo( args[1], (char *)VMA(2), args[3] );
+		return 0;
+
+	case UI_LAN_GETSERVERCOUNT:
+		return LAN_GetServerCount(args[1]);
+
+	case UI_LAN_GETSERVERADDRESSSTRING:
+		LAN_GetServerAddressString( args[1], args[2], (char *)VMA(3), args[4] );
+		return 0;
+
+	case UI_LAN_GETSERVERINFO:
+		LAN_GetServerInfo( args[1], args[2], (char *)VMA(3), args[4] );
+		return 0;
+
+	case UI_LAN_GETSERVERPING:
+		return LAN_GetServerPing( args[1], args[2] );
+
+	case UI_LAN_MARKSERVERVISIBLE:
+		LAN_MarkServerVisible( args[1], args[2], (qboolean)args[3] );
+		return 0;
+
+	case UI_LAN_SERVERISVISIBLE:
+		return LAN_ServerIsVisible( args[1], args[2] );
+
+	case UI_LAN_UPDATEVISIBLEPINGS:
+		return LAN_UpdateVisiblePings( args[1] );
+
+	case UI_LAN_RESETPINGS:
+		LAN_ResetPings( args[1] );
+		return 0;
+
+	case UI_LAN_SERVERSTATUS:
+		return LAN_GetServerStatus( (char *)VMA(1), (char *)VMA(2), args[3] );
+
+	case UI_LAN_COMPARESERVERS:
+		return LAN_CompareServers( args[1], args[2], args[3], args[4], args[5] );
+
 	case UI_MEMORY_REMAINING:
 		return Hunk_MemoryRemaining();
 
@@ -550,6 +1180,24 @@ int CL_UISystemCalls( int *args ) {
 	case UI_REAL_TIME:
 		return Com_RealTime( (struct qtime_s *)VMA(1) );
 
+	case UI_CIN_PLAYCINEMATIC:
+	  Com_DPrintf("UI_CIN_PlayCinematic\n");
+	  return CIN_PlayCinematic((const char *)VMA(1), args[2], args[3], args[4], args[5], args[6]);
+
+	case UI_CIN_STOPCINEMATIC:
+	  return CIN_StopCinematic(args[1]);
+
+	case UI_CIN_RUNCINEMATIC:
+	  return CIN_RunCinematic(args[1]);
+
+	case UI_CIN_DRAWCINEMATIC:
+	  CIN_DrawCinematic(args[1]);
+	  return 0;
+
+	case UI_CIN_SETEXTENTS:
+	  CIN_SetExtents(args[1], args[2], args[3], args[4], args[5]);
+	  return 0;
+
 	case UI_R_REMAP_SHADER:
 		re.RemapShader( (const char *)VMA(1), (const char *)VMA(2), (const char *)VMA(3) );
 		return 0;
@@ -560,12 +1208,14 @@ int CL_UISystemCalls( int *args ) {
 #endif // USE_CD_KEY
 
 	case UI_SP_GETNUMLANGUAGES:
-		assert( 0 );
-		return 0;
-//		return SE_GetNumLanguages();
+		return SE_GetNumLanguages();
 
 	case UI_SP_GETLANGUAGENAME:
-		assert( 0 );
+		char *languageName,*holdName;
+
+		holdName = ((char *)VMA(2));
+		languageName = (char *) SE_GetLanguageName((const int)VMA(1));
+		Q_strncpyz( holdName, languageName,128 );
 		return 0;
 
 	case UI_SP_GETSTRINGTEXTSTRING:
@@ -620,6 +1270,7 @@ Ghoul2 Insert Start
 
 
 	case UI_G2_COLLISIONDETECT:
+	case UI_G2_COLLISIONDETECTCACHE:
 		return 0; //not supported for ui
 
 	case UI_G2_ANGLEOVERRIDE:
@@ -840,21 +1491,7 @@ void CL_InitUI( void ) {
 		//rww - changed to <= CA_ACTIVE, because that is the state when we did a vid_restart
 		//ingame (was just < CA_ACTIVE before, resulting in ingame menus getting wiped and
 		//not reloaded on vid restart from ingame menu)
-#ifdef _XBOX
-//		if(ClientManager::splitScreenMode == qtrue)
-//			cls.state = ClientManager::ActiveClient().state;
-#endif
-
-#ifdef _XBOX
-		// This is kinda a hack to get the UI models that are ALWAYS loaded
-		// forced into the UI model memory slot
-//		ModelMem.EnterUI();
-#endif
 		VM_Call( uivm, UI_INIT, (cls.state >= CA_AUTHORIZING && cls.state <= CA_ACTIVE) );
-
-#ifdef _XBOX
-//		ModelMem.ExitUI();
-#endif
 	}
 }
 

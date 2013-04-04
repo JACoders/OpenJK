@@ -8,11 +8,6 @@
 #include "../RMG/RM_Headers.h"
 #include "../zlib32/zip.h"
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#endif
-
 static void SV_CloseDownload( client_t *cl );
 
 /*
@@ -227,13 +222,13 @@ void SV_DirectConnect( netadr_t from ) {
 	char		userinfo[MAX_INFO_STRING];
 	int			i;
 	client_t	*cl, *newcl;
-	client_t	*pTemp = (client_t *) Z_Malloc( sizeof(client_t), TAG_TEMP_WORKSPACE, qfalse, 4 );
-	client_t	&temp(*pTemp);
+	MAC_STATIC client_t	temp;
 	sharedEntity_t *ent;
 	int			clientNum;
 	int			version;
 	int			qport;
 	int			challenge;
+	char		*password;
 	int			startIndex;
 	char		*denied;
 	int			count;
@@ -245,9 +240,8 @@ void SV_DirectConnect( netadr_t from ) {
 
 	version = atoi( Info_ValueForKey( userinfo, "protocol" ) );
 	if ( version != PROTOCOL_VERSION ) {
-		NET_OutOfBandPrint( NS_SERVER, from, "xProtocol\n" );
+		NET_OutOfBandPrint( NS_SERVER, from, "print\nServer uses protocol version %i.\n", PROTOCOL_VERSION );
 		Com_DPrintf ("    rejected connect from version %i\n", version);
-		Z_Free(pTemp);
 		return;
 	}
 
@@ -271,9 +265,8 @@ void SV_DirectConnect( netadr_t from ) {
 			|| from.port == cl->netchan.remoteAddress.port ) ) {
 			if (( svs.time - cl->lastConnectTime) 
 				< (sv_reconnectlimit->integer * 1000)) {
-				NET_OutOfBandPrint( NS_SERVER, from, "xToosoon\n" );
+				NET_OutOfBandPrint( NS_SERVER, from, "print\nReconnect rejected : too soon\n" );
 				Com_DPrintf ("%s:reconnect rejected : too soon\n", NET_AdrToString (from));
-				Z_Free(pTemp);
 				return;
 			}
 			break;
@@ -293,16 +286,13 @@ void SV_DirectConnect( netadr_t from ) {
 		}
 		if (i == MAX_CHALLENGES) {
 			NET_OutOfBandPrint( NS_SERVER, from, "print\nNo or bad challenge for address.\n" );
-			Z_Free(pTemp);
 			return;
 		}
 		// force the IP key/value pair so the game can filter based on ip
 		Info_SetValueForKey( userinfo, "ip", NET_AdrToString( from ) );
 
 		ping = svs.time - svs.challenges[i].pingTime;
-#ifndef FINAL_BUILD
 		Com_Printf( SE_GetString("MP_SVGAME", "CLIENT_CONN_WITH_PING"), i, ping);//"Client %i connecting with %i challenge ping\n", i, ping );
-#endif
 		svs.challenges[i].connected = qtrue;
 
 		// never reject a LAN client based on ping
@@ -314,13 +304,11 @@ void SV_DirectConnect( netadr_t from ) {
 				// reset the address otherwise their ping will keep increasing
 				// with each connect message and they'd eventually be able to connect
 				svs.challenges[i].adr.port = 0;
-				Z_Free(pTemp);
 				return;
 			}
 			if ( sv_maxPing->value && ping > sv_maxPing->value ) {
 				NET_OutOfBandPrint( NS_SERVER, from, va("print\n%s\n", SE_GetString("MP_SVGAME", "SERVER_FOR_LOW_PING")));//Server is for low pings only\n" );
 				Com_DPrintf (SE_GetString("MP_SVGAME", "CLIENT_REJECTED_HIGH_PING"), i);//"Client %i rejected on a too high ping\n", i);
-				Z_Free(pTemp);
 				return;
 			}
 		}
@@ -353,27 +341,28 @@ void SV_DirectConnect( netadr_t from ) {
 	}
 
 	// find a client slot
+	// if "sv_privateClients" is set > 0, then that number
+	// of client slots will be reserved for connections that
+	// have "password" set to the value of "sv_privatePassword"
+	// Info requests will report the maxclients as if the private
+	// slots didn't exist, to prevent people from trying to connect
+	// to a full server.
+	// This is to allow us to reserve a couple slots here on our
+	// servers so we can play without having to kick people.
 
-	// We don't do passwords or anything - clients send an xbps 1 (xbox private slot)
-	// if they're allowed to take a private slot. Check for that here:
-	bool usePrivateSlot = (strcmp( Info_ValueForKey( userinfo, "xbps" ), "1" ) == 0);
-
-	// Rather than manually searching/making certain client slots be public/private,
-	// just check the counts in the MM system:
-	if( logged_on &&
-		!NET_IsLocalAddress(from) &&
-		!usePrivateSlot &&
-		!XBL_MM_PublicSlotAvailable() )
-	{
-		// This will normally only happen if several people try to join at once.
-		// Reject the connection!
-		NET_OutOfBandPrint( NS_SERVER, from, "xFull\n" );
-		Com_DPrintf ("Rejected a connection.\n");
-		Z_Free(pTemp);
-		return;
-	}
-
+	// check for privateClient password
+	password = Info_ValueForKey( userinfo, "password" );
+#ifdef _XBOX	// We don't do private slots quite the same
 	startIndex = 0;
+#else
+	if ( !strcmp( password, sv_privatePassword->string ) ) {
+		startIndex = 0;
+	} else {
+		// skip past the reserved slots
+		startIndex = sv_privateClients->integer;
+	}
+#endif
+
 	newcl = NULL;
 	for ( i = startIndex; i < sv_maxclients->integer ; i++ ) {
 		cl = &svs.clients[i];
@@ -384,31 +373,30 @@ void SV_DirectConnect( netadr_t from ) {
 	}
 
 	if ( !newcl ) {
-		// Madness. The original code checked for local addresses only - and then kicked
-		// a bot, but only if everyone on was a bot? Or something. Uh, let's just kick
-		// a bot.
-		cl = NULL;
-
-		// Find a bot
-		for ( i = startIndex; i < sv_maxclients->integer ; i++ ) {
-			if( svs.clients[i].netchan.remoteAddress.type == NA_BOT ) {
+		if ( NET_IsLocalAddress( from ) ) {
+			count = 0;
+			for ( i = startIndex; i < sv_maxclients->integer ; i++ ) {
 				cl = &svs.clients[i];
-				break;
+				if (cl->netchan.remoteAddress.type == NA_BOT) {
+					count++;
+				}
+			}
+			// if they're all bots
+			if (count >= sv_maxclients->integer - startIndex) {
+				SV_DropClient(&svs.clients[sv_maxclients->integer - 1], "only bots on server");
+				newcl = &svs.clients[sv_maxclients->integer - 1];
+			}
+			else {
+				Com_Error( ERR_FATAL, "server is full on local connect\n" );
+				return;
 			}
 		}
-
-		if( !cl ) {
-			// Didn't find any bots - server is full.
+		else {
 			const char *SV_GetStringEdString(char *refSection, char *refName);
-			NET_OutOfBandPrint( NS_SERVER, from, "xFull\n" );
+			NET_OutOfBandPrint( NS_SERVER, from, va("print\n%s\n", SV_GetStringEdString("MP_SVGAME","SERVER_IS_FULL")));
 			Com_DPrintf ("Rejected a connection.\n");
-			Z_Free(pTemp);
 			return;
 		}
-
-		// Found a bot. Remove it to make room
-		SV_DropClient( cl, "bot removal" );
-		newcl = cl;
 	}
 
 	// we got a newcl, so reset the reliableSequence and reliableAcknowledge
@@ -434,7 +422,6 @@ gotnewcl:
 	{
 		// We may not be able to reply to them - we might not have their address registered
 		NET_OutOfBandPrint( NS_SERVER, from, "print\nLive/SystemLink mismatch\n" );
-		Z_Free(pTemp);
 		return;
 	}
 
@@ -478,17 +465,13 @@ gotnewcl:
 			pPlayer->xuid.qwUserID = svs.clientRefNum;
 		}
 
-		// Set their name
-		strcpy(pPlayer->name, Info_ValueForKey( userinfo, "name" ));
-
 		pPlayer->refIndex = svs.clientRefNum++;
 		pPlayer->isActive = true;
 	}
 
-	// For dedicated servers (in particular) we want our stored (converted)
-	// inAddr to be correct - so we have to do it here, rather than in cl_parse
-	XNetXnAddrToInAddr( &xbOnlineInfo.xbPlayerList[index].xbAddr, Net_GetXNKID(),
-						&xbOnlineInfo.xbPlayerList[index].inAddr );
+	// One more thing we need - the client will send an xbps "1" if they can
+	// use a private slot (XBox Private Slot). Just check for its existence...
+	bool usePrivateSlot = (strcmp( Info_ValueForKey( userinfo, "xbps" ), "1" ) == 0);
 
 	// Set our refIndex for later. We also remember if they were a private slot
 	// candidate when they joined, so we can free up the right type of slot when
@@ -504,9 +487,6 @@ gotnewcl:
 	xbOnlineInfo.xbPlayerList[index].flags &= ~VOICE_CAN_RECV;
 	xbOnlineInfo.xbPlayerList[index].flags &= ~VOICE_CAN_SEND;
 
-	// Friendship status is also local to the client
-	xbOnlineInfo.xbPlayerList[index].friendshipStatus = FRIEND_NO;
-
 	// Now send the new client's info to all other relevant clients
 	for (int j = 0; j < sv_maxclients->integer; j++) {
 		if ( svs.clients[j].state < CS_PRIMED ) {
@@ -517,12 +497,6 @@ gotnewcl:
 		}
 		SV_SendClientNewPeer( &svs.clients[j], &xbOnlineInfo.xbPlayerList[index] );
 	}
-
-	// If we're a dedicated server, then we won't process this in cl_parse, so do it all here:
-	if( com_dedicated->integer )
-	{
-		XBL_PL_CheckHistoryList(&xbOnlineInfo.xbPlayerList[index]);
-	}
 #endif
 
 	// build a new connection
@@ -532,11 +506,6 @@ gotnewcl:
 	clientNum = newcl - svs.clients;
 	ent = SV_GentityNum( clientNum );
 	newcl->gentity = ent;
-
-	//Clear this to prevent bug where a player joins and takes a client
-	//slot which left while in a vehicle, making the new player invisible.
-	ent->s.owner = 0;
-	ent->r.svFlags = 0;
 
 	// save the challenge
 	newcl->challenge = challenge;
@@ -555,7 +524,6 @@ gotnewcl:
 
 		NET_OutOfBandPrint( NS_SERVER, from, "print\n%s\n", denied );
 		Com_DPrintf ("Game rejected a connection: %s.\n", denied);
-		Z_Free(pTemp);
 		return;
 	}
 
@@ -597,7 +565,6 @@ gotnewcl:
 	if ( count == 1 || count == sv_maxclients->integer ) {
 		SV_Heartbeat_f();
 	}
-	Z_Free(pTemp);
 }
 
 
@@ -631,7 +598,7 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 	}
 
 #ifdef _XBOX
-	// Tells all clients (except the dropee) to remove the dropped player from their list, if not a bot
+	// Tells all clients to remove the dropped player from their list, if not a bot
 	if ( drop->netchan.remoteAddress.type != NA_BOT )
 	{
 		int index = drop - svs.clients;
@@ -642,31 +609,31 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 			if ( svs.clients[j].netchan.remoteAddress.type == NA_BOT ) {
 				continue;
 			}
-			if ( index == j ) {
-				continue;
-			}
 			SV_SendClientRemovePeer(&svs.clients[j], index);
 		}
 
 		// update the advertised session
 		XBL_MM_RemovePlayer( drop->usePrivateSlot );
-
-		// If we're a dedicated server, then we won't process this in cl_parse, so do everything here:
-		if( com_dedicated->integer )
-		{
-			xbOnlineInfo.xbPlayerList[index].isActive = false;
-			g_Voice.OnPlayerDisconnect( &xbOnlineInfo.xbPlayerList[index] );
-			XBL_PL_RemoveActivePeer(&xbOnlineInfo.xbPlayerList[index].xuid, index);
-		}
 	}
 #endif
 
-	// tell everyone why they got dropped	- BTO: this is totally unnecessary,
-	// and makes gramatically correct drop messages harder.
-	//SV_SendServerCommand( NULL, "print \"%s" S_COLOR_WHITE " %s\n\"", drop->name, reason );
+	// Kill any download
+#ifndef _XBOX	// No downloads on Xbox
+	SV_CloseDownload( drop );
+#endif
+
+	// tell everyone why they got dropped
+	SV_SendServerCommand( NULL, "print \"%s" S_COLOR_WHITE " %s\n\"", drop->name, reason );
 
 	Com_DPrintf( "Going to CS_ZOMBIE for %s\n", drop->name );
 	drop->state = CS_ZOMBIE;		// become free in a few seconds
+
+#ifndef _XBOX	// No downloads on Xbox
+	if (drop->download)	{
+		FS_FCloseFile( drop->download );
+		drop->download = 0;
+	}
+#endif
 
 	// call the prog function for removing a client
 	// this will remove the body, among other things
@@ -681,9 +648,23 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 
 	// nuke user info
 	SV_SetUserinfo( drop - svs.clients, "" );
+
+	// if this was the last client on the server, send a heartbeat
+	// to the master so it is known the server is empty
+	// send a heartbeat now so the master will get up to date info
+	// if there is already a slot for this ip, reuse it
+#ifndef _XBOX	// No master on Xbox
+	for (i=0 ; i < sv_maxclients->integer ; i++ ) {
+		if ( svs.clients[i].state >= CS_CONNECTED ) {
+			break;
+		}
+	}
+	if ( i == sv_maxclients->integer ) {
+		SV_Heartbeat_f();
+	}
+#endif
 }
 
-/*
 void SV_WriteRMGAutomapSymbols ( msg_t* msg )
 {
 	int count = TheRandomMissionManager->GetAutomapSymbolCount ( );
@@ -701,7 +682,6 @@ void SV_WriteRMGAutomapSymbols ( msg_t* msg )
 		MSG_WriteLong ( msg, (long)symbol->mOrigin[1] );
 	}
 }
-*/
 
 /*
 ================
@@ -724,19 +704,10 @@ void SV_SendClientGameState( client_t *client ) {
 	// packet fragmentation of initial snapshot.
 	while(client->state&&client->netchan.unsentFragments)
 	{
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue)
-		{
-			client->netchan.unsentFragments = qfalse;
-			break;
-		}
-#endif
 		// send additional message fragments if the last message
 		// was too large to send at once
 	
-#ifndef FINAL_BUILD
 		Com_Printf ("[ISM]SV_SendClientGameState() [2] for %s, writing out old fragments\n", client->name);
-#endif
 		SV_Netchan_TransmitNextFragment(&client->netchan);
 	}
 
@@ -794,7 +765,6 @@ void SV_SendClientGameState( client_t *client ) {
 	MSG_WriteLong( &msg, sv.checksumFeed);
 
 	//rwwRMG - send info for the terrain
-/*
 	if ( TheRandomMissionManager )
 	{
 		z_stream zdata;
@@ -841,7 +811,6 @@ void SV_SendClientGameState( client_t *client ) {
 	{
 		MSG_WriteShort ( &msg, 0 );
 	}
-*/
 
 	// deliver this to the client
 	SV_SendMessageToClient( &msg, client );
@@ -1295,8 +1264,7 @@ The client is going to disconnect, so remove the connection immediately  FIXME: 
 const char *SV_GetStringEdString(char *refSection, char *refName);
 static void SV_Disconnect_f( client_t *cl ) {
 //	SV_DropClient( cl, "disconnected" );
-//	SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","DISCONNECTED") );
-	SV_DropClient( cl, "@MENUS_LOST_CONNECTION" );
+	SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","DISCONNECTED") );
 }
 
 /*
@@ -1490,12 +1458,6 @@ void SV_UserinfoChanged( client_t *cl ) {
 
 	// rate command
 
-	// If we're playing system link, everyone is on a LAN, so no one gets choked:
-	if( logged_on )
-		cl->rate = 8000;
-	else
-		cl->rate = 99999;
-/*
 	// if the client is on the same subnet as the server and we aren't running an
 	// internet public server, assume they don't need a rate choke
 	if ( Sys_IsLANAddress( cl->netchan.remoteAddress ) && com_dedicated->integer != 2 ) {
@@ -1514,7 +1476,6 @@ void SV_UserinfoChanged( client_t *cl ) {
 			cl->rate = 3000;
 		}
 	}
-*/
 	val = Info_ValueForKey (cl->userinfo, "handicap");
 	if (strlen(val)) {
 		i = atoi(val);
@@ -1645,8 +1606,7 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 	if ( seq > cl->lastClientCommand + 1 ) {
 		Com_Printf( "Client %s lost %i clientCommands\n", cl->name, 
 			seq - cl->lastClientCommand + 1 );
-//		SV_DropClient( cl, "Lost reliable commands" );
-		SV_DropClient( cl, "@MENUS_LOST_CONNECTION" );
+		SV_DropClient( cl, "Lost reliable commands" );
 		return qfalse;
 	}
 
@@ -1657,7 +1617,6 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 	// but not other people
 	// We don't do this when the client hasn't been active yet since its
 	// normal to spam a lot of commands when downloading
-/*
 	if ( !com_cl_running->integer && 
 		cl->state >= CS_ACTIVE &&
 		sv_floodProtect->integer && 
@@ -1667,7 +1626,6 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 		Com_DPrintf( "client text ignored for %s\n", cl->name );
 		//return qfalse;	// stop processing
 	} 
-*/
 
 	// don't allow another command for one second
 	cl->nextReliableTime = svs.time + 1000;

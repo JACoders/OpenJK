@@ -42,7 +42,7 @@ static map<pair<int,int>,int> GoreTagsTemp; // this is a surface index to gore t
 								  // temporarily during the generation phase so we reuse gore tags per LOD
 int goreModelIndex;
 
-bool AddGoreToAllModels=false;
+static cvar_t *cg_g2MarksAllModels=NULL;
 
 GoreTextureCoordinates *FindGoreRecord(int tag);
 static inline void DestroyGoreTexCoordinates(int tag)
@@ -551,14 +551,33 @@ void G2_TransformSurfaces(int surfaceNum, surfaceInfo_v &rootSList,
 
 // main calling point for the model transform for collision detection. At this point all of the skeleton has been transformed.
 #ifdef _G2_GORE
-void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, CMiniHeap *G2VertSpace, int useLod, bool ApplyGore)
+void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, CMiniHeap *G2VertSpace, int useLod, bool ApplyGore, SSkinGoreData *gore)
 #else
 void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, CMiniHeap *G2VertSpace, int useLod)
 #endif
 {
 	int				i, lod;
 	vec3_t			correctScale;
+	qboolean		firstModelOnly = qfalse;
 
+	if ( cg_g2MarksAllModels == NULL )
+	{
+		cg_g2MarksAllModels = Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
+	}
+
+	if (cg_g2MarksAllModels == NULL
+		|| !cg_g2MarksAllModels->integer )
+	{
+		firstModelOnly = qtrue;
+	}
+
+#ifdef _G2_GORE
+	if ( gore 
+		&& gore->firstModel > 0 )
+	{
+		firstModelOnly = qfalse;
+	}
+#endif
 
 	VectorCopy(scale, correctScale);
 	// check for scales of 0 - that's the default I believe
@@ -598,7 +617,13 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 			if (lod>=g.currentModel->numLods)
 			{
 				g.mTransformedVertsArray = 0;
-				return;
+				if ( firstModelOnly )
+				{
+					// we don't really need to do multiple models for gore.
+					return;
+				}
+				//do the rest
+				continue;
 			}
 		}
 		else
@@ -621,7 +646,8 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 		G2_TransformSurfaces(g.mSurfaceRoot, g.mSlist, g.mBoneCache,  g.currentModel, lod, correctScale, G2VertSpace, g.mTransformedVertsArray, false);
 
 #ifdef _G2_GORE
-		if (ApplyGore&&!AddGoreToAllModels)
+
+		if (ApplyGore && firstModelOnly )
 		{
 			// we don't really need to do multiple models for gore.
 			break;
@@ -1093,7 +1119,8 @@ static bool G2_TracePolys(const mdxmSurface_t *surface, const mdxmSurfHierarchy_
 		// did we hit it?
 		if (G2_SegmentTriangleTest(TS.rayStart, TS.rayEnd, point1, point2, point3, qtrue, qtrue, hitPoint, normal, &face))
 		{	// find space in the collision records for this record
-			for (int i=0; i<MAX_G2_COLLISIONS;i++)
+			int i=0;
+			for (; i<MAX_G2_COLLISIONS;i++)
 			{
 				if (TS.collRecMap[i].mEntityNum == -1)
 				{
@@ -1191,7 +1218,7 @@ static bool G2_TracePolys(const mdxmSurface_t *surface, const mdxmSurfHierarchy_
 					break;
 				}
 			}
-			if (i==MAX_G2_COLLISIONS)
+			if (i == MAX_G2_COLLISIONS)
 			{
 				assert(i!=MAX_G2_COLLISIONS);		// run out of collision record space - will probalbly never happen
 				TS.hitOne = true;	//force stop recursion
@@ -1325,7 +1352,8 @@ static bool G2_RadiusTracePolys(
 		{
 			// we hit a triangle, so init a collision record...
 			//
-			for (int i=0; i<MAX_G2_COLLISIONS;i++)
+			int i = 0;
+			for (; i<MAX_G2_COLLISIONS;i++)
 			{
 				if (TS.collRecMap[i].mEntityNum == -1)
 				{
@@ -1507,7 +1535,7 @@ static void G2_TraceSurfaces(CTraceSurface &TS)
 }
 
 #ifdef _G2_GORE
-void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CCollisionRecord *collRecMap, int entNum, EG2_Collision eG2TraceType, int useLod, float fRadius, float ssize,float tsize,float theta,int shader, SSkinGoreData *gore)
+void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CCollisionRecord *collRecMap, int entNum, EG2_Collision eG2TraceType, int useLod, float fRadius, float ssize,float tsize,float theta,int shader, SSkinGoreData *gore, qboolean skipIfLODNotMatch)
 #else
 void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CCollisionRecord *collRecMap, int entNum, EG2_Collision eG2TraceType, int useLod, float fRadius)
 #endif
@@ -1515,9 +1543,31 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 	int				i, lod;
 	skin_t			*skin;
 	shader_t		*cust_shader;
+	qboolean		firstModelOnly = qfalse;
+	int				firstModel = 0;
+
+	if ( cg_g2MarksAllModels == NULL )
+	{
+		cg_g2MarksAllModels = Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
+	}
+
+	if (cg_g2MarksAllModels == NULL
+		|| !cg_g2MarksAllModels->integer )
+	{
+		firstModelOnly = qtrue;
+	}
+
+#ifdef _G2_GORE
+	if ( gore
+		&& gore->firstModel > 0 )
+	{
+		firstModel = gore->firstModel;
+		firstModelOnly = qfalse;
+	}
+#endif
 
 	// walk each possible model for this entity and try tracing against it
-	for (i=0; i<ghoul2.size(); i++)
+	for (i=firstModel; i<ghoul2.size(); i++)
 	{
 		CGhoul2Info &g=ghoul2[i];
 #ifdef _G2_GORE
@@ -1560,7 +1610,13 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 		}
 
 		lod = G2_DecideTraceLod(g,useLod);
-
+		if ( skipIfLODNotMatch )
+		{//we only want to hit this SPECIFIC LOD...
+			if ( lod != useLod )
+			{//doesn't match, skip this model
+				continue;
+			}
+		}
 		//reset the quick surface override lookup
 		G2_FindOverrideSurface(-1, g.mSlist); 
 
@@ -1578,7 +1634,7 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 			break;
 		}
 #ifdef _G2_GORE
-		if (!collRecMap&&!AddGoreToAllModels)
+		if ( !collRecMap && firstModelOnly )
 		{
 			// we don't really need to do multiple models for gore.
 			break;
@@ -1737,7 +1793,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 	*(int *)tempBuffer = ghoul2.size();
 	tempBuffer +=4;
 
-	for (i=0; i<ghoul2.size();i++)
+	for (int i = 0; i<ghoul2.size();i++)
 	{
 		// first save out the ghoul2 details themselves
 //		OutputDebugString(va("G2_SaveGhoul2Models(): ghoul2[%d].mModelindex = %d\n",i,ghoul2[i].mModelindex));
@@ -1760,7 +1816,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 		tempBuffer +=4;
 
 		// now save the all the bone list info
-		for (x=0; x<ghoul2[i].mBlist.size(); x++)
+		for (int x = 0; x<ghoul2[i].mBlist.size(); x++)
 		{
 			memcpy(tempBuffer, &ghoul2[i].mBlist[x], BONE_SAVE_BLOCK_SIZE);
 			tempBuffer += BONE_SAVE_BLOCK_SIZE;
@@ -1771,7 +1827,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 		tempBuffer +=4;
 
 		// lastly save the all the bolt list info
-		for (x=0; x<ghoul2[i].mBltlist.size(); x++)
+		for (int x = 0; x<ghoul2[i].mBltlist.size(); x++)
 		{
 			memcpy(tempBuffer, &ghoul2[i].mBltlist[x], BOLT_SAVE_BLOCK_SIZE);
 			tempBuffer += BOLT_SAVE_BLOCK_SIZE;
@@ -1785,8 +1841,8 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 int G2_FindConfigStringSpace(char *name, int start, int max)
 {
 	char	s[MAX_STRING_CHARS];
-
-	for (int  i=1 ; i<max ; i++ ) 
+	int  i=1;
+	for ( ; i<max ; i++ ) 
 	{
 		SV_GetConfigstring( start + i, s, sizeof( s ) );
 		if ( !s[0] ) 
@@ -1853,7 +1909,7 @@ void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 		buffer +=4;
 
 		// now load all the bones
-		for (x=0; x<ghoul2[i].mBlist.size(); x++)
+		for (int x = 0; x<ghoul2[i].mBlist.size(); x++)
 		{
 			memcpy(&ghoul2[i].mBlist[x], buffer, BONE_SAVE_BLOCK_SIZE);
 			buffer += BONE_SAVE_BLOCK_SIZE;
@@ -1864,7 +1920,7 @@ void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 		buffer +=4;
 
 		// now load all the bolts
-		for (x=0; x<ghoul2[i].mBltlist.size(); x++)
+		for (int x = 0; x<ghoul2[i].mBltlist.size(); x++)
 		{
 			memcpy(&ghoul2[i].mBltlist[x], buffer, BOLT_SAVE_BLOCK_SIZE);
 			buffer += BOLT_SAVE_BLOCK_SIZE;

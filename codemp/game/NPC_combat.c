@@ -575,6 +575,7 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 	}
 
 	ent->client->ps.weapon = newWeapon;
+	ent->client->pers.cmd.weapon = newWeapon;
 	ent->NPC->shotTime = 0;
 	ent->NPC->burstCount = 0;
 	ent->NPC->attackHold = 0;

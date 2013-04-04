@@ -4,10 +4,10 @@
  * desc:		IO on .zip files using portions of zlib 
  *
  * $Archive: /StarTrek/Code-Single/qcommon/unzip.cpp $
- * $Author: osman $ 
- * $Revision: 1.19 $
+ * $Author: Jmonroe $ 
+ * $Revision: 5 $
  * $Modtime: 4/10/01 6:47p $
- * $Date: 2003/07/27 20:28:47 $
+ * $Date: 4/10/01 7:28p $
  *
  *****************************************************************************/
 

@@ -6,8 +6,6 @@
 #include "../zlib/zlib.h"
 
 
-//#define GOB_PROFILE
-//#define CUSTOM_MP_GOBS
 
 static	cvar_t		*fs_openorder;
 
@@ -45,11 +43,7 @@ static GOBFSHandle gi_open(GOBChar* name, GOBAccessType type)
 
 	if (f == MAX_FILE_HANDLES) return (GOBFSHandle)0xFFFFFFFF;
 	
-#ifdef CUSTOM_MP_GOBS
-	gi_handles[f].file = WF_Open(name, true, strstr(name, "assets_mp.gob") ? true : false);
-#else
 	gi_handles[f].file = WF_Open(name, true, strstr(name, "assets.gob") ? true : false);
-#endif
 	if (gi_handles[f].file < 0) return (GOBFSHandle)0xFFFFFFFF;
 	gi_handles[f].used = true;
 
@@ -197,7 +191,7 @@ GOBInt32 gi_decompress_null(GOBVoid* source, GOBUInt32 sourceLen,
 static GOBVoid gi_profileread(GOBUInt32 code)
 {
 	code = LittleLong(code);
-	Sys_Log("gob-prof-mp.dat", &code, sizeof(code), true);
+	Sys_Log("gob-prof.dat", &code, sizeof(code), true);
 }
 #endif
 
@@ -574,22 +568,6 @@ int	FS_FileIsInPAK(const char *filename)
 	return exists ? 1 : -1;
 }
 
-static bool sbLargeRead = false;
-
-// Warn the filesystem that a large read is coming (GLM), so it can use
-// TempAlloc to get space!
-void FS_LargeRead( void )
-{
-	sbLargeRead = true;
-}
-void FS_CancelLargeRead( void )
-{
-	sbLargeRead = false;
-}
-
-extern void *BonePoolTempAlloc( unsigned long size );
-extern void BonePoolTempFree( void *p );
-
 /*
 ============
 FS_ReadFile
@@ -623,15 +601,8 @@ int FS_ReadFile( const char *qpath, void **buffer )
 		return len;
 	}
 
-	byte *buf;
-	// Try to TempAlloc if we've got the hint that this could fail:
-	if( sbLargeRead )
-		buf = (byte *)BonePoolTempAlloc( len+1 );
-
-	// If that didn't work, or wasn't suggested:
-	if( !sbLargeRead || !buf )
-		buf = (byte*)Z_Malloc( len+1, TAG_TEMP_WORKSPACE, qfalse, 32);
-
+	// assume temporary....
+	byte* buf = (byte*)Z_Malloc( len+1, TAG_TEMP_WORKSPACE, qfalse, 32);
 	buf[len]='\0';
 
 //	Z_Label(buf, qpath);
@@ -660,13 +631,7 @@ void FS_FreeFile( void *buffer )
 		Com_Error( ERR_FATAL, "FS_FreeFile( NULL )" );
 	}
 
-	// If this was read in with sbLargeRead true, then it might not be from
-	// the zone!
-	extern bool IsBonePoolPointer( void *p );
-	if( IsBonePoolPointer( buffer ) )
-		BonePoolTempFree( buffer );
-	else
-		Z_Free( buffer );
+	Z_Free( buffer );
 }
 
 
@@ -772,16 +737,14 @@ void FS_Startup( const char *gameName )
 		Com_Error( ERR_FATAL, "Could not initialize GOB" );
 	}
 
-#ifdef CUSTOM_MP_GOBS
-	char* archive = FS_BuildOSPath( "assets_mp" );
-#else
 	char* archive = FS_BuildOSPath( "assets" );
-#endif
 	if (GOBArchiveOpen(archive, GOBACCESS_READ, GOB_FALSE, GOB_TRUE) != GOBERR_OK)
 	{
 #if defined(FINAL_BUILD)
+		/*
 		extern void ERR_DiscFail(bool);
 		ERR_DiscFail(false);
+		*/
 #else
 		//Com_Error( ERR_FATAL, "Could not initialize GOB" );
 		Cvar_Set("fs_openorder", "1");

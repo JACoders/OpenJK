@@ -116,7 +116,6 @@ void UI_SetBestScores(postGameInfo_t *newInfo, qboolean postGame) {
 }
 
 void UI_LoadBestScores(const char *map, int game) {
-#ifndef _XBOX
 	char		fileName[MAX_QPATH];
 	fileHandle_t f;
 	postGameInfo_t newInfo;
@@ -138,7 +137,6 @@ void UI_LoadBestScores(const char *map, int game) {
 		uiInfo.demoAvailable = qtrue;
 		trap_FS_FCloseFile(f);
 	} 
-#endif
 }
 
 /*
@@ -146,7 +144,6 @@ void UI_LoadBestScores(const char *map, int game) {
 UI_ClearScores
 ===============
 */
-#ifndef _XBOX
 void UI_ClearScores() {
 	char	gameList[4096];
 	char *gameFile;
@@ -175,7 +172,7 @@ void UI_ClearScores() {
 	UI_SetBestScores(&newInfo, qfalse);
 
 }
-#endif // _XBOX
+
 
 
 static void	UI_Cache_f() {

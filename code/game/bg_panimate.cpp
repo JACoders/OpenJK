@@ -1251,6 +1251,14 @@ qboolean PM_SaberInSpecialAttack( int anim )
 	return qfalse;
 }
 
+qboolean PM_SaberInAttackPure( int move )
+{
+	if ( move >= LS_A_TL2BR && move <= LS_A_T2B )
+	{
+		return qtrue;
+	}
+	return qfalse;
+}
 qboolean PM_SaberInAttack( int move )
 {
 	if ( move >= LS_A_TL2BR && move <= LS_A_T2B )
@@ -1491,6 +1499,160 @@ qboolean PM_KickMove( int move )
 		return qtrue;
 	}
 	return qfalse;
+}
+
+qboolean PM_SaberCanInterruptMove( int move, int anim )
+{
+	if ( PM_InAnimForSaberMove( anim, move ) )
+	{
+		switch( move )
+		{
+		case LS_A_BACK:
+		case LS_A_BACK_CR:
+		case LS_A_BACKSTAB:
+		case LS_ROLL_STAB:
+		case LS_A_LUNGE:
+		case LS_A_JUMP_T__B_:
+		case LS_A_FLIP_STAB:
+		case LS_A_FLIP_SLASH:
+		case LS_JUMPATTACK_DUAL:
+		case LS_JUMPATTACK_CART_LEFT:
+		case LS_JUMPATTACK_CART_RIGHT:
+		case LS_JUMPATTACK_STAFF_LEFT:
+		case LS_JUMPATTACK_STAFF_RIGHT:
+		case LS_BUTTERFLY_LEFT:
+		case LS_BUTTERFLY_RIGHT:
+		case LS_A_BACKFLIP_ATK:
+		case LS_SPINATTACK_DUAL:
+		case LS_SPINATTACK:
+		case LS_LEAP_ATTACK:
+		case LS_SWOOP_ATTACK_RIGHT:
+		case LS_SWOOP_ATTACK_LEFT:
+		case LS_TAUNTAUN_ATTACK_RIGHT:
+		case LS_TAUNTAUN_ATTACK_LEFT:
+		case LS_KICK_S:
+		case LS_KICK_BF:
+		case LS_KICK_RL:
+		case LS_STABDOWN:
+		case LS_STABDOWN_STAFF:
+		case LS_STABDOWN_DUAL:
+		case LS_DUAL_SPIN_PROTECT:
+		case LS_STAFF_SOULCAL:
+		case LS_A1_SPECIAL:
+		case LS_A2_SPECIAL:
+		case LS_A3_SPECIAL:
+		case LS_UPSIDE_DOWN_ATTACK:
+		case LS_PULL_ATTACK_STAB:
+		case LS_PULL_ATTACK_SWING:
+		case LS_SPINATTACK_ALORA:
+		case LS_DUAL_FB:
+		case LS_DUAL_LR:
+		case LS_HILT_BASH:
+			return qfalse;
+		}
+
+		if ( PM_SaberInAttackPure( move ) )
+		{
+			return qfalse;
+		}
+		if ( PM_SaberInStart( move ) )
+		{
+			return qfalse;
+		}
+		if ( PM_SaberInTransition( move ) )
+		{
+			return qfalse;
+		}
+		if ( PM_SaberInBounce( move ) )
+		{
+			return qfalse;
+		}
+		if ( PM_SaberInBrokenParry( move ) )
+		{
+			return qfalse;
+		}
+		if ( PM_SaberInDeflect( move ) )
+		{
+			return qfalse;
+		}
+		if ( PM_SaberInParry( move ) )
+		{
+			return qfalse;
+		}
+		if ( PM_SaberInKnockaway( move ) )
+		{
+			return qfalse;
+		}
+		if ( PM_SaberInReflect( move ) )
+		{
+			return qfalse;
+		}
+	}
+	switch ( anim )
+	{
+	case BOTH_A2_STABBACK1:
+	case BOTH_ATTACK_BACK:
+	case BOTH_CROUCHATTACKBACK1:
+	case BOTH_ROLL_STAB:
+	case BOTH_BUTTERFLY_LEFT:
+	case BOTH_BUTTERFLY_RIGHT:
+	case BOTH_BUTTERFLY_FL1:
+	case BOTH_BUTTERFLY_FR1:
+	case BOTH_FJSS_TR_BL:
+	case BOTH_FJSS_TL_BR:
+	case BOTH_LUNGE2_B__T_:
+	case BOTH_FORCELEAP2_T__B_:
+	case BOTH_JUMPFLIPSLASHDOWN1://#
+	case BOTH_JUMPFLIPSTABDOWN://#
+	case BOTH_JUMPATTACK6:
+	case BOTH_JUMPATTACK7:
+	case BOTH_SPINATTACK6:
+	case BOTH_SPINATTACK7:
+	case BOTH_FORCELONGLEAP_ATTACK:
+	case BOTH_VS_ATR_S:
+	case BOTH_VS_ATL_S:
+	case BOTH_VT_ATR_S:
+	case BOTH_VT_ATL_S:
+	case BOTH_A7_KICK_S:
+	case BOTH_A7_KICK_BF:
+	case BOTH_A7_KICK_RL:
+	case BOTH_STABDOWN:
+	case BOTH_STABDOWN_STAFF:
+	case BOTH_STABDOWN_DUAL:
+	case BOTH_A6_SABERPROTECT:
+	case BOTH_A7_SOULCAL:
+	case BOTH_A1_SPECIAL:
+	case BOTH_A2_SPECIAL:
+	case BOTH_A3_SPECIAL:
+	case BOTH_FLIP_ATTACK7:
+	case BOTH_PULL_IMPALE_STAB:
+	case BOTH_PULL_IMPALE_SWING:
+	case BOTH_ALORA_SPIN_SLASH:
+	case BOTH_A6_FB:
+	case BOTH_A6_LR:	
+	case BOTH_A7_HILT:
+	case BOTH_LK_S_DL_S_SB_1_W:
+	case BOTH_LK_S_DL_T_SB_1_W:
+	case BOTH_LK_S_ST_S_SB_1_W:
+	case BOTH_LK_S_ST_T_SB_1_W:
+	case BOTH_LK_S_S_S_SB_1_W:
+	case BOTH_LK_S_S_T_SB_1_W:
+	case BOTH_LK_DL_DL_S_SB_1_W:
+	case BOTH_LK_DL_DL_T_SB_1_W:
+	case BOTH_LK_DL_ST_S_SB_1_W:
+	case BOTH_LK_DL_ST_T_SB_1_W:
+	case BOTH_LK_DL_S_S_SB_1_W:
+	case BOTH_LK_DL_S_T_SB_1_W:
+	case BOTH_LK_ST_DL_S_SB_1_W:
+	case BOTH_LK_ST_DL_T_SB_1_W:
+	case BOTH_LK_ST_ST_S_SB_1_W:
+	case BOTH_LK_ST_ST_T_SB_1_W:
+	case BOTH_LK_ST_S_S_SB_1_W:
+	case BOTH_LK_ST_S_T_SB_1_W:
+	case BOTH_HANG_ATTACK:
+		return qfalse;
+	}
+	return qtrue;
 }
 
 saberMoveName_t PM_BrokenParryForAttack( int move )
@@ -1877,7 +2039,7 @@ qboolean PM_CheckEnemyInBack( float backCheckDist )
 	AngleVectors( fwdAngles, fwd, NULL, NULL );
 	VectorMA( pm->ps->origin, -backCheckDist, fwd, end );
 
-	pm->trace( &trace, pm->ps->origin, vec3_origin, vec3_origin, end, pm->ps->clientNum, CONTENTS_SOLID|CONTENTS_BODY );
+	pm->trace( &trace, pm->ps->origin, vec3_origin, vec3_origin, end, pm->ps->clientNum, CONTENTS_SOLID|CONTENTS_BODY, (EG2_Collision)0, 0 );
 	if ( trace.fraction < 1.0f && trace.entityNum < ENTITYNUM_WORLD )
 	{
 		gentity_t *traceEnt = &g_entities[trace.entityNum];
@@ -1958,6 +2120,15 @@ saberMoveName_t PM_PickBackStab( void )
 saberMoveName_t PM_CheckStabDown( void )
 {
 	if ( !pm->gent || !pm->gent->enemy || !pm->gent->enemy->client )
+	{
+		return LS_NONE;
+	}
+	if ( (pm->ps->saber[0].saberFlags&SFL_NO_STABDOWN) )
+	{
+		return LS_NONE;
+	}
+	if ( pm->ps->dualSabers 
+		&& (pm->ps->saber[1].saberFlags&SFL_NO_STABDOWN) )
 	{
 		return LS_NONE;
 	}
@@ -2118,17 +2289,21 @@ saberMoveName_t PM_AttackForEnemyPos( qboolean allowFB, qboolean allowStabDown )
 		}
 		if ( allowFB )
 		{//directly in front anim allowed
-			if ( enemyDist > 200 || pm->gent->enemy->health <= 0 )
-			{//hmm, look in back for an enemy
-				if ( pm->ps->clientNum && !PM_ControlledByPlayer() )
-				{//player should never do this automatically
-					if ( pm->ps->groundEntityNum != ENTITYNUM_NONE )
-					{//only when on ground
-						if ( pm->gent && pm->gent->client && pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG && Q_irand( 0, pm->gent->NPC->rank ) > RANK_ENSIGN )
-						{//only fencers and higher can do this, higher rank does it more
-							if ( PM_CheckEnemyInBack( 100 ) )
-							{
-								return PM_PickBackStab();
+			if ( !(pm->ps->saber[0].saberFlags&SFL_NO_BACK_ATTACK)
+				&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_BACK_ATTACK)) )
+			{//okay to do backstabs with this saber
+				if ( enemyDist > 200 || pm->gent->enemy->health <= 0 )
+				{//hmm, look in back for an enemy
+					if ( pm->ps->clientNum && !PM_ControlledByPlayer() )
+					{//player should never do this automatically
+						if ( pm->ps->groundEntityNum != ENTITYNUM_NONE )
+						{//only when on ground
+							if ( pm->gent && pm->gent->client && pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG && Q_irand( 0, pm->gent->NPC->rank ) > RANK_ENSIGN )
+							{//only fencers and higher can do this, higher rank does it more
+								if ( PM_CheckEnemyInBack( 100 ) )
+								{
+									return PM_PickBackStab();
+								}
 							}
 						}
 					}
@@ -2195,34 +2370,38 @@ saberMoveName_t PM_AttackForEnemyPos( qboolean allowFB, qboolean allowStabDown )
 	else if ( allowFB )
 	{//back attack allowed
 		//if ( !PM_InKnockDown( pm->ps ) )
-		if ( pm->ps->groundEntityNum != ENTITYNUM_NONE )
-		{//only when on ground
-			if ( !pm->gent->enemy->client || pm->gent->enemy->client->ps.groundEntityNum != ENTITYNUM_NONE )
-			{//enemy not a client or is a client and on ground
-				if ( dot < -0.75f 
-					&& enemyDist < 128
-					&& (pm->ps->saberAnimLevel == SS_FAST || pm->ps->saberAnimLevel == SS_STAFF || (pm->gent->client &&(pm->gent->client->NPC_class == CLASS_TAVION||pm->gent->client->NPC_class == CLASS_ALORA)&&Q_irand(0,2))) )
-				{//fast back-stab
-					if ( !(pm->ps->pm_flags&PMF_DUCKED) && pm->cmd.upmove >= 0 )
-					{//can't do it while ducked?
-						if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) || (pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG) )
-						{//only fencers and above can do this
-							autoMove = LS_A_BACKSTAB;
+		if ( !(pm->ps->saber[0].saberFlags&SFL_NO_BACK_ATTACK)
+			&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_BACK_ATTACK)) )
+		{//okay to do backstabs with this saber
+			if ( pm->ps->groundEntityNum != ENTITYNUM_NONE )
+			{//only when on ground
+				if ( !pm->gent->enemy->client || pm->gent->enemy->client->ps.groundEntityNum != ENTITYNUM_NONE )
+				{//enemy not a client or is a client and on ground
+					if ( dot < -0.75f 
+						&& enemyDist < 128
+						&& (pm->ps->saberAnimLevel == SS_FAST || pm->ps->saberAnimLevel == SS_STAFF || (pm->gent->client &&(pm->gent->client->NPC_class == CLASS_TAVION||pm->gent->client->NPC_class == CLASS_ALORA)&&Q_irand(0,2))) )
+					{//fast back-stab
+						if ( !(pm->ps->pm_flags&PMF_DUCKED) && pm->cmd.upmove >= 0 )
+						{//can't do it while ducked?
+							if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) || (pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG) )
+							{//only fencers and above can do this
+								autoMove = LS_A_BACKSTAB;
+							}
 						}
 					}
-				}
-				else if ( pm->ps->saberAnimLevel != SS_FAST
-					&& pm->ps->saberAnimLevel != SS_STAFF )
-				{//higher level back spin-attacks
-					if ( (pm->ps->clientNum&&!PM_ControlledByPlayer()) || ((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && cg.renderingThirdPerson && !cg.zoomMode) )
-					{
-						if ( (pm->ps->pm_flags&PMF_DUCKED) || pm->cmd.upmove < 0 )
+					else if ( pm->ps->saberAnimLevel != SS_FAST
+						&& pm->ps->saberAnimLevel != SS_STAFF )
+					{//higher level back spin-attacks
+						if ( (pm->ps->clientNum&&!PM_ControlledByPlayer()) || ((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && cg.renderingThirdPerson && !cg.zoomMode) )
 						{
-							autoMove = LS_A_BACK_CR;
-						}
-						else
-						{
-							autoMove = LS_A_BACK;
+							if ( (pm->ps->pm_flags&PMF_DUCKED) || pm->cmd.upmove < 0 )
+							{
+								autoMove = LS_A_BACK_CR;
+							}
+							else
+							{
+								autoMove = LS_A_BACK;
+							}
 						}
 					}
 				}
@@ -2236,7 +2415,7 @@ qboolean PM_InSecondaryStyle( void )
 {
 	if ( pm->ps->saber[0].numBlades > 1
 		&& pm->ps->saber[0].singleBladeStyle
-		&& pm->ps->saber[0].singleBladeStyle != pm->ps->saber[0].style
+		&& (pm->ps->saber[0].stylesForbidden&(1<<pm->ps->saber[0].singleBladeStyle)) 
 		&& pm->ps->saberAnimLevel == pm->ps->saber[0].singleBladeStyle )
 	{
 		return qtrue;
@@ -2253,6 +2432,38 @@ qboolean PM_InSecondaryStyle( void )
 saberMoveName_t PM_SaberLungeAttackMove( qboolean fallbackToNormalLunge )
 {
 	G_DrainPowerForSpecialMove( pm->gent, FP_SABER_OFFENSE, SABER_ALT_ATTACK_POWER_FB );
+
+	//see if we have an overridden (or cancelled) lunge move
+	if ( pm->ps->saber[0].lungeAtkMove != LS_INVALID )
+	{
+		if ( pm->ps->saber[0].lungeAtkMove != LS_NONE )
+		{
+			return (saberMoveName_t)pm->ps->saber[0].lungeAtkMove;
+		}
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].lungeAtkMove != LS_INVALID )
+		{
+			if ( pm->ps->saber[1].lungeAtkMove != LS_NONE )
+			{
+				return (saberMoveName_t)pm->ps->saber[1].lungeAtkMove;
+			}
+		}
+	}
+	//no overrides, cancelled?
+	if ( pm->ps->saber[0].lungeAtkMove == LS_NONE )
+	{
+		return LS_NONE;
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].lungeAtkMove == LS_NONE )
+		{
+			return LS_NONE;
+		}
+	}
+	//do normal checks
 	if ( pm->gent->client->NPC_class == CLASS_ALORA && !Q_irand( 0, 3 ) )
 	{//alora NPC
 		return LS_SPINATTACK_ALORA; 
@@ -2294,6 +2505,34 @@ saberMoveName_t PM_SaberLungeAttackMove( qboolean fallbackToNormalLunge )
 
 qboolean PM_CheckLungeAttackMove( void )
 {
+	//check to see if it's cancelled?
+	if ( pm->ps->saber[0].lungeAtkMove == LS_NONE )
+	{
+		if ( pm->ps->dualSabers )
+		{
+			if ( pm->ps->saber[1].lungeAtkMove == LS_NONE
+				|| pm->ps->saber[1].lungeAtkMove == LS_INVALID )
+			{
+				return qfalse;
+			}
+		}
+		else
+		{
+			return qfalse;
+		}
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].lungeAtkMove == LS_NONE )
+		{
+			if ( pm->ps->saber[0].lungeAtkMove == LS_NONE
+				|| pm->ps->saber[0].lungeAtkMove == LS_INVALID )
+			{
+				return qfalse;
+			}
+		}
+	}
+	//do normal checks
 	if ( pm->ps->saberAnimLevel == SS_FAST//fast
 		|| pm->ps->saberAnimLevel == SS_DUAL//dual
 		|| pm->ps->saberAnimLevel == SS_STAFF //staff
@@ -2349,6 +2588,36 @@ saberMoveName_t PM_SaberJumpForwardAttackMove( void )
 {
 	G_DrainPowerForSpecialMove( pm->gent, FP_LEVITATION, SABER_ALT_ATTACK_POWER_FB );
 
+	//see if we have an overridden (or cancelled) kata move
+	if ( pm->ps->saber[0].jumpAtkFwdMove != LS_INVALID )
+	{
+		if ( pm->ps->saber[0].jumpAtkFwdMove != LS_NONE )
+		{
+			return (saberMoveName_t)pm->ps->saber[0].jumpAtkFwdMove;
+		}
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].jumpAtkFwdMove != LS_INVALID )
+		{
+			if ( pm->ps->saber[1].jumpAtkFwdMove != LS_NONE )
+			{
+				return (saberMoveName_t)pm->ps->saber[1].jumpAtkFwdMove;
+			}
+		}
+	}
+	//no overrides, cancelled?
+	if ( pm->ps->saber[0].jumpAtkFwdMove == LS_NONE )
+	{
+		return LS_NONE;
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].jumpAtkFwdMove == LS_NONE )
+		{
+			return LS_NONE;
+		}
+	}
 	if ( pm->ps->saberAnimLevel == SS_DUAL
 		|| pm->ps->saberAnimLevel == SS_STAFF )
 	{
@@ -2396,6 +2665,35 @@ qboolean PM_CheckJumpForwardAttackMove( void )
 	{
 		return qfalse;
 	}
+
+	//check to see if it's cancelled?
+	if ( pm->ps->saber[0].jumpAtkFwdMove == LS_NONE )
+	{
+		if ( pm->ps->dualSabers )
+		{
+			if ( pm->ps->saber[1].jumpAtkFwdMove == LS_NONE
+				|| pm->ps->saber[1].jumpAtkFwdMove == LS_INVALID )
+			{
+				return qfalse;
+			}
+		}
+		else
+		{
+			return qfalse;
+		}
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].jumpAtkFwdMove == LS_NONE )
+		{
+			if ( pm->ps->saber[0].jumpAtkFwdMove == LS_NONE
+				|| pm->ps->saber[0].jumpAtkFwdMove == LS_INVALID )
+			{
+				return qfalse;
+			}
+		}
+	}
+	//do normal checks
 
 	if ( pm->cmd.forwardmove > 0 //going forward
 		&& pm->ps->forceRageRecoveryTime < pm->cmd.serverTime	//not in a force Rage recovery period
@@ -2494,6 +2792,36 @@ qboolean PM_CheckJumpForwardAttackMove( void )
 
 saberMoveName_t PM_SaberFlipOverAttackMove( void )
 {
+	//see if we have an overridden (or cancelled) kata move
+	if ( pm->ps->saber[0].jumpAtkFwdMove != LS_INVALID )
+	{
+		if ( pm->ps->saber[0].jumpAtkFwdMove != LS_NONE )
+		{
+			return (saberMoveName_t)pm->ps->saber[0].jumpAtkFwdMove;
+		}
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].jumpAtkFwdMove != LS_INVALID )
+		{
+			if ( pm->ps->saber[1].jumpAtkFwdMove != LS_NONE )
+			{
+				return (saberMoveName_t)pm->ps->saber[1].jumpAtkFwdMove;
+			}
+		}
+	}
+	//no overrides, cancelled?
+	if ( pm->ps->saber[0].jumpAtkFwdMove == LS_NONE )
+	{
+		return LS_NONE;
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].jumpAtkFwdMove == LS_NONE )
+		{
+			return LS_NONE;
+		}
+	}
 	//FIXME: check above for room enough to jump!
 	//FIXME: while in this jump, keep velocity[2] at a minimum until the end of the anim 
 	vec3_t fwdAngles, jumpFwd;
@@ -2555,6 +2883,34 @@ qboolean PM_CheckFlipOverAttackMove( qboolean checkEnemy )
 	{
 		return qfalse;
 	}
+	//check to see if it's cancelled?
+	if ( pm->ps->saber[0].jumpAtkFwdMove == LS_NONE )
+	{
+		if ( pm->ps->dualSabers )
+		{
+			if ( pm->ps->saber[1].jumpAtkFwdMove == LS_NONE
+				|| pm->ps->saber[1].jumpAtkFwdMove == LS_INVALID )
+			{
+				return qfalse;
+			}
+		}
+		else
+		{
+			return qfalse;
+		}
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].jumpAtkFwdMove == LS_NONE )
+		{
+			if ( pm->ps->saber[0].jumpAtkFwdMove == LS_NONE
+				|| pm->ps->saber[0].jumpAtkFwdMove == LS_INVALID )
+			{
+				return qfalse;
+			}
+		}
+	}
+	//do normal checks
 
 	if ( (pm->ps->saberAnimLevel == SS_MEDIUM //medium
 		|| pm->ps->saberAnimLevel == SS_TAVION )//tavion
@@ -2625,6 +2981,36 @@ qboolean PM_CheckFlipOverAttackMove( qboolean checkEnemy )
 
 saberMoveName_t PM_SaberBackflipAttackMove( void )
 {
+	//see if we have an overridden (or cancelled) kata move
+	if ( pm->ps->saber[0].jumpAtkBackMove != LS_INVALID )
+	{
+		if ( pm->ps->saber[0].jumpAtkBackMove != LS_NONE )
+		{
+			return (saberMoveName_t)pm->ps->saber[0].jumpAtkBackMove;
+		}
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].jumpAtkBackMove != LS_INVALID )
+		{
+			if ( pm->ps->saber[1].jumpAtkBackMove != LS_NONE )
+			{
+				return (saberMoveName_t)pm->ps->saber[1].jumpAtkBackMove;
+			}
+		}
+	}
+	//no overrides, cancelled?
+	if ( pm->ps->saber[0].jumpAtkBackMove == LS_NONE )
+	{
+		return LS_NONE;
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].jumpAtkBackMove == LS_NONE )
+		{
+			return LS_NONE;
+		}
+	}
 	pm->cmd.upmove = 0;//no jump just yet
 	return LS_A_BACKFLIP_ATK;
 }
@@ -2636,6 +3022,35 @@ qboolean PM_CheckBackflipAttackMove( void )
 	{
 		return qfalse;
 	}
+
+	//check to see if it's cancelled?
+	if ( pm->ps->saber[0].jumpAtkBackMove == LS_NONE )
+	{
+		if ( pm->ps->dualSabers )
+		{
+			if ( pm->ps->saber[1].jumpAtkBackMove == LS_NONE
+				|| pm->ps->saber[1].jumpAtkBackMove == LS_INVALID )
+			{
+				return qfalse;
+			}
+		}
+		else
+		{
+			return qfalse;
+		}
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].jumpAtkBackMove == LS_NONE )
+		{
+			if ( pm->ps->saber[0].jumpAtkBackMove == LS_NONE
+				|| pm->ps->saber[0].jumpAtkBackMove == LS_INVALID )
+			{
+				return qfalse;
+			}
+		}
+	}
+	//do normal checks
 
 	if ( pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1 //can force jump
 		&& pm->ps->forceRageRecoveryTime < pm->cmd.serverTime	//not in a force Rage recovery period
@@ -2679,6 +3094,37 @@ saberMoveName_t PM_CheckDualSpinProtect( void )
 		return LS_NONE;
 	}
 
+	//see if we have an overridden (or cancelled) kata move
+	if ( pm->ps->saber[0].kataMove != LS_INVALID )
+	{
+		if ( pm->ps->saber[0].kataMove != LS_NONE )
+		{
+			return (saberMoveName_t)pm->ps->saber[0].kataMove;
+		}
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].kataMove != LS_INVALID )
+		{
+			if ( pm->ps->saber[1].kataMove != LS_NONE )
+			{
+				return (saberMoveName_t)pm->ps->saber[1].kataMove;
+			}
+		}
+	}
+	//no overrides, cancelled?
+	if ( pm->ps->saber[0].kataMove == LS_NONE )
+	{
+		return LS_NONE;
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].kataMove == LS_NONE )
+		{
+			return LS_NONE;
+		}
+	}
+	//do normal checks
 	if ( pm->ps->saberMove == LS_READY//ready
 		//&& (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer())//PLAYER ONLY...?
 		//&& pm->ps->viewangles[0] > 30 //looking down
@@ -2714,6 +3160,37 @@ saberMoveName_t PM_CheckStaffKata( void )
 		return LS_NONE;
 	}
 
+	//see if we have an overridden (or cancelled) kata move
+	if ( pm->ps->saber[0].kataMove != LS_INVALID )
+	{
+		if ( pm->ps->saber[0].kataMove != LS_NONE )
+		{
+			return (saberMoveName_t)pm->ps->saber[0].kataMove;
+		}
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].kataMove != LS_INVALID )
+		{
+			if ( pm->ps->saber[1].kataMove != LS_NONE )
+			{
+				return (saberMoveName_t)pm->ps->saber[1].kataMove;
+			}
+		}
+	}
+	//no overrides, cancelled?
+	if ( pm->ps->saber[0].kataMove == LS_NONE )
+	{
+		return LS_NONE;
+	}
+	if ( pm->ps->dualSabers )
+	{
+		if ( pm->ps->saber[1].kataMove == LS_NONE )
+		{
+			return LS_NONE;
+		}
+	}
+	//do normal checks
 	if ( pm->ps->saberMove == LS_READY//ready
 		//&& (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer())//PLAYER ONLY...?
 		//&& pm->ps->viewangles[0] > 30 //looking down
@@ -2746,6 +3223,16 @@ saberMoveName_t PM_CheckPullAttack( void )
 {
 	if ( pm->ps->clientNum < MAX_CLIENTS 
 		&& PM_InSecondaryStyle() )
+	{
+		return LS_NONE;
+	}
+
+	if ( (pm->ps->saber[0].saberFlags&SFL_NO_PULL_ATTACK) )
+	{
+		return LS_NONE;
+	}
+	if ( pm->ps->dualSabers
+		&& (pm->ps->saber[1].saberFlags&SFL_NO_PULL_ATTACK) )
 	{
 		return LS_NONE;
 	}
@@ -2891,6 +3378,51 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 		noSpecials = qtrue;
 	}
 
+	saberMoveName_t overrideJumpRightAttackMove = LS_INVALID;
+	if ( pm->ps->saber[0].jumpAtkRightMove != LS_INVALID )
+	{
+		if ( pm->ps->saber[0].jumpAtkRightMove != LS_NONE )
+		{//actually overriding
+			overrideJumpRightAttackMove = (saberMoveName_t)pm->ps->saber[0].jumpAtkRightMove;
+		}
+		else if ( pm->ps->dualSabers
+			&& pm->ps->saber[1].jumpAtkRightMove > LS_NONE )
+		{//would be cancelling it, but check the second saber, too
+			overrideJumpRightAttackMove = (saberMoveName_t)pm->ps->saber[1].jumpAtkRightMove;
+		}
+		else
+		{//nope, just cancel it
+			overrideJumpRightAttackMove = LS_NONE;
+		}
+	}
+	else if ( pm->ps->dualSabers
+		&& pm->ps->saber[1].jumpAtkRightMove != LS_INVALID )
+	{//first saber not overridden, check second
+		overrideJumpRightAttackMove = (saberMoveName_t)pm->ps->saber[1].jumpAtkRightMove;
+	}
+
+	saberMoveName_t overrideJumpLeftAttackMove = LS_INVALID;
+	if ( pm->ps->saber[0].jumpAtkLeftMove != LS_INVALID )
+	{
+		if ( pm->ps->saber[0].jumpAtkLeftMove != LS_NONE )
+		{//actually overriding
+			overrideJumpLeftAttackMove = (saberMoveName_t)pm->ps->saber[0].jumpAtkLeftMove;
+		}
+		else if ( pm->ps->dualSabers
+			&& pm->ps->saber[1].jumpAtkLeftMove > LS_NONE )
+		{//would be cancelling it, but check the second saber, too
+			overrideJumpLeftAttackMove = (saberMoveName_t)pm->ps->saber[1].jumpAtkLeftMove;
+		}
+		else
+		{//nope, just cancel it
+			overrideJumpLeftAttackMove = LS_NONE;
+		}
+	}
+	else if ( pm->ps->dualSabers
+		&& pm->ps->saber[1].jumpAtkLeftMove != LS_INVALID )
+	{//first saber not overridden, check second
+		overrideJumpLeftAttackMove = (saberMoveName_t)pm->ps->saber[1].jumpAtkLeftMove;
+	}
 #ifdef _XBOX
 	if ( rightmove > 64 )
 #else
@@ -2898,6 +3430,7 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 #endif // _XBOX
 	{//moving right
 		if ( !noSpecials
+			&& overrideJumpRightAttackMove != LS_NONE
 			&& (pm->ps->groundEntityNum != ENTITYNUM_NONE||level.time-pm->ps->lastOnGround<=250) //on ground or just jumped
 			&& (pm->cmd.buttons&BUTTON_ATTACK)//hitting attack
 			&& pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_0//have force jump 1 at least
@@ -2911,7 +3444,11 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 				G_DrainPowerForSpecialMove( pm->gent, FP_LEVITATION, SABER_ALT_ATTACK_POWER_LR );
 			}
 			pm->cmd.upmove = 0;
-			if ( pm->ps->saberAnimLevel == SS_STAFF )
+			if ( overrideJumpRightAttackMove != LS_INVALID )
+			{//overridden with another move
+				return overrideJumpRightAttackMove;
+			}
+			else if ( pm->ps->saberAnimLevel == SS_STAFF )
 			{
 				AngleVectors( fwdAngles, NULL, right, NULL );
 				pm->ps->velocity[0] = pm->ps->velocity[1] = 0; 
@@ -2920,20 +3457,24 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 			}
 			else
 			{
-				/*
-				if ( pm->ps->groundEntityNum != ENTITYNUM_NONE )
-				{//still on ground
-					VectorClear( pm->ps->velocity );
-					return LS_JUMPATTACK_CART_RIGHT;
-				}
-				else
-				*/
-				{//in air
-					AngleVectors( fwdAngles, NULL, right, NULL );
-					pm->ps->velocity[0] = pm->ps->velocity[1] = 0; 
-					VectorMA( pm->ps->velocity, 190, right, pm->ps->velocity );
-					PM_SetJumped( JUMP_VELOCITY, qtrue );
-					return LS_JUMPATTACK_ARIAL_RIGHT;
+				if ( !(pm->ps->saber[0].saberFlags&SFL_NO_CARTWHEELS)
+					&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_CARTWHEELS)) )
+				{//okay to do cartwheels with this saber
+					/*
+					if ( pm->ps->groundEntityNum != ENTITYNUM_NONE )
+					{//still on ground
+						VectorClear( pm->ps->velocity );
+						return LS_JUMPATTACK_CART_RIGHT;
+					}
+					else
+					*/
+					{//in air
+						AngleVectors( fwdAngles, NULL, right, NULL );
+						pm->ps->velocity[0] = pm->ps->velocity[1] = 0; 
+						VectorMA( pm->ps->velocity, 190, right, pm->ps->velocity );
+						PM_SetJumped( JUMP_VELOCITY, qtrue );
+						return LS_JUMPATTACK_ARIAL_RIGHT;
+					}
 				}
 			}
 		}
@@ -2975,6 +3516,7 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 #endif // _XBOX
 	{//moving left
 		if ( !noSpecials
+			&& overrideJumpLeftAttackMove != LS_NONE
 			&& (pm->ps->groundEntityNum != ENTITYNUM_NONE||level.time-pm->ps->lastOnGround<=250) //on ground or just jumped
 			&& (pm->cmd.buttons&BUTTON_ATTACK)//hitting attack
 			&& pm->ps->forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_0//have force jump 1 at least
@@ -2988,7 +3530,11 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 				G_DrainPowerForSpecialMove( pm->gent, FP_LEVITATION, SABER_ALT_ATTACK_POWER_LR );
 			}
 			pm->cmd.upmove = 0;
-			if ( pm->ps->saberAnimLevel == SS_STAFF )
+			if ( overrideJumpRightAttackMove != LS_INVALID )
+			{//overridden with another move
+				return overrideJumpRightAttackMove;
+			}
+			else if ( pm->ps->saberAnimLevel == SS_STAFF )
 			{
 				AngleVectors( fwdAngles, NULL, right, NULL );
 				pm->ps->velocity[0] = pm->ps->velocity[1] = 0; 
@@ -2997,20 +3543,24 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 			}
 			else
 			{
-				/*
-				if ( pm->ps->groundEntityNum != ENTITYNUM_NONE )
-				{//still on ground
-					VectorClear( pm->ps->velocity );
-					return LS_JUMPATTACK_ARIAL_LEFT;
-				}
-				else
-				*/
-				{
-					AngleVectors( fwdAngles, NULL, right, NULL );
-					pm->ps->velocity[0] = pm->ps->velocity[1] = 0; 
-					VectorMA( pm->ps->velocity, -190, right, pm->ps->velocity );
-					PM_SetJumped( JUMP_VELOCITY, qtrue );
-					return LS_JUMPATTACK_CART_LEFT;
+				if ( !(pm->ps->saber[0].saberFlags&SFL_NO_CARTWHEELS)
+					&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_CARTWHEELS)) )
+				{//okay to do cartwheels with this saber
+					/*
+					if ( pm->ps->groundEntityNum != ENTITYNUM_NONE )
+					{//still on ground
+						VectorClear( pm->ps->velocity );
+						return LS_JUMPATTACK_ARIAL_LEFT;
+					}
+					else
+					*/
+					{
+						AngleVectors( fwdAngles, NULL, right, NULL );
+						pm->ps->velocity[0] = pm->ps->velocity[1] = 0; 
+						VectorMA( pm->ps->velocity, -190, right, pm->ps->velocity );
+						PM_SetJumped( JUMP_VELOCITY, qtrue );
+						return LS_JUMPATTACK_CART_LEFT;
+					}
 				}
 			}
 		}
@@ -3182,75 +3732,80 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 					}
 				}
 				//if ( !PM_InKnockDown( pm->ps ) )
-				if ( pm->ps->groundEntityNum != ENTITYNUM_NONE )
-				{//only when on ground
-					if ( pm->gent && pm->gent->enemy )
-					{//FIXME: or just trace for a valid enemy standing behind me?  And no enemy in front?
-						vec3_t enemyDir, faceFwd, facingAngles = {0, pm->ps->viewangles[YAW], 0};
-						AngleVectors( facingAngles, faceFwd, NULL, NULL );
-						VectorSubtract( pm->gent->enemy->currentOrigin, pm->ps->origin, enemyDir );
-						float dot = DotProduct( enemyDir, faceFwd );
-						if ( dot < 0 )
-						{//enemy is behind me
-							if ( dot < -0.75f 
-								&& DistanceSquared( pm->gent->currentOrigin, pm->gent->enemy->currentOrigin ) < 16384//128 squared
-								&& (pm->ps->saberAnimLevel == SS_FAST || pm->ps->saberAnimLevel == SS_STAFF || (pm->gent->client &&(pm->gent->client->NPC_class == CLASS_TAVION||pm->gent->client->NPC_class == CLASS_ALORA)&&Q_irand(0,1))) )
-							{//fast attacks and Tavion
-								if ( !(pm->ps->pm_flags&PMF_DUCKED) && pm->cmd.upmove >= 0 )
-								{//can't do it while ducked?
-									if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) || (pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG) )
-									{//only fencers and above can do this
-										return LS_A_BACKSTAB;
+				//check backstabs
+				if ( !(pm->ps->saber[0].saberFlags&SFL_NO_BACK_ATTACK)
+					&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_BACK_ATTACK)) )
+				{//okay to do backstabs with this saber
+					if ( pm->ps->groundEntityNum != ENTITYNUM_NONE )
+					{//only when on ground
+						if ( pm->gent && pm->gent->enemy )
+						{//FIXME: or just trace for a valid enemy standing behind me?  And no enemy in front?
+							vec3_t enemyDir, faceFwd, facingAngles = {0, pm->ps->viewangles[YAW], 0};
+							AngleVectors( facingAngles, faceFwd, NULL, NULL );
+							VectorSubtract( pm->gent->enemy->currentOrigin, pm->ps->origin, enemyDir );
+							float dot = DotProduct( enemyDir, faceFwd );
+							if ( dot < 0 )
+							{//enemy is behind me
+								if ( dot < -0.75f 
+									&& DistanceSquared( pm->gent->currentOrigin, pm->gent->enemy->currentOrigin ) < 16384//128 squared
+									&& (pm->ps->saberAnimLevel == SS_FAST || pm->ps->saberAnimLevel == SS_STAFF || (pm->gent->client &&(pm->gent->client->NPC_class == CLASS_TAVION||pm->gent->client->NPC_class == CLASS_ALORA)&&Q_irand(0,1))) )
+								{//fast attacks and Tavion
+									if ( !(pm->ps->pm_flags&PMF_DUCKED) && pm->cmd.upmove >= 0 )
+									{//can't do it while ducked?
+										if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) || (pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG) )
+										{//only fencers and above can do this
+											return LS_A_BACKSTAB;
+										}
+									}
+								}
+								else if ( pm->ps->saberAnimLevel != SS_FAST
+									&& pm->ps->saberAnimLevel != SS_STAFF )
+								{//medium and higher attacks
+									if ( (pm->ps->pm_flags&PMF_DUCKED) || pm->cmd.upmove < 0 )
+									{
+										return LS_A_BACK_CR;
+									}
+									else
+									{
+										return LS_A_BACK;
 									}
 								}
 							}
-							else if ( pm->ps->saberAnimLevel != SS_FAST
-								&& pm->ps->saberAnimLevel != SS_STAFF )
-							{//medium and higher attacks
-								if ( (pm->ps->pm_flags&PMF_DUCKED) || pm->cmd.upmove < 0 )
-								{
-									return LS_A_BACK_CR;
+							else
+							{//enemy in front
+								float enemyDistSq = DistanceSquared( pm->gent->currentOrigin, pm->gent->enemy->currentOrigin );
+								if ( (pm->ps->saberAnimLevel == FORCE_LEVEL_1||pm->ps->saberAnimLevel == SS_STAFF||pm->gent->client->NPC_class==CLASS_TAVION||pm->gent->client->NPC_class == CLASS_ALORA||(pm->gent->client->NPC_class==CLASS_DESANN&&!Q_irand(0,3))) && enemyDistSq > 16384 || pm->gent->enemy->health <= 0 )//128 squared
+								{//my enemy is pretty far in front of me and I'm using fast attacks
+									if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) ||
+										( pm->gent && pm->gent->client && pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG && Q_irand( 0, pm->gent->NPC->rank ) > RANK_ENSIGN ) )
+									{//only fencers and higher can do this, higher rank does it more
+										if ( PM_CheckEnemyInBack( 128 ) )
+										{
+											return PM_PickBackStab();
+										}
+									}
 								}
-								else
-								{
-									return LS_A_BACK;
+								else if ( (pm->ps->saberAnimLevel >= FORCE_LEVEL_2 || pm->gent->client->NPC_class == CLASS_DESANN) && enemyDistSq > 40000 || pm->gent->enemy->health <= 0 )//200 squared
+								{//enemy is very faw away and I'm using medium/strong attacks
+									if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) ||
+										( pm->gent && pm->gent->client && pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG && Q_irand( 0, pm->gent->NPC->rank ) > RANK_ENSIGN ) )
+									{//only fencers and higher can do this, higher rank does it more
+										if ( PM_CheckEnemyInBack( 164 ) )
+										{
+											return PM_PickBackStab();
+										}
+									}
 								}
 							}
 						}
 						else
-						{//enemy in front
-							float enemyDistSq = DistanceSquared( pm->gent->currentOrigin, pm->gent->enemy->currentOrigin );
-							if ( (pm->ps->saberAnimLevel == FORCE_LEVEL_1||pm->ps->saberAnimLevel == SS_STAFF||pm->gent->client->NPC_class==CLASS_TAVION||pm->gent->client->NPC_class == CLASS_ALORA||(pm->gent->client->NPC_class==CLASS_DESANN&&!Q_irand(0,3))) && enemyDistSq > 16384 || pm->gent->enemy->health <= 0 )//128 squared
-							{//my enemy is pretty far in front of me and I'm using fast attacks
-								if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) ||
-									( pm->gent && pm->gent->client && pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG && Q_irand( 0, pm->gent->NPC->rank ) > RANK_ENSIGN ) )
-								{//only fencers and higher can do this, higher rank does it more
-									if ( PM_CheckEnemyInBack( 128 ) )
-									{
-										return PM_PickBackStab();
-									}
+						{//no current enemy
+							if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && pm->gent && pm->gent->client )
+							{//only player
+								if ( PM_CheckEnemyInBack( 128 ) )
+								{
+									return PM_PickBackStab();
 								}
-							}
-							else if ( (pm->ps->saberAnimLevel >= FORCE_LEVEL_2 || pm->gent->client->NPC_class == CLASS_DESANN) && enemyDistSq > 40000 || pm->gent->enemy->health <= 0 )//200 squared
-							{//enemy is very faw away and I'm using medium/strong attacks
-								if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) ||
-									( pm->gent && pm->gent->client && pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG && Q_irand( 0, pm->gent->NPC->rank ) > RANK_ENSIGN ) )
-								{//only fencers and higher can do this, higher rank does it more
-									if ( PM_CheckEnemyInBack( 164 ) )
-									{
-										return PM_PickBackStab();
-									}
-								}
-							}
-						}
-					}
-					else
-					{//no current enemy
-						if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) && pm->gent && pm->gent->client )
-						{//only player
-							if ( PM_CheckEnemyInBack( 128 ) )
-							{
-								return PM_PickBackStab();
 							}
 						}
 					}
@@ -3844,11 +4399,23 @@ extern qboolean PM_SpinningSaberAnim( int anim );
 extern float saberAnimSpeedMod[NUM_FORCE_POWER_LEVELS];
 void PM_SaberStartTransAnim( int saberAnimLevel, int anim, float *animSpeed, gentity_t *gent )
 {
-	if ( g_saberAnimSpeed->value != 1.0f )
+	if ( anim >= BOTH_A1_T__B_ && anim <= BOTH_ROLL_STAB )
 	{
-		if ( anim >= BOTH_A1_T__B_ && anim <= BOTH_CROUCHATTACKBACK1 )
+		if ( g_saberAnimSpeed->value != 1.0f )
 		{
 			*animSpeed *= g_saberAnimSpeed->value;
+		}
+		else if ( gent && gent->client && gent->client->ps.weapon == WP_SABER )
+		{
+			if ( gent->client->ps.saber[0].animSpeedScale != 1.0f )
+			{
+				*animSpeed *= gent->client->ps.saber[0].animSpeedScale;
+			}
+			if ( gent->client->ps.dualSabers
+				&& gent->client->ps.saber[1].animSpeedScale != 1.0f )
+			{
+				*animSpeed *= gent->client->ps.saber[1].animSpeedScale;
+			}
 		}
 	}
 	if ( gent
@@ -4212,8 +4779,7 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 
 		// Make Sure Not To Play Too Fast An Anim
 		//----------------------------------------
-//		float	maxPlaybackSpeed = (1.5f * timeScaleMod);
-		float	maxPlaybackSpeed = (1.5f * timeScaleMod) / 2.0f;
+		float	maxPlaybackSpeed = (1.5f * timeScaleMod);
 		if (animSpeed>maxPlaybackSpeed)
 		{
 			animSpeed = maxPlaybackSpeed;

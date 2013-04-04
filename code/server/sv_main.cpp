@@ -470,7 +470,7 @@ extern cvar_t	*cl_newClock;
 void SV_Frame( int msec,float fractionMsec ) {
 	int		frameMsec;
 	int		startTime=0;
-	
+
 	// the menu kills the server with this cvar
 	if ( sv_killserver->integer ) {
 		SV_Shutdown ("Server was killed.\n");

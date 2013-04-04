@@ -932,7 +932,7 @@ static rserr_t GLW_SetMode( int mode,
 
 bool GL_CheckForExtension(const char *ext)
 {
-	char	*temp;
+	const char	*temp;
 	char	term;
 
 	temp = strstr(glConfig.extensions_string, ext);
@@ -1360,17 +1360,17 @@ static void GLW_InitExtensions( void )
 	}
 
 	// Figure out which texture rectangle extension to use.
-	// TOTAL HACK!!! This will need to be fixed.
-	// FIXMEFIXMEFIXME!
 	bool bTexRectSupported = false;
-	if ( strstr( glConfig.extensions_string, "GL_EXT_texture_rectangle" ) )
+	if ( strnicmp( glConfig.vendor_string, "ATI Technologies",16 )==0
+		&& strnicmp( glConfig.version_string, "1.3.3",5 )==0 
+		&& glConfig.version_string[5] < '9' ) //1.3.34 and 1.3.37 and 1.3.38 are broken for sure, 1.3.39 is not
 	{
 		g_bTextureRectangleHack = true;
-		bTexRectSupported = true;
 	}
-	else if ( strstr( glConfig.extensions_string, "GL_NV_texture_rectangle" ) )
+	
+	if ( strstr( glConfig.extensions_string, "GL_NV_texture_rectangle" )
+		   || strstr( glConfig.extensions_string, "GL_EXT_texture_rectangle" ) )
 	{
-		g_bTextureRectangleHack = false;
 		bTexRectSupported = true;
 	}
 	

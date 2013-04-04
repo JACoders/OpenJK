@@ -283,11 +283,6 @@ void RB_RenderFlare( flare_t *f ) {
 	iColor[1] = color[1] * 255;
 	iColor[2] = color[2] * 255;
 
-#ifdef _XBOX
-	if(glw_state->isWidescreen)
-		size = backEnd.viewParms.viewportWidth * ( r_flareSize->value/720.0f + 8 / -f->eyeZ );
-	else
-#endif
 	size = backEnd.viewParms.viewportWidth * ( r_flareSize->value/640.0f + 8 / -f->eyeZ );
 
 	RB_BeginSurface( tr.flareShader, f->fogNum );

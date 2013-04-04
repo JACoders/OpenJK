@@ -25,49 +25,43 @@
 using namespace std;
 
 typedef map<sstring_t, const char *>	ShaderEntryPtrs_t;
-										ShaderEntryPtrs_t *ShaderEntryPtrs;
-
-
-
-
+										ShaderEntryPtrs_t ShaderEntryPtrs;
 
 
 void ShaderEntryPtrs_Clear(void)
 {
-	if( ShaderEntryPtrs )
-	{
-		delete ShaderEntryPtrs;
-		ShaderEntryPtrs = NULL;
-	}
+	ShaderEntryPtrs.clear();
 }
+
 
 int ShaderEntryPtrs_Size(void)
 {
-	return ShaderEntryPtrs ? ShaderEntryPtrs->size() : 0;
+	return ShaderEntryPtrs.size();
 }
+
 
 void ShaderEntryPtrs_Insert(const char  *token, const char  *p)
 {
-	if( !ShaderEntryPtrs )
-		ShaderEntryPtrs = new ShaderEntryPtrs_t;
+	ShaderEntryPtrs_t::iterator it = ShaderEntryPtrs.find(token);
 
-	ShaderEntryPtrs_t::iterator it = ShaderEntryPtrs->find(token);
-
-	if (it == ShaderEntryPtrs->end())
+	if (it == ShaderEntryPtrs.end())
 	{
-		(*ShaderEntryPtrs)[token] = p;
+		ShaderEntryPtrs[token] = p;
+	}
+	else
+	{
+		VID_Printf( PRINT_DEVELOPER, "Duplicate shader entry %s!\n",token );
 	}
 }
+
+
 
 // returns NULL if not found...
 //
 const char *ShaderEntryPtrs_Lookup(const char *psShaderName)
 {
-	if( !ShaderEntryPtrs )
-		return NULL;
-
-	ShaderEntryPtrs_t::iterator it = ShaderEntryPtrs->find(psShaderName);
-	if (it != ShaderEntryPtrs->end())
+	ShaderEntryPtrs_t::iterator it = ShaderEntryPtrs.find(psShaderName);
+	if (it != ShaderEntryPtrs.end())
 	{
 		const char *p = (*it).second;
 		return p;
