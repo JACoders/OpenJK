@@ -62,9 +62,9 @@ typedef struct {
 		RE_Font_DrawString(ox, oy, text, rgba, setIndex, iMaxPixelWidth, scale);
 	}
 #else
-	int			(*R_Font_StrLenPixels)(const char *text, const int setIndex, const float scale = 1.0f);
-	int			(*R_Font_HeightPixels)(const int setIndex, const float scale = 1.0f);
-	void		(*R_Font_DrawString)(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iMaxPixelWidth, const float scale = 1.0f);
+	int			(*R_Font_StrLenPixels)(const char *text, const int setIndex, const float scale );
+	int			(*R_Font_HeightPixels)(const int setIndex, const float scale );
+	void		(*R_Font_DrawString)(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iMaxPixelWidth, const float scale );
 #endif
 	int			(*R_Font_StrLenChars)(const char *text);
 	qboolean	(*Language_IsAsian) (void);
