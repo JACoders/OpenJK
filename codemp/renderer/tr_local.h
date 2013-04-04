@@ -81,6 +81,7 @@ typedef struct dlight_s {
 	vec3_t			mTransBasis3;
 } dlight_t;
 
+
 // a trMiniRefEntity_t has all the information passed in by
 // the client game, other info will come from it's parent main ref entity
 typedef struct 
@@ -93,7 +94,7 @@ typedef struct
 typedef struct {
 	refEntity_t	e;
 
-//	float		axisLength;		// compensate for non-normalized axis
+	float		axisLength;		// compensate for non-normalized axis
 
 	qboolean	needDlights;	// true for bmodels that touch a dlight
 	qboolean	lightingCalculated;
@@ -101,10 +102,6 @@ typedef struct {
 	vec3_t		ambientLight;	// color normalized to 0-255
 	int			ambientLightInt;	// 32 bit rgba packed
 	vec3_t		directedLight;
-#ifdef _XBOX
-	vec3_t		dlightDir;
-	vec3_t		dynamicLight;
-#endif
 	int			dlightBits;
 } trRefEntity_t;
 
@@ -116,26 +113,43 @@ typedef struct {
 	float		modelMatrix[16];
 } orientationr_t;
 
+
+#ifdef _XBOX
 typedef struct image_s {
 	int			imgCode;
-
-#ifndef FINAL_BUILD
-	char		imgName[MAX_QPATH];		// Only in debug, so imagelist cmd is useful
-#endif
-
 	USHORT		width, height;				// source image
 
 	GLuint		texnum;					// gl texture binding
 	int			internalFormat;
+	int			wrapClampMode;		// GL_CLAMP or GL_REPEAT
 
 	bool		isLightmap;
 	bool		isSystem;
-	short		mipcount;
+	int			mipcount;
 
-//	bool		allowPicmip;
+	bool		allowPicmip;
 	short		iLastLevelUsedOn;
 } image_t;
 
+#else // _XBOX
+
+typedef struct image_s {
+	char		imgName[MAX_QPATH];		// game path, including extension
+	USHORT		width, height;	// after power of two and picmip but not including clamp to MAX_TEXTURE_SIZE
+	GLuint		texnum;					// gl texture binding
+
+	int			frameUsed;			// for texture usage in frame statistics
+
+	int			internalFormat;
+	int			wrapClampMode;		// GL_CLAMP or GL_REPEAT
+
+	bool		mipmap;
+	bool		allowPicmip;
+
+	short		iLastLevelUsedOn;
+
+} image_t;
+#endif // _XBOX
 
 //===============================================================================
 
@@ -358,6 +372,7 @@ typedef struct surfaceSprite_s
 typedef struct {
 	image_t			*image;
 
+	texCoordGen_t	tcGen;
 	vec3_t			*tcGenVectors;
 
 	texModInfo_t	*texMods;
@@ -365,48 +380,50 @@ typedef struct {
 	short			numImageAnimations;
 	float			imageAnimationSpeed;
 
-//	texCoordGen_t	tcGen;
-	byte			tcGen;
-	byte			isLightmap;
-	byte			oneShotAnimMap;
-	byte			vertexLightmap;
-//	byte			isVideoMap;
+	bool			isLightmap;
+	bool			oneShotAnimMap;
+	bool			vertexLightmap;
+	bool			isVideoMap;
 
-//	int				videoMapHandle;
+	int				videoMapHandle;
 } textureBundle_t;
 
 
 #define NUM_TEXTURE_BUNDLES 2
 
 typedef struct {
-	byte			active;
-	byte			isDetail;
+	bool			active;
+	bool			isDetail;
+#ifdef _XBOX
 	byte			isEnvironment;
-//	byte			isSpecular;
+#endif
+#ifdef VV_LIGHTING
+	byte			isSpecular;
 	byte			isBumpMap;
-
+#endif 
 	byte			index;						// index of stage
 	byte			lightmapStyle;
-	byte			alphaGen;
-	byte			rgbGen;
 	
-	byte			adjustColorsForFog;
-	byte			mGLFogColorOverride;
-
-	// Whether this object emits a glow or not.
-//	byte			glow;
-
 	textureBundle_t	bundle[NUM_TEXTURE_BUNDLES];
 
 	waveForm_t		rgbWave;
+	colorGen_t		rgbGen;
+
 	waveForm_t		alphaWave;
+	alphaGen_t		alphaGen;
 
 	byte			constantColor[4];			// for CGEN_CONST and AGEN_CONST
 
 	unsigned int	stateBits;					// GLS_xxxx mask
 
+	acff_t			adjustColorsForFog;
+
+	EGLFogOverride	mGLFogColorOverride;
+
 	surfaceSprite_t	*ss;
 
+	// Whether this object emits a glow or not.
+	bool			glow;
 } shaderStage_t;
 
 struct shaderCommands_s;
@@ -441,26 +458,31 @@ typedef struct {
 
 typedef struct shader_s {
 	char		name[MAX_QPATH];		// game path, including extension
-	short		lightmapIndex[MAXLIGHTMAPS];	// for a shader to match, both name and lightmapIndex must match
+	int			lightmapIndex[MAXLIGHTMAPS];	// for a shader to match, both name and lightmapIndex must match
 	byte		styles[MAXLIGHTMAPS];
 
-	short		index;					// this shader == tr.shaders[index]
-	short		sortedIndex;			// this shader == tr.sortedShaders[sortedIndex]
+	int			index;					// this shader == tr.shaders[index]
+	int			sortedIndex;			// this shader == tr.sortedShaders[sortedIndex]
 
 	float		sort;					// lower numbered shaders draw before higher numbered
 
 	int			surfaceFlags;			// if explicitlyDefined, this will have SURF_* flags
 	int			contentFlags;
 
-	char		defaultShader;			// we want to return index 0 if the shader failed to
+	bool		defaultShader;			// we want to return index 0 if the shader failed to
 										// load for some reason, but R_FindShader should
 										// still keep a name allocated for it, so if
 										// something calls RE_RegisterShader again with
 										// the same name, we don't try looking for it again
-	char		explicitlyDefined;		// found in a .shader file
-	char		entityMergable;			// merge across entites optimizable (smoke, blood)
+	bool		explicitlyDefined;		// found in a .shader file
+	bool		entityMergable;			// merge across entites optimizable (smoke, blood)
 
-	char		isBumpMap;
+	bool		isBumpMap;
+
+#ifdef _XBOX
+	bool		needsNormal;
+	bool		needsTangent;
+#endif
 
 	skyParms_t	*sky;
 	fogParms_t	*fogParms;
@@ -470,19 +492,14 @@ typedef struct shader_s {
 	int			multitextureEnv;		// 0, GL_MODULATE, GL_ADD (FIXME: put in stage)
 
 	cullType_t	cullType;				// CT_FRONT_SIDED, CT_BACK_SIDED, or CT_TWO_SIDED
-	char		polygonOffset;			// set for decals and other items that must be offset 
-	char		noMipMaps;				// for console fonts, 2D elements, etc.
-//	bool		noPicMip;				// for images that must always be full resolution
-//	bool		noTC;					// for images that don't want to be texture compressed (eg skies)
-#ifdef _XBOX
-	char		needsNormal;
-	char		needsTangent;
-#endif
-
+	bool		polygonOffset;			// set for decals and other items that must be offset 
+	bool		noMipMaps;				// for console fonts, 2D elements, etc.
+	bool		noPicMip;				// for images that must always be full resolution
+	bool		noTC;					// for images that don't want to be texture compressed (eg skies)
 
 	fogPass_t	fogPass;				// draw a blended pass, possibly with depth test equals
 
-//	vec3_t		bumpVector;				// The given light vector for bump-mapping
+	vec3_t		bumpVector;				// The given light vector for bump-mapping
 
 	deformStage_t	*deforms[MAX_SHADER_DEFORMS];
 	short		numDeforms;
@@ -490,7 +507,7 @@ typedef struct shader_s {
 	short		numUnfoggedPasses;
 	shaderStage_t	*stages;		
 
-//  float clampTime;                                  // time this shader is clamped to
+  float clampTime;                                  // time this shader is clamped to
   float timeOffset;                                 // current time offset for this shader
 
 #ifndef _XBOX	// GLOWXXX
@@ -566,8 +583,10 @@ typedef struct {
 	trRefEntity_t	*entities;
 	trMiniRefEntity_t	*miniEntities;
 
+#ifndef VV_LIGHTING
 	int			num_dlights;
 	struct dlight_s	*dlights;
+#endif
 
 	int			numPolys;
 	struct srfPoly_s	*polys;
@@ -689,8 +708,6 @@ typedef struct srfFlare_s {
 	unsigned short	origin[3];
 	unsigned short	normal[3];
 	byte			color[3];
-	byte			number;
-	int				visible;
 } srfFlare_t;
 
 #else // _XBOX
@@ -722,7 +739,6 @@ typedef struct srfFlare_s {
 #define POINTS_ST_SCALE 128.0f
 #define POINTS_LIGHT_SCALE 65536.0f
 #define GLM_COMP_SIZE 64.0f
-#define GLM_COMP_UV_SIZE 16384.0f
 #endif // _XBOX
 
 typedef struct srfTerrain_s
@@ -1285,13 +1301,10 @@ typedef struct {
 */
 
 #ifdef _XBOX
-#define NUM_SCRATCH_IMAGES 1
+#define NUM_SCRATCH_IMAGES 2
 #else
 #define NUM_SCRATCH_IMAGES 16
 #endif
-
-#define SCREEN_IMAGE_MAX_WIDTH	512
-#define SCREEN_IMAGE_MAX_HEIGHT	256
 
 typedef struct {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
@@ -1314,12 +1327,12 @@ typedef struct {
 #endif
 
 	image_t					*defaultImage;
-//	image_t					*scratchImage[NUM_SCRATCH_IMAGES];
+	image_t					*scratchImage[NUM_SCRATCH_IMAGES];
 	image_t					*fogImage;
 	image_t					*dlightImage;	// inverse-quare highlight for projective adding
 	image_t					*flareImage;
 	image_t					*whiteImage;			// full of 0xff
-//	image_t					*identityLightImage;	// full of tr.identityLightByte
+	image_t					*identityLightImage;	// full of tr.identityLightByte
 
 	image_t					*screenImage; //reserve us a gl texnum to use with RF_DISTORTION
 
@@ -1383,10 +1396,8 @@ typedef struct {
 	model_t					*models[MAX_MOD_KNOWN];
 	int						numModels;
 
-/*
 	world_t					bspModels[MAX_SUB_BSP];
 	int						numBSPModels;
-*/
 
 	// shader indexes from other modules will be looked up in tr.shaders[]
 	// shader indexes from drawsurfs will be looked up in sortedShaders[]
@@ -1495,9 +1506,6 @@ extern cvar_t	*r_windPointY;
 extern cvar_t	*r_mode;				// video mode
 extern cvar_t	*r_fullscreen;
 extern cvar_t	*r_gamma;
-#ifdef _XBOX
-extern cvar_t   *s_brightness_volume;
-#endif
 extern cvar_t	*r_displayRefresh;		// optional display refresh option
 extern cvar_t	*r_ignorehwgamma;		// overrides hardware gamma capabilities
 
@@ -1619,6 +1627,11 @@ int R_CullLocalPointAndRadius( const vec3_t origin, float radius );
 
 void R_RotateForEntity( const trRefEntity_t *ent, const viewParms_t *viewParms, orientationr_t *ori );
 
+#ifdef VV_LIGHTING
+void R_SetupEntityLightingGrid( trRefEntity_t *ent );
+void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noViewCount = qfalse );
+#endif
+
 /*
 ** GL wrapper/helper functions
 */
@@ -1682,7 +1695,6 @@ void		RE_SetWorldVisData( SPARC<byte> *vis );
 #else
 void		RE_SetWorldVisData( const byte *vis );
 #endif
-void		RE_SetPlaneData(cplane_t *planes, int count);
 
 qhandle_t	RE_RegisterServerModel( const char *name );
 qhandle_t	RE_RegisterModel( const char *name );
@@ -1695,11 +1707,7 @@ int			RE_RegisterMedia_GetLevel(void);
 //
 //void		RE_RegisterModels_LevelLoadBegin(const char *psMapName);
 qboolean	RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel = qfalse);
-#ifdef _XBOX
-void*		RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const char *psModelFileName, qboolean *pqbAlreadyFound, memtag_t eTag, int modindex, bool useModelMem);
-#else
 void*		RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const char *psModelFileName, qboolean *pqbAlreadyFound, memtag_t eTag);
-#endif
 void		RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke);
 void		RE_RegisterModels_Info_f(void);
 //
@@ -1754,19 +1762,19 @@ skin_t	*R_GetSkinByHandle( qhandle_t hSkin );
 //
 // tr_shader.c
 //
-extern	const short	lightmapsNone[MAXLIGHTMAPS];
-extern	const short	lightmaps2d[MAXLIGHTMAPS];
-extern	const short	lightmapsVertex[MAXLIGHTMAPS];
-extern	const short	lightmapsFullBright[MAXLIGHTMAPS];
+extern	const int	lightmapsNone[MAXLIGHTMAPS];
+extern	const int	lightmaps2d[MAXLIGHTMAPS];
+extern	const int	lightmapsVertex[MAXLIGHTMAPS];
+extern	const int	lightmapsFullBright[MAXLIGHTMAPS];
 extern	const byte	stylesDefault[MAXLIGHTMAPS];
 
-qhandle_t RE_RegisterShaderLightMap( const char *name, const short *lightmapIndex, const byte *styles ) ;
+qhandle_t RE_RegisterShaderLightMap( const char *name, const int *lightmapIndex, const byte *styles ) ;
 qhandle_t		 RE_RegisterShader( const char *name );
 qhandle_t		 RE_RegisterShaderNoMip( const char *name );
 const char		*RE_ShaderNameFromIndex(int index);
-qhandle_t RE_RegisterShaderFromImage(const char *name, short *lightmapIndex, byte *styles, image_t *image, qboolean mipRawImage);
+qhandle_t RE_RegisterShaderFromImage(const char *name, int *lightmapIndex, byte *styles, image_t *image, qboolean mipRawImage);
 
-shader_t	*R_FindShader( const char *name, const short *lightmapIndex, const byte *styles, qboolean mipRawImage );
+shader_t	*R_FindShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage );
 shader_t	*R_GetShaderByHandle( qhandle_t hShader );
 shader_t	*R_GetShaderByState( int index, long *cycleTime );
 shader_t *R_FindShaderByName( const char *name );
@@ -1796,6 +1804,19 @@ void		GLimp_LogComment( char *comment );
 void		GLimp_SetGamma( unsigned char red[256], 
 						    unsigned char green[256],
 							unsigned char blue[256] );
+#endif
+
+#ifdef _XBOX
+typedef struct 
+{
+	char		levelName[_MAX_PATH];
+	vec3_t		sundir;
+	bool		hdrEnable;
+	float		hdrBloom;
+} levelLightParm_t;
+
+void R_GetLightParmsForLevel();
+void R_LoadLevelLightParms();
 #endif
 
 
@@ -2114,8 +2135,6 @@ void	RB_CalcModulateColorsByFog( DWORD *dstColors );
 void	RB_CalcModulateAlphasByFog( DWORD *dstColors );
 void	RB_CalcModulateRGBAsByFog( DWORD *dstColors );
 void	RB_CalcDisintegrateColors( DWORD *colors );
-void    RB_CalcDiffuseColor( DWORD *colors );
-void	RB_CalcDiffuseEntityColor( DWORD *colors );
 #else
 void	RB_CalcModulateColorsByFog( unsigned char *dstColors );
 void	RB_CalcModulateAlphasByFog( unsigned char *dstColors );
@@ -2128,10 +2147,9 @@ void	RB_CalcColorFromEntity( unsigned char *dstColors );
 void	RB_CalcColorFromOneMinusEntity( unsigned char *dstColors );
 void	RB_CalcSpecularAlpha( unsigned char *alphas );
 void	RB_CalcDisintegrateColors( unsigned char *colors );
+#endif // _XBOX
 void	RB_CalcDiffuseColor( unsigned char *colors );
 void	RB_CalcDiffuseEntityColor( unsigned char *colors );
-#endif // _XBOX
-
 void	RB_CalcDisintegrateVertDeform( void );
 
 /*
@@ -2216,9 +2234,6 @@ typedef struct {
 	viewParms_t	viewParms;
 	drawSurf_t *drawSurfs;
 	int		numDrawSurfs;
-#ifdef _XBOX
-	int		clientNum;
-#endif
 } drawSurfsCommand_t;
 
 typedef enum {
@@ -2247,7 +2262,9 @@ typedef enum {
 // on an SMP machine
 typedef struct {
 	drawSurf_t	drawSurfs[MAX_DRAWSURFS];
+#ifndef VV_LIGHTING
 	dlight_t	dlights[MAX_DLIGHTS];
+#endif
 	trRefEntity_t	entities[MAX_ENTITIES];
 	trMiniRefEntity_t	miniEntities[MAX_MINI_ENTITIES];
 	srfPoly_t	*polys;//[MAX_POLYS];
@@ -2282,8 +2299,6 @@ void RE_BeginFrame( stereoFrame_t stereoFrame );
 void RE_EndFrame( int *frontEndMsec, int *backEndMsec );
 void SaveJPG(char * filename, int quality, int image_width, int image_height, unsigned char *image_buffer);
 
-int R_SurfaceImageCount(const image_t*);
-
 /*
 Ghoul2 Insert Start
 */
@@ -2299,8 +2314,7 @@ Ghoul2 Insert End
 */
 
 #define	MAX_VERTS_ON_DECAL_POLY	10
-//#define	MAX_DECAL_POLYS			500
-#define	MAX_DECAL_POLYS			100
+#define	MAX_DECAL_POLYS			500
 
 typedef struct decalPoly_s 
 {

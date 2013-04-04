@@ -1,17 +1,17 @@
-<?xml version="1.0" encoding="Windows-1252"?>
+<?xml version="1.0" encoding = "Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="7.00"
 	Name="x_game"
 	ProjectGUID="{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}"
 	Keyword="XboxProj">
 	<Platforms>
 		<Platform
-			Name="Xenon"/>
+			Name="Xbox"/>
 	</Platforms>
 	<Configurations>
 		<Configuration
-			Name="Debug|Xenon"
+			Name="Debug|Xbox"
 			OutputDirectory=".\..\x_exe\Debug"
 			IntermediateDirectory=".\..\x_exe\Debug\game"
 			ConfigurationType="4"
@@ -23,8 +23,9 @@
 				AdditionalIncludeDirectories="..\ICARUS"
 				PreprocessorDefinitions="_DEBUG;_XBOX;_LIB;WIN32;GAME_HARD_LINKED;VV_LIGHTING"
 				MinimalRebuild="FALSE"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				BufferSecurityCheck="FALSE"
+				EnableEnhancedInstructionSet="1"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough="g_headers.h"
 				PrecompiledHeaderFile=".\..\x_exe\Debug\game/game.pch"
@@ -46,25 +47,23 @@
 				Name="VCPreLinkEventTool"/>
 		</Configuration>
 		<Configuration
-			Name="Release|Xenon"
+			Name="Release|Xbox"
 			OutputDirectory=".\..\x_exe\Release"
 			IntermediateDirectory=".\..\x_exe\Release\game"
 			ConfigurationType="4"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				AdditionalOptions="/Oy-"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				OmitFramePointers="FALSE"
 				OptimizeForProcessor="2"
 				AdditionalIncludeDirectories="..\ICARUS"
 				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;WIN32;GAME_HARD_LINKED"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
-				BufferSecurityCheck="FALSE"
+				BufferSecurityCheck="TRUE"
 				EnableFunctionLevelLinking="TRUE"
 				EnableEnhancedInstructionSet="1"
 				UsePrecompiledHeader="0"
@@ -86,7 +85,7 @@
 				Name="VCPreLinkEventTool"/>
 		</Configuration>
 		<Configuration
-			Name="FinalBuild|Xenon"
+			Name="FinalBuild|Xbox"
 			OutputDirectory=".\..\x_exe\FinalBuild"
 			IntermediateDirectory=".\..\x_exe\FinalBuild\game"
 			ConfigurationType="4"
@@ -104,7 +103,7 @@
 				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;WIN32;GAME_HARD_LINKED;FINAL_BUILD;_FINAL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
-				BufferSecurityCheck="FALSE"
+				BufferSecurityCheck="TRUE"
 				EnableFunctionLevelLinking="TRUE"
 				EnableEnhancedInstructionSet="1"
 				UsePrecompiledHeader="0"
@@ -124,124 +123,7 @@
 			<Tool
 				Name="VCPreLinkEventTool"/>
 		</Configuration>
-		<Configuration
-			Name="DemoRelease|Xenon"
-			OutputDirectory=".\..\x_exe\DemoRelease"
-			IntermediateDirectory=".\..\x_exe\DemoRelease\game"
-			ConfigurationType="4"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
-				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\ICARUS"
-				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;WIN32;GAME_HARD_LINKED;XBOX_DEMO"
-				StringPooling="TRUE"
-				RuntimeLibrary="0"
-				BufferSecurityCheck="FALSE"
-				EnableFunctionLevelLinking="TRUE"
-				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="3"
-				FastCAP="FALSE"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\..\x_exe\DemoRelease\x_game.lib"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-		</Configuration>
-		<Configuration
-			Name="DemoFinal|Xenon"
-			OutputDirectory=".\..\x_exe\DemoFinal"
-			IntermediateDirectory=".\..\x_exe\DemoFinal\game"
-			ConfigurationType="4"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
-				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\ICARUS"
-				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;WIN32;GAME_HARD_LINKED;FINAL_BUILD;_FINAL;XBOX_DEMO"
-				StringPooling="TRUE"
-				RuntimeLibrary="0"
-				BufferSecurityCheck="FALSE"
-				EnableFunctionLevelLinking="TRUE"
-				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="3"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\..\x_exe\DemoFinal\x_game.lib"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-		</Configuration>
-		<Configuration
-			Name="DemoDebug|Xenon"
-			OutputDirectory=".\..\x_exe\DemoDebug"
-			IntermediateDirectory=".\..\x_exe\DemoDebug\game"
-			ConfigurationType="4"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories="..\ICARUS"
-				PreprocessorDefinitions="_DEBUG;_XBOX;_LIB;WIN32;GAME_HARD_LINKED;VV_LIGHTING;XBOX_DEMO"
-				MinimalRebuild="FALSE"
-				RuntimeLibrary="1"
-				BufferSecurityCheck="FALSE"
-				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderThrough="g_headers.h"
-				PrecompiledHeaderFile=".\..\x_exe\Debug\game/game.pch"
-				BrowseInformation="1"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="3"
-				FastCAP="FALSE"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\..\x_exe\DemoDebug\x_game.lib"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-		</Configuration>
 	</Configurations>
-	<References>
-	</References>
 	<Files>
 		<Filter
 			Name="Source Files">
@@ -331,6 +213,45 @@
 			</File>
 			<File
 				RelativePath="..\game\AI_Wampa.cpp">
+			</File>
+			<File
+				RelativePath="..\game\G_Timer.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC_behavior.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC_combat.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC_goal.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC_misc.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC_move.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC_reactions.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC_senses.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC_sounds.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC_spawn.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC_stats.cpp">
+			</File>
+			<File
+				RelativePath="..\game\NPC_utils.cpp">
 			</File>
 			<File
 				RelativePath="..\game\g_active.cpp">
@@ -429,9 +350,6 @@
 				RelativePath="..\game\g_target.cpp">
 			</File>
 			<File
-				RelativePath="..\game\G_Timer.cpp">
-			</File>
-			<File
 				RelativePath="..\game\g_trigger.cpp">
 			</File>
 			<File
@@ -456,42 +374,6 @@
 				RelativePath="..\game\genericparser2.cpp">
 			</File>
 			<File
-				RelativePath="..\game\NPC.cpp">
-			</File>
-			<File
-				RelativePath="..\game\NPC_behavior.cpp">
-			</File>
-			<File
-				RelativePath="..\game\NPC_combat.cpp">
-			</File>
-			<File
-				RelativePath="..\game\NPC_goal.cpp">
-			</File>
-			<File
-				RelativePath="..\game\NPC_misc.cpp">
-			</File>
-			<File
-				RelativePath="..\game\NPC_move.cpp">
-			</File>
-			<File
-				RelativePath="..\game\NPC_reactions.cpp">
-			</File>
-			<File
-				RelativePath="..\game\NPC_senses.cpp">
-			</File>
-			<File
-				RelativePath="..\game\NPC_sounds.cpp">
-			</File>
-			<File
-				RelativePath="..\game\NPC_spawn.cpp">
-			</File>
-			<File
-				RelativePath="..\game\NPC_stats.cpp">
-			</File>
-			<File
-				RelativePath="..\game\NPC_utils.cpp">
-			</File>
-			<File
 				RelativePath="..\game\q_math.cpp">
 			</File>
 			<File
@@ -500,37 +382,19 @@
 			<File
 				RelativePath="..\qcommon\tri_coll_test.cpp">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories="../game"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories="../game"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="../game"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="../game"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="../game"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories="../game"/>
@@ -548,76 +412,19 @@
 			<File
 				RelativePath="..\game\AnimalNPC.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\game\bg_vehicleLoad.c">
-				<FileConfiguration
-					Name="Debug|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
@@ -626,118 +433,40 @@
 			<File
 				RelativePath="..\game\FighterNPC.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\game\g_vehicles.c">
-				<FileConfiguration
-					Name="Debug|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\game\g_vehicles.h">
 			</File>
 			<File
 				RelativePath="..\game\SpeederNPC.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
@@ -746,45 +475,75 @@
 			<File
 				RelativePath="..\game\WalkerNPC.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\game\bg_vehicleLoad.c">
+				<FileConfiguration
+					Name="Debug|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="FinalBuild|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\game\g_vehicles.c">
+				<FileConfiguration
+					Name="Debug|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="FinalBuild|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\game\g_vehicles.h">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files">
+			<File
+				RelativePath="..\ghoul2\G2.h">
+			</File>
 			<File
 				RelativePath="..\game\ai.h">
 			</File>
@@ -838,9 +597,6 @@
 			</File>
 			<File
 				RelativePath="..\game\fields.h">
-			</File>
-			<File
-				RelativePath="..\ghoul2\G2.h">
 			</File>
 			<File
 				RelativePath="..\game\g_functions.h">
@@ -930,9 +686,6 @@
 				RelativePath="..\icarus\BlockStream.cpp">
 			</File>
 			<File
-				RelativePath="..\icarus\blockstream.h">
-			</File>
-			<File
 				RelativePath="..\icarus\IcarusImplementation.cpp">
 			</File>
 			<File
@@ -951,13 +704,7 @@
 				RelativePath="..\icarus\Sequence.cpp">
 			</File>
 			<File
-				RelativePath="..\icarus\sequence.h">
-			</File>
-			<File
 				RelativePath="..\icarus\Sequencer.cpp">
-			</File>
-			<File
-				RelativePath="..\icarus\sequencer.h">
 			</File>
 			<File
 				RelativePath="..\icarus\StdAfx.h">
@@ -966,11 +713,77 @@
 				RelativePath="..\icarus\TaskManager.cpp">
 			</File>
 			<File
+				RelativePath="..\icarus\blockstream.h">
+			</File>
+			<File
+				RelativePath="..\icarus\sequence.h">
+			</File>
+			<File
+				RelativePath="..\icarus\sequencer.h">
+			</File>
+			<File
 				RelativePath="..\icarus\taskmanager.h">
 			</File>
 		</Filter>
 		<Filter
 			Name="Cgame">
+			<File
+				RelativePath="..\cgame\FX_ATSTMain.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_Blaster.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_Bowcaster.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_BryarPistol.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_Concussion.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_DEMP2.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_Disruptor.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_Emplaced.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_Flechette.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_HeavyRepeater.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_NoghriShot.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_RocketLauncher.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FX_TuskenShot.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FxParsing.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FxPrimitives.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FxScheduler.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FxSystem.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FxTemplate.cpp">
+			</File>
+			<File
+				RelativePath="..\cgame\FxUtil.cpp">
+			</File>
 			<File
 				RelativePath="..\game\bg_misc.cpp">
 			</File>
@@ -1058,65 +871,23 @@
 			<File
 				RelativePath="..\cgame\cg_weapons.cpp">
 			</File>
-			<File
-				RelativePath="..\cgame\FX_ATSTMain.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_Blaster.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_Bowcaster.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_BryarPistol.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_Concussion.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_DEMP2.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_Disruptor.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_Emplaced.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_Flechette.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_HeavyRepeater.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_NoghriShot.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_RocketLauncher.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FX_TuskenShot.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FxParsing.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FxPrimitives.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FxScheduler.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FxSystem.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FxTemplate.cpp">
-			</File>
-			<File
-				RelativePath="..\cgame\FxUtil.cpp">
-			</File>
 			<Filter
 				Name="CGame Headers">
+				<File
+					RelativePath="..\cgame\FxParsing.h">
+				</File>
+				<File
+					RelativePath="..\cgame\FxPrimitives.h">
+				</File>
+				<File
+					RelativePath="..\cgame\FxScheduler.h">
+				</File>
+				<File
+					RelativePath="..\cgame\FxSystem.h">
+				</File>
+				<File
+					RelativePath="..\cgame\FxUtil.h">
+				</File>
 				<File
 					RelativePath="..\cgame\animtable.h">
 				</File>
@@ -1134,21 +905,6 @@
 				</File>
 				<File
 					RelativePath="..\cgame\common_headers.h">
-				</File>
-				<File
-					RelativePath="..\cgame\FxParsing.h">
-				</File>
-				<File
-					RelativePath="..\cgame\FxPrimitives.h">
-				</File>
-				<File
-					RelativePath="..\cgame\FxScheduler.h">
-				</File>
-				<File
-					RelativePath="..\cgame\FxSystem.h">
-				</File>
-				<File
-					RelativePath="..\cgame\FxUtil.h">
 				</File>
 				<File
 					RelativePath="..\cgame\strip_objectives.h">

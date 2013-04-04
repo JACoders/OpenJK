@@ -149,7 +149,6 @@ void CGCam_RenderScene( void );
 void CGCam_DrawWideScreen( void );
 
 void CGCam_Shake( float intensity, int duration );
-void CGCam_Shake( float intensity, int duration, bool rumble );
 void CGCam_UpdateShake( vec3_t origin, vec3_t angles );
 
 void CGCam_Follow( const char *cameraGroup, float speed, float initLerp );

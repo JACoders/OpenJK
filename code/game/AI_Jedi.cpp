@@ -1258,6 +1258,18 @@ static qboolean Jedi_DecideKick( void )
 	{//just did one
 		return qfalse;
 	}
+	if ( NPC->client->ps.weapon == WP_SABER )
+	{
+		if ( (NPC->client->ps.saber[0].saberFlags&SFL_NO_KICKS) )
+		{
+			return qfalse;
+		}
+		else if ( NPC->client->ps.dualSabers 
+			&& (NPC->client->ps.saber[1].saberFlags&SFL_NO_KICKS) )
+		{
+			return qfalse;
+		}
+	}
 	//go for it!
 	return qtrue;
 }
@@ -2373,6 +2385,20 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 
 		int parts = SETANIM_BOTH, anim;
 		float	speed, checkDist;
+		qboolean allowCartWheels = qtrue;
+
+		if ( self->client->ps.weapon == WP_SABER )
+		{
+			if ( (self->client->ps.saber[0].saberFlags&SFL_NO_CARTWHEELS) )
+			{
+				allowCartWheels = qfalse;
+			}
+			else if ( self->client->ps.dualSabers 
+				&& (self->client->ps.saber[1].saberFlags&SFL_NO_CARTWHEELS) )
+			{
+				allowCartWheels = qfalse;
+			}
+		}
 
 		if ( PM_SaberInAttack( self->client->ps.saberMove )
 			|| PM_SaberInStart( self->client->ps.saberMove ) )
@@ -2408,7 +2434,7 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 		//trace in the dir that we want to go
 		VectorMA( self->currentOrigin, checkDist, right, traceto );
 		gi.trace( &trace, self->currentOrigin, mins, maxs, traceto, self->s.number, CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP );
-		if ( trace.fraction >= 1.0f )
+		if ( trace.fraction >= 1.0f && allowCartWheels )
 		{//it's clear, let's do it
 			//FIXME: check for drops?
 			NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
@@ -2459,40 +2485,56 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 						gi.trace( &trace, self->currentOrigin, mins, maxs, traceto, self->s.number, CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP );
 						if ( trace.fraction >= 1.0f )
 						{//it's clear, let's do it
-							//FIXME: check for drops?
-							//turn the cartwheel into a wallflip in the other dir
-							if ( rightdot > 0 )
+							qboolean allowWallFlips = qtrue;
+							if ( self->client->ps.weapon == WP_SABER )
 							{
-								anim = BOTH_WALL_FLIP_LEFT;
-								self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
-								VectorMA( self->client->ps.velocity, 150, right, self->client->ps.velocity );
+								if ( (self->client->ps.saber[0].saberFlags&SFL_NO_WALL_FLIPS) )
+								{
+									allowWallFlips = qfalse;
+								}
+								else if ( self->client->ps.dualSabers 
+									&& (self->client->ps.saber[1].saberFlags&SFL_NO_WALL_FLIPS) )
+								{
+									allowWallFlips = qfalse;
+								}
 							}
-							else
-							{
-								anim = BOTH_WALL_FLIP_RIGHT;
-								self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
-								VectorMA( self->client->ps.velocity, -150, right, self->client->ps.velocity );
+							if ( allowWallFlips )
+							{//okay to do wall-flips with this saber
+								//FIXME: check for drops?
+								//turn the cartwheel into a wallflip in the other dir
+								if ( rightdot > 0 )
+								{
+									anim = BOTH_WALL_FLIP_LEFT;
+									self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
+									VectorMA( self->client->ps.velocity, 150, right, self->client->ps.velocity );
+								}
+								else
+								{
+									anim = BOTH_WALL_FLIP_RIGHT;
+									self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
+									VectorMA( self->client->ps.velocity, -150, right, self->client->ps.velocity );
+								}
+								self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+								//animate me
+								int parts = SETANIM_LEGS;
+								if ( !self->client->ps.weaponTime )
+								{
+									parts = SETANIM_BOTH;
+								}
+								NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+								self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
+								self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
+								if ( self->client->NPC_class == CLASS_BOBAFETT 
+									|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
+								{
+									G_AddEvent( self, EV_JUMP, 0 );
+								}
+								else
+								{
+									G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
+								}
+								return EVASION_OTHER;
 							}
-							self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
-							//animate me
-							int parts = SETANIM_LEGS;
-							if ( !self->client->ps.weaponTime )
-							{
-								parts = SETANIM_BOTH;
-							}
-							NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-							self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
-							self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
-							if ( self->client->NPC_class == CLASS_BOBAFETT 
-								|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
-							{
-								G_AddEvent( self, EV_JUMP, 0 );
-							}
-							else
-							{
-								G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
-							}
-							return EVASION_OTHER;
 						}
 						else 
 						{//boxed in on both sides
@@ -2525,35 +2567,51 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 				//Try wall run?
 				if ( bestCheckDist )
 				{//one of the walls was close enough to wall-run on
-					//FIXME: check for long enough wall and a drop at the end?
-					if ( bestCheckDist > 0 )
-					{//it was to the right
-						anim = BOTH_WALL_RUN_RIGHT;
-					}
-					else
-					{//it was to the left
-						anim = BOTH_WALL_RUN_LEFT;
-					}
-					self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
-					//animate me
-					int parts = SETANIM_LEGS;
-					if ( !self->client->ps.weaponTime )
+					qboolean allowWallRuns = qtrue;
+					if ( self->client->ps.weapon == WP_SABER )
 					{
-						parts = SETANIM_BOTH;
+						if ( (self->client->ps.saber[0].saberFlags&SFL_NO_WALL_RUNS) )
+						{
+							allowWallRuns = qfalse;
+						}
+						else if ( self->client->ps.dualSabers 
+							&& (self->client->ps.saber[1].saberFlags&SFL_NO_WALL_RUNS) )
+						{
+							allowWallRuns = qfalse;
+						}
 					}
-					NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-					self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
-					self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
-					if ( self->client->NPC_class == CLASS_BOBAFETT 
-						|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
-					{
-						G_AddEvent( self, EV_JUMP, 0 );
+					if ( allowWallRuns )
+					{//okay to do wallruns with this saber
+						//FIXME: check for long enough wall and a drop at the end?
+						if ( bestCheckDist > 0 )
+						{//it was to the right
+							anim = BOTH_WALL_RUN_RIGHT;
+						}
+						else
+						{//it was to the left
+							anim = BOTH_WALL_RUN_LEFT;
+						}
+						self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+						//animate me
+						int parts = SETANIM_LEGS;
+						if ( !self->client->ps.weaponTime )
+						{
+							parts = SETANIM_BOTH;
+						}
+						NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+						self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
+						self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
+						if ( self->client->NPC_class == CLASS_BOBAFETT 
+							|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
+						{
+							G_AddEvent( self, EV_JUMP, 0 );
+						}
+						else
+						{
+							G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
+						}
+						return EVASION_OTHER;
 					}
-					else
-					{
-						G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
-					}
-					return EVASION_OTHER;
 				}
 				//else check for wall in front, do backflip off wall
 			}
@@ -4579,8 +4637,7 @@ void NPC_EvasionSaber( void )
 extern float WP_SpeedOfMissileForWeapon( int wp, qboolean alt_fire );
 static void Jedi_FaceEnemy( qboolean doPitch )
 {
-	vec3_t	enemy_eyes, eyes;
-	vec3_t	angles = { 0 };
+	vec3_t	enemy_eyes, eyes, angles;
 
 	if ( NPC == NULL )
 		return;

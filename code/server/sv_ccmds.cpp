@@ -43,21 +43,22 @@ static client_t *SV_SetPlayer( void ) {
 //=========================================================
 // don't call this directly, it should only be called from SV_Map_f() or SV_MapTransition_f()
 //
-static void SV_Map_( ForceReload_e eForceReload ) 
+static bool SV_Map_( ForceReload_e eForceReload ) 
 {
 	char	*map;
-//	char	expanded[MAX_QPATH];
+	char	expanded[MAX_QPATH];
 
 	map = Cmd_Argv(1);
 	if ( !*map ) {
-		return;
+		Com_Printf ("no map specified\n");
+		return false;
 	}
 
 	// make sure the level exists before trying to change, so that
 	// a typo at the server console won't end the game
 	if (strchr (map, '\\') ) {
 		Com_Printf ("Can't have mapnames with a \\\n");
-		return;
+		return false;
 	}
 
 #ifndef _XBOX	// Could check for maps/%s/brushes.mle or something...
@@ -69,16 +70,17 @@ static void SV_Map_( ForceReload_e eForceReload )
 		{//yes, it's happened, someone deleted a map during my build...
 			Com_Error( ERR_FATAL, "Can't find map %s\n", expanded );
 		}
-		return;
+		return false;
 	}
 #endif
 
 	if (map[0]!='_')
 	{
-		SG_WipeSavegame("Checkpoint");
+		SG_WipeSavegame("auto");
 	}
 
 	SV_SpawnServer( map, eForceReload, qtrue );	// start up the map
+	return true;
 }
 
 
@@ -250,20 +252,21 @@ static void SV_Map_f( void )
 		eForceReload = eForceReload_ALL;
 	}
 
-	SV_Map_( eForceReload );
-
-	// set the cheat value
-	// if the level was started with "map <levelname>", then
-	// cheats will not be allowed.  If started with "devmap <levelname>"
-	// then cheats will be allowed
-	if ( !Q_stricmpn( Cmd_Argv(0), "devmap", 6 ) ) {
-		Cvar_Set( "helpUsObi", "1" );
-	} else {
+	if (SV_Map_( eForceReload ))
+	{
+		// set the cheat value
+		// if the level was started with "map <levelname>", then
+		// cheats will not be allowed.  If started with "devmap <levelname>"
+		// then cheats will be allowed
+		if ( !Q_stricmpn( Cmd_Argv(0), "devmap", 6 ) ) {
+			Cvar_Set( "helpUsObi", "1" );
+		} else {
 #ifdef _XBOX
-		Cvar_Set( "helpUsObi", "1" );
+			Cvar_Set( "helpUsObi", "1" );
 #else
-		Cvar_Set( "helpUsObi", "0" );
+			Cvar_Set( "helpUsObi", "0" );
 #endif
+		}
 	}
 }
 

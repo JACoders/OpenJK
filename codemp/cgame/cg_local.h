@@ -71,7 +71,7 @@
 #define NUM_FONT_SMALL	2
 #define NUM_FONT_CHUNKY	3
 
-#define	NUM_CROSSHAIRS		1
+#define	NUM_CROSSHAIRS		9
 
 #define TEAM_OVERLAY_MAXNAME_WIDTH	32
 #define TEAM_OVERLAY_MAXLOCATION_WIDTH	64
@@ -164,6 +164,7 @@ typedef struct {
 	qboolean	torsoYawing;
 } lerpFrame_t;
 
+
 typedef struct {
 	lerpFrame_t		legs, torso, flag;
 	int				painTime;
@@ -244,8 +245,8 @@ typedef struct {
 //	char			headModelName[MAX_QPATH];
 //	char			headSkinName[MAX_QPATH];
 	char			forcePowers[MAX_QPATH];
-	char			redTeam[MAX_TEAMNAME];
-	char			blueTeam[MAX_TEAMNAME];
+//	char			redTeam[MAX_TEAMNAME];
+//	char			blueTeam[MAX_TEAMNAME];
 
 	char			teamName[MAX_TEAMNAME];
 
@@ -307,6 +308,10 @@ typedef struct {
 
 	int			superSmoothTime; //do crazy amount of smoothing
 
+#ifdef _XBOX
+	int			friendshipStatus;
+#endif
+	
 } clientInfo_t;
 
 //rww - cheap looping sound struct
@@ -338,20 +343,11 @@ typedef struct centity_s {
 	//from here up must be unified with bgEntity_t -rww
 
 	entityState_t	nextState;		// from cg.nextFrame, if available
-#ifdef _XBOX
-	qboolean		interpolate[2];	// true if next is valid to interpolate to
-	qboolean		currentValid[2];	// true if cg.frame holds this entity
-#else
 	qboolean		interpolate;	// true if next is valid to interpolate to
 	qboolean		currentValid;	// true if cg.frame holds this entity
-#endif
 
 	int				muzzleFlashTime;	// move to playerEntity?
-#ifdef _XBOX
-	int				previousEvent[2];
-#else
 	int				previousEvent;
-#endif
 //	int				teleportFlag;
 
 	int				trailTime;		// so missile trails can handle dropped initial packets
@@ -433,13 +429,8 @@ typedef struct centity_s {
 
 	void			*grip_arm; //pointer to a ghoul2 instance
 
-#ifdef _XBOX
-	int				trickAlpha[2];
-	int				trickAlphaTime[2];
-#else
 	int				trickAlpha;
 	int				trickAlphaTime;
-#endif
 
 	int				teamPowerEffectTime;
 	qboolean		teamPowerType; //0 regen, 1 heal, 2 drain, 3 absorb
@@ -468,10 +459,6 @@ typedef struct centity_s {
 	qboolean		cloaked;
 
 	int				vChatTime;
-
-#ifdef _XBOX
-	bool			updatedThisFrame;
-#endif
 } centity_t;
 
 
@@ -1010,7 +997,7 @@ Ghoul2 Insert End
 	char				sharedBuffer[MAX_CG_SHARED_BUFFER_SIZE];
 
 	short				radarEntityCount;
-	short				radarEntities[MAX_RADAR_ENTITIES];
+	short				radarEntities[MAX_CLIENTS+16];
 
 	short				bracketedEntityCount;
 	short				bracketedEntities[MAX_CLIENTS+16];
@@ -1078,11 +1065,12 @@ typedef enum
 // Other media that can be tied to clients, weapons, or items are
 // stored in the clientInfo_t, itemInfo_t, weaponInfo_t, and powerupInfo_t
 typedef struct {
-//	qhandle_t	charsetShader;
+	qhandle_t	charsetShader;
 	qhandle_t	whiteShader;
 
-	qhandle_t	loadTick;
-	qhandle_t	levelLoad;
+	qhandle_t	loadBarLED;
+	qhandle_t	loadBarLEDCap;
+	qhandle_t	loadBarLEDSurround;
 
 	qhandle_t	bryarFrontFlash;
 	qhandle_t	greenFrontFlash;
@@ -1158,12 +1146,12 @@ typedef struct {
 	qhandle_t	connectionShader;
 
 	qhandle_t	crosshairShader[NUM_CROSSHAIRS];
-//	qhandle_t	lagometerShader;
-//	qhandle_t	backTileShader;
+	qhandle_t	lagometerShader;
+	qhandle_t	backTileShader;
 
 	qhandle_t	numberShaders[11];
 	qhandle_t	smallnumberShaders[11];
-//	qhandle_t	chunkyNumberShaders[11];
+	qhandle_t	chunkyNumberShaders[11];
 
 	qhandle_t	electricBodyShader;
 	qhandle_t	electricBody2Shader;
@@ -1209,12 +1197,12 @@ typedef struct {
 	qhandle_t	disruptorChargeShader;
 
 	// Binocular graphics
-//	qhandle_t	binocularCircle;
-//	qhandle_t	binocularMask;
-//	qhandle_t	binocularArrow;
-//	qhandle_t	binocularTri;
-//	qhandle_t	binocularStatic;
-//	qhandle_t	binocularOverlay;
+	qhandle_t	binocularCircle;
+	qhandle_t	binocularMask;
+	qhandle_t	binocularArrow;
+	qhandle_t	binocularTri;
+	qhandle_t	binocularStatic;
+	qhandle_t	binocularOverlay;
 
 	// weapon effect models
 	qhandle_t	lightningExplosionModel;
@@ -1351,7 +1339,7 @@ typedef struct {
 	qhandle_t demp2Shell;
 	qhandle_t demp2ShellShader;
 
-//	qhandle_t cursor;
+	qhandle_t cursor;
 	qhandle_t selectCursor;
 	qhandle_t sizeCursor;
 
@@ -1368,10 +1356,10 @@ typedef struct {
 	qhandle_t rageRecShader;
 
 	//other HUD parts
-//	int			currentBackground;
-//	qhandle_t	weaponIconBackground;
-//	qhandle_t	forceIconBackground;
-//	qhandle_t	inventoryIconBackground;
+	int			currentBackground;
+	qhandle_t	weaponIconBackground;
+	qhandle_t	forceIconBackground;
+	qhandle_t	inventoryIconBackground;
 
 	sfxHandle_t	holocronPickup;
 
@@ -1533,11 +1521,7 @@ typedef struct {
 	float			screenXBias;
 
 	int				serverCommandSequence;	// reliable command stream counter
-#ifdef _XBOX
-	int				processedSnapshotNum[2];
-#else
 	int				processedSnapshotNum;// the number of snapshots cgame has requested
-#endif
 
 	qboolean		localServer;		// detected on startup by checking sv_running
 
@@ -1561,16 +1545,14 @@ typedef struct {
 	int				fDisable;
 
 	char			mapname[MAX_QPATH];
-	char			redTeam[MAX_QPATH];
-	char			blueTeam[MAX_QPATH];
+//	char			redTeam[MAX_QPATH];
+//	char			blueTeam[MAX_QPATH];
 
 	int				voteTime;
 	int				voteYes;
 	int				voteNo;
 	qboolean		voteModified;			// beep whenever changed
 	char			voteString[MAX_STRING_TOKENS];
-	char			voteCaller[32];			// Change this length????
-	qboolean		votePlaced;
 
 	int				teamVoteTime[2];
 	int				teamVoteYes[2];
@@ -1641,11 +1623,8 @@ extern siegeExtended_t cg_siegeExtendedData[MAX_CLIENTS];
 //==============================================================================
 
 extern	cgs_t			cgs;
-extern	cg_t			g_cg;
-extern  cg_t		   *cg;
-
-//extern	centity_t		cg_entities[MAX_GENTITIES];
-extern	centity_t		*cg_entities;
+extern	cg_t			cg;
+extern	centity_t		cg_entities[MAX_GENTITIES];
 
 extern	centity_t		*cg_permanents[MAX_GENTITIES];
 extern	int				cg_numpermanents;
@@ -1665,19 +1644,20 @@ extern	vmCvar_t		cg_shadows;
 extern	vmCvar_t		cg_renderToTextureFX;
 extern	vmCvar_t		cg_drawTimer;
 extern	vmCvar_t		cg_drawFPS;
-//extern	vmCvar_t		cg_drawSnapshot;
+extern	vmCvar_t		cg_drawSnapshot;
 extern	vmCvar_t		cg_draw3dIcons;
 extern	vmCvar_t		cg_drawIcons;
 extern	vmCvar_t		cg_drawAmmoWarning;
 extern	vmCvar_t		cg_drawCrosshair;
 extern	vmCvar_t		cg_drawCrosshairNames;
 extern	vmCvar_t		cg_drawRadar;
+extern	vmCvar_t		cg_drawVehLeadIndicator;
 extern	vmCvar_t		cg_drawAutomap;
 extern	vmCvar_t		cg_drawScores;
 extern	vmCvar_t		cg_dynamicCrosshair;
 extern	vmCvar_t		cg_dynamicCrosshairPrecision;
 extern	vmCvar_t		cg_drawRewards;
-//extern	vmCvar_t		cg_drawTeamOverlay;
+extern	vmCvar_t		cg_drawTeamOverlay;
 extern	vmCvar_t		cg_teamOverlayUserinfo;
 extern	vmCvar_t		cg_crosshairX;
 extern	vmCvar_t		cg_crosshairY;
@@ -1737,6 +1717,8 @@ extern	vmCvar_t		cg_fpls;
 
 extern	vmCvar_t		cg_ghoul2Marks;
 
+extern	vmCvar_t		cg_optvehtrace;
+
 extern	vmCvar_t		cg_saberDynamicMarks;
 extern	vmCvar_t		cg_saberDynamicMarkTime;
 
@@ -1768,7 +1750,7 @@ extern	vmCvar_t		cg_thirdPersonAlpha;
 extern	vmCvar_t		cg_thirdPersonHorzOffset;
 
 extern	vmCvar_t		cg_stereoSeparation;
-//extern	vmCvar_t		cg_lagometer;
+extern	vmCvar_t		cg_lagometer;
 extern	vmCvar_t		cg_drawEnemyInfo;
 extern	vmCvar_t		cg_synchronousClients;
 extern	vmCvar_t		cg_stats;
@@ -1802,19 +1784,17 @@ extern  vmCvar_t		cg_smallFont;
 extern  vmCvar_t		cg_bigFont;
 extern	vmCvar_t		cg_noTaunt;
 extern	vmCvar_t		cg_noProjectileTrail;
-extern	vmCvar_t		cg_trueLightning;
+//extern	vmCvar_t		cg_trueLightning;
 
-extern	vmCvar_t		cg_redTeamName;
-extern	vmCvar_t		cg_blueTeamName;
+//extern	vmCvar_t		cg_redTeamName;
+//extern	vmCvar_t		cg_blueTeamName;
 extern	vmCvar_t		cg_currentSelectedPlayer;
 extern	vmCvar_t		cg_currentSelectedPlayerName;
-extern	vmCvar_t		cg_singlePlayer;
-extern	vmCvar_t		cg_enableDust;
-extern	vmCvar_t		cg_enableBreath;
-extern	vmCvar_t		cg_singlePlayerActive;
+//extern	vmCvar_t		cg_singlePlayerActive;
 extern  vmCvar_t		cg_recordSPDemo;
 extern  vmCvar_t		cg_recordSPDemoName;
 
+extern	vmCvar_t		ui_myteam;
 extern  vmCvar_t		cg_snapshotTimeout;
 /*
 Ghoul2 Insert Start
@@ -1835,7 +1815,6 @@ const char *CG_ConfigString( int index );
 const char *CG_Argv( int arg );
 
 void QDECL CG_Printf( const char *msg, ... );
-void QDECL CG_PrintfAlways( const char *msg, ... );
 void QDECL CG_Error( const char *msg, ... );
 
 void CG_StartMusic( qboolean bForceStart );
@@ -1897,6 +1876,15 @@ void CG_DrawString( float x, float y, const char *string,
 
 void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charHeight,int style,qboolean zeroFill);
 
+void CG_DrawStringExt( int x, int y, const char *string, const float *setColor, 
+		qboolean forceColor, qboolean shadow, int charWidth, int charHeight, int maxChars );
+void CG_DrawBigString( int x, int y, const char *s, float alpha );
+void CG_DrawBigStringColor( int x, int y, const char *s, vec4_t color );
+void CG_DrawSmallString( int x, int y, const char *s, float alpha );
+void CG_DrawSmallStringColor( int x, int y, const char *s, vec4_t color );
+
+int CG_DrawStrlen( const char *str );
+
 float	*CG_FadeColor( int startMsec, int totalMsec );
 float *CG_TeamColor( int team );
 void CG_TileClear( void );
@@ -1916,8 +1904,8 @@ extern	int sortedTeamPlayers[TEAM_MAXOVERLAY];
 extern	int	numSortedTeamPlayers;
 extern  char systemChat[256];
 
-//void CG_AddLagometerFrameInfo( void );
-//void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
+void CG_AddLagometerFrameInfo( void );
+void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
 void CG_CenterPrint( const char *str, int y, int charWidth );
 void CG_DrawHead( float x, float y, float w, float h, int clientNum, vec3_t headAngles );
 void CG_DrawActive( stereoFrame_t stereoView );
@@ -2156,7 +2144,6 @@ void CG_SiegeObjectiveCompleted(centity_t *ent, int won, int objectivenum);
 
 // print message on the local console
 void		trap_Print( const char *fmt );
-void		trap_PrintAlways( const char *fmt );
 
 // abort the game
 void		trap_Error( const char *fmt );
@@ -2390,13 +2377,12 @@ typedef enum {
 } q3print_t; // bk001201 - warning: useless keyword or type name in empty declaration
 
 #include "../namespace_begin.h"
-/*
+
 int trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits);
 e_status trap_CIN_StopCinematic(int handle);
 e_status trap_CIN_RunCinematic (int handle);
 void trap_CIN_DrawCinematic (int handle);
 void trap_CIN_SetExtents (int handle, int x, int y, int w, int h);
-*/
 
 void trap_SnapVector( float *v );
 
@@ -2519,10 +2505,8 @@ void FX_BlasterWeaponHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid 
 
 #include "../namespace_begin.h"
 
-void		trap_G2API_GetModelName(void *ghoul2, const int modelIndex,
-		const char **modelName);
-
 void		trap_G2API_CollisionDetect		( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,int frameNumber, int entNum, const vec3_t rayStart, const vec3_t rayEnd, const vec3_t scale, int traceFlags, int useLod, float fRadius );
+void		trap_G2API_CollisionDetectCache		( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,int frameNumber, int entNum, const vec3_t rayStart, const vec3_t rayEnd, const vec3_t scale, int traceFlags, int useLod, float fRadius );
 
 /*
 Ghoul2 Insert Start
@@ -2623,8 +2607,6 @@ void *CG_G2WeaponInstance(centity_t *cent, int weapon);
 void CG_CheckPlayerG2Weapons(playerState_t *ps, centity_t *cent);
 
 void CG_SetSiegeTimerCvar( int msec );
-
-bool CG_ModelAllowed(void *ghoul2);
 
 /*
 Ghoul2 Insert End

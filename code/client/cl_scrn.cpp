@@ -362,8 +362,6 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 
 	// wide aspect ratio screens need to have the sides cleared
 	// unless they are displaying game renderings
-#ifndef _XBOX
-	// Xbox no want this
 	if ( cls.state != CA_ACTIVE ) {
 		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
 			re.SetColor( g_color_table[0] );
@@ -371,7 +369,6 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			re.SetColor( NULL );
 		}
 	}
-#endif
 
 	// if the menu is going to cover the entire screen, we
 	// don't need to render anything under it
@@ -395,10 +392,6 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			break;
 		case CA_LOADING:
 		case CA_PRIMED:
-			// We got past the time when the UI needs to prevent swapping
-			extern bool connectSwapOverride;
-			connectSwapOverride = false;
-
 			// draw the game information screen and loading progress
 			CL_CGameRendering( stereoFrame );
 			break;
@@ -425,7 +418,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	_UI_Refresh( cls.realtime );
 
 	// console draws next
-//	Con_DrawConsole ();
+	Con_DrawConsole ();
 
 	// debug graph can be drawn on top of anything
 #ifndef _XBOX
@@ -522,8 +515,8 @@ void SCR_PrecacheScreenshot()
 	// save the current screenshot to the user space to be used
 	// with a savegame
 #ifdef _XBOX
-	extern void SaveCompressedScreenshot( void );
-	SaveCompressedScreenshot();
+	extern void SaveCompressedScreenshot( const char* filename );
+	SaveCompressedScreenshot("u:\\saveimage.xbx");
 #endif
 
 }

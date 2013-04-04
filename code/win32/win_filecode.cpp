@@ -119,8 +119,7 @@ bool _buildFileListFromSavedList(void)
 {
 	// open the file up for reading
 	FILE*	in;
-	extern const char *Sys_RemapPath( const char *filename );
-	in = fopen( Sys_RemapPath( "xbx_filelist" ), "rb" );
+	in = fopen("d:\\xbx_filelist","rb");
 	if(!in)
 	{
 		return false;
@@ -171,8 +170,8 @@ bool _buildFileListFromSavedList(void)
 		info.size	=  *(int*)buffer;
 		buffer		+= sizeof(info.size);
 
-		// save the data - optimization: don't check for dupes!
-		s_Files->InsertUnsafe(info, code);
+		// save the data
+		s_Files->Insert(info, code);
 	}
 
 	fclose(in);
@@ -183,6 +182,7 @@ bool _buildFileListFromSavedList(void)
 bool Sys_SaveFileCodes(void)
 {
 	bool ret;
+	int res;
 
 	// get the number of files
 	int count;
@@ -239,8 +239,6 @@ void Sys_InitFileCodes(void)
 	bool ret;
 	int count = 0;
 
-	Z_PushNewDeleteTag( TAG_FILELIST );
-
 	// First: try to load an existing filecode cache
 	ret = _buildFileListFromSavedList();
 
@@ -257,8 +255,6 @@ void Sys_InitFileCodes(void)
 			Com_Error( ERR_DROP, "ERROR: Couldn't re-read filecode cache\n" );
 	}
 	s_Files->Sort();
-
-	Z_PopNewDeleteTag();
 
 	// make it thread safe
 	s_Mutex = CreateMutex(NULL, FALSE, NULL);
@@ -287,7 +283,7 @@ int Sys_GetFileCode(const char* name)
 	WaitForSingleObject(s_Mutex, INFINITE);
 
 	// Get system level path
-	char* osname = FS_BuildOSPathUnMapped(name);
+	char* osname = FS_BuildOSPath(name);
 	
 	// Generate hash for file name
 	strlwr(osname);

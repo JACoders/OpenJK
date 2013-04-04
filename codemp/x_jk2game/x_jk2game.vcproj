@@ -51,9 +51,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Oy-"
 				Optimization="2"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
+				InlineFunctionExpansion="1"
 				OmitFramePointers="FALSE"
 				OptimizeForProcessor="2"
 				PreprocessorDefinitions="NDEBUG;WIN32;MISSIONPACK;QAGAME;_JK2;_XBOX;_LIB;_GAME;GAME_HARD_LINKED;_JK2MP"
@@ -61,44 +59,6 @@
 				RuntimeLibrary="0"
 				BufferSecurityCheck="TRUE"
 				EnableFunctionLevelLinking="TRUE"
-				UsePrecompiledHeader="3"
-				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="3"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)/$(ProjectName).lib"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-		</Configuration>
-		<Configuration
-			Name="FinalBuild|Xbox"
-			OutputDirectory=".\..\x_exe\FinalBuild"
-			IntermediateDirectory=".\..\x_exe\FinalBuild\jk2game"
-			ConfigurationType="4"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
-				OptimizeForProcessor="2"
-				PreprocessorDefinitions="NDEBUG;WIN32;MISSIONPACK;QAGAME;_JK2;_XBOX;_LIB;_GAME;GAME_HARD_LINKED;_JK2MP;FINAL_BUILD;_FINAL"
-				StringPooling="TRUE"
-				RuntimeLibrary="0"
-				BufferSecurityCheck="TRUE"
-				EnableFunctionLevelLinking="TRUE"
-				EnableEnhancedInstructionSet="1"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
 				WarningLevel="3"
@@ -135,13 +95,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\FighterNPC.c">
@@ -153,13 +106,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -181,13 +127,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_AI_Atst.c">
@@ -199,13 +138,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -227,13 +159,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_AI_Droid.c">
@@ -250,8 +175,17 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\game\NPC_AI_GalakMech.c">
 				<FileConfiguration
-					Name="FinalBuild|Xbox">
+					Name="Debug|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -273,13 +207,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_AI_Howler.c">
@@ -291,13 +218,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -319,8 +239,17 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\game\NPC_AI_Interrogator.c">
 				<FileConfiguration
-					Name="FinalBuild|Xbox">
+					Name="Debug|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -342,8 +271,33 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\game\NPC_AI_Mark1.c">
 				<FileConfiguration
-					Name="FinalBuild|Xbox">
+					Name="Debug|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						CompileAs="2"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\game\NPC_AI_Mark2.c">
+				<FileConfiguration
+					Name="Debug|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -365,13 +319,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_AI_Rancor.c">
@@ -383,13 +330,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -411,13 +351,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_AI_Seeker.c">
@@ -429,13 +362,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -457,13 +383,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_AI_Sniper.c">
@@ -475,13 +394,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -503,13 +415,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_AI_Utils.c">
@@ -521,13 +426,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -549,13 +447,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_behavior.c">
@@ -567,13 +458,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -595,13 +479,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_goal.c">
@@ -613,13 +490,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -641,13 +511,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_move.c">
@@ -659,13 +522,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -687,13 +543,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_senses.c">
@@ -705,13 +554,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -733,13 +575,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_spawn.c">
@@ -751,13 +586,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -779,13 +607,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\NPC_utils.c">
@@ -797,13 +618,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -825,13 +639,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\WalkerNPC.c">
@@ -843,13 +650,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -871,13 +671,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\ai_util.c">
@@ -889,13 +682,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -917,13 +703,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\bg_g2_utils.c">
@@ -935,13 +714,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -963,13 +735,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\bg_panimate.c">
@@ -981,13 +746,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1009,13 +767,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\bg_saber.c">
@@ -1027,13 +778,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1055,13 +799,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\bg_saga.c">
@@ -1073,13 +810,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1101,13 +831,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\bg_vehicleLoad.c">
@@ -1119,13 +842,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1147,13 +863,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_ICARUScb.c">
@@ -1165,13 +874,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1193,13 +895,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_arenas.c">
@@ -1211,13 +906,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1239,13 +927,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_client.c">
@@ -1257,13 +938,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1285,13 +959,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_combat.c">
@@ -1303,13 +970,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1331,13 +991,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_items.c">
@@ -1354,8 +1007,17 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\game\g_log.c">
 				<FileConfiguration
-					Name="FinalBuild|Xbox">
+					Name="Debug|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1377,13 +1039,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_mem.c">
@@ -1395,13 +1050,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1423,13 +1071,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_missile.c">
@@ -1441,13 +1082,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1469,13 +1103,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_nav.c">
@@ -1487,13 +1114,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1515,13 +1135,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_object.c">
@@ -1533,13 +1146,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1561,13 +1167,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_session.c">
@@ -1579,13 +1178,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1607,13 +1199,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_strap.c">
@@ -1625,13 +1210,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1653,13 +1231,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_syscalls.c">
@@ -1671,13 +1242,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1699,13 +1263,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_team.c">
@@ -1717,13 +1274,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1745,13 +1295,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_trigger.c">
@@ -1763,13 +1306,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1791,13 +1327,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_turret_G2.c">
@@ -1809,13 +1338,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1837,13 +1359,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_vehicleTurret.c">
@@ -1855,13 +1370,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1883,13 +1391,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\g_weapon.c">
@@ -1901,13 +1402,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1929,13 +1423,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\q_shared.c">
@@ -1947,13 +1434,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
@@ -1975,13 +1455,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\w_force.c">
@@ -1998,13 +1471,6 @@
 						UsePrecompiledHeader="0"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\game\w_saber.c">
@@ -2016,13 +1482,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"

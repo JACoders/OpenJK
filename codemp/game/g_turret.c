@@ -61,7 +61,6 @@ void auto_turret_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	self->die = NULL;
 	self->takedamage = qfalse;
 	self->s.health = self->health = 0;
-	self->s.maxhealth = self->maxHealth = 0;
 	self->s.loopSound = 0;
 	self->s.shouldtarget = qfalse;
 	//self->s.owner = MAX_CLIENTS; //not owned by any client
@@ -113,9 +112,6 @@ void auto_turret_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 void bottom_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath )
 //------------------------------------------------------------------------------------------------------------
 {
-	// Always clear my max health, otherwise, the top dies first, and this check fails:
-	self->s.maxhealth = self->maxHealth = 0;	// BTO - Is this the right fix?
-
 	if (self->target_ent && self->target_ent->health > 0)
 	{
 		self->target_ent->health = self->health;
@@ -660,11 +656,15 @@ Large 2-piece turbolaser turret
 	0 - none
 	1 - red
 	2 - blue
+
+"icon" - icon that represents the objective on the radar
 */
 //-----------------------------------------------------
 void SP_misc_turret( gentity_t *base )
 //-----------------------------------------------------
 {
+	char* s;
+
 	base->s.modelindex2 = G_ModelIndex( "models/map_objects/hoth/turret_bottom.md3" );
 	base->s.modelindex = G_ModelIndex( "models/map_objects/hoth/turret_base.md3" );
 	//base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/turret_canon.glm", base->s.modelindex );
@@ -672,6 +672,14 @@ void SP_misc_turret( gentity_t *base )
 
 	//gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL ); 
 	//base->torsoBolt = gi.G2API_AddBolt( &base->ghoul2[base->playerModel], "*flash03" );
+
+	G_SpawnString( "icon", "", &s );
+	if (s && s[0])
+	{ 
+		// We have an icon, so index it now.  We are reusing the genericenemyindex
+		// variable rather than adding a new one to the entity state.
+		base->s.genericenemyindex = G_IconIndex(s);
+	}
 
 	G_SetAngles( base, base->s.angles );
 	G_SetOrigin( base, base->s.origin );

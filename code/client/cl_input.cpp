@@ -52,7 +52,6 @@ qboolean	in_mlooking;
 #ifdef _XBOX
 HotSwapManager swapMan1(HOTSWAP_ID_WHITE);
 HotSwapManager swapMan2(HOTSWAP_ID_BLACK);
-HotSwapManager swapMan3(HOTSWAP_ID_YELLOW);
 
 
 void IN_HotSwap1On(void)
@@ -60,14 +59,10 @@ void IN_HotSwap1On(void)
 	swapMan1.SetDown();
 }
 
+
 void IN_HotSwap2On(void)
 {
 	swapMan2.SetDown();
-}
-
-void IN_HotSwap3On(void)
-{
-	swapMan3.SetDown();
 }
 
 
@@ -76,14 +71,10 @@ void IN_HotSwap1Off(void)
 	swapMan1.SetUp();
 }
 
+
 void IN_HotSwap2Off(void)
 {
 	swapMan2.SetUp();
-}
-
-void IN_HotSwap3Off(void)
-{
-	swapMan3.SetUp();
 }
 
 
@@ -91,13 +82,12 @@ void CL_UpdateHotSwap(void)
 {
 	swapMan1.Update();
 	swapMan2.Update();
-	swapMan3.Update();
 }
 
 
 bool CL_ExtendSelectTime(void)
 {
-	return swapMan1.ButtonDown() || swapMan2.ButtonDown() || swapMan3.ButtonDown();
+	return swapMan1.ButtonDown() || swapMan2.ButtonDown();
 }
 #endif
 
@@ -367,7 +357,6 @@ CL_AdjustAngles
 Moves the local angle positions
 ================
 */
-/*
 void CL_AdjustAngles( void ) {
 	float	speed;
 	
@@ -401,7 +390,6 @@ void CL_AdjustAngles( void ) {
 		cl.viewangles[PITCH] += speed*cl_pitchspeed->value * CL_KeyState (&in_lookdown);
 	}
 }
-*/
 
 /*
 ================
@@ -486,15 +474,53 @@ void CL_JoystickEvent( int axis, int value, int time ) {
 CL_JoystickMove
 =================
 */
-void CL_JoystickMove( usercmd_t *cmd )
-{
-	cmd->rightmove = ClampChar( cmd->rightmove + cl.joystickAxis[AXIS_SIDE] );
-	cmd->forwardmove = ClampChar( cmd->forwardmove + cl.joystickAxis[AXIS_FORWARD] );
-	cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
+void CL_JoystickMove( usercmd_t *cmd ) {
+	int		movespeed;
+	float	anglespeed;
 
-	// Smarter run-speed detection, taking diagonals into account!
-	if( (cmd->forwardmove * cmd->forwardmove + cmd->rightmove * cmd->rightmove) < (MOVE_RUN * MOVE_RUN) )
+	if ( in_speed.active ^ cl_run->integer ) {
+		movespeed = 2;
+	} else {
+		movespeed = 1;
 		cmd->buttons |= BUTTON_WALKING;
+	}
+
+	if ( in_speed.active ) {
+		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
+	} else {
+		anglespeed = 0.001 * cls.frametime;
+	}
+
+#ifndef _XBOX
+	if ( !in_strafe.active ) {
+		if ( cl_mYawOverride )
+		{
+			cl.viewangles[YAW] += 5.0f * cl_mYawOverride * cl.joystickAxis[AXIS_SIDE];
+		}
+		else
+		{
+			cl.viewangles[YAW] += anglespeed * (cl_yawspeed->value / 100.0f) * cl.joystickAxis[AXIS_SIDE];
+		}
+	} else
+#endif
+	{
+		cmd->rightmove = ClampChar( cmd->rightmove + cl.joystickAxis[AXIS_SIDE] );
+	}
+
+	if ( in_mlooking ) {
+		if ( cl_mPitchOverride )
+		{
+			cl.viewangles[PITCH] += 5.0f * cl_mPitchOverride * cl.joystickAxis[AXIS_FORWARD];
+		}
+		else
+		{
+			cl.viewangles[PITCH] += anglespeed * (cl_pitchspeed->value / 100.0f) * cl.joystickAxis[AXIS_FORWARD];
+		}
+	} else {
+		cmd->forwardmove = ClampChar( cmd->forwardmove + cl.joystickAxis[AXIS_FORWARD] );
+	}
+
+	cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
 }
 
 /*
@@ -521,49 +547,67 @@ void CL_MouseClamp(int *x, int *y)
 }
 #endif
 
-extern short cg_crossHairStatus;
-
-void CL_MouseMove( usercmd_t *cmd )
-{
-	const float mouseSpeedX = 0.06f;
-	const float mouseSpeedY = 0.05f;
-	const float m_hoverSensitivity = 0.4f;
-
+void CL_MouseMove( usercmd_t *cmd ) {
+	float	mx, my;
+	float	accelSensitivity;
+	float	rate;
 	const float	speed = static_cast<float>(frame_msec);
 	const float pitch = m_pitch->value;
 
-	// Get raw stick values:
-	int ax = cl.mouseDx[cl.mouseIndex];
-	int ay = cl.mouseDy[cl.mouseIndex];
-	// Run them through our filter:
-	CL_MouseClamp(&ax, &ay);
+#ifdef _XBOX
+	const float mouseSpeedX = 0.06f;
+	const float mouseSpeedY = 0.05f;
 
-	// Adjust for frame duration and make horizontal slightly faster:
-	float mx = ax * speed * mouseSpeedX;
-	float my = ay * speed * mouseSpeedY;
-	// Save these before we start tuning them, in case user is on a vehicle with overrides:
-	float rawMx = mx;
-	float rawMy = my;
+	// allow mouse smoothing
+	if ( m_filter->integer ) {
+		mx = ( cl.mouseDx[0] + cl.mouseDx[1] ) * 0.5f * frame_msec * mouseSpeedX;
+		my = ( cl.mouseDy[0] + cl.mouseDy[1] ) * 0.5f * frame_msec * mouseSpeedY;
+	} else {
+		int ax = cl.mouseDx[cl.mouseIndex];
+		int ay = cl.mouseDy[cl.mouseIndex];
+		CL_MouseClamp(&ax, &ay);
+		
+		mx = ax * speed * mouseSpeedX;	
+		my = ay * speed * mouseSpeedY;		
+	}
 
-	// Slow it down when targeting an enemy:
+	extern short cg_crossHairStatus;
+	const float m_hoverSensitivity = 0.4f;
 	if (cg_crossHairStatus == 1)
 	{
 		mx *= m_hoverSensitivity;
 		my *= m_hoverSensitivity;
 	}
+#else
+	// allow mouse smoothing
+	if ( m_filter->integer ) {
+		mx = ( cl.mouseDx[0] + cl.mouseDx[1] ) * 0.5;
+		my = ( cl.mouseDy[0] + cl.mouseDy[1] ) * 0.5;
+	} else {
+		mx = cl.mouseDx[cl.mouseIndex];
+		my = cl.mouseDy[cl.mouseIndex];
+	}
+#endif
 
-	// Switch entries, clear values:
 	cl.mouseIndex ^= 1;
 	cl.mouseDx[cl.mouseIndex] = 0;
 	cl.mouseDy[cl.mouseIndex] = 0;
 
-	// scale by FOV and user settings:
-	mx *= cl_sensitivity->value * cl.cgameSensitivity;
+	rate = SQRTFAST( mx * mx + my * my ) / speed;
+	accelSensitivity = cl_sensitivity->value + rate * cl_mouseAccel->value;
 
-	// note the capital Y in the cvarname - scale by FOV and settings:
-	my *= cl_sensitivityY->value * cl.cgameSensitivity;
+	// scale by FOV
+	accelSensitivity *= cl.cgameSensitivity;
+
+	if ( rate && cl_showMouseRate->integer ) {
+		Com_Printf( "%f : %f\n", rate, accelSensitivity );
+	}
+
+	mx *= accelSensitivity;
+	my *= accelSensitivity;
 
 	if (!mx && !my) {
+#ifdef _XBOX
 		// If there was a movement but no change in angles then start auto-leveling the camera
 		extern int g_lastFireTime;
 		float autolevelSpeed = 0.03f;
@@ -600,27 +644,48 @@ void CL_MouseMove( usercmd_t *cmd )
 				if (cl.viewangles[PITCH] > normAngle) cl.viewangles[PITCH] = normAngle;
 			}
 		}
+#endif
 		return;
 	}
 
-	// Do yaw - use un-tweaked number if override is active:
-	if ( cl_mYawOverride )
-		cl.viewangles[YAW] -= cl_mYawOverride * rawMx;
-	else
-		cl.viewangles[YAW] -= m_yaw->value * mx;
-
-	// Do pitch - use un-tweaked number if override is active:
-	const float cl_pitchSensitivity = 0.5f;	// Should be a cvar!
-	if ( cl_mPitchOverride )
-	{
-		if ( pitch > 0 )
-			cl.viewangles[PITCH] += cl_mPitchOverride * rawMy * cl_pitchSensitivity;
+	// add mouse X/Y movement to cmd
+	if ( in_strafe.active ) {
+		cmd->rightmove = ClampChar( cmd->rightmove + m_side->value * mx );
+	} else {
+		if ( cl_mYawOverride )
+		{
+			cl.viewangles[YAW] -= cl_mYawOverride * mx;
+		}
 		else
-			cl.viewangles[PITCH] -= cl_mPitchOverride * rawMy * cl_pitchSensitivity;
+		{
+			cl.viewangles[YAW] -= m_yaw->value * mx;
+		}
 	}
-	else
-	{
-		cl.viewangles[PITCH] += pitch * my * cl_pitchSensitivity;
+
+	if ( (in_mlooking || cl_freelook->integer) && !in_strafe.active ) {
+		// VVFIXME - This is supposed to be a CVAR
+#ifdef _XBOX
+		const float cl_pitchSensitivity = 0.5f;
+#else
+		const float cl_pitchSensitivity = 1.0f;
+#endif
+		if ( cl_mPitchOverride )
+		{
+			if ( pitch > 0 )
+			{
+				cl.viewangles[PITCH] += cl_mPitchOverride * my * cl_pitchSensitivity;
+			}
+			else
+			{
+				cl.viewangles[PITCH] -= cl_mPitchOverride * my * cl_pitchSensitivity;
+			}
+		}
+		else
+		{
+			cl.viewangles[PITCH] += pitch * my * cl_pitchSensitivity;
+		}
+	} else {
+		cmd->forwardmove = ClampChar( cmd->forwardmove - m_forward->value * my );
 	}
 }
 
@@ -703,7 +768,7 @@ usercmd_t CL_CreateCmd( void ) {
 	VectorCopy( cl.viewangles, oldAngles );
 
 	// keyboard angle adjustment
-//	CL_AdjustAngles ();
+	CL_AdjustAngles ();
 	
 	memset( &cmd, 0, sizeof( cmd ) );
 
@@ -711,19 +776,6 @@ usercmd_t CL_CreateCmd( void ) {
 
 	// get basic movement from keyboard
 	CL_KeyMove (&cmd);
-
-#ifdef XBOX_DEMO
-	static int lastStickData = cl.mouseDx[cl.mouseIndex] + cl.mouseDy[cl.mouseIndex] +
-							   cl.joystickAxis[AXIS_SIDE] + cl.joystickAxis[AXIS_FORWARD];
-	int newStickData = cl.mouseDx[cl.mouseIndex] + cl.mouseDy[cl.mouseIndex] +
-					   cl.joystickAxis[AXIS_SIDE] + cl.joystickAxis[AXIS_FORWARD];
-	if( lastStickData != newStickData )
-	{
-		extern void Demo_TimerKeypress( void );
-		Demo_TimerKeypress();
-	}
-	lastStickData = newStickData;
-#endif
 
 	// get basic movement from mouse
 	CL_MouseMove( &cmd );
@@ -1004,10 +1056,8 @@ void CL_InitInput( void ) {
 #ifdef _XBOX
 	Cmd_AddCommand ("+hotswap1", IN_HotSwap1On);
 	Cmd_AddCommand ("+hotswap2", IN_HotSwap2On);
-	Cmd_AddCommand ("+hotswap3", IN_HotSwap3On);
 	Cmd_AddCommand ("-hotswap1", IN_HotSwap1Off);
 	Cmd_AddCommand ("-hotswap2", IN_HotSwap2Off);
-	Cmd_AddCommand ("-hotswap3", IN_HotSwap3Off);
 #endif
 	Cmd_AddCommand ("useGivenForce", IN_UseGivenForce);
 	//buttons
@@ -1029,6 +1079,8 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-altattack", IN_Button7Up);
 	Cmd_AddCommand ("+forcefocus", IN_Button8Down);//special saber attacks
 	Cmd_AddCommand ("-forcefocus", IN_Button8Up);
+	Cmd_AddCommand ("+block", IN_Button8Down);//manual blocking
+	Cmd_AddCommand ("-block", IN_Button8Up);
 	//end buttons
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);

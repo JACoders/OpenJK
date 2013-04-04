@@ -12,11 +12,6 @@ FORCE INTERFACE
 #include "../qcommon/qfiles.h"
 #include "ui_force.h"
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#endif
-
 int uiForceSide = FORCE_LIGHTSIDE;
 int uiJediNonJedi = -1;
 int uiForceRank = FORCE_MASTERY_JEDI_KNIGHT;
@@ -27,14 +22,7 @@ int uiForceAvailable=0;
 
 extern const char *UI_TeamName(int team);
 
-#ifdef _XBOX
-qboolean gTouchedForce[2] = { qfalse, qfalse };
-qboolean  gcustomConfigChanged;
-
-#else
 qboolean gTouchedForce = qfalse;
-#endif
-
 vmCvar_t	ui_freeSaber, ui_forcePowerDisable;
 
 #include "../namespace_begin.h"
@@ -141,7 +129,7 @@ void UI_InitForceShaders(void)
 void UI_DrawForceStars(rectDef_t *rect, float scale, vec4_t color, int textStyle, int forceindex, int val, int min, int max) 
 {
 	int	i,pad = 4;
-	int	xPos,width = 24;
+	int	xPos,width = 16;
 	int starcolor;
 
 	if (val < min || val > max) 
@@ -182,13 +170,9 @@ void UI_DrawForceStars(rectDef_t *rect, float scale, vec4_t color, int textStyle
 	}
 }
 
-
 // Set the client's force power layout.
 void UI_UpdateClientForcePowers(const char *teamArg)
 {
-	int clientNum = ClientManager::ActiveClientNum();
-	
-	
 	trap_Cvar_Set( "forcepowers", va("%i-%i-%i%i%i%i%i%i%i%i%i%i%i%i%i%i%i%i%i%i",
 		uiForceRank, uiForceSide, uiForcePowersRank[0], uiForcePowersRank[1],
 		uiForcePowersRank[2], uiForcePowersRank[3], uiForcePowersRank[4],
@@ -198,69 +182,19 @@ void UI_UpdateClientForcePowers(const char *teamArg)
 		uiForcePowersRank[14], uiForcePowersRank[15], uiForcePowersRank[16],
 		uiForcePowersRank[17]) );
 
-	ClientManager::ActiveClient().cvar_modifiedFlags |= CVAR_USERINFO;
-	//move it to the client data
-	strcpy(ClientManager::ActiveClient().forcePowers, Cvar_VariableString("forcePowers"));
-	
-	if ( ClientManager::NumClients()>1 && ClientManager::ActiveClientNum() == 0)
+	if (gTouchedForce)
 	{
-		if (Q_stricmp("joingame2player",Cvar_VariableString("ui_menuProgression"))==0)
-		{
-			Cvar_Set("Player1TeamStorage", teamArg);
-			return;
-		}
-	}
-	
-	if (gTouchedForce[ClientManager::ActiveClientNum()])
-	{
-	
 		if (teamArg && teamArg[0])
 		{
-		//	trap_Cmd_ExecuteText( EXEC_APPEND, va("forcechanged \"%s\"\n", teamArg) );
-	
-			AddDeferedCommand("wait");
-			AddDeferedCommand("wait");
-			AddDeferedCommand(va("forcechanged \"%s\"\n", teamArg));
-		//	AddDeferedCommand("wait");
+			trap_Cmd_ExecuteText( EXEC_APPEND, va("forcechanged \"%s\"\n", teamArg) );
 		}
 		else
 		{
-		//	trap_Cmd_ExecuteText( EXEC_APPEND, "forcechanged\n" );
-			AddDeferedCommand("wait");
-			AddDeferedCommand("forcechanged\n");
-		//	AddDeferedCommand("wait");
+			trap_Cmd_ExecuteText( EXEC_APPEND, "forcechanged\n" );
 		}
 	}
 
-	gTouchedForce[ClientManager::ActiveClientNum()] = qfalse;
-	int oldClientNum = ClientManager::ActiveClientNum();
-	if ( ClientManager::NumClients()>1)
-	{
-		char * player1Team;
-		ClientManager::ActivateClient(0);
-		if (gTouchedForce[ClientManager::ActiveClientNum()])
-		{
-
-			player1Team = Cvar_VariableString("Player1TeamStorage");
-			if (player1Team && player1Team[0])
-			{
-				//trap_Cmd_ExecuteText( EXEC_APPEND, va("forcechanged \"%s\"\n", player1Team) );
-				AddDeferedCommand("wait");
-				AddDeferedCommand("wait");
-				AddDeferedCommand(va("forcechanged \"%s\"\n", player1Team));
-			//	AddDeferedCommand("wait");
-			}
-			else
-			{
-				//trap_Cmd_ExecuteText( EXEC_APPEND, "forcechanged\n" );
-				AddDeferedCommand("wait");
-				AddDeferedCommand("forcechanged\n");
-			//	AddDeferedCommand("wait");
-			}
-		}
-		gTouchedForce[ClientManager::ActiveClientNum()] = qfalse;
-		ClientManager::ActivateClient(oldClientNum);
-	}
+	gTouchedForce = qfalse;
 }
 
 int UI_TranslateFCFIndex(int index)
@@ -273,7 +207,6 @@ int UI_TranslateFCFIndex(int index)
 	return index-uiInfo.forceConfigDarkIndexBegin;
 }
 
-#ifndef _XBOX
 void UI_SaveForceTemplate()
 {
 	char *selectedName = UI_Cvar_VariableString("ui_SaveFCF");
@@ -350,7 +283,6 @@ void UI_SaveForceTemplate()
 		Menu_SetFeederSelection(NULL, FEEDER_FORCECFG, 0, NULL);
 	}
 }
-#endif // _XBOX
 
 
 // 
@@ -370,16 +302,6 @@ void UpdateForceUsed()
 	if (uiForcePowersRank[FP_LEVITATION]<1)
 	{
 		uiForcePowersRank[FP_LEVITATION]=1;
-	}
-
-	char info[MAX_INFO_VALUE];
-	info[0] = '\0';
-	trap_GetConfigString(CS_SERVERINFO, info, sizeof(info));
-
-	if (atoi( Info_ValueForKey( info, "g_maxForceRank" ) ) == 0)
-	{
-		uiForcePowersRank[FP_SABER_OFFENSE] = NUM_FORCE_POWER_LEVELS-1;
-		uiForcePowersRank[FP_SABER_DEFENSE] = NUM_FORCE_POWER_LEVELS-1;
 	}
 
 	if ( UI_TrueJediEnabled() )
@@ -431,7 +353,7 @@ void UpdateForceUsed()
 			if ( update )
 			{
 				int myTeam;
-				myTeam = ClientManager::ActiveClient().myTeam;
+				myTeam = (int)(trap_Cvar_VariableValue("ui_myteam"));
 				if ( myTeam != TEAM_SPECTATOR )
 				{
 					UI_UpdateClientForcePowers(UI_TeamName(myTeam));//will cause him to respawn, if it's been 5 seconds since last one
@@ -443,7 +365,6 @@ void UpdateForceUsed()
 			}
 		}
 	}
-
 
 	menu = Menus_FindByName("ingame_playerforce");
 	// Set the cost of the saberattack according to whether its free.
@@ -500,30 +421,6 @@ void UpdateForceUsed()
 		}
 	}
 
-	menu = Menus_FindByName("ingame_forcepoints");
-	if (uiForcePowersRank[FP_SABER_OFFENSE]<1)
-	{
-		if (menu)
-		{
-			Menu_ShowItemByName(menu, "setfp_saberdefend", qfalse);
-			Menu_ShowItemByName(menu, "setfp_saberthrow", qfalse);
-			Menu_ShowItemByName(menu, "effectentry", qfalse);
-			Menu_ShowItemByName(menu, "effectfield", qfalse);
-			Menu_ShowItemByName(menu, "nosaber", qtrue);
-		}
-	}
-	else
-	{
-		if (menu)
-		{
-			Menu_ShowItemByName(menu, "setfp_saberdefend", qtrue);
-			Menu_ShowItemByName(menu, "setfp_saberthrow", qtrue);
-			Menu_ShowItemByName(menu, "effectentry", qtrue);
-			Menu_ShowItemByName(menu, "effectfield", qtrue);
-			Menu_ShowItemByName(menu, "nosaber", qfalse);		
-		}
-	}
-
 	// Make sure that we're still legal.
 	for (curpower=0;curpower<NUM_FORCE_POWERS;curpower++)
 	{	// Make sure that our ranks are within legal limits.
@@ -543,21 +440,7 @@ void UpdateForceUsed()
 					// Do nothing (written this way for clarity)
 				}
 				else
-				{	
-					//BYPASS THE COST OF SABER OFFENSE AND DEFENSE WHEN IN 0 FORCE MODE
-					if ( curpower == FP_SABER_OFFENSE || curpower == FP_SABER_DEFENSE)
-					{
-						char info[MAX_INFO_VALUE];
-						info[0] = '\0';
-						trap_GetConfigString(CS_SERVERINFO, info, sizeof(info));
-
-						if (atoi( Info_ValueForKey( info, "g_maxForceRank" ) ) == 0)
-						{
-							continue;
-						}
-					}
-
-					// Check if we can accrue the cost of this power.
+				{	// Check if we can accrue the cost of this power.
 					if (bgForcePowerCost[curpower][currank] > uiForceAvailable)
 					{	// We can't afford this power.  Break to the next one.
 						// Remove this power from the player's roster.
@@ -615,8 +498,7 @@ void UI_ReadLegalForce(void)
 
 	if (atoi( Info_ValueForKey( info, "g_forceBasedTeams" ) ))
 	{
-		switch((int)(trap_Cvar_VariableValue("xb_joinTeam")))
-	//	switch(ClientManager::ActiveClient().myTeam)
+		switch((int)(trap_Cvar_VariableValue("ui_myteam")))
 		{
 		case TEAM_RED:
 			forceTeam = FORCE_DARKSIDE;
@@ -684,12 +566,7 @@ void UI_ReadLegalForce(void)
 	}
 	uiForceUsed = 0;
 	uiForceAvailable = forceMasteryPoints[uiForceRank];
-
-#ifdef _XBOX
-	gTouchedForce[ClientManager::ActiveClientNum()] = qtrue;
-#else
 	gTouchedForce = qtrue;
-#endif
 
 	for (c=0;fcfString[i]&&c<NUM_FORCE_POWERS;c++,i++)
 	{
@@ -746,35 +623,16 @@ void UI_ReadLegalForce(void)
 
 	if (updateForceLater)
 	{
-#ifdef _XBOX
-		gTouchedForce[ClientManager::ActiveClientNum()] = qtrue;
-#else
 		gTouchedForce = qtrue;
-#endif
 		UI_UpdateClientForcePowers(NULL);
 	}
 }
 
 void UI_UpdateForcePowers()
 {
-	char *forcePowers;
+	char *forcePowers = UI_Cvar_VariableString("forcepowers");
 	char readBuf[256];
 	int i = 0, i_f = 0, i_r = 0;
-
-	//load the custom config
-	Cvar_Set("forcepowers", ClientManager::ActiveClient().forcePowers);
-
-		
-
-
-	
-//	if (ClientManager::ActiveClientNum()==0)
-//		forcePowers = UI_Cvar_VariableString("forcepowers");
-//	else
-//		forcePowers = UI_Cvar_VariableString("forcepowers2");
-
-	forcePowers = UI_Cvar_VariableString("forcepowers");
-
 
 	uiForceSide = 0;
 
@@ -863,10 +721,10 @@ void UI_UpdateForcePowers()
 			i++;
 		}
 	}
-	
+
 validitycheck:
 
-	if (!uiForceSide)//1 is light, 2 is dark
+	if (!uiForceSide)
 	{
 		uiForceSide = 1;
 		uiForceRank = 1;
@@ -948,10 +806,9 @@ qboolean UI_ForceSide_HandleKey(int flags, float *special, int key, int num, int
 	info[0] = '\0';
 	trap_GetConfigString(CS_SERVERINFO, info, sizeof(info));
 
-	/*
 	if (atoi( Info_ValueForKey( info, "g_forceBasedTeams" ) ))
 	{
-		switch(ClientManager::ActiveClient().myTeam)
+		switch((int)(trap_Cvar_VariableValue("ui_myteam")))
 		{
 		case TEAM_RED:
 			return qfalse;
@@ -961,13 +818,8 @@ qboolean UI_ForceSide_HandleKey(int flags, float *special, int key, int num, int
 			break;
 		}
 	}
-	*/
 
-#ifdef _XBOX
-	if (key == A_CURSOR_RIGHT || key == A_CURSOR_LEFT)
-#else
 	if (key == A_MOUSE1 || key == A_MOUSE2 || key == A_ENTER || key == A_KP_ENTER) 
-#endif
 	{
 		int i = num;
 		int x = 0;
@@ -975,11 +827,7 @@ qboolean UI_ForceSide_HandleKey(int flags, float *special, int key, int num, int
 		//update the feeder item selection, it might be different depending on side
 		Menu_SetFeederSelection(NULL, FEEDER_FORCECFG, 0, NULL);
 
-#ifdef _XBOX
-		if (key == A_CURSOR_LEFT)
-#else
 		if (key == A_MOUSE2)
-#endif
 		{
 			i--;
 		}
@@ -1013,11 +861,7 @@ qboolean UI_ForceSide_HandleKey(int flags, float *special, int key, int num, int
 
 		UpdateForceUsed();
 
-#ifdef _XBOX
-		gTouchedForce[ClientManager::ActiveClientNum()] = qtrue;
-#else
 		gTouchedForce = qtrue;
-#endif
 		return qtrue;
 	}
 	return qfalse;
@@ -1065,7 +909,7 @@ qboolean UI_JediNonJedi_HandleKey(int flags, float *special, int key, int num, i
 		// Resetting power ranks based on if light or dark side is chosen
 		if ( !num )
 		{//not a jedi?
-			int myTeam = ClientManager::ActiveClient().myTeam;
+			int myTeam = (int)(trap_Cvar_VariableValue("ui_myteam"));
 			while ( x < NUM_FORCE_POWERS )
 			{//clear all force powers
 				uiForcePowersRank[x] = 0;
@@ -1094,11 +938,7 @@ qboolean UI_JediNonJedi_HandleKey(int flags, float *special, int key, int num, i
 
 		UpdateForceUsed();
 
-#ifdef _XBOX
-		gTouchedForce[ClientManager::ActiveClientNum()] = qtrue;
-#else
 		gTouchedForce = qtrue;
-#endif
 		return qtrue;
 	}
 	return qfalse;
@@ -1137,11 +977,7 @@ qboolean UI_ForceMaxRank_HandleKey(int flags, float *special, int key, int num, 
 	// The update force used will remove overallocated powers automatically.
 	UpdateForceUsed();
 
-#ifdef _XBOX
-	gTouchedForce[ClientManager::ActiveClientNum()] = qtrue;
-#else
 	gTouchedForce = qtrue;
-#endif
 
     return qtrue;
   }
@@ -1154,12 +990,7 @@ qboolean UI_ForcePowerRank_HandleKey(int flags, float *special, int key, int num
 {
 	qboolean raising;
 
-
-#ifdef _XBOX
-		if (key == A_CURSOR_RIGHT || key == A_CURSOR_LEFT ) 
-#else
 	if (key == A_MOUSE1 || key == A_MOUSE2 || key == A_ENTER || key == A_KP_ENTER || key == A_BACKSPACE) 
-#endif
 	{
 		int forcepower, rank;
 
@@ -1198,11 +1029,7 @@ qboolean UI_ForcePowerRank_HandleKey(int flags, float *special, int key, int num
 			min += 1;
 		}
 
-#ifdef _XBOX
-		if (key == A_CURSOR_LEFT)
-#else
 		if (key == A_MOUSE2 || key == A_BACKSPACE)
-#endif
 		{	// Lower a point.
 			if (uiForcePowersRank[forcepower]<=min)
 			{
@@ -1243,11 +1070,7 @@ qboolean UI_ForcePowerRank_HandleKey(int flags, float *special, int key, int num
 
 		UpdateForceUsed();
 
-#ifdef _XBOX
-		gTouchedForce[ClientManager::ActiveClientNum()] = qtrue;
-#else
 		gTouchedForce = qtrue;
-#endif
 
 		return qtrue;
 	}
@@ -1255,11 +1078,10 @@ qboolean UI_ForcePowerRank_HandleKey(int flags, float *special, int key, int num
 }
 
 
-int gCustRank[2] = {0,0};
-int gCustSide[2] = {0, 0};
+int gCustRank = 0;
+int gCustSide = 0;
 
-
-int gCustPowersRank[2][NUM_FORCE_POWERS] = {{
+int gCustPowersRank[NUM_FORCE_POWERS] = {
 	0,//FP_HEAL = 0,//instant
 	1,//FP_LEVITATION,//hold/duration, this one defaults to 1 (gives a free point)
 	0,//FP_SPEED,//duration
@@ -1278,43 +1100,7 @@ int gCustPowersRank[2][NUM_FORCE_POWERS] = {{
 	0,//FP_SABER_OFFENSE,
 	0,//FP_SABER_DEFENSE,
 	0//FP_SABERTHROW,
-},
-{
-	0,//FP_HEAL = 0,//instant
-	1,//FP_LEVITATION,//hold/duration, this one defaults to 1 (gives a free point)
-	0,//FP_SPEED,//duration
-	0,//FP_PUSH,//hold/duration
-	0,//FP_PULL,//hold/duration
-	0,//FP_TELEPATHY,//instant
-	0,//FP_GRIP,//hold/duration
-	0,//FP_LIGHTNING,//hold/duration
-	0,//FP_RAGE,//duration
-	0,//FP_PROTECT,
-	0,//FP_ABSORB,
-	0,//FP_TEAM_HEAL,
-	0,//FP_TEAM_FORCE,
-	0,//FP_DRAIN,
-	0,//FP_SEE,
-	0,//FP_SABER_OFFENSE,
-	0,//FP_SABER_DEFENSE,
-	0//FP_SABERTHROW,
-}};
-
-/*
-void SetupCustomPowers()
-{
-	int i=0;
-	while (i < NUM_FORCE_POWERS)
-		{
-			gCustPowersRank[0][i] = uiForcePowersRank[i];
-			i++;
-		}
-		gCustRank[clientNum] = uiForceRank;
-		gCustSide[clientNum] = uiForceSide;
-
-}
-*/
-
+};
 
 /*
 =================
@@ -1332,9 +1118,6 @@ void UI_ForceConfigHandle( int oldindex, int newindex )
 	char singleBuf[64];
 	char info[MAX_INFO_VALUE];
 	int forceTeam = 0;
-	int clientNum;
-	gcustomConfigChanged = qfalse;
-	clientNum = ClientManager::ActiveClientNum();
 
 	if (oldindex == 0)
 	{ //switching out from custom config, so first shove the current values into the custom storage
@@ -1342,36 +1125,27 @@ void UI_ForceConfigHandle( int oldindex, int newindex )
 
 		while (i < NUM_FORCE_POWERS)
 		{
-			if (gCustPowersRank[clientNum][i]!= uiForcePowersRank[i])
-				gcustomConfigChanged = qtrue;
-			gCustPowersRank[clientNum][i] = uiForcePowersRank[i];
+			gCustPowersRank[i] = uiForcePowersRank[i];
 			i++;
 		}
-		gCustRank[clientNum] = uiForceRank;
-		gCustSide[clientNum] = uiForceSide;
-	//	gcustomConfigChanged = qfalse;
+		gCustRank = uiForceRank;
+		gCustSide = uiForceSide;
 	}
 
 	if (newindex == 0)
 	{ //switching back to custom, shove the values back in from the custom storage
 		i = 0;
 		uiForceUsed = 0;
-#ifdef _XBOX
-		gTouchedForce[clientNum] = qtrue;
-#else
 		gTouchedForce = qtrue;
-#endif
 
 		while (i < NUM_FORCE_POWERS)
 		{
-			uiForcePowersRank[i] = gCustPowersRank[clientNum][i];
+			uiForcePowersRank[i] = gCustPowersRank[i];
 			uiForceUsed += uiForcePowersRank[i];
 			i++;
 		}
-		uiForceRank = gCustRank[clientNum];
-		uiForceSide = gCustSide[clientNum];
-
-		//gcustomConfigChanged = qtrue;
+		uiForceRank = gCustRank;
+		uiForceSide = gCustSide;
 
 		UpdateForceUsed();
 		return;
@@ -1430,8 +1204,7 @@ void UI_ForceConfigHandle( int oldindex, int newindex )
 
 	if (atoi( Info_ValueForKey( info, "g_forceBasedTeams" ) ))
 	{
-	//	switch(ClientManager::ActiveClient().myTeam)
-		switch((int)(trap_Cvar_VariableValue("xb_joinTeam")))
+		switch((int)(trap_Cvar_VariableValue("ui_myteam")))
 		{
 		case TEAM_RED:
 			forceTeam = FORCE_DARKSIDE;
@@ -1515,11 +1288,7 @@ void UI_ForceConfigHandle( int oldindex, int newindex )
 	}
 	uiForceUsed = 0;
 	uiForceAvailable = forceMasteryPoints[uiForceRank];
-#ifdef _XBOX
-	gTouchedForce[ClientManager::ActiveClientNum()] = qtrue;
-#else
 	gTouchedForce = qtrue;
-#endif
 
 	for (c=0;fcfBuffer[i]&&c<NUM_FORCE_POWERS;c++,i++)
 	{

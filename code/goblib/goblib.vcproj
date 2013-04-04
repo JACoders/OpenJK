@@ -1,17 +1,17 @@
-<?xml version="1.0" encoding="Windows-1252"?>
+<?xml version="1.0" encoding = "Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.10"
+	Version="7.00"
 	Name="goblib"
 	ProjectGUID="{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}"
 	Keyword="XboxProj">
 	<Platforms>
 		<Platform
-			Name="Xenon"/>
+			Name="Xbox"/>
 	</Platforms>
 	<Configurations>
 		<Configuration
-			Name="Debug|Xenon"
+			Name="Debug|Xbox"
 			OutputDirectory="Debug"
 			IntermediateDirectory="Debug"
 			ConfigurationType="4"
@@ -22,7 +22,7 @@
 				OptimizeForProcessor="2"
 				PreprocessorDefinitions="_DEBUG;_XBOX;_LIB"
 				MinimalRebuild="TRUE"
-				BasicRuntimeChecks="0"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
@@ -42,19 +42,17 @@
 				Name="VCPreLinkEventTool"/>
 		</Configuration>
 		<Configuration
-			Name="Release|Xenon"
+			Name="Release|Xbox"
 			OutputDirectory="Release"
 			IntermediateDirectory="Release"
 			ConfigurationType="4"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
+				AdditionalOptions="/Oy-"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				OmitFramePointers="FALSE"
 				OptimizeForProcessor="2"
 				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB"
 				StringPooling="TRUE"
@@ -80,7 +78,7 @@
 				Name="VCPreLinkEventTool"/>
 		</Configuration>
 		<Configuration
-			Name="FinalBuild|Xenon"
+			Name="FinalBuild|Xbox"
 			OutputDirectory="FinalBuild"
 			IntermediateDirectory="FinalBuild"
 			ConfigurationType="4"
@@ -117,116 +115,7 @@
 			<Tool
 				Name="VCPreLinkEventTool"/>
 		</Configuration>
-		<Configuration
-			Name="DemoRelease|Xenon"
-			OutputDirectory="DemoRelease"
-			IntermediateDirectory="DemoRelease"
-			ConfigurationType="4"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
-				OptimizeForProcessor="2"
-				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;XBOX_DEMO"
-				StringPooling="TRUE"
-				RuntimeLibrary="0"
-				BufferSecurityCheck="TRUE"
-				EnableFunctionLevelLinking="TRUE"
-				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="3"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\..\x_exe\DemoRelease\goblib.lib"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-		</Configuration>
-		<Configuration
-			Name="DemoFinal|Xenon"
-			OutputDirectory="DemoFinal"
-			IntermediateDirectory="DemoFinal"
-			ConfigurationType="4"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
-				OptimizeForProcessor="2"
-				PreprocessorDefinitions="FINAL_BUILD;NDEBUG;_XBOX;_LIB;XBOX_DEMO"
-				StringPooling="TRUE"
-				RuntimeLibrary="0"
-				BufferSecurityCheck="TRUE"
-				EnableFunctionLevelLinking="TRUE"
-				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="3"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\..\x_exe\DemoFinal\goblib.lib"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-		</Configuration>
-		<Configuration
-			Name="DemoDebug|Xenon"
-			OutputDirectory="DemoDebug"
-			IntermediateDirectory="DemoDebug"
-			ConfigurationType="4"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				OptimizeForProcessor="2"
-				PreprocessorDefinitions="_DEBUG;_XBOX;_LIB"
-				MinimalRebuild="TRUE"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="4"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\..\x_exe\DemoDebug\goblib.lib"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-		</Configuration>
 	</Configurations>
-	<References>
-	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
@@ -234,37 +123,19 @@
 			<File
 				RelativePath="..\zlib\adler32.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -273,37 +144,19 @@
 			<File
 				RelativePath="..\zlib\compress.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -312,37 +165,19 @@
 			<File
 				RelativePath="..\zlib\crc32.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -351,37 +186,19 @@
 			<File
 				RelativePath="..\zlib\deflate.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -390,37 +207,19 @@
 			<File
 				RelativePath="goblib.cpp">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -429,37 +228,19 @@
 			<File
 				RelativePath="..\zlib\infblock.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -468,37 +249,19 @@
 			<File
 				RelativePath="..\zlib\infcodes.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -507,37 +270,19 @@
 			<File
 				RelativePath="..\zlib\inffast.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -546,37 +291,19 @@
 			<File
 				RelativePath="..\zlib\inflate.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -585,37 +312,19 @@
 			<File
 				RelativePath="..\zlib\inftrees.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -624,37 +333,19 @@
 			<File
 				RelativePath="..\zlib\infutil.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -663,37 +354,19 @@
 			<File
 				RelativePath="..\zlib\trees.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -702,37 +375,19 @@
 			<File
 				RelativePath="..\zlib\uncompr.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -741,37 +396,19 @@
 			<File
 				RelativePath="..\zlib\zutil.c">
 				<FileConfiguration
-					Name="Debug|Xenon">
+					Name="Debug|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Xenon">
+					Name="Release|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="FinalBuild|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoRelease|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoFinal|Xenon">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="DemoDebug|Xenon">
+					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>

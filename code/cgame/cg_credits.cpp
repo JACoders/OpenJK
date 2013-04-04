@@ -19,7 +19,7 @@
 #define MAX_LINE_BYTES 2048
 
 qhandle_t ghFontHandle = 0;
-float gfFontScale = 1.00f;
+float gfFontScale = 1.0f;
 vec4_t gv4Color = {0};
 
 struct StringAndSize_t
@@ -621,7 +621,7 @@ qboolean CG_Credits_Draw( void )
 						bool bIsDotted = !!CreditLine.vstrText.size();	// eg "STUNTS ...................... MR ED"
 
 						int iWidth = CreditLine.strText.GetPixelLength();
-						int iXpos  = bIsDotted ? 54 : (SCREEN_WIDTH - iWidth)/2;
+						int iXpos  = bIsDotted ? 4 : (SCREEN_WIDTH - iWidth)/2;
 
 						gv4Color[3] = 1.0f;
 
@@ -633,7 +633,7 @@ qboolean CG_Credits_Draw( void )
 						{
 							StringAndSize_t &StringAndSize = CreditLine.vstrText[i];
 							iWidth = StringAndSize.GetPixelLength();
-							iXpos  = (SCREEN_WIDTH-4 - iWidth) - 50;
+							iXpos  = (SCREEN_WIDTH-4 - iWidth);
 							cgi_R_Font_DrawString(iXpos, iYpos, StringAndSize.c_str(), gv4Color, ghFontHandle, -1, gfFontScale);
 							iYpos += iFontHeight;
 						}

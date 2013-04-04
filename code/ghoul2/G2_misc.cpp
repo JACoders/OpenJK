@@ -42,7 +42,7 @@ static map<pair<int,int>,int> GoreTagsTemp; // this is a surface index to gore t
 								  // temporarily during the generation phase so we reuse gore tags per LOD
 int goreModelIndex;
 
-bool AddGoreToAllModels=false;
+static cvar_t *cg_g2MarksAllModels=NULL;
 
 GoreTextureCoordinates *FindGoreRecord(int tag);
 static inline void DestroyGoreTexCoordinates(int tag)
@@ -551,14 +551,33 @@ void G2_TransformSurfaces(int surfaceNum, surfaceInfo_v &rootSList,
 
 // main calling point for the model transform for collision detection. At this point all of the skeleton has been transformed.
 #ifdef _G2_GORE
-void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, CMiniHeap *G2VertSpace, int useLod, bool ApplyGore)
+void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, CMiniHeap *G2VertSpace, int useLod, bool ApplyGore, SSkinGoreData *gore)
 #else
 void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, CMiniHeap *G2VertSpace, int useLod)
 #endif
 {
 	int				i, lod;
 	vec3_t			correctScale;
+	qboolean		firstModelOnly = qfalse;
 
+	if ( cg_g2MarksAllModels == NULL )
+	{
+		cg_g2MarksAllModels = Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
+	}
+
+	if (cg_g2MarksAllModels == NULL
+		|| !cg_g2MarksAllModels->integer )
+	{
+		firstModelOnly = qtrue;
+	}
+
+#ifdef _G2_GORE
+	if ( gore 
+		&& gore->firstModel > 0 )
+	{
+		firstModelOnly = qfalse;
+	}
+#endif
 
 	VectorCopy(scale, correctScale);
 	// check for scales of 0 - that's the default I believe
@@ -598,7 +617,13 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 			if (lod>=g.currentModel->numLods)
 			{
 				g.mTransformedVertsArray = 0;
-				return;
+				if ( firstModelOnly )
+				{
+					// we don't really need to do multiple models for gore.
+					return;
+				}
+				//do the rest
+				continue;
 			}
 		}
 		else
@@ -621,7 +646,8 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 		G2_TransformSurfaces(g.mSurfaceRoot, g.mSlist, g.mBoneCache,  g.currentModel, lod, correctScale, G2VertSpace, g.mTransformedVertsArray, false);
 
 #ifdef _G2_GORE
-		if (ApplyGore&&!AddGoreToAllModels)
+
+		if (ApplyGore && firstModelOnly )
 		{
 			// we don't really need to do multiple models for gore.
 			break;
@@ -1507,7 +1533,7 @@ static void G2_TraceSurfaces(CTraceSurface &TS)
 }
 
 #ifdef _G2_GORE
-void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CCollisionRecord *collRecMap, int entNum, EG2_Collision eG2TraceType, int useLod, float fRadius, float ssize,float tsize,float theta,int shader, SSkinGoreData *gore)
+void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CCollisionRecord *collRecMap, int entNum, EG2_Collision eG2TraceType, int useLod, float fRadius, float ssize,float tsize,float theta,int shader, SSkinGoreData *gore, qboolean skipIfLODNotMatch)
 #else
 void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CCollisionRecord *collRecMap, int entNum, EG2_Collision eG2TraceType, int useLod, float fRadius)
 #endif
@@ -1515,9 +1541,31 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 	int				i, lod;
 	skin_t			*skin;
 	shader_t		*cust_shader;
+	qboolean		firstModelOnly = qfalse;
+	int				firstModel = 0;
+
+	if ( cg_g2MarksAllModels == NULL )
+	{
+		cg_g2MarksAllModels = Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
+	}
+
+	if (cg_g2MarksAllModels == NULL
+		|| !cg_g2MarksAllModels->integer )
+	{
+		firstModelOnly = qtrue;
+	}
+
+#ifdef _G2_GORE
+	if ( gore
+		&& gore->firstModel > 0 )
+	{
+		firstModel = gore->firstModel;
+		firstModelOnly = qfalse;
+	}
+#endif
 
 	// walk each possible model for this entity and try tracing against it
-	for (i=0; i<ghoul2.size(); i++)
+	for (i=firstModel; i<ghoul2.size(); i++)
 	{
 		CGhoul2Info &g=ghoul2[i];
 #ifdef _G2_GORE
@@ -1560,7 +1608,13 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 		}
 
 		lod = G2_DecideTraceLod(g,useLod);
-
+		if ( skipIfLODNotMatch )
+		{//we only want to hit this SPECIFIC LOD...
+			if ( lod != useLod )
+			{//doesn't match, skip this model
+				continue;
+			}
+		}
 		//reset the quick surface override lookup
 		G2_FindOverrideSurface(-1, g.mSlist); 
 
@@ -1578,7 +1632,7 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 			break;
 		}
 #ifdef _G2_GORE
-		if (!collRecMap&&!AddGoreToAllModels)
+		if ( !collRecMap && firstModelOnly )
 		{
 			// we don't really need to do multiple models for gore.
 			break;

@@ -2967,7 +2967,7 @@ RE_RegisterSkin
 bool gServerSkinHack = false;
 
 
-shader_t *R_FindServerShader( const char *name, const short *lightmapIndex, const byte *styles, qboolean mipRawImage );
+shader_t *R_FindServerShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage );
 char *CommaParse( char **data_p );
 /*
 ===============
@@ -2996,6 +2996,10 @@ bool RE_SplitSkins(const char *INname, char *skinhead, char *skintorso, char *sk
 		//advance to second
 		char *p2 = strchr(p, '|'); 
 		assert(p2);
+		if (!p2)
+		{
+			return false;
+		}
 		*p2=0;
 		p2++;
 		strcat (skinhead, p);
@@ -3005,6 +3009,10 @@ bool RE_SplitSkins(const char *INname, char *skinhead, char *skintorso, char *sk
 		//advance to third
 		p = strchr(p2, '|');
 		assert(p);
+		if (!p)
+		{
+			return false;
+		}
 		*p=0;
 		p++;
 		strcat (skintorso,p2);

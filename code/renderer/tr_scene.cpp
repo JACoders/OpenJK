@@ -206,9 +206,6 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 
 	backEndData->entities[r_numentities].e = *ent;
 	backEndData->entities[r_numentities].lightingCalculated = qfalse;
-#ifdef _XBOX
-	backEndData->entities[r_numentities].visible = -1;
-#endif
 
 	r_numentities++;
 }

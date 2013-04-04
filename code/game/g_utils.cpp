@@ -229,6 +229,13 @@ void G_PlayEffect( const char *name, const vec3_t origin )
 	G_PlayEffect( G_EffectIndex( name ), origin, up );
 }
 
+void G_PlayEffect( int fxID, const vec3_t origin )
+{
+	vec3_t	up = {0, 0, 1};
+
+	G_PlayEffect( fxID, origin, up );
+}
+
 //-----------------------------
 void G_PlayEffect( const char *name, const vec3_t origin, const vec3_t fwd )
 {
@@ -805,9 +812,7 @@ instead of being removed and recreated, which can cause interpolated
 angles and bad trails.
 =================
 */
-extern void G_MassFreeUselessThings( void );
-
-gentity_t *G_Spawn( int itr ) 
+gentity_t *G_Spawn( void ) 
 {
 	int			i, force;
 	gentity_t	*e;
@@ -882,15 +887,7 @@ gentity_t *G_Spawn( int itr )
 		}
 */
 #endif//FINAL_BUILD
-		if(itr)
-		{
-			G_MassFreeUselessThings();
-			return G_Spawn( 0 );
-		}
-		else
-		{
-			G_Error( "G_Spawn: no free entities" );
-		}
+		G_Error( "G_Spawn: no free entities" );
 	}
 	
 	// open up a new slot
@@ -908,22 +905,7 @@ G_FreeEntity
 Marks the entity as free
 =================
 */
-extern short	max_speeders;
-extern char current_speeders;
-
-
 void G_FreeEntity( gentity_t *ed ) {
-
-	if(	ed->m_pVehicle					&&
-		ed->m_pVehicle->m_pVehicleInfo	&&
-		ed->m_pVehicle->m_pVehicleInfo->type == VH_SPEEDER)
-	{
-		// if this speeder was destroyed by cleanup code, alreadCleaned will be set, so
-		// don't account for it again, otherwise the death occured somewhere else
-		if(!ed->m_pVehicle->alreadyCleaned)
-			current_speeders--;
-	}
-
 	gi.unlinkentity (ed);		// unlink from world
 
 	// Free the Game Element (the entity) and delete the Icarus ID.
@@ -944,8 +926,6 @@ void G_FreeEntity( gentity_t *ed ) {
 
 	if (ed->client && ed->client->NPC_class == CLASS_VEHICLE)
 	{
-		int iVehIndex = BG_VehicleGetIndex( ed->NPC_type );
-
 		Vehicle_Remove(ed);
 
 		if ( ed->m_pVehicle )
@@ -1822,6 +1802,13 @@ qboolean CanUseInfrontOf(gentity_t *ent)
 	if (ValidUseTarget( target )) {
 		if ( target->s.eType == ET_ITEM )
 		{//item, see if we could actually pick it up
+			if ( (target->spawnflags&128/*ITMSF_USEPICKUP*/) )
+			{//player has to be touching me and hit use to pick it up, so don't allow this
+				if ( !G_BoundsOverlap( target->absmin, target->absmax, ent->absmin, ent->absmax ) )
+				{//not touching
+					return qfalse;
+				}
+			}
 			if ( !BG_CanItemBeGrabbed( &target->s, &ent->client->ps ) ) 
 			{//nope, so don't indicate that we can use it
 				return qfalse;
@@ -1977,11 +1964,6 @@ void G_ChangeMap (const char *mapname, const char *spawntarget, qboolean hub)
 
 	if (mapname[0] == '+')	//fire up the menu instead
 	{
-		// Flush sound memory to make room for any UI loading that doesn't happen
-		// until the end of the level:
-		extern int SND_FreeOldestSound( void );
-		SND_FreeOldestSound();
-
 		gi.SendConsoleCommand( va("uimenu %s\n", mapname+1) );
 		gi.cvar_set("skippingCinematic", "0");
 		gi.cvar_set("timescale", "1");

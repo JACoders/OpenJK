@@ -248,7 +248,7 @@ typedef struct bot_state_s
 	int					randomNav;
 
 	int					saberSpecialist;
-/*
+
 	int					canChat;
 	int					chatFrequency;
 	char				currentChat[MAX_CHAT_LINE_SIZE];
@@ -258,7 +258,7 @@ typedef struct bot_state_s
 	int					chatTeam;
 	gentity_t			*chatObject;
 	gentity_t			*chatAltObject;
-*/
+
 	float				meleeStrafeTime;
 	int					meleeStrafeDir;
 	float				meleeStrafeDisable;
@@ -388,7 +388,7 @@ extern wpobject_t *oFlagBlue;
 extern gentity_t *eFlagRed;
 extern gentity_t *eFlagBlue;
 
-//extern char gBotChatBuffer[MAX_CLIENTS][MAX_CHAT_BUFFER_SIZE];
+extern char gBotChatBuffer[MAX_CLIENTS][MAX_CHAT_BUFFER_SIZE];
 extern float gWPRenderTime;
 extern float gDeactivated;
 extern float gBotEdit;

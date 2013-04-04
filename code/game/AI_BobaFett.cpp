@@ -345,7 +345,7 @@ qboolean Boba_StopKnockdown( gentity_t *self, gentity_t *pusher, const vec3_t pu
 ////////////////////////////////////////////////////////////////////////////////////////
 qboolean Boba_Flying( gentity_t *self )
 {
-	assert(self && self->NPC && self->client && self->client->NPC_class==CLASS_BOBAFETT);
+	assert(self && self->client && self->client->NPC_class==CLASS_BOBAFETT);//self->NPC && 
 	return ((qboolean)(self->client->moveType==MT_FLYSWIM));
 }
 
@@ -482,6 +482,12 @@ void Boba_FireFlameThrower( gentity_t *self )
 ////////////////////////////////////////////////////////////////////////////////////////
 void Boba_StopFlameThrower( gentity_t *self )
 {
+	if ( self->s.number < MAX_CLIENTS )
+	{
+		self->client->ps.torsoAnimTimer  =	0;
+		G_StopEffect( G_EffectIndex("boba/fthrw"), self->playerModel, self->genericBolt3, self->s.number);
+		return;
+	}
 	if ((NPCInfo->aiFlags&NPCAI_FLAMETHROW))
 	{
 		self->NPC->aiFlags				&= ~NPCAI_FLAMETHROW;
@@ -527,6 +533,22 @@ void Boba_StartFlameThrower( gentity_t *self )
 ////////////////////////////////////////////////////////////////////////////////////////
 void Boba_DoFlameThrower( gentity_t *self )
 {
+	if ( self->s.number < MAX_CLIENTS )
+	{
+		if ( self->client )
+		{
+			if ( !self->client->ps.forcePowerDuration[FP_LIGHTNING] )
+			{
+				NPC_SetAnim( self, SETANIM_TORSO, BOTH_FORCELIGHTNING_HOLD, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+	 			self->client->ps.torsoAnimTimer  =	BOBA_FLAMEDURATION;
+				G_SoundOnEnt( self, CHAN_WEAPON, "sound/weapons/boba/bf_flame.mp3" );
+				G_PlayEffect( G_EffectIndex("boba/fthrw"), self->playerModel, self->genericBolt3, self->s.number, self->s.origin, 1 );
+				self->client->ps.forcePowerDuration[FP_LIGHTNING] = 1;
+			}
+			Boba_FireFlameThrower( self );
+		}
+		return;
+	}
 	if (!(NPCInfo->aiFlags&NPCAI_FLAMETHROW) && TIMER_Done(self, "nextAttackDelay"))
 	{
 		Boba_StartFlameThrower( self );

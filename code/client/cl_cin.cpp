@@ -8,10 +8,10 @@
  * desc:		video and cinematic playback
  *
  * $Archive: /MissionPack/code/client/cl_cin.c $
- * $Author: mccloskey $ 
- * $Revision: 1.20 $
+ * $Author: Ttimo $ 
+ * $Revision: 82 $
  * $Modtime: 4/13/01 4:48p $
- * $Date: 2003/09/16 18:27:56 $
+ * $Date: 4/13/01 4:48p $
  *
  * cl_glconfig.hwtype trtypes 3dfx/ragepro need 256x256
  *
@@ -1748,11 +1748,6 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 		//
 		////////////////////////////////////////////////////////////////////
 
-#ifdef _XBOX
-		if(cg.widescreen)
-			CL_handle = CIN_PlayCinematic( arg, 0, 0, 720, SCREEN_HEIGHT, bits, psAudioFile );
-		else
-#endif
 		CL_handle = CIN_PlayCinematic( arg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bits, psAudioFile );
 		if (CL_handle >= 0) 
 		{

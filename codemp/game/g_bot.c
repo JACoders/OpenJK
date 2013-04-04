@@ -135,6 +135,9 @@ int G_GetMapTypeBits(char *type)
 			typeBits |= (1 << GT_FFA);
 			typeBits |= (1 << GT_TEAM);
 		}
+		if( strstr( type, "team" ) ) {
+			typeBits |= (1 << GT_TEAM);
+		}
 		if( strstr( type, "holocron" ) ) {
 			typeBits |= (1 << GT_HOLOCRON);
 		}
@@ -465,7 +468,7 @@ int G_RemoveRandomBot( int team ) {
 		if ( cl->pers.connected != CON_CONNECTED ) {
 			continue;
 		}
-		if ( !(g_entities[i /*cl->ps.clientNum*/].r.svFlags & SVF_BOT) ) {
+		if ( !(g_entities[cl->ps.clientNum].r.svFlags & SVF_BOT) ) {
 			continue;
 		}
 		if (g_gametype.integer == GT_SIEGE)
@@ -563,11 +566,10 @@ int G_CountBotPlayers( int team ) {
 G_CheckMinimumPlayers
 ===============
 */
-int checkminimumplayers_time = 0;
-
 void G_CheckMinimumPlayers( void ) {
 	int minplayers;
 	int humanplayers, botplayers;
+	static int checkminimumplayers_time;
 
 	if (g_gametype.integer == GT_SIEGE)
 	{
@@ -591,13 +593,6 @@ void G_CheckMinimumPlayers( void ) {
 
 	humanplayers = G_CountHumanPlayers( -1 );
 	botplayers = G_CountBotPlayers(	-1 );
-
-	//humanplayers will be zero at the very beginning of the map.  Pretend
-	//its always at least one so we don't get a bot who disappears as soon
-	//as the player spawns.
-	if(humanplayers < 1) {
-		humanplayers = 1;
-	}
 
 	if ((humanplayers+botplayers) < minplayers)
 	{

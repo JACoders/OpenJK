@@ -917,6 +917,10 @@ qboolean NAV_AvoidCollision( gentity_t *self, gentity_t *goal, navInfo_t *info )
 	VectorMA( self->r.currentOrigin, info->distance, info->direction, movepos );
 	VectorCopy( info->direction, movedir );
 
+	if ( self && self->NPC && (self->NPC->aiFlags&NPCAI_NO_COLL_AVOID) )
+	{//pretend there's no-one in the way
+		return qtrue;
+	}
 	//Now test against entities
 	if ( NAV_CheckAhead( self, movepos, &info->trace, CONTENTS_BODY ) == qfalse )
 	{
@@ -1365,8 +1369,6 @@ radius - how far from the navgoal an ent can be before it thinks it reached it -
 
 void SP_waypoint_navgoal( gentity_t *ent )
 {
-	assert( 0 );
-/*
 	int radius = ( ent->radius ) ? (((int)ent->radius)|NAVGOAL_USE_RADIUS) : 12;
 
 	VectorSet( ent->r.mins, -16, -16, -24 );
@@ -1381,7 +1383,6 @@ void SP_waypoint_navgoal( gentity_t *ent )
 
 	ent->classname = "navgoal";
 	G_FreeEntity( ent );//can't do this, they need to be found later by some functions, though those could be fixed, maybe?
-*/
 }
 
 /*QUAKED waypoint_navgoal_8 (0.3 1 0.3) (-8 -8 -24) (8 8 32) SOLID_OK
@@ -1400,8 +1401,6 @@ You CANNOT set a radius on these navgoals, they are touch-reach ONLY
 */
 void SP_waypoint_navgoal_8( gentity_t *ent )
 {
-	assert( 0 );
-/*
 	VectorSet( ent->r.mins, -8, -8, -24 );
 	VectorSet( ent->r.maxs, 8, 8, 32 );
 	ent->s.origin[2] += 0.125;
@@ -1415,7 +1414,6 @@ void SP_waypoint_navgoal_8( gentity_t *ent )
 
 	ent->classname = "navgoal";
 	G_FreeEntity( ent );//can't do this, they need to be found later by some functions, though those could be fixed, maybe?
-*/
 }
 
 /*QUAKED waypoint_navgoal_4 (0.3 1 0.3) (-4 -4 -24) (4 4 32) SOLID_OK
@@ -1434,8 +1432,6 @@ You CANNOT set a radius on these navgoals, they are touch-reach ONLY
 */
 void SP_waypoint_navgoal_4( gentity_t *ent )
 {
-	assert( 0 );
-/*
 	VectorSet( ent->r.mins, -4, -4, -24 );
 	VectorSet( ent->r.maxs, 4, 4, 32 );
 	ent->s.origin[2] += 0.125;
@@ -1449,7 +1445,6 @@ void SP_waypoint_navgoal_4( gentity_t *ent )
 
 	ent->classname = "navgoal";
 	G_FreeEntity( ent );//can't do this, they need to be found later by some functions, though those could be fixed, maybe?
-*/
 }
 
 /*QUAKED waypoint_navgoal_2 (0.3 1 0.3) (-2 -2 -24) (2 2 32) SOLID_OK
@@ -1467,9 +1462,7 @@ targetname - name you would use in script when setting a navgoal (like so:)
 You CANNOT set a radius on these navgoals, they are touch-reach ONLY
 */
 void SP_waypoint_navgoal_2( gentity_t *ent )
-{
-	assert( 0 );
-/*
+{	
 	VectorSet( ent->r.mins, -2, -2, -24 );
 	VectorSet( ent->r.maxs, 2, 2, 32 );
 	ent->s.origin[2] += 0.125;
@@ -1483,7 +1476,6 @@ void SP_waypoint_navgoal_2( gentity_t *ent )
 
 	ent->classname = "navgoal";
 	G_FreeEntity( ent );//can't do this, they need to be found later by some functions, though those could be fixed, maybe?
-*/
 }
 
 /*QUAKED waypoint_navgoal_1 (0.3 1 0.3) (-1 -1 -24) (1 1 32) SOLID_OK
@@ -1502,8 +1494,6 @@ You CANNOT set a radius on these navgoals, they are touch-reach ONLY
 */
 void SP_waypoint_navgoal_1( gentity_t *ent )
 {
-	assert( 0 );
-/*
 	VectorSet( ent->r.mins, -1, -1, -24 );
 	VectorSet( ent->r.maxs, 1, 1, 32 );
 	ent->s.origin[2] += 0.125;
@@ -1517,7 +1507,6 @@ void SP_waypoint_navgoal_1( gentity_t *ent )
 
 	ent->classname = "navgoal";
 	G_FreeEntity( ent );//can't do this, they need to be found later by some functions, though those could be fixed, maybe?
-*/
 }
 
 /*

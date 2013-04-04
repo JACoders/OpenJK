@@ -382,7 +382,11 @@ void *Sys_LoadDll( const char *name,
   
   // bk001129 - from cvs1.17 (mkv), was fname not fn
   libHandle = dlopen( fn, Q_RTLD );
-  
+ 
+#ifndef NDEBUG
+  if (libHandle == NULL)  Com_Printf("Failed to open DLL\n");
+#endif
+ 
   if ( !libHandle ) {
     if( cdpath[0] ) {
       // bk001206 - report any problem
@@ -415,9 +419,16 @@ void *Sys_LoadDll( const char *name,
   //#endif
 
   dllEntry = (void (*)(int (*)(int,...))) dlsym( libHandle, "dllEntry" ); 
+  if (!dllEntry)
+  {
+     err = dlerror();
+     Com_Printf("Sys_LoadDLL(%s) failed dlsym(dllEntry): \"%s\" ! \n",name,err);
+  }
+  //int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  )
   *entryPoint = (int(*)(int,...))dlsym( libHandle, "vmMain" );
+  if (!*entryPoint)
+     err = dlerror();
   if ( !*entryPoint || !dllEntry ) {
-    err = dlerror();
 #ifdef NDEBUG // bk001206 - in debug abort on failure
     Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed dlsym(vmMain): \"%s\" !\n", name, err );
 #else
@@ -1062,7 +1073,7 @@ void	Sys_Print( const char *msg )
 
 
 void    Sys_ConfigureFPU() { // bk001213 - divide by zero
-#ifdef __linux__
+#ifdef __linux2__
 #ifdef __i386
 #ifndef NDEBUG
   // bk0101022 - enable FPE's in debug mode

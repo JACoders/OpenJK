@@ -15,9 +15,6 @@
 extern vmCvar_t	ui_ffa_fraglimit;
 extern vmCvar_t	ui_ffa_timelimit;
 
-extern vmCvar_t	ui_tourney_fraglimit;
-extern vmCvar_t	ui_tourney_timelimit;
-
 extern vmCvar_t ui_selectedModelIndex;
 
 extern vmCvar_t	ui_team_fraglimit;
@@ -41,23 +38,6 @@ extern vmCvar_t	ui_drawCrosshair;
 extern vmCvar_t	ui_drawCrosshairNames;
 extern vmCvar_t	ui_marks;
 
-extern vmCvar_t	ui_server1;
-extern vmCvar_t	ui_server2;
-extern vmCvar_t	ui_server3;
-extern vmCvar_t	ui_server4;
-extern vmCvar_t	ui_server5;
-extern vmCvar_t	ui_server6;
-extern vmCvar_t	ui_server7;
-extern vmCvar_t	ui_server8;
-extern vmCvar_t	ui_server9;
-extern vmCvar_t	ui_server10;
-extern vmCvar_t	ui_server11;
-extern vmCvar_t	ui_server12;
-extern vmCvar_t	ui_server13;
-extern vmCvar_t	ui_server14;
-extern vmCvar_t	ui_server15;
-extern vmCvar_t	ui_server16;
-
 extern vmCvar_t	ui_captureLimit;
 extern vmCvar_t	ui_fragLimit;
 extern vmCvar_t	ui_gameType;
@@ -72,7 +52,6 @@ extern vmCvar_t ui_optiMaxPlayers;
 extern vmCvar_t ui_optiFriendlyFire;
 extern vmCvar_t ui_optiJediMastery;
 extern vmCvar_t ui_optiSaberOnly;
-extern vmCvar_t ui_optiDedicated;
 #endif
 extern vmCvar_t	ui_netSource;
 extern vmCvar_t	ui_serverFilterType;
@@ -121,8 +100,7 @@ extern vmCvar_t ui_bypassMainMenuLoad;
 #define MAX_MENUDEPTH			8
 #define MAX_MENUITEMS			256
 
-//#define MAX_FORCE_CONFIGS		128
-#define MAX_FORCE_CONFIGS		16
+#define MAX_FORCE_CONFIGS		128
 
 #define MTYPE_NULL				0
 #define MTYPE_SLIDER			1	
@@ -497,30 +475,17 @@ typedef struct {
 	int			animationNumber;
 	animation_t	*animation;
 	int			animationTime;		// time when the first frame of the animation will be exact
-#ifdef _XBOX
-	// MATT! - this was causing crazy conflicts with the lerpFrame_t defined in cg_local.h
-} lerpFrameUI_t;
-#else
 } lerpFrame_t;
-#endif
 
 typedef struct {
 	// model info
 	qhandle_t		legsModel;
 	qhandle_t		legsSkin;
-#ifdef _XBOX
-	lerpFrameUI_t   legs;
-#else
 	lerpFrame_t		legs;
-#endif
 
 	qhandle_t		torsoModel;
 	qhandle_t		torsoSkin;
-#ifdef _XBOX
-	lerpFrameUI_t   torso;
-#else
 	lerpFrame_t		torso;
-#endif
 
 //	qhandle_t		headModel;
 //	qhandle_t		headSkin;
@@ -582,7 +547,7 @@ typedef struct {
 	qhandle_t		menuBackShader2;
 	qhandle_t		menuBackNoLogoShader;
 	qhandle_t		charset;
-//	qhandle_t		cursor;
+	qhandle_t		cursor;
 	qhandle_t		rb_on;
 	qhandle_t		rb_off;
 	float				scale;
@@ -599,7 +564,7 @@ typedef struct {
 #define MAX_HEADNAME  32
 #define MAX_TEAMS 64
 #define MAX_GAMETYPES 16
-#define MAX_MAPS 32	// 128
+#define MAX_MAPS 128
 #define MAX_SPMAPS 16
 #define PLAYERS_PER_TEAM 8//5
 #define MAX_PINGREQUESTS		32
@@ -627,7 +592,6 @@ typedef struct {
 #define MAX_MOVIES 256
 #define MAX_Q3PLAYERMODELS 256
 #define MAX_PLAYERMODELS 32
-//#define MAX_PLAYERMODELS 8
 
 #define MAX_SCROLLTEXT_SIZE		4096
 #define MAX_SCROLLTEXT_LINES		64
@@ -674,6 +638,80 @@ typedef struct {
 	qhandle_t levelShot;
 	qboolean active;
 } mapInfo;
+
+typedef struct {
+	const char *tierName;
+	const char *maps[MAPS_PER_TIER];
+	int gameTypes[MAPS_PER_TIER];
+	qhandle_t mapHandles[MAPS_PER_TIER];
+} tierInfo;
+
+typedef struct serverFilter_s {
+	const char *description;
+	const char *basedir;
+} serverFilter_t;
+
+typedef struct {
+	char	adrstr[MAX_ADDRESSLENGTH];
+	int		start;
+} pinglist_t;
+
+
+typedef struct serverStatus_s {
+	pinglist_t pingList[MAX_PINGREQUESTS];
+	int		numqueriedservers;
+	int		currentping;
+	int		nextpingtime;
+	int		maxservers;
+	int		refreshtime;
+	int		numServers;
+	int		sortKey;
+	int		sortDir;
+	int		lastCount;
+	qboolean refreshActive;
+	int		currentServer;
+	int		displayServers[MAX_DISPLAY_SERVERS];
+	int		numDisplayServers;
+	int		numPlayersOnServers;
+	int		nextDisplayRefresh;
+	int		nextSortTime;
+	qhandle_t currentServerPreview;
+	int		currentServerCinematic;
+	int		motdLen;
+	int		motdWidth;
+	int		motdPaintX;
+	int		motdPaintX2;
+	int		motdOffset;
+	int		motdTime;
+	char	motd[MAX_STRING_CHARS];
+} serverStatus_t;
+
+
+typedef struct {
+	char		adrstr[MAX_ADDRESSLENGTH];
+	char		name[MAX_ADDRESSLENGTH];
+	int			startTime;
+	int			serverNum;
+	qboolean	valid;
+} pendingServer_t;
+
+typedef struct {
+	int num;
+	pendingServer_t server[MAX_SERVERSTATUSREQUESTS];
+} pendingServerStatus_t;
+
+typedef struct {
+	char address[MAX_ADDRESSLENGTH];
+	char *lines[MAX_SERVERSTATUS_LINES][4];
+	char text[MAX_SERVERSTATUS_TEXT];
+	char pings[MAX_CLIENTS * 3];
+	int numLines;
+} serverStatusInfo_t;
+
+typedef struct {
+	const char *modName;
+	const char *modDescr;
+} modInfo_t;
 
 typedef struct {
 	char		Name[64];
@@ -730,20 +768,48 @@ typedef struct {
 	int mapCount;
 	mapInfo mapList[MAX_MAPS];
 
+
+	int tierCount;
+	tierInfo tierList[MAX_TIERS];
+
 	int skillIndex;
 
+	modInfo_t modList[MAX_MODS];
+	int modCount;
+	int modIndex;
+
+	const char *demoList[MAX_DEMOS];
+	int demoCount;
+	int demoIndex;
+
+	const char *movieList[MAX_MOVIES];
+	int movieCount;
+	int movieIndex;
+	int previewMovie;
+
+	char scrolltext[MAX_SCROLLTEXT_SIZE];
+	const char *scrolltextLine[MAX_SCROLLTEXT_LINES];
+	int scrolltextLineCount;
+
+	serverStatus_t serverStatus;
+
+	// for the showing the status of a server
+	char serverStatusAddress[MAX_ADDRESSLENGTH];
+	serverStatusInfo_t serverStatusInfo;
+	int nextServerStatusRefresh;
+
 	// to retrieve the status of server to find a player
-//	pendingServerStatus_t pendingServerStatus;
-//	char findPlayerName[MAX_STRING_CHARS];
-//	char foundPlayerServerAddresses[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
-//	char foundPlayerServerNames[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
-//	int currentFoundPlayerServer;
-//	int numFoundPlayerServers;
-//	int nextFindPlayerRefresh;
+	pendingServerStatus_t pendingServerStatus;
+	char findPlayerName[MAX_STRING_CHARS];
+	char foundPlayerServerAddresses[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
+	char foundPlayerServerNames[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
+	int currentFoundPlayerServer;
+	int numFoundPlayerServers;
+	int nextFindPlayerRefresh;
 
 	int currentCrosshair;
 	int startPostGameTime;
-//	sfxHandle_t newHighScoreSound;
+	sfxHandle_t newHighScoreSound;
 
 	int				q3HeadCount;
 	char			q3HeadNames[MAX_Q3PLAYERMODELS][64];
@@ -751,9 +817,7 @@ typedef struct {
 	int				q3SelectedHead;
 
 	int				forceConfigCount;
-//	int				forceConfigSelected;
-//	int 			forceConfigSelected2;
-
+	int				forceConfigSelected;
 	char			forceConfigNames[MAX_FORCE_CONFIGS][128];
 	qboolean		forceConfigSide[MAX_FORCE_CONFIGS]; //true if it's a light side config, false if dark side
 	int				forceConfigDarkIndexBegin; //mark the index number dark configs start at
@@ -764,15 +828,14 @@ typedef struct {
 	qboolean inGameLoad;
 
 	int					playerSpeciesCount;
-//	playerSpeciesInfo_t	playerSpecies[MAX_PLAYERMODELS];
-	playerSpeciesInfo_t	playerSpecies[6];
+	playerSpeciesInfo_t	playerSpecies[MAX_PLAYERMODELS];
 	int					playerSpeciesIndex;
 
 	short		movesTitleIndex;
 	char		*movesBaseAnim;
 	int			moveAnimTime;
 
-//	int			languageCount;
+	int			languageCount;
 	int			languageCountIndex;
 
 }	uiInfo_t;
@@ -898,7 +961,6 @@ void			trap_GetClipboardData( char *buf, int bufsize );
 void			trap_GetClientState( uiClientState_t *state );
 void			trap_GetGlconfig( glconfig_t *glconfig );
 int				trap_GetConfigString( int index, char* buff, int buffsize );
-/*
 int				trap_LAN_GetServerCount( int source );
 void			trap_LAN_GetServerAddressString( int source, int n, char *buf, int buflen );
 void			trap_LAN_GetServerInfo( int source, int n, char *buf, int buflen );
@@ -917,7 +979,6 @@ void			trap_LAN_RemoveServer(int source, const char *addr);
 void			trap_LAN_ResetPings(int n);
 int				trap_LAN_ServerStatus( const char *serverAddress, char *serverStatus, int maxLen );
 int				trap_LAN_CompareServers( int source, int sortKey, int sortDir, int s1, int s2 );
-*/
 int				trap_MemoryRemaining( void );
 
 #ifdef USE_CD_KEY
@@ -938,11 +999,11 @@ qboolean		trap_Language_UsesSpaces(void);
 unsigned		trap_AnyLanguage_ReadCharFromString( const char *psText, int *piAdvanceCount, qboolean *pbIsTrailingPunctuation/* = NULL*/ );
 void			trap_S_StopBackgroundTrack( void );
 void			trap_S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bReturnWithoutStarting);
-//int				trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits);
-//e_status		trap_CIN_StopCinematic(int handle);
-//e_status		trap_CIN_RunCinematic (int handle);
-//void			trap_CIN_DrawCinematic (int handle);
-//void			trap_CIN_SetExtents (int handle, int x, int y, int w, int h);
+int				trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits);
+e_status		trap_CIN_StopCinematic(int handle);
+e_status		trap_CIN_RunCinematic (int handle);
+void			trap_CIN_DrawCinematic (int handle);
+void			trap_CIN_SetExtents (int handle, int x, int y, int w, int h);
 int				trap_RealTime(qtime_t *qtime);
 void			trap_R_RemapShader( const char *oldShader, const char *newShader, const char *timeOffset );
 

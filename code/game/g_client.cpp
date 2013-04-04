@@ -609,15 +609,7 @@ void ClientBegin( int clientNum, usercmd_t *cmd, SavedGameJustLoaded_e eSavedGam
 		}
 		client->ps.inventory[INV_GOODIE_KEY] = 0;
 		client->ps.inventory[INV_SECURITY_KEY] = 0;
-		
 	}
-	extern bool autosaveTrigger;
-	extern bool doAutoSave;
-	autosaveTrigger = true;
-	if(eSavedGameJustLoaded == eNO)
-		doAutoSave = true;
-	else
-		doAutoSave = false;
 }
 
 
@@ -675,7 +667,7 @@ Player_RestoreFromPrevLevel
   Argument		: gentity_t *ent
 ============
 */
-void Player_RestoreFromPrevLevel(gentity_t *ent)
+static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded)
 {
 	gclient_t	*client = ent->client;
 	int			i;
@@ -763,11 +755,11 @@ void Player_RestoreFromPrevLevel(gentity_t *ent)
 			}
 			ent->client->ps.saber[1].name=0;
 			//NOTE: if sscanf can get a "(null)" out of strings that had NULL string pointers plugged into the original string
-			if ( saber0Name[0] && ( Q_stricmp( saber0Name, "(null)" ) != 0 && Q_stricmp( saber0Name, "none" ) != 0)  )
+			if ( saber0Name[0] && Q_stricmp( "(null)", saber0Name ) != 0 )
 			{
 				ent->client->ps.saber[0].name = G_NewString( saber0Name );
 			}
-			if ( saber1Name[0] && ( Q_stricmp( saber1Name, "(null)" ) != 0 && Q_stricmp( saber1Name, "none" ) != 0)  )
+			if ( saber1Name[0] && Q_stricmp( "(null)", saber1Name ) != 0 )
 			{//have a second saber
 				ent->client->ps.saber[1].name = G_NewString( saber1Name );
 				ent->client->ps.dualSabers = qtrue;
@@ -818,14 +810,56 @@ void Player_RestoreFromPrevLevel(gentity_t *ent)
 			var = strtok( s, " " );
 			while( var != NULL )
 			{
-			  /* While there are tokens in "s" */
-			  client->ps.forcePowerLevel[i++] = atoi(var);
-			  /* Get next token: */
-			  var = strtok( NULL, " " );
+				/* While there are tokens in "s" */
+				  client->ps.forcePowerLevel[i++] = atoi(var);
+				/* Get next token: */
+				var = strtok( NULL, " " );
 			}
 			assert (i==NUM_FORCE_POWERS);
 
 			client->ps.forceGripEntityNum = client->ps.forceDrainEntityNum = ENTITYNUM_NONE;
+		}
+
+
+		// if we're in DEMO mode read in the forcepowers from the
+		// demo cvar, even though we already might have read in something from above
+		if(eSavedGameJustLoaded == eNO && gi.Cvar_VariableIntegerValue("com_demo") )
+		{
+			// the new JK2 stuff - force powers, etc...
+			//
+			gi.Cvar_VariableStringBuffer( "demo_playerfplvl", s, sizeof(s) );
+			int j=0;
+			var = strtok( s, " " );
+			while( var != NULL )
+			{
+				/* While there are tokens in "s" */
+				client->ps.forcePowerLevel[j] = atoi(var);
+				if( client->ps.forcePowerLevel[j] )
+				{
+					client->ps.forcePowersKnown |= (1 << j );
+				}
+				j++;
+			  /* Get next token: */
+			  var = strtok( NULL, " " );
+			}
+			assert (j==NUM_FORCE_POWERS);
+
+			client->ps.forceGripEntityNum = client->ps.forceDrainEntityNum = ENTITYNUM_NONE;
+
+			// now do weapons
+			gi.Cvar_VariableStringBuffer( "demo_playerwpns", s, sizeof(s) );
+			
+			client->ps.stats[STAT_WEAPONS] = atoi(s);
+
+			for(j=0 ; j<WP_NUM_WEAPONS ; j++ )
+			{
+				// if I've got the weapon
+				if( client->ps.stats[STAT_WEAPONS] & (1<<j) )
+				{	// give them max ammo
+					client->ps.ammo[weaponData[j].ammoIndex] = ammoData[weaponData[j].ammoIndex].max;
+				}
+			}
+
 		}
 	}
 }
@@ -1825,9 +1859,13 @@ void G_SetSabersFromCVars( gentity_t *ent )
 		&& Q_stricmp( "NULL", g_saber->string ) )
 	{//FIXME: how to specify second saber?
 		WP_SaberParseParms( g_saber->string, &ent->client->ps.saber[0] );
-		if ( ent->client->ps.saber[0].style )
+		if ( ent->client->ps.saber[0].stylesLearned )
 		{
-			ent->client->ps.saberStylesKnown |= (1<<ent->client->ps.saber[0].style);
+			ent->client->ps.saberStylesKnown |= ent->client->ps.saber[0].stylesLearned;
+		}
+		if ( ent->client->ps.saber[0].singleBladeStyle )
+		{
+			ent->client->ps.saberStylesKnown |= ent->client->ps.saber[0].singleBladeStyle;
 		}
 	}
 
@@ -1855,14 +1893,18 @@ void G_SetSabersFromCVars( gentity_t *ent )
 		&& Q_stricmp( "none", g_saber2->string )
 		&& Q_stricmp( "NULL", g_saber2->string ) )
 	{
-		if ( !ent->client->ps.saber[0].twoHanded )
+		if ( !(ent->client->ps.saber[0].saberFlags&SFL_TWO_HANDED) )
 		{//can't use a second saber if first one is a two-handed saber...?
 			WP_SaberParseParms( g_saber2->string, &ent->client->ps.saber[1] );
-			if ( ent->client->ps.saber[1].style )
+			if ( ent->client->ps.saber[1].stylesLearned )
 			{
-				ent->client->ps.saberStylesKnown |= (1<<ent->client->ps.saber[1].style);
+				ent->client->ps.saberStylesKnown |= ent->client->ps.saber[1].stylesLearned;
 			}
-			if ( ent->client->ps.saber[1].twoHanded )
+			if ( ent->client->ps.saber[1].singleBladeStyle )
+			{
+				ent->client->ps.saberStylesKnown |= ent->client->ps.saber[1].singleBladeStyle;
+			}
+			if ( (ent->client->ps.saber[1].saberFlags&SFL_TWO_HANDED) )
 			{//tsk tsk, can't use a twoHanded saber as second saber
 				WP_RemoveSaber( ent, 1 );
 			}
@@ -2000,17 +2042,25 @@ void G_ReloadSaberData( gentity_t *ent )
 	if ( ent->client->ps.saber[0].name != NULL )
 	{
 		WP_SaberParseParms( ent->client->ps.saber[0].name, &ent->client->ps.saber[0], qfalse );
-		if ( ent->client->ps.saber[0].style )
+		if ( ent->client->ps.saber[0].stylesLearned )
 		{
-			ent->client->ps.saberStylesKnown |= (1<<ent->client->ps.saber[0].style);
+			ent->client->ps.saberStylesKnown |= ent->client->ps.saber[0].stylesLearned;
+		}
+		if ( ent->client->ps.saber[0].singleBladeStyle )
+		{
+			ent->client->ps.saberStylesKnown |= ent->client->ps.saber[0].singleBladeStyle;
 		}
 	}
 	if ( ent->client->ps.saber[1].name != NULL )
 	{
 		WP_SaberParseParms( ent->client->ps.saber[1].name, &ent->client->ps.saber[1], qfalse );
-		if ( ent->client->ps.saber[1].style )
+		if ( ent->client->ps.saber[1].stylesLearned )
 		{
-			ent->client->ps.saberStylesKnown |= (1<<ent->client->ps.saber[1].style);
+			ent->client->ps.saberStylesKnown |= ent->client->ps.saber[1].stylesLearned;
+		}
+		if ( ent->client->ps.saber[1].singleBladeStyle )
+		{
+			ent->client->ps.saberStylesKnown |= ent->client->ps.saber[1].singleBladeStyle;
 		}
 	}
 }
@@ -2224,9 +2274,13 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 
 			client->ps.saberStylesKnown |= (1<<gi.Cvar_VariableIntegerValue("g_fighting_style"));
 
-//			if ( client->ps.saber[0].style )
+//			if ( client->ps.saber[0].stylesLearned )
 //			{
-//				client->ps.saberStylesKnown |= (1<<client->ps.saber[0].style);
+//				client->ps.saberStylesKnown |= client->ps.saber[0].stylesLearned;
+//			}
+//			if ( ent->client->ps.saber[1].singleSaberStyle )
+//			{
+//				ent->client->ps.saberStylesKnown |= ent->client->ps.saber[1].singleSaberStyle;
 //			}
 			WP_InitForcePowers( ent );//Initialize force powers
 		}
@@ -2272,7 +2326,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 
 		// restore some player data 
 		//
-		Player_RestoreFromPrevLevel(ent);
+		Player_RestoreFromPrevLevel(ent, eSavedGameJustLoaded);
 
 		//FIXME: put this BEFORE the Player_RestoreFromPrevLevel check above?
 		if (eSavedGameJustLoaded == eNO)
@@ -2324,6 +2378,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			ent->client->ps.ammo[weaponData[WP_NONE].ammoIndex] = 32000;
 			ent->client->ps.weapon = WP_NONE;
 			ent->client->ps.weaponstate = WEAPON_READY;
+			ent->client->ps.dualSabers = qfalse;
 		}
 
 		if ( ent->client->ps.stats[STAT_WEAPONS] & ( 1 << WP_SABER ) )

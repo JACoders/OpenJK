@@ -4,8 +4,7 @@
 #include "cm_local.h"
 #include "cm_landscape.h" //rwwRMG - include
 #include "cm_patch.h"
-//#include "../rmg/rm_headers.h" //rwwRMG - include
-#include "../renderer/tr_local.h"
+#include "../rmg/rm_headers.h" //rwwRMG - include
 
 #include "sparc.h"
 #include "../zlib/zlib.h"
@@ -74,11 +73,8 @@ cbrush_t	*box_brush;
 void	CM_InitBoxHull (void);
 void	CM_FloodAreaConnections (void);
 
-/*
 clipMap_t	SubBSP[MAX_SUB_BSP];
-int			NumSubBSP;
-*/
-int TotalSubModels;
+int			NumSubBSP, TotalSubModels;
 
 /*
 ===============================================================================
@@ -349,8 +345,6 @@ void CMod_LoadPlanes (void *data, int len)
 		out->type = PlaneTypeForNormal( out->normal );
 		out->signbits = bits;
 	}
-
-	RE_SetPlaneData(cmg.planes, cmg.numPlanes);
 }
 
 /*
@@ -741,32 +735,26 @@ void CM_ClearMap( void )
 //	MAT_Shutdown();
 #endif
 
-/*
 	if (TheRandomMissionManager)
 	{
 		delete TheRandomMissionManager;
 		TheRandomMissionManager = 0;
 	}
-*/
 
-/*
 	if (cmg.landScape)
 	{
 		delete cmg.landScape;
 		cmg.landScape = 0;
 	}
-*/
 
 	Com_Memset( &cmg, 0, sizeof( cmg ) );
 	CM_ClearLevelPatches();
 
-/*
 	for(i = 0; i < NumSubBSP; i++)
 	{
 		memset(&SubBSP[i], 0, sizeof(SubBSP[0]));
 	}
 	NumSubBSP = 0;
-*/
 	TotalSubModels = 0;
 }
 
@@ -801,7 +789,6 @@ cmodel_t	*CM_ClipHandleToModel( clipHandle_t handle, clipMap_t **clipMap )
 		return &box_model;
 	}
 
-/*
 	count = cmg.numSubModels;
 	for(i = 0; i < NumSubBSP; i++)
 	{
@@ -815,7 +802,6 @@ cmodel_t	*CM_ClipHandleToModel( clipHandle_t handle, clipMap_t **clipMap )
 		}
 		count += SubBSP[i].numSubModels;
 	}
-*/
 
 	if ( handle < MAX_SUBMODELS ) 
 	{
@@ -850,12 +836,10 @@ char	*CM_EntityString( void ) {
 	return cmg.entityString;
 }
 
-/*
 char *CM_SubBSPEntityString( int index ) 
 {
 	return SubBSP[index].entityString;
 }
-*/
 
 int		CM_LeafCluster( int leafnum ) {
 	if (leafnum < 0 || leafnum >= cmg.numLeafs) {
@@ -988,7 +972,6 @@ Allows physics to examine the terrain data.
 ===================
 */
 #if !defined(BSPC)
-/*
 CCMLandScape *CM_RegisterTerrain(const char *config, bool server)
 {
 	CCMLandScape	*ls;
@@ -1011,7 +994,6 @@ CCMLandScape *CM_RegisterTerrain(const char *config, bool server)
 	cmg.landScape = ls;
 	return(ls);
 }
-*/
 
 /*
 ===================
@@ -1019,7 +1001,6 @@ CM_ShutdownTerrain
 ===================
 */
 
-/*
 void CM_ShutdownTerrain( thandle_t terrainId)
 {
 	CCMLandScape	*landscape;
@@ -1035,10 +1016,8 @@ void CM_ShutdownTerrain( thandle_t terrainId)
 		}
 	}
 }
-*/
 #endif
 
-/*
 int CM_LoadSubBSP(const char *name, qboolean clientload)
 {
 	int		i;
@@ -1069,9 +1048,7 @@ int CM_LoadSubBSP(const char *name, qboolean clientload)
 
 	return count;
 }
-*/
 
-/*
 int CM_FindSubBSP(int modelIndex)
 {
 	int		i;
@@ -1093,7 +1070,6 @@ int CM_FindSubBSP(int modelIndex)
 	}
 	return -1;
 }
-*/
 
 void CM_GetWorldBounds ( vec3_t mins, vec3_t maxs )
 {
@@ -1141,15 +1117,11 @@ int CM_ModelContents_Actual( clipHandle_t model, clipMap_t *cm )
 
 int CM_ModelContents(  clipHandle_t model, int subBSPIndex )
 {
-/*
 	if (subBSPIndex < 0)
 	{
-*/
 		return CM_ModelContents_Actual(model, NULL);
-/*
 	}
 
 	return CM_ModelContents_Actual(model, &SubBSP[subBSPIndex]);
-*/
 }
 

@@ -689,15 +689,6 @@ Ghoul2 Insert End
 	Z_TagFree(TAG_G_ALLOC);
 	ge->Init( sv_mapname->string, sv_spawntarget->string, sv_mapChecksum->integer, CM_EntityString(), sv.time, com_frameTime, Com_Milliseconds(), eSavedGameJustLoaded, qbLoadTransition );
 
-	if(!Q_stricmp(sv_mapname->string, "t1_rail") )
-	{
-		Cvar_Set("in_shaking_rumble","0");
-	}
-	else
-	{
-		Cvar_Set("in_shaking_rumble","1");
-	}
-
 	// clear all gentity pointers that might still be set from
 	// a previous level
 	for ( i = 0 ; i < 1 ; i++ ) {

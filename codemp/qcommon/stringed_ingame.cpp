@@ -12,9 +12,6 @@
 #include "../server/server.h"
 #include "../game/q_shared.h"
 #include "qcommon.h"
-#include "../qcommon/fixedmap.h"
-#include "../zlib/zlib.h"
-
 //
 //////////////////////////////////////////////////
 
@@ -25,30 +22,44 @@
 #include "stringed_ingame.h"
 #include "stringed_interface.h"
 
-// Needed for DWORD and XC_LANGUAGE defines:
-#include <xtl.h>
-
 ///////////////////////////////////////////////
-
+//
 // some STL stuff...
+#pragma warning ( disable : 4786 )			// disable the usual stupid and pointless STL warning
+#include <list>
+#include <map>
+#include <set>
 #include <string>
+#include <vector>
 using namespace std;
 
+typedef vector<string>	vStrings_t;
+typedef vector<int>		vInts_t;
+//
 ///////////////////////////////////////////////
 
 cvar_t	*se_language = NULL;
+cvar_t	*se_debug = NULL;
+cvar_t  *sp_leet = NULL;	// kept as 'sp_' for JK2 compat.
 
-// Yeah, it's hardcoded. I don't give a shit.
-#define MAX_STRING_ENTRIES	4096
-
+#define __DEBUGOUT(_string)	OutputDebugString(_string)
+#define __ASSERT(_blah)		assert(_blah)
 
 typedef struct SE_Entry_s
 {
 	string		m_strString;
+	string		m_strDebug;	// english and/or "#same", used for debugging only. Also prefixed by "SE:" to show which strings go through StringEd (ie aren't hardwired)
+	int			m_iFlags;
+
+	SE_Entry_s()
+	{
+		m_iFlags = 0;
+	}
+
 } SE_Entry_t;
 
 
-//typedef map <string, SE_Entry_t> mapStringEntries_t;
+typedef map <string, SE_Entry_t> mapStringEntries_t;
 
 class CStringEdPackage
 {
@@ -65,10 +76,6 @@ public:
 
 	CStringEdPackage()
 	{
-		Z_PushNewDeleteTag( TAG_STRINGED );
-		m_Strings = new VVFixedMap< char *, unsigned long >( MAX_STRING_ENTRIES );
-		Z_PopNewDeleteTag();
-
 		Clear( SE_FALSE );
 	}
 
@@ -77,15 +84,19 @@ public:
 		Clear( SE_FALSE );
 	}
 
-	// Text entries, indexed by crc32 of reference:
-	VVFixedMap< char *, unsigned long > *m_Strings;
-
-//	mapStringEntries_t	m_StringEntries;	// needs to be in public space now
+	mapStringEntries_t	m_StringEntries;	// needs to be in public space now
+	SE_BOOL				m_bLoadDebug;		// ""
+	//
+	// flag stuff...
+	//
+	vector <string>		m_vstrFlagNames;
+	map	<string,int>	m_mapFlagMasks;
 
 	void	Clear( SE_BOOL bChangingLanguages );
-	void	SetupNewFileParse( LPCSTR psFileName );
+	void	SetupNewFileParse( LPCSTR psFileName, SE_BOOL bLoadDebug );
 	SE_BOOL	ReadLine( LPCSTR &psParsePos, char *psDest );
 	LPCSTR	ParseLine( LPCSTR psLine );
+	int		GetFlagMask( LPCSTR psFlagName );
 	LPCSTR	ExtractLanguageFromPath( LPCSTR psFileName );
 	SE_BOOL	EndMarkerFoundDuringParse( void )
 	{
@@ -98,6 +109,7 @@ private:
 	int		GetNumStrings(void);
 	void	SetString( LPCSTR psLocalReference, LPCSTR psNewString, SE_BOOL bEnglishDebug );
 	SE_BOOL	SetReference( int iIndex, LPCSTR psNewString );
+	void	AddFlagReference( LPCSTR psLocalReference, LPCSTR psFlagName );
 	LPCSTR	GetCurrentFileName(void);
 	LPCSTR	GetCurrentReference_ParseOnly( void );
 	SE_BOOL	CheckLineForKeyword( LPCSTR psKeyword, LPCSTR &psLine);
@@ -114,7 +126,22 @@ CStringEdPackage TheStringPackage;
 
 void CStringEdPackage::Clear( SE_BOOL bChangingLanguages )
 {
-//	m_StringEntries.clear();
+	m_StringEntries.clear();
+
+	if ( !bChangingLanguages )
+	{
+		// if we're changing languages, then I'm going to leave these alone. This is to do with any (potentially) cached
+		//	flag bitmasks on the game side. It shouldn't matter since all files are written out at once using the build
+		//	command in StringEd. But if ever someone changed a file by hand, or added one, or whatever, and it had a 
+		//	different set of flags declared, or the strings were in a different order, then the flags might also change
+		//	the order I see them in, and hence their indexes and masks. This should never happen unless people mess with
+		//	the .STR files by hand and delete some, but this way makes sure it'll all work just in case...
+		//
+		// ie. flags stay defined once they're defined, and only the destructor (at app-end) kills them.
+		//
+		m_vstrFlagNames.clear();
+		m_mapFlagMasks.clear();
+	}
 
 	m_bEndMarkerFound_ParseOnly = SE_FALSE;
 	m_strCurrentEntryRef_ParseOnly = "";
@@ -206,7 +233,7 @@ LPCSTR CStringEdPackage::ExtractLanguageFromPath( LPCSTR psFileName )
 }
 
 
-void CStringEdPackage::SetupNewFileParse( LPCSTR psFileName )
+void CStringEdPackage::SetupNewFileParse( LPCSTR psFileName, SE_BOOL bLoadDebug )
 {
 	char sString[ iSE_MAX_FILENAME_LENGTH ];
 
@@ -216,6 +243,7 @@ void CStringEdPackage::SetupNewFileParse( LPCSTR psFileName )
 	m_strCurrentFileRef_ParseOnly = sString;	// eg "OBJECTIVES"
 	m_strLoadingLanguage_ParseOnly = ExtractLanguageFromPath( psFileName );
 	m_bLoadingEnglish_ParseOnly = (!stricmp( m_strLoadingLanguage_ParseOnly.c_str(), "english" )) ? SE_TRUE : SE_FALSE;
+	m_bLoadDebug = bLoadDebug;
 }
 
 
@@ -408,6 +436,42 @@ LPCSTR CStringEdPackage::InsideQuotes( LPCSTR psLine )
 }
 
 
+// returns flag bitmask (eg 00000010b), else 0 for not found
+//
+int CStringEdPackage::GetFlagMask( LPCSTR psFlagName )
+{
+	map <string, int>::iterator itFlag = m_mapFlagMasks.find( psFlagName );
+	if ( itFlag != m_mapFlagMasks.end() )
+	{
+		int &iMask = (*itFlag).second;
+		return iMask;
+	}
+
+	return 0;
+}
+
+
+void CStringEdPackage::AddFlagReference( LPCSTR psLocalReference, LPCSTR psFlagName )
+{
+	// add the flag to the list of known ones...
+	//
+	int iMask = GetFlagMask( psFlagName );
+	if (iMask == 0)
+	{
+		m_vstrFlagNames.push_back( psFlagName );
+		iMask = 1 << (m_vstrFlagNames.size()-1);
+		m_mapFlagMasks[ psFlagName ] = iMask;
+	}
+	//
+	// then add the reference to this flag to the currently-parsed reference...
+	//
+	mapStringEntries_t::iterator itEntry = m_StringEntries.find( va("%s_%s",m_strCurrentFileRef_ParseOnly.c_str(), psLocalReference) );
+	if (itEntry != m_StringEntries.end())
+	{
+		SE_Entry_t &Entry = (*itEntry).second;
+		Entry.m_iFlags |= iMask;
+	}
+}
 
 // this copes with both foreigners using hi-char values (eg the french using 0x92 instead of 0x27
 //  for a "'" char), as well as the fact that our buggy fontgen program writes out zeroed glyph info for
@@ -546,6 +610,35 @@ LPCSTR CStringEdPackage::ParseLine( LPCSTR psLine )
 			AddEntry( psLocalReference );
 		}
 		else
+		if (CheckLineForKeyword(sSE_KEYWORD_FLAGS, psLine))
+		{
+			// FLAGS 	FLAG_CAPTION FLAG_TYPEMATIC
+			//
+			LPCSTR psReference = GetCurrentReference_ParseOnly();
+			if (psReference[0])
+			{
+				static const char sSeperators[] = " \t";
+				char sFlags[1024]={0};	// 1024 chars should be enough to store 8 flag names
+				strncpy(sFlags, psLine, sizeof(sFlags)-1);
+				char *psToken = strtok( sFlags, sSeperators );
+				while( psToken != NULL )
+				{
+					// psToken = flag name (in caps)
+					//
+					Q_strupr(psToken);	// jic
+					AddFlagReference( psReference, psToken );
+
+					// read next flag for this string...
+					//
+					psToken = strtok( NULL, sSeperators );
+				}
+			}
+			else
+			{
+				psErrorMessage = "Error parsing file: Unexpected \"" sSE_KEYWORD_FLAGS "\"\n";
+			}
+		}
+		else
 		if (CheckLineForKeyword(sSE_KEYWORD_ENDMARKER, psLine))
 		{
 			// ENDMARKER
@@ -647,60 +740,82 @@ void CStringEdPackage::AddEntry( LPCSTR psLocalReference )
 	// the reason I don't just assign it anyway is because the optional .STE override files don't contain flags, 
 	//	and therefore would wipe out the parsed flags of the .STR file...
 	//
-/*
 	mapStringEntries_t::iterator itEntry = m_StringEntries.find( va("%s_%s",m_strCurrentFileRef_ParseOnly.c_str(), psLocalReference) );
 	if (itEntry == m_StringEntries.end())
 	{
 		SE_Entry_t SE_Entry;
 		m_StringEntries[ va("%s_%s", m_strCurrentFileRef_ParseOnly.c_str(), psLocalReference) ] = SE_Entry;
 	}
-*/
 	m_strCurrentEntryRef_ParseOnly = psLocalReference;
+}
 
+LPCSTR Leetify( LPCSTR psString )
+{
+	static string str;
+	str = psString;
+	if (sp_leet->integer == 42)	// very specific test, so you won't hit it accidentally
+	{
+		static const
+		char cReplace[]={	'o','0','l','1','e','3','a','4','s','5','t','7','i','!','h','#',
+							'O','0','L','1','E','3','A','4','S','5','T','7','I','!','H','#'	// laziness because of strchr()
+						};
+
+		char *p;
+		for (int i=0; i<sizeof(cReplace); i+=2)
+		{
+			while ((p=strchr(str.c_str(),cReplace[i]))!=NULL)
+				*p = cReplace[i+1];
+		}
+	}
+
+	return str.c_str();
 }
 
 
 void CStringEdPackage::SetString( LPCSTR psLocalReference, LPCSTR psNewString, SE_BOOL bEnglishDebug )
 {
-	const char *ref = va("%s_%s", m_strCurrentFileRef_ParseOnly.c_str(), psLocalReference);
-	unsigned long refCrc = crc32( 0, (const Bytef *)ref, strlen(ref) );
-
-	if ( bEnglishDebug )
-	{	
-		// This is the leading english text of a foreign sentence pair (so it's the debug-key text):
-		// don't store, just make a note in-case #same shows up:
-		m_strCurrentEntryEnglish_ParseOnly = psNewString;
-	}
-	else if ( m_bLoadingEnglish_ParseOnly )
+	mapStringEntries_t::iterator itEntry = m_StringEntries.find( va("%s_%s",m_strCurrentFileRef_ParseOnly.c_str(), psLocalReference) );
+	if (itEntry != m_StringEntries.end())
 	{
-		// It's the english text, and we're loading english. Add it!
-		int len = strlen( psNewString );
-		char *strData = (char *) Z_Malloc( len + 1, TAG_STRINGED, qfalse );
-		strcpy( strData, psNewString );
-
-		m_Strings->Insert( strData, refCrc );
-	}
-	else
-	{				
-		// It's foreign text, we're going to add it, but we need to check for #same
-		if (!stricmp(psNewString, sSE_EXPORT_SAME))
-		{
-			// If it's #same, then copy the stored english version:
-			int len = m_strCurrentEntryEnglish_ParseOnly.length();
-			char *strData = (char *) Z_Malloc( len + 1, TAG_STRINGED, qfalse );
-			strcpy( strData, m_strCurrentEntryEnglish_ParseOnly.c_str() );
-
-			m_Strings->Insert( strData, refCrc );
+		SE_Entry_t &Entry = (*itEntry).second;
+	
+		if ( bEnglishDebug || m_bLoadingEnglish_ParseOnly)
+		{	
+			// then this is the leading english text of a foreign sentence pair (so it's the debug-key text),
+			//	or it's the only text when it's english being loaded...
+			//
+			Entry.m_strString = Leetify( psNewString );
+			if ( m_bLoadDebug )
+			{
+				Entry.m_strDebug = sSE_DEBUGSTR_PREFIX;
+				Entry.m_strDebug+= /* m_bLoadingEnglish_ParseOnly ? "" : */ psNewString;
+				Entry.m_strDebug+= sSE_DEBUGSTR_SUFFIX;
+			}
+			m_strCurrentEntryEnglish_ParseOnly = psNewString;	// for possible "#same" resolving in foreign later
 		}
 		else
-		{
-			// Explicit foreign text. Add it!
-			int len = strlen( psNewString );
-			char *strData = (char *) Z_Malloc( len + 1, TAG_STRINGED, qfalse );
-			strcpy( strData, psNewString );
-
-			m_Strings->Insert( strData, refCrc );
+		{				
+			// then this is foreign text (so check for "#same" resolving)...
+			//
+			if (!stricmp(psNewString, sSE_EXPORT_SAME))
+			{
+				Entry.m_strString = m_strCurrentEntryEnglish_ParseOnly;	// foreign "#same" is now english
+				if (m_bLoadDebug)
+				{
+					Entry.m_strDebug = sSE_DEBUGSTR_PREFIX;
+					Entry.m_strDebug+= sSE_EXPORT_SAME;				// english (debug) is now "#same"
+					Entry.m_strDebug+= sSE_DEBUGSTR_SUFFIX;
+				}
+			}
+			else
+			{
+				Entry.m_strString	= psNewString;							// foreign is just foreign
+			}
 		}
+	}
+	else
+	{
+		__ASSERT(0);	// should never happen
 	}
 }
 
@@ -710,7 +825,7 @@ void CStringEdPackage::SetString( LPCSTR psLocalReference, LPCSTR psNewString, S
 //
 // return is either NULL for good else error message to display...
 //
-static LPCSTR SE_Load_Actual( LPCSTR psFileName, SE_BOOL bSpeculativeLoad )
+static LPCSTR SE_Load_Actual( LPCSTR psFileName, SE_BOOL bLoadDebug, SE_BOOL bSpeculativeLoad )
 {
 	LPCSTR psErrorMessage = NULL;
 	
@@ -721,13 +836,16 @@ static LPCSTR SE_Load_Actual( LPCSTR psFileName, SE_BOOL bSpeculativeLoad )
 		//
 		char *psParsePos = (char *) psLoadedData;
 
-		TheStringPackage.SetupNewFileParse( psFileName );
+		TheStringPackage.SetupNewFileParse( psFileName, bLoadDebug );
 
 		char sLineBuffer[16384];	// should be enough for one line of text (some of them can be BIG though)
 		while ( !psErrorMessage && TheStringPackage.ReadLine((LPCSTR &) psParsePos, sLineBuffer ) )
 		{
 			if (strlen(sLineBuffer))
 			{
+//				__DEBUGOUT( sLineBuffer );
+//				__DEBUGOUT( "\n" );
+
 				psErrorMessage = TheStringPackage.ParseLine( sLineBuffer );
 			}
 		}
@@ -789,7 +907,7 @@ static LPCSTR SE_GetFoundFile( string &strResult )
 //
 // return is either NULL for good else error message to display...
 //
-LPCSTR SE_Load( LPCSTR psFileName, SE_BOOL bFailIsCritical = SE_TRUE  )
+LPCSTR SE_Load( LPCSTR psFileName, SE_BOOL bLoadDebug = SE_TRUE, SE_BOOL bFailIsCritical = SE_TRUE  )
 {
 	////////////////////////////////////////////////////
 	//
@@ -813,7 +931,7 @@ LPCSTR SE_Load( LPCSTR psFileName, SE_BOOL bFailIsCritical = SE_TRUE  )
 	////////////////////////////////////////////////////
 
 
-	LPCSTR psErrorMessage = SE_Load_Actual( psFileName, SE_FALSE );
+	LPCSTR psErrorMessage = SE_Load_Actual( psFileName, bLoadDebug, SE_FALSE );
 
 	// check for any corresponding / overriding .STE files and load them afterwards...
 	//
@@ -827,7 +945,7 @@ LPCSTR SE_Load( LPCSTR psFileName, SE_BOOL bFailIsCritical = SE_TRUE  )
 		{
 			strcpy( p, sSE_EXPORT_FILE_EXTENSION );
 		
-			psErrorMessage = SE_Load_Actual( sFileName, SE_TRUE );
+			psErrorMessage = SE_Load_Actual( sFileName, bLoadDebug, SE_TRUE );
 		}
 	}
 
@@ -862,22 +980,166 @@ LPCSTR SE_GetString( LPCSTR psPackageReference, LPCSTR psStringReference)
 
 LPCSTR SE_GetString( LPCSTR psPackageAndStringReference )
 {
-	int len = strlen( psPackageAndStringReference );
 	char sReference[256];	// will always be enough, I've never seen one more than about 30 chars long
-	assert( len < sizeof(sReference) );
+	assert(strlen(psPackageAndStringReference) < sizeof(sReference) );
+	Q_strncpyz(sReference, psPackageAndStringReference, sizeof(sReference) );
+	Q_strupr(sReference);
 
-	Q_strncpyz( sReference, psPackageAndStringReference, sizeof(sReference) );
-	Q_strupr( sReference );
+	mapStringEntries_t::iterator itEntry = TheStringPackage.m_StringEntries.find( sReference );
+	if (itEntry != TheStringPackage.m_StringEntries.end())
+	{
+		SE_Entry_t &Entry = (*itEntry).second;
 
-	unsigned long refCrc = crc32( 0, (const Bytef *)sReference, len );
-	char **strData = TheStringPackage.m_Strings->Find( refCrc );
+		if ( se_debug->integer && TheStringPackage.m_bLoadDebug )
+		{
+			return Entry.m_strDebug.c_str();
+		}
+		else
+		{
+			return Entry.m_strString.c_str();
+		}
+	}
 
-	if( !strData )
-		return "";
-	else
-		return *strData;
+	// should never get here, but fall back anyway... (except we DO use this to see if there's a debug-friendly key bind, which may not exist)
+	//
+//	__ASSERT(0);
+	return "";	// you may want to replace this with something based on _DEBUG or not?
 }
 
+
+// convenience-function for the main GetFlags call...
+//
+int	SE_GetFlags ( LPCSTR psPackageReference, LPCSTR psStringReference )
+{
+	char sReference[256];	// will always be enough, I've never seen one more than about 30 chars long
+
+	sprintf(sReference,"%s_%s", psPackageReference, psStringReference);
+
+	return SE_GetFlags( sReference );
+}
+
+int	SE_GetFlags ( LPCSTR psPackageAndStringReference )
+{
+	mapStringEntries_t::iterator itEntry = TheStringPackage.m_StringEntries.find( psPackageAndStringReference );
+	if (itEntry != TheStringPackage.m_StringEntries.end())
+	{
+		SE_Entry_t &Entry = (*itEntry).second;
+
+		return Entry.m_iFlags;
+	}
+
+	// should never get here, but fall back anyway...
+	//
+	__ASSERT(0);
+
+	return 0;
+}
+
+
+int SE_GetNumFlags( void )
+{
+	return TheStringPackage.m_vstrFlagNames.size();
+}
+
+LPCSTR SE_GetFlagName( int iFlagIndex )
+{
+	if ( iFlagIndex < TheStringPackage.m_vstrFlagNames.size())
+	{
+		return TheStringPackage.m_vstrFlagNames[ iFlagIndex ].c_str();
+	}
+
+	__ASSERT(0);
+	return "";
+}
+
+// returns flag bitmask (eg 00000010b), else 0 for not found
+//
+int SE_GetFlagMask( LPCSTR psFlagName )
+{
+	return TheStringPackage.GetFlagMask( psFlagName );
+}
+
+// I could cache the result of this since it won't change during app lifetime unless someone does a build-publish
+//	while you're still ingame. Cacheing would make sense since it can take a while to scan, but I'll leave it and
+//	let whoever calls it cache the results instead. I'll make it known that it's a slow process to call this, but 
+//	whenever anyone calls someone else's code they should assign it to an int anyway, since you've no idea what's
+//	going on. Basically, don't  use this in a FOR loop as the end-condition. Duh.
+//
+// Groan, except for Bob. I mentioned that this was slow and only call it once, but he's calling it from 
+//	every level-load...  Ok, cacheing it is...
+//
+vector <string> gvLanguagesAvailable;
+int SE_GetNumLanguages(void)
+{
+	if ( gvLanguagesAvailable.empty() )
+	{
+		string strResults;
+		/*int iFilesFound = */SE_BuildFileList( 
+												#ifdef _STRINGED
+													va("C:\\Source\\Tools\\StringEd\\test_data\\%s",sSE_STRINGS_DIR)
+												#else
+													sSE_STRINGS_DIR
+												#endif
+												, strResults 
+											);
+
+		set<string> strUniqueStrings;	// laziness <g>
+		LPCSTR p;
+		while ((p=SE_GetFoundFile (strResults)) != NULL)
+		{
+			LPCSTR psLanguage = TheStringPackage.ExtractLanguageFromPath( p );
+
+	//		__DEBUGOUT( p );
+	//		__DEBUGOUT( "\n" );
+	//		__DEBUGOUT( psLanguage );
+	//		__DEBUGOUT( "\n" );
+
+			if (!strUniqueStrings.count( psLanguage ))
+			{
+				strUniqueStrings.insert( psLanguage );
+
+				// if english is available, it should always be first... ( I suppose )
+				//
+				if (!stricmp(psLanguage,"english"))
+				{
+					gvLanguagesAvailable.insert( gvLanguagesAvailable.begin(), psLanguage );
+				}
+				else
+				{
+					gvLanguagesAvailable.push_back( psLanguage );
+				}
+			}
+		}
+	}
+
+	return gvLanguagesAvailable.size();
+}
+
+// SE_GetNumLanguages() must have been called before this...
+//
+LPCSTR SE_GetLanguageName( int iLangIndex )
+{
+	if ( iLangIndex < gvLanguagesAvailable.size() )
+	{
+		return gvLanguagesAvailable[ iLangIndex ].c_str();
+	}
+
+	__ASSERT(0);
+	return "";
+}
+
+// SE_GetNumLanguages() must have been called before this...
+//
+LPCSTR SE_GetLanguageDir( int iLangIndex )
+{
+	if ( iLangIndex < gvLanguagesAvailable.size() )
+	{
+		return va("%s/%s", sSE_STRINGS_DIR, gvLanguagesAvailable[ iLangIndex ].c_str() );
+	}
+
+	__ASSERT(0);
+	return "";
+}
 
 void SE_NewLanguage(void)
 {
@@ -893,39 +1155,57 @@ void SE_NewLanguage(void)
 //
 void SE_Init(void)
 {
-	Z_PushNewDeleteTag( TAG_STRINGED );
+#ifdef _XBOX	// VVFIXME?
+//	extern void Z_SetNewDeleteTemporary(bool);
+//	Z_SetNewDeleteTemporary(true);
+#endif
 
 	TheStringPackage.Clear( SE_FALSE );
 
-//	se_language = Cvar_Get("se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART);
-	extern DWORD g_dwLanguage;
-	switch( g_dwLanguage )
+#ifdef _DEBUG
+//	int iNumLanguages = SE_GetNumLanguages();
+#endif
+
+	se_language = Cvar_Get("se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART);
+	se_debug = Cvar_Get("se_debug", "0", 0);
+	sp_leet = Cvar_Get("sp_leet", "0", CVAR_ROM );
+
+	// if doing a buildscript, load all languages...
+	//
+	extern cvar_t *com_buildScript;
+	if (com_buildScript->integer == 2)
 	{
-		case XC_LANGUAGE_FRENCH:
-			se_language = Cvar_Get("se_language", "french", CVAR_NORESTART);
-			break;
-		case XC_LANGUAGE_GERMAN:
-			se_language = Cvar_Get("se_language", "german", CVAR_NORESTART);
-			break;
-		case XC_LANGUAGE_ENGLISH:
-		default:
-			se_language = Cvar_Get("se_language", "english", CVAR_NORESTART);
-			break;
+		int iLanguages = SE_GetNumLanguages();
+		for (int iLang = 0; iLang < iLanguages; iLang++)
+		{
+            LPCSTR psLanguage = SE_GetLanguageName( iLang );	// eg "german"			
+			Com_Printf( "com_buildScript(2): Loading language \"%s\"...\n", psLanguage );
+			SE_LoadLanguage( psLanguage );
+		}
 	}
 
-	// Rather than calling SE_LoadLanguage directly, do this. Otherwise,
-	// se_langauge->modified doesn't get cleared, and we parse the string files
-	// twice. Gah.
-	SE_CheckForLanguageUpdates();
+	LPCSTR psErrorMessage = SE_LoadLanguage( se_language->string );
+	if (psErrorMessage)
+	{
+		Com_Error( ERR_DROP, "SE_Init() Unable to load language: \"%s\"!\nError: \"%s\"\n", se_language->string,psErrorMessage );
+	}
 
-	Z_PopNewDeleteTag();
+#ifdef _XBOX
+//	Z_SetNewDeleteTemporary(false);
+#endif
 }
+
+void SE_ShutDown(void)
+{
+	TheStringPackage.Clear( SE_FALSE );
+}
+
 
 // returns error message else NULL for ok.
 //
 // Any errors that result from this should probably be treated as game-fatal, since an asset file is fuxored.
 //
-LPCSTR SE_LoadLanguage( LPCSTR psLanguage )
+LPCSTR SE_LoadLanguage( LPCSTR psLanguage, SE_BOOL bLoadDebug /* = SE_TRUE */ )
 {
 	LPCSTR psErrorMessage = NULL;
 
@@ -950,13 +1230,13 @@ LPCSTR SE_LoadLanguage( LPCSTR psLanguage )
 
 			if ( !stricmp( psLanguage, psThisLang ) )
 			{
-				psErrorMessage = SE_Load( p );
+				psErrorMessage = SE_Load( p, bLoadDebug );
 			}
 		}
 	}
 	else
 	{
-		assert( 0 && "SE_LoadLanguage(): Bad language name!" );
+		__ASSERT( 0 && "SE_LoadLanguage(): Bad language name!" );
 	}
 
 	return psErrorMessage;
@@ -971,12 +1251,11 @@ void SE_CheckForLanguageUpdates(void)
 {
 	if (se_language && se_language->modified)
 	{
-		LPCSTR psErrorMessage = SE_LoadLanguage( se_language->string );
+		LPCSTR psErrorMessage = SE_LoadLanguage( se_language->string, SE_TRUE );
 		if ( psErrorMessage )
 		{
 			Com_Error( ERR_DROP, psErrorMessage );
 		}
-		TheStringPackage.m_Strings->Sort();
 		se_language->modified = SE_FALSE;
 	}
 }

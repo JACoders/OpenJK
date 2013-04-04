@@ -18,10 +18,6 @@ int PASSFLOAT( float x ) {
 	return *(int *)&floatTemp;
 }
 
-void	trap_PrintAlways( const char *fmt ) {
-	syscall( CG_PRINTALWAYS, fmt );
-}
-
 void	trap_Print( const char *fmt ) {
 	syscall( CG_PRINT, fmt );
 }
@@ -583,7 +579,7 @@ int trap_RealTime(qtime_t *qtime) {
 void trap_SnapVector( float *v ) {
 	syscall( CG_SNAPVECTOR, v );
 }
-/*
+
 // this returns a handle.  arg0 is the name in the format "idlogo.roq", set arg1 to NULL, alteredstates to qfalse (do not alter gamestate)
 int trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits) {
   return syscall(CG_CIN_PLAYCINEMATIC, arg0, xpos, ypos, width, height, bits);
@@ -612,7 +608,6 @@ void trap_CIN_DrawCinematic (int handle) {
 void trap_CIN_SetExtents (int handle, int x, int y, int w, int h) {
   syscall(CG_CIN_SETEXTENTS, handle, x, y, w, h);
 }
-*/
 
 qboolean trap_GetEntityToken( char *buffer, int bufferSize ) {
 	return syscall( CG_GET_ENTITY_TOKEN, buffer, bufferSize );
@@ -840,6 +835,24 @@ void trap_G2API_CollisionDetect (
 	syscall ( CG_G2_COLLISIONDETECT, collRecMap, ghoul2, angles, position, frameNumber, entNum, rayStart, rayEnd, scale, traceFlags, useLod, PASSFLOAT(fRadius) );
 }
 
+void trap_G2API_CollisionDetectCache ( 
+	CollisionRecord_t *collRecMap, 
+	void* ghoul2, 
+	const vec3_t angles, 
+	const vec3_t position,
+	int frameNumber, 
+	int entNum, 
+	const vec3_t rayStart, 
+	const vec3_t rayEnd, 
+	const vec3_t scale, 
+	int traceFlags, 
+	int useLod,
+	float fRadius
+	)
+{
+	syscall ( CG_G2_COLLISIONDETECTCACHE, collRecMap, ghoul2, angles, position, frameNumber, entNum, rayStart, rayEnd, scale, traceFlags, useLod, PASSFLOAT(fRadius) );
+}
+
 void trap_G2API_CleanGhoul2Models(void **ghoul2Ptr)
 {
 	syscall(CG_G2_CLEANMODELS, ghoul2Ptr);
@@ -850,13 +863,6 @@ qboolean trap_G2API_SetBoneAngles(void *ghoul2, int modelIndex, const char *bone
 								int blendTime , int currentTime )
 {
 	return (syscall(CG_G2_ANGLEOVERRIDE, ghoul2, modelIndex, boneName, angles, flags, up, right, forward, modelList, blendTime, currentTime));
-}
-
-
-void trap_G2API_GetModelName(void *ghoul2, const int modelIndex,
-		const char **modelName)
-{
-	syscall(CG_G2_GETMODELNAME, ghoul2, modelIndex, modelName);
 }
 
 qboolean trap_G2API_SetBoneAnim(void *ghoul2, const int modelIndex, const char *boneName, const int startFrame, const int endFrame,

@@ -8,7 +8,6 @@
 
 #include "../qcommon/disablewarnings.h"
 
-
 #pragma warning (push, 3)	//go back down to 3 for the stl include
 #include "../qcommon/sstring.h"	// #include <string>
 #include <vector>
@@ -16,14 +15,6 @@
 #pragma warning (pop)
 
 using namespace std;
-
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "modelmem.h"
-ModelMemoryManager ModelMem;
-
-#include "../zlib/zlib.h"
-#endif
 
 
 #define	LL(x) x=LittleLong(x)
@@ -33,21 +24,16 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *name
 Ghoul2 Insert Start
 */
 
-//typedef	struct modelHash_s
-//{
-//	char		name[MAX_QPATH];
-//	qhandle_t	handle;
-//	struct		modelHash_s	*next;
-//
-//}modelHash_t;
-//
-//#define FILE_HASH_SIZE		2048
-//static	modelHash_t 		*mhHashTable[FILE_HASH_SIZE];
+typedef	struct modelHash_s
+{
+	char		name[MAX_QPATH];
+	qhandle_t	handle;
+	struct		modelHash_s	*next;
 
+}modelHash_t;
 
-typedef map<unsigned long, qhandle_t> HashTable;
-typedef HashTable::iterator HashTableIterator;
-HashTable	*mhHashTable = NULL;
+#define FILE_HASH_SIZE		1024
+static	modelHash_t 		*mhHashTable[FILE_HASH_SIZE];
 
 /*
 Ghoul2 Insert End
@@ -66,9 +52,6 @@ struct CachedEndianedModelBinary_s
 	ShaderRegisterData_t ShaderRegisterData;	
 	int		iLastLevelUsedOn;
 	int		iPAKFileCheckSum;	// else -1 if not from PAK
-#ifdef _XBOX
-	int		ID;
-#endif
 
 
 	CachedEndianedModelBinary_s()
@@ -78,9 +61,6 @@ struct CachedEndianedModelBinary_s
 		ShaderRegisterData.clear();
 		iLastLevelUsedOn	= -1;
 		iPAKFileCheckSum	= -1;
-#ifdef _XBOX
-		ID					= -1;
-#endif
 	}
 };
 typedef struct CachedEndianedModelBinary_s CachedEndianedModelBinary_t;
@@ -196,19 +176,11 @@ qboolean RE_RegisterModels_GetDiskFile( const char *psModelFileName, void **ppvB
 // don't use ri.xxx functions in case running on dedicated
 //
 extern cvar_t *sv_pure;
-#ifdef _XBOX
-void *RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const char *psModelFileName, qboolean *pqbAlreadyFound, memtag_t eTag, int modindex, bool useModelMem)
-#else
 void *RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const char *psModelFileName, qboolean *pqbAlreadyFound, memtag_t eTag)
-#endif
 {
 	char sModelName[MAX_QPATH];
 
 	assert(CachedModels);
-
-#ifdef _XBOX
-	static int modelCount = 0;
-#endif
 
 	Q_strncpyz(sModelName,psModelFileName,sizeof(sModelName));
 	Q_strlwr  (sModelName);
@@ -224,22 +196,12 @@ void *RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const 
 		//
 		// ... groan, but not if doing a limb hierarchy creation (some VV stuff?), in which case it's NULL
 		//				
-#ifndef _XBOX	// Can't re-tag allocated memory!
 		if ( pvDiskBufferIfJustLoaded )
 		{
 			Z_MorphMallocTag( pvDiskBufferIfJustLoaded, eTag );
 		}
-		else 
-#endif
+		else
 		{
-#ifdef _XBOX
-//			if(strstr(sModelName, "players") && eTag == TAG_MODEL_GLM && ModelMem.IsNPCMode() == false) {
-			if(useModelMem) {
-				pvDiskBufferIfJustLoaded = ModelMem.GetModelMemory(iSize, modindex, sModelName);
-				ModelBin.ID = modindex;
-			}
-			else 
-#endif
 			pvDiskBufferIfJustLoaded =  Z_Malloc(iSize,eTag, qfalse );
 		}
 
@@ -288,7 +250,7 @@ void *RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const 
 
 // Unfortunately the dedicated server also hates shader loading. So we need an alternate of this func.
 //
-void *RE_RegisterServerModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const char *psModelFileName, qboolean *pqbAlreadyFound, memtag_t eTag, int modindex)
+void *RE_RegisterServerModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const char *psModelFileName, qboolean *pqbAlreadyFound, memtag_t eTag)
 {
 	char sModelName[MAX_QPATH];
 
@@ -306,19 +268,12 @@ void *RE_RegisterServerModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, 
 		//
 		// ... groan, but not if doing a limb hierarchy creation (some VV stuff?), in which case it's NULL
 		//				
-#ifndef _XBOX	// Can't re-tag allocated memory!
 		if ( pvDiskBufferIfJustLoaded )
 		{
 			Z_MorphMallocTag( pvDiskBufferIfJustLoaded, eTag );
 		}
 		else
-#endif
 		{
-			if(strstr(sModelName, "players") && eTag == TAG_MODEL_GLM && ModelMem.IsNPCMode() == false) {
-				pvDiskBufferIfJustLoaded = ModelMem.GetModelMemory(iSize, modindex, sModelName);
-				ModelBin.ID = modindex;
-			}
-			else
 			pvDiskBufferIfJustLoaded =  Z_Malloc(iSize,eTag, qfalse );
 		}
 
@@ -418,8 +373,6 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 			//
 			if (bDeleteThis)
 			{
-				Com_Error( ERR_DROP, "Trying to delete from CachedModels in LevelLoadEnd" );
-#if 0
 				LPCSTR psModelName = (*itModel).first.c_str();
 				Com_DPrintf (S_COLOR_RED "Dumping \"%s\"", psModelName);
 
@@ -428,14 +381,7 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 	#endif				
 
 				if (CachedModel.pModelDiskImage) {
-#ifdef _XBOX
-					if(CachedModel.ID != -1) {
-                        ModelMem.FreeModelMemory(CachedModel.ID);
-					}
-					else
-#endif
-					Z_Free(CachedModel.pModelDiskImage);
-
+					Z_Free(CachedModel.pModelDiskImage);	
 					//CachedModel.pModelDiskImage = NULL;	// REM for reference, erase() call below negates the need for it.
 					bAtLeastoneModelFreed = qtrue;
 				}
@@ -452,8 +398,7 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 				
 #endif
 
-				iLoadedModelBytes = GetModelDataAllocSize();
-#endif
+				iLoadedModelBytes = GetModelDataAllocSize();				
 			}
 		}
 	}
@@ -470,7 +415,6 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 //
 // (avoid using ri.xxxx stuff here in case running on dedicated)
 //
-#if 0
 static void RE_RegisterModels_DumpNonPure(void)
 {
 	Com_DPrintf( "RE_RegisterModels_DumpNonPure():\n");
@@ -498,12 +442,6 @@ static void RE_RegisterModels_DumpNonPure(void)
 				Com_DPrintf( "Dumping none pure model \"%s\"", psModelName);
 
 				if (CachedModel.pModelDiskImage) {
-#ifdef _XBOX
-					if(CachedModel.ID != -1) {
-                        ModelMem.FreeModelMemory(CachedModel.ID);
-					}
-					else
-#endif
 					Z_Free(CachedModel.pModelDiskImage);	
 					//CachedModel.pModelDiskImage = NULL;	// REM for reference, erase() call below negates the need for it.
 				}
@@ -525,7 +463,6 @@ static void RE_RegisterModels_DumpNonPure(void)
 
 	Com_DPrintf( "RE_RegisterModels_DumpNonPure(): Ok\n");	
 }
-#endif
 
 void RE_RegisterModels_Info_f( void )
 {	
@@ -567,33 +504,14 @@ static void RE_RegisterModels_DeleteAll(void)
 	{
 		CachedEndianedModelBinary_t &CachedModel = (*itModel).second;
 
-		if (CachedModel.pModelDiskImage)
-		{
-			if(CachedModel.ID != -1)
-			{	// This already removes the entry from CachedModels!
-				if( ModelMem.ClearModelMemory(CachedModel.ID) )
-					itModel = CachedModels->begin();
-				else
-					itModel = CachedModels->erase(itModel);
-			}
-			else
-			{
-				Z_Free(CachedModel.pModelDiskImage);
-				itModel = CachedModels->erase(itModel);
-			}
+		if (CachedModel.pModelDiskImage) {
+			Z_Free(CachedModel.pModelDiskImage);					
 		}
-		else
-		{
-			itModel = CachedModels->erase(itModel);
-		}
+
+		itModel = CachedModels->erase(itModel);			
 	}
 #else
 	CachedModels->erase(CachedModels->begin(),CachedModels->end());
-#endif
-
-#ifdef _XBOX
-	// Just in case, clear all model memory slots that might have been missed above...
-	ModelMem.ClearAll();
 #endif
 }
 
@@ -614,17 +532,13 @@ void RE_RegisterMedia_LevelLoadBegin(const char *psMapName, ForceReload_e eForce
 	}
 	else
 	{
-		/*
 		if (sv_pure->integer)
 		{
 			RE_RegisterModels_DumpNonPure();
 		}
-		*/
 	}
 
-/*
 	tr.numBSPModels = 0;
-*/
 
 #ifndef DEDICATED
 // not used in MP codebase...
@@ -632,7 +546,7 @@ void RE_RegisterMedia_LevelLoadBegin(const char *psMapName, ForceReload_e eForce
 //	if (bDeleteBSP)
 //	{
 //		CM_DeleteCachedMap();
-//		R_Images_DeleteLightMaps();	// always do this now, makes no real load time difference, and lets designers work ok
+		R_Images_DeleteLightMaps();	// always do this now, makes no real load time difference, and lets designers work ok
 //	}
 #endif
 
@@ -676,13 +590,17 @@ void RE_RegisterMedia_LevelLoadEnd(void)
 /*
 ** R_GetModelByHandle
 */
-model_t	*R_GetModelByHandle( qhandle_t index )
-{
-	// invalid gets the defualt model
-	if( index < 1 || index >= MAX_MOD_KNOWN || !tr.models[index] )
-		return tr.models[0];
+model_t	*R_GetModelByHandle( qhandle_t index ) {
+	model_t		*mod;
 
-	return tr.models[index];
+	// out of range gets the defualt model
+	if ( index < 1 || index >= tr.numModels ) {
+		return tr.models[0];
+	}
+
+	mod = tr.models[index];
+
+	return mod;
 }
 
 //===============================================================================
@@ -697,18 +615,9 @@ model_t *R_AllocModel( void ) {
 		return NULL;
 	}
 
-	mod = (struct model_s *)Hunk_Alloc( sizeof( *tr.models[0] ), h_low );
-
-	int index = 0;
-	for( index = 0; index < MAX_MOD_KNOWN; ++index )
-		if( !tr.models[index] )
-			break;
-
-	if( index == MAX_MOD_KNOWN )
-		return NULL;
-
-	mod->index = index;
-	tr.models[index] = mod;
+	mod = (struct model_s *)Hunk_Alloc( sizeof( *tr.models[tr.numModels] ), h_low );
+	mod->index = tr.numModels;
+	tr.models[tr.numModels] = mod;
 	tr.numModels++;
 
 	return mod;
@@ -743,73 +652,19 @@ static long generateHashValue( const char *fname, const int size ) {
 
 void RE_InsertModelIntoHash(const char *name, model_t *mod)
 {
-	//int			hash;
-	//modelHash_t	*mh;
-
-	//hash = generateHashValue(name, FILE_HASH_SIZE);
-
-	//// insert this file into the hash table so we can look it up faster later
-	//mh = (modelHash_t*)Hunk_Alloc( sizeof( modelHash_t ), h_low );
-
-	//mh->next = mhHashTable[hash];
-	//mh->handle = mod->index;
-	//strcpy(mh->name, name);
-	//mhHashTable[hash] = mh;
-	unsigned long crc = crc32(0, (const byte*)name, strlen(name));
-	(*mhHashTable)[crc] = mod->index;
-}
-
-#ifdef _XBOX
-void RE_RemoveModelFromHash(const char *name)
-{
-	/*int hash;
+	int			hash;
 	modelHash_t	*mh;
 
 	hash = generateHashValue(name, FILE_HASH_SIZE);
 
-	mh = mhHashTable[hash];
+	// insert this file into the hash table so we can look it up faster later
+	mh = (modelHash_t*)Hunk_Alloc( sizeof( modelHash_t ), h_low );
 
-	if(Q_stricmp(mh->name, name) == 0) {
-		Z_Free( mh );
-		mhHashTable[hash] = NULL;
-	}*/
-
-	unsigned long crc = crc32(0, (const byte*)name, strlen(name));
-	mhHashTable->erase(crc);
-
-	// Yank this model out of the CachedModels list also
-	if(!CachedModels) {
-		return;
-	}
-	qboolean bEraseOccured = qfalse;
-	for (CachedModels_t::iterator itModel = CachedModels->begin(); itModel != CachedModels->end(); bEraseOccured?itModel:++itModel)
-	{			
-		bEraseOccured = qfalse;
-
-		LPCSTR						psModelName	 = (*itModel).first.c_str();
-		CachedEndianedModelBinary_t &CachedModel = (*itModel).second;
-
-		if (stricmp(name, psModelName) == 0)
-		{
-			if (CachedModel.pModelDiskImage) {
-				if(CachedModel.ID != -1) {
-					int ID = CachedModel.ID;
-					
-                    itModel = CachedModels->erase(itModel);
-
-					if(tr.models[ID])
-                        Z_Free(tr.models[ID]);
-					tr.models[ID] = NULL;
-					tr.numModels--;
-
-					bEraseOccured = qtrue;
-					break;
-				}	
-			}
-		}
-	}
+	mh->next = mhHashTable[hash];
+	mh->handle = mod->index;
+	strcpy(mh->name, name);
+	mhHashTable[hash] = mh;
 }
-#endif
 /*
 Ghoul2 Insert End
 */
@@ -860,7 +715,7 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 
 	qboolean bAlreadyFound = qfalse;
 	mdxa = mod->mdxa = (mdxaHeader_t*) //Hunk_Alloc( size );
-										RE_RegisterServerModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLA, mod->index);
+										RE_RegisterServerModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLA);
 
 	assert(bAlreadyCached == bAlreadyFound);	// I should probably eliminate 'bAlreadyFound', but wtf?
 
@@ -872,12 +727,9 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 		//
 		// Aaaargh. Kill me now...
 		//
-#ifdef _XBOX	// Can't re-tag allocated memory!
-		memcpy( mdxa, buffer, size );	// and don't do this now, since it's the same thing
-#else
 		bAlreadyCached = qtrue;
 		assert( mdxa == buffer );
-#endif
+//		memcpy( mdxa, buffer, size );	// and don't do this now, since it's the same thing
 
 		LL(mdxa->ident);
 		LL(mdxa->version);
@@ -986,7 +838,7 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 	
 	qboolean bAlreadyFound = qfalse;
 	mdxm = mod->mdxm = (mdxmHeader_t*) //Hunk_Alloc( size );
-										RE_RegisterServerModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM, mod->index);
+										RE_RegisterServerModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
 
 	assert(bAlreadyCached == bAlreadyFound);	// I should probably eliminate 'bAlreadyFound', but wtf?
 
@@ -998,12 +850,9 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 		//
 		// Aaaargh. Kill me now...
 		//
-#ifdef _XBOX	// Can't re-tag allocated memory!
-		memcpy( mdxm, buffer, size );	// and don't do this now, since it's the same thing
-#else
 		bAlreadyCached = qtrue;
 		assert( mdxm == buffer );
-#endif
+//		memcpy( mdxm, buffer, size );	// and don't do this now, since it's the same thing
 
 		LL(mdxm->ident);
 		LL(mdxm->version);
@@ -1162,8 +1011,8 @@ qhandle_t RE_RegisterServerModel( const char *name ) {
 /*
 Ghoul2 Insert Start
 */
-	/*int			hash;
-	modelHash_t	*mh;*/
+	int			hash;
+	modelHash_t	*mh;
 /*
 Ghoul2 Insert End
 */
@@ -1181,20 +1030,16 @@ Ghoul2 Insert End
 		return 0;
 	}
 
-	//hash = generateHashValue(name, FILE_HASH_SIZE);
+	hash = generateHashValue(name, FILE_HASH_SIZE);
 
-	////
-	//// see if the model is already loaded
-	////
-	//for (mh=mhHashTable[hash]; mh; mh=mh->next) {
-	//	if (Q_stricmp(mh->name, name) == 0) {
-	//		return mh->handle;
-	//	}
-	//}
-	unsigned long crc = crc32(0, (const byte*)name, strlen(name));
-	HashTableIterator iter = mhHashTable->find(crc);
-	if (iter != mhHashTable->end()) 
-		return (*iter).second;
+	//
+	// see if the model is already loaded
+	//
+	for (mh=mhHashTable[hash]; mh; mh=mh->next) {
+		if (Q_stricmp(mh->name, name) == 0) {
+			return mh->handle;
+		}
+	}
 
 	if ( ( mod = R_AllocModel() ) == NULL ) {
 		return 0;
@@ -1308,7 +1153,6 @@ fail:
 	return 0;
 }
 
-extern void FS_CancelLargeRead( void );
 
 /*
 ====================
@@ -1333,8 +1177,8 @@ static qhandle_t RE_RegisterModel_Actual( const char *name ) {
 /*
 Ghoul2 Insert Start
 */
-	/*int			hash;
-	modelHash_t	*mh;*/
+	int			hash;
+	modelHash_t	*mh;
 /*
 Ghoul2 Insert End
 */
@@ -1359,20 +1203,16 @@ Ghoul2 Insert Start
 	//
 	// search the currently loaded models
 	//
-	//hash = generateHashValue(name, FILE_HASH_SIZE);
+	hash = generateHashValue(name, FILE_HASH_SIZE);
 
 	//
 	// see if the model is already loaded
 	//
-	/*for (mh=mhHashTable[hash]; mh; mh=mh->next) {
+	for (mh=mhHashTable[hash]; mh; mh=mh->next) {
 		if (Q_stricmp(mh->name, name) == 0) {
 			return mh->handle;
 		}
-	}*/
-	unsigned long crc = crc32(0, (const byte*)name, strlen(name));
-	HashTableIterator iter = mhHashTable->find(crc);
-	if (iter != mhHashTable->end()) 
-		return (*iter).second;
+	}
 
 //	for ( hModel = 1 ; hModel < tr.numModels; hModel++ ) {
 //		mod = tr.models[hModel];
@@ -1384,7 +1224,6 @@ Ghoul2 Insert Start
 //		}
 //	}
 
-/*
 	if (name[0] == '#')
 	{
 		char		temp[MAX_QPATH];
@@ -1405,7 +1244,6 @@ Ghoul2 Insert Start
 		
 		return 0;
 	}
-*/
 
 	if (name[0] == '*')
 	{	// don't create a bad model for a bsp model
@@ -1459,13 +1297,6 @@ Ghoul2 Insert End
 			sprintf( namebuf, "_%d.md3", lod );
 			strcat( filename, namebuf );
 		}
-
-		// Warn the filesystem that a big GLM is about to be read:
-		extern void FS_LargeRead( void );
-		if( strstr(filename, "players") && strstr(filename, "glm") )
-			FS_LargeRead();
-		else
-			FS_CancelLargeRead();		// Because of recursive calls GLM->GLA
 
 		qboolean bAlreadyCached = qfalse;		
 		if (!RE_RegisterModels_GetDiskFile(filename, (void **)&buf, &bAlreadyCached))
@@ -1528,9 +1359,6 @@ Ghoul2 Insert End
 			}
 		}
 	}
-
-	// Stop using the GLA space for GLM reads
-	FS_CancelLargeRead();
 
 	if ( numLoaded ) {
 		// duplicate into higher lod spots that weren't
@@ -1635,13 +1463,8 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 	mod->dataSize += size;
 
 	qboolean bAlreadyFound = qfalse;
-#ifdef _XBOX
-	mod->md3[lod] = (md3Header_t *) //Hunk_Alloc( size );
-										RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_MD3, 0, false);
-#else
 	mod->md3[lod] = (md3Header_t *) //Hunk_Alloc( size );
 										RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_MD3);
-#endif
 
 	assert(bAlreadyCached == bAlreadyFound);	// I should probably eliminate 'bAlreadyFound', but wtf?
 
@@ -1653,12 +1476,9 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 		//
 		// Aaaargh. Kill me now...
 		//
-#ifdef _XBOX	// Can't re-tag allocated memory!
-		memcpy( mod->md3[lod], buffer, size );	// and don't do this now, since it's the same thing		
-#else
 		bAlreadyCached = qtrue;
 		assert( mod->md3[lod] == buffer );
-#endif
+//		memcpy( mod->md3[lod], buffer, size );	// and don't do this now, since it's the same thing		
 
 		LL(mod->md3[lod]->ident);
 		LL(mod->md3[lod]->version);
@@ -1853,17 +1673,7 @@ void R_ModelInit( void )
 
 	// leave a space for NULL model
 	tr.numModels = 0;
-	// Need to clear this now, because they're not in consecutive slots:
-	memset( tr.models, 0, sizeof(tr.models) );
-
-//	memset(mhHashTable, 0, sizeof(mhHashTable));
-	if(mhHashTable)
-	{
-        mhHashTable->clear();
-		delete mhHashTable;
-	}
-
-	mhHashTable = new HashTable;
+	memset(mhHashTable, 0, sizeof(mhHashTable));
 
 	mod = R_AllocModel();
 	mod->type = MOD_BAD;
@@ -1874,12 +1684,7 @@ void R_HunkClearCrap(void)
 { //get your dirty sticky assets off me, you damn dirty hunk!
 	KillTheShaderHashTable();
 	tr.numModels = 0;
-	memset(tr.models, 0, sizeof(tr.models));
-//	memset(mhHashTable, 0, sizeof(mhHashTable));
-	if(mhHashTable)
-	{
-        mhHashTable->clear();
-	}
+	memset(mhHashTable, 0, sizeof(mhHashTable));
 	tr.numShaders = 0;
 	tr.numSkins = 0;
 }
@@ -1890,13 +1695,6 @@ void R_ModelFree(void)
 		RE_RegisterModels_DeleteAll();
 		delete CachedModels;
 		CachedModels = NULL;
-	}
-
-	if(mhHashTable)
-	{
-		mhHashTable->clear();
-		delete mhHashTable;
-		mhHashTable = NULL;
 	}
 }
 
@@ -1914,9 +1712,7 @@ void R_Modellist_f( void ) {
 	int		lods;
 
 	total = 0;
-	for ( i = 1 ; i < MAX_MOD_KNOWN; i++ ) {
-		if( !tr.models[i] )
-			continue;
+	for ( i = 1 ; i < tr.numModels; i++ ) {
 		mod = tr.models[i];
 		lods = 1;
 		for ( j = 1 ; j < MD3_MAX_LODS ; j++ ) {

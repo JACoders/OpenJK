@@ -20,7 +20,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories=""
+				AdditionalIncludeDirectories="$(BINK_XBOX_ROOT)"
 				PreprocessorDefinitions="_DEBUG;WIN32;_JK2;_JK2MP;_XBOX;VV_LIGHTING"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -34,10 +34,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xapilibd.lib d3d8d.lib d3dx8d.lib xgraphicsd.lib dsoundd.lib dmusicd.lib xboxkrnl.lib goblib.lib xbdm.lib xvoiced.lib xonlinesd.lib"
+				AdditionalDependencies="xapilibd.lib d3d8d.lib d3dx8d.lib xgraphicsd.lib dsoundd.lib dmusicd.lib xboxkrnl.lib goblib.lib binkxbox.lib xbdm.lib xvoiced.lib xonlined.lib"
 				OutputFile=".\Debug\jamp-debug.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories=".\Debug"
+				AdditionalLibraryDirectories=".\Debug;&quot;$(BINK_XBOX_ROOT)&quot;"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
 				SubSystem="2"
@@ -54,12 +54,10 @@
 				RemotePath="xe:\JK3\$(TargetName).xbe"/>
 			<Tool
 				Name="XboxImageTool"
-				StackSize="0x40000"
+				StackSize="0x80000"
 				IncludeDebugInfo="TRUE"
 				NoLibWarn="TRUE"
-				TitleID="0x4C41000B"
-				LANKey="4C41000B4C41000B4C41000B4C41000B"
-				TitleName="Jedi Knight: Jedi Academy"/>
+				TitleID="0x4C41000B"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Xbox"
@@ -71,12 +69,10 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Oy-"
 				Optimization="2"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
+				InlineFunctionExpansion="1"
 				OmitFramePointers="FALSE"
 				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories=""
+				AdditionalIncludeDirectories=";$(BINK_XBOX_ROOT)"
 				PreprocessorDefinitions="_WIN32;NDEBUG;WIN32;_JK2;_JK2MP;_XBOX;VV_LIGHTING"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -91,10 +87,10 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xapilib.lib d3d8I.lib d3dx8.lib xgraphics.lib dsound.lib dmusic.lib xboxkrnl.lib goblib.lib xvoice.lib xbdm.lib xonlines.lib"
+				AdditionalDependencies="xapilib.lib d3d8I.lib d3dx8.lib xgraphics.lib dsound.lib dmusic.lib xboxkrnl.lib goblib.lib binkxbox.lib xvoice.lib xbdm.lib xonline.lib"
 				OutputFile=".\Release\jamp-release.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories=".\Release"
+				AdditionalLibraryDirectories=".\Release;&quot;$(BINK_XBOX_ROOT)&quot;"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
 				SubSystem="2"
@@ -114,69 +110,8 @@
 				RemotePath="xe:\JK3\$(TargetName).xbe"/>
 			<Tool
 				Name="XboxImageTool"
-				StackSize="0x40000"
-				TitleID="0x4C41000B"
-				LANKey="4C41000B4C41000B4C41000B4C41000B"
-				TitleName="Jedi Knight: Jedi Academy"/>
-		</Configuration>
-		<Configuration
-			Name="FinalBuild|Xbox"
-			OutputDirectory="FinalBuild"
-			IntermediateDirectory="FinalBuild\exe"
-			ConfigurationType="1"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
-				OptimizeForProcessor="2"
-				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="_WIN32;NDEBUG;WIN32;_JK2;_JK2MP;_XBOX;VV_LIGHTING;FINAL_BUILD;_FINAL"
-				StringPooling="TRUE"
-				RuntimeLibrary="0"
-				BufferSecurityCheck="TRUE"
-				EnableFunctionLevelLinking="TRUE"
-				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="0"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="3"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="xapilib.lib d3d8.lib d3dx8.lib xgraphics.lib dsound.lib dmusic.lib xboxkrnl.lib goblib.lib xvoice.lib xonlines.lib"
-				OutputFile=".\FinalBuild\jamp-final.exe"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories=".\FinalBuild"
-				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
-				SubSystem="2"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				OptimizeForWindows98="1"
-				SetChecksum="TRUE"
-				TargetMachine="1"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-			<Tool
-				Name="XboxDeploymentTool"
-				RemotePath="xe:\JK3\$(TargetName).xbe"/>
-			<Tool
-				Name="XboxImageTool"
-				StackSize="0x40000"
-				LimitAvailableMemoryTo64MB="TRUE"
-				TitleID="0x4C41000B"
-				LANKey="4C41000B4C41000B4C41000B4C41000B"
-				TitleName="Jedi Knight: Jedi Academy"/>
+				StackSize="0x80000"
+				TitleID="0x4C41000B"/>
 		</Configuration>
 	</Configurations>
 	<Files>
@@ -213,6 +148,12 @@
 		<Filter
 			Name="Client">
 			<File
+				RelativePath="..\client\BinkVideo.cpp">
+			</File>
+			<File
+				RelativePath="..\client\BinkVideo.h">
+			</File>
+			<File
 				RelativePath="..\client\cl_cgame.cpp">
 			</File>
 			<File
@@ -222,16 +163,10 @@
 				RelativePath="..\client\cl_console.cpp">
 			</File>
 			<File
-				RelativePath="..\client\cl_data.cpp">
-			</File>
-			<File
-				RelativePath="..\client\cl_data.h">
-			</File>
-			<File
 				RelativePath="..\client\cl_input.cpp">
 			</File>
 			<File
-				RelativePath="..\client\cl_input_hotswap.cpp">
+				RelativePath="..\..\code\client\cl_input_hotswap.cpp">
 			</File>
 			<File
 				RelativePath="..\client\cl_keys.cpp">
@@ -330,7 +265,22 @@
 				RelativePath="..\qcommon\cm_public.h">
 			</File>
 			<File
+				RelativePath="..\qcommon\cm_randomterrain.cpp">
+			</File>
+			<File
+				RelativePath="..\qcommon\cm_randomterrain.h">
+			</File>
+			<File
 				RelativePath="..\qcommon\cm_shader.cpp">
+			</File>
+			<File
+				RelativePath="..\qcommon\cm_terrain.cpp">
+			</File>
+			<File
+				RelativePath="..\qcommon\cm_terrainmap.cpp">
+			</File>
+			<File
+				RelativePath="..\qcommon\cm_terrainmap.h">
 			</File>
 			<File
 				RelativePath="..\qcommon\cm_test.cpp">
@@ -381,6 +331,12 @@
 				RelativePath="..\qcommon\genericparser2.h">
 			</File>
 			<File
+				RelativePath="..\qcommon\hstring.cpp">
+			</File>
+			<File
+				RelativePath="..\qcommon\hstring.h">
+			</File>
+			<File
 				RelativePath="..\qcommon\huffman.cpp">
 			</File>
 			<File
@@ -418,12 +374,6 @@
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\qcommon\q_math.cpp">
@@ -438,12 +388,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						CompileAs="2"/>
@@ -492,16 +436,16 @@
 				RelativePath="..\qcommon\timing.h">
 			</File>
 			<File
+				RelativePath="..\qcommon\unzip.cpp">
+			</File>
+			<File
+				RelativePath="..\qcommon\unzip.h">
+			</File>
+			<File
 				RelativePath="..\qcommon\vm_console.cpp">
 			</File>
 			<File
 				RelativePath="..\qcommon\vm_local.h">
-			</File>
-			<File
-				RelativePath="..\qcommon\xb_settings.cpp">
-			</File>
-			<File
-				RelativePath="..\qcommon\xb_settings.h">
 			</File>
 			<File
 				RelativePath="..\qcommon\z_memman_console.cpp">
@@ -511,21 +455,9 @@
 			Name="Win32">
 			<File
 				RelativePath="..\win32\dbg_console_xbox.cpp">
-				<FileConfiguration
-					Name="FinalBuild|Xbox"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCLCompilerTool"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\win32\dbg_console_xbox.h">
-				<FileConfiguration
-					Name="FinalBuild|Xbox"
-					ExcludedFromBuild="TRUE">
-					<Tool
-						Name="VCCustomBuildTool"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\win32\glw_win_dx8.h">
@@ -561,7 +493,7 @@
 				RelativePath="..\win32\win_main_console.cpp">
 			</File>
 			<File
-				RelativePath="..\win32\win_net_xbox.cpp">
+				RelativePath="..\win32\win_net.cpp">
 			</File>
 			<File
 				RelativePath="..\win32\win_qal_xbox.cpp">
@@ -687,10 +619,10 @@
 				RelativePath="..\renderer\matcomp.h">
 			</File>
 			<File
-				RelativePath="..\renderer\modelmem.h">
+				RelativePath="..\renderer\tr_animation.cpp">
 			</File>
 			<File
-				RelativePath="..\renderer\tr_animation.cpp">
+				RelativePath="..\renderer\tr_arioche.cpp">
 			</File>
 			<File
 				RelativePath="..\renderer\tr_backend.cpp">
@@ -720,7 +652,16 @@
 				RelativePath="..\renderer\tr_init.cpp">
 			</File>
 			<File
+				RelativePath="..\renderer\tr_landscape.h">
+			</File>
+			<File
 				RelativePath="..\renderer\tr_light.cpp">
+			</File>
+			<File
+				RelativePath="..\renderer\tr_lightmanager.cpp">
+			</File>
+			<File
+				RelativePath="..\renderer\tr_lightmanager.h">
 			</File>
 			<File
 				RelativePath="..\renderer\tr_local.h">
@@ -774,6 +715,9 @@
 				RelativePath="..\renderer\tr_surfacesprites.cpp">
 			</File>
 			<File
+				RelativePath="..\renderer\tr_terrain.cpp">
+			</File>
+			<File
 				RelativePath="..\cgame\tr_types.h">
 			</File>
 			<File
@@ -806,9 +750,15 @@
 			<File
 				RelativePath="..\win32\win_qgl_dx8.cpp">
 			</File>
-			<File
-				RelativePath="..\win32\xbox_texture_man.h">
-			</File>
+			<Filter
+				Name="png">
+				<File
+					RelativePath="..\png\png.cpp">
+				</File>
+				<File
+					RelativePath="..\png\png.h">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Ghoul2">
@@ -841,6 +791,129 @@
 			</File>
 			<File
 				RelativePath="..\renderer\mdx_format.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="zlib32">
+			<File
+				RelativePath="..\zlib32\deflate.cpp">
+			</File>
+			<File
+				RelativePath="..\zlib32\deflate.h">
+			</File>
+			<File
+				RelativePath="..\zlib32\inflate.cpp">
+			</File>
+			<File
+				RelativePath="..\zlib32\inflate.h">
+			</File>
+			<File
+				RelativePath="..\zlib32\zip.h">
+			</File>
+			<File
+				RelativePath="..\zlib32\zipcommon.cpp">
+			</File>
+		</Filter>
+		<Filter
+			Name="encryption">
+			<File
+				RelativePath="..\encryption\buffer.cpp">
+			</File>
+			<File
+				RelativePath="..\encryption\buffer.h">
+			</File>
+			<File
+				RelativePath="..\encryption\cpp_interface.cpp">
+			</File>
+			<File
+				RelativePath="..\encryption\cpp_interface.h">
+			</File>
+			<File
+				RelativePath="..\encryption\encryption.h">
+			</File>
+			<File
+				RelativePath="..\encryption\sockets.cpp">
+			</File>
+			<File
+				RelativePath="..\encryption\sockets.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="RMG">
+			<File
+				RelativePath="..\rmg\rm_area.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_area.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_headers.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instance.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instance.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instance_bsp.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instance_bsp.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instance_group.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instance_group.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instance_random.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instance_random.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instance_void.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instance_void.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instancefile.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_instancefile.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_manager.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_manager.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_mission.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_mission.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_objective.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_objective.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_path.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_path.h">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_terrain.cpp">
+			</File>
+			<File
+				RelativePath="..\rmg\rm_terrain.h">
 			</File>
 		</Filter>
 		<Filter
@@ -952,6 +1025,16 @@
 			</File>
 			<File
 				RelativePath="..\xbox\XBVoice.cpp">
+				<FileConfiguration
+					Name="Debug|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\xbox\XBVoice.h">
@@ -981,6 +1064,16 @@
 			</File>
 			<File
 				RelativePath="..\xbox\XHVVoiceManager.cpp">
+				<FileConfiguration
+					Name="Debug|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Xbox">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\xbox\XHVVoiceManager.h">

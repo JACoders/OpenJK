@@ -9,8 +9,6 @@
 #include "glw_win_dx8.h"
 
 #include "../client/client.h"
-
-
 #include "../qcommon/qcommon.h"
 #ifdef _JK2MP
 #include "../ui/keycodes.h"
@@ -20,9 +18,6 @@
 
 #include "win_local.h"
 #include "win_input.h"
-
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
 
 #define IN_MAX_CONTROLLERS 4
 
@@ -39,7 +34,7 @@ struct inputstate_t
 	controller_t controllers[IN_MAX_CONTROLLERS];
 };
 
-inputstate_t in_state;
+inputstate_t *in_state = NULL;
 
 /*
 =========================================================================
@@ -48,40 +43,29 @@ JOYSTICK
 
 =========================================================================
 */
-extern bool noControllersConnected;
-
-
 // Process all the insertions and removals, updating handles and such
 void IN_ProcessChanges(DWORD dwInsert, DWORD dwRemove)
 {
 	for(int port = 0; port < IN_MAX_CONTROLLERS; ++port)
 	{
 		// Close removals.
-		if((1 << port) & dwRemove)
+		if( ((1 << port) & dwRemove) && in_state->controllers[port].handle )
 		{
-			if ( in_state.controllers[port].handle )
-			{
-				XInputClose( in_state.controllers[port].handle );
-				in_state.controllers[port].handle = 0;
-			}
+			XInputClose( in_state->controllers[port].handle );
+			in_state->controllers[port].handle = 0;
 			IN_PadUnplugged(port);
 		}
-
 
 		// Open insertions.
 		if( (1 << port) & dwInsert )
 		{
-
-			in_state.controllers[port].handle = XInputOpen( XDEVICE_TYPE_GAMEPAD, port, XDEVICE_NO_SLOT, NULL );
+			in_state->controllers[port].handle = XInputOpen( XDEVICE_TYPE_GAMEPAD, port, XDEVICE_NO_SLOT, NULL );
 			IN_PadPlugged(port);
 		}
 	}
-	
 
 	return;
 }
-
-
 
 /*********
 IN_CheckForNoControllers()
@@ -89,10 +73,9 @@ If there are no controllers plugged in, the UI
 is notified so it can display an appropriate
 message.
 *********/
-/*
 void IN_CheckForNoControllers()
 {
-	
+	extern bool noControllersConnected;
 	if(!noControllersConnected)
 	{
 		extern bool wasPlugged[4];
@@ -107,7 +90,7 @@ void IN_CheckForNoControllers()
 		}
 	}
 }
-*/
+
 /*
 =========================================================================
 
@@ -121,11 +104,11 @@ bool IN_RumbleAdjust(int controller, int left, int right)
 	assert(controller >= 0 && controller < IN_MAX_CONTROLLERS);
 
 	// Get a device handle for the controller.  This may fail.
-	HANDLE handle = in_state.controllers[controller].handle;
+	HANDLE handle = in_state->controllers[controller].handle;
 
 	if (!handle) return false;
 	
-	XINPUT_FEEDBACK* fb = &in_state.controllers[controller].feedback;
+	XINPUT_FEEDBACK* fb = &in_state->controllers[controller].feedback;
 	
 	// If a prior rumble update is still pending, go away
 	if (fb->Header.dwStatus == ERROR_IO_PENDING) return false;
@@ -162,8 +145,8 @@ IN_Shutdown
 void IN_Shutdown( void ) {
 	IN_RumbleShutdown();
 
-//	delete in_state;
-//	in_state = NULL;
+	delete in_state;
+	in_state = NULL;
 }
 
 
@@ -174,16 +157,16 @@ IN_Init
 */
 void IN_Init( void )
 {
-//	in_state = new inputstate_t;
+	in_state = new inputstate_t;
 
 	// Initialize support for 4 gamepads
 	XDEVICE_PREALLOC_TYPE xdpt[] = {
 		{XDEVICE_TYPE_GAMEPAD, 4},
 		{XDEVICE_TYPE_MEMORY_UNIT, 1},
-		{XDEVICE_TYPE_VOICE_MICROPHONE, 4},
-		{XDEVICE_TYPE_VOICE_HEADPHONE, 4}
+		{XDEVICE_TYPE_VOICE_MICROPHONE, 1},
+		{XDEVICE_TYPE_VOICE_HEADPHONE, 1}
 	};
-	Cvar_Get("ControllersConnectedCount", "0", 0);
+
     // Initialize the peripherals. We can only ever
 	// call XInitDevices once, no matter what.
 	static bool bInputInitialized = false;
@@ -192,7 +175,7 @@ void IN_Init( void )
 	bInputInitialized = true;
 
     // Zero all of our data, including handles
-	memset(in_state.controllers, 0, sizeof(in_state.controllers));
+	memset(in_state->controllers, 0, sizeof(in_state->controllers));
 
 	// Find out the status of all gamepad ports, then open them
 	IN_ProcessChanges( XGetDevices( XDEVICE_TYPE_GAMEPAD ), 0 );
@@ -249,10 +232,10 @@ void IN_UpdateGamepad(int port)
 
 	// Get new state
 	XINPUT_STATE newState;
-	XInputGetState( in_state.controllers[port].handle, &newState );
+	XInputGetState( in_state->controllers[port].handle, &newState );
 
 	// Get old state
-	XINPUT_STATE &oldState(in_state.controllers[port].state);
+	XINPUT_STATE &oldState(in_state->controllers[port].state);
 
 	int buttonIdx;
 	bool oldPressed, newPressed;
@@ -277,29 +260,20 @@ void IN_UpdateGamepad(int port)
 			IN_CommonJoyPress(port, analogXlat[buttonIdx], newPressed);
 	}
 
-	if ( port == ClientManager::ActiveClient().controller || cls.state != CA_ACTIVE)
-	{
-		// Update joysticks
-		_padInfo.joyInfo[0].x = _joyAxisConvert(newState.Gamepad.sThumbLX);
-		_padInfo.joyInfo[0].y = _joyAxisConvert(newState.Gamepad.sThumbLY);
-		_padInfo.joyInfo[1].x = _joyAxisConvert(newState.Gamepad.sThumbRX);
-		_padInfo.joyInfo[1].y = _joyAxisConvert(newState.Gamepad.sThumbRY);
-		_padInfo.joyInfo[0].valid = _padInfo.joyInfo[1].valid = true;
-		_padInfo.padId = port;
+	// Update joysticks
+	_padInfo.joyInfo[0].x = _joyAxisConvert(newState.Gamepad.sThumbLX);
+	_padInfo.joyInfo[0].y = _joyAxisConvert(newState.Gamepad.sThumbLY);
+	_padInfo.joyInfo[1].x = _joyAxisConvert(newState.Gamepad.sThumbRX);
+	_padInfo.joyInfo[1].y = _joyAxisConvert(newState.Gamepad.sThumbRY);
+	_padInfo.joyInfo[0].valid = _padInfo.joyInfo[1].valid = true;
+	_padInfo.padId = port;
 
-		// Copy state back
-		oldState = newState;
-		// Update game
-	
-		IN_CommonUpdate();
-	}
+	// Copy state back
+	oldState = newState;
+
+	// Update game
+	IN_CommonUpdate();
 }
-
-
-extern qboolean CurrentStateIsInteractive();
-extern int mainControllerDelayedUnplug;
-extern vmCvar_t ControllerOutNum;
-
 
 /*
 ==================
@@ -309,55 +283,27 @@ Called every frame, even if not generating commands
 ==================
 */
 //extern int ignoreInputTime;
-
-extern void startsetMainController(int controller);
-extern void CheckForSecondPrompt( void );
-
 void IN_Frame (void)
 {
-	static qboolean first = qtrue;
-//	if (in_state)
-//	{
+	if (in_state)
+	{
 		// First, check for changes in device status (removed/inserted pads)
 		DWORD dwInsert, dwRemove;
 		if( XGetDeviceChanges( XDEVICE_TYPE_GAMEPAD, &dwInsert, &dwRemove ) )
 		{
 			IN_ProcessChanges(dwInsert, dwRemove);
 		}
-
-		if ( first)
+		else
 		{
-			extern int Sys_GetLaunchController( void );
-			int controller = Sys_GetLaunchController();
-			Com_Printf("\tController %d initialized\n", controller); 
-
-			startsetMainController(controller);
-			first = qfalse;
+			IN_CheckForNoControllers();
 		}
-
-		if ( mainControllerDelayedUnplug && CurrentStateIsInteractive() && ControllerOutNum.integer < 0)
-			IN_ProcessChanges(0, mainControllerDelayedUnplug);
-
-
 
 		// Generate callbacks for each controller that's plugged in
-		for (int port = 0; port < IN_MAX_CONTROLLERS; ++port) {
-			if (in_state.controllers[port].handle) {
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					//ClientManager::ActivateClient(port);
-					ClientManager::ActivateByControllerId(port);
-
-				}
+		for (int port = 0; port < IN_MAX_CONTROLLERS; ++port)
+			if (in_state->controllers[port].handle)
 				IN_UpdateGamepad(port);
-			}
-		}
-
-		if(ClientManager::splitScreenMode == qtrue)
-			ClientManager::ActivateMainClient();
 		
 		IN_UIEmptyQueue();
 		IN_RumbleFrame();
-		CheckForSecondPrompt();
-//	}
+	}
 }

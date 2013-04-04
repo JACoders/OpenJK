@@ -155,6 +155,7 @@ G_TryPushingEntity
 Returns qfalse if the move is blocked
 ==================
 */
+extern void G_DamageFromKiller( gentity_t *pEnt, gentity_t *pVehEnt, gentity_t *attacker, vec3_t org, int damage, int dflags, int mod );
 qboolean	G_TryPushingEntity( gentity_t *check, gentity_t *pusher, vec3_t move, vec3_t amove ) {
 	vec3_t		matrix[3], transpose[3];
 	vec3_t		org, org2, move2;
@@ -173,7 +174,16 @@ qboolean	G_TryPushingEntity( gentity_t *check, gentity_t *pusher, vec3_t move, v
 		&& (pusher->spawnflags&16) //IMPACT
 		&& Q_stricmp( "func_rotating", pusher->classname ) == 0 )
 	{//just blow the fuck out of them
-		G_Damage( check, pusher, pusher, NULL, NULL, pusher->damage, DAMAGE_NO_KNOCKBACK, MOD_CRUSH );
+		/*
+		if ( check->m_pVehicle )
+		{
+			G_DamageFromKiller( check, check, pusher, NULL, pusher->damage, DAMAGE_NO_KNOCKBACK, MOD_CRUSH );
+		}
+		else
+		*/
+		{
+			G_Damage( check, pusher, pusher, NULL, NULL, pusher->damage, DAMAGE_NO_KNOCKBACK, MOD_CRUSH );
+		}
 		return qtrue;
 	}
 
@@ -1048,15 +1058,13 @@ static void Touch_DoorTriggerSpectator( gentity_t *ent, gentity_t *other, trace_
 
 	vectoangles(dir, angles);
 
-
 	VectorSet(pMins, -15.0f, -15.0f, DEFAULT_MINS_2);
 	VectorSet(pMaxs, 15.0f, 15.0f, DEFAULT_MAXS_2);
 	trap_Trace(&tr, origin, pMins, pMaxs, origin, other->s.number, other->clipmask);
 	if (!tr.startsolid &&
 		!tr.allsolid &&
 		tr.fraction == 1.0f &&
-		tr.entityNum == ENTITYNUM_NONE &&
-		CM_LeafCluster(CM_PointLeafnum(origin)) != -1 )	// Check for teleporting out of the world
+		tr.entityNum == ENTITYNUM_NONE)
 	{
 		TeleportPlayer(other, origin, angles );
 	}
@@ -1986,7 +1994,9 @@ void SP_func_static( gentity_t *ent )
 #endif
 	if (ent->s.iModelScale < 0)
 	{
-		ent->s.iModelScale = 0;
+		//NOTE: -1 scale is x -100% (so -3 is 300%)
+		ent->s.legsFlip = qtrue;//treat it as a scalar
+		ent->s.iModelScale = -ent->s.iModelScale;
 	}
 	else if (ent->s.iModelScale > 1023)
 	{
@@ -2064,7 +2074,7 @@ the point around which it is rotated. It will rotate around the Z axis by defaul
 check either the X_AXIS or Y_AXIS box to change that.
 
 "model2"		.md3 model to also draw
-"model2scale"	percent of normal scale (on all x y and z axii) to scale the model2 if there is one. 100 is normal scale, min is 1 (100 times smaller than normal), max is 1000 (ten times normal).
+"model2scale"	percent of normal scale (on all x y and z axes) to scale the model2 if there is one. 100 is normal scale, min is 1 (100 times smaller than normal), max is 1000 (ten times normal).
 "speed"			determines how fast it moves; default value is 100.
 "dmg"			damage to inflict when blocked (2 default)
 "color"			constantLight color
@@ -2150,7 +2160,9 @@ void SP_func_rotating (gentity_t *ent) {
 #endif
 	if (ent->s.iModelScale < 0)
 	{
-		ent->s.iModelScale = 0;
+		//NOTE: -1 scale is x -100% (so -3 is 300%)
+		ent->s.legsFlip = qtrue;//treat it as a scalar
+		ent->s.iModelScale = -ent->s.iModelScale;
 	}
 	else if (ent->s.iModelScale > 1023)
 	{

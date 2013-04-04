@@ -36,6 +36,8 @@ stringID_table_t animEventTypeTable[] =
 	ENUM2STRING(AEV_FIRE),			//# animID AEV_FIRE framenum altfire chancetofire
 	ENUM2STRING(AEV_MOVE),			//# animID AEV_MOVE framenum forwardpush rightpush uppush
 	ENUM2STRING(AEV_SOUNDCHAN),		//# animID AEV_SOUNDCHAN framenum CHANNEL soundpath randomlow randomhi chancetoplay 
+	ENUM2STRING(AEV_SABER_SWING),	//# animID AEV_SABER_SWING framenum CHANNEL randomlow randomhi chancetoplay 
+	ENUM2STRING(AEV_SABER_SPIN),	//# animID AEV_SABER_SPIN framenum CHANNEL chancetoplay 
 	//must be terminated
 	NULL,-1
 };
@@ -480,7 +482,7 @@ static void ParseAnimationEvtBlock(int glaIndex, unsigned short modelIndex, cons
 
 		keyFrame = atoi( token );
 		if ( bIsFrameSkipped && 
-			(animations[animNum].numFrames>1) // important, else frame 1 gets divided down and becomes frame 0. Carcass & Assimilate also work this way
+			(animations[animNum].numFrames>2) // important, else frame 1 gets divided down and becomes frame 0. Carcass & Assimilate also work this way
 			)
 		{
 			keyFrame /= 2;	// if we ever use any other value in frame-skipping we'll have to figure out some way of reading it, since it's not stored anywhere
@@ -600,6 +602,56 @@ static void ParseAnimationEvtBlock(int glaIndex, unsigned short modelIndex, cons
 				break;
 			}
 			animEvents[curAnimEvent].eventData[AED_SOUND_PROBABILITY] = atoi( token );
+
+			//last part - cheat and check and see if it's a special overridable saber sound we know of...
+			if ( !Q_stricmpn( "sound/weapons/saber/saberhup", stringData, 28 ) )
+			{//a saber swing
+				animEvents[curAnimEvent].eventType = AEV_SABER_SWING;
+				animEvents[curAnimEvent].eventData[AED_SABER_SWING_SABERNUM] = 0;//since we don't know which one they meant if we're hacking this, always use first saber
+				animEvents[curAnimEvent].eventData[AED_SABER_SWING_PROBABILITY] = animEvents[curAnimEvent].eventData[AED_SOUND_PROBABILITY];
+				if ( lowestVal < 4 )
+				{//fast swing
+					animEvents[curAnimEvent].eventData[AED_SABER_SWING_TYPE] = SWING_FAST;
+				}
+				else if ( lowestVal < 7 )
+				{//medium swing
+					animEvents[curAnimEvent].eventData[AED_SABER_SWING_TYPE] = SWING_MEDIUM;
+				}
+				else
+				{//strong swing
+					animEvents[curAnimEvent].eventData[AED_SABER_SWING_TYPE] = SWING_STRONG;
+				}
+			}
+			else if ( !Q_stricmpn( "sound/weapons/saber/saberspin", stringData, 29 ) )
+			{//a saber spin
+				animEvents[curAnimEvent].eventType = AEV_SABER_SPIN;
+				animEvents[curAnimEvent].eventData[AED_SABER_SPIN_SABERNUM] = 0;//since we don't know which one they meant if we're hacking this, always use first saber
+				animEvents[curAnimEvent].eventData[AED_SABER_SPIN_PROBABILITY] = animEvents[curAnimEvent].eventData[AED_SOUND_PROBABILITY];
+				if ( stringData[29] == 'o' )
+				{//saberspinoff
+					animEvents[curAnimEvent].eventData[AED_SABER_SPIN_TYPE] = 0;
+				}
+				else if ( stringData[29] == '1' )
+				{//saberspin1
+					animEvents[curAnimEvent].eventData[AED_SABER_SPIN_TYPE] = 2;
+				}
+				else if ( stringData[29] == '2' )
+				{//saberspin2
+					animEvents[curAnimEvent].eventData[AED_SABER_SPIN_TYPE] = 3;
+				}
+				else if ( stringData[29] == '3' )
+				{//saberspin3
+					animEvents[curAnimEvent].eventData[AED_SABER_SPIN_TYPE] = 4;
+				}
+				else if ( stringData[29] == '%' )
+				{//saberspin%d
+					animEvents[curAnimEvent].eventData[AED_SABER_SPIN_TYPE] = 5;
+				}
+				else
+				{//just plain saberspin
+					animEvents[curAnimEvent].eventData[AED_SABER_SPIN_TYPE] = 1;
+				}
+			}
 			break;
 		case AEV_FOOTSTEP:		//# animID AEV_FOOTSTEP framenum footstepType
 			//get footstep type
@@ -743,11 +795,7 @@ void G_ParseAnimationEvtFile(int glaIndex, const char* eventsDirectory, int file
 	assert(fileIndex>=0 && fileIndex<MAX_ANIM_FILES);
 
 	const char *psAnimFileInternalName = (iRealGLAIndex == -1 ? NULL : gi.G2API_GetAnimFileInternalNameIndex( iRealGLAIndex ));
-//	bool bIsFrameSkipped = (psAnimFileInternalName && strlen(psAnimFileInternalName)>5 && !stricmp(&psAnimFileInternalName[strlen(psAnimFileInternalName)-5],"_skip"));
-	bool bIsFrameSkipped = false;
-	if( (psAnimFileInternalName && strstr(psAnimFileInternalName, "_humanoid")) ||
-		strstr(eventsDirectory, "rancor") )
-		bIsFrameSkipped = true;
+	bool bIsFrameSkipped = (psAnimFileInternalName && strlen(psAnimFileInternalName)>5 && !stricmp(&psAnimFileInternalName[strlen(psAnimFileInternalName)-5],"_skip"));
 
 	// Open The File, Make Sure It Is Safe
 	//-------------------------------------
@@ -1513,7 +1561,7 @@ void NPC_Precache ( char *NPCName )
 Precaches NPC skins, tgas and md3s.
 
 */
-void NPC_Precache ( gentity_t *spawner )
+void CG_NPC_Precache ( gentity_t *spawner )
 {
 	clientInfo_t	ci={0};
 	renderInfo_t	ri={0};
@@ -1774,6 +1822,22 @@ void NPC_Precache ( gentity_t *spawner )
 			{
 				gi.RE_RegisterSkin( saber.skin );
 				G_SkinIndex( saber.skin );
+			}
+			if ( saber.g2MarksShader[0] )
+			{
+				cgi_R_RegisterShader( saber.g2MarksShader );
+			}
+			if ( saber.g2MarksShader2[0] )
+			{
+				cgi_R_RegisterShader( saber.g2MarksShader2 );
+			}
+			if ( saber.g2WeaponMarkShader[0] )
+			{
+				cgi_R_RegisterShader( saber.g2WeaponMarkShader );
+			}
+			if ( saber.g2WeaponMarkShader2[0] )
+			{
+				cgi_R_RegisterShader( saber.g2WeaponMarkShader2 );
 			}
 			continue;
 		}
@@ -3534,9 +3598,13 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				char *saberName = G_NewString( value );
 				WP_SaberParseParms( saberName, &NPC->client->ps.saber[0] );
 				//if it requires a specific style, make sure we know how to use it
-				if ( NPC->client->ps.saber[0].style )
+				if ( NPC->client->ps.saber[0].stylesLearned )
 				{
-					NPC->client->ps.saberStylesKnown |= (1<<NPC->client->ps.saber[0].style);
+					NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[0].stylesLearned;
+				}
+				if ( NPC->client->ps.saber[0].singleBladeStyle )
+				{
+					NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[0].singleBladeStyle;
 				}
 				continue;
 			}
@@ -3549,15 +3617,19 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					continue;
 				}
 
-				if ( !NPC->client->ps.saber[0].twoHanded )
+				if ( !(NPC->client->ps.saber[0].saberFlags&SFL_TWO_HANDED) )
 				{//can't use a second saber if first one is a two-handed saber...?
 					char *saberName = G_NewString( value );
 					WP_SaberParseParms( saberName, &NPC->client->ps.saber[1] );
-					if ( NPC->client->ps.saber[1].style )
+					if ( NPC->client->ps.saber[1].stylesLearned )
 					{
-						NPC->client->ps.saberStylesKnown |= (1<<NPC->client->ps.saber[1].style);
+						NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[1].stylesLearned;
 					}
-					if ( NPC->client->ps.saber[1].twoHanded )
+					if ( NPC->client->ps.saber[1].singleBladeStyle )
+					{
+						NPC->client->ps.saberStylesKnown |= NPC->client->ps.saber[1].singleBladeStyle;
+					}
+					if ( (NPC->client->ps.saber[1].saberFlags&SFL_TWO_HANDED) )
 					{//tsk tsk, can't use a twoHanded saber as second saber
 						WP_RemoveSaber( NPC, 1 );
 					}

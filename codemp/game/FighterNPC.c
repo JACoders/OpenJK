@@ -88,6 +88,9 @@ extern qboolean BG_UnrestrainedPitchRoll( playerState_t *ps, Vehicle_t *pVeh );
 
 extern void BG_SetAnim(playerState_t *ps, animation_t *animations, int setAnimParts,int anim,int setAnimFlags, int blendTime);
 extern int BG_GetTime(void);
+#ifdef QAGAME //including game headers on cgame is FORBIDDEN ^_^
+extern void G_DamageFromKiller( gentity_t *pEnt, gentity_t *pVehEnt, gentity_t *attacker, vec3_t org, int damage, int dflags, int mod );
+#endif
 #endif
 
 extern void BG_ExternThisSoICanRecompileInDebug( Vehicle_t *pVeh, playerState_t *riderPS );
@@ -374,6 +377,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	float speedInc, speedIdleDec, speedIdle, speedIdleAccel, speedMin, speedMax;
 	bgEntity_t *parent = pVeh->m_pParentEntity;
 	qboolean isLandingOrLaunching = qfalse;
+	/*
 #ifndef _JK2MP//SP
 	int curTime = level.time;
 #elif QAGAME//MP GAME
@@ -382,6 +386,10 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	//FIXME: pass in ucmd?  Not sure if this is reliable...
 	int curTime = pm->cmd.serverTime;
 #endif
+	*/
+	//this function should only be called from pmove.. if it gets called elsehwere,
+	//obviously this will explode.
+	int curTime = pm->cmd.serverTime;
 
 #ifdef _JK2MP
 	playerState_t *parentPS = parent->playerState;
@@ -496,33 +504,14 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 		if ((curTime - pVeh->m_iTurboTime)>pVeh->m_pVehicleInfo->turboRecharge)
 		{
 			pVeh->m_iTurboTime = (curTime + pVeh->m_pVehicleInfo->turboDuration);
-			if (pVeh->m_pVehicleInfo->iTurboStartFX)
-			{
-				int i;
-				for (i=0; i<MAX_VEHICLE_EXHAUSTS; i++)
-				{
-					if (pVeh->m_iExhaustTag[i]==-1)
-					{
-						break;
-					}
-					#ifndef _JK2MP//SP
-						G_PlayEffect(pVeh->m_pVehicleInfo->iTurboStartFX, pVeh->m_pParentEntity->playerModel, pVeh->m_iExhaustTag[i], pVeh->m_pParentEntity->s.number, pVeh->m_pParentEntity->currentOrigin );
-					#else
-						//TODO: MP Play Effect?
-					#endif
-				}
-			}
+
+#ifdef QAGAME//MP GAME-side
 			//NOTE: turbo sound can't be part of effect if effect is played on every muzzle!
 			if ( pVeh->m_pVehicleInfo->soundTurbo )
 			{
-#ifndef _JK2MP//SP
-				G_SoundIndexOnEnt( pVeh->m_pParentEntity, CHAN_AUTO, pVeh->m_pVehicleInfo->soundTurbo );
-#elif QAGAME//MP GAME-side
 				G_EntitySound( ((gentity_t *)(pVeh->m_pParentEntity)), CHAN_AUTO, pVeh->m_pVehicleInfo->soundTurbo );
-#elif CGAME//MP CGAME-side
-				//trap_S_StartSound( NULL, pVeh->m_pParentEntity->s.number, CHAN_AUTO, pVeh->m_pVehicleInfo->soundTurbo );
-#endif		
 			}
+#endif
 		}
 	}
 	speedInc = pVeh->m_pVehicleInfo->acceleration * pVeh->m_fTimeModifier;
@@ -530,7 +519,10 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	{//going turbo speed
 		speedMax = pVeh->m_pVehicleInfo->turboSpeed;
 		//double our acceleration
-		speedInc *= 2.0f;
+		//speedInc *= 2.0f;
+		//no no no! this would el breako el predictiono! we want the following... -rww
+        speedInc = (pVeh->m_pVehicleInfo->acceleration*2.0f) * pVeh->m_fTimeModifier;
+
 		//force us to move forward
 		pVeh->m_ucmd.forwardmove = 127;
 #ifdef _JK2MP//SP can cheat and just check m_iTurboTime directly... :)
@@ -737,7 +729,8 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 		&& pVeh->m_pVehicleInfo->Inhabited( pVeh )//has to have a driver in order to be capable of landing
 #endif
 		&& !pVeh->m_iRemovedSurfaces
-		&& parentPS->electrifyTime<curTime
+		&& parentPS->electrifyTime < curTime
+		&& parentPS->vehTurnaroundTime < curTime
 		&& (pVeh->m_LandTrace.fraction >= 1.0f//no grounf
 			||pVeh->m_LandTrace.plane.normal[2] < MIN_LANDING_SLOPE//can't land here
 			||parentPS->speed>MIN_LANDING_SPEED)//going too fast to land
@@ -786,7 +779,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 		//strafing takes away from forward speed?  If so, strafePerc above should use speedMax
 		//parentPS->speed *= (1.0f-pVeh->m_pVehicleInfo->strafePerc);
 	}
-	else//if ( parentPS->hackingTimef )
+	else//if ( parentPS->hackingTime )
 	{
 		if ( parentPS->hackingTime > 0 )
 		{
@@ -1000,7 +993,7 @@ static void FighterDamageRoutine( Vehicle_t *pVeh, bgEntity_t *parent, playerSta
 		{
 			//pVeh->m_ucmd.forwardmove = 0;
 			//FIXME: don't bias towards pitching down when in space...
-			if ( !(pVeh->m_pParentEntity->s.number%2) )
+			if ( !(pVeh->m_pParentEntity->s.number%3) )
 			{//NOT everyone should do this
 				pVeh->m_vOrientation[PITCH] += pVeh->m_fTimeModifier; 
 				if ( !BG_UnrestrainedPitchRoll( riderPS, pVeh ) )
@@ -1011,7 +1004,7 @@ static void FighterDamageRoutine( Vehicle_t *pVeh, bgEntity_t *parent, playerSta
 					}
 				}
 			}
-			else if ( !(pVeh->m_pParentEntity->s.number%3) )
+			else if ( !(pVeh->m_pParentEntity->s.number%4) )
 			{
 				pVeh->m_vOrientation[PITCH] -= pVeh->m_fTimeModifier; 
 				if ( !BG_UnrestrainedPitchRoll( riderPS, pVeh ) )
@@ -1029,20 +1022,12 @@ static void FighterDamageRoutine( Vehicle_t *pVeh, bgEntity_t *parent, playerSta
 	if ( pVeh->m_LandTrace.fraction < 1.0f )
 	{ //if you land at all when pieces of your ship are missing, then die
 		gentity_t *parent = (gentity_t *)pVeh->m_pParentEntity;
-		gentity_t *killer = parent;
 #ifdef _JK2MP//only have this info in MP...
-		if (parent->client->ps.otherKiller < ENTITYNUM_WORLD &&
-			parent->client->ps.otherKillerTime > level.time)
-		{
-			gentity_t *potentialKiller = &g_entities[parent->client->ps.otherKiller];
-
-			if (potentialKiller->inuse && potentialKiller->client)
-			{ //he's valid I guess
-				killer = potentialKiller;
-			}
-		}
-#endif
+		G_DamageFromKiller( parent, parent, NULL, parent->client->ps.origin, 999999, DAMAGE_NO_ARMOR, MOD_SUICIDE );
+#else
+		gentity_t *killer = parent;
 		G_Damage(parent, killer, killer, vec3_origin, parent->client->ps.origin, 99999, DAMAGE_NO_ARMOR, MOD_SUICIDE);
+#endif
 	}
 #endif
 
@@ -1060,7 +1045,7 @@ static void FighterDamageRoutine( Vehicle_t *pVeh, bgEntity_t *parent, playerSta
 			factor *= 2.0f;
 		}
 
-		if ( !(pVeh->m_pParentEntity->s.number%4)||!(pVeh->m_pParentEntity->s.number%5) )
+		if ( !(pVeh->m_pParentEntity->s.number%2)||!(pVeh->m_pParentEntity->s.number%6) )
 		{//won't yaw, so increase roll factor
 			factor *= 4.0f;
 		}
@@ -1077,7 +1062,7 @@ static void FighterDamageRoutine( Vehicle_t *pVeh, bgEntity_t *parent, playerSta
 			factor *= 2.0f;
 		}
 
-		if ( !(pVeh->m_pParentEntity->s.number%4)||!(pVeh->m_pParentEntity->s.number%5) )
+		if ( !(pVeh->m_pParentEntity->s.number%2)||!(pVeh->m_pParentEntity->s.number%6) )
 		{//won't yaw, so increase roll factor
 			factor *= 4.0f;
 		}
@@ -1094,7 +1079,7 @@ static void FighterDamageRoutine( Vehicle_t *pVeh, bgEntity_t *parent, playerSta
 			factor *= 2.0f;
 		}
 
-		if ( !(pVeh->m_pParentEntity->s.number%4)||!(pVeh->m_pParentEntity->s.number%5) )
+		if ( !(pVeh->m_pParentEntity->s.number%2)||!(pVeh->m_pParentEntity->s.number%6) )
 		{//won't yaw, so increase roll factor
 			factor *= 4.0f;
 		}
@@ -1104,6 +1089,9 @@ static void FighterDamageRoutine( Vehicle_t *pVeh, bgEntity_t *parent, playerSta
 }
 
 #ifdef _JK2MP
+
+#ifdef VEH_CONTROL_SCHEME_4
+
 #define FIGHTER_TURNING_MULTIPLIER 0.8f//was 1.6f //magic number hackery
 #define FIGHTER_TURNING_DEADZONE 0.25f//no turning if offset is this much
 void FighterRollAdjust(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *parentPS)
@@ -1178,9 +1166,6 @@ void FighterRollAdjust(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *p
 
 void FighterYawAdjust(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *parentPS)
 {
-/*
-	float angDif = AngleSubtract(pVeh->m_vOrientation[YAW], riderPS->viewangles[YAW]);
-*/
 	float angDif = AngleSubtract(pVeh->m_vPrevRiderViewAngles[YAW],riderPS->viewangles[YAW]);///2.0f;//AngleSubtract(pVeh->m_vPrevRiderViewAngles[YAW], riderPS->viewangles[YAW]);
 	if ( fabs( angDif ) < FIGHTER_TURNING_DEADZONE )
 	{
@@ -1246,9 +1231,6 @@ void FighterYawAdjust(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *pa
 
 void FighterPitchAdjust(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *parentPS)
 {
-/*
-	float angDif = AngleSubtract(pVeh->m_vOrientation[PITCH], riderPS->viewangles[PITCH]);
-*/
 	float angDif = AngleSubtract(0,riderPS->viewangles[PITCH]);//AngleSubtract(pVeh->m_vPrevRiderViewAngles[PITCH], riderPS->viewangles[PITCH]);
 	if ( fabs( angDif ) < FIGHTER_TURNING_DEADZONE )
 	{
@@ -1312,6 +1294,61 @@ void FighterPitchAdjust(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *
 	}
 }
 
+#else// VEH_CONTROL_SCHEME_4
+
+void FighterYawAdjust(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *parentPS)
+{
+	float angDif = AngleSubtract(pVeh->m_vOrientation[YAW], riderPS->viewangles[YAW]);
+
+	if (parentPS && parentPS->speed)
+	{
+		float s = parentPS->speed;
+		float maxDif = pVeh->m_pVehicleInfo->turningSpeed*0.8f; //magic number hackery
+
+		if (s < 0.0f)
+		{
+			s = -s;
+		}
+		angDif *= s/pVeh->m_pVehicleInfo->speedMax;
+		if (angDif > maxDif)
+		{
+			angDif = maxDif;
+		}
+		else if (angDif < -maxDif)
+		{
+			angDif = -maxDif;
+		}
+		pVeh->m_vOrientation[YAW] = AngleNormalize180(pVeh->m_vOrientation[YAW] - angDif*(pVeh->m_fTimeModifier*0.2f));
+	}
+}
+
+void FighterPitchAdjust(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *parentPS)
+{
+	float angDif = AngleSubtract(pVeh->m_vOrientation[PITCH], riderPS->viewangles[PITCH]);
+
+	if (parentPS && parentPS->speed)
+	{
+		float s = parentPS->speed;
+		float maxDif = pVeh->m_pVehicleInfo->turningSpeed*0.8f; //magic number hackery
+
+		if (s < 0.0f)
+		{
+			s = -s;
+		}
+		angDif *= s/pVeh->m_pVehicleInfo->speedMax;
+		if (angDif > maxDif)
+		{
+			angDif = maxDif;
+		}
+		else if (angDif < -maxDif)
+		{
+			angDif = -maxDif;
+		}
+		pVeh->m_vOrientation[PITCH] = AngleNormalize360(pVeh->m_vOrientation[PITCH] - angDif*(pVeh->m_fTimeModifier*0.2f));
+	}
+}
+#endif// VEH_CONTROL_SCHEME_4
+
 void FighterPitchClamp(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *parentPS, int curTime )
 {
 	if ( !BG_UnrestrainedPitchRoll( riderPS, pVeh ) )
@@ -1331,7 +1368,8 @@ void FighterPitchClamp(Vehicle_t *pVeh, playerState_t *riderPS, playerState_t *p
 		}
 	}
 }
-#endif
+
+#endif// _JK2MP
 
 //MP RULE - ALL PROCESSORIENTCOMMANDS FUNCTIONS MUST BE BG-COMPATIBLE!!!
 //If you really need to violate this rule for SP, then use ifdefs.
@@ -1394,6 +1432,8 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 #endif
 
 #ifdef _JK2MP
+
+#ifdef VEH_CONTROL_SCHEME_4
 	if ( parentPS->hyperSpaceTime
 		&& (curTime - parentPS->hyperSpaceTime) < HYPERSPACE_TIME )
 	{//Going to Hyperspace
@@ -1416,13 +1456,27 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 		FighterPitchClamp( pVeh, riderPS, parentPS, curTime );
 		return;
 	}
-#endif
+
+#else// VEH_CONTROL_SCHEME_4
+
+	if ( parentPS->hyperSpaceTime
+		&& (curTime - parentPS->hyperSpaceTime) < HYPERSPACE_TIME )
+	{//Going to Hyperspace
+		VectorCopy( riderPS->viewangles, pVeh->m_vOrientation );
+		VectorCopy( riderPS->viewangles, parentPS->viewangles );
+		return;
+	}
+#endif// VEH_CONTROL_SCHEME_4
+
+#endif//_JK2MP
 	
 	if ( pVeh->m_iDropTime >= curTime )
 	{//you can only YAW during this
 		parentPS->viewangles[YAW] = pVeh->m_vOrientation[YAW] = riderPS->viewangles[YAW];
+#ifdef VEH_CONTROL_SCHEME_4
 		VectorClear( pVeh->m_vPrevRiderViewAngles );
 		pVeh->m_vPrevRiderViewAngles[YAW] = AngleNormalize180(riderPS->viewangles[YAW]);
+#endif// VEH_CONTROL_SCHEME_4
 		return;
 	}
 
@@ -1519,19 +1573,25 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 			pVeh->m_vOrientation[YAW] = riderPS->viewangles[YAW];//*pVeh->m_LandTrace.fraction;
 #endif
 		}
+#ifdef VEH_CONTROL_SCHEME_4
 		else
 		{
 			VectorClear( pVeh->m_vPrevRiderViewAngles );
 			pVeh->m_vPrevRiderViewAngles[YAW] = AngleNormalize180(riderPS->viewangles[YAW]);
 		}
+#endif// VEH_CONTROL_SCHEME_4
 	}
 	else if ( (pVeh->m_iRemovedSurfaces||parentPS->electrifyTime>=curTime)//spiralling out of control
-		&& (!(pVeh->m_pParentEntity->s.number%4)||!(pVeh->m_pParentEntity->s.number%5)) )
+		&& (!(pVeh->m_pParentEntity->s.number%2)||!(pVeh->m_pParentEntity->s.number%6)) )
 	{//no yaw control
 	}
 	else if ( pVeh->m_pPilot && pVeh->m_pPilot->s.number < MAX_CLIENTS && parentPS->speed > 0.0f )//&& !( pVeh->m_ucmd.forwardmove > 0 && pVeh->m_LandTrace.fraction != 1.0f ) )   
 	{
-		if ( 0 && BG_UnrestrainedPitchRoll( riderPS, pVeh ) )
+#ifdef VEH_CONTROL_SCHEME_4
+		if ( 0  )
+#else// VEH_CONTROL_SCHEME_4
+		if ( BG_UnrestrainedPitchRoll( riderPS, pVeh ) )
+#endif// VEH_CONTROL_SCHEME_4
 		{
 			VectorCopy( riderPS->viewangles, pVeh->m_vOrientation );
 			VectorCopy( riderPS->viewangles, parentPS->viewangles );
@@ -1585,7 +1645,9 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 
 #ifdef _JK2MP
 				FighterPitchAdjust(pVeh, riderPS, parentPS);
+#ifdef VEH_CONTROL_SCHEME_4
 				FighterPitchClamp( pVeh, riderPS, parentPS, curTime );
+#endif// VEH_CONTROL_SCHEME_4
 #else
 				pVeh->m_vOrientation[PITCH] = riderPS->viewangles[PITCH]; 
 #endif
@@ -1607,6 +1669,7 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 
 				//cap it reasonably
 				//NOTE: was hardcoded to 40.0f, now using extern data
+#ifdef VEH_CONTROL_SCHEME_4
 				if ( !BG_UnrestrainedPitchRoll( riderPS, pVeh ) )
 				{
 					if ( pVeh->m_pVehicleInfo->rollLimit != -1 )
@@ -1621,6 +1684,19 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 						}
 					}
 				}
+#else// VEH_CONTROL_SCHEME_4
+				if ( pVeh->m_pVehicleInfo->rollLimit != -1 )
+				{
+					if (curRoll > pVeh->m_pVehicleInfo->rollLimit )
+					{
+						curRoll = pVeh->m_pVehicleInfo->rollLimit;
+					}
+					else if (curRoll < -pVeh->m_pVehicleInfo->rollLimit)
+					{
+						curRoll = -pVeh->m_pVehicleInfo->rollLimit;
+					}
+				}
+#endif// VEH_CONTROL_SCHEME_4
 			}
 		}
 	}
@@ -1706,7 +1782,7 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 		if ( pVeh->m_vOrientation[ROLL] )
 		{ //continually adjust the yaw based on the roll..
 			if ( (pVeh->m_iRemovedSurfaces||parentPS->electrifyTime>=curTime)//spiralling out of control
-				&& (!(pVeh->m_pParentEntity->s.number%4)||!(pVeh->m_pParentEntity->s.number%5)) )
+				&& (!(pVeh->m_pParentEntity->s.number%2)||!(pVeh->m_pParentEntity->s.number%6)) )
 			{//leave YAW alone
 			}
 			else
@@ -1776,7 +1852,6 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 	int curTime = pm->cmd.serverTime;
 #endif
 
-#ifdef _JK2MP
 	if ( parentPS->hyperSpaceTime
 		&& curTime - parentPS->hyperSpaceTime < HYPERSPACE_TIME )
 	{//Going to Hyperspace
@@ -1788,7 +1863,6 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 		}
 	}
 	else
-#endif
 	{
 		isLanding = FighterIsLanding( pVeh, parentPS );
 		isLanded = FighterIsLanded( pVeh, parentPS );

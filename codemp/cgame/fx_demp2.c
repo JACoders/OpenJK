@@ -66,9 +66,9 @@ void FX_DEMP2_AltBeam( vec3_t start, vec3_t end, vec3_t normal, //qboolean spark
 	VectorMA( start, 0.6666f * len, dir, c2 );
 
 	// get some chaos values that really aren't very chaotic :)
-	s1 = sin( cg->time * 0.005f ) * 2 + crandom() * 0.2f;
-	s2 = sin( cg->time * 0.001f );
-	s3 = sin( cg->time * 0.011f );
+	s1 = sin( cg.time * 0.005f ) * 2 + crandom() * 0.2f;
+	s2 = sin( cg.time * 0.001f );
+	s3 = sin( cg.time * 0.011f );
 
 	VectorSet( chaos, len * 0.01f * s1,
 						len * 0.02f * s2,
@@ -100,10 +100,10 @@ void FX_DEMP2_AltBeam( vec3_t start, vec3_t end, vec3_t normal, //qboolean spark
 						chaos, chaos, 0.0f,
 						1.0f, trap_R_RegisterShader( "gfx/misc/electric2" ), FX_ALPHA_LINEAR );
 
-	s1 = sin( cg->time * 0.0005f ) + crandom() * 0.1f;
-	s2 = sin( cg->time * 0.0025f );
-	float cc2 = cos( cg->time * 0.0025f );
-	s3 = sin( cg->time * 0.01f ) + crandom() * 0.1f;
+	s1 = sin( cg.time * 0.0005f ) + crandom() * 0.1f;
+	s2 = sin( cg.time * 0.0025f );
+	float cc2 = cos( cg.time * 0.0025f );
+	s3 = sin( cg.time * 0.01f ) + crandom() * 0.1f;
 
 	VectorSet( chaos, len * 0.08f * s2,
 						len * 0.04f * cc2,//s1 * -s3,
@@ -159,9 +159,9 @@ void FX_DEMP2_AltBeam( vec3_t start, vec3_t end, vec3_t normal, //qboolean spark
 	VectorMA( targ1, 0.6666f * len, dir, c2 );
 
 	// get some chaos values that really aren't very chaotic :)
-	s1 = sin( cg->time * 0.005f ) * 2 + crandom() * 0.2f;
-	s2 = sin( cg->time * 0.001f );
-	s3 = sin( cg->time * 0.011f );
+	s1 = sin( cg.time * 0.005f ) * 2 + crandom() * 0.2f;
+	s2 = sin( cg.time * 0.001f );
+	s3 = sin( cg.time * 0.011f );
 
 	VectorSet( chaos, len * 0.01f * s1,
 						len * 0.02f * s2,
@@ -193,10 +193,10 @@ void FX_DEMP2_AltBeam( vec3_t start, vec3_t end, vec3_t normal, //qboolean spark
 						chaos, chaos, 0.0f,
 						1.0f, trap_R_RegisterShader( "gfx/misc/electric2" ), FX_ALPHA_LINEAR );
 
-	s1 = sin( cg->time * 0.0005f ) + crandom() * 0.1f;
-	s2 = sin( cg->time * 0.0025f );
-	cc2 = cos( cg->time * 0.0025f );
-	s3 = sin( cg->time * 0.01f ) + crandom() * 0.1f;
+	s1 = sin( cg.time * 0.0005f ) + crandom() * 0.1f;
+	s2 = sin( cg.time * 0.0025f );
+	cc2 = cos( cg.time * 0.0025f );
+	s3 = sin( cg.time * 0.01f ) + crandom() * 0.1f;
 
 	VectorSet( chaos, len * 0.08f * s2,
 						len * 0.04f * cc2,//s1 * -s3,
@@ -247,7 +247,7 @@ void FX_DEMP2_AltDetonate( vec3_t org, float size )
 
 	ex->refEntity.renderfx |= RF_VOLUMETRIC;
 
-	ex->startTime = cg->time;
+	ex->startTime = cg.time;
 	ex->endTime = ex->startTime + 800;//1600;
 	
 	ex->radius = size;

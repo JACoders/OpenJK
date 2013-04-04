@@ -1318,8 +1318,6 @@ qboolean PM_AdjustAnglesForHeldByMonster( gentity_t *ent, gentity_t *monster, us
 
 qboolean G_OkayToLean( playerState_t *ps, usercmd_t *cmd, qboolean interruptOkay )
 {
-	return false;
-	/*
 	if ( (ps->clientNum < MAX_CLIENTS||G_ControlledByPlayer(&g_entities[ps->clientNum]))//player
 		&& ps->groundEntityNum != ENTITYNUM_NONE//on ground
 		&& ( (interruptOkay//okay to interrupt a lean
@@ -1337,7 +1335,6 @@ qboolean G_OkayToLean( playerState_t *ps, usercmd_t *cmd, qboolean interruptOkay
 		return qtrue;
 	}
 	return qfalse;
-	*/
 }
 /*
 ================
@@ -1725,19 +1722,18 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 			}
 			else if ( (!cg.renderingThirdPerson||cg.zoomMode) && cmd->rightmove != 0 && !cmd->forwardmove && cmd->upmove <= 0 )
 			{//Only lean if holding use button, strafing and not moving forward or back and not jumping
-				/*
 				int leanofs = 0;
 				vec3_t	viewangles;
 
 				if ( cmd->rightmove > 0 )
 				{
-					
-				//	if( pm->ps->legsAnim != LEGS_LEAN_RIGHT1)
-				//	{
-				//	PM_SetAnim(pm, SETANIM_LEGS, LEGS_LEAN_RIGHT1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
-				//	}
-				//	pm->ps->legsAnimTimer = 500;//Force it to hold the anim for at least half a sec
-					
+					/*
+					if( pm->ps->legsAnim != LEGS_LEAN_RIGHT1)
+					{
+					PM_SetAnim(pm, SETANIM_LEGS, LEGS_LEAN_RIGHT1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
+					}
+					pm->ps->legsAnimTimer = 500;//Force it to hold the anim for at least half a sec
+					*/
 
 					if ( ps->leanofs <= 28 )
 					{
@@ -1750,13 +1746,13 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 				}
 				else
 				{
-					
-				//	if ( pm->ps->legsAnim != LEGS_LEAN_LEFT1 )
-				//	{
-				//	PM_SetAnim(pm, SETANIM_LEGS, LEGS_LEAN_LEFT1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
-				//	}
-				//	pm->ps->legsAnimTimer = 500;//Force it to hold the anim for at least half a sec
-				//	
+					/*
+					if ( pm->ps->legsAnim != LEGS_LEAN_LEFT1 )
+					{
+					PM_SetAnim(pm, SETANIM_LEGS, LEGS_LEAN_LEFT1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
+					}
+					pm->ps->legsAnimTimer = 500;//Force it to hold the anim for at least half a sec
+					*/
 
 					if ( ps->leanofs >= -28 )
 					{
@@ -1785,11 +1781,9 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 				ps->leanofs = floor((float)leanofs * trace.fraction);
 
 				ps->leanStopDebounceTime = 20;
-				*/
 			}
 			else
 			{
-				/*
 				if ( (cmd->forwardmove || cmd->upmove > 0) )
 				{
 					if( ( pm->ps->legsAnim == LEGS_LEAN_RIGHT1) ||
@@ -1815,13 +1809,11 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 						}
 					}
 				}
-				*/
 
 			}
 		}
 		else//BUTTON_USE
 		{
-			/*
 			if ( ps->leanofs > 0 )
 			{
 				ps->leanofs-=4;
@@ -1838,7 +1830,6 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 					ps->leanofs = 0;
 				}
 			}
-			*/
 		}
 	}
 

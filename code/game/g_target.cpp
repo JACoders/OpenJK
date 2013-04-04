@@ -1181,13 +1181,8 @@ extern	cvar_t	*com_buildScript;
 	}
 }
 
-
-extern bool allowNormalAutosave;
 void target_autosave_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 {
-	if(!allowNormalAutosave)
-		return;
-
 	G_ActivateBehavior(self,BSET_USE);
 	//gi.SendServerCommand( NULL, "cp @SP_INGAME_CHECKPOINT" );
 	CG_CenterPrint( "@SP_INGAME_CHECKPOINT", SCREEN_HEIGHT * 0.25 );	//jump the network

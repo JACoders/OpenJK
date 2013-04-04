@@ -1090,6 +1090,15 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			{
 				anim = BOTH_ENGAGETAUNT;
 			}
+			else if ( ent->client->ps.saber[0].tauntAnim != -1 )
+			{
+				anim = ent->client->ps.saber[0].tauntAnim;
+			}
+			else if ( ent->client->ps.dualSabers
+				&& ent->client->ps.saber[1].tauntAnim != -1 )
+			{
+				anim = ent->client->ps.saber[1].tauntAnim;
+			}
 			else
 			{
 				switch ( ent->client->ps.saberAnimLevel )
@@ -1124,7 +1133,19 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			}
 			break;
 		case TAUNT_BOW:
-			anim = BOTH_BOW;
+			if ( ent->client->ps.saber[0].bowAnim != -1 )
+			{
+				anim = ent->client->ps.saber[0].bowAnim;
+			}
+			else if ( ent->client->ps.dualSabers
+				&& ent->client->ps.saber[1].bowAnim != -1 )
+			{
+				anim = ent->client->ps.saber[1].bowAnim;
+			}
+			else
+			{
+				anim = BOTH_BOW;
+			}
 			if ( ent->client->ps.saber[1].Active() )
 			{//turn off second saber
 				G_Sound( ent, ent->client->ps.saber[1].soundOff );
@@ -1136,7 +1157,19 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			ent->client->ps.SaberDeactivate();
 			break;
 		case TAUNT_MEDITATE:
-			anim = BOTH_MEDITATE;
+			if ( ent->client->ps.saber[0].meditateAnim != -1 )
+			{
+				anim = ent->client->ps.saber[0].meditateAnim;
+			}
+			else if ( ent->client->ps.dualSabers
+				&& ent->client->ps.saber[1].meditateAnim != -1 )
+			{
+				anim = ent->client->ps.saber[1].meditateAnim;
+			}
+			else
+			{
+				anim = BOTH_MEDITATE;
+			}
 			if ( ent->client->ps.saber[1].Active() )
 			{//turn off second saber
 				G_Sound( ent, ent->client->ps.saber[1].soundOff );
@@ -1151,51 +1184,75 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			if ( ent->client->ps.weapon == WP_SABER )
 			{
 				ent->client->ps.SaberActivate();
-				switch ( ent->client->ps.saberAnimLevel )
+				if ( ent->client->ps.saber[0].flourishAnim != -1 )
 				{
-				case SS_FAST:
-				case SS_TAVION:
-					anim = BOTH_SHOWOFF_FAST;
-					break;
-				case SS_MEDIUM:
-					anim = BOTH_SHOWOFF_MEDIUM;
-					break;
-				case SS_STRONG:
-				case SS_DESANN:
-					anim = BOTH_SHOWOFF_STRONG;
-					break;
-				case SS_DUAL:
-					anim = BOTH_SHOWOFF_DUAL;
-					break;
-				case SS_STAFF:
-					anim = BOTH_SHOWOFF_STAFF;
-					break;
+					anim = ent->client->ps.saber[0].flourishAnim;
+				}
+				else if ( ent->client->ps.dualSabers
+					&& ent->client->ps.saber[1].flourishAnim != -1 )
+				{
+					anim = ent->client->ps.saber[1].flourishAnim;
+				}
+				else
+				{
+					switch ( ent->client->ps.saberAnimLevel )
+					{
+					case SS_FAST:
+					case SS_TAVION:
+						anim = BOTH_SHOWOFF_FAST;
+						break;
+					case SS_MEDIUM:
+						anim = BOTH_SHOWOFF_MEDIUM;
+						break;
+					case SS_STRONG:
+					case SS_DESANN:
+						anim = BOTH_SHOWOFF_STRONG;
+						break;
+					case SS_DUAL:
+						anim = BOTH_SHOWOFF_DUAL;
+						break;
+					case SS_STAFF:
+						anim = BOTH_SHOWOFF_STAFF;
+						break;
+					}
 				}
 			}
 			break;
 		case TAUNT_GLOAT:
-			switch ( ent->client->ps.saberAnimLevel )
+			if ( ent->client->ps.saber[0].gloatAnim != -1 )
 			{
-			case SS_FAST:
-			case SS_TAVION:
-				anim = BOTH_VICTORY_FAST;
-				break;
-			case SS_MEDIUM:
-				anim = BOTH_VICTORY_MEDIUM;
-				break;
-			case SS_STRONG:
-			case SS_DESANN:
-				ent->client->ps.SaberActivate();
-				anim = BOTH_VICTORY_STRONG;
-				break;
-			case SS_DUAL:
-				ent->client->ps.SaberActivate();
-				anim = BOTH_VICTORY_DUAL;
-				break;
-			case SS_STAFF:
-				ent->client->ps.SaberActivate();
-				anim = BOTH_VICTORY_STAFF;
-				break;
+				anim = ent->client->ps.saber[0].gloatAnim;
+			}
+			else if ( ent->client->ps.dualSabers
+				&& ent->client->ps.saber[1].gloatAnim != -1 )
+			{
+				anim = ent->client->ps.saber[1].gloatAnim;
+			}
+			else
+			{
+				switch ( ent->client->ps.saberAnimLevel )
+				{
+				case SS_FAST:
+				case SS_TAVION:
+					anim = BOTH_VICTORY_FAST;
+					break;
+				case SS_MEDIUM:
+					anim = BOTH_VICTORY_MEDIUM;
+					break;
+				case SS_STRONG:
+				case SS_DESANN:
+					ent->client->ps.SaberActivate();
+					anim = BOTH_VICTORY_STRONG;
+					break;
+				case SS_DUAL:
+					ent->client->ps.SaberActivate();
+					anim = BOTH_VICTORY_DUAL;
+					break;
+				case SS_STAFF:
+					ent->client->ps.SaberActivate();
+					anim = BOTH_VICTORY_STAFF;
+					break;
+				}
 			}
 			break;
 		}
@@ -1219,6 +1276,90 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 		}
 	}
 }
+
+extern cvar_t	*g_saberPickuppableDroppedSabers;
+extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
+extern void CG_ChangeWeapon( int num );
+extern void ChangeWeapon( gentity_t *ent, int newWeapon );
+void Cmd_SaberDrop_f( gentity_t *ent, int saberNum )
+{
+	if ( saberNum < 0 )
+	{
+		return;
+	}
+	if ( saberNum > 1 )
+	{
+		return;
+	}
+	if ( !ent || !ent->client )
+	{
+		return;
+	}
+	if ( ent->weaponModel[saberNum] <= 0 )
+	{
+		return;
+	}
+	
+	if ( ent->client->ps.weapon != WP_SABER )
+	{
+		return;
+	}
+
+	if ( ent->client->ps.weaponTime > 0 )
+	{
+		return;
+	}
+
+	if ( ent->client->ps.saberMove != LS_READY
+		&& ent->client->ps.saberMove != LS_PUTAWAY
+		&& ent->client->ps.saberMove != LS_DRAW
+		&& ent->client->ps.saberMove != LS_NONE )
+	{
+		return;
+	}
+
+	if ( !g_saberPickuppableDroppedSabers->integer )
+	{
+		return;
+	}
+	
+	if ( !ent->client->ps.saber[saberNum].name
+		|| !ent->client->ps.saber[saberNum].name[0] )
+	{
+		return;
+	}
+
+	//have a valid string to use for saberType
+
+	//turn it into a pick-uppable item!
+	if ( G_DropSaberItem( ent->client->ps.saber[saberNum].name, 
+			ent->client->ps.saber[saberNum].blade[0].color, 
+			(saberNum==0?ent->client->renderInfo.handRPoint:ent->client->renderInfo.handLPoint), 
+			ent->client->ps.velocity, 
+			ent->currentAngles ) 
+		!= NULL )
+	{//dropped it
+		WP_RemoveSaber( ent, saberNum );
+	}
+
+	if ( ent->weaponModel[0] <= 0
+		&& ent->weaponModel[1] <= 0 )
+	{//no sabers left!
+		//remove saber from inventory
+		ent->client->ps.stats[STAT_WEAPONS] &= ~(1<<WP_SABER);
+		//change weapons
+		if ( ent->s.number < MAX_CLIENTS )
+		{//player
+			CG_ChangeWeapon( WP_NONE );
+		}
+		else
+		{
+			ChangeWeapon( ent, WP_NONE );
+		}
+		ent->client->ps.weapon = WP_NONE;
+	}
+}
+
 /*
 =================
 ClientCommand
@@ -1452,5 +1593,23 @@ void ClientCommand( int clientNum ) {
 	else if (Q_stricmp (cmd, "flushcam") == 0)
 	{
 		Cmd_FlushCamFile_f( ent );
+	}
+	else if ( Q_stricmp( cmd, "dropsaber" ) == 0 )
+	{
+		char *cmd2 = gi.argv(1);
+		int	saberNum = 2;//by default, drop both
+		if ( cmd2 && cmd2[0] )
+		{
+			saberNum = atoi(cmd2);
+		}
+		if ( saberNum > 1 )
+		{//drop both
+			Cmd_SaberDrop_f( ent, 1 );
+			Cmd_SaberDrop_f( ent, 0 );
+		}
+		else
+		{//drop either left or right
+			Cmd_SaberDrop_f( ent, saberNum );
+		}
 	}
 }

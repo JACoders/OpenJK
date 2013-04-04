@@ -16,10 +16,12 @@ extern qboolean PM_InKnockDown( playerState_t *ps );
 extern qboolean PM_InGetUp( playerState_t *ps );
 extern void WP_SetSaber( gentity_t *ent, int saberNum, char *saberName );
 extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
+extern void WP_SaberFallSound( gentity_t *owner, gentity_t *saber );
 extern saber_colors_t TranslateSaberColor( const char *name );
 
 extern	cvar_t	*g_spskill;
 extern	cvar_t	*g_sex;
+extern cvar_t	*g_saberPickuppableDroppedSabers;
 
 #define MAX_BACTA_HEAL_AMOUNT		25
 
@@ -44,6 +46,8 @@ extern	cvar_t	*g_sex;
 #define ITMSF_VERTICAL		16
 #define ITMSF_INVISIBLE		32
 #define ITMSF_NOGLOW		64
+#define ITMSF_USEPICKUP		128
+#define ITMSF_STATIONARY	2048
 
 //======================================================================
 
@@ -228,48 +232,197 @@ int Pickup_Battery( gentity_t *ent, gentity_t *other )
 
 //======================================================================
 
-extern void G_SetSabersFromCVars( gentity_t *ent );
-void Pickup_Saber( gentity_t *self, qboolean hadSaber, qboolean saberSolo, char *saberType, char *saberColor )
+void G_CopySaberItemValues( gentity_t *pickUpSaber, gentity_t *oldSaber )
 {
+	if ( oldSaber && pickUpSaber )
+	{
+		oldSaber->spawnflags = pickUpSaber->spawnflags;
+		oldSaber->random = pickUpSaber->random;
+		oldSaber->flags = pickUpSaber->flags;
+	}
+}
+
+gentity_t *G_DropSaberItem( const char *saberType, saber_colors_t saberColor, vec3_t saberPos, vec3_t saberVel, vec3_t saberAngles, gentity_t *copySaber )
+{//turn it into a pick-uppable item!
+	gentity_t *newItem = NULL;
+	if ( saberType
+		&& saberType[0] )
+	{//have a valid string to use for saberType
+		newItem = G_Spawn();
+		if ( newItem )
+		{
+			newItem->classname = G_NewString( "weapon_saber" );
+			VectorCopy( saberPos, newItem->s.origin );
+			G_SetOrigin( newItem, newItem->s.origin );
+			VectorCopy( saberAngles, newItem->s.angles );
+			G_SetAngles( newItem, newItem->s.angles );
+			newItem->spawnflags = 128;/*ITMSF_USEPICKUP*/
+			newItem->spawnflags |= 64;/*ITMSF_NOGLOW*/
+			newItem->NPC_type = G_NewString( saberType );//saberType
+			//FIXME: transfer per-blade color somehow?
+			newItem->NPC_targetname = saberColorStringForColor[saberColor];
+			newItem->count = 1;
+			newItem->flags = FL_DROPPED_ITEM;
+			G_SpawnItem( newItem, FindItemForWeapon( WP_SABER ) );
+			newItem->s.pos.trType = TR_GRAVITY;
+			newItem->s.pos.trTime = level.time;
+			VectorCopy( saberVel, newItem->s.pos.trDelta );
+			//newItem->s.eFlags |= EF_BOUNCE_HALF;
+			//copy some values from another saber, if provided:
+			G_CopySaberItemValues( copySaber, newItem );
+			//don't *think* about calling FinishSpawningItem, just do it!
+			newItem->e_ThinkFunc = thinkF_NULL;
+			newItem->nextthink = -1;
+			FinishSpawningItem( newItem );
+			newItem->delay = level.time + 500;//so you can't pick it back up right away
+		}
+	}
+	return newItem;
+}
+
+extern void G_SetSabersFromCVars( gentity_t *ent );
+qboolean Pickup_Saber( gentity_t *self, qboolean hadSaber, gentity_t *pickUpSaber )
+{
+	//NOTE: loopAnim = saberSolo, alt_fire = saberLeftHand, NPC_type = saberType, NPC_targetname = saberColor
+	qboolean foundIt = qfalse;
+
+	if ( !pickUpSaber || !self || !self->client )
+	{
+		return qfalse;
+	}
+
 	//G_RemoveWeaponModels( ent );//???
-	if ( Q_stricmp( "player", saberType ) == 0 )
+	if ( Q_stricmp( "player", pickUpSaber->NPC_type ) == 0 )
 	{//"player" means use cvar info
 		G_SetSabersFromCVars( self );
+		foundIt = qtrue;
 	}
 	else 
 	{
 		saberInfo_t	newSaber={0};
-		if ( WP_SaberParseParms( saberType, &newSaber ) )
+		qboolean swapSabers = qfalse;
+
+		if ( self->client->ps.weapon == WP_SABER
+			&& self->client->ps.weaponTime > 0 )
+		{//can't pick up a new saber while the old one is busy (also helps to work as a debouncer so you don't swap out sabers rapidly when touching more than one at a time)
+			return qfalse;
+		}
+
+		if ( pickUpSaber->count == 1
+			&& g_saberPickuppableDroppedSabers->integer )
+		{
+			swapSabers = qtrue;
+		}
+
+		if ( WP_SaberParseParms( pickUpSaber->NPC_type, &newSaber ) )
 		{//successfully found a saber .sab entry to use
-			//FIXME: what about dual sabers?
 			int	saberNum = 0;
-			if ( saberSolo//only supposed to use this one saber when grab this pickup
-				|| newSaber.twoHanded //new saber is two-handed
-				|| (hadSaber && self->client->ps.saber[0].twoHanded) )//old saber is two-handed
+			qboolean removeLeftSaber = qfalse;
+			if ( pickUpSaber->alt_fire )
+			{//always go in the left hand
+				if ( !hadSaber )
+				{//can't have a saber only in your left hand!
+					return qfalse;
+				}
+				saberNum = 1;
+				//just in case...
+				removeLeftSaber = qtrue;
+			}
+			else if ( !hadSaber )
+			{//don't have a saber at all yet, put it in our right hand
+				saberNum = 0;
+				//just in case...
+				removeLeftSaber = qtrue;
+			}
+			else if ( pickUpSaber->loopAnim//only supposed to use this one saber when grab this pickup
+				|| (newSaber.saberFlags&SFL_TWO_HANDED) //new saber is two-handed
+				|| (hadSaber && (self->client->ps.saber[0].saberFlags&SFL_TWO_HANDED)) )//old saber is two-handed
 			{//replace the old right-hand saber and remove the left hand one
-				WP_RemoveSaber( self, 1 );
+				saberNum = 0;
+				removeLeftSaber = qtrue;
 			}
 			else
-			{//add it as a second saber
-				saberNum = 1;
+			{//have, at least, a saber in our right hand and the new one could go in either left or right hand
+				if ( self->client->ps.dualSabers )
+				{//I already have 2 sabers
+					vec3_t dir2Saber, rightDir;
+					//to determine which one to replace, see which side of me it's on
+					VectorSubtract( pickUpSaber->currentOrigin, self->currentOrigin, dir2Saber );
+					dir2Saber[2] = 0;
+					AngleVectors( self->currentAngles, NULL, rightDir, NULL );
+					rightDir[2] = 0;
+					if ( DotProduct( rightDir, dir2Saber ) > 0 )
+					{
+						saberNum = 0;
+					}
+					else
+					{
+						saberNum = 1;
+						//just in case...
+						removeLeftSaber = qtrue;
+					}
+				}
+				else
+				{//just add it as a second saber
+					saberNum = 1;
+					//just in case...
+					removeLeftSaber = qtrue;
+				}
 			}
-			WP_SetSaber( self, saberNum, saberType );
-			WP_SaberInitBladeData( self );
-			if ( self->client->ps.saber[saberNum].style )
+			if ( saberNum == 0 )
+			{//want to reach out with right hand
+				if ( self->client->ps.torsoAnim == BOTH_BUTTON_HOLD )
+				{//but only if already playing the pickup with left hand anim...
+					NPC_SetAnim( self, SETANIM_TORSO, BOTH_SABERPULL, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+				}
+				if ( swapSabers )
+				{//drop first one where the one we're picking up is
+					G_DropSaberItem( self->client->ps.saber[saberNum].name, self->client->ps.saber[saberNum].blade[0].color, pickUpSaber->currentOrigin, (float *)vec3_origin, pickUpSaber->currentAngles, pickUpSaber );
+					if ( removeLeftSaber )
+					{//drop other one at my origin
+						G_DropSaberItem( self->client->ps.saber[1].name, self->client->ps.saber[1].blade[0].color, self->currentOrigin, (float *)vec3_origin, self->currentAngles, pickUpSaber );
+					}
+				}
+			}
+			else
 			{
-				self->client->ps.saberStylesKnown |= (1<<self->client->ps.saber[saberNum].style);
+				if ( swapSabers )
+				{
+					G_DropSaberItem( self->client->ps.saber[saberNum].name, self->client->ps.saber[saberNum].blade[0].color, pickUpSaber->currentOrigin, (float *)vec3_origin, pickUpSaber->currentAngles, pickUpSaber );
+				}
 			}
-			if ( saberColor != NULL )
+			if ( removeLeftSaber )
+			{
+				WP_RemoveSaber( self, 1 );
+			}
+			WP_SetSaber( self, saberNum, pickUpSaber->NPC_type );
+			WP_SaberInitBladeData( self );
+			if ( self->client->ps.saber[saberNum].stylesLearned )
+			{
+				self->client->ps.saberStylesKnown |= self->client->ps.saber[saberNum].stylesLearned;
+			}
+			if ( self->client->ps.saber[saberNum].singleBladeStyle )
+			{
+				self->client->ps.saberStylesKnown |= self->client->ps.saber[saberNum].singleBladeStyle;
+			}
+			if ( pickUpSaber->NPC_targetname != NULL )
 			{//NPC_targetname = saberColor
-				saber_colors_t saber_color = TranslateSaberColor( saberColor );
+				saber_colors_t saber_color = TranslateSaberColor( pickUpSaber->NPC_targetname );
 				for ( int bladeNum = 0; bladeNum < MAX_BLADES; bladeNum++ )
 				{
 					self->client->ps.saber[saberNum].blade[bladeNum].color = saber_color;
 				}
 			}
+			if ( self->client->ps.torsoAnim == BOTH_BUTTON_HOLD 
+				|| self->client->ps.torsoAnim == BOTH_SABERPULL )
+			{//don't let them attack right away, force them to finish the anim
+				self->client->ps.weaponTime = self->client->ps.torsoAnimTimer;
+			}
+			foundIt = qtrue;
 		}
 		WP_SaberFreeStrings(newSaber);
 	}
+	return foundIt;
 }
 
 extern void CG_ChangeWeapon( int num );
@@ -308,13 +461,16 @@ int Pickup_Weapon (gentity_t *ent, gentity_t *other)
 
 	if ( ent->item->giTag == WP_SABER && (!hadWeapon || ent->NPC_type != NULL) )
 	{//didn't have a saber or it is specifying a certain kind of saber to use
-		//NOTE: alt_fire = saberSolo, NPC_type = saberType, NPC_targetname = saberColor
-		Pickup_Saber( other, hadWeapon, ent->alt_fire, ent->NPC_type, ent->NPC_targetname );
+		if ( !Pickup_Saber( other, hadWeapon, ent ) )
+		{
+			return 0;
+		}
 	}
 
 	if ( other->s.number )
 	{//NPC
-		if ( other->s.weapon == WP_NONE )
+		if ( other->s.weapon == WP_NONE 
+			|| ent->item->giTag == WP_SABER )
 		{//NPC with no weapon picked up a weapon, change to this weapon
 			//FIXME: clear/set the alt-fire flag based on the picked up weapon and my class?
 			other->client->ps.weapon = ent->item->giTag;
@@ -329,6 +485,26 @@ int Pickup_Weapon (gentity_t *ent, gentity_t *other)
 			{
 				G_CreateG2AttachedWeaponModel( other, weaponData[ent->item->giTag].weaponMdl, other->handRBolt, 0 );
 			}
+		}
+	}
+	if ( ent->item->giTag == WP_SABER )
+	{//picked up a saber
+		if ( other->s.weapon != WP_SABER )
+		{//player picking up saber
+			other->client->ps.weapon = WP_SABER;
+			other->client->ps.weaponstate = WEAPON_RAISING;
+			if ( other->s.number < MAX_CLIENTS )
+			{//make sure the cgame-side knows this
+				CG_ChangeWeapon( WP_SABER );
+			}
+			else
+			{//make sure the cgame-side knows this
+				ChangeWeapon( other, WP_SABER );
+			}
+		}
+		if ( !other->client->ps.SaberActive() )
+		{//turn it/them on!
+			other->client->ps.SaberActivate();
 		}
 	}
 
@@ -601,6 +777,25 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		gi.Printf( "Touch_Item: %s is not an item!\n", ent->classname);
 		return;
 	}
+
+	if ( ent->item->giType == IT_WEAPON
+		&& ent->item->giTag == WP_SABER )
+	{//a saber
+		if ( ent->delay > level.time )
+		{//just picked it up, don't pick up again right away
+			return;
+		}
+	}
+
+	if ( other->s.number < MAX_CLIENTS
+		&& (ent->spawnflags&ITMSF_USEPICKUP) )
+	{//only if player is holing use button
+		if ( !(other->client->usercmd.buttons&BUTTON_USE) )
+		{//not holding use?
+			return;
+		}
+	}
+
 	qboolean bHadWeapon = qfalse;
 	// call the item-specific pickup function
 	switch( ent->item->giType ) 
@@ -673,6 +868,21 @@ extern void CG_ItemPickup( int itemNum, qboolean bHadItem );
 	// fire item targets
 	G_UseTargets (ent, other);
 
+	if ( ent->item->giType == IT_WEAPON
+		&& ent->item->giTag == WP_SABER )
+	{//a saber that was picked up
+		if ( ent->count < 0 )
+		{//infinite supply
+			ent->delay = level.time + 500;
+			return;
+		}
+		ent->count--;
+		if ( ent->count > 0 )
+		{//still have more to pick up
+			ent->delay = level.time + 500;
+			return;
+		}
+	}
 	// wait of -1 will not respawn
 //	if ( ent->wait == -1 ) 
 	{
@@ -820,6 +1030,13 @@ void Use_Item( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
 	if ( (ent->svFlags&SVF_PLAYER_USABLE) && other && !other->s.number )
 	{//used directly by the player, pick me up
+		if ( (ent->spawnflags&ITMSF_USEPICKUP) )
+		{//player has to be touching me and hit use to pick it up, so don't allow this
+			if ( !G_BoundsOverlap( ent->absmin, ent->absmax, other->absmin, other->absmax ) )
+			{//not touching
+				return;
+			}
+		}
 		GEntity_TouchFunc( ent, other, NULL );
 	}
 	else
@@ -893,15 +1110,21 @@ void FinishSpawningItem( gentity_t *ent ) {
 	if ( ent->item->giType == IT_WEAPON
 		&& ent->item->giTag == WP_SABER
 		&& ent->NPC_type
-		&& ent->NPC_type[0]
-		&& Q_stricmp( "player", ent->NPC_type ) == 0
-		&& g_saber->string
-		&& g_saber->string[0]
-		&& Q_stricmp( "none", g_saber->string )
-		&& Q_stricmp( "NULL", g_saber->string ) )
-	{//player's saber
+		&& ent->NPC_type[0] )
+	{
 		saberInfo_t itemSaber;
-		WP_SaberParseParms( g_saber->string, &itemSaber );
+		if ( Q_stricmp( "player", ent->NPC_type ) == 0
+			&& g_saber->string
+			&& g_saber->string[0]
+			&& Q_stricmp( "none", g_saber->string )
+			&& Q_stricmp( "NULL", g_saber->string ) )
+		{//player's saber
+			WP_SaberParseParms( g_saber->string, &itemSaber );
+		}
+		else
+		{//specific saber
+			WP_SaberParseParms( ent->NPC_type, &itemSaber );
+		}
 		//NOTE:  should I keep this string around for any reason?  Will I ever need it later?
 		//ent->??? = G_NewString( itemSaber.model );
 		gi.G2API_InitGhoul2Model( ent->ghoul2, itemSaber.model, G_ModelIndex( itemSaber.model ));
@@ -934,7 +1157,8 @@ void FinishSpawningItem( gentity_t *ent ) {
 
 	// Hang in air?
 	ent->s.origin[2] += 1;//just to get it off the damn ground because coplanar = insolid
-	if ( ent->spawnflags & ITMSF_SUSPEND) 
+	if ( (ent->spawnflags&ITMSF_SUSPEND)
+		|| (ent->flags&FL_DROPPED_ITEM) ) 
 	{
 		// suspended
 		G_SetOrigin( ent, ent->s.origin );
@@ -985,6 +1209,17 @@ void FinishSpawningItem( gentity_t *ent ) {
 	if ( ent->spawnflags & ITMSF_NOTSOLID ) // not solid
 	{
 		ent->contents = 0;
+	}
+
+	if ( (ent->spawnflags&ITMSF_STATIONARY) )
+	{//can't be pushed around
+		ent->flags |= FL_NO_KNOCKBACK;
+	}
+
+	if ( (ent->flags&FL_DROPPED_ITEM) ) 
+	{//go away after 30 seconds
+		ent->e_ThinkFunc = thinkF_G_FreeEntity;
+		ent->nextthink = level.time + 30000;
 	}
 
 	gi.linkentity (ent);
@@ -1118,6 +1353,16 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 			G_Error("team name %s not recognized\n", ent->team);
 		}
 	}
+
+	if ( ent->item
+		&& ent->item->giType == IT_WEAPON
+		&& ent->item->giTag == WP_SABER )
+	{//weapon_saber item
+		if ( !ent->count )
+		{//can only pick up once
+			ent->count = 1;
+		}
+	}
 	ent->team = NULL;
 }
 
@@ -1132,6 +1377,15 @@ void G_BounceItem( gentity_t *ent, trace_t *trace ) {
 	vec3_t	velocity;
 	float	dot;
 	int		hitTime;
+	qboolean droppedSaber = qtrue;
+
+	if ( ent->item
+		&& ent->item->giType == IT_WEAPON
+		&& ent->item->giTag == WP_SABER 
+		&& (ent->flags&FL_DROPPED_ITEM) )
+	{
+		droppedSaber = qtrue;
+	}
 
 	// reflect the velocity on the trace plane
 	hitTime = level.previousTime + ( level.time - level.previousTime ) * trace->fraction;
@@ -1142,11 +1396,48 @@ void G_BounceItem( gentity_t *ent, trace_t *trace ) {
 	// cut the velocity to keep from bouncing forever
 	VectorScale( ent->s.pos.trDelta, ent->physicsBounce, ent->s.pos.trDelta );
 
+	if ( droppedSaber )
+	{//a dropped saber item
+		//FIXME: use NPC_type (as saberType) to get proper bounce sound?
+		WP_SaberFallSound( NULL, ent );
+	}
+
 	// check for stop
-	if ( trace->plane.normal[2] > 0 && ent->s.pos.trDelta[2] < 40 ) {
+	if ( trace->plane.normal[2] > 0 && ent->s.pos.trDelta[2] < 40 ) 
+	{//stop
 		G_SetOrigin( ent, trace->endpos );
 		ent->s.groundEntityNum = trace->entityNum;
+		if ( droppedSaber )
+		{//a dropped saber item
+			//stop rotation
+			VectorClear( ent->s.apos.trDelta );
+			ent->currentAngles[PITCH] = SABER_PITCH_HACK;
+			ent->currentAngles[ROLL] = 0;
+			if ( ent->NPC_type 
+				&& ent->NPC_type[0] )
+			{//we have a valid saber for this
+				saberInfo_t saber;
+				if ( WP_SaberParseParms( ent->NPC_type, &saber ) )
+				{
+					if ( (saber.saberFlags&SFL_BOLT_TO_WRIST) )
+					{
+						ent->currentAngles[PITCH] = 0;
+					}
+				}
+			}
+			pitch_roll_for_slope( ent, trace->plane.normal, ent->currentAngles, qtrue );
+			G_SetAngles( ent, ent->currentAngles );
+		}
 		return;
+	}
+	//bounce
+	if ( droppedSaber )
+	{//a dropped saber item
+		//change rotation
+		VectorCopy( ent->currentAngles, ent->s.apos.trBase );
+		ent->s.apos.trType = TR_LINEAR;
+		ent->s.apos.trTime = level.time;
+		VectorSet( ent->s.apos.trDelta, Q_irand( -300, 300 ), Q_irand( -300, 300 ), Q_irand( -300, 300 ) );
 	}
 
 	VectorAdd( ent->currentOrigin, trace->plane.normal, ent->currentOrigin);
@@ -1189,11 +1480,48 @@ void G_RunItem( gentity_t *ent ) {
 			ent->s.pos.trDelta[1] += crandom() * 40.0f;
 			ent->s.pos.trDelta[2] += random() * 20.0f;
 		}
+		else if ( (ent->flags&FL_DROPPED_ITEM) 
+			&& ent->item
+			&& ent->item->giType == IT_WEAPON
+			&& ent->item->giTag == WP_SABER )
+		{//a dropped saber item, check below, just in case
+			int ignore = ENTITYNUM_NONE;
+			if ( ent->clipmask ) 
+			{
+				mask = ent->clipmask;
+			} 
+			else 
+			{
+				mask = MASK_SOLID|CONTENTS_PLAYERCLIP;//shouldn't be able to get anywhere player can't
+			}
+			if ( ent->owner )
+			{
+				ignore = ent->owner->s.number;
+			}
+			else if ( ent->activator )
+			{
+				ignore = ent->activator->s.number;
+			}
+			VectorSet( origin, ent->currentOrigin[0], ent->currentOrigin[1], ent->currentOrigin[2]-1 ); 
+			gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, origin, ignore, mask );
+			if ( !tr.allsolid
+				&& !tr.startsolid
+				&& tr.fraction > 0.001f )
+			{//wha?  fall....
+				ent->s.pos.trType = TR_GRAVITY;
+				ent->s.pos.trTime = level.time;
+			}
+		}
 		return;
 	}
 
 	// get current position
 	EvaluateTrajectory( &ent->s.pos, level.time, origin );
+	if ( ent->s.apos.trType != TR_STATIONARY ) 
+	{
+		EvaluateTrajectory( &ent->s.apos, level.time, ent->currentAngles );
+		G_SetAngles( ent, ent->currentAngles );
+	}
 
 	// trace a line from the previous position to the current position
 	if ( ent->clipmask ) 
@@ -1302,3 +1630,4 @@ void ItemUse_Bacta(gentity_t *ent)
 
 	G_SoundOnEnt( ent, CHAN_VOICE, va( "sound/weapons/force/heal%d_%c.mp3", Q_irand( 1, 4 ), g_sex->string[0] ) );
 }
+

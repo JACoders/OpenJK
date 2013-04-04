@@ -2049,6 +2049,36 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 		trace_t	trace;
 		int parts, anim;
 		float	speed, checkDist;
+		qboolean allowCartWheels = qtrue;
+		qboolean allowWallFlips = qtrue;
+
+		if ( self->client->ps.weapon == WP_SABER )
+		{
+			if ( self->client->saber[0].model
+				&& self->client->saber[0].model[0]
+				&& (self->client->saber[0].saberFlags&SFL_NO_CARTWHEELS) )
+			{
+				allowCartWheels = qfalse;
+			}
+			else if ( self->client->saber[1].model
+				&& self->client->saber[1].model[0]
+				&& (self->client->saber[1].saberFlags&SFL_NO_CARTWHEELS) )
+			{
+				allowCartWheels = qfalse;
+			}
+			if ( self->client->saber[0].model
+				&& self->client->saber[0].model[0]
+				&& (self->client->saber[0].saberFlags&SFL_NO_WALL_FLIPS) )
+			{
+				allowWallFlips = qfalse;
+			}
+			else if ( self->client->saber[1].model
+				&& self->client->saber[1].model[0]
+				&& (self->client->saber[1].saberFlags&SFL_NO_WALL_FLIPS) )
+			{
+				allowWallFlips = qfalse;
+			}
+		}
 
 		VectorSet(mins, self->r.mins[0],self->r.mins[1],0);
 		VectorSet(maxs, self->r.maxs[0],self->r.maxs[1],24);
@@ -2092,7 +2122,7 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 		//trace in the dir that we want to go
 		VectorMA( self->r.currentOrigin, checkDist, right, traceto );
 		trap_Trace( &trace, self->r.currentOrigin, mins, maxs, traceto, self->s.number, CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP );
-		if ( trace.fraction >= 1.0f )
+		if ( trace.fraction >= 1.0f && allowCartWheels )
 		{//it's clear, let's do it
 			//FIXME: check for drops?
 			vec3_t fwdAngles, jumpRt;
@@ -2145,41 +2175,44 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 						trap_Trace( &trace, self->r.currentOrigin, mins, maxs, traceto, self->s.number, CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP );
 						if ( trace.fraction >= 1.0f )
 						{//it's clear, let's do it
-							int parts;
+							if ( allowWallFlips )
+							{//okay to do wall-flips with this saber
+								int parts;
 
-							//FIXME: check for drops?
-							//turn the cartwheel into a wallflip in the other dir
-							if ( rightdot > 0 )
-							{
-								anim = BOTH_WALL_FLIP_LEFT;
-								self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
-								VectorMA( self->client->ps.velocity, 150, right, self->client->ps.velocity );
-							}
-							else
-							{
-								anim = BOTH_WALL_FLIP_RIGHT;
-								self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
-								VectorMA( self->client->ps.velocity, -150, right, self->client->ps.velocity );
-							}
-							self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
-							//animate me
-							parts = SETANIM_LEGS;
-							if ( !self->client->ps.weaponTime )
-							{
-								parts = SETANIM_BOTH;
-							}
-							NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-							self->client->ps.fd.forceJumpZStart = self->r.currentOrigin[2];//so we don't take damage if we land at same height
-							//self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
-							if ( self->client->NPC_class == CLASS_BOBAFETT )
-							{
-								G_AddEvent( self, EV_JUMP, 0 );
-							}
-							else
-							{
-								G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
-							}
-							return EVASION_OTHER;
+								//FIXME: check for drops?
+								//turn the cartwheel into a wallflip in the other dir
+								if ( rightdot > 0 )
+								{
+									anim = BOTH_WALL_FLIP_LEFT;
+									self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
+									VectorMA( self->client->ps.velocity, 150, right, self->client->ps.velocity );
+								}
+								else
+								{
+									anim = BOTH_WALL_FLIP_RIGHT;
+									self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
+									VectorMA( self->client->ps.velocity, -150, right, self->client->ps.velocity );
+								}
+								self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+								//animate me
+								parts = SETANIM_LEGS;
+								if ( !self->client->ps.weaponTime )
+								{
+									parts = SETANIM_BOTH;
+								}
+								NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+								self->client->ps.fd.forceJumpZStart = self->r.currentOrigin[2];//so we don't take damage if we land at same height
+								//self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
+								if ( self->client->NPC_class == CLASS_BOBAFETT )
+								{
+									G_AddEvent( self, EV_JUMP, 0 );
+								}
+								else
+								{
+									G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
+								}
+								return EVASION_OTHER;
+								}
 						}
 						else 
 						{//boxed in on both sides
@@ -2212,36 +2245,55 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 				//Try wall run?
 				if ( bestCheckDist )
 				{//one of the walls was close enough to wall-run on
-					int parts;
+					qboolean allowWallRuns = qtrue;
+					if ( self->client->ps.weapon == WP_SABER )
+					{
+						if ( self->client->saber[0].model
+							&& self->client->saber[0].model[0] 
+							&& (self->client->saber[0].saberFlags&SFL_NO_WALL_RUNS) )
+						{
+							allowWallRuns = qfalse;
+						}
+						else if ( self->client->saber[1].model
+							&& self->client->saber[1].model[0]
+							&& (self->client->saber[1].saberFlags&SFL_NO_WALL_RUNS) )
+						{
+							allowWallRuns = qfalse;
+						}
+					}
+					if ( allowWallRuns )
+					{//okay to do wallruns with this saber
+						int parts;
 
-					//FIXME: check for long enough wall and a drop at the end?
-					if ( bestCheckDist > 0 )
-					{//it was to the right
-						anim = BOTH_WALL_RUN_RIGHT;
+						//FIXME: check for long enough wall and a drop at the end?
+						if ( bestCheckDist > 0 )
+						{//it was to the right
+							anim = BOTH_WALL_RUN_RIGHT;
+						}
+						else
+						{//it was to the left
+							anim = BOTH_WALL_RUN_LEFT;
+						}
+						self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+						//animate me
+						parts = SETANIM_LEGS;
+						if ( !self->client->ps.weaponTime )
+						{
+							parts = SETANIM_BOTH;
+						}
+						NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+						self->client->ps.fd.forceJumpZStart = self->r.currentOrigin[2];//so we don't take damage if we land at same height
+						//self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
+						if ( self->client->NPC_class == CLASS_BOBAFETT )
+						{
+							G_AddEvent( self, EV_JUMP, 0 );
+						}
+						else
+						{
+							G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
+						}
+						return EVASION_OTHER;
 					}
-					else
-					{//it was to the left
-						anim = BOTH_WALL_RUN_LEFT;
-					}
-					self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
-					//animate me
-					parts = SETANIM_LEGS;
-					if ( !self->client->ps.weaponTime )
-					{
-						parts = SETANIM_BOTH;
-					}
-					NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-					self->client->ps.fd.forceJumpZStart = self->r.currentOrigin[2];//so we don't take damage if we land at same height
-					//self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
-					if ( self->client->NPC_class == CLASS_BOBAFETT )
-					{
-						G_AddEvent( self, EV_JUMP, 0 );
-					}
-					else
-					{
-						G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
-					}
-					return EVASION_OTHER;
 				}
 				//else check for wall in front, do backflip off wall
 			}

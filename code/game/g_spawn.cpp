@@ -315,10 +315,12 @@ field_t fields[] = {
 	{"NPC_target4", FOFS(target4), F_LSTRING},//NPC_spawner only
 	{"NPC_type", FOFS(NPC_type), F_LSTRING},
 	{"ownername", FOFS(ownername), F_LSTRING},
-	//for saber
+	//for weapon_saber
 	{"saberType", FOFS(NPC_type), F_LSTRING},
 	{"saberColor", FOFS(NPC_targetname), F_LSTRING},
-	{"saberSolo", FOFS(alt_fire), F_INT},
+	{"saberLeftHand", FOFS(alt_fire), F_INT},
+	{"saberSolo", FOFS(loopAnim), F_INT},
+	{"saberPitch", FOFS(random), F_FLOAT},
 	//freaky camera shit
 	{"startRGBA", FOFS(startRGBA), F_VECTOR4},
 	{"finalRGBA", FOFS(finalRGBA), F_VECTOR4},

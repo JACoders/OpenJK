@@ -3,11 +3,6 @@
 
 #include "client.h"
 #include "../qcommon/stringed_ingame.h"
-
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "cl_data.h"
-#endif
 /*
 
 key up events are sent even if in console mode
@@ -369,6 +364,106 @@ EDIT FIELDS
 
 
 /*
+===================
+Field_Draw
+
+Handles horizontal scrolling and cursor blinking
+x, y, amd width are in pixels
+===================
+*/
+void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, qboolean showCursor ) {
+	int		len;
+	int		drawLen;
+	int		prestep;
+	int		cursorChar;
+	char	str[MAX_STRING_CHARS];
+	int		i;
+
+	drawLen = edit->widthInChars;
+	len = strlen( edit->buffer ) + 1;
+
+	// guarantee that cursor will be visible
+	if ( len <= drawLen ) {
+		prestep = 0;
+	} else {
+		if ( edit->scroll + drawLen > len ) {
+			edit->scroll = len - drawLen;
+			if ( edit->scroll < 0 ) {
+				edit->scroll = 0;
+			}
+		}
+		prestep = edit->scroll;
+
+/*
+		if ( edit->cursor < len - drawLen ) {
+			prestep = edit->cursor;	// cursor at start
+		} else {
+			prestep = len - drawLen;
+		}
+*/
+	}
+
+	if ( prestep + drawLen > len ) {
+		drawLen = len - prestep;
+	}
+
+	// extract <drawLen> characters from the field at <prestep>
+	if ( drawLen >= MAX_STRING_CHARS ) {
+		Com_Error( ERR_DROP, "drawLen >= MAX_STRING_CHARS" );
+	}
+
+	Com_Memcpy( str, edit->buffer + prestep, drawLen );
+	str[ drawLen ] = 0;
+
+	// draw it
+	if ( size == SMALLCHAR_WIDTH ) {
+		float	color[4];
+
+		color[0] = color[1] = color[2] = color[3] = 1.0;
+		SCR_DrawSmallStringExt( x, y, str, color, qfalse );
+	} else {
+		// draw big string with drop shadow
+		SCR_DrawBigString( x, y, str, 1.0 );
+	}
+
+	// draw the cursor
+	if ( !showCursor ) {
+		return;
+	}
+
+	if ( (int)( cls.realtime >> 8 ) & 1 ) {
+		return;		// off blink
+	}
+
+	if ( kg.key_overstrikeMode ) {
+		cursorChar = 11;
+	} else {
+		cursorChar = 10;
+	}
+
+	i = drawLen - ( Q_PrintStrlen( str ) + 1 );
+
+	if ( size == SMALLCHAR_WIDTH ) {
+		SCR_DrawSmallChar( x + ( edit->cursor - prestep - i ) * size, y, cursorChar );
+	} else {
+		str[0] = cursorChar;
+		str[1] = 0;
+		SCR_DrawBigString( x + ( edit->cursor - prestep - i ) * size, y, str, 1.0 );
+
+	}
+}
+
+void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor ) 
+{
+	Field_VariableSizeDraw( edit, x, y, width, SMALLCHAR_WIDTH, showCursor );
+}
+
+void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor ) 
+{
+	Field_VariableSizeDraw( edit, x, y, width, BIGCHAR_WIDTH, showCursor );
+}
+
+/*
 ================
 Field_Paste
 ================
@@ -406,11 +501,7 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 	int		len;
 
 	// shift-insert is paste
-#ifdef _XBOX
-	if ( ( ( key == A_INSERT ) || ( key == A_KP_0 ) ) && ClientManager::ActiveClient().keys[A_SHIFT].down ) {
-#else
 	if ( ( ( key == A_INSERT ) || ( key == A_KP_0 ) ) && kg.keys[A_SHIFT].down ) {
-#endif
 		Field_Paste( edit );
 		return;
 	}
@@ -450,32 +541,20 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 		return;
 	}
 
-#ifdef _XBOX
-	if ( key == A_HOME || ( keynames[key].lower == 'a' && ClientManager::ActiveClient().keys[A_CTRL].down ) ) 
-#else
 	if ( key == A_HOME || ( keynames[key].lower == 'a' && kg.keys[A_CTRL].down ) ) 
-#endif
 	{
 		edit->cursor = 0;
 		return;
 	}
 
-#ifdef _XBOX
-	if ( key == A_END || ( keynames[key].lower == 'e' && ClientManager::ActiveClient().keys[A_CTRL].down ) ) 
-#else
-	if ( key == A_END || ( keynames[key].lower == 'e' && kg.keys[A_CTRL].down ) )
-#endif
+	if ( key == A_END || ( keynames[key].lower == 'e' && kg.keys[A_CTRL].down ) ) 
 	{
 		edit->cursor = len;
 		return;
 	}
 
 	if ( key == A_INSERT ) {
-#ifdef _XBOX
-		ClientManager::ActiveClient().key_overstrikeMode = (qboolean)!ClientManager::ActiveClient().key_overstrikeMode;
-#else
 		kg.key_overstrikeMode = (qboolean)!kg.key_overstrikeMode;
-#endif
 		return;
 	}
 }
@@ -532,11 +611,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-#ifdef _XBOX
-	if ( ClientManager::ActiveClient().key_overstrikeMode ) {
-#else
 	if ( kg.key_overstrikeMode ) {	
-#endif
 		if ( edit->cursor == MAX_EDIT_LINE - 1 )
 			return;
 		edit->buffer[edit->cursor] = ch;
@@ -759,10 +834,10 @@ void Console_Key (int key) {
 
 		// leading slash is an explicit command
 		if ( kg.g_consoleField.buffer[0] == '\\' || kg.g_consoleField.buffer[0] == '/' ) {
-			if (cgvm && cl->mSharedMemory)
+			if (cgvm && cl.mSharedMemory)
 			{ //don't do this unless cgame is inited and shared memory is valid
 				const char *buf = (kg.g_consoleField.buffer+1);
-				TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cl->mSharedMemory;
+				TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cl.mSharedMemory;
 
 				strcpy(icc->conCommand, buf);
 				
@@ -913,20 +988,12 @@ void Message_Key( int key ) {
 
 
 qboolean Key_GetOverstrikeMode( void ) {
-#ifdef _XBOX
-	return ClientManager::ActiveClient().key_overstrikeMode;
-#else
 	return kg.key_overstrikeMode;
-#endif
 }
 
 
 void Key_SetOverstrikeMode( qboolean state ) {
-#ifdef _XBOX
-	ClientManager::ActiveClient().key_overstrikeMode = state;
-#else
 	kg.key_overstrikeMode = state;
-#endif
 }
 
 
@@ -940,11 +1007,7 @@ qboolean Key_IsDown( int keynum ) {
 		return qfalse;
 	}
 
-#ifdef _XBOX
-	return ClientManager::ActiveClient().keys[ keynames[keynum].upper ].down;
-#else
 	return kg.keys[ keynames[keynum].upper ].down;
-#endif
 }
 
 
@@ -1155,29 +1218,16 @@ void Key_SetBinding( int keynum, const char *binding ) {
 	}
 
 	// free old bindings
-#ifdef _XBOX
-	if ( ClientManager::ActiveClient().keys[ keynames[keynum].upper ].binding ) {
-		Z_Free( ClientManager::ActiveClient().keys[ keynames[keynum].upper ].binding );
-		ClientManager::ActiveClient().keys[ keynames[keynum].upper ].binding = NULL;
-	}
-
-	// allocate memory for new binding
-	if (binding)
-	{
-		ClientManager::ActiveClient().keys[ keynames[keynum].upper ].binding = CopyString( binding );
-	}
-#else
 	if ( kg.keys[ keynames[keynum].upper ].binding ) {
 		Z_Free( kg.keys[ keynames[keynum].upper ].binding );
 		kg.keys[ keynames[keynum].upper ].binding = NULL;
 	}
-
+			
 	// allocate memory for new binding
 	if (binding)
 	{
 		kg.keys[ keynames[keynum].upper ].binding = CopyString( binding );
 	}
-#endif
 
 	// consider this like modifying an archived cvar, so the
 	// file write will be triggered at the next oportunity
@@ -1195,11 +1245,7 @@ char *Key_GetBinding( int keynum ) {
 		return "";
 	}
 
-#ifdef _XBOX
-	return ClientManager::ActiveClient().keys[ keynum ].binding;
-#else
 	return kg.keys[ keynum ].binding;
-#endif
 }
 
 /* 
@@ -1213,11 +1259,7 @@ int Key_GetKey(const char *binding) {
 
   if (binding) {
   	for (i=0 ; i<256 ; i++) {
-#ifdef _XBOX
-		if (ClientManager::ActiveClient().keys[i].binding && Q_stricmp(binding, ClientManager::ActiveClient().keys[i].binding) == 0) {
-#else
       if (kg.keys[i].binding && Q_stricmp(binding, kg.keys[i].binding) == 0) {
-#endif
         return i;
       }
     }
@@ -1261,11 +1303,7 @@ void Key_Unbindall_f (void)
 	
 	for (i = 0; i < MAX_KEYS ; i++)
 	{
-#ifdef _XBOX
-		if (ClientManager::ActiveClient().keys[i].binding)
-#else
 		if (kg.keys[i].binding)
-#endif
 		{
 			Key_SetBinding (i, "");
 		}
@@ -1300,13 +1338,8 @@ void Key_Bind_f (void)
 
 	if (c == 2)
 	{
-#ifdef _XBOX
-		if (ClientManager::ActiveClient().keys[b].binding)
-			Com_Printf ("\"%s\" = \"%s\"\n", Cmd_Argv(1), ClientManager::ActiveClient().keys[b].binding );
-#else
 		if (kg.keys[b].binding)
 			Com_Printf ("\"%s\" = \"%s\"\n", Cmd_Argv(1), kg.keys[b].binding );
-#endif
 		else
 			Com_Printf ("\"%s\" is not bound\n", Cmd_Argv(1) );
 		return;
@@ -1336,13 +1369,8 @@ void Key_WriteBindings( fileHandle_t f ) {
 
 	FS_Printf (f, "unbindall\n" );
 	for (i=0 ; i<MAX_KEYS ; i++) {
-#ifdef _XBOX
-		if (ClientManager::ActiveClient().keys[i].binding && kg.keys[i].binding[0] ) {
-			FS_Printf (f, "bind %s \"%s\"\n", Key_KeynumToString(i), ClientManager::ActiveClient().keys[i].binding);
-#else
 		if (kg.keys[i].binding && kg.keys[i].binding[0] ) {
 			FS_Printf (f, "bind %s \"%s\"\n", Key_KeynumToString(i), kg.keys[i].binding);
-#endif
 		}
 	}
 }
@@ -1360,15 +1388,9 @@ void Key_Bindlist_f( void ) {
 	int		i;
 
 	for ( i = 0 ; i < MAX_KEYS ; i++ ) {
-#ifdef _XBOX
-		if ( ClientManager::ActiveClient().keys[i].binding && ClientManager::ActiveClient().keys[i].binding[0] ) {
-			Com_Printf( "Key : %s (%s) \"%s\"\n", Key_KeynumToAscii(i), Key_KeynumToString(i), ClientManager::ActiveClient().keys[i].binding );
-		}
-#else
 		if ( kg.keys[i].binding && kg.keys[i].binding[0] ) {
 			Com_Printf( "Key : %s (%s) \"%s\"\n", Key_KeynumToAscii(i), Key_KeynumToString(i), kg.keys[i].binding );
 		}
-#endif
 	}
 }
 
@@ -1442,48 +1464,23 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	char	cmd[1024];
 
 	// update auto-repeat status and BUTTON_ANY status
-#ifdef _XBOX
-	ClientManager::ActiveClient().keys[ keynames[key].upper ].down = down;
-#else
 	kg.keys[ keynames[key].upper ].down = down;
-#endif
 	if (down)
 	{
-#ifdef _XBOX
-		ClientManager::ActiveClient().keys[ keynames[key].upper ].repeats++;
-#else
 		kg.keys[ keynames[key].upper ].repeats++;
-#endif
-
-#ifdef _XBOX
-		if ( ClientManager::ActiveClient().keys[ keynames[key].upper ].repeats == 1)
-#else
 		if ( kg.keys[ keynames[key].upper ].repeats == 1)
-#endif
 		{
-#ifdef _XBOX
-			ClientManager::ActiveClient().anykeydown = qtrue;
-#else
 			kg.anykeydown = qtrue;
-#endif
 			kg.keyDownCount++;
 		}
 	}
 	else
 	{
-#ifdef _XBOX
-		ClientManager::ActiveClient().keys[ keynames[key].upper ].repeats = 0;
-#else
 		kg.keys[ keynames[key].upper ].repeats = 0;
-#endif
 		kg.keyDownCount--;
 		if(kg.keyDownCount <= 0)
 		{
-#ifdef _XBOX
-			ClientManager::ActiveClient().anykeydown = qfalse;
-#else
 			kg.anykeydown = qfalse;
-#endif
 			kg.keyDownCount = 0;
 		}
 	}
@@ -1496,11 +1493,7 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 
 		}
 #ifdef FINAL_BUILD
-#ifdef _XBOX
-		if (!(cls.keyCatchers & KEYCATCH_CONSOLE) && !ClientManager::ActiveClient().keys[A_SHIFT].down )	//we're not in the console
-#else
 		if (!(cls.keyCatchers & KEYCATCH_CONSOLE) && !kg.keys[A_SHIFT].down )	//we're not in the console
-#endif
 		{//so we require the control kg.keys to get in
 			return;
 		}
@@ -1512,11 +1505,7 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 
 	// kg.keys can still be used for bound actions
 	if ( down && /*( key < 128 || key == A_MOUSE1 ) && */
-#ifdef _XBOX	// No demos on Xbox
 		( cls.state == CA_CINEMATIC ) &&
-#else
-		( clc->demoplaying || cls.state == CA_CINEMATIC ) &&
-#endif
 		!cls.keyCatchers) {
 
 		if (Cvar_VariableValue ("com_cameraMode") == 0) {
@@ -1545,17 +1534,15 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 #ifdef _XBOX	// No demos on Xbox
 			if ( cls.state == CA_ACTIVE ) {
 #else
-			if ( cls.state == CA_ACTIVE && !clc->demoplaying ) {
+			if ( cls.state == CA_ACTIVE && !clc.demoplaying ) {
 #endif
 				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_INGAME );
 			}
-			// This just causes crashes and such if people hit BACK during loading:
-//			else
-//			{
-//				CL_Disconnect_f();
-//				S_StopAllSounds();
-//				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
-//			}
+			else {
+				CL_Disconnect_f();
+				S_StopAllSounds();
+				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
+			}
 			return;
 		}
 
@@ -1570,11 +1557,7 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	// an action started before a mode switch.
 	//
 	if (!down) {
-#ifdef _XBOX
-		kb = ClientManager::ActiveClient().keys[ keynames[key].upper ].binding;
-#else
 		kb = kg.keys[ keynames[key].upper ].binding;
-#endif
 
 		CL_AddKeyUpCommands( key, kb );
 
@@ -1605,11 +1588,7 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 		Console_Key( key );
 	} else {
 		// send the bound action
-#ifdef _XBOX
-		kb = ClientManager::ActiveClient().keys[ keynames[key].upper ].binding;
-#else
 		kb = kg.keys[ keynames[key].upper ].binding;
-#endif
 		if (kb)
 		{
 			if (kb[0] == '+') {	
@@ -1641,9 +1620,9 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 				}
 			} else {
 				// down-only command
-				if (cgvm && cl->mSharedMemory)
+				if (cgvm && cl.mSharedMemory)
 				{ //don't do this unless cgame is inited and shared memory is valid
-					TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cl->mSharedMemory;
+					TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cl.mSharedMemory;
 
 					strcpy(icc->conCommand, kb);
 					
@@ -1711,18 +1690,6 @@ void Key_ClearStates (void)
 {
 	int		i;
 
-#ifdef _XBOX
-	ClientManager::ActiveClient().anykeydown = qfalse;
-
-	for ( i=0 ; i < MAX_KEYS ; i++ ) {
-		if ( ClientManager::ActiveClient().keys[i].down ) {
-			CL_KeyEvent( i, qfalse, 0 );
-
-		}
-		ClientManager::ActiveClient().keys[i].down = (qboolean)0;
-		ClientManager::ActiveClient().keys[i].repeats = 0;
-	}
-#else
 	kg.anykeydown = qfalse;
 
 	for ( i=0 ; i < MAX_KEYS ; i++ ) {
@@ -1733,6 +1700,5 @@ void Key_ClearStates (void)
 		kg.keys[i].down = (qboolean)0;
 		kg.keys[i].repeats = 0;
 	}
-#endif
 }
 

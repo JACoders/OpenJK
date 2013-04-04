@@ -11,8 +11,6 @@
 	#include <float.h>
 #endif //_DEBUG
 
-#include "../client/fffx.h"
-
 extern qboolean InFront( vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold = 0.0f );
 qboolean LogAccuracyHit( gentity_t *target, gentity_t *attacker );
 extern qboolean PM_SaberInParry( int move );

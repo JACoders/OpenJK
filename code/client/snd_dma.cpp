@@ -531,6 +531,20 @@ void S_Init( void ) {
 			// Sources / Channels are not sending to any Slots (other than the Listener / Primary FX Slot)
 			s_channels[i].lSlotID = -1;
 
+			if (s_bEAX)
+			{
+				// Remove the RoomAuto flag from each Source (to remove Reverb Engine Statistical
+				// model that is assuming units are in metres)
+				// Without this call reverb sends from the sources will attenuate too quickly
+				// with distance, especially for the non-primary reverb zones.
+
+				unsigned long ulFlags = 0;
+
+				if (s_eaxSet(&EAXPROPERTYID_EAX40_Source, EAXSOURCE_FLAGS,
+							s_channels[i].alSource, &ulFlags, sizeof(ulFlags))!=AL_NO_ERROR)
+							OutputDebugString("Failed to to remove Source flags\n");
+			}
+
 			s_numChannels++;
 		}
 
@@ -6110,21 +6124,11 @@ static void UpdateEAXListener()
 			}
 		}
 
+		lVolume = 0;
 		for (i = 0; i < s_NumFXSlots; i++)
 		{
-			if (s_FXSlotInfo[i].lEnvID == s_EnvironmentID)
-			{
-				lVolume = 0;
-				if (s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXFXSLOT_VOLUME, NULL, &lVolume, sizeof(long))!=AL_NO_ERROR)
-					OutputDebugString("Failed to set Listener's FX Slot Volume to 0\n");
-			}
-			else
-			{
-				// This will change to lower the volume based on distance from aperture ...
-				lVolume = -600;
-				if (s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXFXSLOT_VOLUME, NULL, &lVolume, sizeof(long))!=AL_NO_ERROR)
-					OutputDebugString("Failed to set FX Slot Volume to 0\n");
-			}
+			if (s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXFXSLOT_VOLUME, NULL, &lVolume, sizeof(long))!=AL_NO_ERROR)
+				OutputDebugString("Failed to set FX Slot Volume to 0\n");
 		}
 	}
 

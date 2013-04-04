@@ -30,24 +30,17 @@
 #include "glw_win_dx8.h"
 #include "win_local.h"
 
-#include "xbox_texture_man.h"
-
 #ifdef _XBOX
 #include <xgraphics.h>
 //#include "win_flareeffect.h"
 #include "win_lighteffects.h"
 #include "win_highdynamicrange.h"
-#include "win_stencilshadow.h"
 
 #ifndef FINAL_BUILD
 #include <d3d8perf.h>
 #endif
 
 #endif
-
-// Global texture allocator (we only use one in SP):
-//SwappingTextureAllocator	gTextures;
-StaticTextureAllocator		gTextures;
 
 #include <vector>
 
@@ -67,7 +60,7 @@ int texMemSize = 0;
 
 #if MEMORY_PROFILE
  
-static int getTexMemSize(IDirect3DTexture9* mipmap)
+static int getTexMemSize(IDirect3DTexture8* mipmap)
 {
 	int levels = mipmap->GetLevelCount();
 	int size = 0;
@@ -437,15 +430,6 @@ void ( * qglActiveTextureARB )( GLenum texture );
 void ( * qglClientActiveTextureARB )( GLenum texture );
 #endif
 
-static void _d3d_check(HRESULT err, const char* func)
-{
-	if (err != D3D_OK)
-	{
-		MEMORYSTATUS status;
-		GlobalMemoryStatus(&status);
-		Sys_Print(va("%s returned %d!  Memfree=%d\n", func, err, status.dwAvailPhys));
-	}
-}
 
 #ifdef _WINDOWS
 static bool surfaceToBMP(LPDIRECT3DDEVICE8 pd3dDevice, LPDIRECT3DSURFACE8 lpSurface, const char *fname)
@@ -709,8 +693,7 @@ static glwstate_t::TextureInfo* _getCurrentTexture(int stage)
 		glw_state->currentTexture[stage]);
 
 	if (i == glw_state->textureXlat.end()) return NULL;
-
-	return &i->second;
+	else return &i->second;
 }
 
 
@@ -987,21 +970,15 @@ Copy color information from the source color
 array into a draw array.
 =================
 */
-//#define _colorElement(push, i)									\
-//{																\
-//	DWORD col = *(DWORD*)((BYTE*)glw_state->colorPointer +		\
-//		(i) * glw_state->colorStride);							\
-//	(push)[0] =													\
-//		((col & 0xFF000000) >> 0) |								\
-//		((col & 0x00FF0000) >> 16) |							\
-//		((col & 0x0000FF00) << 0) |								\
-//		((col & 0x000000FF) << 16);								\
-//}
 #define _colorElement(push, i)									\
 {																\
 	DWORD col = *(DWORD*)((BYTE*)glw_state->colorPointer +		\
 		(i) * glw_state->colorStride);							\
-	(push)[0] =	col;												\
+	(push)[0] =													\
+		((col & 0xFF000000) >> 0) |								\
+		((col & 0x00FF0000) >> 16) |							\
+		((col & 0x0000FF00) << 0) |								\
+		((col & 0x000000FF) << 16);								\
 }
 
 /*
@@ -1940,13 +1917,6 @@ static void dllDeleteLists(GLuint lnum, GLsizei range)
 
 static void dllDeleteTextures(GLsizei n, const GLuint *textures)
 {
-	glw_state->textureStageDirty[0] = true;
-	glw_state->textureStageDirty[1] = true;
-	glw_state->device->SetTexture(0, NULL);
-	glw_state->device->SetTexture(1, NULL);
-//	glw_state->device->SetTexture(2, NULL);
-//	glw_state->device->SetTexture(3, NULL);
-
 	for (int t = 0; t < n; ++t)
 	{
 		glwstate_t::texturexlat_t::iterator i = 
@@ -1957,8 +1927,7 @@ static void dllDeleteTextures(GLsizei n, const GLuint *textures)
 #if MEMORY_PROFILE
 			texMemSize -= getTexMemSize(i->second.mipmap);
 #endif
-			i->second.mipmap->BlockUntilNotBusy();
-			delete i->second.mipmap;
+			i->second.mipmap->Release();
 			glw_state->textureXlat.erase(i);
 		}
 	}
@@ -2290,7 +2259,7 @@ static void PushIndices(GLsizei count, const GLushort *indices)
 	// open the index packet
 	// can only send 2047 indices thru at a time
 	// BUT, Microsoft recommends 511 pairs at a time (?)
-	int num_packets, numpairs;
+	int num_packets, numpairs, cnt;
 	bool singleindex = false;
 
 	numpairs = count / 2;
@@ -2314,17 +2283,10 @@ static void PushIndices(GLsizei count, const GLushort *indices)
 	int inc = glw_state->maxIndices;
 	for (int start = 0; ; start += inc)
 	{
-		// memcpy is faster than looping copy:
-		memcpy( glw_state->drawArray, indices+start, glw_state->maxIndices * sizeof(WORD) );
-		glw_state->drawArray += glw_state->maxIndices / 2;
-
-		/*
 		for(int i = start; i < start + glw_state->maxIndices; i += 2)
 		{
 			*glw_state->drawArray++ = (DWORD)(((WORD)indices[i + 1] << 16) + (WORD)indices[i]);
 		}
-		*/
-
 		// are we done yet?
 		glw_state->totalIndices -= glw_state->maxIndices;
 		if (glw_state->totalIndices <= 1)
@@ -2372,21 +2334,12 @@ static void dllDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoi
 	glw_state->primitiveMode = _convertPrimMode(mode);
 
 	// update DX with any pending state changes
-	if(tess.currentPass == 0)
-	{
-        _updateDrawStride(normals, tex0, tex1);
-		glw_state->drawStride += normals ? 2 : 1;
-	}
-	else
-	{
-		glw_state->drawStride = 1;
-		if(normals && !tess.pNormal) glw_state->drawStride += 4;
-		if(tex0) glw_state->drawStride += 2;
-		if(tex1) glw_state->drawStride += 2;
-	}
+	_updateDrawStride(normals, tex0, tex1);
 	_updateShader(normals, tex0, tex1);
 	_updateTextures();
 	_updateMatrices();
+
+	glw_state->drawStride += normals ? 2 : 1;
 
 	glw_state->numIndices = 0;
 	glw_state->totalIndices = count;
@@ -2403,92 +2356,46 @@ static void dllDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoi
 
 	DWORD *jumpaddress = 0, *stream = 0;
 
-	// Only copy the geometry in on the first pass
-	// Multiple passes will reuse this geometry (except tex coords)
-	if(tess.currentPass == 0)
+	// Determine where the end of the vertex data is gonna be,
+	// that's where we're going to jump to
+	jumpaddress = (DWORD*)*((DWORD*)glw_state->device) + (vert_size + 1);
+
+	// Write the jump address
+	*glw_state->drawArray++ = ((DWORD)jumpaddress & 0x7fffffff) | 1;
+
+	// Set up our own fake vertex buffer
+	stream = glw_state->drawArray;
+
+	memcpy(glw_state->drawArray, tess.xyz, sizeof(vec4_t) * tess.numVertexes);
+	glw_state->drawArray += tess.numVertexes * 4;
+
+	if(normals)
 	{
-		// Determine where the end of the vertex data is gonna be,
-		// that's where we're going to jump to
-        jumpaddress = (DWORD*)*((DWORD*)glw_state->device) + (vert_size + 1);
-
-		// Write the jump address
-		*glw_state->drawArray++ = ((DWORD)jumpaddress & 0x7fffffff) | 1;
-
-		// Set up our own fake vertex buffer
-		stream = glw_state->drawArray;
-
-		memcpy(glw_state->drawArray, tess.xyz, sizeof(vec4_t) * tess.numVertexes);
+		memcpy(glw_state->drawArray, tess.normal, sizeof(vec4_t) * tess.numVertexes);
 		glw_state->drawArray += tess.numVertexes * 4;
+	}
 
-		if(normals)
-		{
-			memcpy(glw_state->drawArray, tess.normal, sizeof(vec4_t) * tess.numVertexes);
-			glw_state->drawArray += tess.numVertexes * 4;
-		}
-
-		if(glw_state->colorArrayState)
-		{
-			memcpy(glw_state->drawArray, tess.svars.colors, sizeof(D3DCOLOR) * tess.numVertexes);
-		}
-		else
-		{
-			for( int v = 0; v < tess.numVertexes; ++v )
-				glw_state->drawArray[v] = glw_state->currentColor;
-		}
-		glw_state->drawArray += tess.numVertexes;
-
-		if(tex0)
-		{
-			memcpy(glw_state->drawArray, tess.svars.texcoords[0], sizeof(vec2_t) * tess.numVertexes);
-			glw_state->drawArray += tess.numVertexes * 2;
-		}
-
-		if(tex1)
-		{
-			memcpy(glw_state->drawArray, tess.svars.texcoords[1], sizeof(vec2_t) * tess.numVertexes);
-			glw_state->drawArray += tess.numVertexes * 2;
-		}
+	if(glw_state->colorArrayState)
+	{
+		memcpy(glw_state->drawArray, tess.svars.colors, sizeof(D3DCOLOR) * tess.numVertexes);
 	}
 	else
 	{
-		// Determine where the end of the vertex data is gonna be,
-		// that's where we're going to jump to
-        jumpaddress = (DWORD*)*((DWORD*)glw_state->device) + (vert_size + 1);
+		for( int v = 0; v < tess.numVertexes; ++v )
+			glw_state->drawArray[v] = glw_state->currentColor;
+	}
+	glw_state->drawArray += tess.numVertexes;
 
-		// Write the jump address
-		*glw_state->drawArray++ = ((DWORD)jumpaddress & 0x7fffffff) | 1;
+	if(tex0)
+	{
+		memcpy(glw_state->drawArray, tess.svars.texcoords[0], sizeof(vec2_t) * tess.numVertexes);
+		glw_state->drawArray += tess.numVertexes * 2;
+	}
 
-		// Set up our own fake vertex buffer
-		stream = glw_state->drawArray;
-
-		if(normals && !tess.pNormal)
-		{
-			memcpy(glw_state->drawArray, tess.normal, sizeof(vec4_t) * tess.numVertexes);
-			glw_state->drawArray += tess.numVertexes * 4;
-		}
-
-		if(glw_state->colorArrayState)
-		{
-			memcpy(glw_state->drawArray, tess.svars.colors, sizeof(D3DCOLOR) * tess.numVertexes);
-		}
-		else
-		{
-			for( int v = 0; v < tess.numVertexes; ++v )
-				glw_state->drawArray[v] = glw_state->currentColor;
-		}
-		glw_state->drawArray += tess.numVertexes;
-
-		if(tex0)
-		{
-			memcpy(glw_state->drawArray, tess.svars.texcoords[0], sizeof(vec2_t) * tess.numVertexes);
-			glw_state->drawArray += tess.numVertexes * 2;
-		}
-
-		if(tex1)
-		{
-			memcpy(glw_state->drawArray, tess.svars.texcoords[1], sizeof(vec2_t) * tess.numVertexes);
-			glw_state->drawArray += tess.numVertexes * 2;
-		}
+	if(tex1)
+	{
+		memcpy(glw_state->drawArray, tess.svars.texcoords[1], sizeof(vec2_t) * tess.numVertexes);
+		glw_state->drawArray += tess.numVertexes * 2;
 	}
 
 	// Write the vertex shader
@@ -2547,51 +2454,32 @@ static void dllDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoi
 #define CMD_VERTEXSTREAM_TEX0		0x1744
 #define CMD_VERTEXSTREAM_TEX1		0x1748
 
-	// On multiple passes, just write the address to the previous geometry
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(CMD_VERTEXSTREAM_XYZ, 1);
-	if(tess.currentPass == 0)
-	{
-        *glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-		tess.pXyz = stream;
-		stream += tess.numVertexes * 4;
-	}
-	else
-	{
-		*glw_state->drawArray++ = (DWORD)tess.pXyz & 0x7fffffff;
-	}
+	*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
+	stream += tess.numVertexes * 4;//3;
 
 	if(normals)
 	{
 		*glw_state->drawArray++ = D3DPUSH_ENCODE(CMD_VERTEXSTREAM_NORMAL, 1);
-		if(!tess.pNormal)
-		{
-            *glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-			tess.pNormal = stream;
-			stream += tess.numVertexes * 4;
-		}
-		else
-		{
-			*glw_state->drawArray++ = (DWORD)tess.pNormal & 0x7fffffff;
-		}
+		*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
+		stream += tess.numVertexes * 4;//3;
 	}
 
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(CMD_VERTEXSTREAM_COLOR, 1);
 	*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-	stream += tess.numVertexes;
+	stream += tess.numVertexes;//1;
 
 	if(tex0)
 	{
 		*glw_state->drawArray++ = D3DPUSH_ENCODE(CMD_VERTEXSTREAM_TEX0, 1);
 		*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-		tess.pTex1 = stream;
-		stream += tess.numVertexes * 2;
+		stream += tess.numVertexes * 2;//2;
 	}
 
 	if(tex1)
 	{
 		*glw_state->drawArray++ = D3DPUSH_ENCODE(CMD_VERTEXSTREAM_TEX1, 1);
 		*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-		tess.pTex2 = stream;
 	}
 
 	// Send thru the index data
@@ -2666,64 +2554,7 @@ static void dllEnd(void)
 #endif
 }
 
-#if YELLOW_MODE
-
-static DWORD YellowModePixelShader	 = -1;
-bool enableYellowMode	= false;
-static void initYellowMode( void )
-{
-	if(!(CreatePixelShader("D:\\base\\media\\yellow.xpu", &YellowModePixelShader)))
-		return;
-}
-
-static void renderYellowMode( void )
-{
-	if(!enableYellowMode || YellowModePixelShader == -1)
-		return;
-
-	if(cls.state == CA_CINEMATIC)
-		return;
-
-	if(!tr.screenImage)
-		return;
-
-	// bind tr.screenImage
-	GL_Bind(tr.screenImage);
-	GL_State(0);
-
-	// copy backbuffer
-	//qglCopyBackBufferToTexEXT(width, height, u1, v1, u2, v2);
-	qglCopyBackBufferToTexEXT(512.0f, 256.0f, 2.0f, 2.0f, 640.0f, 480.0f);
-
-	// set up the yellow mode shader
-	DWORD oldShader;
-	glw_state->device->GetPixelShader(&oldShader);
-	glw_state->device->SetPixelShader(YellowModePixelShader);
-
-	// draw our polygon
-	qglBeginEXT(GL_QUADS,4,0,0,4,0);
-
-	qglTexCoord2f( 0,0 );
-	qglVertex2f( 0, 0 );
-
-	qglTexCoord2f( 1,0 );
-	qglVertex2f( 640, 0 );
-
-	qglTexCoord2f( 1,1 );
-	qglVertex2f( 640, 480);
-
-	qglTexCoord2f( 0,1 );
-	qglVertex2f( 0, 480);
-
-	qglEnd ();
-
-	glw_state->device->SetPixelShader(oldShader);
-}
-
-#endif // YELLOW_MODE
-
 // EXTENSION: End drawing for a frame
-bool connectSwapOverride = false;
 static void dllEndFrame(void)
 {
 	assert(!glw_state->inDrawBlock);
@@ -2731,16 +2562,10 @@ static void dllEndFrame(void)
 	// the blend state can get reset by Present()...
 	GLboolean blend = qglIsEnabled(GL_BLEND);
 	
-#if YELLOW_MODE
-	if( !connectSwapOverride )
-		renderYellowMode();
-#endif // YELLOW_MODE
-
 	glw_state->device->EndScene();
 	
 	qglViewport(0, 0, glConfig.vidWidth, glConfig.vidHeight);
-	if( !connectSwapOverride )
-		glw_state->device->Present(NULL, NULL, NULL, NULL);
+	glw_state->device->Present(NULL, NULL, NULL, NULL);
 
 	// restore the pre-Present state
 	if (blend) qglEnable(GL_BLEND);
@@ -2927,7 +2752,6 @@ static void _getState(GLenum pname, T *params)
 	case GL_CULL_FACE: params[0] = (T)glw_state->cullEnable; break;
 	case GL_MAX_TEXTURE_SIZE: params[0] = (T)512; break;
 	case GL_MAX_ACTIVE_TEXTURES_ARB: params[0] = GLW_MAX_TEXTURE_STAGES; break;
-	case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT: params[0] = 4; break;
 	default:
 		assert(0);
 		params[0] = (T)0;
@@ -3183,7 +3007,7 @@ static void buildStrips(GLuint* len, GLsizei* num_lens, GLushort* dest, GLsizei*
 }
 
 #ifdef _XBOX
-void renderObject_Light( int numIndexes, const glIndex_t *indexes )
+void renderObject_Light()
 {
 	int i;
 
@@ -3196,18 +3020,13 @@ void renderObject_Light( int numIndexes, const glIndex_t *indexes )
 	glw_state->drawStride = 14;
 
 	glw_state->numIndices = 0;
-	glw_state->totalIndices = numIndexes;
+	glw_state->totalIndices = tess.numIndexes;
 	glw_state->maxIndices = _getMaxIndices();
 
 	glw_state->device->SetStreamSource(0, NULL, glw_state->drawStride * 4);	
 
-	int vert_size;
-	if(!tess.pNormal)
-		vert_size = 8 * tess.numVertexes;
-	else
-		vert_size = 4 * tess.numVertexes;
-
-	int index_size = numIndexes / 2;
+	int vert_size = glw_state->drawStride * tess.numVertexes;
+	int index_size = tess.numIndexes / 2;
 	
 	glw_state->device->BeginPush(vert_size + index_size + 60, &glw_state->drawArray);
 
@@ -3225,11 +3044,14 @@ void renderObject_Light( int numIndexes, const glIndex_t *indexes )
 	// Set up our own fake vertex buffer
 	stream = glw_state->drawArray;
 
-	if(!tess.pNormal)
-	{
-        memcpy(glw_state->drawArray, tess.normal, sizeof(vec4_t) * tess.numVertexes);
-		glw_state->drawArray += tess.numVertexes * 4;
-	}
+	memcpy(glw_state->drawArray, tess.xyz, sizeof(vec4_t) * tess.numVertexes);
+	glw_state->drawArray += tess.numVertexes * 4;
+
+	memcpy(glw_state->drawArray, tess.normal, sizeof(vec4_t) * tess.numVertexes);
+	glw_state->drawArray += tess.numVertexes * 4;
+
+	memcpy(glw_state->drawArray, tess.svars.texcoords[0], sizeof(vec2_t) * tess.numVertexes);
+	glw_state->drawArray += tess.numVertexes * 2;
 
 	memcpy(glw_state->drawArray, tess.tangent, sizeof(vec4_t) * tess.numVertexes);
 	glw_state->drawArray += tess.numVertexes * 4;
@@ -3257,25 +3079,23 @@ void renderObject_Light( int numIndexes, const glIndex_t *indexes )
 
 	//	 Write the indicator to our vertex stream
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x1720, 1);
-	*glw_state->drawArray++ = (DWORD)tess.pXyz & 0x7fffffff;
+	*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
+	stream += tess.numVertexes * 4;
 
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x1724, 1);
-	if(!tess.pNormal)
-	{
-        *glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-		stream += tess.numVertexes * 4;
-	}
-	else
-		*glw_state->drawArray++ = (DWORD)tess.pNormal & 0x7fffffff;
+	*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
+	stream += tess.numVertexes * 4;
 
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x1728, 1);
-	*glw_state->drawArray++ = (DWORD)tess.pTex1 & 0x7fffffff;
+	*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
+	stream += tess.numVertexes * 2;
 
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x172c, 1);
 	*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
+	stream += tess.numVertexes * 4;
 
 	// Send thru the index data
-	PushIndices(numIndexes, (GLushort*)indexes);
+	PushIndices(tess.numIndexes, (GLushort*)tess.indexes);
 
 	// finish up the draw
 	glw_state->inDrawBlock = false;
@@ -3284,108 +3104,6 @@ void renderObject_Light( int numIndexes, const glIndex_t *indexes )
 
 	glw_state->device->EndPush(push);
 }
-
-
-void renderObject_Shadow( int primType, int numIndexes, const unsigned short *indexes )
-{
-	int i;
-
-	// start the draw mode
-	assert(!glw_state->inDrawBlock);
-
-	glw_state->inDrawBlock = true;
-	glw_state->primitiveMode = (D3DPRIMITIVETYPE)primType;
-
-	glw_state->drawStride = 5;
-
-	glw_state->numIndices = 0;
-	glw_state->totalIndices = numIndexes;
-	glw_state->maxIndices = _getMaxIndices();
-
-	glw_state->device->SetStreamSource(0, NULL, glw_state->drawStride * 4);	
-
-	int vert_size = glw_state->drawStride * (tess.numVertexes * 2);
-	int index_size = numIndexes / 2;
-	
-	glw_state->device->BeginPush(vert_size + index_size + 60, &glw_state->drawArray);
-
-	glw_state->drawArray = (DWORD*)*((DWORD*)glw_state->device);
-
-	DWORD *jumpaddress = 0, *stream = 0;
-
-	if(!StencilShadower.pVerts)
-	{
-		// Determine where the end of the vertex data is gonna be,
-		// that's where we're going to jump to
-		jumpaddress = (DWORD*)*((DWORD*)glw_state->device) + (vert_size + 1);
-
-		// Write the jump address
-		*glw_state->drawArray++ = ((DWORD)jumpaddress & 0x7fffffff) | 1;
-
-		// Set up our own fake vertex buffer
-		stream = glw_state->drawArray;
-
-        memcpy(glw_state->drawArray, tess.xyz, sizeof(vec4_t) * (tess.numVertexes * 2));
-		glw_state->drawArray += (tess.numVertexes * 2) * 4;
-
-		// Write the extrusion indicators
-		memset(glw_state->drawArray, 0x0, sizeof(float) * tess.numVertexes);
-		glw_state->drawArray += tess.numVertexes;
-		memcpy(glw_state->drawArray, StencilShadower.m_extrusionIndicators, sizeof(float) * tess.numVertexes);
-		glw_state->drawArray += tess.numVertexes;
-	}
-	
-	// Write the vertex shader
-#define CMD_STREAM_STRIDEANDTYPE0 0x1760
-	*glw_state->drawArray++ = D3DPUSH_ENCODE(CMD_STREAM_STRIDEANDTYPE0, 16);
-
-	// Position
-	*glw_state->drawArray++ = (16 << 8)|D3DVSDT_FLOAT3;
-
-	// Extrusion determinant
-	*glw_state->drawArray++ = (4 << 8)|D3DVSDT_FLOAT1;
-
-	for(i = 0; i < 14; i++)
-	{
-		*glw_state->drawArray++ = ((glw_state->drawStride * 4) << 8) | D3DVSDT_NONE;
-	}
-
-	//	 Write the indicator to our vertex stream
-	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x1720, 1);
-	if(!StencilShadower.pVerts)
-	{
-        *glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-		StencilShadower.pVerts = stream;
-		stream += (tess.numVertexes * 2) * 4;
-	}
-	else
-	{
-		*glw_state->drawArray++ = (DWORD)StencilShadower.pVerts & 0x7fffffff;
-	}
-
-	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x1724, 1);
-	if(!StencilShadower.pExtrusions)
-	{
-        *glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-		StencilShadower.pExtrusions = stream;
-		stream += (tess.numVertexes * 2);
-	}
-	else
-	{
-		*glw_state->drawArray++ = (DWORD)StencilShadower.pExtrusions & 0x7fffffff;
-	}
-
-	// Send thru the index data
-	PushIndices(numIndexes, (GLushort*)indexes);
-
-	// finish up the draw
-	glw_state->inDrawBlock = false;
-
-	DWORD* push = _terminateIndexPacket(glw_state->drawArray);
-
-	glw_state->device->EndPush(push);
-}
-
 
 void renderObject_Bump()
 {
@@ -3464,12 +3182,10 @@ void renderObject_Bump()
 	//	 Write the indicator to our vertex stream
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x1720, 1);
 	*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-	tess.pXyz = stream;
 	stream += tess.numVertexes * 4;
 
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x1724, 1);
 	*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-	tess.pNormal = stream;
 	stream += tess.numVertexes * 4;
 
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x1728, 1);
@@ -3561,12 +3277,10 @@ void renderObject_Env()
 	//	 Write the indicator to our vertex stream
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x1720, 1);
 	*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-	tess.pXyz = stream;
 	stream += tess.numVertexes * 4;
 
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x1724, 1);
 	*glw_state->drawArray++ = (DWORD)stream & 0x7fffffff;
-	tess.pNormal = stream;
 	stream += tess.numVertexes * 4;
 
 	*glw_state->drawArray++ = D3DPUSH_ENCODE(0x1728, 1);
@@ -3590,7 +3304,7 @@ void renderObject_Env()
 // is drawn with this function so it better be fast.
 static void dllIndexedTriToStrip(GLsizei count, const GLushort *indices)
 {
-//#ifndef _XBOX
+#ifndef _XBOX
 #ifdef GLW_USE_TRI_STRIPS
 
 	// update the render state
@@ -3670,7 +3384,7 @@ static void dllIndexedTriToStrip(GLsizei count, const GLushort *indices)
 	// just render simple triangles
 	dllDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_SHORT, indices);
 #endif GLW_USE_TRI_STRIPS
-//#endif 
+#endif 
 }
 
 static void dllIndexMask(GLuint mask)
@@ -4382,11 +4096,107 @@ static void dllReadBuffer(GLenum mode)
 //static void dllReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLsizei twidth, GLsizei theight, GLvoid *pixels)
 static void dllReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels)
 {
-	assert( 0 );
 	return;
 
-}
+	/*
+	// assert((format == GL_LIN_RGB8) && (type == GL_UNSIGNED_BYTE));
 
+	// create a temporary storage surface 
+	IDirect3DSurface8 *target;
+	glw_state->device->CreateImageSurface(twidth, theight, D3DFMT_A8R8G8B8, &target);
+
+	// get a pointer to the back buffer
+	IDirect3DSurface8* screen;
+	glw_state->device->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &screen);
+	
+	// copy the back buffer into a surface of the appropriate size and format	
+	RECT r;
+	r.left = x;
+	r.top = y;
+	r.right = x + width;
+	r.bottom = y + height;
+	D3DXLoadSurfaceFromSurface(target, NULL, NULL, screen, NULL, &r, D3DX_DEFAULT, 0);
+	screen->Release();
+
+	// lock the target surface
+	D3DLOCKED_RECT lock;
+	target->LockRect(&lock, NULL, D3DLOCK_READONLY);
+
+	// copy the pixel data
+	for (int y = 0; y < theight; ++y)
+	{
+		memcpy((char*)pixels + twidth * y * 4, 
+			(char*)lock.pBits + lock.Pitch * y, 
+			twidth * 4);
+	}
+
+	// all done
+	target->UnlockRect();
+	target->Release();
+	*/
+
+	/*
+	// create target storage surface
+	IDirect3DSurface8 *target;
+	glw_state->device->CreateImageSurface(twidth, theight, D3DFMT_A8R8G8B8, &target);
+
+	// get a pointer to the back buffer
+	IDirect3DSurface8* back;
+	glw_state->device->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &back);
+
+	D3DSURFACE_DESC ddsd;
+	back->GetDesc(&ddsd);
+	int bpp = XGBytesPerPixelFromFormat(ddsd.Format);
+	
+	// create surface to hold screen data
+	// (512x512 is exactly big enough to hold the screen but we
+	// need to save some memory so I'm going to clip the edges)
+	IDirect3DSurface8 *screen;
+	glw_state->device->CreateImageSurface(512, 512, ddsd.Format, &screen);
+
+	// copy back buffer to non-tiled screen surface
+	RECT r;
+	r.left = 64;
+	r.top = 0;
+	r.right = 576;
+	r.bottom = 480;
+	POINT ul = {0, 0};
+	glw_state->device->CopyRects(back, &r, 1, screen, &ul);
+	back->Release();
+
+	// deswizzle the screen
+	D3DLOCKED_RECT lock;
+	screen->LockRect(&lock, NULL, D3DLOCK_READONLY);
+	void* deswizzled = Z_Malloc(512*512*bpp, TAG_TEMP_WORKSPACE, qfalse, 16);
+	XGUnswizzleRect(lock.pBits, 512, 512, NULL, deswizzled, 0, NULL, bpp);
+	screen->UnlockRect();
+	screen->Release();
+	
+	// copy the screen into a surface of the appropriate size and format	
+	r.left = 0;
+	r.top = 0;
+	r.right = 512;
+	r.bottom = 480;
+	D3DXLoadSurfaceFromMemory(target, NULL, NULL, deswizzled, ddsd.Format, 
+		512*bpp, NULL, &r, D3DX_DEFAULT, 0);
+	Z_Free(deswizzled);
+
+	// lock the target surface
+	target->LockRect(&lock, NULL, D3DLOCK_READONLY);
+
+	// copy the pixel data
+	for (int y = 0; y < theight; ++y)
+	{
+		memcpy((char*)pixels + twidth * y * 4, 
+			(char*)lock.pBits + lock.Pitch * y, 
+			twidth * 4);
+	}
+
+	// all done
+	target->UnlockRect();
+	target->Release();
+	*/
+}
 /**********
 dllCopyBackBufferToTex
 Does a direct copy of the backbuffer to the current texture. The current texture
@@ -4417,8 +4227,6 @@ If the destination is a DXT1 texture, then the buffer will be compressed
 width	- width of the backbuffer polygon rendered to the destination texture
 height	- height of the backbuffer polygon rendered to the destination texture
 u,v		- describes the potion of the backbuffer to be copied in screen coords
-
-The active texture (that we're replacing) NEEDS to already have enough space!
 **********/
 static void dllCopyBackBufferToTexEXT(float width, float height, float u1, float v1, float u2, float v2)
 {
@@ -4440,6 +4248,10 @@ static void dllCopyBackBufferToTexEXT(float width, float height, float u1, float
 	LPDIRECT3DSURFACE8	pBackBuffer;
 	LPDIRECT3DSURFACE8	pStencilBuffer;
 	D3DSURFACE_DESC		desc;
+	D3DBaseTexture*		pTexStage0;
+	D3DBaseTexture*		pTexStage1;
+	D3DBaseTexture*		pTexStage2;
+	D3DBaseTexture*		pTexStage3;
 	D3DTexture*			pRenderTex;
 	int					w	= 0;
 	int					h	= 0;
@@ -4457,11 +4269,10 @@ static void dllCopyBackBufferToTexEXT(float width, float height, float u1, float
 	glw_state->device->GetRenderState( D3DRS_COLORWRITEENABLE, &colorwriteenable);
 	glw_state->device->GetVertexShader( &vShader );
 	glw_state->device->GetPixelShader( &pShader );
-	// This function no longer makes ANY attempt to restore texture stages
-	glw_state->device->SetTexture(0, NULL);
-	glw_state->device->SetTexture(1, NULL);
-	glw_state->device->SetTexture(2, NULL);
-	glw_state->device->SetTexture(3, NULL);
+	glw_state->device->GetTexture(0,&pTexStage0);
+	glw_state->device->GetTexture(1,&pTexStage1);
+	glw_state->device->GetTexture(2,&pTexStage2);
+	glw_state->device->GetTexture(3,&pTexStage3);
 	glw_state->device->GetTextureStageState(0, D3DTSS_COLOROP, &colorop);
 	glw_state->device->GetTextureStageState(0, D3DTSS_COLORARG1, &colorarg1);
 	glw_state->device->GetTextureStageState(0, D3DTSS_ADDRESSU, &addressu);
@@ -4476,31 +4287,23 @@ static void dllCopyBackBufferToTexEXT(float width, float height, float u1, float
 	// get a surface desc
 	info->mipmap->GetLevelDesc(0, &desc);
 
-	// Check to see if the texture needs to be resized
+	// check to see if the texture needs to be resized
 	if( desc.Width != width || desc.Height != height)
 	{
-		// We don't actually destroy/create the texture anymore.
-		// We just adjust the texture header. Thus, make sure the texture
-		// is big enough when you make it the first time!
+		int refCount;
+		refCount = info->mipmap->Release();
 
-		// Replacing this with a while( IsBusy() ) loop makes it hang sometimes
-		// But I can't figure out who the fuck has a lock on the texture, or
-		// and it doesn't seem to cause any problems. (ie: using push on cloaked guys)
-		info->mipmap->BlockUntilNotBusy();
+		// Had to remove this. Multiple characters using force push in one
+		// frame triggers the assert. Things clean up by the end of the frame.
+//		assert(refCount == 0);
 
-		// Change the texture size
-		XGSetTextureHeader( width,
-							height,
-							1,
-							0,
-							desc.Format,
-							0,
-							info->mipmap,
-							0,
-							0 );
-
-		// Re-register the data:
-		info->mipmap->Register( info->data );
+		glw_state->device->CreateTexture(	width,
+											height,
+											1,
+											0,
+											desc.Format,
+											0,
+											&info->mipmap );
 	}
 
 	// check to see if we want a compressed output texture
@@ -4511,13 +4314,13 @@ static void dllCopyBackBufferToTexEXT(float width, float height, float u1, float
 		h	= desc.Height;
 
 		// create a new texture to use as a render target
-		_d3d_check(glw_state->device->CreateTexture( w,
-													 h,
-													 1,
-													 0,
-													 D3DFMT_LIN_X8R8G8B8,
-													 0,
-													 &pRenderTex ), "CreateTexture");
+		glw_state->device->CreateTexture(	w,
+											h,
+											1,
+											0,
+											D3DFMT_LIN_X8R8G8B8,
+											0,
+											&pRenderTex );
 	}
 	else
 	{
@@ -4531,6 +4334,11 @@ static void dllCopyBackBufferToTexEXT(float width, float height, float u1, float
 	
 	// set texture 0 to the back buffer data
 	glw_state->device->SetTexture(0,(LPDIRECT3DTEXTURE8)pBackBuffer);
+
+	// clear the other texture stages
+	glw_state->device->SetTexture(1, NULL);
+	glw_state->device->SetTexture(2, NULL);
+	glw_state->device->SetTexture(3, NULL);
 
 	// set the texture 0 state
 	glw_state->device->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_SELECTARG1 );
@@ -4599,11 +4407,10 @@ static void dllCopyBackBufferToTexEXT(float width, float height, float u1, float
 	glw_state->device->SetRenderState( D3DRS_ZENABLE, zenable );
 	glw_state->device->SetRenderState( D3DRS_COLORWRITEENABLE, colorwriteenable);
 
-	// Clear stage zero again. We're not being nice.
-	glw_state->device->SetTexture(0, NULL);
-	glw_state->textureStageDirty[0] = true;
-	glw_state->textureStageDirty[1] = true;
-
+	glw_state->device->SetTexture(0,pTexStage0);
+	glw_state->device->SetTexture(1,pTexStage1);
+	glw_state->device->SetTexture(2,pTexStage2);
+	glw_state->device->SetTexture(3,pTexStage3);
 	glw_state->device->SetTextureStageState(0, D3DTSS_COLOROP, colorop);
 	glw_state->device->SetTextureStageState(0, D3DTSS_COLORARG1, colorarg1);
 	glw_state->device->SetTextureStageState(0, D3DTSS_ADDRESSU, addressu);
@@ -4615,6 +4422,19 @@ static void dllCopyBackBufferToTexEXT(float width, float height, float u1, float
 	glw_state->device->SetPixelShader( pShader );
 
 	glw_state->device->SetRenderTarget( pBackBuffer, pStencilBuffer );
+
+	// release our surfaces/textures
+	if(pTexStage0)
+		pTexStage0->Release();
+
+	if(pTexStage1)
+		pTexStage1->Release();
+
+	if(pTexStage2)
+		pTexStage2->Release();
+
+	if(pTexStage3)
+		pTexStage3->Release();
 
 	pSurface->Release();
 	pBackBuffer->Release();
@@ -5025,212 +4845,183 @@ static void dllTexImage1D(GLenum target, GLint level, GLint internalformat, GLsi
 	assert(0);
 }
 
+static void _d3d_check(HRESULT err, const char* func)
+{
+	if (err != D3D_OK)
+	{
+		MEMORYSTATUS status;
+		GlobalMemoryStatus(&status);
+		Sys_Print(va("%s returned %d!  Memfree=%d\n", func, err, status.dwAvailPhys));
+	}
+}
+
 static void _texImageDDS(glwstate_t::TextureInfo* info, GLint numlevels, GLsizei width, GLsizei height, GLenum format, const GLvoid *pixels)
 {
-	D3DFORMAT f = D3DFMT_UNKNOWN;
-	switch( format )
-	{
-	case GL_DDS1_EXT:
-		f = D3DFMT_DXT1;
-		break;
-	case GL_DDS5_EXT:
-		f = D3DFMT_DXT5;
-		break;
-	case GL_DDS_RGB16_EXT:
-		f = D3DFMT_R5G6B5;
-		break;
-	case GL_DDS_RGBA32_EXT:
-		f = D3DFMT_A8R8G8B8;
-		break;
-	}
-
-	if( numlevels == 0)
-		numlevels = 1;
-
-	info->mipmap = new IDirect3DTexture9;
-	DWORD pixelSize = XGSetTextureHeader( width,
-						height,
-						numlevels,
-						0,
-						f,
-						0,
-						info->mipmap,
-						0,
-						0 );
-
-	DWORD fileSize = Z_Size(const_cast<void*>(pixels));
-	info->data = gTextures.Allocate( pixelSize, glw_state->currentTexture[glw_state->serverTU] );
-	// Lightmaps need to be swizzled, they're in 565:
-	if( f == D3DFMT_R5G6B5 )
-	{
-		byte *pSrc = ((byte *)pixels)+(fileSize-pixelSize);
-		byte *pDst = (byte *)info->data;
-		DWORD level = numlevels;
-		DWORD curWidth = width;
-		DWORD curHeight = height;
-		while (level--)
-		{
-			XGSwizzleRect(pSrc, 0, NULL, pDst, curWidth, curHeight, NULL, 2);
-			pSrc += curWidth*curHeight*2;
-			pDst += curWidth*curHeight*2;
-			curWidth >>= 1;
-			curHeight >>= 1;
-		}
-	}
-	else
-	{
-		memcpy( info->data, ((byte *)pixels)+(fileSize-pixelSize), pixelSize );
-	}
-	info->mipmap->Register( info->data );
+	_d3d_check(D3DXCreateTextureFromFileInMemoryEx(glw_state->device,
+		pixels, 
+		Z_Size(const_cast<void*>(pixels)),
+		width, 
+		height,
+		numlevels,
+		0,
+		D3DFMT_UNKNOWN,
+		D3DPOOL_MANAGED,
+		D3DX_DEFAULT,
+		D3DX_DEFAULT,
+		0,
+		NULL,
+		NULL,
+		&info->mipmap),
+		"D3DXCreateTextureFromFileInMemoryEx");
 }
 
 static void _texImageRGBA(glwstate_t::TextureInfo* info, GLint numlevels, GLint internalformat, GLsizei width, GLsizei height, GLenum format, const GLvoid *pixels)
 {
-	// Fix number of levels:
-	if( numlevels == 0 )
-		numlevels = 1;
-
-	// What format should the resultant texture be:
-	D3DFORMAT dstFormat = D3DFMT_UNKNOWN;
-	switch(internalformat)
-	{
-		case GL_RGB5:
-		case GL_RGB4_S3TC:
-			dstFormat = D3DFMT_R5G6B5;
-			break;
-
-		case GL_RGBA4:
-			dstFormat = D3DFMT_A4R4G4B4;
-			break;
-
-		case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-			dstFormat = D3DFMT_DXT1;
-			break;
-
-		case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-			dstFormat = D3DFMT_DXT5;
-			break;
-
-		case GL_RGB8:
-		case 3:
-			dstFormat = D3DFMT_X8R8G8B8;
-			break;
-
-		case GL_LIN_RGBA8:
-			dstFormat = D3DFMT_LIN_A8R8G8B8;
-			break;
-		case GL_LIN_RGB8:
-			dstFormat = D3DFMT_LIN_X8R8G8B8;
-			break;
-
-		case GL_RGBA8:
-		case 4:
-			dstFormat = D3DFMT_A8R8G8B8;
-			break;
-		case GL_RGB:
-			dstFormat = D3DFMT_X8R8G8B8;
-			break;
-
-		default:
-			assert(0);
-	}
-
-	// What format is our source data in:
-	D3DFORMAT srcFormat = D3DFMT_UNKNOWN;
+	IDirect3DSurface8 *pSurf = NULL;
+	D3DFORMAT f;
 	float bpp;
 	int pitch;
-	switch(format)
-	{
-		case GL_RGB:
-			srcFormat = D3DFMT_X8R8G8B8;
-			bpp = 3;
-			break;
-			
-		case GL_RGBA:
-			srcFormat = D3DFMT_A8R8G8B8;
-			bpp = 4;
-			break;
-
-		case GL_LIN_RGBA:
-			srcFormat = D3DFMT_LIN_A8R8G8B8;
-			bpp = 4;
-			break;
-
-		case GL_LIN_RGB:
-			srcFormat = D3DFMT_LIN_X8R8G8B8;
-			bpp = 4;
-			break;
-
-		case GL_LIN_RGB8:
-			srcFormat = D3DFMT_LIN_X8R8G8B8;
-			bpp = 4;
-			break;
-
-		case GL_RGB8:
-			srcFormat = D3DFMT_X8R8G8B8;
-			bpp = 4;
-			break;
-
-		case GL_RGB_SWIZZLE_EXT:
-			srcFormat = D3DFMT_R5G6B5;
-			bpp = 2;
-			break;
-
-		case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-			srcFormat = D3DFMT_DXT1;
-			bpp = 0.5;
-			break;
-
-		default:
-			assert(0);
-	}
-
-	pitch = (int)((float)width * bpp);
-
 	RECT	srcRect;
-
+	
 	srcRect.top = 0;
 	srcRect.left = 0;
 	srcRect.right = width;
 	srcRect.bottom = height;
 
-	info->mipmap = new IDirect3DTexture9;
-	DWORD pixelSize = XGSetTextureHeader( width,
-						height,
-						numlevels,
-						0,
-						dstFormat,
-						0,
-						info->mipmap,
-						0,
-						0 );
+	switch(format)
+	{
+	case GL_RGB:
+		f = D3DFMT_X8R8G8B8;
+		bpp = 3;
+		break;
+		
+	case GL_RGBA:
+		f = D3DFMT_A8R8G8B8;
+		bpp = 4;
+		break;
 
-	info->data = gTextures.Allocate( pixelSize, glw_state->currentTexture[glw_state->serverTU] );
-	info->mipmap->Register( info->data );
+	case GL_LIN_RGBA:
+		f = D3DFMT_LIN_A8R8G8B8;
+		bpp = 4;
+		break;
 
-	IDirect3DSurface8 *pSurf = NULL;
-	info->mipmap->GetSurfaceLevel( 0, &pSurf );
+	case GL_LIN_RGB:
+		f = D3DFMT_LIN_X8R8G8B8;
+		bpp = 4;
+		break;
 
-	D3DXLoadSurfaceFromMemory( pSurf,
-							   NULL,
-							   NULL,
-							   pixels,
-							   srcFormat,
-							   pitch,
-							   NULL,
-							   &srcRect,
-							   D3DX_DEFAULT,
-							   0 );
+	case GL_LIN_RGB8:
+		f = D3DFMT_LIN_X8R8G8B8;
+		bpp = 4;
+		break;
 
+	case GL_RGB8:
+		f = D3DFMT_X8R8G8B8;
+		bpp = 4;
+		break;
+
+	case GL_RGB_SWIZZLE_EXT:
+		f = D3DFMT_R5G6B5;
+		bpp = 2;
+		break;
+
+	case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+		f = D3DFMT_DXT1;
+		bpp = 0.5;
+		break;
+
+	default:
+		assert(0);
+	}
+
+	_d3d_check(glw_state->device->CreateImageSurface(width, height, f, &pSurf),
+		"CreateImageSurface");
+
+	pitch = (int)((float)width * bpp);
+
+	_d3d_check(D3DXLoadSurfaceFromMemory(pSurf, 
+								   NULL, 
+								   NULL, 
+								   (LPCVOID)pixels, 
+								   f, 
+								   pitch, 
+								   NULL, 
+								   &srcRect, 
+								   D3DX_FILTER_NONE, 
+								   0),
+								   "D3DXLoadSurfaceFromMemory");
+
+	switch(internalformat)
+	{
+	case GL_RGB5:
+	case GL_RGB4_S3TC:
+		f = D3DFMT_R5G6B5;
+		break;
+
+	case GL_RGBA4:
+		f = D3DFMT_A4R4G4B4;
+		break;
+
+	case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+		f = D3DFMT_DXT1;
+		break;
+
+	case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+		f = D3DFMT_DXT5;
+		break;
+
+	case GL_RGB8:
+	case 3:
+		f = D3DFMT_X8R8G8B8;
+		break;
+
+	case GL_LIN_RGBA8:
+		f = D3DFMT_LIN_A8R8G8B8;
+		break;
+	case GL_LIN_RGB8:
+		f = D3DFMT_LIN_X8R8G8B8;
+		break;
+
+	case GL_RGBA8:
+	case 4:
+		f = D3DFMT_A8R8G8B8;
+		break;
+	case GL_RGB:
+		f = D3DFMT_X8R8G8B8;
+		break;
+
+	default:
+		assert(0);
+	}
+	
+	_d3d_check(D3DXCreateTexture(glw_state->device, 
+							   width, 
+							   height, 
+							   numlevels, 
+							   0, 
+							   f, 
+							   D3DPOOL_MANAGED,
+							   &info->mipmap),
+							   "D3DXCreateTexture");
+
+	LPDIRECT3DSURFACE8 txtSurf;
+	_d3d_check(info->mipmap->GetSurfaceLevel(0, &txtSurf),
+		"GetSurfaceLevel");
+	
+	_d3d_check(D3DXLoadSurfaceFromSurface(txtSurf, NULL, NULL, 
+		pSurf, NULL, NULL, D3DX_DEFAULT, 0),
+		"D3DXLoadSurfaceFromSurface");
+
+	txtSurf->Release();
 	pSurf->Release();
 
-	// Generate mipmaps
-	if( numlevels > 1)
+	if(numlevels > 1)
 	{
-		D3DXFilterTexture( info->mipmap,
-						   NULL,
-						   D3DX_DEFAULT,
-						   D3DX_DEFAULT );
+		_d3d_check(D3DXFilterTexture(info->mipmap, 
+							   NULL, 
+							   D3DX_DEFAULT, 
+							   D3DX_DEFAULT),
+							   "D3DXFilterTexture");
 	}
 }
 
@@ -5254,9 +5045,7 @@ static void dllTexImage2DEXT(GLenum target, GLint level, GLint numlevels, GLint 
 	if (current != glw_state->textureXlat.end())
 	{
 		info = &current->second;
-
-		delete info->mipmap;
-		assert( 0 );		// Why is this happening? We're leaking texture memory!
+		info->mipmap->Release();
 	}
 	// Otherwise, initialize it.
 	else
@@ -5275,7 +5064,7 @@ static void dllTexImage2DEXT(GLenum target, GLint level, GLint numlevels, GLint 
 	}
 
 	// force any DX allocs to temp memory
-//	Z_SetNewDeleteTemporary(true);
+	Z_SetNewDeleteTemporary(true);
 
 	if (format == GL_DDS1_EXT || 
 		format == GL_DDS5_EXT || 
@@ -5288,11 +5077,11 @@ static void dllTexImage2DEXT(GLenum target, GLint level, GLint numlevels, GLint 
 	{
 		_texImageRGBA(info, numlevels, 
 			internalformat, width, height, 
-			format, pixels); 
+			format, pixels);
 	}
 
 	// Done DX calls to new and delete
-//	Z_SetNewDeleteTemporary(false);
+	Z_SetNewDeleteTemporary(false);
 
 #if MEMORY_PROFILE
 	texMemSize += getTexMemSize(info->mipmap);
@@ -6458,7 +6247,6 @@ enum VideoModes
 	VM_1080i
 };
 
-bool bHadPersistedSurface = false;
 
 void GLW_Init(int width, int height, int colorbits, qboolean cdsFullscreen)
 {
@@ -6469,11 +6257,10 @@ void GLW_Init(int width, int height, int colorbits, qboolean cdsFullscreen)
 	if( XGetVideoFlags() & XC_VIDEO_FLAGS_WIDESCREEN )
 	{
 		glw_state->isWidescreen = true;
-		width = 640;
 
 		if( XGetVideoFlags() & XC_VIDEO_FLAGS_HDTV_480p )
 		{
-			width = 640;
+			width = 720;
 			height = 480;
 			mode = VM_480p;
 		}
@@ -6587,11 +6374,6 @@ D3DPRESENT_PARAMETERS present;
 	}
 //	qglEnable(GL_VSYNC);
 	
-	// Immediately check to see if there's 1.2MB being wasted on a persisted surface:
-	IDirect3DSurface8 *pPersistedSurf;
-	glw_state->device->GetPersistedSurface( &pPersistedSurf );
-	bHadPersistedSurface = (pPersistedSurf != NULL);
-
 	for (int m = 0; m < glwstate_t::Num_MatrixModes; ++m)
 	{
 		D3DXCreateMatrixStack(0, &glw_state->matrixStack[m]);
@@ -6636,18 +6418,13 @@ D3DPRESENT_PARAMETERS present;
 //	glw_state->flareEffect = new FlareEffect;
 //	glw_state->flareEffect->Initialize();
 	glw_state->lightEffects = new LightEffects;
-	StencilShadower.Initialize();
 #endif // VV_LIGHTING
-//	HDREffect.Initialize();
+	HDREffect.Initialize();
 #endif
 
 #ifndef FINAL_BUILD
 	Cmd_AddCommand("d3d_autoperf", D3D_AutoPerfData_f);
 #endif
-
-#if YELLOW_MODE
-	initYellowMode();
-#endif // YELLOW_MODE
 }
 
 void GLW_Shutdown(void)
@@ -6676,14 +6453,14 @@ void GLW_Shutdown(void)
 // Compressed Screen Shot code for the save game system
 //-----------------------------------------------------------------------------
 
-//#define DISABLE_SCREENSHOT
 #define CSS_IMAGE_HDR_SIZE			2048									
-#define	CSS_IMAGE_DATA_SIZE			((SAVE_GAME_IMAGE_W * SAVE_GAME_IMAGE_H) / 2 )	
+#define	CSS_IMAGE_WH				256										
+#define	CSS_IMAGE_DATA_SIZE			((CSS_IMAGE_WH * CSS_IMAGE_WH) / 2 )	
 
 struct XprImageHeader
 {
     XPR_HEADER        xpr;           // Standard XPR struct
-    IDirect3DTexture9 txt;           // Standard D3D texture struct
+    IDirect3DTexture8 txt;           // Standard D3D texture struct
     DWORD             dwEndOfHeader; // 0xFFFFFFFF
 };
 
@@ -6696,82 +6473,29 @@ struct XprImage
 
 //-----------------------------------------------------------------------------
 // SaveCompressedScreenshot
-// Saves two screenshots - one is full-screen at 256x128, and placed in
-// Z:\screenshot.xbx. The other is cropped, and 64x64 for the dashboard,
-// and placed in  Z:\saveimage.xbx
+// Saves a copy of the backbuffer to a .xbx file specified by filename
 //-----------------------------------------------------------------------------
-void SaveCompressedScreenshot( void )
+void SaveCompressedScreenshot(const char* filename)
 {
-#ifndef DISABLE_SCREENSHOT
 	LPDIRECT3DSURFACE8 screenShot = 0;
 	HRESULT res;
 	glw_state->device->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &screenShot);
 
 	// Copy over the screen shot to the new image that is CSS_IMAGE_WH x CSS_IMAGE_WH
 	LPDIRECT3DSURFACE8 compressedSaveGameImage = 0;
-	// New: we only screenshot the title-safe area, to make the image clearer in the ui:
-	RECT srcRect;
-	srcRect.left = 48;
-	srcRect.top = 36;
-	srcRect.right = 592;
-	srcRect.bottom = 444;
-    glw_state->device->CreateImageSurface( SAVE_GAME_IMAGE_W, SAVE_GAME_IMAGE_H, D3DFMT_DXT1, &compressedSaveGameImage );
-	D3DXLoadSurfaceFromSurface( compressedSaveGameImage, NULL, NULL, screenShot, NULL, &srcRect, D3DX_DEFAULT, D3DCOLOR( 0 ) );
+    glw_state->device->CreateImageSurface( CSS_IMAGE_WH, CSS_IMAGE_WH, D3DFMT_DXT1, &compressedSaveGameImage );
+	D3DXLoadSurfaceFromSurface( compressedSaveGameImage, NULL, NULL,  screenShot, NULL, NULL, D3DX_DEFAULT, D3DCOLOR( 0 ) );
   
-	// Write out the large screenshot (our 256x128 for display in the UI)
-	res = XGWriteSurfaceOrTextureToXPR( compressedSaveGameImage, "Z:\\screenshot.xbx", TRUE );
-
-	// Free the compressed 256x128 image
-    if ( compressedSaveGameImage )
-		compressedSaveGameImage->Release();
-
-	// Re-load the file and build a signature. File should always be less than 32k
-	// Then append to the file. This is a poor example of how-not-to-write-code:
-	byte xbxFile[32*1024];
-	DWORD dwSize;
-
-	// Open and read:
-	HANDLE hFile = CreateFile( "Z:\\screenshot.xbx", GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0 );
-	ReadFile( hFile, xbxFile, sizeof(xbxFile), &dwSize, NULL );
-
-	// Build a signature:
-	XCALCSIG_SIGNATURE xbxSig;
-	HANDLE hSig = XCalculateSignatureBegin( XCALCSIG_FLAG_SAVE_GAME );
-	XCalculateSignatureUpdate( hSig, xbxFile, dwSize );
-	XCalculateSignatureEnd( hSig, &xbxSig );
-
-	// Append:
-	SetFilePointer( hFile, 0, NULL, FILE_END );
-	WriteFile( hFile, &xbxSig, sizeof(xbxSig), &dwSize, NULL );
-	CloseHandle( hFile );
-
-	// Make another surface, this one only 64x64 for the dashboard:
-	glw_state->device->CreateImageSurface( 64, 64, D3DFMT_DXT1, &compressedSaveGameImage );
-
-	// We take a 240x240 region from the center of the screen, offset if in third person:
-	srcRect;
-	srcRect.left = (glConfig.vidWidth / 2) - 120;
-	srcRect.right = srcRect.left + 240;
-
-	srcRect.top = (glConfig.vidHeight / 2) - 120;
-	if( Cvar_VariableValue( "cg_thirdPerson" ) )
-		srcRect.top += 60;
-	srcRect.bottom = srcRect.top + 240;
-
-	D3DXLoadSurfaceFromSurface( compressedSaveGameImage, NULL, NULL, screenShot, NULL, &srcRect, D3DX_DEFAULT, D3DCOLOR( 0 ) );
-
-	// Write out the small screenshot (64x64)
-	res = XGWriteSurfaceOrTextureToXPR( compressedSaveGameImage, "Z:\\saveimage.xbx", TRUE );
-
-	// Free the compressed 64x64 image
-    if ( compressedSaveGameImage )
-		compressedSaveGameImage->Release();
-
 	// Free the big screenshot 640x480x4?
 	if ( screenShot )
 		screenShot->Release();
 
-#endif
+	// Write out the saveimage to the utility drive
+    res = XGWriteSurfaceOrTextureToXPR( compressedSaveGameImage, filename, TRUE );
+
+	// Free the compressed CSS_IMAGE_WH x CSS_IMAGE_WH image
+    if ( compressedSaveGameImage )
+		compressedSaveGameImage->Release();
 }
 
 //-----------------------------------------------------------------------------
@@ -6780,12 +6504,13 @@ void SaveCompressedScreenshot( void )
 //-----------------------------------------------------------------------------
 BOOL LoadCompressedScreenshot(const char* filename)
 {
-#ifndef DISABLE_SCREENSHOT
 	// get the current texture
 	glwstate_t::TextureInfo* info = _getCurrentTexture(glw_state->serverTU);
 	if (info == NULL) return FALSE;
 
 	// locals
+	LPDIRECT3DTEXTURE8	lpThumbTex;
+	XprImageHeader		XprHeader;
 	DWORD				dwBytesRead;
 	BOOL				bSuccess;
 
@@ -6794,96 +6519,88 @@ BOOL LoadCompressedScreenshot(const char* filename)
 
 	if( hFile == INVALID_HANDLE_VALUE )
 	{
-		// Extreme failure case. Skip other work below, but still blank out the screenshot
-		// ONE: Take all textures out of stages, in case ours is locked:
-		glw_state->device->SetTexture( 0, NULL );
-		glw_state->device->SetTexture( 1, NULL );
-		glw_state->textureStageDirty[0] = true;
-		glw_state->textureStageDirty[1] = true;
+		DWORD err = GetLastError();
 
-		// TWO: Now wait to be sure that the texture we're about to replace isn't locked by GPU:
-		while( info->mipmap->IsBusy() )
+		// If there was a problem, we might want to load the default image for TRC
+		// TCR C4-18 Saved Game Representative Image
+		// No specific image found; see if the default save image exists
+	/*	
+		hFile = CreateFile( "u:\\default_screen.xbx", GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL );
+		if( hFile == INVALID_HANDLE_VALUE )
 		{
-			// Do nothing
+			m_bIsValidImage = FALSE;
+			return FALSE;
 		}
-
-		// THREE: Use LockRect to get a pointer to the texture's data:
-		D3DLOCKED_RECT lr;
-		info->mipmap->LockRect( 0, &lr, NULL, D3DLOCK_TILED );
-
-		// FOUR: Copy the texture data from the file:
-		memset( lr.pBits, 0, CSS_IMAGE_DATA_SIZE );		
-		info->mipmap->UnlockRect( 0 );
-
-		return false;
+	*/
+		return FALSE;
 	}
 
-	// Non-signature portion of the file, which we read all at once:
-	XprImage image;
+	
+	// Read the image header from disk
+	bSuccess = ReadFile( hFile, &XprHeader, sizeof( XprImageHeader ), &dwBytesRead, NULL );
 
-	// Read everything but the signature from disk:
-	bSuccess = ReadFile( hFile, &image, sizeof( XprImage ), &dwBytesRead, NULL );
+	// Validate the image
+	bSuccess &=	dwBytesRead					== sizeof( XprImageHeader ) &&
+				XprHeader.xpr.dwMagic		== XPR_MAGIC_VALUE &&
+				XprHeader.xpr.dwTotalSize	== CSS_IMAGE_HDR_SIZE + CSS_IMAGE_DATA_SIZE &&
+				XprHeader.xpr.dwHeaderSize	== CSS_IMAGE_HDR_SIZE &&
+				XprHeader.dwEndOfHeader		== 0xFFFFFFFF;
 
-	// Validate that data:
-	bSuccess &=	dwBytesRead					== sizeof( XprImage ) &&
-				image.hdr.xpr.dwMagic		== XPR_MAGIC_VALUE &&
-				image.hdr.xpr.dwTotalSize	== CSS_IMAGE_HDR_SIZE + CSS_IMAGE_DATA_SIZE &&
-				image.hdr.xpr.dwHeaderSize	== CSS_IMAGE_HDR_SIZE &&
-				image.hdr.dwEndOfHeader		== 0xFFFFFFFF;
-
-	// Now read the signature:
-	XCALCSIG_SIGNATURE xbxSig;
-	bSuccess &= ReadFile( hFile, &xbxSig, sizeof( xbxSig ), &dwBytesRead, NULL );
-
-	// Verify that we're at the end of the file (it's properly sized)
-	if( SetFilePointer( hFile, 0, NULL, FILE_END ) != (sizeof( XprImage ) + sizeof( xbxSig )) )
-		bSuccess = false;
-	CloseHandle( hFile );
-
-	// Re-sign the data:
-	XCALCSIG_SIGNATURE datSig;
-	HANDLE hSig = XCalculateSignatureBegin( XCALCSIG_FLAG_SAVE_GAME );
-	XCalculateSignatureUpdate( hSig, (const BYTE *) &image, sizeof( image ) );
-	XCalculateSignatureEnd( hSig, &datSig );
-
-	// Compare the signatures:
-	if( memcmp( &xbxSig, &datSig, sizeof( xbxSig ) ) != 0 )
-		bSuccess = false;
-
-	// Now we update the texture. We do this even if the file was bad, using black instead:
-
-	// ONE: Take all textures out of stages, in case ours is locked:
-	glw_state->device->SetTexture( 0, NULL );
-	glw_state->device->SetTexture( 1, NULL );
-	glw_state->textureStageDirty[0] = true;
-	glw_state->textureStageDirty[1] = true;
-
-	// TWO: Now wait to be sure that the texture we're about to replace isn't locked by GPU:
-	while( info->mipmap->IsBusy() )
-	{
-		// Do nothing
-	}
-
-	// THREE: Use LockRect to get a pointer to the texture's data:
-	D3DLOCKED_RECT lr;
-	info->mipmap->LockRect( 0, &lr, NULL, D3DLOCK_TILED );
-
+	// If image looks good, store the bits in a texture
 	if( bSuccess )
 	{
-		// FOUR: Copy the texture data from the file:
-		memcpy( lr.pBits, image.pBits, sizeof( image.pBits ) );
-	}
-	else
-	{
-		memset( lr.pBits, 0, CSS_IMAGE_DATA_SIZE );
-	}
-	
-	info->mipmap->UnlockRect( 0 );
+		HRESULT hr;
+		hr = glw_state->device->CreateTexture(	CSS_IMAGE_WH,
+												CSS_IMAGE_WH, 
+												1,
+												0,
+												D3DFMT_DXT1,
+												D3DPOOL(),
+												&lpThumbTex );
+		bSuccess = SUCCEEDED(hr);
 
+		if( bSuccess )
+		{
+			D3DLOCKED_RECT lr;
+            lpThumbTex->LockRect( 0, &lr, NULL, D3DLOCK_READONLY );
+
+            // Copy the bits from the file to the texture
+            SetFilePointer( hFile, CSS_IMAGE_HDR_SIZE, NULL, FILE_BEGIN );
+            bSuccess = ReadFile( hFile, lr.pBits, CSS_IMAGE_DATA_SIZE, &dwBytesRead, NULL );
+            bSuccess &= ( dwBytesRead == CSS_IMAGE_DATA_SIZE );
+            lpThumbTex->UnlockRect( 0 );
+
+			// If everything was ok, then set the texture ptrs
+			DWORD refcount;
+			if( bSuccess )
+            {
+				refcount = info->mipmap->Release();
+				
+				assert(refcount == 0);
+
+				info->mipmap = lpThumbTex;
+				info->mipmap->AddRef();
+
+				refcount = lpThumbTex->Release();
+
+				assert(refcount == 1);
+            }
+			else
+			{
+				refcount = lpThumbTex->Release();
+
+				assert(refcount == 0);
+			}
+
+        }
+    }
+    else
+	{
+		return FALSE;
+    }
+
+    CloseHandle( hFile );
 	return bSuccess;
-#else
-	return FALSE;
-#endif
 }
 
 bool CreateVertexShader( const CHAR* strFilename, const DWORD* pdwVertexDecl, DWORD* pdwVertexShader )

@@ -536,6 +536,19 @@ void S_Init( void ) {
 			// Sources / Channels are not sending to any Slots (other than the Listener / Primary FX Slot)
 			s_channels[i].lSlotID = -1;
 
+			if (s_bEAX)
+			{
+				// Remove the RoomAuto flag from each Source (to remove Reverb Engine Statistical
+				// model that is assuming units are in metres)
+				// Without this call reverb sends from the sources will attenuate too quickly
+				// with distance, especially for the non-primary reverb zones.
+
+				unsigned long ulFlags = 0;
+
+				s_eaxSet(&EAXPROPERTYID_EAX40_Source, EAXSOURCE_FLAGS,
+							s_channels[i].alSource, &ulFlags, sizeof(ulFlags));
+			}
+
 			s_numChannels++;
 		}
 
@@ -4197,9 +4210,7 @@ static sboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolean
 		//
 		FS_FOpenFileRead( name, &pMusicInfo->s_backgroundFile, qtrue );
 		if ( !pMusicInfo->s_backgroundFile ) {
-#ifndef FINAL_BUILD
 			Com_Printf( S_COLOR_YELLOW "WARNING: couldn't open music file %s\n", name );
-#endif
 			return qfalse;
 		}
 
@@ -4208,9 +4219,7 @@ static sboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolean
 		FS_Read(dump, 12, pMusicInfo->s_backgroundFile);
 
 		if ( !S_FindWavChunk( pMusicInfo->s_backgroundFile, "fmt " ) ) {
-#ifndef FINAL_BUILD
 			Com_Printf( S_COLOR_YELLOW "WARNING: No fmt chunk in %s\n", name );
-#endif
 			FS_FCloseFile( pMusicInfo->s_backgroundFile );
 			pMusicInfo->s_backgroundFile = 0;
 			return qfalse;
@@ -4227,24 +4236,18 @@ static sboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolean
 		if ( pMusicInfo->s_backgroundInfo.format != WAV_FORMAT_PCM ) {
 			FS_FCloseFile( pMusicInfo->s_backgroundFile );
 			pMusicInfo->s_backgroundFile = 0;
-#ifndef FINAL_BUILD
 			Com_Printf(S_COLOR_YELLOW "WARNING: Not a microsoft PCM format wav: %s\n", name);
-#endif
 			return qfalse;
 		}
 
 		if ( pMusicInfo->s_backgroundInfo.channels != 2 || pMusicInfo->s_backgroundInfo.rate != 22050 ) {
-#ifndef FINAL_BUILD
 			Com_Printf(S_COLOR_YELLOW "WARNING: music file %s is not 22k stereo\n", name );
-#endif
 		}
 
 		if ( ( len = S_FindWavChunk( pMusicInfo->s_backgroundFile, "data" ) ) == 0 ) {
 			FS_FCloseFile( pMusicInfo->s_backgroundFile );
 			pMusicInfo->s_backgroundFile = 0;
-#ifndef FINAL_BUILD
 			Com_Printf(S_COLOR_YELLOW "WARNING: No data chunk in %s\n", name);
-#endif
 			return qfalse;
 		}
 
@@ -6166,21 +6169,11 @@ void UpdateEAXListener()
 			}
 		}
 
+		lVolume = 0;
 		for (i = 0; i < s_NumFXSlots; i++)
 		{
-			if (s_FXSlotInfo[i].lEnvID == s_EnvironmentID)
-			{
-				lVolume = 0;
-				if (s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXFXSLOT_VOLUME, NULL, &lVolume, sizeof(long))!=AL_NO_ERROR)
-					OutputDebugString("Failed to set Listener's FX Slot Volume to 0\n");
-			}
-			else
-			{
-				// This will change to lower the volume based on distance from aperture ...
-				lVolume = -600;
-				if (s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXFXSLOT_VOLUME, NULL, &lVolume, sizeof(long))!=AL_NO_ERROR)
-					OutputDebugString("Failed to set FX Slot Volume to 0\n");
-			}
+			if (s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXFXSLOT_VOLUME, NULL, &lVolume, sizeof(long))!=AL_NO_ERROR)
+				OutputDebugString("Failed to set FX Slot Volume to 0\n");
 		}
 	}
 

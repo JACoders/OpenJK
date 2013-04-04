@@ -6,9 +6,6 @@
 
 #include "tr_local.h"
 
-#ifdef _XBOX
-#include "../win32/glw_win_dx8.h"
-#endif
 
 
 /*
@@ -23,11 +20,6 @@ Used for cinematics.
 // param 'bDirty' should be true 99% of the time
 void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *data, int iClient, qboolean bDirty ) 
 {
-#ifdef _XBOX
-	assert( 0 );
-	return;
-#else
-
 	R_SyncRenderThread();
 
 //===========
@@ -132,8 +124,6 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	qglVertex2f (x, y+h);
 	qglEnd ();
 #endif
-
-#endif	// _XBOX
 }
 
 
@@ -519,14 +509,11 @@ static void RE_KillDissolve(void)
 {
 	Dissolve.iStartTime = 0;
 
-#ifndef _XBOX
-	// Xbox reuses tr.screenImage for the dissolve, so killing here is not necessary
 	if (Dissolve.pImage)
 	{
 		R_Images_DeleteImage(	Dissolve.pImage );
 								Dissolve.pImage = NULL;
 	}
-#endif
 }
 // Draw the dissolve pic to the screen, over the top of what's already been rendered.
 //
@@ -568,16 +555,8 @@ qboolean RE_ProcessDissolve(void)
 			qglClearDepth(1.0f);
 			qglClear( GL_DEPTH_BUFFER_BIT );
 			
-			float fXScaleFactor;
-#ifdef _XBOX
-			if(glw_state->isWidescreen)
-			{
-				Dissolve.iWidth = 720;
-				fXScaleFactor = 720.0f / (float)Dissolve.iWidth;
-			}
-			else
-#endif
-			fXScaleFactor = (float)SCREEN_WIDTH / (float)Dissolve.iWidth;
+
+			float fXScaleFactor = (float)SCREEN_WIDTH / (float)Dissolve.iWidth;
 			float fYScaleFactor = (float)SCREEN_HEIGHT/ (float)Dissolve.iHeight;
 			float x0,y0, x1,y1,	x2,y2, x3,y3;	
 
@@ -806,8 +785,6 @@ qboolean RE_ProcessDissolve(void)
 				y0 = 0.0f;
 #ifdef _XBOX
 				x1 = 640;
-				if(glw_state->isWidescreen)
-					x1 = 720;
 #else
 				x1 = fXScaleFactor * Dissolve.pImage->width;
 #endif
@@ -842,13 +819,13 @@ Creates a 256x256 DXT1 texture that contains the backbuffer
 **********/
 static void RE_GetCompressedBackbuffer()
 {
-	byte*	data = (byte*)Z_Malloc(256*256*4,TAG_TEMP_WORKSPACE,qtrue);
+	byte*	data = (byte*)Z_Malloc(32768,TAG_TEMP_WORKSPACE,qtrue);
 
 	Dissolve.pImage = R_CreateImage(	"*DissolveImage",		// const char *name
 										data,					// const byte *pic
 										256,					// int width
 										256,					// int height
-										GL_RGBA,					//GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+										GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
 										qfalse,					// qboolean mipmap
 										qfalse,					// qboolean allowPicmip
 										GL_CLAMP				// int glWrapClampMode
@@ -857,10 +834,7 @@ static void RE_GetCompressedBackbuffer()
 
 	GL_Bind(Dissolve.pImage);
 
-	/*if(glw_state->isWidescreen)
-		qglCopyBackBufferToTexEXT(256.0f, 256.0f, 0.0f, 0.0f, 720.0f, 480.0f);
-	else*/
-	qglCopyBackBufferToTexEXT(256.0f, 256.0f, 2.0f, 2.0f, 640.0f, 480.0f);
+	qglCopyBackBufferToTexEXT(256.0f, 256.0f, 0.0f, 0.0f, 640.0f, 480.0f);
 }
 #endif
 
@@ -884,12 +858,7 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 
 		if (1)
 		{ // Silly if(1) to match up with control flow below, as the #ifdef ends inside the block
-
-			GL_Bind(tr.screenImage);
-			qglCopyBackBufferToTexEXT(512.0f, 256.0f, 1.0f, 1.0f, 640.0f, 480.0f);
-			Dissolve.pImage = tr.screenImage;
-
-//			RE_GetCompressedBackbuffer();
+			RE_GetCompressedBackbuffer();
 			Dissolve.iWidth			= glConfig.vidWidth;
 			Dissolve.iHeight		= glConfig.vidHeight;
 

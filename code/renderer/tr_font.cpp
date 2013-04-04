@@ -8,30 +8,11 @@
 
 #include "../qcommon/stringed_ingame.h"
 
-#ifdef _XBOX
-#include "../win32/glw_win_dx8.h"
-#endif
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // This file is shared in the single and multiplayer codebases, so be CAREFUL WHAT YOU ADD/CHANGE!!!!!
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// These should be consecutive, big, and in order:
-#define XB_GLYPH_A	10000
-#define XB_GLYPH_B	10001
-#define XB_GLYPH_W	10002
-#define XB_GLYPH_X	10003
-#define XB_GLYPH_Y	10004
-
-const char* xbGlyphShaders[] = {
-	"gfx/menus/newFront/A",
-	"gfx/menus/newFront/B",
-	"gfx/menus/newFront/W",
-	"gfx/menus/newFront/X",
-	"gfx/menus/newFront/Y",
-};
 
 typedef enum
 {
@@ -49,8 +30,6 @@ typedef enum
 //
 Language_e GetLanguageEnum()
 {
-	return eWestern;
-/*
 	static int			iSE_Language_ModificationCount = -1234;	// any old silly value that won't match the cvar mod count
 	static Language_e	eLanguage = eWestern;
 
@@ -71,7 +50,6 @@ Language_e GetLanguageEnum()
 	}
 
 	return eLanguage;
-*/
 }
 
 struct SBCSOverrideLanguages_t
@@ -683,7 +661,6 @@ unsigned int AnyLanguage_ReadCharFromString( const char *psText, int *piAdvanceC
 	const byte *psString = (const byte *) psText;	// avoid sign-promote bug
 	unsigned int uiLetter;
 
-/*
 	switch ( GetLanguageEnum() )
 	{
 		case eKorean:
@@ -781,36 +758,11 @@ unsigned int AnyLanguage_ReadCharFromString( const char *psText, int *piAdvanceC
 		}
 		break;
 	}
-*/
 
 	// ... must not have been an MBCS code...
 	//
-	if( psString[0] == '^' )
-	{
-		// Handle button prompt magic:
-		*piAdvanceCount = 2;
-		switch( psString[1] )
-		{
-			case 'A':
-				uiLetter = XB_GLYPH_A; break;
-			case 'B':
-				uiLetter = XB_GLYPH_B; break;
-			case 'X':
-				uiLetter = XB_GLYPH_X; break;
-			case 'Y':
-				uiLetter = XB_GLYPH_Y; break;
-			case 'W':
-				uiLetter = XB_GLYPH_W; break;
-			default:
-				*piAdvanceCount = 1;
-				uiLetter = '^'; break;
-		}
-	}
-	else
-	{
-		uiLetter = psString[0];
-		*piAdvanceCount = 1;
-	}
+	uiLetter = psString[0];
+	*piAdvanceCount = 1;
 
 	if (pbIsTrailingPunctuation)
 	{
@@ -1405,13 +1357,6 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 		{
 			iThisWidth = 0;
 		}
-		else if (uiLetter >= XB_GLYPH_A && uiLetter <= XB_GLYPH_Y)
-		{
-			// These are all ALWAYS drawn at 24x24
-			iThisWidth += 24;
-			if (iThisWidth > iMaxWidth)
-				iMaxWidth = iThisWidth;
-		}
 		else
 		{
 			int iPixelAdvance = curfont->GetLetterHorizAdvance( uiLetter );
@@ -1499,6 +1444,51 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		}
 	}
 
+//	// test code only
+//	if (GetLanguageEnum() == eTaiwanese)
+//	{
+//		psText = "Wp:¶}·F§a ¿p·G´µ¡A§Æ±æ§A¹³¥L­Ì»¡ªº¤@¼Ë¦æ¡C";
+//	}
+//	else 
+//	if (GetLanguageEnum() == eChinese)
+//	{
+//		//psText = "Ó¶±øÕ½³¡II  Ô¼º²?ÄªÁÖË¹  ÈÎÎñÊ§°Ü  ÄãÒªÌ×ÓÃ»­ÃæÉè¶¨µÄ±ä¸üÂð£¿  Ô¤Éè,S3 Ñ¹Ëõ,DXT1 Ñ¹Ëõ,DXT5 Ñ¹Ëõ,16 Bit,32 Bit";
+//		psText = "Ó¶±øÕ½³¡II";
+//	}
+//	else 
+//	if (GetLanguageEnum() == eThai)
+//	{
+//		//psText = "ÁÒµÃ°Ò¹¼ÅÔµÀÑ³±ìÍØµÊÒË¡ÃÃÁÃËÑÊÊÓËÃÑºÍÑ¡¢ÃÐä·Â·Õèãªé¡Ñº¤ÍÁ¾ÔÇàµÍÃì";
+//		psText = "ÁÒµÃ°Ò¹¼ÅÔµ";
+//		psText = "ÃËÑÊÊÓËÃÑº";
+//		psText = "ÃËÑÊÊÓËÃÑº   ÍÒ_¡Ô¹_¤ÍÃì·_1415";
+//	}
+//	else
+//	if (GetLanguageEnum() == eKorean)
+//	{
+//		psText = "Wp:¼îÅ¸ÀÓÀÌ´Ù ¸Ö¸°. ±×µéÀÌ ¸»ÇÑ´ë·Î ³×°¡ ÀßÇÒÁö ±â´ëÇÏ°Ú´Ù.";
+//	}
+//	else
+//	if (GetLanguageEnum() == eJapanese)
+//	{
+//		static char sBlah[200];
+//		sprintf(sBlah,va("%c%c%c%c%c%c%c%c",0x82,0xA9,0x82,0xC8,0x8A,0xBF,0x8E,0x9A));
+//		psText = &sBlah[0];
+//	}
+//	else
+//	if (GetLanguageEnum() == eRussian)
+//	{
+////		//psText = "Íà âåðøèíå õîëìà ñòîèò ñòàðûé äîì ñ ïðèâèäåíèÿìè è áàøíÿ ñ âîëøåáíûìè ÷àñàìè."
+//		psText = "Íà âåðøèíå õîëìà ñòîèò";
+//	}
+//	else
+//	if (GetLanguageEnum() == ePolish)
+//	{
+//		psText = "za³o¿ony w 1364 roku, jest najstarsz¹ polsk¹ uczelni¹ i nale¿y...";
+//		psText = "za³o¿ony nale¿y";
+//	}
+
+
 	CFontInfo *curfont = GetFont(iFontHandle);
 	if(!curfont || !psText)
 	{
@@ -1554,42 +1544,6 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 			x += Round(pLetter->horizAdvance * fScale);
 			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((x-ox)>iMaxPixelWidth) ) ? qtrue : qfalse;	// yeuch
 			break;
-		case XB_GLYPH_A:
-		case XB_GLYPH_B:
-		case XB_GLYPH_W:
-		case XB_GLYPH_X:
-		case XB_GLYPH_Y:
-			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && (((x+24)-ox)>iMaxPixelWidth) ) ? qtrue : qfalse;
-			if( !bNextTextWouldOverflow)
-			{
-				y = oy - 16;
-
-				hShader = RE_RegisterShaderNoMip( xbGlyphShaders[uiLetter - XB_GLYPH_A] );
-
-#ifdef _XBOX
-				extern int Menus_AnyFullScreenVisible();
-				if(glw_state->isWidescreen && cls.state == CA_ACTIVE && !(Menus_AnyFullScreenVisible()))
-					x += 40;
-#endif
-				RE_StretchPic ( x, // float x
-								y,	// float y
-								24.0f,	// float w
-								24.0f, // float h
-								0.0f,						// float s1
-								0.0f,						// float t1
-								1.0f,					// float s2
-								1.0f,					// float t2
-								//lastcolour.c, 
-								hShader							// qhandle_t hShader
-								);
-#ifdef _XBOX
-				if(glw_state->isWidescreen && cls.state == CA_ACTIVE && !(Menus_AnyFullScreenVisible()))
-					x -= 40;
-#endif
-
-				x += 24;
-			}
-			break;
 		case '_':	// has a special word-break usage if in Thai (and followed by a thai char), and should not be displayed, else treat as normal
 			if (GetLanguageEnum()== eThai && ((unsigned char *)psText)[0] >= TIS_GLYPHS_START)
 			{
@@ -1639,22 +1593,6 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 					y+=3;	// I'm sick and tired of going round in circles trying to do this legally, so bollocks to it
 				}
 
-#ifdef _XBOX
-				extern int Menus_AnyFullScreenVisible();
-				if(glw_state->isWidescreen && cls.state == CA_ACTIVE && !(Menus_AnyFullScreenVisible()))
-					RE_StretchPic ( x + Round(pLetter->horizOffset * fScale) + 40, // float x
-								(uiLetter > g_iNonScaledCharRange) ? y - iAsianYAdjust : y,	// float y
-								curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale,	// float w
-								curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
-								pLetter->s,						// float s1
-								pLetter->t,						// float t1
-								pLetter->s2,					// float s2
-								pLetter->t2,					// float t2
-								//lastcolour.c, 
-								hShader							// qhandle_t hShader
-								);
-				else
-#endif
 				RE_StretchPic ( x + Round(pLetter->horizOffset * fScale), // float x
 								(uiLetter > g_iNonScaledCharRange) ? y - iAsianYAdjust : y,	// float y
 								curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale,	// float w
@@ -1684,15 +1622,6 @@ int RE_RegisterFont(const char *psName)
 		return iFontIndex;
 	}
 
-	// Hack. Rather than fix our bazillion menu files, we allow
-	// dummy fonts that don't register, just use up an index.
-	if( Q_stricmp(psName, "NOFONT") == 0 )
-	{
-		g_iCurrentFontIndex++;
-		g_mapFontIndexes[psName] = 0;
-		return 0;
-	}
-	else
 	// not registered, so...
 	//
 	{

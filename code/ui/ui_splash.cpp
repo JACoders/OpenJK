@@ -6,6 +6,8 @@
 #include "../win32/win_file.h"
 #include "../ui/ui_splash.h"
 
+#define SP_TextureExt "dds"
+
 extern bool Sys_QuickStart( void );
 
 /*********
@@ -48,11 +50,6 @@ void SP_DrawTexture(void* pixels, float width, float height, float vShift)
 	// Reset every GL state we've got.  Who knows what state
 	// the renderer could be in when this function gets called.
 	qglColor3f(1.f, 1.f, 1.f);
-#ifdef _XBOX
-	if(glw_state->isWidescreen)
-		qglViewport(0, 0, 720, 480);
-	else
-#endif
 	qglViewport(0, 0, 640, 480);
 
 	GLboolean alpha = qglIsEnabled(GL_ALPHA_TEST);
@@ -89,11 +86,6 @@ void SP_DrawTexture(void* pixels, float width, float height, float vShift)
 	qglLoadIdentity();
 	qglMatrixMode(GL_PROJECTION);
 	qglLoadIdentity();
-#ifdef _XBOX
-	if(glw_state->isWidescreen)
-        qglOrtho(0, 720, 0, 480, 0, 1);
-	else
-#endif
 	qglOrtho(0, 640, 0, 480, 0, 1);
 	
 	qglMatrixMode(GL_TEXTURE0);
@@ -117,24 +109,10 @@ void SP_DrawTexture(void* pixels, float width, float height, float vShift)
 		qglClear(GL_COLOR_BUFFER_BIT);
 	}
 
-	float x1, x2, y1, y2;
-#ifdef _XBOX
-	if(glw_state->isWidescreen)
-	{
-		x1 = 0;
-		x2 = 720;
-		y1 = 0;
-		y2 = 480;
-	}
-	else {
-#endif
-	x1 = 0;
-	x2 = 640;
-	y1 = 0;
-	y2 = 480;
-#ifdef _XBOX
-	}
-#endif
+	float x1 = 320 - width / 2;
+	float x2 = 320 + width / 2;
+	float y1 = 240 - height / 2;
+	float y2 = 240 + height / 2;
 
 	y1 += vShift;
 	y2 += vShift;
@@ -201,22 +179,20 @@ char* SP_GetLanguageExt()
 	{
 	case XC_LANGUAGE_ENGLISH:
 		return "EN";
-//	case XC_LANGUAGE_JAPANESE:
-//		return "JA";
+	case XC_LANGUAGE_JAPANESE:
+		return "JA";
 	case XC_LANGUAGE_GERMAN:
 		return "GE";
-//	case XC_LANGUAGE_SPANISH:
-//		return "SP";
-//	case XC_LANGUAGE_ITALIAN:
-//		return "IT";
-//	case XC_LANGUAGE_KOREAN:
-//		return "KO";
-//	case XC_LANGUAGE_TCHINESE:
-//		return "CH";
-//	case XC_LANGUAGE_PORTUGUESE:
-//		return "PO";
-	case XC_LANGUAGE_FRENCH:
-		return "FR";
+	case XC_LANGUAGE_SPANISH:
+		return "SP";
+	case XC_LANGUAGE_ITALIAN:
+		return "IT";
+	case XC_LANGUAGE_KOREAN:
+		return "KO";
+	case XC_LANGUAGE_TCHINESE:
+		return "CH";
+	case XC_LANGUAGE_PORTUGUESE:
+		return "PO";
 	default:
 		return "EN";
 	}
@@ -237,12 +213,12 @@ void *SP_LoadFileWithLanguage(const char *name)
 	ext = SP_GetLanguageExt();
 
 	// creat the fullpath name and try to load the texture
-	sprintf(fullname, "%s_%s.dds", name, ext);
+	sprintf(fullname,"%s_%s." SP_TextureExt,name,ext);
 	buffer = SP_LoadFile(fullname);
 
 	if (!buffer)
 	{
-		sprintf(fullname, "%s.dds", name);
+		sprintf(fullname, "%s." SP_TextureExt, name);
 		buffer = SP_LoadFile(fullname);
 	}
 
@@ -297,76 +273,18 @@ void SP_DoLicense(void)
 
 	// Load the license screen
 	void *license;
-	extern const char *Sys_RemapPath( const char *filename );
-	license = SP_LoadFileWithLanguage( Sys_RemapPath( "base\\media\\LicenseScreen" ) );
+	license = SP_LoadFileWithLanguage("d:\\base\\media\\LicenseScreen");
 
 	if (license)
 	{
-		SP_DrawTexture(license, 512, 512, 0);
+
+		for (int c = 0; c < 3; ++c)
+		{
+			SP_DrawTexture(license, 1024, 1024, -20.0);
+		}
 		Z_Free(license);
 	}
 
 	SP_LicenseDone = true;
 }
 
-/*
-SP_DrawMPLoadScreen
-
-Draws the Multiplayer loading screen
-*/
-void SP_DrawMPLoadScreen( void )
-{
-	// Load the texture:
-	void *image = SP_LoadFileWithLanguage("d:\\base\\media\\LoadMP");
-
-	if( image )
-	{
-		SP_DrawTexture(image, 512, 512, 0);
-		Z_Free(image);
-	}
-}
-
-/*
-SP_DrawSPLoadScreen
-
-Draws the single player loading screen - used when skipping the logo movies
-*/
-void SP_DrawSPLoadScreen( void )
-{
-	// Load the texture:
-	extern const char *Sys_RemapPath( const char *filename );
-	void *image = SP_LoadFileWithLanguage( Sys_RemapPath("base\\media\\LoadSP") );
-
-	if( image )
-	{
-		SP_DrawTexture(image, 512, 512, 0);
-		Z_Free(image);
-	}
-}
-
-/*
-ERR_DiscFail
-
-Draws the damaged/dirty disc message, looping forever
-*/
-void ERR_DiscFail(bool poll)
-{
-	// Load the texture:
-	extern const char *Sys_RemapPath( const char *filename );
-	void *image = SP_LoadFileWithLanguage( Sys_RemapPath("base\\media\\DiscErr") );
-
-	if( image )
-	{
-		SP_DrawTexture(image, 512, 512, 0);
-		Z_Free(image);
-	}
-
-	for (;;)
-	{
-		extern void MuteBinkSystem(void);
-		MuteBinkSystem();
-
-		extern void S_Update_(void);
-		S_Update_();
-	}
-}

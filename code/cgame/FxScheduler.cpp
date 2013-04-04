@@ -1950,9 +1950,45 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 			{
 				gentity_t *ent = &g_entities[tr.entityNum];
 
-				CG_AddGhoul2Mark(fx->mMediaHandles.GetHandle(), fx->mSizeStart.GetVal(), tr.endpos, tr.plane.normal,
-					tr.entityNum, ent->client->ps.origin, ent->client->ps.viewangles[YAW],
-					ent->ghoul2, ent->s.modelScale, Q_irand(40000, 60000));
+				if ( ent != NULL )
+				{
+					vec3_t entOrg, hitDir;
+					float entYaw;
+					float firstModel = 0;
+					if ( !(ent->s.eFlags&EF_NODRAW) )
+					{//not drawn, no marks
+						if ( ent->client )
+						{
+							VectorCopy( ent->client->ps.origin, entOrg );
+						}
+						else
+						{
+							VectorCopy( ent->currentOrigin, entOrg );
+						}
+						if ( ent->client )
+						{
+							entYaw = ent->client->ps.viewangles[YAW];
+						}
+						else
+						{
+							entYaw = ent->currentAngles[YAW];
+						}
+						//if ( VectorCompare( tr.plane.normal, vec3_origin ) )
+						{//hunh, no plane?  Use trace dir
+							VectorCopy( ax[0], hitDir );
+						}
+						/*
+						else
+						{
+							VectorCopy( tr.plane.normal, hitDir );
+						}
+						*/
+
+						CG_AddGhoul2Mark(fx->mMediaHandles.GetHandle(), fx->mSizeStart.GetVal(), tr.endpos, tr.plane.normal,
+							tr.entityNum, entOrg, entYaw,
+							ent->ghoul2, ent->s.modelScale, Q_irand(40000, 60000), firstModel);
+					}
+				}
 			}
 		}
 		break;

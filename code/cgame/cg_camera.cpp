@@ -20,10 +20,6 @@ void CGCam_DistanceDisable( void );
 extern int CG_CalcFOVFromX( float fov_x );
 extern void WP_SaberCatch( gentity_t *self, gentity_t *saber, qboolean switchToSaber );
 
-#define TOP_LETTERBOX_FRACTION 0.7
-#define LETTERBOX_BAR_HEIGHT_DIVISOR 6
-
-
 /*
 TODO:
 CloseUp, FullShot & Longshot commands:
@@ -74,8 +70,7 @@ void CGCam_Enable( void )
 	client_camera.bar_alpha_dest = 1.0f;
 	
 	client_camera.bar_height_source = 0.0f;
-//	client_camera.bar_height_dest = 480/10;
-	client_camera.bar_height_dest = 480/LETTERBOX_BAR_HEIGHT_DIVISOR;
+	client_camera.bar_height_dest = 480/10;
 	client_camera.bar_height = 0.0f;
 
 	client_camera.info_state |= CAMERA_BAR_FADING;
@@ -118,11 +113,6 @@ extern void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower );
 			}
 		}
 	}
-
-#ifdef _XBOX
-	extern char entityVisList[2024 + 256];
-	memset(entityVisList, -1, sizeof(entityVisList));
-#endif
 }
 /*
 -------------------------
@@ -161,11 +151,6 @@ void CGCam_Disable( void )
 	//we just came out of camera, so update cg.refdef.vieworg out of the camera's origin so the snapshot will know our new ori
 	VectorCopy( g_entities[0].currentOrigin, cg.refdef.vieworg);
 	VectorCopy( g_entities[0].client->ps.viewangles, cg.refdefViewAngles );
-
-#ifdef _XBOX
-	extern char entityVisList[2024 + 256];
-	memset(entityVisList, -1, sizeof(entityVisList));
-#endif
 }
 
 /*
@@ -1332,29 +1317,14 @@ void CGCam_DrawWideScreen( void )
 		modulate[0] = modulate[1] = modulate[2] = 0.0f;
 		modulate[3] = client_camera.bar_alpha;
 	
-#ifdef _XBOX
-		if(cg.widescreen) {
-			CG_FillRect( cg.refdef.x, cg.refdef.y, 720, client_camera.bar_height*TOP_LETTERBOX_FRACTION, modulate  );
-			CG_FillRect( cg.refdef.x, cg.refdef.y + 480 - client_camera.bar_height, 720, client_camera.bar_height, modulate  );
-		}
-		else {
-#endif
-		CG_FillRect( cg.refdef.x, cg.refdef.y, 640, client_camera.bar_height*TOP_LETTERBOX_FRACTION, modulate  );
+		CG_FillRect( cg.refdef.x, cg.refdef.y, 640, client_camera.bar_height, modulate  );
 		CG_FillRect( cg.refdef.x, cg.refdef.y + 480 - client_camera.bar_height, 640, client_camera.bar_height, modulate  );
-#ifdef _XBOX
-		}
-#endif
 	}
 
 	//NOTENOTE: Camera always draws the fades unless the alpha is 0
 	if ( client_camera.fade_color[3] == 0.0f )
 		return;
 
-#ifdef _XBOX
-	if(cg.widescreen)
-		CG_FillRect( cg.refdef.x, cg.refdef.y, 720, 480, client_camera.fade_color );
-	else
-#endif
 	CG_FillRect( cg.refdef.x, cg.refdef.y, 640, 480, client_camera.fade_color );
 }
 
@@ -1389,24 +1359,6 @@ void CGCam_Shake( float intensity, int duration )
 #endif // _IMMERSION
 #ifdef _XBOX
 	cgi_FF_Xbox_Shake(intensity,duration);
-#endif
-}
-
-void CGCam_Shake( float intensity, int duration, bool rumble )
-{
-	if ( intensity > MAX_SHAKE_INTENSITY )
-		intensity = MAX_SHAKE_INTENSITY;
-
-	client_camera.shake_intensity = intensity;
-	client_camera.shake_duration = duration;
-	client_camera.shake_start = cg.time;
-#ifdef _IMMERSION
-	// FIX ME: This is far too weak... but I don't want it to interfere with other effects.
-	cgi_FF_Shake( int(intensity * 625), duration );	// 625 = (10000 / MAX_SHAKE_INTENSITY)
-#endif // _IMMERSION
-#ifdef _XBOX
-	if(rumble)
-		cgi_FF_Xbox_Shake(intensity,duration);
 #endif
 }
 

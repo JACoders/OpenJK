@@ -355,7 +355,7 @@ extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 	{
 		// we don't want for it to draw the weapon select stuff
 		cg.weaponSelect = WP_EMPLACED_GUN;
-		CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.87 );
+		CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.95 );
 	}
 
 	VectorCopy( activator->currentOrigin, self->pos4 );//keep this around so we know when to make them play the strafe anim
@@ -581,7 +581,7 @@ extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 		{
 			// we don't want for it to draw the weapon select stuff
 			cg.weaponSelect = WP_EMPLACED_GUN;
-			CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.87 );
+			CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.95 );
 		}
 		// Since we move the activator inside of the gun, we reserve a solid spot where they were standing in order to be able to get back out without being in solid
 		if ( self->nextTrain )

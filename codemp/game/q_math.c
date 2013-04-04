@@ -802,27 +802,6 @@ int BoxOnPlaneSide2 (vec3_t emins, vec3_t emaxs, struct cplane_s *p)
 
 ==================
 */
-inline void Short2Float(float *f, const short *s)
-{
-	*f = ((float)*s);
-}
-
-void ShortToVec3(const short in[3], vec3_t &out)
-{
-	Short2Float(&out[0], &in[0]);
-	Short2Float(&out[1], &in[1]);
-	Short2Float(&out[2], &in[2]);
-}
-
-int BoxOnPlaneSide (const short emins[3], const short emaxs[3], struct cplane_s *p)
-{
-	vec3_t mins;
-	vec3_t maxs;
-	ShortToVec3(emins, mins);
-	ShortToVec3(emaxs, maxs);
-	return ::BoxOnPlaneSide(mins, maxs, p);
-}
-
 #if !( (defined __linux__ || __FreeBSD__) && (defined __i386__) && (!defined C_ONLY)) // rb010123
 
 #if defined __LCC__ || defined C_ONLY || !id386
@@ -1463,13 +1442,15 @@ float flrand(float min, float max)
 {
 	float	result;
 
-	assert((max - min) < 32768);
-
 	holdrand = (holdrand * 214013L) + 2531011L;
 	result = (float)(holdrand >> 17);						// 0 - 32767 range
 	result = ((result * (max - min)) / 32768.0F) + min;
 
 	return(result);
+}
+float Q_flrand(float min, float max)
+{
+	return flrand(min,max);
 }
 
 // Returns an integer min <= x <= max (ie inclusive)
@@ -1485,6 +1466,11 @@ int irand(int min, int max)
 	result = holdrand >> 17;
 	result = ((result * (max - min)) >> 15) + min;
 	return(result);
+}
+
+int Q_irand(int value1, int value2)
+{
+	return irand(value1, value2);
 }
 
 float powf ( float x, int y )

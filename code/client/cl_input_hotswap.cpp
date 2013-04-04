@@ -6,12 +6,26 @@
 	3) Make sure commands in itemCommands work in both multi & single player.
 */
 
+#ifdef _JK2MP
+#include "../../codemp/client/client.h"
+#include "../../codemp/cgame/cg_local.h"
+#else
 #include "client.h"
 #include "../cgame/cg_local.h"
+#endif
 
 #include "cl_input_hotswap.h"
-#include "../qcommon/xb_settings.h"
 
+
+#ifdef _JK2MP
+#define FORCESELECTTIME forceSelectTime
+#define FORCESELECT		forceSelect
+#define INVSELECTTIME	invenSelectTime
+#define INVSELECT		itemSelect
+#define REGISTERSOUND	S_RegisterSound
+#define STARTSOUND		S_StartLocalSound
+#define WEAPONBINDSTR	"weaponclean"
+#else
 #define FORCESELECTTIME forcepowerSelectTime
 #define FORCESELECT		forcepowerSelect
 #define INVSELECTTIME	inventorySelectTime
@@ -19,10 +33,28 @@
 #define REGISTERSOUND	cgi_S_RegisterSound
 #define STARTSOUND		cgi_S_StartLocalSound
 #define WEAPONBINDSTR	"weapon"
+#endif
 
-#define BIND_TIME 2000 //number of milliseconds button is held before binding
+#define BIND_TIME 3000 //number of milliseconds button is held before binding
+#define EXEC_TIME 500  //max ms button can be held to execute in bind mode
 
 
+#ifdef _JK2MP
+const char *itemCommands[HI_NUM_HOLDABLE] = {
+	NULL,						//HI_NONE
+	"use_seeker\n",
+	"use_field\n",
+	"use_bacta\n",
+	"use_bactabig\n",
+	"use_electrobinoculars\n",
+	"use_sentry\n",
+	"use_jetpack\n",
+	NULL,						//ammo dispenser
+	NULL,						//health dispenser
+	"use_eweb\n",
+	"use_cloak\n",
+};
+#else
 const char *itemCommands[INV_MAX] = {
 	"use_electrobinoculars\n",
 	"use_bacta\n",
@@ -32,101 +64,55 @@ const char *itemCommands[INV_MAX] = {
 	NULL,						//goodie key
 	NULL,						//security key
 };
+#endif
 
-// Commands to issue when user presses a force-bound button
-const char *forceDownCommands[MAX_SHOWPOWERS] = {
-	"force_absorb\n",
-	"force_heal\n",
-	"force_protect\n",
-	"force_distract\n",
-
-	"force_speed\n",
-	"force_throw\n",
-	"force_pull\n",
-	"force_sight\n",
-
-	"+force_drain\n",
-	"+force_lightning\n",
-	"force_rage\n",
-	"+force_grip\n",
-};
-
-// Commands to issue when user releases a force-bound button
-const char *forceUpCommands[MAX_SHOWPOWERS] = {
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-
-	"-force_drain\n",
-	"-force_lightning\n",
-	NULL,
-	"-force_grip\n",
-};
 
 
 HotSwapManager::HotSwapManager(int uniqueID) :
-	uniqueID(uniqueID)
+	uniqueID(uniqueID),
+	forceBound(false)
 {
 	Reset();
 }
 
 
-const char *HotSwapManager::GetBinding(void)
+char *HotSwapManager::GetBinding(void)
 {
 	char buf[64];
 
 	sprintf(buf, "hotswap%d", uniqueID);
 	cvar_t *cvar = Cvar_Get(buf, "", CVAR_ARCHIVE);
 
-	if(!cvar || !cvar->string[0])
-		return NULL;
-
-	if (cvar->integer < HOTSWAP_CAT_ITEM) {	// Weapon
-		return va("weapon %d", cvar->integer);
-	} else if (cvar->integer < HOTSWAP_CAT_FORCE) {	// Item
-		return itemCommands[cvar->integer - HOTSWAP_CAT_ITEM];
-	} else { // Force power
-		return forceDownCommands[cvar->integer - HOTSWAP_CAT_FORCE];
-	}
-}
-
-const char *HotSwapManager::GetBindingUp(void)
-{
-	char buf[64];
-
-	sprintf(buf, "hotswap%d", uniqueID);
-	cvar_t *cvar = Cvar_Get(buf, "", CVAR_ARCHIVE);
-
-	if(!cvar || !cvar->string[0])
-		return NULL;
-
-	// Only force powers have release-commands
-	if (cvar->integer < HOTSWAP_CAT_FORCE) {
-		return NULL;
+	if(cvar && cvar->string[0] != 0) {
+		return cvar->string;
 	} else {
-		return forceUpCommands[cvar->integer - HOTSWAP_CAT_FORCE];
+		return NULL;
 	}
 }
 
 
 void HotSwapManager::Bind(void)
 {
+	forceBound = false;
+
 	if(WeaponSelectUp()) {
 		HotSwapBind(uniqueID, HOTSWAP_CAT_WEAPON, cg.weaponSelect);
 	} else if(ForceSelectUp()) {
-		HotSwapBind(uniqueID, HOTSWAP_CAT_FORCE, cg.FORCESELECT);
+		forceBound = true;
+		HotSwapBind(uniqueID, HOTSWAP_CAT_FORCE, 
+#ifdef _JK2MP
+				cg.FORCESELECT
+#else
+				showPowers[cg.FORCESELECT]
+#endif
+				);
 	} else if(ItemSelectUp()) {
 		HotSwapBind(uniqueID, HOTSWAP_CAT_ITEM, cg.INVSELECT);
 	} else{
 		assert(0);
 	}
 
+	noExec = true;
 	noBind = true;
 	STARTSOUND(REGISTERSOUND("sound/interface/update"), 0);
 }
@@ -170,7 +156,13 @@ void HotSwapManager::Update(void)
 			//Clear bind time.
 			bindTime = 0;
 
+			//If a force power is bound, want to execute whenever the button
+			//is down to handle powers which can be held.
+			if(forceBound) {
+				Execute();
+			}
 		}
+		downTime += cls.frametime;
 	}
 
 	//Down long enough, bind button.
@@ -182,17 +174,12 @@ void HotSwapManager::Update(void)
 
 void HotSwapManager::Execute(void)
 {
-	const char *binding = GetBinding();
-	if(binding) {
-		Cbuf_ExecuteText(EXEC_NOW, binding);
-	}
-}
-
-void HotSwapManager::ExecuteUp(void)
-{
-	const char *binding = GetBindingUp();
-	if(binding) {
-		Cbuf_ExecuteText(EXEC_NOW, binding);
+	char *binding = GetBinding();
+	if(binding && !noExec) {
+		if(!forceBound) {
+			noExec = true;
+		}
+		Cbuf_ExecuteText(EXEC_APPEND, binding);
 	}
 }
 
@@ -202,19 +189,18 @@ void HotSwapManager::SetDown(void)
 	//Set the down flag.
 	down = true;
 
-	//Execute the bind if the HUD isn't up. Also, prevent re-binding!
+	//Execute the bind if the HUD isn't up.
 	if(!HUDInBindState()) {
 		Execute();
-		noBind = true;
 	}
 }
 
 
 void HotSwapManager::SetUp(void)
 {
-	// Execute the tail of the command if the HUD isn't up.
-	if(!HUDInBindState()) {
-		ExecuteUp();
+	//Execute the bind if the button was held down for long enough.
+	if(downTime <= EXEC_TIME) {
+		Execute();
 	}
 
 	Reset();
@@ -224,19 +210,37 @@ void HotSwapManager::SetUp(void)
 void HotSwapManager::Reset(void)
 {
 	down = false;
+	downTime = 0;
 	bindTime = 0;
+	noExec = false;
 	noBind = false;
 }
+
+
+static void HotSwapBind(const char *uniqueID, const char *value)
+{
+	Cvar_Set(uniqueID, value);
+}
+
 
 void HotSwapBind(int buttonID, int category, int value)
 {
 	char uniqueID[64];
 	sprintf(uniqueID, "hotswap%d", buttonID);
 
-	// Add category as an offset for when we retrieve it
-	Cvar_SetValue( uniqueID, value+category );
-	Settings.hotswapSP[buttonID] = value+category;
-
-	Settings.Save();
+	switch(category) {
+	case HOTSWAP_CAT_WEAPON:
+		HotSwapBind(uniqueID, va("%s %d\n", WEAPONBINDSTR, value));
+		break;
+	case HOTSWAP_CAT_ITEM:
+		assert(itemCommands[value]);
+		HotSwapBind(uniqueID, itemCommands[value]);
+		break;
+	case HOTSWAP_CAT_FORCE:
+		HotSwapBind(uniqueID, va("useGivenForce %d\n", value));
+		break;
+	default:
+		assert(0);
+	}
 }
 

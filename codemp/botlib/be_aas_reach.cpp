@@ -3252,11 +3252,9 @@ aas_lreachability_t *AAS_FindFaceReachabilities(vec3_t *facepoints, int numpoint
 		lreach->traveltime = 0;
 		lreach->next = lreachabilities;
 		lreachabilities = lreach;
-#ifndef _XBOX
 #ifndef BSPC
 		if (towardsface) AAS_PermanentLine(lreach->start, lreach->end, 1);
 		else AAS_PermanentLine(lreach->start, lreach->end, 2);
-#endif
 #endif
 	} //end for
 	return lreachabilities;

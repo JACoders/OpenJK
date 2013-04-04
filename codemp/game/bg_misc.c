@@ -2220,12 +2220,10 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 				return qfalse;
 			}
 		}
-/*
 		if ( ps->isJediMaster && item && (item->giType == IT_WEAPON || item->giType == IT_AMMO))
 		{//jedi master cannot pick up weapons
 			return qfalse;
 		}
-*/
 		if ( ps->duelInProgress )
 		{ //no picking stuff up while in a duel, no matter what the type is
 			return qfalse;
@@ -2621,14 +2619,7 @@ char *eventnames[] = {
 	"EV_STOPLOOPINGSOUND",
 	"EV_STARTLOOPINGSOUND",
 	"EV_TAUNT",
-
-	"EV_TAUNT_YES",
-	"EV_TAUNT_NO",
-	"EV_TAUNT_FOLLOWME",
-	"EV_TAUNT_GETFLAG",
-	"EV_TAUNT_GUARDBASE",
-	"EV_TAUNT_PATROL",
-
+//fixme, added a bunch that aren't here!
 };
 
 /*
@@ -2752,7 +2743,11 @@ int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float const
 //I don't much care for hardcoded strings, but this seems the best way to go.
 qboolean BG_IsValidCharacterModel(const char *modelName, const char *skinName)
 {
-	if (!Q_stricmp(modelName, "kyle"))
+	if (!Q_stricmp(skinName, "menu"))
+	{
+		return qfalse;
+	}
+	else if (!Q_stricmp(modelName, "kyle"))
 	{
 		if (!Q_stricmp(skinName, "fpls"))
 		{
@@ -2772,16 +2767,7 @@ qboolean BG_IsValidCharacterModel(const char *modelName, const char *skinName)
 
 qboolean BG_ValidateSkinForTeam( const char *modelName, char *skinName, int team, float *colors )
 {
-	char trunc[6];
-	int i = 0;
-	while (i < 5)
-	{
-		trunc[i] = modelName[i];
-		i++;
-	}
-	trunc[i] = 0;
-
-	if (!Q_stricmp(trunc, "jedi_"))
+	if (!Q_stricmpn(modelName, "jedi_",5))
 	{ //argh, it's a custom player skin!
 		if (team == TEAM_RED && colors)
 		{
@@ -3016,10 +3002,9 @@ void BG_PlayerStateToEntityState( playerState_t *ps, entityState_t *s, qboolean 
 
 	VectorCopy(ps->lastHitLoc, s->origin2);
 
-//	s->isJediMaster = ps->isJediMaster;
+	s->isJediMaster = ps->isJediMaster;
 
-//	s->time2 = ps->holocronBits;
-	s->time2 = 0;	// ???
+	s->time2 = ps->holocronBits;
 
 	s->fireflag = ps->fd.saberAnimLevel;
 
@@ -3169,10 +3154,9 @@ void BG_PlayerStateToEntityStateExtraPolate( playerState_t *ps, entityState_t *s
 
 	VectorCopy(ps->lastHitLoc, s->origin2);
 
-//	s->isJediMaster = ps->isJediMaster;
+	s->isJediMaster = ps->isJediMaster;
 
-//	s->time2 = ps->holocronBits;
-	s->time2 = 0;	// ???
+	s->time2 = ps->holocronBits;
 
 	s->fireflag = ps->fd.saberAnimLevel;
 

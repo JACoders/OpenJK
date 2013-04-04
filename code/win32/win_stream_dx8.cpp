@@ -15,7 +15,6 @@
 #include "../client/client.h"
 #include "win_local.h"
 #include "../qcommon/qcommon.h"
-#include "../zlib/zlib.h"
 
 #if defined(_WINDOWS)
 #include <windows.h>
@@ -32,12 +31,13 @@ extern void Z_SetNewDeleteTemporary(bool);
 #include <deque>
 
 extern HANDLE Sys_FileStreamMutex;
+extern const char* Sys_GetFileCodeName(int code);
 extern int Sys_GetFileCodeSize(int code);
 
 #define STREAM_MAX_OPEN 48
 struct StreamInfo
 {
-	unsigned int file;
+	volatile HANDLE file;
 	volatile bool used;
 	volatile bool error;
 	volatile bool opening;
@@ -66,22 +66,6 @@ HANDLE s_QueueMutex = INVALID_HANDLE_VALUE;
 HANDLE s_QueueLen = INVALID_HANDLE_VALUE;
 
 
-#include "../qcommon/fixedmap.h"
-
-#pragma pack(push, 1)
-typedef struct
-{
-	unsigned char filenameFlags;
-	int offset;
-	int size;
-} sound_file_t;
-#pragma pack(pop)
-
-static HANDLE	soundfile	= INVALID_HANDLE_VALUE;
-static VVFixedMap< sound_file_t, unsigned int >* soundLookup = NULL;
-
-void Sys_StreamInitialize( void );
-
 static DWORD WINAPI _streamThread(LPVOID)
 {
 	for (;;)
@@ -100,22 +84,13 @@ static DWORD WINAPI _streamThread(LPVOID)
 		s_IORequestQueue->pop_front();
 		ReleaseMutex(s_QueueMutex);
 
-		int offset = 0;
-		sound_file_t* crap;
-
 		// Process request
 		switch (req.type)
 		{
 		case IOREQ_OPEN:
-
 			strm = &s_Streams[req.handle];
 			assert(strm->used);
 		
-			strm->file	= req.data[0];
-			strm->error = (strm->file == -1);
-			strm->opening = false;
-			break;
-/*
 			{
 				const char* name = Sys_GetFileCodeName(req.data[0]);
 
@@ -131,38 +106,24 @@ static DWORD WINAPI _streamThread(LPVOID)
 			strm->error = (strm->file == INVALID_HANDLE_VALUE);
 			strm->opening = false;
 			break;
-*/
+
 		case IOREQ_READ:
-			{
-				strm = &s_Streams[req.handle];
-				assert(strm->used);
+			strm = &s_Streams[req.handle];
+			assert(strm->used);
+		
+			WaitForSingleObject(Sys_FileStreamMutex, INFINITE);
 
-				WaitForSingleObject(Sys_FileStreamMutex, INFINITE);
+#			if STREAM_SLOW_READ
+			Sleep(200);
+#			endif
 
-				crap = soundLookup->Find(strm->file);
-
-				if(crap)
-				{
-					offset	= crap->offset + req.data[2];
-					strm->error = (SetFilePointer(soundfile, offset, 0, FILE_BEGIN) != offset) ||
-						(ReadFile(soundfile, (void*)req.data[0], req.data[1], &bytes, NULL) == 0);
-				}
-				else
-				{
-					strm->error = true;
-				}
-
-
-				/*
-				strm->error = 
+			strm->error = 
 				(SetFilePointer(strm->file, req.data[2], 0, FILE_BEGIN) != req.data[2] ||
 				ReadFile(strm->file, (void*)req.data[0], req.data[1], &bytes, NULL) == 0);
-				*/
+			
+			ReleaseMutex(Sys_FileStreamMutex);
 
-				ReleaseMutex(Sys_FileStreamMutex);
-
-				strm->reading = false;
-			}
+			strm->reading = false;
 			break;
 
 		case IOREQ_SHUTDOWN:
@@ -198,8 +159,6 @@ void Sys_IORequestQueueClear(void)
 
 void Sys_StreamInit(void)
 {
-	Sys_StreamInitialize();
-
 	// Create array for storing open streams
 	s_Streams = (StreamInfo*)Z_Malloc(
 		STREAM_MAX_OPEN * sizeof(StreamInfo), TAG_FILESYS, qfalse);
@@ -260,13 +219,7 @@ int Sys_StreamOpen(int code, streamHandle_t *handle)
 	}
 
 	// Find the file size
-	sound_file_t*	crap	= soundLookup->Find(code);
-	int				size	= -1;
-	if(crap)
-	{
-		size	= crap->size;
-	}
-
+	int size = Sys_GetFileCodeSize(code);
 	if (size < 0)
 	{
 		*handle = 0;
@@ -331,181 +284,7 @@ void Sys_StreamClose(streamHandle_t handle)
 		while (s_Streams[handle].opening || s_Streams[handle].reading);
 		
 		// Close the file
-//		CloseHandle(s_Streams[handle].file);
+		CloseHandle(s_Streams[handle].file);
 		s_Streams[handle].used = false;
 	}
-}
-
-extern char* FS_BuildOSPathUnMapped(const char* name);
-
-unsigned int Sys_GetSoundFileCode(const char* name)
-{
-	// Get system level path
-	char* osname = FS_BuildOSPathUnMapped(name);
-	
-	// Generate hash for file name
-	strlwr(osname);
-	unsigned int code = crc32(0, (const byte *)osname, strlen(osname));
-
-	return code;
-}
-
-unsigned int Sys_GetSoundFileCodeFlags(unsigned int code)
-{
-	sound_file_t*	sf;
-	sf	= soundLookup->Find(code);
-
-	if(!sf)
-	{
-		return 0;
-	}
-	else
-	{
-		return sf->filenameFlags;
-	}
-}
-
-int Sys_GetSoundFileCodeSize(unsigned int code)
-{
-	sound_file_t*	sf;
-	sf	= soundLookup->Find(code);
-
-	if(!sf)
-	{
-		return -1;
-	}
-	else
-	{
-		return sf->size;
-	}
-
-}
-
-
-#if PROFILE_SOUND
-VVFixedMap< char*, unsigned int>* soundCrc	= NULL;
-void Sys_LoadSoundCRCFile( void )
-{
-	FILE*	file;
-	file	= fopen("d:\\base\\soundbank\\crclookup.txt", "rb");
-
-	if(!file)
-		return;
-
-	int numberOfLines	= 0;
-	unsigned int crc	= 0;
-	char	name[255];
-
-	// count the number of lines
-	while(1)
-	{
-		if(fscanf(file, "%d %s", &crc, name) == -1)
-			break;
-		numberOfLines++;
-	}
-
-	// allocate memory for the crc lookup
-	soundCrc = new VVFixedMap<char*, unsigned int>(numberOfLines);
-
-	// actually read and store the data
-	fseek(file, 0, SEEK_SET);
-	while(1)
-	{
-		if(fscanf(file, "%d %s", &crc, name) == -1)
-			break;
-
-		char *temp	= (char*)Z_Malloc(strlen(name) + 1, TAG_SND_RAWDATA, qtrue);
-
-		strcpy(temp, name);
-
-		soundCrc->Insert(temp, crc);
-	}
-	soundCrc->Sort();
-	fclose(file);
-}
-
-char* Sys_GetSoundName( unsigned int crc )
-{
-	char* name = *soundCrc->Find(crc);
-	return name;
-}
-
-#endif // PROFILE_SOUND
-
-extern const char *Sys_RemapPath( const char *filename );
-
-void Sys_StreamInitialize( void )
-{
-	// open the sound file
-	soundfile	= CreateFile(
-		Sys_RemapPath("base\\soundbank\\sound.bnk"),
-		GENERIC_READ,
-		FILE_SHARE_READ,
-		NULL,
-		OPEN_EXISTING,
-		FILE_ATTRIBUTE_READONLY | FILE_FLAG_RANDOM_ACCESS,
-		NULL );
-
-	// fill in the lookup table
-	HANDLE	table	= INVALID_HANDLE_VALUE;
-
-	table	= CreateFile(
-		Sys_RemapPath("base\\soundbank\\sound.tbl"),
-		GENERIC_READ,
-		FILE_SHARE_READ,
-		NULL,
-		OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL,
-		NULL );
-
-	DWORD	fileSize	= 0;
-	fileSize = GetFileSize(
-		table,
-		NULL);
-
-	int numberOfRecords	= fileSize / ((sizeof(unsigned int) * 3) + 1);
-
-	soundLookup = new VVFixedMap<sound_file_t, unsigned int>(numberOfRecords);
-
-	byte*	tempData	= (byte*)Z_Malloc(fileSize, TAG_TEMP_WORKSPACE, true, 32);
-	byte*	restore		= tempData;
-
-	DWORD	bytesRead;
-
-	ReadFile(
-		table,
-		tempData,
-		fileSize,
-		&bytesRead,
-		NULL );
-
-	if(bytesRead != fileSize)
-		Com_Error(0,"Could not read sound index file.\n");
-
-	CloseHandle(table);
-
-	for(int i = 0; i < numberOfRecords; i++)
-	{
-		unsigned int filecode	= *(unsigned int*)tempData;
-		tempData += sizeof(unsigned int);
-		unsigned int offset		= *(unsigned int*)tempData;
-		tempData += sizeof(unsigned int);
-		int size				= *(int*)tempData;
-		tempData += sizeof(int);
-		unsigned char filenameFlags = *(unsigned char*)tempData;
-		tempData++;
-
-		sound_file_t sfile;
-		sfile.offset	= offset;
-		sfile.size		= size;
-		sfile.filenameFlags = filenameFlags;
-
-		soundLookup->Insert(sfile, filecode);
-	}
-
-	soundLookup->Sort();
-	Z_Free(restore);
-#if PROFILE_SOUND
-	Sys_LoadSoundCRCFile();
-#endif
 }

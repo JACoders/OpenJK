@@ -484,7 +484,7 @@ typedef struct animation_s {
 #define MAX_ANIM_EVENTS 300
 
 //size of Anim eventData array...
-#define MAX_RANDOM_ANIM_SOUNDS		4
+#define MAX_RANDOM_ANIM_SOUNDS		8
 #define	AED_ARRAY_SIZE				(MAX_RANDOM_ANIM_SOUNDS+3)
 //indices for AEV_SOUND data
 #define	AED_SOUNDINDEX_START		0
@@ -508,6 +508,14 @@ typedef struct animation_s {
 #define	AED_MOVE_FWD				0
 #define	AED_MOVE_RT					1
 #define	AED_MOVE_UP					2
+//indices for AEV_SABER_SWING data
+#define	AED_SABER_SWING_SABERNUM	0
+#define	AED_SABER_SWING_TYPE		1
+#define	AED_SABER_SWING_PROBABILITY	2
+//indices for AEV_SABER_SPIN data
+#define	AED_SABER_SPIN_SABERNUM		0
+#define	AED_SABER_SPIN_TYPE			1	//0 = saberspinoff, 1 = saberspin, 2-4 = saberspin1-saberspin3
+#define	AED_SABER_SPIN_PROBABILITY	2	
 
 typedef enum
 {//NOTENOTE:  Be sure to update animEventTypeTable and ParseAnimationEvtBlock(...) if you change this enum list!
@@ -518,6 +526,8 @@ typedef enum
 	AEV_FIRE,		//# animID AEV_FIRE framenum altfire chancetofire
 	AEV_MOVE,		//# animID AEV_MOVE framenum forwardpush rightpush uppush
 	AEV_SOUNDCHAN,  //# animID AEV_SOUNDCHAN framenum CHANNEL soundpath randomlow randomhi chancetoplay 
+	AEV_SABER_SWING,  //# animID AEV_SABER_SWING framenum CHANNEL randomlow randomhi chancetoplay 
+	AEV_SABER_SPIN,  //# animID AEV_SABER_SPIN framenum CHANNEL chancetoplay 
 	AEV_NUM_AEV
 } animEventType_t;
 

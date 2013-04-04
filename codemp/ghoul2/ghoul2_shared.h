@@ -231,6 +231,9 @@ typedef vector <pair<int,mdxaBone_t> > mdxaBone_v;
 #define		GHOUL2_NOMODEL	 0x004
 #define		GHOUL2_NEWORIGIN 0x008
 
+//for transform optimization -rww
+#define		GHOUL2_ZONETRANSALLOC	0x2000
+
 class CBoneCache;
 
 // NOTE order in here matters. We save out from mModelindex to mFlags, but not the STL vectors that are at the top or the bottom.

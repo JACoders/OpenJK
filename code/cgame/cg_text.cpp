@@ -12,11 +12,7 @@
 
 //int precacheText_i;	// Current high index of precacheText array
 //precacheText_t precacheText[MAX_PRECACHETEXT];
-#define TEXT_SCREEN_WIDTH_FRACTION_CUTSCENE 0.85
-#define TEXT_SCREEN_WIDTH_FRACTION_INGAME 0.85
-#define TEXT_SCREEN_HEIGHT_INGAME 0.15f
-#define TEXT_CUTSCENE_Y_BOOST 18
-#define NUDGE_PERCENTAGE 0.90
+
 
 extern vec4_t textcolor_caption;
 extern vec4_t textcolor_center;
@@ -239,26 +235,12 @@ void CG_CaptionText( const char *str, int sound, int y )
 	}
 
 	const int fontHeight = (int) ((cgi_Language_IsAsian() ? 1.4f : 1.0f) * (float) cgi_R_Font_HeightPixels(cgs.media.qhFontMedium, fFontScale));	// taiwanese & japanese need 1.5 fontheight spacing
-	int lineWidth;
 
 	cg.captionTextTime = cg.time;
 	if (in_camera) {
-		cg.captionTextY = SCREEN_HEIGHT - (client_camera.bar_height_dest/2)- TEXT_CUTSCENE_Y_BOOST;	// ths is now a centre'd Y, not a start Y
-#ifdef _XBOX
-		if(cg.widescreen)
-			lineWidth = 720 *  TEXT_SCREEN_WIDTH_FRACTION_CUTSCENE ;
-		else
-#endif
-		lineWidth = SCREEN_WIDTH *  TEXT_SCREEN_WIDTH_FRACTION_CUTSCENE ;
-
+		cg.captionTextY = SCREEN_HEIGHT - (client_camera.bar_height_dest/2);	// ths is now a centre'd Y, not a start Y
 	} else {	//get above the hud
-		cg.captionTextY = (int) (TEXT_SCREEN_HEIGHT_INGAME * ((float)SCREEN_HEIGHT - (float)fontHeight * 1.5f));	// do NOT move this, it has to fit in between the weapon HUD and the datapad update.
-#ifdef _XBOX
-		if(cg.widescreen)
-			lineWidth = 720 * TEXT_SCREEN_WIDTH_FRACTION_INGAME ;
-		else
-#endif
-		lineWidth = SCREEN_WIDTH * TEXT_SCREEN_WIDTH_FRACTION_INGAME ;
+		cg.captionTextY = (int) (0.88f * ((float)SCREEN_HEIGHT - (float)fontHeight * 1.5f));	// do NOT move this, it has to fit in between the weapon HUD and the datapad update.
 	}
 	cg.captionTextCurrentLine = 0;
 
@@ -326,7 +308,7 @@ void CG_CaptionText( const char *str, int sound, int y )
 			cg.scrollTextLines++;
 		}
 		else 
-		if ( cgi_R_Font_StrLenPixels(cg.captionText[i], cgs.media.qhFontMedium, fFontScale) >= lineWidth)
+		if ( cgi_R_Font_StrLenPixels(cg.captionText[i], cgs.media.qhFontMedium, fFontScale) >= SCREEN_WIDTH)
 		{
 			// reached screen edge, so cap off string at bytepos after last good position...
 			//
@@ -373,7 +355,7 @@ void CG_CaptionText( const char *str, int sound, int y )
 	{
 		holdTime += strlen(cg.captionText[1]);	// strlen is also good for MBCS in this instance, since it's for timing
 	}
-	cg.captionNextTextTime = cg.time + (/*JLF nudge it forward*/NUDGE_PERCENTAGE * holdTime * cg.captionLetterTime);	
+	cg.captionNextTextTime = cg.time + (holdTime * cg.captionLetterTime);	
 
 	cg.scrollTextTime = 0;	// No scrolling during captions
 

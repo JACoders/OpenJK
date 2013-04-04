@@ -11,10 +11,6 @@ displayContextDef_t cgDC;
 	#include "cg_lights.h"
 #endif
 
-#ifdef _XBOX
-#include "../client/cl_data.h"
-#endif
-
 extern int cgSiegeRoundState;
 extern int cgSiegeRoundTime;
 /*
@@ -139,7 +135,7 @@ static void C_GetBoltPos(void);
 static void C_ImpactMark(void);
 
 #ifdef _XBOX
-#define MAX_MISC_ENTS	200
+#define MAX_MISC_ENTS	500
 #else
 #define MAX_MISC_ENTS	4000
 #endif
@@ -150,13 +146,14 @@ static refEntity_t	MiscEnts[MAX_MISC_ENTS]; //statically allocated for now.
 static float		Radius[MAX_MISC_ENTS];
 static float		zOffset[MAX_MISC_ENTS]; //some models need a z offset for culling, because of stupid wrong model origins
 
-int			NumMiscEnts = 0;
+static int			NumMiscEnts = 0;
 
 extern autoMapInput_t cg_autoMapInput; //cg_view.c
 extern int cg_autoMapInputTime;
 extern vec3_t cg_autoMapAngle;
 
 void CG_MiscEnt(void);
+void CG_DoCameraShake( vec3_t origin, float intensity, int radius, int time );
 
 //do we have any force powers that we would normally need to cycle to?
 qboolean CG_NoUseableForce(void)
@@ -169,7 +166,7 @@ qboolean CG_NoUseableForce(void)
 			i != FP_SABER_DEFENSE &&
 			i != FP_LEVITATION)
 		{ //valid selectable power
-			if (cg->predictedPlayerState.fd.forcePowersKnown & (1 << i))
+			if (cg.predictedPlayerState.fd.forcePowersKnown & (1 << i))
 			{ //we have it
 				return qfalse;
 			}
@@ -266,7 +263,7 @@ int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int a
 		//in order to have that string executed in place. Some example code:
 #if 0
 		{
-			TCGIncomingConsoleCommand	*icc = (TCGIncomingConsoleCommand *)cg->sharedBuffer;
+			TCGIncomingConsoleCommand	*icc = (TCGIncomingConsoleCommand *)cg.sharedBuffer;
 			if (strstr(icc->conCommand, "wait"))
 			{ //filter out commands contaning wait
 				Com_Printf("You can't use commands containing the string wait with MyMod v1.0\n");
@@ -311,19 +308,19 @@ int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int a
 		// this trap map be called more than once for a given map change, as the
 		// server is going to attempt to send out multiple broadcasts in hopes that
 		// the client will receive one of them
-		cg->mMapChange = qtrue;
+		cg.mMapChange = qtrue;
 		return 0;
 
 	case CG_AUTOMAP_INPUT:
 		//special input during automap mode -rww
 		{
-			autoMapInput_t *autoInput = (autoMapInput_t *)cg->sharedBuffer;
+			autoMapInput_t *autoInput = (autoMapInput_t *)cg.sharedBuffer;
 
 			memcpy(&cg_autoMapInput, autoInput, sizeof(autoMapInput_t));
 
 			if (!arg0)
 			{ //if this is non-0, it's actually a one-frame mouse event
-				cg_autoMapInputTime = cg->time + 1000;
+				cg_autoMapInputTime = cg.time + 1000;
 			}
 			else
 			{
@@ -346,6 +343,14 @@ int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int a
 		CG_MiscEnt();
 		return 0;
 
+	case CG_FX_CAMERASHAKE:
+		{
+			TCGCameraShake	*data = (TCGCameraShake *)cg.sharedBuffer;
+			
+			CG_DoCameraShake( data->mOrigin, data->mIntensity, data->mRadius, data->mTime );
+		}
+		return 0;
+
 	default:
 		CG_Error( "vmMain: unknown command %i", command );
 		break;
@@ -356,21 +361,21 @@ int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int a
 
 static int C_PointContents(void)
 {
-	TCGPointContents	*data = (TCGPointContents *)cg->sharedBuffer;
+	TCGPointContents	*data = (TCGPointContents *)cg.sharedBuffer;
 
 	return CG_PointContents( data->mPoint, data->mPassEntityNum );
 }
 
 static void C_GetLerpOrigin(void)
 {
-	TCGVectorData		*data = (TCGVectorData *)cg->sharedBuffer;
+	TCGVectorData		*data = (TCGVectorData *)cg.sharedBuffer;
 
 	VectorCopy(cg_entities[data->mEntityNum].lerpOrigin, data->mPoint);
 }
 
 static void C_GetLerpData(void)
 {//only used by FX system to pass to getboltmat
-	TCGGetBoltData		*data = (TCGGetBoltData *)cg->sharedBuffer;
+	TCGGetBoltData		*data = (TCGGetBoltData *)cg.sharedBuffer;
 
 	VectorCopy(cg_entities[data->mEntityNum].lerpOrigin, data->mOrigin);
 	VectorCopy(cg_entities[data->mEntityNum].modelScale, data->mScale);
@@ -402,21 +407,21 @@ static void C_GetLerpData(void)
 
 static void C_Trace(void)
 {
-	TCGTrace	*td = (TCGTrace *)cg->sharedBuffer;
+	TCGTrace	*td = (TCGTrace *)cg.sharedBuffer;
 
 	CG_Trace(&td->mResult, td->mStart, td->mMins, td->mMaxs, td->mEnd, td->mSkipNumber, td->mMask);
 }
 
 static void C_G2Trace(void)
 {
-	TCGTrace	*td = (TCGTrace *)cg->sharedBuffer;
+	TCGTrace	*td = (TCGTrace *)cg.sharedBuffer;
 
 	CG_G2Trace(&td->mResult, td->mStart, td->mMins, td->mMaxs, td->mEnd, td->mSkipNumber, td->mMask);
 }
 
 static void C_G2Mark(void)
 {
-	TCGG2Mark	*td = (TCGG2Mark *)cg->sharedBuffer;
+	TCGG2Mark	*td = (TCGG2Mark *)cg.sharedBuffer;
 	trace_t		tr;
 	vec3_t		end;
 
@@ -506,21 +511,21 @@ static int CG_RagCallback(int callType)
 	{
 	case RAG_CALLBACK_DEBUGBOX:
 		{
-			ragCallbackDebugBox_t *callData = (ragCallbackDebugBox_t *)cg->sharedBuffer;
+			ragCallbackDebugBox_t *callData = (ragCallbackDebugBox_t *)cg.sharedBuffer;
 
 			CG_DebugBoxLines(callData->mins, callData->maxs, callData->duration);
 		}
 		break;
 	case RAG_CALLBACK_DEBUGLINE:
 		{
-			ragCallbackDebugLine_t *callData = (ragCallbackDebugLine_t *)cg->sharedBuffer;
+			ragCallbackDebugLine_t *callData = (ragCallbackDebugLine_t *)cg.sharedBuffer;
 
 			CG_TestLine(callData->start, callData->end, callData->time, callData->color, callData->radius);
 		}
 		break;
 	case RAG_CALLBACK_BONESNAP:
 		{
-			ragCallbackBoneSnap_t *callData = (ragCallbackBoneSnap_t *)cg->sharedBuffer;
+			ragCallbackBoneSnap_t *callData = (ragCallbackBoneSnap_t *)cg.sharedBuffer;
 			centity_t *cent = &cg_entities[callData->entNum];
 			int snapSound = trap_S_RegisterSound(va("sound/player/bodyfall_human%i.wav", Q_irand(1, 3)));
 
@@ -531,7 +536,7 @@ static int CG_RagCallback(int callType)
 	case RAG_CALLBACK_BONEINSOLID:
 #if 0
 		{
-			ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)cg->sharedBuffer;
+			ragCallbackBoneInSolid_t *callData = (ragCallbackBoneInSolid_t *)cg.sharedBuffer;
 
 			if (callData->solidCount > 16)
 			{ //don't bother if we're just tapping into solidity, we'll probably recover on our own
@@ -548,7 +553,7 @@ static int CG_RagCallback(int callType)
 		break;
 	case RAG_CALLBACK_TRACELINE:
 		{
-			ragCallbackTraceLine_t *callData = (ragCallbackTraceLine_t *)cg->sharedBuffer;
+			ragCallbackTraceLine_t *callData = (ragCallbackTraceLine_t *)cg.sharedBuffer;
 
 			CG_Trace(&callData->tr, callData->start, callData->mins, callData->maxs,
 				callData->end, callData->ignore, callData->mask);
@@ -564,7 +569,7 @@ static int CG_RagCallback(int callType)
 
 static void C_ImpactMark(void)
 {
-	TCGImpactMark	*data = (TCGImpactMark *)cg->sharedBuffer;
+	TCGImpactMark	*data = (TCGImpactMark *)cg.sharedBuffer;
 
 	/*
 	CG_ImpactMark((int)arg0, (const float *)arg1, (const float *)arg2, (float)arg3,
@@ -578,7 +583,7 @@ void CG_MiscEnt(void)
 {
 	int			modelIndex;
 	refEntity_t	*RefEnt;
-	TCGMiscEnt	*data = (TCGMiscEnt *)cg->sharedBuffer;
+	TCGMiscEnt	*data = (TCGMiscEnt *)cg.sharedBuffer;
 	vec3_t		mins, maxs;
 	float		*radius, *zOff;
 
@@ -637,10 +642,10 @@ void CG_DrawMiscEnts(void)
 			cullOrigin[2] += *zOff;
 		}
 
-		if (cg->snap && trap_R_inPVS(cg->refdef.vieworg, cullOrigin, cg->snap->areamask))
+		if (cg.snap && trap_R_inPVS(cg.refdef.vieworg, cullOrigin, cg.snap->areamask))
 		{
-			VectorSubtract(RefEnt->origin, cg->refdef.vieworg, difference);
-			if (VectorLength(difference)-(*radius) <= cg->distanceCull)
+			VectorSubtract(RefEnt->origin, cg.refdef.vieworg, difference);
+			if (VectorLength(difference)-(*radius) <= cg.distanceCull)
 			{
 				trap_R_AddRefEntityToScene(RefEnt);
 			}
@@ -683,13 +688,9 @@ void CG_ResizeG2TempBone(mdxaBone_v *tempBone, int newCount)
 /*
 Ghoul2 Insert End
 */
-// MATT - Changed this to a pointer for splitscreen client swapping purposes
-//cg_t				g_cg;
-cg_t			   *cg = NULL;	//&g_cg;
-
+cg_t				cg;
 cgs_t				cgs;
-//centity_t			cg_entities[MAX_GENTITIES];
-centity_t			*cg_entities = NULL;
+centity_t			cg_entities[MAX_GENTITIES];
 
 centity_t			*cg_permanents[MAX_GENTITIES]; //rwwRMG - added
 int					cg_numpermanents = 0;
@@ -709,13 +710,14 @@ vmCvar_t	cg_shadows;
 vmCvar_t	cg_renderToTextureFX;
 vmCvar_t	cg_drawTimer;
 vmCvar_t	cg_drawFPS;
-//vmCvar_t	cg_drawSnapshot;
+vmCvar_t	cg_drawSnapshot;
 vmCvar_t	cg_draw3dIcons;
 vmCvar_t	cg_drawIcons;
 vmCvar_t	cg_drawAmmoWarning;
 vmCvar_t	cg_drawCrosshair;
 vmCvar_t	cg_drawCrosshairNames;
 vmCvar_t	cg_drawRadar;
+vmCvar_t	cg_drawVehLeadIndicator;
 vmCvar_t	cg_dynamicCrosshair;
 vmCvar_t	cg_dynamicCrosshairPrecision;
 vmCvar_t	cg_drawRewards;
@@ -781,6 +783,8 @@ vmCvar_t	cg_fpls;
 
 vmCvar_t	cg_ghoul2Marks;
 
+vmCvar_t	cg_optvehtrace;
+
 vmCvar_t	cg_saberDynamicMarks;
 vmCvar_t	cg_saberDynamicMarkTime;
 
@@ -812,7 +816,7 @@ vmCvar_t	cg_thirdPersonAlpha;
 vmCvar_t	cg_thirdPersonHorzOffset;
 
 vmCvar_t	cg_stereoSeparation;
-//vmCvar_t	cg_lagometer;
+vmCvar_t	cg_lagometer;
 vmCvar_t	cg_drawEnemyInfo;
 vmCvar_t	cg_synchronousClients;
 vmCvar_t 	cg_stats;
@@ -822,7 +826,7 @@ vmCvar_t	cg_paused;
 vmCvar_t	cg_blood;
 vmCvar_t	cg_predictItems;
 vmCvar_t	cg_deferPlayers;
-//vmCvar_t	cg_drawTeamOverlay;
+vmCvar_t	cg_drawTeamOverlay;
 vmCvar_t	cg_teamOverlayUserinfo;
 vmCvar_t	cg_drawFriend;
 vmCvar_t	cg_teamChatsOnly;
@@ -847,7 +851,7 @@ vmCvar_t	cg_timescaleFadeSpeed;
 vmCvar_t	cg_timescale;
 vmCvar_t	cg_noTaunt;
 vmCvar_t	cg_noProjectileTrail;
-vmCvar_t	cg_trueLightning;
+//vmCvar_t	cg_trueLightning;
 /*
 Ghoul2 Insert Start
 */
@@ -855,17 +859,16 @@ vmCvar_t	cg_debugBB;
 /*
 Ghoul2 Insert End
 */
-vmCvar_t 	cg_redTeamName;
-vmCvar_t 	cg_blueTeamName;
+//vmCvar_t 	cg_redTeamName;
+//vmCvar_t 	cg_blueTeamName;
 vmCvar_t	cg_currentSelectedPlayer;
 vmCvar_t	cg_currentSelectedPlayerName;
-vmCvar_t	cg_singlePlayer;
-vmCvar_t	cg_enableDust;
-vmCvar_t	cg_enableBreath;
-vmCvar_t	cg_singlePlayerActive;
+//vmCvar_t	cg_singlePlayerActive;
 vmCvar_t	cg_recordSPDemo;
 vmCvar_t	cg_recordSPDemoName;
 vmCvar_t	cg_showVehBounds;
+
+vmCvar_t	ui_myteam;
 
 vmCvar_t	cg_snapshotTimeout;
 
@@ -890,7 +893,7 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &cg_drawStatus, "cg_drawStatus", "1", CVAR_ARCHIVE  },
 	{ &cg_drawTimer, "cg_drawTimer", "0", CVAR_ARCHIVE  },
 	{ &cg_drawFPS, "cg_drawFPS", "0", CVAR_ARCHIVE  },
-//	{ &cg_drawSnapshot, "cg_drawSnapshot", "0", CVAR_ARCHIVE  },
+	{ &cg_drawSnapshot, "cg_drawSnapshot", "0", CVAR_ARCHIVE  },
 	{ &cg_draw3dIcons, "cg_draw3dIcons", "1", CVAR_ARCHIVE  },
 	{ &cg_drawIcons, "cg_drawIcons", "1", CVAR_ARCHIVE  },
 	{ &cg_drawAmmoWarning, "cg_drawAmmoWarning", "0", CVAR_ARCHIVE  },
@@ -898,6 +901,7 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &cg_drawCrosshair, "cg_drawCrosshair", "1", CVAR_ARCHIVE },
 	{ &cg_drawCrosshairNames, "cg_drawCrosshairNames", "1", CVAR_ARCHIVE },
 	{ &cg_drawRadar, "cg_drawRadar", "1", CVAR_ARCHIVE },
+	{ &cg_drawVehLeadIndicator, "cg_drawVehLeadIndicator", "1", CVAR_ARCHIVE },
 	{ &cg_drawScores,		  "cg_drawScores", "1", CVAR_ARCHIVE },
 	{ &cg_dynamicCrosshair, "cg_dynamicCrosshair", "1", CVAR_ARCHIVE },
 	//Enables ghoul2 traces for crosshair traces.. more precise when pointing at others, but slower.
@@ -910,7 +914,7 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &cg_crosshairY, "cg_crosshairY", "0", CVAR_ARCHIVE },
 	{ &cg_simpleItems, "cg_simpleItems", "0", CVAR_ARCHIVE },
 	{ &cg_addMarks, "cg_marks", "1", CVAR_ARCHIVE },
-//	{ &cg_lagometer, "cg_lagometer", "0", CVAR_ARCHIVE },
+	{ &cg_lagometer, "cg_lagometer", "0", CVAR_ARCHIVE },
 	{ &cg_gun_x, "cg_gunX", "0", CVAR_CHEAT },
 	{ &cg_gun_y, "cg_gunY", "0", CVAR_CHEAT },
 	{ &cg_gun_z, "cg_gunZ", "0", CVAR_CHEAT },
@@ -963,6 +967,8 @@ static cvarTable_t cvarTable[] = { // bk001129
 
 	{ &cg_ghoul2Marks, "cg_ghoul2Marks", "16", 0 },
 
+	{ &cg_optvehtrace, "com_optvehtrace", "0", 0 },
+
 	{ &cg_saberDynamicMarks, "cg_saberDynamicMarks", "0", 0 },
 	{ &cg_saberDynamicMarkTime, "cg_saberDynamicMarkTime", "60000", 0 },
 
@@ -983,8 +989,7 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &cg_thirdPersonSpecialCam, "cg_thirdPersonSpecialCam", "0", 0 },
 
 	{ &cg_thirdPerson, "cg_thirdPerson", "0", CVAR_ARCHIVE },
-//	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "80", CVAR_CHEAT },	// Pulled back for Xbox - also in cl_data
-	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "90", CVAR_CHEAT },
+	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "80", CVAR_CHEAT },
 	{ &cg_thirdPersonAngle, "cg_thirdPersonAngle", "0", CVAR_CHEAT },
 	{ &cg_thirdPersonPitchOffset, "cg_thirdPersonPitchOffset", "0", CVAR_CHEAT },
 	{ &cg_thirdPersonVertOffset, "cg_thirdPersonVertOffset", "16", CVAR_CHEAT },
@@ -997,7 +1002,7 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &cg_forceModel, "cg_forceModel", "0", CVAR_ARCHIVE  },
 	{ &cg_predictItems, "cg_predictItems", "1", CVAR_ARCHIVE },
 	{ &cg_deferPlayers, "cg_deferPlayers", "1", CVAR_ARCHIVE },
-//	{ &cg_drawTeamOverlay, "cg_drawTeamOverlay", "0", CVAR_ARCHIVE },
+	{ &cg_drawTeamOverlay, "cg_drawTeamOverlay", "0", CVAR_ARCHIVE },
 	{ &cg_teamOverlayUserinfo, "teamoverlay", "0", CVAR_ROM | CVAR_USERINFO },
 	{ &cg_stats, "cg_stats", "0", 0 },
 	{ &cg_drawFriend, "cg_drawFriend", "1", CVAR_ARCHIVE },
@@ -1009,14 +1014,11 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &cg_blood, "com_blood", "1", CVAR_ARCHIVE },
 	{ &cg_synchronousClients, "g_synchronousClients", "0", 0 },	// communicated by systeminfo
 
-	{ &cg_redTeamName, "g_redteam", DEFAULT_REDTEAM_NAME, CVAR_ARCHIVE | CVAR_SERVERINFO | CVAR_USERINFO },
-	{ &cg_blueTeamName, "g_blueteam", DEFAULT_BLUETEAM_NAME, CVAR_ARCHIVE | CVAR_SERVERINFO | CVAR_USERINFO },
+//	{ &cg_redTeamName, "g_redteam", DEFAULT_REDTEAM_NAME, CVAR_ARCHIVE | CVAR_SERVERINFO | CVAR_USERINFO },
+//	{ &cg_blueTeamName, "g_blueteam", DEFAULT_BLUETEAM_NAME, CVAR_ARCHIVE | CVAR_SERVERINFO | CVAR_USERINFO },
 	{ &cg_currentSelectedPlayer, "cg_currentSelectedPlayer", "0", CVAR_ARCHIVE},
 	{ &cg_currentSelectedPlayerName, "cg_currentSelectedPlayerName", "", CVAR_ARCHIVE},
-	{ &cg_singlePlayer, "ui_singlePlayerActive", "0", CVAR_USERINFO},
-	{ &cg_enableDust, "g_enableDust", "0", 0},
-	{ &cg_enableBreath, "g_enableBreath", "0", 0},
-	{ &cg_singlePlayerActive, "ui_singlePlayerActive", "0", CVAR_USERINFO},
+//	{ &cg_singlePlayerActive, "ui_singlePlayerActive", "0", CVAR_USERINFO},
 	{ &cg_recordSPDemo, "ui_recordSPDemo", "0", CVAR_ARCHIVE},
 	{ &cg_recordSPDemoName, "ui_recordSPDemoName", "", CVAR_ARCHIVE},
 
@@ -1025,18 +1027,19 @@ static cvarTable_t cvarTable[] = { // bk001129
 	{ &cg_timescaleFadeEnd, "cg_timescaleFadeEnd", "1", 0},
 	{ &cg_timescaleFadeSpeed, "cg_timescaleFadeSpeed", "0", 0},
 	{ &cg_timescale, "timescale", "1", 0},
-	{ &cg_scorePlum, "cg_scorePlums", "1", CVAR_USERINFO | CVAR_ARCHIVE},
-	{ &cg_hudFiles, "cg_hudFiles", "ui/jahud.txt", CVAR_USERINFO | CVAR_ARCHIVE},
-	{ &cg_smoothClients, "cg_smoothClients", "1", CVAR_USERINFO | CVAR_ARCHIVE},
+	{ &cg_scorePlum, "cg_scorePlums", "1",  CVAR_ARCHIVE},
+	{ &cg_hudFiles, "cg_hudFiles", "ui/jahud.txt", CVAR_ARCHIVE},
+	{ &cg_smoothClients, "cg_smoothClients", "1",  CVAR_ARCHIVE},
 	{ &cg_cameraMode, "com_cameraMode", "0", CVAR_CHEAT},
 
 	{ &pmove_fixed, "pmove_fixed", "0", 0},
 	{ &pmove_msec, "pmove_msec", "8", 0},
 	{ &cg_noTaunt, "cg_noTaunt", "0", CVAR_ARCHIVE},
 	{ &cg_noProjectileTrail, "cg_noProjectileTrail", "0", CVAR_ARCHIVE},
-	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE},
+//	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE},
 	{ &cg_showVehBounds, "cg_showVehBounds", "0", 0},
 
+	{ &ui_myteam, "ui_myteam", "0", CVAR_ROM|CVAR_INTERNAL},
 	{ &cg_snapshotTimeout, "cg_snapshotTimeout", "10", CVAR_ARCHIVE },
 
 //	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE }
@@ -1074,11 +1077,6 @@ void CG_RegisterCvars( void ) {
 
 	trap_Cvar_Register(NULL, "model", DEFAULT_MODEL, CVAR_USERINFO | CVAR_ARCHIVE );
 	trap_Cvar_Register(NULL, "forcepowers", DEFAULT_FORCEPOWERS, CVAR_USERINFO | CVAR_ARCHIVE );
-//JLF forcepowers
-#ifdef _XBOX
-	trap_Cvar_Register(NULL, "forcePowersProfile", DEFAULT_FORCEPOWERS, CVAR_PROFILE );
-
-#endif
 
 	// Cvars uses for transferring data between client and server
 	trap_Cvar_Register(NULL, "ui_about_gametype",		"0", CVAR_ROM|CVAR_INTERNAL );
@@ -1169,8 +1167,6 @@ void CG_UpdateCvars( void ) {
 
 	// If team overlay is on, ask for updates from the server.  If its off,
 	// let the server know so we don't receive it
-	trap_Cvar_Set( "teamoverlay", "0" );
-/*
 	if ( drawTeamOverlayModificationCount != cg_drawTeamOverlay.modificationCount ) {
 		drawTeamOverlayModificationCount = cg_drawTeamOverlay.modificationCount;
 
@@ -1182,7 +1178,6 @@ void CG_UpdateCvars( void ) {
 		// FIXME E3 HACK
 		trap_Cvar_Set( "teamoverlay", "1" );
 	}
-*/
 
 	// if force model changed
 	if ( forceModelModificationCount != cg_forceModel.modificationCount ) {
@@ -1192,38 +1187,26 @@ void CG_UpdateCvars( void ) {
 }
 
 int CG_CrosshairPlayer( void ) {
-	if ( cg->time > ( cg->crosshairClientTime + 1000 ) ) {
+	if ( cg.time > ( cg.crosshairClientTime + 1000 ) ) {
 		return -1;
 	}
 
-	if (cg->crosshairClientNum >= MAX_CLIENTS)
+	if (cg.crosshairClientNum >= MAX_CLIENTS)
 	{
 		return -1;
 	}
 
-	return cg->crosshairClientNum;
+	return cg.crosshairClientNum;
 }
 
 int CG_LastAttacker( void ) {
-	if ( !cg->attackerTime ) {
+	if ( !cg.attackerTime ) {
 		return -1;
 	}
-	return cg->snap->ps.persistant[PERS_ATTACKER];
-}
-
-void QDECL CG_PrintfAlways( const char *msg, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
-	va_end (argptr);
-
-	trap_PrintAlways( text );
+	return cg.snap->ps.persistant[PERS_ATTACKER];
 }
 
 void QDECL CG_Printf( const char *msg, ... ) {
-#ifdef _DEBUG
 	va_list		argptr;
 	char		text[1024];
 
@@ -1232,7 +1215,6 @@ void QDECL CG_Printf( const char *msg, ... ) {
 	va_end (argptr);
 
 	trap_Print( text );
-#endif
 }
 
 void QDECL CG_Error( const char *msg, ... ) {
@@ -1293,7 +1275,7 @@ const char *CG_Argv( int arg ) {
 #include "../namespace_begin.h"
 int BG_GetTime(void)
 {
-	return cg->time;
+	return cg.time;
 }
 #include "../namespace_end.h"
 
@@ -1456,7 +1438,7 @@ void CG_ParseSiegeState(const char *str)
 	}
 	else
 	{
-	    cgSiegeRoundTime = cg->time;
+	    cgSiegeRoundTime = cg.time;
 	}
 }
 
@@ -1656,7 +1638,7 @@ static void CG_RegisterSounds( void ) {
 		trap_S_StartBackgroundTrack( "music/mp/duel.mp3", "music/mp/duel.mp3", qfalse );
 	}
 
-	cg->loadLCARSStage = 1;
+	cg.loadLCARSStage = 1;
 
 	cgs.media.selectSound = trap_S_RegisterSound( "sound/weapons/change.wav" );
 
@@ -1793,7 +1775,6 @@ static void CG_RegisterSounds( void ) {
 		}
 	}
 
-	memset(&cgs.gameSounds, -1, MAX_SOUNDS);
 	for ( i = 1 ; i < MAX_SOUNDS ; i++ ) {
 		soundName = CG_ConfigString( CS_SOUNDS+i );
 		if ( !soundName[0] ) {
@@ -1865,7 +1846,7 @@ static void CG_RegisterSounds( void ) {
 		}
 	}
 
-	cg->loadLCARSStage = 2;
+	cg.loadLCARSStage = 2;
 
 	// FIXME: only needed with item
 	cgs.media.deploySeeker = trap_S_RegisterSound ("sound/chars/seeker/misc/hiss");
@@ -1970,7 +1951,6 @@ static void CG_RegisterGraphics( void ) {
 		"gfx/2d/numbers/t_minus",
 	};
 
-/*
 	static char		*sb_c_nums[11] = {
 		"gfx/2d/numbers/c_zero",
 		"gfx/2d/numbers/c_one",
@@ -1984,19 +1964,16 @@ static void CG_RegisterGraphics( void ) {
 		"gfx/2d/numbers/c_nine",
 		"gfx/2d/numbers/t_minus", //?????
 	};
-*/
 
 	// clear any references to old media
-	memset( &cg->refdef, 0, sizeof( cg->refdef ) );
-
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() != 1) {
-#endif
+	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 	trap_R_ClearScene();
 
 	CG_LoadingString( cgs.mapname );        
 
+//#ifndef _XBOX
 	trap_R_LoadWorldMap( cgs.mapname );
+//#endif
 
 	// precache status bar pics
 //	CG_LoadingString( "game media" );
@@ -2005,13 +1982,13 @@ static void CG_RegisterGraphics( void ) {
 		cgs.media.numberShaders[i] = trap_R_RegisterShader( sb_nums[i] );
 	}
 
-	cg->loadLCARSStage = 3;
+	cg.loadLCARSStage = 3;
 
 	for ( i=0; i < 11; i++ )
 	{
 		cgs.media.numberShaders[i]			= trap_R_RegisterShaderNoMip( sb_nums[i] );
 		cgs.media.smallnumberShaders[i]		= trap_R_RegisterShaderNoMip( sb_t_nums[i] );
-//		cgs.media.chunkyNumberShaders[i]	= trap_R_RegisterShaderNoMip( sb_c_nums[i] );
+		cgs.media.chunkyNumberShaders[i]	= trap_R_RegisterShaderNoMip( sb_c_nums[i] );
 	}
 
 	trap_R_RegisterShaderNoMip ( "gfx/mp/pduel_icon_lone" );
@@ -2032,18 +2009,10 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.wireframeAutomapFrame_top = trap_R_RegisterShader( "gfx/mp_automap/mpauto_frame_top" );
 	cgs.media.wireframeAutomapFrame_bottom = trap_R_RegisterShader( "gfx/mp_automap/mpauto_frame_bottom" );
 
-//	cgs.media.lagometerShader = trap_R_RegisterShaderNoMip("gfx/2d/lag" );
+	cgs.media.lagometerShader = trap_R_RegisterShaderNoMip("gfx/2d/lag" );
 	cgs.media.connectionShader = trap_R_RegisterShaderNoMip( "gfx/2d/net" );
 
-#ifdef _XBOX
-}
-#endif
-
-	trap_FX_InitSystem(&cg->refdef);
-
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() != 1) {
-#endif
+	trap_FX_InitSystem(&cg.refdef);
 	CG_RegisterEffects();
 
 	cgs.media.boltShader = trap_R_RegisterShader( "gfx/misc/blueLine" );
@@ -2096,9 +2065,9 @@ static void CG_RegisterGraphics( void ) {
 		cgs.media.crosshairShader[i] = trap_R_RegisterShaderNoMip( va("gfx/2d/crosshair%c", 'a'+i) );
 	}
 
-	cg->loadLCARSStage = 4;
+	cg.loadLCARSStage = 4;
 
-//	cgs.media.backTileShader = trap_R_RegisterShader( "gfx/2d/backtile" );
+	cgs.media.backTileShader = trap_R_RegisterShader( "gfx/2d/backtile" );
 
 	//precache the fpls skin
 	//trap_R_RegisterSkin("models/players/kyle/model_fpls2.skin");
@@ -2155,7 +2124,7 @@ static void CG_RegisterGraphics( void ) {
 		trap_R_RegisterShaderNoMip( "gfx/hud/mpi_rflag" );
 		trap_R_RegisterShaderNoMip( "gfx/hud/mpi_bflag" );
 
-//		trap_R_RegisterShaderNoMip("gfx/2d/net.tga");
+		trap_R_RegisterShaderNoMip("gfx/2d/net.tga");
 
 		cgs.media.flagPoleModel = trap_R_RegisterModel( "models/flag2/flagpole.md3" );
 		cgs.media.flagFlapModel = trap_R_RegisterModel( "models/flag2/flagflap3.md3" );
@@ -2201,14 +2170,14 @@ static void CG_RegisterGraphics( void ) {
 #endif
 
 	// Binocular interface
-//	cgs.media.binocularCircle		= trap_R_RegisterShader( "gfx/2d/binCircle" );
-//	cgs.media.binocularMask			= trap_R_RegisterShader( "gfx/2d/binMask" );
-//	cgs.media.binocularArrow		= trap_R_RegisterShader( "gfx/2d/binSideArrow" );
-//	cgs.media.binocularTri			= trap_R_RegisterShader( "gfx/2d/binTopTri" );
-//	cgs.media.binocularStatic		= trap_R_RegisterShader( "gfx/2d/binocularWindow" );
-//	cgs.media.binocularOverlay		= trap_R_RegisterShader( "gfx/2d/binocularNumOverlay" );
+	cgs.media.binocularCircle		= trap_R_RegisterShader( "gfx/2d/binCircle" );
+	cgs.media.binocularMask			= trap_R_RegisterShader( "gfx/2d/binMask" );
+	cgs.media.binocularArrow		= trap_R_RegisterShader( "gfx/2d/binSideArrow" );
+	cgs.media.binocularTri			= trap_R_RegisterShader( "gfx/2d/binTopTri" );
+	cgs.media.binocularStatic		= trap_R_RegisterShader( "gfx/2d/binocularWindow" );
+	cgs.media.binocularOverlay		= trap_R_RegisterShader( "gfx/2d/binocularNumOverlay" );
 
-	cg->loadLCARSStage = 5;
+	cg.loadLCARSStage = 5;
 
 	// Chunk models
 	//FIXME: jfm:? bother to conditionally load these if an ent has this material type?
@@ -2254,12 +2223,9 @@ Ghoul2 Insert End
 		}
 	}
 
-	cg->loadLCARSStage = 6;
+	cg.loadLCARSStage = 6;
 
-	if( Q_stricmp(Cvar_VariableString( "mapname" ), "mp/ctf5") == 0)
-		cgs.media.glassShardShader	= trap_R_RegisterShader( "gfx/misc/test_crackle" );
-	else
-		cgs.media.glassShardShader	= 0;
+	cgs.media.glassShardShader	= trap_R_RegisterShader( "gfx/misc/test_crackle" );
 
 	// doing one shader just makes it look like a shell.  By using two shaders with different bulge offsets and different texture scales, it has a much more chaotic look
 	cgs.media.electricBodyShader			= trap_R_RegisterShader( "gfx/misc/electric" );
@@ -2303,7 +2269,7 @@ Ghoul2 Insert End
 		}
 	}
 
-	cg->loadLCARSStage = 7;
+	cg.loadLCARSStage = 7;
 
 	// register all the server specified models
 	for (i=1 ; i<MAX_MODELS ; i++) {
@@ -2331,7 +2297,7 @@ Ghoul2 Insert End
 			cgs.gameModels[i] = 0;
 		}
 	}
-	cg->loadLCARSStage = 8;
+	cg.loadLCARSStage = 8;
 /*
 Ghoul2 Insert Start
 */
@@ -2339,7 +2305,6 @@ Ghoul2 Insert Start
 
 //	CG_LoadingString( "BSP instances" );
 
-/*
 	for(i = 1; i < MAX_SUB_BSP; i++)
 	{
 		const char		*bspName = 0;
@@ -2378,7 +2343,6 @@ Ghoul2 Insert Start
 			breakPoint++;
 		}
 	}
-*/
 
 //	CG_LoadingString( "Creating terrain" );
 	for(i = 1; i < MAX_TERRAINS; i++)
@@ -2422,7 +2386,7 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
-	cg->loadLCARSStage = 9;
+	cg.loadLCARSStage = 9;
 
 
 	// new stuff
@@ -2434,7 +2398,7 @@ Ghoul2 Insert End
 	cgs.media.teamLeaderShader = trap_R_RegisterShaderNoMip("ui/assets/statusbar/team_leader.tga");
 	cgs.media.retrieveShader = trap_R_RegisterShaderNoMip("ui/assets/statusbar/retrieve.tga");
 	cgs.media.escortShader = trap_R_RegisterShaderNoMip("ui/assets/statusbar/escort.tga");
-//	cgs.media.cursor = trap_R_RegisterShaderNoMip( "menu/art/3_cursor2" );
+	cgs.media.cursor = trap_R_RegisterShaderNoMip( "menu/art/3_cursor2" );
 	cgs.media.sizeCursor = trap_R_RegisterShaderNoMip( "ui/assets/sizecursor.tga" );
 	cgs.media.selectCursor = trap_R_RegisterShaderNoMip( "ui/assets/selectcursor.tga" );
 	cgs.media.flagShaders[0] = trap_R_RegisterShaderNoMip("ui/assets/statusbar/flag_in_base.tga");
@@ -2459,24 +2423,17 @@ Ghoul2 Insert End
 		}
 	}
 */
-#ifdef _XBOX
-	}
-#endif
 }
 
 
 const char *CG_GetStringEdString(char *refSection, char *refName)
 {
-	extern const char *SE_GetString( const char *psPackageReference, const char *psStringReference );
-	return SE_GetString( refSection, refName );
-/*
 	static char text[2][1024]={0};	//just incase it's nested
 	static int		index = 0;
 
 	index ^= 1;
 	trap_SP_GetStringTextString(va("%s_%s", refSection, refName), text[index], sizeof(text[0]));
 	return text[index];
-*/
 }
 
 int	CG_GetClassCount(team_t team,int siegeClass );
@@ -2522,20 +2479,20 @@ CG_BuildSpectatorString
 */
 void CG_BuildSpectatorString(void) {
 	int i;
-	cg->spectatorList[0] = 0;
+	cg.spectatorList[0] = 0;
 
 	// Count up the number of players per team and per class
 	CG_SiegeCountCvars();
 
 	for (i = 0; i < MAX_CLIENTS; i++) {
 		if (cgs.clientinfo[i].infoValid && cgs.clientinfo[i].team == TEAM_SPECTATOR ) {
-			Q_strcat(cg->spectatorList, sizeof(cg->spectatorList), va("%s     ", cgs.clientinfo[i].name));
+			Q_strcat(cg.spectatorList, sizeof(cg.spectatorList), va("%s     ", cgs.clientinfo[i].name));
 		}
 	}
-	i = strlen(cg->spectatorList);
-	if (i != cg->spectatorLen) {
-		cg->spectatorLen = i;
-		cg->spectatorWidth = -1;
+	i = strlen(cg.spectatorList);
+	if (i != cg.spectatorLen) {
+		cg.spectatorLen = i;
+		cg.spectatorWidth = -1;
 	}
 }
 
@@ -2548,13 +2505,13 @@ CG_RegisterClients
 static void CG_RegisterClients( void ) {
 	int		i;
 
-	CG_LoadingClient(cg->clientNum);
-	CG_NewClientInfo(cg->clientNum, qfalse);
+	CG_LoadingClient(cg.clientNum);
+	CG_NewClientInfo(cg.clientNum, qfalse);
 
 	for (i=0 ; i<MAX_CLIENTS ; i++) {
 		const char		*clientInfo;
 
-		if (cg->clientNum == i) {
+		if (cg.clientNum == i) {
 			continue;
 		}
 
@@ -2695,13 +2652,13 @@ qboolean CG_Asset_Parse(int handle) {
 		}
 
 		// gradientbar
-//		if (Q_stricmp(token.string, "gradientbar") == 0) {
-//			if (!trap_PC_ReadToken(handle, &token)) {
-//				return qfalse;
-//			}
-//			cgDC.Assets.gradientBar = trap_R_RegisterShaderNoMip(token.string);
-//			continue;
-//		}
+		if (Q_stricmp(token.string, "gradientbar") == 0) {
+			if (!trap_PC_ReadToken(handle, &token)) {
+				return qfalse;
+			}
+			cgDC.Assets.gradientBar = trap_R_RegisterShaderNoMip(token.string);
+			continue;
+		}
 
 		// enterMenuSound
 		if (Q_stricmp(token.string, "menuEnterSound") == 0) {
@@ -2743,7 +2700,7 @@ qboolean CG_Asset_Parse(int handle) {
 			if (!PC_String_Parse(handle, &cgDC.Assets.cursorStr)) {
 				return qfalse;
 			}
-//			cgDC.Assets.cursor = trap_R_RegisterShaderNoMip( cgDC.Assets.cursorStr);
+			cgDC.Assets.cursor = trap_R_RegisterShaderNoMip( cgDC.Assets.cursorStr);
 			continue;
 		}
 
@@ -2878,19 +2835,19 @@ static int CG_FeederCount(float feederID) {
 	int i, count;
 	count = 0;
 	if (feederID == FEEDER_REDTEAM_LIST) {
-		for (i = 0; i < cg->numScores; i++) {
-			if (cg->scores[i].team == TEAM_RED) {
+		for (i = 0; i < cg.numScores; i++) {
+			if (cg.scores[i].team == TEAM_RED) {
 				count++;
 			}
 		}
 	} else if (feederID == FEEDER_BLUETEAM_LIST) {
-		for (i = 0; i < cg->numScores; i++) {
-			if (cg->scores[i].team == TEAM_BLUE) {
+		for (i = 0; i < cg.numScores; i++) {
+			if (cg.scores[i].team == TEAM_BLUE) {
 				count++;
 			}
 		}
 	} else if (feederID == FEEDER_SCOREBOARD) {
-		return cg->numScores;
+		return cg.numScores;
 	}
 	return count;
 }
@@ -2898,17 +2855,17 @@ static int CG_FeederCount(float feederID) {
 
 void CG_SetScoreSelection(void *p) {
 	menuDef_t *menu = (menuDef_t*)p;
-	playerState_t *ps = &cg->snap->ps;
+	playerState_t *ps = &cg.snap->ps;
 	int i, red, blue;
 	red = blue = 0;
-	for (i = 0; i < cg->numScores; i++) {
-		if (cg->scores[i].team == TEAM_RED) {
+	for (i = 0; i < cg.numScores; i++) {
+		if (cg.scores[i].team == TEAM_RED) {
 			red++;
-		} else if (cg->scores[i].team == TEAM_BLUE) {
+		} else if (cg.scores[i].team == TEAM_BLUE) {
 			blue++;
 		}
-		if (ps->clientNum == cg->scores[i].client) {
-			cg->selectedScore = i;
+		if (ps->clientNum == cg.scores[i].client) {
+			cg.selectedScore = i;
 		}
 	}
 
@@ -2920,13 +2877,13 @@ void CG_SetScoreSelection(void *p) {
 	if ( cgs.gametype >= GT_TEAM ) {
 		int feeder = FEEDER_REDTEAM_LIST;
 		i = red;
-		if (cg->scores[cg->selectedScore].team == TEAM_BLUE) {
+		if (cg.scores[cg.selectedScore].team == TEAM_BLUE) {
 			feeder = FEEDER_BLUETEAM_LIST;
 			i = blue;
 		}
 		Menu_SetFeederSelection(menu, feeder, i, NULL);
 	} else {
-		Menu_SetFeederSelection(menu, FEEDER_SCOREBOARD, cg->selectedScore, NULL);
+		Menu_SetFeederSelection(menu, FEEDER_SCOREBOARD, cg.selectedScore, NULL);
 	}
 }
 
@@ -2935,18 +2892,18 @@ static clientInfo_t * CG_InfoFromScoreIndex(int index, int team, int *scoreIndex
 	int i, count;
 	if ( cgs.gametype >= GT_TEAM ) {
 		count = 0;
-		for (i = 0; i < cg->numScores; i++) {
-			if (cg->scores[i].team == team) {
+		for (i = 0; i < cg.numScores; i++) {
+			if (cg.scores[i].team == team) {
 				if (count == index) {
 					*scoreIndex = i;
-					return &cgs.clientinfo[cg->scores[i].client];
+					return &cgs.clientinfo[cg.scores[i].client];
 				}
 				count++;
 			}
 		}
 	}
 	*scoreIndex = index;
-	return &cgs.clientinfo[ cg->scores[index].client ];
+	return &cgs.clientinfo[ cg.scores[index].client ];
 }
 
 static const char *CG_FeederItemText(float feederID, int index, int column,
@@ -2966,7 +2923,7 @@ static const char *CG_FeederItemText(float feederID, int index, int column,
 	}
 
 	info = CG_InfoFromScoreIndex(index, team, &scoreIndex);
-	sp = &cg->scores[scoreIndex];
+	sp = &cg.scores[scoreIndex];
 
 	if (info && info->infoValid) {
 		switch (column) {
@@ -2998,7 +2955,7 @@ static const char *CG_FeederItemText(float feederID, int index, int column,
 				}
 		  break;
 			case 2:
-				if ( cg->snap->ps.stats[ STAT_CLIENTS_READY ] & ( 1 << sp->client ) ) {
+				if ( cg.snap->ps.stats[ STAT_CLIENTS_READY ] & ( 1 << sp->client ) ) {
 					return "Ready";
 				}
 				if (team == -1) {
@@ -3045,16 +3002,16 @@ static qboolean CG_FeederSelection(float feederID, int index, itemDef_t *item) {
 		int i, count;
 		int team = (feederID == FEEDER_REDTEAM_LIST) ? TEAM_RED : TEAM_BLUE;
 		count = 0;
-		for (i = 0; i < cg->numScores; i++) {
-			if (cg->scores[i].team == team) {
+		for (i = 0; i < cg.numScores; i++) {
+			if (cg.scores[i].team == team) {
 				if (index == count) {
-					cg->selectedScore = i;
+					cg.selectedScore = i;
 				}
 				count++;
 			}
 		}
 	} else {
-		cg->selectedScore = index;
+		cg.selectedScore = index;
 	}
 
 	return qtrue;
@@ -3082,17 +3039,17 @@ static int CG_OwnerDrawWidth(int ownerDraw, float scale) {
 			return CG_Text_Width(CG_GetKillerText(), scale, FONT_MEDIUM);
 			break;
 	  case CG_RED_NAME:
-			return CG_Text_Width(cg_redTeamName.string, scale, FONT_MEDIUM);
+			return CG_Text_Width(DEFAULT_REDTEAM_NAME/*cg_redTeamName.string*/, scale, FONT_MEDIUM);
 			break;
 	  case CG_BLUE_NAME:
-			return CG_Text_Width(cg_blueTeamName.string, scale, FONT_MEDIUM);
+			return CG_Text_Width(DEFAULT_BLUETEAM_NAME/*cg_blueTeamName.string*/, scale, FONT_MEDIUM);
 			break;
 
 
 	}
 	return 0;
 }
-/*
+
 static int CG_PlayCinematic(const char *name, float x, float y, float w, float h) {
   return trap_CIN_PlayCinematic(name, x, y, w, h, CIN_loop);
 }
@@ -3109,7 +3066,6 @@ static void CG_DrawCinematic(int handle, float x, float y, float w, float h) {
 static void CG_RunCinematicFrame(int handle) {
   trap_CIN_RunCinematic(handle);
 }
-*/
 
 /*
 =================
@@ -3123,7 +3079,7 @@ void CG_LoadMenus(const char *menuFile)
 	const char	*p;
 	int	len;
 	fileHandle_t	f;
-	char buf[MAX_MENUDEFFILE];
+	static char buf[MAX_MENUDEFFILE];
 
 	len = trap_FS_FOpenFile( menuFile, &f, FS_READ );
 
@@ -3243,10 +3199,10 @@ void CG_LoadHudMenu()
 	cgDC.registerSound = &trap_S_RegisterSound;
 	cgDC.startBackgroundTrack = &trap_S_StartBackgroundTrack;
 	cgDC.stopBackgroundTrack = &trap_S_StopBackgroundTrack;
-//	cgDC.playCinematic = &CG_PlayCinematic;
-//	cgDC.stopCinematic = &CG_StopCinematic;
-//	cgDC.drawCinematic = &CG_DrawCinematic;
-//	cgDC.runCinematicFrame = &CG_RunCinematicFrame;
+	cgDC.playCinematic = &CG_PlayCinematic;
+	cgDC.stopCinematic = &CG_StopCinematic;
+	cgDC.drawCinematic = &CG_DrawCinematic;
+	cgDC.runCinematicFrame = &CG_RunCinematicFrame;
 	
 	Init_Display(&cgDC);
 
@@ -3268,15 +3224,23 @@ void CG_AssetCache() {
 	//}
 	//Assets.background = trap_R_RegisterShaderNoMip( ASSET_BACKGROUND );
 	//Com_Printf("Menu Size: %i bytes\n", sizeof(Menus));
-//	cgDC.Assets.gradientBar = trap_R_RegisterShaderNoMip( ASSET_GRADIENTBAR );
-//	cgDC.Assets.scrollBar = trap_R_RegisterShaderNoMip( ASSET_SCROLLBAR );
-//	cgDC.Assets.scrollBarArrowDown = trap_R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWDOWN );
-//	cgDC.Assets.scrollBarArrowUp = trap_R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWUP );
-//	cgDC.Assets.scrollBarArrowLeft = trap_R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWLEFT );
-//	cgDC.Assets.scrollBarArrowRight = trap_R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWRIGHT );
-//	cgDC.Assets.scrollBarThumb = trap_R_RegisterShaderNoMip( ASSET_SCROLL_THUMB );
+	cgDC.Assets.gradientBar = trap_R_RegisterShaderNoMip( ASSET_GRADIENTBAR );
+	cgDC.Assets.fxBasePic = trap_R_RegisterShaderNoMip( ART_FX_BASE );
+	cgDC.Assets.fxPic[0] = trap_R_RegisterShaderNoMip( ART_FX_RED );
+	cgDC.Assets.fxPic[1] = trap_R_RegisterShaderNoMip( ART_FX_YELLOW );
+	cgDC.Assets.fxPic[2] = trap_R_RegisterShaderNoMip( ART_FX_GREEN );
+	cgDC.Assets.fxPic[3] = trap_R_RegisterShaderNoMip( ART_FX_TEAL );
+	cgDC.Assets.fxPic[4] = trap_R_RegisterShaderNoMip( ART_FX_BLUE );
+	cgDC.Assets.fxPic[5] = trap_R_RegisterShaderNoMip( ART_FX_CYAN );
+	cgDC.Assets.fxPic[6] = trap_R_RegisterShaderNoMip( ART_FX_WHITE );
+	cgDC.Assets.scrollBar = trap_R_RegisterShaderNoMip( ASSET_SCROLLBAR );
+	cgDC.Assets.scrollBarArrowDown = trap_R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWDOWN );
+	cgDC.Assets.scrollBarArrowUp = trap_R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWUP );
+	cgDC.Assets.scrollBarArrowLeft = trap_R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWLEFT );
+	cgDC.Assets.scrollBarArrowRight = trap_R_RegisterShaderNoMip( ASSET_SCROLLBAR_ARROWRIGHT );
+	cgDC.Assets.scrollBarThumb = trap_R_RegisterShaderNoMip( ASSET_SCROLL_THUMB );
 	cgDC.Assets.sliderBar = trap_R_RegisterShaderNoMip( ASSET_SLIDER_BAR );
-//	cgDC.Assets.sliderThumb = trap_R_RegisterShaderNoMip( ASSET_SLIDER_THUMB );
+	cgDC.Assets.sliderThumb = trap_R_RegisterShaderNoMip( ASSET_SLIDER_THUMB );
 }
 
 /*
@@ -3290,18 +3254,18 @@ Ghoul2 Insert Start
 void CG_Init_CG(void)
 {
 #ifdef _XBOX
-	qboolean widescreen = cg->widescreen;
+	qboolean widescreen = cg.widescreen;
 #endif
-	memset( cg, 0, sizeof(*cg));
+	memset( &cg, 0, sizeof(cg));
 #ifdef _XBOX
-	cg->widescreen = widescreen;
+	cg.widescreen = widescreen;
 #endif
 }
 
 #ifdef _XBOX
 void CG_SetWidescreen(qboolean widescreen)
 {
-	cg->widescreen = widescreen;
+	cg.widescreen = widescreen;
 }
 #endif
 
@@ -3310,8 +3274,7 @@ void CG_SetWidescreen(qboolean widescreen)
 void CG_Init_CGents(void)
 {
 	
-//	memset(&cg_entities, 0, sizeof(cg_entities));
-	memset(cg_entities, 0, MAX_GENTITIES * sizeof(centity_t));
+	memset(&cg_entities, 0, sizeof(cg_entities));
 }
 
 
@@ -3333,11 +3296,7 @@ void CG_TransitionPermanent(void)
 			cent->nextState = cent->currentState;
 			VectorCopy (cent->currentState.origin, cent->lerpOrigin);
 			VectorCopy (cent->currentState.angles, cent->lerpAngles);
-#ifdef _XBOX
-			cent->currentValid[ClientManager::ActiveClientNum()] = qtrue;
-#else
 			cent->currentValid = qtrue;
-#endif
 
 			cg_permanents[cg_numpermanents++] = cent;
 		}
@@ -3749,19 +3708,10 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum )
 	const char	*s;
 	int i = 0;
 
-	if( !cg_entities )
-		cg_entities = new centity_t[MAX_GENTITIES];
-
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() != 1)
-#endif
 	BG_InitAnimsets(); //clear it out
 
-	trap_CG_RegisterSharedMemory(cg->sharedBuffer);
+	trap_CG_RegisterSharedMemory(cg.sharedBuffer);
 
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() != 1)
-#endif
 	//Load external vehicle data
 	BG_VehicleLoadParms();
 
@@ -3775,10 +3725,6 @@ Ghoul2 Insert Start
 // this is a No-No now we have stl vector classes in here.
 //	memset( &cg, 0, sizeof( cg ) );
 	CG_Init_CG();
-
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() != 1) {
-#endif
 	CG_InitItems();
 
 	//create the global jetpack instance
@@ -3799,57 +3745,36 @@ Ghoul2 Insert End
 	//	if desired during parse.  Dunno how legal it is to store in these cgDC things, but it causes no harm
 	//	and even if/when they get overwritten they'll be legalised by the menu asset parser :-)
 //	CG_LoadFonts();
-//	cgDC.Assets.qhSmallFont  = trap_R_RegisterFont("ocr_a");
-	cgDC.Assets.qhSmallFont  = trap_R_RegisterFont("ergoec");	// Xbox - use ergoec here too!
+	cgDC.Assets.qhSmallFont  = trap_R_RegisterFont("ocr_a");
 	cgDC.Assets.qhMediumFont = trap_R_RegisterFont("ergoec");
 	cgDC.Assets.qhBigFont = cgDC.Assets.qhMediumFont;
 
 	memset( &cgs, 0, sizeof( cgs ) );
 	memset( cg_weapons, 0, sizeof(cg_weapons) );
 
-#ifdef _XBOX
-	}
-#endif
+	cg.clientNum = clientNum;
 
-	cg->clientNum = clientNum;
-
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-		cgs.processedSnapshotNum[ClientManager::ActiveClientNum()] = serverCommandSequence;
-	else
-		cgs.processedSnapshotNum[0] = serverMessageNum;
-#else
 	cgs.processedSnapshotNum = serverMessageNum;
-#endif
-
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-		ClientManager::ActiveClient().serverCommandSequence = serverCommandSequence;
-	else
-#endif
 	cgs.serverCommandSequence = serverCommandSequence;
-	
 
-	cg->loadLCARSStage		= 0;
+	cg.loadLCARSStage		= 0;
 
-	cg->itemSelect = -1;
-	cg->forceSelect = -1;
+	cg.itemSelect = -1;
+	cg.forceSelect = -1;
 	
 	// load a few needed things before we do any screen updates
-//	cgs.media.charsetShader		= trap_R_RegisterShaderNoMip( "gfx/2d/charsgrid_med" );
+	cgs.media.charsetShader		= trap_R_RegisterShaderNoMip( "gfx/2d/charsgrid_med" );
 	cgs.media.whiteShader		= trap_R_RegisterShader( "white" );
 
-	cgs.media.loadTick			= trap_R_RegisterShaderNoMip( "gfx/menus/newFront/GlowLoad" );
-	cgs.media.levelLoad			= trap_R_RegisterShaderNoMip( "gfx/menus/newFront/SaberLoad" );
+	cgs.media.loadBarLED		= trap_R_RegisterShaderNoMip( "gfx/hud/load_tick" );
+	cgs.media.loadBarLEDCap		= trap_R_RegisterShaderNoMip( "gfx/hud/load_tick_cap" );
+	cgs.media.loadBarLEDSurround= trap_R_RegisterShaderNoMip( "gfx/hud/mp_levelload" );
 
 	// Force HUD set up
-	cg->forceHUDActive = qtrue;
-	cg->forceHUDTotalFlashTime = 0;
-	cg->forceHUDNextFlashTime = 0;
+	cg.forceHUDActive = qtrue;
+	cg.forceHUDTotalFlashTime = 0;
+	cg.forceHUDNextFlashTime = 0;
 
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() != 1) {
-#endif
 	i = WP_NONE+1;
 	while (i <= LAST_USEABLE_WEAPON)
 	{
@@ -3876,9 +3801,9 @@ Ghoul2 Insert End
 	i = 0;
 
 	// HUD artwork for cycling inventory,weapons and force powers 
-//	cgs.media.weaponIconBackground		= trap_R_RegisterShaderNoMip( "gfx/hud/background");
-//	cgs.media.forceIconBackground		= trap_R_RegisterShaderNoMip( "gfx/hud/background_f");
-//	cgs.media.inventoryIconBackground	= trap_R_RegisterShaderNoMip( "gfx/hud/background_i");
+	cgs.media.weaponIconBackground		= trap_R_RegisterShaderNoMip( "gfx/hud/background");
+	cgs.media.forceIconBackground		= trap_R_RegisterShaderNoMip( "gfx/hud/background_f");
+	cgs.media.inventoryIconBackground	= trap_R_RegisterShaderNoMip( "gfx/hud/background_i");
 
 	//rww - precache holdable item icons here
 	while (i < bg_numItems)
@@ -3920,26 +3845,14 @@ Ghoul2 Insert End
 
 	CG_InitConsoleCommands();
 
-#ifdef _XBOX
-	}
-#endif
+	cg.weaponSelect = WP_BRYAR_PISTOL;
 
-	cg->weaponSelect = WP_BRYAR_PISTOL;
-
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() != 1) {
-#endif
 	cgs.redflag = cgs.blueflag = -1; // For compatibily, default to unset for
 	cgs.flagStatus = -1;
 	// old servers
 
 	// get the rendering configuration from the client system
 	trap_GetGlconfig( &cgs.glconfig );
-#ifdef _XBOX
-	if(cg->widescreen)
-		cgs.screenXScale = cgs.glconfig.vidWidth / 720.0;
-	else
-#endif
 	cgs.screenXScale = cgs.glconfig.vidWidth / 640.0;
 	cgs.screenYScale = cgs.glconfig.vidHeight / 480.0;
 
@@ -3966,7 +3879,7 @@ Ghoul2 Insert End
 
 	String_Init();
 
-	cg->loading = qtrue;		// force players to load instead of defer
+	cg.loading = qtrue;		// force players to load instead of defer
 
 	//make sure saber data is loaded before this! (so we can precache the appropriate hilts)
 	CG_InitSiegeMode();
@@ -3975,15 +3888,8 @@ Ghoul2 Insert End
 
 //	CG_LoadingString( "graphics" );
 
-#ifdef _XBOX
-	}
-#endif
-
 	CG_RegisterGraphics();
 
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() != 1) {
-#endif
 //	CG_LoadingString( "clients" );
 
 	CG_RegisterClients();		// if low on memory, some clients will be deferred
@@ -3991,14 +3897,14 @@ Ghoul2 Insert End
 	CG_AssetCache();
 	CG_LoadHudMenu();      // load new hud stuff
 
-	cg->loading = qfalse;	// future players will be deferred
+	cg.loading = qfalse;	// future players will be deferred
 
 	CG_InitLocalEntities();
 
 	CG_InitMarkPolys();
 
 	// remove the last loading update
-	cg->infoScreenText[0] = 0;
+	cg.infoScreenText[0] = 0;
 
 	// Make sure we have update values (scores)
 	CG_SetConfigValues();
@@ -4020,15 +3926,8 @@ Ghoul2 Insert End
 
 	trap_S_ClearLoopingSounds();
 
-#ifdef _XBOX
-	}
-#endif
+	trap_R_GetDistanceCull(&cg.distanceCull);
 
-	trap_R_GetDistanceCull(&cg->distanceCull);
-
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() != 1)
-#endif
 	//now get all the cgame only cents
 	CG_SpawnCGameOnlyEnts();
 }
@@ -4036,17 +3935,15 @@ Ghoul2 Insert End
 //makes sure returned string is in localized format
 const char *CG_GetLocationString(const char *loc)
 {
-//	static char text[1024]={0};
+	static char text[1024]={0};
 
 	if (!loc || loc[0] != '@')
 	{ //just a raw string
 		return loc;
 	}
 
-	extern const char *SE_GetString( const char *psPackageAndStringReference );
-	return SE_GetString( loc+1 );
-//	trap_SP_GetStringTextString(loc+1, text, sizeof(text));
-//	return text;
+	trap_SP_GetStringTextString(loc+1, text, sizeof(text));
+	return text;
 }
 
 //clean up all the ghoul2 allocations, the nice and non-hackly way -rww
@@ -4116,15 +4013,7 @@ void CG_Shutdown( void )
 
 	// some mods may need to do cleanup work here,
 	// like closing files or archiving session data
-
-	// De-allocate cg_entities (if this is a map change, it just gets re-created above)
-	delete [] cg_entities;
-	cg_entities = NULL;
 }
-
-#ifdef _XBOX // include this so that we have access to the player class here ( ie jedi, infantry, etc...)
-#include "bg_saga.h"
-#endif
 
 /*
 ===============
@@ -4135,31 +4024,15 @@ void CG_NextForcePower_f( void )
 {
 	int current;
 	usercmd_t cmd;
-
-	if ( !cg->snap )
+	if ( !cg.snap )
 	{
 		return;
 	}
 
-	if (cg->predictedPlayerState.pm_type == PM_SPECTATOR)
+	if (cg.predictedPlayerState.pm_type == PM_SPECTATOR)
 	{
 		return;
 	}
-
-	// SIEGE
-	// if we have inventory, then we don't have force powers
-	// remap nextforcepower to nextinventory
-#ifdef _XBOX
-//	short cg_siegeClassIndex = cgs.clientinfo[cg->snap->ps.clientNum].siegeIndex;
-//	if(cgs.gametype == GT_SIEGE && bgSiegeClasses[cg_siegeClassIndex].invenItems )
-//	{
-//		CG_NextInventory_f();
-//		return;
-//	}
-#endif
-
-	ClientManager::ActiveClient().swapMan1.SetUp();
-	ClientManager::ActiveClient().swapMan2.SetUp();
 
 	current = trap_GetCurrentCmdNumber();
 	trap_GetUserCmd(current, &cmd);
@@ -4169,23 +4042,23 @@ void CG_NextForcePower_f( void )
 		return;
 	}
 
-	if (cg->snap->ps.pm_flags & PMF_FOLLOW)
+	if (cg.snap->ps.pm_flags & PMF_FOLLOW)
 	{
 		return;
 	}
 
-//	BG_CycleForce(&cg->snap->ps, 1);
-	if (cg->forceSelect != -1)
+//	BG_CycleForce(&cg.snap->ps, 1);
+	if (cg.forceSelect != -1)
 	{
-		cg->snap->ps.fd.forcePowerSelected = cg->forceSelect;
+		cg.snap->ps.fd.forcePowerSelected = cg.forceSelect;
 	}
 
-	BG_CycleForce(&cg->snap->ps, 1);
+	BG_CycleForce(&cg.snap->ps, 1);
 
-	if (cg->snap->ps.fd.forcePowersKnown & (1 << cg->snap->ps.fd.forcePowerSelected))
+	if (cg.snap->ps.fd.forcePowersKnown & (1 << cg.snap->ps.fd.forcePowerSelected))
 	{
-		cg->forceSelect = cg->snap->ps.fd.forcePowerSelected;
-		cg->forceSelectTime = cg->time;
+		cg.forceSelect = cg.snap->ps.fd.forcePowerSelected;
+		cg.forceSelectTime = cg.time;
 	}
 }
 
@@ -4198,31 +4071,15 @@ void CG_PrevForcePower_f( void )
 {
 	int current;
 	usercmd_t cmd;
-
-	if ( !cg->snap )
+	if ( !cg.snap )
 	{
 		return;
 	}
 
-	if (cg->predictedPlayerState.pm_type == PM_SPECTATOR)
+	if (cg.predictedPlayerState.pm_type == PM_SPECTATOR)
 	{
 		return;
 	}
-
-	// SIEGE
-	// if we have inventory, then we don't have force powers
-	// remap prevforcepower to previnventory
-#ifdef _XBOX
-//	short cg_siegeClassIndex = cgs.clientinfo[cg->snap->ps.clientNum].siegeIndex;
-//	if(cgs.gametype == GT_SIEGE && bgSiegeClasses[cg_siegeClassIndex].invenItems )
-//	{
-//		CG_PrevInventory_f();
-//		return;
-//	}
-#endif
-
-	ClientManager::ActiveClient().swapMan1.SetUp();
-	ClientManager::ActiveClient().swapMan2.SetUp();
 
 	current = trap_GetCurrentCmdNumber();
 	trap_GetUserCmd(current, &cmd);
@@ -4232,88 +4089,82 @@ void CG_PrevForcePower_f( void )
 		return;
 	}
 
-	if (cg->snap->ps.pm_flags & PMF_FOLLOW)
+	if (cg.snap->ps.pm_flags & PMF_FOLLOW)
 	{
 		return;
 	}
 
-//	BG_CycleForce(&cg->snap->ps, -1);
-	if (cg->forceSelect != -1)
+//	BG_CycleForce(&cg.snap->ps, -1);
+	if (cg.forceSelect != -1)
 	{
-		cg->snap->ps.fd.forcePowerSelected = cg->forceSelect;
+		cg.snap->ps.fd.forcePowerSelected = cg.forceSelect;
 	}
 
-	BG_CycleForce(&cg->snap->ps, -1);
+	BG_CycleForce(&cg.snap->ps, -1);
 
-	if (cg->snap->ps.fd.forcePowersKnown & (1 << cg->snap->ps.fd.forcePowerSelected))
+	if (cg.snap->ps.fd.forcePowersKnown & (1 << cg.snap->ps.fd.forcePowerSelected))
 	{
-		cg->forceSelect = cg->snap->ps.fd.forcePowerSelected;
-		cg->forceSelectTime = cg->time;
+		cg.forceSelect = cg.snap->ps.fd.forcePowerSelected;
+		cg.forceSelectTime = cg.time;
 	}
 }
 
 void CG_NextInventory_f(void)
 {
-	if ( !cg->snap )
+	if ( !cg.snap )
 	{
 		return;
 	}
 
-	if (cg->snap->ps.pm_flags & PMF_FOLLOW)
+	if (cg.snap->ps.pm_flags & PMF_FOLLOW)
 	{
 		return;
 	}
 
-	if (cg->predictedPlayerState.pm_type == PM_SPECTATOR)
+	if (cg.predictedPlayerState.pm_type == PM_SPECTATOR)
 	{
 		return;
 	}
 
-	ClientManager::ActiveClient().swapMan1.SetUp();
-	ClientManager::ActiveClient().swapMan2.SetUp();
-
-	if (cg->itemSelect != -1)
+	if (cg.itemSelect != -1)
 	{
-		cg->snap->ps.stats[STAT_HOLDABLE_ITEM] = BG_GetItemIndexByTag(cg->itemSelect, IT_HOLDABLE);
+		cg.snap->ps.stats[STAT_HOLDABLE_ITEM] = BG_GetItemIndexByTag(cg.itemSelect, IT_HOLDABLE);
 	}
-	BG_CycleInven(&cg->snap->ps, 1);
+	BG_CycleInven(&cg.snap->ps, 1);
 
-	if (cg->snap->ps.stats[STAT_HOLDABLE_ITEM])
+	if (cg.snap->ps.stats[STAT_HOLDABLE_ITEM])
 	{
-		cg->itemSelect = bg_itemlist[cg->snap->ps.stats[STAT_HOLDABLE_ITEM]].giTag;
-		cg->invenSelectTime = cg->time;
+		cg.itemSelect = bg_itemlist[cg.snap->ps.stats[STAT_HOLDABLE_ITEM]].giTag;
+		cg.invenSelectTime = cg.time;
 	}
 }
 
 void CG_PrevInventory_f(void)
 {
-	if ( !cg->snap )
+	if ( !cg.snap )
 	{
 		return;
 	}
 
-	if (cg->snap->ps.pm_flags & PMF_FOLLOW)
+	if (cg.snap->ps.pm_flags & PMF_FOLLOW)
 	{
 		return;
 	}
 
-	if (cg->predictedPlayerState.pm_type == PM_SPECTATOR)
+	if (cg.predictedPlayerState.pm_type == PM_SPECTATOR)
 	{
 		return;
 	}
 
-	ClientManager::ActiveClient().swapMan1.SetUp();
-	ClientManager::ActiveClient().swapMan2.SetUp();
-
-	if (cg->itemSelect != -1)
+	if (cg.itemSelect != -1)
 	{
-		cg->snap->ps.stats[STAT_HOLDABLE_ITEM] = BG_GetItemIndexByTag(cg->itemSelect, IT_HOLDABLE);
+		cg.snap->ps.stats[STAT_HOLDABLE_ITEM] = BG_GetItemIndexByTag(cg.itemSelect, IT_HOLDABLE);
 	}
-	BG_CycleInven(&cg->snap->ps, -1);
+	BG_CycleInven(&cg.snap->ps, -1);
 
-	if (cg->snap->ps.stats[STAT_HOLDABLE_ITEM])
+	if (cg.snap->ps.stats[STAT_HOLDABLE_ITEM])
 	{
-		cg->itemSelect = bg_itemlist[cg->snap->ps.stats[STAT_HOLDABLE_ITEM]].giTag;
-		cg->invenSelectTime = cg->time;
+		cg.itemSelect = bg_itemlist[cg.snap->ps.stats[STAT_HOLDABLE_ITEM]].giTag;
+		cg.invenSelectTime = cg.time;
 	}
 }

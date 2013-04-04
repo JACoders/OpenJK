@@ -939,7 +939,6 @@ void NPC_SetBoneAngles(gentity_t *ent, char *bone, vec3_t angles)
 			thebone = &ent->s.boneIndex2;
 			boneVector = &ent->s.boneAngles2;
 			break;
-/*
 		case 1:
 			thebone = &ent->s.boneIndex3;
 			boneVector = &ent->s.boneAngles3;
@@ -948,7 +947,6 @@ void NPC_SetBoneAngles(gentity_t *ent, char *bone, vec3_t angles)
 			thebone = &ent->s.boneIndex4;
 			boneVector = &ent->s.boneAngles4;
 			break;
-*/
 		default:
 			thebone = NULL;
 			boneVector = NULL;
@@ -962,9 +960,7 @@ void NPC_SetBoneAngles(gentity_t *ent, char *bone, vec3_t angles)
 	{ //didn't find it, create it
 		if (!firstFree)
 		{ //no free bones.. can't do a thing then.
-#ifndef FINAL_BUILD
 			Com_Printf("WARNING: NPC has no free bone indexes\n");
-#endif
 			return;
 		}
 
@@ -1019,9 +1015,7 @@ void NPC_SetSurfaceOnOff(gentity_t *ent, const char *surfaceName, int surfaceFla
 
 	if (!foundIt)
 	{
-#ifndef FINAL_BUILD
 		Com_Printf("WARNING: Tried to toggle NPC surface that isn't in toggleable surface list (%s)\n", surfaceName);
-#endif
 		return;
 	}
 

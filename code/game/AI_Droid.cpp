@@ -120,7 +120,7 @@ void Droid_Patrol( void )
 
 			if (TIMER_Done(NPC,"patrolNoise"))
 			{
-				G_SoundOnEnt( NPC, CHAN_VOICE_ATTEN, va("sound/chars/mouse/misc/mousego%d.wav", Q_irand(1, 3)) );
+				G_SoundOnEnt( NPC, CHAN_AUTO, va("sound/chars/mouse/misc/mousego%d.wav", Q_irand(1, 3)) );
 
 				TIMER_Set( NPC, "patrolNoise", Q_irand( 2000, 4000 ) );
 			}
@@ -129,7 +129,7 @@ void Droid_Patrol( void )
 		{
 			if (TIMER_Done(NPC,"patrolNoise"))
 			{
-				G_SoundOnEnt( NPC, CHAN_VOICE_ATTEN, va("sound/chars/r2d2/misc/r2d2talk0%d.wav",	Q_irand(1, 3)) );
+				G_SoundOnEnt( NPC, CHAN_AUTO, va("sound/chars/r2d2/misc/r2d2talk0%d.wav",	Q_irand(1, 3)) );
 
 				TIMER_Set( NPC, "patrolNoise", Q_irand( 2000, 4000 ) );
 			}
@@ -138,7 +138,7 @@ void Droid_Patrol( void )
 		{
 			if (TIMER_Done(NPC,"patrolNoise"))
 			{
-				G_SoundOnEnt( NPC, CHAN_VOICE_ATTEN, va("sound/chars/r5d2/misc/r5talk%d.wav", Q_irand(1, 4)) );
+				G_SoundOnEnt( NPC, CHAN_AUTO, va("sound/chars/r5d2/misc/r5talk%d.wav", Q_irand(1, 4)) );
 
 				TIMER_Set( NPC, "patrolNoise", Q_irand( 2000, 4000 ) );
 			}
@@ -147,7 +147,7 @@ void Droid_Patrol( void )
 		{
 			if (TIMER_Done(NPC,"patrolNoise"))
 			{
-				G_SoundOnEnt( NPC, CHAN_VOICE_ATTEN, va("sound/chars/gonk/misc/gonktalk%d.wav", Q_irand(1, 2)) );
+				G_SoundOnEnt( NPC, CHAN_AUTO, va("sound/chars/gonk/misc/gonktalk%d.wav", Q_irand(1, 2)) );
 
 				TIMER_Set( NPC, "patrolNoise", Q_irand( 2000, 4000 ) );
 			}

@@ -13,9 +13,10 @@
 
 #include "../namespace_begin.h"
 qboolean BG_SabersOff( playerState_t *ps );
+extern stringID_table_t WPTable[];
+extern stringID_table_t BSTable[];
 #include "../namespace_end.h"
 
-extern stringID_table_t BSTable[];
 
 //This is a hack I guess. It's because we can't include the file this enum is in
 //unless we're using cpp. But we need it for the interpreter stuff.
@@ -946,9 +947,6 @@ Gets the value of a tag by the give name
 */
 int	Q3_GetTag( int entID, const char *name, int lookup, vec3_t info )
 {
-	assert( 0 );
-	return 0;
-/*
 	gentity_t	*ent = &g_entities[entID];
 
 	if (!ent->inuse)
@@ -969,7 +967,6 @@ int	Q3_GetTag( int entID, const char *name, int lookup, vec3_t info )
 	}
 
 	return 0;
-*/
 }
 
 //-----------------------------------------------
@@ -2143,6 +2140,185 @@ static void Q3_SetOriginOffset( int entID, int axis, float offset )
 }
 
 /*
+=============
+Q3_SetEnemy
+
+Sets the enemy of an entity
+=============
+*/
+static void Q3_SetEnemy( int entID, const char *name )
+{
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetEnemy: invalid entID %d\n", entID);
+		return;
+	}
+
+	if( !Q_stricmp("NONE", name) || !Q_stricmp("NULL", name))
+	{
+		if(ent->NPC)
+		{
+			G_ClearEnemy(ent);
+		}
+		else
+		{
+			ent->enemy = NULL;
+		}
+	}
+	else
+	{
+		gentity_t	*enemy = G_Find( NULL, FOFS(targetname), (char *) name);
+
+		if(enemy == NULL)
+		{
+			G_DebugPrint( WL_ERROR, "Q3_SetEnemy: no such enemy: '%s'\n", name );
+			return;
+		}
+		/*else if(enemy->health <= 0)
+		{
+			//G_DebugPrint( WL_ERROR, "Q3_SetEnemy: ERROR - desired enemy has health %d\n", enemy->health );
+			return;
+		}*/
+		else
+		{
+			if(ent->NPC)
+			{
+				G_SetEnemy( ent, enemy );
+				ent->cantHitEnemyCounter = 0;
+			}
+			else
+			{
+				G_SetEnemy(ent, enemy);
+			}
+		}
+	}
+}
+
+
+/*
+=============
+Q3_SetLeader
+
+Sets the leader of an NPC
+=============
+*/
+static void Q3_SetLeader( int entID, const char *name )
+{
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetLeader: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->client )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetLeader: ent %d is NOT a player or NPC!\n", entID);
+		return;
+	}
+
+	if( !Q_stricmp("NONE", name) || !Q_stricmp("NULL", name))
+	{
+		ent->client->leader = NULL;
+	}
+	else
+	{
+		gentity_t	*leader = G_Find( NULL, FOFS(targetname), (char *) name);
+
+		if(leader == NULL)
+		{
+			//G_DebugPrint( WL_ERROR,"Q3_SetEnemy: unable to locate enemy: '%s'\n", name );
+			return;
+		}
+		else if(leader->health <= 0)
+		{
+			//G_DebugPrint( WL_ERROR,"Q3_SetEnemy: ERROR - desired enemy has health %d\n", enemy->health );
+			return;
+		}
+		else
+		{
+			ent->client->leader = leader;
+		}
+	}
+}
+
+/*
+=============
+Q3_SetNavGoal
+
+Sets the navigational goal of an entity
+=============
+*/
+static qboolean Q3_SetNavGoal( int entID, const char *name )
+{
+	gentity_t	*ent  = &g_entities[ entID ];
+	vec3_t		goalPos;
+
+	if ( !ent->health )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetNavGoal: tried to set a navgoal (\"%s\") on a corpse! \"%s\"\n", name, ent->script_targetname );
+		return qfalse;
+	}
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetNavGoal: tried to set a navgoal (\"%s\") on a non-NPC: \"%s\"\n", name, ent->script_targetname );
+		return qfalse;
+	}
+	if ( !ent->NPC->tempGoal )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetNavGoal: tried to set a navgoal (\"%s\") on a dead NPC: \"%s\"\n", name, ent->script_targetname );
+		return qfalse;
+	}
+	if ( !ent->NPC->tempGoal->inuse )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetNavGoal: NPC's (\"%s\") navgoal is freed: \"%s\"\n", name, ent->script_targetname );
+		return qfalse;
+	}
+	if( Q_stricmp( "null", name) == 0
+		|| Q_stricmp( "NULL", name) == 0 )
+	{
+		ent->NPC->goalEntity = NULL;
+		trap_ICARUS_TaskIDComplete( ent, TID_MOVE_NAV );
+		return qfalse;
+	}
+	else
+	{
+		//Get the position of the goal
+		if ( TAG_GetOrigin2( NULL, name, goalPos ) == qfalse )
+		{
+			gentity_t	*targ = G_Find(NULL, FOFS(targetname), (char*)name);
+			if ( !targ )
+			{
+				G_DebugPrint( WL_ERROR, "Q3_SetNavGoal: can't find NAVGOAL \"%s\"\n", name );
+				return qfalse;
+			}
+			else
+			{
+				ent->NPC->goalEntity = targ;
+				ent->NPC->goalRadius = sqrt(ent->r.maxs[0]+ent->r.maxs[0]) + sqrt(targ->r.maxs[0]+targ->r.maxs[0]);
+				ent->NPC->aiFlags &= ~NPCAI_TOUCHED_GOAL;
+			}
+		}
+		else
+		{
+			int	goalRadius = TAG_GetRadius( NULL, name );
+			NPC_SetMoveGoal( ent, goalPos, goalRadius, qtrue, -1, NULL );
+			//We know we want to clear the lastWaypoint here
+			ent->NPC->goalEntity->lastWaypoint = WAYPOINT_NONE;
+			ent->NPC->aiFlags &= ~NPCAI_TOUCHED_GOAL;
+	#ifdef _DEBUG
+			//this is *only* for debugging navigation
+			ent->NPC->tempGoal->target = G_NewString( name );
+	#endif// _DEBUG
+		return qtrue;
+		}
+	}
+	return qfalse;
+}
+/*
 ============
 SetLowerAnim
   Description	: 
@@ -2924,9 +3100,14 @@ Q3_SetWeapon
   Argument		: const char *wp_name
 ============
 */
+extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 static void Q3_SetWeapon (int entID, const char *wp_name)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetWeapon currently unsupported in MP, ask if you need it.\n");
+	gentity_t	*ent  = &g_entities[entID];
+	int		wp = GetIDForString( WPTable, wp_name );
+
+	ent->client->ps.stats[STAT_WEAPONS] = (1<<wp);
+	ChangeWeapon( ent, wp );
 }
 
 /*
@@ -2957,8 +3138,26 @@ Q3_SetWalkSpeed
 */
 static void Q3_SetWalkSpeed (int entID, int int_data)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetWalkSpeed: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetWalkSpeed: invalid entID %d\n", entID);
+		return;
+	}
+	
+	if ( !self->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetWalkSpeed: '%s' is not an NPC!\n", self->targetname );
+		return;
+	}
+
+	if(int_data == 0)
+	{
+		self->NPC->stats.walkSpeed = self->client->ps.speed = 1;
+	}
+
+	self->NPC->stats.walkSpeed = self->client->ps.speed = int_data;
 }
 
 
@@ -2973,8 +3172,26 @@ Q3_SetRunSpeed
 */
 static void Q3_SetRunSpeed (int entID, int int_data)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetRunSpeed: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetRunSpeed: invalid entID %d\n", entID);
+		return;
+	}
+	
+	if ( !self->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetRunSpeed: '%s' is not an NPC!\n", self->targetname );
+		return;
+	}
+
+	if(int_data == 0)
+	{
+		self->NPC->stats.runSpeed = self->client->ps.speed = 1;
+	}
+
+	self->NPC->stats.runSpeed = self->client->ps.speed = int_data;
 }
 
 
@@ -3156,11 +3373,25 @@ static void Q3_SetScale(int entID, float float_data)
 	
 	if (self->client)
 	{
-		self->client->ps.iModelScale = float_data*100.0f;
+		if ( float_data < 0 )
+		{
+			self->client->ps.iModelScale = float_data;
+		}
+		else
+		{
+			self->client->ps.iModelScale = float_data*100.0f;
+		}
 	}
 	else
 	{
-		self->s.iModelScale = float_data*100.0f;
+		if ( float_data < 0 )
+		{
+			self->s.iModelScale = float_data;
+		}
+		else
+		{
+			self->s.iModelScale = float_data*100.0f;
+		}
 	}
 }
 
@@ -3710,7 +3941,28 @@ Q3_SetWalking
 */
 static void Q3_SetWalking( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetWalking: NOT SUPPORTED IN MP\n");
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetWalking: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetWalking: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_WALKING;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_WALKING;
+	}
 	return;
 }
 
@@ -3984,8 +4236,28 @@ Q3_SetNoAvoid
 */
 static void Q3_SetNoAvoid( int entID, qboolean noAvoid)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetNoAvoid: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetNoAvoid: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetNoAvoid: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(noAvoid)
+	{
+		ent->NPC->aiFlags |= NPCAI_NO_COLL_AVOID;
+	}
+	else
+	{
+		ent->NPC->aiFlags &= ~NPCAI_NO_COLL_AVOID;
+	}
 }
 
 /*
@@ -4807,15 +5079,19 @@ qboolean Q3_Set( int taskID, int entID, const char *type_name, const char *data 
 		break;
 
 	case SET_ENEMY:
-		G_DebugPrint( WL_WARNING, "Q3_SetEnemy: NOT SUPPORTED IN MP\n");
+		Q3_SetEnemy( entID, (char *) data );
 		break;
 
 	case SET_LEADER:
-		G_DebugPrint( WL_WARNING, "Q3_SetLeader: NOT SUPPORTED IN MP\n");
+		Q3_SetLeader( entID, (char *) data );
 		break;
 
 	case SET_NAVGOAL:
-		G_DebugPrint( WL_WARNING, "Q3_SetNavGoal: NOT SUPPORTED IN MP\n");
+		if ( Q3_SetNavGoal( entID, (char *) data ) )
+		{
+			trap_ICARUS_TaskIDSet( ent, TID_MOVE_NAV, taskID );
+			return qfalse;	//Don't call it back
+		}
 		break;
 
 	case SET_ANIM_UPPER:

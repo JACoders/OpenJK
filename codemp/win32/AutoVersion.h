@@ -3,15 +3,18 @@
 
 #define VERSION_MAJOR_RELEASE		1
 #define VERSION_MINOR_RELEASE		0
-#define VERSION_EXTERNAL_BUILD		0
+#define VERSION_EXTERNAL_BUILD		1
 #define VERSION_INTERNAL_BUILD		0
 
-#define VERSION_STRING				"1, 0, 0, 0"
-#define VERSION_STRING_DOTTED		"1.0.0.0"
+#define VERSION_STRING				"1, 0, 1, 0"
+#define VERSION_STRING_DOTTED		"1.0.1.0"
 
-#define VERSION_BUILD_NUMBER		86
+#define VERSION_BUILD_NUMBER		91
 
 // BEGIN COMMENTS
+// 1.0.1.0		10/24/2003 16:22:44		jmonroe		patch rc1
+// 1.0.0.3		10/17/2003 17:51:58		jmonroe		fix ati rect hack, fix NET_OpenIP bug preventing multiple servers, inc protocol
+// 1.0.0.0		09/15/2003 15:21:18		mgummelt		Final code changes for siege_destroyer/flying vehicles
 // 1.0.0.0		07/21/2003 16:05:31		jmonroe		going gold
 // 0.0.12.0		07/20/2003 19:05:02		jmonroe		build 0.12 for qa
 // 0.0.11.0		07/18/2003 12:08:44		jmonroe		dlight fix, ui name fix, jk2 -> ja

@@ -81,7 +81,7 @@ namespace NAV
 	{
 #ifdef _XBOX
 		// now 11 bytes each
-		NUM_NODES			= 900,	// Question for VV- is this big enough for all the levels?  if so, we should use it too...
+		NUM_NODES			= 1024,	// Question for VV- is this big enough for all the levels?  if so, we should use it too...
 #else
 		NUM_NODES			= 1024,
 #endif
@@ -4499,8 +4499,6 @@ bool			STEER::SafeToGoTo(gentity_t* actor, const vec3_t& targetPosition, int tar
 ////////////////////////////////////////////////////////////////////////////////////
 // Master Functions
 ////////////////////////////////////////////////////////////////////////////////////
-static int mutantRancorSteerTimer	= 0; // HACK so that mutant rancor can't get stuck
-
 bool			STEER::GoTo(gentity_t* actor,  gentity_t* target, float reachedRadius, bool avoidCollisions)
 {
 	// Can't Steer To A Guy In The Air
@@ -4528,20 +4526,8 @@ bool			STEER::GoTo(gentity_t* actor,  gentity_t* target, float reachedRadius, bo
 		!STEER::SafeToGoTo(actor, target->currentOrigin, NAV::GetNearestNode(target))
  		)
 	{
-
-		// HACK so that mutant rancor can't get stuck
-		if((level.time - mutantRancorSteerTimer) > 6000)
-		{
-			if( actor->client && actor->client->NPC_class == CLASS_RANCOR )
-			{
-				return STEER::Wander(actor);
-			}
-		}
-
 		return false;
 	}
-
-	mutantRancorSteerTimer	= level.time;
 
 	// Ok, It Is, So Clear The Path, And Go Toward Our Target
 	//--------------------------------------------------------
@@ -5506,43 +5492,12 @@ bool	STEER::Reached(gentity_t* actor, const vec3_t& target, float targetRadius, 
 // causing asserts and subsequent memory trashing.
 void	ClearAllNavStructures(void)
 {
-	// Goddamn.
-	mGraph.clear();
-	mRegion.clear();
-	mCells.clear();
-
-	mSearch.clear();
-	mUser.ClearActor();
-	mUser.ClearDangerSpot();
-
-	mNodeNames.clear();
 	TEntEdgeMap::iterator i = mEntEdgeMap.begin();
 	for ( ; i != mEntEdgeMap.end(); i++)
 	{
 		i->clear();
 	}
 	mEntEdgeMap.clear();
-
-
-	mNearestNavSort.clear();
-
-	mPathUsers.clear();
-	mPathUserIndex.clear();
-
-	mSteerUsers.clear();
-	mSteerUserIndex.clear();
-
-	mEntityAlertList.clear();
-
-	mMoveTraceCount = 0;
-	mViewTraceCount = 0;
-	mConnectTraceCount = 0;
-	mConnectTime = 0;
-	mIslandCount = 0;
-	mIslandRegion = 0;
-	mAirRegion = 0;
-	mLocStringA[0] = 0;
-	mLocStringB[0] = 0;
 }
 
 

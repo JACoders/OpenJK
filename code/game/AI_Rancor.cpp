@@ -715,9 +715,9 @@ void Rancor_Bite( void )
 				if ( !Q_irand( 0, 1 ) )
 				{//bite something off
 					int hitLoc = HL_WAIST;
-					if ( g_dismemberment->integer < 11381138 )
+					if ( g_dismemberment->integer < 3 )
 					{
-						hitLoc = Q_irand( HL_WAIST, HL_HAND_LT );
+						hitLoc = Q_irand( HL_BACK_RT, HL_HAND_LT );
 					}
 					else
 					{
@@ -961,7 +961,7 @@ void Rancor_Attack( float distance, qboolean doCharge, qboolean aimAtBlockedEnti
 				}
 				if ( NPC->activator->health <= 0 )
 				{//killed him
-					if ( g_dismemberment->integer >= 11381138 )
+					if ( g_dismemberment->integer >= 3 )
 					{//make it look like we bit his head off
 						NPC->activator->client->dismembered = false;
 						G_DoDismemberment( NPC->activator, NPC->activator->currentOrigin, MOD_SABER, 1000, HL_HEAD, qtrue );
@@ -1269,14 +1269,7 @@ void Rancor_CheckDropVictim( void )
 	vec3_t end={NPC->activator->currentOrigin[0],NPC->activator->currentOrigin[1],NPC->activator->absmax[2]-1}; 
 	trace_t	trace;
 	gi.trace( &trace, start, mins, maxs, end, NPC->activator->s.number, NPC->activator->clipmask );
-	// First, if the held person is outside the world, eat them instead!
-	extern int CM_LeafCluster( int );
-	extern int CM_PointLeafnum( const vec3_t p );
-	if( CM_LeafCluster( CM_PointLeafnum( NPC->activator->currentOrigin ) ) == -1 )
-	{
-		Rancor_Attack( 0, qfalse, qfalse );
-	}
-	else if ( !trace.allsolid && !trace.startsolid && trace.fraction >= 1.0f )
+	if ( !trace.allsolid && !trace.startsolid && trace.fraction >= 1.0f )
 	{
 		Rancor_DropVictim( NPC );
 	}

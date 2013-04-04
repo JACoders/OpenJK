@@ -650,9 +650,7 @@ void RT_Flying_Strafe( void )
 				}
 			}
 
-//			NPCInfo->standTime = level.time + 1000 + random() * 500;	// Original
-//			NPCInfo->standTime = level.time + 2000 + random() * 500;	// Revision 1
-			NPCInfo->standTime = level.time + 1500 + random() * 500;	// Revision 2
+			NPCInfo->standTime = level.time + 1000 + random() * 500;
 		}
 	}
 	else
@@ -705,9 +703,7 @@ void RT_Flying_Strafe( void )
 				}
 			}
 
-//			NPCInfo->standTime = level.time + 2500 + random() * 500;	// Original
-//			NPCInfo->standTime = level.time + 5000 + random() * 500;	// Revision 1
-			NPCInfo->standTime = level.time + 3500 + random() * 500;	// Revision 2
+			NPCInfo->standTime = level.time + 2500 + random() * 500;
 		}
 	}
 }

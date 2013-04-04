@@ -2,8 +2,6 @@
 
 //Anything above this #include will be ignored by the compiler
 #include "../qcommon/exe_headers.h"
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
 
 cvar_t		*cvar_vars;
 cvar_t		*cvar_cheats;
@@ -219,10 +217,7 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 
 			// ZOID--needs to be set so that cvars the game sets as 
 			// SERVERINFO get sent to clients
-			if (flags & CVAR_USERINFO)
-				ClientManager::ActiveClient().cvar_modifiedFlags |= CVAR_USERINFO;
-			else
-				cvar_modifiedFlags |= flags;
+			cvar_modifiedFlags |= flags;
 		}
 
 		var->flags |= flags;
@@ -331,11 +326,7 @@ cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force ) {
 		return var;
 	}
 	// note what types of cvars have been modified (userinfo, archive, serverinfo, systeminfo)
-
-	if (var->flags & CVAR_USERINFO)
-		ClientManager::ActiveClient().cvar_modifiedFlags |=CVAR_USERINFO;
-	else
-		cvar_modifiedFlags |= var->flags;
+	cvar_modifiedFlags |= var->flags;
 
 	if (!force)
 	{
@@ -819,7 +810,6 @@ Cvar_InfoString
 */
 char	*Cvar_InfoString( int bit ) {
 	static char	info[MAX_INFO_STRING];
-	
 	cvar_t	*var;
 
 	info[0] = 0;
@@ -832,8 +822,6 @@ char	*Cvar_InfoString( int bit ) {
 			Info_SetValueForKey (info, var->name, var->string);
 		}
 	}
-
-	
 
 	/*
 	for (var = cvar_vars ; var ; var = var->next)

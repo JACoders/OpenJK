@@ -3157,7 +3157,7 @@ void misc_atst_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 		}
 		if ( !self->s.number )
 		{
-			CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.87 );
+			CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.95 );
 		}
 	}
 	else

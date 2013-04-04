@@ -652,8 +652,8 @@ int WP_FindClosestBodyPart(gentity_t *ent, gentity_t *other, vec3_t point, vec3_
 	else
 	{
 		VectorCopy(ent->s.pos.trBase, out);
-		// Really bad hack 
- 		if (ent->classname && (strcmp(ent->classname, "misc_turret") == 0))
+		// Really bad hack
+		if (strcmp(ent->classname, "misc_turret") == 0)
 		{
 			out[2] = point[2];	
 		}
@@ -2859,9 +2859,6 @@ static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir )
 	// we don't want it to ever bounce
 	missile->bounceCount = 0;
 
-	//Hack!  Need to track spawn times.
-	missile->useDebounceTime = level.time;
-
 	missile->s.radius = 30;
 	VectorSet( missile->s.modelScale, 1.0f, 1.0f, 1.0f );
 	gi.G2API_InitGhoul2Model( missile->ghoul2, weaponData[WP_DET_PACK].missileMdl, G_ModelIndex( weaponData[WP_DET_PACK].missileMdl ));
@@ -2906,22 +2903,6 @@ static void WP_FireDetPack( gentity_t *ent, qboolean alt_fire )
 	}
 	else
 	{
-		//Can't have more than 5 active at once.
-		int count = 0;
-		gentity_t *found = NULL;
-		gentity_t *oldest = NULL;
-		while((found = G_Find( found, FOFS( classname ), "detpack" )) != NULL) {
-			count++;
-			if(!oldest || found->useDebounceTime < oldest->useDebounceTime) {
-				oldest = found;
-			}
-		}
-
-		if(count == 5 && oldest) {
-			void ObjectDie(gentity_t*, gentity_t*, gentity_t*, int, int);
-			ObjectDie(oldest, NULL, NULL, 0, 0);
-		}
-
 		WP_DropDetPack( ent, muzzle, forward );
 
 		ent->client->ps.eFlags |= EF_PLANTED_CHARGE;
@@ -3080,8 +3061,7 @@ void laserTrapThink( gentity_t *ent )
 void CreateLaserTrap( gentity_t *laserTrap, vec3_t start, gentity_t *owner )
 //---------------------------------------------------------
 {
-	if ( !VALIDSTRING( laserTrap->classname ) || 
-			!Q_stricmp(laserTrap->classname, "noclass"))
+	if ( !VALIDSTRING( laserTrap->classname ))
 	{
 		// since we may be coming from a map placed trip mine, we don't want to override that class name....
 		//	That would be bad because the player drop code tries to limit number of placed items...so it would have removed map placed ones as well.
@@ -3143,7 +3123,7 @@ static void WP_RemoveOldTraps( gentity_t *ent )
 	trapcount_org = trapcount;
 	lowestTimeStamp = level.time;
 
-	while ( trapcount > 4 )
+	while ( trapcount > 9 )
 	{
 		removeMe = -1;
 		for ( i = 0; i < trapcount_org; i++ )
@@ -3187,7 +3167,7 @@ void WP_PlaceLaserTrap( gentity_t *ent, qboolean alt_fire )
 	vec3_t		start;
 	gentity_t	*laserTrap;
 
-	// limit to 5 placed at any one time
+	// limit to 10 placed at any one time
 	WP_RemoveOldTraps( ent );
 
 	//FIXME: surface must be within 64

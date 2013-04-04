@@ -44,6 +44,7 @@ extern qboolean PM_LockedAnim( int anim );
 extern cvar_t	*g_dismemberment;
 extern cvar_t	*g_saberRealisticCombat;
 extern cvar_t	*g_corpseRemovalTime;
+extern cvar_t	*debug_subdivision;
 
 //Local Variables
 // ai debug cvars
@@ -93,7 +94,7 @@ void CorpsePhysics( gentity_t *self )
 
 	if ( level.time - self->s.time > 3000 )
 	{//been dead for 3 seconds
-		if ( g_dismemberment->integer < 11381138 && !g_saberRealisticCombat->integer )
+		if ( !debug_subdivision->integer && !g_saberRealisticCombat->integer )
 		{//can't be dismembered once dead
 			if ( self->client->NPC_class != CLASS_PROTOCOL )
 			{
@@ -463,7 +464,7 @@ and returns.
 ====================================================================
 */
 
-void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope, vec3_t storeAngles )
+void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope, vec3_t storeAngles, qboolean keepPitch )
 {
 	vec3_t	slope;
 	vec3_t	nvf, ovf, ovr, startspot, endspot, new_angles = { 0, 0, 0 };
@@ -498,6 +499,7 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope, vec3_t storeAn
 		VectorCopy( pass_slope, slope );
 	}
 
+	float oldPitch = 0;
 	if ( forwhom->client && forwhom->client->NPC_class == CLASS_VEHICLE )
 	{//special code for vehicles
 		Vehicle_t *pVeh = forwhom->m_pVehicle;
@@ -509,11 +511,16 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope, vec3_t storeAn
 	}
 	else
 	{
+		oldPitch = forwhom->currentAngles[PITCH];
 		AngleVectors( forwhom->currentAngles, ovf, ovr, NULL );
 	}
 
 	vectoangles( slope, new_angles );
 	pitch = new_angles[PITCH] + 90;
+	if ( keepPitch )
+	{
+		pitch += oldPitch;
+	}
 	new_angles[ROLL] = new_angles[PITCH] = 0;
 
 	AngleVectors( new_angles, nvf, NULL, NULL );

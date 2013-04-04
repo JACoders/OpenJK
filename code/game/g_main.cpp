@@ -1,6 +1,6 @@
 // leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
-#include <xtl.h>
+
 
 
 #include "g_local.h"
@@ -46,8 +46,7 @@ extern qboolean g_bCollidableRoffs;
 level_locals_t	level;
 game_import_t	gi;
 game_export_t	globals;
-//gentity_t		g_entities[MAX_GENTITIES];
-gentity_t		*g_entities = NULL;
+gentity_t		g_entities[MAX_GENTITIES];
 unsigned int	g_entityInUseBits[MAX_GENTITIES/32];
 
 static void ClearAllInUse(void)
@@ -126,7 +125,6 @@ cvar_t	*g_developer;
 cvar_t	*g_timescale;
 cvar_t	*g_knockback;
 cvar_t	*g_dismemberment;
-cvar_t	*g_dismemberProbabilities;
 cvar_t	*g_corpseRemovalTime;
 
 cvar_t	*g_synchSplitAnims;
@@ -163,6 +161,7 @@ cvar_t	*g_numEntities;
 
 cvar_t	*g_saberAutoBlocking;
 cvar_t	*g_saberRealisticCombat;
+cvar_t	*debug_subdivision;
 cvar_t	*g_saberDamageCapping;
 cvar_t	*g_saberMoveSpeed;
 cvar_t	*g_saberAnimSpeed;
@@ -172,6 +171,8 @@ cvar_t	*g_debugSaberLock;
 cvar_t	*g_saberLockRandomNess;
 cvar_t	*g_debugMelee;
 cvar_t	*g_saberRestrictForce;
+cvar_t	*g_saberPickuppableDroppedSabers;
+cvar_t	*g_dismemberProbabilities;
 
 cvar_t	*g_speederControlScheme;
 
@@ -598,8 +599,7 @@ void G_InitCvars( void ) {
 	g_sex = gi.cvar ("sex", "f", CVAR_USERINFO | CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	g_spskill = gi.cvar ("g_spskill", "0", CVAR_ARCHIVE | CVAR_SAVEGAME|CVAR_NORESTART);
 	g_knockback = gi.cvar( "g_knockback", "1000", CVAR_CHEAT );
-	g_dismemberment = gi.cvar ( "g_dismemberment", "3", CVAR_ARCHIVE );//0 = none, 1 = arms and hands, 2 = legs, 3 = waist and head, 4 = mega dismemberment
-	g_dismemberProbabilities = gi.cvar ( "g_dismemberProbabilities", "1", CVAR_ARCHIVE );//0 = ignore probabilities, 1 = use probabilities
+	g_dismemberment = gi.cvar ( "g_dismemberment", "3", CVAR_ARCHIVE );//0 = none, 1 = arms and hands, 2 = legs, 3 = waist and head
 	// for now I'm making default 10 seconds
 	g_corpseRemovalTime = gi.cvar ( "g_corpseRemovalTime", "10", CVAR_ARCHIVE );//number of seconds bodies stick around for, at least... 0 = never go away
 	g_synchSplitAnims = gi.cvar ( "g_synchSplitAnims", "1", 0 );
@@ -633,7 +633,9 @@ void G_InitCvars( void ) {
 	com_buildScript = gi.cvar ("com_buildscript", "0", 0);
 
 	g_saberAutoBlocking = gi.cvar( "g_saberAutoBlocking", "1", CVAR_CHEAT );//must press +block button to do any blocking
-	g_saberRealisticCombat = gi.cvar( "g_saberRealisticCombat", "0", CVAR_CHEAT );//makes collision more precise, increases damage
+	g_saberRealisticCombat = gi.cvar( "g_saberMoreRealistic", "0", CVAR_CHEAT|CVAR_INIT );//makes collision more precise, increases damage
+	debug_subdivision = gi.cvar( "debug_subdivision", "0", CVAR_CHEAT|CVAR_INIT );//debug for dismemberment
+	g_dismemberProbabilities = gi.cvar ( "g_dismemberProbabilities", "1", CVAR_CHEAT|CVAR_INIT );//0 = ignore probabilities, 1 = use probabilities
 	g_saberDamageCapping = gi.cvar( "g_saberDamageCapping", "1", CVAR_CHEAT );//caps damage of sabers vs players and NPC who use sabers
 	g_saberMoveSpeed = gi.cvar( "g_saberMoveSpeed", "1", CVAR_CHEAT );//how fast you run while attacking with a saber
 	g_saberAnimSpeed = gi.cvar( "g_saberAnimSpeed", "1", CVAR_CHEAT );//how fast saber animations run
@@ -643,6 +645,7 @@ void G_InitCvars( void ) {
 	g_saberLockRandomNess = gi.cvar( "g_saberLockRandomNess", "2", CVAR_ARCHIVE );//just for debugging/development, controls frequency of saberlocks
 	g_debugMelee = gi.cvar( "g_debugMelee", "0", CVAR_CHEAT );//just for debugging/development, test kicks and grabs
 	g_saberRestrictForce = gi.cvar( "g_saberRestrictForce", "0", CVAR_ARCHIVE );//restricts certain force powers when using a 2-handed saber or 2 sabers
+	g_saberPickuppableDroppedSabers = gi.cvar( "g_saberPickuppableDroppedSabers", "0", CVAR_CHEAT );//lets you pick up sabers that are dropped
 
 	g_AIsurrender = gi.cvar( "g_AIsurrender", "0", CVAR_CHEAT );
 	g_numEntities = gi.cvar( "g_numEntities", "0", 0 );
@@ -1051,7 +1054,6 @@ G_RunThink
 Runs thinking code for this frame if necessary
 =============
 */
-#include "../client/client.h"
 void G_RunThink (gentity_t *ent) 
 {
 	if ( (ent->nextthink <= 0) || (ent->nextthink > level.time) ) 
@@ -1072,7 +1074,7 @@ runicarus:
 	{
 		if ( ent->NPC == NULL )
 		{
-			if ( ent->m_iIcarusID != IIcarusInterface::ICARUS_INVALID && !stop_icarus && cls.state != CA_CONNECTED )
+			if ( ent->m_iIcarusID != IIcarusInterface::ICARUS_INVALID && !stop_icarus )
 			{
 				IIcarusInterface::GetIcarus()->Update( ent->m_iIcarusID );
 			}
@@ -1477,7 +1479,7 @@ qboolean G_RagDoll(gentity_t *ent, vec3_t forcedAngles)
 	}
 
 	VectorCopy(forcedAngles, G2Angles);
-	forcedAngles[0] = forcedAngles[2] = 0;
+	//forcedAngles[0] = forcedAngles[2] = 0;
 
 	if (ent->client->ps.heldByClient <= ENTITYNUM_WORLD)
 	{
@@ -1876,115 +1878,6 @@ qboolean G_RagDoll(gentity_t *ent, vec3_t forcedAngles)
 }
 //rww - RAGDOLL_END
 
-/*
-================
-G_FreeUselessEnemies
-
-Continually monitors for enemies that are no longer relevant,
-and kills them off. TODO: Also kill off allies (jedi in kor[12])
-================
-*/
-char current_speeders = 0;
-
-void G_FreeUselessEnemies(void)
-{
-	// We check three entities per frame, cuts down on CPU impact, still
-	// ends up checking every entity within about 10 seconds
-	static int freeEntNum = 1;
-
-	for( int j = 0; j < 3; ++j )
-	{
-
-		if( current_speeders	> 24												&&		// too many speeders
-			PInUse(freeEntNum)														&&		// not in use
-			g_entities[freeEntNum].health											&&		// has health
-			g_entities[freeEntNum].m_pVehicle										&&		// valid vehicle
-			g_entities[freeEntNum].m_pVehicle->m_pVehicleInfo						&&		// valid vehicle info
-			g_entities[freeEntNum].m_pVehicle->m_pVehicleInfo->type == VH_SPEEDER	&&		// a speeder
-			!g_entities[freeEntNum].m_pVehicle->m_pPilot							&&		// doesn't have a pilot
-			strcmp(g_entities[freeEntNum].m_pVehicle->m_pVehicleInfo->name, "Swoop_cin"))	// not needed for a cinematic
-		{
-			// blow it up
-			G_Damage(&g_entities[freeEntNum], NULL, NULL, 0, 0, 200000, DAMAGE_NO_PROTECTION, MOD_UNKNOWN);
-			// decrement the number of speeders
-			current_speeders--;
-			// set the alreadyCleaned flag so that when the entitiy is removed current_speeders is not decremented again
-			g_entities[freeEntNum].m_pVehicle->alreadyCleaned = true;
-		}
-
-		// If the entity is an NPC which has no key, isn't invulnerable,
-		// has fired, but not in a while, has health, isn't on the player's team,
-	   	// and is far away, destroy it.
-		else if( PInUse(freeEntNum) &&
-			g_entities[freeEntNum].NPC &&
-			!g_entities[freeEntNum].message &&
-			g_entities[freeEntNum].client &&
-			g_entities[freeEntNum].health &&
-			g_entities[freeEntNum].client->playerTeam != TEAM_PLAYER &&
-			!(g_entities[freeEntNum].client->ps.powerups[PW_INVINCIBLE]>level.time) &&
-			!(g_entities[freeEntNum].flags & FL_UNDYING) &&
-//			!(g_entities[freeEntNum].client->ps.eFlags & EF_INVULNERABLE) &&
-			g_entities[freeEntNum].NPC->shotTime &&
-			g_entities[freeEntNum].NPC->shotTime + 10000 < level.time &&
-			DistanceSquared(g_entities[freeEntNum].currentOrigin,
-			g_entities[0].currentOrigin) > (2000 * 2000))
-		{
-			G_Damage(&g_entities[freeEntNum], NULL, NULL, 0, 0, 100000,
-					 DAMAGE_NO_PROTECTION, MOD_UNKNOWN);
-			g_entities[freeEntNum].NPC->timeOfDeath = 0;
-		}
-		freeEntNum++;
-		freeEntNum %= MAX_GENTITIES;
-	}
-}
-
-/*
-================
-G_RunFrame
-
-Advances the non-player objects in the world
-================
-*/
-void G_MassFreeUselessThings( void )
-{
-	// We check three entities per frame, cuts down on CPU impact, still
-	// ends up checking every entity within about 10 seconds
-
-	for( int j = 0; j < MAX_GENTITIES; ++j )
-	{
-		if(	PInUse(j)														&&		// not in use
-			g_entities[j].health											&&		// has health
-			g_entities[j].m_pVehicle										&&		// valid vehicle
-			g_entities[j].m_pVehicle->m_pVehicleInfo						&&		// valid vehicle info
-			g_entities[j].m_pVehicle->m_pVehicleInfo->type == VH_SPEEDER	&&		// a speeder
-			!g_entities[j].m_pVehicle->m_pPilot								&&		// doesn't have a pilot
-			strcmp(g_entities[j].m_pVehicle->m_pVehicleInfo->name, "Swoop_cin"))	// not needed for a cinematic
-		{
-			G_Damage(&g_entities[j], NULL, NULL, 0, 0, 200000, DAMAGE_NO_PROTECTION, MOD_UNKNOWN);
-		}
-
-		// If the entity is an NPC which has no key, isn't invulnerable,
-		// has fired, but not in a while, has health, isn't on the player's team,
-	   	// and is far away, destroy it.
-		else if( (PInUse(j) &&
-			g_entities[j].NPC &&
-			!g_entities[j].message &&
-			g_entities[j].client &&
-			g_entities[j].health &&
-			g_entities[j].client->playerTeam != TEAM_PLAYER &&
-			!(g_entities[j].client->ps.powerups[PW_INVINCIBLE]>level.time) &&
-			g_entities[j].NPC->shotTime &&
-			g_entities[j].NPC->shotTime + 10000 < level.time &&
-			DistanceSquared(g_entities[j].currentOrigin,
-			g_entities[0].currentOrigin) > (2000 * 2000)) )
-		{
-			G_Damage(&g_entities[j], NULL, NULL, 0, 0, 100000,
-					 DAMAGE_NO_PROTECTION, MOD_UNKNOWN);
-			g_entities[j].NPC->timeOfDeath = 0;
-		}
-	}
-}
-
 
 /*
 ================
@@ -1998,7 +1891,7 @@ int AITime = 0;
 int navTime = 0;
 #endif//	AI_TIMERS
 
-extern cvar_t*	in_shaking_rumble;
+
 void G_RunFrame( int levelTime ) {
 	int			i;
 	gentity_t	*ent;
@@ -2023,7 +1916,7 @@ void G_RunFrame( int levelTime ) {
 	
 	if (player && gi.WE_IsShaking(player->currentOrigin))
 	{
-		CGCam_Shake(0.45f, 100, in_shaking_rumble->integer);
+ 	  	CGCam_Shake(0.45f, 100);
 	}
 
 	
@@ -2222,9 +2115,6 @@ extern int delayedShutDown;
 	// update the water levels for npcs
 	extern void UpdateNPCWaterLevels(void);
 	UpdateNPCWaterLevels();
-
-	// Kill off any AI that are lingering!
-	G_FreeUselessEnemies();
 #endif // _XBOX
 }
 
@@ -2254,47 +2144,4 @@ void PrintEntClassname( int gentNum )
 IGhoul2InfoArray &TheGameGhoul2InfoArray()
 {
 	return gi.TheGhoul2InfoArray();
-}
-
-extern bool bHadPersistedSurface;
-gentity_t *pReservedZoneGentities = NULL;
-
-void G_ReserveZoneGentities( void )
-{
-	pReservedZoneGentities = (gentity_t *) Z_Malloc( sizeof(gentity_t) * MAX_GENTITIES, TAG_TEMP_WORKSPACE, qfalse, 4 );
-}
-
-void G_AllocGentities( void )
-{
-	g_entities = (gentity_t *) HeapAlloc( GetProcessHeap(), 0, sizeof(gentity_t) * MAX_GENTITIES );
-
-	// If it worked...
-	if( g_entities )
-	{
-		// And we had a persisted surface. (Normal case). Free the reserved zone:
-		if( bHadPersistedSurface )
-		{
-			Z_Free( pReservedZoneGentities );
-			pReservedZoneGentities = NULL;
-			return;
-		}
-
-		// Really bad case #1:
-		Com_PrintfAlways( "G_AllocGentities: Extreme failure #1\n" );
-		return;
-	}
-	else
-	{
-		// It failed. Hopefully that means that there was no persisted surface.
-		if( !bHadPersistedSurface )
-		{
-			g_entities = pReservedZoneGentities;
-			pReservedZoneGentities = NULL;
-			return;
-		}
-
-		// Really bad case #2:
-		Com_PrintfAlways( "G_AllocGentities: Extreme failure #2\n" );
-		return;
-	}
 }

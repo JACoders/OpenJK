@@ -121,9 +121,6 @@ cvar_t	*r_textureMode;
 cvar_t	*r_offsetFactor;
 cvar_t	*r_offsetUnits;
 cvar_t	*r_gamma;
-#ifdef _XBOX
-cvar_t  *s_brightness_volume;
-#endif
 cvar_t	*r_intensity;
 cvar_t	*r_lockpvs;
 cvar_t	*r_noportals;
@@ -863,6 +860,8 @@ void GL_SetDefaultState( void )
 GfxInfo_f
 ================
 */
+extern bool g_bTextureRectangleHack;
+
 void GfxInfo_f( void ) 
 {
 	cvar_t *sys_cpustring = Cvar_Get( "sys_cpustring", "", CVAR_ROM );
@@ -948,6 +947,7 @@ void GfxInfo_f( void )
 	Com_Printf ("anisotropic filtering: %s  ", enablestrings[(r_ext_texture_filter_anisotropic->integer != 0) && glConfig.maxTextureFilterAnisotropy] );
 		Com_Printf ("(%f of %f)\n", r_ext_texture_filter_anisotropic->value, glConfig.maxTextureFilterAnisotropy );
 	Com_Printf ("Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer] );
+	if (g_bTextureRectangleHack) Com_Printf ("Dynamic Glow ATI BAD DRIVER HACK %s\n", enablestrings[g_bTextureRectangleHack] );
 
 	if ( r_finish->integer ) {
 		VID_Printf( PRINT_ALL, "Forcing glFinish\n" );
@@ -961,6 +961,10 @@ void GfxInfo_f( void )
 	}
 }
 
+void R_AtiHackToggle_f(void)
+{
+	g_bTextureRectangleHack = !g_bTextureRectangleHack;
+}
 
 /************************************************************************************************
  * R_FogDistance_f                                                                              *
@@ -1095,7 +1099,7 @@ void R_Register( void )
 	r_ext_texture_env_add = Cvar_Get( "r_ext_texture_env_add", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_ext_texture_filter_anisotropic = Cvar_Get( "r_ext_texture_filter_anisotropic", "16", CVAR_ARCHIVE );
  
-	r_DynamicGlow = Cvar_Get( "r_DynamicGlow", "1", CVAR_ARCHIVE );
+	r_DynamicGlow = Cvar_Get( "r_DynamicGlow", "0", CVAR_ARCHIVE );
 	r_DynamicGlowPasses = Cvar_Get( "r_DynamicGlowPasses", "5", CVAR_CHEAT );
 	r_DynamicGlowDelta  = Cvar_Get( "r_DynamicGlowDelta", "0.8f", CVAR_CHEAT );
 	r_DynamicGlowIntensity = Cvar_Get( "r_DynamicGlowIntensity", "1.13f", CVAR_CHEAT );
@@ -1166,10 +1170,6 @@ void R_Register( void )
 	r_gamma = Cvar_Get( "r_gamma", "1.2", CVAR_ARCHIVE );
 #else
 	r_gamma = Cvar_Get( "r_gamma", "1", CVAR_ARCHIVE );
-#endif
-
-#ifdef _XBOX
-	s_brightness_volume = Cvar_Get( "s_brightness_volume", "1", CVAR_ARCHIVE );
 #endif
 	r_facePlaneCull = Cvar_Get ("r_facePlaneCull", "1", CVAR_ARCHIVE );
 
@@ -1282,6 +1282,7 @@ extern qboolean Sys_LowPhysicalMemory();
 	Cmd_AddCommand( "modellist", R_Modellist_f );
 #ifndef _XBOX
 	Cmd_AddCommand( "modelist", R_ModeList_f );
+	Cmd_AddCommand( "r_atihack", R_AtiHackToggle_f );
 #endif
 	Cmd_AddCommand( "screenshot", R_ScreenShot_f );
 	Cmd_AddCommand( "screenshot_tga", R_ScreenShotTGA_f );
@@ -1429,7 +1430,10 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	Cmd_RemoveCommand ("shaderlist");
 	Cmd_RemoveCommand ("skinlist");
 	Cmd_RemoveCommand ("modellist");
+#ifndef _XBOX
 	Cmd_RemoveCommand ("modelist" );
+	Cmd_RemoveCommand ("r_atihack");
+#endif
 	Cmd_RemoveCommand ("screenshot");
 	Cmd_RemoveCommand ("screenshot_tga");	
 	Cmd_RemoveCommand ("gfxinfo");
@@ -1481,7 +1485,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 			qglDeleteTextures( 1, &tr.blurImage );
 		}
 #endif
-		R_SyncRenderThread();
+//		R_SyncRenderThread();
 		R_ShutdownCommandBuffers();
 //#ifndef _XBOX
 		if (destroyWindow)

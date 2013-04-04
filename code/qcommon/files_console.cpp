@@ -6,8 +6,6 @@
 #include "../zlib/zlib.h"
 
 
-//#define GOB_PROFILE
-
 
 static	cvar_t		*fs_openorder;
 
@@ -417,8 +415,10 @@ int FS_Read( void *buffer, int len, fileHandle_t f )
 		if (size == GOB_INVALID_SIZE)
 		{
 #if defined(FINAL_BUILD)
+			/*
 			extern void ERR_DiscFail(bool);
 			ERR_DiscFail(false);
+			*/
 #else
 			Com_Error( ERR_FATAL, "Failed to read from GOB" );
 #endif
@@ -743,8 +743,10 @@ void FS_Startup( const char *gameName )
 	if (GOBArchiveOpen(archive, GOBACCESS_READ, GOB_FALSE, GOB_TRUE) != GOBERR_OK)
 	{
 #if defined(FINAL_BUILD)
+		/*
 		extern void ERR_DiscFail(bool);
 		ERR_DiscFail(false);
+		*/
 #else
 		//Com_Error( ERR_FATAL, "Could not initialize GOB" );
 		Cvar_Set("fs_openorder", "1");

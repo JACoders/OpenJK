@@ -134,6 +134,14 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+	case CG_DRAW_DATAPAD_HUD:
+		if (cg.snap)
+		{
+			cent = &cg_entities[cg.snap->ps.clientNum];
+			CG_DrawDataPadHUD(cent);
+		}
+		return 0;
+
 	case CG_DRAW_DATAPAD_OBJECTIVES:
 		if (cg.snap)
 		{
@@ -341,7 +349,7 @@ static cvarTable_t cvarTable[] = {
 //	{ &cg_dynamicCrosshair, "cg_dynamicCrosshair", "1", CVAR_ARCHIVE },
 	// NOTE : I also create this in UI_Init()
 	{ &cg_crosshairIdentifyTarget, "cg_crosshairIdentifyTarget", "1", CVAR_ARCHIVE },
-	{ &cg_crosshairForceHint, "cg_crosshairForceHint", "1", CVAR_ARCHIVE },
+	{ &cg_crosshairForceHint, "cg_crosshairForceHint", "1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART },
 	{ &cg_endcredits, "cg_endcredits", "0", 0},
 	{ &cg_updatedDataPadForcePower1, "cg_updatedDataPadForcePower1", "0", 0},
 	{ &cg_updatedDataPadForcePower2, "cg_updatedDataPadForcePower2", "0", 0},
@@ -379,8 +387,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_roffval4, "cg_roffval4", "0" },
 #endif
 	{ &cg_thirdPerson, "cg_thirdPerson", "1", CVAR_SAVEGAME },
-//	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "80", 0 },	// Pulled back for Xbox
-	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "90", 0 },
+	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "80", 0 },
 	{ &cg_thirdPersonMaxRange, "cg_thirdPersonMaxRange", "150", 0 },
 	{ &cg_thirdPersonAngle, "cg_thirdPersonAngle", "0", 0 },
 	{ &cg_thirdPersonPitchOffset, "cg_thirdPersonPitchOffset", "0", 0 },
@@ -418,11 +425,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_smoothPlayerPlat, "cg_smoothPlayerPlat", "0.75", 0},
 	{ &cg_smoothPlayerPlatAccel, "cg_smoothPlayerPlatAccel", "3.25", 0},
 	{ &cg_g2Marks, "cg_g2Marks", "1", CVAR_ARCHIVE },
-#ifdef _XBOX	// Turn off expensive physics in FX system:
-	{ &fx_expensivePhysics, "fx_expensivePhysics", "0", CVAR_ARCHIVE },
-#else
 	{ &fx_expensivePhysics, "fx_expensivePhysics", "1", CVAR_ARCHIVE },
-#endif
 	{ &cg_debugHealthBars,	"cg_debugHealthBars",	"0", CVAR_CHEAT },
 };
 
@@ -688,9 +691,6 @@ void CG_LoadingString( const char *s ) {
 	cgi_UpdateScreen();
 }
 
-void CG_LoadingStringNoUpdate( const char *s ) {
-	Q_strncpyz( cg.infoScreenText, s, sizeof( cg.infoScreenText ) );
-}
 
 static inline void CG_AS_Register(void)
 {
@@ -1389,7 +1389,7 @@ HUDMenuItem_t otherHUDBits[] =
 	"gfx/mp/f_icon_saber_throw"		//FP_SABERTHROW
 };
 */
-extern void NPC_Precache ( gentity_t *spawner );
+extern void CG_NPC_Precache ( gentity_t *spawner );
 qboolean NPCsPrecached = qfalse;
 /*
 =================
@@ -1404,7 +1404,6 @@ static void CG_RegisterGraphics( void ) {
 	int			i;
 	char		items[MAX_ITEMS+1];
 	int			breakPoint = 0;
-/*
 	const char		*sb_nums[11] = {
 		"gfx/2d/numbers/zero",
 		"gfx/2d/numbers/one",
@@ -1418,7 +1417,6 @@ static void CG_RegisterGraphics( void ) {
 		"gfx/2d/numbers/nine",
 		"gfx/2d/numbers/minus",
 	};
-*/
 
 	const char		*sb_t_nums[11] = {
 		"gfx/2d/numbers/t_zero",
@@ -1434,7 +1432,6 @@ static void CG_RegisterGraphics( void ) {
 		"gfx/2d/numbers/t_minus",
 	};
 
-/*
 	const char		*sb_c_nums[11] = {
 		"gfx/2d/numbers/c_zero",
 		"gfx/2d/numbers/c_one",
@@ -1448,7 +1445,6 @@ static void CG_RegisterGraphics( void ) {
 		"gfx/2d/numbers/c_nine",
 		"gfx/2d/numbers/t_minus", //?????
 	};
-*/
 
 	// Clean, then register...rinse...repeat...
 	CG_LoadingString( "effects" );
@@ -1471,9 +1467,9 @@ static void CG_RegisterGraphics( void ) {
 
 	for ( i=0; i < 11; i++ )
 	{
-//		cgs.media.numberShaders[i]			= cgi_R_RegisterShaderNoMip( sb_nums[i] );
+		cgs.media.numberShaders[i]			= cgi_R_RegisterShaderNoMip( sb_nums[i] );
 		cgs.media.smallnumberShaders[i]		= cgi_R_RegisterShaderNoMip( sb_t_nums[i] );
-//		cgs.media.chunkyNumberShaders[i]	= cgi_R_RegisterShaderNoMip( sb_c_nums[i] );
+		cgs.media.chunkyNumberShaders[i]	= cgi_R_RegisterShaderNoMip( sb_c_nums[i] );
 	}
 
 	// FIXME: conditionally do this??  Something must be wrong with inventory item caching..?
@@ -1505,9 +1501,10 @@ static void CG_RegisterGraphics( void ) {
 	}
 	cgs.media.backTileShader		= cgi_R_RegisterShader( "gfx/2d/backtile" );
 //	cgs.media.noammoShader			= cgi_R_RegisterShaderNoMip( "gfx/hud/noammo");
-//	cgs.media.weaponIconBackground	= cgi_R_RegisterShaderNoMip( "gfx/hud/background");
-//	cgs.media.forceIconBackground	= cgi_R_RegisterShaderNoMip( "gfx/hud/background_f");
-//	cgs.media.inventoryIconBackground= cgi_R_RegisterShaderNoMip( "gfx/hud/background_i");
+	cgs.media.weaponIconBackground	= cgi_R_RegisterShaderNoMip( "gfx/hud/background");
+	cgs.media.forceIconBackground	= cgi_R_RegisterShaderNoMip( "gfx/hud/background_f");
+	cgs.media.inventoryIconBackground= cgi_R_RegisterShaderNoMip( "gfx/hud/background_i");
+	cgs.media.dataPadFrame			= cgi_R_RegisterShaderNoMip( "gfx/menus/datapad");
 
 	//gore decal shaders -rww
 	cgs.media.bdecal_burnmark1		= cgi_R_RegisterShader( "gfx/damage/burnmark1" );
@@ -1541,7 +1538,7 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.crateBreakSound[0]	= cgi_S_RegisterSound("sound/weapons/explosions/crateBust1" );
 	cgs.media.crateBreakSound[1]	= cgi_S_RegisterSound("sound/weapons/explosions/crateBust2" );
 
-//	cgs.media.weaponbox	 = cgi_R_RegisterShaderNoMip( "gfx/interface/weapon_box");
+	cgs.media.weaponbox	 = cgi_R_RegisterShaderNoMip( "gfx/interface/weapon_box");
 
 	//Models & Shaders
 	cgs.media.damageBlendBlobShader	= cgi_R_RegisterShader( "gfx/misc/borgeyeflare" );
@@ -1555,10 +1552,10 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.DPForcePowerOverlay = cgi_R_RegisterShader( "gfx/hud/force_swirl" );
 
 	//NOTE: we should only cache this if there is a vehicle or emplaced gun somewhere on the map
-//	cgs.media.emplacedHealthBarShader = cgi_R_RegisterShaderNoMip( "gfx/hud/health_frame" );
+	cgs.media.emplacedHealthBarShader = cgi_R_RegisterShaderNoMip( "gfx/hud/health_frame" );
 
 	// battery charge shader when using a gonk
-//	cgs.media.batteryChargeShader = cgi_R_RegisterShader( "gfx/2d/battery" );
+	cgs.media.batteryChargeShader = cgi_R_RegisterShader( "gfx/2d/battery" );
 	cgi_R_RegisterShader( "gfx/2d/droid_view" );
 	cgs.media.useableHint = cgi_R_RegisterShader("gfx/hud/useableHint");
 
@@ -1753,6 +1750,38 @@ Ghoul2 Insert End
 					if ( i != 0 )
 					{//Client weapons already precached
 						CG_RegisterWeapon( g_entities[i].client->ps.weapon );
+						if ( g_entities[i].client->ps.saber[0].g2MarksShader[0] )
+						{
+							cgi_R_RegisterShader( g_entities[i].client->ps.saber[0].g2MarksShader );
+						}
+						if ( g_entities[i].client->ps.saber[0].g2MarksShader2[0] )
+						{
+							cgi_R_RegisterShader( g_entities[i].client->ps.saber[0].g2MarksShader2 );
+						}
+						if ( g_entities[i].client->ps.saber[0].g2WeaponMarkShader[0] )
+						{
+							cgi_R_RegisterShader( g_entities[i].client->ps.saber[0].g2WeaponMarkShader );
+						}
+						if ( g_entities[i].client->ps.saber[0].g2WeaponMarkShader2[0] )
+						{
+							cgi_R_RegisterShader( g_entities[i].client->ps.saber[0].g2WeaponMarkShader2 );
+						}
+						if ( g_entities[i].client->ps.saber[1].g2MarksShader[0] )
+						{
+							cgi_R_RegisterShader( g_entities[i].client->ps.saber[1].g2MarksShader );
+						}
+						if ( g_entities[i].client->ps.saber[1].g2MarksShader2[0] )
+						{
+							cgi_R_RegisterShader( g_entities[i].client->ps.saber[1].g2MarksShader2 );
+						}
+						if ( g_entities[i].client->ps.saber[1].g2WeaponMarkShader[0] )
+						{
+							cgi_R_RegisterShader( g_entities[i].client->ps.saber[1].g2WeaponMarkShader );
+						}
+						if ( g_entities[i].client->ps.saber[1].g2WeaponMarkShader2[0] )
+						{
+							cgi_R_RegisterShader( g_entities[i].client->ps.saber[1].g2WeaponMarkShader2 );
+						}
 						CG_RegisterNPCCustomSounds( &g_entities[i].client->clientInfo );
 						//CG_RegisterNPCEffects( g_entities[i].client->playerTeam );
 					}
@@ -1771,7 +1800,7 @@ Ghoul2 Insert End
 				else
 				*/
 				{
-					NPC_Precache( &g_entities[i] );
+					CG_NPC_Precache( &g_entities[i] );
 				}
 			}
 		}
@@ -1968,16 +1997,12 @@ static void CG_GameStateReceived( void ) {
 	CG_ParseServerinfo();
 
 	// load the new map
-	cgs.media.levelLoad = cgi_R_RegisterShaderNoMip( "gfx/menus/newFront/SaberLoad" );
+	cgs.media.levelLoad = cgi_R_RegisterShaderNoMip( "gfx/hud/mp_levelload" );
 	CG_LoadingString( "collision map" );
 
 	cgi_CM_LoadMap( cgs.mapname, qfalse );
 
 	CG_RegisterSounds();
-
-	// Xbox hack: Start a huge pile of sound loads right now:
-	extern void S_LoadCommonSounds( void );
-	S_LoadCommonSounds();
 
 #ifdef _IMMERSION
 	CG_RegisterForces();
@@ -2003,6 +2028,7 @@ static void CG_GameStateReceived( void ) {
 	cg.forceHUDActive = qtrue;
 	cg.forceHUDTotalFlashTime = 0;
 	cg.forceHUDNextFlashTime = 0;
+
 }
 
 void CG_WriteTheEvilCGHackStuff(void)
@@ -2138,9 +2164,6 @@ void CG_DrawMiscEnts(void)
 				VectorCopy(MiscEnt->origin, refEnt.origin);
 				VectorCopy(cullOrigin, refEnt.lightingOrigin);
 				ScaleModelAxis(&refEnt);
-#ifdef _XBOX
-				refEnt.number = i + MAX_GENTITIES;
-#endif
 				cgi_R_AddRefEntityToScene(&refEnt);
 			}
 		}
@@ -2217,13 +2240,12 @@ void CG_Init( int serverCommandSequence ) {
 	//
 	cgs.media.charsetShader = cgi_R_RegisterShaderNoMip("gfx/2d/charsgrid_med");
 
-//	cgs.media.qhFontSmall = cgi_R_RegisterFont("ocr_a");
-	cgs.media.qhFontSmall = cgi_R_RegisterFont("ergoec");
+	cgs.media.qhFontSmall = cgi_R_RegisterFont("ocr_a");
 	cgs.media.qhFontMedium= cgi_R_RegisterFont("ergoec");
 
 	cgs.media.whiteShader   = cgi_R_RegisterShader( "white" );
-	cgs.media.loadTick		= cgi_R_RegisterShaderNoMip( "gfx/menus/newFront/GlowLoad" );
-//	cgs.media.loadTickCap	= cgi_R_RegisterShaderNoMip( "gfx/hud/load_tick_cap" );
+	cgs.media.loadTick		= cgi_R_RegisterShaderNoMip( "gfx/hud/load_tick" );
+	cgs.media.loadTickCap	= cgi_R_RegisterShaderNoMip( "gfx/hud/load_tick_cap" );
 	
 	const char	*force_icon_files[NUM_FORCE_POWERS] = 
 	{//icons matching enums forcePowers_t
@@ -3432,7 +3454,7 @@ void CG_DrawInventorySelect( void )
 	if (!count)
 	{
 		cgi_SP_GetStringTextString("SP_INGAME_EMPTY_INV",text, sizeof(text) );
-		int w = cgi_R_Font_StrLenPixels( text, cgs.media.qhFontSmall, 1.0f );
+		int w = cgi_R_Font_StrLenPixels( text, cgs.media.qhFontSmall, 1.0f );	
 		int x = ( SCREEN_WIDTH - w ) / 2;
 		CG_DrawProportionalString(x, y2 + 22, text, CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);
 		return;
@@ -3468,13 +3490,7 @@ void CG_DrawInventorySelect( void )
 	const int bigIconSize = 80;
 	const int pad = 16;
 
-#ifdef _XBOX
-	int x = 320;
-	if(cg.widescreen)
-		x = 360;
-#else
 	const int x = 320;
-#endif
 	const int y = 410;
 
 	// Left side ICONS
@@ -3534,7 +3550,7 @@ void CG_DrawInventorySelect( void )
 			
 				if ( cgi_SP_GetStringTextString( itemName, data, sizeof( data )))
 				{
-					int w = cgi_R_Font_StrLenPixels( data, cgs.media.qhFontSmall, 1.0f );
+					int w = cgi_R_Font_StrLenPixels( data, cgs.media.qhFontSmall, 1.0f );	
 					int x = ( SCREEN_WIDTH - w ) / 2;
 
 					cgi_R_Font_DrawString( x, (SCREEN_HEIGHT - 24), data, textColor, cgs.media.qhFontSmall, -1, 1.0f);
@@ -3628,7 +3644,7 @@ void CG_DrawDataPadInventorySelect( void )
 	if (!count)
 	{
 		cgi_SP_GetStringTextString("SP_INGAME_EMPTY_INV",text, sizeof(text) );
-		int w = cgi_R_Font_StrLenPixels( text, cgs.media.qhFontSmall, 1.0f );
+		int w = cgi_R_Font_StrLenPixels( text, cgs.media.qhFontSmall, 1.0f );	
 		int x = ( SCREEN_WIDTH - w ) / 2;
 		CG_DrawProportionalString(x, 300 + 22, text, CG_CENTER | CG_SMALLFONT, colorTable[CT_ICON_BLUE]);
 		return;
@@ -3666,13 +3682,7 @@ void CG_DrawDataPadInventorySelect( void )
 	const int bigPad = 64;
 	const int pad = 32;
 
-#ifdef _XBOX
-	int centerXPos = 320;
-	if(cg.widescreen)
-		centerXPos = 360;
-#else
 	const int centerXPos = 320;
-#endif
 	const int graphicYPos = 340;
 
 
@@ -3883,9 +3893,6 @@ qboolean ForcePower_Valid(int index)
 CG_NextForcePower_f
 ===============
 */
-extern void IN_HotSwap1Off(void);
-extern void IN_HotSwap2Off(void);
-extern void IN_HotSwap3Off(void);
 void CG_NextForcePower_f( void ) 
 {
 	int		i;
@@ -3894,10 +3901,6 @@ void CG_NextForcePower_f( void )
 	{
 		return;
 	}
-
-	IN_HotSwap1Off();
-	IN_HotSwap2Off();
-	IN_HotSwap3Off();
 
 	SetForcePowerTime();
 
@@ -3940,10 +3943,6 @@ void CG_PrevForcePower_f( void )
 	{
 		return;
 	}
-
-	IN_HotSwap1Off();
-	IN_HotSwap2Off();
-	IN_HotSwap3Off();
 
 	SetForcePowerTime();
 
@@ -4061,13 +4060,7 @@ void CG_DrawForceSelect( void )
 	const int bigIconSize = 60;
 	const int pad = 12;
 
-#ifdef _XBOX
-	int x = 320;
-	if(cg.widescreen)
-		x = 360;
-#else
 	const int x = 320;
-#endif
 	const int y = 425;
 
 	i = cg.forcepowerSelect - 1;
@@ -4139,9 +4132,9 @@ void CG_DrawForceSelect( void )
 	// This only a temp solution.
 	if (cgi_SP_GetStringTextString( showPowersName[cg.forcepowerSelect], text, sizeof(text) ))
 	{
-			int w = cgi_R_Font_StrLenPixels(text, cgs.media.qhFontSmall, 0.9f); //1.0f);	
+			int w = cgi_R_Font_StrLenPixels(text, cgs.media.qhFontSmall, 1.0f);	
 			int x = ( SCREEN_WIDTH - w ) / 2;
-			cgi_R_Font_DrawString(x, (SCREEN_HEIGHT - 24) + yOffset, text, colorTable[CT_ICON_BLUE], cgs.media.qhFontSmall, -1, 0.9f); //1.0f);
+			cgi_R_Font_DrawString(x, (SCREEN_HEIGHT - 24) + yOffset, text, colorTable[CT_ICON_BLUE], cgs.media.qhFontSmall, -1, 1.0f);
 	}
 }
 
@@ -4329,16 +4322,173 @@ char *forcepowerLvl3Desc[NUM_FORCE_POWERS] =
 CG_DrawDataPadForceSelect
 ===================
 */
-#include "../ui/ui_shared.h"
-extern void Menu_SetItemText(const menuDef_t *menu,const char *itemName, const char *text);
-
-char forceDesc[2048];
-void CG_SetDataPadForceText( void )
+void CG_DrawDataPadForceSelect( void ) 
 {
+	int		i;
+	int		count;
+	int		holdX;
+	int		sideLeftIconCnt,sideRightIconCnt;
+	int		holdCount,iconCnt;
 	char	text[1024]={0};
 	char	text2[1024]={0};
 
+	// count the number of powers known
+	count = 0;
+	for (i=0;i<MAX_DPSHOWPOWERS;i++)
+	{
+		if (ForcePowerDataPad_Valid(i))
+		{
+			count++;
+		}
+	}
+
+	if (count < 1)	// If no force powers, don't display
+	{
+		return;
+	}
+
+
+	// Time to switch new icon colors
+	// Faded side icon color
+//	memcpy(fadeColor, colorTable[CT_WHITE], sizeof(vec4_t));
+
+	cg.iconSelectTime = cg.forcepowerSelectTime;
+
+	const int sideMax = 3;	// Max number of icons on the side
+
+	// Calculate how many icons will appear to either side of the center one
+	holdCount = count - 1;	// -1 for the center icon
+	if (holdCount == 0)			// No icons to either side
+	{
+		sideLeftIconCnt = 0;
+		sideRightIconCnt = 0;
+	}
+	else if (count > (2*sideMax))	// Go to the max on each side
+	{
+		sideLeftIconCnt = sideMax;
+		sideRightIconCnt = sideMax;
+	}
+	else							// Less than max, so do the calc
+	{
+		sideLeftIconCnt = holdCount/2;
+		sideRightIconCnt = holdCount - sideLeftIconCnt;
+	}
+
+
+	const int smallIconSize = 40;
+	const int bigIconSize = 70;
+	const int bigPad = 64;
+	const int pad = 32;
+
+	const int centerXPos = 320;
+	const int graphicYPos = 340;
+
+	i = cg.DataPadforcepowerSelect - 1;
+	if (i < 0)
+	{
+		i = MAX_DPSHOWPOWERS-1;
+	}
+
+	// Print icons to the left of the center 
+
+	cgi_R_SetColor(colorTable[CT_WHITE]);
+	// Work backwards from current icon
+	holdX = centerXPos - ((bigIconSize/2) + bigPad + smallIconSize);
+	for (iconCnt=1;iconCnt<(sideLeftIconCnt+1);i--)
+	{
+		if (i < 0)
+		{
+			i = MAX_DPSHOWPOWERS-1;
+		}
+
+		if (!ForcePowerDataPad_Valid(i))	// Does he have this power?
+		{
+			continue;
+		}
+
+		++iconCnt;					// Good icon
+
+		if (force_icons[showDataPadPowers[i]])
+		{
+			CG_DrawPic( holdX, graphicYPos, smallIconSize, smallIconSize, force_icons[showDataPadPowers[i]] ); 
+		}
+
+		// A new force power
+		if (((cg_updatedDataPadForcePower1.integer - 1) == showDataPadPowers[i]) ||
+			((cg_updatedDataPadForcePower2.integer - 1) == showDataPadPowers[i]) ||
+			((cg_updatedDataPadForcePower3.integer - 1) == showDataPadPowers[i]))
+		{
+			CG_DrawPic( holdX, graphicYPos, smallIconSize, smallIconSize, cgs.media.DPForcePowerOverlay ); 
+		}
+
+		if (force_icons[showDataPadPowers[i]])
+		{
+			holdX -= (smallIconSize+pad);
+		}
+	}
+
+	// Current Center Icon
+	if (force_icons[showDataPadPowers[cg.DataPadforcepowerSelect]])
+	{
+
+		cgi_R_SetColor(colorTable[CT_WHITE]);
+		CG_DrawPic( centerXPos-(bigIconSize/2), (graphicYPos-((bigIconSize-smallIconSize)/2)), bigIconSize, bigIconSize, force_icons[showDataPadPowers[cg.DataPadforcepowerSelect]] );
+
+		// New force power
+		if (((cg_updatedDataPadForcePower1.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]) ||
+			((cg_updatedDataPadForcePower2.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]) ||
+			((cg_updatedDataPadForcePower3.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]))
+		{			
+			CG_DrawPic( centerXPos-(bigIconSize/2), (graphicYPos-((bigIconSize-smallIconSize)/2)), bigIconSize, bigIconSize, cgs.media.DPForcePowerOverlay ); 
+		}
+	}
+
+
+	i = cg.DataPadforcepowerSelect + 1;
+	if (i>=MAX_DPSHOWPOWERS)
+	{
+		i = 0;
+	}
+
+	cgi_R_SetColor(colorTable[CT_WHITE]);
+
+	// Work forwards from current icon
+	holdX = centerXPos + (bigIconSize/2) + bigPad;
+	for (iconCnt=1;iconCnt<(sideRightIconCnt+1);i++)
+	{
+		if (i>=MAX_DPSHOWPOWERS)
+		{
+			i = 0;
+		}
+
+		if (!ForcePowerDataPad_Valid(i))	// Does he have this power?
+		{
+			continue;
+		}
+
+		++iconCnt;					// Good icon
+
+		if (force_icons[showDataPadPowers[i]])
+		{
+			CG_DrawPic( holdX, graphicYPos, smallIconSize, smallIconSize, force_icons[showDataPadPowers[i]] );
+		}
+
+		// A new force power
+		if (((cg_updatedDataPadForcePower1.integer - 1) == showDataPadPowers[i]) ||
+			((cg_updatedDataPadForcePower2.integer - 1) == showDataPadPowers[i]) ||
+			((cg_updatedDataPadForcePower3.integer - 1) == showDataPadPowers[i]))
+		{
+			CG_DrawPic( holdX, graphicYPos, smallIconSize, smallIconSize, cgs.media.DPForcePowerOverlay );
+		}
+
+		if (force_icons[showDataPadPowers[i]])
+		{
+			holdX += (smallIconSize+pad);
+		}
+	}
+
 	cgi_SP_GetStringTextString( va("SP_INGAME_%s",forcepowerDesc[cg.DataPadforcepowerSelect]), text, sizeof(text) );
+
 	if (player->client->ps.forcePowerLevel[showDataPadPowers[cg.DataPadforcepowerSelect]]==1)
 	{
 		cgi_SP_GetStringTextString( va("SP_INGAME_%s",forcepowerLvl1Desc[cg.DataPadforcepowerSelect]), text2, sizeof(text2) );
@@ -4352,63 +4502,20 @@ void CG_SetDataPadForceText( void )
 		cgi_SP_GetStringTextString( va("SP_INGAME_%s",forcepowerLvl3Desc[cg.DataPadforcepowerSelect]), text2, sizeof(text2) );
 	}
 
-	const char* craptext	= va("%s%s",text,text2);
-	assert(strlen(craptext) < 2048);
-	strcpy(forceDesc, craptext);
-	Menu_SetItemText(Menu_GetFocused(), "desc", forceDesc);
-}
+	const short textboxXPos = 40;
+	const short textboxYPos = 60;
+	const int	textboxWidth = 560;
+	const int	textboxHeight = 300;
+	const float	textScale = 1.0f;
 
-void CG_DrawDataPadForceSelect( void ) 
-{
-	int		i;
-	int		count;
-	int		holdX;
-	int		sideLeftIconCnt,sideRightIconCnt;
-	int		holdCount,iconCnt;
-
-
-	// count the number of powers known
-	count = 0;
-	for (i=0;i<MAX_DPSHOWPOWERS;i++)
+	if (text)
 	{
-		if (ForcePowerDataPad_Valid(i))
-		{
-			count++;
-			// Fix for datapad always showing absorb, even when we don't have it:
-			if (!ForcePowerDataPad_Valid( cg.DataPadforcepowerSelect ))
-				cg.DataPadforcepowerSelect = i;
-		}
-	}
 
-	if (count < 1)	// If no force powers, don't display
-	{
-		return;
-	}
-
-	cg.iconSelectTime = cg.forcepowerSelectTime;
-
-
-	i = cg.DataPadforcepowerSelect - 1;
-	if (i < 0)
-	{
-		i = MAX_DPSHOWPOWERS-1;
-	}
-
-	// Current Center Icon
-	if (force_icons[showDataPadPowers[cg.DataPadforcepowerSelect]])
-	{
-		cgi_Cvar_Set("ui_rules", va("%d",cg.DataPadforcepowerSelect));
-
-		cgi_R_SetColor(colorTable[CT_WHITE]);
-		CG_DrawPic( 290, 155, 56, 56, force_icons[showDataPadPowers[cg.DataPadforcepowerSelect]] );
-
-		// New force power
-		if (((cg_updatedDataPadForcePower1.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]) ||
-			((cg_updatedDataPadForcePower2.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]) ||
-			((cg_updatedDataPadForcePower3.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]))
-		{			
-			CG_DrawPic( 290, 155, 56, 56, cgs.media.DPForcePowerOverlay ); 
-		}
+		CG_DisplayBoxedText(textboxXPos,textboxYPos,textboxWidth,textboxHeight,va("%s%s",text,text2),
+													4,
+													textScale,
+													colorTable[CT_WHITE]	
+													);
 	}
 }
 

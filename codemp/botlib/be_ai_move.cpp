@@ -3230,7 +3230,6 @@ void BotMoveToGoal(bot_moveresult_t *result, int movestate, bot_goal_t *goal, in
 			} //end if
 			else
 			{
-#ifndef _XBOX
 #ifdef DEBUG
 				if (bot_developer)
 				{
@@ -3247,7 +3246,6 @@ void BotMoveToGoal(bot_moveresult_t *result, int movestate, bot_goal_t *goal, in
 					} //end if*/
 				} //end if
 #endif //DEBUG
-#endif
 				//if the goal area changed or the reachability timed out
 				//or the area changed
 				if (ms->lastgoalareanum != goal->areanum ||
@@ -3370,7 +3368,6 @@ void BotMoveToGoal(bot_moveresult_t *result, int movestate, bot_goal_t *goal, in
 			result->flags |= resultflags;
 			Com_Memset(&reach, 0, sizeof(aas_reachability_t));
 		} //end else
-#ifndef _XBOX
 #ifdef DEBUG
 		if (bot_developer)
 		{
@@ -3382,7 +3379,6 @@ void BotMoveToGoal(bot_moveresult_t *result, int movestate, bot_goal_t *goal, in
 			} //end if
 		} //end if
 #endif //DEBUG
-#endif
 	} //end if
 	else
 	{
@@ -3473,7 +3469,6 @@ void BotMoveToGoal(bot_moveresult_t *result, int movestate, bot_goal_t *goal, in
 				} //end case
 			} //end switch
 			result->traveltype = reach.traveltype;
-#ifndef _XBOX
 #ifdef DEBUG
 			if (bot_developer)
 			{
@@ -3485,7 +3480,6 @@ void BotMoveToGoal(bot_moveresult_t *result, int movestate, bot_goal_t *goal, in
 				} //end if
 			} //end if
 #endif //DEBUG
-#endif
 		} //end if
 	} //end else
 	//FIXME: is it right to do this here?

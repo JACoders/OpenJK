@@ -10,7 +10,6 @@
 #endif
 
 #ifdef _XBOX
-#include "../win32/glw_win_dx8.h"
 #include "../win32/win_highdynamicrange.h"
 #endif
 
@@ -444,7 +443,7 @@ Any mirrored or portaled views have already been drawn, so prepare
 to actually render the visible surfaces for this view
 =================
 */
-void RB_BeginDrawingView (void) {
+static void RB_BeginDrawingView (void) {
 	int clearBits = GL_DEPTH_BUFFER_BIT;
 
 	// sync with gl if needed
@@ -693,19 +692,13 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	backEnd.pc.c_surfaces += numDrawSurfs;
 
-	for (i = 0, drawSurf = drawSurfs ; i < numDrawSurfs ; i++, drawSurf++)
-	{
-		if ( drawSurf->sort == oldSort )
-		{
+	for (i = 0, drawSurf = drawSurfs ; i < numDrawSurfs ; i++, drawSurf++) {
+		if ( drawSurf->sort == oldSort ) {
 			// fast path, same as previous sort
 			rb_surfaceTable[ *drawSurf->surface ]( drawSurf->surface );
 			continue;
 		}
 		R_DecomposeSort( drawSurf->sort, &entityNum, &shader, &fogNum, &dlighted );
-
-#ifdef _XBOX
-		tr.currentEntityNum = entityNum;
-#endif
 
 #ifndef _XBOX	// GLOWXXX
 		// If we're rendering glowing objects, but this shader has no stages with glow, skip it!
@@ -789,11 +782,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 #endif
 				RB_EndSurface();
 
-//#ifdef _XBOX
-//				if (!didShadowPass && shader && shader->sort > SS_BANNER && shader != tr.projectionShadowShader)
-//#else
 				if (!didShadowPass && shader && shader->sort > SS_BANNER)
-//#endif
 				{
 					RB_ShadowFinish();
 					didShadowPass = true;
@@ -941,16 +930,6 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			{ //do the capture now, we only need to do it once per ent
 				int x, y;
 				int rad = backEnd.currentEntity->e.radius;
-
-				// Hack - prevent this from using
-				if( rad > SCREEN_IMAGE_MAX_HEIGHT )
-				{
-#ifndef FINAL_BUILD
-					Com_Printf( "WARNING: Shrinking screenImage\n" );
-#endif
-					rad = SCREEN_IMAGE_MAX_HEIGHT;
-				}
-
 				//We are going to just bind this, and then the CopyTexImage is going to
 				//stomp over this texture num in texture memory.
 				GL_Bind( tr.screenImage );
@@ -1017,9 +996,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 #ifdef _XBOX
 	if (r_hdreffect->integer)
-	{
-//		HDREffect.Render();
-	}
+		HDREffect.Render();
 #endif
 
 	// add light flares on lights that aren't obscured
@@ -1029,86 +1006,6 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	Sys_PumpEvents();		// crutch up the mac's limited buffer queue size
 #endif
 }
-
-
-#ifdef _XBOX
-static unsigned short indexList[24] = { 0, 3, 2, 1,
-										1, 2, 6, 5,
-										5, 6, 7, 4,
-										4, 7, 3, 0,
-										3, 7, 6, 2,
-										4, 0, 1, 5 };
-
-void RB_RunVisTest(int number, vec3_t bounds[2])
-{
-	glw_state->device->SetTransform(D3DTS_VIEW, glw_state->matrixStack[glwstate_t::MatrixMode_Model]->GetTop());
-	if(glw_state->matricesDirty[glwstate_t::MatrixMode_Projection])
-        glw_state->device->SetTransform(D3DTS_PROJECTION, glw_state->matrixStack[glwstate_t::MatrixMode_Projection]->GetTop());
-
-	GL_Bind(tr.whiteImage);
-	glw_state->device->SetTexture(0, NULL);
-
-	GL_State(GLS_DEFAULT);
-
-	DWORD cullmode, zwrite;
-	glw_state->device->GetRenderState(D3DRS_CULLMODE, &cullmode);
-	glw_state->device->GetRenderState(D3DRS_ZWRITEENABLE, &zwrite);
-
-	glw_state->device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	glw_state->device->SetRenderState(D3DRS_ZWRITEENABLE, false);
-	glw_state->device->SetRenderState(D3DRS_COLORWRITEENABLE, 0);
-
-	float fZOffset = -4.0f;
-	float fZSlopeScale = -2.0f;
-	glw_state->device->SetRenderState( D3DRS_SOLIDOFFSETENABLE,        TRUE );
-    glw_state->device->SetRenderState( D3DRS_POLYGONOFFSETZOFFSET,     *((DWORD*)&fZOffset) );
-    glw_state->device->SetRenderState( D3DRS_POLYGONOFFSETZSLOPESCALE, *((DWORD*)&fZSlopeScale) );
-
-	glw_state->device->SetVertexShader(D3DFVF_XYZ);
-
-	D3DVECTOR box[8];
-	box[0].x = bounds[0][0];
-	box[0].y = bounds[0][1];
-	box[0].z = bounds[0][2];
-
-	box[1].x = bounds[1][0];
-	box[1].y = bounds[0][1];
-	box[1].z = bounds[0][2];
-
-	box[2].x = bounds[1][0];
-	box[2].y = bounds[1][1];
-	box[2].z = bounds[0][2];
-
-	box[3].x = bounds[0][0];
-	box[3].y = bounds[1][1];
-	box[3].z = bounds[0][2];
-
-	box[4].x = bounds[0][0];
-	box[4].y = bounds[0][1];
-	box[4].z = bounds[1][2];
-
-	box[5].x = bounds[1][0];
-	box[5].y = bounds[0][1];
-	box[5].z = bounds[1][2];
-
-	box[6].x = bounds[1][0];
-	box[6].y = bounds[1][1];
-	box[6].z = bounds[1][2];
-
-	box[7].x = bounds[0][0];
-	box[7].y = bounds[1][1];
-	box[7].z = bounds[1][2];
-
-	glw_state->device->BeginVisibilityTest();
-	glw_state->device->DrawIndexedPrimitiveUP(D3DPT_QUADLIST, 0, 0, 6, indexList, D3DFMT_INDEX16, &box[0], 12);
-	glw_state->device->EndVisibilityTest(number);
-
-	glw_state->device->SetRenderState(D3DRS_CULLMODE, cullmode);
-	glw_state->device->SetRenderState(D3DRS_ZWRITEENABLE, zwrite);
-	glw_state->device->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_ALL);
-	glw_state->device->SetRenderState( D3DRS_SOLIDOFFSETENABLE, FALSE );
-}
-#endif
 
 
 /*
@@ -1134,11 +1031,7 @@ void	RB_SetGL2D (void) {
 	qglMatrixMode(GL_PROJECTION);
     qglLoadIdentity ();
 #ifdef _XBOX
-	extern int Menus_AnyFullScreenVisible(void);
-	if(glw_state->isWidescreen && !(Menus_AnyFullScreenVisible()) && cls.state == CA_ACTIVE)
-		qglOrtho (0, 720, 0, 480, 0, 1);
-	else
-        qglOrtho (0, 640, 0, 480, 0, 1);
+	qglOrtho (0, 640, 0, 480, 0, 1);
 #else
 	qglOrtho (0, 640, 480, 0, 0, 1);
 #endif
@@ -1514,8 +1407,6 @@ const void	*RB_DrawBuffer( const void *data ) {
 	qglDrawBuffer( cmd->buffer );
 
 		// clear screen for debugging
-	// VVFIXME - Does their new check fix our problem with hoth2 cinematic?
-#ifndef _XBOX
 	if (!( backEnd.refdef.rdflags & RDF_NOWORLDMODEL ) && tr.world && tr.refdef.rdflags & RDF_doLAGoggles)
 	{
 		const fog_t		*fog = &tr.world->fogs[tr.world->numfogs];
@@ -1568,7 +1459,6 @@ const void	*RB_DrawBuffer( const void *data ) {
 		}		
 		qglClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	}
-#endif // _XBOX
 
 	return (const void *)(cmd + 1);
 }

@@ -49,7 +49,6 @@ void	 GLW_Shutdown(void);
 // variable declarations
 //
 glwstate_t *glw_state = NULL;
-glwstate_t	g_glwState;
 
 
 /*

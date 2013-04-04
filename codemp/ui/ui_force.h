@@ -10,21 +10,9 @@ extern int uiForceRank;
 extern int uiMaxRank;
 extern int uiForceUsed;
 extern int uiForceAvailable;
-#ifdef _XBOX
-extern qboolean gTouchedForce[2];
-#else
 extern qboolean gTouchedForce;
-#endif
 extern qboolean uiForcePowersDisabled[NUM_FORCE_POWERS];
 extern int uiForcePowersRank[NUM_FORCE_POWERS];
-
-//JLF
-#ifdef _XBOX
-extern int gCustRank[2];
-extern int gCustSide[2];
-extern int gCustPowersRank[2][NUM_FORCE_POWERS];
-#endif
-
 extern int uiForcePowerDarkLight[NUM_FORCE_POWERS];
 extern int uiSaberColorShaders[NUM_SABER_COLORS];
 // Dots above or equal to a given rank carry a certain color.

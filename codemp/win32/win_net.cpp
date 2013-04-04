@@ -245,6 +245,8 @@ Sys_GetPacket
 Never called by the game logic, just the system event queing
 ==================
 */
+int	recvfromCount;
+
 qboolean Sys_GetPacket( netadr_t *net_from, msg_t *net_message ) {
 	int 	ret;
 	struct sockaddr from;
@@ -266,6 +268,7 @@ qboolean Sys_GetPacket( netadr_t *net_from, msg_t *net_message ) {
 		}
 
 		fromlen = sizeof(from);
+		recvfromCount++;		// performance check
 		ret = recvfrom( net_socket, (char *)net_message->data, net_message->maxsize, 0, (struct sockaddr *)&from, &fromlen );
 
 		if (ret == SOCKET_ERROR)
@@ -302,10 +305,6 @@ qboolean Sys_GetPacket( netadr_t *net_from, msg_t *net_message ) {
 		}
 		else {
 			SockadrToNetadr( &from, net_from );
-			if (ret == 88)	// Size of a CNK server packet =)
-			{
-				Com_Printf( "CNK: %d.%d.%d.%d\n", net_from->ip[0], net_from->ip[1], net_from->ip[2], net_from->ip[3] );
-			}
 			net_message->readcount = 0;
 		}
 
@@ -586,7 +585,7 @@ void Sys_ShowIP(void) {
 NET_IPSocket
 ====================
 */
-int NET_IPSocket( char *net_interface, int port ) {
+SOCKET NET_IPSocket( char *net_interface, int port ) {
 	SOCKET				newsocket;
 	struct sockaddr_in	address;
 	qboolean			_true = qtrue;
@@ -836,10 +835,10 @@ void NET_OpenSocks( int port ) {
 NET_GetLocalAddress
 =====================
 */
-#ifndef _XBOX
-
 void NET_GetLocalAddress( void )
 {
+#ifndef _XBOX
+
 	char				hostname[256];
 	struct hostent		*hostInfo;
 	int					error;
@@ -880,28 +879,20 @@ void NET_GetLocalAddress( void )
 		Com_Printf( "IP: %i.%i.%i.%i\n", ( ip >> 24 ) & 0xff, ( ip >> 16 ) & 0xff, ( ip >> 8 ) & 0xff, ip & 0xff );
 		numIP++;
 	}
-}
 
 #else
-
-// Xbox version supports the force option, so we can prime the
-// system and hopefully be getting an IP while Com_Init() is running.
-void NET_GetLocalAddress( bool force )
-{
 	XNADDR xnMyAddr;
 	DWORD dwStatus;
 	do
 	{
 	   // Repeat while pending; OK to do other work in this loop
 	   dwStatus = XNetGetTitleXnAddr( &xnMyAddr );
-	} while( dwStatus == XNET_GET_XNADDR_PENDING && force );
+	} while( dwStatus == XNET_GET_XNADDR_PENDING );
 
 	// Error checking
 	if( dwStatus == XNET_GET_XNADDR_NONE )
 	{
-		// If this wasn't the final (necessary) call, then don't worry
-		if( force )
-			assert(!"Error getting XBox title address.");
+		assert(!"Error getting XBox title address.");
 		return;
 	}
 
@@ -911,9 +902,9 @@ void NET_GetLocalAddress( bool force )
 	*(u_long*)localIP[3] = 0;
 
 	Com_Printf( "IP: %i.%i.%i.%i\n", localIP[0], localIP[1], localIP[2], localIP[3] );
-}
-#endif
 
+#endif
+}
 
 /*
 ====================
@@ -934,16 +925,12 @@ void NET_OpenIP( void )
 	// a different net_port for each one
 	for( i = 0 ; i < 10 ; i++ ) {
 		ip_socket = NET_IPSocket( ip->string, port + i );
-		if ( ip_socket ) {
+		if ( ip_socket != INVALID_SOCKET ) {
 			Cvar_SetValue( "net_port", port + i );
 			if ( net_socksEnabled->integer ) {
 				NET_OpenSocks( port + i );
 			}
-#ifdef _XBOX
-			NET_GetLocalAddress( false );
-#else
 			NET_GetLocalAddress();
-#endif
 			return;
 		}
 	}

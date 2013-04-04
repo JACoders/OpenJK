@@ -20,9 +20,6 @@
 #include "../game/q_shared.h"
 
 extern qboolean G_ActivePlayerNormal(void);
-static int rumble_timer = 0;
-
-cvar_t*	in_shaking_rumble;	// 1 - shaking rumble on, 0 - shaking rumble off
 
 struct rumblestate_t
 {
@@ -75,9 +72,60 @@ static rumblescript_t rumbleScripts[MAX_RUMBLE_SCRIPTS];
 
 cvar_t* in_useRumble = NULL;
 
+/***** FIXME Some functions that would be found in a client manager *****/
+/***** BEGIN FILLER *****/
+
+// Always return 0 because we have only one client (right now anyway)
+int ActiveClientNum(void)
+{
+	return 0;
+}
+
+// The active controller will always be number 0 for now
+int ActiveController(void)
+{
+	return 0;
+}
+/***** END FILLER *****/
+
+void IN_enableRumble( void ) 
+{
+	if (ActiveClientNum() == 0)
+	{
+		Cvar_Set( "in_useRumble",   "1"); 
+	}
+	else
+	{
+		Cvar_Set( "in_useRumble2",   "1"); 
+	}
+}
+
+void IN_disableRumble( void ) 
+{
+	if (ActiveClientNum() == 0)
+	{
+		Cvar_Set( "in_useRumble",   "0"); 
+	}
+	else
+	{
+		Cvar_Set( "in_useRumble2",   "0"); 
+	}
+}									
+	 
 bool IN_usingRumble( void )
 {
-	return in_useRumble->integer;
+	if (ActiveClientNum() == 0)
+	{
+		//return Cvar_VariableIntegerValue( "in_useRumble"); 
+		return in_useRumble->integer;
+	}
+	else
+	{
+		//return Cvar_VariableIntegerValue( "in_useRumble2"); 
+		return in_useRumble->integer;
+	}
+
+	return true;
 }
 
 
@@ -100,7 +148,6 @@ int IN_CreateRumbleScript(int controller, int numStates, bool deleteWhenFinished
 	if (i == MAX_RUMBLE_SCRIPTS) 
 		return -1;		// Ran out of scripts
 	
-
 	rumbleScripts[i].autoDelete = deleteWhenFinished;
 	rumbleScripts[i].controller = controller;
 	rumbleScripts[i].currentState = 0;
@@ -410,8 +457,6 @@ int IN_Time()
 	return cg.time;
 }
 
-int testTime;
-
 void IN_ExecuteRumbleScript(int whichScript)
 {
 	if (!IN_usingRumble()) return;
@@ -428,12 +473,10 @@ void IN_ExecuteRumbleScript(int whichScript)
 		cmd = IN_RunSpecialScript(whichScript);
 	}
 	
-	rumbleScripts[whichScript].nextStateAt = -1;//IN_Time() + cmd;
+	rumbleScripts[whichScript].nextStateAt = IN_Time() + cmd;
 	
 	rumbleStatus[rumbleScripts[whichScript].controller].changed = true;
 	rumbleStatus[rumbleScripts[whichScript].controller].killed = false;
-
-	testTime = IN_Time();
 }
 
 
@@ -446,7 +489,6 @@ void IN_PauseRumbling(int controller)
 
 	rumbleStatus[controller].timePaused = IN_Time();
 	rumbleStatus[controller].paused = IN_RumbleAdjust(controller, 0, 0);
-	IN_KillRumbleScripts();
 }
 
 void IN_UnPauseRumbling(int controller)
@@ -471,8 +513,6 @@ void IN_UnPauseRumbling(int controller)
 	rumbleStatus[controller].paused = false; 
 	rumbleStatus[controller].changed = true;
 	rumbleStatus[controller].killed = false;
-
-	IN_KillRumbleScripts();
 }
 
 void IN_TogglePauseRumbling(int controller)
@@ -539,20 +579,20 @@ bool IN_AdvanceToNextState(int whichScript)
 // Max rumble takes precidence
 // Other possibility is some kind of sum of all the speeds 
 // Call this once a frame, to update the controller based on the rumble states
-extern qboolean _UI_IsFullscreen( void );
 void IN_UpdateRumbleFromStates()
 {
-	if(_UI_IsFullscreen())
-	{
-		IN_KillRumbleScripts();
+	//if (!IN_usingRumble()) return;
+/*mb	extern int G_ShouldBeRumbling();
+	if (!G_ShouldBeRumbling())
 		return;
-	}
-
-
+*/
+	int usingRumble[2];
+	usingRumble[0] = Cvar_VariableIntegerValue("in_useRumble");
+	usingRumble[1] = Cvar_VariableIntegerValue("in_useRumble2");
+	
 	int i;
 	int value[MAX_RUMBLE_CONTROLLERS][2];		
 	int cur_time = IN_Time();
-	bool canKillScripts = false;
 
 	memset(value, 0, sizeof(int)*MAX_RUMBLE_CONTROLLERS*2);
 	for (i = 0; i < MAX_RUMBLE_SCRIPTS; i++)
@@ -561,7 +601,7 @@ void IN_UpdateRumbleFromStates()
 		if ( rumbleStatus[rumbleScripts[i].controller].paused) continue;
 
 //*mb	ClientManager::ActivateByControllerId(rumbleScripts[i].controller);
-		if ( !IN_usingRumble() ) 
+		if ( !usingRumble[ActiveClientNum()] ) 
 		{
 			IN_KillRumbleScript(i);
 			continue;
@@ -575,14 +615,6 @@ void IN_UpdateRumbleFromStates()
 */
 		// Unset state so skip
 		if ( rumbleScripts[i].nextStateAt == 0) continue;
-
-		canKillScripts	= true;
-
-		if ( rumbleScripts[i].nextStateAt == -1)
-		{
-			int cmd = rumbleScripts[i].states[rumbleScripts[i].currentState].timeToStop;
-			rumbleScripts[i].nextStateAt = cur_time + cmd;
-		}
 
 		// Time is up on this rumble state
 		if ( rumbleScripts[i].nextStateAt < cur_time) 
@@ -619,17 +651,6 @@ void IN_UpdateRumbleFromStates()
 		// State has changed
 		rumbleStatus[i].changed = false;
 	}
-
-	if(canKillScripts)
-	{
-		if( (cur_time - rumble_timer) > 5000 )
-			IN_KillRumbleScripts();
-	}
-	else
-	{
-		rumble_timer	= cur_time;
-	}
-
 }
 
 
@@ -644,7 +665,7 @@ void IN_RumbleInit (void) {
 	memset(&rumbleScripts, 0, sizeof(rumblescript_t)*MAX_RUMBLE_SCRIPTS);
 
 	in_useRumble = Cvar_Get( "in_useRumble", "1", 0 );
-	in_shaking_rumble	= Cvar_Get("in_shaking_rumble", "1", 0);
+	Cvar_Get("in_useRumble2", "1", 0);
 }
 
 

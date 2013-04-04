@@ -391,14 +391,10 @@ typedef int		clipHandle_t;
 
 
 #define	MAX_QPATH			64		// max length of a quake game pathname
-#ifdef _XBOX
-#define MAX_OSPATH			128
-#else
 #ifdef PATH_MAX
 #define MAX_OSPATH			PATH_MAX
 #else
 #define	MAX_OSPATH			256		// max length of a filesystem pathname
-#endif
 #endif
 
 #define	MAX_NAME_LENGTH		32		// max length of a client name
@@ -666,7 +662,7 @@ typedef struct
 	vec3_t		muzzlePointOld;
 	vec3_t		muzzleDir;
 	vec3_t		muzzleDirOld;
-	saberTrail_t	trail[2];
+	saberTrail_t	trail;
 	int			hitWallDebounceTime;
 	int			storageTime;
 	int			extendDebounce;
@@ -686,6 +682,56 @@ typedef enum
 	SS_NUM_SABER_STYLES
 } saber_styles_t;
 
+//SABER FLAGS
+//Old bools converted to a flag now
+#define SFL_NOT_LOCKABLE			(1<<0)//can't get into a saberlock
+#define SFL_NOT_THROWABLE			(1<<1)//can't be thrown - FIXME: maybe make this a max level of force saber throw that can be used with this saber?
+#define SFL_NOT_DISARMABLE			(1<<2)//can't be dropped
+#define SFL_NOT_ACTIVE_BLOCKING		(1<<3)//don't to try to block incoming shots with this saber
+#define SFL_TWO_HANDED				(1<<4)//uses both hands
+#define SFL_SINGLE_BLADE_THROWABLE	(1<<5)//can throw this saber if only the first blade is on
+#define SFL_RETURN_DAMAGE			(1<<6)//when returning from a saber throw, it keeps spinning and doing damage
+//NEW FLAGS
+#define SFL_ON_IN_WATER				(1<<7)//if set, weapon stays active even in water
+#define SFL_BOUNCE_ON_WALLS			(1<<8)//if set, the saber will bounce back when it hits solid architecture (good for real-sword type mods)
+#define SFL_BOLT_TO_WRIST			(1<<9)//if set, saber model is bolted to wrist, not in hand... useful for things like claws & shields, etc.
+//#define SFL_STICK_ON_IMPACT		(1<<?)//if set, the saber will stick in the wall when thrown and hits solid architecture (good for sabers that are meant to be thrown).
+//#define SFL_NO_ATTACK				(1<<?)//if set, you cannot attack with the saber (for sabers/weapons that are meant to be thrown only, not used as melee weapons).
+//Move Restrictions
+#define SFL_NO_PULL_ATTACK			(1<<10)//if set, cannot do pull+attack move (move not available in MP anyway)
+#define SFL_NO_BACK_ATTACK			(1<<11)//if set, cannot do back-stab moves
+#define SFL_NO_STABDOWN				(1<<12)//if set, cannot do stabdown move (when enemy is on ground)
+#define SFL_NO_WALL_RUNS			(1<<13)//if set, cannot side-run or forward-run on walls
+#define SFL_NO_WALL_FLIPS			(1<<14)//if set, cannot do backflip off wall or side-flips off walls
+#define SFL_NO_WALL_GRAB			(1<<15)//if set, cannot grab wall & jump off
+#define SFL_NO_ROLLS				(1<<16)//if set, cannot roll
+#define SFL_NO_FLIPS				(1<<17)//if set, cannot do flips
+#define SFL_NO_CARTWHEELS			(1<<18)//if set, cannot do cartwheels
+#define SFL_NO_KICKS				(1<<19)//if set, cannot do kicks (can't do kicks anyway if using a throwable saber/sword)
+#define SFL_NO_MIRROR_ATTACKS		(1<<20)//if set, cannot do the simultaneous attack left/right moves (only available in Dual Lightsaber Combat Style)
+#define SFL_NO_ROLL_STAB			(1<<21)//if set, cannot do roll-stab move at end of roll
+//SABER FLAGS2
+//Primary Blade Style
+#define SFL2_NO_WALL_MARKS			(1<<0)//if set, stops the saber from drawing marks on the world (good for real-sword type mods)
+#define SFL2_NO_DLIGHT				(1<<1)//if set, stops the saber from drawing a dynamic light (good for real-sword type mods)
+#define SFL2_NO_BLADE				(1<<2)//if set, stops the saber from drawing a blade (good for real-sword type mods)
+#define SFL2_NO_CLASH_FLARE			(1<<3)//if set, the saber will not do the big, white clash flare with other sabers
+#define SFL2_NO_DISMEMBERMENT		(1<<4)//if set, the saber never does dismemberment (good for pointed/blunt melee weapons)
+#define SFL2_NO_IDLE_EFFECT			(1<<5)//if set, the saber will not do damage or any effects when it is idle (not in an attack anim).  (good for real-sword type mods)
+#define SFL2_ALWAYS_BLOCK			(1<<6)//if set, the blades will always be blocking (good for things like shields that should always block)
+#define SFL2_NO_MANUAL_DEACTIVATE	(1<<7)//if set, the blades cannot manually be toggled on and off
+#define SFL2_TRANSITION_DAMAGE		(1<<8)//if set, the blade does damage in start, transition and return anims (like strong style does)
+//Secondary Blade Style
+#define SFL2_NO_WALL_MARKS2			(1<<9)//if set, stops the saber from drawing marks on the world (good for real-sword type mods)
+#define SFL2_NO_DLIGHT2				(1<<10)//if set, stops the saber from drawing a dynamic light (good for real-sword type mods)
+#define SFL2_NO_BLADE2				(1<<11)//if set, stops the saber from drawing a blade (good for real-sword type mods)
+#define SFL2_NO_CLASH_FLARE2		(1<<12)//if set, the saber will not do the big, white clash flare with other sabers
+#define SFL2_NO_DISMEMBERMENT2		(1<<13)//if set, the saber never does dismemberment (good for pointed/blunt melee weapons)
+#define SFL2_NO_IDLE_EFFECT2		(1<<14)//if set, the saber will not do damage or any effects when it is idle (not in an attack anim).  (good for real-sword type mods)
+#define SFL2_ALWAYS_BLOCK2			(1<<15)//if set, the blades will always be blocking (good for things like shields that should always block)
+#define SFL2_NO_MANUAL_DEACTIVATE2	(1<<16)//if set, the blades cannot manually be toggled on and off
+#define SFL2_TRANSITION_DAMAGE2		(1<<17)//if set, the blade does damage in start, transition and return anims (like strong style does)
+
 typedef struct
 {
 	char		name[64];						//entry in sabers.cfg, if any
@@ -698,47 +744,97 @@ typedef struct
 	int			soundOff;					//game soundindex for turning off sound
 	int			numBlades;
 	bladeInfo_t	blade[MAX_BLADES];			//blade info - like length, trail, origin, dir, etc.
-	saber_styles_t	style;					//locked style to use, if any
+	int			stylesLearned;				//styles you get when you get this saber, if any
+	int			stylesForbidden;			//styles you cannot use with this saber, if any
 	int			maxChain;					//how many moves can be chained in a row with this weapon (-1 is infinite, 0 is use default behavior)
-	qboolean	lockable;					//can get into a saberlock
-	qboolean	throwable;					//whether or not this saber can be thrown - FIXME: maybe make this a max level of force saber throw that can be used with this saber?
-	qboolean	disarmable;					//whether or not this saber can be dropped
-	qboolean	activeBlocking;				//whether or not to try to block incoming shots with this saber
-	qboolean	twoHanded;					//uses both hands
 	int			forceRestrictions;			//force powers that cannot be used while this saber is on (bitfield) - FIXME: maybe make this a limit on the max level, per force power, that can be used with this type?
 	int			lockBonus;					//in saberlocks, this type of saber pushes harder or weaker
 	int			parryBonus;					//added to strength of parry with this saber
 	int			breakParryBonus;			//added to strength when hit a parry
+	int			breakParryBonus2;			//for bladeStyle2 (see bladeStyle2Start below)
 	int			disarmBonus;				//added to disarm chance when win saberlock or have a good parry (knockaway)
+	int			disarmBonus2;				//for bladeStyle2 (see bladeStyle2Start below)
 	saber_styles_t	singleBladeStyle;		//makes it so that you use a different style if you only have the first blade active
-	qboolean	singleBladeThrowable;		//makes it so that you can throw this saber if only the first blade is on
-	qboolean	returnDamage;
-//===NEW FOR MP ONLY========================================================================================
+//	char		*brokenSaber1;				//if saber is actually hit by another saber, it can be cut in half/broken and will be replaced with this saber in your right hand
+//	char		*brokenSaber2;				//if saber is actually hit by another saber, it can be cut in half/broken and will be replaced with this saber in your left hand
+//===NEW========================================================================================
+	//these values are global to the saber, like all of the ones above
+	int			saberFlags;					//from SFL_ list above
+	int			saberFlags2;				//from SFL2_ list above
+
 	//done in cgame (client-side code)
-	qboolean	noWallMarks;				//0 - if 1, stops the saber from drawing marks on the world (good for real-sword type mods)
-	qboolean	noDlight;					//0 - if 1, stops the saber from drawing a dynamic light (good for real-sword type mods)
-	qboolean	noBlade;					//0 - if 1, stops the saber from drawing a blade (good for real-sword type mods)
-	qboolean	noClashFlare;				//0 - if non-zero, the saber will not do the big, white clash flare with other sabers
-	int			trailStyle;					//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
-	int			g2MarksShader;				//none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
-	//int		bladeShader;				//none - if set, overrides the shader used for the saber blade?
-	//int		trailShader;				//none - if set, overrides the shader used for the saber trail?
 	qhandle_t	spinSound;					//none - if set, plays this sound as it spins when thrown
 	qhandle_t	swingSound[3];				//none - if set, plays one of these 3 sounds when swung during an attack - NOTE: must provide all 3!!!
+
+	//done in game (server-side code)
+	float		moveSpeedScale;				//1.0 - you move faster/slower when using this saber
+	float		animSpeedScale;				//1.0 - plays normal attack animations faster/slower
+
+	//done in both cgame and game (BG code)
+	int	kataMove;				//LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time 
+	int	lungeAtkMove;			//LS_INVALID - if set, player will execute this move when they crouch+fwd+attack 
+	int	jumpAtkUpMove;			//LS_INVALID - if set, player will execute this move when they jump+attack 
+	int	jumpAtkFwdMove;			//LS_INVALID - if set, player will execute this move when they jump+fwd+attack 
+	int	jumpAtkBackMove;		//LS_INVALID - if set, player will execute this move when they jump+back+attack
+	int	jumpAtkRightMove;		//LS_INVALID - if set, player will execute this move when they jump+rightattack
+	int	jumpAtkLeftMove;		//LS_INVALID - if set, player will execute this move when they jump+left+attack
+	int	readyAnim;				//-1 - anim to use when standing idle
+	int	drawAnim;				//-1 - anim to use when drawing weapon
+	int	putawayAnim;			//-1 - anim to use when putting weapon away
+	int	tauntAnim;				//-1 - anim to use when hit "taunt"
+	int	bowAnim;				//-1 - anim to use when hit "bow"
+	int	meditateAnim;			//-1 - anim to use when hit "meditate"
+	int	flourishAnim;			//-1 - anim to use when hit "flourish"
+	int	gloatAnim;				//-1 - anim to use when hit "gloat"
+
+	//***NOTE: you can only have a maximum of 2 "styles" of blades, so this next value, "bladeStyle2Start" is the number of the first blade to use these value on... all blades before this use the normal values above, all blades at and after this number use the secondary values below***
+	int			bladeStyle2Start;			//0 - if set, blades from this number and higher use the following values (otherwise, they use the normal values already set)
+
+	//***The following can be different for the extra blades - not setting them individually defaults them to the value for the whole saber (and first blade)***
+	
+	//===PRIMARY BLADES=====================
+	//done in cgame (client-side code)
+	int			trailStyle;					//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
+	int			g2MarksShader;				//none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
+	int			g2WeaponMarkShader;			//none - if set, the game will ry to project this shader onto the weapon when it damages a person (good for a blood splatter on the weapon)
+	//int		bladeShader;				//none - if set, overrides the shader used for the saber blade?
+	//int		trailShader;				//none - if set, overrides the shader used for the saber trail?
 	qhandle_t	hitSound[3];				//none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
 	qhandle_t	blockSound[3];				//none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
+	qhandle_t	bounceSound[3];				//none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
 	int			blockEffect;				//none - if set, plays this effect when the saber/sword hits another saber/sword (instead of "saber/saber_block.efx")
 	int			hitPersonEffect;			//none - if set, plays this effect when the saber/sword hits a person (instead of "saber/blood_sparks_mp.efx")
 	int			hitOtherEffect;				//none - if set, plays this effect when the saber/sword hits something else damagable (instead of "saber/saber_cut.efx")
+	int			bladeEffect;				//none - if set, plays this effect at the blade tag
 
 	//done in game (server-side code)
 	float		knockbackScale;				//0 - if non-zero, uses damage done to calculate an appropriate amount of knockback
 	float		damageScale;				//1 - scale up or down the damage done by the saber
-	qboolean	noDismemberment;			//0 - if non-zero, the saber never does dismemberment (good for pointed/blunt melee weapons)
-	qboolean	noIdleEffect;				//0 - if non-zero, the saber will not do damage or any effects when it is idle (not in an attack anim).  (good for real-sword type mods)
-	//qboolean	bounceOnWalls;				//0 - if non-zero, the saber will bounce back when it hits solid architecture (good for real-sword type mods)
-	//qboolean	stickOnImpact;				//0 - if non-zero, the saber will stick in the wall when thrown and hits solid architecture (good for sabers that are meant to be thrown).
-	//qboolean	noAttack;					//0 - if non-zero, you cannot attack with the saber (for sabers/weapons that are meant to be thrown only, not used as melee weapons).
+	float		splashRadius;				//0 - radius of splashDamage
+	int			splashDamage;				//0 - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
+	float		splashKnockback;			//0 - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
+	
+	//===SECONDARY BLADES===================
+	//done in cgame (client-side code)
+	int			trailStyle2;				//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
+	int			g2MarksShader2;				//none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
+	int			g2WeaponMarkShader2;		//none - if set, the game will ry to project this shader onto the weapon when it damages a person (good for a blood splatter on the weapon)
+	//int		bladeShader2;				//none - if set, overrides the shader used for the saber blade?
+	//int		trailShader2;				//none - if set, overrides the shader used for the saber trail?
+	qhandle_t	hit2Sound[3];				//none - if set, plays one of these 3 sounds when saber hits a person - NOTE: must provide all 3!!!
+	qhandle_t	block2Sound[3];				//none - if set, plays one of these 3 sounds when saber/sword hits another saber/sword - NOTE: must provide all 3!!!
+	qhandle_t	bounce2Sound[3];			//none - if set, plays one of these 3 sounds when saber/sword hits a wall and bounces off (must set bounceOnWall to 1 to use these sounds) - NOTE: must provide all 3!!!
+	int			blockEffect2;				//none - if set, plays this effect when the saber/sword hits another saber/sword (instead of "saber/saber_block.efx")
+	int			hitPersonEffect2;			//none - if set, plays this effect when the saber/sword hits a person (instead of "saber/blood_sparks_mp.efx")
+	int			hitOtherEffect2;			//none - if set, plays this effect when the saber/sword hits something else damagable (instead of "saber/saber_cut.efx")
+	int			bladeEffect2;				//none - if set, plays this effect at the blade tag
+
+	//done in game (server-side code)
+	float		knockbackScale2;			//0 - if non-zero, uses damage done to calculate an appropriate amount of knockback
+	float		damageScale2;				//1 - scale up or down the damage done by the saber
+	float		splashRadius2;				//0 - radius of splashDamage
+	int			splashDamage2;				//0 - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
+	float		splashKnockback2;			//0 - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
 //=========================================================================================================================================
 
 } saberInfo_t;
@@ -1304,7 +1400,9 @@ typedef struct {
 #define VectorSet5(v,x,y,z,a,b)	((v)[0]=(x), (v)[1]=(y), (v)[2]=(z), (v)[3]=(a), (v)[4]=(b)) //rwwRMG - added
 #define Vector4Copy(a,b)		((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
 
-#ifndef __linux2__
+#ifdef __linux__
+#define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
+#else 
 #ifndef __LCC__
 //pitiful attempt to reduce _ftol2 calls -rww
 static ID_INLINE void SnapVector( float *v )
@@ -1329,8 +1427,9 @@ static ID_INLINE void SnapVector( float *v )
 }
 #else
 #define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
-#endif
+#endif // __LCC__
 #endif // __linux__
+
 // just in case you do't want to use the macros
 vec_t _DotProduct( const vec3_t v1, const vec3_t v2 );
 void _VectorSubtract( const vec3_t veca, const vec3_t vecb, vec3_t out );
@@ -1500,7 +1599,6 @@ void AxisCopy( vec3_t in[3], vec3_t out[3] );
 
 void SetPlaneSignbits( struct cplane_s *out );
 int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
-int BoxOnPlaneSide (const short emins[3], const short emaxs[3], struct cplane_s *p);
 
 double	fmod( double x, double y );
 float	AngleMod(float a);
@@ -1701,9 +1799,6 @@ default values.
 #define CVAR_NORESTART		0x00000400		// do not clear when a cvar_restart is issued
 #define CVAR_INTERNAL		0x00000800		// cvar won't be displayed, ever (for passwords and such)
 #define	CVAR_PARENTAL		0x00001000		// lets cvar system know that parental stuff needs to be updated
-//JLF
-#define CVAR_PROFILE		0x00002000		//used to mark profile cvars.
-
 
 // nothing outside the Cvar_*() functions should modify these fields!
 typedef struct cvar_s {
@@ -1885,17 +1980,16 @@ typedef int soundChannel_t;
 // per-level limits
 //
 #ifdef _XBOX
-#define MAX_CLIENTS			10
+#define MAX_CLIENTS			16
 #else
 #define	MAX_CLIENTS			32		// absolute limit
 #endif
 #define MAX_RADAR_ENTITIES	MAX_GENTITIES
 #define MAX_TERRAINS		1//32 //rwwRMG: inserted
 #define MAX_LOCATIONS		64
-#define MAX_VEHICLE_ENTS	32
 
 #ifdef _XBOX
-#define	GENTITYNUM_BITS	10		// don't need to send any more
+#define	GENTITYNUM_BITS	9		// don't need to send any more
 #else
 #define	GENTITYNUM_BITS	10		// don't need to send any more
 #endif
@@ -1928,7 +2022,7 @@ typedef int soundChannel_t;
 #define MAX_ICONS			64		// max registered icons you can have per map 
 #define MAX_FX				64		// max effects strings, I'm hoping that 64 will be plenty
 
-//#define MAX_SUB_BSP			32 //rwwRMG - added
+#define MAX_SUB_BSP			32 //rwwRMG - added
 
 /*
 Ghoul2 Insert Start
@@ -2051,7 +2145,7 @@ typedef enum {
 
 #define MAX_FORCE_RANK			7
 
-#define FALL_FADE_TIME			1200
+#define FALL_FADE_TIME			3000
 
 //#define _ONEBIT_COMBO
 //Crazy optimization attempt to take all those 1 bit values and shove them into a single
@@ -2194,7 +2288,7 @@ typedef struct playerState_s {
 	int			emplacedIndex;
 	float		emplacedTime;
 
-//	qboolean	isJediMaster;
+	qboolean	isJediMaster;
 	qboolean	forceRestricted;
 	qboolean	trueJedi;
 	qboolean	trueNonJedi;
@@ -2208,12 +2302,10 @@ typedef struct playerState_s {
 
 	qboolean	hasDetPackPlanted; //better than taking up an eFlag isn't it?
 
-/*
 	float		holocronsCarried[NUM_FORCE_POWERS];
 	int			holocronCantTouch;
 	float		holocronCantTouchTime; //for keeping track of the last holocron that just popped out of me (if any)
 	int			holocronBits;
-*/
 
 	int			electrifyTime;
 
@@ -2638,7 +2730,7 @@ typedef struct entityState_s {
 	int			forcePowersActive;
 	int			saberHolstered;//sent in only only 2 bits - should be 0, 1 or 2
 
-//	qboolean	isJediMaster;
+	qboolean	isJediMaster;
 
 	qboolean	isPortalEnt; //this needs to be seperate for all entities I guess, which is why I couldn't reuse another value.
 
@@ -2786,10 +2878,9 @@ typedef struct entityState_s {
 	//over for anything that isn't an NPC.
 	vec3_t	boneAngles1; //angles of boneIndex1
 	vec3_t	boneAngles2; //angles of boneIndex2
-//	vec3_t	boneAngles3; //angles of boneIndex3
-//	vec3_t	boneAngles4; //angles of boneIndex4
+	vec3_t	boneAngles3; //angles of boneIndex3
+	vec3_t	boneAngles4; //angles of boneIndex4
 
-	int		powerups;		// bit flags
 
 	// Now, the 16-bit members
 
@@ -2815,6 +2906,7 @@ typedef struct entityState_s {
 	word	event;			// impulse events -- muzzle flashes, footsteps, etc
 	word	owner; // so crosshair knows what it's looking at
 
+	word	powerups;		// bit flags
 	word	legsAnim;
 
 	word	torsoAnim;
@@ -2855,7 +2947,7 @@ typedef struct entityState_s {
 	byte	modelindex2;
 	byte	saberInFlight;
 	byte	saberMove;
-//	byte	isJediMaster;
+	byte	isJediMaster;
 	byte	saberHolstered;//sent in only 2 bytes, should be 0, 1 or 2
 
 	byte	isPortalEnt; //this needs to be seperate for all entities I guess, which is why I couldn't reuse another value.
@@ -2885,11 +2977,11 @@ typedef struct entityState_s {
 	//desired bone.
 	byte	boneIndex1;
 	byte	boneIndex2;
-//	byte	boneIndex3;
-//	byte	boneIndex4;
+	byte	boneIndex3;
+	byte	boneIndex4;
 
 	byte	NPC_class; //we need to see what it is on the client for a few effects.
-//	byte	alignPad[2];
+	byte	alignPad[3];
 } entityState_t;
 
 #pragma pack(pop)
@@ -3015,7 +3107,7 @@ typedef enum {
 typedef char memtag_t;
 
 //rww - conveniently toggle "gore" code, for model decals and stuff.
-//#define _G2_GORE
+#define _G2_GORE
 
 typedef struct SSkinGoreData_s
 {
