@@ -1,0 +1,21 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Smuggler"
+	weapons			WP_BLASTER_PISTOL|WP_DEMP2
+	forcepowers		0
+	classflags		CFL_STATVIEWER|CFL_EXTRA_AMMO
+	maxhealth		100
+	maxarmor		0
+	startarmor		0
+	model			"chiss" 				//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/chiss/icon_default"
+	class_shader	"gfx/mp/c_icon_support"
+	holdables		HI_HEALTHDISP|HI_AMMODISP|HI_SHIELD|HI_MEDPAC_BIG|HI_SENTRY_GUN
+	speed			0.85
+}
+
+description	
+"@SIEGE_SUPP_SMUGGLER"

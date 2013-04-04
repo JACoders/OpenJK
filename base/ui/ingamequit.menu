@@ -1,0 +1,784 @@
+	//----------------------------------------------------------------------------------------------
+	//
+	//	QUIT MENU
+	//
+	//----------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name				"ingamequitMenu"
+		visible			0
+		fullScreen			1							// MENU_TRUE				
+		rect				0 0 640 480						// Size and position of the menu
+		focusColor			1 1 1 1						// Focus color for text and items
+		descX				320
+		descY				426
+		descScale			1
+		descColor				1 .682 0 .8
+		descAlignment			ITEM_ALIGN_CENTER		
+
+		onOpen
+		{
+			hide			abandongamegroup ;
+			hide			quitprogramgroup ;
+			hide			highlights ;
+			show			quitchoicegroup ;
+		}
+		onESC 
+		{ 
+			play			"sound/interface/esc.wav" 					
+			hide			abandongamegroup ;
+			hide			quitprogramgroup ;
+			hide			highlights ;
+			show			quitchoicegroup ;
+			close			all ; 
+			open			ingameMainMenu ;
+		}
+
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	MENU BACKGROUND
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				really_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				156 154 320 240
+			background			"gfx/menus/main_centerblue"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 160 480
+			background			"gfx/menus/menu_side_text"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text_b
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				480 0 160 480
+			background			"gfx/menus/menu_side_text_right"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}	
+	
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/main_background"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				starwars
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				107 8 428 112
+			background			"gfx/menus/jediacademy"	
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				left_frame
+			group				lf_fr
+			style				WINDOW_STYLE_SHADER
+			rect				0 50 320 160
+			background			"gfx/menus/menu_boxes_left"	
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				right_frame
+			group				rt_fr
+			style				WINDOW_STYLE_SHADER
+			rect				320 50 320 160
+			background			"gfx/menus/menu_boxes_right"	
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	TOP MENU BUTTONS
+		//
+		//----------------------------------------------------------------------------------------------
+
+
+		// Big button "SAVE"
+		itemDef 
+		{
+			name				savegamebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				7 126 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				savegamebutton
+			group				nbut
+			text				@MENUS_SAVE
+			descText			@MENUS_SAVE_CURRENT_GAME
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				7 126 130 24
+			textaligny			0
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			forecolor			1 .682 0 1
+			visible			1
+
+			mouseEnter 
+			{ 
+				show			savegamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			savegamebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			ingamesaveMenu 
+			}
+		}
+
+
+		// Big button "LOAD"
+		itemDef 
+		{
+			name				loadgamebutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				170 126 130 24
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				loadgamebutton
+			group				lbut
+			text				@MENUS_LOAD
+			descText			@MENUS_LOAD_A_SAVED_GAME
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				170 126 130 24
+			textaligny			0
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			forecolor			1 .682 0 1
+			visible			1
+
+			mouseEnter 
+			{ 
+				show			loadgamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			loadgamebutton_glow 
+			}
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			ingameloadMenu 
+			}	  	  
+		}
+
+		// Big button "CONTROLS"
+		itemDef 
+		{
+			name				controlsbutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				340 126 130 24
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef {
+			name				controlsbutton
+			group				cbut
+			text				@MENUS_CONTROLS
+			descText			@MENUS_CONFIGURE_GAME_CONTROLS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				340 126 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			controlsbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			controlsbutton_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			ingamecontrolsMenu ; 
+			}
+		}
+
+		// Big button "SETUP"
+		itemDef 
+		{
+			name				setupbutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				502 126 130 24
+			background			"gfx/menus/menu_buttonback"	
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				setupbutton
+			group				sbut
+			text				@MENUS_SETUP
+			descText			@MENUS_CONFIGURE_GAME_SETTINGS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				502 126 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			setupbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			setupbutton_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			ingamesetupMenu ; 
+			}
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	OTHER MAIN MENU BUTTONS
+		//
+		//----------------------------------------------------------------------------------------------
+		// RESUME button in the lower right corner
+		itemDef 
+		{
+			name				resumebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				455 444 130 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				resume
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				455 444 130 24 
+			text				@MENUS_RESUME
+			descText			@MENUS_RESUME_CURRENT_GAME
+			font				3
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible			1
+			mouseEnter 
+			{ 
+				show			resumebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			resumebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				uiScript		closeingame			// Close menu				
+			}
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//   QUIT GAME MENU specific stuff
+		//
+		//----------------------------------------------------------------------------------------------
+		// Quitting title
+		itemDef 
+		{
+      			name				quit_title
+			group				none
+      			text				@MENUS_LEAVING_JEDI_KNIGHT_2
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+      			rect				100 164 440 16
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			225
+			textaligny			-1
+			forecolor			.549 .854 1 1
+	      		visible			1
+	      		decoration 
+		}
+
+		itemDef 
+		{
+			name			quitgame_current_glow
+			group			highlights 
+			style			WINDOW_STYLE_SHADER
+			rect			220 210 200 30
+			background		"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor		1 1 1 1
+			decoration
+			visible		0 
+		}
+
+		// Quit current button
+		itemDef 
+		{
+			name			quitgame_current
+			group			quitchoicegroup
+			text			@MENUS_ABANDON_GAME
+			type			ITEM_TYPE_BUTTON
+			style			WINDOW_STYLE_EMPTY
+			rect			220 210 200 30
+			font			2
+			textscale		1
+			textalign		ITEM_ALIGN_CENTER
+			textstyle		1
+			textalignx		100
+			textaligny		-2
+			descText		@MENUS_QUIT_CURRENT_GAME_AND
+			forecolor			1 .682 0 1
+			visible		1
+			action 
+			{ 
+				play		"sound/interface/button1.wav" ; 
+				show		abandongamegroup ;
+				hide		quitchoicegroup ;
+				hide		quitprogramgroup ;
+				hide		highlights ;
+			}
+			mouseEnter 
+			{ 
+				show		quitgame_current_glow
+			}
+			mouseExit 
+			{ 
+				hide		quitgame_current_glow
+			}	  	  
+		}
+
+		itemDef 
+		{
+			name			quitgame_program_glow
+			group			highlights 
+			style			WINDOW_STYLE_SHADER
+			rect			220 280 200 30
+			background		"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor		1 1 1 1
+			decoration
+			visible		0
+		}
+
+		// Quit program button
+		itemDef 
+		{
+			name			quitgame_program
+			group			quitchoicegroup
+			text			@MENUS_QUIT_PROGRAM
+			type			ITEM_TYPE_BUTTON
+			style			WINDOW_STYLE_EMPTY
+			rect			220 280 200 30
+			font			2
+			textscale		1
+			textalign		ITEM_ALIGN_CENTER
+			textstyle		1
+			textalignx		100
+			textaligny		-2
+			descText		@MENUS_LEAVE_THE_PROGRAM_ENTIRELY
+			forecolor			1 .682 0 1
+			visible		1
+	      	action 
+			{ 
+				play		"sound/interface/button1.wav" ; 
+				show		quitprogramgroup ;
+				hide		abandongamegroup ;
+				hide		quitchoicegroup ;
+				hide		highlights ;
+			}
+			mouseEnter 
+			{ 
+				show		quitgame_program_glow
+			}
+			mouseExit 
+			{ 
+				hide		quitgame_program_glow
+			}	  	  
+		}
+
+
+//----------------------------------------------------------------------------------------------
+//
+//   Abandon game Confirmation
+//
+//----------------------------------------------------------------------------------------------
+// Quit current button
+		itemDef 
+		{
+			name			fakequitgame_current
+			group			abandongamegroup
+			text			@MENUS_ABANDON_GAME
+			type			ITEM_TYPE_BUTTON
+			style			WINDOW_STYLE_EMPTY
+			rect			220 210 200 30
+			font			2
+			textscale		1
+			textalign		ITEM_ALIGN_CENTER
+			textstyle		1
+			textalignx		100
+			textaligny		-2
+			forecolor		1 1 1 1
+			visible		0
+			decoration
+		}
+
+		itemDef 
+		{
+			name			abandongame_cancel_glow
+			group			highlights 
+			style			WINDOW_STYLE_SHADER
+			rect			78 384 130 24
+			background		"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor		1 1 1 1
+			decoration
+			visible		0 
+		}
+
+		// CANCEL button
+		itemDef 
+		{
+			name			abandongame_cancel
+			group			abandongamegroup
+			text			@MENUS_NO
+			type			ITEM_TYPE_BUTTON
+			style			WINDOW_STYLE_EMPTY
+			rect			78 384 130 24
+			font			3
+			textscale		1
+			textalignx		65
+			textaligny		-1
+			textalign		ITEM_ALIGN_CENTER
+			textstyle		1
+			descText		@MENUS_DO_NOT_ABANDON
+			forecolor			1 .682 0 1
+			visible		1
+			action 
+			{ 
+				play		"sound/interface/button1.wav" ; 
+				hide		abandongamegroup ;
+				hide		quitprogramgroup ;
+				hide		highlights ;
+				show		quitchoicegroup ;
+			}
+			mouseEnter 
+			{ 
+				show		abandongame_cancel_glow 
+			}
+			mouseExit 
+			{ 
+				hide		abandongame_cancel_glow 
+			}	  	  
+		}
+
+		itemDef 
+		{
+			name			abandongame_yes_glow
+			group			highlights 
+			style			WINDOW_STYLE_SHADER
+			rect			434 384 130 24
+			background		"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor		1 1 1 1
+			decoration
+			visible		0
+		}
+
+		// YES button
+		itemDef 
+		{
+			name			abandongame_yes
+			group			abandongamegroup
+			text			@MENUS_YES
+			type			ITEM_TYPE_BUTTON
+			style			WINDOW_STYLE_EMPTY
+			rect			434 384 130 24
+			font			3
+			textscale		1
+			textalignx		65
+			textaligny		-1
+			textalign		ITEM_ALIGN_CENTER
+			textstyle		1
+			descText		@MENUS_ABANDON
+			forecolor			1 .682 0 1
+			visible		1
+	      	action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				hide			abandongamegroup ;
+				hide			quitprogramgroup ;
+				hide			highlights ;
+				show			quitchoicegroup ;
+				uiScript		Leave	//disconnect and start over
+			}
+			mouseEnter 
+			{ 
+				show		abandongame_yes_glow 
+			}
+			mouseExit 
+			{ 
+				hide		abandongame_yes_glow 
+			}	  	  
+		}
+
+
+//----------------------------------------------------------------------------------------------
+//
+//   Leave game Confirmation
+//
+//----------------------------------------------------------------------------------------------
+// Quit program button
+		itemDef 
+		{
+			name			fakequitgame_program
+			group			quitprogramgroup
+			text			@MENUS_QUIT_PROGRAM
+			type			ITEM_TYPE_BUTTON
+			style			WINDOW_STYLE_EMPTY
+			rect			220 280 200 30
+			font			2
+			textscale		1
+			textalign		ITEM_ALIGN_CENTER
+			textstyle		1
+			textalignx		100
+			textaligny		-2
+			forecolor		1 1 1 1
+			visible		0
+			decoration
+		}
+
+		itemDef 
+		{
+			name			quitprogram_cancel_glow
+			group			highlights 
+			style			WINDOW_STYLE_SHADER
+			rect			78 384 130 24
+			background		"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor		1 1 1 1
+			decoration
+			visible		0 
+		}
+
+		// CANCEL button
+		itemDef 
+		{
+			name			quitprogram_cancel
+			group			quitprogramgroup
+			text			@MENUS_NO
+			type			ITEM_TYPE_BUTTON
+			style			WINDOW_STYLE_EMPTY
+			rect			78 384 130 24
+			font			3
+			textscale		1
+			textalignx		65
+			textaligny		-1
+			textalign		ITEM_ALIGN_CENTER
+			textstyle		1
+			descText		@MENUS_DO_NOT_LEAVE_JEDI_KNIGHT
+			forecolor			1 .682 0 1
+			visible		1
+			action 
+			{ 
+				play		"sound/interface/button1.wav" ; 
+				hide		quitprogramgroup ;
+				hide		abandongamegroup ;
+				hide		highlights ;
+				show		quitchoicegroup ;
+			}
+			mouseEnter 
+			{ 
+				show		quitprogram_cancel_glow 
+			}
+			mouseExit 
+			{ 
+				hide		quitprogram_cancel_glow
+			}	  	  
+		}
+
+		itemDef 
+		{
+			name			quitprogram_yes_glow
+			group			highlights 
+			style			WINDOW_STYLE_SHADER
+			rect			434 384 130 24
+			background		"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor		1 1 1 1
+			decoration
+			visible		0
+		}
+
+		// YES button
+		itemDef 
+		{
+			name			quitprogram_yes
+			group			quitprogramgroup
+			text			@MENUS_YES
+			type			ITEM_TYPE_BUTTON
+			style			WINDOW_STYLE_EMPTY
+			rect			434 384 130 24
+			font			3
+			textscale		1
+			textalignx		65
+			textaligny		-1
+			textalign		ITEM_ALIGN_CENTER
+			textstyle		1
+			descText		@MENUS_JEDI_KNIGHT_II
+			forecolor			1 .682 0 1
+			visible		1
+			cvartest			"com_demo"
+			hidecvar		
+			{
+				"1"
+			}
+	      		action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				uiScript		Quit			// Quit the game
+			}
+			mouseEnter 
+			{ 
+				show		quitprogram_yes_glow 
+			}
+			mouseExit 
+			{ 
+				hide		quitprogram_yes_glow
+			}	  	  
+		}
+
+		// YES button
+		itemDef 
+		{
+			name			quitprogram_yes
+			group			quitprogramgroup
+			text			@MENUS_YES
+			type			ITEM_TYPE_BUTTON
+			style			WINDOW_STYLE_EMPTY
+			rect			434 384 130 24
+			font			3
+			textscale		1
+			textalignx		65
+			textaligny		-1
+			textalign		ITEM_ALIGN_CENTER
+			textstyle		1
+			descText		@MENUS_JEDI_KNIGHT_II
+			forecolor			1 .682 0 1
+			visible		1
+			cvartest			"com_demo"
+			hidecvar		
+			{
+				"0"
+			}
+	      		action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ;
+				open			demo_sellscreen1 ;
+
+			}
+			mouseEnter 
+			{ 
+				show		quitprogram_yes_glow 
+			}
+			mouseExit 
+			{ 
+				hide		quitprogram_yes_glow
+			}	  	  
+		}
+
+
+	}
+}

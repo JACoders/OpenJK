@@ -1,0 +1,61 @@
+saboteur
+{
+	playerModel	saboteur
+	weapon	WP_BLASTER_RIFLE
+	altFire	1
+	rank		crewman
+	reactions	5
+	aim		3
+	move		5
+	aggression	5
+	evasion		4
+	intelligence	5
+	hfov		160
+	vfov		160
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_SABOTEUR
+	snd		sab1
+	sndcombat	sab1
+	sndextra	sab1
+	yawSpeed	140
+	walkSpeed	55
+	runSpeed	200
+	health	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+saboteurcommando
+{
+	playerModel	saboteur
+	weapon	WP_BLASTER_RIFLE
+	altFire	1
+	rank		crewman
+	reactions	5
+	aim		3
+	move		5
+	aggression	5
+	evasion		4
+	intelligence	5
+	hfov		160
+	vfov		160
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_SABOTEUR
+	snd		sab2
+	sndcombat	sab2
+	sndextra	sab2
+	yawSpeed	140
+	walkSpeed	55
+	runSpeed	200
+	health	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

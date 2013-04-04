@@ -1,0 +1,55 @@
+WildTauntaun
+{
+name			WildTauntaun
+type			VH_ANIMAL
+numHands		2
+lookYaw			45
+lookPitch		45
+length			128
+width			32
+height			32
+centerOfGravity	"-0.222 0 0"
+speedMax		500
+speedMin		-50
+turboSpeed		800
+turboDuration		3000
+turboRecharge		8000
+acceleration		10
+decelIdle		20
+
+
+strafePerc		0.0
+bankingSpeed		0.0
+rollLimit		2
+pitchLimit		0
+braking			10
+mouseYaw		0.006
+turningSpeed		5
+turnWhenStopped		0
+traction		100
+friction		100
+maxSlope		0.55
+mass			200
+armor 			300
+toughness 		30.0
+model			tauntaun
+riderAnim		BOTH_VT_IDLE
+radarIcon		"gfx/menus/radar/tauntaun"
+skin			"wild"
+
+cameraOverride		1
+cameraRange			125
+cameraVertOffset	0
+cameraPitchOffset	0
+cameraFOV			80
+cameraAlpha			0
+
+soundOn			"sound/chars/tauntaun/misc/buck1.mp3"
+soundOff		"sound/chars/tauntaun/misc/buck2.mp3"
+soundTurbo		"sound/chars/tauntaun/misc/anger1.mp3"
+soundShift1		"sound/chars/tauntaun/misc/anger3.mp3"
+soundShift2		"sound/chars/tauntaun/misc/chatter1.mp3"
+soundShift3		"sound/chars/tauntaun/misc/chatter3.mp3"
+soundShift4		"sound/chars/tauntaun/misc/pant1.mp3"
+
+}

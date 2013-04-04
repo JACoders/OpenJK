@@ -1,0 +1,423 @@
+\\ INGAME_LEAVE MENU \\
+{
+	menuDef 
+	{
+		name					"ingame_leave"
+		visible					1
+		fullScreen				0
+		outOfBoundsClick							// this closes the window if it gets a click out of the rectangle
+		rect					474 40 156 100
+		focusColor				1 1 1 1
+		onOpen 
+		{ 
+			show				grpMenu ; 
+			hide				grpConfirm 
+		}
+
+		// Overall window backdrop
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 156 100
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+//
+// BUTTONS
+//
+		itemDef 
+		{
+			name				button1
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 5 152 30
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				button2
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 35 152 30
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				button3
+			group				buttons
+			style				WINDOW_STYLE_SHADER
+			rect				2 65 152 30
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+
+//
+// LEAVE MAIN MENU
+//
+
+		itemDef 
+		{
+			name				leave
+			text				@MENUS_MAIN_MENU
+			group				grpMenu
+			style				2	
+			type				1
+			rect				2 5 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76 
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				hide			grpMenu ; 
+				hide			buttons ;
+				show			leaveConfirm 
+			}
+			mouseEnter 
+			{ 
+				show			button1
+			}
+			mouseExit 
+			{ 
+				hide			button1
+			}
+		}
+
+		itemDef 
+		{
+			name				leave
+			group				grpMenu
+			text				@MENUS_RESTART_MATCH
+			style				2	
+			type				1
+			rect				2 35 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76 
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			cvarTest			"cl_currentServerAddress"
+			enableCvar 
+			{ 
+				"Localhost"
+			}
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				hide			grpMenu ; 
+				hide			buttons ;
+				show			restartConfirm 
+			}
+			mouseEnter 
+			{ 
+				show			button2
+			}
+			mouseExit 
+			{ 
+				hide			button2
+			}
+		}
+
+		itemDef 
+		{
+			name				leave
+			group				grpMenu
+			type				1
+			text				@MENUS_QUIT_PROGRAM
+			style				2	
+			rect				2 65 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				hide 			grpMenu ; 
+				hide			buttons ;
+				show 			quitConfirm 
+			}
+			mouseEnter 
+			{ 
+				show			button3
+			}
+			mouseExit 
+			{ 
+				hide			button3
+			}
+		}
+
+
+
+		//---------------------------------
+		// MAIN MENU CONFIRM
+		//---------------------------------
+		itemDef 
+		{
+			name				leaveConfirm
+			text				@MENUS_GO_TO_MAIN_MENU
+			group				grpConfirm
+			style				2	
+			rect				2 5 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76 
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			.549 .854 1 1
+			decoration
+			visible				1 
+		}
+
+
+		itemDef 
+		{
+			name				leaveConfirm
+			text				@MENUS_YES
+			group				grpConfirm
+			type				1
+			style				0
+			rect				2 35 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76 
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{
+				play			"sound/interface/button1.wav" ;
+				uiScript		leave 
+			}
+			mouseEnter 
+			{ 
+				show			button2
+			}
+			mouseExit 
+			{ 
+				hide			button2
+			}
+		}
+
+		itemDef 
+		{
+			name				leaveConfirm
+			text				@MENUS_NO
+			group				grpConfirm
+			type				1
+			style				0
+			rect				2 65 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76 
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				hide grpConfirm ; 
+				show grpMenu 
+			}
+			mouseEnter 
+			{ 
+				show			button3
+			}
+			mouseExit 
+			{ 
+				hide			button3
+			}
+		}
+
+
+
+		//---------------------------------
+		// RESTART MATCH CONFIRM
+		//---------------------------------
+		itemDef 
+		{
+			name				restartConfirm
+			text				@MENUS_MATCH
+			group				grpConfirm
+			style				2	
+			rect				2 5 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76 
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			.549 .854 1 1
+			decoration
+			visible				1 
+		}
+
+		itemDef 
+		{
+			name				restartConfirm
+			text				@MENUS_YES
+			group				grpConfirm
+			type				1
+			rect				2 35 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76 
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible			1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"map_restart" ; 
+				close			ingame_leave ; 
+				close			ingame 
+			}
+			mouseEnter 
+			{ 
+				show			button2
+			}
+			mouseExit 
+			{ 
+				hide			button2
+			}
+		}
+
+		itemDef 
+		{
+			name				restartConfirm
+			text				@MENUS_NO
+			group				grpConfirm
+			type				1
+			rect				2 65 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76 
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible			1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				hide			grpConfirm ; 
+				show			grpMenu 
+			}
+			mouseEnter 
+			{ 
+				show			button3
+			}
+			mouseExit 
+			{ 
+				hide			button3
+			}
+		}
+
+
+
+		//---------------------------------
+		// RESTART MATCH CONFIRM
+		//---------------------------------
+		itemDef 
+		{
+			name				quitConfirm
+			text				@MENUS_PROGRAM
+			group				grpConfirm
+			style				2	
+			rect				2 5 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76 
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			.549 .854 1 1
+			decoration
+			visible				1 
+		}
+
+		itemDef 
+		{
+			name				quitConfirm
+			text				@MENUS_YES
+			group				grpConfirm
+			type				1
+			rect				2 35 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76 
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible			1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript		quit 
+			}
+			mouseEnter 
+			{ 
+				show			button2
+			}
+			mouseExit 
+			{ 
+				hide			button2
+			}
+		}
+
+		itemDef 
+		{
+			name				quitConfirm
+			text				@MENUS_NO
+			group				grpConfirm
+			type				1
+			rect				2 65 152 30
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			76
+			textaligny			0
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible			1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				hide grpConfirm ; 
+				show grpMenu 
+			}
+			mouseEnter 
+			{ 
+				show			button3
+			}
+			mouseExit 
+			{ 
+				hide			button3
+			}
+		}
+	}
+}

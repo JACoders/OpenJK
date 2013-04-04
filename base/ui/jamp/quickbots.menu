@@ -1,0 +1,652 @@
+//----------------------------------------------------------------------------------------------
+//	QUICK GAME BOT MENU - 
+//		Set up the roster of bots and humans for a game. Called from Quick Game2 menu.
+//
+//ui_net_gametype
+//	0 = FFA
+//	1 = DUEL
+//	2 = POWER DUEL
+//	3 = TEAM FFA
+//	4 = SIEGE
+//	5 = CTF
+//
+//----------------------------------------------------------------------------------------------
+{
+	menuDef  
+	{
+		name					"quickbots"
+		fullScreen				MENU_FALSE				
+		rect					100 50 440 380						// Size and position of the menu
+		visible					MENU_FALSE							// Visible on open
+		focusColor				1 1 1 1							// Focus color for text and items
+		descX					320
+		descY					380
+		descScale				1
+		descColor				1 .682 0 1						// Focus color for text and items
+		descAlignment				ITEM_ALIGN_CENTER		
+		popup
+		outOfBoundsClick											// this closes the window if it gets a click out of the rectangle
+
+		onESC 
+		{ 
+			play				"sound/interface/esc.wav" ;
+			close				quickbots ; 
+			open				quickgame2 ;
+		}
+
+		itemDef 
+		{
+			name				frame_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 440 380
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			decoration			
+			border				1
+			bordercolor			.265 .824 .886 .25
+			bordersize			3
+			visible				1 
+		}
+
+//----------------------------------------------------------------------------------------------
+// TITLE
+//----------------------------------------------------------------------------------------------
+		// Bots title
+		itemDef 
+		{
+			name				title
+			group				none
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS_BOTS
+      			rect				55 5 330 16
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			165
+			textaligny			-1
+			forecolor			1 1 1 1
+	      		visible				1 
+	      		decoration 
+		}
+
+		itemDef 
+		{
+			name				button_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 0 0
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+//----------------------------------------------------------------------------------------------
+// BOT LIST FOR NON-TEAMGAMES
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name 				botlist_slot
+			style				0	
+			text 				@MENUS_1_1
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM1
+			rect 				20 55 196 20 
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border				0
+			bordercolor			0 0 0 0
+			visible				1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 51 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+		
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0	
+			text 				@MENUS_2_1
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM1
+			rect 				20 75 196 20 
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 71 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0
+			text 				@MENUS_3_1	
+ 			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM2
+			rect 				20 95 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+      			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor 			0 0 0 0
+        		visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 91 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+	    	}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0
+			text 				@MENUS_4_1	
+ 			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+	  		ownerdraw 			UI_REDTEAM2
+			rect 				20 115 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 111 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+    		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+	      		style				0	
+			text 				@MENUS_5_1
+ 			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+	  		ownerdraw 			UI_BLUETEAM3
+      			rect 				20 135 196 20 
+      			textalign 			ITEM_ALIGN_LEFT		
+      			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+      			border				0
+      			bordercolor			0 0 0 0
+       			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 131 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+    		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style				0	
+			text 				@MENUS_6_1
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM3
+			rect 				20 155 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border				0
+			bordercolor			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 151 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0	
+			text 				@MENUS_7_1
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM4
+			rect 				20 175 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor	 		0 0 0 0
+		 	visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 171 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style				0	
+			text 				@MENUS_8_1
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM4
+			rect 				20 195 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border				0
+			bordercolor			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 191 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0
+			text 				@MENUS_9	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM5
+			rect 				220 55 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	200 51 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0	
+			text 				@MENUS_10
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM5
+			rect 				220 75 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	200 71 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0
+			text 				@MENUS_11	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM6
+			rect 				220 95 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	200 91 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0
+			text 				@MENUS_12	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM6
+			rect 				220 115 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	200 111 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0
+			text 				@MENUS_13	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM7
+			rect 				220 135 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	200 131 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0
+			text 				@MENUS_14	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM7
+			rect 				220 155 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	200 151 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0
+			text 				@MENUS_15	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM8
+			rect 				220 175 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	200 171 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name 				botlist_slot
+			style 				0
+			text 				@MENUS_16	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM8
+			rect 				220 195 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	200 191 250 28
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+//----------------------------------------------------------------------------------------------
+// DONE
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name					done
+			text					@MENUS_DONE
+			descText				@MENUS_RETURN_PREVIOUS
+			type					ITEM_TYPE_BUTTON
+			font					3
+			textscale				1
+			style					WINDOW_STYLE_EMPTY
+			rect					140 352 160 30
+			textalignx				80						// Center
+			textaligny				0
+			textalign				ITEM_ALIGN_CENTER
+			forecolor				1 .682 0 1
+			visible					1 
+			action 
+			{ 
+				play				"sound/interface/button1.wav" ;
+				close				quickbots ; 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	130 350 200 34
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

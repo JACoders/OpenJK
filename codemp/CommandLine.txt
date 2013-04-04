@@ -1,0 +1,3 @@
+JKA Multiplayer, select all build types, set these command line parms:
+
++set fs_cdpath w:\game +set r_fullscreen 0 +set fs_copyfiles 0 +set vm_ui 0 +set vm_cgame 0 +set vm_game 0 +set sv_pure 0

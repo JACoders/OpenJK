@@ -1,0 +1,23 @@
+Howler
+{
+	playerModel howler
+	weapon		WP_MELEE
+	height		32
+	crouchheight		32
+	reactions	4
+	aim			1
+	move		5
+	aggression	3
+	evasion		5
+	intelligence	2
+	playerTeam	TEAM_FREE
+	enemyTeam	TEAM_FREE
+	class		CLASS_HOWLER
+	yawSpeed	60
+	runSpeed	300
+	walkSpeed	100
+	hFOV		120
+	vfov		45
+	snd			howler
+	health		60
+}

@@ -1,0 +1,28 @@
+proton_torpedo
+{
+name		proton_torpedo
+projectile	1
+muzzleFX	"ships/imp_torpmuzzleflash"
+shotFX		"ships/imp_torpshot"
+impactFX	"ships/proton_impact"
+g2MarkShader	"gfx/effects/scorch"
+g2MarkSize	72
+loopSound	"sound/vehicles/weapons/proton/loop.wav"
+speed		4000
+//homing		0.5
+//homingFOV		0
+homing		0.25
+homingFOV		0.4
+lockOnTime	2400
+//damage		800
+//splashDamage	300
+damage		800
+splashDamage	300
+splashRadius	350
+ammoPerShot	1
+health		10
+width		6
+height		6
+lifetime	30000
+explodeOnExpire	1
+}

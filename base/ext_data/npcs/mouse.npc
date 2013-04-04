@@ -1,0 +1,25 @@
+mouse
+{
+	headmodel	none
+	torsomodel	none
+	legsmodel	mouse
+	weapon		WP_NONE
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+//	race		bot
+	class		CLASS_MOUSE
+	yawSpeed	120
+	runSpeed	500
+	walkSpeed	150
+	height		16
+	width		8
+	hFOV		120
+	vfov		45
+	snd			mouse
+}

@@ -1,0 +1,36 @@
+Galak_Mech
+{
+	playerModel	galak_mech
+	weapon		WP_REPEATER
+	health		1000
+	width		20
+	height		88
+	crouchheight 88
+	snd			galak_mech
+	reactions	3
+	aim			5
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		klingon
+	class		CLASS_GALAK_MECH
+	snd			galak
+	sndcombat	galak
+	sndextra	galak
+	yawSpeed	50
+	walkSpeed	45
+	runSpeed	150
+	dismemberProbHead	0
+	dismemberProbArms	0
+	dismemberProbHands	0
+	dismemberProbLegs	0
+	dismemberProbWaist	0
+	headPitchRangeUp	60
+	headPitchRangeDown	60
+	torsoPitchRangeUp	60
+	torsoPitchRangeDown	60
+}

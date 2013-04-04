@@ -1,0 +1,66 @@
+saber_droid_training
+{
+	playerModel	saber_droid
+	saber		droid
+	weapon	WP_SABER
+	saberStyle	1
+	FP_SABER_DEFENSE 1
+	FP_SABER_OFFENSE 1
+	reactions	1
+	aim			1
+	move		1
+	aggression	1
+	evasion		1
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_SABER_DROID
+	snd			saber_droid
+	sndcombat	saber_droid
+	sndjedi		saber_droid
+	yawSpeed	100
+	walkSpeed	60
+	runSpeed	200
+	health		50
+	dismemberProbHead	100
+	dismemberProbArms	100
+	dismemberProbLegs	100
+	dismemberProbHands	100
+	dismemberProbWaist	100
+}
+
+saber_droid
+{
+	playerModel	saber_droid
+	saber		droid
+	weapon	WP_SABER
+	saberStyle	1
+	FP_SABER_DEFENSE 3
+	FP_SABER_OFFENSE 3
+	rank		ensign
+	reactions	1
+	aim			1
+	move		1
+	aggression	1
+	evasion		1
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_SABER_DROID
+	snd			saber_droid
+	sndcombat	saber_droid
+	sndjedi		saber_droid
+	yawSpeed	100
+	walkSpeed	60
+	runSpeed	200
+	health		300
+	dismemberProbHead	100
+	dismemberProbArms	100
+	dismemberProbLegs	100
+	dismemberProbHands	100
+	dismemberProbWaist	100
+}

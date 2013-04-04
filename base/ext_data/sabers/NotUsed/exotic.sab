@@ -1,0 +1,270 @@
+
+SaberLance
+{
+	saberType	SABER_LANCE
+	saberModel	"models/weapons2/saber_maul/saber_w.glm"
+	customSkin	"models/weapons2/saber_maul/saber_w.skin"
+	saberLength	80
+	saberRadius	6
+//	saberStyle	lance
+	saberStyle	strong
+	lockable		0
+	throwable		0
+	blocking		0
+	twoHanded		1
+	forceRestrict	FP_SPEED				
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+	forceRestrict	FP_SABERTHROW
+	parryBonus		2
+	breakParryBonus	3
+	disarmBonus		1
+	maxChain	1
+}
+
+SaberShortStaff
+{
+	saberType	SABER_STAFF
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	numBlades	2
+	saberLength	20
+	saberStyle	tavion
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+	lockBonus		-1
+	breakParryBonus	-1
+}
+
+SaberStaff2
+{
+	saberType	SABER_STAFF
+	saberModel	"models/weapons2/saber_maul/saber_w.glm"
+	customSkin	"models/weapons2/saber_maul/saber_w.skin"
+	numBlades	2
+	saberLength	40
+	saberLength2	24
+	saberStyle	staff
+	throwable		0
+	twoHanded		1
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+	forceRestrict	FP_SABERTHROW
+}
+
+SaberStaff3
+{
+	saberType	SABER_STAFF
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	numBlades	2
+	saberLength	4
+	saberLength2	24
+//	saberStyle	dagger
+	saberStyle	fast
+}
+
+SaberDagger
+{
+	saberType	SABER_DAGGER
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	saberLength	16
+	saberRadius	2
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+	lockBonus		-1
+	parryBonus		-1
+	breakParryBonus	-1
+	disarmBonus		-1
+	maxChain		-1
+}
+
+SaberBroad
+{
+	saberType	SABER_BROAD
+	saberModel	"models/weapons2/saber_desann/saber_w.glm"
+	numBlades	2
+	saberLength	24
+	saberRadius	6
+	saberStyle	strong
+	twoHanded		1
+	forceRestrict	FP_SPEED				
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+	lockBonus		1
+	breakParryBonus	2
+	maxChain		2
+}
+
+SaberProng
+{
+	saberType	SABER_PRONG
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	numBlades	2
+	saberLength	24
+}
+
+SaberArc
+{
+	saberType	SABER_ARC
+	saberModel	"models/weapons2/saber_maul/saber_w.glm"
+	customSkin	"models/weapons2/saber_maul/saber_w.skin"
+	numBlades	4
+	saberLength	20
+	saberLength2	10
+	saberLength3	10
+	saberLength4	20
+//	saberStyle	strong
+	throwable		0
+//	twoHanded		1
+	forceRestrict	FP_SPEED				
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+	forceRestrict	FP_SABERTHROW
+	lockBonus		2
+	parryBonus		2
+	breakParryBonus	2
+	disarmBonus		2
+}
+
+SaberSai
+{
+	saberType	SABER_SAI
+	saberModel	"models/weapons2/saber/saber_w.glm"
+	numBlades	3
+	saberLength	16
+	saberLength2	8
+	saberLength3	8
+	saberRadius2	1
+	saberRadius3	1
+	saberStyle	tavion
+//	throwable		0
+	blocking	0
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+	parryBonus		1
+	breakParryBonus	-1
+	disarmBonus		3
+}
+
+SaberClaw
+{
+	saberType	SABER_CLAW
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	numBlades	3
+	saberLength	16
+	saberRadius	2
+	saberStyle	tavion
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+	throwable		0
+	disarmable		0
+	blocking	0
+	lockBonus		1
+	parryBonus		1
+//	breakParryBonus	-1
+	disarmBonus		1
+	maxChain	-1
+}
+
+SaberStar
+{
+	saberType	SABER_STAR
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	numBlades	6
+	saberLength	16
+	saberRadius	2
+	saberStyle	tavion
+	blocking	0
+	returnDamage	1
+	forceRestrict	FP_SPEED				
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+	parryBonus		2
+	lockBonus		-1
+	breakParryBonus	-1
+	disarmBonus		1
+	maxChain		3
+}
+
+SaberStar2
+{
+	saberType	SABER_STAR
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	numBlades	6
+	saberLength	8
+	saberRadius	1
+	saberStyle	tavion
+	returnDamage	1
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+	parryBonus		1
+	breakParryBonus	-1
+	disarmBonus		2
+	maxChain		-1
+}
+
+SaberTrident
+{
+	saberType	SABER_TRIDENT
+	saberModel	"models/weapons2/saber_maul/saber_w.glm"
+	customSkin	"models/weapons2/saber_maul/saber_w.skin"
+	numBlades	4
+	saberLength		18
+	saberLength2	10
+	saberLength3	10
+	saberLength4	8
+	saberRadius2	2
+	saberRadius3	2
+	saberStyle		strong
+	throwable		0
+	blocking	0
+	twoHanded		1
+	forceRestrict	FP_SPEED				
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+	disarmBonus		1
+	maxChain		1
+}
+
+
+

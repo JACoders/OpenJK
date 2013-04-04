@@ -1,0 +1,86 @@
+chewie
+{
+	playerModel		chewbacca
+	altFire			0
+	weapon			WP_BOWCASTER
+	FP_HEAL			0
+	FP_LEVITATION		0
+	FP_SPEED		0
+	FP_PUSH			0
+	FP_PULL			0
+	FP_TELEPATHY		0
+	FP_GRIP			0
+	FP_LIGHTNING		0
+	FP_SABERTHROW		0
+	FP_SABER_DEFENSE	0
+	FP_SABER_OFFENSE	0
+	health			400
+	scale			122
+	width			18
+	height			78
+	crouchheight		42
+	headPitchRangeDown	30
+	reactions		5
+	aim			5
+	move			5
+	aggression		5
+	evasion			5
+	intelligence		5
+	earshot			1024
+	visrange		2048
+	hfov			120
+	vfov			100
+	rank			captain
+	playerTeam		TEAM_PLAYER
+	enemyTeam		TEAM_ENEMY
+	class			CLASS_REBEL
+	walkSpeed		60
+	runSpeed		160
+	snd			chewbacca
+	sndcombat		chewbacca
+	sndextra		chewbacca
+	yawspeed		90
+}
+
+chewie_cin
+{
+	playerModel		chewbacca
+	altFire			0
+	FP_HEAL			0
+	FP_LEVITATION		0
+	FP_SPEED		0
+	FP_PUSH			0
+	FP_PULL			0
+	FP_TELEPATHY		0
+	FP_GRIP			0
+	FP_LIGHTNING		0
+	FP_SABERTHROW		0
+	FP_SABER_DEFENSE	0
+	FP_SABER_OFFENSE	0
+	health			400
+	scale			122
+	width			18
+	height			78
+	crouchheight		42
+	headPitchRangeDown	30
+	reactions		5
+	aim			5
+	move			5
+	aggression		5
+	evasion			5
+	intelligence		5
+	earshot			1024
+	visrange		2048
+	hfov			120
+	vfov			100
+	rank			captain
+	playerTeam		TEAM_PLAYER
+	enemyTeam		TEAM_ENEMY
+	class			CLASS_REBEL
+	walkSpeed		60
+	runSpeed		160
+	snd			chewbacca
+	sndcombat		chewbacca
+	sndextra		chewbacca
+	yawspeed		90
+}

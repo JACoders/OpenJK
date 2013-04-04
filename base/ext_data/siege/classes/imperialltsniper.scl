@@ -1,0 +1,19 @@
+//Siege class def file.
+//NOTE: light version used for Star Destroyer map
+
+ClassInfo
+{
+	name			"Imperial Light Sniper"
+	weapons		WP_BLASTER_PISTOL|WP_DISRUPTOR
+	classflags		CFL_EXTRA_AMMO
+	maxhealth		20
+	maxarmor		0
+	startarmor		0
+	model			"imperial" 					//this is optional, if it's here it forces the model to this.
+	skin			"commander"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/imperial/icon_commander"
+	class_shader	"gfx/mp/c_icon_vanguard"
+}
+
+description	
+"@SIEGE_VAN_IMP_LT_SNIPER"

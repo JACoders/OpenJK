@@ -1,0 +1,18 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Imperial Tech"
+	weapons			WP_BLASTER_PISTOL|WP_DEMP2
+	classflags		CFL_EXTRA_AMMO|CFL_STATVIEWER
+	maxhealth		100
+	maxarmor		100
+	startarmor		0
+	model			"imperial_worker" 				//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/imperial_worker/icon_default"
+	class_shader	"gfx/mp/c_icon_support"
+	holdables		HI_MEDPAC|HI_SENTRY_GUN|HI_HEALTHDISP|HI_AMMODISP
+}
+
+description	"@SIEGE_SUPP_IMP_TECH"

@@ -1,0 +1,821 @@
+// CHARACTER CREATION MENU
+{
+						   
+	menuDef 
+	{
+		name			"playerMenu2"
+		fullScreen		1			
+		rect			0 0 640 480	
+		visible		1		
+		focusColor		1 1 1 1
+		descX			320
+		descY					430
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment	ITEM_ALIGN_CENTER
+	
+
+		onOpen
+		{ 
+			uiScript  	"getcharcvars"
+			uiScript  	"character"
+		}
+									
+		onESC 
+		{ 
+			play		"sound/interface/menuroam.wav"
+			close		playerMenu2
+			open		playerMenu
+		}
+
+
+//----------------------------------------------------------------------------------------------
+//
+//	MENU BACKGROUND
+//
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				really_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				156 154 320 240
+			background			"gfx/menus/main_centerblue"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 160 480
+			background			"gfx/menus/menu_side_text"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text_b
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				480 0 160 480
+			background			"gfx/menus/menu_side_text_right"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}	
+	
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+//			background			"gfx/menus/main_background"
+			background			"gfx/menus/charmenu"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				left_frame
+			group				lf_fr
+			style				WINDOW_STYLE_SHADER
+			rect				0 -60 320 160
+			background			"gfx/menus/menu_boxes_left"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				right_frame
+			group				rt_fr
+			style				WINDOW_STYLE_SHADER
+			rect				320 -60 320 160
+			background			"gfx/menus/menu_boxes_right"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+
+		// CREATION title
+		itemDef 
+		{
+			name				creation_title
+			group				title
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS_CHARACTER_CREATION
+      		rect				100 54 440 16
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			225
+			textaligny			-1	
+			forecolor			.549 .854 1 1
+      		visible			1 
+      		decoration 
+		}
+
+		itemDef
+		{
+			name				character
+			group				models
+			type 				ITEM_TYPE_MODEL
+			//rect				95 84 820 1000 
+			rect				52 84 900 1000
+			model_g2anim 		"BOTH_WALK1"
+			asset_model			"ui_char_model"
+			model_angle			180
+			//mins maxs format is apparently z x y (hmmm... y x z?)
+			//model_g2mins		-20 -15 -10
+			//model_g2maxs		10 15 20
+			model_g2mins		-10 -15 -10
+			model_g2maxs		20 15 30
+			model_rotation		50
+			//model_fovx			75
+			model_fovx			50
+			//model_fovy			75
+			model_fovy			50
+			isCharacter			1
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background2
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				320 360 320 120
+			background			"gfx/menus/charmenu_bottom"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+//
+//	TOP MAIN MENU BUTTONS
+//
+//----------------------------------------------------------------------------------------------
+
+// Big button "NEW"
+		itemDef 
+		{
+			name				newbutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				7 16 130 24
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				newgamebutton
+			group				nbut
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				7 16 130 24
+			text				@MENUS_PLAY
+			descText			@MENUS_START_PLAYING_NOW
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			0
+			textalignx			65
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			newgamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			newgamebutton_glow 
+			}	  	  
+			action 
+			{ 
+				close			all ; 
+				open			multiplayermenu 
+			}
+		}
+
+
+// Big button "PROFILE"
+		itemDef 
+		{
+			name				profilebutton
+			group				lbut
+			text				@MENUS_PROFILE
+			descText			@MENUS_PROFILE_DESC
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				170 16 130 24
+			textaligny			0
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			0
+			textalignx			65
+			forecolor			1 1 1 1
+			visible				1
+
+			mouseEnter 
+			{ 
+			}
+			mouseExit 
+			{ 
+			}	  	  
+			action 
+			{ 
+			}
+		}
+
+// Big button "CONTROLS"
+		itemDef 
+		{
+			name				controlsbutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				340 16 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef {
+			name				controlsbutton
+			group				cbut
+			text				@MENUS_CONTROLS2
+			descText			@MENUS_CONFIGURE_GAME_CONTROLS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				340 16 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			0
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			controlsbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			controlsbutton_glow 
+			}	  	  
+			action 
+			{
+				close			all ; 
+				open			controlsMenu ;
+			}
+		}
+
+// Big button "SETUP"
+		itemDef 
+		{
+			name				setupbutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				502 16 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				setupbutton
+			group				sbut
+			text				@MENUS_SETUP
+			descText			@MENUS_CONFIGURE_GAME_SETTINGS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				502 16 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			0
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			setupbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			setupbutton_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			setup_menu
+			}
+		}
+
+//----------------------------------------------------------------------------------------------
+//
+//   CHARACTER MENU specific stuff
+//
+//----------------------------------------------------------------------------------------------
+		
+
+
+//////////////////
+// SPECIES BUTTON
+//////////////////
+
+		itemDef
+		{
+			name				species
+			group				none
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				30 88 140 24
+			forecolor			.549 .854 1 1
+			text				@MENUS_SPECIES
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			-1
+			font				3
+			textscale 			1
+			visible 			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				speciesbut_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				176 92 150 16
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				speciesbut
+			group				none
+			text				" "
+			descText			@MENUS_CHOOSE_SPECIES
+			type				ITEM_TYPE_MULTI
+			style				WINDOW_STYLE_EMPTY
+			rect				176 92 150 16
+			font				2
+			textscale			.9
+			textaligny			-5
+			textalign			ITEM_ALIGN_LEFT
+			textstyle			0
+			textalignx			0
+			backcolor			0 0 0 0
+			forecolor			.615 .615 .956 1
+			feeder			19	//FEEDER_PLAYER_SPECIES
+			cvar				"ui_char_model"
+			cvarStrList			feeder
+
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			speciesbut_glow 
+			}
+			mouseExit 
+			{ 
+				hide			speciesbut_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav"
+				uiScript 		"characterchanged"
+				uiScript 		"resetcharacterlistboxes"
+			}
+		}
+
+////////////////////
+// COLOR TINT AREA
+////////////////////
+
+
+		itemDef
+		{
+			name				color
+			group				none
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				30 144 160 24
+			text				@MENUS_COLOR
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			-1
+			font				3
+			textscale 			1
+			forecolor			.549 .854 1 1
+			visible 			1
+			decoration
+		}
+
+		itemDef
+		{
+			name				colorbox
+			group				tints
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth		32
+			elementheight		32
+			elementtype			1 			//LISTBOX_IMAGE
+			feeder				23		//FEEDER_COLORCHOICES
+			horizontalscroll
+			border			1
+			bordersize			1
+			backcolor			.66 .66 1 .25
+			bordercolor			.66 .66 1 1
+			rect				30 168 292 48
+			visible			1
+			action 
+			{
+				play			"sound/interface/choose_color.wav"
+			}
+		}
+
+///////////////////////
+//APPEARANCE
+//////////////////////
+
+		itemDef
+		{
+			name				appear
+			group				none
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				30 252 180 24
+			forecolor			.549 .854 1 1
+			text				@MENUS_APPEARANCE
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			-1
+			font				3
+			textscale 			1
+			visible 			1
+			decoration
+		}
+
+		// HEAD BUTTON
+		itemDef 
+		{
+			name				headbut_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				30 280 90 16
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				headbut
+			group				none
+			text				@MENUS_HEAD
+			descText			@MENUS_SELECT_HEAD
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				30 280 90 16
+			font				2
+			textscale			.9
+			textaligny			-5
+			textalign			ITEM_ALIGN_LEFT
+			textstyle			0
+			textalignx			0
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			headbut_glow 
+			}
+			mouseExit 
+			{ 
+				hide			headbut_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav"
+				show			heads
+				hide			torso
+				hide			lower
+				transition2	character 52 84 900 1000 20 25
+			}
+		}
+
+
+		// TORSO BUTTON
+		itemDef 
+		{
+			name				torsobut_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				126 280 90 16
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				torsobut
+			group				none
+			text				@MENUS_TORSO
+			descText			@MENUS_SELECT_TORSO
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				126 280 90 16
+			font				2
+			textscale			.9
+			textaligny			-5
+			textalign			ITEM_ALIGN_LEFT
+			textstyle			0
+			textalignx			0
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+
+			mouseEnter 
+			{ 
+				show			torsobut_glow 
+			}
+			mouseExit 
+			{ 
+				hide			torsobut_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" 
+				show			torso
+				hide			heads
+				hide			lower
+				transition2	character 355 84 300 340 20 25
+			}
+		}
+
+		// LEGS BUTTON
+		itemDef 
+		{
+			name				legsbut_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				224 280 90 16
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				legsbut
+			group				none
+			text				@MENUS_LEGS
+			descText			@MENUS_SELECT_LEGS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				224 280 90 16
+			font				2
+			textscale			.9
+			textaligny			-5
+			textalign			ITEM_ALIGN_LEFT
+			textstyle			0
+			textalignx			0
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible				1
+			 
+			mouseEnter 
+			{ 
+				show			legsbut_glow 
+			}
+			mouseExit 
+			{ 
+				hide			legsbut_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav"
+				show			lower
+				hide			heads
+				hide			torso
+				transition2	character 355 84 300 340 20 25
+			}
+		}
+
+//////////////////////
+//LISTBOXES
+//////////////////////
+
+		itemDef
+		{
+			name				headlistbox
+			group				heads
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth		72
+			elementheight		72
+			elementtype			1 			//LISTBOX_IMAGE
+			feeder			20 			//FEEDER_PLAYER_SKIN_HEAD
+			horizontalscroll
+			border			1
+			bordersize			1
+			backcolor			.66 .66 1 .25
+			bordercolor			.66 .66 1 1
+			forecolor			-1			//use playercolor
+			rect				30 306 292 93
+			visible			1
+			action
+			{
+				play			"sound/interface/choose_head.wav"
+				uiScript 		"char_skin"
+			}
+		}
+
+		itemDef
+		{
+			name				torsolistbox
+			group				torso
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth		72
+			elementheight		72
+			elementtype			1 			//LISTBOX_IMAGE
+			feeder			21 			//FEEDER_PLAYER_SKIN_TORSO
+			horizontalscroll
+			border			1
+			bordersize			1
+			backcolor			.66 .66 1 .25
+			bordercolor			.66 .66 1 1
+			forecolor			-1			//use playercolor
+			rect				30 306 292 93
+			visible			0
+			action
+			{
+				play			"sound/interface/choose_torso.wav"
+				uiScript 		"char_skin"
+			}
+		}
+
+		itemDef
+		{
+			name				lowerlistbox
+			group				lower
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth		72
+			elementheight		72
+			elementtype			1 			//LISTBOX_IMAGE
+			feeder			22 			//FEEDER_PLAYER_SKIN_LEGS
+			horizontalscroll
+			border			1
+			bordersize			1
+			backcolor			.66 .66 1 .25
+			bordercolor			.66 .66 1 1
+			forecolor			-1			//use playercolor
+			rect				30 306 292 93
+			visible			0
+			action
+			{
+				play			"sound/interface/choose_head.wav"
+				uiScript 		"char_skin"
+			}
+		}
+
+		// EXIT button in lower left corner
+		itemDef 
+		{
+			name				exitgamebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				59 444 130 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			// appearance_slot		1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				exitgamebutton
+			group				exit
+			text				@MENUS_BACK
+			descText			@MENUS_BACK_2_PROFILE
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				59 444 130 24 
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			exitgamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			exitgamebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/weapons/saber/saberoff.mp3"
+				close			playerMenu2
+				open			playerMenu
+			}
+		}
+
+		itemDef 
+		{
+			name				next_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				455 444 130 24 
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible			0
+			// appearance_slot		1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				next
+			group				none
+			text				@MENUS_APPLY_CAPS
+			descText			@MENUS_APPLY_PLAYER_SABER
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				455 444 130 24 
+			font				3
+			textscale			1
+			textalignx			65
+			textaligny			-1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			forecolor			1 .682 0 1
+			visible				1
+	     		action 
+			{ 
+				play			"sound/interface/button1.wav" 
+				close			all 
+				uiScript		"updatecharmodel"
+
+//				uiScript 		"updatecharcvars"
+				open			saberMenu 
+//				open			mainMenu 
+			}
+			mouseEnter 
+			{ 
+				show			next_glow
+			}
+			mouseExit 
+			{ 
+				hide			next_glow
+			}	  	  
+		}
+	}
+}

@@ -1,0 +1,26 @@
+seeker
+{
+	headmodel	none
+	torsomodel	none
+	legsmodel	remote
+	weapon		WP_BOT_LASER
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		3
+	intelligence	5
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+//	race		bot
+	class		CLASS_SEEKER
+	yawSpeed	120
+	runSpeed	500
+	walkSpeed	150
+	height		32
+	width		8
+	hFOV		160
+	vfov		45
+	snd		remote
+	moveType	"flyswim"
+}

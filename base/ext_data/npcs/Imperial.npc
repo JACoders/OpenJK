@@ -1,0 +1,29 @@
+Imperial
+{
+	playerModel imperial
+	weapon		WP_BLASTER_PISTOL
+	surfOff		l_arm_key
+	health		20
+	reactions	2
+	aim			2
+	move		2
+	aggression	2
+	evasion		2
+	intelligence	2
+	rank		lt
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		klingon
+	class		CLASS_IMPERIAL
+	snd			io2
+	sndcombat	io2
+	sndextra	io2
+	yawspeed	110
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

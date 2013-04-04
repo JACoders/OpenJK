@@ -1,0 +1,1612 @@
+//----------------------------------------------------------------------------------------------
+//	RULES
+//----------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name					"rulesMenu_weapons"
+		fullScreen				MENU_TRUE				
+		rect					0 0 640 480							// Size and position of the menu
+		visible					0					
+		focusColor				1 1 1 1								// Focus color for text and items
+		descX					320
+		descY					424
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment			ITEM_ALIGN_CENTER		
+
+		onOpen 
+		{
+			hide			gamedesc ;
+			show			stun_desc ;
+
+			setitemcolor	weapon_submenu		forecolor	1 .682 0 1 ;
+			setitemcolor	stunmenubutton		forecolor	1 1 1 1 ;
+		}								
+
+		onESC 
+		{ 
+			play			"sound/interface/button1.wav" ; 
+
+			close			"rulesMenu_weapons" ;
+			open			"rulesMenu" ;
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	MENU BACKGROUND
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				really_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				156 154 320 240
+			background			"gfx/menus/main_centerblue"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 160 480
+			background			"gfx/menus/menu_side_text"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text_b
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				480 0 160 480
+			background			"gfx/menus/menu_side_text_right"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}	
+	
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/main_background"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				starwars
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				107 8 428 112
+			background			"gfx/menus/jediacademy"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				left_frame
+			group				lf_fr
+			style				WINDOW_STYLE_SHADER
+			rect				0 50 320 160
+			background			"gfx/menus/menu_boxes_left"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				right_frame
+			group				rt_fr
+			style				WINDOW_STYLE_SHADER
+			rect				320 50 320 160
+			background			"gfx/menus/menu_boxes_right"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				button_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 0 0
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		//----------------------------------------------------------------------------------------------
+		//
+		//	TOP MENU BUTTONS
+		//
+		//----------------------------------------------------------------------------------------------
+		// Big button "NEW"
+		itemDef 
+		{
+			name				newgamebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				7 126 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				newgamebutton
+			group				toprow
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				7 126 130 24
+			text				@MENUS_PLAY
+			descText			@MENUS_START_PLAYING_NOW
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			0
+			textalignx			65
+			forecolor			1 .682 0 1
+			visible			1
+
+			mouseEnter 
+			{ 
+				show			newgamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			newgamebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			multiplayermenu 
+			}
+		}
+
+		// Big button "PLAYER PROFILE"
+		itemDef 
+		{
+			name				profilebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				170 126 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				profilebutton
+			group				toprow
+			text				@MENUS_PROFILE
+			descText			@MENUS_PROFILE_DESC
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				170 126 130 24
+			textaligny			0
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			0
+			textalignx			65
+			forecolor			1 .682 0 1
+			visible			1
+
+			mouseEnter 
+			{ 
+				show			profilebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			profilebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			playerMenu
+			}
+		}
+
+
+		// Big button "CONTROLS"
+		itemDef 
+		{
+			name				controlsbutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				340 126 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef {
+			name				controlsbutton
+			group				toprow
+			text				@MENUS_CONTROLS2
+			descText			@MENUS_CONFIGURE_GAME_CONTROLS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				340 126 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			0
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			controlsbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			controlsbutton_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			controlsMenu ;
+			}
+		}
+
+		// Big button "SETUP"
+		itemDef 
+		{
+			name				setupbutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				502 126 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef {
+			name				setupbutton
+			group				toprow
+			text				@MENUS_SETUP
+			descText			@MENUS_CONFIGURE_GAME_SETTINGS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				502 126 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			0
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			setupbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			setupbutton_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			setup_menu
+			}
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	OTHER MAIN MENU BUTTONS
+		//
+		//----------------------------------------------------------------------------------------------
+		// Credits hidden button
+		itemDef 
+		{
+			name				creditsbutton
+			group				othermain
+//			text				@CREDITS
+			descText			@MENUS_SHOW_GAME_CREDITS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				200 144 256 256
+			font				2
+			textscale			1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			46
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible				0
+
+			mouseEnter
+			{
+			}		
+			mouseExit
+			{
+			}		
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 	
+				close			all ; 
+				open			creditsMenu 
+			}
+		}
+
+		// BACK button 
+		itemDef 
+		{
+			name				backbutton
+			group				fade_buttons
+			text				@MENUS_BACK
+			descText			@MENUS_BACKTORULES
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				59 444 130 24  
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	30 441 190 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	
+			  	  
+			action 
+			{ 
+				play			"sound/interface/esc.wav" ; 
+				close			all ; 
+				open			rulesMenu
+			}
+
+		}
+		
+		// EXIT button in lower left corner
+		itemDef 
+		{
+			name				exitgamebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				255 444 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				exitgamebutton
+			group				othermain
+			text				@MENUS_EXIT
+			descText			@MENUS_LEAVE_JEDI_KNIGHT_II
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				255 444 130 24
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			0
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible			1
+
+			mouseEnter 
+			{ 
+				show			exitgamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			exitgamebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/weapons/saber/saberoff.mp3"; 
+				close			all ; 
+				open			quitMenu 
+			}
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	SECOND ROW MENU BUTTONS
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				rules_title
+			group				none
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS_WEAPON_RULES_TITLE
+      			rect				100 164 440 16
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			225
+			textaligny			-1	
+			forecolor			.549 .854 1 1
+      			visible				1
+      			decoration 
+		}
+
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				225 183 370 230
+			backcolor			0 0 .6 .5
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .6 1
+			visible				1
+			decoration
+		}
+
+		// Main small highlights
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight1
+			style				WINDOW_STYLE_SHADER
+			rect				40 185 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight2
+			style				WINDOW_STYLE_SHADER
+			rect				40 200 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight3
+			style				WINDOW_STYLE_SHADER
+			rect				40 215 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight4
+			style				WINDOW_STYLE_SHADER
+			rect				40 230 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight5
+			style				WINDOW_STYLE_SHADER
+			rect				40 245 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight6
+			style				WINDOW_STYLE_SHADER
+			rect				40 260 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight7
+			style				WINDOW_STYLE_SHADER
+			rect				40 275 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight8
+			style				WINDOW_STYLE_SHADER
+			rect				40 290 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight9
+			style				WINDOW_STYLE_SHADER
+			rect				40 305 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight10
+			style				WINDOW_STYLE_SHADER
+			rect				40 320 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight11
+			style				WINDOW_STYLE_SHADER
+			rect				40 335 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight12
+			style				WINDOW_STYLE_SHADER
+			rect				40 350 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight13
+			style				WINDOW_STYLE_SHADER
+			rect				40 365 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight14
+			style				WINDOW_STYLE_SHADER
+			rect				40 380 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			group				smallhighlight
+			name				smallhighlight15
+			style				WINDOW_STYLE_SHADER
+			rect				40 395 170 15
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+//
+//	WEAPON RULES
+//
+//----------------------------------------------------------------------------------------------
+
+		// LIGHT SABER FORCE DESC
+
+		itemDef 
+		{
+			name				sabermenubutton
+			group				weapon_submenu
+			text				@MENUS_LIGHTSABER_CAPS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 185 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+
+			mouseEnter 
+			{ 
+				show			smallhighlight1
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight1
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor		weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor		sabermenubutton		forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			saber_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				saber_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_lightsaber"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				saber_desc
+			text 				@MENUS_AN_ELEGANT_WEAPON_FOR
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+			lineHeight			15
+			maxLineChars			45
+		}	
+
+		// BLASTER PISTOL
+
+		itemDef 
+		{
+			name				pistolmenubutton
+			group				weapon_submenu
+			text				@MENUS_BLASTER_PISTOL
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 200 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+
+			mouseEnter 
+			{ 
+				show			smallhighlight2
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight2
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor		weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor		pistolmenubutton	forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			pistol_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				pistol_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_blaster_pistol"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				pistol_desc
+			text 				@MENUS_BLASTER_PISTOL_DESC
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+			lineHeight			15
+			maxLineChars			45
+		}	
+
+		// BLASTER RIFLE DESC
+
+		itemDef 
+		{
+			name				briflemenubutton
+			group				weapon_submenu
+			text				@MENUS_BLASTER_RIFLE
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 215 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+
+			mouseEnter 
+			{ 
+				show			smallhighlight3
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight3
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor		weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor		briflemenubutton	forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			brifle_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				brifle_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_blaster"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				brifle_desc
+			text 				@MENUS_THE_PRIMARY_WEAPON_OF
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+
+			lineHeight			15
+			maxLineChars		45
+		}	
+
+		// DISTRUPTER RIFLE DESC
+
+		itemDef 
+		{
+			name				driflemenubutton
+			group				weapon_submenu
+			text				@MENUS_DISRUPTOR
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 230 170 15
+			font				2
+			textscale			.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			smallhighlight4
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight4
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor	weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor	driflemenubutton	forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			drifle_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				drifle_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_disruptor"
+			forecolor			1 1 1 1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				drifle_desc
+			group				gamedesc
+			text				@MENUS_THIS_NEFARIOUS_WEAPON
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+
+			lineHeight			15
+			maxLineChars		45
+		}
+
+		// BOW CASTER DESC
+
+		itemDef 
+		{
+			name				bowcastmenubutton
+			group				weapon_submenu
+			text				@MENUS_BOWCASTER_CAPS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 245 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			smallhighlight5
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight5
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor	weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor	bowcastmenubutton	forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			bowcast_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				bowcast_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_bowcaster"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				bowcast_desc
+			text 				@MENUS_THIS_ARCHAIC_LOOKING
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+
+			lineHeight			15
+			maxLineChars		45
+		}	
+
+		// REPEATER
+
+		itemDef 
+		{
+			name				repeatermenubutton
+			group				weapon_submenu
+			text				@MENUS_REPEATER
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 260 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				0
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			smallhighlight6
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight6
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor	weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor	repeatermenubutton	forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			repeater_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				repeater_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_repeater"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				repeater_desc
+			text 				@MENUS_THIS_DESTRUCTIVE_PROJECTILE
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+
+			lineHeight			15
+			maxLineChars		45
+		}	
+
+		// DEMP 2
+
+		itemDef 
+		{
+			name				demp2menubutton
+			group				weapon_submenu
+			text				@MENUS_DEMP_2_1
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 275 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+
+			mouseEnter 
+			{ 
+				show			smallhighlight7
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight7
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor	weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor	demp2menubutton		forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			demp2_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				demp2_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_demp2"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				demp2_desc
+			text 				@MENUS_COMMONLY_REFERRED_TO
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+
+			lineHeight			15
+			maxLineChars		45
+		}	
+
+		// Flechette
+
+		itemDef 
+		{
+			name				flechmenubutton
+			group				weapon_submenu
+			text				@MENUS_FLECHETTE_1
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 290 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+
+			mouseEnter 
+			{ 
+				show			smallhighlight8
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight8
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor	weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor	flechmenubutton		forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			flechette_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				flechette_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_flechette"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				flechette_desc
+			text 				@MENUS_WIDELY_USED_BY_THE_CORPORATE
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+
+			lineHeight			15
+			maxLineChars		45
+		}
+		
+		// Concussion Rifle
+
+		itemDef 
+		{
+			name				concmenubutton
+			group				weapon_submenu
+			text				@MENUS_CONC_RIFLE
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 305 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+
+			mouseEnter 
+			{ 
+				show			smallhighlight9
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight9
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor		weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor		concmenubutton		forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			conc_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				conc_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_c_rifle"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				conc_desc
+			text 				@MENUS_CONC_RIFLE_DESC
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+
+			lineHeight			15
+			maxLineChars			45
+		}	
+
+		// MERRSONN
+
+		itemDef 
+		{
+			name				merrmenubutton
+			group				weapon_submenu
+			text				@MENUS_MERRSONN
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 320 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+
+			mouseEnter 
+			{ 
+				show			smallhighlight10
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight10
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor	weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor	merrmenubutton		forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			merr_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				merr_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_merrsonn"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				merr_desc
+			text 				@MENUS_THE_PLX_2M_IS_AN_EXTREMELY
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+
+			lineHeight			15
+			maxLineChars		45
+		}	
+
+		// THERMAL
+
+		itemDef 
+		{
+			name				thermmenubutton
+			group				weapon_submenu
+			text				@MENUS_THERMAL_DETONATOR
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 335 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+
+			mouseEnter 
+			{ 
+				show			smallhighlight11
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight11
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor	weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor	thermmenubutton		forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			therm_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				therm_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_thermal"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				therm_desc
+			text 				@MENUS_THE_THERMAL_DETONATOR
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12			
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+
+			lineHeight			15
+			maxLineChars		45
+		}	
+
+		// TRIP MINE
+
+		itemDef 
+		{
+			name				tripmenubutton
+			group				weapon_submenu
+			text				@MENUS_TRIP_MINE
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 350 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+
+			mouseEnter 
+			{ 
+				show			smallhighlight12
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight12
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor	weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor	tripmenubutton		forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			trip_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				trip_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_tripmine"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				trip_desc
+			text 				@MENUS_TRIP_MINES_CONSIST_OF
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+
+			lineHeight			15
+			maxLineChars		45
+		}	
+
+		// DETPACK
+
+		itemDef 
+		{
+			name				detpackmenubutton
+			group				weapon_submenu
+			text				@MENUS_DETPACK
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				40 365 170 15
+			font				2
+			textscale			0.8
+			textalignx			170
+			textaligny			-5
+			textstyle			3
+			textalign			ITEM_ALIGN_RIGHT
+			forecolor			1 .682 0 1
+			visible				1
+			descText			@MENUS_DESCRIPTION_OF_A_WEAPON
+
+			mouseEnter 
+			{ 
+				show			smallhighlight13
+			}
+			mouseExit 
+			{ 
+				hide			smallhighlight13
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+
+				setitemcolor	weapon_submenu		forecolor	1 .682 0 1 ;
+				setitemcolor	detpackmenubutton	forecolor	1 1 1 1 ;
+
+				hide			gamedesc ;
+				show			detpack_desc ;
+			}
+		}
+
+		itemDef 
+		{
+			name				detpack_desc
+			group				gamedesc
+			style				WINDOW_STYLE_SHADER
+			rect				382 185 56 56
+			background			"gfx/hud/w_icon_detpack"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef
+		{
+			group				gamedesc
+			name				detpack_desc
+			text 				@MENUS_A_DETONATION_PACK_IS
+			type				ITEM_TYPE_TEXTSCROLL
+			style				WINDOW_STYLE_EMPTY
+			visible				0
+			rect				235 254 360 148
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT	
+			textaligny			12
+			backcolor			0 0 1 0
+			forecolor			.549 .854 1 1
+
+			lineHeight			15
+			maxLineChars		45
+		}	
+	}
+}
+

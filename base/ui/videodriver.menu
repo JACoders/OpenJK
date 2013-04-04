@@ -1,0 +1,113 @@
+// VIDEODRIVER MENU
+{
+	menuDef 
+	{
+		name					"videodriverMenu"
+		visible					0
+		fullScreen				0								// MENU_TRUE			
+		rect					100 120 440 320
+		focusColor				1 1 1 1				// Focus color for text and items
+		outOfBoundsClick							// this closes the window if it gets a click out of the rectangle
+		descX					320
+		descY					450
+		descScale				1
+		descColor				.79 .64 .22 .7			// Focus color for text and items
+		descAlignment				ITEM_ALIGN_CENTER		
+		popup
+										
+		onESC 
+		{ 
+			play				"sound/interface/esc.wav" 		
+			close				all
+			open				setupMenu
+		}
+
+		onClose
+		{
+		}
+
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	MENU BACKGROUND
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				driver_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 440 320
+			background			"gfx/menus/menu_boxred"					// Frame
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				driver_done_button
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				150 293 140 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				driver_done
+			group				none
+			text				@MENUS_DONE_CAPS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				150 293 140 24
+			forecolor			1 1 1 1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			0
+			textalignx			70
+			textaligny			0
+			font				3
+			textscale			1
+			forecolor			.79 .64 .22 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show		driver_done_button
+			}
+			mouseExit 
+			{ 
+				hide		driver_done_button			
+			}	  	  
+			action
+			{
+				close 		videodriverMenu
+			}
+		}
+
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	VIDEO DRIVER INFO
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef													// Drivers
+		{
+			name				game_version
+			group				none
+			ownerdraw			249								// UI_GLINFO
+			font				4
+			textscale			1
+			rect				10 3 430 280
+			forecolor			.79 .64 .22 1
+			style				WINDOW_STYLE_EMPTY
+			textalign			ITEM_ALIGN_LEFT
+			textaligny			14
+			visible				1
+			decoration 
+		}
+	}
+}

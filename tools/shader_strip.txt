@@ -1,0 +1,6 @@
+:g/^[ 	]*q3map/d
+:g/^[ 	]*qer/d
+:g/^[ 	]*nopicmip/d
+:g/^[ 	]*notc/d
+:wq
+

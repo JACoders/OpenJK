@@ -1,0 +1,22 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Jedi Healer"
+	weapons		WP_SABER
+	saber1		single_7
+	sabercolor		4
+	saberstyle		SS_FAST
+	classflags		CFL_FASTFORCEREGEN
+	forcepowers		FP_SABER_OFFENSE,1|FP_LEVITATION,3|FP_PUSH,1|FP_PULL,1|FP_TELEPATHY,3|FP_PROTECT,3|FP_ABSORB,3|FP_HEAL,3|FP_TEAM_HEAL,2
+	forcealignment	light
+	maxhealth		100
+	maxarmor		0
+	model			"jedi_hf" 					//this is optional, if it's here it forces the model to this.
+	speed			1.25
+	skin			"siege"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/jedi_hf/icon_siege"
+	class_shader	"gfx/mp/c_icon_support"
+}
+
+description	"@SIEGE_SUPP_JEDI_HEALER"

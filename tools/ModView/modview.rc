@@ -1,0 +1,1050 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\ModView.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\ModView.ico"
+IDR_MODVIETYPE          ICON                    "res\\ModViewDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+IDB_SPLASH              BITMAP                  "Splsh16.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR  16, 15
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    SEPARATOR
+    BUTTON      ID_ANIMATION_REWIND
+    BUTTON      ID_ANIMATION_PREVFRAME
+    BUTTON      ID_ANIMATION_STOP
+    BUTTON      ID_ANIMATION_NEXTFRAME
+    BUTTON      ID_ANIMATION_START
+    BUTTON      ID_ANIMATION_STARTWITHWRAPFORCE
+    BUTTON      ID_ANIMATION_ENDFRAME
+    BUTTON      ID_ANIMATION_FASTER
+    BUTTON      ID_ANIMATION_SLOWER
+    SEPARATOR
+    BUTTON      ID_FILE_RESETVIEWPARAMS
+    BUTTON      ID_FILE_REFRESHTEXTURES
+    SEPARATOR
+    BUTTON      ID_VIEW_FOVCYCLE
+    BUTTON      ID_APP_ABOUT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE, GRAYED
+        MENUITEM "Save &As...",                 ID_MODEL_SAVE_AS
+        MENUITEM "Batch Convert",               ID_FILE_BATCHCONVERT
+        MENUITEM SEPARATOR
+        MENUITEM "Write ""<modelname>.ideal"" file", ID_FILE_WRITEIDEAL
+        MENUITEM "Read ""<modelname>.ideal"" file", ID_FILE_READIDEAL
+        MENUITEM "Reset/zero model view position", ID_FILE_RESETVIEWPARAMS
+        MENUITEM SEPARATOR
+        MENUITEM "Refresh (reload) all current textures\tALT-R", 
+                                                ID_FILE_REFRESHTEXTURES
+        MENUITEM SEPARATOR
+        MENUITEM "Write script",                ID_FILE_WRITESCRIPT
+        MENUITEM "Read Script",                 ID_FILE_READSCRIPT
+        MENUITEM SEPARATOR
+        MENUITEM "View SOF2 NPCs",              ID_FILE_VIEW_SOF2_NPCS
+        MENUITEM "View JK2 Bots",               ID_FILE_VIEW_JK2_BOTS
+        MENUITEM SEPARATOR
+        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT, GRAYED
+        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        , GRAYED
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT, GRAYED
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE, GRAYED
+        MENUITEM "Choose background Colour",    ID_EDIT_BGRNDCOLOUR
+        MENUITEM SEPARATOR
+        MENUITEM "Set Floor position to <input  number >", 
+                                                ID_EDIT_SETFLOOR_ABS
+        MENUITEM "Set Floor position to lowest current point of primary model", 
+                                                ID_EDIT_SETFLOOR_CURRENT
+        MENUITEM SEPARATOR
+        MENUITEM "Set bone-weight-threshhold to < input number >", 
+                                                ID_EDIT_SETBONEWEIGHT_THRESHHOLD
+
+        MENUITEM "Prompt for GLA overrides during GLM load", 
+                                                IDM_EDIT_ALLOWSKELETONOVERRIDES
+        , CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Test Function (works on Ste's machine only!)", 
+                                                ID_EDIT_TESTFUNCTION
+        MENUITEM SEPARATOR
+        MENUITEM "Always on top",               IDM_EDIT_TOPMOST, CHECKED
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        MENUITEM "... as WireFrame\tCTRL-W",    ID_VIEW_WIREFRAME, CHECKED
+        MENUITEM "... using Alpha Blend\tCTRL-A", ID_VIEW_ALPHA, CHECKED
+        MENUITEM "... using Interpolation\tCTRL-N", ID_VIEW_INTERPOLATE
+        , CHECKED
+        MENUITEM "... using Filtering\tCTRL-F", ID_VIEW_BILINEAR, CHECKED
+        MENUITEM "... showing Origin lines\tCTRL-O", ID_VIEW_ORIGIN, CHECKED
+        MENUITEM "... using Bone Highlighting\tCTRL-B", ID_VIEW_BONEHILITE
+        , CHECKED
+        MENUITEM "... using Bone weight-threshhold-filtering\tCTRL-G", 
+                                                ID_VIEW_BONEFILTERING
+        , CHECKED
+        MENUITEM "... using Surface Highlighting\tCTRL-S", 
+                                                ID_VIEW_SURFACEHILITE
+        , CHECKED
+        MENUITEM "      ( surface highlighting also shows Bone Refs? )", 
+                                                ID_VIEW_SURFACEHILITEWITHBONEREFS
+        , CHECKED
+        MENUITEM "... showing Tri Indexes (only when surface-highlit)\tCTRL-J", 
+                                                ID_VIEW_TRIINDEXES, CHECKED
+        MENUITEM "... showing Vert Indexes (only when surface-highlit)\tCTRL-I", 
+                                                ID_VIEW_VERTINDEXES, CHECKED
+        MENUITEM "      ( Vert Indexes also show Bone Weighting? )\tCTRL-E", 
+                                                ID_VIEW_VERTWEIGHTING
+        , CHECKED
+        MENUITEM "... showing Vertex Normals-Display\tCTRL-V", 
+                                                ID_VIEW_NORMALS, CHECKED
+        MENUITEM "... showing actual tag-surfaces\tCTRL-T", 
+                                                ID_VIEW_TAGSURFACES
+        MENUITEM "... showing RGB lines for origins instead of axis-lines", 
+                                                ID_VIEW_TAGSASRGB, CHECKED
+        MENUITEM "... showing height Ruler\tCTRL-R", ID_VIEW_RULER, CHECKED
+        MENUITEM "... showing bounding box\tCTRL-U", ID_VIEW_BBOX, CHECKED
+        MENUITEM "... showing floor\tCTRL-L",   ID_VIEW_FLOOR, CHECKED
+        MENUITEM "... using Forced-white textures (for crack-finding)\tCTRL-H", 
+                                                ID_VIEW_FORCEWHITE, CHECKED
+        MENUITEM "... using auto Crack-Highlighter (experimental)\tCTRL-K", 
+                                                ID_VIEW_CRACKVIEWER, CHECKED
+        MENUITEM "... showing unShadowable surfaces\t", 
+                                                ID_VIEW_UNSHADOWABLESURFACES
+        , CHECKED
+        MENUITEM "... showing all polys as double-sided", 
+                                                ID_VIEW_DOUBLESIDEDPOLYS
+        , CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Screenshot to file\tSHIFT-C", ID_VIEW_SCREENSHOT_FILE
+        MENUITEM "Screenshot to clipboard\tCTRL-C", 
+                                                ID_VIEW_SCREENSHOT_CLIPBOARD
+        MENUITEM "Remove all highlights/text etc before taking screenshot", 
+                                                ID_VIEW_SCREENSHOT_CLEAN
+        , CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Cycle FOV ( 10 / 80 / 90 Degrees )\tCTRL-D", 
+                                                ID_VIEW_FOVCYCLE
+        MENUITEM SEPARATOR
+        MENUITEM "LOD 1\tF1",                   ID_VIEW_LOD0
+        MENUITEM "LOD 2\tF2",                   ID_VIEW_LOD1
+        MENUITEM "LOD 3\tF3",                   ID_VIEW_LOD2
+        MENUITEM SEPARATOR
+        MENUITEM "Picmip 0\tCTRL-F1",           ID_PICMIP_0
+        MENUITEM "Picmip 1\tCTRL-F2",           ID_PICMIP_1
+        MENUITEM "Picmip 2\tCTRL-F3",           ID_PICMIP_2
+        MENUITEM "Picmip 3\tCTRL-F4",           ID_PICMIP_3
+        MENUITEM SEPARATOR
+        MENUITEM "OpenGL Driver Info",          ID_VIEW_GLINFO
+    END
+    POPUP "&Animation"
+    BEGIN
+        MENUITEM "... Start\tCTRL-UP Arrow",    ID_ANIMATION_START
+        MENUITEM "... Start (with wrap-forcing)\tALT-UP Arrow", 
+                                                ID_ANIMATION_STARTWITHWRAPFORCE
+
+        MENUITEM "... Stop\tSPACE",             ID_ANIMATION_STOP
+        MENUITEM "... Rewind\tCTRL-DW Arrow",   ID_ANIMATION_REWIND
+        MENUITEM "... Go to End Frame",         ID_ANIMATION_ENDFRAME
+        MENUITEM "... Faster\tCTRL-RT Arrow",   ID_ANIMATION_FASTER
+        MENUITEM "... Slower\tCTRL-LT Arrow",   ID_ANIMATION_SLOWER
+        MENUITEM "... NextFrame (turns off animation and lerping)\t>", 
+                                                ID_ANIMATION_NEXTFRAME
+        MENUITEM "... PrevFrame ( "" "" )\t<",  ID_ANIMATION_PREVFRAME
+        MENUITEM SEPARATOR
+        MENUITEM "... Interpolation?\tCTRL-N",  ID_ANIMATION_LERPING
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About ModView...",           ID_APP_ABOUT
+    END
+END
+
+IDR_TREEPOPUP_MODEL MENU 
+BEGIN
+    POPUP "Model"
+    BEGIN
+        MENUITEM "Info",                        IDM_TREE_MODEL_INFO
+        MENUITEM "Unbolt this model from parent", IDM_TREE_MODEL_UNBOLTME
+        MENUITEM SEPARATOR
+        MENUITEM "Expand All",                  IDM_TREE_MODEL_EXPANDALL
+        MENUITEM "Collapse All",                IDM_TREE_MODEL_CONTRACTALL
+        MENUITEM "Find tree item containing <text>", ID_MODEL_FINDANY
+    END
+END
+
+IDR_TREEPOPUP_GLMSURFACE MENU 
+BEGIN
+    POPUP "Surface"
+    BEGIN
+        MENUITEM "( title )",                   IDM_GLMSURFACE_TITLE, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Info",                        IDM_GLMSURFACE_INFO
+        MENUITEM "Set status: ON",              IDM_GLMSURFACE_ON
+        MENUITEM "Set status: OFF",             IDM_GLMSURFACE_OFF
+        MENUITEM "Set status: OFF + NO DESCENDANTS", 
+                                                IDM_GLMSURFACE_NODESCENDANTS
+        MENUITEM SEPARATOR
+        MENUITEM "Set this surface as root",    IDM_GLMSURFACE_SETASROOT
+        MENUITEM "Clear this surface from being root", 
+                                                IDM_GLMSURFACE_CLEARROOT
+        MENUITEM SEPARATOR
+        MENUITEM "Bolt model to this tag surface ( deleting any others already here )", 
+                                                IDM_SURFACE_BOLT
+        MENUITEM "Bolt model to this tag surface ( adding to any already here )", 
+                                                IDM_SURFACE_ADDBOLT
+        MENUITEM "Delete all models bolted to this tag surface", 
+                                                ID_SURFACE_DELETEMODELBOLTEDTOTHISSURFACE
+
+    END
+END
+
+IDR_TREEPOPUP_GLMBONE MENU 
+BEGIN
+    POPUP "Bone"
+    BEGIN
+        MENUITEM "( title )",                   IDM_GLMBONE_TITLE, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Info",                        IDM_GLMBONE_INFO
+        MENUITEM "Bolt model to this bone ( deleting any others already here )", 
+                                                IDM_GLM_BONEBOLT
+        MENUITEM "Bolt model to this bone ( adding to any already here )", 
+                                                IDM_GLM_ADDBONEBOLT
+        MENUITEM "Delete all models bolted to this bone", 
+                                                IDM_GLM_BONECLEARBOLT
+        MENUITEM "Set as secondary Anim Start", IDM_GLM_BONE_LOWERANIMSTART
+    END
+END
+
+IDR_TREEPOPUP_SEQUENCES MENU 
+BEGIN
+    POPUP "Sequences"
+    BEGIN
+        MENUITEM "( Sequences Popup )",         ID_JUNK, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Toggle pathnames on/off in sequence treeitems (if available)", 
+                                                ID_SEQUENCES_VIEWFULLPATH
+        MENUITEM "Sort by Alpha ( unchecked = Sort by Frame # )", 
+                                                ID_SEQUENCES_SORTALPHABETICALLY
+        , CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Unlock All",                  ID_SEQS_UNLOCKALL
+        MENUITEM SEPARATOR
+        MENUITEM "Unlock Primary Sequence",     ID_SEQS_UNLOCK_PRIMARY
+        MENUITEM "Unlock Secondary Sequence",   ID_SEQS_UNLOCK_SECONDARY
+        MENUITEM SEPARATOR
+        MENUITEM "Enable Primary Multi-Sequence locking ?", 
+                                                ID_MULTISEQS_UNLOCK_PRIMARY
+        , CHECKED
+        MENUITEM "Delete last Primary Multi-Lock entry", 
+                                                ID_SEQS_DELETELAST_PRIMARY
+        MENUITEM "Delete all Primary Multi-Lock sequences", 
+                                                ID_SEQS_DELETEALL_PRIMARY
+        MENUITEM SEPARATOR
+        MENUITEM "Enable Secondary Multi-Sequence locking ?", 
+                                                ID_MULTISEQS_UNLOCK_SECONDARY
+        , CHECKED
+        MENUITEM "Delete last Secondary Multi-Lock entry", 
+                                                ID_SEQS_DELETELAST_SECONDARY
+        MENUITEM "Delete all Secondary Multi-Lock sequences", 
+                                                ID_SEQS_DELETEALL_SECONDARY
+    END
+END
+
+IDR_TREEPOPUP_SEQUENCE MENU 
+BEGIN
+    POPUP "Sequence"
+    BEGIN
+        MENUITEM "( title )",                   ID_SEQ_TITLE, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Lock this sequence",          ID_SEQ_LOCK
+        MENUITEM "Unlock this sequence",        ID_SEQ_UNLOCK
+        MENUITEM "Multi-Lock this sequence",    ID_SEQ_MULTILOCK
+        MENUITEM "Delete this sequence from Multi-Lock", 
+                                                ID_SEQ_MULTILOCK_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Lock this Secondary Sequence", ID_SEQ_LOCK_SECONDARY
+        MENUITEM "Unlock this Secondary Sequence", ID_SEQ_UNLOCK_SECONDARY
+        MENUITEM "Multi-Lock this Secondary sequence", 
+                                                ID_SEQ_MULTILOCK_SECONDARY
+        MENUITEM "Delete this sequence from Multi-Lock", 
+                                                ID_SEQ_MULTILOCK_SECONDARY_DELETE
+
+    END
+END
+
+IDR_TREEPOPUP_SURFACES MENU 
+BEGIN
+    POPUP "Surfaces"
+    BEGIN
+        MENUITEM "Surfaces Popup",              ID_JUNK, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Expand all surfaces",         IDR_TREE_SURFACES_EXPANDALL
+        MENUITEM "Find Surface named...<xxx>",  ID_SURFACES_FIND
+        MENUITEM SEPARATOR
+        MENUITEM "Disable all hidden (""..._off"") surfaces", 
+                                                IDR_TREE_SURFACES_ALLDEFAULTOFF_OFF
+
+        MENUITEM "Enable all hidden (""..._off"") surfaces", 
+                                                IDR_TREE_SURFACES_ALLDEFAULTOFF_ON
+
+        MENUITEM "Default all surfaces to original on/off state", 
+                                                IDR_TREE_SURFACES_ALLDEFAULTOFF_DEFAULT
+
+        MENUITEM SEPARATOR
+        MENUITEM "Clear overriden root surface", IDR_TREE_SURFACES_CLEARROOT
+    END
+END
+
+IDR_TREEPOPUP_BONES MENU 
+BEGIN
+    POPUP "Bones"
+    BEGIN
+        MENUITEM "( Bones popup )",             ID_JUNK, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Expand all bones",            IDR_TREE_BONES_EXPANDALL
+        MENUITEM "Find Bone named... <xxx>",    ID_BONES_FIND
+        MENUITEM SEPARATOR
+        MENUITEM "Clear Secondary Anim Start",  ID_BONES_CLEARSECONDARYANIM
+    END
+END
+
+IDR_TREEPOPUP_GLMTAGSURFACE MENU 
+BEGIN
+    POPUP "Tag Surface"
+    BEGIN
+        MENUITEM "( title )",                   IDM_GLMTAGSURFACE_TITLE
+        , GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Info",                        IDM_GLMTAGSURFACE_INFO
+        MENUITEM "Bolt model to this tag surface ( deleting any others already here )", 
+                                                IDM_GLMTAGSURFACE_BOLT
+        MENUITEM "Bolt model to this tag surface ( adding to any already here )", 
+                                                IDM_GLMTAGSURFACE_ADDBOLT
+        MENUITEM "Delete all models bolted to this tag surface", 
+                                                IDM_GLMTAGSURFACE_DELETEBOLT
+    END
+END
+
+IDR_TREEPOPUP_TAGSURFACES MENU 
+BEGIN
+    POPUP "Tag Surfaces"
+    BEGIN
+        MENUITEM "Tag Surfaces popup",          ID_JUNK, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Expand all tag surfaces",     IDR_TREE_TAGSURFACES_EXPANDALL
+
+    END
+END
+
+IDR_TREEPOPUP_SKINS MENU 
+BEGIN
+    POPUP "Skins"
+    BEGIN
+        MENUITEM "( skins popup )",             ID_JUNK, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Expand all",                  ID_EXPAND_ALL
+        MENUITEM "Validate all skins",          ID_SKINS_VALIDATE
+    END
+END
+
+IDR_TREEPOPUP_SKIN MENU 
+BEGIN
+    POPUP "Skin"
+    BEGIN
+        MENUITEM "( Skin popup )",              ID_JUNK, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Expand all",                  ID_SKIN_EXPANDALL
+        MENUITEM "Validate this skin",          ID_SKIN_VALIDATE
+    END
+END
+
+IDR_TREEPOPUP_ETHNIC MENU 
+BEGIN
+    POPUP "Ethnicity"
+    BEGIN
+        MENUITEM "( Ethnic variant popup )",    ID_ETHNIC, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Expand all",                  ID_EXPANDALL
+        MENUITEM "Apply this skin",             ID_ETHNIC_APPLY
+        MENUITEM "Apply this skin ( with surface on/off prefs )", 
+                                                ID_ETHNIC_APPLYWITHSURFACES
+        MENUITEM "Apply this skin ( with surface on/off defaulting )", 
+                                                ID_ETHNIC_APPLYWITHSURFACEDEFAULTING
+
+    END
+END
+
+IDR_TREEPOPUP_SHADERVARIANT MENU 
+BEGIN
+    POPUP "Shader Variant"
+    BEGIN
+        MENUITEM "( Shader variant popup )",    ID_JUNK, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Apply this shader",           ID_VARIANT_APPLY
+    END
+END
+
+IDR_TREEPOPUP_OLDSKINS MENU 
+BEGIN
+    POPUP "OldSkins"
+    BEGIN
+        MENUITEM "( old-type skin popup )",     ID_JUNK, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Validate all skins",          ID_OLDSKINS_VALIDATE
+    END
+END
+
+IDR_TREEPOPUP_OLDSKIN MENU 
+BEGIN
+    POPUP "OldSkin"
+    BEGIN
+        MENUITEM "( old-type skin popup )",     ID_JUNK, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Validate this skin",          ID_OLDSKIN_VALIDATE
+        MENUITEM "Apply this skin",             ID_OLDSKIN_APPLY
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS 
+BEGIN
+    ",",            ID_ANIMATION_PREVFRAME, ASCII,  NOINVERT
+    ".",            ID_ANIMATION_NEXTFRAME, ASCII,  NOINVERT
+    "A",            ID_VIEW_ALPHA,          VIRTKEY, CONTROL, NOINVERT
+    "B",            ID_VIEW_BONEHILITE,     VIRTKEY, CONTROL, NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "C",            ID_VIEW_SCREENSHOT_FILE, VIRTKEY, SHIFT, NOINVERT
+    "D",            ID_VIEW_FOVCYCLE,       VIRTKEY, CONTROL, NOINVERT
+    "E",            ID_VIEW_VERTWEIGHTING,  VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_FIND_NEXT,           VIRTKEY, NOINVERT
+    "F",            ID_VIEW_BILINEAR,       VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_VIEW_BONEFILTERING,  VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_BONEFILTER_DECTHRESHHOLD, VIRTKEY, SHIFT, NOINVERT
+    "G",            ID_BONEFILTER_INCTHRESHHOLD, VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    "H",            ID_VIEW_FORCEWHITE,     VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_VIEW_VERTINDEXES,    VIRTKEY, CONTROL, NOINVERT
+    "J",            ID_VIEW_TRIINDEXES,     VIRTKEY, CONTROL, NOINVERT
+    "K",            ID_VIEW_CRACKVIEWER,    VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_VIEW_FLOOR,          VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_VIEW_INTERPOLATE,    VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_VIEW_ORIGIN,         VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_VIEW_RULER,          VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_FILE_REFRESHTEXTURES, VIRTKEY, ALT, NOINVERT
+    "S",            ID_VIEW_SURFACEHILITE,  VIRTKEY, CONTROL, NOINVERT
+    "T",            ID_VIEW_TAGSURFACES,    VIRTKEY, CONTROL, NOINVERT
+    "U",            ID_VIEW_BBOX,           VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_VIEW_NORMALS,        VIRTKEY, CONTROL, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    VK_DOWN,        ID_ANIMATION_REWIND,    VIRTKEY, CONTROL, NOINVERT
+    VK_F1,          ID_VIEW_LOD0,           VIRTKEY, NOINVERT
+    VK_F1,          ID_PICMIP_0,            VIRTKEY, CONTROL, NOINVERT
+    VK_F2,          ID_VIEW_LOD1,           VIRTKEY, NOINVERT
+    VK_F2,          ID_PICMIP_1,            VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          ID_VIEW_LOD2,           VIRTKEY, NOINVERT
+    VK_F3,          ID_PICMIP_2,            VIRTKEY, CONTROL, NOINVERT
+    VK_F4,          ID_VIEW_LOD3,           VIRTKEY, NOINVERT
+    VK_F4,          ID_PICMIP_3,            VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          ID_VIEW_LOD4,           VIRTKEY, NOINVERT
+    VK_F5,          ID_PICMIP_4,            VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_VIEW_LOD5,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PICMIP_5,            VIRTKEY, CONTROL, NOINVERT
+    VK_F7,          ID_VIEW_LOD6,           VIRTKEY, NOINVERT
+    VK_F7,          ID_PICMIP_6,            VIRTKEY, CONTROL, NOINVERT
+    VK_F8,          ID_VIEW_LOD7,           VIRTKEY, NOINVERT
+    VK_F8,          ID_PICMIP_7,            VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_LEFT,        ID_ANIMATION_SLOWER,    VIRTKEY, CONTROL, NOINVERT
+    VK_RIGHT,       ID_ANIMATION_FASTER,    VIRTKEY, CONTROL, NOINVERT
+    VK_SPACE,       ID_ANIMATION_STOP,      VIRTKEY, NOINVERT
+    VK_UP,          ID_ANIMATION_START,     VIRTKEY, CONTROL, NOINVERT
+    VK_UP,          ID_ANIMATION_STARTWITHWRAPFORCE, VIRTKEY, ALT, NOINVERT
+    "W",            ID_VIEW_WIREFRAME,      VIRTKEY, CONTROL, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG  0, 0, 235, 110
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About ModView"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "ModView Version 2.1",IDC_STATIC,41,10,119,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2000 .. 2002 Raven Software",IDC_STATIC,
+                    41,41,187,8
+    DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
+    LTEXT           "Written by Ste Cork (+ MFC help from Mike Crowns)",
+                    IDC_STATIC,41,25,162,8
+    LTEXT           "Current formats supported:   Ghoul2  ( .GLM / .GLA )",
+                    IDC_STATIC,41,79,165,8
+END
+
+IDD_DIALOG_GETSTRING DIALOG  0, 0, 254, 105
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Input String..."
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,43,84,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,156,84,50,14
+    LTEXT           "Prompt",IDC_GETSTRING_PROMPT,11,14,228,32
+    EDITTEXT        IDC_EDIT1,13,53,226,14,ES_AUTOHSCROLL
+END
+
+IDD_DIALOG_NPCS DIALOG  0, 0, 383, 340
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Character Viewer (SOF2 NPCs or JK2 bots)"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,293,30,77,30
+    LISTBOX         IDC_LIST_NPCS,19,30,263,269,LBS_SORT | LBS_USETABSTOPS | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "Refresh",IDREFRESH,293,64,77,30
+    CTEXT           "( Double-click on an entry to load it )",IDC_STATIC,60,
+                    15,183,11
+    LTEXT           "Comment field",IDC_STATIC_COMMENT,20,305,347,28
+    DEFPUSHBUTTON   "Generate Gallery",IDGALLERY,293,233,77,66
+    DEFPUSHBUTTON   "Quick Validate",IDVALIDATE,293,98,77,30
+    PUSHBUTTON      "Send List To Notepad",IDC_BUTTON_GENERATE_LIST,293,213,
+                    77,17
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "ModView MFC Application"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "ModView"
+            VALUE "LegalCopyright", "Copyright (C) 2000"
+            VALUE "OriginalFilename", "ModView.EXE"
+            VALUE "ProductName", "ModView Application"
+            VALUE "ProductVersion", "1, 0, 0, 1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 103
+    END
+
+    IDD_DIALOG_GETSTRING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 247
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 98
+    END
+
+    IDD_DIALOG_NPCS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 376
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 333
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDR_MAINFRAME           "ModView\n\nModVie\n\n\nModView.Document\nModVie Document"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "ModView"
+    AFX_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_NEW             "Create a new document\nNew"
+    ID_FILE_OPEN            "Open an existing document\nOpen"
+    ID_FILE_CLOSE           "Close the active document\nClose"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
+    ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
+    ID_FILE_PRINT           "Print the active document\nPrint"
+    ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_MIPMAPTEXTURES  "Test function to see if mipmapping causes texture boundary problems"
+    ID_PICMIP_0             "Re-upload textures using this picmip value"
+    ID_PICMIP_1             "Re-upload textures using this picmip value"
+    ID_PICMIP_2             "Re-upload textures using this picmip value"
+    ID_PICMIP_3             "Re-upload textures using this picmip value"
+    ID_MODEL_SAVE_AS        "Save the active document with a new name\nSave As"
+    ID_VIEW_RULER           "Helpful when measuring model sizes"
+    ID_VALIDATE             "This will force a texture-load of every skin variant below this to see if they exist"
+    ID_SKINS_VALIDATE       "Validates all shaders used in all skin variants"
+    ID_SKIN_VALIDATE        "Force a texture-load of all shaders in all variants of this skin file"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
+    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_TREE_MODEL_EXPANDALL "Open up everything underneath"
+    IDM_TREE_MODEL_CONTRACTALL "Close up everything underneath"
+    IDM_GLMSURFACE_INFO     "General info on this surface"
+    IDM_TREE_MODEL_INFO     "Display information about current model"
+    ID_JUNK                 "( Header only, not selectable )"
+    IDM_GLMSURFACE_TOGGLE   "Simulate surface/limb removal/restore"
+    IDM_GLMSURFACE_OFF      "Disable this surface"
+    IDM_GLMSURFACE_ON       "Set this surface to be ON, along with any child surfaces"
+    IDM_GLMSURFACE_NODESCENDANTS "Turns off all child surfaces"
+    ID_VIEW_WIREFRAME       "Have a guess, go on..."
+    ID_VIEW_ALPHA           "Show certain textures as transparent"
+    ID_VIEW_INTERPOLATE     "Lerp between frames"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_BILINEAR        "Toggles texture smoothing"
+    ID_VIEW_SCREENSHOT_FILE "Takes a screenshot and saves out (removes onscreen text first)"
+    ID_VIEW_SCREENSHOT_CLIPBOARD 
+                            "Takes a screenshot and sends to clipboard (removes text first)"
+    ID_VIEW_ORIGIN          "Draw axis/origin lines"
+    ID_VIEW_GLINFO          "View whatever the GL driver sends back when interrogated"
+    ID_ANIMATION_START      "Start animating\nPlay"
+    ID_ANIMATION_STOP       "Stop anim\nStop"
+    ID_ANIMATION_REWIND     "Rewind\nRewind"
+    ID_ANIMATION_FASTER     "Speed up playback\nPlay faster"
+    ID_ANIMATION_SLOWER     "Slow down playback speed\nPlay slower"
+    ID_ANIMATION_LERPING    "Toggles interpolation on/off (same as under View menu)"
+    ID_FILE_WRITEIDEAL      "Saves out current viewpos etc for auto positioning next loadtime"
+    ID_SEQ_LOCK             "Force model playback to be constrained to this sequence"
+    ID_SEQS_UNLOCKALL       "Remove any animation sequence locking for this model"
+    ID_ANIMATION_NEXTFRAME  "Increase current anim frame\nFrame advance"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_ANIMATION_PREVFRAME  "Decrease current anim frame\nFrame decrement"
+    ID_VIEW_LOD0            "View Models in highest LOD"
+    ID_VIEW_LOD1            "View models in medium LOD (if available)"
+    ID_VIEW_LOD2            "View models in lowest LOD (if available)"
+    ID_EDIT_BGRNDCOLOUR     "Have a guess, go on..."
+    ID_VIEW_BONEHILITE      "Highlight bones in 3d view (if present in model) when selected in treeview"
+    ID_VIEW_NORMALS         "Displays vert-normal lines"
+    ID_VIEW_SURFACEHILITE   "Highlight surfaces in 3d view when selected in treeview"
+    IDR_TREE_SURFACES_EXPANDALL "Expand all surface treeitems"
+    IDR_TREE_BONES_EXPANDALL "Expand all bone treeitems"
+    ID_VIEW_VERTINDEXES     "(Mainly a debugging aid) Show indexes of vert in selected mesh"
+    ID_VIEW_FOVCYCLE        "Change FOV degrees\nCycle FOV"
+    ID_FILE_READIDEAL       "Reads previously-saved file for optimal settings"
+    IDM_GLM_BONEBOLT        "Opens up a file-browse dialog to select a model to bolt to this point (and delete anything already there)"
+    IDM_GLM_BONECLEARBOLT   "Removes whatever's bolted here"
+    IDM_GLMBONE_INFO        "Display general info on this bone"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_REFRESHTEXTURES "Refresh / reload all textures ( e.g. if you've just saved out a new graphic in another package and want to see it updated )\nRefresh textures"
+    ID_EDIT_TESTFUNCTION    "Used for temp testing of weird bits of code, only works on my machine"
+    IDM_TREE_MODEL_UNBOLTME "Will delete this model and any bolted models from its parent model"
+    ID_FILE_RESETVIEWPARAMS "Reset view position to default ( useful for when model is scrolled offscreen )\nReset viewpos"
+    ID_ANIMATION_STARTWITHWRAPFORCE 
+                            "Start animating, with forced-wrap for non-wrapping sequences\nPlay ( with wrap-force )"
+    ID_FILE_WRITESCRIPT     "Writes out a script file so you can reload all current models in same way later"
+    ID_FILE_READSCRIPT      "Reads in a script file detailing which models are bolted to which etc."
+    ID_VIEW_SURFACEHILITEWITHBONEREFS 
+                            "Only applicable if surface highlighting is on"
+    ID_VIEW_TAGSURFACES     "View the surfaces used for bolting which are normally hidden"
+    ID_VIEW_TAGSASRGB       "Check this to view Red/Green/Blue axis lines, else will show +ve and -ve letters on axis"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_GLMTAGSURFACE_INFO  "General info on this tag surface"
+    IDM_GLMTAGSURFACE_BOLT  "Open a browse dialog to bolt a model to this surface ( deleting any others already there )"
+    IDM_GLMTAGSURFACE_DELETEBOLT 
+                            "Delete whatever models are bolted to this tag surface"
+    IDR_TREE_SURFACES_ALLDEFAULTOFF_ON 
+                            "Switches on all surfaces ending in ""_off"" (which normally default to not being drawn)"
+    IDR_TREE_SURFACES_ALLDEFAULTOFF_OFF 
+                            "Switches off all surfaces ending in ""_off"" (which normally default to not being drawn)"
+    IDM_SURFACE_BOLT        "Open a browse window to bolt another model to this bolt point, deleting anything already bolted there"
+    ID_SURFACE_DELETEMODELBOLTEDTOTHISTAGSURFACE 
+                            "Delete whatever model is bolted to this tag surface"
+    ID_SURFACE_DELETEMODELBOLTEDTOTHISSURFACE 
+                            "Delete all models bolted to this tag surface"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_ETHNIC_APPLY         "Applies this ethnic skin variant (eg black, white etc) to the model"
+    ID_EXPANDALL            "Expand all tree items below this one"
+    ID_VARIANT_APPLY        "Apply this shader"
+    ID_EXPAND_ALL           "Expand everything below this"
+    ID_SKIN_EXPANDALL       "Expand all tree items below this one"
+    ID_VIEW_FORCEWHITE      "This option forces all textures to be drawn as solid white, which will show up cracks better"
+    ID_VIEW_SCREENSHOT_CLEAN 
+                            "This gets rid of all higlights, text, etc so screenshots come out clean, with justa Raven (C) notice"
+    ID_OLDSKIN_VALIDATE     "Check that all the files for this skin exist"
+    ID_OLDSKIN_APPLY        "Well, duh....  read the menu"
+    IDM_GLM_BONE_LOWERANIMSTART 
+                            "Set this bone as being the (non-inclusive) stop point of the primary animation"
+    ID_VIEW_VERTWEIGHTING   "Turning this on shows the number of bones each vert references (for optimisation)"
+    ID_SEQ_LOCK_SECONDARY   "Lock this sequence as secondary animation"
+    ID_SEQ_UNLOCK_SECONDARY "Unlock this Secondary Sequence"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SEQS_UNLOCK_PRIMARY  "Unlock Primary Sequence"
+    ID_SEQS_UNLOCK_SECONDARY "Unlock Secondary Sequence"
+    ID_SURFACES_FIND        "Search from this point down for item matching <inputstring>"
+    ID_BONES_FIND           "Recursive-search for the supplied bone name"
+    ID_MODEL_FINDANY        "Generic tree search to find deeply-nested items"
+    ID_SEQUENCES_VIEWFULLPATH 
+                            "Toggles displaying of local-paths in sequence names"
+    ID_ETHNIC_APPLYWITHSURFACES 
+                            "Apply skin, but also apply the surface on/off hints in the G2Skin file"
+    IDR_TREE_SURFACES_ALLDEFAULTOFF_DEFAULT 
+                            "Restores all of a model's surfaces to what they would be when first loaded"
+    ID_ETHNIC_APPLYWITHSURFACEDEFAULTING 
+                            "Default's all model's surfaces to the correct on/off state, then applies the skin"
+    ID_VIEW_BBOX            "View bounding box. Takes more CPU time and ignores lerping"
+    ID_VIEW_FLOOR           "Shows a floor under the primary model"
+    ID_EDIT_SETFLOOR_ABS    "Sets the floor to an absolute position"
+    ID_EDIT_SETFLOOR_CURRENT "Like the man says..."
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SEQ_MULTILOCK        "Add this sequence to this model's multi-sequence locking list"
+    ID_SEQ_MULTILOCK_SECONDARY 
+                            "Add this sequence to this model's secondary multi-lock list"
+    ID_MULTISEQS_UNLOCK_PRIMARY "Toggle primary multisequence locking"
+    ID_MULTISEQS_UNLOCK_SECONDARY "Toggle secondary multi-sequence locking"
+    ID_SEQS_DELETEALL_PRIMARY 
+                            "Deletes all sequence entries in the primary multi-lock list"
+    ID_SEQS_DELETEALL_SECONDARY 
+                            "Deletes all sequences in the secondary multi-lock list"
+    ID_SEQS_DELETELAST_PRIMARY 
+                            "Basic edit feature, just deletes last entry in list"
+    ID_SEQS_DELETELAST_SECONDARY 
+                            "Basic edit feature, just deletes last entry in list"
+    ID_SEQ_MULTILOCK_DELETE "Deletes this sequence from the multilock list"
+    ID_SEQ_MULTILOCK_SECONDARY_DELETE 
+                            "Removes this sequence from secondary multi-lock list"
+    ID_VIEW_BONEFILTERING   "Filters out bone weights below a given threshold"
+    ID_EDIT_SETBONEWEIGHT_THRESHHOLD 
+                            "Input a value below which bone-weightings will be ignored"
+    ID_VIEW_CRACKVIEWER     "Speculative code to auto-highlight model cracks"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_GLMSURFACE_SETASROOT 
+                            "Forces model to start rendering from this surface down, not from actual root"
+    IDR_TREE_SURFACES_CLEARROOT 
+                            "Removes any root override so model renders from surface 0 again"
+    ID_VIEW_UNSHADOWABLESURFACES 
+                            "Show a marker on any surface that has too many ( > MAX_SHADER_VERTS/2) verts to display with shadows ingame"
+    ID_FILE_VIEW_SOF2_NPCS  "Generates a list of NPCs to view from SOF2's multiple-file data format"
+    IDM_EDIT_ALLOWSKELETONOVERRIDES 
+                            "( Allows override-use of different skeletons for Ghoul2 models )"
+    ID_VIEW_DOUBLESIDEDPOLYS 
+                            "Show all polys as double-sided (except in wireframe)"
+END
+
+STRINGTABLE 
+BEGIN
+    IDM_GLM_ADDBONEBOLT     "Add a bolt-on model to this bolt point"
+    IDM_SURFACE_ADDBOLT     "Open a browse window to bolt another model to this bolt point, but adding it to anything already bolted there"
+    IDM_GLMTAGSURFACE_ADDBOLT "Add another bolton model to this bolt point"
+    IDM_EDIT_TOPMOST        "Toggle between always-on-top and normal windows modes"
+    ID_VIEW_TRIINDEXES      "Shows triangle indexes numbers in the middle of each triangle"
+    ID_FILE_VIEW_JK2_BOTS   "Pops up a dialog that handles viewing of entries in game/base/botfiles/bots.txt"
+    ID_ANIMATION_ENDFRAME   "Go to End Frame\nGo to End Frame"
+    ID_SEQUENCES_SORTALPHABETICALLY "Toggles between alpha and frame# sorting"
+    IDM_GLMSURFACE_CLEARROOT "Stop considering this surface to be the root"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\ModView.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

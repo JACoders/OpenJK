@@ -1,0 +1,16 @@
+//Siege team definition file.
+
+name "Jedi"
+FriendlyShader "sprites/team_jedi" //Name of shader to display above heads of teammates (to others on this team)
+
+Classes
+{
+	class1		"Jedi Healer"
+	class2		"Jedi Scout"
+	class3		"Jedi Duelist"
+	class4		"Jedi Force User"
+	class5		"Jedi Knight"
+	class6		"Jedi Guardian"
+	class7		"Kyle"
+	class8		"Protector"
+}

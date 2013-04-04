@@ -1,0 +1,16 @@
+//Siege team definition file.
+
+name "Dark Jedi"
+FriendlyShader "sprites/team_darkjedi" //Name of shader to display above heads of teammates (to others on this team)
+
+Classes
+{
+	class1		"Dark Jedi Destroyer"
+	class2		"Dark Jedi Invader"
+	class3		"Dark Jedi Duelist"
+	class4		"Dark Jedi Knight"
+	class5		"Dark Side Marauder"
+	class6		"Dark Force Assassin"
+	class7		"Cultist"
+	class8		"Jedi Hunter"
+}

@@ -1,0 +1,179 @@
+//----------------------------------------------------------------------------------------------
+// Load screen
+//
+//	Data displayed while level is loading. Run only during map transitions.
+//
+//----------------------------------------------------------------------------------------------
+{
+					   
+	menuDef 
+	{
+		name					"loadscreen"
+		fullScreen				0
+		rect					0 0 640 480	
+		visible					1
+		focusColor				1 1 1 1
+		descX					320
+		descY					426
+		descScale				1
+		descColor				.79 .64 .22 .7
+		descAlignment				ITEM_ALIGN_CENTER	
+		disablecolor				.5 .5 .5 1
+		onClose 
+		{
+		}
+		
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/load_back"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		// Picture that goes along with map
+		itemDef 
+		{
+			name				mappic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				25 31 266 200
+			background			"gfx/menus/mission_back"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		// Used only if there are enough icons to fill one row		
+		itemDef 
+		{
+			name				weaponicons_singlerow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				20 280 540 30
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		// Used only if there are enough icons to fill two rows
+		itemDef 
+		{
+			name				weaponicons_row1
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				20 260 540 30
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				weaponicons_row2
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				20 305 540 30
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				forceicons_singlerow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				50 385 540 30
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				forceicons_row1
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				50 360 540 30
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				forceicons_row2
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				50 400 540 30
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		itemDef
+		{
+			name				briefingtext
+			group				none
+			type				ITEM_TYPE_TEXTSCROLL			
+			rect				295 20 330 370
+			cvar				ui_missionbriefing
+			font				4
+			forecolor			1 1 1 1
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			6
+			lineHeight			18
+			visible				1
+			autowrapped
+		}	
+		// Frame around map pic					
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			rect				21 29 270 203
+			border				1
+			bordercolor			.298 .305 .690 1
+			bordersize			2
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		
+//----------------------------------------------------------------------------------------------
+//	Scan line to go over top of everything else
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				scan
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 640
+			background			"gfx/menus/scanlines_noscroll"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+	}
+	
+}
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,197 @@
+//------------------------------------------------------------------------------------------------
+// INGAME VIDEO WARNING
+//------------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name					"ingamevideowarningMenu"
+		visible					0
+		fullScreen				1					// MENU_TRUE			
+		rect					100 120 440 320
+		focusColor				1 1 1 1					// Focus color for text and items
+		outOfBoundsClick								// this closes the window if it gets a click out of the rectangle
+		descX					320
+		descY					350
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER		
+		popup
+										
+		onESC 
+		{ 
+			play				"sound/interface/esc.wav" 					
+			close				all ; 
+			open				ingameSetupMenu ;
+		}
+
+		onClose
+		{
+			play				"sound/interface/button1.wav" ; 
+		}
+
+		itemDef 
+		{
+			name				warn_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				100 120 440 320
+			background			"gfx/menus/menu_boxred"					// Frame
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+//
+//	VIDEO WARNING
+//
+//----------------------------------------------------------------------------------------------
+		// Video Warning title
+		itemDef 
+		{
+			name				vidwarn_title
+			group				vidwarn
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS_UNAPPLIED_VIDEO_CHANGES
+      			rect				120 130 400 20
+			font				3
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			200
+			textaligny			-3
+			forecolor			1 1 1 1
+      			visible				1 
+      			decoration 
+		}
+
+		itemDef 
+		{
+			name				vidwarn_text1
+			group				vidwarn
+			text				@MENUS_YOU_HAVE_MADE_CHANGES
+			rect				210 240 220 20
+			textalign			ITEM_ALIGN_CENTER
+			text2aligny			18
+			textalignx			110
+			font				2
+			textscale			1        
+			forecolor			1 1 1 1	
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				vidwarn_text2
+			group				vidwarn
+			text				@MENUS_APPLY_THESE_CHANGES_OR
+			rect				210 260 220 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			110
+			font				2
+			textscale			1        
+			forecolor			1 1 1 1	
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				vidwarn_no_button
+			group				vidwarn
+			style				WINDOW_STYLE_SHADER
+			rect				180 380 120 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0 
+		}
+
+		// DISCARD button - return to Video Data screen
+		itemDef 
+		{
+			name				vidwarn_no
+			group				vidwarn
+			text				@MENUS_DISCARD
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				180 380 120 24 
+			font				2
+			textscale			1        
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			60
+			textaligny			-3
+			descText			@MENUS_DO_NOT_APPLY_CHANGES
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/esc.wav" 					
+				close			all ;
+				uiScript		getvid1data	;					// Get video settings
+				open			ingameSetupMenu ;
+				activate		ingameSetupMenu 	video1menubutton
+			}
+			mouseEnter 
+			{ 
+				show		vidwarn_no_button
+			}
+			mouseExit 
+			{ 
+				hide		vidwarn_no_button
+			}	  	  
+		}
+
+		itemDef 
+		{
+			name				vidwarn_yes_button
+			group				vidwarn
+			style				WINDOW_STYLE_SHADER
+			rect				340 380 120 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		// APPLY button, use settings
+		itemDef 
+		{
+			name				vidwarn_yes
+			group				vidwarn
+			text				@MENUS_APPLY
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				340 380 120 24 
+			font				2
+			textscale			1        
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			60
+			textaligny			-3
+			descText			@MENUS_APPLY_CHANGES_AND_THEN
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				uiScript		setvid1data	ingameSetupMenu ;		// Set video settings
+				close			all
+			}
+			mouseEnter 
+			{ 
+				show		vidwarn_yes_button
+			}
+			mouseExit 
+			{ 
+				hide		vidwarn_yes_button			
+			}	  	  
+		}
+	}
+}
+
+
+
+
+
+

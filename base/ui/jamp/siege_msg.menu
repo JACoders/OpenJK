@@ -1,0 +1,123 @@
+//-----------------------------------------------------------------
+// seige_msg.menu
+//
+// Popup menu that displays messages at the end of a siege game
+//
+//-----------------------------------------------------------------
+{
+\\ END OF GAME \\
+	menuDef 
+	{
+		name					"siege_popmenu"
+	   	visible					0
+	   	fullscreen				0
+	   	rect					158 80 320 320
+		focusColor				1 1 1 1					// Focus color for text and items
+	   	style					1
+	   	border					1
+		popup
+		onClose 
+		{ 
+		}
+		onOpen 
+		{ 
+		}
+		onESC 
+		{ 
+			close				siege_popmenu  
+			open				main 
+		}
+	
+		itemDef 
+		{
+			name				window
+			rect				10 15 300 320
+			style 				1
+			backcolor			.015 .015 .229 0.25
+			forecolor			0 0 0 1
+			border				1
+			bordercolor			.388 .396 .925 1
+			bordersize			5
+			visible				1
+			decoration
+		}
+
+
+		itemDef 
+		{
+			name				siegeinfo
+			rect				0 50 320 20	
+			text				@MENUS_DATAPAD
+			textalign			1
+			textstyle			6
+			textscale			1
+			textalignx			160
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				siegeinfo
+			rect				60 80 200 270
+			type				ITEM_TYPE_TEXT
+			style				1
+			textstyle			3
+			autowrapped
+			cvar				"cg_siegeMessage"
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			100
+			textscale			1
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+//	BUTTON	//
+		itemDef 
+		{
+			name				button_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				118 295 85 26
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				exit
+			group				grpControlbutton
+			text				@MENUS_OKAY
+			type				1
+			textscale			1
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				138 295 45 26
+			textalign			1
+			textalignx 			22
+			forecolor			.79 .64 .22 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			siege_popmenu  
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	  	  
+		}
+	}
+}
+
+
+
+

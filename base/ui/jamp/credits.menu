@@ -1,0 +1,441 @@
+// CREDITS MENU
+
+{
+	menuDef 
+	{
+		name					"creditsMenu"
+		fullScreen				MENU_TRUE								// MENU_TRUE				
+		rect					0 0 640 480						// Size and position of the menu
+		visible				MENU_TRUE								// Visible on open
+		focusColor				1 1 1 1							// Focus color for text and items
+		appearanceIncrement		75								// In miliseconds
+		descX					375
+		descY					434
+		descScale				1
+		descColor				.235 .882 .847 1					// Focus color for text and items
+		descAlignment			ITEM_ALIGN_CENTER		
+
+		onOpen 
+		{
+			exec				"music music/cairn_bay/impbasee_action" ;
+			setfocus			newgamebutton ;
+		}
+		
+		onClose
+		{
+//			exec				"music music/cairn_bay/impbasee_explore" ;
+		}
+									
+		onESC 
+		{ 
+			play				"sound/interface/button1.wav" ; 
+			close				all ; 
+			open				mainMenu ;
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	MENU BACKGROUND
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				frame_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/menu1"					// Frame
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+		// The saber glow on the left
+		itemDef 
+		{
+			name				saberglow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				15 0 60 480
+			background			"gfx/menus/menu3"					// Frame
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+
+		// The red saber glow on the left
+		itemDef 
+		{
+			name				saberglowr
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				75 0 60 480
+			background			"gfx/menus/menu3r"					// Frame
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+
+		// The starwars logo on the top
+		itemDef 
+		{
+			name				starwars
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				143 12 470 93
+			background			"gfx/menus/menu4"					// Frame
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+		// The saber halo on the left
+		itemDef 
+		{
+			name				saberhalo
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				-255 -50 600 600
+			background			"gfx/menus/menu2"						// Frame
+			forecolor			0.7 0.7 0.7 1
+			visible			1
+			decoration
+		}
+
+		// The red saber halo on the left
+		itemDef 
+		{
+			name				saberhalor
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				-195 35 600 600
+			background			"gfx/menus/menu2r"						// Frame
+			forecolor			0.7 0.7 0.7 1
+			visible			1
+			decoration
+		}
+
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	TOP MENU BUTTONS
+		//
+		//----------------------------------------------------------------------------------------------
+
+		// Big button "NEW"
+		itemDef 
+		{
+			name				newgamebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				115 115 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			// appearance_slot		1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				newgamebutton
+			group				toprow
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				115 115 130 24
+			text				@MENUS_PLAY
+			descText			@MENUS_START_PLAYING_NOW
+			font				3
+			textscale			0.9
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			forecolor			0.65 0.65 1 1
+			visible			1
+
+			mouseEnter 
+			{ 
+				show			newgamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			newgamebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			multiplayermenu 
+			}
+		}
+
+		// Big button "LOAD"
+		itemDef 
+		{
+			name				loadgamebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				245 115 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			// appearance_slot		1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				loadgamebutton
+			group				toprow
+			text				@MENUS_RULES
+			descText			@MENUS_GAME_DESCRIPTIONS
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				245 115 130 24
+			textaligny			0
+			font				3
+			textscale			0.9
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			forecolor			0.65 0.65 1 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			loadgamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			loadgamebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			rulesgameMenu
+			}
+		}
+
+		// Big button "CONTROLS"
+		itemDef 
+		{
+			name				controlsbutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				375 115 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			// appearance_slot		1
+			decoration
+		}
+
+		itemDef {
+			name				controlsbutton
+			group				toprow
+			text				@MENUS_CONTROLS2
+			descText			@MENUS_CONFIGURE_GAME_CONTROLS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				375 115 130 24
+			font				3
+			textscale			0.9
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			0.65 0.65 1 1
+			visible				1
+			 
+			mouseEnter 
+			{ 
+				show			controlsbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			controlsbutton_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			weaponSetupMenu
+			}
+		}
+
+		// Big button "SETUP"
+		itemDef 
+		{
+			name				setupbutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				505 115 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			// appearance_slot		1
+			decoration
+		}
+
+		itemDef {
+			name				setupbutton
+			group				toprow
+			text				@MENUS_SETUP
+			descText			@MENUS_CONFIGURE_GAME_SETTINGS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				505 115 130 24
+			font				3
+			textscale			0.9
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			0.65 0.65 1 1
+			visible				1
+			 
+			mouseEnter 
+			{ 
+				show			setupbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			setupbutton_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			weaponSetupMenu
+			}
+		}
+
+		itemDef 
+		{
+			name				header_line
+			group				toprow
+			style				WINDOW_STYLE_SHADER
+			rect				125 136 500 4
+			background			"gfx/menus/menu_line"					// Frame
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	OTHER MAIN MENU BUTTONS
+		//
+		//----------------------------------------------------------------------------------------------
+		// EXIT button in lower left corner
+		itemDef 
+		{
+			name				exitgamebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				115 444 130 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			// appearance_slot		1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				exitgamebutton
+			group				othermain
+			text				@MENUS_EXIT
+			descText			@MENUS_JEDI_KNIGHT_II
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				115 444 130 24 
+			font				3
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			0.65 0.65 1 1
+			visible			1
+
+			mouseEnter 
+			{ 
+				show			exitgamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			exitgamebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/weapons/saber/saberoff.mp3"; 
+				close			all ; 
+				open			quitMenu 
+			}
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	CREDITS FIELDS
+		//
+		//----------------------------------------------------------------------------------------------
+		// Credits title
+		itemDef 
+		{
+			name				credits_title
+			group				none
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS_CREDITS
+      		rect				150 145 450 16
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			225
+			textaligny			-1	
+			forecolor			1 1 1 1
+      		visible			1 
+			// appearance_slot		2
+      		decoration 
+		}
+
+
+		itemDef 
+		{
+			name confirm
+			group			none
+			text			@MENUS_TO_BE_DETERMINED
+			font		2
+			textscale 1
+			textstyle 3
+			rect 320 220 110 20
+			textalign ITEM_ALIGN_CENTER
+			textalignx 0
+			textaligny 0
+			decoration
+			forecolor .433 .703 .722 1
+			visible 1
+			// appearance_slot	2
+		}
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+

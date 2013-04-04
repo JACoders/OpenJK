@@ -1,0 +1,62 @@
+Lando
+{
+	playerModel	lando
+	weapon		WP_BLASTER
+	rank		captain
+	altFire		1
+	snd			lando
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+//	race		human
+	class		CLASS_LANDO
+	snd			lando
+	sndcombat	lando
+	sndextra	lando
+	sndjedi		lando
+	walkSpeed	55
+	runSpeed	200
+	yawspeed	120
+	dismemberProbHead	0
+	dismemberProbArms	0
+	dismemberProbHands	0
+	dismemberProbLegs	0
+	dismemberProbWaist	0
+}
+
+Lando_cin
+{
+	playerModel	lando
+	rank		captain
+	altFire		1
+	snd			lando
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+//	race		human
+	class		CLASS_LANDO
+	snd			lando
+	sndcombat	lando
+	sndextra	lando
+	sndjedi		lando
+	walkSpeed	52
+	runSpeed	200
+	yawspeed	120
+	dismemberProbHead	0
+	dismemberProbArms	0
+	dismemberProbHands	0
+	dismemberProbLegs	0
+	dismemberProbWaist	0
+}

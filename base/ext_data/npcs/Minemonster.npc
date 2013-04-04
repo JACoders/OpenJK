@@ -1,0 +1,24 @@
+Minemonster
+{
+	playerModel minemonster
+	weapon		WP_MELEE
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_MINEMONSTER
+	snd			mine
+	yawSpeed	160
+	runSpeed	210
+	walkSpeed	50
+	hFOV		120
+	vfov		45
+	height	30
+	width	9
+	snd			mine
+	health		40
+}

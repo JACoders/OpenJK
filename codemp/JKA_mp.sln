@@ -1,0 +1,176 @@
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JK2cgame", "cgame\JK2_cgame.vcproj", "{4DC69D68-9DB8-4DEB-AC63-481153B1F41D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "JK2game", "game\JK2_game.vcproj", "{5B587283-8429-4F8B-AECA-C09BF364B617}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WinDed", "WinDed.vcproj", "{149BAC28-9F08-4C08-BD4E-02D01A0DAD1F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "botlib", "botlib\botlib.vcproj", "{07CCC82A-B905-4384-8AC5-E8A8E352B14C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exe", "jk2mp.vcproj", "{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ui", "ui\ui.vcproj", "{2DDA2041-6A68-4754-B342-14039CC91695}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_botlib", "x_botlib\x_botlib.vcproj", "{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_exe", "x_exe\x_exe.vcproj", "{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_jk2cgame", "x_jk2cgame\x_jk2cgame.vcproj", "{C79C9037-8F32-4833-A276-96B2FB96CCA5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_jk2game", "x_jk2game\x_jk2game.vcproj", "{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_ui", "x_ui\x_ui.vcproj", "{613EA919-780E-416D-90A9-67D3EB27F899}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "goblib", "goblib\goblib.vcproj", "{0959DD50-BCBA-4551-9617-E6FD4DF85298}"
+EndProject
+Global
+	GlobalSection(SourceCodeControl) = preSolution
+		SccNumberOfProjects = 6
+		SccProjectUniqueName0 = cgame\\JK2_cgame.vcproj
+		SccProjectName0 = \u0022$/jedi/codemp/cgame\u0022,\u0020ICAAAAAA
+		SccLocalPath0 = cgame
+		SccProvider0 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = true
+		SccProjectUniqueName1 = game\\JK2_game.vcproj
+		SccProjectName1 = \u0022$/jedi/codemp/game\u0022,\u0020EGAAAAAA
+		SccLocalPath1 = game
+		SccProvider1 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = true
+		SccProjectUniqueName2 = WinDed.vcproj
+		SccProjectName2 = \u0022$/jedi/codemp\u0022,\u0020CAAAAAAA
+		SccLocalPath2 = .
+		SccProvider2 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = true
+		SccProjectUniqueName3 = botlib\\botlib.vcproj
+		SccProjectName3 = \u0022$/jedi/codemp/botlib\u0022,\u0020EAAAAAAA
+		SccLocalPath3 = botlib
+		SccProvider3 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = true
+		SccProjectUniqueName4 = jk2mp.vcproj
+		SccProjectName4 = \u0022$/jedi/codemp\u0022,\u0020CAAAAAAA
+		SccLocalPath4 = .
+		SccProvider4 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = true
+		SccProjectUniqueName5 = ui\\ui.vcproj
+		SccProjectName5 = \u0022$/jedi/codemp/ui\u0022,\u0020YSAAAAAA
+		SccLocalPath5 = ui
+		SccProvider5 = MSSCCI:Microsoft\u0020Visual\u0020SourceSafe
+		CanCheckoutShared = true
+	EndGlobalSection
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = Debug(SH)
+		ConfigName.2 = Final
+		ConfigName.3 = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.0 = {5B587283-8429-4F8B-AECA-C09BF364B617}
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.1 = {4DC69D68-9DB8-4DEB-AC63-481153B1F41D}
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.2 = {2DDA2041-6A68-4754-B342-14039CC91695}
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.3 = {07CCC82A-B905-4384-8AC5-E8A8E352B14C}
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.0 = {0959DD50-BCBA-4551-9617-E6FD4DF85298}
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.1 = {ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.2 = {C79C9037-8F32-4833-A276-96B2FB96CCA5}
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.3 = {A0451C0A-0B2F-400A-BBB1-98F517FAB30B}
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.4 = {613EA919-780E-416D-90A9-67D3EB27F899}
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{4DC69D68-9DB8-4DEB-AC63-481153B1F41D}.Debug.ActiveCfg = Debug|Win32
+		{4DC69D68-9DB8-4DEB-AC63-481153B1F41D}.Debug.Build.0 = Debug|Win32
+		{4DC69D68-9DB8-4DEB-AC63-481153B1F41D}.Debug(SH).ActiveCfg = Debug(SH)|Win32
+		{4DC69D68-9DB8-4DEB-AC63-481153B1F41D}.Debug(SH).Build.0 = Debug(SH)|Win32
+		{4DC69D68-9DB8-4DEB-AC63-481153B1F41D}.Final.ActiveCfg = Final|Win32
+		{4DC69D68-9DB8-4DEB-AC63-481153B1F41D}.Final.Build.0 = Final|Win32
+		{4DC69D68-9DB8-4DEB-AC63-481153B1F41D}.Release.ActiveCfg = Release|Win32
+		{4DC69D68-9DB8-4DEB-AC63-481153B1F41D}.Release.Build.0 = Release|Win32
+		{5B587283-8429-4F8B-AECA-C09BF364B617}.Debug.ActiveCfg = Debug|Win32
+		{5B587283-8429-4F8B-AECA-C09BF364B617}.Debug.Build.0 = Debug|Win32
+		{5B587283-8429-4F8B-AECA-C09BF364B617}.Debug(SH).ActiveCfg = Debug(SH)|Win32
+		{5B587283-8429-4F8B-AECA-C09BF364B617}.Debug(SH).Build.0 = Debug(SH)|Win32
+		{5B587283-8429-4F8B-AECA-C09BF364B617}.Final.ActiveCfg = Final|Win32
+		{5B587283-8429-4F8B-AECA-C09BF364B617}.Final.Build.0 = Final|Win32
+		{5B587283-8429-4F8B-AECA-C09BF364B617}.Release.ActiveCfg = Release|Win32
+		{5B587283-8429-4F8B-AECA-C09BF364B617}.Release.Build.0 = Release|Win32
+		{149BAC28-9F08-4C08-BD4E-02D01A0DAD1F}.Debug.ActiveCfg = Debug|Win32
+		{149BAC28-9F08-4C08-BD4E-02D01A0DAD1F}.Debug(SH).ActiveCfg = Debug|Win32
+		{149BAC28-9F08-4C08-BD4E-02D01A0DAD1F}.Final.ActiveCfg = Debug|Win32
+		{149BAC28-9F08-4C08-BD4E-02D01A0DAD1F}.Release.ActiveCfg = Release|Win32
+		{07CCC82A-B905-4384-8AC5-E8A8E352B14C}.Debug.ActiveCfg = Debug|Win32
+		{07CCC82A-B905-4384-8AC5-E8A8E352B14C}.Debug.Build.0 = Debug|Win32
+		{07CCC82A-B905-4384-8AC5-E8A8E352B14C}.Debug(SH).ActiveCfg = Debug(SH)|Win32
+		{07CCC82A-B905-4384-8AC5-E8A8E352B14C}.Debug(SH).Build.0 = Debug(SH)|Win32
+		{07CCC82A-B905-4384-8AC5-E8A8E352B14C}.Final.ActiveCfg = Final|Win32
+		{07CCC82A-B905-4384-8AC5-E8A8E352B14C}.Final.Build.0 = Final|Win32
+		{07CCC82A-B905-4384-8AC5-E8A8E352B14C}.Release.ActiveCfg = Release|Win32
+		{07CCC82A-B905-4384-8AC5-E8A8E352B14C}.Release.Build.0 = Release|Win32
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.Debug.ActiveCfg = Debug|Win32
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.Debug.Build.0 = Debug|Win32
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.Debug(SH).ActiveCfg = Debug(SH)|Win32
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.Debug(SH).Build.0 = Debug(SH)|Win32
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.Final.ActiveCfg = Final|Win32
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.Final.Build.0 = Final|Win32
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.Release.ActiveCfg = Release|Win32
+		{36D7BB4B-5943-4477-AD6A-7B96CC0AB71A}.Release.Build.0 = Release|Win32
+		{2DDA2041-6A68-4754-B342-14039CC91695}.Debug.ActiveCfg = Debug|Win32
+		{2DDA2041-6A68-4754-B342-14039CC91695}.Debug.Build.0 = Debug|Win32
+		{2DDA2041-6A68-4754-B342-14039CC91695}.Debug(SH).ActiveCfg = Debug(SH)|Win32
+		{2DDA2041-6A68-4754-B342-14039CC91695}.Debug(SH).Build.0 = Debug(SH)|Win32
+		{2DDA2041-6A68-4754-B342-14039CC91695}.Final.ActiveCfg = Final|Win32
+		{2DDA2041-6A68-4754-B342-14039CC91695}.Final.Build.0 = Final|Win32
+		{2DDA2041-6A68-4754-B342-14039CC91695}.Release.ActiveCfg = Release|Win32
+		{2DDA2041-6A68-4754-B342-14039CC91695}.Release.Build.0 = Release|Win32
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Debug.ActiveCfg = Debug|Xbox
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Debug.Build.0 = Debug|Xbox
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Debug(SH).ActiveCfg = Debug|Xbox
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Final.ActiveCfg = Release|Xbox
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Final.Build.0 = Release|Xbox
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Release.ActiveCfg = Release|Xbox
+		{ACB93D0D-F6CB-480B-9B20-CE6C5EDC13BD}.Release.Build.0 = Release|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Debug.ActiveCfg = Debug|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Debug.Build.0 = Debug|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Debug(SH).ActiveCfg = Debug|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Final.ActiveCfg = Release|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Final.Build.0 = Release|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Release.ActiveCfg = Release|Xbox
+		{EEDF772D-5D2B-4C0F-B5C8-0A5828917847}.Release.Build.0 = Release|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Debug.ActiveCfg = Debug|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Debug.Build.0 = Debug|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Debug(SH).ActiveCfg = Debug|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Final.ActiveCfg = Release|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Final.Build.0 = Release|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Release.ActiveCfg = Release|Xbox
+		{C79C9037-8F32-4833-A276-96B2FB96CCA5}.Release.Build.0 = Release|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Debug.ActiveCfg = Debug|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Debug.Build.0 = Debug|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Debug(SH).ActiveCfg = Debug|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Final.ActiveCfg = Release|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Final.Build.0 = Release|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Release.ActiveCfg = Release|Xbox
+		{A0451C0A-0B2F-400A-BBB1-98F517FAB30B}.Release.Build.0 = Release|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Debug.ActiveCfg = Debug|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Debug.Build.0 = Debug|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Debug(SH).ActiveCfg = Debug|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Final.ActiveCfg = Release|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Final.Build.0 = Release|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Release.ActiveCfg = Release|Xbox
+		{613EA919-780E-416D-90A9-67D3EB27F899}.Release.Build.0 = Release|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Debug.ActiveCfg = Debug|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Debug.Build.0 = Debug|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Debug(SH).ActiveCfg = Debug|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Final.ActiveCfg = Release|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Final.Build.0 = Release|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Release.ActiveCfg = Release|Xbox
+		{0959DD50-BCBA-4551-9617-E6FD4DF85298}.Release.Build.0 = Release|Xbox
+	EndGlobalSection
+	GlobalSection(SolutionItems) = postSolution
+		Item:1 = CommandLine.txt
+		Item:2 = install.bat
+		Item:3 = VU.bat
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+	GlobalSection(DevPartner) = postSolution
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,112 @@
+tie-fighter
+{
+name			tie-fighter
+type			VH_FIGHTER
+numHands		2
+hideRider		1
+killRiderOnDeath 1
+lookYaw			45
+length			240
+width			320
+height			320
+g2radius		320
+centerOfGravity	"-0.222 0 0"
+speedMax		2400
+turboSpeed		4000
+turboDuration	2000
+turboRecharge	6000
+speedMin		0
+acceleration	25
+decelIdle		12
+accelIdle		20
+speedIdle		1200
+//test: speed stays at whatever you last set it to...
+throttleSticks	1
+strafePerc		0.1125
+bankingSpeed	0.5
+rollLimit		45
+pitchLimit		80
+//rollLimit		-1
+//pitchLimit		-1
+braking			30
+mouseYaw		0.003
+mousePitch		0.003
+turningSpeed	6
+turnWhenStopped	0
+traction		18
+friction		0.75
+speedDependantTurning	1
+maxSlope		0.65
+mass			500
+//armor 		1000
+//malfunctionArmorLevel	500
+//health_front	300
+//health_back		200
+//health_right	250
+//health_left		250
+armor 		750
+malfunctionArmorLevel	400
+//armor 		1800
+//malfunctionArmorLevel	600
+health_front	200
+health_back		200
+health_right	400
+health_left		400
+toughness 		75.0
+model			tie_fighter
+riderAnim		BOTH_VS_IDLE
+radarIcon		"gfx/menus/radar/tieF"
+dmgIndicFrame	"gfx/menus/radar/circle_base_frame_imp"
+dmgIndicShield	"gfx/menus/radar/circle_base_shield"
+dmgIndicBackground "gfx/menus/radar/circle_base"
+icon_front		"gfx/menus/radar/TF_front"
+icon_back		"gfx/menus/radar/TF_back"
+icon_right		"gfx/menus/radar/TF_right"
+icon_left		"gfx/menus/radar/TF_left"
+crosshairShader	"gfx/menus/radar/TF_reticle"
+soundOn 		"sound/vehicles/tie/on.wav"
+soundLoop 		"sound/vehicles/tie/loop.wav"
+soundOff 		"sound/vehicles/tie/off.wav"
+soundFlyBy 		"sound/vehicles/tie/flyby.wav"
+soundFlyBy2 		"sound/vehicles/tie/flyby2.wav"
+soundHyper		"sound/vehicles/common/hyperstartimp.wav"
+soundTurbo 		"sound/vehicles/tie/flyby.wav"
+exhaustFX		"ships/tiefighter_exhaust"
+turboFX			"ships/tiefighter_exhaust_turbo"
+impactFX		"ships/scrape_sparks"
+explodeFX		"ships/TF_explosion"
+//trailFX		"ships/wingtrail"
+dmgFX			"ships/heavydmg"
+injureFX		"ships/lightdmg"
+noseFX		"ships/TF_nose"
+lwingFX		"ships/TF_lwing"
+rwingFX		"ships/TF_rwing"
+flammable		1
+hoverHeight		80
+hoverStrength	10
+explosionRadius 400
+explosionDamage 1000
+
+surfDestruction	1
+
+landingHeight	300
+
+weap1			imp_laser
+weap1Delay		50
+
+weap1AmmoMax	50
+weap1AmmoRechargeMS	250
+
+weapMuzzle1		imp_laser
+weapMuzzle2		imp_laser
+
+//should *all* ships really be able to do this?
+weap1Link		1
+
+cameraOverride		1
+cameraRange			500
+cameraVertOffset	20
+cameraPitchOffset	10
+cameraFOV			100
+cameraAlpha			0
+}

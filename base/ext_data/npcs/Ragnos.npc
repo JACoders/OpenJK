@@ -1,0 +1,20 @@
+Ragnos
+{
+	playerModel	marka_ragnos
+	weapon	WP_NONE
+	rank		captain
+	snd		ragnos
+	reactions	5
+	aim		5
+	move		5
+	aggression	5
+	evasion		5
+	intelligence	5
+	rank		captain
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_GRAN
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+}

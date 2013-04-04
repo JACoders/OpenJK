@@ -1,0 +1,35 @@
+StormPilot
+{
+	playerModel stormpilot
+	weapon		WP_BLASTER_PISTOL
+	health		30
+	headPitchRangeDown 30
+	reactions	3
+	aim			5
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+//	snd			stofficer1
+//	sndcombat	stofficer1
+//	sndextra	stofficer1
+	snd			worker2
+	sndcombat	worker2
+	sndextra	worker2
+	yawspeed	80
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

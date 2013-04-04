@@ -1,0 +1,30 @@
+Jan
+{
+	playerModel	jan
+	weapon		WP_BLASTER
+	altFire		1
+	rank		lt
+	reactions	3
+	aim			5
+	move		3
+	aggression	3
+	evasion		3
+	intelligence	3
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+	class		CLASS_JAN
+	sex		female
+	snd			jan
+	sndcombat	jan
+	sndextra	jan
+	yawSpeed	140
+	walkSpeed	55
+	runSpeed	200
+//	race		human
+	snd			jan
+	dismemberProbHead	0
+	dismemberProbArms	0
+	dismemberProbHands	1
+	dismemberProbLegs	0
+	dismemberProbWaist	0
+}

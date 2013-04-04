@@ -1,0 +1,325 @@
+//Lightsaber configurations, use by name
+
+/*
+NOTE: add new sabers by putting their entries in a .sab file in ext_data/sabers
+
+defaults and explanations of fields:
+	//saber type
+	saberType				SABER_NONE - what kind of saber to use ( SABER_SINGLE, SABER_STAFF)
+
+	//saber hilt
+	saberModel				"models/weapons2/saber_reborn/saber_w.glm" - what saber hilt model to use
+	
+	A note about saber hilt models:  the surface names on saber models should *always* start with "w_", the code expects it.
+
+	customSkin				"" - a .skin file to apply to the saber hilt model, if any (overrides saber hilt model's internal texture mapping)
+
+	soundOn					"sound/weapons/saber/enemy_saber_on.wav" - turn on sound
+	soundLoop				"sound/weapons/saber/saberhum3.wav" - loop sound (must be a .wav file)
+	soundOff				"sound/weapons/saber/enemy_saber_off.wav" - turn off sound
+
+	//blades
+	numBlades				1 - how many blades it has (min of 1, max of 8)
+
+	A note about blade tags:  each blade will be drawn from it's corresponding tag's position and in the direction (negative X axis in ModView) of that tag.
+	The naming of the tags must be as follows:
+	"tag_blade1" for the first blade.  I made the code fall back to "tag_flash" if it can't find the tag_blades so that the code will still work pre-JKA sabers, but we you should always use the new name.
+	All following blades (if applicable) should be "tag_blade2", "tag_blade3", etc., to a maximum of 8 blades ("tag_blade8")
+
+	//saber length
+	//NOTE: these should be inputted in order - setting "saberLength" automatically sets all of the others to the same length
+	saberLength				32 - how long the saber's first blade should be (minimum of 4)
+	saberLength2			saberLength - how long the saber's second blade should be (minimum of 4)
+	saberLength3			saberLength - how long the saber's third blade should be (minimum of 4)
+	saberLength4			saberLength - how long the saber's fourth blade should be (minimum of 4)
+	saberLength5			saberLength - how long the saber's fifth blade should be (minimum of 4)
+	saberLength6			saberLength - how long the saber's sixth blade should be (minimum of 4)
+	saberLength7			saberLength - how long the saber's seventh blade should be (minimum of 4)
+	saberLength8			saberLength - how long the saber's eigth blade should be (minimum of 4)
+
+	//saber radius
+	//NOTE: these should be inputted in order - setting "saberLength" automatically sets all of the others to the same length
+	saberRadius				3 - how wide the saber's first blade should be (minimum of 0.25)
+	saberRadius2			saberRadius - how wide the saber's second blade should be (minimum of 0.25)
+	saberRadius3			saberRadius - how wide the saber's third blade should be (minimum of 0.25)
+	saberRadius4			saberRadius - how wide the saber's fourth blade should be (minimum of 0.25)
+	saberRadius5			saberRadius - how wide the saber's fifth blade should be (minimum of 0.25)
+	saberRadius6			saberRadius - how wide the saber's sixth blade should be (minimum of 0.25)
+	saberRadius7			saberRadius - how wide the saber's seventh blade should be (minimum of 0.25)
+	saberRadius8			saberRadius - how wide the saber's eigth blade should be (minimum of 0.25)
+
+	//saberColor - valid colors:  random, red, orange, yellow, green, blue, and purple
+	//NOTE: these should be inputted in order - setting "saberColor" automatically sets all of the others to the same color
+	saberColor				red - what color the saber's 1st blade should be
+	saberColor2				saberColor - what color the saber's 2nd blade should be
+	saberColor3				saberColor - what color the saber's 3rd blade should be
+	saberColor4				saberColor - what color the saber's 4th blade should be
+	saberColor5				saberColor - what color the saber's 5th blade should be
+	saberColor6				saberColor - what color the saber's 6th blade should be
+	saberColor7				saberColor - what color the saber's 7th blade should be
+	saberColor8				saberColor - what color the saber's 8th blade should be
+
+	//locked style
+	saberStyle				none - what one style it's limited to, if any (fast, medium, strong, desann, tavion)
+
+	//maxChain
+	maxChain				0 - how many moves can be chained in a row with this weapon (-1 is infinite, 0 is use default behavior)
+
+	//throwable
+	lockable				1 - whether or not it can be stuck in a saber lock
+
+	//throwable
+	throwable				1 - whether or not it can be thrown
+
+	//disarmable
+	disarmable				1 - whether or not it can be disarmed (dropped)
+ 
+	//blocking
+	blocking				1 - whether or not user will try to block incoming shots (shots always bounce off it, this just determines if the user *tries* to block with it)
+ 
+	//twoHanded
+	twoHanded				0 - whether or not it requires 2 hands (makes it restrict force powers but makes it stronger in locks or parries)
+
+	//force power restrictions
+	forceRestrict			0 - what force powers it restricts, use these keys, a seperate entry per power:
+							FP_HEAL					
+							FP_LEVITATION			
+							FP_SPEED				
+							FP_PUSH					
+							FP_PULL					
+							FP_TELEPATHY			
+							FP_GRIP					
+							FP_LIGHTNING
+							FP_SABERTHROW
+							FP_SABER_DEFENSE
+							FP_SABER_OFFENSE
+							//new Jedi Academy powers
+							FP_RAGE
+							FP_PROTECT
+							FP_ABSORB
+							FP_DRAIN
+							FP_SEE
+
+	//lockBonus
+	lockBonus				0 - this pushes harder/weaker in saberlocks
+
+	//parryBonus
+	parryBonus				0 - this is stronger/weaker in a parry (harder to break, more likely to knockaway)
+
+	//breakParryBonus
+	breakParryBonus			0 - this is more/less likely to break a parry
+
+	//disarmBonus
+	disarmBonus				0 - this is more/less likely to disarm another saber in a saberlock or knockaway
+
+	singleBladeStyle		none - makes it so that you use a different style if you only have the first blade active
+
+	singleBladeThrowable	0 - makes it so that you can throw this saber if only the first blade is on
+
+	brokenSaber1			none - if saber is actually hit by another saber, it can be cut in half/broken and will be replaced with this saber in your right hand
+	brokenSaber2			none - if saber is actually hit by another saber, it can be cut in half/broken and will be replaced with this saber in your left hand
+
+	returnDamage			0 - when returning from a saber throw, it keeps spinning and doing damage
+
+//===The following fields were added later:===========================================================================
+	//done in cgame (client-side code)
+	noWallMarks				0 - if 1, stops the saber from drawing marks on the world (good for real-sword type mods)
+	noDlight				0 - if 1, stops the saber from drawing a dynamic light (good for real-sword type mods)
+	noBlade				0 - if 1, stops the saber from drawing a blade (good for real-sword type mods)
+	trailStyle				0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
+	g2MarksShader			none - if set, the game will use this shader for marks on enemies instead of the default "gfx/damage/saberglowmark"
+
+	//done in game (server-side code)
+	knockbackScale			0 - if non-zero, uses damage done to calculate an appropriate amount of knockback
+	damageScale				1 - scale up or down the damage done by the saber
+	noDismemberment			0 - if non-zero, the saber never does dismemberment (good for pointed/blunt melee weapons)
+	bounceOnWalls			0 - if non-zero, the saber will bounce back when it hits solid architecture (good for real-sword type mods)
+	noIdleEffect			0 - if non-zero, the saber will not do damage or any effects when it is idle (not in an attack anim).  (good for real-sword type mods)
+	stickOnImpact			0 - if non-zero, the saber will stick in the wall when thrown and hits solid architecture (good for sabers that are meant to be thrown).
+	noAttack				0 - if non-zero, you cannot attack with the saber (for sabers/weapons that are meant to be thrown only, not used as melee weapons).
+//=========================================================================================================================================
+*/
+
+Kyle
+{
+	name		"Katarn"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber/saber_w.glm"
+	soundOn		"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	blue
+}
+
+Kyle_boss
+{
+	name		"Katarn"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber/saber_w.glm"
+	soundOn		"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	blue
+	lockBonus	2
+	parryBonus	2
+	disarmBonus	2
+	notInMP	1
+}
+
+Luke
+{
+	name		"Skywalker"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_luke/saber_w.glm"
+	soundOn		"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum5.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	green
+	notInMP	1
+}
+
+Desann
+{
+	name		"Retribution"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_desann/saber_w.glm"
+	soundLoop	"sound/weapons/saber/saberhum2.wav"
+//	saberLength	48
+	saberLength	64
+	saberRadius 6
+	saberColor	red
+	notInMP	1
+}
+
+RebornMaster
+{
+	name		"RebornMaster"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_desann/saber_w.glm"
+	soundLoop	"sound/weapons/saber/saberhum2.wav"
+	saberLength	48
+	saberColor	red
+	lockBonus		1
+	parryBonus		1
+	breakParryBonus	1
+	disarmBonus		2
+	notInMP	1
+}
+
+Tavion
+{
+	name		"Stinger"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	saberLength	40
+	saberColor	red
+	notInMP	1
+}
+
+reborn_new
+{
+	name		"reborn_new"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	saberLength	40
+	saberColor	red
+	lockBonus		1
+	parryBonus		1
+	breakParryBonus	1
+	disarmBonus		1
+	notInMP	1
+}
+
+Shadowtrooper
+{
+	name		"Shadowtrooper"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	saberLength	40
+	saberColor	red
+	notInMP	1
+}
+
+Reborn
+{
+	name		"Reborn"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	saberLength	32
+	saberColor	red
+	notInMP	1
+}
+
+Training
+{
+	name		"Training"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	soundOn		"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	32
+	saberColor	yellow
+	notInMP	1
+}
+
+Jedi
+{
+	name		"Apprentice"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	soundOn		"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum1.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	random
+	notInMP	1
+}
+
+Yoda
+{
+	name		"Eternal"
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_yoda/saber_w.glm"
+	customSkin	"models/weapons2/saber_yoda/saber_w.skin"
+	soundOn		"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum1.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	32
+	saberColor	green
+	saberStyle	tavion
+	maxChain	-1
+	disarmable	0
+	lockBonus	2
+	parryBonus	5
+	breakParryBonus	1
+	disarmBonus	3
+	notInMP	1
+}
+
+brokenStaff
+{
+	saberType	SABER_SINGLE
+	//FIXME: need actual broken staff model
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	numBlades	1
+	saberLength	32
+	throwable		1
+	twoHanded		0
+	notInMP	1
+}
+
+droid
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_reborn/saber_w.glm"
+	soundOn		"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	yellow
+	notInMP	1
+}

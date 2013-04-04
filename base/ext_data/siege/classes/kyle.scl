@@ -1,0 +1,18 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Kyle"
+	weapons		WP_BLASTER_PISTOL|WP_BLASTER|WP_THERMAL
+	forcepowers		FP_LEVITATION,1|FP_PUSH,2|FP_PULL,2|FP_HEAL,1|FP_SEE,1|FP_PROTECT,2
+	maxhealth		100
+	maxarmor		100
+	startarmor		0
+	model			"kyle" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/kyle/icon_default"
+	class_shader	"gfx/mp/c_icon_infantry"
+	holdables		HI_BINOCULARS
+}
+
+description "@SIEGE_INF_LIGHT_FORCE_ADVENTURER"

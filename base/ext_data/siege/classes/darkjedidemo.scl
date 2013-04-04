@@ -1,0 +1,21 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Dark Jedi Demolitionist"
+	weapons		WP_SABER|WP_THERMAL|WP_TRIP_MINE
+	saber1		single_6
+	sabercolor		0
+	saberstyle		SS_STRONG
+	forcepowers		FP_SABER_OFFENSE,2|FP_SABER_DEFENSE,2|FP_SABERTHROW,1|FP_LEVITATION,2|FP_PUSH,1|FP_PULL,1|FP_SEE,1
+	classflags		CFL_EXTRA_AMMO
+	maxhealth		100
+	maxarmor		0
+	startarmor		0
+	model			"cultist" 					//this is optional, if it's here it forces the model to this.
+	skin			"red"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/cultist/icon_red"
+	class_shader	"gfx/mp/c_icon_demolitionist"
+}
+
+description	"@SIEGE_DEMO_DJEDI_DEMO"

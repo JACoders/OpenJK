@@ -1,0 +1,155 @@
+;rww - this file will allow you to override the number of bits any given
+;entityState value is sent across the network in for your mod. Do not
+;mess with this unless you know what you're doing as it's easily possible
+;to mess something up terribly. Just remove the ; in front of any of the
+;values that you want to override and use the desired bit num. 0 is a
+;special-case value, it means to send across as a float. GENTITYNUM_BITS
+;means to send in as many bits as it takes to send the highest possible
+;entity number.
+;
+;pos.trTime, 32
+;pos.trBase[0], 0
+;pos.trBase[1], 0
+;pos.trDelta[0], 0
+;pos.trDelta[1], 0
+;pos.trBase[2], 0
+;apos.trBase[1], 0
+;pos.trDelta[2], 0
+;apos.trBase[0], 0
+;event, 10
+;angles2[1], 0
+;eType, 8
+;torsoAnim, 16
+;forceFrame, 16
+;eventParm, 8
+;legsAnim, 16
+;torsoFlip, 1
+;legsFlip, 1
+;groundEntityNum, GENTITYNUM_BITS
+;pos.trType, 8
+;eFlags, 32
+;bolt1, 8
+;bolt2, GENTITYNUM_BITS
+;trickedentindex, 16
+;trickedentindex2, 16
+;trickedentindex3, 16
+;trickedentindex4, 16
+;speed, 0
+;fireflag, 2
+;genericenemyindex, 32
+;activeForcePass, 6
+;emplacedOwner, 32
+;otherEntityNum, GENTITYNUM_BITS
+;weapon, 32
+;clientNum, GENTITYNUM_BITS
+;angles[1], 0
+;pos.trDuration, 32
+;apos.trType, 8
+;origin[0], 0
+;origin[1], 0
+;origin[2], 0
+;solid, 24
+;owner, GENTITYNUM_BITS
+;teamowner, 8
+;shouldtarget, 1
+;powerups, 16
+;modelGhoul2, 8
+;g2radius, 8
+;modelindex, -16
+;otherEntityNum2, GENTITYNUM_BITS
+;loopSound, 8
+;loopIsSoundset, 1
+;soundSetIndex, 8
+;generic1, 8
+;origin2[2], 0
+;origin2[0], 0
+;origin2[1], 0
+;modelindex2, 8
+;angles[0], 0
+;time, 32
+;apos.trTime, 32
+;apos.trDuration, 32
+;apos.trBase[2], 0
+;apos.trDelta[0], 0
+;apos.trDelta[1], 0
+;apos.trDelta[2], 0
+;time2, 32
+;angles[2], 0
+;angles2[0], 0
+;angles2[2], 0
+;constantLight, 32
+;frame, 16
+;saberInFlight, 1
+;saberEntityNum, GENTITYNUM_BITS
+;saberMove, 8
+;forcePowersActive, 32
+;isJediMaster, 1
+;isPortalEnt, 1
+;heldByClient, 6
+;ragAttach, GENTITYNUM_BITS
+;iModelScale, 10
+;brokenLimbs, 8
+;boltToPlayer, 6
+;hasLookTarget, 1
+;lookTarget, GENTITYNUM_BITS
+;
+;customRGBA[0], 8
+;customRGBA[1], 8
+;customRGBA[2], 8
+;customRGBA[3], 8
+;
+;health, 10
+;maxhealth, 10
+;
+;npcSaber1, 9
+;npcSaber2, 9
+;
+;csSounds_Std, 8
+;csSounds_Combat, 8
+;csSounds_Extra, 8
+;csSounds_Jedi, 8
+;
+;surfacesOn, 32
+;surfacesOff, 32
+;
+;boneIndex1, 6
+;boneIndex2, 6
+;boneIndex3, 6
+;boneIndex4, 6
+;
+;boneOrient, 9
+;
+;boneAngles1[0], 0
+;boneAngles1[1], 0
+;boneAngles1[2], 0
+;
+;boneAngles2[0], 0
+;boneAngles2[1], 0
+;boneAngles2[2], 0
+;
+;boneAngles3[0], 0
+;boneAngles3[1], 0
+;boneAngles3[2], 0
+;
+;boneAngles4[0], 0
+;boneAngles4[1], 0
+;boneAngles4[2], 0
+;
+;NPC_class, 8
+;
+;m_iVehicleNum, 10
+;
+;eFlags2,10
+;
+;userInt1, 1
+;userInt2, 1
+;userInt3, 1
+;userFloat1, 1
+;userFloat2, 1
+;userFloat3, 1
+;userVec1[0], 1
+;userVec1[1], 1
+;userVec1[2], 1
+;userVec2[0], 1
+;userVec2[1], 1
+;userVec2[2], 1

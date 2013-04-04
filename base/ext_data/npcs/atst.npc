@@ -1,0 +1,36 @@
+atst
+{
+	playerModel	atst
+	weapon		WP_ATST_MAIN
+	weapon		WP_ATST_SIDE
+//	headModel	atst
+	//torsoModel	atst
+	//legsModel	atst
+	headYawRangeLeft		80
+	headYawRangeRight		80
+	headPitchRangeUp		30
+	headPitchRangeDown		30
+	torsoYawRangeLeft		0
+	torsoYawRangeRight		0
+	torsoPitchRangeUp		0
+	torsoPitchRangeDown		0
+	health		200
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	height		272	
+	width		80
+//	race		bot
+	class		CLASS_ATST
+	yawSpeed	60
+	runSpeed	150
+	walkSpeed	150
+	hFOV		120
+	vfov		45
+	snd			atst
+}

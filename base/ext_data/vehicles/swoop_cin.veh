@@ -1,0 +1,71 @@
+Swoop_cin
+{
+name			Swoop_cin
+type			VH_SPEEDER
+numHands		2
+lookYaw			45
+lookPitch		20
+length			128
+width			32
+height			32
+centerOfGravity	"-0.222 0 0"
+speedMax		800
+speedMin		-50
+turboSpeed		2000
+acceleration	20
+decelIdle		10
+strafePerc		0.5
+bankingSpeed	0.5
+rollLimit		45
+pitchLimit		80
+braking			10
+mouseYaw		0.0038
+turningSpeed	5
+turnWhenStopped	0
+traction		12
+friction		1.5
+maxSlope		0.65
+mass			200
+armor 			2000
+toughness 		80.0
+malfunctionArmorLevel	1000
+model			swoop
+riderAnim		BOTH_VS_IDLE
+radarIcon		"gfx/menus/radar/swoop"
+
+soundOn 		"sound/vehicles/swoop/on.mp3"
+soundLoop 		"sound/vehicles/swoop/loop.wav"
+lExhaustTag		"*lexhaust"
+rExhaustTag		"*rexhaust"
+exhaustFX		"ships/burner"
+impactFX		"ships/scrape_sparks"
+flammable		1
+explosionRadius 200
+explosionDamage 500
+explodeFX		"ships/swoop_explosion"
+explosionDelay	4500
+wakeFX			"ships/vehicle_wake"
+gravity			800
+waterProof		1
+bouyancy		1
+//only difference in cinematic one: doesn't hover
+//hoverHeight	30
+hoverHeight	0
+hoverStrength	35
+
+cameraOverride		1
+cameraRange			125
+cameraVertOffset	0
+cameraPitchOffset	0
+cameraFOV			100
+cameraAlpha			0
+
+weap1			swoop_laser
+
+weap1Delay		100
+
+weap1AmmoMax	2000
+weap1AmmoRechargeMS	200
+
+weapMuzzle1		swoop_laser
+}

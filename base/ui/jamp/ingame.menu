@@ -1,0 +1,604 @@
+//-------------------------------------------
+// INGAME MENU 
+//
+// This is the main menu of the ingame menus.
+//
+//-------------------------------------------
+{
+	assetGlobalDef 
+	{
+		font					"ergoec" 18				// font
+		smallFont				"ocr_a" 18				// font
+		bigFont					"anewhope" 20			// font
+		small2Font				"arialnb" 	14	
+		cursor					"cursor"				// cursor	
+		gradientBar				"ui/assets/gradientbar2.tga"	// gradient bar
+		itemFocusSound				"sound/interface/menuroam.wav"		// sound for item getting focus (via keyboard or mouse )
+
+		fadeClamp				1.0					// sets the fadeup alpha
+		fadeCycle				1					// how often fade happens in milliseconds
+		fadeAmount				0.1					// amount to adjust alpha per cycle
+
+		shadowColor				0.1 0.1 0.1 0.25			// shadow color
+		precacheSound
+		{
+			"sound/interface/choose_color.wav" ;
+			"sound/interface/choose_head.wav" ;
+			"sound/interface/choose_torso.wav" ;
+			"sound/interface/choose_saber.wav" ;
+			"sound/interface/choose_hilt.wav" ;
+			"sound/interface/choose_blade.wav" ;
+			"sound/interface/transition.wav"  ;
+			"sound/interface/esc.wav" ;
+			"sound/interface/sub_select.wav" ;
+		}
+	}
+							   
+	menuDef 
+	{
+		name					"ingame"
+		visible					0
+		fullScreen				0
+		outOfBoundsClick			// this closes the window if it gets a click out of the rectangle
+		rect					0 0 640 480
+		focusColor				1 1 1 1
+		disableColor				0.5 0.5 0.5 1
+
+		onOpen  
+		{ 
+			uiScript 			setBotButton
+		}
+
+
+
+
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 32
+			background			"gfx/menus/menu_top_mp"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				aboutButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				5 0 70 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemdef
+		{
+			name				about
+			text				@MENUS_ABOUT
+			rect				5 0 70 32
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_about 
+			}
+			mouseenter 
+			{ 
+				show			aboutButton
+			}
+			mouseexit 
+			{ 
+				hide			aboutButton
+			}
+		}
+
+		itemDef 
+		{
+			name				joinButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				75 0 70 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				join
+			text				@MENUS_JOIN
+			cvarTest			"ui_singleplayeractive"
+			disableCvar 
+			{ 
+				"1" 
+			}
+			rect				75 0 70 32
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx          	35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible			1
+			cvartest			"g_gametype"
+			showcvar			{ "0", "1", "2", "3", "4", "5", "6", "8" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_join 
+			}
+			mouseenter 
+			{ 
+				show			joinButton
+			}
+			mouseexit 
+			{ 
+				hide			joinButton
+			}
+		}
+
+		itemDef 
+		{
+			name				class
+			text				@MENUS_JOIN
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				75 0 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx         	35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible			1
+			cvartest			"g_gametype"
+			showcvar			{ "7" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_siegeclass
+			} 
+			mouseenter 
+			{ 
+				show			joinButton
+			}
+			mouseexit 
+			{ 
+				hide			joinButton
+			}
+		}
+
+		itemDef 
+		{
+			name				playerButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				145 0 70 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				player
+			text				@MENUS_PROFILE_LOWER
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				145 0 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx         	35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			cvartest			"g_gametype"
+			showcvar			{ "0", "1", "2", "3", "4", "5", "6", "8" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_player 
+			} 
+			mouseenter 
+			{ 
+				show			playerButton
+			}
+			mouseexit 
+			{ 
+				hide			playerButton
+			}
+		}
+
+		itemDef 
+		{
+			name				objectivesButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				145 0 70 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				objectives
+			text				@MENUS_OBJECTIVES
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				145 0 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx         	35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			cvartest			"g_gametype"
+			showcvar			{ "7" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_objectives
+			} 
+			mouseenter 
+			{ 
+				show			objectivesButton
+			}
+			mouseexit 
+			{ 
+				hide			objectivesButton
+			}
+		}
+
+		itemDef 
+		{
+			name				chatButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				215 0 70 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				chat
+			text				@MENUS_VOICE_CHAT			
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				215 0 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx         	35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			cvartest			"g_gametype"
+			showcvar			{ "7" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_voicechat
+			} 
+			mouseenter 
+			{ 
+				show			chatButton
+			}
+			mouseexit 
+			{ 
+				hide			chatButton
+			}
+		}
+		
+		itemDef 
+		{
+			name				addBotButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				215 0 70 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		// do not change the name of this, the uiScript setBotButton looks 
+		// for this item and turns it off if the gametype is siege
+		itemDef 
+		{
+			name				addBot
+			text				@MENUS_ADD_BOT
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			rect				215 0 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx          	35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			cvarTest			"sv_running"
+			disableCvar 
+			{ 
+				"0" 
+			}
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_addbot 
+			}
+			mouseenter 
+			{ 
+				show			addBotButton
+			}
+			mouseexit 
+			{ 
+				hide			addBotButton
+			}
+		}
+
+		itemDef 
+		{
+			name				controlsButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				285 0 70 32
+			background		"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				controls
+			text				@MENUS_CONTROLS2
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				285 0 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx          35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_controls 
+			}
+			mouseenter 
+			{ 
+				show			controlsButton
+			}
+			mouseexit 
+			{ 
+				hide			controlsButton
+			}
+		}
+
+		itemDef 
+		{
+			name				setupButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				355 0 70 32
+			background		"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				setup
+			text				@MENUS_SETUP_INGAME
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				355 0 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx          35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_setup 
+			}
+			mouseenter 
+			{ 
+				show			setupButton
+			}
+			mouseexit 
+			{ 
+				hide			setupButton
+			}
+		}
+
+		itemDef 
+		{
+			name				voteButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				425 0 70 32
+			background		"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				vote
+			text				@MENUS_VOTE
+			type				1
+			style				WINDOW_STYLE_FILLED
+			cvarTest			"ui_singleplayeractive"
+			disableCvar 
+			{ 
+				"1" 
+			}
+			rect				425 0 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx          35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_vote 
+			}
+			mouseenter 
+			{ 
+				show			voteButton
+			}
+			mouseexit 
+			{ 
+				hide			voteButton
+			}
+		}
+
+		itemDef 
+		{
+			name				callvoteButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				495 0 70 32
+			background		"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				callvote
+			text				@MENUS_CALL_VOTE
+			type				1
+			style				WINDOW_STYLE_FILLED
+			cvarTest			"ui_singleplayeractive"
+			disableCvar 
+			{ 
+				"1" 
+			}
+
+			rect				495 0 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx          35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_callvote 
+			}
+			mouseenter 
+			{ 
+				show			callvoteButton
+			}
+			mouseexit 
+			{ 
+				hide			callvoteButton
+			}
+		}
+
+		itemDef 
+		{
+			name				leaveButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				565 0 70 32
+			background		"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				leave
+			text				@MENUS_EXIT_INGAME
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				565 0 70 32
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx          35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_leave 
+			}
+			mouseenter 
+			{ 
+				show			leaveButton
+			}
+			mouseexit 
+			{ 
+				hide			leaveButton
+			}
+		} 
+	}
+}

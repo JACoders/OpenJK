@@ -1,0 +1,24 @@
+protocol
+{
+	playerModel	protocol
+	weapon		WP_NONE
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+//	race		bot
+	class		CLASS_PROTOCOL
+	snd			protocol
+	yawSpeed	60
+	runSpeed	150
+	walkSpeed	50
+	height		65
+	width		12
+	hFOV		120
+	vfov		45
+	snd			protocol
+}

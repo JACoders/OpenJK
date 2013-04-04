@@ -1,0 +1,11 @@
+empty
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/noweap/noweap.glm"
+	soundOn	"sound/null.wav"
+	soundLoop	"sound/null.wav"
+	soundOff	"sound/null.wav"
+	saberLength	0
+	saberColor	blue
+	notInMP	1
+}

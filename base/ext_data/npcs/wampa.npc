@@ -1,0 +1,35 @@
+
+wampa
+{
+	playerModel 	wampa
+	scale		150
+	weapon		WP_MELEE
+	health		800
+	headPitchRangeDown 30
+	reactions		3
+	aim			1
+	move			3
+	aggression		3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_FREE
+	enemyTeam	TEAM_FREE
+	class		CLASS_WAMPA
+	height		128
+	crouchheight 	80
+	width			30
+	snd		wampa
+	sndcombat	wampa
+	sndextra	wampa
+	yawspeed	80
+	walkSpeed	120
+	runSpeed	300
+	hfov		100
+	vfov		90
+	dismemberProbHead		0
+	dismemberProbArms		0
+	dismemberProbLegs		0
+	dismemberProbHands	0
+	dismemberProbWaist	0
+}

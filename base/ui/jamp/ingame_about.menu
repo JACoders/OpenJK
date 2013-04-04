@@ -1,0 +1,300 @@
+//----------------------------------------------------------------------------------------------
+// INGAME ABOUT BOX 
+//----------------------------------------------------------------------------------------------
+{
+	menuDef  
+	{
+		name					"ingame_about"
+		visible					0
+		fullscreen				0
+		outOfBoundsClick							// this closes the window if it gets a click out of the rectangle
+		rect					10 40 380 280
+		focusColor				1 .75 0 1
+		style					1
+		border					1
+
+
+		// Overall window backdrop
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 500 240
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				about
+			rect				10 5 360 20
+			style				WINDOW_STYLE_SHADER	
+			background			"gfx/menus/menu_blendbox"
+			type				4
+			text				@MENUS_HOST_NAME
+			cvar				"ui_about_hostname" 
+			maxPaintChars			40
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			150
+			textaligny			-2    
+			font				2
+			textscale			1
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				about
+			rect				10 40 360 20
+			style				0	
+			type				4
+			text				@MENUS_ADDRESS
+			cvar				"cl_currentServerAddress" 
+			maxPaintChars			24
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			150
+			textaligny			-3    
+			forecolor			1 .682 0 1
+			font				2
+			textscale			1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				about
+			rect				10 60 360 20
+			type				4
+			style				0	
+			text				@MENUS_MAP_NAME
+			cvar				"ui_about_mapname"
+			maxPaintChars			20
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			150
+			textaligny			-3   
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				about
+			rect				10 80 360 20
+			style				0
+			//type 4
+			textalign			ITEM_ALIGN_RIGHT	
+			text				@MENUS_TYPE
+			type				ITEM_TYPE_MULTI	
+			cvar				"ui_about_gametype"	
+			cvarFloatList 
+			{ 
+				@MENUS_FREE_FOR_ALL		0 
+				@MENUS_HOLOCRON_FFA		1 
+				@MENUS_JEDI_MASTER		2 
+				@MENUS_DUEL			3 
+				@MENUS_POWERDUEL		4 
+				@MENUS_TEAM_FFA			6 
+				@MENUS_SIEGE			7 
+				@MENUS_CAPTURE_THE_FLAG		8 
+				@MENUS_CAPTURE_THE_YSALIMARI	9 
+			}		
+    
+			textalignx			150
+			textaligny			-3    
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			backcolor			0 0 .75 .25
+			visible				1
+			decoration
+		}
+
+
+
+		itemDef 
+		{
+			name				about
+			rect				10 100 360 20
+			type				4
+			style				0	
+			text				@MENUS_MAXIMUM_PLAYERS
+			cvar				"ui_about_maxclients" 
+			maxPaintChars			12
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			150
+			textaligny			-3    
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				about
+			rect				10 120 360 20
+			type				4
+			style				0	
+			text				@MENUS_TIME_LIMIT
+			maxPaintChars			12
+			cvar				"ui_about_timelimit"
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			150
+			textaligny			-3   
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				about
+			rect				10 140 360 20
+			type				4
+			style				0	
+			text				@MENUS_FRAG_LIMIT
+			cvarTest			"ui_about_gametype"
+			hideCvar 
+			{ 
+				"1" ; 
+				"2" ; 
+				"3" ;
+				"4" ;
+				"7" ;
+				"8" ;
+				"9" ;
+			}
+			maxPaintChars			12
+			cvar				"ui_about_fraglimit" 
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			150
+			textaligny			-3    
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				about
+			rect				10 140 360 20
+			type				4
+			style				0	
+			text				@MENUS_CAPTURE_LIMIT 
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"8" ; 
+				"9" ; 
+			}
+			maxPaintChars			12
+			cvar				"ui_about_capturelimit" 
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			150
+			textaligny			-3    
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				about
+			rect				10 160 360 20
+			type				4
+			style				0	
+			text				@MENUS_DUEL_LIMIT
+			cvarTest			"ui_about_gametype"
+			showCvar 
+			{ 
+				"3" ;
+				"4" ;
+			}
+			maxPaintChars			12
+			cvar				"ui_about_duellimit" 
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			150
+			textaligny			-3    
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				about
+			rect				10 180 360 20
+			type				4
+			maxPaintChars			4
+			style				0	
+			text				@MENUS_MINIMUM_PLAYERS
+			cvar				"ui_about_botminplayers" 
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			150
+			textaligny			-3   
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				about
+			rect				10 210 360 20
+			type				4
+			style				0	
+			text				@MENUS_VERSION
+			cvar				version 
+			maxPaintChars			40
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			180
+			textaligny			14  
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1
+			decoration
+		}
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,66 @@
+Rodian
+{
+	playerModel	rodian
+	customSkin	sp
+	customRGBA	random1
+	weapon		WP_DISRUPTOR
+	altFire		1
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	health 		25
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		klingon
+	class		CLASS_RODIAN
+	snd			rodian1
+	sndcombat	rodian1
+	sndextra	rodian1
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	visrange	8192
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+Rodian2
+{
+	playerModel	rodian
+	customSkin	sp
+	customRGBA	random1
+	weapon		WP_BLASTER
+	altFire		1
+	surfOff		"hips_belt torso_vest"
+	surfOn		"torso_augment"
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	health 		20
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		klingon
+	class		CLASS_RODIAN
+	snd			rodian2
+	sndcombat	rodian2
+	sndextra	rodian2
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	1
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

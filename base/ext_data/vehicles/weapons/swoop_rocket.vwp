@@ -1,0 +1,23 @@
+swoop_rocket
+{
+name		swoop_rocket
+projectile	1
+muzzleFX	"ships/conc_muzzleflash"
+shotFX		"ships/reb_torpshot"
+impactFX	"ships/conc_impact"
+g2MarkShader	"gfx/damage/bodybigburnmark1"
+g2MarkSize	48
+loopSound	"sound/vehicles/weapons/conc_missile/loop.wav"
+speed		10000
+homing		0
+lockOnTime	0
+damage		300
+splashDamage	200
+splashRadius	160
+ammoPerShot	1
+health		10
+width		6
+height		6
+lifetime	10000
+explodeOnExpire	1
+}

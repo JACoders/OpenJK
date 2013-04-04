@@ -1,0 +1,20 @@
+//Siege team definition file.
+
+name "Siege1_Rebels"
+FriendlyShader "sprites/rebel_defend" //Name of shader to display above heads of teammates (to others on this team)
+
+Classes
+{
+//Infantry
+	class1		"Rebel Infantry"
+//Heavy
+	class2		"Wookie"
+//Demo
+	class3		"Rebel Demolitionist"
+//Vanguard
+	class4		"Rebel Sniper"
+//Support
+	class5		"Rebel Tech"
+//Jedi
+	class6		"Jedi Guardian"
+}

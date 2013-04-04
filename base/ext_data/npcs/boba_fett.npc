@@ -1,0 +1,44 @@
+
+boba_fett
+{
+	playerModel	boba_fett
+	altFire		1
+	weapon		WP_MELEE
+	weapon		WP_DISRUPTOR
+	weapon		WP_ROCKET_LAUNCHER
+	weapon		WP_BLASTER
+	FP_HEAL			0
+	FP_LEVITATION	3
+	FP_SPEED		0
+	FP_PUSH			0
+	FP_PULL			0
+	FP_TELEPATHY	0
+	FP_GRIP			0
+	FP_LIGHTNING	0
+	FP_SABERTHROW	0
+	FP_SABER_DEFENSE	0
+	FP_SABER_OFFENSE	0
+	health		400
+	headPitchRangeDown 30
+	reactions		5
+	aim				5
+	move			5
+	aggression		5
+	evasion			5
+	intelligence	5
+	earshot			2048
+	visrange		4096
+	hfov			120
+	vfov			100
+	rank			captain
+	playerTeam		TEAM_ENEMY
+	enemyTeam		TEAM_PLAYER
+	class			CLASS_BOBAFETT
+	walkSpeed		80
+	runSpeed		250
+	snd				boba
+	sndcombat		boba
+	sndextra		boba
+	yawspeed		180
+}
+
