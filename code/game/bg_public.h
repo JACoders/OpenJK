@@ -157,7 +157,7 @@ typedef struct {
 	Trace_Functor_t	trace;
 #else
 	void		(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
-						const int passEntityNum, const int contentMask, const EG2_Collision eG2TraceType = (EG2_Collision)0, const int useLod = 0 );
+						const int passEntityNum, const int contentMask, const EG2_Collision eG2TraceType, const int useLod );
 #endif
 	int			(*pointcontents)( const vec3_t point, int passEntityNum );
 } pmove_t;

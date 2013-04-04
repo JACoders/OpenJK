@@ -814,7 +814,7 @@ void trigger_push_checkclear( gentity_t *self )
 	VectorScale( center, 0.5, center );
 
 	gentity_t *target = G_Find( NULL, FOFS(targetname), self->target );
-	gi.trace( &trace, center, vec3_origin, vec3_origin, target->currentOrigin, ENTITYNUM_NONE, CONTENTS_SOLID );
+	gi.trace( &trace, center, vec3_origin, vec3_origin, target->currentOrigin, ENTITYNUM_NONE, CONTENTS_SOLID, (EG2_Collision)0, 0 );
 
 	if ( trace.fraction >= 1.0f )
 	{//can trace, turn on

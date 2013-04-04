@@ -1973,7 +1973,7 @@ gentity_t *G_KickTrace( gentity_t *ent, vec3_t kickDir, float kickDist, vec3_t k
 		VectorMA( traceOrg, kickDist, kickDir, traceEnd );
 	}
 
-	gi.trace( &trace, traceOrg, kickMins, kickMaxs, traceEnd, ent->s.number, MASK_SHOT );//clipmask ok?
+	gi.trace( &trace, traceOrg, kickMins, kickMaxs, traceEnd, ent->s.number, MASK_SHOT, (EG2_Collision)0, 0 );//clipmask ok?
 	if ( trace.fraction < 1.0f && !trace.startsolid && !trace.allsolid && trace.entityNum < ENTITYNUM_NONE )
 	{
 		hitEnt = &g_entities[trace.entityNum];
@@ -2193,7 +2193,7 @@ qboolean G_CheckRollSafety( gentity_t *self, int anim, float testDist )
 		break;
 	}
 
-	gi.trace( &trace, self->currentOrigin, self->mins, self->maxs, testPos, self->s.number, contents );
+	gi.trace( &trace, self->currentOrigin, self->mins, self->maxs, testPos, self->s.number, contents, (EG2_Collision)0, 0 );
 	if ( trace.fraction < 1.0f 
 		|| trace.allsolid
 		|| trace.startsolid )
@@ -2401,7 +2401,7 @@ void G_FixMins( gentity_t *ent )
 	float  downdist = (DEFAULT_MINS_2-ent->mins[2]);
 	vec3_t end={ent->currentOrigin[0],ent->currentOrigin[1],ent->currentOrigin[2]+downdist}; 
 	trace_t	trace;
-	gi.trace( &trace, ent->currentOrigin, ent->mins, ent->maxs, end, ent->s.number, ent->clipmask );
+	gi.trace( &trace, ent->currentOrigin, ent->mins, ent->maxs, end, ent->s.number, ent->clipmask, (EG2_Collision)0, 0 );
 	if ( !trace.allsolid && !trace.startsolid )
 	{
 		if ( trace.fraction >= 1.0f )
@@ -2418,7 +2418,7 @@ void G_FixMins( gentity_t *ent )
 			//need to trace up, too
 			float updist = ((1.0f-trace.fraction) * -downdist);
 			end[2] = ent->currentOrigin[2]+updist; 
-			gi.trace( &trace, ent->currentOrigin, ent->mins, ent->maxs, end, ent->s.number, ent->clipmask );
+			gi.trace( &trace, ent->currentOrigin, ent->mins, ent->maxs, end, ent->s.number, ent->clipmask, (EG2_Collision)0, 0 );
 			if ( !trace.allsolid && !trace.startsolid )
 			{
 				if ( trace.fraction >= 1.0f )

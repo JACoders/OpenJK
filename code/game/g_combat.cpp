@@ -249,7 +249,7 @@ gentity_t *TossClientItems( gentity_t *self )
 				&& weapon != WP_TRIP_MINE
 				&& weapon != WP_DET_PACK )
 			{
-				gi.G2API_InitGhoul2Model( dropped->ghoul2, item->world_model, G_ModelIndex( item->world_model ));
+				gi.G2API_InitGhoul2Model( dropped->ghoul2, item->world_model, G_ModelIndex( item->world_model ), NULL, NULL, 0, 0);
 				dropped->s.radius = 10;
 			}
 		}
@@ -474,13 +474,14 @@ void G_AlertTeam( gentity_t *victim, gentity_t *attacker, float radius, float so
 	gentity_t	*radiusEnts[ 128 ];
 	vec3_t		mins, maxs;
 	int			numEnts;
+	int			i;
 	float		distSq, sndDistSq = (soundDist*soundDist);
 
 	if ( attacker == NULL || attacker->client == NULL )
 		return;
 
 	//Setup the bbox to search in
-	for ( int i = 0; i < 3; i++ )
+	for ( i = 0; i < 3; i++ )
 	{
 		mins[i] = victim->currentOrigin[i] - radius;
 		maxs[i] = victim->currentOrigin[i] + radius;
@@ -1690,7 +1691,7 @@ void LimbThink( gentity_t *ent )
 	// trace a line from the previous position to the current position,
 	// ignoring interactions with the missile owner
 	gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, origin, 
-		ent->owner ? ent->owner->s.number : ENTITYNUM_NONE, ent->clipmask );
+		ent->owner ? ent->owner->s.number : ENTITYNUM_NONE, ent->clipmask, (EG2_Collision)0, 0 );
 
 	VectorCopy( tr.endpos, ent->currentOrigin );
 	if ( tr.startsolid ) 
@@ -2037,7 +2038,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 	//G_SetAngles( limb, ent->currentAngles );
 	VectorCopy( newPoint, limb->s.pos.trBase );
 //1) copy the g2 instance of the victim into the limb
-	gi.G2API_CopyGhoul2Instance( ent->ghoul2, limb->ghoul2 );
+	gi.G2API_CopyGhoul2Instance( ent->ghoul2, limb->ghoul2, 0 );
 	limb->playerModel = 0;//assumption!
 	limb->craniumBone = ent->craniumBone;
 	limb->cervicalBone = ent->cervicalBone;
@@ -2088,7 +2089,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 		//play the proper dismember anim on the limb
 		gi.G2API_SetBoneAnim(&limb->ghoul2[limb->playerModel], 0, animations[limbAnim].firstFrame, 
 							animations[limbAnim].numFrames + animations[limbAnim].firstFrame,
-							BONE_ANIM_OVERRIDE_FREEZE, 1, cg.time );
+							BONE_ANIM_OVERRIDE_FREEZE, 1, cg.time, -1, -1 );
 	}
 	if ( rotateBone )
 	{
@@ -2183,15 +2184,15 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 	VectorSet( limb->maxs, 3.0f, 3.0f, 6.0f );
 
 	//make sure it doesn't start in solid
-	gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+	gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 	if ( trace.startsolid )
 	{
 		limb->s.pos.trBase[2] -= limb->mins[2];
-		gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+		gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 		if ( trace.startsolid )
 		{
 			limb->s.pos.trBase[2] += limb->mins[2];
-			gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+			gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 			if ( trace.startsolid )
 			{//stuck?  don't remove
 				G_FreeEntity( limb );
@@ -5282,7 +5283,7 @@ static int G_CheckForLedge( gentity_t *self, vec3_t fallCheckDir, float checkDis
 
 	VectorMA( self->currentOrigin, checkDist, fallCheckDir, end );
 	//Should have clip burshes masked out by now and have bbox resized to death size
-	gi.trace( &tr, self->currentOrigin, self->mins, self->maxs, end, self->s.number, self->clipmask );
+	gi.trace( &tr, self->currentOrigin, self->mins, self->maxs, end, self->s.number, self->clipmask, (EG2_Collision)0, 0 );
 	if ( tr.allsolid || tr.startsolid )
 	{
 		return 0;
@@ -5291,7 +5292,7 @@ static int G_CheckForLedge( gentity_t *self, vec3_t fallCheckDir, float checkDis
 	VectorCopy( start, end );
 	end[2] -= 256;
 
-	gi.trace( &tr, start, self->mins, self->maxs, end, self->s.number, self->clipmask );
+	gi.trace( &tr, start, self->mins, self->maxs, end, self->s.number, self->clipmask, (EG2_Collision)0, 0 );
 	if ( tr.allsolid || tr.startsolid )
 	{
 		return 0;
@@ -6229,7 +6230,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 					testEndPos[1] += (random() * 8.0f) - 4.0f;
 					testEndPos[2] += (random() * 8.0f);
 
-					gi.trace (&testTrace, testStartPos, NULL, NULL, testEndPos, ENTITYNUM_NONE, MASK_SHOT, G2_COLLIDE);
+					gi.trace (&testTrace, testStartPos, NULL, NULL, testEndPos, ENTITYNUM_NONE, MASK_SHOT, G2_COLLIDE, 0);
 
 					if (!testTrace.startsolid && 
 						!testTrace.allsolid && 
@@ -6377,7 +6378,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 					//copy the g2 instance of the victim into the limb
 					//-------------------------------------------------
- 					gi.G2API_CopyGhoul2Instance(targ->ghoul2, limb->ghoul2);
+ 					gi.G2API_CopyGhoul2Instance(targ->ghoul2, limb->ghoul2, -1);
 					gi.G2API_SetRootSurface(limb->ghoul2, limb->playerModel, "lfront");
 					gi.G2API_SetSurfaceOnOff(&targ->ghoul2[targ->playerModel], "lfront", TURN_OFF);
 					animation_t *animations = level.knownAnimFileSets[targ->client->clientInfo.animFileIndex].animations;
@@ -6385,21 +6386,21 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 					//play the proper dismember anim on the limb
 					gi.G2API_SetBoneAnim(&limb->ghoul2[limb->playerModel], 0, animations[BOTH_A1_BL_TR].firstFrame, 
 							animations[BOTH_A1_BL_TR].numFrames + animations[BOTH_A1_BL_TR].firstFrame,
-							BONE_ANIM_OVERRIDE_FREEZE, 1, level.time );
+							BONE_ANIM_OVERRIDE_FREEZE, 1, level.time, -1, -1 );
 
 
 					// Check For Start In Solid
 					//--------------------------
 					gi.linkentity( limb );
-					gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+					gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 					if ( trace.startsolid )
 					{
 						limb->s.pos.trBase[2] -= limb->mins[2];
-						gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+						gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 						if ( trace.startsolid )
 						{
 							limb->s.pos.trBase[2] += limb->mins[2];
-							gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+							gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 
 						}
 					}
@@ -6853,7 +6854,7 @@ qboolean CanDamage (gentity_t *targ, const vec3_t origin) {
 	VectorCopy( origin, blah);
 	G_DebugLine(blah, dest, 5000, 0x0000ff, qtrue );
 	*/
-	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID);
+	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID, (EG2_Collision)0, 0);
 	if (( tr.fraction == 1.0 && cantHitEnt) || tr.entityNum == targ->s.number ) // if we also test the entitynum's we can bust up bbrushes better!
 		return qtrue;
 
@@ -6862,28 +6863,28 @@ qboolean CanDamage (gentity_t *targ, const vec3_t origin) {
 	VectorCopy (midpoint, dest);
 	dest[0] += 15.0;
 	dest[1] += 15.0;
-	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID);
+	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID, (EG2_Collision)0, 0);
 	if (( tr.fraction == 1.0 && cantHitEnt) || tr.entityNum == targ->s.number )
 		return qtrue;
 
 	VectorCopy (midpoint, dest);
 	dest[0] += 15.0;
 	dest[1] -= 15.0;
-	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID);
+	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID, (EG2_Collision)0, 0);
 	if (( tr.fraction == 1.0 && cantHitEnt) || tr.entityNum == targ->s.number )
 		return qtrue;
 
 	VectorCopy (midpoint, dest);
 	dest[0] -= 15.0;
 	dest[1] += 15.0;
-	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID);
+	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID, (EG2_Collision)0, 0);
 	if (( tr.fraction == 1.0 && cantHitEnt) || tr.entityNum == targ->s.number )
 		return qtrue;
 
 	VectorCopy (midpoint, dest);
 	dest[0] -= 15.0;
 	dest[1] -= 15.0;
-	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID);
+	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID, (EG2_Collision)0, 0);
 	if (( tr.fraction == 1.0 && cantHitEnt) || tr.entityNum == targ->s.number )
 		return qtrue;
 

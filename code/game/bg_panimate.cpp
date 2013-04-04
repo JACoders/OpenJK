@@ -2039,7 +2039,7 @@ qboolean PM_CheckEnemyInBack( float backCheckDist )
 	AngleVectors( fwdAngles, fwd, NULL, NULL );
 	VectorMA( pm->ps->origin, -backCheckDist, fwd, end );
 
-	pm->trace( &trace, pm->ps->origin, vec3_origin, vec3_origin, end, pm->ps->clientNum, CONTENTS_SOLID|CONTENTS_BODY );
+	pm->trace( &trace, pm->ps->origin, vec3_origin, vec3_origin, end, pm->ps->clientNum, CONTENTS_SOLID|CONTENTS_BODY, (EG2_Collision)0, 0 );
 	if ( trace.fraction < 1.0f && trace.entityNum < ENTITYNUM_WORLD )
 	{
 		gentity_t *traceEnt = &g_entities[trace.entityNum];

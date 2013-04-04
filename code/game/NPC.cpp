@@ -479,7 +479,7 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope, vec3_t storeAn
 		startspot[2] += forwhom->mins[2] + 4;
 		VectorCopy( startspot, endspot );
 		endspot[2] -= 300;
-		gi.trace( &trace, forwhom->currentOrigin, vec3_origin, vec3_origin, endspot, forwhom->s.number, MASK_SOLID );
+		gi.trace( &trace, forwhom->currentOrigin, vec3_origin, vec3_origin, endspot, forwhom->s.number, MASK_SOLID, (EG2_Collision)0, 0 );
 //		if(trace_fraction>0.05&&forwhom.movetype==MOVETYPE_STEP)
 //			forwhom.flags(-)FL_ONGROUND;
 
@@ -817,7 +817,7 @@ static void DeadThink ( void )
 	}
 	if ( NPC->maxs[2] > oldMaxs2 )
 	{//inflating maxs, make sure we're not inflating into solid
-		gi.trace (&trace, NPC->currentOrigin, NPC->mins, NPC->maxs, NPC->currentOrigin, NPC->s.number, NPC->clipmask );
+		gi.trace (&trace, NPC->currentOrigin, NPC->mins, NPC->maxs, NPC->currentOrigin, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );
 		if ( trace.allsolid )
 		{//must be inflating
 			NPC->maxs[2] = oldMaxs2;
@@ -1124,7 +1124,7 @@ void NPC_HandleAIFlags (void)
 				trace_t	trace;
 				VectorCopy(NPC->currentOrigin, ground);
 				ground[2] -= 60.0f;
-                gi.trace(&trace, NPC->currentOrigin, 0, 0, ground, NPC->s.number, NPC->clipmask);
+                gi.trace(&trace, NPC->currentOrigin, 0, 0, ground, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0);
 
 				IsInTheAir	= (!trace.allsolid && !trace.startsolid && trace.fraction>0.9f);
 			}
@@ -2392,7 +2392,7 @@ void NPC_CheckInSolid(void)
 	VectorCopy(NPC->currentOrigin, point);
 	point[2] -= 0.25;
 
-	gi.trace(&trace, NPC->currentOrigin, NPC->mins, NPC->maxs, point, NPC->s.number, NPC->clipmask);
+	gi.trace(&trace, NPC->currentOrigin, NPC->mins, NPC->maxs, point, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0);
 	if(!trace.startsolid && !trace.allsolid)
 	{
 		VectorCopy(NPC->currentOrigin, NPCInfo->lastClearOrigin);

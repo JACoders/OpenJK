@@ -167,7 +167,7 @@ static char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 
 		assert(iStrlen+1<=sizeof(sString));
 		
-		gi.ReadFromSaveGame('STRG', sString, iStrlen);
+		gi.ReadFromSaveGame('STRG', sString, iStrlen, NULL);
 
 #ifndef _XBOX	// TAG_G_ALLOC is always blown away, we can never recycle
 		if (psOriginal && gi.bIsFromZone(psOriginal, TAG_G_ALLOC)) {
@@ -707,7 +707,7 @@ static void SG_ConvertRetailSaberinfoToNewSaberinfo( void *sabData, saberInfo_t 
 
 static void EvaluateFields(const save_field_t *pFields, byte *pbData, byte *pbOriginalRefData, unsigned long ulChid, int iSize, qboolean bOkToSizeMisMatch)
 {	
-	int iReadSize = gi.ReadFromSaveGame(ulChid, pbData, bOkToSizeMisMatch?0:iSize);
+	int iReadSize = gi.ReadFromSaveGame(ulChid, pbData, bOkToSizeMisMatch?0:iSize, NULL);
 
 	if (iReadSize != iSize)
 	{
@@ -792,8 +792,9 @@ static void ReadLevelLocals ()
 static void WriteGEntities(qboolean qbAutosave)
 {
 	int iCount = 0;
+	int i;
 
-	for (int i=0; i<(qbAutosave?1:globals.num_entities); i++)
+	for (i=0; i<(qbAutosave?1:globals.num_entities); i++)
 	{
 		gentity_t* ent = &g_entities[i];
 
@@ -882,14 +883,15 @@ static void WriteGEntities(qboolean qbAutosave)
 static void ReadGEntities(qboolean qbAutosave)
 {
 	int		iCount;
+	int		i;
 	
-	gi.ReadFromSaveGame('NMED', (void *)&iCount, sizeof(iCount));
+	gi.ReadFromSaveGame('NMED', (void *)&iCount, sizeof(iCount), NULL);
 
 	int iPreviousEntRead = -1;
-	for (int i=0; i<iCount; i++)
+	for (i=0; i<iCount; i++)
 	{
 		int iEntIndex;
-		gi.ReadFromSaveGame('EDNM', (void *)&iEntIndex, sizeof(iEntIndex));
+		gi.ReadFromSaveGame('EDNM', (void *)&iEntIndex, sizeof(iEntIndex), NULL);
 
 		if (iEntIndex >= globals.num_entities)
 		{
@@ -1002,7 +1004,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			parms_t tempParms;
 			
-			gi.ReadFromSaveGame('PARM', &tempParms, sizeof(tempParms));
+			gi.ReadFromSaveGame('PARM', &tempParms, sizeof(tempParms), NULL);
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -1119,7 +1121,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		// check that Icarus has loaded everything it saved out by having a marker chunk after it...
 		//
 		static int iBlah = 1234;
-		gi.ReadFromSaveGame('ICOK', &iBlah, sizeof(iBlah));
+		gi.ReadFromSaveGame('ICOK', &iBlah, sizeof(iBlah), NULL);
 	}
 	if (!qbAutosave)
 	{
@@ -1188,7 +1190,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 
 		//Read & throw away objective info
 		objectives_t	junkObj[MAX_MISSION_OBJ];
-		gi.ReadFromSaveGame('OBJT', (void *) &junkObj, 0);
+		gi.ReadFromSaveGame('OBJT', (void *) &junkObj, 0, NULL);
 	}
 	else
 	{
@@ -1221,7 +1223,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 	// check that the whole file content was loaded by specifically requesting an end-marker...
 	//
 	static int iDONE = 1234;
-	gi.ReadFromSaveGame('DONE', &iDONE, sizeof(iDONE));
+	gi.ReadFromSaveGame('DONE', &iDONE, sizeof(iDONE), NULL);
 }
 
 extern int killPlayerTimer;
