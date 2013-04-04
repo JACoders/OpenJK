@@ -1,0 +1,19 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Imperial Snowtrooper"
+//	weapons			WP_BLASTER_PISTOL|WP_BLASTER|WP_FLECHETTE|WP_THERMAL
+	weapons			WP_BLASTER_PISTOL|WP_BLASTER|WP_REPEATER
+	maxhealth		100
+	maxarmor		100
+	startarmor		0
+	model			"snowtrooper" 				//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/snowtrooper/icon_default"
+	class_shader	"gfx/mp/c_icon_infantry"
+	holdables		HI_EWEB
+}
+
+description	
+"@SIEGE_INF_SNOWTROOPER"

@@ -1,0 +1,24 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Merc Sniper"
+	weapons			WP_BLASTER_PISTOL|WP_DISRUPTOR
+	classflags		CFL_EXTRA_AMMO
+	forcepowers		0
+	maxhealth		50
+	maxarmor		50
+	starthealth		50
+	startarmor		0
+	//model			"rodian" 					//this is optional, if it's here it forces the model to this.
+	//skin			"default"					//this is optional, if it's here it forces the skin to this.
+	//uishader		"models/players/rodian/icon_default"
+	//holdables		HI_CLOAK
+	model			"boba_fett" 					//this is optional, if it's here it forces the model to this.
+	skin			"no_jetpack"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/boba_fett/icon_default"
+	holdables		HI_JETPACK
+	class_shader	"gfx/mp/c_icon_vanguard"
+}
+
+description	"@SIEGE_VAN_MERC_SNIPER"

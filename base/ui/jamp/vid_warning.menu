@@ -1,0 +1,205 @@
+// VIDEO WARNING
+{
+	menuDef 
+	{
+		name					"videowarningMenu"
+		visible					0
+		fullScreen				0				// MENU_TRUE			
+		rect					0 0 640 480
+		focusColor				1 1 1 1				// Focus color for text and items
+		outOfBoundsClick							// this closes the window if it gets a click out of the rectangle					// In miliseconds
+		descX					320
+		descY					434
+		descScale				1
+		descColor				.79 .64 .22 .7			// Focus color for text and items
+		descAlignment				ITEM_ALIGN_CENTER		
+		popup
+										
+		onESC 
+		{ 
+			play				"sound/interface/button1.wav" ; 
+			close				"videowarningMenu" ;
+			setcvar				"ui_r_modified" 0 ;
+			rundeferred ;
+		}
+
+		onClose
+		{
+			play				"sound/interface/button1.wav" ; 
+		}
+
+		itemDef 
+		{
+			name				warn_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				100 100 440 320
+			background			"gfx/menus/menu_boxred"					// Frame
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+//
+//	VIDEO WARNING
+//
+//----------------------------------------------------------------------------------------------
+		// Video Warning title
+		itemDef 
+		{
+			name				vidwarn_title
+			group				vidwarn
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS_UNAPPLIED_VIDEO_CHANGES
+      			rect				120 129 400 20
+			font				3
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			200
+			textaligny			-3
+			forecolor			1 1 1 1
+      			visible				1 
+      			decoration 
+		}
+
+
+		itemDef 
+		{
+			name				vidwarn_text1
+			group				vidwarn
+			text				@MENUS_YOU_HAVE_MADE_CHANGES
+			rect				210 230 220 20
+			textalign			ITEM_ALIGN_CENTER
+			text2aligny			18
+			textalignx			110
+			font				2
+			textscale			1        
+			forecolor			.79 .64 .22 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				vidwarn_text2
+			group				vidwarn
+			text				@MENUS_APPLY_THESE_CHANGES_OR
+			rect				210 250 220 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			110
+			font				2
+			textscale			1        
+			forecolor			.79 .64 .22 1
+			visible				1
+		}
+
+// DISCARD button - return to Video Data screen
+		itemDef 
+		{
+			name				vidwarn_no_button
+			group				vidwarn
+			style				WINDOW_STYLE_SHADER
+			rect				180 386 120 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0 
+		}
+
+		itemDef 
+		{
+			name				vidwarn_no
+			group				vidwarn
+			text				@MENUS_DISCARD
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				180 386 120 24 
+			font				2
+			textscale			1        
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			60
+			textaligny			-3
+			descText			@MENUS_DO_NOT_APPLY_CHANGES
+			forecolor			.79 .64 .22 1
+			visible				1
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			"videowarningMenu" ;
+
+				setcvar			"ui_r_modified" 0 ;
+
+				rundeferred ;
+			}
+
+			mouseEnter 
+			{ 
+				show		vidwarn_no_button
+			}
+
+			mouseExit 
+			{ 
+				hide		vidwarn_no_button
+			}	  	  
+		}
+
+// APPLY button, use settings
+		itemDef 
+		{
+			name				vidwarn_yes_button
+			group				vidwarn
+			style				WINDOW_STYLE_SHADER
+			rect				340 386 120 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				vidwarn_yes
+			group				vidwarn
+			text				@MENUS_APPLY
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				340 386 120 24 
+			font				2
+			textscale			1        
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			60
+			textaligny			-3
+			descText			@MENUS_APPLY_CHANGES_AND_THEN
+			forecolor			.79 .64 .22 1
+			visible				1
+
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+
+				uiScript		updatevideosetup ;
+
+//				uiScript		setvid1data	setupMenu ;		// Set video settings
+				close			all
+			}
+			mouseEnter 
+			{ 
+				show		vidwarn_yes_button
+			}
+			mouseExit 
+			{ 
+				hide		vidwarn_yes_button			
+			}	  	  
+		}
+	
+	}	
+}
+
+
+
+
+
+

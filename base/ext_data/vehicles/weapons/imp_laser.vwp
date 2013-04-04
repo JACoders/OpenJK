@@ -1,0 +1,18 @@
+imp_laser
+{
+name		imp_laser
+projectile	1
+muzzleFX	"ships/imp_blastermuzzleflash"
+shotFX		"ships/imp_blastershot"
+impactFX	"ships/imp_blasterimpact"
+g2MarkShader	"gfx/effects/scorch"
+g2MarkSize	56
+//loopSound	
+speed		20000
+damage		100
+//damage		50
+splashDamage	50
+splashRadius	100
+ammoPerShot	1
+lifetime	2000
+}

@@ -1,0 +1,27 @@
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lipsyncthing", "lipsyncthing.vcproj", "{8203BFBC-DAE3-4BF1-90AB-8F005E676AB1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lipthing2", "..\lipthing2\lipthing2.vcproj", "{7B20D319-1E16-4254-B210-12B6C736D42D}"
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{8203BFBC-DAE3-4BF1-90AB-8F005E676AB1}.Debug.ActiveCfg = Debug|Win32
+		{8203BFBC-DAE3-4BF1-90AB-8F005E676AB1}.Debug.Build.0 = Debug|Win32
+		{8203BFBC-DAE3-4BF1-90AB-8F005E676AB1}.Release.ActiveCfg = Release|Win32
+		{8203BFBC-DAE3-4BF1-90AB-8F005E676AB1}.Release.Build.0 = Release|Win32
+		{7B20D319-1E16-4254-B210-12B6C736D42D}.Debug.ActiveCfg = Debug|Win32
+		{7B20D319-1E16-4254-B210-12B6C736D42D}.Debug.Build.0 = Debug|Win32
+		{7B20D319-1E16-4254-B210-12B6C736D42D}.Release.ActiveCfg = Release|Win32
+		{7B20D319-1E16-4254-B210-12B6C736D42D}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

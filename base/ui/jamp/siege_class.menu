@@ -1,0 +1,4417 @@
+//--------------------------------------------------------------------------------------------
+// uberScreen
+//
+// cvars used (at least some of them
+//	siege_mapgraphic - the name of the graphic of the map of the level.
+//	currentObjButton - the menu item name of currently active objective button
+//
+//	team1_icon	- read in from siege file, the graphic of team1
+//	team2_icon	- read in from siege file, the graphic of team2
+//
+//--------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{	
+		name 					"ingame_siegeclass"
+  		fullScreen				1				
+ 		visible 				0
+		outOfBoundsClick	
+		rect					0 0 640 480
+		focusColor				1 1 1 1			
+		style					1
+		descX					480
+		descY					444
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER
+		backColor				.05 .07 .09 1
+		disablecolor				1 1 1 1
+		onClose 
+		{ 
+			hide				minidesc
+			hide				obj_longdesc
+			hide				objective_pic
+			hide				siegeclassconfigtitle
+		}
+		
+		onOpen 
+		{ 
+			setcvar				currentObjButton "null"
+
+			exec				"siegeCompleteCvarUpdate"
+			
+			setitembackground		mappic 		"*siege_mapgraphic"
+
+			// set tm_icon fields to the proper mapicon graphic 
+			uiscript			updatesiegeobjgraphics
+			
+			setitembackground		team1_symbol	"*team1_icon"
+			setitembackground		team2_symbol	"*team2_icon"
+			setitembackground		team1_button	"*team1_icon"
+			setitembackground		team2_button	"*team2_icon"
+						
+			// Enable team buttons, in case they'd been shut off
+			disable				team_button	0
+			disable				autoteam	0
+			disable				team1_button	0
+			disable				team2_button	0
+
+			// and reset colors
+			setitemcolor			team1_button backcolor   .8 .48 0 1
+			setitemcolor			team2_button backcolor   .8 .48 0 1
+			setitemcolor			team1name forecolor   .8 .48 0 1
+			setitemcolor			team2name forecolor   .8 .48 0 1
+			setitemcolor			team1_count forecolor   .8 .48 0 1
+			setitemcolor			team2_count forecolor   .8 .48 0 1
+			setitemcolor			siegeclassconfigtitle forecolor	1 .68 0 1
+			
+			// 
+			setitemcolor			team1obj_buttons bordercolor	0 0 0 0
+			setitemcolor			team2obj_buttons bordercolor	0 0 0 0
+			setitemcolor			team1obj_buttons forecolor	1 1 1 1
+			setitemcolor			team2obj_buttons forecolor	1 1 1 1
+
+			disable				team1obj_buttons	0
+			disable				team2obj_buttons	0
+			
+			hide				grey_button
+			hide				class_portrait
+			hide				itemdescription
+
+			// Show first objective			
+			show			obj_minidesc
+			show			obj_longdesc
+			show			objective_pic
+			
+			// change color and stext of mini desc
+			setitemtext		obj_minidesc @MENUS_OBJECTIVE_1
+
+			//change text of long desc
+			setitemtext		obj_longdesc "*team1_objective1_longdesc"
+			
+			// change objective pic
+			setitembackground	objective_pic	"*team1_objective1_gfx"
+
+			// Show new map icon
+			setitembackground	tm1_icon1	"*team1_objective1_mapicon"
+			
+			// Reset all buttons to their normal colors
+			setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+			setitemcolor		team1obj_buttons backcolor .7 0 0 1
+			setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+			setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+
+			setitemcolor		mapicons	bordercolor	0 0 0 0 
+			
+			// Disable current button and give it a border
+			setitemcolor		team1obj1_button 	bordercolor 1 1 1 1
+			setitemcolor		team1obj1_button 	backcolor 1 0 0 1
+
+			// Set the map icon picture to the updated graphic
+			uiscript		setsiegeobjbuttons tm1_icon1   team1_objective1_mapicon   team1_objective1_litmapicon
+			uiscript		setteamclassicons
+		}
+		
+		onESC 
+		{ 
+			hide				stats
+			hide				forcepowerlevel
+			hide				minidesc
+			hide				fulldesc	
+			hide				objective_pic			
+			disable				team_button	0
+			close 				all;
+		}
+
+	//------------------------------------------------------------		
+	// Window backdrop
+	//------------------------------------------------------------		
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		// Title of objective section
+		itemDef 
+		{
+			name 				objectivetitle
+			style				WINDOW_STYLE_FILLED
+			backcolor			.05 .13 .25 1
+			text 				@MENUS_MISSION_OBJECTIVES
+			rect				7 7 308 20
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			160
+			textaligny			-1
+			font				3
+			textscale			0.9
+			forecolor			1 .68 0 1
+			visible 			1		
+			decoration
+		}
+
+		// Border around the objective half of the screen		
+		itemDef 
+		{
+			name				border
+			group				none
+			type 				ITEM_TYPE_TEXT
+			rect				5 5 310 370
+//			forecolor			1 1 1 .6
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			decoration
+		}
+
+
+		itemDef 
+		{
+			name				mapname
+			group				time
+			style				WINDOW_STYLE_EMPTY
+//			text				@MENUS_MISSION
+			cvar				siege_missionname
+			maxChars			0
+			rect				70 28 180 18
+			textalign			ITEM_ALIGN_CENTER	
+			textalignx			90
+			font				3
+			textscale			.7
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		
+		//------------------------------------------------------------		
+		// Map picture
+		//------------------------------------------------------------		
+		itemDef 
+		{
+			name				mappic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				70 46 180 320
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			.38 .51 .59 1
+			decoration
+			background			"*siege_mapgraphic"
+		}
+
+	
+//----------------------------------------------------------------------------------------------
+// TEAM SYMBOLS
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				team1_symbol
+			style				WINDOW_STYLE_SHADER
+			rect				12 60 45 45
+			forecolor			1  0  0  1
+			visible				1 
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				team2_symbol
+			style				WINDOW_STYLE_SHADER
+			rect				265 60 45 45
+			forecolor			0  0  1  1
+			visible				1 
+			decoration
+		}
+		
+//-------------------------------------------
+// TEAM1 - OBJECTIVE BUTTON 1
+//-------------------------------------------
+		itemDef 
+		{
+			name 				team1obj1_button
+			group				team1obj_buttons
+			rect 				22 120 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_1
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			1 0 0 1
+			forecolor			.75 .75 .75 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 0
+			mouseEnter 
+			{ 
+				setitemcolor		team1obj1_button forecolor 1 1 1 1
+				setitemcolor		team1obj1_button backcolor 1 0 0 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team1obj1_button forecolor .75 .75 .75 1
+				setitemcolor		team1obj1_button backcolor .7 0 0 1
+			} 
+			action
+			{					
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change text of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_1
+
+				//change text of long desc
+				setitemtext		obj_longdesc "*team1_objective1_longdesc"
+				
+				// change pic to match objective
+				setitembackground	objective_pic	"*team1_objective1_gfx"
+				
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons 	forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons 	backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons 	forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons 	backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+
+				// Disable current button and give it a border
+				setcvar			currentObjButton	"team1obj1_button"
+				setitemcolor		team1obj1_button 	bordercolor 1 1 1 1
+				setitemcolor		team1obj1_button 	backcolor 1 0 0 1
+
+				// Completed text				
+				hide				completed_text
+				show				text_tm1_obj1
+				
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm1_icon1   team1_objective1_mapicon   team1_objective1_litmapicon
+			}
+		}
+
+//----------------------------------------------------------------------------------------------
+// TEAM1 - OBJECTIVE BUTTON 2
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name 				team1obj2_button			
+			group				team1obj_buttons
+			rect 				22 150 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_2
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			.7 0 0 1
+			forecolor			.75 .75 .75 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 1
+			cvartest			"team1_objective2_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team1obj2_button forecolor 1 1 1 1
+				setitemcolor		team1obj2_button backcolor 1 0 0 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team1obj2_button forecolor .75 .75 .75 1
+				setitemcolor		team1obj2_button backcolor .7 0 0 1
+			} 
+
+			action
+			{						
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and text of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_2
+
+				//change text of long desc
+				setitemtext		obj_longdesc "*team1_objective2_longdesc"
+				
+				// change pic to match objective
+				setitembackground	objective_pic	"*team1_objective2_gfx"
+							
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+
+				// Disable current button
+				setcvar			currentObjButton	"team1obj2_button"			
+				setitemcolor		team1obj2_button	bordercolor	1 1 1 1
+				setitemcolor		team1obj2_button 	backcolor	 1 0 0 1
+				
+				// Completed text				
+				hide				completed_text
+				show				text_tm1_obj2
+				
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm1_icon2   team1_objective2_mapicon   team1_objective2_litmapicon
+								
+			}
+		}
+		
+		itemDef 
+		{
+			name 				team1obj3_button
+			group				team1obj_buttons
+			rect 				22 180 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_3
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			.7 0 0 1
+			forecolor			.75 .75 .75 1
+			visible 			1
+			border			1
+			bordercolor			0 0 0 1
+			cvartest			"team1_objective3_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team1obj3_button forecolor 1 1 1 1
+				setitemcolor		team1obj3_button backcolor 1 0 0 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team1obj3_button forecolor .75 .75 .75 1
+				setitemcolor		team1obj3_button backcolor .7 0 0 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and stext of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_3
+
+				//change text of long desc
+				setitemtext		obj_longdesc "*team1_objective3_longdesc"
+
+				// change pic to match objective
+				setitembackground	objective_pic	"*team1_objective3_gfx"
+				
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+
+				// Disable current button
+				setcvar			currentObjButton	"team1obj3_button"			
+				setitemcolor		team1obj3_button	bordercolor	1 1 1 1
+				setitemcolor		team1obj3_button 	backcolor 1 0 0 1
+	
+				// Completed text				
+				hide				completed_text
+				show				text_tm1_obj3
+				
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm1_icon3   team1_objective3_mapicon   team1_objective3_litmapicon
+			}
+		}
+
+		itemDef 
+		{
+			name 				team1obj4_button			
+			group				team1obj_buttons
+			rect 				22 210 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_4
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			.7 0 0 1
+			forecolor			.75 .75 .75 1
+			visible 			1
+			border			1
+			bordercolor			0 0 0 1
+			cvartest			"team1_objective4_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team1obj4_button forecolor 1 1 1 1
+				setitemcolor		team1obj4_button backcolor 1 0 0 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team1obj4_button forecolor .75 .75 .75 1
+				setitemcolor		team1obj4_button backcolor .7 0 0 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and stext of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_4
+
+				//change text of long desc
+				setitemtext		obj_longdesc "*team1_objective4_longdesc"
+
+				// change pic to match objective
+				setitembackground	objective_pic	"*team1_objective4_gfx"
+				
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton	"team1obj4_button"			
+				setitemcolor		team1obj4_button	bordercolor	1 1 1 1
+				setitemcolor		team1obj4_button 	backcolor 1 0 0 1
+
+				// Completed text				
+				hide				completed_text
+				show				text_tm1_obj4
+				
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm1_icon4   team1_objective4_mapicon   team1_objective4_litmapicon
+			}
+		}
+
+		itemDef 
+		{
+			name 				team1obj5_button			
+			group				team1obj_buttons
+			rect 				22 240 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_5
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			.7 0 0 1
+			forecolor			.75 .75 .75 1
+			visible 			1
+			border			1
+			bordercolor			0 0 0 1
+			cvartest			"team1_objective5_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team1obj5_button forecolor 1 1 1 1
+				setitemcolor		team1obj5_button backcolor 1 0 0 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team1obj5_button forecolor .75 .75 .75 1
+				setitemcolor		team1obj5_button backcolor .7 0 0 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and stext of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_5
+
+				//change text of long desc
+				setitemtext		obj_longdesc "*team1_objective5_longdesc"
+
+
+				// change pic to match objective
+				setitembackground	objective_pic	"*team1_objective5_gfx"
+				
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton	"team1obj5_button"
+				setitemcolor		team1obj5_button	bordercolor	1 1 1 1
+				setitemcolor		team1obj5_button 	backcolor 1 0 0 1
+
+				// Completed text				
+				hide				completed_text
+				show				text_tm1_obj5
+				
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm1_icon5   team1_objective5_mapicon   team1_objective5_litmapicon
+			}
+		}
+
+		itemDef 
+		{
+			name 				team1obj6_button			
+			group				team1obj_buttons
+			rect 				22 270 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_6
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			.7 0 0 1
+			forecolor			.75 .75 .75 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 1
+			cvartest			"team1_objective6_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team1obj6_button forecolor 1 1 1 1
+				setitemcolor		team1obj6_button backcolor 1 0 0 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team1obj6_button forecolor .75 .75 .75 1
+				setitemcolor		team1obj6_button backcolor .7 0 0 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and stext of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_6
+
+				//change text of long desc
+				setitemtext		obj_longdesc "*team1_objective6_longdesc"
+
+				// change pic to match objective
+				setitembackground	objective_pic	"*team1_objective6_gfx"
+
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton	"team1obj6_button"
+				setitemcolor		team1obj6_button	bordercolor	1 1 1 1
+				setitemcolor		team1obj6_button 	backcolor 1 0 0 1
+
+				// Completed text				
+				hide				completed_text
+				show				text_tm1_obj6
+				
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm1_icon6   team1_objective6_mapicon   team1_objective6_litmapicon
+			}
+		}
+
+		itemDef 
+		{
+			name 				team1obj7_button			
+			group				team1obj_buttons
+			rect 				22 300 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_7
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			.7 0 0 1
+			forecolor			.75 .75 .75 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 1
+			cvartest			"team1_objective7_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team1obj7_button forecolor 1 1 1 1
+				setitemcolor		team1obj7_button backcolor 1 0 0 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team1obj7_button forecolor .75 .75 .75 1
+				setitemcolor		team1obj7_button backcolor .7 0 0 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and stext of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_7
+	
+				//change text of long desc
+				setitemtext		obj_longdesc "*team1_objective7_longdesc"
+		
+				// change pic to match objective
+				setitembackground	objective_pic	"*team1_objective7_gfx"
+								
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton	"team1obj7_button"
+				setitemcolor		team1obj7_button	bordercolor	1 1 1 1
+				setitemcolor		team1obj7_button 	backcolor 1 0 0 1
+				
+				// Completed text				
+				hide				completed_text
+				show				text_tm1_obj7
+
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm1_icon7   team1_objective7_mapicon   team1_objective7_litmapicon
+			}
+		}
+
+		itemDef 
+		{
+			name 				team1obj8_button			
+			group				team1obj_buttons
+			rect 				22 330 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_8
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			.7 0 0 1
+			forecolor			.75 .75 .75 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 1
+			cvartest			"team1_objective8_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team1obj8_button forecolor 1 1 1 1
+				setitemcolor		team1obj8_button backcolor 1 0 0 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team1obj8_button forecolor .75 .75 .75 1
+				setitemcolor		team1obj8_button backcolor .7 0 0 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and stext of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_8
+	
+				//change text of long desc
+				setitemtext		obj_longdesc "*team1_objective8_longdesc"
+	
+				// change pic to match objective
+				setitembackground	objective_pic	"*team1_objective8_gfx"
+												
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton	"team1obj8_button"
+				setitemcolor		team1obj8_button	bordercolor	1 1 1 1
+				setitemcolor		team1obj8_button 	backcolor 1 0 0 1
+				
+				// Completed text				
+				hide				completed_text
+				show				text_tm1_obj8
+
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm1_icon8   team1_objective8_mapicon   team1_objective8_litmapicon
+			}
+		}
+
+//----------------------------------------------------------------------------------------------
+// TEAM1 - MET OBJECTIVES BUTTONS
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				team1_met_obj1
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				22 120 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective1"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team1_met_obj2
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				22 150 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective2"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team1_met_obj3
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				22 180 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective3"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team1_met_obj4
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				22 210 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective4"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team1_met_obj5
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				22 240 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective5"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team1_met_obj6
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				22 270 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective6"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team1_met_obj7
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				22 300 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective7"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team1_met_obj8
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				22 330 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective8"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+//----------------------------------------------------------------------------------------------
+// TEAM2 - PRIMARY OBJECTIVE BUTTON
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name 				team2obj1_button
+			group				team2obj_buttons
+			rect 				273 120 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_1
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			0 0 1 1
+			forecolor 			1 1 1 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 0
+			mouseEnter 
+			{ 
+				setitemcolor		team2obj1_button forecolor 1 1 1 1
+				setitemcolor		team2obj1_button backcolor 0 0 1 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team2obj1_button forecolor .75 .75 .75 1
+				setitemcolor		team2obj1_button backcolor 0 0 .7 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and stext of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_1
+
+				//change text of long desc
+				setitemtext		obj_longdesc "*team2_objective1_longdesc"
+		
+				// change pic to match objective
+				setitembackground	objective_pic	"*team2_objective1_gfx"
+				
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton	"team2obj1_button"
+				setitemcolor		team2obj1_button	bordercolor	1 1 1 1
+				setitemcolor		team2obj1_button 	backcolor 0 0 1 1
+				
+				// Completed text				
+				hide				completed_text
+				show				text_tm2_obj1
+
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm2_icon1   team2_objective1_mapicon   team2_objective1_litmapicon
+			}
+		}
+		
+//----------------------------------------------------------------------------------------------
+// TEAM2 - SECONDARY OBJECTIVE BUTTONS
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name 				team2obj2_button
+			group				team2obj_buttons
+			rect 				273 150 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_2
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			0 0 1 1
+			forecolor 			1 1 1 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 0
+			cvartest			"team2_objective2_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team2obj2_button forecolor 1 1 1 1
+				setitemcolor		team2obj2_button backcolor 0 0 1 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team2obj2_button forecolor .75 .75 .75 1
+				setitemcolor		team2obj2_button backcolor 0 0 .7 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and stext of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_2
+	
+				//change text of long desc
+				setitemtext		obj_longdesc "*team2_objective2_longdesc"
+		
+				// change pic to match objective
+				setitembackground	objective_pic	"*team2_objective2_gfx"
+								
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton "team2obj2_button"
+				setitemcolor		team2obj2_button bordercolor	1 1 1 1
+				setitemcolor		team2obj2_button 	backcolor 0 0 1 1
+
+				// Completed text				
+				hide				completed_text
+				show				text_tm2_obj2
+
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm2_icon2   team2_objective2_mapicon   team2_objective2_litmapicon
+			}
+		}
+
+		itemDef 
+		{
+			name 				team2obj3_button
+			group				team2obj_buttons
+			rect 				273 180 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_3
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			0 0 1 1
+			forecolor 			1 1 1 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 0
+			cvartest			"team2_objective3_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team2obj3_button forecolor 1 1 1 1
+				setitemcolor		team2obj3_button backcolor 0 0 1 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team2obj3_button forecolor .75 .75 .75 1
+				setitemcolor		team2obj3_button backcolor 0 0 .7 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and stext of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_3
+	
+				//change text of long desc
+				setitemtext		obj_longdesc "*team2_objective3_longdesc"
+		
+				// change pic to match objective
+				setitembackground	objective_pic	"*team2_objective3_gfx"
+								
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton "team2obj3_button"
+				setitemcolor		team2obj3_button bordercolor	1 1 1 1
+				setitemcolor		team2obj3_button 	backcolor 0 0 1 1
+
+				// Completed text				
+				hide				completed_text
+				show				text_tm2_obj3
+
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm2_icon3   team2_objective3_mapicon   team2_objective3_litmapicon
+			}
+		}
+
+		itemDef 
+		{
+			name 				team2obj4_button
+			group				team2obj_buttons
+			rect 				273 210 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_4
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			0 0 1 1
+			forecolor 			1 1 1 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 0
+			cvartest			"team2_objective4_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team2obj4_button forecolor 1 1 1 1
+				setitemcolor		team2obj4_button backcolor 0 0 1 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team2obj4_button forecolor .75 .75 .75 1
+				setitemcolor		team2obj4_button backcolor 0 0 .7 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and text of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_4
+	
+				//change text of long desc
+				setitemtext		obj_longdesc "*team2_objective4_longdesc"
+		
+				// change pic to match objective
+				setitembackground	objective_pic	"*team2_objective4_gfx"
+								
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton "team2obj4_button"
+				setitemcolor		team2obj4_button bordercolor	1 1 1 1
+				setitemcolor		team2obj4_button 	backcolor 0 0 1 1
+
+				// Completed text				
+				hide				completed_text
+				show				text_tm2_obj4
+
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm2_icon4   team2_objective4_mapicon   team2_objective4_litmapicon
+			}
+		}
+
+		itemDef 
+		{
+			name 				team2obj5_button
+			group				team2obj_buttons
+			rect 				273 240 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_5
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			0 0 1 1
+			forecolor 			1 1 1 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 0
+			cvartest			"team2_objective5_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team2obj5_button forecolor 1 1 1 1
+				setitemcolor		team2obj5_button backcolor 0 0 1 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team2obj5_button forecolor .75 .75 .75 1
+				setitemcolor		team2obj5_button backcolor 0 0 .7 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and text of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_5
+	
+				//change text of long desc
+				setitemtext		obj_longdesc "*team2_objective5_longdesc"
+		
+				// change pic to match objective
+				setitembackground	objective_pic	"*team2_objective5_gfx"
+								
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton	"team2obj5_button"
+				setitemcolor		team2obj5_button	bordercolor	1 1 1 1
+				setitemcolor		team2obj5_button 	backcolor 0 0 1 1
+
+				// Completed text				
+				hide				completed_text
+				show				text_tm2_obj5
+
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm2_icon5   team2_objective5_mapicon   team2_objective5_litmapicon
+			}
+		}
+
+		itemDef 
+		{
+			name 				team2obj6_button
+			group				team2obj_buttons
+			rect 				273 270 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_6
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			0 0 1 1
+			forecolor 			1 1 1 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 0
+			cvartest			"team2_objective6_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team2obj6_button forecolor 1 1 1 1
+				setitemcolor		team2obj6_button backcolor 0 0 1 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team2obj6_button forecolor .75 .75 .75 1
+				setitemcolor		team2obj6_button backcolor 0 0 .7 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and text of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_6
+	
+				//change text of long desc
+				setitemtext		obj_longdesc "*team2_objective6_longdesc"
+		
+				// change pic to match objective
+				setitembackground	objective_pic	"*team2_objective6_gfx"
+								
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton	"team2obj6_button"
+				setitemcolor		team2obj6_button	bordercolor	1 1 1 1
+				setitemcolor		team2obj6_button 	backcolor 0 0 1 1
+
+				// Completed text				
+				hide				completed_text
+				show				text_tm2_obj6
+
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm2_icon6   team2_objective6_mapicon   team2_objective6_litmapicon
+			}
+		}
+
+		itemDef 
+		{
+			name 				team2obj7_button
+			group				team2obj_buttons
+			rect 				273 300 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_7
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			0 0 1 1
+			forecolor 			1 1 1 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 0
+			cvartest			"team2_objective7_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team2obj7_button forecolor 1 1 1 1
+				setitemcolor		team2obj7_button backcolor 0 0 1 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team2obj7_button forecolor .75 .75 .75 1
+				setitemcolor		team2obj7_button backcolor 0 0 .7 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and text of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_7
+	
+				//change text of long desc
+				setitemtext		obj_longdesc "*team2_objective7_longdesc"
+		
+				// change pic to match objective
+				setitembackground	objective_pic	"*team2_objective7_gfx"
+								
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton "team2obj7_button"
+				setitemcolor		team2obj7_button bordercolor	1 1 1 1
+				setitemcolor		team2obj7_button 	backcolor 0 0 1 1
+				
+				// Completed text				
+				hide				completed_text
+				show				text_tm2_obj7
+
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm2_icon7   team2_objective7_mapicon   team2_objective7_litmapicon
+			}
+		}
+
+		itemDef 
+		{
+			name 				team2obj8_button
+			group				team2obj_buttons
+			rect 				273 330 24 24
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			text 				@MENUS_8
+			font				2
+			textscale 			.8
+			textstyle 			0
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			12
+			textaligny 			-1
+			backcolor			0 0 1 1
+			forecolor 			1 1 1 1
+			visible 			1
+			border				1
+			bordercolor			0 0 0 0
+			cvartest			"team2_objective8_inuse"
+			showcvar
+			{
+				"1"; "2"
+			}
+			mouseEnter 
+			{ 
+				setitemcolor		team2obj8_button forecolor 1 1 1 1
+				setitemcolor		team2obj8_button backcolor 0 0 1 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor		team2obj8_button forecolor .75 .75 .75 1
+				setitemcolor		team2obj8_button backcolor 0 0 .7 1
+			} 
+			action
+			{
+				// Because open and close menu hide these
+				show			obj_minidesc
+				show			obj_longdesc
+				show			objective_pic
+				
+				// change color and text of mini desc
+				setitemtext		obj_minidesc @MENUS_OBJECTIVE_8
+	
+				//change text of long desc
+				setitemtext		obj_longdesc "*team2_objective8_longdesc"
+		
+				// change pic to match objective
+				setitembackground	objective_pic	"*team2_objective8_gfx"
+				
+				// Reset all buttons to their normal colors
+				setitemcolor		team1obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team1obj_buttons backcolor .7 0 0 1
+				setitemcolor		team2obj_buttons forecolor .75 .75 .75 1
+				setitemcolor		team2obj_buttons backcolor 0 0 .7 1
+				setitemcolor		team1obj_buttons 	bordercolor 0 0 0 0 				
+				setitemcolor		team2obj_buttons 	bordercolor 0 0 0 0 				
+				
+				// Disable current button
+				setcvar			currentObjButton "team2obj8_button"
+				setitemcolor		team2obj8_button bordercolor	1 1 1 1
+				setitemcolor		team2obj8_button 	backcolor 0 0 1 1
+
+				// Completed text				
+				hide				completed_text
+				show				text_tm2_obj8
+
+				// Reset old map icon to old background and enable old obj button
+				// Set new map icon to hilite background and disable new obj button
+				uiscript			setsiegeobjbuttons tm2_icon8   team2_objective8_mapicon   team2_objective8_litmapicon
+			}
+		}
+
+				
+//----------------------------------------------------------------------------------------------
+// TEAM2 - MET OBJECTIVES
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				team2_met_obj1
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				273 120 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective1"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team2_met_obj2
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				273 150 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective2"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team2_met_obj3
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				273 180 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective3"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team2_met_obj4
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				273 210 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective4"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team2_met_obj5
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				273 240 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective5"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team2_met_obj6
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				273 270 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective6"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team2_met_obj7
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				273 300 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective7"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team2_met_obj8
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				273 330 24 24
+			forecolor			1 1 1 1
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			background			"gfx/menus/x"
+			visible 			1
+			cvartest			"team1_objective8"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		
+//----------------------------------------------------------------------------------------------
+// TEAM1 MAP ICONS - position for these is set in the on open of the menu
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name 				tm1_icon1
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team1_objective1_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm1_icon2
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team1_objective2_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm1_icon3
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team1_objective3_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm1_icon4
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team1_objective4_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm1_icon5
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team1_objective5_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm1_icon6
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team1_objective6_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm1_icon7
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team1_objective7_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm1_icon8
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team1_objective8_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		
+//----------------------------------------------------------------------------------------------
+// TEAM2 MAP ICONS - position for these is set in the on open of the menu
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name 				tm2_icon1
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team2_objective1_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm2_icon2
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team2_objective2_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm2_icon3
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team2_objective3_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm2_icon4
+			group				mapicons
+			//rectcvar 			"siege_objective3_mappos"
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team2_objective4_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm2_icon5
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team2_objective5_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm2_icon6
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team2_objective6_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm2_icon7
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team2_objective7_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+		itemDef 
+		{
+			name 				tm2_icon8
+			group				mapicons
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+			cvartest			"team2_objective8_inuse"
+			hidecvar
+			{
+				"0"
+			}
+		}
+
+//----------------------------------------------------------------------------------------------
+// TEAM1 - MET OBJECTIVES MAP ICONS
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				team1_met_map1
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team1_objective1_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team1_objective1_donemapicon"
+			visible 			1
+			cvartest			"team1_objective1"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team1_met_map2
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team1_objective2_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team1_objective2_donemapicon"
+			visible 			1
+			cvartest			"team1_objective2"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name				team1_met_map3
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team1_objective3_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team1_objective3_donemapicon"
+			visible 			1
+			cvartest			"team1_objective3"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name				team1_met_map4
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team1_objective4_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team1_objective4_donemapicon"
+			visible 			1
+			cvartest			"team1_objective4"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name				team1_met_map5
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team1_objective5_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team1_objective5_donemapicon"
+			visible 			1
+			cvartest			"team1_objective5"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name				team1_met_map6
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team1_objective6_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team1_objective6_donemapicon"
+			visible 			1
+			cvartest			"team1_objective6"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		
+		itemDef 
+		{
+			name				team1_met_map7
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team1_objective7_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team1_objective7_donemapicon"
+			visible 			1
+			cvartest			"team1_objective7"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name				team1_met_map8
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team1_objective8_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team1_objective8_donemapicon"
+			visible 			1
+			cvartest			"team1_objective8"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+	
+//----------------------------------------------------------------------------------------------
+// TEAM2 - MET OBJECTIVES MAP ICONS
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				team2_met_map1
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team2_objective1_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team2_objective1_donemapicon"
+			visible 			1
+			decoration
+			cvartest			"team1_objective1"
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team2_met_map2
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team2_objective2_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team2_objective2_donemapicon"
+			visible 			1
+			cvartest			"team1_objective2"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name				team2_met_map3
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team2_objective3_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team2_objective3_donemapicon"
+			visible 			1
+			cvartest			"team1_objective3"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name				team2_met_map4
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team2_objective4_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team2_objective4_donemapicon"
+			visible 			1
+			cvartest			"team1_objective4"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name				team2_met_map5
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team2_objective5_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team2_objective5_donemapicon"
+			visible 			1
+			cvartest			"team1_objective5"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+
+		itemDef 
+		{
+			name				team2_met_map6
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team2_objective6_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team2_objective6_donemapicon"
+			visible 			1
+			cvartest			"team1_objective6"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name				team2_met_map7
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team2_objective7_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team2_objective7_donemapicon"
+			visible 			1
+			cvartest			"team1_objective7"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name				team2_met_map8
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rectcvar			team2_objective8_mappos
+			forecolor			1 1 1 1
+			visible				1
+			background			"*team2_objective8_donemapicon"
+			visible 			1
+			cvartest			"team1_objective8"
+			decoration
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		//-------------------------------------------
+		// OBJECTIVE MINI-DESCRIPTIONS
+		//-------------------------------------------
+		itemDef 
+		{
+			name 				obj_minidesc
+			rect 				7 378 308 20
+			style 				WINDOW_STYLE_FILLED
+			backcolor			.05 .13 .25 1
+			text 				@MENUS_PRIMARY_OBJECTIVES
+			font				2
+			textscale 			.7
+			textalign 			ITEM_ALIGN_RIGHT
+			textalignx 			300
+			forecolor			1 .68 0 1
+			visible 			0
+			decoration
+		}
+		
+		//-------------------------------------------
+		// OBJECTIVE LONG DESCRIPTION
+		//-------------------------------------------
+		itemDef 
+		{
+			name 				obj_longdesc
+			rect 				16 403 270 76
+			type 				ITEM_TYPE_TEXT
+			font				4
+			textscale 			.8
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			1
+			autowrapped			
+			decoration
+		}
+		
+
+		//-------------------------------------------
+		// OBJECTIVE PICTURE
+		//-------------------------------------------
+		itemDef 
+		{
+			name 				objective_pic
+			rect 				208 398 107 78
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/select"
+			forecolor 			1 1 1 1
+			visible 			1
+			decoration
+		}
+
+		//-------------------------------------------
+		// COMPLETED TEXT
+		//-------------------------------------------
+		itemDef 
+		{
+			name 				text_tm1_obj1
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team1_objective1"
+			showcvar
+			{
+				"1"
+			}	
+			
+		}
+		
+		itemDef 
+		{
+			name 				text_tm1_obj2
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team1_objective2"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		
+		itemDef 
+		{
+			name 				text_tm1_obj3
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team1_objective3"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		
+		itemDef 
+		{
+			name 				text_tm1_obj4
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team1_objective4"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		
+		itemDef 
+		{
+			name 				text_tm1_obj5
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team1_objective5"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		
+		itemDef 
+		{
+			name 				text_tm1_obj6
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team1_objective6"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		
+		itemDef 
+		{
+			name 				text_tm1_obj7
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team1_objective7"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name 				text_tm1_obj8
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team1_objective8"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name 				text_tm2_obj1
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team2_objective1"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name 				text_tm2_obj2
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team2_objective2"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		
+		itemDef 
+		{
+			name 				text_tm2_obj3
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team2_objective3"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		
+		itemDef 
+		{
+			name 				text_tm2_obj4
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team2_objective4"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		
+		itemDef 
+		{
+			name 				text_tm2_obj5
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team2_objective5"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		
+		itemDef 
+		{
+			name 				text_tm2_obj6
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team2_objective6"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		
+		itemDef 
+		{
+			name 				text_tm2_obj7
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team2_objective7"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+		itemDef 
+		{
+			name 				text_tm2_obj8
+			group				completed_text
+			rect				210 427 107 78			
+			type 				ITEM_TYPE_TEXT
+			text 				@MENUS_OBJECTIVE_COMPLETED
+			textalign 			ITEM_ALIGN_CENTER
+			font				2
+			textscale 			.7
+			textalignx 			53
+			textaligny 			0
+			forecolor			1 1 1 1
+			visible 			0
+			decoration
+			cvartest			"team2_objective8"
+			showcvar
+			{
+				"1"
+			}			
+		}
+		
+
+		// Border around the objective text and pic (lower left section of screen)
+		itemDef 
+		{
+			name				objtext_border
+			group				none
+			type 				ITEM_TYPE_TEXT
+			rect				5 378 310 98
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+// MAP TIME SECTION
+//----------------------------------------------------------------------------------------------
+
+		// Border
+		itemDef 
+		{
+			name				border
+			group				none
+			type 				ITEM_TYPE_TEXT
+			rect				317 5 317 20
+			forecolor			1 1 1 .6
+			visible				1
+			border				1
+			bordercolor			1 1 1 1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				playername
+			group				time
+			type				ITEM_TYPE_EDITFIELD
+			rect				325 6 120 18
+			text				@MENUS_NAME_TITLE
+			cvar				name
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx			0
+			font				4
+			textscale			1
+			forecolor			1 .68 0 1
+			visible				1
+		}
+		
+		itemDef 
+		{
+			name				playerteam
+			group				time
+			type				ITEM_TYPE_MULTI
+			style				WINDOW_STYLE_EMPTY
+			rect				500 6 120 18
+			text				@MENUS_TEAM
+			cvar				ui_team
+			cvarStrList
+			{
+				
+				@MENUS_SPECTATOR	0
+				"*cg_siegeTeam1Name"	1
+				"*cg_siegeTeam2Name"	2
+				@MENUS_SPECTATOR	3
+			}
+			
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx			0
+			font				4
+			textscale			1
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+			
+//----------------------------------------------------------------------------------------------
+// TEAM SELECTION
+//----------------------------------------------------------------------------------------------
+
+		// join a team text
+		itemDef 
+		{
+			name 				joinateam
+			rect 				318 27 316 20
+			style 				WINDOW_STYLE_FILLED
+			backcolor			.05 .13 .25 1
+			text 				@MENUS_JOIN_A_TEAM
+			font				3
+			textscale 			.7
+			textalign 			ITEM_ALIGN_LEFT
+			textalignx 			6
+			textaligny 			2
+			forecolor			1 .68 0 1
+			visible 			1
+			decoration
+		}
+
+		// Border 		
+		itemDef 
+		{
+			name				teamborder
+			group				none
+			type 				ITEM_TYPE_TEXT
+			rect				317 26 317 103
+			forecolor			1 1 1 .6
+			visible				1
+			border				1
+			bordercolor 			1 1 1 1
+			decoration
+		}
+			
+	//----------------------------------------
+	// TEAM SYMBOLS AND COUNTS PER TEAM
+	//----------------------------------------
+
+		itemDef 
+		{
+			name				team1name
+			group				none
+			rect				355 47 45 45
+			cvar				cg_siegeTeam1Name
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			23
+			font				4
+			textscale			1
+			forecolor			.8 .48 0 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+								
+			name				team1_button
+			group				team_button			
+			rect				355 66 45 45
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			descText			@MENUS_JOIN_TEAM_DESC
+			backcolor			.8 .48 0 1
+			visible 			1
+											
+			mouseEnter 
+			{ 
+				setitemcolor		team1_button backcolor   1 .68 0 1
+				setitemcolor		team1_count  forecolor 	1 .68 0 1
+				setitemcolor		team1name  forecolor 1 .68 0 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		team1_button backcolor   .8 .48 0 1
+				setitemcolor		team1_count  forecolor .8 .48 0 1
+				setitemcolor		team1name  forecolor .8 .48 0 1
+			}
+			
+			// If you change this script, be sure to change	onteam1		
+			action 
+			{ 
+				// show the class stuff, cause this uses class
+				show			class_button	
+				show			class_count	
+				show			classdescription
+
+				play			"sound/interface/button1.wav"
+				setcvar			ui_holdteam 1
+				uiscript		updatesiegeclasscnt      1
+				uiscript		updatesiegecvars
+				
+				// Darken the other team buttons				
+				setitemcolor		team_button backcolor   .8 .48 0 1
+				setitemcolor		team_count  forecolor .8 .48 0 1
+				setitemcolor		team2name  forecolor .8 .48 0 1
+				setitemcolor		autoteam  bordercolor 0 0 0 0
+				
+				// turn on the other team buttons for input
+				disable			team_button	0
+				disable			autoteam	0
+				
+				// turn on class buttons
+				disable			class_button	0
+				
+				// highlight this team button
+				setitemcolor		team1_button backcolor 1 1 1 1
+				setitemcolor		team1_count  forecolor 1 1 1 1
+				setitemcolor		team1name  forecolor 1 1 1 1
+
+				// no more input for this guy
+				disable			team1_button	1
+				
+				show			grey_button
+				setitemcolor		class_button  forecolor .5 .5 .5 1
+								
+				setitemtext		class1_count "*ui_tm1_c0_cnt"
+				setitemtext		class2_count "*ui_tm1_c1_cnt"
+				setitemtext		class3_count "*ui_tm1_c2_cnt"
+				setitemtext		class4_count "*ui_tm1_c3_cnt"
+				setitemtext		class5_count "*ui_tm1_c4_cnt"
+				setitemtext		class6_count "*ui_tm1_c5_cnt"
+				hide			class_portrait
+				show			siegeclassconfigtitle
+				uiscript			resetsiegelistboxes
+				uiscript			resetitemdescription
+				hide			feeders
+				hide			forcepowerlevel
+				hide			stats
+				hide			classdescription
+				setitemcolor		class_count	forecolor .5 .5 .5 1
+				hide			itemdescription
+			}
+		}
+
+		itemDef 
+		{
+			name				team1_count
+			group				team_count
+			type 				ITEM_TYPE_TEXT
+			rect				355 111 60 18
+			cvar				ui_tm1_cnt
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			24
+			font				4
+			textscale			1
+			forecolor			.8 .48 0 1			
+			visible				1
+			decoration
+		}
+		
+		// This item is here just to have a script for C to run if the menu is opened by 
+		// a player who is already on a team		
+		itemDef 
+		{
+			name				onteam1
+			group				none
+			rect				455 47 45 45
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			23
+			forecolor			.8 .48 0 1
+			visible				0
+			decoration
+			action 
+			{ 
+				// show the class stuff, cause this uses class
+				show			class_button	
+				show			class_count	
+				show			classdescription
+
+//				setitemcolorcvar	feeders bordercolor "team1_coloron"				
+//				setitemcolorcvar	siegeclassconfigtitle forecolor "team1_coloron"				
+
+				play			"sound/interface/button1.wav"
+				setcvar			ui_holdteam 1
+				uiscript		updatesiegeclasscnt      1
+				uiscript		updatesiegecvars
+				
+				// Darken the other team buttons				
+				setitemcolor		team_button backcolor   .8 .48 0 1
+				setitemcolor		team_count  forecolor .8 .48 0 1
+				setitemcolor		team2name  forecolor .8 .48 0 1
+				setitemcolor		autoteam  bordercolor 0 0 0 0
+				
+				// turn on the other team buttons for input
+				disable			team_button	0
+				disable			autoteam	0
+				
+				// turn on class buttons
+				disable			class_button	0
+				
+				// highlight this team button
+				setitemcolor		team1_button backcolor 1 1 1 1
+				setitemcolor		team1_count  forecolor 1 1 1 1
+				setitemcolor		team1name  forecolor 1 1 1 1
+
+				// no more input for this guy
+				disable			team1_button	1
+				
+				show			grey_button
+				setitemcolor		class_button  forecolor .5 .5 .5 1
+								
+				setitemtext		class1_count "*ui_tm1_c0_cnt"
+				setitemtext		class2_count "*ui_tm1_c1_cnt"
+				setitemtext		class3_count "*ui_tm1_c2_cnt"
+				setitemtext		class4_count "*ui_tm1_c3_cnt"
+				setitemtext		class5_count "*ui_tm1_c4_cnt"
+				setitemtext		class6_count "*ui_tm1_c5_cnt"
+				hide			class_portrait
+				show			siegeclassconfigtitle
+				uiscript			resetsiegelistboxes
+				uiscript			resetitemdescription
+				hide			feeders
+				hide			forcepowerlevel
+				hide			stats
+				hide			classdescription
+				setitemcolor		class_count	forecolor .5 .5 .5 1
+				hide			itemdescription
+			}
+		}
+		itemDef 
+		{
+			name				team2name
+			group				none
+			rect				455 47 45 45
+			cvar				cg_siegeTeam2Name
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			23
+			font				4
+			textscale			1
+			forecolor			.8 .48 0 1
+			visible				1
+			decoration
+		}
+		itemDef 
+		{
+			name				team2_button			
+			group				team_button			
+			rect				455 67 45 45
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			descText			@MENUS_JOIN_TEAM_DESC
+			backcolor			.8 .48 0 1
+			visible 			1
+			
+			mouseEnter 
+			{ 
+				setitemcolor		team2_button backcolor   1 .68 0 1
+				setitemcolor		team2_count  forecolor 	1 .68 0 1
+				setitemcolor		team2name  forecolor 1 .68 0 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		team2_button backcolor   .8 .48 0 1
+				setitemcolor		team2_count  forecolor .8 .48 0 1
+				setitemcolor		team2name  forecolor .8 .48 0 1
+			}
+			
+			// If you change this script, be sure to change	onteam2
+			action 
+			{ 
+				// show the class stuff, cause this uses class
+				show			class_button	
+				show			class_count	
+				show			classdescription
+								
+				play			"sound/interface/button1.wav"
+				setcvar			ui_holdteam 2
+				uiscript		updatesiegeclasscnt      2
+				uiscript		updatesiegecvars
+
+				// Darken the other team buttons				
+				setitemcolor		team_button backcolor   .8 .48 0 1
+				setitemcolor		team_count  forecolor .8 .48 0 1
+				setitemcolor		team1name  forecolor .8 .48 0 1
+				setitemcolor		autoteam  bordercolor 0 0 0 0
+				// turn on the other team buttons for input
+				disable			team_button	0
+				disable			autoteam	0
+				
+				// turn on class buttons
+				disable			class_button	0
+				
+				// highlight this team button
+				setitemcolor		team2_button backcolor 1 1 1 1
+				setitemcolor		team2_count  forecolor 1 1 1 1
+				setitemcolor		team2name  forecolor 1 1 1 1
+				// no more input for this guy
+				disable			team2_button	1
+				
+				show			grey_button
+				setitemcolor		class_button  forecolor .5 .5 .5 1
+				setitemtext		class1_count "*ui_tm2_c0_cnt"
+				setitemtext		class2_count "*ui_tm2_c1_cnt"
+				setitemtext		class3_count "*ui_tm2_c2_cnt"
+				setitemtext		class4_count "*ui_tm2_c3_cnt"
+				setitemtext		class5_count "*ui_tm2_c4_cnt"
+				setitemtext		class6_count "*ui_tm2_c5_cnt"
+
+				hide			class_portrait
+				show			siegeclassconfigtitle
+				uiscript			resetsiegelistboxes
+				uiscript			resetitemdescription
+				hide			feeders
+				hide			forcepowerlevel
+				hide			stats
+				hide			classdescription
+				setitemcolor		class_count	forecolor .5 .5 .5 1
+				hide			itemdescription
+			}
+		}
+
+		itemDef 
+		{
+			name				team2_count
+			group				team_count
+			type 				ITEM_TYPE_TEXT
+			rect				455 111 60 18
+			cvar				ui_tm2_cnt
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			24
+			font				4
+			textscale			1
+			forecolor			.8 .48 0 1
+			visible				1
+			decoration
+		}
+		
+		// This item is here just to have a script for C to run if the menu is opened by 
+		// a player who is already on a team		
+		itemDef 
+		{
+			name				onteam2
+			group				none
+			rect				455 47 45 45
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			23
+			forecolor			.8 .48 0 1
+			visible				0
+			decoration
+			action 
+			{ 
+				// show the class stuff, cause this uses class
+				show			class_button	
+				show			class_count	
+				show			classdescription
+								
+				play			"sound/interface/button1.wav"
+				setcvar			ui_holdteam 2
+				uiscript		updatesiegeclasscnt      2
+				uiscript		updatesiegecvars
+
+				// Darken the other team buttons				
+				setitemcolor		team_button backcolor   .8 .48 0 1
+				setitemcolor		team_count  forecolor .8 .48 0 1
+				setitemcolor		team1name  forecolor .8 .48 0 1
+				setitemcolor		autoteam  bordercolor 0 0 0 0
+				// turn on the other team buttons for input
+				disable			team_button	0
+				disable			autoteam	0
+				
+				// turn on class buttons
+				disable			class_button	0
+				
+				// highlight this team button
+				setitemcolor		team2_button backcolor 1 1 1 1
+				setitemcolor		team2_count  forecolor 1 1 1 1
+				setitemcolor		team2name  forecolor 1 1 1 1
+				// no more input for this guy
+				disable			team2_button	1
+				
+				show			grey_button
+				setitemcolor		class_button  forecolor .5 .5 .5 1
+				setitemtext		class1_count "*ui_tm2_c0_cnt"
+				setitemtext		class2_count "*ui_tm2_c1_cnt"
+				setitemtext		class3_count "*ui_tm2_c2_cnt"
+				setitemtext		class4_count "*ui_tm2_c3_cnt"
+				setitemtext		class5_count "*ui_tm2_c4_cnt"
+				setitemtext		class6_count "*ui_tm2_c5_cnt"
+
+				hide			class_portrait
+				show			siegeclassconfigtitle
+				uiscript			resetsiegelistboxes
+				uiscript			resetitemdescription
+				hide			feeders
+				hide			forcepowerlevel
+				hide			stats
+				hide			classdescription
+				setitemcolor		class_count	forecolor .5 .5 .5 1
+				hide			itemdescription
+			}
+		}
+
+		itemDef 
+		{
+			name				team3name
+			group				none
+			rect				556 69 32 20
+			text				@MENUS_SPECTATOR
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			16
+			font				4
+			textscale			1
+			forecolor			.8 .48 0 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				spectator_symbol
+			group				none			
+			rect				556 45 32 32
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			descText			@MENUS_WATCH_DESC
+			backcolor			.5 .5 .5 1
+			visible 			1
+			background			"gfx/2d/mp_spec_symbol"
+			
+			mouseEnter 
+			{ 
+				setitemcolor		spectator_symbol backcolor   1 1 1 1
+				setitemcolor		team3name  forecolor 1 .68 0 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		spectator_symbol backcolor   .5 .5 .5 1
+				setitemcolor		team3name  forecolor .8 .48 0 1
+			}
+			action 
+			{ 
+			
+				play			"sound/interface/button1.wav"
+				setcvar			ui_holdteam 3
+				exec			"cmd team s" 				
+				uiScript		closeingame 						
+			}
+		}
+	
+
+
+	//----------------------------------------
+	// AUTOTEAM BUTTON
+	//----------------------------------------
+		itemDef 
+		{
+			name				autoteam_symbol
+			type 				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			descText			@MENUS_AUTO_JOIN_DESC
+			rect				556 85 32 32
+			backcolor			.5 .5 .5 1
+			visible				1 
+			background			"gfx/2d/mp_autoteam_symbol"
+			
+			mouseEnter 
+			{ 
+				setitemcolor		autoteam_symbol backcolor   1 1 1 1
+				setitemcolor		autoteamname  forecolor 1 .68 0 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		autoteam_symbol backcolor   .5 .5 .5 1
+				setitemcolor		autoteamname  forecolor .8 .48 0 1
+			}
+			action 
+			{ 
+				// hide the class stuff, cause this doesn't use class
+				hide			class_button	
+				hide			class_count	
+				hide			feeders
+				hide			stats
+				hide			classdescription
+				setitemcolor	siegeclassconfigtitle forecolor 1 1 1 1 
+								
+				play			"sound/interface/button1.wav"
+				exec			"cmd team free"
+				
+				uiScript		closeingame 
+			}
+		}
+
+
+		itemDef 
+		{
+			name				autoteamname
+			group				none
+			rect				556 109 32 20
+			text				@MENUS_CAP_AUTO_JOIN
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			16
+			font				4
+			textscale			1
+			forecolor			.8 .48 0 1
+			visible				1
+			decoration
+		}
+
+
+//----------------------------------------------------------------------------------------------
+// CLASS SELECTION
+//----------------------------------------------------------------------------------------------
+		// join a team text
+		itemDef 
+		{
+			name 				siegeclassconfigtitle
+			rect 				318 130 316 20
+			style 				WINDOW_STYLE_FILLED
+			backcolor			.05 .13 .25 1
+			text 				@MENUS_CHOOSE_CLASS
+			font				3
+			textscale 			.7
+			textalign 			ITEM_ALIGN_LEFT
+			textalignx 			6
+			textaligny 			2
+			forecolor			1 .68 0 1
+			visible 			0
+			decoration
+		}
+
+		// Border around the objective half of the screen		
+		itemDef 
+		{
+			name				border
+			group				none
+			type 				ITEM_TYPE_TEXT
+			rect				317 130 317 331
+			forecolor			1 1 1 .6
+			visible				1
+			border				1
+			bordercolor 			1 1 1 1
+			decoration
+		}
+
+
+//----------------------------------------------------------------------------------------------
+// CLASS 1 - INFANTRY
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				class1_desc
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				328 154 45 18
+			text				@MENUS_SIEGE_ASSAULT
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			22
+			font				4
+			textscale			.5
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				class1_button
+			group				class_button
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/mp/c_icon_infantry"
+			rect				328 165 45 45
+			forecolor			.5  .5  .5  1
+			visible				1 
+			descText			@MENUS_CLASS_CHOICE_DESC
+			cvartest			"ui_infantry_cnt"
+			disablecvar			{ "0" }
+			
+			mouseEnter 
+			{ 
+				setitemcolor		class1_button	forecolor	1 1 1 1
+				setitemcolor		class1_count	forecolor	1 1 1 1
+				setitemcolor		class1_desc	forecolor	1 1 1 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		class1_button	forecolor	.5 .5 .5 1
+				setitemcolor		class1_count	forecolor	.5 .5 .5 1
+				setitemcolor		class1_desc	forecolor	.5 .5 .5 1
+			}
+			
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				
+				setcvar			ui_siege_class 0
+				uiscript		updatesiegecvars
+				
+				// Turn other buttons on
+				setitemcolor		class_button	forecolor	.5 .5 .5 1
+				disable			class_button	0
+				setitemcolor		class_count	forecolor	.5 .5 .5 1
+				
+				// High light this button and disable it
+				setitemcolor		class1_button	forecolor	1 1 1 1
+				setitemcolor		class1_count	forecolor	1 1 1 1
+				setitemcolor		class1_desc	forecolor	1 1 1 1
+				disable			class1_button	1			
+				
+//		setitemtext		description 	"*ui_classdesc"
+				show			class_portrait
+				setitembackground	class_portrait	"*ui_classportrait"
+				setitemrect		class_portrait	328 162 45 45
+
+				uiscript			resetsiegelistboxes
+				uiscript			resetitemdescription
+				show			description
+				hide			itemdescription
+				setitemcolor		stats	forecolor	1 1 1 1
+				show			feeders
+				show			stats
+				show			forcepowerlevel
+			}
+		}
+
+		itemDef 
+		{
+			name				class1_count
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				328 207 45 18
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			23
+			font				4
+			textscale			1
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				class1_greybutton
+			group				grey_button
+			style				WINDOW_STYLE_FILLED
+			rect				328 165 45 45
+			forecolor			.5 .5 .5 .6
+			backcolor			.5 .5 .5 .6
+			visible				1 
+			cvartest			"ui_infantry_cnt"
+			showcvar			{ "0" }
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+// CLASS 2
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				class2_desc
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				379 154 45 18
+			text				@MENUS_SIEGE_HEAVY_WEAPS
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			20
+			font				4
+			textscale			.5
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				class2_button
+			group				class_button
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/mp/c_icon_heavy_weapons"
+			rect				379 165 45 45
+			forecolor			.5  .5  .5  1
+			visible				1 
+			descText			@MENUS_CLASS_CHOICE_DESC
+			cvartest			"ui_heavy_cnt"
+			disablecvar			{ "0" }
+			
+			mouseEnter 
+			{ 
+				setitemcolor		class2_button	forecolor	1 1 1 1
+				setitemcolor		class2_count	forecolor	1 1 1 1
+				setitemcolor		class2_desc	forecolor	1 1 1 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		class2_button	forecolor	.5 .5 .5 1
+				setitemcolor		class2_count	forecolor	.5 .5 .5 1
+				setitemcolor		class2_desc	forecolor	.5 .5 .5 1
+			}
+			
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				
+				setcvar			ui_siege_class 5
+				uiscript		updatesiegecvars
+				
+				// Turn other buttons on
+				setitemcolor		class_button	forecolor	.5 .5 .5 1
+				disable			class_button	0
+				setitemcolor		class_count	forecolor	.5 .5 .5 1
+				
+				// High light this button and disable it
+				setitemcolor		class2_button	forecolor	1 1 1 1
+				setitemcolor		class2_count	forecolor	1 1 1 1
+				setitemcolor		class2_desc	forecolor	1 1 1 1
+				disable			class2_button	1			
+				
+//		setitemtext		description 	"*ui_classdesc"
+				show			class_portrait
+				setitembackground	class_portrait	"*ui_classportrait"
+				setitemrect		class_portrait	379 162 45 45
+				
+				uiscript			resetsiegelistboxes
+				uiscript			resetitemdescription
+				show			description
+				hide			itemdescription
+				setitemcolor		stats	forecolor	1 1 1 1
+				show			feeders
+				show			stats
+				show			forcepowerlevel
+			}
+		}
+
+		itemDef 
+		{
+			name				class2_count
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				379 207 45 18
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			23
+			font				4
+			textscale			1
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				class2_greybutton
+			group				grey_button
+			style				WINDOW_STYLE_FILLED
+			rect				379 165 45 45
+			forecolor			.5 .5 .5 .6
+			backcolor			.5 .5 .5 .6
+			visible				1 
+			cvartest			"ui_heavy_cnt"
+			showcvar			{ "0" }
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+// CLASS 3
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				class3_desc
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				430 154 45 18
+			text				@MENUS_SIEGE_DEMOLITIONS
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			19
+			font				4
+			textscale			.5
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+
+		// The actual button
+		itemDef 
+		{
+			name				class3_button
+			group				class_button
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/mp/c_icon_demolitionist"
+			rect				430 165 45 45
+			forecolor			.5  .5  .5  1
+			visible				1 
+			descText			@MENUS_CLASS_CHOICE_DESC
+			cvartest			"ui_demo_cnt"
+			disablecvar			{ "0" }
+			
+			mouseEnter 
+			{ 
+				setitemcolor		class3_button	forecolor	1 1 1 1
+				setitemcolor		class3_count	forecolor	1 1 1 1
+				setitemcolor		class3_desc	forecolor	1 1 1 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		class3_button	forecolor	.5 .5 .5 1
+				setitemcolor		class3_count	forecolor	.5 .5 .5 1
+				setitemcolor		class3_desc	forecolor	.5 .5 .5 1
+			}
+			
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				
+				setcvar			ui_siege_class 4
+				uiscript		updatesiegecvars
+				
+				// Turn other buttons on
+				setitemcolor		class_button	forecolor	.5 .5 .5 1
+				disable			class_button	0
+				setitemcolor		class_count	forecolor	.5 .5 .5 1
+				
+				// High light this button and disable it
+				setitemcolor		class3_button	forecolor	1 1 1 1
+				setitemcolor		class3_count	forecolor	1 1 1 1
+				setitemcolor		class3_desc	forecolor	1 1 1 1
+				disable			class3_button	1			
+				
+//		setitemtext		description 	"*ui_classdesc"
+				show			class_portrait
+				setitembackground	class_portrait	"*ui_classportrait"
+				setitemrect		class_portrait	430 162 45 45
+
+				uiscript			resetsiegelistboxes
+				uiscript			resetitemdescription
+				
+				show			description
+				hide			itemdescription
+				setitemcolor		stats	forecolor	1 1 1 1
+				show			feeders
+				show			stats
+				show			forcepowerlevel
+			}
+		}
+
+		itemDef 
+		{
+			name				class3_count
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				430 207 45 18
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			23
+			font				4
+			textscale			1
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				class3_greybutton
+			group				grey_button
+			style				WINDOW_STYLE_FILLED
+			rect				430 165 45 45
+			forecolor			.5 .5 .5 .6
+			backcolor			.5 .5 .5 .6
+			visible				1 
+			cvartest			"ui_demo_cnt"
+			showcvar			{ "0" }
+			decoration
+		}
+		
+//----------------------------------------------------------------------------------------------
+// CLASS 4
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				class4_desc
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				481 154 45 18
+			text				@MENUS_SIEGE_SCOUT
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			21
+			font				4
+			textscale			.5
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+
+		// The actual button
+		itemDef 
+		{
+			name				class4_button
+			group				class_button
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/mp/c_icon_vanguard"
+			rect				481 165 45 45
+			forecolor			.5  .5  .5  1
+			visible				1 
+			descText			@MENUS_CLASS_CHOICE_DESC
+			cvartest			"ui_vanguard_cnt"
+			disablecvar			{ "0" }
+			
+			mouseEnter 
+			{ 
+				setitemcolor		class4_button	forecolor	1 1 1 1
+				setitemcolor		class4_count	forecolor	1 1 1 1
+				setitemcolor		class4_desc	forecolor	1 1 1 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		class4_button	forecolor	.5 .5 .5 1
+				setitemcolor		class4_count	forecolor	.5 .5 .5 1
+				setitemcolor		class4_desc	forecolor	.5 .5 .5 1
+			}
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				
+				setcvar			ui_siege_class 1
+				uiscript		updatesiegecvars
+				
+				// Turn other buttons on
+				setitemcolor		class_button	forecolor	.5 .5 .5 1
+				disable			class_button	0
+				setitemcolor		class_count	forecolor	.5 .5 .5 1
+				
+				// High light this button and disable it
+				setitemcolor		class4_button	forecolor	1 1 1 1
+				setitemcolor		class4_count	forecolor	1 1 1 1
+				setitemcolor		class4_desc	forecolor	1 1 1 1
+				disable			class4_button	1				
+				
+//		setitemtext		description 	"*ui_classdesc"
+				show			class_portrait
+				setitembackground	class_portrait	"*ui_classportrait"
+				setitemrect		class_portrait	481 162 45 45
+
+				uiscript			resetsiegelistboxes
+				uiscript			resetitemdescription
+
+				show			description
+				hide			itemdescription
+				setitemcolor		stats	forecolor	1 1 1 1
+				show			feeders
+				show			stats
+				show			forcepowerlevel
+			}
+		}
+
+		itemDef 
+		{
+			name				class4_count
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				481 207 60 18
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			24
+			font				4
+			textscale			1
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				class4_greybutton
+			group				grey_button
+			style				WINDOW_STYLE_FILLED
+			rect				481 165 45 45
+			forecolor			.5 .5 .5 .6
+			backcolor			.5 .5 .5 .6
+			visible				1 
+			cvartest			"ui_vanguard_cnt"
+			showcvar			{ "0" }
+			decoration
+		}
+		
+//----------------------------------------------------------------------------------------------
+// CLASS 5
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				class5_desc
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				532 154 45 18
+			text				@MENUS_SIEGE_TECH
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			21
+			font				4
+			textscale			.5
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+		
+		// The actual button
+		itemDef 
+		{
+			name				class5_button
+			group				class_button
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/mp/c_icon_support"
+			rect				532 165 45 45
+			forecolor			.5  .5  .5  1
+			visible				1 
+			descText			@MENUS_CLASS_CHOICE_DESC
+			cvartest			"ui_support_cnt"
+			disablecvar			{ "0" }
+			
+			mouseEnter 
+			{ 
+				setitemcolor		class5_button	forecolor	1 1 1 1
+				setitemcolor		class5_count	forecolor	1 1 1 1
+				setitemcolor		class5_desc	forecolor	1 1 1 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		class5_button	forecolor	.5 .5 .5 1
+				setitemcolor		class5_count	forecolor	.5 .5 .5 1
+				setitemcolor		class5_desc	forecolor	.5 .5 .5 1
+			}
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				
+				setcvar			ui_siege_class 2
+				uiscript		updatesiegecvars
+				
+				// Turn other buttons on
+				setitemcolor		class_button	forecolor	.5 .5 .5 1
+				disable			class_button	0
+				setitemcolor		class_count	forecolor	.5 .5 .5 1
+				
+				// High light this button and disable it
+				setitemcolor		class5_button	forecolor	1 1 1 1
+				setitemcolor		class5_count	forecolor	1 1 1 1
+				setitemcolor		class5_desc	forecolor	1 1 1 1
+				disable			class5_button	1				
+				
+//		setitemtext		description 	"*ui_classdesc"
+				show			class_portrait
+				setitembackground	class_portrait	"*ui_classportrait"
+				setitemrect		class_portrait	532 162 45 45
+
+				uiscript			resetsiegelistboxes
+				uiscript			resetitemdescription
+				
+				show			description
+				hide			itemdescription
+				setitemcolor		stats	forecolor	1 1 1 1
+				show			feeders
+				show			stats
+				show			forcepowerlevel
+			}
+		}
+
+		itemDef 
+		{
+			name				class5_count
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				532 207 60 18
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			23
+			font				4
+			textscale			1
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				class5_greybutton
+			group				grey_button
+			style				WINDOW_STYLE_FILLED
+			rect				532 165 45 45
+			forecolor			.5 .5 .5 .6
+			backcolor			.5 .5 .5 .6
+			visible				1 
+			cvartest			"ui_support_cnt"
+			showcvar			{ "0" }
+			decoration
+		}
+		
+//--------------------------------------------------
+// CLASS 6
+//--------------------------------------------------
+		itemDef 
+		{
+			name				class6_desc
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				583 154 45 18
+			text				@MENUS_SIEGE_JEDI
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			21
+			font				4
+			textscale			.5
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+
+		// The actual button
+		itemDef 
+		{
+			name				class6_button
+			group				class_button
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/mp/c_icon_jedi_general"
+			rect				583 165 45 45
+			forecolor			.5  .5  .5  1
+			visible				1 
+			descText			@MENUS_CLASS_CHOICE_DESC
+			cvartest			"ui_jedi_cnt"
+			disablecvar			{ "0" }
+			mouseEnter 
+			{ 
+				setitemcolor		class6_button	forecolor	1 1 1 1
+				setitemcolor		class6_count	forecolor	1 1 1 1
+				setitemcolor		class6_desc	forecolor	1 1 1 1
+			}
+			mouseExit 
+			{ 
+				setitemcolor		class6_button	forecolor	.5 .5 .5 1
+				setitemcolor		class6_count	forecolor	.5 .5 .5 1
+				setitemcolor		class6_desc	forecolor	.5 .5 .5 1
+			}
+			
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				
+				setcvar			ui_siege_class 3
+				uiscript		updatesiegecvars
+				
+				// Turn other buttons on
+				setitemcolor		class_button	forecolor	.5 .5 .5 1
+				disable			class_button	0
+				setitemcolor		class_count	forecolor	.5 .5 .5 1
+				
+				// High light this button and disable it
+				setitemcolor		class6_button	forecolor	1 1 1 1
+				setitemcolor		class6_count	forecolor	1 1 1 1
+				setitemcolor		class6_desc	forecolor	1 1 1 1
+				disable			class6_button	1				
+				
+//		setitemtext		description 	"*ui_classdesc"
+				show			class_portrait
+				setitembackground	class_portrait	"*ui_classportrait"
+				setitemrect		class_portrait	583 162 45 45
+
+				uiscript			resetsiegelistboxes
+				uiscript			resetitemdescription
+				
+				show			description
+				hide			itemdescription
+				setitemcolor		stats	forecolor	1 1 1 1
+				show			feeders
+				show			stats
+				show			forcepowerlevel
+			}
+		}
+
+		itemDef 
+		{
+			name				class6_count
+			group				class_count
+			type 				ITEM_TYPE_TEXT
+			rect				583 207 60 18
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			23
+			font				4
+			textscale			1
+			forecolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				class6_greybutton
+			group				grey_button
+			style				WINDOW_STYLE_FILLED
+			rect				583 165 45 45
+			forecolor			.5 .5 .5 .6
+			backcolor			.5 .5 .5 .6
+			visible				1 
+			cvartest			"ui_jedi_cnt"
+			showcvar			{ "0" }
+			decoration
+		}
+		
+//--------------------------------------------------
+// CLASS PORTRAIT - this gets its background value from ui_classportrait
+//--------------------------------------------------
+		itemDef 
+		{
+			name				class_portrait
+			style				WINDOW_STYLE_FILLED
+			rect				526 176 45 45
+			backcolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+//-----------------------------------------------
+//
+// DISPLAY HEALTH, SHIELD, SPEED
+//
+//-----------------------------------------------
+
+		itemDef 
+		{
+			name 				health_disp
+			group				stats
+			rect 				328 230 110 20
+			type				ITEM_TYPE_EDITFIELD
+			text				@SIEGE_HEALTH
+			cvar				"ui_class_health"
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx			0
+			textaligny			0
+			font				4
+			textscale			.7
+			visible 			0
+			forecolor 			.5 .5 .5 1
+			decoration
+		}
+
+		itemDef 
+		{
+			name 				armor_disp
+			group				stats
+			rect 				438 230 100 20
+			type				ITEM_TYPE_EDITFIELD
+			text				@SIEGE_SHIELDS
+			cvar				"ui_class_armor"
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx			0
+			textaligny			0
+			font				4
+			textscale			.7
+			forecolor 			.5 .5 .5 1
+			visible 			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name 				speed_disp
+			group				stats
+			rect 				548 230 100 20
+			type				ITEM_TYPE_EDITFIELD
+			text				@SIEGE_SPEED
+			cvar				"ui_class_speed"
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx			0
+			textaligny			0
+			font				4
+			textscale			.7
+			visible 			0
+			forecolor 			.5 .5 .5 1
+			decoration
+		}
+
+//--------------------------------------------------
+// BASE CLASS WEAPONS FEEDER
+//--------------------------------------------------
+		itemDef 
+		{
+			name				base_class_weapons_feed
+			group				feeders
+			type 				ITEM_TYPE_LISTBOX
+			desctext			@MENUS_CLASS_WEAPONS
+			style 				WINDOW_STYLE_FILLED
+			elementwidth 			34
+			elementheight 			34
+			elementtype 			LISTBOX_IMAGE
+			feeder 				FEEDER_SIEGE_CLASS_WEAPONS
+			rect				326 246 148 52
+			horizontalscroll
+			backcolor 			0 0 0 0
+			border 				1
+			bordercolor 			1 1 1 1
+			forecolor 			1 1 1 1
+			visible 			1
+			textscale 			0.7
+			action
+			{
+				hide			description
+				show			itemdescription
+				uiscript		updatesiegeweapondesc
+				uiscript		resetitemdescription
+			}
+
+		}
+			
+
+//--------------------------------------------------
+// BASE CLASS INVENTORY FEEDER
+//--------------------------------------------------
+		itemDef 
+		{
+			name				base_class_inventory_feed
+			group				feeders
+			desctext			@MENUS_CLASS_INVENTORY
+			type 				ITEM_TYPE_LISTBOX
+			style 				WINDOW_STYLE_FILLED
+			elementwidth 			34
+			elementheight 			34
+			elementtype 			LISTBOX_IMAGE
+			feeder 				FEEDER_SIEGE_CLASS_INVENTORY
+			rect				479 246 148 52
+			horizontalscroll
+			backcolor 			0 0 0 0
+			border 				1
+			bordercolor 			1 1 1 1
+			forecolor 			1 1 1 1
+			visible 			1
+			textscale 			0.7
+			action
+			{
+				hide			description
+				show			itemdescription
+				uiscript		updatesiegeinventorydesc
+				uiscript		resetitemdescription
+			}
+
+		}
+			
+//--------------------------------------------------
+// BASE CLASS FORCE POWER FEEDER
+//--------------------------------------------------
+		itemDef 
+		{
+			name				base_class_force_feed
+			group				feeders
+			type 				ITEM_TYPE_LISTBOX
+			desctext			@MENUS_CLASS_FORCEPOWERS
+			style 				WINDOW_STYLE_FILLED
+			elementwidth 			34
+			elementheight 			34
+			elementtype 			LISTBOX_IMAGE
+			feeder 				FEEDER_SIEGE_CLASS_FORCE
+			rect				320 299 311 52
+			horizontalscroll
+			backcolor 			0 0 0 0
+			border 				1
+			bordercolor 			1 1 1 1
+			forecolor 			1 1 1 1
+			visible 			1
+			textscale 			0.7
+			action
+			{
+				hide			description
+				show			itemdescription
+				uiscript		updatesiegeforcedesc
+				uiscript		resetitemdescription
+			}
+
+		}
+			
+		itemDef 
+		{
+			name 				description
+			group				classdescription
+			rect 				327 356 300 85
+			type				ITEM_TYPE_TEXTSCROLL
+			text				"   "
+			cvar				ui_classdesc
+			font				4
+			textscale 			1
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			0
+			lineHeight			13			
+		}
+		
+		itemDef 
+		{
+			name				slot0
+			group 				forcepowerlevel
+			rect 				350 322 300 80
+			type				ITEM_TYPE_TEXT
+			font				4
+			textscale 			.5
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			0
+			cvar				ui_class_powerlevelslot0
+			cvartest			ui_class_powerlevelslot0
+			hidecvar			
+			{
+				"0"
+			}
+		}
+							
+		itemDef 
+		{
+			name				slot1
+			group 				forcepowerlevel
+			rect 				384 322 300 80
+			type				ITEM_TYPE_TEXT
+			cvar				ui_itemforceinvdesc
+			font				4
+			textscale 			.5
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			0
+			cvar				ui_class_powerlevelslot1
+			cvartest			ui_class_powerlevelslot1
+			hidecvar			
+			{
+				"0"
+			}
+		}
+							
+		itemDef 
+		{
+			name				slot2
+			group 				forcepowerlevel
+			rect 				418 322 300 80
+			type				ITEM_TYPE_TEXT
+			cvar				ui_itemforceinvdesc
+			font				4
+			textscale 			.5
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			0
+			cvar				ui_class_powerlevelslot2
+			cvartest			ui_class_powerlevelslot2
+			hidecvar			
+			{
+				"0"
+			}
+		}
+							
+		itemDef 
+		{
+			name				slot3
+			group 				forcepowerlevel
+			rect 				452 322 300 80
+			type				ITEM_TYPE_TEXT
+			cvar				ui_itemforceinvdesc
+			font				4
+			textscale 			.5
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			0
+			cvar				ui_class_powerlevelslot3
+			cvartest			ui_class_powerlevelslot3
+			hidecvar			
+			{
+				"0"
+			}
+		}
+							
+		itemDef 
+		{
+			name				slot4
+			group 				forcepowerlevel
+			rect 				486 322 300 80
+			type				ITEM_TYPE_TEXT
+			cvar				ui_itemforceinvdesc
+			font				4
+			textscale 			.5
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			0
+			cvar				ui_class_powerlevelslot4
+			cvartest			ui_class_powerlevelslot4
+			hidecvar			
+			{
+				"0"
+			}
+		}
+							
+		itemDef 
+		{
+			name				slot5
+			group 				forcepowerlevel
+			rect 				520 322 300 80
+			type				ITEM_TYPE_TEXT
+			cvar				ui_itemforceinvdesc
+			font				4
+			textscale 			.5
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			0
+			cvar				ui_class_powerlevelslot5
+			cvartest			ui_class_powerlevelslot5
+			hidecvar			
+			{
+				"0"
+			}
+		}
+							
+		itemDef 
+		{
+			name				slot6
+			group 				forcepowerlevel
+			rect 				554 322 300 80
+			type				ITEM_TYPE_TEXT
+			cvar				ui_itemforceinvdesc
+			font				4
+			textscale 			.5
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			1
+			cvar				ui_class_powerlevelslot6
+			cvartest			ui_class_powerlevelslot6
+			hidecvar			
+			{
+				"0"
+			}
+		}
+							
+		itemDef 
+		{
+			name				slot7
+			group 				forcepowerlevel
+			rect 				588 322 300 80
+			type				ITEM_TYPE_TEXT
+			cvar				ui_itemforceinvdesc
+			font				4
+			textscale 			.5
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			1
+			cvar				ui_class_powerlevelslot7
+			cvartest			ui_class_powerlevelslot7
+			hidecvar			
+			{
+				"0"
+			}
+		}
+							
+		itemDef 
+		{
+			name				slot8
+			group 				forcepowerlevel
+			rect 				620 322 300 80
+			type				ITEM_TYPE_TEXT
+			cvar				ui_itemforceinvdesc
+			font				4
+			textscale 			.5
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			1
+			cvar				ui_class_powerlevelslot8
+			cvartest			ui_class_powerlevelslot8
+			hidecvar			
+			{
+				"0"
+			}
+		}
+							
+		itemDef 
+		{
+			name 				itemdescription
+			group				itemdescription
+			rect 				327 356 300 85
+			type				ITEM_TYPE_TEXTSCROLL
+			text				"   "
+			cvar				ui_itemforceinvdesc
+			font				4
+			textscale 			1
+			textalign 			ITEM_ALIGN_LEFT
+			forecolor			1 1 1 1
+			visible 			0
+			lineHeight			13			
+		}
+							
+	//-----------------------------------------------
+	// CANCEL BUTTON
+	//-----------------------------------------------
+		itemDef 
+		{
+			name 				cancel
+			text 				@MENUS_CANCEL
+			type 				1
+			textscale 			.8
+			group 				grpControlbutton
+			type 				ITEM_TYPE_BUTTON
+			rect 				325 460 150 26
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			75
+			forecolor			1 .682 0 1
+			backcolor 			.37 .1 .1 1
+			visible 			1
+			descText			@MENUS_CANCEL_DESC
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				hide			stats
+				hide			forcepowerlevel
+				close 			all
+			}
+		}
+	//-----------------------------------------------
+	// OKAY BUTTON
+	//-----------------------------------------------
+		itemDef 
+		{
+			name 				okay
+			text 				@MENUS_OKAY
+			type 				1
+			textscale 			.8
+			group 				grpControlbutton
+			type 				ITEM_TYPE_BUTTON
+			rect 				480 460 150 26
+			textalign 			ITEM_ALIGN_CENTER
+			textalignx 			75
+			forecolor			1 .682 0 1
+			backcolor 			.37 .1 .1 1
+			visible 			1
+			descText			@MENUS_JOIN_GAME
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				uiScript		setsiegeclassandteam
+				hide			stats
+				hide			forcepowerlevel
+				uiScript		closeingame
+			}
+		}
+		
+	}
+}

@@ -1,0 +1,2011 @@
+//----------------------------------------------------------------------------------------------
+//
+//	CREATE SERVER MENU
+//
+//----------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name					"createserver"
+		fullScreen				MENU_TRUE				
+		rect					0 0 640 480				// Size and position of the menu
+		visible					1					// Visible on open
+		focusColor				1 1 1 1				// Focus color for text and items
+		descX					320
+		descY					424
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER		
+
+		onEsc 
+		{ 
+			setcvartocvar 			password g_password 
+			close				createserver
+			open				multiplayermenu
+			uiscript			checkservername
+		}
+
+		onOpen 
+		{ 
+			setcvartocvar 			password g_password
+			uiScript			loadArenas
+			hide				accept_alt
+			show				accept
+			hide				back_alt
+			show				back
+			hide				grpmessage
+			uiScript			setBotButtons
+			uiscript			clampmaxplayers
+			uiscript			checkservername
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	MENU BACKGROUND
+		//
+		//----------------------------------------------------------------------------------------------
+
+		itemDef 
+		{
+			name				really_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				156 154 320 240
+			background			"gfx/menus/main_centerblue"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 160 480
+			background			"gfx/menus/menu_side_text"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text_b
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				480 0 160 480
+			background			"gfx/menus/menu_side_text_right"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}	
+	
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/main_background"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+/////////////////////////////////////
+// Create Server title
+/////////////////////////////////////
+
+		itemDef 
+		{
+			name				create_title
+			group				none
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS_CREATE_A_NEW_MULTIPLAYER
+      			rect				50 4 540 16
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			270
+			textaligny			-1	
+			forecolor			.549 .854 1 1
+      			visible			1 
+      			decoration 
+		}
+
+/////////////////////////////////////
+// Blue backgrounds
+/////////////////////////////////////
+
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				2 50 200 192	
+			backcolor			0 0 .6 .5
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .6 1
+			visible				1
+			decoration
+		}
+		
+		
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				204 50 429 192	
+			backcolor			0 0 .6 .5
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .6 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				204 244 429 178	
+			backcolor			0 0 .6 .5
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .6 1
+			visible				1
+			decoration
+		}
+		
+//---------------------------------------------
+//	GAME TYPE SELECTION FIELD
+//---------------------------------------------
+		itemDef 
+		{
+			name				gametypefieldButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				5 25 255 26 
+			background			"gfx/menus/menu_blendbox3"		
+			forecolor			.615 .615 .956 1
+			visible				0 
+			decoration
+
+		}
+
+		itemDef 
+		{
+			name				gametypefield
+			style				0	
+			ownerdraw			UI_NETGAMETYPE
+			text				@MENUS_GAME_TYPE
+			descText			@MENUS_ALLOWS_YOU_TO_SELECT
+			textstyle			0
+			rect				5 25 255 26 
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx			10     
+			textaligny			-3    
+			font				2
+			textscale			.9
+			forecolor			.615 .615 .956 1
+			visible				1
+			border				0
+			bordercolor			1 1 1 1
+			action 
+			{ 
+				play			"sound/interface/button1" 
+				uiScript		setBotButtons
+			}
+			mouseEnter 
+			{ 
+				show			gametypefieldButton
+			}
+			mouseExit 
+			{ 
+				hide			gametypefieldButton
+			}	  	  
+		}
+
+//---------------------------------------------
+//	SERVER NAME ENTRY FIELD
+//---------------------------------------------
+
+		itemDef 
+		{
+			name				hostnameButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				220 22 470 26 
+			background			"gfx/menus/menu_blendbox"	
+			forecolor			.615 .615 .956 1
+			decoration
+			visible				0 
+		}
+
+		itemDef 
+		{
+			name				expert
+			group				grpsettings
+			type				ITEM_TYPE_EDITFIELD
+			text				@MENUS_SERVER_NAME_1				//@HOST_NAME
+			cvar				"sv_hostname"
+			maxChars			32
+			maxPaintChars			18
+			rect				260 25 310 26
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			10
+			textaligny			-3
+			font				2
+			textscale			.9
+			forecolor			.615 .615 .956 1
+			visible				1  
+			border				0
+			bordercolor			.79 .64 .22 1
+			descText			@MENUS_ENTER_THE_NAME_FOR_YOUR
+			mouseEnter 
+			{ 
+				show			hostnameButton
+			}
+			mouseExit 
+			{ 
+				hide			hostnameButton
+				uiscript		checkservername
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1" 
+				uiscript		checkservername
+			}
+		}
+//------------------------------------------------
+//
+// 	GAME SETTINGS
+//
+//------------------------------------------------
+
+//
+// GENERAL RULES TITLE
+//
+
+		itemDef 
+		{
+			name				rules_title
+			group				none
+			text				@MENUS_GENERAL_RULES
+      			rect				10 55 180 20
+			font				3
+			textscale			0.8
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			90
+			textaligny			-2	
+			forecolor			.549 .854 1 1
+      			visible				1 
+      			decoration 
+		}
+
+//
+// MINIMUM BOTS/PLAYERS
+//
+		itemDef 
+		{
+			name				settingsButton11
+			style				WINDOW_STYLE_SHADER
+			rect 				10 75 180 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				expert
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			maxchars			4
+			text				@MENUS_PLAYERS
+			descText			@MENUS_PLAYERS_INFO
+			cvar				"bot_minplayers"
+			rect				10 75 180 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			145
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			cvarTest			"ui_netGameType"
+			hideCvar
+			{ 
+				"4"
+			}     
+			visible				1
+			action 
+			{
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			settingsButton11 
+			}
+			mouseExit 
+			{ 
+				hide 			settingsButton11 
+			}
+		}
+		
+// TEAM SWITCHING
+		itemDef 
+		{
+			name				expert
+			group				grpsettings
+			type				ITEM_TYPE_YESNO
+			text				@MENUS_TEAM_SWITCHING
+			cvar				"g_siegeTeamSwitch"
+			cvarTest			"ui_netGameType"
+			showCvar
+			{ 
+				"4"
+			}     
+			rect				10 75 180 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			145
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1  
+			descText			@MENUS_TEAM_SWITCHING_DESC
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{
+				show 			settingsButton11
+			}
+			mouseExit 
+			{ 
+				hide 			settingsButton11 
+			}
+		}
+		
+//
+// MAX PLAYERS
+//
+		itemDef 
+		{
+			name				settingsButton1
+			style				WINDOW_STYLE_SHADER
+			rect 				10 95 180 20 
+			background			"gfx/menus/menu_blendbox"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				expert
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			text				@MENUS_MAXIMUM_PLAYERS
+			cvar				"sv_maxclients"
+			rect				10 95 180 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			145
+			textaligny			0
+			font				4
+			textscale			1
+			maxchars			6
+			forecolor			.615 .615 .956 1
+			visible				1  
+			descText			@MENUS_SETS_THE_MAXIMUM_NUMBER
+			action 	
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 
+				show 			settingsButton1
+			}
+			mouseExit 
+			{ 
+				hide 			settingsButton1
+				uiscript		clampmaxplayers
+			}
+		}
+
+//
+// EVEN TEAMS
+//
+		itemDef 
+		{
+			name				settingsButton10
+			style				WINDOW_STYLE_SHADER
+			rect 				10 115 180 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				expert
+			group				grpsettings
+			type				ITEM_TYPE_YESNO
+			text				@MENUS_EVEN_TEAMS
+			cvar				"g_teamforcebalance"
+			cvarTest			"ui_netGameType"
+			showCvar
+			{ 
+				"3" ;
+				"4" ;
+				"5"
+			}     
+			rect				10 115 180 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			145
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1  
+			descText			@MENUS_THIS_OPTION_RE_BALANCES
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{
+				show 			settingsButton10 
+			}
+			mouseExit 
+			{ 
+				hide 			settingsButton10 
+			}
+		}
+
+//
+// END GAME RULES TITLE
+//
+
+		itemDef 
+		{
+			name				rules_title
+			group				none
+			text				@MENUS_ENDGAME_RULES
+      			rect				10 155 180 20
+			font				3
+			textscale			0.8
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			90
+			textaligny			-2	
+			forecolor			.549 .854 1 1
+      			visible				1 
+      			decoration 
+		}
+
+
+//
+// TIME LIMIT
+//
+		itemDef 
+		{
+			name				settingsButton2
+			style				WINDOW_STYLE_SHADER
+			rect 				10 175 180 20 
+			background			"gfx/menus/menu_blendbox"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name				normal
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			text				@MENUS_TIME_LIMIT
+			cvar				"timelimit"
+			rect				10 175 180 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			145
+			textaligny			0
+			font				4
+			textscale			1
+			maxchars			4
+			forecolor			.615 .615 .956 1
+			visible				1  	
+			descText			@MENUS_THIS_VALUE_ADJUSTS_THE
+			cvarTest			"ui_netGameType"
+			hideCvar
+			{ 
+				"1" ;
+				"2" ;
+				"4"
+			}     
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 
+				show 			settingsButton2 
+			}
+			mouseExit 
+			{ 	
+				hide 			settingsButton2 
+			}
+		}
+
+
+//
+// KILL LIMIT / CAPTURE LIMIT /DUEL LIMIT 
+//
+		itemDef 
+		{
+			name				settingsButton3
+			style				WINDOW_STYLE_SHADER
+			rect 				10 195 180 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				normal
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			text				@MENUS_KILL_LIMIT
+			cvar				"fraglimit"
+			cvarTest			"ui_netGameType"
+			showCvar
+			{ 
+				"0" ;
+				"3"
+			}     
+			rect				10 195 180 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			145
+			textaligny			0
+			font				4
+			textscale			1
+			maxchars			4
+			forecolor			.615 .615 .956 1
+			visible				1  		
+			descText			@MENUS_ESTABLISH_THE_NUMBER
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			settingsButton3 
+			}
+			mouseExit 
+			{ 
+				hide 			settingsButton3 
+			}
+		}
+
+		itemDef 
+		{
+			name				normal
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			text				@MENUS_CAPTURE_LIMIT
+			cvar				"capturelimit" 
+			cvarTest			"ui_netGameType"
+			showCvar
+			{ 
+				"5"
+			}     
+			rect				10 195 180 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			145
+			textaligny			0
+			font				4
+			textscale			1
+			maxchars			6
+			forecolor			.615 .615 .956 1
+			visible				1  
+			descText			@MENUS_THIS_IS_THE_NUMBER_OF
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 
+				show 			settingsButton3 
+			}
+			mouseExit 
+			{ 
+				hide 			settingsButton3 
+			}
+		}
+
+		itemDef 
+		{
+			name				settingsButton3b
+			style				WINDOW_STYLE_SHADER
+			rect 				10 215 180 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				normal
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			text				@MENUS_DUEL_LIMIT
+			descText			@MENUS_VALUE_ADJUSTS_THE_TOTAL
+			cvar				"duel_fraglimit"
+			cvarTest			"ui_netGameType"
+			hideCvar
+			{ 
+				"0" ;
+				"3" ;
+				"4" ;
+				"5"
+			}     
+			rect				10 215 180 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			145
+			textaligny			0
+			font				4
+			textscale			1
+			maxchars			6
+			forecolor			.615 .615 .956 1
+			visible				1  		
+			action 
+			{
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 	
+			{ 	
+				show 			settingsButton3b
+			}
+			mouseExit 
+			{ 
+				hide 			settingsButton3b
+			}
+		}
+
+//---------------------------------------------
+//	MAP LISTING
+//---------------------------------------------
+
+		itemDef 
+		{
+			name				maplist
+			rect				2 244 200 178
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth			120
+			elementheight			20
+			font				2
+			textscale			.75
+			elementtype			LISTBOX_TEXT
+			feeder				FEEDER_ALLMAPS
+			textstyle			6
+			textalign			3
+			textaligny			2
+			border				1
+			bordercolor			.79 .64 .22 .5
+			forecolor			.615 .615 .956 1
+			backcolor			0 0 .5 .75
+			outlinecolor			.25 .464 .578 .5
+			descText			@MENUS_CHOOSE_YOUR_GAME
+			visible				1
+			columns				1 2 196 172
+			mouseEnter 
+			{ 
+				setitemcolor	maplist bordercolor .79 .64 .22 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor	maplist bordercolor .79 .64 .22 .5
+			} 
+		}
+
+//-------------------------------------
+// BOT LIST FOR NON-TEAMGAMES
+//-------------------------------------
+		itemDef 
+		{
+			name				bot1Button
+			style				WINDOW_STYLE_SHADER
+			rect				207 55 196 20
+			background			"gfx/menus/menu_blendbox"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 				0	
+			text 				@MENUS_1_1
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM1
+			rect 				207 55 196 20 
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 
+				show 			bot1Button 
+			}
+			mouseExit 
+			{ 
+				hide 			bot1Button 
+			}
+		}
+
+		itemDef 
+		{
+			name				bot2Button
+			style				WINDOW_STYLE_SHADER
+			rect 				207 75 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				humanbotfield
+			style 				0	
+			text 				@MENUS_2_1
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM1
+			rect 				207 75 196 20 
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			bot2Button 
+			}
+			mouseExit 
+			{ 
+				hide 			bot2Button 
+			}
+		}
+
+		itemDef 
+		{
+			name				bot3Button
+			style				WINDOW_STYLE_SHADER
+		      	rect 				207 95 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+		      	name 				humanbotfield
+		      	style 				0
+			text 				@MENUS_3_1	
+ 			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM2
+		      	rect 				207 95 196 20 
+		      	textalign 			ITEM_ALIGN_LEFT		
+      			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+		      	border 				0
+		      	bordercolor 			0 0 0 0
+        		visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 
+				show 			bot3Button 
+			}
+			mouseExit 
+			{ 
+				hide 			bot3Button 
+			}
+	    	}
+
+		itemDef 
+		{
+			name				bot4Button
+			style				WINDOW_STYLE_SHADER
+		      	rect 				207 115 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+      			name 				humanbotfield
+      			style 				0
+			text 				@MENUS_4_1	
+ 			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+	  		ownerdraw 			UI_REDTEAM2
+		      	rect 				207 115 196 20 
+      			textalign 			ITEM_ALIGN_LEFT		
+      			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+      			border 				0
+      			bordercolor 			0 0 0 0
+       			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 
+				show 			bot4Button 
+			}
+			mouseExit 
+			{ 
+				hide 			bot4Button 
+			}
+    		}
+
+		itemDef 
+		{
+			name				bot5Button
+			style				WINDOW_STYLE_SHADER
+      			rect 				207 135 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+      			name 				humanbotfield
+      			style 				0	
+			text 				@MENUS_5_1
+ 			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+	  		ownerdraw 			UI_BLUETEAM3
+      			rect 				207 135 196 20 
+      			textalign 			ITEM_ALIGN_LEFT		
+      			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+      			border 				0
+      			bordercolor 			0 0 0 0
+       			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 
+				show 			bot5Button
+			}
+			mouseExit 
+			{ 
+				hide 			bot5Button 
+			}
+    		}
+
+		itemDef 
+		{
+			name				bot6Button
+			style				WINDOW_STYLE_SHADER
+			rect 				207 155 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 				0	
+			text 				@MENUS_6_1
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM3
+			rect 				207 155 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 
+				show 			bot6Button 
+			}
+			mouseExit 
+			{ 
+				hide 			bot6Button 
+			}
+		}
+
+		itemDef 
+		{
+			name				bot7Button
+			style				WINDOW_STYLE_SHADER
+			rect 				207 175 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 				0	
+			text 				@MENUS_7_1
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM4
+			rect 				207 175 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor 			0 0 0 0
+		 	visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			bot7Button 
+			}
+			mouseExit 
+			{ 	
+				hide 			bot7Button 
+			}
+		}
+
+		itemDef 
+		{
+			name				bot8Button
+			style				WINDOW_STYLE_SHADER
+			rect 				207 195 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 				0	
+			text 				@MENUS_8_1
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM4
+			rect 				207 195 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			bot8Button 
+			}
+			mouseExit 
+			{ 	
+				hide 			bot8Button 
+			}
+		}
+
+		itemDef 
+		{
+			name				bot9Button
+			style				WINDOW_STYLE_SHADER
+			rect 				435 55 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 				0
+			text 				@MENUS_9_1	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM5
+			rect 				435 55 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			bot9Button 
+			}
+			mouseExit 
+			{ 	
+				hide 			bot9Button 
+			}
+		}
+
+		itemDef 
+		{
+			name				bot10Button
+			style				WINDOW_STYLE_SHADER
+			rect 				435 75 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 				0	
+			text 				@MENUS_10
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM5
+			rect 				435 75 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			bot10Button 
+			}
+			mouseExit 
+			{ 	
+				hide 			bot10Button 
+			}
+		}
+
+		itemDef 
+		{
+			name				bot11Button
+			style				WINDOW_STYLE_SHADER
+			rect 				435 95 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 			0
+			text 				@MENUS_11	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM6
+			rect 				435 95 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			bot11Button 
+			}
+			mouseExit 
+			{ 	
+				hide 			bot11Button 
+			}
+		}
+
+		itemDef 
+		{
+			name				bot12Button
+			style				WINDOW_STYLE_SHADER
+			rect 				435 115 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 			0
+			text 				@MENUS_12	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM6
+			rect 				435 115 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			bot12Button 
+			}
+			mouseExit 
+			{ 	
+				hide 			bot12Button 
+			}	
+		}
+
+		itemDef 
+		{
+			name				bot13Button
+			style				WINDOW_STYLE_SHADER
+			rect 				435 135 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 			0
+			text 				@MENUS_13	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM7
+			rect 				435 135 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			bot13Button 
+			}
+			mouseExit 
+			{ 	
+				hide 			bot13Button 
+			}	
+		}
+
+		itemDef 
+		{
+			name				bot14Button
+			style				WINDOW_STYLE_SHADER
+			rect 				435 155 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 			0
+			text 				@MENUS_14	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM7
+			rect 				435 155 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			bot14Button 
+			}
+			mouseExit 
+			{ 	
+				hide 			bot14Button 
+			}
+		}
+
+		itemDef 
+		{
+			name				bot15Button
+			style				WINDOW_STYLE_SHADER
+			rect 				435 175 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 			0
+			text 				@MENUS_15	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_BLUETEAM8
+			rect 				435 175 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			bot15Button 
+			}
+			mouseExit 
+			{ 	
+				hide 			bot15Button 
+			}
+		}
+
+		itemDef 
+		{
+			name				bot16Button
+			style				WINDOW_STYLE_SHADER
+			rect 				435 195 196 20 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name 				humanbotfield
+			style 			0
+			text 				@MENUS_16	
+			descText			@MENUS_CLICK_FOR_HUMAN_BOTS
+			ownerdraw 			UI_REDTEAM8
+			rect 				435 195 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+			action 
+			{ 
+				play 			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 	
+				show 			bot16Button 
+			}
+			mouseExit 
+			{ 	
+				hide 			bot16Button 
+			}
+		}
+
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 				0	
+			text 				@MENUS_1_1
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_BLUETEAM1
+			rect 				207 55 196 20 
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+		}
+		
+		itemDef 
+		{
+			name				humanbotnonfield
+			style 				0	
+			text 				@MENUS_2_1
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_REDTEAM1
+			rect 				207 75 196 20 
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+		}
+
+		itemDef 
+		{
+		      	name 				humanbotnonfield
+		      	style 				0
+			text 				@MENUS_3_1	
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_BLUETEAM2
+		      	rect 				207 95 196 20 
+		      	textalign 			ITEM_ALIGN_LEFT		
+      			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+		      	border 				0
+		      	bordercolor 			0 0 0 0
+        		visible 			1 
+	    	}
+
+		itemDef 
+		{
+      			name 				humanbotnonfield
+      			style 				0
+			text 				@MENUS_4_1	
+			descText			@MENUS_ONLY_HUMANS
+	  		ownerdraw 			UI_REDTEAM2
+		      	rect 				207 115 196 20 
+      			textalign 			ITEM_ALIGN_LEFT		
+      			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+      			border 				0
+      			bordercolor 			0 0 0 0
+       			visible 			1 
+    		}
+
+		itemDef 
+		{
+      			name 				humanbotnonfield
+      			style 				0	
+			text 				@MENUS_5_1
+			descText			@MENUS_ONLY_HUMANS
+	  		ownerdraw 			UI_BLUETEAM3
+      			rect 				207 135 196 20 
+      			textalign 			ITEM_ALIGN_LEFT		
+      			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+      			border 				0
+      			bordercolor 			0 0 0 0
+       			visible 			1 
+    		}
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 				0	
+			text 				@MENUS_6_1
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_REDTEAM3
+			rect 				207 155 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+		}
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 				0	
+			text 				@MENUS_7_1
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_BLUETEAM4
+			rect 				207 175 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor 			0 0 0 0
+		 	visible 			1 
+		}
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 				0	
+			text 				@MENUS_8_1
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_REDTEAM4
+			rect 				207 195 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+		}
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 				0
+			text 				@MENUS_9_1	
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_BLUETEAM5
+			rect 				435 55 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			20     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 				0
+			bordercolor 			0 0 0 0
+			visible 			1 
+		}
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 				0	
+			text 				@MENUS_10
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_REDTEAM5
+			rect 				435 75 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+		}
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 			0
+			text 				@MENUS_11	
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_BLUETEAM6
+			rect 				435 95 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+		}
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 			0
+			text 				@MENUS_12	
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_REDTEAM6
+			rect 				435 115 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+		}
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 			0
+			text 				@MENUS_13	
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_BLUETEAM7
+			rect 				435 135 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+		}
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 			0
+			text 				@MENUS_14	
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_REDTEAM7
+			rect 				435 155 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+		}
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 			0
+			text 				@MENUS_15	
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_BLUETEAM8
+			rect 				435 175 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			0.65 0.65 1 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+		}
+
+		itemDef 
+		{
+			name 				humanbotnonfield
+			style 			0
+			text 				@MENUS_16	
+			descText			@MENUS_ONLY_HUMANS
+			ownerdraw 			UI_REDTEAM8
+			rect 				435 195 196 20 
+			textalign 			ITEM_ALIGN_LEFT		
+			textalignx 			10     
+			textaligny 			-4
+			font				2
+			textscale			1
+			forecolor			1 0.2 0.2 1
+			border 			0
+			bordercolor 		0 0 0 0
+			visible 			1 
+		}
+
+//---------------------------------------------
+//	SKILL BUTTON
+//---------------------------------------------
+
+		itemDef 
+		{
+			name				difficultyfieldButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect 				410 215 175 24 
+			background			"gfx/menus/menu_blendbox"			
+			forecolor			1 1 1 1
+			decoration
+			visible			0 
+		}
+
+		itemDef 
+		{
+			name				difficultyfield
+			style				0	
+			ownerdraw			UI_SKILL
+			text				@MENUS_SKILL
+			descText			@MENUS_ADJUSTS_THE_DIFFICULTY
+			rect 				435 215 175 24 
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx			10     
+			textaligny			2
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			cvarTest			"ui_netGameType"
+			hideCvar
+			{ 
+				"4"
+			}     
+			action 
+			{ 
+				play			"sound/interface/button1" 
+			}
+			mouseEnter 
+			{ 
+				show			difficultyfieldButton
+			}
+			mouseExit 
+			{ 
+				hide			difficultyfieldButton
+			}	  	  
+		}
+
+//---------------------------------------------
+//	MAP SCREENSHOT
+//---------------------------------------------
+
+		itemDef 
+		{
+			name				mappreview
+			style				0	
+			ownerdraw			UI_STARTMAPCINEMATIC
+			//rect				7 57 190 141
+			rect				314 254 210 158
+			border			1
+			bordercolor			.265 .824 .886 .25
+			visible			1 
+		}
+
+		itemDef 
+		{
+			name				mappreview
+			style				WINDOW_STYLE_FILLED
+			//rect				6 56 192 143
+			rect				313 253 212 160
+			border			1
+			bordercolor			.265 .824 .886 .25
+			visible			1
+		}
+
+//---------------------------------------------
+//	BOTTOM BUTTONS OPTIONS
+//---------------------------------------------
+		itemDef 
+		{
+			name				backButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				10 444 200 32
+			background			"gfx/menus/menu_buttonback"			
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				back
+			text				@MENUS_BACK
+			descText			@MENUS_EXIT_TO_MAIN_MENU
+			type				ITEM_TYPE_BUTTON
+			font				3
+			textscale			1.1
+			textstyle			0
+			style				WINDOW_STYLE_FILLED
+			rect				10 444 200 32
+			textalign			1
+			textalignx			100		
+			textaligny			2
+			textalign			ITEM_ALIGN_CENTER
+			forecolor			1 .682 0 1
+			visible			1 
+			action 
+			{ 
+				play			"sound/interface/button1" 
+				close			createserver 
+				open			multiplayermenu 
+			}
+			mouseenter 
+			{ 
+				show			backButton
+			}
+			mouseexit 
+			{ 
+				hide			backButton
+			}
+		}
+
+		itemDef 
+		{
+			name					acceptButton
+			group					none
+			style					WINDOW_STYLE_SHADER
+			rect					430 444 200 32
+			background				"gfx/menus/menu_buttonback"			
+			forecolor				1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name					accept
+			text					@MENUS_BEGIN
+			descText				@MENUS_START_SERVER
+			type					ITEM_TYPE_BUTTON
+			font					3
+			textscale				1.1
+			textstyle				0
+			style					WINDOW_STYLE_FILLED
+			rect					430 444 200 32
+			textalign				1
+			textalignx				100		
+			textaligny				2
+			forecolor			1 .682 0 1
+			visible				1 
+
+      		action 
+			{ 
+				play				"sound/interface/button1" 
+				uiScript			setSiegeNoBots
+				uiScript			weaponDisable //update the weapondisable cvar for duel or non-duel
+				uiScript 			StartServer
+				setcvartocvar		password g_password 
+				close				createserver 
+			}
+
+			mouseenter 
+			{ 
+				show				acceptButton
+			}	
+			mouseexit 
+			{ 
+				hide				acceptButton
+			}
+		}
+
+		itemDef 
+		{
+			name					advancedButton
+			group					none
+			style					WINDOW_STYLE_SHADER
+			rect					220 444 200 32
+			background				"gfx/menus/menu_buttonback"			
+			forecolor				1 1 1 1
+			decoration
+			visible				0
+		}
+
+		itemDef 
+		{
+			name					advanced
+			text					@MENUS_ADVANCED
+			descText				@MENUS_UPDATE_ADVANCED_SERVER
+			type					ITEM_TYPE_BUTTON
+			font					3
+			textscale				1.1
+			textstyle				0
+			style					WINDOW_STYLE_FILLED
+			rect					220 444 200 32
+			textalign				1
+			textalignx				100		
+			textaligny				2
+			forecolor			1 .682 0 1
+			visible					1 
+			action 
+			{ 
+				play				"sound/interface/button1.wav" 
+				open				advancedcreateserver 
+			}
+			mouseenter 
+			{ 
+				show				advancedButton
+			}
+			mouseexit 
+			{ 
+				hide				advancedButton
+			}
+		}	  	  
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

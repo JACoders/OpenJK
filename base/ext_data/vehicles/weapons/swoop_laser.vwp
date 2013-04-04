@@ -1,0 +1,14 @@
+swoop_laser
+{
+name		swoop_laser
+projectile	1
+saberBlockable	1
+muzzleFX	"ships/swoop_blastermuzzleflash"
+shotFX		"ships/swoop_blastershot"
+impactFX	"ships/swoop_blasterhit"
+g2MarkShader	"gfx/damage/bodyburnmark1"
+g2MarkSize	16
+speed		2500
+damage		10
+ammoPerShot	1
+}

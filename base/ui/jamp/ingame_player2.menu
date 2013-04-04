@@ -1,0 +1,558 @@
+//-----------------------------------
+// Custom Player
+//-----------------------------------
+{
+	menuDef 
+	{
+		name						"ingame_player2"
+		visible					0
+		fullscreen					0
+		outOfBoundsClick										// this closes the window if it gets a click out of the rectangle
+		rect						105 40 430 425
+		focusColor					1 1 1 1					// Focus color for text and items
+		style						1
+		border					1
+		descX						320
+		descY						450
+		descScale					1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER		
+		onOpen  
+		{ 
+			uiScript  				"getcharcvars"
+			uiScript  				"character"
+			uiScript				updateForceStatus
+			hide					highlights
+		}
+		onClose 
+		{ 
+			uiScript				updateForceStatus 
+			hide					highlights
+		}
+
+// Overall window backdrop
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 430 425
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+//----------------------------------------
+// Player Configuration
+//----------------------------------------
+// Player Configuration title		
+		itemDef 
+		{
+			name				playerconfigtitle
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS_CUSTOM_CHARACTER
+			rect				35 5 360 28
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			180
+			textaligny			2
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			font				3
+			textscale			0.9
+			forecolor			.549 .854 1 1
+			border			0
+			bordercolor			0 0 0 0
+			visible			1 
+		}
+
+// Character model
+		itemDef
+		{
+			name				character
+			group				models
+			type 				ITEM_TYPE_MODEL
+			rect				270 84 200 225
+			model_g2anim 		"BOTH_WALK1"
+			asset_model			"ui_char_model"
+			model_angle			180
+			//mins maxs format is apparently z x y (hmmm... y x z?)
+			model_g2mins		-30 -15 -14
+			model_g2maxs		20 15 30
+			model_rotation		50
+			model_fovx			50
+			model_fovy			50
+			isCharacter			1
+			visible			1
+			decoration
+		}
+
+//////////////////
+// SPECIES BUTTON
+//////////////////
+
+		itemDef
+		{
+			name				species
+			group				none
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				15 48 140 24
+			forecolor			.549 .854 1 1
+			text				@MENUS_SPECIES
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			-1
+			font				3
+			textscale 			1
+			visible 			1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				speciesbut_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				161 52 150 16
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				speciesbut
+			group				none
+			text				" "
+			descText			@MENUS_CHOOSE_SPECIES
+			type				ITEM_TYPE_MULTI
+			style				WINDOW_STYLE_EMPTY
+			rect				161 52 150 16
+			font				2
+			textscale			.9
+			textaligny			-5
+			textalign			ITEM_ALIGN_LEFT
+			textstyle			0
+			textalignx			0
+			backcolor			0 0 0 0
+			forecolor			.615 .615 .956 1
+			feeder			19	//FEEDER_PLAYER_SPECIES
+			cvar				"ui_char_model"
+			cvarStrList			feeder
+
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			speciesbut_glow 
+			}
+			mouseExit 
+			{ 
+				hide			speciesbut_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav"
+				uiScript 		"characterchanged"
+				uiScript 		"resetcharacterlistboxes"
+			}
+		}
+
+////////////////////
+// COLOR TINT AREA
+////////////////////
+
+
+		itemDef
+		{
+			name				color
+			group				none
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				15 80 160 24
+			forecolor			.549 .854 1 1
+			text				@MENUS_COLOR
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			-1
+			font				3
+			textscale 			1
+			visible 			1
+			decoration
+		}
+
+		itemDef
+		{
+			name				colorbox
+			group				tints
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth		32
+			elementheight		32
+			elementtype			1 			//LISTBOX_IMAGE
+			feeder				23		//FEEDER_COLORCHOICES
+			horizontalscroll
+			border			1
+			bordersize			1
+			backcolor			.66 .66 1 .25
+			bordercolor			.66 .66 1 1
+			rect				15 104 292 48
+			visible			1
+			action 
+			{
+				play			"sound/interface/choose_color.wav"
+			}
+		}
+
+///////////////////////
+//APPEARANCE
+//////////////////////
+
+		itemDef
+		{
+			name				appear
+			group				none
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				15 160 180 24
+			forecolor			.549 .854 1 1
+			text				@MENUS_APPEARANCE
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			-1
+			font				3
+			textscale 			1
+			visible 			1
+			decoration
+		}
+
+		// HEAD BUTTON
+		itemDef 
+		{
+			name				headbut_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				15 184 90 16
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				headbut
+			group				none
+			text				@MENUS_HEAD
+			descText			@MENUS_SELECT_HEAD
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				15 184 90 16
+			font				2
+			textscale			.9
+			textaligny			-5
+			textalign			ITEM_ALIGN_LEFT
+			textstyle			0
+			textalignx			0
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			headbut_glow 
+			}
+			mouseExit 
+			{ 
+				hide			headbut_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav"
+				show			heads
+				hide			torso
+				hide			lower
+			}
+		}
+
+
+		// TORSO BUTTON
+		itemDef 
+		{
+			name				torsobut_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				111 184 90 16
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				torsobut
+			group				none
+			text				@MENUS_TORSO
+			descText			@MENUS_SELECT_TORSO
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				111 184 90 16
+			font				2
+			textscale			.9
+			textaligny			-5
+			textalign			ITEM_ALIGN_LEFT
+			textstyle			0
+			textalignx			0
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+
+			mouseEnter 
+			{ 
+				show			torsobut_glow 
+			}
+			mouseExit 
+			{ 
+				hide			torsobut_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" 
+				show			torso
+				hide			heads
+				hide			lower
+			}
+		}
+
+		// LEGS BUTTON
+		itemDef 
+		{
+			name				legsbut_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				209 184 90 16
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				legsbut
+			group				none
+			text				@MENUS_LEGS
+			descText			@MENUS_SELECT_LEGS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				209 184 90 16
+			font				2
+			textscale			.9
+			textaligny			-5
+			textalign			ITEM_ALIGN_LEFT
+			textstyle			0
+			textalignx			0
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible				1
+			 
+			mouseEnter 
+			{ 
+				show			legsbut_glow 
+			}
+			mouseExit 
+			{ 
+				hide			legsbut_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav"
+				show			lower
+				hide			heads
+				hide			torso
+			}
+		}
+
+//////////////////////
+//LISTBOXES
+//////////////////////
+
+		itemDef
+		{
+			name				headlistbox
+			group				heads
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth		72
+			elementheight		72
+			elementtype			1 			//LISTBOX_IMAGE
+			feeder			20 			//FEEDER_PLAYER_SKIN_HEAD
+			horizontalscroll
+			border			1
+			bordersize			1
+			backcolor			.66 .66 1 .25
+			bordercolor			.66 .66 1 1
+			forecolor			-1			//use playercolor
+			rect				15 206 292 93
+			visible			1
+			action
+			{
+				play			"sound/interface/choose_head.wav"
+				uiScript 		"char_skin"
+			}
+		}
+
+		itemDef
+		{
+			name				torsolistbox
+			group				torso
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth		72
+			elementheight		72
+			elementtype			1 			//LISTBOX_IMAGE
+			feeder			21 			//FEEDER_PLAYER_SKIN_TORSO
+			horizontalscroll
+			border			1
+			bordersize			1
+			backcolor			.66 .66 1 .25
+			bordercolor			.66 .66 1 1
+			forecolor			-1			//use playercolor
+			rect				15 206 292 93
+			visible			0
+			action
+			{
+				play			"sound/interface/choose_torso.wav"
+				uiScript 		"char_skin"
+			}
+		}
+
+		itemDef
+		{
+			name				lowerlistbox
+			group				lower
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth		72
+			elementheight		72
+			elementtype			1 			//LISTBOX_IMAGE
+			feeder			22 			//FEEDER_PLAYER_SKIN_LEGS
+			horizontalscroll
+			border			1
+			bordersize			1
+			backcolor			.66 .66 1 .25
+			bordercolor			.66 .66 1 1
+			forecolor			-1			//use playercolor
+			rect				15 206 292 93
+			visible			0
+			action
+			{
+				play			"sound/interface/choose_head.wav"
+				uiScript 		"char_skin"
+			}
+		}
+		
+		itemDef 
+		{
+			name				backButton
+			group				highlights 
+			style				WINDOW_STYLE_SHADER
+			rect				30 370 110 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+		
+		// BACK button 
+		itemDef 
+		{
+			name				backmenu_button
+			text				@MENUS_BACK
+			descText			@MENUS_RETURN_PREVIOUS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				30 370 110 32
+			font				2
+			textscale			.9
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			55
+			textaligny			2
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			backButton
+			}
+			mouseExit 
+			{ 
+				hide			backButton
+			}
+			  	  
+			action 
+			{ 
+				play			"sound/interface/esc.wav" ; 
+				close			ingame_player2 ;
+				open			ingame_player ;
+			}
+
+		}
+		
+//---------------------------------------------
+//	APPLY BUTTON
+//---------------------------------------------
+// APPLY, already on a team
+		itemDef 
+		{
+			name				applyjoinButton
+			group				highlights 
+			style				WINDOW_STYLE_SHADER
+			rect				290 370 110 32
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				applycurrent
+			group				"playerapply"
+			text				@MENUS_APPLY
+			type				1
+			style				WINDOW_STYLE_EMPTY
+			rect				290 370 110 32
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			55
+			textaligny			2
+			font				2
+			textscale			.9
+			forecolor			1 .682 0 1
+			descText			@MENUS_APPLY_CHANGES_AND_JOIN
+			visible			1
+			action 
+			{ 
+				play			"sound/interface/button1"
+				uiScript		"updatecharmodel"
+				hide			highlights
+				close			ingame_player2
+				open			ingame_player
+			}
+			mouseEnter 
+			{ 
+				show			applyjoinButton
+			}
+			mouseExit 
+			{ 
+				hide			applyjoinButton
+			}
+		}
+
+	}
+}

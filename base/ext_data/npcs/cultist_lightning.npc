@@ -1,0 +1,37 @@
+cultist_lightning
+{
+	playerModel	cultist
+	customSkin	blue
+	weapon		WP_MELEE
+	FP_LEVITATION	1
+	FP_PUSH		3
+	FP_LIGHTNING	3
+	forcePowerMax	200
+	forceRegenRate	50
+	forceRegenAmount	2
+	rank		captain
+	reactions	1
+	aim			1
+	move		1
+	aggression	5
+	evasion		3
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+//	race		human
+	class		CLASS_REBORN
+	snd			cultist3
+	sndcombat	cultist3
+	sndjedi		cultist3
+	yawSpeed	60
+	walkSpeed	45
+	runSpeed	180
+	health		100
+	dismemberProbHead	0
+	dismemberProbArms	20
+	dismemberProbLegs	0
+	dismemberProbHands	30
+	dismemberProbWaist	0
+}

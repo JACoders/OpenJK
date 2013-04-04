@@ -1,0 +1,18 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Rebel Tech"
+	weapons			WP_BLASTER_PISTOL|WP_DEMP2
+	classflags		CFL_EXTRA_AMMO|CFL_STATVIEWER
+	maxhealth		100
+	maxarmor		100
+	startarmor		0
+	model			"jan" 				//this is optional, if it's here it forces the model to this.
+	skin			"siege"	//changed skin cause default has two torsos on		//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/jan/icon_default"
+	class_shader	"gfx/mp/c_icon_support"
+	holdables		HI_SEEKER|HI_SHIELD|HI_HEALTHDISP|HI_AMMODISP
+}
+
+description	"@SIEGE_SUPP_REBEL_TECH"

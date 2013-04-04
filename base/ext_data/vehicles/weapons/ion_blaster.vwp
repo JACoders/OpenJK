@@ -1,0 +1,16 @@
+ion_blaster
+{
+name		ion_blaster
+projectile	1
+ionWeapon	1
+muzzleFX	"ships/ion_muzzleflash"
+shotFX	"ships/ion_blastershot"
+impactFX	"ships/ion_blasterimpact"
+//loopSound
+speed		20000
+//damage		40
+//splashDamage	50
+//splashRadius	80
+ammoPerShot	1
+lifetime	2000
+}

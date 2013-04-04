@@ -1,0 +1,25 @@
+MorganKatarn
+{
+	playerModel	morgan
+	weapon		WP_NONE
+	snd			morgan
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+//	race		human
+	class		CLASS_MORGAN
+	walkSpeed	55
+	runSpeed	200
+	yawspeed	90
+	dismemberProbHead	0
+	dismemberProbArms	0
+	dismemberProbLegs	0
+	dismemberProbHands	0
+	dismemberProbWaist	0
+}

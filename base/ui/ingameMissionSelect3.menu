@@ -1,0 +1,1311 @@
+//------------------------------------------------------------------------------------------------
+// Mission Select 3 Menu
+//
+//	Select missions from the 3rd tier.
+//
+//------------------------------------------------------------------------------------------------
+{		   
+	menuDef 
+	{
+		name					"ingameMissionSelect3"
+		fullScreen				1		
+		rect					0 0 640 480	
+		visible					1
+		focusColor				1 1 1 1
+		descX					200
+		descY					444
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER	
+		disablecolor				.5 .5 .5 1
+		fadeClamp				1.0					// sets the fadeup alpha
+		fadeCycle				25					// how often fade happens in milliseconds
+		fadeAmount				0.05					// amount to adjust alpha per cycle	
+		onOpen 
+		{
+			show				mission_button
+			stopVoice
+		}							
+		onESC 
+		{ 
+		}
+
+//----------------------------------------------------------------------------------------------
+//	MENU BACKGROUND
+//----------------------------------------------------------------------------------------------	
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/mission_back"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				eyecandy1
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				17 309 357 153
+			background			"gfx/menus/mission_bottomleft_grid"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				botlf
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 300 80 180
+			background			"gfx/menus/mission_bottom_left"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				starfield
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				20 20 600 256
+			background			"gfx/menus/star_field"
+			backcolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				stars_close
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				20 20 600 256
+			background			"gfx/menus/star_field_zoom"
+			backcolor			1 1 1 0
+			visible				1
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------	
+// BIG PLANET GRAPHICS
+//----------------------------------------------------------------------------------------------	
+		itemDef 
+		{
+			name				big_planet
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				320 148 0 0
+			background			"gfx/menus/planets/yalara"
+			backcolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+
+		itemDef 
+		{
+			name				yalara
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				320 148 0 0
+			background			"gfx/menus/planets/yalara"
+			backcolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				chandrila
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				320 148 0 0
+			background			"gfx/menus/planets/chandrila"
+			backcolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				ordmantell
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				320 148 0 0
+			background			"gfx/menus/planets/ordman"
+			backcolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				tanaab
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				320 148 0 0
+			background			"gfx/menus/planets/tanaab"
+			backcolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				byss
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				320 148 0 0
+			background			"gfx/menus/planets/byss"
+			backcolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+// GALAXY MAP
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				galaxy
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				64 20 512 256
+			background			"gfx/menus/mission_galaxy"
+			backcolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			name				map_title
+			type				ITEM_TYPE_TEXT
+			rect				40 14 600 18
+			text				@MENUS_GALACTIC_MAP
+			font				2
+			forecolor			.549 .854 1 1
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			300
+			textaligny			-1
+			visible				1
+		}
+		
+//----------------------------------------------------------------------------------------------
+//	TIER 3 LOCATION MARKERS ON GALAXY MAP
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				loc_but01_off
+			group				location_marker
+			style				WINDOW_STYLE_SHADER
+			rect				270 109 20 20 
+			background			"gfx/menus/mission_loc_but_off"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_rift"
+			}
+			cvarSubString
+		}
+
+		itemDef 
+		{
+			name				loc_but01_on
+			group				location_marker
+			style				WINDOW_STYLE_SHADER
+			rect				270 109 20 20
+			background			"gfx/menus/mission_loc_but_on"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_rift"
+			}
+			cvarSubString
+		}
+
+		itemDef 
+		{
+			name				loc_but02_off
+			group				location_marker
+			style				WINDOW_STYLE_SHADER
+			rect				380 122 30 30
+			background			"gfx/menus/mission_loc_but_off"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_stamp"
+			}
+			cvarSubString
+		}
+
+		itemDef 
+		{
+			name				loc_but02_on
+			group				location_marker
+			style				WINDOW_STYLE_SHADER
+			rect				380 122 30 30
+			background			"gfx/menus/mission_loc_but_on"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_stamp"
+			}
+			cvarSubString
+		}
+
+		itemDef 
+		{
+			name				loc_but03_off
+			group				location_marker
+			style				WINDOW_STYLE_SHADER
+			rect				170 152 23 23
+			background			"gfx/menus/mission_loc_but_off"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_hevil"
+			}
+			cvarSubString
+		}
+
+		itemDef 
+		{
+			name				loc_but03_on
+			group				location_marker
+			style				WINDOW_STYLE_SHADER
+			rect				170 152 23 23
+			background			"gfx/menus/mission_loc_but_on"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_hevil"
+			}
+			cvarSubString
+		}
+
+		itemDef 
+		{
+			name				loc_but04_off
+			group				location_marker
+			style				WINDOW_STYLE_SHADER
+			rect				295 104 20 20
+			background			"gfx/menus/mission_loc_but_off"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_byss"
+			}
+			cvarSubString
+		}
+
+		itemDef 
+		{
+			name				loc_but04_on
+			group				location_marker
+			style				WINDOW_STYLE_SHADER
+			rect				295 104 20 20
+			background			"gfx/menus/mission_loc_but_on"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_byss"
+			}
+			cvarSubString
+		}
+
+		itemDef 
+		{
+			name				loc_but05_off
+			group				location_marker
+			style				WINDOW_STYLE_SHADER
+			rect				380 70 18 18
+			background			"gfx/menus/mission_loc_but_off"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_bounty"
+			}
+			cvarSubString
+		}
+
+		itemDef 
+		{
+			name				loc_but05_on
+			group				location_marker
+			style				WINDOW_STYLE_SHADER
+			rect				380 70 18 18
+			background			"gfx/menus/mission_loc_but_on"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_bounty"
+			}
+			cvarSubString
+		}
+
+		itemDef
+		{
+			name				planet_name
+			type				ITEM_TYPE_TEXT
+			rect				52 316 288 24
+			font				2
+			forecolor			.549 .854 1 1
+			textscale			.8
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				0
+			autowrapped
+			decoration
+		}
+		
+//----------------------------------------------------------------------------------------------
+//	MODELS FOR V-O
+//----------------------------------------------------------------------------------------------
+		itemDef
+		{
+			name				luke
+			group				models
+			type 				ITEM_TYPE_MODEL
+			rect				415 285 149 149
+			model_g2anim			"BOTH_STAND1_TALK2"
+			model_g2skin			"models/players/luke/model_menu.skin"
+			asset_model			"models/players/luke/model.glm"
+			model_angle			180
+			//mins maxs format is apparently z x y (hmmm... y x z?)
+			model_g2mins			15 -20 18
+			model_g2maxs			60 20 55
+			model_rotation			0
+			model_fovx			10
+			model_fovy			10
+			isCharacter			1
+			visible				0
+			decoration
+		}
+
+		itemDef
+		{
+			name				kyle
+			group				models
+			type 				ITEM_TYPE_MODEL
+			rect				415 288 145 145
+			model_g2anim			"BOTH_STAND1_TALK2"
+			model_g2skin			"models/players/kyle/model_menu.skin"
+			asset_model			"models/players/kyle/model.glm"
+			model_angle			180
+			model_g2mins			15 -20 18
+			model_g2maxs			60 20 55
+			model_rotation			0
+			model_fovx			10
+			model_fovy			10
+			isCharacter			1
+			visible				0
+			decoration
+		}
+
+		itemDef
+		{
+			name				prot
+			group				models
+			type 				ITEM_TYPE_MODEL
+			rect				426 317 116 116
+			model_g2anim			"BOTH_STAND1_TALK2"
+			model_g2skin			"models/players/protocol/model_menu.skin"
+			asset_model			"models/players/protocol/model.glm"
+			model_angle			180
+			model_g2mins			15 -20 17
+			model_g2maxs			60 20 50
+			model_rotation			0
+			model_fovx			10
+			model_fovy			10
+			isCharacter			1
+			visible				0
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+//	BUTTONS
+//----------------------------------------------------------------------------------------------
+		//GENERAL BACK BUTTON - if you don't want mission
+		itemDef
+		{
+			name				backbut
+			type				ITEM_TYPE_BUTTON
+			rect				52 430 172 24
+			text				@MENUS_BACK_CAPS
+			desctext			@MENUS_DIFF_MISSION
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.8
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				0
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	15 430 200 20
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}
+			action
+			{
+				play			"sound/interface/esc.wav" 					
+				fadein			starfield
+				fadein			galaxy
+				fadeout			stars_close 
+				transition2 		loc_but01_off 270 109 20 20 20 25
+				transition2 		loc_but02_off 380 122 30 30 20 25
+				transition2 		loc_but03_off 170 152 23 23 20 25
+				transition2 		loc_but04_off 295 104 20 20 20 25
+				transition2 		loc_but05_off 380 70 18 18 20 25
+				hide			backbut
+				
+				hide			planet_name
+		
+				show			mission_button
+				
+				hide			accbuttons
+				
+				hide			briefing_text
+				
+				hide			big_planet
+				
+				hide			planet_name
+				show			map_title					
+				
+				hide			briefing_background
+				hide 			briefing_text
+
+				hide			button_glow
+			}
+		}
+
+//----------------------------------------------------------------------------------------------
+//  TIER 3 MISSION BUTTONS
+//----------------------------------------------------------------------------------------------
+		itemDef
+		{
+			name				map_title
+			type				ITEM_TYPE_TEXT
+			rect				10 305 400 20
+			text				@MENUS_MISSIONS
+			font				2
+			forecolor			.549 .854 1 1
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			200
+			textaligny			-1
+			visible				1
+		}
+		
+		itemDef
+		{
+			name				miss1
+			group				mission_button
+			type				ITEM_TYPE_BUTTON
+			rect				52 330 224 20
+			text				@MENUS_T3_RIFT_TITLE
+			desctext			@MENUS_CLICK_BRIEFING
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				1
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_rift"
+			}
+			cvarSubString
+			mouseEnter 
+			{ 
+				hide			loc_but01_off
+				show			loc_but01_on
+				
+				show			planet_name
+				setitemtext		planet_name	@MENUS_CHANDRILA
+				setitemrect		planet_name	150 90 120 26
+				
+				show			button_glow
+				setitemrect		button_glow	20 328 380 22	
+			}
+			mouseExit 
+			{ 
+				hide			loc_but01_on
+				show			loc_but01_off
+				
+				hide			planet_name
+				hide			button_glow
+			}
+			action
+			{
+				play			"sound/weapons/force/protect.wav" 
+				
+				fadeout			starfield
+				fadeout			galaxy
+				
+				fadein			stars_close 
+				
+				transition2		loc_but01_off 280 119 0 0 20 25
+				transition2		loc_but02_off 395 137 0 0 20 25
+				transition2		loc_but03_off 181 163 0 0 20 25
+				transition2		loc_but04_off 305 114 0 0 20 25
+				transition2		loc_but05_off 389 79 0 0 20 25
+				
+				hide			loc_but01_on
+				hide			loc_but02_on
+				hide			loc_but03_on
+				hide			loc_but04_on
+				hide			loc_but05_on
+				
+				setitembackground	big_planet	"gfx/menus/planets/chandrila"
+				transition2		big_planet 192 20 256 256 10 15
+				
+				transition2		planet_name	270 250 256 256 20 15
+				
+				hide			mission_button				
+				
+				show			backbut
+				show			accbut1
+				
+				show			briefing_background
+				show			briefing_text
+				setitemtext		briefing_text	@BRIEFINGS_T3_RIFT				
+				
+				hide			map_title					
+				hide			button_glow
+				
+			}
+		}
+
+		itemDef
+		{
+			name				miss2
+			group				mission_button
+			type				ITEM_TYPE_BUTTON
+			rect				52 353 224 20
+			text				@MENUS_T3_STAMPEDE_TITLE
+			desctext			@MENUS_CLICK_BRIEFING
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				1
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_stamp"
+			}
+			cvarSubString
+			mouseEnter 
+			{ 
+				hide			loc_but02_off
+				show			loc_but02_on
+				
+				show			planet_name				
+				setitemtext		planet_name	@MENUS_TANAAB
+				setitemrect		planet_name	420 180 120 26
+				
+				show			button_glow
+				setitemrect		button_glow	20 351 380 22		
+			}
+			mouseExit 
+			{ 
+				hide			loc_but02_on
+				show			loc_but02_off
+				
+				hide			planet_name				
+				hide			button_glow
+			}
+			action
+			{
+				play			"sound/weapons/force/protect.wav" 
+				fadeout			starfield
+				fadeout			galaxy
+				fadein			stars_close 
+				transition2		loc_but01_off 280 119 0 0 20 25
+				transition2		loc_but02_off 395 137 0 0 20 25
+				transition2		loc_but03_off 181 163 0 0 20 25
+				transition2		loc_but04_off 305 114 0 0 20 25
+				transition2		loc_but05_off 389 79 0 0 20 25
+
+				hide			loc_but01_on
+				hide			loc_but02_on
+				hide			loc_but03_on
+				hide			loc_but04_on
+				hide			loc_but05_on
+				
+				setitembackground	big_planet	"gfx/menus/planets/tanaab"
+				transition2		big_planet 192 20 256 256 10 15
+				
+				transition2		planet_name	270 250 256 256 20 15
+				
+				hide			mission_button				
+				
+				show			backbut
+				show			accbut2
+				
+				show			briefing_background
+				show			briefing_text
+				setitemtext		briefing_text	@BRIEFINGS_T3_STAMP
+				
+				hide			map_title					
+				hide			button_glow
+			}
+		}
+
+		itemDef
+		{
+			name				miss3
+			group				mission_button
+			type				ITEM_TYPE_BUTTON
+			rect				52 376 224 20
+			text				@MENUS_T3_HEVIL_TITLE
+			desctext			@MENUS_CLICK_BRIEFING
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				1
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_hevil"
+			}
+			cvarSubString
+			mouseEnter 
+			{ 
+				hide			loc_but03_off
+				show			loc_but03_on
+				
+				show			planet_name
+				setitemtext		planet_name	@MENUS_YALARA
+				setitemrect		planet_name	60 180 120 26
+				
+				show			button_glow
+				setitemrect		button_glow	20 374 380 22		
+			}
+			mouseExit 
+			{ 
+				hide			loc_but03_on
+				show			loc_but03_off
+				hide			planet_name
+				hide			button_glow
+			}
+			action
+			{
+				play			"sound/weapons/force/protect.wav" 
+				fadeout			starfield
+				fadeout			galaxy
+				fadein			stars_close 
+				transition2		loc_but01_off 280 119 0 0 20 25
+				transition2		loc_but02_off 395 137 0 0 20 25
+				transition2		loc_but03_off 181 163 0 0 20 25
+				transition2		loc_but04_off 305 114 0 0 20 25
+				transition2		loc_but05_off 389 79 0 0 20 25
+				
+				hide			loc_but01_on
+				hide			loc_but02_on
+				hide			loc_but03_on
+				hide			loc_but04_on
+				hide			loc_but05_on
+				
+				setitembackground	big_planet	"gfx/menus/planets/yalara"
+				transition2		big_planet 192 20 256 256 10 15
+				
+				transition2		planet_name	270 250 256 256 20 15
+				
+				hide			mission_button				
+				
+				show			backbut
+				show			accbut3
+				
+				show			briefing_background
+				show			briefing_text
+				setitemtext		briefing_text	@BRIEFINGS_T3_HEVIL
+				hide			map_title					
+				hide			button_glow
+			}
+		}
+
+		itemDef
+		{
+			name				miss4
+			group				mission_button
+			type				ITEM_TYPE_BUTTON
+			rect				52 399 224 20
+			text				@MENUS_T3_BYSS_TITLE
+			desctext			@MENUS_CLICK_BRIEFING
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				1
+			cvartest			"tiers_complete"
+			disablecvar		
+			{
+				"t3_byss"
+			}
+			cvarSubString
+			mouseEnter 
+			{ 
+				hide			loc_but04_off
+				show			loc_but04_on
+				
+				show			planet_name
+				setitemtext		planet_name	@MENUS_BYSS
+				setitemrect		planet_name	240 40 120 26
+				
+				show			button_glow
+				setitemrect		button_glow	20 397 380 22		
+			}
+			mouseExit 
+			{ 
+				hide			loc_but04_on
+				show			loc_but04_off
+				hide			planet_name
+				hide			button_glow
+			}
+			action
+			{
+				play			"sound/weapons/force/protect.wav" 
+				fadeout			starfield
+				fadeout			galaxy
+				fadein			stars_close 
+				transition2		loc_but01_off 280 119 0 0 20 25
+				transition2		loc_but02_off 395 137 0 0 20 25
+				transition2		loc_but03_off 181 163 0 0 20 25
+				transition2		loc_but04_off 305 114 0 0 20 25
+				transition2		loc_but05_off 389 79 0 0 20 25
+
+				hide			loc_but01_on
+				hide			loc_but02_on
+				hide			loc_but03_on
+				hide			loc_but04_on
+				hide			loc_but05_on
+				
+				setitembackground	big_planet	"gfx/menus/planets/byss"
+				transition2		big_planet 192 20 256 256 10 15
+
+				transition2		planet_name	270 250 256 256 20 15
+				
+				hide			mission_button				
+				
+				show			backbut
+				show			accbut4
+				
+				show			briefing_background
+				show			briefing_text
+				setitemtext		briefing_text	@BRIEFINGS_T3_BYSS				
+				
+				hide			map_title					
+				hide			button_glow
+			}
+		}
+
+		itemDef
+		{
+			name				miss5
+			group				mission_button
+			type				ITEM_TYPE_BUTTON
+			rect				52 422 224 20
+			text				@MENUS_T3_BOUNTY_TITLE
+			desctext			@MENUS_CLICK_BRIEFING
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				1
+			cvartest			"tiers_complete"
+			disablecvar			
+			{
+				"t3_bounty"
+			}
+			cvarSubString
+			mouseEnter 
+			{ 
+				hide			loc_but05_off
+				show			loc_but05_on
+				
+				show			planet_name
+				setitemtext		planet_name	@MENUS_ORD_MANTELL
+				setitemrect		planet_name	410 40 120 26
+				
+				show			button_glow
+				setitemrect		button_glow	20 420 380 22		
+			}
+			mouseExit 
+			{ 
+				hide			loc_but05_on
+				show			loc_but05_off
+				hide			planet_name
+				hide			button_glow
+			}
+			action
+			{
+				play			"sound/weapons/force/protect.wav" 
+				fadeout			starfield
+				fadeout			galaxy
+				fadein			stars_close 
+				transition2		loc_but01_off 280 119 0 0 20 25
+				transition2		loc_but02_off 395 137 0 0 20 25
+				transition2		loc_but03_off 181 163 0 0 20 25
+				transition2		loc_but04_off 305 114 0 0 20 25
+				transition2		loc_but05_off 389 79 0 0 20 25
+
+				hide			loc_but01_on
+				hide			loc_but02_on
+				hide			loc_but03_on
+				hide			loc_but04_on
+				hide			loc_but05_on
+				
+				setitembackground	big_planet	"gfx/menus/planets/ordman"
+				transition2		big_planet 192 20 256 256 10 15
+
+				transition2		planet_name	270 250 256 256 20 15
+				
+				hide			mission_button				
+				hide			location_marker				
+				
+				show			backbut
+				show			accbut5
+				
+				show			briefing_background
+				show			briefing_text
+				setitemtext		briefing_text	@BRIEFINGS_T3_BOUNTY
+				
+				hide			map_title					
+				hide			button_glow
+				
+			}
+		}
+
+//----------------------------------------------------------------------------------------------
+//	MISSION BRIEFING TEXT
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				briefing_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				42 314 320 114
+			backcolor			0 0 .35 .7
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .8 1
+			visible				0
+			decoration
+		}
+		
+		itemDef
+		{
+			name				briefing_text
+			type				ITEM_TYPE_TEXTSCROLL
+			rect				42 314 320 114
+			text				@BRIEFINGS_T3_RIFT
+			font				4
+			forecolor			1 1 1 1
+			textscale			1
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			lineHeight			18
+			visible				0
+			autowrapped
+		}
+
+//----------------------------------------------------------------------------------------------
+// ACCEPT BUTTONS - IF YOU CHOOSE A PARTICULAR MISSION
+//----------------------------------------------------------------------------------------------
+		itemDef
+		{
+			name				accbut1
+			group				accbuttons
+			type				ITEM_TYPE_BUTTON
+			rect				268 430 172 24
+			text				@MENUS_ACCEPT
+			desctext			@MENUS_ACCEPT_MISSION
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				0
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	200 430 200 20
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}
+			action
+			{
+				hide 			accbuttons
+				setcvar 		tier_mapname "maptransition t3_rift"
+				
+				hide			backbut
+				
+				show			nextscreen_button
+				setfocus		nextscreen_button
+				
+				show			accept_text
+				setitemtext		accept_text	@T3_RIFT_23LUK001
+				
+				show			luke				
+				playVoice		"sound/chars/luke/23luk001.mp3"
+				
+				hide			briefing_background
+				hide			briefing_text
+				hide			button_glow
+			}
+		}
+
+		itemDef
+		{
+			name				accbut2
+			group				accbuttons
+			type				ITEM_TYPE_BUTTON
+			rect				268 430 172 24
+			text				@MENUS_ACCEPT
+			desctext			@MENUS_ACCEPT_MISSION
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				0
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	200 430 200 20
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}
+			action
+			{
+				hide 			accbuttons
+				setcvar 		tier_mapname "maptransition t3_stamp"
+				
+				hide			backbut
+				hide			briefing_text
+				
+				show			nextscreen_button
+				setfocus		nextscreen_button
+				
+				show			accept_text
+				setitemtext		accept_text	@T3_STAMP_25KYK001
+				
+				hide			briefing_background
+				hide			briefing_text
+				hide			button_glow
+				
+				show			kyle
+				playVoice		"sound/chars/kyle/25kyk001.mp3"
+			}
+		}
+
+		itemDef
+		{
+			name				accbut3
+			group				accbuttons
+			type				ITEM_TYPE_BUTTON
+			rect				268 430 172 24
+			text				@MENUS_ACCEPT
+			desctext			@MENUS_ACCEPT_MISSION
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible			0
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	200 430 200 20
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}
+			action
+			{
+				hide 			accbuttons
+				setcvar 		tier_mapname "maptransition t3_hevil"
+				
+				hide			backbut
+				hide			briefing_text
+				
+				show			nextscreen_button
+				setfocus		nextscreen_button
+				
+				show			accept_text
+				setitemtext		accept_text	@T3_HEVIL_22LUK001
+				
+				show			luke				
+				playVoice		"sound/chars/luke/22luk001.mp3"
+				
+				hide			briefing_background
+				hide			briefing_text
+				hide			button_glow
+								
+			}
+		}
+
+		itemDef
+		{
+			name				accbut4
+			group				accbuttons
+			type				ITEM_TYPE_BUTTON
+			rect				268 430 172 24
+			text				@MENUS_ACCEPT
+			desctext			@MENUS_ACCEPT_MISSION
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				0
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	200 430 200 20
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}
+			action
+			{
+				hide 			accbuttons
+				setcvar 		tier_mapname "maptransition t3_byss"
+				
+				hide			backbut
+				hide			briefing_text
+				
+				show			nextscreen_button
+				setfocus		nextscreen_button
+
+				show			accept_text
+				setitemtext		accept_text	@T3_BYSS_21KYK001
+				
+				show			kyle
+				playVoice		"sound/chars/kyle/21kyk001.mp3"
+				
+				hide			briefing_background
+				hide			briefing_text
+				hide			button_glow
+			}
+		}
+
+		itemDef
+		{
+			name				accbut5
+			group				accbuttons
+			type				ITEM_TYPE_BUTTON
+			rect				268 430 172 24
+			text				@MENUS_ACCEPT
+			desctext			@MENUS_ACCEPT_MISSION
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				0
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	200 430 200 20
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}
+			action
+			{
+				hide			accbuttons
+				setcvar			tier_mapname "maptransition t3_bounty"
+				
+				hide			backbut
+				hide			briefing_text
+				
+				show			nextscreen_button
+				setfocus		nextscreen_button
+				
+				show			accept_text
+				setitemtext		accept_text	@T3_BOUNTY_24KYK001
+				
+				show			kyle
+				playVoice		"sound/chars/kyle/24kyk001.mp3"
+				
+				hide			briefing_background
+				hide			briefing_text
+				hide			button_glow
+			}
+		}
+
+//----------------------------------------------------------------------------------------------
+// ACCEPT TEXT
+//----------------------------------------------------------------------------------------------
+		itemDef
+		{
+			name				accept_text
+			type				ITEM_TYPE_TEXT
+			rect				52 316 288 124
+			text				@T3_RIFT_23LUK001
+			font				2
+			forecolor			1 1 1 1
+			textscale			.8
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				0
+			autowrapped
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+// NEXT BUTTONS - to go to next screen
+//----------------------------------------------------------------------------------------------
+		itemDef
+		{
+			name				nextscreen_button
+			type				ITEM_TYPE_BUTTON
+			rect				530 440 172 24
+			text				@MENUS_NEXT
+			desctext			@MENUS_ADVANCE_NEXT
+			font				2
+			forecolor			1 .682 0 1
+			textscale			.7
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			-1
+			visible				0
+
+			mouseEnter 
+			{ 
+			}
+			mouseExit 
+			{ 
+			}
+			action
+			{
+				play			"sound/interface/menuroam.wav"
+				close			all
+				open			ingameForceSelect
+			}
+		}
+
+//----------------------------------------------------------------------------------------------
+//	SCANLINES OVER WHOLE MENU
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				button_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 0 0
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				static
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				396 314 175 120
+			background			"gfx/menus/static"
+			backcolor			1 0 0 .2
+			forecolor			1 0 0 .2
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				scan
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 640
+			background			"gfx/menus/scanlines"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+	}
+}
+
+
+
+
+
+
+
+
+
+
+

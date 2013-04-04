@@ -1,0 +1,145 @@
+LambdaShuttle
+{
+name			LambdaShuttle
+type			VH_FIGHTER
+numHands		2
+hideRider		1
+killRiderOnDeath 1
+lookYaw			45
+length			500
+width			640
+height			248
+g2radius		640
+centerOfGravity	"-0.222 0 0"
+speedMax		1800
+turboSpeed		0
+speedMin		0
+acceleration	10
+decelIdle		5
+accelIdle		5
+speedIdle		200
+//test: speed stays at whatever you last set it to...
+throttleSticks	1
+strafePerc		0
+bankingSpeed	0.5
+rollLimit		25
+pitchLimit		40
+braking			10
+mouseYaw		0.001
+mousePitch		0.001
+turningSpeed	2
+turnWhenStopped	0
+speedDependantTurning	1
+traction		12
+friction		1.5
+maxSlope		0.65
+mass			2500
+armor 			2700
+malfunctionArmorLevel	2000
+shields			1500
+toughness 		80.0
+model			LambdaShuttle
+//skin			"models/players/lambdashuttle/model_mark2.skin"
+riderAnim		BOTH_VS_IDLE
+radarIcon		"gfx/menus/radar/shuttle"
+dmgIndicFrame	"gfx/menus/radar/circle_base_frame_reb"
+dmgIndicShield	"gfx/menus/radar/circle_base_shield"
+dmgIndicBackground "gfx/menus/radar/circle_base"
+icon_front		"gfx/menus/radar/LS_front"
+icon_back		"gfx/menus/radar/LS_back"
+icon_right		"gfx/menus/radar/LS_right"
+icon_left		"gfx/menus/radar/LS_left"
+crosshairShader	"gfx/menus/radar/LS_reticle"
+//shieldShader	"gfx/misc/shields_green"
+shieldShader	"gfx/misc/shields_blue"
+soundOn 		"sound/vehicles/shuttle/on.wav"
+soundTakeOff 	"sound/vehicles/shuttle/takeoff.wav"
+soundEngineStart "sound/vehicles/shuttle/enginestart.wav"
+soundLoop 		"sound/vehicles/shuttle/loop.wav"
+soundLand 		"sound/vehicles/shuttle/land.wav"
+soundOff 		"sound/vehicles/shuttle/off.wav"
+soundFlyBy 		"sound/vehicles/shuttle/flyby.wav"
+soundFlyBy2 	"sound/vehicles/shuttle/flyby2.wav"
+soundHyper		"sound/vehicles/common/hyperstartreb.wav"
+exhaustFX		"ships/shuttle_exhaust"
+impactFX		"ships/scrape_sparks"
+explodeFX		"ships/LS_explosion"
+//trailFX		"ships/wingtrail"
+dmgFX			"ships/heavydmg"
+injureFX		"ships/lightdmg"
+noseFX		"ships/LS_nose"
+lwingFX		"ships/LS_lwing"
+rwingFX		"ships/LS_rwing"
+hoverHeight		80
+hoverStrength	10
+explosionRadius 400
+explosionDamage 1000
+maxPassengers	4
+
+landingHeight	300
+
+weap1			rebel_laser
+weap1Aim		1
+weap1Delay		500
+weap1AmmoMax	80
+//NOTE: these are *always* linked... permanently linked muzzles don't use a cumulative delay, just the one that's specified here.
+weap1link		2
+
+weap2			mine
+weap2Delay		1000
+weap2AmmoMax	10
+
+weap1AmmoRechargeMS	500
+
+//FIXME: just use a double-blaster shot effect on these
+weapMuzzle1		rebel_laser
+weapMuzzle2		rebel_laser
+weapMuzzle3		rebel_laser
+weapMuzzle4		rebel_laser
+
+//FIXME: these turrets need to animate to point forward when the wings are open (down)
+//weapMuzzle5		rebel_laser
+//weapMuzzle6		rebel_laser
+//weapMuzzle7		rebel_laser
+//weapMuzzle8		rebel_laser
+
+weapMuzzle9		mine
+weapMuzzle10	mine
+
+//turret 1
+//turret1Weap		rebel_laser
+//turret1Delay		250
+//turret1AmmoMax		40
+//turret1AmmoRechargeMS	500
+//turret1PitchBone	r_turret_bone
+//turret1PitchAxis	2
+//turret1ClampPitchU	-80
+//turret1ClampPitchD	0
+//turret1Muzzle1		5
+//turret1Muzzle2		6
+//turret1TurnSpeed	10
+//turret1PassengerNum	1
+//turret1GunnerViewTag	"*turretview_r"
+
+//turret 2
+//turret2Weap		rebel_laser
+//turret2Delay		250
+//turret2AmmoMax		40
+//turret2AmmoRechargeMS	500
+//turret2PitchBone	l_turret_bone
+//turret2PitchAxis	2
+//turret2ClampPitchU	-80
+//turret2ClampPitchD	0
+//turret2Muzzle1		7
+//turret2Muzzle2		8
+//turret2TurnSpeed	10
+//turret2PassengerNum	2
+//turret2GunnerViewTag	"*turretview_l"
+
+cameraOverride		1
+cameraRange			900
+cameraVertOffset		256
+cameraPitchOffset		0
+cameraFOV			100
+cameraAlpha			0
+}

@@ -1,0 +1,25 @@
+Rax
+{
+	playerModel	rax_joris
+	weapon		WP_CONCUSSION
+	altFire		1
+	rank		commander
+	snd		rax
+	sndcombat	rax
+	sndextra	rax
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	4
+	rank		captain
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_IMPERIAL
+	yawspeed	90
+	walkSpeed	55
+	runSpeed	200
+	health		300
+	visrange	3000
+}

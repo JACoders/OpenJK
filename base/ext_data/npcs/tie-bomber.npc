@@ -1,0 +1,19 @@
+//NOTE: for vehicle-class NPCs, the playerModel key is actually their entry in the vehicles.dat
+
+tie-bomber
+{
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width		200
+	height		256
+}
+
+tie-bomber2
+{
+	playerTeam	TEAM_NEUTRAL
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_VEHICLE
+	width		200
+	height		256
+}

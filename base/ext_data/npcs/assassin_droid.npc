@@ -1,0 +1,32 @@
+assassin_droid
+{
+	playerModel assassin_droid
+	weapon		WP_BLASTER
+	health		150
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_ASSASSIN_DROID
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd		shadowtrooper1
+	sndcombat	shadowtrooper1
+	sndextra	shadowtrooper1
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	100
+	dismemberProbArms	100
+	dismemberProbLegs	100
+	dismemberProbHands	100
+	dismemberProbWaist	100
+}

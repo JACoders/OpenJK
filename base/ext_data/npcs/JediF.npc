@@ -1,0 +1,49 @@
+JediF
+{
+	playerModel	jan
+	surfOff	"torso_vest hips_chaps torso_computer head_goggles torso_comp hips_belt"
+	surfOn	"torso_augment hips_augment hips_torso"
+	saber		dual_3
+	saberColor	random
+	weapon	WP_SABER
+	saberStyle	7
+	FP_HEAL			1
+	FP_LEVITATION	2
+	FP_SPEED		2
+	FP_PUSH			2
+	FP_PULL			1
+	FP_TELEPATHY	1
+	FP_GRIP			0
+	FP_LIGHTNING	0
+	FP_RAGE			0
+	FP_PROTECT		1
+	FP_ABSORB		1
+	FP_DRAIN		0
+	FP_SEE			2
+	FP_SABERTHROW	2
+	FP_SABER_DEFENSE 3
+	FP_SABER_OFFENSE 3
+	rank		lt
+	reactions	3
+	aim			3
+	move		3
+	aggression	3
+	evasion		2
+	intelligence	3
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+	class		CLASS_JEDI
+	yawSpeed	140
+	walkSpeed	55
+	runSpeed	200
+	sex		female
+	snd			jan
+	sndcombat	jan
+	sndjedi		jan
+	health		200
+	dismemberProbHead	0
+	dismemberProbArms	5
+	dismemberProbLegs	0
+	dismemberProbHands	10
+	dismemberProbWaist	0
+}

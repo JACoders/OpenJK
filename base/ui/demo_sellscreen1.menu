@@ -1,0 +1,98 @@
+//----------------------------------------------------------------------------------------------
+// SELL SCREEN
+//
+//	HEY BUY THIS GAME DUDE
+//
+//----------------------------------------------------------------------------------------------
+{
+					   
+	menuDef 
+	{
+		name					"demo_sellscreen1"
+		fullScreen				1
+		rect					0 0 640 480	
+		visible					1
+		focusColor				1 1 1 1
+
+		onOpen 
+		{
+			setfocus			next_button
+		}
+
+		onEsc
+		{ 
+			play			"sound/interface/button1.wav"
+			uiScript		Quit			
+		}
+		
+		
+		itemDef 
+		{
+			name				screen1
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"menu/sellscreen1"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				screen2
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"menu/sellscreen2"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef
+		{
+			name				next_button
+			type				ITEM_TYPE_BUTTON
+			rect				0 0 640 480
+			forecolor			1 1 1 1
+
+			action 
+			{ 
+				play			"sound/interface/transition"
+				hide			screen1
+				show			screen2
+				show 			quit_button			
+			}
+		}
+
+		itemDef
+		{
+			name				quit_button
+			type				ITEM_TYPE_BUTTON
+			rect				0 0 640 480
+			forecolor			1 1 1 1
+			visible				0
+
+			action 
+			{ 
+				play			"sound/interface/button1"
+				uiScript		Quit			
+			}
+		}
+		
+	
+	}
+	
+}
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,8 @@
+test
+{
+	playerModel	test
+	weapon		WP_NONE
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_NEUTRAL
+	class		CLASS_KYLE
+}

@@ -1,0 +1,419 @@
+// Filename:-	cl_mp3.cpp
+//
+// (The interface module between all the MP3 stuff and Trek)
+//
+#include "client.h"
+#include "cl_mp3.h"					//(only included directly from snd_mem.cpp, so not in client.h)
+#include "../mp3code/mp3struct.h"	// keep this rather awful file secret from the rest of the program
+
+// call the real worker code in the messy C stuff...
+//
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+char*	C_MP3_IsValid			(void *pvData, int iDataLen);
+char*	C_MP3_GetUnpackedSize	(void *pvData, int iDataLen, int *piUnpackedSize);
+char*	C_MP3_UnpackRawPCM		(void *pvData, int iDataLen, int *piUnpackedSize, void *pbUnpackBuffer);
+char*	C_MP3_GetHeaderData		(void *pvData, int iDataLen, int *piRate, int *piWidth, int *piChannels);
+char*	C_MP3Stream_DecodeInit	(LP_MP3STREAM pSFX_MP3Stream, void *pvSourceData, int iSourceBytesRemaining,
+								int iGameAudioSampleRate, int iGameAudioSampleBits );
+unsigned int C_MP3Stream_Decode	(LP_MP3STREAM pSFX_MP3Stream);
+char*	C_MP3Stream_Rewind		(LP_MP3STREAM pSFX_MP3Stream);
+
+
+// these two are temp and will eventually be deleted... honest...
+//
+char*	C_TEST_MP3_GetUnpackedSize( const char *_FILENAME1, const char *_FILENAME2, const char *_FILENAME3,
+									void *data1,void *data2,void *data3,
+									int size1,int size2,int size3,
+									int *iUnpackedSize1,int *iUnpackedSize2,int *iUnpackedSize3
+									);
+char *	C_TEST_MP3_UnpackRawPCM(const char *_FILENAME1, const char *_FILENAME2, const char *_FILENAME3,
+								void *data1,void *data2,void *data3,
+								int iSourceBytesRemaining1,int iSourceBytesRemaining2,int iSourceBytesRemaining3,
+								int *piUnpackedSize1,int *piUnpackedSize2,int *piUnpackedSize3,
+								void *pbUnpackBuffer1,void *pbUnpackBuffer2,void *pbUnpackBuffer3
+								);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+
+
+// expects data already loaded, filename arg is for error printing only
+//
+// returns success/fail
+//
+qboolean MP3_IsValid( const char *psLocalFilename, void *pvData, int iDataLen )
+{
+	char *psError = C_MP3_IsValid(pvData, iDataLen);
+
+	if (psError)
+	{
+		Com_Printf(va(S_COLOR_RED"%s\n(File: %s)\n",psError, psLocalFilename));
+	}
+
+	return !psError;
+}
+
+
+
+// expects data already loaded, filename arg is for error printing only
+//
+// returns unpacked length, or 0 for errors (which will be printed internally)
+//
+int MP3_GetUnpackedSize( const char *psLocalFilename, void *pvData, int iDataLen, qboolean qbIgnoreID3Tag /* = qfalse */)
+{
+	int	iUnpackedSize = 0;
+	
+	if (qbIgnoreID3Tag || !MP3_ReadSpecialTagInfo((byte *)pvData, iDataLen, NULL, &iUnpackedSize))
+	{	
+		char *psError = C_MP3_GetUnpackedSize( pvData, iDataLen, &iUnpackedSize);
+
+		if (psError)
+		{
+			Com_Printf(va(S_COLOR_RED"%s\n(File: %s)\n",psError, psLocalFilename));
+			return 0;
+		}
+	}	
+
+	return iUnpackedSize;
+}
+
+
+
+// expects data already loaded, filename arg is for error printing only
+//
+// returns byte count of unpacked data (effectively a success/fail bool)
+//
+int MP3_UnpackRawPCM( const char *psLocalFilename, void *pvData, int iDataLen, byte *pbUnpackBuffer )
+{
+	int iUnpackedSize;
+	char *psError = C_MP3_UnpackRawPCM( pvData, iDataLen, &iUnpackedSize, pbUnpackBuffer);
+
+	if (psError)
+	{
+		Com_Printf(va(S_COLOR_RED"%s\n(File: %s)\n",psError, psLocalFilename));
+		return 0;
+	}
+
+	return iUnpackedSize;
+}
+
+
+
+// expects data already loaded, filename arg is for error printing only
+//
+qboolean MP3_FakeUpWAVInfo( const char *psLocalFilename, void *pvData, int iDataLen, int iUnpackedDataLength, int &format, int &rate, int &width, int &channels, int &samples, int &dataofs)
+{
+	// some things can be done instantly...
+	//
+	format = 1;		// 1 for MS format
+	dataofs= 0;		// will be 0 for me (since there's no header in the unpacked data)
+
+	// some things need to be read...
+	//
+	char *psError = C_MP3_GetHeaderData(pvData, iDataLen, &rate, &width, &channels);
+	if (psError)
+	{
+		Com_Printf(va(S_COLOR_RED"%s\n(File: %s)\n",psError, psLocalFilename));
+	}
+
+	// and some stuff needs calculating...
+	//
+	samples	= iUnpackedDataLength / width;
+		
+
+	return !psError;
+
+}
+
+
+
+const char sKEY_MAXVOL[]="#MAXVOL";	// formerly #defines
+const char sKEY_UNCOMP[]="#UNCOMP";	//    "        "
+
+// returns qtrue for success...
+//
+qboolean MP3_ReadSpecialTagInfo(byte *pbLoadedFile, int iLoadedFileLen,		// (in)
+								id3v1_1** ppTAG,							// (out), can be NULL
+								int *piUncompressedSize, float *pfMaxVol	// (out), can be NULL
+								)
+{
+	qboolean qbError = qfalse;
+
+	id3v1_1* pTAG = (id3v1_1*) ((pbLoadedFile+iLoadedFileLen)-sizeof(id3v1_1));	// sizeof = 128	
+
+	if (!strncmp(pTAG->id, "TAG", 3))
+	{
+		// TAG found...
+		//
+		
+		// read MAXVOL key...
+		//
+		if (strncmp(pTAG->comment, sKEY_MAXVOL,	strlen(sKEY_MAXVOL)))
+		{
+			qbError = qtrue;
+		}
+		else
+		{
+			if ( pfMaxVol)
+			{
+				*pfMaxVol = atof(pTAG->comment + strlen(sKEY_MAXVOL));
+			}
+		}
+
+		//
+		// read UNCOMP key...
+		//
+		if (strncmp(pTAG->album, sKEY_UNCOMP, strlen(sKEY_UNCOMP)))
+		{
+			qbError = qtrue;
+		}
+		else
+		{
+			if ( piUncompressedSize)
+			{
+				*piUncompressedSize = atoi(pTAG->album + strlen(sKEY_UNCOMP));
+			}
+		}
+	}
+	else
+	{
+		pTAG = NULL;
+	}
+
+	if (ppTAG)
+	{
+		*ppTAG = pTAG;
+	}
+
+	return (pTAG && !qbError);
+}
+
+
+
+qboolean TEST_MP3_GetUnpackedSize(const char *_FILENAME1, const char *_FILENAME2, const char *_FILENAME3,
+										void *data1,void *data2,void *data3,
+										int size1,int size2,int size3,
+										int *iUnpackedSize1,int *iUnpackedSize2,int *iUnpackedSize3
+										)
+{
+	char *psError = C_TEST_MP3_GetUnpackedSize(_FILENAME1, _FILENAME2, _FILENAME3,
+												data1,data2,data3,
+												size1,size2,size3,
+												iUnpackedSize1,iUnpackedSize2,iUnpackedSize3
+												);
+
+	if (psError)
+	{
+		Com_Printf(va(S_COLOR_RED"%s\n",psError));
+		return qfalse;
+	}
+
+	return qtrue;
+}
+
+
+// expects data already loaded, filename arg is for error printing only
+//
+// returns byte count of unpacked data (effectively a success/fail bool)
+//
+qboolean TEST_MP3_UnpackRawPCM(		const char *_FILENAME1, const char *_FILENAME2, const char *_FILENAME3,
+									void *data1,void *data2,void *data3,
+									int iSourceBytesRemaining1,int iSourceBytesRemaining2,int iSourceBytesRemaining3,
+									int *piUnpackedSize1,int *piUnpackedSize2,int *piUnpackedSize3,
+									void *pbUnpackBuffer1,void *pbUnpackBuffer2,void *pbUnpackBuffer3
+									)
+{
+	char *psError = C_TEST_MP3_UnpackRawPCM(_FILENAME1, _FILENAME2, _FILENAME3,
+											data1,data2,data3,
+											iSourceBytesRemaining1,iSourceBytesRemaining2,iSourceBytesRemaining3,
+											piUnpackedSize1,piUnpackedSize2,piUnpackedSize3,
+											pbUnpackBuffer1,pbUnpackBuffer2,pbUnpackBuffer3
+											);
+	if (psError)
+	{
+		Com_Printf(va(S_COLOR_RED"%s\n",psError));
+		return qfalse;
+	}
+
+	return qtrue;
+}
+
+
+
+
+
+// a file has been loaded in memory, see if we want to keep it as MP3, else as normal WAV...
+//
+// return = qtrue if keeping as MP3
+//
+// (note: the reason I pass in the unpacked size rather than working it out here is simply because I already have it)
+//
+qboolean MP3Stream_InitFromFile( sfx_t* sfx, byte *pbSrcData, int iSrcDatalen, const char *psSrcDataFilename, int iMP3UnPackedSize )
+{
+	// first, make a decision based on size here as to whether or not it's worth it because of MP3 buffer space
+	//	making small files much bigger (and therefore best left as WAV)...
+	//
+#define FUZZY_AMOUNT (5*1024)	// so it has to be significantly over, not just break even, because of
+								// the xtra CPU time versus memory saving
+
+	if (iSrcDatalen + sizeof(MP3STREAM) + FUZZY_AMOUNT < iMP3UnPackedSize)
+	{
+		// ok, let's keep it as MP3 then...
+		//
+
+		float fMaxVol = 128;	// seems to be a reasonable typical default for maxvol (for lip synch). Naturally there's no #define I can use instead...
+
+		MP3_ReadSpecialTagInfo(pbSrcData, iSrcDatalen, NULL, NULL, &fMaxVol );	// try and read a read maxvol from MP3 header
+	
+		// fill in some sfx_t fields...
+		//
+					sfx->eCompressionType = ct_MP3;
+					sfx->data			  = (byte*) Hunk_Alloc( iSrcDatalen );	// will err_drop if fails
+		memcpy	  ( sfx->data, pbSrcData, iSrcDatalen );						// ... so the -> data field is MP3, not PCM		
+					sfx->width  = 2;//(s_compression->value == 1)?1:2;						
+					sfx->length = (iMP3UnPackedSize / sfx->width) / (44100 / dma.speed);
+					sfx->vol_range = fMaxVol;
+
+		// now init the low-level MP3 stuff...
+		//		
+		MP3STREAM SFX_MP3Stream = {0};
+		char *psError = C_MP3Stream_DecodeInit( &SFX_MP3Stream, sfx->data, iSrcDatalen,
+												dma.speed,//(s_khz->value == 44)?44100:(s_khz->value == 22)?22050:11025,
+												sfx->width * 8
+												);
+		if (psError)
+		{
+			// This should never happen, since any errors or problems with the MP3 file would have stopped us getting
+			//	to this whole function, but just in case...
+			//
+			Com_Printf(va(S_COLOR_YELLOW"File \"%s\": %s\n",psSrcDataFilename,psError));
+
+			// This will leave iSrcDatalen bytes on the hunk stack (since you can't dealloc that), but MP3 files are
+			//	usually small, and like I say, it should never happen.
+			//
+			// Strictly speaking, I should do a Z_Malloc above, then I could do a Z_Free if failed, else do a Hunk_Alloc
+			//	to copy the Z_Malloc data into, then Z_Free, but for something that shouldn't happen it seemed bad to
+			//	penalise the rest of the game with extra malloc demands.
+			//
+			return qfalse;	
+		}
+
+		// success ( ...on a plate).
+		//
+		// make a copy of the filled-in stream struct and attach to the sfx_t struct...
+		//
+				sfx->pMP3StreamHeader = (MP3STREAM *) Hunk_Alloc( sizeof(MP3STREAM) );
+		memcpy(	sfx->pMP3StreamHeader, &SFX_MP3Stream,			  sizeof(MP3STREAM) );
+		//
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
+
+// return is decoded byte count, else 0 for finished
+//
+int MP3Stream_Decode( LP_MP3STREAM lpMP3Stream )
+{
+	lpMP3Stream->iCopyOffset = 0;
+	return C_MP3Stream_Decode( lpMP3Stream );
+}
+
+// returns qtrue for all ok
+//
+// (this can be optimised by copying the whole header from the sfx struct sometime)
+//
+qboolean MP3Stream_Rewind( channel_t *ch )
+{		
+/*	char *psError = C_MP3Stream_Rewind( lpMP3Stream );
+
+	if (psError)
+	{
+		Com_Printf(S_COLOR_YELLOW"%s\n",psError);
+		return qfalse;
+	}
+
+	return qtrue;
+*/
+	memcpy(&ch->MP3StreamHeader, ch->sfx->pMP3StreamHeader, sizeof(ch->MP3StreamHeader));
+	return qtrue;
+}
+
+void MP3Stream_GetSamples( channel_t *ch, int startingSampleNum, int count, short *buf )
+{	
+	static const int iQuarterOfSlidingBuffer		=  sizeof(ch->MP3SlidingDecodeBuffer)/4;
+	static const int iThreeQuartersOfSlidingBuffer	= (sizeof(ch->MP3SlidingDecodeBuffer)*3)/4;
+
+//	Com_Printf("startingSampleNum %d\n",startingSampleNum);
+
+	count *= ch->sfx->width;	// count arg was for words, so double it for bytes;
+
+	startingSampleNum *= ch->sfx->width;
+
+	if ( startingSampleNum < ch->iMP3SlidingDecodeWindowPos)
+	{
+		// what?!?!?!   Fucking time travel needed or something?, forget it
+		memset(buf,0,count);
+		return;
+	}
+
+//	OutputDebugString(va("\nRequest: startingSampleNum %d, count %d\n",startingSampleNum,count));
+//	OutputDebugString(va("WindowPos %d, WindowWritePos %d\n",ch->iMP3SlidingDecodeWindowPos,ch->iMP3SlidingDecodeWritePos));
+
+	while (!
+		(
+			(startingSampleNum			>= ch->iMP3SlidingDecodeWindowPos)
+			&&
+			(startingSampleNum + count	<  ch->iMP3SlidingDecodeWindowPos + ch->iMP3SlidingDecodeWritePos)
+			)
+			)
+	{
+//		OutputDebugString("Scrolling...");
+
+		int _iBytesDecoded = MP3Stream_Decode( (LP_MP3STREAM) &ch->MP3StreamHeader );
+//		OutputDebugString(va("%d bytes decoded\n",_iBytesDecoded));
+		if (_iBytesDecoded == 0)
+		{
+			// no more source data left so clear the remainder of the buffer...
+			//
+			memset(ch->MP3SlidingDecodeBuffer + ch->iMP3SlidingDecodeWritePos, 0, sizeof(ch->MP3SlidingDecodeBuffer)-ch->iMP3SlidingDecodeWritePos);
+			//MP3Stream_Rewind(ch);	// should I do this???
+//			OutputDebugString("Finished\n");
+			break;
+		}
+		else
+		{
+			memcpy(ch->MP3SlidingDecodeBuffer + ch->iMP3SlidingDecodeWritePos,ch->MP3StreamHeader.bDecodeBuffer,_iBytesDecoded);
+
+			ch->iMP3SlidingDecodeWritePos += _iBytesDecoded;
+
+			// if reached 3/4 of buffer pos, backscroll the decode window by one quarter...
+			//
+			if (ch->iMP3SlidingDecodeWritePos > (sizeof(ch->MP3SlidingDecodeBuffer)*3)/4)
+			{
+				memmove(ch->MP3SlidingDecodeBuffer, ((byte *)ch->MP3SlidingDecodeBuffer + (sizeof(ch->MP3SlidingDecodeBuffer)/4)), (sizeof(ch->MP3SlidingDecodeBuffer)*3)/4);
+				ch->iMP3SlidingDecodeWritePos -= sizeof(ch->MP3SlidingDecodeBuffer)/4;
+				ch->iMP3SlidingDecodeWindowPos+= sizeof(ch->MP3SlidingDecodeBuffer)/4;
+			}
+		}
+//		OutputDebugString(va("WindowPos %d, WindowWritePos %d\n",ch->iMP3SlidingDecodeWindowPos,ch->iMP3SlidingDecodeWritePos));
+	}
+
+	assert(startingSampleNum >= ch->iMP3SlidingDecodeWindowPos);
+	memcpy( buf, ch->MP3SlidingDecodeBuffer + (startingSampleNum-ch->iMP3SlidingDecodeWindowPos), count);
+	
+
+//	OutputDebugString("OK\n");
+}
+
+
+///////////// eof /////////////
+

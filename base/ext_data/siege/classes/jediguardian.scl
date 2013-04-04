@@ -1,0 +1,21 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Jedi Guardian"
+	weapons			WP_SABER
+	saber1			dual_1
+	sabercolor		3
+	saberstyle		SS_STAFF
+	forcepowers		FP_SABER_OFFENSE,1|FP_SABER_DEFENSE,1|FP_SABERTHROW,2|FP_LEVITATION,2|FP_PUSH,2|FP_PULL,1|FP_SEE,1|FP_HEAL,1
+	maxhealth		50
+	starthealth		50
+	maxarmor		0
+	model			"jedi_kdm" 					//this is optional, if it's here it forces the model to this.
+	speed			1.25
+	skin			"siege"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/jedi_kdm/icon_siege"
+	class_shader	"gfx/mp/c_icon_jedi_general"
+}
+
+description	"@SIEGE_JEDI_JEDI_GUARDIAN"

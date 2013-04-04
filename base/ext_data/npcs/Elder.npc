@@ -1,0 +1,55 @@
+Elder
+{
+	playerModel	prisoner
+	weapon		WP_NONE
+	customSkin	elder
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+	class		CLASS_PRISONER
+	snd			prisoner1
+	sndcombat	prisoner1
+	sndextra	prisoner1
+	walkSpeed	55
+	runSpeed	200
+	yawspeed	110
+	dismemberProbHead	0
+	dismemberProbArms	5
+	dismemberProbLegs	0
+	dismemberProbHands	10
+	dismemberProbWaist	0
+}
+
+Elder2
+{
+	playerModel	prisoner
+	weapon		WP_NONE
+	customSkin	elder2
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+	class		CLASS_PRISONER
+	snd			prisoner2
+	sndcombat	prisoner2
+	sndextra	prisoner2
+	walkSpeed	55
+	runSpeed	200
+	yawspeed	110
+	dismemberProbHead	0
+	dismemberProbArms	5
+	dismemberProbLegs	0
+	dismemberProbHands	10
+	dismemberProbWaist	0
+}

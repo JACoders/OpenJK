@@ -1,0 +1,18 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Rebel Infantry"
+	weapons			WP_BLASTER_PISTOL|WP_BLASTER|WP_FLECHETTE|WP_TRIP_MINE|WP_REPEATER
+	maxhealth		100
+	maxarmor		0
+	startarmor		0	//need 0
+	model			"rebel" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/rebel/icon_default"
+	holdables		HI_MEDPAC_BIG
+	class_shader	"gfx/mp/c_icon_infantry"
+}
+
+description	
+"@SIEGE_INF_REBEL_INFANTRY"

@@ -1,0 +1,19 @@
+//Siege class def file.
+//NOTE: light version used for Star Destroyer map
+
+ClassInfo
+{
+	name			"Imperial Light Demolitionist"
+	weapons		WP_BLASTER_PISTOL|WP_THERMAL|WP_TRIP_MINE|WP_DET_PACK
+//	classflags		CFL_EXTRA_AMMO
+	maxhealth		30
+	maxarmor		0
+	startarmor		0
+	model			"imperial" 				//this is optional, if it's here it forces the model to this.
+	skin			"officer"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/imperial/icon_officer"
+	class_shader	"gfx/mp/c_icon_demolitionist"
+}
+
+description	
+"@SIEGE_DEMO_IMP_LT_DEMO"

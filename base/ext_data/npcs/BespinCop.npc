@@ -1,0 +1,57 @@
+BespinCop
+{
+	playerModel bespin_cop
+	weapon		WP_BLASTER_PISTOL
+	health		40
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+	walkSpeed	55
+	runSpeed	200
+	yawspeed	120
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+//	race		bespincop
+	class		CLASS_BESPIN_COP
+	snd			bespincop1
+	sndcombat	bespincop1
+	sndextra	bespincop1
+}
+
+BespinCop2
+{
+	playerModel bespin_cop
+	weapon		WP_BLASTER_PISTOL
+	health		40
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_PLAYER
+	enemyTeam	TEAM_ENEMY
+	walkSpeed	55
+	runSpeed	200
+	yawspeed	120
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+//	race		bespincop
+	class		CLASS_BESPIN_COP
+	snd			bespincop2
+	sndcombat	bespincop2
+	sndextra	bespincop2
+}

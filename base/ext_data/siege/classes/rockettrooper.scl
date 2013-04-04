@@ -1,0 +1,22 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Rocket Trooper"
+	weapons		WP_BLASTER_PISTOL|WP_ROCKET_LAUNCHER
+//	weapons		WP_BLASTER_PISTOL|WP_REPEATER
+//	classflags		CFL_EXTRA_AMMO
+	forcepowers		0
+	maxhealth		100
+	maxarmor		100
+	startarmor		0
+//	model			"rockettrooper" 					//this is optional, if it's here it forces the model to this.
+	model			"stormtrooper" 					//this is optional, if it's here it forces the model to this.
+	skin			"officer"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/stormtrooper/icon_officer"
+	class_shader	"gfx/mp/c_icon_heavy_weapons"
+	speed			0.75
+}
+
+description	
+"@SIEGE_VAN_ROCKETTROOPER"

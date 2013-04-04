@@ -1,0 +1,20 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Dark Force Assassin"
+	weapons			WP_BLASTER_PISTOL|WP_DISRUPTOR
+	classflags		CFL_EXTRA_AMMO
+	forcepowers		FP_TELEPATHY,3|FP_SEE,1|FP_LEVITATION,3
+	forcealignment	dark
+	maxhealth		75
+	maxarmor		0
+	startarmor		0
+	model			"shadowtrooper" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/shadowtrooper/icon_default"
+	class_shader	"gfx/mp/c_icon_vanguard"
+	speed			1.1
+}
+
+description	"@SIEGE_VAN_DFORCE_ASSASSIN"

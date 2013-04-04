@@ -1,0 +1,21 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Dark Jedi Knight"
+	weapons			WP_SABER
+	saber1			single_9
+	sabercolor		0
+	saberstyle		SS_FAST|SS_MEDIUM|SS_STRONG
+	forcepowers		FP_SABER_OFFENSE,2|FP_SABER_DEFENSE,2|FP_SABERTHROW,2|FP_LEVITATION,2|FP_SPEED,2|FP_PUSH,2|FP_PULL,2|FP_SEE,2|FP_RAGE,2|FP_GRIP,2|FP_DRAIN,2|FP_LIGHTNING,2
+	maxhealth		100
+	maxarmor		0
+	startarmor		0
+	speed			1.25
+	model			"tavion_new" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/tavion_new/icon_default"
+	class_shader	"gfx/mp/c_icon_jedi_general"
+}
+
+description	"@SIEGE_JEDI_DJEDI_KNIGHT"

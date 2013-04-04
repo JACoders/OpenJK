@@ -1,0 +1,21 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Dark Side Marauder"
+	weapons			WP_SABER
+	saber1			dual_1
+	sabercolor		0
+	saberstyle		SS_STAFF
+	forcepowers		FP_SABER_OFFENSE,3|FP_SABER_DEFENSE,1|FP_SABERTHROW,2|FP_LEVITATION,2|FP_GRIP,3|FP_RAGE,3|FP_PUSH,2|FP_PULL,1|FP_LIGHTNING,1
+	maxhealth		100
+	maxarmor		0
+	startarmor		0
+	speed			1.25
+	model			"reborn_new" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/reborn_new/icon_default"
+	class_shader	"gfx/mp/c_icon_jedi_general"
+}
+
+description	"@SIEGE_JEDI_DJEDI_MARAUDER"

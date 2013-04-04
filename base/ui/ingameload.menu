@@ -1,0 +1,726 @@
+//----------------------------------------------------------------------------------------------
+// INGAME MAIN MENU
+//
+//	Allows user to load from saved games. Called from in game main menu.
+//----------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		// ***IMPORTANT*** This name can not change, code looks for it.
+		// If it must change, change it in UI_AdjustSaveGameListBox() also
+		//
+		name					"ingameloadMenu"
+		fullScreen				1							// MENU_TRUE				
+		rect					0 0 640 480						// Size and position of the menu
+		visible					1							// Visible on open
+		focusColor				1 1 1 1						// Focus color for text and items
+		descX					320
+		descY					426
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER		
+		disablecolor				.5 .5 .5 1
+
+		onOpen 
+		{
+			uiScript			ReadSaveDirectory
+		}
+
+		onESC 
+		{ 
+				play			"sound/interface/esc.wav" 					
+				uiScript		closeingame			// Close menu				
+		}
+												
+//----------------------------------------------------------------------------------------------
+//	MENU BACKGROUND
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				really_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				156 154 320 240
+			background			"gfx/menus/main_centerblue"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}		
+
+		itemDef 
+		{
+			name				background_text
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 160 480
+			background			"gfx/menus/menu_side_text"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text_b
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				480 0 160 480
+			background			"gfx/menus/menu_side_text_right"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}	
+	
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/main_background"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				starwars
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				107 8 428 112
+			background			"gfx/menus/jediacademy"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				left_frame
+			group				lf_fr
+			style				WINDOW_STYLE_SHADER
+			rect				0 50 320 160
+			background			"gfx/menus/menu_boxes_left"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				right_frame
+			group				rt_fr
+			style				WINDOW_STYLE_SHADER
+			rect				320 50 320 160
+			background			"gfx/menus/menu_boxes_right"	
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+//	TOP MENU BUTTONS
+//----------------------------------------------------------------------------------------------
+		// Big button "SAVE"
+		itemDef 
+		{
+			name				savegamebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				7 126 130 24
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				savegamebutton
+			group				nbut
+			text				@MENUS_SAVE
+			descText			@MENUS_SAVE_CURRENT_GAME
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				7 126 130 24
+			textaligny			0
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			forecolor			1 .682 0 1
+			visible				1
+			mouseEnter 
+			{ 
+				show			savegamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			savegamebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			ingamesaveMenu 
+			}
+		}
+
+	// Big button "LOAD"
+		itemDef 
+		{
+			name				loadgamebutton
+			group				lbut
+			text				@MENUS_LOAD
+			descText			@MENUS_LOAD_A_SAVED_GAME
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				170 126 130 24
+			textaligny			0
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+
+		}
+
+		// Big button "CONTROLS"
+		itemDef 
+		{
+			name				controlsbutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				340 126 130 24
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef {
+			name				controlsbutton
+			group				cbut
+			text				@MENUS_CONTROLS
+			descText			@MENUS_CONFIGURE_GAME_CONTROLS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				340 126 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			controlsbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			controlsbutton_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			ingamecontrolsMenu ; 
+			}
+		}
+
+		// Big button "SETUP"
+		itemDef 
+		{
+			name				setupbutton_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				502 126 130 24
+			background			"gfx/menus/menu_buttonback"	
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				setupbutton
+			group				sbut
+			text				@MENUS_SETUP
+			descText			@MENUS_CONFIGURE_GAME_SETTINGS
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				502 126 130 24
+			font				3
+			textscale			1.1
+			textaligny			0
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			1
+			textalignx			65
+			backcolor			0 0 0 0
+			forecolor			1 .682 0 1
+			visible			1
+			 
+			mouseEnter 
+			{ 
+				show			setupbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			setupbutton_glow 
+			}	  	  
+			action 
+			{
+				play			"sound/interface/button1.wav" ; 
+				close			all ; 
+				open			ingamesetupMenu ; 
+			}
+		}
+
+//----------------------------------------------------------------------------------------------
+//	OTHER MAIN MENU BUTTONS
+//----------------------------------------------------------------------------------------------
+		// BACK button in lower left corner
+		itemDef 
+		{
+			name				backbutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				59 444 130 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				backbutton
+			group				exit
+			text				@MENUS_BACK
+			descText			@MENUS_BACKTOMAIN
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				59 444 130 24  
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible				1
+			cvartest			ui_missionfailed
+			hidecvar	
+			{
+				"1"
+			}
+
+			mouseEnter 
+			{ 
+				show			backbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			backbutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/esc.wav" 					
+				close			all ; 
+				open			ingamemainMenu 
+			}
+		}
+
+		// Only displayed when the mission failure screen is up		
+		itemDef 
+		{
+			name				backbutton
+			group				exit
+			text				@MENUS_BACK
+			descText			@MENUS_BACKTOMAIN
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				59 444 130 24  
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible				1
+			cvartest			ui_missionfailed
+			showcvar	
+			{
+				"1"
+			}
+
+			mouseEnter 
+			{ 
+				show			backbutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			backbutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/esc.wav" 					
+				close			all ; 
+				open			missionfailed_menu 
+			}
+		}
+		// EXIT button in lower left corner
+		itemDef 
+		{
+			name				exitgamebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				255 444 130 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				exitgamebutton
+			group				exit
+			text				@MENUS_EXIT
+			descText			@MENUS_JEDI_KNIGHT_II
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				255 444 130 24 
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			exitgamebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			exitgamebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/weapons/saber/saberoff.mp3"; 
+				close			all ; 
+				open			ingamequitMenu 
+			}
+		}
+
+		// RESUME button in the lower right corner
+		itemDef 
+		{
+			name				resumebutton_glow
+			group				mods
+			style				WINDOW_STYLE_SHADER
+			rect				455 444 130 24 
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				resume
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				455 444 130 24 
+			text				@MENUS_RESUME
+			descText			@MENUS_RESUME_CURRENT_GAME
+			font				3
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible			1
+			mouseEnter 
+			{ 
+				show			resumebutton_glow 
+			}
+			mouseExit 
+			{ 
+				hide			resumebutton_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				uiScript		closeingame			// Close menu				
+			}
+		}
+
+//----------------------------------------------------------------------------------------------
+//   LOAD GAME MENU specific stuff
+//----------------------------------------------------------------------------------------------
+		// Load Game title
+		itemDef 
+		{
+			name				loadgame_title
+			group				title
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS_LOAD_GAME
+      			rect				100 164 440 16
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			225
+			textaligny			-1
+			forecolor			.549 .854 1 1			
+      			visible				1 
+  	    		decoration 
+		}
+
+		itemDef 
+		{
+			// ***IMPORTANT*** This name can not change, code looks for it.
+			// If it must change, change it in UI_AdjustSaveGameListBox() also
+			//
+			name				loadgamelist
+			group				loadscreen
+			rect				40 200 360 190
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth			120
+			elementheight			16
+			font				2
+			textaligny			8 
+			textscale			0.7
+			border				1
+			bordersize			1
+			bordercolor			0 0 .8 1
+			forecolor			.615 .615 .956 1
+			
+			
+			backcolor			0 0 .5 .25
+			outlinecolor			.5 .5 .5 .5
+			elementtype			LISTBOX_TEXT
+			feeder				FEEDER_SAVEGAMES
+			notselectable
+			visible				1
+			columns				2 	2 55 150   155 0 200		//#of col., x loc. of 1st column, 2 number doesn't seem to do anything, third is width of column
+			mouseEnter 
+			{ 
+				setitemcolor	loadgamelist bordercolor 1 1 1 1
+			} 
+			mouseExit 
+			{ 
+				setitemcolor	loadgamelist bordercolor 0 0 .8 1
+			} 
+			doubleclick
+			{
+				play			sound/interface/button1.wav
+				uiScript		loadgame
+			}
+			action 
+			{
+				play			sound/interface/sub_select 
+			}
+		}
+
+		itemDef 
+		{
+			name				loadgamepic
+			group				loadscreen
+			style				WINDOW_STYLE_EMPTY	
+			ownerdraw			236					//UI_ALLMAPS_SELECTION
+			font				2
+			textscale			.8
+//			forecolor			1 1 1 1
+			forecolor			.549 .854 1 1			
+			rect				435 200 180 135
+			border				1
+			bordercolor			0 0 .8 1
+			visible				1 
+		}
+
+		// loadgame button
+		itemDef 
+		{
+			name				loadgameaction_glow
+			group				glow
+			style				WINDOW_STYLE_SHADER
+			rect				440 360 190 20 
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				loadgameaction
+			group				actionbutton
+			text				@MENUS_LOAD_GAME
+			descText			@MENUS_LOAD_CHOSEN_GAME
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				440 360 175 25 
+			font				3
+			textscale			0.8
+			textalignx			175
+			textaligny			1
+			textalign			ITEM_ALIGN_RIGHT
+			textstyle			1
+			forecolor			1 .682 0 1
+			visible				1
+			cvarTest			ui_SelectionOK
+			enableCvar			{ "1" }
+
+			mouseEnter 
+			{ 
+				show			loadgameaction_glow
+			} 
+			mouseExit 
+			{ 
+				hide			loadgameaction_glow
+			} 
+			action 
+			{ 
+				play			sound/interface/button1.wav ;
+				hide			glow ;
+				uiScript		loadgame
+			}
+		}
+
+		// deletegame button
+		itemDef 
+		{
+			name				deletegameaction_glow
+			group				glow
+			style				WINDOW_STYLE_SHADER
+			rect				440 385 190 20
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				deletegamebutton
+			group				actionbutton
+			text				@MENUS_DELETE_GAME
+			descText			@MENUS_DELETE_CHOSEN_GAME
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				440 385 175 25 
+			font				3
+			textscale			0.8
+			textalignx			175
+			textaligny			1
+			textalign			ITEM_ALIGN_RIGHT
+			textstyle			1
+			forecolor			1 .682 0 1
+			visible				1
+			cvarTest			ui_SelectionOK
+			enableCvar			{ "1" }
+
+			mouseEnter 
+			{ 
+				show			deletegameaction_glow
+			} 
+			mouseExit 
+			{ 
+				hide			deletegameaction_glow
+			} 
+			action
+			{ 
+				play			sound/interface/button1.wav ;
+				hide			glow ;
+				uiScript		deletegame
+			}
+		}
+
+		
+		// resumegame button
+		itemDef 
+		{
+			name				resumegameaction_glow
+			group				glow
+			style				WINDOW_STYLE_SHADER
+			rect				440 410 190 20 
+			background			"gfx/menus/menu_blendbox2"			// Frame around button
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				resumeautobutton
+			group				actionbutton
+			text				@MENUS_RESUME_MISSION
+			descText			@MENUS_RESUME_LAST_MISSION_ENTERED
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				440 410 175 25 
+			font				3
+			textscale			0.8
+			textalignx			175
+			textaligny			1
+			textalign			ITEM_ALIGN_RIGHT
+			textstyle			1
+			forecolor			1 .682 0 1
+			visible				1					// This button isn't used when not in game.
+			cvarTest			ui_ResumeOK
+			enableCvar			{ "1" }
+
+			mouseEnter 
+			{ 
+				show			resumegameaction_glow
+			} 
+			mouseExit 
+			{ 
+				hide			resumegameaction_glow
+			} 
+			action
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				hide			glow ;
+				uiScript		loadAuto
+			}
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

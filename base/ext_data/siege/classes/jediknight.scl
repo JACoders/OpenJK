@@ -1,0 +1,21 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Jedi Knight"
+	weapons			WP_SABER
+	saber1			single_4
+	sabercolor		4
+	saberstyle		SS_FAST|SS_MEDIUM|SS_STRONG
+	forcepowers		FP_SABER_OFFENSE,2|FP_SABER_DEFENSE,2|FP_SABERTHROW,2|FP_LEVITATION,3|FP_SPEED,1|FP_PUSH,2|FP_PULL,2|FP_SEE,1|FP_ABSORB,1|FP_HEAL,1
+	maxhealth		100
+	maxarmor		0
+	startarmor		0
+	model			"jedi_hm" 					//this is optional, if it's here it forces the model to this.
+	speed			1.25
+	skin			"siege"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/jedi_hm/icon_siege"
+	class_shader	"gfx/mp/c_icon_heavy_weapons"
+}
+
+description	"@SIEGE_HVY_JEDI_KNIGHT"

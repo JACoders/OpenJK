@@ -1,0 +1,21 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Imperial Sniper"
+	weapons			WP_BLASTER_PISTOL|WP_DISRUPTOR
+	forcepowers		0
+	classflags		CFL_EXTRA_AMMO
+	maxhealth		100
+	maxarmor		50
+	startarmor		0
+	model			"saboteur" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/saboteur/icon_default"
+	class_shader	"gfx/mp/c_icon_vanguard"
+	holdables		HI_MEDPAC|HI_SENTRY_GUN
+	speed			1.25
+}
+
+description	
+"@SIEGE_VAN_IMP_SNIPER"

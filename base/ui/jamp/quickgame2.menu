@@ -1,0 +1,865 @@
+//----------------------------------------------------------------------------------------------
+//
+//	MULTIPLAYER QUICK SERVER MENU
+//
+//	Allows player to choose quickly game server rules
+//		This is the second screen in the quick game series.
+//----------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name					"quickgame2"
+		fullScreen				MENU_TRUE				
+		rect					0 0 640 480				// Size and position of the menu
+		visible					1					// Visible on open
+		focusColor				1 1 1 1				// Focus color for text and items
+		descX					320
+		descY					424
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER		
+
+		onEsc 
+		{ 
+			play				"sound/interface/esc.wav" ;
+			close				quickgame2 ; 
+			open				quickgame 
+		}
+
+		onOpen 
+		{ 
+			hide				accept_alt ; 
+			show				accept ;
+			hide				back_alt ;
+			show				back ;
+			hide				grpmessage 
+		}
+
+//----------------------------------------------------------------------------------------------
+//	MENU BACKGROUND
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				really_background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				156 154 320 240
+			background			"gfx/menus/main_centerblue"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 160 480
+			background			"gfx/menus/menu_side_text"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				background_text_b
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				480 0 160 480
+			background			"gfx/menus/menu_side_text_right"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}	
+	
+		itemDef 
+		{
+			name				background
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 640 480
+			background			"gfx/menus/main_background"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				button_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 0 0
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+//----------------------------------------------------------------------------------------------
+// Create Server title
+//----------------------------------------------------------------------------------------------
+		// Quick Game title
+		itemDef 
+		{
+			name				title_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				150 11 340 30
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				title
+			group				none
+			style				WINDOW_STYLE_EMPTY
+			background			"gfx/menus/menu_blendbox"
+			text				@MENUS_SOLO_GAME
+      			rect				50 14 540 16
+			font				3
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			270
+			textaligny			-1	
+			forecolor			.549 .854 1 1
+      			visible				1 
+      			decoration 
+		}
+		
+//----------------------------------------------------------------------------------------------
+// GENERAL RULES
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				rules_title
+			group				none
+			text				@MENUS_GENERAL_RULES
+      			rect				5 110 240 20
+			font				3
+			textscale			0.8
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			120
+			textaligny			-2	
+			forecolor			.549 .854 1 1
+      			visible				1 
+      			decoration 
+		}
+
+		// LIGHTSABER ONLY
+		itemDef 
+		{
+			name				options
+			group				grpOptions
+			type				ITEM_TYPE_YESNO
+			text				@MENUS_LIGHTSABER_ONLY
+			descText			@MENUS_SABER_ONLY_INFO
+			cvar				"g_weaponDisable"
+			rect				5 130 240 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2	
+			font				2
+			textscale			.9
+			forecolor			 .615 .615 .956 1
+			visible				1  
+			cvarTest			"ui_netGameType"
+			//Hide in Duel/Power Duel
+			hideCvar
+			{ 
+				"1" ;
+				"2"
+			}     
+			action		
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 127 260 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name				options
+			group				grpOptions
+			type				ITEM_TYPE_YESNO
+			text				@MENUS_LIGHTSABER_ONLY
+			descText			@MENUS_SABER_ONLY_INFO
+			cvar				"g_duelWeaponDisable"
+			rect				5 130 240 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font				2
+			textscale			.9
+			forecolor			 .615 .615 .956 1
+			visible				1  
+			cvarTest			"ui_netGameType"
+			//hide in everthing but Duel/Power Duel
+			showCvar
+			{ 
+				"1" ;
+				"2"
+			}     
+			action		
+			{ 	
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 127 260 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		// FORCE POWER DISABLE
+		itemDef 
+		{
+			name				options
+			group				grpOptions
+			type				ITEM_TYPE_YESNO
+			text				@MENUS_DISABLE_FORCE
+			descText			@MENUS_DISABLE_FORCE_INFO
+			cvar				"g_forcePowerDisable"
+			cvarTest			"ui_netGameType"
+			hideCvar
+			{ 
+				"4"
+			}     
+			rect				5 150 240 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font				2
+			textscale			.9
+			forecolor			 .615 .615 .956 1
+			visible				1  
+			action 
+			{ 
+				uiScript		forcePowersDisable ;
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 147 260 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+
+		itemDef 
+		{
+			name				normal
+			group				grpsettings
+			text				@MENUS_FORCE_MASTERY
+			descText			@MENUS_FORCE_MASTERY_INFO
+			ownerdraw			UI_FORCE_MASTERY_SET
+			cvarTest			"ui_netGameType"
+			hideCvar
+			{ 
+				"4"
+			}     
+			rect				5 170 240 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font				2
+			textscale			.9
+			forecolor			 .615 .615 .956 1
+			visible				1  
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 167 260 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+
+//----------------------------------------------------------------------------------------------
+// END GAME RULES TITLE
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				end_game_title
+			group				none
+			text				@MENUS_ENDGAME_RULES
+      			rect				5 200 240 20
+			font				3
+			textscale			0.8
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			120
+			textaligny			-2	
+			forecolor			.549 .854 1 1
+      			visible				1 
+      			decoration 
+		}
+
+		// TIME LIMIT
+		itemDef 
+		{
+			name				normal
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			text				@MENUS_TIME_LIMIT
+			cvar				"timelimit"
+			rect				5 220 240 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font				2
+			textscale			.9
+			maxchars			4
+			forecolor			 .615 .615 .956 1
+			visible				1  	
+			descText			@MENUS_THIS_VALUE_ADJUSTS_THE
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 217 260 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		// KILL LIMIT / CAPTURE LIMIT /DUEL LIMIT 
+		itemDef 
+		{
+			name				normal
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			text				@MENUS_KILL_LIMIT
+			cvar				"fraglimit"
+			cvarTest			"ui_netGameType"
+			showCvar
+			{ 
+				"0" ;
+				"3" ;
+			}     
+			rect				5 240 240 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font				2
+			textscale			.9
+			maxchars			4
+			forecolor			 .615 .615 .956 1
+			visible				1  		
+			descText			@MENUS_ESTABLISH_THE_NUMBER
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 237 260 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name				normal
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			text				@MENUS_CAPTURE_LIMIT
+			cvar				"capturelimit" 
+			cvarTest			"ui_netGameType"
+			showCvar
+			{ 
+				"5" ;
+			}     
+			rect				5 240 240 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font				2
+			textscale			.9
+			maxchars			8
+			forecolor			 .615 .615 .956 1
+			visible				1  
+			descText			@MENUS_THIS_IS_THE_NUMBER_OF
+			action 
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 237 260 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name				normal
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			text				@MENUS_DUEL_LIMIT
+			descText			@MENUS_VALUE_ADJUSTS_THE_TOTAL
+			cvar				"duel_fraglimit"
+			cvarTest			"ui_netGameType"
+			hideCvar
+			{ 
+				"0" ;
+				"3" ;
+				"4" ;
+				"5" ;
+			}     
+			rect				5 240 240 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font				2
+			textscale			.9
+			maxchars			8
+			forecolor			 .615 .615 .956 1
+			visible				1  		
+			action 
+			{
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 237 260 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+//----------------------------------------------------------------------------------------------		
+// BOTS TITLE
+//----------------------------------------------------------------------------------------------		
+		itemDef 
+		{
+			name				bots_title
+			group				none
+			text				@MENUS_BOTS
+      			rect				5 280 240 20
+			font				3
+			textscale			0.8
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			120
+			textaligny			-2	
+			forecolor			.549 .854 1 1
+      			visible				1 
+      			decoration 
+		}
+
+		// MINIMUM BOTS/PLAYERS
+		itemDef 
+		{
+			name				expert_button
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			maxchars			4
+			text				@MENUS_PLAYERS
+			descText			@MENUS_PLAYERS_INFO
+			cvar				"bot_minplayers"
+			rect				5 300 240 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font				2
+			textscale			.9
+			forecolor			 .615 .615 .956 1
+			visible				1
+			action 
+			{
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 297 260 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+		
+		itemDef 
+		{
+			name				expert_button
+			group				grpsettings
+			type				ITEM_TYPE_NUMERICFIELD
+			text				@MENUS_MAXIMUM_PLAYERS
+			cvar				"sv_maxclients"
+			rect				5 320 240 20 
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			-2
+			font				2
+			textscale			.9
+			forecolor			 .615 .615 .956 1
+			maxchars			6
+			visible				1  
+			descText			@MENUS_SETS_THE_MAXIMUM_NUMBER
+			action 	
+			{ 
+				play 			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show 			settingsButton1
+			}
+			mouseExit 
+			{ 
+				hide 			settingsButton1 
+				uiscript		clampmaxplayers				
+			}
+		}
+
+		itemDef 
+		{
+			name				difficulty_button
+			style				0	
+			ownerdraw			UI_SKILL
+			text				@MENUS_SKILL
+			descText			@MENUS_ADJUSTS_THE_DIFFICULTY
+			rect 				5 340 240 20 
+			textstyle			0
+			textalign			ITEM_ALIGN_RIGHT		
+			textalignx			165     
+			textaligny			-2
+			font				2
+			textscale			.9
+			forecolor			 .615 .615 .956 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 337 260 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+		itemDef 
+		{
+			name				custombots_button
+			text				@MENUS_SELECT_BOTS
+			descText			@MENUS_SELECT_BOTS_DESC
+			type				ITEM_TYPE_BUTTON
+			font				2
+			textscale			.9
+			textstyle			0
+			style				WINDOW_STYLE_FILLED
+			rect				5 360 240 20
+			textalignx			120		
+			textaligny			-2
+			textalign			ITEM_ALIGN_CENTER
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				open			quickbots
+			}
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	0 357 260 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+		}
+
+//----------------------------------------------------------------------------------------------		
+//	MAP SCREENSHOT
+//----------------------------------------------------------------------------------------------		
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				280 104 340 280
+			backcolor			0 0 .6 .5
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .6 1
+			visible				1
+			decoration
+		}
+
+		itemDef 
+		{
+			name				mappreview
+			style				0	
+			ownerdraw			UI_STARTMAPCINEMATIC
+			rect				290 124 320 240
+			border				1
+			bordercolor			.265 .824 .886 .25
+			visible				1 
+		}
+
+		itemDef 
+		{
+			name				mappreview
+			style				WINDOW_STYLE_FILLED
+			rect				289 123 322 242
+			border				1
+			bordercolor			.265 .824 .886 .25
+			visible				1
+		}
+
+
+//----------------------------------------------------------------------------------------------
+//	BOTTOM BUTTONS
+//----------------------------------------------------------------------------------------------		
+		// BACK button 
+		itemDef 
+		{
+			name				back_button
+			group				fade_buttons
+			text				@MENUS_BACK
+			descText			@MENUS_BACKUP_ONE_MENU
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				59 444 130 24  
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			3
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible				1
+
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	30 441 190 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	
+			  	  
+			action 
+			{ 
+				play			"sound/interface/esc.wav" ; 
+				close			quickgame2 ; 
+				open			quickgame
+			}
+
+		}
+
+		// EXIT button 
+		itemDef 
+		{
+			name				exitgame_button
+			group				othermain
+			text				@MENUS_EXIT
+			descText			@MENUS_LEAVE_JEDI_KNIGHT_II
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				255 444 130 24
+			font				3
+			textscale			1.1
+			textalign			ITEM_ALIGN_CENTER
+			textstyle			0
+			textalignx			65
+			textaligny			-1
+			forecolor			1 .682 0 1
+			visible			1
+
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	225 441 190 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	  	  
+			action 
+			{ 
+				play			"sound/weapons/saber/saberoff.mp3"; 
+				close			all ; 
+				open			quitMenu 
+			}
+		}
+		
+		// NEXT button		
+		itemDef 
+		{
+			name					next_button
+			text					@MENUS_NEXT
+			descText				@MENUS_START_SERVER
+			type					ITEM_TYPE_BUTTON
+			font					3
+			textscale				1.1
+			textstyle				0
+			style					WINDOW_STYLE_FILLED
+			rect					455 444 200 32
+			textalign				1
+			textalignx				65		
+			textaligny				-1
+			forecolor			1 .682 0 1
+			visible					1 
+
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	425 441 190 30
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}				  	  
+	      		action 
+			{ 
+				play				"sound/interface/button1.wav" ; 
+				uiScript			weaponDisable ; //update the weapondisable cvar for duel or non-duel
+				setcvar				ui_singlePlayerActive "1"
+				uiScript 			StartServer ;
+				close				quickgame2 ; 
+			}
+		}	  
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

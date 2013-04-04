@@ -1,0 +1,26 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Bounty Hunter"
+	//weapons		WP_BLASTER_PISTOL|WP_BLASTER|WP_ROCKET_LAUNCHER|WP_THERMAL
+	weapons			WP_BLASTER_PISTOL|WP_BLASTER|WP_REPEATER
+	classflags		CFL_SINGLE_ROCKET|CFL_EXTRA_AMMO
+	forcepowers		0
+	maxhealth		200
+	starthealth		200
+	maxarmor		0
+	startarmor		0
+	class_shader	"gfx/mp/c_icon_infantry"
+	//model			"boba_fett" 					//this is optional, if it's here it forces the model to this.
+	//skin			"no_jetpack"					//this is optional, if it's here it forces the skin to this.
+	//uishader		"models/players/boba_fett/icon_default"
+	//holdables		HI_SEEKER|HI_JETPACK
+	model			"rodian" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/rodian/icon_default"
+	holdables		HI_SEEKER
+	speed			0.85
+}
+
+description	"@SIEGE_VAN_BOUNTY_HUNTER"

@@ -1,0 +1,91 @@
+Kyle
+{
+	playerModel	kyle
+	saber		kyle
+	rank		commander
+	health		1000
+	weapon	WP_BRYAR_PISTOL
+	weapon	WP_SABER
+	saberStyle	1
+	saberStyle	3
+	saberStyle	2
+	FP_HEAL			3
+	FP_LEVITATION	3
+	FP_SPEED		3
+	FP_PUSH			3
+	FP_PULL			3
+	FP_TELEPATHY	3
+	FP_GRIP			3
+	FP_LIGHTNING	2
+	FP_SABERTHROW	3
+	FP_RAGE			0
+	FP_PROTECT		3
+	FP_ABSORB		3
+	FP_DRAIN		0
+	FP_SEE			3
+	FP_SABER_DEFENSE 3
+	FP_SABER_OFFENSE 3
+	forcePowerMax	200
+	reactions	4
+	aim		5
+	move		3
+	aggression	5
+	evasion		5
+	intelligence	5
+	playerTeam	TEAM_PLAYER
+	class		CLASS_KYLE
+	snd			kyle
+	sndcombat	kyle
+	sndjedi		kyle
+	dismemberProbHead	0
+	dismemberProbArms	0
+	dismemberProbHands	0
+	dismemberProbLegs	0
+	dismemberProbWaist	0
+}
+
+Kyle_boss
+{
+	playerModel	kyle
+	saber		kyle_boss
+	rank		captain
+	health		300
+	weapon	WP_SABER
+	saberStyle	1
+	saberStyle	2
+	saberStyle	3
+	FP_HEAL			3
+	FP_LEVITATION	3
+	FP_SPEED		3
+	FP_PUSH			3
+	FP_PULL			3
+	FP_TELEPATHY	3
+	FP_GRIP			3
+	FP_LIGHTNING	0
+//	FP_SABERTHROW	3
+	FP_SABERTHROW	0
+	FP_RAGE			0
+	FP_PROTECT		3
+	FP_ABSORB		3
+	FP_DRAIN		0
+	FP_SEE			3
+	FP_SABER_DEFENSE 3
+	FP_SABER_OFFENSE 3
+	reactions	4
+	aim		5
+	move		3
+	aggression	5
+	evasion		5
+	intelligence	5
+	playerTeam	TEAM_PLAYER
+	class		CLASS_KYLE
+	snd			kyle_boss
+	sndcombat	kyle_boss
+	sndjedi		kyle_boss
+	dismemberProbHead	0
+	dismemberProbArms	0
+	dismemberProbHands	0
+	dismemberProbLegs	0
+	dismemberProbWaist	0
+}
+

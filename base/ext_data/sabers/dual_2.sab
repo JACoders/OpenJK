@@ -1,0 +1,21 @@
+
+dual_2
+{
+	name		@MENUS_STAFF_HILT2
+	saberType	SABER_STAFF
+	saberModel	"models/weapons2/saber_dual_2/saber_dual_2.glm"
+	soundOn		"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberColor	random
+	numBlades	2
+	saberLength	32
+	saberStyle	staff
+	throwable		0
+	singleBladeStyle	medium
+	singleBladeThrowable		1
+	brokenSaber1	brokenstaff
+	brokenSaber2	brokenstaff
+	twoHanded		1
+}
+

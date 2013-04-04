@@ -1,0 +1,21 @@
+//Siege class def file.
+
+ClassInfo
+{
+	name			"Dark Jedi Force User"
+	weapons			WP_MELEE
+	classflags		CFL_FASTFORCEREGEN
+	forcepowers		FP_LEVITATION,3|FP_SPEED,3|FP_PUSH,3|FP_PULL,3|FP_SEE,3|FP_LIGHTNING,3|FP_GRIP,3|FP_DRAIN,3
+	forcealignment	dark
+	maxhealth		100
+	maxarmor		0
+	startarmor		0
+	speed			1.25
+	model			"reborn" 					//this is optional, if it's here it forces the model to this.
+	skin			"forceuser"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/reborn/icon_red"
+	class_shader	"gfx/mp/c_icon_jedi_general"
+}
+
+description	"Dark Jedi Force User: A master of use of the dark side of the Force, he has no use for weapons, not even a saber.
+HEALTH 100, ARMOR 0, SPEED 100%, MELEE, JUMP 3, SPEED 3, PUSH 3, PULL 3, SIGHT 3, LIGHTNING 3, GRIP 3, DRAIN 3"

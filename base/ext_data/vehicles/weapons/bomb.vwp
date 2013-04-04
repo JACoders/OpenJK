@@ -1,0 +1,18 @@
+bomb
+{
+name		bomb
+projectile	1
+hasGravity	1
+muzzleFX	"ships/bomb_launch"
+shotFX		"ships/bomb"
+impactFX	"ships/mine_impact"
+g2MarkShader	"gfx/damage/bodybigburnmark1"
+g2MarkSize	100
+speed		50
+//damage		1000
+//splashDamage	100
+damage		1000
+splashDamage	300
+splashRadius	500
+ammoPerShot	1
+}

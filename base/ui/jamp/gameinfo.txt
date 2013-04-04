@@ -1,0 +1,35 @@
+// Game type info
+//
+// description, g_gametype enum
+//
+// 0 - GT_FFA,				// free for all
+// 1 - GT_HOLOCRON,		// ffa with holocrons
+// 2 - GT_JEDIMASTER,		// jedi master
+// 3 - GT_DUEL,		// one on one tournament
+// 4 - GT_POWERDUEL,
+// 5 - GT_SINGLE_PLAYER,	// single player ffa
+// 6 - GT_TEAM,				// team ffa
+// 7 - GT_SIEGE,				// siege
+// 8 - GT_CTF,				// capture the flag
+// 9 - GT_CTY,				// capture the ysalimari
+
+gametypes {
+  { "Free For All" 0 }
+  { "Duel" 3 }
+  { "Power Duel" 4 }
+  { "Team FFA" 6 } 
+  { "Siege" 7 }
+  { "Capture the Flag" 8 }
+}
+
+
+joingametypes {
+  { "All" -1 }
+  { "Free For All" 0 }
+  { "Duel" 3 }
+  { "Power Duel" 4 }
+  { "Team FFA" 6 } 
+  { "Siege" 7 }
+  { "Capture the Flag" 8 }
+}
+

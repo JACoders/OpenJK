@@ -1,0 +1,351 @@
+//----------------------------------------------------------------------------------------------
+//
+//	FIND PLAYER POPUP MENU
+//
+//	Screen for finding which server has a particular player
+//
+//----------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name "findplayer_popmenu"
+		visible					0
+		fullscreen				0
+		outOfBoundsClick									// this closes the window if it gets a click out of the rectangle
+		rect					125 60 390 360
+		focusColor				1 1 1 1								// Focus color for text and items
+		style					1
+		border					1
+		descX					320
+		descY					400
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER		
+		popup
+
+		onOpen 
+		{ 
+			uiScript			FindPlayer
+			setfocus			nameField 
+		}
+		onESC 
+		{ 
+			play				"sound/interface/esc.wav" ; 
+			close				findplayer_popmenu
+		}
+
+
+//----------------------------------------------------------------------------------------------
+//	MENU BACKGROUND
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				0 0 390 380
+			backcolor			0 0 .35 .9
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .8 1
+			visible				1
+			decoration
+		}
+
+		//---------------------------------------------
+		//	TITLE
+		//---------------------------------------------
+		// title
+		itemDef 
+		{
+			name				screenTitle
+			text				@MENUS_FIND_PLAYER
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			rect				25 5 340 20
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			170
+			textaligny			1
+			forecolor			.549 .854 1 1
+			visible				1 
+			decoration 
+		}
+
+		//---------------------------------------------
+		//	PLAYER NAME
+		//---------------------------------------------
+		itemDef 
+		{
+			name				nameTitle
+			text				@MENUS_NAME1
+			style				0
+			decoration
+			font				2
+			textscale			.9
+			rect				25 30 90 25
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			85
+			textaligny			0
+			forecolor			.549 .854 1 1
+			visible				1
+		}
+
+		itemDef 
+		{
+			name				nameEntry
+			style				1
+			descText			@MENUS_INPUT_PLAYER_NAME
+			text				@MENUS_BLANK_1
+			maxchars			15
+			font				2
+			textscale			.9
+			type				ITEM_TYPE_EDITFIELD
+			cvar				"ui_findplayer"
+			rect				115 30 250 25
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			5
+			textaligny			0
+			forecolor			1 1 1 1
+			backcolor			.25 .25 .25 .5
+			border				1
+			bordercolor			.79 .64 .22 1
+			visible				1
+			action 
+			{ 
+				ui_script		FindPlayer 
+			}
+			mouseenter 
+			{ 
+				setitemcolor	nameEntry backcolor .25 .25 .25 .75 
+			}
+			mouseexit 
+			{ 
+				setitemcolor	nameEntry backcolor .25 .25 .25 .5 
+			}
+		}
+
+
+		//---------------------------------------------
+		//	LIST OF SERVER NAMES
+		//---------------------------------------------
+		itemDef 
+		{
+			name				serverNameList		
+			rect				25 60 340 90
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth			120
+			elementheight			16
+			font				2
+			textscale			.8
+			backcolor			0 0 0 0.5
+			outlinecolor			.1 .1 .7 .5
+			border				1
+			bordersize			1
+			bordercolor			.5 .5 .5 1
+			elementtype			LISTBOX_TEXT
+			feeder				FEEDER_FINDPLAYER
+			visible				1
+			textaligny			12
+			mouseenter 
+			{ 
+				setitemcolor	serverNameWindow bordercolor .7 0 0 1  
+			}
+			mouseexit 
+			{ 
+				setitemcolor	serverNameWindow bordercolor .5 .5 .5 1 
+			}
+		}
+
+		itemDef 
+		{
+			name				serverNameWindow 
+			rect				25 60 340 90
+			style				1
+			backcolor			0 0 0 0
+			forecolor			0 0 0 0
+			border				1
+			bordersize			1
+			bordercolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+
+		itemDef
+		{
+			name				serversFoundMsg
+			cvar				"ui_playerServersFound"
+			type				0
+			style				0
+			background			"gfx/menus/menu_blendbox"
+			rect				5 360 390 30
+			font				3
+			textscale			.6
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			1
+			forecolor			.549 .854 1 1
+			visible				1 
+			decoration 
+		}
+
+		//---------------------------------------------
+		//	LIST OF SERVER STATUS INFORMATION
+		//---------------------------------------------
+		itemDef 
+		{
+			name				serverInfoList		
+			rect				25 160 340 150
+			type				ITEM_TYPE_LISTBOX
+			style				WINDOW_STYLE_FILLED
+			elementwidth		120
+			elementheight		16
+			font				2
+			textscale			.7
+			backcolor			0 0 0 1
+			border				1
+			bordersize			1
+			bordercolor			.5 .5 .5 1
+			elementtype			LISTBOX_TEXT
+			feeder				FEEDER_SERVERSTATUS
+			notselectable
+			visible				1
+			columns				4	2 40 120
+								40 40 180
+								90 40 180
+								135 40 180
+			mouseenter 
+			{ 
+				setitemcolor	serverInfowindow bordercolor .7 0 0 1  
+			}
+			mouseexit 
+			{ 
+				setitemcolor	serverInfowindow bordercolor .5 .5 .5 1 
+			}
+		}
+
+		itemDef 
+		{
+			name				serverInfowindow 
+			rect				25 160 340 150
+			style				1
+			backcolor			0 0 0 0
+			forecolor			0 0 0 0
+			border				1
+			bordersize			1
+			bordercolor			.5 .5 .5 1
+			visible				1
+			decoration
+		}
+
+//----------------------------------------------------------------------------------------------
+//	BUTTONS
+//----------------------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				button_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 0 0
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				search
+			text				@MENUS_SEARCH_CAPS
+			descText			@MENUS_SEARCH_DESC
+			type				1
+			font				3
+			textscale			.8
+			style				WINDOW_STYLE_FILLED
+			rect				15 310 120 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			60
+			textaligny			5
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				ui_script		FindPlayer 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	15 312 150 26
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}	  	  
+		}
+
+		itemDef 
+		{
+			name				doneText
+			text				@MENUS_DONE_CAPS
+			descText			@MENUS_DONE_DESC
+			type				1
+			font				3
+			textscale			.8
+			style				WINDOW_STYLE_FILLED
+			rect				135 310 120 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			60
+			textaligny			5
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ; 
+				close			findplayer_popmenu
+			}
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	115 312 160 26
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}	  	  
+		}
+
+		itemDef 
+		{
+			name				join
+			text				@MENUS_JOIN_CAPS
+			descText			@MENUS_JOIN_PLAYER_DESC
+			type				1
+			font				3
+			textscale			.8
+			style				WINDOW_STYLE_FILLED
+			rect				255 310 120 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			60
+			textaligny			5
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{  
+				play			"sound/interface/button1.wav" ; 
+				ui_script		FoundPlayerJoinServer 
+			}
+			mouseEnter 
+			{ 
+				show			button_glow
+				setitemrect		button_glow	235 312 160 26
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}	  	  
+		}
+	}
+}

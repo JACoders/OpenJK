@@ -1,0 +1,16 @@
+//Siege team definition file.
+
+name "Mercenaries"
+FriendlyShader "sprites/team_mercs" //Name of shader to display above heads of teammates (to others on this team)
+
+Classes
+{
+	class1		"Merc Driver"
+	class2		"Merc Sniper"
+	class3		"Mercenary"
+	class4		"Merc Assault Specialist"
+	class5		"Merc Heavy Weapons Specialist"
+	class6		"Merc Demolitionist"
+	class7		"Jedi Hunter"
+	class8		"Bounty Hunter"
+}

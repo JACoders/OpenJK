@@ -1,0 +1,397 @@
+
+alaris
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_alaris/saber_w.glm"
+	customSkin	"models/weapons2/saber_alaris/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	purple
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+apex1
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_apex1/saber_w.glm"
+	customSkin	"models/weapons2/saber_apex1/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	blue
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+apex2
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_apex1/saber_w.glm"
+	customSkin	"models/weapons2/saber_apex1/saber_w2.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	green
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+apex3
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_apex1/saber_w.glm"
+	customSkin	"models/weapons2/saber_apex1/saber_w3.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	yellow
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+darksaber
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber/saber_w.glm"
+	customSkin	"models/weapons2/saber/saber_w_dark.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	red
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+dooku
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_dooku/saber_w.glm"
+	customSkin	"models/weapons2/saber_dooku/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	red
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+dooku2
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_dooku2/saber_w.glm"
+	customSkin	"models/weapons2/saber_dooku2/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	red
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+exarkun
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_exarkun/saber_w.glm"
+	customSkin	"models/weapons2/saber_exarkun/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	red
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+gold
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_gold/saber_w.glm"
+	customSkin	"models/weapons2/saber_gold/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	green
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+gold1
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_gold1/saber_w.glm"
+	customSkin	"models/weapons2/saber_gold1/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	yellow
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+sith1
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_sith1/saber_w.glm"
+	customSkin	"models/weapons2/saber_sith1/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	red
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+sith2
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_sith2/saber_w.glm"
+	customSkin	"models/weapons2/saber_sith2/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	red
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+sith3
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_sith3/saber_w.glm"
+	customSkin	"models/weapons2/saber_sith3/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	red
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+lukeANH
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_lukeANH/saber_w.glm"
+	customSkin	"models/weapons2/saber_lukeANH/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	blue
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+obi
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_obi/saber_w.glm"
+	customSkin	"models/weapons2/saber_obi/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	blue
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+plo_koon
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_plo_koon/saber_w.glm"
+	customSkin	"models/weapons2/saber_plo_koon/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	green
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+QuiGon
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_QuiGon/saber_w.glm"
+	customSkin	"models/weapons2/saber_QuiGon/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	green
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+rusted
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_rusted/saber_w.glm"
+	customSkin	"models/weapons2/saber_rusted/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	yellow
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+kenobi
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_kenobi/saber_w.glm"
+	customSkin	"models/weapons2/saber_kenobi/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	blue
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+vader2
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_vader2/saber_w.glm"
+	customSkin	"models/weapons2/saber_vader2/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	red
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+windu
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_windu/saber_w.glm"
+	customSkin	"models/weapons2/saber_windu/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	40
+	saberColor	purple
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+
+yoda2
+{
+	saberType	SABER_SINGLE
+	saberModel	"models/weapons2/saber_yoda/saber_w.glm"
+	customSkin	"models/weapons2/saber_yoda/saber_w.skin"
+	soundOn	"sound/weapons/saber/saberon.wav"
+	soundLoop	"sound/weapons/saber/saberhum4.wav"
+	soundOff	"sound/weapons/saber/saberoff.wav"
+	saberLength	32
+	saberColor	green
+	forceRestrict	FP_PUSH					
+	forceRestrict	FP_PULL					
+	forceRestrict	FP_TELEPATHY			
+	forceRestrict	FP_GRIP					
+	forceRestrict	FP_LIGHTNING
+	forceRestrict	FP_DRAIN
+}
+

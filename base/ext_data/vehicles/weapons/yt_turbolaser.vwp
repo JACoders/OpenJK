@@ -1,0 +1,19 @@
+yt_turbolaser
+{
+name		yt_turbolaser
+projectile	1
+muzzleFX	"ships/yt_turbomuzzleflash"
+shotFX		"ships/reb_blastershot"
+impactFX	"ships/reb_blasterimpact"
+g2MarkShader	"gfx/effects/scorch"
+g2MarkSize	64
+//loopSound
+speed		25000
+//damage		500
+//splashDamage	160
+damage		500
+splashDamage	160
+splashRadius	200
+ammoPerShot	1
+lifetime	2000
+}

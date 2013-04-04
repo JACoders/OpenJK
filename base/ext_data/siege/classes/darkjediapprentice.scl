@@ -1,0 +1,21 @@
+//Siege class def file.
+//NOTE: light version used for Star Destroyer map
+
+ClassInfo
+{
+	name			"Dark Jedi Apprentice"
+	weapons		WP_SABER
+	saber1		single_9
+	sabercolor		0
+	saberstyle		SS_FAST|SS_MEDIUM|SS_STRONG
+	forcepowers		FP_SABER_OFFENSE,3|FP_SABER_DEFENSE,2|FP_LEVITATION,2|FP_PUSH,1|FP_PULL,1
+	maxhealth		50
+	maxarmor		0
+	startarmor		0
+	model			"shadowtrooper" 					//this is optional, if it's here it forces the model to this.
+	skin			"default"					//this is optional, if it's here it forces the skin to this.
+	uishader		"models/players/shadowtrooper/icon_default"
+	class_shader	"gfx/mp/c_icon_jedi_general"
+}
+
+description	"@SIEGE_JEDI_DJEDI_APPRENTICE"

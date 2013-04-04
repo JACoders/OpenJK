@@ -1,0 +1,372 @@
+human_merc
+{
+	playerModel human_merc
+	weapon		WP_BLASTER
+	surfOff		"l_arm_pocket l_arm_key"
+	health		100
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			humanmerc1
+	sndcombat	humanmerc1
+	sndextra	humanmerc1
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+human_merc_bow
+{
+	playerModel human_merc
+	surfOff		"l_arm_pocket l_arm_key"
+	weapon		WP_BOWCASTER
+	health		100
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			humanmerc2
+	sndcombat	humanmerc2
+	sndextra	humanmerc2
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+human_merc_rep
+{
+	playerModel human_merc
+	surfOff		"l_arm_pocket l_arm_key"
+	weapon		WP_REPEATER
+	health		100
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			humanmerc2
+	sndcombat	humanmerc2
+	sndextra	humanmerc2
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+human_merc_flc
+{
+	playerModel human_merc
+	surfOff		"l_arm_pocket l_arm_key"
+	weapon		WP_FLECHETTE
+	health		100
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			humanmerc1
+	sndcombat	humanmerc1
+	sndextra	humanmerc1
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+human_merc_cnc
+{
+	playerModel human_merc
+	surfOff		"l_arm_pocket l_arm_key"
+	weapon		WP_CONCUSSION
+	health		100
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			humanmerc2
+	sndcombat	humanmerc2
+	sndextra	humanmerc2
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+human_merc
+{
+	playerModel human_merc
+	surfOff		"l_arm_pocket l_arm_key"
+	weapon		WP_BLASTER
+	health		100
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			st1
+	sndcombat	st1
+	sndextra	st1
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+human_merc_bow
+{
+	playerModel human_merc
+	surfOff		"l_arm_pocket l_arm_key"
+	weapon		WP_BOWCASTER
+	health		100
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			st1
+	sndcombat	st1
+	sndextra	st1
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+human_merc_rep
+{
+	playerModel human_merc
+	surfOff		"l_arm_pocket l_arm_key"
+	weapon		WP_REPEATER
+	health		100
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			st1
+	sndcombat	st1
+	sndextra	st1
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+human_merc_flc
+{
+	playerModel human_merc
+	surfOff		"l_arm_pocket l_arm_key"
+	weapon		WP_FLECHETTE
+	health		100
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			st1
+	sndcombat	st1
+	sndextra	st1
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+lannik_racto
+{
+	playerModel human_merc
+	customSkin	racto
+	surfOff		"l_arm_pocket l_arm_key"
+	weapon		WP_CONCUSSION
+	health		300
+	headPitchRangeDown 30
+	reactions	5
+	aim			5
+	move		5
+	aggression	5
+	evasion		5
+	intelligence	5
+	rank		captain
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	snd			lannik
+	sndcombat	lannik
+	sndextra	lannik
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}
+
+human_merc_key
+{
+	playerModel human_merc
+	customSkin	key_carrier
+	weapon		WP_BLASTER
+	health		100
+	headPitchRangeDown 30
+	reactions	3
+	aim			1
+	move		3
+	aggression	3
+	evasion		1
+	intelligence	5
+	rank		crewman
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_STORMTROOPER
+	height		64
+	crouchheight 48
+	walkSpeed	51
+	runSpeed	200
+	snd			st1
+	sndcombat	st1
+	sndextra	st1
+	yawspeed	70
+	walkSpeed	55
+	runSpeed	200
+	dismemberProbHead	0
+	dismemberProbArms	10
+	dismemberProbLegs	0
+	dismemberProbHands	20
+	dismemberProbWaist	0
+}

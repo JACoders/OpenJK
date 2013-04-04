@@ -1,0 +1,14 @@
+bink gfx\menus\planets\ast??.png*1-32 video\ast.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\bakura??.png*1-32 video\bakura.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\blenjeel??.png*1-32 video\blenjeel.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\chandrila??.png*1-32 video\chandrila.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\core??.png*1-32 video\core.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\cos??.png*1-32 video\cos.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\dosunn??.png*1-32 video\dosunn.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\krildor??.png*1-32 video\krildor.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\narkreeta??.png*1-32 video\narkreeta.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\ordman??.png*1-32 video\ordman.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\tanaab??.png*1-32 video\tanaab.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\tatooine??.png*1-32 video\tatooine.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\yalara??.png*1-32 video\yalara.bik /F8 /Z1000 /O /(256 /)256 /#
+bink gfx\menus\planets\zonju??.png*1-32 video\zonju.bik /F8 /Z1000 /O /(256 /)256 /#

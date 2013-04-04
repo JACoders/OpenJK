@@ -1,0 +1,305 @@
+cultist_saber2
+{
+	playerModel	cultist
+	customSkin	brown
+	saber		reborn
+	weapon	WP_SABER
+	saberStyle	1
+	rank		ltjg
+	FP_PUSH		1
+	FP_LEVITATION	1
+	FP_SABER_DEFENSE 3
+	FP_SABER_OFFENSE 2
+	reactions	1
+	aim			1
+	move		1
+	aggression	3
+	evasion		2
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_REBORN
+	snd			cultist1
+	sndcombat	cultist1
+	sndjedi		cultist1
+	yawSpeed	60
+	walkSpeed	45
+	runSpeed	180
+	health		150
+	dismemberProbHead	0
+	dismemberProbArms	20
+	dismemberProbLegs	0
+	dismemberProbHands	30
+	dismemberProbWaist	0
+}
+
+cultist_saber_throw2
+{
+	playerModel	cultist
+	customSkin	brown
+	saber		reborn
+	weapon	WP_SABER
+	saberStyle	1
+	rank		ltjg
+	FP_PUSH		1
+	FP_LEVITATION	1
+	FP_SABER_DEFENSE 2
+	FP_SABER_OFFENSE 2
+	FP_SABERTHROW	1
+	reactions	1
+	aim			1
+	move		1
+	aggression	2
+	evasion		2
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_REBORN
+	snd			cultist1
+	sndcombat	cultist1
+	sndjedi		cultist1
+	yawSpeed	60
+	walkSpeed	45
+	runSpeed	180
+	health		150
+	dismemberProbHead	0
+	dismemberProbArms	20
+	dismemberProbLegs	0
+	dismemberProbHands	30
+	dismemberProbWaist	0
+}
+
+cultist_saber_med2
+{
+	playerModel	cultist
+	customSkin	brown
+	saber		reborn
+	weapon	WP_SABER
+	saberStyle	2
+	rank		ensign
+	FP_PUSH		1
+	FP_LEVITATION	1
+	FP_SABER_DEFENSE 3
+	FP_SABER_OFFENSE 3
+	reactions	1
+	aim			1
+	move		1
+	aggression	3
+	evasion		2
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_REBORN
+	snd			cultist1
+	sndcombat	cultist1
+	sndjedi		cultist1
+	yawSpeed	60
+	walkSpeed	45
+	runSpeed	180
+	health		150
+	dismemberProbHead	0
+	dismemberProbArms	20
+	dismemberProbLegs	0
+	dismemberProbHands	30
+	dismemberProbWaist	0
+}
+
+cultist_saber_med_throw2
+{
+	playerModel	cultist
+	customSkin	brown
+	saber		reborn
+	weapon	WP_SABER
+	saberStyle	2
+	rank		ensign
+	FP_PUSH		1
+	FP_LEVITATION	1
+	FP_SABER_DEFENSE 2
+	FP_SABER_OFFENSE 2
+	FP_SABERTHROW	2
+	reactions	1
+	aim			1
+	move		1
+	aggression	2
+	evasion		2
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_REBORN
+	snd			cultist1
+	sndcombat	cultist1
+	sndjedi		cultist1
+	yawSpeed	60
+	walkSpeed	45
+	runSpeed	180
+	health		150
+	dismemberProbHead	0
+	dismemberProbArms	20
+	dismemberProbLegs	0
+	dismemberProbHands	30
+	dismemberProbWaist	0
+}
+
+cultist_saber_strong2
+{
+	playerModel	cultist
+	customSkin	brown
+	saber		reborn
+	weapon	WP_SABER
+	saberStyle	3
+	rank		ltjg
+	FP_PUSH		1
+	FP_LEVITATION	1
+	FP_SABER_DEFENSE 2
+	FP_SABER_OFFENSE 3
+	reactions	1
+	aim			1
+	move		1
+	aggression	3
+	evasion		2
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_REBORN
+	snd			cultist1
+	sndcombat	cultist1
+	sndjedi		cultist1
+	yawSpeed	60
+	walkSpeed	45
+	runSpeed	180
+	health		150
+	dismemberProbHead	0
+	dismemberProbArms	20
+	dismemberProbLegs	0
+	dismemberProbHands	30
+	dismemberProbWaist	0
+}
+
+cultist_saber_strong_throw2
+{
+	playerModel	cultist
+	customSkin	brown
+	saber		reborn
+	weapon	WP_SABER
+	saberStyle	3
+	rank		ltjg
+	FP_PUSH		1
+	FP_LEVITATION	1
+	FP_SABER_DEFENSE 2
+	FP_SABER_OFFENSE 3
+	FP_SABERTHROW	2
+	reactions	1
+	aim			1
+	move		1
+	aggression	2
+	evasion		2
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_REBORN
+	snd			cultist1
+	sndcombat	cultist1
+	sndjedi		cultist1
+	yawSpeed	60
+	walkSpeed	45
+	runSpeed	180
+	health		150
+	dismemberProbHead	0
+	dismemberProbArms	20
+	dismemberProbLegs	0
+	dismemberProbHands	30
+	dismemberProbWaist	0
+}
+
+cultist_saber_all2
+{
+	playerModel	cultist
+	customSkin	brown
+	saber		reborn
+	weapon	WP_SABER
+	saberStyle		1
+	saberStyle		3
+	saberStyle		2
+	rank		ltjg
+	FP_PUSH		1
+	FP_LEVITATION	1
+	FP_SABER_DEFENSE 3
+	FP_SABER_OFFENSE 3
+	rank		crewman
+	reactions	1
+	aim			1
+	move		1
+	aggression	4
+	evasion		2
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_REBORN
+	snd			cultist1
+	sndcombat	cultist1
+	sndjedi		cultist1
+	yawSpeed	60
+	walkSpeed	45
+	runSpeed	180
+	health		150
+	dismemberProbHead	0
+	dismemberProbArms	20
+	dismemberProbLegs	0
+	dismemberProbHands	30
+	dismemberProbWaist	0
+}
+
+cultist_saber_all_throw2
+{
+	playerModel	cultist
+	customSkin	brown
+	saber		reborn
+	weapon	WP_SABER
+	saberStyle		1
+	saberStyle		3
+	saberStyle		2
+	rank		ltjg
+	FP_PUSH		1
+	FP_LEVITATION	1
+	FP_SABER_DEFENSE 2
+	FP_SABER_OFFENSE 3
+	FP_SABERTHROW	2
+	reactions	1
+	aim			1
+	move		1
+	aggression	3
+	evasion		2
+	intelligence	1
+	hfov		120
+	vfov		120
+	playerTeam	TEAM_ENEMY
+	enemyTeam	TEAM_PLAYER
+	class		CLASS_REBORN
+	snd			cultist1
+	sndcombat	cultist1
+	sndjedi		cultist1
+	yawSpeed	60
+	walkSpeed	45
+	runSpeed	180
+	health		150
+	dismemberProbHead	0
+	dismemberProbArms	20
+	dismemberProbLegs	0
+	dismemberProbHands	30
+	dismemberProbWaist	0
+}
+

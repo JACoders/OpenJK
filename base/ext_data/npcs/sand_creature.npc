@@ -1,0 +1,48 @@
+sand_creature
+{
+	playermodel		sand_creature
+	weapon		WP_NONE
+//	health			500
+	health		150
+	reactions		3
+	aim			1
+	move			3
+	aggression		3
+	evasion		1
+	intelligence	5
+	playerTeam		TEAM_FREE
+	enemyTeam		TEAM_FREE
+	class			CLASS_SAND_CREATURE
+	yawSpeed		120
+	runSpeed		300
+	walkSpeed		125
+	height			24
+	width			48
+	hFOV			120
+	vfov			45
+	snd			sand_creature
+}
+
+sand_creature_fast
+{
+	playermodel		sand_creature
+	weapon		WP_NONE
+	health		500
+	reactions		3
+	aim			1
+	move			3
+	aggression		3
+	evasion		1
+	intelligence	5
+	playerTeam		TEAM_FREE
+	enemyTeam		TEAM_FREE
+	class			CLASS_SAND_CREATURE
+	yawSpeed		120
+	runSpeed		400
+	walkSpeed		400
+	height		24
+	width			48
+	hFOV			120
+	vfov			45
+	snd			sand_creature
+}

@@ -1,0 +1,16 @@
+//Siege team definition file.
+
+name "Imperial Remnant"
+FriendlyShader "sprites/team_imperials" //Name of shader to display above heads of teammates (to others on this team)
+
+Classes
+{
+	class1		"Imperial Driver"
+	class2		"Imperial Sniper"
+	class3		"Imperial Stormtrooper"
+	class4		"Rocket Trooper"
+	class5		"Hazard Trooper"
+	class6		"Imperial Demolitionist"
+	class7		"Imperial Assassin"
+	class8		"Imperial Officer"
+}

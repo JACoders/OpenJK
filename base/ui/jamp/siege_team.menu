@@ -1,0 +1,464 @@
+//------------------------------------------------------------------------------------------------
+// SIEGE_TEAM - player chooses team and then from here they choose base class. 
+//
+//	ui_team 1 = RED
+//	ui_team 2 = BLUE
+//	ui_team 3 = SPECTATOR
+//
+//------------------------------------------------------------------------------------------------
+{
+	menuDef 
+	{
+		name						"ingame_siegeteam"
+		visible					0
+		fullscreen					0
+		outOfBoundsClick								// this closes the window if it gets a click out of the rectangle
+		rect						95 34 460 435
+		focusColor					1 1 1 1			// Focus color for text and items
+		style						1
+		border					1
+		descX						320
+		descY						440
+		descScale					0.7
+		descColor					.79 .64 .22 .7		// Focus color for text and items
+		descAlignment				ITEM_ALIGN_CENTER		
+		onOpen  
+		{ 
+			uiScript				update ui_GetName
+			uiScript				updateForceStatus
+			hide					nextbutton		
+			hide					glow
+			setitemcolor			team1_button forecolor .670 .670 .929 1
+			setitemcolor			team2_button forecolor .670 .670 .929 1
+		}
+		onClose 
+		{ 
+//			uiScript				update ui_SetName
+//			uiScript				updateForceStatus
+		}
+
+		// Overall window backdrop
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 460 435
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			visible			1
+			decoration
+		}
+
+//----------------------------------------
+//
+// TITLE BAR
+//
+//----------------------------------------
+		itemDef 
+		{
+			name				siegeclassconfigtitle
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			text				"TEAM CHOICE"
+			rect				20 5 420 28
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			210
+			textaligny			2
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			font				3
+			textscale			0.9
+			forecolor			1  1  1  1
+			border			0
+			bordercolor			0 0 0 0
+			visible			1 
+		}
+
+//----------------------------------------
+//
+// TEAM SYMBOLS
+//
+//----------------------------------------
+
+		itemDef 
+		{
+			name				team1_impsymbol
+			group				team1_symbol
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/mp_imp_symbol"
+			cvarTest 			cg_siegeTeam1Name
+			showCVar 			{ "Imperial" }
+			rect				102 87 256 256
+			forecolor			1  1  1  .3
+			visible			1 
+			decoration
+		}
+
+		itemDef 
+		{
+			name				team1_rebelsymbol
+			group				team1_symbol
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/mp_rebel_symbol"
+			cvarTest 			cg_siegeTeam1Name
+			showCVar 			{ "Rebel" }
+			rect				102 87 256 256
+			forecolor			1  1  1  .3
+			visible			1 
+			decoration
+		}
+
+		itemDef 
+		{
+			name				team2_impsymbol
+			group				team2_symbol
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/mp_imp_symbol"
+			cvarTest 			cg_siegeTeam2Name
+			showCVar 			{ "Imperial" }
+			rect				102 87 256 256
+			forecolor			1  1  1  .3
+			visible			0 
+			decoration
+		}
+
+		itemDef 
+		{
+			name				team2_rebelsymbol
+			group				team2_symbol
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/2d/mp_rebel_symbol"
+			cvarTest 			cg_siegeTeam2Name
+			showCVar 			{ "Rebel" }
+			rect				102 87 256 256
+			forecolor			1  1  1  .3
+			visible			0 
+			decoration
+		}
+
+//----------------------------------------
+//
+// NAME ENTRY FIELD
+//
+//----------------------------------------
+		itemDef 
+		{
+			name 				namefield
+			type 				ITEM_TYPE_EDITFIELD
+			style 			0
+			text 				@MENUS_NAME
+			cvar 				ui_Name
+			maxchars 			26
+			rect 				80 80 300 20
+			textalign			ITEM_ALIGN_LEFT		
+			textalignx 			0
+			textaligny 			-4
+			font				0
+			textscale			1
+			forecolor			.670 .670 .929 1
+			outlinecolor 		1 .5 .5 .5
+			backcolor 			0 0 0 0
+			border 			0
+			bordercolor 		0 0 0 0
+			descText			@MENUS_ENTER_YOUR_NAME_HERE
+			visible 			1 
+			mouseEnter 
+			{ 
+				show			namefield_glow
+			}
+			mouseExit 
+			{ 
+				hide			namefield_glow
+			}
+		}
+
+		// The high light
+		itemDef 
+		{
+			name				namefield_glow
+			group				glow
+			style				WINDOW_STYLE_SHADER
+			rect				10 80 400 20
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+//----------------------------------------
+// TEAM1 BUTTON
+//----------------------------------------
+		itemDef 
+		{
+			name				team1_button
+			type				ITEM_TYPE_BUTTON
+			cvar				cg_siegeTeam1Name
+			rect				165 150 130 16
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			65
+			textaligny			-4
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			font				2
+			textscale			0.9
+			forecolor			.670 .670 .929 1
+			border			0
+			bordercolor			0 0 0 0
+			descText			"Join this team."
+
+			visible			1 
+			mouseEnter 
+			{ 
+				show			team1_glow
+			}
+			mouseExit 
+			{ 
+				hide			team1_glow
+			}
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				hide			team2_symbol
+				show			team1_symbol
+				exec			"cmd team r" 
+				setcvar		ui_team 1
+				uiscript		updatesiegeclasscnt      1
+				uiscript		updatesiegecvars
+//				show			nextbutton		
+
+//				setitemcolor	team1_button forecolor 1 1 .807 1 
+//				setitemcolor	team2_button forecolor .670 .670 .929 1
+
+				uiScript		setsiegeclass
+				close			all
+				open			ingame_siegeclass
+
+			}
+		}
+
+		// The high light
+		itemDef 
+		{
+			name				team1_glow
+			group				glow
+			style				WINDOW_STYLE_SHADER
+			rect				165 145 130 26
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+//----------------------------------------
+// TEAM2 BUTTON
+//----------------------------------------
+		itemDef 
+		{
+			name				team2_button
+			type				ITEM_TYPE_BUTTON
+			cvar				cg_siegeTeam2Name
+			rect				165 200 130 16
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			65
+			textaligny			-4
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			font				2
+			textscale			0.9
+			forecolor			.670 .670 .929 1
+			border			0
+			bordercolor			0 0 0 0
+			descText			"Join this team."
+
+			visible			1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				hide			team1_symbol
+				show			team2_symbol
+				exec			"cmd team b" 
+				setcvar		ui_team 2
+				uiscript		updatesiegeclasscnt      2
+				uiscript		updatesiegecvars
+//				show			nextbutton		
+
+//				setitemcolor	team1_button forecolor .670 .670 .929 1
+//				setitemcolor	team2_button forecolor 1 1 .807 1 
+
+				uiScript		setsiegeclass
+				close			all
+				open			ingame_siegeclass
+
+			}
+			mouseEnter 
+			{ 
+				show			team2_glow
+			}
+			mouseExit 
+			{ 
+				hide			team2_glow
+			}
+		}
+
+		// The high light
+		itemDef 
+		{
+			name				team2_glow
+			group				glow
+			style				WINDOW_STYLE_SHADER
+			rect				165 195 130 26
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+//----------------------------------------
+// AUTOTEAM BUTTON
+//----------------------------------------
+		itemDef 
+		{
+			name				autoteam
+			text				@MENUS_AUTO_TEAM
+			type				1
+			style				2	
+			rect				165 250 130 16
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			65
+			textaligny			-4
+			outlinecolor		1 .5 .5 .5
+			backcolor			0 0 0 0
+			font				2
+			textscale			0.9
+			forecolor			.670 .670 .929 1
+			descText			"Let server automatically decide the team."
+			visible			1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				exec			"cmd team free"
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			autoteam_glow
+			}
+			mouseExit 
+			{ 
+				hide			autoteam_glow
+			}
+		}
+
+		// The high light
+		itemDef 
+		{
+			name				autoteam_glow
+			group				glow
+			style				WINDOW_STYLE_SHADER
+			rect				165 245 130 26
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+//----------------------------------------
+// SPECTATOR BUTTON
+//----------------------------------------
+		itemDef 
+		{
+			name				spectate
+			text				@MENUS_SPECTATE
+			type				1
+			style				2	
+			rect				165 300 130 16
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			65
+			textaligny			-4     
+			font				2
+			textscale			.9
+			forecolor			.670 .670 .929 1
+			visible			1 
+			descText			"Watch the game."
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				exec			"cmd team s" 
+				uiScript		closeingame 
+			}
+			mouseEnter 
+			{ 
+				show			spectate_glow
+			}
+			mouseExit 
+			{ 
+				hide			spectate_glow
+			}
+		}
+
+		// The high light
+		itemDef 
+		{
+			name				spectate_glow
+			group				glow
+			style				WINDOW_STYLE_SHADER
+			rect				165 295 130 26
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+//----------------------------------------
+// NEXT BUTTON
+//----------------------------------------
+/*		itemDef 
+		{
+			name				nextbutton
+			group				playerapply
+			text				@MENUS_NEXT
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				10 370 440 16
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			220
+			textaligny			-4
+			font				2
+			textscale			.9
+			forecolor			.79 .64 .22 1
+			descText			"Select a class on the chosen team."
+			visible			0
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				uiScript		setsiegeclass
+				close			all
+				open			ingame_siegeclass
+			}
+			mouseEnter 
+			{ 
+				show			next_glow
+			}
+			mouseExit 
+			{ 
+				hide			next_glow
+			}
+		}
+
+		// The high light
+		itemDef 
+		{
+			name				next_glow
+			group				glow
+			style				WINDOW_STYLE_SHADER
+			rect				10 365 440 26
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+	} */
+}
+

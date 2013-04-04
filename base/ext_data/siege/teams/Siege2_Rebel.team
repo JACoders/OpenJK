@@ -1,0 +1,20 @@
+//Siege team definition file.
+
+name "Siege2_Rebels"
+FriendlyShader "sprites/rebel_attack" //Name of shader to display above heads of teammates (to others on this team)
+
+Classes
+{
+//Infantry Class
+	class1		"Rebel Assault Specialist"
+//Heavy Class
+	class2		"Wookie"
+//Demo Class
+	class3		"Rebel Demolitionist"
+//Vanguard Class
+	class4		"Rebel Sniper"
+//Support Class
+	class5		"Rebel Tech"
+//Jedi Class
+	class6		"Jedi Duelist"
+}

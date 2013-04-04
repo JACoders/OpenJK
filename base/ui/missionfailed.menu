@@ -1,0 +1,347 @@
+//--------------------------------------------------------------
+//
+// MISSION FAILED MENU
+//
+//	Displays choices after player death
+//
+//--------------------------------------------------------------
+{
+	menuDef 
+	{
+		name					"missionfailed_menu"
+	   	visible					0
+	   	// Not full screen so we can see the game behind it.
+	   	fullscreen				0
+	   	rect					0 0 640 480
+		focusColor				1 1 1 1					   	
+		style					WINDOW_STYLE_FILLED
+	   	border					1
+		descX					320
+		descY					458
+		descScale				1
+		descColor				1 .682 0 .8
+		descAlignment				ITEM_ALIGN_CENTER
+		ignoreescape				1		
+
+		onClose 
+		{ 
+		}
+		
+		onOpen 
+		{ 
+			setcvar				ui_missionfailed	"0"
+		}
+		
+		onESC 
+		{ 
+		}
+	
+			 				 	
+		// Top Background
+		itemDef 
+		{
+			name				top_background
+			rect				50 10 540 80
+			style 				WINDOW_STYLE_FILLED
+			backcolor			.015 .015 .229 .5
+			forecolor			0 0 0 .5
+			visible				1
+			decoration
+		}
+		
+		// Bottom Background
+		itemDef 
+		{
+			name				bottom_background
+			rect				170 380 300 95
+			style 				WINDOW_STYLE_FILLED
+			backcolor			.015 .015 .229 .5
+			forecolor			0 0 0 .5
+			visible				1
+			decoration
+		}
+		
+		// Title
+		itemDef 
+		{
+			name				failed_title
+			group				title
+			style				WINDOW_STYLE_EMPTY
+			background			"gfx/menus/menu_blendbox"
+			text				@SP_INGAME_MISSIONFAILED
+      			rect				0 20 640 16
+			font				3
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			320
+			textaligny			-1
+			forecolor			1 0 0 1
+      			visible				1 
+  	    		decoration 
+		}
+		
+		// Text saying why you failed
+		itemDef 
+		{
+			name				why_text
+			group				none
+			background			"gfx/menus/menu_blendbox"
+			cvar				ui_missionfailed_text    			
+			rect				0 60 640 0
+			font				3
+			textscale			.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			320
+			textaligny			-1
+			forecolor			1 0 0 1
+      			visible				1 
+  	    		decoration 
+		}
+			
+		
+//--------------------------------------------------------------------------------
+//	BUTTON	
+//--------------------------------------------------------------------------------
+		itemDef 
+		{
+			name				button_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				118 295 85 26
+			background			"gfx/menus/menu_buttonback"							forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+
+		itemDef 
+		{
+			name				restartauto
+			group				grpControlbutton
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				170 380 300 20
+			text				@MENUS_LOAD_AUTOSAVE
+			desctext			@MENUS_LOAD_AUTOSAVE_DESC
+			textscale			1
+			font				4
+			textalign			ITEM_ALIGN_CENTER
+			textalignx 			150
+			forecolor			1 .682 0 1
+			visible				1
+						
+			action 
+			{ 
+				play			"sound/misc/nomenu.wav"  
+				close			all
+				uiScript  		"load_auto"		// Perform screen init				
+			}
+			
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	170 378 300 24
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	  	  
+		}	
+
+		itemDef 
+		{
+			name				loadsave
+			group				grpControlbutton
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				170 400 300 20
+			text				@MENUS_LOAD_SAVE_GAME
+			desctext			@MENUS_LOAD_SAVE_GAME_DESC
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textalignx 			150
+			forecolor			1 .682 0 1
+			visible				1
+			font				4
+									
+			action 
+			{ 
+				play			"sound/misc/nomenu.wav"  
+				close			all
+				setcvar			cl_paused		"1"
+				setcvar			ui_missionfailed	"1"
+				open			ingameloadMenu
+			}
+			
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	170 398 300 24
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	  	  
+		}	
+		
+		itemDef 
+		{
+			name				instantload
+			group				grpControlbutton
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				170 420 300 20
+			text				@MENUS_INSTANT_LOAD_CAPS
+			desctext			@MENUS_INSTANT_LOAD_CAPS_DESC
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textalignx 			150
+			forecolor			1 .682 0 1
+			visible				1
+			font				4
+									
+			action 
+			{ 
+				play			"sound/misc/nomenu.wav"  
+				close			all
+				uiScript  		"load_quick"						
+			}
+			
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	170 418 300 24
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	  	  
+		}	
+		
+		itemDef 
+		{
+			name				missionselect
+			group				grpControlbutton
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				170 440 300 20
+			text				@MENUS_NEW_MISSION
+			desctext			@MENUS_NEW_MISSION_DESC
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textalignx 			150
+			forecolor			1 .682 0 1
+			visible				1
+			cvartest			"tier_storyinfo"
+			showcvar
+			{
+				"1" "2" "3" "4" "5" "6"
+			}
+						
+			action 
+			{ 
+				play			"sound/misc/nomenu.wav"  
+				setcvar				cl_paused		"1"
+				uiScript		decrementforcepowerlevel
+				close			all
+				open			ingameMissionSelect1
+								
+			}
+			
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	170 438 300 24
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	  	  
+		}	
+		
+		itemDef 
+		{
+			name				missionselect
+			group				grpControlbutton
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				170 440 300 20
+			text				@MENUS_NEW_MISSION
+			desctext			@MENUS_NEW_MISSION_DESC
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textalignx 			150
+			forecolor			1 .682 0 1
+			visible				1
+			cvartest			"tier_storyinfo"
+			showcvar
+			{
+				"7" "8" "9" "10" "11" "12"
+			}
+						
+			action 
+			{ 
+				play			"sound/misc/nomenu.wav"  
+				setcvar				cl_paused		"1"
+				uiScript		decrementforcepowerlevel
+				close			all
+				open			ingameMissionSelect2
+								
+			}
+			
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	170 438 300 24
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	  	  
+		}	
+		itemDef 
+		{
+			name				missionselect
+			group				grpControlbutton
+			style				WINDOW_STYLE_EMPTY
+			type				ITEM_TYPE_BUTTON
+			rect				170 440 300 20
+			text				@MENUS_NEW_MISSION
+			desctext			@MENUS_NEW_MISSION_DESC
+			font				4
+			textscale			1
+			textalign			ITEM_ALIGN_CENTER
+			textalignx 			150
+			forecolor			1 .682 0 1
+			visible				1
+			cvartest			"tier_storyinfo"
+			showcvar
+			{
+				"13" "14" "15" "16" "17" "18"
+			}
+						
+			action 
+			{ 
+				play			"sound/misc/nomenu.wav"  
+				setcvar				cl_paused		"1"
+				uiScript		decrementforcepowerlevel
+				close			all
+				open			ingameMissionSelect3				
+			}
+			
+			mouseEnter 
+			{ 
+				show			button_glow 
+				setitemrect		button_glow	170 438 300 24
+			}
+			mouseExit 
+			{ 
+				hide			button_glow 
+			}	  	  
+		}	
+				
+	}
+}
+
+

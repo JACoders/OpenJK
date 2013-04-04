@@ -1,0 +1,76 @@
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "game", "game\game.vcproj", "{52D48192-6C71-4D4A-BE26-D05C0E02939C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exe", "starwars.vcproj", "{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_game", "x_game\x_game.vcproj", "{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x_exe", "x_exe\x_exe.vcproj", "{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "goblib", "goblib\goblib.vcproj", "{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}"
+EndProject
+Globa
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = FinalBuild
+		ConfigName.2 = Release
+		ConfigName.3 = SHDebug
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+		{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}.0 = {52D48192-6C71-4D4A-BE26-D05C0E02939C}
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.0 = {E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.1 = {68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{52D48192-6C71-4D4A-BE26-D05C0E02939C}.Debug.ActiveCfg = Debug|Win32
+		{52D48192-6C71-4D4A-BE26-D05C0E02939C}.Debug.Build.0 = Debug|Win32
+		{52D48192-6C71-4D4A-BE26-D05C0E02939C}.FinalBuild.ActiveCfg = FinalBuild|Win32
+		{52D48192-6C71-4D4A-BE26-D05C0E02939C}.FinalBuild.Build.0 = FinalBuild|Win32
+		{52D48192-6C71-4D4A-BE26-D05C0E02939C}.Release.ActiveCfg = Release|Win32
+		{52D48192-6C71-4D4A-BE26-D05C0E02939C}.Release.Build.0 = Release|Win32
+		{52D48192-6C71-4D4A-BE26-D05C0E02939C}.SHDebug.ActiveCfg = SHDebug|Win32
+		{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}.Debug.ActiveCfg = Debug|Win32
+		{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}.Debug.Build.0 = Debug|Win32
+		{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}.FinalBuild.ActiveCfg = FinalBuild|Win32
+		{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}.FinalBuild.Build.0 = FinalBuild|Win32
+		{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}.Release.ActiveCfg = Release|Win32
+		{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}.Release.Build.0 = Release|Win32
+		{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}.SHDebug.ActiveCfg = SHDebug|Win32
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.Debug.ActiveCfg = Debug|Xbox
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.Debug.Build.0 = Debug|Xbox
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.FinalBuild.ActiveCfg = FinalBuild|Xbox
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.FinalBuild.Build.0 = FinalBuild|Xbox
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.Release.ActiveCfg = Release|Xbox
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.Release.Build.0 = Release|Xbox
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.SHDebug.ActiveCfg = Debug|Xbox
+		{E7A12117-F3B0-4C68-9B44-66CEFCA3AEAA}.SHDebug.Build.0 = Debug|Xbox
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.Debug.ActiveCfg = Debug|Xbox
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.Debug.Build.0 = Debug|Xbox
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.FinalBuild.ActiveCfg = FinalBuild|Xbox
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.FinalBuild.Build.0 = FinalBuild|Xbox
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.Release.ActiveCfg = Release|Xbox
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.Release.Build.0 = Release|Xbox
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.SHDebug.ActiveCfg = Debug|Xbox
+		{FD1DA207-0D4A-47A8-A6AD-B81AE1BA28DA}.SHDebug.Build.0 = Debug|Xbox
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.Debug.ActiveCfg = Debug|Xbox
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.Debug.Build.0 = Debug|Xbox
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.FinalBuild.ActiveCfg = FinalBuild|Xbox
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.FinalBuild.Build.0 = FinalBuild|Xbox
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.Release.ActiveCfg = Release|Xbox
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.Release.Build.0 = Release|Xbox
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.SHDebug.ActiveCfg = Debug|Xbox
+		{68A067E3-BB9E-435B-9AA3-DD45DB2AA4DB}.SHDebug.Build.0 = Debug|Xbox
+	EndGlobalSection
+	GlobalSection(SolutionItems) = postSolution
+		Item:1 = tonet.bat
+		Item:2 = VU.bat
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+	GlobalSection(DevPartner) = postSolution
+	EndGlobalSection
+	GlobalSection(DevPartner) = postSolution
+	EndGlobalSection
+EndGlobal
