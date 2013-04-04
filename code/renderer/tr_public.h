@@ -127,9 +127,9 @@ typedef struct {
 		return RE_Font_DrawString(x, y, s, rgba, iFontHandle, iMaxPixelWidth, scale);
 	}
 #else
-	int		(*Font_HeightPixels)(const int index, const float scale = 1.0f);
-	int		(*Font_StrLenPixels)(const char *s, const int index, const float scale = 1.0f);
-	void	(*Font_DrawString)(int x, int y, const char *s, const float *rgba, const int iFontHandle, int iMaxPixelWidth, const float scale = 1.0f);
+	int		(*Font_HeightPixels)(const int index, const float scale);
+	int		(*Font_StrLenPixels)(const char *s, const int index, const float scale);
+	void	(*Font_DrawString)(int x, int y, const char *s, const float *rgba, const int iFontHandle, int iMaxPixelWidth, const float scale);
 #endif
 	int		(*Font_StrLenChars) (const char *s);
 	qboolean (*Language_IsAsian) (void);

@@ -85,14 +85,14 @@ void CFxScheduler::LoadSave_Read()
 {		
 	Clean();	// need to get rid of old pre-cache handles, or it thinks it has some older effects when it doesn't	
 	g_vstrEffectsNeededPerSlot.clear();	// jic
-	gi.ReadFromSaveGame('FXLE', (void *) &gLoopedEffectArray, sizeof(gLoopedEffectArray));
+	gi.ReadFromSaveGame('FXLE', (void *) &gLoopedEffectArray, sizeof(gLoopedEffectArray), NULL);
 	//
 	// now read in and re-register the effects we need for those structs...
 	//
 	for (int iFX = 0; iFX < MAX_LOOPED_FX; iFX++)
 	{
 		char sFX_Filename[MAX_QPATH];
-		gi.ReadFromSaveGame('FXFN', sFX_Filename, sizeof(sFX_Filename));
+		gi.ReadFromSaveGame('FXFN', sFX_Filename, sizeof(sFX_Filename), NULL);
 		g_vstrEffectsNeededPerSlot.push_back( sFX_Filename );
 	}
 }

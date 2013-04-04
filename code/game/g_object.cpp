@@ -102,7 +102,7 @@ void G_RunObject( gentity_t *ent )
 	// trace a line from the previous position to the current position,
 	// ignoring interactions with the missile owner
 	gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, origin, 
-		ent->owner ? ent->owner->s.number : ent->s.number, ent->clipmask );
+		ent->owner ? ent->owner->s.number : ent->s.number, ent->clipmask, (EG2_Collision)0, 0 );
 
 	if ( !tr.startsolid && !tr.allsolid && tr.fraction ) 
 	{

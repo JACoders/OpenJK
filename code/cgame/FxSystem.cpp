@@ -105,7 +105,7 @@ void SFxHelper::G2Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max,
 						vec3_t end, int skipEntNum, int flags )
 {
 	//CG_Trace( tr, start, min, max, end, skipEntNum, flags, G2_COLLIDE );
-	gi.trace(tr, start, NULL, NULL, end, skipEntNum, flags, G2_COLLIDE);
+	gi.trace(tr, start, NULL, NULL, end, skipEntNum, flags, G2_COLLIDE, 0);
 }
 
 //------------------------------------------------------

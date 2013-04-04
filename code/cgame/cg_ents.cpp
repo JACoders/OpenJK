@@ -507,12 +507,12 @@ const weaponData_t  *wData = NULL;
 					if ( cent->gent->bounceCount )
 					{//EWeb
 						gi.G2API_SetBoneAnimIndex( &cent->gent->ghoul2[cent->gent->playerModel], cent->gent->rootBone, 
-							2, 4, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time );
+							2, 4, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time, -1, -1 );
 					}
 					else
 					{//Emplaced Gun
 						gi.G2API_SetBoneAnimIndex( &cent->gent->ghoul2[cent->gent->playerModel], cent->gent->rootBone, 
-							0, 3, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time );
+							0, 3, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time, -1, -1 );
 					}
 		
 					if ( effect )

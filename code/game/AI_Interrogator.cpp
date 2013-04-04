@@ -84,7 +84,7 @@ void Interrogator_PartsMove(void)
 			NPC->pos1[1]=Q_irand( 0, 60 );	// Pitch	
 		}
 
-		gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+		gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, 0 ); 
 		TIMER_Set( NPC, "syringeDelay", Q_irand( 100, 1000 ) );
 	}
 
@@ -113,13 +113,13 @@ void Interrogator_PartsMove(void)
 		}
 
 		NPC->pos2[0] = AngleNormalize360( NPC->pos2[0]);
-		gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone2, NPC->pos2, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+		gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone2, NPC->pos2, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, 0 ); 
 	}
 
 	// Claw
 	NPC->pos3[1] += Q_irand( 10, 30 );
 	NPC->pos3[1] = AngleNormalize360( NPC->pos3[1]);
-	gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone3, NPC->pos3, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+	gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone3, NPC->pos3, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, 0 ); 
 
 }
 
@@ -246,7 +246,7 @@ void Interrogator_Strafe( void )
 	dir = ( rand() & 1 ) ? -1 : 1;
 	VectorMA( NPC->currentOrigin, HUNTER_STRAFE_DIS * dir, right, end );
 
-	gi.trace( &tr, NPC->currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID );
+	gi.trace( &tr, NPC->currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID, (EG2_Collision)0, 0 );
 
 	// Close enough
 	if ( tr.fraction > 0.9f )

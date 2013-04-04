@@ -1396,6 +1396,7 @@ bool NPC_SafeSpawn( gentity_t *ent, float safeRadius )
 	float		distance = 999999;
 	int			numEnts = 0;
 	float		safeRadiusSquared = safeRadius*safeRadius;
+	int i;
 
 	if (!ent)
 	{
@@ -1403,7 +1404,7 @@ bool NPC_SafeSpawn( gentity_t *ent, float safeRadius )
 	}
 
 	//Setup the bbox to search in
-	for ( int i = 0; i < 3; i++ )
+	for ( i = 0; i < 3; i++ )
 	{
 		safeMins[i] = ent->currentOrigin[i] - safeRadius;
 		safeMaxs[i] = ent->currentOrigin[i] + safeRadius;
@@ -1474,7 +1475,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 		VectorCopy( ent->currentOrigin, saveOrg );
 		VectorCopy( ent->currentOrigin, bottom );
 		bottom[2] = MIN_WORLD_COORD;
-		gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, bottom, ent->s.number, MASK_NPCSOLID );
+		gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, bottom, ent->s.number, MASK_NPCSOLID, (EG2_Collision)0, 0 );
 		if ( !tr.allsolid && !tr.startsolid && tr.fraction < 1.0 )
 		{
 			G_SetOrigin( ent, tr.endpos );
@@ -4101,10 +4102,10 @@ static void NPC_Spawn_f(void)
 	AngleVectors(g_entities[0].client->ps.viewangles, forward, NULL, NULL);
 	VectorNormalize(forward);
 	VectorMA(g_entities[0].currentOrigin, 64, forward, end);
-	gi.trace(&trace, g_entities[0].currentOrigin, NULL, NULL, end, 0, MASK_SOLID);
+	gi.trace(&trace, g_entities[0].currentOrigin, NULL, NULL, end, 0, MASK_SOLID, (EG2_Collision)0, 0);
 	VectorCopy(trace.endpos, end);
 	end[2] -= 24;
-	gi.trace(&trace, trace.endpos, NULL, NULL, end, 0, MASK_SOLID);
+	gi.trace(&trace, trace.endpos, NULL, NULL, end, 0, MASK_SOLID, (EG2_Collision)0, 0);
 	VectorCopy(trace.endpos, end);
 	end[2] += 24;
 	G_SetOrigin(NPCspawner, end);

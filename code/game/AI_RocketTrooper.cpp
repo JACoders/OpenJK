@@ -196,7 +196,7 @@ void RT_FireDecide( void )
 							vec3_t	forward, end;
 							AngleVectors( NPC->client->ps.viewangles, forward, NULL, NULL );
 							VectorMA( muzzle, 8192, forward, end );
-							gi.trace( &tr, muzzle, vec3_origin, vec3_origin, end, NPC->s.number, MASK_SHOT );
+							gi.trace( &tr, muzzle, vec3_origin, vec3_origin, end, NPC->s.number, MASK_SHOT, (EG2_Collision)0, 0 );
 							VectorCopy( tr.endpos, impactPos );
 						}
 
@@ -626,7 +626,7 @@ void RT_Flying_Strafe( void )
 		side = ( rand() & 1 ) ? -1 : 1;
 		VectorMA( NPC->currentOrigin, RT_FLYING_STRAFE_DIS * side, right, end );
 
-		gi.trace( &tr, NPC->currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID );
+		gi.trace( &tr, NPC->currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID, (EG2_Collision)0, 0 );
 
 		// Close enough
 		if ( tr.fraction > 0.9f )
@@ -666,7 +666,7 @@ void RT_Flying_Strafe( void )
 		// then add a very small bit of random in front of/behind the player action
 		VectorMA( end, crandom() * 25, dir, end );
 
-		gi.trace( &tr, NPC->currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID );
+		gi.trace( &tr, NPC->currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID, (EG2_Collision)0, 0 );
 
 		// Close enough
 		if ( tr.fraction > 0.9f )

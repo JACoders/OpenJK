@@ -55,7 +55,7 @@ static qboolean enemyCS;
 static qboolean enemyInFOV;
 static qboolean hitAlly;
 static qboolean faceEnemy;
-static qboolean move;
+static qboolean doMove;
 static qboolean shoot;
 static float	enemyDist;
 static vec3_t	impactPos;
@@ -395,7 +395,7 @@ ST_Move
 void ST_TransferMoveGoal( gentity_t *self, gentity_t *other );
 static qboolean ST_Move( void )
 {
-	NPCInfo->combatMove = qtrue;//always move straight toward our goal
+	NPCInfo->combatMove = qtrue;//always doMove straight toward our goal
 
 	qboolean	moved = NPC_MoveToGoal( qtrue );
 	if (moved==qfalse)
@@ -921,13 +921,13 @@ static qboolean NPC_ST_InvestigateEvent( int eventID, bool extraSuspicious )
 	{
 		//make it so they can walk right to this point and look at it rather than having to use combatPoints
 		if ( G_ExpandPointToBBox( NPCInfo->investigateGoal, NPC->mins, NPC->maxs, NPC->s.number, ((NPC->clipmask&~CONTENTS_BODY)|CONTENTS_BOTCLIP) ) )
-		{//we were able to move the investigateGoal to a point in which our bbox would fit
+		{//we were able to doMove the investigateGoal to a point in which our bbox would fit
 			//drop the goal to the ground so we can get at it
 			vec3_t	end;
 			trace_t	trace;
 			VectorCopy( NPCInfo->investigateGoal, end );
 			end[2] -= 512;//FIXME: not always right?  What if it's even higher, somehow?
-			gi.trace( &trace, NPCInfo->investigateGoal, NPC->mins, NPC->maxs, end, ENTITYNUM_NONE, ((NPC->clipmask&~CONTENTS_BODY)|CONTENTS_BOTCLIP) );
+			gi.trace( &trace, NPCInfo->investigateGoal, NPC->mins, NPC->maxs, end, ENTITYNUM_NONE, ((NPC->clipmask&~CONTENTS_BODY)|CONTENTS_BOTCLIP), (EG2_Collision)0, 0 );
 			if ( trace.fraction >= 1.0f )
 			{//too high to even bother
 				//FIXME: look at them???
@@ -1146,7 +1146,7 @@ void NPC_BSST_Investigate( void )
 		{
 			ucmd.buttons |= BUTTON_WALKING;
 
-			//Try and move there
+			//Try and doMove there
 			if ( NPC_MoveToGoal( qtrue )  )
 			{
 				//Bump our times
@@ -1185,7 +1185,7 @@ void NPC_BSST_Patrol( void )
 		AngleVectors( NPC->client->renderInfo.eyeAngles, eyeFwd, NULL, NULL );
 		VectorMA( NPC->client->renderInfo.eyePoint, NPCInfo->stats.visrange, eyeFwd, end ); 
 		//get server-side trace impact point
-		gi.trace( &trace, NPC->client->renderInfo.eyePoint, mins, maxs, end, NPC->s.number, MASK_OPAQUE|CONTENTS_BODY|CONTENTS_CORPSE );
+		gi.trace( &trace, NPC->client->renderInfo.eyePoint, mins, maxs, end, NPC->s.number, MASK_OPAQUE|CONTENTS_BODY|CONTENTS_CORPSE, (EG2_Collision)0, 0 );
 		NPC->speed = (trace.fraction*NPCInfo->stats.visrange);
 		if ( NPCInfo->scriptFlags&SCF_LOOK_FOR_ENEMIES )
 		{
@@ -1373,7 +1373,7 @@ static void ST_CheckMoveState( void )
 {
 	if ( Q3_TaskIDPending( NPC, TID_MOVE_NAV ) )
 	{//moving toward a goal that a script is waiting on, so don't stop for anything!
-		move = qtrue;
+		doMove = qtrue;
 	}
 	else if ( NPC->client->NPC_class == CLASS_ROCKETTROOPER
 		&& NPC->client->ps.groundEntityNum == ENTITYNUM_NONE )
@@ -1382,7 +1382,7 @@ static void ST_CheckMoveState( void )
 	}
 //	else if ( NPC->NPC->scriptFlags&SCF_NO_GROUPS )
 	{
-		move = qtrue;
+		doMove = qtrue;
 	}
 	//See if we're a scout
 
@@ -1471,7 +1471,7 @@ void ST_ResolveBlockedShot( int hit )
 		}
 	}
 	//Hmm, can't resolve this by telling them to duck or telling me to stand
-	//We need to move!
+	//We need to doMove!
 	TIMER_Set( NPC, "roamTime", -1 );
 	TIMER_Set( NPC, "stick", -1 );
 	TIMER_Set( NPC, "duck", -1 );
@@ -1527,7 +1527,7 @@ static void ST_CheckFireState( void )
 					vec3_t	forward, end;
 					AngleVectors( NPC->client->ps.viewangles, forward, NULL, NULL );
 					VectorMA( muzzle, 8192, forward, end );
-					gi.trace( &tr, muzzle, vec3_origin, vec3_origin, end, NPC->s.number, MASK_SHOT );
+					gi.trace( &tr, muzzle, vec3_origin, vec3_origin, end, NPC->s.number, MASK_SHOT, (EG2_Collision)0, 0 );
 					VectorCopy( tr.endpos, impactPos );
 				}
 
@@ -1871,7 +1871,7 @@ void ST_Commander( void )
 				continue;
 			}
 			if ( !(NPCInfo->scriptFlags&SCF_CHASE_ENEMIES) )
-			{//not allowed to move on my own
+			{//not allowed to doMove on my own
 				continue;
 			}
 			//Lost enemy for three minutes?  go into search mode?
@@ -2157,7 +2157,7 @@ void ST_Commander( void )
 					NPCInfo->aiFlags |= NPCAI_STOP_AT_LOS;
 				}
 
-				//okay, try a move right now to see if we can even get there
+				//okay, try a doMove right now to see if we can even get there
 				if ( (cpFlags&CP_FLANK) )
 				{
 					if ( group->numGroup > 1 )
@@ -2335,7 +2335,7 @@ void NPC_BSST_Attack( void )
 
 
 	enemyLOS = enemyCS = enemyInFOV = qfalse;
-	move = qtrue;
+	doMove = qtrue;
 	faceEnemy = qfalse;
 	shoot = qfalse;
 	hitAlly = qfalse;
@@ -2472,8 +2472,8 @@ void NPC_BSST_Attack( void )
 	if ( !(NPCInfo->scriptFlags&SCF_CHASE_ENEMIES) )
 	{//not supposed to chase my enemies
 		if ( NPCInfo->goalEntity == NPC->enemy )
-		{//goal is my entity, so don't move
-			move = qfalse;
+		{//goal is my entity, so don't doMove
+			doMove = qfalse;
 		}
 	}
 	else if (NPC->NPC->scriptFlags&SCF_NO_GROUPS)
@@ -2485,7 +2485,7 @@ void NPC_BSST_Attack( void )
 
 	if ( NPC->client->fireDelay && NPC->s.weapon == WP_ROCKET_LAUNCHER )
 	{
-		move = qfalse;
+		doMove = qfalse;
 	}
 
 	if ( !ucmd.rightmove )
@@ -2505,7 +2505,7 @@ void NPC_BSST_Attack( void )
 				ucmd.rightmove = -127;
 				//re-check the duck as we might want to be rolling
 				VectorClear( NPC->client->ps.moveDir );
-				move = qfalse;
+				doMove = qfalse;
 			}
 		}
 		else if ( !TIMER_Done( NPC, "strafeRight" ) )
@@ -2518,20 +2518,20 @@ void NPC_BSST_Attack( void )
 			{//go ahead and strafe left
 				ucmd.rightmove = 127;
 				VectorClear( NPC->client->ps.moveDir );
-				move = qfalse;
+				doMove = qfalse;
 			}
 		}
 	}
 
 	if ( NPC->client->ps.legsAnim == BOTH_GUARD_LOOKAROUND1 )
-	{//don't move when doing silly look around thing
-		move = qfalse;
+	{//don't doMove when doing silly look around thing
+		doMove = qfalse;
 	}
-	if ( move )
-	{//move toward goal
+	if ( doMove )
+	{//doMove toward goal
 		if ( NPCInfo->goalEntity )//&& ( NPCInfo->goalEntity != NPC->enemy || enemyDist > 10000 ) )//100 squared
 		{
-			move = ST_Move();
+			doMove = ST_Move();
 			if ( (NPC->client->NPC_class != CLASS_ROCKETTROOPER||NPC->s.weapon!=WP_ROCKET_LAUNCHER||enemyDist<MIN_ROCKET_DIST_SQUARED)//rockettroopers who use rocket launchers turn around and run if you get too close (closer than 128)
 				&& ucmd.forwardmove <= -32 )
 			{//moving backwards at least 45 degrees
@@ -2558,11 +2558,11 @@ void NPC_BSST_Attack( void )
 		}
 		else
 		{
-			move = qfalse;
+			doMove = qfalse;
 		}
 	}
 
-	if ( !move )
+	if ( !doMove )
 	{
 		if (NPC->client->NPC_class != CLASS_ASSASSIN_DROID)
 		{
@@ -2587,7 +2587,7 @@ void NPC_BSST_Attack( void )
 	}
 
 	if ( //!TIMER_Done( NPC, "flee" ) ||
-		(move&&!TIMER_Done( NPC, "runBackwardsDebounce" )) )
+		(doMove&&!TIMER_Done( NPC, "runBackwardsDebounce" )) )
 	{//running away
 		faceEnemy = qfalse;
 	}
@@ -2596,14 +2596,14 @@ void NPC_BSST_Attack( void )
 
 	if ( !faceEnemy )
 	{//we want to face in the dir we're running
-		if ( !move )
+		if ( !doMove )
 		{//if we haven't moved, we should look in the direction we last looked?
 			VectorCopy( NPC->client->ps.viewangles, NPCInfo->lastPathAngles );
 		}
 		NPCInfo->desiredYaw = NPCInfo->lastPathAngles[YAW];
 		NPCInfo->desiredPitch = 0;
 		NPC_UpdateAngles( qtrue, qtrue );
-		if ( move )
+		if ( doMove )
 		{//don't run away and shoot
 			shoot = qfalse;
 		}
@@ -2657,7 +2657,7 @@ void NPC_BSST_Attack( void )
 			if ( NPC->s.weapon == WP_ROCKET_LAUNCHER )
 			{
 				if ( (ucmd.buttons&BUTTON_ATTACK) 
-					&& !move
+					&& !doMove
 					&& g_spskill->integer > 1 
 					&& !Q_irand( 0, 3 ) )
 				{//every now and then, shoot a homing rocket
