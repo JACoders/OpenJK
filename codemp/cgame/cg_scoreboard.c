@@ -5,10 +5,6 @@
 #include "../ui/ui_shared.h"
 #include "../game/bg_saga.h"
 
-#ifdef _XBOX
-#include "../client/cl_data.h"
-#endif
-
 #define	SCOREBOARD_X		(0)
 
 #define SB_HEADER			86
@@ -41,11 +37,8 @@
 #define SB_RATING_WIDTH	    0 // (6 * BIGCHAR_WIDTH)
 #define SB_NAME_X			(SB_SCORELINE_X)
 #define SB_SCORE_X			(SB_SCORELINE_X + .55 * SB_SCORELINE_WIDTH)
-//#define SB_PING_X			(SB_SCORELINE_X + .70 * SB_SCORELINE_WIDTH)
+#define SB_PING_X			(SB_SCORELINE_X + .70 * SB_SCORELINE_WIDTH)
 #define SB_TIME_X			(SB_SCORELINE_X + .85 * SB_SCORELINE_WIDTH)
-
-//JLF
-#define TITLE_SAFE_SHIFT  30
 
 // The new and improved score board
 //
@@ -89,7 +82,7 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 	
 	ci = &cgs.clientinfo[score->client];
 
-	iconx = SB_BOTICON_X + (SB_RATING_WIDTH / 2)+/*JLF*/TITLE_SAFE_SHIFT;
+	iconx = SB_BOTICON_X + (SB_RATING_WIDTH / 2);
 	headx = SB_HEAD_X + (SB_RATING_WIDTH / 2);
 
 	// draw the handicap or bot skill marker (unless player has flag)
@@ -131,20 +124,10 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 	{
 		if (ci->duelTeam == DUELTEAM_LONE)
 		{
-#ifdef _XBOX
-			if(cg->widescreen)
-				CG_DrawPic ( iconx + 40, y, 32, 32, trap_R_RegisterShaderNoMip ( "gfx/mp/pduel_icon_lone" ) );
-			else
-#endif
 			CG_DrawPic ( iconx, y, 32, 32, trap_R_RegisterShaderNoMip ( "gfx/mp/pduel_icon_lone" ) );
 		}
 		else
 		{
-#ifdef _XBOX
-			if(cg->widescreen)
-				CG_DrawPic ( iconx + 40, y, 32, 32, trap_R_RegisterShaderNoMip ( "gfx/mp/pduel_icon_double" ) );
-			else
-#endif
 			CG_DrawPic ( iconx, y, 32, 32, trap_R_RegisterShaderNoMip ( "gfx/mp/pduel_icon_double" ) );
 		}
 	}
@@ -156,33 +139,35 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 
 			if (scl->classShader)
 			{
-#ifdef _XBOX
-				if(cg->widescreen)
-					CG_DrawPic (iconx + 40, y, largeFormat?24:12, largeFormat?24:12, scl->classShader);
-				else
-#endif
 				CG_DrawPic (iconx, y, largeFormat?24:12, largeFormat?24:12, scl->classShader);
 			}
 		}
 	}
 	else
 	{
+		// draw the wins / losses
+		/*
+		if ( cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL ) 
+		{
+			CG_DrawSmallStringColor( iconx, y + SMALLCHAR_HEIGHT/2, va("%i/%i", ci->wins, ci->losses ), color );
+		}
+		*/
 		//rww - in duel, we now show wins/losses in place of "frags". This is because duel now defaults to 1 kill per round.
 	}
 
 	// highlight your position
-	if ( score->client == cg->snap->ps.clientNum ) 
+	if ( score->client == cg.snap->ps.clientNum ) 
 	{
 		float	hcolor[4];
 		int		rank;
 
 		localClient = qtrue;
 
-		if ( cg->snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR 
+		if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR 
 			|| cgs.gametype >= GT_TEAM ) {
 			rank = -1;
 		} else {
-			rank = cg->snap->ps.persistant[PERS_RANK] & ~RANK_TIED_FLAG;
+			rank = cg.snap->ps.persistant[PERS_RANK] & ~RANK_TIED_FLAG;
 		}
 		if ( rank == 0 ) {
 			hcolor[0] = 0;
@@ -203,19 +188,9 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 		}
 
 		hcolor[3] = fade * 0.7;
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_FillRect( SB_SCORELINE_X - 5 + 40, y + 2, 640 - SB_SCORELINE_X * 2 + 10, largeFormat?SB_NORMAL_HEIGHT:SB_INTER_HEIGHT, hcolor );
-		else
-#endif
 		CG_FillRect( SB_SCORELINE_X - 5, y + 2, 640 - SB_SCORELINE_X * 2 + 10, largeFormat?SB_NORMAL_HEIGHT:SB_INTER_HEIGHT, hcolor );
 	}
 
-#ifdef _XBOX
-	if(cg->widescreen)
-		CG_Text_Paint (SB_NAME_X + 40, y, 0.9f * scale, colorWhite, ci->name,0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-	else
-#endif
 	CG_Text_Paint (SB_NAME_X, y, 0.9f * scale, colorWhite, ci->name,0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 
 	if ( score->ping != -1 )
@@ -224,58 +199,28 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 		{
 			if (cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL)
 			{
-#ifdef _XBOX
-				if(cg->widescreen)
-					CG_Text_Paint (SB_SCORE_X + 40, y, 1.0f * scale, colorWhite, va("%i/%i", ci->wins, ci->losses),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
-				else
-#endif
 				CG_Text_Paint (SB_SCORE_X, y, 1.0f * scale, colorWhite, va("%i/%i", ci->wins, ci->losses),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
 			}
 			else
 			{
-#ifdef _XBOX
-				if(cg->widescreen)
-					CG_Text_Paint (SB_SCORE_X + 40, y, 1.0f * scale, colorWhite, va("%i", score->score),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
-				else
-#endif
 				CG_Text_Paint (SB_SCORE_X, y, 1.0f * scale, colorWhite, va("%i", score->score),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
 			}
 		}
 
-//		CG_Text_Paint (SB_PING_X, y, 1.0f * scale, colorWhite, va("%i", score->ping),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );	
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint (SB_TIME_X + 40, y, 1.0f * scale, colorWhite, va("%i", score->time),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
-		else
-#endif
+		CG_Text_Paint (SB_PING_X, y, 1.0f * scale, colorWhite, va("%i", score->ping),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );	
 		CG_Text_Paint (SB_TIME_X, y, 1.0f * scale, colorWhite, va("%i", score->time),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );		
 	}
 	else
 	{
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint (SB_SCORE_X + 40, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
-		else
-#endif
 		CG_Text_Paint (SB_SCORE_X, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
-//		CG_Text_Paint (SB_PING_X, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );	
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint (SB_TIME_X + 40, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
-		else
-#endif
+		CG_Text_Paint (SB_PING_X, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );	
 		CG_Text_Paint (SB_TIME_X, y, 1.0f * scale, colorWhite, "-",0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_SMALL );
 	}
 
 	// add the "ready" marker for intermission exiting
-	if ( cg->snap->ps.stats[ STAT_CLIENTS_READY ] & ( 1 << score->client ) ) 
+	if ( cg.snap->ps.stats[ STAT_CLIENTS_READY ] & ( 1 << score->client ) ) 
 	{
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint (SB_NAME_X - 64 + 40, y + 2, 0.7f * scale, colorWhite, CG_GetStringEdString("MP_INGAME", "READY"),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-		else
-#endif
-		CG_Text_Paint (SB_NAME_X - 64 + 15, y + 2, 0.7f * scale, colorWhite, CG_GetStringEdString("MP_INGAME", "READY"),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+		CG_Text_Paint (SB_NAME_X - 64, y + 2, 0.7f * scale, colorWhite, CG_GetStringEdString("MP_INGAME", "READY"),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
 }
 
@@ -296,8 +241,8 @@ static int CG_TeamScoreboard( int y, team_t team, float fade, int maxClients, in
 	color[3] = fade;
 
 	count = 0;
-	for ( i = 0 ; i < cg->numScores && count < maxClients ; i++ ) {
-		score = &cg->scores[i];
+	for ( i = 0 ; i < cg.numScores && count < maxClients ; i++ ) {
+		score = &cg.scores[i];
 		ci = &cgs.clientinfo[ score->client ];
 
 		if ( team != ci->team ) {
@@ -373,9 +318,9 @@ int CG_GetTeamCount(team_t team, int maxClients)
 	clientInfo_t	*ci;
 	score_t	*score;
 
-	for ( i = 0 ; i < cg->numScores && count < maxClients ; i++ )
+	for ( i = 0 ; i < cg.numScores && count < maxClients ; i++ )
 	{
-		score = &cg->scores[i];
+		score = &cg.scores[i];
 		ci = &cgs.clientinfo[ score->client ];
 
 		if ( team != ci->team )
@@ -408,26 +353,26 @@ qboolean CG_DrawOldScoreboard( void ) {
 
 	// don't draw amuthing if the menu or console is up
 	if ( cg_paused.integer ) {
-		cg->deferredPlayerLoading = 0;
+		cg.deferredPlayerLoading = 0;
 		return qfalse;
 	}
 
 	// don't draw scoreboard during death while warmup up
-	if ( cg->warmup && !cg->showScores ) {
+	if ( cg.warmup && !cg.showScores ) {
 		return qfalse;
 	}
 
-	if ( cg->showScores || cg->predictedPlayerState.pm_type == PM_DEAD ||
-		 cg->predictedPlayerState.pm_type == PM_INTERMISSION ) {
+	if ( cg.showScores || cg.predictedPlayerState.pm_type == PM_DEAD ||
+		 cg.predictedPlayerState.pm_type == PM_INTERMISSION ) {
 		fade = 1.0;
 		fadeColor = colorWhite;
 	} else {
-		fadeColor = CG_FadeColor( cg->scoreFadeTime, FADE_TIME );
+		fadeColor = CG_FadeColor( cg.scoreFadeTime, FADE_TIME );
 		
 		if ( !fadeColor ) {
 			// next time scoreboard comes up, don't print killer
-			cg->deferredPlayerLoading = 0;
-			cg->killerName[0] = 0;
+			cg.deferredPlayerLoading = 0;
+			cg.killerName[0] = 0;
 			return qfalse;
 		}
 		fade = *fadeColor;
@@ -436,7 +381,7 @@ qboolean CG_DrawOldScoreboard( void ) {
 	// fragged by ... line
 	// or if in intermission and duel, prints the winner of the duel round
 	if ((cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL) && cgs.duelWinner != -1 &&
-		cg->predictedPlayerState.pm_type == PM_INTERMISSION)
+		cg.predictedPlayerState.pm_type == PM_INTERMISSION)
 	{
 		s = va("%s^7 %s", cgs.clientinfo[cgs.duelWinner].name, CG_GetStringEdString("MP_INGAME", "DUEL_WINS") );
 		/*w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
@@ -445,22 +390,11 @@ qboolean CG_DrawOldScoreboard( void ) {
 		CG_DrawBigString( x, y, s, fade );
 		*/
 		x = ( SCREEN_WIDTH ) / 2;
-		if(ClientManager::splitScreenMode == qtrue) {
-			y = 20;
-
-			if(ClientManager::ActiveClientNum() == 1)
-				y = 240;
-		}
-		else
-			y = 40;
-
-		if(cg->widescreen)
-			CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2 + 40, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-		else
-			CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+		y = 40;
+		CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
 	else if ((cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL) && cgs.duelist1 != -1 && cgs.duelist2 != -1 &&
-		cg->predictedPlayerState.pm_type == PM_INTERMISSION)
+		cg.predictedPlayerState.pm_type == PM_INTERMISSION)
 	{
 		if (cgs.gametype == GT_POWERDUEL && cgs.duelist3 != -1)
 		{
@@ -476,46 +410,19 @@ qboolean CG_DrawOldScoreboard( void ) {
 		CG_DrawBigString( x, y, s, fade );
 		*/
 		x = ( SCREEN_WIDTH ) / 2;
-		if(ClientManager::splitScreenMode == qtrue) {
-			y = 20;
-
-			if(ClientManager::ActiveClientNum() == 1)
-				y = 240;
-		}
-		else
-			y = 40;
-
-		if(cg->widescreen)
-			CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2 + 40, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-		else
-			CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+		y = 40;
+		CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
-	else if ( cg->killerName[0] ) {
-		s = " "; //va("%s %s", CG_GetStringEdString("MP_INGAME", "KILLEDBY"), cg->killerName );
+	else if ( cg.killerName[0] ) {
+		s = va("%s %s", CG_GetStringEdString("MP_INGAME", "KILLEDBY"), cg.killerName );
 		/*w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
 		x = ( SCREEN_WIDTH - w ) / 2;
 		y = 40;
 		CG_DrawBigString( x, y, s, fade );
 		*/
 		x = ( SCREEN_WIDTH ) / 2;
-		if(ClientManager::splitScreenMode == qtrue) {
-			y = 20;
-
-			if(ClientManager::ActiveClientNum() == 1)
-				y = 240;
-
-			// If not displaying the scoreboard in splitscreen, move the text down
-			// so that it doesn't interfere with console messages
-			if(!cg->showScores)
-				y += 80;
-		}
-		else
-			y = 40;
-
-		if(cg->widescreen)
-			CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2 + 40, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-		else
-			CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+		y = 40;
+		CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
 
 	// current rank
@@ -523,13 +430,7 @@ qboolean CG_DrawOldScoreboard( void ) {
 	{ //do nothing?
 	}
 	else if ( cgs.gametype < GT_TEAM) {
-#ifdef _XBOX
-		// Don't want place ranking text in splitscreen Duel
-		if(ClientManager::NumClients() == 2 && cgs.gametype == GT_DUEL) {
-		}
-		else
-#endif
-		if (cg->snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR ) 
+		if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR ) 
 		{
 			char sPlace[256];
 			char sOf[256];
@@ -540,67 +441,33 @@ qboolean CG_DrawOldScoreboard( void ) {
 			trap_SP_GetStringTextString("MP_INGAME_WITH",	sWith,	sizeof(sWith));
 
 			s = va("%s %s (%s %i) %s %i",
-				CG_PlaceString( cg->snap->ps.persistant[PERS_RANK] + 1 ),
+				CG_PlaceString( cg.snap->ps.persistant[PERS_RANK] + 1 ),
 				sPlace,
 				sOf,
-				cg->numScores,
+				cg.numScores,
 				sWith,
-				cg->snap->ps.persistant[PERS_SCORE] );
-//			w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
+				cg.snap->ps.persistant[PERS_SCORE] );
+			w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
 			x = ( SCREEN_WIDTH ) / 2;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				y = 40;
-
-				if(ClientManager::ActiveClientNum() == 1)
-					y = 260;
-
-				// If not displaying the scoreboard in splitscreen, move the text down
-				// so that it doesn't interfere with console messages
-				if(!cg->showScores)
-					y += 80;
-			}
-			else
-				y = 60;
-
-			if(cg->widescreen)
-				UI_DrawProportionalString(x + 40, y, s, UI_CENTER|UI_DROPSHADOW, colorTable[CT_WHITE]);
-			else
-				UI_DrawProportionalString(x, y, s, UI_CENTER|UI_DROPSHADOW, colorTable[CT_WHITE]);
+			y = 60;
+			//CG_DrawBigString( x, y, s, fade );
+			UI_DrawProportionalString(x, y, s, UI_CENTER|UI_DROPSHADOW, colorTable[CT_WHITE]);
 		}
 	}
 	else if (cgs.gametype != GT_SIEGE)
 	{
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue && cg->showScores == qfalse) {
-		}
-		else {
-#endif
-		if ( cg->teamScores[0] == cg->teamScores[1] ) {
-			s = va("%s %i", CG_GetStringEdString("MP_INGAME", "TIEDAT"), cg->teamScores[0] );
-		} else if ( cg->teamScores[0] >= cg->teamScores[1] ) {
-			s = va("%s, %i / %i", CG_GetStringEdString("MP_INGAME", "RED_LEADS"), cg->teamScores[0], cg->teamScores[1] );
+		if ( cg.teamScores[0] == cg.teamScores[1] ) {
+			s = va("%s %i", CG_GetStringEdString("MP_INGAME", "TIEDAT"), cg.teamScores[0] );
+		} else if ( cg.teamScores[0] >= cg.teamScores[1] ) {
+			s = va("%s, %i / %i", CG_GetStringEdString("MP_INGAME", "RED_LEADS"), cg.teamScores[0], cg.teamScores[1] );
 		} else {
-			s = va("%s, %i / %i", CG_GetStringEdString("MP_INGAME", "BLUE_LEADS"), cg->teamScores[1], cg->teamScores[0] );
+			s = va("%s, %i / %i", CG_GetStringEdString("MP_INGAME", "BLUE_LEADS"), cg.teamScores[1], cg.teamScores[0] );
 		}
 
 		x = ( SCREEN_WIDTH ) / 2;
-		if(ClientManager::splitScreenMode == qtrue) {
-			y = 40;
-
-			if(ClientManager::ActiveClientNum() == 1)
-				y = 260;
-		}
-		else
-			y = 60;
-
-		if(cg->widescreen)
-			CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2 + 40, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-		else
-			CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-#ifdef _XBOX
-		}
-#endif
+		y = 60;
+		
+		CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
 	else if (cgs.gametype == GT_SIEGE && (cg_siegeWinTeam == 1 || cg_siegeWinTeam == 2))
 	{
@@ -614,86 +481,35 @@ qboolean CG_DrawOldScoreboard( void ) {
 		}
 
 		x = ( SCREEN_WIDTH ) / 2;
-		if(ClientManager::splitScreenMode == qtrue) {
-			y = 40;
-
-			if(ClientManager::ActiveClientNum() == 1)
-				y = 260;
-		}
-		else
-			y = 60;
+		y = 60;
 		
-		if(cg->widescreen)
-			CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2 + 40, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-		else
-			CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+		CG_Text_Paint ( x - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
-
-#ifdef _XBOX
-	// In splitscreen mode, the scoreboard should only come up when requested (back button)
-	// or at the end of a round
-	if(ClientManager::splitScreenMode == qtrue && cg->showScores == qfalse &&
-		cg->predictedPlayerState.pm_type != PM_INTERMISSION)
-		return qfalse;
-#endif
 
 	// scoreboard
-	if(ClientManager::splitScreenMode == qtrue) {
-		y = SB_HEADER - 20;
+	y = SB_HEADER;
 
-		if(ClientManager::ActiveClientNum() == 1)
-			y = SB_HEADER - 20 + 220;
-	}
-	else
-		y = SB_HEADER;
+	CG_DrawPic ( SB_SCORELINE_X - 40, y - 5, SB_SCORELINE_WIDTH + 80, 40, trap_R_RegisterShaderNoMip ( "gfx/menus/menu_buttonback.tga" ) );
 
-	if(cg->widescreen)
-		CG_DrawPic ( SB_SCORELINE_X - 40 + 40, y - 5, SB_SCORELINE_WIDTH + 80, 40, trap_R_RegisterShaderNoMip ( "gfx/menus/menu_buttonback.tga" ) );
-	else
-		CG_DrawPic ( SB_SCORELINE_X - 40, y - 5, SB_SCORELINE_WIDTH + 80, 40, trap_R_RegisterShaderNoMip ( "gfx/menus/menu_buttonback.tga" ) );
-
-	if(cg->widescreen)
-		CG_Text_Paint ( SB_NAME_X + 40, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "NAME"),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-	else
-		CG_Text_Paint ( SB_NAME_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "NAME"),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+	CG_Text_Paint ( SB_NAME_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "NAME"),0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	if (cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL)
 	{
 		char sWL[100];
 		trap_SP_GetStringTextString("MP_INGAME_W_L", sWL,	sizeof(sWL));
 
-		if(cg->widescreen)
-			CG_Text_Paint ( SB_SCORE_X + 40, y, 1.0f, colorWhite, sWL, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-		else
-			CG_Text_Paint ( SB_SCORE_X, y, 1.0f, colorWhite, sWL, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
+		CG_Text_Paint ( SB_SCORE_X, y, 1.0f, colorWhite, sWL, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
 	else
 	{
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint ( SB_SCORE_X + 40, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "SCORE"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-		else
-#endif
 		CG_Text_Paint ( SB_SCORE_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "SCORE"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	}
-//	CG_Text_Paint ( SB_PING_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "PING"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-#ifdef _XBOX
-	if(cg->widescreen)
-		CG_Text_Paint ( SB_TIME_X + 40, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "TIME"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-	else
-#endif
+	CG_Text_Paint ( SB_PING_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "PING"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 	CG_Text_Paint ( SB_TIME_X, y, 1.0f, colorWhite, CG_GetStringEdString("MP_INGAME", "TIME"), 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
 
-	if(ClientManager::splitScreenMode == qtrue) {
-		y = SB_TOP - 20;
-
-		if(ClientManager::ActiveClientNum() == 1)
-			y = SB_TOP - 20 + 220;
-	}
-	else
-		y = SB_TOP;
+	y = SB_TOP;
 
 	// If there are more than SB_MAXCLIENTS_NORMAL, use the interleaved scores
-	if ( cg->numScores > SB_MAXCLIENTS_NORMAL || ClientManager::splitScreenMode == qtrue) {
+	if ( cg.numScores > SB_MAXCLIENTS_NORMAL ) {
 		maxClients = SB_MAXCLIENTS_INTER;
 		lineHeight = SB_INTER_HEIGHT;
 		topBorderSize = 8;
@@ -721,7 +537,7 @@ qboolean CG_DrawOldScoreboard( void ) {
 		//
 		y += lineHeight/2;
 
-		if ( cg->teamScores[0] >= cg->teamScores[1] ) {
+		if ( cg.teamScores[0] >= cg.teamScores[1] ) {
 			int team1MaxCl = CG_GetTeamCount(TEAM_RED, maxClients);
 			int team2MaxCl = CG_GetTeamCount(TEAM_BLUE, maxClients);
 
@@ -740,11 +556,6 @@ qboolean CG_DrawOldScoreboard( void ) {
 			team2MaxCl = (maxClients-team1MaxCl); //team2 can display however many is left over after team1's display
 
 			n1 = CG_TeamScoreboard( y, TEAM_RED, fade, team1MaxCl, lineHeight, qtrue );
-#ifdef _XBOX
-			if(cg->widescreen)
-				CG_DrawTeamBackground( SB_SCORELINE_X - 5 + 40, y - topBorderSize, 640 - SB_SCORELINE_X * 2 + 10, n1 * lineHeight + bottomBorderSize, 0.33f, TEAM_RED );
-			else
-#endif
 			CG_DrawTeamBackground( SB_SCORELINE_X - 5, y - topBorderSize, 640 - SB_SCORELINE_X * 2 + 10, n1 * lineHeight + bottomBorderSize, 0.33f, TEAM_RED );
 			CG_TeamScoreboard( y, TEAM_RED, fade, team1MaxCl, lineHeight, qfalse );
 			y += (n1 * lineHeight) + BIGCHAR_HEIGHT;
@@ -752,11 +563,6 @@ qboolean CG_DrawOldScoreboard( void ) {
 			//maxClients -= n1;
 
 			n2 = CG_TeamScoreboard( y, TEAM_BLUE, fade, team2MaxCl, lineHeight, qtrue );
-#ifdef _XBOX
-			if(cg->widescreen)
-				CG_DrawTeamBackground( SB_SCORELINE_X - 5 + 40, y - topBorderSize, 640 - SB_SCORELINE_X * 2 + 10, n2 * lineHeight + bottomBorderSize, 0.33f, TEAM_BLUE );
-			else
-#endif
 			CG_DrawTeamBackground( SB_SCORELINE_X - 5, y - topBorderSize, 640 - SB_SCORELINE_X * 2 + 10, n2 * lineHeight + bottomBorderSize, 0.33f, TEAM_BLUE );
 			CG_TeamScoreboard( y, TEAM_BLUE, fade, team2MaxCl, lineHeight, qfalse );
 			y += (n2 * lineHeight) + BIGCHAR_HEIGHT;
@@ -783,11 +589,6 @@ qboolean CG_DrawOldScoreboard( void ) {
 			team2MaxCl = (maxClients-team1MaxCl); //team2 can display however many is left over after team1's display
 
 			n1 = CG_TeamScoreboard( y, TEAM_BLUE, fade, team1MaxCl, lineHeight, qtrue );
-#ifdef _XBOX
-			if(cg->widescreen)
-				CG_DrawTeamBackground( SB_SCORELINE_X - 5 + 40, y - topBorderSize, 640 - SB_SCORELINE_X * 2 + 10, n1 * lineHeight + bottomBorderSize, 0.33f, TEAM_BLUE );
-			else
-#endif
 			CG_DrawTeamBackground( SB_SCORELINE_X - 5, y - topBorderSize, 640 - SB_SCORELINE_X * 2 + 10, n1 * lineHeight + bottomBorderSize, 0.33f, TEAM_BLUE );
 			CG_TeamScoreboard( y, TEAM_BLUE, fade, team1MaxCl, lineHeight, qfalse );
 			y += (n1 * lineHeight) + BIGCHAR_HEIGHT;
@@ -795,11 +596,6 @@ qboolean CG_DrawOldScoreboard( void ) {
 			//maxClients -= n1;
 
 			n2 = CG_TeamScoreboard( y, TEAM_RED, fade, team2MaxCl, lineHeight, qtrue );
-#ifdef _XBOX
-			if(cg->widescreen)
-				CG_DrawTeamBackground( SB_SCORELINE_X - 5 + 40, y - topBorderSize, 640 - SB_SCORELINE_X * 2 + 10, n2 * lineHeight + bottomBorderSize, 0.33f, TEAM_RED );
-			else
-#endif
 			CG_DrawTeamBackground( SB_SCORELINE_X - 5, y - topBorderSize, 640 - SB_SCORELINE_X * 2 + 10, n2 * lineHeight + bottomBorderSize, 0.33f, TEAM_RED );
 			CG_TeamScoreboard( y, TEAM_RED, fade, team2MaxCl, lineHeight, qfalse );
 			y += (n2 * lineHeight) + BIGCHAR_HEIGHT;
@@ -821,29 +617,18 @@ qboolean CG_DrawOldScoreboard( void ) {
 		y += (n2 * lineHeight) + BIGCHAR_HEIGHT;
 	}
 
-	if (!localClient && ClientManager::splitScreenMode == qfalse) {
+	if (!localClient) {
 		// draw local client at the bottom
-		for ( i = 0 ; i < cg->numScores ; i++ ) {
-			if ( cg->scores[i].client == cg->snap->ps.clientNum ) {
-				CG_DrawClientScore( y, &cg->scores[i], fadeColor, fade, lineHeight == SB_NORMAL_HEIGHT );
+		for ( i = 0 ; i < cg.numScores ; i++ ) {
+			if ( cg.scores[i].client == cg.snap->ps.clientNum ) {
+				CG_DrawClientScore( y, &cg.scores[i], fadeColor, fade, lineHeight == SB_NORMAL_HEIGHT );
 				break;
 			}
 		}
 	}
 
-	//If in intermission, draw "press fire to continue" string.
-	if(cg->predictedPlayerState.pm_type == PM_INTERMISSION) {
-		const char *s = CG_GetStringEdString("SP_INGAME", "CONTINUE");
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint ( (720 - CG_Text_Width(s, 1.0f, FONT_MEDIUM)) / 2 , y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-		else
-#endif
-		CG_Text_Paint ( (640 - CG_Text_Width(s, 1.0f, FONT_MEDIUM)) / 2 , y, 1.0f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-	}
-
 	// load any models that have been deferred
-	if ( ++cg->deferredPlayerLoading > 10 ) {
+	if ( ++cg.deferredPlayerLoading > 10 ) {
 		CG_LoadDeferredPlayers();
 	}
 

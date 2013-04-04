@@ -39,12 +39,12 @@ void CG_BubbleTrail( vec3_t start, vec3_t end, float spacing ) {
 		le = CG_AllocLocalEntity();
 		le->leFlags = LEF_PUFF_DONT_SCALE;
 		le->leType = LE_MOVE_SCALE_FADE;
-		le->startTime = cg->time;
-		le->endTime = cg->time + 1000 + random() * 250;
+		le->startTime = cg.time;
+		le->endTime = cg.time + 1000 + random() * 250;
 		le->lifeRate = 1.0 / ( le->endTime - le->startTime );
 
 		re = &le->refEntity;
-		re->shaderTime = cg->time / 1000.0f;
+		re->shaderTime = cg.time / 1000.0f;
 
 		re->reType = RT_SPRITE;
 		re->rotation = 0;
@@ -58,7 +58,7 @@ void CG_BubbleTrail( vec3_t start, vec3_t end, float spacing ) {
 		le->color[3] = 1.0;
 
 		le->pos.trType = TR_LINEAR;
-		le->pos.trTime = cg->time;
+		le->pos.trTime = cg.time;
 		VectorCopy( move, le->pos.trBase );
 		le->pos.trDelta[0] = crandom()*5;
 		le->pos.trDelta[1] = crandom()*5;
@@ -166,14 +166,14 @@ void CG_TestLine( vec3_t start, vec3_t end, int time, unsigned int color, int ra
 
 	le = CG_AllocLocalEntity();
 	le->leType = LE_LINE;
-	le->startTime = cg->time;
-	le->endTime = cg->time + time;
+	le->startTime = cg.time;
+	le->endTime = cg.time + time;
 	le->lifeRate = 1.0 / ( le->endTime - le->startTime );
 
 	re = &le->refEntity;
 	VectorCopy( start, re->origin );
 	VectorCopy( end, re->oldorigin);
-	re->shaderTime = cg->time / 1000.0f;
+	re->shaderTime = cg.time / 1000.0f;
 
 	re->reType = RT_LINE;
 	re->radius = 0.5*radius;
@@ -216,7 +216,7 @@ void CG_ThrowChunk( vec3_t origin, vec3_t velocity, qhandle_t hModel, int option
 	re = &le->refEntity;
 
 	le->leType = LE_FRAGMENT;
-	le->startTime = cg->time;
+	le->startTime = cg.time;
 	le->endTime = le->startTime + 5000 + random() * 3000;
 
 	VectorCopy( origin, re->origin );
@@ -229,8 +229,8 @@ void CG_ThrowChunk( vec3_t origin, vec3_t velocity, qhandle_t hModel, int option
 	VectorCopy( velocity, le->pos.trDelta );
 	VectorSet(le->angles.trBase, 20, 20, 20);
 	VectorCopy( velocity, le->angles.trDelta );
-	le->pos.trTime = cg->time;
-	le->angles.trTime = cg->time;
+	le->pos.trTime = cg.time;
+	le->angles.trTime = cg.time;
 
 	le->leFlags = LEF_TUMBLE;
 
@@ -924,7 +924,7 @@ void CG_ExplosionEffects( vec3_t origin, float intensity, int radius, int time )
 	float	dist, intensityScale;
 	float	realIntensity;
 
-	VectorSubtract( cg->refdef.vieworg, origin, dir );
+	VectorSubtract( cg.refdef.vieworg, origin, dir );
 	dist = VectorNormalize( dir );
 
 	//Use the dir to add kick to the explosion
@@ -1202,7 +1202,7 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 
 			re->hModel = chunkModel;
 			le->leType = LE_FRAGMENT;
-			le->endTime = cg->time + 1300 + random() * 900;
+			le->endTime = cg.time + 1300 + random() * 900;
 
 			// spawn chunk roughly in the bbox of the thing...bias towards center in case thing blowing up doesn't complete fill its bbox.
 			for( j = 0; j < 3; j++ )
@@ -1228,7 +1228,7 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 
 			le->pos.trType = TR_GRAVITY;
 			le->angles.trType = TR_LINEAR;
-			le->pos.trTime = le->angles.trTime = cg->time;
+			le->pos.trTime = le->angles.trTime = cg.time;
 			le->bounceFactor = 0.2f + random() * 0.2f;
 			le->leFlags |= LEF_TUMBLE;
 			//le->ownerGentNum = owner;
@@ -1265,15 +1265,15 @@ void CG_ScorePlum( int client, vec3_t org, int score ) {
 	static vec3_t lastPos;
 
 	// only visualize for the client that scored
-	if (client != cg->predictedPlayerState.clientNum || cg_scorePlum.integer == 0) {
+	if (client != cg.predictedPlayerState.clientNum || cg_scorePlum.integer == 0) {
 		return;
 	}
 
 	le = CG_AllocLocalEntity();
 	le->leFlags = 0;
 	le->leType = LE_SCOREPLUM;
-	le->startTime = cg->time;
-	le->endTime = cg->time + 4000;
+	le->startTime = cg.time;
+	le->endTime = cg.time + 4000;
 	le->lifeRate = 1.0 / ( le->endTime - le->startTime );
 
 	
@@ -1344,7 +1344,7 @@ localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 		}
 	}
 
-	ex->startTime = cg->time - offset;
+	ex->startTime = cg.time - offset;
 	ex->endTime = ex->startTime + msec;
 	
 	// bias the time so all shader effects start correctly
@@ -1448,7 +1448,7 @@ void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shak
 	//Core of the explosion
 
 	//Orient the explosions to face the camera
-	VectorSubtract( cg->refdef.vieworg, origin, direction );
+	VectorSubtract( cg.refdef.vieworg, origin, direction );
 	VectorNormalize( direction );
 
 	//Tag the last one with a light
@@ -1496,7 +1496,7 @@ void CG_Bleed( vec3_t origin, int entityNum ) {
 	ex = CG_AllocLocalEntity();
 	ex->leType = LE_EXPLOSION;
 
-	ex->startTime = cg->time;
+	ex->startTime = cg.time;
 	ex->endTime = ex->startTime + 500;
 	
 	VectorCopy ( origin, ex->refEntity.origin);
@@ -1507,7 +1507,7 @@ void CG_Bleed( vec3_t origin, int entityNum ) {
 	ex->refEntity.customShader = 0;//cgs.media.bloodExplosionShader;
 
 	// don't show player's own blood in view
-	if ( entityNum == cg->snap->ps.clientNum ) {
+	if ( entityNum == cg.snap->ps.clientNum ) {
 		ex->refEntity.renderfx |= RF_THIRD_PERSON;
 	}
 }
@@ -1527,7 +1527,7 @@ void CG_LaunchGib( vec3_t origin, vec3_t velocity, qhandle_t hModel ) {
 	re = &le->refEntity;
 
 	le->leType = LE_FRAGMENT;
-	le->startTime = cg->time;
+	le->startTime = cg.time;
 	le->endTime = le->startTime + 5000 + random() * 3000;
 
 	VectorCopy( origin, re->origin );
@@ -1537,7 +1537,7 @@ void CG_LaunchGib( vec3_t origin, vec3_t velocity, qhandle_t hModel ) {
 	le->pos.trType = TR_GRAVITY;
 	VectorCopy( origin, le->pos.trBase );
 	VectorCopy( velocity, le->pos.trDelta );
-	le->pos.trTime = cg->time;
+	le->pos.trTime = cg.time;
 
 	le->bounceFactor = 0.6f;
 

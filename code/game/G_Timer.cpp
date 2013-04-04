@@ -190,7 +190,7 @@ void TIMER_Load( void )
 	{
 		unsigned char numTimers;
 
-		gi.ReadFromSaveGame( 'TIME', (void *)&numTimers, sizeof(numTimers) );
+		gi.ReadFromSaveGame( 'TIME', (void *)&numTimers, sizeof(numTimers), NULL );
 
 		//Read back all entries
 		for ( int i = 0; i < numTimers; i++ )
@@ -201,8 +201,8 @@ void TIMER_Load( void )
 			assert (sizeof(g_timers[0]->time) == sizeof(time) );//make sure we're reading the same size as we wrote
 
 			//Read the id string and time
-			gi.ReadFromSaveGame( 'TMID', (char *) tempBuffer, 0 );
-			gi.ReadFromSaveGame( 'TDTA', (void *) &time, sizeof( time ) );
+			gi.ReadFromSaveGame( 'TMID', (char *) tempBuffer, 0, NULL );
+			gi.ReadFromSaveGame( 'TDTA', (void *) &time, sizeof( time ), NULL );
 
 			//this is odd, we saved all the timers in the autosave, but not all the ents are spawned yet from an auto load, so skip it
 			if (ent->inuse)

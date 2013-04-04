@@ -57,7 +57,6 @@ void G2Tur_SetBoneAngles(gentity_t *ent, char *bone, vec3_t angles)
 			thebone = &ent->s.boneIndex2;
 			boneVector = &ent->s.boneAngles2;
 			break;
-/*
 		case 1:
 			thebone = &ent->s.boneIndex3;
 			boneVector = &ent->s.boneAngles3;
@@ -66,7 +65,6 @@ void G2Tur_SetBoneAngles(gentity_t *ent, char *bone, vec3_t angles)
 			thebone = &ent->s.boneIndex4;
 			boneVector = &ent->s.boneAngles4;
 			break;
-*/
 		default:
 			thebone = NULL;
 			boneVector = NULL;
@@ -80,9 +78,7 @@ void G2Tur_SetBoneAngles(gentity_t *ent, char *bone, vec3_t angles)
 	{ //didn't find it, create it
 		if (!firstFree)
 		{ //no free bones.. can't do a thing then.
-#ifndef FINAL_BUILD
 			Com_Printf("WARNING: NPC has no free bone indexes\n");
-#endif
 			return;
 		}
 
@@ -254,6 +250,14 @@ void turretG2_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, 
 	self->s.loopSound = 0;
 	self->s.shouldtarget = qfalse;
 	//self->s.owner = MAX_CLIENTS; //not owned by any client
+
+	if ( attacker 
+		&& attacker->s.number < MAX_CLIENTS
+		&& !OnSameTeam( attacker, self ) )
+	{//give them a point for the kill
+		AddScore( attacker, self->r.currentOrigin, 1 );
+		//should we send an obit?  nah...
+	}
 
 	// hack the effect angle so that explode death can orient the effect properly
 	if ( self->spawnflags & 2 )
@@ -1018,12 +1022,16 @@ Turret that hangs from the ceiling, will aim and shoot at enemies
 	2 - blue
 
   customscale - custom scaling size. 100 is normal size, 1024 is the max scaling. this will change the bounding box size, so be careful of starting in solid!
+
+"icon" - icon that represents the objective on the radar
 */
 //-----------------------------------------------------
 void SP_misc_turretG2( gentity_t *base )
 //-----------------------------------------------------
 {
 	int customscaleVal;
+	char* s;
+
 	turretG2_set_models( base, qfalse );
 
 	G_SpawnInt("painwait", "0", &base->genericValue4);
@@ -1038,6 +1046,14 @@ void SP_misc_turretG2( gentity_t *base )
 			base->s.iModelScale = 1023;
 		}
 		base->modelScale[0] = base->modelScale[1] = base->modelScale[2] = base->s.iModelScale/100.0f;
+	}
+
+	G_SpawnString( "icon", "", &s );
+	if (s && s[0])
+	{ 
+		// We have an icon, so index it now.  We are reusing the genericenemyindex
+		// variable rather than adding a new one to the entity state.
+		base->s.genericenemyindex = G_IconIndex(s);
 	}
 
 	finish_spawning_turretG2( base );

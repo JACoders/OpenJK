@@ -23,8 +23,6 @@ byte		*fileBase;
 int			c_subdivisions;
 int			c_gridVerts;
 
-static int	flareNum = 0;
-
 void R_RMGInit(void);
 //===============================================================================
 
@@ -316,7 +314,7 @@ qhandle_t R_GetShaderByNum(int shaderNum, world_t &worldData)
 ShaderForShaderNum
 ===============
 */
-static shader_t *ShaderForShaderNum( int shaderNum, const short *lightmapNum, const byte *lightmapStyles ) {
+static shader_t *ShaderForShaderNum( int shaderNum, const int *lightmapNum, const byte *lightmapStyles ) {
 	shader_t	*shader;
 	dshader_t	*dsh;
 
@@ -388,7 +386,8 @@ int SurfaceFaceSize(int numVerts, int numLightMaps, bool needVertexColors,
 			(int)needVertexColors * 8));	
 #endif
 
-	// Add in tangent size - no, tangent size is included in VERTEX_LM!
+	// Add in tangent size
+	sfaceSize += sizeof(vec3_t) * numVerts;
 
 	//Indices stored in 8 bits now.
 	sfaceSize += numIndexes;
@@ -570,7 +569,7 @@ static void ParseFace( dface_t *ds, mapVert_t *verts, msurface_t *surf, short *i
 	int			i, j, k;
 	srfSurfaceFace_t	*cv;
 	int			numPoints, numIndexes;
-	short		lightmapNum[MAXLIGHTMAPS];
+	int			lightmapNum[MAXLIGHTMAPS];
 	int			sfaceSize, ofsIndexes;
 	vec3_t		tangents[1000];
 
@@ -700,7 +699,7 @@ static void ParseMesh ( dpatch_t *ds, mapVert_t *verts, msurface_t *surf,
 	srfGridMesh_t	*grid;
 	int				i, j, k;
 	int				width, height, numPoints;
-	short			lightmapNum[MAXLIGHTMAPS];
+	int				lightmapNum[MAXLIGHTMAPS];
 	vec3_t			bounds[2];
 	vec3_t			tmpVec;
 	static surfaceType_t	skipData = SF_SKIP;
@@ -823,8 +822,8 @@ static void ParseTriSurf( dtrisurf_t *ds, mapVert_t *verts, msurface_t *surf, sh
 			// Sanity check that alternate fixed point representation
 			// is good enough
 			// MATT! - double check this!
-			assert( verts[i].st[j] * DRAWVERT_ST_SCALE <= 32767 &&
-					verts[i].st[j] * DRAWVERT_ST_SCALE >= -32768 );
+//			assert( verts[i].st[j] * DRAWVERT_ST_SCALE <= 32767 &&
+//					verts[i].st[j] * DRAWVERT_ST_SCALE >= -32768 );
 			tri->verts[i].dvst[j] = verts[i].st[j] * DRAWVERT_ST_SCALE;
 			for(k=0;k<MAXLIGHTMAPS;k++)
 			{
@@ -883,10 +882,6 @@ static void ParseFlare( dflare_t *df, msurface_t *surf )
 		flare->normal[i] = df->normal[i];
 	}
 
-	assert(flareNum <= 255);
-	flare->number = flareNum++;
-	flare->visible = -1;
-
 	surf->data = (surfaceType_t *)flare;
 }
 
@@ -897,8 +892,6 @@ void R_LoadFlares( void *surfaces, int surfacelen ) {
 	msurface_t  *out;
 
 	count = surfacelen / sizeof(*in);
-
-	flareNum = 0;
 
 	for ( i = 0 ; i < count ; i++ ) {
 		in = (dflare_t *)surfaces + i;
@@ -1048,7 +1041,7 @@ void R_LoadFaces( void *indexdata, int indexlen,
 	{ 
 		in = (dface_t *)surfaces + i;
 
-		short lightmapNum[MAXLIGHTMAPS];
+		int lightmapNum[MAXLIGHTMAPS];
 		for(int j=0; j<4; j++) {
 			lightmapNum[j] = (int)in->lightmapNum[j] - 4;
 		}
@@ -1312,7 +1305,7 @@ static void R_LoadFogs( void *fogdata, int foglen,
 	shader_t	*shader;
 	float		d;
 	int			firstSide=0;
-	short		lightmaps[MAXLIGHTMAPS] = { LIGHTMAP_NONE } ;
+	int			lightmaps[MAXLIGHTMAPS] = { LIGHTMAP_NONE } ;
 
 	fogs = (dfog_t *)(fogdata);
 	if (foglen % sizeof(*fogs)) {
@@ -1665,35 +1658,9 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 extern qboolean gbUsingCachedMapDataRightNow;
 void RE_LoadWorldMap( const char *name )
 {
-	memset(entityVisList, -1, sizeof(entityVisList));
-
 	gbUsingCachedMapDataRightNow = qtrue;	// !!!!!!!!!!!!
 
 		RE_LoadWorldMap_Actual( name, s_worldData, 0 );
 
 	gbUsingCachedMapDataRightNow = qfalse;	// !!!!!!!!!!!!
 }
-
-
-//A nasty looking function which loops through all images used by all surfaces
-//and returns the number of matches for the given image.
-#ifndef FINAL_BUILD
-int R_SurfaceImageCount(const image_t *image1)
-{
-	int count = 0;
-
-	for(int i=0; i<s_worldData.numsurfaces; i++) {
-		for(int j=0; j<s_worldData.surfaces[i].shader->numUnfoggedPasses; j++){
-			for(int k=0; k<NUM_TEXTURE_BUNDLES; k++) {
-				image_t *image2 = s_worldData.surfaces[i].shader->stages[j].bundle[k].image;
-				if(image2 != NULL && !Q_stricmp(image1->imgName, image2->imgName)) {
-					count++;
-				}
-							
-			}
-		}
-	}
-
-	return count;
-}
-#endif

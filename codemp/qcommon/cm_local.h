@@ -152,7 +152,7 @@ typedef struct {
 	int			floodvalid;
 	int			checkcount;					// incremented on each trace
 
-//	CCMLandScape	*landScape;
+	CCMLandScape	*landScape;
 	qboolean	haswater;
 } clipMap_t;
 
@@ -207,7 +207,7 @@ typedef struct {
 	int			checkcount;					// incremented on each trace
 
 	//rwwRMG - added:
-//	CCMLandScape	*landScape;
+	CCMLandScape	*landScape;
 } clipMap_t;
 
 #endif // _XBOX
@@ -294,8 +294,8 @@ qboolean CM_PositionTestInPatchCollide( traceWork_t *tw, const struct patchColli
 void CM_ClearLevelPatches( void );
 
 //rwwRMG - added
-//CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
-//void CM_ShutdownTerrain( thandle_t terrainId );
+CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
+void CM_ShutdownTerrain( thandle_t terrainId );
 
 // cm_shader.cpp
 void CM_SetupShaderProperties( void );

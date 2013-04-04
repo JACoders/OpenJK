@@ -6,8 +6,6 @@
 #include "bg_saga.h"
 #include "bg_vehicles.h"
 #include "g_nav.h"
-#include "../cgame/cg_local.h"
-#include "../renderer/modelmem.h"
 
 extern void G_DebugPrint( int level, const char *format, ... );
 
@@ -39,15 +37,15 @@ extern void NPC_Remote_Precache( void );
 extern void	NPC_R2D2_Precache(void);
 extern void	NPC_R5D2_Precache(void);
 extern void NPC_Probe_Precache(void);
-//extern void NPC_Interrogator_Precache(gentity_t *self);
+extern void NPC_Interrogator_Precache(gentity_t *self);
 extern void NPC_MineMonster_Precache( void );
 extern void NPC_Howler_Precache( void );
 extern void NPC_ATST_Precache(void);
 extern void NPC_Sentry_Precache(void);
-//extern void NPC_Mark1_Precache(void);
-//extern void NPC_Mark2_Precache(void);
-//extern void NPC_GalakMech_Precache( void );
-//extern void NPC_GalakMech_Init( gentity_t *ent );
+extern void NPC_Mark1_Precache(void);
+extern void NPC_Mark2_Precache(void);
+extern void NPC_GalakMech_Precache( void );
+extern void NPC_GalakMech_Init( gentity_t *ent );
 extern void NPC_Protocol_Precache( void );
 extern void Boba_Precache( void );
 extern void NPC_Wampa_Precache( void );
@@ -75,10 +73,10 @@ extern void NPC_Howler_Pain				(gentity_t *self, gentity_t *attacker, int damage
 extern void NPC_Seeker_Pain				(gentity_t *self, gentity_t *attacker, int damage);
 extern void NPC_Remote_Pain				(gentity_t *self, gentity_t *attacker, int damage);
 extern void emplaced_gun_pain			(gentity_t *self, gentity_t *attacker, int damage);
-//extern void NPC_Mark1_Pain				(gentity_t *self, gentity_t *attacker, int damage);
-//extern void NPC_GM_Pain				(gentity_t *self, gentity_t *attacker, int damage);
+extern void NPC_Mark1_Pain				(gentity_t *self, gentity_t *attacker, int damage);
+extern void NPC_GM_Pain				(gentity_t *self, gentity_t *attacker, int damage);
 extern void NPC_Sentry_Pain				(gentity_t *self, gentity_t *attacker, int damage);
-//extern void NPC_Mark2_Pain				(gentity_t *self, gentity_t *attacker, int damage);
+extern void NPC_Mark2_Pain				(gentity_t *self, gentity_t *attacker, int damage);
 extern void PlayerPain					(gentity_t *self, gentity_t *attacker, int damage);
 extern void GasBurst					(gentity_t *self, gentity_t *attacker, int damage);
 extern void CrystalCratePain			(gentity_t *self, gentity_t *attacker, int damage);
@@ -162,20 +160,16 @@ PAIN_FUNC *NPC_PainFunc( gentity_t *ent )
 			func = NPC_Sentry_Pain;
 			break;
 		case CLASS_MARK1:
-			assert( 0 );
-//			func = NPC_Mark1_Pain;
+			func = NPC_Mark1_Pain;
 			break;
 		case CLASS_MARK2:
-			assert( 0 );
-//			func = NPC_Mark2_Pain;
+			func = NPC_Mark2_Pain;
 			break;
 		case CLASS_ATST:  
-			assert( 0 );
-//			func = NPC_ATST_Pain;
+			func = NPC_ATST_Pain;
 			break;
 		case CLASS_GALAKMECH:
-			assert( 0 );
-//			func = NPC_GM_Pain;
+			func = NPC_GM_Pain;
 			break;
 		case CLASS_RANCOR:
 			func = NPC_Rancor_Pain;
@@ -465,8 +459,7 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 				}
 				if ( !Q_stricmp( "galak_mech", ent->NPC_type ) )
 				{//starts with armor
-					assert( 0 );
-//					NPC_GalakMech_Init( ent );
+					NPC_GalakMech_Init( ent );
 				}
 			}
 		}
@@ -1251,6 +1244,12 @@ void NPC_Begin (gentity_t *ent)
 						//SP way:
 						//droidEnt->s.m_iVehicleNum = ent->s.number;
 						//droidEnt->owner = ent;
+						//set team
+						droidEnt->alliedTeam = ent->alliedTeam;
+						droidEnt->teamnodmg = ent->teamnodmg;
+						droidEnt->client->sess.sessionTeam = ent->client->sess.sessionTeam;
+						droidEnt->client->ps.persistant[PERS_TEAM] = ent->client->ps.persistant[PERS_TEAM];
+						//position
 						VectorCopy( ent->r.currentOrigin, droidEnt->s.origin );
 						VectorCopy( ent->r.currentOrigin, droidEnt->client->ps.origin );
 						G_SetOrigin( droidEnt, droidEnt->s.origin );
@@ -1375,7 +1374,7 @@ extern void G_CreateWalkerNPC( Vehicle_t **pVeh, const char *strAnimalType );
 extern void G_CreateFighterNPC( Vehicle_t **pVeh, const char *strType );
 #include "../namespace_end.h"
 
-gentity_t *NPC_Spawn_Do( gentity_t *ent, int vehicle )
+gentity_t *NPC_Spawn_Do( gentity_t *ent )
 {
 	gentity_t	*newent = NULL;
 	int			index;
@@ -1417,11 +1416,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, int vehicle )
 		}
 	}
 
-	if(vehicle) {
-		newent = G_SpawnVehicle();
-	} else {
-		newent = G_Spawn();
-	}
+	newent = G_Spawn();
 
 	if ( newent == NULL ) 
 	{
@@ -1478,21 +1473,18 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, int vehicle )
 		ent->NPC_type = Q_strlwr( G_NewString( ent->NPC_type ) );
 	}
 
-	/*
-	if ( ent->svFlags & SVF_NO_BASIC_SOUNDS )
+	if ( ent->r.svFlags & SVF_NO_BASIC_SOUNDS )
 	{
-		newent->svFlags |= SVF_NO_BASIC_SOUNDS;
+		newent->r.svFlags |= SVF_NO_BASIC_SOUNDS;
 	}
-	if ( ent->svFlags & SVF_NO_COMBAT_SOUNDS )
+	if ( ent->r.svFlags & SVF_NO_COMBAT_SOUNDS )
 	{
-		newent->svFlags |= SVF_NO_COMBAT_SOUNDS;
+		newent->r.svFlags |= SVF_NO_COMBAT_SOUNDS;
 	}
-	if ( ent->svFlags & SVF_NO_EXTRA_SOUNDS )
+	if ( ent->r.svFlags & SVF_NO_EXTRA_SOUNDS )
 	{
-		newent->svFlags |= SVF_NO_EXTRA_SOUNDS;
+		newent->r.svFlags |= SVF_NO_EXTRA_SOUNDS;
 	}
-	*/
-	//rwwFIXMEFIXME: Use all these flags?
 	
 	if ( ent->message )
 	{//has a key
@@ -1628,7 +1620,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, int vehicle )
 			}
 			newent->NPC->defaultBehavior = newent->NPC->behaviorState = BS_WAIT;
 			newent->classname = "NPC";
-	//		newent->svFlags |= SVF_NOPUSH;
+	//		newent->r.svFlags |= SVF_NOPUSH;
 		}
 	}
 //=====================================================================
@@ -1772,7 +1764,7 @@ finish:
 
 void NPC_Spawn_Go(gentity_t *ent)
 {
-	NPC_Spawn_Do(ent, false);
+	NPC_Spawn_Do(ent);
 }
 
 /*
@@ -1875,7 +1867,7 @@ void NPC_Spawn ( gentity_t *ent, gentity_t *other, gentity_t *activator )
 		}
 		else
 		{
-			NPC_Spawn_Do( ent, false );
+			NPC_Spawn_Do( ent );
 		}
 	}
 }
@@ -1958,6 +1950,10 @@ teamnodmg - team that NPC does not take damage from (turrets and other auto-defe
 	0 - none
 	1 - red
 	2 - blue
+
+"noBasicSounds" - set to 1 to prevent loading and usage of basic sounds (pain, death, etc)
+"noCombatSounds" - set to 1 to prevent loading and usage of combat sounds (anger, victory, etc.)
+"noExtraSounds" - set to 1 to prevent loading and usage of "extra" sounds (chasing the enemy - detecting them, flanking them... also jedi combat sounds)
 */
 //void NPC_PrecacheModels ( char *NPCName );
 extern void NPC_PrecacheAnimationCFG( const char *NPC_type );
@@ -1998,25 +1994,22 @@ void SP_NPC_spawner( gentity_t *self)
 		self->count = 1;
 	}
 
-	/*
 	{//Stop loading of certain extra sounds
 		static	int	garbage;
 
 		if ( G_SpawnInt( "noBasicSounds", "0", &garbage ) )
 		{
-			self->svFlags |= SVF_NO_BASIC_SOUNDS;
+			self->r.svFlags |= SVF_NO_BASIC_SOUNDS;
 		}
 		if ( G_SpawnInt( "noCombatSounds", "0", &garbage ) )
 		{
-			self->svFlags |= SVF_NO_COMBAT_SOUNDS;
+			self->r.svFlags |= SVF_NO_COMBAT_SOUNDS;
 		}
 		if ( G_SpawnInt( "noExtraSounds", "0", &garbage ) )
 		{
-			self->svFlags |= SVF_NO_EXTRA_SOUNDS;
+			self->r.svFlags |= SVF_NO_EXTRA_SOUNDS;
 		}
 	}
-	*/
-	//rwwFIXMEFIXME: Use these flags?
 
 	if ( !self->wait )
 	{
@@ -2037,7 +2030,7 @@ void SP_NPC_spawner( gentity_t *self)
 	/*
 	if ( self->delay > 0 )
 	{
-		self->svFlags |= SVF_NPC_PRECACHE;
+		self->r.svFlags |= SVF_NPC_PRECACHE;
 	}
 	*/
 	//rwwFIXMEFIXME: support for this flag?
@@ -2051,7 +2044,7 @@ void SP_NPC_spawner( gentity_t *self)
 	if ( self->targetname )
 	{//Wait for triggering
 		self->use = NPC_Spawn;
-	//	self->svFlags |= SVF_NPC_PRECACHE;//FIXME: precache my weapons somehow?
+	//	self->r.svFlags |= SVF_NPC_PRECACHE;//FIXME: precache my weapons somehow?
 
 		//NPC_PrecacheModels( self->NPC_type );
 	}
@@ -2129,9 +2122,7 @@ qboolean NPC_VehiclePrecache( gentity_t *spawner )
 		{
 			skin = trap_R_RegisterSkin(va("models/players/%s/model_%s.skin", pVehInfo->model, pVehInfo->skin));
 		}
-		ModelMem.SetNPCMode(true);
 		trap_G2API_InitGhoul2Model(&tempG2, va("models/players/%s/model.glm", pVehInfo->model), 0, skin, 0, 0, 0);
-		ModelMem.SetNPCMode(false);
 		if (tempG2)
 		{ //now, cache the anim config.
 			char GLAName[1024];
@@ -2792,8 +2783,6 @@ SHY - Spawner is shy
 */
 void SP_NPC_Galak( gentity_t *self)
 {
-	assert( 0 );
-/*
 	if ( self->spawnflags & 1 )
 	{
 		self->NPC_type = "Galak_Mech";
@@ -2805,7 +2794,6 @@ void SP_NPC_Galak( gentity_t *self)
 	}
 
 	SP_NPC_spawner( self );
-*/
 }
 
 /*QUAKED NPC_Desann(1 0 0) (-16 -16 -24) (16 16 40) x x x x CEILING CINEMATIC NOTSOLID STARTINSOLID SHY
@@ -3613,14 +3601,11 @@ SHY - Spawner is shy
 */
 void SP_NPC_Droid_Interrogator( gentity_t *self)
 {
-	assert( 0 );
-/*
 	self->NPC_type = "interrogator";
 
 	SP_NPC_spawner( self );
 
 	NPC_Interrogator_Precache(self);
-*/
 }
 
 /*QUAKED NPC_Droid_Probe (1 0 0) (-12 -12 -24) (12 12 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
@@ -3653,14 +3638,11 @@ Big walking droid
 */
 void SP_NPC_Droid_Mark1( gentity_t *self)
 {
-	assert( 0 );
-/*
 	self->NPC_type = "mark1";
 
 	SP_NPC_spawner( self );
 
 	NPC_Mark1_Precache();
-*/
 }
 
 /*QUAKED NPC_Droid_Mark2 (1 0 0) (-12 -12 -24) (12 12 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
@@ -3675,14 +3657,11 @@ Small rolling droid with one gun.
 */
 void SP_NPC_Droid_Mark2( gentity_t *self)
 {
-	assert( 0 );
-/*
 	self->NPC_type = "mark2";
 
 	SP_NPC_spawner( self );
 
 	NPC_Mark2_Precache();
-*/
 }
 
 /*QUAKED NPC_Droid_ATST (1 0 0) (-40 -40 -24) (40 40 248) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
@@ -3694,8 +3673,6 @@ SHY - Spawner is shy
 */
 void SP_NPC_Droid_ATST( gentity_t *self)
 {
-	assert( 0 );
-/*
 	if ( (self->spawnflags&1) )
 	{
 		self->NPC_type = "atst_vehicle";
@@ -3708,7 +3685,6 @@ void SP_NPC_Droid_ATST( gentity_t *self)
 	SP_NPC_spawner( self );
 
 	NPC_ATST_Precache();
-*/
 }
 
 /*QUAKED NPC_Droid_Remote (1 0 0) (-12 -12 -24) (12 12 40) x x x x DROPTOFLOOR CINEMATIC NOTSOLID STARTINSOLID SHY
@@ -3979,8 +3955,7 @@ gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboo
 	}
 	else if ( !Q_stricmp( "atst", NPCspawner->NPC_type))
 	{
-		assert( 0 );
-//		NPC_ATST_Precache();
+		NPC_ATST_Precache();
 	}
 	else if ( !Q_strncmp( "r5d2", NPCspawner->NPC_type, 4))
 	{
@@ -3988,18 +3963,15 @@ gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboo
 	}
 	else if ( !Q_stricmp( "mark1", NPCspawner->NPC_type))
 	{
-		assert( 0 );
-//		NPC_Mark1_Precache();
+		NPC_Mark1_Precache();
 	}
 	else if ( !Q_stricmp( "mark2", NPCspawner->NPC_type))
 	{
-		assert( 0 );
-//		NPC_Mark2_Precache();
+		NPC_Mark2_Precache();
 	}
 	else if ( !Q_stricmp( "interrogator", NPCspawner->NPC_type))
 	{
-		assert( 0 );
-//		NPC_Interrogator_Precache(NULL);
+		NPC_Interrogator_Precache(NULL);
 	}
 	else if ( !Q_stricmp( "probe", NPCspawner->NPC_type))
 	{
@@ -4035,15 +4007,14 @@ gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboo
 	}
 	else if ( !Q_stricmp( "galak_mech", NPCspawner->NPC_type ))
 	{
-		assert( 0 );
-//		NPC_GalakMech_Precache();
+		NPC_GalakMech_Precache();
 	}
 	else if ( !Q_stricmp( "wampa", NPCspawner->NPC_type ))
 	{
 		NPC_Wampa_Precache();
 	}
 
-	return (NPC_Spawn_Do( NPCspawner, false ));
+	return (NPC_Spawn_Do( NPCspawner ));
 }
 
 void NPC_Spawn_f( gentity_t *ent ) 
@@ -4188,7 +4159,7 @@ void NPC_Kill_f( void )
 			}
 		}
 		/*
-		else if ( player && (player->svFlags&SVF_NPC_PRECACHE) )
+		else if ( player && (player->r.svFlags&SVF_NPC_PRECACHE) )
 		{//a spawner
 			Com_Printf( S_COLOR_GREEN"Removing NPC spawner %s named %s\n", player->NPC_type, player->targetname );
 			G_FreeEntity( player );

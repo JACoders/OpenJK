@@ -531,6 +531,20 @@ void S_Init( void ) {
 			// Sources / Channels are not sending to any Slots (other than the Listener / Primary FX Slot)
 			s_channels[i].lSlotID = -1;
 
+			if (s_bEAX)
+			{
+				// Remove the RoomAuto flag from each Source (to remove Reverb Engine Statistical
+				// model that is assuming units are in metres)
+				// Without this call reverb sends from the sources will attenuate too quickly
+				// with distance, especially for the non-primary reverb zones.
+
+				unsigned long ulFlags = 0;
+
+				if (s_eaxSet(&EAXPROPERTYID_EAX40_Source, EAXSOURCE_FLAGS,
+							s_channels[i].alSource, &ulFlags, sizeof(ulFlags))!=AL_NO_ERROR)
+							OutputDebugString("Failed to to remove Source flags\n");
+			}
+
 			s_numChannels++;
 		}
 
@@ -2591,7 +2605,7 @@ qboolean S_ScanChannelStarts( void ) {
 // this is now called AFTER the DMA painting, since it's only the painter calls that cause the MP3s to be unpacked,
 //	and therefore to have data readable by the lip-sync volume calc code.
 //
-void S_DoLipSynchs( const s_oldpaintedtime )
+void S_DoLipSynchs( const int s_oldpaintedtime )
 {
 	channel_t		*ch;
 	int				i;
@@ -4513,7 +4527,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCall
 			//
 			// default all tracks to OFF first (and set any other vars)
 			//
-			for (i=0; i<eBGRNDTRACK_NUMBEROF; i++)
+			for (int i = 0; i<eBGRNDTRACK_NUMBEROF; i++)
 			{
 				tMusic_Info[i].bActive				= qfalse;
 				tMusic_Info[i].bTrackSwitchPending	= qfalse;
@@ -5122,7 +5136,8 @@ int SND_FreeOldestSound(sfx_t *pButNotThisOne /* = NULL */)
 			{
 				// new bit, we can't throw away any sfx_t struct in use by a channel, else the paint code will crash...
 				//
-				for (int iChannel=0; iChannel<MAX_CHANNELS; iChannel++)
+				int iChannel = 0;
+				for (iChannel=0; iChannel<MAX_CHANNELS; iChannel++)
 				{
 					channel_t *ch = & s_channels[iChannel];
 
@@ -6110,21 +6125,11 @@ static void UpdateEAXListener()
 			}
 		}
 
+		lVolume = 0;
 		for (i = 0; i < s_NumFXSlots; i++)
 		{
-			if (s_FXSlotInfo[i].lEnvID == s_EnvironmentID)
-			{
-				lVolume = 0;
-				if (s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXFXSLOT_VOLUME, NULL, &lVolume, sizeof(long))!=AL_NO_ERROR)
-					OutputDebugString("Failed to set Listener's FX Slot Volume to 0\n");
-			}
-			else
-			{
-				// This will change to lower the volume based on distance from aperture ...
-				lVolume = -600;
-				if (s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXFXSLOT_VOLUME, NULL, &lVolume, sizeof(long))!=AL_NO_ERROR)
-					OutputDebugString("Failed to set FX Slot Volume to 0\n");
-			}
+			if (s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXFXSLOT_VOLUME, NULL, &lVolume, sizeof(long))!=AL_NO_ERROR)
+				OutputDebugString("Failed to set FX Slot Volume to 0\n");
 		}
 	}
 

@@ -1,0 +1,14 @@
+-o "vm/ui"
+vm/ui_main
+vm/ui_syscalls
+vm/ui_atoms
+vm/ui_force
+vm/ui_shared
+vm/ui_gameinfo
+vm/bg_misc
+vm/bg_weapons
+vm/bg_lib
+vm/bg_saga
+vm/bg_vehicleLoad
+vm/q_math
+vm/q_shared

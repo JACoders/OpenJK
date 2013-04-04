@@ -232,6 +232,13 @@ void G_ExplodeMissile( gentity_t *ent ) {
 	ent->takedamage = qfalse;
 	// splash damage
 	if ( ent->splashDamage ) {
+		//NOTE: vehicle missiles don't have an ent->parent set, so check that here and set it
+		if ( ent->s.eType == ET_MISSILE//missile
+			&& (ent->s.eFlags&EF_JETPACK_ACTIVE)//vehicle missile
+			&& ent->r.ownerNum < MAX_CLIENTS )//valid client owner
+		{//set my parent to my owner for purposes of damage credit...
+			ent->parent = &g_entities[ent->r.ownerNum];
+		}
 		if( G_RadiusDamage( ent->r.currentOrigin, ent->parent, ent->splashDamage, ent->splashRadius, ent, 
 				ent, ent->splashMethodOfDeath ) ) 
 		{
@@ -339,6 +346,8 @@ void G_MissileBounceEffect( gentity_t *ent, vec3_t org, vec3_t dir )
 			VectorCopy(org, te->s.origin);
 			VectorCopy(dir, te->s.angles);
 			te->s.eventParm = 0;
+			te->s.weapon = 0;//saberNum
+			te->s.legsAnim = 0;//bladeNum
 		}
 		break;
 	}
@@ -436,7 +445,9 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			ent->methodOfDeath != MOD_CONC &&
 			ent->methodOfDeath != MOD_CONC_ALT &&
 			ent->methodOfDeath != MOD_SABER &&
-			ent->methodOfDeath != MOD_TURBLAST)
+			ent->methodOfDeath != MOD_TURBLAST &&
+			ent->methodOfDeath != MOD_TARGET_LASER)// &&
+			//ent->methodOfDeath != MOD_COLLISION)
 		{
 			vec3_t fwd;
 
@@ -465,6 +476,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		ent->methodOfDeath != MOD_REPEATER_ALT &&
 		ent->methodOfDeath != MOD_FLECHETTE_ALT_SPLASH && 
 		ent->methodOfDeath != MOD_TURBLAST &&
+		ent->methodOfDeath != MOD_TARGET_LASER &&
 		ent->methodOfDeath != MOD_VEHICLE &&
 		ent->methodOfDeath != MOD_CONC &&
 		ent->methodOfDeath != MOD_CONC_ALT &&
@@ -508,6 +520,8 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		VectorCopy(ent->r.currentOrigin, te->s.origin);
 		VectorCopy(trace->plane.normal, te->s.angles);
 		te->s.eventParm = 0;
+		te->s.weapon = 0;//saberNum
+		te->s.legsAnim = 0;//bladeNum
 
 		/*if (other->client->ps.velocity[2] > 0 ||
 			other->client->pers.cmd.forwardmove ||
@@ -583,6 +597,8 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			VectorCopy(ent->r.currentOrigin, te->s.origin);
 			VectorCopy(trace->plane.normal, te->s.angles);
 			te->s.eventParm = 0;
+			te->s.weapon = 0;//saberNum
+			te->s.legsAnim = 0;//bladeNum
 
 			/*if (otherOwner->client->ps.velocity[2] > 0 ||
 				otherOwner->client->pers.cmd.forwardmove ||

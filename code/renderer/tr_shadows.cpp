@@ -56,7 +56,7 @@ void R_AddEdgeDef( int i1, int i2, int facing ) {
 
 void R_RenderShadowEdges( void ) {
 #if defined(VV_LIGHTING) && defined(_XBOX)
-	return;
+	StencilShadower.RenderEdges();
 #else
 
 	int		i;
@@ -176,8 +176,17 @@ void RB_DoShadowTessEnd( vec3_t lightPos );
 void RB_ShadowTessEnd( void )
 {
 #if defined(VV_LIGHTING) && defined(_XBOX)
-	if(StencilShadower.BuildFromLight())
-		StencilShadower.RenderShadow();
+	VVdlight_t *dl;
+
+	/*for(int i = 0; i < VVLightMan.num_dlights; i++)
+	{
+		if(tess.dlightBits & (1 << i))
+		{*/
+			dl = &VVLightMan.dlights[0];//i];
+			if(StencilShadower.BuildFromLight(dl))
+				StencilShadower.RenderShadow();
+		/*}
+	}*/
 #else
 #if 0
 	if (backEnd.currentEntity &&
@@ -542,8 +551,8 @@ void RB_ProjectionShadowDeform( void ) {
 	// Turn on stenciling
 	// This is done to prevent overlapping shadow artifacts
 	qglEnable( GL_STENCIL_TEST ); 
-	qglStencilFunc( GL_NOTEQUAL, 0x1, 0x7f );
-	qglStencilMask( 0x7f );
+	qglStencilFunc( GL_NOTEQUAL, 0x1, 0xffffffff );
+	qglStencilMask( 0xffffffff );
 	qglStencilOp( GL_KEEP, GL_KEEP, GL_INCR );
 #else
 	float	*xyz;
@@ -650,7 +659,7 @@ void RB_CaptureScreenImage(void)
 #ifndef _XBOX
 	qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, cX, cY, radX, radY, 0);
 #else
-	qglCopyBackBufferToTexEXT(radX, radY, cX, cY, (cX + radX), (cY + radY));
+	qglCopyBackBufferToTexEXT(radX, radY, cX, (480 - cY), (cX + radX), (480 - (cY + radY)));
 #endif // _XBOX
 }
 
@@ -677,9 +686,8 @@ void RB_DistortionFill(void)
 		RB_CaptureScreenImage();
 	}
 
-	// BTO - Xbox fix: High stencil bit is used for glow, don't test against that here!
 	qglEnable(GL_STENCIL_TEST);
-	qglStencilFunc(GL_NOTEQUAL, 0, 0x7F); //0xFFFFFFFF);'
+	qglStencilFunc(GL_NOTEQUAL, 0, 0xFFFFFFFF);
 	qglStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
 	qglDisable (GL_CLIP_PLANE0);

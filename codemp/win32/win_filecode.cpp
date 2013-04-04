@@ -170,8 +170,8 @@ bool _buildFileListFromSavedList(void)
 		info.size	=  *(int*)buffer;
 		buffer		+= sizeof(info.size);
 
-		// save the data - optimization: don't check for dupes!
-		s_Files->InsertUnsafe(info, code);
+		// save the data
+		s_Files->Insert(info, code);
 	}
 
 	fclose(in);

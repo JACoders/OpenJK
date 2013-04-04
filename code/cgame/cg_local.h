@@ -741,7 +741,7 @@ void CG_DrawCenterString( void );
 // cg_player.c
 //
 void CG_AddGhoul2Mark(int type, float size, vec3_t hitloc, vec3_t hitdirection, 
-				int entnum, vec3_t entposition, float entangle, CGhoul2Info_v &ghoul2, vec3_t modelScale, int lifeTime = 0, vec3_t uaxis = 0);
+				int entnum, vec3_t entposition, float entangle, CGhoul2Info_v &ghoul2, vec3_t modelScale, int lifeTime = 0, int firstModel = 0, vec3_t uaxis = 0);
 void CG_Player( centity_t *cent );
 void CG_ResetPlayerEntity( centity_t *cent );
 void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cent );

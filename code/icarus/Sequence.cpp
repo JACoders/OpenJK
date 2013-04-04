@@ -660,7 +660,7 @@ int CSequence::Load( CIcarus* icarus )
 	icarus->BufferRead( &numCommands, sizeof( numCommands ) );
 
 	//Get all the commands
-	for ( i = 0; i < numCommands; i++ )
+	for ( int i = 0; i < numCommands; i++ )
 	{
 		block = new CBlock;
 		LoadCommand( block, icarus );

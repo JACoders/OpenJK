@@ -8,7 +8,6 @@
 #include "cg_media.h"
 
 #pragma warning(disable: 4035)
-#ifdef _M_IX86
 static long myftol( float f ) 
 {
 	static int tmp;
@@ -16,12 +15,6 @@ static long myftol( float f )
 	__asm fistp tmp
 	__asm mov eax, tmp
 }
-#else
-static long myftol( float f ) 
-{
-	return f;
-}
-#endif
 #pragma warning(default: 4035)
 
 extern int drawnFx;
@@ -176,17 +169,12 @@ bool CParticle::Update()
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{
 			const centity_t &cent = cg_entities[mClientID];
-			if (cent.currentValid && cent.gent->ghoul2.IsValid())
+			if (cent.gent->ghoul2.IsValid())
 			{
 				if (!theFxHelper.GetOriginAxisFromBolt(cent, mModelNum, mBoltNum, org, ax))
 				{	//could not get bolt
 					return false;
 				}
-			}
-			else
-			{
-				// BTO - Fix for crappy FX system bug
-				return false;
 			}
 		}
 		else

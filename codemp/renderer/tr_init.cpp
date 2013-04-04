@@ -144,9 +144,6 @@ cvar_t	*r_textureMode;
 cvar_t	*r_offsetFactor;
 cvar_t	*r_offsetUnits;
 cvar_t	*r_gamma;
-#ifdef _XBOX
-cvar_t  *s_brightness_volume;
-#endif
 cvar_t	*r_intensity;
 cvar_t	*r_lockpvs;
 cvar_t	*r_noportals;
@@ -348,32 +345,10 @@ void R_Splash()
 	}
 	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
 
-#ifdef _XBOX
-	int width;
-	if(glw_state->isWidescreen)
-		width = 720;
-	else
-		width = 640;
-#else
 	const int width = 640;
-#endif
 	const int height = 480;
-#ifdef _XBOX
-	float x1, x2;
-	if(glw_state->isWidescreen)
-	{
-		x1 = 360 - width / 2;
-		x2 = 360 + width / 2;
-	}
-	else
-	{
-		x1 = 320 - width / 2;
-		x2 = 320 + width / 2;
-	}
-#else
 	const float x1 = 320 - width / 2;
 	const float x2 = 320 + width / 2;
-#endif
 	const float y1 = 240 - height / 2;
 	const float y2 = 240 + height / 2;
 
@@ -895,6 +870,8 @@ void GL_SetDefaultState( void )
 GfxInfo_f
 ================
 */
+extern bool g_bTextureRectangleHack;
+
 void GfxInfo_f( void ) 
 {
 	cvar_t *sys_cpustring = Cvar_Get( "sys_cpustring", "", CVAR_ROM );
@@ -980,6 +957,7 @@ void GfxInfo_f( void )
 	Com_Printf ("anisotropic filtering: %s  ", enablestrings[(r_ext_texture_filter_anisotropic->integer != 0) && glConfig.maxTextureFilterAnisotropy] );
 		Com_Printf ("(%f of %f)\n", r_ext_texture_filter_anisotropic->value, glConfig.maxTextureFilterAnisotropy );
 	Com_Printf ("Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer] );
+	if (g_bTextureRectangleHack) Com_Printf ("Dynamic Glow ATI BAD DRIVER HACK %s\n", enablestrings[g_bTextureRectangleHack] );
 
 	if ( r_finish->integer ) {
 		Com_Printf ("Forcing glFinish\n" );
@@ -991,6 +969,11 @@ void GfxInfo_f( void )
 	{
 		Com_Printf ("Light Grid size set to (%.2f %.2f %.2f)\n", tr.world->lightGridSize[0], tr.world->lightGridSize[1], tr.world->lightGridSize[2] );
 	}
+}
+
+void R_AtiHackToggle_f(void)
+{
+	g_bTextureRectangleHack = !g_bTextureRectangleHack;
 }
 
 #endif // !DEDICATED
@@ -1018,7 +1001,7 @@ void R_Register( void )
 #endif
 	r_ext_texture_filter_anisotropic = Cvar_Get( "r_ext_texture_filter_anisotropic", "16", CVAR_ARCHIVE );
 
-	r_DynamicGlow = Cvar_Get( "r_DynamicGlow", "1", CVAR_ARCHIVE );
+	r_DynamicGlow = Cvar_Get( "r_DynamicGlow", "0", CVAR_ARCHIVE );
 	r_DynamicGlowPasses = Cvar_Get( "r_DynamicGlowPasses", "5", CVAR_CHEAT );
 	r_DynamicGlowDelta  = Cvar_Get( "r_DynamicGlowDelta", "0.8f", CVAR_CHEAT );
 	r_DynamicGlowIntensity = Cvar_Get( "r_DynamicGlowIntensity", "1.13f", CVAR_CHEAT );
@@ -1089,11 +1072,6 @@ void R_Register( void )
 #else
 	r_gamma = Cvar_Get( "r_gamma", "1", CVAR_ARCHIVE );
 #endif
-
-#ifdef _XBOX
-	s_brightness_volume = Cvar_Get( "s_brightness_volume", "1", CVAR_ARCHIVE );
-#endif
-
 	r_facePlaneCull = Cvar_Get ("r_facePlaneCull", "1", CVAR_ARCHIVE );
 
 	r_cullRoofFaces = Cvar_Get ("r_cullRoofFaces", "0", CVAR_CHEAT ); //attempted smart method of culling out upwards facing surfaces on roofs for automap shots -rww
@@ -1214,6 +1192,7 @@ extern qboolean Sys_LowPhysicalMemory();
 	Cmd_AddCommand( "screenshot", R_ScreenShot_f );
 	Cmd_AddCommand( "screenshot_tga", R_ScreenShotTGA_f );
 	Cmd_AddCommand( "gfxinfo", GfxInfo_f );
+	Cmd_AddCommand( "r_atihack", R_AtiHackToggle_f );
 	Cmd_AddCommand( "r_we", R_WorldEffect_f);
 	Cmd_AddCommand( "imagecacheinfo", RE_RegisterImages_Info_f);
 #endif
@@ -1328,9 +1307,7 @@ void R_Init( void ) {
 	R_InitShaders(qfalse);
 	R_InitSkins();
 
-/*
 	R_TerrainInit(); //rwwRMG - added
-*/
 
 	R_InitFonts();
 #endif
@@ -1363,6 +1340,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	Cmd_RemoveCommand ("screenshot");
 	Cmd_RemoveCommand ("screenshot_tga");
 	Cmd_RemoveCommand ("gfxinfo");
+	Cmd_RemoveCommand ("r_atihack");
 	Cmd_RemoveCommand ("r_we");
 	Cmd_RemoveCommand ("imagecacheinfo");
 	Cmd_RemoveCommand ("modellist");
@@ -1405,9 +1383,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	}
 #endif
 
-/*
 	R_TerrainShutdown(); //rwwRMG - added
-*/
 
 	R_ShutdownFonts();
 	if ( tr.registered ) {
@@ -1522,8 +1498,10 @@ refexport_t *GetRefAPI ( int apiVersion ) {
 	re.AddPolyToScene = RE_AddPolyToScene;
 	re.AddDecalToScene = RE_AddDecalToScene;
 	re.LightForPoint = R_LightForPoint;
+#ifndef VV_LIGHTING
 	re.AddLightToScene = RE_AddLightToScene;
 	re.AddAdditiveLightToScene = RE_AddAdditiveLightToScene;
+#endif
 	re.RenderScene = RE_RenderScene;
 
 	re.SetColor = RE_SetColor;

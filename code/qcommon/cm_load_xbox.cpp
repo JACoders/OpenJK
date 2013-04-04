@@ -623,7 +623,6 @@ void R_LoadFlares( void *surfaces, int surfacelen );
 extern void R_LoadShaders( void );
 extern void R_LoadLightmaps( void *data, int len, const char *psMapName );
 extern byte *fileBase;
-extern void UpdateLoadingAnimation();
 static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *checksum ) {
 	const int		*buf = NULL;
 	const int		*surfBuf = NULL;
@@ -667,21 +666,15 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	last_checksum = crc32(0, (const Bytef *)name, strlen(name));
 	COM_StripExtension(name, stripName);
 
-	UpdateLoadingAnimation();
-
 	// load into heap
 	outputLump.load(stripName, "shaders");
 	CMod_LoadShaders( outputLump.data, outputLump.len );
 	R_LoadShaders();
 	
-	UpdateLoadingAnimation();
-
 	strcpy(lmName, name);
 	outputLump.load(stripName, "lightmaps");
 	R_LoadLightmaps( outputLump.data, outputLump.len, lmName);
 	
-	UpdateLoadingAnimation();
-
 	{
 		fileBase = NULL;
 		outputLump.clear();
@@ -694,23 +687,17 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 		
 		R_LoadSurfaces(num_surfs);
 
-		UpdateLoadingAnimation();
-
 		Lump verts;
 		verts.load(stripName, "verts");
 
 		Lump patches;
 		patches.load(stripName, "patches");
 
-		UpdateLoadingAnimation();
-
 		CMod_LoadPatches(verts.data, verts.len,
 			patches.data, patches.len,
 			num_surfs );
 		R_LoadPatches(verts.data, verts.len, 
 			patches.data, patches.len);
-
-		UpdateLoadingAnimation();
 
 		patches.clear();
 
@@ -720,16 +707,12 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 		Lump trisurfs;
 		trisurfs.load(stripName, "trisurfs");
 
-		UpdateLoadingAnimation();
-
 		R_LoadTriSurfs(indexes.data, indexes.len,
 			verts.data, verts.len, 
 			trisurfs.data, trisurfs.len);
 
 		trisurfs.clear();
 	
-		UpdateLoadingAnimation();
-
 		Lump faces;
 		faces.load(stripName, "faces");
 
@@ -737,24 +720,18 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 			verts.data, verts.len, 
 			faces.data, faces.len);
 
-		UpdateLoadingAnimation();
-
 		Lump flares;
 		flares.load(stripName, "flares");
 
 		R_LoadFlares(flares.data, flares.len);
 	}
 	
-	UpdateLoadingAnimation();
-
 	outputLump.load(stripName, "leafs");
 	CMod_LoadLeafs (outputLump.data, outputLump.len);
 
 	outputLump.load(stripName, "leafbrushes");
 	CMod_LoadLeafBrushes (outputLump.data, outputLump.len);
 	
-	UpdateLoadingAnimation();
-
 	cmg.leafsurfaces = NULL;
 	outputLump.load(stripName, "planes");
 	CMod_LoadPlanes (outputLump.data, outputLump.len);
@@ -764,23 +741,17 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	outputLump.load(stripName, "brushes");
 	CMod_LoadBrushes (outputLump.data, outputLump.len);
 
-	UpdateLoadingAnimation();
-
 	outputLump.load(stripName, "models");
 	CMod_LoadSubmodels (outputLump.data, outputLump.len);
 
 	outputLump.load(stripName, "nodes");
 	CMod_LoadNodes (outputLump.data, outputLump.len);
 
-	UpdateLoadingAnimation();
-
 	outputLump.load(stripName, "entities");
 	CMod_LoadEntityString (outputLump.data, outputLump.len);
 
 	outputLump.load(stripName, "visibility");
 	CMod_LoadVisibility( outputLump.data, outputLump.len);
-
-	UpdateLoadingAnimation();
 
 	TotalSubModels += cmg.numSubModels;
 	
@@ -791,8 +762,6 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	// do this whether or not the map was cached from last load...
 	//
 	CM_FloodAreaConnections ();
-
-	UpdateLoadingAnimation();
 
 	// allow this to be cached if it is loaded by the server
 	if ( !clientload ) {
@@ -1141,7 +1110,7 @@ void CM_ShutdownTerrain( thandle_t terrainId)
 int CM_LoadSubBSP(const char *name, qboolean clientload)
 {
 	int		i;
-//	int		checksum;
+	int		checksum;
 	int		count;
 
 	count = cmg.numSubModels;

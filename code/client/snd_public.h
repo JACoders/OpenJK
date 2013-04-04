@@ -1,10 +1,6 @@
 #ifndef _SND_PUBLIC_H
 #define _SND_PUBLIC_H
 
-#ifndef FINAL_BUILD
-#define PROFILE_SOUND 0
-#endif
-
 void S_Init( void );
 void S_Shutdown( void );
 

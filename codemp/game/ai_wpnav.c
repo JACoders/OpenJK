@@ -2038,7 +2038,7 @@ int LoadPathData(const char *filename)
 		return 0;
 	}
 
-	fileString = (char *)B_TempAlloc(len + 1);
+	fileString = (char *)B_TempAlloc(524288);
 	currentVar = (char *)B_TempAlloc(2048);
 
 	trap_FS_Read(fileString, len, f);
@@ -2228,7 +2228,7 @@ int LoadPathData(const char *filename)
 		i++;
 	}
 
-	B_TempFree(len + 1); //fileString
+	B_TempFree(524288); //fileString
 	B_TempFree(2048); //currentVar
 
 	trap_FS_FCloseFile(f);

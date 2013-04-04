@@ -183,6 +183,7 @@ void AddTeamScore(vec3_t origin, int team, int score) {
 OnSameTeam
 ==============
 */
+extern qboolean G_CheckVehicleNPCTeamDamage( gentity_t *ent );
 qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 ) {
 	if ( !ent1->client || !ent2->client ) {
 		return qfalse;
@@ -252,6 +253,14 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 ) {
 
 	if (ent1->s.eType == ET_NPC && ent2->s.eType == ET_PLAYER)
 	{
+		if ( G_CheckVehicleNPCTeamDamage( ent1 ) )
+		{//hit an NPC that is in a vehicle - a droid?
+			if ( ent1->client->sess.sessionTeam == ent2->client->sess.sessionTeam 
+				|| ent1->teamnodmg == ent2->client->sess.sessionTeam ) 
+			{
+				return qtrue;
+			}
+		}
 		return qfalse;
 	}
 	else if (ent1->s.eType == ET_PLAYER && ent2->s.eType == ET_NPC)
@@ -1043,7 +1052,7 @@ gentity_t *SelectCTFSpawnPoint ( team_t team, int teamstate, vec3_t origin, vec3
 	spot = SelectRandomTeamSpawnPoint ( teamstate, team, -1 );
 
 	if (!spot) {
-		return SelectSpawnPoint( vec3_origin, origin, angles );
+		return SelectSpawnPoint( vec3_origin, origin, angles, team );
 	}
 
 	VectorCopy (spot->s.origin, origin);
@@ -1065,7 +1074,7 @@ gentity_t *SelectSiegeSpawnPoint ( int siegeClass, team_t team, int teamstate, v
 	spot = SelectRandomTeamSpawnPoint ( teamstate, team, siegeClass );
 
 	if (!spot) {
-		return SelectSpawnPoint( vec3_origin, origin, angles );
+		return SelectSpawnPoint( vec3_origin, origin, angles, team );
 	}
 
 	VectorCopy (spot->s.origin, origin);

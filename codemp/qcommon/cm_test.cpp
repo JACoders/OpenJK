@@ -282,7 +282,6 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 		if ( i == b->numsides ) 
 		{
 			contents |= b->contents;
-/*
 			if(cmg.landScape && (contents & CONTENTS_TERRAIN))
 			{
 				if(p[2] < cmg.landScape->GetWaterHeight())
@@ -290,7 +289,6 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 					contents |= cmg.landScape->GetWaterContents();
 				}
 			}
-*/
 		}
 	}
 

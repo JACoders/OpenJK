@@ -823,11 +823,9 @@ Ghoul2 Insert End
 	case CG_CIN_RUNCINEMATIC:
 	  return CIN_RunCinematic(args[1]);
 
-#ifndef _XBOX
 	case CG_CIN_DRAWCINEMATIC:
 	  CIN_DrawCinematic(args[1]);
 	  return 0;
-#endif
 
 	case CG_CIN_SETEXTENTS:
 	  CIN_SetExtents(args[1], args[2], args[3], args[4], args[5]);
@@ -1212,10 +1210,6 @@ void CL_AdjustTimeDelta( void ) {
 	}
 }
 
-// The UI sets this to a non-negative value, when the level select cheat is used
-// to start a level. It will be the rank of neutral force powers that we should have.
-// All others will be rank 3. =)
-//int levelSelectCheat = -1;
 
 /*
 ==================
@@ -1247,56 +1241,6 @@ void CL_FirstSnapshot( void ) {
 	// turn vsync back on - tearing is ugly
 	qglEnable(GL_VSYNC);
 #endif
-
-#ifdef XBOX_DEMO
-	// It's convenient, so I call this the "end of loading" for timer pausing
-	extern void Demo_TimerPause( bool bPaused );
-	Demo_TimerPause( false );
-
-	// Need to copy in the force powers (that were configured in the front-end)
-	playerState_t *pState = svs.clients[0].gentity->client;
-	extern int demoForcePowerLevel[16];
-	pState->forcePowersKnown = 0;
-	for( int i = 0; i < NUM_FORCE_POWERS; ++i )
-	{
-		pState->forcePowerLevel[i] = demoForcePowerLevel[i];
-		if( pState->forcePowerLevel[i] )
-			pState->forcePowersKnown |= (1 << i);
-	}
-
-	// Give us the right weapons, and max ammo:
-	extern int demoWeapon1;
-	extern int demoWeapon2;
-	extern int demoThrowable;
-	pState->stats[STAT_WEAPONS] = 1 << WP_SABER;
-	Cbuf_ExecuteText( EXEC_APPEND, "give weaponnum 2\n" );
-	Cbuf_ExecuteText( EXEC_APPEND, va("give weaponnum %d\n", demoWeapon1) );
-	Cbuf_ExecuteText( EXEC_APPEND, va("give weaponnum %d\n", demoWeapon2) );
-	Cbuf_ExecuteText( EXEC_APPEND, va("give weaponnum %d\n", demoThrowable) );
-	Cbuf_ExecuteText( EXEC_APPEND, "give ammo\n" );
-#else
-	// Goodies?
-	cvar_t*	levelSelectCheat	= Cvar_Get("levelSelectCheat", "-1", CVAR_SAVEGAME);
-	if(  levelSelectCheat->integer >= 0 )
-	{
-		int n = levelSelectCheat->integer;
-		//levelSelectCheat = -1;
-
-		// Set all Light powers to level 3:
-		Cbuf_ExecuteText( EXEC_APPEND, "setForceHeal 3\nsetMindTrick 3\nsetForceProtect 3\nsetForceAbsorb 3\n" );
-		// Set all Dark powers to level 3:
-		Cbuf_ExecuteText( EXEC_APPEND, "setForceGrip 3\nsetForceLightning 3\nsetForceRage 3\nsetForceDrain 3\n" );
-
-		// Special case for yavin1b - we need saber powers, but no other neutral
-		if( n == 0 )
-			Cbuf_ExecuteText( EXEC_APPEND, "setSaberOffense 1\nsetSaberDefense 1\nsetSaberThrow 1\n" );
-		else
-			Cbuf_ExecuteText( EXEC_APPEND, va("setSaberOffense %d\nsetSaberDefense %d\nsetSaberThrow %d\n", n, n, n) );
-
-		// Set all remaining neutral powers to cheat level:
-		Cbuf_ExecuteText( EXEC_APPEND, va("setForcePush %d\nsetForcePull %d\nsetForceSpeed %d\nsetForceJump %d\nsetForceSight %d\n", n, n, n, n, n) );
-	}
-#endif
 }
 
 /*
@@ -1327,14 +1271,8 @@ void CL_SetCGameTime( void ) {
 	}
 
 	// allow pause in single player
-	static int pauseStart = 0;
-	static int pauseServerTimeDelta;
 	if ( sv_paused->integer && cl_paused->integer && com_sv_running->integer ) {
 		// paused
-		if(!pauseStart) {
-			pauseServerTimeDelta = cl.serverTimeDelta;
-			pauseStart = cls.realtime;
-		}
 		return;
 	}
 
@@ -1350,16 +1288,6 @@ void CL_SetCGameTime( void ) {
 	// or less latency to be added in the interest of better 
 	// smoothness or better responsiveness.
 	cl.serverTime = cls.realtime + cl.serverTimeDelta - cl_timeNudge->integer;
-
-	//If we were paused, subtract out pause time once since we won't yet
-	//have an updated server time.  Otherwise the camera gets confused when
-	//time leaps forward for a frame and then resets back to normal.
-	if(pauseStart && pauseServerTimeDelta == cl.serverTimeDelta) {
-		cl.serverTime -= cls.realtime - pauseStart;
-	} else {
-		pauseStart = 0;
-		pauseServerTimeDelta = 0;
-	}
 
 	// guarantee that time will never flow backwards, even if
 	// serverTimeDelta made an adjustment or cl_timeNudge was changed

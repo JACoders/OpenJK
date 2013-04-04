@@ -16,8 +16,6 @@
 #endif // _IMMERSION
 #include "../ghoul2/g2.h"
 
-#include "../qcommon/xb_settings.h"
-
 #include "../RMG/RM_Headers.h"
 
 #ifdef _XBOX
@@ -53,12 +51,9 @@ cvar_t	*cl_endcredits;
 
 cvar_t	*cl_freelook;
 cvar_t	*cl_sensitivity;
-#ifdef _XBOX
-cvar_t	*cl_sensitivityY;
-#endif
 
-//cvar_t	*cl_mouseAccel;
-//cvar_t	*cl_showMouseRate;
+cvar_t	*cl_mouseAccel;
+cvar_t	*cl_showMouseRate;
 cvar_t  *cl_VideoQuality;
 cvar_t	*cl_VidFadeUp;	// deliberately kept as "Vid" rather than "Video" so tab-matching matches only VideoQuality
 cvar_t	*cl_VidFadeDown;
@@ -68,7 +63,7 @@ cvar_t	*m_pitch;
 cvar_t	*m_yaw;
 cvar_t	*m_forward;
 cvar_t	*m_side;
-//cvar_t	*m_filter;
+cvar_t	*m_filter;
 
 #ifdef _XBOX
 //MAP HACK
@@ -295,10 +290,6 @@ void CL_Disconnect( void ) {
 
 #ifdef _XBOX
 	Cvar_Set("r_norefresh", "0");
-
-	// Make sure to stop all rumbling! - Prevents bug when quitting game during rumble:
-	extern void IN_KillRumbleScripts( void );
-	IN_KillRumbleScripts();
 #endif
 
 	if (cls.uiStarted)
@@ -593,7 +584,7 @@ void CL_CheckForResend( void ) {
 	// sending back the challenge
 		port = Cvar_VariableIntegerValue("qport");
 
-//		UI_UpdateConnectionString( va("(%i)", clc.connectPacketCount ) );
+		UI_UpdateConnectionString( va("(%i)", clc.connectPacketCount ) );
 
 		Q_strncpyz( info, Cvar_InfoString( CVAR_USERINFO ), sizeof( info ) );
 		Info_SetValueForKey( info, "protocol", va("%i", PROTOCOL_VERSION ) );
@@ -831,13 +822,10 @@ CL_Frame
 
 ==================
 */
-
 extern cvar_t	*cl_newClock;
 static unsigned int frameCount;
 float avgFrametime=0.0;
 void CL_Frame ( int msec,float fractionMsec ) {
-
-	checkAutoSave();	//saves the game immediately after starting a level
 
 	if ( !com_cl_running->integer ) {
 		return;
@@ -848,7 +836,6 @@ void CL_Frame ( int msec,float fractionMsec ) {
 
 #if defined (_XBOX)// && !defined(_DEBUG)
 	// Play the intro movies once
-	extern bool Sys_QuickStart( void );
 	static bool firstRun = true;
 	if(firstRun)
 	{
@@ -870,37 +857,18 @@ void CL_Frame ( int msec,float fractionMsec ) {
 	if ( cls.state == CA_DISCONNECTED && !( cls.keyCatchers & KEYCATCH_UI )
 		&& !com_sv_running->integer ) {		
 		// if disconnected, bring up the menu
-#ifdef _XBOX
-		if (firstRun && !Sys_QuickStart())
-		{
-			// Fresh boot
-			UI_SetActiveMenu("splashMenu", NULL);
-		}
-		else if (firstRun)
-		{
-			// Came from MP:
-			UI_SetActiveMenu("mainMenu", NULL);
-			extern void XB_Startup( XBStartupState startupState );
-			XB_Startup( STARTUP_LOAD_SETTINGS );
-		}
-		else
-		{
-#ifdef XBOX_DEMO
-			// Quitting the demo returns to the IIS, and restores settings:
-			Settings.RestoreDefaults();
-			Settings.SetAll();
-			UI_SetActiveMenu("splashMenu", NULL);
-#else
-			UI_SetActiveMenu("mainMenu", NULL);
-#endif
-		}
-#else
 		if (!CL_CheckPendingCinematic())	// this avoid having the menu flash for one frame before pending cinematics
 		{
-			UI_SetActiveMenu("mainMenu", NULL);
-		}
+#ifdef _XBOX
+			if (firstRun)
+			{
+			
+				UI_SetActiveMenu("splashMenu", NULL);
+			}
+			else
 #endif
-		S_StartBackgroundTrack("music/mp/MP_action4.mp3","",0);
+			UI_SetActiveMenu( "mainMenu",NULL );
+		}
 	}
 
 #ifdef _XBOX
@@ -931,59 +899,19 @@ void CL_Frame ( int msec,float fractionMsec ) {
 
 	// decide the simulation time
 	cls.frametime = msec;
-	//if(cl_framerate->integer)
-	//{
-	//	avgFrametime+=msec;
-	//	char mess[256];
-	//	if(!(frameCount&0x1f))
-	//	{
-	//		sprintf(mess,"Frame rate=%f\n\n",1000.0f*(1.0/(avgFrametime/32.0f)));
-	////		OutputDebugString(mess);
-	//		Com_Printf(mess);
-	//		avgFrametime=0.0f;
-	//	}
-	//	frameCount++;
-	//}
-	// Always calculate framerate, bias the LOD if low
-	avgFrametime+=msec;
-	extern bool in_camera;
-	float framerate = 1000.0f*(1.0/(avgFrametime/32.0f));
-	static int lodFrameCount = 0;
-	int bias = Cvar_VariableIntegerValue("r_lodbias");
-	if(!(frameCount&0x1f))
+	if(cl_framerate->integer)
 	{
-        if(cl_framerate->integer)
+		avgFrametime+=msec;
+		char mess[256];
+		if(!(frameCount&0x1f))
 		{
-			char mess[256];
-			sprintf(mess,"Frame rate=%f LOD=%d\n\n",framerate,bias);
+			sprintf(mess,"Frame rate=%f\n\n",1000.0f*(1.0/(avgFrametime/32.0f)));
+	//		OutputDebugString(mess);
 			Com_Printf(mess);
+			avgFrametime=0.0f;
 		}
-		avgFrametime=0.0f;
-
-		// If we drop below 20FPS, pull down the LOD bias
-		if(framerate < 20.0f && bias == 0)
-		{
-			bias++;
-			Cvar_SetValue("r_lodbias", bias);
-			lodFrameCount = -1;
-		}
-
-		lodFrameCount++;
-		if(lodFrameCount==5 && bias > 0)
-		{
-			bias--;
-			Cvar_SetValue("r_lodBias", bias);
-			lodFrameCount = 0;
-		}
+		frameCount++;
 	}
-	frameCount++;
-
-	if(in_camera)
-	{
-		// No LOD stuff during cutscenes
-		Cvar_SetValue("r_lodBias", 0);
-	}
-
 	cls.frametimeFraction=fractionMsec;
 	cls.realtime += msec;
 	cls.realtimeFraction+=fractionMsec;
@@ -1161,7 +1089,7 @@ void CL_StartHunkUsers( void ) {
 //		cls.charSetShader = re.RegisterShaderNoMip( "gfx/2d/bigchars" );
 		cls.charSetShader = re.RegisterShaderNoMip( "gfx/2d/charsgrid_med" );
 		cls.whiteShader = re.RegisterShader( "white" );
-//		cls.consoleShader = re.RegisterShader( "console" );
+		cls.consoleShader = re.RegisterShader( "console" );
 		g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
 		kg.g_consoleField.widthInChars = g_console_field_width;
 #ifndef _IMMERSION
@@ -1307,16 +1235,11 @@ void CL_Init( void ) {
 	cl_packetdup = Cvar_Get ("cl_packetdup", "1", CVAR_ARCHIVE );
 
 	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE);
-	cl_sensitivity = Cvar_Get ("sensitivity", "2", CVAR_ARCHIVE);
-
-#ifdef _XBOX
-	cl_sensitivityY = Cvar_Get ("sensitivityY", "2", CVAR_ARCHIVE);
-#endif
-
-//	cl_mouseAccel = Cvar_Get ("cl_mouseAccel", "0", CVAR_ARCHIVE);
+	cl_sensitivity = Cvar_Get ("sensitivity", "5", CVAR_ARCHIVE);
+	cl_mouseAccel = Cvar_Get ("cl_mouseAccel", "0", CVAR_ARCHIVE);
 	cl_freelook = Cvar_Get( "cl_freelook", "1", CVAR_ARCHIVE );
 
-//	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
+	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 
 	cl_ingameVideo = Cvar_Get ("cl_ingameVideo", "1", CVAR_ARCHIVE);
 	cl_VideoQuality = Cvar_Get ("cl_VideoQuality", "0", CVAR_ARCHIVE);
@@ -1329,16 +1252,12 @@ void CL_Init( void ) {
 	// init autoswitch so the ui will have it correctly even
 	// if the cgame hasn't been started
 	Cvar_Get ("cg_autoswitch", "1", CVAR_ARCHIVE);
-//JLF
-#ifdef _XBOX
-	Cvar_Get ("cl_autolevel","0",CVAR_ARCHIVE);
-#endif
 
 	m_pitch = Cvar_Get ("m_pitch", "0.022", CVAR_ARCHIVE);
 	m_yaw = Cvar_Get ("m_yaw", "0.022", CVAR_ARCHIVE);
 	m_forward = Cvar_Get ("m_forward", "0.25", CVAR_ARCHIVE);
 	m_side = Cvar_Get ("m_side", "0.25", CVAR_ARCHIVE);
-//	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
+	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
 
 #ifdef _XBOX
 	cl_mapname = Cvar_Get ("cl_mapname", "t3_bounty", CVAR_TEMP);
@@ -1350,14 +1269,9 @@ void CL_Init( void ) {
 	Cvar_Get ("name", "Jaden", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("snaps", "20", CVAR_USERINFO | CVAR_ARCHIVE );
 	
-	Cvar_Get ("sex", "f", CVAR_USERINFO | CVAR_ARCHIVE | CVAR_SAVEGAME );
+	Cvar_Get ("sex", "f", CVAR_USERINFO | CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART );
 	Cvar_Get ("snd", "jaden_fmle", CVAR_USERINFO | CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART );//UI_SetSexandSoundForModel changes to match sounds.cfg for model
-	Cvar_Get ("handicap", "100", CVAR_USERINFO | CVAR_ARCHIVE | CVAR_SAVEGAME );
-
-	// Hot-swap (programmable) buttons:
-	Cvar_Get ("hotswap0", "", CVAR_ARCHIVE);
-	Cvar_Get ("hotswap1", "", CVAR_ARCHIVE);
-	Cvar_Get ("hotswap2", "", CVAR_ARCHIVE);
+	Cvar_Get ("handicap", "100", CVAR_USERINFO | CVAR_SAVEGAME | CVAR_NORESTART);
 
 	//
 	// register our commands
@@ -1391,12 +1305,6 @@ void CL_Init( void ) {
 	Com_Printf( "Initializing Cinematics...\n");
 	CIN_Init();
 #endif
-//JLF MPMOVED
-#ifdef _XBOX
-//	initProfile();
-#endif
-
-	Cvar_Get("levelSelectCheat", "-1", CVAR_ARCHIVE | CVAR_SAVEGAME);
 
 	Com_Printf( "----- Client Initialization Complete -----\n" );
 }
@@ -1576,54 +1484,4 @@ ping_t* CL_GetFreePing( void )
 	}
 
 	return (best);
-}
-
-bool autosaveTrigger = false;
-bool doAutoSave = false;
-bool allowNormalAutosave = true;
-
-static void checkAutoSave()
-{
-	static int timeToCheckpoint = 0;
-	static int delayCountdown = 3;		// delay a few frames before saving
-
-	if(sv.time < timeToCheckpoint && timeToCheckpoint != 0)
-	{
-		allowNormalAutosave = false;
-	}
-	else
-	{
-		allowNormalAutosave = true;
-		timeToCheckpoint = 0;
-	}
-
-	if(autosaveTrigger)
-	{
-		if( cls.uiStarted && cls.state == CA_ACTIVE && SG_GameAllowedToSaveHere(qfalse)
-			&& Cvar_VariableIntegerValue("disableAutoSave") == 0 )
-		{
-			if(delayCountdown <= 0)
-			{
-				if(doAutoSave)
-				{
-					CG_CenterPrint( "@SP_INGAME_CHECKPOINT", SCREEN_HEIGHT * 0.25 );	//jump the network
-					Cbuf_AddText( "save auto\n" );
-				}
-				timeToCheckpoint = sv.time + 10000;
-				autosaveTrigger = false;
-				doAutoSave = false;
-				allowNormalAutosave = false;
-				delayCountdown = 3;
-			}
-			else
-			{
-				delayCountdown--;
-			}
-		}
-		else
-		{
-			delayCountdown = 3;
-		}
-
-	}
 }

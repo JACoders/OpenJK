@@ -1004,7 +1004,7 @@ netField_t	entityStateFields[] =
 { NETF(surfacesOff), 32 },
 { NETF(eFlags2), 10 },
 // should be bit field
-//{ NETF(isJediMaster), 1 },
+{ NETF(isJediMaster), 1 },
 // should be bit field
 { NETF(isPortalEnt), 1 },
 // possible multiple definitions
@@ -1020,18 +1020,18 @@ netField_t	entityStateFields[] =
 // used only for surfaces on NPCs
 { NETF(surfacesOn), 32 }, //allow up to 32 surfaces in the bitflag
 { NETF(boneIndex2), 6 },
-//{ NETF(boneIndex3), 6 },
-//{ NETF(boneIndex4), 6 },
+{ NETF(boneIndex3), 6 },
+{ NETF(boneIndex4), 6 },
 { NETF(boneAngles1[0]), 0 },
 { NETF(boneAngles2[0]), 0 },
 { NETF(boneAngles2[1]), 0 },
 { NETF(boneAngles2[2]), 0 },
-//{ NETF(boneAngles3[0]), 0 },
-//{ NETF(boneAngles3[1]), 0 },
-//{ NETF(boneAngles3[2]), 0 },
-//{ NETF(boneAngles4[0]), 0 },
-//{ NETF(boneAngles4[1]), 0 },
-//{ NETF(boneAngles4[2]), 0 },
+{ NETF(boneAngles3[0]), 0 },
+{ NETF(boneAngles3[1]), 0 },
+{ NETF(boneAngles3[2]), 0 },
+{ NETF(boneAngles4[0]), 0 },
+{ NETF(boneAngles4[1]), 0 },
+{ NETF(boneAngles4[2]), 0 },
 
 //rww - for use by mod authors only
 #ifndef _XBOX
@@ -1400,6 +1400,13 @@ plyer_state_t communication
 //rww - Remember to update ext_data/MP/psf_overrides.txt if you change any of this!
 //(for the sake of being consistent)
 
+//=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
+#ifdef _OPTIMIZED_VEHICLE_NETWORKING
+//Instead of sending 2 full playerStates for the pilot and the vehicle, send a smaller,
+//specialized pilot playerState and vehicle playerState.  Also removes some vehicle
+//fields from the normal playerState -mcg
+//=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
+
 netField_t	playerStateFields[] = 
 {
 { PSF(commandTime), 32 },				
@@ -1528,7 +1535,8 @@ netField_t	playerStateFields[] =
 { PSF(saberLockEnemy), GENTITYNUM_BITS },
 { PSF(fd.forceGripCripple), 1 }, //should only be 0 or 1 ever
 { PSF(emplacedIndex), GENTITYNUM_BITS },
-//{ PSF(isJediMaster), 1 },
+{ PSF(holocronBits), 32 },
+{ PSF(isJediMaster), 1 },
 { PSF(forceRestricted), 1 },
 { PSF(trueJedi), 1 },
 { PSF(trueNonJedi), 1 },
@@ -1539,9 +1547,26 @@ netField_t	playerStateFields[] =
 { PSF(ragAttach), GENTITYNUM_BITS },
 { PSF(iModelScale), 10 }, //0-1024 (guess it's gotta be increased if we want larger allowable scale.. but 1024% is pretty big)
 { PSF(hackingBaseTime), 16 }, //up to 65536ms, over 10 seconds would just be silly anyway
+//{ PSF(hyperSpaceAngles[0]), 0 },//only used by vehicle?
+//{ PSF(hyperSpaceAngles[2]), 0 },//only used by vehicle?
+
+//rww - for use by mod authors only
+#ifndef _XBOX
+{ PSF(userInt1), 1 },
+{ PSF(userInt2), 1 },
+{ PSF(userInt3), 1 },
+{ PSF(userFloat1), 1 },
+{ PSF(userFloat2), 1 },
+{ PSF(userFloat3), 1 },
+{ PSF(userVec1[0]), 1 },
+{ PSF(userVec1[1]), 1 },
+{ PSF(userVec1[2]), 1 },
+{ PSF(userVec2[0]), 1 },
+{ PSF(userVec2[1]), 1 },
+{ PSF(userVec2[2]), 1 }
+#endif
 };
 
-// PILOT FIELDS
 netField_t	pilotPlayerStateFields[] = 
 {
 { PSF(commandTime), 32 },				
@@ -1600,6 +1625,7 @@ netField_t	pilotPlayerStateFields[] =
 { PSF(fd.forceMindtrickTargetIndex4), 16 }, //NOTE: Not just an index, used as a (1 << val) bitflag for up to 16 clients
 { PSF(fd.sentryDeployed), 1 },
 { PSF(fd.forcePowerLevel[FP_SEE]), 2 }, //needed for knowing when to display players through walls
+{ PSF(holocronBits), 32 },
 { PSF(fd.forcePower), 8 },
 
 //===THE REST OF THESE SHOULD NOT BE RELEVANT, BUT, FOR SAFETY, INCLUDE THEM ANYWAY, JUST AT THE BOTTOM===============================================================
@@ -1664,7 +1690,7 @@ netField_t	pilotPlayerStateFields[] =
 { PSF(saberLockEnemy), GENTITYNUM_BITS },
 { PSF(fd.forceGripCripple), 1 }, //should only be 0 or 1 ever
 { PSF(emplacedIndex), GENTITYNUM_BITS },
-//{ PSF(isJediMaster), 1 },
+{ PSF(isJediMaster), 1 },
 { PSF(forceRestricted), 1 },
 { PSF(trueJedi), 1 },
 { PSF(trueNonJedi), 1 },
@@ -1675,9 +1701,38 @@ netField_t	pilotPlayerStateFields[] =
 { PSF(ragAttach), GENTITYNUM_BITS },
 { PSF(iModelScale), 10 }, //0-1024 (guess it's gotta be increased if we want larger allowable scale.. but 1024% is pretty big)
 { PSF(hackingBaseTime), 16 }, //up to 65536ms, over 10 seconds would just be silly anyway
+//===NEVER SEND THESE, ONLY USED BY VEHICLES==============================================================
+
+//{ PSF(vehOrientation[0]), 0 },
+//{ PSF(vehOrientation[1]), 0 },
+//{ PSF(vehOrientation[2]), 0 },
+//{ PSF(vehTurnaroundTime), 32 },//only used by vehicle?
+//{ PSF(vehWeaponsLinked), 1 },//only used by vehicle?
+//{ PSF(hyperSpaceTime), 32 },//only used by vehicle?
+//{ PSF(vehTurnaroundIndex), GENTITYNUM_BITS },//only used by vehicle?
+//{ PSF(vehSurfaces), 16 }, //only used by vehicle? allow up to 16 surfaces in the flag I guess
+//{ PSF(vehBoarding), 1 }, //only used by vehicle? not like the normal boarding value, this is a simple "1 or 0" value
+//{ PSF(hyperSpaceAngles[1]), 0 },//only used by vehicle?
+//{ PSF(hyperSpaceAngles[0]), 0 },//only used by vehicle?
+//{ PSF(hyperSpaceAngles[2]), 0 },//only used by vehicle?
+
+//rww - for use by mod authors only
+#ifndef _XBOX
+{ PSF(userInt1), 1 },
+{ PSF(userInt2), 1 },
+{ PSF(userInt3), 1 },
+{ PSF(userFloat1), 1 },
+{ PSF(userFloat2), 1 },
+{ PSF(userFloat3), 1 },
+{ PSF(userVec1[0]), 1 },
+{ PSF(userVec1[1]), 1 },
+{ PSF(userVec1[2]), 1 },
+{ PSF(userVec2[0]), 1 },
+{ PSF(userVec2[1]), 1 },
+{ PSF(userVec2[2]), 1 }
+#endif
 };
 
-// VEHICLE FIELDS
 netField_t	vehPlayerStateFields[] = 
 {
 { PSF(commandTime), 32 },				
@@ -1749,7 +1804,191 @@ netField_t	vehPlayerStateFields[] =
 { PSF(hyperSpaceAngles[0]), 0 },
 { PSF(hyperSpaceAngles[2]), 0 },
 
+//rww - for use by mod authors only
+#ifndef _XBOX
+{ PSF(userInt1), 1 },
+{ PSF(userInt2), 1 },
+{ PSF(userInt3), 1 },
+{ PSF(userFloat1), 1 },
+{ PSF(userFloat2), 1 },
+{ PSF(userFloat3), 1 },
+{ PSF(userVec1[0]), 1 },
+{ PSF(userVec1[1]), 1 },
+{ PSF(userVec1[2]), 1 },
+{ PSF(userVec2[0]), 1 },
+{ PSF(userVec2[1]), 1 },
+{ PSF(userVec2[2]), 1 }
+#endif
 };
+
+//=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
+#else//_OPTIMIZED_VEHICLE_NETWORKING
+//The unoptimized way, throw *all* the vehicle stuff into the playerState along with everything else... :(
+//=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
+
+netField_t	playerStateFields[] = 
+{
+{ PSF(commandTime), 32 },				
+{ PSF(origin[1]), 0 },
+{ PSF(origin[0]), 0 },
+{ PSF(viewangles[1]), 0 },
+{ PSF(viewangles[0]), 0 },
+{ PSF(origin[2]), 0 },
+{ PSF(velocity[0]), 0 },
+{ PSF(velocity[1]), 0 },
+{ PSF(velocity[2]), 0 },
+{ PSF(bobCycle), 8 },
+{ PSF(weaponTime), -16 },
+{ PSF(delta_angles[1]), 16 },
+{ PSF(speed), 0 }, //sadly, the vehicles require negative speed values, so..
+{ PSF(legsAnim), 16 },			// Maximum number of animation sequences is 2048.  Top bit is reserved for the togglebit
+{ PSF(delta_angles[0]), 16 },
+{ PSF(torsoAnim), 16 },			// Maximum number of animation sequences is 2048.  Top bit is reserved for the togglebit
+{ PSF(groundEntityNum), GENTITYNUM_BITS },
+{ PSF(eFlags), 32 },
+{ PSF(fd.forcePower), 8 },
+{ PSF(eventSequence), 16 },
+{ PSF(torsoTimer), 16 },
+{ PSF(legsTimer), 16 },
+{ PSF(viewheight), -8 },
+{ PSF(fd.saberAnimLevel), 4 },
+{ PSF(rocketLockIndex), GENTITYNUM_BITS },
+{ PSF(fd.saberDrawAnimLevel), 4 },
+{ PSF(genericEnemyIndex), 32 }, //NOTE: This isn't just an index all the time, it's often used as a time value, and thus needs 32 bits
+{ PSF(events[0]), 10 },			// There is a maximum of 256 events (8 bits transmission, 2 high bits for uniqueness)
+{ PSF(events[1]), 10 },			// There is a maximum of 256 events (8 bits transmission, 2 high bits for uniqueness)
+{ PSF(customRGBA[0]), 8 }, //0-255
+{ PSF(movementDir), 4 },
+{ PSF(saberEntityNum), GENTITYNUM_BITS }, //Also used for channel tracker storage, but should never exceed entity number
+{ PSF(customRGBA[3]), 8 }, //0-255
+{ PSF(weaponstate), 4 },
+{ PSF(saberMove), 32 }, //This value sometimes exceeds the max LS_ value and gets set to a crazy amount, so it needs 32 bits
+{ PSF(standheight), 10 },
+{ PSF(crouchheight), 10 },
+{ PSF(basespeed), -16 },
+{ PSF(pm_flags), 16 },
+{ PSF(jetpackFuel), 8 },
+{ PSF(cloakFuel), 8 },
+{ PSF(pm_time), -16 },
+{ PSF(customRGBA[1]), 8 }, //0-255
+{ PSF(clientNum), GENTITYNUM_BITS },
+{ PSF(duelIndex), GENTITYNUM_BITS },
+{ PSF(customRGBA[2]), 8 }, //0-255
+{ PSF(gravity), 16 },
+{ PSF(weapon), 8 },
+{ PSF(delta_angles[2]), 16 },
+{ PSF(saberCanThrow), 1 },
+{ PSF(viewangles[2]), 0 },
+{ PSF(fd.forcePowersKnown), 32 },
+{ PSF(fd.forcePowerLevel[FP_LEVITATION]), 2 }, //unfortunately we need this for fall damage calculation (client needs to know the distance for the fall noise)
+{ PSF(fd.forcePowerDebounce[FP_LEVITATION]), 32 },
+{ PSF(fd.forcePowerSelected), 8 },
+{ PSF(torsoFlip), 1 },
+{ PSF(externalEvent), 10 },
+{ PSF(damageYaw), 8 },
+{ PSF(damageCount), 8 },
+{ PSF(inAirAnim), 1 }, //just transmit it for the sake of knowing right when on the client to play a land anim, it's only 1 bit
+{ PSF(eventParms[1]), 8 },
+{ PSF(fd.forceSide), 2 }, //so we know if we should apply greyed out shaders to dark/light force enlightenment
+{ PSF(saberAttackChainCount), 4 },
+{ PSF(pm_type), 8 },					
+{ PSF(externalEventParm), 8 },
+{ PSF(eventParms[0]), -16 },
+{ PSF(lookTarget), GENTITYNUM_BITS },
+{ PSF(vehOrientation[0]), 0 },
+{ PSF(weaponChargeSubtractTime), 32 }, //? really need 32 bits??
+{ PSF(vehOrientation[1]), 0 },
+{ PSF(moveDir[1]), 0 },
+{ PSF(moveDir[0]), 0 },
+{ PSF(weaponChargeTime), 32 }, //? really need 32 bits??
+{ PSF(vehOrientation[2]), 0 },
+{ PSF(legsFlip), 1 },
+{ PSF(damageEvent), 8 },
+{ PSF(moveDir[2]), 0 },
+{ PSF(rocketTargetTime), 32 },
+{ PSF(activeForcePass), 6 },
+{ PSF(electrifyTime), 32 },
+{ PSF(fd.forceJumpZStart), 0 },
+{ PSF(loopSound), 16 }, //rwwFIXMEFIXME: max sounds is 256, doesn't this only need to be 8?
+{ PSF(hasLookTarget), 1 },
+{ PSF(saberBlocked), 8 },
+{ PSF(damageType), 2 },
+{ PSF(rocketLockTime), 32 },
+{ PSF(forceHandExtend), 8 },
+{ PSF(saberHolstered), 2 },
+{ PSF(fd.forcePowersActive), 32 },
+{ PSF(damagePitch), 8 },
+{ PSF(m_iVehicleNum), GENTITYNUM_BITS }, // 10 bits fits all possible entity nums (2^10 = 1024). - AReis
+{ PSF(vehTurnaroundTime), 32 },
+{ PSF(generic1), 8 },
+{ PSF(jumppad_ent), 10 },
+{ PSF(hasDetPackPlanted), 1 },
+{ PSF(saberInFlight), 1 },
+{ PSF(forceDodgeAnim), 16 },
+{ PSF(zoomMode), 2 }, // NOTENOTE Are all of these necessary?
+{ PSF(hackingTime), 32 },
+{ PSF(zoomTime), 32 },	// NOTENOTE Are all of these necessary?
+{ PSF(brokenLimbs), 8 }, //up to 8 limbs at once (not that that many are used)
+{ PSF(zoomLocked), 1 },	// NOTENOTE Are all of these necessary?
+{ PSF(zoomFov), 0 },	// NOTENOTE Are all of these necessary?
+{ PSF(fd.forceRageRecoveryTime), 32 },
+{ PSF(fallingToDeath), 32 },
+{ PSF(fd.forceMindtrickTargetIndex), 16 }, //NOTE: Not just an index, used as a (1 << val) bitflag for up to 16 clients
+{ PSF(fd.forceMindtrickTargetIndex2), 16 }, //NOTE: Not just an index, used as a (1 << val) bitflag for up to 16 clients
+{ PSF(vehWeaponsLinked), 1 },
+{ PSF(lastHitLoc[2]), 0 },
+{ PSF(hyperSpaceTime), 32 },
+{ PSF(fd.forceMindtrickTargetIndex3), 16 }, //NOTE: Not just an index, used as a (1 << val) bitflag for up to 16 clients
+{ PSF(lastHitLoc[0]), 0 },
+{ PSF(eFlags2), 10 },
+{ PSF(fd.forceMindtrickTargetIndex4), 16 }, //NOTE: Not just an index, used as a (1 << val) bitflag for up to 16 clients
+{ PSF(hyperSpaceAngles[1]), 0 },
+{ PSF(lastHitLoc[1]), 0 }, //currently only used so client knows to orient disruptor disintegration.. seems a bit much for just that though.
+{ PSF(vehBoarding), 1 }, //not like the normal boarding value, this is a simple "1 or 0" value
+{ PSF(fd.sentryDeployed), 1 },
+{ PSF(saberLockTime), 32 },
+{ PSF(saberLockFrame), 16 },
+{ PSF(vehTurnaroundIndex), GENTITYNUM_BITS },
+{ PSF(vehSurfaces), 16 }, //allow up to 16 surfaces in the flag I guess
+{ PSF(fd.forcePowerLevel[FP_SEE]), 2 }, //needed for knowing when to display players through walls
+{ PSF(saberLockEnemy), GENTITYNUM_BITS },
+{ PSF(fd.forceGripCripple), 1 }, //should only be 0 or 1 ever
+{ PSF(emplacedIndex), GENTITYNUM_BITS },
+{ PSF(holocronBits), 32 },
+{ PSF(isJediMaster), 1 },
+{ PSF(forceRestricted), 1 },
+{ PSF(trueJedi), 1 },
+{ PSF(trueNonJedi), 1 },
+{ PSF(duelTime), 32 },
+{ PSF(duelInProgress), 1 },
+{ PSF(saberLockAdvance), 1 },
+{ PSF(heldByClient), 6 },
+{ PSF(ragAttach), GENTITYNUM_BITS },
+{ PSF(iModelScale), 10 }, //0-1024 (guess it's gotta be increased if we want larger allowable scale.. but 1024% is pretty big)
+{ PSF(hackingBaseTime), 16 }, //up to 65536ms, over 10 seconds would just be silly anyway
+{ PSF(hyperSpaceAngles[0]), 0 },
+{ PSF(hyperSpaceAngles[2]), 0 },
+
+//rww - for use by mod authors only
+#ifndef _XBOX
+{ PSF(userInt1), 1 },
+{ PSF(userInt2), 1 },
+{ PSF(userInt3), 1 },
+{ PSF(userFloat1), 1 },
+{ PSF(userFloat2), 1 },
+{ PSF(userFloat3), 1 },
+{ PSF(userVec1[0]), 1 },
+{ PSF(userVec1[1]), 1 },
+{ PSF(userVec1[2]), 1 },
+{ PSF(userVec2[0]), 1 },
+{ PSF(userVec2[1]), 1 },
+{ PSF(userVec2[2]), 1 }
+#endif
+};
+
+//=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
+#endif//_OPTIMIZED_VEHICLE_NETWORKING
+//=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 
 #ifndef _XBOX	// No mods on Xbox
 typedef struct bitStorage_s bitStorage_t;
@@ -2978,23 +3217,12 @@ int msg_hData[256] = {
 #ifndef _USINGNEWHUFFTABLE_
 
 void MSG_initHuffman() {
-
-#ifdef _XBOX
-	// Try to use pre-built table:
-	extern bool Huff_Load( huffman_t *huff );
-	if( Huff_Load( &msgHuff ) )
-	{
-		msgInit = qtrue;
-		return;
-	}
-#endif
-
 	int i,j;
 
 #ifdef _NEWHUFFTABLE_
 	fp=fopen("c:\\netchan.bin", "a");
 #endif // _NEWHUFFTABLE_
-
+	
 	msgInit = qtrue;
 	Huff_Init(&msgHuff);
 	for(i=0;i<256;i++) {
@@ -3003,13 +3231,6 @@ void MSG_initHuffman() {
 			Huff_addRef(&msgHuff.decompressor,	(byte)i);			// Do update
 		}
 	}
-
-#if defined(_XBOX) && !defined(FINAL_BUILD)
-	// When we build a new table, write it out:
-	extern void Huff_Save( huffman_t *huff );
-	Huff_Save( &msgHuff );
-#endif
-
 }
 
 #else

@@ -11,8 +11,6 @@
 	#include <float.h>
 #endif //_DEBUG
 
-#include "../client/fffx.h"
-
 extern qboolean InFront( vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold = 0.0f );
 qboolean LogAccuracyHit( gentity_t *target, gentity_t *attacker );
 extern qboolean PM_SaberInParry( int move );
@@ -976,7 +974,7 @@ int G_GroundTrace( gentity_t *ent, pml_t *pPml )
 	point[1] = ent->currentOrigin[1];
 	point[2] = ent->currentOrigin[2] - 0.25;
 
-	gi.trace ( &trace, ent->currentOrigin, ent->mins, ent->maxs, point, ent->s.number, ent->clipmask );
+	gi.trace ( &trace, ent->currentOrigin, ent->mins, ent->maxs, point, ent->s.number, ent->clipmask, (EG2_Collision)0, 0 );
 	pPml->groundTrace = trace;
 
 	// do something corrective if the trace starts in a solid...

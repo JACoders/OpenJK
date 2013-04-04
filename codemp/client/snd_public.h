@@ -49,11 +49,7 @@ void S_Update( void );
 
 void S_DisableSounds( void );
 
-#ifdef _XBOX
-void S_BeginRegistration( int num_listeners );
-#else
 void S_BeginRegistration( void );
-#endif
 
 // RegisterSound will allways return a valid sample, even if it
 // has to create a placeholder.  This prevents continuous filesystem

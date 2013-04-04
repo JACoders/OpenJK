@@ -17,7 +17,7 @@
 
 // these are also in q_shared.h - argh (rjr)
 #ifdef _XBOX
-#define MAX_CLIENTS			10
+#define MAX_CLIENTS			16
 #else
 #define MAX_CLIENTS			32
 #endif

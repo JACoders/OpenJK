@@ -6,7 +6,7 @@
 	SccProjectName="&quot;$/jedi/codemp&quot;, CAAAAAAA"
 	SccAuxPath=""
 	SccLocalPath="."
-	SccProvider="MSSCCI:SourceOffSite">
+	SccProvider="MSSCCI:Microsoft Visual SourceSafe">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -52,6 +52,9 @@
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ProgramDatabaseFile=".\Release/jk2Ded.pdb"
+				GenerateMapFile="TRUE"
+				MapFileName="release\jampDed.map"
+				MapLines="TRUE"
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"

@@ -166,6 +166,15 @@ int G_FindLookItem( gentity_t *self )
 		{//can't see him
 			continue;
 		}
+		if ( ent->item->giType == IT_WEAPON
+			&& ent->item->giType == WP_SABER )
+		{//a weapon_saber pickup
+			if ( self->client->ps.dualSabers//using 2 sabers already
+				|| (self->client->ps.saber[0].saberFlags&SFL_TWO_HANDED) )//using a 2-handed saber
+			{//hands are full already, don't look at saber pickups
+				continue;
+			}
+		}
 		//rate him based on how close & how in front he is
 		VectorSubtract( ent->currentOrigin, center, dir );
 		rating = (1.0f-(VectorNormalize( dir )/radius));
@@ -249,7 +258,7 @@ void G_SetViewEntity( gentity_t *self, gentity_t *viewEntity )
 	}
 	if ( !self->s.number )
 	{
-		CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.87 );
+		CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.95 );
 	}
 }
 
@@ -1964,7 +1973,7 @@ gentity_t *G_KickTrace( gentity_t *ent, vec3_t kickDir, float kickDist, vec3_t k
 		VectorMA( traceOrg, kickDist, kickDir, traceEnd );
 	}
 
-	gi.trace( &trace, traceOrg, kickMins, kickMaxs, traceEnd, ent->s.number, MASK_SHOT );//clipmask ok?
+	gi.trace( &trace, traceOrg, kickMins, kickMaxs, traceEnd, ent->s.number, MASK_SHOT, (EG2_Collision)0, 0 );//clipmask ok?
 	if ( trace.fraction < 1.0f && !trace.startsolid && !trace.allsolid && trace.entityNum < ENTITYNUM_NONE )
 	{
 		hitEnt = &g_entities[trace.entityNum];
@@ -2184,7 +2193,7 @@ qboolean G_CheckRollSafety( gentity_t *self, int anim, float testDist )
 		break;
 	}
 
-	gi.trace( &trace, self->currentOrigin, self->mins, self->maxs, testPos, self->s.number, contents );
+	gi.trace( &trace, self->currentOrigin, self->mins, self->maxs, testPos, self->s.number, contents, (EG2_Collision)0, 0 );
 	if ( trace.fraction < 1.0f 
 		|| trace.allsolid
 		|| trace.startsolid )
@@ -2392,7 +2401,7 @@ void G_FixMins( gentity_t *ent )
 	float  downdist = (DEFAULT_MINS_2-ent->mins[2]);
 	vec3_t end={ent->currentOrigin[0],ent->currentOrigin[1],ent->currentOrigin[2]+downdist}; 
 	trace_t	trace;
-	gi.trace( &trace, ent->currentOrigin, ent->mins, ent->maxs, end, ent->s.number, ent->clipmask );
+	gi.trace( &trace, ent->currentOrigin, ent->mins, ent->maxs, end, ent->s.number, ent->clipmask, (EG2_Collision)0, 0 );
 	if ( !trace.allsolid && !trace.startsolid )
 	{
 		if ( trace.fraction >= 1.0f )
@@ -2409,7 +2418,7 @@ void G_FixMins( gentity_t *ent )
 			//need to trace up, too
 			float updist = ((1.0f-trace.fraction) * -downdist);
 			end[2] = ent->currentOrigin[2]+updist; 
-			gi.trace( &trace, ent->currentOrigin, ent->mins, ent->maxs, end, ent->s.number, ent->clipmask );
+			gi.trace( &trace, ent->currentOrigin, ent->mins, ent->maxs, end, ent->s.number, ent->clipmask, (EG2_Collision)0, 0 );
 			if ( !trace.allsolid && !trace.startsolid )
 			{
 				if ( trace.fraction >= 1.0f )
@@ -4691,6 +4700,20 @@ void	ClientAlterSpeed(gentity_t *ent, usercmd_t *ucmd, qboolean	controlledByPlay
 		{
 			client->ps.speed *= 0.75;
 		}
+		
+		if ( client->ps.weapon == WP_SABER )
+		{
+			if ( client->ps.saber[0].moveSpeedScale != 1.0f )
+			{
+				client->ps.speed *= client->ps.saber[0].moveSpeedScale;
+			}
+			if ( client->ps.dualSabers
+				&& client->ps.saber[1].moveSpeedScale != 1.0f )
+			{
+				client->ps.speed *= client->ps.saber[1].moveSpeedScale;
+			}
+		}
+
 	}
 }
 
@@ -4761,7 +4784,6 @@ usually be a couple times for each server frame on fast clients.
 
 extern int		G_FindLocalInterestPoint( gentity_t *self );
 extern float	G_CanJumpToEnemyVeh(Vehicle_t *pVeh, const usercmd_t *pUmcd );
-extern void Cbuf_ExecuteText( int exec_when, const char *text );
 
 void ClientThink_real( gentity_t *ent, usercmd_t *ucmd ) 
 {
@@ -5522,19 +5544,6 @@ extern cvar_t	*g_skippingcin;
 	// check for respawning
 	if ( client->ps.stats[STAT_HEALTH] <= 0 ) 
 	{
-		if( client->ps.clientNum == 0 )
-		{
-			Cbuf_ExecuteText(EXEC_NOW, "-moveup");
-			Cbuf_ExecuteText(EXEC_NOW, "-movedown");
-			Cbuf_ExecuteText(EXEC_NOW, "-hotswap1");
-			Cbuf_ExecuteText(EXEC_NOW, "-hotswap2");
-			Cbuf_ExecuteText(EXEC_NOW, "-hotswap3");
-			Cbuf_ExecuteText(EXEC_NOW, "-attack");
-			Cbuf_ExecuteText(EXEC_NOW, "-altattack");
-			Cbuf_ExecuteText(EXEC_NOW, "-use");
-			Cbuf_ExecuteText(EXEC_NOW, "-useforce");
-		}
-
 		// wait for the attack button to be pressed
 		if ( ent->NPC == NULL && level.time > client->respawnTime ) 
 		{
@@ -5552,11 +5561,10 @@ extern cvar_t	*g_skippingcin;
 			*/
 
 			// pressing attack or use is the normal respawn method
-			//if ( ucmd->buttons & ( BUTTON_ATTACK ) ) 
-			//{
-	
-			//	respawn( ent );
-			//}
+			if ( ucmd->buttons & ( BUTTON_ATTACK ) ) 
+			{
+				respawn( ent );
+			}
 		}
 		if ( ent 
 			&& !ent->s.number 
@@ -5592,15 +5600,6 @@ extern cvar_t	*g_skippingcin;
 	ClientEndPowerUps( ent );
 	//try some idle anims on ent if getting no input and not moving for some time
 	G_CheckClientIdle( ent, ucmd );
-
-	extern void FF_XboxSaberRumble( void );
-	if(ent->s.number == 0)	// player
-	{
-		if(ent->client->ps.saberLockTime > level.time)
-		{
-			FF_XboxSaberRumble();
-		}
-	}	
 }
 
 /*

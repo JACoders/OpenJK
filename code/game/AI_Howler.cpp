@@ -214,7 +214,7 @@ static void Howler_TryDamage( int damage, qboolean tongue, qboolean knockdown )
 	}
 #endif
 	// Should probably trace from the mouth, but, ah well.
-	gi.trace( &tr, start, vec3_origin, vec3_origin, end, NPC->s.number, MASK_SHOT );
+	gi.trace( &tr, start, vec3_origin, vec3_origin, end, NPC->s.number, MASK_SHOT, (EG2_Collision)0, 0 );
 
 	if ( tr.entityNum < ENTITYNUM_WORLD )
 	{//hit *something*

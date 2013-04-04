@@ -242,9 +242,10 @@ void CG_RegisterWeapon( int weaponNum ) {
 		theFxScheduler.RegisterEffect( "force/force_touch" );
 		theFxScheduler.RegisterEffect( "saber/saber_block" );
 		theFxScheduler.RegisterEffect( "saber/saber_cut" );
-		theFxScheduler.RegisterEffect( "blaster/smoke_bolton" );
+		theFxScheduler.RegisterEffect( "saber/limb_bolton" );
 		theFxScheduler.RegisterEffect( "saber/fizz" );
 		theFxScheduler.RegisterEffect( "saber/boil" );
+		theFxScheduler.RegisterEffect( "saber/fire" );//was "sparks/spark"
 
 		cgs.effects.forceHeal			= theFxScheduler.RegisterEffect( "force/heal" );
 		//cgs.effects.forceInvincibility	= theFxScheduler.RegisterEffect( "force/invin" );
@@ -607,7 +608,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 		cgi_R_RegisterShader( "models/map_objects/imp_mine/turret_chair_dmg" );
 		cgi_R_RegisterShader( "models/map_objects/imp_mine/turret_chair_on" );
 
-//		cgs.media.emplacedHealthBarShader		= cgi_R_RegisterShaderNoMip( "gfx/hud/health_frame" );
+		cgs.media.emplacedHealthBarShader		= cgi_R_RegisterShaderNoMip( "gfx/hud/health_frame" );
 		cgs.media.turretComputerOverlayShader	= cgi_R_RegisterShaderNoMip( "gfx/hud/generic_target" );
 		cgs.media.turretCrossHairShader			= cgi_R_RegisterShaderNoMip( "gfx/2d/panel_crosshair" );
 		break;
@@ -746,7 +747,6 @@ void CG_RegisterItemVisuals( int itemNum ) {
 			cgi_S_RegisterSound( "sound/player/use_sentry" );
 			break;
 
-/*
 		case INV_ELECTROBINOCULARS:
 			// Binocular interface
 			cgs.media.binocularCircle		= cgi_R_RegisterShader( "gfx/2d/binCircle" );
@@ -765,7 +765,6 @@ void CG_RegisterItemVisuals( int itemNum ) {
 			cgs.media.laGogglesBracket		= cgi_R_RegisterShader( "gfx/2d/bracket" );
 			cgs.media.laGogglesArrow		= cgi_R_RegisterShader( "gfx/2d/bracket2" );
 			break;
-*/
 
 		case INV_BACTA_CANISTER:
 			for ( int i = 1; i < 5; i++ )
@@ -1468,19 +1467,6 @@ char *weaponDesc[13] =
 "CONCUSSION_DESC",
 };
 
-extern char forceDesc[2048];
-#include "../ui/ui_shared.h"
-extern void Menu_SetItemText(const menuDef_t *menu,const char *itemName, const char *text);
-void CG_SetDataPadWeaponText( void )
-{
-	// Print the weapon description
-	if(!cg.DataPadWeaponSelect) { //Print nothing if you have no weapons.
-		Menu_SetItemText(Menu_GetFocused(), "desc", "");
-	} else {
-		cgi_SP_GetStringTextString( va("SP_INGAME_%s",weaponDesc[cg.DataPadWeaponSelect-1]), forceDesc, sizeof(forceDesc) );
-		Menu_SetItemText(Menu_GetFocused(), "desc", forceDesc);
-	}
-}
 /*
 ===================
 CG_DrawDataPadWeaponSelect
@@ -1492,6 +1478,9 @@ void CG_DrawDataPadWeaponSelect( void )
 {
 	int				i;
 	int				weaponBitFlag,weaponCount,weaponSelectI;
+	int				holdX;
+	int				sideLeftIconCnt,sideRightIconCnt;
+	int				holdCount,iconCnt;
 	char			text[1024]={0};
 	qboolean drewConc = qfalse;
 
@@ -1507,15 +1496,32 @@ void CG_DrawDataPadWeaponSelect( void )
 		if ( weaponBitFlag & ( 1 << i ) ) 
 		{
 			weaponCount++;
-			// Fix for datapad always showing saber, even when we don't have it
-			if (!(weaponBitFlag & (1 << cg.DataPadWeaponSelect)))
-				cg.DataPadWeaponSelect = i;
 		}
 	}
 
 	if (weaponCount == 0)	// If no weapons, don't display
 	{
 		return;
+	}
+
+	const short sideMax = 3;	// Max number of icons on the side
+
+	// Calculate how many icons will appear to either side of the center one
+	holdCount = weaponCount - 1;	// -1 for the center icon
+	if (holdCount == 0)			// No icons to either side
+	{
+		sideLeftIconCnt = 0;
+		sideRightIconCnt = 0;
+	}
+	else if (weaponCount > (2*sideMax))	// Go to the max on each side
+	{
+		sideLeftIconCnt = sideMax;
+		sideRightIconCnt = sideMax;
+	}
+	else							// Less than max, so do the calc
+	{
+		sideLeftIconCnt = holdCount/2;
+		sideRightIconCnt = holdCount - sideLeftIconCnt;
 	}
 
 	// This seems to be a problem if datapad comes up too early
@@ -1542,25 +1548,186 @@ void CG_DrawDataPadWeaponSelect( void )
 		weaponSelectI = 13;
 	}	
 
+	const int smallIconSize = 40;
+	const int bigIconSize = 80;
+	const int bigPad = 64;
+	const int pad = 32;
+
+	const int centerXPos = 320;
+	const int graphicYPos = 340;
+
+
+	// Left side ICONS
+	// Work backwards from current icon
+	holdX = centerXPos - ((bigIconSize/2) + bigPad + smallIconSize);
+
+	cgi_R_SetColor( colorTable[CT_WHITE] );
+	for (iconCnt=1;iconCnt<(sideLeftIconCnt+1);weaponSelectI--)
+	{
+		if ( weaponSelectI == WP_CONCUSSION )
+		{
+			weaponSelectI--;
+		}
+		else if ( weaponSelectI == WP_FLECHETTE && !drewConc && cg.DataPadWeaponSelect != WP_CONCUSSION )
+		{
+			weaponSelectI = WP_CONCUSSION;
+		}
+
+		if (weaponSelectI<1)
+		{
+			weaponSelectI = 13;
+		}
+
+		if ( !(weaponBitFlag & ( 1 << weaponSelectI )))	// Does he have this weapon?
+		{
+			if ( weaponSelectI == WP_CONCUSSION )
+			{
+				drewConc = qtrue;
+				weaponSelectI = WP_ROCKET_LAUNCHER;
+			}
+			continue;
+		}
+
+		++iconCnt;					// Good icon
+
+		if (weaponData[weaponSelectI].weaponIcon[0])
+		{
+			weaponInfo_t	*weaponInfo;
+			CG_RegisterWeapon( weaponSelectI );	
+			weaponInfo = &cg_weapons[weaponSelectI];
+
+			if (!CG_WeaponCheck(weaponSelectI))
+			{
+				CG_DrawPic( holdX, graphicYPos, smallIconSize, smallIconSize, weaponInfo->weaponIconNoAmmo );
+			}
+			else
+			{
+				CG_DrawPic( holdX, graphicYPos, smallIconSize, smallIconSize, weaponInfo->weaponIcon );
+			}
+
+			holdX -= (smallIconSize+pad);
+		}
+
+		if ( weaponSelectI == WP_CONCUSSION )
+		{
+			drewConc = qtrue;
+			weaponSelectI = WP_ROCKET_LAUNCHER;
+		}
+	}
+
+	// Current Center Icon
+	cgi_R_SetColor(colorTable[CT_WHITE]);
+
 	if (weaponData[cg.DataPadWeaponSelect].weaponIcon[0])
 	{
 		weaponInfo_t	*weaponInfo;
 		CG_RegisterWeapon( cg.DataPadWeaponSelect );	
 		weaponInfo = &cg_weapons[cg.DataPadWeaponSelect];
 
-		extern void Cvar_Set( const char *var_name, const char *value);
-		Cvar_Set("ui_rules", va("%d", cg.DataPadWeaponSelect));
-
-		// Draw graphic to show weapon has ammo or no ammo
+			// Draw graphic to show weapon has ammo or no ammo
 		if (!CG_WeaponCheck(cg.DataPadWeaponSelect))
 		{
-			CG_DrawPic( 290, 155, 56, 56, weaponInfo->weaponIconNoAmmo );
+			CG_DrawPic( centerXPos-(bigIconSize/2), (graphicYPos-((bigIconSize-smallIconSize)/2))+10, bigIconSize, bigIconSize, weaponInfo->weaponIconNoAmmo );
 		}
 		else
 		{
-			CG_DrawPic( 290, 155, 56, 56, weaponInfo->weaponIcon );
+			CG_DrawPic( centerXPos-(bigIconSize/2), (graphicYPos-((bigIconSize-smallIconSize)/2))+10, bigIconSize, bigIconSize, weaponInfo->weaponIcon );
 		}
 	}
+
+	if ( cg.DataPadWeaponSelect == WP_CONCUSSION )
+	{
+		weaponSelectI = WP_ROCKET_LAUNCHER;
+	}
+	else
+	{
+		weaponSelectI = cg.DataPadWeaponSelect + 1;
+	}
+
+	if (weaponSelectI> 13)
+	{
+		weaponSelectI = 1;
+	}
+
+	// Right side ICONS
+	// Work forwards from current icon
+	cgi_R_SetColor(colorTable[CT_WHITE]);
+	holdX = centerXPos + (bigIconSize/2) + bigPad;
+	for (iconCnt=1;iconCnt<(sideRightIconCnt+1);weaponSelectI++)
+	{
+		if ( weaponSelectI == WP_CONCUSSION )
+		{
+			weaponSelectI++;
+		}
+		else if ( weaponSelectI == WP_ROCKET_LAUNCHER && !drewConc && cg.DataPadWeaponSelect != WP_CONCUSSION )
+		{
+			weaponSelectI = WP_CONCUSSION;
+		}
+		if (weaponSelectI>13)
+		{
+			weaponSelectI = 1;
+		}
+
+		if ( !(weaponBitFlag & ( 1 << weaponSelectI )))	// Does he have this weapon?
+		{
+			if ( weaponSelectI == WP_CONCUSSION )
+			{
+				drewConc = qtrue;
+				weaponSelectI = WP_FLECHETTE;
+			}
+			continue;
+		}
+
+		++iconCnt;					// Good icon
+
+		if (weaponData[weaponSelectI].weaponIcon[0])
+		{
+			weaponInfo_t	*weaponInfo;
+			CG_RegisterWeapon( weaponSelectI );	
+			weaponInfo = &cg_weapons[weaponSelectI];
+
+			// Draw graphic to show weapon has ammo or no ammo
+			if (!CG_WeaponCheck(i))
+			{
+				CG_DrawPic( holdX, graphicYPos, smallIconSize, smallIconSize, weaponInfo->weaponIconNoAmmo );
+			}
+			else
+			{
+				CG_DrawPic( holdX, graphicYPos, smallIconSize, smallIconSize, weaponInfo->weaponIcon );
+			}
+
+
+			holdX += (smallIconSize+pad);
+		}
+		if ( weaponSelectI == WP_CONCUSSION )
+		{
+			drewConc = qtrue;
+			weaponSelectI = WP_FLECHETTE;
+		}
+	}
+
+	// Print the weapon description
+	cgi_SP_GetStringTextString( va("SP_INGAME_%s",weaponDesc[cg.DataPadWeaponSelect-1]), text, sizeof(text) );
+
+	const short textboxXPos = 40;
+	const short textboxYPos = 60;
+	const int	textboxWidth = 560;
+	const int	textboxHeight = 300;
+	const float	textScale = 1.0f;
+
+	if (text)
+	{
+		CG_DisplayBoxedText(
+			textboxXPos, textboxYPos,
+			textboxWidth, textboxHeight,
+			text,
+			4,
+			textScale,
+			colorTable[CT_WHITE]	
+				);
+	}
+
+	cgi_R_SetColor( NULL );
 }
 
 /*
@@ -1739,10 +1906,6 @@ void CG_DrawWeaponSelect( void )
 		return;
 	}
 	x = 320;
-#ifdef _XBOX
-	if(cg.widescreen)
-		x = 360;
-#endif
 	y = 410;
 
 	// Background
@@ -1931,10 +2094,9 @@ void CG_DrawWeaponSelect( void )
 		
 		if ( cgi_SP_GetStringTextString( va("SP_INGAME_%s",item->classname), text, sizeof( text )))
 		{
-			int w = cgi_R_Font_StrLenPixels(text, cgs.media.qhFontSmall, 0.9f ); //1.0f);	
-			int x;
-			x = ( SCREEN_WIDTH - w ) / 2;
-			cgi_R_Font_DrawString(x, (SCREEN_HEIGHT - 24)+yOffset, text, textColor, cgs.media.qhFontSmall, -1, 0.9f); //1.0f);
+			int w = cgi_R_Font_StrLenPixels(text, cgs.media.qhFontSmall, 1.0f);	
+			int x = ( SCREEN_WIDTH - w ) / 2;
+			cgi_R_Font_DrawString(x, (SCREEN_HEIGHT - 24)+yOffset, text, textColor, cgs.media.qhFontSmall, -1, 1.0f);
 		}
 	}
 
@@ -2052,10 +2214,6 @@ extern qboolean Q3_TaskIDPending( gentity_t *ent, taskID_t taskType );
 CG_NextWeapon_f
 ===============
 */
-extern void IN_HotSwap1Off(void);
-extern void IN_HotSwap2Off(void);
-extern void IN_HotSwap3Off(void);
-
 void CG_NextWeapon_f( void ) {
 	int		i;
 	int		original;
@@ -2097,10 +2255,6 @@ void CG_NextWeapon_f( void ) {
 			return;
 		}
 	}
-
-	IN_HotSwap1Off();
-	IN_HotSwap2Off();
-	IN_HotSwap3Off();
 
 	original = cg.weaponSelect;
 
@@ -2306,11 +2460,6 @@ void CG_PrevWeapon_f( void ) {
 		}
 	}
 
-
-	IN_HotSwap1Off();
-	IN_HotSwap2Off();
-	IN_HotSwap3Off();
-
 	original = cg.weaponSelect;
 
 	int firstWeapon = FIRST_WEAPON;
@@ -2461,11 +2610,6 @@ void CG_Weapon_f( void )
 		return;
 	}
 
-	if (!CG_WeaponSelectable(num, cg.snap->ps.weapon, qfalse))
-	{
-		return;
-	}
-
 	if ( num == WP_SABER )
 	{//lightsaber
 		if ( ! ( cg.snap->ps.stats[STAT_WEAPONS] & ( 1 << num ) ) )
@@ -2514,7 +2658,7 @@ void CG_Weapon_f( void )
 				}
 			}
 		}
-	}/*
+	}
 	else if ( num >= WP_THERMAL && num <= WP_DET_PACK ) // these weapons cycle
 	{
 		int weap, i = 0;
@@ -2551,10 +2695,10 @@ void CG_Weapon_f( void )
 			i++;
 		}
 	}
-	*/
 
-	if ( ! ( cg.snap->ps.stats[STAT_WEAPONS] & ( 1 << num ) ) ) {
-		return;		// don't have the weapon
+	if (!CG_WeaponSelectable(num, cg.snap->ps.weapon, qfalse))
+	{
+		return;
 	}
 
 	SetWeaponSelectTime();
@@ -2702,7 +2846,7 @@ void CG_FireWeapon( centity_t *cent, qboolean alt_fire )
 		//		guess as to which FX forces go with which weapon. Sorry if they're crap...
 		//
 		case WP_SABER:				
-			//cgi_FF_StartFX( fffx_SwitchClick );	// repeat-fire handled above, but this just give an initial jolt
+			cgi_FF_StartFX( fffx_SwitchClick );	// repeat-fire handled above, but this just give an initial jolt
 			break;
 
 		case WP_DISRUPTOR:
@@ -2710,10 +2854,8 @@ void CG_FireWeapon( centity_t *cent, qboolean alt_fire )
 		case WP_BLASTER_PISTOL:	
 		case WP_JAWA:	
 		case WP_THERMAL:
-			cgi_FF_StartFX( alt_fire ? fffx_Shotgun : fffx_Pistol);	
-			break;
 		case WP_DET_PACK:
-			
+			cgi_FF_StartFX( alt_fire ? fffx_Shotgun : fffx_Pistol);	
 			break;
 
 		case WP_FLECHETTE:	

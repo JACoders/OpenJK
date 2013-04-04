@@ -50,6 +50,7 @@ typedef struct
 	int		iLoopSound;	//index of loopSound
 	float	fSpeed;		//speed of projectile/range of traceline
 	float	fHoming;		//0.0 = not homing, 0.5 = half vel to targ, half cur vel, 1.0 = all vel to targ
+	float	fHomingFOV;		//missile will lose lock on if DotProduct of missile direction and direction to target ever drops below this (-1 to 1, -1 = never lose target, 0 = lose if ship gets behind missile, 1 = pretty much will lose it's target right away)
 	int		iLockOnTime;	//0 = no lock time needed, else # of ms needed to lock on
 	int		iDamage;		//damage done when traceline or projectile directly hits target
 	int		iSplashDamage;//damage done to ents in splashRadius of end of traceline or projectile origin on impact
@@ -62,7 +63,7 @@ typedef struct
 	qboolean	bExplodeOnExpire;	//when iLifeTime is up, explodes rather than simply removing itself
 } vehWeaponInfo_t;
 //NOTE: this MUST stay up to date with the number of variables in the vehFields table!!!
-#define NUM_VWEAP_PARMS	24
+#define NUM_VWEAP_PARMS	25
 
 #define	VWFOFS(x) ((int)&(((vehWeaponInfo_t *)0)->x))
 

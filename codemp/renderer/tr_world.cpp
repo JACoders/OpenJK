@@ -3,6 +3,10 @@
 
 #include "tr_local.h"
 
+#ifdef VV_LIGHTING
+#include "tr_lightmanager.h"
+#endif
+
 #ifdef _XBOX
 #include "../qcommon/sparc.h"
 static bool lookingForWorstLeaf = false;
@@ -270,7 +274,7 @@ static qboolean	R_CullSurface( surfaceType_t *surface, shader_t *shader ) {
 	return qfalse;
 }
 
-
+#ifndef VV_LIGHTING
 static int R_DlightFace( srfSurfaceFace_t *face, int dlightBits ) {
 	float		d;
 	int			i;
@@ -384,6 +388,7 @@ static int R_DlightSurface( msurface_t *surf, int dlightBits ) {
 
 	return dlightBits;
 }
+#endif // VV_LIGHTING
 
 
 
@@ -397,7 +402,11 @@ static float g_playerHeight = 0.0f;
 R_AddWorldSurface
 ======================
 */
+#ifdef VV_LIGHTING
+void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noViewCount ) 
+#else
 static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noViewCount = qfalse )
+#endif
 {
 	if (!noViewCount)
 	{
@@ -444,7 +453,11 @@ static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noView
 
 	// check for dlighting
 	if ( dlightBits ) {
+#ifdef VV_LIGHTING
+		dlightBits = VVLightMan.R_DlightSurface( surf, dlightBits );
+#else
 		dlightBits = R_DlightSurface( surf, dlightBits );
+#endif
 		dlightBits = ( dlightBits != 0 );
 	}
 
@@ -571,13 +584,21 @@ void R_AddBrushModelSurfaces ( trRefEntity_t *ent ) {
 	
 	if(pModel->bspInstance)
 	{ //rwwRMG - added
+#ifdef VV_LIGHTING
+		VVLightMan.R_SetupEntityLighting(&tr.refdef, ent);
+#else
 		R_SetupEntityLighting(&tr.refdef, ent);
+#endif
 	}
 
 	//rww - Take this into account later?
 //	if (!com_RMG || !com_RMG->integer)
 //	{	// don't dlight bmodels on rmg, as multiple copies of the same instance will light up
+#ifdef VV_LIGHTING
+		VVLightMan.R_DlightBmodel( bmodel, false );
+#else
 		R_DlightBmodel( bmodel, false );
+#endif
 //	}
 //	else
 //	{
@@ -1478,6 +1499,7 @@ const void *R_DrawWireframeAutomap(const void *data)
 R_RecursiveWorldNode
 ================
 */
+#ifndef VV_LIGHTING
 static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits ) {
 
 	do
@@ -1572,8 +1594,7 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits )
 
 					if ( dlightBits & ( 1 << i ) ) {
 						dl = &tr.refdef.dlights[i];
-						dist = DotProduct( dl->origin, tr.world->planes[node->planeNum].normal ) - 
-							tr.world->planes[node->planeNum].dist;
+						dist = DotProduct( dl->origin, node->plane->normal ) - node->plane->dist;
 						
 						if ( dist > -dl->radius ) {
 							newDlights[0] |= ( 1 << i );
@@ -1603,7 +1624,6 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits )
 		// leaf node, so add mark surfaces
 		int			c;
 		msurface_t	*surf, **mark;
-		mleaf_s *leaf;
 
 		tr.pc.c_leafs++;
 
@@ -1629,9 +1649,8 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits )
 		}
 
 		// add the individual surfaces
-		leaf = (mleaf_s*)node;
-		mark = tr.world->marksurfaces + leaf->firstMarkSurfNum;
-		c = leaf->nummarksurfaces;
+		mark = node->firstmarksurface;
+		c = node->nummarksurfaces;
 		while (c--) {
 			// the surface may have already been added if it
 			// spans multiple leafs
@@ -1642,6 +1661,7 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits )
 	}
 
 }
+#endif // VV_LIGHTING
 
 
 /*
@@ -1902,11 +1922,11 @@ void R_AddWorldSurfaces (void) {
 	ClearBounds( tr.viewParms.visBounds[0], tr.viewParms.visBounds[1] );
 
 	// perform frustum culling and add all the potentially visible surfaces
-	if ( tr.refdef.num_dlights > MAX_DLIGHTS ) {
-		tr.refdef.num_dlights = MAX_DLIGHTS ;
+	if ( VVLightMan.num_dlights > MAX_DLIGHTS ) {
+		VVLightMan.num_dlights = MAX_DLIGHTS ;
 	}
 
-	R_RecursiveWorldNode( tr.world->nodes, 15, ( 1 << tr.refdef.num_dlights ) - 1 );
+	VVLightMan.R_RecursiveWorldNode( tr.world->nodes, 15, ( 1 << VVLightMan.num_dlights ) - 1 );
 }
 
 #else // _XBOX

@@ -408,8 +408,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			cg.landTime = cg.time;
 		}
 #ifdef _XBOX
-		if ( !clientNum )
-			cgi_FF_StartFX( fffx_FallingMedium );
+		cgi_FF_StartFX( fffx_FallingMedium );
 #endif
 		//FIXME: maybe kick up some dust?
 		break;
@@ -424,8 +423,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			cg.landTime = cg.time;
 		}
 #ifdef _XBOX
-		if ( !clientNum )
-			cgi_FF_StartFX( fffx_FallingFar );
+		cgi_FF_StartFX( fffx_FallingFar );
 #endif
 		//FIXME: maybe kick up some dust?
 		break;

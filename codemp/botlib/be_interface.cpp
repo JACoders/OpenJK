@@ -131,8 +131,10 @@ int Export_BotLibSetup(void)
 	botlibglobals.maxclients = (int) LibVarValue("maxclients", "128");
 	botlibglobals.maxentities = (int) LibVarValue("maxentities", "1024");
 
-	EA_Setup();
-
+	errnum = AAS_Setup();			//be_aas_main.c
+	if (errnum != BLERR_NOERROR) return errnum;
+	errnum = EA_Setup();			//be_ea.c
+	if (errnum != BLERR_NOERROR) return errnum;
 	/*
 	errnum = BotSetupWeaponAI();	//be_ai_weap.c
 	if (errnum != BLERR_NOERROR)return errnum;
@@ -161,12 +163,20 @@ int Export_BotLibShutdown(void)
 	//DumpFileCRCs();
 #endif //DEMO
 	//
+	BotShutdownChatAI();		//be_ai_chat.c
+	BotShutdownMoveAI();		//be_ai_move.c
+	BotShutdownGoalAI();		//be_ai_goal.c
+	BotShutdownWeaponAI();		//be_ai_weap.c
+	BotShutdownWeights();		//be_ai_weight.c
+	BotShutdownCharacters();	//be_ai_char.c
+	//shud down aas
+	AAS_Shutdown();
+	//shut down bot elemantary actions
+	EA_Shutdown();
 	//free all libvars
 	LibVarDeAllocAll();
 	//remove all global defines from the pre compiler
 	PC_RemoveAllGlobalDefines();
-
-	EA_Shutdown();
 
 	//dump all allocated memory
 //	DumpMemory();
@@ -218,7 +228,7 @@ int Export_BotLibVarGet(char *var_name, char *value, int size)
 int Export_BotLibStartFrame(float time)
 {
 	if (!BotLibSetup("BotStartFrame")) return BLERR_LIBRARYNOTSETUP;
-	return 0;
+	return AAS_StartFrame(time);
 } //end of the function Export_BotLibStartFrame
 //===========================================================================
 //
@@ -237,7 +247,11 @@ int Export_BotLibLoadMap(const char *mapname)
 	//
 	botimport.Print(PRT_MESSAGE, "------------ Map Loading ------------\n");
 	//startup AAS for the current map, model and sound index
+	errnum = AAS_LoadMap(mapname);
+	if (errnum != BLERR_NOERROR) return errnum;
 	//initialize the items in the level
+	BotInitLevelItems();		//be_ai_goal.h
+	BotSetBrushModelTypes();	//be_ai_move.h
 	//
 	botimport.Print(PRT_MESSAGE, "-------------------------------------\n");
 #ifdef DEBUG
@@ -257,7 +271,7 @@ int Export_BotLibUpdateEntity(int ent, bot_entitystate_t *state)
 	if (!BotLibSetup("BotUpdateEntity")) return BLERR_LIBRARYNOTSETUP;
 	if (!ValidEntityNumber(ent, "BotUpdateEntity")) return BLERR_INVALIDENTITYNUMBER;
 
-	return 0;
+	return AAS_UpdateEntity(ent, state);
 } //end of the function Export_BotLibUpdateEntity
 //===========================================================================
 //
@@ -287,7 +301,6 @@ void AAS_FloodAreas(vec3_t origin);
 
 int BotExportTest(int parm0, char *parm1, vec3_t parm2, vec3_t parm3)
 {
-#ifndef _XBOX
 
 //	return AAS_PointLight(parm2, NULL, NULL, NULL);
 
@@ -614,9 +627,9 @@ int BotExportTest(int parm0, char *parm1, vec3_t parm2, vec3_t parm3)
 	} //end if
 #endif
 #endif
-#endif // _XBOX
 	return 0;
 } //end of the function BotExportTest
+
 
 /*
 ============
@@ -624,6 +637,52 @@ Init_AAS_Export
 ============
 */
 static void Init_AAS_Export( aas_export_t *aas ) {
+	//--------------------------------------------
+	// be_aas_entity.c
+	//--------------------------------------------
+	aas->AAS_EntityInfo = AAS_EntityInfo;
+	//--------------------------------------------
+	// be_aas_main.c
+	//--------------------------------------------
+	aas->AAS_Initialized = AAS_Initialized;
+	aas->AAS_PresenceTypeBoundingBox = AAS_PresenceTypeBoundingBox;
+	aas->AAS_Time = AAS_Time;
+	//--------------------------------------------
+	// be_aas_sample.c
+	//--------------------------------------------
+	aas->AAS_PointAreaNum = AAS_PointAreaNum;
+	aas->AAS_PointReachabilityAreaIndex = AAS_PointReachabilityAreaIndex;
+	aas->AAS_TraceAreas = AAS_TraceAreas;
+	aas->AAS_BBoxAreas = AAS_BBoxAreas;
+	aas->AAS_AreaInfo = AAS_AreaInfo;
+	//--------------------------------------------
+	// be_aas_bspq3.c
+	//--------------------------------------------
+	aas->AAS_PointContents = AAS_PointContents;
+	aas->AAS_NextBSPEntity = AAS_NextBSPEntity;
+	aas->AAS_ValueForBSPEpairKey = AAS_ValueForBSPEpairKey;
+	aas->AAS_VectorForBSPEpairKey = AAS_VectorForBSPEpairKey;
+	aas->AAS_FloatForBSPEpairKey = AAS_FloatForBSPEpairKey;
+	aas->AAS_IntForBSPEpairKey = AAS_IntForBSPEpairKey;
+	//--------------------------------------------
+	// be_aas_reach.c
+	//--------------------------------------------
+	aas->AAS_AreaReachability = AAS_AreaReachability;
+	//--------------------------------------------
+	// be_aas_route.c
+	//--------------------------------------------
+	aas->AAS_AreaTravelTimeToGoalArea = AAS_AreaTravelTimeToGoalArea;
+	aas->AAS_EnableRoutingArea = AAS_EnableRoutingArea;
+	aas->AAS_PredictRoute = AAS_PredictRoute;
+	//--------------------------------------------
+	// be_aas_altroute.c
+	//--------------------------------------------
+	aas->AAS_AlternativeRouteGoals = AAS_AlternativeRouteGoals;
+	//--------------------------------------------
+	// be_aas_move.c
+	//--------------------------------------------
+	aas->AAS_Swimming = AAS_Swimming;
+	aas->AAS_PredictClientMovement = AAS_PredictClientMovement;
 }
 
   
@@ -633,6 +692,35 @@ Init_EA_Export
 ============
 */
 static void Init_EA_Export( ea_export_t *ea ) {
+	//ClientCommand elementary actions
+	ea->EA_Command = EA_Command;
+	ea->EA_Say = EA_Say;
+	ea->EA_SayTeam = EA_SayTeam;
+
+	ea->EA_Action = EA_Action;
+	ea->EA_Gesture = EA_Gesture;
+	ea->EA_Talk = EA_Talk;
+	ea->EA_Attack = EA_Attack;
+	ea->EA_Alt_Attack = EA_Alt_Attack;
+	ea->EA_ForcePower = EA_ForcePower;
+	ea->EA_Use = EA_Use;
+	ea->EA_Respawn = EA_Respawn;
+	ea->EA_Crouch = EA_Crouch;
+	ea->EA_MoveUp = EA_MoveUp;
+	ea->EA_MoveDown = EA_MoveDown;
+	ea->EA_MoveForward = EA_MoveForward;
+	ea->EA_MoveBack = EA_MoveBack;
+	ea->EA_MoveLeft = EA_MoveLeft;
+	ea->EA_MoveRight = EA_MoveRight;
+
+	ea->EA_SelectWeapon = EA_SelectWeapon;
+	ea->EA_Jump = EA_Jump;
+	ea->EA_DelayedJump = EA_DelayedJump;
+	ea->EA_Move = EA_Move;
+	ea->EA_View = EA_View;
+	ea->EA_GetInput = EA_GetInput;
+	ea->EA_EndRegular = EA_EndRegular;
+	ea->EA_ResetInput = EA_ResetInput;
 }
 
 
@@ -642,6 +730,99 @@ Init_AI_Export
 ============
 */
 static void Init_AI_Export( ai_export_t *ai ) {
+	//-----------------------------------
+	// be_ai_char.h
+	//-----------------------------------
+	ai->BotLoadCharacter = BotLoadCharacter;
+	ai->BotFreeCharacter = BotFreeCharacter;
+	ai->Characteristic_Float = Characteristic_Float;
+	ai->Characteristic_BFloat = Characteristic_BFloat;
+	ai->Characteristic_Integer = Characteristic_Integer;
+	ai->Characteristic_BInteger = Characteristic_BInteger;
+	ai->Characteristic_String = Characteristic_String;
+	//-----------------------------------
+	// be_ai_chat.h
+	//-----------------------------------
+	ai->BotAllocChatState = BotAllocChatState;
+	ai->BotFreeChatState = BotFreeChatState;
+	ai->BotQueueConsoleMessage = BotQueueConsoleMessage;
+	ai->BotRemoveConsoleMessage = BotRemoveConsoleMessage;
+	ai->BotNextConsoleMessage = BotNextConsoleMessage;
+	ai->BotNumConsoleMessages = BotNumConsoleMessages;
+	ai->BotInitialChat = BotInitialChat;
+	ai->BotNumInitialChats = BotNumInitialChats;
+	ai->BotReplyChat = BotReplyChat;
+	ai->BotChatLength = BotChatLength;
+	ai->BotEnterChat = BotEnterChat;
+	ai->BotGetChatMessage = BotGetChatMessage;
+	ai->StringContains = StringContains;
+	ai->BotFindMatch = BotFindMatch;
+	ai->BotMatchVariable = BotMatchVariable;
+	ai->UnifyWhiteSpaces = UnifyWhiteSpaces;
+	ai->BotReplaceSynonyms = BotReplaceSynonyms;
+	ai->BotLoadChatFile = BotLoadChatFile;
+	ai->BotSetChatGender = BotSetChatGender;
+	ai->BotSetChatName = BotSetChatName;
+	//-----------------------------------
+	// be_ai_goal.h
+	//-----------------------------------
+	ai->BotResetGoalState = BotResetGoalState;
+	ai->BotResetAvoidGoals = BotResetAvoidGoals;
+	ai->BotRemoveFromAvoidGoals = BotRemoveFromAvoidGoals;
+	ai->BotPushGoal = BotPushGoal;
+	ai->BotPopGoal = BotPopGoal;
+	ai->BotEmptyGoalStack = BotEmptyGoalStack;
+	ai->BotDumpAvoidGoals = BotDumpAvoidGoals;
+	ai->BotDumpGoalStack = BotDumpGoalStack;
+	ai->BotGoalName = BotGoalName;
+	ai->BotGetTopGoal = BotGetTopGoal;
+	ai->BotGetSecondGoal = BotGetSecondGoal;
+	ai->BotChooseLTGItem = BotChooseLTGItem;
+	ai->BotChooseNBGItem = BotChooseNBGItem;
+	ai->BotTouchingGoal = BotTouchingGoal;
+	ai->BotItemGoalInVisButNotVisible = BotItemGoalInVisButNotVisible;
+	ai->BotGetLevelItemGoal = BotGetLevelItemGoal;
+	ai->BotGetNextCampSpotGoal = BotGetNextCampSpotGoal;
+	ai->BotGetMapLocationGoal = BotGetMapLocationGoal;
+	ai->BotAvoidGoalTime = BotAvoidGoalTime;
+	ai->BotSetAvoidGoalTime = BotSetAvoidGoalTime;
+	ai->BotInitLevelItems = BotInitLevelItems;
+	ai->BotUpdateEntityItems = BotUpdateEntityItems;
+	ai->BotLoadItemWeights = BotLoadItemWeights;
+	ai->BotFreeItemWeights = BotFreeItemWeights;
+	ai->BotInterbreedGoalFuzzyLogic = BotInterbreedGoalFuzzyLogic;
+	ai->BotSaveGoalFuzzyLogic = BotSaveGoalFuzzyLogic;
+	ai->BotMutateGoalFuzzyLogic = BotMutateGoalFuzzyLogic;
+	ai->BotAllocGoalState = BotAllocGoalState;
+	ai->BotFreeGoalState = BotFreeGoalState;
+	//-----------------------------------
+	// be_ai_move.h
+	//-----------------------------------
+	ai->BotResetMoveState = BotResetMoveState;
+	ai->BotMoveToGoal = BotMoveToGoal;
+	ai->BotMoveInDirection = BotMoveInDirection;
+	ai->BotResetAvoidReach = BotResetAvoidReach;
+	ai->BotResetLastAvoidReach = BotResetLastAvoidReach;
+	ai->BotReachabilityArea = BotReachabilityArea;
+	ai->BotMovementViewTarget = BotMovementViewTarget;
+	ai->BotPredictVisiblePosition = BotPredictVisiblePosition;
+	ai->BotAllocMoveState = BotAllocMoveState;
+	ai->BotFreeMoveState = BotFreeMoveState;
+	ai->BotInitMoveState = BotInitMoveState;
+	ai->BotAddAvoidSpot = BotAddAvoidSpot;
+	//-----------------------------------
+	// be_ai_weap.h
+	//-----------------------------------
+	ai->BotChooseBestFightWeapon = BotChooseBestFightWeapon;
+	ai->BotGetWeaponInfo = BotGetWeaponInfo;
+	ai->BotLoadWeaponWeights = BotLoadWeaponWeights;
+	ai->BotAllocWeaponState = BotAllocWeaponState;
+	ai->BotFreeWeaponState = BotFreeWeaponState;
+	ai->BotResetWeaponState = BotResetWeaponState;
+	//-----------------------------------
+	// be_ai_gen.h
+	//-----------------------------------
+	ai->GeneticParentsAndChildSelection = GeneticParentsAndChildSelection;
 }
 
 

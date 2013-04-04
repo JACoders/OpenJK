@@ -1,8 +1,7 @@
 #ifndef __CG_MEDIA_H_
 #define __CG_MEDIA_H_
 
-//#define	NUM_CROSSHAIRS		9
-#define	NUM_CROSSHAIRS		1
+#define	NUM_CROSSHAIRS		9
 
 typedef enum {
 	FOOTSTEP_STONEWALK,
@@ -102,19 +101,19 @@ typedef struct {
 	qhandle_t	backTileShader;
 //	qhandle_t	noammoShader;
 
-//	qhandle_t	numberShaders[11];
+	qhandle_t	numberShaders[11];
 	qhandle_t	smallnumberShaders[11];
-//	qhandle_t	chunkyNumberShaders[11];
+	qhandle_t	chunkyNumberShaders[11];
 
 	qhandle_t	loadTick;
-//	qhandle_t	loadTickCap;
+	qhandle_t	loadTickCap;
 
 	//			HUD artwork
-//	int			currentBackground;
-//	qhandle_t	weaponbox;
-//	qhandle_t	weaponIconBackground;
-//	qhandle_t	forceIconBackground;
-//	qhandle_t	inventoryIconBackground;
+	int			currentBackground;
+	qhandle_t	weaponbox;
+	qhandle_t	weaponIconBackground;
+	qhandle_t	forceIconBackground;
+	qhandle_t	inventoryIconBackground;
 	qhandle_t	turretComputerOverlayShader;
 	qhandle_t	turretCrossHairShader;
 
@@ -166,23 +165,19 @@ typedef struct {
 	qhandle_t	disruptorInsertTick;
 
 	// Binocular graphics
-/*
 	qhandle_t	binocularCircle;
 	qhandle_t	binocularMask;
 	qhandle_t	binocularArrow;
 	qhandle_t	binocularTri;
 	qhandle_t	binocularStatic;
 	qhandle_t	binocularOverlay;
-*/
 
 	// LA Goggles graphics
-/*
 	qhandle_t	laGogglesStatic;
 	qhandle_t	laGogglesMask;
 	qhandle_t	laGogglesSideBit;
 	qhandle_t	laGogglesBracket;
 	qhandle_t	laGogglesArrow;
-*/
 
 	// wall mark shaders
 	qhandle_t	scavMarkShader;
@@ -208,8 +203,9 @@ typedef struct {
 
 	// Interface media
 	qhandle_t	ammoslider;
-//	qhandle_t	emplacedHealthBarShader;
+	qhandle_t	emplacedHealthBarShader;
 
+	qhandle_t	dataPadFrame;
 	qhandle_t	DPForcePowerOverlay;
 
 	qhandle_t	bdecal_burnmark1;
@@ -219,7 +215,7 @@ typedef struct {
 	qhandle_t	messageLitOff;
 	qhandle_t	messageObjCircle;
 
-//	qhandle_t	batteryChargeShader;
+	qhandle_t	batteryChargeShader;
 	qhandle_t	useableHint;
 
 	qhandle_t	levelLoad;

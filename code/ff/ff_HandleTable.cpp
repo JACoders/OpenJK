@@ -20,8 +20,9 @@ ffHandle_t FFHandleTable::Convert( ChannelCompound &compound, const char *name, 
 		ff = Convert( compound );
 	else
 	{
+		FFHandleTable::RegFail::iterator itRegFail = mRegFail.end();
 		for
-		(	FFHandleTable::RegFail::iterator itRegFail = mRegFail.begin()
+		(	itRegFail = mRegFail.begin()
 		;	itRegFail != mRegFail.end()
 		&&	(*itRegFail).second != name
 		;	itRegFail++
@@ -60,8 +61,9 @@ ffHandle_t FFHandleTable::Convert( ChannelCompound &compound, const char *name, 
 //
 ffHandle_t FFHandleTable::Convert( ChannelCompound &compound )
 {
+	int i = 1;
 	for
-	(	int i = 1
+	(	
 	;	i < mVector.size()
 	&&	mVector[ i ] != compound
 	;	i++

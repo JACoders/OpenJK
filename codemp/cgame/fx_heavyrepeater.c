@@ -2,10 +2,6 @@
 
 #include "cg_local.h"
 
-#ifdef _XBOX
-#include "../client/cl_data.h"
-#endif
-
 /*
 ---------------------------
 FX_RepeaterProjectileThink
@@ -61,24 +57,18 @@ static void CG_DistortionOrb( centity_t *cent )
 
 	VectorCopy( cent->lerpOrigin, ent.origin );
 
-	VectorSubtract(ent.origin, cg->refdef.vieworg, ent.axis[0]);
+	VectorSubtract(ent.origin, cg.refdef.vieworg, ent.axis[0]);
 	vLen = VectorLength(ent.axis[0]);
 	if (VectorNormalize(ent.axis[0]) <= 0.1f)
 	{	// Entity is right on vieworg.  quit.
 		return;
 	}
 
-//	VectorCopy(cg->refdef.viewaxis[2], ent.axis[2]);
+//	VectorCopy(cg.refdef.viewaxis[2], ent.axis[2]);
 //	CrossProduct(ent.axis[0], ent.axis[2], ent.axis[1]);
 	vectoangles(ent.axis[0], ang);
-#ifdef _XBOX
-	ang[ROLL] = cent->trickAlpha[ClientManager::ActiveClientNum()];
-	cent->trickAlpha[ClientManager::ActiveClientNum()] += 16; //spin the half-sphere to give a "screwdriver" effect
-#else
 	ang[ROLL] = cent->trickAlpha;
 	cent->trickAlpha += 16; //spin the half-sphere to give a "screwdriver" effect
-#endif
-	
 	AnglesToAxis(ang, ent.axis);
 
 	//radius must be a power of 2, and is the actual captured texture size

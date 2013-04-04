@@ -895,9 +895,9 @@ void WPN_AmmoIcon(const char **holdBuf)
 
 	len = strlen(tokenStr);
 	len++;
-	if (len > 32)
+	if (len > 64)
 	{
-		len = 32;
+		len = 64;
 		gi.Printf(S_COLOR_YELLOW"WARNING: ammoicon too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 

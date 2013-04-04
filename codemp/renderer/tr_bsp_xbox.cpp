@@ -23,11 +23,6 @@ byte		*fileBase;
 int			c_subdivisions;
 int			c_gridVerts;
 
-static int	flareNum = 0;
-
-static cplane_t *externalPlaneData = NULL;
-int externalPlaneCount = 0;
-
 void R_RMGInit(void);
 //===============================================================================
 
@@ -277,13 +272,6 @@ void RE_SetWorldVisData( SPARC<byte> *vis ) {
 }
 
 
-void RE_SetPlaneData(cplane_t *planes, int count)
-{
-	externalPlaneData = planes;
-	externalPlaneCount = count;
-}
-
-
 /*
 =================
 R_LoadVisibility
@@ -335,7 +323,7 @@ qhandle_t R_GetShaderByNum(int shaderNum, world_t &worldData)
 ShaderForShaderNum
 ===============
 */
-static shader_t *ShaderForShaderNum( int shaderNum, const short *lightmapNum, const byte *lightmapStyles ) {
+static shader_t *ShaderForShaderNum( int shaderNum, const int *lightmapNum, const byte *lightmapStyles ) {
 	shader_t	*shader;
 	dshader_t	*dsh;
 
@@ -403,8 +391,8 @@ int SurfaceFaceSize(int numVerts, int numLightMaps, bool needVertexColors,
 			(VERTEX_LM + numLightMaps * 2 + 
 			(int)needVertexColors * 4));	
 
-	// Add in tangent size	-- NO! It's in VERTEX_LM
-//	sfaceSize += sizeof(vec3_t) * numVerts;
+	// Add in tangent size
+	sfaceSize += sizeof(vec3_t) * numVerts;
 
 	//Indices stored in 8 bits now.
 	sfaceSize += numIndexes;
@@ -586,7 +574,7 @@ static void ParseFace( dface_t *ds, mapVert_t *verts, msurface_t *surf, short *i
 	int			i, j, k;
 	srfSurfaceFace_t	*cv;
 	int			numPoints, numIndexes;
-	short		lightmapNum[MAXLIGHTMAPS];
+	int			lightmapNum[MAXLIGHTMAPS];
 	int			sfaceSize, ofsIndexes;
 	vec3_t		tangents[1000];
 
@@ -706,7 +694,7 @@ static void ParseMesh ( dpatch_t *ds, mapVert_t *verts, msurface_t *surf,
 	srfGridMesh_t	*grid;
 	int				i, j, k;
 	int				width, height, numPoints;
-	short			lightmapNum[MAXLIGHTMAPS];
+	int				lightmapNum[MAXLIGHTMAPS];
 	vec3_t			bounds[2];
 	vec3_t			tmpVec;
 	static surfaceType_t	skipData = SF_SKIP;
@@ -879,10 +867,6 @@ static void ParseFlare( dflare_t *df, msurface_t *surf )
 		flare->normal[i] = df->normal[i];
 	}
 
-	assert(flareNum <= 255);
-	flare->number = flareNum++;
-	flare->visible = -1;
-
 	surf->data = (surfaceType_t *)flare;
 }
 
@@ -893,8 +877,6 @@ void R_LoadFlares( void *surfaces, int surfacelen ) {
 	msurface_t  *out;
 
 	count = surfacelen / sizeof(*in);
-
-	flareNum = 0;
 
 	for ( i = 0 ; i < count ; i++ ) {
 		in = (dflare_t *)surfaces + i;
@@ -961,7 +943,7 @@ void R_LoadPatches( void *verts, int vertlen,
 	Z_Free(ctrl);
 	Z_Free(points);
 
-//	Com_Printf( "...loaded %i meshes\n", count );
+	Com_Printf( "...loaded %i meshes\n", count );
 }
 
 
@@ -1000,7 +982,7 @@ void R_LoadTriSurfs( void *indexdata, int indexlen,
 		ParseTriSurf( in, dv, out, indexes );
 	}
 
-//	Com_Printf( "...loaded %i trisurfs\n", count );
+	Com_Printf( "...loaded %i trisurfs\n", count );
 }
 
 
@@ -1044,7 +1026,7 @@ void R_LoadFaces( void *indexdata, int indexlen,
 	{ 
 		in = (dface_t *)surfaces + i;
 
-		short lightmapNum[MAXLIGHTMAPS];
+		int lightmapNum[MAXLIGHTMAPS];
 		for(int j=0; j<4; j++) {
 			lightmapNum[j] = (int)in->lightmapNum[j] - 4;
 		}
@@ -1084,7 +1066,7 @@ void R_LoadFaces( void *indexdata, int indexlen,
 		}
 	}
 
-//	Com_Printf( "...loaded %d faces\n", count );
+	Com_Printf( "...loaded %d faces\n", count );
 }
 
 
@@ -1312,17 +1294,6 @@ static void R_LoadPlanes( void *data, int len ) {
 	int			count;
 	int			bits;
 
-	//If plane data has been set by the local server, use it.
-	if(externalPlaneData) {
-		s_worldData.planes = externalPlaneData;
-		s_worldData.numplanes = externalPlaneCount;
-
-		externalPlaneData = NULL;
-		externalPlaneCount = 0;
-		return;
-	}
-		
-
 	in = (dplane_t *)(data);
 	if (len % sizeof(*in))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size");
@@ -1331,8 +1302,7 @@ static void R_LoadPlanes( void *data, int len ) {
 	if (count < 1)
 		Com_Error (ERR_DROP, "Map with no planes");
 
-//	out = (struct cplane_s *) Hunk_Alloc( count * 2 * sizeof( *out ), h_low);
-	out = (struct cplane_s *) Hunk_Alloc( count * sizeof( *out ), h_low);
+	out = (struct cplane_s *) Hunk_Alloc( count * 2 * sizeof( *out ), h_low);
 
 	s_worldData.planes = out;
 	s_worldData.numplanes = count;
@@ -1373,7 +1343,7 @@ static void R_LoadFogs( void *fogdata, int foglen,
 	shader_t	*shader;
 	float		d;
 	int			firstSide=0;
-	short		lightmaps[MAXLIGHTMAPS] = { LIGHTMAP_NONE } ;
+	int			lightmaps[MAXLIGHTMAPS] = { LIGHTMAP_NONE } ;
 
 	fogs = (dfog_t *)(fogdata);
 	if (foglen % sizeof(*fogs)) {
@@ -1665,8 +1635,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 	Lump outputLumps[3];
 
 	if ( tr.worldMapLoaded ) {
-//		Com_Error( ERR_DROP, "ERROR: attempted to redundantly load world map\n" );
-		return;
+		Com_Error( ERR_DROP, "ERROR: attempted to redundantly load world map\n" );
 	}
 
 	skyboxportal = 0;
@@ -1745,14 +1714,10 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 	Lump faces;
 	faces.load(stripName, "faces");
 	R_LoadFaces(indexes.data, indexes.len, verts.data, verts.len, faces.data, faces.len);
-	faces.clear();
-	indexes.clear();
-	verts.clear();
 
 	Lump flares;
 	flares.load(stripName, "flares");
 	R_LoadFlares(flares.data, flares.len);
-	flares.clear();
 
 	outputLumps[0].load(stripName, "leafsurfaces");
 	R_LoadMarksurfaces (outputLumps[0].data, outputLumps[0].len);
@@ -1780,6 +1745,10 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 
 	// only set tr.world now that we know the entire level has loaded properly
 	tr.world = &s_worldData;
+
+	// Load the light parms for this level
+	R_LoadLevelLightParms();
+	R_GetLightParmsForLevel();
 }
 
 
@@ -1794,27 +1763,3 @@ void RE_LoadWorldMap( const char *name )
 
 	gbUsingCachedMapDataRightNow = qfalse;	// !!!!!!!!!!!!
 }
-
-
-//A nasty looking function which loops through all images used by all surfaces
-//and returns the number of matches for the given image.
-#ifndef FINAL_BUILD
-int R_SurfaceImageCount(const image_t *image1)
-{
-	int count = 0;
-
-	for(int i=0; i<s_worldData.numsurfaces; i++) {
-		for(int j=0; j<s_worldData.surfaces[i].shader->numUnfoggedPasses; j++){
-			for(int k=0; k<NUM_TEXTURE_BUNDLES; k++) {
-				image_t *image2 = s_worldData.surfaces[i].shader->stages[j].bundle[k].image;
-				if(image2 != NULL && !Q_stricmp(image1->imgName, image2->imgName)) {
-					count++;
-				}
-							
-			}
-		}
-	}
-
-	return count;
-}
-#endif

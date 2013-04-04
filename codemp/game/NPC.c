@@ -21,10 +21,10 @@ extern void NPC_CheckAllClear ( void );
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
 extern qboolean NPC_CheckLookTarget( gentity_t *self );
 extern void NPC_SetLookTarget( gentity_t *self, int entNum, int clearTime );
-//extern void Mark1_dying( gentity_t *self );
+extern void Mark1_dying( gentity_t *self );
 extern void NPC_BSCinematic( void );
 extern int GetTime ( int lastTime );
-//extern void NPC_BSGM_Default( void );
+extern void NPC_BSGM_Default( void );
 extern void NPC_CheckCharmed( void );
 extern qboolean Boba_Flying( gentity_t *self );
 
@@ -39,7 +39,7 @@ visibility_t	enemyVisibility;
 
 void NPC_SetAnim(gentity_t	*ent,int type,int anim,int priority);
 void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope );
-//extern void GM_Dying( gentity_t *self );
+extern void GM_Dying( gentity_t *self );
 
 extern int eventClearTime;
 
@@ -53,8 +53,7 @@ void CorpsePhysics( gentity_t *self )
 	
 	if ( self->client->NPC_class == CLASS_GALAKMECH )
 	{
-		assert( 0 );
-//		GM_Dying( self );
+		GM_Dying( self );
 	}
 	//FIXME: match my pitch and roll for the slope of my groundPlane
 	if ( self->client->ps.groundEntityNum != ENTITYNUM_NONE && !(self->s.eFlags&EF_DISINTEGRATION) )
@@ -134,8 +133,7 @@ void NPC_RemoveBody( gentity_t *self )
 	// I agree, very creative... need something like this for ATST and GALAKMECH too!
 	if (self->client->NPC_class == CLASS_MARK1)
 	{
-		assert( 0 );
-//		Mark1_dying( self );
+		Mark1_dying( self );
 	}
 
 	// Since these blow up, remove the bounding box.
@@ -1018,7 +1016,6 @@ void NPC_BehaviorSet_Default( int bState )
 NPC_BehaviorSet_Interrogator
 -------------------------
 */
-/*
 void NPC_BehaviorSet_Interrogator( int bState )
 {
 	switch( bState )
@@ -1035,7 +1032,6 @@ void NPC_BehaviorSet_Interrogator( int bState )
 		break;
 	}
 }
-*/
 
 void NPC_BSImperialProbe_Attack( void );
 void NPC_BSImperialProbe_Patrol( void );
@@ -1255,8 +1251,6 @@ NPC_BehaviorSet_Mark1
 */
 void NPC_BehaviorSet_Mark1( int bState )
 {
-	assert( 0 );
-/*
 	switch( bState )
 	{
 	case BS_DEFAULT:
@@ -1268,7 +1262,6 @@ void NPC_BehaviorSet_Mark1( int bState )
 		NPC_BehaviorSet_Default( bState );
 		break;
 	}
-*/
 }
 
 /*
@@ -1278,8 +1271,6 @@ NPC_BehaviorSet_Mark2
 */
 void NPC_BehaviorSet_Mark2( int bState )
 {
-	assert( 0 );
-/*
 	switch( bState )
 	{
 	case BS_DEFAULT:
@@ -1292,7 +1283,6 @@ void NPC_BehaviorSet_Mark2( int bState )
 		NPC_BehaviorSet_Default( bState );
 		break;
 	}
-*/
 }
 
 /*
@@ -1302,8 +1292,6 @@ NPC_BehaviorSet_ATST
 */
 void NPC_BehaviorSet_ATST( int bState )
 {
-	assert( 0 );
-/*
 	switch( bState )
 	{
 	case BS_DEFAULT:
@@ -1316,7 +1304,6 @@ void NPC_BehaviorSet_ATST( int bState )
 		NPC_BehaviorSet_Default( bState );
 		break;
 	}
-*/
 }
 
 /*
@@ -1479,8 +1466,7 @@ void NPC_RunBehavior( int team, int bState )
 				NPC_BehaviorSet_Sentry(bState);
 				return;
 			case CLASS_INTERROGATOR:
-				assert( 0 );
-//				NPC_BehaviorSet_Interrogator( bState );
+				NPC_BehaviorSet_Interrogator( bState );
 				return;
 			case CLASS_MINEMONSTER:
 				NPC_BehaviorSet_MineMonster( bState );
@@ -1489,16 +1475,13 @@ void NPC_RunBehavior( int team, int bState )
 				NPC_BehaviorSet_Howler( bState );
 				return;
 			case CLASS_MARK1:
-				assert( 0 );
-//				NPC_BehaviorSet_Mark1( bState );
+				NPC_BehaviorSet_Mark1( bState );
 				return;
 			case CLASS_MARK2:
-				assert( 0 );
-//				NPC_BehaviorSet_Mark2( bState );
+				NPC_BehaviorSet_Mark2( bState );
 				return;
 			case CLASS_GALAKMECH:
-				assert( 0 );
-//				NPC_BSGM_Default();
+				NPC_BSGM_Default();
 				return;
 
 			}

@@ -265,7 +265,7 @@ void target_laser_think (gentity_t *self) {
 	// fire forward and see what we hit
 	VectorMA (self->s.origin, 2048, self->movedir, end);
 
-	gi.trace( &tr, self->s.origin, NULL, NULL, end, self->s.number, CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_CORPSE);
+	gi.trace( &tr, self->s.origin, NULL, NULL, end, self->s.number, CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_CORPSE, (EG2_Collision)0, 0);
 
 	if ( tr.entityNum ) {
 		// hurt it if we can
@@ -1181,13 +1181,8 @@ extern	cvar_t	*com_buildScript;
 	}
 }
 
-
-extern bool allowNormalAutosave;
 void target_autosave_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 {
-	if(!allowNormalAutosave)
-		return;
-
 	G_ActivateBehavior(self,BSET_USE);
 	//gi.SendServerCommand( NULL, "cp @SP_INGAME_CHECKPOINT" );
 	CG_CenterPrint( "@SP_INGAME_CHECKPOINT", SCREEN_HEIGHT * 0.25 );	//jump the network

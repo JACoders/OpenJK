@@ -13,11 +13,7 @@
 #define MAX_ITEMACTION				64
 #define MAX_MENUDEFFILE				4096
 #define MAX_MENUFILE				32768
-#ifdef CGAME
-#define MAX_MENUS					16
-#else
 #define MAX_MENUS					64
-#endif
 #define MAX_MENUITEMS				256
 #define MAX_COLOR_RANGES			10
 #define MAX_OPEN_MENUS				16
@@ -50,8 +46,7 @@
 #define WINDOW_PLAYERCOLOR			0x01000000	// hack the forecolor to match ui_char_color_*
 
 //JLF
-#define WINDOW_INTRANSITIONMODEL	0x04000000
-#define WINDOW_SCRIPTWAITING		0x08000000	// delayed script waiting to run
+#define WINDOW_INTRANSITIONMODEL	0x04000000	// delayed script waiting to run
 
 
 // CGAME cursor type bits
@@ -81,21 +76,32 @@
 #define MAX_SCRIPT_ARGS 12
 #define MAX_EDITFIELD 256
 
-//#define ASSET_GRADIENTBAR			"ui/assets/gradientbar2.tga"
+#define ART_FX_BASE			"menu/art/fx_base"
+#define ART_FX_BLUE			"menu/art/fx_blue"
+#define ART_FX_CYAN			"menu/art/fx_cyan"
+#define ART_FX_GREEN		"menu/art/fx_grn"
+#define ART_FX_RED			"menu/art/fx_red"
+#define ART_FX_TEAL			"menu/art/fx_teal"
+#define ART_FX_WHITE		"menu/art/fx_white"
+#define ART_FX_YELLOW		"menu/art/fx_yel"
+#define ART_FX_ORANGE		"menu/art/fx_orange"
+#define ART_FX_PURPLE		"menu/art/fx_purple"
+
+#define ASSET_GRADIENTBAR			"ui/assets/gradientbar2.tga"
 #define ASSET_SCROLLBAR             "gfx/menus/scrollbar.tga"
 #define ASSET_SCROLLBAR_ARROWDOWN   "gfx/menus/scrollbar_arrow_dwn_a.tga"
 #define ASSET_SCROLLBAR_ARROWUP     "gfx/menus/scrollbar_arrow_up_a.tga"
 #define ASSET_SCROLLBAR_ARROWLEFT   "gfx/menus/scrollbar_arrow_left.tga"
 #define ASSET_SCROLLBAR_ARROWRIGHT  "gfx/menus/scrollbar_arrow_right.tga"
 #define ASSET_SCROLL_THUMB          "gfx/menus/scrollbar_thumb.tga"
-#define ASSET_SLIDER_BAR			"gfx/menus/newFront/slider"
-//#define ASSET_SLIDER_THUMB			"menu/new/sliderthumb"
+#define ASSET_SLIDER_BAR			"menu/new/slider"
+#define ASSET_SLIDER_THUMB			"menu/new/sliderthumb"
 #define SCROLLBAR_SIZE 16.0
-#define SLIDER_WIDTH 128.0
+#define SLIDER_WIDTH 96.0
 #define SLIDER_HEIGHT 16.0
-//#define SLIDER_THUMB_WIDTH 12.0
-//#define SLIDER_THUMB_HEIGHT 20.0
-#define	NUM_CROSSHAIRS			1
+#define SLIDER_THUMB_WIDTH 12.0
+#define SLIDER_THUMB_HEIGHT 20.0
+#define	NUM_CROSSHAIRS			9
 
 typedef struct {
   const char *command;
@@ -118,8 +124,8 @@ typedef struct {
   Rectangle rectClient;           // screen coord rectangle
   const char *name;               //
   const char *group;              // if it belongs to a group
-//  const char *cinematicName;		  // cinematic name
-//  int cinematic;								  // cinematic handle
+  const char *cinematicName;		  // cinematic name
+  int cinematic;								  // cinematic handle
   int style;                      //
   int border;                     //
   int ownerDraw;									// ownerDraw style
@@ -130,7 +136,6 @@ typedef struct {
   Rectangle rectEffects2;         // for various effects
   int offsetTime;                 // time based value for various effects
   int nextTime;                   // time next effect should cycle
-  int delayTime;                  // time when delay expires
   vec4_t foreColor;               // text color
   vec4_t backColor;               // border color
   vec4_t borderColor;             // border color
@@ -178,7 +183,6 @@ typedef struct listBoxDef_s {
 	qboolean notselectable;
 	//JLF MPMOVED
 	qboolean	scrollhidden;
-	qhandle_t	selectionShader;
 } listBoxDef_t;
 
 typedef struct editFieldDef_s {
@@ -191,11 +195,7 @@ typedef struct editFieldDef_s {
 	int paintOffset;							 // 
 } editFieldDef_t;
 
-#ifdef _XBOX
-#define MAX_MULTI_CVARS 44
-#else
 #define MAX_MULTI_CVARS 32
-#endif
 
 typedef struct multiDef_s {
 	const char *cvarList[MAX_MULTI_CVARS];
@@ -221,10 +221,6 @@ typedef struct modelDef_s {
 //Transition extras
 	vec3_t g2mins2, g2maxs2, g2minsEffect, g2maxsEffect;
 	float fov_x2, fov_y2, fov_Effectx, fov_Effecty;
-
-	// BTO - This is disgusting, but when I'm writing out the UIC files, I need
-	// to know if the ghoul2 model was originally created using "ui_char_model"
-	bool	g2IsPlayer;
 } modelDef_t;
 
 typedef struct textScrollDef_s 
@@ -270,20 +266,20 @@ typedef struct itemDef_s {
 	float		textscale;					// scale percentage from 72pts
 	int			textStyle;					// ( optional ) style, normal and shadowed are it for now
 	const char	*text;						// display text
-//	const char	*text2;						// display text, 2nd line
-//	float		text2alignx;				// ( optional ) text2 alignment x coord
-//	float		text2aligny;				// ( optional ) text2 alignment y coord
+	const char	*text2;						// display text, 2nd line
+	float		text2alignx;				// ( optional ) text2 alignment x coord
+	float		text2aligny;				// ( optional ) text2 alignment y coord
 	void		*parent;					// menu owner
 	qhandle_t	asset;						// handle to asset
 	void		*ghoul2;					// ghoul2 instance if available instead of a model.
 	int			flags;						// flags like g2valid, character, saber, saber2, etc.
-//	const char	*mouseEnterText;			// mouse enter script
-//	const char	*mouseExitText;				// mouse exit script
-//	const char	*mouseEnter;				// mouse enter script
-//	const char	*mouseExit;					// mouse exit script 
+	const char	*mouseEnterText;			// mouse enter script
+	const char	*mouseExitText;				// mouse exit script
+	const char	*mouseEnter;				// mouse enter script
+	const char	*mouseExit;					// mouse exit script 
 	const char	*action;					// select script
 //JLFACCEPT MPMOVED
-//	const char  *accept;
+	const char  *accept;
 //JLFDPADSCRIPT
 	const char * selectionNext;
 	const char * selectionPrev;
@@ -294,9 +290,9 @@ typedef struct itemDef_s {
 	const char	*cvarTest;					// associated cvar for enable actions
 	const char	*enableCvar;				// enable, disable, show, or hide based on value, this can contain a list
 	int			cvarFlags;					//	what type of action to take on cvarenables
-//	sfxHandle_t focusSound;
-//	int			numColors;					// number of color ranges
-//	colorRangeDef_t colorRanges[MAX_COLOR_RANGES];
+	sfxHandle_t focusSound;
+	int			numColors;					// number of color ranges
+	colorRangeDef_t colorRanges[MAX_COLOR_RANGES];
 	float		special;					// used for feeder id's etc.. diff per type
 	int			cursorPos;					// cursor position in characters
 	void		*typeData;					// type specific data ptr's	
@@ -324,9 +320,6 @@ typedef struct {
 	const char  *onAccept;					// run when menu is closed with acceptance
 
 	const char *onESC;						// run when the menu is closed
-	const char *xScript;					// run when the X button is pressed
-	const char *yScript;					// run when the Y button is pressed
-	const char *whiteScript;				// run when the White button is pressed
 	const char *soundName;					// background loop sound for menu
 
 	vec4_t focusColor;						// focus color for items
@@ -350,19 +343,19 @@ typedef struct {
   qhandle_t	qhSmall2Font;
   qhandle_t	qhMediumFont;
   qhandle_t	qhBigFont;
-//  qhandle_t cursor;
-//  qhandle_t gradientBar;
+  qhandle_t cursor;
+  qhandle_t gradientBar;
   qhandle_t scrollBarArrowUp;
   qhandle_t scrollBarArrowDown;
   qhandle_t scrollBarArrowLeft;
   qhandle_t scrollBarArrowRight;
   qhandle_t scrollBar;
   qhandle_t scrollBarThumb;
-//  qhandle_t buttonMiddle;
-//  qhandle_t buttonInside;
-//  qhandle_t solidBox;
+  qhandle_t buttonMiddle;
+  qhandle_t buttonInside;
+  qhandle_t solidBox;
   qhandle_t sliderBar;
-//  qhandle_t sliderThumb;
+  qhandle_t sliderThumb;
   sfxHandle_t menuEnterSound;
   sfxHandle_t menuExitSound;
   sfxHandle_t menuBuzzSound;
@@ -376,11 +369,11 @@ typedef struct {
   float shadowFadeClamp;
   qboolean fontRegistered;
 
-//    qhandle_t needPass;
-//    qhandle_t noForce;
-//    qhandle_t forceRestrict;
-//    qhandle_t saberOnly;
-//    qhandle_t trueJedi;
+    qhandle_t needPass;
+    qhandle_t noForce;
+    qhandle_t forceRestrict;
+    qhandle_t saberOnly;
+    qhandle_t trueJedi;
 
 	sfxHandle_t moveRollSound;
 	sfxHandle_t moveJumpSound;
@@ -392,6 +385,8 @@ typedef struct {
 	sfxHandle_t datapadmoveSaberSound6;
 
   // player settings
+	qhandle_t fxBasePic;
+  qhandle_t fxPic[7];
 	qhandle_t	crosshairShader[NUM_CROSSHAIRS];
 
 } cachedAssets_t;
@@ -457,10 +452,10 @@ typedef struct {
 	sfxHandle_t (*registerSound)(const char *name);
 	void (*startBackgroundTrack)( const char *intro, const char *loop, qboolean bReturnWithoutStarting);
 	void (*stopBackgroundTrack)();
-//	int (*playCinematic)(const char *name, float x, float y, float w, float h);
-//	void (*stopCinematic)(int handle);
-//	void (*drawCinematic)(int handle, float x, float y, float w, float h);
-//	void (*runCinematicFrame)(int handle);
+	int (*playCinematic)(const char *name, float x, float y, float w, float h);
+	void (*stopCinematic)(int handle);
+	void (*drawCinematic)(int handle, float x, float y, float w, float h);
+	void (*runCinematicFrame)(int handle);
 
   float			yscale;
   float			xscale;
@@ -476,7 +471,7 @@ typedef struct {
 	glconfig_t glconfig;
 	qhandle_t	whiteShader;
   qhandle_t gradientImage;
-//  qhandle_t cursor;
+  qhandle_t cursor;
 	float FPS;
 
 } displayContextDef_t;
@@ -515,15 +510,12 @@ void Menu_Reset();
 qboolean Menus_AnyFullScreenVisible();
 void  Menus_Activate(menuDef_t *menu);
 itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *p);
-itemDef_t *Menu_GetFocusedItem(menuDef_t *menu);
-itemDef_t *Menu_SetPrevCursorItem(menuDef_t *menu);
-void Item_RunScript(itemDef_t *item, const char *s) ;
-void AddDeferedCommand(char * command);
 
 displayContextDef_t *Display_GetContext();
 void *Display_CaptureItem(int x, int y);
 qboolean Display_MouseMove(void *p, int x, int y);
 int Display_CursorType(int x, int y);
+qboolean Display_KeyBindPending();
 void Menus_OpenByName(const char *p);
 menuDef_t *Menus_FindByName(const char *p);
 void Menus_ShowByName(const char *p);
@@ -570,6 +562,8 @@ Ghoul2 Insert Start
 */
 // UI specific API access
 void		trap_G2API_CollisionDetect		( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,int frameNumber, int entNum, const vec3_t rayStart, const vec3_t rayEnd, const vec3_t scale, int traceFlags, int useLod, float fRadius );
+void		trap_G2API_CollisionDetectCache		( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,int frameNumber, int entNum, const vec3_t rayStart, const vec3_t rayEnd, const vec3_t scale, int traceFlags, int useLod, float fRadius );
+
 
 void		trap_G2_ListModelSurfaces(void *ghlInfo);
 void		trap_G2_ListModelBones(void *ghlInfo, int frame);

@@ -136,8 +136,7 @@ typedef struct {
 	char			*mSharedMemory;
 } clientActive_t;
 
-//extern	clientActive_t		g_cl;
-extern  clientActive_t       *cl;
+extern	clientActive_t		cl;
 
 #define MAX_HEIGHTMAP_SIZE	16000
 
@@ -226,18 +225,15 @@ typedef struct {
 	netchan_t	netchan;
 
 	//rwwRMG - added:
-/*
 	int					rmgSeed;
 	int					rmgHeightMapSize;
 	unsigned char		rmgHeightMap[MAX_HEIGHTMAP_SIZE];
 	unsigned char		rmgFlattenMap[MAX_HEIGHTMAP_SIZE];
 	rmAutomapSymbol_t	rmgAutomapSymbols[MAX_AUTOMAP_SYMBOLS];
 	int					rmgAutomapSymbolCount;
-*/
 } clientConnection_t;
 
-extern	clientConnection_t g_clc;
-extern	clientConnection_t *clc;
+extern	clientConnection_t clc;
 
 /*
 ==================================================================
@@ -247,31 +243,48 @@ no client connection is active at all
 
 ==================================================================
 */
-/*
+
 typedef struct {
 	netadr_t	adr;
 	int			start;
 	int			time;
 	char		info[MAX_INFO_STRING];
+#ifdef _XBOX
 	XNADDR		xnaddr;
+#endif
 } ping_t;
-*/
 
 typedef struct {
-//	char	  	hostName[MAX_NAME_LENGTH];
+	netadr_t	adr;
+	char	  	hostName[MAX_NAME_LENGTH];
 	char	  	mapName[MAX_NAME_LENGTH];
+	char	  	game[MAX_NAME_LENGTH];
+#ifndef _XBOX
+	int			netType;
+#endif
 	int			gameType;
 	int		  	clients;
 	int		  	maxClients;
-
-	qboolean	saberOnly;
-	qboolean	forceDisable;
-
+#ifndef _XBOX
+	int			minPing;
+	int			maxPing;
+#endif
+	int			ping;
+	qboolean	visible;
+//	int			allowAnonymous;
+#ifndef _XBOX
+	qboolean	needPassword;
+	int			trueJedi;
+	int			weaponDisable;
+	int			forceDisable;
+#endif
+//	qboolean	pure;
+#ifdef _XBOX
+	qboolean	saberOnly;			// Not the same as weaponDisable!
 	XNKID		SessionID;				
 	XNKEY		KeyExchangeKey;
 	XNADDR		HostAddress;
-
-	int			lastUpdate;
+#endif
 } serverInfo_t;
 
 typedef struct {
@@ -301,13 +314,34 @@ typedef struct {
 	int			numlocalservers;
 	serverInfo_t	localServers[MAX_OTHER_SERVERS];
 
+	int			numglobalservers;
+	serverInfo_t  globalServers[MAX_GLOBAL_SERVERS];
+	// additional global servers
+	int			numGlobalServerAddresses;
+	serverAddress_t		globalServerAddresses[MAX_GLOBAL_SERVERS];
+
+	int			numfavoriteservers;
+	serverInfo_t	favoriteServers[MAX_OTHER_SERVERS];
+
+	int			nummplayerservers;
+	serverInfo_t	mplayerServers[MAX_OTHER_SERVERS];
+
 	int pingUpdateSource;		// source currently pinging or updating
+
+	int masterNum;
+
+	// update server info
+	netadr_t	updateServer;
+	char		updateChallenge[MAX_TOKEN_CHARS];
+	char		updateInfoString[MAX_INFO_STRING];
+
+	netadr_t	authorizeServer;
 
 	// rendering info
 	glconfig_t	glconfig;
-//	qhandle_t	charSetShader;
+	qhandle_t	charSetShader;
 	qhandle_t	whiteShader;
-//	qhandle_t	consoleShader;
+	qhandle_t	consoleShader;
 
 #ifdef _XBOX
 	short		mainGamepad;
@@ -381,6 +415,7 @@ extern	cvar_t	*cl_mouseAccel;
 extern	cvar_t	*cl_showMouseRate;
 
 extern	cvar_t	*m_pitchVeh;
+extern	cvar_t	*m_pitch;
 extern	cvar_t	*m_yaw;
 extern	cvar_t	*m_forward;
 extern	cvar_t	*m_side;
@@ -421,7 +456,7 @@ void CL_ReadDemoMessage( void );
 void CL_InitDownloads(void);
 void CL_NextDownload(void);
 
-//void CL_GetPing( int n, char *buf, int buflen, int *pingtime );
+void CL_GetPing( int n, char *buf, int buflen, int *pingtime );
 void CL_GetPingInfo( int n, char *buf, int buflen );
 void CL_ClearPing( int n );
 int CL_GetPingQueueCount( void );
@@ -435,7 +470,7 @@ qboolean CL_CDKeyValidate( const char *key, const char *checksum );
 
 #endif // USE_CD_KEY
 
-//int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen );
+int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen );
 
 
 //
@@ -480,9 +515,13 @@ void CL_ParseServerMessage( msg_t *msg );
 
 //====================================================================
 
-//void	CL_ServerInfoPacket( netadr_t from, msg_t *msg );
-//void	CL_LocalServers_f( void );
-//void	CL_Ping_f( void );
+void	CL_ServerInfoPacket( netadr_t from, msg_t *msg );
+void	CL_LocalServers_f( void );
+#ifndef _XBOX
+void	CL_GlobalServers_f( void );
+void	CL_FavoriteServers_f( void );
+#endif
+void	CL_Ping_f( void );
 qboolean CL_UpdateVisiblePings_f( int source );
 
 
@@ -514,10 +553,18 @@ void	SCR_UpdateScreen (void);
 
 void	SCR_DebugGraph (float value, int color);
 
+int		SCR_GetBigStringWidth( const char *str );	// returns in virtual 640x480 coordinates
+
 void	SCR_FillRect( float x, float y, float width, float height, 
 					 const float *color );
 void	SCR_DrawPic( float x, float y, float width, float height, qhandle_t hShader );
 void	SCR_DrawNamedPic( float x, float y, float width, float height, const char *picname );
+
+void	SCR_DrawBigString( int x, int y, const char *s, float alpha );			// draws a string with embedded color control characters with fade
+void	SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color );	// ignores embedded color control characters
+void	SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor );
+void	SCR_DrawSmallChar( int x, int y, int ch );
+
 
 //
 // cl_cin.c

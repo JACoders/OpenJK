@@ -26,7 +26,7 @@ extern vec3_t gPainPoint;
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"basejk"
+#define	GAMEVERSION	"basejka"
 
 #define BODY_QUEUE_SIZE		8
 
@@ -114,12 +114,12 @@ typedef enum
 	HL_HAND_RT,
 	HL_HAND_LT,
 	HL_HEAD,
-//	HL_GENERIC1,
-//	HL_GENERIC2,
-//	HL_GENERIC3,
-//	HL_GENERIC4,
-//	HL_GENERIC5,
-//	HL_GENERIC6,
+	HL_GENERIC1,
+	HL_GENERIC2,
+	HL_GENERIC3,
+	HL_GENERIC4,
+	HL_GENERIC5,
+	HL_GENERIC6,
 	HL_MAX
 };
 
@@ -425,6 +425,9 @@ typedef struct {
 	char		saber2Type[64];
 	int			duelTeam;
 	int			siegeDesiredTeam;
+	int			killCount;
+	int			TKCount;
+	char		IPstring[32];		// yeah, I know, could be 16, but, just in case...
 } clientSession_t;
 
 // playerstate mGameFlags
@@ -445,7 +448,7 @@ typedef struct {
 	qboolean	predictItemPickup;	// based on cg_predictItems userinfo
 	qboolean	pmoveFixed;			//
 	char		netname[MAX_NETNAME];
-//	int			netnameTime;				// Last time the name was changed
+	int			netnameTime;				// Last time the name was changed
 	int			maxHealth;			// for handicapping
 	int			enterTime;			// level.time the client entered the game
 	playerTeamState_t teamState;	// status in teamplay games
@@ -605,11 +608,11 @@ struct gclient_s {
 	qboolean	fireHeld;			// used for hook
 	gentity_t	*hook;				// grapple hook if out
 
-//	int			switchTeamTime;		// time the player switched teams
+	int			switchTeamTime;		// time the player switched teams
 
-//	int			switchDuelTeamTime;		// time the player switched duel teams
+	int			switchDuelTeamTime;		// time the player switched duel teams
 
-//	int			switchClassTime;	// class changed debounce timer
+	int			switchClassTime;	// class changed debounce timer
 
 	// timeResidual is used to handle events that happen every second
 	// like health / armor countdowns and regeneration
@@ -737,6 +740,11 @@ struct gclient_s {
 
 	int			lastGenCmd;
 	int			lastGenCmdTime;
+	
+	//can't put these in playerstate, crashes game (need to change exe?)
+	int			otherKillerMOD;
+	int			otherKillerVehWeapon;
+	int			otherKillerWeaponType;
 };
 
 //Interest points
@@ -1021,7 +1029,6 @@ void	G_SetAngles( gentity_t *ent, vec3_t angles );
 
 void	G_InitGentity( gentity_t *e );
 gentity_t	*G_Spawn (void);
-gentity_t	*G_SpawnVehicle (void);
 gentity_t *G_TempEntity( vec3_t origin, int event );
 gentity_t	*G_PlayEffect(int fxID, vec3_t org, vec3_t ang);
 gentity_t	*G_PlayEffectID(const int fxID, vec3_t org, vec3_t ang);
@@ -1095,6 +1102,8 @@ qboolean	trap_G2API_RemoveGhoul2Model(void *ghlInfo, int modelIndex);
 qboolean	trap_G2API_RemoveGhoul2Models(void *ghlInfo);
 void		trap_G2API_CleanGhoul2Models(void **ghoul2Ptr);
 void		trap_G2API_CollisionDetect ( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,
+								int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius );
+void		trap_G2API_CollisionDetectCache ( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,
 								int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius );
 
 qboolean	trap_G2API_SetBoneAngles(void *ghoul2, int modelIndex, const char *boneName, const vec3_t angles, const int flags,
@@ -1175,8 +1184,10 @@ extern int gGAvoidDismember;
 #define DAMAGE_NO_HIT_LOC			0x00002000	// No hit location
 #define DAMAGE_NO_SELF_PROTECTION	0x00004000	// Dont apply half damage to self attacks
 #define DAMAGE_NO_DISMEMBER			0x00008000	// Dont do dismemberment
-#define DAMAGE_SABER_KNOCKBACK1		0x00010000	// Check the attacker's first saber for a damageScale
-#define DAMAGE_SABER_KNOCKBACK2		0x00020000	// Check the attacker's second saber for a damageScale
+#define DAMAGE_SABER_KNOCKBACK1		0x00010000	// Check the attacker's first saber for a knockbackScale
+#define DAMAGE_SABER_KNOCKBACK2		0x00020000	// Check the attacker's second saber for a knockbackScale
+#define DAMAGE_SABER_KNOCKBACK1_B2	0x00040000	// Check the attacker's first saber for a knockbackScale2
+#define DAMAGE_SABER_KNOCKBACK2_B2	0x00080000	// Check the attacker's second saber for a knockbackScale2
 //
 // g_exphysics.c
 //
@@ -1265,7 +1276,7 @@ team_t TeamCount( int ignoreClientNum, int team );
 int TeamLeader( int team );
 team_t PickTeam( int ignoreClientNum );
 void SetClientViewAngle( gentity_t *ent, vec3_t angle );
-gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles );
+gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, team_t team );
 void MaintainBodyQueue(gentity_t *ent);
 void respawn (gentity_t *ent);
 void BeginIntermission (void);
@@ -1428,7 +1439,6 @@ void ForceTelepathy(gentity_t *self);
 qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, int hitLoc );
 
 // g_log.c
-/*
 void QDECL G_LogPrintf( const char *fmt, ... );
 void QDECL G_LogWeaponPickup(int client, int weaponid);
 void QDECL G_LogWeaponFire(int client, int weaponid);
@@ -1442,7 +1452,6 @@ void QDECL G_LogWeaponInit(void);
 void QDECL G_LogWeaponOutput(void);
 void QDECL G_LogExit( const char *string );
 void QDECL G_ClearClientLog(int client);
-*/
 
 // g_siege.c
 void InitSiegeMode(void);
@@ -1497,8 +1506,7 @@ int BotAIStartFrame( int time );
 
 
 extern	level_locals_t	level;
-//extern	gentity_t		g_entities[MAX_GENTITIES];
-extern	gentity_t		*g_entities;
+extern	gentity_t		g_entities[MAX_GENTITIES];
 
 #define	FOFS(x) ((int)&(((gentity_t *)0)->x))
 
@@ -1551,6 +1559,8 @@ extern	vmCvar_t	d_perPlayerGhoul2;
 extern	vmCvar_t	d_projectileGhoul2Collision;
 
 extern	vmCvar_t	g_g2TraceLod;
+
+extern	vmCvar_t	g_optvehtrace;
 
 extern	vmCvar_t	g_locationBasedDamage;
 
@@ -1608,6 +1618,7 @@ extern	vmCvar_t	g_warmup;
 extern	vmCvar_t	g_doWarmup;
 extern	vmCvar_t	g_blood;
 extern	vmCvar_t	g_allowVote;
+extern	vmCvar_t	g_allowTeamVote;
 extern	vmCvar_t	g_teamAutoJoin;
 extern	vmCvar_t	g_teamForceBalance;
 extern	vmCvar_t	g_banIPs;
@@ -1615,8 +1626,8 @@ extern	vmCvar_t	g_filterBan;
 extern	vmCvar_t	g_debugForward;
 extern	vmCvar_t	g_debugRight;
 extern	vmCvar_t	g_debugUp;
-extern	vmCvar_t	g_redteam;
-extern	vmCvar_t	g_blueteam;
+//extern	vmCvar_t	g_redteam;
+//extern	vmCvar_t	g_blueteam;
 extern	vmCvar_t	g_smoothClients;
 
 #include "../namespace_begin.h"
@@ -1624,8 +1635,6 @@ extern	vmCvar_t	pmove_fixed;
 extern	vmCvar_t	pmove_msec;
 #include "../namespace_end.h"
 
-extern	vmCvar_t	g_rankings;
-extern	vmCvar_t	g_enableDust;
 extern	vmCvar_t	g_enableBreath;
 extern	vmCvar_t	g_singlePlayer;
 extern	vmCvar_t	g_dismember;
@@ -1809,26 +1818,26 @@ int		trap_Characteristic_Integer(int character, int index);
 int		trap_Characteristic_BInteger(int character, int index, int min, int max);
 void	trap_Characteristic_String(int character, int index, char *buf, int size);
 
-//int		trap_BotAllocChatState(void);
-//void	trap_BotFreeChatState(int handle);
-//void	trap_BotQueueConsoleMessage(int chatstate, int type, char *message);
-//void	trap_BotRemoveConsoleMessage(int chatstate, int handle);
-//int		trap_BotNextConsoleMessage(int chatstate, void /* struct bot_consolemessage_s */ *cm);
-//int		trap_BotNumConsoleMessages(int chatstate);
-//void	trap_BotInitialChat(int chatstate, char *type, int mcontext, char *var0, char *var1, char *var2, char *var3, char *var4, char *var5, char *var6, char *var7 );
-//int		trap_BotNumInitialChats(int chatstate, char *type);
-//int		trap_BotReplyChat(int chatstate, char *message, int mcontext, int vcontext, char *var0, char *var1, char *var2, char *var3, char *var4, char *var5, char *var6, char *var7 );
-//int		trap_BotChatLength(int chatstate);
-//void	trap_BotEnterChat(int chatstate, int client, int sendto);
-//void	trap_BotGetChatMessage(int chatstate, char *buf, int size);
-//int		trap_StringContains(char *str1, char *str2, int casesensitive);
-//int		trap_BotFindMatch(char *str, void /* struct bot_match_s */ *match, unsigned long int context);
-//void	trap_BotMatchVariable(void /* struct bot_match_s */ *match, int variable, char *buf, int size);
-//void	trap_UnifyWhiteSpaces(char *string);
-//void	trap_BotReplaceSynonyms(char *string, unsigned long int context);
-//int		trap_BotLoadChatFile(int chatstate, char *chatfile, char *chatname);
-//void	trap_BotSetChatGender(int chatstate, int gender);
-//void	trap_BotSetChatName(int chatstate, char *name, int client);
+int		trap_BotAllocChatState(void);
+void	trap_BotFreeChatState(int handle);
+void	trap_BotQueueConsoleMessage(int chatstate, int type, char *message);
+void	trap_BotRemoveConsoleMessage(int chatstate, int handle);
+int		trap_BotNextConsoleMessage(int chatstate, void /* struct bot_consolemessage_s */ *cm);
+int		trap_BotNumConsoleMessages(int chatstate);
+void	trap_BotInitialChat(int chatstate, char *type, int mcontext, char *var0, char *var1, char *var2, char *var3, char *var4, char *var5, char *var6, char *var7 );
+int		trap_BotNumInitialChats(int chatstate, char *type);
+int		trap_BotReplyChat(int chatstate, char *message, int mcontext, int vcontext, char *var0, char *var1, char *var2, char *var3, char *var4, char *var5, char *var6, char *var7 );
+int		trap_BotChatLength(int chatstate);
+void	trap_BotEnterChat(int chatstate, int client, int sendto);
+void	trap_BotGetChatMessage(int chatstate, char *buf, int size);
+int		trap_StringContains(char *str1, char *str2, int casesensitive);
+int		trap_BotFindMatch(char *str, void /* struct bot_match_s */ *match, unsigned long int context);
+void	trap_BotMatchVariable(void /* struct bot_match_s */ *match, int variable, char *buf, int size);
+void	trap_UnifyWhiteSpaces(char *string);
+void	trap_BotReplaceSynonyms(char *string, unsigned long int context);
+int		trap_BotLoadChatFile(int chatstate, char *chatfile, char *chatname);
+void	trap_BotSetChatGender(int chatstate, int gender);
+void	trap_BotSetChatName(int chatstate, char *name, int client);
 void	trap_BotResetGoalState(int goalstate);
 void	trap_BotRemoveFromAvoidGoals(int goalstate, int number);
 void	trap_BotResetAvoidGoals(int goalstate);

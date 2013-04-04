@@ -17,7 +17,6 @@ extern void G_SoundOnEnt( gentity_t *ent, soundChannel_t channel, const char *so
 NPC_ATST_Precache
 -------------------------
 */
-#if 0
 void NPC_ATST_Precache(void)
 {
 	G_SoundIndex( "sound/chars/atst/atst_damaged1" );
@@ -33,7 +32,6 @@ void NPC_ATST_Precache(void)
 	G_EffectIndex( "blaster/smoke_bolton" );
 	G_EffectIndex( "explosions/droidexplosion1" );
 }
-#endif
 
 //-----------------------------------------------------------------
 #if 0
@@ -78,6 +76,40 @@ void G_ATSTCheckPain( gentity_t *self, gentity_t *other, int damage )
 	{
 		G_SoundOnEnt( self, CHAN_LESS_ATTEN, "sound/chars/atst/atst_damaged2" );
 	}
+
+	/*
+	if ((hitLoc==HL_ARM_LT) && (self->locationDamage[HL_ARM_LT] > LEFT_ARM_HEALTH))
+	{
+		if (self->locationDamage[hitLoc] >= LEFT_ARM_HEALTH)	// Blow it up?
+		{
+			newBolt = trap_G2API_AddBolt( self->ghoul2, 0, "*flash3" );
+			if ( newBolt != -1 )
+			{
+//				G_PlayEffect( "small_chunks", self->playerModel, self->genericBolt1, self->s.number);
+				ATST_PlayEffect( self, trap_G2API_AddBolt(self->ghoul2, 0, "*flash3"), "env/med_explode2" );
+				//G_PlayEffectID( G_EffectIndex("blaster/smoke_bolton"), self->playerModel, newBolt, self->s.number);
+				//Maybe bother with this some other time.
+			}
+
+			NPC_SetSurfaceOnOff( self, "head_light_blaster_cann", TURN_OFF );
+		}
+	}
+	else if ((hitLoc==HL_ARM_RT) && (self->locationDamage[HL_ARM_RT] > RIGHT_ARM_HEALTH))	// Blow it up?
+	{
+		if (self->locationDamage[hitLoc] >= RIGHT_ARM_HEALTH)
+		{			
+			newBolt = trap_G2API_AddBolt( self->ghoul2, 0, "*flash4" );
+			if ( newBolt != -1 )
+			{
+//				G_PlayEffect( "small_chunks", self->playerModel, self->genericBolt2, self->s.number);
+				ATST_PlayEffect( self, trap_G2API_AddBolt(self->ghoul2, 0, "*flash4"), "env/med_explode2" );
+				//G_PlayEffect( "blaster/smoke_bolton", self->playerModel, newBolt, self->s.number);
+			}
+
+			NPC_SetSurfaceOnOff( self, "head_concussion_charger", TURN_OFF );
+		}
+	}
+	*/
 }
 /*
 -------------------------
@@ -95,7 +127,6 @@ void NPC_ATST_Pain(gentity_t *self, gentity_t *attacker, int damage)
 ATST_Hunt
 -------------------------`
 */
-/*
 void ATST_Hunt( qboolean visible, qboolean advance )
 {
 
@@ -109,14 +140,12 @@ void ATST_Hunt( qboolean visible, qboolean advance )
 	NPC_MoveToGoal( qtrue );
 
 }
-*/
 
 /*
 -------------------------
 ATST_Ranged
 -------------------------
 */
-/*
 void ATST_Ranged( qboolean visible, qboolean advance, qboolean altAttack )
 {
 
@@ -139,14 +168,12 @@ void ATST_Ranged( qboolean visible, qboolean advance, qboolean altAttack )
 		ATST_Hunt( visible, advance );
 	}
 }
-*/
 
 /*
 -------------------------
 ATST_Attack
 -------------------------
 */
-/*
 void ATST_Attack( void )
 {
 	qboolean	altAttack=qfalse;
@@ -235,14 +262,12 @@ void ATST_Attack( void )
 
 	ATST_Ranged( visible, advance,altAttack );
 }
-*/
 
 /*
 -------------------------
 ATST_Patrol
 -------------------------
 */
-/*
 void ATST_Patrol( void )
 {
 	if ( NPC_CheckPlayerTeamStealth() )
@@ -263,14 +288,12 @@ void ATST_Patrol( void )
 	}
 
 }
-*/
 
 /*
 -------------------------
 ATST_Idle
 -------------------------
 */
-/*
 void ATST_Idle( void )
 {
 
@@ -278,14 +301,12 @@ void ATST_Idle( void )
 
 	NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_STAND1, SETANIM_FLAG_NORMAL );
 }
-*/
 
 /*
 -------------------------
 NPC_BSDroid_Default
 -------------------------
 */
-/*
 void NPC_BSATST_Default( void )
 {
 	if ( NPC->enemy )
@@ -305,4 +326,3 @@ void NPC_BSATST_Default( void )
 		ATST_Idle();
 	}
 }
-*/

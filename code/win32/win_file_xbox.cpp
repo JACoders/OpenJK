@@ -117,8 +117,10 @@ int WF_Read(void* buffer, int len, wfhandle_t handle)
 		s_FileTable[handle].m_bErrorsFatal)
 	{
 #if defined(FINAL_BUILD)
+		/*
 		extern void ERR_DiscFail(bool);
 		ERR_DiscFail(false);
+		*/
 #else
 		assert(0);
 #endif

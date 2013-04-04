@@ -48,6 +48,7 @@ typedef struct
 	int		iLoopSound;	//index of loopSound
 	float	fSpeed;		//speed of projectile/range of traceline
 	float	fHoming;		//0.0 = not homing, 0.5 = half vel to targ, half cur vel, 1.0 = all vel to targ
+	float	fHomingFOV;
 	int		iLockOnTime;	//0 = no lock time needed, else # of ms needed to lock on
 	int		iDamage;		//damage done when traceline or projectile directly hits target
 	int		iSplashDamage;//damage done to ents in splashRadius of end of traceline or projectile origin on impact
@@ -60,7 +61,7 @@ typedef struct
 	qboolean	bExplodeOnExpire;	//when iLifeTime is up, explodes rather than simply removing itself
 } vehWeaponInfo_t;
 //NOTE: this MUST stay up to date with the number of variables in the vehFields table!!!
-#define NUM_VWEAP_PARMS	24
+#define NUM_VWEAP_PARMS	25
 
 #define	VWFOFS(x) ((int)&(((vehWeaponInfo_t *)0)->x))
 
@@ -617,8 +618,6 @@ struct Vehicle_t
 	// don't need these in mp
 	int			m_safeJumpMountTime;
 	float		m_safeJumpMountRightDot;
-
-	bool		alreadyCleaned;
 };
 
 extern int BG_VehicleGetIndex( const char *vehicleName );

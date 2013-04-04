@@ -196,7 +196,7 @@ void CG_ImpactMark( qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 
 		// otherwise save it persistantly
 		mark = CG_AllocMark();
-		mark->time = cg->time;
+		mark->time = cg.time;
 		mark->alphaFade = alphaFade;
 		mark->markShader = markShader;
 		mark->poly.numVerts = mf->numPoints;
@@ -235,7 +235,7 @@ void CG_AddMarks( void ) {
 		next = mp->nextMark;
 
 		// see if it is time to completely remove it
-		if ( cg->time > mp->time + MARK_TOTAL_TIME ) {
+		if ( cg.time > mp->time + MARK_TOTAL_TIME ) {
 			CG_FreeMarkPoly( mp );
 			continue;
 		}
@@ -244,7 +244,7 @@ void CG_AddMarks( void ) {
 		//if ( mp->markShader == cgs.media.energyMarkShader ) {
 		if (0) {
 
-			fade = 450 - 450 * ( (cg->time - mp->time ) / 3000.0 );
+			fade = 450 - 450 * ( (cg.time - mp->time ) / 3000.0 );
 			if ( fade < 255 ) {
 				if ( fade < 0 ) {
 					fade = 0;
@@ -260,7 +260,7 @@ void CG_AddMarks( void ) {
 		}
 
 		// fade all marks out with time
-		t = mp->time + MARK_TOTAL_TIME - cg->time;
+		t = mp->time + MARK_TOTAL_TIME - cg.time;
 		if ( t < MARK_FADE_TIME ) {
 			fade = 255 * t / MARK_FADE_TIME;
 			if ( mp->alphaFade ) {
@@ -360,7 +360,6 @@ typedef enum
 #define	MAX_SHADER_ANIMS		32
 #define	MAX_SHADER_ANIM_FRAMES	64
 
-/*
 static char *shaderAnimNames[MAX_SHADER_ANIMS] = {
 	"explode1",
 	NULL
@@ -373,7 +372,6 @@ static float	shaderAnimSTRatio[MAX_SHADER_ANIMS] = {
 	1.0f
 };
 static int	numShaderAnims;
-*/
 // done.
 
 #define		PARTICLE_GRAVITY	40
@@ -410,7 +408,7 @@ void CG_ClearParticles (void)
 	}
 	particles[cl_numparticles-1].next = NULL;
 
-	oldtime = cg->time;
+	oldtime = cg.time;
 
 	/*
 	// Ridah, init the shaderAnims
@@ -423,7 +421,7 @@ void CG_ClearParticles (void)
 	}
 	numShaderAnims = i;
 	*/
-//	numShaderAnims = 0;
+	numShaderAnims = 0;
 	// done.
 
 	initparticles = qtrue;
@@ -459,7 +457,7 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 			{
 				if (org[2] > p->end)			
 				{	
-					p->time = cg->time;	
+					p->time = cg.time;	
 					VectorCopy (org, p->org); // Ridah, fixes rare snow flakes that flicker on the ground
 									
 					p->org[2] = ( p->start + crandom () * 4 );
@@ -477,7 +475,7 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 			{
 				if (org[2] < p->end)			
 				{	
-					p->time = cg->time;	
+					p->time = cg.time;	
 					VectorCopy (org, p->org); // Ridah, fixes rare snow flakes that flicker on the ground
 									
 					while (p->org[2] < p->end) 
@@ -504,7 +502,7 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 		}
 		
 		// Ridah, had to do this or MAX_POLYS is being exceeded in village1.bsp
-		if (Distance( cg->snap->ps.origin, org ) > 1024) {
+		if (Distance( cg.snap->ps.origin, org ) > 1024) {
 			return;
 		}
 		// done.
@@ -591,7 +589,7 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 		vec3_t	rotate_ang;
 
 		VectorSet (color, 1.0, 1.0, 0.5);
-		time = cg->time - p->time;
+		time = cg.time - p->time;
 		time2 = p->endtime - p->time;
 		ratio = time / time2;
 
@@ -599,7 +597,7 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 		height = p->height + ( ratio * ( p->endheight - p->height) );
 
 		if (p->roll) {
-			vectoangles( cg->refdef.viewaxis[0], rotate_ang );
+			vectoangles( cg.refdef.viewaxis[0], rotate_ang );
 			rotate_ang[ROLL] += p->roll;
 			AngleVectors ( rotate_ang, NULL, rr, ru);
 		}
@@ -661,7 +659,7 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 	else if (p->type == P_SMOKE || p->type == P_SMOKE_IMPACT)
 	{// create a front rotating facing polygon
 
-		if ( p->type == P_SMOKE_IMPACT && Distance( cg->snap->ps.origin, org ) > 1024) {
+		if ( p->type == P_SMOKE_IMPACT && Distance( cg.snap->ps.origin, org ) > 1024) {
 			return;
 		}
 
@@ -672,7 +670,7 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 			float	len;
 			float	greyit;
 			float	val;
-			len = Distance (cg->snap->ps.origin, org);
+			len = Distance (cg.snap->ps.origin, org);
 			if (!len)
 				len = 1;
 
@@ -686,13 +684,13 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 		else
 			VectorSet (color, 1.0, 1.0, 1.0);
 
-		time = cg->time - p->time;
+		time = cg.time - p->time;
 		time2 = p->endtime - p->time;
 		ratio = time / time2;
 		
-		if (cg->time > p->startfade)
+		if (cg.time > p->startfade)
 		{
-			invratio = 1 - ( (cg->time - p->startfade) / (p->endtime - p->startfade) );
+			invratio = 1 - ( (cg.time - p->startfade) / (p->endtime - p->startfade) );
 
 			if (p->color == EMISIVEFADE)
 			{
@@ -811,7 +809,7 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 		
 		if (p->roll) 
 		{
-			vectoangles( cg->refdef.viewaxis[0], rotate_ang );
+			vectoangles( cg.refdef.viewaxis[0], rotate_ang );
 			rotate_ang[ROLL] += p->roll;
 			AngleVectors ( rotate_ang, NULL, rr, ru);
 		}
@@ -872,7 +870,7 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 		else
 			VectorSet (color, 0.5, 0.5, 0.5);
 		
-		time = cg->time - p->time;
+		time = cg.time - p->time;
 		time2 = p->endtime - p->time;
 		ratio = time / time2;
 
@@ -974,13 +972,11 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 	}
 	// Ridah
 	else if (p->type == P_ANIM) {
-		p->pshader = 0;
-/*
 		vec3_t	rr, ru;
 		vec3_t	rotate_ang;
 		int i, j;
 
-		time = cg->time - p->time;
+		time = cg.time - p->time;
 		time2 = p->endtime - p->time;
 		ratio = time / time2;
 		if (ratio >= 1.0f) {
@@ -991,7 +987,7 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 		height = p->height + ( ratio * ( p->endheight - p->height) );
 
 		// if we are "inside" this sprite, don't draw
-		if (Distance( cg->snap->ps.origin, org ) < width/1.5) {
+		if (Distance( cg.snap->ps.origin, org ) < width/1.5) {
 			return;
 		}
 
@@ -1000,7 +996,7 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 		p->pshader = shaderAnims[i][j];
 
 		if (p->roll) {
-			vectoangles( cg->refdef.viewaxis[0], rotate_ang );
+			vectoangles( cg.refdef.viewaxis[0], rotate_ang );
 			rotate_ang[ROLL] += p->roll;
 			AngleVectors ( rotate_ang, NULL, rr, ru);
 		}
@@ -1058,7 +1054,6 @@ void CG_AddParticleToScene (cparticle_t *p, vec3_t org, float alpha)
 		verts[3].modulate[1] = 255;	
 		verts[3].modulate[2] = 255;	
 		verts[3].modulate[3] = 255;	
-*/
 	}
 	// done.
 	
@@ -1097,16 +1092,16 @@ void CG_AddParticles (void)
 	if (!initparticles)
 		CG_ClearParticles ();
 
-	VectorCopy( cg->refdef.viewaxis[0], pvforward );
-	VectorCopy( cg->refdef.viewaxis[1], pvright );
-	VectorCopy( cg->refdef.viewaxis[2], pvup );
+	VectorCopy( cg.refdef.viewaxis[0], pvforward );
+	VectorCopy( cg.refdef.viewaxis[1], pvright );
+	VectorCopy( cg.refdef.viewaxis[2], pvup );
 
-	vectoangles( cg->refdef.viewaxis[0], rotate_ang );
-	roll += ((cg->time - oldtime) * 0.1) ;
+	vectoangles( cg.refdef.viewaxis[0], rotate_ang );
+	roll += ((cg.time - oldtime) * 0.1) ;
 	rotate_ang[ROLL] += (roll*0.9);
 	AngleVectors ( rotate_ang, rforward, rright, rup);
 	
-	oldtime = cg->time;
+	oldtime = cg.time;
 
 	active = NULL;
 	tail = NULL;
@@ -1116,7 +1111,7 @@ void CG_AddParticles (void)
 
 		next = p->next;
 
-		time = (cg->time - p->time)*0.001;
+		time = (cg.time - p->time)*0.001;
 
 		alpha = p->alpha + time*p->alphavel;
 		if (alpha <= 0)
@@ -1131,7 +1126,7 @@ void CG_AddParticles (void)
 
 		if (p->type == P_SMOKE || p->type == P_ANIM || p->type == P_BLEED || p->type == P_SMOKE_IMPACT)
 		{
-			if (cg->time > p->endtime)
+			if (cg.time > p->endtime)
 			{
 				p->next = free_particles;
 				free_particles = p;
@@ -1146,7 +1141,7 @@ void CG_AddParticles (void)
 
 		if (p->type == P_WEATHER_FLURRY)
 		{
-			if (cg->time > p->endtime)
+			if (cg.time > p->endtime)
 			{
 				p->next = free_particles;
 				free_particles = p;
@@ -1161,7 +1156,7 @@ void CG_AddParticles (void)
 
 		if (p->type == P_FLAT_SCALEUP_FADE)
 		{
-			if (cg->time > p->endtime)
+			if (cg.time > p->endtime)
 			{
 				p->next = free_particles;
 				free_particles = p;
@@ -1231,7 +1226,7 @@ void CG_ParticleSnowFlurry (qhandle_t pshader, centity_t *cent)
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	p->color = 0;
 	p->alpha = 0.90f;
 	p->alphavel = 0;
@@ -1239,8 +1234,8 @@ void CG_ParticleSnowFlurry (qhandle_t pshader, centity_t *cent)
 	p->start = cent->currentState.origin2[0];
 	p->end = cent->currentState.origin2[1];
 	
-	p->endtime = cg->time + cent->currentState.time;
-	p->startfade = cg->time + cent->currentState.time2;
+	p->endtime = cg.time + cent->currentState.time;
+	p->startfade = cg.time + cent->currentState.time2;
 	
 	p->pshader = pshader;
 	
@@ -1298,7 +1293,7 @@ void CG_ParticleSnow (qhandle_t pshader, vec3_t origin, vec3_t origin2, int turb
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	p->color = 0;
 	p->alpha = 0.40f;
 	p->alphavel = 0;
@@ -1356,7 +1351,7 @@ void CG_ParticleBubble (qhandle_t pshader, vec3_t origin, vec3_t origin2, int tu
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	p->color = 0;
 	p->alpha = 0.40f;
 	p->alphavel = 0;
@@ -1419,10 +1414,10 @@ void CG_ParticleSmoke (qhandle_t pshader, centity_t *cent)
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	
-	p->endtime = cg->time + cent->currentState.time;
-	p->startfade = cg->time + cent->currentState.time2;
+	p->endtime = cg.time + cent->currentState.time;
+	p->startfade = cg.time + cent->currentState.time2;
 	
 	p->color = 0;
 	p->alpha = 1.0;
@@ -1462,10 +1457,10 @@ void CG_ParticleBulletDebris (vec3_t org, vec3_t vel, int duration)
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	
-	p->endtime = cg->time + duration;
-	p->startfade = cg->time + duration/2;
+	p->endtime = cg.time + duration;
+	p->startfade = cg.time + duration/2;
 	
 	p->color = EMISIVEFADE;
 	p->alpha = 1.0;
@@ -1498,7 +1493,6 @@ CG_ParticleExplosion
 ======================
 */
 
-/*
 void CG_ParticleExplosion (char *animStr, vec3_t origin, vec3_t vel, int duration, int sizeStart, int sizeEnd)
 {
 	cparticle_t	*p;
@@ -1523,7 +1517,7 @@ void CG_ParticleExplosion (char *animStr, vec3_t origin, vec3_t vel, int duratio
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	p->alpha = 0.5;
 	p->alphavel = 0;
 
@@ -1542,7 +1536,7 @@ void CG_ParticleExplosion (char *animStr, vec3_t origin, vec3_t vel, int duratio
 	p->endheight = sizeEnd;
 	p->endwidth = sizeEnd*shaderAnimSTRatio[anim];
 
-	p->endtime = cg->time + duration;
+	p->endtime = cg.time + duration;
 
 	p->type = P_ANIM;
 
@@ -1551,7 +1545,6 @@ void CG_ParticleExplosion (char *animStr, vec3_t origin, vec3_t vel, int duratio
 	VectorClear( p->accel );
 
 }
-*/
 
 // Rafael Shrapnel
 void CG_AddParticleShrapnel (localEntity_t *le)
@@ -1671,15 +1664,15 @@ void CG_ParticleImpactSmokePuff (qhandle_t pshader, vec3_t origin)
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	p->alpha = 0.25;
 	p->alphavel = 0;
 	p->roll = crandom()*179;
 
 	p->pshader = pshader;
 
-	p->endtime = cg->time + 1000;
-	p->startfade = cg->time + 100;
+	p->endtime = cg.time + 1000;
+	p->startfade = cg.time + 100;
 
 	p->width = rand()%4 + 8;
 	p->height = rand()%4 + 8;
@@ -1687,7 +1680,7 @@ void CG_ParticleImpactSmokePuff (qhandle_t pshader, vec3_t origin)
 	p->endheight = p->height *2;
 	p->endwidth = p->width * 2;
 
-	p->endtime = cg->time + 500;
+	p->endtime = cg.time + 500;
 
 	p->type = P_SMOKE_IMPACT;
 
@@ -1711,19 +1704,19 @@ void CG_Particle_Bleed (qhandle_t pshader, vec3_t start, vec3_t dir, int fleshEn
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	p->alpha = 1.0;
 	p->alphavel = 0;
 	p->roll = 0;
 
 	p->pshader = pshader;
 
-	p->endtime = cg->time + duration;
+	p->endtime = cg.time + duration;
 	
 	if (fleshEntityNum)
-		p->startfade = cg->time;
+		p->startfade = cg.time;
 	else
-		p->startfade = cg->time + 100;
+		p->startfade = cg.time + 100;
 
 	p->width = 4;
 	p->height = 4;
@@ -1758,8 +1751,8 @@ void CG_Particle_OilParticle (qhandle_t pshader, centity_t *cent)
 
 	float	duration = 1500;
 
-	time = cg->time;
-	time2 = cg->time + cent->currentState.time;
+	time = cg.time;
+	time2 = cg.time + cent->currentState.time;
 
 	ratio =(float)1 - ((float)time / (float)time2);
 
@@ -1772,14 +1765,14 @@ void CG_Particle_OilParticle (qhandle_t pshader, centity_t *cent)
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	p->alpha = 1.0;
 	p->alphavel = 0;
 	p->roll = 0;
 
 	p->pshader = pshader;
 
-	p->endtime = cg->time + duration;
+	p->endtime = cg.time + duration;
 	
 	p->startfade = p->endtime;
 
@@ -1825,12 +1818,12 @@ void CG_Particle_OilSlick (qhandle_t pshader, centity_t *cent)
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	
 	if (cent->currentState.angles2[2])
-		p->endtime = cg->time + cent->currentState.angles2[2];
+		p->endtime = cg.time + cent->currentState.angles2[2];
 	else
-		p->endtime = cg->time + 60000;
+		p->endtime = cg.time + 60000;
 
 	p->startfade = p->endtime;
 
@@ -1896,7 +1889,7 @@ void CG_OilSlickRemove (centity_t *cent)
 		{
 			if (p->snum == id)
 			{
-				p->endtime = cg->time + 100;
+				p->endtime = cg.time + 100;
 				p->startfade = p->endtime;
 				p->type = P_FLAT_SCALEUP_FADE;
 
@@ -1975,9 +1968,9 @@ void CG_BloodPool (localEntity_t *le, qhandle_t pshader, trace_t *tr)
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	
-	p->endtime = cg->time + 3000;
+	p->endtime = cg.time + 3000;
 	p->startfade = p->endtime;
 
 	p->alpha = 1.0;
@@ -2053,16 +2046,16 @@ void CG_ParticleBloodCloud (centity_t *cent, vec3_t origin, vec3_t dir)
 		p->next = active_particles;
 		active_particles = p;
 
-		p->time = cg->time;
+		p->time = cg.time;
 		p->alpha = 1.0;
 		p->alphavel = 0;
 		p->roll = 0;
 
 		p->pshader = 0;//cgs.media.smokePuffShader;
 
-		p->endtime = cg->time + 350 + (crandom() * 100);
+		p->endtime = cg.time + 350 + (crandom() * 100);
 		
-		p->startfade = cg->time;
+		p->startfade = cg.time;
 		
 		p->width = LARGESIZE;
 		p->height = LARGESIZE;
@@ -2102,10 +2095,10 @@ void CG_ParticleSparks (vec3_t org, vec3_t vel, int duration, float x, float y, 
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	
-	p->endtime = cg->time + duration;
-	p->startfade = cg->time + duration/2;
+	p->endtime = cg.time + duration;
+	p->startfade = cg.time + duration/2;
 	
 	p->color = EMISIVEFADE;
 	p->alpha = 0.4f;
@@ -2179,7 +2172,7 @@ void CG_ParticleDust (centity_t *cent, vec3_t origin, vec3_t dir)
 		p->next = active_particles;
 		active_particles = p;
 
-		p->time = cg->time;
+		p->time = cg.time;
 		p->alpha = 5.0;
 		p->alphavel = 0;
 		p->roll = 0;
@@ -2188,11 +2181,11 @@ void CG_ParticleDust (centity_t *cent, vec3_t origin, vec3_t dir)
 
 		// RF, stay around for long enough to expand and dissipate naturally
 		if (length)
-			p->endtime = cg->time + 4500 + (crandom() * 3500);
+			p->endtime = cg.time + 4500 + (crandom() * 3500);
 		else
-			p->endtime = cg->time + 750 + (crandom() * 500);
+			p->endtime = cg.time + 750 + (crandom() * 500);
 		
-		p->startfade = cg->time;
+		p->startfade = cg.time;
 		
 		p->width = LARGESIZE;
 		p->height = LARGESIZE;
@@ -2250,7 +2243,7 @@ void CG_ParticleMisc (qhandle_t pshader, vec3_t origin, int size, int duration, 
 	free_particles = p->next;
 	p->next = active_particles;
 	active_particles = p;
-	p->time = cg->time;
+	p->time = cg.time;
 	p->alpha = 1.0;
 	p->alphavel = 0;
 	p->roll = rand()%179;
@@ -2258,11 +2251,11 @@ void CG_ParticleMisc (qhandle_t pshader, vec3_t origin, int size, int duration, 
 	p->pshader = pshader;
 
 	if (duration > 0)
-		p->endtime = cg->time + duration;
+		p->endtime = cg.time + duration;
 	else
 		p->endtime = duration;
 
-	p->startfade = cg->time;
+	p->startfade = cg.time;
 
 	p->width = size;
 	p->height = size;

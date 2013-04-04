@@ -829,10 +829,18 @@ void CM_TraceThroughTree( traceWork_t *tw, clipMap_t *local, int num, float p1f,
 	// and the offset for the size of the box
 	//
 	node = local->nodes + num;
+
 #ifdef _XBOX
 	plane = cmg.planes + tr.world->nodes[num].planeNum;
 #else   mnode_s
 	plane = node->plane;
+#endif
+
+#if 0
+	// uncomment this to test against every leaf in the world for debugging
+CM_TraceThroughTree( tw, local, node->children[0], p1f, p2f, p1, p2 );
+CM_TraceThroughTree( tw, local, node->children[1], p1f, p2f, p1, p2 );
+return;
 #endif
 
 	// adjust the plane distance apropriately for mins/maxs
@@ -846,7 +854,20 @@ void CM_TraceThroughTree( traceWork_t *tw, clipMap_t *local, int num, float p1f,
 		if ( tw->isPoint ) {
 			offset = 0;
 		} else {
-			// this is silly
+			// an axial brush right behind a slanted bsp plane
+			// will poke through when expanded, so adjust
+			// by sqrt(3)
+			offset = fabs(tw->extents[0]*plane->normal[0]) +
+				fabs(tw->extents[1]*plane->normal[1]) +
+				fabs(tw->extents[2]*plane->normal[2]);
+
+			offset *= 2;
+#if 0
+CM_TraceThroughTree( tw, local, node->children[0], p1f, p2f, p1, p2 );
+CM_TraceThroughTree( tw, local, node->children[1], p1f, p2f, p1, p2 );
+return;
+#endif
+			offset = tw->maxOffset;
 			offset = 2048;
 		}
 	}

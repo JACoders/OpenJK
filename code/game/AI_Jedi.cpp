@@ -796,7 +796,7 @@ static qboolean Jedi_ClearPathToSpot( vec3_t dest, int impactEntNum )
 	//Offset the step height
 	VectorSet( mins, NPC->mins[0], NPC->mins[1], NPC->mins[2] + STEPSIZE );
 	
-	gi.trace( &trace, NPC->currentOrigin, mins, NPC->maxs, dest, NPC->s.number, NPC->clipmask );
+	gi.trace( &trace, NPC->currentOrigin, mins, NPC->maxs, dest, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );
 
 	//Do a simple check
 	if ( trace.allsolid || trace.startsolid )
@@ -833,7 +833,7 @@ static qboolean Jedi_ClearPathToSpot( vec3_t dest, int impactEntNum )
 		VectorMA( NPC->currentOrigin, i, dir, start );
 		VectorCopy( start, end );
 		end[2] -= drop;
-		gi.trace( &trace, start, mins, NPC->maxs, end, NPC->s.number, NPC->clipmask );//NPC->mins?
+		gi.trace( &trace, start, mins, NPC->maxs, end, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );//NPC->mins?
 		if ( trace.fraction < 1.0f || trace.allsolid || trace.startsolid )
 		{//good to go
 			continue;
@@ -894,7 +894,7 @@ qboolean NPC_MoveDirClear( int forwardmove, int rightmove, qboolean reset )
 	rtDist = ((float)rightmove)/2.0f;
 	VectorMA( NPC->currentOrigin, fwdDist, forward, testPos );
 	VectorMA( testPos, rtDist, right, testPos );
-	gi.trace( &trace, NPC->currentOrigin, mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask|CONTENTS_BOTCLIP );
+	gi.trace( &trace, NPC->currentOrigin, mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask|CONTENTS_BOTCLIP, (EG2_Collision)0, 0 );
 	if ( trace.allsolid || trace.startsolid )
 	{//hmm, trace started inside this brush... how do we decide if we should continue?
 		//FIXME: what do we do if we start INSIDE a CONTENTS_BOTCLIP? Try the trace again without that in the clipmask?
@@ -932,7 +932,7 @@ qboolean NPC_MoveDirClear( int forwardmove, int rightmove, qboolean reset )
 	VectorCopy( trace.endpos, testPos );
 	testPos[2] += bottom_max;
 
-	gi.trace( &trace, trace.endpos, mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask );
+	gi.trace( &trace, trace.endpos, mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );
 
 	//FIXME:Should we try to see if we can still get to our goal using the waypoint network from this trace.endpos?
 	//OR: just put NPC clip brushes on these edges (still fall through when die)
@@ -1257,6 +1257,18 @@ static qboolean Jedi_DecideKick( void )
 	if ( !TIMER_Done( NPC, "kickDebounce" ) )
 	{//just did one
 		return qfalse;
+	}
+	if ( NPC->client->ps.weapon == WP_SABER )
+	{
+		if ( (NPC->client->ps.saber[0].saberFlags&SFL_NO_KICKS) )
+		{
+			return qfalse;
+		}
+		else if ( NPC->client->ps.dualSabers 
+			&& (NPC->client->ps.saber[1].saberFlags&SFL_NO_KICKS) )
+		{
+			return qfalse;
+		}
 	}
 	//go for it!
 	return qtrue;
@@ -2373,6 +2385,20 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 
 		int parts = SETANIM_BOTH, anim;
 		float	speed, checkDist;
+		qboolean allowCartWheels = qtrue;
+
+		if ( self->client->ps.weapon == WP_SABER )
+		{
+			if ( (self->client->ps.saber[0].saberFlags&SFL_NO_CARTWHEELS) )
+			{
+				allowCartWheels = qfalse;
+			}
+			else if ( self->client->ps.dualSabers 
+				&& (self->client->ps.saber[1].saberFlags&SFL_NO_CARTWHEELS) )
+			{
+				allowCartWheels = qfalse;
+			}
+		}
 
 		if ( PM_SaberInAttack( self->client->ps.saberMove )
 			|| PM_SaberInStart( self->client->ps.saberMove ) )
@@ -2407,8 +2433,8 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 		}
 		//trace in the dir that we want to go
 		VectorMA( self->currentOrigin, checkDist, right, traceto );
-		gi.trace( &trace, self->currentOrigin, mins, maxs, traceto, self->s.number, CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP );
-		if ( trace.fraction >= 1.0f )
+		gi.trace( &trace, self->currentOrigin, mins, maxs, traceto, self->s.number, CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP, (EG2_Collision)0, 0 );
+		if ( trace.fraction >= 1.0f && allowCartWheels )
 		{//it's clear, let's do it
 			//FIXME: check for drops?
 			NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
@@ -2456,43 +2482,59 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 						checkDist *= -1.0f;
 						VectorMA( self->currentOrigin, checkDist, right, traceto );
 						//trace in the dir that we want to go
-						gi.trace( &trace, self->currentOrigin, mins, maxs, traceto, self->s.number, CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP );
+						gi.trace( &trace, self->currentOrigin, mins, maxs, traceto, self->s.number, CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP, (EG2_Collision)0, 0 );
 						if ( trace.fraction >= 1.0f )
 						{//it's clear, let's do it
-							//FIXME: check for drops?
-							//turn the cartwheel into a wallflip in the other dir
-							if ( rightdot > 0 )
+							qboolean allowWallFlips = qtrue;
+							if ( self->client->ps.weapon == WP_SABER )
 							{
-								anim = BOTH_WALL_FLIP_LEFT;
-								self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
-								VectorMA( self->client->ps.velocity, 150, right, self->client->ps.velocity );
+								if ( (self->client->ps.saber[0].saberFlags&SFL_NO_WALL_FLIPS) )
+								{
+									allowWallFlips = qfalse;
+								}
+								else if ( self->client->ps.dualSabers 
+									&& (self->client->ps.saber[1].saberFlags&SFL_NO_WALL_FLIPS) )
+								{
+									allowWallFlips = qfalse;
+								}
 							}
-							else
-							{
-								anim = BOTH_WALL_FLIP_RIGHT;
-								self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
-								VectorMA( self->client->ps.velocity, -150, right, self->client->ps.velocity );
+							if ( allowWallFlips )
+							{//okay to do wall-flips with this saber
+								//FIXME: check for drops?
+								//turn the cartwheel into a wallflip in the other dir
+								if ( rightdot > 0 )
+								{
+									anim = BOTH_WALL_FLIP_LEFT;
+									self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
+									VectorMA( self->client->ps.velocity, 150, right, self->client->ps.velocity );
+								}
+								else
+								{
+									anim = BOTH_WALL_FLIP_RIGHT;
+									self->client->ps.velocity[0] = self->client->ps.velocity[1] = 0;
+									VectorMA( self->client->ps.velocity, -150, right, self->client->ps.velocity );
+								}
+								self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+								//animate me
+								int parts = SETANIM_LEGS;
+								if ( !self->client->ps.weaponTime )
+								{
+									parts = SETANIM_BOTH;
+								}
+								NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+								self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
+								self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
+								if ( self->client->NPC_class == CLASS_BOBAFETT 
+									|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
+								{
+									G_AddEvent( self, EV_JUMP, 0 );
+								}
+								else
+								{
+									G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
+								}
+								return EVASION_OTHER;
 							}
-							self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
-							//animate me
-							int parts = SETANIM_LEGS;
-							if ( !self->client->ps.weaponTime )
-							{
-								parts = SETANIM_BOTH;
-							}
-							NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-							self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
-							self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
-							if ( self->client->NPC_class == CLASS_BOBAFETT 
-								|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
-							{
-								G_AddEvent( self, EV_JUMP, 0 );
-							}
-							else
-							{
-								G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
-							}
-							return EVASION_OTHER;
 						}
 						else 
 						{//boxed in on both sides
@@ -2511,7 +2553,7 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 						checkDist *= -1.0f;
 						VectorMA( self->currentOrigin, checkDist, right, traceto );
 						//trace in the dir that we want to go
-						gi.trace( &trace, self->currentOrigin, mins, maxs, traceto, self->s.number, CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP );
+						gi.trace( &trace, self->currentOrigin, mins, maxs, traceto, self->s.number, CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP, (EG2_Collision)0, 0 );
 						if ( (trace.fraction*checkDist) <= 32 )
 						{//wall on this side is close enough
 							bestCheckDist = checkDist;
@@ -2525,35 +2567,51 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 				//Try wall run?
 				if ( bestCheckDist )
 				{//one of the walls was close enough to wall-run on
-					//FIXME: check for long enough wall and a drop at the end?
-					if ( bestCheckDist > 0 )
-					{//it was to the right
-						anim = BOTH_WALL_RUN_RIGHT;
-					}
-					else
-					{//it was to the left
-						anim = BOTH_WALL_RUN_LEFT;
-					}
-					self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
-					//animate me
-					int parts = SETANIM_LEGS;
-					if ( !self->client->ps.weaponTime )
+					qboolean allowWallRuns = qtrue;
+					if ( self->client->ps.weapon == WP_SABER )
 					{
-						parts = SETANIM_BOTH;
+						if ( (self->client->ps.saber[0].saberFlags&SFL_NO_WALL_RUNS) )
+						{
+							allowWallRuns = qfalse;
+						}
+						else if ( self->client->ps.dualSabers 
+							&& (self->client->ps.saber[1].saberFlags&SFL_NO_WALL_RUNS) )
+						{
+							allowWallRuns = qfalse;
+						}
 					}
-					NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-					self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
-					self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
-					if ( self->client->NPC_class == CLASS_BOBAFETT 
-						|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
-					{
-						G_AddEvent( self, EV_JUMP, 0 );
+					if ( allowWallRuns )
+					{//okay to do wallruns with this saber
+						//FIXME: check for long enough wall and a drop at the end?
+						if ( bestCheckDist > 0 )
+						{//it was to the right
+							anim = BOTH_WALL_RUN_RIGHT;
+						}
+						else
+						{//it was to the left
+							anim = BOTH_WALL_RUN_LEFT;
+						}
+						self->client->ps.velocity[2] = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+						//animate me
+						int parts = SETANIM_LEGS;
+						if ( !self->client->ps.weaponTime )
+						{
+							parts = SETANIM_BOTH;
+						}
+						NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+						self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
+						self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
+						if ( self->client->NPC_class == CLASS_BOBAFETT 
+							|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
+						{
+							G_AddEvent( self, EV_JUMP, 0 );
+						}
+						else
+						{
+							G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
+						}
+						return EVASION_OTHER;
 					}
-					else
-					{
-						G_SoundOnEnt( self, CHAN_BODY, "sound/weapons/force/jump.wav" );
-					}
-					return EVASION_OTHER;
 				}
 				//else check for wall in front, do backflip off wall
 			}
@@ -3945,7 +4003,7 @@ static qboolean Jedi_SaberBlock( void )
 
 	//get the actual point of impact
 	trace_t	tr;
-	gi.trace( &tr, saberPoint, saberMins, saberMaxs, hitloc, NPC->enemy->s.number, CONTENTS_BODY );//, G2_RETURNONHIT, 10 );
+	gi.trace( &tr, saberPoint, saberMins, saberMaxs, hitloc, NPC->enemy->s.number, CONTENTS_BODY, (EG2_Collision)0, 0 );//, G2_RETURNONHIT, 10 );
 	if ( tr.allsolid || tr.startsolid || tr.fraction >= 1.0f )
 	{//estimate
 		vec3_t	dir2Me;
@@ -4470,7 +4528,7 @@ gentity_t *Jedi_FindEnemyInCone( gentity_t *self, gentity_t *fallback, float min
 		}
 
 		//really should have a clear LOS to this thing...
-		gi.trace( &tr, self->currentOrigin, vec3_origin, vec3_origin, check->currentOrigin, self->s.number, MASK_SHOT );
+		gi.trace( &tr, self->currentOrigin, vec3_origin, vec3_origin, check->currentOrigin, self->s.number, MASK_SHOT, (EG2_Collision)0, 0 );
 		if ( tr.fraction < 1.0f && tr.entityNum != check->s.number )
 		{//must have clear shot
 			continue;
@@ -4579,8 +4637,7 @@ void NPC_EvasionSaber( void )
 extern float WP_SpeedOfMissileForWeapon( int wp, qboolean alt_fire );
 static void Jedi_FaceEnemy( qboolean doPitch )
 {
-	vec3_t	enemy_eyes, eyes;
-	vec3_t	angles = { 0 };
+	vec3_t	enemy_eyes, eyes, angles;
 
 	if ( NPC == NULL )
 		return;
@@ -5561,11 +5618,11 @@ static void Jedi_CheckJumps( void )
 		//FIXME: account for PM_AirMove if ucmd.forwardmove and/or ucmd.rightmove is non-zero...
 		if ( testPos[2] < lastPos[2] )
 		{//going down, don't check for BOTCLIP
-			gi.trace( &trace, lastPos, NPC->mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask );//FIXME: include CONTENTS_BOTCLIP?
+			gi.trace( &trace, lastPos, NPC->mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );//FIXME: include CONTENTS_BOTCLIP?
 		}
 		else
 		{//going up, check for BOTCLIP
-			gi.trace( &trace, lastPos, NPC->mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask|CONTENTS_BOTCLIP );
+			gi.trace( &trace, lastPos, NPC->mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask|CONTENTS_BOTCLIP, (EG2_Collision)0, 0 );
 		}
 		if ( trace.allsolid || trace.startsolid )
 		{//WTF?
@@ -5598,7 +5655,7 @@ static void Jedi_CheckJumps( void )
 		return;
 	}
 	bottom[2] -= 128;
-	gi.trace( &trace, trace.endpos, NPC->mins, NPC->maxs, bottom, NPC->s.number, NPC->clipmask );
+	gi.trace( &trace, trace.endpos, NPC->mins, NPC->maxs, bottom, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );
 	if ( trace.allsolid || trace.startsolid || trace.fraction < 1.0f )
 	{//hit ground!
 		if ( trace.entityNum < ENTITYNUM_WORLD )

@@ -25,7 +25,7 @@ public:
 	const char *GetData(void) const { return(mData); }
 };
 
-char			   		*shaderText = NULL;	// THIS IS THE ONLY COPY - IT IS NEVER FREED!
+char			   		*shaderText = NULL;
 CHash<CCMShaderText>	shaderTextTable;
 CHash<CCMShader>		cmShaderTable;
 
@@ -70,59 +70,83 @@ a single large text block that can be scanned for shader names
 
 void CM_LoadShaderFiles( void )
 {
-	if( !shaderText )
+	char	**shaderFiles1;
+	int		numShaders1;
+#ifndef FINAL_BUILD
+	char	**shaderFiles2;
+	int		numShaders2;
+#endif
+	char	*buffers[MAX_SHADER_FILES];
+	int		numShaders;
+	int		i;
+	int		sum = 0;
+
+	// scan for shader files
+	shaderFiles1 = FS_ListFiles( "shaders", ".shader", &numShaders1 );
+#ifndef FINAL_BUILD
+	shaderFiles2 = FS_ListFiles( "shaders/test", ".shader", &numShaders2 );
+#endif
+
+	if ( !shaderFiles1 || !numShaders1 )
 	{
-		char	**shaderFiles1;
-		int		numShaders1;
-		char	*buffers[MAX_SHADER_FILES];
-		int		numShaders;
-		int		i;
-		int		sum = 0;
-
-		// scan for shader files
-		shaderFiles1 = FS_ListFiles( "shaders", ".shader", &numShaders1 );
-
-		if ( !shaderFiles1 || !numShaders1 )
-		{
-			Com_Printf( S_COLOR_YELLOW "WARNING: no shader files found\n" );
-			return;
-		}
-
-		numShaders = numShaders1;
-		if ( numShaders > MAX_SHADER_FILES ) 
-		{
-			numShaders = MAX_SHADER_FILES;
-		}
-
-		// load and parse shader files
-		for ( i = 0; i < numShaders1; i++ )
-		{
-			char filename[MAX_QPATH];
-
-			Com_sprintf( filename, sizeof( filename ), "shaders/%s", shaderFiles1[i] );
-			Com_DPrintf( "...loading '%s'\n", filename );
-			FS_ReadFile( filename, (void **)&buffers[i] );
-			if ( !buffers[i] ) 
-			{
-				Com_Error( ERR_FATAL, "Couldn't load %s", filename );
-			}
-			sum += COM_Compress( buffers[i] );
-		}
-
-		// build single large buffer
-		shaderText = (char *)Z_Malloc( sum + numShaders * 2, TAG_SHADERTEXT, qtrue);
-
-		// free in reverse order, so the temp files are all dumped
-		for ( i = numShaders - 1; i >= 0 ; i-- ) 
-		{
-			strcat( shaderText, "\n" );
-			strcat( shaderText, buffers[i] );
-			FS_FreeFile( buffers[i] );
-		}
-
-		// free up memory
-		FS_FreeFileList( shaderFiles1 );
+		Com_Printf( S_COLOR_YELLOW "WARNING: no shader files found\n" );
+		return;
 	}
+
+#ifndef FINAL_BUILD
+	numShaders = numShaders1 + numShaders2;
+#else
+	numShaders = numShaders1;
+#endif
+	if ( numShaders > MAX_SHADER_FILES ) 
+	{
+		numShaders = MAX_SHADER_FILES;
+	}
+
+	// load and parse shader files
+	for ( i = 0; i < numShaders1; i++ )
+	{
+		char filename[MAX_QPATH];
+
+		Com_sprintf( filename, sizeof( filename ), "shaders/%s", shaderFiles1[i] );
+		Com_DPrintf( "...loading '%s'\n", filename );
+		sum += FS_ReadFile( filename, (void **)&buffers[i] );
+		if ( !buffers[i] ) 
+		{
+			Com_Error( ERR_FATAL, "Couldn't load %s", filename );
+		}
+	}
+#ifndef FINAL_BUILD
+	for ( ; i < numShaders; i++ )
+	{
+		char filename[MAX_QPATH];
+
+		Com_sprintf( filename, sizeof( filename ), "shaders/test/%s", shaderFiles2[i - numShaders1] );
+		Com_DPrintf( "...loading '%s'\n", filename );
+		sum += FS_ReadFile( filename, (void **)&buffers[i] );
+		if ( !buffers[i] ) 
+		{
+			Com_Error( ERR_DROP, "Couldn't load %s", filename );
+		}
+	}
+#endif
+
+	// build single large buffer
+	shaderText = (char *)Z_Malloc( sum + numShaders * 2, TAG_SHADERTEXT, qtrue);
+
+	// free in reverse order, so the temp files are all dumped
+	for ( i = numShaders - 1; i >= 0 ; i-- ) 
+	{
+		strcat( shaderText, "\n" );
+		strcat( shaderText, buffers[i] );
+		FS_FreeFile( buffers[i] );
+	}
+
+	// free up memory
+	FS_FreeFileList( shaderFiles1 );
+#ifndef FINAL_BUILD
+	FS_FreeFileList( shaderFiles2 );
+#endif
 }
 
 /*
@@ -152,12 +176,11 @@ CM_FreeShaderText
 void CM_FreeShaderText(void)
 {
 	shaderTextTable.clear();
-	// We NEVER free the shadertext anymore!
-//	if(shaderText)
-//	{
-//		Z_Free(shaderText);
-//		shaderText = NULL;
-//	}
+	if(shaderText)
+	{
+		Z_Free(shaderText);
+		shaderText = NULL;
+	}
 }
 
 /*
@@ -175,13 +198,10 @@ void CM_LoadShaderText(qboolean forceReload)
 	{
 		CM_FreeShaderText();
 	}
-	// Above no longer blows away shader text, so we DO need to re-make the hash tables:
-/*
 	if(shaderText)
 	{
 		return;
 	}
-*/
 //	Com_Printf("Loading shader text .....\n");
 	CM_LoadShaderFiles();
 	CM_CreateShaderTextHash();
@@ -302,9 +322,7 @@ static qboolean CM_ParseVector( CCMShader *shader, const char **text, int count,
 	token = COM_ParseExt( text, qfalse );
 	if ( strcmp( token, "(" ) ) 
 	{
-#ifndef FINAL_BUILD
 		Com_Printf( S_COLOR_YELLOW "WARNING: missing parenthesis in shader '%s'\n", shader->shader );
-#endif
 		return qfalse;
 	}
 
@@ -322,9 +340,7 @@ static qboolean CM_ParseVector( CCMShader *shader, const char **text, int count,
 	token = COM_ParseExt( text, qfalse );
 	if ( strcmp( token, ")" ) ) 
 	{
-#ifndef FINAL_BUILD
 		Com_Printf( S_COLOR_YELLOW "WARNING: missing parenthesis in shader '%s'\n", shader->shader );
-#endif
 		return qfalse;
 	}
 	return qtrue;

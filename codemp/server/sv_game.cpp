@@ -139,12 +139,10 @@ void SV_SetBrushModel( sharedEntity_t *ent, const char *name )
 	{
 		ent->s.modelindex = atoi( name + 1 );
 
-/*
 		if (sv.mLocalSubBSPIndex != -1)
 		{
 			ent->s.modelindex += sv.mLocalSubBSPModelOffset;
 		}
-*/
 
 		h = CM_InlineModel( ent->s.modelindex );
 
@@ -154,18 +152,15 @@ void SV_SetBrushModel( sharedEntity_t *ent, const char *name )
 		VectorCopy (maxs, ent->r.maxs);
 		ent->r.bmodel = qtrue;
 
-/*
 		if (com_RMG && com_RMG->integer)
 		{
 			ent->r.contents = CM_ModelContents( h, sv.mLocalSubBSPIndex );
 		}
 		else
-*/
 		{
 			ent->r.contents = CM_ModelContents( h, -1 );
 		}
 	}
-/*
 	else if (name[0] == '#')
 	{
 		ent->s.modelindex = CM_LoadSubBSP(va("maps/%s.bsp", name + 1), qfalse);
@@ -181,14 +176,12 @@ void SV_SetBrushModel( sharedEntity_t *ent, const char *name )
 		h = CM_InlineModel( ent->s.modelindex );
 		ent->r.contents = CM_ModelContents( h, CM_FindSubBSP(ent->s.modelindex) );
 	}
-*/
 	else
 	{
 		Com_Error( ERR_DROP, "SV_SetBrushModel: %s isn't a brush model", name );
 	}
 }
 
-/*
 const char *SV_SetActiveSubBSP(int index)
 {
 	if (index >= 0)
@@ -205,7 +198,6 @@ const char *SV_SetActiveSubBSP(int index)
 
 	return NULL;
 }
-*/
 
 /*
 =================
@@ -346,9 +338,7 @@ qboolean SV_GetEntityToken( char *buffer, int bufferSize )
 {
 	char	*s;
 
-/*
 	if (sv.mLocalSubBSPIndex == -1)
-*/
 	{
 		s = COM_Parse( (const char **)&sv.entityParsePoint );
 		Q_strncpyz( buffer, s, bufferSize );
@@ -361,7 +351,6 @@ qboolean SV_GetEntityToken( char *buffer, int bufferSize )
 			return qtrue;
 		}
 	}
-/*
 	else
 	{
 		s = COM_Parse( (const char **)&sv.mLocalSubBSPEntityParsePoint);
@@ -375,7 +364,6 @@ qboolean SV_GetEntityToken( char *buffer, int bufferSize )
 			return qtrue;
 		}
 	}
-*/
 }
 
 /*
@@ -1143,7 +1131,6 @@ int SV_GameSystemCalls( int *args ) {
 		botlib_export->ai.Characteristic_String( args[1], args[2], (char *)VMA(3), args[4] );
 		return 0;
 
-/*
 	case BOTLIB_AI_ALLOC_CHAT_STATE:
 		return botlib_export->ai.BotAllocChatState();
 	case BOTLIB_AI_FREE_CHAT_STATE:
@@ -1195,7 +1182,7 @@ int SV_GameSystemCalls( int *args ) {
 	case BOTLIB_AI_SET_CHAT_NAME:
 		botlib_export->ai.BotSetChatName( args[1], (char *)VMA(2), args[3] );
 		return 0;
-*/
+
 	case BOTLIB_AI_RESET_GOAL_STATE:
 		botlib_export->ai.BotResetGoalState( args[1] );
 		return 0;
@@ -1465,7 +1452,22 @@ int SV_GameSystemCalls( int *args ) {
 								   args[11],
 								   VMF(12) );
 		return 0;
-	
+
+	case G_G2_COLLISIONDETECTCACHE:
+		G2API_CollisionDetectCache ( (CollisionRecord_t*)VMA(1), *((CGhoul2Info_v *)args[2]), 
+								   (const float*)VMA(3),
+								   (const float*)VMA(4),
+								   args[5],
+								   args[6],
+								   (float*)VMA(7),
+								   (float*)VMA(8),
+								   (float*)VMA(9),
+								   G2VertSpaceServer,
+								   args[10],
+								   args[11],
+								   VMF(12) );
+		return 0;
+
 	case G_G2_SETROOTSURFACE:
 		return G2API_SetRootSurface(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3));
 
@@ -1615,12 +1617,10 @@ int SV_GameSystemCalls( int *args ) {
 
 		return 0;
 
-/*
 	case G_SET_ACTIVE_SUBBSP:
 		SV_SetActiveSubBSP(args[1]);
 		return 0;
-*/
-/*
+
 	case G_RMG_INIT:
 		if (com_RMG && com_RMG->integer)
 		{
@@ -1636,12 +1636,9 @@ int SV_GameSystemCalls( int *args ) {
 //			cmg.landScape->UpdatePatches();
 		}
 		return 0;
-*/
 
-/*
 	case G_CM_REGISTER_TERRAIN:
 		return CM_RegisterTerrain((const char *)VMA(1), true)->GetTerrainId();
-*/
 
 	case G_BOT_UPDATEWAYPOINTS:
 		SV_BotWaypointReception(args[1], (wpobject_t **)VMA(2));

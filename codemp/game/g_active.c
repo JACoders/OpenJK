@@ -4,11 +4,6 @@
 #include "g_local.h"
 #include "bg_saga.h"
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#endif
-
 extern void Jedi_Cloak( gentity_t *self );
 extern void Jedi_Decloak( gentity_t *self );
 
@@ -16,6 +11,7 @@ extern void Jedi_Decloak( gentity_t *self );
 qboolean PM_SaberInTransition( int move );
 qboolean PM_SaberInStart( int move );
 qboolean PM_SaberInReturn( int move );
+qboolean WP_SaberStyleValidForSaber( saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int saberAnimLevel );
 #include "../namespace_end.h"
 qboolean saberCheckKnockdown_DuelLoss(gentity_t *saberent, gentity_t *saberOwner, gentity_t *other);
 
@@ -1159,7 +1155,7 @@ static void G_UpdateJediMasterBroadcasts ( gentity_t *self )
 	{
 		return;
 	}
-/*
+
 	// This client isnt the jedi master so it shouldnt broadcast
 	if ( !self->client->ps.isJediMaster )
 	{
@@ -1198,7 +1194,6 @@ static void G_UpdateJediMasterBroadcasts ( gentity_t *self )
 		// master we are done
 		self->r.broadcastClients[ent->s.clientNum/32] |= (1 << (ent->s.clientNum%32));
 	}
-*/
 }
 
 void G_UpdateClientBroadcasts ( gentity_t *self )
@@ -1694,6 +1689,16 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			{
 				anim = BOTH_ENGAGETAUNT;
 			}
+			else if ( ent->client->saber[0].tauntAnim != -1 )
+			{
+				anim = ent->client->saber[0].tauntAnim;
+			}
+			else if ( ent->client->saber[1].model 
+					&& ent->client->saber[1].model[0]
+					&& ent->client->saber[1].tauntAnim != -1 )
+			{
+				anim = ent->client->saber[1].tauntAnim;
+			}
 			else
 			{
 				switch ( ent->client->ps.fd.saberAnimLevel )
@@ -1744,7 +1749,20 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			}
 			break;
 		case TAUNT_BOW:
-			anim = BOTH_BOW;
+			if ( ent->client->saber[0].bowAnim != -1 )
+			{
+				anim = ent->client->saber[0].bowAnim;
+			}
+			else if ( ent->client->saber[1].model 
+					&& ent->client->saber[1].model[0]
+					&& ent->client->saber[1].bowAnim != -1 )
+			{
+				anim = ent->client->saber[1].bowAnim;
+			}
+			else
+			{
+				anim = BOTH_BOW;
+			}
 			if ( ent->client->ps.saberHolstered == 1 
 				&& ent->client->saber[1].model 
 				&& ent->client->saber[1].model[0] )
@@ -1758,7 +1776,20 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			ent->client->ps.saberHolstered = 2;
 			break;
 		case TAUNT_MEDITATE:
-			anim = BOTH_MEDITATE;
+			if ( ent->client->saber[0].meditateAnim != -1 )
+			{
+				anim = ent->client->saber[0].meditateAnim;
+			}
+			else if ( ent->client->saber[1].model 
+					&& ent->client->saber[1].model[0]
+					&& ent->client->saber[1].meditateAnim != -1 )
+			{
+				anim = ent->client->saber[1].meditateAnim;
+			}
+			else
+			{
+				anim = BOTH_MEDITATE;
+			}
 			if ( ent->client->ps.saberHolstered == 1 
 				&& ent->client->saber[1].model 
 				&& ent->client->saber[1].model[0] )
@@ -1785,69 +1816,95 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 					G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
 				}
 				ent->client->ps.saberHolstered = 0;
-				switch ( ent->client->ps.fd.saberAnimLevel )
+				if ( ent->client->saber[0].flourishAnim != -1 )
 				{
-				case SS_FAST:
-				case SS_TAVION:
-					anim = BOTH_SHOWOFF_FAST;
-					break;
-				case SS_MEDIUM:
-					anim = BOTH_SHOWOFF_MEDIUM;
-					break;
-				case SS_STRONG:
-				case SS_DESANN:
-					anim = BOTH_SHOWOFF_STRONG;
-					break;
-				case SS_DUAL:
-					anim = BOTH_SHOWOFF_DUAL;
-					break;
-				case SS_STAFF:
-					anim = BOTH_SHOWOFF_STAFF;
-					break;
+					anim = ent->client->saber[0].flourishAnim;
+				}
+				else if ( ent->client->saber[1].model 
+					&& ent->client->saber[1].model[0]
+					&& ent->client->saber[1].flourishAnim != -1 )
+				{
+					anim = ent->client->saber[1].flourishAnim;
+				}
+				else
+				{
+					switch ( ent->client->ps.fd.saberAnimLevel )
+					{
+					case SS_FAST:
+					case SS_TAVION:
+						anim = BOTH_SHOWOFF_FAST;
+						break;
+					case SS_MEDIUM:
+						anim = BOTH_SHOWOFF_MEDIUM;
+						break;
+					case SS_STRONG:
+					case SS_DESANN:
+						anim = BOTH_SHOWOFF_STRONG;
+						break;
+					case SS_DUAL:
+						anim = BOTH_SHOWOFF_DUAL;
+						break;
+					case SS_STAFF:
+						anim = BOTH_SHOWOFF_STAFF;
+						break;
+					}
 				}
 			}
 			break;
 		case TAUNT_GLOAT:
-			switch ( ent->client->ps.fd.saberAnimLevel )
+			if ( ent->client->saber[0].gloatAnim != -1 )
 			{
-			case SS_FAST:
-			case SS_TAVION:
-				anim = BOTH_VICTORY_FAST;
-				break;
-			case SS_MEDIUM:
-				anim = BOTH_VICTORY_MEDIUM;
-				break;
-			case SS_STRONG:
-			case SS_DESANN:
-				if ( ent->client->ps.saberHolstered )
-				{//turn on first
-					G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
+				anim = ent->client->saber[0].gloatAnim;
+			}
+			else if ( ent->client->saber[1].model 
+					&& ent->client->saber[1].model[0]
+					&& ent->client->saber[1].gloatAnim != -1 )
+			{
+				anim = ent->client->saber[1].gloatAnim;
+			}
+			else
+			{
+				switch ( ent->client->ps.fd.saberAnimLevel )
+				{
+				case SS_FAST:
+				case SS_TAVION:
+					anim = BOTH_VICTORY_FAST;
+					break;
+				case SS_MEDIUM:
+					anim = BOTH_VICTORY_MEDIUM;
+					break;
+				case SS_STRONG:
+				case SS_DESANN:
+					if ( ent->client->ps.saberHolstered )
+					{//turn on first
+						G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
+					}
+					ent->client->ps.saberHolstered = 0;
+					anim = BOTH_VICTORY_STRONG;
+					break;
+				case SS_DUAL:
+					if ( ent->client->ps.saberHolstered == 1 
+						&& ent->client->saber[1].model 
+						&& ent->client->saber[1].model[0] )
+					{//turn on second saber
+						G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOn );
+					}
+					else if ( ent->client->ps.saberHolstered == 2 )
+					{//turn on first
+						G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
+					}
+					ent->client->ps.saberHolstered = 0;
+					anim = BOTH_VICTORY_DUAL;
+					break;
+				case SS_STAFF:
+					if ( ent->client->ps.saberHolstered )
+					{//turn on first
+						G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
+					}
+					ent->client->ps.saberHolstered = 0;
+					anim = BOTH_VICTORY_STAFF;
+					break;
 				}
-				ent->client->ps.saberHolstered = 0;
-				anim = BOTH_VICTORY_STRONG;
-				break;
-			case SS_DUAL:
-				if ( ent->client->ps.saberHolstered == 1 
-					&& ent->client->saber[1].model 
-					&& ent->client->saber[1].model[0] )
-				{//turn on second saber
-					G_Sound( ent, CHAN_WEAPON, ent->client->saber[1].soundOn );
-				}
-				else if ( ent->client->ps.saberHolstered == 2 )
-				{//turn on first
-					G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
-				}
-				ent->client->ps.saberHolstered = 0;
-				anim = BOTH_VICTORY_DUAL;
-				break;
-			case SS_STAFF:
-				if ( ent->client->ps.saberHolstered )
-				{//turn on first
-					G_Sound( ent, CHAN_WEAPON, ent->client->saber[0].soundOn );
-				}
-				ent->client->ps.saberHolstered = 0;
-				anim = BOTH_VICTORY_STAFF;
-				break;
 			}
 			break;
 		}
@@ -1968,31 +2025,40 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 		else if (client->saber[0].model[0] && client->saber[1].model[0])
 		{ //with two sabs always use akimbo style
-			client->ps.fd.saberAnimLevelBase = SS_DUAL;
 			if ( client->ps.saberHolstered == 1 )
 			{//one saber should be off, adjust saberAnimLevel accordinly
+				client->ps.fd.saberAnimLevelBase = SS_DUAL;
 				client->ps.fd.saberAnimLevel = SS_FAST;
 				client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevel;
 			}
 			else
 			{
-				client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_DUAL;
+				if ( !WP_SaberStyleValidForSaber( &client->saber[0], &client->saber[1], client->ps.saberHolstered, client->ps.fd.saberAnimLevel ) )
+				{//only use dual style if the style we're trying to use isn't valid
+					client->ps.fd.saberAnimLevelBase = client->ps.fd.saberAnimLevel = SS_DUAL;
+				}
 				client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevel;
 			}
 		}
-		else if (client->saber[0].style == SS_STAFF)
-		{ //then always use the staff style
-			client->ps.fd.saberAnimLevelBase = SS_STAFF;
-			if ( client->ps.saberHolstered == 1 
-				&& client->saber[0].singleBladeStyle != SS_NONE)
-			{//one blade should be off, adjust saberAnimLevel accordinly
-				client->ps.fd.saberAnimLevel = client->saber[0].singleBladeStyle;
-				client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevel;
+		else
+		{
+			if (client->saber[0].stylesLearned == (1<<SS_STAFF) )
+			{ //then *always* use the staff style
+				client->ps.fd.saberAnimLevelBase = SS_STAFF;
 			}
-			else
-			{
-				client->ps.fd.saberAnimLevel = SS_STAFF;
-				client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevel;
+			if ( client->ps.fd.saberAnimLevelBase == SS_STAFF )
+			{//using staff style
+				if ( client->ps.saberHolstered == 1 
+					&& client->saber[0].singleBladeStyle != SS_NONE)
+				{//one blade should be off, adjust saberAnimLevel accordinly
+					client->ps.fd.saberAnimLevel = client->saber[0].singleBladeStyle;
+					client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevel;
+				}
+				else
+				{
+					client->ps.fd.saberAnimLevel = SS_STAFF;
+					client->ps.fd.saberDrawAnimLevel = client->ps.fd.saberAnimLevel;
+				}
 			}
 		}
 	}
@@ -2047,9 +2113,14 @@ void ClientThink_real( gentity_t *ent ) {
 	//
 	// check for exiting intermission
 	//
-	if ( level.intermissiontime ) {
-		ClientIntermissionThink( client );
-		return;
+	if ( level.intermissiontime ) 
+	{
+		if ( ent->s.number < MAX_CLIENTS
+			|| client->NPC_class == CLASS_VEHICLE )
+		{//players and vehicles do nothing in intermissions
+			ClientIntermissionThink( client );
+			return;
+		}
 	}
 
 	// spectators don't do much
@@ -2319,30 +2390,32 @@ void ClientThink_real( gentity_t *ent ) {
 
 		if (ucmd->buttons & BUTTON_WALKING)
 		{ //sort of a hack I guess since MP handles walking differently from SP (has some proxy cheat prevention methods)
+			/*
 			if (ent->client->ps.speed > 64)
 			{
 				ent->client->ps.speed = 64;
 			}
+			*/
 
 			if (ucmd->forwardmove > 64)
 			{
-				ucmd->forwardmove = ent->client->ps.speed;				
+				ucmd->forwardmove = 64;	
 			}
 			else if (ucmd->forwardmove < -64)
 			{
-				ucmd->forwardmove = -ent->client->ps.speed;
+				ucmd->forwardmove = -64;
 			}
 			
 			if (ucmd->rightmove > 64)
 			{
-				ucmd->rightmove = ent->client->ps.speed;
+				ucmd->rightmove = 64;
 			}
 			else if ( ucmd->rightmove < -64)
 			{
-				ucmd->rightmove = -ent->client->ps.speed;
+				ucmd->rightmove = -64;
 			}
 
-			ent->client->ps.speed = ent->client->ps.basespeed = NPC_GetRunSpeed( ent );
+			//ent->client->ps.speed = ent->client->ps.basespeed = NPC_GetRunSpeed( ent );
 		}
 		client->ps.basespeed = client->ps.speed;
 	}
@@ -2668,6 +2741,9 @@ void ClientThink_real( gentity_t *ent ) {
 					ent->client->ps.otherKiller = thrower->s.number;
 					ent->client->ps.otherKillerTime = level.time + 8000;
 					ent->client->ps.otherKillerDebounceTime = level.time + 100;
+					ent->client->otherKillerMOD = MOD_FALLING;
+					ent->client->otherKillerVehWeapon = 0;
+					ent->client->otherKillerWeaponType = WP_NONE;
 				}
 				else
 				{ //see if we can move to be next to the hand.. if it's not clear, break the throw.
@@ -2799,9 +2875,8 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 
-//		WP_ForcePowersUpdate( ent, ucmd); //update any active force powers
-//		WP_SaberPositionUpdate(ent, ucmd); //check the server-side saber point, do apprioriate server-side actions (effects are cs-only)
-//		WP_SaberStartMissileBlockCheck(ent, ucmd);
+//	WP_ForcePowersUpdate( ent, msec, ucmd); //update any active force powers
+//	WP_SaberPositionUpdate(ent, ucmd); //check the server-side saber point, do apprioriate server-side actions (effects are cs-only)
 
 	//NOTE: can't put USE here *before* PMove!!
 	if ( ent->client->ps.useDelay > level.time 
@@ -3104,6 +3179,27 @@ void ClientThink_real( gentity_t *ent ) {
 		pm.checkDuelLoss = 0;
 	}
 
+	if ( ent->client->ps.groundEntityNum < ENTITYNUM_WORLD )
+	{//standing on an ent
+		gentity_t *groundEnt = &g_entities[ent->client->ps.groundEntityNum];
+		if ( groundEnt
+			&& groundEnt->s.eType == ET_NPC
+			&& groundEnt->s.NPC_class == CLASS_VEHICLE 
+			&& groundEnt->inuse
+			&& groundEnt->health > 0
+			&& groundEnt->m_pVehicle )
+		{//standing on a valid, living vehicle
+			if ( !groundEnt->client->ps.speed
+				&& groundEnt->m_pVehicle->m_ucmd.upmove > 0 )
+			{//a vehicle that's trying to take off!
+				//just kill me
+				vec3_t up = {0,0,1};
+				G_Damage( ent, NULL, NULL, up, ent->r.currentOrigin, 9999999, DAMAGE_NO_PROTECTION, MOD_CRUSH );
+				return;
+			}
+		}
+	}
+
 	if (pm.cmd.generic_cmd &&
 		(pm.cmd.generic_cmd != ent->client->lastGenCmd || ent->client->lastGenCmdTime < level.time))
 	{
@@ -3321,7 +3417,8 @@ void ClientThink_real( gentity_t *ent ) {
 	if ( ent->client->ps.eventSequence != oldEventSequence ) {
 		ent->eventTime = level.time;
 	}
-	if (g_smoothClients.integer) {
+	if (g_smoothClients.integer)
+	{
 		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qfalse );
 		//rww - 12-03-02 - Don't snap the origin of players! It screws prediction all up.
 	}
@@ -3434,6 +3531,9 @@ void ClientThink_real( gentity_t *ent ) {
 						faceKicked->client->ps.otherKiller = ent->s.number;
 						faceKicked->client->ps.otherKillerTime = level.time + 5000;
 						faceKicked->client->ps.otherKillerDebounceTime = level.time + 100;
+						faceKicked->client->otherKillerMOD = MOD_MELEE;
+						faceKicked->client->otherKillerVehWeapon = 0;
+						faceKicked->client->otherKillerWeaponType = WP_NONE;
 
 						faceKicked->client->ps.velocity[0] = oppDir[0]*(strength*40);
 						faceKicked->client->ps.velocity[1] = oppDir[1]*(strength*40);
@@ -3505,15 +3605,6 @@ void ClientThink_real( gentity_t *ent ) {
 		else
 		{ //vehicle no longer valid?
 			ent->client->ps.m_iVehicleNum = 0;
-		}
-	}
-
-	extern void FF_XboxSaberRumble( void );
-	if(ent->s.number == ClientManager::ActiveClientNum())	// player
-	{
-		if(ent->client->ps.saberLockTime > level.time)
-		{
-			FF_XboxSaberRumble();
 		}
 	}
 
@@ -3737,7 +3828,11 @@ void ClientEndFrame( gentity_t *ent ) {
 	// the player any normal movement attributes
 	//
 	if ( level.intermissiontime ) {
-		return;
+		if ( ent->s.number < MAX_CLIENTS
+			|| ent->client->NPC_class == CLASS_VEHICLE )
+		{//players and vehicles do nothing in intermissions
+			return;
+		}
 	}
 
 	// burn from lava, etc

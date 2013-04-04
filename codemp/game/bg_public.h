@@ -17,7 +17,7 @@
 #define	MAX_SPAWN_VARS_CHARS	4096
 
 
-#define	GAME_VERSION		"basejk-1"
+#define	GAME_VERSION		"basejka-1"
 
 #define	STEPSIZE		18
 
@@ -66,29 +66,28 @@
 #define CS_VOTE_STRING			9
 #define	CS_VOTE_YES				10
 #define	CS_VOTE_NO				11
-#define CS_VOTE_CALLER			12
 
-#define CS_TEAMVOTE_TIME		13
-#define CS_TEAMVOTE_STRING		15
-#define	CS_TEAMVOTE_YES			17
-#define	CS_TEAMVOTE_NO			19
+#define CS_TEAMVOTE_TIME		12
+#define CS_TEAMVOTE_STRING		14
+#define	CS_TEAMVOTE_YES			16
+#define	CS_TEAMVOTE_NO			18
 
-#define	CS_GAME_VERSION			21
-#define	CS_LEVEL_START_TIME		22		// so the timer only shows the current level
-#define	CS_INTERMISSION			23		// when 1, fraglimit/timelimit has been hit and intermission will start in a second or two
-#define CS_FLAGSTATUS			24		// string indicating flag status in CTF
-#define CS_SHADERSTATE			25
-#define CS_BOTINFO				26
+#define	CS_GAME_VERSION			20
+#define	CS_LEVEL_START_TIME		21		// so the timer only shows the current level
+#define	CS_INTERMISSION			22		// when 1, fraglimit/timelimit has been hit and intermission will start in a second or two
+#define CS_FLAGSTATUS			23		// string indicating flag status in CTF
+#define CS_SHADERSTATE			24
+#define CS_BOTINFO				25
 
-#define	CS_ITEMS				28		// string of 0's and 1's that tell which items are present
+#define	CS_ITEMS				27		// string of 0's and 1's that tell which items are present
 
-#define CS_CLIENT_JEDIMASTER	29		// current jedi master
-#define CS_CLIENT_DUELWINNER	30		// current duel round winner - needed for printing at top of scoreboard
-#define CS_CLIENT_DUELISTS		31		// client numbers for both current duelists. Needed for a number of client-side things.
-#define CS_CLIENT_DUELHEALTHS	32		// nmckenzie: DUEL_HEALTH.  Hopefully adding this cs is safe and good?
-#define CS_GLOBAL_AMBIENT_SET	33
+#define CS_CLIENT_JEDIMASTER	28		// current jedi master
+#define CS_CLIENT_DUELWINNER	29		// current duel round winner - needed for printing at top of scoreboard
+#define CS_CLIENT_DUELISTS		30		// client numbers for both current duelists. Needed for a number of client-side things.
+#define CS_CLIENT_DUELHEALTHS	31		// nmckenzie: DUEL_HEALTH.  Hopefully adding this cs is safe and good?
+#define CS_GLOBAL_AMBIENT_SET	32
 
-#define CS_AMBIENT_SET			38
+#define CS_AMBIENT_SET			37
 
 #define CS_SIEGE_STATE			(CS_AMBIENT_SET+MAX_AMBIENT_SETS)
 #define CS_SIEGE_OBJECTIVES		(CS_SIEGE_STATE+1)
@@ -118,8 +117,7 @@ Ghoul2 Insert End
 #define CS_TERRAINS				(CS_LIGHT_STYLES + (MAX_LIGHT_STYLES*3))
 #define CS_BSP_MODELS			(CS_TERRAINS + MAX_TERRAINS)
 
-//#define CS_MAX					(CS_BSP_MODELS + MAX_SUB_BSP)+1
-#define CS_MAX					(CS_BSP_MODELS)+1
+#define CS_MAX					(CS_BSP_MODELS + MAX_SUB_BSP)
 
 #if (CS_MAX) > MAX_CONFIGSTRINGS
 #error overflow: (CS_MAX) > MAX_CONFIGSTRINGS
@@ -254,8 +252,7 @@ extern qboolean			BGPAFtextLoaded;
 extern animation_t		bgHumanoidAnimations[MAX_TOTALANIMATIONS];
 #include "../namespace_end.h"
 
-//#define MAX_ANIM_FILES	16
-#define MAX_ANIM_FILES	6	// I know that I had this number smaller once!
+#define MAX_ANIM_FILES	64
 #define MAX_ANIM_EVENTS 300
 
 typedef enum
@@ -267,7 +264,7 @@ typedef enum
 	NUM_FOOTSTEP_TYPES
 } footstepType_t;
 
-extern stringID_table_t animEventTypeTable[];
+extern stringID_table_t animEventTypeTable[MAX_ANIM_EVENTS+1];
 extern stringID_table_t footstepTypeTable[NUM_FOOTSTEP_TYPES+1];
 
 //size of Anim eventData array...
@@ -295,6 +292,14 @@ extern stringID_table_t footstepTypeTable[NUM_FOOTSTEP_TYPES+1];
 #define	AED_MOVE_FWD				0
 #define	AED_MOVE_RT					1
 #define	AED_MOVE_UP					2
+//indices for AEV_SABER_SWING data
+#define	AED_SABER_SWING_SABERNUM	0
+#define	AED_SABER_SWING_TYPE		1
+#define	AED_SABER_SWING_PROBABILITY	2
+//indices for AEV_SABER_SPIN data
+#define	AED_SABER_SPIN_SABERNUM		0
+#define	AED_SABER_SPIN_TYPE			1	//0 = saberspinoff, 1 = saberspin, 2-4 = saberspin1-saberspin3
+#define	AED_SABER_SPIN_PROBABILITY	2	
 
 typedef enum
 {//NOTENOTE:  Be sure to update animEventTypeTable and ParseAnimationEvtBlock(...) if you change this enum list!
@@ -305,6 +310,8 @@ typedef enum
 	AEV_FIRE,		//# animID AEV_FIRE framenum altfire chancetofire
 	AEV_MOVE,		//# animID AEV_MOVE framenum forwardpush rightpush uppush
 	AEV_SOUNDCHAN,  //# animID AEV_SOUNDCHAN framenum CHANNEL soundpath randomlow randomhi chancetoplay 
+	AEV_SABER_SWING,  //# animID AEV_SABER_SWING framenum CHANNEL randomlow randomhi chancetoplay 
+	AEV_SABER_SPIN,  //# animID AEV_SABER_SPIN framenum CHANNEL chancetoplay 
 	AEV_NUM_AEV
 } animEventType_t;
 
@@ -1076,6 +1083,8 @@ typedef enum {
 	MOD_CRUSH,
 	MOD_TELEFRAG,
 	MOD_FALLING,
+	MOD_COLLISION,
+	MOD_VEH_EXPLOSION,
 	MOD_SUICIDE,
 	MOD_TARGET_LASER,
 	MOD_TRIGGER_HURT,
@@ -1278,6 +1287,8 @@ typedef struct
 #endif
 
 typedef enum {
+	//totally invalid
+	LS_INVALID	= -1,
 	// Invalid, or saber not armed
 	LS_NONE		= 0,
 
@@ -1596,7 +1607,7 @@ qboolean BG_InDeathAnim( int anim );
 qboolean BG_InSaberLockOld( int anim );
 qboolean BG_InSaberLock( int anim );
 
-void BG_SaberStartTransAnim( int saberAnimLevel, int anim, float *animSpeed, int broken );
+void BG_SaberStartTransAnim( int clientNum, int saberAnimLevel, int weapon, int anim, float *animSpeed, int broken );
 
 void BG_ForcePowerDrain( playerState_t *ps, forcePowers_t forcePower, int overrideAmt );
 

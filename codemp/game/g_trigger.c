@@ -166,8 +166,6 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		}
 	}
 
-	bool forceMultiRun = false;
-
 	if (g_gametype.integer == GT_SIEGE && ent->genericValue1)
 	{
 		haltTrigger = qtrue;
@@ -205,7 +203,6 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 						objItem->nextthink = 0;
 						objItem->neverFree = qfalse;
 						G_FreeEntity(objItem);
-						forceMultiRun = true;
 					}
 				}
 			}
@@ -301,7 +298,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 		return;
 	}
 
-	if ( ent->nextthink > level.time && !forceMultiRun ) 
+	if ( ent->nextthink > level.time ) 
 	{
 		if( ent->spawnflags & 2048 ) // MULTIPLE - allow multiple entities to touch this trigger in a single frame
 		{
@@ -318,7 +315,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 	}
 
 	// if the player has already activated this trigger this frame
-	if( activator && !activator->s.number && ent->aimDebounceTime == level.time && !forceMultiRun )
+	if( activator && !activator->s.number && ent->aimDebounceTime == level.time )
 	{
 		return;	
 	}
@@ -330,7 +327,7 @@ void multi_trigger( gentity_t *ent, gentity_t *activator )
 
 	ent->activator = activator;
 
-	if(ent->delay && ent->painDebounceTime < (level.time + ent->delay) && !forceMultiRun)
+	if(ent->delay && ent->painDebounceTime < (level.time + ent->delay) )
 	{//delay before firing trigger
 		ent->think = multi_trigger_run;
 		ent->nextthink = level.time + ent->delay;
@@ -1367,6 +1364,9 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace ) {
 		{ //we're as good as dead, so if someone pushed us into this then remember them
 			other->client->ps.otherKillerTime = level.time + 20000;
 			other->client->ps.otherKillerDebounceTime = level.time + 10000;
+			other->client->otherKillerMOD = MOD_FALLING;
+			other->client->otherKillerVehWeapon = 0;
+			other->client->otherKillerWeaponType = WP_NONE;
 		}
 		other->client->ps.fallingToDeath = level.time;
 
@@ -1628,6 +1628,7 @@ void hyperspace_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 				fDiff = DotProduct( fwd, diff );
 				rDiff = DotProduct( right, diff );
 				uDiff = DotProduct( up, diff );
+
 				//Now get the base position of the destination
 				ent = G_Find (NULL, FOFS(targetname), self->target2);
 				if (!ent || !ent->inuse)
@@ -1638,9 +1639,9 @@ void hyperspace_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 				VectorCopy( ent->s.origin, newOrg );
 				//finally, add the offset into the new origin
 				AngleVectors( ent->s.angles, fwd, right, up );
-				VectorMA( newOrg, fDiff, fwd, newOrg );
-				VectorMA( newOrg, rDiff, right, newOrg );
-				VectorMA( newOrg, uDiff, up, newOrg );
+				VectorMA( newOrg, fDiff*self->radius, fwd, newOrg );
+				VectorMA( newOrg, rDiff*self->radius, right, newOrg );
+				VectorMA( newOrg, uDiff*self->radius, up, newOrg );
 				//G_Printf("hyperspace from %s to %s\n", vtos(other->client->ps.origin), vtos(newOrg) );
 				//now put them in the offset position, facing the angles that position wants them to be facing
 				TeleportPlayer( other, newOrg, ent->s.angles );
@@ -1703,9 +1704,12 @@ Ship will turn to face the angles of the first target_position then fly forward,
 
 "target"		whatever position the ship teleports from in relation to the target_position specified here, that's the relative position the ship will spawn at around the target2 target_position
 "target2"		name of target_position to teleport the ship to (will be relative to it's origin)
+"exitscale"		Can use this to make the vehicle appear farther from the exit position than they were from the entry position at the time of teleporting (scales the relative position - default is "1" - normal, no scale)
 */
 void SP_trigger_hyperspace(gentity_t *self)
 {
+	G_SpawnFloat( "exitscale", "1", &self->radius);
+
 	//register the hyperspace end sound (start sounds are customized)
 	G_SoundIndex( "sound/vehicles/common/hyperend.wav" );
 
@@ -1791,4 +1795,213 @@ void SP_func_timer( gentity_t *self ) {
 	self->r.svFlags = SVF_NOCLIENT;
 }
 
+gentity_t *asteroid_pick_random_asteroid( gentity_t *self )
+{
+	int			t_count = 0, pick;
+	gentity_t	*t = NULL;
 
+	while ( (t = G_Find (t, FOFS(targetname), self->target)) != NULL )
+	{
+		if (t != self)
+		{
+			t_count++;
+		}
+	}
+
+	if(!t_count)
+	{
+		return NULL;
+	}
+
+	if(t_count == 1)
+	{
+		return (G_Find (NULL, FOFS(targetname), self->target));
+	}
+
+	//FIXME: need a seed
+	pick = Q_irand(1, t_count);
+	t_count = 0;
+	while ( (t = G_Find (t, FOFS(targetname), self->target)) != NULL )
+	{
+		if (t != self)
+		{
+			t_count++;
+		}
+		else
+		{
+			continue;
+		}
+		
+		if(t_count == pick)
+		{
+			return t;
+		}
+	}
+	return NULL;
+}
+
+int asteroid_count_num_asteroids( gentity_t *self )
+{
+	int	i, count = 0;
+
+	for ( i = MAX_CLIENTS; i < ENTITYNUM_WORLD; i++ )
+	{
+		if ( !g_entities[i].inuse )
+		{
+			continue;
+		}
+		if ( g_entities[i].r.ownerNum == self->s.number )
+		{
+			count++;
+		}
+	}
+	return count;
+}
+
+extern void SP_func_rotating (gentity_t *ent);
+extern void Q3_Lerp2Origin( int taskID, int entID, vec3_t origin, float duration );
+void asteroid_move_to_start(gentity_t *self);
+void asteroid_move_to_start2(gentity_t *self, gentity_t *ownerTrigger)
+{//move asteroid to a new start position
+	if ( ownerTrigger )
+	{//move it
+		vec3_t startSpot, endSpot, startAngles;
+		float dist, speed = flrand( self->speed * 0.25f, self->speed * 2.0f );
+		int	capAxis, axis, time = 0;
+
+		capAxis = Q_irand( 0, 2 );
+		for ( axis = 0; axis < 3; axis++ )
+		{
+			if ( axis == capAxis )
+			{
+				if ( Q_irand( 0, 1 ) )
+				{
+					startSpot[axis] = ownerTrigger->r.mins[axis];
+					endSpot[axis] = ownerTrigger->r.maxs[axis];
+				}
+				else
+				{
+					startSpot[axis] = ownerTrigger->r.maxs[axis];
+					endSpot[axis] = ownerTrigger->r.mins[axis];
+				}
+			}
+			else
+			{
+				startSpot[axis] = ownerTrigger->r.mins[axis]+(flrand(0,1.0f)*(ownerTrigger->r.maxs[axis]-ownerTrigger->r.mins[axis]));
+				endSpot[axis] = ownerTrigger->r.mins[axis]+(flrand(0,1.0f)*(ownerTrigger->r.maxs[axis]-ownerTrigger->r.mins[axis]));
+			}
+		}
+		//FIXME: maybe trace from start to end to make sure nothing is in the way?  How big of a trace?
+
+		G_SetOrigin( self, startSpot );
+		dist = Distance( endSpot, startSpot );
+		time = ceil(dist/speed)*1000;
+		Q3_Lerp2Origin( -1, self->s.number, endSpot, time );
+
+		//spin it
+		startAngles[0] = flrand( -360, 360 );
+		startAngles[1] = flrand( -360, 360 );
+		startAngles[2] = flrand( -360, 360 );
+		G_SetAngles( self, startAngles );
+		self->s.apos.trDelta[0] = flrand( -100, 100 );
+		self->s.apos.trDelta[1] = flrand( -100, 100 );
+		self->s.apos.trDelta[2] = flrand( -100, 100 );
+		self->s.apos.trTime = level.time;
+		self->s.apos.trType = TR_LINEAR;
+		//move itownerTrigger back to a new start when done
+		self->think = asteroid_move_to_start;
+		self->nextthink = level.time+time;
+	}
+	else
+	{//crap, go bye-bye
+		self->think = G_FreeEntity;
+		self->nextthink = level.time+FRAMETIME;
+	}
+}
+
+void asteroid_move_to_start(gentity_t *self)
+{//move asteroid to a new start position
+	asteroid_move_to_start2( self, &g_entities[self->r.ownerNum] );
+}
+
+void asteroid_field_think(gentity_t *self)
+{
+	int numAsteroids = asteroid_count_num_asteroids( self );
+
+	self->nextthink = level.time + 500;
+
+	if ( numAsteroids < self->count )
+	{
+		//need to spawn a new asteroid
+		gentity_t *newAsteroid = G_Spawn();
+		if ( newAsteroid )
+		{
+			gentity_t *copyAsteroid = asteroid_pick_random_asteroid( self );
+			if ( copyAsteroid )
+			{
+				newAsteroid->model = copyAsteroid->model;
+				newAsteroid->model2 = copyAsteroid->model2;
+				newAsteroid->health = copyAsteroid->health;
+				newAsteroid->spawnflags = copyAsteroid->spawnflags;
+				newAsteroid->mass = copyAsteroid->mass;
+				newAsteroid->damage = copyAsteroid->damage;
+				newAsteroid->speed = copyAsteroid->speed;
+
+				G_SetOrigin( newAsteroid, copyAsteroid->s.origin );
+				G_SetAngles( newAsteroid, copyAsteroid->s.angles );
+				newAsteroid->classname = "func_rotating";
+
+				SP_func_rotating( newAsteroid );
+
+				newAsteroid->genericValue15 = copyAsteroid->genericValue15;
+				newAsteroid->s.iModelScale = copyAsteroid->s.iModelScale;
+				newAsteroid->maxHealth = newAsteroid->health;
+				G_ScaleNetHealth(newAsteroid);
+				newAsteroid->radius = copyAsteroid->radius;
+				newAsteroid->material = copyAsteroid->material;
+				//CacheChunkEffects( self->material );
+
+				//keep track of it
+				newAsteroid->r.ownerNum = self->s.number;
+				
+				//position it
+				asteroid_move_to_start2( newAsteroid, self );
+
+				//think again sooner if need even more
+				if ( numAsteroids+1 < self->count )
+				{//still need at least one more
+					//spawn it in 100ms
+					self->nextthink = level.time + 100;
+				}
+			}
+		}
+	}
+}
+
+/*QUAKED trigger_asteroid_field (.5 .5 .5) ? 
+speed - how fast, on average, the asteroid moves
+count - how many asteroids, max, to have at one time
+target - target this at func_rotating asteroids
+*/
+void SP_trigger_asteroid_field(gentity_t *self)
+{
+	trap_SetBrushModel( self, self->model );
+//	self->r.contents = CONTENTS_TRIGGER;		// replaces the -1 from trap_SetBrushModel
+	self->r.contents = 0;
+	self->r.svFlags = SVF_NOCLIENT;
+
+	if ( !self->count )
+	{
+		self->health = 20;
+	}
+
+	if ( !self->speed )
+	{
+		self->speed = 10000;
+	}
+
+	self->think = asteroid_field_think;
+	self->nextthink = level.time + 100;
+
+    trap_LinkEntity(self);
+}

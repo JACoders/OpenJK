@@ -1966,7 +1966,7 @@ void SP_misc_trip_mine( gentity_t *self )
 	AngleVectors( self->s.angles, forward, NULL, NULL );
 	VectorMA( self->s.origin, 128, forward, end );
 
-	gi.trace( &trace, self->s.origin, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT );
+	gi.trace( &trace, self->s.origin, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, (EG2_Collision)0, 0 );
 
 	if ( trace.allsolid || trace.startsolid )
 	{
@@ -2068,7 +2068,7 @@ void maglock_link( gentity_t *self )
 	VectorMA( self->s.origin, 128, forward, end );
 	VectorMA( self->s.origin, -4, forward, start );
 
-	gi.trace( &trace, start, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT );
+	gi.trace( &trace, start, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, (EG2_Collision)0, 0 );
 
 	if ( trace.allsolid || trace.startsolid )
 	{
@@ -2767,7 +2767,7 @@ void SP_misc_model_welder( gentity_t *ent )
 
 	ent->s.modelindex = G_ModelIndex( "models/map_objects/cairn/welder.glm" );
 //	ent->s.modelindex2 = G_ModelIndex( "models/map_objects/cairn/welder.md3" );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/cairn/welder.glm", ent->s.modelindex );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/cairn/welder.glm", ent->s.modelindex, NULL, NULL, 0, 0 );
 	ent->s.radius = 400.0f;// the origin of the welder is offset by approximately 352, so we need the big radius
 
 	ent->e_ThinkFunc = thinkF_welder_think;
@@ -2822,7 +2822,7 @@ void SP_misc_model_jabba_cam( gentity_t *ent )
 	G_SetAngles( ent, ent->s.angles );
 
 	ent->s.modelindex = G_ModelIndex( "models/map_objects/nar_shaddar/jabacam/jabacam.glm" );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/nar_shaddar/jabacam/jabacam.glm", ent->s.modelindex );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/nar_shaddar/jabacam/jabacam.glm", ent->s.modelindex, NULL, NULL, 0, 0 );
 	ent->s.radius = 150.0f;  //......
 	VectorSet( ent->s.modelScale, 1.0f, 1.0f, 1.0f );
 
@@ -2835,7 +2835,7 @@ void SP_misc_model_jabba_cam( gentity_t *ent )
 	// start extended..
 	if ( ent->spawnflags & 1 )
 	{
-		gi.G2API_SetBoneAnimIndex( &ent->ghoul2[ent->playerModel], ent->rootBone, 0, 15, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time );
+		gi.G2API_SetBoneAnimIndex( &ent->ghoul2[ent->playerModel], ent->rootBone, 0, 15, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time, -1, -1 );
 	}
 
 	gi.linkentity( ent );
@@ -3157,7 +3157,7 @@ void misc_atst_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 		}
 		if ( !self->s.number )
 		{
-			CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.87 );
+			CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.95 );
 		}
 	}
 	else
@@ -3182,7 +3182,7 @@ void misc_atst_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 			self->playerModel = -1;
 		}
 		//copy player's
-		gi.G2API_CopyGhoul2Instance( activator->ghoul2, self->ghoul2 );
+		gi.G2API_CopyGhoul2Instance( activator->ghoul2, self->ghoul2, -1 );
 		self->playerModel = 0;//assumption
 		//reset player to kyle
 		G_DriveATST( activator, NULL );
@@ -3220,7 +3220,7 @@ void SP_misc_atst_drivable( gentity_t *ent )
 	extern void NPC_PrecacheAnimationCFG( const char *NPC_type );
 
 	ent->s.modelindex = G_ModelIndex( "models/players/atst/model.glm" );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/players/atst/model.glm", ent->s.modelindex );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/players/atst/model.glm", ent->s.modelindex, NULL, NULL, 0, 0 );
 	ent->rootBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "model_root", qtrue );
 	ent->craniumBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "cranium", qtrue );	//FIXME: need to somehow set the anim/frame to the equivalent of BOTH_STAND1...  use to be that BOTH_STAND1 was the first frame of the glm, but not anymore
 	ent->s.radius = 320;

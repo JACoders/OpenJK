@@ -221,7 +221,7 @@ typedef struct {
 	glconfig_t	glconfig;
 	qhandle_t	charSetShader;
 	qhandle_t	whiteShader;
-//	qhandle_t	consoleShader;
+	qhandle_t	consoleShader;
 
 #ifdef _XBOX
 	short		mainGamepad;
@@ -285,14 +285,10 @@ extern	cvar_t	*cl_run;
 extern	cvar_t	*cl_anglespeedkey;
 
 extern	cvar_t	*cl_sensitivity;
-#ifdef _XBOX
-extern	cvar_t	*cl_sensitivityY;
-#endif
-
 extern	cvar_t	*cl_freelook;
 
-//extern	cvar_t	*cl_mouseAccel;
-//extern	cvar_t	*cl_showMouseRate;
+extern	cvar_t	*cl_mouseAccel;
+extern	cvar_t	*cl_showMouseRate;
 
 extern	cvar_t	*cl_ingameVideo;
 extern  cvar_t  *cl_VideoQuality;
@@ -303,7 +299,7 @@ extern	cvar_t	*m_pitch;
 extern	cvar_t	*m_yaw;
 extern	cvar_t	*m_forward;
 extern	cvar_t	*m_side;
-//extern	cvar_t	*m_filter;
+extern	cvar_t	*m_filter;
 
 extern	cvar_t	*cl_activeAction;
 
@@ -329,11 +325,6 @@ void CL_NextDemo( void );
 void CL_GetPing( int n, char *adrstr, int *pingtime );
 void CL_ClearPing( int n );
 int CL_GetPingQueueCount( void );
-
-extern qboolean SG_GameAllowedToSaveHere(qboolean inCamera);
-extern void CG_CenterPrint(const char *str, int y);
-extern bool autosaveTrigger;
-static void checkAutoSave();
 
 //
 // cl_input

@@ -150,10 +150,6 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
-#ifdef _XBOX
-	int			number;
-#endif
-
 } refEntity_t;
 
 

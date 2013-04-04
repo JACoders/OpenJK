@@ -1371,12 +1371,11 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 			{
 				UI_SetActiveMenu( "ingame",NULL );
 			}
-			// This just causes crashes and such if people hit BACK during loading:
-//			else 
-//			{
-//				CL_Disconnect_f();
-//				UI_SetActiveMenu( "mainMenu",NULL );
-//			}
+			else 
+			{
+				CL_Disconnect_f();
+				UI_SetActiveMenu( "mainMenu",NULL );
+			}
 			return;
 		}
 

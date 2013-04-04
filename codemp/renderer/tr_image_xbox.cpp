@@ -11,9 +11,7 @@
 #include "../zlib/zlib.h"
 #include "../png/png.h"
 #include "../qcommon/sstring.h"
-#include "../win32/xbox_texture_man.h"
-#include "../cgame/cg_local.h"
-#include "modelmem.h"
+
 
 static byte			 s_intensitytable[256];
 static unsigned char s_gammatable[256];
@@ -222,28 +220,18 @@ void R_ImageList_f( void ) {
 	int		texels = 0;
 	float	texBytes = 0.0f;
 	const char *yesno[] = {"no ", "yes"};
-	int curTexels;
-	unsigned curBytes, cb2;
-	unsigned slack = 0;
 
-	Com_Printf ( "\n      -w-- -h-- -mm- -if-- --size-- surfs --name-------\n");
+	Com_Printf ( "\n      -w-- -h-- -mm- -if- wrap --name-------\n");
 
 	int iNumImages = R_Images_StartIteration();
 	while ( (image = R_Images_GetNextIteration()) != NULL)
 	{
-		curTexels = image->width * image->height;
-		texels   += curTexels;
+		texels   += image->width*image->height;
+		texBytes += image->width*image->height * R_BytesPerTex (image->internalFormat);
 
-		curBytes = curTexels * R_BytesPerTex(image->internalFormat);
-		if( image->mipcount )
-			curBytes *= 1.3;
-		cb2 = (curBytes + 127) & ~127;
-		slack += cb2 - curBytes;
-//		curBytes = (curBytes + 4095) & ~4095;
-		curBytes = cb2;
-		texBytes += curBytes;
 		Com_Printf ( "%4i: %4i %4i  %s ",
-			i, image->width, image->height, yesno[image->mipcount?1:0] );
+			i, image->width, image->height, yesno[image->mipcount] );
+
 		switch ( image->internalFormat ) {
 		case 1:
 			Com_Printf( "I    " );
@@ -294,22 +282,28 @@ void R_ImageList_f( void ) {
 			Com_Printf( "???? " );
 		}
 
+		switch ( image->wrapClampMode ) {
+		case GL_REPEAT:
+			Com_Printf( "rept " );
+			break;
+		case GL_CLAMP:
+			Com_Printf( "clmp " );
+			break;
+		case GL_CLAMP_TO_EDGE:
+			Com_Printf( "clpE " );
+			break;
+		default:
+			Com_Printf( "%4i ", image->wrapClampMode );
+			break;
+		}
 		
-#ifndef FINAL_BUILD
-		Com_Printf( " %8u %4i %s\n", curBytes, R_SurfaceImageCount(image),
-				image->imgName );
-#else
-		Com_Printf( " %8u %u\n", curBytes, image->imgCode );
-#endif
 		i++;
 	}
-//	Com_Printf (" ---------\n");
-//	Com_Printf ("      -w-- -h-- -mm- -if- wrap --name-------\n");
+	Com_Printf (" ---------\n");
+	Com_Printf ("      -w-- -h-- -mm- -if- wrap --name-------\n");
 	Com_Printf (" %i total texels (not including mipmaps)\n", texels );
 	Com_Printf (" %.2fMB total texture mem (not including mipmaps)\n", texBytes/1048576.0f );
 	Com_Printf (" %i total images\n\n", iNumImages );
-
-	Com_Printf("D3D is wasting: %u bytes\n", slack);
 }
 
 //=======================================================================
@@ -685,6 +679,7 @@ static void Upload32( unsigned *data,
 }
 
 
+
 typedef tmap (int, image_t *)	AllocatedImages_t;
 								AllocatedImages_t* AllocatedImages = NULL;
 								AllocatedImages_t::iterator itAllocatedImages;
@@ -752,7 +747,6 @@ static void GL_ResetBinds(void)
 //
 void R_Images_DeleteLightMaps(void)
 {
-	assert( 0 && "This function will wreak havoc on texture pool!" );
 	qboolean bEraseOccured = qfalse;
 	for (AllocatedImages_t::iterator itImage = AllocatedImages->begin(); itImage != AllocatedImages->end(); bEraseOccured?itImage:++itImage)
 	{			
@@ -804,18 +798,9 @@ void R_Images_Clear(void)
 		R_Images_DeleteImageContents(pImage);
 	}
 
-	if( AllocatedImages )
-	{
-		AllocatedImages->clear();
-		delete AllocatedImages;
-		AllocatedImages = NULL;
-	}
+	AllocatedImages->clear();
 
 	giTextureBindNum = 1024;
-	glw_state->textureBindNum = 1;
-
-	gStaticTextures.Reset();
-	gSkinTextures.Reset();
 }
 
 
@@ -848,7 +833,6 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 			//
 			if ( pImage->iLastLevelUsedOn != RE_RegisterMedia_GetLevel() )
 			{	// nope, so dump it...
-				assert( 0 && "This will wreak havoc on texture pool!" );
 				//Com_Printf( PRINT_DEVELOPER, "Dumping image \"%s\"\n",pImage->imgName);
 				R_Images_DeleteImageContents(pImage);
 				itImage = AllocatedImages->erase(itImage);
@@ -890,13 +874,11 @@ static image_t *R_FindImageFile_NoLoad(const char *name, int mipcount, qboolean 
 		if ( strcmp( pName, "*white" ) ) {
 			if ( !pImage->mipcount != !mipcount ) {
 				// Test is more lax, but also prevents tons of false positives
-#ifndef FINAL_BUILD
-//				Com_Printf( "WARNING: reused image %s with mixed mipmap parm\n", pName );
-#endif
+				Com_Printf( "WARNING: reused image %s with mixed mipmap parm\n", pName );
 			}
-//			if ( pImage->allowPicmip != !!allowPicmip ) {
-//				Com_Printf( "WARNING: reused image %s with mixed allowPicmip parm\n", pName );
-//			}
+			if ( pImage->allowPicmip != !!allowPicmip ) {
+				Com_Printf( "WARNING: reused image %s with mixed allowPicmip parm\n", pName );
+			}
 		}
 
 		pImage->iLastLevelUsedOn = RE_RegisterMedia_GetLevel();
@@ -952,12 +934,9 @@ image_t *R_CreateImage( const char *name, const byte *pic, int width, int height
 	image->iLastLevelUsedOn = RE_RegisterMedia_GetLevel();
 
 	image->mipcount = mipcount;
-//	image->allowPicmip = allowPicmip;
+	image->allowPicmip = allowPicmip;
 
 	image->imgCode = crc32(0, (const Bytef *)name, strlen(name));
-#ifndef FINAL_BUILD
-	Q_strncpyz(image->imgName, name, sizeof(image->imgName));
-#endif
 
 	image->width = width;
 	image->height = height;
@@ -1008,7 +987,7 @@ TARGA LOADING
 /*
 Ghoul2 Insert Start
 */
-/*
+
 bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *height)
 {
 	int		columns, rows, numPixels;
@@ -1079,13 +1058,12 @@ bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *heigh
 
 	return true;
 }
-*/
 
 /*
 Ghoul2 Insert End
 */
 
-/*
+
 // My TGA loader...
 //
 //---------------------------------------------------
@@ -1439,7 +1417,6 @@ TGADone:
 		Com_Error( ERR_DROP, "%s( File: \"%s\" )\n",sErrorString,name);
 	}
 }
-*/
 
 /*
 =========================================================
@@ -1514,6 +1491,7 @@ Loads any of the supported image types into a cannonical
 =================
 */
 void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, int *mipcount, GLenum *format ) {
+	int		bytedepth;
 	char	name[MAX_QPATH];
 
 	*pic = NULL;
@@ -1527,18 +1505,10 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, in
 		Q_strncpyz( name, shortname, sizeof( name ) );
 	}
 
-	// Try DDS first - saves a ton of failed GOB checks on startup:
-	COM_StripExtension(name, name);
-	COM_DefaultExtension(name, sizeof(name), ".dds");
-	LoadDDS( name, pic, width, height, mipcount, format );
-	if( *pic )
-		return;
-/*
-	// OK. Now look for TGA:
 	*format = GL_RGBA;
 	*mipcount = 1;
 
-	COM_StripExtension(name, name);
+	COM_StripExtension(name,name);
 	COM_DefaultExtension(name, sizeof(name), ".tga");
 	LoadTGA( name, pic, width, height );
 
@@ -1554,14 +1524,25 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, in
 		}
 		return;
 	}
-*/
 
-	// Return whether or not it worked
+	COM_StripExtension(name,name);
+	COM_DefaultExtension(name, sizeof(name), ".png");	
+	
+	//No .tga existed, try .png
+	LoadPNG32( name, pic, width, height, &bytedepth );
+	if (*pic)
+	{
+		return;
+	}
+
+	// No .png either, fall back to .dds
+	COM_StripExtension(name,name);
+	COM_DefaultExtension(name, sizeof(name), ".dds");
+	LoadDDS( name, pic, width, height, mipcount, format );
 	return;
 }
 
 
-#ifndef _XBOX	// Only used for terrain
 void R_LoadDataImage( const char *name, byte **pic, int *width, int *height)
 {
 	int		len;
@@ -1603,7 +1584,6 @@ void R_LoadDataImage( const char *name, byte **pic, int *width, int *height)
 	Com_Printf("Couldn't read %s -- dataimage load failed\n", name);
 //	MD_PopTag();
 }
-#endif
 
 void R_InvertImage(byte *data, int width, int height, int depth)
 {
@@ -1865,46 +1845,42 @@ image_t	*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmi
 R_CreateDlightImage
 ================
 */
-#define	DLIGHT_SIZE	16
+#define	DLIGHT_SIZE	64
 static void R_CreateDlightImage( void ) 
 {
-	int		width, height, mipcount;
-	byte	*pic;
-	GLenum	format;
+	int		x,y;
+	byte	data[DLIGHT_SIZE][DLIGHT_SIZE][4];
+	int		xs, ys;
+	int b;
 
-	R_LoadImage("gfx/2d/dlight", &pic, &width, &height, &mipcount, &format);
-	if (pic)
-	{                                    
-		tr.dlightImage = R_CreateImage("*dlight", pic, width, height, GL_DDS5_EXT, mipcount, qfalse, GL_CLAMP );
-		Z_Free(pic);
-	}
-	else
-	{	// if we dont get a successful load
-		int		x,y;
-		byte	data[DLIGHT_SIZE][DLIGHT_SIZE][4];
-		int		b;
+	// The old code claims to have made a centered inverse-square falloff blob for dynamic lighting
+	//	and it looked nasty, so, just doing something simpler that seems to have a much softer result
+	for ( x = 0; x < DLIGHT_SIZE; x++ ) 
+	{
+		for ( y = 0; y < DLIGHT_SIZE; y++ ) 
+		{
+			xs = (DLIGHT_SIZE * 0.5f - x);
+			ys = (DLIGHT_SIZE * 0.5f - y);
 
-		// make a centered inverse-square falloff blob for dynamic lighting
-		for (x=0 ; x<DLIGHT_SIZE ; x++) {
-			for (y=0 ; y<DLIGHT_SIZE ; y++) {
-				float	d;
+            b = 255 - sqrt( (float)(xs * xs + ys * ys) ) * 9.0f; // try and generate numbers in the range of 255-0
 
-				d = ( DLIGHT_SIZE/2 - 0.5f - x ) * ( DLIGHT_SIZE/2 - 0.5f - x ) +
-					( DLIGHT_SIZE/2 - 0.5f - y ) * ( DLIGHT_SIZE/2 - 0.5f - y );
-				b = 4000 / d;
-				if (b > 255) {
-					b = 255;
-				} else if ( b < 75 ) {
-					b = 0;
-				}
-				data[y][x][0] = 
-					data[y][x][1] = 
-					data[y][x][2] = b;
-				data[y][x][3] = 255;			
+			// should be close, but clamp anyway
+			if ( b > 255 ) 
+			{
+				b = 255;
+			} 
+			else if ( b < 0 ) 
+			{
+				b = 0;
 			}
+			data[y][x][0] = 
+			data[y][x][1] = 
+			data[y][x][2] = b;
+			data[y][x][3] = 255;			
 		}
-		tr.dlightImage = R_CreateImage("*dlight", (byte *)data, DLIGHT_SIZE, DLIGHT_SIZE, GL_DDS5_EXT, mipcount, qfalse, GL_CLAMP );
 	}
+
+	tr.dlightImage = R_CreateImage("*dlight", (byte *)data, DLIGHT_SIZE, DLIGHT_SIZE, GL_RGBA, qfalse, qfalse, GL_CLAMP);
 }
 
 /*
@@ -2045,23 +2021,36 @@ static void R_CreateDefaultImage( void ) {
 R_CreateBuiltinImages
 ==================
 */
-void R_CreateBuiltinImages( void )
-{
-	byte	*data = (byte *) Z_Malloc( SCREEN_IMAGE_MAX_WIDTH * SCREEN_IMAGE_MAX_HEIGHT * 4, TAG_TEMP_WORKSPACE, qfalse, 4 );
+void R_CreateBuiltinImages( void ) {
+	int		x,y;
+	byte	data[DEFAULT_SIZE][DEFAULT_SIZE][4];
 
 	R_CreateDefaultImage();
 
 	// we use a solid white image instead of disabling texturing
-	memset( data, 255, Z_Size( data ) );
-
+	memset( data, 255, sizeof( data ) );
 	tr.whiteImage = R_CreateImage("*white", (byte *)data, 8, 8, GL_RGBA, qfalse, qfalse, GL_REPEAT);
+	//tr.screenImage = R_CreateImage("*screen", (byte *)data, 8, 8, GL_RGBA, qfalse, qfalse, GL_REPEAT );
+	tr.screenImage = R_CreateImage("*screen", (byte *)data, 8, 8, GL_RGBA, 1, qfalse, GL_REPEAT );
 
-	// Make this the right size the first time!
-	tr.screenImage = R_CreateImage("*screen", data, SCREEN_IMAGE_MAX_WIDTH, SCREEN_IMAGE_MAX_HEIGHT, GL_RGBA, 1, qfalse, GL_REPEAT );
+	// with overbright bits active, we need an image which is some fraction of full color,
+	// for default lightmaps, etc
+	for (x=0 ; x<DEFAULT_SIZE ; x++) {
+		for (y=0 ; y<DEFAULT_SIZE ; y++) {
+			data[y][x][0] = 
+			data[y][x][1] = 
+			data[y][x][2] = tr.identityLightByte;
+			data[y][x][3] = 255;			
+		}
+	}
 
-	Z_Free( data );
+	tr.identityLightImage = R_CreateImage("*identityLight", (byte *)data, 8, 8, GL_RGBA, qfalse, qfalse, GL_REPEAT);
 
-	//R_CreateDlightImage();
+	// scratchimage is usually used for cinematic drawing
+	for(x=0;x<32;x++) {
+		// scratchimage is usually used for cinematic drawing
+		tr.scratchImage[x] = R_CreateImage(va("*scratch%d",x), (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE, GL_RGBA, qfalse, qfalse, GL_CLAMP);
+	}
 
 	R_CreateFogImage();
 }
@@ -2289,7 +2278,7 @@ static char *CommaParse( char **data_p ) {
 
 bool gServerSkinHack = false;
 
-shader_t *R_FindServerShader( const char *name, const short *lightmapIndex, const byte *styles, qboolean mipRawImage );
+shader_t *R_FindServerShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage );
 
 /*
 ===============
@@ -2389,55 +2378,9 @@ qhandle_t RE_RegisterSkin( const char *name) {
 		Com_Printf( "WARNING: RE_RegisterSkin( '%s' ) MAX_SKINS hit\n", name );
 		return 0;
 	}
-
-	//If we're trying to allocate a customized character skin, try to reuse
-	//one that isn't in use.
-	skin = NULL;
-	if(strstr(name, "|")) {
-		int i, j;
-		bool found;
-
-		//Loop through all skins and look for one which has a bar.
-		for(i=0; i<tr.numSkins; i++) {
-			if(tr.skins[i]->name && strstr(tr.skins[i]->name, "|")) {
-				//Found one.  Loop through all clients and see if this skin
-				//is used.
-				found = false;
-				for(j=0; j<cgs.maxclients; j++) {
-					if(cgs.clientinfo[j].skinName[0] != 0 &&
-							strstr(tr.skins[i]->name, 
-								cgs.clientinfo[j].skinName)) {
-						found = true;
-						break;
-					}
-				}
-
-				if(strcmp(tr.skins[i]->name, ModelMem.GetUISkin()) == 0)
-					found = true;
-
-				//Didn't find a match.  Reuse this slot.
-				if(!found) {
-					skin = tr.skins[i];
-					hSkin = i;
-					break;
-				}
-			}
-		}
-	}
-
-	// Funky code above couldn't find a skin to reuse?  Allocate a new one.
-	if(!skin) {
-		tr.numSkins++;
-		skin = (skin_t*) Hunk_Alloc( sizeof( skin_t ), h_low );
-	} else {
-		//Free old skin pointers.
-		for(int i=0; i<skin->numSurfaces; i++) {
-			Z_Free(skin->surfaces[i]);
-		}
-		memset(skin, 0, sizeof(skin_t));
-	}
-
-
+	// allocate a new skin
+	tr.numSkins++;
+	skin = (skin_t*) Hunk_Alloc( sizeof( skin_t ), h_low );
 	tr.skins[hSkin] = skin;
 	Q_strncpyz( skin->name, name, sizeof( skin->name ) );	//always make one so it won't search for it again
 
@@ -2452,11 +2395,6 @@ qhandle_t RE_RegisterSkin( const char *name) {
 		return hSkin;
 */
 	}
-
-	// Redirect all texture allocations to the swapping pool
-	bool playerSkin = strstr(name, "models/players");
-	if( playerSkin )
-		BeginSkinTextures();
 
 	char skinhead[MAX_QPATH]={0};
 	char skintorso[MAX_QPATH]={0};
@@ -2477,9 +2415,6 @@ qhandle_t RE_RegisterSkin( const char *name) {
 	{//single skin
 		hSkin = RE_RegisterIndividualSkin(name, hSkin);
 	}
-
-	EndSkinTextures();
-
 	return(hSkin);
 }
 

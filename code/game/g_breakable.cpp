@@ -987,7 +987,7 @@ void TieBomberThink( gentity_t *self )
 		char name1[200] = "models/players/remote/model.glm";
 		gentity_t *bomb = G_CreateObject( self, self->s.pos.trBase, self->s.apos.trBase, 0, 0, TR_GRAVITY, 0 );
 		bomb->s.modelindex = G_ModelIndex( name1 );
-		gi.G2API_InitGhoul2Model( bomb->ghoul2, name1, bomb->s.modelindex);
+		gi.G2API_InitGhoul2Model( bomb->ghoul2, name1, bomb->s.modelindex, NULL, NULL, 0, 0);
 		bomb->s.radius = 50;
 		bomb->s.eFlags |= EF_NODRAW;
 
@@ -1040,7 +1040,7 @@ void misc_model_breakable_gravity_init( gentity_t *ent, qboolean dropToFloor )
 		top[2] += 1;
 		VectorCopy( ent->currentOrigin, bottom );
 		bottom[2] = MIN_WORLD_COORD;
-		gi.trace( &tr, top, ent->mins, ent->maxs, bottom, ent->s.number, MASK_NPCSOLID );
+		gi.trace( &tr, top, ent->mins, ent->maxs, bottom, ent->s.number, MASK_NPCSOLID, (EG2_Collision)0, 0 );
 		if ( !tr.allsolid && !tr.startsolid && tr.fraction < 1.0 )
 		{
 			G_SetOrigin( ent, tr.endpos );

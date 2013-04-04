@@ -137,7 +137,7 @@ struct QALState
 		};
 		
 		typedef std::deque<Request> queue_t;
-		queue_t m_Queue;
+		queue_t *m_Queue;
 	};
 	StreamInfo m_Stream;
 };
@@ -166,6 +166,7 @@ ALCdevice* alcOpenDevice(ALCubyte *deviceName)
 {
 	if (s_pState) return NULL;
 	s_pState = new QALState;
+	s_pState->m_Stream.m_Queue = new QALState::StreamInfo::queue_t;
 
 	s_pState->m_Gain = 1.f;
 	s_pState->m_Error = AL_NO_ERROR;
@@ -487,8 +488,6 @@ static void _dettachBuffer(ALuint source)
 	info->m_Buffer = 0;
 }
 
-static float rollOffPoint	= 0;
-
 static void _sourceSetRefDist(QALState::SourceInfo* info, FLOAT value)
 {
 	for (QALState::SourceInfo::voice_t::iterator v = info->m_Voices.begin(); 
@@ -501,14 +500,9 @@ static void _sourceSetRefDist(QALState::SourceInfo* info, FLOAT value)
 
 		// New algorithm - ref dist is supposed to be dist at which sound is 1/2 volume,
 		// which happens at double min distance in DS, thus: (reverted)
-		v->second->SetMaxDistance(value * 2.f, DS3D_DEFERRED);
-//		v->second->SetMinDistance(value, DS3D_DEFERRED);
+		v->second->SetMaxDistance(value * 10.f, DS3D_DEFERRED);
+		v->second->SetMinDistance(value, DS3D_DEFERRED);
 //		v->second->SetMinDistance(value / 2.f, DS3D_DEFERRED);
-
-		v->second->SetRolloffCurve(
-			&rollOffPoint,
-			1,
-			DS3D_IMMEDIATE );
 	}
 }
 
@@ -948,10 +942,10 @@ static DWORD WINAPI _streamThread(LPVOID lpParameter)
 		
 		// Grab the next request
 		WaitForSingleObject(strm->m_Mutex, INFINITE);
-		if (!strm->m_Queue.empty())
+		if (!strm->m_Queue->empty())
 		{
-			req = strm->m_Queue.front();
-			strm->m_Queue.pop_front();
+			req = strm->m_Queue->front();
+			strm->m_Queue->pop_front();
 		}
 		else
 		{
@@ -989,12 +983,9 @@ static DWORD WINAPI _streamThread(LPVOID lpParameter)
 static void _postStreamRequest(const QALState::StreamInfo::Request& req)
 {
 	// Add request to queue
-	extern void Z_SetNewDeleteTemporary( bool bTemp );
-	Z_SetNewDeleteTemporary( true );
 	WaitForSingleObject(s_pState->m_Stream.m_Mutex, INFINITE);
-	s_pState->m_Stream.m_Queue.push_back(req);
+	s_pState->m_Stream.m_Queue->push_back(req);
 	ReleaseMutex(s_pState->m_Stream.m_Mutex);
-	Z_SetNewDeleteTemporary( false );
 
 	// Let thread know it has one more pending request
 	ReleaseSemaphore(s_pState->m_Stream.m_QueueLen, 1, NULL);
@@ -1006,9 +997,8 @@ static void _postStreamRequest(const QALState::StreamInfo::Request& req)
 void Sys_StreamRequestQueueClear(void)
 {
 	WaitForSingleObject(s_pState->m_Stream.m_Mutex, INFINITE);
-//	delete s_pState->m_Stream.m_Queue;
-//	s_pState->m_Stream.m_Queue = new QALState::StreamInfo::queue_t;
-	s_pState->m_Stream.m_Queue.clear();
+	delete s_pState->m_Stream.m_Queue;
+	s_pState->m_Stream.m_Queue = new QALState::StreamInfo::queue_t;
 	ReleaseMutex(s_pState->m_Stream.m_Mutex);
 }
 
@@ -1056,7 +1046,7 @@ ALvoid alGenStream( ALvoid )
 	// of the main thread)
 	s_pState->m_Stream.m_QueueLen = CreateSemaphore(NULL, 0, 256, NULL);
 	s_pState->m_Stream.m_Mutex = CreateMutex(NULL, FALSE, NULL);
-	s_pState->m_Stream.m_Thread = CreateThread(NULL, 64*1024, 
+	s_pState->m_Stream.m_Thread = CreateThread(NULL, 0, 
 		_streamThread, NULL, 0, NULL );
 }
 
@@ -1184,18 +1174,15 @@ static void _updateVoiceGain(IDirectSoundBuffer* voice, FLOAT gain)
 	}
 	else
 	{
-		if( g >= 0.98)
-			g	= 1.0f;
-
 		// convert to dB
-		g = 20.f * log10(g) * 100.0f;
+		g = 20.f * log10(g);
 
-		if(g < DSBVOLUME_HW_MIN) {
-			g = DSBVOLUME_HW_MIN;
+		if(g < -100.0f) {
+			g = -100.0f;
 		}
 
 		// set the volume
-		voice->SetVolume(g);
+		voice->SetVolume(g * 100.f);
 	}
 }
 
@@ -1253,18 +1240,15 @@ static void _updateStream(void)
 		}
 		else
 		{
-			if( g >= 0.98)
-				g	= 1.0f;
-
 			// convert to dB
-			g = 20.f * log10(g) * 100.0f;
+			g = 20.f * log10(g);
 
-			if(g < DSBVOLUME_HW_MIN) {
-				g = DSBVOLUME_HW_MIN;
+			if(g < -100.0f) {
+				g = -100.0f;
 			}
 
 			// set the volume
-			s_pState->m_Stream.m_pVoice->SetVolume(g);
+			s_pState->m_Stream.m_pVoice->SetVolume(g * 100.f);
 		}
 
 		s_pState->m_Stream.m_GainDirty = false;

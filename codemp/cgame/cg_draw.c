@@ -9,17 +9,6 @@
 
 #include "../ui/ui_shared.h"
 #include "../ui/ui_public.h"
-#include "../renderer/tr_font.h"
-
-#ifdef _XBOX
-#include "../client/cl_data.h"
-#define SPLITSCREEN_HUD_SCALE	0.75f
-#define SPLITSCREEN_HUD_P1OFFSET	220
-int lscalex, lscaley, rscalex, rscaley;
-#endif
-
-#include "../Xbox/XBLive.h"
-#include "../client/fffx.h"
 
 extern float CG_RadiusForCent( centity_t *cent );
 qboolean CG_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y);
@@ -41,11 +30,7 @@ int	numSortedTeamPlayers;
 
 int lastvalidlockdif;
 
-#ifdef _XBOX
-extern float zoomFov[2];
-#else
 extern float zoomFov; //this has to be global client-side
-#endif
 
 char systemChat[256];
 char teamChat1[256];
@@ -187,15 +172,15 @@ qboolean CG_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y)
 	int	xcenter, ycenter;
 	vec3_t	local, transformed;
 
-//	xcenter = cg->refdef.width / 2;//gives screen coords adjusted for resolution
-//	ycenter = cg->refdef.height / 2;//gives screen coords adjusted for resolution
+//	xcenter = cg.refdef.width / 2;//gives screen coords adjusted for resolution
+//	ycenter = cg.refdef.height / 2;//gives screen coords adjusted for resolution
 	
 	//NOTE: did it this way because most draw functions expect virtual 640x480 coords
 	//	and adjust them for current resolution
 	xcenter = 640 / 2;//gives screen coords in virtual 640x480, to be adjusted when drawn
 	ycenter = 480 / 2;//gives screen coords in virtual 640x480, to be adjusted when drawn
 
-	VectorSubtract (worldCoord, cg->refdef.vieworg, local);
+	VectorSubtract (worldCoord, cg.refdef.vieworg, local);
 
 	transformed[0] = DotProduct(local,vright);
 	transformed[1] = DotProduct(local,vup);
@@ -207,8 +192,8 @@ qboolean CG_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y)
 		return qfalse;
 	}
 	// Simple convert to screen coords.
-	float xzi = xcenter / transformed[2] * (90.0/cg->refdef.fov_x);
-	float yzi = ycenter / transformed[2] * (90.0/cg->refdef.fov_y);
+	float xzi = xcenter / transformed[2] * (90.0/cg.refdef.fov_x);
+	float yzi = ycenter / transformed[2] * (90.0/cg.refdef.fov_y);
 
 	*x = xcenter + xzi * transformed[0];
 	*y = ycenter - yzi * transformed[1];
@@ -244,16 +229,13 @@ static void CG_DrawZoomMask( void )
 	float max, fi;
 
 	// Check for Binocular specific zooming since we'll want to render different bits in each case
-	if ( cg->predictedPlayerState.zoomMode == 2 )
+	if ( cg.predictedPlayerState.zoomMode == 2 )
 	{
-		assert( 0 );
-		return;
-/*
 		int val, i;
 		float off;
 
 		// zoom level
-		level = (float)(80.0f - cg->predictedPlayerState.zoomFov) / 80.0f;
+		level = (float)(80.0f - cg.predictedPlayerState.zoomFov) / 80.0f;
 
 		// ...so we'll clamp it
 		if ( level < 0.0f )
@@ -285,8 +267,8 @@ static void CG_DrawZoomMask( void )
 
 		// Draw scrolling numbers, use intervals 10 units apart--sorry, this section of code is just kind of hacked
 		//	up with a bunch of magic numbers.....
-		val = ((int)((cg->refdef.viewangles[YAW] + 180) / 10)) * 10;
-		off = (cg->refdef.viewangles[YAW] + 180) - val;
+		val = ((int)((cg.refdef.viewangles[YAW] + 180) / 10)) * 10;
+		off = (cg.refdef.viewangles[YAW] + 180) - val;
 
 		for ( i = -10; i < 30; i += 10 )
 		{
@@ -309,7 +291,7 @@ static void CG_DrawZoomMask( void )
 
 		CG_DrawPic( 212, 367, 200, 28, cgs.media.binocularOverlay );
 
-		color1[0] = sin( cg->time * 0.01f ) * 0.5f + 0.5f;
+		color1[0] = sin( cg.time * 0.01f ) * 0.5f + 0.5f;
 		color1[0] = color1[0] * color1[0];
 		color1[1] = color1[0];
 		color1[2] = color1[0];
@@ -340,56 +322,15 @@ static void CG_DrawZoomMask( void )
 			CG_DrawPic( 307, 40, 26, 30, cgs.media.binocularTri );
 		}
 
-		if ( random() > 0.98f && ( cg->time & 1024 ))
+		if ( random() > 0.98f && ( cg.time & 1024 ))
 		{
 			flip = !flip;
 		}
-*/
 	}
-	else if ( cg->predictedPlayerState.zoomMode)
+	else if ( cg.predictedPlayerState.zoomMode)
 	{
-#ifdef _XBOX
-		float mscale = 1.0f;
-		float moffy = 0.0f;
-		float moffx = 0.0f;
-
-		if (ClientManager::splitScreenMode == qtrue)
-		{
-			mscale = .5f;
-			if (ClientManager::ActiveClientNum() == 1)
-				moffy = 240.f;
-			if(cg->widescreen)
-				moffx += 720 / 4;
-			else
-                moffx += 640 / 4;
-			trap_R_SetColor(colorTable[CT_BLACK]);
-			
-			if(cg->widescreen) {
-				CG_DrawPic(   0,   moffy,  moffx + 40, 240, cgs.media.whiteShader );
-				CG_DrawPic( 720-moffx - 40,  moffy, moffx + 40, 240, cgs.media.whiteShader );
-			}
-			else {
-				CG_DrawPic(   0,   moffy,  moffx, 240, cgs.media.whiteShader );
-                CG_DrawPic( 640-moffx,  moffy, moffx, 240, cgs.media.whiteShader );
-			}
-		
-		}
-		else {
-			if(cg->widescreen) {
-				trap_R_SetColor(colorTable[CT_BLACK]);
-				CG_DrawPic( 0, 0, 40, 480, cgs.media.whiteShader );
-				CG_DrawPic( 720 - 40,  0, 40, 480, cgs.media.whiteShader );
-			}
-		}
-
-#endif
-
 		// disruptor zoom mode
-#ifdef _XBOX
-		level = (float)(50.0f - zoomFov[ClientManager::ActiveClientNum()]) / 50.0f;
-#else
 		level = (float)(50.0f - zoomFov) / 50.0f;//(float)(80.0f - zoomFov) / 80.0f;
-#endif
 
 		// ...so we'll clamp it
 		if ( level < 0.0f )
@@ -402,60 +343,26 @@ static void CG_DrawZoomMask( void )
 		}
 
 		// Using a magic number to convert the zoom level to a rotation amount that correlates more or less with the zoom artwork. 
-		level *= 1.84f;
+		level *= 103.0f;
 
 		// Draw target mask
 		trap_R_SetColor( colorTable[CT_WHITE] );
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue)
-		{
-			if(cg->widescreen)
-                CG_DrawPic( 200, moffy, 320, 240, cgs.media.disruptorMask );
-			else
-				CG_DrawPic( 160, moffy, 320, 240, cgs.media.disruptorMask );
-		}
-		else
-		{
-			if(cg->widescreen)
-				CG_DrawPic( 40, 0, 640, 480, cgs.media.disruptorMask );
-			else
-#endif
 		CG_DrawPic( 0, 0, 640, 480, cgs.media.disruptorMask );
-#ifdef _XBOX
-		}
-#endif
 
-		//FFFX_START( fffx_StartConst );
 		// apparently 99.0f is the full zoom level
-		if ( level >= 1.72f )
+		if ( level >= 99 )
 		{
 			// Fully zoomed, so make the rotating insert pulse
 			color1[0] = 1.0f; 
 			color1[1] = 1.0f;
 			color1[2] = 1.0f;
-			color1[3] = 0.7f + sin( cg->time * 0.01f ) * 0.3f;
+			color1[3] = 0.7f + sin( cg.time * 0.01f ) * 0.3f;
 
 			trap_R_SetColor( color1 );
 		}
 
 		// Draw rotating insert
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue)
-		{
-			if(cg->widescreen)
-                CG_DrawRotatePic2( 360, 120 + moffy, 320, 240, -level, cgs.media.disruptorInsert );
-			else
-				CG_DrawRotatePic2( 320, 120 + moffy, 320, 240, -level, cgs.media.disruptorInsert );
-		}
-		else {
-			if(cg->widescreen)
-				CG_DrawRotatePic2( 360, 240, 640, 480, -level, cgs.media.disruptorInsert );
-			else
-#endif
 		CG_DrawRotatePic2( 320, 240, 640, 480, -level, cgs.media.disruptorInsert );
-#ifdef _XBOX
-		}
-#endif
 
 		// Increase the light levels under the center of the target
 //		CG_DrawPic( 198, 118, 246, 246, cgs.media.disruptorLight );
@@ -484,13 +391,13 @@ static void CG_DrawZoomMask( void )
 		//max = ( cg_entities[0].gent->health / 100.0f );
 
 		
-		if ( (cg->snap->ps.eFlags & EF_DOUBLE_AMMO) )
+		if ( (cg.snap->ps.eFlags & EF_DOUBLE_AMMO) )
 		{
-			max = cg->snap->ps.ammo[weaponData[WP_DISRUPTOR].ammoIndex] / ((float)ammoData[weaponData[WP_DISRUPTOR].ammoIndex].max*2.0f);
+			max = cg.snap->ps.ammo[weaponData[WP_DISRUPTOR].ammoIndex] / ((float)ammoData[weaponData[WP_DISRUPTOR].ammoIndex].max*2.0f);
 		}
 		else
 		{
-			max = cg->snap->ps.ammo[weaponData[WP_DISRUPTOR].ammoIndex] / (float)ammoData[weaponData[WP_DISRUPTOR].ammoIndex].max;
+			max = cg.snap->ps.ammo[weaponData[WP_DISRUPTOR].ammoIndex] / (float)ammoData[weaponData[WP_DISRUPTOR].ammoIndex].max;
 		}
 		if ( max > 1.0f )
 		{
@@ -503,7 +410,7 @@ static void CG_DrawZoomMask( void )
 		color1[3] = 1.0f;
 
 		// If we are low on health, make us flash
-		if ( max < 0.15f && ( cg->time & 512 ))
+		if ( max < 0.15f && ( cg.time & 512 ))
 		{
 			VectorClear( color1 );
 		}
@@ -524,72 +431,29 @@ static void CG_DrawZoomMask( void )
 
 		for (fi = 18.5f; fi <= 18.5f + max; fi+= 3 ) // going from 15 to 45 degrees, with 5 degree increments
 		{
-#ifdef _XBOX
-			if(ClientManager::splitScreenMode == qtrue) {
-				if(cg->widescreen) {
-					cx = (360 + sin( (fi+90.0f)/57.296f ) * 190) * mscale + moffx;
-					cy = (240 + cos( (fi+90.0f)/57.296f ) * 190) * mscale + moffy;
-				}
-				else {
-                    cx = (320 + sin( (fi+90.0f)/57.296f ) * 190) * mscale + moffx;
-					cy = (240 + cos( (fi+90.0f)/57.296f ) * 190) * mscale + moffy;
-				}
+			cx = 320 + sin( (fi+90.0f)/57.296f ) * 190;
+			cy = 240 + cos( (fi+90.0f)/57.296f ) * 190;
 
-				CG_DrawRotatePic2( cx, cy, 6, 12, (90 - fi)/57.296f, cgs.media.disruptorInsertTick );
-			}
-			else {
-#endif
-			if(cg->widescreen) {
-				cx = 360 + sin( (fi+90.0f)/57.296f ) * 190;
-				cy = 240 + cos( (fi+90.0f)/57.296f ) * 190;
-			}
-			else {
-				cx = 320 + sin( (fi+90.0f)/57.296f ) * 190;
-				cy = 240 + cos( (fi+90.0f)/57.296f ) * 190;
-			}
-
-			CG_DrawRotatePic2( cx, cy, 12, 24, (90 - fi)/57.296f, cgs.media.disruptorInsertTick );
-#ifdef _XBOX
-			}
-#endif
+			CG_DrawRotatePic2( cx, cy, 12, 24, 90 - fi, cgs.media.disruptorInsertTick );
 		}
 
-		if ( cg->predictedPlayerState.weaponstate == WEAPON_CHARGING_ALT )
+		if ( cg.predictedPlayerState.weaponstate == WEAPON_CHARGING_ALT )
 		{
 			trap_R_SetColor( colorTable[CT_WHITE] );
 
 			// draw the charge level
-			max = ( cg->time - cg->predictedPlayerState.weaponChargeTime ) / ( 50.0f * 30.0f ); // bad hardcodedness 50 is disruptor charge unit and 30 is max charge units allowed.
+			max = ( cg.time - cg.predictedPlayerState.weaponChargeTime ) / ( 50.0f * 30.0f ); // bad hardcodedness 50 is disruptor charge unit and 30 is max charge units allowed.
 
 			if ( max > 1.0f )
 			{
 				max = 1.0f;
 			}
 
-#ifdef _XBOX
-			if(ClientManager::splitScreenMode == qtrue) {
-				if(cg->widescreen)
-					trap_R_DrawStretchPic(297 * mscale + moffx, 435 * mscale + moffy, 134*max*mscale, 34*mscale, 0, 0, max, 1, cgs.media.disruptorChargeShader);
-				else
-                    trap_R_DrawStretchPic(257 * mscale + moffx, 435 * mscale + moffy, 134*max*mscale, 34*mscale, 0, 0, max, 1, cgs.media.disruptorChargeShader);
-			}
-			else {
-#endif
-			if(cg->widescreen)
-				trap_R_DrawStretchPic(297, 435, 134*max, 34, 0, 0, max, 1, cgs.media.disruptorChargeShader);
-			else
-                trap_R_DrawStretchPic(257, 435, 134*max, 34, 0, 0, max, 1, cgs.media.disruptorChargeShader);
-#ifdef _XBOX
-			}
-#endif
+			trap_R_DrawStretchPic(257, 435, 134*max, 34, 0, 0, max, 1, cgs.media.disruptorChargeShader);
 		}
 //		trap_R_SetColor( colorTable[CT_WHITE] );
 //		CG_DrawPic( 0, 0, 640, 480, cgs.media.disruptorMask );
 
-	}
-	else
-	{
-		FFFX_START( fffx_StopConst );
 	}
 }
 
@@ -631,7 +495,7 @@ void CG_Draw3DModel( float x, float y, float w, float h, qhandle_t model, void *
 	refdef.width = w;
 	refdef.height = h;
 
-	refdef.time = cg->time;
+	refdef.time = cg.time;
 
 	trap_R_ClearScene();
 	trap_R_AddRefEntityToScene( &ent );
@@ -696,7 +560,7 @@ void CG_DrawFlagModel( float x, float y, float w, float h, int team, qboolean fo
 		len = 0.5 * ( maxs[2] - mins[2] );		
 		origin[0] = len / 0.268;	// len / tan( fov/2 )
 
-		angles[YAW] = 60 * sin( cg->time / 2000.0 );;
+		angles[YAW] = 60 * sin( cg.time / 2000.0 );;
 
 		if( team == TEAM_RED ) {
 			handle = cgs.media.redFlagModel;
@@ -735,11 +599,6 @@ void DrawAmmo()
 {
 	int x, y;
 
-#ifdef _XBOX
-	if(cg->widescreen)
-		x = 720 - 80;
-	else
-#endif
 	x = SCREEN_WIDTH-80;
 	y = SCREEN_HEIGHT-80;
 
@@ -767,7 +626,7 @@ void CG_DrawHealth( menuDef_t *menuHUD )
 		return;
 	}
 
-	ps = &cg->snap->ps;
+	ps = &cg.snap->ps;
 
 	// What's the health?
 	healthAmt = ps->stats[STAT_HEALTH];
@@ -804,41 +663,6 @@ void CG_DrawHealth( menuDef_t *menuHUD )
 
 		trap_R_SetColor( calcColor);
 
-#ifdef _XBOX
-		int ww, wh, wx, wy;
-		ww = focusItem->window.rect.w;
-		wh = focusItem->window.rect.h;
-		wy = focusItem->window.rect.y;
-		wx = focusItem->window.rect.x;
-
-		if(ClientManager::splitScreenMode == qtrue) {
-			ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-			wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-			if(ClientManager::ActiveClientNum() == 0) {
-				wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-			}
-			
-			if(i == 0) {
-				wx -= 6;
-				wy += 21;
-			}
-			else if(i == 1) {
-				wx -= 9;
-				wy += 19;
-			}
-			else if(i == 2) {
-				wx -= 12;
-				wy += 16;
-			}
-			else if(i == 3) {
-				wx -= 13;
-				wy += 12;
-			}
-		}
-
-		CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
 		CG_DrawPic( 
 			focusItem->window.rect.x,
 			focusItem->window.rect.y,
@@ -846,7 +670,6 @@ void CG_DrawHealth( menuDef_t *menuHUD )
 			focusItem->window.rect.h, 
 			focusItem->window.background
 			);
-#endif // _XBOX
 
 		currValue -= inc;
 	}
@@ -855,48 +678,9 @@ void CG_DrawHealth( menuDef_t *menuHUD )
 	focusItem = Menu_FindItemByName(menuHUD, "healthamount");
 	if (focusItem)
 	{
-#ifdef _XBOX
-		int wx = focusItem->window.rect.x;
-		int wy = focusItem->window.rect.y;
-
-		if(ClientManager::splitScreenMode == qtrue) {
-            if(ClientManager::ActiveClientNum() == 0) {
-				wy -= 220;
-			}
-
-			wy += 4;
-			wx -= 15;
-		}
-
-		// Print black border around the numbers
-		float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		trap_R_SetColor( black );
-
-		CG_DrawNumField (
-		wx, 
-		wy, 
-		3, 
-		ps->stats[STAT_HEALTH], 
-		focusItem->window.rect.w, 
-		focusItem->window.rect.h, 
-		NUM_FONT_SMALL,
-		qtrue);
-#endif
-
 		// Print health amount
 		trap_R_SetColor( focusItem->window.foreColor );	
 
-#ifdef _XBOX
-		CG_DrawNumField (
-		wx, 
-		wy, 
-		3, 
-		ps->stats[STAT_HEALTH], 
-		focusItem->window.rect.w, 
-		focusItem->window.rect.h, 
-		NUM_FONT_SMALL,
-		qfalse);
-#else
 		CG_DrawNumField (
 			focusItem->window.rect.x, 
 			focusItem->window.rect.y, 
@@ -906,7 +690,6 @@ void CG_DrawHealth( menuDef_t *menuHUD )
 			focusItem->window.rect.h, 
 			NUM_FONT_SMALL,
 			qfalse);
-#endif
 	}
 
 }
@@ -925,8 +708,8 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 	float			percent,quarterArmor;
 	int				i,currValue,inc;
 
-	//ps = &cg->snap->ps;
-	ps = &cg->predictedPlayerState;
+	//ps = &cg.snap->ps;
+	ps = &cg.predictedPlayerState;
 
 	// Can we find the menu?
 	if (!menuHUD)
@@ -971,44 +754,8 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 
 		if ((i==(MAX_HUD_TICS-1)) && (currValue < inc))
 		{
-			if (cg->HUDArmorFlag)
+			if (cg.HUDArmorFlag)
 			{
-#ifdef _XBOX
-				int ww, wh, wx, wy;
-				ww = focusItem->window.rect.w;
-				wh = focusItem->window.rect.h;
-				wy = focusItem->window.rect.y;
-				wx = focusItem->window.rect.x; 
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-					wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-					if(ClientManager::ActiveClientNum() == 0) {
-						wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-					}
-					wy += focusItem->window.rect.h - wh;
-
-					if(i == 0) {
-						wx -= 2;
-						wy += 15;
-					}
-					else if(i == 1) {
-						wx -= 9;
-						wy += 13;
-					}
-					else if(i == 2) {
-						wx -= 13;
-						wy += 8;
-					}
-					else if(i == 3) {
-						wx -= 15;
-						wy += 2;
-					}
-				}
-
-				CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
 				CG_DrawPic( 
 					focusItem->window.rect.x,
 					focusItem->window.rect.y,
@@ -1016,47 +763,10 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 					focusItem->window.rect.h, 
 					focusItem->window.background
 					);
-#endif // _XBOX
 			}
 		}
 		else 
 		{
-#ifdef _XBOX
-			int ww, wh, wx, wy;
-			ww = focusItem->window.rect.w;
-			wh = focusItem->window.rect.h;
-			wy = focusItem->window.rect.y;
-			wx = focusItem->window.rect.x;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-				wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-				if(ClientManager::ActiveClientNum() == 0) {
-					wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-				}
-				wy += focusItem->window.rect.h - wh;
-
-				if(i == 0) {
-					wx -= 2;
-					wy += 15;
-				}
-				else if(i == 1) {
-					wx -= 9;
-					wy += 13;
-				}
-				else if(i == 2) {
-					wx -= 13;
-					wy += 8;
-				}
-				else if(i == 3) {
-					wx -= 15;
-					wy += 2;
-				}
-			}
-
-			CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
 				CG_DrawPic( 
 					focusItem->window.rect.x,
 					focusItem->window.rect.y,
@@ -1064,7 +774,6 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 					focusItem->window.rect.h, 
 					focusItem->window.background
 					);
-#endif
 		}
 
 		currValue -= inc;
@@ -1074,48 +783,9 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 
 	if (focusItem)
 	{
-#ifdef _XBOX
-		int wx = focusItem->window.rect.x;
-		int wy = focusItem->window.rect.y;
-
-		if(ClientManager::splitScreenMode == qtrue) {
-            if(ClientManager::ActiveClientNum() == 0) {
-				wy -= 220;
-			}
-
-			wy += 4;
-			wx -= 18;
-		}
-
-		// Print a black border around the numbers
-		float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		trap_R_SetColor( black );	
-
-		CG_DrawNumField (
-			wx, 
-			wy, 
-			3, 
-			armor, 
-			focusItem->window.rect.w, 
-			focusItem->window.rect.h, 
-			NUM_FONT_SMALL,
-			qtrue);
-#endif
-
 		// Print armor amount
 		trap_R_SetColor( focusItem->window.foreColor );	
 
-#ifdef _XBOX
-		CG_DrawNumField (
-			wx, 
-			wy, 
-			3, 
-			armor, 
-			focusItem->window.rect.w, 
-			focusItem->window.rect.h, 
-			NUM_FONT_SMALL,
-			qfalse);
-#else
 		CG_DrawNumField (
 			focusItem->window.rect.x, 
 			focusItem->window.rect.y, 
@@ -1125,7 +795,6 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 			focusItem->window.rect.h, 
 			NUM_FONT_SMALL,
 			qfalse);
-#endif
 	}
 
 	// If armor is low, flash a graphic to warn the player
@@ -1136,27 +805,27 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 		// Make tic flash if armor is at 25% of full armor
 		if (ps->stats[STAT_ARMOR] < quarterArmor)		// Do whatever the flash timer says
 		{
-			if (cg->HUDTickFlashTime < cg->time)			// Flip at the same time
+			if (cg.HUDTickFlashTime < cg.time)			// Flip at the same time
 			{
-				cg->HUDTickFlashTime = cg->time + 400;
-				if (cg->HUDArmorFlag)
+				cg.HUDTickFlashTime = cg.time + 400;
+				if (cg.HUDArmorFlag)
 				{
-					cg->HUDArmorFlag = qfalse;
+					cg.HUDArmorFlag = qfalse;
 				}
 				else
 				{
-					cg->HUDArmorFlag = qtrue;
+					cg.HUDArmorFlag = qtrue;
 				}
 			}
 		}
 		else
 		{
-			cg->HUDArmorFlag=qtrue;
+			cg.HUDArmorFlag=qtrue;
 		}
 	}
 	else						// No armor? Don't show it.
 	{
-		cg->HUDArmorFlag=qfalse;
+		cg.HUDArmorFlag=qfalse;
 	}
 
 }
@@ -1172,7 +841,6 @@ the saber style (fast, medium, strong)
 static void CG_DrawSaberStyle( centity_t *cent, menuDef_t *menuHUD)
 {
 	itemDef_t		*focusItem;
-	int rectx;
 
 	if (!cent->currentState.weapon ) // We don't have a weapon right now
 	{
@@ -1192,7 +860,7 @@ static void CG_DrawSaberStyle( centity_t *cent, menuDef_t *menuHUD)
 
 
 	// draw the current saber style in this window
-	switch ( cg->predictedPlayerState.fd.saberDrawAnimLevel )
+	switch ( cg.predictedPlayerState.fd.saberDrawAnimLevel )
 	{
 	case 1://FORCE_LEVEL_1:
 	case 5://FORCE_LEVEL_5://Tavion
@@ -1201,42 +869,15 @@ static void CG_DrawSaberStyle( centity_t *cent, menuDef_t *menuHUD)
 
 		if (focusItem)
 		{
-			rectx = focusItem->window.rect.x;
-			if(cg->widescreen)
-				rectx += 80;
-
 			trap_R_SetColor( hudTintColor );
 
-#ifdef _XBOX
-			int ww, wh, wx, wy;
-			ww = focusItem->window.rect.w;
-			wh = focusItem->window.rect.h;
-			wy = focusItem->window.rect.y;
-			wx = rectx;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-				wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-				if(ClientManager::ActiveClientNum() == 0) {
-					wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-				}
-				wy += focusItem->window.rect.h - wh;
-
-				wx += 23;
-				wy += 0;
-			}
-
-			CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
 			CG_DrawPic( 
-				rectx,
+				focusItem->window.rect.x,
 				focusItem->window.rect.y,
 				focusItem->window.rect.w, 
 				focusItem->window.rect.h, 
 				focusItem->window.background
 				);
-#endif
 		}
 
 		break;
@@ -1247,42 +888,15 @@ static void CG_DrawSaberStyle( centity_t *cent, menuDef_t *menuHUD)
 
 		if (focusItem)
 		{
-			rectx = focusItem->window.rect.x;
-			if(cg->widescreen)
-				rectx += 80;
-
 			trap_R_SetColor( hudTintColor );
 
-#ifdef _XBOX
-			int ww, wh, wx, wy;
-			ww = focusItem->window.rect.w;
-			wh = focusItem->window.rect.h;
-			wy = focusItem->window.rect.y;
-			wx = rectx;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-				wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-				if(ClientManager::ActiveClientNum() == 0) {
-					wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-				}
-				wy += focusItem->window.rect.h - wh;
-
-				wx += 15;
-				wy += 11;
-			}
-
-			CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
 			CG_DrawPic( 
-				rectx,
+				focusItem->window.rect.x,
 				focusItem->window.rect.y,
 				focusItem->window.rect.w, 
 				focusItem->window.rect.h, 
 				focusItem->window.background
 				);
-#endif
 		}
 		break;
 	case 3://FORCE_LEVEL_3:
@@ -1291,42 +905,15 @@ static void CG_DrawSaberStyle( centity_t *cent, menuDef_t *menuHUD)
 
 		if (focusItem)
 		{
-			rectx = focusItem->window.rect.x;
-			if(cg->widescreen)
-				rectx += 80;
-
 			trap_R_SetColor( hudTintColor );
 
-#ifdef _XBOX
-			int ww, wh, wx, wy;
-			ww = focusItem->window.rect.w;
-			wh = focusItem->window.rect.h;
-			wy = focusItem->window.rect.y;
-			wx = rectx;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-				wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-				if(ClientManager::ActiveClientNum() == 0) {
-					wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-				}
-				wy += focusItem->window.rect.h - wh;
-
-				wx += 8;
-				wy += 20;
-			}
-
-			CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
 			CG_DrawPic( 
-				rectx,
+				focusItem->window.rect.x,
 				focusItem->window.rect.y,
 				focusItem->window.rect.w, 
 				focusItem->window.rect.h, 
 				focusItem->window.background
 				);
-#endif
 		}
 		break;
 	}
@@ -1345,9 +932,8 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 	vec4_t			calcColor;
 	float			value,inc = 0.0f,percent;
 	itemDef_t		*focusItem;
-	int				rectx;
 
-	ps = &cg->snap->ps;
+	ps = &cg.snap->ps;
 
 	// Can we find the menu?
 	if (!menuHUD)
@@ -1379,30 +965,7 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 		trap_R_SetColor( hudTintColor );
 		if (focusItem)
 		{
-#ifdef _XBOX
-			int wx = focusItem->window.rect.x;
-			if(cg->widescreen)
-				wx += 80;
-
-			int wy = focusItem->window.rect.y;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				if(ClientManager::ActiveClientNum() == 0) {
-					wy -= 220;
-				}
-
-				wy += 4;
-				wx += 18;
-			}
-
-			UI_DrawProportionalString(wx, 
-						wy, 
-						"--", 
-						NUM_FONT_SMALL, 
-						focusItem->window.foreColor);
-#else
 			UI_DrawProportionalString(focusItem->window.rect.x, focusItem->window.rect.y, "--", NUM_FONT_SMALL, focusItem->window.foreColor);
-#endif
 		}
 	}
 	else
@@ -1422,50 +985,6 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 			}
 			value =ps->ammo[weaponData[cent->currentState.weapon].ammoIndex];
 
-#ifdef _XBOX
-			int wx = focusItem->window.rect.x;
-			if(cg->widescreen)
-				wx += 80;
-
-			int wy = focusItem->window.rect.y;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				if(ClientManager::ActiveClientNum() == 0) {
-					wy -= 220;
-				}
-
-				wy += 4;
-				wx += 16;
-			}
-
-			// Print a black border around the numbers
-			float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-			trap_R_SetColor( black );	
-
-			CG_DrawNumField (
-				wx, 
-				wy, 
-				3, 
-				value, 
-				focusItem->window.rect.w, 
-				focusItem->window.rect.h, 
-				NUM_FONT_SMALL,
-				qtrue);
-
-			trap_R_SetColor( hudTintColor );
-#endif
-
-#ifdef _XBOX
-			CG_DrawNumField (
-				wx, 
-				wy, 
-				3, 
-				value, 
-				focusItem->window.rect.w, 
-				focusItem->window.rect.h, 
-				NUM_FONT_SMALL,
-				qfalse);
-#else
 			CG_DrawNumField (
 				focusItem->window.rect.x, 
 				focusItem->window.rect.y, 
@@ -1475,7 +994,6 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 				focusItem->window.rect.h, 
 				NUM_FONT_SMALL,
 				qfalse);
-#endif
 		}
 	}
 
@@ -1503,44 +1021,6 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 
 		trap_R_SetColor( calcColor);
 
-#ifdef _XBOX
-		int ww, wh, wx, wy;
-		ww = focusItem->window.rect.w;
-		wh = focusItem->window.rect.h;
-		wy = focusItem->window.rect.y;
-		wx = focusItem->window.rect.x;
-		if(cg->widescreen)
-			wx += 80;
-
-		if(ClientManager::splitScreenMode == qtrue) {
-			ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-			wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-			if(ClientManager::ActiveClientNum() == 0) {
-				wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-			}
-			wy += focusItem->window.rect.h - wh;
-
-			if(i == 0) {
-				wx += 14;
-				wy += 13;
-			}
-			else if(i == 1) {
-				wx += 17;
-				wy += 11;
-			}
-			else if(i == 2) {
-				wx += 20;
-				wy += 8;
-			}
-			else if(i == 3) {
-				wx += 21;
-				wy += 4;
-			}
-		}
-
-		CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
 		CG_DrawPic( 
 			focusItem->window.rect.x,
 			focusItem->window.rect.y,
@@ -1548,7 +1028,6 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 			focusItem->window.rect.h, 
 			focusItem->window.background
 			);
-#endif
 
 		value -= inc;
 	}
@@ -1568,7 +1047,6 @@ void CG_DrawForcePower( menuDef_t *menuHUD )
 	itemDef_t		*focusItem;
 	const int		maxForcePower = 100;
 	qboolean	flash=qfalse;
-	int				rectx;
 
 	// Can we find the menu?
 	if (!menuHUD)
@@ -1576,39 +1054,39 @@ void CG_DrawForcePower( menuDef_t *menuHUD )
 		return;
 	}
 
-	// Make the hud flash by setting forceHUDTotalFlashTime above cg->time
-	if (cg->forceHUDTotalFlashTime > cg->time )
+	// Make the hud flash by setting forceHUDTotalFlashTime above cg.time
+	if (cg.forceHUDTotalFlashTime > cg.time )
 	{
 		flash = qtrue;
-		if (cg->forceHUDNextFlashTime < cg->time)	
+		if (cg.forceHUDNextFlashTime < cg.time)	
 		{
-			cg->forceHUDNextFlashTime = cg->time + 400;
+			cg.forceHUDNextFlashTime = cg.time + 400;
 			trap_S_StartSound (NULL, 0, CHAN_LOCAL, cgs.media.noforceSound );
 
-			if (cg->forceHUDActive)
+			if (cg.forceHUDActive)
 			{
-				cg->forceHUDActive = qfalse;
+				cg.forceHUDActive = qfalse;
 			}
 			else
 			{
-				cg->forceHUDActive = qtrue;
+				cg.forceHUDActive = qtrue;
 			}
 
 		}
 	}
 	else	// turn HUD back on if it had just finished flashing time.
 	{
-		cg->forceHUDNextFlashTime = 0;
-		cg->forceHUDActive = qtrue;
+		cg.forceHUDNextFlashTime = 0;
+		cg.forceHUDActive = qtrue;
 	}
 
-//	if (!cg->forceHUDActive)
+//	if (!cg.forceHUDActive)
 //	{
 //		return;
 //	}
 
 	inc = (float)  maxForcePower / MAX_HUD_TICS;
-	value = cg->snap->ps.fd.forcePower;
+	value = cg.snap->ps.fd.forcePower;
 
 	for (i=MAX_HUD_TICS-1;i>=0;i--)
 	{
@@ -1653,53 +1131,13 @@ void CG_DrawForcePower( menuDef_t *menuHUD )
 
 		trap_R_SetColor( calcColor);
 
-		rectx = focusItem->window.rect.x;
-		if(cg->widescreen)
-			rectx += 80;
-#ifdef _XBOX
-		int ww, wh, wx, wy;
-		ww = focusItem->window.rect.w;
-		wh = focusItem->window.rect.h;
-		wy = focusItem->window.rect.y;
-		wx = rectx;
-
-		if(ClientManager::splitScreenMode == qtrue) {
-			ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-			wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-			if(ClientManager::ActiveClientNum() == 0) {
-				wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-			}
-			wy += focusItem->window.rect.h - wh;
-
-			if(i == 0) {
-				wx += 17;
-				wy += 13;
-			}
-			else if(i == 1) {
-				wx += 22;
-				wy += 11;
-			}
-			else if(i == 2) {
-				wx += 26;
-				wy += 8;
-			}
-			else if(i == 3) {
-				wx += 29;
-				wy += 1;
-			}
-		}
-
-		CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
 		CG_DrawPic( 
-			rectx,
+			focusItem->window.rect.x,
 			focusItem->window.rect.y,
 			focusItem->window.rect.w, 
 			focusItem->window.rect.h, 
 			focusItem->window.background
 			);
-#endif
 
 		value -= inc;
 	}
@@ -1708,63 +1146,18 @@ void CG_DrawForcePower( menuDef_t *menuHUD )
 
 	if (focusItem)
 	{
-		rectx = focusItem->window.rect.x;
-		if(cg->widescreen)
-			rectx += 80;
-
-		// Print force amount	
-
-#ifdef _XBOX
-		int wx = rectx;
-		int wy = focusItem->window.rect.y;
-
-		if(ClientManager::splitScreenMode == qtrue) {
-            if(ClientManager::ActiveClientNum() == 0) {
-				wy -= 220;
-			}
-
-			wy += 4;
-			wx += 18;
-		}
-
-		// Print a black border around the numbers
-		float black[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		trap_R_SetColor( black );	
+		// Print force amount
+		trap_R_SetColor( focusItem->window.foreColor );	
 
 		CG_DrawNumField (
-			wx, 
-			wy, 
-			3, 
-			cg->snap->ps.fd.forcePower, 
-			focusItem->window.rect.w, 
-			focusItem->window.rect.h, 
-			NUM_FONT_SMALL,
-			qtrue);
-#endif
-
-		trap_R_SetColor( focusItem->window.foreColor );
-
-#ifdef _XBOX
-		CG_DrawNumField (
-			wx, 
-			wy, 
-			3, 
-			cg->snap->ps.fd.forcePower, 
-			focusItem->window.rect.w, 
-			focusItem->window.rect.h, 
-			NUM_FONT_SMALL,
-			qfalse);
-#else
-		CG_DrawNumField (
-			rectx, 
+			focusItem->window.rect.x, 
 			focusItem->window.rect.y, 
 			3, 
-			cg->snap->ps.fd.forcePower, 
+			cg.snap->ps.fd.forcePower, 
 			focusItem->window.rect.w, 
 			focusItem->window.rect.h, 
 			NUM_FONT_SMALL,
 			qfalse);
-#endif
 	}
 }
 
@@ -1781,10 +1174,6 @@ void CG_DrawHUD(centity_t	*cent)
 	int	scoreBias;
 	char scoreBiasStr[16];
 
-#ifdef _XBOX
-	float blackBar[4] = { 0.0429f, 0.078f, 1.0f, 0.4f };
-#endif
-
 	if (cg_hudFiles.integer)
 	{
 		int x = 0;
@@ -1792,30 +1181,30 @@ void CG_DrawHUD(centity_t	*cent)
 		char ammoString[64];
 		int weapX = x;
 
-		UI_DrawProportionalString( x+16, y+40, va( "%i", cg->snap->ps.stats[STAT_HEALTH] ),
+		UI_DrawProportionalString( x+16, y+40, va( "%i", cg.snap->ps.stats[STAT_HEALTH] ),
 			UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_RED] );
 
-		UI_DrawProportionalString( x+18+14, y+40+14, va( "%i", cg->snap->ps.stats[STAT_ARMOR] ),
+		UI_DrawProportionalString( x+18+14, y+40+14, va( "%i", cg.snap->ps.stats[STAT_ARMOR] ),
 			UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_GREEN] );
 
-		if (cg->snap->ps.weapon == WP_SABER)
+		if (cg.snap->ps.weapon == WP_SABER)
 		{
-			if (cg->snap->ps.fd.saberDrawAnimLevel == SS_DUAL)
+			if (cg.snap->ps.fd.saberDrawAnimLevel == SS_DUAL)
 			{
 				Com_sprintf(ammoString, sizeof(ammoString), "AKIMBO");
 				weapX += 16;
 			}
-			else if (cg->snap->ps.fd.saberDrawAnimLevel == SS_STAFF)
+			else if (cg.snap->ps.fd.saberDrawAnimLevel == SS_STAFF)
 			{
 				Com_sprintf(ammoString, sizeof(ammoString), "STAFF");
 				weapX += 16;
 			}
-			else if (cg->snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_3)
+			else if (cg.snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_3)
 			{
 				Com_sprintf(ammoString, sizeof(ammoString), "STRONG");
 				weapX += 16;
 			}
-			else if (cg->snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_2)
+			else if (cg.snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_2)
 			{
 				Com_sprintf(ammoString, sizeof(ammoString), "MEDIUM");
 				weapX += 16;
@@ -1827,25 +1216,13 @@ void CG_DrawHUD(centity_t	*cent)
 		}
 		else
 		{
-			Com_sprintf(ammoString, sizeof(ammoString), "%i", cg->snap->ps.ammo[weaponData[cent->currentState.weapon].ammoIndex]);
+			Com_sprintf(ammoString, sizeof(ammoString), "%i", cg.snap->ps.ammo[weaponData[cent->currentState.weapon].ammoIndex]);
 		}
 		
-#ifdef _XBOX
-		if(cg->widescreen)
-			UI_DrawProportionalString( 720-(weapX+16+32), y+40, va( "%s", ammoString ),
-			UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_ORANGE] );
-		else
-#endif
 		UI_DrawProportionalString( SCREEN_WIDTH-(weapX+16+32), y+40, va( "%s", ammoString ),
 			UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_ORANGE] );
 
-#ifdef _XBOX
-		if(cg->widescreen)
-			UI_DrawProportionalString( 720-(x+18+14+32), y+40+14, va( "%i", cg->snap->ps.fd.forcePower),
-			UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_ICON_BLUE] );
-		else
-#endif
-		UI_DrawProportionalString( SCREEN_WIDTH-(x+18+14+32), y+40+14, va( "%i", cg->snap->ps.fd.forcePower),
+		UI_DrawProportionalString( SCREEN_WIDTH-(x+18+14+32), y+40+14, va( "%i", cg.snap->ps.fd.forcePower),
 			UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_ICON_BLUE] );
 
 		return;
@@ -1853,9 +1230,9 @@ void CG_DrawHUD(centity_t	*cent)
 
 	if (cgs.gametype >= GT_TEAM && cgs.gametype != GT_SIEGE)
 	{	// tint the hud items based on team
-		if (cg->snap->ps.persistant[PERS_TEAM] == TEAM_RED )
+		if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_RED )
 			hudTintColor = redhudtint;
-		else if (cg->snap->ps.persistant[PERS_TEAM] == TEAM_BLUE )
+		else if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_BLUE )
 			hudTintColor = bluehudtint;
 		else // If we're not on a team for whatever reason, leave things as they are.
 			hudTintColor = colorTable[CT_WHITE];
@@ -1876,33 +1253,13 @@ void CG_DrawHUD(centity_t	*cent)
 		if (focusItem)
 		{
 			trap_R_SetColor( hudTintColor );	
-#ifdef _XBOX
-			int ww, wh, wx, wy;
-			ww = focusItem->window.rect.w;
-			wh = focusItem->window.rect.h;
-			wy = focusItem->window.rect.y;
-			wx = focusItem->window.rect.x;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-				wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-				if(ClientManager::ActiveClientNum() == 0) {
-					wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-				}
-				wy += focusItem->window.rect.h - wh;
-			}
-
-			CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
 			CG_DrawPic( 
 				focusItem->window.rect.x, 
 				focusItem->window.rect.y, 
 				focusItem->window.rect.w, 
 				focusItem->window.rect.h, 
 				focusItem->window.background 
-				);	
-#endif
+				);			
 		}
 
 		// Print frame
@@ -1910,80 +1267,17 @@ void CG_DrawHUD(centity_t	*cent)
 		if (focusItem)
 		{
 			trap_R_SetColor( hudTintColor );	
-#ifdef _XBOX
-			int ww, wh, wx, wy;
-			ww = focusItem->window.rect.w;
-			wh = focusItem->window.rect.h;
-			wy = focusItem->window.rect.y;
-			wx = focusItem->window.rect.x;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-				wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-				if(ClientManager::ActiveClientNum() == 0) {
-					wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-				}
-				wy += focusItem->window.rect.h - wh;
-
-				lscalex = focusItem->window.rect.w - ww;
-				lscaley = focusItem->window.rect.h - wh;
-			}
-
-			CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
 			CG_DrawPic( 
 				focusItem->window.rect.x, 
 				focusItem->window.rect.y, 
 				focusItem->window.rect.w, 
 				focusItem->window.rect.h, 
 				focusItem->window.background 
-				);	
-#endif
+				);			
 		}
 
-#ifdef _XBOX
-		// Draw the friend/game invitation icons
-		if (XBL_F_FriendNotice() && (focusItem = Menu_FindItemByName(menuHUD, "friendInvite")))
+		if (cg.predictedPlayerState.pm_type != PM_SPECTATOR)
 		{
-			trap_R_SetColor( hudTintColor );
-			CG_DrawPic(
-				focusItem->window.rect.x,
-				focusItem->window.rect.y,
-				focusItem->window.rect.w,
-				focusItem->window.rect.h,
-				focusItem->window.background
-				);
-		}
-
-		if (XBL_F_GameNotice() && (focusItem = Menu_FindItemByName(menuHUD, "gameInvite")))
-		{
-			trap_R_SetColor( hudTintColor );
-			CG_DrawPic(
-				focusItem->window.rect.x,
-				focusItem->window.rect.y,
-				focusItem->window.rect.w,
-				focusItem->window.rect.h,
-				focusItem->window.background
-				);
-		}
-#endif
-
-		if (cg->predictedPlayerState.pm_type != PM_SPECTATOR)
-		{
-#ifdef _XBOX
-			// Draw the blue tinted bar behind the numbers
-			int yoff = 0;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				if(ClientManager::ActiveClientNum() == 0)
-					yoff = -220;
-
-				CG_FillRect(93, 433 + yoff, 50, 14, blackBar);
-			}
-			else
-                CG_FillRect(105, 428, 54, 16, blackBar);
-#endif
 			CG_DrawArmor(menuHUD);
 			CG_DrawHealth(menuHUD);
 		}
@@ -1993,15 +1287,15 @@ void CG_DrawHUD(centity_t	*cent)
 		//CG_Error("CG_ChatBox_ArrayInsert: unable to locate HUD menu file ");
 	}
 
-	//scoreStr = va("Score: %i", cgs.clientinfo[cg->snap->ps.clientNum].score);
+	//scoreStr = va("Score: %i", cgs.clientinfo[cg.snap->ps.clientNum].score);
 	if ( cgs.gametype == GT_DUEL )
 	{//A duel that requires more than one kill to knock the current enemy back to the queue
 		//show current kills out of how many needed
-		scoreStr = va("%s: %i/%i", CG_GetStringEdString("MP_INGAME", "SCORE"), cg->snap->ps.persistant[PERS_SCORE], cgs.fraglimit);
+		scoreStr = va("%s: %i/%i", CG_GetStringEdString("MP_INGAME", "SCORE"), cg.snap->ps.persistant[PERS_SCORE], cgs.fraglimit);
 	}
 	else if (0 && cgs.gametype < GT_TEAM )
 	{	// This is a teamless mode, draw the score bias.
-		scoreBias = cg->snap->ps.persistant[PERS_SCORE] - cgs.scores1;
+		scoreBias = cg.snap->ps.persistant[PERS_SCORE] - cgs.scores1;
 		if (scoreBias == 0)
 		{	// We are the leader!
 			if (cgs.scores2 <= 0)
@@ -2010,7 +1304,7 @@ void CG_DrawHUD(centity_t	*cent)
 			}
 			else
 			{
-				scoreBias = cg->snap->ps.persistant[PERS_SCORE] - cgs.scores2;
+				scoreBias = cg.snap->ps.persistant[PERS_SCORE] - cgs.scores2;
 				if (scoreBias == 0)
 				{
 					Com_sprintf(scoreBiasStr, sizeof(scoreBiasStr), " (Tie)");
@@ -2025,16 +1319,15 @@ void CG_DrawHUD(centity_t	*cent)
 		{	// We are behind!
 			Com_sprintf(scoreBiasStr, sizeof(scoreBiasStr), " (%d)", scoreBias);
 		}
-		scoreStr = va("%s: %i%s", CG_GetStringEdString("MP_INGAME", "SCORE"), cg->snap->ps.persistant[PERS_SCORE], scoreBiasStr);
+		scoreStr = va("%s: %i%s", CG_GetStringEdString("MP_INGAME", "SCORE"), cg.snap->ps.persistant[PERS_SCORE], scoreBiasStr);
 	}
 	else
 	{	// Don't draw a bias.
-		scoreStr = va("%s: %i", CG_GetStringEdString("MP_INGAME", "SCORE"), cg->snap->ps.persistant[PERS_SCORE]);
+		scoreStr = va("%s: %i", CG_GetStringEdString("MP_INGAME", "SCORE"), cg.snap->ps.persistant[PERS_SCORE]);
 	}
 
 	menuHUD = Menus_FindByName("righthud");
 
-	int rectx;
 	if (menuHUD)
 	{
 		if (cgs.gametype != GT_POWERDUEL)
@@ -2042,32 +1335,13 @@ void CG_DrawHUD(centity_t	*cent)
 			focusItem = Menu_FindItemByName(menuHUD, "score_line");
 			if (focusItem)
 			{
-				if(cg->widescreen)
-					rectx = focusItem->window.rect.x + 80;
-				else
-					rectx = focusItem->window.rect.x;
-#ifdef _XBOX
-				if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0) {
-					UI_DrawScaledProportionalString(
-					rectx, 
-					focusItem->window.rect.y - 220, 
-					scoreStr, 
-					UI_RIGHT|UI_DROPSHADOW, 
-					focusItem->window.foreColor, 
-					0.7);
-				}
-				else {
-#endif
 				UI_DrawScaledProportionalString(
-					rectx, 
+					focusItem->window.rect.x, 
 					focusItem->window.rect.y, 
 					scoreStr, 
 					UI_RIGHT|UI_DROPSHADOW, 
 					focusItem->window.foreColor, 
 					0.7);
-#ifdef _XBOX
-				}
-#endif
 			}
 		}
 
@@ -2075,92 +1349,28 @@ void CG_DrawHUD(centity_t	*cent)
 		focusItem = Menu_FindItemByName(menuHUD, "scanline");
 		if (focusItem)
 		{
-			if(cg->widescreen)
-				rectx = focusItem->window.rect.x + 80;
-			else
-				rectx = focusItem->window.rect.x;
 			trap_R_SetColor( hudTintColor );	
-#ifdef _XBOX
-			int ww, wh, wx, wy;
-			ww = focusItem->window.rect.w;
-			wh = focusItem->window.rect.h;
-			wy = focusItem->window.rect.y;
-			wx = rectx;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-				wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-				if(ClientManager::ActiveClientNum() == 0) {
-					wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-				}
-				wy += focusItem->window.rect.h - wh;
-				wx += focusItem->window.rect.w - ww;
-			}
-
-			CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
 			CG_DrawPic( 
-				rectx, 
+				focusItem->window.rect.x, 
 				focusItem->window.rect.y, 
 				focusItem->window.rect.w, 
 				focusItem->window.rect.h, 
 				focusItem->window.background 
-				);	
-#endif
+				);			
 		}
 
 		focusItem = Menu_FindItemByName(menuHUD, "frame");
 		if (focusItem)
 		{
-			if(cg->widescreen)
-				rectx = focusItem->window.rect.x + 80;
-			else
-				rectx = focusItem->window.rect.x;
-			trap_R_SetColor( hudTintColor );
-#ifdef _XBOX
-			int ww, wh, wx, wy;
-			ww = focusItem->window.rect.w;
-			wh = focusItem->window.rect.h;
-			wy = focusItem->window.rect.y;
-			wx = rectx;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				ww = focusItem->window.rect.w * SPLITSCREEN_HUD_SCALE;
-				wh = focusItem->window.rect.h * SPLITSCREEN_HUD_SCALE;
-
-				if(ClientManager::ActiveClientNum() == 0) {
-					wy = focusItem->window.rect.y - SPLITSCREEN_HUD_P1OFFSET;
-				}
-				wy += focusItem->window.rect.h - wh;
-			}
-
-			CG_DrawPic( wx, wy, ww, wh, focusItem->window.background );
-#else
+			trap_R_SetColor( hudTintColor );	
 			CG_DrawPic( 
-				rectx, 
+				focusItem->window.rect.x, 
 				focusItem->window.rect.y, 
 				focusItem->window.rect.w, 
 				focusItem->window.rect.h, 
 				focusItem->window.background 
-				);	
-#endif
+				);			
 		}
-
-#ifdef _XBOX
-			int xoff = 0, yoff = 0;
-			if(cg->widescreen)
-				xoff = 80;
-
-			if(ClientManager::splitScreenMode == qtrue) {
-				if(ClientManager::ActiveClientNum() == 0)
-					yoff = -220;
-
-				CG_FillRect(500 + xoff, 433 + yoff, 50, 14, blackBar);
-			}
-			else
-                CG_FillRect(481 + xoff, 428 + yoff, 54, 16, blackBar);
-#endif
 
 		CG_DrawForcePower(menuHUD);
 
@@ -2192,7 +1402,7 @@ qboolean ForcePower_Valid(int i)
 		return qfalse;
 	}
 
-	if (cg->snap->ps.fd.forcePowersKnown & (1 << i))
+	if (cg.snap->ps.fd.forcePowersKnown & (1 << i))
 	{
 		return qtrue;
 	}
@@ -2217,37 +1427,32 @@ void CG_DrawForceSelect( void )
 	int		sideLeftIconCnt,sideRightIconCnt;
 	int		sideMax,holdCount,iconCnt;
 	int		yOffset = 0;
-	int		xOffset = 0;
 
 
 	x2 = 0;
 	y2 = 0;
 
 	// don't display if dead
-	if ( cg->snap->ps.stats[STAT_HEALTH] <= 0 ) 
+	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 ) 
 	{
 		return;
 	}
 
-	if ((cg->forceSelectTime+WEAPON_SELECT_TIME)<cg->time)	// Time is up for the HUD to display
+	if ((cg.forceSelectTime+WEAPON_SELECT_TIME)<cg.time)	// Time is up for the HUD to display
 	{
-		cg->forceSelect = cg->snap->ps.fd.forcePowerSelected;
+		cg.forceSelect = cg.snap->ps.fd.forcePowerSelected;
 		return;
 	}
 
-	if (!cg->snap->ps.fd.forcePowersKnown)
+	if (!cg.snap->ps.fd.forcePowersKnown)
 	{
 		return;
 	}
 
 #ifdef _XBOX
 	if(CL_ExtendSelectTime()) {
-		cg->forceSelectTime = cg->time;
+		cg.forceSelectTime = cg.time;
 	}
-
-	if(cg->widescreen)
-		xOffset = 40;
-
 	yOffset = -50;
 #endif
 
@@ -2291,14 +1496,14 @@ void CG_DrawForceSelect( void )
 	bigIconSize = 60;
 	pad = 12;
 
-	x = 320 + xOffset;
+	x = 320;
 	y = 425;
 
 	// Background
 	length = (sideLeftIconCnt * smallIconSize) + (sideLeftIconCnt*pad) +
 			bigIconSize + (sideRightIconCnt * smallIconSize) + (sideRightIconCnt*pad) + 12;
 	
-	i = BG_ProperForceIndex(cg->forceSelect) - 1;
+	i = BG_ProperForceIndex(cg.forceSelect) - 1;
 	if (i < 0)
 	{
 		i = MAX_SHOWPOWERS;
@@ -2323,39 +1528,21 @@ void CG_DrawForceSelect( void )
 
 		if (cgs.media.forcePowerIcons[forcePowerSorted[i]])
 		{
-#ifdef _XBOX
-			if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0) {
-				CG_DrawPic( holdX, y + yOffset - 220, smallIconSize, smallIconSize, cgs.media.forcePowerIcons[forcePowerSorted[i]] );
-			}
-			else {
-#endif
 			CG_DrawPic( holdX, y + yOffset, smallIconSize, smallIconSize, cgs.media.forcePowerIcons[forcePowerSorted[i]] ); 
-#ifdef _XBOX
-			}
-#endif
 			holdX -= (smallIconSize+pad);
 		}
 	}
 
-	if (ForcePower_Valid(cg->forceSelect))
+	if (ForcePower_Valid(cg.forceSelect))
 	{
 		// Current Center Icon
-		if (cgs.media.forcePowerIcons[cg->forceSelect])
+		if (cgs.media.forcePowerIcons[cg.forceSelect])
 		{
-#ifdef _XBOX
-			if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0) {
-				CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2)) + yOffset - 220, bigIconSize, bigIconSize, cgs.media.forcePowerIcons[cg->forceSelect] ); //only cache the icon for display
-			}
-			else {
-#endif
-			CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2)) + yOffset, bigIconSize, bigIconSize, cgs.media.forcePowerIcons[cg->forceSelect] ); //only cache the icon for display
-#ifdef _XBOX
-			}
-#endif
+			CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2)) + yOffset, bigIconSize, bigIconSize, cgs.media.forcePowerIcons[cg.forceSelect] ); //only cache the icon for display
 		}
 	}
 
-	i = BG_ProperForceIndex(cg->forceSelect) + 1;
+	i = BG_ProperForceIndex(cg.forceSelect) + 1;
 	if (i>MAX_SHOWPOWERS)
 	{
 		i = 0;
@@ -2379,32 +1566,14 @@ void CG_DrawForceSelect( void )
 
 		if (cgs.media.forcePowerIcons[forcePowerSorted[i]])
 		{
-#ifdef _XBOX
-			if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0) {
-				CG_DrawPic( holdX, y + yOffset - 220, smallIconSize, smallIconSize, cgs.media.forcePowerIcons[forcePowerSorted[i]] ); //only cache the icon for display
-			}
-			else {
-#endif
 			CG_DrawPic( holdX, y + yOffset, smallIconSize, smallIconSize, cgs.media.forcePowerIcons[forcePowerSorted[i]] ); //only cache the icon for display
-#ifdef _XBOX
-			}
-#endif
 			holdX += (smallIconSize+pad);
 		}
 	}
 
-	if ( showPowersName[cg->forceSelect] ) 
+	if ( showPowersName[cg.forceSelect] ) 
 	{
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0) {
-			UI_DrawProportionalString(320 + xOffset, y + 30 + yOffset - 220, CG_GetStringEdString("SP_INGAME", showPowersName[cg->forceSelect]), UI_CENTER | UI_SMALLFONT, colorTable[CT_ICON_BLUE]);
-		}
-		else {
-#endif
-		UI_DrawProportionalString(320 + xOffset, y + 30 + yOffset, CG_GetStringEdString("SP_INGAME", showPowersName[cg->forceSelect]), UI_CENTER | UI_SMALLFONT, colorTable[CT_ICON_BLUE]);
-#ifdef _XBOX
-		}
-#endif
+		UI_DrawProportionalString(320, y + 30 + yOffset, CG_GetStringEdString("SP_INGAME", showPowersName[cg.forceSelect]), UI_CENTER | UI_SMALLFONT, colorTable[CT_ICON_BLUE]);
 	}
 }
 
@@ -2423,45 +1592,42 @@ void CG_DrawInvenSelect( void )
 	int				holdX,x,y,y2,pad;
 	int				height;
 	float			addX;
-	int				yOffset = 0;
 
 	// don't display if dead
-	if ( cg->snap->ps.stats[STAT_HEALTH] <= 0 ) 
+	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 ) 
 	{
 		return;
 	}
 
-	if ((cg->invenSelectTime+WEAPON_SELECT_TIME)<cg->time)	// Time is up for the HUD to display
+	if ((cg.invenSelectTime+WEAPON_SELECT_TIME)<cg.time)	// Time is up for the HUD to display
 	{
 		return;
 	}
 
-	if (!cg->snap->ps.stats[STAT_HOLDABLE_ITEM] || !cg->snap->ps.stats[STAT_HOLDABLE_ITEMS])
+	if (!cg.snap->ps.stats[STAT_HOLDABLE_ITEM] || !cg.snap->ps.stats[STAT_HOLDABLE_ITEMS])
 	{
 		return;
 	}
 
 #ifdef _XBOX
 	if(CL_ExtendSelectTime()) {
-		cg->invenSelectTime = cg->time;
+		cg.invenSelectTime = cg.time;
 	}
-
-	yOffset = -50;
 #endif
 
-	if (cg->itemSelect == -1)
+	if (cg.itemSelect == -1)
 	{
-		cg->itemSelect = bg_itemlist[cg->snap->ps.stats[STAT_HOLDABLE_ITEM]].giTag;
+		cg.itemSelect = bg_itemlist[cg.snap->ps.stats[STAT_HOLDABLE_ITEM]].giTag;
 	}
 
-//const int bits = cg->snap->ps.stats[ STAT_ITEMS ];
+//const int bits = cg.snap->ps.stats[ STAT_ITEMS ];
 
 	// count the number of items owned
 	count = 0;
 	for ( i = 0 ; i < HI_NUM_HOLDABLE ; i++ ) 
 	{
 		if (/*CG_InventorySelectable(i) && inv_icons[i]*/
-			(cg->snap->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << i)) ) 
+			(cg.snap->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << i)) ) 
 		{
 			count++;
 		}
@@ -2470,16 +1636,7 @@ void CG_DrawInvenSelect( void )
 	if (!count)
 	{
 		y2 = 0; //err?
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0) {
-			UI_DrawProportionalString(320, y2 + 22 - 220, "EMPTY INVENTORY", UI_CENTER | UI_SMALLFONT, colorTable[CT_ICON_BLUE]);
-		}
-		else {
-#endif
 		UI_DrawProportionalString(320, y2 + 22, "EMPTY INVENTORY", UI_CENTER | UI_SMALLFONT, colorTable[CT_ICON_BLUE]);
-#ifdef _XBOX
-		}
-#endif
 		return;
 	}
 
@@ -2503,7 +1660,7 @@ void CG_DrawInvenSelect( void )
 		sideRightIconCnt = holdCount - sideLeftIconCnt;
 	}
 
-	i = cg->itemSelect - 1;
+	i = cg.itemSelect - 1;
 	if (i<0)
 	{
 		i = HI_NUM_HOLDABLE-1;
@@ -2519,7 +1676,7 @@ void CG_DrawInvenSelect( void )
 	// Left side ICONS
 	// Work backwards from current icon
 	holdX = x - ((bigIconSize/2) + pad + smallIconSize);
-	height = smallIconSize * cg->iconHUDPercent;
+	height = smallIconSize * cg.iconHUDPercent;
 	addX = (float) smallIconSize * .75;
 
 	for (iconCnt=0;iconCnt<sideLeftIconCnt;i--)
@@ -2529,14 +1686,14 @@ void CG_DrawInvenSelect( void )
 			i = HI_NUM_HOLDABLE-1;
 		}
 
-		if ( !(cg->snap->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << i)) || i == cg->itemSelect )
+		if ( !(cg.snap->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << i)) || i == cg.itemSelect )
 		{
 			continue;
 		}
 
 		++iconCnt;					// Good icon
 
-		if (!BG_IsItemSelectable(&cg->predictedPlayerState, i))
+		if (!BG_IsItemSelectable(&cg.predictedPlayerState, i))
 		{
 			continue;
 		}
@@ -2544,19 +1701,10 @@ void CG_DrawInvenSelect( void )
 		if (cgs.media.invenIcons[i])
 		{
 			trap_R_SetColor(NULL);
-#ifdef _XBOX
-			if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0) {
-				CG_DrawPic( holdX, y+10+yOffset - 220, smallIconSize, smallIconSize, cgs.media.invenIcons[i] );
-			}
-			else {
-#endif
-			CG_DrawPic( holdX, y+10+yOffset, smallIconSize, smallIconSize, cgs.media.invenIcons[i] );
-#ifdef _XBOX
-			}
-#endif
+			CG_DrawPic( holdX, y+10, smallIconSize, smallIconSize, cgs.media.invenIcons[i] );
 
 			trap_R_SetColor(colorTable[CT_ICON_BLUE]);
-			/*CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg->snap->ps.inventory[i], 6, 12, 
+			/*CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg.snap->ps.inventory[i], 6, 12, 
 				NUM_FONT_SMALL,qfalse);
 				*/
 
@@ -2565,27 +1713,18 @@ void CG_DrawInvenSelect( void )
 	}
 
 	// Current Center Icon
-	height = bigIconSize * cg->iconHUDPercent;
-	if (cgs.media.invenIcons[cg->itemSelect] && BG_IsItemSelectable(&cg->predictedPlayerState, cg->itemSelect))
+	height = bigIconSize * cg.iconHUDPercent;
+	if (cgs.media.invenIcons[cg.itemSelect] && BG_IsItemSelectable(&cg.predictedPlayerState, cg.itemSelect))
 	{
 		int itemNdex;
 		trap_R_SetColor(NULL);
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0) {
-			CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2))+10+yOffset - 220, bigIconSize, bigIconSize, cgs.media.invenIcons[cg->itemSelect] );
-		}
-		else {
-#endif
-		CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2))+10+yOffset, bigIconSize, bigIconSize, cgs.media.invenIcons[cg->itemSelect] );
-#ifdef _XBOX
-		}
-#endif
+		CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2))+10, bigIconSize, bigIconSize, cgs.media.invenIcons[cg.itemSelect] );
 		addX = (float) bigIconSize * .75;
 		trap_R_SetColor(colorTable[CT_ICON_BLUE]);
-		/*CG_DrawNumField ((x-(bigIconSize/2)) + addX, y, 2, cg->snap->ps.inventory[cg->inventorySelect], 6, 12, 
+		/*CG_DrawNumField ((x-(bigIconSize/2)) + addX, y, 2, cg.snap->ps.inventory[cg.inventorySelect], 6, 12, 
 			NUM_FONT_SMALL,qfalse);*/
 
-		itemNdex = BG_GetItemIndexByTag(cg->itemSelect, IT_HOLDABLE);
+		itemNdex = BG_GetItemIndexByTag(cg.itemSelect, IT_HOLDABLE);
 		if (bg_itemlist[itemNdex].classname)
 		{
 			vec4_t	textColor = { .312f, .75f, .621f, 1.0f };
@@ -2596,34 +1735,16 @@ void CG_DrawInvenSelect( void )
 			
 			if ( trap_SP_GetStringTextString( va("SP_INGAME_%s",Q_strupr(upperKey)), text, sizeof( text )))
 			{
-#ifdef _XBOX
-				if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0) {
-					UI_DrawProportionalString(320, y+45+yOffset - 220, text, UI_CENTER | UI_SMALLFONT, textColor);
-				}
-				else {
-#endif
-				UI_DrawProportionalString(320, y+45+yOffset, text, UI_CENTER | UI_SMALLFONT, textColor);
-#ifdef _XBOX
-				}
-#endif
+				UI_DrawProportionalString(320, y+45, text, UI_CENTER | UI_SMALLFONT, textColor);
 			}
 			else
 			{
-#ifdef _XBOX
-				if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0) {
-					UI_DrawProportionalString(320, y+45+yOffset - 220, bg_itemlist[itemNdex].classname, UI_CENTER | UI_SMALLFONT, textColor);
-				}
-				else {
-#endif
-				UI_DrawProportionalString(320, y+45+yOffset, bg_itemlist[itemNdex].classname, UI_CENTER | UI_SMALLFONT, textColor);
-#ifdef _XBOX
-				}
-#endif
+				UI_DrawProportionalString(320, y+45, bg_itemlist[itemNdex].classname, UI_CENTER | UI_SMALLFONT, textColor);
 			}
 		}
 	}
 
-	i = cg->itemSelect + 1;
+	i = cg.itemSelect + 1;
 	if (i> HI_NUM_HOLDABLE-1)
 	{
 		i = 0;
@@ -2632,7 +1753,7 @@ void CG_DrawInvenSelect( void )
 	// Right side ICONS
 	// Work forwards from current icon
 	holdX = x + (bigIconSize/2) + pad;
-	height = smallIconSize * cg->iconHUDPercent;
+	height = smallIconSize * cg.iconHUDPercent;
 	addX = (float) smallIconSize * .75;
 	for (iconCnt=0;iconCnt<sideRightIconCnt;i++)
 	{
@@ -2641,14 +1762,14 @@ void CG_DrawInvenSelect( void )
 			i = 0;
 		}
 
-		if ( !(cg->snap->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << i)) || i == cg->itemSelect )
+		if ( !(cg.snap->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << i)) || i == cg.itemSelect )
 		{
 			continue;
 		}
 
 		++iconCnt;					// Good icon
 
-		if (!BG_IsItemSelectable(&cg->predictedPlayerState, i))
+		if (!BG_IsItemSelectable(&cg.predictedPlayerState, i))
 		{
 			continue;
 		}
@@ -2656,19 +1777,10 @@ void CG_DrawInvenSelect( void )
 		if (cgs.media.invenIcons[i])
 		{
 			trap_R_SetColor(NULL);
-#ifdef _XBOX
-			if(ClientManager::splitScreenMode == qtrue && ClientManager::ActiveClientNum() == 0) {
-				CG_DrawPic( holdX, y+10+yOffset - 220, smallIconSize, smallIconSize, cgs.media.invenIcons[i] );
-			}
-			else {
-#endif
-			CG_DrawPic( holdX, y+10+yOffset, smallIconSize, smallIconSize, cgs.media.invenIcons[i] );
-#ifdef _XBOX
-			}
-#endif
+			CG_DrawPic( holdX, y+10, smallIconSize, smallIconSize, cgs.media.invenIcons[i] );
 
 			trap_R_SetColor(colorTable[CT_ICON_BLUE]);
-			/*CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg->snap->ps.inventory[i], 6, 12, 
+			/*CG_DrawNumField (holdX + addX, y + smallIconSize, 2, cg.snap->ps.inventory[i], 6, 12, 
 				NUM_FONT_SMALL,qfalse);*/
 
 			holdX += (smallIconSize+pad);
@@ -2690,13 +1802,19 @@ qboolean CG_CheckTargetVehicle( centity_t **pTargetVeh, float *alpha )
 
 	*alpha = 1.0f;
 
-	if ( cg->predictedPlayerState.rocketLockIndex < ENTITYNUM_WORLD )
+	//FIXME: need to clear all of these when you die?
+	if ( cg.predictedPlayerState.rocketLockIndex < ENTITYNUM_WORLD )
 	{
-		targetNum = cg->predictedPlayerState.rocketLockIndex;
+		targetNum = cg.predictedPlayerState.rocketLockIndex;
 	}
-    else if ( cg->crosshairClientNum < ENTITYNUM_WORLD )
+	else if ( cg.crosshairVehNum < ENTITYNUM_WORLD 
+		&& cg.time - cg.crosshairVehTime < 3000 )
+	{//crosshair was on a vehicle in the last 3 seconds
+		targetNum = cg.crosshairVehNum;
+	}
+    else if ( cg.crosshairClientNum < ENTITYNUM_WORLD )
 	{
-		targetNum = cg->crosshairClientNum;
+		targetNum = cg.crosshairClientNum;
 	}
 
 	if ( targetNum < MAX_CLIENTS )
@@ -2716,7 +1834,7 @@ qboolean CG_CheckTargetVehicle( centity_t **pTargetVeh, float *alpha )
 			&& targetVeh->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER )
 		{//it's a vehicle
 			cg_targVeh = targetNum;
-			cg_targVehLastTime = cg->time;
+			cg_targVehLastTime = cg.time;
 			*alpha = 1.0f;
 		}
 		else
@@ -2726,16 +1844,16 @@ qboolean CG_CheckTargetVehicle( centity_t **pTargetVeh, float *alpha )
 	}
 	if ( !targetVeh )
 	{
-		if ( cg_targVehLastTime && cg->time - cg_targVehLastTime < 3000 )
+		if ( cg_targVehLastTime && cg.time - cg_targVehLastTime < 3000 )
 		{
 			targetVeh = &cg_entities[cg_targVeh];;
-			if ( cg->time-cg_targVehLastTime < 1000 )
+			if ( cg.time-cg_targVehLastTime < 1000 )
 			{//stay at full alpha for 1 sec after lose them from crosshair
 				*alpha = 1.0f;
 			}
 			else
 			{//fade out over 2 secs
-				*alpha = 1.0f-((cg->time-cg_targVehLastTime-1000)/2000.0f);
+				*alpha = 1.0f-((cg.time-cg_targVehLastTime-1000)/2000.0f);
 			}
 		}
 	}
@@ -2775,7 +1893,7 @@ float CG_DrawVehicleShields( const menuDef_t	*menuHUD, const centity_t *veh )
 	}
 
 	maxShields = veh->m_pVehicle->m_pVehicleInfo->shields;
-	currValue = cg->predictedVehicleState.stats[STAT_ARMOR];
+	currValue = cg.predictedVehicleState.stats[STAT_ARMOR];
 	percShields = (float)currValue/(float)maxShields;
 	// Print all the tics of the shield graphic
 	// Look at the amount of health left and show only as much of the graphic as there is health.
@@ -2843,7 +1961,7 @@ void CG_DrawVehicleAmmo( const menuDef_t *menuHUD, const centity_t *veh )
 	}
 
 	maxAmmo = veh->m_pVehicle->m_pVehicleInfo->weapon[0].ammoMax;
-	currValue = cg->predictedVehicleState.ammo[0];
+	currValue = cg.predictedVehicleState.ammo[0];
 	
 	inc = (float) maxAmmo / MAX_VHUD_AMMO_TICS;
 	for (i=1;i<=MAX_VHUD_AMMO_TICS;i++)
@@ -2857,11 +1975,11 @@ void CG_DrawVehicleAmmo( const menuDef_t *menuHUD, const centity_t *veh )
 			continue;
 		}
 
-		if ( cg_vehicleAmmoWarningTime > cg->time 
+		if ( cg_vehicleAmmoWarningTime > cg.time 
 			&& cg_vehicleAmmoWarning == 0 )
 		{
 			memcpy(calcColor, g_color_table[ColorIndex(COLOR_RED)], sizeof(vec4_t));
-			calcColor[3] = sin(cg->time*0.005)*0.5f+0.5f;
+			calcColor[3] = sin(cg.time*0.005)*0.5f+0.5f;
 		}
 		else
 		{
@@ -2914,7 +2032,7 @@ void CG_DrawVehicleAmmoUpper( const menuDef_t *menuHUD, const centity_t *veh )
 	}
 
 	maxAmmo = veh->m_pVehicle->m_pVehicleInfo->weapon[0].ammoMax;
-	currValue = cg->predictedVehicleState.ammo[0];
+	currValue = cg.predictedVehicleState.ammo[0];
 
 	inc = (float) maxAmmo / MAX_VHUD_AMMO_TICS;
 	for (i=1;i<MAX_VHUD_AMMO_TICS;i++)
@@ -2928,11 +2046,11 @@ void CG_DrawVehicleAmmoUpper( const menuDef_t *menuHUD, const centity_t *veh )
 			continue;
 		}
 
-		if ( cg_vehicleAmmoWarningTime > cg->time 
+		if ( cg_vehicleAmmoWarningTime > cg.time 
 			&& cg_vehicleAmmoWarning == 0 )
 		{
 			memcpy(calcColor, g_color_table[ColorIndex(COLOR_RED)], sizeof(vec4_t));
-			calcColor[3] = sin(cg->time*0.005)*0.5f+0.5f;
+			calcColor[3] = sin(cg.time*0.005)*0.5f+0.5f;
 		}
 		else
 		{
@@ -2986,7 +2104,7 @@ void CG_DrawVehicleAmmoLower( const menuDef_t *menuHUD, const centity_t *veh )
 	}
 
 	maxAmmo = veh->m_pVehicle->m_pVehicleInfo->weapon[1].ammoMax;
-	currValue = cg->predictedVehicleState.ammo[1];
+	currValue = cg.predictedVehicleState.ammo[1];
 
 	inc = (float) maxAmmo / MAX_VHUD_AMMO_TICS;
 	for (i=1;i<MAX_VHUD_AMMO_TICS;i++)
@@ -3000,11 +2118,11 @@ void CG_DrawVehicleAmmoLower( const menuDef_t *menuHUD, const centity_t *veh )
 			continue;
 		}
 
-		if ( cg_vehicleAmmoWarningTime > cg->time 
+		if ( cg_vehicleAmmoWarningTime > cg.time 
 			&& cg_vehicleAmmoWarning == 1 )
 		{
 			memcpy(calcColor, g_color_table[ColorIndex(COLOR_RED)], sizeof(vec4_t));
-			calcColor[3] = sin(cg->time*0.005)*0.5f+0.5f;
+			calcColor[3] = sin(cg.time*0.005)*0.5f+0.5f;
 		}
 		else
 		{
@@ -3045,7 +2163,7 @@ void CG_DrawVehicleTurboRecharge( const menuDef_t	*menuHUD, const centity_t *veh
 	if (item)
 	{
 		float percent=0.0f;
-		int diff = ( cg->time - veh->m_pVehicle->m_iTurboTime );
+		int diff = ( cg.time - veh->m_pVehicle->m_iTurboTime );
 
 		height = item->window.rect.h;
 
@@ -3089,7 +2207,7 @@ void CG_DrawVehicleWeaponsLinked( const menuDef_t	*menuHUD, const centity_t *veh
 	{
 //MP way:
 		//must get sent over network
-		if ( cg->predictedVehicleState.vehWeaponsLinked )
+		if ( cg.predictedVehicleState.vehWeaponsLinked )
 		{
 			drawLink = qtrue;
 		}
@@ -3107,7 +2225,7 @@ void CG_DrawVehicleWeaponsLinked( const menuDef_t	*menuHUD, const centity_t *veh
 	if ( cg_drawLink != drawLink )
 	{//state changed, play sound
 		cg_drawLink = drawLink;
-		trap_S_StartSound (NULL, cg->predictedPlayerState.clientNum, CHAN_LOCAL, trap_S_RegisterSound( "sound/vehicles/common/linkweaps.wav" ) );
+		trap_S_StartSound (NULL, cg.predictedPlayerState.clientNum, CHAN_LOCAL, trap_S_RegisterSound( "sound/vehicles/common/linkweaps.wav" ) );
 	}
 
 	if ( drawLink )
@@ -3152,7 +2270,7 @@ void CG_DrawVehicleSpeed( const menuDef_t	*menuHUD, const centity_t *veh )
 	}
 
 	maxSpeed = veh->m_pVehicle->m_pVehicleInfo->speedMax;
-	currValue = cg->predictedVehicleState.speed;
+	currValue = cg.predictedVehicleState.speed;
 
 
 	// Print all the tics of the shield graphic
@@ -3170,26 +2288,26 @@ void CG_DrawVehicleSpeed( const menuDef_t	*menuHUD, const centity_t *veh )
 			continue;
 		}
 
-		if ( cg->time > veh->m_pVehicle->m_iTurboTime )
+		if ( cg.time > veh->m_pVehicle->m_iTurboTime )
 		{
 			memcpy(calcColor, item->window.foreColor, sizeof(vec4_t));
 		}
 		else	// In turbo mode
 		{
-			if (cg->VHUDFlashTime < cg->time)	
+			if (cg.VHUDFlashTime < cg.time)	
 			{
-				cg->VHUDFlashTime = cg->time + 200;
-				if (cg->VHUDTurboFlag)
+				cg.VHUDFlashTime = cg.time + 200;
+				if (cg.VHUDTurboFlag)
 				{
-					cg->VHUDTurboFlag = qfalse;
+					cg.VHUDTurboFlag = qfalse;
 				}
 				else
 				{
-					cg->VHUDTurboFlag = qtrue;
+					cg.VHUDTurboFlag = qtrue;
 				}
 			}
 
-			if (cg->VHUDTurboFlag)
+			if (cg.VHUDTurboFlag)
 			{
 				memcpy(calcColor, colorTable[CT_LTRED1], sizeof(vec4_t));
 			}
@@ -3232,7 +2350,7 @@ void CG_DrawVehicleArmor( const menuDef_t *menuHUD, const centity_t *veh )
 	itemDef_t	*item;
 
 	maxArmor = veh->m_pVehicle->m_pVehicleInfo->armor;
-	currValue = cg->predictedVehicleState.stats[STAT_HEALTH];
+	currValue = cg.predictedVehicleState.stats[STAT_HEALTH];
 
 	item = Menu_FindItemByName( (menuDef_t	*) menuHUD, "shieldbackground");
 
@@ -3392,10 +2510,10 @@ void CG_DrawVehicleDamageHUD(const centity_t *veh,int brokenLimbs,float percShie
 	{
 		if (veh->m_pVehicle->m_pVehicleInfo->dmgIndicBackgroundHandle)
 		{
-			if ( veh->damageTime > cg->time )
+			if ( veh->damageTime > cg.time )
 			{//ship shields currently taking damage
 				//NOTE: cent->damageAngle can be accessed to get the direction from the ship origin to the impact point (in 3-D space)
-				float perc = 1.0f - ((veh->damageTime - cg->time) / 2000.0f/*MIN_SHIELD_TIME*/);
+				float perc = 1.0f - ((veh->damageTime - cg.time) / 2000.0f/*MIN_SHIELD_TIME*/);
 				if ( perc < 0.0f )
 				{
 					perc = 0.0f;
@@ -3478,7 +2596,7 @@ qboolean CG_DrawVehicleHud( const centity_t *cent )
 		return qtrue;	// Draw player HUD
 	}
 
-	ps = &cg->predictedPlayerState;
+	ps = &cg.predictedPlayerState;
 
 	if (!ps || !(ps->m_iVehicleNum))
 	{
@@ -3557,7 +2675,7 @@ qboolean CG_DrawVehicleHud( const centity_t *cent )
 	// If he's hidden, he must be in a vehicle
 	if (veh->m_pVehicle->m_pVehicleInfo->hideRider)
 	{
-		CG_DrawVehicleDamageHUD(veh,cg->predictedVehicleState.brokenLimbs,shieldPerc,"vehicledamagehud",1.0f);
+		CG_DrawVehicleDamageHUD(veh,cg.predictedVehicleState.brokenLimbs,shieldPerc,"vehicledamagehud",1.0f);
 
 		// Has he targeted an enemy?
 		if (CG_CheckTargetVehicle( &veh, &alpha ))
@@ -3591,13 +2709,13 @@ static void CG_DrawStats( void )
 		return;
 	}
 */
-	cent = &cg_entities[cg->snap->ps.clientNum];
-/*	ps = &cg->snap->ps;
+	cent = &cg_entities[cg.snap->ps.clientNum];
+/*	ps = &cg.snap->ps;
 
 	VectorClear( angles );
 
 	// Do start
-	if (!cg->interfaceStartupDone)
+	if (!cg.interfaceStartupDone)
 	{
 		CG_InterfaceStartup();
 	}
@@ -3606,7 +2724,7 @@ static void CG_DrawStats( void )
 
 	if ( cent )
 	{
-		ps = &cg->predictedPlayerState;
+		ps = &cg.predictedPlayerState;
 
 		if ( (ps->m_iVehicleNum ) )	// In a vehicle???
 		{
@@ -3635,33 +2753,15 @@ static void CG_DrawPickupItem( void ) {
 	int		value;
 	float	*fadeColor;
 
-	int xoff = 0, yoff = 20;
-
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue) {
-		if(ClientManager::ActiveClientNum() == 0)
-			yoff = 200;
-		else
-			yoff = 0;
-
-		xoff = 120;
-	}
-
-	if(cg->widescreen)
-		xoff = 40;
-#endif
-
-	value = cg->itemPickup;
+	value = cg.itemPickup;
 	if ( value && cg_items[ value ].icon != -1 ) 
 	{
-		fadeColor = CG_FadeColor( cg->itemPickupTime, 3000 );
+		fadeColor = CG_FadeColor( cg.itemPickupTime, 3000 );
 		if ( fadeColor ) 
 		{
 			CG_RegisterItemVisuals( value );
 			trap_R_SetColor( fadeColor );
-
-			CG_DrawPic( 573 - xoff, 320 - yoff, ICON_SIZE, ICON_SIZE, cg_items[ value ].icon );
-
+			CG_DrawPic( 573, 320, ICON_SIZE, ICON_SIZE, cg_items[ value ].icon );
 			trap_R_SetColor( NULL );
 		}
 	}
@@ -3736,11 +2836,6 @@ static float CG_DrawMiniScoreboard ( float y )
 		Q_strcat ( temp, MAX_QPATH, va(" %s: ", CG_GetStringEdString("MP_INGAME", "BLUE")) );
 		Q_strcat ( temp, MAX_QPATH, cgs.scores2==SCORE_NOT_PRESENT?"-":(va("%i",cgs.scores2)) );
 
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint( 710 - CG_Text_Width ( temp, 0.7f, FONT_MEDIUM ) + xOffset, y, 0.7f, colorWhite, temp, 0, 0, ITEM_TEXTSTYLE_SHADOWEDMORE, FONT_MEDIUM );
-		else
-#endif
 		CG_Text_Paint( 630 - CG_Text_Width ( temp, 0.7f, FONT_MEDIUM ) + xOffset, y, 0.7f, colorWhite, temp, 0, 0, ITEM_TEXTSTYLE_SHADOWEDMORE, FONT_MEDIUM );
 		y += 15;
 	}
@@ -3775,18 +2870,13 @@ static float CG_DrawEnemyInfo ( float y )
 	const char	*title;
 	clientInfo_t	*ci;
 	int xOffset = 0;
-	int ico_size;
 
-	if (!cg->snap)
+	if (!cg.snap)
 	{
 		return y;
 	}
 
-	ico_size = ICON_SIZE;
 #ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-		return y;
-
 	xOffset = -40;
 #endif
 
@@ -3795,7 +2885,7 @@ static float CG_DrawEnemyInfo ( float y )
 		return y;
 	}
 
-	if ( cg->predictedPlayerState.stats[STAT_HEALTH] <= 0 ) 
+	if ( cg.predictedPlayerState.stats[STAT_HEALTH] <= 0 ) 
 	{
 		return y;
 	}
@@ -3818,14 +2908,9 @@ static float CG_DrawEnemyInfo ( float y )
 			title = CG_GetStringEdString("MP_INGAME", "GET_SABER");
 
 
-			size = ico_size * 1.25;
+			size = ICON_SIZE * 1.25;
 			y += 5;
 
-#ifdef _XBOX
-			if(cg->widescreen)
-				CG_DrawPic( 720 - size - 12 + xOffset, y, size, size, cgs.media.weaponIcons[WP_SABER] );
-			else
-#endif
 			CG_DrawPic( 640 - size - 12 + xOffset, y, size, size, cgs.media.weaponIcons[WP_SABER] );
 
 			y += size;
@@ -3835,34 +2920,29 @@ static float CG_DrawEnemyInfo ( float y )
 			y += 15;
 			*/
 
-#ifdef _XBOX
-			if(cg->widescreen)
-				CG_Text_Paint( 710 - CG_Text_Width ( title, 0.7f, FONT_MEDIUM ) + xOffset, y, 0.7f, colorWhite, title, 0, 0, 0, FONT_MEDIUM );
-			else
-#endif
 			CG_Text_Paint( 630 - CG_Text_Width ( title, 0.7f, FONT_MEDIUM ) + xOffset, y, 0.7f, colorWhite, title, 0, 0, 0, FONT_MEDIUM );
 
 			return y + BIGCHAR_HEIGHT + 2;
 		}
 	}
-	else if ( cg->snap->ps.duelInProgress )
+	else if ( cg.snap->ps.duelInProgress )
 	{
 //		title = "Dueling";
 		title = CG_GetStringEdString("MP_INGAME", "DUELING");
-		clientNum = cg->snap->ps.duelIndex;
+		clientNum = cg.snap->ps.duelIndex;
 	}
-	else if ( cgs.gametype == GT_DUEL && cgs.clientinfo[cg->snap->ps.clientNum].team != TEAM_SPECTATOR)
+	else if ( cgs.gametype == GT_DUEL && cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR)
 	{
 		title = CG_GetStringEdString("MP_INGAME", "DUELING");
-		if (cg->snap->ps.clientNum == cgs.duelist1)
+		if (cg.snap->ps.clientNum == cgs.duelist1)
 		{
 			clientNum = cgs.duelist2; //if power duel, should actually draw both duelists 2 and 3 I guess
 		}
-		else if (cg->snap->ps.clientNum == cgs.duelist2)
+		else if (cg.snap->ps.clientNum == cgs.duelist2)
 		{
 			clientNum = cgs.duelist1;
 		}
-		else if (cg->snap->ps.clientNum == cgs.duelist3)
+		else if (cg.snap->ps.clientNum == cgs.duelist3)
 		{
 			clientNum = cgs.duelist1;
 		}
@@ -3875,16 +2955,16 @@ static float CG_DrawEnemyInfo ( float y )
 	{
 		/*
 		title = "Attacker";
-		clientNum = cg->predictedPlayerState.persistant[PERS_ATTACKER];
+		clientNum = cg.predictedPlayerState.persistant[PERS_ATTACKER];
 
-		if ( clientNum < 0 || clientNum >= MAX_CLIENTS || clientNum == cg->snap->ps.clientNum ) 
+		if ( clientNum < 0 || clientNum >= MAX_CLIENTS || clientNum == cg.snap->ps.clientNum ) 
 		{
 			return y;
 		}
 
-		if ( cg->time - cg->attackerTime > ATTACKER_HEAD_TIME ) 
+		if ( cg.time - cg.attackerTime > ATTACKER_HEAD_TIME ) 
 		{
-			cg->attackerTime = 0;
+			cg.attackerTime = 0;
 			return y;
 		}
 		*/
@@ -3910,55 +2990,35 @@ static float CG_DrawEnemyInfo ( float y )
 		clientNum = cgs.duelWinner;
 	}
 
-	ci = &cgs.clientinfo[ clientNum ];
-
-	if ( !ci )
+	if ( clientNum >= MAX_CLIENTS || !(&cgs.clientinfo[ clientNum ]) )
 	{
 		return y;
 	}
 
-	size = ico_size * 1.25;
+	ci = &cgs.clientinfo[ clientNum ];
+
+	size = ICON_SIZE * 1.25;
 	y += 5;
 
 	if ( ci->modelIcon )
 	{
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_DrawPic( 720 - size - 5 + xOffset, y, size, size, ci->modelIcon );
-		else
-#endif
 		CG_DrawPic( 640 - size - 5 + xOffset, y, size, size, ci->modelIcon );
 	}
 
 	y += size;
 
 //	CG_Text_Paint( 630 - CG_Text_Width ( ci->name, 0.7f, FONT_MEDIUM ) + xOffset, y, 0.7f, colorWhite, ci->name, 0, 0, 0, FONT_MEDIUM );
-#ifdef _XBOX
-	if(cg->widescreen)
-		CG_Text_Paint( 710 - CG_Text_Width ( ci->name,  0.75f, FONT_MEDIUM ) + xOffset, y, 0.75f, colorWhite, ci->name, 0, 0, 0, FONT_MEDIUM );
-	else
-#endif
-	CG_Text_Paint( 630 - CG_Text_Width ( ci->name,  0.75f, FONT_MEDIUM ) + xOffset, y, 0.75f, colorWhite, ci->name, 0, 0, 0, FONT_MEDIUM );
+	CG_Text_Paint( 630 - CG_Text_Width ( ci->name, 1.0f, FONT_SMALL2 ) + xOffset, y, 1.0f, colorWhite, ci->name, 0, 0, 0, FONT_SMALL2 );
 
 	y += 15;
 //	CG_Text_Paint( 630 - CG_Text_Width ( title, 0.7f, FONT_MEDIUM ) + xOffset, y, 0.7f, colorWhite, title, 0, 0, 0, FONT_MEDIUM );
-#ifdef _XBOX
-	if(cg->widescreen)
-		CG_Text_Paint( 710 - CG_Text_Width ( title,  0.75f, FONT_MEDIUM ) + xOffset, y, 0.75f, colorWhite, title, 0, 0, 0, FONT_MEDIUM );
-	else
-#endif
-	CG_Text_Paint( 630 - CG_Text_Width ( title,  0.75f, FONT_MEDIUM ) + xOffset, y, 0.75f, colorWhite, title, 0, 0, 0, FONT_MEDIUM );
+	CG_Text_Paint( 630 - CG_Text_Width ( title, 1.0f, FONT_SMALL2 ) + xOffset, y, 1.0f, colorWhite, title, 0, 0, 0, FONT_SMALL2 );
 
-	if ( (cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL) && cgs.clientinfo[cg->snap->ps.clientNum].team != TEAM_SPECTATOR)
+	if ( (cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL) && cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR)
 	{//also print their score
 		char text[1024];
 		y += 15;
 		Com_sprintf(text, sizeof(text), "%i/%i", cgs.clientinfo[clientNum].score, cgs.fraglimit );
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint( 710 - CG_Text_Width ( text, 0.7f, FONT_MEDIUM ) + xOffset, y, 0.7f, colorWhite, text, 0, 0, 0, FONT_MEDIUM );
-		else
-#endif
 		CG_Text_Paint( 630 - CG_Text_Width ( text, 0.7f, FONT_MEDIUM ) + xOffset, y, 0.7f, colorWhite, text, 0, 0, 0, FONT_MEDIUM );
 	}
 
@@ -3968,20 +3028,10 @@ static float CG_DrawEnemyInfo ( float y )
 		y += 15;
 		if ( cgs.duelist1 == clientNum )
 		{
-#ifdef _XBOX
-			if(cg->widescreen)
-				CG_DrawDuelistHealth ( 720 - size - 5 + xOffset, y, 64, 8, 1 );
-			else
-#endif
 			CG_DrawDuelistHealth ( 640 - size - 5 + xOffset, y, 64, 8, 1 );
 		}
 		else if ( cgs.duelist2 == clientNum )
 		{
-#ifdef _XBOX
-			if(cg->widescreen)
-				CG_DrawDuelistHealth ( 720 - size - 5 + xOffset, y, 64, 8, 2 );
-			else
-#endif
 			CG_DrawDuelistHealth ( 640 - size - 5 + xOffset, y, 64, 8, 2 );
 		}
 	}
@@ -3991,12 +3041,34 @@ static float CG_DrawEnemyInfo ( float y )
 
 /*
 ==================
+CG_DrawSnapshot
+==================
+*/
+static float CG_DrawSnapshot( float y ) {
+	char		*s;
+	int			w;
+	int			xOffset = 0;
+
+#ifdef _XBOX
+	xOffset = -40;
+#endif
+
+	s = va( "time:%i snap:%i cmd:%i", cg.snap->serverTime, 
+		cg.latestSnapshotNum, cgs.serverCommandSequence );
+	w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
+
+	CG_DrawBigString( 635 - w + xOffset, y + 2, s, 1.0F);
+
+	return y + BIGCHAR_HEIGHT + 4;
+}
+
+/*
+==================
 CG_DrawFPS
 ==================
 */
 #define	FPS_FRAMES	16
-static float CG_DrawFPS( float y )
-{
+static float CG_DrawFPS( float y ) {
 	char		*s;
 	int			w;
 	static unsigned short previousTimes[FPS_FRAMES];
@@ -4004,7 +3076,12 @@ static float CG_DrawFPS( float y )
 	static int	previous, lastupdate;
 	int		t, i, fps, total;
 	unsigned short frameTime;
+#ifdef _XBOX
 	const int		xOffset = -40;
+#else
+	const int		xOffset = 0;
+#endif
+
 
 	// don't use serverTime, because that will be drifting to
 	// correct for internet lag changes, timescales, timedemos, etc
@@ -4028,11 +3105,11 @@ static float CG_DrawFPS( float y )
 	fps = 1000 * FPS_FRAMES / total;
 
 	s = va( "%ifps", fps );
-	w = RE_Font_StrLenPixels( s, 1, 1.0f );
+	w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
 
-	RE_Font_DrawString( 635 - w + xOffset, y + 2, s, g_color_table[7], 1, -1, 1.0f );
+	CG_DrawBigString( 635 - w + xOffset, y + 2, s, 1.0F);
 
-	return y + RE_Font_HeightPixels( 1, 1.0f ) + 4;
+	return y + BIGCHAR_HEIGHT + 4;
 }
 
 // nmckenzie: DUEL_HEALTH
@@ -4099,11 +3176,6 @@ static int impactSoundDebounceTime = 0;
 #define	RADAR_ASTEROID_RANGE				10000.0f
 #define	RADAR_MIN_ASTEROID_SURF_WARN_DIST	1200.0f
 
-#ifdef _XBOX
-#define SPLITSCREEN_RADAR_RADIUS	45
-#define SPLITSCREEN_RADAR_X			(590 - SPLITSCREEN_RADAR_RADIUS)
-#endif
-
 float CG_DrawRadar ( float y )
 {
 	vec4_t			color;
@@ -4117,7 +3189,7 @@ float CG_DrawRadar ( float y )
 	float			zScale;
 	int				xOffset = 0;
 
-	if (!cg->snap)
+	if (!cg.snap)
 	{
 		return y;
 	}
@@ -4127,17 +3199,17 @@ float CG_DrawRadar ( float y )
 #endif
 
 	// Make sure the radar should be showing
-	if ( cg->snap->ps.stats[STAT_HEALTH] <= 0 )
+	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 )
 	{
 		return y;
 	}
 
-	if ( (cg->predictedPlayerState.pm_flags & PMF_FOLLOW) || cg->predictedPlayerState.persistant[PERS_TEAM] == TEAM_SPECTATOR )
+	if ( (cg.predictedPlayerState.pm_flags & PMF_FOLLOW) || cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_SPECTATOR )
 	{
 		return y;
 	}
 
-	local = &cgs.clientinfo[ cg->snap->ps.clientNum ];
+	local = &cgs.clientinfo[ cg.snap->ps.clientNum ];
 	if ( !local->infoValid )
 	{
 		return y;
@@ -4147,30 +3219,14 @@ float CG_DrawRadar ( float y )
 	color[0] = color[1] = color[2] = 1.0f;
 	color[3] = 0.6f;
 	trap_R_SetColor ( color );
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue) {
-		y -= 15;
-		if(cg->widescreen)
-			CG_DrawPic( SPLITSCREEN_RADAR_X + xOffset + 80, y, SPLITSCREEN_RADAR_RADIUS*2, SPLITSCREEN_RADAR_RADIUS*2, cgs.media.radarShader );
-		else
-            CG_DrawPic( SPLITSCREEN_RADAR_X + xOffset, y, SPLITSCREEN_RADAR_RADIUS*2, SPLITSCREEN_RADAR_RADIUS*2, cgs.media.radarShader );
-	}
-	else {
-		if(cg->widescreen)
-			CG_DrawPic( RADAR_X + xOffset + 80, y, RADAR_RADIUS*2, RADAR_RADIUS*2, cgs.media.radarShader );
-		else
-#endif
 	CG_DrawPic( RADAR_X + xOffset, y, RADAR_RADIUS*2, RADAR_RADIUS*2, cgs.media.radarShader );
-#ifdef _XBOX
-	}
-#endif
 
 	//Always green for your own team.
 	VectorCopy ( g_color_table[ColorIndex(COLOR_GREEN)], teamColor );
 	teamColor[3] = 1.0f;
 
 	// Draw all of the radar entities.  Draw them backwards so players are drawn last
-	for ( i = cg->radarEntityCount -1 ; i >= 0 ; i-- ) 
+	for ( i = cg.radarEntityCount -1 ; i >= 0 ; i-- ) 
 	{	
 		vec3_t		dirLook;	
 		vec3_t		dirPlayer;
@@ -4180,10 +3236,10 @@ float CG_DrawRadar ( float y )
 		float		distance, actualDist;
 		centity_t*	cent;
 
-		cent = &cg_entities[cg->radarEntities[i]];
+		cent = &cg_entities[cg.radarEntities[i]];
 
 		// Get the distances first
-		VectorSubtract ( cg->predictedPlayerState.origin, cent->lerpOrigin, dirPlayer );		
+		VectorSubtract ( cg.predictedPlayerState.origin, cent->lerpOrigin, dirPlayer );		
 		dirPlayer[2] = 0;
 		actualDist = distance = VectorNormalize ( dirPlayer );
 
@@ -4203,14 +3259,9 @@ float CG_DrawRadar ( float y )
 		}
 
 		distance  = distance / cg_radarRange;
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue)
-			distance *= SPLITSCREEN_RADAR_RADIUS;
-		else
-#endif
 		distance *= RADAR_RADIUS;
 
-		AngleVectors ( cg->predictedPlayerState.viewangles, dirLook, NULL, NULL );
+		AngleVectors ( cg.predictedPlayerState.viewangles, dirLook, NULL, NULL );
 
 		dirLook[2] = 0;
 		anglePlayer = atan2(dirPlayer[0],dirPlayer[1]);		
@@ -4227,27 +3278,17 @@ float CG_DrawRadar ( float y )
 					qhandle_t shader;
 					vec4_t    color;
 
-#ifdef _XBOX
-					if(ClientManager::splitScreenMode == qtrue) {
-						x = (float)SPLITSCREEN_RADAR_X + (float)SPLITSCREEN_RADAR_RADIUS + (float)sin (angle) * distance;
-						ly = y + (float)SPLITSCREEN_RADAR_RADIUS + (float)cos (angle) * distance;
-					}
-					else {
-#endif
 					x = (float)RADAR_X + (float)RADAR_RADIUS + (float)sin (angle) * distance;
 					ly = y + (float)RADAR_RADIUS + (float)cos (angle) * distance;
-#ifdef _XBOX
-					}
-#endif
 
 					arrowBaseScale = 9.0f;
 					shader = 0;
 					zScale = 1.0f;
 
 					//we want to scale the thing up/down based on the relative Z (up/down) positioning
-					if (cent->lerpOrigin[2] > cg->predictedPlayerState.origin[2])
+					if (cent->lerpOrigin[2] > cg.predictedPlayerState.origin[2])
 					{ //higher, scale up (between 16 and 24)
-						float dif = (cent->lerpOrigin[2] - cg->predictedPlayerState.origin[2]);
+						float dif = (cent->lerpOrigin[2] - cg.predictedPlayerState.origin[2]);
 						
 						//max out to 1.5x scale at 512 units above local player's height
 						dif /= 1024.0f;
@@ -4257,9 +3298,9 @@ float CG_DrawRadar ( float y )
 						}
 						zScale += dif;
 					}
-					else if (cent->lerpOrigin[2] < cg->predictedPlayerState.origin[2])
+					else if (cent->lerpOrigin[2] < cg.predictedPlayerState.origin[2])
 					{ //lower, scale down (between 16 and 8)
-						float dif = (cg->predictedPlayerState.origin[2] - cent->lerpOrigin[2]);
+						float dif = (cg.predictedPlayerState.origin[2] - cent->lerpOrigin[2]);
 
 						//half scale at 512 units below local player's height
 						dif /= 1024.0f;
@@ -4296,8 +3337,8 @@ float CG_DrawRadar ( float y )
 							}
 							else
 							{
-								if (cg->snap &&
-									cent->currentState.brokenLimbs == cg->snap->ps.persistant[PERS_TEAM])
+								if (cg.snap &&
+									cent->currentState.brokenLimbs == cg.snap->ps.persistant[PERS_TEAM])
 								{
 									VectorCopy ( g_color_table[ColorIndex(COLOR_RED)], color );
 								}
@@ -4329,36 +3370,21 @@ float CG_DrawRadar ( float y )
 					if ( shader )
 					{
 						// Pulse the alpha if time2 is set.  time2 gets set when the entity takes pain
-						if ( (cent->currentState.time2 && cg->time - cent->currentState.time2 < 5000) ||
+						if ( (cent->currentState.time2 && cg.time - cent->currentState.time2 < 5000) ||
 							(cent->currentState.time2 == 0xFFFFFFFF) )
 						{								
-							if ( (cg->time / 200) & 1 )
+							if ( (cg.time / 200) & 1 )
 							{
-								color[3] = 0.1f + 0.9f * (float) (cg->time % 200) / 200.0f;
+								color[3] = 0.1f + 0.9f * (float) (cg.time % 200) / 200.0f;
 							}
 							else
 							{
-								color[3] = 1.0f - 0.9f * (float) (cg->time % 200) / 200.0f;
+								color[3] = 1.0f - 0.9f * (float) (cg.time % 200) / 200.0f;
 							}					
 						}
 
 						trap_R_SetColor ( color );
-#ifdef _XBOX
-						if(ClientManager::splitScreenMode == qtrue) {
-							if(cg->widescreen)
-								CG_DrawPic ( x - 4 + xOffset + 80, ly - 4, arrowBaseScale, arrowBaseScale, shader );
-							else
-								CG_DrawPic ( x - 4 + xOffset, ly - 4, arrowBaseScale, arrowBaseScale, shader );
-						}
-						else {
-							if(cg->widescreen)
-								CG_DrawPic ( x - 4 + xOffset + 80, ly - 4, arrowBaseScale, arrowBaseScale, shader );
-							else
-#endif
 						CG_DrawPic ( x - 4 + xOffset, ly - 4, arrowBaseScale, arrowBaseScale, shader );
-#ifdef _XBOX
-						}
-#endif
 					}
 				}
 				break;
@@ -4372,26 +3398,16 @@ float CG_DrawRadar ( float y )
 						float  x;
 						float  ly;
 			
-#ifdef _XBOX
-						if(ClientManager::splitScreenMode == qtrue) {
-							x = (float)SPLITSCREEN_RADAR_X + (float)SPLITSCREEN_RADAR_RADIUS + (float)sin (angle) * distance;
-							ly = y + (float)SPLITSCREEN_RADAR_RADIUS + (float)cos (angle) * distance;
-						}
-						else {
-#endif
 						x = (float)RADAR_X + (float)RADAR_RADIUS + (float)sin (angle) * distance;
 						ly = y + (float)RADAR_RADIUS + (float)cos (angle) * distance;
-#ifdef _XBOX
-						}
-#endif
 
 						arrowBaseScale = 9.0f;
 						zScale = 1.0f;
 
 						//we want to scale the thing up/down based on the relative Z (up/down) positioning
-						if (cent->lerpOrigin[2] > cg->predictedPlayerState.origin[2])
+						if (cent->lerpOrigin[2] > cg.predictedPlayerState.origin[2])
 						{ //higher, scale up (between 16 and 24)
-							float dif = (cent->lerpOrigin[2] - cg->predictedPlayerState.origin[2]);
+							float dif = (cent->lerpOrigin[2] - cg.predictedPlayerState.origin[2]);
 							
 							//max out to 1.5x scale at 512 units above local player's height
 							dif /= 4096.0f;
@@ -4401,9 +3417,9 @@ float CG_DrawRadar ( float y )
 							}
 							zScale += dif;
 						}
-						else if (cent->lerpOrigin[2] < cg->predictedPlayerState.origin[2])
+						else if (cent->lerpOrigin[2] < cg.predictedPlayerState.origin[2])
 						{ //lower, scale down (between 16 and 8)
-							float dif = (cg->predictedPlayerState.origin[2] - cent->lerpOrigin[2]);
+							float dif = (cg.predictedPlayerState.origin[2] - cent->lerpOrigin[2]);
 
 							//half scale at 512 units below local player's height
 							dif /= 4096.0f;
@@ -4432,22 +3448,7 @@ float CG_DrawRadar ( float y )
 						{
 							trap_R_SetColor ( NULL );
 						}
-#ifdef _XBOX
-						if(ClientManager::splitScreenMode == qtrue) {
-							if(cg->widescreen)
-								CG_DrawPic ( x - 4 + xOffset + 80, ly - 4, arrowBaseScale, arrowBaseScale, cent->m_pVehicle->m_pVehicleInfo->radarIconHandle );
-							else
-                                CG_DrawPic ( x - 4 + xOffset, ly - 4, arrowBaseScale, arrowBaseScale, cent->m_pVehicle->m_pVehicleInfo->radarIconHandle );
-						}
-						else {
-							if(cg->widescreen)
-								CG_DrawPic ( x - 4 + xOffset + 80, ly - 4, arrowBaseScale, arrowBaseScale, cent->m_pVehicle->m_pVehicleInfo->radarIconHandle );
-							else
-#endif
 						CG_DrawPic ( x - 4 + xOffset, ly - 4, arrowBaseScale, arrowBaseScale, cent->m_pVehicle->m_pVehicleInfo->radarIconHandle );
-#ifdef _XBOX
-						}
-#endif
 					}
 				}
 				break; //maybe do something?
@@ -4455,7 +3456,7 @@ float CG_DrawRadar ( float y )
 			case ET_MOVER:
 				if ( cent->currentState.speed//the mover's size, actually
 					&& actualDist < (cent->currentState.speed+RADAR_ASTEROID_RANGE)
-					&& cg->predictedPlayerState.m_iVehicleNum )
+					&& cg.predictedPlayerState.m_iVehicleNum )
 				{//a mover that's close to me and I'm in a vehicle
 					qboolean mayImpact = qfalse;
 					float surfaceDist = (actualDist-cent->currentState.speed);
@@ -4475,10 +3476,10 @@ float CG_DrawRadar ( float y )
 						for ( predictTime = timeStep; predictTime < 5000; predictTime+=timeStep )
 						{
 							//asteroid dir, speed, size, + my dir & speed...
-							BG_EvaluateTrajectory( &cent->currentState.pos, cg->time+predictTime, asteroidPos );
+							BG_EvaluateTrajectory( &cent->currentState.pos, cg.time+predictTime, asteroidPos );
 							//FIXME: I don't think it's calcing "myPos" correctly
-							AngleVectors( cg->predictedVehicleState.viewangles, moveDir, NULL, NULL );
-							VectorMA( cg->predictedVehicleState.origin, cg->predictedVehicleState.speed*predictTime/1000.0f, moveDir, myPos );
+							AngleVectors( cg.predictedVehicleState.viewangles, moveDir, NULL, NULL );
+							VectorMA( cg.predictedVehicleState.origin, cg.predictedVehicleState.speed*predictTime/1000.0f, moveDir, myPos );
 							newDist = Distance( myPos, asteroidPos );
 							if ( (newDist-cent->currentState.speed) <= RADAR_MIN_ASTEROID_SURF_WARN_DIST )//200.0f )
 							{//heading for an impact within the next 5 seconds
@@ -4497,20 +3498,10 @@ float CG_DrawRadar ( float y )
 						{
 							actualDist = RADAR_ASTEROID_RANGE;
 						}
-#ifdef _XBOX
-						if(ClientManager::splitScreenMode == qtrue) {
-							distance = (actualDist/RADAR_ASTEROID_RANGE)*SPLITSCREEN_RADAR_RADIUS;
-							x = (float)SPLITSCREEN_RADAR_X + (float)SPLITSCREEN_RADAR_RADIUS + (float)sin (angle) * distance;
-							ly = y + (float)SPLITSCREEN_RADAR_RADIUS + (float)cos (angle) * distance;
-						}
-						else {
-#endif
 						distance = (actualDist/RADAR_ASTEROID_RANGE)*RADAR_RADIUS;
+
 						x = (float)RADAR_X + (float)RADAR_RADIUS + (float)sin (angle) * distance;
 						ly = y + (float)RADAR_RADIUS + (float)cos (angle) * distance;
-#ifdef _XBOX
-						}
-#endif
 						
 						if ( asteroidScale > 3.0f )
 						{
@@ -4521,22 +3512,22 @@ float CG_DrawRadar ( float y )
 							asteroidScale = 0.2f;
 						}
 						arrowBaseScale = (9.0f*asteroidScale);
-						if ( impactSoundDebounceTime < cg->time )
+						if ( impactSoundDebounceTime < cg.time )
 						{
 							vec3_t	soundOrg;
 							if ( surfaceDist > RADAR_ASTEROID_RANGE*0.66f )
 							{
-								impactSoundDebounceTime = cg->time + 1000;
+								impactSoundDebounceTime = cg.time + 1000;
 							}
 							else if ( surfaceDist > RADAR_ASTEROID_RANGE/3.0f )
 							{
-								impactSoundDebounceTime = cg->time + 400;
+								impactSoundDebounceTime = cg.time + 400;
 							}
 							else 
 							{
-								impactSoundDebounceTime = cg->time + 100;
+								impactSoundDebounceTime = cg.time + 100;
 							}
-							VectorMA( cg->refdef.vieworg, -500.0f*(surfaceDist/RADAR_ASTEROID_RANGE), dirPlayer, soundOrg );
+							VectorMA( cg.refdef.vieworg, -500.0f*(surfaceDist/RADAR_ASTEROID_RANGE), dirPlayer, soundOrg );
 							trap_S_StartSound( soundOrg, ENTITYNUM_WORLD, CHAN_AUTO, trap_S_RegisterSound( "sound/vehicles/common/impactalarm.wav" ) );
 						}
 						//brighten it the closer it is
@@ -4553,28 +3544,13 @@ float CG_DrawRadar ( float y )
 							asteroidColor[0] = asteroidColor[1] = asteroidColor[2] = 1.0f;
 						}
 						//alpha out the longer it's been since it was considered dangerous
-						if ( (cg->time-impactSoundDebounceTime) > 100 )
+						if ( (cg.time-impactSoundDebounceTime) > 100 )
 						{
-							asteroidColor[3] = (float)((cg->time-impactSoundDebounceTime)-100)/900.0f;
+							asteroidColor[3] = (float)((cg.time-impactSoundDebounceTime)-100)/900.0f;
 						}
 
 						trap_R_SetColor ( asteroidColor );
-#ifdef _XBOX
-						if(ClientManager::splitScreenMode == qtrue) {
-							if(cg->widescreen)
-								CG_DrawPic ( x - 4 + xOffset + 80, ly - 4, arrowBaseScale, arrowBaseScale, trap_R_RegisterShaderNoMip( "gfx/menus/radar/asteroid" ) );
-							else
-                                CG_DrawPic ( x - 4 + xOffset, ly - 4, arrowBaseScale, arrowBaseScale, trap_R_RegisterShaderNoMip( "gfx/menus/radar/asteroid" ) );
-						}
-						else {
-							if(cg->widescreen)
-								CG_DrawPic ( x - 4 + xOffset + 80, ly - 4, arrowBaseScale, arrowBaseScale, trap_R_RegisterShaderNoMip( "gfx/menus/radar/asteroid" ) );
-							else
-#endif
 						CG_DrawPic ( x - 4 + xOffset, ly - 4, arrowBaseScale, arrowBaseScale, trap_R_RegisterShaderNoMip( "gfx/menus/radar/asteroid" ) );
-#ifdef _XBOX
-						}
-#endif
 					}
 				}
 				break;
@@ -4587,44 +3563,34 @@ float CG_DrawRadar ( float y )
 					float  x;
 					float  ly;
 		
-#ifdef _XBOX
-					if(ClientManager::splitScreenMode == qtrue) {
-						x = (float)SPLITSCREEN_RADAR_X + (float)SPLITSCREEN_RADAR_RADIUS + (float)sin (angle) * distance;
-						ly = y + (float)SPLITSCREEN_RADAR_RADIUS + (float)cos (angle) * distance;
-					}
-					else {
-#endif
 					x = (float)RADAR_X + (float)RADAR_RADIUS + (float)sin (angle) * distance;
 					ly = y + (float)RADAR_RADIUS + (float)cos (angle) * distance;
-#ifdef _XBOX
-					}
-#endif
 
 					arrowBaseScale = 3.0f;
-					if ( cg->predictedPlayerState.m_iVehicleNum )
+					if ( cg.predictedPlayerState.m_iVehicleNum )
 					{//I'm in a vehicle
 						//if it's targetting me, then play an alarm sound if I'm in a vehicle
-						if ( cent->currentState.otherEntityNum == cg->predictedPlayerState.clientNum || cent->currentState.otherEntityNum == cg->predictedPlayerState.m_iVehicleNum )
+						if ( cent->currentState.otherEntityNum == cg.predictedPlayerState.clientNum || cent->currentState.otherEntityNum == cg.predictedPlayerState.m_iVehicleNum )
 						{
-							if ( radarLockSoundDebounceTime < cg->time )
+							if ( radarLockSoundDebounceTime < cg.time )
 							{
 								vec3_t	soundOrg;
 								int		alarmSound;
 								if ( actualDist > RADAR_MISSILE_RANGE * 0.66f )
 								{
-									radarLockSoundDebounceTime = cg->time + 1000;
+									radarLockSoundDebounceTime = cg.time + 1000;
 									arrowBaseScale = 3.0f;
 									alarmSound = trap_S_RegisterSound( "sound/vehicles/common/lockalarm1.wav" );
 								}
 								else if ( actualDist > RADAR_MISSILE_RANGE/3.0f )
 								{
-									radarLockSoundDebounceTime = cg->time + 500;
+									radarLockSoundDebounceTime = cg.time + 500;
 									arrowBaseScale = 6.0f;
 									alarmSound = trap_S_RegisterSound( "sound/vehicles/common/lockalarm2.wav" );
 								}
 								else
 								{
-									radarLockSoundDebounceTime = cg->time + 250;
+									radarLockSoundDebounceTime = cg.time + 250;
 									arrowBaseScale = 9.0f;
 									alarmSound = trap_S_RegisterSound( "sound/vehicles/common/lockalarm3.wav" );
 								}
@@ -4632,7 +3598,7 @@ float CG_DrawRadar ( float y )
 								{
 									actualDist = RADAR_MISSILE_RANGE;
 								}
-								VectorMA( cg->refdef.vieworg, -500.0f*(actualDist/RADAR_MISSILE_RANGE), dirPlayer, soundOrg );
+								VectorMA( cg.refdef.vieworg, -500.0f*(actualDist/RADAR_MISSILE_RANGE), dirPlayer, soundOrg );
 								trap_S_StartSound( soundOrg, ENTITYNUM_WORLD, CHAN_AUTO, alarmSound );
 							}
 						}
@@ -4640,9 +3606,9 @@ float CG_DrawRadar ( float y )
 					zScale = 1.0f;
 
 					//we want to scale the thing up/down based on the relative Z (up/down) positioning
-					if (cent->lerpOrigin[2] > cg->predictedPlayerState.origin[2])
+					if (cent->lerpOrigin[2] > cg.predictedPlayerState.origin[2])
 					{ //higher, scale up (between 16 and 24)
-						float dif = (cent->lerpOrigin[2] - cg->predictedPlayerState.origin[2]);
+						float dif = (cent->lerpOrigin[2] - cg.predictedPlayerState.origin[2]);
 						
 						//max out to 1.5x scale at 512 units above local player's height
 						dif /= 1024.0f;
@@ -4652,9 +3618,9 @@ float CG_DrawRadar ( float y )
 						}
 						zScale += dif;
 					}
-					else if (cent->lerpOrigin[2] < cg->predictedPlayerState.origin[2])
+					else if (cent->lerpOrigin[2] < cg.predictedPlayerState.origin[2])
 					{ //lower, scale down (between 16 and 8)
-						float dif = (cg->predictedPlayerState.origin[2] - cent->lerpOrigin[2]);
+						float dif = (cg.predictedPlayerState.origin[2] - cent->lerpOrigin[2]);
 
 						//half scale at 512 units below local player's height
 						dif /= 1024.0f;
@@ -4686,22 +3652,7 @@ float CG_DrawRadar ( float y )
 					{
 						trap_R_SetColor ( NULL );
 					}
-#ifdef _XBOX
-					if(ClientManager::splitScreenMode == qtrue) {
-						if(cg->widescreen)
-							CG_DrawPic ( x - 4 + xOffset + 80, ly - 4, arrowBaseScale, arrowBaseScale, cgs.media.mAutomapRocketIcon );
-						else
-                            CG_DrawPic ( x - 4 + xOffset, ly - 4, arrowBaseScale, arrowBaseScale, cgs.media.mAutomapRocketIcon );
-					}
-					else {
-						if(cg->widescreen)
-							CG_DrawPic ( x - 4 + xOffset + 80, ly - 4, arrowBaseScale, arrowBaseScale, cgs.media.mAutomapRocketIcon );
-						else
-#endif
 					CG_DrawPic ( x - 4 + xOffset, ly - 4, arrowBaseScale, arrowBaseScale, cgs.media.mAutomapRocketIcon );
-#ifdef _XBOX
-					}
-#endif
 				}
 				break;
 
@@ -4723,9 +3674,9 @@ float CG_DrawRadar ( float y )
 				zScale = 1.0f;
 
 				// Pulse the radar icon after a voice message
-				if ( cent->vChatTime + 2000 > cg->time )
+				if ( cent->vChatTime + 2000 > cg.time )
 				{
-					float f = (cent->vChatTime + 2000 - cg->time) / 3000.0f;
+					float f = (cent->vChatTime + 2000 - cg.time) / 3000.0f;
 					arrowBaseScale = 16.0f + 4.0f * f;
 					color[0] = teamColor[0] + (1.0f - teamColor[0]) * f;
 					color[1] = teamColor[1] + (1.0f - teamColor[1]) * f;
@@ -4735,9 +3686,9 @@ float CG_DrawRadar ( float y )
 				trap_R_SetColor ( color );
 
 				//we want to scale the thing up/down based on the relative Z (up/down) positioning
-				if (cent->lerpOrigin[2] > cg->predictedPlayerState.origin[2])
+				if (cent->lerpOrigin[2] > cg.predictedPlayerState.origin[2])
 				{ //higher, scale up (between 16 and 32)
-					float dif = (cent->lerpOrigin[2] - cg->predictedPlayerState.origin[2]);
+					float dif = (cent->lerpOrigin[2] - cg.predictedPlayerState.origin[2]);
 					
 					//max out to 2x scale at 1024 units above local player's height
 					dif /= 1024.0f;
@@ -4747,9 +3698,9 @@ float CG_DrawRadar ( float y )
 					}
 					zScale += dif;
 				}
-                else if (cent->lerpOrigin[2] < cg->predictedPlayerState.origin[2])
+                else if (cent->lerpOrigin[2] < cg.predictedPlayerState.origin[2])
 				{ //lower, scale down (between 16 and 8)
-					float dif = (cg->predictedPlayerState.origin[2] - cent->lerpOrigin[2]);
+					float dif = (cg.predictedPlayerState.origin[2] - cent->lerpOrigin[2]);
 
 					//half scale at 512 units below local player's height
 					dif /= 1024.0f;
@@ -4761,37 +3712,14 @@ float CG_DrawRadar ( float y )
 				}
 
 				arrowBaseScale *= zScale;
+
 				arrow_w = arrowBaseScale * RADAR_RADIUS / 128;
 				arrow_h = arrowBaseScale * RADAR_RADIUS / 128;
 
-#ifdef _XBOX
-				if(ClientManager::splitScreenMode == qtrue) {
-					if(cg->widescreen)
-						CG_DrawRotatePic2( SPLITSCREEN_RADAR_X + SPLITSCREEN_RADAR_RADIUS + sin (angle) * distance + xOffset + 80,
-								   (y + SPLITSCREEN_RADAR_RADIUS + cos (angle) * distance), 
-								   arrow_w, arrow_h, 
-								   (360 - cent->lerpAngles[YAW]) + cg->predictedPlayerState.viewangles[YAW], cgs.media.mAutomapPlayerIcon );
-					else
-                        CG_DrawRotatePic2( SPLITSCREEN_RADAR_X + SPLITSCREEN_RADAR_RADIUS + sin (angle) * distance + xOffset,
-								   (y + SPLITSCREEN_RADAR_RADIUS + cos (angle) * distance), 
-								   arrow_w, arrow_h, 
-								   (360 - cent->lerpAngles[YAW]) + cg->predictedPlayerState.viewangles[YAW], cgs.media.mAutomapPlayerIcon );
-				}
-				else {
-					if(cg->widescreen)
-						CG_DrawRotatePic2( RADAR_X + RADAR_RADIUS + sin (angle) * distance + xOffset + 80,
-								   y + RADAR_RADIUS + cos (angle) * distance, 
-								   arrow_w, arrow_h, 
-								   (360 - cent->lerpAngles[YAW]) + cg->predictedPlayerState.viewangles[YAW], cgs.media.mAutomapPlayerIcon );
-					else
-#endif
 				CG_DrawRotatePic2( RADAR_X + RADAR_RADIUS + sin (angle) * distance + xOffset,
 								   y + RADAR_RADIUS + cos (angle) * distance, 
 								   arrow_w, arrow_h, 
-								   (360 - cent->lerpAngles[YAW]) + cg->predictedPlayerState.viewangles[YAW], cgs.media.mAutomapPlayerIcon );
-#ifdef _XBOX
-				}
-#endif
+								   (360 - cent->lerpAngles[YAW]) + cg.predictedPlayerState.viewangles[YAW], cgs.media.mAutomapPlayerIcon );
 				break;
 			}
 		}
@@ -4803,32 +3731,9 @@ float CG_DrawRadar ( float y )
 	arrow_h = arrowBaseScale * RADAR_RADIUS / 128;
 
 	trap_R_SetColor ( colorWhite );
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue) {
-		if(cg->widescreen)
-			CG_DrawRotatePic2( SPLITSCREEN_RADAR_X + SPLITSCREEN_RADAR_RADIUS + xOffset + 80, y + SPLITSCREEN_RADAR_RADIUS, arrow_w, arrow_h, 
-					   0, cgs.media.mAutomapPlayerIcon );
-		else
-            CG_DrawRotatePic2( SPLITSCREEN_RADAR_X + SPLITSCREEN_RADAR_RADIUS + xOffset, y + SPLITSCREEN_RADAR_RADIUS, arrow_w, arrow_h, 
-					   0, cgs.media.mAutomapPlayerIcon );
-	}
-	else {
-		if(cg->widescreen)
-			CG_DrawRotatePic2( RADAR_X + RADAR_RADIUS + xOffset + 80, y + RADAR_RADIUS, arrow_w, arrow_h, 
-					   0, cgs.media.mAutomapPlayerIcon );
-		else
-#endif
 	CG_DrawRotatePic2( RADAR_X + RADAR_RADIUS + xOffset, y + RADAR_RADIUS, arrow_w, arrow_h, 
 					   0, cgs.media.mAutomapPlayerIcon );
-#ifdef _XBOX
-	}
-#endif
 
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-		return y+(SPLITSCREEN_RADAR_RADIUS*2);
-	else
-#endif
 	return y+(RADAR_RADIUS*2);
 }
 
@@ -4846,14 +3751,9 @@ static float CG_DrawTimer( float y ) {
 
 #ifdef _XBOX
 	xOffset = -40;
-
-	if (ClientManager::ActiveClientNum() != 0)
-	{
-		return y;
-	}
 #endif
 
-	msec = cg->time - cgs.levelStartTime;
+	msec = cg.time - cgs.levelStartTime;
 
 	seconds = msec / 1000;
 	mins = seconds / 60;
@@ -4862,12 +3762,192 @@ static float CG_DrawTimer( float y ) {
 	seconds -= tens * 10;
 
 	s = va( "%i:%i%i", mins, tens, seconds );
-	w = RE_Font_StrLenPixels( s, 1, 1.0f );
+	w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
 
-	RE_Font_DrawString( 635 - w + xOffset, y + 2, s, g_color_table[7], 1, -1, 1.0f );
+	CG_DrawBigString( 635 - w + xOffset, y + 2, s, 1.0F);
 
-	return y + RE_Font_HeightPixels( 1, 1.0f ) + 4;
+	return y + BIGCHAR_HEIGHT + 4;
 }
+
+
+/*
+=================
+CG_DrawTeamOverlay
+=================
+*/
+extern const char *CG_GetLocationString(const char *loc); //cg_main.c
+static float CG_DrawTeamOverlay( float y, qboolean right, qboolean upper ) {
+	int x, w, h, xx;
+	int i, j, len;
+	const char *p;
+	vec4_t		hcolor;
+	int pwidth, lwidth;
+	int plyrs;
+	char st[16];
+	clientInfo_t *ci;
+	gitem_t	*item;
+	int ret_y, count;
+	int xOffset = 0;
+
+#ifdef _XBOX
+	xOffset = -40;
+#endif
+
+	if ( !cg_drawTeamOverlay.integer ) {
+		return y;
+	}
+
+	if ( cg.snap->ps.persistant[PERS_TEAM] != TEAM_RED && cg.snap->ps.persistant[PERS_TEAM] != TEAM_BLUE ) {
+		return y; // Not on any team
+	}
+
+	plyrs = 0;
+
+	// max player name width
+	pwidth = 0;
+	count = (numSortedTeamPlayers > 8) ? 8 : numSortedTeamPlayers;
+	for (i = 0; i < count; i++) {
+		ci = cgs.clientinfo + sortedTeamPlayers[i];
+		if ( ci->infoValid && ci->team == cg.snap->ps.persistant[PERS_TEAM]) {
+			plyrs++;
+			len = CG_DrawStrlen(ci->name);
+			if (len > pwidth)
+				pwidth = len;
+		}
+	}
+
+	if (!plyrs)
+		return y;
+
+	if (pwidth > TEAM_OVERLAY_MAXNAME_WIDTH)
+		pwidth = TEAM_OVERLAY_MAXNAME_WIDTH;
+
+	// max location name width
+	lwidth = 0;
+	for (i = 1; i < MAX_LOCATIONS; i++) {
+		p = CG_GetLocationString(CG_ConfigString(CS_LOCATIONS+i));
+		if (p && *p) {
+			len = CG_DrawStrlen(p);
+			if (len > lwidth)
+				lwidth = len;
+		}
+	}
+
+	if (lwidth > TEAM_OVERLAY_MAXLOCATION_WIDTH)
+		lwidth = TEAM_OVERLAY_MAXLOCATION_WIDTH;
+
+	w = (pwidth + lwidth + 4 + 7) * TINYCHAR_WIDTH;
+
+	if ( right )
+		x = 640 - w;
+	else
+		x = 0;
+
+	h = plyrs * TINYCHAR_HEIGHT;
+
+	if ( upper ) {
+		ret_y = y + h;
+	} else {
+		y -= h;
+		ret_y = y;
+	}
+
+	if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_RED ) {
+		hcolor[0] = 1.0f;
+		hcolor[1] = 0.0f;
+		hcolor[2] = 0.0f;
+		hcolor[3] = 0.33f;
+	} else { // if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_BLUE )
+		hcolor[0] = 0.0f;
+		hcolor[1] = 0.0f;
+		hcolor[2] = 1.0f;
+		hcolor[3] = 0.33f;
+	}
+	trap_R_SetColor( hcolor );
+	CG_DrawPic( x + xOffset, y, w, h, cgs.media.teamStatusBar );
+	trap_R_SetColor( NULL );
+
+	for (i = 0; i < count; i++) {
+		ci = cgs.clientinfo + sortedTeamPlayers[i];
+		if ( ci->infoValid && ci->team == cg.snap->ps.persistant[PERS_TEAM]) {
+
+			hcolor[0] = hcolor[1] = hcolor[2] = hcolor[3] = 1.0;
+
+			xx = x + TINYCHAR_WIDTH;
+
+			CG_DrawStringExt( xx + xOffset, y,
+				ci->name, hcolor, qfalse, qfalse,
+				TINYCHAR_WIDTH, TINYCHAR_HEIGHT, TEAM_OVERLAY_MAXNAME_WIDTH);
+
+			if (lwidth) {
+				p = CG_GetLocationString(CG_ConfigString(CS_LOCATIONS+ci->location));
+				if (!p || !*p)
+					p = "unknown";
+				len = CG_DrawStrlen(p);
+				if (len > lwidth)
+					len = lwidth;
+
+//				xx = x + TINYCHAR_WIDTH * 2 + TINYCHAR_WIDTH * pwidth + 
+//					((lwidth/2 - len/2) * TINYCHAR_WIDTH);
+				xx = x + TINYCHAR_WIDTH * 2 + TINYCHAR_WIDTH * pwidth;
+				CG_DrawStringExt( xx + xOffset, y,
+					p, hcolor, qfalse, qfalse, TINYCHAR_WIDTH, TINYCHAR_HEIGHT,
+					TEAM_OVERLAY_MAXLOCATION_WIDTH);
+			}
+
+			CG_GetColorForHealth( ci->health, ci->armor, hcolor );
+
+			Com_sprintf (st, sizeof(st), "%3i %3i", ci->health,	ci->armor);
+
+			xx = x + TINYCHAR_WIDTH * 3 + 
+				TINYCHAR_WIDTH * pwidth + TINYCHAR_WIDTH * lwidth;
+
+			CG_DrawStringExt( xx + xOffset, y,
+				st, hcolor, qfalse, qfalse,
+				TINYCHAR_WIDTH, TINYCHAR_HEIGHT, 0 );
+
+			// draw weapon icon
+			xx += TINYCHAR_WIDTH * 3;
+
+			if ( cg_weapons[ci->curWeapon].weaponIcon ) {
+				CG_DrawPic( xx + xOffset, y, TINYCHAR_WIDTH, TINYCHAR_HEIGHT, 
+					cg_weapons[ci->curWeapon].weaponIcon );
+			} else {
+				CG_DrawPic( xx + xOffset, y, TINYCHAR_WIDTH, TINYCHAR_HEIGHT, 
+					cgs.media.deferShader );
+			}
+
+			// Draw powerup icons
+			if (right) {
+				xx = x;
+			} else {
+				xx = x + w - TINYCHAR_WIDTH;
+			}
+			for (j = 0; j <= PW_NUM_POWERUPS; j++) {
+				if (ci->powerups & (1 << j)) {
+
+					item = BG_FindItemForPowerup( j );
+
+					if (item) {
+						CG_DrawPic( xx + xOffset, y, TINYCHAR_WIDTH, TINYCHAR_HEIGHT, 
+						trap_R_RegisterShader( item->icon ) );
+						if (right) {
+							xx -= TINYCHAR_WIDTH;
+						} else {
+							xx += TINYCHAR_WIDTH;
+						}
+					}
+				}
+			}
+
+			y += TINYCHAR_HEIGHT;
+		}
+	}
+
+	return ret_y;
+//#endif
+}
+
 
 static void CG_DrawPowerupIcons(int y)
 {
@@ -4881,36 +3961,18 @@ static void CG_DrawPowerupIcons(int y)
 	xOffset = -40;
 #endif
 
-	if (!cg->snap)
+	if (!cg.snap)
 	{
 		return;
 	}
 
 	y += 16;
 
-#ifdef _XBOX
-	if (ClientManager::splitScreenMode == qtrue)
-	{
-		ico_size = 32;
-		if (ClientManager::ActiveClientNum() == 0)
-			y = 40;
-		else
-			y = 220 + 40;
-
-		// This stuff automatically gets pulled to the left in splitscreen as to
-		// not overlap with the radar
-		xOffset -= 100;
-
-		/*if(cg->widescreen)
-			xOffset -= 40;*/
-	}
-#endif
-
 	for (j = 0; j <= PW_NUM_POWERUPS; j++)
 	{
-		if (cg->snap->ps.powerups[j] > cg->time)
+		if (cg.snap->ps.powerups[j] > cg.time)
 		{
-			int secondsleft = (cg->snap->ps.powerups[j] - cg->time)/1000;
+			int secondsleft = (cg.snap->ps.powerups[j] - cg.time)/1000;
 
 			item = BG_FindItemForPowerup( j );
 
@@ -4933,22 +3995,12 @@ static void CG_DrawPowerupIcons(int y)
 					icoShader = trap_R_RegisterShader( item->icon );
 				}
 
-#ifdef _XBOX
-				if(cg->widescreen)
-					CG_DrawPic( (720-(ico_size*1.1)) + xOffset, y, ico_size, ico_size, icoShader );
-				else
-#endif
 				CG_DrawPic( (640-(ico_size*1.1)) + xOffset, y, ico_size, ico_size, icoShader );
 	
 				y += ico_size;
 
 				if (j != PW_REDFLAG && j != PW_BLUEFLAG && secondsleft < 999)
 				{
-#ifdef _XBOX
-					if(cg->widescreen)
-						UI_DrawProportionalString((720-(ico_size*1.1))+(ico_size/2) + xOffset, y-8, va("%i", secondsleft), UI_CENTER | UI_BIGFONT | UI_DROPSHADOW, colorTable[CT_WHITE]);
-					else
-#endif
 					UI_DrawProportionalString((640-(ico_size*1.1))+(ico_size/2) + xOffset, y-8, va("%i", secondsleft), UI_CENTER | UI_BIGFONT | UI_DROPSHADOW, colorTable[CT_WHITE]);
 				}
 
@@ -4965,27 +4017,23 @@ CG_DrawUpperRight
 
 =====================
 */
-float CG_DrawVote(float y);
-
 static void CG_DrawUpperRight( void ) {
 	float	y;
 
 #ifdef _XBOX
 	y = 50;
-	if(ClientManager::ActiveClientNum() == 1)
-		y = 240 + 25;
 #else
 	y = 0;
 #endif
 
 	trap_R_SetColor( colorTable[CT_WHITE] );
 
-//	if ( cgs.gametype >= GT_TEAM && cg_drawTeamOverlay.integer == 1 ) {
-//		y = CG_DrawTeamOverlay( y, qtrue, qtrue );
-//	} 
-//	if ( cg_drawSnapshot.integer ) {
-//		y = CG_DrawSnapshot( y );
-//	}
+	if ( cgs.gametype >= GT_TEAM && cg_drawTeamOverlay.integer == 1 ) {
+		y = CG_DrawTeamOverlay( y, qtrue, qtrue );
+	} 
+	if ( cg_drawSnapshot.integer ) {
+		y = CG_DrawSnapshot( y );
+	}
 
 	if ( cg_drawFPS.integer ) {
 		y = CG_DrawFPS( y );
@@ -4994,7 +4042,7 @@ static void CG_DrawUpperRight( void ) {
 		y = CG_DrawTimer( y );
 	}
 
-	if ( ( cgs.gametype >= GT_TEAM || cg->predictedPlayerState.m_iVehicleNum )
+	if ( ( cgs.gametype >= GT_TEAM || cg.predictedPlayerState.m_iVehicleNum )
 		&& cg_drawRadar.integer )
 	{//draw Radar in Siege mode or when in a vehicle of any kind
 		y = CG_DrawRadar ( y );
@@ -5004,11 +4052,143 @@ static void CG_DrawUpperRight( void ) {
 
 	y = CG_DrawMiniScoreboard ( y );
 
-	y = CG_DrawVote(y);
-
 	CG_DrawPowerupIcons(y);
 }
 
+/*
+===================
+CG_DrawReward
+===================
+*/
+#ifdef JK2AWARDS
+static void CG_DrawReward( void ) { 
+	float	*color;
+	int		i, count;
+	float	x, y;
+	char	buf[32];
+
+	if ( !cg_drawRewards.integer ) {
+		return;
+	}
+
+	color = CG_FadeColor( cg.rewardTime, REWARD_TIME );
+	if ( !color ) {
+		if (cg.rewardStack > 0) {
+			for(i = 0; i < cg.rewardStack; i++) {
+				cg.rewardSound[i] = cg.rewardSound[i+1];
+				cg.rewardShader[i] = cg.rewardShader[i+1];
+				cg.rewardCount[i] = cg.rewardCount[i+1];
+			}
+			cg.rewardTime = cg.time;
+			cg.rewardStack--;
+			color = CG_FadeColor( cg.rewardTime, REWARD_TIME );
+			trap_S_StartLocalSound(cg.rewardSound[0], CHAN_ANNOUNCER);
+		} else {
+			return;
+		}
+	}
+
+	trap_R_SetColor( color );
+
+	/*
+	count = cg.rewardCount[0]/10;				// number of big rewards to draw
+
+	if (count) {
+		y = 4;
+		x = 320 - count * ICON_SIZE;
+		for ( i = 0 ; i < count ; i++ ) {
+			CG_DrawPic( x, y, (ICON_SIZE*2)-4, (ICON_SIZE*2)-4, cg.rewardShader[0] );
+			x += (ICON_SIZE*2);
+		}
+	}
+
+	count = cg.rewardCount[0] - count*10;		// number of small rewards to draw
+	*/
+
+	if ( cg.rewardCount[0] >= 10 ) {
+		y = 56;
+		x = 320 - ICON_SIZE/2;
+		CG_DrawPic( x, y, ICON_SIZE-4, ICON_SIZE-4, cg.rewardShader[0] );
+		Com_sprintf(buf, sizeof(buf), "%d", cg.rewardCount[0]);
+		x = ( SCREEN_WIDTH - SMALLCHAR_WIDTH * CG_DrawStrlen( buf ) ) / 2;
+		CG_DrawStringExt( x, y+ICON_SIZE, buf, color, qfalse, qtrue,
+								SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT, 0 );
+	}
+	else {
+
+		count = cg.rewardCount[0];
+
+		y = 56;
+		x = 320 - count * ICON_SIZE/2;
+		for ( i = 0 ; i < count ; i++ ) {
+			CG_DrawPic( x, y, ICON_SIZE-4, ICON_SIZE-4, cg.rewardShader[0] );
+			x += ICON_SIZE;
+		}
+	}
+	trap_R_SetColor( NULL );
+}
+#endif
+
+
+/*
+===============================================================================
+
+LAGOMETER
+
+===============================================================================
+*/
+
+#define	LAG_SAMPLES		128
+
+
+typedef struct {
+	int		frameSamples[LAG_SAMPLES];
+	int		frameCount;
+	int		snapshotFlags[LAG_SAMPLES];
+	int		snapshotSamples[LAG_SAMPLES];
+	int		snapshotCount;
+} lagometer_t;
+
+lagometer_t		lagometer;
+
+/*
+==============
+CG_AddLagometerFrameInfo
+
+Adds the current interpolate / extrapolate bar for this frame
+==============
+*/
+void CG_AddLagometerFrameInfo( void ) {
+	int			offset;
+
+	offset = cg.time - cg.latestSnapshotTime;
+	lagometer.frameSamples[ lagometer.frameCount & ( LAG_SAMPLES - 1) ] = offset;
+	lagometer.frameCount++;
+}
+
+/*
+==============
+CG_AddLagometerSnapshotInfo
+
+Each time a snapshot is received, log its ping time and
+the number of snapshots that were dropped before it.
+
+Pass NULL for a dropped packet.
+==============
+*/
+void CG_AddLagometerSnapshotInfo( snapshot_t *snap ) {
+	// dropped packet
+	if ( !snap ) {
+		lagometer.snapshotSamples[ lagometer.snapshotCount & ( LAG_SAMPLES - 1) ] = -1;
+		lagometer.snapshotCount++;
+		return;
+	}
+
+	// add this snapshot's info
+	lagometer.snapshotSamples[ lagometer.snapshotCount & ( LAG_SAMPLES - 1) ] = snap->ping;
+	lagometer.snapshotFlags[ lagometer.snapshotCount & ( LAG_SAMPLES - 1) ] = snap->snapFlags;
+	lagometer.snapshotCount++;
+}
 
 /*
 ==============
@@ -5024,42 +4204,150 @@ static void CG_DrawDisconnect( void ) {
 	const char		*s;
 	int			w;  // bk010215 - FIXME char message[1024];
 
-	if (cg->mMapChange)
+	if (cg.mMapChange)
 	{			
-		s = CG_GetStringEdString("MP_INGAME", "SERVER_CHANGING_MAPS");	// s = "Server Changing Maps";
-		w = RE_Font_StrLenPixels( s, 1, 1.0f );
-		RE_Font_DrawString( 320 - w/2, 100, s, g_color_table[7], 1, -1, 1.0f );
+		s = CG_GetStringEdString("MP_INGAME", "SERVER_CHANGING_MAPS");	// s = "Server Changing Maps";			
+		w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
+		CG_DrawBigString( 320 - w/2, 100, s, 1.0F);
 
 		s = CG_GetStringEdString("MP_INGAME", "PLEASE_WAIT");	// s = "Please wait...";
-		w = RE_Font_StrLenPixels( s, 1, 1.0f );
-		RE_Font_DrawString( 320 - w/2, 200, s, g_color_table[7], 1, -1, 1.0f );
+		w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
+		CG_DrawBigString( 320 - w/2, 200, s, 1.0F);
 		return;
 	}
 
 	// draw the phone jack if we are completely past our buffers
 	cmdNum = trap_GetCurrentCmdNumber() - CMD_BACKUP + 1;
 	trap_GetUserCmd( cmdNum, &cmd );
-	if ( cmd.serverTime <= cg->snap->ps.commandTime
-		|| cmd.serverTime > cg->time ) {	// special check for map_restart // bk 0102165 - FIXME
+	if ( cmd.serverTime <= cg.snap->ps.commandTime
+		|| cmd.serverTime > cg.time ) {	// special check for map_restart // bk 0102165 - FIXME
 		return;
 	}
 
 	// also add text in center of screen
 	s = CG_GetStringEdString("MP_INGAME", "CONNECTION_INTERRUPTED"); // s = "Connection Interrupted"; // bk 010215 - FIXME
-	w = RE_Font_StrLenPixels( s, 1, 1.0f );
-	RE_Font_DrawString( 320 - w/2, 100, s, g_color_table[7], 1, -1, 1.0f );
+	w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
+	CG_DrawBigString( 320 - w/2, 100, s, 1.0F);
+
+	// blink the icon
+	if ( ( cg.time >> 9 ) & 1 ) {
+		return;
+	}
+
+	x = 640 - 48;
+	y = 480 - 48;
+
+	CG_DrawPic( x, y, 48, 48, trap_R_RegisterShader("gfx/2d/net.tga" ) );
 }
 
+
+#define	MAX_LAGOMETER_PING	900
+#define	MAX_LAGOMETER_RANGE	300
 
 /*
 ==============
 CG_DrawLagometer
 ==============
 */
-static void CG_DrawLagometer( void )
-{
+static void CG_DrawLagometer( void ) {
+	int		a, x, y, i;
+	float	v;
+	float	ax, ay, aw, ah, mid, range;
+	int		color;
+	float	vscale;
+
+	if ( !cg_lagometer.integer || cgs.localServer ) {
+		CG_DrawDisconnect();
+		return;
+	}
+
+	//
+	// draw the graph
+	//
+	x = 640 - 48;
+	y = 480 - 144;
+
+	trap_R_SetColor( NULL );
+	CG_DrawPic( x, y, 48, 48, cgs.media.lagometerShader );
+
+	ax = x;
+	ay = y;
+	aw = 48;
+	ah = 48;
+
+	color = -1;
+	range = ah / 3;
+	mid = ay + range;
+
+	vscale = range / MAX_LAGOMETER_RANGE;
+
+	// draw the frame interpoalte / extrapolate graph
+	for ( a = 0 ; a < aw ; a++ ) {
+		i = ( lagometer.frameCount - 1 - a ) & (LAG_SAMPLES - 1);
+		v = lagometer.frameSamples[i];
+		v *= vscale;
+		if ( v > 0 ) {
+			if ( color != 1 ) {
+				color = 1;
+				trap_R_SetColor( g_color_table[ColorIndex(COLOR_YELLOW)] );
+			}
+			if ( v > range ) {
+				v = range;
+			}
+			trap_R_DrawStretchPic ( ax + aw - a, mid - v, 1, v, 0, 0, 0, 0, cgs.media.whiteShader );
+		} else if ( v < 0 ) {
+			if ( color != 2 ) {
+				color = 2;
+				trap_R_SetColor( g_color_table[ColorIndex(COLOR_BLUE)] );
+			}
+			v = -v;
+			if ( v > range ) {
+				v = range;
+			}
+			trap_R_DrawStretchPic( ax + aw - a, mid, 1, v, 0, 0, 0, 0, cgs.media.whiteShader );
+		}
+	}
+
+	// draw the snapshot latency / drop graph
+	range = ah / 2;
+	vscale = range / MAX_LAGOMETER_PING;
+
+	for ( a = 0 ; a < aw ; a++ ) {
+		i = ( lagometer.snapshotCount - 1 - a ) & (LAG_SAMPLES - 1);
+		v = lagometer.snapshotSamples[i];
+		if ( v > 0 ) {
+			if ( lagometer.snapshotFlags[i] & SNAPFLAG_RATE_DELAYED ) {
+				if ( color != 5 ) {
+					color = 5;	// YELLOW for rate delay
+					trap_R_SetColor( g_color_table[ColorIndex(COLOR_YELLOW)] );
+				}
+			} else {
+				if ( color != 3 ) {
+					color = 3;
+					trap_R_SetColor( g_color_table[ColorIndex(COLOR_GREEN)] );
+				}
+			}
+			v = v * vscale;
+			if ( v > range ) {
+				v = range;
+			}
+			trap_R_DrawStretchPic( ax + aw - a, ay + ah - v, 1, v, 0, 0, 0, 0, cgs.media.whiteShader );
+		} else if ( v < 0 ) {
+			if ( color != 4 ) {
+				color = 4;		// RED for dropped snapshots
+				trap_R_SetColor( g_color_table[ColorIndex(COLOR_RED)] );
+			}
+			trap_R_DrawStretchPic( ax + aw - a, ay + ah - range, 1, range, 0, 0, 0, 0, cgs.media.whiteShader );
+		}
+	}
+
+	trap_R_SetColor( NULL );
+
+	if ( cg_nopredict.integer || cg_synchronousClients.integer ) {
+		CG_DrawBigString( ax, ay, "snc", 1.0 );
+	}
+
 	CG_DrawDisconnect();
-	return;
 }
 
 void CG_DrawSiegeMessage( const char *str, int objectiveScreen )
@@ -5087,7 +4375,7 @@ void CG_DrawSiegeMessageNonMenu( const char *str )
 		trap_SP_GetStringTextString(str+1, text, sizeof(text));
 		str = text;
 	}
-	CG_CenterPrint(str, SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH);
+	CG_CenterPrint(str, SCREEN_HEIGHT * 0.20, BIGCHAR_WIDTH);
 }
 
 /*
@@ -5110,27 +4398,18 @@ for a few moments
 void CG_CenterPrint( const char *str, int y, int charWidth ) {
 	char	*s;
 
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue) {
-		y = (240 - ((480 - y) / 2)) + 60;
+	Q_strncpyz( cg.centerPrint, str, sizeof(cg.centerPrint) );
 
-		if(ClientManager::ActiveClientNum() == 1)
-			y += 220;
-	}
-#endif
-
-	Q_strncpyz( cg->centerPrint, str, sizeof(cg->centerPrint) );
-
-	cg->centerPrintTime = cg->time;
-	cg->centerPrintY = y;
-	cg->centerPrintCharWidth = charWidth;
+	cg.centerPrintTime = cg.time;
+	cg.centerPrintY = y;
+	cg.centerPrintCharWidth = charWidth;
 
 	// count the number of lines for centering
-	cg->centerPrintLines = 1;
-	s = cg->centerPrint;
+	cg.centerPrintLines = 1;
+	s = cg.centerPrint;
 	while( *s ) {
 		if (*s == '\n')
-			cg->centerPrintLines++;
+			cg.centerPrintLines++;
 		s++;
 	}
 }
@@ -5149,20 +4428,20 @@ static void CG_DrawCenterString( void ) {
 	float	*color;
 	const float scale = 1.0; //0.5
 
-	if ( !cg->centerPrintTime ) {
+	if ( !cg.centerPrintTime ) {
 		return;
 	}
 
-	color = CG_FadeColor( cg->centerPrintTime, 1000 * cg_centertime.value );
+	color = CG_FadeColor( cg.centerPrintTime, 1000 * cg_centertime.value );
 	if ( !color ) {
 		return;
 	}
 
 	trap_R_SetColor( color );
 
-	start = cg->centerPrint;
+	start = cg.centerPrint;
 
-	y = cg->centerPrintY - cg->centerPrintLines * BIGCHAR_HEIGHT / 2;
+	y = cg.centerPrintY - cg.centerPrintLines * BIGCHAR_HEIGHT / 2;
 
 	while ( 1 ) {
 		char linebuffer[1024];
@@ -5177,11 +4456,6 @@ static void CG_DrawCenterString( void ) {
 
 		w = CG_Text_Width(linebuffer, scale, FONT_MEDIUM);
 		h = CG_Text_Height(linebuffer, scale, FONT_MEDIUM);
-#ifdef _XBOX
-		if(cg->widescreen)
-			x = (720 - w) / 2;
-		else
-#endif
 		x = (SCREEN_WIDTH - w) / 2;
 		CG_Text_Paint(x, y + h, scale, color, linebuffer, 0, 0, ITEM_TEXTSTYLE_SHADOWEDMORE, FONT_MEDIUM);
 		y += h + 6;
@@ -5228,12 +4502,12 @@ void CG_DrawSiegeInfo(centity_t *cent, float chX, float chY, float chW, float ch
 
 	assert(cent->currentState.number < MAX_CLIENTS);
 
-	if (se->lastUpdated > cg->time)
+	if (se->lastUpdated > cg.time)
 	{ //strange, shouldn't happen
 		return;
 	}
 	
-	if ((cg->time - se->lastUpdated) > 10000)
+	if ((cg.time - se->lastUpdated) > 10000)
 	{ //if you haven't received a status update on this guy in 10 seconds, forget about it
 		return;
 	}
@@ -5249,12 +4523,12 @@ void CG_DrawSiegeInfo(centity_t *cent, float chX, float chY, float chW, float ch
 	}
 
 	ci = &cgs.clientinfo[cent->currentState.number];
-	if (ci->team != cg->predictedPlayerState.persistant[PERS_TEAM])
+	if (ci->team != cg.predictedPlayerState.persistant[PERS_TEAM])
 	{ //not on the same team
 		return;
 	}
 
-	configstring = CG_ConfigString( cg->predictedPlayerState.clientNum + CS_PLAYERS );
+	configstring = CG_ConfigString( cg.predictedPlayerState.clientNum + CS_PLAYERS );
 	v = Info_ValueForKey( configstring, "siegeclass" );
 
 	if (!v || !v[0])
@@ -5363,9 +4637,7 @@ void CG_DrawHealthBar(centity_t *cent, float chX, float chY, float chW, float ch
 	float x = chX+((chW/2)-(HEALTH_WIDTH/2));
 	float y = (chY+chH) + 8.0f;
 	float percent = ((float)cent->currentState.health/(float)cent->currentState.maxhealth)*HEALTH_WIDTH;
-	// The HEALTH_WIDTH check here is a hacky attempt to fix all the crappy ents that don't properly
-	// set health or maxhealth when they die, thus allowing infinite length health bars for a few frames. - BTO
-	if (percent <= 0 || percent > HEALTH_WIDTH)
+	if (percent <= 0)
 	{
 		return;
 	}
@@ -5378,7 +4650,7 @@ void CG_DrawHealthBar(centity_t *cent, float chX, float chY, float chW, float ch
 		aColor[2] = 0.0f;
 		aColor[3] = 0.4f;
 	}
-	else if (cent->currentState.teamowner == cg->predictedPlayerState.persistant[PERS_TEAM])
+	else if (cent->currentState.teamowner == cg.predictedPlayerState.persistant[PERS_TEAM])
 	{ //owned by my team
 		aColor[0] = 0.0f;
 		aColor[1] = 1.0f;
@@ -5423,7 +4695,7 @@ void CG_DrawHaqrBar(float chX, float chY, float chW, float chH)
 	vec4_t cColor;
 	float x = chX+((chW/2)-(HEALTH_WIDTH/2));
 	float y = (chY+chH) + 8.0f;
-	float percent = (((float)cg->predictedPlayerState.hackingTime-(float)cg->time)/(float)cg->predictedPlayerState.hackingBaseTime)*HEALTH_WIDTH;
+	float percent = (((float)cg.predictedPlayerState.hackingTime-(float)cg.time)/(float)cg.predictedPlayerState.hackingBaseTime)*HEALTH_WIDTH;
 
 	if (percent > HEALTH_WIDTH ||
 		percent < 1.0f)
@@ -5468,8 +4740,8 @@ int cg_genericTimerDur = 0;
 vec4_t cg_genericTimerColor;
 #define CGTIMERBAR_H			50.0f
 #define CGTIMERBAR_W			10.0f
-#define CGTIMERBAR_X			(SCREEN_WIDTH-CGTIMERBAR_W-53.0f)
-#define CGTIMERBAR_Y			(SCREEN_HEIGHT-CGTIMERBAR_H-96.0f)
+#define CGTIMERBAR_X			(SCREEN_WIDTH-CGTIMERBAR_W-120.0f)
+#define CGTIMERBAR_Y			(SCREEN_HEIGHT-CGTIMERBAR_H-20.0f)
 void CG_DrawGenericTimerBar(void)
 {
 	vec4_t aColor;
@@ -5477,7 +4749,7 @@ void CG_DrawGenericTimerBar(void)
 	vec4_t cColor;
 	float x = CGTIMERBAR_X;
 	float y = CGTIMERBAR_Y;
-	float percent = ((float)(cg_genericTimerBar-cg->time)/(float)cg_genericTimerDur)*CGTIMERBAR_H;
+	float percent = ((float)(cg_genericTimerBar-cg.time)/(float)cg_genericTimerDur)*CGTIMERBAR_H;
 
 	if (percent > CGTIMERBAR_H)
 	{
@@ -5524,7 +4796,7 @@ CG_DrawCrosshair
 */
 
 #ifdef _XBOX
-//int cg_crossHairStatus = 0;
+int cg_crossHairStatus = 0;
 #endif
 
 float cg_crosshairPrevPosX = 0;
@@ -5535,13 +4807,7 @@ void CG_LerpCrosshairPos( float *x, float *y )
 {
 	if ( cg_crosshairPrevPosX )
 	{//blend from old pos
-		float maxMove;
-#ifdef _XBOX
-		if(cg->widescreen)
-			maxMove = 30.0f * ((float)cg->frametime/500.0f) * 720.0f/480.0f;
-		else
-#endif
-		maxMove = 30.0f * ((float)cg->frametime/500.0f) * 640.0f/480.0f;
+		float maxMove = 30.0f * ((float)cg.frametime/500.0f) * 640.0f/480.0f;
 		float xDiff = (*x - cg_crosshairPrevPosX);
 		if ( fabs(xDiff) > CRAZY_CROSSHAIR_MAX_ERROR_X )
 		{
@@ -5560,7 +4826,7 @@ void CG_LerpCrosshairPos( float *x, float *y )
 
 	if ( cg_crosshairPrevPosY )
 	{//blend from old pos
-		float maxMove = 30.0f * ((float)cg->frametime/500.0f);
+		float maxMove = 30.0f * ((float)cg.frametime/500.0f);
 		float yDiff = (*y - cg_crosshairPrevPosY);
 		if ( fabs(yDiff) > CRAZY_CROSSHAIR_MAX_ERROR_Y )
 		{
@@ -5590,7 +4856,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 	float		chX, chY;
 
 #ifdef _XBOX
-	ClientManager::ActiveClient().cg_crossHairStatus = 0;
+	cg_crossHairStatus = 0;
 #endif
 
 	if ( worldPoint )
@@ -5603,15 +4869,23 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 		return;
 	}
 
-	if (cg->snap->ps.fallingToDeath)
+	if (cg.snap->ps.fallingToDeath)
 	{
 		return;
 	}
 
-	if ( cg->predictedPlayerState.zoomMode != 0 )
+	if ( cg.predictedPlayerState.zoomMode != 0 )
 	{//not while scoped
 		return;
 	}
+
+	/*
+	if ( cg_drawingRocketLockThisFrame
+		&& cg.snap->ps.m_iVehicleNum )
+	{//in vehicle, rocket lock-on replaces crosshair
+		return;
+	}
+	*/
 
 	if ( cg_crosshairHealth.integer )
 	{
@@ -5623,20 +4897,20 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 	else
 	{
 		//set color based on what kind of ent is under crosshair
-		if ( cg->crosshairClientNum >= ENTITYNUM_WORLD )
+		if ( cg.crosshairClientNum >= ENTITYNUM_WORLD )
 		{
 			trap_R_SetColor( NULL );
 		}
 		//rwwFIXMEFIXME: Write this a different way, it's getting a bit too sloppy looking
 		else if (chEntValid &&
-			(cg_entities[cg->crosshairClientNum].currentState.number < MAX_CLIENTS ||
-			cg_entities[cg->crosshairClientNum].currentState.eType == ET_NPC ||
-			cg_entities[cg->crosshairClientNum].currentState.shouldtarget ||
-			cg_entities[cg->crosshairClientNum].currentState.health || //always show ents with health data under crosshair
-			(cg_entities[cg->crosshairClientNum].currentState.eType == ET_MOVER && cg_entities[cg->crosshairClientNum].currentState.bolt1 && cg->predictedPlayerState.weapon == WP_SABER) ||
-			(cg_entities[cg->crosshairClientNum].currentState.eType == ET_MOVER && cg_entities[cg->crosshairClientNum].currentState.teamowner)))
+			(cg_entities[cg.crosshairClientNum].currentState.number < MAX_CLIENTS ||
+			cg_entities[cg.crosshairClientNum].currentState.eType == ET_NPC ||
+			cg_entities[cg.crosshairClientNum].currentState.shouldtarget ||
+			cg_entities[cg.crosshairClientNum].currentState.health || //always show ents with health data under crosshair
+			(cg_entities[cg.crosshairClientNum].currentState.eType == ET_MOVER && cg_entities[cg.crosshairClientNum].currentState.bolt1 && cg.predictedPlayerState.weapon == WP_SABER) ||
+			(cg_entities[cg.crosshairClientNum].currentState.eType == ET_MOVER && cg_entities[cg.crosshairClientNum].currentState.teamowner)))
 		{
-			crossEnt = &cg_entities[cg->crosshairClientNum];
+			crossEnt = &cg_entities[cg.crosshairClientNum];
 
 			if ( crossEnt->currentState.powerups & (1 <<PW_CLOAKED) )
 			{ //don't show up for cloaked guys
@@ -5647,7 +4921,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 			else if ( crossEnt->currentState.number < MAX_CLIENTS )
 			{
 				if (cgs.gametype >= GT_TEAM &&
-					cgs.clientinfo[crossEnt->currentState.number].team == cgs.clientinfo[cg->snap->ps.clientNum].team )
+					cgs.clientinfo[crossEnt->currentState.number].team == cgs.clientinfo[cg.snap->ps.clientNum].team )
 				{
 					//Allies are green
 					ecolor[0] = 0.0;//R
@@ -5657,7 +4931,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 				else
 				{
 					if (cgs.gametype == GT_POWERDUEL &&
-						cgs.clientinfo[crossEnt->currentState.number].duelTeam == cgs.clientinfo[cg->snap->ps.clientNum].duelTeam)
+						cgs.clientinfo[crossEnt->currentState.number].duelTeam == cgs.clientinfo[cg.snap->ps.clientNum].duelTeam)
 					{ //on the same duel team in powerduel, so he's a friend
 						ecolor[0] = 0.0;//R
 						ecolor[1] = 1.0;//G
@@ -5669,14 +4943,14 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 						ecolor[1] = 0.0;//G
 						ecolor[2] = 0.0;//B
 #ifdef _XBOX
-						ClientManager::ActiveClient().cg_crossHairStatus = 1;
+						cg_crossHairStatus = 1;
 #endif
 					}
 				}
 
-				if (cg->snap->ps.duelInProgress)
+				if (cg.snap->ps.duelInProgress)
 				{
-					if (crossEnt->currentState.number != cg->snap->ps.duelIndex)
+					if (crossEnt->currentState.number != cg.snap->ps.duelIndex)
 					{ //grey out crosshair for everyone but your foe if you're in a duel
 						ecolor[0] = 0.4;
 						ecolor[1] = 0.4;
@@ -5707,7 +4981,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 					int plTeam;
 					if (cgs.gametype == GT_SIEGE)
 					{
-						plTeam = cg->predictedPlayerState.persistant[PERS_TEAM];
+						plTeam = cg.predictedPlayerState.persistant[PERS_TEAM];
 					}
 					else
 					{
@@ -5729,7 +5003,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 							{ //base color on who is pilotting this thing
 								clientInfo_t *ci = &cgs.clientinfo[crossEnt->currentState.owner];
 
-								if (cgs.gametype >= GT_TEAM && ci->team == cg->predictedPlayerState.persistant[PERS_TEAM])
+								if (cgs.gametype >= GT_TEAM && ci->team == cg.predictedPlayerState.persistant[PERS_TEAM])
 								{ //friendly
 									ecolor[0] = 0.0;//R
 									ecolor[1] = 1.0;//G
@@ -5741,7 +5015,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 									ecolor[1] = 0.0;//G
 									ecolor[2] = 0.0;//B
 #ifdef _XBOX
-									ClientManager::ActiveClient().cg_crossHairStatus = 1;
+									cg_crossHairStatus = 1;
 #endif
 								}
 							}
@@ -5758,7 +5032,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 							ecolor[1] = 0.0;//G
 							ecolor[2] = 0.0;//B
 #ifdef _XBOX
-							ClientManager::ActiveClient().cg_crossHairStatus = 1;
+							cg_crossHairStatus = 1;
 #endif
 						}
 					}
@@ -5768,7 +5042,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 						ecolor[1] = 0.0;//G
 						ecolor[2] = 0.0;//B
 #ifdef _XBOX
-						ClientManager::ActiveClient().cg_crossHairStatus = 1;
+						cg_crossHairStatus = 1;
 #endif
 					}
 					else
@@ -5787,13 +5061,13 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 						ecolor[1] = 1.0;//G
 						ecolor[2] = 0.0;//B
 					}
-					else if ( crossEnt->currentState.teamowner != cgs.clientinfo[cg->snap->ps.clientNum].team )
+					else if ( crossEnt->currentState.teamowner != cgs.clientinfo[cg.snap->ps.clientNum].team )
 					{ //on the enemy team
 						ecolor[0] = 1.0;//R
 						ecolor[1] = 0.0;//G
 						ecolor[2] = 0.0;//B
 #ifdef _XBOX
-						ClientManager::ActiveClient().cg_crossHairStatus = 1;
+						cg_crossHairStatus = 1;
 #endif
 					}
 					else
@@ -5803,25 +5077,25 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 						ecolor[2] = 0.0;//B
 					}
 				}
-				else if (crossEnt->currentState.owner == cg->snap->ps.clientNum ||
-					(cgs.gametype >= GT_TEAM && crossEnt->currentState.teamowner == cgs.clientinfo[cg->snap->ps.clientNum].team))
+				else if (crossEnt->currentState.owner == cg.snap->ps.clientNum ||
+					(cgs.gametype >= GT_TEAM && crossEnt->currentState.teamowner == cgs.clientinfo[cg.snap->ps.clientNum].team))
 				{
 					ecolor[0] = 0.0;//R
 					ecolor[1] = 1.0;//G
 					ecolor[2] = 0.0;//B
 				}
 				else if (crossEnt->currentState.teamowner == 16 ||
-					(cgs.gametype >= GT_TEAM && crossEnt->currentState.teamowner && crossEnt->currentState.teamowner != cgs.clientinfo[cg->snap->ps.clientNum].team))
+					(cgs.gametype >= GT_TEAM && crossEnt->currentState.teamowner && crossEnt->currentState.teamowner != cgs.clientinfo[cg.snap->ps.clientNum].team))
 				{
 					ecolor[0] = 1.0;//R
 					ecolor[1] = 0.0;//G
 					ecolor[2] = 0.0;//B
 #ifdef _XBOX
-					ClientManager::ActiveClient().cg_crossHairStatus = 1;
+					cg_crossHairStatus = 1;
 #endif
 				}
 			}
-			else if (crossEnt->currentState.eType == ET_MOVER && crossEnt->currentState.bolt1 && cg->predictedPlayerState.weapon == WP_SABER)
+			else if (crossEnt->currentState.eType == ET_MOVER && crossEnt->currentState.bolt1 && cg.predictedPlayerState.weapon == WP_SABER)
 			{ //can push/pull this mover. Only show it if we're using the saber.
 				ecolor[0] = 0.2f;
 				ecolor[1] = 0.5f;
@@ -5837,13 +5111,13 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 					ecolor[1] = 1.0;//G
 					ecolor[2] = 0.0;//B
 				}
-                else if (cg->predictedPlayerState.persistant[PERS_TEAM] != crossEnt->currentState.teamowner)
+                else if (cg.predictedPlayerState.persistant[PERS_TEAM] != crossEnt->currentState.teamowner)
 				{ //not my team
 					ecolor[0] = 1.0;//R
 					ecolor[1] = 0.0;//G
 					ecolor[2] = 0.0;//B
 #ifdef _XBOX
-					ClientManager::ActiveClient().cg_crossHairStatus = 1;
+					cg_crossHairStatus = 1;
 #endif
 				}
 				else
@@ -5861,7 +5135,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 					ecolor[1] = 1.0f;
 					ecolor[2] = 0.0f;
 				}
-				else if (crossEnt->currentState.teamowner == cg->predictedPlayerState.persistant[PERS_TEAM])
+				else if (crossEnt->currentState.teamowner == cg.predictedPlayerState.persistant[PERS_TEAM])
 				{ //owned by my team
 					ecolor[0] = 0.0f;
 					ecolor[1] = 1.0f;
@@ -5873,7 +5147,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 					ecolor[1] = 0.0f;
 					ecolor[2] = 0.0f;
 #ifdef _XBOX
-					ClientManager::ActiveClient().cg_crossHairStatus = 1;
+					cg_crossHairStatus = 1;
 #endif
 				}
 			}
@@ -5882,15 +5156,11 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 
 			trap_R_SetColor( ecolor );
 		}
-		else
-		{
-			trap_R_SetColor( NULL );
-		}
 	}
 
-	if ( cg->predictedPlayerState.m_iVehicleNum )
+	if ( cg.predictedPlayerState.m_iVehicleNum )
 	{//I'm in a vehicle
-		centity_t *vehCent = &cg_entities[cg->predictedPlayerState.m_iVehicleNum];
+		centity_t *vehCent = &cg_entities[cg.predictedPlayerState.m_iVehicleNum];
 	    if ( vehCent 
 			&& vehCent->m_pVehicle 
 			&& vehCent->m_pVehicle->m_pVehicleInfo 
@@ -5908,7 +5178,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 	}
 
 	// pulse the size of the crosshair when picking up items
-	f = cg->time - cg->itemPickupBlendTime;
+	f = cg.time - cg.itemPickupBlendTime;
 	if ( f > 0 && f < ITEM_BLOB_TIME ) {
 		f /= ITEM_BLOB_TIME;
 		w *= ( 1 + f );
@@ -5924,10 +5194,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 		//CG_LerpCrosshairPos( &x, &y );
 		x -= 320;
 		y -= 240;
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue)
-			y += 120;
-#endif
 	}
 	else
 	{
@@ -5940,23 +5206,8 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 		hShader = cgs.media.crosshairShader[ cg_drawCrosshair.integer % NUM_CROSSHAIRS ];
 	}
 
-#ifdef _XBOX
-	if(cg->widescreen)
-		chX = x + cg->refdef.x + 0.5 * (720 - w);
-	else
-#endif
-	chX = x + cg->refdef.x + 0.5 * (640 - w);
-	chY = y + cg->refdef.y + 0.5 * (480 - h);
-
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-	{
-		trap_R_DrawStretchPic( x + cg->refdef.x + (cgs.glconfig.vidWidth - w) / 2, 
-				y + cg->refdef.y + (cgs.glconfig.vidHeight - h) / 2, 
-				w , h , 0, 0, 1, 1, hShader );	
-	}
-	else
-#endif
+	chX = x + cg.refdef.x + 0.5 * (640 - w);
+	chY = y + cg.refdef.y + 0.5 * (480 - h);
 	trap_R_DrawStretchPic( chX, chY, w, h, 0, 0, 1, 1, hShader );
 
 	//draw a health bar directly under the crosshair if we're looking at something
@@ -5974,9 +5225,9 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 			CG_DrawSiegeInfo(crossEnt, chX, chY, w, h);
 			chY += HEALTH_HEIGHT*4;
 		}
-		if (cg->crosshairVehNum && cg->time == cg->crosshairVehTime)
+		if (cg.crosshairVehNum && cg.time == cg.crosshairVehTime)
 		{ //it was in the crosshair this frame
-			centity_t *hisVeh = &cg_entities[cg->crosshairVehNum];
+			centity_t *hisVeh = &cg_entities[cg.crosshairVehNum];
 
 			if (hisVeh->currentState.eType == ET_NPC &&
 				hisVeh->currentState.NPC_class == CLASS_VEHICLE &&
@@ -5989,12 +5240,12 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 		}
 	}
 
-	if (cg->predictedPlayerState.hackingTime)
+	if (cg.predictedPlayerState.hackingTime)
 	{ //hacking something
 		CG_DrawHaqrBar(chX, chY, w, h);
 	}
 
-	if (cg_genericTimerBar > cg->time)
+	if (cg_genericTimerBar > cg.time)
 	{ //draw generic timing bar, can be used for whatever
 		CG_DrawGenericTimerBar();
 	}
@@ -6002,7 +5253,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 	if ( corona ) // drawing extra bits
 	{
 		ecolor[3] = 0.5f;
-		ecolor[0] = ecolor[1] = ecolor[2] = (1 - ecolor[3]) * ( sin( cg->time * 0.001f ) * 0.08f + 0.35f ); // don't draw full color
+		ecolor[0] = ecolor[1] = ecolor[2] = (1 - ecolor[3]) * ( sin( cg.time * 0.001f ) * 0.08f + 0.35f ); // don't draw full color
 		ecolor[3] = 1.0f;
 
 		trap_R_SetColor( ecolor );
@@ -6010,15 +5261,8 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 		w *= 2.0f;
 		h *= 2.0f;
 
-#ifdef _XBOX
-		if(cg->widescreen)
-			trap_R_DrawStretchPic( x + cg->refdef.x + 0.5 * (720 - w), 
-			y + cg->refdef.y + 0.5 * (480 - h), 
-			w, h, 0, 0, 1, 1, cgs.media.forceCoronaShader );
-		else
-#endif
-		trap_R_DrawStretchPic( x + cg->refdef.x + 0.5 * (640 - w), 
-			y + cg->refdef.y + 0.5 * (480 - h), 
+		trap_R_DrawStretchPic( x + cg.refdef.x + 0.5 * (640 - w), 
+			y + cg.refdef.y + 0.5 * (480 - h), 
 			w, h, 0, 0, 1, 1, cgs.media.forceCoronaShader );
 	}
 }
@@ -6033,27 +5277,17 @@ qboolean CG_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y)
 	float xzi;
 	float yzi;
 
-//	xcenter = cg->refdef.width / 2;//gives screen coords adjusted for resolution
-//	ycenter = cg->refdef.height / 2;//gives screen coords adjusted for resolution
+//	xcenter = cg.refdef.width / 2;//gives screen coords adjusted for resolution
+//	ycenter = cg.refdef.height / 2;//gives screen coords adjusted for resolution
 	
 	//NOTE: did it this way because most draw functions expect virtual 640x480 coords
 	//	and adjust them for current resolution
-#ifdef _XBOX
-	if(cg->widescreen)
-		xcenter = 720.0f / 2.0f;
-	else
-#endif
 	xcenter = 640.0f / 2.0f;//gives screen coords in virtual 640x480, to be adjusted when drawn
 	ycenter = 480.0f / 2.0f;//gives screen coords in virtual 640x480, to be adjusted when drawn
 
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-		ycenter -= 120;
-#endif
+	AngleVectors (cg.refdef.viewangles, vfwd, vright, vup);
 
-	AngleVectors (cg->refdef.viewangles, vfwd, vright, vup);
-
-	VectorSubtract (worldCoord, cg->refdef.vieworg, local);
+	VectorSubtract (worldCoord, cg.refdef.vieworg, local);
 
 	transformed[0] = DotProduct(local,vright);
 	transformed[1] = DotProduct(local,vup);
@@ -6065,8 +5299,8 @@ qboolean CG_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y)
 		return qfalse;
 	}
 
-	xzi = xcenter / transformed[2] * (96.0f/cg->refdef.fov_x);
-	yzi = ycenter / transformed[2] * (102.0f/cg->refdef.fov_y);
+	xzi = xcenter / transformed[2] * (96.0f/cg.refdef.fov_x);
+	yzi = ycenter / transformed[2] * (102.0f/cg.refdef.fov_y);
 
 	*x = xcenter + xzi * transformed[0];
 	*y = ycenter - yzi * transformed[1];
@@ -6099,7 +5333,7 @@ void CG_SaberClashFlare( void )
 	float v, len;
 	trace_t tr;
 
-	t = cg->time - cg_saberFlashTime;
+	t = cg.time - cg_saberFlashTime;
 
 	if ( t <= 0 || t >= maxTime ) 
 	{
@@ -6107,14 +5341,14 @@ void CG_SaberClashFlare( void )
 	}
 
 	// Don't do clashes for things that are behind us
-	VectorSubtract( cg_saberFlashPos, cg->refdef.vieworg, dif );
+	VectorSubtract( cg_saberFlashPos, cg.refdef.vieworg, dif );
 
-	if ( DotProduct( dif, cg->refdef.viewaxis[0] ) < 0.2 )
+	if ( DotProduct( dif, cg.refdef.viewaxis[0] ) < 0.2 )
 	{
 		return;
 	}
 
-	CG_Trace( &tr, cg->refdef.vieworg, NULL, NULL, cg_saberFlashPos, -1, CONTENTS_SOLID );
+	CG_Trace( &tr, cg.refdef.vieworg, NULL, NULL, cg_saberFlashPos, -1, CONTENTS_SOLID );
 
 	if ( tr.fraction < 1.0f )
 	{
@@ -6151,6 +5385,31 @@ void CG_SaberClashFlare( void )
 				trap_R_RegisterShader( "gfx/effects/saberFlare" ));
 }
 
+void CG_DottedLine( float x1, float y1, float x2, float y2, float dotSize, int numDots, vec4_t color, float alpha )
+{
+	float x, y, xDiff, yDiff, xStep, yStep;
+	vec4_t colorRGBA;
+	int dotNum = 0;
+
+	VectorCopy4( color, colorRGBA );
+	colorRGBA[3] = alpha;
+
+	trap_R_SetColor( colorRGBA );
+
+	xDiff = x2-x1;
+	yDiff = y2-y1;
+	xStep = xDiff/(float)numDots;
+	yStep = yDiff/(float)numDots;
+
+	for ( dotNum = 0; dotNum < numDots; dotNum++ )
+	{
+		x = x1 + (xStep*dotNum) - (dotSize*0.5f);
+		y = y1 + (yStep*dotNum) - (dotSize*0.5f);
+
+		CG_DrawPic( x, y, dotSize, dotSize, cgs.media.whiteShader );
+	}
+}
+
 void CG_BracketEntity( centity_t *cent, float radius )
 {
 	trace_t tr;
@@ -6158,12 +5417,13 @@ void CG_BracketEntity( centity_t *cent, float radius )
 	float	len, size, lineLength, lineWidth;
 	float	x,	y;
 	clientInfo_t *local;
+	qboolean isEnemy = qfalse;
 
-	VectorSubtract( cent->lerpOrigin, cg->refdef.vieworg, dif );
+	VectorSubtract( cent->lerpOrigin, cg.refdef.vieworg, dif );
 	len = VectorNormalize( dif );
 
-	if ( cg->crosshairClientNum != cent->currentState.clientNum
-		&& (!cg->snap||cg->snap->ps.rocketLockIndex!= cent->currentState.clientNum) )
+	if ( cg.crosshairClientNum != cent->currentState.clientNum
+		&& (!cg.snap||cg.snap->ps.rocketLockIndex!= cent->currentState.clientNum) )
 	{//if they're the entity you're locking onto or under your crosshair, always draw bracket
 		//Hmm... for now, if they're closer than 2000, don't bracket?
 		if ( len < 2000.0f )
@@ -6171,7 +5431,7 @@ void CG_BracketEntity( centity_t *cent, float radius )
 			return;
 		}
 
-		CG_Trace( &tr, cg->refdef.vieworg, NULL, NULL, cent->lerpOrigin, -1, CONTENTS_OPAQUE );
+		CG_Trace( &tr, cg.refdef.vieworg, NULL, NULL, cent->lerpOrigin, -1, CONTENTS_OPAQUE );
 
 		//don't bracket if can't see them
 		if ( tr.fraction < 1.0f )
@@ -6188,23 +5448,35 @@ void CG_BracketEntity( centity_t *cent, float radius )
 	//just to see if it's centered
 	//CG_DrawPic( x-2, y-2, 4, 4, cgs.media.whiteShader );
 
-	local = &cgs.clientinfo[cg->snap->ps.clientNum];
+	local = &cgs.clientinfo[cg.snap->ps.clientNum];
 	if ( cent->currentState.m_iVehicleNum //vehicle has a driver
 		&& cgs.clientinfo[ cent->currentState.m_iVehicleNum-1 ].infoValid )
 	{
-		if ( cgs.clientinfo[ cent->currentState.m_iVehicleNum-1 ].team == local->team )
+		if ( cgs.gametype < GT_TEAM )
+		{//ffa?
+			isEnemy = qtrue;
+			trap_R_SetColor ( g_color_table[ColorIndex(COLOR_RED)] );
+		}
+		else if ( cgs.clientinfo[ cent->currentState.m_iVehicleNum-1 ].team == local->team )
 		{
 			trap_R_SetColor ( g_color_table[ColorIndex(COLOR_GREEN)] );
 		}
 		else
 		{
+			isEnemy = qtrue;
 			trap_R_SetColor ( g_color_table[ColorIndex(COLOR_RED)] );
 		}
 	}
 	else if ( cent->currentState.teamowner )
 	{
-		if ( cent->currentState.teamowner != cg->predictedPlayerState.persistant[PERS_TEAM] )
+		if ( cgs.gametype < GT_TEAM )
+		{//ffa?
+			isEnemy = qtrue;
+			trap_R_SetColor ( g_color_table[ColorIndex(COLOR_RED)] );
+		}
+		else if ( cent->currentState.teamowner != cg.predictedPlayerState.persistant[PERS_TEAM] )
 		{// on enemy team
+			isEnemy = qtrue;
 			trap_R_SetColor ( g_color_table[ColorIndex(COLOR_RED)] );
 		}
 		else
@@ -6269,13 +5541,69 @@ void CG_BracketEntity( centity_t *cent, float radius )
 		//vert
         CG_DrawPic( x+size-lineWidth, y+size-lineLength, lineWidth, lineLength, cgs.media.whiteShader );
 	}
+	//Lead Indicator...
+	if ( cg_drawVehLeadIndicator.integer )
+	{//draw the lead indicator
+		if ( isEnemy )
+		{//an enemy object
+			if ( cent->currentState.NPC_class == CLASS_VEHICLE )
+			{//enemy vehicle
+				if ( !VectorCompare( cent->currentState.pos.trDelta, vec3_origin ) )
+				{//enemy vehicle is moving
+					if ( cg.predictedPlayerState.m_iVehicleNum )
+					{//I'm in a vehicle
+						centity_t		*veh = &cg_entities[cg.predictedPlayerState.m_iVehicleNum];
+						if ( veh //vehicle cent
+							&& veh->m_pVehicle//vehicle
+							&& veh->m_pVehicle->m_pVehicleInfo//vehicle stats
+							&& veh->m_pVehicle->m_pVehicleInfo->weapon[0].ID > VEH_WEAPON_BASE )//valid vehicle weapon
+						{
+							vehWeaponInfo_t *vehWeapon = &g_vehWeaponInfo[veh->m_pVehicle->m_pVehicleInfo->weapon[0].ID];
+							if ( vehWeapon 
+								&& vehWeapon->bIsProjectile//primary weapon's shot is a projectile
+								&& !vehWeapon->bHasGravity//primary weapon's shot is not affected by gravity
+								&& !vehWeapon->fHoming//primary weapon's shot is not homing
+								&& vehWeapon->fSpeed )//primary weapon's shot has speed
+							{//our primary weapon's projectile has a speed
+								vec3_t vehDiff, vehLeadPos;
+								float vehDist, eta;
+								float leadX, leadY;
+								
+								VectorSubtract( cent->lerpOrigin, cg.predictedVehicleState.origin, vehDiff );
+								vehDist = VectorNormalize( vehDiff );
+								eta = (vehDist/vehWeapon->fSpeed);//how many seconds it would take for my primary weapon's projectile to get from my ship to theirs
+								//now extrapolate their position that number of seconds into the future based on their velocity
+								VectorMA( cent->lerpOrigin, eta, cent->currentState.pos.trDelta, vehLeadPos );
+								//now we have where we should be aiming at, project that onto the screen at a 2D co-ord
+								if ( !CG_WorldCoordToScreenCoordFloat(cent->lerpOrigin, &x, &y) )
+								{//off-screen, don't draw it
+									return;
+								}
+								if ( !CG_WorldCoordToScreenCoordFloat(vehLeadPos, &leadX, &leadY) )
+								{//off-screen, don't draw it
+									//just draw the line
+									CG_DottedLine( x, y, leadX, leadY, 1, 10, g_color_table[ColorIndex(COLOR_RED)], 0.5f );
+									return;
+								}
+								//draw a line from the ship's cur pos to the lead pos
+								CG_DottedLine( x, y, leadX, leadY, 1, 10, g_color_table[ColorIndex(COLOR_RED)], 0.5f );
+								//now draw the lead indicator
+								trap_R_SetColor ( g_color_table[ColorIndex(COLOR_RED)] );
+								CG_DrawPic( leadX-8, leadY-8, 16, 16, trap_R_RegisterShader( "gfx/menus/radar/lead" ) );
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 qboolean CG_InFighter( void )
 {
-	if ( cg->predictedPlayerState.m_iVehicleNum )
+	if ( cg.predictedPlayerState.m_iVehicleNum )
 	{//I'm in a vehicle
-		centity_t *vehCent = &cg_entities[cg->predictedPlayerState.m_iVehicleNum];
+		centity_t *vehCent = &cg_entities[cg.predictedPlayerState.m_iVehicleNum];
 	    if ( vehCent 
 			&& vehCent->m_pVehicle 
 			&& vehCent->m_pVehicle->m_pVehicleInfo
@@ -6289,9 +5617,9 @@ qboolean CG_InFighter( void )
 
 qboolean CG_InATST( void )
 {
-	if ( cg->predictedPlayerState.m_iVehicleNum )
+	if ( cg.predictedPlayerState.m_iVehicleNum )
 	{//I'm in a vehicle
-		centity_t *vehCent = &cg_entities[cg->predictedPlayerState.m_iVehicleNum];
+		centity_t *vehCent = &cg_entities[cg.predictedPlayerState.m_iVehicleNum];
 	    if ( vehCent 
 			&& vehCent->m_pVehicle 
 			&& vehCent->m_pVehicle->m_pVehicleInfo
@@ -6306,9 +5634,9 @@ qboolean CG_InATST( void )
 void CG_DrawBracketedEntities( void )
 {
 	int i;
-	for ( i = 0; i < cg->bracketedEntityCount; i++ ) 
+	for ( i = 0; i < cg.bracketedEntityCount; i++ ) 
 	{	
-		centity_t *cent = &cg_entities[cg->bracketedEntities[i]];
+		centity_t *cent = &cg_entities[cg.bracketedEntities[i]];
 		CG_BracketEntity( cent, CG_RadiusForCent( cent ) );
 	}
 }
@@ -6317,8 +5645,6 @@ void CG_DrawBracketedEntities( void )
 static void CG_DrawHolocronIcons(void)
 //--------------------------------------------------------------
 {
-#ifndef _XBOX
-
 	int icon_size = 40;
 	int i = 0;
 	int startx = 10;
@@ -6327,19 +5653,19 @@ static void CG_DrawHolocronIcons(void)
 	int endx = icon_size;
 	int endy = icon_size;
 
-	if (cg->snap->ps.zoomMode)
+	if (cg.snap->ps.zoomMode)
 	{ //don't display over zoom mask
 		return;
 	}
 
-	if (cgs.clientinfo[cg->snap->ps.clientNum].team == TEAM_SPECTATOR)
+	if (cgs.clientinfo[cg.snap->ps.clientNum].team == TEAM_SPECTATOR)
 	{
 		return;
 	}
 
 	while (i < NUM_FORCE_POWERS)
 	{
-		if (cg->snap->ps.holocronBits & (1 << forcePowerSorted[i]))
+		if (cg.snap->ps.holocronBits & (1 << forcePowerSorted[i]))
 		{
 			CG_DrawPic( startx, starty, endx, endy, cgs.media.forcePowerIcons[forcePowerSorted[i]]);
 			starty += (icon_size+2); //+2 for spacing
@@ -6352,7 +5678,6 @@ static void CG_DrawHolocronIcons(void)
 
 		i++;
 	}
-#endif	// _XBOX
 }
 
 static qboolean CG_IsDurationPower(int power)
@@ -6377,52 +5702,30 @@ static void CG_DrawActivePowers(void)
 {
 	int icon_size = 40;
 	int i = 0;
-	int startx = 160;//icon_size*2+16;
-	int starty = 332;//SCREEN_HEIGHT - icon_size*2;
+	int startx = icon_size*2+16;
+	int starty = SCREEN_HEIGHT - icon_size*2;
 
 	int endx = icon_size;
 	int endy = icon_size;
 
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-	{
-		startx -= 27;
-		starty += 72;
-
-		endx = endy = icon_size = 30;
-
-		if(ClientManager::ActiveClientNum() == 0)
-		{
-            starty -= 220;
-		}
-	}
-#endif
-
-	if (cg->snap->ps.zoomMode)
+	if (cg.snap->ps.zoomMode)
 	{ //don't display over zoom mask
 		return;
 	}
 
-	if (cgs.clientinfo[cg->snap->ps.clientNum].team == TEAM_SPECTATOR)
+	if (cgs.clientinfo[cg.snap->ps.clientNum].team == TEAM_SPECTATOR)
 	{
 		return;
 	}
 
 	while (i < NUM_FORCE_POWERS)
 	{
-		if ((cg->snap->ps.fd.forcePowersActive & (1 << forcePowerSorted[i])) &&
+		if ((cg.snap->ps.fd.forcePowersActive & (1 << forcePowerSorted[i])) &&
 			CG_IsDurationPower(forcePowerSorted[i]))
 		{
 			CG_DrawPic( startx, starty, endx, endy, cgs.media.forcePowerIcons[forcePowerSorted[i]]);
 			startx += (icon_size+2); //+2 for spacing
-			int screenw;
-#ifdef _XBOX
-			if(cg->widescreen)
-				screenw = 720;
-			else
-#endif
-			screenw = SCREEN_WIDTH;
-			if ((startx+icon_size) >= screenw-80)
+			if ((startx+icon_size) >= SCREEN_WIDTH-80)
 			{
 				startx = icon_size*2+16;
 				starty += (icon_size+2);
@@ -6433,12 +5736,13 @@ static void CG_DrawActivePowers(void)
 	}
 
 	//additionally, draw an icon force force rage recovery
-	if (cg->snap->ps.fd.forceRageRecoveryTime > cg->time)
+	if (cg.snap->ps.fd.forceRageRecoveryTime > cg.time)
 	{
 		CG_DrawPic( startx, starty, endx, endy, cgs.media.rageRecShader);
 	}
 }
 
+//static qboolean	cg_drawingRocketLockThisFrame = qfalse;
 //--------------------------------------------------------------
 static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 //--------------------------------------------------------------
@@ -6450,32 +5754,28 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 	vec4_t color={0.0f,0.0f,0.0f,0.0f};
 	float lockTimeInterval = ((cgs.gametype==GT_SIEGE)?2400.0f:1200.0f)/16.0f;
 	//FIXME: if in a vehicle, use the vehicle's lockOnTime...
-	int dif = (cg->time - cg->snap->ps.rocketLockTime)/lockTimeInterval;
+	int dif = (cg.time - cg.snap->ps.rocketLockTime)/lockTimeInterval;
 	int i;
 
-	int yOff = 0;
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() == 1)
-		yOff = 220;
-#endif
+//	cg_drawingRocketLockThisFrame = qfalse;
 
-	if (!cg->snap->ps.rocketLockTime)
+	if (!cg.snap->ps.rocketLockTime)
 	{
 		return;
 	}
 
-	if (cgs.clientinfo[cg->snap->ps.clientNum].team == TEAM_SPECTATOR)
+	if (cgs.clientinfo[cg.snap->ps.clientNum].team == TEAM_SPECTATOR)
 	{
 		return;
 	}
 
-	if ( cg->snap->ps.m_iVehicleNum )
+	if ( cg.snap->ps.m_iVehicleNum )
 	{//driving a vehicle
-		centity_t *veh = &cg_entities[cg->snap->ps.m_iVehicleNum];
+		centity_t *veh = &cg_entities[cg.snap->ps.m_iVehicleNum];
 		if ( veh->m_pVehicle )
 		{
 			vehWeaponInfo_t *vehWeapon = NULL;
-			if ( cg->predictedVehicleState.weaponstate == WEAPON_CHARGING_ALT )
+			if ( cg.predictedVehicleState.weaponstate == WEAPON_CHARGING_ALT )
 			{
 				if ( veh->m_pVehicle->m_pVehicleInfo->weapon[1].ID > VEH_WEAPON_BASE 
 					&& veh->m_pVehicle->m_pVehicleInfo->weapon[1].ID < MAX_VEH_WEAPONS )
@@ -6500,30 +5800,30 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 				else
 				{//use the custom vehicle lockOnTime
 					lockTimeInterval = (vehWeapon->iLockOnTime/16.0f);
-					dif = (cg->time - cg->snap->ps.rocketLockTime)/lockTimeInterval;
+					dif = (cg.time - cg.snap->ps.rocketLockTime)/lockTimeInterval;
 				}
 			}
 		}
 	}
 	//We can't check to see in pmove if players are on the same team, so we resort
 	//to just not drawing the lock if a teammate is the locked on ent
-	if (cg->snap->ps.rocketLockIndex >= 0 &&
-		cg->snap->ps.rocketLockIndex < ENTITYNUM_NONE)
+	if (cg.snap->ps.rocketLockIndex >= 0 &&
+		cg.snap->ps.rocketLockIndex < ENTITYNUM_NONE)
 	{
 		clientInfo_t *ci = NULL;
 
-		if (cg->snap->ps.rocketLockIndex < MAX_CLIENTS)
+		if (cg.snap->ps.rocketLockIndex < MAX_CLIENTS)
 		{
-			ci = &cgs.clientinfo[cg->snap->ps.rocketLockIndex];
+			ci = &cgs.clientinfo[cg.snap->ps.rocketLockIndex];
 		}
 		else
 		{
-			ci = cg_entities[cg->snap->ps.rocketLockIndex].npcClient;
+			ci = cg_entities[cg.snap->ps.rocketLockIndex].npcClient;
 		}
 
 		if (ci)
 		{
-			if (ci->team == cgs.clientinfo[cg->snap->ps.clientNum].team)
+			if (ci->team == cgs.clientinfo[cg.snap->ps.clientNum].team)
 			{
 				if (cgs.gametype >= GT_TEAM)
 				{
@@ -6532,7 +5832,7 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 			}
 			else if (cgs.gametype >= GT_TEAM)
 			{
-				centity_t *hitEnt = &cg_entities[cg->snap->ps.rocketLockIndex];
+				centity_t *hitEnt = &cg_entities[cg.snap->ps.rocketLockIndex];
 				if (hitEnt->currentState.eType == ET_NPC &&
 					hitEnt->currentState.NPC_class == CLASS_VEHICLE &&
 					hitEnt->currentState.owner < ENTITYNUM_WORLD)
@@ -6545,7 +5845,7 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 					{
 						ci = cg_entities[hitEnt->currentState.owner].npcClient;
 					}
-					if (ci && ci->team == cgs.clientinfo[cg->snap->ps.clientNum].team)
+					if (ci && ci->team == cgs.clientinfo[cg.snap->ps.clientNum].team)
 					{
 						return;
 					}
@@ -6554,7 +5854,7 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 		}
 	}
 
-	if (cg->snap->ps.rocketLockTime != -1)
+	if (cg.snap->ps.rocketLockTime != -1)
 	{
 		lastvalidlockdif = dif;
 	}
@@ -6573,7 +5873,7 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 	if ( CG_WorldCoordToScreenCoord( org, &cx, &cy ))
 	{
 		// we care about distance from enemy to eye, so this is good enough
-		float sz = Distance( cent->lerpOrigin, cg->refdef.vieworg ) / 1024.0f; 
+		float sz = Distance( cent->lerpOrigin, cg.refdef.vieworg ) / 1024.0f; 
 		
 		if ( sz > 1.0f )
 		{
@@ -6585,6 +5885,11 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 		}
 
 		sz = (1.0f - sz) * (1.0f - sz) * 32 + 6;
+
+		if ( cg.snap->ps.m_iVehicleNum )
+		{
+			sz *= 2.0f;
+		}
 
 		cy += sz * 0.5f;
 		
@@ -6603,7 +5908,7 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 		{
 			if ( dif == 8 )
 			{
-				if ( cg->snap->ps.m_iVehicleNum )
+				if ( cg.snap->ps.m_iVehicleNum )
 				{
 					trap_S_StartSound( org, 0, CHAN_AUTO, trap_S_RegisterSound( "sound/vehicles/weapons/common/lock.wav" ));
 				}
@@ -6614,7 +5919,7 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 			}
 			else
 			{
-				if ( cg->snap->ps.m_iVehicleNum )
+				if ( cg.snap->ps.m_iVehicleNum )
 				{
 					trap_S_StartSound( org, 0, CHAN_AUTO, trap_S_RegisterSound( "sound/vehicles/weapons/common/tick.wav" ));
 				}
@@ -6637,19 +5942,20 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 			trap_R_SetColor( color );
 
 			// our slices are offset by about 45 degrees.
-			CG_DrawRotatePic( cx - sz, cy - sz + yOff, sz, sz, i * 45.0f, trap_R_RegisterShaderNoMip( "gfx/2d/wedge" ));
+			CG_DrawRotatePic( cx - sz, cy - sz, sz, sz, i * 45.0f, trap_R_RegisterShaderNoMip( "gfx/2d/wedge" ));
 		}
 
 		// we are locked and loaded baby
 		if ( dif == 8 )
 		{
-			color[0] = color[1] = color[2] = sin( cg->time * 0.05f ) * 0.5f + 0.5f;
+			color[0] = color[1] = color[2] = sin( cg.time * 0.05f ) * 0.5f + 0.5f;
 			color[3] = 1.0f; // this art is additive, so the alpha value does nothing
 
 			trap_R_SetColor( color );
 
-			CG_DrawPic( cx - sz, cy - sz * 2 + yOff, sz * 2, sz * 2, trap_R_RegisterShaderNoMip( "gfx/2d/lock" ));
+			CG_DrawPic( cx - sz, cy - sz * 2, sz * 2, sz * 2, trap_R_RegisterShaderNoMip( "gfx/2d/lock" ));
 		}
+//		cg_drawingRocketLockThisFrame = qtrue;
 	}
 }
 
@@ -6671,7 +5977,7 @@ qboolean CG_CalcVehicleMuzzlePoint( int entityNum, vec3_t start, vec3_t d_f, vec
 
 		bolt = trap_G2API_AddBolt( vehCent->ghoul2, 0, "*flash1");
 		trap_G2API_GetBoltMatrix( vehCent->ghoul2, 0, bolt, &boltMatrix, 
-									yawOnlyAngles, vehCent->lerpOrigin, cg->time, 
+									yawOnlyAngles, vehCent->lerpOrigin, cg.time, 
 									NULL, vehCent->modelScale );
 
 		// work the matrix axis stuff into the original axis and origins used.
@@ -6684,7 +5990,7 @@ qboolean CG_CalcVehicleMuzzlePoint( int entityNum, vec3_t start, vec3_t d_f, vec
 	else
 	{
 		//check to see if we're a turret gunner on this vehicle
-		if ( cg->predictedPlayerState.generic1 )//as a passenger
+		if ( cg.predictedPlayerState.generic1 )//as a passenger
 		{//passenger in a vehicle
 			if ( vehCent->m_pVehicle
 				&& vehCent->m_pVehicle->m_pVehicleInfo 
@@ -6695,7 +6001,7 @@ qboolean CG_CalcVehicleMuzzlePoint( int entityNum, vec3_t start, vec3_t d_f, vec
 				{
 					if ( vehCent->m_pVehicle->m_pVehicleInfo->turret[turretNum].iAmmoMax )
 					{// valid turret
-						if ( vehCent->m_pVehicle->m_pVehicleInfo->turret[turretNum].passengerNum == cg->predictedPlayerState.generic1 )
+						if ( vehCent->m_pVehicle->m_pVehicleInfo->turret[turretNum].passengerNum == cg.predictedPlayerState.generic1 )
 						{//I control this turret
 							//Go through all muzzles, average their positions and directions and use the result for crosshair trace
 							int vehMuzzle, numMuzzles = 0;
@@ -6744,7 +6050,7 @@ void CG_CalcEWebMuzzlePoint(centity_t *cent, vec3_t start, vec3_t d_f, vec3_t d_
 	{
 		mdxaBone_t boltMatrix;
 
-		trap_G2API_GetBoltMatrix_NoRecNoRot(cent->ghoul2, 0, bolt, &boltMatrix, cent->lerpAngles, cent->lerpOrigin, cg->time, NULL, cent->modelScale);
+		trap_G2API_GetBoltMatrix_NoRecNoRot(cent->ghoul2, 0, bolt, &boltMatrix, cent->lerpAngles, cent->lerpOrigin, cg.time, NULL, cent->modelScale);
 		BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, start);
 		BG_GiveMeVectorFromMatrix(&boltMatrix, NEGATIVE_X, d_f);
 
@@ -6770,38 +6076,38 @@ static void CG_ScanForCrosshairEntity( void ) {
 	int			ignore;
 	qboolean	bVehCheckTraceFromCamPos = qfalse;
 
-	ignore = cg->predictedPlayerState.clientNum;
+	ignore = cg.predictedPlayerState.clientNum;
 
 	if ( cg_dynamicCrosshair.integer )
 	{
 		vec3_t d_f, d_rt, d_up;
 		/*
-		if ( cg->snap->ps.weapon == WP_NONE || 
-			cg->snap->ps.weapon == WP_SABER || 
-			cg->snap->ps.weapon == WP_STUN_BATON)
+		if ( cg.snap->ps.weapon == WP_NONE || 
+			cg.snap->ps.weapon == WP_SABER || 
+			cg.snap->ps.weapon == WP_STUN_BATON)
 		{
-			VectorCopy( cg->refdef.vieworg, start );
-			AngleVectors( cg->refdef.viewangles, d_f, d_rt, d_up );
+			VectorCopy( cg.refdef.vieworg, start );
+			AngleVectors( cg.refdef.viewangles, d_f, d_rt, d_up );
 		}
 		else
 		*/
 		//For now we still want to draw the crosshair in relation to the player's world coordinates
 		//even if we have a melee weapon/no weapon.
-		if ( cg->predictedPlayerState.m_iVehicleNum && (cg->predictedPlayerState.eFlags&EF_NODRAW) )
+		if ( cg.predictedPlayerState.m_iVehicleNum && (cg.predictedPlayerState.eFlags&EF_NODRAW) )
 		{//we're *inside* a vehicle
 			//do the vehicle's crosshair instead
-			centity_t *veh = &cg_entities[cg->predictedPlayerState.m_iVehicleNum];
+			centity_t *veh = &cg_entities[cg.predictedPlayerState.m_iVehicleNum];
 			qboolean gunner = qfalse;
 
-			//if (veh->currentState.owner == cg->predictedPlayerState.clientNum)
+			//if (veh->currentState.owner == cg.predictedPlayerState.clientNum)
 			{ //the pilot
-				ignore = cg->predictedPlayerState.m_iVehicleNum;
-				gunner = CG_CalcVehicleMuzzlePoint(cg->predictedPlayerState.m_iVehicleNum, start, d_f, d_rt, d_up);
+				ignore = cg.predictedPlayerState.m_iVehicleNum;
+				gunner = CG_CalcVehicleMuzzlePoint(cg.predictedPlayerState.m_iVehicleNum, start, d_f, d_rt, d_up);
 			}
 			/*
 			else
 			{ //a passenger
-				ignore = cg->predictedPlayerState.m_iVehicleNum;
+				ignore = cg.predictedPlayerState.m_iVehicleNum;
 				VectorCopy( veh->lerpOrigin, start );
 				AngleVectors( veh->lerpAngles, d_f, d_rt, d_up );
 				VectorMA(start, 32.0f, d_f, start); //super hack
@@ -6810,37 +6116,37 @@ static void CG_ScanForCrosshairEntity( void ) {
 			if ( veh->m_pVehicle 
 				&& veh->m_pVehicle->m_pVehicleInfo 
 				&& veh->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER 
-				&& cg->distanceCull > MAX_XHAIR_DIST_ACCURACY 
+				&& cg.distanceCull > MAX_XHAIR_DIST_ACCURACY 
 				&& !gunner )
 			{	
 				//NOTE: on huge maps, the crosshair gets inaccurate at close range, 
-				//		so we'll do an extra G2 trace from the cg->refdef.vieworg
+				//		so we'll do an extra G2 trace from the cg.refdef.vieworg
 				//		to see if we hit anything closer and auto-aim at it if so
 				bVehCheckTraceFromCamPos = qtrue;
 			}
 		}
-		else if (cg->snap && cg->snap->ps.weapon == WP_EMPLACED_GUN && cg->snap->ps.emplacedIndex &&
-			cg_entities[cg->snap->ps.emplacedIndex].ghoul2 && cg_entities[cg->snap->ps.emplacedIndex].currentState.weapon == WP_NONE)
+		else if (cg.snap && cg.snap->ps.weapon == WP_EMPLACED_GUN && cg.snap->ps.emplacedIndex &&
+			cg_entities[cg.snap->ps.emplacedIndex].ghoul2 && cg_entities[cg.snap->ps.emplacedIndex].currentState.weapon == WP_NONE)
 		{ //locked into our e-web, calc the muzzle from it
-			CG_CalcEWebMuzzlePoint(&cg_entities[cg->snap->ps.emplacedIndex], start, d_f, d_rt, d_up);
+			CG_CalcEWebMuzzlePoint(&cg_entities[cg.snap->ps.emplacedIndex], start, d_f, d_rt, d_up);
 		}
 		else
 		{
-			if (cg->snap && cg->snap->ps.weapon == WP_EMPLACED_GUN && cg->snap->ps.emplacedIndex)
+			if (cg.snap && cg.snap->ps.weapon == WP_EMPLACED_GUN && cg.snap->ps.emplacedIndex)
 			{
 				vec3_t pitchConstraint;
 
-				ignore = cg->snap->ps.emplacedIndex;
+				ignore = cg.snap->ps.emplacedIndex;
 
-				VectorCopy(cg->refdef.viewangles, pitchConstraint);
+				VectorCopy(cg.refdef.viewangles, pitchConstraint);
 
-				if (cg->renderingThirdPerson)
+				if (cg.renderingThirdPerson)
 				{
-					VectorCopy(cg->predictedPlayerState.viewangles, pitchConstraint);
+					VectorCopy(cg.predictedPlayerState.viewangles, pitchConstraint);
 				}
 				else
 				{
-					VectorCopy(cg->refdef.viewangles, pitchConstraint);
+					VectorCopy(cg.refdef.viewangles, pitchConstraint);
 				}
 
 				if (pitchConstraint[PITCH] > 40)
@@ -6854,26 +6160,26 @@ static void CG_ScanForCrosshairEntity( void ) {
 			{
 				vec3_t pitchConstraint;
 
-				if (cg->renderingThirdPerson)
+				if (cg.renderingThirdPerson)
 				{
-					VectorCopy(cg->predictedPlayerState.viewangles, pitchConstraint);
+					VectorCopy(cg.predictedPlayerState.viewangles, pitchConstraint);
 				}
 				else
 				{
-					VectorCopy(cg->refdef.viewangles, pitchConstraint);
+					VectorCopy(cg.refdef.viewangles, pitchConstraint);
 				}
 
 				AngleVectors( pitchConstraint, d_f, d_rt, d_up );
 			}
-			CG_CalcMuzzlePoint(cg->snap->ps.clientNum, start);
+			CG_CalcMuzzlePoint(cg.snap->ps.clientNum, start);
 		}
 
-		VectorMA( start, cg->distanceCull, d_f, end );
+		VectorMA( start, cg.distanceCull, d_f, end );
 	}
 	else
 	{
-		VectorCopy( cg->refdef.vieworg, start );
-		VectorMA( start, 131072, cg->refdef.viewaxis[0], end );
+		VectorCopy( cg.refdef.vieworg, start );
+		VectorMA( start, 131072, cg.refdef.viewaxis[0], end );
 	}
 
 	if ( cg_dynamicCrosshair.integer && cg_dynamicCrosshairPrecision.integer )
@@ -6883,15 +6189,15 @@ static void CG_ScanForCrosshairEntity( void ) {
 		if ( bVehCheckTraceFromCamPos )
 		{
 			//NOTE: this MUST stay up to date with the method used in WP_VehCheckTraceFromCamPos
-			centity_t *veh = &cg_entities[cg->predictedPlayerState.m_iVehicleNum];
+			centity_t *veh = &cg_entities[cg.predictedPlayerState.m_iVehicleNum];
 			trace_t	extraTrace;
 			vec3_t	viewDir2End, extraEnd;
-			float	minAutoAimDist = Distance( veh->lerpOrigin, cg->refdef.vieworg ) + (veh->m_pVehicle->m_pVehicleInfo->length/2.0f) + 200.0f;
+			float	minAutoAimDist = Distance( veh->lerpOrigin, cg.refdef.vieworg ) + (veh->m_pVehicle->m_pVehicleInfo->length/2.0f) + 200.0f;
 
-			VectorSubtract( end, cg->refdef.vieworg, viewDir2End );
+			VectorSubtract( end, cg.refdef.vieworg, viewDir2End );
 			VectorNormalize( viewDir2End );
-			VectorMA( cg->refdef.vieworg, MAX_XHAIR_DIST_ACCURACY, viewDir2End, extraEnd );
-			CG_G2Trace( &extraTrace, cg->refdef.vieworg, vec3_origin, vec3_origin, extraEnd, 
+			VectorMA( cg.refdef.vieworg, MAX_XHAIR_DIST_ACCURACY, viewDir2End, extraEnd );
+			CG_G2Trace( &extraTrace, cg.refdef.vieworg, vec3_origin, vec3_origin, extraEnd, 
 				ignore, CONTENTS_SOLID|CONTENTS_BODY );
 			if ( !extraTrace.allsolid
 				&& !extraTrace.startsolid )
@@ -6900,7 +6206,7 @@ static void CG_ScanForCrosshairEntity( void ) {
 				{
 					if ( (extraTrace.fraction*MAX_XHAIR_DIST_ACCURACY) > minAutoAimDist )
 					{
-						if ( ((extraTrace.fraction*MAX_XHAIR_DIST_ACCURACY)-Distance( veh->lerpOrigin, cg->refdef.vieworg )) < (trace.fraction*cg->distanceCull) )
+						if ( ((extraTrace.fraction*MAX_XHAIR_DIST_ACCURACY)-Distance( veh->lerpOrigin, cg.refdef.vieworg )) < (trace.fraction*cg.distanceCull) )
 						{//this trace hit *something* that's closer than the thing the main trace hit, so use this result instead
 							memcpy( &trace, &extraTrace, sizeof( trace_t ) );
 						}
@@ -6921,12 +6227,12 @@ static void CG_ScanForCrosshairEntity( void ) {
 			cg_entities[trace.entityNum].currentState.trickedentindex2,
 			cg_entities[trace.entityNum].currentState.trickedentindex3,
 			cg_entities[trace.entityNum].currentState.trickedentindex4,
-			cg->snap->ps.clientNum))
+			cg.snap->ps.clientNum))
 		{
-			if (cg->crosshairClientNum == trace.entityNum)
+			if (cg.crosshairClientNum == trace.entityNum)
 			{
-				cg->crosshairClientNum = ENTITYNUM_NONE;
-				cg->crosshairClientTime = 0;
+				cg.crosshairClientNum = ENTITYNUM_NONE;
+				cg.crosshairClientTime = 0;
 			}
 
 			CG_DrawCrosshair(trace.endpos, 0);
@@ -6935,24 +6241,24 @@ static void CG_ScanForCrosshairEntity( void ) {
 		}
 	}
 
-	if (cg->snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR)
+	if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR)
 	{
 		if (trace.entityNum < /*MAX_CLIENTS*/ENTITYNUM_WORLD)
 		{
-			cg->crosshairClientNum = trace.entityNum;
-			cg->crosshairClientTime = cg->time;
+			cg.crosshairClientNum = trace.entityNum;
+			cg.crosshairClientTime = cg.time;
 
-			if (cg->crosshairClientNum < ENTITYNUM_WORLD)
+			if (cg.crosshairClientNum < ENTITYNUM_WORLD)
 			{
-				centity_t *veh = &cg_entities[cg->crosshairClientNum];
+				centity_t *veh = &cg_entities[cg.crosshairClientNum];
 
 				if (veh->currentState.eType == ET_NPC &&
 					veh->currentState.NPC_class == CLASS_VEHICLE &&
 					veh->currentState.owner < MAX_CLIENTS)
 				{ //draw the name of the pilot then
-					cg->crosshairClientNum = veh->currentState.owner;
-					cg->crosshairVehNum = veh->currentState.number;
-					cg->crosshairVehTime = cg->time;
+					cg.crosshairClientNum = veh->currentState.owner;
+					cg.crosshairVehNum = veh->currentState.number;
+					cg.crosshairVehTime = cg.time;
 				}
 			}
 
@@ -6975,8 +6281,8 @@ static void CG_ScanForCrosshairEntity( void ) {
 	}
 
 	// update the fade timer
-	cg->crosshairClientNum = trace.entityNum;
-	cg->crosshairClientTime = cg->time;
+	cg.crosshairClientNum = trace.entityNum;
+	cg.crosshairClientTime = cg.time;
 }
 
 void CG_SanitizeString( char *in, char *out )
@@ -7044,46 +6350,46 @@ static void CG_DrawCrosshairNames( void ) {
 	}
 	//rww - still do the trace, our dynamic crosshair depends on it
 
-	if (cg->crosshairClientNum < ENTITYNUM_WORLD)
+	if (cg.crosshairClientNum < ENTITYNUM_WORLD)
 	{
-		centity_t *veh = &cg_entities[cg->crosshairClientNum];
+		centity_t *veh = &cg_entities[cg.crosshairClientNum];
 
 		if (veh->currentState.eType == ET_NPC &&
 			veh->currentState.NPC_class == CLASS_VEHICLE &&
 			veh->currentState.owner < MAX_CLIENTS)
 		{ //draw the name of the pilot then
-			cg->crosshairClientNum = veh->currentState.owner;
-			cg->crosshairVehNum = veh->currentState.number;
-			cg->crosshairVehTime = cg->time;
+			cg.crosshairClientNum = veh->currentState.owner;
+			cg.crosshairVehNum = veh->currentState.number;
+			cg.crosshairVehTime = cg.time;
 			isVeh = qtrue; //so we know we're drawing the pilot's name
 		}
 	}
 
-	if (cg->crosshairClientNum >= MAX_CLIENTS)
+	if (cg.crosshairClientNum >= MAX_CLIENTS)
 	{
 		return;
 	}
 
-	if (cg_entities[cg->crosshairClientNum].currentState.powerups & (1 << PW_CLOAKED))
+	if (cg_entities[cg.crosshairClientNum].currentState.powerups & (1 << PW_CLOAKED))
 	{
 		return;
 	}
 
 	// draw the name of the player being looked at
-	color = CG_FadeColor( cg->crosshairClientTime, 1000 );
+	color = CG_FadeColor( cg.crosshairClientTime, 1000 );
 	if ( !color ) {
 		trap_R_SetColor( NULL );
 		return;
 	}
 
-	name = cgs.clientinfo[ cg->crosshairClientNum ].name;
+	name = cgs.clientinfo[ cg.crosshairClientNum ].name;
 
 	if (cgs.gametype >= GT_TEAM)
 	{
 		//if (cgs.gametype == GT_SIEGE)
 		if (1)
 		{ //instead of team-based we'll make it oriented based on which team we're on
-			if (cgs.clientinfo[cg->crosshairClientNum].team == cg->predictedPlayerState.persistant[PERS_TEAM])
+			if (cgs.clientinfo[cg.crosshairClientNum].team == cg.predictedPlayerState.persistant[PERS_TEAM])
 			{
 				baseColor = CT_GREEN;
 			}
@@ -7094,7 +6400,7 @@ static void CG_DrawCrosshairNames( void ) {
 		}
 		else
 		{
-			if (cgs.clientinfo[cg->crosshairClientNum].team == TEAM_RED)
+			if (cgs.clientinfo[cg.crosshairClientNum].team == TEAM_RED)
 			{
 				baseColor = CT_RED;
 			}
@@ -7108,8 +6414,8 @@ static void CG_DrawCrosshairNames( void ) {
 	{
 		//baseColor = CT_WHITE;
 		if (cgs.gametype == GT_POWERDUEL &&
-			cgs.clientinfo[cg->snap->ps.clientNum].team != TEAM_SPECTATOR &&
-			cgs.clientinfo[cg->crosshairClientNum].duelTeam == cgs.clientinfo[cg->predictedPlayerState.clientNum].duelTeam)
+			cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR &&
+			cgs.clientinfo[cg.crosshairClientNum].duelTeam == cgs.clientinfo[cg.predictedPlayerState.clientNum].duelTeam)
 		{ //on the same duel team in powerduel, so he's a friend
 			baseColor = CT_GREEN;
 		}
@@ -7119,14 +6425,14 @@ static void CG_DrawCrosshairNames( void ) {
 		}
 	}
 
-	if (cg->snap->ps.duelInProgress)
+	if (cg.snap->ps.duelInProgress)
 	{
-		if (cg->crosshairClientNum != cg->snap->ps.duelIndex)
+		if (cg.crosshairClientNum != cg.snap->ps.duelIndex)
 		{ //grey out crosshair for everyone but your foe if you're in a duel
 			baseColor = CT_BLACK;
 		}
 	}
-	else if (cg_entities[cg->crosshairClientNum].currentState.bolt1)
+	else if (cg_entities[cg.crosshairClientNum].currentState.bolt1)
 	{ //this fellow is in a duel. We just checked if we were in a duel above, so
 	  //this means we aren't and he is. Which of course means our crosshair greys out over him.
 		baseColor = CT_BLACK;
@@ -7139,51 +6445,15 @@ static void CG_DrawCrosshairNames( void ) {
 
 	CG_SanitizeString(name, sanitized);
 
-	int yoff = 0;
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() == 1)
-		yoff = 220;
-#endif
-
 	if (isVeh)
 	{
 		char str[MAX_STRING_CHARS];
 		Com_sprintf(str, MAX_STRING_CHARS, "%s (pilot)", sanitized);
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue) {
-			if(cg->widescreen)
-				UI_DrawProportionalString(360, 80 + yoff, str, UI_CENTER, tcolor);
-			else
-				UI_DrawProportionalString(320, 80 + yoff, str, UI_CENTER, tcolor);
-		}
-		else {
-			if(cg->widescreen)
-				UI_DrawProportionalString(360, 170, str, UI_CENTER, tcolor);
-		else
-#endif
 		UI_DrawProportionalString(320, 170, str, UI_CENTER, tcolor);
-#ifdef _XBOX
-		}
-#endif
 	}
 	else
 	{
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qtrue) {
-            if(cg->widescreen)
-				UI_DrawProportionalString(360, 80 + yoff, sanitized, UI_CENTER, tcolor);
-			else
-				UI_DrawProportionalString(320, 80 + yoff, sanitized, UI_CENTER, tcolor);
-		}
-		else {
-			if(cg->widescreen)
-				UI_DrawProportionalString(360, 170, sanitized, UI_CENTER, tcolor);
-			else
-#endif
 		UI_DrawProportionalString(320, 170, sanitized, UI_CENTER, tcolor);
-#ifdef _XBOX
-		}
-#endif
 	}
 
 	trap_R_SetColor( NULL );
@@ -7200,18 +6470,6 @@ CG_DrawSpectator
 static void CG_DrawSpectator(void) 
 {	
 	const char* s;
-	int yoff = 0, xoff = 0, yo = 0;
-#ifdef _XBOX
-	if (ClientManager::splitScreenMode == qtrue) 
-	{
-		if(ClientManager::ActiveClientNum() == 0)
-			yoff = 220;
-		else
-			yo = 220;
-	}
-	if(cg->widescreen)
-		xoff = 80;
-#endif
 
 	s = CG_GetStringEdString("MP_INGAME", "SPECTATOR");
 	if ((cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL) &&
@@ -7229,21 +6487,16 @@ static void CG_DrawSpectator(void)
 		{
 			Com_sprintf(text, sizeof(text), "%s^7 %s %s", cgs.clientinfo[cgs.duelist1].name, CG_GetStringEdString("MP_INGAME", "SPECHUD_VERSUS"), cgs.clientinfo[cgs.duelist2].name);
 		}
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint ( 360 - CG_Text_Width ( text, 1.0f, 3 ) / 2, 420 - yoff, 1.0f, colorWhite, text, 0, 0, 0, 3 );
-		else
-#endif
-		CG_Text_Paint ( 320 - CG_Text_Width ( text, 1.0f, 3 ) / 2, 420 - yoff, 1.0f, colorWhite, text, 0, 0, 0, 3 );
+		CG_Text_Paint ( 320 - CG_Text_Width ( text, 1.0f, 3 ) / 2, 420, 1.0f, colorWhite, text, 0, 0, 0, 3 );
 
 		trap_R_SetColor( colorTable[CT_WHITE] );
 		if ( cgs.clientinfo[cgs.duelist1].modelIcon )
 		{
-			CG_DrawPic( 70, SCREEN_HEIGHT-(size*1.75) - yoff, size, size, cgs.clientinfo[cgs.duelist1].modelIcon );
+			CG_DrawPic( 10, SCREEN_HEIGHT-(size*1.5), size, size, cgs.clientinfo[cgs.duelist1].modelIcon );
 		}
 		if ( cgs.clientinfo[cgs.duelist2].modelIcon )
 		{
-			CG_DrawPic( SCREEN_WIDTH-size+10 - 70 + xoff, SCREEN_HEIGHT-(size*1.75) - yoff, size, size, cgs.clientinfo[cgs.duelist2].modelIcon );
+			CG_DrawPic( SCREEN_WIDTH-size-10, SCREEN_HEIGHT-(size*1.5), size, size, cgs.clientinfo[cgs.duelist2].modelIcon );
 		}
 
 // nmckenzie: DUEL_HEALTH
@@ -7251,104 +6504,151 @@ static void CG_DrawSpectator(void)
 		{
 			if ( cgs.showDuelHealths >= 1)
 			{	// draw the healths on the two guys - how does this interact with power duel, though?
-				CG_DrawDuelistHealth ( 70, SCREEN_HEIGHT-(size*1.75) - 12 - yoff, 64, 8, 1 );
-				CG_DrawDuelistHealth ( SCREEN_WIDTH-size+10 + xoff, SCREEN_HEIGHT-(size*1.5) - 12 - yoff, 64, 8, 2 );
+				CG_DrawDuelistHealth ( 10, SCREEN_HEIGHT-(size*1.5) - 12, 64, 8, 1 );
+				CG_DrawDuelistHealth ( SCREEN_WIDTH-size-10, SCREEN_HEIGHT-(size*1.5) - 12, 64, 8, 2 );
 			}
 		}
 
 		if (cgs.gametype != GT_POWERDUEL)
 		{
 			Com_sprintf(text, sizeof(text), "%i/%i", cgs.clientinfo[cgs.duelist1].score, cgs.fraglimit );
-			CG_Text_Paint( 90, 340, 1.0f, colorWhite, text, 0, 0, 0, 2 );
+			CG_Text_Paint( 42 - CG_Text_Width( text, 1.0f, 2 ) / 2, SCREEN_HEIGHT-(size*1.5) + 64, 1.0f, colorWhite, text, 0, 0, 0, 2 );
 
 			Com_sprintf(text, sizeof(text), "%i/%i", cgs.clientinfo[cgs.duelist2].score, cgs.fraglimit );
-#ifdef _XBOX
-			if(cg->widescreen)
-				CG_Text_Paint( 720-size+22 - CG_Text_Width( text, 1.0f, 2 ) / 2, SCREEN_HEIGHT-(size*1.5) + 64 - yoff, 1.0f, colorWhite, text, 0, 0, 0, 2 );
-			else
-#endif
-			CG_Text_Paint( 536,340, 1.0f, colorWhite, text, 0, 0, 0, 2 );
+			CG_Text_Paint( SCREEN_WIDTH-size+22 - CG_Text_Width( text, 1.0f, 2 ) / 2, SCREEN_HEIGHT-(size*1.5) + 64, 1.0f, colorWhite, text, 0, 0, 0, 2 );
 		}
 
 		if (cgs.gametype == GT_POWERDUEL && cgs.duelist3 != -1)
 		{
 			if ( cgs.clientinfo[cgs.duelist3].modelIcon )
 			{
-				CG_DrawPic( SCREEN_WIDTH-size+10-70 + xoff, SCREEN_HEIGHT-(size*2.8) - yoff, size, size, cgs.clientinfo[cgs.duelist3].modelIcon );
+				CG_DrawPic( SCREEN_WIDTH-size-10, SCREEN_HEIGHT-(size*2.8), size, size, cgs.clientinfo[cgs.duelist3].modelIcon );
 			}
 		}
 	}
 	else
 	{
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint ( 360 - CG_Text_Width ( s, 1.0f, 3 ) / 2, 400 - yoff, 1.0f, colorWhite, s, 0, 0, 0, 3 );
-		else
-#endif
-		CG_Text_Paint ( 320 - CG_Text_Width ( s, 1.0f, 3 ) / 2, 400 - yoff, 1.0f, colorWhite, s, 0, 0, 0, 3 );
+		CG_Text_Paint ( 320 - CG_Text_Width ( s, 1.0f, 3 ) / 2, 420, 1.0f, colorWhite, s, 0, 0, 0, 3 );
 	}
 
 	if ( cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL ) 
 	{
 		s = CG_GetStringEdString("MP_INGAME", "WAITING_TO_PLAY");	// "waiting to play";
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint ( 360 - CG_Text_Width ( s, 1.0f, 3 ) / 2, 50 + yo, 1.0f, colorWhite, s, 0, 0, 0, 3 );
-		else
-#endif
-		CG_Text_Paint ( 320 - CG_Text_Width ( s, 1.0f, 3 ) / 2, 50 + yo, 1.0f, colorWhite, s, 0, 0, 0, 3 );
-	}
-	else if ( cgs.gametype >= GT_TEAM ) 
-	{
-		//s = "press ESC and use the JOIN menu to play";
-		s = CG_GetStringEdString("MP_INGAME", "SPEC_TEAMJOIN");
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint ( 360 - CG_Text_Width ( s, 1.0f, 3 ) / 2, 420 - yoff, 1.0f, colorWhite, s, 0, 0, 0, 3 );
-		else
-#endif
-		CG_Text_Paint ( 320 - CG_Text_Width ( s, 1.0f, 3 ) / 2, 420 - yoff, 1.0f, colorWhite, s, 0, 0, 0, 3 );
+		CG_Text_Paint ( 320 - CG_Text_Width ( s, 1.0f, 3 ) / 2, 440, 1.0f, colorWhite, s, 0, 0, 0, 3 );
 	}
 	else //if ( cgs.gametype >= GT_TEAM ) 
 	{
 		//s = "press ESC and use the JOIN menu to play";
 		s = CG_GetStringEdString("MP_INGAME", "SPEC_CHOOSEJOIN");
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_Text_Paint ( 360 - CG_Text_Width ( s, 1.0f, 3 ) / 2, 420 - yoff, 1.0f, colorWhite, s, 0, 0, 0, 3 );
-		else
-#endif
-		CG_Text_Paint ( 320 - CG_Text_Width ( s, 1.0f, 3 ) / 2, 420 - yoff, 1.0f, colorWhite, s, 0, 0, 0, 3 );
+		CG_Text_Paint ( 320 - CG_Text_Width ( s, 1.0f, 3 ) / 2, 440, 1.0f, colorWhite, s, 0, 0, 0, 3 );
 	}
 }
 
-float CG_DrawVote(float y)
-{
-	const char* s;
-	int	sec;
+/*
+=================
+CG_DrawVote
+=================
+*/
+static void CG_DrawVote(void) {
+	const char	*s;
+	int		sec;
+	char							sYes[20];
+	char							sNo[20];
+	char							sVote[20];
+	char							sCmd[100];
+	const char*						sParm = 0;
 
 	if ( !cgs.voteTime ) {
-		if(cgs.voteModified)
-		{
-			cgs.votePlaced = qfalse;
-			cgs.voteModified = qfalse;
-		}
-		return y;
+		return;
 	}
 
-	sec = ( VOTE_TIME - ( cg->time - cgs.voteTime ) ) / 1000;
+	// play a talk beep whenever it is modified
+	if ( cgs.voteModified ) {
+		cgs.voteModified = qfalse;
+//		trap_S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
+	}
+
+	sec = ( VOTE_TIME - ( cg.time - cgs.voteTime ) ) / 1000;
 	if ( sec < 0 ) {
 		sec = 0;
 	}
 
-	s	= va("%s %d", CG_GetStringEdString("MP_INGAME", "VOTE_MESSAGE"), sec) ;
-	if(cg->widescreen)
-		CG_Text_Paint (710 - CG_Text_Width( s, 0.7f, FONT_MEDIUM) - 40.0f, y, 0.70f, colorWhite, s,0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-	else
-		CG_Text_Paint (630 - CG_Text_Width( s, 0.7f, FONT_MEDIUM) - 40.0f, y, 0.70f, colorWhite, s,0, 0, ITEM_TEXTSTYLE_OUTLINED, FONT_MEDIUM );
-	y += CG_Text_Height(s, 0.70f, FONT_MEDIUM);
+	if (strncmp(cgs.voteString, "map_restart", 11)==0)
+	{
+		trap_SP_GetStringTextString("MENUS_RESTART_MAP", sCmd, sizeof(sCmd) );
+	}
+	else if (strncmp(cgs.voteString, "vstr nextmap", 12)==0)
+	{
+		trap_SP_GetStringTextString("MENUS_NEXT_MAP", sCmd, sizeof(sCmd) );
+	}
+	else if (strncmp(cgs.voteString, "g_doWarmup", 10)==0)
+	{
+		trap_SP_GetStringTextString("MENUS_WARMUP", sCmd, sizeof(sCmd) );
+	}
+	else if (strncmp(cgs.voteString, "g_gametype", 10)==0)
+	{
+		trap_SP_GetStringTextString("MENUS_GAME_TYPE", sCmd, sizeof(sCmd) );
+		if      ( stricmp("Free For All", cgs.voteString+11)==0 ) 
+		{
+			sParm = CG_GetStringEdString("MENUS", "FREE_FOR_ALL");
+		}
+		else if ( stricmp("Duel", cgs.voteString+11)==0 ) 
+		{
+			sParm = CG_GetStringEdString("MENUS", "DUEL");
+		}
+		else if ( stricmp("Holocron FFA", cgs.voteString+11)==0  ) 
+		{
+			sParm = CG_GetStringEdString("MENUS", "HOLOCRON_FFA");
+		}
+		else if ( stricmp("Power Duel", cgs.voteString+11)==0  ) 
+		{
+			sParm = CG_GetStringEdString("MENUS", "POWERDUEL");
+		}
+		else if ( stricmp("Team FFA", cgs.voteString+11)==0  ) 
+		{
+			sParm = CG_GetStringEdString("MENUS", "TEAM_FFA");
+		}
+		else if ( stricmp("Siege", cgs.voteString+11)==0  ) 
+		{
+			sParm = CG_GetStringEdString("MENUS", "SIEGE");
+		}
+		else if ( stricmp("Capture the Flag", cgs.voteString+11)==0  ) 
+		{
+			sParm = CG_GetStringEdString("MENUS", "CAPTURE_THE_FLAG");
+		}
+		else if ( stricmp("Capture the Ysalamiri", cgs.voteString+11)==0  ) 
+		{
+			sParm = CG_GetStringEdString("MENUS", "CAPTURE_THE_YSALIMARI");
+		} 
+	}
+	else if (strncmp(cgs.voteString, "map", 3)==0)
+	{
+		trap_SP_GetStringTextString("MENUS_NEW_MAP", sCmd, sizeof(sCmd) );
+		sParm = cgs.voteString+4;
+	}
+	else if (strncmp(cgs.voteString, "kick", 4)==0)
+	{
+		trap_SP_GetStringTextString("MENUS_KICK_PLAYER", sCmd, sizeof(sCmd) );
+		sParm = cgs.voteString+5;
+	}
 
-	return y;
+
+
+	trap_SP_GetStringTextString("MENUS_VOTE", sVote, sizeof(sVote) );
+	trap_SP_GetStringTextString("MENUS_YES", sYes, sizeof(sYes) );
+	trap_SP_GetStringTextString("MENUS_NO",  sNo,  sizeof(sNo) );
+
+	if (sParm && sParm[0])
+	{
+		s = va("%s(%i):<%s %s> %s:%i %s:%i", sVote, sec, sCmd, sParm, sYes, cgs.voteYes, sNo, cgs.voteNo);
+	}
+	else
+	{
+		s = va("%s(%i):<%s> %s:%i %s:%i",    sVote, sec, sCmd,        sYes, cgs.voteYes, sNo, cgs.voteNo);
+	}
+	CG_DrawSmallString( 4, 58, s, 1.0F );
+	s = CG_GetStringEdString("MP_INGAME", "OR_PRESS_ESC_THEN_CLICK_VOTE");	//	s = "or press ESC then click Vote";
+	CG_DrawSmallString( 4, 58 + SMALLCHAR_HEIGHT + 2, s, 1.0F );
 }
 
 /*
@@ -7357,22 +6657,6 @@ CG_DrawTeamVote
 =================
 */
 static void CG_DrawTeamVote(void) {
-#ifdef _XBOX
-	int cs_offset;
-
-	if ( cgs.clientinfo->team == TEAM_RED )
-		cs_offset = 0;
-	else if ( cgs.clientinfo->team == TEAM_BLUE )
-		cs_offset = 1;
-	else
-		return;
-
-	if ( !cgs.teamVoteTime[cs_offset] ) {
-		return;
-	}
-
-	assert( 0 );
-#else
 	char	*s;
 	int		sec, cs_offset;
 
@@ -7393,7 +6677,7 @@ static void CG_DrawTeamVote(void) {
 //		trap_S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 	}
 
-	sec = ( VOTE_TIME - ( cg->time - cgs.teamVoteTime[cs_offset] ) ) / 1000;
+	sec = ( VOTE_TIME - ( cg.time - cgs.teamVoteTime[cs_offset] ) ) / 1000;
 	if ( sec < 0 ) {
 		sec = 0;
 	}
@@ -7438,7 +6722,6 @@ static void CG_DrawTeamVote(void) {
 								cgs.teamVoteYes[cs_offset], cgs.teamVoteNo[cs_offset] );
 	}
 	CG_DrawSmallString( 4, 90, s, 1.0F );
-#endif
 }
 
 static qboolean CG_DrawScoreboard() {
@@ -7451,32 +6734,32 @@ static qboolean CG_DrawScoreboard() {
 		menuScoreboard->window.flags &= ~WINDOW_FORCED;
 	}
 	if (cg_paused.integer) {
-		cg->deferredPlayerLoading = 0;
+		cg.deferredPlayerLoading = 0;
 		firstTime = qtrue;
 		return qfalse;
 	}
 
 	// should never happen in Team Arena
-	if (cgs.gametype == GT_SINGLE_PLAYER && cg->predictedPlayerState.pm_type == PM_INTERMISSION ) {
-		cg->deferredPlayerLoading = 0;
+	if (cgs.gametype == GT_SINGLE_PLAYER && cg.predictedPlayerState.pm_type == PM_INTERMISSION ) {
+		cg.deferredPlayerLoading = 0;
 		firstTime = qtrue;
 		return qfalse;
 	}
 
 	// don't draw scoreboard during death while warmup up
-	if ( cg->warmup && !cg->showScores ) {
+	if ( cg.warmup && !cg.showScores ) {
 		return qfalse;
 	}
 
-	if ( cg->showScores || cg->predictedPlayerState.pm_type == PM_DEAD || cg->predictedPlayerState.pm_type == PM_INTERMISSION ) {
+	if ( cg.showScores || cg.predictedPlayerState.pm_type == PM_DEAD || cg.predictedPlayerState.pm_type == PM_INTERMISSION ) {
 		fade = 1.0;
 		fadeColor = colorWhite;
 	} else {
-		fadeColor = CG_FadeColor( cg->scoreFadeTime, FADE_TIME );
+		fadeColor = CG_FadeColor( cg.scoreFadeTime, FADE_TIME );
 		if ( !fadeColor ) {
 			// next time scoreboard comes up, don't print killer
-			cg->deferredPlayerLoading = 0;
-			cg->killerName[0] = 0;
+			cg.deferredPlayerLoading = 0;
+			cg.killerName[0] = 0;
 			firstTime = qtrue;
 			return qfalse;
 		}
@@ -7501,7 +6784,7 @@ static qboolean CG_DrawScoreboard() {
 	}
 
 	// load any models that have been deferred
-	if ( ++cg->deferredPlayerLoading > 10 ) {
+	if ( ++cg.deferredPlayerLoading > 10 ) {
 		CG_LoadDeferredPlayers();
 	}
 
@@ -7520,8 +6803,8 @@ static void CG_DrawIntermission( void ) {
 	//	CG_DrawCenterString();
 	//	return;
 	//}
-	cg->scoreFadeTime = cg->time;
-	cg->scoreBoardShowing = CG_DrawScoreboard();
+	cg.scoreFadeTime = cg.time;
+	cg.scoreBoardShowing = CG_DrawScoreboard();
 }
 
 /*
@@ -7533,7 +6816,7 @@ static qboolean CG_DrawFollow( void )
 {
 	const char	*s;
 
-	if ( !(cg->snap->ps.pm_flags & PMF_FOLLOW) ) 
+	if ( !(cg.snap->ps.pm_flags & PMF_FOLLOW) ) 
 	{
 		return qfalse;
 	}
@@ -7541,7 +6824,7 @@ static qboolean CG_DrawFollow( void )
 //	s = "following";
 	if (cgs.gametype == GT_POWERDUEL)
 	{
-		clientInfo_t *ci = &cgs.clientinfo[ cg->snap->ps.clientNum ];
+		clientInfo_t *ci = &cgs.clientinfo[ cg.snap->ps.clientNum ];
 
 		if (ci->duelTeam == DUELTEAM_LONE)
 		{
@@ -7561,23 +6844,41 @@ static qboolean CG_DrawFollow( void )
 		s = CG_GetStringEdString("MP_INGAME", "FOLLOWING");
 	}
 
-	int yoff = 0, xoff = 0;
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() == 1)
-		yoff = 220;
+	CG_Text_Paint ( 320 - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2, 60, 1.0f, colorWhite, s, 0, 0, 0, FONT_MEDIUM );
 
-	if(cg->widescreen)
-		xoff = 40;
-#endif
-
-	CG_Text_Paint ( 320 - CG_Text_Width ( s, 1.0f, FONT_MEDIUM ) / 2 + xoff, 60 + yoff, 1.0f, colorWhite, s, 0, 0, 0, FONT_MEDIUM );
-
-	s = cgs.clientinfo[ cg->snap->ps.clientNum ].name;
-	CG_Text_Paint ( 320 - CG_Text_Width ( s, 2.0f, FONT_MEDIUM ) / 2 + xoff, 80 + yoff, 2.0f, colorWhite, s, 0, 0, 0, FONT_MEDIUM );
+	s = cgs.clientinfo[ cg.snap->ps.clientNum ].name;
+	CG_Text_Paint ( 320 - CG_Text_Width ( s, 2.0f, FONT_MEDIUM ) / 2, 80, 2.0f, colorWhite, s, 0, 0, 0, FONT_MEDIUM );
 
 	return qtrue;
 }
 
+#if 0
+static void CG_DrawTemporaryStats()
+{ //placeholder for testing (draws ammo and force power)
+	char s[512];
+
+	if (!cg.snap)
+	{
+		return;
+	}
+
+	sprintf(s, "Force: %i", cg.snap->ps.fd.forcePower);
+
+	CG_DrawBigString(SCREEN_WIDTH-164, SCREEN_HEIGHT-dmgIndicSize, s, 1.0f);
+
+	sprintf(s, "Ammo: %i", cg.snap->ps.ammo[weaponData[cg.snap->ps.weapon].ammoIndex]);
+
+	CG_DrawBigString(SCREEN_WIDTH-164, SCREEN_HEIGHT-112, s, 1.0f);
+
+	sprintf(s, "Health: %i", cg.snap->ps.stats[STAT_HEALTH]);
+
+	CG_DrawBigString(8, SCREEN_HEIGHT-dmgIndicSize, s, 1.0f);
+
+	sprintf(s, "Armor: %i", cg.snap->ps.stats[STAT_ARMOR]);
+
+	CG_DrawBigString(8, SCREEN_HEIGHT-112, s, 1.0f);
+}
+#endif
 
 /*
 =================
@@ -7598,11 +6899,11 @@ static void CG_DrawAmmoWarning( void ) {
 		return;
 	}
 
-	if ( !cg->lowAmmoWarning ) {
+	if ( !cg.lowAmmoWarning ) {
 		return;
 	}
 
-	if ( cg->lowAmmoWarning == 2 ) {
+	if ( cg.lowAmmoWarning == 2 ) {
 		s = "OUT OF AMMO";
 	} else {
 		s = "LOW AMMO WARNING";
@@ -7627,7 +6928,7 @@ static void CG_DrawWarmup( void ) {
 	int			cw;
 	const char	*s;
 
-	sec = cg->warmup;
+	sec = cg.warmup;
 	if ( !sec ) {
 		return;
 	}
@@ -7635,9 +6936,9 @@ static void CG_DrawWarmup( void ) {
 	if ( sec < 0 ) {
 //		s = "Waiting for players";		
 		s = CG_GetStringEdString("MP_INGAME", "WAITING_FOR_PLAYERS");
-		w = RE_Font_StrLenPixels( s, 1, 1.0f );
-		RE_Font_DrawString( 320 - w/2, 60, s, g_color_table[7], 1, -1, 1.0f );
-		cg->warmupCount = 0;
+		w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
+		CG_DrawBigString(320 - w / 2, 24, s, 1.0F);
+		cg.warmupCount = 0;
 		return;
 	}
 
@@ -7712,15 +7013,15 @@ static void CG_DrawWarmup( void ) {
 		CG_Text_Paint(320 - w / 2, 90, 1.5f, colorWhite, s, 0, 0, ITEM_TEXTSTYLE_SHADOWEDMORE,FONT_MEDIUM);
 	}
 
-	sec = ( sec - cg->time ) / 1000;
+	sec = ( sec - cg.time ) / 1000;
 	if ( sec < 0 ) {
-		cg->warmup = 0;
+		cg.warmup = 0;
 		sec = 0;
 	}
 //	s = va( "Starts in: %i", sec + 1 );
 	s = va( "%s: %i",CG_GetStringEdString("MP_INGAME", "STARTS_IN"), sec + 1 );
-	if ( sec != cg->warmupCount ) {
-		cg->warmupCount = sec;
+	if ( sec != cg.warmupCount ) {
+		cg.warmupCount = sec;
 
 		if (cgs.gametype != GT_SIEGE)
 		{
@@ -7740,7 +7041,7 @@ static void CG_DrawWarmup( void ) {
 		}
 	}
 	scale = 0.45f;
-	switch ( cg->warmupCount ) {
+	switch ( cg.warmupCount ) {
 	case 0:
 		cw = 28;
 		scale = 1.25f;
@@ -7770,12 +7071,12 @@ CG_DrawTimedMenus
 =================
 */
 void CG_DrawTimedMenus() {
-	if (cg->voiceTime) {
-		int t = cg->time - cg->voiceTime;
+	if (cg.voiceTime) {
+		int t = cg.time - cg.voiceTime;
 		if ( t > 2500 ) {
 			Menus_CloseByName("voiceMenu");
 			trap_Cvar_Set("cl_conXOffset", "0");
-			cg->voiceTime = 0;
+			cg.voiceTime = 0;
 		}
 	}
 }
@@ -7787,14 +7088,8 @@ void CG_DrawFlagStatus()
 	int team = 0;
 	int startDrawPos = 2;
 	int ico_size = 32;
-	int yOff = 0;
 
-#ifdef _XBOX
-	if(ClientManager::ActiveClientNum() == 0)
-		yOff = 220;
-#endif
-
-	if (!cg->snap)
+	if (!cg.snap)
 	{
 		return;
 	}
@@ -7804,7 +7099,7 @@ void CG_DrawFlagStatus()
 		return;
 	}
 
-	team = cg->snap->ps.persistant[PERS_TEAM];
+	team = cg.snap->ps.persistant[PERS_TEAM];
 
 	if (cgs.gametype == GT_CTY)
 	{
@@ -7836,22 +7131,22 @@ void CG_DrawFlagStatus()
 	if (CG_YourTeamHasFlag())
 	{
 		//CG_DrawPic( startDrawPos, 330, ico_size, ico_size, theirFlagShader );
-		CG_DrawPic( 60, 290-startDrawPos - yOff, ico_size, ico_size, theirFlagShader );
+		CG_DrawPic( 2, 330-startDrawPos, ico_size, ico_size, theirFlagShader );
 		startDrawPos += ico_size+2;
 	}
 
 	if (CG_OtherTeamHasFlag())
 	{
 		//CG_DrawPic( startDrawPos, 330, ico_size, ico_size, myFlagTakenShader );
-		CG_DrawPic( 60, 290-startDrawPos - yOff, ico_size, ico_size, myFlagTakenShader );
+		CG_DrawPic( 2, 330-startDrawPos, ico_size, ico_size, myFlagTakenShader );
 	}
 }
 
 //draw meter showing jetpack fuel when it's not full
 #define JPFUELBAR_H			100.0f
 #define JPFUELBAR_W			20.0f
-#define JPFUELBAR_X			560.0f
-#define JPFUELBAR_Y			230.0f
+#define JPFUELBAR_X			(SCREEN_WIDTH-JPFUELBAR_W-8.0f)
+#define JPFUELBAR_Y			260.0f
 void CG_DrawJetpackFuel(void)
 {
 	vec4_t aColor;
@@ -7859,11 +7154,7 @@ void CG_DrawJetpackFuel(void)
 	vec4_t cColor;
 	float x = JPFUELBAR_X;
 	float y = JPFUELBAR_Y;
-#ifdef _XBOX
-	if(cg->widescreen) 
-		x += 80;
-#endif
-	float percent = ((float)cg->snap->ps.jetpackFuel/100.0f)*JPFUELBAR_H;
+	float percent = ((float)cg.snap->ps.jetpackFuel/100.0f)*JPFUELBAR_H;
 
 	if (percent > JPFUELBAR_H)
 	{
@@ -7897,7 +7188,7 @@ void CG_DrawJetpackFuel(void)
 	CG_DrawRect(x, y, JPFUELBAR_W, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
 
 	//now draw the part to show how much health there is in the color specified
-	CG_FillRect(x, y+1.0f+(JPFUELBAR_H-percent), JPFUELBAR_W-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-percent), aColor);
+	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-percent), JPFUELBAR_W-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-percent), aColor);
 
 	//then draw the other part greyed out
 	CG_FillRect(x+1.0f, y+1.0f, JPFUELBAR_W-1.0f, JPFUELBAR_H-percent, cColor);
@@ -7915,7 +7206,7 @@ void CG_DrawEWebHealth(void)
 	vec4_t cColor;
 	float x = EWEBHEALTH_X;
 	float y = EWEBHEALTH_Y;
-	centity_t *eweb = &cg_entities[cg->predictedPlayerState.emplacedIndex];
+	centity_t *eweb = &cg_entities[cg.predictedPlayerState.emplacedIndex];
 	float percent = ((float)eweb->currentState.health/eweb->currentState.maxhealth)*EWEBHEALTH_H;
 
 	if (percent > EWEBHEALTH_H)
@@ -7929,11 +7220,11 @@ void CG_DrawEWebHealth(void)
 	}
 
 	//kind of hacky, need to pass a coordinate in here
-	if (cg->snap->ps.jetpackFuel < 100)
+	if (cg.snap->ps.jetpackFuel < 100)
 	{
 		x -= (JPFUELBAR_W+8.0f);
 	}
-	if (cg->snap->ps.cloakFuel < 100)
+	if (cg.snap->ps.cloakFuel < 100)
 	{
 		x -= (JPFUELBAR_W+8.0f);
 	}
@@ -7969,8 +7260,8 @@ void CG_DrawEWebHealth(void)
 //draw meter showing cloak fuel when it's not full
 #define CLFUELBAR_H			100.0f
 #define CLFUELBAR_W			20.0f
-#define CLFUELBAR_X			560.0f
-#define CLFUELBAR_Y			220.0f
+#define CLFUELBAR_X			(SCREEN_WIDTH-CLFUELBAR_W-8.0f)
+#define CLFUELBAR_Y			260.0f
 void CG_DrawCloakFuel(void)
 {
 	vec4_t aColor;
@@ -7978,14 +7269,14 @@ void CG_DrawCloakFuel(void)
 	vec4_t cColor;
 	float x = CLFUELBAR_X;
 	float y = CLFUELBAR_Y;
-	float percent = ((float)cg->snap->ps.cloakFuel/100.0f)*CLFUELBAR_H;
+	float percent = ((float)cg.snap->ps.cloakFuel/100.0f)*CLFUELBAR_H;
 
 	if (percent > CLFUELBAR_H)
 	{
 		return;
 	}
 
-	if ( cg->snap->ps.jetpackFuel < 100 )
+	if ( cg.snap->ps.jetpackFuel < 100 )
 	{//if drawing jetpack fuel bar too, then move this over...?
 		x -= (JPFUELBAR_W+8.0f);
 	}
@@ -8023,7 +7314,6 @@ void CG_DrawCloakFuel(void)
 	CG_FillRect(x+1.0f, y+1.0f, CLFUELBAR_W-1.0f, CLFUELBAR_H-percent, cColor);
 }
 
-#ifndef _XBOX
 int cgRageTime = 0;
 int cgRageFadeTime = 0;
 float cgRageFadeVal = 0;
@@ -8043,15 +7333,9 @@ float cgProtectFadeVal = 0;
 int cgYsalTime = 0;
 int cgYsalFadeTime = 0;
 float cgYsalFadeVal = 0;
-#endif
 
-#ifdef _XBOX
-qboolean gCGHasFallVector[2] = {qfalse, qfalse};
-vec3_t gCGFallVector[2];
-#else
 qboolean gCGHasFallVector = qfalse;
 vec3_t gCGFallVector;
-#endif
 
 /*
 =================
@@ -8092,16 +7376,6 @@ static void CG_DrawSiegeTimer(int timeRemaining, qboolean isMyTeam)
 	if (item)
 	{
 		trap_R_SetColor( item->window.foreColor );
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_DrawPic( 
-			item->window.rect.x + 80, 
-			item->window.rect.y, 
-			item->window.rect.w, 
-			item->window.rect.h, 
-			item->window.background );
-		else
-#endif
 		CG_DrawPic( 
 			item->window.rect.x, 
 			item->window.rect.y, 
@@ -8137,16 +7411,6 @@ static void CG_DrawSiegeTimer(int timeRemaining, qboolean isMyTeam)
 	item = Menu_FindItemByName(menuHUD, "timer");
 	if (item)
 	{
-#ifdef _XBOX
-		if(cg->widescreen)
-			UI_DrawProportionalString( 
-			item->window.rect.x + 80, 
-			item->window.rect.y, 
-			timeStr,
-			UI_SMALLFONT|UI_DROPSHADOW, 
-			colorTable[fColor] );
-		else
-#endif
 		UI_DrawProportionalString( 
 			item->window.rect.x, 
 			item->window.rect.y, 
@@ -8176,16 +7440,6 @@ static void CG_DrawSiegeDeathTimer( int timeRemaining )
 	if (item)
 	{
 		trap_R_SetColor( item->window.foreColor );
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_DrawPic( 
-			item->window.rect.x + 80, 
-			item->window.rect.y, 
-			item->window.rect.w, 
-			item->window.rect.h, 
-			item->window.background );
-		else
-#endif
 		CG_DrawPic( 
 			item->window.rect.x, 
 			item->window.rect.y, 
@@ -8214,16 +7468,6 @@ static void CG_DrawSiegeDeathTimer( int timeRemaining )
 	item = Menu_FindItemByName(menuHUD, "deathtimer");
 	if (item)
 	{
-#ifdef _XBOX
-		if(cg->widescreen)
-			UI_DrawProportionalString( 
-			item->window.rect.x + 80, 
-			item->window.rect.y, 
-			timeStr,
-			UI_SMALLFONT|UI_DROPSHADOW, 
-			item->window.foreColor );
-		else
-#endif
 		UI_DrawProportionalString( 
 			item->window.rect.x, 
 			item->window.rect.y, 
@@ -8272,9 +7516,9 @@ static void CG_DrawSiegeHUDItem(void)
 	origin[0] = len / 0.268;
 
 	VectorClear(angles);
-	angles[YAW] = cg->autoAngles[YAW];
+	angles[YAW] = cg.autoAngles[YAW];
 
-	CG_Draw3DModel( 64, 48, 64, 64, handle, g2, cent->currentState.g2radius, 0, origin, angles );
+	CG_Draw3DModel( 8, 8, 64, 64, handle, g2, cent->currentState.g2radius, 0, origin, angles );
 
 	cgSiegeEntityRender = 0; //reset for next frame
 }
@@ -8312,7 +7556,7 @@ void CG_ChatBox_StrInsert(char *buffer, int place, char *str)
 //add chatbox string
 void CG_ChatBox_AddString(char *chatStr)
 {
-	chatBoxItem_t *chat = &cg->chatItems[cg->chatItemActive];
+	chatBoxItem_t *chat = &cg.chatItems[cg.chatItemActive];
 	float chatLen;
 
 	if (cg_chatBox.integer<=0)
@@ -8328,7 +7572,7 @@ void CG_ChatBox_AddString(char *chatStr)
 	}
 
 	strcpy(chat->string, chatStr);
-	chat->time = cg->time + cg_chatBox.integer;
+	chat->time = cg.time + cg_chatBox.integer;
 
 	chat->lines = 1;
 
@@ -8372,10 +7616,10 @@ void CG_ChatBox_AddString(char *chatStr)
 		}
 	}
 
-	cg->chatItemActive++;
-	if (cg->chatItemActive >= MAX_CHATBOX_ITEMS)
+	cg.chatItemActive++;
+	if (cg.chatItemActive >= MAX_CHATBOX_ITEMS)
 	{
-		cg->chatItemActive = 0;
+		cg.chatItemActive = 0;
 	}
 }
 
@@ -8403,7 +7647,7 @@ static CGAME_INLINE void CG_ChatBox_DrawStrings(void)
 	int linesToDraw = 0;
 	int i = 0;
 	int x = 30;
-	int y = cg->scoreBoardShowing ? 475 : cg_chatBoxHeight.integer;
+	int y = cg.scoreBoardShowing ? 475 : cg_chatBoxHeight.integer;
 	float fontScale = 0.65f;
 
 	if (!cg_chatBox.integer)
@@ -8415,7 +7659,7 @@ static CGAME_INLINE void CG_ChatBox_DrawStrings(void)
 
 	while (i < MAX_CHATBOX_ITEMS)
 	{
-		if (cg->chatItems[i].time >= cg->time)
+		if (cg.chatItems[i].time >= cg.time)
 		{
 			int check = numToDraw;
 			int insertionPoint = numToDraw;
@@ -8423,15 +7667,15 @@ static CGAME_INLINE void CG_ChatBox_DrawStrings(void)
 			while (check >= 0)
 			{
 				if (drawThese[check] &&
-					cg->chatItems[i].time < drawThese[check]->time)
+					cg.chatItems[i].time < drawThese[check]->time)
 				{ //insert here
 					insertionPoint = check;
 				}
 				check--;
 			}
-			CG_ChatBox_ArrayInsert(drawThese, insertionPoint, MAX_CHATBOX_ITEMS, &cg->chatItems[i]);
+			CG_ChatBox_ArrayInsert(drawThese, insertionPoint, MAX_CHATBOX_ITEMS, &cg.chatItems[i]);
 			numToDraw++;
-			linesToDraw += cg->chatItems[i].lines;
+			linesToDraw += cg.chatItems[i].lines;
 		}
 		i++;
 	}
@@ -8454,665 +7698,20 @@ static CGAME_INLINE void CG_ChatBox_DrawStrings(void)
 	}
 }
 
-
-#ifdef _XBOX
 static void CG_Draw2DScreenTints( void )
 {
 	float			rageTime, rageRecTime, absorbTime, protectTime, ysalTime;
 	vec4_t			hcolor;
-	if (cgs.clientinfo[cg->snap->ps.clientNum].team != TEAM_SPECTATOR)
+	if (cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR)
 	{
-		if (cg->snap->ps.fd.forcePowersActive & (1 << FP_RAGE))
-		{
-			if (!ClientManager::ActiveClient().cgRageTime)
-			{
-				ClientManager::ActiveClient().cgRageTime = cg->time;
-			}
-			
-			rageTime = (float)(cg->time - ClientManager::ActiveClient().cgRageTime);
-			
-			rageTime /= 9000;
-			
-			if (rageTime < 0)
-			{
-				rageTime = 0;
-			}
-			if (rageTime > 0.15)
-			{
-				rageTime = 0.15;
-			}
-			
-			hcolor[3] = rageTime;
-			hcolor[0] = 0.7;
-			hcolor[1] = 0;
-			hcolor[2] = 0;
-			
-			if (!cg->renderingThirdPerson)
-			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
-				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
-			}
-			
-			ClientManager::ActiveClient().cgRageFadeTime = 0;
-			ClientManager::ActiveClient().cgRageFadeVal = 0;
-		}
-		else if (ClientManager::ActiveClient().cgRageTime)
-		{
-			if (!ClientManager::ActiveClient().cgRageFadeTime)
-			{
-				ClientManager::ActiveClient().cgRageFadeTime = cg->time;
-				ClientManager::ActiveClient().cgRageFadeVal = 0.15;
-			}
-			
-			rageTime = ClientManager::ActiveClient().cgRageFadeVal;
-			
-			ClientManager::ActiveClient().cgRageFadeVal -= (cg->time - ClientManager::ActiveClient().cgRageFadeTime)*0.000005;
-			
-			if (rageTime < 0)
-			{
-				rageTime = 0;
-			}
-			if (rageTime > 0.15)
-			{
-				rageTime = 0.15;
-			}
-			
-			if (cg->snap->ps.fd.forceRageRecoveryTime > cg->time)
-			{
-				float checkRageRecTime = rageTime;
-				
-				if (checkRageRecTime < 0.15)
-				{
-					checkRageRecTime = 0.15;
-				}
-				
-				hcolor[3] = checkRageRecTime;
-				hcolor[0] = rageTime*4;
-				if (hcolor[0] < 0.2)
-				{
-					hcolor[0] = 0.2;
-				}
-				hcolor[1] = 0.2;
-				hcolor[2] = 0.2;
-			}
-			else
-			{
-				hcolor[3] = rageTime;
-				hcolor[0] = 0.7;
-				hcolor[1] = 0;
-				hcolor[2] = 0;
-			}
-			
-			if (!cg->renderingThirdPerson && rageTime)
-			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
-				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
-			}
-			else
-			{
-				if (cg->snap->ps.fd.forceRageRecoveryTime > cg->time)
-				{
-					hcolor[3] = 0.15;
-					hcolor[0] = 0.2;
-					hcolor[1] = 0.2;
-					hcolor[2] = 0.2;
-#ifdef _XBOX
-					int wx = 0;
-					int wy = 0;
-					int ww = SCREEN_WIDTH;
-					if(cg->widescreen)
-						ww = 720;
-					int wh = SCREEN_HEIGHT;
-
-					if(ClientManager::splitScreenMode == qtrue) {
-						wh = SCREEN_HEIGHT / 2;
-
-						if(ClientManager::ActiveClientNum() == 1) {
-							wy = SCREEN_HEIGHT / 2;
-						}
-					}
-
-					CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
-					CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
-				}
-				ClientManager::ActiveClient().cgRageTime = 0;
-			}
-		}
-		else if (cg->snap->ps.fd.forceRageRecoveryTime > cg->time)
-		{
-			if (!ClientManager::ActiveClient().cgRageRecTime)
-			{
-				ClientManager::ActiveClient().cgRageRecTime = cg->time;
-			}
-			
-			rageRecTime = (float)(cg->time - ClientManager::ActiveClient().cgRageRecTime);
-			
-			rageRecTime /= 9000;
-			
-			if (rageRecTime < 0.15)//0)
-			{
-				rageRecTime = 0.15;//0;
-			}
-			if (rageRecTime > 0.15)
-			{
-				rageRecTime = 0.15;
-			}
-			
-			hcolor[3] = rageRecTime;
-			hcolor[0] = 0.2;
-			hcolor[1] = 0.2;
-			hcolor[2] = 0.2;
-			
-			if (!cg->renderingThirdPerson)
-			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
-				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
-			}
-			
-			ClientManager::ActiveClient().cgRageRecFadeTime = 0;
-			ClientManager::ActiveClient().cgRageRecFadeVal = 0;
-		}
-		else if (ClientManager::ActiveClient().cgRageRecTime)
-		{
-			if (!ClientManager::ActiveClient().cgRageRecFadeTime)
-			{
-				ClientManager::ActiveClient().cgRageRecFadeTime = cg->time;
-				ClientManager::ActiveClient().cgRageRecFadeVal = 0.15;
-			}
-			
-			rageRecTime = ClientManager::ActiveClient().cgRageRecFadeVal;
-			
-			ClientManager::ActiveClient().cgRageRecFadeVal -= (cg->time - ClientManager::ActiveClient().cgRageRecFadeTime)*0.000005;
-			
-			if (rageRecTime < 0)
-			{
-				rageRecTime = 0;
-			}
-			if (rageRecTime > 0.15)
-			{
-				rageRecTime = 0.15;
-			}
-			
-			hcolor[3] = rageRecTime;
-			hcolor[0] = 0.2;
-			hcolor[1] = 0.2;
-			hcolor[2] = 0.2;
-			
-			if (!cg->renderingThirdPerson && rageRecTime)
-			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
-				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
-			}
-			else
-			{
-				ClientManager::ActiveClient().cgRageRecTime = 0;
-			}
-		}
-		
-		if (cg->snap->ps.fd.forcePowersActive & (1 << FP_ABSORB))
-		{
-			if (!ClientManager::ActiveClient().cgAbsorbTime)
-			{
-				ClientManager::ActiveClient().cgAbsorbTime = cg->time;
-			}
-			
-			absorbTime = (float)(cg->time - ClientManager::ActiveClient().cgAbsorbTime);
-			
-			absorbTime /= 9000;
-			
-			if (absorbTime < 0)
-			{
-				absorbTime = 0;
-			}
-			if (absorbTime > 0.15)
-			{
-				absorbTime = 0.15;
-			}
-			
-			hcolor[3] = absorbTime/2;
-			hcolor[0] = 0;
-			hcolor[1] = 0;
-			hcolor[2] = 0.7;
-			
-			if (!cg->renderingThirdPerson)
-			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
-				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
-			}
-			
-			ClientManager::ActiveClient().cgAbsorbFadeTime = 0;
-			ClientManager::ActiveClient().cgAbsorbFadeVal = 0;
-		}
-		else if (ClientManager::ActiveClient().cgAbsorbTime)
-		{
-			if (!ClientManager::ActiveClient().cgAbsorbFadeTime)
-			{
-				ClientManager::ActiveClient().cgAbsorbFadeTime = cg->time;
-				ClientManager::ActiveClient().cgAbsorbFadeVal = 0.15;
-			}
-			
-			absorbTime = ClientManager::ActiveClient().cgAbsorbFadeVal;
-			
-			ClientManager::ActiveClient().cgAbsorbFadeVal -= (cg->time - ClientManager::ActiveClient().cgAbsorbFadeTime)*0.000005;
-			
-			if (absorbTime < 0)
-			{
-				absorbTime = 0;
-			}
-			if (absorbTime > 0.15)
-			{
-				absorbTime = 0.15;
-			}
-			
-			hcolor[3] = absorbTime/2;
-			hcolor[0] = 0;
-			hcolor[1] = 0;
-			hcolor[2] = 0.7;
-			
-			if (!cg->renderingThirdPerson && absorbTime)
-			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
-				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
-			}
-			else
-			{
-				ClientManager::ActiveClient().cgAbsorbTime = 0;
-			}
-		}
-		
-		if (cg->snap->ps.fd.forcePowersActive & (1 << FP_PROTECT))
-		{
-			if (!ClientManager::ActiveClient().cgProtectTime)
-			{
-				ClientManager::ActiveClient().cgProtectTime = cg->time;
-			}
-			
-			protectTime = (float)(cg->time - ClientManager::ActiveClient().cgProtectTime);
-			
-			protectTime /= 9000;
-			
-			if (protectTime < 0)
-			{
-				protectTime = 0;
-			}
-			if (protectTime > 0.15)
-			{
-				protectTime = 0.15;
-			}
-			
-			hcolor[3] = protectTime/2;
-			hcolor[0] = 0;
-			hcolor[1] = 0.7;
-			hcolor[2] = 0;
-			
-			if (!cg->renderingThirdPerson)
-			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
-				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
-			}
-			
-			ClientManager::ActiveClient().cgProtectFadeTime = 0;
-			ClientManager::ActiveClient().cgProtectFadeVal = 0;
-		}
-		else if (ClientManager::ActiveClient().cgProtectTime)
-		{
-			if (!ClientManager::ActiveClient().cgProtectFadeTime)
-			{
-				ClientManager::ActiveClient().cgProtectFadeTime = cg->time;
-				ClientManager::ActiveClient().cgProtectFadeVal = 0.15;
-			}
-			
-			protectTime = ClientManager::ActiveClient().cgProtectFadeVal;
-			
-			ClientManager::ActiveClient().cgProtectFadeVal -= (cg->time - ClientManager::ActiveClient().cgProtectFadeTime)*0.000005;
-			
-			if (protectTime < 0)
-			{
-				protectTime = 0;
-			}
-			if (protectTime > 0.15)
-			{
-				protectTime = 0.15;
-			}
-			
-			hcolor[3] = protectTime/2;
-			hcolor[0] = 0;
-			hcolor[1] = 0.7;
-			hcolor[2] = 0;
-			
-			if (!cg->renderingThirdPerson && protectTime)
-			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
-				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
-			}
-			else
-			{
-				ClientManager::ActiveClient().cgProtectTime = 0;
-			}
-		}
-		
-		if (cg->snap->ps.rocketLockIndex != ENTITYNUM_NONE && (cg->time - cg->snap->ps.rocketLockTime) > 0)
-		{
-			CG_DrawRocketLocking( cg->snap->ps.rocketLockIndex, cg->snap->ps.rocketLockTime );
-		}
-		
-		if (BG_HasYsalamiri(cgs.gametype, &cg->snap->ps))
-		{
-			if (!ClientManager::ActiveClient().cgYsalTime)
-			{
-				ClientManager::ActiveClient().cgYsalTime = cg->time;
-			}
-			
-			ysalTime = (float)(cg->time - ClientManager::ActiveClient().cgYsalTime);
-			
-			ysalTime /= 9000;
-			
-			if (ysalTime < 0)
-			{
-				ysalTime = 0;
-			}
-			if (ysalTime > 0.15)
-			{
-				ysalTime = 0.15;
-			}
-			
-			hcolor[3] = ysalTime/2;
-			hcolor[0] = 0.7;
-			hcolor[1] = 0.7;
-			hcolor[2] = 0;
-			
-			if (!cg->renderingThirdPerson)
-			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
-				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
-			}
-			
-			ClientManager::ActiveClient().cgYsalFadeTime = 0;
-			ClientManager::ActiveClient().cgYsalFadeVal = 0;
-		}
-		else if (ClientManager::ActiveClient().cgYsalTime)
-		{
-			if (!ClientManager::ActiveClient().cgYsalFadeTime)
-			{
-				ClientManager::ActiveClient().cgYsalFadeTime = cg->time;
-				ClientManager::ActiveClient().cgYsalFadeVal = 0.15;
-			}
-			
-			ysalTime = ClientManager::ActiveClient().cgYsalFadeVal;
-			
-			ClientManager::ActiveClient().cgYsalFadeVal -= (cg->time - ClientManager::ActiveClient().cgYsalFadeTime)*0.000005;
-			
-			if (ysalTime < 0)
-			{
-				ysalTime = 0;
-			}
-			if (ysalTime > 0.15)
-			{
-				ysalTime = 0.15;
-			}
-			
-			hcolor[3] = ysalTime/2;
-			hcolor[0] = 0.7;
-			hcolor[1] = 0.7;
-			hcolor[2] = 0;
-			
-			if (!cg->renderingThirdPerson && ysalTime)
-			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
-				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
-			}
-			else
-			{
-				ClientManager::ActiveClient().cgYsalTime = 0;
-			}
-		}
-	}
-
-	if ( (cg->refdef.viewContents&CONTENTS_LAVA) )
-	{//tint screen red
-		float phase = cg->time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
-		hcolor[3] = 0.5 + (0.15f*sin( phase ));
-		hcolor[0] = 0.7f;
-		hcolor[1] = 0;
-		hcolor[2] = 0;
-		
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_DrawRect( 0, 0, 720, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
-		else
-#endif
-		CG_DrawRect( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
-	}
-	else if ( (cg->refdef.viewContents&CONTENTS_SLIME) )
-	{//tint screen green
-		float phase = cg->time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
-		hcolor[3] = 0.4 + (0.1f*sin( phase ));
-		hcolor[0] = 0;
-		hcolor[1] = 0.7f;
-		hcolor[2] = 0;
-		
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_DrawRect( 0, 0, 720, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
-		else
-#endif
-		CG_DrawRect( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
-	}
-	else if ( (cg->refdef.viewContents&CONTENTS_WATER) )
-	{//tint screen light blue -- FIXME: don't do this if CONTENTS_FOG? (in case someone *does* make a water shader with fog in it?)
-		float phase = cg->time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
-		hcolor[3] = 0.3 + (0.05f*sin( phase ));
-		hcolor[0] = 0;
-		hcolor[1] = 0.2f;
-		hcolor[2] = 0.8;
-		
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_DrawRect( 0, 0, 720, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
-		else
-#endif
-		CG_DrawRect( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
-	}
-}
-
-#else // _XBOX
-
-static void CG_Draw2DScreenTints( void )
-{
-	float			rageTime, rageRecTime, absorbTime, protectTime, ysalTime;
-	vec4_t			hcolor;
-	if (cgs.clientinfo[cg->snap->ps.clientNum].team != TEAM_SPECTATOR)
-	{
-		if (cg->snap->ps.fd.forcePowersActive & (1 << FP_RAGE))
+		if (cg.snap->ps.fd.forcePowersActive & (1 << FP_RAGE))
 		{
 			if (!cgRageTime)
 			{
-				cgRageTime = cg->time;
+				cgRageTime = cg.time;
 			}
 			
-			rageTime = (float)(cg->time - cgRageTime);
+			rageTime = (float)(cg.time - cgRageTime);
 			
 			rageTime /= 9000;
 			
@@ -9130,28 +7729,9 @@ static void CG_Draw2DScreenTints( void )
 			hcolor[1] = 0;
 			hcolor[2] = 0;
 			
-			if (!cg->renderingThirdPerson)
+			if (!cg.renderingThirdPerson)
 			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
 				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 			}
 			
 			cgRageFadeTime = 0;
@@ -9161,13 +7741,13 @@ static void CG_Draw2DScreenTints( void )
 		{
 			if (!cgRageFadeTime)
 			{
-				cgRageFadeTime = cg->time;
+				cgRageFadeTime = cg.time;
 				cgRageFadeVal = 0.15;
 			}
 			
 			rageTime = cgRageFadeVal;
 			
-			cgRageFadeVal -= (cg->time - cgRageFadeTime)*0.000005;
+			cgRageFadeVal -= (cg.time - cgRageFadeTime)*0.000005;
 			
 			if (rageTime < 0)
 			{
@@ -9178,7 +7758,7 @@ static void CG_Draw2DScreenTints( void )
 				rageTime = 0.15;
 			}
 			
-			if (cg->snap->ps.fd.forceRageRecoveryTime > cg->time)
+			if (cg.snap->ps.fd.forceRageRecoveryTime > cg.time)
 			{
 				float checkRageRecTime = rageTime;
 				
@@ -9204,69 +7784,31 @@ static void CG_Draw2DScreenTints( void )
 				hcolor[2] = 0;
 			}
 			
-			if (!cg->renderingThirdPerson && rageTime)
+			if (!cg.renderingThirdPerson && rageTime)
 			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
 				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 			}
 			else
 			{
-				if (cg->snap->ps.fd.forceRageRecoveryTime > cg->time)
+				if (cg.snap->ps.fd.forceRageRecoveryTime > cg.time)
 				{
 					hcolor[3] = 0.15;
 					hcolor[0] = 0.2;
 					hcolor[1] = 0.2;
 					hcolor[2] = 0.2;
-#ifdef _XBOX
-					int wx = 0;
-					int wy = 0;
-					int ww = SCREEN_WIDTH;
-					if(cg->widescreen)
-						ww = 720;
-					int wh = SCREEN_HEIGHT;
-
-					if(ClientManager::splitScreenMode == qtrue) {
-						wh = SCREEN_HEIGHT / 2;
-
-						if(ClientManager::ActiveClientNum() == 1) {
-							wy = SCREEN_HEIGHT / 2;
-						}
-					}
-
-					CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
 					CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 				}
 				cgRageTime = 0;
 			}
 		}
-		else if (cg->snap->ps.fd.forceRageRecoveryTime > cg->time)
+		else if (cg.snap->ps.fd.forceRageRecoveryTime > cg.time)
 		{
 			if (!cgRageRecTime)
 			{
-				cgRageRecTime = cg->time;
+				cgRageRecTime = cg.time;
 			}
 			
-			rageRecTime = (float)(cg->time - cgRageRecTime);
+			rageRecTime = (float)(cg.time - cgRageRecTime);
 			
 			rageRecTime /= 9000;
 			
@@ -9284,28 +7826,9 @@ static void CG_Draw2DScreenTints( void )
 			hcolor[1] = 0.2;
 			hcolor[2] = 0.2;
 			
-			if (!cg->renderingThirdPerson)
+			if (!cg.renderingThirdPerson)
 			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
 				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 			}
 			
 			cgRageRecFadeTime = 0;
@@ -9315,13 +7838,13 @@ static void CG_Draw2DScreenTints( void )
 		{
 			if (!cgRageRecFadeTime)
 			{
-				cgRageRecFadeTime = cg->time;
+				cgRageRecFadeTime = cg.time;
 				cgRageRecFadeVal = 0.15;
 			}
 			
 			rageRecTime = cgRageRecFadeVal;
 			
-			cgRageRecFadeVal -= (cg->time - cgRageRecFadeTime)*0.000005;
+			cgRageRecFadeVal -= (cg.time - cgRageRecFadeTime)*0.000005;
 			
 			if (rageRecTime < 0)
 			{
@@ -9337,28 +7860,9 @@ static void CG_Draw2DScreenTints( void )
 			hcolor[1] = 0.2;
 			hcolor[2] = 0.2;
 			
-			if (!cg->renderingThirdPerson && rageRecTime)
+			if (!cg.renderingThirdPerson && rageRecTime)
 			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
 				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 			}
 			else
 			{
@@ -9366,14 +7870,14 @@ static void CG_Draw2DScreenTints( void )
 			}
 		}
 		
-		if (cg->snap->ps.fd.forcePowersActive & (1 << FP_ABSORB))
+		if (cg.snap->ps.fd.forcePowersActive & (1 << FP_ABSORB))
 		{
 			if (!cgAbsorbTime)
 			{
-				cgAbsorbTime = cg->time;
+				cgAbsorbTime = cg.time;
 			}
 			
-			absorbTime = (float)(cg->time - cgAbsorbTime);
+			absorbTime = (float)(cg.time - cgAbsorbTime);
 			
 			absorbTime /= 9000;
 			
@@ -9391,28 +7895,9 @@ static void CG_Draw2DScreenTints( void )
 			hcolor[1] = 0;
 			hcolor[2] = 0.7;
 			
-			if (!cg->renderingThirdPerson)
+			if (!cg.renderingThirdPerson)
 			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
 				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 			}
 			
 			cgAbsorbFadeTime = 0;
@@ -9422,13 +7907,13 @@ static void CG_Draw2DScreenTints( void )
 		{
 			if (!cgAbsorbFadeTime)
 			{
-				cgAbsorbFadeTime = cg->time;
+				cgAbsorbFadeTime = cg.time;
 				cgAbsorbFadeVal = 0.15;
 			}
 			
 			absorbTime = cgAbsorbFadeVal;
 			
-			cgAbsorbFadeVal -= (cg->time - cgAbsorbFadeTime)*0.000005;
+			cgAbsorbFadeVal -= (cg.time - cgAbsorbFadeTime)*0.000005;
 			
 			if (absorbTime < 0)
 			{
@@ -9444,28 +7929,9 @@ static void CG_Draw2DScreenTints( void )
 			hcolor[1] = 0;
 			hcolor[2] = 0.7;
 			
-			if (!cg->renderingThirdPerson && absorbTime)
+			if (!cg.renderingThirdPerson && absorbTime)
 			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
 				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 			}
 			else
 			{
@@ -9473,14 +7939,14 @@ static void CG_Draw2DScreenTints( void )
 			}
 		}
 		
-		if (cg->snap->ps.fd.forcePowersActive & (1 << FP_PROTECT))
+		if (cg.snap->ps.fd.forcePowersActive & (1 << FP_PROTECT))
 		{
 			if (!cgProtectTime)
 			{
-				cgProtectTime = cg->time;
+				cgProtectTime = cg.time;
 			}
 			
-			protectTime = (float)(cg->time - cgProtectTime);
+			protectTime = (float)(cg.time - cgProtectTime);
 			
 			protectTime /= 9000;
 			
@@ -9498,28 +7964,9 @@ static void CG_Draw2DScreenTints( void )
 			hcolor[1] = 0.7;
 			hcolor[2] = 0;
 			
-			if (!cg->renderingThirdPerson)
+			if (!cg.renderingThirdPerson)
 			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
 				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 			}
 			
 			cgProtectFadeTime = 0;
@@ -9529,13 +7976,13 @@ static void CG_Draw2DScreenTints( void )
 		{
 			if (!cgProtectFadeTime)
 			{
-				cgProtectFadeTime = cg->time;
+				cgProtectFadeTime = cg.time;
 				cgProtectFadeVal = 0.15;
 			}
 			
 			protectTime = cgProtectFadeVal;
 			
-			cgProtectFadeVal -= (cg->time - cgProtectFadeTime)*0.000005;
+			cgProtectFadeVal -= (cg.time - cgProtectFadeTime)*0.000005;
 			
 			if (protectTime < 0)
 			{
@@ -9551,28 +7998,9 @@ static void CG_Draw2DScreenTints( void )
 			hcolor[1] = 0.7;
 			hcolor[2] = 0;
 			
-			if (!cg->renderingThirdPerson && protectTime)
+			if (!cg.renderingThirdPerson && protectTime)
 			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
 				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 			}
 			else
 			{
@@ -9580,19 +8008,19 @@ static void CG_Draw2DScreenTints( void )
 			}
 		}
 		
-		if (cg->snap->ps.rocketLockIndex != ENTITYNUM_NONE && (cg->time - cg->snap->ps.rocketLockTime) > 0)
+		if (cg.snap->ps.rocketLockIndex != ENTITYNUM_NONE && (cg.time - cg.snap->ps.rocketLockTime) > 0)
 		{
-			CG_DrawRocketLocking( cg->snap->ps.rocketLockIndex, cg->snap->ps.rocketLockTime );
+			CG_DrawRocketLocking( cg.snap->ps.rocketLockIndex, cg.snap->ps.rocketLockTime );
 		}
 		
-		if (BG_HasYsalamiri(cgs.gametype, &cg->snap->ps))
+		if (BG_HasYsalamiri(cgs.gametype, &cg.snap->ps))
 		{
 			if (!cgYsalTime)
 			{
-				cgYsalTime = cg->time;
+				cgYsalTime = cg.time;
 			}
 			
-			ysalTime = (float)(cg->time - cgYsalTime);
+			ysalTime = (float)(cg.time - cgYsalTime);
 			
 			ysalTime /= 9000;
 			
@@ -9610,28 +8038,9 @@ static void CG_Draw2DScreenTints( void )
 			hcolor[1] = 0.7;
 			hcolor[2] = 0;
 			
-			if (!cg->renderingThirdPerson)
+			if (!cg.renderingThirdPerson)
 			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
 				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 			}
 			
 			cgYsalFadeTime = 0;
@@ -9641,13 +8050,13 @@ static void CG_Draw2DScreenTints( void )
 		{
 			if (!cgYsalFadeTime)
 			{
-				cgYsalFadeTime = cg->time;
+				cgYsalFadeTime = cg.time;
 				cgYsalFadeVal = 0.15;
 			}
 			
 			ysalTime = cgYsalFadeVal;
 			
-			cgYsalFadeVal -= (cg->time - cgYsalFadeTime)*0.000005;
+			cgYsalFadeVal -= (cg.time - cgYsalFadeTime)*0.000005;
 			
 			if (ysalTime < 0)
 			{
@@ -9663,28 +8072,9 @@ static void CG_Draw2DScreenTints( void )
 			hcolor[1] = 0.7;
 			hcolor[2] = 0;
 			
-			if (!cg->renderingThirdPerson && ysalTime)
+			if (!cg.renderingThirdPerson && ysalTime)
 			{
-#ifdef _XBOX
-				int wx = 0;
-				int wy = 0;
-				int ww = SCREEN_WIDTH;
-				if(cg->widescreen)
-					ww = 720;
-				int wh = SCREEN_HEIGHT;
-
-				if(ClientManager::splitScreenMode == qtrue) {
-					wh = SCREEN_HEIGHT / 2;
-
-					if(ClientManager::ActiveClientNum() == 1) {
-						wy = SCREEN_HEIGHT / 2;
-					}
-				}
-
-				CG_DrawRect(wx, wy, ww, wh, ww*wh, hcolor);
-#else
 				CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 			}
 			else
 			{
@@ -9693,90 +8083,52 @@ static void CG_Draw2DScreenTints( void )
 		}
 	}
 
-	if ( (cg->refdef.viewContents&CONTENTS_LAVA) )
+	if ( (cg.refdef.viewContents&CONTENTS_LAVA) )
 	{//tint screen red
-		float phase = cg->time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
+		float phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
 		hcolor[3] = 0.5 + (0.15f*sin( phase ));
 		hcolor[0] = 0.7f;
 		hcolor[1] = 0;
 		hcolor[2] = 0;
 		
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_DrawRect( 0, 0, 720, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
-		else
-#endif
 		CG_DrawRect( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
 	}
-	else if ( (cg->refdef.viewContents&CONTENTS_SLIME) )
+	else if ( (cg.refdef.viewContents&CONTENTS_SLIME) )
 	{//tint screen green
-		float phase = cg->time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
+		float phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
 		hcolor[3] = 0.4 + (0.1f*sin( phase ));
 		hcolor[0] = 0;
 		hcolor[1] = 0.7f;
 		hcolor[2] = 0;
 		
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_DrawRect( 0, 0, 720, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
-		else
-#endif
 		CG_DrawRect( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
 	}
-	else if ( (cg->refdef.viewContents&CONTENTS_WATER) )
+	else if ( (cg.refdef.viewContents&CONTENTS_WATER) )
 	{//tint screen light blue -- FIXME: don't do this if CONTENTS_FOG? (in case someone *does* make a water shader with fog in it?)
-		float phase = cg->time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
+		float phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
 		hcolor[3] = 0.3 + (0.05f*sin( phase ));
 		hcolor[0] = 0;
 		hcolor[1] = 0.2f;
 		hcolor[2] = 0.8;
 		
-#ifdef _XBOX
-		if(cg->widescreen)
-			CG_DrawRect( 0, 0, 720, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
-		else
-#endif
 		CG_DrawRect( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
 	}
 }
 
-#endif // _XBOX
-
 static void CG_Draw2D( void ) {
-	float			inTime = cg->invenSelectTime+WEAPON_SELECT_TIME;
-	float			wpTime = cg->weaponSelectTime+WEAPON_SELECT_TIME;
+	float			inTime = cg.invenSelectTime+WEAPON_SELECT_TIME;
+	float			wpTime = cg.weaponSelectTime+WEAPON_SELECT_TIME;
 	float			fallTime; 
 	float			bestTime;
 	int				drawSelect = 0;
 
 	// if we are taking a levelshot for the menu, don't draw anything
-	if ( cg->levelShot ) {
+	if ( cg.levelShot ) {
 		return;
 	}
 
-	if (cgs.clientinfo[cg->snap->ps.clientNum].team == TEAM_SPECTATOR)
+	if (cgs.clientinfo[cg.snap->ps.clientNum].team == TEAM_SPECTATOR)
 	{
-#ifdef _XBOX
-		ClientManager::ActiveClient().cgRageTime = 0;
-		ClientManager::ActiveClient().cgRageFadeTime = 0;
-		ClientManager::ActiveClient().cgRageFadeVal = 0;
-
-		ClientManager::ActiveClient().cgRageRecTime = 0;
-		ClientManager::ActiveClient().cgRageRecFadeTime = 0;
-		ClientManager::ActiveClient().cgRageRecFadeVal = 0;
-
-		ClientManager::ActiveClient().cgAbsorbTime = 0;
-		ClientManager::ActiveClient().cgAbsorbFadeTime = 0;
-		ClientManager::ActiveClient().cgAbsorbFadeVal = 0;
-
-		ClientManager::ActiveClient().cgProtectTime = 0;
-		ClientManager::ActiveClient().cgProtectFadeTime = 0;
-		ClientManager::ActiveClient().cgProtectFadeVal = 0;
-
-		ClientManager::ActiveClient().cgYsalTime = 0;
-		ClientManager::ActiveClient().cgYsalFadeTime = 0;
-		ClientManager::ActiveClient().cgYsalFadeVal = 0;
-#else
 		cgRageTime = 0;
 		cgRageFadeTime = 0;
 		cgRageFadeVal = 0;
@@ -9796,14 +8148,13 @@ static void CG_Draw2D( void ) {
 		cgYsalTime = 0;
 		cgYsalFadeTime = 0;
 		cgYsalFadeVal = 0;
-#endif
 	}
 
 	if ( cg_draw2D.integer == 0 ) {
 		return;
 	}
 
-	if ( cg->snap->ps.pm_type == PM_INTERMISSION ) {
+	if ( cg.snap->ps.pm_type == PM_INTERMISSION ) {
 		CG_DrawIntermission();
 		CG_ChatBox_DrawStrings();
 		return;
@@ -9811,33 +8162,31 @@ static void CG_Draw2D( void ) {
 
 	CG_Draw2DScreenTints();
 
-	if (cg->snap->ps.rocketLockIndex != ENTITYNUM_NONE && (cg->time - cg->snap->ps.rocketLockTime) > 0)
+	if (cg.snap->ps.rocketLockIndex != ENTITYNUM_NONE && (cg.time - cg.snap->ps.rocketLockTime) > 0)
 	{
-		CG_DrawRocketLocking( cg->snap->ps.rocketLockIndex, cg->snap->ps.rocketLockTime );
+		CG_DrawRocketLocking( cg.snap->ps.rocketLockIndex, cg.snap->ps.rocketLockTime );
 	}
 
-/*
-	if (cg->snap->ps.holocronBits)
+	if (cg.snap->ps.holocronBits)
 	{
 		CG_DrawHolocronIcons();
 	}
-*/
-	if (cg->snap->ps.fd.forcePowersActive || cg->snap->ps.fd.forceRageRecoveryTime > cg->time)
+	if (cg.snap->ps.fd.forcePowersActive || cg.snap->ps.fd.forceRageRecoveryTime > cg.time)
 	{
 		CG_DrawActivePowers();
 	}
 
-	if (cg->snap->ps.jetpackFuel < 100)
+	if (cg.snap->ps.jetpackFuel < 100)
 	{ //draw it as long as it isn't full
         CG_DrawJetpackFuel();        
 	}
-	if (cg->snap->ps.cloakFuel < 100)
+	if (cg.snap->ps.cloakFuel < 100)
 	{ //draw it as long as it isn't full
 		CG_DrawCloakFuel();
 	}
-	if (cg->predictedPlayerState.emplacedIndex > 0)
+	if (cg.predictedPlayerState.emplacedIndex > 0)
 	{
-		centity_t *eweb = &cg_entities[cg->predictedPlayerState.emplacedIndex];
+		centity_t *eweb = &cg_entities[cg.predictedPlayerState.emplacedIndex];
 
 		if (eweb->currentState.weapon == WP_NONE)
 		{ //using an e-web, draw its health
@@ -9849,24 +8198,18 @@ static void CG_Draw2D( void ) {
 	CG_DrawZoomMask();
 
 /*
-	if (cg->cameraMode) {
+	if (cg.cameraMode) {
 		return;
 	}
 */
-	if ( cg->snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR ) {
+	if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR ) {
 		CG_DrawSpectator();
-#ifdef _XBOX
-		if(ClientManager::splitScreenMode == qfalse) {
-#endif
 		CG_DrawCrosshair(NULL, 0);
 		CG_DrawCrosshairNames();
-#ifdef _XBOX
-		}
-#endif
 		CG_SaberClashFlare();
 	} else {
 		// don't draw any status if dead or the scoreboard is being explicitly shown
-		if ( !cg->showScores && cg->snap->ps.stats[STAT_HEALTH] > 0 ) {
+		if ( !cg.showScores && cg.snap->ps.stats[STAT_HEALTH] > 0 ) {
 
 			if ( /*cg_drawStatus.integer*/0 ) {
 				//Reenable if stats are drawn with menu system again
@@ -9888,15 +8231,15 @@ static void CG_Draw2D( void ) {
 			if (inTime > wpTime)
 			{
 				drawSelect = 1;
-				bestTime = cg->invenSelectTime;
+				bestTime = cg.invenSelectTime;
 			}
 			else //only draw the most recent since they're drawn in the same place
 			{
 				drawSelect = 2;
-				bestTime = cg->weaponSelectTime;
+				bestTime = cg.weaponSelectTime;
 			}
 
-			if (cg->forceSelectTime > bestTime)
+			if (cg.forceSelectTime > bestTime)
 			{
 				drawSelect = 3;
 			}
@@ -9938,11 +8281,11 @@ static void CG_Draw2D( void ) {
     
 	}
 
-	if (cg->snap->ps.fallingToDeath)
+	if (cg.snap->ps.fallingToDeath)
 	{
 		vec4_t	hcolor;
 
-		fallTime = (float)(cg->time - cg->snap->ps.fallingToDeath);
+		fallTime = (float)(cg.time - cg.snap->ps.fallingToDeath);
 
 		fallTime /= (FALL_FADE_TIME/2);
 
@@ -9960,45 +8303,11 @@ static void CG_Draw2D( void ) {
 		hcolor[1] = 0;
 		hcolor[2] = 0;
 
-#ifdef _XBOX
-		int wx = 0;
-		int wy = 0;
-		int wh = SCREEN_HEIGHT;
-		int ww = SCREEN_WIDTH;
-		if(cg->widescreen)
-			ww = 720;
-
-		if(ClientManager::splitScreenMode == qtrue) {
-			wh = SCREEN_HEIGHT / 2;
-
-			if(ClientManager::ActiveClientNum() == 1) 
-				wy = SCREEN_HEIGHT / 2;
-		}
-//		CG_DrawRect(wx, wy, ww, wh, ww * wh, hcolor);
-		trap_R_SetColor( hcolor );
-		trap_R_DrawStretchPic( wx, wy, ww, wh, 0, 0, 0, 0, cgs.media.whiteShader);
-#else
 		CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
-#endif
 
-#ifdef _XBOX
-		if (!gCGHasFallVector[ClientManager::ActiveClientNum()])
-		{
-			VectorCopy(cg->snap->ps.origin, gCGFallVector[ClientManager::ActiveClientNum()]);
-			gCGHasFallVector[ClientManager::ActiveClientNum()] = qtrue;
-		}
-	}
-	else
-	{
-		if (gCGHasFallVector[ClientManager::ActiveClientNum()])
-		{
-			gCGHasFallVector[ClientManager::ActiveClientNum()] = qfalse;
-			VectorClear(gCGFallVector[ClientManager::ActiveClientNum()]);
-		}
-#else
 		if (!gCGHasFallVector)
 		{
-			VectorCopy(cg->snap->ps.origin, gCGFallVector);
+			VectorCopy(cg.snap->ps.origin, gCGFallVector);
 			gCGHasFallVector = qtrue;
 		}
 	}
@@ -10009,10 +8318,9 @@ static void CG_Draw2D( void ) {
 			gCGHasFallVector = qfalse;
 			VectorClear(gCGFallVector);
 		}
-#endif
-		
 	}
 
+	CG_DrawVote();
 	CG_DrawTeamVote();
 
 	CG_DrawLagometer();
@@ -10040,7 +8348,7 @@ static void CG_Draw2D( void ) {
 			CG_CenterPrint(CG_GetStringEdString("MP_INGAME", "WAITING_FOR_PLAYERS"), SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH);
 			break;
 		case 2:
-			rTime = (SIEGE_ROUND_BEGIN_TIME - (cg->time - cgSiegeRoundTime));
+			rTime = (SIEGE_ROUND_BEGIN_TIME - (cg.time - cgSiegeRoundTime));
 		
 			if (rTime < 0)
 			{
@@ -10095,7 +8403,7 @@ static void CG_Draw2D( void ) {
 		CG_CenterPrint("", SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH);
 		cgSiegeRoundTime = 0;
 
-		//cgSiegeRoundBeganTime = cg->time;
+		//cgSiegeRoundBeganTime = cg.time;
 		cgSiegeEntityRender = 0;
 	}
 	else if (cgSiegeRoundBeganTime)
@@ -10140,7 +8448,7 @@ static void CG_Draw2D( void ) {
 
 			if (cgs.siegeTeamSwitch && !cg_beatingSiegeTime)
 			{ //in switchy mode but not beating a time, so count up.
-				timeRemaining = (cg->time-cgSiegeRoundBeganTime);
+				timeRemaining = (cg.time-cgSiegeRoundBeganTime);
 				if (timeRemaining < 0)
 				{
 					timeRemaining = 0;
@@ -10148,7 +8456,7 @@ static void CG_Draw2D( void ) {
 			}
 			else
 			{
-				timeRemaining = (((cgSiegeRoundBeganTime)+timedValue) - cg->time);
+				timeRemaining = (((cgSiegeRoundBeganTime)+timedValue) - cg.time);
 			}
 
 			if (timeRemaining > timedValue)
@@ -10165,7 +8473,7 @@ static void CG_Draw2D( void ) {
 				timeRemaining /= 1000;
 			}
 
-			if (cg->predictedPlayerState.persistant[PERS_TEAM] == timedTeam)
+			if (cg.predictedPlayerState.persistant[PERS_TEAM] == timedTeam)
 			{ //the team that's timed is the one this client is on
 				isMyTeam = qtrue;
 			}
@@ -10180,7 +8488,7 @@ static void CG_Draw2D( void ) {
 
 	if ( cg_siegeDeathTime )
 	{
-		int timeRemaining = ( cg_siegeDeathTime - cg->time );
+		int timeRemaining = ( cg_siegeDeathTime - cg.time );
 
 		if ( timeRemaining < 0 )
 		{
@@ -10197,8 +8505,8 @@ static void CG_Draw2D( void ) {
 	}
 
 	// don't draw center string if scoreboard is up
-	cg->scoreBoardShowing = CG_DrawScoreboard();
-	if ( !cg->scoreBoardShowing) {
+	cg.scoreBoardShowing = CG_DrawScoreboard();
+	if ( !cg.scoreBoardShowing) {
 		CG_DrawCenterString();
 	}
 	
@@ -10222,14 +8530,14 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 	vec3_t		baseOrg;
 
 	// optionally draw the info screen instead
-	if ( !cg->snap ) {
+	if ( !cg.snap ) {
 		CG_DrawInformation();
 		return;
 	}
 
 	// optionally draw the tournement scoreboard instead
-	if ( cg->snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR &&
-		( cg->snap->ps.pm_flags & PMF_SCOREBOARD ) ) {
+	if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR &&
+		( cg.snap->ps.pm_flags & PMF_SCOREBOARD ) ) {
 		CG_DrawTourneyScoreboard();
 		return;
 	}
@@ -10251,26 +8559,22 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 
 
 	// clear around the rendered view if sized down
-#ifdef _XBOX
-	// MATT! - hack here, this was messing up split-screen
-	if(ClientManager::splitScreenMode == false)
-#endif
 	CG_TileClear();
 
 	// offset vieworg appropriately if we're doing stereo separation
-	VectorCopy( cg->refdef.vieworg, baseOrg );
+	VectorCopy( cg.refdef.vieworg, baseOrg );
 	if ( separation != 0 ) {
-		VectorMA( cg->refdef.vieworg, -separation, cg->refdef.viewaxis[1], cg->refdef.vieworg );
+		VectorMA( cg.refdef.vieworg, -separation, cg.refdef.viewaxis[1], cg.refdef.vieworg );
 	}
 
-	cg->refdef.rdflags |= RDF_DRAWSKYBOX;
+	cg.refdef.rdflags |= RDF_DRAWSKYBOX;
 
 	// draw 3D view
-	trap_R_RenderScene( &cg->refdef );
+	trap_R_RenderScene( &cg.refdef );
 
 	// restore original viewpoint if running stereo
 	if ( separation != 0 ) {
-		VectorCopy( baseOrg, cg->refdef.vieworg );
+		VectorCopy( baseOrg, cg.refdef.vieworg );
 	}
 
 	// draw status bar and other floating elements

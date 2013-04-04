@@ -184,7 +184,6 @@ typedef struct {
 	qhandle_t	customSkin;			// NULL for default skin
 
 	// texturing
-/*
 	union	
 	{
 //		int			skinNum;		// inline skin index
@@ -195,33 +194,27 @@ typedef struct {
 			int		miniCount;
 		} uMini;
 	} uRefEnt;
-*/
 
 	// extra sprite information
 	union {
-/*
 		struct 
 		{
 			float rotation;
 			float radius;
 			byte  vertRGBA[4][4];
 		} sprite;
-*/
 		struct 
 		{
 			float width;
 			float width2;
 			float stscale;
 		} line;
-/*
 		struct	// that whole put-the-opening-brace-on-the-same-line-as-the-beginning-of-the-definition coding style is fecal
 		{
 			float	width;
 			vec3_t	control1;
 			vec3_t	control2;
 		} bezier;
-*/
-/*
 		struct
 		{
 			float width;
@@ -231,8 +224,6 @@ typedef struct {
 			float bias;
 			qboolean wrap;
 		} cylinder;
-*/
-/*
 		struct 
 		{
 			float width;
@@ -241,7 +232,6 @@ typedef struct {
 			qboolean wrap;
 			qboolean taper;
 		} electricity;
-*/
 	} data;
 
 	float		endTime;
@@ -258,9 +248,6 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
-#ifdef _XBOX
-	bool		skipForPlayer2;
-#endif
 } refEntity_t;
 
 

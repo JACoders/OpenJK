@@ -9,8 +9,7 @@
 
 #define		SIEGE_ROUND_BEGIN_TIME				5000 //delay 5 secs after players are in game.
 
-//#define		MAX_SIEGE_CLASSES					128 //up to 128 classes
-#define		MAX_SIEGE_CLASSES					64 //up to 128 classes
+#define		MAX_SIEGE_CLASSES					128 //up to 128 classes
 #define		MAX_SIEGE_CLASSES_PER_TEAM			16
 
 #define		MAX_SIEGE_TEAMS						16 //up to 16 diffent teams
@@ -88,13 +87,13 @@ typedef struct
 	int			friendlyShader;
 } siegeTeam_t;
 
+#include "../namespace_begin.h"
+
 extern siegeClass_t bgSiegeClasses[MAX_SIEGE_CLASSES];
 extern int bgNumSiegeClasses;
 
 extern siegeTeam_t bgSiegeTeams[MAX_SIEGE_TEAMS];
 extern int bgNumSiegeTeams;
-
-#include "../namespace_begin.h"
 
 int BG_SiegeGetValueGroup(char *buf, char *group, char *outbuf);
 int BG_SiegeGetPairedValue(char *buf, char *key, char *outbuf);

@@ -635,7 +635,6 @@ int AAS_ClientMovementPrediction(struct aas_clientmove_s *move,
 			//trace a bounding box
 			trace = AAS_TraceClientBBox(org, end, presencetype, entnum);
 			//
-#ifndef _XBOX
 //#ifdef AAS_MOVE_DEBUG
 			if (visualize)
 			{
@@ -643,7 +642,6 @@ int AAS_ClientMovementPrediction(struct aas_clientmove_s *move,
 				AAS_DebugLine(org, trace.endpos, LINECOLOR_RED);
 			} //end if
 //#endif //AAS_MOVE_DEBUG
-#endif
 			//
 			if (stopevent & (SE_ENTERAREA|SE_TOUCHJUMPPAD|SE_TOUCHTELEPORTER|SE_TOUCHCLUSTERPORTAL))
 			{
@@ -782,7 +780,6 @@ int AAS_ClientMovementPrediction(struct aas_clientmove_s *move,
 							VectorSubtract(end, steptrace.endpos, left_test_vel);
 							left_test_vel[2] = 0;
 							frame_test_vel[2] = 0;
-#ifndef _XBOX
 //#ifdef AAS_MOVE_DEBUG
 							if (visualize)
 							{
@@ -794,7 +791,6 @@ int AAS_ClientMovementPrediction(struct aas_clientmove_s *move,
 								} //end if
 							} //end if
 //#endif //AAS_MOVE_DEBUG
-#endif
 							org[2] = steptrace.endpos[2];
 							step = qtrue;
 						} //end if
@@ -1017,7 +1013,6 @@ int AAS_ClientMovementHitBBox(struct aas_clientmove_s *move,
 // Returns:				-
 // Changes Globals:		-
 //===========================================================================
-#ifndef _XBOX
 void AAS_TestMovementPrediction(int entnum, vec3_t origin, vec3_t dir)
 {
 	vec3_t velocity, cmdmove;
@@ -1036,7 +1031,6 @@ void AAS_TestMovementPrediction(int entnum, vec3_t origin, vec3_t dir)
 		botimport.Print(PRT_MESSAGE, "leave ground\n");
 	} //end if
 } //end of the function TestMovementPrediction
-#endif
 //===========================================================================
 // calculates the horizontal velocity needed to perform a jump from start
 // to end

@@ -74,6 +74,3 @@ extern WinVars_t	g_wv;
 #define	MAX_QUED_EVENTS		256
 #define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
 
-#define YELLOW_MODE 0
-
-

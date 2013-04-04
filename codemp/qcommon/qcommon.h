@@ -103,8 +103,7 @@ NET
 
 #define	PORT_ANY			-1
 
-//#define	MAX_RELIABLE_COMMANDS	128			// max string commands buffered for restransmit
-#define	MAX_RELIABLE_COMMANDS	64			// max string commands buffered for restransmit
+#define	MAX_RELIABLE_COMMANDS	128			// max string commands buffered for restransmit
 
 typedef enum {
 	NA_BOT,
@@ -135,10 +134,9 @@ void		NET_Shutdown( void );
 void		NET_Restart( void );
 void		NET_Config( qboolean enableNetworking );
 
-bool		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
+void		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
 void		QDECL NET_OutOfBandPrint( netsrc_t net_socket, netadr_t adr, const char *format, ...);
-void		QDECL NET_BroadcastPrint( netsrc_t net_socket, const char *format, ...);
-bool		QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len );
+void		QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len );
 
 qboolean	NET_CompareAdr (netadr_t a, netadr_t b);
 qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b);
@@ -148,13 +146,8 @@ qboolean	NET_StringToAdr ( const char *s, netadr_t *a);
 qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_message);
 void		NET_Sleep(int msec);
 
-extern byte	broadcast_nonce[8];
 
-//#define	MAX_MSGLEN				49152		// max length of a message, which may
-											// be fragmented into multiple packets
-
-// What the fuck? I haven't seen a message bigger than 9k. Let's increase when we NEED to, eh?
-#define	MAX_MSGLEN				16384		// max length of a message, which may
+#define	MAX_MSGLEN				49152		// max length of a message, which may
 											// be fragmented into multiple packets
 
 //rww - 6/28/02 - Changed from 16384 to match sof2's. This does seem rather huge, but I guess it doesn't really hurt anything.
@@ -195,8 +188,8 @@ typedef struct {
 void Netchan_Init( int qport );
 void Netchan_Setup( netsrc_t sock, netchan_t *chan, netadr_t adr, int qport );
 
-bool Netchan_Transmit( netchan_t *chan, int length, const byte *data );
-bool Netchan_TransmitNextFragment( netchan_t *chan );
+void Netchan_Transmit( netchan_t *chan, int length, const byte *data );
+void Netchan_TransmitNextFragment( netchan_t *chan );
 
 qboolean Netchan_Process( netchan_t *chan, msg_t *msg );
 
@@ -209,7 +202,7 @@ PROTOCOL
 ==============================================================
 */
 
-#define	PROTOCOL_VERSION	25
+#define	PROTOCOL_VERSION	26
 
 #ifndef _XBOX	// No gethostbyname(), and can't really use this stuff
 #define	UPDATE_SERVER_NAME		"updatejk3.ravensoft.com"
@@ -223,8 +216,6 @@ PROTOCOL
 #ifdef _XBOX	// Use port number 1000 for less bandwidth!
 #define	PORT_SERVER			1000
 #define NUM_SERVER_PORTS	1
-// Some random port number in the 1000-1255 range for session discovery:
-#define PORT_BROADCAST		1007
 #else
 #define	PORT_MASTER			29060
 #define	PORT_UPDATE			29061
@@ -254,16 +245,6 @@ enum svc_ops_e {
 	svc_newpeer,				//jsw//inform current clients about new player
 	svc_removepeer,				//jsw//inform current clients about dying player
 	svc_xbInfo,					//jsw//update client with current server xbOnlineInfo
-	svc_plyrPos0,				// BTO - All client positions, used for voice proximity
-	svc_plyrPos1,				// BTO - All client positions, used for voice proximity
-	svc_plyrPos2,				// BTO - All client positions, used for voice proximity
-	svc_plyrPos3,				// BTO - All client positions, used for voice proximity
-	svc_plyrPos4,				// BTO - All client positions, used for voice proximity
-	svc_plyrPos5,				// BTO - All client positions, used for voice proximity
-	svc_plyrPos6,				// BTO - All client positions, used for voice proximity
-	svc_plyrPos7,				// BTO - All client positions, used for voice proximity
-	svc_plyrPos8,				// BTO - All client positions, used for voice proximity
-	svc_plyrPos9,				// BTO - All client positions, used for voice proximity
 #endif
 	svc_EOF
 };
@@ -684,7 +665,6 @@ void		Info_Print( const char *s );
 void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
 void		Com_EndRedirect( void );
 void 		QDECL Com_Printf( const char *fmt, ... );
-void 		QDECL Com_PrintfAlways( const char *fmt, ... );
 void 		QDECL Com_DPrintf( const char *fmt, ... );
 void		QDECL Com_OPrintf( const char *fmt, ...); // Outputs to the VC / Windows Debug window (only in debug compile)
 void 		QDECL Com_Error( int code, const char *fmt, ... );
@@ -718,6 +698,8 @@ extern	cvar_t	*com_blood;
 extern	cvar_t	*com_buildScript;		// for building release pak files
 extern	cvar_t	*com_journal;
 extern	cvar_t	*com_cameraMode;
+
+extern	cvar_t	*com_optvehtrace;
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 extern	cvar_t	*com_G2Report;
@@ -814,10 +796,6 @@ int   Z_MemSize	( memtag_t eTag );
 void  Z_TagFree	( memtag_t eTag );
 void  Z_Free	( void *ptr );
 int	  Z_Size	( void *pvAddress);
-
-void Z_PushNewDeleteTag( memtag_t eTag );
-void Z_PopNewDeleteTag( void );
-
 void Com_InitZoneMemory(void);
 void Com_InitHunkMemory(void);
 void Com_ShutdownZoneMemory(void);
@@ -862,7 +840,7 @@ void CL_InitKeyCommands( void );
 // config files, but the rest of client startup will happen later
 
 void CL_Init( void );
-void CL_Disconnect( qboolean showMainMenu, qboolean deleteTextures = qtrue );
+void CL_Disconnect( qboolean showMainMenu );
 void CL_Shutdown( void );
 void CL_Frame( int msec );
 qboolean CL_GameCommand( void );
@@ -950,8 +928,7 @@ typedef enum {
 	SE_MOUSE,	// evValue and evValue2 are reletive signed x / y moves
 	SE_JOYSTICK_AXIS,	// evValue is an axis number and evValue2 is the current state (-127 to 127)
 	SE_CONSOLE,	// evPtr is a char*
-	SE_PACKET,	// evPtr is a netadr_t followed by data bytes to evPtrLength
-	SE_BROADCAST_PACKET	// same as SE_PACKET - but came from our broadcast socket
+	SE_PACKET	// evPtr is a netadr_t followed by data bytes to evPtrLength
 } sysEventType_t;
 
 typedef struct {
@@ -1022,8 +999,7 @@ void	Sys_StreamSeek( fileHandle_t f, int offset, int origin );
 void	Sys_ShowConsole( int level, qboolean quitOnClose );
 void	Sys_SetErrorText( const char *text );
 
-bool	Sys_SendPacket( int length, const void *data, netadr_t to );
-void	Sys_SendBroadcastPacket( int length, const void *data );
+void	Sys_SendPacket( int length, const void *data, netadr_t to );
 #ifdef _XBOX
 void	Sys_SendVoicePacket( int length, const void *data, netadr_t to );
 #endif
