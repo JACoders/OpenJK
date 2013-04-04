@@ -31,7 +31,7 @@
 #define false qfalse
 #define true qtrue
 
-#define sqrtf sqrt
+//#define sqrtf sqrt
 
 #define MOD_EXPLOSIVE MOD_SUICIDE
 #endif

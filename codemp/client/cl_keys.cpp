@@ -724,7 +724,7 @@ static void keyConcatArgs( void ) {
 }
 
 static void ConcatRemaining( const char *src, const char *start ) {
-	char *str;
+	const char *str;
 
 	str = strstr(src, start);
 	if (!str) {
