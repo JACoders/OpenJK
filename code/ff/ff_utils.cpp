@@ -32,8 +32,9 @@ const char *UncommonDirectory( const char *target, const char *comp )
 {
 	const char *pos = target;
 
+	int i = 0;
 	for
-	(	int i = 0
+	(	i = 0
 	;	target[ i ] && comp[ i ] && target[ i ] == comp[ i ]
 	;	i++
 	){

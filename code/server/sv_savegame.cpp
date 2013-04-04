@@ -154,7 +154,7 @@ static LPCSTR SG_AddSavePath( LPCSTR psPathlessBaseName )
 
 	if(psPathlessBaseName)
 	{
-		char *p = strchr(psPathlessBaseName,'/');
+		char *p = const_cast<char*>(strchr(psPathlessBaseName,'/'));
 		if (p)
 		{
 			while (p)
@@ -908,7 +908,7 @@ void SG_ReadServerConfigStrings( void )
 
 	Com_DPrintf( "Reading %d configstrings...\n",iCount);
 
-	for (i=0; i<iCount; i++)
+	for (int i = 0; i<iCount; i++)
 	{
 		int iIndex;
 		char *psName;
