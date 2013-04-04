@@ -53,18 +53,18 @@ qboolean Rancor_CheckAhead( vec3_t end )
 
 	//make sure our goal isn't underground (else the trace will fail)
 	vec3_t	bottom = {end[0],end[1],end[2]+NPC->mins[2]};
-	gi.trace( &trace, end, vec3_origin, vec3_origin, bottom, NPC->s.number, NPC->clipmask );
+	gi.trace( &trace, end, vec3_origin, vec3_origin, bottom, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );
 	if ( trace.fraction < 1.0f )
 	{//in the ground, raise it up
 		end[2] -= NPC->mins[2]*(1.0f-trace.fraction)-0.125f;
 	}
 
-	gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, end, NPC->s.number, clipmask );
+	gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, end, NPC->s.number, clipmask, (EG2_Collision)0, 0 );
 
 	if ( trace.startsolid&&(trace.contents&CONTENTS_BOTCLIP) )
 	{//started inside do not enter, so ignore them
 		clipmask &= ~CONTENTS_BOTCLIP;
-		gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, end, NPC->s.number, clipmask );
+		gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, end, NPC->s.number, clipmask, (EG2_Collision)0, 0 );
 	}
 	//Do a simple check
 	if ( ( trace.allsolid == qfalse ) && ( trace.startsolid == qfalse ) && ( trace.fraction == 1.0f ) )
@@ -374,7 +374,7 @@ void Rancor_Swing( int boltIndex, qboolean tryGrab )
 		//HMM... maybe always do this?
 		//if boltOrg inside a breakable brush, damage it
 		trace_t trace;
-		gi.trace( &trace, NPC->pos3, vec3_origin, vec3_origin, boltOrg, NPC->s.number, CONTENTS_SOLID|CONTENTS_BODY );
+		gi.trace( &trace, NPC->pos3, vec3_origin, vec3_origin, boltOrg, NPC->s.number, CONTENTS_SOLID|CONTENTS_BODY, (EG2_Collision)0, 0 );
 #ifndef FINAL_BUILD
 		if ( g_bobaDebug->integer > 0 )
 		{
@@ -390,7 +390,7 @@ void Rancor_Swing( int boltIndex, qboolean tryGrab )
 		}
 		else
 		{//fuck, do an actual line trace, I guess...
-			gi.trace( &trace, originUp, vec3_origin, vec3_origin, boltOrg, NPC->s.number, CONTENTS_SOLID|CONTENTS_BODY );
+			gi.trace( &trace, originUp, vec3_origin, vec3_origin, boltOrg, NPC->s.number, CONTENTS_SOLID|CONTENTS_BODY, (EG2_Collision)0, 0 );
 #ifndef FINAL_BUILD
 			if ( g_bobaDebug->integer > 0 )
 			{
@@ -551,7 +551,7 @@ void Rancor_Smash( void )
 		//HMM... maybe always do this?
 		//if boltOrg inside a breakable brush, damage it
 		trace_t trace;
-		gi.trace( &trace, boltOrg, vec3_origin, vec3_origin, NPC->pos3, NPC->s.number, CONTENTS_SOLID|CONTENTS_BODY );
+		gi.trace( &trace, boltOrg, vec3_origin, vec3_origin, NPC->pos3, NPC->s.number, CONTENTS_SOLID|CONTENTS_BODY, (EG2_Collision)0, 0 );
 #ifndef FINAL_BUILD
 		if ( g_bobaDebug->integer > 0 )
 		{
@@ -567,7 +567,7 @@ void Rancor_Smash( void )
 		}
 		else
 		{//fuck, do an actual line trace, I guess...
-			gi.trace( &trace, NPC->currentOrigin, vec3_origin, vec3_origin, boltOrg, NPC->s.number, CONTENTS_SOLID|CONTENTS_BODY );
+			gi.trace( &trace, NPC->currentOrigin, vec3_origin, vec3_origin, boltOrg, NPC->s.number, CONTENTS_SOLID|CONTENTS_BODY, (EG2_Collision)0, 0 );
 #ifndef FINAL_BUILD
 			if ( g_bobaDebug->integer > 0 )
 			{
@@ -1268,7 +1268,7 @@ void Rancor_CheckDropVictim( void )
 	vec3_t start={NPC->activator->currentOrigin[0],NPC->activator->currentOrigin[1],NPC->activator->absmin[2]}; 
 	vec3_t end={NPC->activator->currentOrigin[0],NPC->activator->currentOrigin[1],NPC->activator->absmax[2]-1}; 
 	trace_t	trace;
-	gi.trace( &trace, start, mins, maxs, end, NPC->activator->s.number, NPC->activator->clipmask );
+	gi.trace( &trace, start, mins, maxs, end, NPC->activator->s.number, NPC->activator->clipmask, (EG2_Collision)0, 0 );
 	if ( !trace.allsolid && !trace.startsolid && trace.fraction >= 1.0f )
 	{
 		Rancor_DropVictim( NPC );
@@ -1309,7 +1309,7 @@ qboolean Rancor_AttackBBrush( void )
 	else
 	{
 		VectorMA( NPC->currentOrigin, checkDist, dir2Brush, end );
-		gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, end, NPC->s.number, NPC->clipmask );
+		gi.trace( &trace, NPC->currentOrigin, NPC->mins, NPC->maxs, end, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );
 		if ( trace.allsolid || trace.startsolid )
 		{//wtf?
 			NPCInfo->blockedEntity = NULL;
@@ -1380,7 +1380,7 @@ void Rancor_FireBreathAttack( void )
 	gi.G2API_GiveMeVectorFromMatrix( boltMatrix, NEGATIVE_Z, dir );
 	VectorMA( start, 512, dir, end );
 
-	gi.trace( &tr, start, traceMins, traceMaxs, end, NPC->s.number, MASK_SHOT );
+	gi.trace( &tr, start, traceMins, traceMaxs, end, NPC->s.number, MASK_SHOT, (EG2_Collision)0, 0 );
 
 	traceEnt = &g_entities[tr.entityNum];
 	if ( tr.entityNum < ENTITYNUM_WORLD 

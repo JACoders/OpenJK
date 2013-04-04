@@ -34,7 +34,7 @@ qboolean NPC_CheckPlayerTeamStealth( void );
 static qboolean enemyLOS;
 static qboolean enemyCS;
 static qboolean faceEnemy;
-static qboolean move;
+static qboolean doMove;
 static qboolean shoot;
 static float	enemyDist;
 
@@ -128,12 +128,12 @@ ST_Move
 
 static qboolean Grenadier_Move( void )
 {
-	NPCInfo->combatMove = qtrue;//always move straight toward our goal
+	NPCInfo->combatMove = qtrue;//always doMove straight toward our goal
 
 	qboolean	moved = NPC_MoveToGoal( qtrue );
 //	navInfo_t	info;
 	
-	//Get the move info
+	//Get the doMove info
 //	NAV_GetLastMove( info );
 
 	//FIXME: if we bump into another one of our guys and can't get around him, just stop!
@@ -146,7 +146,7 @@ static qboolean Grenadier_Move( void )
 //		}
 //	}
 
-	//If our move failed, then reset
+	//If our doMove failed, then reset
 	if ( moved == qfalse )
 	{//couldn't get to enemy
 		if ( (NPCInfo->scriptFlags&SCF_CHASE_ENEMIES) && NPC->client->ps.weapon == WP_THERMAL && NPCInfo->goalEntity && NPCInfo->goalEntity == NPC->enemy )
@@ -308,7 +308,7 @@ static void Grenadier_CheckMoveState( void )
 	{
 		if ( NPCInfo->goalEntity == NPC->enemy )
 		{
-			move = qfalse;
+			doMove = qfalse;
 			return;
 		}
 	}
@@ -329,7 +329,7 @@ static void Grenadier_CheckMoveState( void )
 	{
 		if ( !NPCInfo->goalEntity )
 		{
-			move = qfalse;
+			doMove = qfalse;
 			return;
 		}
 		//Should keep moving toward player when we're out of range... right?
@@ -486,7 +486,7 @@ void NPC_BSGrenadier_Attack( void )
 	}
 
 	enemyLOS = enemyCS = qfalse;
-	move = qtrue;
+	doMove = qtrue;
 	faceEnemy = qfalse;
 	shoot = qfalse;
 	enemyDist = DistanceSquared( NPC->enemy->currentOrigin, NPC->currentOrigin );
@@ -497,7 +497,7 @@ void NPC_BSGrenadier_Attack( void )
 		if ( NPC->client->ps.weapon == WP_THERMAL )
 		{//grenadier
 			trace_t	trace;
-			gi.trace ( &trace, NPC->currentOrigin, NPC->enemy->mins, NPC->enemy->maxs, NPC->enemy->currentOrigin, NPC->s.number, NPC->enemy->clipmask );
+			gi.trace ( &trace, NPC->currentOrigin, NPC->enemy->mins, NPC->enemy->maxs, NPC->enemy->currentOrigin, NPC->s.number, NPC->enemy->clipmask, (EG2_Collision)0, 0 );
 			if ( !trace.allsolid && !trace.startsolid && (trace.fraction == 1.0 || trace.entityNum == NPC->enemy->s.number ) )
 			{//I can get right to him
 				//reset fire-timing variables
@@ -577,11 +577,11 @@ void NPC_BSGrenadier_Attack( void )
 		shoot = qtrue;
 		if ( NPC->client->ps.weapon == WP_THERMAL )
 		{//don't chase and throw
-			move = qfalse;
+			doMove = qfalse;
 		}
 		else if ( NPC->client->ps.weapon == WP_MELEE && enemyDist < (NPC->maxs[0]+NPC->enemy->maxs[0]+16)*(NPC->maxs[0]+NPC->enemy->maxs[0]+16) )
 		{//close enough
-			move = qfalse;
+			doMove = qfalse;
 		}
 	}//this should make him chase enemy when out of range...?
 
@@ -591,19 +591,19 @@ void NPC_BSGrenadier_Attack( void )
 	//See if we should override shooting decision with any special considerations
 	Grenadier_CheckFireState();
 
-	if ( move )
-	{//move toward goal
+	if ( doMove )
+	{//doMove toward goal
 		if ( NPCInfo->goalEntity )//&& ( NPCInfo->goalEntity != NPC->enemy || enemyDist > 10000 ) )//100 squared
 		{
-			move = Grenadier_Move();
+			doMove = Grenadier_Move();
 		}
 		else
 		{
-			move = qfalse;
+			doMove = qfalse;
 		}
 	}
 
-	if ( !move )
+	if ( !doMove )
 	{
 		if ( !TIMER_Done( NPC, "duck" ) )
 		{
@@ -618,7 +618,7 @@ void NPC_BSGrenadier_Attack( void )
 
 	if ( !faceEnemy )
 	{//we want to face in the dir we're running
-		if ( move )
+		if ( doMove )
 		{//don't run away and shoot
 			NPCInfo->desiredYaw = NPCInfo->lastPathAngles[YAW];
 			NPCInfo->desiredPitch = 0;

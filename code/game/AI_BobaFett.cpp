@@ -242,7 +242,7 @@ void	Boba_DustFallNear(const vec3_t origin, int dustcount)
 		testDirection[2] = 1.0f;
 
 		VectorMA(origin, 1000.0f, testDirection, testEndPos);
-		gi.trace (&testTrace, origin, NULL, NULL, testEndPos, (player && player->inuse)?(0):(ENTITYNUM_NONE), MASK_SHOT );
+		gi.trace (&testTrace, origin, NULL, NULL, testEndPos, (player && player->inuse)?(0):(ENTITYNUM_NONE), MASK_SHOT, (EG2_Collision)0, 0 );
 
 		if (!testTrace.startsolid && 
 			!testTrace.allsolid && 
@@ -463,7 +463,7 @@ void Boba_FireFlameThrower( gentity_t *self )
 	{
 		CG_DrawEdge(start, end, EDGE_IMPACT_POSSIBLE);
 	}
-	gi.trace( &tr, start, self->mins, self->maxs, end, self->s.number, MASK_SHOT);
+	gi.trace( &tr, start, self->mins, self->maxs, end, self->s.number, MASK_SHOT, (EG2_Collision)0, 0);
 
 	traceEnt = &g_entities[tr.entityNum];
 	if ( tr.entityNum < ENTITYNUM_WORLD && traceEnt->takedamage )
@@ -1009,7 +1009,7 @@ void	Boba_Update()
 			trace_t		testTrace;
 			vec3_t		eyes;
 			CalcEntitySpot( NPC, SPOT_HEAD_LEAN, eyes );
-			gi.trace (&testTrace, eyes, NULL, NULL, NPC->enemy->currentOrigin, NPC->s.number, MASK_SHOT);
+			gi.trace (&testTrace, eyes, NULL, NULL, NPC->enemy->currentOrigin, NPC->s.number, MASK_SHOT, (EG2_Collision)0, 0);
 
 			bool	wasSeen = Boba_CanSeeEnemy(NPC);
 

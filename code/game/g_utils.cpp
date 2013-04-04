@@ -1357,7 +1357,7 @@ qboolean G_CheckInSolidTeleport (const vec3_t& teleportPos, gentity_t *self)
 	VectorCopy(self->mins, mins);
 	mins[2] = 0;
 
-	gi.trace(&trace, teleportPos, mins, self->maxs, end, self->s.number, self->clipmask);
+	gi.trace(&trace, teleportPos, mins, self->maxs, end, self->s.number, self->clipmask, (EG2_Collision)0, 0);
 	if(trace.allsolid || trace.startsolid)
 	{
 		return qtrue;
@@ -1376,7 +1376,7 @@ qboolean G_CheckInSolid (gentity_t *self, qboolean fix)
 	VectorCopy(self->mins, mins);
 	mins[2] = 0;
 
-	gi.trace(&trace, self->currentOrigin, mins, self->maxs, end, self->s.number, self->clipmask);
+	gi.trace(&trace, self->currentOrigin, mins, self->maxs, end, self->s.number, self->clipmask, (EG2_Collision)0, 0);
 	if(trace.allsolid || trace.startsolid)
 	{
 		return qtrue;
@@ -1567,7 +1567,7 @@ static void DebugTraceForNPC(gentity_t *ent)
 	VectorMA( src, 4096, vf, dest );
 
 	//Trace ahead to find a valid target
-	gi.trace( &trace, src, vec3_origin, vec3_origin, dest, ent->s.number, MASK_OPAQUE|CONTENTS_SOLID|CONTENTS_TERRAIN|CONTENTS_BODY|CONTENTS_ITEM|CONTENTS_CORPSE );
+	gi.trace( &trace, src, vec3_origin, vec3_origin, dest, ent->s.number, MASK_OPAQUE|CONTENTS_SOLID|CONTENTS_TERRAIN|CONTENTS_BODY|CONTENTS_ITEM|CONTENTS_CORPSE, (EG2_Collision)0, 0 );
 
 	if (trace.fraction < 0.99f)
 	{
@@ -2042,7 +2042,7 @@ qboolean G_ClearTrace( const vec3_t start, const vec3_t mins, const vec3_t maxs,
 {
 	static	trace_t	tr;
 
-	gi.trace( &tr, start, mins, maxs, end, ignore, clipmask );
+	gi.trace( &tr, start, mins, maxs, end, ignore, clipmask, (EG2_Collision)0, 0 );
 
 	if ( tr.allsolid || tr.startsolid || tr.fraction < 1.0 )
 	{
@@ -2078,7 +2078,7 @@ qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3_t maxs
 	{
 		VectorCopy( start, end );
 		end[i] += mins[i];
-		gi.trace( &tr, start, vec3_origin, vec3_origin, end, ignore, clipmask );
+		gi.trace( &tr, start, vec3_origin, vec3_origin, end, ignore, clipmask, (EG2_Collision)0, 0 );
 		if ( tr.allsolid || tr.startsolid )
 		{
 			return qfalse;
@@ -2087,7 +2087,7 @@ qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3_t maxs
 		{
 			VectorCopy( start, end );
 			end[i] += maxs[i]-(mins[i]*tr.fraction);
-			gi.trace( &tr, start, vec3_origin, vec3_origin, end, ignore, clipmask );
+			gi.trace( &tr, start, vec3_origin, vec3_origin, end, ignore, clipmask, (EG2_Collision)0, 0 );
 			if ( tr.allsolid || tr.startsolid )
 			{
 				return qfalse;
@@ -2100,7 +2100,7 @@ qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3_t maxs
 		}
 	}
 	//expanded it, now see if it's all clear
-	gi.trace( &tr, start, mins, maxs, start, ignore, clipmask );
+	gi.trace( &tr, start, mins, maxs, start, ignore, clipmask, (EG2_Collision)0, 0 );
 	if ( tr.allsolid || tr.startsolid )
 	{
 		return qfalse;

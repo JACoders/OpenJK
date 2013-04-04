@@ -18,7 +18,8 @@ char	SaberParms[MAX_SABER_DATA_SIZE];
 
 void Saber_SithSwordPrecache( void )
 {//*SIGH* special sounds used by the sith sword
-	for ( int i = 1; i < 5; i++ )
+	int i;
+	for ( i = 1; i < 5; i++ )
 	{
 		G_SoundIndex( va( "sound/weapons/sword/stab%d.wav", i ) );
 	}

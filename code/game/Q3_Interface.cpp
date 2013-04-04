@@ -5894,7 +5894,7 @@ static void Q3_AddRHandModel( int entID, char *addModel)
 {
 	gentity_t	*ent  = &g_entities[entID];
 
-	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ));
+	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), NULL, NULL, 0, 0);
 	if ( ent->cinematicModel != -1 )
 	{
 		// attach it to the hand
@@ -5912,7 +5912,7 @@ static void Q3_AddLHandModel( int entID, char *addModel)
 {
 	gentity_t	*ent  = &g_entities[entID];
 
-	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ));
+	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), NULL, NULL, 0, 0);
 	if ( ent->cinematicModel != -1 )
 	{
 		// attach it to the hand
@@ -6281,7 +6281,7 @@ void InflateOwner( gentity_t *self )
 
 	trace_t	trace;
 
-	gi.trace( &trace, self->currentOrigin, self->mins, self->maxs, self->currentOrigin, self->owner->s.number, self->owner->clipmask&~(CONTENTS_SOLID|CONTENTS_MONSTERCLIP) );
+	gi.trace( &trace, self->currentOrigin, self->mins, self->maxs, self->currentOrigin, self->owner->s.number, self->owner->clipmask&~(CONTENTS_SOLID|CONTENTS_MONSTERCLIP), (EG2_Collision)0, 0 );
 	if ( trace.allsolid || trace.startsolid )
 	{
 		self->e_ThinkFunc = thinkF_InflateOwner;
@@ -7272,19 +7272,19 @@ void CQuake3GameInterface::VariableLoadFloats( varFloat_m &fmap )
 	int		numFloats;
 	char	tempBuffer[1024];
 
-	gi.ReadFromSaveGame( 'FVAR', &numFloats, sizeof( numFloats ) );
+	gi.ReadFromSaveGame( 'FVAR', &numFloats, sizeof( numFloats ), NULL );
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 		
-		gi.ReadFromSaveGame( 'FIDL', &idSize, sizeof( idSize ) );
-		gi.ReadFromSaveGame( 'FIDS', &tempBuffer, idSize );
+		gi.ReadFromSaveGame( 'FIDL', &idSize, sizeof( idSize ), NULL );
+		gi.ReadFromSaveGame( 'FIDS', &tempBuffer, idSize, NULL );
 		tempBuffer[ idSize ] = 0;
 
 		float	val;
 
-		gi.ReadFromSaveGame( 'FVAL', &val, sizeof( float ) );
+		gi.ReadFromSaveGame( 'FVAL', &val, sizeof( float ), NULL );
 
 		DeclareVariable( TK_FLOAT, (const char *) &tempBuffer );
 		SetFloatVariable( (const char *) &tempBuffer, val );
@@ -7303,18 +7303,18 @@ void CQuake3GameInterface::VariableLoadStrings( int type, varString_m &fmap )
 	char	tempBuffer[1024];
 	char	tempBuffer2[1024];
 
-	gi.ReadFromSaveGame( 'SVAR', &numFloats, sizeof( numFloats ) );
+	gi.ReadFromSaveGame( 'SVAR', &numFloats, sizeof( numFloats ), NULL );
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 		
-		gi.ReadFromSaveGame( 'SIDL', &idSize, sizeof( idSize ) );
-		gi.ReadFromSaveGame( 'SIDS', &tempBuffer, idSize );
+		gi.ReadFromSaveGame( 'SIDL', &idSize, sizeof( idSize ), NULL );
+		gi.ReadFromSaveGame( 'SIDS', &tempBuffer, idSize, NULL );
 		tempBuffer[ idSize ] = 0;
 
-		gi.ReadFromSaveGame( 'SVSZ', &idSize, sizeof( idSize ) );
-		gi.ReadFromSaveGame( 'SVAL', &tempBuffer2, idSize );
+		gi.ReadFromSaveGame( 'SVSZ', &idSize, sizeof( idSize ), NULL );
+		gi.ReadFromSaveGame( 'SVAL', &tempBuffer2, idSize, NULL );
 		tempBuffer2[ idSize ] = 0;
 
 		switch ( type )
