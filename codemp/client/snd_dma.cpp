@@ -4569,7 +4569,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, int bCalledByC
 			//
 			// default all tracks to OFF first (and set any other vars)
 			//
-			for (i=0; i<eBGRNDTRACK_NUMBEROF; i++)
+			for (int i=0; i<eBGRNDTRACK_NUMBEROF; i++)
 			{
 				tMusic_Info[i].bActive				= qfalse;
 				tMusic_Info[i].bTrackSwitchPending	= qfalse;
@@ -5184,7 +5184,8 @@ int SND_FreeOldestSound(sfx_t *pButNotThisOne /* = NULL */)
 			{
 				// new bit, we can't throw away any sfx_t struct in use by a channel, else the paint code will crash...
 				//
-				for (int iChannel=0; iChannel<MAX_CHANNELS; iChannel++)
+				int iChannel;
+				for (iChannel=0; iChannel<MAX_CHANNELS; iChannel++)
 				{
 					channel_t *ch = & s_channels[iChannel];
 

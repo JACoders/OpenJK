@@ -763,7 +763,7 @@ LPCSTR Leetify( LPCSTR psString )
 		char *p;
 		for (int i=0; i<sizeof(cReplace); i+=2)
 		{
-			while ((p=strchr(str.c_str(),cReplace[i]))!=NULL)
+			while ((p=(char*)strchr(str.c_str(),cReplace[i]))!=NULL)
 				*p = cReplace[i+1];
 		}
 	}
