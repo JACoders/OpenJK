@@ -909,7 +909,7 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 			byte *pbSwapLineBuffer = (byte *)Z_Malloc( iCopyBytes, TAG_TEMP_WORKSPACE, qfalse);
 			pbSrc = &pBuffer[0];
 			pbDst = &pBuffer[(glConfig.vidHeight-1) * iPow2VidWidth * 4];
-			for (y = 0; y < glConfig.vidHeight/2; y++)
+			for (int y = 0; y < glConfig.vidHeight/2; y++)
 			{
 				memcpy(pbSwapLineBuffer, pbDst, iCopyBytes);
 				memcpy(pbDst, pbSrc, iCopyBytes);

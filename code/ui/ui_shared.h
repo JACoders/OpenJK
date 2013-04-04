@@ -225,9 +225,9 @@ typedef struct {
 		return G2API_SetBoneAnim(ghlInfo, boneName, startFrame, endFrame, flags, animSpeed, currentTime, setFrame, blendTime);
 	}
 #else
-	qboolean	(*g2_SetSkin)(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t renderSkin = 0);
+	qboolean	(*g2_SetSkin)(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t renderSkin );
 	qboolean	(*g2_SetBoneAnim)(CGhoul2Info *ghlInfo, const char *boneName, const int startFrame, const int endFrame,
-					  const int flags, const float animSpeed, const int currentTime, const float setFrame = -1, const int blendTime = -1);
+					  const int flags, const float animSpeed, const int currentTime, const float setFrame, const int blendTime );
 #endif
 	qboolean	(*g2_RemoveGhoul2Model)(CGhoul2Info_v &ghlInfo, const int modelIndex);
 	int			(*g2_InitGhoul2Model)(CGhoul2Info_v &ghoul2, const char *fileName, int, qhandle_t customSkin, qhandle_t customShader, int modelFlags, int lodBias);
@@ -241,7 +241,7 @@ typedef struct {
 	int			(*g2hilev_SetAnim)(CGhoul2Info *ghlInfo, const char *boneName, int animNum, const qboolean freeze);
 
 #ifdef _IMMERSION
-	ffHandle_t	(*registerForce)(const char *name, int channel=FF_CHANNEL_MENU);
+	ffHandle_t	(*registerForce)(const char *name, int channel );
 	void		(*startForce)(ffHandle_t ff);
 #endif // _IMMERSION
 

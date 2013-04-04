@@ -639,7 +639,7 @@ static void RB_SurfaceCylinder( void )
 }
 
 static vec3_t sh1, sh2;
-static f_count;
+static int f_count;
 
 // Up front, we create a random "shape", then apply that to each line segment...and then again to each of those segments...kind of like a fractal
 //----------------------------------------------------------------------------
