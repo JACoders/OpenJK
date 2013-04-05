@@ -491,9 +491,6 @@ void FS_InitFilesystem( void ) {
 	FS_Startup( BASEGAME );
 	initialized = qtrue;
 
-	// see if we are going to allow add-ons
-	FS_SetRestrictions();
-
 	// if we can't find default.cfg, assume that the paths are
 	// busted and error out now, rather than getting an unreadable
 	// graphics screen when the font fails to load
