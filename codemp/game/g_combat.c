@@ -3429,9 +3429,9 @@ void LimbThink( gentity_t *ent )
 	ent->nextthink = level.time;
 }
 
-#include "../namespace_begin.h"
+
 extern qboolean BG_GetRootSurfNameWithVariant( void *ghoul2, const char *rootSurfName, char *returnSurfName, int returnSize );
-#include "../namespace_end.h"
+
 
 void G_Dismember( gentity_t *ent, gentity_t *enemy, vec3_t point, int limbType, float limbRollBase, float limbPitchBase, int deathAnim, qboolean postDeath )
 {

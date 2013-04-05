@@ -436,6 +436,7 @@ LPCSTR GLMModel_SurfaceVertInfo( ModelHandle_t hModel, int iSurfaceIndex )
 												pMDXMHeader->numSurfaces,
 														pSurfHierarchy->name,
 																		pMDXMHeader->name);
+	int iVert = 0;
 													
 
 	for (int iLOD = 0; iLOD < pMDXMHeader->numLODs; iLOD++)
@@ -449,7 +450,7 @@ LPCSTR GLMModel_SurfaceVertInfo( ModelHandle_t hModel, int iSurfaceIndex )
 
 		mdxmVertex_t			*pVert			= (mdxmVertex_t *) ((byte *)pSurface + pSurface->ofsVerts);
 		mdxmVertexTexCoord_t	*pVertTexCoords	= (mdxmVertexTexCoord_t	*) &pVert[pSurface->numVerts];
-		for (int iVert=0; iVert < pSurface->numVerts; iVert++)
+		for (iVert=0; iVert < pSurface->numVerts; iVert++)
 		{
 			StatusMessage(va("LOD %d/%d, Dumping Vert %d/%d",iLOD,pMDXMHeader->numLODs,iVert,pSurface->numVerts));
 

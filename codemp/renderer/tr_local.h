@@ -9,23 +9,13 @@ typedef unsigned int GLuint;
 
 #include "../qcommon/qfiles.h"
 #include "tr_public.h"
-#if defined(_XBOX)
-#include "qgl_console.h"
-#include "glext_console.h"
-#else
 #ifndef DEDICATED
-#include "qgl.h"
+	#include "qgl.h"
 #endif 
-#endif
 #include "../ghoul2/ghoul2_shared.h" //rwwRMG - added
 
-#ifdef _XBOX
-#define GL_INDEX_TYPE		GL_UNSIGNED_SHORT
-typedef unsigned short glIndex_t;
-#else
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
-#endif
 
 // fast float to int conversion
 #if id386 && !( (defined __linux__ || defined __FreeBSD__ ) && (defined __i386__ ) ) // rb010123
@@ -39,11 +29,7 @@ inline long myftol( float f );
 
 // 14 bits
 // see QSORT_SHADERNUM_SHIFT
-#ifdef _XBOX
-#define	MAX_SHADERS				2048
-#else
 #define	MAX_SHADERS				16384
-#endif
 // can't be increased without changing bit packing for drawsurfs
 
 #define MAX_SHADER_STATES 2048
@@ -114,25 +100,6 @@ typedef struct {
 } orientationr_t;
 
 
-#ifdef _XBOX
-typedef struct image_s {
-	int			imgCode;
-	USHORT		width, height;				// source image
-
-	GLuint		texnum;					// gl texture binding
-	int			internalFormat;
-	int			wrapClampMode;		// GL_CLAMP or GL_REPEAT
-
-	bool		isLightmap;
-	bool		isSystem;
-	int			mipcount;
-
-	bool		allowPicmip;
-	short		iLastLevelUsedOn;
-} image_t;
-
-#else // _XBOX
-
 typedef struct image_s {
 	char		imgName[MAX_QPATH];		// game path, including extension
 	USHORT		width, height;	// after power of two and picmip but not including clamp to MAX_TEXTURE_SIZE
@@ -149,7 +116,6 @@ typedef struct image_s {
 	short		iLastLevelUsedOn;
 
 } image_t;
-#endif // _XBOX
 
 //===============================================================================
 
@@ -394,9 +360,6 @@ typedef struct {
 typedef struct {
 	bool			active;
 	bool			isDetail;
-#ifdef _XBOX
-	byte			isEnvironment;
-#endif
 #ifdef VV_LIGHTING
 	byte			isSpecular;
 	byte			isBumpMap;
@@ -479,11 +442,6 @@ typedef struct shader_s {
 
 	bool		isBumpMap;
 
-#ifdef _XBOX
-	bool		needsNormal;
-	bool		needsTangent;
-#endif
-
 	skyParms_t	*sky;
 	fogParms_t	*fogParms;
 
@@ -510,10 +468,8 @@ typedef struct shader_s {
   float clampTime;                                  // time this shader is clamped to
   float timeOffset;                                 // current time offset for this shader
 
-#ifndef _XBOX	// GLOWXXX
 	// True if this shader has a stage with glow in it (just an optimization).
 	bool hasGlow;
-#endif
 
 /*
   int numStates;                                    // if non-zero this is a state shader
@@ -702,16 +658,6 @@ typedef struct srfDisplayList_s {
 	int				listNum;
 } srfDisplayList_t;
 
-#ifdef _XBOX
-typedef struct srfFlare_s {
-	surfaceType_t	surfaceType;
-	unsigned short	origin[3];
-	unsigned short	normal[3];
-	byte			color[3];
-} srfFlare_t;
-
-#else // _XBOX
-
 typedef struct srfFlare_s {
 	surfaceType_t	surfaceType;
 	vec3_t			origin;
@@ -719,27 +665,11 @@ typedef struct srfFlare_s {
 	vec3_t			color;
 } srfFlare_t;
 
-#endif
-
-#ifdef _XBOX
-// Added tangent size in here
-#define	VERTEXSIZE			(9+(MAXLIGHTMAPS*3))
-#define VERTEX_LM			8  
-#define	VERTEX_COLOR(flags)		(VERTEX_LM + (((flags) & 0x7F) * 2))
-#else
 #define	VERTEXSIZE			(6+(MAXLIGHTMAPS*3))
 #define VERTEX_LM			5
 #define	VERTEX_COLOR		(5+(MAXLIGHTMAPS*2))
-#endif
 
 #define	VERTEX_FINAL_COLOR	(5+(MAXLIGHTMAPS*3))
-
-#ifdef _XBOX
-#define NEXT_SURFPOINT(flags) (VERTEX_LM + (((flags) & 0x7F) * 2) + ((((flags) & 0x80) >> 7) * 4));
-#define POINTS_ST_SCALE 128.0f
-#define POINTS_LIGHT_SCALE 65536.0f
-#define GLM_COMP_SIZE 64.0f
-#endif // _XBOX
 
 typedef struct srfTerrain_s
 {
@@ -773,29 +703,6 @@ typedef struct srfGridMesh_s {
 	drawVert_t		verts[1];		// variable sized
 } srfGridMesh_t;
 
-#ifdef _XBOX
-#pragma pack (push, 1)
-typedef struct {
-	surfaceType_t	surfaceType;
-	cplane_t	plane;
-
-	// dynamic lighting information
-	int			dlightBits;
-
-	// triangle definitions (no normals at points)
-	unsigned char	numPoints;
-	unsigned short	numIndices;
-	unsigned short	ofsIndices;
-	unsigned char   flags; //highest bit - true if face uses vertex colors,
-							//low 7 bits - number of light maps
-//	vec3_t			*tangents;
-	unsigned short	*srfPoints;			// variable sized
-										// there is a variable length list of indices here also
-} srfSurfaceFace_t;
-#pragma pack (pop)
-
-#else // _XBOX
-
 typedef struct {
 	surfaceType_t	surfaceType;
 	cplane_t	plane;
@@ -810,9 +717,6 @@ typedef struct {
 	float		points[1][VERTEXSIZE];	// variable sized
 										// there is a variable length list of indices here also
 } srfSurfaceFace_t;
-
-#endif // _XBOX
-
 
 // misc_models in maps are turned into direct geometry by q3map
 typedef struct {
@@ -881,39 +785,6 @@ typedef struct msurface_s {
 
 #define	CONTENTS_NODE		-1
 
-#ifdef _XBOX
-#pragma pack (push, 1)
-typedef struct mnode_s {
-	// common with leaf and node
-	signed char	contents;		// -1 for nodes, to differentiate from leafs
-	int 		visframe;		// node needs to be traversed if current
-	short		mins[3], maxs[3];		// for bounding box culling
-	struct mnode_s *parent;
-
-	// node specific
-	unsigned int planeNum;
-	struct mnode_s	*children[2];	
-
-} mnode_t;
-
-struct mleaf_s {
-	// common with leaf and node
-	signed char	contents;		// -1 for nodes, to differentiate from leafs
-	int 		visframe;		// node needs to be traversed if current
-	short		mins[3], maxs[3];		// for bounding box culling
-	struct mnode_s *parent;
-
-	// leaf specific
-	short			cluster;
-	signed char		area;
-
-	unsigned short firstMarkSurfNum;
-	short		nummarksurfaces;
-};
-#pragma pack (pop)
-
-#else // _XBOX
-
 typedef struct mnode_s {
 	// common with leaf and node
 	int			contents;		// -1 for nodes, to differentiate from leafs
@@ -933,39 +804,11 @@ typedef struct mnode_s {
 	int			nummarksurfaces;
 } mnode_t;
 
-#endif // _XBOX
-
 typedef struct {
 	vec3_t		bounds[2];		// for culling
 	msurface_t	*firstSurface;
 	int			numSurfaces;
 } bmodel_t;
-
-#ifdef _XBOX
-#pragma pack(push, 1)
-typedef struct {
-	byte flags;
-	byte latLong[2];
-	int data;
-
-	/*
-	   flags has the following bits:
-	   0 - ambientLight[0] and directLight[0] are not all zeros
-	   1 - ambientLight[1] and directLight[1] are not all zeros
-	   2 - ambientLight[2] and directLight[2] are not all zeros
-	   3 - ambientLight[3] and directLight[3] are not all zeros
-	   4 - styles[0] is not LS_NONE
-	   5 - styles[1] is not LS_NONE
-	   6 - styles[2] is not LS_NONE
-	   7 - styles[3] is not LS_NONE
-
-	   data points to memory which stores ambientLight, directLight and
-	   styles when they are not 0 or LS_NONE.
-	*/
-} mgrid_t;
-#pragma pack(pop)
-
-#else // _XBOX
 
 typedef struct 
 {
@@ -976,65 +819,6 @@ typedef struct
 //	byte		pad[2];								// to align to a cache line
 } mgrid_t;
 
-#endif // _XBOX
-
-
-#ifdef _XBOX
-template <class T>
-class SPARC;
-typedef struct {
-	char		name[MAX_QPATH];		// ie: maps/tim_dm2.bsp
-	char		baseName[MAX_QPATH];	// ie: tim_dm2
-
-	int			numShaders;
-	dshader_t	*shaders;
-
-	bmodel_t	*bmodels;
-
-	int			numplanes;
-	cplane_t	*planes;
-
-	int			numnodes;		// includes leafs
-	int			numDecisionNodes;
-	mnode_t		*nodes;
-
-	int			numleafs;
-	mleaf_s		*leafs;
-
-	int			numsurfaces;
-	msurface_t	*surfaces;
-
-	int			nummarksurfaces;
-	msurface_t	**marksurfaces;
-
-	int			numfogs;
-	fog_t		*fogs;
-	int			globalFog;
-
-	int			startLightMapIndex;
-
-	vec3_t		lightGridOrigin;
-	vec3_t		lightGridSize;
-	vec3_t		lightGridInverseSize;
-	int			lightGridBounds[3];
-	mgrid_t			*lightGridData;
-	unsigned short	*lightGridArray;
-	int			numGridArrayElements;
-
-	int			numClusters;
-	int			clusterBytes;
-
-	SPARC<byte>	*vis;
-
-	byte		*novis;			// clusterBytes of 0xff
-
-	qboolean	portalPresent;
-
-	char		*entityString;
-	char		*entityParsePoint;
-} world_t;
-
-#else // _XBOX
 
 typedef struct {
 	char		name[MAX_QPATH];		// ie: maps/tim_dm2.bsp
@@ -1088,8 +872,6 @@ typedef struct {
 	char		*entityString;
 	char		*entityParsePoint;
 } world_t;
-
-#endif // _XBOX
 
 //======================================================================
 /*
@@ -1151,7 +933,6 @@ void		R_Modellist_f (void);
 
 
 // An offscreen buffer used for secondary rendering and render-to-texture support (RTT). - AReis
-#ifndef _XBOX	// GLOWXXX
 #ifndef DEDICATED
 class CPBUFFER
 {
@@ -1196,7 +977,6 @@ public:
 	bool End();
 };
 #endif  // DEDICATED
-#endif	// _XBOX
 
 
 #define	MAX_DRAWIMAGES			2048
@@ -1204,11 +984,7 @@ public:
 #define	MAX_SKINS				1024
 
 
-#ifdef _XBOX
-#define	MAX_DRAWSURFS			0x4000
-#else
 #define	MAX_DRAWSURFS			0x10000
-#endif
 #define	DRAWSURF_MASK			(MAX_DRAWSURFS-1)
 
 /*
@@ -1300,11 +1076,7 @@ typedef struct {
 ** by the frontend.
 */
 
-#ifdef _XBOX
-#define NUM_SCRATCH_IMAGES 2
-#else
 #define NUM_SCRATCH_IMAGES 16
-#endif
 
 typedef struct {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
@@ -1320,11 +1092,7 @@ typedef struct {
 	qboolean				worldMapLoaded;
 	world_t					*world;
 
-#ifdef _XBOX
-	SPARC<byte>				*externalVisData;	// from RE_SetWorldVisData, shared with CM_Load
-#else
 	const byte				*externalVisData;	// from RE_SetWorldVisData, shared with CM_Load
-#endif
 
 	image_t					*defaultImage;
 	image_t					*scratchImage[NUM_SCRATCH_IMAGES];
@@ -1336,7 +1104,6 @@ typedef struct {
 
 	image_t					*screenImage; //reserve us a gl texnum to use with RF_DISTORTION
 
-#ifndef _XBOX	// GLOWXXX
 	// Handle to the Glow Effect Vertex Shader. - AReis
 	GLuint					glowVShader;
 
@@ -1351,7 +1118,6 @@ typedef struct {
 
 	// Image used to downsample and blur scene to.	- AReis
 	GLuint					blurImage;
-#endif
 
 	shader_t				*defaultShader;
 	shader_t				*shadowShader;
@@ -1573,14 +1339,6 @@ extern	cvar_t	*r_simpleMipMaps;
 extern	cvar_t	*r_showImages;
 extern	cvar_t	*r_debugSort;
 
-#ifdef _XBOX
-extern	cvar_t	*r_hdreffect;
-extern  cvar_t  *r_sundir_x;
-extern  cvar_t  *r_sundir_y;
-extern  cvar_t  *r_sundir_z;
-extern  cvar_t  *r_hdrbloom;
-#endif
-
 /*
 Ghoul2 Insert Start
 */
@@ -1690,11 +1448,7 @@ void		RE_BeginRegistration( glconfig_t *glconfig );
 void		R_ColorShiftLightingBytes( byte in[4], byte out[4] ); //rwwRMG - added
 void		RE_LoadWorldMap( const char *mapname );
 
-#ifdef _XBOX
-void		RE_SetWorldVisData( SPARC<byte> *vis );
-#else
 void		RE_SetWorldVisData( const byte *vis );
-#endif
 
 qhandle_t	RE_RegisterServerModel( const char *name );
 qhandle_t	RE_RegisterModel( const char *name );
@@ -1723,22 +1477,13 @@ model_t		*R_AllocModel( void );
 void    	R_Init( void );
 
 #ifndef DEDICATED
-#ifdef _XBOX
-void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, int *mipcount, GLenum *format );
-#else
 void R_LoadImage( const char *name, byte **pic, int *width, int *height, GLenum *format );
-#endif
 #endif // DEDICATED
 
 image_t		*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
 
 #ifndef DEDICATED
-#ifdef _XBOX
-image_t		*R_CreateImage( const char *name, const byte *pic, int width, int height, GLenum format, qboolean mipmap, qboolean allowPicmip, int wrapClampMode);
-#else
-image_t		*R_CreateImage( const char *name, const byte *pic, int width, int height, GLenum format, qboolean mipmap
-					, qboolean allowPicmip, qboolean allowTC, int wrapClampMode, bool bRectangle = false );
-#endif // _XBOX
+image_t		*R_CreateImage( const char *name, const byte *pic, int width, int height, GLenum format, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int wrapClampMode, bool bRectangle = false );
 #endif // DEDICATED
 
 qboolean	R_GetModeInfo( int *width, int *height, int mode );
@@ -1800,25 +1545,7 @@ void		GLimp_EndFrame( void );
 
 void		GLimp_LogComment( char *comment );
 
-#ifndef _XBOX
-void		GLimp_SetGamma( unsigned char red[256], 
-						    unsigned char green[256],
-							unsigned char blue[256] );
-#endif
-
-#ifdef _XBOX
-typedef struct 
-{
-	char		levelName[_MAX_PATH];
-	vec3_t		sundir;
-	bool		hdrEnable;
-	float		hdrBloom;
-} levelLightParm_t;
-
-void R_GetLightParmsForLevel();
-void R_LoadLevelLightParms();
-#endif
-
+void		GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] );
 
 /*
 ====================================================================
@@ -1831,11 +1558,7 @@ typedef byte color4ub_t[4];
 
 typedef struct stageVars
 {
-#ifdef _XBOX
-	unsigned long colors[SHADER_MAX_VERTEXES];
-#else
 	color4ub_t	colors[SHADER_MAX_VERTEXES];
-#endif
 	vec2_t		texcoords[NUM_TEXTURE_BUNDLES][SHADER_MAX_VERTEXES];
 } stageVars_t;
 
@@ -1846,9 +1569,6 @@ struct shaderCommands_s
 	glIndex_t	indexes[SHADER_MAX_INDEXES];
 	vec4_t		xyz[SHADER_MAX_VERTEXES];
 	vec4_t		normal[SHADER_MAX_VERTEXES];
-#ifdef _XBOX
-	vec4_t		tangent[SHADER_MAX_VERTEXES];
-#endif
 	vec2_t		texCoords[SHADER_MAX_VERTEXES][NUM_TEX_COORDS];
 	color4ub_t	vertexColors[SHADER_MAX_VERTEXES];
 	byte		vertexAlphas[SHADER_MAX_VERTEXES][4]; //rwwRMG - added support
@@ -1867,10 +1587,6 @@ struct shaderCommands_s
 
 	// info extracted from current shader
 	int			numPasses;
-#ifdef _XBOX
-	int		    currentPass;
-	bool		setTangents;
-#endif
 	void		(*currentStageIteratorFunc)( void );
 	shaderStage_t	*xstages;
 
@@ -1978,14 +1694,8 @@ CURVE TESSELATION
 
 #define PATCH_STITCHING
 
-#ifdef _XBOX
-srfGridMesh_t *R_SubdividePatchToGrid( int width, int height,
-								drawVert_t* points,
-								drawVert_t* ctl, float* errorTable );
-#else
 srfGridMesh_t *R_SubdividePatchToGrid( int width, int height,
 								drawVert_t points[MAX_PATCH_SIZE*MAX_PATCH_SIZE] );
-#endif // _XBOX
 
 srfGridMesh_t *R_GridInsertColumn( srfGridMesh_t *grid, int column, int row, vec3_t point, float loderror );
 srfGridMesh_t *R_GridInsertRow( srfGridMesh_t *grid, int row, int column, vec3_t point, float loderror );
@@ -2123,19 +1833,6 @@ void	RB_CalcScaleTexCoords( const float scale[2], float *dstTexCoords );
 void	RB_CalcTurbulentTexCoords( const waveForm_t *wf, float *dstTexCoords );
 void	RB_CalcTransformTexCoords( const texModInfo_t *tmi, float *dstTexCoords );
 void	RB_CalcStretchTexCoords( const waveForm_t *wf, float *texCoords );
-#ifdef _XBOX
-void	RB_CalcWaveColor( const waveForm_t *wf, DWORD *dstColors );
-void	RB_CalcColorFromEntity( DWORD *dstColors );
-void	RB_CalcColorFromOneMinusEntity( DWORD *dstColors );
-void	RB_CalcWaveAlpha( const waveForm_t *wf, DWORD *dstColors );
-void	RB_CalcSpecularAlpha( DWORD *alphas );
-void	RB_CalcAlphaFromEntity( DWORD *dstColors );
-void	RB_CalcAlphaFromOneMinusEntity( DWORD *dstColors );
-void	RB_CalcModulateColorsByFog( DWORD *dstColors );
-void	RB_CalcModulateAlphasByFog( DWORD *dstColors );
-void	RB_CalcModulateRGBAsByFog( DWORD *dstColors );
-void	RB_CalcDisintegrateColors( DWORD *colors );
-#else
 void	RB_CalcModulateColorsByFog( unsigned char *dstColors );
 void	RB_CalcModulateAlphasByFog( unsigned char *dstColors );
 void	RB_CalcModulateRGBAsByFog( unsigned char *dstColors );
@@ -2147,7 +1844,6 @@ void	RB_CalcColorFromEntity( unsigned char *dstColors );
 void	RB_CalcColorFromOneMinusEntity( unsigned char *dstColors );
 void	RB_CalcSpecularAlpha( unsigned char *alphas );
 void	RB_CalcDisintegrateColors( unsigned char *colors );
-#endif // _XBOX
 void	RB_CalcDiffuseColor( unsigned char *colors );
 void	RB_CalcDiffuseEntityColor( unsigned char *colors );
 void	RB_CalcDisintegrateVertDeform( void );
@@ -2171,11 +1867,7 @@ RENDERER BACK END COMMAND QUEUE
 =============================================================
 */
 
-#ifdef _XBOX
-#define	MAX_RENDER_COMMANDS	0x18000
-#else
 #define	MAX_RENDER_COMMANDS	0x40000
-#endif
 
 typedef struct {
 	byte	cmds[MAX_RENDER_COMMANDS];
@@ -2330,36 +2022,6 @@ typedef struct decalPoly_s
 #ifndef DEDICATED
 // tr_surfacesprites
 void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input);
-#endif
-
-#ifdef _XBOX
-struct DDS_PIXELFORMAT
-{
-    DWORD dwSize;
-    DWORD dwFlags;
-    DWORD dwFourCC;
-    DWORD dwRGBBitCount;
-    DWORD dwRBitMask;
-    DWORD dwGBitMask;
-    DWORD dwBBitMask;
-    DWORD dwABitMask;
-};
-
-struct DDS_HEADER
-{
-    DWORD dwSize;
-    DWORD dwHeaderFlags;
-    DWORD dwHeight;
-    DWORD dwWidth;
-    DWORD dwPitchOrLinearSize;
-    DWORD dwDepth;
-    DWORD dwMipMapCount;
-    DWORD dwReserved1[11];
-    DDS_PIXELFORMAT ddspf;
-    DWORD dwSurfaceFlags;
-    DWORD dwCubemapFlags;
-    DWORD dwReserved2[3];
-};
 #endif
 
 #endif //TR_LOCAL_H

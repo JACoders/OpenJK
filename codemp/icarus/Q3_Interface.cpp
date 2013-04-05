@@ -94,12 +94,10 @@ WARNING: Clearing a taskID will make that task never finish unless you intend to
 			return the same taskID from somewhere else.
 -------------------------
 */
-#ifndef _XBOX	// We borrow the one in g_ICARUScb.c
 void Q3_TaskIDClear( int *taskID )
 {
 	*taskID = -1;
 }
-#endif
 
 /*
 -------------------------
@@ -728,14 +726,10 @@ void CGCam_Move( vec3_t dest, float duration )
 	CGCam_Anything();
 }
 
-#ifdef _XBOX
-void CGCam_Shake( float intensity, int duration );
-#else
 void CGCam_Shake( float intensity, int duration )
 {
 	CGCam_Anything();
 }
-#endif
 
 void CGCam_Follow( const char *cameraGroup, float speed, float initLerp )
 {

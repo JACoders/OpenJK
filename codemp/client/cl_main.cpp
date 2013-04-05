@@ -6,13 +6,7 @@
 #include "client.h"
 #include "../qcommon/stringed_ingame.h"
 #include <limits.h>
-#ifdef _XBOX
-#include "snd_local_console.h"
-#include "../xbox/XBLive.h"
-#include "../xbox/XBoxCommon.h"
-#else
 #include "snd_local.h"
-#endif
 
 //rwwRMG - added:
 #include "..\qcommon\cm_local.h"
@@ -28,14 +22,6 @@
 
 #ifdef _DONETPROFILE_
 #include "../qcommon/INetProfile.h"
-#endif
-
-#if 0 //rwwFIXMEFIXME: Disable this before release!!!!!! I am just trying to find a crash bug.
-#include "../renderer/tr_local.h"
-#endif
-
-#ifdef _XBOX
-#include "../renderer/tr_local.h"
 #endif
 
 cvar_t	*cl_nodelta;
@@ -73,11 +59,6 @@ cvar_t	*m_forward;
 cvar_t	*m_side;
 cvar_t	*m_filter;
 
-#ifdef _XBOX
-//MAP HACK
-cvar_t	*cl_mapname;
-#endif
-
 cvar_t	*cl_activeAction;
 
 cvar_t	*cl_motdString;
@@ -88,7 +69,6 @@ cvar_t	*cl_conXOffset;
 cvar_t	*cl_inGameVideo;
 
 cvar_t	*cl_serverStatusResendTime;
-cvar_t	*cl_trn;
 cvar_t	*cl_framerate;
 
 cvar_t	*cl_autolodscale;
@@ -161,39 +141,6 @@ void CL_AddReliableCommand( const char *cmd ) {
 }
 
 /*
-======================
-CL_ChangeReliableCommand
-======================
-*/
-void CL_ChangeReliableCommand( void ) {
-	int r, index, l;
-
-	r = clc.reliableSequence - ((int)(random()) * 5);
-	index = clc.reliableSequence & ( MAX_RELIABLE_COMMANDS - 1 );
-	l = strlen(clc.reliableCommands[ index ]);
-	if ( l >= MAX_STRING_CHARS - 1 ) {
-		l = MAX_STRING_CHARS - 2;
-	}
-	clc.reliableCommands[ index ][ l ] = '\n';
-	clc.reliableCommands[ index ][ l+1 ] = '\0';
-}
-
-/*
-======================
-CL_MakeMonkeyDoLaundry
-======================
-*/
-void CL_MakeMonkeyDoLaundry( void ) {
-	if ( Sys_MonkeyShouldBeSpanked() ) {
-		if ( !(cls.framecount & 255) ) {
-			if ( random() < 0.1 ) {
-				CL_ChangeReliableCommand();
-			}
-		}
-	}
-}
-
-/*
 =======================================================================
 
 CLIENT SIDE DEMO RECORDING
@@ -208,7 +155,6 @@ CL_WriteDemoMessage
 Dumps the current net message, prefixed by the length
 ====================
 */
-#ifndef _XBOX	// No demos on Xbox
 void CL_WriteDemoMessage ( msg_t *msg, int headerBytes ) {
 	int		len, swlen;
 
@@ -639,8 +585,6 @@ void CL_NextDemo( void ) {
 	Cbuf_Execute();
 }
 
-#endif	// _XBOX	- No demos on Xbox
-
 //======================================================================
 
 /*
@@ -667,54 +611,11 @@ void CL_ShutdownAll(void) {
 		re.Shutdown( qfalse );		// don't destroy window or context
 	}
 
-#ifndef _XBOX
 	cls.uiStarted = qfalse;
 	cls.cgameStarted = qfalse;
-#endif
 	cls.rendererStarted = qfalse;
 	cls.soundRegistered = qfalse;
 }
-
-
-#ifdef _XBOX
-//To avoid fragmentation, we want everything free by this point.
-//Much of this probably violates DLL boundaries, so it's done on
-//Xbox only.
-extern void R_DestroyWireframeMap(void);
-extern void Sys_IORequestQueueClear(void);
-extern void AS_FreePartial(void);
-extern void Cvar_Defrag(void);
-extern void R_ModelFree(void);
-extern void Ghoul2InfoArray_Free(void);
-extern void CM_Free(void);
-extern void G_ClPtrClear(void);
-extern void NPC_NPCPtrsClear(void);
-extern void Sys_StreamRequestQueueClear(void);
-extern void RemoveAllWP(void);
-extern void BG_ClearVehicleParseParms(void);
-extern void NAV_ClearStoredWaypoints(void);
-void CL_ClearLastLevel(void)
-{
-	Z_TagFree(TAG_UI_ALLOC);
-	Z_TagFree(TAG_CG_UI_ALLOC);
-	Z_TagFree(TAG_BG_ALLOC);
-	CM_Free();
-	R_DestroyWireframeMap();
-	Ghoul2InfoArray_Free();
-	CM_FreeShaderText();
-	R_ModelFree();
-	Sys_IORequestQueueClear();
-	Sys_StreamRequestQueueClear();
-	AS_FreePartial();
-	Cvar_Defrag();
-	G_ClPtrClear();
-	NPC_NPCPtrsClear();
-	RemoveAllWP();
-	BG_ClearVehicleParseParms();
-	NAV_ClearStoredWaypoints();
-}
-#endif
-
 
 /*
 =================
@@ -736,21 +637,6 @@ void CL_FlushMemory( void ) {
 		CM_ClearMap();
 		// clear the whole hunk
 		Hunk_Clear();
-
-		//clear everything else to avoid fragmentation
-#ifdef _XBOX
-		CL_ClearLastLevel();
-
-		#ifdef _DEBUG
-		//Useful for memory debugging.  Please don't delete.  Comment out if
-		//necessary.
-		extern void Z_DisplayLevelMemory(int, int, int);
-		extern void Z_Details_f(void);
-		extern void Z_TagPointers(memtag_t);
-		Z_DisplayLevelMemory(0, 0, 0);
-		Z_Details_f();
-		#endif
-#endif
 	}
 	else {
 		// clear all the client data on the hunk
@@ -833,14 +719,9 @@ void CL_Disconnect( qboolean showMainMenu ) {
 		return;
 	}
 
-#ifdef _XBOX
-	Cvar_Set("r_norefresh", "0");
-#endif
-
 	// shutting down the client so enter full screen ui mode
 	Cvar_Set("r_uiFullScreen", "1");
 
-#ifndef _XBOX	// No demos or downloads on Xbox
 	if ( clc.demorecording ) {
 		CL_StopRecord_f ();
 	}
@@ -856,7 +737,6 @@ void CL_Disconnect( qboolean showMainMenu ) {
 		FS_FCloseFile( clc.demofile );
 		clc.demofile = 0;
 	}
-#endif	// _XBOX
 
 	if ( uivm && showMainMenu ) {
 		VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_NONE );
@@ -864,12 +744,6 @@ void CL_Disconnect( qboolean showMainMenu ) {
 
 	SCR_StopCinematic ();
 	S_ClearSoundBuffer();
-
-#ifdef _XBOX
-//	extern qboolean RE_RegisterImages_LevelLoadEnd(void);
-//	RE_RegisterImages_LevelLoadEnd();
-	R_DeleteTextures();
-#endif
 
 	// send a disconnect message to the server
 	// send it a few times in case one is dropped
@@ -914,11 +788,7 @@ void CL_ForwardCommandToServer( const char *string ) {
 		return;
 	}
 
-#ifdef _XBOX	// No demos on Xbox
-	if (cls.state < CA_CONNECTED || cmd[0] == '+' ) {
-#else
 	if (clc.demoplaying || cls.state < CA_CONNECTED || cmd[0] == '+' ) {
-#endif
 		Com_Printf ("Unknown command \"%s\"\n", cmd);
 		return;
 	}
@@ -937,7 +807,6 @@ CL_RequestMotd
 ===================
 */
 void CL_RequestMotd( void ) {
-#ifndef _XBOX	// No MOTD on Xbox
 	char		info[MAX_INFO_STRING];
 
 	if ( !cl_motd->integer ) {
@@ -976,7 +845,6 @@ void CL_RequestMotd( void ) {
 
 
 	NET_OutOfBandPrint( NS_CLIENT, cls.updateServer, "getmotd \"%s\"\n", info );
-#endif
 }
 
 
@@ -993,7 +861,6 @@ CONSOLE COMMANDS
 CL_ForwardToServer_f
 ==================
 */
-#ifndef _XBOX	// Don't need it
 void CL_ForwardToServer_f( void ) {
 	if ( cls.state != CA_ACTIVE || clc.demoplaying ) {
 		Com_Printf ("Not connected to a server.\n");
@@ -1005,7 +872,6 @@ void CL_ForwardToServer_f( void ) {
 		CL_AddReliableCommand( Cmd_Args() );
 	}
 }
-#endif
 
 
 /*
@@ -1045,11 +911,6 @@ CL_Connect_f
 */
 void CL_Connect_f( void ) {
 	char	*server;
-
-	if ( !Cvar_VariableValue("fs_restrict") && !Sys_CheckCD() )
-	{
-		Com_Error( ERR_NEED_CD, SE_GetString("CON_TEXT_NEED_CD") ); //"Game CD not in drive" );		
-	}
 
 	if ( Cmd_Argc() != 2 ) {
 		Com_Printf( "usage: connect [server]\n");
@@ -1112,6 +973,7 @@ void CL_Connect_f( void ) {
 	Cvar_Set( "cl_currentServerAddress", server );
 }
 
+#define MAX_RCON_MESSAGE 1024
 
 /*
 =====================
@@ -1122,12 +984,11 @@ CL_Rcon_f
 =====================
 */
 void CL_Rcon_f( void ) {
-	char	message[1024];
-	int		i;
+	char	message[MAX_RCON_MESSAGE];
 	netadr_t	to;
 
 	if ( !rcon_client_password->string ) {
-		Com_Printf ("You must set 'rcon_password' before\n"
+		Com_Printf ("You must set 'rconpassword' before\n"
 					"issuing an rcon command.\n");
 		return;
 	}
@@ -1138,15 +999,13 @@ void CL_Rcon_f( void ) {
 	message[3] = -1;
 	message[4] = 0;
 
-	strcat (message, "rcon ");
+	Q_strcat (message, MAX_RCON_MESSAGE, "rcon ");
 
-	strcat (message, rcon_client_password->string);
-	strcat (message, " ");
+	Q_strcat (message, MAX_RCON_MESSAGE, rcon_client_password->string);
+	Q_strcat (message, MAX_RCON_MESSAGE, " ");
 
-	for (i=1 ; i<Cmd_Argc() ; i++) {
-		strcat (message, Cmd_Argv(i));
-		strcat (message, " ");
-	}
+	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=543
+	Q_strcat (message, MAX_RCON_MESSAGE, Cmd_Cmd()+5);
 
 	if ( cls.state >= CA_CONNECTED ) {
 		to = clc.netchan.remoteAddress;
@@ -1173,7 +1032,6 @@ CL_SendPureChecksums
 =================
 */
 void CL_SendPureChecksums( void ) {
-#ifndef _XBOX
 	const char *pChecksums;
 	char cMsg[MAX_INFO_VALUE];
 	int i;
@@ -1189,7 +1047,6 @@ void CL_SendPureChecksums( void ) {
 		cMsg[i] += 10;
 	}
 	CL_AddReliableCommand( cMsg );
-#endif
 }
 
 /*
@@ -1216,9 +1073,7 @@ void CL_Vid_Restart_f( void ) {
 	//rww - sort of nasty, but when a user selects a mod
 	//from the menu all it does is a vid_restart, so we
 	//have to check for new net overrides for the mod then.
-#ifndef _XBOX	// No mods on Xbox
 	g_nOverrideChecked = false;
-#endif
 
 	// don't let them loop during the restart
 	S_StopAllSounds();
@@ -1364,7 +1219,6 @@ Called when all downloading has been completed
 void CL_DownloadsComplete( void ) {
 
 	// if we downloaded files we need to restart the file system
-#ifndef _XBOX	// No downloads on Xbox
 	if (clc.downloadRestart) {
 		clc.downloadRestart = qfalse;
 
@@ -1377,7 +1231,6 @@ void CL_DownloadsComplete( void ) {
 		// so we don't want to load stuff yet
 		return;
 	}
-#endif
 
 	// let the client game init and load data
 	cls.state = CA_LOADING;
@@ -1420,8 +1273,6 @@ Requests a file to download from the server.  Stores it in the current
 game directory.
 =================
 */
-
-#ifndef _XBOX	// No downloads on Xbox
 
 void CL_BeginDownload( const char *localName, const char *remoteName ) {
 
@@ -1492,8 +1343,6 @@ void CL_NextDownload(void) {
 	CL_DownloadsComplete();
 }
 
-#endif	// XBOX		- No downloads on Xbox
-
 /*
 =================
 CL_InitDownloads
@@ -1503,7 +1352,6 @@ and determine if we need to download them
 =================
 */
 void CL_InitDownloads(void) {
-#ifndef _XBOX
   char missingfiles[1024];
 	
 	if ( !cl_allowDownload->integer )
@@ -1531,7 +1379,6 @@ void CL_InitDownloads(void) {
 		}
 		
 	}
-#endif
 	CL_DownloadsComplete();
 }
 
@@ -1548,11 +1395,9 @@ void CL_CheckForResend( void ) {
 	char	data[MAX_INFO_STRING];
 
 	// don't send anything if playing back a demo
-#ifndef _XBOX	// No demos on Xbox
 	if ( clc.demoplaying ) {
 		return;
 	}
-#endif
 
 	// resend if we haven't gotten a reply yet
 	if ( cls.state != CA_CONNECTING && cls.state != CA_CHALLENGING ) {
@@ -1581,34 +1426,6 @@ void CL_CheckForResend( void ) {
 		Info_SetValueForKey( info, "protocol", va("%i", PROTOCOL_VERSION ) );
 		Info_SetValueForKey( info, "qport", va("%i", port ) );
 		Info_SetValueForKey( info, "challenge", va("%i", clc.challenge ) );
-
-#ifdef _XBOX
-		// Send Xbox stuff to host
-		// This stuff needs to be parsed in SV_DirectConnect(). SOF2 sent a raw
-		// XBPlayerInfo, which changed net traffic type. I'm just sending what I
-		// need to, and doing text encode to avoid other changes.
-
-		// Send our Xbox Address
-		char sxnaddr[XNADDR_STRING_LEN];
-		XnAddrToString(Net_GetXNADDR(), sxnaddr);
-		Info_SetValueForKey(info, "xnaddr", sxnaddr);
-
-		// Send our XUID if we're logged on and it's good
-		if (logged_on)
-		{
-			XONLINE_USER *pUser = XOnlineGetLogonUsers();
-			if (pUser && pUser->hr == S_OK)
-			{
-				char sxuid[XUID_STRING_LEN];
-				XUIDToString(&pUser->xuid, sxuid);
-				Info_SetValueForKey(info, "xuid", sxuid);
-			}
-		}
-
-		// If we're allowed to take a private slot (ie, we joined a friend or got invited):
-		if (XBL_MM_CanUsePrivateSlot())
-			Info_SetValueForKey(info, "xbps", "1");
-#endif
 
 		sprintf(data, "connect \"%s\"", info );
 		NET_OutOfBandData( NS_CLIENT, clc.serverAddress, (unsigned char *)data, strlen(data) );
@@ -1652,10 +1469,6 @@ void CL_DisconnectPacket( netadr_t from ) {
 
 	// drop the connection (FIXME: connection dropped dialog)
 	Com_Printf( "Server disconnected for unknown reason\n" );
-
-#ifdef _XBOX
-	Net_XboxDisconnect();
-#endif
 
 	CL_Disconnect( qtrue );
 }
@@ -1706,7 +1519,6 @@ void CL_InitServerInfo( serverInfo_t *server, serverAddress_t *address ) {
 	server->hostName[0] = '\0';
 	server->mapName[0] = '\0';
 	server->maxClients = 0;
-#ifndef _XBOX
 	server->maxPing = 0;
 	server->minPing = 0;
 	server->netType = 0;
@@ -1714,9 +1526,6 @@ void CL_InitServerInfo( serverInfo_t *server, serverAddress_t *address ) {
 	server->trueJedi = 0;
 	server->weaponDisable = 0;
 	server->forceDisable = 0;
-#else
-	server->saberOnly = 0;
-#endif
 	server->ping = -1;
 	server->game[0] = '\0';
 	server->gameType = 0;
@@ -2095,11 +1904,9 @@ void CL_PacketEvent( netadr_t from, msg_t *msg ) {
 	// we don't know if it is ok to save a demo message until
 	// after we have parsed the frame
 	//
-#ifndef _XBOX	// No demos on Xbox
 	if ( clc.demorecording && !clc.demowaiting ) {
 		CL_WriteDemoMessage( msg, headerBytes );
 	}
-#endif
 }
 
 /*
@@ -2197,8 +2004,6 @@ void CL_Frame ( int msec ) {
 		}
 	}
 
-	CL_MakeMonkeyDoLaundry();
-
 	// save the msec before checking pause
 	cls.realFrametime = msec;
 
@@ -2230,11 +2035,6 @@ void CL_Frame ( int msec ) {
 	if ( cl_timegraph->integer ) {
 		SCR_DebugGraph ( cls.realFrametime * 0.25, 0 );
 	}
-
-#ifdef _XBOX
-	//Check on the hot swappable button states.
-	CL_UpdateHotSwap();
-#endif
 
 	// see if we need to update any userinfo
 	CL_CheckUserinfo();
@@ -2561,13 +2361,11 @@ void CL_Init( void ) {
 	//
 	// register our commands
 	//
-#ifndef _XBOX
 	Cmd_AddCommand ("cmd", CL_ForwardToServer_f);
 	Cmd_AddCommand ("globalservers", CL_GlobalServers_f);
 	Cmd_AddCommand ("record", CL_Record_f);
 	Cmd_AddCommand ("demo", CL_PlayDemo_f);
 	Cmd_AddCommand ("stoprecord", CL_StopRecord_f);
-#endif
 	Cmd_AddCommand ("configstrings", CL_Configstrings_f);
 	Cmd_AddCommand ("clientinfo", CL_Clientinfo_f);
 	Cmd_AddCommand ("snd_restart", CL_Snd_Restart_f);
@@ -2595,12 +2393,6 @@ void CL_Init( void ) {
 	Cvar_Set( "cl_running", "1" );
 
 	G2VertSpaceClient = new CMiniHeap(G2_VERT_SPACE_CLIENT_SIZE * 1024);
-
-#ifdef _XBOX
-	extern void CIN_Init(void);
-	Com_Printf( "Initializing Cinematics...\n");
-	CIN_Init();
-#endif
 
 //	Com_Printf( "----- Client Initialization Complete -----\n" );
 }
@@ -2678,7 +2470,6 @@ static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
 			server->maxClients = atoi(Info_ValueForKey(info, "sv_maxclients"));
 			Q_strncpyz(server->game,Info_ValueForKey(info, "game"), MAX_NAME_LENGTH);
 			server->gameType = atoi(Info_ValueForKey(info, "gametype"));
-#ifndef _XBOX
 			server->netType = atoi(Info_ValueForKey(info, "nettype"));
 			server->minPing = atoi(Info_ValueForKey(info, "minping"));
 			server->maxPing = atoi(Info_ValueForKey(info, "maxping"));
@@ -2687,9 +2478,6 @@ static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
 			server->trueJedi = atoi(Info_ValueForKey(info, "truejedi" ));
 			server->weaponDisable = atoi(Info_ValueForKey(info, "wdisable" ));
 			server->forceDisable = atoi(Info_ValueForKey(info, "fdisable" ));
-#else
-			server->saberOnly = atoi(Info_ValueForKey(info, "saberonly" ));
-#endif
 //			server->pure = (qboolean)atoi(Info_ValueForKey(info, "pure" ));
 		}
 		server->ping = ping;
@@ -2745,12 +2533,6 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 		Com_DPrintf( "Different protocol info packet: %s\n", infoString );
 		return;
 	}
-
-#ifdef _XBOX
-	// Ignore servers that don't send an xnaddr
-	if (!(*Info_ValueForKey(infoString, "xnaddr")))
-		return;
-#endif
 
 	// iterate servers waiting for ping response
 	for (i=0; i<MAX_PINGREQUESTS; i++)
@@ -2821,7 +2603,6 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 	cls.localServers[i].hostName[0] = '\0';
 	cls.localServers[i].mapName[0] = '\0';
 	cls.localServers[i].maxClients = 0;
-#ifndef _XBOX
 	cls.localServers[i].maxPing = 0;
 	cls.localServers[i].minPing = 0;
 	cls.localServers[i].netType = from.type;
@@ -2829,22 +2610,11 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 	cls.localServers[i].trueJedi = 0;
 	cls.localServers[i].weaponDisable = 0;
 	cls.localServers[i].forceDisable = 0;
-#else
-	cls.localServers[i].saberOnly = 0;
-#endif
 	cls.localServers[i].ping = -1;
 	cls.localServers[i].game[0] = '\0';
 	cls.localServers[i].gameType = 0;
 //	cls.localServers[i].allowAnonymous = 0;
 //	cls.localServers[i].pure = qfalse;
-
-#ifdef _XBOX
-	// Store off Xbox info. We don't do any key registration or address translation yet.
-	// That happens when we connect.
-	StringToXnAddr(&cls.localServers[i].HostAddress, Info_ValueForKey(infoString, "xnaddr"));
-	StringToXNKID(&cls.localServers[i].SessionID, Info_ValueForKey(infoString, "xnkid"));
-	StringToXNKEY(&cls.localServers[i].KeyExchangeKey, Info_ValueForKey(infoString, "xnkey"));
-#endif
 
 	Q_strncpyz( info, MSG_ReadString( msg ), MAX_INFO_STRING );
 	if (strlen(info)) {
@@ -3100,7 +2870,6 @@ void CL_LocalServers_f( void ) {
 CL_GlobalServers_f
 ==================
 */
-#ifndef _XBOX	// No master on Xbox
 void CL_GlobalServers_f( void ) {
 	netadr_t	to;
 	int			i;
@@ -3142,14 +2911,8 @@ void CL_GlobalServers_f( void ) {
 	for (i=3; i<count; i++)
 		buffptr += sprintf( buffptr, " %s", Cmd_Argv(i) );
 
-	// if we are a demo, automatically add a "demo" keyword
-	if ( Cvar_VariableValue( "fs_restrict" ) ) {
-		buffptr += sprintf( buffptr, " demo" );
-	}
-
 	NET_OutOfBandPrint( NS_SERVER, to, command );
 }
-#endif	// _XBOX
 
 /*
 ==================
@@ -3474,11 +3237,7 @@ void CL_ServerStatus_f(void) {
 	Com_Memset( &to, 0, sizeof(netadr_t) );
 
 	if ( Cmd_Argc() != 2 ) {
-#ifdef _XBOX	// No demos on Xbox
-		if ( cls.state != CA_ACTIVE ) {
-#else
 		if ( cls.state != CA_ACTIVE || clc.demoplaying ) {
-#endif
 			Com_Printf ("Not connected to a server.\n");
 			Com_Printf( "Usage: serverstatus [server]\n");
 			return;	

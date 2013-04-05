@@ -32,11 +32,7 @@ extern void			SetViewportAndScissor( void );
 #include "../Ratl/vector_vs.h"
 #include "../Ratl/bits_vs.h"
 
-#ifdef _XBOX
-#include "../win32/glw_win_dx8.h"
-#else
 #include "glext.h"
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Defines
@@ -47,20 +43,7 @@ extern void			SetViewportAndScissor( void );
 #define	MAX_PUFF_SYSTEMS		2
 #define	MAX_PARTICLE_CLOUDS		5
 
-#ifdef _XBOX
-#define POINTCACHE_CELL_SIZE	96.0f		
-
-// Note to Vv:
-// you guys may want to look into lowering that number.  I've optimized the storage
-// space by breaking it up into small boxes (weather zones) around the areas we care about
-// in order to speed up load time and reduce memory.  A very high number here will mean
-// that weather related effects like rain, fog, snow, etc will bleed through to where
-// they shouldn't...
-
-#else
 #define POINTCACHE_CELL_SIZE	96.0f
-#endif
-
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -726,100 +709,6 @@ float R_IsOutsideCausingPain(vec3_t pos)
 	return (mOutside.mOutsidePain && mOutside.PointOutside(pos));
 }
 
-#ifdef _XBOX
-static void pointBegin(GLint verts, float size)
-{
-	assert(!glw_state->inDrawBlock);
-
-	// start the draw block
-	glw_state->inDrawBlock = true;
-	glw_state->primitiveMode = D3DPT_POINTLIST;
-
-	// update DX with any pending state changes
-	glw_state->drawStride = 4;
-	DWORD mask = D3DFVF_XYZ | D3DFVF_DIFFUSE;
-	glw_state->device->SetVertexShader(mask);
-	glw_state->shaderMask = mask;
-
-	if(glw_state->matricesDirty[glwstate_t::MatrixMode_Model])
-	{
-		glw_state->device->SetTransform(D3DTS_VIEW, 
-			glw_state->matrixStack[glwstate_t::MatrixMode_Model]->GetTop());
-
-		glw_state->matricesDirty[glwstate_t::MatrixMode_Model] = false;
-	}
-
-	// Update the texture and states
-	// NOTE: Point sprites ALWAYS go on texture stage 3
-	glwstate_t::texturexlat_t::iterator it = glw_state->textureXlat.find(glw_state->currentTexture[0]);
-	glw_state->device->SetTexture( 3, it->second.mipmap );
-	glw_state->device->SetTextureStageState(3, D3DTSS_COLOROP,   glw_state->textureEnv[0]);
-	glw_state->device->SetTextureStageState(3, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	glw_state->device->SetTextureStageState(3, D3DTSS_COLORARG2, D3DTA_CURRENT);
-	glw_state->device->SetTextureStageState(3, D3DTSS_ALPHAOP,   glw_state->textureEnv[0]);
-	glw_state->device->SetTextureStageState(3, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	glw_state->device->SetTextureStageState(3, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
-	glw_state->device->SetTextureStageState(3, D3DTSS_MAXANISOTROPY, it->second.anisotropy);
-	glw_state->device->SetTextureStageState(3, D3DTSS_MINFILTER, it->second.minFilter);
-	glw_state->device->SetTextureStageState(3, D3DTSS_MIPFILTER, it->second.mipFilter);
-	glw_state->device->SetTextureStageState(3, D3DTSS_MAGFILTER, it->second.magFilter);
-	glw_state->device->SetTextureStageState(3, D3DTSS_ADDRESSU,  it->second.wrapU);
-	glw_state->device->SetTextureStageState(3, D3DTSS_ADDRESSV,  it->second.wrapV);
-
-	glw_state->device->SetTexture( 0, NULL );
-	glw_state->device->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_DISABLE );
-
-	float attena = 1.0f, attenb = 0.0f, attenc = 0.0004f;
-	glw_state->device->SetRenderState( D3DRS_POINTSPRITEENABLE, TRUE );
-	glw_state->device->SetRenderState( D3DRS_POINTSCALEENABLE,  TRUE );
-	glw_state->device->SetRenderState( D3DRS_POINTSIZE,         *((DWORD*)&size) );
-	glw_state->device->SetRenderState( D3DRS_POINTSIZE_MIN,     *((DWORD*)&attenb));
-	glw_state->device->SetRenderState( D3DRS_POINTSCALE_A,      *((DWORD*)&attena) );
-	glw_state->device->SetRenderState( D3DRS_POINTSCALE_B,      *((DWORD*)&attenb) );
-	glw_state->device->SetRenderState( D3DRS_POINTSCALE_C,      *((DWORD*)&attenc) );
-
-	// set vertex counters
-	glw_state->numVertices = 0;
-	glw_state->totalVertices = verts;
-	int max = glw_state->totalVertices;
-	if (max > 2040 / glw_state->drawStride)
-	{
-		max = 2040 / glw_state->drawStride;
-	}
-	glw_state->maxVertices = max;	
-
-	// open a draw packet
-	int num_packets;
-	if(verts == 0) {
-		num_packets = 1;
-	} else {
-		num_packets = (verts / glw_state->maxVertices) + (!!(verts % glw_state->maxVertices));
-	}
-	int cmd_size = num_packets * 3;
-	int vert_size = glw_state->drawStride * verts;
-
-	glw_state->device->BeginPush(vert_size + cmd_size + 2, 
-		&glw_state->drawArray);
-
-	glw_state->drawArray[0] = D3DPUSH_ENCODE(D3DPUSH_SET_BEGIN_END, 1);
-	glw_state->drawArray[1] = glw_state->primitiveMode;
-	glw_state->drawArray[2] = D3DPUSH_ENCODE(
-		D3DPUSH_NOINCREMENT_FLAG|D3DPUSH_INLINE_ARRAY, 
-		glw_state->drawStride * glw_state->maxVertices);
-	glw_state->drawArray += 3;
-}
-
-
-static void pointEnd()
-{
-	glw_state->device->SetRenderState( D3DRS_POINTSPRITEENABLE, FALSE );
-	glw_state->device->SetRenderState( D3DRS_POINTSCALEENABLE, FALSE );
-	glw_state->device->SetTexture( 3, NULL );
-	glw_state->device->SetTextureStageState( 3, D3DTSS_COLOROP, D3DTOP_DISABLE );
-}
-#endif // _XBOX
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Particle Cloud
@@ -936,11 +825,6 @@ public:
 
 		mVertexCount = VertexCount;
 
-#ifdef _XBOX
-		if(mVertexCount == 1)
-			mGLModeEnum = GL_POINTS;
-		else
-#endif
 		mGLModeEnum = (mVertexCount==3)?(GL_TRIANGLES):(GL_QUADS);
 	}
 
@@ -1340,12 +1224,6 @@ public:
 		{
 			1, 0.0, 0.0004
 		};
-#ifdef _XBOX
-		if (mGLModeEnum==GL_POINTS)
-		{
-			pointBegin(mParticleCountRender, mWidth);
-		}
-#else
 		if (mGLModeEnum == GL_POINTS && qglPointParameterfEXT)
 		{ //fixme use custom parameters but gotta make sure it expects them on same scale first
 			qglPointSize(10.0);
@@ -1353,7 +1231,6 @@ public:
 			qglPointParameterfEXT(GL_POINT_SIZE_MAX_EXT, 4.0);
 			qglPointParameterfvEXT(GL_DISTANCE_ATTENUATION_EXT, (float *)attenuation);
 		}
-#endif
 		else
 		{
 			qglEnable(GL_TEXTURE_2D);
@@ -1370,16 +1247,11 @@ public:
 			qglMatrixMode(GL_MODELVIEW);
 			qglPushMatrix();
 
-#ifdef _XBOX
-			qglBeginEXT(mGLModeEnum, mParticleCountRender*mVertexCount, mParticleCountRender, 0, mParticleCountRender*mVertexCount, 0);
-#endif
 		}
 
 		// Begin
 		//-------
-#ifndef _XBOX
 		qglBegin(mGLModeEnum);
-#endif
 		for (particleNum=0; particleNum<mParticleCount; particleNum++)
 		{
 			part = &(mParticles[particleNum]);
@@ -1462,12 +1334,8 @@ public:
 
 		if (mGLModeEnum==GL_POINTS)
 		{
-#ifdef _XBOX
-			pointEnd();
-#else
 			//qglDisable(GL_POINT_SPRITE_NV);
 			//qglTexEnvi(GL_POINT_SPRITE_NV, GL_COORD_REPLACE_NV, GL_FALSE);
-#endif
 		}
 		else
 		{
@@ -1802,18 +1670,11 @@ void R_WorldEffectCommand(const char *command)
 			return;
 		}
 		CWeatherParticleCloud& nCloud = mParticleClouds.push_back();
-#ifdef _XBOX
-		nCloud.Initialize(1000, "gfx/effects/snowflake1.bmp", 1);
-#else
 		nCloud.Initialize(1000, "gfx/effects/snowflake1.bmp");
-#endif
 		nCloud.mBlendMode			= 1;
 		nCloud.mRotationChangeNext	= 0;
 		nCloud.mColor		= 0.75f;
 		nCloud.mWaterParticles = true;
-#ifdef _XBOX
-		nCloud.mWidth = 0.05f;
-#endif
 	}
 
 	// Create A Some stuff

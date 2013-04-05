@@ -10,9 +10,9 @@ extern qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t
 				float minSpeed, float maxSpeed, float idealSpeed, qboolean mustHit );
 extern void G_SoundOnEnt (gentity_t *ent, soundChannel_t channel, const char *soundPath);
 
-#include "../namespace_begin.h"
+
 extern qboolean BG_CrouchAnim( int anim );
-#include "../namespace_end.h"
+
 
 //extern void NPC_Mark1_Part_Explode(gentity_t *self,int bolt);
 

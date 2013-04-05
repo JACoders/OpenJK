@@ -66,6 +66,8 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 	OutputDebugString( va("...%d PFDs found\n", maxPFD - 1) );
 
 	FILE *handle = fopen("c:\\ModView_GL_report.txt","wt");
+	if ( !handle )
+		return -1;
 
 	fprintf(handle,"Total PFDs: %d\n\n",maxPFD);
 
@@ -334,7 +336,9 @@ HGLRC GL_GenerateRC(HDC hDC, bool bDoubleBuffer/* = true*/)
 		//
 		// set the pixel format for this device context...
 		//
-		VERIFY(SetPixelFormat(hDC, iPixelFormat, &pfd));
+		//JAC FIXME - assertion failed
+		//VERIFY(SetPixelFormat(hDC, iPixelFormat, &pfd));
+		SetPixelFormat(hDC, iPixelFormat, &pfd);
 		//
 		// create the rendering context...
 		//

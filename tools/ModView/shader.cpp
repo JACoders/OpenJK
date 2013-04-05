@@ -552,7 +552,7 @@ LPCSTR Shader_ExtractSuitableFilename(LPCSTR psShaderText)
 	LPCSTR psAnswer = NULL;
 	
 	char *psShaderSearchTry = psShaderSearch;
-	if (CheckForFilenameArg(psShaderSearchTry, "qer_editorimage"))
+	if (CheckForFilenameArg((LPCSTR&)psShaderSearchTry, "qer_editorimage"))
 	{
 		psAnswer = psShaderSearchTry;
 	}
@@ -563,7 +563,7 @@ LPCSTR Shader_ExtractSuitableFilename(LPCSTR psShaderText)
 	psShaderSearchTry = psShaderSearch;
 	while (psShaderSearchTry && !psAnswer)
 	{
-		if (CheckForFilenameArg(psShaderSearchTry, "map"))
+		if (CheckForFilenameArg((LPCSTR&)psShaderSearchTry, "map"))
 		{
 			psAnswer = psShaderSearchTry;
 		}
@@ -575,7 +575,7 @@ LPCSTR Shader_ExtractSuitableFilename(LPCSTR psShaderText)
 
 		while (psShaderSearchTry && !psAnswer)
 		{
-			if (CheckForFilenameArg(psShaderSearchTry, "clampmap"))
+			if (CheckForFilenameArg((LPCSTR&)psShaderSearchTry, "clampmap"))
 			{
 				psAnswer = psShaderSearchTry;
 			}

@@ -44,15 +44,6 @@ extern vmCvar_t	ui_gameType;
 extern vmCvar_t	ui_netGameType;
 extern vmCvar_t	ui_actualNetGameType;
 extern vmCvar_t	ui_joinGameType;
-#ifdef _XBOX
-extern vmCvar_t ui_optiGameType;
-extern vmCvar_t ui_optiCurrentMap;
-extern vmCvar_t ui_optiMinPlayers;
-extern vmCvar_t ui_optiMaxPlayers;
-extern vmCvar_t ui_optiFriendlyFire;
-extern vmCvar_t ui_optiJediMastery;
-extern vmCvar_t ui_optiSaberOnly;
-#endif
 extern vmCvar_t	ui_netSource;
 extern vmCvar_t	ui_serverFilterType;
 extern vmCvar_t	ui_dedicated;
@@ -903,7 +894,7 @@ void UI_SPSkillMenu_Cache( void );
 // ui_syscalls.c
 //
 
-#include "../namespace_begin.h"
+
 
 void			trap_Print( const char *string );
 void			trap_Error( const char *string );
@@ -991,7 +982,7 @@ void			trap_CIN_SetExtents (int handle, int x, int y, int w, int h);
 int				trap_RealTime(qtime_t *qtime);
 void			trap_R_RemapShader( const char *oldShader, const char *newShader, const char *timeOffset );
 
-#include "../namespace_end.h"
+
 
 //
 // ui_addbots.c

@@ -307,19 +307,10 @@ typedef struct {
 	float		facial_aux;			// time before next aux. If a minus value, we are in aux mode
 
 	int			superSmoothTime; //do crazy amount of smoothing
-
-#ifdef _XBOX
-	int			friendshipStatus;
-#endif
-	
 } clientInfo_t;
 
 //rww - cheap looping sound struct
-#ifdef _XBOX
-#define MAX_CG_LOOPSOUNDS 2
-#else
 #define MAX_CG_LOOPSOUNDS 8
-#endif
 
 typedef struct cgLoopSound_s {
 	int entityNum;
@@ -834,10 +825,6 @@ typedef struct {
 
 	// view rendering
 	refdef_t	refdef;
-
-#ifdef _XBOX
-	qboolean widescreen;
-#endif
 
 	// zoom key
 	qboolean	zoomed;
@@ -1768,10 +1755,8 @@ extern  vmCvar_t		cg_scorePlum;
 extern	vmCvar_t		cg_hudFiles;
 extern	vmCvar_t		cg_smoothClients;
 
-#include "../namespace_begin.h"
 extern	vmCvar_t		pmove_fixed;
 extern	vmCvar_t		pmove_msec;
-#include "../namespace_end.h"
 
 //extern	vmCvar_t		cg_pmove_fixed;
 extern	vmCvar_t		cg_cameraOrbit;
@@ -2140,7 +2125,6 @@ void CG_SiegeObjectiveCompleted(centity_t *ent, int won, int objectivenum);
 // These functions are how the cgame communicates with the main game system
 //
 
-#include "../namespace_begin.h"
 
 // print message on the local console
 void		trap_Print( const char *fmt );
@@ -2367,7 +2351,6 @@ void		BG_CycleInven(playerState_t *ps, int direction);
 int			BG_ProperForceIndex(int power);
 void		BG_CycleForce(playerState_t *ps, int direction);
 
-#include "../namespace_end.h"
 
 
 typedef enum {
@@ -2376,7 +2359,6 @@ typedef enum {
   TEAMCHAT_PRINT
 } q3print_t; // bk001201 - warning: useless keyword or type name in empty declaration
 
-#include "../namespace_begin.h"
 
 int trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits);
 e_status trap_CIN_StopCinematic(int handle);
@@ -2437,7 +2419,6 @@ qboolean	trap_ROFF_Purge_Ent( int entID );
 void	trap_TrueMalloc(void **ptr, int size);
 void	trap_TrueFree(void **ptr);
 
-#include "../namespace_end.h"
 
 void	CG_ClearParticles (void);
 void	CG_AddParticles (void);
@@ -2503,7 +2484,6 @@ void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon 
 void FX_BlasterWeaponHitWall( vec3_t origin, vec3_t normal );
 void FX_BlasterWeaponHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
 
-#include "../namespace_begin.h"
 
 void		trap_G2API_CollisionDetect		( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,int frameNumber, int entNum, const vec3_t rayStart, const vec3_t rayEnd, const vec3_t scale, int traceFlags, int useLod, float fRadius );
 void		trap_G2API_CollisionDetectCache		( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,int frameNumber, int entNum, const vec3_t rayStart, const vec3_t rayEnd, const vec3_t scale, int traceFlags, int useLod, float fRadius );
@@ -2591,7 +2571,6 @@ qboolean	trap_G2API_OverrideServer(void *serverInstance);
 
 void		trap_G2API_GetSurfaceName(void *ghoul2, int surfNumber, int modelIndex, char *fillBuf);
 
-#include "../namespace_end.h"
 
 void		CG_Init_CG(void);
 void		CG_Init_CGents(void);

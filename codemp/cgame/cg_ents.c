@@ -142,9 +142,6 @@ void CG_S_AddLoopingSound(int entityNum, const vec3_t origin, const vec3_t veloc
 	}
 	else if (cent->numLoopingSounds >= MAX_CG_LOOPSOUNDS)
 	{ //Just don't add it then I suppose.
-#ifdef _XBOX	// We decreased this number, so I'd like to know if it gets overflowed
-		Com_Printf( S_COLOR_YELLOW "Warning: MAX_CG_LOOPSOUNDS exceeded!!\n" );
-#endif
 		return;
 	}
 
@@ -826,9 +823,7 @@ CG_General
 */
 void CG_G2ServerBoneAngles(centity_t *cent);
 
-#include "../namespace_begin.h"
 extern qboolean BG_GetRootSurfNameWithVariant( void *ghoul2, const char *rootSurfName, char *returnSurfName, int returnSize );
-#include "../namespace_end.h"
 
 static void CG_General( centity_t *cent ) {
 	refEntity_t			ent;

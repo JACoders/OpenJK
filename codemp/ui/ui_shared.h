@@ -54,22 +54,10 @@
 #define CURSOR_ARROW				0x00000002
 #define CURSOR_SIZER				0x00000004
 
-#ifdef _XBOX
-
 #ifdef CGAME
-#define STRING_POOL_SIZE 32*1024
+	#define STRING_POOL_SIZE 128*1024
 #else
-#define STRING_POOL_SIZE 128*1024
-#endif
-
-#else
-
-#ifdef CGAME
-#define STRING_POOL_SIZE 128*1024
-#else
-#define STRING_POOL_SIZE 384*1024
-#endif
-
+	#define STRING_POOL_SIZE 384*1024
 #endif
 
 #define MAX_STRING_HANDLES 4096
@@ -476,7 +464,7 @@ typedef struct {
 
 } displayContextDef_t;
 
-#include "../namespace_begin.h"
+
 
 const char *String_Alloc(const char *p);
 void String_Init();
@@ -616,7 +604,7 @@ qboolean	trap_G2API_IKMove(void *ghoul2, int time, sharedIKMoveParams_t *params)
 
 void		trap_G2API_GetSurfaceName(void *ghoul2, int surfNumber, int modelIndex, char *fillBuf);
 
-#include "../namespace_end.h"
+
 
 /*
 Ghoul2 Insert End

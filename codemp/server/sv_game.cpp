@@ -211,11 +211,7 @@ qboolean SV_inPVS (const vec3_t p1, const vec3_t p2)
 	int		leafnum;
 	int		cluster;
 	int		area1, area2;
-#ifdef _XBOX 
-	const byte *mask;
-#else
 	byte	*mask;
-#endif
 
 	leafnum = CM_PointLeafnum (p1);
 	cluster = CM_LeafCluster (leafnum);
@@ -245,11 +241,7 @@ qboolean SV_inPVSIgnorePortals( const vec3_t p1, const vec3_t p2)
 	int		leafnum;
 	int		cluster;
 	int		area1, area2;
-#ifdef _XBOX
-	const byte *mask;
-#else
 	byte	*mask;
-#endif
 
 	leafnum = CM_PointLeafnum (p1);
 	cluster = CM_LeafCluster (leafnum);
@@ -1739,11 +1731,6 @@ void SV_InitGameProgs( void ) {
 	}
 	else {
 		bot_enable = 0;
-	}
-
-	if ( !Cvar_VariableValue("fs_restrict") && !com_dedicated->integer && !Sys_CheckCD() ) 
-	{
-		Com_Error( ERR_NEED_CD, SE_GetString("CON_TEXT_NEED_CD") ); //"Game CD not in drive" );		
 	}
 
 	// load the dll or bytecode

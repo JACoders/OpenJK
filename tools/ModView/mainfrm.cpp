@@ -403,6 +403,11 @@ void CMainFrame::OnViewScreenshotFile()
 			{
 				char sFilename[MAX_PATH];
 
+				if (iName==NUM_SAVE_SLOTS)
+				{
+					ErrorBox(va("Couldn't find a free save slot! (tried %d slots)",NUM_SAVE_SLOTS));
+				}
+
 				sprintf(sFilename, "c:\\%s_%03d.bmp",sBaseName,iName);
 
 				if (!FileExists(sFilename))
@@ -411,10 +416,6 @@ void CMainFrame::OnViewScreenshotFile()
 					BMP_Free();
 					break;
 				}
-			}
-			if (iName==NUM_SAVE_SLOTS)
-			{
-				ErrorBox(va("Couldn't find a free save slot! (tried %d slots)",NUM_SAVE_SLOTS));
 			}
 		}
 		gbTextInhibit = false;

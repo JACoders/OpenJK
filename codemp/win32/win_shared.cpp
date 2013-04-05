@@ -2,7 +2,6 @@
 #include "../qcommon/exe_headers.h"
 
 #include "win_local.h"
-#ifndef _XBOX
 #include <lmerr.h>
 #include <lmcons.h>
 #include <lmwksta.h>
@@ -12,7 +11,6 @@
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
-#endif
 
 /*
 ================
@@ -292,9 +290,6 @@ int Sys_GetProcessorId( void )
 
 char *Sys_GetCurrentUser( void )
 {
-#ifdef _XBOX
-	return NULL;
-#else
 	static char s_userName[1024];
 	unsigned long size = sizeof( s_userName );
 
@@ -308,7 +303,6 @@ char *Sys_GetCurrentUser( void )
 	}
 
 	return s_userName;
-#endif
 }
 
 char	*Sys_DefaultHomePath(void) {
@@ -334,7 +328,6 @@ int Sys_GetPhysicalMemory( void )
 } 
 
 
-#ifndef _XBOX
 int Sys_GetCPUSpeedOld()
 {
 	timeBeginPeriod(1);
@@ -517,9 +510,9 @@ int Sys_GetCPUSpeed()
 
 	} while ( (tries < 3 ) || 
 	          (tries < 20)&&
-	          ((abs((long)(3 * freq -total)) > 3*TOLERANCE )||
-	           (abs((long)(3 * freq2-total)) > 3*TOLERANCE )||
-	           (abs((long)(3 * freq3-total)) > 3*TOLERANCE )));	
+	          ((abs((double)(3 * freq -total)) > 3*TOLERANCE )||
+	           (abs((double)(3 * freq2-total)) > 3*TOLERANCE )||
+	           (abs((double)(3 * freq3-total)) > 3*TOLERANCE )));	
 				// Compare last three calculations to average of last three calculations.		
 
 	if (!total_ticks){
@@ -543,5 +536,3 @@ int Sys_GetCPUSpeed()
 
 	return norm_freq;
 }
-#endif
-

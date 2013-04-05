@@ -9,9 +9,9 @@
 extern void laserTrapStick( gentity_t *ent, vec3_t endpos, vec3_t normal );
 extern void Jedi_Decloak( gentity_t *self );
 
-#include "../namespace_begin.h"
+
 extern qboolean FighterIsLanded( Vehicle_t *pVeh, playerState_t *parentPS );
-#include "../namespace_end.h"
+
 
 /*
 ================

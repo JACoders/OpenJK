@@ -120,11 +120,7 @@ void R_BoxSurfaces_r(mnode_t *node, vec3_t mins, vec3_t maxs, surfaceType_t **li
 
 	// do the tail recursion in a loop
 	while ( node->contents == -1 ) {
-#ifdef _XBOX
-		s = BoxOnPlaneSide( mins, maxs, tr.world->planes + node->planeNum );
-#else
 		s = BoxOnPlaneSide( mins, maxs, node->plane );
-#endif
 		if (s == 1) {
 			node = node->children[0];
 		} else if (s == 2) {
@@ -136,14 +132,8 @@ void R_BoxSurfaces_r(mnode_t *node, vec3_t mins, vec3_t maxs, surfaceType_t **li
 	}
 
 	// add the individual surfaces
-#ifdef _XBOX
-	mleaf_s *leaf = (mleaf_s*)node;
-	mark = tr.world->marksurfaces + leaf->firstMarkSurfNum;
-	c = leaf->nummarksurfaces;
-#else
 	mark = node->firstmarksurface;
 	c = node->nummarksurfaces;
-#endif
 	while (c--) {
 		//
 		if (*listlength >= listsize) break;
@@ -404,25 +394,11 @@ int R_MarkFragments( int numPoints, const vec3_t *points, const vec3_t projectio
 			VectorNormalize(normal);
 			if (DotProduct(normal, projectionDir) > -0.5) continue;
 			*/
-#ifdef _XBOX
-			const unsigned char * const indexes = (unsigned char *)( (byte *)surf + surf->ofsIndices );
-			int nextSurfPoint = NEXT_SURFPOINT(surf->flags);
-#else
 			indexes = (int *)( (byte *)surf + surf->ofsIndices );
-#endif
 			for ( k = 0 ; k < surf->numIndices ; k += 3 ) {
 				for ( j = 0 ; j < 3 ; j++ ) {
-#ifdef _XBOX
-					const unsigned short* v = surf->srfPoints + nextSurfPoint * indexes[k+j];
-					float fVec[3];
-					Q_CastShort2Float(&fVec[0], (short*)v + 0);
-					Q_CastShort2Float(&fVec[1], (short*)v + 1);
-					Q_CastShort2Float(&fVec[2], (short*)v + 2);
-					VectorMA( fVec, MARKER_OFFSET, surf->plane.normal, clipPoints[0][j] );
-#else
 					v = surf->points[0] + VERTEXSIZE * indexes[k+j];;
 					VectorMA( v, MARKER_OFFSET, surf->plane.normal, clipPoints[0][j] );
-#endif
 				}
 				// add the fragments of this face
 				R_AddMarkFragments( 3 , clipPoints,

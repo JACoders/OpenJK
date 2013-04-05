@@ -6,10 +6,6 @@
  
 #include "../client/client.h"	//FIXME!! EVIL - just include the definitions needed 
 
-#ifdef _XBOX
-#include "../qcommon/miniheap.h"
-#endif
-						  
 #if !defined(TR_LOCAL_H)
 	#include "tr_local.h"
 #endif
@@ -166,19 +162,13 @@ public:
 class CTransformBone
 {
 public:
-#ifdef _XBOX
-	float			renderMatrix[16];
-#endif
 	int				touch; // for minimal recalculation
 	//rww - RAGDOLL_BEGIN
 	int				touchRender;
 	//rww - RAGDOLL_END
 	mdxaBone_t		boneMatrix; //final matrix
 	int				parent; // only set once
-#ifdef _XBOX
-	// This shouldn't be done like this. use declspec(aligned)?!
-	int				pad[1]; // must be 16-byte aligned!
-#endif
+
 	CTransformBone()
 	{
 		touch=0;
@@ -205,32 +195,7 @@ void G2_TransformBone(int index,CBoneCache &CB);
 
 class CBoneCache
 {
-	void SetRenderMatrix(CTransformBone *bone)
-	{
-#ifdef _XBOX
-		float *src = bone->boneMatrix.matrix[0];
-		float *dst = bone->renderMatrix;
-
-		dst[0] = src[0];
-		dst[1] = src[4];
-		dst[2] = src[8];
-		dst[3] = 0;
-
-		dst[4] = src[1];
-		dst[5] = src[5];
-		dst[6] = src[9];
-		dst[7] = 0;
-
-		dst[8] = src[2];
-		dst[9] = src[6];
-		dst[10] = src[10];
-		dst[11] = 0;
-
-		dst[12] = src[3];
-		dst[13] = src[7];
-		dst[14] = src[11];
-		dst[15] = 1;
-#endif
+	void SetRenderMatrix(CTransformBone *bone) {
 	}
 
 	void EvalLow(int index)
@@ -239,11 +204,7 @@ class CBoneCache
 		if (mFinalBones[index].touch!=mCurrentTouch)
 		{
 			// need to evaluate the bone
-#ifdef _XBOX
-			assert((mFinalBones[index].parent>=0&&mFinalBones[index].parent<mNumBones)||(index==0&&mFinalBones[index].parent==-1));
-#else
 			assert((mFinalBones[index].parent>=0&&mFinalBones[index].parent<mFinalBones.size())||(index==0&&mFinalBones[index].parent==-1));
-#endif
 			if (mFinalBones[index].parent>=0)
 			{
 				EvalLow(mFinalBones[index].parent); // make sure parent is evaluated
@@ -257,9 +218,6 @@ class CBoneCache
 				mBones[index].blendLerp=par.blendLerp;
 			}
 			G2_TransformBone(index,*this);
-#ifdef _XBOX
-			SetRenderMatrix(mFinalBones + index);
-#endif
 			mFinalBones[index].touch=mCurrentTouch;
 		}
 	}
@@ -334,10 +292,6 @@ class CBoneCache
 		VectorScale(&tempMatrix.matrix[1][0],maxl,&tempMatrix.matrix[1][0]);
 		VectorScale(&tempMatrix.matrix[2][0],maxl,&tempMatrix.matrix[2][0]);
 		Multiply_3x4Matrix(&mSmoothBones[index].boneMatrix,&tempMatrix,&skel->BasePoseMatInv);
-#ifdef _XBOX
-		// Added by BTO (VV) - I hope this is right.
-		SetRenderMatrix(mSmoothBones + index);
-#endif
 		mSmoothBones[index].touch=mCurrentTouch;
 #ifdef _DEBUG
 		for ( int i = 0; i < 3; i++ )
@@ -357,19 +311,10 @@ public:
 
 	// these are split for better cpu cache behavior
 	vector<SBoneCalc> mBones;
-#ifdef _XBOX
-	CTransformBone*		   mFinalBones;
-	CTransformBone*		   mSmoothBones;
-#else
 	vector<CTransformBone> mFinalBones;
 
 	vector<CTransformBone> mSmoothBones; // for render smoothing
-#endif
 	//vector<mdxaSkel_t *>   mSkels;
-
-#ifdef _XBOX
-	int				mNumBones;
-#endif
 
 	boneInfo_v		*rootBoneList;
 	mdxaBone_t		rootMatrix;
@@ -397,18 +342,10 @@ public:
 		mUnsquash=false;
 		mSmoothFactor=0.0f;
 
-#ifdef _XBOX
-		mNumBones = header->numBones;
-#endif
 		int numBones=header->numBones;
 		mBones.resize(numBones);
-#ifdef _XBOX
-		mFinalBones = (CTransformBone*)Z_Malloc(sizeof(CTransformBone) * mNumBones, TAG_GHOUL2, qtrue, 16);
-		mSmoothBones = (CTransformBone*)Z_Malloc(sizeof(CTransformBone) * mNumBones, TAG_GHOUL2, qtrue, 16);
-#else
 		mFinalBones.resize(numBones);
 		mSmoothBones.resize(numBones);
-#endif
 //		mSkels.resize(numBones);
 		//rww - removed mSkels
 		mdxaSkelOffsets_t *offsets;
@@ -429,14 +366,6 @@ public:
 		mLastLastTouch=1;
 //rww - RAGDOLL_END
 	}
-#ifdef _XBOX
-	~CBoneCache ()
-	{
-		// Alignment
-		Z_Free(mFinalBones);
-		Z_Free(mSmoothBones);
-	}
-#endif
 
 	SBoneCalc &Root()
 	{
@@ -552,18 +481,6 @@ public:
 		return mFinalBones[index].parent;
 	}
 	//rww - RAGDOLL_END
-
-#ifdef _XBOX
-	CTransformBone *EvalFull(int index)
-	{
-		EvalRender(index);
-		if (mSmoothingActive)
-		{
-			return mSmoothBones + index;
-		}
-		return mFinalBones + index;
-	}
-#endif
 };
 
 void RemoveBoneCache(CBoneCache *boneCache)
@@ -2294,20 +2211,9 @@ void G2_ProcessSurfaceBolt(mdxaBone_v &bonePtr, mdxmSurface_t *surface, int bolt
 			int		iBoneIndex	= G2_GetVertBoneIndex( vert0, k );
 			float	fBoneWeight	= G2_GetVertBoneWeight( vert0, k, fTotalWeight, iNumWeights );
 
-#ifdef _XBOX
-			vec3_t vec;
-			Q_CastShort2FloatScale(&vec[0], &vert0->vertCoords[0], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[1], &vert0->vertCoords[1], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[2], &vert0->vertCoords[2], 1.f / (float)GLM_COMP_SIZE);
-
-			pTri[0][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
-			pTri[0][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
-			pTri[0][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
-#else
  			pTri[0][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vert0->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
  			pTri[0][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vert0->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
  			pTri[0][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vert0->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
-#endif
 		}
 //		w = vert1->weights;
 		fTotalWeight = 0.0f;
@@ -2317,20 +2223,9 @@ void G2_ProcessSurfaceBolt(mdxaBone_v &bonePtr, mdxmSurface_t *surface, int bolt
 			int		iBoneIndex	= G2_GetVertBoneIndex( vert1, k );
 			float	fBoneWeight	= G2_GetVertBoneWeight( vert1, k, fTotalWeight, iNumWeights );
 
-#ifdef _XBOX
-			vec3_t vec;
-			Q_CastShort2FloatScale(&vec[0], &vert1->vertCoords[0], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[1], &vert1->vertCoords[1], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[2], &vert1->vertCoords[2], 1.f / (float)GLM_COMP_SIZE);
-
-			pTri[0][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
-			pTri[0][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
-			pTri[0][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
-#else
  			pTri[1][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vert1->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
  			pTri[1][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vert1->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
  			pTri[1][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vert1->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
-#endif
 		}
 //		w = vert2->weights;
 		fTotalWeight = 0.0f;
@@ -2340,20 +2235,9 @@ void G2_ProcessSurfaceBolt(mdxaBone_v &bonePtr, mdxmSurface_t *surface, int bolt
 			int		iBoneIndex	= G2_GetVertBoneIndex( vert2, k );
 			float	fBoneWeight	= G2_GetVertBoneWeight( vert2, k, fTotalWeight, iNumWeights );
 
-#ifdef _XBOX
-			vec3_t vec;
-			Q_CastShort2FloatScale(&vec[0], &vert2->vertCoords[0], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[1], &vert2->vertCoords[1], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[2], &vert2->vertCoords[2], 1.f / (float)GLM_COMP_SIZE);
-
-			pTri[0][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
-			pTri[0][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
-			pTri[0][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
-#else
  			pTri[2][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vert2->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
  			pTri[2][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vert2->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
  			pTri[2][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vert2->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
-#endif
 		}
  			
    		vec3_t normal;
@@ -2426,20 +2310,9 @@ void G2_ProcessSurfaceBolt(mdxaBone_v &bonePtr, mdxmSurface_t *surface, int bolt
 				float	fBoneWeight	= G2_GetVertBoneWeight( v, k, fTotalWeight, iNumWeights );
 
  				//bone = bonePtr + piBoneRefs[w->boneIndex];
-#ifdef _XBOX
-				vec3_t vec;
-				Q_CastShort2FloatScale(&vec[0], &v->vertCoords[0], 1.f / (float)GLM_COMP_SIZE);
-				Q_CastShort2FloatScale(&vec[1], &v->vertCoords[1], 1.f / (float)GLM_COMP_SIZE);
-				Q_CastShort2FloatScale(&vec[2], &v->vertCoords[2], 1.f / (float)GLM_COMP_SIZE);
-
-				pTri[0][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
-				pTri[0][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
-				pTri[0][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vec ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
-#else
  				pTri[j][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], v->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
  				pTri[j][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], v->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
  				pTri[j][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], v->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
-#endif
  			}
  			
  			v++;// = (mdxmVertex_t *)&v->weights[/*v->numWeights*/surface->maxVertBoneWeights];
@@ -2591,11 +2464,6 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 			&& shader->sort == SS_OPAQUE ) 
 		{		// set the surface info to point at the where the transformed bone list is going to be for when the surface gets rendered out
 			CRenderableSurface *newSurf = new CRenderableSurface;
-#ifdef _XBOX //testing performance benefit vs ugliness
-			// On Xbox, we always use the lowest LOD
-			mdxmSurface_t *lowsurface = (mdxmSurface_t *)G2_FindSurface(RS.currentModel, RS.surfaceNum, RS.currentModel->numLods-1);
-			newSurf->surfaceData = lowsurface;
-#else
 			if (surface->numVerts >= SHADER_MAX_VERTEXES/2)
 			{ //we need numVerts*2 xyz slots free in tess to do shadow, if this surf is going to exceed that then let's try the lowest lod -rww
 				mdxmSurface_t *lowsurface = (mdxmSurface_t *)G2_FindSurface(RS.currentModel, RS.surfaceNum, RS.currentModel->numLods-1);
@@ -2605,7 +2473,6 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 			{
 				newSurf->surfaceData = surface;
 			}
-#endif
 			newSurf->boneCache = RS.boneCache;
 			R_AddDrawSurf( (surfaceType_t *)newSurf, tr.shadowShader, 0, qfalse );
 		}
@@ -3035,20 +2902,9 @@ void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface,
 			const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
 #endif
 
-#ifdef _XBOX
-			vec3_t vec;
-			Q_CastShort2FloatScale(&vec[0], &vert0->vertCoords[0], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[1], &vert0->vertCoords[1], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[2], &vert0->vertCoords[2], 1.f / (float)GLM_COMP_SIZE);
-
-			pTri[0][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vec ) + bone.matrix[0][3] );
-			pTri[0][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vec ) + bone.matrix[1][3] );
-			pTri[0][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vec ) + bone.matrix[2][3] );
-#else
 			pTri[0][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vert0->vertCoords ) + bone.matrix[0][3] );
  			pTri[0][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vert0->vertCoords ) + bone.matrix[1][3] );
  			pTri[0][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vert0->vertCoords ) + bone.matrix[2][3] );
-#endif
 		}
 
 //		w = vert1->weights;
@@ -3065,20 +2921,9 @@ void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface,
 			const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
 #endif
 
-#ifdef _XBOX
-			vec3_t vec;
-			Q_CastShort2FloatScale(&vec[0], &vert1->vertCoords[0], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[1], &vert1->vertCoords[1], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[2], &vert1->vertCoords[2], 1.f / (float)GLM_COMP_SIZE);
-
-			pTri[1][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vec ) + bone.matrix[0][3] );
-			pTri[1][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vec ) + bone.matrix[1][3] );
-			pTri[1][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vec ) + bone.matrix[2][3] );
-#else
  			pTri[1][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vert1->vertCoords ) + bone.matrix[0][3] );
  			pTri[1][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vert1->vertCoords ) + bone.matrix[1][3] );
  			pTri[1][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vert1->vertCoords ) + bone.matrix[2][3] );
-#endif
 		}
 
 //		w = vert2->weights;
@@ -3095,20 +2940,9 @@ void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface,
 			const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
 #endif
 
-#ifdef _XBOX
-			vec3_t vec;
-			Q_CastShort2FloatScale(&vec[0], &vert2->vertCoords[0], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[1], &vert2->vertCoords[1], 1.f / (float)GLM_COMP_SIZE);
-			Q_CastShort2FloatScale(&vec[2], &vert2->vertCoords[2], 1.f / (float)GLM_COMP_SIZE);
-
-			pTri[2][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vec ) + bone.matrix[0][3] );
-			pTri[2][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vec ) + bone.matrix[1][3] );
-			pTri[2][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vec ) + bone.matrix[2][3] );
-#else
  			pTri[2][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vert2->vertCoords ) + bone.matrix[0][3] );
  			pTri[2][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vert2->vertCoords ) + bone.matrix[1][3] );
  			pTri[2][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vert2->vertCoords ) + bone.matrix[2][3] );
-#endif
 		}
  			
    		vec3_t normal;
@@ -3186,20 +3020,9 @@ void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface,
 				const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
 #endif
 
-#ifdef _XBOX
-				vec3_t vec;
-				Q_CastShort2FloatScale(&vec[0], &v->vertCoords[0], 1.f / (float)GLM_COMP_SIZE);
-				Q_CastShort2FloatScale(&vec[1], &v->vertCoords[1], 1.f / (float)GLM_COMP_SIZE);
-				Q_CastShort2FloatScale(&vec[2], &v->vertCoords[2], 1.f / (float)GLM_COMP_SIZE);
-
-				pTri[j][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vec ) + bone.matrix[0][3] );
-				pTri[j][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vec ) + bone.matrix[1][3] );
-				pTri[j][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vec ) + bone.matrix[2][3] );
-#else
  				pTri[j][0] += fBoneWeight * ( DotProduct( bone.matrix[0], v->vertCoords ) + bone.matrix[0][3] );
  				pTri[j][1] += fBoneWeight * ( DotProduct( bone.matrix[1], v->vertCoords ) + bone.matrix[1][3] );
  				pTri[j][2] += fBoneWeight * ( DotProduct( bone.matrix[2], v->vertCoords ) + bone.matrix[2][3] );
-#endif
  			}
  			
  			v++;// = (mdxmVertex_t *)&v->weights[/*v->numWeights*/surface->maxVertBoneWeights];
@@ -3638,423 +3461,6 @@ static inline float G2_GetVertBoneWeightNotSlow( const mdxmVertex_t *pVert, cons
 	return fBoneWeight;
 }
 
-#ifdef _XBOX
-
-static inline void VertTransform(float *out_vert, const float *mat, const float *in_vert)
-{
-	__asm
-	{
-		push      ESI
-			push      EDI
-			push      EAX
-
-			mov       ESI,    in_vert
-			mov       EDI,    out_vert
-			mov       EAX,    mat
-
-			movaps    XMM4,   [EAX + 0]		// Load matrix columns
-			movaps    XMM5,   [EAX + 16]
-			movaps    XMM6,   [EAX + 32]
-			movaps    XMM7,   [EAX + 48]
-
-			movss     XMM0,   [ESI + 0]		// Compute x * column 0
-			shufps    XMM0,   XMM0, 0x0
-				mulps     XMM0,   XMM4
-
-				movss     XMM1,   [ESI + 4]		// Compute y * column 1
-				shufps    XMM1,   XMM1, 0x0
-					mulps     XMM1,   XMM5
-
-					movss     XMM2,   [ESI + 8]		// Compute z * column 2
-					shufps    XMM2,   XMM2, 0x0
-						mulps     XMM2,   XMM6
-
-						addps     XMM0,   XMM1			// Add dot products
-						addps     XMM0,   XMM2
-						addps     XMM0,   XMM7			// Add translation
-
-						movaps    [EDI],  XMM0			// Store result
-
-						pop       EAX
-						pop       EDI
-						pop       ESI
-	}
-}
-
-static inline void VertTransformSR(float *out_vert, const float *mat, const float *in_vert)
-{
-	__asm
-	{
-		push      ESI
-			push      EDI
-			push      EAX
-
-			mov       ESI,    in_vert
-			mov       EDI,    out_vert
-			mov       EAX,    mat
-
-			movaps    XMM4,   [EAX + 0]		// Load matrix columns
-			movaps    XMM5,   [EAX + 16]
-			movaps    XMM6,   [EAX + 32]
-
-			movss     XMM0,   [ESI + 0]		// Compute x * column 0
-			shufps    XMM0,   XMM0, 0x0
-				mulps     XMM0,   XMM4
-
-				movss     XMM1,   [ESI + 4]		// Compute y * column 1
-				shufps    XMM1,   XMM1, 0x0
-					mulps     XMM1,   XMM5
-
-					movss     XMM2,   [ESI + 8]		// Compute z * column 2
-					shufps    XMM2,   XMM2, 0x0
-						mulps     XMM2,   XMM6
-
-						addps     XMM0,   XMM1			// Add dot products
-						addps     XMM0,   XMM2
-
-						movaps    [EDI],  XMM0			// Store result
-
-						pop       EAX
-						pop       EDI
-						pop       ESI
-	}
-}
-
-static inline void VertTransformWeighted(float *out_vert, const float *mat, const float *in_vert, const float *weight)
-{
-	__asm
-	{
-		push      ESI
-			push      EDI
-			push      EAX
-			push      EDX
-
-			mov       ESI,    in_vert
-			mov       EDI,    out_vert
-			mov       EAX,    mat
-			mov       EDX,    weight
-
-			movaps    XMM4,   [EAX + 0]		// Load matrix columns
-			movaps    XMM5,   [EAX + 16]
-			movaps    XMM6,   [EAX + 32]
-			movaps    XMM7,   [EAX + 48]
-
-			movss     XMM0,   [ESI + 0]		// Compute x * column 0
-			shufps    XMM0,   XMM0, 0x0
-				mulps     XMM0,   XMM4
-
-				movss     XMM1,   [ESI + 4]		// Compute y * column 1
-				shufps    XMM1,   XMM1, 0x0
-					mulps     XMM1,   XMM5
-
-					movss     XMM2,   [ESI + 8]		// Compute z * column 2
-					shufps    XMM2,   XMM2, 0x0
-						mulps     XMM2,   XMM6
-
-						addps     XMM0,   XMM1			// Add dot products
-						addps     XMM0,   XMM2
-						addps     XMM0,   XMM7			// Add translation
-
-						movss     XMM4,   [EDX]			// Weight the resulting vector
-						shufps    XMM4,   XMM4, 0x0
-							mulps     XMM0,   XMM4
-
-							movaps    XMM5,   [EDI]			// Add the weighted vector to the current
-							addps     XMM0,   XMM5
-
-								movaps    [EDI],  XMM0			// Store result
-
-								pop       EDX
-								pop       EAX
-								pop       EDI
-								pop       ESI
-	}
-}
-
-static inline void VertTransformSRWeighted(float *out_vert, const float *mat, const float *in_vert, const float *weight)
-{
-	__asm
-	{
-		push      ESI
-			push      EDI
-			push      EAX
-			push      EDX
-
-			mov       ESI,    in_vert
-			mov       EDI,    out_vert
-			mov       EAX,    mat
-			mov       EDX,    weight
-
-			movaps    XMM4,   [EAX + 0]		// Load matrix columns
-			movaps    XMM5,   [EAX + 16]
-			movaps    XMM6,   [EAX + 32]
-
-			movss     XMM0,   [ESI + 0]		// Compute x * column 0
-			shufps    XMM0,   XMM0, 0x0
-				mulps     XMM0,   XMM4
-
-				movss     XMM1,   [ESI + 4]		// Compute y * column 1
-				shufps    XMM1,   XMM1, 0x0
-					mulps     XMM1,   XMM5
-
-					movss     XMM2,   [ESI + 8]		// Compute z * column 2
-					shufps    XMM2,   XMM2, 0x0
-						mulps     XMM2,   XMM6
-
-						addps     XMM0,   XMM1			// Add dot products
-						addps     XMM0,   XMM2
-
-						movss     XMM7,   [EDX]			// Weight the resulting vector
-						shufps    XMM7,   XMM7, 0x0
-							mulps     XMM0,   XMM7
-
-							movaps    XMM4,   [EDI]			// Add the weighted vector to the current
-							addps     XMM0,   XMM4
-
-								movaps    [EDI],  XMM0			// Store result
-
-								pop       EDX
-								pop       EAX
-								pop       EDI
-								pop       ESI
-	}
-}
-
-static void TransformRenderSurface(const mdxmSurface_t *surf, CBoneCache *bones, shaderCommands_t *out)
-{
-	const int *boneRefs = (int*) ((byte*)surf + surf->ofsBoneReferences);
-	int numVerts = surf->numVerts;
-	const mdxmVertex_t *vert = (mdxmVertex_t *) ((byte *)surf + surf->ofsVerts);
-	const mdxmVertexTexCoord_t *texCoord = (mdxmVertexTexCoord_t *) &vert[numVerts];
-
-	int	boneIndex = -1;
-	const float *bone = NULL;
-
-	int baseVert = out->numVertexes;
-
-	while(numVerts--)
-	{
-		__declspec (align(16)) vec4_t vec;
-		__declspec (align(16)) vec4_t nrm;
-
-#ifdef _XBOX
-		__declspec (align(16)) vec4_t tan;
-
-		Q_CastShort2FloatScale(&vec[0], &vert->vertCoords[0], 1.f / GLM_COMP_SIZE);
-		Q_CastShort2FloatScale(&vec[1], &vert->vertCoords[1], 1.f / GLM_COMP_SIZE);
-		Q_CastShort2FloatScale(&vec[2], &vert->vertCoords[2], 1.f / GLM_COMP_SIZE);
-
-		if(tess.shader->needsNormal || tess.dlightBits)
-		{
-            nrm[0] = (((vert->normal & 0x00FF0000) >> 16) - 128.f) / 127.0f;
-			nrm[1] = (((vert->normal & 0x0000FF00) >> 8) - 128.f) / 127.0f;
-			nrm[2] = (((vert->normal & 0x000000FF) >> 0) - 128.f) / 127.0f;
-		}
-
-		if(tess.shader->needsTangent || tess.dlightBits)
-		{
-            tan[0] = (((vert->tangent & 0x00FF0000) >> 16) - 128.f) / 127.0f;
-			tan[1] = (((vert->tangent & 0x0000FF00) >> 8) - 128.f) / 127.0f;
-			tan[2] = (((vert->tangent & 0x000000FF) >> 0) - 128.f) / 127.0f;
-
-			out->setTangents = true;
-		}
-#else
-		VectorCopy(vert->vertCoords, vec);
-		VectorCopy(vert->normal, nrm);
-#endif
-
-		const int numWeights = G2_GetVertWeights( vert );
-
-		if (numWeights == 1)
-		{
-			// Slightly faster single weight path
-			int index = G2_GetVertBoneIndex( vert, 0 );
-
-			if ( index != boneIndex )
-			{
-				CTransformBone *tbone = bones->EvalFull(boneRefs[index]);
-				bone = tbone->renderMatrix;
-				boneIndex = index;
-			}
-
-			VertTransform(out->xyz[baseVert], bone, vec);
-#ifdef _XBOX	
-			if(tess.shader->needsNormal || tess.dlightBits)
-				VertTransformSR(out->normal[baseVert], bone, nrm);
-
-			if(tess.shader->needsTangent || tess.dlightBits)
-				VertTransformSR(out->tangent[baseVert], bone, tan);
-#else
-			VertTransformSR(out->normal[baseVert], bone, nrm);
-#endif
-		}
-		else
-		{
-			// Multi-weight blending path
-			VectorClear( out->xyz[baseVert] );
-
-			// Special case for first weight, as it's the only one we use for the normals
-			boneIndex = G2_GetVertBoneIndex( vert, 0 );
-			CTransformBone *tbone = bones->EvalFull(boneRefs[boneIndex]);
-			bone = tbone->renderMatrix;
-
-			__declspec (align(16)) float weight = G2_GetVertBoneWeightNotSlow( vert, 0 );
-
-			VertTransformWeighted(out->xyz[baseVert], bone, vec, &weight);
-#ifdef _XBOX
-			if(tess.shader->needsNormal || tess.dlightBits)
-				VertTransformSR(out->normal[baseVert], bone, nrm);
-
-			if(tess.shader->needsTangent || tess.dlightBits)
-				VertTransformSR(out->tangent[baseVert], bone, tan);
-#else
-			VertTransformSR(out->normal[baseVert], bone, nrm);
-#endif
-
-			for (int k = 1; k < numWeights; ++k)
-			{
-				boneIndex = G2_GetVertBoneIndex( vert, k );
-
-				tbone = bones->EvalFull(boneRefs[boneIndex]);
-				bone = tbone->renderMatrix;
-
-				weight = G2_GetVertBoneWeightNotSlow( vert, k );
-
-				VertTransformWeighted(out->xyz[baseVert], bone, vec, &weight);
-			}
-		}
-
-#ifdef _XBOX
-		Q_CastShort2FloatScale(&out->texCoords[baseVert][0][0], &texCoord->texCoords[0], 1.f / GLM_COMP_SIZE);
-		Q_CastShort2FloatScale(&out->texCoords[baseVert][0][1], &texCoord->texCoords[1], 1.f / GLM_COMP_SIZE);
-#else
-		out->texCoords[baseVert][0][0] = texCoord->texCoords[0];
-		out->texCoords[baseVert][0][1] = texCoord->texCoords[1];
-#endif
-
-		++vert;
-		++texCoord;
-		++baseVert;
-	}
-
-	// VVFIXME - BTO - commented this out, as it's still being done in SurfaceGhoul now.
-	// Really, I ought to move the Gore surfacing in here.
-	//	out->numVertexes += surf->numVerts;
-}
-
-static void TransformCollideSurface(const mdxmSurface_t *surf, CBoneCache *bones, vec3_t scale, float *out)
-{
-	const int *boneRefs = (int*) ((byte*)surf + surf->ofsBoneReferences);
-	int numVerts = surf->numVerts;
-	const mdxmVertex_t *vert = (mdxmVertex_t *) ((byte *)surf + surf->ofsVerts);
-	const mdxmVertexTexCoord_t *texCoord = (mdxmVertexTexCoord_t *) &vert[numVerts];
-
-	int	boneIndex = -1;
-	const float *bone = NULL;
-
-#ifdef _XBOX
-	vec3_t scl;
-	scl[0] = scale[0] * 1.f / GLM_COMP_SIZE;
-	scl[1] = scale[1] * 1.f / GLM_COMP_SIZE;
-	scl[2] = scale[2] * 1.f / GLM_COMP_SIZE;
-#endif
-
-	while(numVerts--)
-	{
-		__declspec (align(16)) vec4_t vec;
-
-#ifdef _XBOX
-		Q_CastShort2FloatScale(&vec[0], &vert->vertCoords[0], scl[0]);
-		Q_CastShort2FloatScale(&vec[1], &vert->vertCoords[1], scl[1]);
-		Q_CastShort2FloatScale(&vec[2], &vert->vertCoords[2], scl[2]);
-#else
-		VectorCopy(vert->vertCoords, vec);
-#endif
-
-		const int numWeights = G2_GetVertWeights( vert );
-
-		if (numWeights == 1)
-		{
-			// Slightly faster single weight path
-			int index = G2_GetVertBoneIndex( vert, 0 );
-
-			if ( index != boneIndex )
-			{
-				CTransformBone *tbone = bones->EvalFull(boneRefs[index]);
-				bone = tbone->renderMatrix;
-				boneIndex = index;
-			}
-
-			__declspec (align(16)) vec4_t temp;
-
-			VertTransform(temp, bone, vec);
-
-			out[0] = temp[0];
-			out[1] = temp[1];
-			out[2] = temp[2];
-		}
-		else
-		{
-			// Multi-weight blending path
-			float totalWeight = 0.0f;
-
-			__declspec (align(16)) vec4_t temp;
-			temp[0] = 0;
-			temp[1] = 0;
-			temp[2] = 0;
-
-			for (int k = 0; k < numWeights; ++k) 
-			{
-				boneIndex = G2_GetVertBoneIndex( vert, k );
-
-				CTransformBone *tbone = bones->EvalFull(boneRefs[boneIndex]);
-				bone = tbone->renderMatrix;
-
-				__declspec (align(16)) float weight = 
-					G2_GetVertBoneWeight( vert, k, totalWeight, numWeights );
-
-				VertTransformWeighted(temp, bone, vec, &weight);
-			}
-
-			out[0] = temp[0];
-			out[1] = temp[1];
-			out[2] = temp[2];
-		}
-
-#ifdef _XBOX
-		Q_CastShort2FloatScale(out + 3, &texCoord->texCoords[0], 1.f / GLM_COMP_SIZE);
-		Q_CastShort2FloatScale(out + 4, &texCoord->texCoords[1], 1.f / GLM_COMP_SIZE);
-#else
-		out[3] = texCoord->texCoords[0];
-		out[4] = texCoord->texCoords[1];
-#endif
-
-		++vert;
-		++texCoord;
-		out += 5;
-	}
-}
-
-void R_TransformEachSurface( const mdxmSurface_t *surface, vec3_t scale, CMiniHeap *G2VertSpace, int *TransformedVertsArray,CBoneCache *boneCache) 
-{
-	float			*TransformedVerts;
-
-	// alloc some space for the transformed verts to get put in
-	TransformedVerts = (float *)G2VertSpace->MiniHeapAlloc(surface->numVerts * 5 * 4);
-	TransformedVertsArray[surface->thisSurfaceIndex] = (int)TransformedVerts;
-	if (!TransformedVerts)
-	{
-		assert(0);
-		Com_Error(ERR_DROP, "Ran out of transform space for Ghoul2 Models. Adjust MiniHeapSize in SV_SpawnServer.\n");
-	}
-
-	TransformCollideSurface(surface, boneCache, scale, TransformedVerts);
-}
-
-#endif
-
-
 //This is a slightly mangled version of the same function from the sof2sp base.
 //It provides a pretty significant performance increase over the existing one.
 void RB_SurfaceGhoul( CRenderableSurface *surf ) 
@@ -4152,12 +3558,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 
 				for (j=0;j<numVerts;j++)
 				{
-#ifdef _XBOX
-					DWORD rgb = tess.svars.colors[j+baseVertex] & 0x00ffffff;
-					tess.svars.colors[j+baseVertex] = rgb | ((lFade & 0xff) << 24);
-#else
 					tess.svars.colors[j+baseVertex][3] = lFade;
-#endif
 				}
 			}
 			else if (surf->fade > 2.0f && surf->fade < 3.0f)
@@ -4167,18 +3568,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 
 				for (j=0;j<numVerts;j++)
 				{
-#ifdef _XBOX
-					if (lFade < ((tess.svars.colors[j+baseVertex] & 0x00ff0000) >> 16))
-					{
-						DWORD a = (tess.svars.colors[j+baseVertex] & 0xff000000) >> 24;
-						tess.svars.colors[j+baseVertex] = D3DCOLOR_RGBA(lFade, lFade, lFade, lFade);
-					}
-					else
-					{
-						DWORD rgb = tess.svars.colors[j+baseVertex] & 0x00ffffff;
-						tess.svars.colors[j+baseVertex] = rgb | ((lFade & 0xff) << 24);
-					}
-#else
 					if (lFade < tess.svars.colors[j+baseVertex][0])
 					{ //don't set it unless the fade is less than the current r value (to avoid brightening suddenly before we start fading)
 						tess.svars.colors[j+baseVertex][0] = tess.svars.colors[j+baseVertex][1] = tess.svars.colors[j+baseVertex][2] = lFade;
@@ -4186,7 +3575,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 
 					//Set the alpha as well I suppose, no matter what
 					tess.svars.colors[j+baseVertex][3] = lFade;
-#endif
 				}
 			}
 		}
@@ -4248,9 +3636,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 
 	numVerts = surface->numVerts;
 
-#ifdef _XBOX
-	TransformRenderSurface(surface, surf->boneCache, &tess);
-#else
 	piBoneReferences = (int*) ((byte*)surface + surface->ofsBoneReferences);
 	baseVertex = tess.numVertexes;
 	v = (mdxmVertex_t *) ((byte *)surface + surface->ofsVerts);
@@ -4380,7 +3765,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 #if 0
 	}
 #endif
-#endif // _XBOX
 
 #ifdef _G2_GORE
 	CRenderableSurface *storeSurf = surf;
@@ -4433,14 +3817,10 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	// the glow is rendered _second_!!! If that changes, change this!
 	extern bool g_bRenderGlowingObjects;
 	extern bool g_bDynamicGlowSupported;
-#ifdef _XBOX	// GLOWXXX
-	delete storeSurf;
-#else
 	if ( !tess.shader->hasGlow || g_bRenderGlowingObjects || !g_bDynamicGlowSupported || !r_DynamicGlow->integer )
 	{
 		delete storeSurf;
 	}
-#endif
 #endif
 
 	tess.numVertexes += surface->numVerts;

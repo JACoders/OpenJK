@@ -1169,11 +1169,6 @@ qboolean CG_CalcFOVFromX( float fov_x )
 	cg.refdef.fov_x = fov_x;
 	cg.refdef.fov_y = fov_y;
 
-#ifdef _XBOX
-	if(cg.widescreen)
-		cg.refdef.fov_x *= 1.125f;
-#endif
-
 	return (inwater);
 }
 
@@ -1309,12 +1304,6 @@ static int CG_CalcFov( void ) {
 	else {
 		inwater = qfalse;
 	}
-
-#ifdef _XBOX
-	if(cg.widescreen)
-		fov_x = fov_y * 1.77777f;
-#endif
-
 
 	// set it
 	cg.refdef.fov_x = fov_x;
@@ -2117,13 +2106,6 @@ void CGCam_Shake( float intensity, int duration )
 	
 
 	cgScreenEffects.shake_start = cg.time;
-//JLFRUMBLE
-#ifdef _XBOX
-extern void FF_XboxShake(float intensity, int duration);
-
-FF_XboxShake(intensity, duration);
-
-#endif
 }
 
 void CG_DoCameraShake( vec3_t origin, float intensity, int radius, int time )
@@ -2178,9 +2160,9 @@ CG_EmplacedView
 Keep view reasonably constrained in relation to gun -rww
 =================
 */
-#include "../namespace_begin.h"
+
 int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float constraint);
-#include "../namespace_end.h"
+
 
 void CG_EmplacedView(vec3_t angles)
 {
@@ -2434,10 +2416,10 @@ Generates and draws a game scene and status information at the given time.
 static qboolean cg_rangedFogging = qfalse; //so we know if we should go back to normal fog
 float cg_linearFogOverride = 0.0f; //designer-specified override for linear fogging style
 
-#include "../namespace_begin.h"
+
 extern void BG_VehicleTurnRateForSpeed( Vehicle_t *pVeh, float speed, float *mPitchOverride, float *mYawOverride );
 extern qboolean PM_InKnockDown( playerState_t *ps );
-#include "../namespace_end.h"
+
 
 extern qboolean cgQueueLoad;
 extern void CG_ActualLoadDeferredPlayers( void );

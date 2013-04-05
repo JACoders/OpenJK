@@ -45,319 +45,6 @@ char *forcepowerDesc[NUM_FORCE_POWERS] =
 "@SP_INGAME_FORCE_SABER_THROW_DESC"
 };
 
-#ifdef _XBOX
-#include "../xbox/XBLive.h"
-#include "../xbox/XBoxCommon.h"
-#include "../xbox/XBVoice.h"
-
-
-/*
-===============
-UI_XBL_PlayerListScript
-Handle all UI script calls for player list
-===============
-*/
-void UI_XBL_PlayerListScript(char **args, const char *name)
-{
-	if ( !String_Parse(args, &name) || !name )
-	{
-		return;
-	}
-	//
-	// General player-list management
-	//
-	else if(Q_stricmp(name, "init") == 0)
-	{
-		XBL_PL_Init();
-		Menu_SetFeederSelection(NULL, FEEDER_XBL_PLAYERS, 0, NULL);
-	}
-	else if(Q_stricmp(name, "shutdown") == 0)
-	{
-		XBL_PL_Cleanup();
-	}
-	else if (Q_stricmp(name, "popup") == 0)
-	{
-		// Copy selected player's info into the cvars
-		if (!XBL_PL_SetCurrentInfo())
-			return;
-
-		// Show the popup
-		Menus_ActivateByName("playerlist_popup");
-	}
-	//
-	// User-specific actions
-	//
-	else if (Q_stricmp(name, "friendAdd") == 0)
-	{
-		XBL_PL_MakeFriend();
-	}
-	else if (Q_stricmp(name, "friendRemove") == 0)
-	{
-		XBL_PL_CancelFriend();
-	}
-	else if (Q_stricmp(name, "toggleMute") == 0)
-	{
-		XBL_PL_ToggleMute();
-	}
-	else if (Q_stricmp(name, "sendFeedback") == 0)
-	{
-		XBL_PL_SendFeedBack();
-	}
-	else if (Q_stricmp(name, "kick") == 0)
-	{
-		XBL_PL_KickPlayer();
-	}
-}
-
-void UI_JoinSession()
-{
-	HRESULT result = XBL_F_PerformMenuAction(UI_F_JOINSESSION);
-    
-    // if not S_OK then it was a different game, request disk swap
-    //
-    if( result != S_OK )
-    {
-        Menus_ActivateByName("ingame_med_bgd");
-        trap_Cvar_Set("ui_xboxreboottitle", "Swap disks");//StringTable_Get(XSTR_SWAP_DISCS)); //"Swap Discs"
-		XONLINE_FRIEND* curFriend = XBL_F_GetChosenFriend();
-		char titleString[MAX_TITLENAME_LEN+1];
-		if(curFriend)
-		{
-			XBL_F_GetTitleString(curFriend->dwTitleID, titleString);
-	        trap_Cvar_Set( "ui_xboxrebootmessage", va("%s %s. %s","Please insert", titleString, "This will let you play that crappy game instead of this awesome one."));
-		}
-		else
-	        trap_Cvar_Set( "ui_xboxrebootmessage", "Put in the right disc. That'll shut down this fine piece of software" );
-        Menus_ActivateByName("xbox_swap_disks");
-    }
-}
-
-/*
-===============
-UI_XBL_HandleFriendsPopUp
-Determines which friend pop up to activate based on friend state.
-===============
-*/
-void UI_XBL_HandleFriendsPopUp( void )
-{
-	// Get the chosen friend
-	const XONLINE_FRIEND* curFriend = XBL_F_GetChosenFriend();
-
-	if( !curFriend )
-		return;
-
-	// Is the friend's game joinable?
-	bool joinAvail = (bool)(curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_JOINABLE);
-
-	// We can invite if we're playing...
-	bool inviteAvail = XBL_F_GetState( XONLINE_FRIENDSTATE_FLAG_PLAYING );
-
-	// Double check that we're REALLY in a game
-	uiClientState_t	cstate;
-	trap_GetClientState( &cstate );
-	if( cstate.connState != CA_ACTIVE )
-		inviteAvail = false;
-
-	// If we're in the same game, neither option makes sense
-	if( memcmp( &curFriend->sessionID, Net_GetXNKID(), sizeof(XNKID) ) == 0 )
-		inviteAvail = joinAvail = false;
-
-	// Put the friend's name into the cvar used to display it in all the popups
-	trap_Cvar_Set( "fl_selectedName", curFriend->szGamertag );
-
-	// Based on current friendstates activate correct popup
-
-	// Player has received a game invite fom the indicated friend (Accept/Decline/Remove)
-	if( curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_RECEIVEDINVITE )
-		Menus_ActivateByName("xbf_ReceivedInvite_popup");
-
-	// We sent an invite, didn't hear back. Player is online and playing (joinable). (Cancel/Join/Remove)
-	else if( (curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_SENTINVITE) &&
-			 !(curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_INVITEACCEPTED) && 
-			 !(curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_INVITEREJECTED) && 
-			 (curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_PLAYING) &&
-			 joinAvail )
-		Menus_ActivateByName("xbf_SentInviteCanJoin_popup");
-
-	// We sent an invite, didn't hear back. Player is idle, offline, or in our game (not joinable). (Cancel/Remove)
-	else if( (curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_SENTINVITE) && 
-			 !(curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_INVITEACCEPTED) && 
-			 !(curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_INVITEREJECTED) && 
-			 !(curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_PLAYING) )
-		Menus_ActivateByName("xbf_SentInviteNoJoin_popup");
-
-	// Player has received a friend request. (Accept/Decline/Block)
-	else if( curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_RECEIVEDREQUEST )
-		Menus_ActivateByName("xbf_ReceivedRequest_popup");
-
-	// Player has sent a friend request. (Revoke)
-	else if( curFriend->dwFriendState & XONLINE_FRIENDSTATE_FLAG_SENTREQUEST )
-		Menus_ActivateByName("xbf_SentRequest_popup");
-
-	// Now, there are four more options, for all combinations of join and invite being available.
-	// It really doesn't matter if the user is online or offline.
-
-	// Player is joinable, and we have the option to invite (Invite/Join/Remove)
-	else if( joinAvail && inviteAvail )
-		Menus_ActivateByName("xbf_BasicInviteJoin_popup");
-
-	// Player is joinable, but we can't send an invitation (Join/Remove)
-	else if( joinAvail && !inviteAvail )
-		Menus_ActivateByName("xbf_BasicJoin_popup");
-
-	// Player can be invited, but we can't join their game (Invite/Remove)
-	else if( !joinAvail && inviteAvail )
-		Menus_ActivateByName("xbf_BasicInvite_popup");
-
-	// We can't invite, can't join (Remove)
-	else
-		Menus_ActivateByName("xbf_Basic_popup");
-}
-
-/*
-===============
-UI_XBL_FriendsListScript
-Handle all UI script calls for friends list
-===============
-*/
-void UI_XBL_FriendsListScript(char **args, const char *name)
-{
-	if ( !String_Parse(args, &name) || !name )
-	{
-		return;
-	}
-	//
-	// General friends-list management
-	//
-	else if(Q_stricmp(name, "init") == 0)
-	{
-		// VVFIXME - Initialize selection or something? - generate isn't instant!
-		XBL_F_GenerateFriendsList();
-		Menu_SetFeederSelection(NULL, FEEDER_XBL_FRIENDS, 0, NULL);
-	}
-	else if(Q_stricmp(name, "shutdown") == 0)
-	{
-		XBL_F_ReleaseFriendsList();
-	}
-	else if (Q_stricmp(name, "popup") == 0)
-	{
-		// Display the correct popup, depending on many factors
-		UI_XBL_HandleFriendsPopUp();
-	}
-	//
-	// Respond to friend requests
-	//
-	else if (Q_stricmp(name, "accept") == 0)
-	{
-		XBL_F_PerformMenuAction(UI_F_FRIENDACCEPTED);
-	}
-	else if (Q_stricmp(name, "decline") == 0)
-	{
-		XBL_F_PerformMenuAction(UI_F_FRIENDDECLINE);
-	}
-	else if (Q_stricmp(name, "block") == 0)
-	{
-		XBL_F_PerformMenuAction(UI_F_FRIENDBLOCK);
-	}
-	// VVFIXME - Why is this here? It makes no sense.
-//	else if (Q_stricmp(name, "request") == 0)
-//	{
-//		XBL_F_PerformMenuAction(UI_F_FRIENDREQUESTED);
-//	}
-
-	//
-	// Remove an existing friend or cancel a pending friend request
-	//
-	else if (Q_stricmp(name, "remove") == 0)
-	{
-		XBL_F_PerformMenuAction(UI_F_FRIENDREMOVE);
-	}
-	else if (Q_stricmp(name, "cancel") == 0)
-	{
-		XBL_F_PerformMenuAction(UI_F_FRIENDCANCEL);
-	}
-
-	//
-	// Invite someone to play, or cancel a pending invitation
-	//
-	else if (Q_stricmp(name, "invite") == 0)
-	{
-		XBL_F_PerformMenuAction(UI_F_GAMEREQUESTED);
-	}
-	else if(Q_stricmp(name, "uninvite") == 0)
-	{
-		XBL_F_PerformMenuAction(UI_F_GAMECANCEL);
-	}
-
-	//
-	// Respond to a game invitation
-	//
-	else if (Q_stricmp(name, "acceptInvite") == 0)
-	{
-//        strcpy( hostName, "friend" );
-
-		HRESULT result = XBL_F_PerformMenuAction(UI_F_GAMEACCEPTED);
-
-        // if not S_OK then it was a different game, request disk swap
-        //
-        if( result != S_OK )
-        {
-            Menus_ActivateByName("ingame_med_bgd");
-            trap_Cvar_Set("ui_xboxreboottitle", "Swap Disks");//StringTable_Get(XSTR_SWAP_DISCS)); //"Swap Disks"
-            //strcpy( str, "Please insert the appropriate Xbox Game Disk. This will close down your Soldier Of Fortune II Double Helix session and reboot your Xbox.");
-			XONLINE_FRIEND* curFriend = XBL_F_GetChosenFriend();
-			char titleString[MAX_TITLENAME_LEN+1];
-			if(curFriend)
-			{
-				XBL_F_GetTitleString(curFriend->dwTitleID, titleString);
-	            trap_Cvar_Set( "ui_xboxrebootmessage", va("%s %s. %s", "Please insert", titleString, "Close JA session"));
-			}
-			else
-	            trap_Cvar_Set( "ui_xboxrebootmessage", "Plz put in the disk. This will close down this game."); //"Please insert the appropriate Xbox Game Disc. This will close down your Soldier Of Fortune II Double Helix session."
-
-            Menus_ActivateByName("xbox_swap_disks");
-        }
-
-	}
-	else if (Q_stricmp(name, "declineInvite") == 0)
-	{
-		XBL_F_PerformMenuAction(UI_F_GAMEDECLINE);
-	}
-	else if (Q_stricmp(name, "removeInviter") == 0)
-	{
-		XBL_F_PerformMenuAction(UI_F_GAMEFRIENDREMOVED);
-	}
-
-	//
-	// Join someone else's game uninvited
-	//
-	else if (Q_stricmp(name, "join") == 0)
-	{
-        XONLINE_FRIEND* curFriend = XBL_F_GetChosenFriend();
-
-        if( curFriend && XBL_MM_ThisSessionIsLagging( &curFriend->sessionID ) )
-        {
-            XBL_MM_SetJoinType(VIA_FRIEND_JOIN);
-	        trap_Cvar_Set("ui_xboxreboottitle", " ");
-            trap_Cvar_Set("ui_xboxrebootmessage", "The net suxors. You might not want to do this.");
-		    Menus_ActivateByName("ingame_small_bgd");
-            Menus_ActivateByName("xblive_slow_warning");
-        }
-        else
-        {
-		    Menus_CloseByName("ingame_small_bgd");
-            UI_JoinSession();
-        }
-	}
-
-	// Appear online/offline
-	else if(Q_stricmp(name, "toggleOnline") == 0)
-	{
-		XBL_F_PerformMenuAction(UI_F_TOGGLEONLINE);		
-	}
-}
-#endif	// _XBOX
-
 // Movedata Sounds
 typedef enum
 {
@@ -539,14 +226,6 @@ vmCvar_t	ui_char_color_blue;
 vmCvar_t	ui_PrecacheModels;
 vmCvar_t	ui_char_anim;
 
-//JLFCALLOUT 
-#ifdef _XBOX
-vmCvar_t	ui_hideAcallout;
-vmCvar_t	ui_hideBcallout;
-vmCvar_t	ui_hideXcallout;
-#endif
-//END JLFCALLOUT
-
 void _UI_Init( qboolean );
 void _UI_Shutdown( void );
 void _UI_KeyEvent( int key, qboolean down );
@@ -564,7 +243,7 @@ static void UI_CheckServerName( void );
 static qboolean UI_CheckPassword( void );
 static void UI_JoinServer( void );
 
-#include "../namespace_begin.h"
+
 // Functions in BG or ui_shared
 void Menu_ShowGroup (menuDef_t *menu, char *itemName, qboolean showFlag);
 void Menu_ItemDisable(menuDef_t *menu, char *name,int disableFlag);
@@ -621,7 +300,7 @@ int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int a
 
 	return -1;
 }
-#include "../namespace_end.h"
+
 
 siegeClassDesc_t g_UIClassDescriptions[MAX_SIEGE_CLASSES];
 siegeTeam_t *siegeTeam1 = NULL;
@@ -635,10 +314,10 @@ int g_UIGloballySelectedSiegeClass = -1;
 qboolean	UIPAFtextLoaded = qfalse;
 animation_t	uiHumanoidAnimations[MAX_TOTALANIMATIONS]; //humanoid animations are the only ones that are statically allocated.
 
-#include "../namespace_begin.h"
+
 bgLoadedAnim_t bgAllAnims[MAX_ANIM_FILES];
 int uiNumAllAnims = 1; //start off at 0, because 0 will always be assigned to humanoid.
-#include "../namespace_end.h"
+
 
 animation_t *UI_AnimsetAlloc(void)
 {
@@ -657,7 +336,7 @@ models/players/visor/animation.cfg, etc
 
 ======================
 */
-#include "../namespace_begin.h"
+
 static char UIPAFtext[60000];
 int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean isHumanoid) 
 {
@@ -863,7 +542,7 @@ int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 //menuDef_t *Menus_FindByName(const char *p);
 void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow);
 
-#include "../namespace_end.h"
+
 
 void UpdateForceUsed();
 
@@ -1069,7 +748,7 @@ void _UI_DrawRect( float x, float y, float width, float height, float size, cons
 	trap_R_SetColor( NULL );
 }
 
-#include "../namespace_begin.h"
+
 int MenuFontToHandle(int iMenuFont)
 {
 	switch (iMenuFont)
@@ -1082,7 +761,7 @@ int MenuFontToHandle(int iMenuFont)
 
 	return uiInfo.uiDC.Assets.qhMediumFont;	// 0;
 }
-#include "../namespace_end.h"
+
 
 int Text_Width(const char *text, float scale, int iMenuFont) 
 {	
@@ -1238,9 +917,9 @@ vmCvar_t	ui_rankChange;
 static void UI_BuildPlayerList();
 char parsedFPMessage[1024];
 
-#include "../namespace_begin.h"
+
 extern int FPMessageTime;
-#include "../namespace_end.h"
+
 
 void Text_PaintCenter(float x, float y, float scale, vec4_t color, const char *text, float adjust, int iMenuFont);
 
@@ -1298,13 +977,11 @@ void _UI_Refresh( int realtime )
 		// refresh find player list
 		UI_BuildFindPlayerList(qfalse);
 	} 
-#ifndef _XBOX	
 	// draw cursor
 	UI_SetColor( NULL );
 	if (Menu_Count() > 0) {
 		UI_DrawHandlePic( uiInfo.uiDC.cursorx, uiInfo.uiDC.cursory, 48, 48, uiInfo.uiDC.Assets.cursor);
 	}
-#endif
 
 #ifndef NDEBUG
 	if (uiInfo.uiDC.debug)
@@ -1423,9 +1100,9 @@ void _UI_Refresh( int realtime )
 _UI_Shutdown
 =================
 */
-#include "../namespace_begin.h"
+
 void UI_CleanupGhoul2(void);
-#include "../namespace_end.h"
+
 
 void _UI_Shutdown( void ) {
 	trap_LAN_SaveCachedServers();
@@ -3939,9 +3616,9 @@ static qboolean UI_Effects_HandleKey(int flags, float *special, int key) {
 	return qfalse;
 }
 
-#include "../namespace_begin.h"
+
 extern void	Item_RunScript(itemDef_t *item, const char *s);		//from ui_shared;
-#include "../namespace_end.h"
+
 
 // For hot keys on the chat main menu.
 static qboolean UI_Chat_Main_HandleKey(int key) 
@@ -4319,18 +3996,10 @@ static qboolean UI_InSoloMenu( void )
 
 static qboolean UI_NetGameType_HandleKey(int flags, float *special, int key) 
 {
-#ifdef _XBOX
-  if (key == A_CURSOR_RIGHT || key == A_CURSOR_LEFT)
-#else
   if (key == A_MOUSE1 || key == A_MOUSE2 || key == A_ENTER || key == A_KP_ENTER) 
-#endif
   {
 
-#ifdef _XBOX
-	if (key == A_CURSOR_LEFT) 
-#else
 	if (key == A_MOUSE2) 
-#endif
 	{
 		ui_netGameType.integer--;
 		if (UI_InSoloMenu())
@@ -4711,88 +4380,6 @@ static qboolean UI_VoiceChat_HandleKey(int flags, float *special, int key)
 }
 */
 
-
-#ifdef _XBOX
-static qboolean UI_XboxPasscode_HandleKey(int flags, float *special, int key)
-{
-	static BYTE passcode[XONLINE_PASSCODE_LENGTH];
-	int passcodeState = trap_Cvar_VariableValue( "xb_passcodeState" );
-
-	// If the user hasn't entered a full passcode yet
-	if (passcodeState >= 0 && passcodeState <= 3)
-	{
-		switch (key)
-		{
-			// Undo our stupid UI joy2key mapping that was done in the input system
-			case A_CURSOR_DOWN:
-				passcode[passcodeState++] = XONLINE_PASSCODE_DPAD_DOWN; break;
-			case A_CURSOR_LEFT:
-				passcode[passcodeState++] = XONLINE_PASSCODE_DPAD_LEFT; break;
-			case A_CURSOR_RIGHT:
-				passcode[passcodeState++] = XONLINE_PASSCODE_DPAD_RIGHT; break;
-			case A_CURSOR_UP:
-				passcode[passcodeState++] = XONLINE_PASSCODE_DPAD_UP; break;
-			case A_PAGE_UP:
-				passcode[passcodeState++] = XONLINE_PASSCODE_GAMEPAD_LEFT_TRIGGER; break;
-			case A_PAGE_DOWN:
-				passcode[passcodeState++] = XONLINE_PASSCODE_GAMEPAD_RIGHT_TRIGGER; break;
-			case A_DELETE:
-				passcode[passcodeState++] = XONLINE_PASSCODE_GAMEPAD_X; break;
-			case A_BACKSPACE:
-				passcode[passcodeState++] = XONLINE_PASSCODE_GAMEPAD_Y; break;
-			default:
-				// No other button (including "A") does anything here
-				return qfalse;
-		}
-
-		// User has incremented passcodeState - change the cvar, and we're done
-		trap_Cvar_Set( "xb_passcodeState", va("%d", passcodeState) );
-		return qtrue;
-	}
-
-	// If the user has a full passcode on screen:
-	if (passcodeState == 4)
-	{
-		// Pressing "A" tests the code. Every other button does nothing
-		if (key != A_MOUSE1)
-			return qfalse;
-
-		// Test the passcode
-		XONLINE_USER *pUser = XBL_GetUserInfo( XBL_GetSelectedAccountIndex() );
-		if (memcmp(pUser->passcode, passcode, sizeof(passcode)) == 0)
-		{
-			// Success - resume logging in
-			Menus_CloseByName( "xbox_passcode" );
-			XBL_Login( LOGIN_CONNECT );
-			return qtrue;
-		}
-		else
-		{
-			// Wrong - set state to invalid - so menu changes
-			trap_Cvar_Set( "xb_passcodeState", "5" );
-			return qtrue;
-		}
-	}
-
-	// If the user had already entered an invalid passcode
-	if (passcodeState == 5)
-	{
-		// Pressing "A" brings them back to the beginning, to try again.
-		// All other buttons do nothing
-		if (key != A_MOUSE1)
-			return qfalse;
-
-		trap_Cvar_Set( "xb_passcodeState", "0" );
-		return qtrue;
-	}
-
-	// No other state is valid!
-	assert( 0 );
-	return qfalse;
-}
-#endif
-
-
 static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key) {
 	int findex, iUse = 0;
 
@@ -4945,11 +4532,6 @@ static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, 
 	//	case UI_VOICECHAT:
 	//		UI_VoiceChat_HandleKey(flags, special, key);
 	//		break;
-#ifdef _XBOX
-		case UI_XBOX_PASSCODE:
-			UI_XboxPasscode_HandleKey(flags, special, key);
-			break;
-#endif
     default:
       break;
   }
@@ -5941,10 +5523,10 @@ static void UI_SetSaberBoxesandHilts (void)
 
 //extern qboolean UI_SaberModelForSaber( const char *saberName, char *saberModel );
 extern qboolean UI_SaberSkinForSaber( const char *saberName, char *saberSkin );
-#include "../namespace_begin.h"
+
 extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTimeLength );
 extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName );
-#include "../namespace_end.h"
+
 
 static void UI_UpdateSaberType( void )
 {
@@ -6038,9 +5620,9 @@ static void UI_GetSaberCvars ( void )
 
 
 //extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName );
-#include "../namespace_begin.h"
+
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
-#include "../namespace_end.h"
+
 //extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
 
 void UI_UpdateCharacterSkin( void )
@@ -7378,92 +6960,6 @@ static void UI_RunMenuScript(char **args)
 		{
 			UI_ClampMaxPlayers();
 		}
-#ifdef _XBOX
-		// XBL uiScript commands
-		else if (Q_stricmp(name, "initaccountlist") == 0)
-		{
-			// Make sure that things are up and running
-			XBL_Init();
-		}
-		else if (Q_stricmp(name, "createaccount") == 0)
-		{
-			UI_xboxErrorPopup( XB_POPUP_CONFIRM_NEW_ACCOUNT );
-		}
-		else if (Q_stricmp(name, "logonlive") == 0)
-		{
-			// We've already called SetAccountIndex somewhere
-			// We don't even check for return value - this just kicks off a
-			// giant sequence of popups and such, ending with the lobby
-			XBL_Login( LOGIN_PASSCODE_CHECK );
-		}
-		else if (Q_stricmp(name, "logofflive") == 0)
-		{
-			// User is already logged on - is trying to back out. Get confirmation
-			UI_xboxErrorPopup( XB_POPUP_CONFIRM_LOGOFF );
-		}
-		else if (Q_stricmp(name, "quickmatch") == 0)
-		{
-			// VVFIXME - Someone needs to handle quickmatch resulting UI (errors)
-			// Probably done within XBL_MM_QuickMatch() though...
-			if (XBL_MM_QuickMatch())
-			{
-				// QuickMatch code has already issued a connect...
-				Menus_CloseAll();
-			}
-		}
-		else if (Q_stricmp(name, "optimatch") == 0)
-		{
-			// Run the query
-			XBL_MM_Find_Session(
-				(ui_optiGameType.integer >= 0) ? ui_optiGameType.integer : X_MATCH_NULL_INTEGER,
-				(ui_optiCurrentMap.integer >= 0) ? ui_optiCurrentMap.integer : X_MATCH_NULL_INTEGER,
-				ui_optiMinPlayers.integer,
-				ui_optiMaxPlayers.integer,
-				(ui_optiFriendlyFire.integer >= 0) ? ui_optiFriendlyFire.integer : X_MATCH_NULL_INTEGER,
-				(ui_optiJediMastery.integer >= 0) ? ui_optiJediMastery.integer : X_MATCH_NULL_INTEGER,
-				(ui_optiSaberOnly.integer >= 0) ? ui_optiSaberOnly.integer : X_MATCH_NULL_INTEGER);
-
-			// Everything else is handled automatically. XBL_MM_Tick is getting pings for us,
-			// results already exists and will be pulled by the listbox drawing code.
-			Menus_CloseAll();
-			Menus_OpenByName("optimatch_results");
-		}
-		else if (Q_stricmp(name, "haltoptimatch") == 0)
-		{
-			// Cancels probing of QoS from results once we've backed out or started joining a server
-			XBL_MM_CancelProbing();
-		}
-		else if (Q_stricmp(name, "xboxErrorResponse") == 0)
-		{
-			// User closed the Xbox Error Popup in some way. Do TheRightThing(TM)
-			UI_xboxPopupResponse();
-		}
-		else if (Q_stricmp(name, "singleplayer") == 0)
-		{
-			extern void Sys_Reboot( const char *reason );
-			Sys_Reboot("singleplayer");
-		}
-		else if (Q_stricmp(name, "plyrList") == 0)
-		{
-			// Handles all player list functionality as secondary commands
-			UI_XBL_PlayerListScript(args, name);
-		}
-		else if (Q_stricmp(name, "friendsList") == 0)
-		{
-			// Handles all friends list functionality as secondary commands
-			UI_XBL_FriendsListScript(args, name);
-		}
-		else if (Q_stricmp(name, "getvoicemask") == 0)
-		{
-			// Retrieve current voice mask value for UI display
-			trap_Cvar_SetValue( "ui_voiceMask", g_Voice.GetVoiceMask() );
-		}
-		else if (Q_stricmp(name, "setvoicemask") == 0)
-		{
-			// Update voice mask being used from UI version
-			g_Voice.SetVoiceMask( trap_Cvar_VariableValue( "ui_voiceMask" ) );
-		}
-#endif
 		else 
 		{
 			Com_Printf("unknown UI script %s\n", name);
@@ -7474,9 +6970,9 @@ static void UI_RunMenuScript(char **args)
 static void UI_GetTeamColor(vec4_t *color) {
 }
 
-#include "../namespace_begin.h"
+
 int BG_SiegeCountBaseClass(const int team, const short classIndex);
-#include "../namespace_end.h"
+
 
 static void UI_SiegeClassCnt( const int team )
 {
@@ -7953,23 +7449,11 @@ static void UI_JoinServer( void )
 	trap_Cvar_Set("cg_thirdPerson", "0");
 	trap_Cvar_Set("cg_cameraOrbit", "0");
 	trap_Cvar_Set("ui_singlePlayerActive", "0");
-#ifdef _XBOX
-	if (logged_on)
-	{ // Live server
-		XBL_MM_JoinServer( uiInfo.serverStatus.displayServers[uiInfo.serverStatus.currentServer] );
-	}
-	else
-	{ // System link
-		SysLink_JoinServer( uiInfo.serverStatus.displayServers[uiInfo.serverStatus.currentServer] );
-	}
-#else
 	if (uiInfo.serverStatus.currentServer >= 0 && uiInfo.serverStatus.currentServer < uiInfo.serverStatus.numDisplayServers)
 	{
 		trap_LAN_GetServerAddressString(ui_netSource.integer, uiInfo.serverStatus.displayServers[uiInfo.serverStatus.currentServer], buff, 1024);
 		trap_Cmd_ExecuteText( EXEC_APPEND, va( "connect %s\n", buff ) );
-	}
-#endif
-	
+	}	
 }
 
 
@@ -8634,25 +8118,6 @@ static int UI_FeederCount(float feederID)
 				}
 			}
 			return count;
-
-#ifdef _XBOX
-		// Get the count of xbl accounts
-		case FEEDER_XBL_ACCOUNTS:
-			// VVFIXME - Again, SOF2 had all kinds of silliness here. Do we need it?
-			return XBL_GetNumAccounts( false );
-
-		// Number of active players, plus number in history list, plus one for divider
-		case FEEDER_XBL_PLAYERS:
-			return XBL_PL_GetNumPlayers() + 1;
-
-		// Number of friends
-		case FEEDER_XBL_FRIENDS:
-			return XBL_F_GetNumFriends();
-
-		// Number of results from an optimatch query
-		case FEEDER_XBL_SERVERS:
-			return XBL_MM_GetNumServers();
-#endif
 	}
 
 	return 0;
@@ -9062,76 +8527,6 @@ static const char *UI_FeederItemText(float feederID, int index, int column,
 	{
 		return ""; 
 	}
-#ifdef _XBOX
-	else if (feederID == FEEDER_XBL_ACCOUNTS)
-	{
-		// VVFIXME - SOF2 keeps track of old number of accounts, to force a
-		// refresh when someone yanks an MU. Probably necessary
-		int numAccounts = XBL_GetNumAccounts( false );
-		if (index >= 0 && index < numAccounts)
-		{
-			XONLINE_USER *pUser = XBL_GetUserInfo( index );
-			if (pUser)
-			{
-				static char displayName[XONLINE_GAMERTAG_SIZE];
-				strcpy( displayName, pUser->szGamertag );
-				return displayName;
-			}
-		}
-	}
-	else if (feederID == FEEDER_XBL_PLAYERS)
-	{
-		int numEntries = XBL_PL_GetNumPlayers() + 1;
-
-		if (index >= 0 && index < numEntries)
-		{
-			if (column == 0)
-				return XBL_PL_GetPlayerName( index );
-			else if (column == 1)
-				return XBL_PL_GetStatusIcon( index );
-			else if (column == 2)
-				return XBL_PL_GetVoiceIcon( index );
-			else
-				return "";
-		}
-	}
-	else if (feederID == FEEDER_XBL_FRIENDS)
-	{
-		if (index >= 0 && index < XBL_F_GetNumFriends())
-		{
-			if (column == 0)
-				return XBL_F_GetFriendName( index );
-			else if (column == 1)
-				return XBL_F_GetStatusIcon( index );
-			else if (column == 2)
-				return XBL_F_GetVoiceIcon( index );
-			else
-				return "";
-		}
-	}
-	else if (feederID == FEEDER_XBL_SERVERS)
-	{
-		// We handle the optimatch results listbox separately from the rest
-		// of the UI server browser code. It's just nasty otherwise.
-		if (index >= 0 && index < XBL_MM_GetNumServers())
-		{
-			switch (column)
-			{
-				case SORT_HOST:
-					return XBL_MM_GetServerName( index );
-				case SORT_MAP:
-					return XBL_MM_GetServerMap( index );
-				case SORT_CLIENTS:
-					return XBL_MM_GetServerClients( index );
-				case SORT_GAME:
-					return XBL_MM_GetServerGametype( index );
-				case SORT_PING:
-					return XBL_MM_GetServerPing( index );
-			}
-		}
-	}
-#endif
-
 	return "";
 }
 
@@ -9936,25 +9331,6 @@ qboolean UI_FeederSelection(float feederFloat, int index, itemDef_t *item)
 			}
 		}
 	} 
-#ifdef _XBOX
-	else if (feederID == FEEDER_XBL_ACCOUNTS)
-	{
-		XBL_SetAccountIndex( index );
-	}
-	else if (feederID == FEEDER_XBL_PLAYERS)
-	{
-		XBL_PL_SetPlayerIndex( index );
-	}
-	else if (feederID == FEEDER_XBL_FRIENDS)
-	{
-		XBL_F_SetChosenFriendIndex( index );
-	}
-	else if (feederID == FEEDER_XBL_SERVERS)
-	{
-		XBL_MM_SetChosenServerIndex( index );
-	}
-#endif
-
 	return qtrue;
 }
 
@@ -10259,13 +9635,8 @@ static qboolean bIsImageFile(const char* dirptr, const char* skinname)
 	char fpath[MAX_QPATH];
 	int f;
 
-#ifdef _XBOX
-	Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.dds", dirptr, skinname);
-#else
 	Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.jpg", dirptr, skinname);
-#endif
 	trap_FS_FOpenFile(fpath, &f, FS_READ);
-#if !defined(_XBOX) || defined(_DEBUG)
 	if (!f)
 	{ //not there, try png
 		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.png", dirptr, skinname);
@@ -10276,7 +9647,6 @@ static qboolean bIsImageFile(const char* dirptr, const char* skinname)
 		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.tga", dirptr, skinname);
 		trap_FS_FOpenFile(fpath, &f, FS_READ);
 	}
-#endif
 	if (f) 
 	{
 		trap_FS_FCloseFile(f);
@@ -10352,11 +9722,7 @@ static void UI_BuildQ3Model_List( void )
 			}
 
 			/*
-#ifdef _XBOX
-			Com_sprintf(fpath, 2048, "models/players/%s/icon%s.dds", dirptr, skinname);
-#else
 			Com_sprintf(fpath, 2048, "models/players/%s/icon%s.jpg", dirptr, skinname);
-#endif
 
 			trap_FS_FOpenFile(fpath, &f, FS_READ);
 
@@ -10788,12 +10154,6 @@ void _UI_Init( qboolean inGameLoad ) {
 	trap_Cvar_Set("ui_actualNetGameType", va("%d", ui_netGameType.integer));
 }
 
-#ifdef _XBOX
-#include "../namespace_begin.h"
-extern void UpdateDemoTimer();
-#include "../namespace_end.h"
-#endif
-
 /*
 =================
 UI_KeyEvent
@@ -10804,12 +10164,6 @@ void _UI_KeyEvent( int key, qboolean down ) {
   if (Menu_Count() > 0) {
     menuDef_t *menu = Menu_GetFocused();
 		if (menu) {
-//JLF
-#ifdef _XBOX
-
-			UpdateDemoTimer();
-
-#endif
 			if (key == A_ESCAPE && down && !Menus_AnyFullScreenVisible()) {
 				Menus_CloseAll();
 			} else {
@@ -10902,12 +10256,7 @@ void _UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			{
 				if (!ui_singlePlayerActive.integer) 
 				{
-#ifdef _XBOX
-					// Display Xbox popups after an ERR_DROP?
-					UI_xboxErrorPopup( XB_POPUP_COM_ERROR );
-#else
 					Menus_ActivateByName("error_popmenu");
-#endif
 					active = qtrue;
 				} 
 				else 
@@ -11308,15 +10657,6 @@ vmCvar_t	ui_gameType;
 vmCvar_t	ui_netGameType;
 vmCvar_t	ui_actualNetGameType;
 vmCvar_t	ui_joinGameType;
-#ifdef _XBOX
-vmCvar_t	ui_optiGameType;
-vmCvar_t	ui_optiCurrentMap;
-vmCvar_t	ui_optiMinPlayers;
-vmCvar_t	ui_optiMaxPlayers;
-vmCvar_t	ui_optiFriendlyFire;
-vmCvar_t	ui_optiJediMastery;
-vmCvar_t	ui_optiSaberOnly;
-#endif
 vmCvar_t	ui_netSource;
 vmCvar_t	ui_serverFilterType;
 vmCvar_t	ui_opponentName;
@@ -11420,15 +10760,6 @@ static cvarTable_t		cvarTable[] = {
 	{ &ui_joinGameType, "ui_joinGametype", "0", CVAR_ARCHIVE|CVAR_INTERNAL },
 	{ &ui_netGameType, "ui_netGametype", "0", CVAR_ARCHIVE|CVAR_INTERNAL },
 	{ &ui_actualNetGameType, "ui_actualNetGametype", "3", CVAR_ARCHIVE|CVAR_INTERNAL },
-#ifdef _XBOX
-	{ &ui_optiGameType, "ui_optiGameType", "0", CVAR_ARCHIVE },
-	{ &ui_optiCurrentMap, "ui_optiCurrentMap", "0", CVAR_ARCHIVE },
-	{ &ui_optiMinPlayers, "ui_optiMinPlayers", "0", CVAR_ARCHIVE },
-	{ &ui_optiMaxPlayers, "ui_optiMaxPlayers", "0", CVAR_ARCHIVE },
-	{ &ui_optiFriendlyFire, "ui_optiFriendlyFire", "0", CVAR_ARCHIVE },
-	{ &ui_optiJediMastery, "ui_optiJediMastery", "0", CVAR_ARCHIVE },
-	{ &ui_optiSaberOnly, "ui_optiSaberOnly", "0", CVAR_ARCHIVE },
-#endif
 	{ &ui_redteam1, "ui_redteam1", "1", CVAR_ARCHIVE|CVAR_INTERNAL }, //rww - these used to all default to 0 (closed).. I changed them to 1 (human)
 	{ &ui_redteam2, "ui_redteam2", "1", CVAR_ARCHIVE|CVAR_INTERNAL },
 	{ &ui_redteam3, "ui_redteam3", "1", CVAR_ARCHIVE|CVAR_INTERNAL },
@@ -11483,13 +10814,6 @@ static cvarTable_t		cvarTable[] = {
 	{ &se_language, "se_language","english", CVAR_ARCHIVE | CVAR_NORESTART},	//text (string ed)
 
 	{ &ui_bypassMainMenuLoad, "ui_bypassMainMenuLoad", "0", CVAR_INTERNAL },
-//JLFCALLOUT
-#ifdef _XBOX
-	{ &ui_hideAcallout,		"ui_hideAcallout",	"", 0}, 
-	{ &ui_hideBcallout,		"ui_hideBcallout",	"", 0}, 
-	{ &ui_hideXcallout,		"ui_hideXcallout",	"", 0}, 
-#endif
-//END JLFCALLOUT
 };
 
 // bk001129 - made static to avoid aliasing
@@ -11631,7 +10955,6 @@ static void UI_StartServerRefresh(qboolean full)
 	}
 
 	uiInfo.serverStatus.refreshtime = uiInfo.uiDC.realTime + 5000;
-#ifndef _XBOX	// Optimatch is handled elsewhere
 	if( ui_netSource.integer == AS_GLOBAL || ui_netSource.integer == AS_MPLAYER ) {
 		if( ui_netSource.integer == AS_GLOBAL ) {
 			i = 0;
@@ -11648,6 +10971,5 @@ static void UI_StartServerRefresh(qboolean full)
 			trap_Cmd_ExecuteText( EXEC_NOW, va( "globalservers %d %d\n", i, (int)trap_Cvar_VariableValue( "protocol" ) ) );
 		}
 	}
-#endif
 }
 

@@ -2,15 +2,9 @@
 #if !defined(CM_TERRAINMAP_H_INC)
 #define CM_TERRAINMAP_H_INC
 
-#ifdef _XBOX
-#define TM_WIDTH		64
-#define TM_HEIGHT		64
-#define	TM_BORDER		4
-#else
 #define TM_WIDTH		512
 #define TM_HEIGHT		512
 #define	TM_BORDER		16
-#endif
 #define TM_REAL_WIDTH	(TM_WIDTH-TM_BORDER-TM_BORDER)
 #define TM_REAL_HEIGHT	(TM_HEIGHT-TM_BORDER-TM_BORDER)
 
