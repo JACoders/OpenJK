@@ -2302,6 +2302,23 @@ qboolean FS_idPak( char *pak, char *base ) {
 
 /*
 ================
+FS_CheckDirTraversal
+
+Check whether the string contains stuff like "../" to prevent directory traversal bugs
+and return qtrue if it does.
+================
+*/
+
+qboolean FS_CheckDirTraversal(const char *checkdir)
+{
+	if(strstr(checkdir, "../") || strstr(checkdir, "..\\"))
+		return qtrue;
+	
+	return qfalse;
+}
+
+/*
+================
 FS_ComparePaks
 
 if dlstring == qtrue
@@ -2326,7 +2343,8 @@ we are not interested in a download string format, we want something human-reada
 */
 qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 	searchpath_t	*sp;
-	qboolean havepak, badchecksum;
+	qboolean havepak;
+	char *origpos = neededpaks;
 	int i;
 
 	if ( !fs_numServerReferencedPaks ) {
@@ -2337,11 +2355,17 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 
 	for ( i = 0 ; i < fs_numServerReferencedPaks ; i++ ) {
 		// Ok, see if we have this pak file
-		badchecksum = qfalse;
 		havepak = qfalse;
 
 		// never autodownload any of the id paks
 		if ( FS_idPak(fs_serverReferencedPakNames[i], "base") || FS_idPak(fs_serverReferencedPakNames[i], "missionpack") ) {
+			continue;
+		}
+
+		// Make sure the server cannot make us write to non-quake3 directories.
+		if(FS_CheckDirTraversal(fs_serverReferencedPakNames[i]))
+		{
+			Com_Printf("WARNING: Invalid download name %s\n", fs_serverReferencedPakNames[i]);
 			continue;
 		}
 
@@ -2357,6 +2381,12 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 			
 			if (dlstring)
 			{
+				// We need this to make sure we won't hit the end of the buffer or the server could
+				// overwrite non-pk3 files on clients by writing so much crap into neededpaks that
+				// Q_strcat cuts off the .pk3 extension.
+
+				origpos += strlen(origpos);
+
 				// Remote name
 				Q_strcat( neededpaks, len, "@");
 				Q_strcat( neededpaks, len, fs_serverReferencedPakNames[i] );
@@ -2374,6 +2404,14 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 				} else {
 					Q_strcat( neededpaks, len, fs_serverReferencedPakNames[i] );
 					Q_strcat( neededpaks, len, ".pk3" );
+				}
+
+				// Find out whether it might have overflowed the buffer and don't add this file to the
+				// list if that is the case.
+				if(strlen(origpos) + (origpos - neededpaks) >= len - 1)
+				{
+					*origpos = '\0';
+					break;
 				}
 			}
 			else
@@ -2971,6 +3009,8 @@ restart if necessary
 qboolean FS_ConditionalRestart( int checksumFeed ) {
 	if( fs_gamedirvar->modified || checksumFeed != fs_checksumFeed ) {
 		FS_Restart( checksumFeed );
+		// Clean out any user and VM created cvars
+		//Cvar_Restart(qtrue);
 		return qtrue;
 	}
 	return qfalse;
