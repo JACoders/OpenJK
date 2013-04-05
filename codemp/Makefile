@@ -1,6 +1,7 @@
 CC			= clang
 CXX			= clang++
 CXXFLAGS		= -fpermissive -m32 -w -D_JK2MP -D_JK2 -DBOTLIB -D__linux__
+CFLAGS		= -fpermissive -m32 -w -D_JK2MP -D_JK2 -DBOTLIB -D__linux__
 
 BOTLIB_SRCS		= botlib/be_aas_bspq3.cpp \
 			  botlib/be_aas_cluster.cpp \
@@ -91,9 +92,13 @@ COMMON_SRCS		= qcommon/cmd_common.cpp \
 			  qcommon/vm.cpp \
 			  qcommon/vm_interpreted.cpp \
 			  qcommon/vm_x86.cpp \
-			  qcommon/z_memman_pc.cpp
+			  qcommon/z_memman_pc.cpp \
 
 COMMON_OBJS		= $(COMMON_SRCS:.cpp=.o)
+
+COMMON_C_SRCS		= game/q_math.c
+
+COMMON_C_OBJS		= $(COMMON_C_SRCS:.c=.o)
 
 GHOUL2_SRCS		= ghoul2/G2_API.cpp\
 			  ghoul2/G2_bolts.cpp \
@@ -195,11 +200,11 @@ NULL_RENDERER_SRCS	= null/null_client.cpp \
 NULL_RENDERER_OBJS	= $(NULL_RENDERER_SRCS:.cpp=.o)
 
 all: botlib common server client renderer ghoul2 icarus zlib null_renderer
-	$(CXX) -o jamp -m32 $(BOTLIB_OBJS) $(COMMON_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS) $(NULL_RENDERER_OBJS)
+	$(CXX) -o jamp -m32 $(BOTLIB_OBJS) $(COMMON_OBJS) $(COMMON_C_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS) $(NULL_RENDERER_OBJS)
 
 botlib: $(BOTLIB_OBJS)
 client: $(CLIENT_OBJS)
-common: $(COMMON_OBJS)
+common: $(COMMON_OBJS) $(COMMON_C_OBJS)
 server: $(SERVER_OBJS)
 renderer: $(RENDERER_OBJS)
 unix: $(UNIX_OBJS)
@@ -209,4 +214,4 @@ zlib: $(ZLIB_OBJS)
 null_renderer: $(NULL_RENDERER_OBJS)
 
 clean:
-	$(RM) $(BOTLIB_OBJS) $(COMMON_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(CLIENT_OBJS) $(UNIX_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS) $(NULL_RENDERER_OBJS)
+	$(RM) $(BOTLIB_OBJS) $(COMMON_OBJS) $(COMMON_C_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(CLIENT_OBJS) $(UNIX_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS) $(NULL_RENDERER_OBJS)
