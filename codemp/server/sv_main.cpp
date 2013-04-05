@@ -981,11 +981,13 @@ qboolean SV_CheckPaused( void ) {
 
 	if ( count > 1 ) {
 		// don't pause
-		sv_paused->integer = 0;
+		if (sv_paused->integer)
+			Cvar_Set("sv_paused", "0");
 		return qfalse;
 	}
 
-	sv_paused->integer = 1;
+	if (!sv_paused->integer)
+		Cvar_Set("sv_paused", "1");
 	return qtrue;
 }
 
