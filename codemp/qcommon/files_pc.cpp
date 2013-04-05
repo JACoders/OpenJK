@@ -866,7 +866,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 		  //   this test can make the search fail although the file is in the directory
 		  // I had the problem on https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=8
 		  // turned out I used FS_FileExists instead
-				if ( fs_restrict->integer || fs_numServerPaks ) {
+				if ( fs_numServerPaks ) {
 
 					if ( Q_stricmp( filename + l - 4, ".cfg" )		// for config files
 						&& Q_stricmp( filename + l - 4, ".fcf" )	// force configuration files
@@ -1680,8 +1680,8 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, char *filt
 			char	*name;
 
 			// don't scan directories for files if we are pure or restricted
-			if ( (fs_restrict->integer || fs_numServerPaks) &&
-				 (!extension || Q_stricmp(extension, "fcf") || fs_restrict->integer) )
+			if ( fs_numServerPaks &&
+				 (!extension || Q_stricmp(extension, "fcf")) )
 			{
 				//rww - allow scanning for fcf files outside of pak even if pure
 			    continue;
@@ -2499,7 +2499,6 @@ void FS_Startup( const char *gameName ) {
 	}
 	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT );
 	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
-	fs_restrict = Cvar_Get ("fs_restrict", "", CVAR_INIT );
 
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT);
 
@@ -2573,67 +2572,6 @@ void FS_Startup( const char *gameName ) {
 	}
 #endif
 	Com_Printf( "%d files in pk3 files\n", fs_packFiles );
-}
-
-
-/*
-===================
-FS_SetRestrictions
-
-Looks for product keys and restricts media add on ability
-if the full version is not found
-===================
-*/
-void FS_SetRestrictions( void ) {
-	searchpath_t	*path;
-
-#ifndef PRE_RELEASE_DEMO
-	char	*productId;
-
-	// if fs_restrict is set, don't even look for the id file,
-	// which allows the demo release to be tested even if
-	// the full game is present
-	if ( !fs_restrict->integer ) {
-		// look for the full game id
-		FS_ReadFile( "productid.txt", (void **)&productId );
-		if ( productId ) {
-			// check against the hardcoded string
-			int		seed, i;
-
-			seed = 102270;
-			for ( i = 0 ; i < sizeof( fs_scrambledProductId ) ; i++ ) {
-				if ( ( fs_scrambledProductId[i] ^ (seed&255) ) != productId[i] ) {
-					break;
-				}
-				seed = (69069 * seed + 1);
-			}
-
-			FS_FreeFile( productId );
-
-			if ( i == sizeof( fs_scrambledProductId ) ) {
-				return;	// no restrictions
-			}
-			Com_Error( ERR_FATAL, "Invalid product identification" );
-		}
-	}
-#endif
-	Cvar_Set( "fs_restrict", "1" );
-
-	Com_Printf( "\nRunning in restricted demo mode.\n\n" );
-
-	// restart the filesystem with just the demo directory
-	FS_Shutdown(qfalse);
-	FS_Startup( DEMOGAME );
-
-	// make sure that the pak file has the header checksum we expect
-	for ( path = fs_searchpaths ; path ; path = path->next ) {
-		if ( path->pack ) {
-			// a tiny attempt to keep the checksum from being scannable from the exe
-			if ( (path->pack->checksum ^ 0x02261994u) != (DEMO_PAK_CHECKSUM ^ 0x02261994u) ) {
-				Com_Error( ERR_FATAL, "Corrupted pak0.pk3: %u", path->pack->checksum );
-			}
-		}
-	}
 }
 
 /*
