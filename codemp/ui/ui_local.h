@@ -378,13 +378,6 @@ extern void UI_ModsMenu( void );
 extern void UI_ModsMenu_Cache( void );
 
 //
-// ui_cdkey.c
-//
-extern void UI_CDKeyMenu( void );
-extern void UI_CDKeyMenu_Cache( void );
-extern void UI_CDKeyMenu_f( void );
-
-//
 // ui_playermodel.c
 //
 extern void UI_PlayerModelMenu( void );
@@ -971,15 +964,6 @@ void			trap_LAN_ResetPings(int n);
 int				trap_LAN_ServerStatus( const char *serverAddress, char *serverStatus, int maxLen );
 int				trap_LAN_CompareServers( int source, int sortKey, int sortDir, int s1, int s2 );
 int				trap_MemoryRemaining( void );
-
-#ifdef USE_CD_KEY
-
-void			trap_GetCDKey( char *buf, int buflen );
-void			trap_SetCDKey( char *buf );
-qboolean		trap_VerifyCDKey( const char *key, const char *chksum);
-
-#endif // USE_CD_KEY
-
 qhandle_t		trap_R_RegisterFont( const char *name );
 int				trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale);
 int				trap_R_Font_StrLenChars(const char *text);
