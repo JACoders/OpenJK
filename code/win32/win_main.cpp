@@ -548,14 +548,14 @@ void *Sys_GetGameAPI (void *parms)
 	if (game_library)
 		Com_Error (ERR_FATAL, "Sys_GetGameAPI without Sys_UnloadingGame");
 
-	gamelibrary = Sys_RetrieveDLL(gamename, debugdir);
-	if(!gamelibrary)
+	game_library = Sys_RetrieveDLL(gamename, debugdir);
+	if(!game_library)
 	{
 		char *buf;
 
 		FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &buf, 0, NULL );
 
-		Com_Printf( "LoadLibrary(\"%s\") failed\n", name);
+		Com_Printf( "LoadLibrary(\"%s\") failed\n", gamename);
 		Com_Printf( "...reason: '%s'\n", buf );
 		Com_Error( ERR_FATAL, "Couldn't load game" );
 	}
