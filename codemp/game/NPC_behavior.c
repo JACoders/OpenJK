@@ -15,9 +15,9 @@ extern vec3_t NPCDEBUG_BLUE;
 extern void G_Cube( vec3_t mins, vec3_t maxs, vec3_t color, float alpha );
 extern void NPC_CheckGetNewWeapon( void );
 
-#include "../namespace_begin.h"
+
 extern qboolean PM_InKnockDown( playerState_t *ps );
-#include "../namespace_end.h"
+
 
 extern void NPC_AimAdjust( int change );
 extern qboolean NPC_SomeoneLookingAtMe(gentity_t *ent);

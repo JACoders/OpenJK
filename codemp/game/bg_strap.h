@@ -2,8 +2,6 @@
 #include "q_shared.h"
 #include "bg_public.h"
 
-#include "../namespace_begin.h"
-
 qboolean strap_G2API_GetBoltMatrix(void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix,
 								const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale);
 
@@ -34,5 +32,3 @@ qboolean strap_G2API_IKMove(void *ghoul2, int time, sharedIKMoveParams_t *params
 void strap_TrueMalloc(void **ptr, int size);
 
 void strap_TrueFree(void **ptr);
-
-#include "../namespace_end.h"

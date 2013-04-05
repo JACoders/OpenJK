@@ -45,11 +45,7 @@ typedef struct ipFilter_s
 } ipFilter_t;
 
 // VVFIXME - We don't need this at all, but this is the quick way.
-#ifdef _XBOX
-#define	MAX_IPFILTERS	1
-#else
 #define	MAX_IPFILTERS	1024
-#endif
 
 static ipFilter_t	ipFilters[MAX_IPFILTERS];
 static int			numIPFilters;

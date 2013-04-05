@@ -471,10 +471,9 @@ qboolean CL_GetServerCommand( int serverCommandNumber ) {
 
 		// when a demo record was started after the client got a whole bunch of
 		// reliable commands then the client never got those first reliable commands
-#ifndef _XBOX	// No demos on Xbox
 		if ( clc.demoplaying )
 			return qfalse;
-#endif
+
 		while (i < MAX_RELIABLE_COMMANDS)
 		{ //spew out the reliable command buffer
 			if (clc.reliableCommands[i][0])
@@ -623,11 +622,7 @@ The cgame module is making a system call
 */
 #define	VMA(x) VM_ArgPtr(args[x])
 #define	VMF(x)	((float *)args)[x]
-#ifdef _XBOX
-extern int *s_entityWavVol;
-#else
 extern int s_entityWavVol[MAX_GENTITIES];
-#endif
 void R_WorldEffectCommand(const char *command);
 
 extern int CL_GetValueForHidden(const char *s); //cl_parse.cpp
@@ -1836,11 +1831,7 @@ void CL_CGameRendering( stereoFrame_t stereo ) {
 	G2API_SetTime(cl.serverTime, 1);
 	//rww - RAGDOLL_END
 
-#ifdef _XBOX	// No demos on Xbox
-	VM_Call( cgvm, CG_DRAW_ACTIVE_FRAME, cl.serverTime, stereo, 0 );
-#else
 	VM_Call( cgvm, CG_DRAW_ACTIVE_FRAME, cl.serverTime, stereo, clc.demoplaying );
-#endif
 	VM_Debug( 0 );
 }
 
@@ -1875,11 +1866,9 @@ void CL_AdjustTimeDelta( void ) {
 	cl.newSnapshots = qfalse;
 
 	// the delta never drifts when replaying a demo
-#ifndef _XBOX	// No demos on Xbox
 	if ( clc.demoplaying ) {
 		return;
 	}
-#endif
 
 	// if the current time is WAY off, just correct to the current value
 	if ( com_sv_running->integer ) {
@@ -1947,9 +1936,7 @@ void CL_FirstSnapshot( void ) {
 	cl.serverTimeDelta = cl.snap.serverTime - cls.realtime;
 	cl.oldServerTime = cl.snap.serverTime;
 
-#ifndef _XBOX	// No demos on Xbox
 	clc.timeDemoBaseTime = cl.snap.serverTime;
-#endif
 
 	// if this is the first frame of active play,
 	// execute the contents of activeAction now
@@ -1961,15 +1948,6 @@ void CL_FirstSnapshot( void ) {
 	}
 	
 	Sys_BeginProfiling();
-
-#ifdef _XBOX
-	// turn vsync back on - tearing is ugly
-	qglEnable(GL_VSYNC);
-
-	// Start (or update) advertising on MM
-	if ( com_sv_running->integer )
-		XBL_MM_Advertise();
-#endif
 }
 
 /*
@@ -1983,7 +1961,6 @@ void CL_SetCGameTime( void ) {
 		if ( cls.state != CA_PRIMED ) {
 			return;
 		}
-#ifndef _XBOX	// No demos on Xbox
 		if ( clc.demoplaying ) {
 			// we shouldn't get the first snapshot on the same frame
 			// as the gamestate, because it causes a bad time skip
@@ -1993,7 +1970,6 @@ void CL_SetCGameTime( void ) {
 			}
 			CL_ReadDemoMessage();
 		}
-#endif
 		if ( cl.newSnapshots ) {
 			cl.newSnapshots = qfalse;
 			CL_FirstSnapshot();
@@ -2022,12 +1998,9 @@ void CL_SetCGameTime( void ) {
 
 	// get our current view of time
 
-#ifndef _XBOX	// No demos on Xbox
 	if ( clc.demoplaying && cl_freezeDemo->integer ) {
 		// cl_freezeDemo is used to lock a demo in place for single frame advances
-
 	} else
-#endif
 	{
 		// cl_timeNudge is a user adjustable cvar that allows more
 		// or less latency to be added in the interest of better 
@@ -2072,7 +2045,6 @@ void CL_SetCGameTime( void ) {
 		CL_AdjustTimeDelta();
 	}
 
-#ifndef _XBOX	// No demos on Xbox
 	if ( !clc.demoplaying ) {
 		return;
 	}
@@ -2101,7 +2073,6 @@ void CL_SetCGameTime( void ) {
 			return;		// end of demo
 		}
 	}
-#endif	// _XBOX
 }
 
 

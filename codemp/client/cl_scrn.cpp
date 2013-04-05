@@ -282,7 +282,6 @@ SCR_DrawDemoRecording
 =================
 */
 void SCR_DrawDemoRecording( void ) {
-#ifndef _XBOX	// No demos on Xbox
 	char	string[1024];
 	int		pos;
 
@@ -297,7 +296,6 @@ void SCR_DrawDemoRecording( void ) {
 	sprintf( string, "RECORDING %s: %ik", clc.demoName, pos / 1024 );
 
 	SCR_DrawStringExt( 320 - strlen( string ) * 4, 20, 8, string, g_color_table[7], qtrue );
-#endif
 }
 
 

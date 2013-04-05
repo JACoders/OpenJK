@@ -22,34 +22,27 @@
  */
 #include "altypes.h"
 
-#ifdef _XBOX
- #define ALAPI
- #define ALAPIENTRY
- #define AL_CALLBACK
-#else
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #ifdef _WIN32
- #ifdef _OPENAL32LIB
-  #define ALAPI __declspec(dllexport)
- #else
-  #define ALAPI __declspec(dllimport)
- #endif
- #define ALAPIENTRY __cdecl
- #define AL_CALLBACK
+	#ifdef _OPENAL32LIB
+		#define ALAPI __declspec(dllexport)
+	#else
+		#define ALAPI __declspec(dllimport)
+	#endif
+	#define ALAPIENTRY __cdecl
+	#define AL_CALLBACK
 #else
- #ifdef TARGET_OS_MAC
-  #if TARGET_OS_MAC
-   #pragma export on
-  #endif
- #endif
- #define ALAPI
- #define ALAPIENTRY __cdecl
- #define AL_CALLBACK
-#endif
+	#ifdef TARGET_OS_MAC
+		#if TARGET_OS_MAC
+			#pragma export on
+		#endif
+	#endif
+	#define ALAPI
+	#define ALAPIENTRY __cdecl
+	#define AL_CALLBACK
 #endif
 
 #define OPENAL
@@ -89,23 +82,6 @@ ALAPI ALubyte*	ALAPIENTRY alGetString( ALenum param );
  */
 ALAPI ALenum	ALAPIENTRY alGetError( ALvoid );
 
-#ifdef _XBOX
-/**
- * Update cycle.
- */
-ALAPI ALvoid	ALAPIENTRY alUpdate( ALvoid );
-
-/**
- * Returns a global state parameter.
- */
-ALAPI ALvoid	ALAPIENTRY alGeti( ALenum param, ALint* value );
-
-/**
- * Adjust the size of the sound buffer pool.
- */
-ALAPI ALvoid	ALAPIENTRY alResizePool( ALuint size );
-#endif
-
 /** 
  * Extension support.
  * Obtain the address of a function (usually an extension)
@@ -142,35 +118,18 @@ ALAPI ALenum	ALAPIENTRY alGetEnumValue( ALubyte* ename );
 
 
 
-#ifdef _XBOX
-/**
- * Listener create and delete
- */
-ALAPI ALvoid	ALAPIENTRY alGenListeners( ALsizei n, ALuint* listeners );
-ALAPI ALvoid	ALAPIENTRY alDeleteListeners( ALsizei n, ALuint* listeners );
-#endif
-
-// VV's Console version of openAL includes multiple listener support,
-// as an extra first arg to the alListener functions. We wrap that up
-// in a macro here, to make the following more concise.
-#ifdef _XBOX
-#define AL_VV_LISTENER ALuint listener,
-#else
-#define AL_VV_LISTENER
-#endif
-
 /**
  *
  * Listener Environment:  default 0.
  */
-ALAPI ALvoid	ALAPIENTRY alListeneri( AL_VV_LISTENER ALenum param, ALint value );
+ALAPI ALvoid	ALAPIENTRY alListeneri( ALenum param, ALint value );
 
 
 /**
  *
  * Listener Gain:  default 1.0f.
  */
-ALAPI ALvoid	ALAPIENTRY alListenerf( AL_VV_LISTENER ALenum param, ALfloat value );
+ALAPI ALvoid	ALAPIENTRY alListenerf( ALenum param, ALfloat value );
 
 
 /**  
@@ -178,7 +137,7 @@ ALAPI ALvoid	ALAPIENTRY alListenerf( AL_VV_LISTENER ALenum param, ALfloat value 
  * Listener Position.
  * Listener Velocity.
  */
-ALAPI ALvoid	ALAPIENTRY alListener3f( AL_VV_LISTENER ALenum param, ALfloat v1, ALfloat v2, ALfloat v3 ); 
+ALAPI ALvoid	ALAPIENTRY alListener3f( ALenum param, ALfloat v1, ALfloat v2, ALfloat v3 ); 
 
 
 /**
@@ -187,12 +146,12 @@ ALAPI ALvoid	ALAPIENTRY alListener3f( AL_VV_LISTENER ALenum param, ALfloat v1, A
  * Listener Velocity:        ALfloat[3]
  * Listener Orientation:     ALfloat[6]  (forward and up vector).
  */
-ALAPI ALvoid	ALAPIENTRY alListenerfv( AL_VV_LISTENER ALenum param, ALfloat* values ); 
+ALAPI ALvoid	ALAPIENTRY alListenerfv( ALenum param, ALfloat* values ); 
 
-ALAPI ALvoid	ALAPIENTRY alGetListeneri( AL_VV_LISTENER ALenum param, ALint* value );
-ALAPI ALvoid	ALAPIENTRY alGetListenerf( AL_VV_LISTENER ALenum param, ALfloat* value );
-ALAPI ALvoid	ALAPIENTRY alGetListener3f( AL_VV_LISTENER ALenum param, ALfloat* v1, ALfloat* v2, ALfloat* v3 ); 
-ALAPI ALvoid	ALAPIENTRY alGetListenerfv( AL_VV_LISTENER ALenum param, ALfloat* values ); 
+ALAPI ALvoid	ALAPIENTRY alGetListeneri( ALenum param, ALint* value );
+ALAPI ALvoid	ALAPIENTRY alGetListenerf( ALenum param, ALfloat* value );
+ALAPI ALvoid	ALAPIENTRY alGetListener3f( ALenum param, ALfloat* v1, ALfloat* v2, ALfloat* v3 ); 
+ALAPI ALvoid	ALAPIENTRY alGetListenerfv( ALenum param, ALfloat* values ); 
 
 
 /**
@@ -207,12 +166,7 @@ ALAPI ALvoid	ALAPIENTRY alGetListenerfv( AL_VV_LISTENER ALenum param, ALfloat* v
 
 
 /** Create Source objects. */
-#ifdef _XBOX
-ALAPI ALvoid	ALAPIENTRY alGenSources2D( ALsizei n, ALuint* sources ); 
-ALAPI ALvoid	ALAPIENTRY alGenSources3D( ALsizei n, ALuint* sources ); 
-#else
 ALAPI ALvoid	ALAPIENTRY alGenSources( ALsizei n, ALuint* sources ); 
-#endif
 
 /** Delete Source objects. */
 ALAPI ALvoid	ALAPIENTRY alDeleteSources( ALsizei n, ALuint* sources );
@@ -308,36 +262,12 @@ ALAPI ALvoid	ALAPIENTRY alSourceUnqueueBuffers( ALuint source, ALsizei n, ALuint
 
 
 
-#ifdef _XBOX
-/**
- * STREAM
- * Stream objects encapsulate traditional sound stream and
- *  act as both sources and buffers.  They emit sound and 
- *  manage sound data.
- */
-
-ALAPI ALvoid	ALAPIENTRY alGenStream( ALvoid );
-ALAPI ALvoid	ALAPIENTRY alDeleteStream( ALvoid );
-
-ALAPI ALvoid	ALAPIENTRY alStreamStop( ALvoid );
-ALAPI ALvoid	ALAPIENTRY alStreamPlay( ALsizei offset, ALint file, ALint loop );
-
-ALAPI ALvoid	ALAPIENTRY alStreamf( ALenum param, ALfloat value );
-
-ALAPI ALvoid	ALAPIENTRY alGetStreamf( ALenum param, ALfloat* value );
-ALAPI ALvoid	ALAPIENTRY alGetStreami( ALenum param, ALint* value );
-#endif
-
-
 /**
  * Knobs and dials
  */
 ALAPI ALvoid	ALAPIENTRY alDistanceModel( ALenum value );
 ALAPI ALvoid	ALAPIENTRY alDopplerFactor( ALfloat value );
 ALAPI ALvoid	ALAPIENTRY alDopplerVelocity( ALfloat value );
-#ifdef _XBOX
-ALAPI ALvoid	ALAPIENTRY alGain( ALfloat value );
-#endif
 
 #else /* AL_NO_PROTOTYPES */
 
@@ -555,10 +485,8 @@ ALAPI ALvoid	ALAPIENTRY (*alDopplerVelocity)( ALfloat value );
  #endif
 #endif
 
-#ifndef _XBOX
 #ifdef __cplusplus
 }
-#endif
 #endif
 
 #endif

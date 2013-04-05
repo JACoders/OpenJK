@@ -20,8 +20,6 @@
 #endif
 #endif
 
-#include "../namespace_begin.h"
-
 void BG_AttachToRancor( void *ghoul2,
 					   float rancYaw,
 					   vec3_t rancOrigin,
@@ -120,5 +118,3 @@ qboolean BG_GetRootSurfNameWithVariant( void *ghoul2, const char *rootSurfName, 
 	Q_strncpyz( returnSurfName, rootSurfName, returnSize );
 	return qfalse;
 }
-
-#include "../namespace_end.h"

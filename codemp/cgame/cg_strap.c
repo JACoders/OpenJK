@@ -1,8 +1,6 @@
 //rww - shared trap call system
 #include "cg_local.h"
 
-#include "../namespace_begin.h"
-
 qboolean strap_G2API_GetBoltMatrix(void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix,
 								const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale)
 {
@@ -69,5 +67,3 @@ void strap_TrueFree(void **ptr)
 {
 	trap_TrueFree(ptr);
 }
-
-#include "../namespace_end.h"

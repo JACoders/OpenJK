@@ -397,10 +397,6 @@ int G2_DecideTraceLod(CGhoul2Info &ghoul2, int useLod)
 	return returnLod;
 }
 
-#ifdef _XBOX
-// This is in tr_ghoul2 for various reasons.
-extern void R_TransformEachSurface( const mdxmSurface_t *surface, vec3_t scale, CMiniHeap *G2VertSpace, int *TransformedVertsArray,CBoneCache *boneCache);
-#else
 void R_TransformEachSurface( const mdxmSurface_t *surface, vec3_t scale, CMiniHeap *G2VertSpace, int *TransformedVertsArray,CBoneCache *boneCache) 
 {
 	int				 j, k;
@@ -511,8 +507,6 @@ void R_TransformEachSurface( const mdxmSurface_t *surface, vec3_t scale, CMiniHe
 		}
 	}
 }
-
-#endif // _XBOX
 
 void G2_TransformSurfaces(int surfaceNum, surfaceInfo_v &rootSList, 
 					CBoneCache *boneCache, const model_t *currentModel, int lod, vec3_t scale, CMiniHeap *G2VertSpace, int *TransformedVertArray, bool secondTimeAround)

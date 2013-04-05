@@ -10,13 +10,11 @@
 #pragma warning( pop )
 #endif
 
-#ifndef _XBOX
 #define DIRECTINPUT_VERSION 0x0800  //[ 0x0300 | 0x0500 | 0x0700 | 0x0800 ]
 #include <dinput.h>
 #include <dsound.h>
 #include <winsock.h>
 #include <wsipx.h>
-#endif
 
 void	IN_MouseEvent (int mstate);
 
@@ -44,20 +42,17 @@ void	IN_Activate (qboolean active);
 void	IN_Frame (void);
 
 // window procedure
-#ifndef _XBOX
 LONG WINAPI MainWndProc (
     HWND    hWnd,
     UINT    uMsg,
     WPARAM  wParam,
     LPARAM  lParam);
-#endif
 
 void Conbuf_AppendText( const char *msg );
 
 void SNDDMA_Activate( qboolean bAppActive );
 int  SNDDMA_InitDS ();
 
-#ifndef _XBOX
 typedef struct
 {
 	
@@ -76,7 +71,6 @@ typedef struct
 } WinVars_t;
 
 extern WinVars_t	g_wv;
-#endif
 
 
 #define	MAX_QUED_EVENTS		256

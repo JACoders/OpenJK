@@ -295,56 +295,6 @@ inline static ulong ComputeFinalVertexColor(const byte *colors)
 	return *(ulong *)result;
 }
 
-#ifdef _XBOX
-//16 bits in, 32 bits out
-inline ulong ComputeFinalVertexColor16(const byte *colors)
-{
-	int			k;
-	byte		result[4];
-	byte		color32[4];
-	ulong		r, g, b;
-
-	result[0] = colors[0] & 0xF0;
-	result[1] = colors[0] << 4;
-	result[2] = colors[1] & 0xF0;
-	result[3] = colors[1] << 4;
-	if (tess.shader->lightmapIndex[0] != LIGHTMAP_BY_VERTEX || r_fullbright->integer )
-	{
-		result[0] = 255;
-		result[1] = 255;
-		result[2] = 255;
-		return *(ulong *)result;
-	}
-	// an optimization could be added here to compute the style[0] (which is always the world normal light)
-	r = g = b = 0;
-	for(k = 0; k < MAXLIGHTMAPS; k++)
-	{
-		if (tess.shader->styles[k] < LS_UNUSED)
-		{
-			byte	*styleColor = styleColors[tess.shader->styles[k]];
-
-			color32[0] = colors[k * 2] & 0xF0;
-			color32[1] = colors[k * 2] << 4;
-			color32[2] = colors[k * 2 + 1] & 0xF0;
-
-			r += (ulong)(color32[0]) * (ulong)(*styleColor++);
-			g += (ulong)(color32[1]) * (ulong)(*styleColor++);
-			b += (ulong)(color32[2]) * (ulong)(*styleColor);
-		}
-		else
-		{
-			break;
-		}
-	}
-	result[0] = Com_Clamp(0, 255, r >> 8);
-	result[1] = Com_Clamp(0, 255, g >> 8);
-	result[2] = Com_Clamp(0, 255, b >> 8);
-
-	return *(ulong *)result;
-}
-#endif
-
-
 /*
 =============
 RB_SurfaceTriangles
@@ -354,9 +304,6 @@ void RB_SurfaceTriangles( srfTriangles_t *srf ) {
 	int			i, k;
 	drawVert_t	*dv;
 	float		*xyz, *normal, *texCoords;
-#ifdef _XBOX
-	float		*tangent;
-#endif
 	byte		*color;
 	int			dlightBits;
 
@@ -377,58 +324,9 @@ void RB_SurfaceTriangles( srfTriangles_t *srf ) {
 	normal = tess.normal[ tess.numVertexes ];
 	texCoords = tess.texCoords[ tess.numVertexes ][0];
 	color = tess.vertexColors[ tess.numVertexes ];
-#ifdef _XBOX
-	tangent = tess.tangent[ tess.numVertexes ];
-#endif
 
 	for ( i = 0 ; i < srf->numVerts ; i++, dv++) 
 	{
-#ifdef _XBOX
-		xyz[0] = dv->xyz[0];
-		xyz[1] = dv->xyz[1];
-		xyz[2] = dv->xyz[2];
-		xyz += 4;
-
-		if ( tess.shader->needsNormal || tess.dlightBits )
-		{
-			normal[0] = (float)dv->normal[0] / 32767.f;
-			normal[1] = (float)dv->normal[1] / 32767.f;
-			normal[2] = (float)dv->normal[2] / 32767.f;
-			normal += 4;
-		}
-
-		if( tess.shader->needsTangent || tess.dlightBits )
-		{
-            tangent[0] = dv->tangent[0];
-			tangent[1] = dv->tangent[1];
-			tangent[2] = dv->tangent[2];
-			tangent += 4;
-
-			tess.setTangents = true;
-		}
-
-		Q_CastShort2FloatScale(&texCoords[0], &dv->dvst[0], 1.f / DRAWVERT_ST_SCALE);
-		Q_CastShort2FloatScale(&texCoords[1], &dv->dvst[1], 1.f / DRAWVERT_ST_SCALE);
-
-		for(k=0;k<MAXLIGHTMAPS;k++)
-		{
-			if (tess.shader->lightmapIndex[k] >= 0)
-			{
-				Q_CastShort2FloatScale(&texCoords[2+(k*2)+0], 
-					&dv->dvlightmap[k][0], 1.f / DRAWVERT_LIGHTMAP_SCALE);
-				Q_CastShort2FloatScale(&texCoords[2+(k*2)+1], 
-					&dv->dvlightmap[k][1], 1.f / DRAWVERT_LIGHTMAP_SCALE);
-			}
-			else
-			{	// can't have an empty slot in the middle, so we are done
-				break;
-			}
-		}
-		texCoords += NUM_TEX_COORDS*2;
-
-		*(unsigned int*)color = ComputeFinalVertexColor16((byte *)dv->dvcolor);
-		color += 4;
-#else
 		xyz[0] = dv->xyz[0];
 		xyz[1] = dv->xyz[1];
 		xyz[2] = dv->xyz[2];
@@ -458,7 +356,6 @@ void RB_SurfaceTriangles( srfTriangles_t *srf ) {
 
 		*(unsigned *)color = ComputeFinalVertexColor((byte *)dv->color);
 		color += 4;
-#endif // _XBOX
 	}
 
 	for ( i = 0 ; i < srf->numVerts ; i++ ) {
@@ -1275,18 +1172,9 @@ static void LerpMeshVertexes (md3Surface_t *surf, float backlerp)
 			// decode X as cos( lat ) * sin( long )
 			// decode Y as sin( lat ) * sin( long )
 			// decode Z as cos( long )
-#ifdef _XBOX
-			if( tess.shader->needsNormal || tess.dlightBits )
-			{
-				outNormal[0] = tr.sinTable[(lat+(FUNCTABLE_SIZE/4))&FUNCTABLE_MASK] * tr.sinTable[lng];
-				outNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
-				outNormal[2] = tr.sinTable[(lng+(FUNCTABLE_SIZE/4))&FUNCTABLE_MASK];
-			}
-#else
 			outNormal[0] = tr.sinTable[(lat+(FUNCTABLE_SIZE/4))&FUNCTABLE_MASK] * tr.sinTable[lng];
 			outNormal[1] = tr.sinTable[lat] * tr.sinTable[lng];
 			outNormal[2] = tr.sinTable[(lng+(FUNCTABLE_SIZE/4))&FUNCTABLE_MASK];
-#endif
 		}
 	} else {
 		//
@@ -1310,10 +1198,6 @@ static void LerpMeshVertexes (md3Surface_t *surf, float backlerp)
 			outXyz[1] = oldXyz[1] * oldXyzScale + newXyz[1] * newXyzScale;
 			outXyz[2] = oldXyz[2] * oldXyzScale + newXyz[2] * newXyzScale;
 
-#ifdef _XBOX
-			if(tess.shader->needsNormal || tess.dlightBits )
-			{
-#endif
 			// FIXME: interpolate lat/long instead?
 			lat = ( newNormals[0] >> 8 ) & 0xff;
 			lng = ( newNormals[0] & 0xff );
@@ -1337,9 +1221,6 @@ static void LerpMeshVertexes (md3Surface_t *surf, float backlerp)
 			outNormal[2] = uncompressedOldNormal[2] * oldNormalScale + uncompressedNewNormal[2] * newNormalScale;
 
 //			VectorNormalize (outNormal);
-#ifdef _XBOX
-			}
-#endif
 		}
     	VectorArrayNormalize((vec4_t *)tess.normal[tess.numVertexes], numVerts);
    	}
@@ -1405,15 +1286,9 @@ RB_SurfaceFace
 void RB_SurfaceFace( srfSurfaceFace_t *surf ) {
 	int			i, k;
 	// VVFIXME : Sooper hack. Indices in the surface are still 32-bit, we need to make them 16 bit here.
-#ifdef _XBOX
-	unsigned char	*indices;
-	unsigned short	*tessIndexes;
-	unsigned short	*v;
-#else
 	unsigned int *indices;
 	glIndex_t	*tessIndexes;
 	float		*v;
-#endif
 	float		*normal;
 	int			ndx;
 	int			Bob;
@@ -1425,11 +1300,7 @@ void RB_SurfaceFace( srfSurfaceFace_t *surf ) {
 	dlightBits = surf->dlightBits;
 	tess.dlightBits |= dlightBits;
 
-#ifdef _XBOX
-	indices = ( unsigned char * ) ( ( ( char  * ) surf ) + surf->ofsIndices );
-#else
 	indices = ( unsigned * ) ( ( ( char  * ) surf ) + surf->ofsIndices );
-#endif
 
 	Bob = tess.numVertexes;
 	tessIndexes = tess.indexes + tess.numIndexes;
@@ -1438,59 +1309,6 @@ void RB_SurfaceFace( srfSurfaceFace_t *surf ) {
 	}
 
 	tess.numIndexes += surf->numIndices;
-
-#ifdef _XBOX
-	ndx = tess.numVertexes;
-
-	numPoints = surf->numPoints;
-
-	if ( tess.shader->needsNormal || tess.dlightBits) {
-		normal = surf->plane.normal;
-		for ( i = 0, ndx = tess.numVertexes; i < numPoints; i++, ndx++ ) {
-			VectorCopy( normal, tess.normal[ndx] );
-		}
-	}
-
-	int nextSurfPoint = NEXT_SURFPOINT(surf->flags);
-	int numLightMaps = surf->flags & 0x7F;
-	for ( i = 0, v = surf->srfPoints, ndx = tess.numVertexes; i < numPoints; i++, v += nextSurfPoint, ndx++ ) {
-		Q_CastShort2Float(&tess.xyz[ndx][0], (short*)&v[0]);
-		Q_CastShort2Float(&tess.xyz[ndx][1], (short*)&v[1]);
-		Q_CastShort2Float(&tess.xyz[ndx][2], (short*)&v[2]);
-
-		Q_CastShort2Float(&tess.tangent[ndx][0], (short*)&v[3]);
-		Q_CastShort2Float(&tess.tangent[ndx][1], (short*)&v[4]);
-		Q_CastShort2Float(&tess.tangent[ndx][2], (short*)&v[5]);
-
-		tess.tangent[ndx][0] /= 32767.0f;
-		tess.tangent[ndx][1] /= 32767.0f;
-		tess.tangent[ndx][2] /= 32767.0f;
-
-		tess.setTangents = true;
-
-		Q_CastShort2FloatScale(&tess.texCoords[ndx][0][0], (short*)&v[6], 1.f / POINTS_ST_SCALE);
-		Q_CastShort2FloatScale(&tess.texCoords[ndx][0][1], (short*)&v[7], 1.f / POINTS_ST_SCALE);
-		for(k=0;k<numLightMaps;k++)
-		{
-			if (tess.shader->lightmapIndex[k] >= 0)
-			{
-				Q_CastUShort2FloatScale(&tess.texCoords[ndx][k+1][0], 
-					&v[VERTEX_LM+(k*2)+0], 1.f / POINTS_LIGHT_SCALE);
-				Q_CastUShort2FloatScale(&tess.texCoords[ndx][k+1][1], 
-					&v[VERTEX_LM+(k*2)+1], 1.f / POINTS_LIGHT_SCALE);
-			}
-			else
-			{
-				//This causes problems.  See bug 57.
-				//assert(0);
-				break;
-			}
-		}
-		if((surf->flags & 0x80) >> 7) {
-			*(unsigned int*) &tess.vertexColors[ndx] = ComputeFinalVertexColor16((byte *)&v[VERTEX_COLOR(surf->flags)]);
-		}
-	}
-#else // _XBOX
 
 	v = surf->points[0];
 
@@ -1526,7 +1344,6 @@ void RB_SurfaceFace( srfSurfaceFace_t *surf ) {
 		*(unsigned int*) &tess.vertexColors[ndx] = ComputeFinalVertexColor((byte *)&v[VERTEX_COLOR]);
 		tess.vertexDlightBits[ndx] = dlightBits;
 	}
-#endif
 
 	tess.numVertexes += surf->numPoints;
 }
@@ -1653,44 +1470,6 @@ void RB_SurfaceGrid( srfGridMesh_t *cv ) {
 		color = ( unsigned char * ) &tess.vertexColors[numVertexes];
 		vDlightBits = &tess.vertexDlightBits[numVertexes];
 
-#ifdef _XBOX
-		for ( i = 0 ; i < rows ; i++ ) {
-			for ( j = 0 ; j < lodWidth ; j++ ) {
-				dv = cv->verts + heightTable[ used + i ] * cv->width
-					+ widthTable[ j ];
-
-				xyz[0] = dv->xyz[0];
-				xyz[1] = dv->xyz[1];
-				xyz[2] = dv->xyz[2];
-				xyz += 4;
-
-				Q_CastShort2FloatScale(&texCoords[0], &dv->dvst[0], 1.f / GRID_DRAWVERT_ST_SCALE);
-				Q_CastShort2FloatScale(&texCoords[1], &dv->dvst[1], 1.f / GRID_DRAWVERT_ST_SCALE);
-
-				for(k=0;k<MAXLIGHTMAPS;k++)
-				{
-					Q_CastShort2FloatScale(&texCoords[2+(k*2)+0], 
-						&dv->dvlightmap[k][0], 1.f / DRAWVERT_LIGHTMAP_SCALE);
-					Q_CastShort2FloatScale(&texCoords[2+(k*2)+1], 
-						&dv->dvlightmap[k][1], 1.f / DRAWVERT_LIGHTMAP_SCALE);
-				}
-				texCoords += NUM_TEX_COORDS*2;
-
-				if ( tess.shader->needsNormal || tess.dlightBits) 
-				{
-					normal[0] = dv->normal[0];
-					normal[1] = dv->normal[1];
-					normal[2] = dv->normal[2];
-					normal += 4;
-				}
-				
-				*(unsigned *)color = ComputeFinalVertexColor16((byte *)dv->dvcolor);
-				color += 4;
-				*vDlightBits++ = dlightBits;
-			}
-		}
-#else // _XBOX
-
 		for ( i = 0 ; i < rows ; i++ ) {
 			for ( j = 0 ; j < lodWidth ; j++ ) {
 				dv = cv->verts + heightTable[ used + i ] * cv->width
@@ -1723,7 +1502,6 @@ void RB_SurfaceGrid( srfGridMesh_t *cv ) {
 				*vDlightBits++ = dlightBits;
 			}
 		}
-#endif // _XBOX
 
 		// add the indexes
 		{
@@ -1782,11 +1560,7 @@ Draws x/y/z lines from the origin for orientation debugging
 static void RB_SurfaceAxis( void ) {
 	GL_Bind( tr.whiteImage );
 	qglLineWidth( 3 );
-#ifdef _XBOX
-	qglBeginEXT( GL_LINES, 6, 3, 0, 0, 0);
-#else
 	qglBegin( GL_LINES );
-#endif
 	qglColor3f( 1,0,0 );
 	qglVertex3f( 0,0,0 );
 	qglVertex3f( 16,0,0 );
@@ -1907,9 +1681,6 @@ static bool RB_TestZFlare( vec3_t point) {
 	float			screenZ;
 
 	// read back the z buffer contents
-#ifdef _XBOX
-	depth = 0.0f;
-#else
 	if ( r_flares->integer !=1 ) {	//skipping the the z-test
 		return true;
 	}
@@ -1917,7 +1688,6 @@ static bool RB_TestZFlare( vec3_t point) {
 	// don't bother with another sync
 	glState.finishCalled = qfalse;
 	qglReadPixels( backEnd.viewParms.viewportX + window[0],backEnd.viewParms.viewportY + window[1], 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth );
-#endif
 
 	screenZ = backEnd.viewParms.projectionMatrix[14] / 
 		( ( 2*depth - 1 ) * backEnd.viewParms.projectionMatrix[11] - backEnd.viewParms.projectionMatrix[10] );
@@ -1938,26 +1708,6 @@ void RB_SurfaceFlare( srfFlare_t *surf ) {
 		return;
 	}
 
-#ifdef _XBOX
-	vec3_t     sorigin, snormal;
-
-	Q_CastShort2Float(&sorigin[0], (short*)&surf->origin[0]);
-	Q_CastShort2Float(&sorigin[1], (short*)&surf->origin[1]);
-	Q_CastShort2Float(&sorigin[2], (short*)&surf->origin[2]);
-	Q_CastShort2Float(&snormal[0], (short*)&surf->normal[0]);
-	Q_CastShort2Float(&snormal[1], (short*)&surf->normal[1]);
-	Q_CastShort2Float(&snormal[2], (short*)&surf->normal[2]);
-	snormal[0] /= 32767.0f;
-	snormal[1] /= 32767.0f;
-	snormal[2] /= 32767.0f;
-
-	if (!RB_TestZFlare( sorigin) ) {
-		return;
-	}
-
-	// calculate the xyz locations for the four corners
-	VectorMA( sorigin, 3, snormal, origin );
-#else
 	if (!RB_TestZFlare( surf->origin ) ) {
 		return;
 	}
@@ -1965,7 +1715,6 @@ void RB_SurfaceFlare( srfFlare_t *surf ) {
 	// calculate the xyz locations for the four corners
 	VectorMA( surf->origin, 3, surf->normal, origin );
 	float* snormal = surf->normal;
-#endif // _XBOX
 
 	VectorSubtract( origin, backEnd.viewParms.ori.origin, dir );
 	dist = VectorNormalize( dir );
