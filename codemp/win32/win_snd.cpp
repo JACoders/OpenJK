@@ -211,7 +211,7 @@ int SNDDMA_InitDS ()
 	
 	Com_DPrintf( "...creating secondary buffer: " );
 	if (DS_OK != pDS->CreateSoundBuffer(&dsbuf, &pDSBuf, NULL)) {
-		Com_Printf( " - using ancient version of DirectX -- this will slow FPS\n" );
+		Com_Printf( " - using either ancient or newer DirectX version -- if ancient version FPS will be slowed\n" );
 		dsbuf.dwFlags = DSBCAPS_CTRLFREQUENCY;
 		hresult = pDS->CreateSoundBuffer(&dsbuf, &pDSBuf, NULL);
 		if (hresult != DS_OK) {			
