@@ -1594,6 +1594,7 @@ Also called by bot code
 */
 void SV_ExecuteClientCommand( client_t *cl, const char *s, qboolean clientOK ) {
 	ucmd_t	*u;
+	qboolean bProcessed = qfalse;
 	
 	Cmd_TokenizeString( s );
 
@@ -1601,16 +1602,20 @@ void SV_ExecuteClientCommand( client_t *cl, const char *s, qboolean clientOK ) {
 	for (u=ucmds ; u->name ; u++) {
 		if (!strcmp (Cmd_Argv(0), u->name) ) {
 			u->func( cl );
+			bProcessed = qtrue;
 			break;
 		}
 	}
 
 	if (clientOK) {
 		// pass unknown strings to the game
-		if (!u->name && sv.state == SS_GAME) {
+		if (!u->name && sv.state == SS_GAME && (cl->state == CS_ACTIVE || cl->state == CS_PRIMED)) {
+			Cmd_Args_Sanitize();
 			VM_Call( gvm, GAME_CLIENT_COMMAND, cl - svs.clients );
 		}
 	}
+	else if (!bProcessed)
+		Com_DPrintf( "client text ignored for %s: %s\n", cl->name, Cmd_Argv(0) );
 }
 
 /*
@@ -1653,9 +1658,8 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 		sv_floodProtect->integer && 
 		svs.time < cl->nextReliableTime ) {
 		// ignore any other text messages from this client but let them keep playing
+		// TTimo - moved the ignored verbose to the actual processing in SV_ExecuteClientCommand, only printing if the core doesn't intercept
 		clientOk = qfalse;
-		Com_DPrintf( "client text ignored for %s\n", cl->name );
-		//return qfalse;	// stop processing
 	} 
 
 	// don't allow another command for one second
