@@ -469,6 +469,9 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	Com_Printf ("-----------------------------------\n");
 }
 
+#define G2_VERT_SPACE_SIZE 256
+#define G2_MINIHEAP_SIZE	G2_VERT_SPACE_SIZE*1024
+
 /*
 ===============
 SV_Init
@@ -504,7 +507,7 @@ void SV_Init (void) {
 	// Only allocated once, no point in moving it around and fragmenting
 	// create a heap for Ghoul2 to use for game side model vertex transforms used in collision detection
 	{
-		static CMiniHeap singleton(132096);
+		static CMiniHeap singleton(G2_MINIHEAP_SIZE);
 		G2VertSpaceServer = &singleton;
 	}
 }
