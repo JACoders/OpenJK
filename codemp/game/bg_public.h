@@ -139,12 +139,10 @@ typedef enum {
 
 #define MAX_CUSTOM_SIEGE_SOUNDS 30
 
-#include "../namespace_begin.h"
 extern const char *bg_customSiegeSoundNames[MAX_CUSTOM_SIEGE_SOUNDS];
 
 extern const char *bgToggleableSurfaces[BG_NUM_TOGGLEABLE_SURFACES];
 extern const int bgToggleableSurfaceDebris[BG_NUM_TOGGLEABLE_SURFACES];
-#include "../namespace_end.h"
 
 typedef enum {
 	HANDEXTEND_NONE = 0,
@@ -202,9 +200,7 @@ typedef enum { GENDER_MALE, GENDER_FEMALE, GENDER_NEUTER } gender_t;
 
 extern vec3_t WP_MuzzlePoint[WP_NUM_WEAPONS];
 
-#include "../namespace_begin.h"
 extern int forcePowerSorted[NUM_FORCE_POWERS];
-#include "../namespace_end.h"
 
 typedef enum
 {
@@ -247,10 +243,8 @@ typedef struct animation_s {
 } animation_t;
 #pragma pack(pop)
 
-#include "../namespace_begin.h"
 extern qboolean			BGPAFtextLoaded;
 extern animation_t		bgHumanoidAnimations[MAX_TOTALANIMATIONS];
-#include "../namespace_end.h"
 
 #define MAX_ANIM_FILES	64
 #define MAX_ANIM_EVENTS 300
@@ -340,8 +334,6 @@ typedef struct
 	qboolean		eventsParsed;
 } bgLoadedEvents_t;
 
-#include "../namespace_begin.h"
-
 extern bgLoadedAnim_t bgAllAnims[MAX_ANIM_FILES];
 
 //In SP this is shared in with the anim stuff, and humanoid anim sets can be loaded
@@ -354,8 +346,6 @@ extern bgLoadedAnim_t bgAllAnims[MAX_ANIM_FILES];
 extern bgLoadedEvents_t bgAllEvents[MAX_ANIM_FILES];
 extern int bgNumAnimEvents;
 #endif
-
-#include "../namespace_end.h"
 
 typedef enum {
 	PM_NORMAL,		// can accelerate and turn
@@ -392,12 +382,10 @@ typedef enum {
 	NUM_FORCE_MASTERY_LEVELS
 };
 
-#include "../namespace_begin.h"
 extern char *forceMasteryLevels[NUM_FORCE_MASTERY_LEVELS];
 extern int forceMasteryPoints[NUM_FORCE_MASTERY_LEVELS];
 
 extern int bgForcePowerCost[NUM_FORCE_POWERS][NUM_FORCE_POWER_LEVELS];
-#include "../namespace_end.h"
 
 // pmove->pm_flags
 #define	PMF_DUCKED			1
@@ -491,8 +479,6 @@ typedef struct {
 	int			entSize; //size of the struct (gentity_t or centity_t) so things can be dynamic
 } pmove_t;
 
-#include "../namespace_begin.h"
-
 extern	pmove_t		*pm;
 
 #define SETANIM_TORSO 1
@@ -509,8 +495,6 @@ extern	pmove_t		*pm;
 // if a full pmove isn't done on the client, you can just update the angles
 void PM_UpdateViewAngles( playerState_t *ps, const usercmd_t *cmd );
 void Pmove (pmove_t *pmove);
-
-#include "../namespace_end.h"
 
 //===================================================================================
 
@@ -1137,9 +1121,6 @@ typedef struct gitem_s {
 	char		*description;
 } gitem_t;
 
-// included in both the game dll and the client
-#include "../namespace_begin.h"
-
 extern	gitem_t	bg_itemlist[];
 extern	int		bg_numItems;
 
@@ -1152,9 +1133,6 @@ gitem_t	*BG_FindItemForHoldable( holdable_t pw );
 #define	ITEM_INDEX(x) ((x)-bg_itemlist)
 
 qboolean	BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const playerState_t *ps );
-
-#include "../namespace_end.h"
-
 
 #define SABER_BLOCK_DUR 150		// number of milliseconds a block animation should take.
 
@@ -1507,15 +1485,11 @@ typedef struct
 	qboolean trailLength;
 } saberMoveData_t;
 
-#include "../namespace_begin.h"
-
 extern saberMoveData_t	saberMoveData[LS_MOVE_MAX];
 
 bgEntity_t *PM_BGEntForNum( int num );
 qboolean BG_KnockDownable(playerState_t *ps);
 qboolean BG_LegalizedForcePowers(char *powerOut, int maxRank, qboolean freeSaber, int teamForce, int gametype, int fpDisabled);
-
-#include "../namespace_end.h"
 
 #ifdef __LCC__ //can't inline it then, it is declared over in bg_misc in this case
 void BG_GiveMeVectorFromMatrix(mdxaBone_t *boltMatrix, int flags, vec3_t vec);
@@ -1563,8 +1537,6 @@ static ID_INLINE void BG_GiveMeVectorFromMatrix(mdxaBone_t *boltMatrix, int flag
 	}
 }
 #endif
-
-#include "../namespace_begin.h"
 
 void BG_IK_MoveArm(void *ghoul2, int lHandBolt, int time, entityState_t *ent, int basePose, vec3_t desiredPos, qboolean *ikInProgress,
 					 vec3_t origin, vec3_t angles, vec3_t scale, int blendTime, qboolean forceHalt);
@@ -1666,8 +1638,6 @@ extern int WeaponReadyAnim[WP_NUM_WEAPONS];
 extern int WeaponAttackAnim[WP_NUM_WEAPONS];
 
 extern int forcePowerDarkLight[NUM_FORCE_POWERS];
-
-#include "../namespace_end.h"
 
 #define ARENAS_PER_TIER		4
 #define MAX_ARENAS			1024

@@ -26,14 +26,9 @@ to the new value before sending out any replies.
 
 */
 
-#ifdef _XBOX
-#define	MAX_PACKETLEN			1359 // UDP total packet size
-#define	FRAGMENT_SIZE			(MAX_PACKETLEN - 55 - 10) // 55 is packet overhead  |||  10 is fudge factor - needed due to huffman?
-#else
 #define	MAX_PACKETLEN			1400		// max size of a network packet
 #define	FRAGMENT_SIZE			(MAX_PACKETLEN - 100)
 #define	PACKET_HEADER			10			// two ints and a short
-#endif
 
 #define	FRAGMENT_BIT	(1<<31)
 
@@ -390,14 +385,12 @@ qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b)
 		return qfalse;
 	}
 
-#ifndef _XBOX	// No IPX
 	if (a.type == NA_IPX)
 	{
 		if ((memcmp(a.ipx, b.ipx, 10) == 0))
 			return qtrue;
 		return qfalse;
 	}
-#endif
 
 	Com_Printf ("NET_CompareBaseAdr: bad address type\n");
 	return qfalse;
@@ -441,14 +434,12 @@ qboolean	NET_CompareAdr (netadr_t a, netadr_t b)
 		return qfalse;
 	}
 
-#ifndef _XBOX	// No IPX
 	if (a.type == NA_IPX)
 	{
 		if ((memcmp(a.ipx, b.ipx, 10) == 0) && a.port == b.port)
 			return qtrue;
 		return qfalse;
 	}
-#endif
 
 	Com_Printf ("NET_CompareAdr: bad address type\n");
 	return qfalse;

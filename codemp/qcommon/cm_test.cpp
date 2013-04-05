@@ -3,10 +3,6 @@
 
 #include "cm_local.h"
 
-#ifdef _XBOX
-#include "../renderer/tr_local.h"
-#endif
-
 /*
 ==================
 CM_PointLeafnum_r
@@ -21,12 +17,7 @@ int CM_PointLeafnum_r( const vec3_t p, int num, clipMap_t *local ) {
 	while (num >= 0)
 	{
 		node = local->nodes + num;
-
-#ifdef _XBOX
-		plane = cmg.planes + node->planeNum;//tr.world->nodes[num].planeNum;
-#else
 		plane = node->plane;
-#endif
 		
 		if (plane->type < 3)
 			d = p[plane->type] - plane->dist;
@@ -139,12 +130,7 @@ void CM_BoxLeafnums_r( leafList_t *ll, int nodenum ) {
 		}
 	
 		node = &cmg.nodes[nodenum];
-
-#ifdef _XBOX
-		plane = cmg.planes + node->planeNum;//tr.world->nodes[nodenum].planeNum;
-#else
 		plane = node->plane;
-#endif
 
 		s = BoxOnPlaneSide( ll->bounds[0], ll->bounds[1], plane );
 		if (s == 1) {
@@ -263,18 +249,10 @@ int CM_PointContents( const vec3_t p, clipHandle_t model ) {
 
 		// see if the point is in the brush
 		for ( i = 0 ; i < b->numsides ; i++ ) {
-#ifdef _XBOX
-			d = DotProduct( p, cmg.planes[b->sides[i].planeNum.GetValue()].normal );
-#else
 			d = DotProduct( p, b->sides[i].plane->normal );
-#endif
 // FIXME test for Cash
 //			if ( d >= b->sides[i].plane->dist ) {
-#ifdef _XBOX
-			if ( d > cmg.planes[b->sides[i].planeNum.GetValue()].dist ) {
-#else
 			if ( d > b->sides[i].plane->dist ) {
-#endif
 				break;
 			}
 		}
@@ -335,19 +313,6 @@ PVS
 
 ===============================================================================
 */
-#ifdef _XBOX
-extern trGlobals_t tr;
-const byte	*CM_ClusterPVS (int cluster) {
-	if (cluster < 0 || cluster >= cmg.numClusters || !cmg.vised ) {
-		return NULL;
-	}
-
-	return cmg.visibility->Decompress(cluster * cmg.clusterBytes,
-			cmg.numClusters);
-}
-
-#else
-
 byte	*CM_ClusterPVS (int cluster) {
 	if (cluster < 0 || cluster >= cmg.numClusters || !cmg.vised ) {
 		return cmg.visibility;
@@ -356,10 +321,6 @@ byte	*CM_ClusterPVS (int cluster) {
 	return cmg.visibility + cluster * cmg.clusterBytes;
 }
 
-#endif // _XBOX
-
-
-
 /*
 ===============================================================================
 
@@ -367,31 +328,6 @@ AREAPORTALS
 
 ===============================================================================
 */
-#ifdef _XBOX
-void CM_FloodArea_r( int areaNum, int floodnum) {
-	int		i;
-	cArea_t *area;
-	int		*con;
-
-	area = &cmg.areas[ areaNum ];
-
-	if ( area->floodvalid == cmg.floodvalid ) {
-		if (area->floodnum == floodnum)
-			return;
-		Com_Error (ERR_DROP, "FloodArea_r: reflooded");
-	}
-
-	area->floodnum = floodnum;
-	area->floodvalid = cmg.floodvalid;
-	con = cmg.areaPortals + areaNum * cmg.numAreas;
-	for ( i=0 ; i < cmg.numAreas  ; i++ ) {
-		if ( con[i] > 0 ) {
-			CM_FloodArea_r( i, floodnum );
-		}
-	}
-}
-#else  // _XBOX
-
 void CM_FloodArea_r( int areaNum, int floodnum, clipMap_t &cm ) {
 	int		i;
 	cArea_t *area;
@@ -415,36 +351,12 @@ void CM_FloodArea_r( int areaNum, int floodnum, clipMap_t &cm ) {
 	}
 }
 
-#endif // _XBOX
-
 /*
 ====================
 CM_FloodAreaConnections
 
 ====================
 */
-#ifdef _XBOX
-void	CM_FloodAreaConnections( void ) {
-	int		i;
-	cArea_t	*area;
-	int		floodnum;
-
-	// all current floods are now invalid
-	cmg.floodvalid++;
-	floodnum = 0;
-
-	for (i = 0 ; i < cmg.numAreas ; i++) {
-		area = &cmg.areas[i];
-		if (area->floodvalid == cmg.floodvalid) {
-			continue;		// already flooded into
-		}
-		floodnum++;
-		CM_FloodArea_r (i, floodnum);
-	}
-
-}
-#else // _XBOX
-
 void	CM_FloodAreaConnections( clipMap_t &cm ) {
 	int		i;
 	cArea_t	*area;
@@ -464,8 +376,6 @@ void	CM_FloodAreaConnections( clipMap_t &cm ) {
 	}
 
 }
-
-#endif // _XBOX
 
 /*
 ====================
@@ -493,11 +403,7 @@ void	CM_AdjustAreaPortalState( int area1, int area2, qboolean open ) {
 		}
 	}
 
-#ifdef _XBOX
-	CM_FloodAreaConnections ();
-#else
 	CM_FloodAreaConnections (cmg);
-#endif
 }
 
 /*

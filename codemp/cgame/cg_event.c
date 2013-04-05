@@ -1066,14 +1066,7 @@ void CG_GetCTFMessageEvent(entityState_t *es)
 	CG_PrintCTFMessage(ci, teamName, es->eventParm);
 }
 
-#include "../namespace_begin.h"
 qboolean BG_InKnockDownOnly( int anim );
-#include "../namespace_end.h"
-
-//JLFRUMBLE
-#ifdef _XBOX
-extern void FF_XboxDamage(int damage, float xpos);
-#endif
 
 void DoFall(centity_t *cent, entityState_t *es, int clientNum)
 {
@@ -1134,37 +1127,6 @@ void DoFall(centity_t *cent, entityState_t *es, int clientNum)
 		}
 		cg.landTime = cg.time;
 	}
-//JLFRUMBLE
-#ifdef _XBOX
-	if ( cent->playerState)
-	{
-
-		if (BG_InKnockDownOnly(es->legsAnim))
-		{
-			if (delta > 14)
-			{
-				FF_XboxDamage(20, 0);
-			}
-			else
-			{
-				FF_XboxDamage(14, 0);
-			}
-			return;
-		}
-		if ( delta > 50)
-			FF_XboxDamage(50, 0);
-		else 
-			FF_XboxDamage(delta, 0);
-/*		else if (delta > 44)
-			FF_XboxDamage(44, 0);
-		else 
-			FF_XboxDamage(20, 0);
-*/
-	}
-#endif
-
-
-
 }
 
 int CG_InClientBitflags(entityState_t *ent, int client)

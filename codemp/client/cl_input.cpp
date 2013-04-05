@@ -4,10 +4,6 @@
 // cl.input.c  -- builds an intended movement command to send to the server
 
 #include "client.h"
-#ifdef _XBOX
-#include "../../code/client/cl_input_hotswap.h"
-#include "../xbox/XBVoice.h"
-#endif
 unsigned	frame_msec;
 int			old_com_frameTime;
 
@@ -52,52 +48,6 @@ kbutton_t	in_buttons[16];
 
 
 qboolean	in_mlooking;
-
-
-#ifdef _XBOX
-HotSwapManager swapMan1(HOTSWAP_ID_WHITE);
-HotSwapManager swapMan2(HOTSWAP_ID_BLACK);
-
-
-void IN_HotSwap1On(void)
-{
-	swapMan1.SetDown();
-}
-
-
-void IN_HotSwap2On(void)
-{
-	swapMan2.SetDown();
-}
-
-
-void IN_HotSwap1Off(void)
-{
-	swapMan1.SetUp();
-}
-
-
-void IN_HotSwap2Off(void)
-{
-	swapMan2.SetUp();
-}
-
-
-void CL_UpdateHotSwap(void)
-{
-	swapMan1.Update();
-	swapMan2.Update();
-}
-
-
-bool CL_ExtendSelectTime(void)
-{
-	return swapMan1.ButtonDown() || swapMan2.ButtonDown();
-}
-
-
-#endif
-
 
 void IN_Button11Down(void);
 void IN_Button11Up(void);
@@ -295,14 +245,6 @@ void IN_GenCMD18( void )
 
 void IN_GenCMD19( void )
 {
-#ifdef _XBOX
-	if (cl.snap.ps.weapon != WP_SABER)
-	{
-		Cbuf_ExecuteText(EXEC_APPEND, "weapon 1");
-		return;
-	}
-#endif
-
 	if (Cvar_VariableIntegerValue("d_saberStanceDebug"))
 	{
 		Com_Printf("SABERSTANCEDEBUG: Gencmd on client set successfully.\n");
@@ -784,13 +726,6 @@ void IN_MoverightUp(void)
 	}
 }
 
-#ifdef _XBOX
-// BTO - State for auto-level usage. This REALLY ought to be in cl[sc ].
-// Honestly, I don't want to figure out which one, especially anticipating
-// split-screen. All I want for Christmas is to not do split-screen.
-static unsigned long sLastFireTime = 0;
-#endif
-
 void IN_SpeedDown(void) {IN_KeyDown(&in_speed);}
 void IN_SpeedUp(void) {IN_KeyUp(&in_speed);}
 void IN_StrafeDown(void) {IN_KeyDown(&in_strafe);}
@@ -800,9 +735,6 @@ void IN_Button0Down(void) {IN_KeyDown(&in_buttons[0]);}
 void IN_Button0Up(void)
 {
 	IN_KeyUp(&in_buttons[0]);
-#ifdef _XBOX	// Auto-level. Thought this was nasty, but now I sort of like it.
-	sLastFireTime = Sys_Milliseconds();
-#endif
 }
 void IN_Button1Down(void) {IN_KeyDown(&in_buttons[1]);}
 void IN_Button1Up(void) {IN_KeyUp(&in_buttons[1]);}
@@ -830,9 +762,6 @@ void IN_Button7Down(void) {IN_KeyDown(&in_buttons[7]);}
 void IN_Button7Up(void)
 {
 	IN_KeyUp(&in_buttons[7]);
-#ifdef _XBOX	// Auto-level. Thought this was nasty, but now I sort of like it.
-	sLastFireTime = Sys_Milliseconds();
-#endif
 }
 void IN_Button8Down(void) {IN_KeyDown(&in_buttons[8]);}
 void IN_Button8Up(void) {IN_KeyUp(&in_buttons[8]);}
@@ -1033,12 +962,10 @@ CL_JoystickMove
 */
 extern cvar_t *in_joystick;
 void CL_JoystickMove( usercmd_t *cmd ) {
-#ifndef _XBOX	// We always have a joystick, won't bother adding another cvar
 	if ( !in_joystick->integer )
 	{
 		return;
 	}
-#endif
 
 	int		movespeed;
 	float	anglespeed;
@@ -1056,7 +983,6 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 		anglespeed = 0.001 * cls.frametime;
 	}
 
-#ifndef _XBOX
 	if ( !in_strafe.active ) {
 		if ( cl_mYawOverride )
 		{
@@ -1074,12 +1000,10 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 			cl.viewangles[YAW] += anglespeed * (cl_yawspeed->value / 100.0f) * cl.joystickAxis[AXIS_SIDE];
 		}
 	} else
-#endif
 	{
 		cmd->rightmove = ClampChar( cmd->rightmove + cl.joystickAxis[AXIS_SIDE] );
 	}
 
-#ifndef _XBOX
 	if ( in_mlooking || cl_freelook->integer ) {
 		if ( cl_mPitchOverride )
 		{
@@ -1097,7 +1021,6 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 			cl.viewangles[PITCH] += anglespeed * (cl_pitchspeed->value / 100.0f) * cl.joystickAxis[AXIS_FORWARD];
 		}
 	} else
-#endif
 	{
 		cmd->forwardmove = ClampChar( cmd->forwardmove + cl.joystickAxis[AXIS_FORWARD] );
 	}
@@ -1110,25 +1033,6 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 CL_MouseMove
 =================
 */
-#ifdef _XBOX
-void CL_MouseClamp(int *x, int *y)
-{
-	float ax = Q_fabs(*x);
-	float ay = Q_fabs(*y);
-
-	ax = (ax-10)*(3.0f/45.0f) * (ax-10) * (Q_fabs(*x) > 10);
-	ay = (ay-10)*(3.0f/45.0f) * (ay-10) * (Q_fabs(*y) > 10);
-	if (*x < 0)
-		*x = -ax;
-	else
-		*x = ax;
-	if (*y < 0)
-		*y = -ay;
-	else
-		*y = ay;
-}
-#endif
-
 void CL_MouseMove( usercmd_t *cmd ) {
 	float	mx, my;
 	float	accelSensitivity;
@@ -1136,31 +1040,6 @@ void CL_MouseMove( usercmd_t *cmd ) {
 	const float	speed = static_cast<float>(frame_msec);
 	const float pitch = cl_bUseFighterPitch?m_pitchVeh->value:m_pitch->value;
 
-#ifdef _XBOX
-	const float mouseSpeedX = 0.06f;
-	const float mouseSpeedY = 0.05f;
-
-	// allow mouse smoothing
-	if ( m_filter->integer ) {
-		mx = ( cl.mouseDx[0] + cl.mouseDx[1] ) * 0.5f * frame_msec * mouseSpeedX;
-		my = ( cl.mouseDy[0] + cl.mouseDy[1] ) * 0.5f * frame_msec * mouseSpeedY;
-	} else {
-		int ax = cl.mouseDx[cl.mouseIndex];
-		int ay = cl.mouseDy[cl.mouseIndex];
-		CL_MouseClamp(&ax, &ay);
-		
-		mx = ax * speed * mouseSpeedX;
-		my = ay * speed * mouseSpeedY;		
-	}
-
-	extern int cg_crossHairStatus;
-	const float m_hoverSensitivity = 0.4f;
-	if (cg_crossHairStatus)
-	{
-		mx *= m_hoverSensitivity;
-		my *= m_hoverSensitivity;
-	}
-#else
 	// allow mouse smoothing
 	if ( m_filter->integer ) {
 		mx = ( cl.mouseDx[0] + cl.mouseDx[1] ) * 0.5;
@@ -1169,7 +1048,6 @@ void CL_MouseMove( usercmd_t *cmd ) {
 		mx = cl.mouseDx[cl.mouseIndex];
 		my = cl.mouseDy[cl.mouseIndex];
 	}
-#endif
 
 	cl.mouseIndex ^= 1;
 	cl.mouseDx[cl.mouseIndex] = 0;
@@ -1206,44 +1084,6 @@ void CL_MouseMove( usercmd_t *cmd ) {
 	my *= accelSensitivity;
 
 	if (!mx && !my) {
-#ifdef _XBOX
-		// If there was a movement but no change in angles then start auto-leveling the camera
-		float autolevelSpeed = 0.03f;
-
-		if (!cg_crossHairStatus &&								// Not looking at an enemy
-			cl.joystickAxis[AXIS_FORWARD] &&					// Moving forward/backward
-			cl.snap.ps.groundEntityNum != ENTITYNUM_NONE &&		// Not in the air
-			Cvar_VariableIntegerValue("cl_autolevel") &&		// Autolevel is turned on
-			!(in_buttons[0].active || in_buttons[7].active) &&	// Not firing a weapon
-			sLastFireTime < Sys_Milliseconds() - 1000)			// Haven't fired recently
-		{
-			float normAngle = -SHORT2ANGLE(cl.snap.ps.delta_angles[PITCH]);
-			// The adjustment to normAngle below is meant to add or remove some multiple
-			// of 360, so that normAngle is within 180 of viewangles[PITCH]. It should
-			// be correct.
-			int diff = (int)(cl.viewangles[PITCH] - normAngle);
-			if (diff > 180)
-				normAngle += 360.0f * ((diff+180) / 360);
-			else if (diff < -180)
-				normAngle -= 360.0f * ((-diff+180) / 360);
-
-			if (Cvar_VariableIntegerValue("cg_thirdperson") == 1)
-			{
-				normAngle += 10;
-				autolevelSpeed *= 1.5f;
-			}
-			if (cl.viewangles[PITCH] > normAngle)
-			{
-				cl.viewangles[PITCH] -= autolevelSpeed * speed;
-				if (cl.viewangles[PITCH] < normAngle) cl.viewangles[PITCH] = normAngle;
-			}
-			else if (cl.viewangles[PITCH] < normAngle)
-			{
-				cl.viewangles[PITCH] += autolevelSpeed * speed;
-				if (cl.viewangles[PITCH] > normAngle) cl.viewangles[PITCH] = normAngle;
-			}
-		}
-#endif
 		return;
 	}
 
@@ -1263,11 +1103,7 @@ void CL_MouseMove( usercmd_t *cmd ) {
 
 	if ( (in_mlooking || cl_freelook->integer) && !in_strafe.active ) {
 		// VVFIXME - This is supposed to be a CVAR
-#ifdef _XBOX
-		const float cl_pitchSensitivity = 0.5f;
-#else
 		const float cl_pitchSensitivity = 1.0f;
-#endif
 		if ( cl_mPitchOverride )
 		{
 			if ( pitch > 0 )
@@ -1531,29 +1367,21 @@ qboolean CL_ReadyToSendPacket( void ) {
 	int		delta;
 
 	// don't send anything if playing back a demo
-#ifdef _XBOX	// No demos on Xbox
-	if ( cls.state == CA_CINEMATIC ) {
-#else
 	if ( clc.demoplaying || cls.state == CA_CINEMATIC ) {
-#endif
 		return qfalse;
 	}
 
 	// If we are downloading, we send no less than 50ms between packets
-#ifndef _XBOX	// No downloads on Xbox
 	if ( *clc.downloadTempName &&
 		cls.realtime - clc.lastPacketSentTime < 50 ) {
 		return qfalse;
 	}
-#endif
 
 	// if we don't have a valid gamestate yet, only send
 	// one packet a second
 	if ( cls.state != CA_ACTIVE && 
 		cls.state != CA_PRIMED && 
-#ifndef _XBOX	// No downloads on Xbox
 		!*clc.downloadTempName &&
-#endif
 		cls.realtime - clc.lastPacketSentTime < 1000 ) {
 		return qfalse;
 	}
@@ -1616,11 +1444,7 @@ void CL_WritePacket( void ) {
 	int			count, key;
 
 	// don't send anything if playing back a demo
-#ifdef _XBOX	// No demos on Xbox
-	if ( cls.state == CA_CINEMATIC ) {
-#else
 	if ( clc.demoplaying || cls.state == CA_CINEMATIC ) {
-#endif
 		return;
 	}
 
@@ -1670,9 +1494,7 @@ void CL_WritePacket( void ) {
 
 		// begin a client move command
 		if ( cl_nodelta->integer || !cl.snap.valid
-#ifndef _XBOX	// No demos on Xbox
 			|| clc.demowaiting
-#endif
 			|| clc.serverMessageSequence != cl.snap.messageNum ) {
 			MSG_WriteByte (&buf, clc_moveNoDelta);
 		} else {
@@ -1876,15 +1698,6 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("gloat", IN_GenCMD31);
 	Cmd_AddCommand ("saberAttackCycle", IN_GenCMD19);
 	Cmd_AddCommand ("force_throw", IN_GenCMD20);
-#ifdef _XBOX
-	Cmd_AddCommand ("+hotswap1", IN_HotSwap1On);
-	Cmd_AddCommand ("+hotswap2", IN_HotSwap2On);
-	Cmd_AddCommand ("-hotswap1", IN_HotSwap1Off);
-	Cmd_AddCommand ("-hotswap2", IN_HotSwap2Off);
-
-	Cmd_AddCommand ("+voicetoggle", IN_VoiceToggleDown);
-	Cmd_AddCommand ("-voicetoggle", IN_VoiceToggleUp);
-#endif
 	Cmd_AddCommand ("useGivenForce", IN_UseGivenForce);
 
 

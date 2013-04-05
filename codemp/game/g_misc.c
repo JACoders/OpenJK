@@ -3437,9 +3437,9 @@ void misc_weapon_shooter_aim( gentity_t *self )
 	}
 }
 
-#include "../namespace_begin.h"
+
 extern stringID_table_t WPTable[];
-#include "../namespace_end.h"
+
 
 void SP_misc_weapon_shooter( gentity_t *self )
 {

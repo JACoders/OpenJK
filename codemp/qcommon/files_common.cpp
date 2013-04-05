@@ -187,8 +187,7 @@ cvar_t		*fs_basepath;
 cvar_t		*fs_basegame;
 cvar_t		*fs_cdpath;
 cvar_t		*fs_copyfiles;
-cvar_t	*fs_gamedirvar;
-cvar_t		*fs_restrict;
+cvar_t		*fs_gamedirvar;
 cvar_t		*fs_dirbeforepak; //rww - when building search path, keep directories at top and insert pk3's under them
 searchpath_t	*fs_searchpaths;
 int			fs_readCount;			// total bytes read
@@ -442,9 +441,7 @@ void FS_Shutdown( qboolean closemfp ) {
 		next = p->next;
 
 		if ( p->pack ) {
-#ifndef _XBOX
 			unzClose(p->pack->handle);
-#endif
 			Z_Free( p->pack->buildBuffer );
 			Z_Free( p->pack );
 		}
@@ -487,14 +484,10 @@ void FS_InitFilesystem( void ) {
 	Com_StartupVariable( "fs_homepath" );
 	Com_StartupVariable( "fs_game" );
 	Com_StartupVariable( "fs_copyfiles" );
-	Com_StartupVariable( "fs_restrict" );
 
 	// try to start up normally
 	FS_Startup( BASEGAME );
 	initialized = qtrue;
-
-	// see if we are going to allow add-ons
-	FS_SetRestrictions();
 
 	// if we can't find default.cfg, assume that the paths are
 	// busted and error out now, rather than getting an unreadable

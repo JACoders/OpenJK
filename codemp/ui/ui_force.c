@@ -25,9 +25,9 @@ extern const char *UI_TeamName(int team);
 qboolean gTouchedForce = qfalse;
 vmCvar_t	ui_freeSaber, ui_forcePowerDisable;
 
-#include "../namespace_begin.h"
+
 void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow);
-#include "../namespace_end.h"
+
 
 qboolean uiForcePowersDisabled[NUM_FORCE_POWERS] = {
 	qfalse,//FP_HEAL,//instant

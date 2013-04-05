@@ -19,10 +19,8 @@ cvar_t	*sv_privatePassword;	// password for the privateClient slots
 cvar_t	*sv_maxclients;
 cvar_t	*sv_privateClients;		// number of clients reserved for password
 cvar_t	*sv_hostname;
-#ifndef _XBOX	// No master or downloads on Xbox
 cvar_t	*sv_allowDownload;
 cvar_t	*sv_master[MAX_MASTER_SERVERS];		// master server ip address
-#endif
 cvar_t	*sv_reconnectlimit;		// minimum seconds between connect messages
 cvar_t	*sv_showghoultraces;	// report ghoul2 traces
 cvar_t	*sv_showloss;			// report when usercmds are lost
@@ -187,7 +185,6 @@ MASTER SERVER FUNCTIONS
 
 ==============================================================================
 */
-#ifndef _XBOX	// No master on Xbox
 #define NEW_RESOLVE_DURATION		86400000 //24 hours
 static int g_lastResolveTime[MAX_MASTER_SERVERS];
 
@@ -297,7 +294,6 @@ void SV_MasterShutdown( void ) {
 	// when the master tries to poll the server, it won't respond, so
 	// it will be removed from the list
 }
-#endif	// _XBOX	- No master on Xbox
 
 
 /*
@@ -307,6 +303,175 @@ CONNECTIONLESS COMMANDS
 
 ==============================================================================
 */
+
+typedef struct leakyBucket_s leakyBucket_t;
+struct leakyBucket_s {
+	netadrtype_t	type;
+
+	union {
+		byte	_4[4];
+	} ipv;
+
+	int						lastTime;
+	signed char		burst;
+
+	long					hash;
+
+	leakyBucket_t *prev, *next;
+};
+
+// This is deliberately quite large to make it more of an effort to DoS
+#define MAX_BUCKETS			16384
+#define MAX_HASHES			1024
+
+static leakyBucket_t buckets[ MAX_BUCKETS ];
+static leakyBucket_t *bucketHashes[ MAX_HASHES ];
+static leakyBucket_t outboundLeakyBucket;
+
+/*
+================
+SVC_HashForAddress
+================
+*/
+static long SVC_HashForAddress( netadr_t address ) {
+	byte 		*ip = NULL;
+	size_t	size = 0;
+	int			i;
+	long		hash = 0;
+
+	switch ( address.type ) {
+		case NA_IP:  ip = address.ip;  size = 4; break;
+		default: break;
+	}
+
+	for ( i = 0; i < size; i++ ) {
+		hash += (long)( ip[ i ] ) * ( i + 119 );
+	}
+
+	hash = ( hash ^ ( hash >> 10 ) ^ ( hash >> 20 ) );
+	hash &= ( MAX_HASHES - 1 );
+
+	return hash;
+}
+
+/*
+================
+SVC_BucketForAddress
+
+Find or allocate a bucket for an address
+================
+*/
+static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int period ) {
+	leakyBucket_t	*bucket = NULL;
+	int						i;
+	long					hash = SVC_HashForAddress( address );
+	int						now = Sys_Milliseconds();
+
+	for ( bucket = bucketHashes[ hash ]; bucket; bucket = bucket->next ) {
+		switch ( bucket->type ) {
+			case NA_IP:
+				if ( memcmp( bucket->ipv._4, address.ip, 4 ) == 0 ) {
+					return bucket;
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	for ( i = 0; i < MAX_BUCKETS; i++ ) {
+		int interval;
+
+		bucket = &buckets[ i ];
+		interval = now - bucket->lastTime;
+
+		// Reclaim expired buckets
+		if ( bucket->lastTime > 0 && ( interval > ( burst * period ) ||
+					interval < 0 ) ) {
+			if ( bucket->prev != NULL ) {
+				bucket->prev->next = bucket->next;
+			} else {
+				bucketHashes[ bucket->hash ] = bucket->next;
+			}
+			
+			if ( bucket->next != NULL ) {
+				bucket->next->prev = bucket->prev;
+			}
+
+			Com_Memset( bucket, 0, sizeof( leakyBucket_t ) );
+		}
+
+		if ( bucket->type == NA_BAD ) {
+			bucket->type = address.type;
+			switch ( address.type ) {
+				case NA_IP:  Com_Memcpy( bucket->ipv._4, address.ip, 4 );   break;
+				default: break;
+			}
+
+			bucket->lastTime = now;
+			bucket->burst = 0;
+			bucket->hash = hash;
+
+			// Add to the head of the relevant hash chain
+			bucket->next = bucketHashes[ hash ];
+			if ( bucketHashes[ hash ] != NULL ) {
+				bucketHashes[ hash ]->prev = bucket;
+			}
+
+			bucket->prev = NULL;
+			bucketHashes[ hash ] = bucket;
+
+			return bucket;
+		}
+	}
+
+	// Couldn't allocate a bucket for this address
+	return NULL;
+}
+
+/*
+================
+SVC_RateLimit
+================
+*/
+static qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period ) {
+	if ( bucket != NULL ) {
+		int now = Sys_Milliseconds();
+		int interval = now - bucket->lastTime;
+		int expired = interval / period;
+		int expiredRemainder = interval % period;
+
+		if ( expired > bucket->burst ) {
+			bucket->burst = 0;
+			bucket->lastTime = now;
+		} else {
+			bucket->burst -= expired;
+			bucket->lastTime = now - expiredRemainder;
+		}
+
+		if ( bucket->burst < burst ) {
+			bucket->burst++;
+
+			return qfalse;
+		}
+	}
+
+	return qtrue;
+}
+
+/*
+================
+SVC_RateLimitAddress
+
+Rate limit for a particular address
+================
+*/
+static qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period ) {
+	leakyBucket_t *bucket = SVC_BucketForAddress( from, burst, period );
+
+	return SVC_RateLimit( bucket, burst, period );
+}
 
 /*
 ================
@@ -334,20 +499,29 @@ void SVC_Status( netadr_t from ) {
 	}
 	*/
 
+	// Prevent using getstatus as an amplifier
+	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
+		Com_DPrintf( "SVC_Status: rate limit from %s exceeded, dropping request\n",
+			NET_AdrToString( from ) );
+		return;
+	}
+
+	// Allow getstatus to be DoSed relatively easily, but prevent
+	// excess outbound bandwidth usage when being flooded inbound
+	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
+		Com_DPrintf( "SVC_Status: rate limit exceeded, dropping request\n" );
+		return;
+	}
+
+	// A maximum challenge length of 128 should be more than plenty.
+	if(strlen(Cmd_Argv(1)) > 128)
+		return;
+
 	strcpy( infostring, Cvar_InfoString( CVAR_SERVERINFO ) );
 
 	// echo back the parameter to status. so master servers can use it as a challenge
 	// to prevent timed spoofed reply packets that add ghost servers
 	Info_SetValueForKey( infostring, "challenge", Cmd_Argv(1) );
-
-	// add "demo" to the sv_keywords if restricted
-	if ( Cvar_VariableValue( "fs_restrict" ) ) {
-		char	keywords[MAX_INFO_STRING];
-
-		Com_sprintf( keywords, sizeof( keywords ), "demo %s",
-			Info_ValueForKey( infostring, "sv_keywords" ) );
-		Info_SetValueForKey( infostring, "sv_keywords", keywords );
-	}
 
 	status[0] = 0;
 	statusLength = 0;
@@ -379,7 +553,7 @@ if a user is interested in a server to do a full status
 ================
 */
 void SVC_Info( netadr_t from ) {
-	int		i, count, wDisable;
+	int		i, count, humans, wDisable;
 	char	*gamedir;
 	char	infostring[MAX_INFO_STRING];
 
@@ -390,22 +564,42 @@ void SVC_Info( netadr_t from ) {
 	}
 	*/
 
-#ifdef _XBOX
-	// don't send system link info if in Xbox Live
-	if (logged_on)
-		return;
-#endif
-
 	if (Cvar_VariableValue("ui_singlePlayerActive"))
 	{
 		return;
 	}
 
+	// Prevent using getinfo as an amplifier
+	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
+		Com_DPrintf( "SVC_Info: rate limit from %s exceeded, dropping request\n",
+			NET_AdrToString( from ) );
+		return;
+	}
+
+	// Allow getinfo to be DoSed relatively easily, but prevent
+	// excess outbound bandwidth usage when being flooded inbound
+	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
+		Com_DPrintf( "SVC_Info: rate limit exceeded, dropping request\n" );
+		return;
+	}
+
+	/*
+	 * Check whether Cmd_Argv(1) has a sane length. This was not done in the original Quake3 version which led
+	 * to the Infostring bug discovered by Luigi Auriemma. See http://aluigi.altervista.org/ for the advisory.
+	 */
+
+	// A maximum challenge length of 128 should be more than plenty.
+	if(strlen(Cmd_Argv(1)) > 128)
+		return;
+
 	// don't count privateclients
-	count = 0;
+	count = humans = 0;
 	for ( i = sv_privateClients->integer ; i < sv_maxclients->integer ; i++ ) {
 		if ( svs.clients[i].state >= CS_CONNECTED ) {
 			count++;
+			if ( svs.clients[i].netchan.remoteAddress.type != NA_BOT ) {
+				humans++;
+			}
 		}
 	}
 
@@ -419,6 +613,7 @@ void SVC_Info( netadr_t from ) {
 	Info_SetValueForKey( infostring, "hostname", sv_hostname->string );
 	Info_SetValueForKey( infostring, "mapname", sv_mapname->string );
 	Info_SetValueForKey( infostring, "clients", va("%i", count) );
+	Info_SetValueForKey(infostring, "g_humanplayers", va("%i", humans));
 	Info_SetValueForKey( infostring, "sv_maxclients", 
 		va("%i", sv_maxclients->integer - sv_privateClients->integer ) );
 	Info_SetValueForKey( infostring, "gametype", va("%i", sv_gametype->integer ) );
@@ -450,21 +645,6 @@ void SVC_Info( netadr_t from ) {
 	Info_SetValueForKey( infostring, "sv_allowAnonymous", va("%i", sv_allowAnonymous->integer) );
 #endif
 
-#ifdef _XBOX
-	// Include Xbox specific networking info
-	char sxnkid[XNKID_STRING_LEN];
-	XNKIDToString(SysLink_GetXNKID(), sxnkid);
-	Info_SetValueForKey(infostring, "xnkid", sxnkid);
-
-	char sxnkey[XNKEY_STRING_LEN];
-	XNKEYToString(SysLink_GetXNKEY(), sxnkey);
-	Info_SetValueForKey(infostring, "xnkey", sxnkey);
-
-	char sxnaddr[XNADDR_STRING_LEN];
-	XnAddrToString(Net_GetXNADDR(), sxnaddr);
-	Info_SetValueForKey(infostring, "xnaddr", sxnaddr);
-#endif
-
 	NET_OutOfBandPrint( NS_SERVER, from, "infoResponse\n%s", infostring );
 }
 
@@ -489,25 +669,35 @@ Redirect all printfs
 */
 void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
 	qboolean	valid;
-	unsigned int	i, time;
 	char		remaining[1024];
+	// TTimo - scaled down to accumulate, but not overflow anything network wise, print wise etc.
+	// (OOB messages are the bottleneck here)
 #define	SV_OUTPUTBUF_LENGTH	(MAX_MSGLEN - 16)
 	char		sv_outputbuf[SV_OUTPUTBUF_LENGTH];
-	static		unsigned int	lasttime = 0;
+	char		*cmd_aux;
 
-	time = Com_Milliseconds();
-	if (time<(lasttime+500)) {
+	// Prevent using rcon as an amplifier and make dictionary attacks impractical
+	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
+		Com_DPrintf( "SVC_RemoteCommand: rate limit from %s exceeded, dropping request\n",
+			NET_AdrToString( from ) );
 		return;
 	}
-	lasttime = time;
 
 	if ( !strlen( sv_rconPassword->string ) ||
 		strcmp (Cmd_Argv(1), sv_rconPassword->string) ) {
+		static leakyBucket_t bucket;
+
+		// Make DoS via rcon impractical
+		if ( SVC_RateLimit( &bucket, 10, 1000 ) ) {
+			Com_DPrintf( "SVC_RemoteCommand: rate limit exceeded, dropping request\n" );
+			return;
+		}
+
 		valid = qfalse;
-		Com_DPrintf ("Bad rcon from %s:\n%s\n", NET_AdrToString (from), Cmd_Argv(2) );
+		Com_Printf ("Bad rcon from %s: %s\n", NET_AdrToString (from), Cmd_ArgsFrom(2) );
 	} else {
 		valid = qtrue;
-		Com_DPrintf ("Rcon from %s:\n%s\n", NET_AdrToString (from), Cmd_Argv(2) );
+		Com_Printf ("Rcon from %s: %s\n", NET_AdrToString (from), Cmd_ArgsFrom(2) );
 	}
 
 	// start redirecting all print outputs to the packet
@@ -521,10 +711,20 @@ void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
 	} else {
 		remaining[0] = 0;
 
-		for (i=2 ; i<Cmd_Argc() ; i++) {
-			strcat (remaining, Cmd_Argv(i) );
-			strcat (remaining, " ");
-		}
+		// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=543
+		// get the command directly, "rcon <pass> <command>" to avoid quoting issues
+		// extract the command by walking
+		// since the cmd formatting can fuckup (amount of spaces), using a dumb step by step parsing
+		cmd_aux = Cmd_Cmd();
+		cmd_aux+=4;
+		while(cmd_aux[0]==' ')
+			cmd_aux++;
+		while(cmd_aux[0] && cmd_aux[0]!=' ') // password
+			cmd_aux++;
+		while(cmd_aux[0]==' ')
+			cmd_aux++;
+
+		Q_strcat( remaining, sizeof(remaining), cmd_aux);
 
 		Cmd_ExecuteString (remaining);
 	}
@@ -567,10 +767,8 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 		SV_GetChallenge( from );
 	} else if (!Q_stricmp(c, "connect")) {
 		SV_DirectConnect( from );
-#ifndef _XBOX	// No authorization on Xbox
 	} else if (!Q_stricmp(c, "ipAuthorize")) {
 		SV_AuthorizeIpPacket( from );
-#endif
 	} else if (!Q_stricmp(c, "rcon")) {
 		SVC_RemoteCommand( from, msg );
 	} else if (!Q_stricmp(c, "disconnect")) {
@@ -931,9 +1129,7 @@ void SV_Frame( int msec ) {
 	SV_CheckCvars();
 
 	// send a heartbeat to the master if needed
-#ifndef _XBOX	// No master on Xbox
 	SV_MasterHeartbeat();
-#endif
 }
 
 //============================================================================

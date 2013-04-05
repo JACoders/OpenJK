@@ -4,11 +4,6 @@
 #include "altypes.h"
 #include "alctypes.h"
 
-#ifdef _XBOX
- #define ALCAPI
- #define ALCAPIENTRY
-#else
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,8 +27,6 @@ extern "C" {
  #endif
  #define ALCAPI
  #define ALCAPIENTRY __cdecl
-#endif
-
 #endif
 
 #ifndef ALC_NO_PROTOTYPES
@@ -88,10 +81,8 @@ ALCAPI ALCenum	  ALCAPIENTRY (*alcGetEnumValue)(ALCdevice *device,ALCubyte *enum
  #endif
 #endif
 
-#ifndef _XBOX
 #ifdef __cplusplus
 }
-#endif
 #endif
 
 #endif

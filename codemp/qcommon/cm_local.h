@@ -5,31 +5,15 @@
 #include "cm_polylib.h"
 #include "cm_landscape.h" //rwwRMG - include
 
-#ifdef _XBOX
-#include "sparc.h"
-#endif
-
 #define	MAX_SUBMODELS			512
 #define	BOX_MODEL_HANDLE		(MAX_SUBMODELS-1)
 #define CAPSULE_MODEL_HANDLE	(MAX_SUBMODELS-2)
 
 
-#ifdef _XBOX
-#pragma pack(push, 1)
-typedef struct {
-	int			planeNum;
-	short		children[2];		// negative numbers are leafs
-} cNode_t;
-#pragma pack(pop)
-
-#else // _XBOX
-
 typedef struct {
 	cplane_t	*plane;
 	int			children[2];		// negative numbers are leafs
 } cNode_t;
-
-#endif // _XBOX
 
 typedef struct {
 	int			cluster;
@@ -48,22 +32,10 @@ typedef struct cmodel_s {
 	int			firstNode;		// only for cmodel[0] (for the main and bsp instances)
 } cmodel_t;
 
-#ifdef _XBOX
-#pragma pack (push, 1)
-typedef struct cbrushside_s {
-	NotSoShort planeNum;
-	unsigned char	shaderNum;
-} cbrushside_t;
-#pragma pack(pop)
-
-#else // _XBOX
-
 typedef struct cbrushside_s {
 	cplane_t	*plane;
 	int			shaderNum;
 } cbrushside_t;
-
-#endif // _XBOX
 
 typedef struct cbrush_s {
 	int					shaderNum;		// the shader that determined the contents
@@ -100,63 +72,6 @@ typedef struct {
 	int			floodnum;
 	int			floodvalid;
 } cArea_t;
-
-#ifdef _XBOX
-template <class T>
-class SPARC;
-typedef struct {
-	char		name[MAX_QPATH];
-
-	int			numShaders;
-	CCMShader	*shaders;
-
-	int			numBrushSides;
-	cbrushside_t *brushsides;
-
-	int			numPlanes;
-	cplane_t	*planes;
-
-	int			numNodes;
-	cNode_t		*nodes;
-
-	int			numLeafs;
-	cLeaf_t		*leafs;
-
-	int			numLeafBrushes;
-	int			*leafbrushes;
-
-	int			numLeafSurfaces;
-	int			*leafsurfaces;
-
-	int			numSubModels;
-	cmodel_t	*cmodels;
-
-	int			numBrushes;
-	cbrush_t	*brushes;
-
-	int			numClusters;
-	int			clusterBytes;
-	SPARC<byte>	*visibility;
-	qboolean	vised;			// if false, visibility is just a single cluster of ffs
-
-	int			numEntityChars;
-	char		*entityString;
-
-	int			numAreas;
-	cArea_t		*areas;
-	int			*areaPortals;	// [ numAreas*numAreas ] reference counts
-
-	int			numSurfaces;
-	cPatch_t	**surfaces;			// non-patches will be NULL
-
-	int			floodvalid;
-	int			checkcount;					// incremented on each trace
-
-	CCMLandScape	*landScape;
-	qboolean	haswater;
-} clipMap_t;
-
-#else // _XBOX
 
 typedef struct {
 	char		name[MAX_QPATH];
@@ -209,8 +124,6 @@ typedef struct {
 	//rwwRMG - added:
 	CCMLandScape	*landScape;
 } clipMap_t;
-
-#endif // _XBOX
 
 
 // keep 1/8 unit away to keep the position valid before network snapping

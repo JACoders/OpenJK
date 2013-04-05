@@ -1510,11 +1510,11 @@ is used for determining where the lightsaber should be, and for per-poly collisi
 */
 void *g2SaberInstance = NULL;
 
-#include "../namespace_begin.h"
+
 qboolean BG_IsValidCharacterModel(const char *modelName, const char *skinName);
 qboolean BG_ValidateSkinForTeam( const char *modelName, char *skinName, int team, float *colors );
 void BG_GetVehicleModelName(char *modelname);
-#include "../namespace_end.h"
+
 
 void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 {
@@ -2374,9 +2374,9 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 
 void G_WriteClientSessionData( gclient_t *client );
 
-#include "../namespace_begin.h"
+
 void WP_SetSaber( int entNum, saberInfo_t *sabers, int saberNum, const char *saberName );
-#include "../namespace_end.h"
+
 
 /*
 ===========
@@ -2674,10 +2674,10 @@ void G_BreakArm(gentity_t *ent, int arm)
 }
 
 //Update the ghoul2 instance anims based on the playerstate values
-#include "../namespace_begin.h"
+
 qboolean BG_SaberStanceAnim( int anim );
 qboolean PM_RunningAnim( int anim );
-#include "../namespace_end.h"
+
 void G_UpdateClientAnims(gentity_t *self, float animSpeedScale)
 {
 	static int f;
