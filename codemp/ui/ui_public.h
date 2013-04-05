@@ -69,6 +69,9 @@ typedef enum {
 	UI_CVAR_REGISTER,
 	UI_CVAR_UPDATE,
 	UI_MEMORY_REMAINING,
+	UI_GET_CDKEY,
+	UI_SET_CDKEY,
+	UI_VERIFY_CDKEY,
 	UI_R_REGISTERFONT,
 	UI_R_FONT_STRLENPIXELS,
 	UI_R_FONT_STRLENCHARS,
@@ -239,6 +242,7 @@ typedef enum {
 
 	UI_DRAW_CONNECT_SCREEN,
 //	void	UI_DrawConnectScreen( qboolean overlay );
+	UI_HASUNIQUECDKEY,
 // if !overlay, the background will be drawn, otherwise it will be
 // overlayed over whatever the cgame has drawn.
 // a GetClientState syscall will be made to get the current strings

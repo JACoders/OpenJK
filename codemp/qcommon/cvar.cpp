@@ -663,6 +663,8 @@ void Cvar_WriteVariables( fileHandle_t f ) {
 	char	buffer[1024];
 
 	for (var = cvar_vars ; var ; var = var->next) {
+		if( !var->name )
+			continue;
 		if( var->flags & CVAR_ARCHIVE ) {
 			// write the latched value, even if it hasn't taken effect yet
 			if ( var->latchedString ) {
