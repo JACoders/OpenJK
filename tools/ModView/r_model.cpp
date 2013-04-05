@@ -19,7 +19,7 @@ void Com_Printf( const char *format, ... )
 {
 	va_list		argptr;
 	static char		string[16][1024];
-	static index = 0;
+	static int index = 0;
 
 	index = (++index)&15;
 	
@@ -143,7 +143,7 @@ void Crap_Printf( int printLevel, const char *format, ...)
 {
 	va_list		argptr;
 	static char		string[16][16384];
-	static index = 0;
+	static int index = 0;
 
 	index = (++index)&15;
 	

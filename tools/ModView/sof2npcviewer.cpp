@@ -567,6 +567,7 @@ static bool NPC_ParseNPCFiles(void)
 {
 	char **ppsNPCFiles;
 	int iNPCFiles;
+	int i = 0;
 
 	// scan for NPC files...
 	//
@@ -595,7 +596,7 @@ static bool NPC_ParseNPCFiles(void)
 		//					
 		char *buffers[MAX_NPC_FILES];
 		long iTotalBytesLoaded = 0;
-		for ( int i=0; i<iNPCFiles; i++ )
+		for ( i=0; i<iNPCFiles; i++ )
 		{
 			char sFileName[MAX_QPATH];
 
