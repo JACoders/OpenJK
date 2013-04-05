@@ -894,7 +894,6 @@ qboolean SV_GameCommand( void );
 // UI interface
 //
 qboolean UI_GameCommand( void );
-qboolean UI_usesUniqueCDKey();
 
 /*
 ==============================================================

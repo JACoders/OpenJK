@@ -1,9 +1,6 @@
 
 #include "../client/client.h"
 
-
-char	cl_cdkey[17] = "123456789";
-
 cvar_t *cl_shownet;
 
 void CL_Shutdown( void ) {
