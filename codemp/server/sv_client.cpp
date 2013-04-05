@@ -790,6 +790,9 @@ Abort a download if in progress
 ==================
 */
 void SV_StopDownload_f( client_t *cl ) {
+	if ( cl->state == CS_ACTIVE )
+		return;
+
 	if (*cl->downloadName)
 		Com_DPrintf( "clientDownload: %d : file \"%s\" aborted\n", cl - svs.clients, cl->downloadName );
 
@@ -804,6 +807,9 @@ Downloads are finished
 ==================
 */
 void SV_DoneDownload_f( client_t *cl ) {
+	if ( cl->state == CS_ACTIVE )
+		return;
+
 	Com_DPrintf( "clientDownload: %s Done\n", cl->name);
 	// resend the game state to update any clients that entered during the download
 	SV_SendClientGameState(cl);
@@ -820,6 +826,9 @@ the same as cl->downloadClientBlock
 void SV_NextDownload_f( client_t *cl )
 {
 	int block = atoi( Cmd_Argv(1) );
+
+	if ( cl->state == CS_ACTIVE )
+		return;
 
 	if (block == cl->downloadClientBlock) {
 		Com_DPrintf( "clientDownload: %d : client acknowledge of block %d\n", cl - svs.clients, block );
@@ -847,6 +856,8 @@ SV_BeginDownload_f
 ==================
 */
 void SV_BeginDownload_f( client_t *cl ) {
+	if ( cl->state == CS_ACTIVE )
+		return;
 
 	// Kill any existing download
 	SV_CloseDownload( cl );
@@ -864,50 +875,102 @@ Check to see if the client wants a file, open it if needed and start pumping the
 Fill up msg with data 
 ==================
 */
-void SV_WriteDownloadToClient( client_t *cl , msg_t *msg )
+void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 {
 	int curindex;
 	int rate;
 	int blockspersnap;
-	int idPack, missionPack;
+	int unreferenced = 1;
 	char errorMessage[1024];
+	char pakbuf[MAX_QPATH], *pakptr;
+	int numRefPaks;
 
 	if (!*cl->downloadName)
 		return;	// Nothing being downloaded
 
-	if (!cl->download) {
+	if(!cl->download)
+	{
+		qboolean idPack = qfalse;
+		#ifndef STANDALONE
+		qboolean missionPack = qfalse;
+		#endif
+	
+ 		// Chop off filename extension.
+		Com_sprintf(pakbuf, sizeof(pakbuf), "%s", cl->downloadName);
+		pakptr = strrchr(pakbuf, '.');
+		
+		if(pakptr)
+		{
+			*pakptr = '\0';
+
+			// Check for pk3 filename extension
+			if(!Q_stricmp(pakptr + 1, "pk3"))
+			{
+				const char *referencedPaks = FS_ReferencedPakNames();
+
+				// Check whether the file appears in the list of referenced
+				// paks to prevent downloading of arbitrary files.
+				Cmd_TokenizeStringIgnoreQuotes(referencedPaks);
+				numRefPaks = Cmd_Argc();
+
+				for(curindex = 0; curindex < numRefPaks; curindex++)
+				{
+					if(!FS_FilenameCompare(Cmd_Argv(curindex), pakbuf))
+					{
+						unreferenced = 0;
+
+						// now that we know the file is referenced,
+						// check whether it's legal to download it.
+						missionPack = FS_idPak(pakbuf, "missionpack");
+						idPack = missionPack;
+						idPack = (qboolean)(idPack || FS_idPak(pakbuf, "base"));
+
+						break;
+					}
+				}
+			}
+		}
+
+		cl->download = 0;
+
 		// We open the file here
-
-		Com_Printf( "clientDownload: %d : begining \"%s\"\n", cl - svs.clients, cl->downloadName );
-
-		missionPack = FS_idPak(cl->downloadName, "missionpack");
-		idPack = missionPack || FS_idPak(cl->downloadName, "base");
-
-		if ( !sv_allowDownload->integer || idPack ||
-			( cl->downloadSize = FS_SV_FOpenFileRead( cl->downloadName, &cl->download ) ) <= 0 ) {
+		if ( !sv_allowDownload->integer ||
+			idPack || unreferenced ||
+			( cl->downloadSize = FS_SV_FOpenFileRead( cl->downloadName, &cl->download ) ) < 0 ) {
 			// cannot auto-download file
-			if (idPack) {
-				Com_Printf("clientDownload: %d : \"%s\" cannot download id pk3 files\n", cl - svs.clients, cl->downloadName);
-				if (missionPack) {
+			if(unreferenced)
+			{
+				Com_Printf("clientDownload: %d : \"%s\" is not referenced and cannot be downloaded.\n", (int) (cl - svs.clients), cl->downloadName);
+				Com_sprintf(errorMessage, sizeof(errorMessage), "File \"%s\" is not referenced and cannot be downloaded.", cl->downloadName);
+			}
+			else if (idPack) {
+				Com_Printf("clientDownload: %d : \"%s\" cannot download id pk3 files\n", (int) (cl - svs.clients), cl->downloadName);
+				if(missionPack)
+				{
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload Team Arena file \"%s\"\n"
 									"The Team Arena mission pack can be found in your local game store.", cl->downloadName);
 				}
-				else {
+				else
+				{
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload id pk3 file \"%s\"", cl->downloadName);
 				}
-			} else if ( !sv_allowDownload->integer ) {
-				Com_Printf("clientDownload: %d : \"%s\" download disabled", cl - svs.clients, cl->downloadName);
+			}
+			else if ( !sv_allowDownload->integer ) {
+				Com_Printf("clientDownload: %d : \"%s\" download disabled\n", (int) (cl - svs.clients), cl->downloadName);
 				if (sv_pure->integer) {
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Could not download \"%s\" because autodownloading is disabled on the server.\n\n"
 										"You will need to get this file elsewhere before you "
 										"can connect to this pure server.\n", cl->downloadName);
 				} else {
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Could not download \"%s\" because autodownloading is disabled on the server.\n\n"
-										"Set autodownload to No in your settings and you might be "
-										"able to connect if you do have the file.\n", cl->downloadName);
+                    "The server you are connecting to is not a pure server, "
+                    "set autodownload to No in your settings and you might be "
+                    "able to join the game anyway.\n", cl->downloadName);
 				}
 			} else {
-				Com_Printf("clientDownload: %d : \"%s\" file not found on server\n", cl - svs.clients, cl->downloadName);
+        // NOTE TTimo this is NOT supposed to happen unless bug in our filesystem scheme?
+        //   if the pk3 is referenced, it must have been found somewhere in the filesystem
+				Com_Printf("clientDownload: %d : \"%s\" file not found on server\n", (int) (cl - svs.clients), cl->downloadName);
 				Com_sprintf(errorMessage, sizeof(errorMessage), "File \"%s\" not found on server for autodownloading.\n", cl->downloadName);
 			}
 			MSG_WriteByte( msg, svc_download );
@@ -916,9 +979,15 @@ void SV_WriteDownloadToClient( client_t *cl , msg_t *msg )
 			MSG_WriteString( msg, errorMessage );
 
 			*cl->downloadName = 0;
+			
+			if(cl->download)
+				FS_FCloseFile(cl->download);
+			
 			return;
 		}
  
+		Com_Printf( "clientDownload: %d : beginning \"%s\"\n", (int) (cl - svs.clients), cl->downloadName );
+		
 		// Init
 		cl->downloadCurrentBlock = cl->downloadClientBlock = cl->downloadXmitBlock = 0;
 		cl->downloadCount = 0;

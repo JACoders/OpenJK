@@ -470,6 +470,7 @@ const char *Key_KeynumToString( int keynum/*, qboolean bTranslate */ ); //note: 
 // cl_parse.c
 //
 extern int cl_connectedToPureServer;
+extern int cl_connectedToCheatServer;
 extern int cl_connectedGAME;
 extern int cl_connectedCGAME;
 extern int cl_connectedUI;
