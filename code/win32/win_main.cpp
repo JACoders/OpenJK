@@ -524,15 +524,7 @@ void *Sys_GetGameAPI (void *parms)
 {
 	void	*(*GetGameAPI) (void *);
 #if defined _M_IX86
-	const char *gamename;
-	if(Cvar_VariableIntegerValue("com_jk2"))
-	{
-		gamename = "jk2gamex86.dll";
-	}
-	else
-	{
-		gamename = "jagamex86.dll";
-	}
+	const char *gamename = "jagamex86.dll";
 
 #ifdef NDEBUG
 	const char *debugdir = "release";
