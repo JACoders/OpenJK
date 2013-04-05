@@ -322,18 +322,17 @@ void Con_Init (void) {
 Con_Linefeed
 ===============
 */
-static void Con_Linefeed (qboolean silent)
+static void Con_Linefeed (qboolean skipnotify)
 {
 	int		i;
 
 	// mark time for transparent overlay
-	if (con.current >= 0 && !silent )
+	if (con.current >= 0)
 	{
-		con.times[con.current % NUM_CON_TIMES] = cls.realtime;
-	}
-	else
-	{
-		con.times[con.current % NUM_CON_TIMES] = 0;
+		if (skipnotify)
+			  con.times[con.current % NUM_CON_TIMES] = 0;
+		else
+			  con.times[con.current % NUM_CON_TIMES] = cls.realtime;
 	}
 
 	con.x = 0;
@@ -353,10 +352,23 @@ All console printing must go through this in order to be logged to disk
 If no console is visible, the text will appear at the top of the game window
 ================
 */
-void CL_ConsolePrint( const char *txt, qboolean silent) {
+void CL_ConsolePrint( const char *txt) {
 	int		y;
 	int		c, l;
 	int		color;
+	qboolean skipnotify = qfalse;		// NERVE - SMF
+	int prev;							// NERVE - SMF
+
+	// TTimo - prefix for text that shows up in console but not in notify
+	// backported from RTCW
+	if ( !Q_strncmp( txt, "[skipnotify]", 12 ) ) {
+		skipnotify = qtrue;
+		txt += 12;
+	}
+	if ( txt[0] == '*' ) {
+		skipnotify = qtrue;
+		txt += 1;
+	}
 
 	// for some demos we don't want to ever show anything on the console
 	if ( cl_noprint && cl_noprint->integer ) {
@@ -387,12 +399,11 @@ void CL_ConsolePrint( const char *txt, qboolean silent) {
 			if ( txt[l] <= ' ') {
 				break;
 			}
-
 		}
 
 		// word wrap
 		if (l != con.linewidth && (con.x + l >= con.linewidth) ) {
-			Con_Linefeed(silent);
+			Con_Linefeed(skipnotify);
 
 		}
 
@@ -401,7 +412,7 @@ void CL_ConsolePrint( const char *txt, qboolean silent) {
 		switch (c)
 		{
 		case '\n':
-			Con_Linefeed (silent);
+			Con_Linefeed (skipnotify);
 			break;
 		case '\r':
 			con.x = 0;
@@ -411,9 +422,7 @@ void CL_ConsolePrint( const char *txt, qboolean silent) {
 			con.text[y*con.linewidth+con.x] = (short) ((color << 8) | c);
 			con.x++;
 			if (con.x >= con.linewidth) {
-
-				Con_Linefeed(silent);
-				con.x = 0;
+				Con_Linefeed(skipnotify);
 			}
 			break;
 		}
@@ -422,13 +431,18 @@ void CL_ConsolePrint( const char *txt, qboolean silent) {
 
 	// mark time for transparent overlay
 
-	if (con.current >= 0 && !silent )
+	if (con.current >= 0 )
 	{
-		con.times[con.current % NUM_CON_TIMES] = cls.realtime;
-	}
-	else
-	{
-		con.times[con.current % NUM_CON_TIMES] = 0;
+		// NERVE - SMF
+		if ( skipnotify ) {
+			prev = con.current % NUM_CON_TIMES - 1;
+			if ( prev < 0 )
+				prev = NUM_CON_TIMES - 1;
+			con.times[prev] = 0;
+		}
+		else
+		// -NERVE - SMF
+			con.times[con.current % NUM_CON_TIMES] = cls.realtime;
 	}
 }
 

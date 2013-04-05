@@ -4,7 +4,7 @@
 #include "../qcommon/exe_headers.h"
 
 
-#define	MAX_CMD_BUFFER	16384
+#define	MAX_CMD_BUFFER	128*1024
 #define	MAX_CMD_LINE	1024
 
 typedef struct {
@@ -32,6 +32,8 @@ bind g "cmd use rocket ; +attack ; wait ; -attack ; cmd use blaster"
 void Cmd_Wait_f( void ) {
 	if ( Cmd_Argc() == 2 ) {
 		cmd_wait = atoi( Cmd_Argv( 1 ) );
+		if ( cmd_wait < 0 )
+			cmd_wait = 1; // ignore the argument
 	} else {
 		cmd_wait = 1;
 	}
@@ -124,9 +126,11 @@ void Cbuf_ExecuteText (int exec_when, const char *text)
 	{
 	case EXEC_NOW:
 		if (text && strlen(text) > 0) {
+			Com_DPrintf(S_COLOR_YELLOW "EXEC_NOW %s\n", text);
 			Cmd_ExecuteString (text);
 		} else {
 			Cbuf_Execute();
+			Com_DPrintf(S_COLOR_YELLOW "EXEC_NOW %s\n", cmd_text.data);
 		}
 		break;
 	case EXEC_INSERT:
@@ -152,16 +156,22 @@ void Cbuf_Execute (void)
 	char	line[MAX_CMD_LINE];
 	int		quotes;
 
+	// This will keep // style comments all on one line by not breaking on
+	// a semicolon.  It will keep /* ... */ style comments all on one line by not
+	// breaking it for semicolon or newline.
+	qboolean in_star_comment = qfalse;
+	qboolean in_slash_comment = qfalse;
+
 	while (cmd_text.cursize)
 	{
-		if ( cmd_wait )	{
+		if ( cmd_wait > 0 ) {
 			// skip out while text still remains in buffer, leaving it
 			// for next frame
 			cmd_wait--;
 			break;
 		}
 
-		// find a \n or ; line break
+		// find a \n or ; line break or comment: // or /* */
 		text = (char *)cmd_text.data;
 
 		quotes = 0;
@@ -169,10 +179,29 @@ void Cbuf_Execute (void)
 		{
 			if (text[i] == '"')
 				quotes++;
-			if ( !(quotes&1) &&  text[i] == ';')
-				break;	// don't break if inside a quoted string
-			if (text[i] == '\n' || text[i] == '\r' )
+
+			if ( !(quotes&1)) {
+				if (i < cmd_text.cursize - 1) {
+					if (! in_star_comment && text[i] == '/' && text[i+1] == '/')
+						in_slash_comment = qtrue;
+					else if (! in_slash_comment && text[i] == '/' && text[i+1] == '*')
+						in_star_comment = qtrue;
+					else if (in_star_comment && text[i] == '*' && text[i+1] == '/') {
+						in_star_comment = qfalse;
+						// If we are in a star comment, then the part after it is valid
+						// Note: This will cause it to NUL out the terminating '/'
+						// but ExecuteString doesn't require it anyway.
+						i++;
+						break;
+					}
+				}
+				if (! in_slash_comment && ! in_star_comment && text[i] == ';')
+					break;
+			}
+			if (! in_star_comment && (text[i] == '\n' || text[i] == '\r')) {
+				in_slash_comment = qfalse;
 				break;
+			}
 		}
 
 		if( i >= (MAX_CMD_LINE - 1)) {
@@ -217,27 +246,36 @@ Cmd_Exec_f
 ===============
 */
 void Cmd_Exec_f( void ) {
-	char	*f;
-	int		len;
+	bool quiet;
+	union {
+		char	*c;
+		void	*v;
+	} f;
 	char	filename[MAX_QPATH];
 
+	quiet = !Q_stricmp(Cmd_Argv(0), "execq");
+
 	if (Cmd_Argc () != 2) {
-		Com_Printf ("exec <filename> : execute a script file\n");
+		Com_Printf ("exec%s <filename> : execute a script file%s\n",
+		            quiet ? "q" : "", quiet ? " without notification" : "");
 		return;
 	}
 
 	Q_strncpyz( filename, Cmd_Argv(1), sizeof( filename ) );
-	COM_DefaultExtension( filename, sizeof( filename ), ".cfg" ); 
-	len = FS_ReadFile( filename, (void **)&f);
-	if (!f) {
-		Com_Printf ("couldn't exec %s\n",Cmd_Argv(1));
+	COM_DefaultExtension( filename, sizeof( filename ), ".cfg" );
+	FS_ReadFile( filename, &f.v);
+	if (!f.c) {
+		Com_Printf ("couldn't exec %s\n", filename);
 		return;
 	}
-	Com_Printf ("execing %s\n",Cmd_Argv(1));
+#ifndef FINAL_BUILD
+	if (!quiet)
+		Com_Printf ("execing %s\n", filename);
+#endif
 	
-	Cbuf_InsertText (f);
+	Cbuf_InsertText (f.c);
 
-	FS_FreeFile (f);
+	FS_FreeFile (f.v);
 }
 
 
@@ -270,11 +308,7 @@ Just prints the rest of the line to the console
 */
 void Cmd_Echo_f (void)
 {
-	int		i;
-	
-	for (i=1 ; i<Cmd_Argc() ; i++)
-		Com_Printf ("%s ",Cmd_Argv(i));
-	Com_Printf ("\n");
+	Com_Printf ("%s\n", Cmd_Args());
 }
 
 
@@ -290,6 +324,7 @@ void Cmd_Echo_f (void)
 static	int			cmd_argc;
 static	char		*cmd_argv[MAX_STRING_TOKENS];		// points into cmd_tokenized
 static	char		cmd_tokenized[BIG_INFO_STRING+MAX_STRING_TOKENS];	// will have 0 bytes inserted
+static	char		cmd_cmd[BIG_INFO_STRING]; // the original command we received (no token processing)
 
 
 /*
@@ -384,6 +419,44 @@ void	Cmd_ArgsBuffer( char *buffer, int bufferLength ) {
 	Q_strncpyz( buffer, Cmd_Args(), bufferLength );
 }
 
+/*
+============
+Cmd_Cmd
+
+Retrieve the unmodified command string
+For rcon use when you want to transmit without altering quoting
+https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=543
+============
+*/
+char *Cmd_Cmd(void)
+{
+	return cmd_cmd;
+}
+
+/*
+   Replace command separators with space to prevent interpretation
+   This is a hack to protect buggy qvms
+   https://bugzilla.icculus.org/show_bug.cgi?id=3593
+   https://bugzilla.icculus.org/show_bug.cgi?id=4769
+*/
+
+void Cmd_Args_Sanitize(void)
+{
+	int i;
+
+	for(i = 1; i < cmd_argc; i++)
+	{
+		char *c = cmd_argv[i];
+		
+		if(strlen(c) > MAX_CVAR_VALUE_STRING - 1)
+			c[MAX_CVAR_VALUE_STRING - 1] = '\0';
+		
+		while ((c = strpbrk(c, "\n\r;"))) {
+			*c = ' ';
+			++c;
+		}
+	}
+}
 
 /*
 ============
@@ -395,9 +468,16 @@ are inserted in the apropriate place, The argv array
 will point into this temporary buffer.
 ============
 */
-void Cmd_TokenizeString( const char *text_in ) {
+// NOTE TTimo define that to track tokenization issues
+//#define TKN_DBG
+static void Cmd_TokenizeString2( const char *text_in, qboolean ignoreQuotes ) {
 	const char	*text;
 	char	*textOut;
+
+#ifdef TKN_DBG
+  // FIXME TTimo blunt hook to try to find the tokenization of userinfo
+  Com_DPrintf("Cmd_TokenizeString: %s\n", text_in);
+#endif
 
 	// clear previous args
 	cmd_argc = 0;
@@ -405,6 +485,8 @@ void Cmd_TokenizeString( const char *text_in ) {
 	if ( !text_in ) {
 		return;
 	}
+	
+	Q_strncpyz( cmd_cmd, text_in, sizeof(cmd_cmd) );
 
 	text = text_in;
 	textOut = cmd_tokenized;
@@ -443,7 +525,8 @@ void Cmd_TokenizeString( const char *text_in ) {
 		}
 
 		// handle quoted strings
-		if ( *text == '"' ) {
+    // NOTE TTimo this doesn't handle \" escaping
+		if ( !ignoreQuotes && *text == '"' ) {
 			cmd_argv[cmd_argc] = textOut;
 			cmd_argc++;
 			text++;
@@ -463,9 +546,8 @@ void Cmd_TokenizeString( const char *text_in ) {
 		cmd_argc++;
 
 		// skip until whitespace, quote, or command
-		while ( *(const unsigned char* /*eurofix*/)text > ' ' ) 
-		{
-			if ( text[0] == '"' ) {
+		while ( *(const unsigned char* /*eurofix*/)text > ' ' ) {
+			if ( !ignoreQuotes && text[0] == '"' ) {
 				break;
 			}
 
@@ -490,7 +572,23 @@ void Cmd_TokenizeString( const char *text_in ) {
 	
 }
 
+/*
+============
+Cmd_TokenizeString
+============
+*/
+void Cmd_TokenizeString( const char *text_in ) {
+	Cmd_TokenizeString2( text_in, qfalse );
+}
 
+/*
+============
+Cmd_TokenizeStringIgnoreQuotes
+============
+*/
+void Cmd_TokenizeStringIgnoreQuotes( const char *text_in ) {
+	Cmd_TokenizeString2( text_in, qtrue );
+}
 
 /*
 ============
@@ -501,6 +599,7 @@ extern void Cmd_List_f(void);
 void Cmd_Init (void) {
 	Cmd_AddCommand ("cmdlist",Cmd_List_f);
 	Cmd_AddCommand ("exec",Cmd_Exec_f);
+	Cmd_AddCommand ("execq",Cmd_Exec_f);
 	Cmd_AddCommand ("vstr",Cmd_Vstr_f);
 	Cmd_AddCommand ("echo",Cmd_Echo_f);
 	Cmd_AddCommand ("wait", Cmd_Wait_f);
