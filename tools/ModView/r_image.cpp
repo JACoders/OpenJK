@@ -1064,7 +1064,7 @@ void R_LoadImage2( const char *name, byte **pic, int *width, int *height ) {
 		return;
 	}
 
-	const char *psExt = strstr(name,".");
+	char *psExt = const_cast<char*>( strstr( name, "." ) );
 	strcpy(g_sImageExtension,psExt?psExt:"");
 
 	if ( !Q_stricmp( name+len-4, ".tga" ) ) {
