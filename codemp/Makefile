@@ -1,6 +1,6 @@
 CC			= clang
 CXX			= clang++
-CXXFLAGS		= -fpermissive -m32 -Wno-deprecated-writable-strings -Wno-extra-tokens -D_JK2MP -D_JK2 -DBOTLIB -D__linux__
+CXXFLAGS		= -fpermissive -m32 -w -D_JK2MP -D_JK2 -DBOTLIB -D__linux__
 
 BOTLIB_SRCS		= botlib/be_aas_bspq3.cpp \
 			  botlib/be_aas_cluster.cpp \
@@ -59,7 +59,6 @@ CLIENT_SRCS		= client/cl_cgame.cpp \
 CLIENT_OBJS		= $(CLIENT_SRCS:.cpp=.o)
 
 COMMON_SRCS		= qcommon/cmd_common.cpp \
-			  qcommon/cmd_console.cpp \
 			  qcommon/cmd_pc.cpp \
 			  qcommon/cm_draw.cpp \
 			  qcommon/cm_load.cpp \
@@ -76,7 +75,6 @@ COMMON_SRCS		= qcommon/cmd_common.cpp \
 			  qcommon/cvar.cpp \
 			  qcommon/exe_headers.cpp \
 			  qcommon/files_common.cpp \
-			  qcommon/files.cpp \
 			  qcommon/files_pc.cpp \
 			  qcommon/GenericParser2.cpp \
 			  qcommon/hstring.cpp \
@@ -90,7 +88,6 @@ COMMON_SRCS		= qcommon/cmd_common.cpp \
 			  qcommon/stringed_ingame.cpp \
 			  qcommon/stringed_interface.cpp \
 			  qcommon/unzip.cpp \
-			  qcommon/vm_console.cpp \
 			  qcommon/vm.cpp \
 			  qcommon/vm_interpreted.cpp \
 			  qcommon/vm_x86.cpp \
@@ -187,8 +184,18 @@ ZLIB_SRCS		= zlib/adler32.c \
 
 ZLIB_OBJS		= $(ZLIB_SRCS:.c=.o)
 
-all: botlib common server client renderer ghoul2 icarus zlib
-	$(CXX) -o jamp -m32 $(BOTLIB_OBJS) $(COMMON_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS)
+NULL_RENDERER_SRCS	= null/null_client.cpp \
+			  null/null_glimp.cpp \
+			  null/null_input.cpp \
+			  null/null_main.cpp \
+			  null/null_net.cpp \
+			  null/null_renderer.cpp \
+			  null/null_snddma.cpp
+
+NULL_RENDERER_OBJS	= $(NULL_RENDERER_SRCS:.cpp=.o)
+
+all: botlib common server client renderer ghoul2 icarus zlib null_renderer
+	$(CXX) -o jamp -m32 $(BOTLIB_OBJS) $(COMMON_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS) $(NULL_RENDERER_OBJS)
 
 botlib: $(BOTLIB_OBJS)
 client: $(CLIENT_OBJS)
@@ -199,6 +206,7 @@ unix: $(UNIX_OBJS)
 ghoul2: $(GHOUL2_OBJS)
 icarus: $(ICARUS_OBJS)
 zlib: $(ZLIB_OBJS)
+null_renderer: $(NULL_RENDERER_OBJS)
 
 clean:
-	$(RM) $(BOTLIB_OBJS) $(COMMON_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(CLIENT_OBJS) $(UNIX_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS)
+	$(RM) $(BOTLIB_OBJS) $(COMMON_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(CLIENT_OBJS) $(UNIX_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS) $(NULL_RENDERER_OBJS)

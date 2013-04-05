@@ -84,12 +84,32 @@ void	Sys_EarlyOutput( char *string ) {
 }
 
 
-void main (int argc, char **argv) {
-	Com_Init (argc, argv);
+int main (int argc, char **argv) {
+	char *cmdline;
+	int i,len;
+//	int			startTime, endTime;
 
+    // should never get a previous instance in Win32
+//    if ( hPrevInstance ) {
+//        return 0;
+//	}
+
+	// merge the command line, this is kinda silly
+	for (len = 1, i = 1; i < argc; i++)
+		len += strlen(argv[i]) + 1;
+	cmdline = (char *)malloc(len);
+	*cmdline = 0;
+	for (i = 1; i < argc; i++) {
+		if (i > 1)
+			strcat(cmdline, " ");
+		strcat(cmdline, argv[i]);
+	}
+
+	Com_Init( cmdline );
 	while (1) {
 		Com_Frame( );
 	}
+	return (0);
 }
 
 

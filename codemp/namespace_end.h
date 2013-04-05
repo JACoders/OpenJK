@@ -14,4 +14,4 @@ using namespace ui;
 //#error Including namespace_end.h, but not in UI/GAME/CGAME
 #endif
 
-#endif _XBOX
+#endif // _XBOX
