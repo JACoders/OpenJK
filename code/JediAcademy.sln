@@ -1,11 +1,13 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "game", "game\game.vcproj", "{52D48192-6C71-4D4A-BE26-D05C0E02939C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameJKA", "game\game.vcproj", "{52D48192-6C71-4D4A-BE26-D05C0E02939C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exe", "starwars.vcproj", "{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}"
 	ProjectSection(ProjectDependencies) = postProject
 		{52D48192-6C71-4D4A-BE26-D05C0E02939C} = {52D48192-6C71-4D4A-BE26-D05C0E02939C}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameJK2", "..\codeJK2\game\gameJK2.vcproj", "{E8D119C5-C6C4-4E78-83F0-5918678700A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +31,14 @@ Global
 		{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}.Release|Win32.ActiveCfg = Release|Win32
 		{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}.Release|Win32.Build.0 = Release|Win32
 		{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}.SHDebug|Win32.ActiveCfg = SHDebug|Win32
+		{E8D119C5-C6C4-4E78-83F0-5918678700A5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E8D119C5-C6C4-4E78-83F0-5918678700A5}.Debug|Win32.Build.0 = Debug|Win32
+		{E8D119C5-C6C4-4E78-83F0-5918678700A5}.FinalBuild|Win32.ActiveCfg = FinalBuild|Win32
+		{E8D119C5-C6C4-4E78-83F0-5918678700A5}.FinalBuild|Win32.Build.0 = FinalBuild|Win32
+		{E8D119C5-C6C4-4E78-83F0-5918678700A5}.Release|Win32.ActiveCfg = Release|Win32
+		{E8D119C5-C6C4-4E78-83F0-5918678700A5}.Release|Win32.Build.0 = Release|Win32
+		{E8D119C5-C6C4-4E78-83F0-5918678700A5}.SHDebug|Win32.ActiveCfg = SHDebug|Win32
+		{E8D119C5-C6C4-4E78-83F0-5918678700A5}.SHDebug|Win32.Build.0 = SHDebug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
