@@ -47,6 +47,9 @@ cvar_t	*sv_paused;
 cvar_t	*com_skippingcin;
 cvar_t	*com_speedslog;		// 1 = buffer log, 2 = flush after each print
 
+// Support for JK2 binaries --eez
+cvar_t	*com_jk2;			// searches for jk2gamex86.dll instead of jagamex86.dll
+
 #ifdef G2_PERFORMANCE_ANALYSIS
 cvar_t	*com_G2Report;
 #endif
@@ -1051,6 +1054,8 @@ void Com_Init( char *commandLine ) {
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
+
+		com_jk2			= Cvar_Get( "com_jk2", "0", CVAR_ARCHIVE );
 		
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);
