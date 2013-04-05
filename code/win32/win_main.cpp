@@ -548,34 +548,6 @@ void *Sys_GetGameAPI (void *parms)
 	if (game_library)
 		Com_Error (ERR_FATAL, "Sys_GetGameAPI without Sys_UnloadingGame");
 
-	// check the current debug directory first for development purposes
-
-	/*_getcwd (cwd, sizeof(cwd));
-	Com_sprintf (name, sizeof(name), "%s/%s/%s", cwd, debugdir, gamename);
-	game_library = LoadLibrary ( name );
-	if (game_library)
-	{
-		Com_DPrintf ("LoadLibrary (%s)\n", name);
-	}
-	else
-	{
-		// check the current directory for other development purposes
-		Com_sprintf (name, sizeof(name), "%s/%s", cwd, gamename);
-		game_library = LoadLibrary ( name );
-		if (game_library)
-		{
-			Com_DPrintf ("LoadLibrary (%s)\n", name);
-		} else {
-			char *buf;
-
-			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &buf, 0, NULL );
-
-			Com_Printf( "LoadLibrary(\"%s\") failed\n", name);
-			Com_Printf( "...reason: '%s'\n", buf );
-			Com_Error( ERR_FATAL, "Couldn't load game" );
-		}
-	}*/
-
 	gamelibrary = Sys_RetrieveDLL(gamename, debugdir);
 	if(!gamelibrary)
 	{
