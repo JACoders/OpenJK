@@ -142,6 +142,8 @@ void *R_GetCommandBuffer( int bytes ) {
 
 	cmdList = &backEndData->commands;
 
+	assert(cmdList); // bk001205
+
 	// always leave room for the end of list command
 	if ( cmdList->used + bytes + 4 > MAX_RENDER_COMMANDS ) {
 #if defined(_DEBUG) && defined(_XBOX)
@@ -193,6 +195,9 @@ Passing NULL will set the color to white
 void	RE_SetColor( const float *rgba ) {
 	setColorCommand_t	*cmd;
 
+	if ( !tr.registered ) {
+		return;
+	}
 	cmd = (setColorCommand_t *) R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
