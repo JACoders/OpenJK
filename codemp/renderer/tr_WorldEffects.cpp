@@ -20,7 +20,10 @@ inline float WE_flrand(float min, float max) {
 extern qboolean		ParseVector( const char **text, int count, float *v );
 extern void			SetViewportAndScissor( void );
 
-
+#ifndef _WIN32
+#include <string.h>
+#define strcmpi strcmp
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Includes

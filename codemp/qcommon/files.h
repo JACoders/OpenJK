@@ -91,7 +91,7 @@ typedef struct {
 	qboolean	streamed;
 	char		name[MAX_ZPATH];
 
-#ifdef _XBOX
+#if 0
 	GOBHandle	ghandle;
 	qboolean	gob;
 	qboolean	used;

@@ -13,8 +13,8 @@
 #include "snd_public.h"
 #include "../mp3code/mp3struct.h"
 
-#include "openal/al.h"
-#include "openal/alc.h"
+#include "AL/al.h"
+#include "AL/alc.h"
 
 typedef int streamHandle_t;
 

@@ -133,7 +133,7 @@ LExit:
 #endif
 #endif
 
-
+void S_WriteLinearBlastStereo16 (void);
 void S_TransferStereo16 (unsigned long *pbuf, int endtime)
 {
 	int		lpos;

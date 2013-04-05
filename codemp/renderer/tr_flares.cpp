@@ -246,13 +246,15 @@ void RB_TestFlare( flare_t *f ) {
 			f->visible = qtrue;
 			f->fadeTime = backEnd.refdef.time - 1;
 		}
-		fade = ( ( backEnd.refdef.time - f->fadeTime ) /1000.0f ) * r_flareFade->value;
+		//fade = ( ( backEnd.refdef.time - f->fadeTime ) /1000.0f ) * r_flareFade->value;
+		fade = ( ( backEnd.refdef.time - f->fadeTime ) /1000.0f ) * 40.0f;
 	} else {
 		if ( f->visible ) {
 			f->visible = qfalse;
 			f->fadeTime = backEnd.refdef.time - 1;
 		}
-		fade = 1.0f - ( ( backEnd.refdef.time - f->fadeTime ) / 1000.0f ) * r_flareFade->value;
+		//fade = 1.0f - ( ( backEnd.refdef.time - f->fadeTime ) / 1000.0f ) * r_flareFade->value;
+		fade = 1.0f - ( ( backEnd.refdef.time - f->fadeTime ) / 1000.0f ) * 40.0f;
 	}
 
 	if ( fade < 0 ) {
@@ -283,9 +285,11 @@ void RB_RenderFlare( flare_t *f ) {
 	iColor[1] = color[1] * 255;
 	iColor[2] = color[2] * 255;
 
-	size = backEnd.viewParms.viewportWidth * ( r_flareSize->value/640.0f + 8 / -f->eyeZ );
+	//size = backEnd.viewParms.viewportWidth * ( r_flareSize->value/640.0f + 8 / -f->eyeZ );
+	size = backEnd.viewParms.viewportWidth * ( 40.0f/640.0f + 8 / -f->eyeZ );
 
-	RB_BeginSurface( tr.flareShader, f->fogNum );
+	//RB_BeginSurface( tr.flareShader, f->fogNum );
+	RB_BeginSurface( tr.defaultShader, f->fogNum );
 
 	// FIXME: use quadstamp?
 	tess.xyz[tess.numVertexes][0] = f->windowX - size;

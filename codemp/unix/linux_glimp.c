@@ -33,11 +33,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "../game/q_shared.h"
 #include "../renderer/tr_local.h"
 #include "../client/client.h"
 #include "linux_local.h" // bk001130
 
-#include "unix_glw.h"
+#include "../../code/unix/unix_glw.h"
 
 #include <GL/glx.h>
 
@@ -158,100 +159,100 @@ static char *XLateKey(XKeyEvent *ev, int *key)
 	switch(keysym)
 	{
 		case XK_KP_Page_Up:	
-		case XK_KP_9:	 *key = K_KP_PGUP; break;
-		case XK_Page_Up:	 *key = K_PGUP; break;
+		case XK_KP_9:	 *key = A_KP_9; break;
+		case XK_Page_Up:	 *key = A_PAGE_UP; break;
 
 		case XK_KP_Page_Down: 
-		case XK_KP_3: *key = K_KP_PGDN; break;
-		case XK_Page_Down:	 *key = K_PGDN; break;
+		case XK_KP_3: *key = A_KP_3; break;
+		case XK_Page_Down:	 *key = A_PAGE_DOWN; break;
 
-		case XK_KP_Home: *key = K_KP_HOME; break;
-		case XK_KP_7: *key = K_KP_HOME; break;
-		case XK_Home:	 *key = K_HOME; break;
+		case XK_KP_Home:
+		case XK_KP_7: *key = A_KP_7; break;
+		case XK_Home:	 *key = A_HOME; break;
 
 		case XK_KP_End:
-		case XK_KP_1:	  *key = K_KP_END; break;
-		case XK_End:	 *key = K_END; break;
+		case XK_KP_1:	  *key = A_KP_1; break;
+		case XK_End:	 *key = A_END; break;
 
-		case XK_KP_Left: *key = K_KP_LEFTARROW; break;
-		case XK_KP_4: *key = K_KP_LEFTARROW; break;
-		case XK_Left:	 *key = K_LEFTARROW; break;
+		case XK_KP_Left:
+		case XK_KP_4: *key = A_KP_4; break;
+		case XK_Left:	 *key = A_CURSOR_LEFT; break;
 
-		case XK_KP_Right: *key = K_KP_RIGHTARROW; break;
-		case XK_KP_6: *key = K_KP_RIGHTARROW; break;
-		case XK_Right:	*key = K_RIGHTARROW;		break;
+		case XK_KP_Right:
+		case XK_KP_6: *key = A_KP_6; break;
+		case XK_Right:	*key = A_CURSOR_RIGHT;		break;
 
 		case XK_KP_Down:
-		case XK_KP_2: 	 *key = K_KP_DOWNARROW; break;
-		case XK_Down:	 *key = K_DOWNARROW; break;
+		case XK_KP_2: 	 *key = A_KP_2; break;
+		case XK_Down:	 *key = A_CURSOR_DOWN; break;
 
 		case XK_KP_Up:   
-		case XK_KP_8:    *key = K_KP_UPARROW; break;
-		case XK_Up:		 *key = K_UPARROW;	 break;
+		case XK_KP_8:    *key = A_KP_8; break;
+		case XK_Up:		 *key = A_CURSOR_UP;	 break;
 
-		case XK_Escape: *key = K_ESCAPE;		break;
+		case XK_Escape: *key = A_ESCAPE;		break;
 
-		case XK_KP_Enter: *key = K_KP_ENTER;	break;
-		case XK_Return: *key = K_ENTER;		 break;
+		case XK_KP_Enter: *key = A_ENTER;	break;
+		case XK_Return: *key = A_ENTER;		 break;
 
-		case XK_Tab:		*key = K_TAB;			 break;
+		case XK_Tab:		*key = A_TAB;			 break;
 
-		case XK_F1:		 *key = K_F1;				break;
+		case XK_F1:		 *key = A_F1;				break;
 
-		case XK_F2:		 *key = K_F2;				break;
+		case XK_F2:		 *key = A_F2;				break;
 
-		case XK_F3:		 *key = K_F3;				break;
+		case XK_F3:		 *key = A_F3;				break;
 
-		case XK_F4:		 *key = K_F4;				break;
+		case XK_F4:		 *key = A_F4;				break;
 
-		case XK_F5:		 *key = K_F5;				break;
+		case XK_F5:		 *key = A_F5;				break;
 
-		case XK_F6:		 *key = K_F6;				break;
+		case XK_F6:		 *key = A_F6;				break;
 
-		case XK_F7:		 *key = K_F7;				break;
+		case XK_F7:		 *key = A_F7;				break;
 
-		case XK_F8:		 *key = K_F8;				break;
+		case XK_F8:		 *key = A_F8;				break;
 
-		case XK_F9:		 *key = K_F9;				break;
+		case XK_F9:		 *key = A_F9;				break;
 
-		case XK_F10:		*key = K_F10;			 break;
+		case XK_F10:		*key = A_F10;			 break;
 
-		case XK_F11:		*key = K_F11;			 break;
+		case XK_F11:		*key = A_F11;			 break;
 
-		case XK_F12:		*key = K_F12;			 break;
+		case XK_F12:		*key = A_F12;			 break;
 
 		  // bk001206 - from Ryan's Fakk2 
 		  //case XK_BackSpace: *key = 8; break; // ctrl-h
-                  case XK_BackSpace: *key = K_BACKSPACE; break; // ctrl-h
+                  case XK_BackSpace: *key = A_BACKSPACE; break; // ctrl-h
 
 		case XK_KP_Delete:
-		case XK_KP_Decimal: *key = K_KP_DEL; break;
-		case XK_Delete: *key = K_DEL; break;
+		case XK_KP_Decimal: *key = A_PERIOD; break;
+		case XK_Delete: *key = A_DELETE; break;
 
-		case XK_Pause:	*key = K_PAUSE;		 break;
+		case XK_Pause:	*key = A_PAUSE;		 break;
 
 		case XK_Shift_L:
-		case XK_Shift_R:	*key = K_SHIFT;		break;
+		case XK_Shift_R:	*key = A_SHIFT;		break;
 
 		case XK_Execute: 
 		case XK_Control_L: 
-		case XK_Control_R:	*key = K_CTRL;		 break;
+		case XK_Control_R:	*key = A_CTRL;		 break;
 
 		case XK_Alt_L:	
 		case XK_Meta_L: 
 		case XK_Alt_R:	
-		case XK_Meta_R: *key = K_ALT;			break;
+		case XK_Meta_R: *key = A_ALT;			break;
 
-		case XK_KP_Begin: *key = K_KP_5;	break;
+		case XK_KP_Begin: *key = A_KP_5;	break;
 
-		case XK_Insert:		*key = K_INS; break;
+		case XK_Insert:		*key = A_INSERT; break;
 		case XK_KP_Insert:
-		case XK_KP_0: *key = K_KP_INS; break;
+		case XK_KP_0: *key = A_KP_0; break;
 
-		case XK_KP_Multiply: *key = '*'; break;
-		case XK_KP_Add:  *key = K_KP_PLUS; break;
-		case XK_KP_Subtract: *key = K_KP_MINUS; break;
-		case XK_KP_Divide: *key = K_KP_SLASH; break;
+		case XK_KP_Multiply: *key = A_STAR; break;
+		case XK_KP_Add:  *key = A_PLUS; break;
+		case XK_KP_Subtract: *key = A_MINUS; break;
+		case XK_KP_Divide: *key = A_FORWARD_SLASH; break;
 
 		  // bk001130 - from cvs1.17 (mkv)
 	case XK_exclam: *key = '1'; break;

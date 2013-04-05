@@ -193,7 +193,6 @@ vec3_t		s_entityPosition[MAX_GENTITIES];
 int			s_entityWavVol[MAX_GENTITIES];
 int			s_entityWavVol_back[MAX_GENTITIES];
 
-
 /**************************************************************************************************\
 *
 *	Open AL Specific
@@ -246,26 +245,33 @@ typedef struct
 	float flDist;
 } REVERBDATA, *LPREVERBDATA;
 
+#ifdef _WIN32
 typedef struct
 {
 	GUID	FXSlotGuid;
 	ALint	lEnvID;
 } FXSLOTINFO, *LPFXSLOTINFO;
+#endif
 
 ALboolean				s_bEAX;					// Is EAX 4.0 support available
 bool					s_bEALFileLoaded;		// Has an .eal file been loaded for the current level
 bool					s_bInWater;				// Underwater effect currently active 
 int						s_EnvironmentID;		// EAGLE ID of current environment
+#ifdef _WIN32
 LPEAXMANAGER			s_lpEAXManager;			// Pointer to EAXManager object
 HINSTANCE				s_hEAXManInst;			// Handle of EAXManager DLL
+
 EAXSet					s_eaxSet;				// EAXSet() function
 EAXGet					s_eaxGet;				// EAXGet() function
 EAXREVERBPROPERTIES		s_eaxLPCur;				// Current EAX Parameters
+#endif
 LPENVTABLE				s_lpEnvTable=NULL;		// Stores information about each environment zone
 long					s_lLastEnvUpdate;		// Time of last EAX update
 long					s_lNumEnvironments;		// Number of environment zones
+#ifdef _WIN32
 long					s_NumFXSlots;			// Number of EAX 4.0 FX Slots
 FXSLOTINFO				s_FXSlotInfo[EAX_MAX_FXSLOTS];	// Stores information about the EAX 4.0 FX Slots
+#endif
 
 void InitEAXManager();
 void ReleaseEAXManager();
@@ -274,7 +280,9 @@ void UnloadEALFile();
 void UpdateEAXListener();
 void UpdateEAXBuffer(channel_t *ch);
 void EALFileInit(char *level);
+#ifdef _WIN32
 float CalcDistance(EMPOINT A, EMPOINT B);
+
 
 void Normalize(EAXVECTOR *v)
 {
@@ -286,6 +294,7 @@ void Normalize(EAXVECTOR *v)
 	v->y = v->y / flMagnitude;
 	v->z = v->z / flMagnitude;	
 }
+
 
 // EAX 4.0 GUIDS ... confidential information ...
 
@@ -312,6 +321,7 @@ const GUID EAX_REVERB_EFFECT = { 0xcf95c8f, 0xa3cc, 0x4849, { 0xb0, 0xb6, 0x83, 
 *	End of Open AL Specific
 *
 \**************************************************************************************************/
+#endif
 
 // instead of clearing a whole channel_t struct, we're going to skip the MP3SlidingDecodeBuffer[] buffer in the middle...
 //
@@ -338,8 +348,8 @@ static void DynamicMusicInfoPrint(void)
 	{
 		// horribly lazy... ;-)
 		//
-		LPCSTR psRequestMusicState	= Music_BaseStateToString( eMusic_StateRequest );
-		LPCSTR psActualMusicState	= Music_BaseStateToString( eMusic_StateActual, qtrue );
+		const char * psRequestMusicState	= Music_BaseStateToString( eMusic_StateRequest );
+		const char * psActualMusicState	= Music_BaseStateToString( eMusic_StateActual, qtrue );
 		if (psRequestMusicState == NULL)
 		{
 			psRequestMusicState = "<unknown>";
@@ -483,7 +493,7 @@ void S_Init( void ) {
 
 	if (s_UseOpenAL)
 	{
-		ALCDevice = alcOpenDevice((ALubyte*)"DirectSound3D");
+		ALCDevice = alcOpenDevice((ALCchar*)"DirectSound3D");
 		if (!ALCDevice)
 			return;
 
@@ -542,11 +552,12 @@ void S_Init( void ) {
 				// model that is assuming units are in metres)
 				// Without this call reverb sends from the sources will attenuate too quickly
 				// with distance, especially for the non-primary reverb zones.
-
+#if _WIN32
 				unsigned long ulFlags = 0;
 
 				s_eaxSet(&EAXPROPERTYID_EAX40_Source, EAXSOURCE_FLAGS,
 							s_channels[i].alSource, &ulFlags, sizeof(ulFlags));
+#endif
 			}
 
 			s_numChannels++;
@@ -778,6 +789,7 @@ S_FindName
 Will allocate a new sfx if it isn't found
 ==================
 */
+char *strlwr (char *s);
 sfx_t *S_FindName( const char *name ) {
 	int		i;
 	int		hash;
@@ -910,10 +922,12 @@ void S_BeginRegistration( void )
 		mapname = Cvar_VariableString( "mapname" );
 		EALFileInit(mapname);
 		// clear carry crap from previous map
+#ifdef _WIN32
 		for (int i = 0; i < EAX_MAX_FXSLOTS; i++)
 		{
 			s_FXSlotInfo[i].lEnvID = -1;
 		}
+#endif
 	}
 
 	if (s_numSfx == 0) {
@@ -935,6 +949,7 @@ void S_BeginRegistration( void )
 
 void EALFileInit(char *level)
 {
+#ifdef _WIN32
 	long		lRoom;
 	char		name[MAX_QPATH];
 	char		szEALFilename[MAX_QPATH];
@@ -978,6 +993,7 @@ void EALFileInit(char *level)
 			}
 		}
 	}
+#endif
 }
 
 
@@ -2463,8 +2479,10 @@ Change the volumes of all the playing sounds for changes in their positions
 */
 void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], int inwater )
 {
+#ifdef _WIN32
 	EAXOCCLUSIONPROPERTIES eaxOCProp;
 	EAXACTIVEFXSLOTS eaxActiveSlots;
+#endif
 	unsigned int ulEnvironment;
 	int			i;
 	channel_t	*ch;
@@ -2489,6 +2507,7 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], int inwat
 		listener_ori[5] = -axis[2][1];
 		alListenerfv(AL_ORIENTATION, listener_ori);
 
+#ifdef _WIN32
 		// Update EAX effects here
 		if (s_bEALFileLoaded)
 		{
@@ -2560,6 +2579,7 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], int inwat
 				}
 			}
 		}
+#endif
 	}
 	else
 	{
@@ -2783,6 +2803,10 @@ void S_GetSoundtime(void)
 	}
 }
 
+#ifdef __linux__
+typedef unsigned long DWORD;
+DWORD timeGetTime(void);
+#endif
 
 void S_Update_(void) {
 	unsigned        endtime;
@@ -3464,7 +3488,9 @@ void AL_UpdateRawSamples()
 		size = (s_rawend - s_paintedtime)<<2;
 		if (size > (MAX_RAW_SAMPLES<<2))
 		{
+#ifdef _DEBUG
 			OutputDebugString("UpdateRawSamples :- Raw Sample buffer has overflowed !!!\n");
+#endif
 			size = MAX_RAW_SAMPLES<<2;
 			s_paintedtime = s_rawend - MAX_RAW_SAMPLES;
 		}
@@ -4291,7 +4317,7 @@ static void S_SwitchDynamicTracks( MusicState_e eOldState, MusicState_e eNewStat
 
 	if (s_debugdynamic->integer)
 	{
-		LPCSTR	psNewStateString = Music_BaseStateToString( eNewState, qtrue );
+		const char*	psNewStateString = Music_BaseStateToString( eNewState, qtrue );
 				psNewStateString = psNewStateString?psNewStateString:"<unknown>";
 
 		Com_Printf( S_COLOR_MAGENTA "S_SwitchDynamicTracks( \"%s\" )\n", psNewStateString );
@@ -4311,7 +4337,7 @@ static void S_SetDynamicMusicState( MusicState_e eNewState )
 
 		if (s_debugdynamic->integer)
 		{
-			LPCSTR	psNewStateString = Music_BaseStateToString( eNewState, qtrue );
+			const char *	psNewStateString = Music_BaseStateToString( eNewState, qtrue );
 					psNewStateString = psNewStateString?psNewStateString:"<unknown>";
 
 			Com_Printf( S_COLOR_MAGENTA "S_SetDynamicMusicState( Request: \"%s\" )\n", psNewStateString );
@@ -4527,7 +4553,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, int bCalledByC
 	//
 	if (!s_allowDynamicMusic->integer && Music_DynamicDataAvailable(intro))	// "intro", NOT "sName" (i.e. don't use version with ".mp3" extension)
 	{
-		LPCSTR psMusicName = Music_GetFileNameForState( eBGRNDTRACK_DATABEGIN );
+		const char* psMusicName = Music_GetFileNameForState( eBGRNDTRACK_DATABEGIN );
 		if (psMusicName && S_FileExists( psMusicName ))
 		{
 			Q_strncpyz(sNameIntro,psMusicName,sizeof(sNameIntro));
@@ -4539,7 +4565,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, int bCalledByC
 	//
 	if ( (strstr(sNameIntro,"/") && S_FileExists( sNameIntro )) )	// strstr() check avoids extra file-exists check at runtime if reverting from streamed music to dynamic since literal files all need at least one slash in their name (eg "music/blah")
 	{
-		LPCSTR psLoopName = S_FileExists( sNameLoop ) ? sNameLoop : sNameIntro;
+		const char * psLoopName = S_FileExists( sNameLoop ) ? sNameLoop : sNameIntro;
 		Com_DPrintf("S_StartBackgroundTrack: Found/using non-dynamic music track '%s' (loop: '%s')\n", sNameIntro, psLoopName);
 		S_StartBackgroundTrack_Actual( &tMusic_Info[eBGRNDTRACK_NONDYNAMIC], bMusic_IsDynamic, sNameIntro, psLoopName );
 	}
@@ -4552,7 +4578,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, int bCalledByC
 			for (int i = eBGRNDTRACK_DATABEGIN; i != eBGRNDTRACK_DATAEND; i++)
 			{
 				sboolean bOk = qfalse;
-				LPCSTR psMusicName = Music_GetFileNameForState( (MusicState_e) i);
+				const char* psMusicName = Music_GetFileNameForState( (MusicState_e) i);
 				if (psMusicName && (!Q_stricmp(tMusic_Info[i].sLoadedDataName, psMusicName) || S_FileExists( psMusicName )) )
 				{
 					bOk = S_StartBackgroundTrack_Actual( &tMusic_Info[i], qtrue, psMusicName, loop );
@@ -4809,7 +4835,7 @@ static sboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolea
 
 // used to be just for dynamic, but now even non-dynamic music has to know whether it should be silent or not...
 //
-static LPCSTR S_Music_GetRequestedState(void)
+static const char* S_Music_GetRequestedState(void)
 {
 	/*
 	int iStringOffset = cl.gameState.stringOffsets[CS_DYNAMIC_MUSIC_STATE];
@@ -4833,7 +4859,7 @@ static LPCSTR S_Music_GetRequestedState(void)
 //
 static void S_CheckDynamicMusicState(void)
 {
-	LPCSTR psCommand = S_Music_GetRequestedState();
+	const char* psCommand = S_Music_GetRequestedState();
 
 	if (psCommand)
 	{
@@ -4993,7 +5019,7 @@ static void S_UpdateBackgroundTrack( void )
 	{
 		// standard / non-dynamic one-track music...
 		//
-		LPCSTR psCommand = S_Music_GetRequestedState();	// special check just for "silence" case...
+		const char* psCommand = S_Music_GetRequestedState();	// special check just for "silence" case...
 		sboolean bShouldBeSilent = (psCommand && !stricmp(psCommand,"silence"));
 		float fDesiredVolume = bShouldBeSilent ? 0.0f : s_musicVolume->value;
 		//
@@ -5290,6 +5316,7 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 */
 void InitEAXManager()
 {
+#ifdef _WIN32
 	LPEAXMANAGERCREATE lpEAXManagerCreateFn;
 	EAXFXSLOTPROPERTIES FXSlotProp;
 	GUID	Effect;
@@ -5399,6 +5426,7 @@ void InitEAXManager()
 	s_bEAX = false;
 
 	return;
+#endif
 }
 
 /*
@@ -5406,6 +5434,7 @@ void InitEAXManager()
 */
 void ReleaseEAXManager()
 {
+#ifdef _WIN32
 	s_bEAX = false;
 
 	UnloadEALFile();
@@ -5420,6 +5449,7 @@ void ReleaseEAXManager()
 		FreeLibrary(s_hEAXManInst);
 		s_hEAXManInst = NULL;
 	}
+#endif
 }
 
 
@@ -5428,6 +5458,7 @@ void ReleaseEAXManager()
 */
 bool LoadEALFile(char *szEALFilename)
 {
+#ifdef _WIN32
 	char		*ealData = NULL;
 	HRESULT		hr;
 	long		i, j, lID, lEnvID;
@@ -5702,6 +5733,7 @@ bool LoadEALFile(char *szEALFilename)
 
 	
 	Com_DPrintf( S_COLOR_YELLOW "Failed to load %s\n", szEALFilename);
+#endif
 	return false;
 }
 
@@ -5710,6 +5742,7 @@ bool LoadEALFile(char *szEALFilename)
 */
 void UnloadEALFile()
 {
+#ifdef _WIN32
 	HRESULT hr;
 
 	if ((!s_lpEAXManager) || (!s_bEAX))
@@ -5723,7 +5756,7 @@ void UnloadEALFile()
 		Z_Free( s_lpEnvTable );
 		s_lpEnvTable = NULL;
 	}
-
+#endif
 	return;
 }
 
@@ -5732,6 +5765,7 @@ void UnloadEALFile()
 */
 void UpdateEAXListener()
 {
+#ifdef _WIN32
 	EMPOINT ListPos, ListOri;
 	EMPOINT EMAperture;
 	EMPOINT EMSourcePoint;
@@ -5896,8 +5930,10 @@ void UpdateEAXListener()
 
 				// Mute it
 				lVolume = -10000;
+#ifdef _DEBUG
 				if (s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXFXSLOT_VOLUME, NULL, &lVolume, sizeof(long))!=AL_NO_ERROR)
 					OutputDebugString("Failed to Mute FX Slot\n");
+#endif
 
 				// If any source is sending to this Slot ID then we need to stop them sending to the slot
 				for (j = 1; j < s_numChannels; j++)
@@ -5906,7 +5942,9 @@ void UpdateEAXListener()
 					{
 						if (s_eaxSet(&EAXPROPERTYID_EAX40_Source, EAXSOURCE_ACTIVEFXSLOTID, s_channels[j].alSource, (void*)&EAX_NULL_GUID, sizeof(GUID))!=AL_NO_ERROR)
 						{
+#ifdef _DEBUG
 							OutputDebugString("Failed to set Source ActiveFXSlotID to NULL\n");
+#endif
 						}
 
 						s_channels[j].lSlotID = -1;
@@ -6179,6 +6217,7 @@ void UpdateEAXListener()
 	}
 
 	return;
+#endif
 }
 
 /*
@@ -6186,6 +6225,7 @@ void UpdateEAXListener()
 */
 void UpdateEAXBuffer(channel_t *ch)
 {
+#ifdef _WIN32
 	HRESULT hr;
 	EMPOINT EMSourcePoint;
 	EMPOINT EMVirtualSourcePoint;
@@ -6318,9 +6358,16 @@ void UpdateEAXBuffer(channel_t *ch)
 	}
 
 	return;
+#endif
 }
 
+#ifdef _WIN32
 float CalcDistance(EMPOINT A, EMPOINT B)
 {
+#ifdef _WIN32
 	return (float)sqrt(sqr(A.fX - B.fX)+sqr(A.fY - B.fY) + sqr(A.fZ - B.fZ));
+#else
+	return 0;
+#endif
 }
+#endif

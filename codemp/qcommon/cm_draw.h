@@ -82,6 +82,13 @@ inline CPixel32 LIGHT_PIX (CPixel32 p, long light)
 
 // Colors are 32-bit RGBA
 
+#ifndef _WIN32
+typedef struct tagPOINT {
+  long x;
+  long y;
+} POINT;
+#endif
+
 // draw class
 class CDraw32
 {

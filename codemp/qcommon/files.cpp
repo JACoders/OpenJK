@@ -972,6 +972,7 @@ qboolean FS_FilenameCompare( const char *s1, const char *s2 ) {
 	return (qboolean)0;		// strings are equal
 }
 
+#ifdef _WIN32
 static bool Sys_GetFileTime(LPCSTR psFileName, FILETIME &ft)
 {
 	bool bSuccess = false;
@@ -1035,10 +1036,22 @@ static bool Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataF
 
 	return false;
 }
-					
+#else
+static bool Sys_GetFileTime(const char* psFileName, int &ft)
+{
+	bool bSuccess = false;
+	return bSuccess;
+}
+
+static bool Sys_FileOutOfDate(const char* psFinalFileName, const char* psDataFileName )
+{
+	return false;
+}
+#endif
+
 static bool FS_FileCacheable(const char* const filename) 
 {
-	return( strchr(filename, '/') && strnicmp(filename, "ext_data/", 9) );
+	return( strchr(filename, '/') && strncmp(filename, "ext_data/", 9) );
 }
 
 /*
@@ -1330,7 +1343,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 							FS_CopyFile( netpath, copypath );
 						}
 						break;
-
+#ifdef _XBOX
 						case 2:
 						{
 					
@@ -1360,6 +1373,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 								}
 							}
 						}
+#endif
 						break;
 					}
 				}

@@ -14,17 +14,17 @@
 	#include "FXExport.h"
 #endif
 
-#include "FXutil.h"
+#include "FxUtil.h"
 
 #if !defined(CROFFSYSTEM_H_INC)
-	#include "../qcommon/ROFFSystem.h"
+	#include "../qcommon/RoffSystem.h"
 #endif
 
 #ifdef _DONETPROFILE_
 #include "../qcommon/INetProfile.h"
 #endif
 
-#include "../renderer/tr_worldeffects.h"
+#include "../renderer/tr_WorldEffects.h"
 
 #ifdef VV_LIGHTING
 #include "../renderer/tr_lightmanager.h"

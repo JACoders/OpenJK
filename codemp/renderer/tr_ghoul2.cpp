@@ -4822,6 +4822,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	int					size;
 	mdxmSurfHierarchy_t	*surfInfo;
 
+#if 0
 #ifndef _M_IX86
 	int					k;
 	int					frameSize;
@@ -4831,7 +4832,8 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
  	mdxmFrame_t			*cframe;
 	int					*boneRef;
 #endif
-    
+#endif
+
 	pinmodel= (mdxmHeader_t *)buffer;
 	//
 	// read some fields from the binary, but only LittleLong() them when we know this wasn't an already-cached model...
@@ -4977,6 +4979,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			// change to surface identifier
 			surf->ident = SF_MDX;
 			// register the shaders
+#if 0
 #ifndef _M_IX86
 //
 // optimisation, we don't bother doing this for standard intel case since our data's already in that format...
@@ -5021,6 +5024,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 				}
 				v = (mdxmVertex_t *)&v->weights[/*v->numWeights*/surf->maxVertBoneWeights];
 			}
+#endif
 #endif
 
 			if (isAnOldModelFile)
@@ -5263,11 +5267,13 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	byte				*sizeMarker;
 #endif
 
+#if 0
 #ifndef _M_IX86
 	int					j, k, i;
 	int					frameSize;
 	mdxaFrame_t			*cframe;
 	mdxaSkel_t			*boneInfo;
+#endif
 #endif
 
  	pinmodel = (mdxaHeader_t *)buffer;
@@ -5458,6 +5464,7 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		return qtrue;	// All done, stop here, do not LittleLong() etc. Do not pass go...
 	}
 
+#if 0
 #ifndef _M_IX86
 
 	//
@@ -5497,6 +5504,7 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			((short *)cframe->bones)[j] = LittleShort( ((short *)cframe->bones)[j] );
 		}
 	}
+#endif
 #endif
 	return qtrue;
 }

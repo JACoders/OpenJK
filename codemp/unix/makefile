@@ -51,7 +51,8 @@ JPDIR=$(MOUNT_DIR)/jpeg-6
 SPLNDIR=$(MOUNT_DIR)/splines
 GHOUL2DIR=$(MOUNT_DIR)/ghoul2
 IDIR=$(MOUNT_DIR)/icarus
-ZLIB=$(MOUNT_DIR)/zlib32
+ZLIB=$(MOUNT_DIR)/zlib
+ZLIB32=$(MOUNT_DIR)/zlib32
 RMGDIR=$(MOUNT_DIR)/RMG
 
 #############################################################################
@@ -77,7 +78,7 @@ DLL_ONLY=false
   # bk001205: no mo'  -Dstricmp=strcasecmp, see q_shared.h
   #BASE_CFLAGS =  -pipe -fsigned-char -x c++ -D_JK2 -D_M_IX86  -I/home/drews/STLport-4.5.3/stlport -I/opt/intel/compiler50/ia32/include
   #BASE_CFLAGS =  -pipe -fsigned-char -Kc++ -D_JK2 -D_M_IX86  -I/opt/intel/compiler50/ia32/include 
-  BASE_CFLAGS =  -D_JK2 -D_M_IX86 -Kc++ -w -I/opt/intel/compiler50/ia32/include 
+  BASE_CFLAGS =  -D_JK2 -w -fpermissive -m32
   # rcg010216: DLL_ONLY for PPC
   ifeq ($(strip $(DLL_ONLY)),true)
     BASE_CFLAGS += -DDLL_ONLY
@@ -106,9 +107,8 @@ DLL_ONLY=false
       #NEWPGCC=/loki/global/x86/bin/gcc
       #NEWPGCC=/usr/bin/gcc 
       #NEWPGCC=/usr/local/bin/gcc
-      NEWPGCC=/opt/intel/compiler50/ia32/bin/icc
-      CC=$(shell if [ -f $(NEWPGCC) ]; then echo $(NEWPGCC); else echo pgcc; fi )
-      CXX=/usr/bin/g++
+      CC=clang++
+      CXX=clang++
 # TTimo: legacy RELEASE_CFLAGS
 # NOTE: the -fomit-frame-pointer option leads to an unstable binary on my test box if it was built on the main box
 #   but building on the Mdk 7.2 baseline seems to work
@@ -130,25 +130,25 @@ DLL_ONLY=false
 
   THREAD_LDFLAGS=-lpthread
   #LDFLAGS=/opt/sxl/lib/sxlgcc3.a -lpthread -ldl -lm -lstdc++ -static -Wl --gc-sections
-  LDFLAGS=-ldl -lm  
+  LDFLAGS=-ldl -lm -m32
   GLLDFLAGS=-L/usr/X11R6/lib -L$(MESADIR)/lib -lX11 -lXext -lXxf86dga -lXxf86vm
 
   TARGETS=\
 	  $(B)/$(PLATFORM)jampded \
 	  $(B)/baseq3/jampgame$(ARCH).$(SHLIBEXT) 
 
-DO_CC=$(CC) $(CFLAGS) -o $@ -c $<
-DO_CXX=$(CXX) $(CFLAGS) -o $@ -c $<
-DO_SMP_CC=$(CC) $(CFLAGS) -DSMP -o $@ -c $<
-DO_BOT_CC=$(CC) $(CFLAGS) -use_msasm -DBOTLIB  -o $@ -c $<   # $(SHLIBCFLAGS) # bk001212
-DO_DEBUG_CC=$(CC) $(DEBUG_CFLAGS) -o $@ -c $<
-DO_SHLIB_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) -use_msasm -o $@ -c $<
-DO_SHLIB_DEBUG_CC=$(CC) $(DEBUG_CFLAGS) $(SHLIBCFLAGS) -o $@ -c $<
+DO_CC=$(CC) $(CFLAGS) -m32 -o $@ -c $<
+DO_CXX=$(CXX) $(CFLAGS) -m32 -o $@ -c $<
+DO_SMP_CC=$(CC) $(CFLAGS) -m32 -DSMP -o $@ -c $<
+DO_BOT_CC=$(CC) $(CFLAGS) -m32 -use_msasm -DBOTLIB  -o $@ -c $<   # $(SHLIBCFLAGS) # bk001212
+DO_DEBUG_CC=$(CC) $(DEBUG_CFLAGS) -m32 -o $@ -c $<
+DO_SHLIB_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) -m32 -use_msasm -o $@ -c $<
+DO_SHLIB_DEBUG_CC=$(CC) $(DEBUG_CFLAGS) $(SHLIBCFLAGS) -m32 -o $@ -c $<
 DO_AS=$(CC) $(CFLAGS) -DELF -x assembler-with-cpp -o $@ -c $<
 DO_NASM=nasm -f elf -o $@  $<
-DO_DED_CC=$(CC) -DDEDICATED -DC_ONLY $(CFLAGS) -use_msasm -o $@ -c $<
-DO_DED_CC2=$(CC) -D__linux2__ -DDEDICATED -DC_ONLY $(CFLAGS) -o $@ -c $<
-DO_DED_CPP=$(CXX) -DDEDICATED -DC_ONLY $(CFLAGS) -o $@ -c $<
+DO_DED_CC=$(CC) -DDEDICATED -DC_ONLY $(CFLAGS) -m32 -use_msasm -o $@ -c $<
+DO_DED_CC2=$(CC) -D__linux2__ -DDEDICATED -DC_ONLY $(CFLAGS) -m32 -o $@ -c $<
+DO_DED_CPP=$(CXX) -DDEDICATED -DC_ONLY $(CFLAGS) -m32 -o $@ -c $<
 
 #DO_LCC=$(LCC) -o $@ -S -Wf-target=bytecode -Wf-g -DQ3_VM -I$(CGDIR) -I$(GDIR)  -I$(UIDIR)  $< 
 
@@ -421,9 +421,9 @@ $(B)/ded/G2_surfaces.o : $(GHOUL2DIR)/G2_surfaces.cpp; $(DO_DED_CC)
 
 $(B)/ded/RoffSystem.o : $(CMDIR)/RoffSystem.cpp; $(DO_DED_CC)
 
-$(B)/ded/inflate.o : $(ZLIB)/inflate.cpp; $(DO_DED_CC)
-$(B)/ded/deflate.o : $(ZLIB)/deflate.cpp; $(DO_DED_CC)
-$(B)/ded/zipcommon.o : $(ZLIB)/zipcommon.cpp; $(DO_DED_CC)
+$(B)/ded/inflate.o : $(ZLIB32)/inflate.cpp; $(DO_DED_CC)
+$(B)/ded/deflate.o : $(ZLIB32)/deflate.cpp; $(DO_DED_CC)
+$(B)/ded/zipcommon.o : $(ZLIB32)/zipcommon.cpp; $(DO_DED_CC)
 
 $(B)/ded/tr_model.o : $(RDIR)/tr_model.cpp; $(DO_DED_CC)
 $(B)/ded/tr_image.o : $(RDIR)/tr_image.cpp; $(DO_DED_CC)
@@ -1587,7 +1587,7 @@ $(B)/linuxq3a-$(VERSION)-DEBUG.tar.gz:
 	cp debug$(ARCH)-glibc/missionpack/qagame$(ARCH).so setup-debug/quake3/missionpack
 	cp debug$(ARCH)-glibc/missionpack/ui$(ARCH).so setup-debug/quake3/missionpack
 	cd setup-debug; tar cvzf linuxq3a-$(VERSION)-DEBUG.tar.gz quake3
-	
+
 ## temps
 # NOTE: not referenced
 

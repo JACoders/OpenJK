@@ -767,10 +767,10 @@ void SV_SendClientGameState( client_t *client ) {
 	//rwwRMG - send info for the terrain
 	if ( TheRandomMissionManager )
 	{
-		z_stream zdata;
+		z32_stream zdata;
 
 		// Send the height map
-		memset(&zdata, 0, sizeof(z_stream));
+		memset(&zdata, 0, sizeof(z32_stream));
 		deflateInit ( &zdata, Z_MAX_COMPRESSION );
 
 		unsigned char heightmap[15000];
@@ -778,29 +778,29 @@ void SV_SendClientGameState( client_t *client ) {
 		zdata.avail_out = 15000;
 		zdata.next_in = TheRandomMissionManager->GetLandScape()->GetHeightMap();
 		zdata.avail_in = TheRandomMissionManager->GetLandScape()->GetRealArea();
-		deflate(&zdata, Z_SYNC_FLUSH);
+		deflate32(&zdata, Z_SYNC_FLUSH);
 
 		MSG_WriteShort ( &msg, (unsigned short)zdata.total_out );
 		MSG_WriteBits ( &msg, 1, 1 );
 		MSG_WriteData ( &msg, heightmap, zdata.total_out);
 
-		deflateEnd(&zdata);
+		deflateEnd32(&zdata);
 
 		// Send the flatten map
-		memset(&zdata, 0, sizeof(z_stream));
+		memset(&zdata, 0, sizeof(z32_stream));
 		deflateInit ( &zdata, Z_MAX_COMPRESSION );
 
 		zdata.next_out = (unsigned char*)heightmap;
 		zdata.avail_out = 15000;
 		zdata.next_in = TheRandomMissionManager->GetLandScape()->GetFlattenMap();
 		zdata.avail_in = TheRandomMissionManager->GetLandScape()->GetRealArea();
-		deflate(&zdata, Z_SYNC_FLUSH);
+		deflate32(&zdata, Z_SYNC_FLUSH);
 
 		MSG_WriteShort ( &msg, (unsigned short)zdata.total_out );
 		MSG_WriteBits ( &msg, 1, 1 );
 		MSG_WriteData ( &msg, heightmap, zdata.total_out);
 
-		deflateEnd(&zdata);
+		deflateEnd32(&zdata);
 
 		// Seed is needed for misc ents and noise
 		MSG_WriteLong ( &msg, TheRandomMissionManager->GetLandScape()->get_rand_seed ( ) );

@@ -7,6 +7,9 @@
 #include "snd_mp3.h"
 #include "snd_ambient.h"
 
+#include <string>
+void S_WriteLinearBlastStereo16 (void);
+
 // Open AL
 void S_PreProcessLipSync(sfx_t *sfx);
 extern int s_UseOpenAL;
@@ -291,7 +294,7 @@ int iFilesUpdated;
 int iErrors;
 sboolean qbForceRescan;
 sboolean qbForceStereo;
-string strErrors;
+std::string strErrors;
 
 void R_CheckMP3s( const char *psDir )
 {
@@ -717,6 +720,7 @@ The filename may be different than sfx->name in the case
 of a forced fallback of a player specific sound	(or of a wav/mp3 substitution now -Ste)
 ==============
 */
+
 qboolean gbInsideLoadSound = qfalse;
 static sboolean S_LoadSound_Actual( sfx_t *sfx )
 {

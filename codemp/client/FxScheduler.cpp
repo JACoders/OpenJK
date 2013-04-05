@@ -251,6 +251,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 // Return:
 //	int handle to the effect
 //------------------------------------------------------
+char *strlwr (char *s);
 int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= false*/ )
 {
 	// Dealing with file names:

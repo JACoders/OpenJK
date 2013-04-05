@@ -530,7 +530,7 @@ public:
 	bool operator()(const char *s1, const char *s2) const { return(strcmp(s1, s2) < 0); } 
 };
 
-typedef map <LPCSTR, image_t *, CStringComparator>	AllocatedImages_t;
+typedef map <const char*, image_t *, CStringComparator>	AllocatedImages_t;
 													AllocatedImages_t AllocatedImages;
 													AllocatedImages_t::iterator itAllocatedImages;
 int giTextureBindNum = 1024;	// will be set to this anyway at runtime, but wtf?
@@ -588,7 +588,7 @@ static void Upload32( unsigned *data,
 						 qboolean isLightmap,
 						 qboolean allowTC,
 						 int *pformat, 
-						 USHORT *pUploadWidth, USHORT *pUploadHeight, bool bRectangle = false )
+						 unsigned short *pUploadWidth, unsigned short *pUploadHeight, bool bRectangle = false )
 {
 	GLuint uiTarget = GL_TEXTURE_2D;
 	if ( bRectangle )
@@ -1284,7 +1284,7 @@ image_t *R_CreateImage( const char *name, const byte *pic, int width, int height
 	qglBindTexture( uiTarget, 0 );	//jfm: i don't know why this is here, but it breaks lightmaps when there's only 1
 	glState.currenttextures[glState.currenttmu] = 0;	//mark it not bound
 
-	LPCSTR psNewName = GenerateImageMappingName(name);
+	const char * psNewName = GenerateImageMappingName(name);
 	Q_strncpyz(image->imgName, psNewName, sizeof(image->imgName));
 	AllocatedImages[ image->imgName ] = image;
 
@@ -2953,7 +2953,7 @@ SKINS
 ============================================================================
 */
 
-static char *CommaParse( char **data_p );
+char *CommaParse( char **data_p );
 //can't be dec'd here since we need it for non-dedicated builds now as well.
 
 /*
@@ -3190,7 +3190,7 @@ This is unfortunate, but the skin files aren't
 compatable with our normal parsing rules.
 ==================
 */
-static char *CommaParse( char **data_p ) {
+char *CommaParse( char **data_p ) {
 	int c = 0, len;
 	char *data;
 	static	char	com_token[MAX_TOKEN_CHARS];

@@ -5,15 +5,22 @@
 
 #define sboolean int //rww - argh (in SP qboolean type is merely #define'd as an int, but I do not want to do that for MP over the whole base)
 
+#ifndef _WIN32
+#include <string.h>
+#define strnicmp strncmp
+char *strlwr (char *s);
+#endif
+
 #include "snd_public.h"
 #include "../mp3code/mp3struct.h"
 
 // Open AL Specific
-#include "openal\al.h"
-#include "openal\alc.h"
-#include "eax\eax.h"
-#include "eax\eaxman.h"
-
+#include <AL/al.h>
+#include <AL/alc.h>
+#ifdef _WIN32
+#include "eax/eax.h"
+#include "eax/EaxMan.h"
+#endif
 // Added for Open AL to know when to mute all sounds (e.g when app. loses focus)
 void S_AL_MuteAllSounds(sboolean bMute);
 

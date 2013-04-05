@@ -35,6 +35,8 @@ enum
 
 // CBlockMember
 
+void *ICARUS_Malloc(int iSize);
+void ICARUS_Free(void *pMem);
 class CBlockMember
 {
 public:

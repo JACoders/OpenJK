@@ -5,8 +5,6 @@
 #include "../win32/win_file.h"
 #include "../zlib/zlib.h"
 
-
-
 static	cvar_t		*fs_openorder;
 
 
@@ -18,6 +16,7 @@ static char* zi_stackTop = NULL;
 static char* zi_stackBase = NULL;
 
 
+#ifdef _XBOX
 
 //GOB stuff
 //===========================================================================
@@ -108,7 +107,7 @@ static GOBBool cache_open(GOBUInt32 size)
 	return GOB_TRUE;
 }
 
-static GOBBool cache_close(GOBVoid)
+static GOBBool cache_close(void)
 {
 	WF_Close(gi_handles[gi_cacheHandle].file);
 	gi_handles[gi_cacheHandle].used = false;
@@ -195,6 +194,7 @@ static GOBVoid gi_profileread(GOBUInt32 code)
 }
 #endif
 
+#endif
 //===========================================================================
 
 
@@ -202,10 +202,12 @@ static GOBVoid gi_profileread(GOBUInt32 code)
 
 static void FS_CheckUsed(fileHandle_t f)
 {
+#ifdef _XBOX
 	if (!fsh[f].used)
 	{
 		Com_Error( ERR_FATAL, "Filesystem call attempting to use invalid handle\n" );
 	}
+#endif
 }
 
 
@@ -213,7 +215,8 @@ int FS_filelength( fileHandle_t f )
 {
 	FS_CheckInit();
 	FS_CheckUsed(f);
-	
+
+#ifdef _XBOX
 	if (fsh[f].gob)
 	{
 		GOBUInt32 cur, end, crap;
@@ -232,6 +235,9 @@ int FS_filelength( fileHandle_t f )
 
 		return end;
 	}
+#else
+	return 0;
+#endif
 }
 
 
@@ -240,12 +246,14 @@ void FS_FCloseFile( fileHandle_t f )
 	FS_CheckInit();
 	FS_CheckUsed(f);
 
+#ifdef _XBOX
 	if (fsh[f].gob)
 		GOBClose(fsh[f].ghandle);
 	else
 		WF_Close(fsh[f].whandle);
 
 	fsh[f].used = qfalse;
+#endif
 }
 
 
@@ -256,6 +264,7 @@ fileHandle_t FS_FOpenFileWrite( const char *filename )
 	fileHandle_t f = FS_HandleForFile();
 
 	char* osname = FS_BuildOSPath( filename );
+
 	fsh[f].whandle = WF_Open(osname, false, false);
 	if (fsh[f].whandle >= 0)
 	{

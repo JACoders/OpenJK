@@ -4,6 +4,7 @@
 #define __TASK_MANAGER__
 
 #include <map>
+#include <string>
 
 #include "sequencer.h"
 class CSequencer;

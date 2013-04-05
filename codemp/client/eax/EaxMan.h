@@ -4,7 +4,9 @@
 #define __EAXMANH
 
 #define COM_NO_WINDOWS_H
+#ifdef _WIN32
 #include <objbase.h>
+#endif
 #include "eax.h"
 
 #ifdef __cplusplus

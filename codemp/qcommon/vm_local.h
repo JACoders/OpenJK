@@ -1,4 +1,6 @@
 //rww - so that I may utilize vm debugging features WITHOUT DROPPING TO 0.1FPS
+#include "../game/q_shared.h"
+
 #ifndef _XBOX
 #define CRAZY_SYMBOL_MAP
 #endif
@@ -147,7 +149,7 @@ struct vm_s {
 
 #ifdef CRAZY_SYMBOL_MAP
 typedef std::map<int, vmSymbol_s*> symbolMap_t;
-typedef std::map<vm_t*, symbolMap_t> symbolVMMap_t;
+typedef std::map<vm_s*, symbolMap_t> symbolVMMap_t;
 
 extern symbolVMMap_t		g_vmMap;
 extern symbolMap_t			*g_symbolMap;

@@ -162,7 +162,7 @@ typedef GOBInt32 (*GOBCompressFunc)(GOBVoid*, GOBUInt32, GOBVoid*, GOBUInt32*);
 typedef GOBInt32 (*GOBDecompressFunc)(GOBVoid*, GOBUInt32, GOBVoid*, GOBUInt32*);
 
 typedef GOBBool (*GOBCacheFileOpenFunc)(GOBUInt32);
-typedef GOBBool (*GOBCacheFileCloseFunc)(GOBVoid);
+typedef GOBBool (*GOBCacheFileCloseFunc)(void);
 typedef GOBInt32 (*GOBCacheFileReadFunc)(GOBVoid*, GOBInt32);
 typedef GOBInt32 (*GOBCacheFileWriteFunc)(GOBVoid*, GOBInt32);
 typedef GOBInt32 (*GOBCacheFileSeekFunc)(GOBInt32);
@@ -241,13 +241,13 @@ extern GOBError GOBInit(struct GOBMemoryFuncSet* mem,
 	struct GOBFileSysFuncSet* file, 
 	struct GOBCodecFuncSet* codec,
 	struct GOBCacheFileFuncSet* cache);
-extern GOBError GOBShutdown(GOBVoid);
+extern GOBError GOBShutdown(void);
 
 extern GOBError GOBArchiveCreate(const GOBChar* file);
 extern GOBError GOBArchiveOpen(const GOBChar* file, GOBAccessType atype,
 	GOBBool extended, GOBBool safe);
-extern GOBError GOBArchiveClose(GOBVoid);
-extern GOBError GOBArchiveCheckMarkers(GOBVoid);
+extern GOBError GOBArchiveClose(void);
+extern GOBError GOBArchiveCheckMarkers(void);
 
 extern GOBError GOBOpen(GOBChar* file, GOBHandle* handle);
 extern GOBError GOBOpenCode(GOBInt32 code, GOBHandle* handle);
@@ -277,7 +277,7 @@ extern GOBUInt32 GOBGetSlack(GOBUInt32 x);
 extern GOBError GOBSetCacheSize(GOBUInt32 num);
 extern GOBError GOBSetReadBufferSize(GOBUInt32 size);
 
-extern struct GOBReadStats GOBGetReadStats(GOBVoid);
+extern struct GOBReadStats GOBGetReadStats(void);
 
 
 typedef GOBVoid (*GOBProfileReadFunc)(GOBUInt32);
@@ -287,8 +287,8 @@ struct GOBProfileFuncSet
 };
 extern GOBVoid GOBSetProfileFuncs(struct GOBProfileFuncSet* fset);
 
-extern GOBError GOBStartProfile(GOBVoid);
-extern GOBError GOBStopProfile(GOBVoid);
+extern GOBError GOBStartProfile(void);
+extern GOBError GOBStopProfile(void);
 
 
 #ifdef __cplusplus

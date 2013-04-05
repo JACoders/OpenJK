@@ -373,7 +373,7 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 			//
 			if (bDeleteThis)
 			{
-				LPCSTR psModelName = (*itModel).first.c_str();
+				const char* psModelName = (*itModel).first.c_str();
 				Com_DPrintf (S_COLOR_RED "Dumping \"%s\"", psModelName);
 
 	#ifdef _DEBUG
@@ -427,7 +427,7 @@ static void RE_RegisterModels_DumpNonPure(void)
 	{			
 		bEraseOccured = qfalse;
 
-		LPCSTR						psModelName	 = (*itModel).first.c_str();
+		const char*						psModelName	 = (*itModel).first.c_str();
 		CachedEndianedModelBinary_t &CachedModel = (*itModel).second;
 
 		int iCheckSum = -1;
@@ -686,11 +686,13 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 	int					version;
 	int					size;
 
+#if 0
 #ifndef _M_IX86
 	int					j, k, i;
 	int					frameSize;
 	mdxaFrame_t			*cframe;
 	mdxaSkel_t			*boneInfo;
+#endif
 #endif
 
  	pinmodel = (mdxaHeader_t *)buffer;
@@ -748,6 +750,7 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 		return qtrue;	// All done, stop here, do not LittleLong() etc. Do not pass go...
 	}
 
+#if 0
 #ifndef _M_IX86
 
 	//
@@ -788,6 +791,7 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 		}
 	}
 #endif
+#endif
 	return qtrue;
 }
 
@@ -806,6 +810,7 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 	shader_t			*sh;
 	mdxmSurfHierarchy_t	*surfInfo;
 
+#if 0
 #ifndef _M_IX86
 	int					k;
 	int					frameSize;
@@ -814,6 +819,7 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 	mdxmVertex_t		*v;
  	mdxmFrame_t			*cframe;
 	int					*boneRef;
+#endif
 #endif
     
 	pinmodel= (mdxmHeader_t *)buffer;
@@ -935,6 +941,7 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 			surf->ident = SF_MDX;
 
 			// register the shaders
+#if 0
 #ifndef _M_IX86
 //
 // optimisation, we don't bother doing this for standard intel case since our data's already in that format...
@@ -981,7 +988,7 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 				v = (mdxmVertex_t *)&v->weights[/*v->numWeights*/surf->maxVertBoneWeights];
 			}
 #endif
-
+#endif
 			// find the next surface
 			surf = (mdxmSurface_t *)( (byte *)surf + surf->ofsEnd );
 		}

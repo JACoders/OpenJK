@@ -302,12 +302,12 @@ protected:
 
 public:
 
-	inline void SetBoltinfo( int iGhoul2,  int entNum, int modelNum = -1, int boltNum = -1 )	
+	void SetBoltinfo( int iGhoul2,  int entNum, int modelNum = -1, int boltNum = -1 )
 	{ 
 		mGhoul2 = iGhoul2; mEntNum = entNum; mModelNum = modelNum; mBoltNum = boltNum; 
 	}
 
-	inline CParticle::CParticle(void)
+	CParticle()
 	{
 		mRefEnt.reType = RT_SPRITE; mEntNum = -1; mModelNum = -1; mBoltNum = -1;
 	}
