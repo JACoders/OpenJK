@@ -80,7 +80,7 @@ bool Sys_GetFileTime(LPCSTR psFileName, FILETIME &ft)
 
 /*
 ==================
-Sys_FileOutOfDate()
+Sys_FileOutOfDate
 ==================
 */
 qboolean Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataFileName /* src */ )
@@ -117,7 +117,7 @@ qboolean Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataFile
 
 /*
 ==================
-Sys_LowPhysicalMemory()
+Sys_CopyFile
 ==================
 */
 qboolean Sys_CopyFile(LPCSTR lpExistingFileName, LPCSTR lpNewFileName, qboolean bOverWrite)
@@ -134,7 +134,7 @@ qboolean Sys_CopyFile(LPCSTR lpExistingFileName, LPCSTR lpNewFileName, qboolean 
 
 /*
 ==================
-Sys_LowPhysicalMemory()
+Sys_LowPhysicalMemory
 ==================
 */
 qboolean Sys_LowPhysicalMemory() 
