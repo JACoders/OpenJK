@@ -302,11 +302,7 @@ static void UI_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_
 UI_SetLerpFrameAnimation
 ===============
 */
-#ifdef _XBOX
-static void UI_SetLerpFrameAnimation( playerInfo_t *ci, lerpFrameUI_t *lf, int newAnimation ) {
-#else
 static void UI_SetLerpFrameAnimation( playerInfo_t *ci, lerpFrame_t *lf, int newAnimation ) {
-#endif
 	animation_t	*anim;
 
 	lf->animationNumber = newAnimation;
@@ -328,11 +324,7 @@ static void UI_SetLerpFrameAnimation( playerInfo_t *ci, lerpFrame_t *lf, int new
 UI_RunLerpFrame
 ===============
 */
-#ifdef _XBOX
-static void UI_RunLerpFrame( playerInfo_t *ci, lerpFrameUI_t *lf, int newAnimation ) {
-#else
 static void UI_RunLerpFrame( playerInfo_t *ci, lerpFrame_t *lf, int newAnimation ) {
-#endif
 	int			f;
 	animation_t	*anim;
 
@@ -707,11 +699,6 @@ void UI_DrawPlayer( float x, float y, float w, float h, playerInfo_t *pi, int ti
 	refdef.width = w;
 	refdef.height = h;
 
-#ifdef _XBOX
-	if(glw_state->isWidescreen)
-		refdef.fov_x = (int)((float)refdef.width / 720.0f * 90.0f);
-	else
-#endif
 	refdef.fov_x = (int)((float)refdef.width / 640.0f * 90.0f);
 	xx = refdef.width / tan( refdef.fov_x / 360 * M_PI );
 	refdef.fov_y = atan2( refdef.height, xx );

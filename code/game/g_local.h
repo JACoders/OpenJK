@@ -295,6 +295,7 @@ void G_PlayEffect( const char *name, const vec3_t origin );
 void G_PlayEffect( const char *name, int clientNum );
 void G_PlayEffect( const char *name, const vec3_t origin, const vec3_t fwd );
 void G_PlayEffect( const char *name, const vec3_t origin, const vec3_t axis[3] );
+void G_PlayEffect( int fxID, const vec3_t origin );
 void G_PlayEffect( int fxID, const vec3_t origin, const vec3_t fwd );
 void G_PlayEffect( int fxID, const vec3_t origin, const vec3_t axis[3] );
 void G_PlayEffect( int fxID, const int modelIndex, const int boltIndex, const int entNum, const vec3_t origin, int iLoopTime = qfalse, qboolean isRelative = qfalse );//iLoopTime 0 = not looping, 1 for infinite, else duration
@@ -317,7 +318,7 @@ void	G_UseTargets2 (gentity_t *ent, gentity_t *activator, const char *string);
 void	G_SetMovedir ( vec3_t angles, vec3_t movedir);
 
 void	G_InitGentity( gentity_t *e, qboolean bFreeG2 );
-gentity_t	*G_Spawn ( int itr = 1);
+gentity_t	*G_Spawn (void);
 gentity_t *G_TempEntity( const vec3_t origin, int event );
 void	G_Sound( gentity_t *ent, int soundIndex );
 void	G_FreeEntity( gentity_t *e );
@@ -372,7 +373,10 @@ void G_Throw( gentity_t *targ, const vec3_t newDir, float push );
 #define DAMAGE_CUSTOM_HUD		0x00002000	// really dumb, but....
 #define	DAMAGE_IMPACT_DIE		0x00004000	// if a vehicle hits a wall it should instantly die
 #define	DAMAGE_DIE_ON_IMPACT	0x00008000	// ignores force-power based protection
-
+#define	DAMAGE_SABER_KNOCKBACK1 0x00010000	// scale knockback based on saber1's knockbackScale value
+#define	DAMAGE_SABER_KNOCKBACK2 0x00020000	// scale knockback based on saber2's knockbackScale value
+#define	DAMAGE_SABER_KNOCKBACK1_B2 0x00040000	// scale knockback based on saber1's knockbackScale2 value
+#define	DAMAGE_SABER_KNOCKBACK2_B2 0x00080000	// scale knockback based on saber2's knockbackScale2 value
 //
 // g_missile.c
 //

@@ -15,11 +15,6 @@
 #include <conio.h>
 #endif
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#endif
-
 
 
 //#define SPANK_MONKEYS	//----(SA)	commented out for running net developer release builds
@@ -259,23 +254,6 @@ be freed by the game later.
 void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr ) {
 	sysEvent_t	*ev;
 
-#ifdef _XBOX
-	if(ClientManager::splitScreenMode == qtrue)
-	{
-		ev = &ClientManager::ActiveClient().eventQue[ ClientManager::ActiveClient().eventHead & MASK_QUED_EVENTS];
-		if ( ClientManager::ActiveClient().eventHead - ClientManager::ActiveClient().eventTail >= MAX_QUED_EVENTS ) {
-			Com_Printf("Sys_QueEvent: overflow\n");
-			// we are discarding an event, but don't leak memory
-			if ( ev->evPtr ) {
-				Z_Free( ev->evPtr );
-			}
-			ClientManager::ActiveClient().eventTail++;
-		}
-
-		ClientManager::ActiveClient().eventHead++;
-	}
-	else {
-#endif
 	ev = &eventQue[ eventHead & MASK_QUED_EVENTS ];
 	if ( eventHead - eventTail >= MAX_QUED_EVENTS ) {
 		Com_Printf("Sys_QueEvent: overflow\n");
@@ -287,10 +265,6 @@ void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptr
 	}
 
 	eventHead++;
-
-#ifdef _XBOX
-	}
-#endif
 
 	if ( time == 0 ) {
 		time = Sys_Milliseconds();

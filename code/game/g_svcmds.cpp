@@ -18,6 +18,8 @@ extern void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t push
 extern void WP_SetSaber( gentity_t *ent, int saberNum, char *saberName );
 extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
 extern saber_colors_t TranslateSaberColor( const char *name );
+extern qboolean WP_SaberBladeUseSecondBladeStyle( saberInfo_t *saber, int bladeNum );
+extern qboolean WP_UseFirstValidSaberStyle( gentity_t *ent, int *saberAnimLevel );
 
 extern void G_SetWeapon( gentity_t *self, int wp );
 extern stringID_table_t WPTable[];
@@ -182,7 +184,7 @@ static void Svcmd_Saber_f()
 
 	gi.cvar_set( "g_saber", saber );
 	WP_SetSaber( &g_entities[0], 0, saber );
-	if ( saber2 && saber2[0] && !g_entities[0].client->ps.saber[0].twoHanded )
+	if ( saber2 && saber2[0] && !(g_entities[0].client->ps.saber[0].saberFlags&SFL_TWO_HANDED) )
 	{//want to use a second saber and first one is not twoHanded
 		gi.cvar_set( "g_saber2", saber2 );
 		WP_SetSaber( &g_entities[0], 1, saber2 );
@@ -737,6 +739,7 @@ static void Svcmd_ForceSetLevel_f( int forcePower )
 extern qboolean PM_SaberInStart( int move );
 extern qboolean PM_SaberInTransition( int move );
 extern qboolean PM_SaberInAttack( int move );
+extern qboolean WP_SaberCanTurnOffSomeBlades( saberInfo_t *saber );
 void Svcmd_SaberAttackCycle_f( void )
 {
 	if ( !&g_entities[0] || !g_entities[0].client )
@@ -751,32 +754,64 @@ void Svcmd_SaberAttackCycle_f( void )
 		return;
 	}
 
-	if ( self->client->ps.dualSabers )
+	if ( self->client->ps.dualSabers ) 
 	{//can't cycle styles with dualSabers, so just toggle second saber on/off
-		if ( self->client->ps.saber[1].Active() )
-		{//turn it off
-			self->client->ps.saber[1].Deactivate();
-			G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[0].soundOff );
-		}
-		else if ( !self->client->ps.saber[0].Active() )
-		{//first one is off, too, so just turn that one on
-			if ( !self->client->ps.saberInFlight )
-			{//but only if it's in your hand!
-				self->client->ps.saber[0].Activate();
+		if ( WP_SaberCanTurnOffSomeBlades( &self->client->ps.saber[1] ) )
+		{//can turn second saber off 
+			if ( self->client->ps.saber[1].ActiveManualOnly() )
+			{//turn it off
+				qboolean skipThisBlade;
+				for ( int bladeNum = 0; bladeNum < self->client->ps.saber[1].numBlades; bladeNum++ )
+				{
+					skipThisBlade = qfalse;
+					if ( WP_SaberBladeUseSecondBladeStyle( &self->client->ps.saber[1], bladeNum ) )
+					{//check to see if we should check the secondary style's flags
+						if ( (self->client->ps.saber[1].saberFlags2&SFL2_NO_MANUAL_DEACTIVATE2) )
+						{
+							skipThisBlade = qtrue;
+						}
+					}
+					else
+					{//use the primary style's flags
+						if ( (self->client->ps.saber[1].saberFlags2&SFL2_NO_MANUAL_DEACTIVATE) )
+						{
+							skipThisBlade = qtrue;
+						}
+					}
+					if ( !skipThisBlade )
+					{
+						self->client->ps.saber[1].BladeActivate( bladeNum, qfalse );
+						G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[1].soundOff );
+					}
+				}
 			}
+			else if ( !self->client->ps.saber[0].ActiveManualOnly() )
+			{//first one is off, too, so just turn that one on
+				if ( !self->client->ps.saberInFlight )
+				{//but only if it's in your hand!
+					self->client->ps.saber[0].Activate();
+				}
+			}
+			else
+			{//turn on the second one
+				self->client->ps.saber[1].Activate();
+			}
+			return;
 		}
-		else
-		{//turn on the second one
-			self->client->ps.saber[1].Activate();
-		}
-		return;
 	}
-	else if ( self->client->ps.saber[0].numBlades > 1 )//self->client->ps.saber[0].type == SABER_STAFF )
+	else if ( self->client->ps.saber[0].numBlades > 1 
+		&& WP_SaberCanTurnOffSomeBlades( &self->client->ps.saber[0] ) )//self->client->ps.saber[0].type == SABER_STAFF )
 	{//can't cycle styles with saberstaff, so just toggles saber blades on/off
 		if ( self->client->ps.saberInFlight )
 		{//can't turn second blade back on if it's in the air, you naughty boy!
 			return;
 		}
+		/*
+		if ( self->client->ps.saber[0].singleBladeStyle == SS_NONE )
+		{//can't use just one blade?
+			return;
+		}
+		*/
 		qboolean playedSound = qfalse;
 		if ( !self->client->ps.saber[0].blade[0].active )
 		{//first one is not even on
@@ -785,28 +820,71 @@ void Svcmd_SaberAttackCycle_f( void )
 			return;
 		}
 
-		for ( int i = 1; i < self->client->ps.saber[0].numBlades; i++ )
+		qboolean skipThisBlade;
+		for ( int bladeNum = 1; bladeNum < self->client->ps.saber[0].numBlades; bladeNum++ )
 		{
-			if ( !self->client->ps.saber[0].blade[i].active )
+			if ( !self->client->ps.saber[0].blade[bladeNum].active )
 			{//extra is off, turn it on
-				self->client->ps.SaberBladeActivate( 0, i, qtrue );
+				self->client->ps.saber[0].BladeActivate( bladeNum, qtrue );
 			}
 			else
 			{//turn extra off
-				self->client->ps.SaberBladeActivate( 0, i, qfalse );
-				if ( !playedSound )
+				skipThisBlade = qfalse;
+				if ( WP_SaberBladeUseSecondBladeStyle( &self->client->ps.saber[1], bladeNum ) )
+				{//check to see if we should check the secondary style's flags
+					if ( (self->client->ps.saber[1].saberFlags2&SFL2_NO_MANUAL_DEACTIVATE2) )
+					{
+						skipThisBlade = qtrue;
+					}
+				}
+				else
+				{//use the primary style's flags
+					if ( (self->client->ps.saber[1].saberFlags2&SFL2_NO_MANUAL_DEACTIVATE) )
+					{
+						skipThisBlade = qtrue;
+					}
+				}
+				if ( !skipThisBlade )
 				{
-					G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[0].soundOff );
-					playedSound = qtrue;
+					self->client->ps.saber[0].BladeActivate( bladeNum, qfalse );
+					if ( !playedSound )
+					{
+						G_SoundIndexOnEnt( self, CHAN_WEAPON, self->client->ps.saber[0].soundOff );
+						playedSound = qtrue;
+					}
 				}
 			}
 		}
 		return;
 	}
 
-	//FIXME: if dualSabers and both on, do something here, too... maybe toggle the second one on/off?
+	int allowedStyles = self->client->ps.saberStylesKnown;
+	if ( self->client->ps.dualSabers
+		&& self->client->ps.saber[0].Active()
+		&& self->client->ps.saber[1].Active() )
+	{
+		allowedStyles |= (1<<SS_DUAL);
+		for ( int styleNum = SS_NONE+1; styleNum < SS_NUM_SABER_STYLES; styleNum++ )
+		{ 
+			if ( styleNum == SS_TAVION
+				&& ((self->client->ps.saber[0].stylesLearned&(1<<SS_TAVION))||(self->client->ps.saber[1].stylesLearned&(1<<SS_TAVION)))//was given this style by one of my sabers
+				&& !(self->client->ps.saber[0].stylesForbidden&(1<<SS_TAVION))
+				&& !(self->client->ps.saber[1].stylesForbidden&(1<<SS_TAVION)) )
+			{//if have both sabers on, allow tavion only if one of our sabers specifically wanted to use it... (unless specifically forbidden)
+			}
+			else if ( styleNum == SS_DUAL
+				&& !(self->client->ps.saber[0].stylesForbidden&(1<<SS_DUAL))
+				&& !(self->client->ps.saber[1].stylesForbidden&(1<<SS_DUAL)) )
+			{//if have both sabers on, only dual style is allowed (unless specifically forbidden)
+			}
+			else
+			{
+				allowedStyles &= ~(1<<styleNum);
+			}
+		}
+	}
 
-	if ( !self->client->ps.saberStylesKnown )
+	if ( !allowedStyles )
 	{
 		return;
 	}
@@ -823,7 +901,7 @@ void Svcmd_SaberAttackCycle_f( void )
 	saberAnimLevel++;
 	int sanityCheck = 0;
 	while ( self->client->ps.saberAnimLevel != saberAnimLevel 
-		&& !(self->client->ps.saberStylesKnown&(1<<saberAnimLevel))
+		&& !(allowedStyles&(1<<saberAnimLevel))
 		&& sanityCheck < SS_NUM_SABER_STYLES+1 )
 	{
 		saberAnimLevel++;
@@ -833,11 +911,13 @@ void Svcmd_SaberAttackCycle_f( void )
 		}
 		sanityCheck++;
 	}
-	if ( !(self->client->ps.saberStylesKnown&(1<<saberAnimLevel)) )
+
+	if ( !(allowedStyles&(1<<saberAnimLevel)) )
 	{
 		return;
 	}
 
+	WP_UseFirstValidSaberStyle( self, &saberAnimLevel );
 	if ( !self->s.number )
 	{
 		cg.saberAnimLevelPending = saberAnimLevel;
@@ -1121,7 +1201,7 @@ qboolean	ConsoleCommand( void ) {
 		Svcmd_ForceSetLevel_f( FP_PROTECT );
 		Svcmd_ForceSetLevel_f( FP_ABSORB );
 		Svcmd_ForceSetLevel_f( FP_SEE );
-		for ( int i = SS_FAST; i < SS_NUM_SABER_STYLES; i++ )
+		for ( int i = SS_NONE+1; i < SS_NUM_SABER_STYLES; i++ )
 		{
 			g_entities[0].client->ps.saberStylesKnown |= (1<<i);
 		}
@@ -1323,7 +1403,6 @@ qboolean	ConsoleCommand( void ) {
 	{
 		gi.cvar_set( "g_debugMelee", "1" );
 		G_SetWeapon( &g_entities[0], WP_MELEE );
-		/*
 		for ( int i = FP_FIRST; i < NUM_FORCE_POWERS; i++ )
 		{
 			g_entities[0].client->ps.forcePowersKnown |= ( 1 << i );
@@ -1336,7 +1415,6 @@ qboolean	ConsoleCommand( void ) {
 				g_entities[0].client->ps.forcePowerLevel[i] = FORCE_LEVEL_3;
 			}
 		}
-		*/
 	}
 
 	return qfalse;

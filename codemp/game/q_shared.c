@@ -300,7 +300,7 @@ char *COM_Parse( const char **data_p )
 void COM_ParseError( char *format, ... )
 {
 	va_list argptr;
-	char string[4096];
+	static char string[4096];
 
 	va_start (argptr, format);
 	vsprintf (string, format, argptr);
@@ -312,7 +312,7 @@ void COM_ParseError( char *format, ... )
 void COM_ParseWarning( char *format, ... )
 {
 	va_list argptr;
-	char string[4096];
+	static char string[4096];
 
 	va_start (argptr, format);
 	vsprintf (string, format, argptr);
@@ -1016,7 +1016,7 @@ FIXME: make this buffer size safe someday
 */
 char	* QDECL va( const char *format, ... ) {
 	va_list		argptr;
-	static char		string[2][4096];	// in case va is called by nested functions
+	static char		string[2][32000];	// in case va is called by nested functions
 	static int		index = 0;
 	char	*buf;
 
@@ -1363,14 +1363,6 @@ void Info_SetValueForKey_Big( char *s, const char *key, const char *value ) {
 	}
 
 	strcat (s, newi);
-}
-
-
-//rww - convience function..
-int Q_irand(int value1, int value2)
-{
-	value2++; //so it can round down
-	return ((rand() * (value2 - value1)) >> 15) + value1;
 }
 
 //====================================================================

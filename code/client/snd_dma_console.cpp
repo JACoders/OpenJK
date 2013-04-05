@@ -50,8 +50,7 @@ static int SND_FreeSFXMem(sfx_t *sfx);
 /*static void S_FreeAllSFXMem(void);
 static void S_UnCacheDynamicMusic( void );
 */
-//extern unsigned long crc32(unsigned long crc, const unsigned char *buf, unsigned long len);
-#include "../zlib/zlib.h"
+extern unsigned long crc32(unsigned long crc, const unsigned char *buf, unsigned long len);
 
 extern int Sys_GetFileCodeSize(int code);
 
@@ -150,12 +149,14 @@ static char			sInfoOnly_CurrentDynamicMusicSet[64];	// any old reasonable size, 
 #define		SOUND_ATTENUATE		0.0008f
 #define		VOICE_ATTENUATE		0.004f
 
-// This number has dramatic affects on volume.
-#define		SOUND_REF_DIST_BASE	1500.f
+// This number has dramatic affects on volume.  QA has
+// determined that 100 is too quiet in some spots and
+// 200 is too loud in others.  Modify with care...
+#define		SOUND_REF_DIST_BASE	150.f
 
 #define		SOUND_UPDATE_TIME	100
 
-const float	SOUND_FMAXVOL=1.0;
+const float	SOUND_FMAXVOL=0.75;//1.0;
 const int	SOUND_MAXVOL=255;
 
 int					s_soundStarted;
@@ -188,7 +189,7 @@ static int			s_numChannels;			// Number of AL Sources == Num of Channels
 #define MAX_CHANNELS (MAX_CHANNELS_2D + MAX_CHANNELS_3D)
 static channel_t*   s_channels;
 
-#define	MAX_SFX 3072	//2048
+#define	MAX_SFX 2048
 #define INVALID_CODE 0
 static sfx_t* s_sfxBlock;
 static int* s_sfxCodes;
@@ -223,7 +224,7 @@ cvar_t		*s_separation;
 cvar_t		*s_CPUType;
 cvar_t		*s_debugdynamic;
 cvar_t		*s_soundpoolmegs;
-//cvar_t		*s_language;	// note that this is distinct from "g_language"
+cvar_t		*s_language;	// note that this is distinct from "g_language"
 
 
 
@@ -241,10 +242,7 @@ void S_SoundInfo_f(void) {
 	Com_Printf("----------------------\n" );
 }
 
-void TrashSounds_f( void )
-{
-	SND_FreeOldestSound( NULL );
-}
+
 
 /*
 ================
@@ -260,10 +258,9 @@ void S_Init( void ) {
 
 	AS_Init();
 
-	s_effects_volume = Cvar_Get ("s_effects_volume", "1.0", CVAR_ARCHIVE);
+	s_effects_volume = Cvar_Get ("s_effects_volume", "0.5", CVAR_ARCHIVE);
 	s_voice_volume= Cvar_Get ("s_voice_volume", "1.0", CVAR_ARCHIVE);
 	s_music_volume = Cvar_Get ("s_music_volume", "0.25", CVAR_ARCHIVE);
-
 	s_separation = Cvar_Get ("s_separation", "0.5", CVAR_ARCHIVE);
 	s_allowDynamicMusic = Cvar_Get ("s_allowDynamicMusic", "1", CVAR_ARCHIVE);
 
@@ -274,7 +271,7 @@ void S_Init( void ) {
 	s_CPUType = Cvar_Get("sys_cpuid","",0);
 	s_soundpoolmegs = Cvar_Get("s_soundpoolmegs", "6", CVAR_ARCHIVE);
 
-//	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART);
+	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART);
 
 	cv = Cvar_Get ("s_initsound", "1", CVAR_ROM);
 	if ( !cv->integer ) {
@@ -292,7 +289,6 @@ void S_Init( void ) {
 	Cmd_AddCommand("soundlist", S_SoundList_f);
 	Cmd_AddCommand("soundinfo", S_SoundInfo_f);
 	Cmd_AddCommand("soundstop", S_StopAllSounds);
-	Cmd_AddCommand("trashsounds", TrashSounds_f);
 
 	s_entityWavVol = new int[MAX_GENTITIES];
 	
@@ -341,47 +337,22 @@ void S_Init( void ) {
 	S_InitLoad();
 
 	// Load all the lipsync index data first:
-	extern DWORD g_dwLanguage;
-	const char *langSuffix;
 	void *buffer;
-	switch( g_dwLanguage )
-	{
-#ifndef XBOX_DEMO	// Demo has no foreign audio
-		case XC_LANGUAGE_FRENCH:
-			langSuffix = "_f";
-			break;
-		case XC_LANGUAGE_GERMAN:
-			langSuffix = "_d";
-			break;
-#endif
-		case XC_LANGUAGE_ENGLISH:
-		default:
-			langSuffix = "_e";
-			break;
-	}
-	int len = FS_ReadFile(va("lipdata%s.idx", langSuffix), &buffer);
+	int len = FS_ReadFile("lipdata.idx", &buffer);
 	if( len == -1 )
 		Com_Error(ERR_DROP, "ERROR: No lip sync index file\n");
 	int numLipFiles = len / sizeof(LipFileInfo);
 	LipFileInfo *lbuf = (LipFileInfo *)buffer;
-
-	Z_PushNewDeleteTag( TAG_LIPSYNC );
 	s_lipSyncMap = new VVFixedMap< unsigned int, unsigned int >(numLipFiles);
-	Z_PopNewDeleteTag();
-
 	for( int i = 0; i < numLipFiles; ++i )
 		s_lipSyncMap->Insert(lbuf[i].offset, lbuf[i].crc);
 	FS_FreeFile(buffer);
 
 	// Now load the actual lip sync data
-	len = FS_ReadFile(va("lipdata%s.dat", langSuffix), &buffer);
+	len = FS_ReadFile("lipdata.dat", &buffer);
 	if( len == -1 )
 		Com_Error(ERR_DROP, "ERROR: No lip sync data file\n");
-
-	Z_PushNewDeleteTag( TAG_LIPSYNC );
 	s_lipSyncData = new char[len];
-	Z_PopNewDeleteTag();
-
 	memcpy(s_lipSyncData, buffer, len);
 	FS_FreeFile(buffer);
 }
@@ -737,13 +708,13 @@ sfxHandle_t S_AllocSfx(int hash)
 }
 
 extern void	COM_StripExtension( const char *in, char *out );
-extern char *FS_BuildOSPathUnMapped( const char *qpath );
+extern char *FS_BuildOSPath( const char *qpath );
 
 // Convert pathname to filecode
 int Lip_GetFileCode(const char* name)
 {
 	// Get system level path
-	char* osname = FS_BuildOSPathUnMapped(name);
+	char* osname = FS_BuildOSPath(name);
 
 	// Generate hash for file name
 	strlwr(osname);
@@ -833,28 +804,16 @@ sfxHandle_t	S_RegisterSound(const char *name)
 
 	sfx->pLipSyncData = NULL;
 
-	char fixedName[MAX_QPATH];
-	Q_strncpyz( fixedName, name, sizeof(fixedName) );
-	Q_strlwr( fixedName );
-
-	char *psVoice = strstr(fixedName, "chars");
-	if( psVoice )
+	if (strstr(name, "chars") ||
+		strstr(name, "chr_d") ||
+		strstr(name, "chr_f") ||
+		strstr(name, "CHARS"))
 	{
-		// Need to replace "chars" with "chr_f" or "chr_d" if we're in a foreign
-		// language, or the crc won't match the one generated by lipthing2:
-#ifndef XBOX_DEMO
-		extern DWORD g_dwLanguage;
-		if( g_dwLanguage == XC_LANGUAGE_FRENCH )
-			strncpy( psVoice, "chr_f", 5 );
-		else if( g_dwLanguage == XC_LANGUAGE_GERMAN )
-			strncpy( psVoice, "chr_d", 5 );
-#endif
-
 		sfx->iFlags |= SFX_FLAG_VOICE;
 		sfx->iFlags |= SFX_FLAG_DEMAND;
 
 		// load up the lip sync data
-		S_LoadLips(sfx, fixedName);
+		S_LoadLips(sfx, name);
 	}
 
 	if ( sfx->iFlags & SFX_FLAG_DEFAULT )
@@ -1015,29 +974,7 @@ channel_t *S_PickChannel(int entnum, int entchannel, bool is2D, sfx_t* sfx)
 	alSourcei(ch_firstToDie->alSource, AL_BUFFER, 0);
 	ch_firstToDie->thesfx = NULL;
 	ch_firstToDie->bLooping = false;
-
-	/*
-	This code can be used to increase the volume of 2D voices, but it
-	makes things sound a little weird because Raven is playing 3D sounds
-	where there should be 2D sounds. If we can get all sounds that should
-	be 3D, to be 3D this will help
-	extern void SetHeadroom( int source, float value);
-	if(is2D)
-	{
-		if(	entchannel == CHAN_VOICE		|| // i don't think 
-			entchannel == CHAN_ANNOUNCER	||
-			entchannel == CHAN_VOICE_ATTEN	||
-			entchannel == CHAN_VOICE_GLOBAL )
-		{
-			SetHeadroom(ch_firstToDie->alSource, 0.0f); // no more attenuation
-		}
-		else
-		{
-			SetHeadroom(ch_firstToDie->alSource, 6.0f); // dsound default for 2d sounds
-		}
-	}
-	*/
-
+	
     return ch_firstToDie;
 }
 
@@ -1082,9 +1019,6 @@ void S_StartAmbientSound( const vec3_t origin, int entityNum, unsigned char volu
 {
 	channel_t	*ch;
 	/*const*/ sfx_t *sfx;
-
-	if( volume == 0)
-		return;
 
 	if ( !s_soundStarted || s_soundMuted ) {
 		return;
@@ -1184,10 +1118,7 @@ if pos is NULL, the sound will be dynamically sourced from the entity
 Entchannel 0 will never override a playing sound
 ====================
 */
-#include "../game/g_local.h"
-extern int Sys_GetSoundFileCodeSize(unsigned int code);
-extern unsigned int Sys_GetSoundFileCodeFlags(unsigned int code);
-void S_StartSound(const vec3_t origin, int entityNum, soundChannel_t entchannel, sfxHandle_t sfxHandle ) 
+void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfxHandle ) 
 {
 	channel_t	*ch;
 	/*const*/ sfx_t *sfx;
@@ -1206,12 +1137,6 @@ void S_StartSound(const vec3_t origin, int entityNum, soundChannel_t entchannel,
 
 	sfx = &s_sfxBlock[sfxHandle];
 
-	if(Sys_GetSoundFileCodeSize(sfx->iFileCode) == -1) {
-		return;
-	}
-
-	int flags = Sys_GetSoundFileCodeFlags(sfx->iFileCode);
-
 	if (sfx->iFlags & SFX_FLAG_UNLOADED){
 		S_StartLoadSound(sfx);
 	}
@@ -1229,68 +1154,6 @@ void S_StartSound(const vec3_t origin, int entityNum, soundChannel_t entchannel,
 		{
 			is2D = true;
 			break;
-		}
-	}
-
-	if(entchannel == CHAN_VOICE_GLOBAL || entchannel == CHAN_ANNOUNCER)
-		is2D	= true;
-
-	// super hack so we can hear the explosionson t2_wedge
-	if( !stricmp(level.mapname, "t2_wedge") && (flags & (1 <<SFF_TIEEXPLODE)))
-		is2D	= true;
-
-	if (entchannel == CHAN_VOICE)
-	{
-		// Make howlers and sand_creature VOICE effects use the normal fall-off (they will still be affected
-		// by the Voice Volume)
-		if ((flags & (1 << SFF_SAND_CREATURE)) || 
-				(flags & (1 << SFF_HOWLER)))
-		{
-			entchannel = CHAN_VOICE_ATTEN;
-		}
-	}
-	if (entchannel == CHAN_WEAPON)
-	{
-		// Check if we are playing a 'charging' sound, if so, stop it now ..
-		ch = s_channels + 1;
-		for (i = 1; i < s_numChannels; i++, ch++)
-		{
-			unsigned int weaponSoundFlags;
-
-			if(ch->thesfx)
-				weaponSoundFlags = Sys_GetSoundFileCodeFlags(ch->thesfx->iFileCode);
-
-			if ((ch->entnum == entityNum) && (ch->entchannel == CHAN_WEAPON) && (ch->thesfx) && (weaponSoundFlags & (1 <<SFF_ALTCHARGE)))
-			{
-				// Stop this sound
-				alSourceStop(ch->alSource);
-				alSourcei(ch->alSource, AL_BUFFER, NULL);
-				ch->bPlaying = false;
-				ch->thesfx = NULL;
-				break;
-			}
-		}
-	}
-	else
-	{
-		ch = s_channels + 1;
-		for (i = 1; i < s_numChannels; i++, ch++)
-		{
-			unsigned int fallSoundFlags;
-
-			if(ch->thesfx)
-				fallSoundFlags = Sys_GetSoundFileCodeFlags(ch->thesfx->iFileCode);
-		
-			if ((ch->entnum == entityNum) && (ch->thesfx) && 
-					(fallSoundFlags & (1 << SFF_FALLING)))
-			{
-				// Stop this sound
-				alSourceStop(ch->alSource);
-				alSourcei(ch->alSource, AL_BUFFER, NULL);
-				ch->bPlaying = false;
-				ch->thesfx = NULL;
-				break;
-			}
 		}
 	}
 	
@@ -1336,7 +1199,7 @@ void S_StartLocalSound( sfxHandle_t sfxHandle, int channelNum ) {
 	}
 
 	// Play a 2D sound -- doesn't matter which listener we use
-	S_StartSound (NULL, 0, (soundChannel_t)channelNum, sfxHandle );
+	S_StartSound (NULL, 0, channelNum, sfxHandle );
 }
 
 
@@ -1367,12 +1230,10 @@ void S_KillEntityChannel(int entnum, int chan)
 		return;
 	}
 
-	// This code is only used by the UI stopVoice command now, this check
-	// screws that usage up.
-//	if ( entnum < s_numListeners && chan == CHAN_VOICE ) {
-//		// don't kill player death sounds
-//		return;
-//	}
+	if ( entnum < s_numListeners && chan == CHAN_VOICE ) {
+		// don't kill player death sounds
+		return;
+	}
 
 	ch = s_channels;
 	for (i = 0; i < s_numChannels; i++, ch++)
@@ -1427,7 +1288,6 @@ void S_StopLoopingSound( int entnum )
 
 // returns length in milliseconds of supplied sound effect...  (else 0 for bad handle now)
 //
-extern int Sys_GetSoundFileCodeSize(unsigned int code);
 float S_GetSampleLengthInMilliSeconds( sfxHandle_t sfxHandle)
 {
 	sfx_t *sfx;
@@ -1443,7 +1303,7 @@ float S_GetSampleLengthInMilliSeconds( sfxHandle_t sfxHandle)
 
 	sfx = &s_sfxBlock[sfxHandle];
 
-	int size = Sys_GetSoundFileCodeSize(sfx->iFileCode);
+	int size = Sys_GetFileCodeSize(sfx->iFileCode);
 	if (size < 0) return 0;
 
 	return 1000 * size / (22050 / 2);
@@ -1549,14 +1409,6 @@ void S_StopAllSounds(void) {
 	S_StopSounds();
 }
 
-void S_StopAllSoundsExceptMusic(void) {
-	if ( !s_soundStarted ) {
-		return;
-	}
-
-	S_StopSounds();
-}
-
 /*
 ==============================================================
 
@@ -1596,7 +1448,7 @@ S_AddLoopingSound
 Called during entity generation for a frame
 ==================
 */
-void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfxHandle, soundChannel_t chan ) {
+void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfxHandle, int chan ) {
 	/*const*/ sfx_t *sfx;
 
   	if ( !s_soundStarted || s_soundMuted || !s_loopEnabled ) {
@@ -1662,7 +1514,7 @@ void S_AddAmbientLoopingSound( const vec3_t origin, unsigned char volume, sfxHan
 	loopSounds[numLoopSounds].origin[2] = origin[2];
 	
 	loopSounds[numLoopSounds].sfx = sfx;	
-	loopSounds[numLoopSounds].volume = volume / 2;
+	loopSounds[numLoopSounds].volume = volume;
 	loopSounds[numLoopSounds].entnum = -1;
 	numLoopSounds++;
 }
@@ -1729,6 +1581,12 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], qboolean 
 
 	int index = 0;
 
+#if 0	
+	extern qboolean g_isMultiplayer;
+	if ( g_isMultiplayer ) {
+		index = entityNum;
+	}
+#endif
 
 	if ( index >= s_numListeners ) {
 		return;
@@ -1894,26 +1752,46 @@ static void UpdateAttenuation(channel_t *ch)
 {
 	if (!ch->b2D)
 	{
-		switch (ch->entchannel)
+		/*
+		if ( ch->entchannel == CHAN_VOICE || ch->entchannel == CHAN_VOICE_ATTEN || ch->entchannel == CHAN_VOICE_GLOBAL )
 		{
-		case CHAN_VOICE:
-			alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, 2000.0f); // bring up 3d voice volumes
-			break;
-		case CHAN_VOICE_ATTEN:
-			alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, 300.0f);
-			break;
-		case CHAN_LESS_ATTEN:
-		case CHAN_ANNOUNCER:
-		case CHAN_LOCAL_SOUND:
-		case CHAN_BODY:
-		case CHAN_VOICE_GLOBAL:
-		case CHAN_LOCAL:
 			alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, 1500.0f);
-			break;
-		default:
-			alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, 300.0f);
-			break;
 		}
+		else
+		{
+			alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, 400.0f);
+		}
+		*/
+#if 0
+		extern qboolean g_isMultiplayer;
+		if (!g_isMultiplayer)
+		{
+#endif
+			switch (ch->entchannel)
+			{
+			case CHAN_VOICE:
+				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE * 3.f);
+				break;
+			case CHAN_LESS_ATTEN:
+				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE * 8.f);
+				break;
+			case CHAN_VOICE_ATTEN:
+				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE * 1.35f);
+				break;
+			case CHAN_VOICE_GLOBAL:
+				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE * 100.f);
+				break;
+			default:
+				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE);
+				break;
+			}
+#if 0
+		}
+		else
+		{
+			alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE * 2.f);
+		}
+#endif
 	}
 }
 
@@ -1949,8 +1827,7 @@ void UpdateLoopingSounds()
 			float num = 1;
 			for (int k = j+1; k < numLoopSounds; ++k)
 			{
-				if (loopSounds[k].sfx == loop->sfx &&
-					loopSounds[k].entnum == loop->entnum)
+				if (loopSounds[k].sfx == loop->sfx)
 				{
 					loop->origin[0] += loopSounds[k].origin[0];
 					loop->origin[1] += loopSounds[k].origin[1];
@@ -2219,7 +2096,7 @@ static void S_PlayEx_f( void ) {
 
 	entchannel = atoi(Cmd_Argv(5));
 
-	S_StartSound(origin, 0, (soundChannel_t)entchannel, h);
+	S_StartSound(origin, 0, entchannel, h);
 }
 #endif
 
@@ -3005,13 +2882,14 @@ int SND_GetMemoryUsed(void)
 
 void SND_update(sfx_t *sfx) 
 {
-	while ( SND_GetMemoryUsed() > (3 * 1024 * 1024))	// s_soundpoolmegs
+	while ( SND_GetMemoryUsed() > (s_soundpoolmegs->integer * 1024 * 1024 * 3 / 4))
 	{
 		int iBytesFreed = SND_FreeOldestSound(sfx);
 		if (iBytesFreed == 0)
 			break;	// sanity
 	}
 }
+
 
 // free any allocated sfx mem...
 //
@@ -3060,17 +2938,18 @@ static void S_FreeAllSFXMem(void)
 // returns number of bytes freed up...
 //
 // new param is so we can be usre of not freeing ourselves (without having to rely on possible uninitialised timers etc)
-// Super new version just throws out ALL sound. Bwa ha ha!
+//
 int SND_FreeOldestSound(sfx_t *pButNotThisOne /* = NULL */) 
 {	
 	int iBytesFreed = 0;
 	sfx_t *sfx;
 
+	int	iOldest = Com_Milliseconds();
+	int	iUsed	= 0;
+	bool bDemandLoad = false;
+
 	// start on 1 so we never dump the default sound...
 	//
-
-	Com_Printf(" Trashing sounds.\n");
-	
 	for (int i = 0; i < MAX_SFX; ++i)
 	{
 		if (s_sfxCodes[i] == INVALID_CODE || i == s_defaultSound) continue;
@@ -3079,10 +2958,14 @@ int SND_FreeOldestSound(sfx_t *pButNotThisOne /* = NULL */)
 
 		if (sfx != pButNotThisOne)
 		{
-			// Don't throw out the default sound, or sounds that are not in memory
+			// Don't throw out the default sound, sounds that
+			// are not in memory, or sounds newer then the oldest.
+			// Also, throw out demand load sounds first.
 			//
 			if (!(sfx->iFlags & SFX_FLAG_DEFAULT) && 
-				(sfx->iFlags & SFX_FLAG_RESIDENT))
+				(sfx->iFlags & SFX_FLAG_RESIDENT) && 
+				(!bDemandLoad || (sfx->iFlags & SFX_FLAG_DEMAND)) &&
+				sfx->iLastTimeUsed < iOldest) 
 			{
 				// new bit, we can't throw away any sfx_t struct in use by a channel, 
 				// else the paint code will crash...
@@ -3099,10 +2982,18 @@ int SND_FreeOldestSound(sfx_t *pButNotThisOne /* = NULL */)
 				{
 					// this sfx_t struct wasn't used by any channels, so we can lose it...
 					//			
-					iBytesFreed += SND_FreeSFXMem( &s_sfxBlock[i] );
+					iUsed = i;
+					iOldest = sfx->iLastTimeUsed;
+					bDemandLoad = (sfx->iFlags & SFX_FLAG_DEMAND);
 				}
 			}
 		}
+	}
+
+	if (iUsed)
+	{
+		sfx = &s_sfxBlock[ iUsed ];
+		iBytesFreed = SND_FreeSFXMem(sfx);
 	}
 
 	return iBytesFreed;
@@ -3197,63 +3088,3 @@ qboolean S_FileExists( const char *psFilename )
 	return qtrue;
 }
 
-void S_Precache( const char *name )
-{
-	S_LoadSound( S_RegisterSound( name ) );
-}
-
-const char	*basicSounds[] = 
-{
-	"death1.wav",
-	"death2.wav",
-	"death3.wav",
-	"jump1.wav",
-	"pain25.wav",
-	"pain50.wav",
-	"pain75.wav",
-	"pain100.wav",
-	"gurp1.wav",
-	"gurp2.wav",
-	"drown.wav",
-	"gasp.wav",
-	"land1.wav",
-	"falling1.wav"
-};
-
-const int numBasicSounds = sizeof(basicSounds) / sizeof(basicSounds[0]);
-
-void S_LoadCommonSounds( void )
-{
-	int i;
-
-	S_Precache( "sound/weapons/saber/saberon.wav" );
-	S_Precache( "sound/weapons/saber/saberonquick.wav" );
-	S_Precache( "sound/weapons/saber/saberoff.wav" );
-	S_Precache( "sound/weapons/saber/saberoffquick.wav" );
-	S_Precache( "sound/weapons/saber/saberspinoff.wav" );
-
-	for ( i = 1; i < 4; i++ )
-		S_Precache( va("sound/weapons/saber/saberhit%d.wav", i) );
-	for ( i = 1; i < 4; i++ )
-		S_Precache( va("sound/weapons/saber/saberhitwall%d.wav", i) );
-	for ( i = 1; i < 10; i++ )
-		S_Precache( va("sound/weapons/saber/saberhup%d.wav", i) );
-
-	S_Precache( "sound/weapons/saber/saber_catch.wav" );
-
-	for ( i = 1; i < 4; i++ )
-		S_Precache( va("sound/weapons/saber/saberbounce%d.wav", i) );
-	for ( i = 1; i < 10; i++ )
-		S_Precache( va("sound/weapons/saber/saberblock%d.wav", i) );
-
-	// Which player sounds do we need?
-	char *jaden;
-	extern cvar_t *g_sex;
-	if( g_sex->string[0] == 'f' || g_sex->string[0] == 'F' )
-		jaden = "jaden_fmle";
-	else
-		jaden = "jaden_male";
-
-	for( i = 0; i < numBasicSounds; ++i )
-		S_Precache( va("sounds/chars/%s/misc/%s", jaden, basicSounds[i]) );
-}

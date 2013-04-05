@@ -280,7 +280,6 @@ void CM_TestInLeaf( traceWork_t *tw, trace_t &trace, cLeaf_t *leaf, clipMap_t *l
 		}
 		
 #ifndef BSPC
-/*
 		if (com_terrainPhysics->integer && cmg.landScape && (b->contents & CONTENTS_TERRAIN) )
 		{
 			// Invalidate the checkcount for terrain as the terrain brush has to be processed
@@ -291,7 +290,6 @@ void CM_TestInLeaf( traceWork_t *tw, trace_t &trace, cLeaf_t *leaf, clipMap_t *l
 			// If inside a terrain brush don't bother with regular brush collision
 			continue;
 		}
-*/
 #endif
 		CM_TestBoxInBrush( tw, trace, b );
 		if ( trace.allsolid ) {
@@ -702,7 +700,6 @@ CM_TraceThroughTerrain
 
 #ifndef BSPC
 
-/*
 void CM_TraceThroughTerrain( traceWork_t *tw, trace_t &trace, cbrush_t *brush )
 {
 	CCMLandScape		*landscape;
@@ -799,11 +796,9 @@ void CM_TraceThroughTerrain( traceWork_t *tw, trace_t &trace, cbrush_t *brush )
 		}
 	}
 }
-*/
 
 #ifdef TEST_TERRAIN_PHYSICS
 
-/*
 void CM_TraceThroughTerrain( traceWork_t *tw, trace_t &trace, CCMLandScape *landscape)
 {
 	vec3_t				tBegin, tEnd, tDistance, tStep;
@@ -900,7 +895,6 @@ void CM_TraceThroughTerrain( traceWork_t *tw, trace_t &trace, CCMLandScape *land
 		}
 	}
 }
-*/
 
 #endif // #ifdef TEST_TERRAIN_PHYSICS
 
@@ -1000,7 +994,6 @@ void CM_TraceThroughLeaf( traceWork_t *tw, trace_t &trace, clipMap_t *local, cLe
 		}
 
 #ifndef BSPC
-/*
 		if (com_terrainPhysics->integer && cmg.landScape && (b->contents & CONTENTS_TERRAIN) )
 		{
 			// Invalidate the checkcount for terrain as the terrain brush has to be processed
@@ -1010,7 +1003,6 @@ void CM_TraceThroughLeaf( traceWork_t *tw, trace_t &trace, clipMap_t *local, cLe
 			CM_TraceThroughTerrain( tw, trace, b );
 		}
 		else
-*/
 #endif
 		{
 			CM_TraceThroughBrush( tw, trace, b, false );
@@ -1379,7 +1371,6 @@ void CM_TraceToLeaf( traceWork_t *tw, trace_t &trace, cLeaf_t *leaf, clipMap_t *
 		}
 
 #ifndef BSPC
-/*
 		if ( com_terrainPhysics->integer && cmg.landScape && (b->contents & CONTENTS_TERRAIN) )
 		{
 			// Invalidate the checkcount for terrain as the terrain brush has to be processed
@@ -1390,7 +1381,6 @@ void CM_TraceToLeaf( traceWork_t *tw, trace_t &trace, cLeaf_t *leaf, clipMap_t *
 			// If inside a terrain brush don't bother with regular brush collision
 			continue;
 		}
-*/
 #endif
 
 		CM_TraceThroughBrush( tw, trace, b, false);

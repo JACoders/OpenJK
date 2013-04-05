@@ -76,12 +76,8 @@
 #define FEEDER_MOVES						0x15			// moves for the data pad moves screen
 #define FEEDER_MOVES_TITLES					0x16			// move titles for the data pad moves screen
 #define FEEDER_LANGUAGES					0x17			// the list of languages 
-#define FEEDER_PROFILES						0x18			//list of saved profiles
-#define FEEDER_LEVELSELECT					0x19			// list of levels for level select cheat screen
 
-#define UI_SOFT_KEYBOARD_ACCEPT	197
-#define UI_SOFT_KEYBOARD_DELETE	198
-#define UI_SOFT_KEYBOARD		199
+
 #define UI_VERSION				200
 #define UI_HANDICAP				200
 #define UI_EFFECTS				201
@@ -140,4 +136,3 @@
 #define UI_PREVIEWCINEMATIC		254
 #define UI_STARTMAPCINEMATIC	255
 #define UI_MAPS_SELECTION		256
-

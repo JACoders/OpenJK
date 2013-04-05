@@ -663,17 +663,6 @@ public:
 	{
 		fileHandle_t f = 0;
 		FS_FOpenFileRead( GenCachedWeatherFilename(), &f, qfalse );
-
-#ifdef _XBOX
-		// Our checksums don't work anyway - so we trust that the file is correct:
-		if ( f )
-		{
-			WeatherFileHeader_t WeatherFileHeaderFromDisk;
-			FS_Read(&WeatherFileHeaderFromDisk, sizeof(WeatherFileHeaderFromDisk), f);
-
-			return f;
-		}
-#else
 		if ( f )
 		{
 			// ok, it exists, but is it valid for this map?...
@@ -693,7 +682,6 @@ public:
             VID_Printf( PRINT_WARNING, "( Cached weather file \"%s\" out of date, regenerating... )\n",GenCachedWeatherFilename());
 			FS_FCloseFile( f );
 		}
-#endif
 		else
 		{
 			VID_Printf( PRINT_WARNING, "( No cached weather file found, generating... )\n");

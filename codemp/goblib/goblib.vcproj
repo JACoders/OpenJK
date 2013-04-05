@@ -51,9 +51,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Oy-"
 				Optimization="2"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
+				InlineFunctionExpansion="1"
 				OmitFramePointers="FALSE"
 				OptimizeForProcessor="2"
 				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB"
@@ -72,44 +70,6 @@
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile=".\..\x_exe\Release\goblib.lib"/>
-			<Tool
-				Name="VCPostBuildEventTool"/>
-			<Tool
-				Name="VCPreBuildEventTool"/>
-			<Tool
-				Name="VCPreLinkEventTool"/>
-		</Configuration>
-		<Configuration
-			Name="FinalBuild|Xbox"
-			OutputDirectory="FinalBuild"
-			IntermediateDirectory="FinalBuild"
-			ConfigurationType="4"
-			CharacterSet="2">
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				GlobalOptimizations="TRUE"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="TRUE"
-				FavorSizeOrSpeed="1"
-				OmitFramePointers="TRUE"
-				OptimizeForProcessor="2"
-				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;FINAL_BUILD;_FINAL"
-				StringPooling="TRUE"
-				RuntimeLibrary="0"
-				BufferSecurityCheck="TRUE"
-				EnableFunctionLevelLinking="TRUE"
-				EnableEnhancedInstructionSet="1"
-				UsePrecompiledHeader="0"
-				PrecompiledHeaderFile="$(OutDir)/$(ProjectName).pch"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="FALSE"
-				DebugInformationFormat="3"/>
-			<Tool
-				Name="VCCustomBuildTool"/>
-			<Tool
-				Name="VCLibrarianTool"
-				OutputFile=".\..\x_exe\FinalBuild\goblib.lib"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -136,12 +96,6 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\zlib\compress.c">
@@ -153,12 +107,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -178,12 +126,6 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\zlib\deflate.c">
@@ -195,12 +137,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -220,12 +156,6 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\zlib\infblock.c">
@@ -237,12 +167,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -262,12 +186,6 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\zlib\inffast.c">
@@ -279,12 +197,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -304,12 +216,6 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\zlib\inftrees.c">
@@ -321,12 +227,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -346,12 +246,6 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\zlib\trees.c">
@@ -363,12 +257,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
@@ -388,12 +276,6 @@
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\zlib\zutil.c">
@@ -405,12 +287,6 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Xbox">
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="FinalBuild|Xbox">
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"/>

@@ -6,6 +6,7 @@
 #include "tr_local.h"
 
 #ifdef VV_LIGHTING
+#include "tr_lightmanager.h"
 #include "../win32/glw_win_dx8.h"
 #include "../win32/win_lighteffects.h"
 #endif
@@ -238,13 +239,11 @@ void CIN_UploadCinematic(int handle);
 void R_BindAnimatedImage( textureBundle_t *bundle ) {
 	int		index;
 
-/*
 	if ( bundle->isVideoMap ) {
 		CIN_RunCinematic(bundle->videoMapHandle);
 		CIN_UploadCinematic(bundle->videoMapHandle);
 		return;
 	}
-*/
 
 	if ((r_fullbright->value /*|| tr.refdef.doFullbright */) && bundle->isLightmap)
 	{
@@ -373,15 +372,11 @@ void RB_BeginSurface( shader_t *shader, int fogNum ) {
 	tess.currentStageIteratorFunc = shader->sky ? RB_StageIteratorSky : RB_StageIteratorGeneric;
 
 	tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
-//	if (tess.shader->clampTime && tess.shaderTime >= tess.shader->clampTime) {
-//		tess.shaderTime = tess.shader->clampTime;
-//	}
+	if (tess.shader->clampTime && tess.shaderTime >= tess.shader->clampTime) {
+		tess.shaderTime = tess.shader->clampTime;
+	}
 
 	tess.fading = false;
-
-#ifdef _XBOX
-	tess.setTangents = false;
-#endif
 
 	tess.registration++;
 }
@@ -451,7 +446,7 @@ static void DrawMultitextured( shaderCommands_t *input, int stage ) {
 #ifdef VV_LIGHTING
 static void BuildTangentVectors( void ) {
 
-	memset(tess.tangent, 0, sizeof(vec4_t) * SHADER_MAX_VERTEXES);
+	memset(tess.tangent, 0, sizeof(vec3_t) * SHADER_MAX_VERTEXES);
 
 	for(int i = 0; i < tess.numIndexes; i += 3)
 	{
@@ -467,9 +462,6 @@ static void BuildTangentVectors( void ) {
 
 		CrossProduct(vec1, vec2, cp);
 
-		if(cp[0] == 0.0f)
-			cp[0] = 0.001f;
-
 		du[0] = -cp[1] / cp[0];
 		dv[0] = -cp[2] / cp[0];
 
@@ -483,9 +475,6 @@ static void BuildTangentVectors( void ) {
 
 		CrossProduct(vec1, vec2, cp);
 
-		if(cp[0] == 0.0f)
-			cp[0] = 0.001f;
-
 		du[1] = -cp[1] / cp[0];
 		dv[1] = -cp[2] / cp[0];
 
@@ -498,9 +487,6 @@ static void BuildTangentVectors( void ) {
 		vec2[2] = tess.svars.texcoords[0][tess.indexes[i+2]][1] - tess.svars.texcoords[0][tess.indexes[i]][1];
 
 		CrossProduct(vec1, vec2, cp);
-
-		if(cp[0] == 0.0f)
-			cp[0] = 0.001f;
 
 		du[2] = -cp[1] / cp[0];
 		dv[2] = -cp[2] / cp[0];
@@ -517,7 +503,7 @@ static void BuildTangentVectors( void ) {
 		tess.tangent[tess.indexes[i+2]][1] += du[1];
 		tess.tangent[tess.indexes[i+2]][2] += du[2];
 	}
-	
+
 	for(i = 0; i < tess.numVertexes; i++)
 	{
 		VectorNormalizeFast(tess.tangent[i]);
@@ -533,6 +519,7 @@ Perform dynamic lighting with another rendering pass
 ===================
 */
 #ifndef VV_LIGHTING
+
 static void ProjectDlightTexture2( void ) {
 	int		i, l;
 	vec3_t	origin;
@@ -752,7 +739,7 @@ static void ProjectDlightTexture2( void ) {
 
 
 		dStage = NULL;
-		if (tess.shader)
+		if (tess.shader && qglActiveTextureARB)
 		{
 			int i = 0;
 			while (i < tess.shader->numUnfoggedPasses)
@@ -1181,7 +1168,9 @@ static void ProjectDlightTexture( void ) {
 		backEnd.pc.c_dlightIndexes += numIndexes;
 	}
 }
+
 #endif // VV_LIGHTING
+
 
 /*
 ===================
@@ -1229,7 +1218,7 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 {
 	int i;
 	qboolean killGen = qfalse;
-	alphaGen_t forceAlphaGen = (alphaGen_t) pStage->alphaGen;//set this up so we can override below
+	alphaGen_t forceAlphaGen = pStage->alphaGen;//set this up so we can override below
 
 	if ( tess.shader != tr.projectionShadowShader && tess.shader != tr.shadowShader && 
 		( backEnd.currentEntity->e.renderfx & (RF_DISINTEGRATE1|RF_DISINTEGRATE2)))
@@ -1302,10 +1291,18 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 		memset( tess.svars.colors, color, sizeof(DWORD) * tess.numVertexes );
 		break;
 	case CGEN_LIGHTING_DIFFUSE:
-		RB_CalcDiffuseColor( tess.svars.colors );
+#ifdef VV_LIGHTING
+		VVLightMan.RB_CalcDiffuseColor( tess.svars.colors );
+#else
+		RB_CalcDiffuseColor( ( unsigned char * ) tess.svars.colors );
+#endif
 		break;
 	case CGEN_LIGHTING_DIFFUSE_ENTITY:
-		RB_CalcDiffuseEntityColor( tess.svars.colors );
+#ifdef VV_LIGHTING
+		VVLightMan.RB_CalcDiffuseEntityColor( tess.svars.colors );
+#else
+		RB_CalcDiffuseEntityColor( ( unsigned char * ) tess.svars.colors );
+#endif
 		if ( forceAlphaGen == AGEN_IDENTITY && 
 			backEnd.currentEntity->e.shaderRGBA[3] == 0xff 
 			)
@@ -1410,7 +1407,7 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 	// alphaGen
 	//
 	DWORD rgb;
-	switch ( forceAlphaGen )
+	switch ( pStage->alphaGen )
 	{
 	case AGEN_SKIP:
 		break;
@@ -2023,12 +2020,10 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		}
 
 		// Reject this stage if it's not a glow stage but we are doing a glow pass.
-/*
 		if ( g_bRenderGlowingObjects && !pStage->glow )
 		{
 			continue;
 		}
-*/
 
 #ifdef _XBOX
 		tess.currentPass = stage;
@@ -2101,7 +2096,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			qglNormalPointer(GL_FLOAT, 16, tess.normal );
 		}
 
-		/*if(pStage->isSpecular)
+		if(pStage->isSpecular)
 		{
 			qglEnableClientState( GL_NORMAL_ARRAY );
 			qglNormalPointer(GL_FLOAT, 16, tess.normal );
@@ -2113,7 +2108,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			glw_state->lightEffects->RenderSpecular();
 			qglDisableClientState( GL_NORMAL_ARRAY );
 			continue;
-		}*/
+		}
 		if(pStage->isEnvironment)
 		{
 			qglEnableClientState( GL_NORMAL_ARRAY );
@@ -2409,12 +2404,10 @@ void RB_EndSurface( void ) {
 		Com_Error (ERR_DROP, "RB_EndSurface() - SHADER_MAX_VERTEXES hit");
 	}
 
-/*
 	if ( tess.shader == tr.shadowShader ) {
 		RB_ShadowTessEnd();
 		return;
 	}
-*/
 
 	// for debugging of sort order issues, stop rendering after a given sort value
 	if ( r_debugSort->integer && r_debugSort->integer < tess.shader->sort ) {

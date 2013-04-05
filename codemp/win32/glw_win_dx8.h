@@ -67,12 +67,6 @@ struct glwstate_t
 		D3DTEXTUREFILTERTYPE minFilter, mipFilter, magFilter;
 		D3DTEXTUREADDRESS wrapU, wrapV;
 		float anisotropy;
-
-		// Bookkeeping for insane texture swapper:
-		DWORD size;
-		bool inMemory;
-		void *data;
-		int fileOffset; //Must start as -1!
 	};
 
 	typedef std::map<GLuint, TextureInfo> texturexlat_t;
@@ -149,7 +143,7 @@ struct glwstate_t
 	D3DRECT scissorBox;
 
 	// Directional Light
-	D3DLIGHT8	dirLight[2];
+	D3DLIGHT8	dirLight;
 	D3DMATERIAL8 mtrl;
 
 	// Description of current shader
@@ -175,10 +169,9 @@ struct glwstate_t
 };
 
 extern glwstate_t *glw_state;
-extern glwstate_t g_glwState;
 
 void renderObject_HACK();
-void renderObject_Light( int numIndexes, const unsigned short *indexes );
+void renderObject_Light();
 void renderObject_Env();
 void renderObject_Bump();
 bool CreateVertexShader( const CHAR* strFilename, const DWORD* pdwVertexDecl, DWORD* pdwVertexShader );

@@ -25,11 +25,13 @@ extern qboolean Wampa_CheckDropVictim( gentity_t *self, qboolean excludeMe );
 extern	cvar_t	*g_debugDamage;
 extern qboolean	stop_icarus;
 extern cvar_t	*g_dismemberment;
-extern cvar_t	*g_dismemberProbabilities;
 extern cvar_t	*g_saberRealisticCombat;
+extern cvar_t	*g_saberPickuppableDroppedSabers;
 extern cvar_t		*g_timescale;
 extern cvar_t		*d_slowmodeath;
 extern gentity_t *player;
+extern cvar_t	*debug_subdivision;
+extern cvar_t	*g_dismemberProbabilities;
 
 gentity_t *g_lastClientDamaged;
 
@@ -77,6 +79,7 @@ static int G_PickDeathAnim( gentity_t *self, vec3_t point, int damage, int mod, 
 static void G_TrackWeaponUsage( gentity_t *self, gentity_t *inflictor, int add, int mod );
 static qboolean G_Dismemberable( gentity_t *self, int hitLoc );
 extern gitem_t	*FindItemForAmmo( ammo_t ammo );
+extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
 
 
 qboolean G_GetRootSurfNameWithVariant( gentity_t *ent, const char *rootSurfName, char *returnSurfName, int returnSize );
@@ -125,9 +128,37 @@ gentity_t *TossClientItems( gentity_t *self )
 	weapon = self->s.weapon;
 	if ( weapon == WP_SABER )
 	{
-		if ( self->weaponModel[0] < 0 || (self->client->ps.saber[0].disarmable && WP_SaberLose( self, NULL )) )
-		{
+		if ( self->weaponModel[0] < 0 )
+		{//don't have one in right hand
 			self->s.weapon = WP_NONE;
+		}
+		else if ( !(self->client->ps.saber[0].saberFlags&SFL_NOT_DISARMABLE) 
+			|| g_saberPickuppableDroppedSabers->integer )
+		{//okay to drop it
+			if ( WP_SaberLose( self, NULL ) )
+			{
+				self->s.weapon = WP_NONE;
+			}
+		}
+		if ( g_saberPickuppableDroppedSabers->integer )
+		{//drop your left one, too
+			if ( self->weaponModel[1] >= 0 )
+			{//have one in left
+				if ( !(self->client->ps.saber[0].saberFlags&SFL_NOT_DISARMABLE) 
+					|| g_saberPickuppableDroppedSabers->integer )
+				{//okay to drop it
+					//just drop an item
+					if ( self->client->ps.saber[1].name
+						&& self->client->ps.saber[1].name[0] )
+					{//have a valid string to use for saberType
+						//turn it into a pick-uppable item!
+						if ( G_DropSaberItem( self->client->ps.saber[1].name, self->client->ps.saber[1].blade[0].color, self->client->renderInfo.handLPoint, self->client->ps.velocity, self->currentAngles ) != NULL )
+						{//dropped it
+							WP_RemoveSaber( self, 1 );
+						}
+					}
+				}
+			}
 		}
 	}
 	else if ( weapon == WP_BLASTER_PISTOL )
@@ -218,7 +249,7 @@ gentity_t *TossClientItems( gentity_t *self )
 				&& weapon != WP_TRIP_MINE
 				&& weapon != WP_DET_PACK )
 			{
-				gi.G2API_InitGhoul2Model( dropped->ghoul2, item->world_model, G_ModelIndex( item->world_model ));
+				gi.G2API_InitGhoul2Model( dropped->ghoul2, item->world_model, G_ModelIndex( item->world_model ), NULL, NULL, 0, 0);
 				dropped->s.radius = 10;
 			}
 		}
@@ -443,13 +474,14 @@ void G_AlertTeam( gentity_t *victim, gentity_t *attacker, float radius, float so
 	gentity_t	*radiusEnts[ 128 ];
 	vec3_t		mins, maxs;
 	int			numEnts;
+	int			i;
 	float		distSq, sndDistSq = (soundDist*soundDist);
 
 	if ( attacker == NULL || attacker->client == NULL )
 		return;
 
 	//Setup the bbox to search in
-	for ( int i = 0; i < 3; i++ )
+	for ( i = 0; i < 3; i++ )
 	{
 		mins[i] = victim->currentOrigin[i] - radius;
 		maxs[i] = victim->currentOrigin[i] + radius;
@@ -1216,7 +1248,8 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 	}
 #endif //_DEBUG
 
-	if ( g_saberRealisticCombat->integer > 1 )
+	if ( g_saberRealisticCombat->integer > 1
+		|| debug_subdivision->integer )
 	{
 		dismember = qtrue;
 	}
@@ -1232,13 +1265,13 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 	{
 		dismember = qtrue;
 	}
-	else if ( g_dismemberment->integer >= 11381138 || !ent->client->dismembered )
+	else if ( debug_subdivision->integer || !ent->client->dismembered )
 	{
 		if ( dir && (dir[0] || dir[1] || dir[2]) &&
 			bladeDir && (bladeDir[0] || bladeDir[1] || bladeDir[2]) )
 		{//we care about direction (presumably for dismemberment)
-			if ( g_dismemberProbabilities->value<=0.0f||G_Dismemberable( ent, *hitLoc ) )
-			{//either we don't care about probabilties or the probability let us continue
+			if (  g_dismemberProbabilities->value<=0.0f||G_Dismemberable( ent, *hitLoc ) )
+			{//the probability let us continue
 				char *tagName = NULL;
 				float	aoa = 0.5f;
 				//dir must be roughly perpendicular to the hitLoc's cap bolt
@@ -1658,7 +1691,7 @@ void LimbThink( gentity_t *ent )
 	// trace a line from the previous position to the current position,
 	// ignoring interactions with the missile owner
 	gi.trace( &tr, ent->currentOrigin, ent->mins, ent->maxs, origin, 
-		ent->owner ? ent->owner->s.number : ENTITYNUM_NONE, ent->clipmask );
+		ent->owner ? ent->owner->s.number : ENTITYNUM_NONE, ent->clipmask, (EG2_Collision)0, 0 );
 
 	VectorCopy( tr.endpos, ent->currentOrigin );
 	if ( tr.startsolid ) 
@@ -2005,7 +2038,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 	//G_SetAngles( limb, ent->currentAngles );
 	VectorCopy( newPoint, limb->s.pos.trBase );
 //1) copy the g2 instance of the victim into the limb
-	gi.G2API_CopyGhoul2Instance( ent->ghoul2, limb->ghoul2 );
+	gi.G2API_CopyGhoul2Instance( ent->ghoul2, limb->ghoul2, 0 );
 	limb->playerModel = 0;//assumption!
 	limb->craniumBone = ent->craniumBone;
 	limb->cervicalBone = ent->cervicalBone;
@@ -2020,7 +2053,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 		newBolt = gi.G2API_AddBolt( &limb->ghoul2[limb->playerModel], limbTagName );
 		if ( newBolt != -1 )
 		{
-			G_PlayEffect( G_EffectIndex("blaster/smoke_bolton"), limb->playerModel, newBolt, limb->s.number, newPoint);
+			G_PlayEffect( G_EffectIndex("saber/limb_bolton"), limb->playerModel, newBolt, limb->s.number, newPoint);
 		}
 	}
 	/*
@@ -2056,7 +2089,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 		//play the proper dismember anim on the limb
 		gi.G2API_SetBoneAnim(&limb->ghoul2[limb->playerModel], 0, animations[limbAnim].firstFrame, 
 							animations[limbAnim].numFrames + animations[limbAnim].firstFrame,
-							BONE_ANIM_OVERRIDE_FREEZE, 1, cg.time );
+							BONE_ANIM_OVERRIDE_FREEZE, 1, cg.time, -1, -1 );
 	}
 	if ( rotateBone )
 	{
@@ -2151,15 +2184,15 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 	VectorSet( limb->maxs, 3.0f, 3.0f, 6.0f );
 
 	//make sure it doesn't start in solid
-	gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+	gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 	if ( trace.startsolid )
 	{
 		limb->s.pos.trBase[2] -= limb->mins[2];
-		gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+		gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 		if ( trace.startsolid )
 		{
 			limb->s.pos.trBase[2] += limb->mins[2];
-			gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+			gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 			if ( trace.startsolid )
 			{//stuck?  don't remove
 				G_FreeEntity( limb );
@@ -2242,9 +2275,9 @@ static qboolean G_Dismemberable( gentity_t *self, int hitLoc )
 	{//cannot dismember me right now
 		return qfalse;
 	}
-	if ( g_dismemberment->integer < 11381138 && g_saberRealisticCombat->integer < 2 )
+	if ( !debug_subdivision->integer && g_saberRealisticCombat->integer < 2 )
 	{
-		if ( g_dismemberProbabilities->value > 0.0f )
+		if ( g_dismemberProbabilities->value > 0.0f ) 
 		{//use the ent-specific dismemberProbabilities
 			float dismemberProb = 0;
 			// check which part of the body it is. Then check the npc's probability
@@ -2294,7 +2327,7 @@ static qboolean G_Dismemberable2( gentity_t *self, int hitLoc )
 	{//cannot dismember me right now
 		return qfalse;
 	}
-	if ( g_dismemberment->integer < 11381138 && g_saberRealisticCombat->integer < 2 )
+	if ( !debug_subdivision->integer && g_saberRealisticCombat->integer < 2 )
 	{
 		if ( g_dismemberProbabilities->value <= 0.0f )
 		{//add the passed-in damage to the locationDamage array, check to see if it's taken enough damage to actually dismember
@@ -2337,7 +2370,7 @@ qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, 
 //extern cvar_t	*g_iscensored;
 	// dismemberment -- FIXME: should have a check for how long npc has been dead so people can't
 	// continue to dismember a dead body long after it's been dead
-	//NOTE that you can only cut one thing off unless the dismemberment is >= 11381138
+	//NOTE that you can only cut one thing off unless the debug_subdivisions is on
 #ifdef GERMAN_CENSORED
 	if ( 0 ) //germany == censorship
 #else
@@ -3889,7 +3922,12 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		}
 		else
 		{
-			if ( (  
+			if ( g_saberPickuppableDroppedSabers->integer )
+			{//always drop your sabers
+				TossClientItems( self );
+				self->client->ps.weapon = self->s.weapon = WP_NONE;
+			}
+			else if ( (  
 					(hitLoc != HL_HAND_RT&&hitLoc !=HL_CHEST_RT&&hitLoc!=HL_ARM_RT&&hitLoc!=HL_BACK_LT)
 					|| self->client->dismembered
 					|| meansOfDeath != MOD_SABER 
@@ -5245,7 +5283,7 @@ static int G_CheckForLedge( gentity_t *self, vec3_t fallCheckDir, float checkDis
 
 	VectorMA( self->currentOrigin, checkDist, fallCheckDir, end );
 	//Should have clip burshes masked out by now and have bbox resized to death size
-	gi.trace( &tr, self->currentOrigin, self->mins, self->maxs, end, self->s.number, self->clipmask );
+	gi.trace( &tr, self->currentOrigin, self->mins, self->maxs, end, self->s.number, self->clipmask, (EG2_Collision)0, 0 );
 	if ( tr.allsolid || tr.startsolid )
 	{
 		return 0;
@@ -5254,7 +5292,7 @@ static int G_CheckForLedge( gentity_t *self, vec3_t fallCheckDir, float checkDis
 	VectorCopy( start, end );
 	end[2] -= 256;
 
-	gi.trace( &tr, start, self->mins, self->maxs, end, self->s.number, self->clipmask );
+	gi.trace( &tr, start, self->mins, self->maxs, end, self->s.number, self->clipmask, (EG2_Collision)0, 0 );
 	if ( tr.allsolid || tr.startsolid )
 	{
 		return 0;
@@ -6039,6 +6077,35 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 	{
 		knockback = 0;
 	}
+
+	if ( (dflags&DAMAGE_SABER_KNOCKBACK1) )
+	{
+		if ( attacker && attacker->client )
+		{
+			knockback *= attacker->client->ps.saber[0].knockbackScale;
+		}
+	}
+	if ( (dflags&DAMAGE_SABER_KNOCKBACK1_B2) )
+	{
+		if ( attacker && attacker->client )
+		{
+			knockback *= attacker->client->ps.saber[0].knockbackScale2;
+		}
+	}
+	if ( (dflags&DAMAGE_SABER_KNOCKBACK2) )
+	{
+		if ( attacker && attacker->client )
+		{
+			knockback *= attacker->client->ps.saber[1].knockbackScale;
+		}
+	}
+	if ( (dflags&DAMAGE_SABER_KNOCKBACK2_B2) )
+	{
+		if ( attacker && attacker->client )
+		{
+			knockback *= attacker->client->ps.saber[1].knockbackScale2;
+		}
+	}
 	// figure momentum add, even if the damage won't be taken
 	if ( knockback && !(dflags&DAMAGE_DEATH_KNOCKBACK) ) //&& targ->client 
 	{
@@ -6163,7 +6230,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 					testEndPos[1] += (random() * 8.0f) - 4.0f;
 					testEndPos[2] += (random() * 8.0f);
 
-					gi.trace (&testTrace, testStartPos, NULL, NULL, testEndPos, ENTITYNUM_NONE, MASK_SHOT, G2_COLLIDE);
+					gi.trace (&testTrace, testStartPos, NULL, NULL, testEndPos, ENTITYNUM_NONE, MASK_SHOT, G2_COLLIDE, 0);
 
 					if (!testTrace.startsolid && 
 						!testTrace.allsolid && 
@@ -6311,7 +6378,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 					//copy the g2 instance of the victim into the limb
 					//-------------------------------------------------
- 					gi.G2API_CopyGhoul2Instance(targ->ghoul2, limb->ghoul2);
+ 					gi.G2API_CopyGhoul2Instance(targ->ghoul2, limb->ghoul2, -1);
 					gi.G2API_SetRootSurface(limb->ghoul2, limb->playerModel, "lfront");
 					gi.G2API_SetSurfaceOnOff(&targ->ghoul2[targ->playerModel], "lfront", TURN_OFF);
 					animation_t *animations = level.knownAnimFileSets[targ->client->clientInfo.animFileIndex].animations;
@@ -6319,21 +6386,21 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 					//play the proper dismember anim on the limb
 					gi.G2API_SetBoneAnim(&limb->ghoul2[limb->playerModel], 0, animations[BOTH_A1_BL_TR].firstFrame, 
 							animations[BOTH_A1_BL_TR].numFrames + animations[BOTH_A1_BL_TR].firstFrame,
-							BONE_ANIM_OVERRIDE_FREEZE, 1, level.time );
+							BONE_ANIM_OVERRIDE_FREEZE, 1, level.time, -1, -1 );
 
 
 					// Check For Start In Solid
 					//--------------------------
 					gi.linkentity( limb );
-					gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+					gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 					if ( trace.startsolid )
 					{
 						limb->s.pos.trBase[2] -= limb->mins[2];
-						gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+						gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 						if ( trace.startsolid )
 						{
 							limb->s.pos.trBase[2] += limb->mins[2];
-							gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask );
+							gi.trace( &trace, limb->s.pos.trBase, limb->mins, limb->maxs, limb->s.pos.trBase, limb->s.number, limb->clipmask, (EG2_Collision)0, 0 );
 
 						}
 					}
@@ -6787,7 +6854,7 @@ qboolean CanDamage (gentity_t *targ, const vec3_t origin) {
 	VectorCopy( origin, blah);
 	G_DebugLine(blah, dest, 5000, 0x0000ff, qtrue );
 	*/
-	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID);
+	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID, (EG2_Collision)0, 0);
 	if (( tr.fraction == 1.0 && cantHitEnt) || tr.entityNum == targ->s.number ) // if we also test the entitynum's we can bust up bbrushes better!
 		return qtrue;
 
@@ -6796,28 +6863,28 @@ qboolean CanDamage (gentity_t *targ, const vec3_t origin) {
 	VectorCopy (midpoint, dest);
 	dest[0] += 15.0;
 	dest[1] += 15.0;
-	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID);
+	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID, (EG2_Collision)0, 0);
 	if (( tr.fraction == 1.0 && cantHitEnt) || tr.entityNum == targ->s.number )
 		return qtrue;
 
 	VectorCopy (midpoint, dest);
 	dest[0] += 15.0;
 	dest[1] -= 15.0;
-	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID);
+	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID, (EG2_Collision)0, 0);
 	if (( tr.fraction == 1.0 && cantHitEnt) || tr.entityNum == targ->s.number )
 		return qtrue;
 
 	VectorCopy (midpoint, dest);
 	dest[0] -= 15.0;
 	dest[1] += 15.0;
-	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID);
+	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID, (EG2_Collision)0, 0);
 	if (( tr.fraction == 1.0 && cantHitEnt) || tr.entityNum == targ->s.number )
 		return qtrue;
 
 	VectorCopy (midpoint, dest);
 	dest[0] -= 15.0;
 	dest[1] -= 15.0;
-	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID);
+	gi.trace ( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID, (EG2_Collision)0, 0);
 	if (( tr.fraction == 1.0 && cantHitEnt) || tr.entityNum == targ->s.number )
 		return qtrue;
 

@@ -5,8 +5,8 @@
  *
  * desc:		Clientgame-side module for Siege gametype.
  *
- * $Author: mccloskey $ 
- * $Revision: 1.19 $
+ * $Author: osman $ 
+ * $Revision: 1.5 $
  *
  *****************************************************************************/
 #include "cg_local.h"
@@ -100,11 +100,6 @@ void CG_PrecacheSiegeObjectiveAssetsForTeam(int myTeam)
 
 void CG_PrecachePlayersForSiegeTeam(int team)
 {
-#ifdef _XBOX
-	// Dont want to precache players on Xbox
-	return;
-#endif
-
 	siegeTeam_t *stm;
 	int i = 0;
 
@@ -393,10 +388,7 @@ void CG_InitSiegeMode(void)
 
 			if (cl->forcedModel[0])
 			{ //This class has a forced model, so precache it.
-#ifndef _XBOX
-				// Don't precache on Xbox
 				trap_R_RegisterModel(va("models/players/%s/model.glm", cl->forcedModel));
-#endif
 
 				if (cl->forcedSkin[0])
 				{ //also has a forced skin, precache it.
@@ -567,9 +559,9 @@ void CG_ParseSiegeObjectiveStatus(const char *str)
 		i++;
 	}
 
-	if (cg->predictedPlayerState.persistant[PERS_TEAM] != TEAM_SPECTATOR)
+	if (cg.predictedPlayerState.persistant[PERS_TEAM] != TEAM_SPECTATOR)
 	{ //update menu cvars
-		CG_SiegeBriefingDisplay(cg->predictedPlayerState.persistant[PERS_TEAM], 1);
+		CG_SiegeBriefingDisplay(cg.predictedPlayerState.persistant[PERS_TEAM], 1);
 	}
 }
 
@@ -588,13 +580,13 @@ void CG_SiegeRoundOver(centity_t *ent, int won)
 		return;
 	}
 
-	if (cg->snap)
+	if (cg.snap)
 	{ //this should always be true, if it isn't though use the predicted ps as a fallback
-		ps = &cg->snap->ps;
+		ps = &cg.snap->ps;
 	}
 	else
 	{
-		ps = &cg->predictedPlayerState;
+		ps = &cg.predictedPlayerState;
 	}
 
 	if (!ps)
@@ -761,11 +753,7 @@ void CG_SiegeBriefingDisplay(int team, int dontshow)
 
 	trap_Cvar_Set(va("siege_primobj_inuse"), "0");
 
-#ifdef _XBOX
-	while (i < 8)	// Dear god this was un-necessary ... and making tons of cvars
-#else
 	while (i < 16)
-#endif
 	{ //do up to 16 objectives I suppose
 		//Get the value for this objective on this team
 		//Now set the cvar for the menu to display.
@@ -904,13 +892,13 @@ void CG_SiegeObjectiveCompleted(centity_t *ent, int won, int objectivenum)
 		return;
 	}
 
-	if (cg->snap)
+	if (cg.snap)
 	{ //this should always be true, if it isn't though use the predicted ps as a fallback
-		ps = &cg->snap->ps;
+		ps = &cg.snap->ps;
 	}
 	else
 	{
-		ps = &cg->predictedPlayerState;
+		ps = &cg.predictedPlayerState;
 	}
 
 	if (!ps)
@@ -1068,7 +1056,7 @@ void CG_ParseSiegeExtendedDataEntry(const char *conStr)
 		cg_siegeExtendedData[clNum].weapon = -1;
 	}
 
-	cg_siegeExtendedData[clNum].lastUpdated = cg->time;
+	cg_siegeExtendedData[clNum].lastUpdated = cg.time;
 }
 
 //parse incoming siege data, see counterpart in g_saga.c

@@ -825,8 +825,7 @@ Ghoul2 Insert End
 };
 #endif //#ifdef GAME_INCLUDE
 
-//extern	gentity_t		g_entities[MAX_GENTITIES];
-extern	gentity_t			*g_entities;
+extern	gentity_t		g_entities[MAX_GENTITIES];
 #ifndef _USRDLL
 extern	game_import_t	gi;
 #endif

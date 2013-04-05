@@ -11,7 +11,6 @@
 
 #include "snd_local_console.h"
 #include "snd_music.h"
-#include "../zlib/zlib.h"
 
 // #include "../../toolbox/zlib/zlib.h"
 
@@ -22,8 +21,6 @@ qboolean s_shutUp = qfalse;
 
 #ifdef _XBOX
 #include <Xtl.h>
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
 #endif
 
 #ifdef _GAMECUBE
@@ -152,7 +149,7 @@ static char			sInfoOnly_CurrentDynamicMusicSet[64];	// any old reasonable size, 
 
 #define		SOUND_UPDATE_TIME	100
 
-const float	SOUND_FMAXVOL=1.0;
+const float	SOUND_FMAXVOL=0.75;//1.0;
 const int	SOUND_MAXVOL=255;
 
 int					s_soundStarted;
@@ -183,12 +180,12 @@ static int			s_numChannels;			// Number of AL Sources == Num of Channels
 #endif
 
 #define MAX_CHANNELS (MAX_CHANNELS_2D + MAX_CHANNELS_3D)
-static channel_t	s_channels[MAX_CHANNELS];
+static channel_t*   s_channels;
 
-#define	MAX_SFX 3072	// 2048
+#define	MAX_SFX 2048
 #define INVALID_CODE 0
-static sfx_t	s_sfxBlock[MAX_SFX];
-static int		s_sfxCodes[MAX_SFX];
+static sfx_t* s_sfxBlock;
+static int* s_sfxCodes;
 
 static bool s_registered = false;
 static int s_defaultSound = 0;
@@ -206,9 +203,9 @@ typedef struct
 
 #define	MAX_LOOP_SOUNDS 32
 static int numLoopSounds;
-static loopSound_t	loopSounds[MAX_LOOP_SOUNDS];
+static loopSound_t* loopSounds;
 
-int	s_entityWavVol[MAX_GENTITIES];
+int* s_entityWavVol = NULL;
 
 cvar_t		*s_effects_volume;
 cvar_t		*s_music_volume;
@@ -220,7 +217,7 @@ cvar_t		*s_separation;
 cvar_t		*s_CPUType;
 cvar_t		*s_debugdynamic;
 cvar_t		*s_soundpoolmegs;
-//cvar_t		*s_language;	// note that this is distinct from "g_language"
+cvar_t		*s_language;	// note that this is distinct from "g_language"
 
 
 
@@ -254,7 +251,7 @@ void S_Init( void ) {
 
 	AS_Init();
 
-	s_effects_volume = Cvar_Get ("s_effects_volume", "1.0", CVAR_ARCHIVE);
+	s_effects_volume = Cvar_Get ("s_effects_volume", "0.5", CVAR_ARCHIVE);
 	s_voice_volume= Cvar_Get ("s_voice_volume", "1.0", CVAR_ARCHIVE);
 	s_music_volume = Cvar_Get ("s_music_volume", "0.25", CVAR_ARCHIVE);
 	s_separation = Cvar_Get ("s_separation", "0.5", CVAR_ARCHIVE);
@@ -267,7 +264,7 @@ void S_Init( void ) {
 	s_CPUType = Cvar_Get("sys_cpuid","",0);
 	s_soundpoolmegs = Cvar_Get("s_soundpoolmegs", "6", CVAR_ARCHIVE);
 
-//	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART);
+	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART);
 
 	cv = Cvar_Get ("s_initsound", "1", CVAR_ROM);
 	if ( !cv->integer ) {
@@ -286,6 +283,8 @@ void S_Init( void ) {
 	Cmd_AddCommand("soundinfo", S_SoundInfo_f);
 	Cmd_AddCommand("soundstop", S_StopAllSounds);
 
+	s_entityWavVol = new int[MAX_GENTITIES];
+	
 	// clear out the lip synching override array
 	memset(s_entityWavVol, 0, sizeof(int) * MAX_GENTITIES);
 
@@ -303,7 +302,13 @@ void S_Init( void ) {
 	if (alcGetError(ALCDevice) != ALC_NO_ERROR)
 		return;
 
+	s_channels = new channel_t[MAX_CHANNELS];
+	
+	s_sfxBlock = new sfx_t[MAX_SFX];
+	s_sfxCodes = new int[MAX_SFX];
 	memset(s_sfxCodes, INVALID_CODE, sizeof(int) * MAX_SFX);
+
+	loopSounds = new loopSound_t[MAX_LOOP_SOUNDS];
 
 	S_StopAllSounds();
 
@@ -358,6 +363,9 @@ void S_Shutdown( void )
 	ALCdevice	*ALCDevice;
 	int			i;
 
+	delete [] s_entityWavVol;
+	s_entityWavVol = NULL;
+
 	if ( !s_soundStarted ) {
 		return;
 	}
@@ -380,6 +388,11 @@ void S_Shutdown( void )
 	}
 	s_numListeners = 0;
 	
+	delete [] s_channels;
+	delete [] s_sfxBlock;
+	delete [] s_sfxCodes;
+	delete [] loopSounds;
+
 	// Get active context
 	ALCContext = alcGetCurrentContext();
 	// Get device for active context
@@ -580,13 +593,17 @@ S_BeginRegistration
 
 =====================
 */
-void S_BeginRegistration( int num_listeners )
+extern bool debugSoundOff;
+void S_BeginRegistration( void )
 {
 	if (!s_soundStarted) return;
 
 	int i;
+	int num_listeners = 1;
 
-	s_soundMuted = qfalse;
+	if(!debugSoundOff) {
+		s_soundMuted = qfalse;		// we can play again
+	}
 
 	// Create listeners
 	assert(num_listeners <= SND_MAX_LISTENERS);
@@ -899,8 +916,8 @@ static void SetChannelOrigin(channel_t *ch, const vec3_t origin, int entityNum)
 	{
 		vec3_t pos;
 
-		extern void CG_EntityPosition( int i, vec3_t ret );
-		CG_EntityPosition(entityNum, pos);
+		extern void G_EntityPosition( int i, vec3_t ret );
+		G_EntityPosition(entityNum, pos);
 		
 		ch->origin[0] = pos[0];
 		ch->origin[1] = pos[1];
@@ -922,9 +939,6 @@ void S_StartAmbientSound( const vec3_t origin, int entityNum, unsigned char volu
 {
 	channel_t	*ch;
 	/*const*/ sfx_t *sfx;
-
-	if( volume == 0)
-		return;
 
 	if ( !s_soundStarted || s_soundMuted ) {
 		return;
@@ -1024,8 +1038,6 @@ if pos is NULL, the sound will be dynamically sourced from the entity
 Entchannel 0 will never override a playing sound
 ====================
 */
-extern unsigned int Sys_GetSoundFileCodeFlags(unsigned int code);
-extern int Sys_GetSoundFileCodeSize(unsigned int code);
 void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfxHandle ) 
 {
 	channel_t	*ch;
@@ -1052,7 +1064,7 @@ void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_
 
 	// pick a channel to play on
 	bool is2D = false;
-	for (int i = 0; i < ClientManager::NumClients(); ++i)
+	for (int i = 0; i < s_numListeners; ++i)
 	{
 		if ((entityNum == s_listeners[i].entnum && !origin) ||
 			(origin &&
@@ -1064,76 +1076,7 @@ void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_
 			break;
 		}
 	}
-
-	if(entchannel == CHAN_VOICE_GLOBAL || entchannel == CHAN_ANNOUNCER)
-		is2D	= true;
 	
-	if(Sys_GetSoundFileCodeSize(sfx->iFileCode) == -1)
-		return;
-
-	unsigned int flags = Sys_GetSoundFileCodeFlags(sfx->iFileCode);
-
-	// might as well add more hacks ;)
-	if(flags & (1 << SFF_WEAPONS_ATST))
-	{
-		entchannel = CHAN_BODY;
-	}
-
-	if (entchannel == CHAN_VOICE)
-	{
-		// Make howlers and sand_creature VOICE effects use the normal fall-off (they will still be affected
-		// by the Voice Volume)
-		if ((flags & (1 << SFF_SAND_CREATURE)) || 
-				(flags & (1 << SFF_HOWLER)))
-		{
-			entchannel = CHAN_VOICE_ATTEN;
-		}
-	}
-	if (entchannel == CHAN_WEAPON)
-	{
-		// Check if we are playing a 'charging' sound, if so, stop it now ..
-		ch = s_channels + 1;
-		for (i = 1; i < s_numChannels; i++, ch++)
-		{
-			unsigned int weaponSoundFlags;
-
-			if(ch->thesfx)
-				weaponSoundFlags	= Sys_GetSoundFileCodeFlags(ch->thesfx->iFileCode);
-
-			if ((ch->entnum == entityNum) && (ch->entchannel == CHAN_WEAPON) && (ch->thesfx) && (weaponSoundFlags & (1 << SFF_ALTCHARGE)))
-			{
-				// Stop this sound
-				alSourceStop(ch->alSource);
-				alSourcei(ch->alSource, AL_BUFFER, NULL);
-				ch->bPlaying = false;
-				ch->thesfx = NULL;
-				break;
-			}
-		}
-	}
-	else
-	{
-		ch = s_channels + 1;
-		for (i = 1; i < s_numChannels; i++, ch++)
-		{
-			unsigned int fallSoundFlags;
-
-			if(ch->thesfx)
-				fallSoundFlags = Sys_GetSoundFileCodeFlags(ch->thesfx->iFileCode);
-		
-			if ((ch->entnum == entityNum) && (ch->thesfx) && 
-					(fallSoundFlags & (1 << SFF_FALLING)))
-			{
-				// Stop this sound
-				alSourceStop(ch->alSource);
-				alSourcei(ch->alSource, AL_BUFFER, NULL);
-				ch->bPlaying = false;
-				ch->thesfx = NULL;
-				break;
-			}
-		}
-	}
-
 	ch = S_PickChannel( entityNum, entchannel, is2D, sfx );
 	if (!ch) {
 		return;
@@ -1176,8 +1119,7 @@ void S_StartLocalSound( sfxHandle_t sfxHandle, int channelNum ) {
 	}
 
 	// Play a 2D sound -- doesn't matter which listener we use
-//	S_StartSound (NULL, 0, channelNum, sfxHandle );
-	S_StartSound (NULL, s_listeners[ClientManager::ActiveClientNum()].entnum, channelNum, sfxHandle );
+	S_StartSound (NULL, 0, channelNum, sfxHandle );
 }
 
 
@@ -1190,10 +1132,6 @@ void S_StartLocalLoopingSound( sfxHandle_t sfxHandle) {
 	vec3_t nullVec = {0,0,0};
 
 	if ( !s_soundStarted || s_soundMuted ) {
-		return;
-	}
-
-	if ( VM_Call( uivm, UI_IS_FULLSCREEN ) && cls.state == CA_ACTIVE) {
 		return;
 	}
 
@@ -1268,7 +1206,6 @@ void S_StopLoopingSound( int entnum )
 
 // returns length in milliseconds of supplied sound effect...  (else 0 for bad handle now)
 //
-extern int Sys_GetSoundFileCodeSize(unsigned int code);
 float S_GetSampleLengthInMilliSeconds( sfxHandle_t sfxHandle)
 {
 	sfx_t *sfx;
@@ -1284,7 +1221,7 @@ float S_GetSampleLengthInMilliSeconds( sfxHandle_t sfxHandle)
 
 	sfx = &s_sfxBlock[sfxHandle];
 
-	int size = Sys_GetSoundFileCodeSize(sfx->iFileCode);
+	int size = Sys_GetFileCodeSize(sfx->iFileCode);
 	if (size < 0) return 0;
 
 	return 1000 * size / (22050 / 2);
@@ -1428,10 +1365,6 @@ Called during entity generation for a frame
 void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfxHandle, int chan ) {
 	/*const*/ sfx_t *sfx;
 
-	if ( VM_Call( uivm, UI_IS_FULLSCREEN ) && cls.state == CA_ACTIVE) {
-		return;
-	}
-
   	if ( !s_soundStarted || s_soundMuted || !s_loopEnabled ) {
 		return;
 	}
@@ -1474,10 +1407,6 @@ void S_AddAmbientLoopingSound( const vec3_t origin, unsigned char volume, sfxHan
 		return;
 	}
 	if ( numLoopSounds >= MAX_LOOP_SOUNDS ) {
-		return;
-	}
-
-	if ( VM_Call( uivm, UI_IS_FULLSCREEN ) && cls.state == CA_ACTIVE) {
 		return;
 	}
 
@@ -1566,8 +1495,9 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], qboolean 
 
 	int index = 0;
 
-#ifdef _XBOX	
-	if ( ClientManager::splitScreenMode == qtrue ) {
+#if 0	
+	extern qboolean g_isMultiplayer;
+	if ( g_isMultiplayer ) {
 		index = entityNum;
 	}
 #endif
@@ -1746,34 +1676,35 @@ static void UpdateAttenuation(channel_t *ch)
 			alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, 400.0f);
 		}
 		*/
-#ifdef _XBOX
-	//	if (ClientManager::splitScreenMode == qfalse)
-	//	{
+#if 0
+		extern qboolean g_isMultiplayer;
+		if (!g_isMultiplayer)
+		{
 #endif
 			switch (ch->entchannel)
 			{
-			case CHAN_VOICE_ATTEN:
-				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, 300.0f);
-				break;
 			case CHAN_VOICE:
+				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE * 3.f);
+				break;
 			case CHAN_LESS_ATTEN:
-			case CHAN_ANNOUNCER:
-			case CHAN_LOCAL_SOUND:
-			case CHAN_BODY:
+				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE * 8.f);
+				break;
+			case CHAN_VOICE_ATTEN:
+				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE * 1.35f);
+				break;
 			case CHAN_VOICE_GLOBAL:
-			case CHAN_LOCAL:
-				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, 1500.0f);
+				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE * 100.f);
 				break;
 			default:
-				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, 300.0f);
+				alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE);
 				break;
 			}
-#ifdef _XBOX
-	//	}
-	//	else
-	//	{
-	//		alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, 1500.0f);
-	//	}
+#if 0
+		}
+		else
+		{
+			alSourcef(ch->alSource, AL_REFERENCE_DISTANCE, SOUND_REF_DIST_BASE * 2.f);
+		}
 #endif
 	}
 }
@@ -2110,9 +2041,7 @@ static qboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolean
 	fileHandle_t handle;
 	int len = FS_FOpenFileRead( name, &handle, qtrue );
 	if ( !handle ) {
-#ifndef FINAL_BUILD
 		Com_Printf( S_COLOR_YELLOW "WARNING: couldn't open music file %s\n", name );
-#endif
 		S_StopBackgroundTrack_Actual( pMusicInfo );
 		return qfalse;
 	}
@@ -2125,9 +2054,7 @@ static qboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolean
 
 	wavinfo_t info = GetWavInfo(buffer);
 	if ( info.size == 0 ) {
-#ifndef FINAL_BUILD
 		Com_Printf(S_COLOR_YELLOW "WARNING: Invalid format in %s\n", name);
-#endif
 		S_StopBackgroundTrack_Actual( pMusicInfo );
 		return qfalse;
 	}
@@ -2798,7 +2725,7 @@ int SND_GetMemoryUsed(void)
 
 void SND_update(sfx_t *sfx) 
 {
-	while ( SND_GetMemoryUsed() > (2 * 1024 * 1024))	// s_soundpoolmegs
+	while ( SND_GetMemoryUsed() > (s_soundpoolmegs->integer * 1024 * 1024 * 3 / 4))
 	{
 		int iBytesFreed = SND_FreeOldestSound(sfx);
 		if (iBytesFreed == 0)
@@ -2854,11 +2781,15 @@ static void S_FreeAllSFXMem(void)
 // returns number of bytes freed up...
 //
 // new param is so we can be usre of not freeing ourselves (without having to rely on possible uninitialised timers etc)
-// Super new version just throws out ALL sound. Bwa ha ha!
+//
 int SND_FreeOldestSound(sfx_t *pButNotThisOne /* = NULL */) 
 {	
 	int iBytesFreed = 0;
 	sfx_t *sfx;
+
+	int	iOldest = Com_Milliseconds();
+	int	iUsed	= 0;
+	bool bDemandLoad = false;
 
 	// start on 1 so we never dump the default sound...
 	//
@@ -2870,10 +2801,14 @@ int SND_FreeOldestSound(sfx_t *pButNotThisOne /* = NULL */)
 
 		if (sfx != pButNotThisOne)
 		{
-			// Don't throw out the default sound, or sounds that are not in memory
+			// Don't throw out the default sound, sounds that
+			// are not in memory, or sounds newer then the oldest.
+			// Also, throw out demand load sounds first.
 			//
 			if (!(sfx->iFlags & SFX_FLAG_DEFAULT) && 
-				(sfx->iFlags & SFX_FLAG_RESIDENT))
+				(sfx->iFlags & SFX_FLAG_RESIDENT) && 
+				(!bDemandLoad || (sfx->iFlags & SFX_FLAG_DEMAND)) &&
+				sfx->iLastTimeUsed < iOldest) 
 			{
 				// new bit, we can't throw away any sfx_t struct in use by a channel, 
 				// else the paint code will crash...
@@ -2889,11 +2824,19 @@ int SND_FreeOldestSound(sfx_t *pButNotThisOne /* = NULL */)
 				if (iChannel == s_numChannels)
 				{
 					// this sfx_t struct wasn't used by any channels, so we can lose it...
-					//		
-					iBytesFreed += SND_FreeSFXMem( &s_sfxBlock[i] );
+					//			
+					iUsed = i;
+					iOldest = sfx->iLastTimeUsed;
+					bDemandLoad = (sfx->iFlags & SFX_FLAG_DEMAND);
 				}
 			}
 		}
+	}
+
+	if (iUsed)
+	{
+		sfx = &s_sfxBlock[ iUsed ];
+		iBytesFreed = SND_FreeSFXMem(sfx);
 	}
 
 	return iBytesFreed;

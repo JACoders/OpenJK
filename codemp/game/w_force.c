@@ -4,11 +4,6 @@
 #include "ai_main.h"
 #include "../ghoul2/G2.h"
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#endif
-
 #define METROID_JUMP 1
 
 //NEEDED FOR MIND-TRICK on NPCS=========================================================
@@ -166,6 +161,11 @@ void WP_InitForcePowers( gentity_t *ent )
 	{ //if server has no max rank, default to max (50)
 		maxRank = FORCE_MASTERY_JEDI_MASTER;
 	}
+	else if (maxRank >= NUM_FORCE_MASTERY_LEVELS)
+	{//ack, prevent user from being dumb
+		maxRank = FORCE_MASTERY_JEDI_MASTER;
+		trap_Cvar_Set( "g_maxForceRank", va("%i", maxRank) );
+	}
 
 	/*
 	if (g_forcePowerDisable.integer)
@@ -188,32 +188,32 @@ void WP_InitForcePowers( gentity_t *ent )
 		ent->client->ps.fd.saberAnimLevel = FORCE_LEVEL_1;
 	}
 
-	//if (!speedLoopSound)
+	if (!speedLoopSound)
 	{ //so that the client configstring is already modified with this when we need it
 		speedLoopSound = G_SoundIndex("sound/weapons/force/speedloop.wav");
 	}
 
-	//if (!rageLoopSound)
+	if (!rageLoopSound)
 	{
 		rageLoopSound = G_SoundIndex("sound/weapons/force/rageloop.wav");
 	}
 
-	//if (!absorbLoopSound)
+	if (!absorbLoopSound)
 	{
 		absorbLoopSound = G_SoundIndex("sound/weapons/force/absorbloop.wav");
 	}
 
-	//if (!protectLoopSound)
+	if (!protectLoopSound)
 	{
 		protectLoopSound = G_SoundIndex("sound/weapons/force/protectloop.wav");
 	}
 
-	//if (!seeLoopSound)
+	if (!seeLoopSound)
 	{
 		seeLoopSound = G_SoundIndex("sound/weapons/force/seeloop.wav");
 	}
 
-	//if (!ysalamiriLoopSound)
+	if (!ysalamiriLoopSound)
 	{
 		ysalamiriLoopSound = G_SoundIndex("sound/player/nullifyloop.wav");
 	}
@@ -465,14 +465,9 @@ void WP_InitForcePowers( gentity_t *ent )
 	}
 	else
 	{
-//#ifdef _XBOX
-//		if ((warnClient || !ent->client->sess.setForce) && (ClientManager::splitScreenMode == qfalse))
-//#else
-		if (/*warnClient ||*/ !ent->client->sess.setForce)
-//#endif
+		if (warnClient || !ent->client->sess.setForce)
 		{ //the client's rank is too high for the server and has been autocapped, so tell them
-//			if (g_gametype.integer != GT_HOLOCRON && g_gametype.integer != GT_JEDIMASTER &&
-//				g_gametype.integer != GT_DUEL && g_gametype.integer != GT_POWERDUEL)
+			if (g_gametype.integer != GT_HOLOCRON && g_gametype.integer != GT_JEDIMASTER )
 			{
 #ifdef EVENT_FORCE_RANK
 				gentity_t *te = G_TempEntity( vec3_origin, EV_GIVE_NEW_RANK );
@@ -511,7 +506,7 @@ void WP_InitForcePowers( gentity_t *ent )
 			ent->client->sess.setForce = qtrue;
 		}
 
-		if (!didEvent && g_gametype.integer != GT_DUEL && g_gametype.integer != GT_POWERDUEL)
+		if (!didEvent )
 		{
 #ifdef EVENT_FORCE_RANK
 			gentity_t *te = G_TempEntity( vec3_origin, EV_GIVE_NEW_RANK );
@@ -604,7 +599,6 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 	ent->client->ps.fd.forceMindtrickTargetIndex3 = 0;
 	ent->client->ps.fd.forceMindtrickTargetIndex4 = 0;
 
-/*
 	ent->client->ps.holocronBits = 0;
 
 	i = 0;
@@ -635,7 +629,6 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 			}
 		}
 	}
-*/
 
 	i = 0;
 
@@ -891,7 +884,7 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 
 	if ( !self->client->ps.saberHolstered )
 	{
-		if ( self->client->saber[0].twoHanded )
+		if ( (self->client->saber[0].saberFlags&SFL_TWO_HANDED) )
 		{
 			if ( g_saberRestrictForce.integer )
 			{
@@ -909,7 +902,7 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 			}
 		}
 
-		if ( self->client->saber[0].twoHanded 
+		if ( (self->client->saber[0].saberFlags&SFL_TWO_HANDED)
 			|| (self->client->saber[0].model && self->client->saber[0].model[0]) )
 		{//this saber requires the use of two hands OR our other hand is using an active saber too
 			if ( (self->client->saber[0].forceRestrictions&(1<<forcePower)) )
@@ -3679,6 +3672,9 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					push_list[x]->client->ps.otherKiller = self->s.number;
 					push_list[x]->client->ps.otherKillerTime = level.time + 5000;
 					push_list[x]->client->ps.otherKillerDebounceTime = level.time + 100;
+					push_list[x]->client->otherKillerMOD = MOD_UNKNOWN;
+					push_list[x]->client->otherKillerVehWeapon = 0;
+					push_list[x]->client->otherKillerWeaponType = WP_NONE;
 
 					pushPowerMod -= (dirLen*0.7);
 					if (pushPowerMod < 16)
@@ -4046,6 +4042,9 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 		gripEnt->client->ps.otherKiller = self->s.number;
 		gripEnt->client->ps.otherKillerTime = level.time + 5000;
 		gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+		gripEnt->client->otherKillerMOD = MOD_UNKNOWN;
+		gripEnt->client->otherKillerVehWeapon = 0;
+		gripEnt->client->otherKillerWeaponType = WP_NONE;
 
 		gripEnt->client->ps.forceGripChangeMovetype = PM_FLOAT;
 
@@ -4079,6 +4078,9 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 		gripEnt->client->ps.otherKiller = self->s.number;
 		gripEnt->client->ps.otherKillerTime = level.time + 5000;
 		gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+		gripEnt->client->otherKillerMOD = MOD_UNKNOWN;
+		gripEnt->client->otherKillerVehWeapon = 0;
+		gripEnt->client->otherKillerWeaponType = WP_NONE;
 
 		gripEnt->client->ps.forceGripChangeMovetype = PM_FLOAT;
 
@@ -4865,7 +4867,6 @@ void SeekerDroneUpdate(gentity_t *self)
 	}
 }
 
-/*
 void HolocronUpdate(gentity_t *self)
 { //keep holocron status updated in holocron mode
 	int i = 0;
@@ -4953,17 +4954,15 @@ void HolocronUpdate(gentity_t *self)
 		}
 	}
 }
-*/
 
 void JediMasterUpdate(gentity_t *self)
 { //keep jedi master status updated for JM gametype
 	int i = 0;
 
-//	trap_Cvar_Update(&g_MaxHolocronCarry);
+	trap_Cvar_Update(&g_MaxHolocronCarry);
 
 	while (i < NUM_FORCE_POWERS)
 	{
-/*
 		if (self->client->ps.isJediMaster)
 		{
 			self->client->ps.fd.forcePowersKnown |= (1 << i);
@@ -4986,7 +4985,6 @@ void JediMasterUpdate(gentity_t *self)
 			}
 		}
 		else
-*/
 		{
 			if ((self->client->ps.fd.forcePowersKnown & (1 << i)) && i != FP_LEVITATION)
 			{
@@ -5258,12 +5256,10 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		}
 	}
 
-	/*
 	if (g_gametype.integer == GT_HOLOCRON)
 	{
 		HolocronUpdate(self);
 	}
-	*/
 	if (g_gametype.integer == GT_JEDIMASTER)
 	{
 		JediMasterUpdate(self);
@@ -5579,7 +5575,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		if ( !self->client->ps.saberInFlight && self->client->ps.fd.forcePowerRegenDebounceTime < level.time &&
 			(self->client->ps.weapon != WP_SABER || !BG_SaberInSpecial(self->client->ps.saberMove)) )
 		{
-			if ( 1 ) //g_gametype.integer != GT_HOLOCRON || g_MaxHolocronCarry.value)
+			if (g_gametype.integer != GT_HOLOCRON || g_MaxHolocronCarry.value)
 			{
 				//if (!g_trueJedi.integer || self->client->ps.weapon == WP_SABER)
 				//let non-jedi force regen since we're doing a more strict jedi/non-jedi thing... this gives dark jedi something to drain
@@ -5588,12 +5584,10 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 					{
 						WP_ForcePowerRegenerate( self, 6 );
 					}
-/*
 					else if (self->client->ps.isJediMaster && g_gametype.integer == GT_JEDIMASTER)
 					{
 						WP_ForcePowerRegenerate( self, 4 ); //jedi master regenerates 4 times as fast
 					}
-*/
 					else
 					{
 						WP_ForcePowerRegenerate( self, 0 );
@@ -5606,7 +5600,6 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 				}
 				*/
 			}
-			/*
 			else
 			{ //regenerate based on the number of holocrons carried
 				holoregen = 0;
@@ -5622,7 +5615,6 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 
 				WP_ForcePowerRegenerate(self, holoregen);
 			}
-			*/
 
 			if (g_gametype.integer == GT_SIEGE)
 			{

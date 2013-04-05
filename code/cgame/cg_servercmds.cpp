@@ -188,11 +188,6 @@ static void CG_ServerCommand( void ) {
 	// Scroll text
 	if ( !strcmp( cmd, "st" ) ) 
 	{
-#ifdef _XBOX
-		if(cg.widescreen)
-			CG_ScrollText( CG_Argv(1), 720 - 16 );
-		else
-#endif
 		CG_ScrollText( CG_Argv(1), SCREEN_WIDTH - 16 );
 		return;
 	}

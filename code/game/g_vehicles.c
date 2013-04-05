@@ -101,7 +101,7 @@ void G_VehicleTrace( trace_t *results, const vec3_t start, const vec3_t tMins, c
 #ifdef _JK2MP
 	trap_Trace(results, start, tMins, tMaxs, end, passEntityNum, contentmask);
 #else
-	gi.trace( results, start, tMins, tMaxs, end, passEntityNum, contentmask );
+	gi.trace( results, start, tMins, tMaxs, end, passEntityNum, contentmask, (EG2_Collision)0, 0 );
 #endif
 }
 
@@ -443,7 +443,7 @@ void G_DriveATST( gentity_t *pEnt, gentity_t *atst )
 		{
 			G_RemovePlayerModel( pEnt );
 			G_RemoveWeaponModels( pEnt );
-			gi.G2API_CopyGhoul2Instance( atst->ghoul2, pEnt->ghoul2 );
+			gi.G2API_CopyGhoul2Instance( atst->ghoul2, pEnt->ghoul2, -1 );
 			pEnt->playerModel = 0;
 			G_SetG2PlayerModelInfo( pEnt, "atst", NULL, NULL, NULL );
 			//turn off hatch underside
@@ -709,7 +709,7 @@ bool Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 
 #ifndef _JK2MP
 		gi.cvar_set( "cg_thirdperson", "1" );								//go to third person
-		CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.87 );		//tell them how to get out!
+		CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.86 );		//tell them how to get out!
 #endif
 
 		//FIXME: rider needs to look in vehicle's direction when he gets in
@@ -1376,7 +1376,7 @@ static void StartDeathDelay( Vehicle_t *pVeh, int iDelayTimeOverride )
 	}
 #endif
 }
-extern char current_speeders;
+
 // Decide whether to explode the vehicle or not.
 static void DeathUpdate( Vehicle_t *pVeh )
 {
@@ -2400,11 +2400,6 @@ static bool UpdateRider( Vehicle_t *pVeh, bgEntity_t *pRider, usercmd_t *pUmcd )
 				}
 #if 1
 				Vehicle_SetAnim( rider, SETANIM_BOTH, BOTH_JUMP1, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD, 300 );
-
-				// Force first person mode when exiting the vehicle
-				// If you're carrying a saber, it will get reset later
-				extern void Cvar_SetValue(const char *var_name, float value);
-				Cvar_SetValue("cg_thirdPerson", 0);
 #else
 
 #endif

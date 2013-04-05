@@ -88,44 +88,46 @@ wavinfo_t GetWavInfo(byte *data)
 
 // adjust filename for foreign languages and WAV/MP3 issues. 
 //
-unsigned int Sys_GetSoundFileCode(const char* name);
-int Sys_GetSoundFileCodeSize(unsigned int filecode);
 static qboolean S_LoadSound_FileNameAdjuster(char *psFilename)
 {
+#if defined(_XBOX)
 	const char* ext = "wxb";
-
+#elif defined(_WINDOWS)
+	const char* ext = "wav";
+#elif defined(_GAMECUBE)
+	const char* ext = "wgc";
+#endif
+	
 	int len = strlen(psFilename);
-
+#if 0
 	char *psVoice = strstr(psFilename,"chars");
 	if (psVoice)
 	{
 		// account for foreign voices...
 		//		
-		extern DWORD g_dwLanguage;
-		if (g_dwLanguage == XC_LANGUAGE_GERMAN)
-			strncpy(psVoice, "chr_d", 5);	// Same number of letters as "chars"
-		else if (g_dwLanguage == XC_LANGUAGE_FRENCH)
-			strncpy(psVoice, "chr_f", 5);	// Same number of letters as "chars"
+		extern cvar_t* sp_language;
+		if (sp_language && sp_language->integer==SP_LANGUAGE_GERMAN)
+		{				
+			strncpy(psVoice,"chr_d",5);	// same number of letters as "chars"
+		}
 		else
-			psVoice = NULL;					// Flag that we didn't substitute
+		if (sp_language && sp_language->integer==SP_LANGUAGE_FRENCH)
+		{				
+			strncpy(psVoice,"chr_f",5);	// same number of letters as "chars"
+		}
+		else
+		{
+			psVoice = NULL;	// use this ptr as a flag as to whether or not we substituted with a foreign version
+		}
 	}
+#else
+	char *psVoice = NULL;
+#endif
 
 	psFilename[len-3] = ext[0];
 	psFilename[len-2] = ext[1];
 	psFilename[len-1] = ext[2];
-	for(int i = 0; i < len; i++)
-	{
-		if(psFilename[i] == '/')
-		{
-			psFilename[i] = '\\';
-		}
-	}
-	unsigned int code = Sys_GetSoundFileCode( psFilename );
-
-	if(Sys_GetSoundFileCodeSize(code) == -1)
-	{
-		code	=  -1;
-	}
+	int code = Sys_GetFileCode( psFilename );
 
 	if ( code == -1 )
 	{
@@ -141,13 +143,8 @@ static qboolean S_LoadSound_FileNameAdjuster(char *psFilename)
 			psFilename[len-3] = ext[0];
 			psFilename[len-2] = ext[1];
 			psFilename[len-1] = ext[2];
-			code = Sys_GetSoundFileCode( psFilename );
+			code = Sys_GetFileCode( psFilename );
 		}
-	}
-
-	if(Sys_GetSoundFileCodeSize(code) == -1)
-	{
-		code	=  -1;
 	}
 
 	return code;
@@ -212,13 +209,6 @@ qboolean S_StartLoadSound( sfx_t *sfx )
 		sfx->iFlags |= SFX_FLAG_RESIDENT | SFX_FLAG_DEFAULT;
 		return qfalse;
 	}
-
-#if PROFILE_SOUND
-	extern char* Sys_GetSoundName( unsigned int crc );
-	char* name = Sys_GetSoundName(sfx->iFileCode);
-	int time	= Sys_Milliseconds();
-	Com_Printf("SOUND: %s at %d\n", name, time);
-#endif
 
 	// Finish up any pending loads
 	do
@@ -290,8 +280,10 @@ qboolean S_EndLoadSound( sfx_t *sfx )
 	if (Sys_StreamIsError(sfx->iStreamHandle))
 	{
 #if defined(FINAL_BUILD)
+		/*
 		extern void ERR_DiscFail(bool);
 		ERR_DiscFail(false);
+		*/
 #endif
 		Sys_StreamClose(sfx->iStreamHandle);
 		Z_Free(sfx->pSoundData);
@@ -365,4 +357,3 @@ S_CloseLoad
 void S_CloseLoad(void) {
 	delete [] s_LoadList;
 }
-

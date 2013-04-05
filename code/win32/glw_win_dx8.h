@@ -15,9 +15,9 @@
 
 #include <map>
 
-#include <d3d9.h>
+#include <d3d8.h>
 #ifdef _WIN32
-#include <d3dx9.h>
+#include <d3dx8.h>
 #endif 
 
 #include "../renderer/qgl_console.h"
@@ -31,7 +31,7 @@
 struct glwstate_t
 {
 	// Interface to DX
-	IDirect3DDevice9* device;
+	IDirect3DDevice8* device;
 
 	// Matrix stuff
 	enum MatrixMode
@@ -63,13 +63,10 @@ struct glwstate_t
 	
 	struct TextureInfo
 	{
-		IDirect3DTexture9* mipmap;
+		IDirect3DTexture8* mipmap;
 		D3DTEXTUREFILTERTYPE minFilter, mipFilter, magFilter;
 		D3DTEXTUREADDRESS wrapU, wrapV;
 		float anisotropy;
-
-		// I only need this for ONE texture, but it's easier than adding more hacks:
-		void *data;
 	};
 
 	typedef std::map<GLuint, TextureInfo> texturexlat_t;
@@ -128,7 +125,7 @@ struct glwstate_t
 	D3DCULL cullMode;
 
 	// Viewport
-	D3DVIEWPORT9 viewport;
+	D3DVIEWPORT8 viewport;
 
 	// Clearing info
 	D3DCOLOR clearColor;
@@ -146,8 +143,8 @@ struct glwstate_t
 	D3DRECT scissorBox;
 
 	// Directional Light
-	D3DLIGHT9	dirLight;
-	D3DMATERIAL9 mtrl;
+	D3DLIGHT8	dirLight;
+	D3DMATERIAL8 mtrl;
 
 	// Description of current shader
 	DWORD shaderMask;
@@ -174,8 +171,7 @@ struct glwstate_t
 extern glwstate_t *glw_state;
 
 void renderObject_HACK();
-void renderObject_Light( int numIndexes, const unsigned short *indexes );
-void renderObject_Shadow( int primType, int numIndexes, const unsigned short *indexes );
+void renderObject_Light();
 void renderObject_Env();
 void renderObject_Bump();
 bool CreateVertexShader( const CHAR* strFilename, const DWORD* pdwVertexDecl, DWORD* pdwVertexShader );

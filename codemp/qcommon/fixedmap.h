@@ -49,7 +49,6 @@ public:
 
 		//Check for fullness.
 		if(numItems >= maxItems) {
-			assert( 0 );
 			return false;
 		}
 
@@ -58,24 +57,6 @@ public:
 		   storage = items + numItems;
 		   numItems++;
 		}	   
-
-		storage->data = newItem;
-		storage->key = key;
-
-		return true;
-	}
-
-	// Faster version of Insert(), but it doesn't check for dupes. Used
-	// by the filecode cache (when we know the data we're inserting is good).
-	bool InsertUnsafe(const T &newItem, const U &key)
-	{
-		//Check for fullness.
-		if(numItems >= maxItems) {
-			return false;
-		}
-
-	   Data *storage = items + numItems;
-	   numItems++;
 
 		storage->data = newItem;
 		storage->key = key;

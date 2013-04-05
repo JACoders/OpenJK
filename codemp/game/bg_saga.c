@@ -16,15 +16,6 @@
 
 #define SIEGECHAR_TAB 9 //perhaps a bit hacky, but I don't think there's any define existing for "tab"
 
-// New - only make one copy of this shit.
-#ifdef QAGAME
-siegeClass_t bgSiegeClasses[MAX_SIEGE_CLASSES];
-int bgNumSiegeClasses = 0;
-
-siegeTeam_t bgSiegeTeams[MAX_SIEGE_TEAMS];
-int bgNumSiegeTeams = 0;
-#endif
-
 //Could use strap stuff but I don't particularly care at the moment anyway.
 #include "../namespace_begin.h"
 
@@ -43,6 +34,12 @@ int			siege_valid = 0;
 
 siegeTeam_t *team1Theme = NULL;
 siegeTeam_t *team2Theme = NULL;
+
+siegeClass_t bgSiegeClasses[MAX_SIEGE_CLASSES];
+int bgNumSiegeClasses = 0;
+
+siegeTeam_t bgSiegeTeams[MAX_SIEGE_TEAMS];
+int bgNumSiegeTeams = 0;
 
 //class flags
 stringID_table_t bgSiegeClassFlagNames[] =
@@ -76,6 +73,7 @@ stringID_table_t StanceTable[] =
 stringID_table_t WPTable[] =
 {
 	"NULL",WP_NONE,
+	ENUM2STRING(WP_NONE),
 	// Player weapons
 	ENUM2STRING(WP_STUN_BATON),
 	ENUM2STRING(WP_MELEE),
@@ -936,7 +934,7 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 	}
 	else
 	{ //It's alright, just default to 100 then.
-		bgSiegeClasses[bgNumSiegeClasses].starthealth = 100;
+		bgSiegeClasses[bgNumSiegeClasses].starthealth = bgSiegeClasses[bgNumSiegeClasses].maxhealth;
 	}
 
 
@@ -978,11 +976,11 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 	if (BG_SiegeGetPairedValue(classInfo, "uishader", parseBuf))
 	{
 #ifdef QAGAME
-//		bgSiegeClasses[bgNumSiegeClasses].uiPortraitShader = 0;
-//		memset(bgSiegeClasses[bgNumSiegeClasses].uiPortrait,0,sizeof(bgSiegeClasses[bgNumSiegeClasses].uiPortrait));
+		bgSiegeClasses[bgNumSiegeClasses].uiPortraitShader = 0;
+		memset(bgSiegeClasses[bgNumSiegeClasses].uiPortrait,0,sizeof(bgSiegeClasses[bgNumSiegeClasses].uiPortrait));
 #elif defined CGAME
-//		bgSiegeClasses[bgNumSiegeClasses].uiPortraitShader = 0;
-//		memset(bgSiegeClasses[bgNumSiegeClasses].uiPortrait,0,sizeof(bgSiegeClasses[bgNumSiegeClasses].uiPortrait));
+		bgSiegeClasses[bgNumSiegeClasses].uiPortraitShader = 0;
+		memset(bgSiegeClasses[bgNumSiegeClasses].uiPortrait,0,sizeof(bgSiegeClasses[bgNumSiegeClasses].uiPortrait));
 #else //ui
 		bgSiegeClasses[bgNumSiegeClasses].uiPortraitShader = trap_R_RegisterShaderNoMip(parseBuf);
 		memcpy(bgSiegeClasses[bgNumSiegeClasses].uiPortrait,parseBuf,sizeof(bgSiegeClasses[bgNumSiegeClasses].uiPortrait));
@@ -997,7 +995,7 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 	if (BG_SiegeGetPairedValue(classInfo, "class_shader", parseBuf))
 	{
 #ifdef QAGAME
-//		bgSiegeClasses[bgNumSiegeClasses].classShader = 0;
+		bgSiegeClasses[bgNumSiegeClasses].classShader = 0;
 #else //cgame, ui
 		bgSiegeClasses[bgNumSiegeClasses].classShader = trap_R_RegisterShaderNoMip(parseBuf);
 		assert( bgSiegeClasses[bgNumSiegeClasses].classShader );

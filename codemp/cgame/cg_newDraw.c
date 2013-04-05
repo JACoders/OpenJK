@@ -48,8 +48,8 @@ float CG_GetValue(int ownerDraw) {
  	clientInfo_t *ci;
 	playerState_t	*ps;
 
-  cent = &cg_entities[cg->snap->ps.clientNum];
-	ps = &cg->snap->ps;
+  cent = &cg_entities[cg.snap->ps.clientNum];
+	ps = &cg.snap->ps;
 
   switch (ownerDraw) {
   case CG_SELECTEDPLAYER_ARMOR:
@@ -70,7 +70,7 @@ float CG_GetValue(int ownerDraw) {
 		}
     break;
   case CG_PLAYER_SCORE:
-	  return cg->snap->ps.persistant[PERS_SCORE];
+	  return cg.snap->ps.persistant[PERS_SCORE];
     break;
   case CG_PLAYER_HEALTH:
 		return ps->stats[STAT_HEALTH];
@@ -92,7 +92,7 @@ float CG_GetValue(int ownerDraw) {
 
 qboolean CG_OtherTeamHasFlag(void) {
 	if (cgs.gametype == GT_CTF || cgs.gametype == GT_CTY) {
-		int team = cg->snap->ps.persistant[PERS_TEAM];
+		int team = cg.snap->ps.persistant[PERS_TEAM];
 		if (team == TEAM_RED && cgs.redflag == FLAG_TAKEN) {
 			return qtrue;
 		} else if (team == TEAM_BLUE && cgs.blueflag == FLAG_TAKEN) {
@@ -106,7 +106,7 @@ qboolean CG_OtherTeamHasFlag(void) {
 
 qboolean CG_YourTeamHasFlag(void) {
 	if (cgs.gametype == GT_CTF || cgs.gametype == GT_CTY) {
-		int team = cg->snap->ps.persistant[PERS_TEAM];
+		int team = cg.snap->ps.persistant[PERS_TEAM];
 		if (team == TEAM_RED && cgs.blueflag == FLAG_TAKEN) {
 			return qtrue;
 		} else if (team == TEAM_BLUE && cgs.redflag == FLAG_TAKEN) {
@@ -166,13 +166,13 @@ qboolean CG_OwnerDrawVisible(int flags) {
 	}
 
 	if (flags & CG_SHOW_HEALTHCRITICAL) {
-		if (cg->snap->ps.stats[STAT_HEALTH] < 25) {
+		if (cg.snap->ps.stats[STAT_HEALTH] < 25) {
 			return qtrue;
 		}
 	}
 
 	if (flags & CG_SHOW_HEALTHOK) {
-		if (cg->snap->ps.stats[STAT_HEALTH] >= 25) {
+		if (cg.snap->ps.stats[STAT_HEALTH] >= 25) {
 			return qtrue;
 		}
 	}
@@ -193,7 +193,7 @@ qboolean CG_OwnerDrawVisible(int flags) {
 	}
 
 	if (flags & CG_SHOW_IF_PLAYER_HAS_FLAG) {
-		if (cg->snap->ps.powerups[PW_REDFLAG] || cg->snap->ps.powerups[PW_BLUEFLAG] || cg->snap->ps.powerups[PW_NEUTRALFLAG]) {
+		if (cg.snap->ps.powerups[PW_REDFLAG] || cg.snap->ps.powerups[PW_BLUEFLAG] || cg.snap->ps.powerups[PW_NEUTRALFLAG]) {
 			return qtrue;
 		}
 	}
@@ -203,8 +203,8 @@ qboolean CG_OwnerDrawVisible(int flags) {
 
 const char *CG_GetKillerText(void) {
 	static const char *s = "";
-	if ( cg->killerName[0] ) {
-		s = va("%s %s", CG_GetStringEdString("MP_INGAME", "KILLEDBY"), cg->killerName );
+	if ( cg.killerName[0] ) {
+		s = va("%s %s", CG_GetStringEdString("MP_INGAME", "KILLEDBY"), cg.killerName );
 	}
 	return s;
 }
@@ -218,22 +218,22 @@ const char *CG_GetGameStatusText(void) {
 	}	
 	else if ( cgs.gametype < GT_TEAM)
 	{
-		if (cg->snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR ) 
+		if (cg.snap->ps.persistant[PERS_TEAM] != TEAM_SPECTATOR ) 
 		{
 			char sPlaceWith[256];
 			trap_SP_GetStringTextString("MP_INGAME_PLACE_WITH", sPlaceWith, sizeof(sPlaceWith));
 
-			s = va("%s %s %i",CG_PlaceString( cg->snap->ps.persistant[PERS_RANK] + 1 ), sPlaceWith, cg->snap->ps.persistant[PERS_SCORE] );
+			s = va("%s %s %i",CG_PlaceString( cg.snap->ps.persistant[PERS_RANK] + 1 ), sPlaceWith, cg.snap->ps.persistant[PERS_SCORE] );
 		}
 	}
 	else
 	{
-		if ( cg->teamScores[0] == cg->teamScores[1] ) {
-			s = va("%s %i", CG_GetStringEdString("MP_INGAME", "TIEDAT"), cg->teamScores[0] );
-		} else if ( cg->teamScores[0] >= cg->teamScores[1] ) {
-			s = va("%s, %i / %i", CG_GetStringEdString("MP_INGAME", "RED_LEADS"), cg->teamScores[0], cg->teamScores[1] );
+		if ( cg.teamScores[0] == cg.teamScores[1] ) {
+			s = va("%s %i", CG_GetStringEdString("MP_INGAME", "TIEDAT"), cg.teamScores[0] );
+		} else if ( cg.teamScores[0] >= cg.teamScores[1] ) {
+			s = va("%s, %i / %i", CG_GetStringEdString("MP_INGAME", "RED_LEADS"), cg.teamScores[0], cg.teamScores[1] );
 		} else {
-			s = va("%s, %i / %i", CG_GetStringEdString("MP_INGAME", "BLUE_LEADS"), cg->teamScores[1], cg->teamScores[0] );
+			s = va("%s, %i / %i", CG_GetStringEdString("MP_INGAME", "BLUE_LEADS"), cg.teamScores[1], cg.teamScores[0] );
 		}
 	}
 	return s;
@@ -340,7 +340,7 @@ void CG_DrawNewTeamInfo(rectDef_t *rect, float text_x, float text_y, float scale
 	count = (numSortedTeamPlayers > 8) ? 8 : numSortedTeamPlayers;
 	for (i = 0; i < count; i++) {
 		ci = cgs.clientinfo + sortedTeamPlayers[i];
-		if ( ci->infoValid && ci->team == cg->snap->ps.persistant[PERS_TEAM]) {
+		if ( ci->infoValid && ci->team == cg.snap->ps.persistant[PERS_TEAM]) {
 			len = CG_Text_Width( ci->name, scale, 0);
 			if (len > pwidth)
 				pwidth = len;
@@ -362,7 +362,7 @@ void CG_DrawNewTeamInfo(rectDef_t *rect, float text_x, float text_y, float scale
 
 	for (i = 0; i < count; i++) {
 		ci = cgs.clientinfo + sortedTeamPlayers[i];
-		if ( ci->infoValid && ci->team == cg->snap->ps.persistant[PERS_TEAM]) {
+		if ( ci->infoValid && ci->team == cg.snap->ps.persistant[PERS_TEAM]) {
 
 			xx = rect->x + 1;
 			for (j = 0; j <= PW_NUM_POWERUPS; j++) {
@@ -435,57 +435,57 @@ void CG_DrawNewTeamInfo(rectDef_t *rect, float text_x, float text_y, float scale
 
 
 void CG_DrawTeamSpectators(rectDef_t *rect, float scale, vec4_t color, qhandle_t shader) {
-	if (cg->spectatorLen) {
+	if (cg.spectatorLen) {
 		float maxX;
 
-		if (cg->spectatorWidth == -1) {
-			cg->spectatorWidth = 0;
-			cg->spectatorPaintX = rect->x + 1;
-			cg->spectatorPaintX2 = -1;
+		if (cg.spectatorWidth == -1) {
+			cg.spectatorWidth = 0;
+			cg.spectatorPaintX = rect->x + 1;
+			cg.spectatorPaintX2 = -1;
 		}
 
-		if (cg->spectatorOffset > cg->spectatorLen) {
-			cg->spectatorOffset = 0;
-			cg->spectatorPaintX = rect->x + 1;
-			cg->spectatorPaintX2 = -1;
+		if (cg.spectatorOffset > cg.spectatorLen) {
+			cg.spectatorOffset = 0;
+			cg.spectatorPaintX = rect->x + 1;
+			cg.spectatorPaintX2 = -1;
 		}
 
-		if (cg->time > cg->spectatorTime) {
-			cg->spectatorTime = cg->time + 10;
-			if (cg->spectatorPaintX <= rect->x + 2) {
-				if (cg->spectatorOffset < cg->spectatorLen) {
-					cg->spectatorPaintX += CG_Text_Width(&cg->spectatorList[cg->spectatorOffset], scale, 1) - 1;
-					cg->spectatorOffset++;
+		if (cg.time > cg.spectatorTime) {
+			cg.spectatorTime = cg.time + 10;
+			if (cg.spectatorPaintX <= rect->x + 2) {
+				if (cg.spectatorOffset < cg.spectatorLen) {
+					cg.spectatorPaintX += CG_Text_Width(&cg.spectatorList[cg.spectatorOffset], scale, 1) - 1;
+					cg.spectatorOffset++;
 				} else {
-					cg->spectatorOffset = 0;
-					if (cg->spectatorPaintX2 >= 0) {
-						cg->spectatorPaintX = cg->spectatorPaintX2;
+					cg.spectatorOffset = 0;
+					if (cg.spectatorPaintX2 >= 0) {
+						cg.spectatorPaintX = cg.spectatorPaintX2;
 					} else {
-						cg->spectatorPaintX = rect->x + rect->w - 2;
+						cg.spectatorPaintX = rect->x + rect->w - 2;
 					}
-					cg->spectatorPaintX2 = -1;
+					cg.spectatorPaintX2 = -1;
 				}
 			} else {
-				cg->spectatorPaintX--;
-				if (cg->spectatorPaintX2 >= 0) {
-					cg->spectatorPaintX2--;
+				cg.spectatorPaintX--;
+				if (cg.spectatorPaintX2 >= 0) {
+					cg.spectatorPaintX2--;
 				}
 			}
 		}
 
 		maxX = rect->x + rect->w - 2;
-		CG_Text_Paint_Limit(&maxX, cg->spectatorPaintX, rect->y + rect->h - 3, scale, color, &cg->spectatorList[cg->spectatorOffset], 0, 0, FONT_MEDIUM); 
-		if (cg->spectatorPaintX2 >= 0) {
+		CG_Text_Paint_Limit(&maxX, cg.spectatorPaintX, rect->y + rect->h - 3, scale, color, &cg.spectatorList[cg.spectatorOffset], 0, 0, FONT_MEDIUM); 
+		if (cg.spectatorPaintX2 >= 0) {
 			float maxX2 = rect->x + rect->w - 2;
-			CG_Text_Paint_Limit(&maxX2, cg->spectatorPaintX2, rect->y + rect->h - 3, scale, color, cg->spectatorList, 0, cg->spectatorOffset, FONT_MEDIUM); 
+			CG_Text_Paint_Limit(&maxX2, cg.spectatorPaintX2, rect->y + rect->h - 3, scale, color, cg.spectatorList, 0, cg.spectatorOffset, FONT_MEDIUM); 
 		}
-		if (cg->spectatorOffset && maxX > 0) {
+		if (cg.spectatorOffset && maxX > 0) {
 			// if we have an offset ( we are skipping the first part of the string ) and we fit the string
-			if (cg->spectatorPaintX2 == -1) {
-						cg->spectatorPaintX2 = rect->x + rect->w - 2;
+			if (cg.spectatorPaintX2 == -1) {
+						cg.spectatorPaintX2 = rect->x + rect->w - 2;
 			}
 		} else {
-			cg->spectatorPaintX2 = -1;
+			cg.spectatorPaintX2 = -1;
 		}
 
 	}
@@ -494,7 +494,7 @@ void CG_DrawTeamSpectators(rectDef_t *rect, float scale, vec4_t color, qhandle_t
 
 
 void CG_DrawMedal(int ownerDraw, rectDef_t *rect, float scale, vec4_t color, qhandle_t shader) {
-	score_t *score = &cg->scores[cg->selectedScore];
+	score_t *score = &cg.scores[cg.selectedScore];
 	float value = 0;
 	char *text = NULL;
 	color[3] = 0.25;
@@ -747,7 +747,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, float text_x, float text_y
 void CG_MouseEvent(int x, int y) {
 	int n;
 
-	if ( (cg->predictedPlayerState.pm_type == PM_NORMAL || cg->predictedPlayerState.pm_type == PM_JETPACK || cg->predictedPlayerState.pm_type == PM_FLOAT || cg->predictedPlayerState.pm_type == PM_SPECTATOR) && cg->showScores == qfalse) {
+	if ( (cg.predictedPlayerState.pm_type == PM_NORMAL || cg.predictedPlayerState.pm_type == PM_JETPACK || cg.predictedPlayerState.pm_type == PM_FLOAT || cg.predictedPlayerState.pm_type == PM_SPECTATOR) && cg.showScores == qfalse) {
     trap_Key_SetCatcher(0);
 		return;
 	}
@@ -832,7 +832,7 @@ void CG_KeyEvent(int key, qboolean down) {
 		return;
 	}
 
-	if ( cg->predictedPlayerState.pm_type == PM_NORMAL || cg->predictedPlayerState.pm_type == PM_JETPACK || cg->predictedPlayerState.pm_type == PM_NORMAL || (cg->predictedPlayerState.pm_type == PM_SPECTATOR && cg->showScores == qfalse)) {
+	if ( cg.predictedPlayerState.pm_type == PM_NORMAL || cg.predictedPlayerState.pm_type == PM_JETPACK || cg.predictedPlayerState.pm_type == PM_NORMAL || (cg.predictedPlayerState.pm_type == PM_SPECTATOR && cg.showScores == qfalse)) {
 		CG_EventHandling(CGAME_EVENT_NONE);
     trap_Key_SetCatcher(0);
 		return;
@@ -867,6 +867,12 @@ int CG_ClientNumFromName(const char *p) {
   return -1;
 }
 
+void CG_ShowResponseHead(void) {
+  Menus_OpenByName("voiceMenu");
+	trap_Cvar_Set("cl_conXOffset", "72");
+	cg.voiceTime = cg.time;
+}
+
 void CG_RunMenuScript(char **args) {
 }
 
@@ -876,11 +882,11 @@ qboolean CG_DeferMenuScript (char **args)
 }
 
 void CG_GetTeamColor(vec4_t *color) {
-  if (cg->snap->ps.persistant[PERS_TEAM] == TEAM_RED) {
+  if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_RED) {
     (*color)[0] = 1.0f;
     (*color)[3] = 0.25f;
     (*color)[1] = (*color)[2] = 0.0f;
-  } else if (cg->snap->ps.persistant[PERS_TEAM] == TEAM_BLUE) {
+  } else if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_BLUE) {
     (*color)[0] = (*color)[1] = 0.0f;
     (*color)[2] = 1.0f;
     (*color)[3] = 0.25f;

@@ -8,9 +8,6 @@
 #include "bg_saga.h"
 extern menuDef_t *menuScoreboard;
 
-#ifdef _XBOX
-#include "../client/cl_data.h"
-#endif
 
 
 void CG_TargetCommand_f( void ) {
@@ -60,38 +57,38 @@ Debugging command to print the current position
 =============
 */
 static void CG_Viewpos_f (void) {
-	CG_Printf ("%s (%i %i %i) : %i\n", cgs.mapname, (int)cg->refdef.vieworg[0],
-		(int)cg->refdef.vieworg[1], (int)cg->refdef.vieworg[2], 
-		(int)cg->refdef.viewangles[YAW]);
+	CG_Printf ("%s (%i %i %i) : %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
+		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], 
+		(int)cg.refdef.viewangles[YAW]);
 }
 
 
 static void CG_ScoresDown_f( void ) {
 
 	CG_BuildSpectatorString();
-	if ( cg->scoresRequestTime + 2000 < cg->time ) {
+	if ( cg.scoresRequestTime + 2000 < cg.time ) {
 		// the scores are more than two seconds out of data,
 		// so request new ones
-		cg->scoresRequestTime = cg->time;
+		cg.scoresRequestTime = cg.time;
 		trap_SendClientCommand( "score" );
 
 		// leave the current scores up if they were already
 		// displayed, but if this is the first hit, clear them out
-		if ( !cg->showScores ) {
-			cg->showScores = qtrue;
-			cg->numScores = 0;
+		if ( !cg.showScores ) {
+			cg.showScores = qtrue;
+			cg.numScores = 0;
 		}
 	} else {
 		// show the cached contents even if they just pressed if it
 		// is within two seconds
-		cg->showScores = qtrue;
+		cg.showScores = qtrue;
 	}
 }
 
 static void CG_ScoresUp_f( void ) {
-	if ( cg->showScores ) {
-		cg->showScores = qfalse;
-		cg->scoreFadeTime = cg->time;
+	if ( cg.showScores ) {
+		cg.showScores = qfalse;
+		cg.scoreFadeTime = cg.time;
 	}
 }
 
@@ -99,7 +96,7 @@ extern menuDef_t *menuScoreboard;
 void Menu_Reset();			// FIXME: add to right include file
 
 static void CG_scrollScoresDown_f( void) {
-	if (menuScoreboard && cg->scoreBoardShowing) {
+	if (menuScoreboard && cg.scoreBoardShowing) {
 		Menu_ScrollFeeder(menuScoreboard, FEEDER_SCOREBOARD, qtrue);
 		Menu_ScrollFeeder(menuScoreboard, FEEDER_REDTEAM_LIST, qtrue);
 		Menu_ScrollFeeder(menuScoreboard, FEEDER_BLUETEAM_LIST, qtrue);
@@ -108,7 +105,7 @@ static void CG_scrollScoresDown_f( void) {
 
 
 static void CG_scrollScoresUp_f( void) {
-	if (menuScoreboard && cg->scoreBoardShowing) {
+	if (menuScoreboard && cg.scoreBoardShowing) {
 		Menu_ScrollFeeder(menuScoreboard, FEEDER_SCOREBOARD, qfalse);
 		Menu_ScrollFeeder(menuScoreboard, FEEDER_REDTEAM_LIST, qfalse);
 		Menu_ScrollFeeder(menuScoreboard, FEEDER_BLUETEAM_LIST, qfalse);
@@ -122,13 +119,6 @@ static void CG_spWin_f( void) {
 	trap_Cvar_Set("cg_thirdPerson", "1");
 	trap_Cvar_Set("cg_thirdPersonAngle", "0");
 	trap_Cvar_Set("cg_thirdPersonRange", "100");
-
-#ifdef _XBOX
-	ClientManager::ActiveClient().cg_thirdPerson = 1;
-	ClientManager::ActiveClient().cg_thirdPersonRange = 100;
-	ClientManager::ActiveClient().cg_thirdPersonAngle = 0;
-#endif
-
 	CG_AddBufferedSound(cgs.media.winnerSound);
 	//trap_S_StartLocalSound(cgs.media.winnerSound, CHAN_ANNOUNCER);
 	CG_CenterPrint(CG_GetStringEdString("MP_INGAME", "YOU_WIN"), SCREEN_HEIGHT * .30, 0);
@@ -140,13 +130,6 @@ static void CG_spLose_f( void) {
 	trap_Cvar_Set("cg_thirdPerson", "1");
 	trap_Cvar_Set("cg_thirdPersonAngle", "0");
 	trap_Cvar_Set("cg_thirdPersonRange", "100");
-
-#ifdef _XBOX
-	ClientManager::ActiveClient().cg_thirdPerson = 1;
-	ClientManager::ActiveClient().cg_thirdPersonRange = 100;
-	ClientManager::ActiveClient().cg_thirdPersonAngle = 0;
-#endif
-
 	CG_AddBufferedSound(cgs.media.loserSound);
 	//trap_S_StartLocalSound(cgs.media.loserSound, CHAN_ANNOUNCER);
 	CG_CenterPrint(CG_GetStringEdString("MP_INGAME", "YOU_LOSE"), SCREEN_HEIGHT * .30, 0);
@@ -183,6 +166,7 @@ static void CG_TellAttacker_f( void ) {
 	trap_SendClientCommand( command );
 }
 
+
 /*
 ==================
 CG_StartOrbit_f
@@ -198,21 +182,12 @@ static void CG_StartOrbit_f( void ) {
 	}
 	if (cg_cameraOrbit.value != 0) {
 		trap_Cvar_Set ("cg_cameraOrbit", "0");
-#ifdef _XBOX
-		ClientManager::ActiveClient().cg_thirdPerson = 0;
-#endif
 		trap_Cvar_Set("cg_thirdPerson", "0");
 	} else {
 		trap_Cvar_Set("cg_cameraOrbit", "5");
 		trap_Cvar_Set("cg_thirdPerson", "1");
 		trap_Cvar_Set("cg_thirdPersonAngle", "0");
 		trap_Cvar_Set("cg_thirdPersonRange", "100");
-
-#ifdef _XBOX
-		ClientManager::ActiveClient().cg_thirdPerson = 1;
-		ClientManager::ActiveClient().cg_thirdPersonRange = 100;
-		ClientManager::ActiveClient().cg_thirdPersonAngle = 0;
-#endif
 	}
 }
 
@@ -226,7 +201,7 @@ static void CG_SiegeBriefing_f(void)
 		return;
 	}
 
-	team = cg->predictedPlayerState.persistant[PERS_TEAM];
+	team = cg.predictedPlayerState.persistant[PERS_TEAM];
 
 	if (team != SIEGETEAM_TEAM1 &&
 		team != SIEGETEAM_TEAM2)
@@ -246,7 +221,7 @@ static void CG_SiegeCvarUpdate_f(void)
 		return;
 	}
 
-	team = cg->predictedPlayerState.persistant[PERS_TEAM];
+	team = cg.predictedPlayerState.persistant[PERS_TEAM];
 
 	if (team != SIEGETEAM_TEAM1 &&
 		team != SIEGETEAM_TEAM2)
@@ -273,8 +248,8 @@ static void CG_Camera_f( void ) {
 	char name[1024];
 	trap_Argv( 1, name, sizeof(name));
 	if (trap_loadCamera(name)) {
-		cg->cameraMode = qtrue;
-		trap_startCamera(cg->time);
+		cg.cameraMode = qtrue;
+		trap_startCamera(cg.time);
 	} else {
 		CG_Printf ("Unable to load camera %s\n",name);
 	}

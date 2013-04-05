@@ -65,8 +65,6 @@ typedef struct listBoxDef_s {
 	qboolean	notselectable;
 //JLF MPMOVED
 	qboolean	scrollhidden;
-	qhandle_t	selectionShader;
-	
 } listBoxDef_t;
 
 
@@ -100,7 +98,7 @@ typedef struct multiDef_s {
 #ifdef _XBOX
 // Super small - doesn't need to be bigger yet, helps us get into 64 MB
 //#define STRING_POOL_SIZE 16*1024
-#define STRING_POOL_SIZE 128*1024
+#define STRING_POOL_SIZE 64*1024
 
 #else
 #ifdef CGAME
@@ -110,8 +108,7 @@ typedef struct multiDef_s {
 #endif
 #endif
 
-//#define	NUM_CROSSHAIRS			9
-#define	NUM_CROSSHAIRS			1
+#define	NUM_CROSSHAIRS			9
 
 typedef struct {
 	qhandle_t	qhMediumFont;
@@ -127,7 +124,7 @@ typedef struct {
 	qhandle_t	buttonInside;
 	qhandle_t	solidBox;
 	qhandle_t	sliderBar;
-//	qhandle_t	sliderThumb;
+	qhandle_t	sliderThumb;
 	sfxHandle_t menuEnterSound;
 	sfxHandle_t menuExitSound;
 	sfxHandle_t menuBuzzSound;
@@ -228,9 +225,9 @@ typedef struct {
 		return G2API_SetBoneAnim(ghlInfo, boneName, startFrame, endFrame, flags, animSpeed, currentTime, setFrame, blendTime);
 	}
 #else
-	qboolean	(*g2_SetSkin)(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t renderSkin = 0);
+	qboolean	(*g2_SetSkin)(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t renderSkin );
 	qboolean	(*g2_SetBoneAnim)(CGhoul2Info *ghlInfo, const char *boneName, const int startFrame, const int endFrame,
-					  const int flags, const float animSpeed, const int currentTime, const float setFrame = -1, const int blendTime = -1);
+					  const int flags, const float animSpeed, const int currentTime, const float setFrame, const int blendTime );
 #endif
 	qboolean	(*g2_RemoveGhoul2Model)(CGhoul2Info_v &ghlInfo, const int modelIndex);
 	int			(*g2_InitGhoul2Model)(CGhoul2Info_v &ghoul2, const char *fileName, int, qhandle_t customSkin, qhandle_t customShader, int modelFlags, int lodBias);
@@ -244,7 +241,7 @@ typedef struct {
 	int			(*g2hilev_SetAnim)(CGhoul2Info *ghlInfo, const char *boneName, int animNum, const qboolean freeze);
 
 #ifdef _IMMERSION
-	ffHandle_t	(*registerForce)(const char *name, int channel=FF_CHANNEL_MENU);
+	ffHandle_t	(*registerForce)(const char *name, int channel );
 	void		(*startForce)(ffHandle_t ff);
 #endif // _IMMERSION
 
@@ -271,7 +268,7 @@ void UI_InitMemory( void );
 
 
 #define MAX_COLOR_RANGES	10
-#define MAX_MENUITEMS		200
+#define MAX_MENUITEMS		150
 #define MAX_MENUS			64
 
 
@@ -321,8 +318,8 @@ typedef struct {
 	UIRectangle	rectClient;					// screen coord rectangle
 	char		*name;						//
 	char		*group;						// if it belongs to a group
-//	const char	*cinematicName;				// cinematic name
-//	int			cinematic;					// cinematic handle
+	const char	*cinematicName;				// cinematic name
+	int			cinematic;					// cinematic handle
 	int			style;                      //
 	int			border;                     //
 	int			ownerDraw;					// ownerDraw style
@@ -338,7 +335,7 @@ typedef struct {
 	vec4_t		foreColor;					// text color
 	vec4_t		backColor;					// border color
 	vec4_t		borderColor;				// border color
-//	vec4_t		outlineColor;				// border color
+	vec4_t		outlineColor;				// border color
 	qhandle_t	background;					// background asset  
 } windowDef_t;
 
@@ -382,24 +379,24 @@ typedef struct itemDef_s {
 	int			textalignment;				// ( optional ) alignment for text within rect based on text width
 	float		textalignx;					// ( optional ) text alignment x coord
 	float		textaligny;					// ( optional ) text alignment y coord
-//	float		text2alignx;				// ( optional ) text2 alignment x coord
-//	float		text2aligny;				// ( optional ) text2 alignment y coord
+	float		text2alignx;				// ( optional ) text2 alignment x coord
+	float		text2aligny;				// ( optional ) text2 alignment y coord
 	float		textscale;					// scale percentage from 72pts
 	int			textStyle;					// ( optional ) style, normal and shadowed are it for now
 	char		*text;						// display text
-//	char		*text2;						// display text2
-//	char		*descText;					//	Description text
+	char		*text2;						// display text2
+	char		*descText;					//	Description text
 	void		*parent;					// menu owner
 	qhandle_t	asset;						// handle to asset
 	CGhoul2Info_v ghoul2;					// ghoul2 instance if available instead of a model.
 	int			flags;						// flags like g2valid, character, saber, saber2, etc.
-//	const char	*mouseEnterText;			// mouse enter script
-//	const char	*mouseExitText;				// mouse exit script
-//	const char	*mouseEnter;				// mouse enter script
-//	const char	*mouseExit;					// mouse exit script 
+	const char	*mouseEnterText;			// mouse enter script
+	const char	*mouseExitText;				// mouse exit script
+	const char	*mouseEnter;				// mouse enter script
+	const char	*mouseExit;					// mouse exit script 
 	const char	*action;					// select script
 //JLFACCEPT MPMOVED
-//	const char  *accept;
+	const char  *accept;
 //JLFDPADSCRIPT MPMOVED
 	const char * selectionNext;
 	const char * selectionPrev;
@@ -414,15 +411,15 @@ typedef struct itemDef_s {
 #ifdef _IMMERSION
 	ffHandle_t	focusForce;
 #endif // _IMMERSION
-//	int			numColors;					// number of color ranges
-//	colorRangeDef_t colorRanges[MAX_COLOR_RANGES];
+	int			numColors;					// number of color ranges
+	colorRangeDef_t colorRanges[MAX_COLOR_RANGES];
 	float		special;					// used for feeder id's etc.. diff per type
 	int			cursorPos;					// cursor position in characters
 	void		*typeData;					// type specific data ptr's	
-//	int			appearanceSlot;				// order of appearance
+	int			appearanceSlot;				// order of appearance
 	int			value;						// used by ITEM_TYPE_MULTI that aren't linked to a particular cvar.
 	int			font;						// FONT_SMALL,FONT_MEDIUM,FONT_LARGE
-//	int			invertYesNo;
+	int			invertYesNo;
 	int			xoffset;
 
 } itemDef_t;
@@ -443,9 +440,6 @@ typedef struct {
 	const char  *onAccept;					// run when menu is closed with acceptance
 
 	const char	*onESC;						// run when the menu is closed
-	const char	*xScript;					// run when X button is pressed
-	const char	*yScript;					// run when Y button is pressed
-	const char	*whiteScript;				// run when White button is pressed
 	const char	*soundName;					// background loop sound for menu
 
 	vec4_t		focusColor;					// focus color for items
@@ -522,7 +516,6 @@ char		*PC_ParseExt(void);
 qboolean	PC_ParseInt(int *number);
 qboolean	PC_ParseFloat(float *number);
 qboolean	PC_ParseColor(vec4_t *c);
-void		PC_SkipBracedSection( void );
 const char	*String_Alloc(const char *p);
 void		String_Init(void);
 qboolean	String_Parse(const char **p, const char **out);

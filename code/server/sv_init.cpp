@@ -5,8 +5,6 @@
 
 #include "../client/snd_music.h"	// didn't want to put this in snd_local because of rebuild times etc.
 #include "server.h"
-#include "../win32/xbox_texture_man.h"
-#include <xgraphics.h>
 
 /*
 Ghoul2 Insert Start
@@ -191,20 +189,7 @@ extern void CL_FreeReliableCommands(void);
 extern void CM_Free(void);
 extern void ShaderEntryPtrs_Clear(void);
 extern void G_FreeRoffs(void);
-extern void BG_ClearVehicles(void);
-extern void ClearHStringPool(void);
-extern void ClearTheBonePool(void);
-extern char cinematicSkipScript[64];
-extern HANDLE s_BCThread;
-extern void IN_HotSwap1Off(void);
-extern void IN_HotSwap2Off(void);
-extern void IN_HotSwap3Off(void);
-extern int	cg_saberOnSoundTime[MAX_GENTITIES];
-extern char current_speeders;
-extern int zfFaceShaders[3];
-extern int tfTorsoShader;
-extern bool dontPillarPush;
-
+extern int	numVehicles;
 void SV_ClearLastLevel(void)
 {
 	Menu_Reset();
@@ -224,134 +209,19 @@ void SV_ClearLastLevel(void)
 	CL_FreeReliableCommands();
 	CM_Free();
 	ShaderEntryPtrs_Clear();
-	ClearTheBonePool();
-	BG_ClearVehicles();
 
-	cinematicSkipScript[0] = 0;
+	numVehicles = 0;
 
 	if (svs.clients)
 	{
 		SV_FreeClient( svs.clients );
 	}
-
-	ClearHStringPool();
-
-	// The bink copier thread is so trivial as to not have any communication
-	// Rather than polling constantly to clean it up, we just check here.
-	// This code should only happen ONCE:
-	if (s_BCThread != INVALID_HANDLE_VALUE)
-	{
-		DWORD status;
-		if (GetExitCodeThread( s_BCThread, &status ) && (status != STILL_ACTIVE))
-		{
-			// Thread is done. Clean up after ourselves:
-			CloseHandle( s_BCThread );
-			s_BCThread = INVALID_HANDLE_VALUE;
-		}
-	}
-
-	IN_HotSwap1Off();
-	IN_HotSwap2Off();
-	IN_HotSwap3Off();
-
-	memset(&cg_saberOnSoundTime, 0, MAX_GENTITIES);
-	memset(zfFaceShaders, -1, sizeof(zfFaceShaders));
-	tfTorsoShader = -1;
-
-	current_speeders = 0;
-
-	dontPillarPush = false;
 }
 #endif
 
 qboolean CM_SameMap(char *server);
 qboolean CM_HasTerrain(void);
 void Cvar_Defrag(void);
-
-// Load-time animation hackery:
-struct OVERLAYINFO
-{
-	D3DTexture *texture;
-	D3DSurface *surface;
-};
-
-OVERLAYINFO Image;
-static int loadingX = 290;
-
-void InitLoadingAnimation( void )
-{
-/*
-	// Make our two textures:
-	Image.texture = new IDirect3DTexture9;
-
-	// Fill in the texture headers:
-	DWORD pixelSize = 
-	XGSetTextureHeader( 4,
-						4,
-						1,
-						0,
-						D3DFMT_YUY2,
-						0,
-						Image.texture,
-						0,
-						0 );
-
-	// Get pixel data, texNum is unused:
-	byte *pixels = (byte *)gTextures.Allocate( pixelSize, 0 );
-
-	// texNum is unused:
-	Image.texture->Register( pixels );
-
-	// Turn on overlays:
-	glw_state->device->EnableOverlay( TRUE );
-
-	// Get surface pointers:
-	Image.texture->GetSurfaceLevel( 0, &Image.surface );
-
-	D3DLOCKED_RECT lock;
-	Image.surface->LockRect( &lock, NULL, D3DLOCK_TILED );
-
-	// Grey?
-	memset( lock.pBits, 0x7f7f7f7f, lock.Pitch * 4 );
-
-	Image.surface->UnlockRect();
-
-	// Just to be safe:
-//	loadingIndex = 0;
-*/
-}
-
-void UpdateLoadingAnimation( void )
-{
-/*
-	// Draw the image tiny, in the bottom of the screen:
-	RECT dst_rect = { loadingX, 390, loadingX + 8, 398 };
-	RECT src_rect = { 0, 0, 4, 4 };
-
-	// Update this bugger.
-	glw_state->device->UpdateOverlay( Image.surface, &src_rect, &dst_rect, FALSE, 0 );
-	loadingX += 4;
-	if (loadingX > 342 )
-		loadingX = 290;
-*/
-}
-
-void StopLoadingAnimation( void )
-{
-/*
-	// Release surfaces:
-	Image.surface->Release();
-	Image.surface = NULL;
-
-	// Clean up the textures we made for the overlay stuff:
-	Image.texture->BlockUntilNotBusy();
-	delete Image.texture;
-	Image.texture = NULL;
-
-	// Turn overlays back off:
-	glw_state->device->EnableOverlay( FALSE );
-*/
-}
 
 /*
 ================
@@ -361,19 +231,10 @@ Change the server to a new map, taking all connected
 clients along with it.
 ================
 */
-void SV_SpawnServer( char *iServer, ForceReload_e eForceReload, qboolean bAllowScreenDissolve )
+void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowScreenDissolve )
 {
 	int			i;
 	int			checksum;
-	char		server[64];
-
-	Q_strncpyz( server, iServer, sizeof(server), qtrue );
-
-#ifdef XBOX_DEMO
-	// Pause the timer if "someone is playing"
-	extern void Demo_TimerPause( bool bPaused );
-	Demo_TimerPause( true );
-#endif
 
 // The following fixes for potential issues only work on Xbox
 #ifdef _XBOX
@@ -388,9 +249,15 @@ void SV_SpawnServer( char *iServer, ForceReload_e eForceReload, qboolean bAllowS
 	extern qboolean MatrixMode;
 	MatrixMode = qfalse;
 
-	// Failsafe to ensure that we don't have rumbling during level load
-	extern void IN_KillRumbleScripts( void );
-	IN_KillRumbleScripts();
+	// Temporary code to turn on HDR effect for specific maps only
+	if (!Q_stricmp(server, "t3_rift"))
+	{
+		Cvar_Set( "r_hdreffect", "1" );
+	}
+	else
+	{
+		Cvar_Set( "r_hdreffect", "0" );
+	}
 #endif
 
 	RE_RegisterMedia_LevelLoadBegin( server, eForceReload, bAllowScreenDissolve );
@@ -404,23 +271,11 @@ void SV_SpawnServer( char *iServer, ForceReload_e eForceReload, qboolean bAllowS
 
 	Com_Printf ("------ Server Initialization ------\n%s\n", com_version->string);
 	Com_Printf ("Server: %s\n",server);	
-	Cvar_Set( "ui_mapname", server );
-
-#ifndef FINAL_BUILD
-//	extern unsigned long texturePointMax;
-//	Com_Printf ("Texture pool highwater mark: %u\n", texturePointMax);
-#endif
 
 #ifdef _XBOX
 	// disable vsync during load for speed
 	qglDisable(GL_VSYNC);
 #endif
-
-	// Hope this is correct - InitGame gets called later, which does this,
-	// but UI_DrawConnect (in CL_MapLoading) needs it now, to properly
-	// mimic CG_DrawInformation:
-	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;
-	g_eSavedGameJustLoaded = eSavedGameJustLoaded;
 
 	// don't let sound stutter and dump all stuff on the hunk
 	CL_MapLoading();
@@ -486,9 +341,6 @@ void SV_SpawnServer( char *iServer, ForceReload_e eForceReload, qboolean bAllowS
 	Z_Details_f();
 #endif
 
-	InitLoadingAnimation();
-	UpdateLoadingAnimation();
-
 	// init client structures and svs.numSnapshotEntities
 	// This is moved down quite a bit, but should be safe. And keeps
 	// svs.clients right at the beginning of memory
@@ -497,9 +349,9 @@ void SV_SpawnServer( char *iServer, ForceReload_e eForceReload, qboolean bAllowS
 	}
 
  	// clear out those shaders, images and Models
-//	R_InitImages();
-//	R_InitShaders();
-//	R_ModelInit();
+	R_InitImages();
+	R_InitShaders();
+	R_ModelInit();
 
 	// allocate the snapshot entities 
 	svs.snapshotEntities = (entityState_t *) Z_Malloc (sizeof(entityState_t)*svs.numSnapshotEntities, TAG_CLIENTS, qtrue );
@@ -526,13 +378,9 @@ void SV_SpawnServer( char *iServer, ForceReload_e eForceReload, qboolean bAllowS
 	G2API_SetTime(sv.time,G2T_SV_TIME);
 
 #ifdef _XBOX
-	UpdateLoadingAnimation();
 	CL_StartHunkUsers();
-	UpdateLoadingAnimation();
 	CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum );
-	UpdateLoadingAnimation();
 	RE_LoadWorldMap(va("maps/%s.bsp", server));
-	UpdateLoadingAnimation();
 #else
 	CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum, qfalse );
 #endif
@@ -614,14 +462,10 @@ void SV_SpawnServer( char *iServer, ForceReload_e eForceReload, qboolean bAllowS
 	svs.nextHeartbeatTime = -9999999;
 
 	Hunk_SetMark();
-#ifndef _XBOX
 	Z_Validate();
 	Z_Validate();
 	Z_Validate();
-#endif
-
-	StopLoadingAnimation();
-
+	
 	Com_Printf ("-----------------------------------\n");
 }
 

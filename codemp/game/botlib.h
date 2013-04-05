@@ -7,9 +7,9 @@
  *
  * $Archive: /source/code/game/botai.h $
  * $Author: osman $ 
- * $Revision: 1.5 $
+ * $Revision: 1.4 $
  * $Modtime: 03/01/00 3:32p $
- * $Date: 2003/09/26 02:43:45 $
+ * $Date: 2003/03/15 23:44:00 $
  *
  *****************************************************************************/
 
@@ -301,26 +301,26 @@ typedef struct ai_export_s
 	//-----------------------------------
 	// be_ai_chat.h
 	//-----------------------------------
-//	int		(*BotAllocChatState)(void);
-//	void	(*BotFreeChatState)(int handle);
-//	void	(*BotQueueConsoleMessage)(int chatstate, int type, char *message);
-//	void	(*BotRemoveConsoleMessage)(int chatstate, int handle);
-//	int		(*BotNextConsoleMessage)(int chatstate, struct bot_consolemessage_s *cm);
-//	int		(*BotNumConsoleMessages)(int chatstate);
-//	void	(*BotInitialChat)(int chatstate, char *type, int mcontext, char *var0, char *var1, char *var2, char *var3, char *var4, char *var5, char *var6, char *var7);
-//	int		(*BotNumInitialChats)(int chatstate, char *type);
-//	int		(*BotReplyChat)(int chatstate, char *message, int mcontext, int vcontext, char *var0, char *var1, char *var2, char *var3, char *var4, char *var5, char *var6, char *var7);
-//	int		(*BotChatLength)(int chatstate);
-//	void	(*BotEnterChat)(int chatstate, int client, int sendto);
-//	void	(*BotGetChatMessage)(int chatstate, char *buf, int size);
-//	int		(*StringContains)(char *str1, char *str2, int casesensitive);
-//	int		(*BotFindMatch)(char *str, struct bot_match_s *match, unsigned long int context);
-//	void	(*BotMatchVariable)(struct bot_match_s *match, int variable, char *buf, int size);
-//	void	(*UnifyWhiteSpaces)(char *string);
-//	void	(*BotReplaceSynonyms)(char *string, unsigned long int context);
-//	int		(*BotLoadChatFile)(int chatstate, char *chatfile, char *chatname);
-//	void	(*BotSetChatGender)(int chatstate, int gender);
-//	void	(*BotSetChatName)(int chatstate, char *name, int client);
+	int		(*BotAllocChatState)(void);
+	void	(*BotFreeChatState)(int handle);
+	void	(*BotQueueConsoleMessage)(int chatstate, int type, char *message);
+	void	(*BotRemoveConsoleMessage)(int chatstate, int handle);
+	int		(*BotNextConsoleMessage)(int chatstate, struct bot_consolemessage_s *cm);
+	int		(*BotNumConsoleMessages)(int chatstate);
+	void	(*BotInitialChat)(int chatstate, char *type, int mcontext, char *var0, char *var1, char *var2, char *var3, char *var4, char *var5, char *var6, char *var7);
+	int		(*BotNumInitialChats)(int chatstate, char *type);
+	int		(*BotReplyChat)(int chatstate, char *message, int mcontext, int vcontext, char *var0, char *var1, char *var2, char *var3, char *var4, char *var5, char *var6, char *var7);
+	int		(*BotChatLength)(int chatstate);
+	void	(*BotEnterChat)(int chatstate, int client, int sendto);
+	void	(*BotGetChatMessage)(int chatstate, char *buf, int size);
+	int		(*StringContains)(char *str1, char *str2, int casesensitive);
+	int		(*BotFindMatch)(char *str, struct bot_match_s *match, unsigned long int context);
+	void	(*BotMatchVariable)(struct bot_match_s *match, int variable, char *buf, int size);
+	void	(*UnifyWhiteSpaces)(char *string);
+	void	(*BotReplaceSynonyms)(char *string, unsigned long int context);
+	int		(*BotLoadChatFile)(int chatstate, char *chatfile, char *chatname);
+	void	(*BotSetChatGender)(int chatstate, int gender);
+	void	(*BotSetChatName)(int chatstate, char *name, int client);
 	//-----------------------------------
 	// be_ai_goal.h
 	//-----------------------------------

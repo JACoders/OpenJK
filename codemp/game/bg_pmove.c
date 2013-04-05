@@ -20,11 +20,12 @@ extern void G_CheapWeaponFire(int entNum, int ev);
 extern qboolean TryGrapple(gentity_t *ent); //g_cmds.c
 extern void trap_FX_PlayEffect( const char *file, vec3_t org, vec3_t fwd, int vol, int rad );
 #endif
-#include "..\client\fffx.h"
+
 #include "../namespace_begin.h"
 extern qboolean BG_FullBodyTauntAnim( int anim );
 extern float PM_WalkableGroundDistance(void);
 extern qboolean PM_GroundSlideOkay( float zNormal );
+extern saberInfo_t *BG_MySaber( int clientNum, int saberNum );
 
 pmove_t		*pm;
 pml_t		pml;
@@ -260,6 +261,8 @@ qboolean PM_INLINE PM_IsRocketTrooper(void)
 int PM_GetSaberStance(void)
 {
 	int anim = BOTH_STAND2;
+	saberInfo_t *saber1 = BG_MySaber( pm->ps->clientNum, 0 );
+	saberInfo_t *saber2 = BG_MySaber( pm->ps->clientNum, 1 );
 
 	if (!pm->ps->saberEntityNum)
 	{ //lost it
@@ -271,6 +274,25 @@ int PM_GetSaberStance(void)
 		return BOTH_STAND1;
 	}
 
+	if ( saber1
+		&& saber1->readyAnim != -1 )
+	{
+		return saber1->readyAnim;
+	}
+
+	if ( saber2
+		&& saber2->readyAnim != -1 )
+	{
+		return saber2->readyAnim;
+	}
+
+	if ( saber1 
+		&& saber2
+		&& !pm->ps->saberHolstered )
+	{//dual sabers, both on
+		return BOTH_SABERDUAL_STANCE;
+	}
+
 	switch ( pm->ps->fd.saberAnimLevel )
 	{
 	case SS_DUAL:
@@ -279,16 +301,16 @@ int PM_GetSaberStance(void)
 	case SS_STAFF:
 		anim = BOTH_SABERSTAFF_STANCE;
 		break;
-	case FORCE_LEVEL_1:
-	case FORCE_LEVEL_5:
+	case SS_FAST:
+	case SS_TAVION:
 		anim = BOTH_SABERFAST_STANCE;
 		break;
-	case FORCE_LEVEL_3:
+	case SS_STRONG:
 		anim = BOTH_SABERSLOW_STANCE;
 		break;
-	case FORCE_LEVEL_0:
-	case FORCE_LEVEL_2:
-	case FORCE_LEVEL_4:
+	case SS_NONE:
+	case SS_MEDIUM:
+	case SS_DESANN:
 	default:
 		anim = BOTH_STAND2;
 		break;
@@ -1765,6 +1787,8 @@ PM_CheckJump
 */
 static qboolean PM_CheckJump( void ) 
 {
+	qboolean allowFlips = qtrue;
+
 	if (pm->ps->clientNum >= MAX_CLIENTS)
 	{
 		bgEntity_t *pEnt = pm_entSelf;
@@ -1796,6 +1820,22 @@ static qboolean PM_CheckJump( void )
 	if ( PM_InKnockDown( pm->ps ) || BG_InRoll( pm->ps, pm->ps->legsAnim ) ) 
 	{//in knockdown
 		return qfalse;		
+	}
+
+	if ( pm->ps->weapon == WP_SABER )
+	{
+		saberInfo_t *saber1 = BG_MySaber( pm->ps->clientNum, 0 );
+		saberInfo_t *saber2 = BG_MySaber( pm->ps->clientNum, 1 );
+		if ( saber1
+			&& (saber1->saberFlags&SFL_NO_FLIPS) )
+		{
+			allowFlips = qfalse;
+		}
+		if ( saber2
+			&& (saber2->saberFlags&SFL_NO_FLIPS) )
+		{
+			allowFlips = qfalse;
+		}
 	}
 
 	if (pm->ps->groundEntityNum != ENTITYNUM_NONE || pm->ps->origin[2] < pm->ps->fd.forceJumpZStart)
@@ -1831,22 +1871,43 @@ static qboolean PM_CheckJump( void )
 	{ //Forced jump anim
 		int anim = BOTH_FORCEINAIR1;
 		int	parts = SETANIM_BOTH;
-
-		if ( pm->cmd.forwardmove > 0 )
+		if ( allowFlips )
 		{
-			anim = BOTH_FLIP_F;
+			if ( pm->cmd.forwardmove > 0 )
+			{
+				anim = BOTH_FLIP_F;
+			}
+			else if ( pm->cmd.forwardmove < 0 )
+			{
+				anim = BOTH_FLIP_B;
+			}
+			else if ( pm->cmd.rightmove > 0 )
+			{
+				anim = BOTH_FLIP_R;
+			}
+			else if ( pm->cmd.rightmove < 0 )
+			{
+				anim = BOTH_FLIP_L;
+			}
 		}
-		else if ( pm->cmd.forwardmove < 0 )
+		else
 		{
-			anim = BOTH_FLIP_B;
-		}
-		else if ( pm->cmd.rightmove > 0 )
-		{
-			anim = BOTH_FLIP_R;
-		}
-		else if ( pm->cmd.rightmove < 0 )
-		{
-			anim = BOTH_FLIP_L;
+			if ( pm->cmd.forwardmove > 0 )
+			{
+				anim = BOTH_FORCEINAIR1;
+			}
+			else if ( pm->cmd.forwardmove < 0 )
+			{
+				anim = BOTH_FORCEINAIRBACK1;
+			}
+			else if ( pm->cmd.rightmove > 0 )
+			{
+				anim = BOTH_FORCEINAIRRIGHT1;
+			}
+			else if ( pm->cmd.rightmove < 0 )
+			{
+				anim = BOTH_FORCEINAIRLEFT1;
+			}
 		}
 		if ( pm->ps->weaponTime )
 		{//FIXME: really only care if we're in a saber attack anim...
@@ -1883,7 +1944,8 @@ static qboolean PM_CheckJump( void )
 								(pm->ps->legsAnim) != BOTH_FLIP_F &&//not already flipping
 								(pm->ps->legsAnim) != BOTH_FLIP_B &&
 								(pm->ps->legsAnim) != BOTH_FLIP_R &&
-								(pm->ps->legsAnim) != BOTH_FLIP_L )
+								(pm->ps->legsAnim) != BOTH_FLIP_L 
+								&& allowFlips )
 							{ 
 								int anim = BOTH_FORCEINAIR1;
 								int	parts = SETANIM_BOTH;
@@ -2060,6 +2122,56 @@ static qboolean PM_CheckJump( void )
 		!BG_HasYsalamiri(pm->gametype, pm->ps) &&
 		BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION) )
 	{
+		qboolean allowWallRuns = qtrue;
+		qboolean allowWallFlips = qtrue;
+		qboolean allowFlips = qtrue;
+		qboolean allowWallGrabs = qtrue;
+		if ( pm->ps->weapon == WP_SABER )
+		{
+			saberInfo_t *saber1 = BG_MySaber( pm->ps->clientNum, 0 );
+			saberInfo_t *saber2 = BG_MySaber( pm->ps->clientNum, 1 );
+			if ( saber1
+				&& (saber1->saberFlags&SFL_NO_WALL_RUNS) )
+			{
+				allowWallRuns = qfalse;
+			}
+			if ( saber2
+				&& (saber2->saberFlags&SFL_NO_WALL_RUNS) )
+			{
+				allowWallRuns = qfalse;
+			}
+			if ( saber1
+				&& (saber1->saberFlags&SFL_NO_WALL_FLIPS) )
+			{
+				allowWallFlips = qfalse;
+			}
+			if ( saber2
+				&& (saber2->saberFlags&SFL_NO_WALL_FLIPS) )
+			{
+				allowWallFlips = qfalse;
+			}
+			if ( saber1
+				&& (saber1->saberFlags&SFL_NO_FLIPS) )
+			{
+				allowFlips = qfalse;
+			}
+			if ( saber2
+				&& (saber2->saberFlags&SFL_NO_FLIPS) )
+			{
+				allowFlips = qfalse;
+			}
+			if ( saber1
+				&& (saber1->saberFlags&SFL_NO_WALL_GRAB) )
+			{
+				allowWallGrabs = qfalse;
+			}
+			if ( saber2
+				&& (saber2->saberFlags&SFL_NO_WALL_GRAB) )
+			{
+				allowWallGrabs = qfalse;
+			}
+		}
+
 		if ( pm->ps->groundEntityNum != ENTITYNUM_NONE )
 		{//on the ground
 			//check for left-wall and right-wall special jumps
@@ -2069,32 +2181,47 @@ static qboolean PM_CheckJump( void )
 			{//strafing right
 				if ( pm->cmd.forwardmove > 0 )
 				{//wall-run
-					vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.0f;
-					anim = BOTH_WALL_RUN_RIGHT;
+					if ( allowWallRuns )
+					{
+						vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.0f;
+						anim = BOTH_WALL_RUN_RIGHT;
+					}
 				}
 				else if ( pm->cmd.forwardmove == 0 )
 				{//wall-flip
-					vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
-					anim = BOTH_WALL_FLIP_RIGHT;
+					if ( allowWallFlips )
+					{
+						vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+						anim = BOTH_WALL_FLIP_RIGHT;
+					}
 				}
 			}
 			else if ( pm->cmd.rightmove < 0 && pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1 )
 			{//strafing left
 				if ( pm->cmd.forwardmove > 0 )
 				{//wall-run
-					vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.0f;
-					anim = BOTH_WALL_RUN_LEFT;
+					if ( allowWallRuns )
+					{
+						vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.0f;
+						anim = BOTH_WALL_RUN_LEFT;
+					}
 				}
 				else if ( pm->cmd.forwardmove == 0 )
 				{//wall-flip
-					vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
-					anim = BOTH_WALL_FLIP_LEFT;
+					if ( allowWallFlips )
+					{
+						vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
+						anim = BOTH_WALL_FLIP_LEFT;
+					}
 				}
 			}
 			else if ( pm->cmd.forwardmove < 0 && !(pm->cmd.buttons&BUTTON_ATTACK) )
 			{//backflip
-				vertPush = JUMP_VELOCITY;
-				anim = BOTH_FLIP_BACK1;//BG_PickAnim( BOTH_FLIP_BACK1, BOTH_FLIP_BACK3 );
+				if ( allowFlips )
+				{
+					vertPush = JUMP_VELOCITY;
+					anim = BOTH_FLIP_BACK1;//BG_PickAnim( BOTH_FLIP_BACK1, BOTH_FLIP_BACK3 );
+				}
 			}
 
 			vertPush += 128; //give them an extra shove
@@ -2395,76 +2522,79 @@ static qboolean PM_CheckJump( void )
 				&& PM_WalkableGroundDistance() <= 80 //unfortunately we do not have a happy ground timer like SP (this would use up more bandwidth if we wanted prediction workign right), so we'll just use the actual ground distance.
 				&& (pm->ps->legsAnim == BOTH_JUMP1 || pm->ps->legsAnim == BOTH_INAIR1 ) )//not in a flip or spin or anything
 			{//run up wall, flip backwards
-				//FIXME: have to be moving... make sure it's opposite the wall... or at least forward?
-				int wallWalkAnim = BOTH_WALL_FLIP_BACK1;
-				int parts = SETANIM_LEGS;
-				int contents = MASK_SOLID;//MASK_PLAYERSOLID;//CONTENTS_SOLID;
-				//qboolean kick = qtrue;
-				if ( pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_2 )
+				if ( allowWallRuns )
 				{
-					wallWalkAnim = BOTH_FORCEWALLRUNFLIP_START;
-					parts = SETANIM_BOTH;
-					//kick = qfalse;
-				}
-				else
-				{
-					if ( !pm->ps->weaponTime )
+					//FIXME: have to be moving... make sure it's opposite the wall... or at least forward?
+					int wallWalkAnim = BOTH_WALL_FLIP_BACK1;
+					int parts = SETANIM_LEGS;
+					int contents = MASK_SOLID;//MASK_PLAYERSOLID;//CONTENTS_SOLID;
+					//qboolean kick = qtrue;
+					if ( pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_2 )
 					{
+						wallWalkAnim = BOTH_FORCEWALLRUNFLIP_START;
 						parts = SETANIM_BOTH;
+						//kick = qfalse;
 					}
-				}
-				//if ( PM_HasAnimation( pm->gent, wallWalkAnim ) )
-				if (1) //sure, we have it! Because I SAID SO.
-				{
-					vec3_t fwd, traceto, mins, maxs, fwdAngles;
-					trace_t	trace;
-					vec3_t	idealNormal;
-					bgEntity_t *traceEnt;
-
-					VectorSet(mins, pm->mins[0], pm->mins[1], 0.0f);
-					VectorSet(maxs, pm->maxs[0], pm->maxs[1], 24.0f);
-					VectorSet(fwdAngles, 0, pm->ps->viewangles[YAW], 0.0f);
-
-					AngleVectors( fwdAngles, fwd, NULL, NULL );
-					VectorMA( pm->ps->origin, 32, fwd, traceto );
-
-					pm->trace( &trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, contents );//FIXME: clip brushes too?
-					VectorSubtract( pm->ps->origin, traceto, idealNormal );
-					VectorNormalize( idealNormal );
-					traceEnt = PM_BGEntForNum(trace.entityNum);
-					
-					if ( trace.fraction < 1.0f
-						&&((trace.entityNum<ENTITYNUM_WORLD&&traceEnt&&traceEnt->s.solid!=SOLID_BMODEL)||DotProduct(trace.plane.normal,idealNormal)>0.7) )
-					{//there is a wall there
-						pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
-						if ( wallWalkAnim == BOTH_FORCEWALLRUNFLIP_START )
+					else
+					{
+						if ( !pm->ps->weaponTime )
 						{
-							pm->ps->velocity[2] = forceJumpStrength[FORCE_LEVEL_3]/2.0f;
+							parts = SETANIM_BOTH;
 						}
-						else
-						{
-							VectorMA( pm->ps->velocity, -150, fwd, pm->ps->velocity );
-							pm->ps->velocity[2] += 150.0f;
-						}
-						//animate me
-						PM_SetAnim( parts, wallWalkAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
-//						pm->ps->pm_flags |= PMF_JUMPING|PMF_SLOW_MO_FALL;
-						//again with the flags!
-						//G_SoundOnEnt( pm->gent, CHAN_BODY, "sound/weapons/force/jump.wav" );
-						//yucky!
-						PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
-						pm->cmd.upmove = 0;
-						pm->ps->fd.forceJumpSound = 1;
-						BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
+					}
+					//if ( PM_HasAnimation( pm->gent, wallWalkAnim ) )
+					if (1) //sure, we have it! Because I SAID SO.
+					{
+						vec3_t fwd, traceto, mins, maxs, fwdAngles;
+						trace_t	trace;
+						vec3_t	idealNormal;
+						bgEntity_t *traceEnt;
 
-						//kick if jumping off an ent
-						/*
-						if ( kick && traceEnt && (traceEnt->s.eType == ET_PLAYER || traceEnt->s.eType == ET_NPC) )
-						{ //kick that thang!
-							pm->ps->forceKickFlip = traceEnt->s.number+1;
+						VectorSet(mins, pm->mins[0], pm->mins[1], 0.0f);
+						VectorSet(maxs, pm->maxs[0], pm->maxs[1], 24.0f);
+						VectorSet(fwdAngles, 0, pm->ps->viewangles[YAW], 0.0f);
+
+						AngleVectors( fwdAngles, fwd, NULL, NULL );
+						VectorMA( pm->ps->origin, 32, fwd, traceto );
+
+						pm->trace( &trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, contents );//FIXME: clip brushes too?
+						VectorSubtract( pm->ps->origin, traceto, idealNormal );
+						VectorNormalize( idealNormal );
+						traceEnt = PM_BGEntForNum(trace.entityNum);
+						
+						if ( trace.fraction < 1.0f
+							&&((trace.entityNum<ENTITYNUM_WORLD&&traceEnt&&traceEnt->s.solid!=SOLID_BMODEL)||DotProduct(trace.plane.normal,idealNormal)>0.7) )
+						{//there is a wall there
+							pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
+							if ( wallWalkAnim == BOTH_FORCEWALLRUNFLIP_START )
+							{
+								pm->ps->velocity[2] = forceJumpStrength[FORCE_LEVEL_3]/2.0f;
+							}
+							else
+							{
+								VectorMA( pm->ps->velocity, -150, fwd, pm->ps->velocity );
+								pm->ps->velocity[2] += 150.0f;
+							}
+							//animate me
+							PM_SetAnim( parts, wallWalkAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 0 );
+	//						pm->ps->pm_flags |= PMF_JUMPING|PMF_SLOW_MO_FALL;
+							//again with the flags!
+							//G_SoundOnEnt( pm->gent, CHAN_BODY, "sound/weapons/force/jump.wav" );
+							//yucky!
+							PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
+							pm->cmd.upmove = 0;
+							pm->ps->fd.forceJumpSound = 1;
+							BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
+
+							//kick if jumping off an ent
+							/*
+							if ( kick && traceEnt && (traceEnt->s.eType == ET_PLAYER || traceEnt->s.eType == ET_NPC) )
+							{ //kick that thang!
+								pm->ps->forceKickFlip = traceEnt->s.number+1;
+							}
+							*/
+							pm->cmd.rightmove = pm->cmd.forwardmove= 0;
 						}
-						*/
-						pm->cmd.rightmove = pm->cmd.forwardmove= 0;
 					}
 				}
 			}
@@ -2483,63 +2613,66 @@ static qboolean PM_CheckJump( void )
 					//&& (pm->ps->legsAnim == BOTH_JUMP1 || pm->ps->legsAnim == BOTH_INAIR1 ) )//not in a flip or spin or anything
 					)
 			{//see if we're pushing at a wall and jump off it if so
-				//FIXME: make sure we have enough force power
-				//FIXME: check  to see if we can go any higher
-				//FIXME: limit to a certain number of these in a row?
-				//FIXME: maybe don't require a ucmd direction, just check all 4?
-				//FIXME: should stick to the wall for a second, then push off...
-				vec3_t checkDir, traceto, mins, maxs, fwdAngles;
-				trace_t	trace;
-				vec3_t	idealNormal;
-				int		anim = -1;
-
-				VectorSet(mins, pm->mins[0], pm->mins[1], 0.0f);
-				VectorSet(maxs, pm->maxs[0], pm->maxs[1], 24.0f);
-				VectorSet(fwdAngles, 0, pm->ps->viewangles[YAW], 0.0f);
-
-				if ( pm->cmd.rightmove )
+				if ( allowWallGrabs )
 				{
-					if ( pm->cmd.rightmove > 0 )
+					//FIXME: make sure we have enough force power
+					//FIXME: check  to see if we can go any higher
+					//FIXME: limit to a certain number of these in a row?
+					//FIXME: maybe don't require a ucmd direction, just check all 4?
+					//FIXME: should stick to the wall for a second, then push off...
+					vec3_t checkDir, traceto, mins, maxs, fwdAngles;
+					trace_t	trace;
+					vec3_t	idealNormal;
+					int		anim = -1;
+
+					VectorSet(mins, pm->mins[0], pm->mins[1], 0.0f);
+					VectorSet(maxs, pm->maxs[0], pm->maxs[1], 24.0f);
+					VectorSet(fwdAngles, 0, pm->ps->viewangles[YAW], 0.0f);
+
+					if ( pm->cmd.rightmove )
 					{
-						anim = BOTH_FORCEWALLREBOUND_RIGHT;
-						AngleVectors( fwdAngles, NULL, checkDir, NULL );
+						if ( pm->cmd.rightmove > 0 )
+						{
+							anim = BOTH_FORCEWALLREBOUND_RIGHT;
+							AngleVectors( fwdAngles, NULL, checkDir, NULL );
+						}
+						else if ( pm->cmd.rightmove < 0 )
+						{
+							anim = BOTH_FORCEWALLREBOUND_LEFT;
+							AngleVectors( fwdAngles, NULL, checkDir, NULL );
+							VectorScale( checkDir, -1, checkDir );
+						}
 					}
-					else if ( pm->cmd.rightmove < 0 )
+					else if ( pm->cmd.forwardmove > 0 )
 					{
-						anim = BOTH_FORCEWALLREBOUND_LEFT;
-						AngleVectors( fwdAngles, NULL, checkDir, NULL );
+						anim = BOTH_FORCEWALLREBOUND_FORWARD;
+						AngleVectors( fwdAngles, checkDir, NULL, NULL );
+					}
+					else if ( pm->cmd.forwardmove < 0 )
+					{
+						anim = BOTH_FORCEWALLREBOUND_BACK;
+						AngleVectors( fwdAngles, checkDir, NULL, NULL );
 						VectorScale( checkDir, -1, checkDir );
 					}
-				}
-				else if ( pm->cmd.forwardmove > 0 )
-				{
-					anim = BOTH_FORCEWALLREBOUND_FORWARD;
-					AngleVectors( fwdAngles, checkDir, NULL, NULL );
-				}
-				else if ( pm->cmd.forwardmove < 0 )
-				{
-					anim = BOTH_FORCEWALLREBOUND_BACK;
-					AngleVectors( fwdAngles, checkDir, NULL, NULL );
-					VectorScale( checkDir, -1, checkDir );
-				}
-				if ( anim != -1 )
-				{//trace in the dir we're pushing in and see if there's a vertical wall there
-					bgEntity_t *traceEnt;
+					if ( anim != -1 )
+					{//trace in the dir we're pushing in and see if there's a vertical wall there
+						bgEntity_t *traceEnt;
 
-					VectorMA( pm->ps->origin, 8, checkDir, traceto );
-					pm->trace( &trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, CONTENTS_SOLID );//FIXME: clip brushes too?
-					VectorSubtract( pm->ps->origin, traceto, idealNormal );
-					VectorNormalize( idealNormal );
-					traceEnt = PM_BGEntForNum(trace.entityNum);
-					if ( trace.fraction < 1.0f
-						&&fabs(trace.plane.normal[2]) <= 0.2f/*MAX_WALL_GRAB_SLOPE*/
-						&&((trace.entityNum<ENTITYNUM_WORLD&&traceEnt&&traceEnt->s.solid!=SOLID_BMODEL)||DotProduct(trace.plane.normal,idealNormal)>0.7) )
-					{//there is a wall there
-						float dot = DotProduct( pm->ps->velocity, trace.plane.normal );
-						if ( dot < 1.0f )
-						{//can't be heading *away* from the wall!
-							//grab it!
-							PM_GrabWallForJump( anim );
+						VectorMA( pm->ps->origin, 8, checkDir, traceto );
+						pm->trace( &trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, CONTENTS_SOLID );//FIXME: clip brushes too?
+						VectorSubtract( pm->ps->origin, traceto, idealNormal );
+						VectorNormalize( idealNormal );
+						traceEnt = PM_BGEntForNum(trace.entityNum);
+						if ( trace.fraction < 1.0f
+							&&fabs(trace.plane.normal[2]) <= 0.2f/*MAX_WALL_GRAB_SLOPE*/
+							&&((trace.entityNum<ENTITYNUM_WORLD&&traceEnt&&traceEnt->s.solid!=SOLID_BMODEL)||DotProduct(trace.plane.normal,idealNormal)>0.7) )
+						{//there is a wall there
+							float dot = DotProduct( pm->ps->velocity, trace.plane.normal );
+							if ( dot < 1.0f )
+							{//can't be heading *away* from the wall!
+								//grab it!
+								PM_GrabWallForJump( anim );
+							}
 						}
 					}
 				}
@@ -3187,7 +3320,6 @@ static void PM_WalkMove( void ) {
 		return;
 	}
 
-
 	if (pm->ps->pm_type != PM_SPECTATOR)
 	{
 		if ( PM_CheckJump () ) {
@@ -3487,6 +3619,22 @@ static int PM_TryRoll( void )
 		!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
 	{ //Not using saber, or can't use jump
 		return 0;
+	}
+
+	if ( pm->ps->weapon == WP_SABER )
+	{
+		saberInfo_t *saber = BG_MySaber( pm->ps->clientNum, 0 );
+		if ( saber
+			&& (saber->saberFlags&SFL_NO_ROLLS) )
+		{
+			return 0;
+		}
+		saber = BG_MySaber( pm->ps->clientNum, 1 );
+		if ( saber
+			&& (saber->saberFlags&SFL_NO_ROLLS) )
+		{
+			return 0;
+		}
 	}
 
 	VectorSet(mins, pm->mins[0],pm->mins[1],pm->mins[2]+STEPSIZE);
@@ -5171,7 +5319,7 @@ static void PM_Footsteps( void ) {
 
 		bobmove = 0.5;	// ducked characters bob much faster
 
-		if ( ( PM_RunningAnim( pm->ps->legsAnim ) || PM_CanRollFromSoulCal( pm->ps ) ) &&
+		if ( ( (PM_RunningAnim( pm->ps->legsAnim )&&VectorLengthSquared(pm->ps->velocity)>=40000/*200*200*/) || PM_CanRollFromSoulCal( pm->ps ) ) &&
 			!BG_InRoll(pm->ps, pm->ps->legsAnim) )
 		{//roll!
 			rolled = PM_TryRoll();
@@ -5422,7 +5570,11 @@ static void PM_Footsteps( void ) {
 			}
 			else
 			{
-				if ( BG_SabersOff( pm->ps ) )
+				if ( pm->ps->weapon == WP_MELEE )
+				{
+					desiredAnim = BOTH_WALK1;
+				}
+				else if ( BG_SabersOff( pm->ps ) )
 				{
 					desiredAnim = BOTH_WALK1;
 				}
@@ -5595,6 +5747,16 @@ static void PM_WaterEvents( void ) {		// FIXME?
 	}
 }
 
+void BG_ClearRocketLock( playerState_t *ps )
+{
+	if ( ps )
+	{
+		ps->rocketLockIndex = ENTITYNUM_NONE;
+		ps->rocketLastValidTime = 0;
+		ps->rocketLockTime = -1;
+		ps->rocketTargetTime = 0;
+	}
+}
 
 /*
 ===============
@@ -5626,6 +5788,8 @@ void PM_BeginWeaponChange( int weapon ) {
 	pm->ps->weaponTime += 200;
 	//PM_StartTorsoAnim( TORSO_DROPWEAP1 );
 	PM_SetAnim(SETANIM_TORSO, TORSO_DROPWEAP1, SETANIM_FLAG_OVERRIDE, 0);
+
+	BG_ClearRocketLock( pm->ps );
 }
 
 
@@ -5658,6 +5822,53 @@ void PM_FinishWeaponChange( void ) {
 	pm->ps->weapon = weapon;
 	pm->ps->weaponstate = WEAPON_RAISING;
 	pm->ps->weaponTime += 250;
+}
+
+#ifdef QAGAME
+extern void WP_GetVehicleCamPos( gentity_t *ent, gentity_t *pilot, vec3_t camPos );
+#else
+extern void CG_GetVehicleCamPos( vec3_t camPos );
+#endif
+#define MAX_XHAIR_DIST_ACCURACY	20000.0f
+int BG_VehTraceFromCamPos( trace_t *camTrace, bgEntity_t *bgEnt, const vec3_t entOrg, const vec3_t shotStart, const vec3_t end, vec3_t newEnd, vec3_t shotDir, float bestDist )
+{
+	//NOTE: this MUST stay up to date with the method used in CG_ScanForCrosshairEntity (where it checks the doExtraVehTraceFromViewPos bool)
+	vec3_t	viewDir2End, extraEnd, camPos;
+	float	minAutoAimDist;
+
+#ifdef QAGAME
+	WP_GetVehicleCamPos( (gentity_t *)bgEnt, (gentity_t *)bgEnt->m_pVehicle->m_pPilot, camPos );
+#else
+	CG_GetVehicleCamPos( camPos );
+#endif
+	
+	minAutoAimDist = Distance( entOrg, camPos ) + (bgEnt->m_pVehicle->m_pVehicleInfo->length/2.0f) + 200.0f;
+
+	VectorCopy( end, newEnd );
+	VectorSubtract( end, camPos, viewDir2End );
+	VectorNormalize( viewDir2End );
+	VectorMA( camPos, MAX_XHAIR_DIST_ACCURACY, viewDir2End, extraEnd );
+
+#ifdef QAGAME
+	trap_Trace( camTrace, camPos, vec3_origin, vec3_origin, extraEnd, 
+		bgEnt->s.number, CONTENTS_SOLID|CONTENTS_BODY );
+#else
+	pm->trace( camTrace, camPos, vec3_origin, vec3_origin, extraEnd, 
+		bgEnt->s.number, CONTENTS_SOLID|CONTENTS_BODY );
+#endif
+
+	if ( !camTrace->allsolid
+		&& !camTrace->startsolid
+		&& camTrace->fraction < 1.0f
+		&& (camTrace->fraction*MAX_XHAIR_DIST_ACCURACY) > minAutoAimDist 
+		&& ((camTrace->fraction*MAX_XHAIR_DIST_ACCURACY)-Distance( entOrg, camPos )) < bestDist )
+	{//this trace hit *something* that's closer than the thing the main trace hit, so use this result instead
+		VectorCopy( camTrace->endpos, newEnd );
+		VectorSubtract( newEnd, shotStart, shotDir );
+		VectorNormalize( shotDir );
+		return (camTrace->entityNum+1);
+	}
+	return 0;
 }
 
 void PM_RocketLock( float lockDist, qboolean vehicleLock )
@@ -5694,6 +5905,19 @@ void PM_RocketLock( float lockDist, qboolean vehicleLock )
 
 
 	pm->trace(&tr, muzzlePoint, NULL, NULL, ang, pm->ps->clientNum, MASK_PLAYERSOLID);
+
+	if ( vehicleLock )
+	{//vehicles also do a trace from the camera point if the main one misses
+		if ( tr.fraction >= 1.0f )
+		{
+			trace_t camTrace;
+			vec3_t newEnd, shotDir;
+			if ( BG_VehTraceFromCamPos( &camTrace, PM_BGEntForNum(pm->ps->clientNum), pm->ps->origin, muzzlePoint, tr.endpos, newEnd, shotDir, (tr.fraction*lockDist) ) )
+			{
+				memcpy( &tr, &camTrace, sizeof(tr) );
+			}
+		}
+	}
 
 	if (tr.fraction != 1 && tr.entityNum < ENTITYNUM_NONE && tr.entityNum != pm->ps->clientNum)
 	{
@@ -5751,7 +5975,6 @@ void PM_RocketLock( float lockDist, qboolean vehicleLock )
 		pm->ps->rocketLockTime = -1;
 	}
 }
-
 
 //---------------------------------------
 static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh )
@@ -5877,20 +6100,12 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 				{
 					charging = qtrue;
 					altFire = qtrue;
-
-					FF_Play( fffx_StartConst );
 				}
 				else
 				{
 					charging = qfalse;
 					altFire = qfalse;
-
-					FF_Play( fffx_StopConst );
 				}
-			}
-			else
-			{
-				FF_Play( fffx_StopConst );
 			}
 
 			if (pm->ps->zoomMode != 1 &&
@@ -5899,7 +6114,6 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 				pm->ps->weaponstate = WEAPON_READY;
 				charging = qfalse;
 				altFire = qfalse;
-				FF_Play( fffx_StopConst );
 			}
 
 		} // end switch
@@ -6904,13 +7118,13 @@ static void PM_Weapon( void )
 	if ( pm->ps->weaponTime > 0 ) {
 		pm->ps->weaponTime -= pml.msec;
 	}
-/*
+
 	if (pm->ps->isJediMaster && pm->ps->emplacedIndex)
 	{
 		pm->ps->emplacedIndex = 0;
 		pm->ps->saberHolstered = 0;
 	}
-*/
+
 	if (pm->ps->duelInProgress && pm->ps->emplacedIndex)
 	{
 		pm->ps->emplacedIndex = 0;
@@ -6923,14 +7137,12 @@ static void PM_Weapon( void )
 		PM_StartTorsoAnim( BOTH_GUNSIT1 );
 	}
 
-	if (	//pm->ps->isJediMaster ||
-		pm->ps->duelInProgress || pm->ps->trueJedi)
+	if (pm->ps->isJediMaster || pm->ps->duelInProgress || pm->ps->trueJedi)
 	{
 		pm->cmd.weapon = WP_SABER;
 		pm->ps->weapon = WP_SABER;
 
-		if (	//pm->ps->isJediMaster ||
-			pm->ps->trueJedi)
+		if (pm->ps->isJediMaster || pm->ps->trueJedi)
 		{
 			pm->ps->stats[STAT_WEAPONS] = (1 << WP_SABER);
 		}
@@ -7613,6 +7825,7 @@ void PM_UpdateViewAngles( playerState_t *ps, const usercmd_t *cmd ) {
 	// circularly clamp the angles with deltas
 	for (i=0 ; i<3 ; i++) {
 		temp = cmd->angles[i] + ps->delta_angles[i];
+#ifdef VEH_CONTROL_SCHEME_4
 		if ( pm_entVeh 
 			&& pm_entVeh->m_pVehicle
 			&& pm_entVeh->m_pVehicle->m_pVehicleInfo
@@ -7650,6 +7863,19 @@ void PM_UpdateViewAngles( playerState_t *ps, const usercmd_t *cmd ) {
 				}
 			}
 		}
+#else //VEH_CONTROL_SCHEME_4
+		if ( pm_entVeh && BG_UnrestrainedPitchRoll( ps, pm_entVeh->m_pVehicle ) )
+		{//in a fighter
+			/*
+			if ( i == ROLL )
+			{//get roll from vehicle
+				ps->viewangles[ROLL] = pm_entVeh->playerState->viewangles[ROLL];//->m_pVehicle->m_vOrientation[ROLL];
+				continue;
+
+			}
+			*/
+		}
+#endif // VEH_CONTROL_SCHEME_4
 		else
 		{
 			if ( i == PITCH ) {
@@ -8104,6 +8330,8 @@ qboolean PM_SaberInTransition( int move );
 
 void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 {
+	saberInfo_t	*saber;
+
 	if (ps->clientNum >= MAX_CLIENTS)
 	{
 		bgEntity_t *bgEnt = pm_entSelf;
@@ -8160,7 +8388,6 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 	{
 		ps->speed *= 0.5f;
 	}
-
 
 	if (ps->fd.forceGripCripple)
 	{
@@ -8266,6 +8493,19 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 			ps->speed = 600;
 		}
 		//Automatically slow down as the roll ends.
+	}
+
+	saber = BG_MySaber( ps->clientNum, 0 );
+	if ( saber 
+		&& saber->moveSpeedScale != 1.0f )
+	{
+		ps->speed *= saber->moveSpeedScale;
+	}
+	saber = BG_MySaber( ps->clientNum, 1 );
+	if ( saber 
+		&& saber->moveSpeedScale != 1.0f )
+	{
+		ps->speed *= saber->moveSpeedScale;
 	}
 }
 
@@ -9410,7 +9650,11 @@ void PM_VehicleViewAngles(playerState_t *ps, bgEntity_t *veh, usercmd_t *ucmd)
 	if ( veh->m_pVehicle->m_pPilot 
 		&& veh->m_pVehicle->m_pPilot->s.number == ps->clientNum )
 	{//set the pilot's viewangles to the vehicle's viewangles
-		if ( 1 )//!BG_UnrestrainedPitchRoll( ps, veh->m_pVehicle ) )
+#ifdef VEH_CONTROL_SCHEME_4
+		if ( 1 )
+#else //VEH_CONTROL_SCHEME_4
+		if ( !BG_UnrestrainedPitchRoll( ps, veh->m_pVehicle ) )
+#endif //VEH_CONTROL_SCHEME_4
 		{//only if not if doing special free-roll/pitch control
 			setAngles = qtrue;
 			clampMin[PITCH] = -pVeh->m_pVehicleInfo->lookPitch;
@@ -9426,6 +9670,9 @@ void PM_VehicleViewAngles(playerState_t *ps, bgEntity_t *veh, usercmd_t *ucmd)
 		{
 			if ( veh->m_pVehicle->m_pVehicleInfo->turret[i].passengerNum == ps->generic1 )
 			{//this turret is my station
+				//nevermind, don't clamp
+				return;
+				/*
 				setAngles = qtrue;
 				clampMin[PITCH] = veh->m_pVehicle->m_pVehicleInfo->turret[i].pitchClampUp;
 				clampMax[PITCH] = veh->m_pVehicle->m_pVehicleInfo->turret[i].pitchClampDown;
@@ -9433,6 +9680,7 @@ void PM_VehicleViewAngles(playerState_t *ps, bgEntity_t *veh, usercmd_t *ucmd)
 				clampMax[YAW] = veh->m_pVehicle->m_pVehicleInfo->turret[i].yawClampLeft;
 				clampMin[ROLL] = clampMax[ROLL] = 0;
 				break;
+				*/
 			}
 		}
 	}
@@ -9561,6 +9809,7 @@ void PM_VehForcedTurning(bgEntity_t *veh)
 	yawD *= 0.6f*pml.frametime;
 	pitchD *= 0.6f*pml.frametime;
 
+#ifdef VEH_CONTROL_SCHEME_4
 	veh->playerState->viewangles[YAW] = AngleSubtract(veh->playerState->viewangles[YAW], yawD);
 	veh->playerState->viewangles[PITCH] = AngleSubtract(veh->playerState->viewangles[PITCH], pitchD);
 	pm->ps->viewangles[YAW] = veh->playerState->viewangles[YAW];
@@ -9570,8 +9819,17 @@ void PM_VehForcedTurning(bgEntity_t *veh)
 	PM_SetPMViewAngle(veh->playerState, veh->playerState->viewangles, &pm->cmd);
 	VectorClear( veh->m_pVehicle->m_vPrevRiderViewAngles );
 	veh->m_pVehicle->m_vPrevRiderViewAngles[YAW] = AngleNormalize180(pm->ps->viewangles[YAW]);
+
+#else //VEH_CONTROL_SCHEME_4
+
+	pm->ps->viewangles[YAW] = AngleSubtract(pm->ps->viewangles[YAW], yawD);
+	pm->ps->viewangles[PITCH] = AngleSubtract(pm->ps->viewangles[PITCH], pitchD);
+
+	PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+#endif //VEH_CONTROL_SCHEME_4
 }
 
+#ifdef VEH_CONTROL_SCHEME_4
 void PM_VehFaceHyperspacePoint(bgEntity_t *veh)
 {
 
@@ -9652,6 +9910,85 @@ void PM_VehFaceHyperspacePoint(bgEntity_t *veh)
 		}
 	}
 }
+
+#else //VEH_CONTROL_SCHEME_4
+
+void PM_VehFaceHyperspacePoint(bgEntity_t *veh)
+{
+
+	if (!veh || !veh->m_pVehicle)
+	{
+		return;
+	}
+	else
+	{
+		float timeFrac = ((float)(pm->cmd.serverTime-veh->playerState->hyperSpaceTime))/HYPERSPACE_TIME;
+		float	turnRate, aDelta;
+		int		i, matchedAxes = 0;
+
+		pm->cmd.upmove = veh->m_pVehicle->m_ucmd.upmove = 127;
+		pm->cmd.forwardmove = veh->m_pVehicle->m_ucmd.forwardmove = 0;
+		pm->cmd.rightmove = veh->m_pVehicle->m_ucmd.rightmove = 0;
+		
+		turnRate = (90.0f*pml.frametime);
+		for ( i = 0; i < 3; i++ )
+		{
+			aDelta = AngleSubtract(veh->playerState->hyperSpaceAngles[i], veh->m_pVehicle->m_vOrientation[i]);
+			if ( fabs( aDelta ) < turnRate )
+			{//all is good
+				pm->ps->viewangles[i] = veh->playerState->hyperSpaceAngles[i];
+				matchedAxes++;
+			}
+			else
+			{
+				aDelta = AngleSubtract(veh->playerState->hyperSpaceAngles[i], pm->ps->viewangles[i]);
+				if ( fabs( aDelta ) < turnRate )
+				{
+					pm->ps->viewangles[i] = veh->playerState->hyperSpaceAngles[i];
+				}
+				else if ( aDelta > 0 )
+				{
+					if ( i == YAW )
+					{
+						pm->ps->viewangles[i] = AngleNormalize360( pm->ps->viewangles[i]+turnRate );
+					}
+					else
+					{
+						pm->ps->viewangles[i] = AngleNormalize180( pm->ps->viewangles[i]+turnRate );
+					}
+				}
+				else
+				{
+					if ( i == YAW )
+					{
+						pm->ps->viewangles[i] = AngleNormalize360( pm->ps->viewangles[i]-turnRate );
+					}
+					else
+					{
+						pm->ps->viewangles[i] = AngleNormalize180( pm->ps->viewangles[i]-turnRate );
+					}
+				}
+			}
+		}
+
+		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+		
+		if ( timeFrac < HYPERSPACE_TELEPORT_FRAC )
+		{//haven't gone through yet
+			if ( matchedAxes < 3 )
+			{//not facing the right dir yet
+				//keep hyperspace time up to date
+				veh->playerState->hyperSpaceTime += pml.msec;
+			}
+			else if ( !(veh->playerState->eFlags2&EF2_HYPERSPACE))
+			{//flag us as ready to hyperspace!
+				veh->playerState->eFlags2 |= EF2_HYPERSPACE;
+			}
+		}
+	}
+}
+
+#endif //VEH_CONTROL_SCHEME_4
 
 void BG_VehicleAdjustBBoxForOrientation( Vehicle_t *veh, vec3_t origin, vec3_t mins, vec3_t maxs,
 										int clientNum, int tracemask,

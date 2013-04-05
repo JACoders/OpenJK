@@ -22,19 +22,6 @@ typedef int streamHandle_t;
 extern void AS_Init( void );
 extern void AS_Free( void );
 
-//Changing this?  It needs to be synced with the create_soundbank util.
-enum SoundFilenameFlags
-{
-	SFF_WEAPONS_ATST,
-	SFF_SAND_CREATURE,
-	SFF_HOWLER,
-	SFF_ALTCHARGE,
-	SFF_FALLING,
-	SFF_TIEEXPLODE,
-	//Can't have more than 8.
-};
-//Changing this?  It needs to be synced with the create_soundbank util.
-
 typedef struct {
 	int			format;
 	int			size;
@@ -57,7 +44,7 @@ typedef struct sfx_s {
 	int				iFlags;
 	int 			iSoundLength;			// length in bytes
 	int				iLastTimeUsed;			// last time sound was played in ms
-	unsigned int				iFileCode;				// CRC of the file name
+	int				iFileCode;				// CRC of the file name
 	streamHandle_t	iStreamHandle;			// handle to the sound file when reading
 	void*			pSoundData;				// buffer to hold sound as we are loading it
 	char*			pLipSyncData;			// buffer to hold lip sync information on characters

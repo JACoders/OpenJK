@@ -446,10 +446,6 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	speedIdleAccel = pVeh->m_pVehicleInfo->accelIdle * pVeh->m_fTimeModifier;
 	speedMin = pVeh->m_pVehicleInfo->speedMin;
 
-	// Xbox - yeah, see we have these input devices -- and they're ANALOG! Wow!
-	if( pVeh->m_ucmd.forwardmove > 0 )
-		speedMax *= pVeh->m_ucmd.forwardmove / 127.0f;
-
 	if ( parentPS->speed || parentPS->groundEntityNum == ENTITYNUM_NONE  ||
 		 pVeh->m_ucmd.forwardmove || pVeh->m_ucmd.upmove > 0 )
 	{ 
@@ -1138,13 +1134,9 @@ extern void G_AllocateVehicleObject(Vehicle_t **pVeh);
 #include "../namespace_begin.h"
 #endif
 
-extern char current_speeders;
 // Create/Allocate a new Animal Vehicle (initializing it as well).
 void G_CreateSpeederNPC( Vehicle_t **pVeh, const char *strType )
 {
-	
-	current_speeders++;
-	
 #ifdef _JK2MP
 #ifdef QAGAME
 	//these will remain on entities on the client once allocated because the pointer is
@@ -1164,8 +1156,6 @@ void G_CreateSpeederNPC( Vehicle_t **pVeh, const char *strType )
 	(*pVeh) = (Vehicle_t *) gi.Malloc( sizeof(Vehicle_t), TAG_G_ALLOC, qtrue );
 	(*pVeh)->m_pVehicleInfo = &g_vehicleInfo[BG_VehicleGetIndex( strType )];
 #endif
-
-	(*pVeh)->alreadyCleaned	= false;
 }
 
 #ifdef _JK2MP

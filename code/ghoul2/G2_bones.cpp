@@ -828,8 +828,8 @@ qboolean G2_Get_Bone_Anim_Index( boneInfo_v &blist, const int index, const int c
 		// are we an animating bone?
 		if (blist[index].flags & (BONE_ANIM_OVERRIDE_LOOP | BONE_ANIM_OVERRIDE))
 		{
-			int currentFrame = 0, newFrame = 0;
-			float lerp = 0;
+			int currentFrame,newFrame;
+			float lerp;
 			G2_TimingModel(blist[index],currentTime,numFrames,currentFrame,newFrame,lerp);
 
 			if (retcurrentFrame)

@@ -168,6 +168,9 @@ void CL_DrawDatapad(int HUDType)
 {
 	switch(HUDType)
 	{
+	case DP_HUD:
+		VM_Call( CG_DRAW_DATAPAD_HUD );
+		break;
 	case DP_OBJECTIVES:
 		VM_Call( CG_DRAW_DATAPAD_OBJECTIVES );
 		break;
@@ -470,11 +473,9 @@ int CL_UISystemCalls( int *args )
 	case UI_CIN_RUNCINEMATIC:
 	  return CIN_RunCinematic(args[1]);
 
-#ifndef _XBOX
 	case UI_CIN_DRAWCINEMATIC:
 	  CIN_DrawCinematic(args[1]);
 	  return 0;
-#endif
 
 	case UI_KEY_SETBINDING:
 		Key_SetBinding( args[1], (const char *) VMA(2) );

@@ -16,11 +16,13 @@ extern ammoData_t ammoData[AMMO_MAX];
 
 #define PICKUPSOUND "sound/weapons/w_pkup.wav"
 
-/*QUAKED weapon_***** ( 0 0 0 ) (-16 -16 -16) (16 16 16) suspended
+/*QUAKED weapon_***** ( 0 0 0 ) (-16 -16 -16) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 DO NOT USE THIS CLASS, IT JUST HOLDS GENERAL INFORMATION for weapons, ammo, and item pickups.
 The suspended flag will allow items to hang in the air, otherwise they are dropped to the next surface.
 The NOPLAYER flag makes it so player cannot pick it up.
 The ALLOWNPC flag allows only NPCs to pick it up, too
+USEPICKUP - Player must be holding "use" to pick it up
+STATIONARY - Cannot be moved around by force push/pull, radius damage, knockback, etc...
 
 If an item is the target of another entity, it will spawn as normal, use INVISIBLE to hide it.
 
@@ -35,58 +37,69 @@ An item fires all of its targets when it is picked up.  If the toucher can't car
 	"enemy"
 */
 
-/*QUAKED weapon_stun_baton (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_stun_baton (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/stun_baton/baton.md3"
 */
-/*QUAKED weapon_saber (.3 .3 1) (-16 -16 -8) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW
+/*QUAKED weapon_saber (.3 .3 1) (-16 -16 -8) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID LEANING INVISIBLE NOGLOW USEPICKUP STATIONARY
+SUSPENDED - allow items to hang in the air, otherwise they are dropped to the next surface.
+NOPLAYER - makes it so player cannot pick it up.
+ALLOWNPC - allows only NPCs to pick it up, too
+LEANING - lean back against wall
+NOGLOW - No Glow
+USEPICKUP - Player must be holding "use" to pick it up
+STATIONARY - Cannot be moved around by force push/pull, radius damage, knockback, etc...
+
 model="/models/weapons2/saber/saber_w.md3"
 When picked up, will be used as a second saber unless:
 	1) It's a two-handed saber
 	2) The old saber was two-handed
-	OR
 	3) You set "saberSolo" to "1"
+	4) You have 2 sabers and the saber pickup is on your right when you touch it
 
 saberType - entry name from sabers.cfg - which kind of saber this is - use "player" to make it so that the saber will be whatever saber the player is configured to use
 saberColor - red, orange, yellow, green, blue, and purple
+saberLeftHand - always be added as a left-hand saber
 saberSolo - set to "1" and this will be the only saber the person who picks this up will be holding
+saberPitch - if set "LEANING" flag, you can specify the exact pitch to lean forward/back
+count - how many you can pick up before it's removed (default is 1, -1 is infinite)
 */
-/*QUAKED weapon_bryar_pistol (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_bryar_pistol (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/briar_pistol/briar_pistol.md3"
 */
-/*QUAKED weapon_blaster_pistol (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_blaster_pistol (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/blaster_pistol/blaster_pistol.md3"
 */
-/*QUAKED weapon_blaster (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_blaster (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/blaster_r/blaster.md3"
 */
-/*QUAKED weapon_disruptor (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_disruptor (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/disruptor/disruptor.md3"
 */
-/*QUAKED weapon_bowcaster (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_bowcaster (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/bowcaster/bowcaster.md3"
 */
-/*QUAKED weapon_repeater (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_repeater (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/heavy_repeater/heavy_repeater.md3"
 */
-/*QUAKED weapon_demp2 (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_demp2 (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/demp2/demp2.md3"
 */
-/*QUAKED weapon_flechette (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_flechette (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/golan_arms/golan_arms.md3"
 */
-/*QUAKED weapon_concussion_rifle (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_concussion_rifle (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/c_rifle/c_rifle.md3"
 */
-/*QUAKED weapon_rocket_launcher (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_rocket_launcher (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/merr_sonn/merr_sonn.md3"
 */
-/*QUAKED weapon_thermal (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_thermal (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/thermal/thermal.md3"
 */
-/*QUAKED weapon_trip_mine (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_trip_mine (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/laser_trap/laser_trap.md3"
 */
-/*QUAKED weapon_det_pack (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED weapon_det_pack (.3 .3 1) (-16 -16 -2) (16 16 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 model="/models/weapons2/detpack/det_pack.md3"
 */
 
@@ -131,13 +144,13 @@ Belt of thermal detonators
 3 pack of detpacks
 */
 
-/*QUAKED item_medpak_instant (.3 .3 1) (-8 -8 -4) (8 8 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED item_medpak_instant (.3 .3 1) (-8 -8 -4) (8 8 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 */
 
-/*QUAKED item_shield_sm_instant (.3 .3 1) (-8 -8 -4) (8 8 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED item_shield_sm_instant (.3 .3 1) (-8 -8 -4) (8 8 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 */
 
-/*QUAKED item_shield_lrg_instant (.3 .3 1) (-8 -8 -4) (8 8 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE
+/*QUAKED item_shield_lrg_instant (.3 .3 1) (-8 -8 -4) (8 8 16) SUSPEND NOPLAYER ALLOWNPC NOTSOLID VERTICAL INVISIBLE NOGLOW USEPICKUP STATIONARY
 */
 /*QUAKED item_goodie_key (.3 .3 1) (-8 -8 0) (8 8 16) suspended
 */

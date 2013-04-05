@@ -546,9 +546,6 @@ void Rancor_Attack( float distance, qboolean doCharge )
 				G_AddEvent( NPC->activator, EV_JUMP, NPC->activator->health );
 			}
 			break;
-		default: //something broke!
-			Rancor_DropVictim(NPC);
-			break;
 		}
 	}
 	else if ( TIMER_Done2( NPC, "attack_dmg2", qtrue ) )
@@ -590,9 +587,6 @@ void Rancor_Attack( float distance, qboolean doCharge )
 				NPC->count = 2;
 				TIMER_Set( NPC, "clearGrabbed", 2600 );
 			}
-			break;
-		default: //something broke!
-			Rancor_DropVictim(NPC);
 			break;
 		}
 	}

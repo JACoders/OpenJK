@@ -5,13 +5,6 @@
 
 #include "client.h"
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "cl_data.h"
-#endif
-
-#include "../xbox/XBVoice.h"
-
 extern console_t con;
 qboolean	scr_initialized;		// ready to draw
 
@@ -20,9 +13,6 @@ cvar_t		*cl_debuggraph;
 cvar_t		*cl_graphheight;
 cvar_t		*cl_graphscale;
 cvar_t		*cl_graphshift;
-#ifndef FINAL_BUILD
-cvar_t		*cl_debugVoice;
-#endif
 
 /*
 ================
@@ -70,7 +60,246 @@ void SCR_DrawPic( float x, float y, float width, float height, qhandle_t hShader
 
 
 
+/*
+** SCR_DrawChar
+** chars are drawn at 640*480 virtual screen size
+*/
+static void SCR_DrawChar( int x, int y, float size, int ch ) {
+	int row, col;
+	float frow, fcol;
+	float	ax, ay, aw, ah;
+
+	ch &= 255;
+
+	if ( ch == ' ' ) {
+		return;
+	}
+
+	if ( y < -size ) {
+		return;
+	}
+
+	ax = x;
+	ay = y;
+	aw = size;
+	ah = size;
+
+	row = ch>>4;
+	col = ch&15;
+
+	float size2;
+
+	frow = row*0.0625;
+	fcol = col*0.0625;
+	size = 0.03125;
+	size2 = 0.0625;
+
+	re.DrawStretchPic( ax, ay, aw, ah,
+					   fcol, frow, 
+					   fcol + size, frow + size2, 
+					   cls.charSetShader );
+}
+
+/*
+** SCR_DrawSmallChar
+** small chars are drawn at native screen resolution
+*/
+void SCR_DrawSmallChar( int x, int y, int ch ) {
+	int row, col;
+	float frow, fcol;
+	float size;
+
+	ch &= 255;
+
+	if ( ch == ' ' ) {
+		return;
+	}
+
+	if ( y < -SMALLCHAR_HEIGHT ) {
+		return;
+	}
+
+	row = ch>>4;
+	col = ch&15;
+
+	float size2;
+
+	frow = row*0.0625;
+	fcol = col*0.0625;
+
+#ifdef _JK2
+	size = 0.03125;
+#else
+	size = 0.0625;
+#endif
+	size2 = 0.0625;
+
+	re.DrawStretchPic( x * con.xadjust, y * con.yadjust, 
+						SMALLCHAR_WIDTH * con.xadjust, SMALLCHAR_HEIGHT * con.yadjust, 
+					   fcol, frow, 
+					   fcol + size, frow + size2, 
+					   cls.charSetShader );
+}
+
+
+/*
+==================
+SCR_DrawBigString[Color]
+
+Draws a multi-colored string with a drop shadow, optionally forcing
+to a fixed color.
+
+Coordinates are at 640 by 480 virtual resolution
+==================
+*/
+void SCR_DrawStringExt( int x, int y, float size, const char *string, float *setColor, qboolean forceColor ) {
+	vec4_t		color;
+	const char	*s;
+	int			xx;
+
+	// draw the drop shadow
+	color[0] = color[1] = color[2] = 0;
+	color[3] = setColor[3];
+	re.SetColor( color );
+	s = string;
+	xx = x;
+	while ( *s ) {
+		if ( Q_IsColorString( s ) ) {
+			s += 2;
+			continue;
+		}
+		SCR_DrawChar( xx+2, y+2, size, *s );
+		xx += size;
+		s++;
+	}
+
+
+	// draw the colored text
+	s = string;
+	xx = x;
+	re.SetColor( setColor );
+	while ( *s ) {
+		if ( Q_IsColorString( s ) ) {
+			if ( !forceColor ) {
+				Com_Memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+				color[3] = setColor[3];
+				re.SetColor( color );
+			}
+			s += 2;
+			continue;
+		}
+		SCR_DrawChar( xx, y, size, *s );
+		xx += size;
+		s++;
+	}
+	re.SetColor( NULL );
+}
+
+
+void SCR_DrawBigString( int x, int y, const char *s, float alpha ) {
+	float	color[4];
+
+	color[0] = color[1] = color[2] = 1.0;
+	color[3] = alpha;
+	SCR_DrawStringExt( x, y, BIGCHAR_WIDTH, s, color, qfalse );
+}
+
+void SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color ) {
+	SCR_DrawStringExt( x, y, BIGCHAR_WIDTH, s, color, qtrue );
+}
+
+
+/*
+==================
+SCR_DrawSmallString[Color]
+
+Draws a multi-colored string with a drop shadow, optionally forcing
+to a fixed color.
+
+Coordinates are at 640 by 480 virtual resolution
+==================
+*/
+void SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor ) {
+	vec4_t		color;
+	const char	*s;
+	int			xx;
+
+	// draw the colored text
+	s = string;
+	xx = x;
+	re.SetColor( setColor );
+	while ( *s ) {
+		if ( Q_IsColorString( s ) ) {
+			if ( !forceColor ) {
+				Com_Memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+				color[3] = setColor[3];
+				re.SetColor( color );
+			}
+			s += 2;
+			continue;
+		}
+		SCR_DrawSmallChar( xx, y, *s );
+		xx += SMALLCHAR_WIDTH;
+		s++;
+	}
+	re.SetColor( NULL );
+}
+
+
+
+/*
+** SCR_Strlen -- skips color escape codes
+*/
+static int SCR_Strlen( const char *str ) {
+	const char *s = str;
+	int count = 0;
+
+	while ( *s ) {
+		if ( Q_IsColorString( s ) ) {
+			s += 2;
+		} else {
+			count++;
+			s++;
+		}
+	}
+
+	return count;
+}
+
+/*
+** SCR_GetBigStringWidth
+*/ 
+int	SCR_GetBigStringWidth( const char *str ) {
+	return SCR_Strlen( str ) * 16;
+}
+
+
 //===============================================================================
+
+/*
+=================
+SCR_DrawDemoRecording
+=================
+*/
+void SCR_DrawDemoRecording( void ) {
+#ifndef _XBOX	// No demos on Xbox
+	char	string[1024];
+	int		pos;
+
+	if ( !clc.demorecording ) {
+		return;
+	}
+	if ( clc.spDemoRecording ) {
+		return;
+	}
+
+	pos = FS_FTell( clc.demofile );
+	sprintf( string, "RECORDING %s: %ik", clc.demoName, pos / 1024 );
+
+	SCR_DrawStringExt( 320 - strlen( string ) * 4, 20, 8, string, g_color_table[7], qtrue );
+#endif
+}
+
 
 /*
 ===============================================================================
@@ -79,7 +308,6 @@ DEBUG GRAPH
 
 ===============================================================================
 */
-#ifndef _XBOX
 
 typedef struct
 {
@@ -90,8 +318,6 @@ typedef struct
 static	int			current;
 static	graphsamp_t	values[1024];
 
-#endif
-
 /*
 ==============
 SCR_DebugGraph
@@ -99,11 +325,9 @@ SCR_DebugGraph
 */
 void SCR_DebugGraph (float value, int color)
 {
-#ifndef _XBOX
 	values[current&1023].value = value;
 	values[current&1023].color = color;
 	current++;
-#endif
 }
 
 /*
@@ -113,7 +337,6 @@ SCR_DrawDebugGraph
 */
 void SCR_DrawDebugGraph (void)
 {
-#ifndef _XBOX
 	int		a, x, y, w, i, h;
 	float	v;
 	int		color;
@@ -121,9 +344,9 @@ void SCR_DrawDebugGraph (void)
 	//
 	// draw the graph
 	//
-	w = cls.glconfig.vidWidth;
+	w = 640;
 	x = 0;
-	y = cls.glconfig.vidHeight;
+	y = 480;
 	re.SetColor( g_color_table[0] );
 	re.DrawStretchPic(x, y - cl_graphheight->integer, 
 		w, cl_graphheight->integer, 0, 0, 0, 0, cls.whiteShader );
@@ -141,7 +364,6 @@ void SCR_DrawDebugGraph (void)
 		h = (int)v % cl_graphheight->integer;
 		re.DrawStretchPic( x+w-1-a, y - h, 1, h, 0, 0, 0, 0, cls.whiteShader );
 	}
-#endif
 }
 
 //=============================================================================
@@ -157,9 +379,7 @@ void SCR_Init( void ) {
 	cl_graphheight = Cvar_Get ("graphheight", "32", CVAR_CHEAT);
 	cl_graphscale = Cvar_Get ("graphscale", "1", CVAR_CHEAT);
 	cl_graphshift = Cvar_Get ("graphshift", "0", CVAR_CHEAT);
-#ifndef FINAL_BUILD
-	cl_debugVoice = Cvar_Get ("debugVoice", "1", 0);
-#endif
+
 	scr_initialized = qtrue;
 }
 
@@ -173,19 +393,11 @@ SCR_DrawScreenField
 This will be called twice if rendering in stereo mode
 ==================
 */
-
 void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	re.BeginFrame( stereoFrame );
 
-#ifdef _XBOX
-//	if(ClientManager::splitScreenMode == qtrue) 
-//		cls.state = ClientManager::ActiveClient().state;
-#endif
-
 	// wide aspect ratio screens need to have the sides cleared
 	// unless they are displaying game renderings
-#ifndef _XBOX
-	// Xbox no likey
 	if ( cls.state != CA_ACTIVE ) {
 		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
 			re.SetColor( g_color_table[0] );
@@ -193,7 +405,6 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			re.SetColor( NULL );
 		}
 	}
-#endif
 
 	if ( !uivm ) {
 		Com_DPrintf("draw screen without UI loaded\n");
@@ -205,12 +416,8 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	//actually, yes you do, unless you want clients to cycle out their reliable
 	//commands from sitting in the menu. -rww
 	if ( !VM_Call( uivm, UI_IS_FULLSCREEN ) || (!(cls.framecount&7) && cls.state == CA_ACTIVE)) {
-
 		switch( cls.state ) {
 		default:
-#ifdef _XBOX
-			if(ClientManager::splitScreenMode == qfalse)
-#endif
 			Com_Error( ERR_FATAL, "SCR_DrawScreenField: bad cls.state" );
 			break;
 		case CA_CINEMATIC:
@@ -231,18 +438,18 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			break;
 		case CA_LOADING:
 		case CA_PRIMED:
+			// draw the game information screen and loading progress
+			CL_CGameRendering( stereoFrame );
+
 			// also draw the connection information, so it doesn't
 			// flash away too briefly on local or lan games
 			// refresh to update the time
 			VM_Call( uivm, UI_REFRESH, cls.realtime );
 			VM_Call( uivm, UI_DRAW_CONNECT_SCREEN, qtrue );
-
-			// draw the game information screen and loading progress
-			CL_CGameRendering( stereoFrame );
 			break;
 		case CA_ACTIVE:
 			CL_CGameRendering( stereoFrame );
-//			SCR_DrawDemoRecording();
+			SCR_DrawDemoRecording();
 			break;
 		}
 	}
@@ -255,18 +462,10 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	// console draws next
 	Con_DrawConsole ();
 
-#ifndef FINAL_BUILD
-	// Debugging output for voice system
-	if( cl_debugVoice->integer )
-		g_Voice.DrawVoiceStats();
-#endif
-
-#ifdef _DEBUG
 	// debug graph can be drawn on top of anything
 	if ( cl_debuggraph->integer || cl_timegraph->integer || cl_debugMove->integer ) {
 		SCR_DrawDebugGraph ();
 	}
-#endif
 }
 
 /*
@@ -277,11 +476,6 @@ This is called every frame, and can also be called explicitly to flush
 text to the screen.
 ==================
 */
-#ifdef _XBOX
-int glcfgWidth = 640, glcfgHeight = 480, glcfgX = 0, glcfgY = 0;
-extern glconfig_t glConfig;
-#endif
-
 void SCR_UpdateScreen( void ) {
 	static int	recursive;
 
@@ -294,48 +488,6 @@ void SCR_UpdateScreen( void ) {
 	}
 	recursive = 1;
 
-#ifdef _XBOX
-	qboolean rendered = qfalse;
-	if (ClientManager::splitScreenMode == qtrue) 
-	{
-//		cls.state = ClientManager::ActiveClient().state;
-
-		if (cls.state == CA_ACTIVE) 
-		{	
-			int lastClient = ClientManager::ActiveClientNum();
-			ClientManager::SetMainClient(0);
-			ClientManager::ActivateClient(0);
-
-			glcfgHeight = cgs.glconfig.vidHeight = 240;// glConfig.vidHeight = 240;
-			ClientManager::SetMainClient(0);
-			ClientManager::ActivateClient(0);
-			SCR_DrawScreenField( STEREO_CENTER );
-			
-			// Only draw the other screen if there are two clients
-			if (ClientManager::NumClients() == 2) 
-			{
-				glcfgY = 240;
-				ClientManager::SetMainClient(1);
-				ClientManager::ActivateClient(1); 
-				SCR_DrawScreenField( STEREO_CENTER );
-			} 
-			
-			glcfgY = 0;
-			glcfgHeight = cgs.glconfig.vidHeight = glConfig.vidHeight = 480;	
-
-			ClientManager::SetMainClient(lastClient);
-			ClientManager::ActivateClient(lastClient);
-
-			rendered = qtrue;
-		}
-		else 
-			rendered = qfalse;
-	}
-	
-	if(rendered == qfalse)
-	{
-#endif
-
 	// if running in stereo, we need to draw the frame twice
 	if ( cls.glconfig.stereoEnabled ) {
 		SCR_DrawScreenField( STEREO_LEFT );
@@ -343,10 +495,6 @@ void SCR_UpdateScreen( void ) {
 	} else {
 		SCR_DrawScreenField( STEREO_CENTER );
 	}
-
-#ifdef _XBOX
-	}
-#endif
 
 	if ( com_speeds->integer ) {
 		re.EndFrame( &time_frontend, &time_backend );
@@ -387,11 +535,6 @@ void SCR_CenterPrint (char *str)//, PalIdx_t colour)
 
 	// RWL - commented out
 //	width = viddef.width / 8;	// rjr hardcoded yuckiness
-#ifdef _XBOX
-	if(cg->widescreen)
-		width = 720 / 8;
-	else
-#endif
 	width = 640 / 8;	// rjr hardcoded yuckiness
 	width -= 4;
 
@@ -450,11 +593,6 @@ void SCR_CenterPrint (char *str)//, PalIdx_t colour)
 
 			// RWL - commented out
 //			scr_center_widths[scr_center_lines] = re.StrlenFont(save_pos, scr_font);;
-#ifdef _XBOX
-			if(cg->widescreen)
-				scr_center_widths[scr_center_lines] = 720;
-			else
-#endif
 			scr_center_widths[scr_center_lines] = 640;
 
 

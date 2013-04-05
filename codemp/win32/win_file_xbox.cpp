@@ -116,7 +116,7 @@ int WF_Read(void* buffer, int len, wfhandle_t handle)
 	if (!ReadFile(s_FileTable[handle].m_Handle, buffer, len, &bytes, 0) &&
 		s_FileTable[handle].m_bErrorsFatal)
 	{
-#if defined(FINAL_BUILD)
+#if 0	// VVFIXME
 		extern void ERR_DiscFail(bool);
 		ERR_DiscFail(false);
 #else

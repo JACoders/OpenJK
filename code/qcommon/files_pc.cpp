@@ -12,7 +12,7 @@
 
 // every time a new demo pk3 file is built, this checksum must be updated.
 // the easiest way to get it is to just run the game and see what it spits out
-#define	DEMO_PAK_CHECKSUM	1431467275
+#define	DEMO_PAK_CHECKSUM	4102795916u
 #define	DEMO_PAK_MAXFILES	5174u
 
 
@@ -1650,7 +1650,7 @@ void FS_SetRestrictions( void ) {
 	for ( path = fs_searchpaths ; path ; path = path->next ) {
 		if ( path->pack ) {
 			// a tiny attempt to keep the checksum from being scannable from the exe
-			if ( (path->pack->checksum ^ 0x84268436u) != (DEMO_PAK_CHECKSUM ^ 0x84268436u) ) {
+			if ( (path->pack->checksum ^ 0x10228436u) != (DEMO_PAK_CHECKSUM ^ 0x10228436u) ) {
 				Com_Error( ERR_FATAL, "Corrupted pk3: %u", path->pack->checksum );
 			}
 		}

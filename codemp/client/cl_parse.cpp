@@ -12,15 +12,12 @@
 #include "../zlib32/zip.h"
 
 #ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "cl_data.h"
-
 #include "../xbox/XBLive.h"
 #include "../xbox/XBoxCommon.h"
 #include "../xbox/XBVoice.h"
 #endif
 
-//static char hiddenCvarVal[128];
+static char hiddenCvarVal[128];
 
 char *svc_strings[256] = {
 	"svc_bad",
@@ -71,7 +68,7 @@ void CL_DeltaEntity (msg_t *msg, clSnapshot_t *frame, int newnum, entityState_t 
 
 	// save the parsed entity state into the big circular buffer so
 	// it can be used as the source for a later delta
-	state = &cl->parseEntities[cl->parseEntitiesNum & (MAX_PARSE_ENTITIES-1)];
+	state = &cl.parseEntities[cl.parseEntitiesNum & (MAX_PARSE_ENTITIES-1)];
 
 	if ( unchanged ) 
 	{
@@ -85,7 +82,7 @@ void CL_DeltaEntity (msg_t *msg, clSnapshot_t *frame, int newnum, entityState_t 
 	if ( state->number == (MAX_GENTITIES-1) ) {
 		return;		// entity was delta removed
 	}
-	cl->parseEntitiesNum++;
+	cl.parseEntitiesNum++;
 	frame->numEntities++;
 }
 
@@ -100,7 +97,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 	entityState_t	*oldstate;
 	int			oldindex, oldnum;
 
-	newframe->parseEntitiesNum = cl->parseEntitiesNum;
+	newframe->parseEntitiesNum = cl.parseEntitiesNum;
 	newframe->numEntities = 0;
 
 	// delta from the entities present in oldframe
@@ -112,7 +109,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 		if ( oldindex >= oldframe->numEntities ) {
 			oldnum = 99999;
 		} else {
-			oldstate = &cl->parseEntities[
+			oldstate = &cl.parseEntities[
 				(oldframe->parseEntitiesNum + oldindex) & (MAX_PARSE_ENTITIES-1)];
 			oldnum = oldstate->number;
 		}
@@ -142,7 +139,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 			if ( oldindex >= oldframe->numEntities ) {
 				oldnum = 99999;
 			} else {
-				oldstate = &cl->parseEntities[
+				oldstate = &cl.parseEntities[
 					(oldframe->parseEntitiesNum + oldindex) & (MAX_PARSE_ENTITIES-1)];
 				oldnum = oldstate->number;
 			}
@@ -159,7 +156,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 			if ( oldindex >= oldframe->numEntities ) {
 				oldnum = 99999;
 			} else {
-				oldstate = &cl->parseEntities[
+				oldstate = &cl.parseEntities[
 					(oldframe->parseEntitiesNum + oldindex) & (MAX_PARSE_ENTITIES-1)];
 				oldnum = oldstate->number;
 			}
@@ -171,7 +168,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 			if ( cl_shownet->integer == 3 ) {
 				Com_Printf ("%3i:  baseline: %i\n", msg->readcount, newnum);
 			}
-			CL_DeltaEntity( msg, newframe, newnum, &cl->entityBaselines[newnum], qfalse );
+			CL_DeltaEntity( msg, newframe, newnum, &cl.entityBaselines[newnum], qfalse );
 			continue;
 		}
 
@@ -190,7 +187,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 		if ( oldindex >= oldframe->numEntities ) {
 			oldnum = 99999;
 		} else {
-			oldstate = &cl->parseEntities[
+			oldstate = &cl.parseEntities[
 				(oldframe->parseEntitiesNum + oldindex) & (MAX_PARSE_ENTITIES-1)];
 			oldnum = oldstate->number;
 		}
@@ -203,7 +200,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 CL_ParseSnapshot
 
 If the snapshot is parsed properly, it will be copied to
-cl->snap and saved in cl->snapshots[].  If the snapshot is invalid
+cl.snap and saved in cl.snapshots[].  If the snapshot is invalid
 for any reason, no changes to the state will be made at all.
 ================
 */
@@ -217,19 +214,19 @@ void CL_ParseSnapshot( msg_t *msg ) {
 
 	// get the reliable sequence acknowledge number
 	// NOTE: now sent with all server to client messages
-	//clc->reliableAcknowledge = MSG_ReadLong( msg );
+	//clc.reliableAcknowledge = MSG_ReadLong( msg );
 
 	// read in the new snapshot to a temporary buffer
-	// we will only copy to cl->snap if it is valid
+	// we will only copy to cl.snap if it is valid
 	Com_Memset (&newSnap, 0, sizeof(newSnap));
 
 	// we will have read any new server commands in this
 	// message before we got to svc_snapshot
-	newSnap.serverCommandNum = clc->serverCommandSequence;
+	newSnap.serverCommandNum = clc.serverCommandSequence;
 
 	newSnap.serverTime = MSG_ReadLong( msg );
 
-	newSnap.messageNum = clc->serverMessageSequence;
+	newSnap.messageNum = clc.serverMessageSequence;
 
 	deltaNum = MSG_ReadByte( msg );
 	if ( !deltaNum ) {
@@ -247,10 +244,10 @@ void CL_ParseSnapshot( msg_t *msg ) {
 		newSnap.valid = qtrue;		// uncompressed frame
 		old = NULL;
 #ifndef _XBOX	// No demos on Xbox
-		clc->demowaiting = qfalse;	// we can start recording now
+		clc.demowaiting = qfalse;	// we can start recording now
 #endif
 	} else {
-		old = &cl->snapshots[newSnap.deltaNum & PACKET_MASK];
+		old = &cl.snapshots[newSnap.deltaNum & PACKET_MASK];
 		if ( !old->valid ) {
 			// should never happen
 			Com_Printf ("Delta from invalid frame (not supposed to happen!).\n");
@@ -258,7 +255,7 @@ void CL_ParseSnapshot( msg_t *msg ) {
 			// The frame that the server did the delta from
 			// is too old, so we can't reconstruct it properly.
 			Com_Printf ("Delta frame too old.\n");
-		} else if ( cl->parseEntitiesNum - old->parseEntitiesNum > MAX_PARSE_ENTITIES-128 ) {
+		} else if ( cl.parseEntitiesNum - old->parseEntitiesNum > MAX_PARSE_ENTITIES-128 ) {
 			Com_DPrintf ("Delta parseEntitiesNum too old.\n");
 		} else {
 			newSnap.valid = qtrue;	// valid delta parse
@@ -299,35 +296,35 @@ void CL_ParseSnapshot( msg_t *msg ) {
 	// received and this one, so if there was a dropped packet
 	// it won't look like something valid to delta from next
 	// time we wrap around in the buffer
-	oldMessageNum = cl->snap.messageNum + 1;
+	oldMessageNum = cl.snap.messageNum + 1;
 
 	if ( newSnap.messageNum - oldMessageNum >= PACKET_BACKUP ) {
 		oldMessageNum = newSnap.messageNum - ( PACKET_BACKUP - 1 );
 	}
 	for ( ; oldMessageNum < newSnap.messageNum ; oldMessageNum++ ) {
-		cl->snapshots[oldMessageNum & PACKET_MASK].valid = qfalse;
+		cl.snapshots[oldMessageNum & PACKET_MASK].valid = qfalse;
 	}
 
 	// copy to the current good spot
-	cl->snap = newSnap;
-	cl->snap.ping = 999;
+	cl.snap = newSnap;
+	cl.snap.ping = 999;
 	// calculate ping time
 	for ( i = 0 ; i < PACKET_BACKUP ; i++ ) {
-		packetNum = ( clc->netchan.outgoingSequence - 1 - i ) & PACKET_MASK;
-		if ( cl->snap.ps.commandTime >= cl->outPackets[ packetNum ].p_serverTime ) {
-			cl->snap.ping = cls.realtime - cl->outPackets[ packetNum ].p_realtime;
+		packetNum = ( clc.netchan.outgoingSequence - 1 - i ) & PACKET_MASK;
+		if ( cl.snap.ps.commandTime >= cl.outPackets[ packetNum ].p_serverTime ) {
+			cl.snap.ping = cls.realtime - cl.outPackets[ packetNum ].p_realtime;
 			break;
 		}
 	}
 	// save the frame off in the backup array for later delta comparisons
-	cl->snapshots[cl->snap.messageNum & PACKET_MASK] = cl->snap;
+	cl.snapshots[cl.snap.messageNum & PACKET_MASK] = cl.snap;
 
 	if (cl_shownet->integer == 3) {
-		Com_Printf( "   snapshot:%i  delta:%i  ping:%i\n", cl->snap.messageNum,
-		cl->snap.deltaNum, cl->snap.ping );
+		Com_Printf( "   snapshot:%i  delta:%i  ping:%i\n", cl.snap.messageNum,
+		cl.snap.deltaNum, cl.snap.ping );
 	}
 
-	cl->newSnapshots = qtrue;
+	cl.newSnapshots = qtrue;
 }
 
 
@@ -399,12 +396,12 @@ void CL_SystemInfoChanged( void ) {
 	char			value[BIG_INFO_VALUE];
 	qboolean		gameSet;
 
-	systemInfo = cl->gameState.stringData + cl->gameState.stringOffsets[ CS_SYSTEMINFO ];
-	cl->serverId = atoi( Info_ValueForKey( systemInfo, "sv_serverid" ) );
+	systemInfo = cl.gameState.stringData + cl.gameState.stringOffsets[ CS_SYSTEMINFO ];
+	cl.serverId = atoi( Info_ValueForKey( systemInfo, "sv_serverid" ) );
 
 	// don't set any vars when playing a demo
 #ifndef _XBOX	// No demos on Xbox
-	if ( clc->demoplaying ) {
+	if ( clc.demoplaying ) {
 		return;
 	}
 #endif
@@ -450,26 +447,25 @@ void CL_SystemInfoChanged( void ) {
 	cl_connectedUI = atoi(Info_ValueForKey( systemInfo, "vm_ui" ));
 }
 
-/*
 void CL_ParseAutomapSymbols ( msg_t* msg )
 {
 	int i;
 
-	clc->rmgAutomapSymbolCount = (unsigned short) MSG_ReadShort ( msg );
+	clc.rmgAutomapSymbolCount = (unsigned short) MSG_ReadShort ( msg );
 
-	for ( i = 0; i < clc->rmgAutomapSymbolCount; i ++ )
+	for ( i = 0; i < clc.rmgAutomapSymbolCount; i ++ )
 	{
-		clc->rmgAutomapSymbols[i].mType = (int)MSG_ReadByte ( msg );
-		clc->rmgAutomapSymbols[i].mSide = (int)MSG_ReadByte ( msg );
-		clc->rmgAutomapSymbols[i].mOrigin[0] = (float)MSG_ReadLong ( msg );
-		clc->rmgAutomapSymbols[i].mOrigin[1] = (float)MSG_ReadLong ( msg );
+		clc.rmgAutomapSymbols[i].mType = (int)MSG_ReadByte ( msg );
+		clc.rmgAutomapSymbols[i].mSide = (int)MSG_ReadByte ( msg );
+		clc.rmgAutomapSymbols[i].mOrigin[0] = (float)MSG_ReadLong ( msg );
+		clc.rmgAutomapSymbols[i].mOrigin[1] = (float)MSG_ReadLong ( msg );
 	}
 }
 
 void CL_ParseRMG ( msg_t* msg )
 {
-	clc->rmgHeightMapSize = (unsigned short)MSG_ReadShort ( msg );
-	if ( !clc->rmgHeightMapSize )
+	clc.rmgHeightMapSize = (unsigned short)MSG_ReadShort ( msg );
+	if ( !clc.rmgHeightMapSize )
 	{
 		return;
 	}
@@ -484,21 +480,21 @@ void CL_ParseRMG ( msg_t* msg )
 		memset(&zdata, 0, sizeof(z_stream));
 		inflateInit ( &zdata, Z_SYNC_FLUSH );		
 
-		MSG_ReadData ( msg, heightmap1, clc->rmgHeightMapSize );
+		MSG_ReadData ( msg, heightmap1, clc.rmgHeightMapSize );
 
 		zdata.next_in = heightmap1;
-		zdata.avail_in = clc->rmgHeightMapSize;
-		zdata.next_out = (unsigned char*)clc->rmgHeightMap;
+		zdata.avail_in = clc.rmgHeightMapSize;
+		zdata.next_out = (unsigned char*)clc.rmgHeightMap;
 		zdata.avail_out = MAX_HEIGHTMAP_SIZE;
 		inflate (&zdata);
 
-		clc->rmgHeightMapSize = zdata.total_out;
+		clc.rmgHeightMapSize = zdata.total_out;
 
 		inflateEnd(&zdata);
 	}
 	else
 	{
-		MSG_ReadData ( msg, (unsigned char*)clc->rmgHeightMap, clc->rmgHeightMapSize );
+		MSG_ReadData ( msg, (unsigned char*)clc.rmgHeightMap, clc.rmgHeightMapSize );
 	}
 
 	size = (unsigned short)MSG_ReadShort ( msg );
@@ -512,23 +508,22 @@ void CL_ParseRMG ( msg_t* msg )
 		MSG_ReadData ( msg, heightmap1, size );
 
 		zdata.next_in = heightmap1;
-		zdata.avail_in = clc->rmgHeightMapSize;
-		zdata.next_out = (unsigned char*)clc->rmgFlattenMap;
+		zdata.avail_in = clc.rmgHeightMapSize;
+		zdata.next_out = (unsigned char*)clc.rmgFlattenMap;
 		zdata.avail_out = MAX_HEIGHTMAP_SIZE;
 		inflate (&zdata );
 		inflateEnd(&zdata);
 	}
 	else
 	{
-		MSG_ReadData ( msg, (unsigned char*)clc->rmgFlattenMap, size );
+		MSG_ReadData ( msg, (unsigned char*)clc.rmgFlattenMap, size );
 	}
 
 	// Read the seed		
-	clc->rmgSeed = MSG_ReadLong ( msg );
+	clc.rmgSeed = MSG_ReadLong ( msg );
 
 	CL_ParseAutomapSymbols ( msg );
 }
-*/
 
 /*
 ==================
@@ -545,7 +540,7 @@ void CL_ParseGamestate( msg_t *msg ) {
 
 	Con_Close();
 
-	clc->connectPacketCount = 0;
+	clc.connectPacketCount = 0;
 
 	// wipe local client state
 	CL_ClearState();
@@ -556,10 +551,10 @@ void CL_ParseGamestate( msg_t *msg ) {
 #endif
 
 	// a gamestate always marks a server command sequence
-	clc->serverCommandSequence = MSG_ReadLong( msg );
+	clc.serverCommandSequence = MSG_ReadLong( msg );
 
 	// parse all the configstrings and baselines
-	cl->gameState.dataCount = 1;	// leave a 0 at the beginning for uninitialized configstrings
+	cl.gameState.dataCount = 1;	// leave a 0 at the beginning for uninitialized configstrings
 	while ( 1 ) {
 		cmd = MSG_ReadByte( msg );
 
@@ -615,34 +610,32 @@ void CL_ParseGamestate( msg_t *msg ) {
 
 			len = strlen( s );
 
-			if ( len + 1 + cl->gameState.dataCount > MAX_GAMESTATE_CHARS ) {
+			if ( len + 1 + cl.gameState.dataCount > MAX_GAMESTATE_CHARS ) {
 				Com_Error( ERR_DROP, "MAX_GAMESTATE_CHARS exceeded" );
 			}
 
 			// append it to the gameState string buffer
-			cl->gameState.stringOffsets[ i ] = cl->gameState.dataCount;
-			Com_Memcpy( cl->gameState.stringData + cl->gameState.dataCount, s, len + 1 );
-			cl->gameState.dataCount += len + 1;
+			cl.gameState.stringOffsets[ i ] = cl.gameState.dataCount;
+			Com_Memcpy( cl.gameState.stringData + cl.gameState.dataCount, s, len + 1 );
+			cl.gameState.dataCount += len + 1;
 		} else if ( cmd == svc_baseline ) {
 			newnum = MSG_ReadBits( msg, GENTITYNUM_BITS );
 			if ( newnum < 0 || newnum >= MAX_GENTITIES ) {
 				Com_Error( ERR_DROP, "Baseline number out of range: %i", newnum );
 			}
 			Com_Memset (&nullstate, 0, sizeof(nullstate));
-			es = &cl->entityBaselines[ newnum ];
+			es = &cl.entityBaselines[ newnum ];
 			MSG_ReadDeltaEntity( msg, &nullstate, es, newnum );
 		} else {
 			Com_Error( ERR_DROP, "CL_ParseGamestate: bad command byte" );
 		}
 	}
 
-	clc->clientNum = MSG_ReadLong(msg);
+	clc.clientNum = MSG_ReadLong(msg);
 	// read the checksum feed
-	clc->checksumFeed = MSG_ReadLong( msg );
+	clc.checksumFeed = MSG_ReadLong( msg );
 
-/*
 	CL_ParseRMG ( msg ); //rwwRMG - get info for it from the server
-*/
 
 #ifdef _DONETPROFILE_
 	endBytes=msg->readcount;
@@ -653,11 +646,11 @@ void CL_ParseGamestate( msg_t *msg ) {
 	CL_SystemInfoChanged();
 
 	// reinitialize the filesystem if the game directory has changed
-	if( FS_ConditionalRestart( clc->checksumFeed ) ) {
+	if( FS_ConditionalRestart( clc.checksumFeed ) ) {
 		// don't set to true because we yet have to start downloading
 		// enabling this can cause double loading of a map when connecting to
 		// a server which has a different game directory set
-		//clc->downloadRestart = qtrue;
+		//clc.downloadRestart = qtrue;
 	}
 
 	// This used to call CL_StartHunkUsers, but now we enter the download state before loading the
@@ -692,11 +685,11 @@ void CL_ParseDownload ( msg_t *msg ) {
 	if ( !block )
 	{
 		// block zero is special, contains file size
-		clc->downloadSize = MSG_ReadLong ( msg );
+		clc.downloadSize = MSG_ReadLong ( msg );
 
-		Cvar_SetValue( "cl_downloadSize", clc->downloadSize );
+		Cvar_SetValue( "cl_downloadSize", clc.downloadSize );
 
-		if (clc->downloadSize < 0)
+		if (clc.downloadSize < 0)
 		{
 			Com_Error(ERR_DROP, MSG_ReadString( msg ) );
 			return;
@@ -707,24 +700,24 @@ void CL_ParseDownload ( msg_t *msg ) {
 	if (size > 0)
 		MSG_ReadData( msg, data, size );
 
-	if (clc->downloadBlock != block) {
-		Com_DPrintf( "CL_ParseDownload: Expected block %d, got %d\n", clc->downloadBlock, block);
+	if (clc.downloadBlock != block) {
+		Com_DPrintf( "CL_ParseDownload: Expected block %d, got %d\n", clc.downloadBlock, block);
 		return;
 	}
 
 	// open the file if not opened yet
-	if (!clc->download)
+	if (!clc.download)
 	{
-		if (!*clc->downloadTempName) {
+		if (!*clc.downloadTempName) {
 			Com_Printf("Server sending download, but no download was requested\n");
 			CL_AddReliableCommand( "stopdl" );
 			return;
 		}
 
-		clc->download = FS_SV_FOpenFileWrite( clc->downloadTempName );
+		clc.download = FS_SV_FOpenFileWrite( clc.downloadTempName );
 
-		if (!clc->download) {
-			Com_Printf( "Could not create %s\n", clc->downloadTempName );
+		if (!clc.download) {
+			Com_Printf( "Could not create %s\n", clc.downloadTempName );
 			CL_AddReliableCommand( "stopdl" );
 			CL_NextDownload();
 			return;
@@ -732,25 +725,25 @@ void CL_ParseDownload ( msg_t *msg ) {
 	}
 
 	if (size)
-		FS_Write( data, size, clc->download );
+		FS_Write( data, size, clc.download );
 
-	CL_AddReliableCommand( va("nextdl %d", clc->downloadBlock) );
-	clc->downloadBlock++;
+	CL_AddReliableCommand( va("nextdl %d", clc.downloadBlock) );
+	clc.downloadBlock++;
 
-	clc->downloadCount += size;
+	clc.downloadCount += size;
 
 	// So UI gets access to it
-	Cvar_SetValue( "cl_downloadCount", clc->downloadCount );
+	Cvar_SetValue( "cl_downloadCount", clc.downloadCount );
 
 	if (!size) { // A zero length block means EOF
-		if (clc->download) {
-			FS_FCloseFile( clc->download );
-			clc->download = 0;
+		if (clc.download) {
+			FS_FCloseFile( clc.download );
+			clc.download = 0;
 
 			// rename the file
-			FS_SV_Rename ( clc->downloadTempName, clc->downloadName );
+			FS_SV_Rename ( clc.downloadTempName, clc.downloadName );
 		}
-		*clc->downloadTempName = *clc->downloadName = 0;
+		*clc.downloadTempName = *clc.downloadName = 0;
 		Cvar_Set( "cl_downloadName", "" );
 
 		// send intentions now
@@ -767,12 +760,10 @@ void CL_ParseDownload ( msg_t *msg ) {
 #endif
 }
 
-/*
 int CL_GetValueForHidden(const char *s)
 { //string arg here just in case I want to add more sometime and make a lookup table
 	return atoi(hiddenCvarVal);
 }
-*/
 
 /*
 =====================
@@ -798,10 +789,10 @@ void CL_ParseCommandString( msg_t *msg ) {
 	ClReadProf().AddField("svc_serverCommand",endBytes-startBytes);
 #endif
 	// see if we have already executed stored it off
-	if ( clc->serverCommandSequence >= seq ) {
+	if ( clc.serverCommandSequence >= seq ) {
 		return;
 	}
-	clc->serverCommandSequence = seq;
+	clc.serverCommandSequence = seq;
 
 	index = seq & (MAX_RELIABLE_COMMANDS-1);
 	/*
@@ -851,7 +842,7 @@ void CL_ParseCommandString( msg_t *msg ) {
 		}
 	}
 	*/
-	Q_strncpyz( clc->serverCommands[ index ], s, sizeof( clc->serverCommands[ index ] ) );
+	Q_strncpyz( clc.serverCommands[ index ], s, sizeof( clc.serverCommands[ index ] ) );
 }
 
 
@@ -872,10 +863,10 @@ void CL_ParseServerMessage( msg_t *msg ) {
 	MSG_Bitstream(msg);
 
 	// get the reliable sequence acknowledge number
-	clc->reliableAcknowledge = MSG_ReadLong( msg );
+	clc.reliableAcknowledge = MSG_ReadLong( msg );
 	// 
-	if ( clc->reliableAcknowledge < clc->reliableSequence - MAX_RELIABLE_COMMANDS ) {
-		clc->reliableAcknowledge = clc->reliableSequence;
+	if ( clc.reliableAcknowledge < clc.reliableSequence - MAX_RELIABLE_COMMANDS ) {
+		clc.reliableAcknowledge = clc.reliableSequence;
 	}
 
 	//
@@ -997,7 +988,7 @@ void CL_ParseServerMessage( msg_t *msg ) {
 				//now find which entry we are
 				if( logged_on )
 				{
-					PXONLINE_USER pToUser = &XBLLoggedOnUsers[ IN_GetMainController() ];
+					PXONLINE_USER pToUser = XOnlineGetLogonUsers();
 					BOOL found = false;
 					for( int i = 0; i < MAX_ONLINE_PLAYERS && !found; i++ )
 					{
@@ -1007,6 +998,9 @@ void CL_ParseServerMessage( msg_t *msg ) {
 							found = true;
 						}
 					}
+
+					// OK. Time to join the chat! - VVFIXME - need to check mute lists
+					g_Voice.JoinSession();
 				}
 				else
 				{
@@ -1020,38 +1014,13 @@ void CL_ParseServerMessage( msg_t *msg ) {
 						for( j = 0; j < MAX_ONLINE_PLAYERS; ++j )
 						{
 							if( xbOnlineInfo.xbPlayerList[j].isActive &&
-								localAddr.s_addr == xbOnlineInfo.xbPlayerList[j].inAddr.s_addr )
+								localAddr.s_addr == xbOnlineInfo.xbPlayerList[i].inAddr.s_addr )
 								break;
 						}
 						xbOnlineInfo.localIndex = (j == MAX_ONLINE_PLAYERS) ? -1 : j;
 					}
 				}
 
-				// OK. Time to join the chat if we're not in split screen
-				if (ClientManager::splitScreenMode == false)
-					g_Voice.JoinSession();
-
-				// OK. We're playing now.
-				if (logged_on)
-                    XBL_F_SetState( XONLINE_FRIENDSTATE_FLAG_PLAYING, true );
-
-				break;
-			}
-		case svc_plyrPos0:
-		case svc_plyrPos1:
-		case svc_plyrPos2:
-		case svc_plyrPos3:
-		case svc_plyrPos4:
-		case svc_plyrPos5:
-		case svc_plyrPos6:
-		case svc_plyrPos7:
-		case svc_plyrPos8:
-		case svc_plyrPos9:
-			{
-				short pos[3];
-				MSG_ReadData( msg, pos, sizeof(pos) );
-
-				g_Voice.SetClientPosition( cmd - svc_plyrPos0, pos );
 				break;
 			}
 #endif

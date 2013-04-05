@@ -6,7 +6,7 @@
 #include "tr_local.h"
 #include "tr_stl.h"
 
-const short lightmapsNone[MAXLIGHTMAPS] = 
+const int lightmapsNone[MAXLIGHTMAPS] = 
 { 
 	LIGHTMAP_NONE,
 	LIGHTMAP_NONE,
@@ -14,7 +14,7 @@ const short lightmapsNone[MAXLIGHTMAPS] =
 	LIGHTMAP_NONE 
 };
 
-const short lightmaps2d[MAXLIGHTMAPS] = 
+const int lightmaps2d[MAXLIGHTMAPS] = 
 { 
 	LIGHTMAP_2D,
 	LIGHTMAP_2D,
@@ -22,7 +22,7 @@ const short lightmaps2d[MAXLIGHTMAPS] =
 	LIGHTMAP_2D 
 };
 
-const short lightmapsVertex[MAXLIGHTMAPS] = 
+const int lightmapsVertex[MAXLIGHTMAPS] = 
 { 
 	LIGHTMAP_BY_VERTEX,
 	LIGHTMAP_BY_VERTEX,
@@ -30,7 +30,7 @@ const short lightmapsVertex[MAXLIGHTMAPS] =
 	LIGHTMAP_BY_VERTEX 
 };
 
-const short lightmapsFullBright[MAXLIGHTMAPS] = 
+const int lightmapsFullBright[MAXLIGHTMAPS] = 
 {
 	LIGHTMAP_WHITEIMAGE,
 	LIGHTMAP_WHITEIMAGE,
@@ -141,7 +141,7 @@ R_CreateExtendedName
 ===============
 */
 
-void R_CreateExtendedName(char *extendedName, const char *name, const short *lightmapIndex, const byte *styles)
+void R_CreateExtendedName(char *extendedName, const char *name, const int *lightmapIndex, const byte *styles)
 {
 	int		i;
 
@@ -232,7 +232,7 @@ This should really only be used for explicit shaders, because there is no
 way to ask for different implicit lighting modes (vertex, lightmap, etc)
 ====================
 */
-qhandle_t RE_RegisterShaderLightMap( const char *name, const short *lightmapIndex, const byte *styles ) 
+qhandle_t RE_RegisterShaderLightMap( const char *name, const int *lightmapIndex, const byte *styles ) 
 {
 	shader_t	*sh;
 
@@ -1365,7 +1365,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 #endif //_XBOX
 			else
 			{
-				stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, 0, 0, GL_REPEAT );
+				stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, !shader.noTC, GL_REPEAT );
 				if ( !stage->bundle[0].image )
 				{
 					VID_Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
@@ -1386,7 +1386,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 
-			stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, 0, 0, GL_REPEAT );
+			stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, !shader.noTC, GL_REPEAT );
 			if ( !stage->bundle[0].image )
 			{
 				VID_Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
@@ -1411,7 +1411,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 
-			stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, 0, 0, GL_CLAMP );
+			stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, !shader.noTC, GL_CLAMP );
 			if ( !stage->bundle[0].image )
 			{
 				VID_Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
@@ -1447,7 +1447,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				}
 				num = stage->bundle[0].numImageAnimations;
 				if ( num < MAX_IMAGE_ANIMATIONS ) {
-					images[num] = R_FindImageFile( token, !shader.noMipMaps, 0, 0, bClamp?GL_CLAMP:GL_REPEAT );
+					images[num] = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, !shader.noTC, bClamp?GL_CLAMP:GL_REPEAT );
 					if ( !images[num] )
 					{
 						VID_Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
@@ -1472,11 +1472,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			stage->bundle[0].videoMapHandle = CIN_PlayCinematic( token, 0, 0, 256, 256, (CIN_loop | CIN_silent | CIN_shader), NULL);
 			if (stage->bundle[0].videoMapHandle != -1) {
 				stage->bundle[0].isVideoMap = true;
-#ifdef _XBOX
-				stage->bundle[0].image = tr.scratchImage[0];
-#else
 				stage->bundle[0].image = tr.scratchImage[stage->bundle[0].videoMapHandle];
-#endif
 			}
 		}
 //#endif
@@ -1493,7 +1489,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 
-			stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, 0, 0, GL_REPEAT );
+			stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, 0, GL_REPEAT );
 			if ( !stage->bundle[0].image )
 			{
 				VID_Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
@@ -1557,7 +1553,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		//
 		else if ( !Q_stricmp( token, "detail" ) )
 		{
-//			stage->isDetail = true;
+			stage->isDetail = true;
 		}
 		//
 		// blendfunc <srcFactor> <dstFactor>
@@ -1735,9 +1731,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			else if ( !Q_stricmp( token, "lightingSpecular" ) )
 			{
 				stage->alphaGen = AGEN_LIGHTING_SPECULAR;
-#ifdef _XBOX
-				shader.needsNormal = true; 
-#endif
 			}
 			else if ( !Q_stricmp( token, "oneMinusVertex" ) )
 			{
@@ -2132,7 +2125,7 @@ static void ParseSkyParms( const char **text ) {
 	if ( strcmp( token, "-" ) ) {
 		for (i=0 ; i<6 ; i++) {
 			Com_sprintf( pathname, sizeof(pathname), "%s_%s", token, suf[i] );
-			shader.sky->outerbox[i] = R_FindImageFile( ( char * ) pathname, qtrue, qtrue, 0, GL_CLAMP );
+			shader.sky->outerbox[i] = R_FindImageFile( ( char * ) pathname, qtrue, qtrue, !shader.noTC, GL_CLAMP );
 			if ( !shader.sky->outerbox[i] ) {
 				if (i) {
 					shader.sky->outerbox[i] = shader.sky->outerbox[i-1];//not found, so let's use the previous image
@@ -2367,12 +2360,12 @@ static qboolean ParseShader( const char  **text )
 				return qfalse;
 			}
 			stages[s].active = true;
-//#ifndef _XBOX	// GLOWXXX
+#ifndef _XBOX	// GLOWXXX
 			if ( stages[s].glow )
 			{
 				shader.hasGlow = true;
 			}
-//#endif
+#endif
 			s++;
 			continue;
 		}
@@ -2449,13 +2442,13 @@ static qboolean ParseShader( const char  **text )
 		else if ( !Q_stricmp( token, "nomipmaps" ) )
 		{
 			shader.noMipMaps = true;
-//			shader.noPicMip = true;
+			shader.noPicMip = true;
 			continue;
 		}
 		// no picmip adjustment
 		else if ( !Q_stricmp( token, "nopicmip" ) )
 		{
-//			shader.noPicMip = true;
+			shader.noPicMip = true;
 			continue;
 		}
 		// polygonOffset
@@ -2467,7 +2460,7 @@ static qboolean ParseShader( const char  **text )
 		// polygonOffset
 		else if ( !Q_stricmp( token, "noTC" ) )
 		{
-//			shader.noTC = true;
+			shader.noTC = true;
 			continue;
 		}
 		// entityMergable, allowing sprite surfaces from multiple entities
@@ -2847,18 +2840,6 @@ static shader_t *GeneratePermanentShader( void ) {
 
 	SortNewShader();
 
-	// Super hack. Actually, it's an optimization to an existing hack:
-	extern int zfFaceShaders[3];
-	extern int tfTorsoShader;
-	if( strstr(newShader->name, "jedi_zf/face_01") )
-		zfFaceShaders[0] = newShader->index;
-	else if( strstr(newShader->name, "jedi_zf/face_02") )
-		zfFaceShaders[1] = newShader->index;
-	else if( strstr(newShader->name, "jedi_zf/face_03") )
-		zfFaceShaders[2] = newShader->index;
-	else if( strstr(newShader->name, "jedi_tf/torso_03_clothes") )
-		tfTorsoShader = newShader->index;
-
 	const int hash = generateHashValue(newShader->name);
 	newShader->next = sh_hashTable[hash];
 	sh_hashTable[hash] = newShader;
@@ -3106,7 +3087,6 @@ static shader_t *FinishShader( void ) {
 		//
 		// ditch this stage if it's detail and detail textures are disabled
 		//
-#ifndef _XBOX
 		if ( pStage->isDetail && !r_detailTextures->integer ) {
 			if ( stage < ( MAX_SHADER_STAGES - 1 ) ) {
 				memmove( pStage, pStage + 1, sizeof( *pStage ) * ( MAX_SHADER_STAGES - stage - 1 ) );
@@ -3115,7 +3095,6 @@ static shader_t *FinishShader( void ) {
 			}
 			continue;
 		}
-#endif
 
 		pStage->index = stageIndex;
 
@@ -3365,7 +3344,7 @@ static const char *FindShaderInShaderText( const char *shadername ) {
 #endif
 }
 
-inline qboolean IsShader(shader_t *sh, const char *name, const short *lightmapIndex, const byte *styles)
+inline qboolean IsShader(shader_t *sh, const char *name, const int *lightmapIndex, const byte *styles)
 {
 	int	i;
 
@@ -3400,7 +3379,7 @@ an external lightmap image and/or sets the index to a valid number
 =============== 
 */  
 #define EXTERNAL_LIGHTMAP     "lm_%04d.tga"     // THIS MUST BE IN SYNC WITH Q3MAP2 
-static inline const short *R_FindLightmap( const short *lightmapIndex ) 
+static inline const int *R_FindLightmap( const int *lightmapIndex ) 
 {
 	image_t          *image; 
 	char          fileName[ MAX_QPATH ]; 
@@ -3464,7 +3443,7 @@ and src*dest blending applied with the texture, as apropriate for
 most world construction surfaces.
 ===============
 */
-shader_t *R_FindShader( const char *name, const short *lightmapIndex, const byte *styles, qboolean mipRawImage ) {
+shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage ) {
 	char		strippedName[MAX_QPATH];
 	int			hash;
 	const char 	*shaderText;

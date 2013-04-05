@@ -14,14 +14,6 @@
 #include "tr_lightmanager.h"
 #endif
 
-#ifdef _XBOX
-#include "../win32/glw_win_dx8.h"
-#include "../win32/win_stencilshadow.h"
-#include <xgraphics.h>
-#include <xgmath.h>
-#include "../win32/shader_constants.h"
-#endif
-
 float ProjectRadius( float r, vec3_t location )
 {
 	float pr;
@@ -182,11 +174,7 @@ R_ComputeLOD
 
 =================
 */
-#ifdef _XBOX
-int R_ComputeLOD( trRefEntity_t *ent ) {
-#else
 static int R_ComputeLOD( trRefEntity_t *ent ) {
-#endif
 	float radius;
 	float flod;
 	float projectedRadius;
@@ -411,10 +399,13 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 
 
 		// we will add shadows even if the main object isn't visible in the view
-#ifndef _XBOX // No MD3 shadows on Xbox
+
 		// stencil shadows can't do personal models unless I polyhedron clip
 		if ( !personalModel
 			&& r_shadows->integer == 2 
+#ifndef VV_LIGHTING
+			&& fogNum == 0
+#endif
 			&& (ent->e.renderfx & RF_SHADOW_PLANE )
 			&& !(ent->e.renderfx & ( RF_NOSHADOW | RF_DEPTHHACK ) ) 
 			&& shader->sort == SS_OPAQUE ) {
@@ -428,7 +419,6 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 			&& shader->sort == SS_OPAQUE ) {
 			R_AddDrawSurf( (surfaceType_t *)surface, tr.projectionShadowShader, 0, qfalse );
 		}
-#endif
 
 		// don't add third_person objects if not viewing through a portal
 		if ( !personalModel ) {

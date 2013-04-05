@@ -6,7 +6,7 @@
  * desc:		Custom physics system (Expensive Physics)
  *
  * $Author: osman $ 
- * $Revision: 1.7 $
+ * $Revision: 1.4 $
  *
  *****************************************************************************/
 #pragma warning(disable : 4701) //local variable may be used without having been initialized

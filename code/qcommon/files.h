@@ -106,7 +106,6 @@ void			FS_Startup( const char *gameName );
 void			FS_CreatePath(char *OSPath);
 char			*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 char			*FS_BuildOSPath( const char *qpath );
-char			*FS_BuildOSPathUnMapped( const char *qpath );
 fileHandle_t	FS_HandleForFile(void);
 qboolean		FS_FilenameCompare( const char *s1, const char *s2 );
 int				FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp );

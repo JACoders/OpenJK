@@ -607,26 +607,12 @@ Cmd_ExecuteString
 A complete command line has been parsed, so try to execute it
 ============
 */
-extern void Key_SetCatcher( int catcher );
-extern void  Menus_CloseAll(void);
-
 void	Cmd_ExecuteString( const char *text ) {	
 
 	// execute the command line
 	Cmd_TokenizeString( text );		
 	if ( !Cmd_Argc() ) {
 		return;		// no tokens
-	}
-
-	cvar_t* levelSelectCheat	= Cvar_Get("levelSelectCheat", "-1", CVAR_SAVEGAME);
-	if(	(!strcmp(text,"use end_level") || strstr(text, "maptransition") || !strcmp(text, "uimenu ingameMissionSelect") || !strcmp(text, "uimenu ingameGotoTier")) &&	// level end
-		levelSelectCheat->integer						!= -1 )		// was cheating
-	{
-		Cbuf_ExecuteText( EXEC_APPEND, "disconnect\n" );	// disconnect the player
-		Key_SetCatcher( KEYCATCH_UI );					// set them in the ui
-		Menus_CloseAll();									// close all the menus
-		Cvar_Set("levelSelectCheat", "-1");
-		return;
 	}
 
 	// check registered command functions	

@@ -12,10 +12,11 @@
 #include "..\game\g_vehicles.h"
 
 extern void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, vec3_t origin, vec3_t angles);
-extern void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int modelIndex, vec3_t origin, vec3_t angles );
+extern void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int saberNum, int modelIndex, vec3_t origin, vec3_t angles );
 extern void CG_ForcePushBlur( const vec3_t org, qboolean darkSide = qfalse );
 extern void CG_AddForceSightShell( refEntity_t *ent, centity_t *cent );
 extern qboolean CG_PlayerCanSeeCent( centity_t *cent );
+extern cvar_t	*debug_subdivision;
 
 /*
 ======================
@@ -160,7 +161,6 @@ static void CG_EntityEffects( centity_t *cent ) {
 		// Only play sound if being drawn.
 		if ( !( ent->s.eFlags & EF_NODRAW ) )
 		{
-
 			cgi_S_AddLoopingSound( cent->currentState.number, v3Origin/*cent->lerpOrigin*/, vec3_origin, sfx, chan );
 		}
 	}
@@ -507,12 +507,12 @@ const weaponData_t  *wData = NULL;
 					if ( cent->gent->bounceCount )
 					{//EWeb
 						gi.G2API_SetBoneAnimIndex( &cent->gent->ghoul2[cent->gent->playerModel], cent->gent->rootBone, 
-							2, 4, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time );
+							2, 4, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time, -1, -1 );
 					}
 					else
 					{//Emplaced Gun
 						gi.G2API_SetBoneAnimIndex( &cent->gent->ghoul2[cent->gent->playerModel], cent->gent->rootBone, 
-							0, 3, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time );
+							0, 3, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time, -1, -1 );
 					}
 		
 					if ( effect )
@@ -563,7 +563,7 @@ const weaponData_t  *wData = NULL;
 					else if ( cent->gent->owner->client->ps.saberEventFlags & SEF_INWATER )
 					{
 						CG_CheckSaberInWater( &cg_entities[cent->gent->owner->s.number], 
-							&cg_entities[cent->gent->s.number], cent->gent->weaponModel[0], 
+							&cg_entities[cent->gent->s.number], 0, cent->gent->weaponModel[0], 
 							cent->lerpOrigin, cent->lerpAngles );
 					}
 				}
@@ -583,7 +583,12 @@ const weaponData_t  *wData = NULL;
 					else
 					{
 						int spinSound;
-						if ( cent->gent->owner->client->ps.saber[0].type == SABER_SITH_SWORD )
+						if ( cent->gent->owner->client->ps.saber[0].spinSound 
+							&& cgs.sound_precache[cent->gent->owner->client->ps.saber[0].spinSound] )
+						{
+							spinSound = cgs.sound_precache[cent->gent->owner->client->ps.saber[0].spinSound];
+						}
+						else if ( cent->gent->owner->client->ps.saber[0].type == SABER_SITH_SWORD )
 						{
 							spinSound = cgi_S_RegisterSound( "sound/weapons/saber/saberspinoff.wav" );
 						}
@@ -624,7 +629,7 @@ const weaponData_t  *wData = NULL;
 					else if ( cent->gent->owner->client->ps.saberEventFlags & SEF_INWATER )
 					{
 						CG_CheckSaberInWater( &cg_entities[cent->gent->owner->s.number], 
-							&cg_entities[cent->gent->s.number], 0, cent->lerpOrigin, 
+							&cg_entities[cent->gent->s.number], 0, 0, cent->lerpOrigin, 
 							cent->lerpAngles );
 					}
 				}
@@ -655,7 +660,12 @@ const weaponData_t  *wData = NULL;
 				else
 				{
 					int spinSound;
-					if ( cent->gent->owner->client->ps.saber[0].type == SABER_SITH_SWORD )
+					if ( cent->gent->owner->client->ps.saber[0].spinSound 
+						&& cgs.sound_precache[cent->gent->owner->client->ps.saber[0].spinSound] )
+					{
+						spinSound = cgs.sound_precache[cent->gent->owner->client->ps.saber[0].spinSound];
+					}
+					else if ( cent->gent->owner->client->ps.saber[0].type == SABER_SITH_SWORD )
 					{
 						spinSound = cgi_S_RegisterSound( "sound/weapons/saber/saberspinoff.wav" );
 					}
@@ -703,10 +713,6 @@ Ghoul2 Insert End
 	{//FIXME: if I'm a rather large model, this will look kind of stupid...
 		CG_ForcePushBlur( cent->lerpOrigin );
 	}
-
-#ifdef _XBOX
-	ent.number = cent->currentState.number;
-#endif
 	CG_AddRefEntWithTransportEffect( cent, &ent );
 
 	if ( cent->gent->health <= 0 
@@ -991,7 +997,22 @@ Ghoul2 Insert End
 	// lovely...this is for weapons that should be oriented vertically.  For weapons lockers and such.
 	if ( cent->gent->spawnflags & 16 )
 	{	//VectorClear( spinAngles );
-		spinAngles[PITCH] -= 75;
+		if ( item->giType == IT_WEAPON 
+			&& item->giTag == WP_SABER )
+		{
+			if ( cent->gent->random )
+			{//pitch specified
+				spinAngles[PITCH] += cent->gent->random;
+			}
+			else
+			{
+				spinAngles[PITCH] -= 20;
+			}
+		}
+		else
+		{
+			spinAngles[PITCH] -= 75;
+		}
 	}
 	
 	if( item->giType != IT_HOLOCRON )
@@ -1013,10 +1034,6 @@ Ghoul2 Insert End
 //		VectorScale( ent.axis[2], 1.5f, ent.axis[2] );
 //		ent.nonNormalizedAxes = qtrue;
 //	}
-
-#ifdef _XBOX
-	ent.number = cent->currentState.number;
-#endif
 
 	// add to refresh list
 	cgi_R_AddRefEntityToScene(&ent);
@@ -1252,9 +1269,6 @@ Ghoul2 Insert End
 //		vec3_t	org;
 		if ( !(s1->eFlags & EF_NODRAW) )
 		{
-#ifdef _XBOX
-			ent.number = cent->currentState.number;
-#endif
 			// add to refresh list
 			CG_AddRefEntWithTransportEffect( cent, &ent );
 		}
@@ -1307,9 +1321,6 @@ Ghoul2 Insert End
 	}
 
 	// add to refresh list
-#ifdef _XBOX
-	ent.number = cent->currentState.number;
-#endif
 	CG_AddRefEntWithTransportEffect( cent, &ent );
 
 	if ((cg.snap->ps.forcePowersActive & (1 << FP_SEE)) 
@@ -2012,7 +2023,7 @@ extern cvar_t	*g_saberRealisticCombat;
 					if ( newBolt != -1 )
 					{
 						cent->gent->delay = cg.time + 50;
-						CG_PlayEffectBolted( "blaster/smoke_bolton", owner->playerModel, newBolt, owner->s.number, owner->s.origin );	//ent origin used to make FX culling work
+						CG_PlayEffectBolted( "saber/limb_bolton", owner->playerModel, newBolt, owner->s.number, owner->s.origin );	//ent origin used to make FX culling work
 					}
 				}
 			}
@@ -2034,7 +2045,7 @@ extern cvar_t	*g_saberRealisticCombat;
 				}
 			}
 			if ( owner->client->NPC_class == CLASS_PROTOCOL 
-				|| g_dismemberment->integer >= 11381138
+				|| debug_subdivision->integer
 				|| g_saberRealisticCombat->integer )
 			{
 				//wait 100ms before allowing owner to be dismembered again

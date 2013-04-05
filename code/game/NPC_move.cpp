@@ -95,7 +95,7 @@ static qboolean NPC_Jump( vec3_t dest, int goalEntNum )
 				}
 				EvaluateTrajectory( &tr, level.time + elapsedTime, testPos );
 				//FUCK IT, always check for do not enter...
-				gi.trace( &trace, lastPos, NPC->mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask|CONTENTS_BOTCLIP );
+				gi.trace( &trace, lastPos, NPC->mins, NPC->maxs, testPos, NPC->s.number, NPC->clipmask|CONTENTS_BOTCLIP, (EG2_Collision)0, 0 );
 				/*
 				if ( testPos[2] < lastPos[2] 
 					&& elapsedTime < floor( travelTime ) )
@@ -175,7 +175,7 @@ static qboolean NPC_Jump( vec3_t dest, int goalEntNum )
 						//FIXME: do we care how far below ourselves or our dest we'll land?
 						VectorCopy( trace.endpos, bottom );
 						bottom[2] -= 128;
-						gi.trace( &trace, trace.endpos, NPC->mins, NPC->maxs, bottom, NPC->s.number, NPC->clipmask );
+						gi.trace( &trace, trace.endpos, NPC->mins, NPC->maxs, bottom, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );
 						if ( trace.fraction >= 1.0f )
 						{//would fall too far
 							blocked = qtrue;
@@ -283,7 +283,7 @@ qboolean NPC_TryJump(const vec3_t& pos,	float max_xy_dist, float max_z_diff)
 			vec3_t	groundTest;
 			VectorCopy(pos, groundTest);
 			groundTest[2]	+= (NPC->mins[2]*3);
-			gi.trace(&mJumpTrace, NPCInfo->jumpDest, vec3_origin, vec3_origin, groundTest, NPC->s.number, NPC->clipmask );
+			gi.trace(&mJumpTrace, NPCInfo->jumpDest, vec3_origin, vec3_origin, groundTest, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0 );
 			if (mJumpTrace.fraction >= 1.0f)
 			{
 				return qfalse;	//no ground = no jump
@@ -393,7 +393,7 @@ qboolean NPC_TryJump()
 	{
 		vec3_t	actorProjectedTowardTarget;
 		VectorMA(NPC->currentOrigin, NPC_JUMP_PREP_BACKUP_DIST, targetDirection, actorProjectedTowardTarget);
-		gi.trace(&mJumpTrace, NPC->currentOrigin, vec3_origin, vec3_origin, actorProjectedTowardTarget, NPC->s.number, NPC->clipmask);
+		gi.trace(&mJumpTrace, NPC->currentOrigin, vec3_origin, vec3_origin, actorProjectedTowardTarget, NPC->s.number, NPC->clipmask, (EG2_Collision)0, 0);
 		if ((mJumpTrace.fraction < 1.0f) ||
 			(mJumpTrace.allsolid) ||
 			(mJumpTrace.startsolid))
@@ -503,7 +503,7 @@ qboolean NPC_TryJump()
 				floorPos[0] = NPCInfo->jumpDest[0];
 				floorPos[1] = NPCInfo->jumpDest[1];
 
-				gi.trace(&mJumpTrace, NPCInfo->jumpDest, NPC->mins, NPC->maxs, floorPos, (NPCInfo->jumpTarget)?(NPCInfo->jumpTarget->s.number):(NPC->s.number), (NPC->clipmask|CONTENTS_BOTCLIP));
+				gi.trace(&mJumpTrace, NPCInfo->jumpDest, NPC->mins, NPC->maxs, floorPos, (NPCInfo->jumpTarget)?(NPCInfo->jumpTarget->s.number):(NPC->s.number), (NPC->clipmask|CONTENTS_BOTCLIP), (EG2_Collision)0, 0);
 				if ((mJumpTrace.fraction<1.0f) && 
 					(!mJumpTrace.allsolid) && 
 					(!mJumpTrace.startsolid))

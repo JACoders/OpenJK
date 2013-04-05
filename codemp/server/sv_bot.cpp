@@ -176,18 +176,11 @@ SV_BotAllocateClient
 ==================
 */
 int SV_BotAllocateClient(void) {
-	int			i = 0;
+	int			i;
 	client_t	*cl;
 
-	// Find a client slot - skip the first two for split screen, humans
-	// MUST be the first two clients!
-	extern bool SplitScreenModeActive( void );
-	if( SplitScreenModeActive() )
-		i = 2;
-	// Likewise, for a listen server, we want the local client to be #0:
-	else if( !com_dedicated->integer )
-		i = 1;
-	for ( cl = svs.clients + i; i < sv_maxclients->integer; i++, cl++ ) {
+	// find a client slot
+	for ( i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++ ) {
 		if ( cl->state == CS_FREE ) {
 			break;
 		}

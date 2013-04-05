@@ -3,10 +3,6 @@
 
 #include "tr_local.h"
 
-#ifdef _XBOX
-#include "../cgame/cg_local.h"
-#include "../client/cl_data.h"
-#endif
 
 /*
 =====================
@@ -184,10 +180,6 @@ void	R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	cmd->refdef = tr.refdef;
 	cmd->viewParms = tr.viewParms;
-
-#ifdef _XBOX
-	cmd->clientNum = ClientManager::ActiveClientNum();
-#endif
 }
 
 

@@ -9,7 +9,6 @@
 #include "glw_win_dx8.h"
 
 #include "../client/client.h"
-
 #include "../qcommon/qcommon.h"
 #ifdef _JK2MP
 #include "../ui/keycodes.h"
@@ -23,7 +22,6 @@
 #define IN_MAX_CONTROLLERS 4
 
 void IN_UIEmptyQueue();
-void IN_CheckForNoControllers();
 
 struct inputstate_t
 {
@@ -38,8 +36,6 @@ struct inputstate_t
 
 inputstate_t *in_state = NULL;
 
-
-
 /*
 =========================================================================
 
@@ -47,23 +43,17 @@ JOYSTICK
 
 =========================================================================
 */
-//JLF moved here for multiple access (then not used multiple times. oh well.)
-extern bool noControllersConnected;
 // Process all the insertions and removals, updating handles and such
 void IN_ProcessChanges(DWORD dwInsert, DWORD dwRemove)
 {
 	for(int port = 0; port < IN_MAX_CONTROLLERS; ++port)
 	{
 		// Close removals.
-		if((1 << port) & dwRemove)
+		if( ((1 << port) & dwRemove) && in_state->controllers[port].handle )
 		{
-			if ( in_state->controllers[port].handle )
-			{
-				XInputClose( in_state->controllers[port].handle );
-				in_state->controllers[port].handle = 0;
-			}
+			XInputClose( in_state->controllers[port].handle );
+			in_state->controllers[port].handle = 0;
 			IN_PadUnplugged(port);
-
 		}
 
 		// Open insertions.
@@ -218,7 +208,7 @@ void IN_UpdateGamepad(int port)
 		A_JOY5, // DPAD_UP
 		A_JOY7, // DPAD_DOWN
 		A_JOY8, // DPAD_LEFT
-		A_JOY6, // DPAD_RIGHT
+		A_JOY6, // DPAD_LEFT
 		A_JOY4, // Start
 		A_JOY1, // Back
 		A_JOY2, // Left stick
@@ -282,11 +272,6 @@ void IN_UpdateGamepad(int port)
 	IN_CommonUpdate();
 }
 
-extern qboolean CurrentStateIsInteractive();
-extern int mainControllerDelayedUnplug;
-
-extern void startsetMainController(int controller);
-extern int gLaunchController;
 /*
 ==================
 IN_Frame
@@ -295,10 +280,8 @@ Called every frame, even if not generating commands
 ==================
 */
 //extern int ignoreInputTime;
-extern vmCvar_t ControllerOutNum;
 void IN_Frame (void)
 {
-	static qboolean first = qtrue;
 	if (in_state)
 	{
 		// First, check for changes in device status (removed/inserted pads)
@@ -307,26 +290,10 @@ void IN_Frame (void)
 		{
 			IN_ProcessChanges(dwInsert, dwRemove);
 		}
-
-		if ( first )
+		else
 		{
-			// We only force the controller to be locked when we came from MP:
-			extern bool Sys_QuickStart( void );
-			if( Sys_QuickStart() )
-			{
-				Com_Printf("\tController %d initialized\n", gLaunchController); 
-				startsetMainController(gLaunchController);
-
-				// We're bypassing splash menu!
-				Cvar_SetValue( "inSplashMenu", 0 );
-			}
-
-			// Only do this check once, no matter what:
-			first = qfalse;
+			IN_CheckForNoControllers();
 		}
-
-		if ( mainControllerDelayedUnplug && CurrentStateIsInteractive() && ControllerOutNum.integer < 0)
-			IN_ProcessChanges(0, mainControllerDelayedUnplug);
 
 		// Generate callbacks for each controller that's plugged in
 		for (int port = 0; port < IN_MAX_CONTROLLERS; ++port)

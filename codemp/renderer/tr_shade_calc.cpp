@@ -591,9 +591,7 @@ void RB_DeformTessGeometry( void ) {
 			RB_CalcMoveVertexes( ds );
 			break;
 		case DEFORM_PROJECTION_SHADOW:
-/*
 			RB_ProjectionShadowDeform();
-*/
 			break;
 		case DEFORM_AUTOSPRITE:
 			AutospriteDeform();
@@ -892,23 +890,7 @@ void RB_CalcWaveAlpha( const waveForm_t *wf, unsigned char *dstColors )
 */
 #ifdef _XBOX
 void RB_CalcModulateColorsByFog( DWORD *colors ) {
-	int i;
-	float	texCoords[SHADER_MAX_VERTEXES][2];
 
-	// calculate texcoords so we can derive density
-	// this is not wasted, because it would only have
-	// been previously called if the surface was opaque
-	RB_CalcFogTexCoords( texCoords[0] );
-
-	for ( i = 0; i < tess.numVertexes; i++, colors ++ ) {
-		float f = 1.0 - R_FogFactor( texCoords[i][0], texCoords[i][1] );
-		DWORD a, r, g, b;
-		a = (*colors & 0xff000000) >> 24;
-		r = ((*colors & 0x00ff0000) >> 16) * f;
-		g = ((*colors & 0x0000ff00) >> 8) * f;
-		b = (*colors & 0x000000ff) * f;
-		*colors = (DWORD)((a << 24) | (r << 16) | (g << 8) | b);
-	}
 }
 #else
 void RB_CalcModulateColorsByFog( unsigned char *colors ) {
@@ -934,20 +916,7 @@ void RB_CalcModulateColorsByFog( unsigned char *colors ) {
 */
 #ifdef _XBOX
 void RB_CalcModulateAlphasByFog( DWORD *colors ) {
-	int i;
-	float	texCoords[SHADER_MAX_VERTEXES][2];
 
-	// calculate texcoords so we can derive density
-	// this is not wasted, because it would only have
-	// been previously called if the surface was opaque
-	RB_CalcFogTexCoords( texCoords[0] );
-
-	for ( i = 0; i < tess.numVertexes; i++, colors ++ ) {
-		float f = 1.0 - R_FogFactor( texCoords[i][0], texCoords[i][1] );
-		DWORD rgb = *colors & 0x00ffffff;
-		DWORD alpha = ((*colors & 0xff000000) >> 24) * f;
-		*colors = (alpha << 24) | rgb;
-	}
 }
 #else
 void RB_CalcModulateAlphasByFog( unsigned char *colors ) {
@@ -971,23 +940,7 @@ void RB_CalcModulateAlphasByFog( unsigned char *colors ) {
 */
 #ifdef _XBOX
 void RB_CalcModulateRGBAsByFog( DWORD *colors ) {
-	int i;
-	float	texCoords[SHADER_MAX_VERTEXES][2];
 
-	// calculate texcoords so we can derive density
-	// this is not wasted, because it would only have
-	// been previously called if the surface was opaque
-	RB_CalcFogTexCoords( texCoords[0] );
-
-	for ( i = 0; i < tess.numVertexes; i++, colors ++ ) {
-		float f = 1.0 - R_FogFactor( texCoords[i][0], texCoords[i][1] );
-		DWORD a, r, g, b;
-		a = ((*colors & 0xff000000) >> 24) * f;
-		r = ((*colors & 0x00ff0000) >> 16) * f;
-		g = ((*colors & 0x0000ff00) >> 8) * f;
-		b = (*colors & 0x000000ff) * f;
-		*colors = (DWORD)((a << 24) | (r << 16) | (g << 8) | b);
-	}
 }
 #else
 void RB_CalcModulateRGBAsByFog( unsigned char *colors ) {
@@ -1388,38 +1341,6 @@ void RB_CalcSpecularAlpha( unsigned char *alphas ) {
 **
 ** The basic vertex lighting calc
 */
-#ifdef _XBOX
-void RB_CalcDiffuseColor( DWORD *colors )
-{
-	trRefEntity_t	*ent;
-
-	ent = backEnd.currentEntity;
-
-	// Make sure to turn lighting on....
-	qglEnable(GL_LIGHTING);
-
-	qglLightfv(0, GL_AMBIENT, ent->ambientLight);
-	qglLightfv(0, GL_DIFFUSE, ent->directedLight);
-
-	if(VectorLengthSquared(ent->lightDir) <= 0.0001f)
-	{
-		ent->lightDir[0] = 0.0f;
-		ent->lightDir[1] = 1.0f;
-		ent->lightDir[2] = 0.0f;
-	}
-
-	qglLightfv(0, GL_SPOT_DIRECTION, ent->lightDir);
-
-	/*if(VectorLengthSquared(ent->dlightDir) > 0.0f && ModelMem.inUI == false)
-	{
-		qglLightfv(1, GL_AMBIENT, ent->ambientLight);
-		qglLightfv(1, GL_DIFFUSE, ent->dynamicLight);
-		qglLightfv(1, GL_SPOT_DIRECTION, ent->dlightDir);
-	}*/
-
-	memset(colors, 0xffffffff, sizeof(DWORD) * tess.numVertexes);
-}
-#else
 void RB_CalcDiffuseColor( unsigned char *colors )
 {
 	int				i, j;
@@ -1469,62 +1390,12 @@ void RB_CalcDiffuseColor( unsigned char *colors )
 		colors[i*4+3] = 255;
 	}
 }
-#endif
 
 /*
 ** RB_CalcDiffuseColorEntity
 **
 ** The basic vertex lighting calc * Entity Color
 */
-#ifdef _XBOX
-void RB_CalcDiffuseEntityColor( DWORD *colors )
-{
-	if ( !backEnd.currentEntity )
-	{//error, use the normal lighting
-		RB_CalcDiffuseColor(colors);
-	}
-
-	trRefEntity_t	*ent;
-
-	ent = backEnd.currentEntity;
-
-	// Make sure to turn lighting on....
-	qglEnable(GL_LIGHTING);
-
-	// Modulate ambient by entity color:
-	vec3_t ambient;
-	ambient[0] = ent->ambientLight[0] * (ent->e.shaderRGBA[0]/255.0);
-	ambient[1] = ent->ambientLight[1] * (ent->e.shaderRGBA[1]/255.0);
-	ambient[2] = ent->ambientLight[2] * (ent->e.shaderRGBA[2]/255.0);
-	qglLightfv(0, GL_AMBIENT, ambient);
-	qglLightfv(0, GL_DIFFUSE, ent->directedLight);
-
-	VectorNormalize(ent->lightDir);
-
-	if(VectorLengthSquared(ent->lightDir) <= 0.0001f)
-	{
-		ent->lightDir[0] = 0.0f;
-		ent->lightDir[1] = 1.0f;
-		ent->lightDir[2] = 0.0f;
-	}
-
-	qglLightfv(0, GL_SPOT_DIRECTION, ent->lightDir);
-
-	/*if(VectorLengthSquared(ent->dlightDir) > 0.0f && ModelMem.inUI == false)
-	{
-		qglLightfv(1, GL_AMBIENT, ent->ambientLight);
-		qglLightfv(1, GL_DIFFUSE, ent->dynamicLight);
-		qglLightfv(1, GL_SPOT_DIRECTION, ent->dlightDir);
-	}*/
-
-	DWORD color = D3DCOLOR_RGBA(backEnd.currentEntity->e.shaderRGBA[0],
-								backEnd.currentEntity->e.shaderRGBA[1],
-								backEnd.currentEntity->e.shaderRGBA[2],
-								backEnd.currentEntity->e.shaderRGBA[3]);
-
-	memset(colors, color, sizeof(DWORD) * tess.numVertexes);
-}
-#else
 void RB_CalcDiffuseEntityColor( unsigned char *colors )
 {
 	int				i;
@@ -1590,7 +1461,6 @@ void RB_CalcDiffuseEntityColor( unsigned char *colors )
 		colors[i*4+3] = backEnd.currentEntity->e.shaderRGBA[3];
 	}
 }
-#endif
 
 //---------------------------------------------------------
 #ifdef _XBOX

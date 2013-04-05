@@ -4,10 +4,6 @@
 
 #include "cg_local.h"
 
-#ifdef _XBOX
-#include "../client/cl_data.h"
-#endif
-
 #define MAX_LOADING_PLAYER_ICONS	16
 #define MAX_LOADING_ITEM_ICONS		26
 
@@ -23,12 +19,7 @@ CG_LoadingString
 ======================
 */
 void CG_LoadingString( const char *s ) {
-#ifdef _XBOX
-	if (ClientManager::ActiveClientNum() == 1)
-		return;
-#endif
-
-	Q_strncpyz( cg->infoScreenText, s, sizeof( cg->infoScreenText ) );
+	Q_strncpyz( cg.infoScreenText, s, sizeof( cg.infoScreenText ) );
 
 	trap_UpdateScreen();
 }
@@ -135,29 +126,7 @@ void CG_DrawInformation( void ) {
 		levelshot = trap_R_RegisterShaderNoMip( "menu/art/unknownmap_mp" );
 	}
 	trap_R_SetColor( NULL );
-
-	// Levelshot in bottom-right frame
-	CG_DrawPic( 371, 279, 189, 141, levelshot );
-
-	switch( cgs.gametype )
-	{
-		case GT_FFA:
-			levelshot = trap_R_RegisterShaderNoMip( "levelshots/mp_ffa" );		break;
-		case GT_DUEL:
-			levelshot = trap_R_RegisterShaderNoMip( "levelshots/mp_duel" );		break;
-		case GT_POWERDUEL:
-			levelshot = trap_R_RegisterShaderNoMip( "levelshots/mp_pduel" );	break;
-		case GT_TEAM:
-			levelshot = trap_R_RegisterShaderNoMip( "levelshots/mp_tffa" );		break;
-		case GT_SIEGE:
-			levelshot = trap_R_RegisterShaderNoMip( "levelshots/mp_siege" );	break;
-		case GT_CTF:
-			levelshot = trap_R_RegisterShaderNoMip( "levelshots/mp_ctf" );		break;
-		default:
-			levelshot = trap_R_RegisterShaderNoMip( "levelshots/mp_ffa" );		break;
-	}
-
-	CG_DrawPic( 75, 279, 189, 141, levelshot );
+	CG_DrawPic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, levelshot );
 
 	CG_LoadBar();
 
@@ -166,23 +135,22 @@ void CG_DrawInformation( void ) {
 
 	// the first 150 rows are reserved for the client connection
 	// screen to write into
-//	if ( cg->infoScreenText[0] ) {
-//		const char *psLoading = CG_GetStringEdString("MENUS", "LOADING_MAPNAME");
-//		UI_DrawProportionalString( 320, 128-32, va(/*"Loading... %s"*/ psLoading, cg->infoScreenText),
-//			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );		
-//	} else {
-//		const char *psAwaitingSnapshot = CG_GetStringEdString("MENUS", "AWAITING_SNAPSHOT");
-//		UI_DrawProportionalString( 320, 128-32, /*"Awaiting snapshot..."*/psAwaitingSnapshot,
-//			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );			
-//	}
+	if ( cg.infoScreenText[0] ) {
+		const char *psLoading = CG_GetStringEdString("MENUS", "LOADING_MAPNAME");
+		UI_DrawProportionalString( 320, 128-32, va(/*"Loading... %s"*/ psLoading, cg.infoScreenText),
+			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );		
+	} else {
+		const char *psAwaitingSnapshot = CG_GetStringEdString("MENUS", "AWAITING_SNAPSHOT");
+		UI_DrawProportionalString( 320, 128-32, /*"Awaiting snapshot..."*/psAwaitingSnapshot,
+			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );			
+	}
 
 	// draw info string information
 
-	y = 60;
+	y = 180-32;
 
 	// don't print server lines if playing a local game
 	trap_Cvar_VariableStringBuffer( "sv_running", buf, sizeof( buf ) );
-/*
 	if ( !atoi( buf ) ) {
 		// server hostname
 		Q_strncpyz(buf, Info_ValueForKey( info, "sv_hostname" ), 1024);
@@ -191,11 +159,39 @@ void CG_DrawInformation( void ) {
 			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
 		y += iPropHeight;
 
+		// pure server
+		s = Info_ValueForKey( sysInfo, "sv_pure" );
+		if ( s[0] == '1' ) {
+			const char *psPure = CG_GetStringEdString("MP_INGAME", "PURE_SERVER");
+			UI_DrawProportionalString( 320, y, psPure,
+				UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
+			y += iPropHeight;
+		}
+
+		// server-specific message of the day
+		s = CG_ConfigString( CS_MOTD );
+		if ( s[0] ) {
+			UI_DrawProportionalString( 320, y, s,
+				UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
+			y += iPropHeight;
+		}
+
+		{	// display global MOTD at bottom (mirrors ui_main UI_DrawConnectScreen
+			char motdString[1024];
+			trap_Cvar_VariableStringBuffer( "cl_motdString", motdString, sizeof( motdString ) );
+
+			if (motdString[0])
+			{
+				UI_DrawProportionalString( 320, 425, motdString,
+					UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
+			}
+		}
+
 		// some extra space after hostname and motd
 		y += 10;
 	}
-*/
-	// Long map name
+
+	// map-specific message (long map name)
 	s = CG_ConfigString( CS_MESSAGE );
 	if ( s[0] ) {
 		UI_DrawProportionalString( 320, y, s,
@@ -203,27 +199,72 @@ void CG_DrawInformation( void ) {
 		y += iPropHeight;
 	}
 
-	// Game type
-	switch ( cgs.gametype ) {
-		case GT_FFA:
-			s = CG_GetStringEdString("MENUS", "FREE_FOR_ALL");		break;
-		case GT_DUEL:
-			s = CG_GetStringEdString("MENUS", "DUEL");				break;
-		case GT_POWERDUEL:
-			s = CG_GetStringEdString("MENUS", "POWERDUEL");			break;
-		case GT_TEAM:
-			s = CG_GetStringEdString("MENUS", "TEAM_FFA");			break;
-		case GT_SIEGE:
-			s = CG_GetStringEdString("MENUS", "SIEGE");				break;
-		case GT_CTF:
-			s = CG_GetStringEdString("MENUS", "CAPTURE_THE_FLAG");	break;
-		default:
-			s = CG_GetStringEdString("MENUS", "FREE_FOR_ALL");		break;
+	// cheats warning
+	s = Info_ValueForKey( sysInfo, "sv_cheats" );
+	if ( s[0] == '1' ) {
+		UI_DrawProportionalString( 320, y, CG_GetStringEdString("MP_INGAME", "CHEATSAREENABLED"),
+			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
+		y += iPropHeight;
 	}
-	UI_DrawProportionalString( 320, y, s, UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
-	y += iPropHeight;
 
-	// Rules
+	// game type
+	switch ( cgs.gametype ) {
+	case GT_FFA:
+			s = CG_GetStringEdString("MENUS", "FREE_FOR_ALL");//"Free For All";
+//		s = "Free For All";
+		break;
+	case GT_HOLOCRON:
+			s = CG_GetStringEdString("MENUS", "HOLOCRON_FFA");//"Holocron FFA";
+//		s = "Holocron FFA";
+		break;
+	case GT_JEDIMASTER:
+			s = CG_GetStringEdString("MENUS", "SAGA");//"Jedi Master";??
+
+//		s = "Jedi Master";
+		break;
+	case GT_SINGLE_PLAYER:
+			s = CG_GetStringEdString("MENUS", "SAGA");//"Team FFA";
+
+		//s = "Single Player";
+		break;
+	case GT_DUEL:
+			s = CG_GetStringEdString("MENUS", "DUEL");//"Team FFA";
+		//s = "Duel";
+		break;
+	case GT_POWERDUEL:
+			s = CG_GetStringEdString("MENUS", "POWERDUEL");//"Team FFA";
+		//s = "Power Duel";
+		break;
+	case GT_TEAM:
+			s = CG_GetStringEdString("MENUS", "TEAM_FFA");//"Team FFA";
+
+		//s = "Team FFA";
+		break;
+	case GT_SIEGE:
+			s = CG_GetStringEdString("MENUS", "SIEGE");//"Siege";
+
+		//s = "Siege";
+		break;
+	case GT_CTF:
+			s = CG_GetStringEdString("MENUS", "CAPTURE_THE_FLAG");//"Capture the Flag";
+
+		//s = "Capture The Flag";
+		break;
+	case GT_CTY:
+			s = CG_GetStringEdString("MENUS", "CAPTURE_THE_YSALIMARI");//"Capture the Ysalamiri";
+
+		//s = "Capture The Ysalamiri";
+		break;
+	default:
+			s = CG_GetStringEdString("MENUS", "SAGA");//"Team FFA";
+
+		//s = "Unknown Gametype";
+		break;
+	}
+	UI_DrawProportionalString( 320, y, s,
+		UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
+	y += iPropHeight;
+		
 	if (cgs.gametype != GT_SIEGE)
 	{
 		value = atoi( Info_ValueForKey( info, "timelimit" ) );
@@ -277,7 +318,7 @@ void CG_DrawInformation( void ) {
 		valueNOFP = atoi( Info_ValueForKey( info, "g_forcePowerDisable" ) );
 
 		value = atoi( Info_ValueForKey( info, "g_maxForceRank" ) );
-		if ( value && !valueNOFP ) {
+		if ( value && !valueNOFP && (value < NUM_FORCE_MASTERY_LEVELS) ) {
 			char fmStr[1024]; 
 
 			trap_SP_GetStringTextString("MP_INGAME_MAXFORCERANK",fmStr, sizeof(fmStr));
@@ -325,6 +366,24 @@ void CG_DrawInformation( void ) {
 			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
 		y += iPropHeight;
 		break;
+	case GT_HOLOCRON:
+		UI_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_HOLO_1")),
+			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
+		y += iPropHeight;
+		UI_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_HOLO_2")),
+			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
+		y += iPropHeight;
+		break;
+	case GT_JEDIMASTER:
+		UI_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_JEDI_1")),
+			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
+		y += iPropHeight;
+		UI_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_JEDI_2")),
+			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
+		y += iPropHeight;
+		break;
+	case GT_SINGLE_PLAYER:
+		break;
 	case GT_DUEL:
 		UI_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_DUEL_1")),
 			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
@@ -338,9 +397,6 @@ void CG_DrawInformation( void ) {
 			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
 		y += iPropHeight;
 		UI_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_POWERDUEL_2")),
-			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
-		y += iPropHeight;
-		UI_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_POWERDUEL_3")),
 			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
 		y += iPropHeight;
 		break;
@@ -361,7 +417,12 @@ void CG_DrawInformation( void ) {
 		UI_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_CTF_2")),
 			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
 		y += iPropHeight;
-		UI_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_CTF_3")),
+		break;
+	case GT_CTY:
+		UI_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_CTY_1")),
+			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
+		y += iPropHeight;
+		UI_DrawProportionalString( 320, y, va( "%s", (char *)CG_GetStringEdString("MP_INGAME", "RULES_CTY_2")),
 			UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
 		y += iPropHeight;
 		break;
@@ -377,17 +438,6 @@ CG_LoadBar
 */
 void CG_LoadBar(void)
 {
-	trap_R_SetColor( colorTable[CT_WHITE] );
-
-	int glowHeight = (cg->loadLCARSStage / 9.0f) * 147;
-	int glowTop = (280 + 147) - glowHeight;
-
-	// Draw glow:
-	CG_DrawPic(280, glowTop, 73, glowHeight, cgs.media.loadTick);
-
-	// Draw saber:
-	CG_DrawPic(280, 265, 73, 147, cgs.media.levelLoad);
-/*
 	const int numticks = 9, tickwidth = 40, tickheight = 8;
 	const int tickpadx = 20, tickpady = 12;
 	const int capwidth = 8;
@@ -403,10 +453,9 @@ void CG_LoadBar(void)
 	CG_DrawPic(tickleft, ticktop, -capwidth, tickheight, cgs.media.loadBarLEDCap);
 
 	// Draw bar
-	CG_DrawPic(tickleft, ticktop, tickwidth*cg->loadLCARSStage, tickheight, cgs.media.loadBarLED);
+	CG_DrawPic(tickleft, ticktop, tickwidth*cg.loadLCARSStage, tickheight, cgs.media.loadBarLED);
 
 	// Draw right cap
-	CG_DrawPic(tickleft+tickwidth*cg->loadLCARSStage, ticktop, capwidth, tickheight, cgs.media.loadBarLEDCap);
-*/
+	CG_DrawPic(tickleft+tickwidth*cg.loadLCARSStage, ticktop, capwidth, tickheight, cgs.media.loadBarLEDCap);
 }
 

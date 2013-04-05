@@ -41,7 +41,7 @@ extern cvar_t		*debugNPCName;
 extern cvar_t		*d_JediAI;
 extern cvar_t		*d_saberCombat;
 extern void NPC_Think ( gentity_t *self);
-extern void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope = NULL, vec3_t storeAngles = NULL );
+extern void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope = NULL, vec3_t storeAngles = NULL, qboolean keepPitch = qfalse );
 
 //NPC_reactions.cpp
 extern void NPC_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, vec3_t point, int damage, int mod ,int hitLoc);

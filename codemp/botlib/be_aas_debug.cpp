@@ -12,8 +12,6 @@
  *
  *****************************************************************************/
 
-#if 0	// Removing on Xbox
-
 #include "../game/q_shared.h"
 #include "l_memory.h"
 #include "l_script.h"
@@ -760,5 +758,3 @@ void AAS_FloodAreas(vec3_t origin)
 	cluster = AAS_AreaCluster(areanum);
 	AAS_FloodAreas_r(areanum, cluster, done);
 }
-
-#endif	// _XBOX

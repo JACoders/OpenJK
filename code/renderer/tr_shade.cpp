@@ -205,11 +205,7 @@ static void R_DrawElements( int numIndexes, const glIndex_t *indexes ) {
 #if 1	// VVFIXME : Temporary solution to try and increase framerate
 		//qglIndexedTriToStrip( numIndexes, indexes );
 
-		if(strstr(tess.shader->name, "terrain")) {
-			qglIndexedTriToStrip( numIndexes, indexes );
-		}
-		else
-            qglDrawElements( GL_TRIANGLES, 
+		qglDrawElements( GL_TRIANGLES, 
 						numIndexes,
 						GL_INDEX_TYPE,
 						indexes );
@@ -469,11 +465,6 @@ void RB_BeginSurface( shader_t *shader, int fogNum ) {
 
 #ifdef _XBOX
 	tess.setTangents = false;
-	tess.pXyz = NULL;
-	tess.pNormal = NULL;
-	tess.pColor = NULL;
-	tess.pTex1 = NULL;
-	tess.pTex2 = NULL;
 #endif
 
 	tess.registration++;
@@ -1477,7 +1468,7 @@ static void ComputeColors( shaderStage_t *pStage, alphaGen_t forceAlphaGen, colo
 	if ( tess.shader != tr.projectionShadowShader && tess.shader != tr.shadowShader && 
 		( backEnd.currentEntity->e.renderfx & (RF_DISINTEGRATE1|RF_DISINTEGRATE2)))
 	{
-		RB_CalcDisintegrateColors( (unsigned char *)tess.svars.colors, (colorGen_t)pStage->rgbGen );
+		RB_CalcDisintegrateColors( (unsigned char *)tess.svars.colors, pStage->rgbGen );
 		RB_CalcDisintegrateVertDeform();
 
 		// We've done some custom alpha and color stuff, so we can skip the rest.  Let it do fog though
@@ -1490,7 +1481,7 @@ static void ComputeColors( shaderStage_t *pStage, alphaGen_t forceAlphaGen, colo
 	//
 	if ( !forceRGBGen )
 	{
-		forceRGBGen = (colorGen_t)pStage->rgbGen;
+		forceRGBGen = pStage->rgbGen;
 	}
 
 	if ( backEnd.currentEntity->e.renderfx & RF_VOLUMETRIC ) // does not work for rotated models, technically, this should also be a CGEN type, but that would entail adding new shader commands....which is too much work for one thing
@@ -1528,7 +1519,7 @@ static void ComputeColors( shaderStage_t *pStage, alphaGen_t forceAlphaGen, colo
 
 	if ( !forceAlphaGen )	//set this up so we can override below
 	{
-		forceAlphaGen = (alphaGen_t)pStage->alphaGen;
+		forceAlphaGen = pStage->alphaGen;
 	}
 
 	DWORD color;
@@ -2467,8 +2458,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 				tr_stencilled = true;
 				lStencilled = true;
 				qglEnable(GL_STENCIL_TEST);
-				// BTO - Xbox fix: High stencil bit is reserved for glow
-				qglStencilFunc(GL_ALWAYS, 1, 0x7F); //0xFFFFFFFF);
+				qglStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
 				qglStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
 				qglColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
@@ -2497,10 +2487,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		// Lighting may have been turned on above
 		qglDisable(GL_LIGHTING);
 		qglDisableClientState( GL_NORMAL_ARRAY );
-
-		if(tess.shader == tr.projectionShadowShader) {
-			qglDisable(GL_STENCIL_TEST);
-		}
 #endif
 	}
 	if (FogColorChange)
@@ -2597,37 +2583,6 @@ void RB_StageIteratorGeneric( void )
 		qglEnableClientState( GL_TEXTURE_COORD_ARRAY);
 		qglTexCoordPointer( 2, GL_FLOAT, 0, tess.svars.texcoords[0] );
 	}
-
-	// If this is a glowing surface, write the glow flag into the stencil buffer
-#ifdef _XBOX
-	if ( r_hdreffect->integer )
-	{
-		// Turn on stenciling, make sure all pixels pass the test
-		glw_state->device->SetRenderState( D3DRS_STENCILENABLE, TRUE );
-		glw_state->device->SetRenderState( D3DRS_STENCILFUNC, D3DCMP_ALWAYS );
-		// Make sure that stencil writes will hit the high bit (the one we care about)
-		glw_state->device->SetRenderState( D3DRS_STENCILWRITEMASK, 0xFFFFFFFF );
-
-		if ( input->shader->hasGlow )
-		{
-			// Write only the high (eighth) bit
-			glw_state->device->SetRenderState( D3DRS_STENCILREF, 0x80 );
-			glw_state->device->SetRenderState( D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE );
-		}
-		else
-		{
-			// Clear out the high (eighth) bit
-			glw_state->device->SetRenderState( D3DRS_STENCILPASS, D3DSTENCILOP_ZERO );
-		}
-	}
-	else
-	{
-#ifdef _XBOX
-		if(tess.shader != tr.projectionShadowShader)
-#endif
-		glw_state->device->SetRenderState( D3DRS_STENCILENABLE, FALSE );
-	}
-#endif
 
 	//
 	// lock XYZ

@@ -521,7 +521,6 @@ void		Info_Print( const char *s );
 void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
 void		Com_EndRedirect( void );
 void 		QDECL Com_Printf( const char *fmt, ... );
-void 		QDECL Com_PrintfAlways( const char *fmt, ... );
 void 		QDECL Com_DPrintf( const char *fmt, ... );
 void 		QDECL Com_Error( int code, const char *fmt, ... );
 void 		Com_Quit_f( void );
@@ -592,8 +591,7 @@ void  Z_TagFree	( memtag_t eTag );
 int   Z_Free	( void *ptr );	//returns bytes freed
 int	  Z_Size	( void *pvAddress);
 void  Z_MorphMallocTag( void *pvAddress, memtag_t eDesiredTag );
-qboolean Z_IsFromZone(void *pvAddress, memtag_t eTag);	
-qboolean Z_IsFromTempPool(void *pvAddress);	
+qboolean Z_IsFromZone(void *pvAddress, memtag_t eTag);	//returns size if true
 
 #ifdef DEBUG_ZONE_ALLOCS
 
@@ -626,9 +624,6 @@ inline void *Hunk_Alloc( int size, qboolean bZeroIt = qtrue)
 	return Z_Malloc(size, TAG_HUNKALLOC, bZeroIt);
 }
 
-// Used to re-tag new/delete allocations:
-void Z_PushNewDeleteTag( memtag_t eTag );
-void Z_PopNewDeleteTag( void );
 
 void Com_TouchMemory( void );
 

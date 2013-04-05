@@ -163,7 +163,11 @@ void SP_info_player_deathmatch (gentity_t *ent);
 void SP_info_player_siegeteam1 (gentity_t *ent);
 void SP_info_player_siegeteam2 (gentity_t *ent);
 void SP_info_player_intermission (gentity_t *ent);
+void SP_info_player_intermission_red (gentity_t *ent);
+void SP_info_player_intermission_blue (gentity_t *ent);
 void SP_info_jedimaster_start (gentity_t *ent);
+void SP_info_player_start_red (gentity_t *ent);
+void SP_info_player_start_blue (gentity_t *ent);
 void SP_info_firstplace(gentity_t *ent);
 void SP_info_secondplace(gentity_t *ent);
 void SP_info_thirdplace(gentity_t *ent);
@@ -200,6 +204,7 @@ void SP_trigger_hurt (gentity_t *ent);
 void SP_trigger_space(gentity_t *self);
 void SP_trigger_shipboundary(gentity_t *self);
 void SP_trigger_hyperspace(gentity_t *self);
+void SP_trigger_asteroid_field(gentity_t *self);
 
 void SP_target_remove_powerups( gentity_t *ent );
 void SP_target_give (gentity_t *ent);
@@ -438,7 +443,11 @@ spawn_t	spawns[] = {
 	{"info_player_siegeteam1", SP_info_player_siegeteam1},
 	{"info_player_siegeteam2", SP_info_player_siegeteam2},
 	{"info_player_intermission", SP_info_player_intermission},
+	{"info_player_intermission_red", SP_info_player_intermission_red},
+	{"info_player_intermission_blue", SP_info_player_intermission_blue},
 	{"info_jedimaster_start", SP_info_jedimaster_start},
+	{"info_player_start_red", SP_info_player_start_red},
+	{"info_player_start_blue", SP_info_player_start_blue},
 	{"info_null", SP_info_null},
 	{"info_notnull", SP_info_notnull},		// use target_position instead
 	{"info_camp", SP_info_camp},
@@ -480,6 +489,7 @@ spawn_t	spawns[] = {
 	{"trigger_space", SP_trigger_space},
 	{"trigger_shipboundary", SP_trigger_shipboundary},
 	{"trigger_hyperspace", SP_trigger_hyperspace},
+	{"trigger_asteroid_field", SP_trigger_asteroid_field},
 
 	// targets perform no action by themselves, but must be triggered
 	// by another entity
@@ -516,9 +526,7 @@ spawn_t	spawns[] = {
 	{"misc_portal_camera", SP_misc_portal_camera},
 	{"misc_weather_zone", SP_misc_weather_zone},
 
-/*
 	{"misc_bsp", SP_misc_bsp},
-*/
 	{"terrain", SP_terrain},
 	{"misc_skyportal_orient", SP_misc_skyportal_orient},
 	{"misc_skyportal", SP_misc_skyportal},
@@ -1324,9 +1332,6 @@ void SP_worldspawn( void )
 
 	G_SpawnString( "gravity", "800", &text );
 	trap_Cvar_Set( "g_gravity", text );
-
-	G_SpawnString( "enableDust", "0", &text );
-	trap_Cvar_Set( "g_enableDust", text );
 
 	G_SpawnString( "enableBreath", "0", &text );
 	trap_Cvar_Set( "g_enableBreath", text );
