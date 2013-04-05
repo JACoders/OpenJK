@@ -507,7 +507,6 @@ bool DStamp_MarkImage(Texture_t *pTexture, LPCSTR psText)
 	return false;
 }
 
-
 void DStamp_AnalyseImage(byte *pPixels, int iWidth, int iHeight, int iPlanes)
 {
 	CWaitCursor wait;
@@ -528,6 +527,7 @@ void DStamp_AnalyseImage(byte *pPixels, int iWidth, int iHeight, int iPlanes)
 					ImageOut.iWidth		= iWidth;
 					ImageOut.iHeight	= iHeight;
 					ImageOut.iPlanes	= iPlanes;	
+	int y = 0;
 
 
 /*
@@ -545,7 +545,7 @@ void DStamp_AnalyseImage(byte *pPixels, int iWidth, int iHeight, int iPlanes)
 	}
 */		
 #if 1
-	for (int y = 0; y+iBlockSampleSize < iHeight; y += iBlockSampleSize)
+	for (y = 0; y+iBlockSampleSize < iHeight; y += iBlockSampleSize)
 	{
 		PROGRESS_SETPOS(y);
 		for (int x = 0; x+iBlockSampleSize < iWidth; x += iBlockSampleSize)
@@ -635,9 +635,9 @@ void DStamp_AnalyseImage(byte *pPixels, int iWidth, int iHeight, int iPlanes)
 												if ((rdiff > iMaxTolerance) ||
 													(gdiff > iMaxTolerance) ||
 													(bdiff > iMaxTolerance) ||													
-													abs(pPixel->R - r) > iMaxTolerance ||
-													abs(pPixel->G - g) > iMaxTolerance ||
-													abs(pPixel->B - b) > iMaxTolerance
+													abs((int)(pPixel->R - r)) > iMaxTolerance ||
+													abs((int)(pPixel->G - g)) > iMaxTolerance ||
+													abs((int)(pPixel->B - b)) > iMaxTolerance
 													)
 												{
 													//iMassivelyDeviantPixels++;
