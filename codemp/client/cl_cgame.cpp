@@ -1774,6 +1774,10 @@ void CL_InitCGame( void ) {
 	// otherwise server commands sent just before a gamestate are dropped
 	VM_Call( cgvm, CG_INIT, clc.serverMessageSequence, clc.lastExecutedServerCommand, clc.clientNum );
 
+	// reset any CVAR_CHEAT cvars registered by cgame
+	if ( !clc.demoplaying && !cl_connectedToCheatServer )
+		Cvar_SetCheatState();
+
 	// we will send a usercmd this frame, which
 	// will cause the server to send us the first snapshot
 	cls.state = CA_PRIMED;
@@ -1985,7 +1989,7 @@ void CL_SetCGameTime( void ) {
 	}
 
 	// allow pause in single player
-	if ( sv_paused->integer && cl_paused->integer && com_sv_running->integer ) {
+	if ( sv_paused->integer && CL_CheckPaused() && com_sv_running->integer ) {
 		// paused
 		return;
 	}

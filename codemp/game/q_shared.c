@@ -796,6 +796,25 @@ int Q_isalpha( int c )
 	return ( 0 );
 }
 
+#define UNUSED_VAR
+qboolean Q_isanumber( const char *s )
+{
+	char *p;
+	double UNUSED_VAR d;
+
+	if( *s == '\0' )
+		return qfalse;
+
+	d = strtod( s, &p );
+
+	return (qboolean)(*p == '\0');
+}
+
+qboolean Q_isintegral( float f )
+{
+	return (qboolean)((int)f == f);
+}
+
 char* Q_strrchr( const char* string, int c )
 {
 	char cc = c;

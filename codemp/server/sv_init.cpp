@@ -775,7 +775,7 @@ void SV_Init (void) {
 	sv_allowAnonymous = Cvar_Get ("sv_allowAnonymous", "0", CVAR_SERVERINFO);
 #endif
 	// systeminfo
-	Cvar_Get ("sv_cheats", "0", CVAR_SYSTEMINFO | CVAR_ROM );
+	Cvar_Get ("sv_cheats", "1", CVAR_SYSTEMINFO | CVAR_ROM );
 	sv_serverid = Cvar_Get ("sv_serverid", "0", CVAR_SYSTEMINFO | CVAR_ROM );
 #ifndef DLL_ONLY // bk010216 - for DLL-only servers
 	sv_pure = Cvar_Get ("sv_pure", "1", CVAR_SYSTEMINFO );
