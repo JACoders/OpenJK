@@ -3204,11 +3204,6 @@ void CL_GlobalServers_f( void ) {
 	for (i=3; i<count; i++)
 		buffptr += sprintf( buffptr, " %s", Cmd_Argv(i) );
 
-	// if we are a demo, automatically add a "demo" keyword
-	if ( Cvar_VariableValue( "fs_restrict" ) ) {
-		buffptr += sprintf( buffptr, " demo" );
-	}
-
 	NET_OutOfBandPrint( NS_SERVER, to, command );
 }
 #endif	// _XBOX
