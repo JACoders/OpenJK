@@ -30,4 +30,4 @@ Major contributors, in alphabetical order:
 
 ## Known Bugs ##
 
-* There's some crash bug (probably the OpenGL extension string) that only happens when the binary is not called jamp.exe/jasp.exe - there's apparently a Jedi Academy specific workaround in the driver. So for now, don't rename the exe
+* Missing Known Bugs list
