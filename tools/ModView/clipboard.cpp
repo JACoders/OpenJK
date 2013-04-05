@@ -345,6 +345,8 @@ static bool BMP_FlipTrueColour(LPCSTR psFilename)
 	
 // rewrite it flipped
 	fhBMP=fopen(psFilename,"wb");	// checked fopen
+	if (!(int)fhBMP)
+		return false;
 	fwrite	(&BMPFileHeader,sizeof(BMPFileHeader),1,fhBMP);
 	fwrite	(&BMPInfoHeader,sizeof(BMPInfoHeader),1,fhBMP);
 	fwrite	(RGBTriples,(iRealWidth)*BMPInfoHeader.biHeight,1,fhBMP);

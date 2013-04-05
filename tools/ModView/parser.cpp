@@ -127,6 +127,11 @@ bool Parser_Load(LPCSTR psFullPathedFilename, MappedString_t &ParsedAliases)
 
 		fclose(fhHandle);
 	}
+	else
+	{
+		ErrorBox( va("Couldn't open file: %s\n", psFullPathedFilename));
+		return false;
+	}
 
 	return bReturn;
 }

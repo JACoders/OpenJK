@@ -107,6 +107,8 @@ static LPCSTR Stats_GetAttachmentString(ModelContainer_t *pContainer)
 
 static void R_ModelContainer_Apply_Actual(ModelContainer_t* pContainer, void (*pFunction) ( ModelContainer_t* pContainer, void *pvData), void *pvData, bool bFromBottomUp )
 {
+	int iBoltPoint = 0;
+
 	if (!bFromBottomUp )
 	{
 		// process this...
@@ -116,7 +118,7 @@ static void R_ModelContainer_Apply_Actual(ModelContainer_t* pContainer, void (*p
 
 	// process this container's bone bolts...
 	//	
-	for (int iBoltPoint=0; iBoltPoint < pContainer->iBoneBolt_MaxBoltPoints; iBoltPoint++)
+	for (iBoltPoint=0; iBoltPoint < pContainer->iBoneBolt_MaxBoltPoints; iBoltPoint++)
 	{
 		BoltPoint_t	*pBoltPoint = &pContainer->tBoneBolt_BoltPoints[ iBoltPoint ];
 
@@ -524,6 +526,11 @@ void AppVars_ReadIdeal(void)
 			TextureList_SetFilter();	// in case filtering was changed
 			ModelList_ForceRedraw();
 		}
+		else
+		{
+			ErrorBox( va("Couldn't open file: %s\n", psIdealName));
+			return;
+		}
 	}
 }
 
@@ -639,6 +646,8 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 	strncpy(pContainer->sLocalPathName,psLocalFilename,sizeof(pContainer->sLocalPathName));
 	pContainer->sLocalPathName[sizeof(pContainer->sLocalPathName)-1] = '\0';
 
+	int iBoltPoint = 0;
+
 	if (hModel)
 	{
 		pContainer->hModel = hModel;
@@ -718,7 +727,7 @@ static ModelHandle_t ModelContainer_RegisterModel(LPCSTR psLocalFilename, ModelC
 				// bone bolts...
 				//
 				pContainer->tBoneBolt_BoltPoints.resize(pContainer->iBoneBolt_MaxBoltPoints);
-				for (int iBoltPoint = 0; iBoltPoint < pContainer->iBoneBolt_MaxBoltPoints; iBoltPoint++)
+				for (iBoltPoint = 0; iBoltPoint < pContainer->iBoneBolt_MaxBoltPoints; iBoltPoint++)
 				{
 					BoltPoint_t *pBoltPoint = &pContainer->tBoneBolt_BoltPoints[ iBoltPoint ];
 					
@@ -1057,6 +1066,7 @@ void ModelTree_InsertSequences(ModelHandle_t hModel, HTREEITEM hTreeItem_Sequenc
 void ModelTree_InsertSequences(ModelContainer_t *pContainer, HTREEITEM hTreeItem_Sequences)
 {
 	CWaitCursor wait;
+	int iSequenceIndex = 0;
 
 	// delete any child items already present...
 	//
@@ -1079,7 +1089,7 @@ void ModelTree_InsertSequences(ModelContainer_t *pContainer, HTREEITEM hTreeItem
 
 	// add sequence ptrs to list...
 	//
-	for (int iSequenceIndex = 0; iSequenceIndex<pContainer->SequenceList.size(); iSequenceIndex++)
+	for (iSequenceIndex = 0; iSequenceIndex<pContainer->SequenceList.size(); iSequenceIndex++)
 	{
 		Sequence_t *pSequence = &pContainer->SequenceList[iSequenceIndex];
 
@@ -4702,9 +4712,11 @@ bool Model_SetBoneHighlight(ModelHandle_t hModel, int iBoneIndex)
 //
 int ModelContainer_BoneIndexFromName(ModelContainer_t *pContainer, LPCSTR psBoneName)
 {
+	int iBone = 0;
+
 	// find this bone (fortunately, all names are unique within a model)...
 	//
-	for (int iBone=0; iBone<pContainer->iNumBones; iBone++)
+	for (iBone=0; iBone<pContainer->iNumBones; iBone++)
 	{
 		if (!stricmp(psBoneName, pContainer->pModelGetBoneNameFunction( pContainer->hModel, iBone )))
 		{
@@ -5298,7 +5310,9 @@ static void BuildTangentVectors(mdxmVertex_t *v, int numVerts, mdxmTriangle_t *t
 
 	mdxmVertexTexCoord_t *pTex = (mdxmVertexTexCoord_t *) &v[numVerts];
 
-	for(int i = 0; i < numTriangles; i ++)
+	int i = 0;
+
+	for(i = 0; i < numTriangles; i ++)
 	{
 		vec3_t vec1, vec2, du, dv, cp;
 
