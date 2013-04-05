@@ -37,7 +37,7 @@ Layer III
 #include <stdio.h>
 #include <float.h>
 #include <math.h>
-#include "L3.h"
+#include "l3.h"
 
 //extern int iframe;
 

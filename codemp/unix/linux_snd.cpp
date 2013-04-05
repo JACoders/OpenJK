@@ -14,6 +14,8 @@
 #endif
 #include <stdio.h>
 
+#include "../game/q_shared.h"
+#include "../qcommon/qcommon.h"
 #include "../client/snd_local.h"
 
 int audio_fd;
@@ -28,7 +30,7 @@ cvar_t *snddevice;
 /* Some devices may work only with 48000 */
 static int tryrates[] = { 22050, 11025, 44100, 48000, 8000 };
 
-qboolean SNDDMA_Init(void)
+int SNDDMA_Init(void)
 {
 	int rc;
     int fmt;

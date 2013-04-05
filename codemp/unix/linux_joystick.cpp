@@ -21,15 +21,15 @@
 
 /* We translate axes movement into keypresses. */
 int joy_keys[16] = {
-     K_LEFTARROW, K_RIGHTARROW,
-     K_UPARROW, K_DOWNARROW,
-     K_JOY16, K_JOY17,
-     K_JOY18, K_JOY19,
-     K_JOY20, K_JOY21,
-     K_JOY22, K_JOY23,
+     A_CURSOR_LEFT, A_CURSOR_RIGHT,
+     A_CURSOR_UP, A_CURSOR_DOWN,
+     A_JOY16, A_JOY17,
+     A_JOY18, A_JOY19,
+     A_JOY20, A_JOY21,
+     A_JOY22, A_JOY23,
 
-     K_JOY24, K_JOY25,
-     K_JOY26, K_JOY27
+     A_JOY24, A_JOY25,
+     A_JOY26, A_JOY27
 };
 
 /* Our file descriptor for the joystick device. */
@@ -140,7 +140,7 @@ void IN_JoyMove( void )
     }
 
     if( event.type & JS_EVENT_BUTTON ) {
-      Sys_QueEvent( 0, SE_KEY, K_JOY1 + event.number, event.value, 0, NULL );
+      Sys_QueEvent( 0, SE_KEY, A_JOY1 + event.number, event.value, 0, NULL );
     } else if( event.type & JS_EVENT_AXIS ) {
 
       if( event.number >= 16 ) {

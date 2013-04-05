@@ -499,6 +499,7 @@ static ulong needout(z_stream *z, inflate_blocks_state_t *s, ulong bytesToEnd)
 inline byte *qcopy(byte *dst, byte *src, int count)
 {
 	byte 	*retval;
+#ifdef _WIN32
 	_asm
 	{
 		push ecx  
@@ -515,6 +516,7 @@ inline byte *qcopy(byte *dst, byte *src, int count)
 		pop esi
 		pop ecx
 	}
+#endif
 	return(retval);
 }
 

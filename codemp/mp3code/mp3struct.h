@@ -14,6 +14,8 @@ typedef void (*SBT_FUNCTION) (float *sample, short *pcm, int n);
 typedef void (*XFORM_FUNCTION) (void *pcm, int igr);
 typedef IN_OUT(*DECODE_FUNCTION) (unsigned char *bs, unsigned char *pcm);
 
+typedef unsigned char byte;
+
 typedef struct
 {
 	union

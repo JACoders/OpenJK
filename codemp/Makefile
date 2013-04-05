@@ -96,10 +96,6 @@ COMMON_SRCS		= qcommon/cmd_common.cpp \
 
 COMMON_OBJS		= $(COMMON_SRCS:.cpp=.o)
 
-COMMON_C_SRCS		= game/q_math.c
-
-COMMON_C_OBJS		= $(COMMON_C_SRCS:.c=.o)
-
 GHOUL2_SRCS		= ghoul2/G2_API.cpp\
 			  ghoul2/G2_bolts.cpp \
 			  ghoul2/G2_bones.cpp \
@@ -137,12 +133,15 @@ SERVER_SRCS		= server/sv_bot.cpp \
 
 SERVER_OBJS		= $(SERVER_SRCS:.cpp=.o)
 
-UNIX_SRCS		= unix/linux_qgl.c \
-			  unix/unix_main.c \
-			  unix/unix_net.c \
-			  unix/unix_shared.cpp
+UNIX_SRCS		= unix/linux_glimp.cpp \
+			  unix/linux_joystick.cpp \
+			  unix/linux_main.cpp \
+			  unix/linux_snd.cpp \
+			  unix/linux_qgl.cpp \
+			  unix/unix_shared.cpp \
+			  unix/unix_main.cpp
 
-UNIX_OBJS		= $(UNIX_SRCS:.c=.o) $(UNIX_SRCS:.cpp=.o)
+UNIX_OBJS		= $(UNIX_SRCS:.cpp=.o)
 
 RENDERER_SRCS		= renderer/tr_animation.cpp \
 			  renderer/tr_arioche.cpp \
@@ -172,22 +171,52 @@ RENDERER_SRCS		= renderer/tr_animation.cpp \
 			  renderer/tr_surfacesprites.cpp \
 			  renderer/tr_terrain.cpp \
 			  renderer/tr_world.cpp \
-			  renderer/tr_WorldEffects.cpp
+			  renderer/tr_WorldEffects.cpp \
+			  RMG/RM_Area.cpp \
+			  RMG/RM_Instance_BSP.cpp \
+			  RMG/RM_Instance.cpp \
+			  RMG/RM_InstanceFile.cpp \
+			  RMG/RM_Instance_Group.cpp \
+			  RMG/RM_Instance_Random.cpp \
+			  RMG/RM_Instance_Void.cpp \
+			  RMG/RM_Manager.cpp \
+			  RMG/RM_Mission.cpp \
+			  RMG/RM_Objective.cpp \
+			  RMG/RM_Path.cpp \
+			  RMG/RM_Terrain.cpp
+
 
 RENDERER_OBJS		= $(RENDERER_SRCS:.cpp=.o)
 
-ZLIB_SRCS		= zlib/adler32.c \
-			  zlib/deflate.c \
-			  zlib/infblock.c \
-			  zlib/infcodes.c \
-			  zlib/inffast.c \
-			  zlib/inflate.c \
-			  zlib/inftrees.c \
-			  zlib/infutil.c \
-			  zlib/trees.c \
-			  zlib/zutil.c
+ZLIB_SRCS		= zlib32/deflate.cpp \
+			  zlib32/inflate.cpp \
+			  zlib32/zipcommon.cpp
 
-ZLIB_OBJS		= $(ZLIB_SRCS:.c=.o)
+ZLIB_OBJS		= $(ZLIB_SRCS:.cpp=.o)
+
+MP3_SRCS		= mp3code/cdct.c \
+			  mp3code/csbtb.c \
+			  mp3code/csbt.c \
+			  mp3code/csbtl3.c \
+			  mp3code/cup.c \
+			  mp3code/cupini.c \
+			  mp3code/cupl1.c \
+			  mp3code/cupl3.c \
+			  mp3code/cwinb.c \
+			  mp3code/cwin.c \
+			  mp3code/cwinm.c \
+			  mp3code/hwin.c \
+			  mp3code/l3dq.c \
+			  mp3code/l3init.c \
+			  mp3code/mdct.c \
+			  mp3code/mhead.c \
+			  mp3code/msis.c \
+			  mp3code/towave.c \
+			  mp3code/uph.c \
+			  mp3code/upsf.c \
+			  mp3code/wavep.c
+
+MP3_OBJS		= $(MP3_SRCS:.c=.o)
 
 NULL_RENDERER_SRCS	= null/null_client.cpp \
 			  null/null_glimp.cpp \
@@ -199,8 +228,48 @@ NULL_RENDERER_SRCS	= null/null_client.cpp \
 
 NULL_RENDERER_OBJS	= $(NULL_RENDERER_SRCS:.cpp=.o)
 
-all: botlib common server client renderer ghoul2 icarus zlib null_renderer
-	$(CXX) -o jamp -m32 $(BOTLIB_OBJS) $(COMMON_OBJS) $(COMMON_C_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS) $(NULL_RENDERER_OBJS)
+JPEG_SRCS		= jpeg-6/jcapimin.cpp \
+			  jpeg-6/jccoefct.cpp \
+			  jpeg-6/jccolor.cpp \
+			  jpeg-6/jcdctmgr.cpp \
+			  jpeg-6/jchuff.cpp \
+			  jpeg-6/jcinit.cpp \
+			  jpeg-6/jcmainct.cpp \
+			  jpeg-6/jcmarker.cpp \
+			  jpeg-6/jcmaster.cpp \
+			  jpeg-6/jcomapi.cpp \
+			  jpeg-6/jcparam.cpp \
+			  jpeg-6/jcphuff.cpp \
+			  jpeg-6/jcprepct.cpp \
+			  jpeg-6/jcsample.cpp \
+			  jpeg-6/jctrans.cpp \
+			  jpeg-6/jdapimin.cpp \
+			  jpeg-6/jdapistd.cpp \
+			  jpeg-6/jdatadst.cpp \
+			  jpeg-6/jdatasrc.cpp \
+			  jpeg-6/jdcoefct.cpp \
+			  jpeg-6/jdcolor.cpp \
+			  jpeg-6/jddctmgr.cpp \
+			  jpeg-6/jdhuff.cpp \
+			  jpeg-6/jdinput.cpp \
+			  jpeg-6/jdmainct.cpp \
+			  jpeg-6/jdmarker.cpp \
+			  jpeg-6/jdmaster.cpp \
+			  jpeg-6/jdpostct.cpp \
+			  jpeg-6/jdsample.cpp \
+			  jpeg-6/jdtrans.cpp \
+			  jpeg-6/jerror.cpp \
+			  jpeg-6/jfdctflt.cpp \
+			  jpeg-6/jidctflt.cpp \
+			  jpeg-6/jmemmgr.cpp \
+			  jpeg-6/jmemnobs.cpp \
+			  jpeg-6/jutils.cpp \
+			  png/png.cpp
+
+JPEG_OBJS		= $(JPEG_SRCS:.cpp=.o)
+
+all: botlib common server client renderer ghoul2 icarus zlib unix $(JPEG_OBJS) $(MP3_OBJS)
+	$(CXX) -o jamp -m32 $(BOTLIB_OBJS) $(COMMON_OBJS) $(COMMON_C_OBJS) $(CLIENT_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS) $(UNIX_OBJS) $(JPEG_OBJS) $(MP3_OBJS) -lX11 -lXxf86dga -lXxf86vm -lopenal
 
 botlib: $(BOTLIB_OBJS)
 client: $(CLIENT_OBJS)
@@ -214,4 +283,4 @@ zlib: $(ZLIB_OBJS)
 null_renderer: $(NULL_RENDERER_OBJS)
 
 clean:
-	$(RM) $(BOTLIB_OBJS) $(COMMON_OBJS) $(COMMON_C_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(CLIENT_OBJS) $(UNIX_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS) $(NULL_RENDERER_OBJS)
+	$(RM) $(BOTLIB_OBJS) $(COMMON_OBJS) $(COMMON_C_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(CLIENT_OBJS) $(UNIX_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS) $(NULL_RENDERER_OBJS) $(MP3_OBJS) $(JPEG_OBJS)
