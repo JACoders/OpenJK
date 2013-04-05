@@ -36,9 +36,6 @@ cvar_t	*sv_gametype;
 cvar_t	*sv_pure;
 cvar_t	*sv_floodProtect;
 cvar_t	*sv_needpass;
-#ifdef USE_CD_KEY
-cvar_t	*sv_allowAnonymous;
-#endif
 /*
 =============================================================================
 
@@ -649,9 +646,6 @@ void SVC_Info( netadr_t from ) {
 	if( *gamedir ) {
 		Info_SetValueForKey( infostring, "game", gamedir );
 	}
-#ifdef USE_CD_KEY
-	Info_SetValueForKey( infostring, "sv_allowAnonymous", va("%i", sv_allowAnonymous->integer) );
-#endif
 
 	NET_OutOfBandPrint( NS_SERVER, from, "infoResponse\n%s", infostring );
 }
