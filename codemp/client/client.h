@@ -464,12 +464,6 @@ int CL_GetPingQueueCount( void );
 void CL_ShutdownRef( void );
 void CL_InitRef( void );
 
-#ifdef USE_CD_KEY
-
-qboolean CL_CDKeyValidate( const char *key, const char *checksum );
-
-#endif // USE_CD_KEY
-
 int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen );
 
 
