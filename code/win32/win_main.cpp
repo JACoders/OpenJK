@@ -475,6 +475,46 @@ void Sys_UnloadGame( void ) {
 
 /*
 =================
+Sys_RetrieveDLL
+
+OpenJK Function.
+Retrieve the DLL using fs_game
+=================
+*/
+
+static HINSTANCE Sys_RetrieveDLL( const char *gamename, const char *debugdir )
+{
+	char	cwd[MAX_OSPATH];
+	char	name[MAX_OSPATH];
+
+	HINSTANCE retVal;
+
+	cvar_t *moddir = Cvar_Get("fs_game", "", CVAR_INIT|CVAR_SERVERINFO);
+
+	// First search path: mod dir, debug/release folders
+	_getcwd(cwd, sizeof(cwd));
+	Com_sprintf(name, sizeof(name), "%s/%s/%s/%s", cwd, moddir->string, debugdir, gamename);
+	retVal = LoadLibrary(name);
+	if(retVal)
+		goto successful;
+
+	// Second search path: mod dir
+	Com_sprintf(name, sizeof(name), "%s/%s/%s", cwd, moddir->string, gamename);
+	retVal = LoadLibrary(name);
+	if(retVal)
+		goto successful;
+
+	// Third/last search path: gamedata folder
+	Com_sprintf(name, sizeof(name), "%s/%s", cwd, gamename);
+	retVal = LoadLibrary(name);
+
+successful:
+	Com_DPrintf("LoadLibrary (%s)\n", name);
+	return retVal;
+}
+
+/*
+=================
 Sys_GetGameAPI
 
 Loads the game dll
@@ -483,8 +523,6 @@ Loads the game dll
 void *Sys_GetGameAPI (void *parms)
 {
 	void	*(*GetGameAPI) (void *);
-	char	name[MAX_OSPATH];
-	char	cwd[MAX_OSPATH];
 #if defined _M_IX86
 	const char *gamename = "jagamex86.dll";
 
@@ -511,7 +549,8 @@ void *Sys_GetGameAPI (void *parms)
 		Com_Error (ERR_FATAL, "Sys_GetGameAPI without Sys_UnloadingGame");
 
 	// check the current debug directory first for development purposes
-	_getcwd (cwd, sizeof(cwd));
+
+	/*_getcwd (cwd, sizeof(cwd));
 	Com_sprintf (name, sizeof(name), "%s/%s/%s", cwd, debugdir, gamename);
 	game_library = LoadLibrary ( name );
 	if (game_library)
@@ -535,6 +574,18 @@ void *Sys_GetGameAPI (void *parms)
 			Com_Printf( "...reason: '%s'\n", buf );
 			Com_Error( ERR_FATAL, "Couldn't load game" );
 		}
+	}*/
+
+	gamelibrary = Sys_RetrieveDLL(gamename, debugdir);
+	if(!gamelibrary)
+	{
+		char *buf;
+
+		FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &buf, 0, NULL );
+
+		Com_Printf( "LoadLibrary(\"%s\") failed\n", name);
+		Com_Printf( "...reason: '%s'\n", buf );
+		Com_Error( ERR_FATAL, "Couldn't load game" );
 	}
 
 	GetGameAPI = (void *(*)(void *))GetProcAddress (game_library, "GetGameAPI");
