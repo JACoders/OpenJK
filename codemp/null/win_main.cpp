@@ -23,9 +23,6 @@
 static char		sys_cmdline[MAX_STRING_CHARS];
 clientStatic_t	cls;
 
-static int	sys_monkeySpank;
-static int	sys_checksum;
-
 
 void *Sys_GetBotAIAPI (void *parms ) {
 	return NULL;
@@ -49,136 +46,6 @@ qboolean Sys_LowPhysicalMemory() {
 	MEMORYSTATUS stat;
 	GlobalMemoryStatus (&stat);
 	return (stat.dwTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
-}
-
-/*
-==================
-Sys_FunctionCmp
-==================
-*/
-int Sys_FunctionCmp(void *f1, void *f2) {
-
-	int i, j, l;
-	byte func_end[32] = {0xC3, 0x90, 0x90, 0x00};
-	byte *ptr, *ptr2;
-	byte *f1_ptr, *f2_ptr;
-
-	ptr = (byte *) f1;
-	if (*(byte *)ptr == 0xE9) {
-		//Com_Printf("f1 %p1 jmp %d\n", (int *) f1, *(int*)(ptr+1));
-		f1_ptr = (byte*)(((byte*)f1) + (*(int *)(ptr+1)) + 5);
-	}
-	else {
-		f1_ptr = ptr;
-	}
-	//Com_Printf("f1 ptr %p\n", f1_ptr);
-
-	ptr = (byte *) f2;
-	if (*(byte *)ptr == 0xE9) {
-		//Com_Printf("f2 %p jmp %d\n", (int *) f2, *(int*)(ptr+1));
-		f2_ptr = (byte*)(((byte*)f2) + (*(int *)(ptr+1)) + 5);
-	}
-	else {
-		f2_ptr = ptr;
-	}
-	//Com_Printf("f2 ptr %p\n", f2_ptr);
-
-#ifdef _DEBUG
-	sprintf((char *)func_end, "%c%c%c%c%c%c%c", 0x5F, 0x5E, 0x5B, 0x8B, 0xE5, 0x5D, 0xC3);
-#endif
-	for (i = 0; i < 1024; i++) {
-		for (j = 0; func_end[j]; j++) {
-			if (f1_ptr[i+j] != func_end[j])
-				break;
-		}
-		if (!func_end[j]) {
-			break;
-		}
-	}
-#ifdef _DEBUG
-	l = i + 7;
-#else
-	l = i + 2;
-#endif
-	//Com_Printf("function length = %d\n", l);
-
-	for (i = 0; i < l; i++) {
-		// check for a potential function call
-		if (*((byte *) &f1_ptr[i]) == 0xE8) {
-			// get the function pointers in case this really is a function call
-			ptr = (byte *) (((byte *) &f1_ptr[i]) + (*(int *) &f1_ptr[i+1])) + 5;
-			ptr2 = (byte *) (((byte *) &f2_ptr[i]) + (*(int *) &f2_ptr[i+1])) + 5;
-			// if it was a function call and both f1 and f2 call the same function
-			if (ptr == ptr2) {
-				i += 4;
-				continue;
-			}
-		}
-		if (f1_ptr[i] != f2_ptr[i])
-			return qfalse;
-	}
-	return qtrue;
-}
-
-/*
-==================
-Sys_FunctionCheckSum
-==================
-*/
-int Sys_FunctionCheckSum(void *f1) {
-
-	int i, j, l;
-	byte func_end[32] = {0xC3, 0x90, 0x90, 0x00};
-	byte *ptr;
-	byte *f1_ptr;
-
-	ptr = (byte *) f1;
-	if (*(byte *)ptr == 0xE9) {
-		//Com_Printf("f1 %p1 jmp %d\n", (int *) f1, *(int*)(ptr+1));
-		f1_ptr = (byte*)(((byte*)f1) + (*(int *)(ptr+1)) + 5);
-	}
-	else {
-		f1_ptr = ptr;
-	}
-	//Com_Printf("f1 ptr %p\n", f1_ptr);
-
-#ifdef _DEBUG
-	sprintf((char *)func_end, "%c%c%c%c%c%c%c", 0x5F, 0x5E, 0x5B, 0x8B, 0xE5, 0x5D, 0xC3);
-#endif
-	for (i = 0; i < 1024; i++) {
-		for (j = 0; func_end[j]; j++) {
-			if (f1_ptr[i+j] != func_end[j])
-				break;
-		}
-		if (!func_end[j]) {
-			break;
-		}
-	}
-#ifdef _DEBUG
-	l = i + 7;
-#else
-	l = i + 2;
-#endif
-	//Com_Printf("function length = %d\n", l);
-	return Com_BlockChecksum( f1_ptr, l );
-}
-
-/*
-==================
-Sys_MonkeyShouldBeSpanked
-==================
-*/
-int Sys_MonkeyShouldBeSpanked( void ) {
-	return sys_monkeySpank;
-}
-
-
-/*
-==================
-Sys_VerifyCodeChecksum
-==================
-*/
-void Sys_VerifyCodeChecksum( void *codeBase ) {
 }
 
 /*
@@ -1419,9 +1286,6 @@ int main(int argc, char **argv)
 //        return 0;
 //	}
 
-//	sys_checksum = Sys_CodeInMemoryChecksum( hInstance );
-//	Sys_VerifyCodeChecksum( hInstance );
-
 	// merge the command line, this is kinda silly
 	for (len = 1, i = 1; i < argc; i++)
 		len += strlen(argv[i]) + 1;
@@ -1466,12 +1330,6 @@ int main(int argc, char **argv)
 	if ( !com_dedicated->integer && !com_viewlog->integer ) {
 		Sys_ShowConsole( 0, qfalse );
 	}
-
-#ifdef _DEBUG
-	if ( sys_monkeySpank ) {
-		Cvar_Set("cl_trn", "666");
-	}
-#endif
 
     // main game loop
 	while( 1 ) {

@@ -1733,11 +1733,6 @@ void SV_InitGameProgs( void ) {
 		bot_enable = 0;
 	}
 
-	if ( !Cvar_VariableValue("fs_restrict") && !com_dedicated->integer && !Sys_CheckCD() ) 
-	{
-		Com_Error( ERR_NEED_CD, SE_GetString("CON_TEXT_NEED_CD") ); //"Game CD not in drive" );		
-	}
-
 	// load the dll or bytecode
 	gvm = VM_Create( "jampgame", SV_GameSystemCalls, (vmInterpret_t)(int)Cvar_VariableValue( "vm_game" ) );
 	if ( !gvm ) {

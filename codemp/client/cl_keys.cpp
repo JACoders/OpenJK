@@ -890,7 +890,7 @@ void Console_Key (int key) {
 
 	// command history (ctrl-p ctrl-n for unix style)
 
-	if ( ( key == A_CURSOR_UP ) || ( ( keynames[ key ].lower == 'p' ) && kg.keys[A_CTRL].down ) ) 
+	if ( ( key == A_MWHEELUP && kg.keys[A_SHIFT].down ) || ( key == A_CURSOR_UP ) || ( key == A_KP_8 ) || ( ( keynames[ key ].lower == 'p' ) && kg.keys[A_CTRL].down ) ) 
 	{
 		if ( kg.nextHistoryLine - kg.historyLine < COMMAND_HISTORY && kg.historyLine > 0 ) 
 		{
@@ -900,7 +900,7 @@ void Console_Key (int key) {
 		return;
 	}
 
-	if ( ( key == A_CURSOR_DOWN ) || ( ( keynames[ key ].lower == 'n' ) && kg.keys[A_CTRL].down ) ) 
+	if ( ( key == A_MWHEELDOWN && kg.keys[A_SHIFT].down ) || ( key == A_CURSOR_DOWN ) || ( key == A_KP_2 ) || ( ( keynames[ key ].lower == 'n' ) && kg.keys[A_CTRL].down ) ) 
 	{
 		if (kg.historyLine == kg.nextHistoryLine)
 			return;
@@ -917,6 +917,24 @@ void Console_Key (int key) {
 
 	if ( key == A_PAGE_DOWN ) {
 		Con_PageDown();
+		return;
+	}
+
+	if ( key == A_MWHEELUP ) {	//----(SA)	added some mousewheel functionality to the console
+		Con_PageUp();
+		if(kg.keys[A_CTRL].down) {	// hold <ctrl> to accelerate scrolling
+			Con_PageUp();
+			Con_PageUp();
+		}
+		return;
+	}
+
+	if ( key == A_MWHEELDOWN ) {	//----(SA)	added some mousewheel functionality to the console
+		Con_PageDown();
+		if(kg.keys[A_CTRL].down) {	// hold <ctrl> to accelerate scrolling
+			Con_PageDown();
+			Con_PageDown();
+		}
 		return;
 	}
 
@@ -947,9 +965,7 @@ In game talk message
 ================
 */
 void Message_Key( int key ) {
-
 	char	buffer[MAX_STRING_CHARS];
-
 
 	if (key == A_ESCAPE) {
 		cls.keyCatchers &= ~KEYCATCH_MESSAGE;
@@ -961,16 +977,11 @@ void Message_Key( int key ) {
 	{
 		if ( chatField.buffer[0] && cls.state == CA_ACTIVE ) {
 			if (chat_playerNum != -1 )
-
 				Com_sprintf( buffer, sizeof( buffer ), "tell %i \"%s\"\n", chat_playerNum, chatField.buffer );
-
 			else if (chat_team)
-
 				Com_sprintf( buffer, sizeof( buffer ), "say_team \"%s\"\n", chatField.buffer );
 			else
 				Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"\n", chatField.buffer );
-
-
 
 			CL_AddReliableCommand( buffer );
 		}
@@ -1368,13 +1379,18 @@ void Key_WriteBindings( fileHandle_t f ) {
 	FS_Printf (f, "unbindall\n" );
 	for (i=0 ; i<MAX_KEYS ; i++) {
 		if (kg.keys[i].binding && kg.keys[i].binding[0] ) {
-			FS_Printf (f, "bind %s \"%s\"\n", Key_KeynumToString(i), kg.keys[i].binding);
+			const char *name = Key_KeynumToString(i);
+
+			// handle the escape character nicely
+			if (!strcmp(name, "\\")) {
+				FS_Printf (f, "bind \"\\\" \"%s\"\n", kg.keys[i].binding);
+			}
+			else {
+				FS_Printf (f, "bind \"%s\" \"%s\"\n", name, kg.keys[i].binding);
+			}
 		}
 	}
 }
-
-
-
 
 /*
 ============
@@ -1391,7 +1407,6 @@ void Key_Bindlist_f( void ) {
 		}
 	}
 }
-
 
 /*
 ===================
@@ -1466,7 +1481,7 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	if (down)
 	{
 		kg.keys[ keynames[key].upper ].repeats++;
-		if ( kg.keys[ keynames[key].upper ].repeats == 1)
+		if ( kg.keys[ keynames[key].upper ].repeats == 1 && key != A_SCROLLLOCK && key != A_NUMLOCK && key != A_CAPSLOCK )
 		{
 			kg.anykeydown = qtrue;
 			kg.keyDownCount++;
@@ -1475,7 +1490,8 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	else
 	{
 		kg.keys[ keynames[key].upper ].repeats = 0;
-		kg.keyDownCount--;
+		if( key != A_SCROLLLOCK && key != A_NUMLOCK && key != A_CAPSLOCK )
+			kg.keyDownCount--;
 		if(kg.keyDownCount <= 0)
 		{
 			kg.anykeydown = qfalse;
@@ -1489,12 +1505,6 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 			return;
 
 		}
-#ifdef FINAL_BUILD
-		if (!(cls.keyCatchers & KEYCATCH_CONSOLE) && !kg.keys[A_SHIFT].down )	//we're not in the console
-		{//so we require the control kg.keys to get in
-			return;
-		}
-#endif
 	    Con_ToggleConsole_f ();
 		return;
 	}
@@ -1509,7 +1519,6 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 			key = A_ESCAPE;
 		}
 	}
-
 
 	// escape is always handled special
 	if ( key == A_ESCAPE && down ) {
@@ -1653,6 +1662,12 @@ void CL_CharEvent( int key ) {
 		return;
 	}
 
+	// delete is not a printable character and is
+	// otherwise handled by Field_KeyDownEvent
+	if ( key == 127 ) {
+		return;
+	}
+
 	// distribute the key down event to the apropriate handler
 	if ( cls.keyCatchers & KEYCATCH_CONSOLE )
 	{
@@ -1685,11 +1700,13 @@ void Key_ClearStates (void)
 	kg.anykeydown = qfalse;
 
 	for ( i=0 ; i < MAX_KEYS ; i++ ) {
+		if (i == A_SCROLLLOCK || i == A_NUMLOCK || i == A_CAPSLOCK)
+			continue;
+
 		if ( kg.keys[i].down ) {
 			CL_KeyEvent( i, qfalse, 0 );
-
 		}
-		kg.keys[i].down = (qboolean)0;
+		kg.keys[i].down = qfalse;
 		kg.keys[i].repeats = 0;
 	}
 }

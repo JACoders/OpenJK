@@ -124,7 +124,6 @@ A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 void QDECL Com_Printf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-	qboolean	silent;
 
 	va_start (argptr,fmt);
 	vsprintf (msg,fmt,argptr);
@@ -141,22 +140,9 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 		return;
 	}
 
-	// * means dont draw this console message on the player screen
-	// but put it on the console
-	silent = qfalse;
-	if ( msg[0] == '*' )
-	{
-		strcpy ( msg, msg + 1 );
-
-		if ( msg[1] != '*' )
-		{
-			silent = qtrue;
-		}
-	}
-
 	// echo to console if we're not a dedicated server
 	if ( com_dedicated && !com_dedicated->integer ) {
-		CL_ConsolePrint( msg, silent );
+		CL_ConsolePrint( msg );
 	}
 
 	// echo to dedicated console and early console
@@ -183,6 +169,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			FS_Write(msg, strlen(msg), logfile);
 		}
 	}
+
 
 #if defined(_WIN32) && defined(_DEBUG)
 	if ( *msg )

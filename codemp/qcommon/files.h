@@ -9,11 +9,6 @@
 #include "unzip.h"
 
 #define	BASEGAME			"base"
-#define	DEMOGAME			"demo"
-
-// every time a new demo pk3 file is built, this checksum must be updated.
-// the easiest way to get it is to just run the game and see what it spits out
-#define	DEMO_PAK_CHECKSUM	437558517u
 
 // if this is defined, the executable positively won't work with any paks other
 // than the demo pak, even if productid is present.  This is only used for our
@@ -91,7 +86,6 @@ extern cvar_t		*fs_basegame;
 extern cvar_t		*fs_cdpath;
 extern cvar_t		*fs_copyfiles;
 extern cvar_t		*fs_gamedirvar;
-extern cvar_t		*fs_restrict;
 extern cvar_t		*fs_dirbeforepak; //rww - when building search path, keep directories at top and insert pk3's under them
 extern searchpath_t	*fs_searchpaths;
 extern int			fs_readCount;			// total bytes read
@@ -134,7 +128,6 @@ fileHandle_t	FS_HandleForFile(void);
 qboolean		FS_FilenameCompare( const char *s1, const char *s2 );
 int				FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp );
 void			FS_Shutdown( void );
-void			FS_SetRestrictions(void);
 void			FS_CheckInit(void);
 void			FS_ReplaceSeparators( char *path );
 

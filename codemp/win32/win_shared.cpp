@@ -510,9 +510,9 @@ int Sys_GetCPUSpeed()
 
 	} while ( (tries < 3 ) || 
 	          (tries < 20)&&
-	          ((abs((long)(3 * freq -total)) > 3*TOLERANCE )||
-	           (abs((long)(3 * freq2-total)) > 3*TOLERANCE )||
-	           (abs((long)(3 * freq3-total)) > 3*TOLERANCE )));	
+	          ((abs((double)(3 * freq -total)) > 3*TOLERANCE )||
+	           (abs((double)(3 * freq2-total)) > 3*TOLERANCE )||
+	           (abs((double)(3 * freq3-total)) > 3*TOLERANCE )));	
 				// Compare last three calculations to average of last three calculations.		
 
 	if (!total_ticks){
