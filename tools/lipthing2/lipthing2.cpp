@@ -126,7 +126,7 @@ char *FS_BuildOSPath( const char *qpath )
 int Sys_GetFileCode(const char* name)
 {
 	// Get the sound portion
-	char *qpath = strstr(name, "sound");
+	char *qpath = const_cast<char*>( strstr( name, "sound" ) );
 	if( !qpath )
 	{
 		printf("ERROR: Couldn't find sound in %s\n", name);
