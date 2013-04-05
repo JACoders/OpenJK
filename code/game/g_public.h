@@ -157,20 +157,10 @@ typedef struct {
 	// Savegame handling
 	//
 	qboolean	(*AppendToSaveGame)(unsigned long chid, const void *data, int length);
-#ifdef _XBOX	// No default arguments through function pointers
-	int			ReadFromSaveGame(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL)
-	{
-		return SG_Read(chid, pvAddress, iLength, ppvAddressPtr);
-	}
 
-	int			ReadFromSaveGameOptional(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL)
-	{
-		return SG_ReadOptional(chid, pvAddress, iLength, ppvAddressPtr);
-	}
-#else
 	int			(*ReadFromSaveGame)(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr );
 	int			(*ReadFromSaveGameOptional)(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr );
-#endif
+
 	// add commands to the console as if they were typed in
 	// for map changing, etc
 	void	(*SendConsoleCommand)( const char *text );
@@ -206,12 +196,8 @@ typedef struct {
 	void	(*SetBrushModel)( gentity_t *ent, const char *name );
 
 	// collision detection against all linked entities
-#ifdef _XBOX
-	Trace_Functor_t trace;
-#else
 	void	(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
 			const int passEntityNum, const int contentmask , const EG2_Collision eG2TraceType , const int useLod );
-#endif
 
 	// point contents against all linked entities
 	int		(*pointcontents)( const vec3_t point, int passEntityNum );
@@ -348,9 +334,9 @@ Ghoul2 Insert Start
 	void		(*G2API_ClearSkinGore)( CGhoul2Info_v &ghoul2 );
 
 	void		(*RMG_Init)(int terrainID);
-#ifndef _XBOX
+
 	int			(*CM_RegisterTerrain)(const char *info);
-#endif
+
 	const char	*(*SetActiveSubBSP)(int index);
 
 
