@@ -2692,9 +2692,6 @@ typedef int flagStatus_t;
 #define SAY_TEAM	1
 #define SAY_TELL	2
 
-#define CDKEY_LEN 16
-#define CDCHKSUM_LEN 2
-
 void Rand_Init(int seed);
 float flrand(float min, float max);
 int irand(int min, int max);
