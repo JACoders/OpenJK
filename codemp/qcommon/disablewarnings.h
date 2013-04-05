@@ -35,4 +35,6 @@
 #pragma warning(disable : 4213)		//nonstandard extension used : cast on l-value
 #pragma warning(disable : 4245)		//signed/unsigned mismatch
 
+#pragma warning(disable : 4996)		// This function or variable may be unsafe.
+
 #endif

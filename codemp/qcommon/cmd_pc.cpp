@@ -10,6 +10,19 @@ typedef struct cmd_function_s
 
 static	cmd_function_t	*cmd_functions;		// possible commands to execute
 
+/*
+============
+Cmd_FindCommand
+============
+*/
+cmd_function_t *Cmd_FindCommand( const char *cmd_name )
+{
+	cmd_function_t *cmd;
+	for( cmd = cmd_functions; cmd; cmd = cmd->next )
+		if( !Q_stricmp( cmd_name, cmd->name ) )
+			return cmd;
+	return NULL;
+}
 
 /*
 ============
@@ -20,14 +33,13 @@ void	Cmd_AddCommand( const char *cmd_name, xcommand_t function ) {
 	cmd_function_t	*cmd;
 	
 	// fail if the command already exists
-	for ( cmd = cmd_functions ; cmd ; cmd=cmd->next ) {
-		if ( !strcmp( cmd_name, cmd->name ) ) {
-			// allow completion-only commands to be silently doubled
-			if ( function != NULL ) {
-				Com_Printf ("Cmd_AddCommand: %s already defined\n", cmd_name);
-			}
-			return;
+	if( Cmd_FindCommand( cmd_name ) )
+	{
+		// allow completion-only commands to be silently doubled
+		if ( function != NULL ) {
+			Com_Printf ("Cmd_AddCommand: %s already defined\n", cmd_name);
 		}
+		return;
 	}
 
 	// use a small malloc to avoid zone fragmentation

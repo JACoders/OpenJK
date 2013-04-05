@@ -872,6 +872,28 @@ GfxInfo_f
 */
 extern bool g_bTextureRectangleHack;
 
+/*
+================
+R_PrintLongString
+
+Workaround for ri.Printf's 1024 characters buffer limit.
+================
+*/
+void R_PrintLongString(const char *string) {
+	char buffer[1024];
+	const char *p;
+	int size = strlen(string);
+
+	p = string;
+	while(size > 0)
+	{
+		Q_strncpyz(buffer, p, sizeof (buffer) );
+		Com_Printf( "%s", buffer );
+		p += 1023;
+		size -= 1023;
+	}
+}
+
 void GfxInfo_f( void ) 
 {
 	cvar_t *sys_cpustring = Cvar_Get( "sys_cpustring", "", CVAR_ROM );
@@ -896,7 +918,8 @@ void GfxInfo_f( void )
 	Com_Printf ("\nGL_VENDOR: %s\n", glConfig.vendor_string );
 	Com_Printf ("GL_RENDERER: %s\n", glConfig.renderer_string );
 	Com_Printf ("GL_VERSION: %s\n", glConfig.version_string );
-	Com_Printf ("GL_EXTENSIONS: %s\n", glConfig.extensions_string );
+	R_PrintLongString( glConfig.extensions_string );
+	Com_Printf ("\n");
 	Com_Printf ("GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
 	Com_Printf ("GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures );
 	Com_Printf ("\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n", glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
@@ -1290,7 +1313,7 @@ void R_Init( void ) {
 	if (max_polyverts < MAX_POLYVERTS)
 		max_polyverts = MAX_POLYVERTS;
 
-	ptr = (unsigned char *)Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
+	ptr = (byte *)Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
 	backEndData = (backEndData_t *) ptr;
 	backEndData->polys = (srfPoly_t *) ((char *) ptr + sizeof( *backEndData ));
 	backEndData->polyVerts = (polyVert_t *) ((char *) ptr + sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys);
