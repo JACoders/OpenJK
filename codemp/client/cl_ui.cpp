@@ -1432,14 +1432,6 @@ void CL_InitUI( void ) {
 	}
 }
 
-qboolean UI_usesUniqueCDKey() {
-	if (uivm) {
-		return (qboolean)(VM_Call( uivm, UI_HASUNIQUECDKEY) == qtrue);
-	} else {
-		return qfalse;
-	}
-}
-
 /*
 ====================
 UI_GameCommand
