@@ -396,7 +396,7 @@ static bool Skins_Read(LPCSTR psModelFilename)
 		// for now, I just scan each file and if it's out of date then I invalidate it's model-prefs info...
 		//
 		extern bool GetFileTime(LPCSTR psFileName, FILETIME &ft);
-		for (int i=0; i<iSkinFiles; i++)
+		for ( int i=0; i<iSkinFiles; i++)
 		{
 			bool bReParseThisFile = false;
 
@@ -544,7 +544,7 @@ _bDiskLoadOccured = true;
 			//
 			// free loaded skin files...
 			//
-			for ( i=0; i<iSkinFiles; i++ )
+			for ( int i=0; i<iSkinFiles; i++ )
 			{
 				if (buffers[i])
 				{
@@ -581,7 +581,7 @@ bool Skins_FilesExist(LPCSTR psModelFilename)
 
 
 
-static Skins_ApplyVariant(ModelContainer_t *pContainer, SkinSet_t::iterator itEthnic, ShadersForMaterial_t::iterator itMaterialShaders, string strMaterialName, int iVariant)
+static void Skins_ApplyVariant(ModelContainer_t *pContainer, SkinSet_t::iterator itEthnic, ShadersForMaterial_t::iterator itMaterialShaders, string strMaterialName, int iVariant)
 {
 	if (itMaterialShaders != (*itEthnic).second.end())
 	{

@@ -157,7 +157,9 @@ static bool OldSkins_Read(LPCSTR psLocalFilename_GLM)
 		//
 		char *buffers[MAX_SKIN_FILES] = {0};
 		long iTotalBytesLoaded = 0;
-		for ( int i=0; i<iSkinFiles && !psError; i++ )
+		int i = 0;
+
+		for ( i=0; i<iSkinFiles && !psError; i++ )
 		{
 			char sFileName[MAX_QPATH];
 
@@ -429,7 +431,8 @@ bool OldSkins_Validate( ModelContainer_t *pContainer, int iSkinNumber )
 {
 	bool bReturn = true;	
 	bool bPREV_bReportImageLoadErrors = g_bReportImageLoadErrors;
-										g_bReportImageLoadErrors = false;	
+										g_bReportImageLoadErrors = false;
+	int iSurface_Other = 0;
 
 	// build up a list of shaders used...
 	//	
@@ -462,7 +465,7 @@ bool OldSkins_Validate( ModelContainer_t *pContainer, int iSkinNumber )
 						string strSkinName_Other				= (*itOldSkins_Other).first;
 						StringPairVector_t &StringPairs_Other	= (*itOldSkins_Other).second;
 
-						for (int iSurface_Other = 0; iSurface_Other < StringPairs_Other.size(); iSurface_Other++)
+						for (iSurface_Other = 0; iSurface_Other < StringPairs_Other.size(); iSurface_Other++)
 						{
 							string strSurface_Other(StringPairs_Other[iSurface_Other].first);							
 

@@ -855,7 +855,7 @@ void CL_JoystickEvent( int axis, int value, int time );
 
 void CL_PacketEvent( netadr_t from, msg_t *msg );
 
-void CL_ConsolePrint( const char *text, qboolean silent );
+void CL_ConsolePrint( const char *text );
 
 void CL_MapLoading( void );
 // do a screen update before starting to load a map
@@ -1010,8 +1010,6 @@ qboolean	Sys_StringToAdr( const char *s, netadr_t *a );
 qboolean	Sys_IsLANAddress (netadr_t adr);
 void		Sys_ShowIP(void);
 
-qboolean	Sys_CheckCD( void );
-
 void	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );
 void	Sys_SetDefaultCDPath(const char *path);
@@ -1029,13 +1027,8 @@ void	Sys_FreeFileList( char **fileList );
 void	Sys_BeginProfiling( void );
 void	Sys_EndProfiling( void );
 
-int Sys_FunctionCmp(void *f1, void *f2);
-int Sys_FunctionCheckSum(void *f1);
-
 qboolean Sys_LowPhysicalMemory();
 unsigned int Sys_ProcessorCount();
-
-int Sys_MonkeyShouldBeSpanked( void );
 
 /* This is based on the Adaptive Huffman algorithm described in Sayood's Data
  * Compression book.  The ranks are not actually stored, but implicitly defined

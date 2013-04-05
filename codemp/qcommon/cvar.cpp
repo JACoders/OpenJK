@@ -3,11 +3,11 @@
 //Anything above this #include will be ignored by the compiler
 #include "../qcommon/exe_headers.h"
 
-cvar_t		*cvar_vars;
+cvar_t		*cvar_vars = NULL;
 cvar_t		*cvar_cheats;
 int			cvar_modifiedFlags;
 
-#define	MAX_CVARS	1224
+#define	MAX_CVARS	2048
 cvar_t		cvar_indexes[MAX_CVARS];
 int			cvar_numIndexes;
 
@@ -313,10 +313,11 @@ cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force ) {
 	}
 
 	// Dont display the update when its internal
-	if ( !(var->flags & CVAR_INTERNAL) )
-	{
-		Com_DPrintf( "Cvar_Set2: %s %s\n", var_name, value );
-	}
+	// Ensiform: Don't display this "update" at all :\
+	//if ( !(var->flags & CVAR_INTERNAL) )
+	//{
+	//	Com_DPrintf( "Cvar_Set2: %s %s\n", var_name, value );
+	//}
 
 	if (!value ) {
 		value = var->resetString;
@@ -662,6 +663,8 @@ void Cvar_WriteVariables( fileHandle_t f ) {
 	char	buffer[1024];
 
 	for (var = cvar_vars ; var ; var = var->next) {
+		if( !var->name )
+			continue;
 #ifdef USE_CD_KEY
 		if( Q_stricmp( var->name, "cl_cdkey" ) == 0 ) {
 			continue;
@@ -670,11 +673,21 @@ void Cvar_WriteVariables( fileHandle_t f ) {
 		if( var->flags & CVAR_ARCHIVE ) {
 			// write the latched value, even if it hasn't taken effect yet
 			if ( var->latchedString ) {
+				if( strlen( var->name ) + strlen( var->latchedString ) + 10 > sizeof( buffer ) ) {
+					Com_Printf( S_COLOR_YELLOW "WARNING: value of variable "
+							"\"%s\" too long to write to file\n", var->name );
+					continue;
+				}
 				Com_sprintf (buffer, sizeof(buffer), "seta %s \"%s\"\n", var->name, var->latchedString);
 			} else {
+				if( strlen( var->name ) + strlen( var->string ) + 10 > sizeof( buffer ) ) {
+					Com_Printf( S_COLOR_YELLOW "WARNING: value of variable "
+							"\"%s\" too long to write to file\n", var->name );
+					continue;
+				}
 				Com_sprintf (buffer, sizeof(buffer), "seta %s \"%s\"\n", var->name, var->string);
 			}
-			FS_Printf (f, "%s", buffer);
+			FS_Write( buffer, strlen( buffer ), f );
 		}
 	}
 }
@@ -704,7 +717,7 @@ void Cvar_List_f( void ) {
 			continue;
 		}
 
-		if (match && !Com_Filter(match, var->name, qfalse)) continue;
+		if (!var->name || (match && !Com_Filter(match, var->name, qfalse))) continue;
 
 		if (var->flags & CVAR_SERVERINFO) {
 			Com_Printf("S");
@@ -816,7 +829,7 @@ char	*Cvar_InfoString( int bit ) {
 
 	for (var = cvar_vars ; var ; var = var->next)
 	{
-		if (!(var->flags & CVAR_INTERNAL) &&
+		if (!(var->flags & CVAR_INTERNAL) && var->name &&
 			(var->flags & bit))
 		{
 			Info_SetValueForKey (info, var->name, var->string);
@@ -859,7 +872,7 @@ char	*Cvar_InfoString_Big( int bit ) {
 
 	for (var = cvar_vars ; var ; var = var->next)
 	{
-		if (!(var->flags & CVAR_INTERNAL) &&
+		if (!(var->flags & CVAR_INTERNAL) && var->name &&
 			(var->flags & bit))
 		{
 			Info_SetValueForKey_Big (info, var->name, var->string);
@@ -901,7 +914,7 @@ void	Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultVa
 
 /*
 =====================
-Cvar_Register
+Cvar_Update
 
 updates an interpreted modules' version of a cvar
 =====================
@@ -925,10 +938,9 @@ void	Cvar_Update( vmCvar_t *vmCvar ) {
 	vmCvar->modificationCount = cv->modificationCount;
 	// bk001129 - mismatches.
 	if ( strlen(cv->string)+1 > MAX_CVAR_VALUE_STRING ) 
-	  Com_Error( ERR_DROP, "Cvar_Update: src %s length %d exceeds MAX_CVAR_VALUE_STRING",
+	  Com_Error( ERR_DROP, "Cvar_Update: src %s length %u exceeds MAX_CVAR_VALUE_STRING",
 		     cv->string, 
-		     strlen(cv->string), 
-		     sizeof(vmCvar->string) );
+		     (unsigned int) strlen(cv->string));
 	// bk001212 - Q_strncpyz guarantees zero padding and dest[MAX_CVAR_VALUE_STRING-1]==0 
 	// bk001129 - paranoia. Never trust the destination string.
 	// bk001129 - beware, sizeof(char*) is always 4 (for cv->string). 

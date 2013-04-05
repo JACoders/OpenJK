@@ -364,7 +364,7 @@ char	*va(char *format, ...)
 {
 	va_list		argptr;
 	static char		string[16][16384];		// important to have a good depth to this. 16 is nice
-	static index = 0;
+	static int index = 0;
 
 	index = (++index)&15;
 	
@@ -747,7 +747,11 @@ bool TextFile_Read(CString &strFile, LPCSTR psFullPathedFilename, bool bLoseSlas
 		}
 		fclose(fhTextFile);
 	}
-
+	else
+	{
+		ErrorBox( va("Couldn't open file: %s\n", psFullPathedFilename));
+		return false;
+	}
 	return !!fhTextFile;
 }
 

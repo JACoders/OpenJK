@@ -83,7 +83,7 @@ static long FS_HashFileName( const char *fname, int hashSize ) {
 
 
 static FILE	*FS_FileForHandle( fileHandle_t f ) {
-	if ( f < 0 || f > MAX_FILE_HANDLES ) {
+	if ( f < 1 || f >= MAX_FILE_HANDLES ) {
 		Com_Error( ERR_DROP, "FS_FileForHandle: out of reange" );
 	}
 	if (fsh[f].zipFile == qtrue) {
@@ -606,7 +606,7 @@ bool Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataFileName
 		// timer res only accurate to within 2 seconds on FAT, so can't do exact compare...
 		//
 		//LONG l = CompareFileTime( &ftFinalFile, &ftDataFile );
-		if (  (abs((int)(ftFinalFile.dwLowDateTime - ftDataFile.dwLowDateTime)) <= 20000000 ) &&
+		if (  (abs((double)(ftFinalFile.dwLowDateTime - ftDataFile.dwLowDateTime)) <= 20000000 ) &&
 				  ftFinalFile.dwHighDateTime == ftDataFile.dwHighDateTime				
 			)
 		{
@@ -2153,7 +2153,7 @@ void FS_Path_f( void ) {
 				}
 			}
 		} else {
-			Com_Printf ("%s/%s\n", s->dir->path, s->dir->gamedir );
+			Com_Printf ("%s%c%s\n", s->dir->path, PATH_SEP, s->dir->gamedir );
 		}
 	}
 
@@ -3011,7 +3011,7 @@ void FS_Restart( int checksumFeed ) {
 		if (lastValidBase[0]) {
 			FS_PureServerSetLoadedPaks("", "");
 			Cvar_Set("fs_basepath", lastValidBase);
-			Cvar_Set("fs_gamedirvar", lastValidGame);
+			Cvar_Set("fs_game", lastValidGame);
 			lastValidBase[0] = '\0';
 			lastValidGame[0] = '\0';
 			Cvar_Set( "fs_restrict", "0" );
