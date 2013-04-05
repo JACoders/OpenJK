@@ -24,3 +24,8 @@ Major contributors, in alphabetical order:
 ## Changes ##
 
 * The Jedi Academy singleplayer now searches for jagamex86.dll in the mod's folder, too, meaning SP Code mods are possible.
+
+
+## Known Bugs ##
+
+* There's some crash bug (probably the OpenGL extension string) that only happens when the binary is not called jamp.exe/jasp.exe - there's apparently a Jedi Academy specific workaround in the driver. So for now, don't rename the exe
