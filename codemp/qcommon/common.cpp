@@ -11,6 +11,8 @@
 #include "../qcommon/platform.h"
 #endif
 
+#include "../server/NPCNav/navigator.h"
+
 #define	MAXPRINTMSG	4096
 
 #define MAX_NUM_ARGVS	50
@@ -1184,10 +1186,12 @@ void Com_Init( char *commandLine ) {
 
 	try
 	{
-	  // bk001129 - do this before anything else decides to push events
-	  Com_InitPushEvent();
+		// bk001129 - do this before anything else decides to push events
+		Com_InitPushEvent();
 
 		Cvar_Init ();
+
+		navigator.Init();
 
 		// prepare enough of the subsystems to handle
 		// cvar and command buffer management
