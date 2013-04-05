@@ -411,7 +411,7 @@ typedef enum
 	VEH_EJECT_REAR, 
 	VEH_EJECT_TOP, 
 	VEH_EJECT_BOTTOM
-};
+} vehEject_t;
 
 // Vehicle flags.
 typedef enum

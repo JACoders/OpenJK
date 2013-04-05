@@ -1,4 +1,4 @@
-CC			= clang++
+CC			= clang
 CXX			= clang++
 CXXFLAGS		= -fpermissive -m32 -Wno-deprecated-writable-strings -Wno-extra-tokens -D_JK2MP -D_JK2 -DBOTLIB -D__linux__
 
@@ -106,6 +106,21 @@ GHOUL2_SRCS		= ghoul2/G2_API.cpp\
 
 GHOUL2_OBJS		= $(GHOUL2_SRCS:.cpp=.o)
 
+ICARUS_SRCS		= icarus/BlockStream.cpp \
+			  icarus/GameInterface.cpp \
+			  icarus/Instance.cpp \
+			  icarus/Interface.cpp \
+			  icarus/Interpreter.cpp \
+			  icarus/Memory.cpp \
+			  icarus/Q3_Interface.cpp \
+			  icarus/Q3_Registers.cpp \
+			  icarus/Sequence.cpp \
+			  icarus/Sequencer.cpp \
+			  icarus/TaskManager.cpp \
+			  icarus/Tokenizer.cpp
+
+ICARUS_OBJS		= $(ICARUS_SRCS:.cpp=.o)
+
 SERVER_SRCS		= server/sv_bot.cpp \
 			  server/sv_ccmds.cpp \
 			  server/sv_client.cpp \
@@ -114,12 +129,13 @@ SERVER_SRCS		= server/sv_bot.cpp \
 			  server/sv_main.cpp \
 			  server/sv_net_chan.cpp \
 			  server/sv_snapshot.cpp \
-			  server/sv_world.cpp
+			  server/sv_world.cpp \
+			  server/NPCNav/gameCallbacks.cpp \
+			  server/NPCNav/navigator.cpp
 
 SERVER_OBJS		= $(SERVER_SRCS:.cpp=.o)
 
-UNIX_SRCS		= unix/linux_common.c \
-			  unix/linux_qgl.c \
+UNIX_SRCS		= unix/linux_qgl.c \
 			  unix/unix_main.c \
 			  unix/unix_net.c \
 			  unix/unix_shared.cpp
@@ -158,8 +174,21 @@ RENDERER_SRCS		= renderer/tr_animation.cpp \
 
 RENDERER_OBJS		= $(RENDERER_SRCS:.cpp=.o)
 
-all: botlib common server client renderer ghoul2 unix
-	$(CXX) -o jamp -m32 $(BOTLIB_OBJS) $(COMMON_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS)
+ZLIB_SRCS		= zlib/adler32.c \
+			  zlib/deflate.c \
+			  zlib/infblock.c \
+			  zlib/infcodes.c \
+			  zlib/inffast.c \
+			  zlib/inflate.c \
+			  zlib/inftrees.c \
+			  zlib/infutil.c \
+			  zlib/trees.c \
+			  zlib/zutil.c
+
+ZLIB_OBJS		= $(ZLIB_SRCS:.c=.o)
+
+all: botlib common server client renderer ghoul2 icarus zlib
+	$(CXX) -o jamp -m32 $(BOTLIB_OBJS) $(COMMON_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS)
 
 botlib: $(BOTLIB_OBJS)
 client: $(CLIENT_OBJS)
@@ -168,6 +197,8 @@ server: $(SERVER_OBJS)
 renderer: $(RENDERER_OBJS)
 unix: $(UNIX_OBJS)
 ghoul2: $(GHOUL2_OBJS)
+icarus: $(ICARUS_OBJS)
+zlib: $(ZLIB_OBJS)
 
 clean:
-	$(RM) $(BOTLIB_OBJS) $(COMMON_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(CLIENT_OBJS) $(UNIX_OBJS)
+	$(RM) $(BOTLIB_OBJS) $(COMMON_OBJS) $(SERVER_OBJS) $(GHOUL2_OBJS) $(RENDERER_OBJS) $(CLIENT_OBJS) $(UNIX_OBJS) $(ICARUS_OBJS) $(ZLIB_OBJS)

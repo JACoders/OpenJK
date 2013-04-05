@@ -8,6 +8,7 @@
 
 #pragma warning (push, 3)			// go back down to 3 for the stl include
 #pragma warning (disable:4503)		// decorated name length xceeded, name was truncated
+#include <cstring>
 #include <string>
 #include <vector>
 #include <map>
@@ -337,6 +338,8 @@ public:
 	void SetValue(int value);
 	int GetValue();
 	byte GetByte();
+	CSymbolLookup** CSymbolLookup::GetChildAddress();
+	CSymbolLookup* CSymbolLookup::GetChild();
 
 protected:
 	void Init(byte theByte);
@@ -583,17 +586,31 @@ protected:
 	virtual bool Init();
 	virtual bool Init(LPCTSTR filename, CTokenizer* tokenizer);
 //	virtual void Init(CFile* file, CTokenizer* tokenizer);
+#ifdef _WIN32
 	DWORD GetFileSize();
 	void Read(void* buff, UINT buffsize);
+#else
+	long int GetFileSize();
+	void Read(void* buff, unsigned int buffsize);
+#endif
 
 //	CFile*			m_file;
+#ifdef _WIN32
 	HANDLE			m_fileHandle;
+#else
+	FILE 			*m_fileHandle;
+#endif
 	char*			m_fileName;
 	int				m_curLine;
 	int				m_curPos;
 	byte*			m_buff;
+#ifdef _WIN32
 	DWORD			m_curByte;
 	DWORD			m_filesize;
+#else
+	unsigned long	m_curByte;
+	unsigned long	m_filesize;
+#endif
 	bool			m_ownsFile;
 };
 

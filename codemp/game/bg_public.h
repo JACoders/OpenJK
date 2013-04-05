@@ -195,8 +195,7 @@ typedef enum {
 	GT_CTF,				// capture the flag
 	GT_CTY,
 	GT_MAX_GAME_TYPE
-};
-typedef int gametype_t;
+} gametype_t;
 
 typedef enum { GENDER_MALE, GENDER_FEMALE, GENDER_NEUTER } gender_t;
 
@@ -215,7 +214,7 @@ typedef enum
 	SABERLOCK_SUPERBREAK,
 	SABERLOCK_WIN,
 	SABERLOCK_LOSE
-};
+} saberLock_t;
 
 typedef enum
 {
@@ -223,7 +222,7 @@ typedef enum
 	DIR_LEFT,
 	DIR_FRONT,
 	DIR_BACK
-};
+} dir_t;
 
 /*
 ===================================================================================
@@ -390,7 +389,7 @@ typedef enum {
 	FORCE_MASTERY_JEDI_KNIGHT,
 	FORCE_MASTERY_JEDI_MASTER,
 	NUM_FORCE_MASTERY_LEVELS
-};
+} forceMastery_t;
 
 #include "../namespace_begin.h"
 extern char *forceMasteryLevels[NUM_FORCE_MASTERY_LEVELS];
@@ -680,8 +679,7 @@ typedef enum {
 
 	PW_NUM_POWERUPS
 
-};
-typedef int powerup_t;
+} powerup_t;
 
 typedef enum {
 	HI_NONE,
@@ -700,8 +698,7 @@ typedef enum {
 	HI_CLOAK,
 
 	HI_NUM_HOLDABLE
-};
-typedef int holdable_t;
+} holdable_t;
 
 
 typedef enum {
@@ -1013,8 +1010,7 @@ typedef enum {
 	TEAM_SPECTATOR,
 
 	TEAM_NUM_TEAMS
-};
-typedef int team_t;
+} team_t;
 
 typedef enum {
 	DUELTEAM_FREE,
@@ -1114,8 +1110,7 @@ typedef enum {
 							// EFX: rotate + bob
 	IT_PERSISTANT_POWERUP,
 	IT_TEAM
-};
-typedef int itemType_t;
+} itemType_t;
 
 #define MAX_ITEM_MODELS 4
 
@@ -1478,8 +1473,7 @@ typedef enum {
 	LS_REFLECT_LL,
 
 	LS_MOVE_MAX//
-};
-typedef int saberMoveName_t;
+} saberMoveName_t;
 
 typedef enum {
 	Q_BR,

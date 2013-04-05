@@ -584,8 +584,7 @@ typedef enum
 	SABER_PURPLE,
 	NUM_SABER_COLORS
 
-};
-typedef int saber_colors_t;
+} saber_colors_t;
 
 typedef enum
 {
@@ -609,8 +608,7 @@ typedef enum
 	FP_SABER_DEFENSE,
 	FP_SABERTHROW,
 	NUM_FORCE_POWERS
-};
-typedef int forcePowers_t;
+} forcePowers_t;
 
 typedef enum
 {
@@ -847,7 +845,7 @@ typedef enum
 	FORCE_LEVEL_2,
 	FORCE_LEVEL_3,
 	NUM_FORCE_POWER_LEVELS
-};
+} forceLevel_t;
 
 #define	FORCE_LEVEL_4 (FORCE_LEVEL_3+1)
 #define	FORCE_LEVEL_5 (FORCE_LEVEL_4+1)
@@ -986,8 +984,7 @@ typedef enum //# material_e
 
 	NUM_MATERIALS
 
-};
-typedef int material_t;
+} material_t;
 
 //rww - bot stuff that needs to be shared
 #define MAX_WPARRAY_SIZE 4096
@@ -1957,8 +1954,7 @@ typedef enum {
 	CHAN_MENU1,		//## %s !!"W:\game\base\!!sound\*.wav;*.mp3" #menu stuff, etc
 	CHAN_VOICE_GLOBAL,  //## %s !!"W:\game\base\!!sound\voice\*.wav;*.mp3" # Causes mouth animation and is broadcast, like announcer
 	CHAN_MUSIC,	//## %s !!"W:\game\base\!!sound\*.wav;*.mp3" #music played as a looping sound - added by BTO (VV)
-};
-typedef int soundChannel_t;
+} soundChannel_t;
 
 
 /*
@@ -3037,8 +3033,7 @@ typedef enum {
 	FMV_ID_IDLE,
 	FMV_LOOPED,
 	FMV_ID_WAIT
-};
-typedef int e_status;
+} e_status;
 
 typedef enum _flag_status {
 	FLAG_ATBASE = 0,
@@ -3046,8 +3041,7 @@ typedef enum _flag_status {
 	FLAG_TAKEN_RED,		// One Flag CTF
 	FLAG_TAKEN_BLUE,	// One Flag CTF
 	FLAG_DROPPED
-};
-typedef int flagStatus_t;
+} flagStatus_t;
 
 
 
@@ -3083,7 +3077,7 @@ typedef struct {
 
 // For ghoul2 axis use
 
-typedef enum Eorientations
+typedef enum
 {
 	ORIGIN = 0, 
 	POSITIVE_X,
@@ -3092,7 +3086,7 @@ typedef enum Eorientations
 	NEGATIVE_X,
 	NEGATIVE_Z,
 	NEGATIVE_Y
-};
+} Eorientations;
 /*
 Ghoul2 Insert End
 */
@@ -3103,8 +3097,7 @@ Ghoul2 Insert End
 #define TAGDEF(blah) TAG_ ## blah
 typedef enum {
 	#include "../qcommon/tags.h"
-};
-typedef char memtag_t;
+} memtag_t;
 
 //rww - conveniently toggle "gore" code, for model decals and stuff.
 #define _G2_GORE

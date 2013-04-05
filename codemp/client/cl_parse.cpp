@@ -470,14 +470,14 @@ void CL_ParseRMG ( msg_t* msg )
 		return;
 	}
 
-	z32_stream zdata;
+	z_stream zdata;
 	int		 size;
 	unsigned char heightmap1[15000];
 
 	if ( MSG_ReadBits ( msg, 1 ) )
 	{
 		// Read the heightmap
-		memset(&zdata, 0, sizeof(z32_stream));
+		memset(&zdata, 0, sizeof(z_stream));
 		inflateInit ( &zdata, Z_SYNC_FLUSH );		
 
 		MSG_ReadData ( msg, heightmap1, clc.rmgHeightMapSize );
@@ -486,11 +486,11 @@ void CL_ParseRMG ( msg_t* msg )
 		zdata.avail_in = clc.rmgHeightMapSize;
 		zdata.next_out = (unsigned char*)clc.rmgHeightMap;
 		zdata.avail_out = MAX_HEIGHTMAP_SIZE;
-		inflate32 (&zdata);
+		inflate (&zdata);
 
 		clc.rmgHeightMapSize = zdata.total_out;
 
-		inflateEnd32(&zdata);
+		inflateEnd(&zdata);
 	}
 	else
 	{
@@ -502,7 +502,7 @@ void CL_ParseRMG ( msg_t* msg )
 	if ( MSG_ReadBits ( msg, 1 ) )
 	{	
 		// Read the flatten map
-		memset(&zdata, 0, sizeof(z32_stream));
+		memset(&zdata, 0, sizeof(z_stream));
 		inflateInit ( &zdata, Z_SYNC_FLUSH );
 
 		MSG_ReadData ( msg, heightmap1, size );
@@ -511,8 +511,8 @@ void CL_ParseRMG ( msg_t* msg )
 		zdata.avail_in = clc.rmgHeightMapSize;
 		zdata.next_out = (unsigned char*)clc.rmgFlattenMap;
 		zdata.avail_out = MAX_HEIGHTMAP_SIZE;
-		inflate32 (&zdata );
-		inflateEnd32(&zdata);
+		inflate (&zdata );
+		inflateEnd(&zdata);
 	}
 	else
 	{

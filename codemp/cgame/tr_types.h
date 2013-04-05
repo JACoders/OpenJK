@@ -279,8 +279,7 @@ typedef enum {
 	STEREO_CENTER,
 	STEREO_LEFT,
 	STEREO_RIGHT
-};
-typedef int stereoFrame_t;
+} stereoFrame_t;
 
 
 /*

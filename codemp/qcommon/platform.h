@@ -18,5 +18,10 @@ typedef unsigned int UINT;
 typedef void* HANDLE;
 typedef DWORD COLORREF;
 typedef unsigned char BYTE;
+COLORREF RGB(
+  BYTE byRed,
+  BYTE byGreen,
+  BYTE byBlue
+);
 #endif 
 #endif
