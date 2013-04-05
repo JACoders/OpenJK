@@ -117,6 +117,14 @@ Sys_Print
 ==============
 */
 void Sys_Print( const char *msg ) {
+	// TTimo - prefix for text that shows up in console but not in notify
+	// backported from RTCW
+	if ( !Q_strncmp( msg, "[skipnotify]", 12 ) ) {
+		msg += 12;
+	}
+	if ( msg[0] == '*' ) {
+		msg += 1;
+	}
 	Conbuf_AppendText( msg );
 }
 
