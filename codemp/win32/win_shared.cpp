@@ -2,7 +2,6 @@
 #include "../qcommon/exe_headers.h"
 
 #include "win_local.h"
-#ifndef _XBOX
 #include <lmerr.h>
 #include <lmcons.h>
 #include <lmwksta.h>
@@ -12,7 +11,6 @@
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
-#endif
 
 /*
 ================
@@ -292,9 +290,6 @@ int Sys_GetProcessorId( void )
 
 char *Sys_GetCurrentUser( void )
 {
-#ifdef _XBOX
-	return NULL;
-#else
 	static char s_userName[1024];
 	unsigned long size = sizeof( s_userName );
 
@@ -308,7 +303,6 @@ char *Sys_GetCurrentUser( void )
 	}
 
 	return s_userName;
-#endif
 }
 
 char	*Sys_DefaultHomePath(void) {
@@ -334,7 +328,6 @@ int Sys_GetPhysicalMemory( void )
 } 
 
 
-#ifndef _XBOX
 int Sys_GetCPUSpeedOld()
 {
 	timeBeginPeriod(1);
@@ -543,5 +536,3 @@ int Sys_GetCPUSpeed()
 
 	return norm_freq;
 }
-#endif
-

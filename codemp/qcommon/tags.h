@@ -7,7 +7,6 @@
 	TAGDEF(ALL),
 	TAGDEF(BOTLIB),
 	TAGDEF(CLIENTS),					// Memory used for client info
-#ifndef _XBOX
 	TAGDEF(BOTGAME),
 	TAGDEF(DOWNLOAD),					// used by the downloading system
 	TAGDEF(GENERAL),
@@ -17,7 +16,6 @@
 	TAGDEF(BSP_DISKIMAGE),				// temp during loading, to save both server and renderer fread()ing the same file. Only used if not low physical memory (currently 96MB)
 	TAGDEF(VM),							// stuff for VM, may be zapped later?
 	TAGDEF(SPECIAL_MEM_TEST),			// special usage for testing z_malloc recover only
-#endif
 	TAGDEF(HUNK_MARK1),					//hunk allocations before the mark is set
 	TAGDEF(HUNK_MARK2),					//hunk allocations after the mark is set
 	TAGDEF(EVENT),
@@ -60,14 +58,6 @@
 	TAGDEF(VM_ALLOCATED),				// allocated by game or cgame via memory shifting
 
 	TAGDEF(TEMP_HUNKALLOC),
-#ifdef _XBOX
-	TAGDEF(NEWDEL),						// new / delete -> Z_Malloc on Xbox
-	TAGDEF(UI_ALLOC),					// UI DLL calls to UI_Alloc
-	TAGDEF(CG_UI_ALLOC),				// Cgame DLL calls to UI_Alloc
-	TAGDEF(BG_ALLOC),
-	TAGDEF(BINK),
-	TAGDEF(XBL_FRIENDS),				// friends list
-#endif
 	TAGDEF(COUNT)
 
 

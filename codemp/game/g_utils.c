@@ -437,15 +437,6 @@ void G_CreateFakeClient(int entNum, gclient_t **cl)
 	*cl = gClPtrs[entNum];
 }
 
-#ifdef _XBOX
-void G_ClPtrClear(void)
-{
-	for(int i=0; i<MAX_GENTITIES; i++) {
-		gClPtrs[i] = NULL;
-	}
-}
-#endif
-
 //call this on game shutdown to run through and get rid of all the lingering client pointers.
 void G_CleanAllFakeClients(void)
 {
@@ -472,9 +463,9 @@ Finally reworked PM_SetAnim to allow non-pmove calls, so we take our
 local anim index into account and make the call -rww
 =============
 */
-#include "../namespace_begin.h"
+
 void BG_SetAnim(playerState_t *ps, animation_t *animations, int setAnimParts,int anim,int setAnimFlags, int blendTime);
-#include "../namespace_end.h"
+
 
 void G_SetAnim(gentity_t *ent, usercmd_t *ucmd, int setAnimParts, int anim, int setAnimFlags, int blendTime)
 {
@@ -1409,37 +1400,6 @@ void G_SoundOnEnt( gentity_t *ent, int channel, const char *soundPath )
 	te->s.trickedentindex = channel;
 
 }
-
-#ifdef _XBOX
-//-----------------------------
-void G_EntityPosition( int i, vec3_t ret )
-{
-	if ( /*g_entities &&*/ i >= 0 && i < MAX_GENTITIES && g_entities[i].inuse)
-	{
-#if 0	// VVFIXME - Do we really care about doing this? It's slow and unnecessary
-		gentity_t *ent = g_entities + i;
-
-		if (ent->bmodel)
-		{
-			vec3_t mins, maxs;
-			clipHandle_t h = CM_InlineModel( ent->s.modelindex );
-			CM_ModelBounds( cmg, h, mins, maxs );
-			ret[0] = (mins[0] + maxs[0]) / 2 + ent->currentOrigin[0];
-			ret[1] = (mins[1] + maxs[1]) / 2 + ent->currentOrigin[1];
-			ret[2] = (mins[2] + maxs[2]) / 2 + ent->currentOrigin[2];
-		}
-		else
-#endif
-		{
-			VectorCopy(g_entities[i].r.currentOrigin, ret);
-		}
-	}
-	else
-	{
-		ret[0] = ret[1] = ret[2] = 0;
-	}
-}
-#endif
 
 //==============================================================================
 

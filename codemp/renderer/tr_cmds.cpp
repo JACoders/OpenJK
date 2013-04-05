@@ -10,7 +10,6 @@ R_PerformanceCounters
 =====================
 */
 void R_PerformanceCounters( void ) {
-#ifndef _XBOX
 	if ( !r_speeds->integer ) {
 		// clear the counters even if we aren't printing
 		Com_Memset( &tr.pc, 0, sizeof( tr.pc ) );
@@ -57,7 +56,6 @@ void R_PerformanceCounters( void ) {
 		Com_Printf ( "Tex MB %.2f + buffers %.2f MB = Total %.2fMB\n",
 			texSize, backBuff*2+depthBuff+stencilBuff, texSize+backBuff*2+depthBuff+stencilBuff); 
 	}
-#endif
 
 	Com_Memset( &tr.pc, 0, sizeof( tr.pc ) );
 	Com_Memset( &backEnd.pc, 0, sizeof( backEnd.pc ) );
@@ -121,12 +119,10 @@ OpenGL calls until R_IssueRenderCommands is called.
 ====================
 */
 void R_SyncRenderThread( void ) {
-#ifndef _XBOX
 	if ( !tr.registered ) {
 		return;
 	}
 	R_IssueRenderCommands( qfalse );
-#endif
 }
 
 /*
@@ -144,9 +140,6 @@ void *R_GetCommandBuffer( int bytes ) {
 
 	// always leave room for the end of list command
 	if ( cmdList->used + bytes + 4 > MAX_RENDER_COMMANDS ) {
-#if defined(_DEBUG) && defined(_XBOX)
-		Com_Printf(S_COLOR_RED"Command buffer overflow!  Tell Brian.\n");
-#endif
 		if ( bytes > MAX_RENDER_COMMANDS - 4 ) {
 			Com_Error( ERR_FATAL, "R_GetCommandBuffer: bad size %i", bytes );
 		}
@@ -333,7 +326,6 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 	//
 	// do overdraw measurement
 	//
-#ifndef _XBOX
 	if ( r_measureOverdraw->integer )
 	{
 		if ( glConfig.stencilBits < 4 )
@@ -368,7 +360,6 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		}
 		r_measureOverdraw->modified = qfalse;
 	}
-#endif
 
 	//
 	// texturemode stuff
@@ -450,15 +441,7 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec ) {
 	}
 	cmd->commandId = RC_SWAP_BUFFERS;
 
-#ifdef _XBOX
-	if (!qglBeginFrame()) return;
-#endif
-
 	R_IssueRenderCommands( qtrue );
-
-#ifdef _XBOX
-	qglEndFrame();
-#endif
 
 	// use the other buffers next frame, because another CPU
 	// may still be rendering into the current ones

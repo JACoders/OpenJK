@@ -12,10 +12,6 @@
 #include "../cgame/cg_public.h"
 #include "../game/bg_public.h"
 
-#ifdef _XBOX
-#include <xtl.h>
-#endif
-
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
 // Wind
@@ -64,11 +60,7 @@ typedef struct {
 // the parseEntities array must be large enough to hold PACKET_BACKUP frames of
 // entities, so that when a delta compressed message arives from the server
 // it can be un-deltad from the original 
-#ifdef _XBOX
-#define	MAX_PARSE_ENTITIES	1024
-#else
-#define	MAX_PARSE_ENTITIES	2048
-#endif
+#define	MAX_PARSE_ENTITIES 2048
 
 extern int g_console_field_width;
 
@@ -195,7 +187,6 @@ typedef struct {
 	int			lastExecutedServerCommand;		// last server command grabbed or executed with CL_GetServerCommand
 	char		serverCommands[MAX_RELIABLE_COMMANDS][MAX_STRING_CHARS];
 
-#ifndef _XBOX	// No downloading or demos on Xbox
 	// file transfer from server
 	fileHandle_t download;
 	char		downloadTempName[MAX_OSPATH];
@@ -219,7 +210,6 @@ typedef struct {
 	int			timeDemoFrames;		// counter of rendered frames
 	int			timeDemoStart;		// cls.realtime before first frame
 	int			timeDemoBaseTime;	// each frame will be at this time + frameNum * 50
-#endif
 
 	// big stuff at end of structure so most offsets are 15 bits or less
 	netchan_t	netchan;
@@ -249,9 +239,6 @@ typedef struct {
 	int			start;
 	int			time;
 	char		info[MAX_INFO_STRING];
-#ifdef _XBOX
-	XNADDR		xnaddr;
-#endif
 } ping_t;
 
 typedef struct {
@@ -259,32 +246,20 @@ typedef struct {
 	char	  	hostName[MAX_NAME_LENGTH];
 	char	  	mapName[MAX_NAME_LENGTH];
 	char	  	game[MAX_NAME_LENGTH];
-#ifndef _XBOX
 	int			netType;
-#endif
 	int			gameType;
 	int		  	clients;
 	int		  	maxClients;
-#ifndef _XBOX
 	int			minPing;
 	int			maxPing;
-#endif
 	int			ping;
 	qboolean	visible;
 //	int			allowAnonymous;
-#ifndef _XBOX
 	qboolean	needPassword;
 	int			trueJedi;
 	int			weaponDisable;
 	int			forceDisable;
-#endif
 //	qboolean	pure;
-#ifdef _XBOX
-	qboolean	saberOnly;			// Not the same as weaponDisable!
-	XNKID		SessionID;				
-	XNKEY		KeyExchangeKey;
-	XNADDR		HostAddress;
-#endif
 } serverInfo_t;
 
 typedef struct {
@@ -342,17 +317,9 @@ typedef struct {
 	qhandle_t	charSetShader;
 	qhandle_t	whiteShader;
 	qhandle_t	consoleShader;
-
-#ifdef _XBOX
-	short		mainGamepad;
-#endif
 } clientStatic_t;
 
-#ifdef _XBOX
-#define	CON_TEXTSIZE	256
-#else
 #define	CON_TEXTSIZE	32768
-#endif
 #define	NUM_CON_TIMES	4
 
 typedef struct {
@@ -425,10 +392,8 @@ extern	cvar_t	*cl_timedemo;
 
 extern	cvar_t	*cl_activeAction;
 
-#ifndef _XBOX
 extern	cvar_t	*cl_allowDownload;
 extern	cvar_t	*cl_allowAltEnter;
-#endif
 extern	cvar_t	*cl_conXOffset;
 extern	cvar_t	*cl_inGameVideo;
 
@@ -517,10 +482,8 @@ void CL_ParseServerMessage( msg_t *msg );
 
 void	CL_ServerInfoPacket( netadr_t from, msg_t *msg );
 void	CL_LocalServers_f( void );
-#ifndef _XBOX
 void	CL_GlobalServers_f( void );
 void	CL_FavoriteServers_f( void );
-#endif
 void	CL_Ping_f( void );
 qboolean CL_UpdateVisiblePings_f( int source );
 
@@ -584,12 +547,6 @@ void CIN_UploadCinematic(int handle);
 void CIN_CloseAllVideos(void);
 
 void CL_UpdateHotSwap(void);
-
-#ifdef _XBOX
-void CIN_Init(void);
-bool CIN_PlayAllFrames( const char *arg, int x, int y, int w, int h, int systemBits, bool keyBreakAllowed );
-#endif
-
 
 //
 // cl_cgame.c

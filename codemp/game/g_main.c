@@ -152,10 +152,10 @@ vmCvar_t	g_debugRight;
 vmCvar_t	g_debugUp;
 vmCvar_t	g_smoothClients;
 
-#include "../namespace_begin.h"
+
 vmCvar_t	pmove_fixed;
 vmCvar_t	pmove_msec;
-#include "../namespace_end.h"
+
 
 vmCvar_t	g_listEntity;
 //vmCvar_t	g_redteam;
@@ -508,7 +508,7 @@ This is the only way control passes into the module.
 This must be the very first function compiled into the .q3vm file
 ================
 */
-#include "../namespace_begin.h"
+
 #ifdef __linux__
 extern "C" {
 #endif
@@ -697,7 +697,7 @@ int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int a
 #ifdef __linux__
 }
 #endif
-#include "../namespace_end.h"
+
 
 
 void QDECL G_Printf( const char *fmt, ... ) {
@@ -880,10 +880,10 @@ void G_UpdateCvars( void ) {
 
 char gSharedBuffer[MAX_G_SHARED_BUFFER_SIZE];
 
-#include "../namespace_begin.h"
+
 void WP_SaberLoadParms( void );
 void BG_VehicleLoadParms( void );
-#include "../namespace_end.h"
+
 
 /*
 ============
@@ -898,13 +898,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	int					i;
 	vmCvar_t	mapname;
 	vmCvar_t	ckSum;
-
-#ifdef _XBOX
-	if(restart) {
-		BG_ClearVehicleParseParms();
-		RemoveAllWP();
-	}
-#endif
 
 	//Init RMG to 0, it will be autoset to 1 if there is terrain on the level.
 	trap_Cvar_Set("RMG", "0");
@@ -948,7 +941,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	//trap_SP_RegisterServer("mp_svgame");
 
-#ifndef _XBOX
 	if ( g_log.string[0] ) {
 		if ( g_logSync.integer ) {
 			trap_FS_FOpenFile( g_log.string, &level.logFile, FS_APPEND_SYNC );
@@ -968,7 +960,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	} else {
 		G_Printf( "Not logging to disk.\n" );
 	}
-#endif
 
 	G_LogWeaponInit();
 
@@ -3544,23 +3535,21 @@ void NAV_CheckCalcPaths( void )
 		}
 		else 
 #endif
-#ifndef _XBOX
 		if ( trap_Nav_Save( mapname.string, ckSum.integer ) == qfalse )
 		{
 			Com_Printf("Unable to save navigations data for map \"%s\" (checksum:%d)\n", mapname.string, ckSum.integer );
 		}
-#endif
 		navCalcPathTime = 0;
 	}
 }
 
 //so shared code can get the local time depending on the side it's executed on
-#include "../namespace_begin.h"
+
 int BG_GetTime(void)
 {
 	return level.time;
 }
-#include "../namespace_end.h"
+
 
 /*
 ================

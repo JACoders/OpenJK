@@ -26,14 +26,6 @@
 extern "C" {
 #endif
 
-#ifdef _XBOX
-/** ALC device type. */
-typedef int ALCdevice;
-
-/** ALC context type. */
-typedef int ALCcontext;
-#endif
-
 /** ALC boolean type. */
 typedef char ALCboolean;
 

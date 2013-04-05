@@ -176,15 +176,6 @@ int		max_polyverts;
 
 cvar_t	*r_modelpoolmegs;
 
-#ifdef _XBOX
-cvar_t	*r_hdreffect;
-cvar_t  *r_sundir_x;
-cvar_t  *r_sundir_y;
-cvar_t  *r_sundir_z;
-cvar_t  *r_hdrbloom;
-#endif
-
-
 /*
 Ghoul2 Insert Start
 */
@@ -235,7 +226,6 @@ void ( APIENTRY * qglTexImage3DEXT) (GLenum, GLint, GLenum, GLsizei, GLsizei, GL
 void ( APIENTRY * qglTexSubImage3DEXT) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *);
 
 
-#ifndef _XBOX	// GLOWXXX
 // Declare Register Combiners function pointers.
 PFNGLCOMBINERPARAMETERFVNV				qglCombinerParameterfvNV = NULL;
 PFNGLCOMBINERPARAMETERIVNV				qglCombinerParameterivNV = NULL;
@@ -288,8 +278,6 @@ PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC qglGetProgramLocalParameterfvARB = NULL;
 PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB = NULL;
 PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB = NULL;
 PFNGLISPROGRAMARBPROC qglIsProgramARB = NULL;
-#endif
-
 
 void RE_SetLightStyle(int style, int color);
 
@@ -324,7 +312,6 @@ static void AssertCvarRange( cvar_t *cv, float minVal, float maxVal, qboolean sh
 
 void R_Splash()
 {
-#ifndef _XBOX
 	image_t *pImage;
 /*	const char* s = Cvar_VariableString("se_language");
 	if (stricmp(s,"english"))
@@ -365,7 +352,6 @@ void R_Splash()
 	qglEnd();
 
 	GLimp_EndFrame();
-#endif
 }
 
 /*
@@ -451,8 +437,6 @@ void GL_CheckErrors( void ) {
 
 #endif //!DEDICATED
 
-#ifndef _XBOX
-
 /*
 ** R_GetModeInfo
 */
@@ -462,8 +446,7 @@ typedef struct vidmode_s
     int         width, height;
 } vidmode_t;
 
-const vidmode_t r_vidModes[] =
-{
+const vidmode_t r_vidModes[] = {
     { "Mode  0: 320x240",		320,	240 },
     { "Mode  1: 400x300",		400,	300 },
     { "Mode  2: 512x384",		512,	384 },
@@ -519,8 +502,6 @@ static void R_ModeList_f( void )
 	Com_Printf ("\n" );
 }
 
-#endif	// _XBOX
-
 /* 
 ============================================================================== 
  
@@ -535,7 +516,6 @@ R_TakeScreenshot
 ================== 
 */  
 void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
-#ifndef _XBOX
 	byte		*buffer;
 	int			i, c, temp;
 
@@ -567,7 +547,6 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	FS_WriteFile( fileName, buffer, c );
 
 	Hunk_FreeTempMemory( buffer );
-#endif
 }
 
 /* 
@@ -576,7 +555,6 @@ R_TakeScreenshot
 ================== 
 */  
 void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName ) {
-#ifndef _XBOX
 	byte		*buffer;
 
 	buffer = (unsigned char *)Hunk_AllocateTempMemory(glConfig.vidWidth*glConfig.vidHeight*4);
@@ -592,7 +570,6 @@ void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName )
 	SaveJPG( fileName, 95, glConfig.vidWidth, glConfig.vidHeight, buffer);
 
 	Hunk_FreeTempMemory( buffer );
-#endif
 }
 
 /* 
@@ -630,7 +607,6 @@ the menu system, sampled down from full screen distorted images
 */
 #define LEVELSHOTSIZE 256
 static void R_LevelShot( void ) {
-#ifndef _XBOX
 	char		checkname[MAX_OSPATH];
 	byte		*buffer;
 	byte		*source;
@@ -687,7 +663,6 @@ static void R_LevelShot( void ) {
 	Hunk_FreeTempMemory( source );
 
 	Com_Printf ("Wrote %s\n", checkname );
-#endif
 }
 
 /* 
@@ -703,7 +678,6 @@ Doesn't print the pacifier message if there is a second arg
 ================== 
 */  
 void R_ScreenShotTGA_f (void) {
-#ifndef _XBOX
 	char		checkname[MAX_OSPATH];
 	static	int	lastNumber = -1;
 	qboolean	silent;
@@ -755,12 +729,10 @@ void R_ScreenShotTGA_f (void) {
 	if ( !silent ) {
 		Com_Printf ( "Wrote %s\n", checkname);
 	}
-#endif
 } 
 
 //jpeg  vession
 void R_ScreenShot_f (void) {
-#ifndef _XBOX
 	char		checkname[MAX_OSPATH];
 	static	int	lastNumber = -1;
 	qboolean	silent;
@@ -811,7 +783,6 @@ void R_ScreenShot_f (void) {
 	if ( !silent ) {
 		Com_Printf ( "Wrote %s\n", checkname);
 	}
-#endif
 } 
 
 //============================================================================
@@ -859,9 +830,6 @@ void GL_SetDefaultState( void )
 	qglEnable( GL_SCISSOR_TEST );
 	qglDisable( GL_CULL_FACE );
 	qglDisable( GL_BLEND );
-#ifdef _XBOX
-	qglDisable( GL_LIGHTING );
-#endif
 }
 
 
@@ -1051,11 +1019,7 @@ void R_Register( void )
 	r_autolodscalevalue = Cvar_Get( "r_autolodscalevalue", "0", CVAR_ROM );
 
 	r_flares = Cvar_Get ("r_flares", "1", CVAR_ARCHIVE );
-#ifdef _XBOX
-	r_znear = Cvar_Get( "r_znear", "2", CVAR_CHEAT );
-#else
 	r_znear = Cvar_Get( "r_znear", "4", CVAR_CHEAT );
-#endif
 	AssertCvarRange( r_znear, 0.001f, 200, qtrue );
 	r_ignoreGLErrors = Cvar_Get( "r_ignoreGLErrors", "1", CVAR_ARCHIVE );
 	r_fastsky = Cvar_Get( "r_fastsky", "0", CVAR_ARCHIVE );
@@ -1139,14 +1103,6 @@ void R_Register( void )
 	r_shadows = Cvar_Get( "cg_shadows", "1", 0 );
 	r_shadowRange = Cvar_Get( "r_shadowRange", "1000", 0 );
 
-#ifdef _XBOX
-	r_hdreffect = Cvar_Get( "r_hdreffect", "0", 0 );
-	r_sundir_x = Cvar_Get( "r_sundir_x", "0.45", 0 );
-	r_sundir_y = Cvar_Get( "r_sundir_y", "0.3", 0 );
-	r_sundir_z = Cvar_Get( "r_sundir_z", "0.9", 0 );
-	r_hdrbloom = Cvar_Get( "r_hdrbloom", "1.0", 0 );
-#endif
-
 	r_maxpolys = Cvar_Get( "r_maxpolys", va("%d", MAX_POLYS), 0);
 	r_maxpolyverts = Cvar_Get( "r_maxpolyverts", va("%d", MAX_POLYVERTS), 0);
 /*
@@ -1197,9 +1153,7 @@ extern qboolean Sys_LowPhysicalMemory();
 	Cmd_AddCommand( "imagecacheinfo", RE_RegisterImages_Info_f);
 #endif
 	Cmd_AddCommand( "modellist", R_Modellist_f );
-#ifndef _XBOX
 	Cmd_AddCommand( "modelist", R_ModeList_f );
-#endif
 	Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f);
 
 }
@@ -1216,28 +1170,11 @@ void R_Init( void ) {
 	byte *ptr;
 
 //	Com_Printf ("----- R_Init -----\n" );
-#ifdef _XBOX
-	/*
-	Hunk_Clear();
-		
-	extern void CM_Free(void);
-	CM_Free();
-	*/
-
-	//Save visibility info as it has already been set.
-	SPARC<byte> *vis = tr.externalVisData;
-#endif
-
 	// clear all our internal state
 	Com_Memset( &tr, 0, sizeof( tr ) );
 	Com_Memset( &backEnd, 0, sizeof( backEnd ) );
 #ifndef DEDICATED
 	Com_Memset( &tess, 0, sizeof( tess ) );
-#endif
-
-#ifdef _XBOX
-	//Restore visibility info.
-	tr.externalVisData = vis;
 #endif
 
 //	Swap_Init();
@@ -1348,7 +1285,6 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	Cmd_RemoveCommand ("modelcacheinfo");
 #ifndef DEDICATED
 
-#ifndef _XBOX	// GLOWXXX
 	if ( r_DynamicGlow && r_DynamicGlow->integer )
 	{
 		// Release the Glow Vertex Shader.
@@ -1381,7 +1317,6 @@ void RE_Shutdown( qboolean destroyWindow ) {
 		// Release the blur texture.
 		qglDeleteTextures( 1, &tr.blurImage );
 	}
-#endif
 
 	R_TerrainShutdown(); //rwwRMG - added
 
@@ -1389,9 +1324,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	if ( tr.registered ) {
 		R_SyncRenderThread();
 		R_ShutdownCommandBuffers();
-//#ifndef _XBOX
 		if (destroyWindow)
-//#endif
 		{
 			R_DeleteTextures();		// only do this for vid_restart now, not during things like map load
 		}
@@ -1418,9 +1351,7 @@ Touch all images to make sure they are resident
 void RE_EndRegistration( void ) {
 	R_SyncRenderThread();
 	if (!Sys_LowPhysicalMemory()) {
-#ifndef _XBOX
 		RB_ShowImages();
-#endif
 	}
 }
 

@@ -760,9 +760,9 @@ Spawn an entity and fill in all of the level fields from
 level.spawnVars[], then call the class specfic spawn function
 ===================
 */
-#include "../namespace_begin.h"
+
 void BG_ParseField( BG_field_t *l_fields, const char *key, const char *value, byte *ent );
-#include "../namespace_end.h"
+
 void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 	int			i;
 	gentity_t	*ent;

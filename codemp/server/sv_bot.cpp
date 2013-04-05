@@ -412,7 +412,6 @@ void BotImport_BSPModelMinsMaxsOrigin(int modelnum, vec3_t angles, vec3_t outmin
 BotImport_GetMemoryGame
 ==================
 */
-#ifndef _XBOX	// These are unused, I want the tag back
 void *Bot_GetMemoryGame(int size) {
 	void *ptr;
 
@@ -429,7 +428,7 @@ BotImport_FreeMemoryGame
 void Bot_FreeMemoryGame(void *ptr) {
 	Z_Free(ptr);
 }
-#endif
+
 /*
 ==================
 BotImport_GetMemory

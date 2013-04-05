@@ -39,9 +39,6 @@ float ProjectRadius( float r, vec3_t location )
 				   tr.viewParms.projectionMatrix[15];
 
 	pr = width / depth;
-#if defined (_XBOX)
-	pr = -pr;
-#endif
 
 	if ( pr > 1.0f )
 		pr = 1.0f;

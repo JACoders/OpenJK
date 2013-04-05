@@ -11,12 +11,6 @@
 #endif
 #include "../zlib32/zip.h"
 
-#ifdef _XBOX
-#include "../xbox/XBLive.h"
-#include "../xbox/XBoxCommon.h"
-#include "../xbox/XBVoice.h"
-#endif
-
 static char hiddenCvarVal[128];
 
 char *svc_strings[256] = {
@@ -31,11 +25,6 @@ char *svc_strings[256] = {
 	"svc_snapshot",
 	"svc_setgame",
 	"svc_mapchange",
-#ifdef _XBOX
-	"svc_newpeer",
-	"svc_removepeer",
-	"svc_xbInfo",
-#endif
 };
 
 void SHOWNET( msg_t *msg, char *s) {
@@ -243,9 +232,7 @@ void CL_ParseSnapshot( msg_t *msg ) {
 	if ( newSnap.deltaNum <= 0 ) {
 		newSnap.valid = qtrue;		// uncompressed frame
 		old = NULL;
-#ifndef _XBOX	// No demos on Xbox
 		clc.demowaiting = qfalse;	// we can start recording now
-#endif
 	} else {
 		old = &cl.snapshots[newSnap.deltaNum & PACKET_MASK];
 		if ( !old->valid ) {
@@ -366,10 +353,8 @@ void CL_ParseSetGame( msg_t *msg )
 	FS_UpdateGamedir();
 
 	//Now update the overrides manually
-#ifndef _XBOX	// No mods on Xbox
 	MSG_CheckNETFPSFOverrides(qfalse);
 	MSG_CheckNETFPSFOverrides(qtrue);
-#endif
 }
 
 
@@ -400,11 +385,9 @@ void CL_SystemInfoChanged( void ) {
 	cl.serverId = atoi( Info_ValueForKey( systemInfo, "sv_serverid" ) );
 
 	// don't set any vars when playing a demo
-#ifndef _XBOX	// No demos on Xbox
 	if ( clc.demoplaying ) {
 		return;
 	}
-#endif
 
 	s = Info_ValueForKey( systemInfo, "sv_cheats" );
 	if ( atoi(s) == 0 )
@@ -672,9 +655,6 @@ A download message has been received from the server
 =====================
 */
 void CL_ParseDownload ( msg_t *msg ) {
-#ifdef _XBOX
-	assert(!"Xbox received a download message. Unsupported!");
-#else
 	int		size;
 	unsigned char data[MAX_MSGLEN];
 	int block;
@@ -757,7 +737,6 @@ void CL_ParseDownload ( msg_t *msg ) {
 		// get another file if needed
 		CL_NextDownload ();
 	}
-#endif
 }
 
 int CL_GetValueForHidden(const char *s)
@@ -921,109 +900,6 @@ void CL_ParseServerMessage( msg_t *msg ) {
 				VM_Call( cgvm, CG_MAP_CHANGE );
 			}
 			break;
-#ifdef _XBOX
-		case svc_newpeer:
-			{ //jsw// new client to add to our XBonlineInfo
-				// We now get the index that we should use to store this from the server
-				// That ensures that our playerlist and clientinfo stay in sync!
-				int index = MSG_ReadLong(msg);
-
-				// Sanity check - server shouldn't have us overwriting an active player
-				// Unless, we're the server, in which case it will be active. Doh.
-				assert( com_sv_running->integer ||
-						!xbOnlineInfo.xbPlayerList[index].isActive );
-
-				// OK. Read directly into the right place
-				MSG_ReadData(msg, &xbOnlineInfo.xbPlayerList[index], sizeof(XBPlayerInfo));
-
-				// Need to do address conversion here, voice needs it
-				XNetXnAddrToInAddr( &xbOnlineInfo.xbPlayerList[index].xbAddr,
-									Net_GetXNKID(),
-									&xbOnlineInfo.xbPlayerList[index].inAddr );
-
-				// VVFIXME - Search for g_Voice here - lots of stuff we're not doing
-				// g_Voice.OnPlayerJoined( index );
-				//if(g_Voice.IsPlayerMuted(&xbOnlineInfo.xbPlayerList[index].xuid))
-				//{
-				//	g_Voice.MutePlayer(&xbOnlineInfo.xbPlayerList[index].xbAddr, &xbOnlineInfo.xbPlayerList[index].xuid, false);
-				//	xbOnlineInfo.xbPlayerList[index].flags |= MUTED_PLAYER;
-				//}
-				//else if(Cvar_Get(CVAR_XBL_WT_ACTIVE)->integer)
-				//{	//reset w/t in case he's on the channel
-				//	g_Voice.EnableWalkieTalkie();
-				//}
-
-				XBL_PL_CheckHistoryList(&xbOnlineInfo.xbPlayerList[index]);
-				break;
-			}
-		case svc_removepeer:
-			{
-				// Remove a client from our xbOnlineInfo. Our ordering is the same
-				// as the server, so we just get an index.
-				int index = MSG_ReadLong(msg);
-
-				// Sanity check
-				assert( xbOnlineInfo.xbPlayerList[index].isActive &&
-						index != xbOnlineInfo.localIndex );
-
-				// Clear out important information
-				xbOnlineInfo.xbPlayerList[index].isActive = false;
-				g_Voice.OnPlayerDisconnect( &xbOnlineInfo.xbPlayerList[index] );
-				XBL_PL_RemoveActivePeer(&xbOnlineInfo.xbPlayerList[index].xuid, index);
-				break;
-			}
-		case svc_xbInfo:
-			{ //jsw//get XNADDR list from server
-				MSG_ReadData(msg, &xbOnlineInfo, sizeof(XBOnlineInfo));
-
-				// Immediately convert everyone's XNADDR to an IN_ADDR
-				for( int i = 0; i < MAX_ONLINE_PLAYERS; ++i )
-				{
-					if( xbOnlineInfo.xbPlayerList[i].isActive )
-						XNetXnAddrToInAddr( &xbOnlineInfo.xbPlayerList[i].xbAddr,
-											Net_GetXNKID(),
-											&xbOnlineInfo.xbPlayerList[i].inAddr );
-				}
-
-				//now find which entry we are
-				if( logged_on )
-				{
-					PXONLINE_USER pToUser = XOnlineGetLogonUsers();
-					BOOL found = false;
-					for( int i = 0; i < MAX_ONLINE_PLAYERS && !found; i++ )
-					{
-						if( xbOnlineInfo.xbPlayerList[i].isActive && XOnlineAreUsersIdentical(&pToUser->xuid, &xbOnlineInfo.xbPlayerList[i].xuid))
-						{
-							xbOnlineInfo.localIndex = i;
-							found = true;
-						}
-					}
-
-					// OK. Time to join the chat! - VVFIXME - need to check mute lists
-					g_Voice.JoinSession();
-				}
-				else
-				{
-					DWORD dwStatus;
-					IN_ADDR localAddr;
-					XNetXnAddrToInAddr(Net_GetXNADDR( &dwStatus ), Net_GetXNKID(), &localAddr);
-
-					if( dwStatus != XNET_GET_XNADDR_NONE )
-					{
-						int j;
-						for( j = 0; j < MAX_ONLINE_PLAYERS; ++j )
-						{
-							if( xbOnlineInfo.xbPlayerList[j].isActive &&
-								localAddr.s_addr == xbOnlineInfo.xbPlayerList[i].inAddr.s_addr )
-								break;
-						}
-						xbOnlineInfo.localIndex = (j == MAX_ONLINE_PLAYERS) ? -1 : j;
-					}
-				}
-
-				break;
-			}
-#endif
 		}
 	}
 }

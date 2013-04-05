@@ -19,10 +19,8 @@ cvar_t	*sv_privatePassword;	// password for the privateClient slots
 cvar_t	*sv_maxclients;
 cvar_t	*sv_privateClients;		// number of clients reserved for password
 cvar_t	*sv_hostname;
-#ifndef _XBOX	// No master or downloads on Xbox
 cvar_t	*sv_allowDownload;
 cvar_t	*sv_master[MAX_MASTER_SERVERS];		// master server ip address
-#endif
 cvar_t	*sv_reconnectlimit;		// minimum seconds between connect messages
 cvar_t	*sv_showghoultraces;	// report ghoul2 traces
 cvar_t	*sv_showloss;			// report when usercmds are lost
@@ -187,7 +185,6 @@ MASTER SERVER FUNCTIONS
 
 ==============================================================================
 */
-#ifndef _XBOX	// No master on Xbox
 #define NEW_RESOLVE_DURATION		86400000 //24 hours
 static int g_lastResolveTime[MAX_MASTER_SERVERS];
 
@@ -297,7 +294,6 @@ void SV_MasterShutdown( void ) {
 	// when the master tries to poll the server, it won't respond, so
 	// it will be removed from the list
 }
-#endif	// _XBOX	- No master on Xbox
 
 
 /*
@@ -390,12 +386,6 @@ void SVC_Info( netadr_t from ) {
 	}
 	*/
 
-#ifdef _XBOX
-	// don't send system link info if in Xbox Live
-	if (logged_on)
-		return;
-#endif
-
 	if (Cvar_VariableValue("ui_singlePlayerActive"))
 	{
 		return;
@@ -448,21 +438,6 @@ void SVC_Info( netadr_t from ) {
 	}
 #ifdef USE_CD_KEY
 	Info_SetValueForKey( infostring, "sv_allowAnonymous", va("%i", sv_allowAnonymous->integer) );
-#endif
-
-#ifdef _XBOX
-	// Include Xbox specific networking info
-	char sxnkid[XNKID_STRING_LEN];
-	XNKIDToString(SysLink_GetXNKID(), sxnkid);
-	Info_SetValueForKey(infostring, "xnkid", sxnkid);
-
-	char sxnkey[XNKEY_STRING_LEN];
-	XNKEYToString(SysLink_GetXNKEY(), sxnkey);
-	Info_SetValueForKey(infostring, "xnkey", sxnkey);
-
-	char sxnaddr[XNADDR_STRING_LEN];
-	XnAddrToString(Net_GetXNADDR(), sxnaddr);
-	Info_SetValueForKey(infostring, "xnaddr", sxnaddr);
 #endif
 
 	NET_OutOfBandPrint( NS_SERVER, from, "infoResponse\n%s", infostring );
@@ -567,10 +542,8 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 		SV_GetChallenge( from );
 	} else if (!Q_stricmp(c, "connect")) {
 		SV_DirectConnect( from );
-#ifndef _XBOX	// No authorization on Xbox
 	} else if (!Q_stricmp(c, "ipAuthorize")) {
 		SV_AuthorizeIpPacket( from );
-#endif
 	} else if (!Q_stricmp(c, "rcon")) {
 		SVC_RemoteCommand( from, msg );
 	} else if (!Q_stricmp(c, "disconnect")) {
@@ -931,9 +904,7 @@ void SV_Frame( int msec ) {
 	SV_CheckCvars();
 
 	// send a heartbeat to the master if needed
-#ifndef _XBOX	// No master on Xbox
 	SV_MasterHeartbeat();
-#endif
 }
 
 //============================================================================

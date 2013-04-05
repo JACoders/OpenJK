@@ -11,10 +11,6 @@
 #include "../qcommon/platform.h"
 #endif
 
-#ifdef _XBOX
-#include "../xbox/XBLive.h"
-#endif
-
 #define	MAXPRINTMSG	4096
 
 #define MAX_NUM_ARGVS	50
@@ -167,7 +163,6 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	Sys_Print( msg );
 
 	// logfile
-#ifndef _XBOX
 	if ( com_logfile && com_logfile->integer ) {
 		if ( !logfile && FS_Initialized() ) {
 			struct tm *newtime;
@@ -188,9 +183,8 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			FS_Write(msg, strlen(msg), logfile);
 		}
 	}
-#endif
 
-#if defined(_WIN32) && defined(_DEBUG) && !defined(_XBOX)	
+#if defined(_WIN32) && defined(_DEBUG)
 	if ( *msg )
 	{
 		OutputDebugString ( Q_CleanStr(msg) );
@@ -251,9 +245,6 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	static int	lastErrorTime;
 	static int	errorCount;
 	int			currentTime;
-#ifdef _XBOX
-	int			wasRunningServer = com_sv_running->integer;
-#endif
 
 #if defined(_WIN32) && defined(_DEBUG)
 	if ( code != ERR_DISCONNECT && code != ERR_NEED_CD ) {
@@ -304,11 +295,6 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		CL_FlushMemory( );
 		com_errorEntered = qfalse;
 
-#ifdef _XBOX
-		// I THINK this only happens on client
-		Net_XboxDisconnect();
-#endif
-
 		throw ("DISCONNECTED\n");
 	} else if ( code == ERR_DROP || code == ERR_DISCONNECT ) {
 		Com_Printf ("********************\nERROR: %s\n********************\n", com_errorMessage);
@@ -316,12 +302,6 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		CL_Disconnect( qtrue );
 		CL_FlushMemory( );
 		com_errorEntered = qfalse;
-
-#ifdef _XBOX
-		// Clients (only) need to do connection cleanup now
-		if (!wasRunningServer)
-			Net_XboxDisconnect();
-#endif
 
 		throw ("DROPPED\n");
 	} else if ( code == ERR_NEED_CD ) {
@@ -1169,7 +1149,6 @@ Com_WriteCDKey
 =================
 */
 static void Com_WriteCDKey( const char *filename, const char *ikey ) {
-#ifndef _XBOX
 	fileHandle_t	f;
 	char			fbuffer[MAX_OSPATH];
 	char			key[17];
@@ -1197,7 +1176,6 @@ static void Com_WriteCDKey( const char *filename, const char *ikey ) {
 	FS_Printf( f, "// id Software and Activision will NOT ask you to send this file to them.\r\n");
 
 	FS_FCloseFile( f );
-#endif
 }
 #endif
 
@@ -1234,11 +1212,6 @@ void Com_Init( char *commandLine ) {
 
 		Com_InitZoneMemory();
 
-#ifdef _XBOX
-		extern void WF_Init();
-		WF_Init();
-#endif
-
 		Cmd_Init ();
 
 		// override anything from the config files with command line args
@@ -1252,16 +1225,6 @@ void Com_Init( char *commandLine ) {
 
 		// done early so bind command exists
 		CL_InitKeyCommands();
-
-#ifdef _XBOX
-		extern void Sys_InitFileCodes();
-		extern void Sys_FilecodeScan_f();
-		Sys_InitFileCodes();
-		Cmd_AddCommand("filecodes", Sys_FilecodeScan_f);
-
-		extern void Sys_StreamInit();
-		Sys_StreamInit();
-#endif
 
 		FS_InitFilesystem ();
 
@@ -1383,12 +1346,6 @@ void Com_Init( char *commandLine ) {
 		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
 		VM_Init();
 		SV_Init();
-#ifdef _XBOX
-		//Load this earlier so it doesn't create a fragment in the middle of
-		//the zone.
-		extern int PC_LoadGlobalDefines(const char*);
-		PC_LoadGlobalDefines("ui/jamp/menudef.h");
-#endif
 
 		com_dedicated->modified = qfalse;
 		if ( !com_dedicated->integer ) {
@@ -1444,7 +1401,6 @@ void Com_Init( char *commandLine ) {
 //==================================================================
 
 void Com_WriteConfigToFile( const char *filename ) {
-#ifndef _XBOX
 	fileHandle_t	f;
 
 	f = FS_FOpenFileWrite( filename );
@@ -1457,7 +1413,6 @@ void Com_WriteConfigToFile( const char *filename ) {
 	Key_WriteBindings (f);
 	Cvar_WriteVariables (f);
 	FS_FCloseFile( f );
-#endif
 }
 
 
@@ -1752,11 +1707,6 @@ try
 	key = lastTime * 0x87243987;
 
 	com_frameNumber++;
-
-#ifdef _XBOX
-	// Need to do Xbox Live frame here, because it can trigger an ERR_DROP
-	XBL_Tick();
-#endif
 
 }//try
 	catch (const char* reason) {

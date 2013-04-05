@@ -5,14 +5,8 @@
    Structures local to the files_* modules.
 */
 
-#ifdef _XBOX
-#include "../goblib/goblib.h"
-
-typedef int wfhandle_t;
-#else
 #include "../zlib32/zip.h"
 #include "unzip.h"
-#endif
 
 #define	BASEGAME			"base"
 #define	DEMOGAME			"demo"
@@ -43,9 +37,7 @@ typedef struct {
 	char			pakFilename[MAX_OSPATH];	// c:\quake3\base\pak0.pk3
 	char			pakBasename[MAX_OSPATH];	// pak0
 	char			pakGamename[MAX_OSPATH];	// base
-#ifndef _XBOX
 	unzFile			handle;						// handle to zip file
-#endif
 	int				checksum;					// regular checksum
 	int				pure_checksum;				// checksum for pure
 	int				numfiles;					// number of files in pk3
@@ -70,9 +62,7 @@ typedef struct searchpath_s {
 
 typedef union qfile_gus {
 	FILE*		o;
-#ifndef _XBOX
 	unzFile		z;
-#endif
 } qfile_gut;
 
 typedef struct qfile_us {
@@ -90,13 +80,6 @@ typedef struct {
 	qboolean	zipFile;
 	qboolean	streamed;
 	char		name[MAX_ZPATH];
-
-#ifdef _XBOX
-	GOBHandle	ghandle;
-	qboolean	gob;
-	qboolean	used;
-	wfhandle_t  whandle;
-#endif
 } fileHandleData_t;
 
 
