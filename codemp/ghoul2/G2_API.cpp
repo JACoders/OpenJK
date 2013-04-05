@@ -2031,7 +2031,9 @@ void G2API_CollisionDetectCache(CollisionRecord_t *collRecMap, CGhoul2Info_v &gh
 										  int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, CMiniHeap *G2VertSpace, int traceFlags, int useLod, float fRadius)
 { //this will store off the transformed verts for the next trace - this is slower, but for models that do not animate
 	//frequently it is much much faster. -rww
+#if 0 // UNUSED
 	int *test = ghoul2[0].mTransformedVertsArray;
+#endif
 	if (G2_SetupModelPointers(ghoul2))
 	{
 		vec3_t	transRayStart, transRayEnd;
