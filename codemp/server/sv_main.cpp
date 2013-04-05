@@ -674,7 +674,7 @@ void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
 	char		remaining[1024];
 	// TTimo - scaled down to accumulate, but not overflow anything network wise, print wise etc.
 	// (OOB messages are the bottleneck here)
-#define	SV_OUTPUTBUF_LENGTH	(MAX_MSGLEN - 16)
+#define	SV_OUTPUTBUF_LENGTH	(1024 - 16)
 	char		sv_outputbuf[SV_OUTPUTBUF_LENGTH];
 	char		*cmd_aux;
 
