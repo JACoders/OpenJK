@@ -20,17 +20,6 @@
 // wether we did a reorder on the current search path when joining the server
 static qboolean fs_reordered;
 
-// productId: This file is copyright 2003 Raven Software, and may not be duplicated except during a licensed installation of the full commercial version of Star Wars: Jedi Academy
-static const byte fs_scrambledProductId[] = {
-42, 143, 149, 190,  10, 197, 225, 133, 243,  63, 189, 182, 226,  56, 143,  17, 215,  37, 197, 218,  50, 103,  24, 235, 246, 191, 183, 149, 160, 170,
-230,  52, 176, 231,  15, 194, 236, 247, 159, 168, 132, 154,  24, 133,  67,  85,  36,  97,  99,  86, 117, 189, 212, 156, 236, 153,  68,  10, 196, 241,
-39, 219, 156,  88,  93, 198, 200, 232, 142,  67,  45, 209,  53, 186, 228, 241, 162, 127, 213,  83,   7, 121,  11,  93, 123, 243, 148, 240, 229,  42,
-42,   6, 215, 239, 112, 120, 240, 244, 104,  12,  38,  47, 201, 253, 223, 208, 154,  69, 141, 157,  32, 117, 166, 146, 236,  59,  15, 223,  52,  89,
-133,  64, 201,  56, 119,  25, 211, 152, 159,  11,  92,  59, 207,  81, 123,   0, 121, 241, 116,  42,  36, 251,  51, 149,  79, 165,  12, 106, 187, 225,
-203,  99, 102,  69,  97,  81,  27, 107,  81, 178,  63,  35, 185,  64, 115 
-};
-
-
 /*
 =================
 FS_PakIsPure
@@ -54,7 +43,6 @@ qboolean FS_PakIsPure( pack_t *pack ) {
 	}
 	return qtrue;
 }
-
 
 /*
 ================
@@ -2936,9 +2924,6 @@ void FS_Restart( int checksumFeed ) {
 
 	// try to start up normally
 	FS_Startup( BASEGAME );
-
-	// see if we are going to allow add-ons
-	FS_SetRestrictions();
 
 	// if we can't find default.cfg, assume that the paths are
 	// busted and error out now, rather than getting an unreadable
