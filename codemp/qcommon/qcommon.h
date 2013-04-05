@@ -7,8 +7,6 @@
 
 //#define	PRE_RELEASE_DEMO
 
-//#define		USE_CD_KEY
-
 //============================================================================
 
 //
@@ -207,10 +205,6 @@ PROTOCOL
 #ifndef _XBOX	// No gethostbyname(), and can't really use this stuff
 #define	UPDATE_SERVER_NAME		"updatejk3.ravensoft.com"
 #define MASTER_SERVER_NAME		"masterjk3.ravensoft.com"
-
-#ifdef USE_CD_KEY
-#define	AUTHORIZE_SERVER_NAME	"authorizejk3.ravensoft.com"
-#endif
 #endif	// _XBOX
 
 #ifdef _XBOX	// Use port number 1000 for less bandwidth!
