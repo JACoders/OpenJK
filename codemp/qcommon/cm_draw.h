@@ -7,7 +7,7 @@
 #if !defined(CM_DRAW_H_INC)
 #define CM_DRAW_H_INC
 
-#ifndef __linux__
+#ifndef _WIN32
 #include "qcommon/platform.h"
 #endif
 

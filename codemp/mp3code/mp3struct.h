@@ -9,6 +9,9 @@
 #pragma warning (disable : 4201 )	// nonstandard extension used : nameless struct/union
 
 #include "small_header.h"	// for SAMPLE and IN_OUT
+#ifndef _WIN32
+#include "qcommon/platform.h"
+#endif
 
 typedef void (*SBT_FUNCTION) (float *sample, short *pcm, int n);
 typedef void (*XFORM_FUNCTION) (void *pcm, int igr);
