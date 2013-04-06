@@ -29,7 +29,7 @@ Major contributors, in alphabetical order:
 * The Jedi Academy singleplayer now searches for jagamex86.dll in the mod's folder, too, meaning SP Code mods are possible.
 * Increased Command Buffer from 16384 to 128*1024
 * Increased max cvars from 1224 to 2048
-* Removed unnessicary xbox code.
+* Removed unnecessary xbox code.
 
 ### Minor Changes ###
 * Added mouse-wheel to console
