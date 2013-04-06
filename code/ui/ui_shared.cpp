@@ -7162,6 +7162,96 @@ void Item_Model_Paint(itemDef_t *item)
 		return;
 	}
 
+	// Fuck all the logic --eez
+#ifndef __NO_JK2
+	if(Cvar_VariableIntegerValue("com_jk2"))
+	{
+		// setup the refdef
+		memset( &refdef, 0, sizeof( refdef ) );
+		refdef.rdflags = RDF_NOWORLDMODEL;
+		AxisClear( refdef.viewaxis );
+		x = item->window.rect.x+1;
+		y = item->window.rect.y+1;
+		w = item->window.rect.w-2;
+		h = item->window.rect.h-2;
+
+		refdef.x = x * DC->xscale;
+		refdef.y = y * DC->yscale;
+		refdef.width = w * DC->xscale;
+		refdef.height = h * DC->yscale;
+
+		DC->modelBounds( item->asset, mins, maxs );
+
+		origin[2] = -0.5 * ( mins[2] + maxs[2] );
+		origin[1] = 0.5 * ( mins[1] + maxs[1] );
+
+		// calculate distance so the model nearly fills the box
+		if (qtrue) 
+		{
+			float len = 0.5 * ( maxs[2] - mins[2] );		
+			origin[0] = len / 0.268;	// len / tan( fov/2 )
+			//origin[0] = len / tan(w/2);
+		} 
+		else 
+		{
+			origin[0] = item->textscale;
+		}
+		// WTF..? --eez
+		//refdef.fov_x = (modelPtr->fov_x) ? modelPtr->fov_x : w;
+		//refdef.fov_y = (modelPtr->fov_y) ? modelPtr->fov_y : h;
+
+		refdef.fov_x = 45;
+		refdef.fov_y = 45;
+		
+		//refdef.fov_x = (int)((float)refdef.width / 640.0f * 90.0f);
+		//xx = refdef.width / tan( refdef.fov_x / 360 * M_PI );
+		//refdef.fov_y = atan2( refdef.height, xx );
+		//refdef.fov_y *= ( 360 / M_PI );
+
+		DC->clearScene();
+
+		refdef.time = DC->realTime;
+
+		// add the model
+
+		memset( &ent, 0, sizeof(ent) );
+
+		//adjust = 5.0 * sin( (float)uis.realtime / 500 );
+		//adjust = 360 % (int)((float)uis.realtime / 1000);
+		//VectorSet( angles, 0, 0, 1 );
+
+		// use item storage to track
+	/*
+		if (modelPtr->rotationSpeed) 
+		{
+			if (DC->realTime > item->window.nextTime) 
+			{
+				item->window.nextTime = DC->realTime + modelPtr->rotationSpeed;
+				modelPtr->angle = (int)(modelPtr->angle + 1) % 360;
+			}
+		}
+		VectorSet( angles, 0, modelPtr->angle, 0 );
+	*/
+		VectorSet( angles, 0, (float)(refdef.time/20.0f), 0);
+		
+		AnglesToAxis( angles, ent.axis );
+
+		ent.hModel = item->asset;
+		VectorCopy( origin, ent.origin );
+		VectorCopy( ent.origin, ent.oldorigin );
+
+		// Set up lighting
+		VectorCopy( refdef.vieworg, ent.lightingOrigin );
+		ent.renderfx = RF_LIGHTING_ORIGIN | RF_NOSHADOW;
+
+		DC->addRefEntityToScene( &ent );
+		DC->renderScene( &refdef );
+	}
+	else
+	{
+#endif
+
+
 	// a moves datapad anim is playing
 	if (uiInfo.moveAnimTime && (uiInfo.moveAnimTime < uiInfo.uiDC.realTime))
 	{ 
@@ -7322,13 +7412,15 @@ void Item_Model_Paint(itemDef_t *item)
 
 	// Set up lighting
 	//VectorCopy( refdef.vieworg, ent.lightingOrigin );
-	//ent.renderfx = RF_LIGHTING_ORIGIN | RF_NOSHADOW;
-	ent.renderfx = RF_NOSHADOW ;
+	ent.renderfx = RF_LIGHTING_ORIGIN | RF_NOSHADOW;
+
 	ui.R_AddLightToScene(refdef.vieworg, 500, 1, 1, 1);	//fixme: specify in menu file!
 
 	DC->addRefEntityToScene( &ent );
 	DC->renderScene( &refdef );
-
+#ifndef __NO_JK2
+	}
+#endif
 }
 
 /*
