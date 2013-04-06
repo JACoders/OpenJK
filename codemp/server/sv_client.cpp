@@ -843,9 +843,7 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 	if(!cl->download)
 	{
 		qboolean idPack = qfalse;
-		#ifndef STANDALONE
 		qboolean missionPack = qfalse;
-		#endif
 	
  		// Chop off filename extension.
 		Com_sprintf(pakbuf, sizeof(pakbuf), "%s", cl->downloadName);
