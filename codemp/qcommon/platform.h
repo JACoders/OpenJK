@@ -12,7 +12,27 @@ typedef const char *LPCSTR;
 typedef unsigned long DWORD;
 typedef unsigned int UINT;
 typedef void* HANDLE;
+typedef HANDLE HINSTANCE;
+typedef void *PVOID;
 typedef DWORD COLORREF;
 typedef unsigned char BYTE;
-#endif 
+typedef unsigned char byte;
+typedef long LONG;
+typedef struct tagPOINT {
+  LONG x;
+  LONG y;
+} POINT;
+typedef unsigned short USHORT;
+typedef unsigned short WORD;
+typedef struct _GUID {
+  DWORD Data1;
+  WORD  Data2;
+  WORD  Data3;
+  BYTE  Data4[8];
+} GUID;
+#define strnicmp strncmp
+#define strcmpi strcmp
+#define stricmp strcmp
+#define RGB(r,g,b)          ((COLORREF)((r) | ((g) << 8) | ((b) << 16)))
+#endif
 #endif

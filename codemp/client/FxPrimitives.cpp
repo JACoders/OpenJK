@@ -424,6 +424,8 @@ inline int VectorToInt(vec3_t vec)
 {
 	int			tmp, retval;
 
+	// FIXME: unix compatibility needed
+#ifdef _WIN32
 	_asm
 	{
 		push	edx
@@ -447,6 +449,7 @@ inline int VectorToInt(vec3_t vec)
 		mov		[retval], eax
 		pop		edx
 	}
+#endif
 	return(retval);
 }
 
