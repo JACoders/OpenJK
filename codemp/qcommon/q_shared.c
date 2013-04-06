@@ -1094,56 +1094,54 @@ const char *Q_strchrs( const char *string, const char *search )
 	return NULL;
 }
 
+#ifdef _MSC_VER
 /*
-============
+=============
 Q_vsnprintf
-
-vsnprintf portability:
-
-C99 standard: vsnprintf returns the number of characters (excluding the trailing
-'\0') which would have been written to the final string if enough space had been available
-snprintf and vsnprintf do not write more than size bytes (including the trailing '\0')
-
-win32: _vsnprintf returns the number of characters written, not including the terminating null character,
-or a negative value if an output error occurs. If the number of characters to write exceeds count, then count 
-characters are written and -1 is returned and no trailing '\0' is added.
-
-Q_vsnprintf: always appends a trailing '\0', returns number of characters written (not including terminal \0)
-or returns -1 on failure or if the buffer would be overflowed.
-============
+ 
+Special wrapper function for Microsoft's broken _vsnprintf() function.
+MinGW comes with its own snprintf() which is not broken.
+=============
 */
-int Q_vsnprintf( char *str, size_t size, const char *format, va_list args )
-{
-	int ret;
 
-#ifdef _WIN32
-	ret = _vsnprintf( str, size-1, format, args );
-#else
-	ret = vsnprintf( str, size, format, args );
+int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
+{
+	int retval;
+
+	retval = _vsnprintf(str, size, format, ap);
+
+	if(retval < 0 || retval == size)
+	{
+		// Microsoft doesn't adhere to the C99 standard of vsnprintf,
+		// which states that the return value must be the number of
+		// bytes written if the output string had sufficient length.
+		//
+		// Obviously we cannot determine that value from Microsoft's
+		// implementation, so we have no choice but to return size.
+
+		str[size - 1] = '\0';
+		return size;
+	}
+
+	return retval;
+}
 #endif
 
-	str[size-1] = '\0';
-
-	if ( ret < 0 || ret >= (signed)size )
-		return -1;
-
-	return ret;
-}
-
 //Raz: Patched version of Com_sprintf
-void QDECL Com_sprintf( char *dest, int size, const char *fmt, ...)
-{
-	int			ret;
+//Ensiform: But this is better
+int QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
+	int		len;
 	va_list		argptr;
 
-	va_start( argptr, fmt );
-	ret = Q_vsnprintf( dest, size, fmt, argptr );
-	va_end( argptr );
+	va_start (argptr,fmt);
+	len = Q_vsnprintf(dest, size, fmt, argptr);
+	va_end (argptr);
 
-	if ( ret == -1 )
-		Com_Printf( "Com_sprintf: overflow of %i bytes buffer\n", size );
+	if(len >= size)
+		Com_Printf("Com_sprintf: Output length %d too short, require %d bytes.\n", size, len + 1);
+	
+	return len;
 }
-
 
 /*
 ============
