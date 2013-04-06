@@ -542,67 +542,45 @@ void * QDECL Sys_LoadDll( const char *name, int (QDECL **entryPoint)(int, ...),
 	HINSTANCE	libHandle;
 	void	(QDECL *dllEntry)( int (QDECL *syscallptr)(int, ...) );
 	char	*basepath;
+	char	*homepath;
 	char	*cdpath;
 	char	*gamedir;
 	char	*fn;
-#ifdef NDEBUG
-	int		timestamp;
-  int   ret;
-#endif
 	char	filename[MAX_QPATH];
 
 	Com_sprintf( filename, sizeof( filename ), "%sx86.dll", name );
-
-#ifdef NDEBUG
-	timestamp = Sys_Milliseconds();
-//	if( ((timestamp - lastWarning) > (5 * 60000)) && !Cvar_VariableIntegerValue( "dedicated" )
-//		&& !Cvar_VariableIntegerValue( "com_blindlyLoadDLLs" ) ) {
-	if (0) {
-		if (FS_FileExists(filename)) {
-			lastWarning = timestamp;
-			ret = MessageBoxEx( NULL, "You are about to load a .DLL executable that\n"
-				  "has not been verified for use with Quake III Arena.\n"
-				  "This type of file can compromise the security of\n"
-				  "your computer.\n\n"
-				  "Select 'OK' if you choose to load it anyway.",
-				  "Security Warning", MB_OKCANCEL | MB_ICONEXCLAMATION | MB_DEFBUTTON2 | MB_TOPMOST | MB_SETFOREGROUND,
-				  MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ) );
-			if( ret != IDOK ) {
-				return NULL;
-			}
-		}
-	}
-#endif
 
 	if (!Sys_UnpackDLL(filename))
 	{
 		return NULL;
 	}
 
-// rjr disable for final release #ifndef NDEBUG
 	libHandle = LoadLibrary( filename );
 	if ( !libHandle ) {
-//#endif
-	basepath = Cvar_VariableString( "fs_basepath" );
-	cdpath = Cvar_VariableString( "fs_cdpath" );
-	gamedir = Cvar_VariableString( "fs_game" );
+		basepath = Cvar_VariableString( "fs_basepath" );
+		homepath = Cvar_VariableString( "fs_homepath" );
+		cdpath = Cvar_VariableString( "fs_cdpath" );
+		gamedir = Cvar_VariableString( "fs_game" );
 
-	fn = FS_BuildOSPath( basepath, gamedir, filename );
-	libHandle = LoadLibrary( fn );
-
-	if ( !libHandle ) {
-		if( cdpath[0] ) {
-			fn = FS_BuildOSPath( cdpath, gamedir, filename );
-			libHandle = LoadLibrary( fn );
-		}
+		fn = FS_BuildOSPath( basepath, gamedir, filename );
+		libHandle = LoadLibrary( fn );
 
 		if ( !libHandle ) {
-			return NULL;
+			if( homepath[0] ) {
+				fn = FS_BuildOSPath( homepath, gamedir, filename );
+				libHandle = LoadLibrary( fn );
+			}
+			if ( !libHandle ) {
+				if( cdpath[0] ) {
+					fn = FS_BuildOSPath( cdpath, gamedir, filename );
+					libHandle = LoadLibrary( fn );
+				}
+				if ( !libHandle ) {
+					return NULL;
+				}
+			}
 		}
 	}
-//#ifndef NDEBUG
-	}
-//#endif
 
 	dllEntry = ( void (QDECL *)( int (QDECL *)( int, ... ) ) )GetProcAddress( libHandle, "dllEntry" ); 
 	*entryPoint = (int (QDECL *)(int,...))GetProcAddress( libHandle, "vmMain" );
