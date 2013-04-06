@@ -125,6 +125,7 @@ Creates any directories needed to store the given filename
 */
 qboolean FS_CreatePath (char *OSPath) {
 	char	*ofs;
+	char	path[MAX_OSPATH];
 	
 	// make absolutely sure that it can't back up the path
 	// FIXME: is c: allowed???
@@ -133,11 +134,21 @@ qboolean FS_CreatePath (char *OSPath) {
 		return qtrue;
 	}
 
-	for (ofs = OSPath+1 ; *ofs ; ofs++) {
-		if (*ofs == PATH_SEP) {	
+	Q_strncpyz( path, OSPath, sizeof( path ) );
+	FS_ReplaceSeparators( path );
+
+	// Skip creation of the root directory as it will always be there
+	ofs = strchr( path, PATH_SEP );
+	ofs++;
+
+	for (; ofs != NULL && *ofs ; ofs++) {
+		if (*ofs == PATH_SEP) {
 			// create the directory
 			*ofs = 0;
-			Sys_Mkdir (OSPath);
+			if (!Sys_Mkdir (path)) {
+				Com_Error( ERR_FATAL, "FS_CreatePath: failed to create path \"%s\"",
+					path );
+			}
 			*ofs = PATH_SEP;
 		}
 	}
@@ -200,6 +211,17 @@ FS_Remove
 */
 void FS_Remove( const char *osPath ) {
 	remove( osPath );
+}
+
+/*
+===========
+FS_HomeRemove
+
+===========
+*/
+void FS_HomeRemove( const char *homePath ) {
+	remove( FS_BuildOSPath( fs_homepath->string,
+			fs_gamedir, homePath ) );
 }
 
 /*
@@ -325,47 +347,47 @@ int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
 
 	fsh[f].handleFiles.file.o = fopen( ospath, "rb" );
 	fsh[f].handleSync = qfalse;
-  if (!fsh[f].handleFiles.file.o)
-  {
-    // NOTE TTimo on non *nix systems, fs_homepath == fs_basepath, might want to avoid
-    if (Q_stricmp(fs_homepath->string,fs_basepath->string))
-    {
-      // search basepath
-      ospath = FS_BuildOSPath( fs_basepath->string, filename, "" );
-      ospath[strlen(ospath)-1] = '\0';
+	if (!fsh[f].handleFiles.file.o)
+	{
+		// NOTE TTimo on non *nix systems, fs_homepath == fs_basepath, might want to avoid
+		if (Q_stricmp(fs_homepath->string,fs_basepath->string))
+		{
+			// search basepath
+			ospath = FS_BuildOSPath( fs_basepath->string, filename, "" );
+			ospath[strlen(ospath)-1] = '\0';
 
-      if ( fs_debug->integer )
-      {
-        Com_Printf( "FS_SV_FOpenFileRead (fs_basepath): %s\n", ospath );
-      }
+			if ( fs_debug->integer )
+			{
+				Com_Printf( "FS_SV_FOpenFileRead (fs_basepath): %s\n", ospath );
+			}
 
-      fsh[f].handleFiles.file.o = fopen( ospath, "rb" );
-      fsh[f].handleSync = qfalse;
+			fsh[f].handleFiles.file.o = fopen( ospath, "rb" );
+			fsh[f].handleSync = qfalse;
 
-      if ( !fsh[f].handleFiles.file.o )
-      {
-        f = 0;
-      }
-    }
-  }
+			if ( !fsh[f].handleFiles.file.o )
+			{
+				f = 0;
+			}
+		}
+	}
 
 	if (!fsh[f].handleFiles.file.o) {
-    // search cd path
-    ospath = FS_BuildOSPath( fs_cdpath->string, filename, "" );
-    ospath[strlen(ospath)-1] = '\0';
+		// search cd path
+		ospath = FS_BuildOSPath( fs_cdpath->string, filename, "" );
+		ospath[strlen(ospath)-1] = '\0';
 
-    if (fs_debug->integer)
-    {
-      Com_Printf( "FS_SV_FOpenFileRead (fs_cdpath) : %s\n", ospath );
-    }
+		if (fs_debug->integer)
+		{
+			Com_Printf( "FS_SV_FOpenFileRead (fs_cdpath) : %s\n", ospath );
+		}
 
-	  fsh[f].handleFiles.file.o = fopen( ospath, "rb" );
-	  fsh[f].handleSync = qfalse;
+		fsh[f].handleFiles.file.o = fopen( ospath, "rb" );
+		fsh[f].handleSync = qfalse;
 
-	  if( !fsh[f].handleFiles.file.o ) {
-	    f = 0;
-	  }
-  }
+		if( !fsh[f].handleFiles.file.o ) {
+			f = 0;
+		}
+	}
   
 	*fp = f;
 	if (f) {
@@ -683,7 +705,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 		Com_Error( ERR_FATAL, "FS_FOpenFileRead: NULL 'filename' parameter passed\n" );
 	}
 
-	Com_sprintf (demoExt, sizeof(demoExt), ".dm_%d",PROTOCOL_VERSION );
+	Com_sprintf (demoExt, sizeof(demoExt), ".dm_%d", PROTOCOL_VERSION );
 	// qpaths are not supposed to have a leading slash
 	if ( filename[0] == '/' || filename[0] == '\\' ) {
 		filename++;
@@ -901,8 +923,8 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 				Q_strncpyz( fsh[*file].name, filename, sizeof( fsh[*file].name ) );
 				fsh[*file].zipFile = qfalse;
 				if ( fs_debug->integer ) {
-					Com_Printf( "FS_FOpenFileRead: %s (found in '%s/%s')\n", filename,
-						dir->path, dir->gamedir );
+					Com_Printf( "FS_FOpenFileRead: %s (found in '%s%c%s')\n", filename,
+						dir->path, PATH_SEP, dir->gamedir );
 				}
 
 #ifndef __linux__
