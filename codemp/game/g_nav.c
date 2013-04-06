@@ -87,7 +87,7 @@ void NPC_Blocked( gentity_t *self, gentity_t *blocker )
 		return;
 	}
 
-	//Debug_Printf( debugNPCAI, DEBUG_LEVEL_WARNING, "%s: Excuse me, %s %s!\n", self->targetname, blocker->classname, blocker->targetname );
+	//Debug_Printf( d_npcai, DEBUG_LEVEL_WARNING, "%s: Excuse me, %s %s!\n", self->targetname, blocker->classname, blocker->targetname );
 	
 	//If we're being blocked by the player, say something to them
 	if ( ( blocker->s.number == 0 ) && ( ( blocker->client->playerTeam == self->client->playerTeam ) ) )
@@ -1714,7 +1714,7 @@ int NAV_GetStoredWaypoint( char *targetname )
 {
 	int i;
 
-	if ( !tempWaypointList || !targetname || !targetname[0] )
+	if ( !targetname || !targetname[0] )
 	{
 		return -1;
 	}
@@ -1736,10 +1736,13 @@ void NAV_CalculatePaths( const char *filename, int checksum )
 	int target = -1;
 	int i;
 
+#ifdef _DISABLED
 	if ( !tempWaypointList )
 	{
 		return;
 	}
+#endif //_DISABLED
+
 #ifndef FINAL_BUILD
 	fatalErrors = 0;
 	memset( fatalErrorString, 0, sizeof( fatalErrorString ) );

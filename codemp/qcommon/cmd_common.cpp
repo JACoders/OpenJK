@@ -1,7 +1,7 @@
 // cmd.c -- Quake script command processing module
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 
 #define	MAX_CMD_BUFFER	128*1024

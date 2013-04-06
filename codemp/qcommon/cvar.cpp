@@ -1,7 +1,7 @@
 // cvar.c -- dynamic variable tracking
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 cvar_t		*cvar_vars = NULL;
 cvar_t		*cvar_cheats;
@@ -217,6 +217,18 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 
 	var = Cvar_FindVar (var_name);
 	if ( var ) {
+		// Make sure the game code cannot mark engine-added variables as gamecode vars
+		if(var->flags & CVAR_VM_CREATED)
+		{
+			if(!(flags & CVAR_VM_CREATED))
+				var->flags &= ~CVAR_VM_CREATED;
+		}
+		else if (!(var->flags & CVAR_USER_CREATED))
+		{
+			if(flags & CVAR_VM_CREATED)
+				flags &= ~CVAR_VM_CREATED;
+		}
+
 		// if the C code is now specifying a variable that the user already
 		// set a value for, take the new value as the reset value
 		if ( var->flags & CVAR_USER_CREATED )
@@ -235,18 +247,6 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 
 				var->latchedString = CopyString(var_value);
 			}
-		}
-
-		// Make sure the game code cannot mark engine-added variables as gamecode vars
-		if(var->flags & CVAR_VM_CREATED)
-		{
-			if(!(flags & CVAR_VM_CREATED))
-				var->flags &= ~CVAR_VM_CREATED;
-		}
-		else
-		{
-			if(flags & CVAR_VM_CREATED)
-				flags &= ~CVAR_VM_CREATED;
 		}
 
 		// Make sure servers cannot mark engine-added variables as SERVER_CREATED
@@ -683,12 +683,13 @@ qboolean Cvar_Command( void ) {
 		return qtrue;
 	}
 
-	const char *value = Cmd_Argv(1);
-	if (value[0] == '!')	//toggle
+	//const char *value = Cmd_Argv(1);
+	//if (value[0] == '!')	//toggle
+	if( !strcmp( Cmd_Argv(1), "!" ) )
 	{
-		char buff[5];
-		sprintf(buff,"%i",!v->value);
-		Cvar_Set2 (v->name, buff, qfalse);// toggle the value
+		// Swap the value if our command has ! in it (bind p "cg_thirdPeson !")
+		Cvar_SetValue2( v->name, !v->value, qfalse );
+		return qtrue;
 	}
 
 	// set the value if forcing isn't required

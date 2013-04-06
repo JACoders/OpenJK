@@ -1,16 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug(SH)|Win32">
-      <Configuration>Debug(SH)</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Final|Win32">
-      <Configuration>Final</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
@@ -19,41 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <SccProjectName>
-    </SccProjectName>
-    <SccAuxPath />
-    <SccLocalPath>
-    </SccLocalPath>
-    <SccProvider>
-    </SccProvider>
+    <ProjectName>botlib</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug(SH)|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>NotSet</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>NotSet</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Final|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>NotSet</CharacterSet>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug(SH)|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -61,79 +31,34 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Final|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">.\../Final\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">.\../Final/botlib\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\../Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\../Debug/botlib\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\../Release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\../Release/botlib\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug(SH)|Win32'">Debug(SH)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug(SH)|Win32'">Debug(SH)\</IntDir>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug(SH)|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug(SH)|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug(SH)|Win32'" />
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\.build\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\libs\win32\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\build\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Final|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Final|Win32'" />
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)$(PlatformShortName)</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)</TargetName>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">
-    <ClCompile>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>../game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;_LIB;BOTLIB;WIN32;_JK2;FINAL_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>.\../Final/botlib/botlib.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\../Final/botlib/</AssemblerListingLocation>
-      <ObjectFileName>.\../Final/botlib/</ObjectFileName>
-      <ProgramDataBaseFileName>.\../Final/botlib/</ProgramDataBaseFileName>
-      <WarningLevel>Level4</WarningLevel>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <CompileAs>Default</CompileAs>
-    </ClCompile>
-    <Lib>
-      <OutputFile>.\../Final\botlib.lib</OutputFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-    </Lib>
-    <ResourceCompile>
-      <PreprocessorDefinitions>NDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Culture>0x0409</Culture>
-    </ResourceCompile>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;DEBUG;WIN32;_LIB;BOTLIB;_JK2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>.\../Debug/botlib/botlib.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\../Debug/botlib/</AssemblerListingLocation>
-      <ObjectFileName>.\../Debug/botlib/</ObjectFileName>
-      <ProgramDataBaseFileName>.\../Debug/botlib/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
       <BrowseInformation>true</BrowseInformation>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -141,7 +66,7 @@
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <Lib>
-      <OutputFile>.\../Debug\botlib.lib</OutputFile>
+      <OutputFile>..\libs\win32\botlib.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <ResourceCompile>
@@ -152,62 +77,27 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>../game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;BOTLIB;_JK2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>.\../Release/botlib/botlib.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\../Release/botlib/</AssemblerListingLocation>
-      <ObjectFileName>.\../Release/botlib/</ObjectFileName>
-      <ProgramDataBaseFileName>.\../Release/botlib/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
       <WarningLevel>Level4</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <Lib>
-      <OutputFile>.\../Release\botlib.lib</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <ResourceCompile>
       <PreprocessorDefinitions>NDebug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Culture>0x0409</Culture>
-    </ResourceCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug(SH)|Win32'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;DEBUG;WIN32;_LIB;BOTLIB;_JK2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>.\../Debug/botlib/botlib.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\../Debug/botlib/</AssemblerListingLocation>
-      <ObjectFileName>.\../Debug/botlib/</ObjectFileName>
-      <ProgramDataBaseFileName>.\../Debug/botlib/</ProgramDataBaseFileName>
-      <BrowseInformation>true</BrowseInformation>
-      <WarningLevel>Level3</WarningLevel>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <CompileAs>Default</CompileAs>
-    </ClCompile>
-    <Lib>
-      <OutputFile>.\../Debug\botlib.lib</OutputFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-    </Lib>
-    <ResourceCompile>
-      <PreprocessorDefinitions>_Debug;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>

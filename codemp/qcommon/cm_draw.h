@@ -8,8 +8,7 @@
 #define CM_DRAW_H_INC
 
 #ifndef __linux__
-//#include <windows.h>
-#include "../qcommon/platform.h"
+#include "qcommon/platform.h"
 #endif
 
 // calc offset into image array for a pixel at (x,y)

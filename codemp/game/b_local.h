@@ -36,14 +36,6 @@
 void SetNPCGlobals( gentity_t *ent );
 void SaveNPCGlobals(void);
 void RestoreNPCGlobals(void);
-extern vmCvar_t		debugNPCAI;			// used to print out debug info about the NPC AI
-extern vmCvar_t		debugNPCFreeze;		// set to disable NPC ai and temporarily freeze them in place
-extern vmCvar_t		debugNPCAimingBeam;
-extern vmCvar_t		debugBreak;
-extern vmCvar_t		debugNoRoam;
-extern vmCvar_t		d_JediAI;
-extern vmCvar_t		d_saberCombat;
-
 extern void NPC_Think ( gentity_t *self);
 
 //NPC_reactions.cpp
@@ -297,7 +289,7 @@ extern qboolean NPC_FaceEntity( gentity_t *ent, qboolean doPitch ); //doPitch = 
 extern qboolean NPC_FaceEnemy( qboolean doPitch ); //doPitch = qtrue
 
 //Skill level cvar
-extern vmCvar_t	g_spskill;
+extern vmCvar_t	g_npcspskill;
 
 #define	NIF_NONE		0x00000000
 #define	NIF_FAILED		0x00000001	//failed to find a way to the goal

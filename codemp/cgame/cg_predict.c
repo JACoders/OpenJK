@@ -854,6 +854,7 @@ void CG_PmoveClientPointerUpdate()
 	{
 		cgSendPS[i] = &cgSendPSPool[i];
 
+		// These will be invalid at this point on Xbox
 		cg_entities[i].playerState = cgSendPS[i];
 	}
 
@@ -943,7 +944,7 @@ void CG_PredictPlayerState( void ) {
 	}
 
 	// non-predicting local movement will grab the latest angles
-	if ( cg_nopredict.integer || cg_synchronousClients.integer || CG_UsingEWeb() ) {
+	if ( cg_noPredict.integer || g_synchronousClients.integer || CG_UsingEWeb() ) {
 		CG_InterpolatePlayerState( qtrue );
 		if (CG_Piloting(cg.predictedPlayerState.m_iVehicleNum))
 		{
@@ -1009,7 +1010,7 @@ void CG_PredictPlayerState( void ) {
 	trap_GetUserCmd( cmdNum, &oldestCmd );
 	if ( oldestCmd.serverTime > cg.snap->ps.commandTime 
 		&& oldestCmd.serverTime < cg.time ) {	// special check for map_restart
-		if ( cg_showmiss.integer ) {
+		if ( cg_showMiss.integer ) {
 			CG_Printf ("exceeded PACKET_BACKUP on commands\n");
 		}
 		return;
@@ -1060,6 +1061,7 @@ void CG_PredictPlayerState( void ) {
 		if (cg_entities[i].currentState.eType == ET_PLAYER ||
 			cg_entities[i].currentState.eType == ET_NPC)
 		{
+			// Need a new playerState_t on Xbox
 			VectorCopy( cg_entities[i].currentState.pos.trBase, cgSendPS[i]->origin );
 			VectorCopy( cg_entities[i].currentState.pos.trDelta, cgSendPS[i]->velocity );
 			cgSendPS[i]->saberLockFrame = cg_entities[i].currentState.forceFrame;
@@ -1176,7 +1178,7 @@ void CG_PredictPlayerState( void ) {
 			if ( cg.thisFrameTeleport ) {
 				// a teleport will not cause an error decay
 				VectorClear( cg.predictedError );
-				if ( cg_showmiss.integer ) {
+				if ( cg_showMiss.integer ) {
 					CG_Printf( "PredictionTeleport\n" );
 				}
 				cg.thisFrameTeleport = qfalse;
@@ -1185,7 +1187,7 @@ void CG_PredictPlayerState( void ) {
 				CG_AdjustPositionForMover( cg.predictedPlayerState.origin, 
 					cg.predictedPlayerState.groundEntityNum, cg.physicsTime, cg.oldTime, adjusted );
 
-				if ( cg_showmiss.integer ) {
+				if ( cg_showMiss.integer ) {
 					if (!VectorCompare( oldPlayerState.origin, adjusted )) {
 						CG_Printf("prediction error\n");
 					}
@@ -1193,7 +1195,7 @@ void CG_PredictPlayerState( void ) {
 				VectorSubtract( oldPlayerState.origin, adjusted, delta );
 				len = VectorLength( delta );
 				if ( len > 0.1 ) {
-					if ( cg_showmiss.integer ) {
+					if ( cg_showMiss.integer ) {
 						CG_Printf("Prediction miss: %f\n", len);
 					}
 					if ( cg_errorDecay.integer ) {
@@ -1205,7 +1207,7 @@ void CG_PredictPlayerState( void ) {
 						if ( f < 0 ) {
 							f = 0;
 						}
-						if ( f > 0 && cg_showmiss.integer ) {
+						if ( f > 0 && cg_showMiss.integer ) {
 							CG_Printf("Double prediction decay: %f\n", f);
 						}
 						VectorScale( cg.predictedError, f, cg.predictedError );
@@ -1376,12 +1378,12 @@ void CG_PredictPlayerState( void ) {
 		//CG_CheckChangedPredictableEvents(&cg.predictedPlayerState);
 	}
 
-	if ( cg_showmiss.integer > 1 ) {
+	if ( cg_showMiss.integer > 1 ) {
 		CG_Printf( "[%i : %i] ", cg_pmove.cmd.serverTime, cg.time );
 	}
 
 	if ( !moved ) {
-		if ( cg_showmiss.integer ) {
+		if ( cg_showMiss.integer ) {
 			CG_Printf( "not moved\n" );
 		}
 		goto revertES;
@@ -1401,7 +1403,7 @@ void CG_PredictPlayerState( void ) {
 			cg.physicsTime, cg.time, cg.predictedPlayerState.origin );
 	}
 
-	if ( cg_showmiss.integer ) {
+	if ( cg_showMiss.integer ) {
 		if (cg.predictedPlayerState.eventSequence > oldPlayerState.eventSequence + MAX_PS_EVENTS) {
 			CG_Printf("WARNING: dropped event\n");
 		}
@@ -1410,7 +1412,7 @@ void CG_PredictPlayerState( void ) {
 	// fire events and other transition triggered things
 	CG_TransitionPlayerState( &cg.predictedPlayerState, &oldPlayerState );
 
-	if ( cg_showmiss.integer ) {
+	if ( cg_showMiss.integer ) {
 		if (cg.eventSequence > cg.predictedPlayerState.eventSequence) {
 			CG_Printf("WARNING: double event\n");
 			cg.eventSequence = cg.predictedPlayerState.eventSequence;
@@ -1421,7 +1423,7 @@ void CG_PredictPlayerState( void ) {
 		!CG_Piloting(cg.predictedPlayerState.m_iVehicleNum))
 	{ //a passenger on this vehicle, bolt them in
 		centity_t *veh = &cg_entities[cg.predictedPlayerState.m_iVehicleNum];
-		//VectorCopy(veh->lerpAngles, cg.predictedPlayerState.viewangles);
+		VectorCopy(veh->lerpAngles, cg.predictedPlayerState.viewangles);
 		VectorCopy(veh->lerpOrigin, cg.predictedPlayerState.origin);
 	}
 

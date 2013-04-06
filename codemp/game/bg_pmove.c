@@ -3,11 +3,11 @@
 // bg_pmove.c -- both games player movement code
 // takes a playerstate and a usercmd as input and returns a modifed playerstate
 
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_local.h"
 #include "bg_strap.h"
-#include "../ghoul2/G2.h"
+#include "ghoul2/G2.h"
 
 #ifdef QAGAME
 #include "g_local.h" //ahahahahhahahaha@$!$!
@@ -704,11 +704,15 @@ void BG_VehicleTurnRateForSpeed( Vehicle_t *pVeh, float speed, float *mPitchOver
 	}
 }
 
+
 // Following couple things don't belong in the DLL namespace!
 #ifdef QAGAME
-typedef struct gentity_s gentity_t;
-gentity_t *G_PlayEffectID(const int fxID, vec3_t org, vec3_t ang);
+	#if !defined(MACOS_X) && !defined(__GCC__)
+		typedef struct gentity_s gentity_t;
+	#endif
+	gentity_t *G_PlayEffectID( const int fxID, vec3_t org, vec3_t ang );
 #endif
+
 
 static void PM_GroundTraceMissed( void );
 void PM_HoverTrace( void )
@@ -1756,7 +1760,7 @@ void PM_SetForceJumpZStart(float value)
 	pm->ps->fd.forceJumpZStart = value;
 	if (!pm->ps->fd.forceJumpZStart)
 	{
-		pm->ps->fd.forceJumpZStart -= 0.1;
+		pm->ps->fd.forceJumpZStart -= 0.1f;
 	}
 }
 
@@ -2801,7 +2805,7 @@ static qboolean	PM_CheckWaterJump( void ) {
 
 	spot[2] += 16;
 	cont = pm->pointcontents (spot, pm->ps->clientNum );
-	if ( cont ) {
+	if ( cont & (CONTENTS_SOLID|CONTENTS_PLAYERCLIP|CONTENTS_BODY) ) {
 		return qfalse;
 	}
 
@@ -3314,6 +3318,7 @@ static void PM_WalkMove( void ) {
 		PM_WaterMove();
 		return;
 	}
+
 
 	if (pm->ps->pm_type != PM_SPECTATOR)
 	{
@@ -3856,10 +3861,8 @@ static void PM_CrashLand( void ) {
 		{
 			if (!BG_SaberInSpecial(pm->ps->saberMove) || pm->ps->weapon != WP_SABER)
 			{
-				if (pm->ps->legsAnim != BOTH_FORCELAND1 &&
-					pm->ps->legsAnim != BOTH_FORCELANDBACK1 &&
-					pm->ps->legsAnim != BOTH_FORCELANDRIGHT1 &&
-					pm->ps->legsAnim != BOTH_FORCELANDLEFT1)
+				if (pm->ps->legsAnim != BOTH_FORCELAND1			&&	pm->ps->legsAnim != BOTH_FORCELANDBACK1 &&
+					pm->ps->legsAnim != BOTH_FORCELANDRIGHT1	&&	pm->ps->legsAnim != BOTH_FORCELANDLEFT1)
 				{ //don't override if we have started a force land
 					pm->ps->legsTimer = TIMER_LAND;
 				}
@@ -4395,6 +4398,38 @@ void PM_CheckFixMins( void )
 	}
 }
 
+static qboolean PM_CanStand ( void )
+{
+    qboolean canStand = qtrue;
+    float x, y;
+    trace_t trace;
+
+    const vec3_t lineMins = { -5.0f, -5.0f, -2.5f };
+    const vec3_t lineMaxs = { 5.0f, 5.0f, 0.0f };
+
+    for ( x = pm->mins[0] + 5.0f; canStand && x <= (pm->maxs[0] - 5.0f); x += 10.0f )
+    {
+        for ( y = pm->mins[1] + 5.0f; y <= (pm->maxs[1] - 5.0f); y += 10.0f )
+        {
+			vec3_t start, end;//
+			VectorSet( start, x, y, pm->maxs[2] );
+			VectorSet( end, x, y, pm->ps->standheight );
+
+			VectorAdd (start, pm->ps->origin, start);
+			VectorAdd (end, pm->ps->origin, end);
+
+			pm->trace (&trace, start, lineMins, lineMaxs, end, pm->ps->clientNum, pm->tracemask);
+			if ( trace.allsolid || trace.fraction < 1.0f )
+			{
+				canStand = qfalse;
+				break;
+			}
+		}
+	}
+
+    return canStand;
+}
+
 /*
 ==============
 PM_CheckDuck
@@ -4404,7 +4439,7 @@ Sets mins, maxs, and pm->ps->viewheight
 */
 static void PM_CheckDuck (void)
 {
-	trace_t	trace;
+//	trace_t	trace;
 
 	if ( pm->ps->m_iVehicleNum > 0 && pm->ps->m_iVehicleNum < ENTITYNUM_NONE )
 	{//riding a vehicle or are a vehicle
@@ -4493,11 +4528,12 @@ static void PM_CheckDuck (void)
 		}
 		else if (pm->ps->pm_flags & PMF_ROLLING)
 		{
-			// try to stand up
-			pm->maxs[2] = pm->ps->standheight;//DEFAULT_MAXS_2;
-			pm->trace (&trace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask );
-			if (!trace.allsolid)
-				pm->ps->pm_flags &= ~PMF_ROLLING;
+			// Xycaleth's fix for crochjumping through roof
+            if ( PM_CanStand() )
+            {
+                pm->maxs[2] = pm->ps->standheight;
+                pm->ps->pm_flags &= ~PMF_ROLLING;
+            }
 		}
 		else if (pm->cmd.upmove < 0 ||
 			pm->ps->forceHandExtend == HANDEXTEND_KNOCKDOWN ||
@@ -4510,11 +4546,12 @@ static void PM_CheckDuck (void)
 		{	// stand up if possible 
 			if (pm->ps->pm_flags & PMF_DUCKED)
 			{
-				// try to stand up
-				pm->maxs[2] = pm->ps->standheight;//DEFAULT_MAXS_2;
-				pm->trace (&trace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask );
-				if (!trace.allsolid)
-					pm->ps->pm_flags &= ~PMF_DUCKED;
+				// Xycaleth's fix for crochjumping through roof
+                if ( PM_CanStand() )
+	            {
+		            pm->maxs[2] = pm->ps->standheight;
+		            pm->ps->pm_flags &= ~PMF_DUCKED;
+	            }
 			}
 		}
 	}
@@ -6128,7 +6165,7 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 				pm->ps->weaponChargeSubtractTime = pm->cmd.serverTime + weaponData[pm->ps->weapon].altChargeSubTime;
 
 #ifdef _DEBUG
-				Com_Printf("Starting charge\n");
+			//	Com_Printf("Starting charge\n");
 #endif
 				assert(pm->ps->weapon > WP_NONE);
 				BG_AddPredictableEventToPlayerstate(EV_WEAPON_CHARGE_ALT, pm->ps->weapon, pm->ps);
@@ -6167,7 +6204,7 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 				pm->ps->weaponChargeSubtractTime = pm->cmd.serverTime + weaponData[pm->ps->weapon].chargeSubTime;
 
 #ifdef _DEBUG
-				Com_Printf("Starting charge\n");
+			//	Com_Printf("Starting charge\n");
 #endif
 				BG_AddPredictableEventToPlayerstate(EV_WEAPON_CHARGE, pm->ps->weapon, pm->ps);
 			}
@@ -6205,7 +6242,7 @@ rest:
 	{
 		// weapon has a charge, so let us do an attack
 #ifdef _DEBUG
-		Com_Printf("Firing.  Charge time=%d\n", pm->cmd.serverTime - pm->ps->weaponChargeTime);
+	//	Com_Printf("Firing.  Charge time=%d\n", pm->cmd.serverTime - pm->ps->weaponChargeTime);
 #endif
 
 		// dumb, but since we shoot a charged weapon on button-up, we need to repress this button for now
@@ -6216,7 +6253,7 @@ rest:
 	{
 		// weapon has a charge, so let us do an alt-attack
 #ifdef _DEBUG
-		Com_Printf("Firing.  Charge time=%d\n", pm->cmd.serverTime - pm->ps->weaponChargeTime);
+	//	Com_Printf("Firing.  Charge time=%d\n", pm->cmd.serverTime - pm->ps->weaponChargeTime);
 #endif
 
 		// dumb, but since we shoot a charged weapon on button-up, we need to repress this button for now
@@ -6685,9 +6722,8 @@ static void PM_Weapon( void )
 	if (pm_entSelf->s.NPC_class!=CLASS_VEHICLE
 		&&pm->ps->m_iVehicleNum)
 	{ //riding a vehicle
-		veh = pm_entVeh;
-		if ( veh &&
-			(veh->m_pVehicle && veh->m_pVehicle->m_pVehicleInfo->type == VH_WALKER || veh->m_pVehicle && veh->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER) )
+		if ( (veh = pm_entVeh) &&
+			(veh->m_pVehicle && (veh->m_pVehicle->m_pVehicleInfo->type == VH_WALKER || veh->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER) ) )
 		{//riding a walker/fighter
 			//keep saber off, do no weapon stuff at all!
 			pm->ps->saberHolstered = 2;
@@ -7037,6 +7073,9 @@ static void PM_Weapon( void )
 
 	// check for item using
 	if ( pm->cmd.buttons & BUTTON_USE_HOLDABLE ) {
+		// fix: rocket lock bug, one of many...
+		BG_ClearRocketLock( pm->ps );
+
 		if ( ! ( pm->ps->pm_flags & PMF_USE_ITEM_HELD ) ) {
 
 			if (pm_entSelf->s.NPC_class!=CLASS_VEHICLE
@@ -7767,6 +7806,11 @@ static void PM_DropTimers( void ) {
 	}
 }
 
+// Following function is stateless (at the moment). And hoisting it out
+// of the namespace here is easier than fixing all the places it's used,
+// which includes files that are also compiled in SP. We do need to make
+// sure we only get one copy in the linker, though.
+
 extern	vmCvar_t	bg_fighterAltControl;
 qboolean BG_UnrestrainedPitchRoll( playerState_t *ps, Vehicle_t *pVeh )
 {
@@ -7783,6 +7827,7 @@ qboolean BG_UnrestrainedPitchRoll( playerState_t *ps, Vehicle_t *pVeh )
 	}
 	return qfalse;
 }
+
 
 /*
 ================
@@ -8010,111 +8055,111 @@ void PM_UpdateViewAngles( playerState_t *ps, const usercmd_t *cmd ) {
 */
 
 //-------------------------------------------
-void PM_AdjustAttackStates( pmove_t *pm )
+void PM_AdjustAttackStates( pmove_t *pmove )
 //-------------------------------------------
 {
 	int amount;
 
 	if (pm_entSelf->s.NPC_class!=CLASS_VEHICLE
-		&&pm->ps->m_iVehicleNum)
+		&&pmove->ps->m_iVehicleNum)
 	{ //riding a vehicle
 		bgEntity_t *veh = pm_entVeh;
 		if ( veh &&
-			(veh->m_pVehicle && (veh->m_pVehicle->m_pVehicleInfo->type == VH_WALKER || veh->m_pVehicle && veh->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER)) )
+			(veh->m_pVehicle && (veh->m_pVehicle->m_pVehicleInfo->type == VH_WALKER || veh->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER)) )
 		{//riding a walker/fighter
 			//not firing, ever
-			pm->ps->eFlags &= ~(EF_FIRING|EF_ALT_FIRING);
+			pmove->ps->eFlags &= ~(EF_FIRING|EF_ALT_FIRING);
 			return;
 		}
 	}
 	// get ammo usage
-	if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
+	if ( pmove->cmd.buttons & BUTTON_ALT_ATTACK )
 	{
-		amount = pm->ps->ammo[weaponData[ pm->ps->weapon ].ammoIndex] - weaponData[pm->ps->weapon].altEnergyPerShot;
+		amount = pmove->ps->ammo[weaponData[ pmove->ps->weapon ].ammoIndex] - weaponData[pmove->ps->weapon].altEnergyPerShot;
 	}
 	else
 	{
-		amount = pm->ps->ammo[weaponData[ pm->ps->weapon ].ammoIndex] - weaponData[pm->ps->weapon].energyPerShot;
+		amount = pmove->ps->ammo[weaponData[ pmove->ps->weapon ].ammoIndex] - weaponData[pmove->ps->weapon].energyPerShot;
 	}
 
 	// disruptor alt-fire should toggle the zoom mode, but only bother doing this for the player?
-	if ( pm->ps->weapon == WP_DISRUPTOR && pm->ps->weaponstate == WEAPON_READY )
+	if ( pmove->ps->weapon == WP_DISRUPTOR && pmove->ps->weaponstate == WEAPON_READY )
 	{
-		if ( !(pm->ps->eFlags & EF_ALT_FIRING) && (pm->cmd.buttons & BUTTON_ALT_ATTACK) /*&&
-			pm->cmd.upmove <= 0 && !pm->cmd.forwardmove && !pm->cmd.rightmove*/)
+		if ( !(pmove->ps->eFlags & EF_ALT_FIRING) && (pmove->cmd.buttons & BUTTON_ALT_ATTACK) /*&&
+			pmove->cmd.upmove <= 0 && !pmove->cmd.forwardmove && !pmove->cmd.rightmove*/)
 		{
 			// We just pressed the alt-fire key
-			if ( !pm->ps->zoomMode && pm->ps->pm_type != PM_DEAD )
+			if ( !pmove->ps->zoomMode && pmove->ps->pm_type != PM_DEAD )
 			{
 				// not already zooming, so do it now
-				pm->ps->zoomMode = 1;
-				pm->ps->zoomLocked = qfalse;
-				pm->ps->zoomFov = 80.0f;//cg_fov.value;
-				pm->ps->zoomLockTime = pm->cmd.serverTime + 50;
+				pmove->ps->zoomMode = 1;
+				pmove->ps->zoomLocked = qfalse;
+				pmove->ps->zoomFov = 80.0f;//cg_fov.value;
+				pmove->ps->zoomLockTime = pmove->cmd.serverTime + 50;
 				PM_AddEvent(EV_DISRUPTOR_ZOOMSOUND);
 			}
-			else if (pm->ps->zoomMode == 1 && pm->ps->zoomLockTime < pm->cmd.serverTime)
+			else if (pmove->ps->zoomMode == 1 && pmove->ps->zoomLockTime < pmove->cmd.serverTime)
 			{ //check for == 1 so we can't turn binoculars off with disruptor alt fire
 				// already zooming, so must be wanting to turn it off
-				pm->ps->zoomMode = 0;
-				pm->ps->zoomTime = pm->ps->commandTime;
-				pm->ps->zoomLocked = qfalse;
+				pmove->ps->zoomMode = 0;
+				pmove->ps->zoomTime = pmove->ps->commandTime;
+				pmove->ps->zoomLocked = qfalse;
 				PM_AddEvent(EV_DISRUPTOR_ZOOMSOUND);
-				pm->ps->weaponTime = 1000;
+				pmove->ps->weaponTime = 1000;
 			}
 		}
-		else if ( !(pm->cmd.buttons & BUTTON_ALT_ATTACK ) && pm->ps->zoomLockTime < pm->cmd.serverTime)
+		else if ( !(pmove->cmd.buttons & BUTTON_ALT_ATTACK ) && pmove->ps->zoomLockTime < pmove->cmd.serverTime)
 		{
 			// Not pressing zoom any more
-			if ( pm->ps->zoomMode )
+			if ( pmove->ps->zoomMode )
 			{
-				if (pm->ps->zoomMode == 1 && !pm->ps->zoomLocked)
+				if (pmove->ps->zoomMode == 1 && !pmove->ps->zoomLocked)
 				{ //approximate what level the client should be zoomed at based on how long zoom was held
-					pm->ps->zoomFov = ((pm->cmd.serverTime+50) - pm->ps->zoomLockTime) * 0.035f;
-					if (pm->ps->zoomFov > 50)
+					pmove->ps->zoomFov = ((pmove->cmd.serverTime+50) - pmove->ps->zoomLockTime) * 0.035f;
+					if (pmove->ps->zoomFov > 50)
 					{
-						pm->ps->zoomFov = 50;
+						pmove->ps->zoomFov = 50;
 					}
-					if (pm->ps->zoomFov < 1)
+					if (pmove->ps->zoomFov < 1)
 					{
-						pm->ps->zoomFov = 1;
+						pmove->ps->zoomFov = 1;
 					}
 				}
 				// were zooming in, so now lock the zoom
-				pm->ps->zoomLocked = qtrue;
+				pmove->ps->zoomLocked = qtrue;
 			}
 		}
 		//This seemed like a good idea, but apparently it confuses people. So disabled for now.
 		/*
-		else if (!(pm->ps->eFlags & EF_ALT_FIRING) && (pm->cmd.buttons & BUTTON_ALT_ATTACK) &&
-			(pm->cmd.upmove > 0 || pm->cmd.forwardmove || pm->cmd.rightmove))
+		else if (!(pmove->ps->eFlags & EF_ALT_FIRING) && (pmove->cmd.buttons & BUTTON_ALT_ATTACK) &&
+			(pmove->cmd.upmove > 0 || pmove->cmd.forwardmove || pmove->cmd.rightmove))
 		{ //if you try to zoom while moving, just convert it into a primary attack
-			pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
-			pm->cmd.buttons |= BUTTON_ATTACK;
+			pmove->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+			pmove->cmd.buttons |= BUTTON_ATTACK;
 		}
 		*/
 
 		/*
-		if (pm->cmd.upmove > 0 || pm->cmd.forwardmove || pm->cmd.rightmove)
+		if (pmove->cmd.upmove > 0 || pmove->cmd.forwardmove || pmove->cmd.rightmove)
 		{
-			if (pm->ps->zoomMode == 1 && pm->ps->zoomLockTime < pm->cmd.serverTime)
+			if (pmove->ps->zoomMode == 1 && pmove->ps->zoomLockTime < pmove->cmd.serverTime)
 			{ //check for == 1 so we can't turn binoculars off with disruptor alt fire
-				pm->ps->zoomMode = 0;
-				pm->ps->zoomTime = pm->ps->commandTime;
-				pm->ps->zoomLocked = qfalse;
+				pmove->ps->zoomMode = 0;
+				pmove->ps->zoomTime = pmove->ps->commandTime;
+				pmove->ps->zoomLocked = qfalse;
 				PM_AddEvent(EV_DISRUPTOR_ZOOMSOUND);
 			}
 		}
 		*/
 
-		if ( pm->cmd.buttons & BUTTON_ATTACK )
+		if ( pmove->cmd.buttons & BUTTON_ATTACK )
 		{
 			// If we are zoomed, we should switch the ammo usage to the alt-fire, otherwise, we'll
 			//	just use whatever ammo was selected from above
-			if ( pm->ps->zoomMode )
+			if ( pmove->ps->zoomMode )
 			{
-				amount = pm->ps->ammo[weaponData[ pm->ps->weapon ].ammoIndex] - 
-							weaponData[pm->ps->weapon].altEnergyPerShot;
+				amount = pmove->ps->ammo[weaponData[ pmove->ps->weapon ].ammoIndex] - 
+							weaponData[pmove->ps->weapon].altEnergyPerShot;
 			}
 		}
 		else
@@ -8124,15 +8169,15 @@ void PM_AdjustAttackStates( pmove_t *pm )
 		}
 	}
 	/*
-	else if (pm->ps->weapon == WP_DISRUPTOR) //still perform certain checks, even if the weapon is not ready
+	else if (pmove->ps->weapon == WP_DISRUPTOR) //still perform certain checks, even if the weapon is not ready
 	{
-		if (pm->cmd.upmove > 0 || pm->cmd.forwardmove || pm->cmd.rightmove)
+		if (pmove->cmd.upmove > 0 || pmove->cmd.forwardmove || pmove->cmd.rightmove)
 		{
-			if (pm->ps->zoomMode == 1 && pm->ps->zoomLockTime < pm->cmd.serverTime)
+			if (pmove->ps->zoomMode == 1 && pmove->ps->zoomLockTime < pmove->cmd.serverTime)
 			{ //check for == 1 so we can't turn binoculars off with disruptor alt fire
-				pm->ps->zoomMode = 0;
-				pm->ps->zoomTime = pm->ps->commandTime;
-				pm->ps->zoomLocked = qfalse;
+				pmove->ps->zoomMode = 0;
+				pmove->ps->zoomTime = pmove->ps->commandTime;
+				pmove->ps->zoomLocked = qfalse;
 				PM_AddEvent(EV_DISRUPTOR_ZOOMSOUND);
 			}
 		}
@@ -8140,42 +8185,43 @@ void PM_AdjustAttackStates( pmove_t *pm )
 	*/
 
 	// set the firing flag for continuous beam weapons, saber will fire even if out of ammo
-	if ( !(pm->ps->pm_flags & PMF_RESPAWNED) && 
-			pm->ps->pm_type != PM_INTERMISSION && 
-			( pm->cmd.buttons & (BUTTON_ATTACK|BUTTON_ALT_ATTACK)) && 
-			( amount >= 0 || pm->ps->weapon == WP_SABER ))
+	if ( !(pmove->ps->pm_flags & PMF_RESPAWNED) && 
+			pmove->ps->pm_type != PM_INTERMISSION && 
+			pmove->ps->pm_type != PM_NOCLIP &&
+			( pmove->cmd.buttons & (BUTTON_ATTACK|BUTTON_ALT_ATTACK)) && 
+			( amount >= 0 || pmove->ps->weapon == WP_SABER ))
 	{
-		if ( pm->cmd.buttons & BUTTON_ALT_ATTACK )
+		if ( pmove->cmd.buttons & BUTTON_ALT_ATTACK )
 		{
-			pm->ps->eFlags |= EF_ALT_FIRING;
+			pmove->ps->eFlags |= EF_ALT_FIRING;
 		}
 		else
 		{
-			pm->ps->eFlags &= ~EF_ALT_FIRING;
+			pmove->ps->eFlags &= ~EF_ALT_FIRING;
 		}
 
 		// This flag should always get set, even when alt-firing
-		pm->ps->eFlags |= EF_FIRING;
+		pmove->ps->eFlags |= EF_FIRING;
 	} 
 	else 
 	{
 		// Clear 'em out
-		pm->ps->eFlags &= ~(EF_FIRING|EF_ALT_FIRING);
+		pmove->ps->eFlags &= ~(EF_FIRING|EF_ALT_FIRING);
 	}
 
 	// disruptor should convert a main fire to an alt-fire if the gun is currently zoomed
-	if ( pm->ps->weapon == WP_DISRUPTOR)
+	if ( pmove->ps->weapon == WP_DISRUPTOR)
 	{
-		if ( pm->cmd.buttons & BUTTON_ATTACK && pm->ps->zoomMode == 1 && pm->ps->zoomLocked)
+		if ( pmove->cmd.buttons & BUTTON_ATTACK && pmove->ps->zoomMode == 1 && pmove->ps->zoomLocked)
 		{
 			// converting the main fire to an alt-fire
-			pm->cmd.buttons |= BUTTON_ALT_ATTACK;
-			pm->ps->eFlags |= EF_ALT_FIRING;
+			pmove->cmd.buttons |= BUTTON_ALT_ATTACK;
+			pmove->ps->eFlags |= EF_ALT_FIRING;
 		}
-		else if ( pm->cmd.buttons & BUTTON_ALT_ATTACK && pm->ps->zoomMode == 1 && pm->ps->zoomLocked)
+		else if ( pmove->cmd.buttons & BUTTON_ALT_ATTACK && pmove->ps->zoomMode == 1 && pmove->ps->zoomLocked)
 		{
-			pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
-			pm->ps->eFlags &= ~EF_ALT_FIRING;
+			pmove->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+			pmove->ps->eFlags &= ~EF_ALT_FIRING;
 		}
 	}
 }
@@ -8344,25 +8390,25 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 
 	if ( cmd->forwardmove < 0 && !(cmd->buttons&BUTTON_WALKING) && pm->ps->groundEntityNum != ENTITYNUM_NONE )
 	{//running backwards is slower than running forwards (like SP)
-		ps->speed *= 0.75;
+		ps->speed *= 0.75f;
 	}
 
 	if (ps->fd.forcePowersActive & (1 << FP_GRIP))
 	{
-		ps->speed *= 0.4;
+		ps->speed *= 0.4f;
 	}
 
 	if (ps->fd.forcePowersActive & (1 << FP_SPEED))
 	{
-		ps->speed *= 1.7;
+		ps->speed *= 1.7f;
 	}
 	else if (ps->fd.forcePowersActive & (1 << FP_RAGE))
 	{
-		ps->speed *= 1.3;
+		ps->speed *= 1.3f;
 	}
 	else if (ps->fd.forceRageRecoveryTime > svTime)
 	{
-		ps->speed *= 0.75;
+		ps->speed *= 0.75f;
 	}
 
 	if (pm->ps->weapon == WP_DISRUPTOR &&
@@ -8375,15 +8421,15 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 	{
 		if (ps->fd.forcePowersActive & (1 << FP_RAGE))
 		{
-			ps->speed *= 0.9;
+			ps->speed *= 0.9f;
 		}
 		else if (ps->fd.forcePowersActive & (1 << FP_SPEED))
 		{ //force speed will help us escape
-			ps->speed *= 0.8;
+			ps->speed *= 0.8f;
 		}
 		else
 		{
-			ps->speed *= 0.2;
+			ps->speed *= 0.2f;
 		}
 	}
 
@@ -9071,7 +9117,7 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 	int					adddir = 0;
 	static int			dir;
 	static int			i;
-	static int			movementOffsets[8] = { 0, 22, 45, -22, 0, 22, -45, -22 };
+//	static int			movementOffsets[8] = { 0, 22, 45, -22, 0, 22, -45, -22 };
 	float				degrees_negative = 0;
 	float				degrees_positive = 0;
 	static float		dif;
@@ -9098,6 +9144,8 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 		forcedAngles[ROLL] = cent_lerpAngles[ROLL];
 		AnglesToAxis( forcedAngles, legs );
 		VectorCopy(forcedAngles, legsAngles);
+		//JAC: turAngles should be updated as well.
+		VectorCopy(legsAngles, turAngles);
 
 		if (cent->number < MAX_CLIENTS)
 		{
@@ -9184,7 +9232,7 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 	}
 	else
 	{
-		BG_SwingAngles( dest, 15, 30, 0.1, tPitchAngle, tPitching, frametime );
+		BG_SwingAngles( dest, 15, 30, 0.1f, tPitchAngle, tPitching, frametime );
 	}
 	torsoAngles[PITCH] = *tPitchAngle;
 
@@ -9194,7 +9242,7 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 		vec3_t	axis[3];
 		float	side;
 
-		speed *= 0.05;
+		speed *= 0.05f;
 
 		AnglesToAxis( legsAngles, axis );
 		side = speed * DotProduct( velocity, axis[1] );
@@ -9279,7 +9327,7 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 	}
 	else
 	{
-		BG_SwingAngles( legsAngles[YAW], /*40*/0, 90, 0.65, lYawAngle, lYawing, frametime );
+		BG_SwingAngles( legsAngles[YAW], /*40*/0, 90, 0.65f, lYawAngle, lYawing, frametime );
 	}
 	legsAngles[YAW] = *lYawAngle;
 
@@ -9652,9 +9700,6 @@ void PM_VehicleViewAngles(playerState_t *ps, bgEntity_t *veh, usercmd_t *ucmd)
 		{
 			if ( veh->m_pVehicle->m_pVehicleInfo->turret[i].passengerNum == ps->generic1 )
 			{//this turret is my station
-				//nevermind, don't clamp
-				return;
-				/*
 				setAngles = qtrue;
 				clampMin[PITCH] = veh->m_pVehicle->m_pVehicleInfo->turret[i].pitchClampUp;
 				clampMax[PITCH] = veh->m_pVehicle->m_pVehicleInfo->turret[i].pitchClampDown;
@@ -9662,7 +9707,6 @@ void PM_VehicleViewAngles(playerState_t *ps, bgEntity_t *veh, usercmd_t *ucmd)
 				clampMax[YAW] = veh->m_pVehicle->m_pVehicleInfo->turret[i].yawClampLeft;
 				clampMin[ROLL] = clampMax[ROLL] = 0;
 				break;
-				*/
 			}
 		}
 	}
@@ -10161,6 +10205,18 @@ void PmoveSingle (pmove_t *pmove) {
 
 	pm = pmove;
 
+	//JAC: This fixes the bug where you can infinitely charge a shot if you're holding BUTTON_USE_HOLDABLE
+	if (pm->cmd.buttons & BUTTON_ATTACK && pm->cmd.buttons & BUTTON_USE_HOLDABLE)
+	{
+		pm->cmd.buttons &= ~BUTTON_ATTACK;
+		pm->cmd.buttons &= ~BUTTON_USE_HOLDABLE;
+	}
+	if (pm->cmd.buttons & BUTTON_ALT_ATTACK && pm->cmd.buttons & BUTTON_USE_HOLDABLE)
+	{
+		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+		pm->cmd.buttons &= ~BUTTON_USE_HOLDABLE;
+	}
+
 	if (pm->ps->emplacedIndex)
 	{
 		if (pm->cmd.buttons & BUTTON_ALT_ATTACK)
@@ -10639,6 +10695,7 @@ void PmoveSingle (pmove_t *pmove) {
 	/*
 	if (pm->ps->fd.saberAnimLevel == SS_STAFF &&
 		(pm->cmd.buttons & BUTTON_ALT_ATTACK) &&
+
 		pm->cmd.upmove > 0)
 	{ //this is how you do kick-for-condition
 		pm->cmd.upmove = 0;
@@ -11195,3 +11252,4 @@ void Pmove (pmove_t *pmove) {
 		}
 	}
 }
+

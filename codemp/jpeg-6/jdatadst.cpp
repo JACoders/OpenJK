@@ -14,7 +14,7 @@
  * than 8 bits on your machine, you may need to do some tweaking.
  */
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 /* this is not a core library module, so it doesn't define JPEG_INTERNALS */
 #include "jinclude.h"

@@ -1,7 +1,7 @@
 #include "g_headers.h"
 #include "bg_vehicles.h"
 #include "b_local.h"
-#include "../ghoul2/G2.h"
+#include "ghoul2/G2.h"
 
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
 extern void WP_CalcVehMuzzle(gentity_t *ent, int muzzleNum);
@@ -348,11 +348,6 @@ void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum )
 	{//this turret does not think on its own.
 		return;
 	}
-	//okay, so it has AI, but still don't think if there's no pilot!
-	if ( !pVeh->m_pPilot )
-	{
-		return;
-	}
 
 	vehWeapon = &g_vehWeaponInfo[turretStats->iWeapon];
 	rangeSq = (turretStats->fAIRange*turretStats->fAIRange);
@@ -382,12 +377,8 @@ void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum )
 		}
 		else if ( parent->enemy && parent->enemy->s.number < ENTITYNUM_WORLD )
 		{
-			if ( g_gametype.integer < GT_TEAM
-				|| !OnSameTeam( parent->enemy, parent ) )
-			{//either not in a team game or the enemy isn't on the same team
-				turretEnemy = parent->enemy;
-				doAim = qtrue;
-			}
+			turretEnemy = parent->enemy;
+			doAim = qtrue;
 		}
 		if ( turretEnemy )
 		{//found one

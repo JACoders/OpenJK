@@ -1,11 +1,11 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // this include must remain at the top of every CPP file
 #include "tr_local.h"
 
 #if !defined(GENERICPARSER2_H_INC)
-	#include "../qcommon/GenericParser2.h"
+	#include "qcommon/GenericParser2.h"
 #endif
 
 // To do:
@@ -14,7 +14,7 @@
 // Link to neightbouring terrains or architecture (edge conditions)
 // Post process generated light data to make sure there are no bands within a patch
 
-#include "../qcommon/cm_landscape.h"
+#include "qcommon/cm_landscape.h"
 #include "tr_landscape.h"
 
 cvar_t		*r_drawTerrain;
@@ -122,10 +122,10 @@ void CTRPatch::Render(int Part)
 {
 	ivec5_t		TL, TR, BL, BR;
 
-	VectorSet5(TL, 0, 0, TEXTURE_ALPHA_TL, -1, 0);
-	VectorSet5(TR, owner->GetTerxels(), 0, TEXTURE_ALPHA_TR, -1, 0);
-	VectorSet5(BL, 0, owner->GetTerxels(), TEXTURE_ALPHA_BL, -1, 0);
-	VectorSet5(BR, owner->GetTerxels(), owner->GetTerxels(), TEXTURE_ALPHA_BR, -1, 0);
+	VectorSet5M(TL, 0, 0, TEXTURE_ALPHA_TL, -1, 0);
+	VectorSet5M(TR, owner->GetTerxels(), 0, TEXTURE_ALPHA_TR, -1, 0);
+	VectorSet5M(BL, 0, owner->GetTerxels(), TEXTURE_ALPHA_BL, -1, 0);
+	VectorSet5M(BR, owner->GetTerxels(), owner->GetTerxels(), TEXTURE_ALPHA_BR, -1, 0);
 
 	if ((Part & PI_TOP) && mTLShader)
 	{
@@ -370,7 +370,7 @@ void CTRLandScape::CalculateRealCoords(void)
 
 			offset = (y * GetRealWidth()) + x;
 
-			VectorSet(icoords, x, y, mRenderMap[offset].height);
+			VectorSetM(icoords, x, y, mRenderMap[offset].height);
 			VectorScaleVectorAdd(GetMins(), icoords, GetTerxelSize(), mRenderMap[offset].coords);
 		}
 	}
@@ -507,7 +507,6 @@ void CTRLandScape::SetShaders(const int height, const qhandle_t shader)
 
 void CTRLandScape::LoadTerrainDef(const char *td)
 {
-#ifndef PRE_RELEASE_DEMO
 	char			terrainDef[MAX_QPATH];
 	CGenericParser2	parse;
 	CGPGroup		*basegroup, *classes, *items;
@@ -574,7 +573,6 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 	}
 	
 	Com_ParseTextFileDestroy(parse);
-#endif // PRE_RELEASE_DEMO
 }
 
 qhandle_t CTRLandScape::GetBlendedShader(qhandle_t a, qhandle_t b, qhandle_t c, bool surfaceSprites)
@@ -627,7 +625,6 @@ static int ComparePatchInfo(const TPatchInfo *arg1, const TPatchInfo *arg2)
 
 void CTRLandScape::CalculateShaders(void)
 {
-#ifndef PRE_RELEASE_DEMO
 	int						x, y;
 	int						width, height;
 	int						offset;
@@ -800,7 +797,6 @@ void CTRLandScape::CalculateShaders(void)
 
 	qsort(mSortedPatches, mSortedCount, sizeof(*mSortedPatches), (int (__cdecl *)(const void *,const void *))ComparePatchInfo);
 
-#endif // PRE_RELEASE_DEMO
 }
 
 void CTRPatch::SetRenderMap(const int x, const int y) 
@@ -874,7 +870,6 @@ extern CCMLandScape *CM_RegisterTerrain(const char *config, bool server);	//cm_l
 
 CTRLandScape::CTRLandScape(const char *configstring)
 {
-#ifndef PRE_RELEASE_DEMO
 	int					shaderNum;
 	const CCMLandScape	*common;
 
@@ -934,7 +929,6 @@ CTRLandScape::CTRLandScape(const char *configstring)
 #if	_DEBUG
 	mCycleCount = 0;
 #endif
-#endif // PRE_RELEASE_DEMO
 }
 
 // ---------------------------------------------------------------------

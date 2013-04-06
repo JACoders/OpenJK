@@ -2,10 +2,8 @@
 #ifndef _QCOMMON_H_
 #define _QCOMMON_H_
 
-#include "../qcommon/cm_public.h"
-#include "../game/q_shared.h"
-
-//#define	PRE_RELEASE_DEMO
+#include "qcommon/cm_public.h"
+#include "qcommon/q_shared.h"
 
 //============================================================================
 
@@ -1000,7 +998,7 @@ qboolean	Sys_StringToAdr( const char *s, netadr_t *a );
 qboolean	Sys_IsLANAddress (netadr_t adr);
 void		Sys_ShowIP(void);
 
-void	Sys_Mkdir( const char *path );
+qboolean	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );
 void	Sys_SetDefaultCDPath(const char *path);
 char	*Sys_DefaultCDPath(void);

@@ -1,5 +1,0 @@
-// hud menu defs
-// 
-{
-	loadMenu { "ui/hud.menu" }
-}

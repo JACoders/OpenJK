@@ -265,7 +265,7 @@ void CG_CheckChangedPredictableEvents( playerState_t *ps ) {
 
 				cg.predictableEvents[ i & (MAX_PREDICTED_EVENTS-1) ] = event;
 
-				if ( cg_showmiss.integer ) {
+				if ( cg_showMiss.integer ) {
 					CG_Printf("WARNING: changed predicted event\n");
 				}
 			}
@@ -348,7 +348,8 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 	}
 
 	// if we are going into the intermission, don't start any voices
-	if ( cg.intermissionStarted ) {
+	//Raz: also check PM_INTERMISSION
+	if ( cg.intermissionStarted || (cg.snap && cg.snap->ps.pm_type == PM_INTERMISSION) ) {
 		return;
 	}
 
@@ -456,6 +457,9 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 	// fraglimit warnings
 	if ( cgs.fraglimit > 0 && cgs.gametype < GT_CTF && cgs.gametype != GT_DUEL && cgs.gametype != GT_POWERDUEL && cgs.gametype != GT_SIEGE && cgAnnouncerTime < cg.time) {
 		highScore = cgs.scores1;
+		if ( cgs.gametype == GT_TEAM && cgs.scores2 > highScore )
+			highScore = cgs.scores2;
+
 		if ( !( cg.fraglimitWarnings & 4 ) && highScore == (cgs.fraglimit - 1) ) {
 			cg.fraglimitWarnings |= 1 | 2 | 4;
 			CG_AddBufferedSound(cgs.media.oneFragSound);

@@ -1,8 +1,8 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "server.h"
-#include "../qcommon/stringed_ingame.h"
+#include "qcommon/stringed_ingame.h"
 
 /*
 ===============================================================================
@@ -655,7 +655,7 @@ static void SV_ConSay_f(void) {
 		return;
 	}
 
-	strcpy (text, "Server: ");
+	strcpy (text, "Server^7\x19: ");
 	p = Cmd_Args();
 
 	if ( *p == '"' ) {
@@ -855,14 +855,12 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("map_restart", SV_MapRestart_f);
 	Cmd_AddCommand ("sectorlist", SV_SectorList_f);
 	Cmd_AddCommand ("map", SV_Map_f);
-#ifndef PRE_RELEASE_DEMO
 	Cmd_AddCommand ("devmap", SV_Map_f);
 	Cmd_AddCommand ("spmap", SV_Map_f);
 	Cmd_AddCommand ("spdevmap", SV_Map_f);
 //	Cmd_AddCommand ("devmapbsp", SV_Map_f);	// not used in MP codebase, no server BSP_cacheing
 	Cmd_AddCommand ("devmapmdl", SV_Map_f);
 	Cmd_AddCommand ("devmapall", SV_Map_f);
-#endif
 	Cmd_AddCommand ("killserver", SV_KillServer_f);
 //	if( com_dedicated->integer ) 
 	{

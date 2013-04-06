@@ -1,27 +1,27 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // cl_main.c  -- client main loop
 
 #include "client.h"
-#include "../qcommon/stringed_ingame.h"
+#include "qcommon/stringed_ingame.h"
 #include <limits.h>
 #include "snd_local.h"
 
 //rwwRMG - added:
-#include "..\qcommon\cm_local.h"
-#include "..\qcommon\cm_landscape.h"
+#include "qcommon/cm_local.h"
+#include "qcommon/cm_landscape.h"
 
 #if !defined(G2_H_INC)
-	#include "..\ghoul2\G2_local.h"
+	#include "ghoul2/G2_local.h"
 #endif
 
 #if !defined (MINIHEAP_H_INC)
-#include "../qcommon/miniheap.h"
+#include "qcommon/miniheap.h"
 #endif
 
 #ifdef _DONETPROFILE_
-#include "../qcommon/INetProfile.h"
+#include "qcommon/INetProfile.h"
 #endif
 
 cvar_t	*cl_nodelta;
@@ -80,6 +80,8 @@ clientActive_t		cl;
 clientConnection_t	clc;
 clientStatic_t		cls;
 vm_t				*cgvm;
+
+netadr_t rcon_address;
 
 // Structure containing functions exported from refresh DLL
 refexport_t	re;
@@ -988,7 +990,6 @@ CL_Rcon_f
 */
 void CL_Rcon_f( void ) {
 	char	message[MAX_RCON_MESSAGE];
-	netadr_t	to;
 
 	if ( !rcon_client_password->string ) {
 		Com_Printf ("You must set 'rconpassword' before\n"
@@ -1011,7 +1012,7 @@ void CL_Rcon_f( void ) {
 	Q_strcat (message, MAX_RCON_MESSAGE, Cmd_Cmd()+5);
 
 	if ( cls.state >= CA_CONNECTED ) {
-		to = clc.netchan.remoteAddress;
+		rcon_address = clc.netchan.remoteAddress;
 	} else {
 		if (!strlen(rconAddress->string)) {
 			Com_Printf ("You must either be connected,\n"
@@ -1020,13 +1021,13 @@ void CL_Rcon_f( void ) {
 
 			return;
 		}
-		NET_StringToAdr (rconAddress->string, &to);
-		if (to.port == 0) {
-			to.port = BigShort (PORT_SERVER);
+		NET_StringToAdr (rconAddress->string, &rcon_address);
+		if (rcon_address.port == 0) {
+			rcon_address.port = BigShort (PORT_SERVER);
 		}
 	}
 	
-	NET_SendPacket (NS_CLIENT, strlen(message)+1, message, to);
+	NET_SendPacket (NS_CLIENT, strlen(message)+1, message, rcon_address);
 }
 
 /*
@@ -1739,6 +1740,7 @@ Responses to broadcasts, etc
 void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	char	*s;
 	char	*c;
+	int challenge = 0;
 
 	MSG_BeginReadingOOB( msg );
 	MSG_ReadLong( msg );	// skip the -1
@@ -1752,21 +1754,37 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	Com_DPrintf ("CL packet %s: %s\n", NET_AdrToString(from), c);
 
 	// challenge from the server we are connecting to
-	if ( !Q_stricmp(c, "challengeResponse") ) {
-		if ( cls.state != CA_CONNECTING ) {
+	if ( !Q_stricmp(c, "challengeResponse") )
+	{
+		if ( cls.state != CA_CONNECTING )
+		{
 			Com_Printf( "Unwanted challenge response received.  Ignored.\n" );
-		} else {
-			// start sending challenge repsonse instead of challenge request packets
-			clc.challenge = atoi(Cmd_Argv(1));
-			cls.state = CA_CHALLENGING;
-			clc.connectPacketCount = 0;
-			clc.connectTime = -99999;
-
-			// take this address as the new server address.  This allows
-			// a server proxy to hand off connections to multiple servers
-			clc.serverAddress = from;
-			Com_DPrintf ("challengeResponse: %d\n", clc.challenge);
+			return;
 		}
+
+		if(!NET_CompareAdr(from, clc.serverAddress))
+		{
+			// This challenge response is not coming from the expected address.
+			// Check whether we have a matching client challenge to prevent
+			// connection hi-jacking.
+
+			if(!*c || challenge != clc.challenge)
+			{
+				Com_DPrintf("Challenge response received from unexpected source. Ignored.\n");
+				return;
+			}
+		}
+
+		// start sending challenge repsonse instead of challenge request packets
+		clc.challenge = atoi(Cmd_Argv(1));
+		cls.state = CA_CHALLENGING;
+		clc.connectPacketCount = 0;
+		clc.connectTime = -99999;
+
+		// take this address as the new server address.  This allows
+		// a server proxy to hand off connections to multiple servers
+		clc.serverAddress = from;
+		Com_DPrintf ("challengeResponse: %d\n", clc.challenge);
 		return;
 	}
 
@@ -1782,8 +1800,6 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 		}
 		if ( !NET_CompareBaseAdr( from, clc.serverAddress ) ) {
 			Com_Printf( "connectResponse from a different address.  Ignored.\n" );
-			Com_Printf( "%s should have been %s\n", NET_AdrToString( from ), 
-				NET_AdrToString( clc.serverAddress ) );
 			return;
 		}
 		Netchan_Setup (NS_CLIENT, &clc.netchan, from, Cvar_VariableValue( "net_qport" ) );
@@ -1832,12 +1848,16 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	// echo request from server
 	if ( !Q_stricmp(c, "print") ) 
 	{
-		char sTemp[MAX_STRINGED_SV_STRING];
+		// NOTE: we may have to add exceptions for auth and update servers
+		if (NET_CompareAdr(from, clc.serverAddress) || NET_CompareAdr(from, rcon_address))
+		{
+			char sTemp[MAX_STRINGED_SV_STRING];
 
-		s = MSG_ReadString( msg );
-		CL_CheckSVStringEdRef(sTemp, s);
-		Q_strncpyz( clc.serverMessage, sTemp, sizeof( clc.serverMessage ) );
-		Com_Printf( "%s", sTemp );
+			s = MSG_ReadString( msg );
+			CL_CheckSVStringEdRef(sTemp, s);
+			Q_strncpyz( clc.serverMessage, sTemp, sizeof( clc.serverMessage ) );
+			Com_Printf( "%s", sTemp );
+		}
 		return;
 	}
 

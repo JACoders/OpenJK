@@ -1,11 +1,11 @@
 // BG_PAnimate.c
 
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_strap.h"
 #include "bg_local.h"
 #include "anims.h"
-#include "../cgame/animtable.h"
+#include "cgame/animtable.h"
 #ifdef QAGAME
 #include "g_local.h"
 #endif
@@ -22,6 +22,10 @@ BEGIN: Animation utility functions (sequence checking)
 ==============================================================================
 */
 //Called regardless of pm validity:
+
+// VVFIXME - Most of these functions are totally stateless and stupid. Don't
+// need multiple copies of this, but it's much easier (and less likely to
+// break in the future) if I keep separate namespace versions now.
 
 qboolean BG_SaberStanceAnim( int anim )
 {
@@ -1658,9 +1662,6 @@ void BG_FlipPart(playerState_t *ps, int part)
 	}
 }
 
-#ifdef Q3_VM
-char		BGPAFtext[60000];
-#endif
 qboolean	BGPAFtextLoaded = qfalse;
 animation_t	bgHumanoidAnimations[MAX_TOTALANIMATIONS]; //humanoid animations are the only ones that are statically allocated.
 
@@ -2177,13 +2178,8 @@ int BG_ParseAnimationEvtFile( const char *as_filename, int animFileIndex, int ev
 	assert(animFileIndex < MAX_ANIM_FILES);
 	assert(eventFileIndex < MAX_ANIM_FILES);
 
-	if ( animFileIndex < 0 || animFileIndex >= MAX_ANIM_FILES )
-	{//WTF??!!
-		return 0;
-	}
-
-	if ( eventFileIndex < 0 || eventFileIndex >= MAX_ANIM_FILES )
-	{//WTF??!!
+	if (eventFileIndex == -1)
+	{
 		forcedIndex = 0;
 	}
 	else
@@ -2341,9 +2337,7 @@ int BG_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 	int			nextIndex = bgNumAllAnims;
 	qboolean	dynAlloc = qfalse;
 	qboolean	wasLoaded = qfalse;
-#ifndef Q3_VM
 	char		BGPAFtext[60000];
-#endif
 
 	fileHandle_t	f;
 	int				animNum;
@@ -3031,3 +3025,4 @@ void PM_SetAnim(int setAnimParts,int anim,int setAnimFlags, int blendTime)
 {	
 	BG_SetAnim(pm->ps, pm->animations, setAnimParts, anim, setAnimFlags, blendTime);
 }
+

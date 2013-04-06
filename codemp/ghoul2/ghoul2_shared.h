@@ -17,7 +17,7 @@ Ghoul2 Insert End
 */
 
 #define MDXABONEDEF
-#include "../renderer/mdx_format.h"
+#include "renderer/mdx_format.h"
 
 struct model_s;
 

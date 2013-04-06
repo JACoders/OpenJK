@@ -15,7 +15,7 @@
 #endif
 
 #if !defined(CM_RANDOMTERRAIN_H_INC)
-#include "../qcommon/cm_randomterrain.h"
+#include "qcommon/cm_randomterrain.h"
 #endif
 
 class CRMPathManager;

@@ -1,6 +1,6 @@
 #include "g_local.h"
-#include "../ghoul2/G2.h"
-#include "q_shared.h"
+#include "ghoul2/G2.h"
+#include "qcommon/q_shared.h"
 
 void G_SetEnemy( gentity_t *self, gentity_t *enemy );
 void finish_spawning_turretG2( gentity_t *base );
@@ -245,14 +245,6 @@ void turretG2_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, 
 	self->s.loopSound = 0;
 	self->s.shouldtarget = qfalse;
 	//self->s.owner = MAX_CLIENTS; //not owned by any client
-
-	if ( attacker 
-		&& attacker->s.number < MAX_CLIENTS
-		&& !OnSameTeam( attacker, self ) )
-	{//give them a point for the kill
-		AddScore( attacker, self->r.currentOrigin, 1 );
-		//should we send an obit?  nah...
-	}
 
 	// hack the effect angle so that explode death can orient the effect properly
 	if ( self->spawnflags & 2 )

@@ -4,13 +4,13 @@
 
 #include "cg_local.h"
 #include "fx_local.h"
-#include "../ui/ui_shared.h"
-#include "../ui/ui_public.h"
+#include "ui/ui_shared.h"
+#include "ui/ui_public.h"
 
 // for the voice chats
-#include "../../ui/menudef.h"
+#include "ui/menudef.h"
 
-#include "../ghoul2/G2.h"
+#include "ghoul2/G2.h"
 //==========================================================================
 
 extern qboolean WP_SaberBladeUseSecondBladeStyle( saberInfo_t *saber, int bladeNum );
@@ -34,7 +34,7 @@ typedef enum
 	TAUNT_MEDITATE,
 	TAUNT_FLOURISH,
 	TAUNT_GLOAT
-};
+} tauntTypes_t ;
 /*
 ===================
 CG_PlaceString
@@ -107,13 +107,10 @@ static void CG_Obituary( entityState_t *ent ) {
 	const char	*targetInfo;
 	const char	*attackerInfo;
 	char		targetName[32];
-	char		targetVehName[32] = {0};
 	char		attackerName[32];
-	char		attackerVehName[32] = {0};
-	char		attackerVehWeapName[32] = {0};
 	gender_t	gender;
 	clientInfo_t	*ci;
-	qboolean	vehMessage = qfalse;
+
 
 	target = ent->otherEntityNum;
 	attacker = ent->otherEntityNum2;
@@ -125,7 +122,7 @@ static void CG_Obituary( entityState_t *ent ) {
 	ci = &cgs.clientinfo[target];
 
 	if ( attacker < 0 || attacker >= MAX_CLIENTS ) {
-		//attacker = ENTITYNUM_WORLD;
+		attacker = ENTITYNUM_WORLD;
 		attackerInfo = NULL;
 	} else {
 		attackerInfo = CG_ConfigString( CS_PLAYERS + attacker );
@@ -138,85 +135,30 @@ static void CG_Obituary( entityState_t *ent ) {
 	Q_strncpyz( targetName, Info_ValueForKey( targetInfo, "n" ), sizeof(targetName) - 2);
 	strcat( targetName, S_COLOR_WHITE );
 
-	// check for target in a vehicle
-	if ( ent->lookTarget > VEHICLE_BASE && ent->lookTarget < MAX_VEHICLES && g_vehicleInfo[ent->lookTarget].name )
-	{
-		Q_strncpyz( targetVehName, g_vehicleInfo[ent->lookTarget].name, sizeof(targetVehName) - 2 );
-	}
-
-	// check for attacker in a vehicle
-	if ( ent->brokenLimbs >= MAX_CLIENTS )
-	{
-		centity_t *attVehCent = &cg_entities[ent->brokenLimbs];
-		if ( attVehCent && attVehCent->m_pVehicle && attVehCent->m_pVehicle->m_pVehicleInfo )
-		{
-			if ( attVehCent->m_pVehicle->m_pVehicleInfo->name )
-			{
-				Q_strncpyz( attackerVehName, attVehCent->m_pVehicle->m_pVehicleInfo->name, sizeof(attackerVehName) - 2 );
-			}
-		}
-	}
-
-	//check for specific vehicle weapon
-	if ( ent->weapon > 0 )
-	{
-		if ( g_vehWeaponInfo[ent->weapon-1].name )
-		{
-			Q_strncpyz( attackerVehWeapName, g_vehWeaponInfo[ent->weapon-1].name, sizeof(attackerVehWeapName) - 2 );
-		}
-	}
-
 	// check for single client messages
 
-	if ( ent->saberInFlight )
-	{//asteroid->vehicle collision
-		switch ( Q_irand( 0, 2 ) )
-		{
-		default:
-		case 0:
-            message = "DIED_ASTEROID1";
-			break;
-		case 1:
-            message = "DIED_ASTEROID2";
-			break;
-		case 2:
-            message = "DIED_ASTEROID3";
-			break;
-		}
-		vehMessage = qtrue;
-	}
-	else
-	{
-		switch( mod ) {
-		case MOD_VEHICLE:
-		case MOD_SUICIDE:
-		case MOD_FALLING:
-		case MOD_COLLISION:
-		case MOD_VEH_EXPLOSION:
-		case MOD_CRUSH:
-		case MOD_WATER:
-		case MOD_SLIME:
-		case MOD_LAVA:
-		case MOD_TRIGGER_HURT:
-			message = "DIED_GENERIC";
-			break;
-		case MOD_TARGET_LASER:
-			vehMessage = qtrue;
-			message = "DIED_TURBOLASER";
-			break;
-		default:
-			message = NULL;
-			break;
-		}
+	switch( mod ) {
+	case MOD_SUICIDE:
+	case MOD_FALLING:
+	case MOD_CRUSH:
+	case MOD_WATER:
+	case MOD_SLIME:
+	case MOD_LAVA:
+	case MOD_TRIGGER_HURT:
+		message = "DIED_GENERIC";
+		break;
+	case MOD_TARGET_LASER:
+		message = "DIED_LASER";
+		break;
+	default:
+		message = NULL;
+		break;
 	}
 
 	// Attacker killed themselves.  Ridicule them for it.
-	if (attacker == target) 
-	{
-		vehMessage = qfalse;
+	if (attacker == target) {
 		gender = ci->gender;
-		switch (mod) 
-		{
+		switch (mod) {
 		case MOD_BRYAR_PISTOL:
 		case MOD_BRYAR_PISTOL_ALT:
 		case MOD_BLASTER:
@@ -288,13 +230,11 @@ static void CG_Obituary( entityState_t *ent ) {
 		goto clientkilled;
 	}
 
-	if (message) 
-	{
+	if (message) {
 		gender = ci->gender;
 
 		if (!message[0])
 		{
-			vehMessage = qfalse;
 			if ( gender == GENDER_FEMALE )
 				message = "SUICIDE_GENERICDEATH_FEMALE";
 			else if ( gender == GENDER_NEUTER )
@@ -302,14 +242,7 @@ static void CG_Obituary( entityState_t *ent ) {
 			else
 				message = "SUICIDE_GENERICDEATH_MALE";
 		}
-		if ( vehMessage )
-		{
-			message = (char *)CG_GetStringEdString("MP_INGAMEVEH", message);
-		}
-		else
-		{
-			message = (char *)CG_GetStringEdString("MP_INGAME", message);
-		}
+		message = (char *)CG_GetStringEdString("MP_INGAME", message);
 
 		CG_Printf( "%s %s\n", targetName, message);
 		return;
@@ -378,7 +311,7 @@ clientkilled:
 
 	// check for double client messages
 	if ( !attackerInfo ) {
-		//attacker = ENTITYNUM_WORLD;
+		attacker = ENTITYNUM_WORLD;
 		strcpy( attackerName, "noname" );
 	} else {
 		Q_strncpyz( attackerName, Info_ValueForKey( attackerInfo, "n" ), sizeof(attackerName) - 2);
@@ -459,48 +392,6 @@ clientkilled:
 			message = "KILLED_DETPACK";
 			break;
 		case MOD_VEHICLE:
-			vehMessage = qtrue;
-			switch ( ent->generic1 )
-			{
-			case WP_BLASTER://primary blasters
-				switch ( Q_irand( 0, 2 ) )
-				{
-				case 2:
-					message = "KILLED_VEH_BLASTER3";
-					break;
-				case 1:
-					message = "KILLED_VEH_BLASTER2";
-					break;
-				default:
-					message = "KILLED_VEH_BLASTER1";
-					break;
-				}
-				break;
-			case WP_ROCKET_LAUNCHER://missile
-				if ( Q_irand( 0, 1 ) )
-				{
-					message = "KILLED_VEH_MISSILE2";
-				}
-				else
-				{
-					message = "KILLED_VEH_MISSILE1";
-				}
-				break;
-			case WP_THERMAL://bomb
-				message = "KILLED_VEH_BOMB";
-				break;
-			case WP_DEMP2://ion cannon
-				message = "KILLED_VEH_ION";
-				break;
-			case WP_TURRET://turret
-				message = "KILLED_VEH_TURRET";
-				break;
-			default:
-				vehMessage = qfalse;
-				message = "KILLED_GENERIC";
-				break;
-			}
-			break;
 		case MOD_CONC:
 		case MOD_CONC_ALT:
 			message = "KILLED_GENERIC";
@@ -520,84 +411,19 @@ clientkilled:
 		case MOD_FALLING:
 			message = "KILLED_FORCETOSS";
 			break;
-		case MOD_COLLISION:
-		case MOD_VEH_EXPLOSION:
-			switch ( Q_irand( 0, 2 ) )
-			{
-			default:
-			case 0:
-				message = "KILLED_VEH_COLLISION1";
-				break;
-			case 1:
-				message = "KILLED_VEH_COLLISION2";
-				break;
-			case 2:
-				message = "KILLED_VEH_COLLISION3";
-				break;
-			}
-			vehMessage = qtrue;
-			break;
 		case MOD_TRIGGER_HURT:
 			message = "KILLED_GENERIC";//"KILLED_FORCETOSS";
-			break;
-		case MOD_TARGET_LASER:
-			if ( Q_irand(0,1) )
-			{
-				message = "KILLED_TURRET1";
-			}
-			else
-			{
-				message = "KILLED_TURRET2";
-			}
-			vehMessage = qtrue;
 			break;
 		default:
 			message = "KILLED_GENERIC";
 			break;
 		}
 
-		if (message) 
-		{
-			if ( vehMessage )
-			{
-				message = (char *)CG_GetStringEdString("MP_INGAMEVEH", message);
-			}
-			else
-			{
-				message = (char *)CG_GetStringEdString("MP_INGAME", message);
-			}
+		if (message) {
+			message = (char *)CG_GetStringEdString("MP_INGAME", message);
 
-			CG_Printf( "%s ", targetName);
-			if ( targetVehName[0] )
-			{
-				CG_Printf( "(%s) ", targetVehName);
-			}
-			if ( mod == MOD_TARGET_LASER )
-			{//no attacker name, just a turbolaser or other kind of turret...
-				CG_Printf( "%s", message);
-			}
-			else
-			{
-				CG_Printf( "%s %s", message, attackerName);
-
-				if ( attackerVehName[0]
-					&& attackerVehWeapName[0] )
-				{
-					CG_Printf( " (%s %s)", attackerVehName, attackerVehWeapName );
-				}
-				else
-				{
-					if ( attackerVehName[0] )
-					{
-						CG_Printf( " (%s)", attackerVehName );
-					}
-					else if ( attackerVehWeapName[0] )
-					{
-						CG_Printf(" (%s)", attackerVehWeapName );
-					}
-				}
-			}
-			CG_Printf( "\n" );
+			CG_Printf( "%s %s %s\n", 
+				targetName, message, attackerName);
 			return;
 		}
 	}
@@ -762,11 +588,11 @@ static void CG_ItemPickup( int itemNum ) {
 		// 2 == automatically switch to best weapon, safe or otherwise
 		// 3 == if not saber, automatically switch to best weapon, safe or otherwise
 
-		if (0 == cg_autoswitch.integer)
+		if (0 == cg_autoSwitch.integer)
 		{
 			// don't switch
 		}
-		else if ( cg_autoswitch.integer == 1)
+		else if ( cg_autoSwitch.integer == 1)
 		{ //only autoselect if not explosive ("safe")
 			if (bg_itemlist[itemNum].giTag != WP_TRIP_MINE &&
 				bg_itemlist[itemNum].giTag != WP_DET_PACK &&
@@ -782,7 +608,7 @@ static void CG_ItemPickup( int itemNum ) {
 				cg.weaponSelect = bg_itemlist[itemNum].giTag;
 			}
 		}
-		else if ( cg_autoswitch.integer == 2)
+		else if ( cg_autoSwitch.integer == 2)
 		{ //autoselect if better
 			if (bg_itemlist[itemNum].giTag > cg.snap->ps.weapon &&
 				cg.snap->ps.weapon != WP_SABER)
@@ -998,7 +824,7 @@ void CG_PrintCTFMessage(clientInfo_t *ci, const char *teamName, int ctfMessage)
 
 			if (ci)
 			{
-				Com_sprintf(printMsg, sizeof(printMsg), "%s ", ci->name);
+				Com_sprintf(printMsg, sizeof(printMsg), "%s^7 ", ci->name);
 				strLen = strlen(printMsg);
 			}
 
@@ -1030,7 +856,7 @@ void CG_PrintCTFMessage(clientInfo_t *ci, const char *teamName, int ctfMessage)
 
 	if (ci)
 	{
-		Com_sprintf(printMsg, sizeof(printMsg), "%s %s", ci->name, psStringEDString);
+		Com_sprintf(printMsg, sizeof(printMsg), "%s^7 %s", ci->name, psStringEDString);
 	}
 	else
 	{
@@ -1644,7 +1470,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		}
 		// if we are interpolating, we don't need to smooth steps
 		if ( cg.demoPlayback || (cg.snap->ps.pm_flags & PMF_FOLLOW) ||
-			cg_nopredict.integer || cg_synchronousClients.integer ) {
+			cg_noPredict.integer || g_synchronousClients.integer ) {
 			break;
 		}
 		// check for stepping up before a previous step is completed
@@ -1745,6 +1571,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		DEBUGNAME("EV_TAUNT");
 		{
 			int soundIndex = 0;
+
+			if ( cg_noTaunt.integer )
+				break;
+
 			if ( cgs.gametype != GT_DUEL
 				&& cgs.gametype != GT_POWERDUEL
 				&& es->eventParm == TAUNT_TAUNT )
@@ -2643,7 +2473,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			if (cg.snap->ps.clientNum == es->number)
 			{
 				trap_S_StartLocalSound(cgs.media.happyMusic, CHAN_LOCAL);
-				CGCam_SetMusicMult(0.3, 5000);
+				CGCam_SetMusicMult(0.3f, 5000);
 			}
 		}
 		break;
@@ -3346,9 +3176,9 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			sfxHandle_t sfx = cgs.gameSounds[ es->eventParm ];
 			clientInfo_t *ci = &cgs.clientinfo[es->groundEntityNum];
 			centity_t *vChatEnt = &cg_entities[es->groundEntityNum];
-			char descr[1024];
+			char descr[1024] = {0};
 
-			strcpy(descr, CG_GetStringForVoiceSound(CG_ConfigString( CS_SOUNDS + es->eventParm )));
+			Q_strncpyz(descr, CG_GetStringForVoiceSound(CG_ConfigString( CS_SOUNDS + es->eventParm )), sizeof( descr ) );
 
 			if (!sfx)
 			{
@@ -3369,8 +3199,8 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				if (ci->team == cg.predictedPlayerState.persistant[PERS_TEAM])
 				{ //add to the chat box
 					//hear it in the world spot.
-					char vchatstr[1024];
-					strcpy(vchatstr, va("<%s: %s>\n", ci->name, descr));
+					char vchatstr[1024] = {0};
+					Q_strncpyz(vchatstr, va("<%s^7: %s>\n", ci->name, descr), sizeof( vchatstr ) );
 					CG_Printf(vchatstr);
 					CG_ChatBox_AddString(vchatstr);
 				}
@@ -3539,7 +3369,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		if (es->eventParm && es->number == cg.snap->ps.clientNum)
 		{
 			trap_S_StartLocalSound(cgs.media.dramaticFailure, CHAN_LOCAL);
-			CGCam_SetMusicMult(0.3, 5000);
+			CGCam_SetMusicMult(0.3f, 5000);
 		}
 		break;
 
@@ -3552,6 +3382,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	//
 	// powerup events
 	//
+#ifdef BASE_COMPAT
 	case EV_POWERUP_QUAD:
 		DEBUGNAME("EV_POWERUP_QUAD");
 		if ( es->number == cg.snap->ps.clientNum ) {
@@ -3568,6 +3399,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		}
 		//trap_S_StartSound (NULL, es->number, CHAN_ITEM, cgs.media.protectSound );
 		break;
+#endif // BASE_COMPAT
 
 	case EV_FORCE_DRAINED:
 		DEBUGNAME("EV_FORCE_DRAINED");

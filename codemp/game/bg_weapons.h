@@ -36,8 +36,7 @@ typedef enum {
 //	WP_GRAPPLING_HOOK,
 
 	WP_NUM_WEAPONS
-};
-typedef int weapon_t;
+} weapon_t;
 
 //anything > this will be considered not player useable
 #define LAST_USEABLE_WEAPON			WP_BRYAR_OLD

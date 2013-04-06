@@ -1,7 +1,7 @@
 //rww - callbacks the navigation system needs to make to the game code.
-#include "../../game/q_shared.h"
-#include "../../game/g_public.h"
-#include "../server.h"
+#include "qcommon/q_shared.h"
+#include "game/g_public.h"
+#include "server/server.h"
 
 qboolean GNavCallback_NAV_ClearPathToPoint( sharedEntity_t *self, vec3_t pmins, vec3_t pmaxs, vec3_t point, int clipmask, int okToHitEntNum )
 {

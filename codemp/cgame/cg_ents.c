@@ -6,8 +6,8 @@
 /*
 Ghoul2 Insert Start
 */
-#include "..\game\q_shared.h"
-#include "..\ghoul2\g2.h"
+#include "qcommon/q_shared.h"
+#include "ghoul2/g2.h"
 /*
 Ghoul2 Insert end
 */
@@ -240,6 +240,24 @@ void CG_S_UpdateLoopingSounds(int entityNum)
 		VectorCopy(cent->lerpOrigin, lerpOrg);
 	}
 
+	//Raz: Looping sounds fix from Sil
+	/*	Sil: well with looping sounds, you would notice it playing with force powers
+		Sil: when someone turns on speed
+		Sil: or rage
+		Sil: etc
+		Sil: you will hear it in origin where he turned it on
+		Sil: even if he is not there anymore
+	*/
+	if ( (cent->currentState.eFlags & EF_SOUNDTRACKER)
+		&& (!cg.snap || cent->currentState.trickedentindex != cg.snap->ps.clientNum) )
+	{//keep sound for this entity updated in accordance with its attached entity at all times
+		//entity out of range
+		if ( !cg_entities[cent->currentState.trickedentindex].currentValid )
+			return;
+
+		VectorCopy( cg_entities[cent->currentState.trickedentindex].lerpOrigin, lerpOrg );
+	}
+
 	while (i < cent->numLoopingSounds)
 	{
 		cSound = &cent->loopingSound[i];
@@ -309,7 +327,8 @@ static void CG_EntityEffects( centity_t *cent ) {
 
 
 	// constant light glow
-	if ( cent->currentState.constantLight ) {
+	//Raz: Fix the glow from charging weapons being stuck to players
+	if ( cent->currentState.constantLight && cent->currentState.eType != ET_PLAYER && cent->currentState.eType != ET_BODY && cent->currentState.eType != ET_NPC ) {
 		int		cl;
 		int		i, r, g, b;
 
@@ -382,11 +401,8 @@ void FX_DrawPortableShield(centity_t *cent)
 	vec3_t			start, end, normal;
 	localEntity_t	*le;
 	qhandle_t		shader;
-	char			buf[1024];
 
-	trap_Cvar_VariableStringBuffer("cl_paused", buf, sizeof(buf));
-
-	if (atoi(buf))
+	if ( cl_paused.integer )
 	{ //rww - fix to keep from rendering repeatedly while HUD menu is up
 		return;
 	}
@@ -673,7 +689,7 @@ void CG_Disintegration(centity_t *cent, refEntity_t *ent)
 	ent->customShader = 0;
 	trap_R_AddRefEntityToScene( ent );
 
-	if ( cg.time - ent->endTime < 1000 && (cg_timescale.value * cg_timescale.value * random()) > 0.05f )
+	if ( cg.time - ent->endTime < 1000 && (timescale.value * timescale.value * random()) > 0.05f )
 	{
 		vec3_t fxOrg, fxDir;
 		mdxaBone_t	boltMatrix;
@@ -902,7 +918,7 @@ static void CG_General( centity_t *cent ) {
 	{
 		if (cent->currentState.groundEntityNum >= ENTITYNUM_WORLD)
 		{
-			float smoothFactor = 0.5f*cg_timescale.value;
+			float smoothFactor = 0.5f*timescale.value;
 			int k = 0;
 			vec3_t posDif;
 
@@ -989,7 +1005,7 @@ static void CG_General( centity_t *cent ) {
 	{ //special case for client limbs
 		centity_t *clEnt;
 		int dismember_settings = cg_dismember.integer;
-		float smoothFactor = 0.5f*cg_timescale.value;
+		float smoothFactor = 0.5f*timescale.value;
 		int k = 0;
 		vec3_t posDif;
 		
@@ -1441,14 +1457,7 @@ Ghoul2 Insert End
 
 	if (cent->currentState.iModelScale)
 	{ //if the server says we have a custom scale then set it now.
-		if ( cent->currentState.legsFlip  )
-		{//scalar
-			cent->modelScale[0] = cent->modelScale[1] = cent->modelScale[2] = cent->currentState.iModelScale;
-		}
-		else
-		{//percentage
-			cent->modelScale[0] = cent->modelScale[1] = cent->modelScale[2] = cent->currentState.iModelScale/100.0f;
-		}
+		cent->modelScale[0] = cent->modelScale[1] = cent->modelScale[2] = cent->currentState.iModelScale/100.0f;
 		VectorCopy(cent->modelScale, ent.modelScale);
 		ScaleModelAxis(&ent);
 	}
@@ -1708,9 +1717,9 @@ Ghoul2 Insert End
 			}
 		}
 
-		ent.modelScale[0] = 1.1;
-		ent.modelScale[1] = 1.1;
-		ent.modelScale[2] = 1.1;
+		ent.modelScale[0] = 1.1f;
+		ent.modelScale[1] = 1.1f;
+		ent.modelScale[2] = 1.1f;
 
 		ent.origin[2] -= 2;
 		ScaleModelAxis(&ent);
@@ -1811,7 +1820,7 @@ Ghoul2 Insert End
 Ghoul2 Insert Start
 */
 
-	if (cg_debugBB.integer)
+	if (debugBB.integer)
 	{
 		CG_CreateBBRefEnts(s1, cent->lerpOrigin);
 	}
@@ -2265,9 +2274,9 @@ Ghoul2 Insert End
 		if (item->giType == IT_TEAM &&
 			(item->giTag == PW_REDFLAG || item->giTag == PW_BLUEFLAG))
 		{
-			ent.modelScale[0] = 0.7;
-			ent.modelScale[1] = 0.7;
-			ent.modelScale[2] = 0.7;
+			ent.modelScale[0] = 0.7f;
+			ent.modelScale[1] = 0.7f;
+			ent.modelScale[2] = 0.7f;
 			ScaleModelAxis(&ent);
 		}
 		trap_R_AddRefEntityToScene(&ent);
@@ -2905,14 +2914,7 @@ Ghoul2 Insert End
 		ent.hModel = cgs.gameModels[s1->modelindex2];
 		if (s1->iModelScale)
 		{ //custom model2 scale
-			if ( s1->legsFlip )
-			{//scalar
-				ent.modelScale[0] = ent.modelScale[1] = ent.modelScale[2] = s1->iModelScale;
-			}
-			else
-			{//percentage
-				ent.modelScale[0] = ent.modelScale[1] = ent.modelScale[2] = s1->iModelScale/100.0f;
-			}
+			ent.modelScale[0] = ent.modelScale[1] = ent.modelScale[2] = s1->iModelScale/100.0f;
 			ScaleModelAxis(&ent);
 		}
 		trap_R_AddRefEntityToScene(&ent);
@@ -3005,6 +3007,13 @@ void CG_AdjustPositionForMover( const vec3_t in, int moverNum, int fromTime, int
 	vec3_t	oldOrigin, origin, deltaOrigin;
 	vec3_t	oldAngles, angles, deltaAngles;
 
+	//Raz: Don't bother if we're a spectator
+	if ( cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_SPECTATOR )
+	{
+		VectorCopy( in, out );
+		return;
+	}
+
 	if ( moverNum <= 0 || moverNum >= ENTITYNUM_MAX_NORMAL ) {
 		VectorCopy( in, out );
 		return;
@@ -3043,6 +3052,7 @@ static void CG_InterpolateEntityPosition( centity_t *cent ) {
 	// a snapshot ahead of the current one
 	if ( cg.nextSnap == NULL ) {
 		CG_Error( "CG_InterpoateEntityPosition: cg.nextSnap == NULL" );
+		return;
 	}
 
 	f = cg.frameInterpolation;
@@ -3103,10 +3113,8 @@ void CG_CalcEntityLerpPositions( centity_t *cent ) {
 
 	// first see if we can interpolate between two snaps for
 	// linear extrapolated clients
-	if ( cent->interpolate 
-		&& cent->currentState.pos.trType == TR_LINEAR_STOP
-		&& cent->currentState.number < MAX_CLIENTS )
-	{
+	if ( cent->interpolate && cent->currentState.pos.trType == TR_LINEAR_STOP &&
+											cent->currentState.number < MAX_CLIENTS) {
 		CG_InterpolateEntityPosition( cent );
 		goAway = qtrue;
 	}
@@ -3330,6 +3338,11 @@ static void CG_AddCEntity( centity_t *cent ) {
 			}
 		}
 	}
+
+	//Raz: don't render when we are in spec, happens occasionally on map_restart and such
+	if ( cg.predictedPlayerState.clientNum == cent->currentState.number && cg.predictedPlayerState.persistant[PERS_TEAM] == TEAM_SPECTATOR )
+		return;
+
 
 	// calculate the current origin
 	CG_CalcEntityLerpPositions( cent );

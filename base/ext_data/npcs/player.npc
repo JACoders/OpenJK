@@ -1,7 +1,0 @@
-
-Player
-{
-	playerModel	player
-	class		CLASS_PLAYER
-}
-

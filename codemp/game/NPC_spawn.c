@@ -10,7 +10,7 @@
 extern void G_DebugPrint( int level, const char *format, ... );
 
 extern qboolean G_CheckInSolid (gentity_t *self, qboolean fix);
-extern void ClientUserinfoChanged( int clientNum );
+extern qboolean ClientUserinfoChanged( int clientNum );
 extern qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest );
 extern void Jedi_Cloak( gentity_t *self );
 
@@ -363,7 +363,7 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 
 			// Not even sure if we want to give different levels of batteries?  ...Or even that these are the values we'd want to use.
 			/*
-			switch ( g_spskill.integer )
+			switch ( g_npcspskill.integer )
 			{
 			case 0:	//	EASY
 				ent->client->ps.batteryCharge = MAX_BATTERIES * 0.8f; 
@@ -921,7 +921,7 @@ void NPC_Begin (gentity_t *ent)
 			//&& ent->client->NPC_class != CLASS_DESANN 
 			&& ent->client->NPC_class != CLASS_JEDI )
 		{// up everyone except jedi
-			ent->NPC->stats.health += ent->NPC->stats.health/4 * g_spskill.integer; // 100% on easy, 125% on medium, 150% on hard
+			ent->NPC->stats.health += ent->NPC->stats.health/4 * g_npcspskill.integer; // 100% on easy, 125% on medium, 150% on hard
 		}
 		
 		client->pers.maxHealth = client->ps.stats[STAT_MAX_HEALTH] = ent->NPC->stats.health;
@@ -934,7 +934,7 @@ void NPC_Begin (gentity_t *ent)
 	if ( !Q_stricmp( "rodian", ent->NPC_type ) )
 	{//sniper
 		//NOTE: this will get overridden by any aim settings in their spawnscripts
-		switch ( g_spskill.integer )
+		switch ( g_npcspskill.integer )
 		{
 		case 0:
 			ent->NPC->stats.aim = 1;
@@ -952,7 +952,7 @@ void NPC_Begin (gentity_t *ent)
 		|| ent->client->NPC_class == CLASS_IMPWORKER
 		|| !Q_stricmp( "rodian2", ent->NPC_type ) )
 	{//tweak yawspeed for these NPCs based on difficulty
-		switch ( g_spskill.integer )
+		switch ( g_npcspskill.integer )
 		{
 		case 0:
 			ent->NPC->stats.yawSpeed *= 0.75f;
@@ -979,7 +979,7 @@ void NPC_Begin (gentity_t *ent)
 	else if ( ent->client->NPC_class == CLASS_REBORN
 		|| ent->client->NPC_class == CLASS_SHADOWTROOPER )
 	{
-		switch ( g_spskill.integer )
+		switch ( g_npcspskill.integer )
 		{
 		case 1:
 			ent->NPC->stats.yawSpeed *= 1.25f;
@@ -1170,7 +1170,7 @@ void NPC_Begin (gentity_t *ent)
 	// initialize animations and other things
 	memset( &ucmd, 0, sizeof( ucmd ) );
 	//_VectorCopy( client->pers.cmd_angles, ucmd.angles );
-	VectorCopy(client->pers.cmd.angles, ucmd.angles);
+	VectorCopyM(client->pers.cmd.angles, ucmd.angles);
 	
 	ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
 
@@ -1244,12 +1244,6 @@ void NPC_Begin (gentity_t *ent)
 						//SP way:
 						//droidEnt->s.m_iVehicleNum = ent->s.number;
 						//droidEnt->owner = ent;
-						//set team
-						droidEnt->alliedTeam = ent->alliedTeam;
-						droidEnt->teamnodmg = ent->teamnodmg;
-						droidEnt->client->sess.sessionTeam = ent->client->sess.sessionTeam;
-						droidEnt->client->ps.persistant[PERS_TEAM] = ent->client->ps.persistant[PERS_TEAM];
-						//position
 						VectorCopy( ent->r.currentOrigin, droidEnt->s.origin );
 						VectorCopy( ent->r.currentOrigin, droidEnt->client->ps.origin );
 						G_SetOrigin( droidEnt, droidEnt->s.origin );
@@ -1358,12 +1352,10 @@ void NPC_DefaultScriptFlags( gentity_t *ent )
 NPC_Spawn_Go
 -------------------------
 */
-
 extern void G_CreateAnimalNPC( Vehicle_t **pVeh, const char *strAnimalType );
 extern void G_CreateSpeederNPC( Vehicle_t **pVeh, const char *strType );
 extern void G_CreateWalkerNPC( Vehicle_t **pVeh, const char *strAnimalType );
 extern void G_CreateFighterNPC( Vehicle_t **pVeh, const char *strType );
-
 
 gentity_t *NPC_Spawn_Do( gentity_t *ent )
 {
@@ -1422,7 +1414,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 	{		
 		Com_Printf ( S_COLOR_RED"ERROR: NPC G_Alloc NPC failed\n" );		
 		goto finish;
-		return NULL;
+	//	return NULL;
 	}	
 
 	//newent->client = (gclient_s *)G_Alloc (sizeof(gclient_s));
@@ -1434,7 +1426,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 	{
 		newent->NPC = NULL;
 		goto finish;
-		return NULL;
+	//	return NULL;
 	}
 
 	newent->NPC->tempGoal->classname = "NPC_goal";
@@ -1445,7 +1437,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 	{
 		Com_Printf ( S_COLOR_RED"ERROR: NPC BG_Alloc client failed\n" );
 		goto finish;
-		return NULL;
+	//	return NULL;
 	}
 	
 	memset ( newent->client, 0, sizeof(*newent->client) );

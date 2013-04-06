@@ -5,7 +5,7 @@
 #ifndef	__ICARUS__
 #define __ICARUS__
 
-#include "../game/g_public.h"
+#include "game/g_public.h"
 
 #pragma warning( disable : 4786 )  // identifier was truncated 
 #pragma warning( disable : 4514 )  // unreferenced inline was removed

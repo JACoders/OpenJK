@@ -47,7 +47,7 @@ void CG_RegisterItemVisuals( int itemNum ) {
 
 	item = &bg_itemlist[ itemNum ];
 
-	memset( itemInfo, 0, sizeof( &itemInfo ) );
+	memset( itemInfo, 0, sizeof( *itemInfo ) );
 	itemInfo->registered = qtrue;
 
 	if (item->giType == IT_TEAM &&
@@ -829,18 +829,20 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 	// set up gun position
 	CG_CalculateWeaponPosition( hand.origin, angles );
 
-	VectorMA( hand.origin, cg_gun_x.value, cg.refdef.viewaxis[0], hand.origin );
-	VectorMA( hand.origin, cg_gun_y.value, cg.refdef.viewaxis[1], hand.origin );
-	VectorMA( hand.origin, (cg_gun_z.value+fovOffset), cg.refdef.viewaxis[2], hand.origin );
+	VectorMA( hand.origin, cg_gunX.value, cg.refdef.viewaxis[0], hand.origin );
+	VectorMA( hand.origin, cg_gunY.value, cg.refdef.viewaxis[1], hand.origin );
+	VectorMA( hand.origin, (cg_gunZ.value+fovOffset), cg.refdef.viewaxis[2], hand.origin );
 
 	AnglesToAxis( angles, hand.axis );
 
 	// map torso animations to weapon animations
-	if ( cg_gun_frame.integer ) {
+	if ( cg_debugGun.integer ) {
 		// development tool
-		hand.frame = hand.oldframe = cg_gun_frame.integer;
+		hand.frame = hand.oldframe = cg_debugGun.integer;
 		hand.backlerp = 0;
 	} else {
+		float currentFrame;
+
 		// get clientinfo for animation map
 		if (cent->currentState.eType == ET_NPC)
 		{
@@ -855,9 +857,11 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 		{
 			ci = &cgs.clientinfo[ cent->currentState.clientNum ];
 		}
-		hand.frame = CG_MapTorsoToWeaponFrame( ci, cent->pe.torso.frame, cent->currentState.torsoAnim );
-		hand.oldframe = CG_MapTorsoToWeaponFrame( ci, cent->pe.torso.oldFrame, cent->currentState.torsoAnim );
-		hand.backlerp = cent->pe.torso.backlerp;
+
+		trap_G2API_GetBoneFrame(cent->ghoul2, "lower_lumbar", cg.time, &currentFrame, cgs.gameModels, 0);
+		hand.frame = CG_MapTorsoToWeaponFrame( ci, ceil( currentFrame ), cent->currentState.torsoAnim );
+		hand.oldframe = CG_MapTorsoToWeaponFrame( ci, floor( currentFrame ), cent->currentState.torsoAnim );
+		hand.backlerp = 1.0f - (currentFrame-floor(currentFrame));
 
 		// Handle the fringe situation where oldframe is invalid
 		if ( hand.frame == -1 )
@@ -1516,7 +1520,8 @@ void CG_Weapon_f( void ) {
 
 	if (num == 1 && cg.snap->ps.weapon == WP_SABER)
 	{
-		if (cg.snap->ps.weaponTime < 1)
+		if (cg.predictedPlayerState.weaponTime < 1)
+	//	if (cg.snap->ps.weaponTime < 1)
 		{
 			trap_SendConsoleCommand("sv_saberswitch\n");
 		}
@@ -1753,7 +1758,7 @@ void CG_OutOfAmmoChange( int oldWeapon )
 				( i == WP_TRIP_MINE || i == WP_DET_PACK || i == WP_THERMAL || i == WP_ROCKET_LAUNCHER) ) // safe weapon switch
 			*/
 			//rww - Don't we want to make sure i != one of these if autoswitch is 1 (safe)?
-			if (cg_autoswitch.integer != 1 || (i != WP_TRIP_MINE && i != WP_DET_PACK && i != WP_THERMAL && i != WP_ROCKET_LAUNCHER))
+			if (cg_autoSwitch.integer != 1 || (i != WP_TRIP_MINE && i != WP_DET_PACK && i != WP_THERMAL && i != WP_ROCKET_LAUNCHER))
 			{
 				if (i != oldWeapon)
 				{ //don't even do anything if we're just selecting the weapon we already have/had
@@ -1834,13 +1839,13 @@ void CG_FireWeapon( centity_t *cent, qboolean altFire ) {
 		{
 			float val = ( cg.time - cent->currentState.constantLight ) * 0.001f;
 
-			if (val > 3)
+			if (val > 3.0f)
 			{
-				val = 3;
+				val = 3.0f;
 			}
-			if (val < 0.2)
+			if (val < 0.2f)
 			{
-				val = 0.2;
+				val = 0.2f;
 			}
 
 			val *= 2;
@@ -1888,10 +1893,12 @@ void CG_FireWeapon( centity_t *cent, qboolean altFire ) {
 		}
 	}
 
-	// play quad sound if needed
-	if ( cent->currentState.powerups & ( 1 << PW_QUAD ) ) {
-		//trap_S_StartSound (NULL, cent->currentState.number, CHAN_ITEM, cgs.media.quadSound );
-	}
+	#ifdef BASE_COMPAT
+		// play quad sound if needed
+		if ( cent->currentState.powerups & ( 1 << PW_QUAD ) ) {
+			//trap_S_StartSound (NULL, cent->currentState.number, CHAN_ITEM, cgs.media.quadSound );
+		}
+	#endif // BASE_COMPAT
 
 
 	// play a sound
@@ -2080,9 +2087,6 @@ void CG_MissileHitPlayer(int weapon, vec3_t origin, vec3_t dir, int entityNum, q
 		}
 	}
 	*/	
-
-	// NOTENOTE No bleeding in this game
-//	CG_Bleed( origin, entityNum );
 
 	// some weapons will make an explosion with the blood, while
 	// others will just make the blood

@@ -19,7 +19,13 @@
 
 #define	GAME_VERSION		"basejka-1"
 
+#define DEFAULT_SABER		"Kyle"
+#define DEFAULT_SABER_MODEL	"models/weapons2/saber/saber_w.glm"
+
 #define	STEPSIZE		18
+
+#define DEFAULT_FORCEPOWERS	"5-1-000000000000000000"
+//"rank-side-heal.lev.speed.push.pull.tele.grip.lightning.rage.protect.absorb.teamheal.teamforce.drain.see"
 
 #define	DEFAULT_GRAVITY		800
 #define	GIB_HEALTH			-40
@@ -193,8 +199,7 @@ typedef enum {
 	GT_CTF,				// capture the flag
 	GT_CTY,
 	GT_MAX_GAME_TYPE
-};
-typedef int gametype_t;
+} gametype_t;
 
 typedef enum { GENDER_MALE, GENDER_FEMALE, GENDER_NEUTER } gender_t;
 
@@ -202,7 +207,7 @@ extern vec3_t WP_MuzzlePoint[WP_NUM_WEAPONS];
 
 extern int forcePowerSorted[NUM_FORCE_POWERS];
 
-typedef enum
+typedef enum saberLockType_e
 {
 	SABERLOCK_TOP,
 	SABERLOCK_SIDE,
@@ -211,15 +216,15 @@ typedef enum
 	SABERLOCK_SUPERBREAK,
 	SABERLOCK_WIN,
 	SABERLOCK_LOSE
-};
+} saberLockType_t;
 
-typedef enum
+typedef enum direction_e
 {
 	DIR_RIGHT,
 	DIR_LEFT,
 	DIR_FRONT,
 	DIR_BACK
-};
+} direction_t;
 
 /*
 ===================================================================================
@@ -246,7 +251,7 @@ typedef struct animation_s {
 extern qboolean			BGPAFtextLoaded;
 extern animation_t		bgHumanoidAnimations[MAX_TOTALANIMATIONS];
 
-#define MAX_ANIM_FILES	64
+#define MAX_ANIM_FILES	16
 #define MAX_ANIM_EVENTS 300
 
 typedef enum
@@ -334,6 +339,7 @@ typedef struct
 	qboolean		eventsParsed;
 } bgLoadedEvents_t;
 
+
 extern bgLoadedAnim_t bgAllAnims[MAX_ANIM_FILES];
 
 //In SP this is shared in with the anim stuff, and humanoid anim sets can be loaded
@@ -346,6 +352,7 @@ extern bgLoadedAnim_t bgAllAnims[MAX_ANIM_FILES];
 extern bgLoadedEvents_t bgAllEvents[MAX_ANIM_FILES];
 extern int bgNumAnimEvents;
 #endif
+
 
 typedef enum {
 	PM_NORMAL,		// can accelerate and turn
@@ -370,7 +377,7 @@ typedef enum {
 } weaponstate_t;
 
 
-typedef enum {
+typedef enum forceMasteries_e {
 	FORCE_MASTERY_UNINITIATED,
 	FORCE_MASTERY_INITIATE,
 	FORCE_MASTERY_PADAWAN,
@@ -380,7 +387,7 @@ typedef enum {
 	FORCE_MASTERY_JEDI_KNIGHT,
 	FORCE_MASTERY_JEDI_MASTER,
 	NUM_FORCE_MASTERY_LEVELS
-};
+} forceMasteries_t;
 
 extern char *forceMasteryLevels[NUM_FORCE_MASTERY_LEVELS];
 extern int forceMasteryPoints[NUM_FORCE_MASTERY_LEVELS];
@@ -418,7 +425,11 @@ typedef struct bgEntity_s
 	vec3_t			modelScale; //needed for g2 collision
 
 	//Data type(s) must directly correspond to the head of the gentity and centity structures
-} bgEntity_t;
+#if defined(__GCC__) || defined(MINGW32) || defined(MACOS_X)
+	} _bgEntity_t;
+#else
+	} bgEntity_t;
+#endif
 
 typedef struct {
 	// state (in / out)
@@ -479,6 +490,7 @@ typedef struct {
 	int			entSize; //size of the struct (gentity_t or centity_t) so things can be dynamic
 } pmove_t;
 
+
 extern	pmove_t		*pm;
 
 #define SETANIM_TORSO 1
@@ -495,6 +507,7 @@ extern	pmove_t		*pm;
 // if a full pmove isn't done on the client, you can just update the angles
 void PM_UpdateViewAngles( playerState_t *ps, const usercmd_t *cmd );
 void Pmove (pmove_t *pmove);
+
 
 //===================================================================================
 
@@ -636,12 +649,12 @@ typedef enum {
 typedef enum {
 	PW_NONE,
 
-	PW_QUAD,
-	PW_BATTLESUIT,
+	#ifdef BASE_COMPAT
+		PW_QUAD,
+		PW_BATTLESUIT,
+	#endif // BASE_COMPAT
+
 	PW_PULL,
-	//PW_INVIS, //rww - removed
-	//PW_REGEN, //rww - removed
-	//PW_FLIGHT, //rww - removed
 
 	PW_REDFLAG,
 	PW_BLUEFLAG,
@@ -649,10 +662,6 @@ typedef enum {
 
 	PW_SHIELDHIT,
 
-	//PW_SCOUT, //rww - removed
-	//PW_GUARD, //rww - removed
-	//PW_DOUBLER, //rww - removed
-	//PW_AMMOREGEN, //rww - removed
 	PW_SPEEDBURST,
 	PW_DISINT_4,
 	PW_SPEED,
@@ -664,8 +673,7 @@ typedef enum {
 
 	PW_NUM_POWERUPS
 
-};
-typedef int powerup_t;
+} powerup_t;
 
 typedef enum {
 	HI_NONE,
@@ -684,8 +692,7 @@ typedef enum {
 	HI_CLOAK,
 
 	HI_NUM_HOLDABLE
-};
-typedef int holdable_t;
+} holdable_t;
 
 
 typedef enum {
@@ -850,9 +857,10 @@ typedef enum {
 	EV_DEATH3,
 	EV_OBITUARY,
 
-	EV_POWERUP_QUAD,
-	EV_POWERUP_BATTLESUIT,
-	//EV_POWERUP_REGEN,
+	#ifdef BASE_COMPAT
+		EV_POWERUP_QUAD,
+		EV_POWERUP_BATTLESUIT,
+	#endif // BASE_COMPAT
 
 	EV_FORCE_DRAINED,
 
@@ -997,8 +1005,7 @@ typedef enum {
 	TEAM_SPECTATOR,
 
 	TEAM_NUM_TEAMS
-};
-typedef int team_t;
+} team_t;
 
 typedef enum {
 	DUELTEAM_FREE,
@@ -1067,8 +1074,6 @@ typedef enum {
 	MOD_CRUSH,
 	MOD_TELEFRAG,
 	MOD_FALLING,
-	MOD_COLLISION,
-	MOD_VEH_EXPLOSION,
 	MOD_SUICIDE,
 	MOD_TARGET_LASER,
 	MOD_TRIGGER_HURT,
@@ -1098,8 +1103,7 @@ typedef enum {
 							// EFX: rotate + bob
 	IT_PERSISTANT_POWERUP,
 	IT_TEAM
-};
-typedef int itemType_t;
+} itemType_t;
 
 #define MAX_ITEM_MODELS 4
 
@@ -1121,6 +1125,8 @@ typedef struct gitem_s {
 	char		*description;
 } gitem_t;
 
+// included in both the game dll and the client
+
 extern	gitem_t	bg_itemlist[];
 extern	int		bg_numItems;
 
@@ -1133,6 +1139,8 @@ gitem_t	*BG_FindItemForHoldable( holdable_t pw );
 #define	ITEM_INDEX(x) ((x)-bg_itemlist)
 
 qboolean	BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const playerState_t *ps );
+
+
 
 #define SABER_BLOCK_DUR 150		// number of milliseconds a block animation should take.
 
@@ -1189,69 +1197,6 @@ typedef enum {
 							// by setting eType to ET_EVENTS + eventNum
 							// this avoids having to set eFlags and eventNum
 } entityType_t;
-
-
-
-
-//
-// fields are needed for spawning from the entity string
-//
-//I moved these from g_spawn.c because the entity parsing stuff is semi-shared now -rww
-#undef _GAME_SIDE
-
-#ifdef QAGAME
-#define _GAME_SIDE
-#elif defined CGAME
-#define _GAME_SIDE
-#endif
-
-#ifdef _GAME_SIDE
-typedef enum {
-	F_INT, 
-	F_FLOAT,
-	F_LSTRING,			// string on disk, pointer in memory, TAG_LEVEL
-	F_GSTRING,			// string on disk, pointer in memory, TAG_GAME
-	F_VECTOR,
-	F_ANGLEHACK,
-	F_ENTITY,			// index on disk, pointer in memory
-	F_ITEM,				// index on disk, pointer in memory
-	F_CLIENT,			// index on disk, pointer in memory
-	F_PARM1,			// Special case for parms
-	F_PARM2,			// Special case for parms
-	F_PARM3,			// Special case for parms
-	F_PARM4,			// Special case for parms
-	F_PARM5,			// Special case for parms
-	F_PARM6,			// Special case for parms
-	F_PARM7,			// Special case for parms
-	F_PARM8,			// Special case for parms
-	F_PARM9,			// Special case for parms
-	F_PARM10,			// Special case for parms
-	F_PARM11,			// Special case for parms
-	F_PARM12,			// Special case for parms
-	F_PARM13,			// Special case for parms
-	F_PARM14,			// Special case for parms
-	F_PARM15,			// Special case for parms
-	F_PARM16,			// Special case for parms
-	F_IGNORE
-} fieldtype_t;
-
-
-
-
-typedef struct
-{
-	char	*name;
-	int		ofs;
-	fieldtype_t	type;
-	int		flags;
-} BG_field_t;
-
-
-
-#endif
-
-
-
 
 // Okay, here lies the much-dreaded Pat-created FSM movement chart...  Heretic II strikes again!
 // Why am I inflicting this on you?  Well, it's better than hardcoded states.
@@ -1456,8 +1401,7 @@ typedef enum {
 	LS_REFLECT_LL,
 
 	LS_MOVE_MAX//
-};
-typedef int saberMoveName_t;
+} saberMoveName_t;
 
 typedef enum {
 	Q_BR,
@@ -1485,11 +1429,13 @@ typedef struct
 	qboolean trailLength;
 } saberMoveData_t;
 
+
 extern saberMoveData_t	saberMoveData[LS_MOVE_MAX];
 
 bgEntity_t *PM_BGEntForNum( int num );
 qboolean BG_KnockDownable(playerState_t *ps);
 qboolean BG_LegalizedForcePowers(char *powerOut, int maxRank, qboolean freeSaber, int teamForce, int gametype, int fpDisabled);
+
 
 #ifdef __LCC__ //can't inline it then, it is declared over in bg_misc in this case
 void BG_GiveMeVectorFromMatrix(mdxaBone_t *boltMatrix, int flags, vec3_t vec);
@@ -1537,6 +1483,7 @@ static ID_INLINE void BG_GiveMeVectorFromMatrix(mdxaBone_t *boltMatrix, int flag
 	}
 }
 #endif
+
 
 void BG_IK_MoveArm(void *ghoul2, int lHandBolt, int time, entityState_t *ent, int basePose, vec3_t desiredPos, qboolean *ikInProgress,
 					 vec3_t origin, vec3_t angles, vec3_t scale, int blendTime, qboolean forceHalt);
@@ -1633,11 +1580,13 @@ float BG_SI_LengthMax(saberInfo_t *saber);
 void BG_SI_ActivateTrail ( saberInfo_t *saber, float duration );
 void BG_SI_DeactivateTrail ( saberInfo_t *saber, float duration );
 extern void BG_AttachToRancor( void *ghoul2,float rancYaw,vec3_t rancOrigin,int time,qhandle_t *modelList,vec3_t modelScale,qboolean inMouth,vec3_t out_origin,vec3_t out_angles,vec3_t out_axis[3] );
+void BG_ClearRocketLock( playerState_t *ps );
 
 extern int WeaponReadyAnim[WP_NUM_WEAPONS];
 extern int WeaponAttackAnim[WP_NUM_WEAPONS];
 
 extern int forcePowerDarkLight[NUM_FORCE_POWERS];
+
 
 #define ARENAS_PER_TIER		4
 #define MAX_ARENAS			1024

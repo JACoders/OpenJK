@@ -2,7 +2,7 @@
 // NPC_misc.cpp
 //
 #include "b_local.h"
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 
 /*
 Debug_Printf

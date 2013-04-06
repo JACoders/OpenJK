@@ -1,14 +1,22 @@
 // Copyright (C) 2000-2002 Raven Software, Inc.
 //
-#include "../win32/AutoVersion.h"
+
+#define _STR(x) #x
+#define STR(x) _STR(x)
 
 // Current version of the multi player game
-#ifdef _DEBUG
-	#define	Q3_VERSION		"(debug)JAmp: v"VERSION_STRING_DOTTED
-#elif defined FINAL_BUILD
-	#define	Q3_VERSION		"JAmp: v"VERSION_STRING_DOTTED
-#else
-	#define	Q3_VERSION		"(internal)JAmp: v"VERSION_STRING_DOTTED
-#endif
+#define VERSION_MAJOR_RELEASE		1
+#define VERSION_MINOR_RELEASE		0
+#define VERSION_EXTERNAL_BUILD		1
+#define VERSION_INTERNAL_BUILD		0
 
-//end
+#define VERSION_STRING				STR(VERSION_MAJOR_RELEASE) ", " STR(VERSION_MINOR_RELEASE) ", " STR(VERSION_EXTERNAL_BUILD) ", " STR(VERSION_INTERNAL_BUILD) // "1, 0, 1, 0"
+#define VERSION_STRING_DOTTED		STR(VERSION_MAJOR_RELEASE) "." STR(VERSION_MINOR_RELEASE) "." STR(VERSION_EXTERNAL_BUILD) "." STR(VERSION_INTERNAL_BUILD) // "1.0.0.0"
+
+#if defined(_DEBUG)
+	#define	JK_VERSION		"(debug)OpenJK-MP: v"VERSION_STRING_DOTTED
+#elif defined(FINAL_BUILD)
+	#define	JK_VERSION		"OpenJK-MP: v"VERSION_STRING_DOTTED
+#else
+	#define	JK_VERSION		"(internal)OpenJK-MP: v"VERSION_STRING_DOTTED
+#endif

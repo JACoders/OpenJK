@@ -14,7 +14,6 @@ extern qboolean Jedi_WaitingAmbush( gentity_t *self );
 extern void Jedi_Ambush( gentity_t *self );
 extern qboolean NPC_SomeoneLookingAtMe(gentity_t *ent);
 
-
 extern qboolean BG_SaberInSpecialAttack( int anim );
 extern qboolean PM_SpinningSaberAnim( int anim );
 extern qboolean PM_SpinningAnim( int anim );
@@ -23,7 +22,6 @@ extern qboolean BG_FlippingAnim( int anim );
 extern qboolean PM_RollingAnim( int anim );
 extern qboolean PM_InCartwheel( int anim );
 extern qboolean BG_CrouchAnim( int anim );
-
 
 extern int	teamLastEnemyTime[];
 extern int killPlayerTimer;
@@ -100,7 +98,7 @@ static void NPC_CheckAttacker( gentity_t *other, int mod )
 		//Account for the skill level to skew the results
 		float	luckThreshold;
 
-		switch ( g_spskill.integer )
+		switch ( g_npcspskill.integer )
 		{
 		//Easiest difficulty, mild chance of picking up the player
 		case 0:
@@ -174,7 +172,7 @@ float NPC_GetPainChance( gentity_t *self, int damage )
 	}
 
 	pain_chance = (float)(self->client->ps.stats[STAT_MAX_HEALTH]-self->health)/(self->client->ps.stats[STAT_MAX_HEALTH]*2.0f) + (float)damage/(self->client->ps.stats[STAT_MAX_HEALTH]/2.0f);
-	switch ( g_spskill.integer )
+	switch ( g_npcspskill.integer )
 	{
 	case 0:	//easy
 		//return 0.75f;
@@ -248,7 +246,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 	}
 	else 
 	{
-		if ( other && other->s.weapon == WP_SABER || /*mod == MOD_ELECTROCUTE ||*/ mod == MOD_CRUSH/*FIXME:MOD_FORCE_GRIP*/ )
+		if ( other && (other->s.weapon == WP_SABER || /*mod == MOD_ELECTROCUTE ||*/ mod == MOD_CRUSH/*FIXME:MOD_FORCE_GRIP*/ ) )
 		{
 			pain_chance = 1.0f;//always take pain from saber
 		}
@@ -442,9 +440,9 @@ void NPC_Pain(gentity_t *self, gentity_t *attacker, int damage)
 				{//mindtricked
 					return;
 				}
-				else if ( self->NPC->ffireCount < 3+((2-g_spskill.integer)*2) )
+				else if ( self->NPC->ffireCount < 3+((2-g_npcspskill.integer)*2) )
 				{//not mad enough yet
-					//Com_Printf( "chck: %d < %d\n", self->NPC->ffireCount, 3+((2-g_spskill.integer)*2) );
+					//Com_Printf( "chck: %d < %d\n", self->NPC->ffireCount, 3+((2-g_npcspskill.integer)*2) );
 					if ( damage != -1 )
 					{//-1 == don't play pain anim
 						//Set our proper pain animation
@@ -923,6 +921,8 @@ void NPC_Respond( gentity_t *self, int userNum )
 		break;
 	case CLASS_GONK:				// droid
 		G_Sound(self, CHAN_AUTO, G_SoundIndex(va("sound/chars/gonk/misc/gonktalk%d.wav",Q_irand(1, 2))));
+		break;
+	default:
 		break;
 	}
 	

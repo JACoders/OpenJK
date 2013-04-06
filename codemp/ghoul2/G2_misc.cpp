@@ -3,24 +3,24 @@
 
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 
 #if !defined(TR_LOCAL_H)
-	#include "../renderer/tr_local.h"
+	#include "renderer/tr_local.h"
 #endif
 
-#include "../renderer/matcomp.h"
+#include "renderer/matcomp.h"
 
 #if !defined(G2_H_INC)
 	#include "G2.h"
 #endif
 
 #if !defined (MINIHEAP_H_INC)
-	#include "../qcommon/MiniHeap.h"
+	#include "qcommon/MiniHeap.h"
 #endif
 
-#include "../server/server.h"
+#include "server/server.h"
 #include "G2_local.h"
 
 #ifdef _G2_GORE

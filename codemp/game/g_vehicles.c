@@ -1,7 +1,7 @@
 // leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
 
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 #include "g_local.h"
 
 #ifdef _JK2 //SP does not have this preprocessor for game like MP does
@@ -13,7 +13,7 @@
 #ifndef _JK2MP
 #include "g_functions.h"
 #include "g_vehicles.h"
-#include "../CGame/cg_Local.h"
+#include "cgame/cg_Local.h"
 #else
 #include "bg_vehicles.h"
 #endif
@@ -31,7 +31,10 @@
 #define false qfalse
 #define true qtrue
 
-//#define sqrtf sqrt
+#ifdef sqrtf
+#undef sqrtf
+#endif
+#define sqrtf sqrt
 
 #define MOD_EXPLOSIVE MOD_SUICIDE
 #endif
@@ -44,10 +47,7 @@
 #ifdef _JK2MP
 extern gentity_t *NPC_Spawn_Do( gentity_t *ent );
 extern void NPC_SetAnim(gentity_t	*ent,int setAnimParts,int anim,int setAnimFlags);
-extern void G_DamageFromKiller( gentity_t *pEnt, gentity_t *pVehEnt, gentity_t *attacker, vec3_t org, int damage, int dflags, int mod );
-
 #else
-
 extern gentity_t *NPC_Spawn_Do( gentity_t *pEnt, qboolean fullSpawnNow );
 extern qboolean G_ClearLineOfSight(const vec3_t point1, const vec3_t point2, int ignore, int clipmask);
 
@@ -72,11 +72,9 @@ extern void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t push
 #endif
 
 #ifdef _JK2MP
-
 extern void BG_SetAnim(playerState_t *ps, animation_t *animations, int setAnimParts,int anim,int setAnimFlags, int blendTime);
 extern void BG_SetLegsAnimTimer(playerState_t *ps, int time );
 extern void BG_SetTorsoAnimTimer(playerState_t *ps, int time );
-
 void G_VehUpdateShields( gentity_t *targ );
 #ifdef QAGAME
 extern void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum );
@@ -973,7 +971,7 @@ bool VEH_TryEject( Vehicle_t *pVeh,
 	if ( m_ExitTrace.fraction < 1.0f )
 	{//not totally clear
 #ifdef _JK2MP
-//		if ( (parent->clipmask&ent->r.contents) )//vehicle could actually get stuck on body
+		if ( (parent->clipmask&ent->r.contents) )//vehicle could actually get stuck on body
 #else
 		if ( (parent->clipmask&ent->contents) )//vehicle could actually get stuck on body
 #endif
@@ -1193,7 +1191,7 @@ getItOutOfMe:
 						pVeh->m_ppPassengers[k] = NULL;
 #ifdef QAGAME
 						//Server just needs to tell client which passenger he is
-						if ( ((gentity_t *)pVeh->m_ppPassengers[k-1])->client )
+						if ( pVeh->m_ppPassengers[k-1] && ((gentity_t *)pVeh->m_ppPassengers[k-1])->client )
 						{
 							((gentity_t *)pVeh->m_ppPassengers[k-1])->client->ps.generic1 = k;
 						}
@@ -1243,7 +1241,7 @@ getItOutOfMe:
 	}
 
 #ifdef _JK2MP //I hate adding these!
-	if (!taintedRider)
+	//if (!taintedRider)
 	{
 #endif
 		if ( pVeh->m_pVehicleInfo->hideRider )
@@ -1589,7 +1587,7 @@ static void DeathUpdate( Vehicle_t *pVeh )
 				bottom[2] += parent->mins[2] - 32;
 				G_VehicleTrace( &trace, parent->currentOrigin, lMins, lMaxs, bottom, parent->s.number, CONTENTS_SOLID );
 #ifdef _JK2MP
-				G_RadiusDamage( trace.endpos, parent, pVeh->m_pVehicleInfo->explosionDamage, pVeh->m_pVehicleInfo->explosionRadius, NULL, NULL, MOD_VEH_EXPLOSION );//FIXME: extern damage and radius or base on fuel
+				G_RadiusDamage( trace.endpos, NULL, pVeh->m_pVehicleInfo->explosionDamage, pVeh->m_pVehicleInfo->explosionRadius, NULL, NULL, MOD_EXPLOSIVE );//FIXME: extern damage and radius or base on fuel
 #else
 				G_RadiusDamage( trace.endpos, NULL, pVeh->m_pVehicleInfo->explosionDamage, pVeh->m_pVehicleInfo->explosionRadius, NULL, MOD_EXPLOSIVE );//FIXME: extern damage and radius or base on fuel
 #endif
@@ -2293,15 +2291,26 @@ maintainSelfDuringBoarding:
 	{
 		if (pVeh->m_iRemovedSurfaces)
 		{
+			gentity_t *killer = parent;
 			float	   dmg;
 			G_VehicleDamageBoxSizing(pVeh);
 
 			//damage him constantly if any chunks are currently taken off
+			if (parent->client->ps.otherKiller < ENTITYNUM_WORLD &&
+				parent->client->ps.otherKillerTime > level.time)
+			{
+				gentity_t *potentialKiller = &g_entities[parent->client->ps.otherKiller];
+
+				if (potentialKiller->inuse && potentialKiller->client)
+				{ //he's valid I guess
+					killer = potentialKiller;
+				}
+			}
+			//FIXME: aside from bypassing shields, maybe set m_iShields to 0, too... ?
 			
 			// 3 seconds max on death.
 			dmg = (float)parent->client->ps.stats[STAT_MAX_HEALTH] * pVeh->m_fTimeModifier / 180.0f;			
-			//FIXME: aside from bypassing shields, maybe set m_iShields to 0, too... ?
-			G_DamageFromKiller( parent, parent, parent, parent->client->ps.origin, dmg, DAMAGE_NO_SELF_PROTECTION|DAMAGE_NO_HIT_LOC|DAMAGE_NO_PROTECTION|DAMAGE_NO_ARMOR, MOD_SUICIDE );
+			G_Damage(parent, killer, killer, NULL, parent->client->ps.origin, dmg, DAMAGE_NO_SELF_PROTECTION|DAMAGE_NO_HIT_LOC|DAMAGE_NO_PROTECTION|DAMAGE_NO_ARMOR, MOD_SUICIDE);
 		}
 		
 		//make sure playerstate value stays in sync
@@ -2589,9 +2598,7 @@ static bool UpdateRider( Vehicle_t *pVeh, bgEntity_t *pRider, usercmd_t *pUmcd )
 
 #ifdef _JK2MP //we want access to this one clientside, but it's the only
 //generic vehicle function we care about over there
-
 extern void AttachRidersGeneric( Vehicle_t *pVeh );
-
 #endif
 
 // Attachs all the riders of this vehicle to their appropriate tag (*driver, *pass1, *pass2, whatever...).
@@ -3179,7 +3186,7 @@ qboolean G_FlyVehicleDestroySurface( gentity_t *veh, int surface )
 	veh->m_pVehicle->m_iRemovedSurfaces |= smashedBits;
 
 	//do some explosive damage, but don't damage this ship with it
-	G_RadiusDamage(veh->client->ps.origin, veh, 100, 500, veh, NULL, MOD_VEH_EXPLOSION);
+	G_RadiusDamage(veh->client->ps.origin, veh, 100, 500, veh, NULL, MOD_SUICIDE);
 
 	//when spiraling to your death, do the electical shader
 	veh->client->ps.electrifyTime = level.time + 10000;
@@ -3274,7 +3281,7 @@ void G_VehUpdateShields( gentity_t *targ )
 #endif
 
 // Set the parent entity of this Vehicle NPC.
-GAME_INLINE void SetParent( Vehicle_t *pVeh, bgEntity_t *pParentEntity ) { pVeh->m_pParentEntity = pParentEntity; }
+GAME_INLINE void _SetParent( Vehicle_t *pVeh, bgEntity_t *pParentEntity ) { pVeh->m_pParentEntity = pParentEntity; }
 
 // Add a pilot to the vehicle.
 GAME_INLINE void SetPilot( Vehicle_t *pVeh, bgEntity_t *pPilot ) { pVeh->m_pPilot = pPilot; }
@@ -3292,7 +3299,7 @@ void G_SetSharedVehicleFunctions( vehicleInfo_t *pVehInfo )
 //	pVehInfo->AnimateVehicle				=		AnimateVehicle;
 //	pVehInfo->AnimateRiders					=		AnimateRiders;
 	pVehInfo->ValidateBoard					=		ValidateBoard;
-	pVehInfo->SetParent						=		SetParent;
+	pVehInfo->SetParent						=		_SetParent;
 	pVehInfo->SetPilot						=		SetPilot;
 	pVehInfo->AddPassenger					=		AddPassenger;
 	pVehInfo->Animate						=		Animate;

@@ -2,8 +2,8 @@
 //
 // cg_players.c -- handle the media and animation for player entities
 #include "cg_local.h"
-#include "..\ghoul2\g2.h"
-#include "bg_saga.h"
+#include "ghoul2/g2.h"
+#include "game/bg_saga.h"
 
 extern vmCvar_t	cg_thirdPersonAlpha;
 
@@ -182,7 +182,7 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 		return trap_S_RegisterSound( soundName );
 	}
 
-	COM_StripExtension(soundName, lSoundName);
+	COM_StripExtension( soundName, lSoundName, sizeof( lSoundName ) );
 
 	if ( clientNum < 0 )
 	{
@@ -242,9 +242,10 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 		}
 	}
 
-    if (cgs.gametype >= GT_TEAM || cg_buildScript.integer)
+    if (cgs.gametype >= GT_TEAM || com_buildScript.integer)
 	{ //siege only
-		for (i = 0; i < MAX_CUSTOM_SOUNDS; i++)
+		//Raz: Fixed potential buffer overrun of bg_customSiegeSoundNames
+		for (i = 0; i < MAX_CUSTOM_SIEGE_SOUNDS; i++)
 		{
 			if (!bg_customSiegeSoundNames[i])
 			{
@@ -256,7 +257,7 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 
     if (cgs.gametype == GT_DUEL
 		|| cgs.gametype == GT_POWERDUEL
-		|| cg_buildScript.integer)
+		|| com_buildScript.integer)
 	{ //Duel only
 		for (i = 0; i < MAX_CUSTOM_SOUNDS; i++)
 		{
@@ -274,11 +275,11 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 		{
 			return ci->sounds[i];
 		}
-		else if ( (cgs.gametype >= GT_TEAM || cg_buildScript.integer) && i < numCSiegeSounds && !strcmp( lSoundName, bg_customSiegeSoundNames[i] ) )
+		else if ( (cgs.gametype >= GT_TEAM || com_buildScript.integer) && i < numCSiegeSounds && !strcmp( lSoundName, bg_customSiegeSoundNames[i] ) )
 		{ //siege only
 			return ci->siegeSounds[i];
 		}
-		else if ( (cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL || cg_buildScript.integer) && i < numCDuelSounds && !strcmp( lSoundName, cg_customDuelSoundNames[i] ) )
+		else if ( (cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL || com_buildScript.integer) && i < numCDuelSounds && !strcmp( lSoundName, cg_customDuelSoundNames[i] ) )
 		{ //siege only
 			return ci->duelSounds[i];
 		}
@@ -298,7 +299,7 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 
 	//CG_Error( "Unknown custom sound: %s", lSoundName );
 #ifndef FINAL_BUILD
-	Com_Printf( "Unknown custom sound: %s", lSoundName );
+	Com_Printf( "Unknown custom sound: %s\n", lSoundName );
 #endif
 	return 0;
 }
@@ -464,7 +465,11 @@ retryModel:
 		ci->colorOverride[0] = ci->colorOverride[1] = ci->colorOverride[2] = 0.0f;
 	}
 
-	if (strchr(skinName, '|'))
+	// fix for transparent custom skin parts
+	if (strchr(skinName, '|')
+		&& strstr(skinName,"head")
+		&& strstr(skinName,"torso")
+		&& strstr(skinName,"lower"))
 	{//three part skin
 		useSkinName = va("models/players/%s/|%s", modelName, skinName);
 	}
@@ -874,7 +879,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 		}
 
 		Com_sprintf(soundName, sizeof(soundName), "%s", s+1);
-		COM_StripExtension(soundName, soundName);
+		COM_StripExtension(soundName, soundName, sizeof( soundName ) );
 		//strip the extension because we might want .mp3's
 
 		ci->sounds[i] = 0;
@@ -904,7 +909,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 		}
 	}
 
-	if (cgs.gametype >= GT_TEAM || cg_buildScript.integer)
+	if (cgs.gametype >= GT_TEAM || com_buildScript.integer)
 	{ //load the siege sounds then
 		for ( i = 0 ; i < MAX_CUSTOM_SIEGE_SOUNDS; i++ )
 		{
@@ -915,7 +920,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 			}
 
 			Com_sprintf(soundName, sizeof(soundName), "%s", s+1);
-			COM_StripExtension(soundName, soundName);
+			COM_StripExtension(soundName, soundName, sizeof( soundName ) );
 			//strip the extension because we might want .mp3's
 
 			ci->siegeSounds[i] = 0;
@@ -948,7 +953,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 
 	if (cgs.gametype == GT_DUEL
 		||cgs.gametype == GT_POWERDUEL
-		|| cg_buildScript.integer)
+		|| com_buildScript.integer)
 	{ //load the Duel sounds then
 		for ( i = 0 ; i < MAX_CUSTOM_DUEL_SOUNDS; i++ )
 		{
@@ -959,7 +964,7 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 			}
 
 			Com_sprintf(soundName, sizeof(soundName), "%s", s+1);
-			COM_StripExtension(soundName, soundName);
+			COM_StripExtension(soundName, soundName, sizeof( soundName ) );
 			//strip the extension because we might want .mp3's
 
 			ci->duelSounds[i] = 0;
@@ -1006,6 +1011,11 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 	int			clientNum;
 	int			i;
 	char		teamname[MAX_QPATH];
+	//Raz: Show jan for unknown female skins
+	char		*fallbackModel = "kyle";
+	
+	if ( ci->gender == GENDER_FEMALE )
+		fallbackModel = "jan";
 
 	clientNum = ci - cgs.clientinfo;
 
@@ -1053,9 +1063,9 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 	if (cgs.gametype == GT_SIEGE &&
 		(ci->team == TEAM_SPECTATOR || ci->siegeIndex == -1))
 	{ //yeah.. kind of a hack I guess. Don't care until they are actually ingame with a valid class.
-		if ( !CG_RegisterClientModelname( ci, DEFAULT_MODEL, "default", teamname, -1 ) )
+		if ( !CG_RegisterClientModelname( ci, fallbackModel, "default", teamname, -1 ) )
 		{
-			CG_Error( "DEFAULT_MODEL (%s) failed to register", DEFAULT_MODEL );
+			CG_Error( "DEFAULT_MODEL (%s) failed to register", fallbackModel );
 		}
 	}
 	else
@@ -1073,12 +1083,12 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 				} else {
 					Q_strncpyz(teamname, DEFAULT_REDTEAM_NAME, sizeof(teamname) );
 				}
-				if ( !CG_RegisterClientModelname( ci, DEFAULT_MODEL, ci->skinName, teamname, -1 ) ) {
-					CG_Error( "DEFAULT_MODEL / skin (%s/%s) failed to register", DEFAULT_MODEL, ci->skinName );
+				if ( !CG_RegisterClientModelname( ci, fallbackModel, ci->skinName, teamname, -1 ) ) {
+					CG_Error( "DEFAULT_MODEL / skin (%s/%s) failed to register", fallbackModel, ci->skinName );
 				}
 			} else {
-				if ( !CG_RegisterClientModelname( ci, DEFAULT_MODEL, "default", teamname, -1 ) ) {
-					CG_Error( "DEFAULT_MODEL (%s) failed to register", DEFAULT_MODEL );
+				if ( !CG_RegisterClientModelname( ci, fallbackModel, "default", teamname, -1 ) ) {
+					CG_Error( "DEFAULT_MODEL (%s) failed to register", fallbackModel );
 				}
 			}
 			modelloaded = qfalse;
@@ -1559,7 +1569,11 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 
 	// bot skill
 	v = Info_ValueForKey( configstring, "skill" );
-	newInfo.botSkill = atoi( v );
+	//Raz: Players now have -1 skill so you can determine the bots from the scoreboard code
+	if ( v && v[0] )
+		newInfo.botSkill = atoi( v );
+	else
+		newInfo.botSkill = -1;
 
 	// handicap
 	v = Info_ValueForKey( configstring, "hc" );
@@ -1582,6 +1596,15 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	{
 		trap_Cvar_Set("ui_team", v);
 	}
+
+	//Raz: Gender hints
+	if ( (v = Info_ValueForKey( configstring, "ds" )) )
+	{
+		if ( *v == 'm' )
+			newInfo.gender = GENDER_MALE;
+		else
+			newInfo.gender = GENDER_FEMALE;
+	}	
 
 	// team task
 	v = Info_ValueForKey( configstring, "tt" );
@@ -1798,7 +1821,7 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 		{ //rww - don't defer your own client info ever
 			CG_LoadClientInfo( &newInfo );
 		}
-		else if (  cg_deferPlayers.integer && cgs.gametype != GT_SIEGE && !cg_buildScript.integer && !cg.loading ) {
+		else if (  cg_deferPlayers.integer && cgs.gametype != GT_SIEGE && !com_buildScript.integer && !cg.loading ) {
 			// keep whatever they had if it won't violate team skins
 			CG_SetDeferredClientInfo( &newInfo );
 		} else {
@@ -2706,8 +2729,8 @@ void CG_TriggerAnimSounds( centity_t *cent )
 	{
 		CG_PlayerAnimEvents( cent->localAnimIndex, sFileIndex, qtrue, cent->pe.torso.frame, curFrame, cent->currentState.number );
 	}
-	cent->pe.torso.oldFrame = cent->pe.torso.frame;
-	cent->pe.torso.frame = curFrame;	
+	cent->pe.torso.oldFrame = cent->pe.torso.oldFrame;
+	cent->pe.torso.frame = curFrame;
 	cent->pe.torso.backlerp = 1.0f - (currentFrame - (float)curFrame);	
 }
 
@@ -3219,15 +3242,15 @@ static void CG_RunLerpFrame( centity_t *cent, clientInfo_t *ci, lerpFrame_t *lf,
 	if ( lf->oldFrameTime > cg.time ) {
 		lf->oldFrameTime = cg.time;
 	}
-	
-	// calculate current lerp value
-	if ( lf->frameTime == lf->oldFrameTime ) {
-		lf->backlerp = 0;
-	} else {
-		lf->backlerp = 1.0 - (float)( cg.time - lf->oldFrameTime ) / ( lf->frameTime - lf->oldFrameTime );
+
+	if ( lf->frameTime )
+	{// calculate current lerp value
+		if ( lf->frameTime == lf->oldFrameTime )
+			lf->backlerp = 0.0f;
+		else
+			lf->backlerp = 1.0f - (float)( cg.time - lf->oldFrameTime ) / ( lf->frameTime - lf->oldFrameTime );
 	}
 }
-
 
 /*
 ===============
@@ -3481,7 +3504,7 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 	qboolean inSomething = qfalse;
 	int ragAnim;//BOTH_DEAD1; //BOTH_DEATH1;
 
-	if (!cg_ragDoll.integer)
+	if (!broadsword.integer)
 	{
 		return qfalse;
 	}
@@ -3520,7 +3543,7 @@ qboolean CG_RagDoll(centity_t *cent, vec3_t forcedAngles)
 			}
 		}
 
-		if (cg_ragDoll.integer > 1)
+		if (broadsword.integer > 1)
 		{
 			inSomething = qtrue;
 		}
@@ -4009,7 +4032,7 @@ static void CG_G2SetHeadAnim( centity_t *cent, int anim )
 	int	animFlags = BONE_ANIM_OVERRIDE ;//| BONE_ANIM_BLEND;
 	// animSpeed is 1.0 if the frameLerp (ms/frame) is 50 (20 fps).
 //	float		timeScaleMod = (cg_timescale.value&&gent&&gent->s.clientNum==0&&!player_locked&&!MatrixMode&&gent->client->ps.forcePowersActive&(1<<FP_SPEED))?(1.0/cg_timescale.value):1.0;
-	const float		timeScaleMod = (cg_timescale.value)?(1.0/cg_timescale.value):1.0;
+	const float		timeScaleMod = (timescale.value)?(1.0/timescale.value):1.0;
 	float animSpeed = 50.0f / animations[anim].frameLerp * timeScaleMod;
 	int	firstFrame;
 	int	lastFrame;
@@ -4447,10 +4470,11 @@ static void CG_PlayerPowerups( centity_t *cent, refEntity_t *torso ) {
 		return;
 	}
 
-	// quad gives a dlight
-	if ( powerups & ( 1 << PW_QUAD ) ) {
-		trap_R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 0.2f, 0.2f, 1 );
-	}
+	#ifdef BASE_COMPAT
+		// quad gives a dlight
+		if ( powerups & ( 1 << PW_QUAD ) )
+			trap_R_AddLightToScene( cent->lerpOrigin, 200 + (rand()&31), 0.2f, 0.2f, 1 );
+	#endif // BASE_COMPAT
 
 	if (cent->currentState.eType == ET_NPC)
 	{
@@ -5464,7 +5488,7 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 
 	float	radius = 0.65f;
 
-	if ( !cg_addMarks.integer ) 
+	if ( !cg_marks.integer ) 
 	{
 		return;
 	}
@@ -5649,7 +5673,7 @@ qboolean CG_G2TraceCollide(trace_t *tr, vec3_t const mins, vec3_t const maxs, co
 		angles[ROLL] = angles[PITCH] = 0;
 		angles[YAW] = g2Hit->lerpAngles[YAW];
 
-		if (cg_optvehtrace.integer &&
+		if (com_optvehtrace.integer &&
 			g2Hit->currentState.eType == ET_NPC &&
 			g2Hit->currentState.NPC_class == CLASS_VEHICLE &&
 			g2Hit->m_pVehicle)
@@ -6865,12 +6889,12 @@ void CG_CacheG2AnimInfo(char *modelName)
 {
 	void *g2 = NULL;
 	char *slash;
-	char useModel[MAX_QPATH];
-	char useSkin[MAX_QPATH];
+	char useModel[MAX_QPATH] = {0};
+	char useSkin[MAX_QPATH] = {0};
 	int animIndex;
 
-	strcpy(useModel, modelName);
-	strcpy(useSkin, modelName);
+	Q_strncpyz(useModel, modelName, sizeof( useModel ) );
+	Q_strncpyz(useSkin, modelName, sizeof( useSkin ) );
 
 	if (modelName[0] == '$')
 	{ //it's a vehicle name actually, let's precache the whole vehicle
@@ -6884,7 +6908,7 @@ void CG_CacheG2AnimInfo(char *modelName)
 		{
 			trap_R_RegisterSkin(va("models/players/%s/model_default.skin", useModel));
 		}
-		strcpy(useModel, va("models/players/%s/model.glm", useModel));
+		Q_strncpyz(useModel, va("models/players/%s/model.glm", useModel), sizeof( useModel ) );
 	}
 
 	trap_G2API_InitGhoul2Model(&g2, useModel, 0, 0, 0, 0, 0);
@@ -6899,12 +6923,12 @@ void CG_CacheG2AnimInfo(char *modelName)
 		GLAName[0] = 0;
 		trap_G2API_GetGLAName(g2, 0, GLAName);
 
-		strcpy(originalModelName, useModel);
+		Q_strncpyz(originalModelName, useModel, sizeof( originalModelName ) );
 			
 		slash = Q_strrchr( GLAName, '/' );
 		if ( slash )
 		{
-			strcpy(slash, "/animation.cfg");
+			strcpy(slash, "/animation.cfg" );
 
 			animIndex = BG_ParseAnimationFile(GLAName, NULL, qfalse);
 		}
@@ -7252,15 +7276,10 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 static void CG_CreateSurfaceDebris(centity_t *cent, int surfNum, int fxID, qboolean throwPart)
 {
 	int lostPartFX = 0;
-	int b = -1;
+	int b;
 	vec3_t v, d;
 	mdxaBone_t boltMatrix;
-	const char *surfName = NULL;
-	
-	if ( surfNum > 0 )
-	{
-		surfName = bgToggleableSurfaces[surfNum];
-	}
+	const char *surfName = bgToggleableSurfaces[surfNum];
 
 	if (!cent->ghoul2)
 	{ //oh no
@@ -7317,25 +7336,21 @@ static void CG_CreateSurfaceDebris(centity_t *cent, int surfNum, int fxID, qbool
 			lostPartFX = cent->m_pVehicle->m_pVehicleInfo->iNoseFX;
 		}
 	}
-	else if ( surfName )
+	else
 	{
 		b = trap_G2API_AddBolt(cent->ghoul2, 0, surfName);
 	}
 
-	if (b == -1 || surfNum == -1)
-	{ //couldn't find this surface apparently, so play on origin?
-		VectorCopy( cent->lerpOrigin, v );
-		AngleVectors( cent->lerpAngles, d, NULL, NULL );
-		VectorNormalize( d );
+	if (b == -1)
+	{ //couldn't find this surface apparently
+		return;
 	}
-	else
-	{
-		//now let's get the position and direction of this surface and make a big explosion
-		trap_G2API_GetBoltMatrix(cent->ghoul2, 0, b, &boltMatrix, cent->lerpAngles, cent->lerpOrigin, cg.time,
-			cgs.gameModels, cent->modelScale);
-		BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, v);
-		BG_GiveMeVectorFromMatrix(&boltMatrix, POSITIVE_Z, d);
-	}
+
+	//now let's get the position and direction of this surface and make a big explosion
+	trap_G2API_GetBoltMatrix(cent->ghoul2, 0, b, &boltMatrix, cent->lerpAngles, cent->lerpOrigin, cg.time,
+		cgs.gameModels, cent->modelScale);
+	BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, v);
+	BG_GiveMeVectorFromMatrix(&boltMatrix, POSITIVE_Z, d);
 
 	trap_FX_PlayEffectID(fxID, v, d, -1, -1);
 	if ( throwPart && lostPartFX )
@@ -8042,7 +8057,6 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 	// Animals don't exude any effects...
 	if ( pVehNPC->m_pVehicleInfo->type != VH_ANIMAL )
 	{
-		qboolean didFireTrail = qfalse;
 		if (pVehNPC->m_pVehicleInfo->surfDestruction && cent->ghoul2)
 		{ //see if anything has been blown off
 			int i = 0;
@@ -8061,7 +8075,6 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 
 						//create some flames
                         CG_CreateSurfaceDebris(cent, i, cgs.effects.mShipDestBurning, qfalse);
-						didFireTrail = qtrue;
 					}
 				}
 
@@ -8072,10 +8085,6 @@ static CGAME_INLINE void CG_VehicleEffects(centity_t *cent)
 			{ //if any surface are damaged, neglect exhaust etc effects (so we don't have exhaust trails coming out of invisible surfaces)
 				return;
 			}
-		}
-		if ( !didFireTrail && (cent->currentState.eFlags&EF_DEAD) )
-		{//spiralling out of control anyway
-            CG_CreateSurfaceDebris(cent, -1, cgs.effects.mShipDestBurning, qfalse);
 		}
 
 		if ( pVehNPC->m_iLastFXTime <= cg.time )
@@ -8522,7 +8531,10 @@ void CG_Player( centity_t *cent ) {
 					checkDroidShields = qtrue;
 				}
 			}
-			else if ( veh->currentState.owner != ENTITYNUM_NONE)
+			// fix for screen blinking when spectating person on vehicle and then
+			// switching to someone else, often happens on siege
+			else if ( veh->currentState.owner != ENTITYNUM_NONE &&
+				(cent->playerState->clientNum != cg.snap->ps.clientNum))
 			{//has a pilot...???
 				vec3_t oldPSOrg;
 
@@ -8870,7 +8882,7 @@ void CG_Player( centity_t *cent ) {
 				renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 			}
 		} else {
-			if (cg_cameraMode.integer) {
+			if (com_cameraMode.integer) {
 				iwantout = 1;
 
 				
@@ -10554,22 +10566,25 @@ stillDoSaber:
 				}
 
 				{
-				const unsigned char savRGBA[3] = {legs.shaderRGBA[0],legs.shaderRGBA[1],legs.shaderRGBA[2]};
-				legs.shaderRGBA[0] = max(255-subLen/4,1);
-				legs.shaderRGBA[1] = max(255-subLen/4,1);
-				legs.shaderRGBA[2] = max(255-subLen/4,1);
+					unsigned char savRGBA[3];
+					savRGBA[0] = legs.shaderRGBA[0];
+					savRGBA[1] = legs.shaderRGBA[1];
+					savRGBA[2] = legs.shaderRGBA[2];
+					legs.shaderRGBA[0] = max(255-subLen/4,1);
+					legs.shaderRGBA[1] = max(255-subLen/4,1);
+					legs.shaderRGBA[2] = max(255-subLen/4,1);
 
-				legs.renderfx &= ~RF_RGB_TINT;
-				legs.renderfx &= ~RF_FORCE_ENT_ALPHA;
-				legs.customShader = cgs.media.forceShell;
-		
-				trap_R_AddRefEntityToScene( &legs );	//draw the shell
+					legs.renderfx &= ~RF_RGB_TINT;
+					legs.renderfx &= ~RF_FORCE_ENT_ALPHA;
+					legs.customShader = cgs.media.forceShell;
 
-				legs.customShader = 0;	//reset to player model
+					trap_R_AddRefEntityToScene( &legs );	//draw the shell
 
-				legs.shaderRGBA[0] = max(savRGBA[0]-subLen/8,1);
-				legs.shaderRGBA[1] = max(savRGBA[1]-subLen/8,1);
-				legs.shaderRGBA[2] = max(savRGBA[2]-subLen/8,1);
+					legs.customShader = 0;	//reset to player model
+
+					legs.shaderRGBA[0] = max(savRGBA[0]-subLen/8,1);
+					legs.shaderRGBA[1] = max(savRGBA[1]-subLen/8,1);
+					legs.shaderRGBA[2] = max(savRGBA[2]-subLen/8,1);
 				}
 
 				if (subLen <= 1024)

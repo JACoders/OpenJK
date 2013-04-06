@@ -1,11 +1,11 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // console.c
 
 #include "client.h"
-#include "../qcommon/stringed_ingame.h"
-#include "../qcommon/game_version.h"
+#include "qcommon/stringed_ingame.h"
+#include "qcommon/game_version.h"
 
 
 int g_console_field_width = 78;
@@ -639,11 +639,11 @@ void Con_DrawSolidConsole( float frac ) {
 	re.SetColor( color );
 	re.DrawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0, 0, 0, cls.whiteShader );
 
-	i = strlen( Q3_VERSION );
+	i = strlen( JK_VERSION );
 
 	for (x=0 ; x<i ; x++) {
 		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x ) * SMALLCHAR_WIDTH, 
-			(lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), Q3_VERSION[x] );
+			(lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), JK_VERSION[x] );
 	}
 
 

@@ -4,14 +4,14 @@
 
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 
 #if !defined(TR_LOCAL_H)
-	#include "../renderer/tr_local.h"
+	#include "renderer/tr_local.h"
 #endif
 
-#include "../renderer/matcomp.h"
+#include "renderer/matcomp.h"
 
 #if !defined(G2_H_INC)
 	#include "G2.h"
@@ -29,7 +29,7 @@
 
 //#define RAG_TRACE_DEBUG_LINES
 
-#include "../client/client.h" //while this is all "shared" code, there are some places where we want to make cgame callbacks (for ragdoll) only if the cgvm exists
+#include "client/client.h" //while this is all "shared" code, there are some places where we want to make cgame callbacks (for ragdoll) only if the cgvm exists
 //rww - RAGDOLL_END
 
 //=====================================================================================================================
@@ -1649,8 +1649,8 @@ void G2_SetRagDoll(CGhoul2Info_v &ghoul2V,CRagDollParams *parms)
 	}
 	int curTime=G2API_GetTime(0);
 	boneInfo_v &blist = ghoul2.mBlist;
-	int	index = G2_Find_Bone_Rag(&ghoul2, blist, "model_root");
 #ifndef DEDICATED
+	int	index = G2_Find_Bone_Rag(&ghoul2, blist, "model_root");
 	switch (parms->RagPhase)
 	{
 	case CRagDollParams::ERagPhase::RP_START_DEATH_ANIM:

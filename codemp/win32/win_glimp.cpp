@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 /*
 ** WIN_GLIMP.C
@@ -17,12 +17,12 @@
 ** related functions that are relevant ONLY to win_glimp.c
 */
 #include <assert.h>
-#include "../renderer/tr_local.h"
+#include "renderer/tr_local.h"
 
 #include "resource.h"
 #include "glw_win.h"
 #include "win_local.h"
-#include "../qcommon/stringed_ingame.h"
+#include "qcommon/stringed_ingame.h"
 extern void WG_CheckHardwareGamma( void );
 extern void WG_RestoreGamma( void );
 
@@ -39,7 +39,7 @@ typedef enum {
 #define TRY_PFD_FAIL_SOFT	1
 #define TRY_PFD_FAIL_HARD	2
 
-#define	WINDOW_CLASS_NAME	"Jedi Knight®: Jedi Academy (MP)"
+#define	WINDOW_CLASS_NAME CLIENT_WINDOW_TITLE
 
 static void		GLW_InitExtensions( void );
 static rserr_t	GLW_SetMode( int mode, 

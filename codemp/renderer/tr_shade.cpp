@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // tr_shade.c
 
@@ -7,8 +7,8 @@
 
 #ifdef VV_LIGHTING
 #include "tr_lightmanager.h"
-#include "../win32/glw_win_dx8.h"
-#include "../win32/win_lighteffects.h"
+#include "win32/glw_win_dx8.h"
+#include "win32/win_lighteffects.h"
 #endif
 
 #include "tr_QuickSprite.h"
