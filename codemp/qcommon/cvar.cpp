@@ -223,7 +223,7 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 			if(!(flags & CVAR_VM_CREATED))
 				var->flags &= ~CVAR_VM_CREATED;
 		}
-		else
+		else if (!(var->flags & CVAR_USER_CREATED))
 		{
 			if(flags & CVAR_VM_CREATED)
 				flags &= ~CVAR_VM_CREATED;
