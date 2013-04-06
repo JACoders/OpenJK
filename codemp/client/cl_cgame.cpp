@@ -1682,7 +1682,6 @@ Ghoul2 Insert End
 		return CM_RegisterTerrain((const char *)VMA(1), false)->GetTerrainId();
 
 	case CG_RMG_INIT:
-#ifndef PRE_RELEASE_DEMO
 		if (!com_sv_running->integer)
 		{	// don't do this if we are connected locally
 			if (!TheRandomMissionManager)
@@ -1701,7 +1700,6 @@ Ghoul2 Insert End
 		}
 		RM_CreateRandomModels(args[1], (const char *)VMA(2));
 //		TheRandomMissionManager->CreateMap();
-#endif // PRE_RELEASE_DEMO
 		return 0;
 
 	case CG_RE_INIT_RENDERER_TERRAIN:
