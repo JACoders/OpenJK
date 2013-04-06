@@ -32,7 +32,7 @@ Major contributors, in alphabetical order:
 * Removed unnessicary xbox code.
 
 ### Minor Changes ###
-* Added mousewhere to console
+* Added mouse-wheel to console
 * Added misc security fixes to allow servers to deal with connectionless packets.
 * Compiles/runs with VS2012.
 * Fixed clients being able to set IP via cvar.
