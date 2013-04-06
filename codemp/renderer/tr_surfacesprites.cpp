@@ -86,7 +86,6 @@ vec3_t	ssViewOrigin, ssViewRight, ssViewUp;
 
 static void R_SurfaceSpriteFrameUpdate(void)
 {
-// Last update Sat Apr  6 19:26:58 2013 axel isouard
 	float ratio;
 	vec3_t ang, diff, retwindvec;
 	float targetspeed;
