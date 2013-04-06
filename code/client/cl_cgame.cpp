@@ -420,6 +420,396 @@ extern qboolean tr_distortionPrePost; //tr_shadows.cpp
 extern qboolean tr_distortionNegate; //tr_shadows.cpp
 
 float g_oldRangedFog = 0.0f;
+
+#ifndef __NO_JK2
+/*
+====================
+CL_ConvertJK2SysCall
+
+Converts a JK2 syscall to a JKA syscall
+====================
+*/
+
+cgameImport_t CL_ConvertJK2SysCall( cgameJK2Import_t import )
+{
+	// FIXME: This was a 5-minute slap-hack job in order to test if this really works. CLEAN ME UP! --eez
+	switch(import)
+	{
+		case CG_PRINT_JK2:
+			return CG_PRINT;
+			break;
+		case CG_ERROR_JK2:
+			return CG_ERROR;
+			break;
+		case CG_MILLISECONDS_JK2:
+			return CG_MILLISECONDS;
+			break;
+		case CG_CVAR_REGISTER_JK2:
+			return CG_CVAR_REGISTER;
+			break;
+		case CG_CVAR_UPDATE_JK2:
+			return CG_CVAR_UPDATE;
+			break;
+		case CG_CVAR_SET_JK2:
+			return CG_CVAR_SET;
+			break;
+		case CG_ARGC_JK2:
+			return CG_ARGC;
+			break;
+		case CG_ARGV_JK2:
+			return CG_ARGV;
+			break;
+		case CG_ARGS_JK2:
+			return CG_ARGS;
+			break;
+		case CG_FS_FOPENFILE_JK2:
+			return CG_FS_FOPENFILE;
+			break;
+		case CG_FS_READ_JK2:
+			return CG_FS_READ;
+			break;
+		case CG_FS_WRITE_JK2:
+			return CG_FS_WRITE;
+			break;
+		case CG_FS_FCLOSEFILE_JK2:
+			return CG_FS_FCLOSEFILE;
+			break;
+		case CG_SENDCONSOLECOMMAND_JK2:
+			return CG_SENDCONSOLECOMMAND;
+			break;
+		case CG_ADDCOMMAND_JK2:
+			return CG_ADDCOMMAND;
+			break;
+		case CG_SENDCLIENTCOMMAND_JK2:
+			return CG_SENDCLIENTCOMMAND;
+			break;
+		case CG_UPDATESCREEN_JK2:
+			return CG_UPDATESCREEN;
+			break;
+		case CG_CM_LOADMAP_JK2:
+			return CG_CM_LOADMAP;
+			break;
+		case CG_CM_NUMINLINEMODELS_JK2:
+			return CG_CM_NUMINLINEMODELS;
+			break;
+		case CG_CM_INLINEMODEL_JK2:
+			return CG_CM_INLINEMODEL;
+			break;
+		case CG_CM_TEMPBOXMODEL_JK2:
+			return CG_CM_TEMPBOXMODEL;
+			break;
+		case CG_CM_POINTCONTENTS_JK2:
+			return CG_CM_POINTCONTENTS;
+			break;
+		case CG_CM_TRANSFORMEDPOINTCONTENTS_JK2:
+			return CG_CM_TRANSFORMEDPOINTCONTENTS;
+			break;
+		case CG_CM_BOXTRACE_JK2:
+			return CG_CM_BOXTRACE;
+			break;
+		case CG_CM_TRANSFORMEDBOXTRACE_JK2:
+			return CG_CM_TRANSFORMEDBOXTRACE;
+			break;
+		case CG_CM_MARKFRAGMENTS_JK2:
+			return CG_CM_MARKFRAGMENTS;
+			break;
+		case CG_CM_SNAPPVS_JK2:
+			return CG_CM_SNAPPVS;
+			break;
+		case CG_S_STARTSOUND_JK2:
+			return CG_S_STARTSOUND;
+			break;
+		case CG_S_STARTLOCALSOUND_JK2:
+			return CG_S_STARTLOCALSOUND;
+			break;
+		case CG_S_CLEARLOOPINGSOUNDS_JK2:
+			return CG_S_CLEARLOOPINGSOUNDS;
+			break;
+		case CG_S_ADDLOOPINGSOUND_JK2:
+			return CG_S_ADDLOOPINGSOUND;
+			break;
+		case CG_S_UPDATEENTITYPOSITION_JK2:
+			return CG_S_UPDATEENTITYPOSITION;
+			break;
+		case CG_S_RESPATIALIZE_JK2:
+			return CG_S_RESPATIALIZE;
+			break;
+		case CG_S_REGISTERSOUND_JK2:
+			return CG_S_REGISTERSOUND;
+			break;
+		case CG_S_STARTBACKGROUNDTRACK_JK2:
+			return CG_S_STARTBACKGROUNDTRACK;
+			break;
+#ifdef _IMMERSION
+		case CG_FF_START_JK2:
+			return CG_FF_START;
+			break;
+		case CG_FF_STOP_JK2:	
+			return CG_FF_STOP;
+			break;
+		case CG_FF_STOPALL_JK2:
+			return CG_FF_STOPALL;
+			break;
+		case CG_FF_SHAKE_JK2:
+			return CG_FF_SHAKE;
+			break;
+		case CG_FF_REGISTER_JK2:
+			return CG_FF_REGISTER;
+			break;
+		case CG_FF_ADDLOOPINGFORCE_JK2:
+			return CG_FF_ADDLOOPINGFORCE;
+			break;
+#else
+		case CG_FF_STARTFX_JK2:
+			return CG_FF_STARTFX;
+			break;
+		case CG_FF_ENSUREFX_JK2:
+			return CG_FF_ENSUREFX;
+			break;
+		case CG_FF_STOPFX_JK2:	
+			return CG_FF_STOPFX;
+			break;
+		case CG_FF_STOPALLFX_JK2:
+			return CG_FF_STOPALLFX;
+			break;
+#endif // _IMMERSION
+		case CG_R_LOADWORLDMAP_JK2:
+			return CG_R_LOADWORLDMAP;
+			break;
+		case CG_R_REGISTERMODEL_JK2:
+			return CG_R_REGISTERMODEL;
+			break;
+		case CG_R_REGISTERSKIN_JK2:
+			return CG_R_REGISTERSKIN;
+			break;
+		case CG_R_REGISTERSHADER_JK2:
+			return CG_R_REGISTERSHADER;
+			break;
+		case CG_R_REGISTERSHADERNOMIP_JK2:
+			return CG_R_REGISTERSHADERNOMIP;
+			break;
+		case CG_R_REGISTERFONT_JK2:
+			return CG_R_REGISTERFONT;
+			break;
+		case CG_R_FONTSTRLENPIXELS_JK2:
+			return CG_R_FONTSTRLENPIXELS;
+			break;
+		case CG_R_FONTSTRLENCHARS_JK2:
+			return CG_R_FONTSTRLENCHARS;
+			break;
+		case CG_R_FONTHEIGHTPIXELS_JK2:
+			return CG_R_FONTHEIGHTPIXELS;
+			break;
+		case CG_R_FONTDRAWSTRING_JK2:
+			return CG_R_FONTDRAWSTRING;
+			break;
+		case CG_LANGUAGE_ISASIAN_JK2:
+			return CG_LANGUAGE_ISASIAN;
+			break;
+		case CG_LANGUAGE_USESSPACES_JK2:
+			return CG_LANGUAGE_USESSPACES;
+			break;
+		case CG_ANYLANGUAGE_READFROMSTRING_JK2:
+			return CG_ANYLANGUAGE_READFROMSTRING;
+			break;
+		case CG_R_CLEARSCENE_JK2:
+			return CG_R_CLEARSCENE;
+			break;
+		case CG_R_ADDREFENTITYTOSCENE_JK2:
+			return CG_R_ADDREFENTITYTOSCENE;
+			break;
+		case CG_R_GETLIGHTING_JK2:
+			return CG_R_GETLIGHTING;
+			break;
+		case CG_R_ADDPOLYTOSCENE_JK2:
+			return CG_R_ADDPOLYTOSCENE;
+			break;
+		case CG_R_ADDLIGHTTOSCENE_JK2:
+			return CG_R_ADDLIGHTTOSCENE;
+			break;
+		case CG_R_RENDERSCENE_JK2:
+			return CG_R_RENDERSCENE;
+			break;
+		case CG_R_SETCOLOR_JK2:
+			return CG_R_SETCOLOR;
+			break;
+		case CG_R_DRAWSTRETCHPIC_JK2:
+			return CG_R_DRAWSTRETCHPIC;
+			break;
+		case CG_R_DRAWSCREENSHOT_JK2:
+			return CG_R_DRAWSCREENSHOT;
+			break;
+		case CG_R_MODELBOUNDS_JK2:
+			return CG_R_MODELBOUNDS;
+			break;
+		case CG_R_LERPTAG_JK2:
+			return CG_R_LERPTAG;
+			break;
+		case CG_R_DRAWROTATEPIC_JK2:
+			return CG_R_DRAWROTATEPIC;
+			break;
+		case CG_R_DRAWROTATEPIC2_JK2:
+			return CG_R_DRAWROTATEPIC2;
+			break;
+		case CG_R_LA_GOGGLES_JK2:
+			return CG_R_LA_GOGGLES;
+			break;
+		case CG_R_SCISSOR_JK2:
+			return CG_R_SCISSOR;
+			break;
+		case CG_GETGLCONFIG_JK2:
+			return CG_GETGLCONFIG;
+			break;
+		case CG_GETGAMESTATE_JK2:
+			return CG_GETGAMESTATE;
+			break;
+		case CG_GETCURRENTSNAPSHOTNUMBER_JK2:
+			return CG_GETCURRENTSNAPSHOTNUMBER;
+			break;
+		case CG_GETSNAPSHOT_JK2:
+			return CG_GETSNAPSHOT;
+			break;
+		case CG_GETSERVERCOMMAND_JK2:
+			return CG_GETSERVERCOMMAND;
+			break;
+		case CG_GETCURRENTCMDNUMBER_JK2:
+			return CG_GETCURRENTCMDNUMBER;
+			break;
+		case CG_GETUSERCMD_JK2:
+			return CG_GETUSERCMD;
+			break;
+		case CG_SETUSERCMDVALUE_JK2:
+			return CG_SETUSERCMDVALUE;
+			break;
+		case CG_SETUSERCMDANGLES_JK2:
+			return CG_SETUSERCMDANGLES;
+			break;
+		case CG_S_UPDATEAMBIENTSET_JK2:
+			return CG_S_UPDATEAMBIENTSET;
+			break;
+		case CG_S_ADDLOCALSET_JK2:
+			return CG_S_ADDLOCALSET;
+			break;
+		case CG_AS_PARSESETS_JK2:
+			return CG_AS_PARSESETS;
+			break;
+		case CG_AS_ADDENTRY_JK2:
+			return CG_AS_GETBMODELSOUND;
+			break;
+		case CG_AS_GETBMODELSOUND_JK2:
+			return CG_AS_GETBMODELSOUND;
+			break;
+		case CG_S_GETSAMPLELENGTH_JK2:
+			return CG_S_GETSAMPLELENGTH;
+			break;
+		case COM_SETORGANGLES_JK2:
+			return COM_SETORGANGLES;
+			break;
+/*
+Ghoul2 Insert Start
+*/
+		case CG_G2_LISTBONES_JK2:
+			return CG_G2_LISTBONES;
+			break;
+		case CG_G2_LISTSURFACES_JK2:
+			return CG_G2_LISTSURFACES;
+			break;
+		case CG_G2_HAVEWEGHOULMODELS_JK2:
+			return CG_G2_HAVEWEGHOULMODELS;
+			break;
+		case CG_G2_SETMODELS_JK2:
+			return CG_G2_SETMODELS;
+			break;
+/*
+Ghoul2 Insert End
+*/
+
+		case CG_R_GET_LIGHT_STYLE_JK2:
+			return CG_R_GET_LIGHT_STYLE;
+			break;
+		case CG_R_SET_LIGHT_STYLE_JK2:
+			return CG_R_SET_LIGHT_STYLE;
+			break;
+		case CG_R_GET_BMODEL_VERTS_JK2:
+			return CG_R_GET_BMODEL_VERTS;
+			break;
+		case CG_R_WORLD_EFFECT_COMMAND_JK2:
+			return CG_R_WORLD_EFFECT_COMMAND;
+			break;
+
+		case CG_CIN_PLAYCINEMATIC_JK2:
+			return CG_CIN_PLAYCINEMATIC;
+			break;
+		case CG_CIN_STOPCINEMATIC_JK2:
+			return CG_CIN_STOPCINEMATIC;
+			break;
+		case CG_CIN_RUNCINEMATIC_JK2:
+			return CG_CIN_RUNCINEMATIC;
+			break;
+		case CG_CIN_DRAWCINEMATIC_JK2:
+			return CG_CIN_DRAWCINEMATIC;
+			break;
+		case CG_CIN_SETEXTENTS_JK2:
+			return CG_CIN_SETEXTENTS;
+			break;
+		case CG_Z_MALLOC_JK2:
+			return CG_Z_MALLOC;
+			break;
+		case CG_Z_FREE_JK2:
+			return CG_Z_FREE;
+			break;
+		case CG_UI_MENU_RESET_JK2:
+			return CG_UI_MENU_RESET;
+			break;
+		case CG_UI_MENU_NEW_JK2:
+			return CG_UI_MENU_NEW;
+			break;
+		case CG_UI_PARSE_INT_JK2:
+			return CG_UI_PARSE_INT;
+			break;
+		case CG_UI_PARSE_STRING_JK2:
+			return CG_UI_PARSE_STRING;
+			break;
+		case CG_UI_PARSE_FLOAT_JK2:
+			return CG_UI_PARSE_FLOAT;
+			break;
+		case CG_UI_STARTPARSESESSION_JK2:
+			return CG_UI_STARTPARSESESSION;
+			break;
+		case CG_UI_ENDPARSESESSION_JK2:
+			return CG_UI_ENDPARSESESSION;
+			break;
+		case CG_UI_PARSEEXT_JK2:
+			return CG_UI_PARSEEXT;
+			break;
+		case CG_UI_MENUPAINT_ALL_JK2:
+			return CG_UI_MENUPAINT_ALL;
+			break;
+		case CG_UI_STRING_INIT_JK2:
+			return CG_UI_STRING_INIT;
+			break;
+		case CG_UI_GETMENUINFO_JK2:
+			return CG_UI_GETMENUINFO;
+			break;
+		case CG_SP_REGISTER_JK2:
+			//return CG_SP_REGISTER;			// Not needed in JKA --eez
+			return (cgameImport_t)-1;
+			break;
+		case CG_SP_GETSTRINGTEXTSTRING_JK2:
+			return CG_SP_GETSTRINGTEXTSTRING;
+			break;
+		case CG_SP_GETSTRINGTEXT_JK2:
+			//return CG_SP_GETSTRINGTEXT;
+			return (cgameImport_t)-1;
+			break;
+		case CG_UI_GETITEMTEXT_JK2:
+			return CG_UI_GETITEMTEXT;
+			break;
+	}
+	return (cgameImport_t)-1;
+}
+
+#endif
 /*
 ====================
 CL_CgameSystemCalls
@@ -433,6 +823,12 @@ void CM_SnapPVS(vec3_t origin,byte *buffer);
 #define	VMA(x) ((void*)args[x])
 #define	VMF(x)	((float *)args)[x]
 int CL_CgameSystemCalls( int *args ) {
+#ifndef __NO_JK2
+	if( Cvar_VariableIntegerValue("com_jk2") )
+	{
+		args[0] = (int)CL_ConvertJK2SysCall((cgameJK2Import_t)args[0]);
+	}
+#endif
 	switch( args[0] ) {
 	case CG_PRINT:
 		Com_Printf( "%s", VMA(1) );
@@ -714,9 +1110,10 @@ int CL_CgameSystemCalls( int *args ) {
 	case CG_R_DRAWSTRETCHPIC:
 		re.DrawStretchPic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), args[9] );
 		return 0;
-	//case CG_R_DRAWSCREENSHOT:
-	//	re.DrawStretchRaw( VMF(1), VMF(2), VMF(3), VMF(4), SG_SCR_WIDTH, SG_SCR_HEIGHT, SCR_GetScreenshot(0), 0, qtrue);
-	//	return 0;
+		// The below was commented out for whatever reason... /me shrugs --eez
+	case CG_R_DRAWSCREENSHOT:
+		re.DrawStretchRaw( VMF(1), VMF(2), VMF(3), VMF(4), SG_SCR_WIDTH, SG_SCR_HEIGHT, SCR_GetScreenshot(0), 0, qtrue);
+		return 0;
 	case CG_R_MODELBOUNDS:
 		re.ModelBounds( args[1], (float *) VMA(2), (float *) VMA(3) );
 		return 0;
@@ -895,6 +1292,10 @@ Ghoul2 Insert End
 	case CG_UI_GETMENUINFO:
 		menuDef_t *menu;
 		int		*xPos,*yPos,*w,*h,result;
+#ifndef __NO_JK2
+		if(!Cvar_VariableIntegerValue("com_jk2"))
+		{
+#endif
 
 		menu = Menus_FindByName((char *) VMA(1));	// Get menu 
 		if (menu)
@@ -915,6 +1316,28 @@ Ghoul2 Insert End
 		}
 
 		return result;
+#ifndef __NO_JK2
+		}
+		else
+		{
+			menu = Menus_FindByName((char *) VMA(1));	// Get menu 
+			if (menu)
+			{
+				xPos = (int *) VMA(2);
+				*xPos = (int) menu->window.rect.x;
+				yPos = (int *) VMA(3);
+				*yPos = (int) menu->window.rect.y;
+				result = qtrue;
+			}
+			else
+			{
+				result = qfalse;
+			}
+
+			return result;
+		}
+#endif
+		break;
 
 	case CG_UI_GETITEMTEXT:
 		itemDef_t *item;
@@ -1011,6 +1434,9 @@ Ghoul2 Insert End
 		}
 		return strlen(text);
 		//break;
+	case -1:
+		// eez: ugly edit!
+		return NULL;
 	default:
 		Com_Error( ERR_DROP, "Bad cgame system trap: %i", args[0] );
 	}
