@@ -1493,6 +1493,7 @@ void		R_GammaCorrect( byte *buffer, int bufSize );
 
 void	R_ImageList_f( void );
 void	R_SkinList_f( void );
+void	R_FontList_f( void );
 void	R_ScreenShot_f( void );
 
 void	R_InitFogTable( void );

@@ -1649,6 +1649,27 @@ void R_InitFonts(void)
 	g_iNonScaledCharRange = INT_MAX;	// default all chars to have no special scaling (other than user supplied)
 }
 
+/*
+===============
+R_FontList_f
+===============
+*/
+void R_FontList_f( void ) {
+	Com_Printf ("------------------------------------\n");
+
+	FontIndexMap_t::iterator it;
+	for (it = g_mapFontIndexes.begin(); it != g_mapFontIndexes.end(); ++it)
+	{
+		CFontInfo *font = GetFont((*it).second);
+		if( font )
+		{
+			Com_Printf("%3i:%s  ps:%hi h:%hi a:%hi d:%hi\n", (*it).second, font->m_sFontName,
+				font->mPointSize, font->mHeight, font->mAscender, font->mDescender);
+		}
+	}
+	Com_Printf ("------------------------------------\n");
+}
+
 void R_ShutdownFonts(void)
 {
 	for(int i = 1; i < g_iCurrentFontIndex; i++)	// entry 0 is reserved for "missing/invalid"
