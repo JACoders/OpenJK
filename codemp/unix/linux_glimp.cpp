@@ -627,7 +627,10 @@ void IN_DeactivateMouse( void )
 
 static qboolean signalcaught = qfalse;;
 
-void Sys_Exit(int); // bk010104 - abstraction
+void Sys_Exit(int code)
+{
+	exit(code);
+}
 
 static void signal_handler(int sig) // bk010104 - replace this...
 {
