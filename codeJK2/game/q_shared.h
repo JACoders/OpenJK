@@ -1153,6 +1153,7 @@ typedef struct {
 // per-level limits
 //
 #define	MAX_CLIENTS			1 // 128		// absolute limit
+#define MAX_TERRAINS		1 //32
 #define MAX_LOCATIONS		64
 
 #define	GENTITYNUM_BITS		10		// don't need to send any more
@@ -1207,6 +1208,7 @@ Ghoul2 Insert End
 #define CS_AMBIENT_SET		5		// ambient set information for the player
 
 #define	CS_MODELS			10
+
 #define	CS_SKYBOXORG		(CS_MODELS+MAX_MODELS)		//rww - skybox info
 
 #define	CS_SOUNDS			(CS_SKYBOXORG+1)
