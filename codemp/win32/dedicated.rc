@@ -61,7 +61,7 @@ IDI_ICON1               ICON                    "icon.ico"
 // Version
 //
 
-#include "game_version.h"
+#include "../qcommon/game_version.h"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION VERSION_MAJOR_RELEASE,VERSION_MINOR_RELEASE
