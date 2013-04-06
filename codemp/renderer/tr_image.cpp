@@ -2968,7 +2968,7 @@ bool gServerSkinHack = false;
 
 
 shader_t *R_FindServerShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage );
-char *CommaParse( char **data_p );
+static char *CommaParse( char **data_p );
 /*
 ===============
 RE_SplitSkins
