@@ -152,13 +152,20 @@ public:
 	boltInfo_v		mBltlist;
 	boneInfo_v		mBlist;
 // save from here
+#define BSAVE_START_FIELD mModelindex	// this is the start point for loadsave, keep it up to date it you change anything
 	int				mModelindex;
+#ifndef __NO_JKA
+	int				animModelIndexOffset;
+#endif
 	qhandle_t		mCustomShader;
 	qhandle_t		mCustomSkin;
 	int				mModelBoltLink;
 	int				mSurfaceRoot;
 	int				mLodBias;
 	int				mNewOrigin;	// this contains the bolt index of the new origin for this model
+#ifdef _G2_GORE
+	int				mGoreSetTag;
+#endif
 	qhandle_t		mModel;		// this and the next entries do NOT go across the network. They are for gameside access ONLY
 	char			mFileName[MAX_QPATH];
 	int				mAnimFrameDefault;
@@ -166,6 +173,7 @@ public:
 	int				mMeshFrameNum;
 	int				mFlags;	// used for determining whether to do full collision detection against this object
 // to here
+#define BSAVE_END_FIELD mTransformedVertsArray	// this is the end point for loadsave, keep it up to date it you change anything
 	int				*mTransformedVertsArray;	// used to create an array of pointers to transformed verts per surface for collision detection
 	CBoneCache		*mBoneCache;
 	int				mSkin;
@@ -194,10 +202,16 @@ public:
 	mLodBias(0),
 	mSkin(0),
 	mNewOrigin(-1),
+#ifdef _G2_GORE
+	mGoreSetTag(0),
+#endif
 	mBoneCache(0),
 	currentModel(0),
 	currentModelSize(0),
 	animModel(0),
+#ifndef __NO_JKA
+	animModelIndexOffset(0),
+#endif
 	currentAnimModelSize(0),
 	aHeader(0),
 	mValid(false)
