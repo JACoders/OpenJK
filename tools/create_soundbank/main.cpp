@@ -6,7 +6,7 @@
 #include <io.h>
 #include <windows.h>
 
-#include "../../code/zlib/zlib.h"
+#include "zlib/zlib.h"
 
 static int count = 0;
 static int basesize	= 0;
