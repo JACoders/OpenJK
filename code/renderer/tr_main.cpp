@@ -1713,11 +1713,7 @@ void R_RenderView (viewParms_t *parms) {
 		R_SetViewFogIndex ();
 	}
 
-#ifdef _XBOX
-	R_GenerateDrawSurfs(parms->isPortal);
-#else
 	R_GenerateDrawSurfs();
-#endif
 
 	R_SortDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
 

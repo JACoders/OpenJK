@@ -411,6 +411,9 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 		sv.time += 100;
 		G2API_SetTime(sv.time,G2T_SV_TIME);
 	}
+#ifndef __NO_JK2
+	if(!Cvar_VariableIntegerValue("com_jk2"))
+#endif
 	ge->ConnectNavs(sv_mapname->string, sv_mapChecksum->integer);
 
 	// create a baseline for more efficient communications

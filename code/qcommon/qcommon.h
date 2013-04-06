@@ -801,7 +801,7 @@ qboolean Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataFile
 qboolean Sys_CopyFile(LPCSTR lpExistingFileName, LPCSTR lpNewFileName, qboolean bOverwrite);
 
 
-//byte*	SCR_GetScreenshot(qboolean *qValid);
+byte*	SCR_GetScreenshot(qboolean *qValid);
 //void	SCR_SetScreenshot(const byte *pbData, int w, int h);
 //byte*	SCR_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, int *piHeight, byte *pbReSampleBuffer, qboolean qbVertFlip);
 //void	SCR_TempRawImage_CleanUp();
