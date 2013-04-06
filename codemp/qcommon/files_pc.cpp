@@ -3009,10 +3009,24 @@ restart if necessary
 =================
 */
 qboolean FS_ConditionalRestart( int checksumFeed ) {
-	if( fs_gamedirvar->modified || checksumFeed != fs_checksumFeed ) {
-		FS_Restart( checksumFeed );
-		return qtrue;
+	if(fs_gamedirvar->modified)
+	{
+		if(FS_FilenameCompare(lastValidGame, fs_gamedirvar->string) &&
+				(*lastValidGame || FS_FilenameCompare(fs_gamedirvar->string, BASEGAME)) &&
+				(*fs_gamedirvar->string || FS_FilenameCompare(lastValidGame, BASEGAME)))
+		{
+			FS_Restart(checksumFeed);
+			//Cvar_Restart(qtrue);
+			return qtrue;
+		}
+		else
+			fs_gamedirvar->modified = qfalse;
 	}
+
+	if(checksumFeed != fs_checksumFeed)
+		FS_Restart(checksumFeed);
+	else if(fs_numServerPaks && !fs_reordered)
+		FS_ReorderPurePaks();
 	return qfalse;
 }
 
