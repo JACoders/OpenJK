@@ -19,7 +19,7 @@
 #endif
 
 #ifndef _WIN32
-#include <string>x
+#include <string>
 #endif
 
 class CRMPathManager;
