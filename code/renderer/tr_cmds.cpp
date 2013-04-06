@@ -298,6 +298,7 @@ void RE_RotatePic2 ( float x, float y, float w, float h,
 void RE_LAGoggles( void )
 {
 	tr.refdef.rdflags |= (RDF_doLAGoggles|RDF_doFullbright);
+	tr.refdef.doLAGoggles = qtrue;
 
 	fog_t		*fog = &tr.world->fogs[tr.world->numfogs];
 
