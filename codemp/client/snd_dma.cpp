@@ -5326,7 +5326,7 @@ void InitEAXManager()
 	s_bEALFileLoaded = false;
 
 	// Check for EAX 4.0 support
-	s_bEAX = alIsExtensionPresent((ALubyte*)"EAX4.0");
+	s_bEAX = alIsExtensionPresent("EAX4.0");
 	
 	if (s_bEAX)
 	{
@@ -5335,7 +5335,7 @@ void InitEAXManager()
 	else
 	{
 		// Support for EAXUnified (automatic translation of EAX 4.0 calls into EAX 3.0)
-		if ((alIsExtensionPresent((ALubyte*)"EAX3.0")) && (alIsExtensionPresent((ALubyte*)"EAX4.0Emulated")))
+		if ((alIsExtensionPresent("EAX3.0")) && (alIsExtensionPresent("EAX4.0Emulated")))
 		{
 			s_bEAX = AL_TRUE;
 			Com_Printf("Found EAX 4.0 EMULATION support\n");
@@ -5344,10 +5344,10 @@ void InitEAXManager()
 
 	if (s_bEAX)
 	{
-		s_eaxSet = (EAXSet)alGetProcAddress((ALubyte*)"EAXSet");
+		s_eaxSet = (EAXSet)alGetProcAddress("EAXSet");
 		if (s_eaxSet == NULL)
 			s_bEAX = false;
-		s_eaxGet = (EAXGet)alGetProcAddress((ALubyte*)"EAXGet");
+		s_eaxGet = (EAXGet)alGetProcAddress("EAXGet");
 		if (s_eaxGet == NULL)
 			s_bEAX = false;
 	}

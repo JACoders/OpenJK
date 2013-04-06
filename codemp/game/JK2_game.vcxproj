@@ -20,13 +20,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>JK2game</ProjectName>
-    <SccProjectName>
-    </SccProjectName>
+    <SccProjectName>"$/jedi/codemp/game", EGAAAAAA</SccProjectName>
     <SccAuxPath />
-    <SccLocalPath>
-    </SccLocalPath>
-    <SccProvider>
-    </SccProvider>
+    <SccLocalPath>.</SccLocalPath>
+    <SccProvider>MSSCCI:Microsoft Visual SourceSafe</SccProvider>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug(SH)|Win32'" Label="Configuration">

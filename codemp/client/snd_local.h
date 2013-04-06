@@ -15,8 +15,8 @@ char *strlwr (char *s);
 #include "../mp3code/mp3struct.h"
 
 // Open AL Specific
-#include <AL/al.h>
-#include <AL/alc.h>
+#include <al.h>
+#include <alc.h>
 #ifdef _WIN32
 #include "eax/eax.h"
 #include "eax/EaxMan.h"
@@ -161,7 +161,7 @@ typedef struct {
 */
 
 // initializes cycling through a DMA buffer and returns information on it
-int SNDDMA_Init(void);
+qboolean SNDDMA_Init(void);
 
 // gets the current DMA position
 int		SNDDMA_GetDMAPos(void);

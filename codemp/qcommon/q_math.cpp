@@ -1,6 +1,7 @@
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 // q_math.c -- stateless support routines that are included in each code module
+#include "../qcommon/exe_headers.h"
 #include "../game/q_shared.h"
 
 
