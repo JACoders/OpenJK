@@ -1,7 +1,7 @@
 #ifndef MacPrefixCommon_h
 #define MacPrefixCommon_h
 
-#define MAC_PORT		1
+//#define MAC_PORT		1
 #define _JK2			1
 
 // gcc-only

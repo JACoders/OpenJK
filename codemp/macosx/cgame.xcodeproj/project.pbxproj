@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		561636D81710AB57008AA92A /* q_math.c in Sources */ = {isa = PBXBuildFile; fileRef = 561636D61710AB57008AA92A /* q_math.c */; };
+		561636D91710AB57008AA92A /* q_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 561636D71710AB57008AA92A /* q_shared.c */; };
+		561636DB1710AB85008AA92A /* cg_spawn.c in Sources */ = {isa = PBXBuildFile; fileRef = 561636DA1710AB85008AA92A /* cg_spawn.c */; };
 		565DADD50C4FF78D008167FA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		565DAE0C0C4FF78D008167FA /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */; };
 		56E4CE2B121EFF36004E7206 /* Info-cgame.plist in Resources */ = {isa = PBXBuildFile; fileRef = 56E4CE2A121EFF36004E7206 /* Info-cgame.plist */; };
@@ -56,8 +59,6 @@
 		56E4CE8D121EFFA3004E7206 /* bg_vehicleLoad.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE7C121EFFA3004E7206 /* bg_vehicleLoad.c */; };
 		56E4CE8E121EFFA3004E7206 /* bg_weapons.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE7D121EFFA3004E7206 /* bg_weapons.c */; };
 		56E4CE8F121EFFA3004E7206 /* FighterNPC.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE7E121EFFA3004E7206 /* FighterNPC.c */; };
-		56E4CE90121EFFA3004E7206 /* q_math.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE7F121EFFA3004E7206 /* q_math.c */; };
-		56E4CE91121EFFA3004E7206 /* q_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE80121EFFA3004E7206 /* q_shared.c */; };
 		56E4CE92121EFFA3004E7206 /* SpeederNPC.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE81121EFFA3004E7206 /* SpeederNPC.c */; };
 		56E4CE93121EFFA3004E7206 /* WalkerNPC.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE82121EFFA3004E7206 /* WalkerNPC.c */; };
 		56E4CE95121EFFB3004E7206 /* ui_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE94121EFFB3004E7206 /* ui_shared.c */; };
@@ -66,6 +67,9 @@
 /* Begin PBXFileReference section */
 		089C167EFE841241C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
+		561636D61710AB57008AA92A /* q_math.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_math.c; path = ../qcommon/q_math.c; sourceTree = "<group>"; };
+		561636D71710AB57008AA92A /* q_shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_shared.c; path = ../qcommon/q_shared.c; sourceTree = "<group>"; };
+		561636DA1710AB85008AA92A /* cg_spawn.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cg_spawn.c; path = ../cgame/cg_spawn.c; sourceTree = "<group>"; };
 		565DAE130C4FF78D008167FA /* cgame.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = cgame.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		56E4CE2A121EFF36004E7206 /* Info-cgame.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Info-cgame.plist"; sourceTree = "<group>"; };
 		56E4CE2D121EFF71004E7206 /* cg_consolecmds.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cg_consolecmds.c; path = ../cgame/cg_consolecmds.c; sourceTree = SOURCE_ROOT; };
@@ -114,8 +118,6 @@
 		56E4CE7C121EFFA3004E7206 /* bg_vehicleLoad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bg_vehicleLoad.c; path = ../game/bg_vehicleLoad.c; sourceTree = SOURCE_ROOT; };
 		56E4CE7D121EFFA3004E7206 /* bg_weapons.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bg_weapons.c; path = ../game/bg_weapons.c; sourceTree = SOURCE_ROOT; };
 		56E4CE7E121EFFA3004E7206 /* FighterNPC.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = FighterNPC.c; path = ../game/FighterNPC.c; sourceTree = SOURCE_ROOT; };
-		56E4CE7F121EFFA3004E7206 /* q_math.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_math.c; path = ../game/q_math.c; sourceTree = SOURCE_ROOT; };
-		56E4CE80121EFFA3004E7206 /* q_shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_shared.c; path = ../game/q_shared.c; sourceTree = SOURCE_ROOT; };
 		56E4CE81121EFFA3004E7206 /* SpeederNPC.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SpeederNPC.c; path = ../game/SpeederNPC.c; sourceTree = SOURCE_ROOT; };
 		56E4CE82121EFFA3004E7206 /* WalkerNPC.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = WalkerNPC.c; path = ../game/WalkerNPC.c; sourceTree = SOURCE_ROOT; };
 		56E4CE94121EFFB3004E7206 /* ui_shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ui_shared.c; path = ../ui/ui_shared.c; sourceTree = SOURCE_ROOT; };
@@ -166,6 +168,7 @@
 		08FB77AFFE84173DC02AAC07 /* cgame */ = {
 			isa = PBXGroup;
 			children = (
+				561636DA1710AB85008AA92A /* cg_spawn.c */,
 				56E4CE2D121EFF71004E7206 /* cg_consolecmds.c */,
 				56E4CE2E121EFF71004E7206 /* cg_draw.c */,
 				56E4CE2F121EFF71004E7206 /* cg_drawtools.c */,
@@ -227,10 +230,10 @@
 				56E4CE7C121EFFA3004E7206 /* bg_vehicleLoad.c */,
 				56E4CE7D121EFFA3004E7206 /* bg_weapons.c */,
 				56E4CE7E121EFFA3004E7206 /* FighterNPC.c */,
-				56E4CE7F121EFFA3004E7206 /* q_math.c */,
-				56E4CE80121EFFA3004E7206 /* q_shared.c */,
 				56E4CE81121EFFA3004E7206 /* SpeederNPC.c */,
 				56E4CE82121EFFA3004E7206 /* WalkerNPC.c */,
+				561636D61710AB57008AA92A /* q_math.c */,
+				561636D71710AB57008AA92A /* q_shared.c */,
 			);
 			name = game;
 			sourceTree = "<group>";
@@ -282,7 +285,11 @@
 			isa = PBXProject;
 			buildConfigurationList = 565DAE140C4FF78E008167FA /* Build configuration list for PBXProject "cgame" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 089C166AFE841209C02AAC07 /* cgame */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -365,11 +372,12 @@
 				56E4CE8D121EFFA3004E7206 /* bg_vehicleLoad.c in Sources */,
 				56E4CE8E121EFFA3004E7206 /* bg_weapons.c in Sources */,
 				56E4CE8F121EFFA3004E7206 /* FighterNPC.c in Sources */,
-				56E4CE90121EFFA3004E7206 /* q_math.c in Sources */,
-				56E4CE91121EFFA3004E7206 /* q_shared.c in Sources */,
 				56E4CE92121EFFA3004E7206 /* SpeederNPC.c in Sources */,
 				56E4CE93121EFFA3004E7206 /* WalkerNPC.c in Sources */,
 				56E4CE95121EFFB3004E7206 /* ui_shared.c in Sources */,
+				561636D81710AB57008AA92A /* q_math.c in Sources */,
+				561636D91710AB57008AA92A /* q_shared.c in Sources */,
+				561636DB1710AB85008AA92A /* cg_spawn.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -503,7 +511,7 @@
 				COPY_PHASE_STRIP = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = "FINAL_BUILD=1";
-				GCC_VERSION = 4.0;
+				GCC_VERSION = "";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				STRIP_INSTALLED_PRODUCT = YES;
 				USER_HEADER_SEARCH_PATHS = "..//**";
