@@ -397,11 +397,6 @@ typedef int		clipHandle_t;
 	// vsnprintf is ISO/IEC 9899:1999
 	// abstracting this to make it portable
 	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-#elif MAC_PORT
-
-	#include <stdint.h>
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-
 #else // not using MSVC
 
 	#include <stdint.h>
@@ -1495,7 +1490,7 @@ void Parse1DMatrix (const char **buf_p, int x, float *m);
 void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
 
-void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
+int	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
 
 
 // mode parm for FS_FOpenFile
