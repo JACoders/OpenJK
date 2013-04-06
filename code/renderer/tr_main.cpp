@@ -1070,7 +1070,7 @@ int R_SpriteFogNum( trRefEntity_t *ent ) {
 		return 0;
 	}
 
-	if ( tr.refdef.rdflags & RDF_doLAGoggles )
+	if ( tr.refdef.doLAGoggles )
 	{
 		return tr.world->numfogs;
 	}
@@ -1324,7 +1324,7 @@ void R_AddDrawSurf( const surfaceType_t *surface, const shader_t *shader, int fo
 	// so it wraps around
 	index = tr.refdef.numDrawSurfs & DRAWSURF_MASK;
 
-	if ( tr.refdef.rdflags & RDF_doLAGoggles )
+	if ( tr.refdef.doLAGoggles )
 	{
 		fogIndex = tr.world->numfogs;
 	}

@@ -1217,7 +1217,7 @@ static int R_GComputeFogNum( trRefEntity_t *ent ) {
 		return 0;
 	}
 
-	if ( tr.refdef.rdflags & RDF_doLAGoggles )
+	if ( tr.refdef.doLAGoggles )
 	{
 		return tr.world->numfogs;
 	}
