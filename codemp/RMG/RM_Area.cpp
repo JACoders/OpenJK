@@ -11,7 +11,7 @@
 
 #include "RM_Headers.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER) && (_MSC_VER < 1600)
 #pragma optimize("p", on)
 #endif
 
@@ -473,6 +473,6 @@ CRMArea* CRMAreaManager::EnumArea ( const int index )
 	return mAreas[index];
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER) && (_MSC_VER < 1600)
 #pragma optimize("p", off)
 #endif

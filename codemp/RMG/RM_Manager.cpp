@@ -95,7 +95,6 @@ void CRMManager::SetLandScape(CCMLandScape *landscape)
  ************************************************************************************************/
 bool CRMManager::LoadMission ( qboolean IsServer )
 {
-#ifndef PRE_RELEASE_DEMO
 	char	instances[MAX_QPATH];
 	char	mission[MAX_QPATH];
 	char	course[MAX_QPATH];
@@ -172,9 +171,6 @@ bool CRMManager::LoadMission ( qboolean IsServer )
 #endif
 
 	return true;
-#else
-	return false;
-#endif // PRE_RELEASE_DEMO
 }
 
 /************************************************************************************************
