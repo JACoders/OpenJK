@@ -278,8 +278,10 @@ void CRMLandScape::LoadDensityMap(const char *td)
 {
 	char		densityMap[MAX_QPATH];
 	byte		*imageData;
+#ifndef DEDICATED
 	int			iWidth, iHeight, seed;
 	char 		*ptr;
+#endif
 
 	// Fill in with default values
 	mDensityMap = (byte *)Z_Malloc(common->GetBlockCount(), TAG_TERRAIN);

@@ -2905,13 +2905,6 @@ void FS_Shutdown( qboolean closemfp ) {
 #endif
 }
 
-#ifdef USE_CD_KEY
-
-void Com_AppendCDKey( const char *filename );
-void Com_ReadCDKey( const char *filename );
-
-#endif // USE_CD_KEY
-
 //rww - add search paths in for received svc_setgame
 void FS_UpdateGamedir(void)
 {
@@ -2939,9 +2932,6 @@ FS_Startup
 */
 static void FS_Startup( const char *gameName ) {
         const char *homePath;
-#ifdef USE_CD_KEY
-	cvar_t	*fs;
-#endif	// USE_CD_KEY
 
 	Com_Printf( "----- FS_Startup -----\n" );
 
@@ -2998,14 +2988,6 @@ static void FS_Startup( const char *gameName ) {
 			FS_AddGameDirectory(fs_homepath->string, fs_gamedirvar->string);
 		}
 	}
-
-#ifdef USE_CD_KEY
-	Com_ReadCDKey( "base" );
-	fs = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
-	if (fs && fs->string[0] != 0) {
-		Com_AppendCDKey( fs->string );
-	}
-#endif // USE_CD_KEY
 
 	// add our commands
 	Cmd_AddCommand ("path", FS_Path_f);

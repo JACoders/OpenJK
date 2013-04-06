@@ -1,0 +1,4 @@
+EXPORTS
+	GetGameAPI
+	vmMain
+	dllEntry

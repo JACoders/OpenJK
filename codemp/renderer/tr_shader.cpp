@@ -2787,6 +2787,10 @@ static void SortNewShader( void ) {
 		tr.sortedShaders[i+1]->sortedIndex++;
 	}
 
+	// Arnout: fix rendercommandlist
+	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=493
+	FixRenderCommandList( i+1 );
+
 	newShader->sortedIndex = i+1;
 	tr.sortedShaders[i+1] = newShader;
 }

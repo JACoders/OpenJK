@@ -477,10 +477,12 @@ CNavigator
 
 CNavigator::CNavigator( void )
 {
+#if 0 // RAVEN... why u make it so hard to double link list cvars
 	if (!d_altRoutes || !d_patched)
 	{
 		NAV_CvarInit();
 	}
+#endif
 }
 
 CNavigator::~CNavigator( void )
@@ -571,6 +573,11 @@ Init
 
 void CNavigator::Init( void )
 {
+	if (!d_altRoutes || !d_patched)
+	{
+		NAV_CvarInit();
+	}
+
 	Free();
 }
 

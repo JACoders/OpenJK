@@ -274,10 +274,18 @@ Fix things up differently for win/unix/mac
 */
 void FS_ReplaceSeparators( char *path ) {
 	char	*s;
+	qboolean lastCharWasSep = qfalse;
 
 	for ( s = path ; *s ; s++ ) {
 		if ( *s == '/' || *s == '\\' ) {
-			*s = PATH_SEP;
+			if ( !lastCharWasSep ) {
+				*s = PATH_SEP;
+				lastCharWasSep = qtrue;
+			} else {
+				memmove (s, s + 1, strlen (s));
+			}
+		} else {
+			lastCharWasSep = qfalse;
 		}
 	}
 }
@@ -362,11 +370,11 @@ qboolean FS_FilenameCompare( const char *s1, const char *s2 ) {
 		}
 		
 		if (c1 != c2) {
-			return (qboolean)-1;		// strings not equal
+			return qtrue;		// strings not equal
 		}
 	} while (c1);
 	
-	return (qboolean)0;		// strings are equal
+	return qfalse;		// strings are equal
 }
 
 #define	MAXPRINTMSG	4096

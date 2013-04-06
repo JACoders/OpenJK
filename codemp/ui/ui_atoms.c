@@ -394,11 +394,6 @@ qboolean UI_ConsoleCommand( int realTime ) {
 	}
 
 
-	if ( Q_stricmp (cmd, "ui_cdkey") == 0 ) {
-		//UI_CDKeyMenu_f();
-		return qtrue;
-	}
-
 	return qfalse;
 }
 

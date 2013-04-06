@@ -838,11 +838,12 @@ qboolean Q_isanumber( const char *s )
 
 	strtod( s, &p );
 
-	return (qboolean)(*p == '\0');
+	return *p == '\0';
 }
 
-qboolean Q_isintegral( float f ) {
-	return (qboolean)( (int)f == f );
+qboolean Q_isintegral( float f )
+{
+	return (int)f == f;
 }
 
 char* Q_strrchr( const char* string, int c )

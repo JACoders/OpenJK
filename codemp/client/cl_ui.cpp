@@ -27,12 +27,6 @@ void SP_Register(const char *Package);
 
 vm_t *uivm;
 
-#ifdef USE_CD_KEY
-
-extern char cl_cdkey[34];
-
-#endif // USE_CD_KEY
-
 /*
 ====================
 GetClientState
@@ -711,48 +705,6 @@ void Key_SetCatcher( int catcher ) {
 }
 
 
-#ifdef USE_CD_KEY
-
-/*
-====================
-CLUI_GetCDKey
-====================
-*/
-static void CLUI_GetCDKey( char *buf, int buflen ) {
-	cvar_t	*fs;
-	fs = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
-	if (UI_usesUniqueCDKey() && fs && fs->string[0] != 0) {
-		Com_Memcpy( buf, &cl_cdkey[16], 16);
-		buf[16] = 0;
-	} else {
-		Com_Memcpy( buf, cl_cdkey, 16);
-		buf[16] = 0;
-	}
-}
-
-
-/*
-====================
-CLUI_SetCDKey
-====================
-*/
-static void CLUI_SetCDKey( char *buf ) {
-	cvar_t	*fs;
-	fs = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
-	if (UI_usesUniqueCDKey() && fs && fs->string[0] != 0) {
-		Com_Memcpy( &cl_cdkey[16], buf, 16 );
-		cl_cdkey[32] = 0;
-		// set the flag so the fle will be written at the next opportunity
-		cvar_modifiedFlags |= CVAR_ARCHIVE;
-	} else {
-		Com_Memcpy( cl_cdkey, buf, 16 );
-		// set the flag so the fle will be written at the next opportunity
-		cvar_modifiedFlags |= CVAR_ARCHIVE;
-	}
-}
-
-#endif // USE_CD_KEY
-
 /*
 ====================
 GetConfigString
@@ -1111,16 +1063,6 @@ int CL_UISystemCalls( int *args ) {
 	case UI_MEMORY_REMAINING:
 		return Hunk_MemoryRemaining();
 
-#ifdef USE_CD_KEY
-	case UI_GET_CDKEY:
-		CLUI_GetCDKey( (char *)VMA(1), args[2] );
-		return 0;
-
-	case UI_SET_CDKEY:
-		CLUI_SetCDKey( (char *)VMA(1) );
-		return 0;
-#endif	// USE_CD_KEY
-
 	case UI_R_REGISTERFONT:
 		return re.RegisterFont( (const char *)VMA(1) );
 
@@ -1193,11 +1135,6 @@ int CL_UISystemCalls( int *args ) {
 	case UI_R_REMAP_SHADER:
 		re.RemapShader( (const char *)VMA(1), (const char *)VMA(2), (const char *)VMA(3) );
 		return 0;
-
-#ifdef USE_CD_KEY
-	case UI_VERIFY_CDKEY:
-		return CL_CDKeyValidate((const char *)VMA(1), (const char *)VMA(2));
-#endif // USE_CD_KEY
 
 	case UI_SP_GETNUMLANGUAGES:
 		return SE_GetNumLanguages();
@@ -1484,14 +1421,6 @@ void CL_InitUI( void ) {
 		//ingame (was just < CA_ACTIVE before, resulting in ingame menus getting wiped and
 		//not reloaded on vid restart from ingame menu)
 		VM_Call( uivm, UI_INIT, (cls.state >= CA_AUTHORIZING && cls.state <= CA_ACTIVE) );
-	}
-}
-
-qboolean UI_usesUniqueCDKey() {
-	if (uivm) {
-		return (qboolean)(VM_Call( uivm, UI_HASUNIQUECDKEY) == qtrue);
-	} else {
-		return qfalse;
 	}
 }
 

@@ -1,0 +1,1238 @@
+musicfiles
+{
+	kejimbase_explore
+	{
+		entry
+		{	
+			marker0	0.000
+			marker1	22.070
+			marker2	53.723
+			marker3	90.926
+		}
+		exit
+		{
+			nextfile	kejimbase_etr00
+			time00	3.337
+			time01	5.668
+			time02	22.040
+			time03	29.889
+			time04	50.124
+			time05	37.168
+			time06	53.473
+			time07	65.923
+			time08	90.478
+			time09	143.233
+			time10	156.166
+			time11	176.608
+			time12	193.505
+		}
+		exit
+		{
+			nextfile	kejimbase_etr01
+			time00	45.555
+			time01	81.525
+			time02	106.406
+			time03	128.648
+			time04	185.168
+			time05	209.309
+		}
+	}
+	kejimbase_action
+	{
+		entry
+		{
+			marker0	0.00
+			marker1	42.585
+			marker2	87.664
+		}
+		exit
+		{
+			nextfile	kejimbase_atr00
+			nextmark	marker0
+			time00	69.347
+			time01	72.142
+			time02	80.444
+			time03	87.608
+			time04	90.185
+		}
+		exit
+		{
+			nextfile	kejimbase_atr01
+			nextmark	marker1
+			time00	2.434
+			time01	5.667
+			time02	20.281
+		}
+		exit
+		{
+			nextfile	kejimbase_atr02
+			nextmark	marker2
+			time00	62.894
+		}
+		exit
+		{
+			nextfile	kejimbase_atr03
+			nextmark	marker3
+			time00	12.397
+			time01	28.679
+			time02	35.492
+			time03	45.328
+		}
+	}
+	ImpBaseB_Explore
+	{
+		entry
+		{
+			marker0	0
+			marker1	37
+			marker2	69.81
+			marker3	119.97
+		}
+		exit
+		{
+			nextfile ImpBaseB_Etr00
+			time0	37
+			time1	54.0
+			time2	62.35
+			time3	69.81
+			time4	79.85
+			time5	119.97
+			time6	132.75			
+			time7	146.88
+		}	
+		exit
+		{
+			nextfile ImpBaseB_Etr01
+			time0	13.67			
+			time1	26.96			
+			time2	89.42
+			time3	96.92
+			time4	107.77	
+		}
+	
+	}
+	ImpBaseB_Action
+	{
+		entry
+		{
+			marker0	0
+			marker1	30.23
+			marker2	45.45
+			marker3	104.48
+		}
+		exit
+		{
+			nextfile ImpBaseB_Atr00	
+			nextmark marker3
+			time0 38.22
+			time1 50.31
+			time2 59.23
+			time3 64.47
+			time4 80.41
+			time5 87.69
+			time6 92.01
+			time7 98.07
+			time8 104.48
+		}
+		exit
+		{
+			nextfile ImpBaseB_Atr01
+			nextmark marker2
+			time0 8.91
+			time1 20.89
+		}
+		exit
+		{
+			nextfile ImpBaseB_Atr02
+			nextmark marker1
+			time0 25.45
+			time1 30.23	
+		}
+		exit
+		{
+			nextfile ImpBaseB_Atr03
+			nextmark marker0
+			time0 4.97
+			time1 11.33
+			time2 16.11
+			time3 45.45
+			time4 70.61
+			time5 74.66	
+		}
+	}
+	ImpBaseC_explore
+	{
+		entry
+		{	
+			marker0	0.000
+			marker1	55.831
+			marker2	11.160
+			marker3	11.160
+			
+		}
+		exit
+		{
+			nextfile	ImpBaseC_etr00
+			time00		42.904
+			time01		71.172
+			time02		127.721
+			time03		150.290
+			time04		171.618
+			
+		}
+		exit
+		{
+			nextfile	ImpBaseC_etr01
+			time00		19.096
+			time01		26.412
+			time02		88.211
+			time03		101.169
+			
+		}
+	}
+	ImpBaseC_action
+	{
+		entry
+		{
+			marker0	0.00
+			marker1	19.468
+			marker2	33.480
+		}
+		exit
+		{
+			nextfile	ImpBaseC_atr00
+			nextmark	marker0
+			time00		2.542
+			time01		5.440
+			time02		9.470
+			time03		19.366
+		}
+		exit
+		{
+			nextfile	ImpBaseC_atr01
+			nextmark	marker1
+			time00		25.544
+			time01		29.140
+		}
+		exit
+		{
+			nextfile	ImpBaseC_atr02
+			nextmark	marker2
+			time00		44.888
+		}
+		exit
+		{
+			nextfile	ImpBaseC_atr03
+			nextmark	marker3
+			time00		34.272
+			time01		65.224
+		}
+	}
+	BespinA_Explore
+	{
+		entry
+		{	
+			marker0 6.74
+			marker1 17.51
+			marker2 95.95
+			marker3 149.87
+		}
+		exit
+		{
+			nextfile	BespinA_Etr00
+			time00	42.01
+		}
+		exit
+		{
+			nextfile	BespinA_Etr01
+			time00	165.65
+		}
+		exit
+		{
+			nextfile	BespinA_Etr02
+			time00 17.51
+			time01 29.50
+			time02 54.80
+			time03 70.21
+			time04 90.25
+			time05 106.40
+			time06 120.53
+			time07 149.87
+			time08 178.36
+		}	
+	}
+	BespinA_Action
+	{
+		entry
+		{
+			marker0	0.00
+			marker1	42.585
+			marker2	87.664
+		}
+		exit
+		{
+			nextfile	BespinA_Atr00
+			nextmark	marker0
+			time00	3.08
+			time01	6.19
+			time02	35.26
+		}
+		exit
+		{
+			nextfile	BespinA_Atr01
+			nextmark	marker1
+			time00	8.98
+			time01	14.76
+			time02	20.65
+			time03 	44.34
+			time04 	47.28
+		}
+		exit
+		{
+			nextfile	BespinA_Atr02
+			nextmark	marker2
+			time00	51.82
+			time01 	58.00
+		}
+		exit
+		{
+			nextfile	BespinA_Atr03
+			nextmark	marker3
+			time00	28.90
+			time01	64.78
+		}
+	}
+
+	besplat_explore
+	{
+		entry
+		{	
+			marker0 46.78
+			marker1 69.05
+			marker2 85.85
+		}
+		exit
+		{
+			nextfile	besplat_etr00
+			time0 6.89
+			time1 21.26
+			time3 55.52
+			time4 69.75
+			time5 85.87
+			time6 98.12
+			time7 119.44
+			time8 131.95
+			time9 157.58
+		}
+		exit
+		{
+			nextfile	besplat_etr01
+			time0 34.15
+			time1 141.84
+			time2 174.72
+			time3 183.05
+		}
+	}
+
+	besplat_action
+	{
+		entry
+		{
+			marker0 0
+			marker1 16.56
+			marker2 24.86
+			marker3 62.37
+		}
+		exit
+		{
+			nextfile	besplat_atr00
+			nextmark	marker1
+			time0 2.82
+			time1 68.46
+		}
+		exit
+		{
+			nextfile	besplat_atr01
+			nextmark	marker2
+			time0 41.23
+			time1 54.20
+			time2 59.31
+			time3 76.51
+		}
+		exit
+		{
+			nextfile	besplat_atr02
+			nextmark	marker0
+			time0 13.47
+			time1 21.19
+			time2 24.65
+			time3 28.82
+			time4 83.53
+		}
+	}
+
+	besplat_boss
+	{
+	}
+
+	yavtrial_explore
+	{
+		entry
+		{	
+			marker0	124.126
+			marker1	102.326
+			marker2	24.853
+			marker3	0.00
+		}
+		exit
+		{
+			nextfile	yavtrial_etr00
+			time00	3.095
+			time01	23.931
+			time02	24.937
+			time03	46.905
+			time04	61.268
+			time05	79.042
+			time06	101.750
+			time07	118.136
+			time08	147.951
+		}
+		exit
+		{
+			nextfile	yavtrial_etr01
+			time00	161.783
+		}
+	}
+	yavtrial_action
+	{
+		entry
+		{
+			marker0	0.00
+			marker1	60.145
+			marker2	85.922
+		}
+		exit
+		{
+			nextfile	yavtrial_atr00
+			nextmark	marker0
+			time00	3.553
+			time01	6.118
+			time02	8.718
+			time03	41.152
+			time04	103.559
+		}
+		exit
+		{
+			nextfile	yavtrial_atr01
+			nextmark	marker1
+			time00	9.307
+			time01	12.310
+			time02	16.719
+			time03	20.045
+			time04	26.229
+			time05	35.160
+		}
+		exit
+		{
+			nextfile	yavtrial_atr02
+			nextmark	marker2
+			time00	59.302
+			time01	65.837
+			time02	74.429
+		}
+		exit
+		{
+			nextfile	yavtrial_atr03
+			nextmark	marker3
+			time00	38.325
+			time01	49.857
+		}
+	}
+	alienha_explore
+	{
+		entry
+		{	
+			marker0 0
+			marker1 65.84
+			marker2 93.63
+		}
+		exit
+		{
+			nextfile	alienha_etr00
+			time0 5.80
+			time1 33.04
+			time3 67.61
+		}
+		exit
+		{
+			nextfile	alienha_etr01
+			time0 94.47
+			time1 103.06
+			time2 115.75
+			time3 127.32
+			time4 138.36
+			time5 152.10
+			time6 166.11
+			time7 180.29
+		}
+	}
+	alienha_action
+	{
+		entry
+		{
+			marker0 0
+			marker1 40.96
+			marker2 63.33
+		}
+		exit
+		{
+			nextfile	alienha_atr00
+			nextmark	marker2
+			time0 3.35
+			time1 6.85
+			time3 15.70
+			time4 22.61
+		}
+		exit
+		{
+			nextfile	alienha_atr01
+			nextmark	marker0
+			time0 31.85
+			time1 41.42
+			time2 47.06
+		}
+		exit
+		{
+			nextfile	alienha_atr03
+			nextmark	marker1
+			time0 53.01
+			time1 58.57
+			time2 62.87
+			time3 72.03
+			time4 89.64
+			time5 96.94
+		}
+	}
+	tunnels_explore
+	{
+		entry
+		{	
+			marker0 0
+			marker1 64.20
+			marker2 96.47
+		}
+		exit
+		{
+			nextfile	tunnels_etr00
+			time0 6.06
+			time1 18.26
+			time3 35.01
+			time4 42.98
+			time5 69.73
+			time6 84.16
+		}
+		exit
+		{
+			nextfile	tunnels_etr01
+			time0 94.81
+			time1 111.25
+			time2 121.77
+			time3 134.68
+		}
+	}
+	tunnels_action
+	{
+		entry
+		{
+			marker0 0
+			marker1 22.39
+		}
+		exit
+		{
+			nextfile	tunnels_atr00
+			nextmark	marker0
+			time0 0.29
+		}
+		exit
+		{
+			nextfile	tunnels_atr01
+			nextmark	marker2
+			time0 15.62
+			time1 22.94
+		}
+		exit
+		{
+			nextfile	tunnels_atr02
+			nextmark	marker2
+			time0 29.14
+			time1 35.63
+			time2 45.33
+			time3 51.78
+			time4 58.67
+		}
+		exit
+		{
+			nextfile	tunnels_atr03
+			nextmark	marker1
+			time0 64.81
+			time1 68.53
+			time2 72.28
+			time3 75.89
+		}
+	}
+	IMPBaseD_explore
+	{
+		entry
+		{	
+			marker0	0.000
+			marker1	66.790
+			marker2	102.874
+			marker3	150.554
+		}
+		exit
+		{
+			nextfile	IMPBaseD_etr00
+			time00	7.997
+			time01	16.678
+			time02	44.664
+			time03	70.836
+		
+		}
+		exit
+		{
+			nextfile	IMPBaseD_etr01
+			time00	89.986
+			time01	111.971
+			time02	130.629
+			time03	166.389
+			time04	172.530
+		}
+	}
+	IMPBaseD_action
+	{
+		entry
+		{
+			marker0	6.607
+			marker1	60.118
+			marker2	140.053
+		}
+		exit
+		{
+			nextfile	IMPBaseD_atr00
+			nextmark	marker0
+			time00	6.457
+			time01	13.265
+			time02	18.757
+			time03	25.194
+			time04	152.772
+		}
+		exit
+		{
+			nextfile	IMPBaseD_atr01
+			nextmark	marker1
+			time00	30.336
+			time01	37.883
+			time02	46.802
+			time03	61.122
+		}
+		exit
+		{
+			nextfile	IMPBaseD_atr02
+			nextmark	marker2
+			time00	78.257
+			time01	85.312
+			time02	92.170
+			time03	140.866
+			time04	149.597
+		}
+		exit
+		{
+			nextfile	IMPBaseD_atr03
+			nextmark	marker3
+			time00	105.982
+			time01	115.569
+			time02	128.476
+		}
+	}
+	swamp_explore
+	{
+		entry
+		{	
+			marker0	0.000
+			marker1	16.916
+			marker2	80.714
+			marker3	31.761
+			
+		}
+		exit
+		{
+			nextfile	swamp_etr00
+			time00		11.185
+			time01		20.989
+			time02		51.408
+			time03		63.196
+			time04		71.293
+			
+		}
+		exit
+		{
+			nextfile	swamp_etr01
+			time00		42.044
+			time01		78.362
+			time02		95.485
+			time03		113.023
+			
+		}
+	}
+	swamp_action
+	{
+		entry
+		{
+			marker0	0.00
+			marker1	36.318
+			marker2	45.982
+		}
+		exit
+		{
+			nextfile	swamp_atr00
+			nextmark	marker0
+			time00		1.035
+		}
+		exit
+		{
+			nextfile	swamp_atr01
+			nextmark	marker1
+			time00		6.835
+			time01		11.323
+			time02		18.592
+			time03		36.230
+			time04		59.793
+		}
+		exit
+		{
+			nextfile	swamp_atr02
+			nextmark	marker2
+			time00		34.108
+			time01		79.955
+			time02		89.847
+			time03		126.994
+
+		}
+		exit
+		{
+			nextfile	swamp_atr03
+			nextmark	marker3
+			time00		102.414
+			time01		115.382
+			time02		120.039
+		}
+	}
+	yavtemp2_explore
+	{
+		entry
+		{	
+			marker0 88.28
+			marker1 48.10
+			marker2 117.47
+			marker3 0
+		}
+		exit
+		{
+			nextfile	yavtemp2_etr00
+			time0 46.23
+			time1 53.44
+			time2 62.08
+			time3 69.09
+			time4 77.08
+			time5 87.03
+			time6 96.49
+		}
+		exit
+		{
+			nextfile	yavtemp2_etr01
+			time0 15.24
+			time1 31.79
+			time2 42.78
+			time3 114.18
+			time4 134.25
+			time5 144.89
+			time6 160.03
+			time7 168.03
+		}
+	}
+	yavtemp2_action
+	{
+		entry
+		{
+			marker0 0
+			marker1 17.35
+			marker2 43.31
+			marker3 60.39
+		}
+		exit
+		{
+			nextfile	yavtemp2_atr00
+			nextmark	marker0
+			time0 0
+			time1 8.78
+			time2 13.47
+		}
+		exit
+		{
+			nextfile	yavtemp2_atr01
+			nextmark	marker1
+			time0 23.89
+			time1 28.62
+			time2 41.11
+			time3 46.73
+		}
+		exit
+		{
+			nextfile	yavtemp2_atr02
+			nextmark	marker2
+			time0 48.95
+			time1 60.59
+			time2 69.13
+			time3 97.63
+		}
+		exit
+		{
+			nextfile	yavtemp2_atr03
+			nextmark	marker3
+			time0 91.11
+		}
+	}
+	ImpBaseE_explore
+	{
+		entry
+		{	
+			marker0	0.000
+			marker1	13.805
+			marker2	29.265
+			marker3	137.915
+			
+		}
+		exit
+		{
+			nextfile	ImpBaseE_etr00
+			time00		13.712
+			time01		37.872
+			time02		52.541
+			time03		131.875
+			time04		232.256
+			
+		}
+		exit
+		{
+			nextfile	ImpBaseE_etr01
+			time00		120.057
+			time01		157.080
+			time02		176.388
+			
+		}
+	}
+	ImpBaseE_action
+	{
+		entry
+		{
+			marker0	0.00
+			marker1	18.336
+			marker2	52.491
+		}
+		exit
+		{
+			nextfile	ImpBaseE_atr00
+			nextmark	marker0
+			time00		22.012
+			time01		32.861
+			time02		73.853
+			time03		77.808
+		}
+		exit
+		{
+			nextfile	ImpBaseE_atr01
+			nextmark	marker1
+			time00		5.824
+			time01		18.457
+			time02		81.088
+			time03		114.805
+		}
+		exit
+		{
+			nextfile	ImpBaseE_atr02
+			nextmark	marker2
+			time00		1.923
+			time01		26.892
+			time02		30.703
+			time03		59.294
+			time04		65.331
+			time05		88.803
+			time06		91.876
+
+		}
+		exit
+		{
+			nextfile	ImpBaseE_atr03
+			nextmark	marker3
+			time00		11.958
+			time01		43.027
+			time02		48.014
+			time04		96.757
+			time05		107.858
+			time06		130.437
+		}
+	}
+	alienhb_explore
+	{
+		entry
+		{	
+			marker0 127.71
+			marker1 36.56
+			marker2 89.94
+		}
+		exit
+		{
+			nextfile	alienhb_etr00
+			time0 13.60
+			time1 22.58
+			time3 31.69
+			time4 41.08
+			time5 53.08
+			time6 67.91
+			time7 89.29
+			time8 181.41
+		}
+		exit
+		{
+			nextfile	alienhb_etr01
+			time0 109.08
+			time1 123.18
+			time2 134.76
+			time3 149.54
+			time4 160.53
+			time5 174.10
+		}
+	}
+	alienhb_action
+	{
+		entry
+		{
+			marker0 0
+			marker1 6.85
+			marker2 31.84
+			marker3 66.77
+		}
+		exit
+		{
+			nextfile	alienhb_atr00
+			nextmark	marker0
+			time0 5.29
+			time1 21.54
+			time3 26.21
+			time4 120.30
+		}
+		exit
+		{
+			nextfile	alienhb_atr01
+			nextmark	marker1
+			time0 10.35
+			time1 17.03
+		}
+		exit
+		{
+			nextfile	alienhb_atr02
+			nextmark	marker2
+			time0 60.27
+			time1 70.21
+			time2 80.36
+			time3 93.55
+			time4 100.47
+			time5 111.75
+		}
+	}
+	yavfinal_explore
+	{
+		entry
+		{	
+			marker0	0.000
+			marker1	18.664
+			marker2	53.390
+			marker3	97.161
+			
+		}
+		exit
+		{
+			nextfile	yavfinal_etr00
+			time00		53.434
+			time01		83.935
+			
+		}
+		exit
+		{
+			nextfile	yavfinal_etr01
+			time00		9.852
+			time01		94.171
+			time02		104.106
+			
+		}
+	}
+	yavfinal_action
+	{
+		entry
+		{
+			marker0	0.00
+			marker1	43.094
+			marker2	73.785
+		}
+		exit
+		{
+			nextfile	yavfinal_atr00
+			nextmark	marker0
+			time00		53.502
+			time01		61.386
+		}
+		exit
+		{
+			nextfile	yavfinal_atr01
+			nextmark	marker1
+			time00		3.623
+			time01		96.341
+		}
+		exit
+		{
+			nextfile	yavfinal_atr02
+			nextmark	marker2
+			time00		9.019
+			time01		11.707
+			time02		15.535
+			time03		29.107
+			time04		35.847
+			time05		75.327
+			time06		101.992
+
+		}
+		exit
+		{
+			nextfile	yavfinal_atr03
+			nextmark	marker3
+			time00		21.257
+			time01		25.167
+			time02		43.800
+			time03		106.249
+			time04		113.638
+
+		}
+	}
+	yavfinal_boss
+	{
+	}
+	narshaada_explore
+	{
+		entry
+		{	
+			marker0 123.18
+			marker1 0
+			marker2 43.30
+			marker3 12.27
+		}
+		exit
+		{
+			nextfile	narshaada_etr00
+			time0 55.86
+			time1 70.17
+			time2 78.63
+			time3 88.61
+			time4 106.57
+
+		}
+		exit
+		{
+			nextfile	narshaada_etr01
+			time0 13.75
+			time1 31.29
+			time2 43.84
+			time4 123.91
+			time5 134.92
+			time6 149.29
+			time7 168.16
+			time8 184.19
+		}
+	}
+	narshaada_action
+	{
+		entry
+		{
+			marker0 0
+			marker1 15.65
+			marker2 47.07
+		}
+		exit
+		{
+			nextfile	narshaada_atr00
+			nextmark	marker0
+			time0 2.72
+			time1 59.84
+			time2 63.90
+			time3 74.16
+			time4 82.37
+		}
+		exit
+		{
+			nextfile	narshaada_atr01
+			nextmark	marker1
+			time0 10.89
+			time1 20.59
+			time2 28.15
+			time3 39.65
+			time4 46.35
+		}
+		exit
+		{
+			nextfile	narshaada_atr02
+			nextmark	marker2
+			time0 48.98
+			time1 69.05
+		}
+		exit
+		{
+			nextfile	narshaada_atr03
+			nextmark	marker3
+			time0 86.14
+			time1 90.73
+			time2 96.40
+			time3 101.09
+		}
+	}
+
+}
+levelmusic
+{
+	kejim_post
+	{
+		explore	ImpBaseB_Explore
+		action	ImpBaseB_Action
+	}
+	kejim_base
+	{
+		explore	kejimbase_explore	
+		action	kejimbase_action	
+	}
+	artus_mine
+	{
+		explore	tunnels_explore
+		action	tunnels_action
+	}
+	artus_detention
+	{
+		explore	ImpBaseC_explore
+		action	ImpBaseC_action
+		useboss bespin_platform
+	}
+	artus_topside
+	{
+		explore	ImpBaseD_explore
+		action	ImpBaseD_action
+	}
+	ns_streets
+	{
+		explore	narshaada_explore
+		action	narshaada_action
+	}
+	ns_hideout
+	{
+		explore	alienha_explore
+		action	alienha_action
+	}
+	ns_starpad
+	{
+		explore	alienhb_explore
+		action	alienhb_action
+	}
+	bespin_undercity
+	{
+		uses	artus_mine
+	}
+	bespin_streets
+	{
+		explore	BespinA_Explore 
+		action	BespinA_Action 
+	}
+	bespin_platform
+	{
+		explore	besplat_explore
+		action	besplat_action
+		boss	besplat_boss
+	}
+	cairn_bay
+	{
+		explore	ImpBaseE_explore
+		action	ImpBaseE_action
+	}
+	cairn_dock1
+	{
+		uses	kejim_base
+	}
+	cairn_assembly
+	{
+		uses	kejim_post
+	}
+	cairn_stockpile
+	{
+		uses	artus_detention
+	}
+	cairn_reactor
+	{
+		uses	artus_topside
+	}
+	cairn_dock2
+	{
+		uses 	cairn_bay
+	}
+	demo
+	{
+		uses	kejim_post
+		useboss bespin_platform
+	}
+	doom_comm
+	{
+		uses	kejim_base
+	}
+	doom_detention
+	{
+		uses	kejim_post
+	}
+	doom_shields
+	{
+		uses	artus_detention
+	}
+	yavin_swamp
+	{
+		explore	swamp_explore
+		action	swamp_action
+	}
+	yavin_canyon
+	{
+		uses	ns_hideout
+	}
+	yavin_courtyard
+	{
+		explore	yavtemp2_explore
+		action	yavtemp2_action
+	}
+	yavin_final
+	{
+		explore	yavfinal_explore
+		action	yavfinal_action
+		boss	yavfinal_boss
+	}
+	yavin_temple
+	{
+		explore	placeholder
+		action	placeholder
+	}
+	yavin_trial
+	{
+		explore	yavtrial_explore
+		action	yavtrial_action
+	}
+}

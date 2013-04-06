@@ -1682,7 +1682,6 @@ Ghoul2 Insert End
 		return CM_RegisterTerrain((const char *)VMA(1), false)->GetTerrainId();
 
 	case CG_RMG_INIT:
-#ifndef PRE_RELEASE_DEMO
 		if (!com_sv_running->integer)
 		{	// don't do this if we are connected locally
 			if (!TheRandomMissionManager)
@@ -1701,7 +1700,6 @@ Ghoul2 Insert End
 		}
 		RM_CreateRandomModels(args[1], (const char *)VMA(2));
 //		TheRandomMissionManager->CreateMap();
-#endif // PRE_RELEASE_DEMO
 		return 0;
 
 	case CG_RE_INIT_RENDERER_TERRAIN:
@@ -1773,6 +1771,10 @@ void CL_InitCGame( void ) {
 	// use the lastExecutedServerCommand instead of the serverCommandSequence
 	// otherwise server commands sent just before a gamestate are dropped
 	VM_Call( cgvm, CG_INIT, clc.serverMessageSequence, clc.lastExecutedServerCommand, clc.clientNum );
+
+	// reset any CVAR_CHEAT cvars registered by cgame
+	if ( !clc.demoplaying && !cl_connectedToCheatServer )
+		Cvar_SetCheatState();
 
 	// we will send a usercmd this frame, which
 	// will cause the server to send us the first snapshot
@@ -1985,7 +1987,7 @@ void CL_SetCGameTime( void ) {
 	}
 
 	// allow pause in single player
-	if ( sv_paused->integer && cl_paused->integer && com_sv_running->integer ) {
+	if ( sv_paused->integer && CL_CheckPaused() && com_sv_running->integer ) {
 		// paused
 		return;
 	}

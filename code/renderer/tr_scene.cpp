@@ -288,7 +288,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	tr.refdef.time = fd->time;
 	tr.refdef.frametime = fd->time - lastTime;
-	tr.refdef.rdflags = fd->rdflags;
+	//tr.refdef.rdflags = fd->rdflags;				// Breaks light amp goggles, among other things.
 
 	if (fd->rdflags & RDF_SKYBOXPORTAL)
 	{
