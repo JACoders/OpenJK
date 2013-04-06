@@ -86,7 +86,6 @@ vec3_t	ssViewOrigin, ssViewRight, ssViewUp;
 
 static void R_SurfaceSpriteFrameUpdate(void)
 {
-// Last update Sat Apr  6 19:26:58 2013 axel isouard
 	float ratio;
 	vec3_t ang, diff, retwindvec;
 	float targetspeed;
@@ -97,7 +96,7 @@ static void R_SurfaceSpriteFrameUpdate(void)
 		return;
 
 	if (backEnd.refdef.time < lastSSUpdateTime)
-	{	// Time is BEFORE the last update time, so reset everything.
+	{
 		curWindGust = 5;
 		curWindSpeed = r_windSpeed->value;
 		nextGustTime = 0;
@@ -109,7 +108,7 @@ static void R_SurfaceSpriteFrameUpdate(void)
 
 	// Adjust for an FOV.  If things look twice as wide on the screen, pretend the shaders have twice the range.
 	// ASSUMPTION HERE IS THAT "standard" fov is the first one rendered.
-	
+
 	if (!standardfovinitialized)
 	{	// This isn't initialized yet.
 		if (backEnd.refdef.fov_x > 50 && backEnd.refdef.fov_x < 135)		// I don't consider anything below 50 or above 135 to be "normal".
