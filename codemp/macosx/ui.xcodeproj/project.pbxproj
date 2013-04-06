@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		561636D41710AA6F008AA92A /* q_math.c in Sources */ = {isa = PBXBuildFile; fileRef = 561636D21710AA6F008AA92A /* q_math.c */; };
+		561636D51710AA6F008AA92A /* q_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 561636D31710AA6F008AA92A /* q_shared.c */; };
 		565DAD9C0C4FF701008167FA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		565DADAD0C4FF701008167FA /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */; };
 		56E4CE03121EFEC2004E7206 /* ui_atoms.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CDFC121EFEC2004E7206 /* ui_atoms.c */; };
@@ -20,13 +22,13 @@
 		56E4CE13121EFEF8004E7206 /* bg_saga.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE0C121EFEF8004E7206 /* bg_saga.c */; };
 		56E4CE14121EFEF8004E7206 /* bg_vehicleLoad.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE0D121EFEF8004E7206 /* bg_vehicleLoad.c */; };
 		56E4CE15121EFEF8004E7206 /* bg_weapons.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE0E121EFEF8004E7206 /* bg_weapons.c */; };
-		56E4CE16121EFEF8004E7206 /* q_math.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE0F121EFEF8004E7206 /* q_math.c */; };
-		56E4CE17121EFEF8004E7206 /* q_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE10121EFEF8004E7206 /* q_shared.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		089C167EFE841241C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
+		561636D21710AA6F008AA92A /* q_math.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_math.c; path = ../qcommon/q_math.c; sourceTree = "<group>"; };
+		561636D31710AA6F008AA92A /* q_shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_shared.c; path = ../qcommon/q_shared.c; sourceTree = "<group>"; };
 		565DADB30C4FF701008167FA /* Info-ui.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-ui.plist"; sourceTree = "<group>"; };
 		565DADB40C4FF702008167FA /* ui.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ui.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
 		56E4CDFC121EFEC2004E7206 /* ui_atoms.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ui_atoms.c; path = ../ui/ui_atoms.c; sourceTree = SOURCE_ROOT; };
@@ -40,8 +42,6 @@
 		56E4CE0C121EFEF8004E7206 /* bg_saga.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bg_saga.c; path = ../game/bg_saga.c; sourceTree = SOURCE_ROOT; };
 		56E4CE0D121EFEF8004E7206 /* bg_vehicleLoad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bg_vehicleLoad.c; path = ../game/bg_vehicleLoad.c; sourceTree = SOURCE_ROOT; };
 		56E4CE0E121EFEF8004E7206 /* bg_weapons.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = bg_weapons.c; path = ../game/bg_weapons.c; sourceTree = SOURCE_ROOT; };
-		56E4CE0F121EFEF8004E7206 /* q_math.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_math.c; path = ../game/q_math.c; sourceTree = SOURCE_ROOT; };
-		56E4CE10121EFEF8004E7206 /* q_shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_shared.c; path = ../game/q_shared.c; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,8 +100,8 @@
 				56E4CE0C121EFEF8004E7206 /* bg_saga.c */,
 				56E4CE0D121EFEF8004E7206 /* bg_vehicleLoad.c */,
 				56E4CE0E121EFEF8004E7206 /* bg_weapons.c */,
-				56E4CE0F121EFEF8004E7206 /* q_math.c */,
-				56E4CE10121EFEF8004E7206 /* q_shared.c */,
+				561636D21710AA6F008AA92A /* q_math.c */,
+				561636D31710AA6F008AA92A /* q_shared.c */,
 			);
 			name = game;
 			sourceTree = "<group>";
@@ -159,7 +159,11 @@
 			isa = PBXProject;
 			buildConfigurationList = 565DADB50C4FF702008167FA /* Build configuration list for PBXProject "ui" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 089C166AFE841209C02AAC07 /* cgame */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -206,8 +210,8 @@
 				56E4CE13121EFEF8004E7206 /* bg_saga.c in Sources */,
 				56E4CE14121EFEF8004E7206 /* bg_vehicleLoad.c in Sources */,
 				56E4CE15121EFEF8004E7206 /* bg_weapons.c in Sources */,
-				56E4CE16121EFEF8004E7206 /* q_math.c in Sources */,
-				56E4CE17121EFEF8004E7206 /* q_shared.c in Sources */,
+				561636D41710AA6F008AA92A /* q_math.c in Sources */,
+				561636D51710AA6F008AA92A /* q_shared.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

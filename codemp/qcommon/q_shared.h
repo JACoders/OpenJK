@@ -1349,7 +1349,7 @@ typedef struct {
 #endif
 #endif
 
-#if MAC_PORT || defined(__linux__)
+#if defined(MACOS_X) || defined(__linux__)
 	#define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
 #else 
 	#if !defined(__LCC__) && !defined(MINGW32)
@@ -1378,7 +1378,7 @@ typedef struct {
 	#else
 		#define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
 	#endif // __LCC__ || MINGW32
-#endif // MAC_PORT || __linux__
+#endif // MACOS_X || __linux__
 
 unsigned ColorBytes3 (float r, float g, float b);
 unsigned ColorBytes4 (float r, float g, float b, float a);
