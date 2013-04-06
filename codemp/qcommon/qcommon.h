@@ -5,8 +5,6 @@
 #include "qcommon/cm_public.h"
 #include "qcommon/q_shared.h"
 
-//#define	PRE_RELEASE_DEMO
-
 //============================================================================
 
 //
