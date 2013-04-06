@@ -1107,6 +1107,10 @@ void Com_Init( char *commandLine ) {
 		// done early so bind command exists
 		CL_InitKeyCommands();
 
+#ifdef _WIN32
+		_setmaxstdio(2048);
+#endif
+
 		FS_InitFilesystem ();
 
 		Com_InitJournaling();
