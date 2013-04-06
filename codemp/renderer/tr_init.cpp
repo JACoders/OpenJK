@@ -1168,6 +1168,7 @@ extern qboolean Sys_LowPhysicalMemory();
 	Cmd_AddCommand( "imagelist", R_ImageList_f );
 	Cmd_AddCommand( "shaderlist", R_ShaderList_f );
 	Cmd_AddCommand( "skinlist", R_SkinList_f );
+	Cmd_AddCommand( "fontlist", R_FontList_f );
 	Cmd_AddCommand( "screenshot", R_ScreenShot_f );
 	Cmd_AddCommand( "screenshot_tga", R_ScreenShotTGA_f );
 	Cmd_AddCommand( "gfxinfo", GfxInfo_f );
@@ -1297,6 +1298,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	Cmd_RemoveCommand ("imagelist");
 	Cmd_RemoveCommand ("shaderlist");
 	Cmd_RemoveCommand ("skinlist");
+	Cmd_RemoveCommand ("fontlist");
 	Cmd_RemoveCommand ("screenshot");
 	Cmd_RemoveCommand ("screenshot_tga");
 	Cmd_RemoveCommand ("gfxinfo");
