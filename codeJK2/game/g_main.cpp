@@ -775,9 +775,9 @@ game_export_t *GetGameAPI( game_import_t *import ) {
 	globals.RunFrame = G_RunFrame;
 
 	globals.ConsoleCommand = ConsoleCommand;
-	globals.PrintEntClassname = PrintEntClassname;
+//	globals.PrintEntClassname = PrintEntClassname;
 
-	globals.ValidateAnimRange = PM_ValidateAnimRange;
+//	globals.ValidateAnimRange = PM_ValidateAnimRange;
 
 	globals.gentitySize = sizeof(gentity_t);
 

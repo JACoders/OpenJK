@@ -17,7 +17,7 @@ int CL_UISystemCalls( int *args );
 extern int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *sMapName);
 extern qboolean SG_GameAllowedToSaveHere(qboolean inCamera);
 extern void SG_StoreSaveGameComment(const char *sComment);
-//extern byte *SCR_GetScreenshot(qboolean *qValid);
+extern byte *SCR_GetScreenshot(qboolean *qValid);						// uncommented --eez
 
 
 /*

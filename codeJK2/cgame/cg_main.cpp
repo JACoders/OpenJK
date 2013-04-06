@@ -2445,7 +2445,8 @@ void CG_LoadMenus(const char *menuFile)
 	len = cgi_FS_FOpenFile( menuFile, &f, FS_READ );
 	if ( !f ) 
 	{
-		cgi_Error( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );
+		//cgi_Error( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );	// what. this would not run
+		cgi_Printf( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );	// the rest at all.. --eez
 		len = cgi_FS_FOpenFile( "ui/jk2hud.txt", &f, FS_READ );
 		if (!f) 
 		{

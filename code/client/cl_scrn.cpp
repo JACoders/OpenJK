@@ -470,16 +470,15 @@ void SCR_UpdateScreen( void ) {
 
 // this stuff is only used by the savegame (SG) code for screenshots...
 //
-#ifdef _XBOX
 
-/*
+
 static byte	bScreenData[SG_SCR_WIDTH * SG_SCR_HEIGHT * 4];
 static qboolean screenDataValid = qfalse;
 void SCR_UnprecacheScreenshot()
 {
 	screenDataValid = qfalse;
 }
-*/
+
 
 void SCR_PrecacheScreenshot()
 {
@@ -505,11 +504,6 @@ void SCR_PrecacheScreenshot()
 		re.GetScreenShot( (byte *) &bScreenData, SG_SCR_WIDTH, SG_SCR_HEIGHT);
 		screenDataValid = qtrue;
 	}
-	else
-	{
-		// we're in the console, or menu, or message input...
-		//
-	}
 #endif
 
 	// save the current screenshot to the user space to be used
@@ -521,7 +515,6 @@ void SCR_PrecacheScreenshot()
 
 }
 
-/*
 byte *SCR_GetScreenshot(qboolean *qValid)
 {
 	if (!screenDataValid) {
@@ -548,7 +541,7 @@ void SCR_SetScreenshot(const byte *pbData, int w, int h)
 		memset(&bScreenData, 0,      SG_SCR_WIDTH*SG_SCR_HEIGHT*4);
 	}
 }
-*/
+
 
 // This is just a client-side wrapper for the function RE_TempRawImage_ReadFromFile() in the renderer code...
 //
@@ -565,4 +558,4 @@ void  SCR_TempRawImage_CleanUp()
 	re.TempRawImage_CleanUp();
 }
 */
-#endif
+

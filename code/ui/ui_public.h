@@ -48,24 +48,10 @@ typedef struct {
 	qhandle_t	(*R_RegisterShader)( const char *name );			// returns white if not found
 	qhandle_t	(*R_RegisterShaderNoMip)( const char *name );			// returns white if not found
 	qhandle_t	(*R_RegisterFont)( const char *name );			// returns 0 for bad font
-#ifdef _XBOX	// No default arguments on function pointers
-	int			R_Font_StrLenPixels(const char *text, const int setIndex, const float scale = 1.0f)
-	{
-		return RE_Font_StrLenPixels(text, setIndex, scale);
-	}
-	int			R_Font_HeightPixels(const int setIndex, const float scale = 1.0f)
-	{
-		return RE_Font_HeightPixels(setIndex, scale);
-	}
-	void		R_Font_DrawString(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iMaxPixelWidth, const float scale = 1.0f)
-	{
-		RE_Font_DrawString(ox, oy, text, rgba, setIndex, iMaxPixelWidth, scale);
-	}
-#else
+
 	int			(*R_Font_StrLenPixels)(const char *text, const int setIndex, const float scale );
 	int			(*R_Font_HeightPixels)(const int setIndex, const float scale );
 	void		(*R_Font_DrawString)(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iMaxPixelWidth, const float scale );
-#endif
 	int			(*R_Font_StrLenChars)(const char *text);
 	qboolean	(*Language_IsAsian) (void);
 	qboolean	(*Language_UsesSpaces) (void);

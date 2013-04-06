@@ -987,6 +987,13 @@ static qboolean UI_RunMenuScript ( const char **args )
 			}
 			else
 			{
+#ifndef __NO_JK2
+				if( Cvar_VariableIntegerValue("com_jk2") )
+				{
+					ui.Cmd_ExecuteText( EXEC_APPEND, "map kejim_post\n" );
+				}
+				else
+#endif
 				ui.Cmd_ExecuteText( EXEC_APPEND, "map yavin1\n");
 			}
 		} 

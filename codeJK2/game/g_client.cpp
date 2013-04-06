@@ -758,7 +758,7 @@ void G_SetSkin( gentity_t *ent, const char *modelName, const char *customSkin )
 	{
 		// put it in the config strings
 		// and set the ghoul2 model to use it
-		gi.G2API_SetSkin( &ent->ghoul2[ent->playerModel], G_SkinIndex( skinName ) );
+		gi.G2API_SetSkin( &ent->ghoul2[ent->playerModel], G_SkinIndex( skinName ), skin );
 	}
 }
 

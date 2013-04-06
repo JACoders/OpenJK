@@ -1603,7 +1603,8 @@ if the full version is not found
 void FS_SetRestrictions( void ) {
 	searchpath_t	*path;
 
-#ifndef PRE_RELEASE_DEMO
+//#ifndef PRE_RELEASE_DEMO
+#if 0
 	byte	*productId;
 
 	// if fs_restrict is set, don't even look for the id file,
@@ -1637,6 +1638,11 @@ void FS_SetRestrictions( void ) {
 		}
 	}
 #endif
+	if(!Cvar_VariableIntegerValue("com_demo"))
+	{
+		return;
+	}
+
 	Cvar_Set( "fs_restrict", "1" );
 	Cvar_Set( "com_demo", "1" );
 
