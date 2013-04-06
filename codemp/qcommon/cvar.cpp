@@ -683,12 +683,13 @@ qboolean Cvar_Command( void ) {
 		return qtrue;
 	}
 
-	const char *value = Cmd_Argv(1);
-	if (value[0] == '!')	//toggle
+	//const char *value = Cmd_Argv(1);
+	//if (value[0] == '!')	//toggle
+	if( !strcmp( Cmd_Argv(1), "!" ) ) {
 	{
-		char buff[5];
-		sprintf(buff,"%i",!v->value);
-		Cvar_Set2 (v->name, buff, qfalse);// toggle the value
+		// Swap the value if our command has ! in it (bind p "cg_thirdPeson !")
+		Cvar_SetValue2( v->name, !v->value, qfalse );
+		return;
 	}
 
 	// set the value if forcing isn't required
