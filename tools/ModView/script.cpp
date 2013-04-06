@@ -380,6 +380,7 @@ bool Script_Write(LPCSTR psFullPathedFilename)
 
 			fclose(fhText);
 		}
+		// DT EDIT
 		/*
 		else
 		{

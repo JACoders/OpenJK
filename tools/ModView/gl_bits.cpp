@@ -67,7 +67,7 @@ static int GLW_ChoosePFD( HDC hDC, PIXELFORMATDESCRIPTOR *pPFD )
 
 	FILE *handle = fopen("c:\\ModView_GL_report.txt","wt");
 	if ( !handle )
-		return -1;
+		return 0;
 
 	fprintf(handle,"Total PFDs: %d\n\n",maxPFD);
 

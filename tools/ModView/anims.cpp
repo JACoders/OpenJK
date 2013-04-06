@@ -98,6 +98,7 @@ bool Anims_ReadFile_FRAMES(ModelContainer_t *pContainer, LPCSTR psLocalFilename_
 		}
 		fclose(fHandle);
 	}
+	// DT EDIT
 	/*
 	else
 	{
@@ -415,6 +416,7 @@ bool Anims_ReadFile_ANIMATION_CFG(ModelContainer_t *pContainer, LPCSTR psLocalFi
 		}
 		fclose(fHandle);
 	}
+	// DT EDIT
 	/*
 	else
 	{
