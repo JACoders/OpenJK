@@ -672,7 +672,7 @@ typedef struct
 
 #define MAX_FAILED_NODES 8
 
-#if !MAC_PORT && !defined(__GCC__)
+#if !defined(MACOS_X) && !defined(__GCC__)
 typedef struct Vehicle_s Vehicle_t;
 #endif
 
