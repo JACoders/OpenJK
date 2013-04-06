@@ -2304,7 +2304,7 @@ void CFlash::Draw( void )
 	{
 		VectorCopy( theFxHelper.refdef->vieworg, mRefEnt.origin );
 		VectorMA( mRefEnt.origin, 12, theFxHelper.refdef->viewaxis[0], mRefEnt.origin );
-		mRefEnt.radius = 11.0f;
+		mRefEnt.radius = fx_flashRadius->value; // 11.0f
 
 		theFxHelper.AddFxToScene( &mRefEnt );
 	}
