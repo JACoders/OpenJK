@@ -7,7 +7,7 @@
 #include "../qcommon/GenericParser2.h"
 #include "cm_randomterrain.h"
 
-#ifdef _WIN32
+#ifdef _WIN32 && _MSC_VER < 1600
 #pragma optimize("p", on)
 #endif
 
@@ -163,7 +163,9 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 	if(strlen(heightMap))
 	{
 		byte	*imageData;
+#ifndef DEDICATED
 		int		iWidth, iHeight;
+#endif
 
 		Com_DPrintf("CM_Terrain: Loading heightmap %s.....\n", heightMap);
 		mRandomTerrain = 0;
@@ -1702,6 +1704,6 @@ CRandomTerrain *CreateRandomTerrain(const char *config, CCMLandScape *landscape,
 
 // end
 
-#ifdef _WIN32
+#ifdef _WIN32 && _MSC_VER < 1600
 #pragma optimize("p", off)
 #endif

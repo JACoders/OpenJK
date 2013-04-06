@@ -36,9 +36,6 @@ cvar_t	*sv_gametype;
 cvar_t	*sv_pure;
 cvar_t	*sv_floodProtect;
 cvar_t	*sv_needpass;
-#ifdef USE_CD_KEY
-cvar_t	*sv_allowAnonymous;
-#endif
 /*
 =============================================================================
 
@@ -157,6 +154,14 @@ void QDECL SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 	va_start (argptr,fmt);
 	vsprintf ((char *)message, fmt,argptr);
 	va_end (argptr);
+
+	// Fix to http://aluigi.altervista.org/adv/q3msgboom-adv.txt
+	// The actual cause of the bug is probably further downstream
+	// and should maybe be addressed later, but this certainly
+	// fixes the problem for now
+	if ( strlen ((char *)message) > 1022 ) {
+		return;
+	}
 
 	if ( cl != NULL ) {
 		SV_AddServerCommand( cl, (char *)message );
@@ -641,9 +646,6 @@ void SVC_Info( netadr_t from ) {
 	if( *gamedir ) {
 		Info_SetValueForKey( infostring, "game", gamedir );
 	}
-#ifdef USE_CD_KEY
-	Info_SetValueForKey( infostring, "sv_allowAnonymous", va("%i", sv_allowAnonymous->integer) );
-#endif
 
 	NET_OutOfBandPrint( NS_SERVER, from, "infoResponse\n%s", infostring );
 }
@@ -672,7 +674,7 @@ void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
 	char		remaining[1024];
 	// TTimo - scaled down to accumulate, but not overflow anything network wise, print wise etc.
 	// (OOB messages are the bottleneck here)
-#define	SV_OUTPUTBUF_LENGTH	(MAX_MSGLEN - 16)
+#define	SV_OUTPUTBUF_LENGTH	(1024 - 16)
 	char		sv_outputbuf[SV_OUTPUTBUF_LENGTH];
 	char		*cmd_aux;
 
@@ -973,11 +975,13 @@ qboolean SV_CheckPaused( void ) {
 
 	if ( count > 1 ) {
 		// don't pause
-		sv_paused->integer = 0;
+		if (sv_paused->integer)
+			Cvar_Set("sv_paused", "0");
 		return qfalse;
 	}
 
-	sv_paused->integer = 1;
+	if (!sv_paused->integer)
+		Cvar_Set("sv_paused", "1");
 	return qtrue;
 }
 
