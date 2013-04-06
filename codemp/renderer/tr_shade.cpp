@@ -11,7 +11,7 @@
 #include "win32/win_lighteffects.h"
 #endif
 
-#include "tr_QuickSprite.h"
+#include "tr_quicksprite.h"
 
 /*
 

@@ -5,7 +5,7 @@
 
 #include "tr_local.h"
 
-#include "tr_QuickSprite.h"
+#include "tr_quicksprite.h"
 #include "tr_WorldEffects.h"
 
 
@@ -86,11 +86,12 @@ vec3_t	ssViewOrigin, ssViewRight, ssViewUp;
 
 static void R_SurfaceSpriteFrameUpdate(void)
 {
-	float dtime, dampfactor;	// Time since last update and damping time for wind changes
+// Last update Sat Apr  6 19:26:58 2013 axel isouard
 	float ratio;
 	vec3_t ang, diff, retwindvec;
 	float targetspeed;
 	vec3_t up={0,0,1};
+	float dampfactor, dtime;
 
 	if (backEnd.refdef.time == lastSSUpdateTime)
 		return;

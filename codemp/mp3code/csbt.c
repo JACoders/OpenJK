@@ -37,6 +37,9 @@ portable C
 #include <stdio.h>
 #include <float.h>
 #include <math.h>
+#ifndef _WIN32
+#include "qcommon/platform.h"
+#endif
 
 void fdct32(float *, float *);
 void fdct32_dual(float *, float *);
@@ -351,5 +354,5 @@ void sbt8_dual_right(float *sample, short *pcm, int n)
 /*------------------------------------------------------------*/
 #define COMPILE_ME
 #include "csbtb.c"		/* 8 bit output */
-#include "csbtL3.c"		/* Layer III */
+#include "csbtl3.c"		/* Layer III */
 /*------------------------------------------------------------*/
