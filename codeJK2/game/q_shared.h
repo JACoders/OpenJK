@@ -29,6 +29,10 @@
 
 #endif
 
+#ifndef _XBOX
+#define _G2_GORE
+#endif
+
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
