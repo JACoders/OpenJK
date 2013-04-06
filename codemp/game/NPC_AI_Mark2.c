@@ -11,9 +11,7 @@
 #define MIN_DISTANCE		24
 #define MIN_DISTANCE_SQR	( MIN_DISTANCE * MIN_DISTANCE )
 
-
 extern gitem_t	*BG_FindItemForAmmo( ammo_t ammo );
-
 
 //Local state enums
 enum
@@ -138,7 +136,7 @@ void Mark2_FireBlaster(qboolean advance)
 {
 	vec3_t	muzzle1,enemy_org1,delta1,angleToEnemy1;
 	static	vec3_t	forward, vright, up;
-	static	vec3_t	muzzle;
+//	static	vec3_t	muzzle;
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
 	int bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash");

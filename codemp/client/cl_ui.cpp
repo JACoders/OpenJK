@@ -1,17 +1,17 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "client.h"
 
-#include "../game/botlib.h"
-#include "../qcommon/stringed_ingame.h"
+#include "game/botlib.h"
+#include "qcommon/stringed_ingame.h"
 
 /*
 Ghoul2 Insert Start
 */
 
 #if !defined(G2_H_INC)
-	#include "../ghoul2/G2_local.h"
+	#include "ghoul2/G2_local.h"
 #endif
 
 /*
@@ -19,7 +19,7 @@ Ghoul2 Insert End
 */
 
 #ifdef VV_LIGHTING
-#include "../renderer/tr_lightmanager.h"
+#include "renderer/tr_lightmanager.h"
 #endif
 
 extern	botlib_export_t	*botlib_export;

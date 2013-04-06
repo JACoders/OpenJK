@@ -13,7 +13,7 @@
  * These routines are used by both the compression and decompression code.
  */
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 /* this is not a core library module, so it doesn't define JPEG_INTERNALS */
 #include "jinclude.h"
@@ -21,7 +21,7 @@
 #include "jversion.h"
 #include "jerror.h"
 
-#include "../renderer/tr_local.h"
+#include "renderer/tr_local.h"
 
 #ifndef EXIT_FAILURE		/* define exit() codes if not provided */
 #define EXIT_FAILURE  1

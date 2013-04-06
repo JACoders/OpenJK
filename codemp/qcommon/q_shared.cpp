@@ -1,4 +1,4 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
-#include "../game/q_shared.c"
+#include "qcommon/q_shared.c"

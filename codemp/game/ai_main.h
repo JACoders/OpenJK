@@ -1,7 +1,5 @@
 #include "bg_saga.h"
 
-#define DEFAULT_FORCEPOWERS		"5-1-000000000000000000"
-
 //#define FORCEJUMP_INSTANTMETHOD 1
 
 #define MAX_CHAT_BUFFER_SIZE 8192
@@ -385,10 +383,8 @@ extern float gDeactivated;
 extern float gBotEdit;
 extern int gWPRenderedFrame;
 
-
 extern wpobject_t *gWPArray[MAX_WPARRAY_SIZE];
 extern int gWPNum;
-
 
 extern int gLastPrintedIndex;
 extern nodeobject_t nodetable[MAX_NODETABLE_SIZE];

@@ -2,16 +2,14 @@
 //
 #include "g_local.h"
 #include "w_saber.h"
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 
 #define	MISSILE_PRESTEP_TIME	50
 
 extern void laserTrapStick( gentity_t *ent, vec3_t endpos, vec3_t normal );
 extern void Jedi_Decloak( gentity_t *self );
 
-
 extern qboolean FighterIsLanded( Vehicle_t *pVeh, playerState_t *parentPS );
-
 
 /*
 ================
@@ -172,7 +170,7 @@ void G_BounceMissile( gentity_t *ent, trace_t *trace ) {
 	}
 	else if ( ent->flags & FL_BOUNCE_HALF ) 
 	{
-		VectorScale( ent->s.pos.trDelta, 0.65, ent->s.pos.trDelta );
+		VectorScale( ent->s.pos.trDelta, 0.65f, ent->s.pos.trDelta );
 		// check for stop
 		if ( trace->plane.normal[2] > 0.2 && VectorLength( ent->s.pos.trDelta ) < 40 ) 
 		{
@@ -232,13 +230,6 @@ void G_ExplodeMissile( gentity_t *ent ) {
 	ent->takedamage = qfalse;
 	// splash damage
 	if ( ent->splashDamage ) {
-		//NOTE: vehicle missiles don't have an ent->parent set, so check that here and set it
-		if ( ent->s.eType == ET_MISSILE//missile
-			&& (ent->s.eFlags&EF_JETPACK_ACTIVE)//vehicle missile
-			&& ent->r.ownerNum < MAX_CLIENTS )//valid client owner
-		{//set my parent to my owner for purposes of damage credit...
-			ent->parent = &g_entities[ent->r.ownerNum];
-		}
 		if( G_RadiusDamage( ent->r.currentOrigin, ent->parent, ent->splashDamage, ent->splashRadius, ent, 
 				ent, ent->splashMethodOfDeath ) ) 
 		{
@@ -359,6 +350,7 @@ G_MissileImpact
 ================
 */
 void WP_SaberBlockNonRandom( gentity_t *self, vec3_t hitloc, qboolean missileBlock );
+void WP_flechette_alt_blow( gentity_t *ent );
 void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	gentity_t		*other;
 	qboolean		hitClient = qfalse;
@@ -445,9 +437,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			ent->methodOfDeath != MOD_CONC &&
 			ent->methodOfDeath != MOD_CONC_ALT &&
 			ent->methodOfDeath != MOD_SABER &&
-			ent->methodOfDeath != MOD_TURBLAST &&
-			ent->methodOfDeath != MOD_TARGET_LASER)// &&
-			//ent->methodOfDeath != MOD_COLLISION)
+			ent->methodOfDeath != MOD_TURBLAST)
 		{
 			vec3_t fwd;
 
@@ -476,7 +466,6 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		ent->methodOfDeath != MOD_REPEATER_ALT &&
 		ent->methodOfDeath != MOD_FLECHETTE_ALT_SPLASH && 
 		ent->methodOfDeath != MOD_TURBLAST &&
-		ent->methodOfDeath != MOD_TARGET_LASER &&
 		ent->methodOfDeath != MOD_VEHICLE &&
 		ent->methodOfDeath != MOD_CONC &&
 		ent->methodOfDeath != MOD_CONC_ALT &&
@@ -674,7 +663,17 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			{
 				if (ent->s.weapon == WP_FLECHETTE && (ent->s.eFlags & EF_ALT_FIRING))
 				{
-					ent->think(ent);
+					/* fix: there are rare situations where flechette did
+					explode by timeout AND by impact in the very same frame, then here
+					ent->think was set to G_FreeEntity, so the folowing think 
+					did invalidate this entity, BUT it would be reused later in this 
+					function for explosion event. This, then, would set ent->freeAfterEvent
+					to qtrue, so event later, when reusing this entity by using G_InitEntity(),
+					it would have this freeAfterEvent set AND this would in case of dropped
+					item erase it from game immeadiately. THIS for example caused
+					very rare flag dissappearing bug.	 */
+					if (ent->think == WP_flechette_alt_blow)
+						ent->think(ent);
 				}
 				else
 				{

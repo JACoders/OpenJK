@@ -3,10 +3,10 @@
 
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #if !defined(TR_LOCAL_H)
-	#include "../renderer/tr_local.h"
+	#include "renderer/tr_local.h"
 #endif
 
 #if !defined(G2_H_INC)
@@ -14,7 +14,7 @@
 #endif
 #include "G2_local.h"
 
-#include "../qcommon/MiniHeap.h"
+#include "qcommon/MiniHeap.h"
 
 //rww - RAGDOLL_BEGIN
 #include "G2_gore.h"
@@ -2662,7 +2662,7 @@ qboolean G2_TestModelPointers(CGhoul2Info *ghlInfo) // returns true if the model
 }
 
 #ifdef G2_PERFORMANCE_ANALYSIS
-#include "../qcommon/timing.h"
+#include "qcommon/timing.h"
 extern timing_c G2PerformanceTimer_G2_SetupModelPointers;
 extern int G2Time_G2_SetupModelPointers;
 #endif

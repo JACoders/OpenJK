@@ -2,12 +2,12 @@
 
 // leave this as first line for PCH reasons...
 //
-#include "../game/q_shared.h"
-#include "../qcommon/qcommon.h"
+#include "qcommon/q_shared.h"
+#include "qcommon/qcommon.h"
 
-#include "../zlib32/zip.h"
+#include "zlib32/zip.h"
 #include "png.h"
-//#include "../qcommon/memory.h"
+//#include "qcommon/memory.h"
 
 // Error returns
 

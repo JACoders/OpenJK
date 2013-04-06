@@ -11,15 +11,15 @@ USER INTERFACE MAIN
 // use this to get a demo build without an explicit demo build, i.e. to get the demo ui files to build
 //#define PRE_RELEASE_TADEMO
 
-#include "../ghoul2/G2.h"
+#include "ghoul2/G2.h"
 #include "ui_local.h"
-#include "../qcommon/qfiles.h"
-#include "../qcommon/game_version.h"
+#include "qcommon/qfiles.h"
+#include "qcommon/game_version.h"
 #include "ui_force.h"
-#include "../cgame/animtable.h" //we want this to be compiled into the module because we access it in the shared module.
-#include "../game/bg_saga.h"
+#include "cgame/animtable.h" //we want this to be compiled into the module because we access it in the shared module.
+#include "game/bg_saga.h"
 
-#include "..\cgame\holocronicons.h"
+#include "cgame/holocronicons.h"
 
 extern void UI_SaberAttachToChar( itemDef_t *item );
 
@@ -236,13 +236,15 @@ void UI_SetSiegeTeams(void);
 extern qboolean UI_SaberModelForSaber( const char *saberName, char *saberModel );
 void UI_SiegeSetCvarsForClass(siegeClass_t *scl);
 int UI_SiegeClassNum(siegeClass_t *scl);
-void UI_UpdateCvarsForClass(const int team,const baseClass,const int index);
+//[Compiler]
+void UI_UpdateCvarsForClass(const int team,const int baseClass,const int index);
+//void UI_UpdateCvarsForClass(const int team,const baseClass,const int index);
+//[/Compiler]
 void	UI_UpdateSiegeStatusIcons(void);
 void UI_ClampMaxPlayers(void);
 static void UI_CheckServerName( void );
 static qboolean UI_CheckPassword( void );
 static void UI_JoinServer( void );
-
 
 // Functions in BG or ui_shared
 void Menu_ShowGroup (menuDef_t *menu, char *itemName, qboolean showFlag);
@@ -255,7 +257,7 @@ char *BG_GetUIPortraitFile(const int team, const short classIndex, const short c
 
 siegeClass_t *BG_GetClassOnBaseClass(const int team, const short classIndex, const short cntIndex);
 
-int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
+Q_EXPORT_C Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
   switch ( command ) {
 	  case UI_GETAPIVERSION:
 		  return UI_API_VERSION;
@@ -303,7 +305,6 @@ int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int a
 	return -1;
 }
 
-
 siegeClassDesc_t g_UIClassDescriptions[MAX_SIEGE_CLASSES];
 siegeTeam_t *siegeTeam1 = NULL;
 siegeTeam_t *siegeTeam2 = NULL;
@@ -316,10 +317,8 @@ int g_UIGloballySelectedSiegeClass = -1;
 qboolean	UIPAFtextLoaded = qfalse;
 animation_t	uiHumanoidAnimations[MAX_TOTALANIMATIONS]; //humanoid animations are the only ones that are statically allocated.
 
-
 bgLoadedAnim_t bgAllAnims[MAX_ANIM_FILES];
 int uiNumAllAnims = 1; //start off at 0, because 0 will always be assigned to humanoid.
-
 
 animation_t *UI_AnimsetAlloc(void)
 {
@@ -338,7 +337,6 @@ models/players/visor/animation.cfg, etc
 
 ======================
 */
-
 static char UIPAFtext[60000];
 int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean isHumanoid) 
 {
@@ -545,7 +543,6 @@ int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow);
 
 
-
 void UpdateForceUsed();
 
 char holdSPString[MAX_STRING_CHARS]={0};
@@ -750,7 +747,6 @@ void _UI_DrawRect( float x, float y, float width, float height, float size, cons
 	trap_R_SetColor( NULL );
 }
 
-
 int MenuFontToHandle(int iMenuFont)
 {
 	switch (iMenuFont)
@@ -763,7 +759,6 @@ int MenuFontToHandle(int iMenuFont)
 
 	return uiInfo.uiDC.Assets.qhMediumFont;	// 0;
 }
-
 
 int Text_Width(const char *text, float scale, int iMenuFont) 
 {	
@@ -817,9 +812,9 @@ void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const cha
 	//
 	{
 		char sTemp[1024];
-		int iCopyCount = limit ? min(strlen(text), limit) : strlen(text);
-			iCopyCount = min(iCopyCount,cursorPos);
-			iCopyCount = min(iCopyCount,sizeof(sTemp));
+		int iCopyCount = limit ? min( (signed)strlen( text ), limit ) : (signed)strlen( text );
+			iCopyCount = min( iCopyCount, cursorPos );
+			iCopyCount = min( iCopyCount, sizeof( sTemp ) );
 
 			// copy text into temp buffer for pixel measure...
 			//			
@@ -894,7 +889,7 @@ static void Text_Paint_Limit(float *maxX, float x, float y, float scale, vec4_t 
 
 void UI_ShowPostGame(qboolean newHigh) {
 	trap_Cvar_Set ("cg_cameraOrbit", "0");
-	trap_Cvar_Set("cg_thirdPerson", "0");
+	//trap_Cvar_Set("cg_thirdPerson", "0");
 	trap_Cvar_Set( "sv_killserver", "1" );
 	uiInfo.soundHighScore = newHigh;
   _UI_SetActiveMenu(UIMENU_POSTGAME);
@@ -919,9 +914,7 @@ vmCvar_t	ui_rankChange;
 static void UI_BuildPlayerList();
 char parsedFPMessage[1024];
 
-
 extern int FPMessageTime;
-
 
 void Text_PaintCenter(float x, float y, float scale, vec4_t color, const char *text, float adjust, int iMenuFont);
 
@@ -981,8 +974,9 @@ void _UI_Refresh( int realtime )
 	} 
 	// draw cursor
 	UI_SetColor( NULL );
-	if (Menu_Count() > 0) {
-		UI_DrawHandlePic( uiInfo.uiDC.cursorx, uiInfo.uiDC.cursory, 48, 48, uiInfo.uiDC.Assets.cursor);
+	if (Menu_Count() > 0 && (trap_Key_GetCatcher() & KEYCATCH_UI)) {
+		UI_DrawHandlePic( (float)uiInfo.uiDC.cursorx, (float)uiInfo.uiDC.cursory, 40.0f, 40.0f, uiInfo.uiDC.Assets.cursor);
+		//UI_DrawHandlePic( uiInfo.uiDC.cursorx, uiInfo.uiDC.cursory, 48, 48, uiInfo.uiDC.Assets.cursor);
 	}
 
 #ifndef NDEBUG
@@ -1102,9 +1096,7 @@ void _UI_Refresh( int realtime )
 _UI_Shutdown
 =================
 */
-
 void UI_CleanupGhoul2(void);
-
 
 void _UI_Shutdown( void ) {
 	trap_LAN_SaveCachedServers();
@@ -1124,7 +1116,7 @@ char *GetMenuBuffer(const char *filename) {
 		return defaultMenu;
 	}
 	if ( len >= MAX_MENUFILE ) {
-		trap_Print( va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i", filename, len, MAX_MENUFILE ) );
+		trap_Print( va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i\n", filename, len, MAX_MENUFILE ) );
 		trap_FS_FCloseFile( f );
 		return defaultMenu;
 	}
@@ -1842,15 +1834,15 @@ static void UI_DrawForceSide(rectDef_t *rect, float scale, vec4_t color, int tex
 		{
 		case TEAM_RED:
 			uiForceSide = FORCE_DARKSIDE;
-			color[0] = 0.2;
-			color[1] = 0.2;
-			color[2] = 0.2;
+			color[0] = 0.2f;
+			color[1] = 0.2f;
+			color[2] = 0.2f;
 			break;
 		case TEAM_BLUE:
 			uiForceSide = FORCE_LIGHTSIDE;
-			color[0] = 0.2;
-			color[1] = 0.2;
-			color[2] = 0.2;
+			color[0] = 0.2f;
+			color[1] = 0.2f;
+			color[2] = 0.2f;
 			break;
 		default:
 			break;
@@ -2937,11 +2929,16 @@ static void UI_DrawRedBlue(rectDef_t *rect, float scale, vec4_t color, int textS
 }
 
 static void UI_DrawCrosshair(rectDef_t *rect, float scale, vec4_t color) {
+	float size = 32.0f;
+
  	trap_R_SetColor( color );
 	if (uiInfo.currentCrosshair < 0 || uiInfo.currentCrosshair >= NUM_CROSSHAIRS) {
 		uiInfo.currentCrosshair = 0;
 	}
-	UI_DrawHandlePic( rect->x, rect->y, rect->w, rect->h, uiInfo.uiDC.Assets.crosshairShader[uiInfo.currentCrosshair]);
+
+	//Raz: Don't stretch crosshairs
+	size = min( rect->w, rect->h );
+	UI_DrawHandlePic( rect->x, rect->y, size, size, uiInfo.uiDC.Assets.crosshairShader[uiInfo.currentCrosshair]);
  	trap_R_SetColor( NULL );
 }
 
@@ -2969,13 +2966,13 @@ static void UI_BuildPlayerList() {
 		trap_GetConfigString( CS_PLAYERS + n, info, MAX_INFO_STRING );
 
 		if (info[0]) {
-			Q_strncpyz( uiInfo.playerNames[uiInfo.playerCount], Info_ValueForKey( info, "n" ), MAX_NAME_LENGTH );
+			Q_strncpyz( uiInfo.playerNames[uiInfo.playerCount], Info_ValueForKey( info, "n" ), MAX_NETNAME );
 			Q_CleanStr( uiInfo.playerNames[uiInfo.playerCount] );
 			uiInfo.playerIndexes[uiInfo.playerCount] = n;
 			uiInfo.playerCount++;
 			team2 = atoi(Info_ValueForKey(info, "t"));
 			if (team2 == team && n != uiInfo.playerNumber) {
-				Q_strncpyz( uiInfo.teamNames[uiInfo.myTeamCount], Info_ValueForKey( info, "n" ), MAX_NAME_LENGTH );
+				Q_strncpyz( uiInfo.teamNames[uiInfo.myTeamCount], Info_ValueForKey( info, "n" ), MAX_NETNAME );
 				Q_CleanStr( uiInfo.teamNames[uiInfo.myTeamCount] );
 				uiInfo.teamClientNums[uiInfo.myTeamCount] = n;
 				if (uiInfo.playerNumber == n) {
@@ -3172,9 +3169,9 @@ static void UI_Version(rectDef_t *rect, float scale, vec4_t color, int iMenuFont
 {
 	int width;
 	
-	width = uiInfo.uiDC.textWidth(Q3_VERSION, scale, iMenuFont);
+	width = uiInfo.uiDC.textWidth(JK_VERSION, scale, iMenuFont);
 
-	uiInfo.uiDC.drawText(rect->x - width, rect->y, scale, color, Q3_VERSION, 0, 0, 0, iMenuFont);
+	uiInfo.uiDC.drawText(rect->x - width, rect->y, scale, color, JK_VERSION, 0, 0, 0, iMenuFont);
 }
 
 /*
@@ -3618,9 +3615,7 @@ static qboolean UI_Effects_HandleKey(int flags, float *special, int key) {
 	return qfalse;
 }
 
-
 extern void	Item_RunScript(itemDef_t *item, const char *s);		//from ui_shared;
-
 
 // For hot keys on the chat main menu.
 static qboolean UI_Chat_Main_HandleKey(int key) 
@@ -4382,6 +4377,7 @@ static qboolean UI_VoiceChat_HandleKey(int flags, float *special, int key)
 }
 */
 
+
 static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key) {
 	int findex, iUse = 0;
 
@@ -4681,36 +4677,111 @@ static void UI_LoadMovies() {
 UI_LoadDemos
 ===============
 */
-static void UI_LoadDemos() {
-	char	demolist[4096];
-	char demoExt[32];
-	char	*demoname;
-	int		i, len;
 
-	Com_sprintf(demoExt, sizeof(demoExt), "dm_%d", (int)trap_Cvar_VariableValue("protocol"));
+#if 1
 
-	uiInfo.demoCount = trap_FS_GetFileList( "demos", demoExt, demolist, 4096 );
+/*
+===============
+UI_LoadDemos
+===============
+*/
 
-	Com_sprintf(demoExt, sizeof(demoExt), ".dm_%d", (int)trap_Cvar_VariableValue("protocol"));
+static void UI_LoadDemosInDirectory( const char *directory )
+{
+	char	demolist[MAX_DEMOLIST] = {0}, *demoname = NULL;
+	char	fileList[MAX_DEMOLIST] = {0}, *fileName = NULL;
+	char	demoExt[32] = {0};
+	int		i=0, j=0, len=0, numFiles=0;
+	int		protocol = trap_Cvar_VariableValue( "com_protocol" ), protocolLegacy = trap_Cvar_VariableValue( "com_legacyprotocol" );
 
-	if (uiInfo.demoCount) {
-		if (uiInfo.demoCount > MAX_DEMOS) {
+	if ( !protocol )
+		protocol = trap_Cvar_VariableValue( "protocol" );
+	if ( protocolLegacy == protocol )
+		protocolLegacy = 0;
+
+	Com_sprintf( demoExt, sizeof( demoExt ), ".%s%d", DEMO_EXTENSION, protocol);
+
+	uiInfo.demoCount += trap_FS_GetFileList( directory, demoExt, demolist, sizeof( demolist ) );
+
+	demoname = demolist;
+
+	for ( j=0; j<2; j++ )
+	{
+		if ( uiInfo.demoCount > MAX_DEMOS )
 			uiInfo.demoCount = MAX_DEMOS;
-		}
-		demoname = demolist;
-		for ( i = 0; i < uiInfo.demoCount; i++ ) {
+
+		for( ; uiInfo.loadedDemos<uiInfo.demoCount; uiInfo.loadedDemos++)
+		{
 			len = strlen( demoname );
-			if (!Q_stricmp(demoname +  len - strlen(demoExt), demoExt)) {
-				demoname[len-strlen(demoExt)] = '\0';
-			}
-			Q_strupr(demoname);
-			uiInfo.demoList[i] = String_Alloc(demoname);
+			Com_sprintf( uiInfo.demoList[uiInfo.loadedDemos], sizeof( uiInfo.demoList[0] ), "%s/%s", directory + strlen( DEMO_DIRECTORY )+1, demoname );
 			demoname += len + 1;
 		}
+
+		if ( !j )
+		{
+			if ( protocolLegacy > 0 && uiInfo.demoCount < MAX_DEMOS )
+			{
+				Com_sprintf( demoExt, sizeof( demoExt ), ".%s%d", DEMO_EXTENSION, protocolLegacy );
+				uiInfo.demoCount += trap_FS_GetFileList( directory, demoExt, demolist, sizeof( demolist ) );
+				demoname = demolist;
+			}
+			else
+				break;
+		}
+	}
+
+	numFiles = trap_FS_GetFileList( directory, "/", fileList, sizeof( fileList ) );
+
+	fileName = fileList;
+	for ( i=0; i<numFiles; i++ )
+	{
+		len = strlen( fileName );
+		fileName[len] = '\0';
+		if ( Q_stricmp( fileName, "." ) && Q_stricmp( fileName, ".." ) )
+			UI_LoadDemosInDirectory( va( "%s/%s", directory, fileName ) );
+		fileName += len+1;
 	}
 
 }
 
+static void UI_LoadDemos( void )
+{
+	uiInfo.demoCount = 0;
+	uiInfo.loadedDemos = 0;
+	memset( uiInfo.demoList, 0, sizeof( uiInfo.demoList ) );
+	UI_LoadDemosInDirectory( DEMO_DIRECTORY );
+}
+
+#else
+
+static void UI_LoadDemos( void )
+{
+	char	demolist[4096] = {0};
+	char	demoExt[8] = {0};
+	char	*demoname = NULL;
+	int		i, len, extLen;
+
+	Com_sprintf( demoExt, sizeof( demoExt ), "dm_%d", (int)trap_Cvar_VariableValue( "protocol" ) );
+	uiInfo.demoCount = Com_Clampi( 0, MAX_DEMOS, trap_FS_GetFileList( "demos", demoExt, demolist, sizeof( demolist ) ) );
+	Com_sprintf( demoExt, sizeof( demoExt ), ".dm_%d", (int)trap_Cvar_VariableValue( "protocol" ) );
+	extLen = strlen( demoExt );
+
+	if ( uiInfo.demoCount )
+	{
+		demoname = demolist;
+		for ( i=0; i<uiInfo.demoCount; i++ )
+		{
+			len = strlen( demoname );
+			if ( !Q_stricmp( demoname + len - extLen, demoExt) )
+				demoname[len-extLen] = '\0';
+			Q_strupr( demoname );
+			uiInfo.demoList[i] = String_Alloc( demoname );
+			demoname += len + 1;
+		}
+	}
+}
+
+#endif
 
 static qboolean UI_SetNextMap(int actual, int index) {
 	int i;
@@ -4779,7 +4850,7 @@ static void UI_StartSkirmish(qboolean next) {
 	trap_Cvar_Set("ui_pure", va("%i", temp));
 
 	trap_Cvar_Set("cg_cameraOrbit", "0");
-	trap_Cvar_Set("cg_thirdPerson", "0");
+	//trap_Cvar_Set("cg_thirdPerson", "0");
 	trap_Cvar_Set("cg_drawTimer", "1");
 	trap_Cvar_Set("g_doWarmup", "1");
 	trap_Cvar_Set("g_warmup", "15");
@@ -4843,9 +4914,17 @@ static void UI_Update(const char *name) {
 		return;
 	}
 
- 	if (Q_stricmp(name, "ui_SetName") == 0) {
+	/* Raz: Truncate the name, try and avoid overflow glitches for long names and menu items
+	if (Q_stricmp(name, "ui_SetName") == 0)
 		trap_Cvar_Set( "name", UI_Cvar_VariableString("ui_Name"));
- 	} else if (Q_stricmp(name, "ui_setRate") == 0) {
+		*/
+	if ( !Q_stricmp( name, "ui_SetName" ) )
+	{
+		char buf[MAX_NETNAME] = {0};
+		Q_strncpyz( buf, UI_Cvar_VariableString( "ui_Name" ), sizeof( buf ) );
+		trap_Cvar_Set( "name", buf );
+	}
+	else if (Q_stricmp(name, "ui_setRate") == 0) {
 		float rate = trap_Cvar_VariableValue("rate");
 		if (rate >= 5000) {
 			trap_Cvar_Set("cl_maxpackets", "30");
@@ -4857,18 +4936,24 @@ static void UI_Update(const char *name) {
 			trap_Cvar_Set("cl_maxpackets", "15");
 			trap_Cvar_Set("cl_packetdup", "1");		// favor lower bandwidth
 		}
- 	} 
+	}
+	/* Raz: Truncate the name, try and avoid overflow glitches for long names and menu items
 	else if (Q_stricmp(name, "ui_GetName") == 0) 
-	{
 		trap_Cvar_Set( "ui_Name", UI_Cvar_VariableString("name"));
+		*/
+	else if ( !Q_stricmp( name, "ui_GetName" ) )
+	{
+		char buf[MAX_NETNAME] = {0};
+		Q_strncpyz( buf, UI_Cvar_VariableString( "name" ), sizeof( buf ) );
+		trap_Cvar_Set( "ui_Name", buf );
 	}
 	else if (Q_stricmp(name, "ui_r_colorbits") == 0) 
 	{
 		switch (val) 
 		{
-			case 0:
-				trap_Cvar_SetValue( "ui_r_depthbits", 0 );
-				break;
+		case 0:
+			trap_Cvar_SetValue( "ui_r_depthbits", 0 );
+			break;
 
 			case 16:
 				trap_Cvar_SetValue( "ui_r_depthbits", 16 );
@@ -5525,10 +5610,8 @@ static void UI_SetSaberBoxesandHilts (void)
 
 //extern qboolean UI_SaberModelForSaber( const char *saberName, char *saberModel );
 extern qboolean UI_SaberSkinForSaber( const char *saberName, char *saberSkin );
-
 extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTimeLength );
 extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName );
-
 
 static void UI_UpdateSaberType( void )
 {
@@ -5622,9 +5705,7 @@ static void UI_GetSaberCvars ( void )
 
 
 //extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName );
-
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
-
 //extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
 
 void UI_UpdateCharacterSkin( void )
@@ -5723,13 +5804,13 @@ static void UI_ResetCharacterListBoxes( void )
 	}
 }
 
-#define MAX_SABER_HILTS	64
+//#define MAX_SABER_HILTS	64
 
 char *saberSingleHiltInfo [MAX_SABER_HILTS];
 char *saberStaffHiltInfo [MAX_SABER_HILTS];
 
 qboolean UI_SaberProperNameForSaber( const char *saberName, char *saberProperName );
-void UI_SaberGetHiltInfo( char *singleHilts[MAX_SABER_HILTS],char *staffHilts[MAX_SABER_HILTS] );
+void UI_SaberGetHiltInfo( const char *singleHilts[MAX_SABER_HILTS], const char *staffHilts[MAX_SABER_HILTS] );
 
 
 static void UI_UpdateCharacter( qboolean changedModel )
@@ -5783,7 +5864,7 @@ static void UI_RunMenuScript(char **args)
 			int warmupTime = 0;
 			int doWarmup = 0;
 			
-			trap_Cvar_Set("cg_thirdPerson", "0");
+		//	trap_Cvar_Set("cg_thirdPerson", "0");
 			trap_Cvar_Set("cg_cameraOrbit", "0");
 			// for Solo games I set this to 1 in the menu and don't want it stomped here,
 			// this cvar seems to be reset to 0 in all the proper places so... -dmv
@@ -6098,10 +6179,6 @@ static void UI_RunMenuScript(char **args)
 			if (uiInfo.teamIndex >= 0 && uiInfo.teamIndex < uiInfo.myTeamCount) {
 				trap_Cmd_ExecuteText( EXEC_APPEND, va("callteamvote leader \"%s\"\n",uiInfo.teamNames[uiInfo.teamIndex]) );
 			}
-		} else if (Q_stricmp(name, "voteTeamKick") == 0) {
-			if (uiInfo.teamIndex >= 0 && uiInfo.teamIndex < uiInfo.myTeamCount) {
-				trap_Cmd_ExecuteText( EXEC_APPEND, va("callteamvote kick \"%s\"\n",uiInfo.teamNames[uiInfo.teamIndex]) );
-			}
 		} else if (Q_stricmp(name, "addBot") == 0) {
 			if (trap_Cvar_VariableValue("g_gametype") >= GT_TEAM) {
 				trap_Cmd_ExecuteText( EXEC_APPEND, va("addbot \"%s\" %i %s\n", UI_GetBotNameByNumber(uiInfo.botIndex), uiInfo.skillIndex+1, (uiInfo.redBlue == 0) ? "Red" : "Blue") );
@@ -6112,14 +6189,14 @@ static void UI_RunMenuScript(char **args)
 		{
 			if (ui_netSource.integer != AS_FAVORITES) 
 			{
-				char name[MAX_NAME_LENGTH];
-				char addr[MAX_NAME_LENGTH];
+				char name[MAX_HOSTNAMELENGTH] = {0};
+				char addr[MAX_ADDRESSLENGTH] = {0};
 				int res;
 
 				trap_LAN_GetServerInfo(ui_netSource.integer, uiInfo.serverStatus.displayServers[uiInfo.serverStatus.currentServer], buff, MAX_STRING_CHARS);
 				name[0] = addr[0] = '\0';
-				Q_strncpyz(name, 	Info_ValueForKey(buff, "hostname"), MAX_NAME_LENGTH);
-				Q_strncpyz(addr, 	Info_ValueForKey(buff, "addr"), MAX_NAME_LENGTH);
+				Q_strncpyz(name, 	Info_ValueForKey(buff, "hostname"), sizeof( name ) );
+				Q_strncpyz(addr, 	Info_ValueForKey(buff, "addr"), sizeof( addr ) );
 				if (strlen(name) > 0 && strlen(addr) > 0) 
 				{
 					res = trap_LAN_AddServer(AS_FAVORITES, name, addr);
@@ -6150,10 +6227,10 @@ static void UI_RunMenuScript(char **args)
 		{
 			if (ui_netSource.integer == AS_FAVORITES) 
 			{
-				char addr[MAX_NAME_LENGTH];
+				char addr[MAX_ADDRESSLENGTH] = {0};
 				trap_LAN_GetServerInfo(ui_netSource.integer, uiInfo.serverStatus.displayServers[uiInfo.serverStatus.currentServer], buff, MAX_STRING_CHARS);
 				addr[0] = '\0';
-				Q_strncpyz(addr, 	Info_ValueForKey(buff, "addr"), MAX_NAME_LENGTH);
+				Q_strncpyz(addr, 	Info_ValueForKey(buff, "addr"), sizeof( addr ) );
 				if (strlen(addr) > 0) 
 				{
 					trap_LAN_RemoveServer(AS_FAVORITES, addr);
@@ -6165,13 +6242,13 @@ static void UI_RunMenuScript(char **args)
 		//	if (ui_netSource.integer == AS_FAVORITES) 
 		//rww - don't know why this check was here.. why would you want to only add new favorites when the filter was favorites?
 			{
-				char name[MAX_NAME_LENGTH];
-				char addr[MAX_NAME_LENGTH];
+				char name[MAX_HOSTNAMELENGTH] = {0};
+				char addr[MAX_ADDRESSLENGTH] = {0};
 				int res;
 
 				name[0] = addr[0] = '\0';
-				Q_strncpyz(name, 	UI_Cvar_VariableString("ui_favoriteName"), MAX_NAME_LENGTH);
-				Q_strncpyz(addr, 	UI_Cvar_VariableString("ui_favoriteAddress"), MAX_NAME_LENGTH);
+				Q_strncpyz(name, 	UI_Cvar_VariableString("ui_favoriteName"), sizeof( name ) );
+				Q_strncpyz(addr, 	UI_Cvar_VariableString("ui_favoriteAddress"), sizeof( addr ) );
 				if (/*strlen(name) > 0 &&*/ strlen(addr) > 0) {
 					res = trap_LAN_AddServer(AS_FAVORITES, name, addr);
 					if (res == 0) {
@@ -6422,6 +6499,7 @@ static void UI_RunMenuScript(char **args)
 		{
 			UI_UpdateCharacterSkin();
 		}
+#if 0
 		else if (Q_stricmp(name, "setui_dualforcepower") == 0) 
 		{
 			int forcePowerDisable = trap_Cvar_VariableValue("g_forcePowerDisable");
@@ -6543,6 +6621,7 @@ static void UI_RunMenuScript(char **args)
 				trap_Cvar_Set(cvarString, va("%i",weaponDisable));
 			}
 		} 
+#endif
 		// If this is siege, change all the bots to humans, because we faked it earlier 
 		//  swapping humans for bots on the menu
 		else if (Q_stricmp(name, "setSiegeNoBots") == 0) 
@@ -7005,9 +7084,7 @@ static void UI_RunMenuScript(char **args)
 static void UI_GetTeamColor(vec4_t *color) {
 }
 
-
 int BG_SiegeCountBaseClass(const int team, const short classIndex);
-
 
 static void UI_SiegeClassCnt( const int team )
 {
@@ -7479,16 +7556,17 @@ UI_JoinServer
 */
 static void UI_JoinServer( void )
 {
-	char buff[1024];
+	char buff[1024] = {0};
 
-	trap_Cvar_Set("cg_thirdPerson", "0");
+	//trap_Cvar_Set("cg_thirdPerson", "0");
 	trap_Cvar_Set("cg_cameraOrbit", "0");
 	trap_Cvar_Set("ui_singlePlayerActive", "0");
 	if (uiInfo.serverStatus.currentServer >= 0 && uiInfo.serverStatus.currentServer < uiInfo.serverStatus.numDisplayServers)
 	{
-		trap_LAN_GetServerAddressString(ui_netSource.integer, uiInfo.serverStatus.displayServers[uiInfo.serverStatus.currentServer], buff, 1024);
+		trap_LAN_GetServerAddressString(ui_netSource.integer, uiInfo.serverStatus.displayServers[uiInfo.serverStatus.currentServer], buff, sizeof( buff ) );
 		trap_Cmd_ExecuteText( EXEC_APPEND, va( "connect %s\n", buff ) );
-	}	
+	}
+	
 }
 
 
@@ -7502,10 +7580,10 @@ static void UI_CheckServerName( void )
 {
 	qboolean	changed = qfalse;
 	
-	char hostname[MAX_INFO_STRING];
+	char hostname[MAX_HOSTNAMELENGTH] = {0};
 	char *c = hostname;
 			
-	trap_Cvar_VariableStringBuffer( "sv_hostname", hostname, MAX_INFO_STRING );
+	trap_Cvar_VariableStringBuffer( "sv_hostname", hostname, sizeof( hostname ) );
 	
 	while( *c )
 	{
@@ -7874,7 +7952,7 @@ void UI_SetSiegeTeams(void)
 
 	Com_sprintf(levelname, sizeof(levelname), "maps/%s.siege", mapname);
 
-	if (!levelname || !levelname[0])
+	if (!levelname[0])
 	{
 		return;
 	}
@@ -8245,7 +8323,7 @@ static void UI_UpdatePendingPings() {
 static const char *UI_FeederItemText(float feederID, int index, int column, 
 									 qhandle_t *handle1, qhandle_t *handle2, qhandle_t *handle3) {
 	static char info[MAX_STRING_CHARS]; // don't change this size without changing the sizes inside the SaberProperName calls
-	static char hostname[1024];
+	static char hostname[MAX_HOSTNAMELENGTH] = {0};
 	static char clientBuff[32];
 	static char needPass[32];
 	static int lastColumn = -1;
@@ -8381,8 +8459,10 @@ static const char *UI_FeederItemText(float feederID, int index, int column,
 						}
 						//check for saberonly and restricted force powers
 						gametype = atoi(Info_ValueForKey(info, "gametype"));
+#if 0
 						if ( gametype != GT_JEDIMASTER )
 						{
+							
 							qboolean saberOnly = qtrue;
 							qboolean restrictedForce = qfalse;
 							qboolean allForceDisabled = qfalse;
@@ -8427,6 +8507,7 @@ static const char *UI_FeederItemText(float feederID, int index, int column,
 								}
 							}
 						}
+#endif
 						if ( ui_netSource.integer == AS_LOCAL ) {
 							Com_sprintf( hostname, sizeof(hostname), "%s [%s]",
 											Info_ValueForKey(info, "hostname"),
@@ -8879,7 +8960,6 @@ void UI_SiegeSetCvarsForClass(siegeClass_t *scl)
 
 		if (scl->weapons & (1<<i))
 		{
-
 			if (i == WP_SABER)
 			{ //we want to see what kind of saber they have, and set the cvar based on that
 				char saberType[1024];
@@ -8988,7 +9068,10 @@ void UI_SiegeSetCvarsForClass(siegeClass_t *scl)
 
 int g_siegedFeederForcedSet = 0;
 
-void UI_UpdateCvarsForClass(const int team,const baseClass,const int index)
+//[Compiler]
+void UI_UpdateCvarsForClass(const int team,const int baseClass,const int index)
+//void UI_UpdateCvarsForClass(const int team,const baseClass,const int index)
+//[/Compiler]
 {
 	siegeClass_t *holdClass=0;
 	char *holdBuf;
@@ -9636,7 +9719,7 @@ nextSearch:
 	for (j=0; j<numfiles && uiInfo.forceConfigCount < MAX_FORCE_CONFIGS;j++,fileptr+=filelen+1)
 	{
 		filelen = strlen(fileptr);
-		COM_StripExtension(fileptr, configname);
+		COM_StripExtension(fileptr, configname, sizeof( configname ) );
 
 		if (lightSearch)
 		{
@@ -9735,7 +9818,7 @@ static void UI_BuildQ3Model_List( void )
 
 			filelen = strlen(fileptr);
 
-			COM_StripExtension(fileptr,skinname);
+			COM_StripExtension(fileptr,skinname, sizeof( skinname ) );
 
 			skinLen = strlen(skinname);
 			k = 0;
@@ -9951,7 +10034,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 				}
 
 				filelen = strlen(fileptr);
-				COM_StripExtension(fileptr,skinname);
+				COM_StripExtension(fileptr,skinname,sizeof(skinname));
 
 				if (bIsImageFile(dirptr, skinname))
 				{ //if it exists
@@ -10029,8 +10112,8 @@ void _UI_Init( qboolean inGameLoad ) {
 	int start;
 
 	//register this freakin thing now
-	vmCvar_t siegeTeamSwitch;
-	trap_Cvar_Register(&siegeTeamSwitch, "g_siegeTeamSwitch", "1", CVAR_SERVERINFO|CVAR_ARCHIVE);
+//	vmCvar_t siegeTeamSwitch;
+//	trap_Cvar_Register(&siegeTeamSwitch, "g_siegeTeamSwitch", "1", CVAR_SERVERINFO|CVAR_ARCHIVE);
 
 	// Get the list of possible languages
 	uiInfo.languageCount = trap_SP_GetNumLanguages();	// this does a dir scan, so use carefully
@@ -10161,7 +10244,15 @@ void _UI_Init( qboolean inGameLoad ) {
 	UI_LoadMenus("ui/jampingame.txt", qtrue);
 #endif
 	
+	/* Raz: Truncate the name, try and avoid overflow glitches for long names and menu items
 	trap_Cvar_Register(NULL, "ui_name", UI_Cvar_VariableString("name"), CVAR_INTERNAL );	//get this now, jic the menus change again trying to setName before getName
+	*/
+	{
+		char buf[MAX_NETNAME] = {0};
+		Q_strncpyz( buf, UI_Cvar_VariableString( "name" ), sizeof( buf ) );
+		trap_Cvar_Register( NULL, "ui_Name", buf, CVAR_INTERNAL );
+	}
+
 
 	Menus_CloseAll();
 
@@ -10280,7 +10371,8 @@ void _UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			//trap_S_StartBackgroundTrack("sound/misc/menu_background.wav", NULL);
 			if (uiInfo.inGameLoad) 
 			{
-//				UI_LoadNonIngame();
+				//Raz: Not loading menus was causing issues when connecting to invalid hostnames.
+				UI_LoadNonIngame();
 			}
 			
 			Menus_CloseAll();
@@ -10310,7 +10402,8 @@ void _UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			//trap_Cvar_Set( "sv_killserver", "1" );
 			trap_Key_SetCatcher( KEYCATCH_UI );
 			if (uiInfo.inGameLoad) {
-//				UI_LoadNonIngame();
+				//Raz: Not loading menus was causing issues when connecting to invalid hostnames.
+				UI_LoadNonIngame();
 			}
 			Menus_CloseAll();
 			Menus_ActivateByName("endofgame");
@@ -10465,7 +10558,7 @@ static void UI_DisplayDownloadInfo( const char *downloadName, float centerPoint,
 	Text_PaintCenter(centerPoint, yStart + 248, scale, colorWhite, sTransferRate, 0, iMenuFont);
 
 	if (downloadSize > 0) {
-		s = va( "%s (%d%%)", downloadName, downloadCount * 100 / downloadSize );
+		s = va( "%s (%d%%)", downloadName, (int)( (float)downloadCount * 100.0f / downloadSize ) );
 	} else {
 		s = downloadName;
 	}
@@ -11008,4 +11101,3 @@ static void UI_StartServerRefresh(qboolean full)
 		}
 	}
 }
-

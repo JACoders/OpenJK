@@ -7,12 +7,12 @@ typedef unsigned short USHORT;
 typedef unsigned int GLuint;
 #endif
 
-#include "../qcommon/qfiles.h"
+#include "qcommon/qfiles.h"
 #include "tr_public.h"
 #ifndef DEDICATED
 	#include "qgl.h"
 #endif 
-#include "../ghoul2/ghoul2_shared.h" //rwwRMG - added
+#include "ghoul2/ghoul2_shared.h" //rwwRMG - added
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;

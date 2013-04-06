@@ -15,8 +15,6 @@ extern int GetTime ( int lastTime );
 extern void NPC_AimAdjust( int change );
 extern qboolean FlyingCreature( gentity_t *ent );
 
-extern	vmCvar_t		d_asynchronousGroupAI;
-
 #define	MAX_VIEW_DIST		1024
 #define MAX_VIEW_SPEED		250
 #define	MAX_LIGHT_INTENSITY 255
@@ -454,9 +452,37 @@ void NPC_BSST_Sleep( void )
 		//See if it was enough to wake us up
 		if ( level.alertEvents[alertEvent].level == AEL_DISCOVERED && (NPCInfo->scriptFlags&SCF_LOOK_FOR_ENEMIES) )
 		{ //rwwFIXMEFIXME: Care about all clients not just 0
+		//JAC: Now we care about all clients :3?
+#if 0
 			if ( &g_entities[0] && g_entities[0].health > 0 )
 			{
 				G_SetEnemy( NPC, &g_entities[0] );
+				return;
+			}
+#endif
+			int			i;
+			float		dist;
+			float		bestDist	= 9999999.0f;
+			gentity_t	*bestCl		= NULL;
+			gentity_t	*ent		= NULL;
+
+			for ( i=0; i<MAX_CLIENTS; i++ )
+			{//Raz: Now we care about all clients >_>
+				ent = &g_entities[i];
+				if ( ent->inuse && ent->health > 0 && !(ent->client->ps.eFlags & EF_DEAD) &&
+					G_ClearLOS( NPC, NPC->s.origin, ent->s.origin ) )
+				{
+					if ( ( dist = Distance( NPC->s.origin, ent->s.origin ) ) < bestDist )
+					{
+						bestCl		= ent;
+						bestDist	= dist;
+					}
+				}
+			}
+
+			if ( bestCl && bestDist < 4096.0f )
+			{
+				G_SetEnemy( NPC, bestCl );
 				return;
 			}
 		}
@@ -661,7 +687,7 @@ qboolean NPC_CheckEnemyStealth( gentity_t *target )
 		}	
 	
 		//If he's violated the threshold, then realize him
-		//float difficulty_scale = 1.0f + (2.0f-g_spskill.value);//if playing on easy, 20% harder to be seen...?
+		//float difficulty_scale = 1.0f + (2.0f-g_npcspskill.value);//if playing on easy, 20% harder to be seen...?
 		if ( NPC->client->NPC_class == CLASS_SWAMPTROOPER )
 		{//swamptroopers can see much better
 			realize = (float)CAUTIOUS_THRESHOLD/**difficulty_scale*/;
@@ -2712,7 +2738,7 @@ void NPC_BSST_Attack( void )
 			if ( NPC->s.weapon == WP_ROCKET_LAUNCHER 
 				&& (ucmd.buttons&BUTTON_ATTACK) 
 				&& !move
-				&& g_spskill.integer > 1 
+				&& g_npcspskill.integer > 1 
 				&& !Q_irand( 0, 3 ) )
 			{//every now and then, shoot a homing rocket
 				ucmd.buttons &= ~BUTTON_ATTACK;
@@ -2722,6 +2748,7 @@ void NPC_BSST_Attack( void )
 		}
 	}
 }
+
 
 void NPC_BSST_Default( void )
 {

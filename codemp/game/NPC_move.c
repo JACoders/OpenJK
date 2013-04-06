@@ -14,9 +14,7 @@ extern int GetTime ( int lastTime );
 navInfo_t	frameNavInfo;
 extern qboolean FlyingCreature( gentity_t *ent );
 
-
 extern qboolean PM_InKnockDown( playerState_t *ps );
-
 
 /*
 -------------------------

@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "client.h"
 
@@ -8,12 +8,12 @@
 #endif
 
 #if !defined(G2_H_INC)
-	#include "../ghoul2/G2.h"
-	#include "../ghoul2/G2_local.h"
+	#include "ghoul2/G2.h"
+	#include "ghoul2/G2_local.h"
 #endif
 
 #if !defined(__Q_SHARED_H)
-	#include "../game/q_shared.h"
+	#include "qcommon/q_shared.h"
 #endif
 
 CFxScheduler	theFxScheduler;
@@ -91,7 +91,7 @@ void CFxScheduler::StopEffect( const char *file, int boltInfo, bool isPortal )
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof( sfile ) );
 	const int id = mEffectIDs[sfile];
 #ifndef FINAL_BUILD
 	if ( id == 0 )
@@ -261,7 +261,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 
 	char sfile[MAX_QPATH];
 
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof( sfile ) );
 	strlwr(sfile);
 
 	Com_DPrintf("Registering effect : %s\n", sfile);
@@ -755,7 +755,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t axis[3], 
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof( sfile ) );
 
 #ifndef FINAL_BUILD
 	if ( mEffectIDs[sfile] == 0 )
@@ -1044,7 +1044,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t forward, 
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof( sfile ) );
 
 	PlayEffect( mEffectIDs[sfile], origin, forward, vol, rad );
 }

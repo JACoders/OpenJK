@@ -1,4 +1,4 @@
-#include "../game/q_shared.h"
+#include "qcommon/q_shared.h"
 #include "qfiles.h"
 
 void		CM_LoadMap( const char *name, qboolean clientload, int *checksum);

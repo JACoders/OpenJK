@@ -122,10 +122,10 @@ void CG_ImpactMark( qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 
 	assert(markShader);
 
-	if ( !cg_addMarks.integer ) {
+	if ( !cg_marks.integer ) {
 		return;
 	}
-	else if (cg_addMarks.integer == 2)
+	else if (cg_marks.integer == 2)
 	{
 		trap_R_AddDecalToScene(markShader, origin, dir, orientation, red, green, blue, alpha,
 			alphaFade, radius, temporary);
@@ -224,7 +224,7 @@ void CG_AddMarks( void ) {
 	int			t;
 	int			fade;
 
-	if ( !cg_addMarks.integer ) {
+	if ( !cg_marks.integer ) {
 		return;
 	}
 

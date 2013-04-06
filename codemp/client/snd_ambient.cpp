@@ -1,7 +1,7 @@
 // Ambient Sound System (ASS!)
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #pragma warning ( disable : 4710 )	//not inlined
 #include "client.h"

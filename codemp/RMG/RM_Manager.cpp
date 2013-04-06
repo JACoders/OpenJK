@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 /************************************************************************************************
  *
@@ -10,8 +10,8 @@
  ************************************************************************************************/
 
 #include "RM_Headers.h"
-#include "../server/server.h"
-#include "../qcommon/qcommon.h"
+#include "server/server.h"
+#include "qcommon/qcommon.h"
 
 CRMObjective *CRMManager::mCurObjective=0;
 

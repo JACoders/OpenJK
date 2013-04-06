@@ -16,8 +16,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../game/q_shared.h"
-#include "../game/botlib.h"
+#include "qcommon/q_shared.h"
+#include "game/botlib.h"
 #include "be_interface.h"			//for botimport.Print
 #include "l_libvar.h"
 

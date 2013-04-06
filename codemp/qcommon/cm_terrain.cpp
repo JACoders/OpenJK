@@ -1,10 +1,10 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "cm_local.h"
 #include "cm_patch.h"
 #include "cm_landscape.h"
-#include "../qcommon/GenericParser2.h"
+#include "qcommon/GenericParser2.h"
 #include "cm_randomterrain.h"
 
 #ifdef _WIN32
@@ -975,7 +975,7 @@ void CCMLandScape::CalcRealCoords(void)
 
 			offset = (y * GetRealWidth()) + x;
 
-			VectorSet(icoords, x, y, mHeightMap[offset]);
+			VectorSetM(icoords, x, y, mHeightMap[offset]);
 			VectorScaleVectorAdd(GetMins(), icoords, GetTerxelSize(), mCoords[offset]);
 		}
 	}

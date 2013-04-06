@@ -10,9 +10,7 @@ extern qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t
 				float minSpeed, float maxSpeed, float idealSpeed, qboolean mustHit );
 extern void G_SoundOnEnt (gentity_t *ent, soundChannel_t channel, const char *soundPath);
 
-
 extern qboolean BG_CrouchAnim( int anim );
-
 
 //extern void NPC_Mark1_Part_Explode(gentity_t *self,int bolt);
 
@@ -272,12 +270,14 @@ void NPC_GM_Pain(gentity_t *self, gentity_t *attacker, int damage)
 	}
 	else
 	{//store the point for shield impact
+#ifdef _DISABLED
 		if ( point )
 		{
 		//	VectorCopy( point, self->pos4 );
 		//	self->client->poisonTime = level.time;
 			//rwwFIXMEFIXME: ..do this is as well.
 		}
+#endif //_DISABLED
 	}
 
 	if ( !self->lockCount && self->client->ps.torsoTimer <= 0 )
@@ -696,7 +696,7 @@ void NPC_BSGM_Attack( void )
 				VectorNormalize( smackDir );
 				//hurt them
 				G_Sound( NPC->enemy, CHAN_AUTO, G_SoundIndex( "sound/weapons/galak/skewerhit.wav" ) );
-				G_Damage( NPC->enemy, NPC, NPC, smackDir, NPC->r.currentOrigin, (g_spskill.integer+1)*Q_irand( 5, 10), DAMAGE_NO_ARMOR|DAMAGE_NO_KNOCKBACK, MOD_CRUSH ); 
+				G_Damage( NPC->enemy, NPC, NPC, smackDir, NPC->r.currentOrigin, (g_npcspskill.integer+1)*Q_irand( 5, 10), DAMAGE_NO_ARMOR|DAMAGE_NO_KNOCKBACK, MOD_CRUSH ); 
 				if ( NPC->client->ps.torsoAnim == BOTH_ATTACK4 )
 				{//smackdown
 					int knockAnim = BOTH_KNOCKDOWN1;
@@ -858,7 +858,7 @@ void NPC_BSGM_Attack( void )
 		else if ( !NPC->lockCount && NPC->locationDamage[HL_GENERIC1] > GENERATOR_HEALTH
 			&& TIMER_Done( NPC, "attackDelay" )
 			&& InFront( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, NPC->client->ps.viewangles, 0.3f )
-			&& ((!Q_irand( 0, 10*(2-g_spskill.integer))&& enemyDist4 > MIN_LOB_DIST_SQUARED&& enemyDist4 < MAX_LOB_DIST_SQUARED)
+			&& ((!Q_irand( 0, 10*(2-g_npcspskill.integer))&& enemyDist4 > MIN_LOB_DIST_SQUARED&& enemyDist4 < MAX_LOB_DIST_SQUARED)
 				||(!TIMER_Done( NPC, "noLob" )&&!TIMER_Done( NPC, "noRapid" ))) 
 			&& NPC->enemy->s.weapon != WP_TURRET )
 		{//sometimes use the laser beam attack, but only after he's taken down our generator
@@ -1161,7 +1161,9 @@ void NPC_BSGM_Attack( void )
 			//if ( NPC->client->ps.powerups[PW_GALAK_SHIELD] > 0 )
 			if (0)
 			{
-				NPC->client->ps.powerups[PW_BATTLESUIT] = level.time + ARMOR_EFFECT_TIME;
+				#ifdef BASE_COMPAT
+					NPC->client->ps.powerups[PW_BATTLESUIT] = level.time + ARMOR_EFFECT_TIME;
+				#endif
 				G_Damage( NPC->enemy, NPC, NPC, NULL, NPC->r.currentOrigin, 100, DAMAGE_NO_KNOCKBACK, MOD_UNKNOWN ); 
 			}
 			else
@@ -1186,12 +1188,14 @@ void NPC_BSGM_Attack( void )
 			//FIXME: debounce this?
 			NPCInfo->touchedByPlayer = NULL;
 			//FIXME: some shield effect?
-			NPC->client->ps.powerups[PW_BATTLESUIT] = level.time + ARMOR_EFFECT_TIME;
+			#ifdef BASE_COMPAT
+				NPC->client->ps.powerups[PW_BATTLESUIT] = level.time + ARMOR_EFFECT_TIME;
+			#endif
 
 			VectorSubtract( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, smackDir );
 			smackDir[2] += 30;
 			VectorNormalize( smackDir );
-			G_Damage( NPC->enemy, NPC, NPC, smackDir, NPC->r.currentOrigin, (g_spskill.integer+1)*Q_irand( 5, 10), DAMAGE_NO_KNOCKBACK, MOD_UNKNOWN ); 
+			G_Damage( NPC->enemy, NPC, NPC, smackDir, NPC->r.currentOrigin, (g_npcspskill.integer+1)*Q_irand( 5, 10), DAMAGE_NO_KNOCKBACK, MOD_UNKNOWN ); 
 			//throw them
 			G_Throw( NPC->enemy, smackDir, 100 );
 			//NPC->enemy->s.powerups |= ( 1 << PW_SHOCKED );

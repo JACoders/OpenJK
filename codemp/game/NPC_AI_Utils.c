@@ -9,7 +9,6 @@
 #define	MAX_RADIUS_ENTS		128
 #define	DEFAULT_RADIUS		45
 
-extern vmCvar_t		d_noGroupAI;
 qboolean AI_ValidateGroupMember( AIGroupInfo_t *group, gentity_t *member );
 
 extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
@@ -877,7 +876,7 @@ qboolean AI_RefreshGroup( AIGroupInfo_t *group )
 		{
 			group->morale += member->NPC->rank;
 		}
-		if ( group->commander && debugNPCAI.integer )
+		if ( group->commander && d_npcai.integer )
 		{
 			//G_DebugLine( group->commander->r.currentOrigin, member->r.currentOrigin, FRAMETIME, 0x00ff00ff, qtrue );
 			G_TestLine(group->commander->r.currentOrigin, member->r.currentOrigin, 0x00000ff, FRAMETIME);

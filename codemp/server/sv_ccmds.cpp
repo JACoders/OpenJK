@@ -1,8 +1,8 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "server.h"
-#include "../qcommon/stringed_ingame.h"
+#include "qcommon/stringed_ingame.h"
 
 /*
 ===============================================================================
@@ -771,7 +771,7 @@ static void SV_ConSay_f(void) {
 		return;
 	}
 
-	strcpy (text, "Server: ");
+	strcpy (text, "Server^7\x19: ");
 	p = Cmd_Args();
 
 	if ( *p == '"' ) {

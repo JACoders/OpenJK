@@ -1,5 +1,5 @@
 
-#include "../client/client.h"
+#include "client/client.h"
 
 
 char	cl_cdkey[17] = "123456789";

@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 /*****************************************************************************
  * name:		snd_dma.c
@@ -796,7 +796,7 @@ sfx_t *S_FindName( const char *name ) {
 	}
 
 	char sSoundNameNoExt[MAX_QPATH];
-	COM_StripExtension(name,sSoundNameNoExt);
+	COM_StripExtension(name,sSoundNameNoExt, sizeof( sSoundNameNoExt ));
 
 	hash = S_HashSFXName(sSoundNameNoExt);
 
@@ -950,7 +950,7 @@ void EALFileInit(char *level)
 	s_bInWater = false;
 
 	// Try and load an EAL file for the new level
-	COM_StripExtension(level, name);
+	COM_StripExtension(level, name, sizeof( name ));
 	Com_sprintf(szEALFilename, MAX_QPATH, "eagle/%s.eal", name);
 
 	s_bEALFileLoaded = LoadEALFile(szEALFilename);

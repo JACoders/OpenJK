@@ -1,6 +1,6 @@
 /* GLOBAL.H - RSAREF types and constants */
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include <string.h>
 #if defined(_WIN32)

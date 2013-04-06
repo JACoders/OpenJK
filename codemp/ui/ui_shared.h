@@ -2,21 +2,22 @@
 #define __UI_SHARED_H
 
 
-#include "../game/q_shared.h"
-#include "../cgame/tr_types.h"
+#include "qcommon/q_shared.h"
+#include "cgame/tr_types.h"
 #include "keycodes.h"
 
-#include "../../ui/menudef.h"
+#include "ui/menudef.h"
 
+//Raz: Drastically increased some of these
 #define MAX_MENUNAME				32
 #define MAX_ITEMTEXT				64
 #define MAX_ITEMACTION				64
-#define MAX_MENUDEFFILE				4096
-#define MAX_MENUFILE				32768
-#define MAX_MENUS					64
-#define MAX_MENUITEMS				256
+#define MAX_MENUDEFFILE				8192 //4096
+#define MAX_MENUFILE				65536 //32768
+#define MAX_MENUS					128 //64
+#define MAX_MENUITEMS				512 //256
 #define MAX_COLOR_RANGES			10
-#define MAX_OPEN_MENUS				16
+#define MAX_OPEN_MENUS				64 //16
 #define	MAX_TEXTSCROLL_LINES		256
 
 #define WINDOW_MOUSEOVER			0x00000001	// mouse is over it, non exclusive
@@ -104,12 +105,12 @@ typedef struct {
   float h;    // height;
 } rectDef_t;
 
-typedef rectDef_t Rectangle;
+//typedef rectDef_t Rectangle;
 
 // FIXME: do something to separate text vs window stuff
 typedef struct {
-  Rectangle rect;                 // client coord rectangle
-  Rectangle rectClient;           // screen coord rectangle
+  rectDef_t rect;                 // client coord rectangle
+  rectDef_t rectClient;           // screen coord rectangle
   const char *name;               //
   const char *group;              // if it belongs to a group
   const char *cinematicName;		  // cinematic name
@@ -120,8 +121,8 @@ typedef struct {
 	int ownerDrawFlags;							// show flags for ownerdraw items
   float borderSize;               // 
   int flags;                      // visible, focus, mouseover, cursor
-  Rectangle rectEffects;          // for various effects
-  Rectangle rectEffects2;         // for various effects
+  rectDef_t rectEffects;          // for various effects
+  rectDef_t rectEffects2;         // for various effects
   int offsetTime;                 // time based value for various effects
   int nextTime;                   // time next effect should cycle
   vec4_t foreColor;               // text color
@@ -245,7 +246,7 @@ typedef struct textScrollDef_s
 
 typedef struct itemDef_s {
 	Window		window;						// common positional, border, style, layout info
-	Rectangle	textRect;					// rectangle the text ( if any ) consumes     
+	rectDef_t	textRect;					// rectangle the text ( if any ) consumes     
 	int			type;						// text, button, radiobutton, checkbox, textfield, listbox, combo
 	int			alignment;					// left center right
 	int			textalignment;				// ( optional ) alignment for text within rect based on text width
@@ -465,7 +466,6 @@ typedef struct {
 } displayContextDef_t;
 
 
-
 const char *String_Alloc(const char *p);
 void String_Init();
 void String_Report();
@@ -603,7 +603,6 @@ qboolean	trap_G2API_SetBoneIKState(void *ghoul2, int time, const char *boneName,
 qboolean	trap_G2API_IKMove(void *ghoul2, int time, sharedIKMoveParams_t *params);
 
 void		trap_G2API_GetSurfaceName(void *ghoul2, int surfNumber, int modelIndex, char *fillBuf);
-
 
 
 /*
