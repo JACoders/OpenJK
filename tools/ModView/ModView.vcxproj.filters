@@ -2,34 +2,34 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{4f4633bf-1df9-49da-8e62-a579d92dd95c}</UniqueIdentifier>
+      <UniqueIdentifier>{f5ccf4b0-ad7b-4bed-a5d3-481f6793603b}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{0174ee4b-2542-4800-b33c-70aa511b6e60}</UniqueIdentifier>
+      <UniqueIdentifier>{caae6d4b-ea2d-45f1-aa21-413ef9cade96}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
     <Filter Include="Resource Files">
-      <UniqueIdentifier>{f3d17b38-1a58-4836-ae30-0e1d86853966}</UniqueIdentifier>
+      <UniqueIdentifier>{0917a3c4-224e-47e6-beeb-45944b62bad7}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
     <Filter Include="JPEG Source">
-      <UniqueIdentifier>{068c450a-8e13-4b56-a9df-4e78f3a415ef}</UniqueIdentifier>
+      <UniqueIdentifier>{cc661d42-30f5-4bf4-bf26-792773840d65}</UniqueIdentifier>
     </Filter>
     <Filter Include="JPEG Headers">
-      <UniqueIdentifier>{740ffb42-20a3-4d8a-8b81-f1d577ac6f30}</UniqueIdentifier>
+      <UniqueIdentifier>{556c21d4-9b50-438a-bce9-cde21cc5f0ae}</UniqueIdentifier>
     </Filter>
     <Filter Include="PNG">
-      <UniqueIdentifier>{c2de62c0-8deb-455d-8d1d-678e67486e36}</UniqueIdentifier>
+      <UniqueIdentifier>{6690d776-77bb-4487-a379-1222b69553be}</UniqueIdentifier>
     </Filter>
     <Filter Include="ZLIB">
-      <UniqueIdentifier>{341970e6-b065-4880-8239-29fab7c6b5a7}</UniqueIdentifier>
+      <UniqueIdentifier>{d556787d-d264-4311-85ce-46621886c565}</UniqueIdentifier>
     </Filter>
     <Filter Include="Foreign Muck Source">
-      <UniqueIdentifier>{1b4237f1-8031-4f0a-9102-4c409aabb263}</UniqueIdentifier>
+      <UniqueIdentifier>{13bc9db7-2843-494f-be3f-7ba7d97e6df5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Foreign Muck Headers">
-      <UniqueIdentifier>{00e152a8-18b7-4369-b90a-6059f671b9ca}</UniqueIdentifier>
+      <UniqueIdentifier>{10008cd9-f434-474c-a645-e44b14ea13a4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
