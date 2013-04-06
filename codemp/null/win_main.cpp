@@ -1,4 +1,6 @@
 // win_main.c
+//Anything above this #include will be ignored by the compiler
+#include "qcommon/exe_headers.h"
 
 #include "client/client.h"
 #include "qcommon/qcommon.h"
@@ -543,7 +545,7 @@ Return true if the proper CD is in the drive
 */
 qboolean	Sys_CheckCD( void ) {
 #ifdef FINAL_BUILD
-//	return Sys_ScanForCD();
+	return Sys_ScanForCD();
 #else
 	return qtrue;
 #endif
