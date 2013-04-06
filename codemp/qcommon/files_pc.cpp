@@ -3011,8 +3011,6 @@ restart if necessary
 qboolean FS_ConditionalRestart( int checksumFeed ) {
 	if( fs_gamedirvar->modified || checksumFeed != fs_checksumFeed ) {
 		FS_Restart( checksumFeed );
-		// Clean out any user and VM created cvars
-		Cvar_Restart(qtrue);
 		return qtrue;
 	}
 	return qfalse;
