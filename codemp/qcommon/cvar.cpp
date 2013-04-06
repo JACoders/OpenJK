@@ -689,7 +689,7 @@ qboolean Cvar_Command( void ) {
 	{
 		// Swap the value if our command has ! in it (bind p "cg_thirdPeson !")
 		Cvar_SetValue2( v->name, !v->value, qfalse );
-		return;
+		return qtrue;
 	}
 
 	// set the value if forcing isn't required
