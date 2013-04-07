@@ -1,7 +1,7 @@
 // cvar.c -- dynamic variable tracking
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 cvar_t		*cvar_vars = NULL;
 cvar_t		*cvar_cheats;

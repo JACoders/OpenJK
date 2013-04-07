@@ -1,14 +1,13 @@
 // common.c -- misc functions used in client and server
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "GenericParser2.h"
 #include "stringed_ingame.h"
-#include "../qcommon/game_version.h"
+#include "qcommon/game_version.h"
 #ifndef __linux__
-//#include <windows.h>
-#include "../qcommon/platform.h"
+#include "qcommon/platform.h"
 #endif
 
 #include "../server/NPCNav/navigator.h"
@@ -1072,7 +1071,7 @@ Com_Init
 void Com_Init( char *commandLine ) {
 	char	*s;
 
-	Com_Printf( "%s %s %s\n", Q3_VERSION, CPUSTRING, __DATE__ );
+	Com_Printf( "%s %s %s\n", JK_VERSION, CPUSTRING, __DATE__ );
 
 	try
 	{
@@ -1217,7 +1216,7 @@ void Com_Init( char *commandLine ) {
 		Cmd_AddCommand ("changeVectors", MSG_ReportChangeVectors_f );
 		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
 
-		s = va("%s %s %s", Q3_VERSION, CPUSTRING, __DATE__ );
+		s = va("%s %s %s", JK_VERSION, CPUSTRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
 		SE_Init();
@@ -1396,7 +1395,7 @@ int Com_ModifyMsec( int msec ) {
 }
 
 #ifdef G2_PERFORMANCE_ANALYSIS
-#include "../qcommon/timing.h"
+#include "qcommon/timing.h"
 void G2Time_ResetTimers(void);
 void G2Time_ReportTimers(void);
 extern timing_c G2PerformanceTimer_PreciseFrame;

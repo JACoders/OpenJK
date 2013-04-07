@@ -83,6 +83,7 @@ typedef struct
 	int			friendlyShader;
 } siegeTeam_t;
 
+
 extern siegeClass_t bgSiegeClasses[MAX_SIEGE_CLASSES];
 extern int bgNumSiegeClasses;
 
@@ -105,3 +106,4 @@ int BG_SiegeFindClassIndexByName(const char *classname);
 
 extern char	siege_info[MAX_SIEGE_INFO_SIZE];
 extern int	siege_valid;
+

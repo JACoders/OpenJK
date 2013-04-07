@@ -149,11 +149,13 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 #ifndef FINAL_BUILD
 	if (!ent || !ent->inuse)
 	{
-		Com_Error(ERR_DROP, "Bad ent in Use_Target_Print");
+	//	Com_Error(ERR_DROP, "Bad ent in Use_Target_Print");
+		return;
 	}
 	else if (!activator || !activator->inuse)
 	{
-		Com_Error(ERR_DROP, "Bad activator in Use_Target_Print");
+	//	Com_Error(ERR_DROP, "Bad activator in Use_Target_Print");
+		return;
 	}
 
 	if (ent->genericValue15 > level.time)
@@ -784,7 +786,7 @@ void scriptrunner_run (gentity_t *self)
 		{
 			if ( !self->activator )
 			{
-				if (g_developer.integer)
+				if (developer.integer)
 				{
 					Com_Printf("target_scriptrunner tried to run on invalid entity!\n");
 				}
@@ -806,7 +808,7 @@ void scriptrunner_run (gentity_t *self)
 				}
 				else
 				{
-					if (g_developer.integer)
+					if (developer.integer)
 					{
 						Com_Printf("target_scriptrunner tried to run on invalid ICARUS activator!\n");
 					}
@@ -814,7 +816,7 @@ void scriptrunner_run (gentity_t *self)
 				}
 			}
 
-			if (g_developer.integer)
+			if (developer.integer)
 			{
 				Com_Printf( "target_scriptrunner running %s on activator %s\n", self->behaviorSet[BSET_USE], self->activator->targetname );
 			}
@@ -822,7 +824,7 @@ void scriptrunner_run (gentity_t *self)
 		}
 		else
 		{
-			if ( g_developer.integer && self->activator )
+			if ( developer.integer && self->activator )
 			{
 				Com_Printf( "target_scriptrunner %s used by %s\n", self->targetname, self->activator->targetname );
 			}

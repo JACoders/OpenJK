@@ -1,7 +1,7 @@
 #ifndef __BG_VEHICLES_H
 #define __BG_VEHICLES_H
 
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 
 typedef struct Vehicle_s Vehicle_t;
 typedef struct bgEntity_s bgEntity_t;
@@ -25,9 +25,7 @@ typedef enum
 	WPOSE_SABERRIGHT,
 } EWeaponPose;
 
-
 extern stringID_table_t VehicleTable[VH_NUM_VEHICLES+1];
-
 
 //===========================================================================================================
 //START VEHICLE WEAPONS
@@ -71,10 +69,8 @@ typedef struct
 #define VEH_WEAPON_BASE	0
 #define VEH_WEAPON_NONE	-1
 
-
 extern vehWeaponInfo_t g_vehWeaponInfo[MAX_VEH_WEAPONS];
 extern int	numVehicleWeapons;
-
 
 //===========================================================================================================
 //END VEHICLE WEAPONS
@@ -366,10 +362,8 @@ typedef struct
 #define VEHICLE_BASE	0
 #define VEHICLE_NONE	-1
 
-
 extern vehicleInfo_t g_vehicleInfo[MAX_VEHICLES];
 extern int	numVehicles;
-
 
 #define VEH_DEFAULT_SPEED_MAX		800.0f
 #define VEH_DEFAULT_ACCEL			10.0f
@@ -403,7 +397,7 @@ extern int	numVehicles;
 #define	VEH_MOUNT_THROW_RIGHT		-6
 
 
-typedef enum
+typedef enum vehEject_e
 {
 	VEH_EJECT_LEFT, 
 	VEH_EJECT_RIGHT, 
@@ -411,7 +405,7 @@ typedef enum
 	VEH_EJECT_REAR, 
 	VEH_EJECT_TOP, 
 	VEH_EJECT_BOTTOM
-};
+} vehEject_t;
 
 // Vehicle flags.
 typedef enum
@@ -619,11 +613,12 @@ typedef struct Vehicle_s
 
 	//the guy who was previously the pilot
 	bgEntity_t *	m_pOldPilot;
-
-} Vehicle_t;
-
+#if defined(__GCC__) || defined(MINGW32) || MAC_PORT
+	} _Vehicle_t;
+#else
+	} Vehicle_t;
+#endif
 
 extern int BG_VehicleGetIndex( const char *vehicleName );
-
 
 #endif	// __BG_VEHICLES_H

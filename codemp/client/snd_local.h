@@ -6,11 +6,11 @@
 #define sboolean int //rww - argh (in SP qboolean type is merely #define'd as an int, but I do not want to do that for MP over the whole base)
 
 #include "snd_public.h"
-#include "../mp3code/mp3struct.h"
+#include "mp3code/mp3struct.h"
 
 // Open AL Specific
-#include "openal\al.h"
-#include "openal\alc.h"
+#include "OpenAL/al.h"
+#include "OpenAL/alc.h"
 #include "eax\eax.h"
 #include "eax\eaxman.h"
 

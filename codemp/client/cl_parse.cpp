@@ -1,15 +1,15 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // cl_parse.c  -- parse a message received from the server
 
 #include "client.h"
-#include "../qcommon/stringed_ingame.h"
-#include "../ghoul2/g2_local.h"
+#include "qcommon/stringed_ingame.h"
+#include "ghoul2/g2_local.h"
 #ifdef _DONETPROFILE_
-#include "../qcommon/INetProfile.h"
+#include "qcommon/INetProfile.h"
 #endif
-#include "../zlib32/zip.h"
+#include "zlib32/zip.h"
 
 static char hiddenCvarVal[128];
 

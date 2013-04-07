@@ -12,7 +12,7 @@ and one exported function: Perform
 
 */
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "vm_local.h"
 
@@ -253,7 +253,7 @@ void VM_LoadSymbols( vm_t *vm ) {
 		return;
 	}
 
-	COM_StripExtension( vm->name, name );
+	COM_StripExtension( vm->name, name, sizeof( name ) );
 	Com_sprintf( symbols, sizeof( symbols ), "vm/%s.map", name );
 	len = FS_ReadFile( symbols, (void **)&mapfile );
 	if ( !mapfile ) {

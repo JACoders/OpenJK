@@ -576,7 +576,7 @@ void Sniper_FaceEnemy( void )
 			else
 			{//based on distance, aim value, difficulty and enemy movement, miss
 				//FIXME: incorporate distance as a factor?
-				int missFactor = 8-(NPCInfo->stats.aim+g_spskill.integer) * 3;
+				int missFactor = 8-(NPCInfo->stats.aim+g_npcspskill.integer) * 3;
 				if ( missFactor > ENEMY_POS_LAG_STEPS )
 				{
 					missFactor = ENEMY_POS_LAG_STEPS;

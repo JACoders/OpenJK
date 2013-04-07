@@ -60,7 +60,10 @@
 #define false qfalse
 #define true qtrue
 
-//#define sqrtf sqrt
+//JAC: Added
+#undef sqrtf
+
+#define sqrtf sqrt
 #define Q_flrand flrand
 
 #define MOD_EXPLOSIVE MOD_SUICIDE
@@ -115,9 +118,6 @@ static bool Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 }
 #endif //QAGAME
 
-#ifdef _JK2MP
-
-#endif
 
 //MP RULE - ALL PROCESSMOVECOMMANDS FUNCTIONS MUST BE BG-COMPATIBLE!!!
 //If you really need to violate this rule for SP, then use ifdefs.
@@ -577,17 +577,11 @@ void G_SetWalkerVehicleFunctions( vehicleInfo_t *pVehInfo )
 }
 
 // Following is only in game, not in namespace
-#ifdef _JK2MP
-
-#endif
 
 #ifdef QAGAME
 extern void G_AllocateVehicleObject(Vehicle_t **pVeh);
 #endif
 
-#ifdef _JK2MP
-
-#endif
 
 // Create/Allocate a new Animal Vehicle (initializing it as well).
 //this is a BG function too in MP so don't un-bg-compatibilify it -rww
@@ -615,8 +609,6 @@ void G_CreateWalkerNPC( Vehicle_t **pVeh, const char *strAnimalType )
 }
 
 #ifdef _JK2MP
-
-
 
 //get rid of all the crazy defs we added for this file
 #undef currentAngles

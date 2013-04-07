@@ -6,9 +6,9 @@
 #endif
 
 #include "ui_shared.h"
-#include "../game/bg_public.h"
-#include "../game/anims.h"
-#include "../ghoul2/G2.h"
+#include "game/bg_public.h"
+#include "game/anims.h"
+#include "ghoul2/G2.h"
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 extern void UI_UpdateCharacterSkin( void );
 
@@ -44,7 +44,6 @@ extern qboolean ui_saber_parms_parsed;
 extern void UI_CacheSaberGlowGraphics( void );
 
 #endif //
-
 
 
 #ifdef CGAME
@@ -106,7 +105,6 @@ extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName
 #endif
 
 static char		memoryPool[MEM_POOL_SIZE];
-
 static int		allocPoint, outOfMemory;
 
 
@@ -339,7 +337,7 @@ void PC_SourceWarning(int handle, char *format, ...) {
 	static char string[4096];
 
 	va_start (argptr, format);
-	vsprintf (string, format, argptr);
+	Q_vsnprintf (string, sizeof( string ), format, argptr);
 	va_end (argptr);
 
 	filename[0] = '\0';
@@ -361,7 +359,7 @@ void PC_SourceError(int handle, char *format, ...) {
 	static char string[4096];
 
 	va_start (argptr, format);
-	vsprintf (string, format, argptr);
+	Q_vsnprintf (string, sizeof( string ), format, argptr);
 	va_end (argptr);
 
 	filename[0] = '\0';
@@ -3219,6 +3217,32 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 				}
 				return qtrue;
 			}
+
+			//Raz: Added
+			if ( key == A_MWHEELUP ) 
+			{
+				listPtr->startPos -= ((int)item->special == FEEDER_Q3HEADS) ? viewmax : 1;
+				if (listPtr->startPos < 0)
+				{
+					listPtr->startPos = 0;
+					Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+					return qfalse;
+				}
+				Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+				return qtrue;
+			}
+			if ( key == A_MWHEELDOWN ) 
+			{
+				listPtr->startPos += ((int)item->special == FEEDER_Q3HEADS) ? viewmax : 1;
+				if (listPtr->startPos > max)
+				{
+					listPtr->startPos = max;
+					Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+					return qfalse;
+				}
+				Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+				return qtrue;
+			}
 		}
 		// mouse hit
 		if (key == A_MOUSE1 || key == A_MOUSE2) {
@@ -3332,7 +3356,6 @@ qboolean Item_ListBox_HandleKey(itemDef_t *item, int key, qboolean down, qboolea
 qboolean Item_YesNo_HandleKey(itemDef_t *item, int key) {
   if (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) && item->window.flags & WINDOW_HASFOCUS && item->cvar) 
 	{
-
 		if (key == A_MOUSE1 || key == A_ENTER || key == A_MOUSE2 || key == A_MOUSE3) 
 		{
 	    DC->setCVar(item->cvar, va("%i", !DC->getCVarValue(item->cvar)));
@@ -3428,12 +3451,15 @@ qboolean Item_Multi_HandleKey(itemDef_t *item, int key)
 	{
 		if (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) && item->window.flags & WINDOW_HASFOCUS) 
 		{
-			if (key == A_MOUSE1 || key == A_ENTER || key == A_MOUSE2 || key == A_MOUSE3) 
+			//Raz: Scroll on multi buttons!
+			if (key == A_MOUSE1 || key == A_ENTER || key == A_MOUSE2 || key == A_MOUSE3 || key == A_MWHEELDOWN || key == A_MWHEELUP) 
+//			if (key == A_MOUSE1 || key == A_ENTER || key == A_MOUSE2 || key == A_MOUSE3) 
 			{
 				int current = Item_Multi_FindCvarByValue(item);
 				int max = Item_Multi_CountSettings(item);
 
-				if (key == A_MOUSE2 || key == A_CURSOR_LEFT)
+				if (key == A_MOUSE2 || key == A_CURSOR_LEFT || key == A_MWHEELDOWN)	// Xbox uses CURSOR_LEFT
+			//	if (key == A_MOUSE2 || key == A_CURSOR_LEFT)	// Xbox uses CURSOR_LEFT
 				{
 					current--;
 					if ( current < 0 ) 
@@ -3649,7 +3675,11 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 			}
 		}
 
+		/* Raz: Don't get stuck in overstrike/insert mode
 		if ( key == A_ENTER || key == A_KP_ENTER || key == A_ESCAPE)  {
+			*/
+		if ( key == A_ENTER || key == A_KP_ENTER || key == A_ESCAPE || (key == A_MOUSE1 && !Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) )) {
+			DC->setOverstrikeMode( qfalse );
 			return qfalse;
 		}
 
@@ -3965,7 +3995,8 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int key, qboolean down) {
 			}
 		}
 	}
-//	DC->Print("slider handle key exit\n");
+	//Raz: Removed leftover debug print
+	//DC->Print("slider handle key exit\n");
 	return qfalse;
 }
 
@@ -4206,7 +4237,7 @@ void Menus_HandleOOBClick(menuDef_t *menu, int key, qboolean down) {
 			if (Menu_OverActiveItem(&Menus[i], DC->cursorx, DC->cursory)) {
 				Menu_RunCloseScript(menu);
 				menu->window.flags &= ~(WINDOW_HASFOCUS | WINDOW_VISIBLE);
-				Menus_Activate(&Menus[i]);
+			//	Menus_Activate(&Menus[i]);
 				Menu_HandleMouseMove(&Menus[i], DC->cursorx, DC->cursory);
 				Menu_HandleKey(&Menus[i], key, down);
 			}
@@ -4265,7 +4296,6 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 		inHandler = qfalse;
 		return;
 	}
-	//JLFMOUSE  
 		// see if the mouse is within the window bounds and if so is this a mouse click
 	if (down && !(menu->window.flags & WINDOW_POPUP) && !Rect_ContainsPoint(&menu->window.rect, DC->cursorx, DC->cursory)) 
 	{
@@ -4296,12 +4326,11 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 	if (item != NULL) {
 		if (Item_HandleKey(item, key, down)) 
 		{
-
-				// It is possible for an item to be disable after Item_HandleKey is run (like in Voice Chat)
-				if (!item->disabled) 
-				{
-					Item_Action(item);
-				}
+			// It is possible for an item to be disable after Item_HandleKey is run (like in Voice Chat)
+			if (!item->disabled) 
+			{
+				Item_Action(item);
+			}
 			inHandler = qfalse;
 			return;
 		}
@@ -4390,7 +4419,6 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 				}
 //END JLFACCEPT			
 				else {
-//JLFMOUSE
 					if (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory))
 					{
 
@@ -4810,8 +4838,7 @@ void Item_YesNo_Paint(itemDef_t *item) {
 	if (item->text) 
 	{
 		Item_Text_Paint(item);
-			DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, newColor, yesnovalue, 0, 0, item->textStyle, item->iMenuFont);
-
+		DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, newColor, yesnovalue, 0, 0, item->textStyle, item->iMenuFont);
 	} 
 	else 
 	{
@@ -4861,7 +4888,7 @@ void Item_Multi_Paint(itemDef_t *item) {
 
 	if (item->text) {
 		Item_Text_Paint(item);
-			DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, newColor, text, 0, 0, item->textStyle,item->iMenuFont);
+		DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, newColor, text, 0, 0, item->textStyle,item->iMenuFont);
 	} else {
 		//JLF added xoffset
 		DC->drawText(item->textRect.x+item->xoffset, item->textRect.y, item->textscale, newColor, text, 0, 0, item->textStyle,item->iMenuFont);
@@ -5385,9 +5412,7 @@ void UI_ScaleModelAxis(refEntity_t	*ent)
 }
 
 #ifndef CGAME
-	// Yes, these are inverted. The whole file is in the namespace.
 extern void UI_SaberAttachToChar( itemDef_t *item );
-
 #endif
 
 void Item_Model_Paint(itemDef_t *item) 
@@ -5815,6 +5840,11 @@ void Item_ListBox_Paint(itemDef_t *item) {
 
 			// draw scrollbar to right side of the window
 			x = item->window.rect.x + item->window.rect.w - SCROLLBAR_SIZE - 1;
+
+			//Raz: adjust x position for the model selection feeder
+			if ( (int)item->special == FEEDER_Q3HEADS )
+				x -= 2;
+
 			y = item->window.rect.y + 1;
 			DC->drawHandlePic(x, y, SCROLLBAR_SIZE, SCROLLBAR_SIZE, DC->Assets.scrollBarArrowUp);
 			y += SCROLLBAR_SIZE - 1;
@@ -5977,7 +6007,8 @@ void Item_ListBox_Paint(itemDef_t *item) {
 						if ( text )
 						{
 //JLF MPMOVED
-							int textyOffset = 0;
+							int textyOffset;
+							textyOffset = 0;
 //							DC->drawText(x + 4 + listPtr->columnInfo[j].pos, y + listPtr->elementHeight, item->textscale, item->window.foreColor, text, 0, listPtr->columnInfo[j].maxChars, item->textStyle);
 	//WAS LAST						DC->drawText(x + 4 + listPtr->columnInfo[j].pos, y, item->textscale, item->window.foreColor, text, 0, listPtr->columnInfo[j].maxChars, item->textStyle, item->iMenuFont);
 							DC->drawText(x + 4 + listPtr->columnInfo[j].pos, y + listPtr->elementHeight+ textyOffset + item->textaligny, item->textscale, item->window.foreColor, text, 0,listPtr->columnInfo[j].maxChars, item->textStyle, item->iMenuFont);
@@ -6536,7 +6567,6 @@ void Item_Paint(itemDef_t *item)
 	}
 
 
-//JLFMOUSE
 	if (item->window.flags & WINDOW_MOUSEOVER)
 	{
 		if (item->descText && !Display_KeyBindPending())
@@ -6550,7 +6580,6 @@ void Item_Paint(itemDef_t *item)
 	//			item->window.flags &= ~WINDOW_MOUSEOVER;
 	//		}
 	//		else
-	//END JLFMOUSE
 			{	// Draw the desctext
 				const char *textPtr = item->descText;
 				if (*textPtr == '@')	// string reference
@@ -6609,72 +6638,75 @@ void Item_Paint(itemDef_t *item)
 		}
 	}
 
-  // paint the rect first.. 
-  Window_Paint(&item->window, parent->fadeAmount , parent->fadeClamp, parent->fadeCycle);
+	// paint the rect first.. 
+	Window_Paint(&item->window, parent->fadeAmount , parent->fadeClamp, parent->fadeCycle);
 
-  // Draw box to show rectangle extents, in debug mode
-  if (debugMode) 
-  {
-	vec4_t color;
-    color[1] = color[3] = 1;
-    color[0] = color[2] = 0;
-	DC->drawRect(
-		item->window.rect.x, 
-		item->window.rect.y, 
-		item->window.rect.w, 
-		item->window.rect.h, 
-		1, 
-		color);
-  }
+	// Draw box to show rectangle extents, in debug mode
+	if (debugMode) 
+	{
+		vec4_t color;
+		color[1] = color[3] = 1;
+		color[0] = color[2] = 0;
+		DC->drawRect(
+			item->window.rect.x, 
+			item->window.rect.y, 
+			item->window.rect.w, 
+			item->window.rect.h, 
+			1, 
+			color);
+	}
 
-  //DC->drawRect(item->window.rect.x, item->window.rect.y, item->window.rect.w, item->window.rect.h, 1, red);
+	//DC->drawRect(item->window.rect.x, item->window.rect.y, item->window.rect.w, item->window.rect.h, 1, red);
 
-  switch (item->type) {
-    case ITEM_TYPE_OWNERDRAW:
-      Item_OwnerDraw_Paint(item);
-      break;
-    case ITEM_TYPE_TEXT:
-    case ITEM_TYPE_BUTTON:
-      Item_Text_Paint(item);
-      break;
-    case ITEM_TYPE_RADIOBUTTON:
-      break;
-    case ITEM_TYPE_CHECKBOX:
-      break;
-    case ITEM_TYPE_EDITFIELD:
-    case ITEM_TYPE_NUMERICFIELD:
-      Item_TextField_Paint(item);
-      break;
-    case ITEM_TYPE_COMBO:
-      break;
-    case ITEM_TYPE_LISTBOX:
-      Item_ListBox_Paint(item);
-      break;
+	switch (item->type) {
+	case ITEM_TYPE_OWNERDRAW:
+		Item_OwnerDraw_Paint(item);
+		break;
+	case ITEM_TYPE_TEXT:
+	case ITEM_TYPE_BUTTON:
+		Item_Text_Paint(item);
+		break;
+	case ITEM_TYPE_RADIOBUTTON:
+		break;
+	case ITEM_TYPE_CHECKBOX:
+		break;
+	case ITEM_TYPE_EDITFIELD:
+	case ITEM_TYPE_NUMERICFIELD:
+		Item_TextField_Paint(item);
+		break;
+	case ITEM_TYPE_COMBO:
+		break;
+	case ITEM_TYPE_LISTBOX:
+		Item_ListBox_Paint(item);
+		break;
 	case ITEM_TYPE_TEXTSCROLL:
-	  Item_TextScroll_Paint ( item );
-	  break;
-    //case ITEM_TYPE_IMAGE:
-    //  Item_Image_Paint(item);
-    //  break;
-    case ITEM_TYPE_MODEL:
-      Item_Model_Paint(item);
-      break;
-    case ITEM_TYPE_YESNO:
-      Item_YesNo_Paint(item);
-      break;
-    case ITEM_TYPE_MULTI:
-      Item_Multi_Paint(item);
-      break;
-    case ITEM_TYPE_BIND:
-      Item_Bind_Paint(item);
-      break;
-    case ITEM_TYPE_SLIDER:
-      Item_Slider_Paint(item);
-      break;
-    default:
-      break;
-  }
+		Item_TextScroll_Paint ( item );
+		break;
+		//case ITEM_TYPE_IMAGE:
+		//  Item_Image_Paint(item);
+		//  break;
+	case ITEM_TYPE_MODEL:
+		Item_Model_Paint(item);
+		break;
+	case ITEM_TYPE_YESNO:
+		Item_YesNo_Paint(item);
+		break;
+	case ITEM_TYPE_MULTI:
+		Item_Multi_Paint(item);
+		break;
+	case ITEM_TYPE_BIND:
+		Item_Bind_Paint(item);
+		break;
+	case ITEM_TYPE_SLIDER:
+		Item_Slider_Paint(item);
+		break;
+	default:
+		break;
+	}
 
+	//Raz: Ran into an issue where ITEM_TYPE_MULTI wasn't resetting the color
+	//		resulting in successive elements being tinted
+	DC->setColor( NULL );
 }
 
 void Menu_Init(menuDef_t *menu) {
@@ -6687,31 +6719,31 @@ void Menu_Init(menuDef_t *menu) {
 }
 
 itemDef_t *Menu_GetFocusedItem(menuDef_t *menu) {
-  int i;
-  if (menu) {
-    for (i = 0; i < menu->itemCount; i++) {
-      if (menu->items[i]->window.flags & WINDOW_HASFOCUS) {
-        return menu->items[i];
-      }
-    }
-  }
-  return NULL;
+	int i;
+	if (menu) {
+		for (i = 0; i < menu->itemCount; i++) {
+			if (menu->items[i]->window.flags & WINDOW_HASFOCUS) {
+				return menu->items[i];
+			}
+		}
+	}
+	return NULL;
 }
 
 menuDef_t *Menu_GetFocused() {
-  int i;
-  for (i = 0; i < menuCount; i++) {
-    if (Menus[i].window.flags & WINDOW_HASFOCUS && Menus[i].window.flags & WINDOW_VISIBLE) {
-      return &Menus[i];
-    }
-  }
-  return NULL;
+	int i;
+	for (i = 0; i < menuCount; i++) {
+		if (Menus[i].window.flags & WINDOW_HASFOCUS && Menus[i].window.flags & WINDOW_VISIBLE) {
+			return &Menus[i];
+		}
+	}
+	return NULL;
 }
 
 void Menu_ScrollFeeder(menuDef_t *menu, int feeder, qboolean down) {
 	if (menu) {
 		int i;
-    for (i = 0; i < menu->itemCount; i++) {
+		for (i = 0; i < menu->itemCount; i++) {
 			if (menu->items[i]->special == feeder) {
 				Item_ListBox_HandleKey(menu->items[i], (down) ? A_CURSOR_DOWN : A_CURSOR_UP, qtrue, qtrue);
 				return;
@@ -6733,7 +6765,7 @@ void Menu_SetFeederSelection(menuDef_t *menu, int feeder, int index, const char 
 
 	if (menu) {
 		int i;
-    for (i = 0; i < menu->itemCount; i++) {
+		for (i = 0; i < menu->itemCount; i++) {
 			if (menu->items[i]->special == feeder) {
 				if (index == 0) {
 					listBoxDef_t *listPtr = (listBoxDef_t*)menu->items[i]->typeData;
@@ -7206,7 +7238,6 @@ void UI_CleanupGhoul2(void)
 
 		next = next->next;
 	}
-
 }
 
 // asset_model <string>
@@ -9525,7 +9556,6 @@ void *Display_CaptureItem(int x, int y) {
 
 // FIXME: 
 qboolean Display_MouseMove(void *p, int x, int y) {
-
 	int i;
 	menuDef_t *menu = (menuDef_t *) p;
 

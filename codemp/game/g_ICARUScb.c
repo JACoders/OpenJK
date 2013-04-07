@@ -4,25 +4,27 @@
 //
 //====================================================================================
 
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 #include "bg_public.h"
 #include "b_local.h"
-#include "../icarus/Q3_Interface.h"
-#include "../icarus/Q3_Registers.h"
+#include "icarus/Q3_Interface.h"
+#include "icarus/Q3_Registers.h"
 #include "g_nav.h"
-
 
 qboolean BG_SabersOff( playerState_t *ps );
 extern stringID_table_t WPTable[];
 extern stringID_table_t BSTable[];
 
 
-
 //This is a hack I guess. It's because we can't include the file this enum is in
 //unless we're using cpp. But we need it for the interpreter stuff.
 //In any case, DO NOT modify this enum.
 
-#ifndef __linux__
+// Hack++
+// This code is compiled as C++ on Xbox. We could try and rig something above
+// so that we only get the C version of the includes (no full Icarus) in that
+// scenario, but I think we'll just try to leave this out instead.
+#if defined(__linux__) && defined(__GCC__) || !defined(__linux__)
 enum
 {
 	TK_EOF = -1,
@@ -39,7 +41,7 @@ enum
 };
 #endif
 
-#include "../icarus/interpreter.h"
+#include "icarus/interpreter.h"
 
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
@@ -258,7 +260,7 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_HUD),
 
 //FIXME: add BOTH_ attributes here too
-	"",	SET_,
+	{"",	SET_},
 };
 
 void Q3_TaskIDClear( int *taskID )
@@ -269,16 +271,16 @@ void Q3_TaskIDClear( int *taskID )
 void G_DebugPrint( int level, const char *format, ... )
 {
 	va_list		argptr;
-	char		text[1024];
+	char		text[1024] = {0};
 
 	//Don't print messages they don't want to see
 	//if ( g_ICARUSDebug->integer < level )
-	if (g_developer.integer != 2)
+	if (developer.integer != 2)
 		return;
 
-	va_start (argptr, format);
-	vsprintf (text, format, argptr);
-	va_end (argptr);
+	va_start( argptr, format );
+	Q_vsnprintf(text, sizeof( text ), format, argptr );
+	va_end( argptr );
 
 	//Add the color formatting
 	switch ( level )
@@ -404,7 +406,7 @@ int Q3_PlaySound( int taskID, int entID, const char *name, const char *channel )
 	Q_strupr(finalName);
 	//G_AddSexToMunroString( finalName, qtrue );
 
-	COM_StripExtension( (const char *)finalName, finalName );
+	COM_StripExtension( (const char *)finalName, finalName, sizeof( finalName ) );
 
 	soundHandle = G_SoundIndex( (char *) finalName );
 	bBroadcast = qfalse;
@@ -3367,25 +3369,11 @@ static void Q3_SetScale(int entID, float float_data)
 	
 	if (self->client)
 	{
-		if ( float_data < 0 )
-		{
-			self->client->ps.iModelScale = float_data;
-		}
-		else
-		{
-			self->client->ps.iModelScale = float_data*100.0f;
-		}
+		self->client->ps.iModelScale = float_data*100.0f;
 	}
 	else
 	{
-		if ( float_data < 0 )
-		{
-			self->s.iModelScale = float_data;
-		}
-		else
-		{
-			self->s.iModelScale = float_data*100.0f;
-		}
+		self->s.iModelScale = float_data*100.0f;
 	}
 }
 
@@ -4930,12 +4918,12 @@ vec4_t textcolor_scroll;
 
 /*
 -------------------------
-SetTextColor
+Q3_SetTextColor
 -------------------------
 */
-static void SetTextColor ( vec4_t textcolor,const char *color)
+static void Q3_SetTextColor ( vec4_t textcolor,const char *color)
 {
-	G_DebugPrint( WL_WARNING, "SetTextColor: NOT SUPPORTED IN MP\n");
+	G_DebugPrint( WL_WARNING, "Q3_SetTextColor: NOT SUPPORTED IN MP\n");
 	return;
 }
 
@@ -4948,7 +4936,7 @@ Change color text prints in
 */
 static void Q3_SetCaptionTextColor ( const char *color)
 {
-	SetTextColor(textcolor_caption,color);
+	Q3_SetTextColor(textcolor_caption,color);
 }
 
 /*
@@ -4960,7 +4948,7 @@ Change color text prints in
 */
 static void Q3_SetCenterTextColor ( const char *color)
 {
-	SetTextColor(textcolor_center,color);
+	Q3_SetTextColor(textcolor_center,color);
 }
 
 /*
@@ -4972,7 +4960,7 @@ Change color text prints in
 */
 static void Q3_SetScrollTextColor ( const char *color)
 {
-	SetTextColor(textcolor_scroll,color);
+	Q3_SetTextColor(textcolor_scroll,color);
 }
 
 /*

@@ -2,8 +2,8 @@
 //
 // cg_scoreboard -- draw the scoreboard on top of the game screen
 #include "cg_local.h"
-#include "../ui/ui_shared.h"
-#include "../game/bg_saga.h"
+#include "ui/ui_shared.h"
+#include "game/bg_saga.h"
 
 #define	SCOREBOARD_X		(0)
 
@@ -63,17 +63,9 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 {
 	//vec3_t	headAngles;
 	clientInfo_t	*ci;
-	int iconx, headx;
-	float		scale;
-
-	if ( largeFormat )
-	{
-		scale = 1.0f;
-	}
-	else
-	{
-		scale = 0.75f;
-	}
+	int				iconx = SB_BOTICON_X + (SB_RATING_WIDTH / 2);
+	float			scale = largeFormat ? 1.0f : 0.75f,
+					iconSize = largeFormat ? SB_NORMAL_HEIGHT : SB_INTER_HEIGHT;
 
 	if ( score->client < 0 || score->client >= cgs.maxclients ) {
 		Com_Printf( "Bad score->client: %i\n", score->client );
@@ -82,55 +74,27 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 	
 	ci = &cgs.clientinfo[score->client];
 
-	iconx = SB_BOTICON_X + (SB_RATING_WIDTH / 2);
-	headx = SB_HEAD_X + (SB_RATING_WIDTH / 2);
-
 	// draw the handicap or bot skill marker (unless player has flag)
-	if ( ci->powerups & ( 1 << PW_NEUTRALFLAG ) )
+	if ( ci->powerups & (1<<PW_NEUTRALFLAG) )
 	{
-		if( largeFormat )
-		{
-			CG_DrawFlagModel( iconx, y - ( 32 - BIGCHAR_HEIGHT ) / 2, 32, 32, TEAM_FREE, qfalse );
-		}
+		if ( largeFormat )
+			CG_DrawFlagModel( iconx, y - (32 - BIGCHAR_HEIGHT) / 2, iconSize, iconSize, TEAM_FREE, qfalse );
 		else
-		{
-			CG_DrawFlagModel( iconx, y, 16, 16, TEAM_FREE, qfalse );
-		}
+			CG_DrawFlagModel( iconx, y, iconSize, iconSize, TEAM_FREE, qfalse );
 	}
+
 	else if ( ci->powerups & ( 1 << PW_REDFLAG ) )
-	{
-		if( largeFormat )
-		{
-			CG_DrawFlagModel( iconx*cgs.screenXScale, y*cgs.screenYScale, 32*cgs.screenXScale, 32*cgs.screenYScale, TEAM_RED, qfalse );
-		}
-		else
-		{
-			CG_DrawFlagModel( iconx*cgs.screenXScale, y*cgs.screenYScale, 32*cgs.screenXScale, 32*cgs.screenYScale, TEAM_RED, qfalse );
-		}
-	}
+		CG_DrawFlagModel( iconx, y, iconSize, iconSize, TEAM_RED, qfalse );
+
 	else if ( ci->powerups & ( 1 << PW_BLUEFLAG ) )
+		CG_DrawFlagModel( iconx, y, iconSize, iconSize, TEAM_BLUE, qfalse );
+
+	else if ( cgs.gametype == GT_POWERDUEL && (ci->duelTeam == DUELTEAM_LONE || ci->duelTeam == DUELTEAM_DOUBLE) )
 	{
-		if( largeFormat )
-		{
-			CG_DrawFlagModel( iconx*cgs.screenXScale, y*cgs.screenYScale, 32*cgs.screenXScale, 32*cgs.screenYScale, TEAM_BLUE, qfalse );
-		}
-		else
-		{
-			CG_DrawFlagModel( iconx*cgs.screenXScale, y*cgs.screenYScale, 32*cgs.screenXScale, 32*cgs.screenYScale, TEAM_BLUE, qfalse );
-		}
+		CG_DrawPic( iconx, y, iconSize, iconSize, trap_R_RegisterShaderNoMip(
+			(ci->duelTeam == DUELTEAM_LONE) ? "gfx/mp/pduel_icon_lone" : "gfx/mp/pduel_icon_double" ) );
 	}
-	else if (cgs.gametype == GT_POWERDUEL &&
-		(ci->duelTeam == DUELTEAM_LONE || ci->duelTeam == DUELTEAM_DOUBLE))
-	{
-		if (ci->duelTeam == DUELTEAM_LONE)
-		{
-			CG_DrawPic ( iconx, y, 32, 32, trap_R_RegisterShaderNoMip ( "gfx/mp/pduel_icon_lone" ) );
-		}
-		else
-		{
-			CG_DrawPic ( iconx, y, 32, 32, trap_R_RegisterShaderNoMip ( "gfx/mp/pduel_icon_double" ) );
-		}
-	}
+
 	else if (cgs.gametype == GT_SIEGE)
 	{ //try to draw the shader for this class on the scoreboard
 		if (ci->siegeIndex != -1)
@@ -142,17 +106,6 @@ static void CG_DrawClientScore( int y, score_t *score, float *color, float fade,
 				CG_DrawPic (iconx, y, largeFormat?24:12, largeFormat?24:12, scl->classShader);
 			}
 		}
-	}
-	else
-	{
-		// draw the wins / losses
-		/*
-		if ( cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL ) 
-		{
-			CG_DrawSmallStringColor( iconx, y + SMALLCHAR_HEIGHT/2, va("%i/%i", ci->wins, ci->losses ), color );
-		}
-		*/
-		//rww - in duel, we now show wins/losses in place of "frags". This is because duel now defaults to 1 kill per round.
 	}
 
 	// highlight your position
@@ -347,12 +300,12 @@ qboolean CG_DrawOldScoreboard( void ) {
 	float	fade;
 	float	*fadeColor;
 	char	*s;
-	int maxClients;
+	int maxClients, realMaxClients;
 	int lineHeight;
 	int topBorderSize, bottomBorderSize;
 
 	// don't draw amuthing if the menu or console is up
-	if ( cg_paused.integer ) {
+	if ( cl_paused.integer ) {
 		cg.deferredPlayerLoading = 0;
 		return qfalse;
 	}
@@ -520,6 +473,7 @@ qboolean CG_DrawOldScoreboard( void ) {
 		topBorderSize = 8;
 		bottomBorderSize = 8;
 	}
+	realMaxClients = maxClients;
 
 	localClient = qfalse;
 
@@ -604,6 +558,8 @@ qboolean CG_DrawOldScoreboard( void ) {
 
 			maxClients -= (team1MaxCl+team2MaxCl);
 		}
+		//Raz: Fix spectators not being shown on team scoreboard by preserving maxClients
+		maxClients = realMaxClients;
 		n1 = CG_TeamScoreboard( y, TEAM_SPECTATOR, fade, maxClients, lineHeight, qfalse );
 		y += (n1 * lineHeight) + BIGCHAR_HEIGHT;
 

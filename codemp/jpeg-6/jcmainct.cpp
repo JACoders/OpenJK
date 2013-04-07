@@ -10,7 +10,7 @@
  * compressor proper; it holds downsampled data in the JPEG colorspace.
  */
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #define JPEG_INTERNALS
 #include "jinclude.h"

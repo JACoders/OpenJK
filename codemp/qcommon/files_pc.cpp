@@ -6,14 +6,13 @@
  *****************************************************************************/
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
-#include "../client/client.h"
-//#include "../zlib32/zip.h"
+#include "client/client.h"
+//#include "zlib32/zip.h"
 //#include "unzip.h"
 #include "files.h"
 
-//#include <windows.h> //rww - included to make fs_copyfiles 2 related functions happy.
 #include "platform.h"
 
 // TTimo - https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=540

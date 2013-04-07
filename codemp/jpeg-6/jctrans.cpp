@@ -10,7 +10,7 @@
  * The routines in jcapimin.c will also be needed by a transcoder.
  */
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #define JPEG_INTERNALS
 #include "jinclude.h"

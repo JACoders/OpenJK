@@ -5,12 +5,12 @@
 // be a valid snapshot this frame
 
 #include "cg_local.h"
-#include "../../ui/menudef.h"
+#include "ui/menudef.h"
 #if !defined(CL_LIGHT_H_INC)
 	#include "cg_lights.h"
 #endif
-#include "..\ghoul2\g2.h"
-#include "../ui/ui_public.h"
+#include "ghoul2/G2.h"
+#include "ui/ui_public.h"
 
 /*
 =================
@@ -103,9 +103,9 @@ and whenever the server updates any serverinfo flagged cvars
 ================
 */
 void CG_ParseServerinfo( void ) {
-	const char	*info;
-	const char	*tinfo;
-	char	*mapname;
+	const char *info = NULL, *tinfo = NULL;
+	char *mapname;
+	int i;
 
 	info = CG_ConfigString( CS_SERVERINFO );
 
@@ -127,11 +127,21 @@ void CG_ParseServerinfo( void ) {
 	cgs.wDisable = atoi( Info_ValueForKey( info, "wdisable" ) );
 	cgs.fDisable = atoi( Info_ValueForKey( info, "fdisable" ) );
 	cgs.dmflags = atoi( Info_ValueForKey( info, "dmflags" ) );
-	cgs.teamflags = atoi( Info_ValueForKey( info, "teamflags" ) );
-	cgs.fraglimit = atoi( Info_ValueForKey( info, "fraglimit" ) );
 	cgs.duel_fraglimit = atoi( Info_ValueForKey( info, "duel_fraglimit" ) );
 	cgs.capturelimit = atoi( Info_ValueForKey( info, "capturelimit" ) );
-	cgs.timelimit = atoi( Info_ValueForKey( info, "timelimit" ) );
+
+	// reset fraglimit warnings
+	i = atoi( Info_ValueForKey( info, "fraglimit" ) );
+	if ( cgs.fraglimit < i )
+		cg.fraglimitWarnings &= ~(1|2|4);
+	cgs.fraglimit = i;
+
+	// reset timelimit warnings
+	i = atoi( Info_ValueForKey( info, "timelimit" ) );
+	if ( cgs.timelimit != i )
+		cg.timelimitWarnings &= ~(1|2);
+	cgs.timelimit = i;
+
 	cgs.maxclients = atoi( Info_ValueForKey( info, "sv_maxclients" ) );
 	mapname = Info_ValueForKey( info, "mapname" );
 
@@ -184,6 +194,9 @@ void CG_ParseServerinfo( void ) {
 			cg.mRMGWeather = qfalse;
 		}
 	}
+
+	//Raz: Fix bogus vote strings
+	Q_strncpyz( cgs.voteString, CG_ConfigString( CS_VOTE_STRING ), sizeof( cgs.voteString ) );
 }
 
 /*
@@ -203,6 +216,16 @@ static void CG_ParseWarmup( void ) {
 	cg.warmup = warmup;
 }
 
+//Raz: This is a reverse map of flag statuses as seen in g_team.c
+//static char ctfFlagStatusRemap[] = { '0', '1', '*', '*', '2' };
+static char ctfFlagStatusRemap[] = { 	
+	FLAG_ATBASE,
+	FLAG_TAKEN,			// CTF
+	// server doesn't use FLAG_TAKEN_RED or FLAG_TAKEN_BLUE
+	// which was originally for 1-flag CTF.
+	FLAG_DROPPED
+};
+
 /*
 ================
 CG_SetConfigValues
@@ -219,9 +242,19 @@ void CG_SetConfigValues( void )
 	cgs.scores2 = atoi( CG_ConfigString( CS_SCORES2 ) );
 	cgs.levelStartTime = atoi( CG_ConfigString( CS_LEVEL_START_TIME ) );
 	if( cgs.gametype == GT_CTF || cgs.gametype == GT_CTY ) {
+		int redflagId = 0, blueflagId = 0;
+
 		s = CG_ConfigString( CS_FLAGSTATUS );
-		cgs.redflag = s[0] - '0';
-		cgs.blueflag = s[1] - '0';
+
+		redflagId = s[0] - '0';
+		blueflagId = s[1] - '0';
+
+		// fix: proper flag statuses mapping for dropped flag
+		if ( redflagId >= 0 && redflagId < ARRAY_LEN( ctfFlagStatusRemap ) ) 
+			cgs.redflag = ctfFlagStatusRemap[redflagId];
+
+		if ( blueflagId >= 0 && blueflagId < ARRAY_LEN( ctfFlagStatusRemap ) ) 
+			cgs.blueflag = ctfFlagStatusRemap[blueflagId];
 	}
 	cg.warmup = atoi( CG_ConfigString( CS_WARMUP ) );
 
@@ -845,8 +878,14 @@ static void CG_ConfigStringModified( void ) {
 	} else if ( num == CS_FLAGSTATUS ) {
 		if( cgs.gametype == GT_CTF || cgs.gametype == GT_CTY ) {
 			// format is rb where its red/blue, 0 is at base, 1 is taken, 2 is dropped
-			cgs.redflag = str[0] - '0';
-			cgs.blueflag = str[1] - '0';
+			int redflagId = str[0] - '0', blueflagId = str[1] - '0';
+
+			//Raz: improved flag status remapping
+			if ( redflagId >= 0 && redflagId < ARRAY_LEN( ctfFlagStatusRemap ) ) 
+				cgs.redflag = ctfFlagStatusRemap[redflagId];
+
+			if ( blueflagId >= 0 && blueflagId < ARRAY_LEN( ctfFlagStatusRemap ) )  
+				cgs.blueflag = ctfFlagStatusRemap[blueflagId];
 		}
 	}
 	else if ( num == CS_SHADERSTATE ) {
@@ -992,7 +1031,7 @@ require a reload of all the media
 ===============
 */
 static void CG_MapRestart( void ) {
-	if ( cg_showmiss.integer ) {
+	if ( cg_showMiss.integer ) {
 		CG_Printf( "CG_MapRestart\n" );
 	}
 
@@ -1034,7 +1073,7 @@ static void CG_MapRestart( void ) {
 		}
 	}
 	*/
-	trap_Cvar_Set("cg_thirdPerson", "0");
+//	trap_Cvar_Set("cg_thirdPerson", "0");
 }
 
 /*
@@ -1532,7 +1571,7 @@ static void CG_ServerCommand( void ) {
 			x++;
 		}
 		trap_SP_GetStringTextString(x, strEd, MAX_STRINGED_SV_STRING);
-		CG_CenterPrint( strEd, SCREEN_HEIGHT * 0.20, BIGCHAR_WIDTH );
+		CG_CenterPrint( strEd, SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
 		return;
 	}
 
@@ -1582,19 +1621,19 @@ static void CG_ServerCommand( void ) {
 				return;
 			}
 
-			strcpy(name, CG_Argv(1));
-			strcpy(loc, CG_Argv(2));
-			strcpy(color, CG_Argv(3));
-			strcpy(message, CG_Argv(4));
+			Q_strncpyz( name, CG_Argv( 1 ), sizeof( name ) );
+			Q_strncpyz( loc, CG_Argv( 2 ), sizeof( loc ) );
+			Q_strncpyz( color, CG_Argv( 3 ), sizeof( color ) );
+			Q_strncpyz( message, CG_Argv( 4 ), sizeof( message ) );
 
 			if (loc[0] == '@')
 			{ //get localized text
-				trap_SP_GetStringTextString(loc+1, loc, MAX_STRING_CHARS);
+				trap_SP_GetStringTextString(loc+1, loc, sizeof( loc ) );
 			}
 
 			trap_S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 			//Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
-			Com_sprintf(text, MAX_SAY_TEXT, "%s<%s>^%s%s", name, loc, color, message);
+			Com_sprintf(text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message);
 			CG_RemoveChatEscapeChar( text );
 			CG_ChatBox_AddString(text);
 			CG_Printf( "*%s\n", text );
@@ -1612,19 +1651,19 @@ static void CG_ServerCommand( void ) {
 			return;
 		}
 
-		strcpy(name, CG_Argv(1));
-		strcpy(loc, CG_Argv(2));
-		strcpy(color, CG_Argv(3));
-		strcpy(message, CG_Argv(4));
+		Q_strncpyz( name, CG_Argv( 1 ), sizeof( name ) );
+		Q_strncpyz( loc, CG_Argv( 2 ), sizeof( loc ) );
+		Q_strncpyz( color, CG_Argv( 3 ), sizeof( color ) );
+		Q_strncpyz( message, CG_Argv( 4 ), sizeof( message ) );
 
 		if (loc[0] == '@')
 		{ //get localized text
-			trap_SP_GetStringTextString(loc+1, loc, MAX_STRING_CHARS);
+			trap_SP_GetStringTextString(loc+1, loc, sizeof( loc ) );
 		}
 
 		trap_S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 		//Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
-		Com_sprintf(text, MAX_SAY_TEXT, "%s<%s> ^%s%s", name, loc, color, message);
+		Com_sprintf(text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message);
 		CG_RemoveChatEscapeChar( text );
 		CG_ChatBox_AddString(text);
 		CG_Printf( "*%s\n", text );
@@ -1647,11 +1686,28 @@ static void CG_ServerCommand( void ) {
 		return;
 	}
 
-  if ( Q_stricmp (cmd, "remapShader") == 0 ) {
+	//Raz: Buffer overflow fix
+#if 0
+	if ( Q_stricmp (cmd, "remapShader") == 0 ) {
 		if (trap_Argc() == 4) {
 			trap_R_RemapShader(CG_Argv(1), CG_Argv(2), CG_Argv(3));
 		}
 	}
+#else
+	if ( !Q_stricmp( cmd, "remapShader" ) )
+	{
+		if ( trap_Argc() == 4 )
+		{
+			char shader1[MAX_QPATH];
+			char shader2[MAX_QPATH];
+			Q_strncpyz( shader1, CG_Argv( 1 ), sizeof( shader1 ) );
+			Q_strncpyz( shader2, CG_Argv( 2 ), sizeof( shader2 ) );
+			trap_R_RemapShader( shader1, shader2, CG_Argv( 3 ) );
+			return;
+		}
+		return;
+	}
+#endif
 
 	// loaddeferred can be both a servercmd and a consolecmd
 	if ( !strcmp( cmd, "loaddefered" ) ) {	// FIXME: spelled wrong, but not changing for demo

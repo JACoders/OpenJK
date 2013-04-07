@@ -1,12 +1,12 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "tr_local.h"
 
 #if !defined(G2_H_INC)
-	#include "../ghoul2/G2.h"
+	#include "ghoul2/G2.h"
 #endif
-#include "../ghoul2/G2_local.h"
+#include "ghoul2/G2_local.h"
 #include "MatComp.h"
 
 #ifdef VV_LIGHTING
@@ -14,7 +14,7 @@
 #endif
 
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
-#include "../qcommon/disablewarnings.h"
+#include "qcommon/disablewarnings.h"
 
 static	int			r_firstSceneDrawSurf;
 

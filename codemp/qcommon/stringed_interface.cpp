@@ -11,8 +11,8 @@
 //////////////////////////////////////////////////
 //
 // stuff common to all qcommon files...
-#include "../server/server.h"
-#include "../game/q_shared.h"
+#include "server/server.h"
+#include "qcommon/q_shared.h"
 #include "qcommon.h"
 //
 //////////////////////////////////////////////////

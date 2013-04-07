@@ -14,14 +14,14 @@
 using namespace std;
 
 #if !defined(GENERICPARSER2_H_INC)
-#include "../qcommon/GenericParser2.h"
+#include "qcommon/GenericParser2.h"
 #endif
 
 #if !defined(CM_LOCAL_H_INC)
-#include "../qcommon/cm_local.h"
+#include "qcommon/cm_local.h"
 #endif
 
-#include "../client/client.h"
+#include "client/client.h"
 
 #define MAX_INSTANCE_TRIES			5
 
@@ -35,7 +35,7 @@ typedef enum
 } symmetry_t;
 
 #if !defined(CM_TERRAINMAP_H_INC)
-	#include "../qcommon/cm_terrainmap.h"
+	#include "qcommon/cm_terrainmap.h"
 #endif
 
 #if !defined(RM_AREA_H_INC)

@@ -1,5 +1,5 @@
 //bg_saberLoad.c
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_local.h"
 #include "w_saber.h"
@@ -13,6 +13,7 @@ extern void	trap_FS_Write( const void *buffer, int len, fileHandle_t f );
 extern void	trap_FS_FCloseFile( fileHandle_t f );
 extern int	trap_FS_GetFileList(  const char *path, const char *extension, char *listbuf, int bufsize );
 extern qhandle_t trap_R_RegisterSkin( const char *name );
+
 
 #ifdef QAGAME
 extern int G_SoundIndex( const char *name );
@@ -51,7 +52,7 @@ stringID_table_t SaberTable[] =
 	ENUM2STRING(SABER_LANCE),
 	ENUM2STRING(SABER_STAR),
 	ENUM2STRING(SABER_TRIDENT),
-	"",	-1
+	{"",	-1}
 };
 
 stringID_table_t SaberMoveTable[] =
@@ -116,7 +117,7 @@ stringID_table_t SaberMoveTable[] =
 	ENUM2STRING(LS_DUAL_FB),
 	ENUM2STRING(LS_DUAL_LR),
 	ENUM2STRING(LS_HILT_BASH),
-	"",	-1
+	{"",	-1}
 };
 
 //Also used in npc code
@@ -491,9 +492,9 @@ void WP_SaberSetDefaults( saberInfo_t *saber )
 		saber->blade[i].lengthMax = 32;
 	}
 
-	strcpy(saber->name, "default");
-	strcpy(saber->fullName, "lightsaber");
-	strcpy(saber->model, "models/weapons2/saber_reborn/saber_w.glm");
+	Q_strncpyz( saber->name, DEFAULT_SABER, sizeof( saber->name ) );
+	Q_strncpyz( saber->fullName, "lightsaber", sizeof( saber->fullName ) );
+	Q_strncpyz( saber->model, DEFAULT_SABER_MODEL, sizeof( saber->model ) );
 	saber->skin = 0;
 	saber->soundOn = BG_SoundIndex( "sound/weapons/saber/enemy_saber_on.wav" );
 	saber->soundLoop = BG_SoundIndex( "sound/weapons/saber/saberhum3.wav" );
@@ -605,8 +606,6 @@ void WP_SaberSetDefaults( saberInfo_t *saber )
 	saber->splashKnockback2 = 0.0f;			//0 - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
 //=========================================================================================================================================
 }
-
-#define DEFAULT_SABER "Kyle"
 
 qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber ) 
 {
@@ -2699,7 +2698,7 @@ void WP_SetSaber( int entNum, saberInfo_t *sabers, int saberNum, const char *sab
 	if ( entNum < MAX_CLIENTS &&
 		!WP_SaberValidForPlayerInMP( saberName ) )
 	{
-		WP_SaberParseParms( "Kyle", &sabers[saberNum] );//get saber info
+		WP_SaberParseParms( DEFAULT_SABER, &sabers[saberNum] );//get saber info
 	}
 	else
 	{
@@ -3001,3 +3000,4 @@ void BG_SI_DeactivateTrail ( saberInfo_t *saber, float duration )
 		BG_BLADE_DeactivateTrail(&saber->blade[i], duration);
 	}
 }
+

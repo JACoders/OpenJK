@@ -9,7 +9,7 @@ FORCE INTERFACE
 
 // use this to get a demo build without an explicit demo build, i.e. to get the demo ui files to build
 #include "ui_local.h"
-#include "../qcommon/qfiles.h"
+#include "qcommon/qfiles.h"
 #include "ui_force.h"
 
 int uiForceSide = FORCE_LIGHTSIDE;
@@ -25,9 +25,7 @@ extern const char *UI_TeamName(int team);
 qboolean gTouchedForce = qfalse;
 vmCvar_t	ui_freeSaber, ui_forcePowerDisable;
 
-
 void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow);
-
 
 qboolean uiForcePowersDisabled[NUM_FORCE_POWERS] = {
 	qfalse,//FP_HEAL,//instant

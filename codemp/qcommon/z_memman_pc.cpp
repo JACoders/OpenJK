@@ -1,7 +1,7 @@
 // Created 3/13/03 by Brian Osman (VV) - Split Zone/Hunk from common
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "platform.h"
 
@@ -13,7 +13,7 @@
 #define TAGDEF(blah) #blah
 const static char *psTagStrings[TAG_COUNT+1]=	// +1 because TAG_COUNT will itself become a string here. Oh well.
 {
-	#include "../qcommon/tags.h"
+	#include "qcommon/tags.h"
 };
 //
 ////////////////////////////////////////////////

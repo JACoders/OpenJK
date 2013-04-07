@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 /************************************************************************************************
  *
@@ -11,7 +11,9 @@
 
 #include "RM_Headers.h"
 
-#define max(a,b)    (((a) > (b)) ? (a) : (b))
+#ifndef max
+	#define max(a,b)    (((a) > (b)) ? (a) : (b))
+#endif
 
 /************************************************************************************************
  * CRMNode::CRMNode

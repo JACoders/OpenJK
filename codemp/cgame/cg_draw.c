@@ -5,10 +5,10 @@
 
 #include "cg_local.h"
 
-#include "bg_saga.h"
+#include "game/bg_saga.h"
 
-#include "../ui/ui_shared.h"
-#include "../ui/ui_public.h"
+#include "ui/ui_shared.h"
+#include "ui/ui_public.h"
 
 extern float CG_RadiusForCent( centity_t *cent );
 qboolean CG_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y);
@@ -95,6 +95,9 @@ char *showPowersName[] =
 	NULL
 };
 
+//Called from UI shared code. For now we'll just redirect to the normal anim load function.
+
+
 int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean isHumanoid) 
 {
 	return BG_ParseAnimationFile(filename, animset, isHumanoid);
@@ -114,6 +117,7 @@ int MenuFontToHandle(int iMenuFont)
 	return cgDC.Assets.qhMediumFont;
 }
 
+
 int CG_Text_Width(const char *text, float scale, int iMenuFont) 
 {
 	int iFontIndex = MenuFontToHandle(iMenuFont);
@@ -128,7 +132,7 @@ int CG_Text_Height(const char *text, float scale, int iMenuFont)
 	return trap_R_Font_HeightPixels(iFontIndex, scale);
 }
 
-#include "../qcommon/qfiles.h"	// for STYLE_BLINK etc
+#include "qcommon/qfiles.h"	// for STYLE_BLINK etc
 void CG_Text_Paint(float x, float y, float scale, vec4_t color, const char *text, float adjust, int limit, int style, int iMenuFont) 
 {
 	int iStyleOR = 0;
@@ -462,7 +466,7 @@ void CG_Draw3DModel( float x, float y, float w, float h, qhandle_t model, void *
 	refdef_t		refdef;
 	refEntity_t		ent;
 
-	if ( !cg_draw3dIcons.integer || !cg_drawIcons.integer ) {
+	if ( !cg_draw3DIcons.integer || !cg_drawIcons.integer ) {
 		return;
 	}
 
@@ -537,7 +541,14 @@ void CG_DrawFlagModel( float x, float y, float w, float h, int team, qboolean fo
 	vec3_t			mins, maxs;
 	qhandle_t		handle;
 
-	if ( !force2D && cg_draw3dIcons.integer ) {
+	if ( !force2D && cg_draw3DIcons.integer ) {
+
+		//Raz: need to adjust the coords only for 3d models
+		//		2d icons use virtual screen coords
+		x *= cgs.screenXScale;
+		y *= cgs.screenYScale;
+		w *= cgs.screenXScale;
+		h *= cgs.screenYScale;
 
 		VectorClear( angles );
 
@@ -583,22 +594,6 @@ void CG_DrawFlagModel( float x, float y, float w, float h, int team, qboolean fo
 		}
 	}
 }
-
-/*
-================
-DrawAmmo
-================
-*/
-void DrawAmmo()
-{
-	int x, y;
-
-	x = SCREEN_WIDTH-80;
-	y = SCREEN_HEIGHT-80;
-
-}
-
-
 
 /*
 ================
@@ -697,7 +692,7 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 {
 	vec4_t			calcColor;
 	playerState_t	*ps;
-	int				armor, maxArmor;
+	int				maxArmor;
 	itemDef_t		*focusItem;
 	float			percent,quarterArmor;
 	int				i,currValue,inc;
@@ -711,15 +706,9 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 		return;
 	}
 
-	armor = ps->stats[STAT_ARMOR];
 	maxArmor = ps->stats[STAT_MAX_HEALTH];
 
-	if (armor> maxArmor)
-	{
-		armor = maxArmor;
-	}
-
-	currValue = armor;
+	currValue = ps->stats[STAT_ARMOR];
 	inc = (float) maxArmor / MAX_HUD_TICS;
 
 	memcpy(calcColor, hudTintColor, sizeof(vec4_t));
@@ -784,7 +773,7 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 			focusItem->window.rect.x, 
 			focusItem->window.rect.y, 
 			3, 
-			armor, 
+			ps->stats[STAT_ARMOR], 
 			focusItem->window.rect.w, 
 			focusItem->window.rect.h, 
 			NUM_FONT_SMALL,
@@ -792,7 +781,7 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 	}
 
 	// If armor is low, flash a graphic to warn the player
-	if (armor)	// Is there armor? Draw the HUD Armor TIC
+	if (ps->stats[STAT_ARMOR])	// Is there armor? Draw the HUD Armor TIC
 	{
 		quarterArmor = (float) (ps->stats[STAT_MAX_HEALTH] / 4.0f);
 
@@ -1335,7 +1324,7 @@ void CG_DrawHUD(centity_t	*cent)
 					scoreStr, 
 					UI_RIGHT|UI_DROPSHADOW, 
 					focusItem->window.foreColor, 
-					0.7);
+					0.7f);
 			}
 		}
 
@@ -1805,7 +1794,8 @@ qboolean CG_CheckTargetVehicle( centity_t **pTargetVeh, float *alpha )
     if ( targetNum < ENTITYNUM_WORLD 
 		&& targetNum >= MAX_CLIENTS )
 	{
-		centity_t *targetVeh = &cg_entities[targetNum];
+		//centity_t *targetVeh = &cg_entities[targetNum];
+		targetVeh = &cg_entities[targetNum];
 		if ( targetVeh->currentState.NPC_class == CLASS_VEHICLE 
 			&& targetVeh->m_pVehicle
 			&& targetVeh->m_pVehicle->m_pVehicleInfo
@@ -1820,25 +1810,21 @@ qboolean CG_CheckTargetVehicle( centity_t **pTargetVeh, float *alpha )
 			targetVeh = NULL;
 		}
 	}
-	if ( !targetVeh )
-	{
-		if ( cg_targVehLastTime && cg.time - cg_targVehLastTime < 3000 )
-		{
-			targetVeh = &cg_entities[cg_targVeh];;
-			if ( cg.time-cg_targVehLastTime < 1000 )
-			{//stay at full alpha for 1 sec after lose them from crosshair
-				*alpha = 1.0f;
-			}
-			else
-			{//fade out over 2 secs
-				*alpha = 1.0f-((cg.time-cg_targVehLastTime-1000)/2000.0f);
-			}
-		}
-	}
 	if ( targetVeh )
 	{
 		*pTargetVeh = targetVeh;
 		return qtrue;
+	}
+
+	if ( cg_targVehLastTime && cg.time - cg_targVehLastTime < 3000 )
+	{
+		targetVeh = &cg_entities[cg_targVeh];
+
+		//stay at full alpha for 1 sec after lose them from crosshair
+		if ( cg.time-cg_targVehLastTime < 1000 )
+			*alpha = 1.0f;
+		else //fade out over 2 secs
+			*alpha = 1.0f-((cg.time-cg_targVehLastTime-1000)/2000.0f);
 	}
 	return qfalse;
 }
@@ -3044,6 +3030,7 @@ static float CG_DrawFPS( float y ) {
 	unsigned short frameTime;
 	const int		xOffset = 0;
 
+
 	// don't use serverTime, because that will be drifting to
 	// correct for internet lag changes, timescales, timedemos, etc
 	t = trap_Milliseconds();
@@ -3752,6 +3739,9 @@ static float CG_DrawTeamOverlay( float y, qboolean right, qboolean upper ) {
 
 	plyrs = 0;
 
+	//TODO: On basejka servers, we won't have valid teaminfo if we're spectating someone.
+	//		Find a way to detect invalid info and return early?
+
 	// max player name width
 	pwidth = 0;
 	count = (numSortedTeamPlayers > 8) ? 8 : numSortedTeamPlayers;
@@ -3906,6 +3896,9 @@ static void CG_DrawPowerupIcons(int y)
 	int xOffset = 0;
 	gitem_t	*item;
 
+	//Raz: was missing this
+	trap_R_SetColor( NULL );
+
 	if (!cg.snap)
 	{
 		return;
@@ -3913,7 +3906,8 @@ static void CG_DrawPowerupIcons(int y)
 
 	y += 16;
 
-	for (j = 0; j <= PW_NUM_POWERUPS; j++)
+	//Raz: fixed potential buffer overrun of cg.snap->ps.powerups
+	for (j = 0; j < PW_NUM_POWERUPS; j++)
 	{
 		if (cg.snap->ps.powerups[j] > cg.time)
 		{
@@ -4282,7 +4276,7 @@ static void CG_DrawLagometer( void ) {
 
 	trap_R_SetColor( NULL );
 
-	if ( cg_nopredict.integer || cg_synchronousClients.integer ) {
+	if ( cg_noPredict.integer || g_synchronousClients.integer ) {
 		CG_DrawBigString( ax, ay, "snc", 1.0 );
 	}
 
@@ -4314,7 +4308,7 @@ void CG_DrawSiegeMessageNonMenu( const char *str )
 		trap_SP_GetStringTextString(str+1, text, sizeof(text));
 		str = text;
 	}
-	CG_CenterPrint(str, SCREEN_HEIGHT * 0.20, BIGCHAR_WIDTH);
+	CG_CenterPrint(str, SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH);
 }
 
 /*
@@ -4336,6 +4330,9 @@ for a few moments
 */
 void CG_CenterPrint( const char *str, int y, int charWidth ) {
 	char	*s;
+	//[BugFix19]
+	int		i = 0;
+	//[/BugFix19]
 
 	Q_strncpyz( cg.centerPrint, str, sizeof(cg.centerPrint) );
 
@@ -4346,8 +4343,18 @@ void CG_CenterPrint( const char *str, int y, int charWidth ) {
 	// count the number of lines for centering
 	cg.centerPrintLines = 1;
 	s = cg.centerPrint;
-	while( *s ) {
-		if (*s == '\n')
+	while( *s ) 
+	{
+		//[BugFix19]
+		i++;
+		if(i >= 50)
+		{//maxed out a line of text, this will make the line spill over onto another line.
+			i = 0;
+			cg.centerPrintLines++;
+		}
+		else if (*s == '\n')
+		//if (*s == '\n')
+		//[/BugFix19]
 			cg.centerPrintLines++;
 		s++;
 	}
@@ -4359,6 +4366,13 @@ void CG_CenterPrint( const char *str, int y, int charWidth ) {
 CG_DrawCenterString
 ===================
 */
+qboolean BG_IsWhiteSpace( char c )
+{//this function simply checks to see if the given character is whitespace.
+	if ( c == ' ' || c == '\n' || c == '\0' )
+		return qtrue;
+
+	return qfalse;
+}
 static void CG_DrawCenterString( void ) {
 	char	*start;
 	int		l;
@@ -4371,7 +4385,7 @@ static void CG_DrawCenterString( void ) {
 		return;
 	}
 
-	color = CG_FadeColor( cg.centerPrintTime, 1000 * cg_centertime.value );
+	color = CG_FadeColor( cg.centerPrintTime, 1000 * cg_centerTime.value );
 	if ( !color ) {
 		return;
 	}
@@ -4393,19 +4407,50 @@ static void CG_DrawCenterString( void ) {
 		}
 		linebuffer[l] = 0;
 
+		//[BugFix19]
+		if(!BG_IsWhiteSpace(start[l]) && !BG_IsWhiteSpace(linebuffer[l-1]) )
+		{//we might have cut a word off, attempt to find a spot where we won't cut words off at.
+			int savedL = l;
+			int counter = l-2;
+
+			for(; counter >= 0; counter--)
+			{
+				if(BG_IsWhiteSpace(start[counter]))
+				{//this location is whitespace, line break from this position
+					linebuffer[counter] = 0;
+					l = counter + 1;
+					break;
+				}
+			}
+			if(counter < 0)
+			{//couldn't find a break in the text, just go ahead and cut off the word mid-word.
+				l = savedL;
+			}
+		}
+		//[/BugFix19]
+
 		w = CG_Text_Width(linebuffer, scale, FONT_MEDIUM);
 		h = CG_Text_Height(linebuffer, scale, FONT_MEDIUM);
 		x = (SCREEN_WIDTH - w) / 2;
 		CG_Text_Paint(x, y + h, scale, color, linebuffer, 0, 0, ITEM_TEXTSTYLE_SHADOWEDMORE, FONT_MEDIUM);
 		y += h + 6;
 
-		while ( *start && ( *start != '\n' ) ) {
-			start++;
+		//[BugFix19]
+		//this method of advancing to new line from the start of the array was causing long lines without
+		//new lines to be totally truncated.
+		if(start[l] && start[l] == '\n')
+		{//next char is a newline, advance past
+			l++;
 		}
-		if ( !*start ) {
+
+		if ( !start[l] )
+		{//end of string, we're done.
 			break;
 		}
-		start++;
+
+		//advance pointer to the last character that we didn't read in.
+		start = &start[l];
+		//[/BugFix19]
 	}
 
 	trap_R_SetColor( NULL );
@@ -4810,14 +4855,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 		return;
 	}
 
-	/*
-	if ( cg_drawingRocketLockThisFrame
-		&& cg.snap->ps.m_iVehicleNum )
-	{//in vehicle, rocket lock-on replaces crosshair
-		return;
-	}
-	*/
-
 	if ( cg_crosshairHealth.integer )
 	{
 		vec4_t		hcolor;
@@ -4880,17 +4917,17 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 				{
 					if (crossEnt->currentState.number != cg.snap->ps.duelIndex)
 					{ //grey out crosshair for everyone but your foe if you're in a duel
-						ecolor[0] = 0.4;
-						ecolor[1] = 0.4;
-						ecolor[2] = 0.4;
+						ecolor[0] = 0.4f;
+						ecolor[1] = 0.4f;
+						ecolor[2] = 0.4f;
 					}
 				}
 				else if (crossEnt->currentState.bolt1)
 				{ //this fellow is in a duel. We just checked if we were in a duel above, so
 				  //this means we aren't and he is. Which of course means our crosshair greys out over him.
-					ecolor[0] = 0.4;
-					ecolor[1] = 0.4;
-					ecolor[2] = 0.4;
+					ecolor[0] = 0.4f;
+					ecolor[1] = 0.4f;
+					ecolor[2] = 0.4f;
 				}
 			}
 			else if (crossEnt->currentState.shouldtarget || crossEnt->currentState.eType == ET_NPC)
@@ -4899,9 +4936,9 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 				if ( !ecolor[0] && !ecolor[1] && !ecolor[2] )
 				{
 					// We really don't want black, so set it to yellow
-					ecolor[0] = 1.0F;//R
-					ecolor[1] = 0.8F;//G
-					ecolor[2] = 0.3F;//B
+					ecolor[0] = 1.0f;//R
+					ecolor[1] = 0.8f;//G
+					ecolor[2] = 0.3f;//B
 				}
 
 				if (crossEnt->currentState.eType == ET_NPC)
@@ -4918,9 +4955,9 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 
 					if ( crossEnt->currentState.powerups & (1 <<PW_CLOAKED) )
 					{
-						ecolor[0] = 1.0;//R
-						ecolor[1] = 1.0;//G
-						ecolor[2] = 1.0;//B
+						ecolor[0] = 1.0f;//R
+						ecolor[1] = 1.0f;//G
+						ecolor[2] = 1.0f;//B
 					}
 					else if ( !crossEnt->currentState.teamowner )
 					{ //not on a team
@@ -4933,42 +4970,42 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 
 								if (cgs.gametype >= GT_TEAM && ci->team == cg.predictedPlayerState.persistant[PERS_TEAM])
 								{ //friendly
-									ecolor[0] = 0.0;//R
-									ecolor[1] = 1.0;//G
-									ecolor[2] = 0.0;//B
+									ecolor[0] = 0.0f;//R
+									ecolor[1] = 1.0f;//G
+									ecolor[2] = 0.0f;//B
 								}
 								else
 								{ //hostile
-									ecolor[0] = 1.0;//R
-									ecolor[1] = 0.0;//G
-									ecolor[2] = 0.0;//B
+									ecolor[0] = 1.0f;//R
+									ecolor[1] = 0.0f;//G
+									ecolor[2] = 0.0f;//B
 								}
 							}
 							else
 							{ //unmanned
-								ecolor[0] = 1.0;//R
-								ecolor[1] = 1.0;//G
-								ecolor[2] = 0.0;//B
+								ecolor[0] = 1.0f;//R
+								ecolor[1] = 1.0f;//G
+								ecolor[2] = 0.0f;//B
 							}
 						}
 						else
 						{
-							ecolor[0] = 1.0;//R
-							ecolor[1] = 0.0;//G
-							ecolor[2] = 0.0;//B
+							ecolor[0] = 1.0f;//R
+							ecolor[1] = 0.0f;//G
+							ecolor[2] = 0.0f;//B
 						}
 					}
 					else if ( crossEnt->currentState.teamowner != plTeam )
 					{// on enemy team
-						ecolor[0] = 1.0;//R
-						ecolor[1] = 0.0;//G
-						ecolor[2] = 0.0;//B
+						ecolor[0] = 1.0f;//R
+						ecolor[1] = 0.0f;//G
+						ecolor[2] = 0.0f;//B
 					}
 					else
 					{ //a friend
-						ecolor[0] = 0.0;//R
-						ecolor[1] = 1.0;//G
-						ecolor[2] = 0.0;//B
+						ecolor[0] = 0.0f;//R
+						ecolor[1] = 1.0f;//G
+						ecolor[2] = 0.0f;//B
 					}
 				}
 				else if ( crossEnt->currentState.teamowner == TEAM_RED
@@ -4976,36 +5013,36 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 				{
 					if (cgs.gametype < GT_TEAM)
 					{ //not teamplay, just neutral then
-						ecolor[0] = 1.0;//R
-						ecolor[1] = 1.0;//G
-						ecolor[2] = 0.0;//B
+						ecolor[0] = 1.0f;//R
+						ecolor[1] = 1.0f;//G
+						ecolor[2] = 0.0f;//B
 					}
 					else if ( crossEnt->currentState.teamowner != cgs.clientinfo[cg.snap->ps.clientNum].team )
 					{ //on the enemy team
-						ecolor[0] = 1.0;//R
-						ecolor[1] = 0.0;//G
-						ecolor[2] = 0.0;//B
+						ecolor[0] = 1.0f;//R
+						ecolor[1] = 0.0f;//G
+						ecolor[2] = 0.0f;//B
 					}
 					else
 					{ //on my team
-						ecolor[0] = 0.0;//R
-						ecolor[1] = 1.0;//G
-						ecolor[2] = 0.0;//B
+						ecolor[0] = 0.0f;//R
+						ecolor[1] = 1.0f;//G
+						ecolor[2] = 0.0f;//B
 					}
 				}
 				else if (crossEnt->currentState.owner == cg.snap->ps.clientNum ||
 					(cgs.gametype >= GT_TEAM && crossEnt->currentState.teamowner == cgs.clientinfo[cg.snap->ps.clientNum].team))
 				{
-					ecolor[0] = 0.0;//R
-					ecolor[1] = 1.0;//G
-					ecolor[2] = 0.0;//B
+					ecolor[0] = 0.0f;//R
+					ecolor[1] = 1.0f;//G
+					ecolor[2] = 0.0f;//B
 				}
 				else if (crossEnt->currentState.teamowner == 16 ||
 					(cgs.gametype >= GT_TEAM && crossEnt->currentState.teamowner && crossEnt->currentState.teamowner != cgs.clientinfo[cg.snap->ps.clientNum].team))
 				{
-					ecolor[0] = 1.0;//R
-					ecolor[1] = 0.0;//G
-					ecolor[2] = 0.0;//B
+					ecolor[0] = 1.0f;//R
+					ecolor[1] = 0.0f;//G
+					ecolor[2] = 0.0f;//B
 				}
 			}
 			else if (crossEnt->currentState.eType == ET_MOVER && crossEnt->currentState.bolt1 && cg.predictedPlayerState.weapon == WP_SABER)
@@ -5020,21 +5057,21 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 			{ //a team owns this - if it's my team green, if not red, if not teamplay then yellow
 				if (cgs.gametype < GT_TEAM)
 				{
-					ecolor[0] = 1.0;//R
-					ecolor[1] = 1.0;//G
-					ecolor[2] = 0.0;//B
+					ecolor[0] = 1.0f;//R
+					ecolor[1] = 1.0f;//G
+					ecolor[2] = 0.0f;//B
 				}
                 else if (cg.predictedPlayerState.persistant[PERS_TEAM] != crossEnt->currentState.teamowner)
 				{ //not my team
-					ecolor[0] = 1.0;//R
-					ecolor[1] = 0.0;//G
-					ecolor[2] = 0.0;//B
+					ecolor[0] = 1.0f;//R
+					ecolor[1] = 0.0f;//G
+					ecolor[2] = 0.0f;//B
 				}
 				else
 				{ //my team
-					ecolor[0] = 0.0;//R
-					ecolor[1] = 1.0;//G
-					ecolor[2] = 0.0;//B
+					ecolor[0] = 0.0f;//R
+					ecolor[1] = 1.0f;//G
+					ecolor[2] = 0.0f;//B
 				}
 			}
 			else if (crossEnt->currentState.health)
@@ -5059,7 +5096,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 				}
 			}
 
-			ecolor[3] = 1.0;
+			ecolor[3] = 1.0f;
 
 			trap_R_SetColor( ecolor );
 		}
@@ -5172,47 +5209,35 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 			y + cg.refdef.y + 0.5 * (480 - h), 
 			w, h, 0, 0, 1, 1, cgs.media.forceCoronaShader );
 	}
+
+	//Raz: Was missing this
+	trap_R_SetColor( NULL );
 }
 
 qboolean CG_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y)
 {
-	float	xcenter, ycenter;
-	vec3_t	local, transformed;
-	vec3_t	vfwd;
-	vec3_t	vright;
-	vec3_t	vup;
-	float xzi;
-	float yzi;
+    vec3_t trans;
+    vec_t xc, yc;
+    vec_t px, py;
+    vec_t z;
 
-//	xcenter = cg.refdef.width / 2;//gives screen coords adjusted for resolution
-//	ycenter = cg.refdef.height / 2;//gives screen coords adjusted for resolution
+    px = tan(cg.refdef.fov_x * (M_PI / 360) );
+    py = tan(cg.refdef.fov_y * (M_PI / 360) );
 	
-	//NOTE: did it this way because most draw functions expect virtual 640x480 coords
-	//	and adjust them for current resolution
-	xcenter = 640.0f / 2.0f;//gives screen coords in virtual 640x480, to be adjusted when drawn
-	ycenter = 480.0f / 2.0f;//gives screen coords in virtual 640x480, to be adjusted when drawn
+    VectorSubtract(worldCoord, cg.refdef.vieworg, trans);
+   
+    xc = 640 / 2.0;
+    yc = 480 / 2.0;
+    
+	// z = how far is the object in our forward direction
+    z = DotProduct(trans, cg.refdef.viewaxis[0]);
+    if (z <= 0.001)
+        return qfalse;
 
-	AngleVectors (cg.refdef.viewangles, vfwd, vright, vup);
+    *x = xc - DotProduct(trans, cg.refdef.viewaxis[1])*xc/(z*px);
+    *y = yc - DotProduct(trans, cg.refdef.viewaxis[2])*yc/(z*py);
 
-	VectorSubtract (worldCoord, cg.refdef.vieworg, local);
-
-	transformed[0] = DotProduct(local,vright);
-	transformed[1] = DotProduct(local,vup);
-	transformed[2] = DotProduct(local,vfwd);		
-
-	// Make sure Z is not negative.
-	if(transformed[2] < 0.01f)
-	{
-		return qfalse;
-	}
-
-	xzi = xcenter / transformed[2] * (96.0f/cg.refdef.fov_x);
-	yzi = ycenter / transformed[2] * (102.0f/cg.refdef.fov_y);
-
-	*x = xcenter + xzi * transformed[0];
-	*y = ycenter - yzi * transformed[1];
-
-	return qtrue;
+    return qtrue;
 }
 
 qboolean CG_WorldCoordToScreenCoord( vec3_t worldCoord, int *x, int *y )
@@ -5625,6 +5650,8 @@ static void CG_DrawActivePowers(void)
 		return;
 	}
 
+	trap_R_SetColor( NULL );
+
 	while (i < NUM_FORCE_POWERS)
 	{
 		if ((cg.snap->ps.fd.forcePowersActive & (1 << forcePowerSorted[i])) &&
@@ -5649,7 +5676,6 @@ static void CG_DrawActivePowers(void)
 	}
 }
 
-//static qboolean	cg_drawingRocketLockThisFrame = qfalse;
 //--------------------------------------------------------------
 static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 //--------------------------------------------------------------
@@ -5663,8 +5689,6 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 	//FIXME: if in a vehicle, use the vehicle's lockOnTime...
 	int dif = (cg.time - cg.snap->ps.rocketLockTime)/lockTimeInterval;
 	int i;
-
-//	cg_drawingRocketLockThisFrame = qfalse;
 
 	if (!cg.snap->ps.rocketLockTime)
 	{
@@ -5793,11 +5817,6 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 
 		sz = (1.0f - sz) * (1.0f - sz) * 32 + 6;
 
-		if ( cg.snap->ps.m_iVehicleNum )
-		{
-			sz *= 2.0f;
-		}
-
 		cy += sz * 0.5f;
 		
 		if ( dif < 0 )
@@ -5862,7 +5881,6 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 
 			CG_DrawPic( cx - sz, cy - sz * 2, sz * 2, sz * 2, trap_R_RegisterShaderNoMip( "gfx/2d/lock" ));
 		}
-//		cg_drawingRocketLockThisFrame = qtrue;
 	}
 }
 
@@ -6177,9 +6195,10 @@ static void CG_ScanForCrosshairEntity( void ) {
 		}
 	}
 
-//	if ( trace.entityNum >= MAX_CLIENTS ) {
-//		return;
-//	}
+	//Raz: Put this back in so fading works again
+	if ( trace.entityNum >= MAX_CLIENTS ) {
+		return;
+	}
 
 	// if the player is in fog, don't show it
 	content = trap_CM_PointContents( trace.endpos, 0 );
@@ -6457,22 +6476,17 @@ CG_DrawVote
 =================
 */
 static void CG_DrawVote(void) {
-	const char	*s;
-	int		sec;
-	char							sYes[20];
-	char							sNo[20];
-	char							sVote[20];
-	char							sCmd[100];
-	const char*						sParm = 0;
+	const char *s = NULL, *sParm = NULL;
+	int sec;
+	char sYes[20] = {0}, sNo[20] = {0}, sVote[20] = {0}, sCmd[100] = {0};
 
-	if ( !cgs.voteTime ) {
+	if ( !cgs.voteTime )
 		return;
-	}
 
 	// play a talk beep whenever it is modified
 	if ( cgs.voteModified ) {
 		cgs.voteModified = qfalse;
-//		trap_S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
+		trap_S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 	}
 
 	sec = ( VOTE_TIME - ( cg.time - cgs.voteTime ) ) / 1000;
@@ -6538,6 +6552,10 @@ static void CG_DrawVote(void) {
 		trap_SP_GetStringTextString("MENUS_KICK_PLAYER", sCmd, sizeof(sCmd) );
 		sParm = cgs.voteString+5;
 	}
+	else
+	{//Raz: Added an else case for custom votes like ampoll, cointoss, etc
+		sParm = cgs.voteString;
+	}
 
 
 
@@ -6567,9 +6585,9 @@ static void CG_DrawTeamVote(void) {
 	char	*s;
 	int		sec, cs_offset;
 
-	if ( cgs.clientinfo->team == TEAM_RED )
+	if ( cgs.clientinfo[cg.clientNum].team == TEAM_RED )
 		cs_offset = 0;
-	else if ( cgs.clientinfo->team == TEAM_BLUE )
+	else if ( cgs.clientinfo[cg.clientNum].team == TEAM_BLUE )
 		cs_offset = 1;
 	else
 		return;
@@ -6995,6 +7013,9 @@ void CG_DrawFlagStatus()
 	int team = 0;
 	int startDrawPos = 2;
 	int ico_size = 32;
+
+	//Raz: was missing this
+	trap_R_SetColor( NULL );
 
 	if (!cg.snap)
 	{
@@ -7554,7 +7575,7 @@ static CGAME_INLINE void CG_ChatBox_DrawStrings(void)
 	int linesToDraw = 0;
 	int i = 0;
 	int x = 30;
-	int y = cg.scoreBoardShowing ? 475 : cg_chatBoxHeight.integer;
+	float y = cg.scoreBoardShowing ? 475 : cg_chatBoxHeight.integer;
 	float fontScale = 0.65f;
 
 	if (!cg_chatBox.integer)
@@ -7628,11 +7649,11 @@ static void CG_Draw2DScreenTints( void )
 			}
 			if (rageTime > 0.15)
 			{
-				rageTime = 0.15;
+				rageTime = 0.15f;
 			}
 			
 			hcolor[3] = rageTime;
-			hcolor[0] = 0.7;
+			hcolor[0] = 0.7f;
 			hcolor[1] = 0;
 			hcolor[2] = 0;
 			
@@ -7649,7 +7670,7 @@ static void CG_Draw2DScreenTints( void )
 			if (!cgRageFadeTime)
 			{
 				cgRageFadeTime = cg.time;
-				cgRageFadeVal = 0.15;
+				cgRageFadeVal = 0.15f;
 			}
 			
 			rageTime = cgRageFadeVal;
@@ -7660,33 +7681,33 @@ static void CG_Draw2DScreenTints( void )
 			{
 				rageTime = 0;
 			}
-			if (rageTime > 0.15)
+			if (rageTime > 0.15f)
 			{
-				rageTime = 0.15;
+				rageTime = 0.15f;
 			}
 			
 			if (cg.snap->ps.fd.forceRageRecoveryTime > cg.time)
 			{
 				float checkRageRecTime = rageTime;
 				
-				if (checkRageRecTime < 0.15)
+				if (checkRageRecTime < 0.15f)
 				{
-					checkRageRecTime = 0.15;
+					checkRageRecTime = 0.15f;
 				}
 				
 				hcolor[3] = checkRageRecTime;
 				hcolor[0] = rageTime*4;
-				if (hcolor[0] < 0.2)
+				if (hcolor[0] < 0.2f)
 				{
-					hcolor[0] = 0.2;
+					hcolor[0] = 0.2f;
 				}
-				hcolor[1] = 0.2;
-				hcolor[2] = 0.2;
+				hcolor[1] = 0.2f;
+				hcolor[2] = 0.2f;
 			}
 			else
 			{
 				hcolor[3] = rageTime;
-				hcolor[0] = 0.7;
+				hcolor[0] = 0.7f;
 				hcolor[1] = 0;
 				hcolor[2] = 0;
 			}
@@ -7699,10 +7720,10 @@ static void CG_Draw2DScreenTints( void )
 			{
 				if (cg.snap->ps.fd.forceRageRecoveryTime > cg.time)
 				{
-					hcolor[3] = 0.15;
-					hcolor[0] = 0.2;
-					hcolor[1] = 0.2;
-					hcolor[2] = 0.2;
+					hcolor[3] = 0.15f;
+					hcolor[0] = 0.2f;
+					hcolor[1] = 0.2f;
+					hcolor[2] = 0.2f;
 					CG_DrawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor);
 				}
 				cgRageTime = 0;
@@ -7719,19 +7740,19 @@ static void CG_Draw2DScreenTints( void )
 			
 			rageRecTime /= 9000;
 			
-			if (rageRecTime < 0.15)//0)
+			if (rageRecTime < 0.15f)//0)
 			{
-				rageRecTime = 0.15;//0;
+				rageRecTime = 0.15f;//0;
 			}
-			if (rageRecTime > 0.15)
+			if (rageRecTime > 0.15f)
 			{
-				rageRecTime = 0.15;
+				rageRecTime = 0.15f;
 			}
 			
 			hcolor[3] = rageRecTime;
-			hcolor[0] = 0.2;
-			hcolor[1] = 0.2;
-			hcolor[2] = 0.2;
+			hcolor[0] = 0.2f;
+			hcolor[1] = 0.2f;
+			hcolor[2] = 0.2f;
 			
 			if (!cg.renderingThirdPerson)
 			{
@@ -7746,7 +7767,7 @@ static void CG_Draw2DScreenTints( void )
 			if (!cgRageRecFadeTime)
 			{
 				cgRageRecFadeTime = cg.time;
-				cgRageRecFadeVal = 0.15;
+				cgRageRecFadeVal = 0.15f;
 			}
 			
 			rageRecTime = cgRageRecFadeVal;
@@ -7757,15 +7778,15 @@ static void CG_Draw2DScreenTints( void )
 			{
 				rageRecTime = 0;
 			}
-			if (rageRecTime > 0.15)
+			if (rageRecTime > 0.15f)
 			{
-				rageRecTime = 0.15;
+				rageRecTime = 0.15f;
 			}
 			
 			hcolor[3] = rageRecTime;
-			hcolor[0] = 0.2;
-			hcolor[1] = 0.2;
-			hcolor[2] = 0.2;
+			hcolor[0] = 0.2f;
+			hcolor[1] = 0.2f;
+			hcolor[2] = 0.2f;
 			
 			if (!cg.renderingThirdPerson && rageRecTime)
 			{
@@ -7792,15 +7813,15 @@ static void CG_Draw2DScreenTints( void )
 			{
 				absorbTime = 0;
 			}
-			if (absorbTime > 0.15)
+			if (absorbTime > 0.15f)
 			{
-				absorbTime = 0.15;
+				absorbTime = 0.15f;
 			}
 			
 			hcolor[3] = absorbTime/2;
 			hcolor[0] = 0;
 			hcolor[1] = 0;
-			hcolor[2] = 0.7;
+			hcolor[2] = 0.7f;
 			
 			if (!cg.renderingThirdPerson)
 			{
@@ -7815,26 +7836,26 @@ static void CG_Draw2DScreenTints( void )
 			if (!cgAbsorbFadeTime)
 			{
 				cgAbsorbFadeTime = cg.time;
-				cgAbsorbFadeVal = 0.15;
+				cgAbsorbFadeVal = 0.15f;
 			}
 			
 			absorbTime = cgAbsorbFadeVal;
 			
-			cgAbsorbFadeVal -= (cg.time - cgAbsorbFadeTime)*0.000005;
+			cgAbsorbFadeVal -= (cg.time - cgAbsorbFadeTime)*0.000005f;
 			
 			if (absorbTime < 0)
 			{
 				absorbTime = 0;
 			}
-			if (absorbTime > 0.15)
+			if (absorbTime > 0.15f)
 			{
-				absorbTime = 0.15;
+				absorbTime = 0.15f;
 			}
 			
 			hcolor[3] = absorbTime/2;
 			hcolor[0] = 0;
 			hcolor[1] = 0;
-			hcolor[2] = 0.7;
+			hcolor[2] = 0.7f;
 			
 			if (!cg.renderingThirdPerson && absorbTime)
 			{
@@ -7861,14 +7882,14 @@ static void CG_Draw2DScreenTints( void )
 			{
 				protectTime = 0;
 			}
-			if (protectTime > 0.15)
+			if (protectTime > 0.15f)
 			{
-				protectTime = 0.15;
+				protectTime = 0.15f;
 			}
 			
 			hcolor[3] = protectTime/2;
 			hcolor[0] = 0;
-			hcolor[1] = 0.7;
+			hcolor[1] = 0.7f;
 			hcolor[2] = 0;
 			
 			if (!cg.renderingThirdPerson)
@@ -7884,7 +7905,7 @@ static void CG_Draw2DScreenTints( void )
 			if (!cgProtectFadeTime)
 			{
 				cgProtectFadeTime = cg.time;
-				cgProtectFadeVal = 0.15;
+				cgProtectFadeVal = 0.15f;
 			}
 			
 			protectTime = cgProtectFadeVal;
@@ -7895,14 +7916,14 @@ static void CG_Draw2DScreenTints( void )
 			{
 				protectTime = 0;
 			}
-			if (protectTime > 0.15)
+			if (protectTime > 0.15f)
 			{
-				protectTime = 0.15;
+				protectTime = 0.15f;
 			}
 			
 			hcolor[3] = protectTime/2;
 			hcolor[0] = 0;
-			hcolor[1] = 0.7;
+			hcolor[1] = 0.7f;
 			hcolor[2] = 0;
 			
 			if (!cg.renderingThirdPerson && protectTime)
@@ -7935,14 +7956,14 @@ static void CG_Draw2DScreenTints( void )
 			{
 				ysalTime = 0;
 			}
-			if (ysalTime > 0.15)
+			if (ysalTime > 0.15f)
 			{
-				ysalTime = 0.15;
+				ysalTime = 0.15f;
 			}
 			
 			hcolor[3] = ysalTime/2;
-			hcolor[0] = 0.7;
-			hcolor[1] = 0.7;
+			hcolor[0] = 0.7f;
+			hcolor[1] = 0.7f;
 			hcolor[2] = 0;
 			
 			if (!cg.renderingThirdPerson)
@@ -7958,25 +7979,25 @@ static void CG_Draw2DScreenTints( void )
 			if (!cgYsalFadeTime)
 			{
 				cgYsalFadeTime = cg.time;
-				cgYsalFadeVal = 0.15;
+				cgYsalFadeVal = 0.15f;
 			}
 			
 			ysalTime = cgYsalFadeVal;
 			
-			cgYsalFadeVal -= (cg.time - cgYsalFadeTime)*0.000005;
+			cgYsalFadeVal -= (cg.time - cgYsalFadeTime)*0.000005f;
 			
 			if (ysalTime < 0)
 			{
 				ysalTime = 0;
 			}
-			if (ysalTime > 0.15)
+			if (ysalTime > 0.15f)
 			{
-				ysalTime = 0.15;
+				ysalTime = 0.15f;
 			}
 			
 			hcolor[3] = ysalTime/2;
-			hcolor[0] = 0.7;
-			hcolor[1] = 0.7;
+			hcolor[0] = 0.7f;
+			hcolor[1] = 0.7f;
 			hcolor[2] = 0;
 			
 			if (!cg.renderingThirdPerson && ysalTime)
@@ -8012,11 +8033,11 @@ static void CG_Draw2DScreenTints( void )
 	}
 	else if ( (cg.refdef.viewContents&CONTENTS_WATER) )
 	{//tint screen light blue -- FIXME: don't do this if CONTENTS_FOG? (in case someone *does* make a water shader with fog in it?)
-		float phase = cg.time / 1000.0 * WAVE_FREQUENCY * M_PI * 2;
-		hcolor[3] = 0.3 + (0.05f*sin( phase ));
+		float phase = cg.time / 1000.0f * WAVE_FREQUENCY * M_PI * 2;
+		hcolor[3] = 0.3f + (0.05f*sinf( phase ));
 		hcolor[0] = 0;
 		hcolor[1] = 0.2f;
-		hcolor[2] = 0.8;
+		hcolor[2] = 0.8f;
 		
 		CG_DrawRect( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH*SCREEN_HEIGHT, hcolor  );
 	}
@@ -8058,6 +8079,10 @@ static void CG_Draw2D( void ) {
 	}
 
 	if ( cg_draw2D.integer == 0 ) {
+		//Raz: If you fall to your death, then turn cg_draw2D off, your camera will not update
+		//		Clear the fall vector to avoid that.
+		gCGHasFallVector = qfalse;
+		VectorClear( gCGFallVector );
 		return;
 	}
 
@@ -8233,7 +8258,7 @@ static void CG_Draw2D( void ) {
 	CG_DrawLagometer();
 	
 
-	if (!cg_paused.integer) {
+	if (!cl_paused.integer) {
 		CG_DrawBracketedEntities();
 		CG_DrawUpperRight();
 	}
@@ -8421,6 +8446,54 @@ static void CG_Draw2D( void ) {
 	CG_ChatBox_DrawStrings();
 }
 
+qboolean CG_CullPointAndRadius( const vec3_t pt, vec_t radius);
+void CG_DrawMiscStaticModels( void ) {
+	int i, j;
+	refEntity_t ent;
+	vec3_t cullorg;
+	vec3_t diff;
+
+	memset( &ent, 0, sizeof( ent ) );
+
+	ent.reType = RT_MODEL;
+	ent.frame = 0;
+	ent.nonNormalizedAxes = qtrue;
+	
+	// static models don't project shadows
+	ent.renderfx = RF_NOSHADOW;
+	
+	for( i = 0; i < cgs.numMiscStaticModels; i++ ) {
+		VectorCopy(cgs.miscStaticModels[i].org, cullorg);
+		cullorg[2] += 1.0f;
+
+		if ( cgs.miscStaticModels[i].zoffset ) {
+			cullorg[2] += cgs.miscStaticModels[i].zoffset;
+		}
+		if( cgs.miscStaticModels[i].radius ) {
+			if( CG_CullPointAndRadius( cullorg, cgs.miscStaticModels[i].radius ) ) {
+ 				continue;
+			}
+		}
+
+		if( !trap_R_inPVS( cg.refdef.vieworg, cullorg, cg.refdef.areamask ) ) {
+			continue;
+		}
+
+		VectorCopy( cgs.miscStaticModels[i].org, ent.origin );
+		VectorCopy( cgs.miscStaticModels[i].org, ent.oldorigin );
+		VectorCopy( cgs.miscStaticModels[i].org, ent.lightingOrigin );
+
+		for( j = 0; j < 3; j++ ) {
+			VectorCopy( cgs.miscStaticModels[i].axes[j], ent.axis[j] );
+		}
+		ent.hModel = cgs.miscStaticModels[i].model;
+
+		VectorSubtract(ent.origin, cg.refdef.vieworg, diff);
+		if (VectorLength(diff)-(cgs.miscStaticModels[i].radius) <= cg.distanceCull) {
+			trap_R_AddRefEntityToScene( &ent );
+		}
+	}
+}
 
 static void CG_DrawTourneyScoreboard() {
 }
@@ -8475,6 +8548,8 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 	}
 
 	cg.refdef.rdflags |= RDF_DRAWSKYBOX;
+
+	CG_DrawMiscStaticModels();
 
 	// draw 3D view
 	trap_R_RenderScene( &cg.refdef );

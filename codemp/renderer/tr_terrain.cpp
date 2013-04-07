@@ -1,11 +1,11 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // this include must remain at the top of every CPP file
 #include "tr_local.h"
 
 #if !defined(GENERICPARSER2_H_INC)
-	#include "../qcommon/GenericParser2.h"
+	#include "qcommon/GenericParser2.h"
 #endif
 
 // To do:
@@ -14,7 +14,7 @@
 // Link to neightbouring terrains or architecture (edge conditions)
 // Post process generated light data to make sure there are no bands within a patch
 
-#include "../qcommon/cm_landscape.h"
+#include "qcommon/cm_landscape.h"
 #include "tr_landscape.h"
 
 cvar_t		*r_drawTerrain;
@@ -122,10 +122,10 @@ void CTRPatch::Render(int Part)
 {
 	ivec5_t		TL, TR, BL, BR;
 
-	VectorSet5(TL, 0, 0, TEXTURE_ALPHA_TL, -1, 0);
-	VectorSet5(TR, owner->GetTerxels(), 0, TEXTURE_ALPHA_TR, -1, 0);
-	VectorSet5(BL, 0, owner->GetTerxels(), TEXTURE_ALPHA_BL, -1, 0);
-	VectorSet5(BR, owner->GetTerxels(), owner->GetTerxels(), TEXTURE_ALPHA_BR, -1, 0);
+	VectorSet5M(TL, 0, 0, TEXTURE_ALPHA_TL, -1, 0);
+	VectorSet5M(TR, owner->GetTerxels(), 0, TEXTURE_ALPHA_TR, -1, 0);
+	VectorSet5M(BL, 0, owner->GetTerxels(), TEXTURE_ALPHA_BL, -1, 0);
+	VectorSet5M(BR, owner->GetTerxels(), owner->GetTerxels(), TEXTURE_ALPHA_BR, -1, 0);
 
 	if ((Part & PI_TOP) && mTLShader)
 	{
@@ -370,7 +370,7 @@ void CTRLandScape::CalculateRealCoords(void)
 
 			offset = (y * GetRealWidth()) + x;
 
-			VectorSet(icoords, x, y, mRenderMap[offset].height);
+			VectorSetM(icoords, x, y, mRenderMap[offset].height);
 			VectorScaleVectorAdd(GetMins(), icoords, GetTerxelSize(), mRenderMap[offset].coords);
 		}
 	}

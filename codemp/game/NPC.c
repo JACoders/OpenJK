@@ -4,7 +4,7 @@
 #include "b_local.h"
 #include "anims.h"
 #include "say.h"
-#include "../icarus/Q3_Interface.h"
+#include "icarus/Q3_Interface.h"
 
 extern vec3_t playerMins;
 extern vec3_t playerMaxs;
@@ -27,8 +27,6 @@ extern int GetTime ( int lastTime );
 extern void NPC_BSGM_Default( void );
 extern void NPC_CheckCharmed( void );
 extern qboolean Boba_Flying( gentity_t *self );
-
-extern vmCvar_t		g_saberRealisticCombat;
 
 //Local Variables
 gentity_t		*NPC;
@@ -819,7 +817,7 @@ void NPC_HandleAIFlags (void)
 		if ( NPCInfo->ffireFadeDebounce < level.time )
 		{
 			NPCInfo->ffireCount--;
-			//Com_Printf( "drop: %d < %d\n", NPCInfo->ffireCount, 3+((2-g_spskill.integer)*2) );
+			//Com_Printf( "drop: %d < %d\n", NPCInfo->ffireCount, 3+((2-g_npcspskill.integer)*2) );
 			NPCInfo->ffireFadeDebounce = level.time + 3000;
 		}
 	}
@@ -1483,7 +1481,8 @@ void NPC_RunBehavior( int team, int bState )
 			case CLASS_GALAKMECH:
 				NPC_BSGM_Default();
 				return;
-
+			default:
+				break;
 			}
 
 			if ( NPC->enemy && NPC->s.weapon == WP_NONE && bState != BS_HUNT_AND_KILL && !trap_ICARUS_TaskIDPending( NPC, TID_MOVE_NAV ) )
@@ -1807,6 +1806,8 @@ void G_DroidSounds( gentity_t *self )
 			case CLASS_GONK:				// droid
 				G_SoundOnEnt(self, CHAN_AUTO, va("sound/chars/gonk/misc/gonktalk%d.wav",Q_irand(1, 2)) );
 				break;
+			default:
+				break;
 			}
 			TIMER_Set( self, "patrolNoise", Q_irand( 2000, 4000 ) );
 		}
@@ -1860,7 +1861,7 @@ void NPC_Think ( gentity_t *self)//, int msec )
 	}
 
 	// see if NPC ai is frozen
-	if ( debugNPCFreeze.value || (NPC->r.svFlags&SVF_ICARUS_FREEZE) ) 
+	if ( d_npcfreeze.value || (NPC->r.svFlags&SVF_ICARUS_FREEZE) ) 
 	{
 		NPC_UpdateAngles( qtrue, qtrue );
 		ClientThink(self->s.number, &ucmd);
@@ -1930,7 +1931,7 @@ void NPC_Think ( gentity_t *self)//, int msec )
 			return;
 		}
 
-		if ( NPC->s.weapon == WP_SABER && g_spskill.integer >= 2 && NPCInfo->rank > RANK_LT_JG )
+		if ( NPC->s.weapon == WP_SABER && g_npcspskill.integer >= 2 && NPCInfo->rank > RANK_LT_JG )
 		{//Jedi think faster on hard difficulty, except low-rank (reborn)
 			NPCInfo->nextBStateThink = level.time + FRAMETIME/2;
 		}
@@ -1986,7 +1987,7 @@ void NPC_InitAI ( void )
 	trap_Cvar_Register(&debugNoRoam, "d_noroam", "0", CVAR_CHEAT);
 	trap_Cvar_Register(&debugNPCAimingBeam, "d_npcaiming", "0", CVAR_CHEAT);
 	trap_Cvar_Register(&debugBreak, "d_break", "0", CVAR_CHEAT);
-	trap_Cvar_Register(&debugNPCAI, "d_npcai", "0", CVAR_CHEAT);
+	trap_Cvar_Register(&d_npcai, "d_npcai", "0", CVAR_CHEAT);
 	trap_Cvar_Register(&debugNPCFreeze, "d_npcfreeze", "0", CVAR_CHEAT);
 	trap_Cvar_Register(&d_JediAI, "d_JediAI", "0", CVAR_CHEAT);
 	trap_Cvar_Register(&d_noGroupAI, "d_noGroupAI", "0", CVAR_CHEAT);
@@ -2004,7 +2005,7 @@ void NPC_InitAI ( void )
 
 	trap_Cvar_Register(&d_saberCombat, "d_saberCombat", "0", CVAR_CHEAT);
 
-	trap_Cvar_Register(&g_spskill, "g_npcspskill", "0", CVAR_ARCHIVE | CVAR_USERINFO);
+	trap_Cvar_Register(&g_npcspskill, "g_npcspskill", "0", CVAR_ARCHIVE | CVAR_USERINFO);
 	*/
 }
 

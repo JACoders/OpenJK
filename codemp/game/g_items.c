@@ -1,8 +1,8 @@
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 #include "g_local.h"
-#include "../ghoul2/G2.h"
-#include "q_shared.h"
+#include "ghoul2/G2.h"
+#include "qcommon/q_shared.h"
 
 /*
 
@@ -258,7 +258,7 @@ void CreateShield(gentity_t *ent)
 	int			height, posWidth, negWidth, halfWidth = 0;
 	qboolean	xaxis;
 	int			paramData = 0;
-	static int	shieldID;
+//	static int	shieldID;
 
 	// trace upward to find height of shield
 	VectorCopy(ent->r.currentOrigin, end);
@@ -1442,9 +1442,7 @@ void EWebPrecache(void)
 #define EWEB_DEATH_RADIUS		128
 #define EWEB_DEATH_DMG			90
 
-
 extern void BG_CycleInven(playerState_t *ps, int direction); //bg_misc.c
-
 
 void EWebDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod)
 {
@@ -1764,9 +1762,7 @@ void EWebUpdateBoneAngles(gentity_t *owner, gentity_t *eweb)
 }
 
 //keep it updated
-
 extern int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float constraint); //bg_misc.c
-
 
 void EWebThink(gentity_t *self)
 {
@@ -2112,12 +2108,19 @@ int Pickup_Holdable( gentity_t *ent, gentity_t *other ) {
 
 void Add_Ammo (gentity_t *ent, int weapon, int count)
 {
-	if ( ent->client->ps.ammo[weapon] < ammoData[weapon].max )
+	int max = ammoData[weapon].max;
+		
+	if (ent->client->ps.eFlags & EF_DOUBLE_AMMO) 
+	{ // fix: double ammo for siege
+		max *= 2;
+	}
+
+	if ( ent->client->ps.ammo[weapon] < max )
 	{
 		ent->client->ps.ammo[weapon] += count;
-		if ( ent->client->ps.ammo[weapon] > ammoData[weapon].max )
+		if ( ent->client->ps.ammo[weapon] > max )
 		{
-			ent->client->ps.ammo[weapon] = ammoData[weapon].max;
+			ent->client->ps.ammo[weapon] = max;
 		}
 	}
 }
@@ -2684,11 +2687,11 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 		Team_CheckDroppedItem( dropped );
 
 		//rww - so bots know
-		if (strcmp(dropped->classname, "team_CTF_redflag") == 0)
+		if (dropped->item->giTag == PW_REDFLAG)	
 		{
 			droppedRedFlag = dropped;
-		}
-		else if (strcmp(dropped->classname, "team_CTF_blueflag") == 0)
+		} 
+		else if (dropped->item->giTag == PW_BLUEFLAG)	
 		{
 			droppedBlueFlag = dropped;
 		}
@@ -2913,8 +2916,8 @@ void FinishSpawningItem( gentity_t *ent ) {
 
 		//if it is directly even with the floor it will return startsolid, so raise up by 0.1
 		//and temporarily subtract 0.1 from the z maxs so that going up doesn't push into the ceiling
-		ent->s.origin[2] += 0.1;
-		ent->r.maxs[2] -= 0.1;
+		ent->s.origin[2] += 0.1f;
+		ent->r.maxs[2] -= 0.1f;
 
 		VectorSet( dest, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] - 4096 );
 		trap_Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID );
@@ -2925,7 +2928,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 
 		//add the 0.1 back after the trace
-		ent->r.maxs[2] += 0.1;
+		ent->r.maxs[2] += 0.1f;
 
 		// allow to ride movers
 		ent->s.groundEntityNum = tr.entityNum;
@@ -2976,11 +2979,11 @@ void G_CheckTeamItems( void ) {
 		// check for the two flags
 		item = BG_FindItem( "team_CTF_redflag" );
 		if ( !item || !itemRegistered[ item - bg_itemlist ] ) {
-			G_Printf( S_COLOR_YELLOW "WARNING: No team_CTF_redflag in map" );
+			G_Printf( S_COLOR_YELLOW "WARNING: No team_CTF_redflag in map\n" );
 		}
 		item = BG_FindItem( "team_CTF_blueflag" );
 		if ( !item || !itemRegistered[ item - bg_itemlist ] ) {
-			G_Printf( S_COLOR_YELLOW "WARNING: No team_CTF_blueflag in map" );
+			G_Printf( S_COLOR_YELLOW "WARNING: No team_CTF_blueflag in map\n" );
 		}
 	}
 }
@@ -3210,6 +3213,7 @@ void G_RunItem( gentity_t *ent ) {
 	VectorCopy( tr.endpos, ent->r.currentOrigin );
 
 	if ( tr.startsolid ) {
+
 		tr.fraction = 0;
 	}
 

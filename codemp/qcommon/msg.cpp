@@ -1,13 +1,13 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #ifdef _DONETPROFILE_
 #include "INetProfile.h"
 #endif
 
 // rjr: this is only used when cl_shownet is turned on and the server and client are in the same session
-#include "../game/g_public.h"
-#include "../server/server.h"
+#include "game/g_public.h"
+#include "server/server.h"
 
 extern	cvar_t	*cl_shownet;
 

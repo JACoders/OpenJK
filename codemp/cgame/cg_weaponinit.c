@@ -73,10 +73,11 @@ void CG_RegisterWeapon( int weaponNum) {
 	if (weaponNum == WP_DISRUPTOR ||
 		weaponNum == WP_FLECHETTE ||
 		weaponNum == WP_REPEATER ||
-		weaponNum == WP_ROCKET_LAUNCHER)
+		weaponNum == WP_ROCKET_LAUNCHER ||
+		weaponNum == WP_CONCUSSION) //Raz: Concussion has a barrel model too, eezstreet pointed this out
 	{
 		strcpy( path, item->view_model );
-		COM_StripExtension( path, path );
+		COM_StripExtension( path, path, sizeof( path ) );
 		strcat( path, "_barrel.md3" );
 		weaponInfo->barrelModel = trap_R_RegisterModel( path );
 	}
@@ -94,7 +95,7 @@ void CG_RegisterWeapon( int weaponNum) {
 	if (weaponNum != WP_SABER)
 	{
 		strcpy( path, item->view_model );
-		COM_StripExtension( path, path );
+		COM_StripExtension( path, path, sizeof( path ) );
 		strcat( path, "_hand.md3" );
 		weaponInfo->handsModel = trap_R_RegisterModel( path );
 	}

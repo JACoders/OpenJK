@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "cm_local.h"
 #include "cm_patch.h"
@@ -499,7 +499,7 @@ static inline int CM_FindPlane2(float plane[4], int *flipped) {
 		Com_Error( ERR_DROP, "MAX_PATCH_PLANES" );
 	}
 
-	Vector4Copy( plane, planes[numPlanes].plane );
+	VectorCopy4( plane, planes[numPlanes].plane );
 	planes[numPlanes].signbits = CM_SignbitsForNormal( plane );
 
 	numPlanes++;
@@ -553,7 +553,7 @@ static inline int CM_FindPlane( float *p1, float *p2, float *p3 ) {
 		Com_Error( ERR_DROP, "MAX_PATCH_PLANES" );
 	}
 
-	Vector4Copy( plane, planes[numPlanes].plane );
+	VectorCopy4( plane, planes[numPlanes].plane );
 	planes[numPlanes].signbits = CM_SignbitsForNormal( plane );
 
 	numPlanes++;
@@ -762,14 +762,14 @@ static inline qboolean CM_ValidateFacet( facet_t *facet ) {
 		return qfalse;
 	}
 
-	Vector4Copy( planes[ facet->surfacePlane ].plane, plane );
+	VectorCopy4( planes[ facet->surfacePlane ].plane, plane );
 	w = BaseWindingForPlane( plane,  plane[3] );
 	for ( j = 0 ; j < facet->numBorders && w ; j++ ) {
 		if ( facet->borderPlanes[j] == -1 ) {
 			FreeWinding(w);
 			return qfalse;
 		}
-		Vector4Copy( planes[ facet->borderPlanes[j] ].plane, plane );
+		VectorCopy4( planes[ facet->borderPlanes[j] ].plane, plane );
 		if ( !facet->borderInward[j] ) {
 			VectorSubtract( vec3_origin, plane, plane );
 			plane[3] = -plane[3];
@@ -812,12 +812,12 @@ static inline void CM_AddFacetBevels( facet_t *facet ) {
 	winding_t *w, *w2;
 	vec3_t mins, maxs, vec, vec2;
 
-	Vector4Copy( planes[ facet->surfacePlane ].plane, plane );
+	VectorCopy4( planes[ facet->surfacePlane ].plane, plane );
 
 	w = BaseWindingForPlane( plane,  plane[3] );
 	for ( j = 0 ; j < facet->numBorders && w ; j++ ) {
 		if (facet->borderPlanes[j] == facet->surfacePlane) continue;
-		Vector4Copy( planes[ facet->borderPlanes[j] ].plane, plane );
+		VectorCopy4( planes[ facet->borderPlanes[j] ].plane, plane );
 
 		if ( !facet->borderInward[j] ) {
 			VectorSubtract( vec3_origin, plane, plane );
@@ -931,7 +931,7 @@ static inline void CM_AddFacetBevels( facet_t *facet ) {
 					facet->borderInward[facet->numBorders] = flipped;
 					//
 					w2 = CopyWinding(w);
-					Vector4Copy(planes[facet->borderPlanes[facet->numBorders]].plane, newplane);
+					VectorCopy4(planes[facet->borderPlanes[facet->numBorders]].plane, newplane);
 					if (!facet->borderInward[facet->numBorders])
 					{
 						VectorNegate(newplane, newplane);
@@ -1454,7 +1454,7 @@ void CM_TraceThroughPatchCollide( traceWork_t *tw, trace_t &trace, const struct 
 		if (!CM_CheckFacetPlane(plane, startp, endp, &enterFrac, &leaveFrac, &hit))
 			continue;
 		if (hit) {
-			Vector4Copy(plane, bestplane);
+			VectorCopy4(plane, bestplane);
 		}
 		//
 		for ( j = 0 ; j < facet->numBorders ; j++ ) {
@@ -1496,7 +1496,7 @@ void CM_TraceThroughPatchCollide( traceWork_t *tw, trace_t &trace, const struct 
 				break;
 			if (hit) {
 				hitnum = j;
-				Vector4Copy(plane, bestplane);
+				VectorCopy4(plane, bestplane);
 			}
 		}
 		if (j < facet->numBorders) continue;
@@ -1701,7 +1701,7 @@ void CM_DrawDebugSurface( void (*drawPoly)(int color, int numPoints, float *poin
 				//continue;
 			}
 
-			Vector4Copy( pc->planes[ planenum ].plane, plane );
+			VectorCopy4( pc->planes[ planenum ].plane, plane );
 
 			//planenum = facet->surfacePlane;
 			if ( inward ) {
@@ -1735,7 +1735,7 @@ void CM_DrawDebugSurface( void (*drawPoly)(int color, int numPoints, float *poin
 				//
 				if (curplanenum == planenum) continue;
 
-				Vector4Copy( pc->planes[ curplanenum ].plane, plane );
+				VectorCopy4( pc->planes[ curplanenum ].plane, plane );
 				if ( !curinward ) {
 					VectorSubtract( vec3_origin, plane, plane );
 					plane[3] = -plane[3];

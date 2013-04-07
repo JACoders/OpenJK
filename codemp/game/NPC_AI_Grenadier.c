@@ -3,9 +3,7 @@
 #include "anims.h"
 //#include "g_navigator.h"
 
-
 extern qboolean BG_SabersOff( playerState_t *ps );
-
 
 extern void CG_DrawAlert( vec3_t origin, float rating );
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );

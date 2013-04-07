@@ -1,4 +1,4 @@
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_local.h"
 #include "w_saber.h"
@@ -293,23 +293,33 @@ saberMoveData_t	saberMoveData[LS_MOVE_MAX] = {//							NB:randomized
 	{"BParry Top",	BOTH_H1_S1_T_,		Q_T,	Q_B,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_UP,
 	{"BParry UR",	BOTH_H1_S1_TR,		Q_TR,	Q_BL,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_UR,
 	{"BParry UL",	BOTH_H1_S1_TL,		Q_TL,	Q_BR,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_UL,
-	{"BParry LR",	BOTH_H1_S1_BL,		Q_BL,	Q_TR,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_LR,
-	{"BParry Bot",	BOTH_H1_S1_B_,		Q_B,	Q_T,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_LL
-	{"BParry LL",	BOTH_H1_S1_BR,		Q_BR,	Q_TL,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_LL
+	//JAC: the bottom right and bottom left animations were accidently switched.
+	{"BParry LR",	BOTH_H1_S1_BR,		Q_BL,	Q_TR,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_LR,
+	{"BParry Bot",	BOTH_H1_S1_B_,		Q_B,	Q_T,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_LR
+	{"BParry LL",	BOTH_H1_S1_BL,		Q_BR,	Q_TL,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_LL
+	//{"BParry LR",	BOTH_H1_S1_BL,		Q_BL,	Q_TR,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_LR,
+	//{"BParry Bot",	BOTH_H1_S1_B_,		Q_B,	Q_T,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_LL
+	//{"BParry LL",	BOTH_H1_S1_BR,		Q_BR,	Q_TL,	AFLAG_ACTIVE,	50,		BLK_NO,	LS_READY,		LS_READY,		150	},	// LS_PARRY_LL
 
 	// Knockaways
 	{"Knock Top",	BOTH_K1_S1_T_,		Q_R,	Q_T,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_BL2TR,		LS_T1_T__BR,		150	},	// LS_PARRY_UP,
 	{"Knock UR",	BOTH_K1_S1_TR,		Q_R,	Q_TR,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_BL2TR,		LS_T1_TR__R,		150	},	// LS_PARRY_UR,
 	{"Knock UL",	BOTH_K1_S1_TL,		Q_R,	Q_TL,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_BR2TL,		LS_T1_TL__L,		150	},	// LS_PARRY_UL,
-	{"Knock LR",	BOTH_K1_S1_BL,		Q_R,	Q_BL,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TL2BR,		LS_T1_BL_TL,		150	},	// LS_PARRY_LR,
-	{"Knock LL",	BOTH_K1_S1_BR,		Q_R,	Q_BR,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TR2BL,		LS_T1_BR_TR,		150	},	// LS_PARRY_LL
+	//JAC: the bottom right and bottom left animations were accidently switched.
+	{"Knock LR",	BOTH_K1_S1_BR,		Q_R,	Q_BL,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TL2BR,		LS_T1_BL_TL,		150	},	// LS_PARRY_LR,
+	{"Knock LL",	BOTH_K1_S1_BL,		Q_R,	Q_BR,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TR2BL,		LS_T1_BR_TR,		150	},	// LS_PARRY_LL
+	//{"Knock LR",	BOTH_K1_S1_BL,		Q_R,	Q_BL,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TL2BR,		LS_T1_BL_TL,		150	},	// LS_PARRY_LR,
+	//{"Knock LL",	BOTH_K1_S1_BR,		Q_R,	Q_BR,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TR2BL,		LS_T1_BR_TR,		150	},	// LS_PARRY_LL
 
 	// Parry
 	{"Parry Top",	BOTH_P1_S1_T_,		Q_R,	Q_T,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_BL2TR,		LS_A_T2B,		150	},	// LS_PARRY_UP,
 	{"Parry UR",	BOTH_P1_S1_TR,		Q_R,	Q_TL,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_BL2TR,		LS_A_TR2BL,		150	},	// LS_PARRY_UR,
 	{"Parry UL",	BOTH_P1_S1_TL,		Q_R,	Q_TR,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_BR2TL,		LS_A_TL2BR,		150	},	// LS_PARRY_UL,
-	{"Parry LR",	BOTH_P1_S1_BL,		Q_R,	Q_BR,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TL2BR,		LS_A_BR2TL,		150	},	// LS_PARRY_LR,
-	{"Parry LL",	BOTH_P1_S1_BR,		Q_R,	Q_BL,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TR2BL,		LS_A_BL2TR,		150	},	// LS_PARRY_LL
+	//JAC: the bottom right and bottom left animations were accidently switched.
+	{"Parry LR",	BOTH_P1_S1_BR,		Q_R,	Q_BR,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TL2BR,		LS_A_BR2TL,		150	},	// LS_PARRY_LR,
+	{"Parry LL",	BOTH_P1_S1_BL,		Q_R,	Q_BL,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TR2BL,		LS_A_BL2TR,		150	},	// LS_PARRY_LL
+	//{"Parry LR",	BOTH_P1_S1_BL,		Q_R,	Q_BR,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TL2BR,		LS_A_BR2TL,		150	},	// LS_PARRY_LR,
+	//{"Parry LL",	BOTH_P1_S1_BR,		Q_R,	Q_BL,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TR2BL,		LS_A_BL2TR,		150	},	// LS_PARRY_LL
 
 	// Reflecting a missile
 	{"Reflect Top",	BOTH_P1_S1_T_,		Q_R,	Q_T,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_BL2TR,		LS_A_T2B,		300	},	// LS_PARRY_UP,
@@ -319,73 +329,16 @@ saberMoveData_t	saberMoveData[LS_MOVE_MAX] = {//							NB:randomized
 	{"Reflect LL",	BOTH_P1_S1_BL,		Q_R,	Q_BR,	AFLAG_ACTIVE,	50,		BLK_WIDE,	LS_R_TL2BR,		LS_A_BR2TL,		300	},	// LS_PARRY_LL,
 };
 
-
 int transitionMove[Q_NUM_QUADS][Q_NUM_QUADS] = 
 {
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_BR__R,//40
-	LS_T1_BR_TR,
-	LS_T1_BR_T_,
-	LS_T1_BR_TL,
-	LS_T1_BR__L,
-	LS_T1_BR_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1__R_BR,//46
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1__R_TR,
-	LS_T1__R_T_,
-	LS_T1__R_TL,
-	LS_T1__R__L,
-	LS_T1__R_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_TR_BR,//52
-	LS_T1_TR__R,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_TR_T_,
-	LS_T1_TR_TL,
-	LS_T1_TR__L,
-	LS_T1_TR_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_T__BR,//58
-	LS_T1_T___R,
-	LS_T1_T__TR,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_T__TL,
-	LS_T1_T___L,
-	LS_T1_T__BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_TL_BR,//64
-	LS_T1_TL__R,
-	LS_T1_TL_TR,
-	LS_T1_TL_T_,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1_TL__L,
-	LS_T1_TL_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1__L_BR,//70
-	LS_T1__L__R,
-	LS_T1__L_TR,
-	LS_T1__L_T_,
-	LS_T1__L_TL,
-	LS_NONE,	//Can't transition to same pos!
-	LS_T1__L_BL,
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_BL_BR,//76
-	LS_T1_BL__R,
-	LS_T1_BL_TR,
-	LS_T1_BL_T_,
-	LS_T1_BL_TL,
-	LS_T1_BL__L,
-	LS_NONE,	//Can't transition to same pos!
-	LS_NONE,	//No transitions to bottom, and no anims start there, so shouldn't need any
-	LS_T1_BL_BR,//NOTE: there are no transitions from bottom, so re-use the bottom right transitions
-	LS_T1_BR__R,
-	LS_T1_BR_TR,
-	LS_T1_BR_T_,
-	LS_T1_BR_TL,
-	LS_T1_BR__L,
-	LS_T1_BR_BL,
-	LS_NONE		//No transitions to bottom, and no anims start there, so shouldn't need any
+	{	LS_NONE,		LS_T1_BR__R,	LS_T1_BR_TR,	LS_T1_BR_T_,	LS_T1_BR_TL,	LS_T1_BR__L,	LS_T1_BR_BL,	LS_NONE		},
+	{	LS_T1__R_BR,	LS_NONE,		LS_T1__R_TR,	LS_T1__R_T_,	LS_T1__R_TL,	LS_T1__R__L,	LS_T1__R_BL,	LS_NONE		},
+	{	LS_T1_TR_BR,	LS_T1_TR__R,	LS_NONE,		LS_T1_TR_T_,	LS_T1_TR_TL,	LS_T1_TR__L,	LS_T1_TR_BL,	LS_NONE		},
+	{	LS_T1_T__BR,	LS_T1_T___R,	LS_T1_T__TR,	LS_NONE,		LS_T1_T__TL,	LS_T1_T___L,	LS_T1_T__BL,	LS_NONE		},
+	{	LS_T1_TL_BR,	LS_T1_TL__R,	LS_T1_TL_TR,	LS_T1_TL_T_,	LS_NONE,		LS_T1_TL__L,	LS_T1_TL_BL,	LS_NONE		},
+	{	LS_T1__L_BR,	LS_T1__L__R,	LS_T1__L_TR,	LS_T1__L_T_,	LS_T1__L_TL,	LS_NONE,		LS_T1__L_BL,	LS_NONE		},
+	{	LS_T1_BL_BR,	LS_T1_BL__R,	LS_T1_BL_TR,	LS_T1_BL_T_,	LS_T1_BL_TL,	LS_T1_BL__L,	LS_NONE,		LS_NONE		},
+	{	LS_T1_BL_BR,	LS_T1_BR__R,	LS_T1_BR_TR,	LS_T1_BR_T_,	LS_T1_BR_TL,	LS_T1_BR__L,	LS_T1_BR_BL,	LS_NONE		},
 };
 
 saberMoveName_t PM_AttackMoveForQuad( int quad )
@@ -713,70 +666,22 @@ qboolean PM_SaberInTransition( int move );
 
 int saberMoveTransitionAngle[Q_NUM_QUADS][Q_NUM_QUADS] = 
 {
-	0,//Q_BR,Q_BR,
-	45,//Q_BR,Q_R,
-	90,//Q_BR,Q_TR,
-	135,//Q_BR,Q_T,
-	180,//Q_BR,Q_TL,
-	215,//Q_BR,Q_L,
-	270,//Q_BR,Q_BL,
-	45,//Q_BR,Q_B,
-	45,//Q_R,Q_BR,
-	0,//Q_R,Q_R,
-	45,//Q_R,Q_TR,
-	90,//Q_R,Q_T,
-	135,//Q_R,Q_TL,
-	180,//Q_R,Q_L,
-	215,//Q_R,Q_BL,
-	90,//Q_R,Q_B,
-	90,//Q_TR,Q_BR,
-	45,//Q_TR,Q_R,
-	0,//Q_TR,Q_TR,
-	45,//Q_TR,Q_T,
-	90,//Q_TR,Q_TL,
-	135,//Q_TR,Q_L,
-	180,//Q_TR,Q_BL,
-	135,//Q_TR,Q_B,
-	135,//Q_T,Q_BR,
-	90,//Q_T,Q_R,
-	45,//Q_T,Q_TR,
-	0,//Q_T,Q_T,
-	45,//Q_T,Q_TL,
-	90,//Q_T,Q_L,
-	135,//Q_T,Q_BL,
-	180,//Q_T,Q_B,
-	180,//Q_TL,Q_BR,
-	135,//Q_TL,Q_R,
-	90,//Q_TL,Q_TR,
-	45,//Q_TL,Q_T,
-	0,//Q_TL,Q_TL,
-	45,//Q_TL,Q_L,
-	90,//Q_TL,Q_BL,
-	135,//Q_TL,Q_B,
-	215,//Q_L,Q_BR,
-	180,//Q_L,Q_R,
-	135,//Q_L,Q_TR,
-	90,//Q_L,Q_T,
-	45,//Q_L,Q_TL,
-	0,//Q_L,Q_L,
-	45,//Q_L,Q_BL,
-	90,//Q_L,Q_B,
-	270,//Q_BL,Q_BR,
-	215,//Q_BL,Q_R,
-	180,//Q_BL,Q_TR,
-	135,//Q_BL,Q_T,
-	90,//Q_BL,Q_TL,
-	45,//Q_BL,Q_L,
-	0,//Q_BL,Q_BL,
-	45,//Q_BL,Q_B,
-	45,//Q_B,Q_BR,
-	90,//Q_B,Q_R,
-	135,//Q_B,Q_TR,
-	180,//Q_B,Q_T,
-	135,//Q_B,Q_TL,
-	90,//Q_B,Q_L,
-	45,//Q_B,Q_BL,
-	0//Q_B,Q_B,
+//		Q_BR,Q_BR,	Q_BR,Q_R,	Q_BR,Q_TR,	Q_BR,Q_T,	Q_BR,Q_TL,	Q_BR,Q_L,	Q_BR,Q_BL,	Q_BR,Q_B,
+	{	0,			45,			90,			135,		180,		215,		270,		45			},
+//		Q_R,Q_BR,	Q_R,Q_R,	Q_R,Q_TR,	Q_R,Q_T,	Q_R,Q_TL,	Q_R,Q_L,	Q_R,Q_BL,	Q_R,Q_B,
+	{	45,			0,			45,			90,			135,		180,		215,		90			},
+//		Q_TR,Q_BR,	Q_TR,Q_R,	Q_TR,Q_TR,	Q_TR,Q_T,	Q_TR,Q_TL,	Q_TR,Q_L,	Q_TR,Q_BL,	Q_TR,Q_B,
+	{	90,			45,			0,			45,			90,			135,		180,		135			},
+//		Q_T,Q_BR,	Q_T,Q_R,	Q_T,Q_TR,	Q_T,Q_T,	Q_T,Q_TL,	Q_T,Q_L,	Q_T,Q_BL,	Q_T,Q_B,
+	{	135,		90,			45,			0,			45,			90,			135,		180			},
+//		Q_TL,Q_BR,	Q_TL,Q_R,	Q_TL,Q_TR,	Q_TL,Q_T,	Q_TL,Q_TL,	Q_TL,Q_L,	Q_TL,Q_BL,	Q_TL,Q_B,
+	{	180,		135,		90,			45,			0,			45,			90,			135			},
+//		Q_L,Q_BR,	Q_L,Q_R,	Q_L,Q_TR,	Q_L,Q_T,	Q_L,Q_TL,	Q_L,Q_L,	Q_L,Q_BL,	Q_L,Q_B,
+	{	215,		180,		135,		90,			45,			0,			45,			90			},
+//		Q_BL,Q_BR,	Q_BL,Q_R,	Q_BL,Q_TR,	Q_BL,Q_T,	Q_BL,Q_TL,	Q_BL,Q_L,	Q_BL,Q_BL,	Q_BL,Q_B,
+	{	270,		215,		180,		135,		90,			45,			0,			45			},
+//		Q_B,Q_BR,	Q_B,Q_R,	Q_B,Q_TR,	Q_B,Q_T,	Q_B,Q_TL,	Q_B,Q_L,	Q_B,Q_BL,	Q_B,Q_B,
+	{	45,			90,			135,		180,		135,		90,			45,			0			},
 };
 
 int PM_SaberAttackChainAngle( int move1, int move2 )
@@ -990,7 +895,7 @@ extern gentity_t g_entities[];
 
 #elif defined CGAME
 
-#include "..\cgame\cg_local.h" //ahahahahhahahaha@$!$!
+#include "cgame/cg_local.h" //ahahahahhahahaha@$!$!
 
 #endif
 
@@ -1278,9 +1183,6 @@ void PM_SaberLockBreak( playerState_t *genemy, qboolean victory, int strength )
 				genemy->otherKiller = pm->ps->clientNum;
 				genemy->otherKillerTime = pm->cmd.serverTime + 5000;
 				genemy->otherKillerDebounceTime = pm->cmd.serverTime + 100;
-				//genemy->otherKillerMOD = MOD_UNKNOWN;
-				//genemy->otherKillerVehWeapon = 0;
-				//genemy->otherKillerWeaponType = WP_NONE;
 
 				genemy->velocity[0] = oppDir[0]*(strength*40);
 				genemy->velocity[1] = oppDir[1]*(strength*40);
@@ -1709,6 +1611,7 @@ saberMoveName_t PM_SaberFlipOverAttackMove(void)
 	if (psData)
 	{
 		zDiff = psData->origin[2] - pm->ps->origin[2];
+
 	}
 	else
 	{
@@ -1938,7 +1841,7 @@ saberMoveName_t PM_SaberJumpAttackMove2( void )
 			return LS_JUMPATTACK_STAFF_RIGHT;
 		}
 	}
-	return LS_A_T2B;
+//	return LS_A_T2B;
 }
 
 saberMoveName_t PM_SaberJumpAttackMove( void )
@@ -2055,7 +1958,7 @@ static qboolean PM_CanDoDualDoubleAttacks(void)
 static qboolean PM_CheckEnemyPresence( int dir, float radius )
 { //anyone in this dir?
 	vec3_t angles;
-	vec3_t checkDir;
+	vec3_t checkDir = { 0.0f };
 	vec3_t tTo;
 	vec3_t tMins, tMaxs;
 	trace_t tr;
@@ -4136,3 +4039,4 @@ saberInfo_t *BG_MySaber( int clientNum, int saberNum )
 
 	return NULL;
 }
+

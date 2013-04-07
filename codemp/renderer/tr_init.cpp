@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // tr_init.c -- functions that are not called every frame
 
@@ -14,9 +14,9 @@
 #include "tr_font.h"
 
 #if !defined (MINIHEAP_H_INC)
-	#include "../qcommon/MiniHeap.h"
+	#include "qcommon/MiniHeap.h"
 
-#include "../ghoul2/G2_local.h"
+#include "ghoul2/G2_local.h"
 #endif
 
 

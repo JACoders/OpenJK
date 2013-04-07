@@ -7,7 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+#include "winresrc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -34,7 +34,7 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include ""afxres.h""\r\n"
+    "#include ""winresrc.h""\r\n"
     "\0"
 END
 
@@ -51,7 +51,8 @@ END
 //
 // Version
 //
-#include "AutoVersion.h"
+
+#include "../qcommon/game_version.h"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION VERSION_MAJOR_RELEASE,VERSION_MINOR_RELEASE,VERSION_EXTERNAL_BUILD,VERSION_INTERNAL_BUILD
@@ -70,14 +71,12 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "Raven Software"
-            VALUE "CompanyName", "Activision Inc"
-            VALUE "FileDescription", "JA User Interface DLL"
+            VALUE "Comments", "OpenJK Contributors"
+            VALUE "FileDescription", "OpenJK UI"
             VALUE "FileVersion", VERSION_STRING
             VALUE "InternalName", "ui"
-            VALUE "LegalCopyright", "Copyright (C) 2003"
             VALUE "OriginalFilename", "ui.dll"
-            VALUE "ProductName", "Jedi Knight®: Jedi Academy (MP)"
+            VALUE "ProductName", "OpenJK"
             VALUE "ProductVersion", VERSION_STRING
         END
     END

@@ -1,27 +1,27 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // cl_main.c  -- client main loop
 
 #include "client.h"
-#include "../qcommon/stringed_ingame.h"
+#include "qcommon/stringed_ingame.h"
 #include <limits.h>
 #include "snd_local.h"
 
 //rwwRMG - added:
-#include "..\qcommon\cm_local.h"
-#include "..\qcommon\cm_landscape.h"
+#include "qcommon/cm_local.h"
+#include "qcommon/cm_landscape.h"
 
 #if !defined(G2_H_INC)
-	#include "..\ghoul2\G2_local.h"
+	#include "ghoul2/G2_local.h"
 #endif
 
 #if !defined (MINIHEAP_H_INC)
-#include "../qcommon/miniheap.h"
+#include "qcommon/miniheap.h"
 #endif
 
 #ifdef _DONETPROFILE_
-#include "../qcommon/INetProfile.h"
+#include "qcommon/INetProfile.h"
 #endif
 
 cvar_t	*cl_nodelta;
