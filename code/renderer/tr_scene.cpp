@@ -117,7 +117,7 @@ void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *vert
 
 	if ( !hShader ) {
 #ifndef FINAL_BUILD
-		VID_Printf( PRINT_WARNING, "WARNING: RE_AddPolyToScene: NULL poly shader\n");
+		Com_DPrintf( S_COLOR_YELLOW"WARNING: RE_AddPolyToScene: NULL poly shader\n");
 #endif
 		return;
 	}

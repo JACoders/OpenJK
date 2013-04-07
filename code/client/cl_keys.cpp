@@ -779,7 +779,7 @@ void Console_Key (int key) {
 
 	// command history (ctrl-p ctrl-n for unix style)
 
-	if ( ( key == A_CURSOR_UP ) || ( ( keynames[ key ].lower == 'p' ) && kg.keys[A_CTRL].down ) ) 
+	if ( ( key == A_MWHEELUP && kg.keys[A_SHIFT].down ) || ( key == A_CURSOR_UP ) || ( key == A_KP_8 ) || ( ( keynames[ key ].lower == 'p' ) && kg.keys[A_CTRL].down ) ) 
 	{
 		if ( kg.nextHistoryLine - kg.historyLine < COMMAND_HISTORY && kg.historyLine > 0 ) 
 		{
@@ -789,12 +789,33 @@ void Console_Key (int key) {
 		return;
 	}
 
-	if ( ( key == A_CURSOR_DOWN ) || ( ( keynames[ key ].lower == 'n' ) && kg.keys[A_CTRL].down ) ) 
+	if ( ( key == A_MWHEELDOWN && kg.keys[A_SHIFT].down ) || ( key == A_CURSOR_DOWN ) || ( key == A_KP_2 ) || ( ( keynames[ key ].lower == 'n' ) && kg.keys[A_CTRL].down ) ) 
 	{
 		if (kg.historyLine == kg.nextHistoryLine)
 			return;
 		kg.historyLine++;
 		kg.g_consoleField = kg.historyEditLines[ kg.historyLine % COMMAND_HISTORY ];
+		return;
+	}
+
+	// eezstreet - Shift + Page Up/Down = scroll up/down 5x
+	if ( key == A_PAGE_UP && kg.keys[A_SHIFT].down )
+	{
+		Con_PageUp();
+		Con_PageUp();
+		Con_PageUp();
+		Con_PageUp();
+		Con_PageUp();
+		return;
+	}
+
+	if ( key == A_PAGE_DOWN && kg.keys[A_SHIFT].down )
+	{
+		Con_PageDown();
+		Con_PageDown();
+		Con_PageDown();
+		Con_PageDown();
+		Con_PageDown();
 		return;
 	}
 
@@ -807,6 +828,24 @@ void Console_Key (int key) {
 	if ( key == A_PAGE_DOWN ) {
 		Con_PageDown();
 		return;
+	}
+
+	if ( key == A_MWHEELUP ) {  //----(SA)  added some mousewheel functionality to the console 
+		Con_PageUp(); 
+		if(kg.keys[A_CTRL].down) {  // hold <ctrl> to accelerate scrolling 
+			Con_PageUp(); 
+			Con_PageUp(); 
+		} 
+		return; 
+	} 
+
+	if ( key == A_MWHEELDOWN ) {  //----(SA)  added some mousewheel functionality to the console 
+		Con_PageDown(); 
+		if(kg.keys[A_CTRL].down) {  // hold <ctrl> to accelerate scrolling 
+			Con_PageDown(); 
+			Con_PageDown(); 
+		} 
+		return; 
 	}
 
 	// ctrl-home = top of console
