@@ -526,6 +526,7 @@ void AppVars_ReadIdeal(void)
 			TextureList_SetFilter();	// in case filtering was changed
 			ModelList_ForceRedraw();
 		}
+		// DT EDIT
 		/*
 		else
 		{

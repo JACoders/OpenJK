@@ -7,7 +7,7 @@
 Ghoul2 Insert Start
 */
 #include "qcommon/q_shared.h"
-#include "ghoul2/g2.h"
+#include "ghoul2/G2.h"
 /*
 Ghoul2 Insert end
 */

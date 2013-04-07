@@ -1,0 +1,691 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\Assimilate.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\Assimilate.ico"
+IDR_ASSIMITYPE          ICON    DISCARDABLE     "res\\AssimilateDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+IDB_TREEIMAGES          BITMAP  DISCARDABLE     "res\\treeimag.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR DISCARDABLE  23, 21
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+    BUTTON      IDM_RESEQUENCE
+    BUTTON      IDM_BUILD
+    BUTTON      ID_EDIT_BUILDALL
+    BUTTON      IDM_EDIT_BUILDDEPENDANT
+    BUTTON      IDM_VALIDATE
+    BUTTON      IDM_CARWASH
+    BUTTON      ID_EDIT_LAUNCHMODVIEWONCURRENT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "Add Files...",                IDM_ADDFILES
+        MENUITEM "Write Config Data...",        IDM_EXTERNAL
+        MENUITEM SEPARATOR
+        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "Resequence",                  IDM_RESEQUENCE
+        MENUITEM "Build Model",                 IDM_BUILD
+        MENUITEM "Validate",                    IDM_VALIDATE
+        MENUITEM "View current model via ModView", 
+                                                ID_EDIT_LAUNCHMODVIEWONCURRENT
+
+        MENUITEM SEPARATOR
+        MENUITEM "Validate "" *.CAR /s ""     ( aka .CAR WASH :-)", 
+                                                IDM_CARWASH
+        MENUITEM SEPARATOR
+        MENUITEM "Build every CAR file in the project....     ""Hurrrrr.....Big Jobs!""", 
+                                                ID_EDIT_BUILDALL
+        MENUITEM "Build dependant models",      IDM_EDIT_BUILDDEPENDANT
+        MENUITEM SEPARATOR
+        MENUITEM "Preferences...",              IDM_PROPERTIES
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM "Anim Enums",                  ID_VIEW_ANIMENUMS
+        MENUITEM "Frame Details",               ID_VIEW_FRAMEDETAILS
+        MENUITEM "Frame Details On Additional Sequences", 
+                                                ID_VIEW_FRAMEDETAILSONADDITIONALSEQUENCES
+
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About Assimilate...",        ID_APP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+BEGIN
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 55
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About Assimilate"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "Assimilate Version 2.1",IDC_STATIC,40,10,119,8,
+                    SS_NOPREFIX
+    LTEXT           "Copyright (C) 1999 Raven Software",IDC_STATIC,39,24,119,
+                    10
+    DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
+    LTEXT           "Written by M.Crowns, S.Cork",IDC_STATIC,39,38,121,8
+END
+
+IDD_PP_MODEL DIALOG DISCARDABLE  0, 0, 309, 359
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Model"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Build Parameters ",IDC_STATIC,7,6,295,346
+    CONTROL         "Skew 90 (only use this if you REALLY need to, i.e. leave it alone!)",
+                    IDC_CHECK_SKEW90,"Button",BS_AUTOCHECKBOX | WS_DISABLED | 
+                    WS_TABSTOP,17,18,222,10
+    CONTROL         "Smooth all surfaces",IDC_CHECK_SMOOTH_ALL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,28,77,10
+    GROUPBOX        "Skeleton",IDC_STATIC,17,75,277,74
+    EDITTEXT        IDC_EDIT_SKELPATH,23,127,263,14,ES_AUTOHSCROLL | 
+                    WS_GROUP
+    LTEXT           "Path,  eg ""models/players/interrogator/interrogator""  ( no extension )",
+                    IDC_STATIC_SKELPATH,24,116,239,11
+    GROUPBOX        "Origin - Adjust",IDC_STATIC,17,155,277,31
+    EDITTEXT        IDC_EDIT_ORIGINX,31,165,52,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_ORIGINY,99,165,55,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_ORIGINZ,172,165,49,14,ES_AUTOHSCROLL
+    LTEXT           "X",IDC_STATIC,23,167,8,8
+    LTEXT           "Y",IDC_STATIC,91,167,8,8
+    LTEXT           "Z",IDC_STATIC,163,167,8,8
+    EDITTEXT        IDC_EDIT_SCALE,182,83,41,14,ES_AUTOHSCROLL
+    LTEXT           "Scale (default = 1.0)",IDC_STATIC,226,85,64,8
+    CONTROL         "Make EF1-type .skin file",IDC_CHECK_MAKESKIN,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,49,91,10
+    CONTROL         "Remove duplicate verts from mesh during compile",
+                    IDC_CHECK_LOSEDUPVERTS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,17,39,172,10
+    CONTROL         "Makes it's own skeleton",IDC_CHECK_MAKESKEL,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,25,87,92,10
+    GROUPBOX        "PCJ List",IDC_PCJ_STATIC,17,191,277,151
+    LISTBOX         IDC_LIST_PCJ,24,204,263,109,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_PCJ,23,319,130,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "<---- Add to PCJ list",IDC_BUTTON_PCJ,157,319,68,14
+    PUSHBUTTON      "Delete PCJ entry",IDC_BUTTON_DELPCJ,226,319,61,14
+    CONTROL         "Keep ""motion"" bone",IDC_CHECK_KEEPMOTIONBONE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,60,87,10
+    CONTROL         "Uses ( older ) pre-quaternian animation-compression",
+                    IDC_CHECK_PREQUAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    25,101,194,10
+END
+
+IDD_PP_SEQUENCE DIALOG DISCARDABLE  0, 0, 542, 175
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Sequence"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Start Frame",IDC_STATIC,78,10,37,8
+    LTEXT           "Frame Count",IDC_STATIC,124,10,41,8
+    LTEXT           "Loop Frame",IDC_STATIC,173,10,38,8
+    LTEXT           "Frame Speed",IDC_STATIC,218,10,43,8
+    LTEXT           "Animation Enum",IDC_STATIC,369,10,53,8
+    LTEXT           "( -1 = none )",IDC_STATIC,173,19,39,8
+    LTEXT           "Master",IDC_STATIC,17,33,22,8
+    EDITTEXT        IDC_STARTFRAME,75,30,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FRAMECOUNT,123,30,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LOOPFRAME,171,30,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FRAMESPEED,219,30,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_ANIMATIONENUM,333,30,120,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    PUSHBUTTON      "Choose",IDC_BUTTON_CHOOSEANIMATIONENUM,455,31,36,13
+    PUSHBUTTON      "Clear",IDC_BUTTON_CLEARANIMATIONENUM,491,31,36,13
+    LTEXT           "Additional #1",IDC_STATIC,8,59,42,8
+    EDITTEXT        IDC_STARTFRAME2,75,57,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FRAMECOUNT2,123,57,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LOOPFRAME2,171,57,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FRAMESPEED2,219,57,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_ANIMATIONENUM2,333,57,120,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    PUSHBUTTON      "Choose",IDC_BUTTON_CHOOSEANIMATIONENUM2,455,57,36,13
+    PUSHBUTTON      "Clear",IDC_BUTTON_CLEARANIMATIONENUM2,491,57,36,13
+    LTEXT           "Additional #2",IDC_STATIC,8,77,42,8
+    EDITTEXT        IDC_STARTFRAME3,75,75,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FRAMECOUNT3,123,75,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LOOPFRAME3,171,75,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FRAMESPEED3,219,75,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_ANIMATIONENUM3,333,75,120,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    PUSHBUTTON      "Choose",IDC_BUTTON_CHOOSEANIMATIONENUM3,455,76,36,13
+    PUSHBUTTON      "Clear",IDC_BUTTON_CLEARANIMATIONENUM3,491,76,36,13
+    LTEXT           "Additional #3",IDC_STATIC,8,95,42,8
+    EDITTEXT        IDC_STARTFRAME4,75,93,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FRAMECOUNT4,123,93,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LOOPFRAME4,171,93,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FRAMESPEED4,219,93,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_ANIMATIONENUM4,333,93,120,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    PUSHBUTTON      "Choose",IDC_BUTTON_CHOOSEANIMATIONENUM4,455,94,36,13
+    PUSHBUTTON      "Clear",IDC_BUTTON_CLEARANIMATIONENUM4,491,94,36,13
+    LTEXT           "Additional #4",IDC_STATIC,8,112,42,8
+    EDITTEXT        IDC_STARTFRAME5,75,111,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FRAMECOUNT5,123,111,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LOOPFRAME5,171,111,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FRAMESPEED5,219,111,42,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_ANIMATIONENUM5,333,111,120,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    PUSHBUTTON      "Choose",IDC_BUTTON_CHOOSEANIMATIONENUM5,455,111,36,13
+    PUSHBUTTON      "Clear",IDC_BUTTON_CLEARANIMATIONENUM5,491,111,36,13
+    LTEXT           "File Path:",IDC_STATIC,7,142,36,8
+    EDITTEXT        IDC_PATH,75,140,186,14,ES_AUTOHSCROLL
+    CONTROL         "GenLoopFrame",IDC_CHECK_GENLOOPFRAME,"Button",
+                    BS_AUTOCHECKBOX | BS_LEFT | BS_TOP | BS_MULTILINE | 
+                    WS_TABSTOP,266,32,64,10
+END
+
+IDD_PP_PROPERTIES DIALOG DISCARDABLE  0, 0, 235, 159
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Preferences"
+FONT 8, "MS Sans Serif"
+BEGIN
+    RTEXT           "Enum file:",IDC_STATIC,18,7,32,8
+    EDITTEXT        IDC_ENUM,53,7,160,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_ENUM_BROWSE,213,7,15,11
+    RTEXT           "Buffer size:",IDC_STATIC,18,22,32,8
+    EDITTEXT        IDC_BUFFSIZE,53,22,32,12,ES_AUTOHSCROLL
+    RTEXT           "Compiler:",IDC_STATIC,18,36,32,8
+    EDITTEXT        IDC_QDATA,53,37,160,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_QDATA_BROWSE,213,37,15,11
+    EDITTEXT        IDC_QUAKEDIR,53,75,160,12,ES_AUTOHSCROLL
+    LTEXT           "Quake Dir:       eg: Q:\\quake\\baseq3\\               ( note trailing '\\'  )",
+                    IDC_STATIC,7,65,219,8
+    PUSHBUTTON      "Default all fields for StarWars Single Player",
+                    IDC_BUTTON_DEFAULTS,12,110,211,14
+    PUSHBUTTON      "Default all fields for StarWars Multi Player (subject to change)",
+                    IDC_BUTTON_DEFAULTS_MULTI,12,129,211,14
+    CONTROL         "MultiPlayer",IDC_CHECK_MULTIPLAYER,"Button",
+                    BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,10,94,51,10
+    LTEXT           "( Ignore this dumb field, I'll lose it later )",
+                    IDC_STATIC,87,23,121,8
+END
+
+IDD_ANIMPICKER DIALOG DISCARDABLE  0, 0, 549, 423
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Animation Picker"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,479,380,50,14
+    LISTBOX         IDC_LIST_LEGS,20,23,160,352,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "LEGS_xxxx",IDC_STATIC,82,11,37,8
+    LISTBOX         IDC_LIST_TORSO,193,23,160,352,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "TORSO_xxxx",IDC_STATIC,248,11,44,8
+    LISTBOX         IDC_LIST_BOTH,370,23,160,352,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "BOTH_xxxx",IDC_STATIC,429,11,38,8
+    LTEXT           "( Double-click an entry to select. Entries beginning with ( * ) are already in use )",
+                    IDC_STATIC,154,381,247,8
+    LTEXT           "",IDC_STATIC_COMMENT,22,398,444,8
+    CONTROL         "Filter-out used",IDC_CHECK_FILTEROUTUSED,"Button",
+                    BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,415,380,59,14
+END
+
+IDD_DIALOG_YESNOYESNOALL DIALOG DISCARDABLE  0, 0, 308, 114
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Decision needed..."
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Yes",IDOK,31,81,50,14
+    PUSHBUTTON      "No",IDCANCEL,93,81,50,14
+    PUSHBUTTON      "Yes To All",IDYESTOALL,157,81,50,14
+    PUSHBUTTON      "No To All",IDNOTOALL,221,81,50,14
+    CTEXT           "static",IDC_STATIC1,16,10,277,9,SS_CENTERIMAGE
+    CTEXT           "static",IDC_STATIC2,16,20,277,9,SS_CENTERIMAGE
+    CTEXT           "static",IDC_STATIC3,16,30,277,9,SS_CENTERIMAGE
+    CTEXT           "static",IDC_STATIC4,16,40,277,9,SS_CENTERIMAGE
+    CTEXT           "static",IDC_STATIC5,16,50,277,9,SS_CENTERIMAGE
+    CTEXT           "static",IDC_STATIC6,16,60,277,9,SS_CENTERIMAGE
+END
+
+IDD_BUILD_ALL DIALOG DISCARDABLE  0, 0, 186, 87
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Build-Models"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,27,66,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,106,66,50,14
+    EDITTEXT        IDC_EDIT_BUILDPATH,15,25,154,14,ES_AUTOHSCROLL
+    LTEXT           "Game path to start at:    ( eg ""models/players"" )",
+                    IDC_STATIC,17,15,149,8
+    CONTROL         "Pre-Validate all CAR files before build",
+                    IDC_CHECK_PREVALIDATECARS,"Button",BS_AUTOCHECKBOX | 
+                    BS_MULTILINE | WS_TABSTOP,15,46,155,14
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "Raven Software\0"
+            VALUE "FileDescription", "Helps assimilate .ase and .xsi files into ST:Voy config files\0"
+            VALUE "FileVersion", "2.0\0"
+            VALUE "InternalName", "Assimilate\0"
+            VALUE "LegalCopyright", "Copyright (C) 1999\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "Assimilate.EXE\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "Assimilate Application\0"
+            VALUE "ProductVersion", "2.0\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_PP_MODEL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 352
+    END
+
+    IDD_PP_SEQUENCE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 535
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 168
+    END
+
+    IDD_PP_PROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 152
+    END
+
+    IDD_ANIMPICKER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 542
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 416
+    END
+
+    IDD_DIALOG_YESNOYESNOALL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 301
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 107
+    END
+
+    IDD_BUILD_ALL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 80
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    IDR_MAINFRAME           "Assimilate\n\nAssimilate\nAssimilate Files (*.car)\n.car\nAssimilate.Document\nAssimilate Document"
+END
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "Assimilate"
+    AFX_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW             "Create a new document\nNew"
+    ID_FILE_OPEN            "Open an existing document\nOpen"
+    ID_FILE_CLOSE           "Close the active document\nClose"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
+    ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
+    ID_FILE_PRINT_SETUP     "Change the printer and printing options\nPrint Setup"
+    ID_FILE_PRINT           "Print the active document\nPrint"
+    ID_FILE_PRINT_PREVIEW   "Display full pages\nPrint Preview"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
+    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDM_ADDFILES            "Add files"
+    IDM_EXTERNAL            "Creates the external data file"
+    IDM_RESEQUENCE          "Resequences model\nResequence model"
+    IDM_PROPERTIES          "Alter Properties"
+    ID_VIEW_ANIMENUMS       "Toggles viewing of animation enums in treeview"
+    ID_VIEW_FRAMEDETAILS    "Various frame info stuff, may well be removed after app finished"
+    IDM_BUILD               "Performs a build on all models within this QDT/CAR file\nBuild"
+    IDM_VALIDATE            "Validate: Checks for existance of all model files\nValidate"
+    IDM_CARWASH             "Validates every .CAR file in baseq down (big job)\nValidate all ( CAR-wash )"
+    ID_EDIT_BUILDALL        "Builds everything in the current single or multiplayer dir\nBuild all models"
+    IDM_EDIT_BUILDDEPENDANT "Build all models who are dependant on the skeleton produced by this CAR file\nBuild model + all dependants"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_FRAMEDETAILSONADDITIONALSEQUENCES 
+                            "Displays frame details on additional sequences, as opposed to primary"
+    ID_BUTTON_RESEQUENCE    "Resequence"
+    ID_EDIT_LAUNCHMODVIEWONCURRENT 
+                            "View using ModView\nView disk-version via ModView"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+// DT EDIT - File does not exist
+//#include "res\Assimilate.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
