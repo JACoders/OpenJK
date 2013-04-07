@@ -2284,20 +2284,9 @@ restarts.
 ============
 */
 
-static qboolean CompareIPs( int clientnum1, int clientnum2 )
+static qboolean CompareIPs( const char *ip1, const char *ip2 )
 {
-	const char *ip1 = NULL, *ip2 = NULL;
-
-	if ( clientnum1 < 0 || clientnum1 >= MAX_CLIENTS )
-		return qfalse;
-	if ( clientnum2 < 0 || clientnum2 >= MAX_CLIENTS )
-		return qfalse;
-
-	ip1 = level.clients[clientnum1].sess.IP;
-	ip2 = level.clients[clientnum2].sess.IP;
-
-	while ( 1 )
-	{
+	while ( 1 ) {
 		if ( *ip1 != *ip2 )
 			return qfalse;
 		if ( !*ip1 || *ip1 == ':' )
@@ -2318,7 +2307,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 
 	ent = &g_entities[ clientNum ];
 
-	level.security.clientConnectionActive[clientNum] = qfalse;
 	ent->s.number = clientNum;
 	ent->classname = "connecting";
 
@@ -2362,7 +2350,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 						}
 					}
 				#else
-					if ( CompareIPs( clientNum, i ) )
+					if ( CompareIPs( tmpIP, level.clients[i].sess.IP ) )
 						count++;
 				#endif
 			}
@@ -3891,8 +3879,6 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->ps.persistant[PERS_TEAM] = TEAM_FREE;
 	ent->client->sess.sessionTeam = TEAM_FREE;
 	ent->r.contents = 0;
-
-	level.security.clientConnectionActive[clientNum] = qfalse;
 
 	if (ent->client->holdingObjectiveItem > 0)
 	{ //carrying a siege objective item - make sure it updates and removes itself from us now in case this is an instant death-respawn situation
