@@ -1217,7 +1217,7 @@ static int R_GComputeFogNum( trRefEntity_t *ent ) {
 		return 0;
 	}
 
-	if ( tr.refdef.rdflags & RDF_doLAGoggles )
+	if ( tr.refdef.doLAGoggles )
 	{
 		return tr.world->numfogs;
 	}
@@ -4062,10 +4062,21 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	}
 	
 	bool isAnOldModelFile = false;
+#ifndef __NO_JK2
+	if (!Cvar_VariableIntegerValue("com_jk2")) 
+	{
+#endif
 	if (mdxm->numBones == 72 && strstr(mdxm->animName,"_humanoid") )
 	{
 		isAnOldModelFile = true;
 	}
+#ifndef __NO_JK2
+	}
+	else
+	{
+		isAnOldModelFile = false;	// JK2 used JK2 models before it was even cool
+	}
+#endif
 
 	if (!mdxm->animIndex) 
 	{

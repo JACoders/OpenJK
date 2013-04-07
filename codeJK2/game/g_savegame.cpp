@@ -682,14 +682,7 @@ void WriteGEntities(qboolean qbAutosave)
 
 			// the scary ghoul2 saver stuff...  (fingers crossed)
 			//
-			{
-				char *pGhoul2Data = NULL;
-				int   iGhoul2Size = 0;
-				gi.G2API_SaveGhoul2Models(tempEnt.ghoul2, &pGhoul2Data, &iGhoul2Size);								
-				gi.AppendToSaveGame('GL2S', &iGhoul2Size, sizeof(iGhoul2Size));	// needed so I can pre-alloc a buffer to read back in
-				gi.AppendToSaveGame('GHL2', pGhoul2Data, iGhoul2Size);
-				gi.G2API_FreeSaveBuffer(pGhoul2Data);	// because alloc was in a different DLL, so I can't free it here
-			}
+			gi.G2API_SaveGhoul2Models(tempEnt.ghoul2);								
 			tempEnt.ghoul2.kill(); // this handle was shallow copied from an ent. We don't want it destroyed
 		}
 	}
@@ -850,6 +843,14 @@ void ReadGEntities(qboolean qbAutosave)
 
 		// the scary ghoul2 stuff...  (fingers crossed)
 		//
+#ifndef __NO_JKA
+		{
+			char *pGhoul2Data = NULL;
+			gi.ReadFromSaveGame('GHL2', 0, 0, (void**)&pGhoul2Data);
+			gi.G2API_LoadGhoul2Models(pEnt->ghoul2, pGhoul2Data);	// if it's going to crash anywhere...   <g>
+			gi.Free(pGhoul2Data);
+		}
+#else
 		{
 			char *pGhoul2Data = NULL;
 			int   iGhoul2Size = 0;
@@ -863,6 +864,7 @@ void ReadGEntities(qboolean qbAutosave)
 			gi.G2API_LoadGhoul2Models(pEnt->ghoul2, pGhoul2Data);	// if it's going to crash anywhere...   <g>
 			gi.Free(pGhoul2Data);
 		}
+#endif
 
 //		gi.unlinkentity (pEntOriginal);		
 //		ICARUS_FreeEnt( pEntOriginal );

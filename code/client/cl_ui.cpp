@@ -17,7 +17,7 @@ int CL_UISystemCalls( int *args );
 extern int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *sMapName);
 extern qboolean SG_GameAllowedToSaveHere(qboolean inCamera);
 extern void SG_StoreSaveGameComment(const char *sComment);
-//extern byte *SCR_GetScreenshot(qboolean *qValid);
+extern byte *SCR_GetScreenshot(qboolean *qValid);						// uncommented --eez
 
 
 /*
@@ -198,6 +198,13 @@ CL_InitUI
 ====================
 */
 void CL_InitUI( void ) {
+#ifndef __NO_JK2
+	if(Cvar_VariableIntegerValue("com_jk2"))
+	{
+		JK2SP_Register("keynames", 0	/*SP_REGISTER_REQUIRED*/);		// reference is KEYNAMES
+	}
+#endif
+
 	uiimport_t	uii;
 
 	memset( &uii, 0, sizeof( uii ) );
@@ -283,6 +290,11 @@ void CL_InitUI( void ) {
 	uii.Key_ClearStates			= Key_ClearStates;
 	uii.Key_GetCatcher			= Key_GetCatcher;
 	uii.Key_SetCatcher			= Key_SetCatcher;
+#ifndef __NO_JK2
+	uii.SP_Register				= JK2SP_Register;
+	uii.SP_GetStringText		= JK2SP_GetStringText;
+	uii.SP_GetStringTextString  = JK2SP_GetStringTextString;
+#endif
 
 	uii.GetClipboardData		= GetClipboardData;
 

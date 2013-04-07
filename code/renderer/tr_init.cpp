@@ -1631,6 +1631,7 @@ refexport_t *GetRefAPI ( int apiVersion ) {
 	re.Language_IsAsian = Language_IsAsian;
 	re.Language_UsesSpaces = Language_UsesSpaces;
 	re.AnyLanguage_ReadCharFromString = AnyLanguage_ReadCharFromString;
+	re.AnyLanguage_ReadCharFromString2 = AnyLanguage_ReadCharFromString;
 
 	return &re;
 }

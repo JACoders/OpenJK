@@ -4,13 +4,14 @@
 #include "..\game\ghoul2_shared.h"
 
 #define	MAX_DLIGHTS		32			// can't be increased, because bit flags are used on surfaces
-#define	MAX_ENTITIES	1023		// can't be increased without changing drawsurf bit packing
+#define	MAX_ENTITIES	2048		// can't be increased without changing drawsurf bit packing
 
 // renderfx flags
 #define	RF_MORELIGHT		0x00001	// allways have some light (viewmodel, some items)
 #define	RF_THIRD_PERSON		0x00002	// don't draw through eyes, only mirrors (player bodies, chat sprites)
 #define	RF_FIRST_PERSON		0x00004	// only draw through eyes (view weapon, damage blood blob)
 #define	RF_DEPTHHACK		0x00008	// for view weapon Z crunching
+#define RF_NODEPTH			0x00010	// No depth at all (seeing through walls)
 
 #define RF_VOLUMETRIC		0x00020	// fake volumetric shading
 
@@ -38,9 +39,25 @@
 #define RF_DISINTEGRATE1	0x40000	// does a procedural hole-ripping thing.
 #define RF_DISINTEGRATE2	0x80000	// does a procedural hole-ripping thing with scaling at the ripping point
 
+#define RF_G2MINLOD		   0x100000	// force Lowest lod on g2
+
+#define RF_SHADOW_ONLY	   0x200000 //add surfs for shadowing but don't draw them normally -rww
+
+#define	RF_DISTORTION	   0x400000	//area distortion effect -rww
+
 // refdef flags
 #define RDF_NOWORLDMODEL	1		// used for player configuration screen
 #define RDF_HYPERSPACE		4		// teleportation effect
+
+#define RDF_SKYBOXPORTAL	8
+#define RDF_DRAWSKYBOX		16		// the above marks a scene as being a 'portal sky'.  this flag says to draw it or not
+
+#define RDF_doLAGoggles		32		// Light Amp goggles
+#define RDF_doFullbright	64		// Light Amp goggles
+#define RDF_ForceSightOn	128		// using force sight
+
+extern int	skyboxportal;
+extern int	drawskyboxportal;
 
 typedef byte color4ub_t[4];
 
@@ -138,6 +155,7 @@ typedef struct {
 	float		fov_x, fov_y;
 	vec3_t		vieworg;
 	vec3_t		viewaxis[3];		// transformation matrix
+	int			viewContents;		// world contents at vieworg
 
 	// time in milliseconds for shader effects and other time dependent rendering issues
 	int			time;
@@ -180,6 +198,7 @@ typedef struct {
 
 	int						maxTextureSize;			// queried from GL
 	int						maxActiveTextures;		// multitexture ability
+	float					maxTextureFilterAnisotropy;
 
 	int						colorBits, depthBits, stencilBits;
 
@@ -190,10 +209,6 @@ typedef struct {
 	qboolean				clampToEdgeAvailable;
 
 	int						vidWidth, vidHeight;
-	// aspect is the screen's physical width / height, which may be different
-	// than scrWidth / scrHeight if the pixels are non-square
-	// normal screens should be 4/3, but wide aspect monitors may be 16/9
-	float					windowAspect;
 
 	int						displayFrequency;
 
@@ -202,7 +217,6 @@ typedef struct {
 	// used CDS.
 	qboolean				isFullscreen;
 	qboolean				stereoEnabled;
-	qboolean				smpActive;		// dual processor
 } glconfig_t;
 
 

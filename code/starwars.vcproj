@@ -16,7 +16,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
+			OutputDirectory=".\..\bin\Debug"
 			IntermediateDirectory=".\Debug\exe"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
@@ -81,7 +81,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ALut.lib OpenAL32.lib winmm.lib wsock32.lib ff/ifc/ifc22.lib"
-				OutputFile=".\Debug/jasp.exe"
+				OutputFile=".\..\bin\Debug/jasp.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -316,7 +316,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
+			OutputDirectory=".\..\..\bin\Release"
 			IntermediateDirectory=".\Release\exe"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
@@ -379,7 +379,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ALut.lib OpenAL32.lib winmm.lib wsock32.lib ff/ifc/ifc22.lib"
-				OutputFile=".\Release/jasp.exe"
+				OutputFile=".\..\..\bin\Release/jasp.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
@@ -1908,6 +1908,10 @@
 						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\qcommon\strip.cpp"
+				>
 			</File>
 			<File
 				RelativePath=".\server\sv_ccmds.cpp"

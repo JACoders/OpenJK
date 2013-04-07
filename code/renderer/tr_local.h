@@ -101,6 +101,8 @@ typedef struct {
 	int			numDrawSurfs;
 	struct drawSurf_s	*drawSurfs;
 
+	qboolean	doLAGoggles;
+
 	int			fogIndex;	//what fog brush the vieworg is in
 
 } trRefdef_t;
