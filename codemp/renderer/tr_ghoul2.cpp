@@ -3086,6 +3086,13 @@ void G2_GetBoltMatrixLow(CGhoul2Info &ghoul2,int boltNum,const vec3_t scale,mdxa
 	CBoneCache &boneCache=*ghoul2.mBoneCache;
 	assert(boneCache.mod);
 	boltInfo_v &boltList=ghoul2.mBltlist;
+
+	//Raz: This was causing a client crash when rendering a model with no valid g2 bolts, such as Ragnos =]
+	if ( boltList.size() < 1 ) {
+		retMatrix=identityMatrix;
+		return;
+	}
+
 	assert(boltNum>=0&&boltNum<boltList.size());
 #if 0 //rwwFIXMEFIXME: Disable this before release!!!!!! I am just trying to find a crash bug.
 	if (boltNum < 0 || boltNum >= boltList.size())
