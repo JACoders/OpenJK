@@ -1326,7 +1326,7 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	}
 
 	// console key is hardcoded, so the user can never unbind it
-	if (key == A_CONSOLE) 
+	if (key == A_CONSOLE || ( kg.keys[A_SHIFT].down && key == A_ESCAPE ) )	// Added shift+esc alias ala Ensiform's edits --eez
 	{
 		if (!down) 
 		{

@@ -947,7 +947,6 @@ void CG_DrawCenterString( void )
 		//		
 		const char *psString = start;
 		int iOutIndex = 0;
-		int nope = 0;
 		for ( l = 0; l < sizeof(linebuffer)-1; l++ ) {
 			unsigned int uiLetter = cgi_AnyLanguage_ReadCharFromString(&psString, 0);
 			if (!uiLetter || uiLetter == '\n'){
