@@ -52,7 +52,7 @@ static qboolean enemyCS;
 static qboolean enemyInFOV;
 static qboolean hitAlly;
 static qboolean faceEnemy;
-static qboolean move;
+static qboolean AImove;
 static qboolean shoot;
 static float	enemyDist;
 static vec3_t	impactPos;
@@ -1185,7 +1185,7 @@ static void ST_CheckMoveState( void )
 {
 	if ( Q3_TaskIDPending( NPC, TID_MOVE_NAV ) )
 	{//moving toward a goal that a script is waiting on, so don't stop for anything!
-		move = qtrue;
+		AImove = qtrue;
 	}
 	//See if we're a scout
 	else if ( NPCInfo->squadState == SQUAD_SCOUT )
@@ -1193,7 +1193,7 @@ static void ST_CheckMoveState( void )
 		//If we're supposed to stay put, then stand there and fire
 		if ( TIMER_Done( NPC, "stick" ) == qfalse )
 		{
-			move = qfalse;
+			AImove = qfalse;
 			return;
 		}
 
@@ -1206,7 +1206,7 @@ static void ST_CheckMoveState( void )
 				if ( NPCInfo->goalEntity == NPC->enemy )
 				{
 					AI_GroupUpdateSquadstates( NPCInfo->group, NPC, SQUAD_STAND_AND_SHOOT );
-					move = qfalse;
+					AImove = qfalse;
 					return;
 				}
 			}
@@ -1259,20 +1259,20 @@ static void ST_CheckMoveState( void )
 			return;
 		}
 
-		move = qfalse;
+		AImove = qfalse;
 		return;
 	}
 	//see if we're just standing around
 	else if ( NPCInfo->squadState == SQUAD_STAND_AND_SHOOT )
 	{//from this squadState we can transition to others?
-		move = qfalse;
+		AImove = qfalse;
 		return;
 	}
 	//see if we're hiding
 	else if ( NPCInfo->squadState == SQUAD_COVER )
 	{
 		//Should we duck?
-		move = qfalse;
+		AImove = qfalse;
 		return;
 	}
 	//see if we're just standing around
@@ -1280,7 +1280,7 @@ static void ST_CheckMoveState( void )
 	{
 		if ( !NPCInfo->goalEntity )
 		{
-			move = qfalse;
+			AImove = qfalse;
 			return;
 		}
 	}
@@ -2451,7 +2451,7 @@ void NPC_BSST_Attack( void )
 	}
 
 	enemyLOS = enemyCS = enemyInFOV = qfalse;
-	move = qtrue;
+	AImove = qtrue;
 	faceEnemy = qfalse;
 	shoot = qfalse;
 	hitAlly = qfalse;
@@ -2584,28 +2584,28 @@ void NPC_BSST_Attack( void )
 	{//not supposed to chase my enemies
 		if ( NPCInfo->goalEntity == NPC->enemy )
 		{//goal is my entity, so don't move
-			move = qfalse;
+			AImove = qfalse;
 		}
 	}
 
 	if ( NPC->client->fireDelay && NPC->s.weapon == WP_ROCKET_LAUNCHER )
 	{
-		move = qfalse;
+		AImove = qfalse;
 	}
 
-	if ( move )
+	if ( AImove )
 	{//move toward goal
 		if ( NPCInfo->goalEntity )//&& ( NPCInfo->goalEntity != NPC->enemy || enemyDist > 10000 ) )//100 squared
 		{
-			move = ST_Move();
+			AImove = ST_Move();
 		}
 		else
 		{
-			move = qfalse;
+			AImove = qfalse;
 		}
 	}
 
-	if ( !move )
+	if ( !AImove )
 	{
 		if ( !TIMER_Done( NPC, "duck" ) )
 		{
@@ -2627,14 +2627,14 @@ void NPC_BSST_Attack( void )
 
 	if ( !faceEnemy )
 	{//we want to face in the dir we're running
-		if ( !move )
+		if ( !AImove )
 		{//if we haven't moved, we should look in the direction we last looked?
 			VectorCopy( NPC->client->ps.viewangles, NPCInfo->lastPathAngles );
 		}
 		NPCInfo->desiredYaw = NPCInfo->lastPathAngles[YAW];
 		NPCInfo->desiredPitch = 0;
 		NPC_UpdateAngles( qtrue, qtrue );
-		if ( move )
+		if ( AImove )
 		{//don't run away and shoot
 			shoot = qfalse;
 		}
@@ -2678,7 +2678,7 @@ void NPC_BSST_Attack( void )
 			//NASTY
 			if ( NPC->s.weapon == WP_ROCKET_LAUNCHER 
 				&& (ucmd.buttons&BUTTON_ATTACK) 
-				&& !move
+				&& !AImove
 				&& g_spskill->integer > 1 
 				&& !Q_irand( 0, 3 ) )
 			{//every now and then, shoot a homing rocket
