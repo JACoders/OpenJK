@@ -41,11 +41,7 @@ typedef enum
 } siegeClassFlags_t;
 
 
-#ifdef _XBOX
-#define SIEGE_CLASS_DESC_LEN  512
-#else
 #define SIEGE_CLASS_DESC_LEN  4096
-#endif
 typedef struct
 {
 	char		desc[SIEGE_CLASS_DESC_LEN];
@@ -87,8 +83,6 @@ typedef struct
 	int			friendlyShader;
 } siegeTeam_t;
 
-#include "../namespace_begin.h"
-
 extern siegeClass_t bgSiegeClasses[MAX_SIEGE_CLASSES];
 extern int bgNumSiegeClasses;
 
@@ -111,5 +105,3 @@ int BG_SiegeFindClassIndexByName(const char *classname);
 
 extern char	siege_info[MAX_SIEGE_INFO_SIZE];
 extern int	siege_valid;
-
-#include "../namespace_end.h"

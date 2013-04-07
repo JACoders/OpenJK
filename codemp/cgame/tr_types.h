@@ -5,11 +5,7 @@
 
 
 #define	MAX_DLIGHTS		32			// can't be increased, because bit flags are used on surfaces
-#ifdef _XBOX
-#define	MAX_ENTITIES	1024		// 11 bits, can't be increased without changing drawsurf bit packing (QSORT_ENTITYNUM_SHIFT)
-#else
 #define	MAX_ENTITIES	2048		// 11 bits, can't be increased without changing drawsurf bit packing (QSORT_ENTITYNUM_SHIFT)
-#endif
 #define	MAX_MINI_ENTITIES	1024		
 
 #define	TR_WORLDENT		(MAX_ENTITIES-1)

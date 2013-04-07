@@ -441,9 +441,7 @@ void FS_Shutdown( qboolean closemfp ) {
 		next = p->next;
 
 		if ( p->pack ) {
-#ifndef _XBOX
 			unzClose(p->pack->handle);
-#endif
 			Z_Free( p->pack->buildBuffer );
 			Z_Free( p->pack );
 		}

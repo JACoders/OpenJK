@@ -6,10 +6,10 @@
 
 extern qboolean NPCsPrecached;
 
-#include "../namespace_begin.h"
+
 extern qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber );
 extern void WP_RemoveSaber( saberInfo_t *sabers, int saberNum );
-#include "../namespace_end.h"
+
 
 stringID_table_t TeamTable[] =
 {
@@ -125,10 +125,10 @@ stringID_table_t BSETTable[] =
 	"",				-1,
 };
 
-#include "../namespace_begin.h"
+
 extern stringID_table_t WPTable[];
 extern stringID_table_t FPTable[];
-#include "../namespace_end.h"
+
 
 char	*TeamNames[TEAM_NUM_TEAMS] = 
 {
@@ -226,9 +226,9 @@ int NPC_ReactionTime ( void )
 // parse support routines
 //
 
-#include "../namespace_begin.h"
+
 extern qboolean BG_ParseLiteral( const char **data, const char *string );
-#include "../namespace_end.h"
+
 
 //
 // NPC parameters file : scripts/NPCs.cfg
@@ -329,9 +329,9 @@ static rank_t TranslateRankName( const char *name )
 	return RANK_CIVILIAN;
 }
 
-#include "../namespace_begin.h"
+
 extern saber_colors_t TranslateSaberColor( const char *name );
-#include "../namespace_end.h"
+
 
 /* static int MethodNameToNumber( const char *name ) {
 	if ( !Q_stricmp( name, "EXPONENTIAL" ) ) {
@@ -3232,11 +3232,7 @@ Ghoul2 Insert End
 	return qtrue;
 }
 
-#ifdef _XBOX
-char *npcParseBuffer = NULL;
-#else
 char npcParseBuffer[MAX_NPC_DATA_SIZE];
-#endif
 
 void NPC_LoadParms( void ) 
 {
@@ -3254,10 +3250,6 @@ void NPC_LoadParms( void )
 
 	//now load in the extra .npc extensions
 	fileCnt = trap_FS_GetFileList("ext_data/NPCs", ".npc", npcExtensionListBuf, sizeof(npcExtensionListBuf) );
-
-#ifdef _XBOX
-	npcParseBuffer = (char *) Z_Malloc(MAX_NPC_DATA_SIZE, TAG_TEMP_WORKSPACE, qfalse, 4);
-#endif
 
 	holdChar = npcExtensionListBuf;
 	for ( i = 0; i < fileCnt; i++, holdChar += npcExtFNLen + 1 ) 
@@ -3293,10 +3285,5 @@ void NPC_LoadParms( void )
 			//rww  12/19/02-actually the probelm was npcParseBuffer not being nul-term'd, which could cause issues in the strcat too
 		}
 	}
-
-#ifdef _XBOX
-	Z_Free(npcParseBuffer);
-	npcParseBuffer = NULL;
-#endif
 
 }

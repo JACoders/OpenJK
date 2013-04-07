@@ -211,11 +211,7 @@ qboolean SV_inPVS (const vec3_t p1, const vec3_t p2)
 	int		leafnum;
 	int		cluster;
 	int		area1, area2;
-#ifdef _XBOX 
-	const byte *mask;
-#else
 	byte	*mask;
-#endif
 
 	leafnum = CM_PointLeafnum (p1);
 	cluster = CM_LeafCluster (leafnum);
@@ -245,11 +241,7 @@ qboolean SV_inPVSIgnorePortals( const vec3_t p1, const vec3_t p2)
 	int		leafnum;
 	int		cluster;
 	int		area1, area2;
-#ifdef _XBOX
-	const byte *mask;
-#else
 	byte	*mask;
-#endif
 
 	leafnum = CM_PointLeafnum (p1);
 	cluster = CM_LeafCluster (leafnum);

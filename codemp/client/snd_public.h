@@ -32,11 +32,7 @@ void S_MP3_CalcVols_f( void );
 // all continuous looping sounds must be added before calling S_Update
 void S_ClearLoopingSounds( void );
 void S_StopLoopingSound( int entityNum );
-#ifdef _XBOX
-void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfx, int chan = 0 );
-#else
 void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfx );
-#endif
 
 // recompute the reletive volumes for all running sounds
 // relative to the given entityNum / orientation

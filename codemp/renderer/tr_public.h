@@ -8,9 +8,6 @@
 //
 // these are the functions exported by the refresh module
 //
-#ifdef _XBOX
-template <class T> class SPARC;
-#endif
 typedef struct {
 	// called before the library is unloaded
 	// if the system is just reconfiguring, pass destroyWindow = qfalse,
@@ -36,11 +33,7 @@ typedef struct {
 
 	// the vis data is a large enough block of data that we go to the trouble
 	// of sharing it with the clipmodel subsystem
-#ifdef _XBOX
-	void	(*SetWorldVisData)( SPARC<byte> *vis );
-#else
 	void	(*SetWorldVisData)( const byte *vis );
-#endif
 
 	// EndRegistration will draw a tiny polygon with each texture, forcing
 	// them to be loaded into card memory

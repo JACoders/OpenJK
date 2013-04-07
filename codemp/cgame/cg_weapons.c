@@ -902,10 +902,6 @@ void CG_DrawIconBackground(void)
 //	int				drawType = cgs.media.weaponIconBackground;
 //	int				yOffset = 0;
 
-#ifdef _XBOX
-	//yOffset = -50;
-#endif
-
 	// don't display if dead
 	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 ) 
 	{
@@ -1070,9 +1066,6 @@ static qboolean CG_WeaponSelectable( int i ) {
 CG_DrawWeaponSelect
 ===================
 */
-#ifdef _XBOX
-extern bool CL_ExtendSelectTime(void);
-#endif
 void CG_DrawWeaponSelect( void ) {
 	int				i;
 	int				bits;
@@ -1100,14 +1093,6 @@ void CG_DrawWeaponSelect( void ) {
 	{
 		return;
 	}
-
-#ifdef _XBOX
-	if(CL_ExtendSelectTime()) {
-		cg.weaponSelectTime = cg.time;
-	}
-
-	yOffset = -50;
-#endif
 
 	// showing weapon select clears pickup item display, but not the blend blob
 	cg.itemPickupTime = 0;

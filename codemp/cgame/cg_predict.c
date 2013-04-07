@@ -208,11 +208,9 @@ CG_ClipMoveToEntities
 
 ====================
 */
-#include "../namespace_begin.h"
 extern void BG_VehicleAdjustBBoxForOrientation( Vehicle_t *veh, vec3_t origin, vec3_t mins, vec3_t maxs,
 										int clientNum, int tracemask,
 										void (*localTrace)(trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask)); // bg_pmove.c
-#include "../namespace_end.h"
 static void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 							int skipNumber, int mask, trace_t *tr, qboolean g2Check ) {
 	int			i, x, zd, zu;
@@ -834,43 +832,8 @@ static ID_INLINE void CG_EntityStateToPlayerState( entityState_t *s, playerState
 }
 #endif
 
-// This many playerState_t structures is painfully large. And we
-// don't need that many. So we just use a small pool of them.
-// PC gets to keep one per entity, just in case.
-#ifdef _XBOX
-
-struct psLinkedNode_t
-{
-	playerState_t	ps;
-	psLinkedNode_t	*next;
-};
-
-#define CG_SEND_PS_POOL_SIZE	64
-psLinkedNode_t cgSendPSPool[ CG_SEND_PS_POOL_SIZE ];
-psLinkedNode_t *cgSendPSFreeList;
-
-#else
 playerState_t cgSendPSPool[ MAX_GENTITIES ];
-#endif
-
 playerState_t *cgSendPS[MAX_GENTITIES];
-
-#ifdef _XBOX
-void AllocSendPlayerstate(int entNum)
-{
-	if (cgSendPS[entNum])
-	{
-		//Com_Printf( S_COLOR_RED "ERROR: Entity %d already has a playerstate!\n", entNum );
-		return;
-	}
-
-	if (!cgSendPSFreeList)
-		Com_Error( ERR_DROP, "ERROR: No free playerstates! Increase CG_SEND_PS_POOL_SIZE\n" );
-
-	cgSendPS[entNum] = &cgSendPSFreeList->ps;
-	cgSendPSFreeList = cgSendPSFreeList->next;
-}
-#endif
 
 //#define _PROFILE_ES_TO_PS
 
@@ -889,25 +852,10 @@ void CG_PmoveClientPointerUpdate()
 
 	for ( i = 0 ; i < MAX_GENTITIES ; i++ )
 	{
-#ifdef _XBOX
-		cgSendPS[i] = NULL;
-#else
 		cgSendPS[i] = &cgSendPSPool[i];
-#endif
 
-		// These will be invalid at this point on Xbox
 		cg_entities[i].playerState = cgSendPS[i];
 	}
-
-#ifdef _XBOX
-	for ( i = 0; i < CG_SEND_PS_POOL_SIZE - 1; i++ )
-	{
-		cgSendPSPool[i].next = &cgSendPSPool[i+1];
-	}
-	
-	// Last .next is already NULL from memset above
-	cgSendPSFreeList = &cgSendPSPool[0];
-#endif
 
 	//Set up bg entity data
 	cg_pmove.baseEnt = (bgEntity_t *)cg_entities;
@@ -1112,10 +1060,6 @@ void CG_PredictPlayerState( void ) {
 		if (cg_entities[i].currentState.eType == ET_PLAYER ||
 			cg_entities[i].currentState.eType == ET_NPC)
 		{
-			// Need a new playerState_t on Xbox
-#ifdef _XBOX
-			AllocSendPlayerstate(i);
-#endif
 			VectorCopy( cg_entities[i].currentState.pos.trBase, cgSendPS[i]->origin );
 			VectorCopy( cg_entities[i].currentState.pos.trDelta, cgSendPS[i]->velocity );
 			cgSendPS[i]->saberLockFrame = cg_entities[i].currentState.forceFrame;

@@ -30,8 +30,6 @@ typedef struct
 	int			previous_waterlevel;
 } pml_t;
 
-#include "../namespace_begin.h"
-
 extern	pml_t		pml;
 
 // movement parameters
@@ -58,10 +56,8 @@ int		trap_FS_FOpenFile( const char *qpath, fileHandle_t *f, fsMode_t mode );
 void	trap_FS_Read( void *buffer, int len, fileHandle_t f );
 void	trap_FS_Write( const void *buffer, int len, fileHandle_t f );
 void	trap_FS_FCloseFile( fileHandle_t f );
-#include "../namespace_end.h"
 
 //PM anim utility functions:
-#include "../namespace_begin.h"
 qboolean PM_SaberInParry( int move );
 qboolean PM_SaberInKnockaway( int move );
 qboolean PM_SaberInReflect( int move );
@@ -105,5 +101,3 @@ void PM_SetSaberMove(short newMove);
 void PM_SetForceJumpZStart(float value);
 
 void BG_CycleInven(playerState_t *ps, int direction);
-
-#include "../namespace_end.h"

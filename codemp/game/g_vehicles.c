@@ -72,11 +72,11 @@ extern void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t push
 #endif
 
 #ifdef _JK2MP
-#include "../namespace_begin.h"
+
 extern void BG_SetAnim(playerState_t *ps, animation_t *animations, int setAnimParts,int anim,int setAnimFlags, int blendTime);
 extern void BG_SetLegsAnimTimer(playerState_t *ps, int time );
 extern void BG_SetTorsoAnimTimer(playerState_t *ps, int time );
-#include "../namespace_end.h"
+
 void G_VehUpdateShields( gentity_t *targ );
 #ifdef QAGAME
 extern void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum );
@@ -2589,9 +2589,9 @@ static bool UpdateRider( Vehicle_t *pVeh, bgEntity_t *pRider, usercmd_t *pUmcd )
 
 #ifdef _JK2MP //we want access to this one clientside, but it's the only
 //generic vehicle function we care about over there
-#include "../namespace_begin.h"
+
 extern void AttachRidersGeneric( Vehicle_t *pVeh );
-#include "../namespace_end.h"
+
 #endif
 
 // Attachs all the riders of this vehicle to their appropriate tag (*driver, *pass1, *pass2, whatever...).

@@ -36,15 +36,12 @@ Handles byte ordering and avoids alignment errors
 
 int oldsize = 0;
 
-#ifndef _XBOX	// No mods on Xbox
 bool g_nOverrideChecked = false;
 void MSG_CheckNETFPSFOverrides(qboolean psfOverrides);
-#endif
 
 void MSG_initHuffman();
 
 void MSG_Init( msg_t *buf, byte *data, int length ) {
-#ifndef _XBOX	// No mods on Xbox
 	if (!g_nOverrideChecked)
 	{
 		//Check for netf overrides
@@ -55,7 +52,6 @@ void MSG_Init( msg_t *buf, byte *data, int length ) {
 
 		g_nOverrideChecked = true;
 	}
-#endif
 
 	if (!msgInit)
 	{
@@ -68,7 +64,6 @@ void MSG_Init( msg_t *buf, byte *data, int length ) {
 }
 
 void MSG_InitOOB( msg_t *buf, byte *data, int length ) {
-#ifndef _XBOX	// No mods on Xbox
 	if (!g_nOverrideChecked)
 	{
 		//Check for netf overrides
@@ -79,7 +74,6 @@ void MSG_InitOOB( msg_t *buf, byte *data, int length ) {
 
 		g_nOverrideChecked = true;
 	}
-#endif	// _XBOX
 
 	if (!msgInit)
 	{
@@ -833,9 +827,6 @@ entityState_t communication
 typedef struct {
 	char	*name;
 	int		offset;
-#ifdef _XBOX
-	int		realSize;	// in bytes (1, 2, 4)
-#endif
 	int		bits;		// 0 = float
 #ifndef FINAL_BUILD
 	unsigned	mCount;
@@ -844,18 +835,11 @@ typedef struct {
 } netField_t;
 
 // using the stringizing operator to save typing...
-#ifdef _XBOX
-#define	NETF(x) #x,(int)&((entityState_t*)0)->x,sizeof(((entityState_t*)0)->x)
-#else
 #define	NETF(x) #x,(int)&((entityState_t*)0)->x
-#endif
 
 //rww - Remember to update ext_data/MP/netf_overrides.txt if you change any of this!
 //(for the sake of being consistent)
 
-// BTO - This was mis-documented before. We do allow datatypes less than 32 bits on Xbox
-// now, but our macros and such handle it all automagically. No need to be anal about
-// keeping q_shared.h in sync with this.
 netField_t	entityStateFields[] = 
 {
 { NETF(pos.trTime), 32 },
@@ -1034,7 +1018,6 @@ netField_t	entityStateFields[] =
 { NETF(boneAngles4[2]), 0 },
 
 //rww - for use by mod authors only
-#ifndef _XBOX
 { NETF(userInt1), 1 },
 { NETF(userInt2), 1 },
 { NETF(userInt3), 1 },
@@ -1047,7 +1030,6 @@ netField_t	entityStateFields[] =
 { NETF(userVec2[0]), 1 },
 { NETF(userVec2[1]), 1 },
 { NETF(userVec2[2]), 1 }
-#endif
 };
 
 // if (int)f == f and (int)f + ( 1<<(FLOAT_INT_BITS-1) ) < ( 1 << FLOAT_INT_BITS )
@@ -1081,9 +1063,7 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 	// the "number" field is not part of the field list
 	// if this assert fails, someone added a field to the entityState_t
 	// struct without updating the message fields
-#ifndef _XBOX	// No longer true, although we should keep some kind of check.
 	assert( numFields + 1 == sizeof( *from )/4 );
-#endif
 
 	// a NULL to is a delta remove message
 	if ( to == NULL ) {
@@ -1106,21 +1086,12 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 	for ( i = 0, field = entityStateFields ; i < numFields ; i++, field++ ) {
 		fromF = (int *)( (byte *)from + field->offset );
 		toF = (int *)( (byte *)to + field->offset );
-#ifdef _XBOX
-		if (((field->realSize == 4) && (*fromF != *toF)) ||
-			((field->realSize == 2) && (*(short *)fromF != *(short *)toF)) ||
-			((field->realSize == 1) && (*(char *)fromF != *(char *)toF)))
-		{
-			lc = i+1;
-		}
-#else
 		if ( *fromF != *toF ) {
 			lc = i+1;
 #ifndef FINAL_BUILD
 			field->mCount++;
 #endif
 		}
-#endif
 	}
 
 	if ( lc == 0 ) {
@@ -1147,20 +1118,10 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 		fromF = (int *)( (byte *)from + field->offset );
 		toF = (int *)( (byte *)to + field->offset );
 
-#ifdef _XBOX
-		if (((field->realSize == 4) && (*fromF == *toF)) ||
-			((field->realSize == 2) && (*(short *)fromF == *(short *)toF)) ||
-			((field->realSize == 1) && (*(char *)fromF == *(char *)toF)))
-		{
-			MSG_WriteBits( msg, 0, 1 );	// no change
-			continue;
-		}
-#else
 		if ( *fromF == *toF ) {
 			MSG_WriteBits( msg, 0, 1 );	// no change
 			continue;
 		}
-#endif
 
 		MSG_WriteBits( msg, 1, 1 );	// changed
 
@@ -1186,20 +1147,6 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 				}
 			}
 		} else {
-#ifdef _XBOX
-			if (((field->realSize == 4) && (*toF == 0)) ||
-				((field->realSize == 2) && (*(short *)toF == 0)) ||
-				((field->realSize == 1) && (*(char *)toF == 0))) {
-				MSG_WriteBits( msg, 0, 1 );
-			} else {
-				MSG_WriteBits( msg, 1, 1 );
-				// integer
-				MSG_WriteBits( msg,
-					(field->realSize == 4) ? *toF :
-					(field->realSize == 2) ? *(short *)toF : *(char *)toF,
-					field->bits );
-			}
-#else
 			if (*toF == 0) {
 				MSG_WriteBits( msg, 0, 1 );
 			} else {
@@ -1207,7 +1154,6 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 				// integer
 				MSG_WriteBits( msg, *toF, field->bits );
 			}
-#endif
 		}
 	}
 }
@@ -1292,16 +1238,7 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 #endif
 		if ( ! MSG_ReadBits( msg, 1 ) ) {
 			// no change
-#ifdef _XBOX
-			if (field->realSize == 4)
-				*toF = *fromF;
-			else if (field->realSize == 2)
-				*(short *)toF = *(short *)fromF;
-			else
-				*(char *)toF = *(char *)fromF;
-#else
 			*toF = *fromF;
-#endif
 		} else {
 			if ( field->bits == 0 ) {
 				// float
@@ -1327,28 +1264,10 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 				}
 			} else {
 				if ( MSG_ReadBits( msg, 1 ) == 0 ) {
-#ifdef _XBOX
-					if (field->realSize == 4)
-						*toF = 0;
-					else if (field->realSize == 2)
-						*(short *)toF = 0;
-					else
-						*(char *)toF = 0;
-#else
 					*toF = 0;
-#endif
 				} else {
 					// integer
-#ifdef _XBOX
-					if (field->realSize == 4)
-						*toF = MSG_ReadBits( msg, field->bits );
-					else if (field->realSize == 2)
-						*(short *)toF = MSG_ReadBits( msg, field->bits );
-					else
-						*(char *)toF = MSG_ReadBits( msg, field->bits );
-#else
 					*toF = MSG_ReadBits( msg, field->bits );
-#endif
 					if ( print ) {
 						Com_Printf( "%s:%i ", field->name, *toF );
 					}
@@ -1364,16 +1283,7 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 		fromF = (int *)( (byte *)from + field->offset );
 		toF = (int *)( (byte *)to + field->offset );
 		// no change
-#ifdef _XBOX
-		if (field->realSize == 4)
-			*toF = *fromF;
-		else if (field->realSize == 2)
-			*(short *)toF = *(short *)fromF;
-		else
-			*(char *)toF = *(char *)fromF;
-#else
 		*toF = *fromF;
-#endif
 	}
 
 	if ( print ) {
@@ -1391,11 +1301,7 @@ plyer_state_t communication
 */
 
 // using the stringizing operator to save typing...
-#ifdef _XBOX
-#define	PSF(x) #x,(int)&((playerState_t*)0)->x,sizeof(((playerState_t*)0)->x)
-#else
 #define	PSF(x) #x,(int)&((playerState_t*)0)->x
-#endif
 
 //rww - Remember to update ext_data/MP/psf_overrides.txt if you change any of this!
 //(for the sake of being consistent)
@@ -1551,7 +1457,6 @@ netField_t	playerStateFields[] =
 //{ PSF(hyperSpaceAngles[2]), 0 },//only used by vehicle?
 
 //rww - for use by mod authors only
-#ifndef _XBOX
 { PSF(userInt1), 1 },
 { PSF(userInt2), 1 },
 { PSF(userInt3), 1 },
@@ -1564,7 +1469,6 @@ netField_t	playerStateFields[] =
 { PSF(userVec2[0]), 1 },
 { PSF(userVec2[1]), 1 },
 { PSF(userVec2[2]), 1 }
-#endif
 };
 
 netField_t	pilotPlayerStateFields[] = 
@@ -1717,7 +1621,6 @@ netField_t	pilotPlayerStateFields[] =
 //{ PSF(hyperSpaceAngles[2]), 0 },//only used by vehicle?
 
 //rww - for use by mod authors only
-#ifndef _XBOX
 { PSF(userInt1), 1 },
 { PSF(userInt2), 1 },
 { PSF(userInt3), 1 },
@@ -1730,7 +1633,6 @@ netField_t	pilotPlayerStateFields[] =
 { PSF(userVec2[0]), 1 },
 { PSF(userVec2[1]), 1 },
 { PSF(userVec2[2]), 1 }
-#endif
 };
 
 netField_t	vehPlayerStateFields[] = 
@@ -1805,7 +1707,6 @@ netField_t	vehPlayerStateFields[] =
 { PSF(hyperSpaceAngles[2]), 0 },
 
 //rww - for use by mod authors only
-#ifndef _XBOX
 { PSF(userInt1), 1 },
 { PSF(userInt2), 1 },
 { PSF(userInt3), 1 },
@@ -1818,7 +1719,6 @@ netField_t	vehPlayerStateFields[] =
 { PSF(userVec2[0]), 1 },
 { PSF(userVec2[1]), 1 },
 { PSF(userVec2[2]), 1 }
-#endif
 };
 
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
@@ -1970,7 +1870,6 @@ netField_t	playerStateFields[] =
 { PSF(hyperSpaceAngles[2]), 0 },
 
 //rww - for use by mod authors only
-#ifndef _XBOX
 { PSF(userInt1), 1 },
 { PSF(userInt2), 1 },
 { PSF(userInt3), 1 },
@@ -1983,14 +1882,12 @@ netField_t	playerStateFields[] =
 { PSF(userVec2[0]), 1 },
 { PSF(userVec2[1]), 1 },
 { PSF(userVec2[2]), 1 }
-#endif
 };
 
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 #endif//_OPTIMIZED_VEHICLE_NETWORKING
 //=====_OPTIMIZED_VEHICLE_NETWORKING=======================================================================
 
-#ifndef _XBOX	// No mods on Xbox
 typedef struct bitStorage_s bitStorage_t;
 
 struct bitStorage_s
@@ -2195,7 +2092,6 @@ void MSG_CheckNETFPSFOverrides(qboolean psfOverrides)
 		i++;
 	}
 }
-#endif	// Xbox	- No mods on Xbox
 
 //MAKE SURE THIS MATCHES THE ENUM IN BG_PUBLIC.H!!!
 //This is in caps, because it is important.
@@ -3289,7 +3185,6 @@ Prints out a table from the current statistics for copying to code
 =================
 */
 void MSG_ReportChangeVectors_f( void ) {
-#ifndef _XBOX
 #ifndef FINAL_BUILD
 	int			numFields, i;
 	netField_t	*field;
@@ -3312,7 +3207,6 @@ void MSG_ReportChangeVectors_f( void ) {
 	}
 
 #endif	// FINAL_BUILD
-#endif
 }
 
 //===========================================================================

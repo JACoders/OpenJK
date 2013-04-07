@@ -11,10 +11,8 @@
 #endif
 
 #ifdef CGAME
-#include "../namespace_begin.h"
 extern sfxHandle_t trap_S_RegisterSound( const char *sample);
 extern int trap_FX_RegisterEffect( const char *file);
-#include "../namespace_end.h"
 #endif
 
 extern saberInfo_t *BG_MySaber( int clientNum, int saberNum );
@@ -24,11 +22,6 @@ BEGIN: Animation utility functions (sequence checking)
 ==============================================================================
 */
 //Called regardless of pm validity:
-
-// VVFIXME - Most of these functions are totally stateless and stupid. Don't
-// need multiple copies of this, but it's much easier (and less likely to
-// break in the future) if I keep separate namespace versions now.
-#include "../namespace_begin.h"
 
 qboolean BG_SaberStanceAnim( int anim )
 {
@@ -3038,5 +3031,3 @@ void PM_SetAnim(int setAnimParts,int anim,int setAnimFlags, int blendTime)
 {	
 	BG_SetAnim(pm->ps, pm->animations, setAnimParts, anim, setAnimFlags, blendTime);
 }
-
-#include "../namespace_end.h"		// End of animation utilities

@@ -297,13 +297,8 @@ qboolean G2API_OverrideServerWithClientData(CGhoul2Info *serverInstance)
 }
 
 // must be a power of two
-#ifdef _XBOX
-#define MAX_G2_MODELS (512)
-#define G2_MODEL_BITS (9)
-#else
 #define MAX_G2_MODELS (1024)
 #define G2_MODEL_BITS (10)
-#endif
 
 #define G2_INDEX_MASK (MAX_G2_MODELS-1)
 

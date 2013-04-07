@@ -15,9 +15,6 @@ SV_Netchan_Encode
 ==============
 */
 static void SV_Netchan_Encode( client_t *client, msg_t *msg ) {
-#ifdef _XBOX
-	return;
-#endif
 	long reliableAcknowledge, i, index;
 	byte key, *string;
         int	srdc, sbit, soob;
@@ -74,9 +71,6 @@ SV_Netchan_Decode
 ==============
 */
 static void SV_Netchan_Decode( client_t *client, msg_t *msg ) {
-#ifdef _XBOX
-	return;
-#endif
 	int serverId, messageAcknowledge, reliableAcknowledge;
 	int i, index, srdc, sbit, soob;
 	byte key, *string;

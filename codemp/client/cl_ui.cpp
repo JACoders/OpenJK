@@ -57,7 +57,6 @@ void LAN_LoadCachedServers( ) {
 	fileHandle_t fileIn;
 	cls.numglobalservers = cls.nummplayerservers = cls.numfavoriteservers = 0;
 	cls.numGlobalServerAddresses = 0;
-#ifndef _XBOX
 	if (FS_SV_FOpenFileRead("servercache.dat", &fileIn)) {
 		FS_Read(&cls.numglobalservers, sizeof(int), fileIn);
 		FS_Read(&cls.nummplayerservers, sizeof(int), fileIn);
@@ -73,7 +72,6 @@ void LAN_LoadCachedServers( ) {
 		}
 		FS_FCloseFile(fileIn);
 	}
-#endif
 }
 
 /*
@@ -82,7 +80,6 @@ LAN_SaveServersToCache
 ====================
 */
 void LAN_SaveServersToCache( ) {
-#ifndef _XBOX
 	int size;
 	fileHandle_t fileOut = FS_SV_FOpenFileWrite("servercache.dat");
 	FS_Write(&cls.numglobalservers, sizeof(int), fileOut);
@@ -94,7 +91,6 @@ void LAN_SaveServersToCache( ) {
 	FS_Write(&cls.mplayerServers, sizeof(cls.mplayerServers), fileOut);
 	FS_Write(&cls.favoriteServers, sizeof(cls.favoriteServers), fileOut);
 	FS_FCloseFile(fileOut);
-#endif
 }
 
 
@@ -333,7 +329,6 @@ static void LAN_GetServerInfo( int source, int n, char *buf, int buflen ) {
 		Info_SetValueForKey( info, "clients", va("%i",server->clients));
 		Info_SetValueForKey( info, "sv_maxclients", va("%i",server->maxClients));
 		Info_SetValueForKey( info, "ping", va("%i",server->ping));
-#ifndef _XBOX
 		Info_SetValueForKey( info, "minping", va("%i",server->minPing));
 		Info_SetValueForKey( info, "maxping", va("%i",server->maxPing));
 		Info_SetValueForKey( info, "nettype", va("%i",server->netType));
@@ -341,9 +336,6 @@ static void LAN_GetServerInfo( int source, int n, char *buf, int buflen ) {
 		Info_SetValueForKey( info, "truejedi", va("%i", server->trueJedi ) );
 		Info_SetValueForKey( info, "wdisable", va("%i", server->weaponDisable ) );
 		Info_SetValueForKey( info, "fdisable", va("%i", server->forceDisable ) );
-#else
-		Info_SetValueForKey( info, "saberonly", va("%i", server->saberOnly));
-#endif
 		Info_SetValueForKey( info, "game", server->game);
 		Info_SetValueForKey( info, "gametype", va("%i",server->gameType));
 		Info_SetValueForKey( info, "addr", NET_AdrToString(server->adr));
