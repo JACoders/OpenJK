@@ -2508,6 +2508,19 @@ void _UI_Init( qboolean inGameLoad )
 #endif
 	uiInfo.languageCount = SE_GetNumLanguages();	// this does a dir scan, so use carefully
 
+	#ifndef __NO_JK2
+	if(Cvar_VariableIntegerValue("com_jk2"))
+	{
+		// sod it, parse every menu strip file until we find a gap in the sequence...
+		//
+		for (int i=0; i<10; i++)
+		{
+			if (!ui.SP_Register(va("menus%d",i), /*SP_REGISTER_REQUIRED|*/SP_REGISTER_MENU))
+				break;
+		}
+	}
+#endif
+
 	uiInfo.inGameLoad = inGameLoad;
 
 	UI_RegisterCvars();
@@ -2904,19 +2917,6 @@ void UI_Load(void)
 	char *menuSet;
 	char lastName[1024];
 	menuDef_t *menu = Menu_GetFocused();
-
-#ifndef __NO_JK2
-	if(Cvar_VariableIntegerValue("com_jk2"))
-	{
-		// sod it, parse every menu strip file until we find a gap in the sequence...
-		//
-		for (int i=0; i<10; i++)
-		{
-			if (!ui.SP_Register(va("menus%d",i), /*SP_REGISTER_REQUIRED|*/SP_REGISTER_MENU))
-				break;
-		}
-	}
-#endif
 
 	if (menu && menu->window.name) 
 	{
