@@ -78,6 +78,9 @@ void SV_GetChallenge( netadr_t from ) {
 		NET_OutOfBandPrint( NS_SERVER, from, "challengeResponse %i", challenge->challenge );
 		return;
 	}
+
+	challenge->pingTime = svs.time;
+	NET_OutOfBandPrint( NS_SERVER, challenge->adr, "challengeResponse %i", challenge->challenge );
 }
 
 /*
