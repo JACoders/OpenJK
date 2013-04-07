@@ -249,7 +249,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;
 
 #if defined(_WIN32) && defined(_DEBUG)
-	if ( code != ERR_DISCONNECT && code != ERR_NEED_CD ) {
+	if ( code != ERR_DISCONNECT ) {
 //		if (com_noErrorInterrupt && !com_noErrorInterrupt->integer) 
 		{
 			__asm {
@@ -302,17 +302,6 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		Com_Printf (S_COLOR_RED"********************\n"S_COLOR_MAGENTA"ERROR: %s\n"S_COLOR_RED"********************\n", com_errorMessage);
 		com_errorEntered = qfalse;
 		throw ("DROPPED\n");
-	} else if ( code == ERR_NEED_CD ) {
-		SV_Shutdown( "Server didn't have CD\n" );
-		if ( com_cl_running && com_cl_running->integer ) {
-			CL_Disconnect();
-			CL_FlushMemory();
-			CL_StartHunkUsers();
-			com_errorEntered = qfalse;
-		} else {
-			Com_Printf("Server didn't have CD\n" );
-		}
-		throw ("NEED CD\n");
 	} else {
 		CL_Shutdown ();
 		SV_Shutdown (va(S_COLOR_RED"Server fatal crashed: %s\n", com_errorMessage));
