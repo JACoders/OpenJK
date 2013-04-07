@@ -189,8 +189,8 @@ void	cgi_S_ClearLoopingSounds( void ) {
 	syscall( CG_S_CLEARLOOPINGSOUNDS );
 }
 
-void	cgi_S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfx ) {
-	syscall( CG_S_ADDLOOPINGSOUND, entityNum, origin, velocity, sfx );
+void	cgi_S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfx, soundChannel_t chan ) {
+	syscall( CG_S_ADDLOOPINGSOUND, entityNum, origin, velocity, sfx, chan );
 }
 
 void	cgi_S_UpdateEntityPosition( int entityNum, const vec3_t origin ) {
@@ -308,7 +308,13 @@ qboolean cgi_Language_UsesSpaces(void)
 
 unsigned int cgi_AnyLanguage_ReadCharFromString( const char **ppText, qboolean *pbIsTrailingPunctuation /* = NULL */ )
 {
-	return syscall( CG_ANYLANGUAGE_READFROMSTRING, ppText, pbIsTrailingPunctuation );
+	int dummy;
+	return syscall( CG_ANYLANGUAGE_READFROMSTRING2, ppText, &dummy, pbIsTrailingPunctuation );
+}
+
+unsigned int cgi_AnyLanguage_ReadCharFromString( const char **ppText, int *ppos, qboolean *pbIsTrailingPunctuation /* = NULL */ )
+{
+	return syscall( CG_ANYLANGUAGE_READFROMSTRING, ppText, ppos, pbIsTrailingPunctuation );
 }
 
 void cgi_R_Font_DrawString(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iMaxPixelWidth, const float scale /*= 1.0f*/) {

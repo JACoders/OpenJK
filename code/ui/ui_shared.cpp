@@ -4508,6 +4508,10 @@ qboolean ItemParse_cvarStrList( itemDef_t *item)
 			// The displayed text
 			multiPtr->cvarList[multiPtr->count] = "@MENUS_MYLANGUAGE";
 			// The cvar value that goes into se_language
+#ifndef __NO_JK2
+			// FIXME
+			if(!Cvar_VariableIntegerValue("com_jk2"))
+#endif
 			multiPtr->cvarStr[multiPtr->count] = SE_GetLanguageName( multiPtr->count );
 		}
 		return qtrue;
@@ -5076,7 +5080,7 @@ static void Item_TextScroll_BuildLines ( itemDef_t* item )
 
 			// read letter...
 			//
-			uiLetter = ui.AnyLanguage_ReadCharFromString(psCurrentTextReadPos, &iAdvanceCount, &bIsTrailingPunctuation);
+			uiLetter = ui.AnyLanguage_ReadCharFromString((char *)psCurrentTextReadPos, &iAdvanceCount, &bIsTrailingPunctuation);
 			psCurrentTextReadPos += iAdvanceCount;
 
 			// concat onto string so far...
@@ -6267,10 +6271,16 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 		}
 
 		ToWindowCoords(&item->textRect.x, &item->textRect.y, &item->window);
-		if (item->text && item->text[0]=='@' )//string package
-		{//mark language
-			item->asset = se_language->modificationCount;
+#ifndef __NO_JK2
+		if( Cvar_VariableIntegerValue("com_jk2") )
+		{
+			if(item->text && item->text[0]=='@')
+				item->asset = sp_language->modificationCount;
 		}
+		else
+#endif
+		if (item->text && item->text[0]=='@' )//string package
+			item->asset = se_language->modificationCount; //mark language
 
 	}
 }
@@ -6938,6 +6948,11 @@ void BindingFromName(const char *cvar)
 				DC->keynumToStringBuf( b2, g_nameBind2, sizeof(g_nameBind2) );
 // do NOT do this or it corrupts asian text!!!//				Q_strupr(g_nameBind2);
 
+#ifndef __NO_JK2
+				if(Cvar_VariableIntegerValue( "com_jk2" ))
+					strcat( g_nameBind1, va(" %s ", ui.SP_GetStringTextString("MENUS_KEYBIND_OR" )) );
+				else
+#endif
 				strcat( g_nameBind1, va(" %s ",SE_GetString("MENUS_KEYBIND_OR" )) );
 				strcat( g_nameBind1, g_nameBind2 );
 			}
@@ -7517,8 +7532,23 @@ void Item_YesNo_Paint(itemDef_t *item)
 		memcpy(&newColor, &item->window.foreColor, sizeof(vec4_t));
 	}
 
+#ifndef __NO_JK2
+	const char *psYes;
+	const char *psNo;
+	if( Cvar_VariableIntegerValue( "com_jk2" ) )
+	{
+		psYes = ui.SP_GetStringTextString( "MENUS_YES" );
+		psNo = ui.SP_GetStringTextString( "MENUS_NO" );
+	}
+	else
+	{
+		psYes = SE_GetString( "MENUS_YES" );
+		psNo  = SE_GetString( "MENUS_NO" );
+	}
+#else
 	const char *psYes = SE_GetString( "MENUS_YES" );
 	const char *psNo  = SE_GetString( "MENUS_NO" );
+#endif
 	const char *yesnovalue;
 	
 	if (item->invertYesNo)

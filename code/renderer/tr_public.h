@@ -134,8 +134,8 @@ typedef struct {
 	int		(*Font_StrLenChars) (const char *s);
 	qboolean (*Language_IsAsian) (void);
 	qboolean (*Language_UsesSpaces) (void);
-	unsigned int (*AnyLanguage_ReadCharFromString)( const char *psText, int * piAdvanceCount, qboolean *pbIsTrailingPunctuation /* = NULL */);
-
+	unsigned int (*AnyLanguage_ReadCharFromString)( char *psText, int * piAdvanceCount, qboolean *pbIsTrailingPunctuation /* = NULL */);
+	unsigned int (*AnyLanguage_ReadCharFromString2)( char **psText, qboolean *pbIsTrailingPunctuation /* = NULL */);
 } refexport_t;
 
 

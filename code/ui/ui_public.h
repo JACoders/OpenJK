@@ -55,7 +55,7 @@ typedef struct {
 	int			(*R_Font_StrLenChars)(const char *text);
 	qboolean	(*Language_IsAsian) (void);
 	qboolean	(*Language_UsesSpaces) (void);
-	unsigned int (*AnyLanguage_ReadCharFromString)( const char *psText, int *piAdvanceCount, qboolean *pbIsTrailingPunctuation /* = NULL */);
+	unsigned int (*AnyLanguage_ReadCharFromString)( char *psText, int *piAdvanceCount, qboolean *pbIsTrailingPunctuation /* = NULL */);
 
 	// a scene is built up by calls to R_ClearScene and the various R_Add functions.
 	// Nothing is drawn until R_RenderScene is called.
@@ -114,6 +114,11 @@ typedef struct {
 	int			(*Key_GetCatcher)( void );
 	void		(*Key_SetCatcher)( int catcher );
 
+#ifndef __NO_JK2
+	qboolean	(*SP_Register)( const char *Package, unsigned char Registration );
+	const char *(*SP_GetStringText)(unsigned short ID);
+	const char *(*SP_GetStringTextString)(const char *Reference);
+#endif
 	void		(*GetClipboardData)( char *buf, int bufsize );
 
 	void		(*GetGlconfig)( glconfig_t *config );
