@@ -52,4 +52,4 @@ Major contributors, in alphabetical order:
 * Missing Known Bugs list
 
 ## Mod Developer Notes ##
-* If your mod intends to use engine "hax to figure out the nedaddr types (NA_IP, etc) NA_BAD is now 0 and NA_BOT is now 1 instead of vice versa.
+* If your mod intends to use engine "hax" to figure out the nedaddr types (NA_IP, etc) NA_BAD is now 0 and NA_BOT is now 1 instead of vice versa.
