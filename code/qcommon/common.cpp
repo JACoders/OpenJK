@@ -1055,7 +1055,7 @@ void Com_Init( char *commandLine ) {
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 
-		com_jk2			= Cvar_Get( "com_jk2", "0", CVAR_ARCHIVE );
+		com_jk2			= Cvar_Get( "com_jk2", "0", CVAR_INIT|CVAR_SERVERINFO );
 		
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);

@@ -27,6 +27,8 @@ game_export_t	globals;
 gentity_t		g_entities[MAX_GENTITIES];
 unsigned int	g_entityInUseBits[MAX_GENTITIES/32];
 
+void G_ASPreCacheFree(void);
+
 void ClearAllInUse(void)
 {
 	memset(g_entityInUseBits,0,sizeof(g_entityInUseBits));
@@ -733,6 +735,7 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+	G_ASPreCacheFree();
 }
 
 
