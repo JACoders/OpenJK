@@ -397,11 +397,6 @@ typedef int		clipHandle_t;
 	// vsnprintf is ISO/IEC 9899:1999
 	// abstracting this to make it portable
 	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-#elif MAC_PORT
-
-	#include <stdint.h>
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-
 #else // not using MSVC
 
 	#include <stdint.h>
@@ -1354,7 +1349,7 @@ typedef struct {
 #endif
 #endif
 
-#if MAC_PORT || defined(__linux__)
+#if defined(MACOS_X) || defined(__linux__)
 	#define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
 #else 
 	#if !defined(__LCC__) && !defined(MINGW32)
@@ -1383,7 +1378,7 @@ typedef struct {
 	#else
 		#define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
 	#endif // __LCC__ || MINGW32
-#endif // MAC_PORT || __linux__
+#endif // MACOS_X || __linux__
 
 unsigned ColorBytes3 (float r, float g, float b);
 unsigned ColorBytes4 (float r, float g, float b, float a);
@@ -1495,7 +1490,7 @@ void Parse1DMatrix (const char **buf_p, int x, float *m);
 void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
 
-void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
+int	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
 
 
 // mode parm for FS_FOpenFile

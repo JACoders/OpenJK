@@ -127,6 +127,7 @@ bool Parser_Load(LPCSTR psFullPathedFilename, MappedString_t &ParsedAliases)
 
 		fclose(fhHandle);
 	}
+	// DT EDIT
 	/*
 	else
 	{

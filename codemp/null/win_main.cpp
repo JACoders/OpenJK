@@ -1,4 +1,6 @@
 // win_main.c
+//Anything above this #include will be ignored by the compiler
+#include "qcommon/exe_headers.h"
 
 #include "client/client.h"
 #include "qcommon/qcommon.h"
@@ -543,7 +545,7 @@ Return true if the proper CD is in the drive
 */
 qboolean	Sys_CheckCD( void ) {
 #ifdef FINAL_BUILD
-//	return Sys_ScanForCD();
+	return Sys_ScanForCD();
 #else
 	return qtrue;
 #endif
@@ -659,6 +661,7 @@ void * QDECL Sys_LoadDll( const char *name, int (QDECL **entryPoint)(int, ...),
 	HINSTANCE	libHandle;
 	void	(QDECL *dllEntry)( int (QDECL *syscallptr)(int, ...) );
 	char	*basepath;
+	char	*homepath;
 	char	*cdpath;
 	char	*gamedir;
 	char	*fn;
@@ -671,30 +674,32 @@ void * QDECL Sys_LoadDll( const char *name, int (QDECL **entryPoint)(int, ...),
 		return NULL;
 	}
 
-// rjr disable for final release #ifndef NDEBUG
 	libHandle = LoadLibrary( filename );
 	if ( !libHandle ) {
-//#endif
-	basepath = Cvar_VariableString( "fs_basepath" );
-	cdpath = Cvar_VariableString( "fs_cdpath" );
-	gamedir = Cvar_VariableString( "fs_game" );
+		basepath = Cvar_VariableString( "fs_basepath" );
+		homepath = Cvar_VariableString( "fs_homepath" );
+		cdpath = Cvar_VariableString( "fs_cdpath" );
+		gamedir = Cvar_VariableString( "fs_game" );
 
-	fn = FS_BuildOSPath( basepath, gamedir, filename );
-	libHandle = LoadLibrary( fn );
-
-	if ( !libHandle ) {
-		if( cdpath[0] ) {
-			fn = FS_BuildOSPath( cdpath, gamedir, filename );
-			libHandle = LoadLibrary( fn );
-		}
+		fn = FS_BuildOSPath( basepath, gamedir, filename );
+		libHandle = LoadLibrary( fn );
 
 		if ( !libHandle ) {
-			return NULL;
+			if( homepath[0] ) {
+				fn = FS_BuildOSPath( homepath, gamedir, filename );
+				libHandle = LoadLibrary( fn );
+			}
+			if ( !libHandle ) {
+				if( cdpath[0] ) {
+					fn = FS_BuildOSPath( cdpath, gamedir, filename );
+					libHandle = LoadLibrary( fn );
+				}
+				if ( !libHandle ) {
+					return NULL;
+				}
+			}
 		}
 	}
-//#ifndef NDEBUG
-	}
-//#endif
 
 	dllEntry = ( void (QDECL *)( int (QDECL *)( int, ... ) ) )GetProcAddress( libHandle, "dllEntry" ); 
 	*entryPoint = (int (QDECL *)(int,...))GetProcAddress( libHandle, "vmMain" );
