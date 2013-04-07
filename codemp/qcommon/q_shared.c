@@ -841,8 +841,8 @@ qboolean Q_isanumber( const char *s )
 	return (qboolean)(*p == '\0');
 }
 
-
-qboolean Q_isintegral( float f ) {
+qboolean Q_isintegral( float f )
+{
 	return (qboolean)( (int)f == f );
 }
 

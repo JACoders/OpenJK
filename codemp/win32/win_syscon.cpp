@@ -301,7 +301,7 @@ void Sys_CreateConsole( void )
 
 	s_wcd.hWnd = CreateWindowEx( 0,
 							   DEDCLASS,
-							   "Jedi Knight Academy MP Console",
+							   CLIENT_CONSOLE_TITLE,
 							   DEDSTYLE,
 							   ( swidth - 600 ) / 2, ( sheight - 450 ) / 2 , rect.right - rect.left + 1, rect.bottom - rect.top + 1,
 							   NULL,

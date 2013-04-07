@@ -39,7 +39,7 @@ typedef enum {
 #define TRY_PFD_FAIL_SOFT	1
 #define TRY_PFD_FAIL_HARD	2
 
-#define	WINDOW_CLASS_NAME	"Jedi Knight®: Jedi Academy (MP)"
+#define	WINDOW_CLASS_NAME CLIENT_WINDOW_TITLE
 
 static void		GLW_InitExtensions( void );
 static rserr_t	GLW_SetMode( int mode, 

@@ -7,23 +7,19 @@
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
+#define CLIENT_WINDOW_TITLE "OpenJK (MP)"
+#define CLIENT_CONSOLE_TITLE "OpenJK Console (MP)"
+
 //NOTENOTE: Only change this to re-point ICARUS to a new script directory
 #define Q3_SCRIPT_DIR	"scripts"
 
 #define MAX_TEAMNAME 32
 
-#ifdef QAGAME
-	// server-side conditional compiling
-	#define BASE_COMPAT // some unused and leftover code has been stripped out, but this breaks compatibility
-						//	between base<->modbase clients and servers (mismatching events, powerups, etc)
-						// leave this defined to ensure compatibility
-#else
-	// client-side conditional compiling
-	#define BASE_COMPAT // some unused and leftover code has been stripped out, but this breaks compatibility
-						//	between base<->modbase clients and servers (mismatching events, powerups, etc)
-						// leave this defined to ensure compatibility
-//	#define USE_WIDESCREEN // Adjust fov for widescreen aspect ratio
-#endif // QAGAME
+#define BASE_COMPAT // some unused and leftover code has been stripped out, but this breaks compatibility
+					//	between base<->modbase clients and servers (mismatching events, powerups, etc)
+					// leave this defined to ensure compatibility
+
+//#define USE_WIDESCREEN // Adjust fov for widescreen aspect ratio
 
 #include "qcommon/disablewarnings.h"
 
