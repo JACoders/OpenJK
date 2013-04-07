@@ -271,7 +271,7 @@ float FloatSwap( const float *f );
 	// bk001205 - from Makefile
 	#define stricmp strcasecmp
 
-	#define ID_INLINE inline 
+	#define ID_INLINE /*inline*/
 
 	#ifdef __i386__
 		#define	CPUSTRING "linux-i386"
@@ -1277,31 +1277,31 @@ void ByteToDir( int b, vec3_t dir );
 #define DEG2RAD( deg ) ( ((deg)*M_PI) / 180.0f )
 #define RAD2DEG( rad ) ( ((rad)*180.0f) / M_PI )
 
-void		VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-void		VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-void		VectorScale( const vec3_t vecIn, vec_t scale, vec3_t vecOut );
-void		VectorScale4( const vec4_t vecIn, vec_t scale, vec4_t vecOut );
-void		VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3_t vecOut );
-vec_t		VectorLength( const vec3_t vec );
-vec_t		VectorLengthSquared( const vec3_t vec );
-vec_t		Distance( const vec3_t p1, const vec3_t p2 );
-vec_t		DistanceSquared( const vec3_t p1, const vec3_t p2 );
-void		VectorNormalizeFast( vec3_t vec );
-vec_t		VectorNormalize( vec3_t vec );
-vec_t		VectorNormalize2( const vec3_t vec, vec3_t vecOut );
-void		VectorCopy( const vec3_t vecIn, vec3_t vecOut );
-void		VectorCopy4( const vec4_t vecIn, vec4_t vecOut );
-void		VectorSet( vec3_t vec, vec_t x, vec_t y, vec_t z );
-void		VectorSet4( vec4_t vec, vec_t x, vec_t y, vec_t z, vec_t w );
-void		VectorSet5( vec5_t vec, vec_t x, vec_t y, vec_t z, vec_t w, vec_t u );
-void		VectorClear( vec3_t vec );
-void		VectorClear4( vec4_t vec );
-void		VectorInc( vec3_t vec );
-void		VectorDec( vec3_t vec );
-void		VectorInverse( vec3_t vec );
-void		CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-vec_t		DotProduct( const vec3_t vec1, const vec3_t vec2 );
-qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
+extern ID_INLINE void		VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
+extern ID_INLINE void		VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
+extern ID_INLINE void		VectorScale( const vec3_t vecIn, vec_t scale, vec3_t vecOut );
+extern ID_INLINE void		VectorScale4( const vec4_t vecIn, vec_t scale, vec4_t vecOut );
+extern ID_INLINE void		VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3_t vecOut );
+extern ID_INLINE vec_t		VectorLength( const vec3_t vec );
+extern ID_INLINE vec_t		VectorLengthSquared( const vec3_t vec );
+extern ID_INLINE vec_t		Distance( const vec3_t p1, const vec3_t p2 );
+extern ID_INLINE vec_t		DistanceSquared( const vec3_t p1, const vec3_t p2 );
+extern ID_INLINE void		VectorNormalizeFast( vec3_t vec );
+extern ID_INLINE vec_t		VectorNormalize( vec3_t vec );
+extern ID_INLINE vec_t		VectorNormalize2( const vec3_t vec, vec3_t vecOut );
+extern ID_INLINE void		VectorCopy( const vec3_t vecIn, vec3_t vecOut );
+extern ID_INLINE void		VectorCopy4( const vec4_t vecIn, vec4_t vecOut );
+extern ID_INLINE void		VectorSet( vec3_t vec, vec_t x, vec_t y, vec_t z );
+extern ID_INLINE void		VectorSet4( vec4_t vec, vec_t x, vec_t y, vec_t z, vec_t w );
+extern ID_INLINE void		VectorSet5( vec5_t vec, vec_t x, vec_t y, vec_t z, vec_t w, vec_t u );
+extern ID_INLINE void		VectorClear( vec3_t vec );
+extern ID_INLINE void		VectorClear4( vec4_t vec );
+extern ID_INLINE void		VectorInc( vec3_t vec );
+extern ID_INLINE void		VectorDec( vec3_t vec );
+extern ID_INLINE void		VectorInverse( vec3_t vec );
+extern ID_INLINE void		CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
+extern ID_INLINE vec_t		DotProduct( const vec3_t vec1, const vec3_t vec2 );
+extern ID_INLINE qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
 
 #define				VectorAddM( vec1, vec2, vecOut )		((vecOut)[0]=(vec1)[0]+(vec2)[0], (vecOut)[1]=(vec1)[1]+(vec2)[1], (vecOut)[2]=(vec1)[2]+(vec2)[2])
 #define				VectorSubtractM( vec1, vec2, vecOut )	((vecOut)[0]=(vec1)[0]-(vec2)[0], (vecOut)[1]=(vec1)[1]-(vec2)[1], (vecOut)[2]=(vec1)[2]-(vec2)[2])
