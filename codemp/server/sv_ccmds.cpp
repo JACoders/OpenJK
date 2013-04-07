@@ -31,16 +31,14 @@ const char *SV_GetStringEdString(char *refSection, char *refName)
 	return text;
 }
 
-
-
 /*
 ==================
-SV_GetPlayerByName
+SV_GetPlayerByHandle
 
-Returns the player with name from Cmd_Argv(1)
+Returns the player with player id or name from Cmd_Argv(1)
 ==================
 */
-static client_t *SV_GetPlayerByName( void ) {
+static client_t *SV_GetPlayerByHandle( void ) {
 	client_t	*cl;
 	int			i;
 	char		*s;
@@ -57,6 +55,23 @@ static client_t *SV_GetPlayerByName( void ) {
 	}
 
 	s = Cmd_Argv(1);
+
+	// Check whether this is a numeric player handle
+	for(i = 0; s[i] >= '0' && s[i] <= '9'; i++);
+
+	if(!s[i])
+	{
+		int plid = atoi(s);
+
+		// Check for numeric playerid match
+		if(plid >= 0 && plid < sv_maxclients->integer)
+		{
+			cl = &svs.clients[plid];
+
+			if(cl->state)
+				return cl;
+		}
+	}
 
 	// check for a name match
 	for ( i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++ ) {
@@ -125,8 +140,6 @@ static client_t *SV_GetPlayerByNum( void ) {
 }
 
 //=========================================================
-
-
 
 /*
 ==================
@@ -344,110 +357,47 @@ static void SV_MapRestart_f( void ) {
 
 /*
 ==================
-SV_GetPlayerByName
-
-Returns the player with name from Cmd_Argv(1)
+SV_KickBlankPlayers
 ==================
 */
-static client_t *SV_GetPlayerByFedName( const char *name )
-{
+static void SV_KickBlankPlayers( void ) {
 	client_t	*cl;
 	int			i;
 	char		cleanName[64];
 
 	// make sure server is running
-	if ( !com_sv_running->integer )
-	{
-		return NULL;
+	if ( !com_sv_running->integer ) {
+		return;
 	}
 
 	// check for a name match
-	for ( i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++ )
-	{
-		if ( !cl->state )
-		{
+	for ( i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++ ) {
+		if ( !cl->state ) {
 			continue;
 		}
-		if ( !Q_stricmp( cl->name, name ) )
-		{
-			return cl;
+		if( cl->netchan.remoteAddress.type == NA_LOOPBACK ) {
+			continue;
+		}
+		if ( !Q_stricmp( cl->name, "" ) ) {
+			SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
+			cl->lastPacketTime = svs.time;	// in case there is a funny zombie
+			continue;
 		}
 
 		Q_strncpyz( cleanName, cl->name, sizeof(cleanName) );
 		Q_CleanStr( cleanName );
-		if ( !Q_stricmp( cleanName, name ) )
-		{
-			return cl;
+		if ( !Q_stricmp( cleanName, "" ) ) {
+			SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
+			cl->lastPacketTime = svs.time;	// in case there is a funny zombie
 		}
 	}
-
-	return NULL;
-}
-
-static void SV_KickByName( const char *name )
-{
-	client_t	*cl;
-	int			i;
-
-	// make sure server is running
-	if ( !com_sv_running->integer )
-	{
-		return;
-	}
-
-	cl = SV_GetPlayerByFedName(name);
-	if ( !cl )
-	{
-		if ( !Q_stricmp(name, "all") )
-		{
-			for ( i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++ )
-			{
-				if ( !cl->state )
-				{
-					continue;
-				}
-				if( cl->netchan.remoteAddress.type == NA_LOOPBACK )
-				{
-					continue;
-				}
-				SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
-				cl->lastPacketTime = svs.time;	// in case there is a funny zombie
-			}
-		}
-		else if ( !Q_stricmp(name, "allbots") )
-		{
-			for ( i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++ )
-			{
-				if ( !cl->state )
-				{
-					continue;
-				}
-				if( cl->netchan.remoteAddress.type != NA_BOT )
-				{
-					continue;
-				}
-				SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
-				cl->lastPacketTime = svs.time;	// in case there is a funny zombie
-			}
-		}
-		return;
-	}
-	if( cl->netchan.remoteAddress.type == NA_LOOPBACK )
-	{
-//		SV_SendServerCommand(NULL, "print \"%s\"", "Cannot kick host player\n");
-		SV_SendServerCommand(NULL, "print \"%s\"", SV_GetStringEdString("MP_SVGAME","CANNOT_KICK_HOST"));
-		return;
-	}
-
-	SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
-	cl->lastPacketTime = svs.time;	// in case there is a funny zombie
 }
 
 /*
 ==================
 SV_Kick_f
 
-Kick a user off of the server  FIXME: move to game
+Kick a user off of the server
 ==================
 */
 static void SV_Kick_f( void ) {
@@ -467,10 +417,10 @@ static void SV_Kick_f( void ) {
 
 	if (!Q_stricmp(Cmd_Argv(1), "Padawan"))
 	{ //if you try to kick the default name, also try to kick ""
-		SV_KickByName("");
+		SV_KickBlankPlayers();
 	}
 
-	cl = SV_GetPlayerByName();
+	cl = SV_GetPlayerByHandle();
 	if ( !cl ) {
 		if ( !Q_stricmp(Cmd_Argv(1), "all") ) {
 			for ( i=0, cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++ ) {
@@ -499,8 +449,10 @@ static void SV_Kick_f( void ) {
 		return;
 	}
 	if( cl->netchan.remoteAddress.type == NA_LOOPBACK ) {
+		// Ensiform: RAVEN BUT THIS IS SERVER CONSOLE SO... WHY DO WE WANT @@@ TO APPEAR
 //		SV_SendServerCommand(NULL, "print \"%s\"", "Cannot kick host player\n");
-		SV_SendServerCommand(NULL, "print \"%s\"", SV_GetStringEdString("MP_SVGAME","CANNOT_KICK_HOST"));
+//		SV_SendServerCommand(NULL, "print \"%s\"", SV_GetStringEdString("MP_SVGAME","CANNOT_KICK_HOST"));
+		Com_Printf("Cannot kick host player\n");
 		return;
 	}
 
@@ -510,9 +462,70 @@ static void SV_Kick_f( void ) {
 
 /*
 ==================
+SV_KickBots_f
+
+Kick all bots off of the server
+==================
+*/
+static void SV_KickBots_f( void ) {
+	client_t	*cl;
+	int			i;
+
+	// make sure server is running
+	if( !com_sv_running->integer ) {
+		Com_Printf("Server is not running.\n");
+		return;
+	}
+
+	for( i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++ ) {
+		if( !cl->state ) {
+			continue;
+		}
+
+		if( cl->netchan.remoteAddress.type != NA_BOT ) {
+			continue;
+		}
+
+		SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
+		cl->lastPacketTime = svs.time; // in case there is a funny zombie
+	}
+}
+/*
+==================
+SV_KickAll_f
+
+Kick all users off of the server
+==================
+*/
+static void SV_KickAll_f( void ) {
+	client_t *cl;
+	int i;
+
+	// make sure server is running
+	if( !com_sv_running->integer ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
+
+	for( i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++ ) {
+		if( !cl->state ) {
+			continue;
+		}
+
+		if( cl->netchan.remoteAddress.type == NA_LOOPBACK ) {
+			continue;
+		}
+
+		SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
+		cl->lastPacketTime = svs.time; // in case there is a funny zombie
+	}
+}
+
+/*
+==================
 SV_KickNum_f
 
-Kick a user off of the server  FIXME: move to game
+Kick a user off of the server
 ==================
 */
 static void SV_KickNum_f( void ) {
@@ -525,7 +538,7 @@ static void SV_KickNum_f( void ) {
 	}
 
 	if ( Cmd_Argc() != 2 ) {
-		Com_Printf ("Usage: kicknum <client number>\n");
+		Com_Printf ("Usage: %s <client number>\n", Cmd_Argv(0));
 		return;
 	}
 
@@ -534,8 +547,10 @@ static void SV_KickNum_f( void ) {
 		return;
 	}
 	if( cl->netchan.remoteAddress.type == NA_LOOPBACK ) {
+		// Ensiform: RAVEN BUT THIS IS SERVER CONSOLE SO... WHY DO WE WANT @@@ TO APPEAR
 //		SV_SendServerCommand(NULL, "print \"%s\"", "Cannot kick host player\n");
-		SV_SendServerCommand(NULL, "print \"%s\"", SV_GetStringEdString("MP_SVGAME","CANNOT_KICK_HOST"));
+//		SV_SendServerCommand(NULL, "print \"%s\"", SV_GetStringEdString("MP_SVGAME","CANNOT_KICK_HOST"));
+		Com_Printf("Cannot kick host player\n");
 		return;
 	}
 
@@ -561,7 +576,9 @@ static void SV_Status_f( void )
 	// make sure server is running
 	if ( !com_sv_running->integer ) 
 	{
-		Com_Printf( SE_GetString("STR_SERVER_SERVER_NOT_RUNNING") );
+		//Ensiform: Why raven why, you didn't do this in other cmds.
+		Com_Printf( "Server is not running.\n" );
+		//Com_Printf( SE_GetString("STR_SERVER_SERVER_NOT_RUNNING") );
 		return;
 	}
 
@@ -743,7 +760,7 @@ void SV_ForceToggle_f(void)
 		fpDisabled |= (1 << targetPower);
 	}
 
-	Cvar_Set("g_forcePowerDisable", va("%i", fpDisabled));
+	Cvar_SetValue("g_forcePowerDisable", fpDisabled);
 
 	Com_Printf("%s has been %s.\n", forceToggleNamePrints[targetPower], powerDisabled);
 }
@@ -759,7 +776,6 @@ void SV_Heartbeat_f( void ) {
 	svs.nextHeartbeatTime = -9999999;
 }
 
-
 /*
 ===========
 SV_Serverinfo_f
@@ -768,13 +784,15 @@ Examine the serverinfo string
 ===========
 */
 static void SV_Serverinfo_f( void ) {
-	Com_Printf ("Server info settings:\n");
-	Info_Print ( Cvar_InfoString( CVAR_SERVERINFO ) );
+// make sure server is running
 	if ( !com_sv_running->integer ) {
 		Com_Printf( "Server is not running.\n" );
+		return;
 	}
-}
 
+	Com_Printf ("Server info settings:\n");
+	Info_Print ( Cvar_InfoString( CVAR_SERVERINFO ) );
+}
 
 /*
 ===========
@@ -784,10 +802,15 @@ Examine or change the serverinfo string
 ===========
 */
 static void SV_Systeminfo_f( void ) {
+// make sure server is running
+	if ( !com_sv_running->integer ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
+
 	Com_Printf ("System info settings:\n");
 	Info_Print ( Cvar_InfoString( CVAR_SYSTEMINFO ) );
 }
-
 
 /*
 ===========
@@ -810,7 +833,7 @@ static void SV_DumpUser_f( void ) {
 		return;
 	}
 
-	cl = SV_GetPlayerByName();
+	cl = SV_GetPlayerByHandle();
 	if ( !cl ) {
 		return;
 	}
@@ -819,7 +842,6 @@ static void SV_DumpUser_f( void ) {
 	Com_Printf( "--------\n" );
 	Info_Print( cl->userinfo );
 }
-
 
 /*
 =================
@@ -847,6 +869,9 @@ void SV_AddOperatorCommands( void ) {
 
 	Cmd_AddCommand ("heartbeat", SV_Heartbeat_f);
 	Cmd_AddCommand ("kick", SV_Kick_f);
+	Cmd_AddCommand ("kickbots", SV_KickBots_f);
+	Cmd_AddCommand ("kickall", SV_KickAll_f);
+	Cmd_AddCommand ("kicknum", SV_KickNum_f);
 	Cmd_AddCommand ("clientkick", SV_KickNum_f);
 	Cmd_AddCommand ("status", SV_Status_f);
 	Cmd_AddCommand ("serverinfo", SV_Serverinfo_f);
