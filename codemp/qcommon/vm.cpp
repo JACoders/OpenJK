@@ -361,7 +361,7 @@ Dlls will call this directly
 ============
 */
 int QDECL VM_DllSyscall( int arg, ... ) {
-#if ((defined __linux__) && (defined __powerpc__))
+#if !id386 || defined __clang__ || defined MACOS_X
   // rcg010206 - see commentary above
   int args[16];
   int i;

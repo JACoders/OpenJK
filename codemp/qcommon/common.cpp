@@ -207,7 +207,7 @@ void QDECL Com_OPrintf( const char *fmt, ...)
 	va_start (argptr,fmt);
 	vsprintf (msg,fmt,argptr);
 	va_end (argptr);
-#ifndef __linux__	
+#ifdef _WIN32
 	OutputDebugString(msg);
 #else
 	printf(msg);

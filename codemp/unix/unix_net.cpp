@@ -1,6 +1,6 @@
 // unix_net.c
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 
 #include <unistd.h>
@@ -372,7 +372,7 @@ void NET_GetLocalAddress( void ) {
                         if (sdl->sdl_type != IFT_LOOP) {
                             // Get the local interface address
                             strncpy(ifr.ifr_name, inetInterface->ifr_name, sizeof(ifr.ifr_name));
-                            if (ioctl(interfaceSocket, OSIOCGIFADDR, (caddr_t)&ifr) < 0) {
+                            if (ioctl(interfaceSocket, SIOCGIFADDR, (caddr_t)&ifr) < 0) {
                                 Com_Printf("NET_GetLocalAddress: Unable to get local address for interface '%s', errno = %d\n", inetInterface->ifr_name, errno);
                             } else {
                                 struct sockaddr_in *sin;

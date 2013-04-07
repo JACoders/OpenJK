@@ -24,7 +24,7 @@ extern stringID_table_t BSTable[];
 // This code is compiled as C++ on Xbox. We could try and rig something above
 // so that we only get the C version of the includes (no full Icarus) in that
 // scenario, but I think we'll just try to leave this out instead.
-#if defined(__linux__) && defined(__GCC__) || !defined(__linux__)
+//#if defined(__linux__) && defined(__GCC__) || !defined(__linux__)
 enum
 {
 	TK_EOF = -1,
@@ -39,7 +39,7 @@ enum
 	TK_IDENTIFIER,
 	TK_USERDEF,
 };
-#endif
+//#endif
 
 #include "icarus/interpreter.h"
 

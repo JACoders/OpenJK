@@ -22,7 +22,7 @@
 
 #elif defined(MACOS_X)
 
-#include "macosx_glimp.h"
+#include "../macosx/macosx_glimp.h"
 
 #elif defined( __linux__ )
 
@@ -182,7 +182,7 @@ extern PFNGLGETCOMBINEROUTPUTPARAMETERIVNV		qglGetCombinerOutputParameterivNV;
 extern PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV	qglGetFinalCombinerInputParameterfvNV;
 extern PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV	qglGetFinalCombinerInputParameterivNV;
 
-
+#ifdef _WIN32
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Pixel Format extension definitions. - AReis
 /***********************************************************************************************************/
@@ -251,7 +251,7 @@ typedef BOOL (WINAPI * PFNWGLSETPBUFFERATTRIBARBPROC) (HPBUFFERARB hPbuffer, con
 extern PFNWGLBINDTEXIMAGEARBPROC			qwglBindTexImageARB;
 extern PFNWGLRELEASETEXIMAGEARBPROC			qwglReleaseTexImageARB;
 extern PFNWGLSETPBUFFERATTRIBARBPROC		qwglSetPbufferAttribARB;
-
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Vertex and Fragment Program extension definitions. - AReis
@@ -357,7 +357,7 @@ extern	void ( APIENTRY * qglTexSubImage3DEXT) (GLenum, GLint, GLint, GLint, GLin
 
 #elif defined(MACOS_X)
 // This includes #ifdefs for optional logging and GL error checking after every GL call as well as #defines to prevent incorrect usage of the non-'qgl' versions of the GL API.
-#include "macosx_qgl.h"
+#include "../macosx/macosx_qgl.h"
 
 #else
 

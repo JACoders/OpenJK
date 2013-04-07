@@ -51,7 +51,7 @@ JPDIR=$(MOUNT_DIR)/jpeg-6
 SPLNDIR=$(MOUNT_DIR)/splines
 GHOUL2DIR=$(MOUNT_DIR)/ghoul2
 IDIR=$(MOUNT_DIR)/icarus
-ZLIB=$(MOUNT_DIR)/zlib32
+ZLIB=$(MOUNT_DIR)/zlib
 RMGDIR=$(MOUNT_DIR)/RMG
 
 #############################################################################
@@ -76,13 +76,16 @@ DLL_ONLY=false
   # bk001205: no mo'  -I/usr/include/glide, no FX
   # bk001205: no mo'  -Dstricmp=strcasecmp, see q_shared.h
   #BASE_CFLAGS =  -pipe -fsigned-char -x c++ -D_JK2 -D_M_IX86  -I/home/drews/STLport-4.5.3/stlport -I/opt/intel/compiler50/ia32/include
-  #BASE_CFLAGS =  -pipe -fsigned-char -Kc++ -D_JK2 -D_M_IX86  -I/opt/intel/compiler50/ia32/include 
-  BASE_CFLAGS =  -D_JK2 -D_M_IX86 -Kc++ -w -I/opt/intel/compiler50/ia32/include 
+  #BASE_CFLAGS =  -pipe -fsigned-char -I.. -D_JK2 -D_M_IX86
+  BASE_CFLAGS =  -D_JK2 -D_M_IX86 -w -I../ -fpermissive -m32
   # rcg010216: DLL_ONLY for PPC
   ifeq ($(strip $(DLL_ONLY)),true)
     BASE_CFLAGS += -DDLL_ONLY
   endif
 
+  ifeq ($(PLATFORM),darwin) #TODO: This should not be mixed in with linux stuff
+	BASE_CFLAGS += -DMACOS_X
+  endif
 
   #GL_CFLAGS = -I$(MESADIR)/include -I/usr/X11R6/include
   GL_CFAGS = -I/usr/X11R6/include 
@@ -91,7 +94,7 @@ DLL_ONLY=false
   # bk001205 - took out -O to get assertions (NDEBUG)
   # bk001206 - MALLOC_CHECK in addition to ZONE_DEBUG
   # TTimo 03/30/2001 temporary took out -Werror for initial merge
-  DEBUG_CFLAGS=$(BASE_CFLAGS) -g  
+  DEBUG_CFLAGS=$(BASE_CFLAGS) -g
 #  DEBUG_CFLAGS=$(BASE_CFLAGS) -g  -Wall -Werror -O
   ifeq ($(ARCH),axp)
     CC=pgcc
@@ -106,9 +109,8 @@ DLL_ONLY=false
       #NEWPGCC=/loki/global/x86/bin/gcc
       #NEWPGCC=/usr/bin/gcc 
       #NEWPGCC=/usr/local/bin/gcc
-      NEWPGCC=/opt/intel/compiler50/ia32/bin/icc
-      CC=$(shell if [ -f $(NEWPGCC) ]; then echo $(NEWPGCC); else echo pgcc; fi )
-      CXX=/usr/bin/g++
+      CC=gcc
+      CXX=g++
 # TTimo: legacy RELEASE_CFLAGS
 # NOTE: the -fomit-frame-pointer option leads to an unstable binary on my test box if it was built on the main box
 #   but building on the Mdk 7.2 baseline seems to work
@@ -122,30 +124,35 @@ DLL_ONLY=false
   LIBEXT=a
 
   SHLIBEXT=so
-  SHLIBCFLAGS=-D_JK2 -DJK2AWARDS -DQAGAME -DMISSIONPACK 
-  SHLIBLDFLAGS=-shared $(LDFLAGS)
+  SHLIBCFLAGS=-D_JK2 -DJK2AWARDS -DQAGAME -DMISSIONPACK -m32
+  SHLIBLDFLAGS=-m32 -shared $(LDFLAGS)
 
   ARFLAGS=ar rv
   RANLIB=ranlib
 
   THREAD_LDFLAGS=-lpthread
   #LDFLAGS=/opt/sxl/lib/sxlgcc3.a -lpthread -ldl -lm -lstdc++ -static -Wl --gc-sections
-  LDFLAGS=-ldl -lm  
+  LDFLAGS= -ldl -lm -lz
   GLLDFLAGS=-L/usr/X11R6/lib -L$(MESADIR)/lib -lX11 -lXext -lXxf86dga -lXxf86vm
 
   TARGETS=\
 	  $(B)/$(PLATFORM)jampded \
-	  $(B)/baseq3/jampgame$(ARCH).$(SHLIBEXT) 
+	  $(B)/base/jampgame$(ARCH).$(SHLIBEXT) 
 
 DO_CC=$(CC) $(CFLAGS) -o $@ -c $<
 DO_CXX=$(CXX) $(CFLAGS) -o $@ -c $<
 DO_SMP_CC=$(CC) $(CFLAGS) -DSMP -o $@ -c $<
 DO_BOT_CC=$(CC) $(CFLAGS) -use_msasm -DBOTLIB  -o $@ -c $<   # $(SHLIBCFLAGS) # bk001212
+DO_BOT_CPP=$(CXX) $(CFLAGS) -use_msasm -DBOTLIB  -o $@ -c $<   # $(SHLIBCFLAGS) # bk001212
 DO_DEBUG_CC=$(CC) $(DEBUG_CFLAGS) -o $@ -c $<
 DO_SHLIB_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) -use_msasm -o $@ -c $<
 DO_SHLIB_DEBUG_CC=$(CC) $(DEBUG_CFLAGS) $(SHLIBCFLAGS) -o $@ -c $<
 DO_AS=$(CC) $(CFLAGS) -DELF -x assembler-with-cpp -o $@ -c $<
-DO_NASM=nasm -f elf -o $@  $<
+ifeq ($(PLATFORM),darwin) #TODO: This should not be mixed in with linux stuff
+	DO_NASM=nasm -f macho -o $@  $<
+else
+	DO_NASM=nasm -f elf -o $@  $<
+endif
 DO_DED_CC=$(CC) -DDEDICATED -DC_ONLY $(CFLAGS) -use_msasm -o $@ -c $<
 DO_DED_CC2=$(CC) -D__linux2__ -DDEDICATED -DC_ONLY $(CFLAGS) -o $@ -c $<
 DO_DED_CPP=$(CXX) -DDEDICATED -DC_ONLY $(CFLAGS) -o $@ -c $<
@@ -177,9 +184,9 @@ makedirs:
 	@if [ ! -d $(B)/ded ];then mkdir $(B)/ded;fi
 #	@if [ ! -d $(B)/ref ];then mkdir $(B)/ref;fi
 #	@if [ ! -d $(B)/ft2 ];then mkdir $(B)/ft2;fi
-	@if [ ! -d $(B)/baseq3 ];then mkdir $(B)/baseq3;fi
+	@if [ ! -d $(B)/base ];then mkdir $(B)/base;fi
 #	@if [ ! -d $(B)/baseq3/cgame ];then mkdir $(B)/baseq3/cgame;fi
-	@if [ ! -d $(B)/baseq3/game ];then mkdir $(B)/baseq3/game;fi
+	@if [ ! -d $(B)/base/game ];then mkdir $(B)/base/game;fi
 #	@if [ ! -d $(B)/baseq3/ui ];then mkdir $(B)/baseq3/ui;fi
 #	@if [ ! -d $(B)/baseq3/vm ];then mkdir $(B)/baseq3/vm;fi
 #	@if [ ! -d $(B)/missionpack ];then mkdir $(B)/missionpack;fi
@@ -224,10 +231,8 @@ Q3DOBJ = \
 	$(B)/ded/q_shared.o \
 	$(B)/ded/z_memman_pc.o \
 	\
-	$(B)/ded/inflate.o \
-	$(B)/ded/deflate.o \
-	$(B)/ded/zipcommon.o \
 	\
+	$(B)/ded/ioapi.o \
 	$(B)/ded/unzip.o \
 	$(B)/ded/vm.o \
 	$(B)/ded/vm_interpreted.o \
@@ -349,6 +354,11 @@ Q3DOBJ = \
 #	$(B)/ded/tr_main.o
 #	$(B)/ded/tr_sky.o
 
+
+#	$(B)/ded/inflate.o \
+#	$(B)/ded/deflate.o \
+#	$(B)/ded/zipcommon.o \
+
 #ifeq ($(ARCH),i386)
   Q3DOBJ += $(B)/ded/vm_x86.o $(B)/ded/ftol.o $(B)/ded/snapvector.o
 #endif
@@ -360,161 +370,162 @@ ifeq ($(ARCH),ppc)
 endif
 
 $(B)/$(PLATFORM)jampded : $(Q3DOBJ)
-	$(CC)  -o $@ $(Q3DOBJ) $(LDFLAGS)
+	$(CXX) -m32 -o $@ $(Q3DOBJ) $(LDFLAGS)
 
-$(B)/ded/sv_bot.o : $(SDIR)/sv_bot.cpp; $(DO_DED_CC) 
-$(B)/ded/sv_client.o : $(SDIR)/sv_client.cpp; $(DO_DED_CC) 
-$(B)/ded/sv_ccmds.o : $(SDIR)/sv_ccmds.cpp; $(DO_DED_CC) 
-$(B)/ded/sv_game.o : $(SDIR)/sv_game.cpp; $(DO_DED_CC) 
-$(B)/ded/sv_init.o : $(SDIR)/sv_init.cpp; $(DO_DED_CC) 
-$(B)/ded/sv_main.o : $(SDIR)/sv_main.cpp; $(DO_DED_CC) 
-$(B)/ded/sv_net_chan.o : $(SDIR)/sv_net_chan.cpp; $(DO_DED_CC) 
-$(B)/ded/sv_snapshot.o : $(SDIR)/sv_snapshot.cpp; $(DO_DED_CC) 
-$(B)/ded/sv_world.o : $(SDIR)/sv_world.cpp; $(DO_DED_CC) 
-$(B)/ded/gameCallbacks.o : $(SDIR)/NPCNav/gameCallbacks.cpp; $(DO_DED_CC)
-$(B)/ded/navigator.o: $(SDIR)/NPCNav/navigator.cpp; $(DO_DED_CC)
+$(B)/ded/sv_bot.o : $(SDIR)/sv_bot.cpp; $(DO_DED_CPP) 
+$(B)/ded/sv_client.o : $(SDIR)/sv_client.cpp; $(DO_DED_CPP) 
+$(B)/ded/sv_ccmds.o : $(SDIR)/sv_ccmds.cpp; $(DO_DED_CPP) 
+$(B)/ded/sv_game.o : $(SDIR)/sv_game.cpp; $(DO_DED_CPP) 
+$(B)/ded/sv_init.o : $(SDIR)/sv_init.cpp; $(DO_DED_CPP) 
+$(B)/ded/sv_main.o : $(SDIR)/sv_main.cpp; $(DO_DED_CPP) 
+$(B)/ded/sv_net_chan.o : $(SDIR)/sv_net_chan.cpp; $(DO_DED_CPP) 
+$(B)/ded/sv_snapshot.o : $(SDIR)/sv_snapshot.cpp; $(DO_DED_CPP) 
+$(B)/ded/sv_world.o : $(SDIR)/sv_world.cpp; $(DO_DED_CPP) 
+$(B)/ded/gameCallbacks.o : $(SDIR)/NPCNav/gameCallbacks.cpp; $(DO_DED_CPP) 
+$(B)/ded/navigator.o: $(SDIR)/NPCNav/navigator.cpp; $(DO_DED_CPP) 
 
-$(B)/ded/cm_load.o : $(CMDIR)/cm_load.cpp; $(DO_DED_CC) 
-$(B)/ded/stringed_ingame.o : $(CMDIR)/stringed_ingame.cpp; $(DO_DED_CC)
-$(B)/ded/stringed_interface.o : $(CMDIR)/stringed_interface.cpp; $(DO_DED_CC)
-$(B)/ded/GenericParser2.o : $(CMDIR)/GenericParser2.cpp; $(DO_DED_CC)
-$(B)/ded/cm_shader.o : $(CMDIR)/cm_shader.cpp; $(DO_DED_CC)
-$(B)/ded/cm_polylib.o : $(CMDIR)/cm_polylib.cpp; $(DO_DED_CC) 
-$(B)/ded/cm_test.o : $(CMDIR)/cm_test.cpp; $(DO_DED_CC) 
-$(B)/ded/cm_trace.o : $(CMDIR)/cm_trace.cpp; $(DO_DED_CC) 
-$(B)/ded/cm_patch.o : $(CMDIR)/cm_patch.cpp; $(DO_DED_CC) 
-$(B)/ded/common.o : $(CMDIR)/common.cpp; $(DO_DED_CC) 
-$(B)/ded/cvar.o : $(CMDIR)/cvar.cpp; $(DO_DED_CC) 
-$(B)/ded/files.o : $(CMDIR)/files.cpp; $(DO_DED_CC) 
-$(B)/ded/md4.o : $(CMDIR)/md4.cpp; $(DO_DED_CC) 
-$(B)/ded/msg.o : $(CMDIR)/msg.cpp; $(DO_DED_CC) 
-$(B)/ded/net_chan.o : $(CMDIR)/net_chan.cpp; $(DO_DED_CC)
-$(B)/ded/huffman.o : $(CMDIR)/huffman.cpp; $(DO_DED_CC)
-$(B)/ded/q_shared.o : $(CMDIR)/q_shared.cpp; $(DO_DED_CC) 
-$(B)/ded/q_math.o : $(GDIR)/q_math.c; $(DO_DED_CC) 
-$(B)/ded/z_memman_pc.o : $(CMDIR)/z_memman_pc.cpp; $(DO_DED_CC)
-$(B)/ded/files_common.o : $(CMDIR)/files_common.cpp; $(DO_DED_CC)
-$(B)/ded/cmd_common.o : $(CMDIR)/cmd_common.cpp; $(DO_DED_CC)
-$(B)/ded/files_pc.o : $(CMDIR)/files_pc.cpp; $(DO_DED_CC)
+$(B)/ded/cm_load.o : $(CMDIR)/cm_load.cpp; $(DO_DED_CPP) 
+$(B)/ded/stringed_ingame.o : $(CMDIR)/stringed_ingame.cpp; $(DO_DED_CPP) 
+$(B)/ded/stringed_interface.o : $(CMDIR)/stringed_interface.cpp; $(DO_DED_CPP) 
+$(B)/ded/GenericParser2.o : $(CMDIR)/GenericParser2.cpp; $(DO_DED_CPP) 
+$(B)/ded/cm_shader.o : $(CMDIR)/cm_shader.cpp; $(DO_DED_CPP) 
+$(B)/ded/cm_polylib.o : $(CMDIR)/cm_polylib.cpp; $(DO_DED_CPP) 
+$(B)/ded/cm_test.o : $(CMDIR)/cm_test.cpp; $(DO_DED_CPP) 
+$(B)/ded/cm_trace.o : $(CMDIR)/cm_trace.cpp; $(DO_DED_CPP) 
+$(B)/ded/cm_patch.o : $(CMDIR)/cm_patch.cpp; $(DO_DED_CPP) 
+$(B)/ded/common.o : $(CMDIR)/common.cpp; $(DO_DED_CPP) 
+$(B)/ded/cvar.o : $(CMDIR)/cvar.cpp; $(DO_DED_CPP) 
+$(B)/ded/files.o : $(CMDIR)/files.cpp; $(DO_DED_CPP) 
+$(B)/ded/md4.o : $(CMDIR)/md4.cpp; $(DO_DED_CPP) 
+$(B)/ded/msg.o : $(CMDIR)/msg.cpp; $(DO_DED_CPP) 
+$(B)/ded/net_chan.o : $(CMDIR)/net_chan.cpp; $(DO_DED_CPP) 
+$(B)/ded/huffman.o : $(CMDIR)/huffman.cpp; $(DO_DED_CPP)
+$(B)/ded/q_shared.o : $(CMDIR)/q_shared.cpp; $(DO_DED_CPP)
+$(B)/ded/q_math.o : $(CMDIR)/q_math.cpp; $(DO_DED_CPP)
+$(B)/ded/z_memman_pc.o : $(CMDIR)/z_memman_pc.cpp; $(DO_DED_CPP)
+$(B)/ded/files_common.o : $(CMDIR)/files_common.cpp; $(DO_DED_CPP)
+$(B)/ded/cmd_common.o : $(CMDIR)/cmd_common.cpp; $(DO_DED_CPP)
+$(B)/ded/files_pc.o : $(CMDIR)/files_pc.cpp; $(DO_DED_CPP)
 
-$(B)/ded/RM_Manager.o : $(RMGDIR)/RM_Manager.cpp; $(DO_DED_CC)
-$(B)/ded/RM_Mission.o : $(RMGDIR)/RM_Mission.cpp; $(DO_DED_CC)
-$(B)/ded/RM_Instance.o: $(RMGDIR)/RM_Instance.cpp; $(DO_DED_CC)
-$(B)/ded/RM_InstanceFile.o : $(RMGDIR)/RM_InstanceFile.cpp; $(DO_DED_CC)
-$(B)/ded/RM_Instance_Void.o : $(RMGDIR)/RM_Instance_Void.cpp; $(DO_DED_CC)
-$(B)/ded/RM_Instance_Random.o : $(RMGDIR)/RM_Instance_Random.cpp; $(DO_DED_CC)
-$(B)/ded/RM_Instance_Group.o : $(RMGDIR)/RM_Instance_Group.cpp; $(DO_DED_CC)
-$(B)/ded/RM_Instance_BSP.o : $(RMGDIR)/RM_Instance_BSP.cpp; $(DO_DED_CC)
-$(B)/ded/RM_Objective.o : $(RMGDIR)/RM_Objective.cpp; $(DO_DED_CC)
-$(B)/ded/RM_Path.o : $(RMGDIR)/RM_Path.cpp; $(DO_DED_CC)
-$(B)/ded/RM_Area.o : $(RMGDIR)/RM_Area.cpp; $(DO_DED_CC)
-$(B)/ded/RM_Terrain.o : $(RMGDIR)/RM_Terrain.cpp; $(DO_DED_CC)
-$(B)/ded/tr_terrain.o : $(RDIR)/tr_terrain.cpp; $(DO_DED_CC)
-$(B)/ded/cm_terrain.o : $(CMDIR)/cm_terrain.cpp; $(DO_DED_CC)
-$(B)/ded/cm_randomterrain.o : $(CMDIR)/cm_randomterrain.cpp; $(DO_DED_CC)
+$(B)/ded/RM_Manager.o : $(RMGDIR)/RM_Manager.cpp; $(DO_DED_CPP)
+$(B)/ded/RM_Mission.o : $(RMGDIR)/RM_Mission.cpp; $(DO_DED_CPP)
+$(B)/ded/RM_Instance.o: $(RMGDIR)/RM_Instance.cpp; $(DO_DED_CPP)
+$(B)/ded/RM_InstanceFile.o : $(RMGDIR)/RM_InstanceFile.cpp; $(DO_DED_CPP)
+$(B)/ded/RM_Instance_Void.o : $(RMGDIR)/RM_Instance_Void.cpp; $(DO_DED_CPP)
+$(B)/ded/RM_Instance_Random.o : $(RMGDIR)/RM_Instance_Random.cpp; $(DO_DED_CPP)
+$(B)/ded/RM_Instance_Group.o : $(RMGDIR)/RM_Instance_Group.cpp; $(DO_DED_CPP)
+$(B)/ded/RM_Instance_BSP.o : $(RMGDIR)/RM_Instance_BSP.cpp; $(DO_DED_CPP)
+$(B)/ded/RM_Objective.o : $(RMGDIR)/RM_Objective.cpp; $(DO_DED_CPP)
+$(B)/ded/RM_Path.o : $(RMGDIR)/RM_Path.cpp; $(DO_DED_CPP)
+$(B)/ded/RM_Area.o : $(RMGDIR)/RM_Area.cpp; $(DO_DED_CPP)
+$(B)/ded/RM_Terrain.o : $(RMGDIR)/RM_Terrain.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_terrain.o : $(RDIR)/tr_terrain.cpp; $(DO_DED_CPP)
+$(B)/ded/cm_terrain.o : $(CMDIR)/cm_terrain.cpp; $(DO_DED_CPP)
+$(B)/ded/cm_randomterrain.o : $(CMDIR)/cm_randomterrain.cpp; $(DO_DED_CPP)
 
-$(B)/ded/G2_API.o : $(GHOUL2DIR)/G2_API.cpp; $(DO_DED_CC)
-$(B)/ded/G2_bolts.o : $(GHOUL2DIR)/G2_bolts.cpp; $(DO_DED_CC)
-$(B)/ded/G2_bones.o : $(GHOUL2DIR)/G2_bones.cpp; $(DO_DED_CC)
-$(B)/ded/G2_misc.o : $(GHOUL2DIR)/G2_misc.cpp; $(DO_DED_CC)
-$(B)/ded/G2_surfaces.o : $(GHOUL2DIR)/G2_surfaces.cpp; $(DO_DED_CC)
+$(B)/ded/G2_API.o : $(GHOUL2DIR)/G2_API.cpp; $(DO_DED_CPP)
+$(B)/ded/G2_bolts.o : $(GHOUL2DIR)/G2_bolts.cpp; $(DO_DED_CPP)
+$(B)/ded/G2_bones.o : $(GHOUL2DIR)/G2_bones.cpp; $(DO_DED_CPP)
+$(B)/ded/G2_misc.o : $(GHOUL2DIR)/G2_misc.cpp; $(DO_DED_CPP)
+$(B)/ded/G2_surfaces.o : $(GHOUL2DIR)/G2_surfaces.cpp; $(DO_DED_CPP)
 
-$(B)/ded/RoffSystem.o : $(CMDIR)/RoffSystem.cpp; $(DO_DED_CC)
+$(B)/ded/RoffSystem.o : $(CMDIR)/RoffSystem.cpp; $(DO_DED_CPP)
 
-$(B)/ded/inflate.o : $(ZLIB)/inflate.cpp; $(DO_DED_CC)
-$(B)/ded/deflate.o : $(ZLIB)/deflate.cpp; $(DO_DED_CC)
-$(B)/ded/zipcommon.o : $(ZLIB)/zipcommon.cpp; $(DO_DED_CC)
+$(B)/ded/inflate.o : $(ZLIB)/inflate.c; $(DO_DED_CPP)
+$(B)/ded/deflate.o : $(ZLIB)/deflate.c; $(DO_DED_CPP)
+$(B)/ded/zipcommon.o : $(ZLIB)/zipcommon.cpp; $(DO_DED_CPP)
 
-$(B)/ded/tr_model.o : $(RDIR)/tr_model.cpp; $(DO_DED_CC)
-$(B)/ded/tr_image.o : $(RDIR)/tr_image.cpp; $(DO_DED_CC)
-$(B)/ded/tr_ghoul2.o : $(RDIR)/tr_ghoul2.cpp; $(DO_DED_CC)
-$(B)/ded/tr_shader.o : $(RDIR)/tr_shader.cpp; $(DO_DED_CC)
-$(B)/ded/tr_sky.o : $(RDIR)/tr_shader.cpp; $(DO_DED_CC)
-$(B)/ded/tr_cmds.o : $(RDIR)/tr_cmds.cpp; $(DO_DED_CC)
-$(B)/ded/tr_backend.o : $(RDIR)/tr_backend.cpp; $(DO_DED_CC)
-$(B)/ded/tr_animation.o : $(RDIR)/tr_animation.cpp; $(DO_DED_CC)
-$(B)/ded/tr_bsp.o : $(RDIR)/tr_bsp.cpp; $(DO_DED_CC)
-$(B)/ded/tr_curve.o : $(RDIR)/tr_curve.cpp; $(DO_DED_CC)
-$(B)/ded/tr_flares.o : $(RDIR)/tr_flares.cpp; $(DO_DED_CC)
-$(B)/ded/tr_font.o : $(RDIR)/tr_font.cpp; $(DO_DED_CC)
-$(B)/ded/tr_init.o : $(RDIR)/tr_init.cpp; $(DO_DED_CC)
-$(B)/ded/tr_light.o : $(RDIR)/tr_light.cpp; $(DO_DED_CC)
-$(B)/ded/tr_main.o : $(RDIR)/tr_main.cpp; $(DO_DED_CC)
-$(B)/ded/tr_marks.o : $(RDIR)/tr_marks.cpp; $(DO_DED_CC)
-$(B)/ded/tr_mesh.o : $(RDIR)/tr_mesh.cpp; $(DO_DED_CC)
-$(B)/ded/tr_noise.o : $(RDIR)/tr_noise.cpp; $(DO_DED_CC)
-$(B)/ded/tr_quicksprite.o : $(RDIR)/tr_quicksprite.cpp; $(DO_DED_CC)
-$(B)/ded/tr_scene.o : $(RDIR)/tr_scene.cpp; $(DO_DED_CC)
-$(B)/ded/tr_shade.o : $(RDIR)/tr_shade.cpp; $(DO_DED_CC)
-$(B)/ded/tr_shade_calc.o : $(RDIR)/tr_shade_calc.cpp; $(DO_DED_CC)
-$(B)/ded/tr_shadows.o : $(RDIR)/tr_shadows.cpp; $(DO_DED_CC)
-$(B)/ded/tr_surface.o : $(RDIR)/tr_surface.cpp; $(DO_DED_CC)
-$(B)/ded/tr_surfacesprites.o : $(RDIR)/tr_surfacesprites.cpp; $(DO_DED_CC)
-$(B)/ded/tr_world.o : $(RDIR)/tr_world.cpp; $(DO_DED_CC)
-$(B)/ded/tr_worldeffects.o : $(RDIR)/tr_worldeffects.cpp; $(DO_DED_CC)
-$(B)/ded/matcomp.o : $(RDIR)/matcomp.c; $(DO_DED_CC)
+$(B)/ded/tr_model.o : $(RDIR)/tr_model.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_image.o : $(RDIR)/tr_image.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_ghoul2.o : $(RDIR)/tr_ghoul2.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_shader.o : $(RDIR)/tr_shader.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_sky.o : $(RDIR)/tr_shader.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_cmds.o : $(RDIR)/tr_cmds.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_backend.o : $(RDIR)/tr_backend.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_animation.o : $(RDIR)/tr_animation.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_bsp.o : $(RDIR)/tr_bsp.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_curve.o : $(RDIR)/tr_curve.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_flares.o : $(RDIR)/tr_flares.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_font.o : $(RDIR)/tr_font.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_init.o : $(RDIR)/tr_init.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_light.o : $(RDIR)/tr_light.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_main.o : $(RDIR)/tr_main.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_marks.o : $(RDIR)/tr_marks.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_mesh.o : $(RDIR)/tr_mesh.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_noise.o : $(RDIR)/tr_noise.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_quicksprite.o : $(RDIR)/tr_quicksprite.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_scene.o : $(RDIR)/tr_scene.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_shade.o : $(RDIR)/tr_shade.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_shade_calc.o : $(RDIR)/tr_shade_calc.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_shadows.o : $(RDIR)/tr_shadows.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_surface.o : $(RDIR)/tr_surface.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_surfacesprites.o : $(RDIR)/tr_surfacesprites.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_world.o : $(RDIR)/tr_world.cpp; $(DO_DED_CPP)
+$(B)/ded/tr_worldeffects.o : $(RDIR)/tr_worldeffects.cpp; $(DO_DED_CPP)
+$(B)/ded/matcomp.o : $(RDIR)/matcomp.c; $(DO_DED_CPP)
 
 
-$(B)/ded/be_aas_bspq3.o : $(BLIBDIR)/be_aas_bspq3.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_aas_cluster.o : $(BLIBDIR)/be_aas_cluster.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_aas_debug.o : $(BLIBDIR)/be_aas_debug.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_aas_entity.o : $(BLIBDIR)/be_aas_entity.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_aas_file.o : $(BLIBDIR)/be_aas_file.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_aas_main.o : $(BLIBDIR)/be_aas_main.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_aas_move.o : $(BLIBDIR)/be_aas_move.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_aas_optimize.o : $(BLIBDIR)/be_aas_optimize.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_aas_reach.o : $(BLIBDIR)/be_aas_reach.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_aas_route.o : $(BLIBDIR)/be_aas_route.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_aas_routealt.o : $(BLIBDIR)/be_aas_routealt.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_aas_sample.o : $(BLIBDIR)/be_aas_sample.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_ai_char.o : $(BLIBDIR)/be_ai_char.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_ai_chat.o : $(BLIBDIR)/be_ai_chat.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_ai_gen.o : $(BLIBDIR)/be_ai_gen.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_ai_goal.o : $(BLIBDIR)/be_ai_goal.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_ai_move.o : $(BLIBDIR)/be_ai_move.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_ai_weap.o : $(BLIBDIR)/be_ai_weap.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_ai_weight.o : $(BLIBDIR)/be_ai_weight.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_ea.o : $(BLIBDIR)/be_ea.cpp; $(DO_BOT_CC) 
-$(B)/ded/be_interface.o : $(BLIBDIR)/be_interface.cpp; $(DO_BOT_CC) 
-$(B)/ded/l_crc.o : $(BLIBDIR)/l_crc.cpp; $(DO_BOT_CC) 
-$(B)/ded/l_libvar.o : $(BLIBDIR)/l_libvar.cpp; $(DO_BOT_CC) 
-$(B)/ded/l_log.o : $(BLIBDIR)/l_log.cpp; $(DO_BOT_CC) 
-$(B)/ded/l_memory.o : $(BLIBDIR)/l_memory.cpp; $(DO_BOT_CC) 
-$(B)/ded/l_precomp.o : $(BLIBDIR)/l_precomp.cpp; $(DO_BOT_CC) 
-$(B)/ded/l_script.o : $(BLIBDIR)/l_script.cpp; $(DO_BOT_CC) 
-$(B)/ded/l_struct.o : $(BLIBDIR)/l_struct.cpp; $(DO_BOT_CC) 
+$(B)/ded/be_aas_bspq3.o : $(BLIBDIR)/be_aas_bspq3.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_aas_cluster.o : $(BLIBDIR)/be_aas_cluster.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_aas_debug.o : $(BLIBDIR)/be_aas_debug.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_aas_entity.o : $(BLIBDIR)/be_aas_entity.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_aas_file.o : $(BLIBDIR)/be_aas_file.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_aas_main.o : $(BLIBDIR)/be_aas_main.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_aas_move.o : $(BLIBDIR)/be_aas_move.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_aas_optimize.o : $(BLIBDIR)/be_aas_optimize.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_aas_reach.o : $(BLIBDIR)/be_aas_reach.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_aas_route.o : $(BLIBDIR)/be_aas_route.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_aas_routealt.o : $(BLIBDIR)/be_aas_routealt.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_aas_sample.o : $(BLIBDIR)/be_aas_sample.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_ai_char.o : $(BLIBDIR)/be_ai_char.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_ai_chat.o : $(BLIBDIR)/be_ai_chat.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_ai_gen.o : $(BLIBDIR)/be_ai_gen.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_ai_goal.o : $(BLIBDIR)/be_ai_goal.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_ai_move.o : $(BLIBDIR)/be_ai_move.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_ai_weap.o : $(BLIBDIR)/be_ai_weap.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_ai_weight.o : $(BLIBDIR)/be_ai_weight.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_ea.o : $(BLIBDIR)/be_ea.cpp; $(DO_BOT_CPP) 
+$(B)/ded/be_interface.o : $(BLIBDIR)/be_interface.cpp; $(DO_BOT_CPP) 
+$(B)/ded/l_crc.o : $(BLIBDIR)/l_crc.cpp; $(DO_BOT_CPP) 
+$(B)/ded/l_libvar.o : $(BLIBDIR)/l_libvar.cpp; $(DO_BOT_CPP) 
+$(B)/ded/l_log.o : $(BLIBDIR)/l_log.cpp; $(DO_BOT_CPP) 
+$(B)/ded/l_memory.o : $(BLIBDIR)/l_memory.cpp; $(DO_BOT_CPP) 
+$(B)/ded/l_precomp.o : $(BLIBDIR)/l_precomp.cpp; $(DO_BOT_CPP) 
+$(B)/ded/l_script.o : $(BLIBDIR)/l_script.cpp; $(DO_BOT_CPP) 
+$(B)/ded/l_struct.o : $(BLIBDIR)/l_struct.cpp; $(DO_BOT_CPP) 
 
-$(B)/ded/linux_common.o : $(UDIR)/linux_common.c; $(DO_CC)
+$(B)/ded/linux_common.o : $(UDIR)/linux_common.c; $(DO_DED_CPP)
 $(B)/ded/linux_glimp.o : $(UDIR)/linux_glimp.c; $(DO_DED_CC)
-$(B)/ded/unix_main.o : $(UDIR)/unix_main.c; $(DO_DED_CC) 
-$(B)/ded/unix_net.o : $(UDIR)/unix_net.c; $(DO_DED_CC) 
-$(B)/ded/unix_shared.o : $(UDIR)/unix_shared.cpp; $(DO_DED_CC) 
+$(B)/ded/unix_main.o : $(UDIR)/unix_main.cpp; $(DO_DED_CPP) 
+$(B)/ded/unix_net.o : $(UDIR)/unix_net.cpp; $(DO_DED_CPP) 
+$(B)/ded/unix_shared.o : $(UDIR)/unix_shared.cpp; $(DO_DED_CPP) 
 $(B)/ded/linux_qgl.o : $(UDIR)/linux_qgl.c; $(DO_DED_CC)
-$(B)/ded/null_client.o : $(NDIR)/null_client.cpp; $(DO_DED_CC) 
-$(B)/ded/null_input.o : $(NDIR)/null_input.cpp; $(DO_DED_CC) 
-$(B)/ded/null_snddma.o : $(NDIR)/null_snddma.cpp; $(DO_DED_CC) 
-$(B)/ded/null_glimp.o : $(NDIR)/null_glimp.cpp; $(DO_DED_CC)
-$(B)/ded/null_main.o : $(NDIR)/null_main.cpp; $(DO_DED_CC)
-$(B)/ded/null_net.o : $(NDIR)/null_net.cpp; $(DO_DED_CC)
-$(B)/ded/null_renderer.o : $(NDIR)/null_renderer.cpp; $(DO_DED_CC)
-$(B)/ded/unzip.o : $(CMDIR)/unzip.cpp; $(DO_DED_CC) 
-$(B)/ded/vm.o : $(CMDIR)/vm.cpp; $(DO_DED_CC) 
-$(B)/ded/vm_interpreted.o : $(CMDIR)/vm_interpreted.cpp; $(DO_DED_CC) 
-$(B)/ded/cmd_pc.o : $(CMDIR)/cmd_pc.cpp; $(DO_DED_CC)
+$(B)/ded/null_client.o : $(NDIR)/null_client.cpp; $(DO_DED_CPP) 
+$(B)/ded/null_input.o : $(NDIR)/null_input.cpp; $(DO_DED_CPP) 
+$(B)/ded/null_snddma.o : $(NDIR)/null_snddma.cpp; $(DO_DED_CPP) 
+$(B)/ded/null_glimp.o : $(NDIR)/null_glimp.cpp; $(DO_DED_CPP)
+$(B)/ded/null_main.o : $(NDIR)/null_main.cpp; $(DO_DED_CPP)
+$(B)/ded/null_net.o : $(NDIR)/null_net.cpp; $(DO_DED_CPP)
+$(B)/ded/null_renderer.o : $(NDIR)/null_renderer.cpp; $(DO_DED_CPP)
+$(B)/ded/ioapi.o : $(ZLIB)/ioapi.c; $(DO_DED_CPP)
+$(B)/ded/unzip.o : $(CMDIR)/unzip.cpp; $(DO_DED_CPP) 
+$(B)/ded/vm.o : $(CMDIR)/vm.cpp; $(DO_DED_CPP) 
+$(B)/ded/vm_interpreted.o : $(CMDIR)/vm_interpreted.cpp; $(DO_DED_CPP) 
+$(B)/ded/cmd_pc.o : $(CMDIR)/cmd_pc.cpp; $(DO_DED_CPP)
 
-$(B)/ded/BlockStream.o : $(IDIR)/BlockStream.cpp; $(DO_DED_CC)
-$(B)/ded/GameInterface.o : $(IDIR)/GameInterface.cpp; $(DO_DED_CC)
-$(B)/ded/Instance.o : $(IDIR)/Instance.cpp; $(DO_DED_CC)
-$(B)/ded/Interface.o : $(IDIR)/Interface.cpp; $(DO_DED_CC)
-$(B)/ded/Memory.o : $(IDIR)/Memory.cpp; $(DO_DED_CC)
-$(B)/ded/Q3_Interface.o : $(IDIR)/Q3_Interface.cpp; $(DO_DED_CC)
-$(B)/ded/Q3_Registers.o : $(IDIR)/Q3_Registers.cpp; $(DO_DED_CC)
-$(B)/ded/Sequence.o: $(IDIR)/Sequence.cpp; $(DO_DED_CC)
-$(B)/ded/Sequencer.o : $(IDIR)/Sequencer.cpp; $(DO_DED_CC)
-$(B)/ded/TaskManager.o: $(IDIR)/TaskManager.cpp; $(DO_DED_CC)
+$(B)/ded/BlockStream.o : $(IDIR)/BlockStream.cpp; $(DO_DED_CPP)
+$(B)/ded/GameInterface.o : $(IDIR)/GameInterface.cpp; $(DO_DED_CPP)
+$(B)/ded/Instance.o : $(IDIR)/Instance.cpp; $(DO_DED_CPP)
+$(B)/ded/Interface.o : $(IDIR)/Interface.cpp; $(DO_DED_CPP)
+$(B)/ded/Memory.o : $(IDIR)/Memory.cpp; $(DO_DED_CPP)
+$(B)/ded/Q3_Interface.o : $(IDIR)/Q3_Interface.cpp; $(DO_DED_CPP)
+$(B)/ded/Q3_Registers.o : $(IDIR)/Q3_Registers.cpp; $(DO_DED_CPP)
+$(B)/ded/Sequence.o: $(IDIR)/Sequence.cpp; $(DO_DED_CPP)
+$(B)/ded/Sequencer.o : $(IDIR)/Sequencer.cpp; $(DO_DED_CPP)
+$(B)/ded/TaskManager.o: $(IDIR)/TaskManager.cpp; $(DO_DED_CPP)
 
 #ifeq ($(ARCH),i386)
-$(B)/ded/vm_x86.o : $(CMDIR)/vm_x86.cpp; $(DO_DED_CC2) 
+$(B)/ded/vm_x86.o : $(UDIR)/vm_x86.cpp; $(DO_DED_CPP) 
 $(B)/ded/ftol.o : $(UDIR)/ftol.nasm; $(DO_NASM)
 $(B)/ded/snapvector.o : $(UDIR)/snapvector.nasm; $(DO_NASM) 
 #endif
@@ -619,189 +630,188 @@ $(B)/baseq3/cgame/q_shared.o : $(GDIR)/q_shared.c; $(DO_SHLIB_CC)
 #############################################################################
 
 Q3GOBJ = \
-	$(B)/baseq3/game/g_main.o \
-	$(B)/baseq3/game/AnimalNPC.o \
-	$(B)/baseq3/game/FighterNPC.o \
-	$(B)/baseq3/game/NPC.o \
-	$(B)/baseq3/game/NPC_AI_Atst.o \
-	$(B)/baseq3/game/NPC_AI_Default.o \
-	$(B)/baseq3/game/NPC_AI_Droid.o \
-	$(B)/baseq3/game/NPC_AI_GalakMech.o \
-	$(B)/baseq3/game/NPC_AI_Grenadier.o \
-	$(B)/baseq3/game/NPC_AI_Howler.o \
-	$(B)/baseq3/game/NPC_AI_ImperialProbe.o \
-	$(B)/baseq3/game/NPC_AI_Interrogator.o \
-	$(B)/baseq3/game/NPC_AI_Jedi.o \
-	$(B)/baseq3/game/NPC_AI_Mark1.o \
-	$(B)/baseq3/game/NPC_AI_Mark2.o \
-	$(B)/baseq3/game/NPC_AI_MineMonster.o \
-	$(B)/baseq3/game/NPC_AI_Rancor.o \
-	$(B)/baseq3/game/NPC_AI_Remote.o \
-	$(B)/baseq3/game/NPC_AI_Seeker.o \
-	$(B)/baseq3/game/NPC_AI_Sentry.o \
-	$(B)/baseq3/game/NPC_AI_Sniper.o \
-	$(B)/baseq3/game/NPC_AI_Stormtrooper.o \
-	$(B)/baseq3/game/NPC_AI_Utils.o \
-	$(B)/baseq3/game/NPC_AI_Wampa.o \
-	$(B)/baseq3/game/NPC_behavior.o \
-	$(B)/baseq3/game/NPC_combat.o \
-	$(B)/baseq3/game/NPC_goal.o \
-	$(B)/baseq3/game/NPC_misc.o \
-	$(B)/baseq3/game/NPC_move.o \
-	$(B)/baseq3/game/NPC_reactions.o \
-	$(B)/baseq3/game/NPC_senses.o \
-	$(B)/baseq3/game/NPC_sounds.o \
-	$(B)/baseq3/game/NPC_spawn.o \
-	$(B)/baseq3/game/NPC_stats.o \
-	$(B)/baseq3/game/NPC_utils.o \
-	$(B)/baseq3/game/SpeederNPC.o \
-	$(B)/baseq3/game/WalkerNPC.o \
-	$(B)/baseq3/game/ai_main.o \
-	$(B)/baseq3/game/ai_util.o \
-	$(B)/baseq3/game/ai_wpnav.o \
-	$(B)/baseq3/game/bg_g2_utils.o \
-	$(B)/baseq3/game/bg_lib.o \
-	$(B)/baseq3/game/bg_misc.o \
-	$(B)/baseq3/game/bg_panimate.o \
-	$(B)/baseq3/game/bg_pmove.o \
-	$(B)/baseq3/game/bg_saber.o \
-	$(B)/baseq3/game/bg_saberLoad.o \
-	$(B)/baseq3/game/bg_saga.o \
-	$(B)/baseq3/game/bg_slidemove.o \
-	$(B)/baseq3/game/bg_vehicleLoad.o \
-	$(B)/baseq3/game/bg_weapons.o \
-	$(B)/baseq3/game/g_ICARUScb.o \
-	$(B)/baseq3/game/g_active.o \
-	$(B)/baseq3/game/g_arenas.o \
-	$(B)/baseq3/game/g_bot.o \
-	$(B)/baseq3/game/g_client.o \
-	$(B)/baseq3/game/g_cmds.o \
-	$(B)/baseq3/game/g_combat.o \
-	$(B)/baseq3/game/g_exphysics.o \
-	$(B)/baseq3/game/g_items.o \
-	$(B)/baseq3/game/g_log.o \
-	$(B)/baseq3/game/g_mem.o \
-	$(B)/baseq3/game/g_misc.o \
-	$(B)/baseq3/game/g_missile.o \
-	$(B)/baseq3/game/g_mover.o \
-	$(B)/baseq3/game/g_nav.o \
-	$(B)/baseq3/game/g_navnew.o \
-	$(B)/baseq3/game/g_object.o \
-	$(B)/baseq3/game/g_saga.o \
-	$(B)/baseq3/game/g_session.o \
-	$(B)/baseq3/game/g_spawn.o \
-	$(B)/baseq3/game/g_strap.o \
-	$(B)/baseq3/game/g_svcmds.o \
-	$(B)/baseq3/game/g_syscalls.o \
-	$(B)/baseq3/game/g_target.o \
-	$(B)/baseq3/game/g_team.o \
-	$(B)/baseq3/game/g_timer.o \
-	$(B)/baseq3/game/g_trigger.o \
-	$(B)/baseq3/game/g_turret.o \
-	$(B)/baseq3/game/g_turret_G2.o \
-	$(B)/baseq3/game/g_utils.o \
-	$(B)/baseq3/game/g_vehicleTurret.o \
-	$(B)/baseq3/game/g_vehicles.o \
-	$(B)/baseq3/game/g_weapon.o \
-	$(B)/baseq3/game/tri_coll_test.o \
-	$(B)/baseq3/game/w_force.o \
-	$(B)/baseq3/game/w_saber.o \
+	$(B)/base/game/g_main.o \
+	$(B)/base/game/AnimalNPC.o \
+	$(B)/base/game/FighterNPC.o \
+	$(B)/base/game/NPC.o \
+	$(B)/base/game/NPC_AI_Atst.o \
+	$(B)/base/game/NPC_AI_Default.o \
+	$(B)/base/game/NPC_AI_Droid.o \
+	$(B)/base/game/NPC_AI_GalakMech.o \
+	$(B)/base/game/NPC_AI_Grenadier.o \
+	$(B)/base/game/NPC_AI_Howler.o \
+	$(B)/base/game/NPC_AI_ImperialProbe.o \
+	$(B)/base/game/NPC_AI_Interrogator.o \
+	$(B)/base/game/NPC_AI_Jedi.o \
+	$(B)/base/game/NPC_AI_Mark1.o \
+	$(B)/base/game/NPC_AI_Mark2.o \
+	$(B)/base/game/NPC_AI_MineMonster.o \
+	$(B)/base/game/NPC_AI_Rancor.o \
+	$(B)/base/game/NPC_AI_Remote.o \
+	$(B)/base/game/NPC_AI_Seeker.o \
+	$(B)/base/game/NPC_AI_Sentry.o \
+	$(B)/base/game/NPC_AI_Sniper.o \
+	$(B)/base/game/NPC_AI_Stormtrooper.o \
+	$(B)/base/game/NPC_AI_Utils.o \
+	$(B)/base/game/NPC_AI_Wampa.o \
+	$(B)/base/game/NPC_behavior.o \
+	$(B)/base/game/NPC_combat.o \
+	$(B)/base/game/NPC_goal.o \
+	$(B)/base/game/NPC_misc.o \
+	$(B)/base/game/NPC_move.o \
+	$(B)/base/game/NPC_reactions.o \
+	$(B)/base/game/NPC_senses.o \
+	$(B)/base/game/NPC_sounds.o \
+	$(B)/base/game/NPC_spawn.o \
+	$(B)/base/game/NPC_stats.o \
+	$(B)/base/game/NPC_utils.o \
+	$(B)/base/game/SpeederNPC.o \
+	$(B)/base/game/WalkerNPC.o \
+	$(B)/base/game/ai_main.o \
+	$(B)/base/game/ai_util.o \
+	$(B)/base/game/ai_wpnav.o \
+	$(B)/base/game/bg_g2_utils.o \
+	$(B)/base/game/bg_misc.o \
+	$(B)/base/game/bg_panimate.o \
+	$(B)/base/game/bg_pmove.o \
+	$(B)/base/game/bg_saber.o \
+	$(B)/base/game/bg_saberLoad.o \
+	$(B)/base/game/bg_saga.o \
+	$(B)/base/game/bg_slidemove.o \
+	$(B)/base/game/bg_vehicleLoad.o \
+	$(B)/base/game/bg_weapons.o \
+	$(B)/base/game/g_ICARUScb.o \
+	$(B)/base/game/g_active.o \
+	$(B)/base/game/g_arenas.o \
+	$(B)/base/game/g_bot.o \
+	$(B)/base/game/g_client.o \
+	$(B)/base/game/g_cmds.o \
+	$(B)/base/game/g_combat.o \
+	$(B)/base/game/g_exphysics.o \
+	$(B)/base/game/g_items.o \
+	$(B)/base/game/g_log.o \
+	$(B)/base/game/g_mem.o \
+	$(B)/base/game/g_misc.o \
+	$(B)/base/game/g_missile.o \
+	$(B)/base/game/g_mover.o \
+	$(B)/base/game/g_nav.o \
+	$(B)/base/game/g_navnew.o \
+	$(B)/base/game/g_object.o \
+	$(B)/base/game/g_saga.o \
+	$(B)/base/game/g_session.o \
+	$(B)/base/game/g_spawn.o \
+	$(B)/base/game/g_strap.o \
+	$(B)/base/game/g_svcmds.o \
+	$(B)/base/game/g_syscalls.o \
+	$(B)/base/game/g_target.o \
+	$(B)/base/game/g_team.o \
+	$(B)/base/game/g_timer.o \
+	$(B)/base/game/g_trigger.o \
+	$(B)/base/game/g_turret.o \
+	$(B)/base/game/g_turret_G2.o \
+	$(B)/base/game/g_utils.o \
+	$(B)/base/game/g_vehicleTurret.o \
+	$(B)/base/game/g_vehicles.o \
+	$(B)/base/game/g_weapon.o \
+	$(B)/base/game/tri_coll_test.o \
+	$(B)/base/game/w_force.o \
+	$(B)/base/game/w_saber.o \
 	\
-	$(B)/baseq3/game/q_math.o \
-	$(B)/baseq3/game/q_shared.o
+	$(B)/base/game/q_math.o \
+	$(B)/base/game/q_shared.o
 
-$(B)/baseq3/jampgame$(ARCH).$(SHLIBEXT) : $(Q3GOBJ)
+$(B)/base/jampgame$(ARCH).$(SHLIBEXT) : $(Q3GOBJ)
 	$(CC)  $(SHLIBLDFLAGS) -o $@ $(Q3GOBJ)
 
-$(B)/baseq3/game/ai_main.o : $(GDIR)/ai_main.c; $(DO_SHLIB_CC)     
-$(B)/baseq3/game/ai_util.o : $(GDIR)/ai_util.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/ai_wpnav.o : $(GDIR)/ai_wpnav.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/AnimalNPC.o : $(GDIR)/AnimalNPC.c; $(DO_SHLIB_CC)   
-$(B)/baseq3/game/FighterNPC.o : $(GDIR)/FighterNPC.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC.o : $(GDIR)/NPC.c; $(DO_SHLIB_CC)      
-$(B)/baseq3/game/NPC_AI_Atst.o : $(GDIR)/NPC_AI_Atst.c; $(DO_SHLIB_CC)  
-$(B)/baseq3/game/NPC_AI_Default.o : $(GDIR)/NPC_AI_Default.c; $(DO_SHLIB_CC)     
-$(B)/baseq3/game/NPC_AI_Droid.o : $(GDIR)/NPC_AI_Droid.c; $(DO_SHLIB_CC)     
-$(B)/baseq3/game/NPC_AI_GalakMech.o : $(GDIR)/NPC_AI_GalakMech.c; $(DO_SHLIB_CC)     
-$(B)/baseq3/game/NPC_AI_Grenadier.o : $(GDIR)/NPC_AI_Grenadier.c; $(DO_SHLIB_CC)    
-$(B)/baseq3/game/NPC_AI_Howler.o : $(GDIR)/NPC_AI_Howler.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_ImperialProbe.o : $(GDIR)/NPC_AI_ImperialProbe.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Interrogator.o : $(GDIR)/NPC_AI_Interrogator.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Jedi.o : $(GDIR)/NPC_AI_Jedi.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Mark1.o : $(GDIR)/NPC_AI_Mark1.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Mark2.o : $(GDIR)/NPC_AI_Mark2.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_MineMonster.o : $(GDIR)/NPC_AI_MineMonster.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Rancor.o : $(GDIR)/NPC_AI_Rancor.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Remote.o : $(GDIR)/NPC_AI_Remote.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Seeker.o : $(GDIR)/NPC_AI_Seeker.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Sentry.o : $(GDIR)/NPC_AI_Sentry.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Sniper.o : $(GDIR)/NPC_AI_Sniper.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Stormtrooper.o : $(GDIR)/NPC_AI_Stormtrooper.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Utils.o : $(GDIR)/NPC_AI_Utils.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_AI_Wampa.o : $(GDIR)/NPC_AI_Wampa.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_behavior.o : $(GDIR)/NPC_behavior.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_combat.o : $(GDIR)/NPC_combat.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_goal.o : $(GDIR)/NPC_goal.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_misc.o : $(GDIR)/NPC_misc.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_reactions.o : $(GDIR)/NPC_reactions.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_senses.o : $(GDIR)/NPC_senses.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_sounds.o : $(GDIR)/NPC_sounds.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_spawn.o : $(GDIR)/NPC_spawn.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_stats.o : $(GDIR)/NPC_stats.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_utils.o : $(GDIR)/NPC_utils.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/SpeederNPC.o : $(GDIR)/SpeederNPC.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/WalkerNPC.o : $(GDIR)/WalkerNPC.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/NPC_move.o : $(GDIR)/NPC_move.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/bg_g2_utils.o : $(GDIR)/bg_g2_utils.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/bg_lib.o : $(GDIR)/bg_lib.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/bg_misc.o : $(GDIR)/bg_misc.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/bg_panimate.o : $(GDIR)/bg_panimate.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/bg_pmove.o : $(GDIR)/bg_pmove.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/bg_saber.o : $(GDIR)/bg_saber.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/bg_saberLoad.o : $(GDIR)/bg_saberLoad.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/bg_saga.o : $(GDIR)/bg_saga.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/bg_slidemove.o : $(GDIR)/bg_slidemove.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/bg_vehicleLoad.o : $(GDIR)/bg_vehicleLoad.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/bg_weapons.o : $(GDIR)/bg_weapons.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/g_ICARUScb.o : $(GDIR)/g_ICARUScb.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/g_active.o : $(GDIR)/g_active.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/g_arenas.o : $(GDIR)/g_arenas.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/g_bot.o : $(GDIR)/g_bot.c; $(DO_SHLIB_CC)            
-$(B)/baseq3/game/g_client.o : $(GDIR)/g_client.c; $(DO_SHLIB_CC)      
-$(B)/baseq3/game/g_cmds.o : $(GDIR)/g_cmds.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_combat.o : $(GDIR)/g_combat.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/g_exphysics.o : $(GDIR)/g_exphysics.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/g_items.o : $(GDIR)/g_items.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_log.o : $(GDIR)/g_log.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_main.o : $(GDIR)/g_main.c; $(DO_SHLIB_CC)            
-$(B)/baseq3/game/g_mem.o : $(GDIR)/g_mem.c; $(DO_SHLIB_CC)               
-$(B)/baseq3/game/g_misc.o : $(GDIR)/g_misc.c; $(DO_SHLIB_CC)             
-$(B)/baseq3/game/g_missile.o : $(GDIR)/g_missile.c; $(DO_SHLIB_CC)        
-$(B)/baseq3/game/g_mover.o : $(GDIR)/g_mover.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_nav.o : $(GDIR)/g_nav.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_navnew.o : $(GDIR)/g_navnew.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_object.o : $(GDIR)/g_object.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_saga.o : $(GDIR)/g_saga.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/g_session.o : $(GDIR)/g_session.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/g_spawn.o : $(GDIR)/g_spawn.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_strap.o : $(GDIR)/g_strap.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_svcmds.o : $(GDIR)/g_svcmds.c; $(DO_SHLIB_CC)         
-$(B)/baseq3/game/g_syscalls.o : $(GDIR)/g_syscalls.c; $(DO_SHLIB_CC)    
-$(B)/baseq3/game/g_target.o : $(GDIR)/g_target.c; $(DO_SHLIB_CC)        
-$(B)/baseq3/game/g_team.o : $(GDIR)/g_team.c; $(DO_SHLIB_CC)           
-$(B)/baseq3/game/g_timer.o : $(GDIR)/g_timer.c; $(DO_SHLIB_CC)           
-$(B)/baseq3/game/g_trigger.o : $(GDIR)/g_trigger.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/g_turret.o : $(GDIR)/g_turret.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/g_turret_G2.o : $(GDIR)/g_turret_G2.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/g_utils.o : $(GDIR)/g_utils.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_vehicleTurret.o : $(GDIR)/g_vehicleTurret.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_vehicles.o : $(GDIR)/g_vehicles.c; $(DO_SHLIB_CC)          
-$(B)/baseq3/game/g_weapon.o : $(GDIR)/g_weapon.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/tri_coll_test.o : $(GDIR)/tri_coll_test.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/w_force.o : $(GDIR)/w_force.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/w_saber.o : $(GDIR)/w_saber.c; $(DO_SHLIB_CC)       
-$(B)/baseq3/game/q_math.o : $(GDIR)/q_math.c; $(DO_SHLIB_CC)            
-$(B)/baseq3/game/q_shared.o : $(GDIR)/q_shared.c; $(DO_SHLIB_CC)       
+$(B)/base/game/ai_main.o : $(GDIR)/ai_main.c; $(DO_SHLIB_CC)     
+$(B)/base/game/ai_util.o : $(GDIR)/ai_util.c; $(DO_SHLIB_CC)       
+$(B)/base/game/ai_wpnav.o : $(GDIR)/ai_wpnav.c; $(DO_SHLIB_CC)       
+$(B)/base/game/AnimalNPC.o : $(GDIR)/AnimalNPC.c; $(DO_SHLIB_CC)   
+$(B)/base/game/FighterNPC.o : $(GDIR)/FighterNPC.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC.o : $(GDIR)/NPC.c; $(DO_SHLIB_CC)      
+$(B)/base/game/NPC_AI_Atst.o : $(GDIR)/NPC_AI_Atst.c; $(DO_SHLIB_CC)  
+$(B)/base/game/NPC_AI_Default.o : $(GDIR)/NPC_AI_Default.c; $(DO_SHLIB_CC)     
+$(B)/base/game/NPC_AI_Droid.o : $(GDIR)/NPC_AI_Droid.c; $(DO_SHLIB_CC)     
+$(B)/base/game/NPC_AI_GalakMech.o : $(GDIR)/NPC_AI_GalakMech.c; $(DO_SHLIB_CC)     
+$(B)/base/game/NPC_AI_Grenadier.o : $(GDIR)/NPC_AI_Grenadier.c; $(DO_SHLIB_CC)    
+$(B)/base/game/NPC_AI_Howler.o : $(GDIR)/NPC_AI_Howler.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_ImperialProbe.o : $(GDIR)/NPC_AI_ImperialProbe.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Interrogator.o : $(GDIR)/NPC_AI_Interrogator.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Jedi.o : $(GDIR)/NPC_AI_Jedi.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Mark1.o : $(GDIR)/NPC_AI_Mark1.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Mark2.o : $(GDIR)/NPC_AI_Mark2.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_MineMonster.o : $(GDIR)/NPC_AI_MineMonster.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Rancor.o : $(GDIR)/NPC_AI_Rancor.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Remote.o : $(GDIR)/NPC_AI_Remote.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Seeker.o : $(GDIR)/NPC_AI_Seeker.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Sentry.o : $(GDIR)/NPC_AI_Sentry.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Sniper.o : $(GDIR)/NPC_AI_Sniper.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Stormtrooper.o : $(GDIR)/NPC_AI_Stormtrooper.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Utils.o : $(GDIR)/NPC_AI_Utils.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_AI_Wampa.o : $(GDIR)/NPC_AI_Wampa.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_behavior.o : $(GDIR)/NPC_behavior.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_combat.o : $(GDIR)/NPC_combat.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_goal.o : $(GDIR)/NPC_goal.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_misc.o : $(GDIR)/NPC_misc.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_reactions.o : $(GDIR)/NPC_reactions.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_senses.o : $(GDIR)/NPC_senses.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_sounds.o : $(GDIR)/NPC_sounds.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_spawn.o : $(GDIR)/NPC_spawn.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_stats.o : $(GDIR)/NPC_stats.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_utils.o : $(GDIR)/NPC_utils.c; $(DO_SHLIB_CC)       
+$(B)/base/game/SpeederNPC.o : $(GDIR)/SpeederNPC.c; $(DO_SHLIB_CC)       
+$(B)/base/game/WalkerNPC.o : $(GDIR)/WalkerNPC.c; $(DO_SHLIB_CC)       
+$(B)/base/game/NPC_move.o : $(GDIR)/NPC_move.c; $(DO_SHLIB_CC)       
+$(B)/base/game/bg_g2_utils.o : $(GDIR)/bg_g2_utils.c; $(DO_SHLIB_CC)       
+$(B)/base/game/bg_lib.o : $(GDIR)/bg_lib.c; $(DO_SHLIB_CC)       
+$(B)/base/game/bg_misc.o : $(GDIR)/bg_misc.c; $(DO_SHLIB_CC)       
+$(B)/base/game/bg_panimate.o : $(GDIR)/bg_panimate.c; $(DO_SHLIB_CC)       
+$(B)/base/game/bg_pmove.o : $(GDIR)/bg_pmove.c; $(DO_SHLIB_CC)       
+$(B)/base/game/bg_saber.o : $(GDIR)/bg_saber.c; $(DO_SHLIB_CC)       
+$(B)/base/game/bg_saberLoad.o : $(GDIR)/bg_saberLoad.c; $(DO_SHLIB_CC)       
+$(B)/base/game/bg_saga.o : $(GDIR)/bg_saga.c; $(DO_SHLIB_CC)       
+$(B)/base/game/bg_slidemove.o : $(GDIR)/bg_slidemove.c; $(DO_SHLIB_CC)       
+$(B)/base/game/bg_vehicleLoad.o : $(GDIR)/bg_vehicleLoad.c; $(DO_SHLIB_CC)       
+$(B)/base/game/bg_weapons.o : $(GDIR)/bg_weapons.c; $(DO_SHLIB_CC)       
+$(B)/base/game/g_ICARUScb.o : $(GDIR)/g_ICARUScb.c; $(DO_SHLIB_CC)       
+$(B)/base/game/g_active.o : $(GDIR)/g_active.c; $(DO_SHLIB_CC)       
+$(B)/base/game/g_arenas.o : $(GDIR)/g_arenas.c; $(DO_SHLIB_CC)       
+$(B)/base/game/g_bot.o : $(GDIR)/g_bot.c; $(DO_SHLIB_CC)            
+$(B)/base/game/g_client.o : $(GDIR)/g_client.c; $(DO_SHLIB_CC)      
+$(B)/base/game/g_cmds.o : $(GDIR)/g_cmds.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_combat.o : $(GDIR)/g_combat.c; $(DO_SHLIB_CC)       
+$(B)/base/game/g_exphysics.o : $(GDIR)/g_exphysics.c; $(DO_SHLIB_CC)       
+$(B)/base/game/g_items.o : $(GDIR)/g_items.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_log.o : $(GDIR)/g_log.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_main.o : $(GDIR)/g_main.c; $(DO_SHLIB_CC)            
+$(B)/base/game/g_mem.o : $(GDIR)/g_mem.c; $(DO_SHLIB_CC)               
+$(B)/base/game/g_misc.o : $(GDIR)/g_misc.c; $(DO_SHLIB_CC)             
+$(B)/base/game/g_missile.o : $(GDIR)/g_missile.c; $(DO_SHLIB_CC)        
+$(B)/base/game/g_mover.o : $(GDIR)/g_mover.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_nav.o : $(GDIR)/g_nav.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_navnew.o : $(GDIR)/g_navnew.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_object.o : $(GDIR)/g_object.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_saga.o : $(GDIR)/g_saga.c; $(DO_SHLIB_CC)       
+$(B)/base/game/g_session.o : $(GDIR)/g_session.c; $(DO_SHLIB_CC)       
+$(B)/base/game/g_spawn.o : $(GDIR)/g_spawn.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_strap.o : $(GDIR)/g_strap.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_svcmds.o : $(GDIR)/g_svcmds.c; $(DO_SHLIB_CC)         
+$(B)/base/game/g_syscalls.o : $(GDIR)/g_syscalls.c; $(DO_SHLIB_CC)    
+$(B)/base/game/g_target.o : $(GDIR)/g_target.c; $(DO_SHLIB_CC)        
+$(B)/base/game/g_team.o : $(GDIR)/g_team.c; $(DO_SHLIB_CC)           
+$(B)/base/game/g_timer.o : $(GDIR)/g_timer.c; $(DO_SHLIB_CC)           
+$(B)/base/game/g_trigger.o : $(GDIR)/g_trigger.c; $(DO_SHLIB_CC)       
+$(B)/base/game/g_turret.o : $(GDIR)/g_turret.c; $(DO_SHLIB_CC)       
+$(B)/base/game/g_turret_G2.o : $(GDIR)/g_turret_G2.c; $(DO_SHLIB_CC)       
+$(B)/base/game/g_utils.o : $(GDIR)/g_utils.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_vehicleTurret.o : $(GDIR)/g_vehicleTurret.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_vehicles.o : $(GDIR)/g_vehicles.c; $(DO_SHLIB_CC)          
+$(B)/base/game/g_weapon.o : $(GDIR)/g_weapon.c; $(DO_SHLIB_CC)       
+$(B)/base/game/tri_coll_test.o : $(GDIR)/tri_coll_test.c; $(DO_SHLIB_CC)       
+$(B)/base/game/w_force.o : $(GDIR)/w_force.c; $(DO_SHLIB_CC)       
+$(B)/base/game/w_saber.o : $(GDIR)/w_saber.c; $(DO_SHLIB_CC)       
+$(B)/base/game/q_math.o : $(CMDIR)/q_math.c; $(DO_SHLIB_CC)            
+$(B)/base/game/q_shared.o : $(CMDIR)/q_shared.c; $(DO_SHLIB_CC)       
 
 
 #############################################################################
@@ -1587,7 +1597,7 @@ $(B)/linuxq3a-$(VERSION)-DEBUG.tar.gz:
 	cp debug$(ARCH)-glibc/missionpack/qagame$(ARCH).so setup-debug/quake3/missionpack
 	cp debug$(ARCH)-glibc/missionpack/ui$(ARCH).so setup-debug/quake3/missionpack
 	cd setup-debug; tar cvzf linuxq3a-$(VERSION)-DEBUG.tar.gz quake3
-	
+
 ## temps
 # NOTE: not referenced
 

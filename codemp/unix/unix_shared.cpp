@@ -8,7 +8,7 @@
 #include <sys/time.h>
 #include <pwd.h>
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 
 typedef unsigned short DWORD;
@@ -81,9 +81,19 @@ void Sys_SnapVector3( float *v ) { // bk001213 - see win32/win_shared.c
 #endif
 
 
-void	Sys_Mkdir( const char *path )
+qboolean Sys_Mkdir( const char *path )
 {
-    mkdir (path, 0777);
+	int result = mkdir( path, 0750 );
+
+	if( result != 0 )
+	{
+		if (errno == EEXIST)
+			return qtrue;
+		else
+			return qfalse;
+	}
+
+	return qtrue;
 }
 
 char *strlwr (char *s) {
@@ -315,7 +325,7 @@ char *Sys_DefaultHomePath(void)
 	if ((p = getenv("HOME")) != NULL) {
 		Q_strncpyz(homePath, p, sizeof(homePath));
 #ifdef MACOS_X
-		Q_strcat(homePath, sizeof(homePath), "/Library/Application Support/Quake3");
+		Q_strcat(homePath, sizeof(homePath), "/Library/Application Support/Jedi Academy");
 #else
 		Q_strcat(homePath, sizeof(homePath), "/.ja");
 #endif

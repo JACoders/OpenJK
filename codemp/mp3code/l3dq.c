@@ -38,7 +38,7 @@ ____________________________________________________________________________*/
 #include <float.h>
 #include <math.h>
 #include <string.h>
-#include "L3.h"
+#include "l3.h"
 
 #include "mp3struct.h"
 
