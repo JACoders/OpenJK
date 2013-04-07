@@ -268,17 +268,6 @@
 // times !!!
 //
 
-// plane_t structure
-// !!! if this is changed, it must be changed in model.h too !!!
-// !!! if the size of this is changed, the array lookup in SV_HullPointContents
-//     must be changed too !!!
-#define pl_normal	0
-#define pl_dist		12
-#define pl_type		16
-#define pl_signbits	17
-#define pl_pad		18
-#define pl_size		20
-
 // hull_t structure
 // !!! if this is changed, it must be changed in model.h too !!!
 #define	hu_clipnodes		0
