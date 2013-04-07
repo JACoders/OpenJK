@@ -66,6 +66,7 @@ void RE_ClearScene( void ) {
 	r_firstSceneEntity = r_numentities;
 	r_firstScenePoly = r_numpolys;
 	tr.refdef.rdflags &= ~(RDF_doLAGoggles|RDF_doFullbright);	//probably not needed since it gets copied over in RE_RenderScene
+	tr.refdef.doLAGoggles = qfalse;
 }
 
 /*
@@ -288,7 +289,10 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	tr.refdef.time = fd->time;
 	tr.refdef.frametime = fd->time - lastTime;
-	//tr.refdef.rdflags = fd->rdflags;				// Breaks light amp goggles, among other things.
+	tr.refdef.rdflags = fd->rdflags;
+	// Ignore my last there. This actually breaks the rest of the game as well, causing massive issues.
+	// We need to figure out what's going on in fd->rdflags first :S .. I'm half-tempted to just revert
+	// back to JK2 and use a qbool for it --eez
 
 	if (fd->rdflags & RDF_SKYBOXPORTAL)
 	{

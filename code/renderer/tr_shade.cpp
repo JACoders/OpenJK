@@ -256,7 +256,7 @@ void R_BindAnimatedImage( const textureBundle_t *bundle) {
 		return;
 	}
 
-	if ((r_fullbright->integer || (tr.refdef.rdflags & RDF_doFullbright) ) && bundle->isLightmap)
+	if ((r_fullbright->integer || tr.refdef.doLAGoggles || (tr.refdef.rdflags & RDF_doFullbright) ) && bundle->isLightmap)
 	{
 		GL_Bind( tr.whiteImage );
 		return;

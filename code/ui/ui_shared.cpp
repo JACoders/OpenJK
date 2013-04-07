@@ -4508,6 +4508,10 @@ qboolean ItemParse_cvarStrList( itemDef_t *item)
 			// The displayed text
 			multiPtr->cvarList[multiPtr->count] = "@MENUS_MYLANGUAGE";
 			// The cvar value that goes into se_language
+#ifndef __NO_JK2
+			// FIXME
+			if(!Cvar_VariableIntegerValue("com_jk2"))
+#endif
 			multiPtr->cvarStr[multiPtr->count] = SE_GetLanguageName( multiPtr->count );
 		}
 		return qtrue;
@@ -5076,7 +5080,7 @@ static void Item_TextScroll_BuildLines ( itemDef_t* item )
 
 			// read letter...
 			//
-			uiLetter = ui.AnyLanguage_ReadCharFromString(psCurrentTextReadPos, &iAdvanceCount, &bIsTrailingPunctuation);
+			uiLetter = ui.AnyLanguage_ReadCharFromString((char *)psCurrentTextReadPos, &iAdvanceCount, &bIsTrailingPunctuation);
 			psCurrentTextReadPos += iAdvanceCount;
 
 			// concat onto string so far...
@@ -6232,8 +6236,14 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 
 	// keeps us from computing the widths and heights more than once
 	if (*width == 0 || (item->type == ITEM_TYPE_OWNERDRAW && item->textalignment == ITEM_ALIGN_CENTER)
+#ifndef __NO_JK2
+		|| (item->text && item->text[0]=='@' && 
+		((!Cvar_VariableIntegerValue("com_jk2") && item->asset != se_language->modificationCount) ||
+		((Cvar_VariableIntegerValue("com_jk2") && item->asset != sp_language->modificationCount)))	//string package language changed
+#else
 		|| (item->text && item->text[0]=='@' && item->asset != se_language->modificationCount )	//string package language changed
-		) 
+#endif
+		))
 	{
 		int originalWidth;
 
@@ -6267,10 +6277,16 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 		}
 
 		ToWindowCoords(&item->textRect.x, &item->textRect.y, &item->window);
-		if (item->text && item->text[0]=='@' )//string package
-		{//mark language
-			item->asset = se_language->modificationCount;
+#ifndef __NO_JK2
+		if( Cvar_VariableIntegerValue("com_jk2") )
+		{
+			if(item->text && item->text[0]=='@')
+				item->asset = sp_language->modificationCount;
 		}
+		else
+#endif
+		if (item->text && item->text[0]=='@' )//string package
+			item->asset = se_language->modificationCount; //mark language
 
 	}
 }
@@ -6427,10 +6443,24 @@ void Item_Text_Paint(itemDef_t *item)
 	{
 		textPtr = item->text;
 	}
+#ifndef __NO_JK2
+	if(!Cvar_VariableIntegerValue("com_jk2"))
+	{
+#endif
 	if (*textPtr == '@')	// string reference
 	{
 		textPtr = SE_GetString( &textPtr[1] );
 	}
+#ifndef __NO_JK2
+	}
+	else
+	{
+		if(*textPtr == '@')
+		{
+			textPtr = JK2SP_GetStringTextString(&textPtr[1]);
+		}
+	}
+#endif
 
 	// this needs to go here as it sets extents for cvar types as well
 	Item_SetTextExtents(item, &width, &height, textPtr);
@@ -6938,6 +6968,11 @@ void BindingFromName(const char *cvar)
 				DC->keynumToStringBuf( b2, g_nameBind2, sizeof(g_nameBind2) );
 // do NOT do this or it corrupts asian text!!!//				Q_strupr(g_nameBind2);
 
+#ifndef __NO_JK2
+				if(Cvar_VariableIntegerValue( "com_jk2" ))
+					strcat( g_nameBind1, va(" %s ", ui.SP_GetStringTextString("MENUS_KEYBIND_OR" )) );
+				else
+#endif
 				strcat( g_nameBind1, va(" %s ",SE_GetString("MENUS_KEYBIND_OR" )) );
 				strcat( g_nameBind1, g_nameBind2 );
 			}
@@ -7162,6 +7197,96 @@ void Item_Model_Paint(itemDef_t *item)
 		return;
 	}
 
+	// Fuck all the logic --eez
+#ifndef __NO_JK2
+	if(Cvar_VariableIntegerValue("com_jk2"))
+	{
+		// setup the refdef
+		memset( &refdef, 0, sizeof( refdef ) );
+		refdef.rdflags = RDF_NOWORLDMODEL;
+		AxisClear( refdef.viewaxis );
+		x = item->window.rect.x+1;
+		y = item->window.rect.y+1;
+		w = item->window.rect.w-2;
+		h = item->window.rect.h-2;
+
+		refdef.x = x * DC->xscale;
+		refdef.y = y * DC->yscale;
+		refdef.width = w * DC->xscale;
+		refdef.height = h * DC->yscale;
+
+		DC->modelBounds( item->asset, mins, maxs );
+
+		origin[2] = -0.5 * ( mins[2] + maxs[2] );
+		origin[1] = 0.5 * ( mins[1] + maxs[1] );
+
+		// calculate distance so the model nearly fills the box
+		if (qtrue) 
+		{
+			float len = 0.5 * ( maxs[2] - mins[2] );		
+			origin[0] = len / 0.268;	// len / tan( fov/2 )
+			//origin[0] = len / tan(w/2);
+		} 
+		else 
+		{
+			origin[0] = item->textscale;
+		}
+		// WTF..? --eez
+		//refdef.fov_x = (modelPtr->fov_x) ? modelPtr->fov_x : w;
+		//refdef.fov_y = (modelPtr->fov_y) ? modelPtr->fov_y : h;
+
+		refdef.fov_x = 45;
+		refdef.fov_y = 45;
+		
+		//refdef.fov_x = (int)((float)refdef.width / 640.0f * 90.0f);
+		//xx = refdef.width / tan( refdef.fov_x / 360 * M_PI );
+		//refdef.fov_y = atan2( refdef.height, xx );
+		//refdef.fov_y *= ( 360 / M_PI );
+
+		DC->clearScene();
+
+		refdef.time = DC->realTime;
+
+		// add the model
+
+		memset( &ent, 0, sizeof(ent) );
+
+		//adjust = 5.0 * sin( (float)uis.realtime / 500 );
+		//adjust = 360 % (int)((float)uis.realtime / 1000);
+		//VectorSet( angles, 0, 0, 1 );
+
+		// use item storage to track
+	/*
+		if (modelPtr->rotationSpeed) 
+		{
+			if (DC->realTime > item->window.nextTime) 
+			{
+				item->window.nextTime = DC->realTime + modelPtr->rotationSpeed;
+				modelPtr->angle = (int)(modelPtr->angle + 1) % 360;
+			}
+		}
+		VectorSet( angles, 0, modelPtr->angle, 0 );
+	*/
+		VectorSet( angles, 0, (float)(refdef.time/20.0f), 0);
+		
+		AnglesToAxis( angles, ent.axis );
+
+		ent.hModel = item->asset;
+		VectorCopy( origin, ent.origin );
+		VectorCopy( ent.origin, ent.oldorigin );
+
+		// Set up lighting
+		VectorCopy( refdef.vieworg, ent.lightingOrigin );
+		ent.renderfx = RF_LIGHTING_ORIGIN | RF_NOSHADOW;
+
+		DC->addRefEntityToScene( &ent );
+		DC->renderScene( &refdef );
+	}
+	else
+	{
+#endif
+
+
 	// a moves datapad anim is playing
 	if (uiInfo.moveAnimTime && (uiInfo.moveAnimTime < uiInfo.uiDC.realTime))
 	{ 
@@ -7322,13 +7447,15 @@ void Item_Model_Paint(itemDef_t *item)
 
 	// Set up lighting
 	//VectorCopy( refdef.vieworg, ent.lightingOrigin );
-	//ent.renderfx = RF_LIGHTING_ORIGIN | RF_NOSHADOW;
-	ent.renderfx = RF_NOSHADOW ;
+	ent.renderfx = RF_LIGHTING_ORIGIN | RF_NOSHADOW;
+
 	ui.R_AddLightToScene(refdef.vieworg, 500, 1, 1, 1);	//fixme: specify in menu file!
 
 	DC->addRefEntityToScene( &ent );
 	DC->renderScene( &refdef );
-
+#ifndef __NO_JK2
+	}
+#endif
 }
 
 /*
@@ -7425,8 +7552,23 @@ void Item_YesNo_Paint(itemDef_t *item)
 		memcpy(&newColor, &item->window.foreColor, sizeof(vec4_t));
 	}
 
+#ifndef __NO_JK2
+	const char *psYes;
+	const char *psNo;
+	if( Cvar_VariableIntegerValue( "com_jk2" ) )
+	{
+		psYes = ui.SP_GetStringTextString( "MENUS_YES" );
+		psNo = ui.SP_GetStringTextString( "MENUS_NO" );
+	}
+	else
+	{
+		psYes = SE_GetString( "MENUS_YES" );
+		psNo  = SE_GetString( "MENUS_NO" );
+	}
+#else
 	const char *psYes = SE_GetString( "MENUS_YES" );
 	const char *psNo  = SE_GetString( "MENUS_NO" );
+#endif
 	const char *yesnovalue;
 	
 	if (item->invertYesNo)

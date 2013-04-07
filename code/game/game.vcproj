@@ -2,8 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="game"
+	Name="gameJKA"
 	ProjectGUID="{52D48192-6C71-4D4A-BE26-D05C0E02939C}"
+	RootNamespace="gameJKA"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -113,7 +114,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\..\Debug"
+			OutputDirectory=".\..\..\bin\Debug"
 			IntermediateDirectory=".\..\Debug\game"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
@@ -176,7 +177,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib"
-				OutputFile="..\Debug/jagamex86.dll"
+				OutputFile="..\..\bin\Debug/jagamex86.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\game.def"
@@ -316,7 +317,7 @@
 		</Configuration>
 		<Configuration
 			Name="FinalBuild|Win32"
-			OutputDirectory=".\..\FinalBuild"
+			OutputDirectory=".\..\..\bin\FinalBuild"
 			IntermediateDirectory=".\..\FinalBuild\game"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
@@ -377,7 +378,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib"
-				OutputFile="..\FinalBuild/jagamex86.dll"
+				OutputFile="..\..\bin\FinalBuild/jagamex86.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				ModuleDefinitionFile=".\game.def"

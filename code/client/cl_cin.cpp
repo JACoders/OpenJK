@@ -1722,11 +1722,28 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 			}
 			else
 			{
+#ifndef __NO_JK2
+				if(Cvar_VariableIntegerValue("com_jk2"))
+				{
+					hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%d", sp_language->string) );
+					if(!hCrawl)
+					{
+						// failed, so go back to english
+						hCrawl = re.RegisterShaderNoMip( "menu/video/tc_0" );
+					}
+				}
+				else
+				{
+#endif
 				hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%s",se_language->string) );
 				if (!hCrawl)
 				{
 					hCrawl = re.RegisterShaderNoMip( "menu/video/tc_english" );//failed, so go back to english
 				}
+#ifndef __NO_JK2
+				}
+#endif
+
 			}
 			bits |= CIN_hold;
 		}

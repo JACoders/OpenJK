@@ -626,6 +626,11 @@ const char *UI_FeederItemText(float feederID, int index, int column, qhandle_t *
 	} 
 	else if (feederID == FEEDER_LANGUAGES) 
 	{
+#ifndef __NO_JK2
+		// FIXME
+		if(Cvar_VariableIntegerValue("com_jk2"))
+			return NULL;
+#endif
 		return SE_GetLanguageName( index );
 	} 
 	else if (feederID == FEEDER_PLAYER_SKIN_HEAD)
@@ -987,6 +992,13 @@ static qboolean UI_RunMenuScript ( const char **args )
 			}
 			else
 			{
+#ifndef __NO_JK2
+				if( Cvar_VariableIntegerValue("com_jk2") )
+				{
+					ui.Cmd_ExecuteText( EXEC_APPEND, "map kejim_post\n" );
+				}
+				else
+#endif
 				ui.Cmd_ExecuteText( EXEC_APPEND, "map yavin1\n");
 			}
 		} 
@@ -2491,7 +2503,23 @@ UI_Init
 void _UI_Init( qboolean inGameLoad ) 
 {
 	// Get the list of possible languages
+#ifndef __NO_JK2
+	if(!Cvar_VariableIntegerValue("com_jk2"))
+#endif
 	uiInfo.languageCount = SE_GetNumLanguages();	// this does a dir scan, so use carefully
+
+	#ifndef __NO_JK2
+	if(Cvar_VariableIntegerValue("com_jk2"))
+	{
+		// sod it, parse every menu strip file until we find a gap in the sequence...
+		//
+		for (int i=0; i<10; i++)
+		{
+			if (!ui.SP_Register(va("menus%d",i), /*SP_REGISTER_REQUIRED|*/SP_REGISTER_MENU))
+				break;
+		}
+	}
+#endif
 
 	uiInfo.inGameLoad = inGameLoad;
 
@@ -3020,6 +3048,32 @@ qboolean Asset_Parse(char **buffer)
 
 			continue;
 		}
+
+#ifndef __NO_JK2
+		if (Q_stricmp(token, "stripedFile") == 0) 
+		{
+			if (!PC_ParseStringMem((const char **) &tempStr))
+			{
+				PC_ParseWarning("Bad 1st parameter for keyword 'stripedFile'");
+				return qfalse;
+			}
+
+			char sTemp[1024];
+			Q_strncpyz( sTemp, tempStr,  sizeof(sTemp) );
+			if (!ui.SP_Register(sTemp, /*SP_REGISTER_REQUIRED|*/SP_REGISTER_MENU))
+			{
+				PC_ParseWarning(va("(.SP file \"%s\" not found)",sTemp));
+				//return qfalse;	// hmmm... dunno about this, don't want to break scripts for just missing subtitles
+			}
+			else
+			{
+//				extern void AddMenuPackageRetryKey(const char *);
+//				AddMenuPackageRetryKey(sTemp);
+			}
+
+			continue;
+		}
+#endif
 
 		// gradientbar
 		if (Q_stricmp(token, "gradientbar") == 0) 
@@ -3642,6 +3696,11 @@ static void UI_DrawKeyBindStatus(rectDef_t *rect, float scale, vec4_t color, int
 {
 	if (Display_KeyBindPending()) 
 	{
+#ifndef __NO_JK2
+		if( Cvar_VariableIntegerValue("com_jk2") )
+			Text_Paint(rect->x, rect->y, scale, color, ui.SP_GetStringTextString("MENUS_WAITINGFORKEY"), 0, textStyle, iFontIndex);
+		else
+#endif
 		Text_Paint(rect->x, rect->y, scale, color, SE_GetString("MENUS_WAITINGFORKEY"), 0, textStyle, iFontIndex);
 	} 
 	else 
@@ -3882,6 +3941,11 @@ int UI_OwnerDrawWidth(int ownerDraw, float scale)
 	case UI_KEYBINDSTATUS:
 		if (Display_KeyBindPending()) 
 		{
+#ifndef __NO_JK2
+			if( Cvar_VariableIntegerValue( "com_jk2 " ) )
+				s = ui.SP_GetStringTextString("MENUS_WAITINGFORKEY");
+			else
+#endif
 			s = SE_GetString("MENUS_WAITINGFORKEY");
 		} 
 		else 

@@ -938,8 +938,6 @@ typedef struct {
 
 	//JAC: added
 	struct {
-		qboolean		isPatched;
-		qboolean		clientConnectionActive[MAX_CLIENTS];
 		fileHandle_t	log;
 	} security;
 } level_locals_t;

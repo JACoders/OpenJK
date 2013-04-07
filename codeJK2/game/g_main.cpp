@@ -27,6 +27,8 @@ game_export_t	globals;
 gentity_t		g_entities[MAX_GENTITIES];
 unsigned int	g_entityInUseBits[MAX_GENTITIES/32];
 
+void G_ASPreCacheFree(void);
+
 void ClearAllInUse(void)
 {
 	memset(g_entityInUseBits,0,sizeof(g_entityInUseBits));
@@ -733,6 +735,7 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+	G_ASPreCacheFree();
 }
 
 
@@ -775,9 +778,9 @@ game_export_t *GetGameAPI( game_import_t *import ) {
 	globals.RunFrame = G_RunFrame;
 
 	globals.ConsoleCommand = ConsoleCommand;
-	globals.PrintEntClassname = PrintEntClassname;
+//	globals.PrintEntClassname = PrintEntClassname;
 
-	globals.ValidateAnimRange = PM_ValidateAnimRange;
+//	globals.ValidateAnimRange = PM_ValidateAnimRange;
 
 	globals.gentitySize = sizeof(gentity_t);
 

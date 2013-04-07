@@ -260,12 +260,6 @@
     <ClCompile Include="NPC_utils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="q_math.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="q_shared.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SpeederNPC.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -281,10 +275,10 @@
     <ClCompile Include="WalkerNPC.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="g_engine.c">
+    <ClCompile Include="..\qcommon\q_math.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\shared\q_engine.c">
+    <ClCompile Include="..\qcommon\q_shared.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -361,12 +355,6 @@
     <ClInclude Include="chars.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\qcommon\disablewarnings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\Ghoul2\G2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="g_headers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -385,9 +373,6 @@
     <ClInclude Include="g_team.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\ICARUS\interpreter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="inv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -400,12 +385,6 @@
     <ClInclude Include="npc_headers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\ICARUS\Q3_Interface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="q_shared.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="say.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -413,9 +392,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="syn.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\shared\qcommon\tags.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="teams.h">
@@ -430,17 +406,24 @@
     <ClInclude Include="g_xcvar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="g_engine.h">
+    <ClInclude Include="..\qcommon\disablewarnings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\q_engine.h">
+    <ClInclude Include="..\ghoul2\G2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="game.def">
+    <ClInclude Include="..\icarus\interpreter.h">
       <Filter>Header Files</Filter>
-    </None>
+    </ClInclude>
+    <ClInclude Include="..\icarus\Q3_Interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\qcommon\q_shared.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\qcommon\tags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\win32\game.rc">

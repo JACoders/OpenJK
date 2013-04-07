@@ -16,7 +16,7 @@
 #include "../qcommon/sstring.h"
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
 typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char >  >	namePrecache_m;
-extern namePrecache_m	as_preCacheMap;
+extern namePrecache_m	*as_preCacheMap;
 extern void CG_RegisterNPCCustomSounds( clientInfo_t *ci );
 extern qboolean G_AddSexToMunroString ( char *string, qboolean qDoBoth );
 extern void CG_RegisterNPCEffects( team_t team );
@@ -676,7 +676,7 @@ static void CG_AS_Register(void)
 	cgi_AS_AddPrecacheEntry( "#clear" );	// ;-)
 	//FIXME: Don't ask... I had to get around a really nasty MS error in the templates with this...
 	namePrecache_m::iterator	pi;
-	STL_ITERATE( pi, as_preCacheMap )
+	STL_ITERATE( pi, (*as_preCacheMap) )
 	{
 		cgi_AS_AddPrecacheEntry( ((*pi).first).c_str() );
 	}
@@ -2445,7 +2445,8 @@ void CG_LoadMenus(const char *menuFile)
 	len = cgi_FS_FOpenFile( menuFile, &f, FS_READ );
 	if ( !f ) 
 	{
-		cgi_Error( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );
+		//cgi_Error( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );	// what. this would not run
+		cgi_Printf( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );	// the rest at all.. --eez
 		len = cgi_FS_FOpenFile( "ui/jk2hud.txt", &f, FS_READ );
 		if (!f) 
 		{
