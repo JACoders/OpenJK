@@ -184,7 +184,7 @@ float FloatSwap( const float *f );
 	#define __cdecl
 	#define __declspec(x)
 	#define stricmp strcasecmp
-	#define ID_INLINE inline 
+	#define ID_INLINE /*inline*/ 
 
 	#ifdef __ppc__
 		#define CPUSTRING "MacOSX-ppc"
@@ -226,6 +226,21 @@ float FloatSwap( const float *f );
 	static inline int LittleLong( int l ) { return LongSwap( l ); }
 	#define BigFloat
 	static inline float LittleFloat( const float l ) { return FloatSwap( &l ); }
+    #ifdef __ppc__
+        #define LittleShort(x) ShortSwap(x)
+        #define LittleLong(x) LongSwap(x)
+        #define LittleFloat(x) FloatSwap(&x)
+        #define BigShort
+        #define BigLong
+        #define BigFloat
+    #elif defined __i386__
+        #define LittleShort
+        #define LittleLong
+        #define LittleFloat
+        #define BigShort(x) ShortSwap(x)
+        #define BigLong(x) LongSwap(x)
+        #define BigFloat(x) FloatSwap(&x)
+    #endif
 
 #endif // MACOS_X
 
