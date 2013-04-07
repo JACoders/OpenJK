@@ -56,16 +56,12 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_JK2;_JK2MP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;BOTLIB;_JK2;_JK2MP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
@@ -77,7 +73,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>botlib.lib;ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -106,7 +102,7 @@
       <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <PreprocessorDefinitions>_WIN32;NDEBUG;WIN32;_WINDOWS;_JK2;_JK2MP;FINAL_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;NDEBUG;WIN32;_WINDOWS;BOTLIB;_JK2;_JK2MP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -121,7 +117,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>botlib.lib;ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -243,6 +239,31 @@
     <ClInclude Include="jpeg-6\jpeglib.h" />
     <ClInclude Include="jpeg-6\jversion.h" />
     <ClInclude Include="png\png.h" />
+    <ClInclude Include="botlib\aasfile.h" />
+    <ClInclude Include="botlib\be_aas_bsp.h" />
+    <ClInclude Include="botlib\be_aas_cluster.h" />
+    <ClInclude Include="botlib\be_aas_debug.h" />
+    <ClInclude Include="botlib\be_aas_def.h" />
+    <ClInclude Include="botlib\be_aas_entity.h" />
+    <ClInclude Include="botlib\be_aas_file.h" />
+    <ClInclude Include="botlib\be_aas_funcs.h" />
+    <ClInclude Include="botlib\be_aas_main.h" />
+    <ClInclude Include="botlib\be_aas_move.h" />
+    <ClInclude Include="botlib\be_aas_optimize.h" />
+    <ClInclude Include="botlib\be_aas_reach.h" />
+    <ClInclude Include="botlib\be_aas_route.h" />
+    <ClInclude Include="botlib\be_aas_routealt.h" />
+    <ClInclude Include="botlib\be_aas_sample.h" />
+    <ClInclude Include="botlib\be_ai_weight.h" />
+    <ClInclude Include="botlib\be_interface.h" />
+    <ClInclude Include="botlib\l_crc.h" />
+    <ClInclude Include="botlib\l_libvar.h" />
+    <ClInclude Include="botlib\l_log.h" />
+    <ClInclude Include="botlib\l_memory.h" />
+    <ClInclude Include="botlib\l_precomp.h" />
+    <ClInclude Include="botlib\l_script.h" />
+    <ClInclude Include="botlib\l_struct.h" />
+    <ClInclude Include="botlib\l_utils.h" />
     <ClInclude Include="ghoul2\G2.h" />
     <ClInclude Include="ghoul2\G2_gore.h" />
     <ClInclude Include="ghoul2\G2_local.h" />
@@ -478,6 +499,34 @@
     <ClCompile Include="RMG\RM_Objective.cpp" />
     <ClCompile Include="RMG\RM_Path.cpp" />
     <ClCompile Include="RMG\RM_Terrain.cpp" />
+    <ClCompile Include="botlib\be_aas_bspq3.cpp" />
+    <ClCompile Include="botlib\be_aas_cluster.cpp" />
+    <ClCompile Include="botlib\be_aas_debug.cpp" />
+    <ClCompile Include="botlib\be_aas_entity.cpp" />
+    <ClCompile Include="botlib\be_aas_file.cpp" />
+    <ClCompile Include="botlib\be_aas_main.cpp" />
+    <ClCompile Include="botlib\be_aas_move.cpp" />
+    <ClCompile Include="botlib\be_aas_optimize.cpp" />
+    <ClCompile Include="botlib\be_aas_reach.cpp" />
+    <ClCompile Include="botlib\be_aas_route.cpp" />
+    <ClCompile Include="botlib\be_aas_routealt.cpp" />
+    <ClCompile Include="botlib\be_aas_sample.cpp" />
+    <ClCompile Include="botlib\be_ai_char.cpp" />
+    <ClCompile Include="botlib\be_ai_chat.cpp" />
+    <ClCompile Include="botlib\be_ai_gen.cpp" />
+    <ClCompile Include="botlib\be_ai_goal.cpp" />
+    <ClCompile Include="botlib\be_ai_move.cpp" />
+    <ClCompile Include="botlib\be_ai_weap.cpp" />
+    <ClCompile Include="botlib\be_ai_weight.cpp" />
+    <ClCompile Include="botlib\be_ea.cpp" />
+    <ClCompile Include="botlib\be_interface.cpp" />
+    <ClCompile Include="botlib\l_crc.cpp" />
+    <ClCompile Include="botlib\l_libvar.cpp" />
+    <ClCompile Include="botlib\l_log.cpp" />
+    <ClCompile Include="botlib\l_memory.cpp" />
+    <ClCompile Include="botlib\l_precomp.cpp" />
+    <ClCompile Include="botlib\l_script.cpp" />
+    <ClCompile Include="botlib\l_struct.cpp" />
     <ClCompile Include="icarus\BlockStream.cpp" />
     <ClCompile Include="icarus\GameInterface.cpp" />
     <ClCompile Include="icarus\Instance.cpp" />
