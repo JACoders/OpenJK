@@ -8,6 +8,7 @@
 // Notes:			-
 //===========================================================================
 
+#if 0
 #define CONTEXT_ALL						0xFFFFFFFF
 #define CONTEXT_NORMAL					1
 #define CONTEXT_NEARBYITEM				2
@@ -18,3 +19,4 @@
 #define CONTEXT_HARVESTERBLUETEAM		256
 
 #define CONTEXT_NAMES 1024
+#endif

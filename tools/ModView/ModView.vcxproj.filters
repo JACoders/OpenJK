@@ -1,0 +1,489 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{32b88477-a022-4c1d-aa7f-cd32b70a47d0}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{899740d5-1d37-4cc5-920e-1328ca22f78d}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{9a107d5a-50e7-4ca4-ae26-9844fb087ef3}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="JPEG Source">
+      <UniqueIdentifier>{8d90ab32-4033-45d2-b055-b981f5ce6cdc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JPEG Headers">
+      <UniqueIdentifier>{dc737c3e-008e-4c29-b35c-70013e816aa2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PNG">
+      <UniqueIdentifier>{25891872-93c8-4b65-95d8-c0eaeb4dd77a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ZLIB">
+      <UniqueIdentifier>{9e795779-3dbe-49b9-a4db-9db7cdb2e35f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foreign Muck Source">
+      <UniqueIdentifier>{4b07f72c-0a47-4a45-886b-226772e21826}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Foreign Muck Headers">
+      <UniqueIdentifier>{5d2375d9-dbe9-4dbf-9ac8-b885fc2cd7b5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CommArea.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GetString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModViewDoc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModViewTreeView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModViewView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="R_GLM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="R_Image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="R_MD3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="R_MDR.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="R_Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="R_Surface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SOF2NPCViewer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Splash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StdAfx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TEXT.CPP">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Textures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="anims.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clipboard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="drag.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generic_stuff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gl_bits.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="glm_code.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg_interface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="matcomp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mc_compress2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oldskins.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="script.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sequence.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="skins.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wintalk.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jcomapi.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdapimin.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdapistd.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdatasrc.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdcoefct.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdcolor.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jddctmgr.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdhuff.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdinput.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdmainct.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdmarker.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdmaster.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdpostct.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdsample.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jdtrans.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jerror.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jidctflt.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jmemmgr.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jmemnobs.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="jpeg6\jutils.c">
+      <Filter>JPEG Source</Filter>
+    </ClCompile>
+    <ClCompile Include="png\png.cpp">
+      <Filter>PNG</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\adler32.c">
+      <Filter>ZLIB</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\crc32.cpp">
+      <Filter>ZLIB</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\deflate.c">
+      <Filter>ZLIB</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\infblock.c">
+      <Filter>ZLIB</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\infcodes.c">
+      <Filter>ZLIB</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inffast.c">
+      <Filter>ZLIB</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inflate.c">
+      <Filter>ZLIB</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\inftrees.c">
+      <Filter>ZLIB</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\infutil.c">
+      <Filter>ZLIB</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\trees.c">
+      <Filter>ZLIB</Filter>
+    </ClCompile>
+    <ClCompile Include="zlib\zutil.c">
+      <Filter>ZLIB</Filter>
+    </ClCompile>
+    <ClCompile Include="GenericParser2.cpp">
+      <Filter>Foreign Muck Source</Filter>
+    </ClCompile>
+    <ClCompile Include="files.cpp">
+      <Filter>Foreign Muck Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ModView.rc">
+      <Filter>Source Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CommArea.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GetString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModViewDoc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModViewTreeView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModViewView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="R_Common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="R_GLM.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="R_Image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="R_MD3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="R_MDR.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="R_Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="R_Surface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SOF2NPCViewer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Splash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StdAfx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TEXT.H">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="anims.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="clipboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="drag.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generic_stuff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gl_bits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glm_code.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="includes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="jpeg_interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="matcomp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mc_compress2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="md3_format.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mdr_format.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mdx_format.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oldskins.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="script.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sequence.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="skins.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="special_defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="textures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="todo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wintalk.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="jpeg6\jconfig.h">
+      <Filter>JPEG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="jpeg6\jdct.h">
+      <Filter>JPEG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="jpeg6\jdhuff.h">
+      <Filter>JPEG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="jpeg6\jerror.h">
+      <Filter>JPEG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="jpeg6\jinclude.h">
+      <Filter>JPEG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="jpeg6\jmemsys.h">
+      <Filter>JPEG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="jpeg6\jmorecfg.h">
+      <Filter>JPEG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="jpeg6\jpegint.h">
+      <Filter>JPEG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="jpeg6\jpeglib.h">
+      <Filter>JPEG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="jpeg6\jversion.h">
+      <Filter>JPEG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="png\png.h">
+      <Filter>PNG</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\deflate.h">
+      <Filter>ZLIB</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\infblock.h">
+      <Filter>ZLIB</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\infcodes.h">
+      <Filter>ZLIB</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inffast.h">
+      <Filter>ZLIB</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inffixed.h">
+      <Filter>ZLIB</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\inftrees.h">
+      <Filter>ZLIB</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\infutil.h">
+      <Filter>ZLIB</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\trees.h">
+      <Filter>ZLIB</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zconf.h">
+      <Filter>ZLIB</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zlib.h">
+      <Filter>ZLIB</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib\zutil.h">
+      <Filter>ZLIB</Filter>
+    </ClInclude>
+    <ClInclude Include="GenericParser2.h">
+      <Filter>Foreign Muck Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="common_headers.h">
+      <Filter>Foreign Muck Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="disablewarnings.h">
+      <Filter>Foreign Muck Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="files.h">
+      <Filter>Foreign Muck Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\ModView.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ModViewDoc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Splsh16.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\ModView.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+</Project>

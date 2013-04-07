@@ -2,7 +2,7 @@
 #include "b_local.h"
 #include "w_saber.h"
 #include "ai_main.h"
-#include "../ghoul2/G2.h"
+#include "ghoul2/G2.h"
 
 #define METROID_JUMP 1
 
@@ -13,25 +13,16 @@ extern void NPC_UseResponse( gentity_t *self, gentity_t *user, qboolean useWhenD
 //NEEDED FOR MIND-TRICK on NPCS=========================================================
 extern void Jedi_Decloak( gentity_t *self );
 
-extern vmCvar_t		g_saberRestrictForce;
-
-
 extern qboolean BG_FullBodyTauntAnim( int anim );
-
 
 extern bot_state_t *botstates[MAX_CLIENTS];
 
-int speedLoopSound = 0;
- 
-int rageLoopSound = 0;
-
-int protectLoopSound = 0;
-
-int absorbLoopSound = 0;
-
-int seeLoopSound = 0;
-
-int	ysalamiriLoopSound = 0;
+int		speedLoopSound		= 0;
+int		rageLoopSound		= 0;
+int		protectLoopSound	= 0;
+int		absorbLoopSound		= 0;
+int		seeLoopSound		= 0;
+int		ysalamiriLoopSound	= 0;
 
 #define FORCE_VELOCITY_DAMAGE 0
 
@@ -47,7 +38,6 @@ gentity_t *G_PreDefSound(vec3_t org, int pdSound)
 
 	return te;
 }
-
 const int forcePowerMinRank[NUM_FORCE_POWER_LEVELS][NUM_FORCE_POWERS] = //0 == neutral
 {
 	{
@@ -267,19 +257,24 @@ void WP_InitForcePowers( gentity_t *ent )
 
 	if (ent->s.eType == ET_NPC && ent->s.number >= MAX_CLIENTS)
 	{ //rwwFIXMEFIXME: Temp
-		strcpy(userinfo, "forcepowers\\7-1-333003000313003120");
+		Q_strncpyz( userinfo, "forcepowers\\7-1-333003000313003120", sizeof( userinfo ) );
 	}
 	else
 	{
 		trap_GetUserinfo( ent->s.number, userinfo, sizeof( userinfo ) );
 	}
 
-	Q_strncpyz( forcePowers, Info_ValueForKey (userinfo, "forcepowers"), sizeof( forcePowers ) );
+	Q_strncpyz( forcePowers, Info_ValueForKey( userinfo, "forcepowers" ), sizeof( forcePowers ) );
 
-	if ( (ent->r.svFlags & SVF_BOT) && botstates[ent->s.number] )
-	{ //if it's a bot just copy the info directly from its personality
-		Com_sprintf(forcePowers, sizeof(forcePowers), "%s\0", botstates[ent->s.number]->forceinfo);
+	if ( strlen( forcePowers ) < strlen( DEFAULT_FORCEPOWERS ) )
+	{
+		Q_strncpyz( forcePowers, DEFAULT_FORCEPOWERS, sizeof( forcePowers ) );
+		trap_SendServerCommand( ent-g_entities, "print \"^1Invalid forcepowers string, setting default\n\"" );
 	}
+
+	//if it's a bot just copy the info directly from its personality
+	if ( (ent->r.svFlags & SVF_BOT) && botstates[ent->s.number] )
+		Q_strncpyz( forcePowers, botstates[ent->s.number]->forceinfo, sizeof( forcePowers ) );
 
 	//rww - parse through the string manually and eat out all the appropriate data
 	i = 0;
@@ -690,9 +685,7 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 	}
 }
 
-
 extern qboolean BG_InKnockDown( int anim ); //bg_pmove.c
-
 
 int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forcePower)
 {
@@ -878,6 +871,8 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 			case FP_SABERTHROW:
 				return qfalse;
 				break;
+			default:
+				break;
 			}
 		}
 	}
@@ -897,6 +892,8 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 				case FP_LIGHTNING:
 				case FP_DRAIN:
 					return qfalse;
+					break;
+				default:
 					break;
 				}
 			}
@@ -925,6 +922,8 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 				case FP_LIGHTNING:
 				case FP_DRAIN:
 					return qfalse;
+					break;
+				default:
 					break;
 				}
 			}
@@ -1799,6 +1798,9 @@ void ForceLightning( gentity_t *self )
 		return;
 	}
 
+	// fix: rocket lock bug
+	BG_ClearRocketLock(&self->client->ps);
+
 	//Shoot lightning from hand
 	//using grip anim now, to extend the burst time
 	self->client->ps.forceHandExtend = HANDEXTEND_FORCE_HOLD;
@@ -2540,6 +2542,7 @@ qboolean ForceTelepathyCheckDirectNPCTarget( gentity_t *self, trace_t *tr, qbool
 	tto[2] = tfrom[2] + fwd[2]*radius/2;
 
 	trap_Trace( tr, tfrom, NULL, NULL, tto, self->s.number, MASK_PLAYERSOLID );
+
 	
 	if ( tr->entityNum == ENTITYNUM_NONE 
 		|| tr->fraction == 1.0f
@@ -2762,6 +2765,9 @@ void ForceTelepathy(gentity_t *self)
 	{
 		return;
 	}
+
+	// fix: rocket lock bug
+	BG_ClearRocketLock(&self->client->ps);
 
 	if ( ForceTelepathyCheckDirectNPCTarget( self, &tr, &tookPower ) )
 	{//hit an NPC directly
@@ -3021,7 +3027,6 @@ qboolean G_InGetUpAnim(playerState_t *ps)
 
 	return qfalse;
 }
-
 void G_LetGoOfWall( gentity_t *ent )
 {
 	if ( !ent || !ent->client )
@@ -3116,6 +3121,9 @@ void ForceThrow( gentity_t *self, qboolean pull )
 	{
 		return;
 	}
+
+	// fix: rocket lock bug
+	BG_ClearRocketLock(&self->client->ps);
 
 	if (!pull && self->client->ps.saberLockTime > level.time && self->client->ps.saberLockFrame)
 	{
@@ -3672,9 +3680,6 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					push_list[x]->client->ps.otherKiller = self->s.number;
 					push_list[x]->client->ps.otherKillerTime = level.time + 5000;
 					push_list[x]->client->ps.otherKillerDebounceTime = level.time + 100;
-					push_list[x]->client->otherKillerMOD = MOD_UNKNOWN;
-					push_list[x]->client->otherKillerVehWeapon = 0;
-					push_list[x]->client->otherKillerWeaponType = WP_NONE;
 
 					pushPowerMod -= (dirLen*0.7);
 					if (pushPowerMod < 16)
@@ -4042,9 +4047,6 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 		gripEnt->client->ps.otherKiller = self->s.number;
 		gripEnt->client->ps.otherKillerTime = level.time + 5000;
 		gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
-		gripEnt->client->otherKillerMOD = MOD_UNKNOWN;
-		gripEnt->client->otherKillerVehWeapon = 0;
-		gripEnt->client->otherKillerWeaponType = WP_NONE;
 
 		gripEnt->client->ps.forceGripChangeMovetype = PM_FLOAT;
 
@@ -4078,9 +4080,6 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 		gripEnt->client->ps.otherKiller = self->s.number;
 		gripEnt->client->ps.otherKillerTime = level.time + 5000;
 		gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
-		gripEnt->client->otherKillerMOD = MOD_UNKNOWN;
-		gripEnt->client->otherKillerVehWeapon = 0;
-		gripEnt->client->otherKillerWeaponType = WP_NONE;
 
 		gripEnt->client->ps.forceGripChangeMovetype = PM_FLOAT;
 
@@ -4279,9 +4278,12 @@ static void WP_UpdateMindtrickEnts(gentity_t *self)
 	}
 }
 
+//JAC: sets the time between lightning/drain hit shots on the server so that we can alter the sv_fps without issues.
+#define FORCE_DEBOUNCE_TIME 50 // sv_fps 20 = 50msec frametime, basejka balance/timing
+
 static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd_t *cmd )
 {
-	extern usercmd_t	ucmd;
+//	extern usercmd_t	ucmd;
 
 	switch( (int)forcePower )
 	{
@@ -4427,9 +4429,14 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		{
 			WP_ForcePowerStop( self, forcePower );
 		}
+		//JAC: consistent drain regardless of sv_fps
 		else
 		{
-			ForceShootDrain( self );
+			while ( self->client->force.drainDebounce < level.time )
+			{
+				ForceShootDrain( self );
+				self->client->force.drainDebounce += FORCE_DEBOUNCE_TIME;
+			}
 		}
 		break;
 	case FP_LIGHTNING:
@@ -4452,10 +4459,15 @@ static void WP_ForcePowerRun( gentity_t *self, forcePowers_t forcePower, usercmd
 		{
 			WP_ForcePowerStop( self, forcePower );
 		}
+		//JAC: consistent lightning regardless of sv_fps
 		else
 		{
-			ForceShootLightning( self );
-			BG_ForcePowerDrain( &self->client->ps, forcePower, 0 );
+			while ( self->client->force.lightningDebounce < level.time )
+			{
+				ForceShootLightning( self );
+				BG_ForcePowerDrain( &self->client->ps, forcePower, 0 );
+				self->client->force.lightningDebounce += FORCE_DEBOUNCE_TIME;
+			}
 		}
 		break;
 	case FP_TELEPATHY:
@@ -4676,7 +4688,7 @@ void FindGenericEnemyIndex(gentity_t *self)
 	float tlen;
 	gentity_t *ent;
 	gentity_t *besten = NULL;
-	float blen = 99999999;
+	float blen = 99999999.9f;
 	vec3_t a;
 
 	while (i < MAX_CLIENTS)
@@ -4739,7 +4751,7 @@ void SeekerDroneUpdate(gentity_t *self)
 
 		G_PlayEffect(EFFECT_SPARK_EXPLOSION, org, a);
 
-		self->client->ps.eFlags -= EF_SEEKERDRONE;
+		self->client->ps.eFlags &= ~EF_SEEKERDRONE;
 		self->client->ps.genericEnemyIndex = -1;
 
 		return;
@@ -4786,7 +4798,7 @@ void SeekerDroneUpdate(gentity_t *self)
 
 		G_PlayEffect(EFFECT_SPARK_EXPLOSION, org, a);
 
-		self->client->ps.eFlags -= EF_SEEKERDRONE;
+		self->client->ps.eFlags &= ~EF_SEEKERDRONE;
 		self->client->ps.genericEnemyIndex = -1;
 
 		return;
@@ -4881,7 +4893,7 @@ void HolocronUpdate(gentity_t *self)
 		noHRank = FORCE_LEVEL_3;
 	}
 
-	trap_Cvar_Update(&g_MaxHolocronCarry);
+	trap_Cvar_Update(&g_maxHolocronCarry);
 
 	while (i < NUM_FORCE_POWERS)
 	{
@@ -4959,7 +4971,7 @@ void JediMasterUpdate(gentity_t *self)
 { //keep jedi master status updated for JM gametype
 	int i = 0;
 
-	trap_Cvar_Update(&g_MaxHolocronCarry);
+	trap_Cvar_Update(&g_maxHolocronCarry);
 
 	while (i < NUM_FORCE_POWERS)
 	{
@@ -5560,6 +5572,12 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 			WP_ForcePowerRun( self, (forcePowers_t)i, ucmd );
 		}
 	}
+
+	if ( !(self->client->ps.fd.forcePowersActive & (1<<FP_DRAIN)) )
+		self->client->force.drainDebounce = level.time;
+	if ( !(self->client->ps.fd.forcePowersActive & (1<<FP_LIGHTNING)) )
+		self->client->force.lightningDebounce = level.time;
+
 	if ( self->client->ps.saberInFlight && self->client->ps.saberEntityNum )
 	{//don't regen force power while throwing saber
 		if ( self->client->ps.saberEntityNum < ENTITYNUM_NONE && self->client->ps.saberEntityNum > 0 )//player is 0
@@ -5572,89 +5590,59 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 	}
 	if ( !self->client->ps.fd.forcePowersActive || self->client->ps.fd.forcePowersActive == (1 << FP_DRAIN) )
 	{//when not using the force, regenerate at 1 point per half second
-		if ( !self->client->ps.saberInFlight && self->client->ps.fd.forcePowerRegenDebounceTime < level.time &&
-			(self->client->ps.weapon != WP_SABER || !BG_SaberInSpecial(self->client->ps.saberMove)) )
+		if ( !self->client->ps.saberInFlight && (self->client->ps.weapon != WP_SABER || !BG_SaberInSpecial(self->client->ps.saberMove)) )
 		{
-			if (g_gametype.integer != GT_HOLOCRON || g_MaxHolocronCarry.value)
+			while ( self->client->ps.fd.forcePowerRegenDebounceTime < level.time )
 			{
-				//if (!g_trueJedi.integer || self->client->ps.weapon == WP_SABER)
-				//let non-jedi force regen since we're doing a more strict jedi/non-jedi thing... this gives dark jedi something to drain
+				if (g_gametype.integer != GT_HOLOCRON || g_maxHolocronCarry.value)
 				{
-					if (self->client->ps.powerups[PW_FORCE_BOON])
-					{
+					if ( self->client->ps.powerups[PW_FORCE_BOON] )
 						WP_ForcePowerRegenerate( self, 6 );
-					}
-					else if (self->client->ps.isJediMaster && g_gametype.integer == GT_JEDIMASTER)
-					{
+					else if ( self->client->ps.isJediMaster && g_gametype.integer == GT_JEDIMASTER )
 						WP_ForcePowerRegenerate( self, 4 ); //jedi master regenerates 4 times as fast
-					}
 					else
-					{
 						WP_ForcePowerRegenerate( self, 0 );
-					}
 				}
-				/*
-				else if (g_trueJedi.integer && self->client->ps.weapon != WP_SABER)
-				{
-					self->client->ps.fd.forcePower = 0;
-				}
-				*/
-			}
-			else
-			{ //regenerate based on the number of holocrons carried
-				holoregen = 0;
-				holo = 0;
-				while (holo < NUM_FORCE_POWERS)
-				{
-					if (self->client->ps.holocronsCarried[holo])
+				else
+				{ //regenerate based on the number of holocrons carried
+					holoregen = 0;
+					holo = 0;
+					while (holo < NUM_FORCE_POWERS)
 					{
-						holoregen++;
+						if (self->client->ps.holocronsCarried[holo])
+							holoregen++;
+						holo++;
 					}
-					holo++;
+
+					WP_ForcePowerRegenerate(self, holoregen);
 				}
 
-				WP_ForcePowerRegenerate(self, holoregen);
-			}
-
-			if (g_gametype.integer == GT_SIEGE)
-			{
-				if (self->client->holdingObjectiveItem &&
-					g_entities[self->client->holdingObjectiveItem].inuse &&
-					g_entities[self->client->holdingObjectiveItem].genericValue15)
-				{ //1 point per 7 seconds.. super slow
-					self->client->ps.fd.forcePowerRegenDebounceTime = level.time + 7000;
-				}
-				else if (self->client->siegeClass != -1 &&
-					(bgSiegeClasses[self->client->siegeClass].classflags & (1<<CFL_FASTFORCEREGEN)))
-				{ //if this is siege and our player class has the fast force regen ability, then recharge with 1/5th the usual delay
-					self->client->ps.fd.forcePowerRegenDebounceTime = level.time + (g_forceRegenTime.integer*0.2);
+				if (g_gametype.integer == GT_SIEGE)
+				{
+					if ( self->client->holdingObjectiveItem && g_entities[self->client->holdingObjectiveItem].inuse && g_entities[self->client->holdingObjectiveItem].genericValue15 )
+						self->client->ps.fd.forcePowerRegenDebounceTime += 7000; //1 point per 7 seconds.. super slow
+					else if (self->client->siegeClass != -1 && (bgSiegeClasses[self->client->siegeClass].classflags & (1<<CFL_FASTFORCEREGEN)))
+						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer*0.2, 1); //if this is siege and our player class has the fast force regen ability, then recharge with 1/5th the usual delay
+					else
+						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
 				}
 				else
 				{
-					self->client->ps.fd.forcePowerRegenDebounceTime = level.time + g_forceRegenTime.integer;
-				}
-			}
-			else
-			{
-				if ( g_gametype.integer == GT_POWERDUEL && self->client->sess.duelTeam == DUELTEAM_LONE )
-				{
-					if ( g_duel_fraglimit.integer )
+					if ( g_gametype.integer == GT_POWERDUEL && self->client->sess.duelTeam == DUELTEAM_LONE )
 					{
-						self->client->ps.fd.forcePowerRegenDebounceTime = level.time + (g_forceRegenTime.integer*
-							(0.6 + (.3 * (float)self->client->sess.wins / (float)g_duel_fraglimit.integer)));
+						if ( duel_fraglimit.integer )
+							self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer * (0.6 + (.3 * (float)self->client->sess.wins / (float)duel_fraglimit.integer)), 1);
+						else
+							self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer*0.7, 1);
 					}
 					else
-					{
-						self->client->ps.fd.forcePowerRegenDebounceTime = level.time + (g_forceRegenTime.integer*0.7);
-					}
-				}
-				else
-				{
-					self->client->ps.fd.forcePowerRegenDebounceTime = level.time + g_forceRegenTime.integer;
+						self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer, 1);
 				}
 			}
 		}
 	}
+	else
+		self->client->ps.fd.forcePowerRegenDebounceTime = level.time;
 
 powersetcheck:
 

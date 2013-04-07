@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 // this include must remain at the top of every CPP file
 #include "client.h"
 
@@ -13,6 +13,7 @@ cvar_t	*fx_freeze;
 #endif
 cvar_t	*fx_countScale;
 cvar_t	*fx_nearCull;
+cvar_t	*fx_flashRadius;
 
 #define DEFAULT_EXPLOSION_RADIUS	512
 

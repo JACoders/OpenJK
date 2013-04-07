@@ -1,14 +1,14 @@
 // cl_cgame.c  -- client system interaction with client game
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
-#include "../RMG/RM_Headers.h"
+#include "RMG/RM_Headers.h"
 
 #include "client.h"
 
-#include "../game/botlib.h"
+#include "game/botlib.h"
 
-#include "../RMG/RM_Headers.h"
+#include "RMG/RM_Headers.h"
 
 #if !defined(FX_EXPORT_H_INC)
 	#include "FXExport.h"
@@ -17,17 +17,17 @@
 #include "FXutil.h"
 
 #if !defined(CROFFSYSTEM_H_INC)
-	#include "../qcommon/ROFFSystem.h"
+	#include "qcommon/ROFFSystem.h"
 #endif
 
 #ifdef _DONETPROFILE_
-#include "../qcommon/INetProfile.h"
+#include "qcommon/INetProfile.h"
 #endif
 
-#include "../renderer/tr_worldeffects.h"
+#include "renderer/tr_worldeffects.h"
 
 #ifdef VV_LIGHTING
-#include "../renderer/tr_lightmanager.h"
+#include "renderer/tr_lightmanager.h"
 #endif
 
 /*
@@ -35,20 +35,20 @@ Ghoul2 Insert Start
 */
 
 #if !defined(G2_H_INC)
-	#include "../ghoul2/G2_local.h"
+	#include "ghoul2/G2_local.h"
 #endif
 
-#include "../qcommon/stringed_ingame.h"
+#include "qcommon/stringed_ingame.h"
 
-#include "../ghoul2/G2_gore.h"
+#include "ghoul2/G2_gore.h"
 
 extern CMiniHeap *G2VertSpaceClient;
 
 #include "snd_ambient.h"
 
-#include "../qcommon/timing.h"
+#include "qcommon/timing.h"
 
-#include "../renderer/tr_local.h"
+#include "renderer/tr_local.h"
 
 //extern int contentOverride;
 
@@ -56,7 +56,7 @@ extern CMiniHeap *G2VertSpaceClient;
 Ghoul2 Insert End
 */
 
-#include "../cgame/cg_local.h"
+//#include "cgame/cg_local.h"
 
 extern	botlib_export_t	*botlib_export;
 
@@ -1682,7 +1682,6 @@ Ghoul2 Insert End
 		return CM_RegisterTerrain((const char *)VMA(1), false)->GetTerrainId();
 
 	case CG_RMG_INIT:
-#ifndef PRE_RELEASE_DEMO
 		if (!com_sv_running->integer)
 		{	// don't do this if we are connected locally
 			if (!TheRandomMissionManager)
@@ -1701,7 +1700,6 @@ Ghoul2 Insert End
 		}
 		RM_CreateRandomModels(args[1], (const char *)VMA(2));
 //		TheRandomMissionManager->CreateMap();
-#endif // PRE_RELEASE_DEMO
 		return 0;
 
 	case CG_RE_INIT_RENDERER_TERRAIN:
@@ -1773,6 +1771,10 @@ void CL_InitCGame( void ) {
 	// use the lastExecutedServerCommand instead of the serverCommandSequence
 	// otherwise server commands sent just before a gamestate are dropped
 	VM_Call( cgvm, CG_INIT, clc.serverMessageSequence, clc.lastExecutedServerCommand, clc.clientNum );
+
+	// reset any CVAR_CHEAT cvars registered by cgame
+	if ( !clc.demoplaying && !cl_connectedToCheatServer )
+		Cvar_SetCheatState();
 
 	// we will send a usercmd this frame, which
 	// will cause the server to send us the first snapshot
@@ -1985,7 +1987,7 @@ void CL_SetCGameTime( void ) {
 	}
 
 	// allow pause in single player
-	if ( sv_paused->integer && cl_paused->integer && com_sv_running->integer ) {
+	if ( sv_paused->integer && CL_CheckPaused() && com_sv_running->integer ) {
 		// paused
 		return;
 	}

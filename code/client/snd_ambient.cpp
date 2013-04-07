@@ -41,7 +41,7 @@ static char	tempBuffer[1024];
 
 //NOTENOTE: Be sure to change the mirrored code in g_spawn.cpp, and cg_main.cpp
 typedef	map<sstring_t, unsigned char>	namePrecache_m;
-static namePrecache_m*	pMap = NULL;
+static namePrecache_m	*pMap;
 
 // Used for enum / string matching
 static const char	*setNames[NUM_AS_SETS] =

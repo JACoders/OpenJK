@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 /************************************************************************************************
  *
@@ -484,7 +484,6 @@ void CRMMission::PlaceWallInstance(CRMInstance*	instance, float xpos, float ypos
  ************************************************************************************************/
 bool CRMMission::ParseWallRect(CGPGroup* group , int side)
 {
-#ifndef PRE_RELEASE_DEMO
 	CGPGroup* wallGroup = group->FindSubGroup ( "wallrect" ) ;
 
 	// If NULL that means this particular instance has no wall rect
@@ -716,7 +715,6 @@ bool CRMMission::ParseWallRect(CGPGroup* group , int side)
 	}			
 	else
 		return false;
-#endif // #ifndef PRE_RELEASE_DEMO
 
 	return true;
 }
@@ -736,7 +734,6 @@ bool CRMMission::ParseWallRect(CGPGroup* group , int side)
  ************************************************************************************************/
 bool CRMMission::ParseInstancesOnPath ( CGPGroup* group )
 {
-#ifndef PRE_RELEASE_DEMO
 	CGPGroup* defenseGroup;
 	for ( defenseGroup = group->GetSubGroups(); 
 		  defenseGroup; 
@@ -866,7 +863,6 @@ bool CRMMission::ParseInstancesOnPath ( CGPGroup* group )
 			return false;
 
 	}
-#endif // #ifndef PRE_RELEASE_DEMO
 
 	return true;
 }
@@ -965,7 +961,6 @@ bool CRMMission::ParseInstance ( CGPGroup* group )
  ************************************************************************************************/
 bool CRMMission::ParseInstances ( CGPGroup* group )
 {
-#ifndef PRE_RELEASE_DEMO
 	// If NULL that means this particular difficulty level has no instances
 	if ( NULL == group )
 	{
@@ -980,7 +975,6 @@ bool CRMMission::ParseInstances ( CGPGroup* group )
 	{
 		ParseInstance ( group );
 	}
-#endif // #ifndef PRE_RELEASE_DEMO
 
 	return true;
 }
@@ -1437,7 +1431,6 @@ bool CRMMission::Load ( const char* mission, const char* instances, const char* 
 
 bool CRMMission::Spawn ( CRandomTerrain* terrain, qboolean IsServer )
 {
-#ifndef PRE_RELEASE_DEMO
 	rmInstanceIter_t	it;
 	int					areaIndex;
 	CRMArea*			area;
@@ -1584,7 +1577,6 @@ bool CRMMission::Spawn ( CRandomTerrain* terrain, qboolean IsServer )
 
 		mInstanceFile.Close ( );
 	}
-#endif // PRE_RELEASE_DEMO
 
 	return true;
 }

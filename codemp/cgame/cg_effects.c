@@ -960,6 +960,8 @@ void CG_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunk
 
 	switch( chunkType )
 	{
+	default:
+		break;
 	case MAT_GLASS:
 		effect = "chunks/glassbreak";
 		ct = 5;
@@ -1079,6 +1081,8 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 	// Set up our chunk sound info...breaking sounds are done here so they are done once on breaking..some return instantly because the chunks are done with effects instead of models
 	switch( chunkType )
 	{
+	default:
+		break;
 	case MAT_GLASS:
 		trap_S_StartSound( NULL, owner, CHAN_BODY, cgs.media.glassChunkSound );
 		return;
@@ -1145,6 +1149,8 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 			// No custom chunk.  Pick a random chunk type at run-time so we don't get the same chunks
 			switch( chunkType )
 			{
+			default:
+				break;
 			case MAT_METAL2: //bluegrey
 				chunkModel = cgs.media.chunkModels[CHUNK_METAL2][Q_irand(0, 3)];
 				break;
@@ -1265,7 +1271,7 @@ void CG_ScorePlum( int client, vec3_t org, int score ) {
 	static vec3_t lastPos;
 
 	// only visualize for the client that scored
-	if (client != cg.predictedPlayerState.clientNum || cg_scorePlum.integer == 0) {
+	if (client != cg.predictedPlayerState.clientNum || cg_scorePlums.integer == 0) {
 		return;
 	}
 
@@ -1478,41 +1484,6 @@ void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shak
 		//CG_ImpactMark( cgs.media.burnMarkShader, origin, normal, random()*360, 1,1,1,1, qfalse, 8, qfalse );
 	}
 }
-
-/*
-=================
-CG_Bleed
-
-This is the spurt of blood when a character gets hit
-=================
-*/
-void CG_Bleed( vec3_t origin, int entityNum ) {
-	localEntity_t	*ex;
-
-	if ( !cg_blood.integer ) {
-		return;
-	}
-
-	ex = CG_AllocLocalEntity();
-	ex->leType = LE_EXPLOSION;
-
-	ex->startTime = cg.time;
-	ex->endTime = ex->startTime + 500;
-	
-	VectorCopy ( origin, ex->refEntity.origin);
-	ex->refEntity.reType = RT_SPRITE;
-	ex->refEntity.rotation = rand() % 360;
-	ex->refEntity.radius = 24;
-
-	ex->refEntity.customShader = 0;//cgs.media.bloodExplosionShader;
-
-	// don't show player's own blood in view
-	if ( entityNum == cg.snap->ps.clientNum ) {
-		ex->refEntity.renderfx |= RF_THIRD_PERSON;
-	}
-}
-
-
 
 /*
 ==================

@@ -6,10 +6,10 @@
 #define SERVER_H_INC
 
 
-#include "../game/q_shared.h"
-#include "../qcommon/qcommon.h"
-#include "../game/g_public.h"
-#include "../game/bg_public.h"
+#include "qcommon/q_shared.h"
+#include "qcommon/qcommon.h"
+#include "game/g_public.h"
+#include "game/bg_public.h"
 
 //=============================================================================
 
@@ -232,9 +232,6 @@ extern	cvar_t	*sv_gametype;
 extern	cvar_t	*sv_pure;
 extern	cvar_t	*sv_floodProtect;
 extern	cvar_t	*sv_needpass;
-#ifdef USE_CD_KEY
-extern	cvar_t	*sv_allowAnonymous;
-#endif
 
 //===========================================================
 

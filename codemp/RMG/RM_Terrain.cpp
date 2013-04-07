@@ -1,11 +1,11 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
-#include "../qcommon/cm_local.h"
-#include "../cgame/tr_types.h"
+#include "qcommon/cm_local.h"
+#include "cgame/tr_types.h"
 #include "RM_Headers.h"
 
-//#include "../qcommon/q_imath.h"
+//#include "qcommon/q_imath.h"
 
 #pragma optimize("", off)
 
@@ -278,8 +278,10 @@ void CRMLandScape::LoadDensityMap(const char *td)
 {
 	char		densityMap[MAX_QPATH];
 	byte		*imageData;
+#ifndef DEDICATED
 	int			iWidth, iHeight, seed;
 	char 		*ptr;
+#endif
 
 	// Fill in with default values
 	mDensityMap = (byte *)Z_Malloc(common->GetBlockCount(), TAG_TERRAIN);

@@ -747,11 +747,14 @@ bool TextFile_Read(CString &strFile, LPCSTR psFullPathedFilename, bool bLoseSlas
 		}
 		fclose(fhTextFile);
 	}
+	// DT EDIT
+	/*
 	else
 	{
 		ErrorBox( va("Couldn't open file: %s\n", psFullPathedFilename));
 		return false;
 	}
+	*/
 	return !!fhTextFile;
 }
 

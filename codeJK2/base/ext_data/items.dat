@@ -1,0 +1,712 @@
+//    EXTERNAL ITEM DATA 
+//
+
+//Fields
+//pickupsound	STRING; DEFAULT = sound/weapons/w_pkup.wav
+//itemname		STRING;
+//classname		STRING;
+//count			INT;	ammount of ammo or health given with item
+//icon			STRING;
+//min			VECTOR;	item bounds min, DEFAULT = -16 -16 -2
+//max			VECTOR;	item bounds max, DEFAULT = 16 16 16
+//pickupname	STRING; name to show in inventory
+//tag			ENUM;	WP_, or AMMO_
+//type			ENUM;	IT_WEAPON, IT_AMMO, IT_ARMOR, IT_HEALTH
+//worldmodel	STRING; model to show on ground or in hand
+
+{
+itemname	ITM_SABER_PICKUP
+
+classname	weapon_saber
+worldmodel	models/weapons2/saber/saber_w.md3
+icon		gfx/hud/w_icon_lightsaber
+// Amount of ammo given with weapon
+count		50
+type		IT_WEAPON
+tag		WP_SABER
+min		-16 -16 -8
+max		16 16 16
+}
+
+
+{
+itemname	ITM_BRYAR_PISTOL_PICKUP
+
+classname	weapon_bryar_pistol
+worldmodel	models/weapons2/briar_pistol/briar_pistol_w.glm
+icon		gfx/hud/w_icon_briar
+// Amount of ammo given with weapon
+count		10
+type		IT_WEAPON
+tag		WP_BRYAR_PISTOL
+min		-10 -10 -2
+max		 10  10 12
+}
+
+
+{
+itemname     ITM_BLASTER_PICKUP
+
+classname    weapon_blaster
+worldmodel   models/weapons2/blaster_r/blaster_w.glm
+icon         gfx/hud/w_icon_blaster
+// Amount of ammo given with weapon
+count		10
+type         IT_WEAPON
+tag          WP_BLASTER
+min		-10 -10 -2
+max		 10  10 12
+}
+
+{
+itemname	ITM_DISRUPTOR_PICKUP
+
+classname	weapon_disruptor
+worldmodel	models/weapons2/disruptor/disruptor_w.glm
+icon		gfx/hud/w_icon_disruptor
+// Amount of ammo given with weapon
+count		50
+type		IT_WEAPON
+tag		WP_DISRUPTOR
+min		-10 -10 -2
+max		 10  10 12
+}
+
+{
+itemname	ITM_BOWCASTER_PICKUP
+
+classname	weapon_bowcaster
+worldmodel	models/weapons2/bowcaster/bowcaster_w.glm
+icon		gfx/hud/w_icon_bowcaster
+// Amount of ammo given with weapon
+count		50
+type		IT_WEAPON
+tag		WP_BOWCASTER
+min		-10 -10 -2
+max		 10  10 12
+}
+
+{
+itemname	ITM_REPEATER_PICKUP
+
+classname	weapon_repeater
+worldmodel	models/weapons2/heavy_repeater/heavy_repeater_w.glm
+icon		gfx/hud/w_icon_repeater
+// Amount of ammo given with weapon
+count		50
+type		IT_WEAPON
+tag		WP_REPEATER
+min		-10 -10 -2
+max		 10  10 12
+}
+
+{
+itemname	ITM_DEMP2_PICKUP
+
+classname	weapon_demp2
+worldmodel	models/weapons2/demp2/demp2_w.glm
+icon		gfx/hud/w_icon_demp2
+// Amount of ammo given with weapon
+count		50
+type		IT_WEAPON
+tag		WP_DEMP2
+min		-10 -10 -2
+max		 10  10 12
+}
+ 
+  
+{
+itemname	ITM_FLECHETTE_PICKUP
+
+classname	weapon_flechette
+worldmodel	models/weapons2/golan_arms/golan_arms_w.glm
+icon		gfx/hud/w_icon_flechette
+// Amount of ammo given with weapon
+count		50
+type		IT_WEAPON
+tag		WP_FLECHETTE
+min		-10 -10 -2
+max		 10  10 12
+}
+
+
+{
+itemname	ITM_ROCKET_LAUNCHER_PICKUP
+
+classname	weapon_rocket_launcher
+worldmodel	models/weapons2/merr_sonn/merr_sonn_w.glm
+icon		gfx/hud/w_icon_merrsonn
+// Amount of ammo given with weapon
+count		50
+type		IT_WEAPON
+tag		WP_ROCKET_LAUNCHER
+min		-10 -10 -2
+max		 10  10 12
+}
+
+
+{
+itemname	ITM_THERMAL_DET_PICKUP
+
+classname	weapon_thermal
+worldmodel	models/weapons2/thermal/thermal_pu.md3
+icon		gfx/hud/w_icon_thermal
+// Amount of ammo given with weapon
+count		50
+type		IT_WEAPON
+tag		WP_THERMAL
+min		-10 -10 -2
+max		 10  10 12
+}
+
+{
+itemname	ITM_TRIP_MINE_PICKUP
+
+classname	weapon_trip_mine
+worldmodel	models/weapons2/laser_trap/laser_trap_pu.md3
+icon		gfx/hud/w_icon_tripmine
+// Amount of ammo given with weapon
+count		50
+type		IT_WEAPON
+tag		WP_TRIP_MINE
+min		-10 -10 -2
+max		 10  10 12
+}
+
+{
+itemname	ITM_DET_PACK_PICKUP
+
+classname	weapon_det_pack
+worldmodel	models/weapons2/detpack/det_pack_pu.md3
+icon		gfx/hud/w_icon_detpack
+// Amount of ammo given with weapon
+count		50
+type		IT_WEAPON
+tag		WP_DET_PACK
+min		-10 -10 -2
+max		 10  10 12
+}
+
+{
+itemname	ITM_STUN_BATON_PICKUP
+
+classname	weapon_stun_baton
+worldmodel	models/weapons2/stun_baton/stunbaton_w.glm
+icon		gfx/hud/w_icon_stunbaton
+// Amount of ammo given with weapon
+count		50
+type		IT_WEAPON
+tag		WP_STUN_BATON
+}
+
+
+{
+itemname	ITM_BOT_LASER_PICKUP
+
+classname	weapon_botwelder
+worldmodel	models/weapons2/noweap/noweap.md3
+// Amount of ammo given with weapon
+count		400
+type		IT_WEAPON
+tag		WP_BOT_LASER
+}
+
+{
+itemname	ITM_MELEE
+
+classname	weapon_melee
+worldmodel	models/weapons2/noweap/noweap.md3
+// Amount of ammo given with weapon
+count		400
+type		IT_WEAPON
+tag			WP_MELEE
+min			-16 -16 -2
+max			16 16 16
+}
+
+{
+itemname	ITM_EMPLACED_GUN_PICKUP
+
+classname	weapon_emplaced_gun
+worldmodel	models/weapons2/noweap/noweap.md3
+// Amount of ammo given with weapon
+count		800
+type		IT_WEAPON
+tag			WP_EMPLACED_GUN
+}
+
+{
+itemname	ITM_TURRET_PICKUP
+
+classname	weapon_turret
+worldmodel	models/weapons2/noweap/noweap.md3
+// Amount of ammo given with weapon
+count		400
+type		IT_WEAPON
+tag			WP_TURRET
+}
+
+{
+itemname	ITM_ATST_MAIN_PICKUP
+
+classname	weapon_atst_main
+worldmodel	models/weapons2/noweap/noweap.md3
+icon		gfx/hud/w_icon_atst
+// Amount of ammo given with weapon
+count		400
+type		IT_WEAPON
+tag			WP_ATST_MAIN
+}
+
+{
+itemname	ITM_ATST_SIDE_PICKUP
+
+classname	weapon_atst_side
+worldmodel	models/weapons2/noweap/noweap.md3
+icon		gfx/hud/w_icon_atstside
+// Amount of ammo given with weapon
+count		400
+type		IT_WEAPON
+tag			WP_ATST_SIDE
+}
+
+{
+itemname	ITM_TIE_FIGHTER_PICKUP
+
+classname	weapon_tie_fighter
+worldmodel	models/weapons2/noweap/noweap.md3
+// Amount of ammo given with weapon
+count		400
+type		IT_WEAPON
+tag			WP_TIE_FIGHTER
+}
+
+{
+itemname	ITM_RAPID_FIRE_CONC_PICKUP
+
+classname	weapon_rapid_concussion
+worldmodel	models/weapons2/noweap/noweap.md3
+// Amount of ammo given with weapon
+count		400
+type		IT_WEAPON
+tag			WP_RAPID_FIRE_CONC
+}
+
+{
+itemname	ITM_BLASTER_PISTOL_PICKUP
+
+classname	weapon_blaster_pistol
+worldmodel	models/weapons2/imp_pistol/pistol_w.md3
+// Amount of ammo given with weapon
+count		400
+type		IT_WEAPON
+tag		WP_BLASTER_PISTOL
+}
+
+//
+//Items
+//
+
+// AMMO Items
+//-------------
+{
+itemname	ITM_AMMO_FORCE_PICKUP
+
+classname	ammo_force
+worldmodel	models/items/forcegem.md3
+pickupsound	sound/player/enlightenment.wav
+icon		gfx/hud/forcegem_icon2
+count		100
+type		IT_AMMO
+tag		AMMO_FORCE
+max		 8  8 16
+min		-8 -8 -0
+}
+
+{
+itemname	ITM_AMMO_BLASTER_PICKUP
+
+classname	ammo_blaster
+worldmodel	models/items/energy_cell.md3
+icon		gfx/hud/energy_cell
+count		25
+type		IT_AMMO
+tag		AMMO_BLASTER
+max		 8  8 16
+min		-8 -8 -0
+}
+
+{
+itemname	ITM_AMMO_POWERCELL_PICKUP
+
+classname	ammo_powercell
+worldmodel	models/items/power_cell.md3
+icon		gfx/hud/power_cell
+count		100
+type		IT_AMMO
+tag		AMMO_POWERCELL
+max		 8  8 16
+min		-8 -8 -0
+}
+
+
+{
+itemname	ITM_AMMO_METAL_BOLTS_PICKUP
+
+classname	ammo_metallic_bolts
+worldmodel	models/items/metallic_bolts.md3
+icon		gfx/hud/metallic_bolts
+count		100
+type		IT_AMMO
+tag			AMMO_METAL_BOLTS
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_AMMO_ROCKETS_PICKUP
+
+classname	ammo_rockets
+worldmodel	models/items/rockets.md3
+icon		gfx/hud/rockets
+count		3
+type		IT_AMMO
+tag			AMMO_ROCKETS
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_AMMO_EMPLACED_PICKUP
+
+classname	ammo_emplaced
+worldmodel	models/weapons2/noweap/noweap.md3
+count		100
+type		IT_AMMO
+tag			AMMO_EMPLACED
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_AMMO_THERMAL_PICKUP
+
+classname	ammo_thermal
+worldmodel	models/weapons2/thermal/thermal_pu.md3
+icon		gfx/hud/w_icon_thermal
+count		4
+type		IT_AMMO
+tag			AMMO_THERMAL
+max		 	16  16 16
+min			-16 -16 -0
+}
+
+{
+itemname	ITM_AMMO_TRIPMINE_PICKUP
+
+classname	ammo_tripmine
+worldmodel	models/weapons2/laser_trap/laser_trap_pu.md3
+icon		gfx/hud/w_icon_tripmine
+count		3
+type		IT_AMMO
+tag			AMMO_TRIPMINE
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_AMMO_DETPACK_PICKUP
+
+classname	ammo_detpack
+worldmodel	models/weapons2/detpack/det_pack_pu.md3
+icon		gfx/hud/w_icon_detpack
+count		3
+type		IT_AMMO
+tag			AMMO_DETPACK
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+
+
+{
+itemname	ITM_BATTERY_PICKUP
+
+classname	item_battery
+worldmodel	models/items/battery.md3
+icon		gfx/hud/battery
+count		1000
+type		IT_BATTERY
+tag			ITM_BATTERY_PICKUP
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_SEEKER_PICKUP
+classname	item_seeker
+worldmodel	models/items/remote.md3
+icon		gfx/hud/i_icon_seeker
+count		120
+type		IT_HOLDABLE
+tag			INV_SEEKER
+max		 	8  8 16
+min			-8 -8 -4
+}
+
+{
+itemname	ITM_SHIELD_PICKUP
+classname	item_enviro
+worldmodel	models/items/shield.md3
+icon		gfx/hud/i_icon_shieldwall
+count		100
+type		IT_HOLDABLE
+tag			ITM_SHIELD_PICKUP
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_BACTA_PICKUP
+classname	item_bacta
+worldmodel	models/items/bacta.md3
+icon		gfx/hud/i_icon_bacta
+count		25
+type		IT_HOLDABLE
+tag			INV_BACTA_CANISTER
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_DATAPAD_PICKUP
+classname	item_datapad
+worldmodel	models/items/datapad.md3
+count		1
+type		IT_HOLDABLE
+tag			ITM_DATAPAD_PICKUP
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_BINOCULARS_PICKUP
+classname	item_binoculars
+worldmodel	models/items/binoculars.md3
+icon		gfx/hud/i_icon_zoom
+count		1
+type		IT_HOLDABLE
+tag		INV_ELECTROBINOCULARS
+max		8  8 16
+min		-8 -8 -0
+}
+
+{
+itemname	ITM_SENTRY_GUN_PICKUP
+classname	item_sentry_gun
+worldmodel	models/items/psgun.glm
+icon		gfx/hud/i_icon_sentrygun
+count		120
+type		IT_HOLDABLE
+tag		INV_SENTRY
+max	 	8  8 16
+min		-8 -8 -0
+}
+
+{
+itemname	ITM_LA_GOGGLES_PICKUP
+classname	item_la_goggles
+worldmodel	models/items/binoculars.md3
+icon		gfx/hud/i_icon_goggles
+count		30
+type		IT_HOLDABLE
+tag		INV_LIGHTAMP_GOGGLES
+max	 	8  8 16
+min		-8 -8 -0
+}
+
+{
+itemname	ITM_MEDPAK_PICKUP
+classname	item_medpak_instant
+worldmodel	models/items/medpac.md3
+icon		gfx/hud/i_icon_medkit
+count		20
+type		IT_HEALTH
+tag		ITM_MEDPAK_PICKUP
+max		 8  8 16
+min		-8 -8 -4
+}
+
+{
+itemname	ITM_SHIELD_SM_PICKUP
+classname	item_shield_sm_instant
+worldmodel	models/items/psd_sm.md3
+icon		gfx/hud/psd_small
+count		25
+type		IT_ARMOR
+tag		ITM_SHIELD_SM_PICKUP
+max		 8  8 16
+min		-8 -8 -4
+}
+
+{
+itemname	ITM_SHIELD_LRG_PICKUP
+classname	item_shield_lrg_instant
+worldmodel	models/items/psd.md3
+icon		gfx/hud/psd_medium
+count		50
+type		IT_ARMOR
+tag		ITM_SHIELD_LRG_PICKUP
+max		 8  8 16
+min		-8 -8 -4
+}
+
+
+{
+itemname	ITM_GOODIE_KEY_PICKUP
+classname	item_goodie_key
+worldmodel	models/items/key.md3
+icon		gfx/hud/i_icon_goodie_key
+type		IT_HOLDABLE
+tag		INV_GOODIE_KEY
+max		8  8 16
+min		-8 -8 -0
+}
+
+
+{
+itemname	ITM_SECURITY_KEY_PICKUP
+classname	item_security_key
+worldmodel	models/items/key.md3
+icon		gfx/hud/i_icon_security_key
+type		IT_HOLDABLE
+tag		INV_SECURITY_KEY
+max		8  8 16
+min		-8 -8 -0
+}
+
+{
+itemname	ITM_FORCE_HEAL_PICKUP
+
+classname	holocron_force_heal
+worldmodel	models/map_objects/force_holocrons/heal.md3
+pickupsound	sound/player/holocron.wav
+icon		gfx/hud/f_icon_heal
+count		1
+type		IT_HOLOCRON
+tag			FP_HEAL
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_FORCE_LEVITATION_PICKUP
+
+classname	holocron_force_levitation
+worldmodel	models/map_objects/force_holocrons/jump.md3
+pickupsound	sound/player/holocron.wav
+icon		gfx/hud/f_icon_levitation
+count		1
+type		IT_HOLOCRON
+tag			FP_LEVITATION
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_FORCE_SPEED_PICKUP
+
+classname	holocron_force_speed
+worldmodel	models/map_objects/force_holocrons/speed.md3
+pickupsound	sound/player/holocron.wav
+icon		gfx/hud/f_icon_speed
+count		1
+type		IT_HOLOCRON
+tag			FP_SPEED
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_FORCE_PUSH_PICKUP
+
+classname	holocron_force_push
+worldmodel	models/map_objects/force_holocrons/push.md3
+pickupsound	sound/player/holocron.wav
+icon		gfx/hud/f_icon_push
+count		1
+type		IT_HOLOCRON
+tag			FP_PUSH
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_FORCE_PULL_PICKUP
+
+classname	holocron_force_pull
+worldmodel	models/map_objects/force_holocrons/pull.md3
+pickupsound	sound/player/holocron.wav
+icon		gfx/hud/f_icon_pull
+count		1
+type		IT_HOLOCRON
+tag			FP_PULL
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_FORCE_TELEPATHY_PICKUP
+
+classname	holocron_force_telepathy
+worldmodel	models/map_objects/force_holocrons/telepathy.md3
+pickupsound	sound/player/holocron.wav
+icon		gfx/hud/f_icon_telepathy
+count		1
+type		IT_HOLOCRON
+tag			FP_TELEPATHY
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_FORCE_GRIP_PICKUP
+
+classname	holocron_force_grip
+worldmodel	models/map_objects/force_holocrons/grip.md3
+pickupsound	sound/player/holocron.wav
+icon		gfx/hud/f_icon_grip
+count		1
+type		IT_HOLOCRON
+tag			FP_GRIP
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_FORCE_LIGHTNING_PICKUP
+
+classname	holocron_force_lightning
+worldmodel	models/map_objects/force_holocrons/lightning.md3
+pickupsound	sound/player/holocron.wav
+icon		gfx/hud/f_icon_lightning
+count		1
+type		IT_HOLOCRON
+tag			FP_LIGHTNING
+max		 	8  8 16
+min			-8 -8 -0
+}
+
+{
+itemname	ITM_FORCE_SABERTHROW_PICKUP
+
+classname	holocron_force_saberthrow
+worldmodel	models/map_objects/force_holocrons/saberthrow.md3
+pickupsound	sound/player/holocron.wav
+icon		gfx/hud/f_icon_saberthrow
+count		1
+type		IT_HOLOCRON
+tag			FP_SABERTHROW
+max		 	8  8 16
+min			-8 -8 -0
+}

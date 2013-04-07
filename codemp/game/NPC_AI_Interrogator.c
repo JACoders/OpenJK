@@ -331,7 +331,7 @@ void Interrogator_Hunt( qboolean visible, qboolean advance )
 		distance = VectorNormalize( forward );
 	}
 
-	speed = HUNTER_FORWARD_BASE_SPEED + HUNTER_FORWARD_MULTIPLIER * g_spskill.integer;
+	speed = HUNTER_FORWARD_BASE_SPEED + HUNTER_FORWARD_MULTIPLIER * g_npcspskill.integer;
 	VectorMA( NPC->client->ps.velocity, speed, forward, NPC->client->ps.velocity );
 }
 

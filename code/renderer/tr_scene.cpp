@@ -66,6 +66,7 @@ void RE_ClearScene( void ) {
 	r_firstSceneEntity = r_numentities;
 	r_firstScenePoly = r_numpolys;
 	tr.refdef.rdflags &= ~(RDF_doLAGoggles|RDF_doFullbright);	//probably not needed since it gets copied over in RE_RenderScene
+	tr.refdef.doLAGoggles = qfalse;
 }
 
 /*
@@ -116,7 +117,7 @@ void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *vert
 
 	if ( !hShader ) {
 #ifndef FINAL_BUILD
-		VID_Printf( PRINT_WARNING, "WARNING: RE_AddPolyToScene: NULL poly shader\n");
+		Com_DPrintf( S_COLOR_YELLOW"WARNING: RE_AddPolyToScene: NULL poly shader\n");
 #endif
 		return;
 	}
@@ -289,6 +290,9 @@ void RE_RenderScene( const refdef_t *fd ) {
 	tr.refdef.time = fd->time;
 	tr.refdef.frametime = fd->time - lastTime;
 	tr.refdef.rdflags = fd->rdflags;
+	// Ignore my last there. This actually breaks the rest of the game as well, causing massive issues.
+	// We need to figure out what's going on in fd->rdflags first :S .. I'm half-tempted to just revert
+	// back to JK2 and use a qbool for it --eez
 
 	if (fd->rdflags & RDF_SKYBOXPORTAL)
 	{

@@ -3,10 +3,10 @@
 
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #if !defined(TR_LOCAL_H)
-	#include "../renderer/tr_local.h"
+	#include "renderer/tr_local.h"
 #endif
 
 #if !defined(G2_H_INC)
@@ -14,7 +14,7 @@
 #endif
 #include "G2_local.h"
 
-#include "../qcommon/MiniHeap.h"
+#include "qcommon/MiniHeap.h"
 
 //rww - RAGDOLL_BEGIN
 #include "G2_gore.h"
@@ -2031,7 +2031,9 @@ void G2API_CollisionDetectCache(CollisionRecord_t *collRecMap, CGhoul2Info_v &gh
 										  int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, CMiniHeap *G2VertSpace, int traceFlags, int useLod, float fRadius)
 { //this will store off the transformed verts for the next trace - this is slower, but for models that do not animate
 	//frequently it is much much faster. -rww
+#if 0 // UNUSED
 	int *test = ghoul2[0].mTransformedVertsArray;
+#endif
 	if (G2_SetupModelPointers(ghoul2))
 	{
 		vec3_t	transRayStart, transRayEnd;
@@ -2662,7 +2664,7 @@ qboolean G2_TestModelPointers(CGhoul2Info *ghlInfo) // returns true if the model
 }
 
 #ifdef G2_PERFORMANCE_ANALYSIS
-#include "../qcommon/timing.h"
+#include "qcommon/timing.h"
 extern timing_c G2PerformanceTimer_G2_SetupModelPointers;
 extern int G2Time_G2_SetupModelPointers;
 #endif

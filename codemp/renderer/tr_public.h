@@ -1,7 +1,7 @@
 #ifndef __TR_PUBLIC_H
 #define __TR_PUBLIC_H
 
-#include "../cgame/tr_types.h"
+#include "cgame/tr_types.h"
 
 #define	REF_API_VERSION		8
 

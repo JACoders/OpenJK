@@ -1,4 +1,4 @@
-#include "../ui/keycodes.h"
+#include "ui/keycodes.h"
 
 typedef struct {
 	qboolean	down;

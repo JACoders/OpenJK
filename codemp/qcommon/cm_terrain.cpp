@@ -1,13 +1,13 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "cm_local.h"
 #include "cm_patch.h"
 #include "cm_landscape.h"
-#include "../qcommon/GenericParser2.h"
+#include "qcommon/GenericParser2.h"
 #include "cm_randomterrain.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER) && (_MSC_VER < 1600)
 #pragma optimize("p", on)
 #endif
 
@@ -163,7 +163,9 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 	if(strlen(heightMap))
 	{
 		byte	*imageData;
+#ifndef DEDICATED
 		int		iWidth, iHeight;
+#endif
 
 		Com_DPrintf("CM_Terrain: Loading heightmap %s.....\n", heightMap);
 		mRandomTerrain = 0;
@@ -297,7 +299,6 @@ void* CCMPatch::GetAdjacentBrushX ( int x, int y )
 
 void CCMPatch::CreatePatchPlaneData(void)
 {				
-#ifndef PRE_RELEASE_DEMO
 	int				realWidth;
 	int				x, y, i, j;
 #if	0
@@ -505,12 +506,10 @@ void CCMPatch::CreatePatchPlaneData(void)
 #endif
 		}
 	}
-#endif // PRE_RELEASE_DEMO
 }
 
 void CCMPatch::Init(CCMLandScape *ls, int heightX, int heightY, vec3_t world, byte *hMap, byte *patchBrushData)
 {
-#ifndef PRE_RELEASE_DEMO
 	int		min, max, x, y, height;
 
 	// Set owning landscape
@@ -574,7 +573,6 @@ void CCMPatch::Init(CCMLandScape *ls, int heightX, int heightY, vec3_t world, by
 	// Set base of brush data from big array
 	mPatchBrushData = (cbrush_t *)patchBrushData; 
 	CreatePatchPlaneData();
-#endif // PRE_RELEASE_DEMO
 }
 
 CCMPatch *CCMLandScape::GetPatch(int x, int y)
@@ -975,7 +973,7 @@ void CCMLandScape::CalcRealCoords(void)
 
 			offset = (y * GetRealWidth()) + x;
 
-			VectorSet(icoords, x, y, mHeightMap[offset]);
+			VectorSetM(icoords, x, y, mHeightMap[offset]);
 			VectorScaleVectorAdd(GetMins(), icoords, GetTerxelSize(), mCoords[offset]);
 		}
 	}
@@ -1676,7 +1674,6 @@ CRandomTerrain *CreateRandomTerrain(const char *config, CCMLandScape *landscape,
 {
 	CRandomTerrain	*RandomTerrain = 0;
 
-#ifndef PRE_RELEASE_DEMO
 	char			*ptr;
 	unsigned long	seed;
 
@@ -1686,7 +1683,6 @@ CRandomTerrain *CreateRandomTerrain(const char *config, CCMLandScape *landscape,
 	
 	RandomTerrain = new CRandomTerrain;
 	RandomTerrain->Init(landscape, heightmap, width, height);
-#endif // #ifndef PRE_RELEASE_DEMO
 
 /*
 	RandomTerrain->CreatePath(0, -1, 0, 9, 0.1, 0.5, 0.5, 0.5, 0.05, 0.08, 0.31, 0.1, 3);
@@ -1702,6 +1698,6 @@ CRandomTerrain *CreateRandomTerrain(const char *config, CCMLandScape *landscape,
 
 // end
 
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER) && (_MSC_VER < 1600)
 #pragma optimize("p", off)
 #endif

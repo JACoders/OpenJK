@@ -252,7 +252,6 @@ typedef enum {
 	ERR_FATAL,					// exit the entire game with a popup window
 	ERR_DROP,					// print to console and disconnect from game
 	ERR_DISCONNECT,				// don't kill server
-	ERR_NEED_CD					// pop up the need-cd dialog
 } errorParm_t;
 
 // font rendering values used by ui and cgame
@@ -2139,9 +2138,20 @@ typedef struct playerState_s {
 	vec3_t		serverViewOrg;
 
 	qboolean	saberInFlight;
+#ifndef __NO_JK2
+	qboolean	saberActive;	// -- JK2 --
 
+	int			vehicleModel;	// -- JK2 --
+	int			viewEntity;		// For overriding player movement controls and vieworg
+	saber_colors_t	saberColor; // -- JK2 --
+	float		saberLength;	// -- JK2 --
+	float		saberLengthMax;	// -- JK2 --
+	int			forcePowersActive;	//prediction needs to know this
+#else
 	int			viewEntity;		// For overriding player movement controls and vieworg
 	int			forcePowersActive;	//prediction needs to know this
+
+#endif
 
 	//NEW vehicle stuff
 	// This has been localized to the vehicle stuff (NOTE: We can still use it later, I'm just commenting it to
@@ -2294,6 +2304,9 @@ typedef struct playerState_s {
 	short		saberBlocked;
 	short		leanStopDebounceTime;
 
+#ifndef __NO_JK2
+	float		saberLengthOld;
+#endif
 	int			saberEntityNum;
 	float		saberEntityDist;
 	int			saberThrowTime;
@@ -2307,6 +2320,9 @@ typedef struct playerState_s {
 	int			saberLockTime;
 	int			saberLockEnemy;
 	int			saberStylesKnown;
+#ifndef __NO_JK2
+	char		*saberModel;
+#endif
 
 	int			forcePowersKnown;
 	int			forcePowerDuration[NUM_FORCE_POWERS];	//for effects that have a duration
@@ -2495,6 +2511,10 @@ typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!
 	qboolean	saberInFlight;
 	qboolean	saberActive;
 
+#ifndef __NO_JK2
+	int		vehicleModel;	// For overriding your playermodel with a drivable vehicle
+#endif
+
 	//int		vehicleIndex;		// What kind of vehicle you're driving
 	vec3_t	vehicleAngles;		// 
 	int		vehicleArmor;		// current armor of your vehicle (explodes if drops to 0)
@@ -2625,8 +2645,8 @@ const char *GetStringForID( const stringID_table_t *table, int id );
 
 // savegame screenshot size stuff...
 //
-//#define SG_SCR_WIDTH			512	//256
-//#define SG_SCR_HEIGHT			512	//256
+#define SG_SCR_WIDTH			512	//256
+#define SG_SCR_HEIGHT			512	//256
 #define iSG_COMMENT_SIZE		64
 
 #define sCVARNAME_PLAYERSAVE	"playersave"	// used for level-transition, accessed by game and server modules

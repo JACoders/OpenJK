@@ -1,6 +1,6 @@
 //b_goal.cpp
 #include "b_local.h"
-#include "../icarus/Q3_Interface.h"
+#include "icarus/Q3_Interface.h"
 
 extern qboolean FlyingCreature( gentity_t *ent );
 /*
@@ -15,11 +15,11 @@ void SetGoal( gentity_t *goal, float rating )
 //	NAV_ClearLastRoute(NPC);
 	if ( goal ) 
 	{
-//		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_SetGoal: %s @ %s (%f)\n", goal->classname, vtos( goal->currentOrigin), rating );
+//		Debug_NPCPrintf( NPC, d_npcai, DEBUG_LEVEL_INFO, "NPC_SetGoal: %s @ %s (%f)\n", goal->classname, vtos( goal->currentOrigin), rating );
 	}
 	else 
 	{
-//		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_SetGoal: NONE\n" );
+//		Debug_NPCPrintf( NPC, d_npcai, DEBUG_LEVEL_INFO, "NPC_SetGoal: NONE\n" );
 	}
 }
 
@@ -37,19 +37,19 @@ void NPC_SetGoal( gentity_t *goal, float rating )
 
 	if ( !goal ) 
 	{
-//		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_ERROR, "NPC_SetGoal: NULL goal\n" );
+//		Debug_NPCPrintf( NPC, d_npcai, DEBUG_LEVEL_ERROR, "NPC_SetGoal: NULL goal\n" );
 		return;
 	}
 
 	if ( goal->client ) 
 	{
-//		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_ERROR, "NPC_SetGoal: goal is a client\n" );
+//		Debug_NPCPrintf( NPC, d_npcai, DEBUG_LEVEL_ERROR, "NPC_SetGoal: goal is a client\n" );
 		return;
 	}
 
 	if ( NPCInfo->goalEntity ) 
 	{
-//		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_SetGoal: push %s\n", NPCInfo->goalEntity->classname );
+//		Debug_NPCPrintf( NPC, d_npcai, DEBUG_LEVEL_INFO, "NPC_SetGoal: push %s\n", NPCInfo->goalEntity->classname );
 		NPCInfo->lastGoalEntity = NPCInfo->goalEntity;
 //		NPCInfo->lastGoalEntityNeed = NPCInfo->goalEntityNeed;
 	}
@@ -77,7 +77,7 @@ void NPC_ClearGoal( void )
 //	NAV_ClearLastRoute(NPC);
 	if ( goal->inuse && !(goal->s.eFlags & EF_NODRAW) ) 
 	{
-//		Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "NPC_ClearGoal: pop %s\n", goal->classname );
+//		Debug_NPCPrintf( NPC, d_npcai, DEBUG_LEVEL_INFO, "NPC_ClearGoal: pop %s\n", goal->classname );
 		SetGoal( goal, 0 );//, NPCInfo->lastGoalEntityNeed
 		return;
 	}
@@ -116,7 +116,7 @@ qboolean G_BoundsOverlap(const vec3_t mins1, const vec3_t maxs1, const vec3_t mi
 
 void NPC_ReachedGoal( void )
 {
-//	Debug_NPCPrintf( NPC, debugNPCAI, DEBUG_LEVEL_INFO, "UpdateGoal: reached goal entity\n" );
+//	Debug_NPCPrintf( NPC, d_npcai, DEBUG_LEVEL_INFO, "UpdateGoal: reached goal entity\n" );
 	NPC_ClearGoal();
 	NPCInfo->goalTime = level.time;
 

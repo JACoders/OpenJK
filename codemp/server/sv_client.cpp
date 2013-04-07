@@ -1,12 +1,12 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // sv_client.c -- server code for dealing with clients
 
 #include "server.h"
-#include "../qcommon/stringed_ingame.h"
-#include "../RMG/RM_Headers.h"
-#include "../zlib32/zip.h"
+#include "qcommon/stringed_ingame.h"
+#include "RMG/RM_Headers.h"
+#include "zlib32/zip.h"
 
 static void SV_CloseDownload( client_t *cl );
 
@@ -79,54 +79,8 @@ void SV_GetChallenge( netadr_t from ) {
 		return;
 	}
 
-#ifdef USE_CD_KEY
-	// look up the authorize server's IP
-	if ( !svs.authorizeAddress.ip[0] && svs.authorizeAddress.type != NA_BAD ) {
-		Com_Printf( "Resolving %s\n", AUTHORIZE_SERVER_NAME );
-		if ( !NET_StringToAdr( AUTHORIZE_SERVER_NAME, &svs.authorizeAddress ) ) {
-			Com_Printf( "Couldn't resolve address\n" );
-			return;
-		}
-		svs.authorizeAddress.port = BigShort( PORT_AUTHORIZE );
-		Com_Printf( "%s resolved to %i.%i.%i.%i:%i\n", AUTHORIZE_SERVER_NAME,
-			svs.authorizeAddress.ip[0], svs.authorizeAddress.ip[1],
-			svs.authorizeAddress.ip[2], svs.authorizeAddress.ip[3],
-			BigShort( svs.authorizeAddress.port ) );
-	}
-
-	// if they have been challenging for a long time and we
-	// haven't heard anything from the authoirze server, go ahead and
-	// let them in, assuming the id server is down
-	if ( svs.time - challenge->firstTime > AUTHORIZE_TIMEOUT ) {
-		Com_DPrintf( "authorize server timed out\n" );
-
-		challenge->pingTime = svs.time;
-		NET_OutOfBandPrint( NS_SERVER, challenge->adr, 
-			"challengeResponse %i", challenge->challenge );
-		return;
-	}
-
-	// otherwise send their ip to the authorize server
-	if ( svs.authorizeAddress.type != NA_BAD ) {
-		cvar_t	*fs;
-		char	game[1024];
-
-		game[0] = 0;
-		fs = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
-		if (fs && fs->string[0] != 0) {
-			strcpy(game, fs->string);
-		}
-		Com_DPrintf( "sending getIpAuthorize for %s\n", NET_AdrToString( from ));
-		fs = Cvar_Get ("sv_allowAnonymous", "0", CVAR_SERVERINFO);
-
-		NET_OutOfBandPrint( NS_SERVER, svs.authorizeAddress,
-			"getIpAuthorize %i %i.%i.%i.%i %s %s",  svs.challenges[i].challenge,
-			from.ip[0], from.ip[1], from.ip[2], from.ip[3], game, fs->integer );
-	}
-#else
 	challenge->pingTime = svs.time;
 	NET_OutOfBandPrint( NS_SERVER, challenge->adr, "challengeResponse %i", challenge->challenge );
-#endif	// USE_CD_KEY
 }
 
 /*
@@ -181,7 +135,7 @@ void SV_AuthorizeIpPacket( netadr_t from ) {
 	}
 	if ( !Q_stricmp( s, "unknown" ) ) {
 		if (!r) {
-			NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, "print\nAwaiting CD key authorization\n" );
+			NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, "print\nAwaiting Authorization\n" );
 		} else {
 			sprintf(ret, "print\n%s\n", r);
 			NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, ret );
@@ -193,7 +147,7 @@ void SV_AuthorizeIpPacket( netadr_t from ) {
 
 	// authorization failed
 	if (!r) {
-		NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, "print\nSomeone is using this CD Key\n" );
+		NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, "print\nAuthorization Failed\n" );
 	} else {
 		sprintf(ret, "print\n%s\n", r);
 		NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, ret );
@@ -590,7 +544,8 @@ void SV_SendClientGameState( client_t *client ) {
 
 	Com_DPrintf ("SV_SendClientGameState() for %s\n", client->name);
 	Com_DPrintf( "Going from CS_CONNECTED to CS_PRIMED for %s\n", client->name );
-	client->state = CS_PRIMED;
+	if ( client->state == CS_CONNECTED )
+		client->state = CS_PRIMED;
 	client->pureAuthentic = 0;
 
 	// when we receive the first packet from the client, we will
@@ -790,6 +745,9 @@ Abort a download if in progress
 ==================
 */
 void SV_StopDownload_f( client_t *cl ) {
+	if ( cl->state == CS_ACTIVE )
+		return;
+
 	if (*cl->downloadName)
 		Com_DPrintf( "clientDownload: %d : file \"%s\" aborted\n", cl - svs.clients, cl->downloadName );
 
@@ -804,6 +762,9 @@ Downloads are finished
 ==================
 */
 void SV_DoneDownload_f( client_t *cl ) {
+	if ( cl->state == CS_ACTIVE )
+		return;
+
 	Com_DPrintf( "clientDownload: %s Done\n", cl->name);
 	// resend the game state to update any clients that entered during the download
 	SV_SendClientGameState(cl);
@@ -820,6 +781,9 @@ the same as cl->downloadClientBlock
 void SV_NextDownload_f( client_t *cl )
 {
 	int block = atoi( Cmd_Argv(1) );
+
+	if ( cl->state == CS_ACTIVE )
+		return;
 
 	if (block == cl->downloadClientBlock) {
 		Com_DPrintf( "clientDownload: %d : client acknowledge of block %d\n", cl - svs.clients, block );
@@ -847,6 +811,8 @@ SV_BeginDownload_f
 ==================
 */
 void SV_BeginDownload_f( client_t *cl ) {
+	if ( cl->state == CS_ACTIVE )
+		return;
 
 	// Kill any existing download
 	SV_CloseDownload( cl );
@@ -864,50 +830,100 @@ Check to see if the client wants a file, open it if needed and start pumping the
 Fill up msg with data 
 ==================
 */
-void SV_WriteDownloadToClient( client_t *cl , msg_t *msg )
+void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 {
 	int curindex;
 	int rate;
 	int blockspersnap;
-	int idPack, missionPack;
+	int unreferenced = 1;
 	char errorMessage[1024];
+	char pakbuf[MAX_QPATH], *pakptr;
+	int numRefPaks;
 
 	if (!*cl->downloadName)
 		return;	// Nothing being downloaded
 
-	if (!cl->download) {
+	if(!cl->download)
+	{
+		qboolean idPack = qfalse;
+		qboolean missionPack = qfalse;
+	
+ 		// Chop off filename extension.
+		Com_sprintf(pakbuf, sizeof(pakbuf), "%s", cl->downloadName);
+		pakptr = strrchr(pakbuf, '.');
+		
+		if(pakptr)
+		{
+			*pakptr = '\0';
+
+			// Check for pk3 filename extension
+			if(!Q_stricmp(pakptr + 1, "pk3"))
+			{
+				const char *referencedPaks = FS_ReferencedPakNames();
+
+				// Check whether the file appears in the list of referenced
+				// paks to prevent downloading of arbitrary files.
+				Cmd_TokenizeStringIgnoreQuotes(referencedPaks);
+				numRefPaks = Cmd_Argc();
+
+				for(curindex = 0; curindex < numRefPaks; curindex++)
+				{
+					if(!FS_FilenameCompare(Cmd_Argv(curindex), pakbuf))
+					{
+						unreferenced = 0;
+
+						// now that we know the file is referenced,
+						// check whether it's legal to download it.
+						missionPack = FS_idPak(pakbuf, "missionpack");
+						idPack = missionPack;
+						idPack = (qboolean)(idPack || FS_idPak(pakbuf, "base"));
+
+						break;
+					}
+				}
+			}
+		}
+
+		cl->download = 0;
+
 		// We open the file here
-
-		Com_Printf( "clientDownload: %d : begining \"%s\"\n", cl - svs.clients, cl->downloadName );
-
-		missionPack = FS_idPak(cl->downloadName, "missionpack");
-		idPack = missionPack || FS_idPak(cl->downloadName, "base");
-
-		if ( !sv_allowDownload->integer || idPack ||
-			( cl->downloadSize = FS_SV_FOpenFileRead( cl->downloadName, &cl->download ) ) <= 0 ) {
+		if ( !sv_allowDownload->integer ||
+			idPack || unreferenced ||
+			( cl->downloadSize = FS_SV_FOpenFileRead( cl->downloadName, &cl->download ) ) < 0 ) {
 			// cannot auto-download file
-			if (idPack) {
-				Com_Printf("clientDownload: %d : \"%s\" cannot download id pk3 files\n", cl - svs.clients, cl->downloadName);
-				if (missionPack) {
+			if(unreferenced)
+			{
+				Com_Printf("clientDownload: %d : \"%s\" is not referenced and cannot be downloaded.\n", (int) (cl - svs.clients), cl->downloadName);
+				Com_sprintf(errorMessage, sizeof(errorMessage), "File \"%s\" is not referenced and cannot be downloaded.", cl->downloadName);
+			}
+			else if (idPack) {
+				Com_Printf("clientDownload: %d : \"%s\" cannot download id pk3 files\n", (int) (cl - svs.clients), cl->downloadName);
+				if(missionPack)
+				{
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload Team Arena file \"%s\"\n"
 									"The Team Arena mission pack can be found in your local game store.", cl->downloadName);
 				}
-				else {
+				else
+				{
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload id pk3 file \"%s\"", cl->downloadName);
 				}
-			} else if ( !sv_allowDownload->integer ) {
-				Com_Printf("clientDownload: %d : \"%s\" download disabled", cl - svs.clients, cl->downloadName);
+			}
+			else if ( !sv_allowDownload->integer ) {
+				Com_Printf("clientDownload: %d : \"%s\" download disabled\n", (int) (cl - svs.clients), cl->downloadName);
 				if (sv_pure->integer) {
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Could not download \"%s\" because autodownloading is disabled on the server.\n\n"
 										"You will need to get this file elsewhere before you "
 										"can connect to this pure server.\n", cl->downloadName);
 				} else {
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Could not download \"%s\" because autodownloading is disabled on the server.\n\n"
-										"Set autodownload to No in your settings and you might be "
-										"able to connect if you do have the file.\n", cl->downloadName);
+                    "The server you are connecting to is not a pure server, "
+                    "set autodownload to No in your settings and you might be "
+                    "able to join the game anyway.\n", cl->downloadName);
 				}
 			} else {
-				Com_Printf("clientDownload: %d : \"%s\" file not found on server\n", cl - svs.clients, cl->downloadName);
+        // NOTE TTimo this is NOT supposed to happen unless bug in our filesystem scheme?
+        //   if the pk3 is referenced, it must have been found somewhere in the filesystem
+				Com_Printf("clientDownload: %d : \"%s\" file not found on server\n", (int) (cl - svs.clients), cl->downloadName);
 				Com_sprintf(errorMessage, sizeof(errorMessage), "File \"%s\" not found on server for autodownloading.\n", cl->downloadName);
 			}
 			MSG_WriteByte( msg, svc_download );
@@ -916,9 +932,15 @@ void SV_WriteDownloadToClient( client_t *cl , msg_t *msg )
 			MSG_WriteString( msg, errorMessage );
 
 			*cl->downloadName = 0;
+			
+			if(cl->download)
+				FS_FCloseFile(cl->download);
+			
 			return;
 		}
  
+		Com_Printf( "clientDownload: %d : beginning \"%s\"\n", (int) (cl - svs.clients), cl->downloadName );
+		
 		// Init
 		cl->downloadCurrentBlock = cl->downloadClientBlock = cl->downloadXmitBlock = 0;
 		cl->downloadCount = 0;

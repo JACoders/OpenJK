@@ -1,10 +1,10 @@
 // leave this as first line for PCH reasons...
 //
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
  
-#include "../client/client.h"	//FIXME!! EVIL - just include the definitions needed 
+#include "client/client.h"	//FIXME!! EVIL - just include the definitions needed 
 
 #if !defined(TR_LOCAL_H)
 	#include "tr_local.h"
@@ -12,14 +12,14 @@
 
 #include "matcomp.h"
 #if !defined(_QCOMMON_H_)
-	#include "../qcommon/qcommon.h"
+	#include "qcommon/qcommon.h"
 #endif
 #if !defined(G2_H_INC)
-	#include "../ghoul2/G2.h"
+	#include "ghoul2/G2.h"
 #endif
-#include "../ghoul2/G2_local.h"
+#include "ghoul2/G2_local.h"
 #ifdef _G2_GORE
-#include "../ghoul2/G2_gore.h"
+#include "ghoul2/G2_gore.h"
 #endif
 #include "matcomp.h"
 
@@ -28,12 +28,12 @@
 #endif
 
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
-#include "../qcommon/disablewarnings.h"
+#include "qcommon/disablewarnings.h"
 
 #define	LL(x) x=LittleLong(x)
 
 #ifdef G2_PERFORMANCE_ANALYSIS
-#include "../qcommon/timing.h"
+#include "qcommon/timing.h"
 
 timing_c G2PerformanceTimer_RenderSurfaces;
 timing_c G2PerformanceTimer_R_AddGHOULSurfaces;
@@ -810,6 +810,7 @@ frame.
 R_ACullModel
 =============
 */
+#ifndef DEDICATED
 static int R_GCullModel( trRefEntity_t *ent ) {
 
 	// scale the radius if need be
@@ -956,6 +957,7 @@ static int G2_ComputeLOD( trRefEntity_t *ent, const model_t *currentModel, int l
 
 	return lod;
 }
+#endif
 
 //======================================================================
 //
@@ -3084,6 +3086,13 @@ void G2_GetBoltMatrixLow(CGhoul2Info &ghoul2,int boltNum,const vec3_t scale,mdxa
 	CBoneCache &boneCache=*ghoul2.mBoneCache;
 	assert(boneCache.mod);
 	boltInfo_v &boltList=ghoul2.mBltlist;
+
+	//Raz: This was causing a client crash when rendering a model with no valid g2 bolts, such as Ragnos =]
+	if ( boltList.size() < 1 ) {
+		retMatrix=identityMatrix;
+		return;
+	}
+
 	assert(boltNum>=0&&boltNum<boltList.size());
 #if 0 //rwwFIXMEFIXME: Disable this before release!!!!!! I am just trying to find a crash bug.
 	if (boltNum < 0 || boltNum >= boltList.size())

@@ -238,7 +238,7 @@ static int R_ComputeFogNum( md3Header_t *header, trRefEntity_t *ent ) {
 		return 0;
 	}
 
-	if ( tr.refdef.rdflags & RDF_doLAGoggles )
+	if ( tr.refdef.doLAGoggles )
 	{
 		return tr.world->numfogs;
 	}

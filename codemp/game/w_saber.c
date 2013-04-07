@@ -2,23 +2,16 @@
 #include "bg_local.h"
 #include "w_saber.h"
 #include "ai_main.h"
-#include "../ghoul2/G2.h"
+#include "ghoul2/G2.h"
 
 #define SABER_BOX_SIZE 16.0f
 extern bot_state_t *botstates[MAX_CLIENTS];
 extern qboolean InFront( vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold );
 extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
 
-extern vmCvar_t		g_saberRealisticCombat;
-extern vmCvar_t		d_saberSPStyleDamage;
-extern vmCvar_t		g_debugSaberLocks;
-// nmckenzie: SABER_DAMAGE_WALLS
-extern vmCvar_t		g_saberWallDamageScale;
-
 int saberSpinSound = 0;
 
 //would be cleaner if these were renamed to BG_ and proto'd in a header.
-
 qboolean PM_SaberInTransition( int move );
 qboolean PM_SaberInDeflect( int move );
 qboolean PM_SaberInBrokenParry( int move );
@@ -32,14 +25,25 @@ qboolean BG_SaberInAttackPure( int move );
 qboolean WP_SaberBladeUseSecondBladeStyle( saberInfo_t *saber, int bladeNum );
 qboolean WP_SaberBladeDoTransitionDamage( saberInfo_t *saber, int bladeNum );
 
-
 void WP_SaberAddG2Model( gentity_t *saberent, const char *saberModel, qhandle_t saberSkin );
 void WP_SaberRemoveG2Model( gentity_t *saberent );
 
-float RandFloat(float min, float max) {
-//	return ((rand() * (max - min)) / 32768.0F) + min;
-//for linux:
-	return ((rand() * (max - min)) / (float)RAND_MAX) + min; 
+//Raz: Fixing this in several ways. Some communities like the 'broken' behaviour.
+//	g_randFix 0 == Same as basejka. Broken on Linux, fine on Windows
+//	g_randFix 1 == Use proper behaviour of RAND_MAX. Fine on Linux, fine on Windows
+//	g_randFix 2 == Intentionally break RAND_MAX. Broken on Linux, broken on Windows.
+float RandFloat( float min, float max ) {
+	//JAC: Fixed an issue where linux was producing undesired results due to not using RAND_MAX, which is platform-dependant
+	int randActual = rand();
+	float randMax = 32768.0f;
+#ifdef _WIN32
+	if ( g_randFix.integer == 2 )
+		randActual = (randActual<<16)|randActual;
+#elif defined(__GCC__)
+	if ( g_randFix.integer == 1 )
+		randMax = RAND_MAX;
+#endif
+	return ((randActual * (max - min)) / randMax) + min;
 }
 
 #ifdef DEBUG_SABER_BOX
@@ -79,37 +83,20 @@ void	G_DebugBoxLines(vec3_t mins, vec3_t maxs, int duration)
 #endif
 
 //general check for performing certain attacks against others
-qboolean G_CanBeEnemy(gentity_t *self, gentity_t *enemy)
+qboolean G_CanBeEnemy( gentity_t *self, gentity_t *enemy )
 {
-	if (!self->inuse || !enemy->inuse || !self->client || !enemy->client)
-	{
+	//ptrs!
+	if ( !self->inuse || !enemy->inuse || !self->client || !enemy->client )
 		return qfalse;
-	}
-
-	if (self->client->ps.duelInProgress && self->client->ps.duelIndex != enemy->s.number)
-	{ //dueling but not with this person
-		return qfalse;
-	}
-
-	if (enemy->client->ps.duelInProgress && enemy->client->ps.duelIndex != self->s.number)
-	{ //other guy dueling but not with me
-		return qfalse;
-	}
 
 	if (g_gametype.integer < GT_TEAM)
-	{ //ok, sure
 		return qtrue;
-	}
 
-	if (g_friendlyFire.integer)
-	{ //if ff on then can inflict damage normally on teammates
+	if ( g_friendlyFire.integer )
 		return qtrue;
-	}
 
-	if (OnSameTeam(self, enemy))
-	{ //ff not on, don't hurt teammates
+	if ( OnSameTeam( self, enemy ) )
 		return qfalse;
-	}
 
 	return qtrue;
 }
@@ -334,7 +321,7 @@ void SaberUpdateSelf(gentity_t *ent)
 			VectorAdd( ent->r.currentOrigin, ent->r.mins, dbgMins );
 			VectorAdd( ent->r.currentOrigin, ent->r.maxs, dbgMaxs );
 
-			G_DebugBoxLines(dbgMins, dbgMaxs, (10.0f/(float)g_svfps.integer)*100);
+			G_DebugBoxLines(dbgMins, dbgMaxs, (10.0f/(float)sv_fps.integer)*100);
 		}
 #endif
 		if (ent->r.contents != CONTENTS_LIGHTSABER)
@@ -369,9 +356,7 @@ void SaberGotHit( gentity_t *self, gentity_t *other, trace_t *trace )
 	//Do something here..? Was handling projectiles here, but instead they're now handled in their own functions.
 }
 
-
 qboolean BG_SuperBreakLoseAnim( int anim );
-
 
 static GAME_INLINE void SetSaberBoxSize(gentity_t *saberent)
 {
@@ -1033,41 +1018,26 @@ static GAME_INLINE void G_G2PlayerAngles( gentity_t *ent, vec3_t legs[3], vec3_t
 	}
 }
 
-static GAME_INLINE qboolean SaberAttacking(gentity_t *self)
+static GAME_INLINE qboolean SaberAttacking( gentity_t *self )
 {
-	if (PM_SaberInParry(self->client->ps.saberMove))
-	{
+	if ( PM_SaberInParry(self->client->ps.saberMove) )
 		return qfalse;
-	}
-	if (PM_SaberInBrokenParry(self->client->ps.saberMove))
-	{
+	if ( PM_SaberInBrokenParry(self->client->ps.saberMove) )
 		return qfalse;
-	}
-	if (PM_SaberInDeflect(self->client->ps.saberMove))
-	{
+	if ( PM_SaberInDeflect(self->client->ps.saberMove) )
 		return qfalse;
-	}
-	if (PM_SaberInBounce(self->client->ps.saberMove))
-	{
+	if ( PM_SaberInBounce(self->client->ps.saberMove) )
 		return qfalse;
-	}
-	if (PM_SaberInKnockaway(self->client->ps.saberMove))
-	{
+	if ( PM_SaberInKnockaway(self->client->ps.saberMove) )
 		return qfalse;
-	}
 
+	//if we're firing and not blocking, then we're attacking.
 	if (BG_SaberInAttack(self->client->ps.saberMove))
-	{
 		if (self->client->ps.weaponstate == WEAPON_FIRING && self->client->ps.saberBlocked == BLOCKED_NONE)
-		{ //if we're firing and not blocking, then we're attacking.
 			return qtrue;
-		}
-	}
 
-	if (BG_SaberInSpecial(self->client->ps.saberMove))
-	{
+	if ( BG_SaberInSpecial( self->client->ps.saberMove ) )
 		return qtrue;
-	}
 
 	return qfalse;
 }
@@ -1210,9 +1180,7 @@ int G_SaberLockAnim( int attackerSaberStyle, int defenderSaberStyle, int topOrSi
 	return baseAnim;
 }
 
-
 extern qboolean BG_CheckIncrementLockAnim( int anim, int winOrLose ); //bg_saber.c
-
 #define LOCK_IDEAL_DIST_JKA 46.0f//all of the new saberlocks are 46.08 from each other because Richard Lico is da MAN
 
 static GAME_INLINE qboolean WP_SabersCheckLock2( gentity_t *attacker, gentity_t *defender, sabersLockMode_t lockMode )
@@ -1929,10 +1897,8 @@ static GAME_INLINE int G_GetParryForBlock(int block)
 	return LS_NONE;
 }
 
-
 int PM_SaberBounceForAttack( int move );
 int PM_SaberDeflectionForQuad( int quad );
-
 
 extern stringID_table_t animTable[MAX_ANIMATIONS+1];
 static GAME_INLINE qboolean WP_GetSaberDeflectionAngle( gentity_t *attacker, gentity_t *defender, float saberHitFraction )
@@ -2316,9 +2282,7 @@ static GAME_INLINE qboolean G_ClientIdleInWorld(gentity_t *ent)
 		return qfalse;
 	}
 
-	if (!ent->client->pers.cmd.upmove &&
-		!ent->client->pers.cmd.forwardmove &&
-		!ent->client->pers.cmd.rightmove &&
+	if (!ent->client->pers.cmd.upmove && !ent->client->pers.cmd.forwardmove && !ent->client->pers.cmd.rightmove &&
 		!(ent->client->pers.cmd.buttons & BUTTON_GESTURE) &&
 		!(ent->client->pers.cmd.buttons & BUTTON_FORCEGRIP) &&
 		!(ent->client->pers.cmd.buttons & BUTTON_ALT_ATTACK) &&
@@ -2326,9 +2290,7 @@ static GAME_INLINE qboolean G_ClientIdleInWorld(gentity_t *ent)
 		!(ent->client->pers.cmd.buttons & BUTTON_FORCE_LIGHTNING) &&
 		!(ent->client->pers.cmd.buttons & BUTTON_FORCE_DRAIN) &&
 		!(ent->client->pers.cmd.buttons & BUTTON_ATTACK))
-	{
 		return qtrue;
-	}
 
 	return qfalse;
 }
@@ -2388,7 +2350,7 @@ static GAME_INLINE qboolean G_G2TraceCollide(trace_t *tr, vec3_t lastValidStart,
 			angles[YAW] = g2Hit->r.currentAngles[YAW];
 		}
 
-		if (g_optvehtrace.integer &&
+		if (com_optvehtrace.integer &&
 			g2Hit->s.eType == ET_NPC &&
 			g2Hit->s.NPC_class == CLASS_VEHICLE &&
 			g2Hit->m_pVehicle)
@@ -3827,6 +3789,7 @@ void WP_SaberBounceSound( gentity_t *ent, int saberNum, int bladeNum )
 	{
 		G_Sound( ent, CHAN_AUTO, ent->client->saber[saberNum].bounce2Sound[Q_irand( 0, 2 )] );
 	}
+
 	else if ( !WP_SaberBladeUseSecondBladeStyle( &ent->client->saber[saberNum], bladeNum )
 		&& ent->client->saber[saberNum].blockSound[0] )
 	{
@@ -3850,9 +3813,7 @@ static float saberHitFraction = 1.0f;
 //triggering a broken parry, doing actual damage, etc. are done for the saber. It doesn't resemble the SP
 //version very much, but functionality is (hopefully) about the same.
 //This is a large function. I feel sort of bad inlining it. But it does get called tons of times per frame.
-
 qboolean BG_SuperBreakWinAnim( int anim );
-
 
 static GAME_INLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBladeNum, vec3_t saberStart, vec3_t saberEnd, qboolean doInterpolate, int trMask, qboolean extrapolate )
 {
@@ -4446,9 +4407,9 @@ static GAME_INLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int
 	if (g_gametype.integer == GT_POWERDUEL &&
 		self->client->sess.duelTeam == DUELTEAM_LONE)
 	{ //always x2 when we're powerdueling alone... er, so, we apparently no longer want this?  So they say.
-		if ( g_duel_fraglimit.integer )
+		if ( duel_fraglimit.integer )
 		{
-			//dmg *= 1.5 - (.4 * (float)self->client->sess.wins / (float)g_duel_fraglimit.integer);
+			//dmg *= 1.5 - (.4 * (float)self->client->sess.wins / (float)duel_fraglimit.integer);
 				
 		}
 		//dmg *= 2;
@@ -5479,9 +5440,7 @@ void G_SPSaberDamageTraceLerped( gentity_t *self, int saberNum, int bladeNum, ve
 	}
 }
 
-
 qboolean BG_SaberInTransitionAny( int move );
-
 
 qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower );
 qboolean InFOV3( vec3_t spot, vec3_t from, vec3_t fromAngles, int hFOV, int vFOV );
@@ -6251,6 +6210,8 @@ void MakeDeadSaber(gentity_t *ent)
 	vec3_t startang;
 	gentity_t *saberent;
 	gentity_t *owner = NULL;
+	//trace stuct used for determining if it's safe to spawn at current location
+	trace_t		tr;  
 	
 	if (g_gametype.integer == GT_JEDIMASTER)
 	{ //never spawn a dead saber in JM, because the only saber on the level is really a world object
@@ -6278,6 +6239,29 @@ void MakeDeadSaber(gentity_t *ent)
 
 	saberent->think = DeadSaberThink;
 	saberent->nextthink = level.time;
+
+	//perform a trace before attempting to spawn at currently location.
+	//unfortunately, it's a fairly regular occurance that current saber location
+	//(normally at the player's right hand) could result in the saber being stuck 
+	//in the the map and then freaking out.
+	trap_Trace(&tr, startorg, saberent->r.mins, saberent->r.maxs,
+		startorg, saberent->s.number, saberent->clipmask);
+	if(tr.startsolid || tr.fraction != 1)
+	{//bad position, try popping our origin up a bit
+		startorg[2] += 20;
+		trap_Trace(&tr, startorg, saberent->r.mins, saberent->r.maxs,
+			startorg, saberent->s.number, saberent->clipmask);
+		if(tr.startsolid || tr.fraction != 1)
+		{//still no luck, try using our owner's origin
+			owner = &g_entities[ent->r.ownerNum];
+			if( owner->inuse && owner->client )
+			{
+				G_SetOrigin(saberent, owner->client->ps.origin); 
+			}
+			
+			//since this is our last chance, we don't care if this works or not.
+		}
+	}
 
 	VectorCopy(startorg, saberent->s.pos.trBase);
 	VectorCopy(startang, saberent->s.apos.trBase);
@@ -6511,6 +6495,8 @@ void saberReactivate(gentity_t *saberent, gentity_t *saberOwner)
 
 void saberKnockDown(gentity_t *saberent, gentity_t *saberOwner, gentity_t *other)
 {
+	trace_t		tr;  
+
 	saberOwner->client->ps.saberEntityNum = 0; //still stored in client->saberStoredIndex
 	saberOwner->client->saberKnockedTime = level.time + SABER_RETRIEVE_DELAY;
 
@@ -6519,6 +6505,26 @@ void saberKnockDown(gentity_t *saberent, gentity_t *saberOwner, gentity_t *other
 
 	VectorSet( saberent->r.mins, -3.0f, -3.0f, -1.5f );
 	VectorSet( saberent->r.maxs, 3.0f, 3.0f, 1.5f );
+
+	//perform a trace before attempting to spawn at currently location.
+	//unfortunately, it's a fairly regular occurance that current saber location
+	//(normally at the player's right hand) could result in the saber being stuck 
+	//in the the map and then freaking out.
+	trap_Trace(&tr, saberent->r.currentOrigin, saberent->r.mins, saberent->r.maxs,
+		saberent->r.currentOrigin, saberent->s.number, saberent->clipmask);
+	if(tr.startsolid || tr.fraction != 1)
+	{//bad position, try popping our origin up a bit
+		saberent->r.currentOrigin[2] += 20;
+		G_SetOrigin(saberent, saberent->r.currentOrigin);
+		trap_Trace(&tr, saberent->r.currentOrigin, saberent->r.mins, saberent->r.maxs,
+			saberent->r.currentOrigin, saberent->s.number, saberent->clipmask);
+		if(tr.startsolid || tr.fraction != 1)
+		{//still no luck, try using our owner's origin
+			G_SetOrigin(saberent, saberOwner->client->ps.origin); 
+			
+			//since this is our last chance, we don't care if this works or not.
+		}
+	}
 
 	saberent->s.apos.trType = TR_GRAVITY;
 	saberent->s.apos.trDelta[0] = Q_irand(200, 800);
@@ -6747,7 +6753,8 @@ qboolean saberCheckKnockdown_DuelLoss(gentity_t *saberent, gentity_t *saberOwner
 			&& other->client->saber[1].model[0]
 			&& !other->client->ps.saberHolstered )
 		{
-			other->client->saber[1].disarmBonus;
+			//JAC: Fixed second sabers not being accounted for in disarm bonuses.
+			disarmChance += other->client->saber[1].disarmBonus;
 		}
 	}
 	if ( Q_irand( 0, disarmChance ) )
@@ -6832,7 +6839,8 @@ qboolean saberCheckKnockdown_BrokenParry(gentity_t *saberent, gentity_t *saberOw
 				&& other->client->saber[1].model[0]
 				&& !other->client->ps.saberHolstered )
 			{
-				other->client->saber[1].disarmBonus;
+				//JAC: Fixed second sabers not being accounted for in disarm bonuses.
+				disarmChance += other->client->saber[1].disarmBonus;
 			}
 		}
 		if ( Q_irand( 0, disarmChance ) )
@@ -6844,9 +6852,7 @@ qboolean saberCheckKnockdown_BrokenParry(gentity_t *saberent, gentity_t *saberOw
 	return qfalse;
 }
 
-
 qboolean BG_InExtraDefenseSaberMove( int move );
-
 
 //Called upon an enemy actually slashing into a thrown saber
 qboolean saberCheckKnockdown_Smashed(gentity_t *saberent, gentity_t *saberOwner, gentity_t *other, int damage)
@@ -7587,9 +7593,6 @@ static gentity_t *G_KickTrace( gentity_t *ent, vec3_t kickDir, float kickDist, v
 					hitEnt->client->ps.otherKiller = ent->s.number;
 					hitEnt->client->ps.otherKillerDebounceTime = level.time + 10000;
 					hitEnt->client->ps.otherKillerTime = level.time + 10000;
-					hitEnt->client->otherKillerMOD = MOD_MELEE;
-					hitEnt->client->otherKillerVehWeapon = 0;
-					hitEnt->client->otherKillerWeaponType = WP_NONE;
 				}
 
 				if (d_saberKickTweak.integer)
@@ -8493,7 +8496,7 @@ nextStep:
 	}
 
 	//fVSpeed *= 0.08;
-	fVSpeed *= 1.6f/g_svfps.value;
+	fVSpeed *= 1.6f/sv_fps.value;
 
 	//Cap it off at reasonable values so the saber box doesn't go flying ahead of us or
 	//something if we get a big speed boost from something.
@@ -9482,4 +9485,3 @@ qboolean HasSetSaberOnly(void)
 
 	return qtrue;
 }
-

@@ -4,9 +4,9 @@
 // cg_syscalls.asm is included instead when building a qvm
 #include "cg_local.h"
 
-static int (QDECL *syscall)( int arg, ... ) = (int (QDECL *)( int, ...))-1;
+static intptr_t (QDECL *syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
 
-void dllEntry( int (QDECL  *syscallptr)( int arg,... ) ) {
+Q_EXPORT void dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg,... ) ) {
 	syscall = syscallptr;
 }
 
@@ -23,6 +23,8 @@ void	trap_Print( const char *fmt ) {
 
 void	trap_Error( const char *fmt ) {
 	syscall( CG_ERROR, fmt );
+	// shut up GCC warning about returning functions, because we know better
+	exit(1);
 }
 
 int		trap_Milliseconds( void ) {
@@ -285,7 +287,9 @@ qhandle_t trap_R_RegisterFont( const char *fontName )
 
 int	trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale)
 {
-	return syscall( CG_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(scale));
+	//Raz: HACK! RE_Font_TtrLenPixels only works correctly with 1.0f scale
+	float width = (float)syscall( CG_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(1.0f));
+	return width * scale;
 }
 
 int trap_R_Font_StrLenChars(const char *text)
@@ -1119,3 +1123,4 @@ void trap_WE_AddWeatherZone( const vec3_t mins, const vec3_t maxs )
 /*
 Ghoul2 Insert End
 */
+

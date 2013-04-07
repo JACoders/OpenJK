@@ -125,6 +125,28 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 	}
 
 	// check against frustum planes
+#ifndef __NO_JK2
+	if( Cvar_VariableIntegerValue("com_jk2") )
+	{
+		// They used 4 frustrum planes in JK2, and 5 in JKA --eez
+		for (i = 0 ; i < 4 ; i++) 
+		{
+			frust = &tr.viewParms.frustum[i];
+
+			dist = DotProduct( pt, frust->normal) - frust->dist;
+			if ( dist < -radius )
+			{
+				return CULL_OUT;
+			}
+			else if ( dist <= radius ) 
+			{
+				mightBeClipped = qtrue;
+			}
+		}
+	}
+	else
+	{
+#endif
 	for (i = 0 ; i < 5 ; i++) 
 	{
 		frust = &tr.viewParms.frustum[i];
@@ -139,6 +161,9 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 			mightBeClipped = qtrue;
 		}
 	}
+#ifndef __NO_JK2
+	}
+#endif
 
 	if ( mightBeClipped )
 	{
@@ -1045,7 +1070,7 @@ int R_SpriteFogNum( trRefEntity_t *ent ) {
 		return 0;
 	}
 
-	if ( tr.refdef.rdflags & RDF_doLAGoggles )
+	if ( tr.refdef.doLAGoggles )
 	{
 		return tr.world->numfogs;
 	}
@@ -1299,7 +1324,7 @@ void R_AddDrawSurf( const surfaceType_t *surface, const shader_t *shader, int fo
 	// so it wraps around
 	index = tr.refdef.numDrawSurfs & DRAWSURF_MASK;
 
-	if ( tr.refdef.rdflags & RDF_doLAGoggles )
+	if ( tr.refdef.doLAGoggles )
 	{
 		fogIndex = tr.world->numfogs;
 	}
@@ -1713,11 +1738,7 @@ void R_RenderView (viewParms_t *parms) {
 		R_SetViewFogIndex ();
 	}
 
-#ifdef _XBOX
-	R_GenerateDrawSurfs(parms->isPortal);
-#else
 	R_GenerateDrawSurfs();
-#endif
 
 	R_SortDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
 

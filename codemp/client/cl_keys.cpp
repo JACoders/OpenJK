@@ -1,8 +1,8 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "client.h"
-#include "../qcommon/stringed_ingame.h"
+#include "qcommon/stringed_ingame.h"
 /*
 
 key up events are sent even if in console mode
@@ -1500,10 +1500,9 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	}
 
 	// console key is hardcoded, so the user can never unbind it
-	if (key == A_CONSOLE) {
+	if (key == A_CONSOLE || ( kg.keys[A_SHIFT].down && key == A_ESCAPE ) ) {
 		if (!down) {
 			return;
-
 		}
 	    Con_ToggleConsole_f ();
 		return;

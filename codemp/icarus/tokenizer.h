@@ -17,7 +17,7 @@
 using namespace std;
 
 //#include <windows.h>
-#include "../qcommon/platform.h"
+#include "qcommon/platform.h"
 
 typedef unsigned char byte;
 typedef unsigned short word;

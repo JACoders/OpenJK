@@ -5,9 +5,9 @@
  *
  *****************************************************************************/
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
-#include "../client/client.h"
+#include "client/client.h"
 
 #define ZIP_fopen	fopen
 #define ZIP_fclose	fclose
@@ -15,7 +15,7 @@
 #define ZIP_fread	fread
 #define ZIP_ftell	ftell
 
-#include "../zlib32/zip.h"
+#include "zlib32/zip.h"
 #include "unzip.h"
 
 /* unzip.h -- IO for uncompress .zip files using zlib 

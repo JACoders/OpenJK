@@ -47,6 +47,9 @@ cvar_t	*sv_paused;
 cvar_t	*com_skippingcin;
 cvar_t	*com_speedslog;		// 1 = buffer log, 2 = flush after each print
 
+// Support for JK2 binaries --eez
+cvar_t	*com_jk2;			// searches for jk2gamex86.dll instead of jagamex86.dll
+
 #ifdef G2_PERFORMANCE_ANALYSIS
 cvar_t	*com_G2Report;
 #endif
@@ -246,7 +249,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;
 
 #if defined(_WIN32) && defined(_DEBUG)
-	if ( code != ERR_DISCONNECT && code != ERR_NEED_CD ) {
+	if ( code != ERR_DISCONNECT ) {
 //		if (com_noErrorInterrupt && !com_noErrorInterrupt->integer) 
 		{
 			__asm {
@@ -299,17 +302,6 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		Com_Printf (S_COLOR_RED"********************\n"S_COLOR_MAGENTA"ERROR: %s\n"S_COLOR_RED"********************\n", com_errorMessage);
 		com_errorEntered = qfalse;
 		throw ("DROPPED\n");
-	} else if ( code == ERR_NEED_CD ) {
-		SV_Shutdown( "Server didn't have CD\n" );
-		if ( com_cl_running && com_cl_running->integer ) {
-			CL_Disconnect();
-			CL_FlushMemory();
-			CL_StartHunkUsers();
-			com_errorEntered = qfalse;
-		} else {
-			Com_Printf("Server didn't have CD\n" );
-		}
-		throw ("NEED CD\n");
 	} else {
 		CL_Shutdown ();
 		SV_Shutdown (va(S_COLOR_RED"Server fatal crashed: %s\n", com_errorMessage));
@@ -1051,6 +1043,8 @@ void Com_Init( char *commandLine ) {
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
+
+		com_jk2			= Cvar_Get( "com_jk2", "0", CVAR_INIT|CVAR_SERVERINFO );
 		
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);
@@ -1061,6 +1055,13 @@ void Com_Init( char *commandLine ) {
 		s = va("%s %s %s", Q3_VERSION, CPUSTRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
+#ifndef __NO_JK2
+		if(com_jk2->integer)
+		{
+			JK2SP_Init();
+		}
+		else
+#endif
 		SE_Init();	// Initialize StringEd
 	
 		Sys_Init();	// this also detects CPU type, so I can now do this CPU check below...
@@ -1119,13 +1120,6 @@ void Com_Init( char *commandLine ) {
 	catch (const char* reason) {
 		Sys_Error ("Error during initialization %s", reason);
 	}
-
-#ifdef _XBOX
-	//Load these early to keep them at the beginning of memory.  Perhaps
-	//here is too early though.  After the license screen would be better.
-	extern void SE_CheckForLanguageUpdates(void);
-	SE_CheckForLanguageUpdates();
-#endif
 
 }
 
@@ -1473,7 +1467,6 @@ extern void CM_FreeShaderText(void);
 void Com_Shutdown (void) {
 	CM_ClearMap();
 
-#ifndef _XBOX
 	CM_FreeShaderText();
 
 	if (logfile) {
@@ -1496,14 +1489,14 @@ void Com_Shutdown (void) {
 		FS_FCloseFile( com_journalFile );
 		com_journalFile = 0;
 	}
-#endif
 
-#ifdef _XBOX
-	extern void Sys_StreamShutdown();
-	Sys_StreamShutdown();
-	Sys_ShutdownFileCodes();
+#ifndef __NO_JK2
+	if(com_jk2->integer)
+	{
+		JK2SP_Shutdown();
+	}
+	else
 #endif
-
 	SE_ShutDown();//close the string packages
 
 	extern void Netchan_Shutdown();

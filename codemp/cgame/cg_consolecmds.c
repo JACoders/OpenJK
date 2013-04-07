@@ -4,8 +4,8 @@
 // executed by a key binding
 
 #include "cg_local.h"
-#include "../ui/ui_shared.h"
-#include "bg_saga.h"
+#include "ui/ui_shared.h"
+#include "game/bg_saga.h"
 extern menuDef_t *menuScoreboard;
 
 
@@ -281,8 +281,9 @@ static consoleCommand_t	commands[] = {
 	{ "tell_target", CG_TellTarget_f },
 	{ "tell_attacker", CG_TellAttacker_f },
 	{ "tcmd", CG_TargetCommand_f },
-	{ "spWin", CG_spWin_f },
-	{ "spLose", CG_spLose_f },
+	//JAC - Disable spWin and spLose as they're just used to troll people.
+	//{ "spWin", CG_spWin_f },
+	//{ "spLose", CG_spLose_f },
 	{ "scoresDown", CG_scrollScoresDown_f },
 	{ "scoresUp", CG_scrollScoresUp_f },
 	{ "startOrbit", CG_StartOrbit_f },

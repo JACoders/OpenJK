@@ -1,10 +1,10 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // tr_QuickSprite.cpp: implementation of the CQuickSpriteSystem class.
 //
 //////////////////////////////////////////////////////////////////////
-//#include "../server/exe_headers.h"
+//#include "server/exe_headers.h"
 #include "tr_local.h"
 
 #include "tr_QuickSprite.h"

@@ -91,6 +91,7 @@ static bool SV_Map_( ForceReload_e eForceReload )
 void SV_Player_EndOfLevelSave(void)						   
 {
 	int	i;	
+	qboolean usesJK2 = (qboolean)Cvar_VariableIntegerValue("com_jk2");
 
 	// I could just call GetClientState() but that's in sv_bot.cpp, and I'm not sure if that's going to be deleted for
 	//	the single player build, so here's the guts again...
@@ -108,8 +109,32 @@ void SV_Player_EndOfLevelSave(void)
 //		clientSnapshot_t*	pFrame = &cl->frames[cl->netchan.outgoingSequence & PACKET_MASK];
 		playerState_t*		pState = cl->gentity->client;
 		const char	*s2;
-			//				|general info				  |-force powers |-saber 1										   |-saber 2										  |-general saber
-		const char *s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+		const char *s;
+		if(usesJK2)
+		{
+			s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %i",
+							pState->stats[STAT_HEALTH],
+							pState->stats[STAT_ARMOR],
+							pState->stats[STAT_WEAPONS],
+							pState->stats[STAT_ITEMS],
+							pState->weapon,
+							pState->weaponstate,
+							pState->batteryCharge,
+							pState->viewangles[0],
+							pState->viewangles[1],
+							pState->viewangles[2],
+							pState->forcePowersKnown,
+							pState->forcePower,
+							pState->saberActive,
+							pState->saberAnimLevel,
+							pState->saberLockEnemy,
+							pState->saberLockTime
+							);
+		}
+		else
+		{
+					//				|general info				  |-force powers |-saber 1		|-saber 2										  |-general saber
+					s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 							pState->stats[STAT_HEALTH],
 							pState->stats[STAT_ARMOR],
 							pState->stats[STAT_WEAPONS],
@@ -168,6 +193,7 @@ void SV_Player_EndOfLevelSave(void)
 							pState->saberLockEnemy,
 							pState->saberLockTime
 							);
+		}
 		Cvar_Set( sCVARNAME_PLAYERSAVE, s );
 
 		//ammo

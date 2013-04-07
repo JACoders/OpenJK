@@ -857,6 +857,29 @@ void GL_SetDefaultState( void )
 
 /*
 ================
+R_LongString
+
+Workaround for ri.Printf's 1024 characters buffer limit.
+================
+*/
+
+void R_PrintLongString(const char *string) {
+	char buffer[1024];
+	const char *p;
+	int size = strlen(string);
+
+	p = string;
+	while(size > 0)
+	{
+		Q_strncpyz(buffer, p, sizeof (buffer) );
+		Com_Printf( "%s", buffer );
+		p += 1023;
+		size -= 1023;
+	}
+}
+
+/*
+================
 GfxInfo_f
 ================
 */
@@ -886,7 +909,9 @@ void GfxInfo_f( void )
 	VID_Printf( PRINT_ALL, "\nGL_VENDOR: %s\n", glConfig.vendor_string );
 	VID_Printf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
 	VID_Printf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
-	VID_Printf( PRINT_ALL, "GL_EXTENSIONS: %s\n", glConfig.extensions_string );
+	//VID_Printf( PRINT_ALL, "GL_EXTENSIONS: %s\n", glConfig.extensions_string );
+	R_PrintLongString(glConfig.extensions_string);
+	Com_Printf ("\n");
 	VID_Printf( PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
 	VID_Printf( PRINT_ALL, "GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures );
 	VID_Printf( PRINT_ALL, "\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n", glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
@@ -1279,6 +1304,7 @@ extern qboolean Sys_LowPhysicalMemory();
 	Cmd_AddCommand( "imagelist", R_ImageList_f );
 	Cmd_AddCommand( "shaderlist", R_ShaderList_f );
 	Cmd_AddCommand( "skinlist", R_SkinList_f );
+	Cmd_AddCommand( "fontlist", R_FontList_f );
 	Cmd_AddCommand( "modellist", R_Modellist_f );
 #ifndef _XBOX
 	Cmd_AddCommand( "modelist", R_ModeList_f );
@@ -1429,6 +1455,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	Cmd_RemoveCommand ("imagelist");
 	Cmd_RemoveCommand ("shaderlist");
 	Cmd_RemoveCommand ("skinlist");
+	Cmd_RemoveCommand ("fontlist");
 	Cmd_RemoveCommand ("modellist");
 #ifndef _XBOX
 	Cmd_RemoveCommand ("modelist" );
@@ -1631,6 +1658,7 @@ refexport_t *GetRefAPI ( int apiVersion ) {
 	re.Language_IsAsian = Language_IsAsian;
 	re.Language_UsesSpaces = Language_UsesSpaces;
 	re.AnyLanguage_ReadCharFromString = AnyLanguage_ReadCharFromString;
+	re.AnyLanguage_ReadCharFromString2 = AnyLanguage_ReadCharFromString;
 
 	return &re;
 }

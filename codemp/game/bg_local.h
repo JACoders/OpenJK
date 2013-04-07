@@ -30,6 +30,7 @@ typedef struct
 	int			previous_waterlevel;
 } pml_t;
 
+
 extern	pml_t		pml;
 
 // movement parameters
@@ -101,3 +102,4 @@ void PM_SetSaberMove(short newMove);
 void PM_SetForceJumpZStart(float value);
 
 void BG_CycleInven(playerState_t *ps, int direction);
+

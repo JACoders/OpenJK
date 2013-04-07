@@ -101,6 +101,8 @@ typedef struct {
 	int			numDrawSurfs;
 	struct drawSurf_s	*drawSurfs;
 
+	qboolean	doLAGoggles;
+
 	int			fogIndex;	//what fog brush the vieworg is in
 
 } trRefdef_t;
@@ -1552,6 +1554,7 @@ void		R_GammaCorrect( byte *buffer, int bufSize );
 
 void	R_ImageList_f( void );
 void	R_SkinList_f( void );
+void	R_FontList_f( void );
 void	R_ScreenShot_f( void );
 void	R_ScreenShotTGA_f( void );
 

@@ -3,8 +3,8 @@
 #define FX_SYSTEM_H_INC
 
 #if !defined(G2_H_INC)
-	#include "../ghoul2/G2.h"
-	#include "../ghoul2/G2_local.h"
+	#include "ghoul2/G2.h"
+	#include "ghoul2/G2_local.h"
 #endif
 
 extern cvar_t	*fx_debug;
@@ -15,6 +15,7 @@ extern cvar_t	*fx_freeze;
 
 extern cvar_t	*fx_countScale;
 extern cvar_t	*fx_nearCull;
+extern cvar_t	*fx_flashRadius;
 
 inline void Vector2Clear(vec2_t a)
 {

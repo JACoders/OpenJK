@@ -14,7 +14,7 @@
  * storage only upon successful completion of an MCU.
  */
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #define JPEG_INTERNALS
 #include "jinclude.h"

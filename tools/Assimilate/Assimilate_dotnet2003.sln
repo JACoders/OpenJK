@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Assimilate", "Assimilate.vcproj", "{8C24B758-96BF-4ED6-9B5D-9726DCF6D3BA}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{8C24B758-96BF-4ED6-9B5D-9726DCF6D3BA}.Debug.ActiveCfg = Debug|Win32
+		{8C24B758-96BF-4ED6-9B5D-9726DCF6D3BA}.Debug.Build.0 = Debug|Win32
+		{8C24B758-96BF-4ED6-9B5D-9726DCF6D3BA}.Release.ActiveCfg = Release|Win32
+		{8C24B758-96BF-4ED6-9B5D-9726DCF6D3BA}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

@@ -970,11 +970,13 @@ void RE_BeginRegistration( glconfig_t *glconfigOut ) {
 	R_Init();
 	*glconfigOut = glConfig;
 
-	tr.viewCluster = -1;		// force markleafs to regenerate
 	RE_ClearScene();
+
+	tr.viewCluster = -1;		// force markleafs to regenerate
 	tr.registered = qtrue;
 
 	R_SyncRenderThread();
+
 }
 
 //=============================================================================

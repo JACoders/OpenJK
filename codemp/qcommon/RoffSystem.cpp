@@ -1,8 +1,8 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "RoffSystem.h"
-#include "../client/client.h"
+#include "client/client.h"
 
 // The one and only instance...
 CROFFSystem theROFFSystem;
@@ -316,7 +316,7 @@ int CROFFSystem::Cache( const char *file, qboolean isClient )
 		if ( len <= 0 )
 		{
 			char otherPath[1024];
-			COM_StripExtension(file, otherPath);
+			COM_StripExtension(file, otherPath, sizeof( otherPath ));
 			len = FS_ReadFile( va("scripts/%s.rof", otherPath), (void**) &data);
 			if (len <= 0)
 			{

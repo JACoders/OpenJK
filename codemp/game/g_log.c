@@ -28,9 +28,6 @@ qboolean G_WeaponLogClientTouch[MAX_CLIENTS];
 int G_WeaponLogPowerups[MAX_CLIENTS][HI_NUM_HOLDABLE];
 int	G_WeaponLogItems[MAX_CLIENTS][PW_NUM_POWERUPS];
 
-extern vmCvar_t	g_statLog;
-extern vmCvar_t	g_statLogFile;
-
 // MOD-weapon mapping array.
 int weaponFromMOD[MOD_MAX] =
 {
@@ -70,7 +67,6 @@ int weaponFromMOD[MOD_MAX] =
 	WP_NONE,				//MOD_CRUSH,
 	WP_NONE,				//MOD_TELEFRAG,
 	WP_NONE,				//MOD_FALLING,
-	WP_NONE,				//MOD_COLLISION,
 	WP_NONE,				//MOD_SUICIDE,
 	WP_NONE,				//MOD_TARGET_LASER,
 	WP_NONE,				//MOD_TRIGGER_HURT,
@@ -829,7 +825,7 @@ qboolean CalculateEfficiency(gentity_t *ent, int *efficiency)
 	gentity_t	*player = NULL;
 
 
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		player = g_entities + i;
 		if (!player->inuse)
@@ -876,7 +872,7 @@ qboolean CalculateSharpshooter(gentity_t *ent, int *frags)
 		return qfalse;
 	}
 
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		nKills = 0;
 		player = g_entities + i;
@@ -935,7 +931,7 @@ qboolean CalculateLogistics(gentity_t *ent, int *stuffUsed)
 				nDifferent = 0, nMostDifferent = 0;
 	gentity_t	*player = NULL;
 
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		nStuffUsed = 0;
 		nDifferent = 0;
@@ -1018,7 +1014,7 @@ qboolean CalculateTactician(gentity_t *ent, int *kills)
 	for (weapon = 0; weapon<WP_NUM_WEAPONS; weapon++)
 			wasPickedUpBySomeone[weapon] = 0;				// CLEAR
 
-	for (person=0; person<g_maxclients.integer; person++)
+	for (person=0; person<sv_maxclients.integer; person++)
 	{
 		for (weapon = 0; weapon<WP_NUM_WEAPONS; weapon++)
 		{
@@ -1032,7 +1028,7 @@ qboolean CalculateTactician(gentity_t *ent, int *kills)
 
 
 	//------------------------------------------------------ FOR EVERY PERSON, CHECK FOR CANDIDATE
-	for (person=0; person<g_maxclients.integer; person++)
+	for (person=0; person<sv_maxclients.integer; person++)
 	{
 		player = g_entities + person;
 		if (!player->inuse)			continue;
@@ -1091,7 +1087,7 @@ qboolean CalculateDemolitionist(gentity_t *ent, int *kills)
 				playTime = (level.time - ent->client->pers.enterTime)/60000;
 	gentity_t	*player = NULL;
 
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		nKills = 0;
 		player = g_entities + i;
@@ -1163,7 +1159,7 @@ qboolean CalculateTeamMVP(gentity_t *ent)
 				team = ent->client->ps.persistant[PERS_TEAM];
 	gentity_t	*player = NULL;
 
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		nScore = 0;
 		player = g_entities + i;
@@ -1208,7 +1204,7 @@ qboolean CalculateTeamMVPByRank(gentity_t *ent)
 	}
 	*/
 
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		nScore = 0;
 		player = g_entities + i;
@@ -1251,7 +1247,7 @@ qboolean CalculateTeamDefender(gentity_t *ent)
 		return qfalse;
 	}
 	*/
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		nScore = 0;
 		player = g_entities + i;
@@ -1287,7 +1283,7 @@ qboolean CalculateTeamWarrior(gentity_t *ent)
 		return qfalse;
 	}
 	*/
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		nScore = 0;
 		player = g_entities + i;
@@ -1323,7 +1319,7 @@ qboolean CalculateTeamCarrier(gentity_t *ent)
 		return qfalse;
 	}
 	*/
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		nScore = 0;
 		player = g_entities + i;
@@ -1360,7 +1356,7 @@ qboolean CalculateTeamInterceptor(gentity_t *ent)
 		return qfalse;
 	}
 	*/
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		nScore = 0;
 		player = g_entities + i;
@@ -1398,7 +1394,7 @@ qboolean CalculateTeamRedShirt(gentity_t *ent)
 		return qfalse;
 	}
 	*/
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		nScore = 0;
 		player = g_entities + i;
@@ -1488,7 +1484,7 @@ qboolean CalculateSection31Award(gentity_t *ent)
 	int			i = 0, frags = 0, efficiency = 0;
 	gentity_t	*player = NULL;
 
-	for (i = 0; i < g_maxclients.integer; i++)
+	for (i = 0; i < sv_maxclients.integer; i++)
 	{
 		player = g_entities + i;
 		if (!player->inuse)

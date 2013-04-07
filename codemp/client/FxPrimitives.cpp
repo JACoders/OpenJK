@@ -1,6 +1,6 @@
 // this include must remain at the top of every CPP file
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "client.h"
 
@@ -9,12 +9,12 @@
 #endif
 
 #if !defined(G2_H_INC)
-	#include "../ghoul2/G2.h"
-	#include "../ghoul2/G2_local.h"
+	#include "ghoul2/G2.h"
+	#include "ghoul2/G2_local.h"
 #endif
 
 #ifdef VV_LIGHTING
-#include "../renderer/tr_lightmanager.h"
+#include "renderer/tr_lightmanager.h"
 #endif
 
 extern int		drawnFx;
@@ -2304,7 +2304,7 @@ void CFlash::Draw( void )
 	{
 		VectorCopy( theFxHelper.refdef->vieworg, mRefEnt.origin );
 		VectorMA( mRefEnt.origin, 12, theFxHelper.refdef->viewaxis[0], mRefEnt.origin );
-		mRefEnt.radius = 11.0f;
+		mRefEnt.radius = fx_flashRadius->value; // 11.0f
 
 		theFxHelper.AddFxToScene( &mRefEnt );
 	}

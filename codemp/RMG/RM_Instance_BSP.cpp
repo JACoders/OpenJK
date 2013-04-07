@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 /************************************************************************************************
  *
@@ -10,8 +10,8 @@
  *
  ************************************************************************************************/
 
-#include "../qcommon/cm_local.h"
-#include "../server/server.h"
+#include "qcommon/cm_local.h"
+#include "server/server.h"
 #include "RM_Headers.h"
 
 #include "RM_Instance_BSP.h"
@@ -79,7 +79,6 @@ CRMBSPInstance::CRMBSPInstance(CGPGroup *instGroup, CRMInstanceFile& instFile)  
  ************************************************************************************************/
 bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 {
-#ifndef PRE_RELEASE_DEMO
 //	TEntity*	ent;
 	float		yaw;
 	char		temp[10000];
@@ -272,8 +271,6 @@ bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 	// NOTE: all this origin flipping, setting the side etc... should be done when mMirror is set
 	// because right after this function is called, mMirror is set to 0 but all the instance data is STILL MIRRORED -- not good
 	VectorCopy(notmirrored, GetOrigin());
-
-#endif  // PRE_RELEASE_DEMO
 	
 	return true;
 }

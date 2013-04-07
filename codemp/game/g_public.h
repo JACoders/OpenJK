@@ -672,7 +672,9 @@ typedef struct
 
 #define MAX_FAILED_NODES 8
 
+#if !defined(MACOS_X) && !defined(__GCC__)
 typedef struct Vehicle_s Vehicle_t;
+#endif
 
 // the server looks at a sharedEntity, which is the start of the game's gentity_t structure
 //mod authors should not touch this struct
@@ -723,9 +725,9 @@ class CTaskManager;
 extern CSequencer	*gSequencers[MAX_GENTITIES];
 extern CTaskManager	*gTaskManagers[MAX_GENTITIES];
 
-#include "../icarus/icarus.h"
-#include "../icarus/sequencer.h"
-#include "../icarus/taskmanager.h"
+#include "icarus/icarus.h"
+#include "icarus/sequencer.h"
+#include "icarus/taskmanager.h"
 #endif
 
 //

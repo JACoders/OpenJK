@@ -10,8 +10,7 @@ typedef enum //# team_e
 
 	//# #eol
 	NPCTEAM_NUM_TEAMS
-};
-typedef int npcteam_t;
+} npcteam_t;
 
 // This list is made up from the model directories, this MUST be in the same order as the ClassNames array in NPC_stats.cpp
 typedef enum 

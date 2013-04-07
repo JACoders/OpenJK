@@ -2,14 +2,12 @@
 #include "b_local.h"
 #include "b_public.h"
 #include "anims.h"
-#include "../ghoul2/G2.h"
+#include "ghoul2/G2.h"
 
 extern qboolean NPCsPrecached;
 
-
 extern qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber );
 extern void WP_RemoveSaber( saberInfo_t *sabers, int saberNum );
-
 
 stringID_table_t TeamTable[] =
 {
@@ -17,7 +15,7 @@ stringID_table_t TeamTable[] =
 	ENUM2STRING(NPCTEAM_PLAYER),
 	ENUM2STRING(NPCTEAM_ENEMY),
 	ENUM2STRING(NPCTEAM_NEUTRAL),	// most droids are team_neutral, there are some exceptions like Probe,Seeker,Interrogator
-	"",	-1
+	{"",	-1}
 };
 
 // this list was made using the model directories, this MUST be in the same order as the CLASS_ enum in teams.h
@@ -82,7 +80,7 @@ stringID_table_t ClassTable[] =
 	ENUM2STRING(CLASS_VEHICLE),
 	ENUM2STRING(CLASS_RANCOR),
 	ENUM2STRING(CLASS_WAMPA),
-	"",	-1
+	{"",	-1}
 };
 
 stringID_table_t BSTable[] =
@@ -98,10 +96,10 @@ stringID_table_t BSTable[] =
 	ENUM2STRING(BS_REMOVE),//# Waits for player to leave PVS then removes itself
 	ENUM2STRING(BS_CINEMATIC),//# Does nothing but face it's angles and move to a goal if it has one
 	//the rest are internal only
-	"",				-1,
+	{"",				-1},
 };
 
-#define stringIDExpand(str, strEnum)	str, strEnum, ENUM2STRING(strEnum)
+#define stringIDExpand(str, strEnum)	{str, strEnum}, ENUM2STRING(strEnum)
 
 stringID_table_t BSETTable[] =
 {
@@ -122,13 +120,11 @@ stringID_table_t BSETTable[] =
 	ENUM2STRING(BSET_FFIRE),//# script to run when player shoots their own teammates
 	ENUM2STRING(BSET_FFDEATH),//# script to run when player kills a teammate
 	stringIDExpand("", BSET_INVALID),
-	"",				-1,
+	{"",				-1},
 };
-
 
 extern stringID_table_t WPTable[];
 extern stringID_table_t FPTable[];
-
 
 char	*TeamNames[TEAM_NUM_TEAMS] = 
 {
@@ -226,9 +222,7 @@ int NPC_ReactionTime ( void )
 // parse support routines
 //
 
-
 extern qboolean BG_ParseLiteral( const char **data, const char *string );
-
 
 //
 // NPC parameters file : scripts/NPCs.cfg
@@ -327,11 +321,10 @@ static rank_t TranslateRankName( const char *name )
 	}
 
 	return RANK_CIVILIAN;
+
 }
 
-
 extern saber_colors_t TranslateSaberColor( const char *name );
-
 
 /* static int MethodNameToNumber( const char *name ) {
 	if ( !Q_stricmp( name, "EXPONENTIAL" ) ) {
@@ -3285,5 +3278,4 @@ void NPC_LoadParms( void )
 			//rww  12/19/02-actually the probelm was npcParseBuffer not being nul-term'd, which could cause issues in the strcat too
 		}
 	}
-
 }

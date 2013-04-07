@@ -188,7 +188,7 @@ static void CG_TransitionSnapshot( void ) {
 		// if we are not doing client side movement prediction for any
 		// reason, then the client events and view changes will be issued now
 		if ( cg.demoPlayback || (cg.snap->ps.pm_flags & PMF_FOLLOW)
-			|| cg_nopredict.integer || cg_synchronousClients.integer || CG_UsingEWeb() ) {
+			|| cg_noPredict.integer || g_synchronousClients.integer || CG_UsingEWeb() ) {
 			CG_TransitionPlayerState( ps, ops );
 		}
 	}
@@ -272,7 +272,7 @@ static snapshot_t *CG_ReadNextSnapshot( void ) {
 	snapshot_t	*dest;
 
 	if ( cg.latestSnapshotNum > cgs.processedSnapshotNum + 1000 ) {
-		CG_Printf( "WARNING: CG_ReadNextSnapshot: way out of range, %i > %i", 
+		CG_Printf( "WARNING: CG_ReadNextSnapshot: way out of range, %i > %i\n", 
 			cg.latestSnapshotNum, cgs.processedSnapshotNum );
 	}
 
@@ -290,7 +290,14 @@ static snapshot_t *CG_ReadNextSnapshot( void ) {
 
 		// FIXME: why would trap_GetSnapshot return a snapshot with the same server time
 		if ( cg.snap && r && dest->serverTime == cg.snap->serverTime ) {
-			//continue;
+			//[BugFix30]
+			//According to dumbledore, this situation occurs when you're playing back a demo that was record when
+			//the game was running in local mode.  As such, we need to skip those snaps or the demo looks laggy.
+			if ( cg.demoPlayback ) 
+			{
+				continue;
+			}
+			//[/BugFix30]
 		}
 
 		// if it succeeded, return

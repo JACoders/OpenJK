@@ -1,5 +1,5 @@
 // this include must remain at the top of every CPP file
-//#include "../game/q_math.h"
+//#include "qcommon/q_math.h"
 //#include "tr_headers.h"
 
 // tr_QuickSprite.h: interface for the CQuickSprite class.

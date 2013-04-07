@@ -3,7 +3,7 @@
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
 
-#include "../ui/ui_shared.h"
+#include "ui/ui_shared.h"
 // display context for new ui stuff
 displayContextDef_t cgDC;
 
@@ -112,8 +112,6 @@ vec4_t colorTable[CT_MAX] =
 
 int cgWeatherOverride = 0;
 
-int forceModelModificationCount = -1;
-
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
 void CG_Shutdown( void );
 
@@ -131,16 +129,6 @@ static void C_G2Mark(void);
 static int	CG_RagCallback(int callType);
 static void C_GetBoltPos(void);
 static void C_ImpactMark(void);
-
-#define MAX_MISC_ENTS	4000
-
-//static refEntity_t	*MiscEnts = 0;
-//static float		*Radius = 0;
-static refEntity_t	MiscEnts[MAX_MISC_ENTS]; //statically allocated for now.
-static float		Radius[MAX_MISC_ENTS];
-static float		zOffset[MAX_MISC_ENTS]; //some models need a z offset for culling, because of stupid wrong model origins
-
-static int			NumMiscEnts = 0;
 
 extern autoMapInput_t cg_autoMapInput; //cg_view.c
 extern int cg_autoMapInputTime;
@@ -180,7 +168,7 @@ This is the only way control passes into the module.
 This must be the very first function compiled into the .q3vm file
 ================
 */
-int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
+Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
 
 	switch ( command ) {
 	case CG_INIT:
@@ -573,78 +561,42 @@ static void C_ImpactMark(void)
 
 void CG_MiscEnt(void)
 {
-	int			modelIndex;
-	refEntity_t	*RefEnt;
-	TCGMiscEnt	*data = (TCGMiscEnt *)cg.sharedBuffer;
-	vec3_t		mins, maxs;
-	float		*radius, *zOff;
+	int i;
+	int modelIndex;
+	TCGMiscEnt *data = (TCGMiscEnt *)cg.sharedBuffer;
+	cg_staticmodel_t *staticmodel;
 
-	if (NumMiscEnts >= MAX_MISC_ENTS)
-	{
-		return;
+	if( cgs.numMiscStaticModels >= MAX_STATIC_MODELS ) {
+		CG_Error( "^1MAX_STATIC_MODELS(%i) hit", MAX_STATIC_MODELS );
 	}
-	
-	radius = &Radius[NumMiscEnts];
-	zOff = &zOffset[NumMiscEnts];
-	RefEnt = &MiscEnts[NumMiscEnts++];
 
 	modelIndex = trap_R_RegisterModel(data->mModel);
-	if (modelIndex == 0)
-	{
-		Com_Error(ERR_DROP, "client_model has invalid model definition");
+	if (modelIndex == 0) {
+		CG_Error( "client_model failed to load model '%s'", data->mModel );
 		return;
 	}
 
-	*zOff = 0;
+	staticmodel = &cgs.miscStaticModels[cgs.numMiscStaticModels++];
+	staticmodel->model = modelIndex;
+	AnglesToAxis( data->mAngles, staticmodel->axes );
+	for ( i = 0; i < 3; i++ ) {
+		VectorScale( staticmodel->axes[i], data->mScale[i], staticmodel->axes[i] );
+	}
 
-	memset(RefEnt, 0, sizeof(refEntity_t));
-	RefEnt->reType = RT_MODEL;
-	RefEnt->hModel = modelIndex;
-	RefEnt->frame = 0;
-	trap_R_ModelBounds(modelIndex, mins, maxs);
-	VectorCopy(data->mScale, RefEnt->modelScale);
-	VectorCopy(data->mOrigin, RefEnt->origin);
+	VectorCopy( data->mOrigin, staticmodel->org );
+	staticmodel->zoffset = 0.f;
 
-	VectorScaleVector(mins, data->mScale, mins);
-	VectorScaleVector(maxs, data->mScale, maxs);
-	*radius = Distance(mins, maxs);
+	if( staticmodel->model ) {
+		vec3_t mins, maxs;
 
-	AnglesToAxis( data->mAngles, RefEnt->axis );
-	ScaleModelAxis(RefEnt);
-}
+		trap_R_ModelBounds( staticmodel->model, mins, maxs );
 
-void CG_DrawMiscEnts(void)
-{
-	int			i;
-	refEntity_t	*RefEnt;
-	float		*radius, *zOff;
-	vec3_t		difference;
-	vec3_t		cullOrigin;
+		VectorScaleVector(mins, data->mScale, mins);
+		VectorScaleVector(maxs, data->mScale, maxs);
 
-	RefEnt = MiscEnts;
-	radius = Radius;
-	zOff = zOffset;
-	for(i=0;i<NumMiscEnts;i++)
-	{
-		VectorCopy(RefEnt->origin, cullOrigin);
-		cullOrigin[2] += 1.0f;
-
-		if (*zOff)
-		{
-			cullOrigin[2] += *zOff;
-		}
-
-		if (cg.snap && trap_R_inPVS(cg.refdef.vieworg, cullOrigin, cg.snap->areamask))
-		{
-			VectorSubtract(RefEnt->origin, cg.refdef.vieworg, difference);
-			if (VectorLength(difference)-(*radius) <= cg.distanceCull)
-			{
-				trap_R_AddRefEntityToScene(RefEnt);
-			}
-		}
-		RefEnt++;
-		radius++;
-		zOff++;
+		staticmodel->radius = RadiusFromBounds( mins, maxs );
+	} else {
+		staticmodel->radius = 0;
 	}
 }
 
@@ -691,356 +643,53 @@ weaponInfo_t		cg_weapons[MAX_WEAPONS];
 itemInfo_t			cg_items[MAX_ITEMS];
 
 
-vmCvar_t	cg_centertime;
-vmCvar_t	cg_runpitch;
-vmCvar_t	cg_runroll;
-vmCvar_t	cg_bobup;
-vmCvar_t	cg_bobpitch;
-vmCvar_t	cg_bobroll;
-//vmCvar_t	cg_swingSpeed;
-vmCvar_t	cg_shadows;
-vmCvar_t	cg_renderToTextureFX;
-vmCvar_t	cg_drawTimer;
-vmCvar_t	cg_drawFPS;
-vmCvar_t	cg_drawSnapshot;
-vmCvar_t	cg_draw3dIcons;
-vmCvar_t	cg_drawIcons;
-vmCvar_t	cg_drawAmmoWarning;
-vmCvar_t	cg_drawCrosshair;
-vmCvar_t	cg_drawCrosshairNames;
-vmCvar_t	cg_drawRadar;
-vmCvar_t	cg_drawVehLeadIndicator;
-vmCvar_t	cg_dynamicCrosshair;
-vmCvar_t	cg_dynamicCrosshairPrecision;
-vmCvar_t	cg_drawRewards;
-vmCvar_t	cg_drawScores;
-vmCvar_t	cg_crosshairSize;
-vmCvar_t	cg_crosshairX;
-vmCvar_t	cg_crosshairY;
-vmCvar_t	cg_crosshairHealth;
-vmCvar_t	cg_draw2D;
-vmCvar_t	cg_drawStatus;
-vmCvar_t	cg_animSpeed;
-vmCvar_t	cg_debugAnim;
-vmCvar_t	cg_debugSaber;
-vmCvar_t	cg_debugPosition;
-vmCvar_t	cg_debugEvents;
-vmCvar_t	cg_errorDecay;
-vmCvar_t	cg_nopredict;
-vmCvar_t	cg_noPlayerAnims;
-vmCvar_t	cg_showmiss;
-vmCvar_t	cg_showVehMiss;
-vmCvar_t	cg_footsteps;
-vmCvar_t	cg_addMarks;
-vmCvar_t	cg_viewsize;
-vmCvar_t	cg_drawGun;
-vmCvar_t	cg_gun_frame;
-vmCvar_t	cg_gun_x;
-vmCvar_t	cg_gun_y;
-vmCvar_t	cg_gun_z;
-vmCvar_t	cg_autoswitch;
-vmCvar_t	cg_ignore;
-vmCvar_t	cg_simpleItems;
-vmCvar_t	cg_fov;
-vmCvar_t	cg_zoomFov;
+static void CG_SVRunningChange( void ) {
+	cgs.localServer = sv_running.integer;
+}
 
-vmCvar_t	cg_swingAngles;
+static void CG_ForceModelChange( void ) {
+	int i;
 
-vmCvar_t	cg_oldPainSounds;
+	for ( i=0; i<MAX_CLIENTS; i++ ) {
+		const char *clientInfo;
+		void *oldGhoul2;
 
-vmCvar_t	cg_ragDoll;
+		clientInfo = CG_ConfigString( CS_PLAYERS+i );
+		if ( !VALIDSTRING( clientInfo ) )
+			continue;
 
-vmCvar_t	cg_jumpSounds;
+		oldGhoul2 = cgs.clientinfo[i].ghoul2Model;
+		CG_NewClientInfo( i, qtrue );
+	}
+}
 
-vmCvar_t	cg_autoMap;
-vmCvar_t	cg_autoMapX;
-vmCvar_t	cg_autoMapY;
-vmCvar_t	cg_autoMapW;
-vmCvar_t	cg_autoMapH;
-
-vmCvar_t	bg_fighterAltControl;
-
-vmCvar_t	cg_chatBox;
-vmCvar_t	cg_chatBoxHeight;
-
-vmCvar_t	cg_saberModelTraceEffect;
-
-vmCvar_t	cg_saberClientVisualCompensation;
-
-vmCvar_t	cg_g2TraceLod;
-
-vmCvar_t	cg_fpls;
-
-vmCvar_t	cg_ghoul2Marks;
-
-vmCvar_t	cg_optvehtrace;
-
-vmCvar_t	cg_saberDynamicMarks;
-vmCvar_t	cg_saberDynamicMarkTime;
-
-vmCvar_t	cg_saberContact;
-vmCvar_t	cg_saberTrail;
-
-vmCvar_t	cg_duelHeadAngles;
-
-vmCvar_t	cg_speedTrail;
-vmCvar_t	cg_auraShell;
-
-vmCvar_t	cg_repeaterOrb;
-
-vmCvar_t	cg_animBlend;
-
-vmCvar_t	cg_dismember;
-
-vmCvar_t	cg_thirdPersonSpecialCam;
-
-vmCvar_t	cg_thirdPerson;
-vmCvar_t	cg_thirdPersonRange;
-vmCvar_t	cg_thirdPersonAngle;
-vmCvar_t	cg_thirdPersonPitchOffset;
-vmCvar_t	cg_thirdPersonVertOffset;
-vmCvar_t	cg_thirdPersonCameraDamp;
-vmCvar_t	cg_thirdPersonTargetDamp;
-
-vmCvar_t	cg_thirdPersonAlpha;
-vmCvar_t	cg_thirdPersonHorzOffset;
-
-vmCvar_t	cg_stereoSeparation;
-vmCvar_t	cg_lagometer;
-vmCvar_t	cg_drawEnemyInfo;
-vmCvar_t	cg_synchronousClients;
-vmCvar_t 	cg_stats;
-vmCvar_t 	cg_buildScript;
-vmCvar_t 	cg_forceModel;
-vmCvar_t	cg_paused;
-vmCvar_t	cg_blood;
-vmCvar_t	cg_predictItems;
-vmCvar_t	cg_deferPlayers;
-vmCvar_t	cg_drawTeamOverlay;
-vmCvar_t	cg_teamOverlayUserinfo;
-vmCvar_t	cg_drawFriend;
-vmCvar_t	cg_teamChatsOnly;
-vmCvar_t	cg_hudFiles;
-vmCvar_t 	cg_scorePlum;
-vmCvar_t 	cg_smoothClients;
-
-vmCvar_t	pmove_fixed;
-//vmCvar_t	cg_pmove_fixed;
-vmCvar_t	pmove_msec;
-// nmckenzie: DUEL_HEALTH
-vmCvar_t	g_showDuelHealths;
-
-vmCvar_t	cg_pmove_msec;
-vmCvar_t	cg_cameraMode;
-vmCvar_t	cg_cameraOrbit;
-vmCvar_t	cg_cameraOrbitDelay;
-vmCvar_t	cg_timescaleFadeEnd;
-vmCvar_t	cg_timescaleFadeSpeed;
-vmCvar_t	cg_timescale;
-vmCvar_t	cg_noTaunt;
-vmCvar_t	cg_noProjectileTrail;
-//vmCvar_t	cg_trueLightning;
-/*
-Ghoul2 Insert Start
-*/
-vmCvar_t	cg_debugBB;
-/*
-Ghoul2 Insert End
-*/
-//vmCvar_t 	cg_redTeamName;
-//vmCvar_t 	cg_blueTeamName;
-vmCvar_t	cg_currentSelectedPlayer;
-vmCvar_t	cg_currentSelectedPlayerName;
-//vmCvar_t	cg_singlePlayerActive;
-vmCvar_t	cg_recordSPDemo;
-vmCvar_t	cg_recordSPDemoName;
-vmCvar_t	cg_showVehBounds;
-
-vmCvar_t	ui_myteam;
-
-vmCvar_t	cg_snapshotTimeout;
+static void CG_TeamOverlayChange( void ) {
+	// If team overlay is on, ask for updates from the server.  If its off,
+	// let the server know so we don't receive it
+	if ( cg_drawTeamOverlay.integer > 0 && cgs.gametype >= GT_SINGLE_PLAYER)
+		trap_Cvar_Set( "teamoverlay", "1" );
+	else
+		trap_Cvar_Set( "teamoverlay", "0" );
+}
 
 typedef struct {
 	vmCvar_t	*vmCvar;
 	char		*cvarName;
 	char		*defaultString;
+	void		(*update)( void );
 	int			cvarFlags;
 } cvarTable_t;
 
-static cvarTable_t cvarTable[] = { // bk001129
-	{ &cg_ignore, "cg_ignore", "0", 0 },	// used for debugging
-	{ &cg_autoswitch, "cg_autoswitch", "1", CVAR_ARCHIVE },
-	{ &cg_drawGun, "cg_drawGun", "1", CVAR_ARCHIVE },
-	{ &cg_zoomFov, "cg_zoomfov", "40.0", CVAR_ARCHIVE },
-	{ &cg_fov, "cg_fov", "80", CVAR_ARCHIVE },
-	{ &cg_viewsize, "cg_viewsize", "100", CVAR_ARCHIVE },
-	{ &cg_stereoSeparation, "cg_stereoSeparation", "0.4", CVAR_ARCHIVE  },
-	{ &cg_shadows, "cg_shadows", "1", CVAR_ARCHIVE  },
-	{ &cg_renderToTextureFX, "cg_renderToTextureFX", "1", CVAR_ARCHIVE  },
-	{ &cg_draw2D, "cg_draw2D", "1", CVAR_ARCHIVE  },
-	{ &cg_drawStatus, "cg_drawStatus", "1", CVAR_ARCHIVE  },
-	{ &cg_drawTimer, "cg_drawTimer", "0", CVAR_ARCHIVE  },
-	{ &cg_drawFPS, "cg_drawFPS", "0", CVAR_ARCHIVE  },
-	{ &cg_drawSnapshot, "cg_drawSnapshot", "0", CVAR_ARCHIVE  },
-	{ &cg_draw3dIcons, "cg_draw3dIcons", "1", CVAR_ARCHIVE  },
-	{ &cg_drawIcons, "cg_drawIcons", "1", CVAR_ARCHIVE  },
-	{ &cg_drawAmmoWarning, "cg_drawAmmoWarning", "0", CVAR_ARCHIVE  },
-	{ &cg_drawEnemyInfo, "cg_drawEnemyInfo", "1", CVAR_ARCHIVE  },
-	{ &cg_drawCrosshair, "cg_drawCrosshair", "1", CVAR_ARCHIVE },
-	{ &cg_drawCrosshairNames, "cg_drawCrosshairNames", "1", CVAR_ARCHIVE },
-	{ &cg_drawRadar, "cg_drawRadar", "1", CVAR_ARCHIVE },
-	{ &cg_drawVehLeadIndicator, "cg_drawVehLeadIndicator", "1", CVAR_ARCHIVE },
-	{ &cg_drawScores,		  "cg_drawScores", "1", CVAR_ARCHIVE },
-	{ &cg_dynamicCrosshair, "cg_dynamicCrosshair", "1", CVAR_ARCHIVE },
-	//Enables ghoul2 traces for crosshair traces.. more precise when pointing at others, but slower.
-	//And if the server doesn't have g2 col enabled, it won't match up the same.
-	{ &cg_dynamicCrosshairPrecision, "cg_dynamicCrosshairPrecision", "1", CVAR_ARCHIVE },
-	{ &cg_drawRewards, "cg_drawRewards", "1", CVAR_ARCHIVE },
-	{ &cg_crosshairSize, "cg_crosshairSize", "24", CVAR_ARCHIVE },
-	{ &cg_crosshairHealth, "cg_crosshairHealth", "0", CVAR_ARCHIVE },
-	{ &cg_crosshairX, "cg_crosshairX", "0", CVAR_ARCHIVE },
-	{ &cg_crosshairY, "cg_crosshairY", "0", CVAR_ARCHIVE },
-	{ &cg_simpleItems, "cg_simpleItems", "0", CVAR_ARCHIVE },
-	{ &cg_addMarks, "cg_marks", "1", CVAR_ARCHIVE },
-	{ &cg_lagometer, "cg_lagometer", "0", CVAR_ARCHIVE },
-	{ &cg_gun_x, "cg_gunX", "0", CVAR_CHEAT },
-	{ &cg_gun_y, "cg_gunY", "0", CVAR_CHEAT },
-	{ &cg_gun_z, "cg_gunZ", "0", CVAR_CHEAT },
-	{ &cg_centertime, "cg_centertime", "3", CVAR_CHEAT },
-	{ &cg_runpitch, "cg_runpitch", "0.002", CVAR_ARCHIVE},
-	{ &cg_runroll, "cg_runroll", "0.005", CVAR_ARCHIVE },
-	{ &cg_bobup , "cg_bobup", "0.005", CVAR_ARCHIVE },
-	{ &cg_bobpitch, "cg_bobpitch", "0.002", CVAR_ARCHIVE },
-	{ &cg_bobroll, "cg_bobroll", "0.002", CVAR_ARCHIVE },
-	//{ &cg_swingSpeed, "cg_swingSpeed", "0.3", CVAR_CHEAT },
-	{ &cg_animSpeed, "cg_animspeed", "1", CVAR_CHEAT },
-	{ &cg_debugAnim, "cg_debuganim", "0", CVAR_CHEAT },
-	{ &cg_debugSaber, "cg_debugsaber", "0", CVAR_CHEAT },
-	{ &cg_debugPosition, "cg_debugposition", "0", CVAR_CHEAT },
-	{ &cg_debugEvents, "cg_debugevents", "0", CVAR_CHEAT },
-	{ &cg_errorDecay, "cg_errordecay", "100", 0 },
-	{ &cg_nopredict, "cg_nopredict", "0", 0 },
-	{ &cg_noPlayerAnims, "cg_noplayeranims", "0", CVAR_CHEAT },
-	{ &cg_showmiss, "cg_showmiss", "0", 0 },
-	{ &cg_showVehMiss, "cg_showVehMiss", "0", 0 },
-	{ &cg_footsteps, "cg_footsteps", "3", CVAR_ARCHIVE },
-	{ &cg_swingAngles, "cg_swingAngles", "1", 0 },
+#define XCVAR_DECL
+	#include "cg_xcvar.h"
+#undef XCVAR_DECL
 
-	{ &cg_oldPainSounds, "cg_oldPainSounds", "0", 0 },
-
-	{ &cg_ragDoll, "broadsword", "0", 0 },
-
-	{ &cg_jumpSounds, "cg_jumpSounds", "0", 0 },
-
-	{ &cg_autoMap, "r_autoMap", "0", CVAR_ARCHIVE },
-	{ &cg_autoMapX, "r_autoMapX", "496", CVAR_ARCHIVE },
-	{ &cg_autoMapY, "r_autoMapY", "32", CVAR_ARCHIVE },
-	{ &cg_autoMapW, "r_autoMapW", "128", CVAR_ARCHIVE },
-	{ &cg_autoMapH, "r_autoMapH", "128", CVAR_ARCHIVE },
-
-	{ &bg_fighterAltControl, "bg_fighterAltControl", "0", CVAR_SERVERINFO },
-
-	{ &cg_chatBox, "cg_chatBox", "10000", CVAR_ARCHIVE },
-	{ &cg_chatBoxHeight, "cg_chatBoxHeight", "350", CVAR_ARCHIVE },
-
-	{ &cg_saberModelTraceEffect, "cg_saberModelTraceEffect", "0", 0 },
-
-	//allows us to trace between server frames on the client to see if we're visually
-	//hitting the last entity we detected a hit on from the server.
-	{ &cg_saberClientVisualCompensation, "cg_saberClientVisualCompensation", "1", 0 },
-
-	{ &cg_g2TraceLod, "cg_g2TraceLod", "2", 0 },
-
-	{ &cg_fpls, "cg_fpls", "0", 0 },
-
-	{ &cg_ghoul2Marks, "cg_ghoul2Marks", "16", 0 },
-
-	{ &cg_optvehtrace, "com_optvehtrace", "0", 0 },
-
-	{ &cg_saberDynamicMarks, "cg_saberDynamicMarks", "0", 0 },
-	{ &cg_saberDynamicMarkTime, "cg_saberDynamicMarkTime", "60000", 0 },
-
-	{ &cg_saberContact, "cg_saberContact", "1", 0 },
-	{ &cg_saberTrail, "cg_saberTrail", "1", 0 },
-
-	{ &cg_duelHeadAngles, "cg_duelHeadAngles", "0", 0 },
-
-	{ &cg_speedTrail, "cg_speedTrail", "1", 0 },
-	{ &cg_auraShell, "cg_auraShell", "1", 0 },
-
-	{ &cg_repeaterOrb, "cg_repeaterOrb", "0", 0 },
-
-	{ &cg_animBlend, "cg_animBlend", "1", 0 },
-
-	{ &cg_dismember, "cg_dismember", "0", CVAR_ARCHIVE },
-
-	{ &cg_thirdPersonSpecialCam, "cg_thirdPersonSpecialCam", "0", 0 },
-
-	{ &cg_thirdPerson, "cg_thirdPerson", "0", CVAR_ARCHIVE },
-	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "80", CVAR_CHEAT },
-	{ &cg_thirdPersonAngle, "cg_thirdPersonAngle", "0", CVAR_CHEAT },
-	{ &cg_thirdPersonPitchOffset, "cg_thirdPersonPitchOffset", "0", CVAR_CHEAT },
-	{ &cg_thirdPersonVertOffset, "cg_thirdPersonVertOffset", "16", CVAR_CHEAT },
-	{ &cg_thirdPersonCameraDamp, "cg_thirdPersonCameraDamp", "0.3", 0 },
-	{ &cg_thirdPersonTargetDamp, "cg_thirdPersonTargetDamp", "0.5", CVAR_CHEAT },
-	
-	{ &cg_thirdPersonHorzOffset, "cg_thirdPersonHorzOffset", "0", CVAR_CHEAT },
-	{ &cg_thirdPersonAlpha,	"cg_thirdPersonAlpha",	"1.0", CVAR_CHEAT },
-
-	{ &cg_forceModel, "cg_forceModel", "0", CVAR_ARCHIVE  },
-	{ &cg_predictItems, "cg_predictItems", "1", CVAR_ARCHIVE },
-	{ &cg_deferPlayers, "cg_deferPlayers", "1", CVAR_ARCHIVE },
-	{ &cg_drawTeamOverlay, "cg_drawTeamOverlay", "0", CVAR_ARCHIVE },
-	{ &cg_teamOverlayUserinfo, "teamoverlay", "0", CVAR_ROM | CVAR_USERINFO },
-	{ &cg_stats, "cg_stats", "0", 0 },
-	{ &cg_drawFriend, "cg_drawFriend", "1", CVAR_ARCHIVE },
-	{ &cg_teamChatsOnly, "cg_teamChatsOnly", "0", CVAR_ARCHIVE },
-	// the following variables are created in other parts of the system,
-	// but we also reference them here
-	{ &cg_buildScript, "com_buildScript", "0", 0 },	// force loading of all possible data amd error on failures
-	{ &cg_paused, "cl_paused", "0", CVAR_ROM },
-	{ &cg_blood, "com_blood", "1", CVAR_ARCHIVE },
-	{ &cg_synchronousClients, "g_synchronousClients", "0", 0 },	// communicated by systeminfo
-
-//	{ &cg_redTeamName, "g_redteam", DEFAULT_REDTEAM_NAME, CVAR_ARCHIVE | CVAR_SERVERINFO | CVAR_USERINFO },
-//	{ &cg_blueTeamName, "g_blueteam", DEFAULT_BLUETEAM_NAME, CVAR_ARCHIVE | CVAR_SERVERINFO | CVAR_USERINFO },
-	{ &cg_currentSelectedPlayer, "cg_currentSelectedPlayer", "0", CVAR_ARCHIVE},
-	{ &cg_currentSelectedPlayerName, "cg_currentSelectedPlayerName", "", CVAR_ARCHIVE},
-//	{ &cg_singlePlayerActive, "ui_singlePlayerActive", "0", CVAR_USERINFO},
-	{ &cg_recordSPDemo, "ui_recordSPDemo", "0", CVAR_ARCHIVE},
-	{ &cg_recordSPDemoName, "ui_recordSPDemoName", "", CVAR_ARCHIVE},
-
-	{ &cg_cameraOrbit, "cg_cameraOrbit", "0", CVAR_CHEAT},
-	{ &cg_cameraOrbitDelay, "cg_cameraOrbitDelay", "50", CVAR_ARCHIVE},
-	{ &cg_timescaleFadeEnd, "cg_timescaleFadeEnd", "1", 0},
-	{ &cg_timescaleFadeSpeed, "cg_timescaleFadeSpeed", "0", 0},
-	{ &cg_timescale, "timescale", "1", 0},
-	{ &cg_scorePlum, "cg_scorePlums", "1",  CVAR_ARCHIVE},
-	{ &cg_hudFiles, "cg_hudFiles", "ui/jahud.txt", CVAR_ARCHIVE},
-	{ &cg_smoothClients, "cg_smoothClients", "1",  CVAR_ARCHIVE},
-	{ &cg_cameraMode, "com_cameraMode", "0", CVAR_CHEAT},
-
-	{ &pmove_fixed, "pmove_fixed", "0", 0},
-	{ &pmove_msec, "pmove_msec", "8", 0},
-	{ &cg_noTaunt, "cg_noTaunt", "0", CVAR_ARCHIVE},
-	{ &cg_noProjectileTrail, "cg_noProjectileTrail", "0", CVAR_ARCHIVE},
-//	{ &cg_trueLightning, "cg_trueLightning", "0.0", CVAR_ARCHIVE},
-	{ &cg_showVehBounds, "cg_showVehBounds", "0", 0},
-
-	{ &ui_myteam, "ui_myteam", "0", CVAR_ROM|CVAR_INTERNAL},
-	{ &cg_snapshotTimeout, "cg_snapshotTimeout", "10", CVAR_ARCHIVE },
-
-//	{ &cg_pmove_fixed, "cg_pmove_fixed", "0", CVAR_USERINFO | CVAR_ARCHIVE }
-/*
-Ghoul2 Insert Start
-*/
-	{ &cg_debugBB, "debugBB", "0", 0},
-/*
-Ghoul2 Insert End
-*/
+static cvarTable_t cvarTable[] = {
+	#define XCVAR_LIST
+		#include "cg_xcvar.h"
+	#undef XCVAR_LIST
 };
-
-static int  cvarTableSize = sizeof( cvarTable ) / sizeof( cvarTable[0] );
+static int cvarTableSize = ARRAY_LEN( cvarTable );
 
 /*
 =================
@@ -1050,90 +699,11 @@ CG_RegisterCvars
 void CG_RegisterCvars( void ) {
 	int			i;
 	cvarTable_t	*cv;
-	char		var[MAX_TOKEN_CHARS];
 
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) {
-		trap_Cvar_Register( cv->vmCvar, cv->cvarName,
-			cv->defaultString, cv->cvarFlags );
-	}
-
-	// see if we are also running the server on this machine
-	trap_Cvar_VariableStringBuffer( "sv_running", var, sizeof( var ) );
-	cgs.localServer = atoi( var );
-
-	forceModelModificationCount = cg_forceModel.modificationCount;
-
-	trap_Cvar_Register(NULL, "model", DEFAULT_MODEL, CVAR_USERINFO | CVAR_ARCHIVE );
-	trap_Cvar_Register(NULL, "forcepowers", DEFAULT_FORCEPOWERS, CVAR_USERINFO | CVAR_ARCHIVE );
-
-	// Cvars uses for transferring data between client and server
-	trap_Cvar_Register(NULL, "ui_about_gametype",		"0", CVAR_ROM|CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_about_fraglimit",		"0", CVAR_ROM|CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_about_capturelimit",	"0", CVAR_ROM|CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_about_duellimit",		"0", CVAR_ROM|CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_about_timelimit",		"0", CVAR_ROM|CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_about_maxclients",		"0", CVAR_ROM|CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_about_dmflags",		"0", CVAR_ROM|CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_about_mapname",		"0", CVAR_ROM|CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_about_hostname",		"0", CVAR_ROM|CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_about_needpass",		"0", CVAR_ROM|CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_about_botminplayers",	"0", CVAR_ROM|CVAR_INTERNAL );
-
-	trap_Cvar_Register(NULL, "ui_tm1_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm2_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm3_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-
-	trap_Cvar_Register(NULL, "ui_tm1_c0_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm1_c1_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm1_c2_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm1_c3_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm1_c4_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm1_c5_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-
-	trap_Cvar_Register(NULL, "ui_tm2_c0_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm2_c1_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm2_c2_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm2_c3_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm2_c4_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-	trap_Cvar_Register(NULL, "ui_tm2_c5_cnt", "0", CVAR_ROM | CVAR_INTERNAL );
-
-}
-
-/*																																			
-===================
-CG_SetWeatherOverride
-===================
-*/
-#if 0
-void CG_SetWeatherOverride(int contents)
-{
-	if (contents != cgWeatherOverride)
-	{ //only do the trap call if we aren't already set to this
-		trap_R_WeatherContentsOverride(contents);
-	}
-	cgWeatherOverride = contents; //keep track of it
-}
-#endif
-
-/*																																			
-===================
-CG_ForceModelChange
-===================
-*/
-static void CG_ForceModelChange( void ) {
-	int		i;
-
-	for (i=0 ; i<MAX_CLIENTS ; i++) {
-		const char		*clientInfo;
-		void	*oldGhoul2;
-
-		clientInfo = CG_ConfigString( CS_PLAYERS+i );
-		if ( !clientInfo[0] ) {
-			continue;
-		}
-
-		oldGhoul2 = cgs.clientinfo[i].ghoul2Model;
-		CG_NewClientInfo( i, qtrue);
+	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
+		trap_Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
+		if ( cv->update )
+			cv->update();
 	}
 }
 
@@ -1145,103 +715,79 @@ CG_UpdateCvars
 void CG_UpdateCvars( void ) {
 	int			i;
 	cvarTable_t	*cv;
-	static int drawTeamOverlayModificationCount = -1;
 
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) {
-		trap_Cvar_Update( cv->vmCvar );
-	}
-
-	// check for modications here
-
-	// If team overlay is on, ask for updates from the server.  If its off,
-	// let the server know so we don't receive it
-	if ( drawTeamOverlayModificationCount != cg_drawTeamOverlay.modificationCount ) {
-		drawTeamOverlayModificationCount = cg_drawTeamOverlay.modificationCount;
-
-		if ( cg_drawTeamOverlay.integer > 0 ) {
-			trap_Cvar_Set( "teamoverlay", "1" );
-		} else {
-			trap_Cvar_Set( "teamoverlay", "0" );
+	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
+		if ( cv->vmCvar ) {
+			int modCount = cv->vmCvar->modificationCount;
+			trap_Cvar_Update( cv->vmCvar );
+			if ( cv->vmCvar->modificationCount > modCount ) {
+				if ( cv->update )
+					cv->update();
+			}
 		}
-		// FIXME E3 HACK
-		trap_Cvar_Set( "teamoverlay", "1" );
-	}
-
-	// if force model changed
-	if ( forceModelModificationCount != cg_forceModel.modificationCount ) {
-		forceModelModificationCount = cg_forceModel.modificationCount;
-		CG_ForceModelChange();
 	}
 }
 
 int CG_CrosshairPlayer( void ) {
-	if ( cg.time > ( cg.crosshairClientTime + 1000 ) ) {
+	if ( cg.time > (cg.crosshairClientTime + 1000) )
 		return -1;
-	}
 
-	if (cg.crosshairClientNum >= MAX_CLIENTS)
-	{
+	if ( cg.crosshairClientNum >= MAX_CLIENTS )
 		return -1;
-	}
 
 	return cg.crosshairClientNum;
 }
 
 int CG_LastAttacker( void ) {
-	if ( !cg.attackerTime ) {
+	if ( !cg.attackerTime )
 		return -1;
-	}
+
 	return cg.snap->ps.persistant[PERS_ATTACKER];
 }
 
 void QDECL CG_Printf( const char *msg, ... ) {
 	va_list		argptr;
-	char		text[1024];
+	char		text[1024] = {0};
 
-	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
-	va_end (argptr);
+	va_start( argptr, msg );
+	Q_vsnprintf( text, sizeof( text ), msg, argptr );
+	va_end( argptr );
 
 	trap_Print( text );
 }
 
 void QDECL CG_Error( const char *msg, ... ) {
 	va_list		argptr;
-	char		text[1024];
+	char		text[1024] = {0};
 
 	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
+	Q_vsnprintf( text, sizeof( text ), msg, argptr );
 	va_end (argptr);
 
 	trap_Error( text );
 }
 
-#ifndef CGAME_HARD_LINKED
-// this is only here so the functions in q_shared.c and bg_*.c can link (FIXME)
-
 void QDECL Com_Error( int level, const char *error, ... ) {
 	va_list		argptr;
-	char		text[1024];
+	char		text[1024] = {0};
 
-	va_start (argptr, error);
-	vsprintf (text, error, argptr);
-	va_end (argptr);
+	va_start( argptr, error );
+	Q_vsnprintf( text, sizeof( text ), error, argptr );
+	va_end( argptr );
 
-	CG_Error( "%s", text);
+	trap_Error(text);
 }
 
 void QDECL Com_Printf( const char *msg, ... ) {
 	va_list		argptr;
-	char		text[1024];
+	char		text[1024] = {0};
 
-	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
-	va_end (argptr);
+	va_start( argptr, msg );
+	Q_vsnprintf( text, sizeof( text ), msg, argptr );
+	va_end( argptr );
 
-	CG_Printf ("%s", text);
+	trap_Print(text);
 }
-
-#endif
 
 /*
 ================
@@ -1249,7 +795,7 @@ CG_Argv
 ================
 */
 const char *CG_Argv( int arg ) {
-	static char	buffer[MAX_STRING_CHARS];
+	static char	buffer[MAX_STRING_CHARS] = {0};
 
 	trap_Argv( arg, buffer, sizeof( buffer ) );
 
@@ -1587,7 +1133,7 @@ static void CG_RegisterSounds( void ) {
 	trap_S_RegisterSound("sound/weapons/force/jump.mp3"); //PDSOUND_FORCEJUMP
 	trap_S_RegisterSound("sound/weapons/force/grip.mp3"); //PDSOUND_FORCEGRIP
 
-	if ( cgs.gametype >= GT_TEAM || cg_buildScript.integer ) {
+	if ( cgs.gametype >= GT_TEAM || com_buildScript.integer ) {
 
 #ifdef JK2AWARDS
 		cgs.media.captureAwardSound = trap_S_RegisterSound( "sound/teamplay/flagcapture_yourteam.wav" );
@@ -1599,13 +1145,13 @@ static void CG_RegisterSounds( void ) {
 		cgs.media.redScoredSound = trap_S_RegisterSound( "sound/chars/protocol/misc/40MOM044");
 		cgs.media.blueScoredSound = trap_S_RegisterSound( "sound/chars/protocol/misc/40MOM043" );
 
-		if ( cgs.gametype == GT_CTF || cg_buildScript.integer ) {
+		if ( cgs.gametype == GT_CTF || com_buildScript.integer ) {
 			cgs.media.redFlagReturnedSound = trap_S_RegisterSound( "sound/chars/protocol/misc/40MOM042" );
 			cgs.media.blueFlagReturnedSound = trap_S_RegisterSound( "sound/chars/protocol/misc/40MOM041" );
 			cgs.media.redTookFlagSound = trap_S_RegisterSound( "sound/chars/protocol/misc/40MOM040" );
 			cgs.media.blueTookFlagSound = trap_S_RegisterSound( "sound/chars/protocol/misc/40MOM039" );
 		}
-		if ( cgs.gametype == GT_CTY /*|| cg_buildScript.integer*/ ) {
+		if ( cgs.gametype == GT_CTY /*|| com_buildScript.integer*/ ) {
 			cgs.media.redYsalReturnedSound = trap_S_RegisterSound( "sound/chars/protocol/misc/40MOM050" );
 			cgs.media.blueYsalReturnedSound = trap_S_RegisterSound( "sound/chars/protocol/misc/40MOM049" );
 			cgs.media.redTookYsalSound = trap_S_RegisterSound( "sound/chars/protocol/misc/40MOM048" );
@@ -1619,7 +1165,7 @@ static void CG_RegisterSounds( void ) {
 	cgs.media.dramaticFailure = trap_S_RegisterSound("music/badsmall.mp3");
 
 	//PRECACHE ALL MUSIC HERE (don't need to precache normally because it's streamed off the disk)
-	if (cg_buildScript.integer)
+	if (com_buildScript.integer)
 	{
 		trap_S_StartBackgroundTrack( "music/mp/duel.mp3", "music/mp/duel.mp3", qfalse );
 	}
@@ -1666,7 +1212,7 @@ static void CG_RegisterSounds( void ) {
 
 	cgs.media.disruptorShader			= trap_R_RegisterShader( "gfx/effects/burn");
 
-	if (cg_buildScript.integer)
+	if (com_buildScript.integer)
 	{
 		trap_R_RegisterShader( "gfx/effects/turretflashdie" );
 	}
@@ -1753,10 +1299,11 @@ static void CG_RegisterSounds( void ) {
 	}
 
 	// only register the items that the server says we need
-	strcpy( items, CG_ConfigString( CS_ITEMS ) );
+	//Raz: Fixed buffer overflow
+	Q_strncpyz(items, CG_ConfigString(CS_ITEMS), sizeof(items));
 
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
-		if ( items[ i ] == '1' || cg_buildScript.integer ) {
+		if ( items[ i ] == '1' || com_buildScript.integer ) {
 			CG_RegisterItemSounds( i );
 		}
 	}
@@ -2067,7 +1614,7 @@ static void CG_RegisterGraphics( void ) {
 
 	cgs.media.itemHoloModel = trap_R_RegisterModel("models/map_objects/mp/holo.md3");
 
-	if (cgs.gametype == GT_HOLOCRON || cg_buildScript.integer)
+	if (cgs.gametype == GT_HOLOCRON || com_buildScript.integer)
 	{
 		for ( i=0; i < NUM_FORCE_POWERS; i++ )
 		{
@@ -2079,8 +1626,8 @@ static void CG_RegisterGraphics( void ) {
 		}
 	}
 
-	if ( cgs.gametype == GT_CTF || cgs.gametype == GT_CTY || cg_buildScript.integer ) {
-		if (cg_buildScript.integer)
+	if ( cgs.gametype == GT_CTF || cgs.gametype == GT_CTY || com_buildScript.integer ) {
+		if (com_buildScript.integer)
 		{
 			trap_R_RegisterModel( "models/flags/r_flag.md3" );
 			trap_R_RegisterModel( "models/flags/b_flag.md3" );
@@ -2118,7 +1665,7 @@ static void CG_RegisterGraphics( void ) {
 		cgs.media.neutralFlagBaseModel = trap_R_RegisterModel( "models/mapobjects/flagbase/ntrl_base.md3" );
 	}
 
-	if ( cgs.gametype >= GT_TEAM || cg_buildScript.integer ) {
+	if ( cgs.gametype >= GT_TEAM || com_buildScript.integer ) {
 		cgs.media.teamRedShader = trap_R_RegisterShader( "sprites/team_red" );
 		cgs.media.teamBlueShader = trap_R_RegisterShader( "sprites/team_blue" );
 		//cgs.media.redQuadShader = trap_R_RegisterShader("powerups/blueflag" );
@@ -2129,7 +1676,7 @@ static void CG_RegisterGraphics( void ) {
 		cgs.media.teamRedShader = trap_R_RegisterShader( "sprites/team_red" );
 	}
 
-	if (cgs.gametype == GT_POWERDUEL || cg_buildScript.integer)
+	if (cgs.gametype == GT_POWERDUEL || com_buildScript.integer)
 	{
 		cgs.media.powerDuelAllyShader = trap_R_RegisterShader("gfx/mp/pduel_icon_double");//trap_R_RegisterShader("gfx/mp/pduel_gameicon_ally");
 	}
@@ -2198,10 +1745,10 @@ Ghoul2 Insert End
 	memset( cg_weapons, 0, sizeof( cg_weapons ) );
 
 	// only register the items that the server says we need
-	strcpy( items, CG_ConfigString( CS_ITEMS) );
+	Q_strncpyz(items, CG_ConfigString(CS_ITEMS), sizeof(items));
 
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
-		if ( items[ i ] == '1' || cg_buildScript.integer ) {
+		if ( items[ i ] == '1' || com_buildScript.integer ) {
 			CG_LoadingItem( i );
 			CG_RegisterItemVisuals( i );
 		}
@@ -2329,7 +1876,7 @@ Ghoul2 Insert Start
 	}
 
 //	CG_LoadingString( "Creating terrain" );
-	for(i = 1; i < MAX_TERRAINS; i++)
+	for(i = 0; i < MAX_TERRAINS; i++)
 	{
 		terrainInfo = CG_ConfigString( CS_TERRAINS + i );
 		if ( !terrainInfo[0] )
@@ -2554,7 +2101,7 @@ char *CG_GetMenuBuffer(const char *filename) {
 		return NULL;
 	}
 	if ( len >= MAX_MENUFILE ) {
-		trap_Print( va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i", filename, len, MAX_MENUFILE ) );
+		trap_Print( va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i\n", filename, len, MAX_MENUFILE ) );
 		trap_FS_FCloseFile( f );
 		return NULL;
 	}
@@ -3065,22 +2612,25 @@ void CG_LoadMenus(const char *menuFile)
 
 	len = trap_FS_FOpenFile( menuFile, &f, FS_READ );
 
-	if ( !f ) 
+	if ( !f )
 	{
-		trap_Print( va( S_COLOR_RED "menu file not found: %s, using default\n", menuFile ) );
+		if( Q_isanumber( menuFile ) ) // cg_hudFiles 1
+			trap_Print( S_COLOR_GREEN "hud menu file skipped, using default\n" );
+		else
+			CG_Printf( S_COLOR_YELLOW "hud menu file not found: %s, using default\n", menuFile );
 
 		len = trap_FS_FOpenFile( "ui/jahud.txt", &f, FS_READ );
-		if (!f) 
+		if (!f)
 		{
-			trap_Print( va( S_COLOR_RED "default menu file not found: ui/hud.txt, unable to continue!\n", menuFile ) );
+			trap_FS_FCloseFile( f );
+			CG_Error( S_COLOR_RED "default hud menu file not found: ui/jahud.txt, unable to continue!" );
 		}
 	}
 
 	if ( len >= MAX_MENUDEFFILE ) 
 	{
-		trap_Print( va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i", menuFile, len, MAX_MENUDEFFILE ) );
 		trap_FS_FCloseFile( f );
-		return;
+		CG_Error( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i", menuFile, len, MAX_MENUDEFFILE );
 	}
 
 	trap_FS_Read( buf, len, f );
@@ -3235,8 +2785,22 @@ Ghoul2 Insert Start
 // initialise the cg_entities structure - take into account the ghoul2 stl stuff in the active snap shots
 void CG_Init_CG(void)
 {
+#ifdef USE_WIDESCREEN
+	qboolean widescreen = cg.widescreen;
+#endif
 	memset( &cg, 0, sizeof(cg));
+#ifdef USE_WIDESCREEN
+	cg.widescreen = widescreen;
+#endif
 }
+
+#ifdef USE_WIDESCREEN
+void CG_SetWidescreen(qboolean widescreen)
+{
+	cg.widescreen = widescreen;
+}
+#endif
+
 
 // initialise the cg_entities structure - take into account the ghoul2 stl stuff
 void CG_Init_CGents(void)
@@ -3269,382 +2833,6 @@ void CG_TransitionPermanent(void)
 			cg_permanents[cg_numpermanents++] = cent;
 		}
 	}
-}
-
-
-//this is a 32k custom pool for parsing ents, it can get reset between ent parsing
-//so we don't need a whole lot of memory -rww
-#define MAX_CGSTRPOOL_SIZE		32768
-static int cg_strPoolSize = 0;
-static byte cg_strPool[MAX_CGSTRPOOL_SIZE];
-
-char *CG_StrPool_Alloc(int size)
-{
-	char *giveThemThis;
-
-	if (cg_strPoolSize+size >= MAX_CGSTRPOOL_SIZE)
-	{
-		Com_Error(ERR_DROP, "You exceeded the cgame string pool size. Bad programmer!\n");
-	}
-
-	giveThemThis = (char *) &cg_strPool[cg_strPoolSize];
-	cg_strPoolSize += size;
-
-	//memset it for them, just to be nice.
-	memset(giveThemThis, 0, size);
-
-	return giveThemThis;
-}
-
-void CG_StrPool_Reset(void)
-{
-	cg_strPoolSize = 0;
-}
-
-/*
-=============
-CG_NewString
-
-Builds a copy of the string, translating \n to real linefeeds
-so message texts can be multi-line
-=============
-*/
-char *CG_NewString( const char *string )
-{
-	char	*newb, *new_p;
-	int		i,l;
-	
-	l = strlen(string) + 1;
-
-	newb = CG_StrPool_Alloc( l );
-
-	new_p = newb;
-
-	// turn \n into a real linefeed
-	for ( i=0 ; i< l ; i++ ) {
-		if (string[i] == '\\' && i < l-1) {
-			i++;
-			if (string[i] == 'n') {
-				*new_p++ = '\n';
-			} else {
-				*new_p++ = '\\';
-			}
-		} else {
-			*new_p++ = string[i];
-		}
-	}
-	
-	return newb;
-}
-
-//data to grab our spawn info into
-typedef struct cgSpawnEnt_s
-{
-	char		*classname;
-	vec3_t		origin;
-	vec3_t		angles;
-	float		angle;
-	vec3_t		scale;
-	float		fScale;
-	vec3_t		mins;
-	vec3_t		maxs;
-	char		*model;
-	float		zoffset;
-	int			onlyFogHere;
-	float		fogstart;
-	float		radarrange;
-} cgSpawnEnt_t;
-
-#define	CGFOFS(x) ((int)&(((cgSpawnEnt_t *)0)->x))
-
-//spawn fields for our cgame "entity"
-BG_field_t cg_spawnFields[] =
-{
-	{"classname", CGFOFS(classname), F_LSTRING},
-	{"origin", CGFOFS(origin), F_VECTOR},
-	{"angles", CGFOFS(angles), F_VECTOR},
-	{"angle", CGFOFS(angle), F_FLOAT},
-	{"modelscale", CGFOFS(fScale), F_FLOAT},
-	{"modelscale_vec", CGFOFS(scale), F_VECTOR},
-	{"model", CGFOFS(model), F_LSTRING},
-	{"mins", CGFOFS(mins), F_VECTOR},
-	{"maxs", CGFOFS(maxs), F_VECTOR},
-	{"zoffset", CGFOFS(zoffset), F_FLOAT},
-	{"onlyfoghere", CGFOFS(onlyFogHere), F_INT},
-	{"fogstart", CGFOFS(fogstart), F_FLOAT},
-	{"radarrange", CGFOFS(radarrange), F_FLOAT},
-	{NULL}
-};
-
-static int cg_numSpawnVars;
-static int cg_numSpawnVarChars;
-static char *cg_spawnVars[MAX_SPAWN_VARS][2];
-static char cg_spawnVarChars[MAX_SPAWN_VARS_CHARS];
-
-//get some info from the skyportal ent on the map
-qboolean cg_noFogOutsidePortal = qfalse;
-void CG_CreateSkyPortalFromSpawnEnt(cgSpawnEnt_t *ent)
-{
-	if (ent->onlyFogHere)
-	{ //only globally fog INSIDE the sky portal
-		cg_noFogOutsidePortal = qtrue;
-	}
-}
-
-//create a skybox portal orientation entity. there -should- only
-//be one of these things per level. if there's more than one the
-//next will just stomp over the last. -rww
-qboolean cg_skyOri = qfalse;
-vec3_t cg_skyOriPos;
-float cg_skyOriScale = 0.0f;
-void CG_CreateSkyOriFromSpawnEnt(cgSpawnEnt_t *ent)
-{
-    cg_skyOri = qtrue;
-	VectorCopy(ent->origin, cg_skyOriPos);
-	cg_skyOriScale = ent->fScale;
-}
-
-//get brush box extents, note this does not care about bsp instances.
-void CG_CreateBrushEntData(cgSpawnEnt_t *ent)
-{
-	trap_R_ModelBounds(trap_R_RegisterModel(ent->model), ent->mins, ent->maxs);
-}
-
-void CG_CreateWeatherZoneFromSpawnEnt(cgSpawnEnt_t *ent)
-{
-	CG_CreateBrushEntData(ent);
-	trap_WE_AddWeatherZone(ent->mins, ent->maxs);
-}
-
-//create a new cgame-only model
-void CG_CreateModelFromSpawnEnt(cgSpawnEnt_t *ent)
-{
-	int			modelIndex;
-	refEntity_t	*RefEnt;
-	vec3_t		mins, maxs;
-	float		*radius;
-	float		*zOff;
-
-	if (NumMiscEnts >= MAX_MISC_ENTS)
-	{
-		Com_Error(ERR_DROP, "Too many misc_model_static's on level, ask a programmer to raise the limit (currently %i), or take some out.", MAX_MISC_ENTS);
-		return;
-	}
-	
-	if (!ent || !ent->model || !ent->model[0])
-	{
-		Com_Error(ERR_DROP, "misc_model_static with no model.");
-		return;
-	}
-
-	radius = &Radius[NumMiscEnts];
-	zOff = &zOffset[NumMiscEnts];
-	RefEnt = &MiscEnts[NumMiscEnts++];
-
-	modelIndex = trap_R_RegisterModel(ent->model);
-	if (modelIndex == 0)
-	{
-		Com_Error(ERR_DROP, "misc_model_static failed to load model '%s'",ent->model);
-		return;
-	}
-
-	memset(RefEnt, 0, sizeof(refEntity_t));
-	RefEnt->reType = RT_MODEL;
-	RefEnt->hModel = modelIndex;
-	RefEnt->frame = 0;
-	trap_R_ModelBounds(modelIndex, mins, maxs);
-	VectorCopy(ent->scale, RefEnt->modelScale);
-	if (ent->fScale)
-	{ //use same scale on each axis then
-		RefEnt->modelScale[0] = RefEnt->modelScale[1] = RefEnt->modelScale[2] = ent->fScale;
-	}
-	VectorCopy(ent->origin, RefEnt->origin);
-	VectorCopy(ent->origin, RefEnt->lightingOrigin);
-
-	VectorScaleVector(mins, ent->scale, mins);
-	VectorScaleVector(maxs, ent->scale, maxs);
-	*radius = Distance(mins, maxs);
-	*zOff = ent->zoffset;
-
-	if (ent->angle)
-	{ //only yaw supplied...
-		ent->angles[YAW] = ent->angle;
-	}
-
-	AnglesToAxis( ent->angles, RefEnt->axis );
-	ScaleModelAxis(RefEnt);
-}
-
-/*
-====================
-CG_AddSpawnVarToken
-====================
-*/
-char *CG_AddSpawnVarToken( const char *string )
-{
-	int		l;
-	char	*dest;
-
-	l = strlen( string );
-	if ( cg_numSpawnVarChars + l + 1 > MAX_SPAWN_VARS_CHARS ) {
-		CG_Error( "CG_AddSpawnVarToken: MAX_SPAWN_VARS" );
-	}
-
-	dest = cg_spawnVarChars + cg_numSpawnVarChars;
-	memcpy( dest, string, l+1 );
-
-	cg_numSpawnVarChars += l + 1;
-
-	return dest;
-}
-
-/*
-====================
-CG_ParseSpawnVars
-
-cgame version of G_ParseSpawnVars, for ents that don't really
-need to take up an entity slot (e.g. static models) -rww
-====================
-*/
-qboolean CG_ParseSpawnVars( void )
-{
-	char		keyname[MAX_TOKEN_CHARS];
-	char		com_token[MAX_TOKEN_CHARS];
-
-	cg_numSpawnVars = 0;
-	cg_numSpawnVarChars = 0;
-
-	// parse the opening brace
-	if ( !trap_GetEntityToken( com_token, sizeof( com_token ) ) ) {
-		// end of spawn string
-		return qfalse;
-	}
-	if ( com_token[0] != '{' ) {
-		CG_Error( "CG_ParseSpawnVars: found %s when expecting {",com_token );
-	}
-
-	// go through all the key / value pairs
-	while ( 1 )
-	{	
-		// parse key
-		if ( !trap_GetEntityToken( keyname, sizeof( keyname ) ) )
-		{
-			CG_Error( "CG_ParseSpawnVars: EOF without closing brace" );
-		}
-
-		if ( keyname[0] == '}' )
-		{
-			break;
-		}
-		
-		// parse value	
-		if ( !trap_GetEntityToken( com_token, sizeof( com_token ) ) )
-		{ //this happens on mike's test level, I don't know why. Fixme?
-			//CG_Error( "CG_ParseSpawnVars: EOF without closing brace" );
-			break;
-		}
-
-		if ( com_token[0] == '}' )
-		{
-			CG_Error( "CG_ParseSpawnVars: closing brace without data" );
-		}
-		if ( cg_numSpawnVars == MAX_SPAWN_VARS )
-		{
-			CG_Error( "CG_ParseSpawnVars: MAX_SPAWN_VARS" );
-		}
-		cg_spawnVars[ cg_numSpawnVars ][0] = CG_AddSpawnVarToken( keyname );
-		cg_spawnVars[ cg_numSpawnVars ][1] = CG_AddSpawnVarToken( com_token );
-		cg_numSpawnVars++;
-	}
-
-	return qtrue;
-}
-
-/*
-==============
-CG_SpawnCGameEntFromVars
-
-See if we should do something for this ent cgame-side -rww
-==============
-*/
-void BG_ParseField( BG_field_t *l_fields, const char *key, const char *value, byte *ent );
-
-extern float cg_linearFogOverride; //cg_view.c
-extern float cg_radarRange;//cg_draw.c
-void CG_SpawnCGameEntFromVars(void)
-{
-	int i;
-	cgSpawnEnt_t ent;
-
-	memset(&ent, 0, sizeof(cgSpawnEnt_t));
-
-	for (i = 0; i < cg_numSpawnVars; i++)
-	{ //shove all this stuff into our data structure used specifically for getting spawn info
-		BG_ParseField( cg_spawnFields, cg_spawnVars[i][0], cg_spawnVars[i][1], (byte *)&ent );
-	}
-
-	if (ent.classname && ent.classname[0])
-	{ //we'll just stricmp this bastard, since there aren't all that many cgame-only things, and they all have special handling
-		if (!Q_stricmp(ent.classname, "worldspawn"))
-		{ //I'd like some info off this guy
-            if (ent.fogstart)
-			{ //linear fog method
-				cg_linearFogOverride = ent.fogstart;
-			}
-			//get radarRange off of worldspawn
-            if (ent.radarrange)
-			{ //linear fog method
-				cg_radarRange = ent.radarrange;
-			}
-		}
-		else if (!Q_stricmp(ent.classname, "misc_model_static"))
-		{ //we've got us a static model
-            CG_CreateModelFromSpawnEnt(&ent);			
-		}
-		else if (!Q_stricmp(ent.classname, "misc_skyportal_orient"))
-		{ //a sky portal orientation point
-            CG_CreateSkyOriFromSpawnEnt(&ent);            
-		}
-		else if (!Q_stricmp(ent.classname, "misc_skyportal"))
-		{ //might as well parse this thing cgame side for the extra info I want out of it
-			CG_CreateSkyPortalFromSpawnEnt(&ent);            
-		}
-		else if (!Q_stricmp(ent.classname, "misc_weather_zone"))
-		{ //might as well parse this thing cgame side for the extra info I want out of it
-			CG_CreateWeatherZoneFromSpawnEnt(&ent);
-		}
-	}
-
-	//reset the string pool for the next entity, if there is one
-    CG_StrPool_Reset();
-}
-
-/*
-==============
-CG_SpawnCGameOnlyEnts
-
-Parses entity string data for cgame-only entities, that we can throw away on
-the server and never even bother sending. -rww
-==============
-*/
-void CG_SpawnCGameOnlyEnts(void)
-{
-	//make sure it is reset
-	trap_GetEntityToken(NULL, -1);
-
-	if (!CG_ParseSpawnVars())
-	{ //first one is gonna be the world spawn
-		CG_Error("no entities for cgame parse");
-	}
-	else
-	{ //parse the world spawn info we want
-		CG_SpawnCGameEntFromVars();
-	}
-
-	while(CG_ParseSpawnVars())
-	{ //now run through the whole list, and look for things we care about cgame-side
-		CG_SpawnCGameEntFromVars();
-	}		
 }
 
 /*
@@ -3809,6 +2997,9 @@ Ghoul2 Insert End
 
 	CG_InitConsoleCommands();
 
+	//Raz: initialise third person setting
+	cg.renderingThirdPerson = cg_thirdPerson.integer;
+
 	cg.weaponSelect = WP_BRYAR_PISTOL;
 
 	cgs.redflag = cgs.blueflag = -1; // For compatibily, default to unset for
@@ -3890,8 +3081,12 @@ Ghoul2 Insert End
 
 	trap_R_GetDistanceCull(&cg.distanceCull);
 
-	//now get all the cgame only cents
-	CG_SpawnCGameOnlyEnts();
+	CG_ParseEntitiesFromString();
+
+	//Raz: warn for poor settings
+	trap_Cvar_VariableStringBuffer( "rate", buf, sizeof( buf ) );
+	if ( atoi( buf ) == 4000 )
+		CG_Printf( "^3WARNING: Default /rate value detected. Suggest typing /rate 25000 for a smoother connection!\n" );
 }
 
 //makes sure returned string is in localized format

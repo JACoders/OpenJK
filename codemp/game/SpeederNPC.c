@@ -43,7 +43,7 @@
 #ifndef _JK2MP
 #include "g_functions.h"
 #include "g_vehicles.h"
-#include "..\game\wp_saber.h"
+#include "game/wp_saber.h"
 #else
 #include "bg_vehicles.h"
 #endif
@@ -61,7 +61,10 @@
 #define false qfalse
 #define true qtrue
 
-//#define sqrtf sqrt
+#ifdef sqrtf
+#undef sqrtf
+#endif
+#define sqrtf sqrt
 #define Q_flrand flrand
 
 #define MOD_EXPLOSIVE MOD_SUICIDE
@@ -82,7 +85,6 @@ extern int PM_AnimLength( int index, animNumber_t anim );
 #endif
 
 #ifdef _JK2MP
-
 
 
 extern void BG_SetAnim(playerState_t *ps, animation_t *animations, int setAnimParts,int anim,int setAnimFlags, int blendTime);
@@ -1076,17 +1078,11 @@ void G_SetSpeederVehicleFunctions( vehicleInfo_t *pVehInfo )
 }
 
 // Following is only in game, not in namespace
-#ifdef _JK2MP
-
-#endif
 
 #ifdef QAGAME
 extern void G_AllocateVehicleObject(Vehicle_t **pVeh);
 #endif
 
-#ifdef _JK2MP
-
-#endif
 
 // Create/Allocate a new Animal Vehicle (initializing it as well).
 void G_CreateSpeederNPC( Vehicle_t **pVeh, const char *strType )
@@ -1113,7 +1109,6 @@ void G_CreateSpeederNPC( Vehicle_t **pVeh, const char *strType )
 }
 
 #ifdef _JK2MP
-
 
 
 //get rid of all the crazy defs we added for this file

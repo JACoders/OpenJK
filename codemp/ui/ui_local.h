@@ -3,11 +3,11 @@
 #ifndef __UI_LOCAL_H__
 #define __UI_LOCAL_H__
 
-#include "../game/q_shared.h"
-#include "../cgame/tr_types.h"
+#include "qcommon/q_shared.h"
+#include "cgame/tr_types.h"
 #include "ui_public.h"
 #include "keycodes.h"
-#include "../game/bg_public.h"
+#include "game/bg_public.h"
 #include "ui_shared.h"
 
 // global display context
@@ -88,10 +88,13 @@ extern vmCvar_t ui_bypassMainMenuLoad;
 #define SLIDER_RANGE			10
 #define	MAX_EDIT_LINE			256
 
-#define MAX_MENUDEPTH			8
-#define MAX_MENUITEMS			256
+#define MAX_MENUDEPTH			16 //Raz: was 8
+//#define MAX_MENUITEMS			256
 
 #define MAX_FORCE_CONFIGS		128
+
+//JAC: Moved from ui_main.c and ui_saber.c, also increased drastically
+#define MAX_SABER_HILTS			256 //64
 
 #define MTYPE_NULL				0
 #define MTYPE_SLIDER			1	
@@ -378,13 +381,6 @@ extern void UI_ModsMenu( void );
 extern void UI_ModsMenu_Cache( void );
 
 //
-// ui_cdkey.c
-//
-extern void UI_CDKeyMenu( void );
-extern void UI_CDKeyMenu_Cache( void );
-extern void UI_CDKeyMenu_f( void );
-
-//
 // ui_playermodel.c
 //
 extern void UI_PlayerModelMenu( void );
@@ -555,14 +551,18 @@ typedef struct {
 #define MAX_HEADNAME  32
 #define MAX_TEAMS 64
 #define MAX_GAMETYPES 16
-#define MAX_MAPS 128
+#define MAX_MAPS 512 //Raz: was 128
 #define MAX_SPMAPS 16
 #define PLAYERS_PER_TEAM 8//5
 #define MAX_PINGREQUESTS		32
+
+/* Raz: Moving some of this to q_shared.h
 #define MAX_ADDRESSLENGTH		64
 #define MAX_HOSTNAMELENGTH		22
 #define MAX_MAPNAMELENGTH		16
 #define MAX_STATUSLENGTH		64
+*/
+
 #define MAX_LISTBOXWIDTH		59
 #define UI_FONT_THRESHOLD		0.1
 #define MAX_DISPLAY_SERVERS		2048
@@ -579,10 +579,22 @@ typedef struct {
 #define MAPS_PER_TIER 3
 #define MAX_TIERS 16
 #define MAX_MODS 64
+
+/* Raz: Drastically increasing some of these
 #define MAX_DEMOS 256
 #define MAX_MOVIES 256
 #define MAX_Q3PLAYERMODELS 256
 #define MAX_PLAYERMODELS 32
+*/
+#define MAX_DEMOS 2048
+#define MAX_MOVIES 2048
+#define MAX_Q3PLAYERMODELS 1024
+#define MAX_PLAYERMODELS 512
+
+//JAC: Added
+#define DEMO_DIRECTORY "demos/"
+#define DEMO_EXTENSION "dm_"
+#define MAX_DEMOLIST (MAX_DEMOS * MAX_QPATH)
 
 #define MAX_SCROLLTEXT_SIZE		4096
 #define MAX_SCROLLTEXT_LINES		64
@@ -750,8 +762,8 @@ typedef struct {
 	int playerIndex;
 	int playerNumber; 
 	qboolean teamLeader;
-	char playerNames[MAX_CLIENTS][MAX_NAME_LENGTH];
-	char teamNames[MAX_CLIENTS][MAX_NAME_LENGTH];
+	char playerNames[MAX_CLIENTS][MAX_NETNAME];
+	char teamNames[MAX_CLIENTS][MAX_NETNAME];
 	int teamClientNums[MAX_CLIENTS];
 
 	int playerIndexes[MAX_CLIENTS]; //so we can vote-kick by index
@@ -769,9 +781,10 @@ typedef struct {
 	int modCount;
 	int modIndex;
 
-	const char *demoList[MAX_DEMOS];
+	char demoList[MAX_DEMOS][MAX_QPATH];
 	int demoCount;
 	int demoIndex;
+	int loadedDemos;
 
 	const char *movieList[MAX_MOVIES];
 	int movieCount;
@@ -902,7 +915,6 @@ void UI_SPSkillMenu_Cache( void );
 //
 
 
-
 void			trap_Print( const char *string );
 void			trap_Error( const char *string );
 int				trap_Milliseconds( void );
@@ -971,15 +983,6 @@ void			trap_LAN_ResetPings(int n);
 int				trap_LAN_ServerStatus( const char *serverAddress, char *serverStatus, int maxLen );
 int				trap_LAN_CompareServers( int source, int sortKey, int sortDir, int s1, int s2 );
 int				trap_MemoryRemaining( void );
-
-#ifdef USE_CD_KEY
-
-void			trap_GetCDKey( char *buf, int buflen );
-void			trap_SetCDKey( char *buf );
-qboolean		trap_VerifyCDKey( const char *key, const char *chksum);
-
-#endif // USE_CD_KEY
-
 qhandle_t		trap_R_RegisterFont( const char *name );
 int				trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale);
 int				trap_R_Font_StrLenChars(const char *text);
@@ -997,7 +1000,6 @@ void			trap_CIN_DrawCinematic (int handle);
 void			trap_CIN_SetExtents (int handle, int x, int y, int w, int h);
 int				trap_RealTime(qtime_t *qtime);
 void			trap_R_RemapShader( const char *oldShader, const char *newShader, const char *timeOffset );
-
 
 
 //

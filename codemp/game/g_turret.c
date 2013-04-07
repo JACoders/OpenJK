@@ -1,7 +1,7 @@
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 #include "g_local.h"
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 
 void G_SetEnemy( gentity_t *self, gentity_t *enemy );
 qboolean turret_base_spawn_top( gentity_t *base );
@@ -160,6 +160,7 @@ static void turret_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	bolt->splashDamage = ent->damage;
 	bolt->splashRadius = 100;
 	bolt->methodOfDeath = MOD_TARGET_LASER;
+	bolt->splashMethodOfDeath = MOD_TARGET_LASER;
 	bolt->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 	//bolt->trigger_formation = qfalse;		// don't draw tail on first frame	
 

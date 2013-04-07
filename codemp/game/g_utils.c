@@ -4,7 +4,7 @@
 
 #include "g_local.h"
 #include "bg_saga.h"
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 
 typedef struct {
   char oldShader[MAX_QPATH];
@@ -381,7 +381,7 @@ void G_FreeFakeClient(gclient_t **cl)
 }
 
 //allocate a veh object
-#define MAX_VEHICLES_AT_A_TIME		128
+#define MAX_VEHICLES_AT_A_TIME		512//128
 static Vehicle_t g_vehiclePool[MAX_VEHICLES_AT_A_TIME];
 static qboolean g_vehiclePoolOccupied[MAX_VEHICLES_AT_A_TIME];
 static qboolean g_vehiclePoolInit = qfalse;
@@ -463,9 +463,7 @@ Finally reworked PM_SetAnim to allow non-pmove calls, so we take our
 local anim index into account and make the call -rww
 =============
 */
-
 void BG_SetAnim(playerState_t *ps, animation_t *animations, int setAnimParts,int anim,int setAnimFlags, int blendTime);
-
 
 void G_SetAnim(gentity_t *ent, usercmd_t *ucmd, int setAnimParts, int anim, int setAnimFlags, int blendTime)
 {
@@ -704,8 +702,6 @@ static void G_SpewEntList(void)
 	gentity_t *ent;
 	char *str;
 #ifdef FINAL_BUILD
-	#define VM_OR_FINAL_BUILD
-#elif defined Q3_VM
 	#define VM_OR_FINAL_BUILD
 #endif
 
@@ -1358,6 +1354,9 @@ void G_Sound( gentity_t *ent, int channel, int soundIndex ) {
 		ent->client->ps.fd.killSoundEntIndex[channel-50] = te->s.number;
 		te->s.trickedentindex = ent->s.number;
 		te->s.eFlags = EF_SOUNDTRACKER;
+		// fix: let other players know about this
+		// for case that they will meet this one
+		te->r.svFlags |= SVF_BROADCAST;
 		//te->freeAfterEvent = qfalse;
 	}
 }
@@ -1653,7 +1652,7 @@ void TryUse( gentity_t *ent )
 	//Trace ahead to find a valid target
 	trap_Trace( &trace, src, vec3_origin, vec3_origin, dest, ent->s.number, MASK_OPAQUE|CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_ITEM|CONTENTS_CORPSE );
 	
-	if ( trace.fraction == 1.0f || trace.entityNum < 1 )
+	if ( trace.fraction == 1.0f || trace.entityNum == ENTITYNUM_NONE )
 	{
 		goto tryJetPack;
 	}

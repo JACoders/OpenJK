@@ -1,9 +1,9 @@
 // win_input.c -- win32 mouse and joystick code
 // 02/21/97 JCB Added extended DirectInput code to support external controllers.
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
-#include "../client/client.h"
+#include "client/client.h"
 #include "win_local.h"
 
 
@@ -719,13 +719,22 @@ void IN_Frame (void) {
 		return;
 	}
 
-	if ( cls.keyCatchers & KEYCATCH_CONSOLE ) {
+	// If not DISCONNECTED (main menu) or ACTIVE (in game), we're loading
+	qboolean loading = (qboolean)( cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE );
+
+	if( !Cvar_VariableIntegerValue("r_fullscreen") && ( cls.keyCatchers & KEYCATCH_CONSOLE ) ) {
+	//if ( cls.keyCatchers & KEYCATCH_CONSOLE ) {
 		// temporarily deactivate if not in the game and
 		// running on the desktop
-		if (r_fullscreen && r_fullscreen->value == 0 )	{
+		//if (r_fullscreen && r_fullscreen->value == 0 )	{
 			IN_DeactivateMouse ();
 			return;
-		}
+		//}
+	}
+
+	if( !Cvar_VariableIntegerValue("r_fullscreen") && loading ) {
+		IN_DeactivateMouse ();
+		return;
 	}
 
 	if ( !in_appactive ) {

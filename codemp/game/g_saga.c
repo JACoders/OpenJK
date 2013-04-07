@@ -142,7 +142,7 @@ void InitSiegeMode(void)
 
 	Com_sprintf(levelname, sizeof(levelname), "maps/%s.siege\0", mapname.string);
 
-	if (!levelname || !levelname[0])
+	if ( !levelname[0] )
 	{
 		goto failure;
 	}
@@ -825,7 +825,8 @@ void SetTeamQuick(gentity_t *ent, int team, qboolean doBegin)
 
 	ent->client->pers.teamState.state = TEAM_BEGIN;
 
-	ClientUserinfoChanged( ent->s.number );
+	if ( !ClientUserinfoChanged( ent->s.number ) )
+		return;
 
 	if (doBegin)
 	{
@@ -1447,7 +1448,43 @@ void SiegeItemThink(gentity_t *ent)
 			}
 			else
 			{
-				G_SetOrigin(ent, carrier->client->ps.origin);
+				//perform a startsolid check to make sure the seige item doesn't get stuck
+				//in a wall or something
+				trace_t tr;
+				trap_Trace(&tr, carrier->client->ps.origin, ent->r.mins, ent->r.maxs, carrier->client->ps.origin, ent->s.number, ent->clipmask);
+
+				if(tr.startsolid)
+				{//bad spawning area, try again with the trace up a bit.
+					vec3_t TracePoint;
+					VectorCopy(carrier->client->ps.origin, TracePoint);
+					TracePoint[2] += 30;
+					trap_Trace(&tr, TracePoint, ent->r.mins, ent->r.maxs, TracePoint, ent->s.number, ent->clipmask);
+					
+					if(tr.startsolid)
+					{//hmm, well that didn't work. try one last time with the item back 
+						//away from where the dude was facing (in case the carrier was
+						//close to something they were attacking.)
+						vec3_t fwd;
+						AngleVectors(carrier->client->ps.viewangles,fwd, NULL, NULL);
+						VectorMA(TracePoint, -30, fwd, TracePoint);
+						trap_Trace(&tr, TracePoint, ent->r.mins, ent->r.maxs, TracePoint, ent->s.number, ent->clipmask);
+						
+						if(tr.startsolid)
+						{
+							SiegeItemRespawnOnOriginalSpot(ent, carrier);
+							return;
+						}
+					}
+
+					G_SetOrigin(ent, TracePoint);
+				}
+				else
+				{//we're good at the player's origin
+					G_SetOrigin(ent, carrier->client->ps.origin);
+				}
+				
+
+				//G_SetOrigin(ent, carrier->client->ps.origin);
 				ent->epVelocity[0] = Q_irand(-80, 80);
 				ent->epVelocity[1] = Q_irand(-80, 80);
 				ent->epVelocity[2] = Q_irand(40, 80);
@@ -1616,7 +1653,44 @@ void SiegeItemUse(gentity_t *ent, gentity_t *other, gentity_t *activator)
 		
 		if (targ && targ->inuse)
 		{
-			G_SetOrigin(ent, targ->r.currentOrigin);
+			//perform a startsolid check to make sure the seige item doesn't get stuck
+			//in a wall or something
+			trace_t tr;
+			vec3_t TracePoint;
+			VectorCopy(targ->r.currentOrigin, TracePoint);
+			trap_Trace(&tr, targ->r.currentOrigin, ent->r.mins, ent->r.maxs, 
+				targ->r.currentOrigin, targ->s.number, ent->clipmask);
+
+			if(tr.startsolid)
+			{//bad spawning area, try again with the trace up a bit.
+				TracePoint[2] += 30;
+				trap_Trace(&tr, TracePoint, ent->r.mins, ent->r.maxs, TracePoint, 
+					ent->s.number, ent->clipmask);
+				
+				if(tr.startsolid)
+				{//hmm, well that didn't work. try one last time with the item back 
+					//away from where the dude was facing (in case the carrier was
+					//close to something they were attacking.)
+					vec3_t fwd;
+					if(targ->client)
+					{
+						AngleVectors(targ->client->ps.viewangles,fwd, NULL, NULL);
+					}
+					else
+					{
+						AngleVectors(targ->r.currentAngles,fwd, NULL, NULL);
+					}
+					VectorMA(TracePoint, -30, fwd, TracePoint);
+					trap_Trace(&tr, TracePoint, ent->r.mins, ent->r.maxs, TracePoint, ent->s.number, ent->clipmask);
+					
+					if(tr.startsolid)
+					{//crap, that's all we got.  just spawn at the defualt location.
+						return;
+					}
+				}
+			}
+			G_SetOrigin(ent, TracePoint);
+			//G_SetOrigin(ent, targ->r.currentOrigin);
 			trap_LinkEntity(ent);
 		}
 	}

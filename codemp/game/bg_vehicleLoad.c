@@ -7,7 +7,7 @@
 #endif
 
 #ifdef _JK2MP
-	#include "q_shared.h"
+	#include "qcommon/q_shared.h"
 	#include "bg_public.h"
 	#include "bg_vehicles.h"
 	#include "bg_weapons.h"
@@ -28,13 +28,13 @@
 #ifndef QAGAME
 #ifndef CGAME
 #define WE_ARE_IN_THE_UI
-#include "../ui/ui_local.h"
+#include "ui/ui_local.h"
 #endif
 #endif
 #endif
 
 #ifndef _JK2MP
-#include "..\Ratl\string_vs.h"
+#include "Ratl/string_vs.h"
 #endif
 
 #ifdef QAGAME
@@ -61,8 +61,10 @@ extern sfxHandle_t	trap_S_RegisterSound( const char *sample);		// returns buzz i
 
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
-#define MAX_VEH_WEAPON_DATA_SIZE 0x20000
-#define MAX_VEHICLE_DATA_SIZE 0x80000
+// These buffers are filled in with the same contents and then just read from in
+// a few places. We only need one copy on Xbox.
+#define MAX_VEH_WEAPON_DATA_SIZE 0x40000 //Raz: was 0x4000
+#define MAX_VEHICLE_DATA_SIZE 0x100000 //Raz: was 0x10000
 
 char	VehWeaponParms[MAX_VEH_WEAPON_DATA_SIZE];
 char	VehicleParms[MAX_VEHICLE_DATA_SIZE];
@@ -73,6 +75,10 @@ void BG_ClearVehicleParseParms(void)
 	VehWeaponParms[0] = 0;
 	VehicleParms[0] = 0;
 }
+
+
+#ifdef _JK2MP
+#endif
 
 #ifndef WE_ARE_IN_THE_UI
 //These funcs are actually shared in both projects
@@ -658,7 +664,7 @@ stringID_table_t VehicleTable[VH_NUM_VEHICLES+1] =
 	ENUM2STRING(VH_SPEEDER),	//something you ride on that hovers, like a speeder or swoop
 	ENUM2STRING(VH_ANIMAL),		//animal you ride on top of that walks, like a tauntaun
 	ENUM2STRING(VH_FLIER),		//animal you ride on top of that flies, like a giant mynoc?
-	0,	-1
+	{0,	-1}
 };
 
 // Setup the shared functions (one's that all vehicles would generally use).
@@ -683,6 +689,8 @@ void BG_SetSharedVehicleFunctions( vehicleInfo_t *pVehInfo )
 			break;
 		case VH_WALKER:
 			G_SetWalkerVehicleFunctions( pVehInfo );
+			break;
+		default:
 			break;
 	}
 #endif
@@ -1646,4 +1654,6 @@ void AttachRidersGeneric( Vehicle_t *pVeh )
 }
 #endif
 
+
 #endif // _JK2MP
+

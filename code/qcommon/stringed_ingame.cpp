@@ -980,6 +980,14 @@ LPCSTR SE_GetString( LPCSTR psPackageReference, LPCSTR psStringReference)
 
 LPCSTR SE_GetString( LPCSTR psPackageAndStringReference )
 {
+#ifndef __NO_JK2
+	// Hacky but saves me from fixing 1000000 references --eez
+	if(Cvar_VariableIntegerValue("com_jk2"))
+	{
+extern const char *JK2SP_GetStringTextString(const char *Reference);
+		return (LPCSTR)JK2SP_GetStringTextString((const char *)psPackageAndStringReference); 
+	}
+#endif
 	char sReference[256];	// will always be enough, I've never seen one more than about 30 chars long
 	assert(strlen(psPackageAndStringReference) < sizeof(sReference) );
 	Q_strncpyz(sReference, psPackageAndStringReference, sizeof(sReference) );
