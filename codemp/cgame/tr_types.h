@@ -311,6 +311,10 @@ typedef struct {
 
 	int						vidWidth, vidHeight;
 
+	// Display (desktop) resolution, aspect, and refresh rate.
+	int						displayWidth;
+	int						displayHeight;
+	float					displayAspect;
 	int						displayFrequency;
 
 	// synonymous with "does rendering consume the entire screen?", therefore

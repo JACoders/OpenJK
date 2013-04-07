@@ -246,13 +246,21 @@ void RB_TestFlare( flare_t *f ) {
 			f->visible = qtrue;
 			f->fadeTime = backEnd.refdef.time - 1;
 		}
+#ifdef _WIN32
 		fade = ( ( backEnd.refdef.time - f->fadeTime ) /1000.0f ) * r_flareFade->value;
+#else
+		fade = ( ( backEnd.refdef.time - f->fadeTime ) /1000.0f ) * 40.f;
+#endif
 	} else {
 		if ( f->visible ) {
 			f->visible = qfalse;
 			f->fadeTime = backEnd.refdef.time - 1;
 		}
+#ifdef _WIN32
 		fade = 1.0f - ( ( backEnd.refdef.time - f->fadeTime ) / 1000.0f ) * r_flareFade->value;
+#else
+		fade = 1.0f - ( ( backEnd.refdef.time - f->fadeTime ) / 1000.0f ) * 40.0f;
+#endif
 	}
 
 	if ( fade < 0 ) {
@@ -283,9 +291,14 @@ void RB_RenderFlare( flare_t *f ) {
 	iColor[1] = color[1] * 255;
 	iColor[2] = color[2] * 255;
 
+#ifdef _WIN32
 	size = backEnd.viewParms.viewportWidth * ( r_flareSize->value/640.0f + 8 / -f->eyeZ );
+#else
+	size = backEnd.viewParms.viewportWidth * ( 40.f/640.0f + 8 / -f->eyeZ );
+#endif
 
-	RB_BeginSurface( tr.flareShader, f->fogNum );
+	//	RB_BeginSurface( tr.flareShader, f->fogNum );
+	RB_BeginSurface( tr.defaultShader, f->fogNum );
 
 	// FIXME: use quadstamp?
 	tess.xyz[tess.numVertexes][0] = f->windowX - size;

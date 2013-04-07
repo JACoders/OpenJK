@@ -17,6 +17,10 @@ typedef unsigned int GLuint;
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
 
+#ifndef _WIN32
+#include "qcommon/platform.h"
+#endif
+
 // fast float to int conversion
 #if id386 && !( (defined __linux__ || defined __FreeBSD__ ) && (defined __i386__ ) ) // rb010123
 inline long myftol( float f );
@@ -937,6 +941,7 @@ void		R_Modellist_f (void);
 class CPBUFFER
 {
 private:
+#ifdef _WIN32
 	// Pixel Buffer Rendering and Device Contexts.
 	HGLRC m_hRC;
 	HDC m_hDC;
@@ -947,7 +952,7 @@ private:
 
 	// Buffer handle.
 	HPBUFFERARB m_hBuffer;
-
+#endif
 	// Buffer Dimensions.
 	int m_iWidth, m_iHeight;
 
@@ -1599,7 +1604,11 @@ struct shaderCommands_s
 	bool		fading;
 };
 #ifndef DEDICATED
+#ifdef _WIN32
 typedef __declspec(align(16)) shaderCommands_s	shaderCommands_t;
+#else
+typedef struct shaderCommands_s	shaderCommands_t;
+#endif
 extern	shaderCommands_t	tess;
 #endif
 extern	color4ub_t	styleColors[MAX_LIGHT_STYLES];
