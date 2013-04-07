@@ -857,6 +857,29 @@ void GL_SetDefaultState( void )
 
 /*
 ================
+R_LongString
+
+Workaround for ri.Printf's 1024 characters buffer limit.
+================
+*/
+
+void R_PrintLongString(const char *string) {
+	char buffer[1024];
+	const char *p;
+	int size = strlen(string);
+
+	p = string;
+	while(size > 0)
+	{
+		Q_strncpyz(buffer, p, sizeof (buffer) );
+		Com_Printf( "%s", buffer );
+		p += 1023;
+		size -= 1023;
+	}
+}
+
+/*
+================
 GfxInfo_f
 ================
 */
@@ -886,7 +909,9 @@ void GfxInfo_f( void )
 	VID_Printf( PRINT_ALL, "\nGL_VENDOR: %s\n", glConfig.vendor_string );
 	VID_Printf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
 	VID_Printf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
-	VID_Printf( PRINT_ALL, "GL_EXTENSIONS: %s\n", glConfig.extensions_string );
+	//VID_Printf( PRINT_ALL, "GL_EXTENSIONS: %s\n", glConfig.extensions_string );
+	R_PrintLongString(glConfig.extensions_string);
+	Com_Printf ("\n");
 	VID_Printf( PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
 	VID_Printf( PRINT_ALL, "GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures );
 	VID_Printf( PRINT_ALL, "\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n", glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
