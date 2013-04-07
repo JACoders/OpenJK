@@ -1910,6 +1910,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\qcommon\strip.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\server\sv_ccmds.cpp"
 				>
 				<FileConfiguration

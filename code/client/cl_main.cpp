@@ -1192,6 +1192,14 @@ CL_Init
 */
 void CL_Init( void ) {
 	Com_Printf( "----- Client Initialization -----\n" );
+
+#ifndef __NO_JK2
+	if(Cvar_VariableIntegerValue("com_jk2"))
+	{
+		JK2SP_Register("con_text", SP_REGISTER_REQUIRED);	//reference is CON_TEXT
+		JK2SP_Register("keynames", SP_REGISTER_REQUIRED);	// reference is KEYNAMES
+	}
+#endif
 	
 	Con_Init ();
 

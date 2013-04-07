@@ -955,7 +955,7 @@ void	cgi_S_StartSound( vec3_t origin, int entityNum, int entchannel, sfxHandle_t
 // a local sound is always played full volume
 void	cgi_S_StartLocalSound( sfxHandle_t sfx, int channelNum );
 void	cgi_S_ClearLoopingSounds( void );
-void	cgi_S_AddLoopingSound(int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfx );
+void	cgi_S_AddLoopingSound(int entityNum, const vec3_t origin, const vec3_t velocity, sfxHandle_t sfx, soundChannel_t chan = CHAN_AUTO );
 void	cgi_S_UpdateEntityPosition( int entityNum, const vec3_t origin );
 
 // repatialize recalculates the volumes of sound as they should be heard by the
@@ -1002,7 +1002,8 @@ int			cgi_R_Font_HeightPixels(const int iFontIndex, const float scale = 1.0f);
 void		cgi_R_Font_DrawString(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iMaxPixelWidth, const float scale = 1.0f);
 qboolean	cgi_Language_IsAsian(void);
 qboolean	cgi_Language_UsesSpaces(void);
-unsigned	cgi_AnyLanguage_ReadCharFromString( const char **ppText, qboolean *pbIsTrailingPunctuation = NULL );
+unsigned int 	cgi_AnyLanguage_ReadCharFromString( const char **ppText, qboolean *pbIsTrailingPunctuation = NULL );
+unsigned int cgi_AnyLanguage_ReadCharFromString( const char **ppText, int *ppos, qboolean *pbIsTrailingPunctuation /* = NULL */ );
 
 // a scene is built up by calls to R_ClearScene and the various R_Add functions.
 // Nothing is drawn until R_RenderScene is called.
