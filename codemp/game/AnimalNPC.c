@@ -60,7 +60,10 @@
 #define false qfalse
 #define true qtrue
 
-//#define sqrtf sqrt
+#ifdef sqrtf
+#undef sqrtf
+#endif
+#define sqrtf sqrt
 #define Q_flrand flrand
 
 #define MOD_EXPLOSIVE MOD_SUICIDE
@@ -76,8 +79,12 @@ extern vec3_t playerMins;
 extern vec3_t playerMaxs;
 extern cvar_t	*g_speederControlScheme;
 
+#ifdef _JK2MP
+#endif
 extern void PM_SetAnim(pmove_t	*pm,int setAnimParts,int anim,int setAnimFlags, int blendTime);
 extern int PM_AnimLength( int index, animNumber_t anim );
+#ifdef _JK2MP
+#endif
 
 #ifndef	_JK2MP
 extern void CG_ChangeWeapon( int num );
@@ -147,6 +154,9 @@ static bool Update( Vehicle_t *pVeh, const usercmd_t *pUcmd )
 	return g_vehicleInfo[VEHICLE_BASE].Update( pVeh, pUcmd );
 }
 #endif //QAGAME
+
+#ifdef _JK2MP
+#endif
 
 //MP RULE - ALL PROCESSMOVECOMMANDS FUNCTIONS MUST BE BG-COMPATIBLE!!!
 //If you really need to violate this rule for SP, then use ifdefs.
@@ -876,8 +886,15 @@ void G_SetAnimalVehicleFunctions( vehicleInfo_t *pVehInfo )
 //	pVehInfo->Inhabited					=		Inhabited;
 }
 
+// Following is only in game, not in namespace
+#ifdef _JK2MP
+#endif
+
 #ifdef QAGAME
 extern void G_AllocateVehicleObject(Vehicle_t **pVeh);
+#endif
+
+#ifdef _JK2MP
 #endif
 
 // Create/Allocate a new Animal Vehicle (initializing it as well).
@@ -906,6 +923,7 @@ void G_CreateAnimalNPC( Vehicle_t **pVeh, const char *strAnimalType )
 }
 
 #ifdef _JK2MP
+
 
 //get rid of all the crazy defs we added for this file
 #undef currentAngles

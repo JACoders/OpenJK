@@ -16,7 +16,7 @@
 
 
 #include "g_local.h"
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 #include "botlib.h"		//bot lib interface
 #include "be_aas.h"
 #include "be_ea.h"
@@ -38,7 +38,7 @@
 #define BOT_CTF_DEBUG	1
 */
 
-#define MAX_PATH		144
+//#define MAX_PATH		144
 
 #define BOT_THINK_TIME	0
 
@@ -1030,7 +1030,7 @@ int OrgVisibleBox(vec3_t org1, vec3_t mins, vec3_t maxs, vec3_t org2, int ignore
 {
 	trace_t tr;
 
-	if (g_RMG.integer)
+	if (RMG.integer)
 	{
 		trap_Trace(&tr, org1, NULL, NULL, org2, ignore, MASK_SOLID);
 	}
@@ -1085,7 +1085,7 @@ int CheckForFunc(vec3_t org, int ignore)
 //perform pvs check based on rmg or not
 qboolean BotPVSCheck( const vec3_t p1, const vec3_t p2 )
 {
-	if (g_RMG.integer && bot_pvstype.integer)
+	if (RMG.integer && bot_pvstype.integer)
 	{
 		vec3_t subPoint;
 		VectorSubtract(p1, p2, subPoint);
@@ -1110,7 +1110,7 @@ int GetNearestVisibleWP(vec3_t org, int ignore)
 	vec3_t a, mins, maxs;
 
 	i = 0;
-	if (g_RMG.integer)
+	if (RMG.integer)
 	{
 		bestdist = 300;
 	}
@@ -1135,7 +1135,7 @@ int GetNearestVisibleWP(vec3_t org, int ignore)
 			VectorSubtract(org, gWPArray[i]->origin, a);
 			flLen = VectorLength(a);
 
-			if (flLen < bestdist && (g_RMG.integer || BotPVSCheck(org, gWPArray[i]->origin)) && OrgVisibleBox(org, mins, maxs, gWPArray[i]->origin, ignore))
+			if (flLen < bestdist && (RMG.integer || BotPVSCheck(org, gWPArray[i]->origin)) && OrgVisibleBox(org, mins, maxs, gWPArray[i]->origin, ignore))
 			{
 				bestdist = flLen;
 				bestindex = i;
@@ -1161,7 +1161,7 @@ int PassWayCheck(bot_state_t *bs, int windex)
 		return 0;
 	}
 
-	if (g_RMG.integer)
+	if (RMG.integer)
 	{
 		if ((gWPArray[windex]->flags & WPFLAG_RED_FLAG) ||
 			(gWPArray[windex]->flags & WPFLAG_BLUE_FLAG))
@@ -1216,7 +1216,7 @@ float TotalTrailDistance(int start, int end, bot_state_t *bs)
 			return -1;
 		}
 
-		if (!g_RMG.integer)
+		if (!RMG.integer)
 		{
 			if ((end > start && gWPArray[beginat]->flags & WPFLAG_ONEWAY_BACK) ||
 				(start > end && gWPArray[beginat]->flags & WPFLAG_ONEWAY_FWD))
@@ -3057,7 +3057,7 @@ int Siege_TargetClosestObjective(bot_state_t *bs, int flag)
 	int i = 0;
 	int bestindex = -1;
 	float testdistance = 0;
-	float bestdistance = 999999999;
+	float bestdistance = 999999999.9f;
 	gentity_t *goalent;
 	vec3_t a, dif;
 	vec3_t mins, maxs;
@@ -4491,7 +4491,7 @@ void SaberCombatHandling(bot_state_t *bs)
 				bs->beStill = level.time + Q_irand(500, 1000);
 				bs->saberSTime = level.time + Q_irand(1200, 1800);
 			}
-			else if (bs->currentEnemy->client->ps.weapon == WP_SABER && bs->frame_Enemy_Len < 80 && (Q_irand(1, 10) < 8 && bs->saberBFTime < level.time) || bs->saberBTime > level.time || BG_SaberInKata(bs->currentEnemy->client->ps.saberMove) || bs->currentEnemy->client->ps.saberMove == LS_SPINATTACK || bs->currentEnemy->client->ps.saberMove == LS_SPINATTACK_DUAL)
+			else if (bs->currentEnemy->client->ps.weapon == WP_SABER && bs->frame_Enemy_Len < 80 && ((Q_irand(1, 10) < 8 && bs->saberBFTime < level.time) || bs->saberBTime > level.time || BG_SaberInKata(bs->currentEnemy->client->ps.saberMove) || bs->currentEnemy->client->ps.saberMove == LS_SPINATTACK || bs->currentEnemy->client->ps.saberMove == LS_SPINATTACK_DUAL))
 			{
 				vec3_t vs;
 				vec3_t groundcheck;
@@ -4569,38 +4569,25 @@ void SaberCombatHandling(bot_state_t *bs)
 //so, by how much?
 float BotWeaponCanLead(bot_state_t *bs)
 {
-	int weap = bs->cur_ps.weapon;
-
-	if (weap == WP_BRYAR_PISTOL)
+	switch ( bs->cur_ps.weapon )
 	{
-		return 0.5;
+	case WP_BRYAR_PISTOL:
+		return 0.5f;
+	case WP_BLASTER:
+		return 0.35f;
+	case WP_BOWCASTER:
+		return 0.5f;
+	case WP_REPEATER:
+		return 0.45f;
+	case WP_THERMAL:
+		return 0.5f;
+	case WP_DEMP2:
+		return 0.35f;
+	case WP_ROCKET_LAUNCHER:
+		return 0.7f;
+	default:
+		return 0.0f;
 	}
-	if (weap == WP_BLASTER)
-	{
-		return 0.35;
-	}
-	if (weap == WP_BOWCASTER)
-	{
-		return 0.5;
-	}
-	if (weap == WP_REPEATER)
-	{
-		return 0.45;
-	}
-	if (weap == WP_THERMAL)
-	{
-		return 0.5;
-	}
-	if (weap == WP_DEMP2)
-	{
-		return 0.35;
-	}
-	if (weap == WP_ROCKET_LAUNCHER)
-	{
-		return 0.7;
-	}
-	
-	return 0;
 }
 
 //offset the desired view angles with aim leading in mind
@@ -6537,7 +6524,7 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 	//ESTABLISH VISIBILITIES AND DISTANCES FOR THE WHOLE FRAME HERE
 	if (bs->wpCurrent)
 	{
-		if (g_RMG.integer)
+		if (RMG.integer)
 		{ //this is somewhat hacky, but in RMG we don't really care about vertical placement because points are scattered across only the terrain.
 			vec3_t vecB, vecC;
 
@@ -6653,7 +6640,7 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 
 		if (bs->frame_Waypoint_Vis || (bs->wpCurrent->flags & WPFLAG_NOVIS))
 		{
-			if (g_RMG.integer)
+			if (RMG.integer)
 			{
 				bs->wpSeenTime = level.time + 5000; //if we lose sight of the point, we have 1.5 seconds to regain it before we drop it
 			}
@@ -6718,7 +6705,7 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 			}
 		}
 
-		if (g_RMG.integer)
+		if (RMG.integer)
 		{
 			if (bs->frame_Waypoint_Vis)
 			{
@@ -6729,7 +6716,7 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 			}
 		}
 
-		if (bs->frame_Waypoint_Len < wpTouchDist || (g_RMG.integer && bs->frame_Waypoint_Len < wpTouchDist*2))
+		if (bs->frame_Waypoint_Len < wpTouchDist || (RMG.integer && bs->frame_Waypoint_Len < wpTouchDist*2))
 		{
 			WPTouchRoutine(bs);
 
@@ -6786,7 +6773,7 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 		doingFallback = BotFallbackNavigation(bs);
 	}
 
-	if (g_RMG.integer)
+	if (RMG.integer)
 	{ //for RMG if the bot sticks around an area too long, jump around randomly some to spread to a new area (horrible hacky method)
 		vec3_t vSubDif;
 
@@ -6815,7 +6802,7 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 		bs->lastSignificantChangeTime = level.time + 25000;
 	}
 
-	if (bs->wpCurrent && g_RMG.integer)
+	if (bs->wpCurrent && RMG.integer)
 	{
 		qboolean doJ = qfalse;
 
@@ -7493,7 +7480,7 @@ int BotAIStartFrame(int time) {
 	int i;
 	int elapsed_time, thinktime;
 	static int local_time;
-	static int botlib_residual;
+//	static int botlib_residual;
 	static int lastbotthink_time;
 
 	if (gUpdateVars < level.time)

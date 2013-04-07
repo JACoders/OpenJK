@@ -24,7 +24,7 @@
  * memory then you shouldn't care about a little bit of unused code...)
  */
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #define JPEG_INTERNALS
 #define AM_MEMORY_MANAGER	/* we define jvirt_Xarray_control structs */

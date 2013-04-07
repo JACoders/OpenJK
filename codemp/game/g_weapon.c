@@ -6,10 +6,9 @@
 #include "g_local.h"
 #include "be_aas.h"
 #include "bg_saga.h"
-#include "../ghoul2/G2.h"
-#include "q_shared.h"
+#include "ghoul2/G2.h"
+#include "qcommon/q_shared.h"
 
-static	float	s_quadFactor;
 static	vec3_t	forward, vright, up;
 static	vec3_t	muzzle;
 
@@ -169,8 +168,6 @@ void touch_NULL( gentity_t *ent, gentity_t *other, trace_t *trace )
 
 void laserTrapExplode( gentity_t *self );
 void RocketDie(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod);
-
-extern vmCvar_t		g_vehAutoAimLead;
 
 //We should really organize weapon data into tables or parse from the ext data so we have accurate info for this,
 float WP_SpeedOfMissileForWeapon( int wp, qboolean alt_fire )
@@ -403,8 +400,8 @@ void WP_FireTurboLaserMissile( gentity_t *ent, vec3_t start, vec3_t dir )
 	missile->splashDamage = ent->splashDamage;	//FIXME: externalize
 	missile->splashRadius = ent->splashRadius;	//FIXME: externalize
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-	missile->methodOfDeath = MOD_TARGET_LASER;//MOD_TURBLAST; //count as a heavy weap
-	missile->splashMethodOfDeath = MOD_TARGET_LASER;//MOD_TURBLAST;// ?SPLASH;
+	missile->methodOfDeath = MOD_TURBLAST; //count as a heavy weap
+	missile->splashMethodOfDeath = MOD_TURBLAST;// ?SPLASH;
 	missile->clipmask = MASK_SHOT;
 
 	// we don't want it to bounce forever
@@ -451,7 +448,7 @@ void WP_FireEmplacedMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean 
 static void WP_FireBlaster( gentity_t *ent, qboolean altFire )
 //---------------------------------------------------------
 {
-	vec3_t	dir, angs;
+	vec3_t  dir, angs;
 
 	vectoangles( forward, angs );
 
@@ -459,7 +456,7 @@ static void WP_FireBlaster( gentity_t *ent, qboolean altFire )
 	{
 		// add some slop to the alt-fire direction
 		angs[PITCH] += crandom() * BLASTER_SPREAD;
-		angs[YAW]	+= crandom() * BLASTER_SPREAD;
+		angs[YAW]       += crandom() * BLASTER_SPREAD;
 	}
 
 	AngleVectors( angs, dir, NULL, NULL );
@@ -467,7 +464,6 @@ static void WP_FireBlaster( gentity_t *ent, qboolean altFire )
 	// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
 	WP_FireBlasterMissile( ent, muzzle, dir, altFire );
 }
-
 
 
 int G_GetHitLocation(gentity_t *target, vec3_t ppoint);
@@ -716,6 +712,10 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		{
 			trap_Trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT );
 		}
+
+		// fix: shooting ourselves shouldn't be allowed 
+		if (tr.entityNum == ent->s.number)
+			break;
 
 		traceEnt = &g_entities[tr.entityNum];
 
@@ -1837,7 +1837,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 		vel *= 0.5f;
 	}
 
-	missile = CreateMissile( muzzle, forward, vel, 10000, ent, altFire );
+	missile = CreateMissile( muzzle, forward, vel, 30000, ent, altFire );
 
 	if (ent->client && ent->client->ps.rocketLockIndex != ENTITYNUM_NONE)
 	{
@@ -2670,7 +2670,7 @@ void charge_stick (gentity_t *self, gentity_t *other, trace_t *trace)
 		VectorNPos(self->s.pos.trDelta, tN);
 		self->s.pos.trDelta[0] += vNor[0]*(tN[0]*(((float)Q_irand(1, 10))*0.1));
 		self->s.pos.trDelta[1] += vNor[1]*(tN[1]*(((float)Q_irand(1, 10))*0.1));
-		self->s.pos.trDelta[2] += vNor[1]*(tN[2]*(((float)Q_irand(1, 10))*0.1));
+		self->s.pos.trDelta[2] += vNor[2]*(tN[2]*(((float)Q_irand(1, 10))*0.1));
 
 		vectoangles(vNor, self->s.angles);
 		vectoangles(vNor, self->s.apos.trBase);
@@ -2702,10 +2702,21 @@ void charge_stick (gentity_t *self, gentity_t *other, trace_t *trace)
 	}
 
 	//if we get here I guess we hit hte world so we can stick to it
-
-	self->touch = 0;
-	self->think = DetPackBlow;
-	self->nextthink = level.time + 30000;
+	//Raz: This fix requires a bit of explaining..
+	//	When you suicide, all of the detpacks you have placed (either on a wall, or still falling in the air) will
+	//		have their ent->think() set to DetPackBlow and ent->nextthink will be between 100 <-> 300
+	//	If your detpacks land on a surface (i.e. charge_stick gets called) within that 100<->300 ms then ent->think()
+	//		will be overwritten (set to DetpackBlow) and ent->nextthink will be 30000
+	//	The end result is your detpacks won't explode, but will be stuck to the wall for 30 seconds without
+	//		being able to detonate them (or shoot them)
+	//	The fix Sil came up with is to check the think() function in charge_stick, and only overwrite it
+	//		if they haven't been primed to detonate
+	if ( self->think == G_RunObject )
+	{
+		self->touch = 0;
+		self->think = DetPackBlow;
+		self->nextthink = level.time + 30000;
+	}
 
 	VectorClear(self->s.apos.trDelta);
 	self->s.apos.trType = TR_STATIONARY;
@@ -2867,10 +2878,29 @@ void BlowDetpacks(gentity_t *ent)
 		ent->client->ps.hasDetPackPlanted = qfalse;
 	}
 }
+void RemoveDetpacks(gentity_t *ent)
+{
+	gentity_t *found = NULL;
+
+	if ( ent->client->ps.hasDetPackPlanted )
+	{
+		while ( (found = G_Find( found, FOFS(classname), "detpack") ) != NULL )
+		{//loop through all ents and blow the crap out of them!
+			if ( found->parent == ent )
+			{
+				VectorCopy( found->r.currentOrigin, found->s.origin );
+				found->think = G_FreeEntity;
+				found->nextthink = level.time;
+			//	G_Sound( found, CHAN_BODY, G_SoundIndex("sound/weapons/detpack/warning.wav") );
+			}
+		}
+		ent->client->ps.hasDetPackPlanted = qfalse;
+	}
+}
 
 qboolean CheatsOn(void) 
 {
-	if ( !g_cheats.integer )
+	if ( !sv_cheats.integer )
 	{
 		return qfalse;
 	}
@@ -2963,7 +2993,6 @@ void WP_DropDetPack( gentity_t *ent, qboolean alt_fire )
 	}
 }
 
-#pragma warning(disable : 4701) //local variable may be used without having been initialized
 static void WP_FireConcussionAlt( gentity_t *ent )
 {//a rail-gun-like beam
 	int			damage = CONC_ALT_DAMAGE, skip, traces = DISRUPTOR_ALT_TRACES;
@@ -3145,9 +3174,6 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 								traceEnt->client->ps.otherKiller = ent->s.number;
 								traceEnt->client->ps.otherKillerTime = level.time + 5000;
 								traceEnt->client->ps.otherKillerDebounceTime = level.time + 100;
-								traceEnt->client->otherKillerMOD = MOD_UNKNOWN;
-								traceEnt->client->otherKillerVehWeapon = 0;
-								traceEnt->client->otherKillerWeaponType = WP_NONE;
 
 								traceEnt->client->ps.velocity[0] += pushDir[0]*pStr;
 								traceEnt->client->ps.velocity[1] += pushDir[1]*pStr;
@@ -3227,7 +3253,6 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 	G_PlayEffectID( G_EffectIndex( "concussion/altmuzzle_flash" ), muzzle, forward );
 #endif
 }
-#pragma warning(default : 4701) //local variable may be used without having been initialized
 
 static void WP_FireConcussion( gentity_t *ent )
 {//a fast rocket-like projectile
@@ -3466,9 +3491,9 @@ void SnapVectorTowards( vec3_t v, vec3_t to ) {
 
 	for ( i = 0 ; i < 3 ; i++ ) {
 		if ( to[i] <= v[i] ) {
-			v[i] = (int)v[i];
+			v[i] = floorf( v[i] );
 		} else {
-			v[i] = (int)v[i] + 1;
+			v[i] = ceilf( v[i] );
 		}
 	}
 }
@@ -3710,13 +3735,10 @@ gentity_t *WP_FireVehicleWeapon( gentity_t *ent, vec3_t start, vec3_t dir, vehWe
 
 		if ( vehWeapon->iHealth )
 		{//the missile can take damage
-			/*
-			//don't do this - ships hit them first and have no trace.plane.normal to bounce off it at and end up in the middle of the asteroid...
 			missile->health = vehWeapon->iHealth;
 			missile->takedamage = qtrue;
 			missile->r.contents = MASK_SHOT;
 			missile->die = RocketDie;
-			*/
 		}
 
 		//pilot should own this projectile on server if we have a pilot
@@ -3816,13 +3838,6 @@ gentity_t *WP_FireVehicleWeapon( gentity_t *ent, vec3_t start, vec3_t dir, vehWe
 		}
 		if ( !vehWeapon->fSpeed )
 		{//a mine or something?
-			if ( vehWeapon->iHealth )
-			{//the missile can take damage
-				missile->health = vehWeapon->iHealth;
-				missile->takedamage = qtrue;
-				missile->r.contents = MASK_SHOT;
-				missile->die = RocketDie;
-			}
 			//only do damage when someone touches us
 			missile->s.weapon = WP_THERMAL;//does this really matter?
 			G_SetOrigin( missile, start );
@@ -4021,26 +4036,12 @@ void WP_GetVehicleCamPos( gentity_t *ent, gentity_t *pilot, vec3_t camPos )
 
 void WP_VehLeadCrosshairVeh( gentity_t *camTraceEnt, vec3_t newEnd, const vec3_t dir, const vec3_t shotStart, vec3_t shotDir )
 {
-	if ( g_vehAutoAimLead.integer )
-	{
-		if ( camTraceEnt 
-			&& camTraceEnt->client
-			&& camTraceEnt->client->NPC_class == CLASS_VEHICLE )
-		{//if the crosshair is on a vehicle, lead it
-			float dot, distAdjust = DotProduct( camTraceEnt->client->ps.velocity, dir );
-			vec3_t	predPos, predShotDir;
-			if ( distAdjust > 500 || DistanceSquared( camTraceEnt->client->ps.origin, shotStart ) > 7000000 )
-			{//moving away from me at a decent speed and/or more than @2600 units away from me
-				VectorMA( newEnd, distAdjust, dir, predPos );
-				VectorSubtract( predPos, shotStart, predShotDir );
-				VectorNormalize( predShotDir );
-				dot = DotProduct( predShotDir, shotDir );
-				if ( dot >= 0.75f )
-				{//if the new aim vector is no more than 23 degrees off the original one, go ahead and adjust the aim
-					VectorCopy( predPos, newEnd );
-				}
-			}
-		}
+	if ( camTraceEnt 
+		&& camTraceEnt->client
+		&& camTraceEnt->client->NPC_class == CLASS_VEHICLE )
+	{//if the crosshair is on a vehicle, lead it
+		float distAdjust = DotProduct( camTraceEnt->client->ps.velocity, dir );
+		VectorMA( newEnd, distAdjust, dir, newEnd );
 	}
 	VectorSubtract( newEnd, shotStart, shotDir );
 	VectorNormalize( shotDir );
@@ -4417,17 +4418,9 @@ tryFire:
 FireWeapon
 ===============
 */
-
 int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float constraint);
 
-
 void FireWeapon( gentity_t *ent, qboolean altFire ) {
-	if (ent->client->ps.powerups[PW_QUAD] ) {
-		s_quadFactor = g_quadfactor.value;
-	} else {
-		s_quadFactor = 1;
-	}
-
 	// track shots taken for accuracy tracking.  Grapple is not a weapon and gauntet is just not tracked
 	if( ent->s.weapon != WP_SABER && ent->s.weapon != WP_STUN_BATON && ent->s.weapon != WP_MELEE ) 
 	{

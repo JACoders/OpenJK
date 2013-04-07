@@ -1,10 +1,10 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // world.c -- world query functions
 
 #include "server.h"
-#include "../ghoul2/G2_local.h"
+#include "ghoul2/G2_local.h"
 extern CMiniHeap *G2VertSpaceServer;
 
 /*

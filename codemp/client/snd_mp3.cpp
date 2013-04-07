@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // Filename:-	cl_mp3.cpp
 //
@@ -8,8 +8,8 @@
 
 #include "client.h"
 #include "snd_mp3.h"					// only included directly by a few snd_xxxx.cpp files plus this one
-#include "../mp3code/mp3struct.h"	// keep this rather awful file secret from the rest of the program
-#include "../mp3code/copyright.h"
+#include "mp3code/mp3struct.h"	// keep this rather awful file secret from the rest of the program
+#include "mp3code/copyright.h"
 
 // expects data already loaded, filename arg is for error printing only
 //

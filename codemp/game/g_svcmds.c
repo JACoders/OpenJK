@@ -5,7 +5,6 @@
 
 #include "g_local.h"
 
-
 /*
 ==============================================================================
 
@@ -33,10 +32,6 @@ If 0, then only addresses matching the list will be allowed.  This lets you easi
 
 ==============================================================================
 */
-
-// extern	vmCvar_t	g_banIPs;
-// extern	vmCvar_t	g_filterBan;
-
 
 typedef struct ipFilter_s
 {
@@ -72,6 +67,15 @@ static qboolean StringToFilter (char *s, ipFilter_t *f)
 	{
 		if (*s < '0' || *s > '9')
 		{
+			if (*s == '*') // 'match any'
+			{
+				// b[i] and m[i] to 0
+				s++;
+				if (!*s)
+					break;
+				s++;
+				continue;
+			}
 			G_Printf( "Bad filter address: %s\n", s );
 			return qfalse;
 		}
@@ -83,8 +87,7 @@ static qboolean StringToFilter (char *s, ipFilter_t *f)
 		}
 		num[j] = 0;
 		b[i] = atoi(num);
-		if (b[i] != 0)
-			m[i] = 255;
+		m[i] = 255;
 
 		if (!*s)
 			break;
@@ -105,21 +108,40 @@ UpdateIPBans
 static void UpdateIPBans (void)
 {
 	byte	b[4];
-	int		i;
-	char	iplist[MAX_INFO_STRING];
+	byte	m[4];
+	int		i, j;
+	char	iplist_final[MAX_CVAR_VALUE_STRING];
+	char	ip[NET_ADDRSTRMAXLEN];
 
-	*iplist = 0;
+	*iplist_final = 0;
 	for (i = 0 ; i < numIPFilters ; i++)
 	{
 		if (ipFilters[i].compare == 0xffffffff)
 			continue;
 
 		*(unsigned *)b = ipFilters[i].compare;
-		Com_sprintf( iplist + strlen(iplist), sizeof(iplist) - strlen(iplist), 
-			"%i.%i.%i.%i ", b[0], b[1], b[2], b[3]);
+		*(unsigned *)m = ipFilters[i].mask;
+		*ip = 0;
+		for (j = 0 ; j < 4 ; j++)
+		{
+			if (m[j]!=255)
+				Q_strcat(ip, sizeof(ip), "*");
+			else
+				Q_strcat(ip, sizeof(ip), va("%i", b[j]));
+			Q_strcat(ip, sizeof(ip), (j<3) ? "." : " ");
+		}
+		if (strlen(iplist_final)+strlen(ip) < MAX_CVAR_VALUE_STRING)
+		{
+			Q_strcat( iplist_final, sizeof(iplist_final), ip);
+		}
+		else
+		{
+			Com_Printf("g_banIPs overflowed at MAX_CVAR_VALUE_STRING\n");
+			break;
+		}
 	}
 
-	trap_Cvar_Set( "g_banIPs", iplist );
+	trap_Cvar_Set( "g_banIPs", iplist_final );
 }
 
 /*
@@ -129,20 +151,15 @@ G_FilterPacket
 */
 qboolean G_FilterPacket (char *from)
 {
-	byte			m[4];// = {'\0','\0','\0','\0'};
-	int				i = 0;
+	int				i;
 	unsigned int	in;
-	char			*p;
-
-	while (i < 4)
-	{
-		m[i] = 0;
-		i++;
-	}
+	byte m[4];
+	char *p;
 
 	i = 0;
 	p = from;
 	while (*p && i < 4) {
+		m[i] = 0;
 		while (*p >= '0' && *p <= '9') {
 			m[i] = m[i]*10 + (*p - '0');
 			p++;
@@ -166,7 +183,7 @@ qboolean G_FilterPacket (char *from)
 AddIP
 =================
 */
-void AddIP( char *str )
+static void AddIP( char *str )
 {
 	int		i;
 
@@ -213,7 +230,6 @@ void G_ProcessIPBans(void)
 	}
 }
 
-
 /*
 =================
 Svcmd_AddIP_f
@@ -224,14 +240,13 @@ void Svcmd_AddIP_f (void)
 	char		str[MAX_TOKEN_CHARS];
 
 	if ( trap_Argc() < 2 ) {
-		G_Printf("Usage:  addip <ip-mask>\n");
+		G_Printf("Usage: addip <ip-mask>\n");
 		return;
 	}
 
 	trap_Argv( 1, str, sizeof( str ) );
 
 	AddIP( str );
-
 }
 
 /*
@@ -246,7 +261,7 @@ void Svcmd_RemoveIP_f (void)
 	char		str[MAX_TOKEN_CHARS];
 
 	if ( trap_Argc() < 2 ) {
-		G_Printf("Usage:  sv removeip <ip-mask>\n");
+		G_Printf("Usage: removeip <ip-mask>\n");
 		return;
 	}
 
@@ -269,111 +284,6 @@ void Svcmd_RemoveIP_f (void)
 	G_Printf ( "Didn't find %s.\n", str );
 }
 
-void Svcmd_ListIPs_f( void )
-{
-	int		i;
-	char	*str;
-	byte	b[4];
-
-	G_Printf ( "%d IP slots used.\n", numIPFilters );
-	for ( i = 0 ; i < numIPFilters ; i++ ) 
-	{
-		G_Printf ( "%d: ", i );
-		if (ipFilters[i].compare == 0xffffffff)
-		{
-			G_Printf ( "unused\n" );
-		}
-		else
-		{
-			*(unsigned *)b = ipFilters[i].compare;
-			str = va("%i.%i.%i.%i \n", b[0], b[1], b[2], b[3]);
-			G_Printf ( "%s\n", str );
-		}
-	}
-}
-
-void G_SaveBanIP( void )
-{//save out all the banned IPs
-	int		i;
-	char	*str;
-	fileHandle_t fh;
-	byte	b[4];
-
-	trap_FS_FOpenFile("banip.txt", &fh, FS_WRITE);
-	if ( !fh )
-	{
-		G_Printf ( "G_SaveBanIP - ERROR: can't open banip.txt\n" );
-		return;
-	}
-	
-	str = va("%d \n", numIPFilters);
-	trap_FS_Write(str, strlen(str), fh);
-	for ( i = 0 ; i < numIPFilters ; i++ ) 
-	{
-		if (ipFilters[i].compare == 0xffffffff)
-		{
-			str = "unused \n";
-			trap_FS_Write(str, strlen(str), fh);
-		}
-		else
-		{
-			*(unsigned *)b = ipFilters[i].compare;
-			str = va("%i.%i.%i.%i \n", b[0], b[1], b[2], b[3]);
-			trap_FS_Write(str, strlen(str), fh);
-		}
-	}
-
-	trap_FS_FCloseFile(fh);
-}
-
-void G_LoadIPBans( void )
-{//load in all the banned IPs
-	int		i, len;
-	char	*p, *token;
-	fileHandle_t fh;
-	char	banIPBuffer[MAX_IPFILTERS*32];			//	The list of file names read in
-	char	banIPFile[MAX_QPATH];
-
-	len = trap_FS_FOpenFile("banip.txt", &fh, FS_READ);
-	if ( !fh )
-	{
-		G_Printf ( "G_LoadBanIP - ERROR: can't open banip.txt\n" );
-		return;
-	}
-	
-	trap_FS_Read(banIPBuffer, len, fh);
-	banIPBuffer[len] = 0;
-	trap_FS_FCloseFile(fh);
-	p = banIPBuffer;
-	COM_BeginParseSession(banIPFile);
-
-	token = COM_ParseExt( &p, qtrue );
-	if ( token )
-	{
-		numIPFilters = atoi(token);
-
-		for ( i = 0 ; i < numIPFilters ; i++ ) 
-		{
-			token = COM_ParseExt( &p, qtrue );
-			if ( token )
-			{//have an ip
-				if ( !Q_stricmp("unused",token) )
-				{
-					ipFilters[i].compare = 0xffffffffu;
-				}
-				else
-				{
-					StringToFilter(token,&ipFilters[i]);
-				}
-			}
-			else
-			{
-				break;
-			}
-		}
-	}
-}
-
 /*
 ===================
 Svcmd_EntityList_f
@@ -383,8 +293,8 @@ void	Svcmd_EntityList_f (void) {
 	int			e;
 	gentity_t		*check;
 
-	check = g_entities+1;
-	for (e = 1; e < level.num_entities ; e++, check++) {
+	check = g_entities;
+	for (e = 0; e < level.num_entities ; e++, check++) {
 		if ( !check->inuse ) {
 			continue;
 		}
@@ -401,6 +311,12 @@ void	Svcmd_EntityList_f (void) {
 			break;
 		case ET_MISSILE:
 			G_Printf("ET_MISSILE          ");
+			break;
+		case ET_SPECIAL:
+			G_Printf("ET_SPECIAL          ");
+			break;
+		case ET_HOLOCRON:
+			G_Printf("ET_HOLOCRON         ");
 			break;
 		case ET_MOVER:
 			G_Printf("ET_MOVER            ");
@@ -426,8 +342,17 @@ void	Svcmd_EntityList_f (void) {
 		case ET_NPC:
 			G_Printf("ET_NPC              ");
 			break;
+		case ET_BODY:
+			G_Printf("ET_BODY             ");
+			break;
+		case ET_TERRAIN:
+			G_Printf("ET_TERRAIN          ");
+			break;
+		case ET_FX:
+			G_Printf("ET_FX               ");
+			break;
 		default:
-			G_Printf("%3i                 ", check->s.eType);
+			G_Printf("%-3i                ", check->s.eType);
 			break;
 		}
 
@@ -438,40 +363,41 @@ void	Svcmd_EntityList_f (void) {
 	}
 }
 
+qboolean StringIsInteger( const char *s );
+/*
+===================
+ClientForString
+===================
+*/
 gclient_t	*ClientForString( const char *s ) {
 	gclient_t	*cl;
-	int			i;
 	int			idnum;
+	char		cleanName[MAX_STRING_CHARS];
 
-	// numeric values are just slot numbers
-	if ( s[0] >= '0' && s[0] <= '9' ) {
+	// numeric values could be slot numbers
+	if ( StringIsInteger( s ) ) {
 		idnum = atoi( s );
-		if ( idnum < 0 || idnum >= level.maxclients ) {
-			Com_Printf( "Bad client slot: %i\n", idnum );
-			return NULL;
+		if ( idnum >= 0 && idnum < level.maxclients ) {
+			cl = &level.clients[idnum];
+			if ( cl->pers.connected == CON_CONNECTED ) {
+				return cl;
+			}
 		}
-
-		cl = &level.clients[idnum];
-		if ( cl->pers.connected == CON_DISCONNECTED ) {
-			G_Printf( "Client %i is not connected\n", idnum );
-			return NULL;
-		}
-		return cl;
 	}
 
 	// check for a name match
-	for ( i=0 ; i < level.maxclients ; i++ ) {
-		cl = &level.clients[i];
-		if ( cl->pers.connected == CON_DISCONNECTED ) {
+	for ( idnum=0,cl=level.clients ; idnum < level.maxclients ; idnum++,cl++ ) {
+		if ( cl->pers.connected != CON_CONNECTED ) {
 			continue;
 		}
-		if ( !Q_stricmp( cl->pers.netname, s ) ) {
+		Q_strncpyz(cleanName, cl->pers.netname, sizeof(cleanName));
+		Q_CleanStr(cleanName);
+		if ( !Q_stricmp( cleanName, s ) ) {
 			return cl;
 		}
 	}
 
 	G_Printf( "User %s is not on the server\n", s );
-
 	return NULL;
 }
 
@@ -485,6 +411,11 @@ forceteam <player> <team>
 void	Svcmd_ForceTeam_f( void ) {
 	gclient_t	*cl;
 	char		str[MAX_TOKEN_CHARS];
+
+	if ( trap_Argc() < 3 ) {
+		G_Printf("Usage: forceteam <player> <team>\n");
+		return;
+	}
 
 	// find the player
 	trap_Argv( 1, str, sizeof( str ) );
@@ -536,11 +467,6 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 
-/*	if (Q_stricmp (cmd, "abort_podium") == 0) {
-		Svcmd_AbortPodium_f();
-		return qtrue;
-	}
-*/
 	if (Q_stricmp (cmd, "addip") == 0) {
 		Svcmd_AddIP_f();
 		return qtrue;
@@ -552,19 +478,18 @@ qboolean	ConsoleCommand( void ) {
 	}
 
 	if (Q_stricmp (cmd, "listip") == 0) {
-		Svcmd_ListIPs_f();
-		//trap_SendConsoleCommand( EXEC_NOW, "g_banIPs\n" );
+		trap_SendConsoleCommand( EXEC_NOW, "g_banIPs\n" );
 		return qtrue;
 	}
 
-	if (g_dedicated.integer) {
+	if (dedicated.integer) {
 		if (Q_stricmp (cmd, "say") == 0) {
 			trap_SendServerCommand( -1, va("print \"server: %s\n\"", ConcatArgs(1) ) );
 			return qtrue;
 		}
-		// everything else will also be printed as a say command
-		trap_SendServerCommand( -1, va("print \"server: %s\n\"", ConcatArgs(0) ) );
-		return qtrue;
+		// everything else will NOT also be printed as a say command
+		//trap_SendServerCommand( -1, va("print \"server: %s\n\"", ConcatArgs(0) ) );
+		//return qtrue;
 	}
 
 	return qfalse;

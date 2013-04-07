@@ -1,12 +1,12 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 // sv_client.c -- server code for dealing with clients
 
 #include "server.h"
-#include "../qcommon/stringed_ingame.h"
-#include "../RMG/RM_Headers.h"
-#include "../zlib32/zip.h"
+#include "qcommon/stringed_ingame.h"
+#include "RMG/RM_Headers.h"
+#include "zlib32/zip.h"
 
 static void SV_CloseDownload( client_t *cl );
 
@@ -541,7 +541,8 @@ void SV_SendClientGameState( client_t *client ) {
 
 	Com_DPrintf ("SV_SendClientGameState() for %s\n", client->name);
 	Com_DPrintf( "Going from CS_CONNECTED to CS_PRIMED for %s\n", client->name );
-	client->state = CS_PRIMED;
+	if ( client->state == CS_CONNECTED )
+		client->state = CS_PRIMED;
 	client->pureAuthentic = 0;
 
 	// when we receive the first packet from the client, we will

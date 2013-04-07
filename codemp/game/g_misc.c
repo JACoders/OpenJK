@@ -3,7 +3,7 @@
 // g_misc.c
 
 #include "g_local.h"
-#include "../ghoul2/G2.h"
+#include "ghoul2/G2.h"
 
 #include "ai_main.h" //for the g2animents
 
@@ -12,7 +12,6 @@
 #define STATION_RECHARGE_TIME 100
 
 void HolocronThink(gentity_t *ent);
-extern vmCvar_t g_MaxHolocronCarry;
 
 /*QUAKED func_group (0 0 0) ?
 Used to group brushes together just for editor convenience.  They are turned into normal brushes by the utilities.
@@ -494,7 +493,7 @@ void SP_terrain(gentity_t *ent)
 
 	//Force it to 1 when there is terrain on the level.
 	trap_Cvar_Set("RMG", "1");
-	g_RMG.integer = 1;
+	RMG.integer = 1;
 
 	VectorClear (ent->s.angles);
 	trap_SetBrushModel( ent, ent->model );
@@ -503,7 +502,7 @@ void SP_terrain(gentity_t *ent)
 //	shaderNum = gi.CM_GetShaderNum(s.modelindex);
 	shaderNum = 0;
 
-	if (g_RMG.integer)
+	if (RMG.integer)
 	{
 		/*
 		// Grab the default terrain file from the RMG cvar
@@ -603,7 +602,7 @@ void SP_terrain(gentity_t *ent)
 	trap_LinkEntity(ent);
 
 	// If running RMG then initialize the terrain and handle team skins
-	if ( g_RMG.integer ) 
+	if ( RMG.integer ) 
 	{
 		trap_RMG_Init(terrainID);
 
@@ -854,7 +853,7 @@ void HolocronTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 		}
 	}
 
-	if (g_MaxHolocronCarry.integer && othercarrying >= g_MaxHolocronCarry.integer)
+	if (g_maxHolocronCarry.integer && othercarrying >= g_maxHolocronCarry.integer)
 	{ //make the oldest holocron carried by the player pop out to make room for this one
 		other->client->ps.holocronsCarried[index_lowest] = 0;
 
@@ -1017,8 +1016,8 @@ void SP_misc_holocron(gentity_t *ent)
 	VectorSet( ent->r.maxs, 8, 8, 8 );
 	VectorSet( ent->r.mins, -8, -8, -8 );
 
-	ent->s.origin[2] += 0.1;
-	ent->r.maxs[2] -= 0.1;
+	ent->s.origin[2] += 0.1f;
+	ent->r.maxs[2] -= 0.1f;
 
 	VectorSet( dest, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] - 4096 );
 	trap_Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID );
@@ -1030,7 +1029,7 @@ void SP_misc_holocron(gentity_t *ent)
 	}
 
 	//add the 0.1 back after the trace
-	ent->r.maxs[2] += 0.1;
+	ent->r.maxs[2] += 0.1f;
 
 	// allow to ride movers
 //	ent->s.groundEntityNum = tr.entityNum;
@@ -1615,8 +1614,8 @@ void SP_misc_shield_floor_unit( gentity_t *ent )
 	VectorSet( ent->r.mins, -16, -16, 0 );
 	VectorSet( ent->r.maxs, 16, 16, 40 );
 
-	ent->s.origin[2] += 0.1;
-	ent->r.maxs[2] -= 0.1;
+	ent->s.origin[2] += 0.1f;
+	ent->r.maxs[2] -= 0.1f;
 
 	VectorSet( dest, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] - 4096 );
 	trap_Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID );
@@ -1628,7 +1627,7 @@ void SP_misc_shield_floor_unit( gentity_t *ent )
 	}
 
 	//add the 0.1 back after the trace
-	ent->r.maxs[2] += 0.1;
+	ent->r.maxs[2] += 0.1f;
 
 	// allow to ride movers
 	ent->s.groundEntityNum = tr.entityNum;
@@ -3437,9 +3436,7 @@ void misc_weapon_shooter_aim( gentity_t *self )
 	}
 }
 
-
 extern stringID_table_t WPTable[];
-
 
 void SP_misc_weapon_shooter( gentity_t *self )
 {

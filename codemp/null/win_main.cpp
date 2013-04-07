@@ -1,9 +1,9 @@
 // win_main.c
 
-#include "../client/client.h"
-#include "../qcommon/qcommon.h"
-#include "../win32/win_local.h"
-#include "../win32/resource.h"
+#include "client/client.h"
+#include "qcommon/qcommon.h"
+#include "win32/win_local.h"
+#include "win32/resource.h"
 #include <errno.h>
 #include <float.h>
 #include <fcntl.h>
@@ -11,7 +11,7 @@
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
-#include "../qcommon/stringed_ingame.h"
+#include "qcommon/stringed_ingame.h"
 
 #define	CD_BASEDIR	"gamedata\\gamedata"
 #define	CD_EXE		"jamp.exe"

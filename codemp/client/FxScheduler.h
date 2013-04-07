@@ -4,7 +4,7 @@
 #endif
 
 #if !defined(GENERICPARSER2_H_INC)
-	#include "../qcommon/GenericParser2.h"
+	#include "qcommon/GenericParser2.h"
 #endif
 
 #ifndef FX_SCHEDULER_H_INC

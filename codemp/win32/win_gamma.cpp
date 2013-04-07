@@ -1,12 +1,12 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 /*
 ** WIN_GAMMA.C
 */
 #include <assert.h>
-#include "../renderer/tr_local.h"
-#include "../qcommon/qcommon.h"
+#include "renderer/tr_local.h"
+#include "qcommon/qcommon.h"
 #include "glw_win.h"
 #include "win_local.h"
 

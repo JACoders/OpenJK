@@ -9,15 +9,34 @@
 
 qboolean		m_entersound;		// after a frame, so caching won't disrupt the sound
 
-// these are here so the functions in q_shared.c can link
-#ifndef UI_HARD_LINKED
+void QDECL UI_Printf( const char *msg, ... ) {
+	va_list		argptr;
+	char		text[1024] = {0};
+
+	va_start( argptr, msg );
+	Q_vsnprintf( text, sizeof( text ), msg, argptr );
+	va_end( argptr );
+
+	trap_Print( text );
+}
+
+void QDECL UI_Error( const char *msg, ... ) {
+	va_list		argptr;
+	char		text[1024] = {0};
+
+	va_start (argptr, msg);
+	Q_vsnprintf( text, sizeof( text ), msg, argptr );
+	va_end (argptr);
+
+	trap_Error( text );
+}
 
 void QDECL Com_Error( int level, const char *error, ... ) {
 	va_list		argptr;
-	char		text[1024];
+	char		text[4096] = {0};
 
 	va_start (argptr, error);
-	vsprintf (text, error, argptr);
+	Q_vsnprintf( text, sizeof( text ), error, argptr );
 	va_end (argptr);
 
 	trap_Error( va("%s", text) );
@@ -25,16 +44,18 @@ void QDECL Com_Error( int level, const char *error, ... ) {
 
 void QDECL Com_Printf( const char *msg, ... ) {
 	va_list		argptr;
-	char		text[1024];
+	char		text[4096] = {0};
+	int ret;
 
 	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
+	ret = Q_vsnprintf (text, sizeof( text ), msg, argptr);
 	va_end (argptr);
 
-	trap_Print( va("%s", text) );
+	if ( ret == -1 )
+		trap_Print( "Com_Printf: overflow of 4096 bytes buffer\n" );
+	else
+		trap_Print( va("%s", text) );
 }
-
-#endif
 
 qboolean newUI = qfalse;
 

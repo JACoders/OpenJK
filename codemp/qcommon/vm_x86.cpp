@@ -1,6 +1,6 @@
 // vm_x86.c -- load time compiler and execution environment for x86
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "vm_local.h"
 

@@ -1,31 +1,31 @@
 // sv_game.c -- interface to the game dll
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #include "server.h"
 
-#include "../game/botlib.h"
-#include "../qcommon/stringed_ingame.h"
+#include "game/botlib.h"
+#include "qcommon/stringed_ingame.h"
 
 #if !defined(CROFFSYSTEM_H_INC)
-	#include "../qcommon/RoffSystem.h"
+	#include "qcommon/RoffSystem.h"
 #endif
 
-#include "../renderer/tr_WorldEffects.h"
+#include "renderer/tr_WorldEffects.h"
 
 #if !defined(G2_H_INC)
-	#include "../ghoul2/G2_local.h"
+	#include "ghoul2/G2_local.h"
 #endif
 
-#include "../ghoul2/G2_gore.h"
+#include "ghoul2/G2_gore.h"
 
-#include "../RMG/RM_Headers.h"
-#include "../qcommon/cm_local.h"
-#include "../qcommon/cm_public.h"
+#include "RMG/RM_Headers.h"
+#include "qcommon/cm_local.h"
+#include "qcommon/cm_public.h"
 
-#include "../icarus/GameInterface.h"
+#include "icarus/GameInterface.h"
 
-#include "../qcommon/timing.h"
+#include "qcommon/timing.h"
 
 #include "NPCNav/navigator.h"
 

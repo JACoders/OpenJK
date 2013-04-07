@@ -2,7 +2,7 @@
 //
 // g_local.h -- local definitions for game module
 
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_vehicles.h"
 #include "g_public.h"
@@ -27,6 +27,8 @@ extern vec3_t gPainPoint;
 
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	"basejka"
+
+#define SECURITY_LOG "security.log"
 
 #define BODY_QUEUE_SIZE		8
 
@@ -82,6 +84,8 @@ extern vec3_t gPainPoint;
 #define DEBUG_SABER_BOX
 #endif
 
+#define EC "\x19"
+
 #define	MAX_G_SHARED_BUFFER_SIZE		8192
 extern char gSharedBuffer[MAX_G_SHARED_BUFFER_SIZE];
 
@@ -121,7 +125,7 @@ typedef enum
 	HL_GENERIC5,
 	HL_GENERIC6,
 	HL_MAX
-};
+} hitLocation_t;
 
 //============================================================================
 extern void *precachedKyle;
@@ -367,8 +371,7 @@ typedef enum {
 	CON_DISCONNECTED,
 	CON_CONNECTING,
 	CON_CONNECTED
-};
-typedef int clientConnected_t;
+} clientConnected_t;
 
 typedef enum {
 	SPECTATOR_NOT,
@@ -417,17 +420,15 @@ typedef struct {
 	int			wins, losses;		// tournament stats
 	int			selectedFP;			// check against this, if doesn't match value in playerstate then update userinfo
 	int			saberLevel;			// similar to above method, but for current saber attack level
-	qboolean	setForce;			// set to true once player is given the chance to set force powers
+	int			setForce;			// set to true once player is given the chance to set force powers
 	int			updateUITime;		// only update userinfo for FP/SL if < level.time
 	qboolean	teamLeader;			// true when this client is a team leader
 	char		siegeClass[64];
-	char		saberType[64];
-	char		saber2Type[64];
 	int			duelTeam;
 	int			siegeDesiredTeam;
-	int			killCount;
-	int			TKCount;
-	char		IPstring[32];		// yeah, I know, could be 16, but, just in case...
+
+	//JAC: Added
+	char		IP[NET_ADDRSTRMAXLEN];
 } clientSession_t;
 
 // playerstate mGameFlags
@@ -455,6 +456,14 @@ typedef struct {
 	int			voteCount;			// to prevent people from constantly calling votes
 	int			teamVoteCount;		// to prevent people from constantly calling votes
 	qboolean	teamInfo;			// send team overlay updates?
+
+	//JAC: Added
+	int			connectTime;
+
+	//Raz: Moved this out of session data.
+	//		userinfo -> pers in ClientUserinfoChanged
+	char		saber1[MAX_QPATH];
+	char		saber2[MAX_QPATH];
 } clientPersistant_t;
 
 typedef struct renderInfo_s
@@ -740,11 +749,12 @@ struct gclient_s {
 
 	int			lastGenCmd;
 	int			lastGenCmdTime;
-	
-	//can't put these in playerstate, crashes game (need to change exe?)
-	int			otherKillerMOD;
-	int			otherKillerVehWeapon;
-	int			otherKillerWeaponType;
+
+	struct force {
+		int		regenDebounce;
+		int		drainDebounce;
+		int		lightningDebounce;
+	} force;
 };
 
 //Interest points
@@ -857,10 +867,9 @@ typedef struct {
     int			snd_medHealed;			//being healed by supply class
 	int			snd_medSupplied;		//being supplied by supply class
 
-	int			warmupModificationCount;	// for detecting if g_warmup is changed
-
 	// voting state
 	char		voteString[MAX_STRING_CHARS];
+	char		voteStringClean[MAX_STRING_CHARS];
 	char		voteDisplayString[MAX_STRING_CHARS];
 	int			voteTime;				// level.time vote was called
 	int			voteExecuteTime;		// time the vote is executed
@@ -927,6 +936,12 @@ typedef struct {
 
 	char		mTeamFilter[MAX_QPATH];
 
+	//JAC: added
+	struct {
+		qboolean		isPatched;
+		qboolean		clientConnectionActive[MAX_CLIENTS];
+		fileHandle_t	log;
+	} security;
 } level_locals_t;
 
 
@@ -938,6 +953,7 @@ qboolean	G_SpawnString( const char *key, const char *defaultString, char **out )
 qboolean	G_SpawnFloat( const char *key, const char *defaultString, float *out );
 qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out );
 qboolean	G_SpawnVector( const char *key, const char *defaultString, float *out );
+qboolean	G_SpawnBoolean( const char *key, const char *defaultString, qboolean *out );
 void		G_SpawnEntitiesFromString( qboolean inSubBSP );
 char *G_NewString( const char *string );
 
@@ -1071,7 +1087,6 @@ Ghoul2 Insert Start
 int G_BoneIndex( const char *name );
 
 
-
 qhandle_t	trap_R_RegisterSkin( const char *name );
 
 // CG specific API access
@@ -1144,7 +1159,6 @@ void		trap_G2API_AttachInstanceToEntNum(void *ghoul2, int entityNum, qboolean se
 void		trap_G2API_ClearAttachedInstance(int entityNum);
 void		trap_G2API_CleanEntAttachments(void);
 qboolean	trap_G2API_OverrideServer(void *serverInstance);
-
 
 
 /*
@@ -1301,6 +1315,7 @@ qboolean G_FilterPacket (char *from);
 //
 void FireWeapon( gentity_t *ent, qboolean altFire );
 void BlowDetpacks(gentity_t *ent);
+void RemoveDetpacks(gentity_t *ent);
 
 //
 // p_hud.c
@@ -1332,6 +1347,7 @@ void SetLeader(int team, int client);
 void CheckTeamLeader( int team );
 void G_RunThink (gentity_t *ent);
 void QDECL G_LogPrintf( const char *fmt, ... );
+void QDECL G_SecurityLogPrintf( const char *fmt, ... );
 void SendScoreboardMessageToAllClients( void );
 void QDECL G_Printf( const char *fmt, ... );
 void QDECL G_Error( const char *fmt, ... );
@@ -1341,7 +1357,7 @@ const char *G_GetStringEdString(char *refSection, char *refName);
 // g_client.c
 //
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot );
-void ClientUserinfoChanged( int clientNum );
+qboolean ClientUserinfoChanged( int clientNum );
 void ClientDisconnect( int clientNum );
 void ClientBegin( int clientNum, qboolean allowTeamReset );
 void G_BreakArm(gentity_t *ent, int arm);
@@ -1402,7 +1418,7 @@ void UpdateTournamentInfo( void );
 //
 // g_bot.c
 //
-void G_InitBots( qboolean restart );
+void G_InitBots( void );
 char *G_GetBotInfoByNumber( int num );
 char *G_GetBotInfoByName( const char *name );
 void G_CheckBotSpawn( void );
@@ -1413,6 +1429,7 @@ void Svcmd_BotList_f( void );
 void BotInterbreedEndMatch( void );
 qboolean G_DoesMapSupportGametype(const char *mapname, int gametype);
 const char *G_RefreshNextMap(int gametype, qboolean forced);
+void G_LoadArenas( void );
 
 // w_force.c / w_saber.c
 gentity_t *G_PreDefSound(vec3_t org, int pdSound);
@@ -1439,7 +1456,6 @@ void ForceTelepathy(gentity_t *self);
 qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, int hitLoc );
 
 // g_log.c
-void QDECL G_LogPrintf( const char *fmt, ... );
 void QDECL G_LogWeaponPickup(int client, int weaponid);
 void QDECL G_LogWeaponFire(int client, int weaponid);
 void QDECL G_LogWeaponDamage(int client, int mod, int amount);
@@ -1510,171 +1526,11 @@ extern	gentity_t		g_entities[MAX_GENTITIES];
 
 #define	FOFS(x) ((int)&(((gentity_t *)0)->x))
 
-extern	vmCvar_t	g_gametype;
-extern	vmCvar_t	g_dedicated;
-extern	vmCvar_t	g_developer;
-extern	vmCvar_t	g_cheats;
-extern	vmCvar_t	g_maxclients;			// allow this many total, including spectators
-extern	vmCvar_t	g_maxGameClients;		// allow this many active
-extern	vmCvar_t	g_restarted;
+#define XCVAR_PROTO
+	#include "g_xcvar.h"
+#undef XCVAR_PROTO
 
-extern	vmCvar_t	g_trueJedi;
-
-extern	vmCvar_t	g_autoMapCycle;
-extern	vmCvar_t	g_dmflags;
-extern	vmCvar_t	g_maxForceRank;
-extern	vmCvar_t	g_forceBasedTeams;
-extern	vmCvar_t	g_privateDuel;
-
-extern	vmCvar_t	g_allowNPC;
-
-extern	vmCvar_t	g_armBreakage;
-
-extern	vmCvar_t	g_saberLocking;
-extern	vmCvar_t	g_saberLockFactor;
-extern	vmCvar_t	g_saberTraceSaberFirst;
-
-extern	vmCvar_t	d_saberKickTweak;
-
-extern	vmCvar_t	d_powerDuelPrint;
-
-extern	vmCvar_t	d_saberGhoul2Collision;
-extern	vmCvar_t	g_saberBladeFaces;
-extern	vmCvar_t	d_saberAlwaysBoxTrace;
-extern	vmCvar_t	d_saberBoxTraceSize;
-
-extern	vmCvar_t	d_siegeSeekerNPC;
-
-extern	vmCvar_t	g_debugMelee;
-extern	vmCvar_t	g_stepSlideFix;
-
-extern	vmCvar_t	g_noSpecMove;
-
-#ifdef _DEBUG
-extern	vmCvar_t	g_disableServerG2;
-#endif
-
-extern	vmCvar_t	d_perPlayerGhoul2;
-
-extern	vmCvar_t	d_projectileGhoul2Collision;
-
-extern	vmCvar_t	g_g2TraceLod;
-
-extern	vmCvar_t	g_optvehtrace;
-
-extern	vmCvar_t	g_locationBasedDamage;
-
-extern	vmCvar_t	g_allowHighPingDuelist;
-
-extern	vmCvar_t	g_logClientInfo;
-
-extern	vmCvar_t	g_slowmoDuelEnd;
-
-extern	vmCvar_t	g_saberDamageScale;
-
-extern	vmCvar_t	g_useWhileThrowing;
-
-extern	vmCvar_t	g_RMG;
-
-extern	vmCvar_t	g_svfps;
-
-extern	vmCvar_t	g_forceRegenTime;
-extern	vmCvar_t	g_spawnInvulnerability;
-extern	vmCvar_t	g_forcePowerDisable;
-extern	vmCvar_t	g_weaponDisable;
-
-extern	vmCvar_t	g_allowDuelSuicide;
-extern	vmCvar_t	g_fraglimitVoteCorrection;
-
-extern	vmCvar_t	g_duelWeaponDisable;
-extern	vmCvar_t	g_fraglimit;
-extern	vmCvar_t	g_duel_fraglimit;
-extern	vmCvar_t	g_timelimit;
-extern	vmCvar_t	g_capturelimit;
-extern	vmCvar_t	d_saberInterpolate;
-extern	vmCvar_t	g_friendlyFire;
-extern	vmCvar_t	g_friendlySaber;
-extern	vmCvar_t	g_password;
-extern	vmCvar_t	g_needpass;
-extern	vmCvar_t	g_gravity;
-extern	vmCvar_t	g_speed;
-extern	vmCvar_t	g_knockback;
-extern	vmCvar_t	g_quadfactor;
-extern	vmCvar_t	g_forcerespawn;
-extern	vmCvar_t	g_siegeRespawn;
-extern	vmCvar_t	g_inactivity;
-extern	vmCvar_t	g_debugMove;
-extern	vmCvar_t	g_debugAlloc;
-#ifndef FINAL_BUILD
-extern	vmCvar_t	g_debugDamage;
-#endif
-extern	vmCvar_t	g_debugServerSkel;
-extern	vmCvar_t	g_weaponRespawn;
-extern	vmCvar_t	g_weaponTeamRespawn;
-extern	vmCvar_t	g_adaptRespawn;
-extern	vmCvar_t	g_synchronousClients;
-extern	vmCvar_t	g_motd;
-extern	vmCvar_t	g_warmup;
-extern	vmCvar_t	g_doWarmup;
-extern	vmCvar_t	g_blood;
-extern	vmCvar_t	g_allowVote;
-extern	vmCvar_t	g_allowTeamVote;
-extern	vmCvar_t	g_teamAutoJoin;
-extern	vmCvar_t	g_teamForceBalance;
-extern	vmCvar_t	g_banIPs;
-extern	vmCvar_t	g_filterBan;
-extern	vmCvar_t	g_debugForward;
-extern	vmCvar_t	g_debugRight;
-extern	vmCvar_t	g_debugUp;
-//extern	vmCvar_t	g_redteam;
-//extern	vmCvar_t	g_blueteam;
-extern	vmCvar_t	g_smoothClients;
-
-
-extern	vmCvar_t	pmove_fixed;
-extern	vmCvar_t	pmove_msec;
-
-
-extern	vmCvar_t	g_enableBreath;
-extern	vmCvar_t	g_singlePlayer;
-extern	vmCvar_t	g_dismember;
-extern	vmCvar_t	g_forceDodge;
-extern	vmCvar_t	g_timeouttospec;
-
-extern	vmCvar_t	g_saberDmgVelocityScale;
-extern	vmCvar_t	g_saberDmgDelay_Idle;
-extern	vmCvar_t	g_saberDmgDelay_Wound;
-
-#ifndef FINAL_BUILD
-extern	vmCvar_t	g_saberDebugPrint;
-#endif
-
-extern	vmCvar_t	g_siegeTeamSwitch;
-
-extern	vmCvar_t	bg_fighterAltControl;
-
-#ifdef DEBUG_SABER_BOX
-extern	vmCvar_t	g_saberDebugBox;
-#endif
-
-//NPC nav debug
-extern vmCvar_t		d_altRoutes;
-extern vmCvar_t		d_patched;
-extern	vmCvar_t	d_noIntermissionWait;
-
-extern	vmCvar_t	g_siegeTeam1;
-extern	vmCvar_t	g_siegeTeam2;
-
-extern	vmCvar_t	g_austrian;
-
-extern	vmCvar_t	g_powerDuelStartHealth;
-extern	vmCvar_t	g_powerDuelEndHealth;
-
-extern vmCvar_t		g_showDuelHealths;
-
-
-
-void	trap_Printf( const char *fmt );
+void	trap_Print( const char *fmt );
 void	trap_Error( const char *fmt );
 int		trap_Milliseconds( void );
 void	trap_PrecisionTimer_Start(void **theNewTimer);
@@ -1982,4 +1838,11 @@ void trap_RMG_Init(int terrainID);
 void trap_Bot_UpdateWaypoints(int wpnum, wpobject_t **wps);
 void trap_Bot_CalculatePaths(int rmg);
 
-
+// userinfo validation bitflags
+typedef enum userinfoValidationBits_e {
+	// validation & (1<<(numUserinfoFields+USERINFO_VALIDATION_BLAH))
+	USERINFO_VALIDATION_SIZE=0,
+	USERINFO_VALIDATION_SLASH,
+	USERINFO_VALIDATION_EXTASCII,
+	USERINFO_VALIDATION_CONTROLCHARS,
+} userinfoValidationBits_t;

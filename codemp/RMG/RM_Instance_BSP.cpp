@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 /************************************************************************************************
  *
@@ -10,8 +10,8 @@
  *
  ************************************************************************************************/
 
-#include "../qcommon/cm_local.h"
-#include "../server/server.h"
+#include "qcommon/cm_local.h"
+#include "server/server.h"
 #include "RM_Headers.h"
 
 #include "RM_Instance_BSP.h"

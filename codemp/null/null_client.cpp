@@ -1,5 +1,5 @@
 
-#include "../client/client.h"
+#include "client/client.h"
 
 cvar_t *cl_shownet;
 

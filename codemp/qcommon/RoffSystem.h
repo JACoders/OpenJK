@@ -6,11 +6,11 @@
 #define CROFFSYSTEM_H_INC
 
 #ifndef __Q_SHARED_H
-	#include "../game/q_shared.h"	//needs to be in here for entityState_t
+	#include "qcommon/q_shared.h"	//needs to be in here for entityState_t
 #endif
 
 #if !defined(SERVER_H_INC)
-	#include "../server/server.h"
+	#include "server/server.h"
 #endif
 
 #pragma warning (push, 3)	//go back down to 3 for the stl include

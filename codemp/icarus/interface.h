@@ -3,8 +3,8 @@
 #ifndef __INTERFACE__
 #define __INTERFACE__
 
-//#include "../server/server.h"
-//#include "../game/g_public.h"
+//#include "server/server.h"
+//#include "game/g_public.h"
 
 typedef unsigned long       DWORD;
 

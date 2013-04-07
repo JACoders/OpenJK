@@ -1,10 +1,12 @@
-#include "../game/q_shared.h"
-#include "../renderer/tr_local.h"
+#include "qcommon/q_shared.h"
+#include "renderer/tr_local.h"
 #ifdef __linux__
 typedef unsigned int GLenum;
 #endif
 
 #ifdef _WIN32
+	#define WIN32_LEAN_AND_MEAN
+	#define NOSCROLL
 #include <windows.h>
 BOOL (WINAPI * qwglSwapIntervalEXT)( int interval );
 //void (APIENTRY * qglMultiTexCoord2fARB )( GLenum texture, float s, float t );

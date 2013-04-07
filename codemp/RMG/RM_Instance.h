@@ -7,7 +7,7 @@
 #endif
 
 #if !defined(CM_LANDSCAPE_H_INC)
-#include "../qcommon/cm_landscape.h"
+#include "qcommon/cm_landscape.h"
 #endif
 
 enum

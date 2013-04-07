@@ -4,14 +4,14 @@
 
 
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 
 #if !defined(TR_LOCAL_H)
-	#include "../renderer/tr_local.h"
+	#include "renderer/tr_local.h"
 #endif
 
-#include "../renderer/matcomp.h"
+#include "renderer/matcomp.h"
 
 #if !defined(G2_H_INC)
 	#include "G2.h"
@@ -29,7 +29,7 @@
 
 //#define RAG_TRACE_DEBUG_LINES
 
-#include "../client/client.h" //while this is all "shared" code, there are some places where we want to make cgame callbacks (for ragdoll) only if the cgvm exists
+#include "client/client.h" //while this is all "shared" code, there are some places where we want to make cgame callbacks (for ragdoll) only if the cgvm exists
 //rww - RAGDOLL_END
 
 //=====================================================================================================================

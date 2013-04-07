@@ -7,15 +7,11 @@
 extern void Jedi_Cloak( gentity_t *self );
 extern void Jedi_Decloak( gentity_t *self );
 
-
 qboolean PM_SaberInTransition( int move );
 qboolean PM_SaberInStart( int move );
 qboolean PM_SaberInReturn( int move );
 qboolean WP_SaberStyleValidForSaber( saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int saberAnimLevel );
-
 qboolean saberCheckKnockdown_DuelLoss(gentity_t *saberent, gentity_t *saberOwner, gentity_t *other);
-
-extern vmCvar_t g_saberLockRandomNess;
 
 void P_SetTwitchInfo(gclient_t	*client)
 {
@@ -127,7 +123,9 @@ Check for lava / slime contents and drowning
 =============
 */
 void P_WorldEffects( gentity_t *ent ) {
-	qboolean	envirosuit;
+#ifdef BASE_COMPAT
+	qboolean	envirosuit = qfalse;
+#endif
 	int			waterlevel;
 
 	if ( ent->client->noclip ) {
@@ -137,16 +135,19 @@ void P_WorldEffects( gentity_t *ent ) {
 
 	waterlevel = ent->waterlevel;
 
-	envirosuit = ent->client->ps.powerups[PW_BATTLESUIT] > level.time;
+	#ifdef BASE_COMPAT
+		envirosuit = ent->client->ps.powerups[PW_BATTLESUIT] > level.time;
+	#endif // BASE_COMPAT
 
 	//
 	// check for drowning
 	//
 	if ( waterlevel == 3 ) {
-		// envirosuit give air
-		if ( envirosuit ) {
-			ent->client->airOutTime = level.time + 10000;
-		}
+		#ifdef BASE_COMPAT
+			// envirosuit give air
+			if ( envirosuit )
+				ent->client->airOutTime = level.time + 10000;
+		#endif // BASE_COMPAT
 
 		// if out of air, start drowning
 		if ( ent->client->airOutTime < level.time) {
@@ -182,23 +183,21 @@ void P_WorldEffects( gentity_t *ent ) {
 	//
 	// check for sizzle damage (move to pmove?)
 	//
-	if (waterlevel && 
-		(ent->watertype&(CONTENTS_LAVA|CONTENTS_SLIME)) ) {
-		if (ent->health > 0
-			&& ent->pain_debounce_time <= level.time	) {
-
-			if ( envirosuit ) {
+	if ( waterlevel && (ent->watertype & (CONTENTS_LAVA|CONTENTS_SLIME)) )
+	{
+		if ( ent->health > 0 && ent->pain_debounce_time <= level.time )
+		{
+		#ifdef BASE_COMPAT
+			if ( envirosuit )
 				G_AddEvent( ent, EV_POWERUP_BATTLESUIT, 0 );
-			} else {
-				if (ent->watertype & CONTENTS_LAVA) {
-					G_Damage (ent, NULL, NULL, NULL, NULL, 
-						30*waterlevel, 0, MOD_LAVA);
-				}
+			else
+		#endif
+			{
+				if ( ent->watertype & CONTENTS_LAVA )
+					G_Damage( ent, NULL, NULL, NULL, NULL, 30*waterlevel, 0, MOD_LAVA );
 
-				if (ent->watertype & CONTENTS_SLIME) {
-					G_Damage (ent, NULL, NULL, NULL, NULL, 
-						10*waterlevel, 0, MOD_SLIME);
-				}
+				if ( ent->watertype & CONTENTS_SLIME )
+					G_Damage( ent, NULL, NULL, NULL, NULL, 10*waterlevel, 0, MOD_SLIME );
 			}
 		}
 	}
@@ -360,7 +359,7 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf )
 			//if(self.classname!="monster_mezzoman"&&self.netname!="spider")//Cats always land on their feet
 				if( ( magnitude >= 100 + self->health && self->s.number != 0 && self->s.weapon != WP_SABER ) || ( magnitude >= 700 ) )//&& self.safe_time < level.time ))//health here is used to simulate structural integrity
 				{
-					if ( (self->s.weapon == WP_SABER || self->s.number == 0) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000 )
+					if ( (self->s.weapon == WP_SABER) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000 )
 					{//players and jedi take less impact damage
 						//allow for some lenience on high falls
 						magnitude /= 2;
@@ -728,9 +727,11 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 	if (client->tempSpectate < level.time)
 	{
 		// attack button cycles through spectators
-		if ( ( client->buttons & BUTTON_ATTACK ) && ! ( client->oldbuttons & BUTTON_ATTACK ) ) {
+		if ( (client->buttons & BUTTON_ATTACK) && !(client->oldbuttons & BUTTON_ATTACK) )
 			Cmd_FollowCycle_f( ent, 1 );
-		}
+
+		else if ( client->sess.spectatorState == SPECTATOR_FOLLOW && (client->buttons & BUTTON_ALT_ATTACK) && !(client->oldbuttons & BUTTON_ALT_ATTACK) )
+			Cmd_FollowCycle_f( ent, -1 );
 
 		if (client->sess.spectatorState == SPECTATOR_FOLLOW && (ucmd->upmove > 0))
 		{ //jump now removes you from follow mode
@@ -854,6 +855,7 @@ void G_VehicleAttachDroidUnit( gentity_t *vehEnt )
 }
 
 //called gameside only from pmove code (convenience)
+extern qboolean BG_SabersOff( playerState_t *ps );
 void G_CheapWeaponFire(int entNum, int ev)
 {
 	gentity_t *ent = &g_entities[entNum];
@@ -873,7 +875,7 @@ void G_CheapWeaponFire(int entNum, int ev)
 				if (rider->inuse && rider->client)
 				{ //pilot is valid...
                     if (rider->client->ps.weapon != WP_MELEE &&
-						(rider->client->ps.weapon != WP_SABER || !rider->client->ps.saberHolstered))
+						(rider->client->ps.weapon != WP_SABER || !BG_SabersOff(&rider->client->ps)))
 					{ //can only attack on speeder when using melee or when saber is holstered
 						break;
 					}
@@ -902,9 +904,7 @@ Events will be passed on to the clients for presentation,
 but any server game effects are handled here
 ================
 */
-
 qboolean BG_InKnockDownOnly( int anim );
-
 
 void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 	int		i;//, j;
@@ -942,7 +942,7 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 					break;		// not in the player model
 				}
 				
-				if ( g_dmflags.integer & DF_NO_FALLING )
+				if ( dmflags.integer & DF_NO_FALLING )
 				{
 					break;
 				}
@@ -1525,17 +1525,17 @@ static int NPC_GetRunSpeed( gentity_t *ent )
 	{
 	case TEAM_BORG:
 		runSpeed = ent->NPC->stats.runSpeed;
-		runSpeed += BORG_RUN_INCR * (g_spskill->integer%3);
+		runSpeed += BORG_RUN_INCR * (g_npcspskill->integer%3);
 		break;
 
 	case TEAM_8472:
 		runSpeed = ent->NPC->stats.runSpeed;
-		runSpeed += SPECIES_RUN_INCR * (g_spskill->integer%3);
+		runSpeed += SPECIES_RUN_INCR * (g_npcspskill->integer%3);
 		break;
 
 	case TEAM_STASIS:
 		runSpeed = ent->NPC->stats.runSpeed;
-		runSpeed += STASIS_RUN_INCR * (g_spskill->integer%3);
+		runSpeed += STASIS_RUN_INCR * (g_npcspskill->integer%3);
 		break;
 
 	case TEAM_BOTS:
@@ -1599,6 +1599,8 @@ void G_CheckMovingLoopingSounds( gentity_t *ent, usercmd_t *ucmd )
 				break;
 			case CLASS_PROBE:
 				ent->s.loopSound = G_SoundIndex( "sound/chars/probe/misc/probedroidloop" );
+			default:
+				break;
 			}
 		}
 		else
@@ -1650,14 +1652,14 @@ void G_HeldByMonster( gentity_t *ent, usercmd_t **ucmd )
 	(*ucmd)->upmove = 0;
 }
 
-typedef enum
+typedef enum tauntTypes_e
 {
 	TAUNT_TAUNT = 0,
 	TAUNT_BOW,
 	TAUNT_MEDITATE,
 	TAUNT_FLOURISH,
 	TAUNT_GLOAT
-};
+} tauntTypes_t;
 
 void G_SetTauntAnim( gentity_t *ent, int taunt )
 {
@@ -1675,6 +1677,10 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 			return;
 		}
 	}
+
+	// fix: rocket lock bug
+	BG_ClearRocketLock(&ent->client->ps);
+
 	if ( ent->client->ps.torsoTimer < 1 
 		&& ent->client->ps.forceHandExtend == HANDEXTEND_NONE 
 		&& ent->client->ps.legsTimer < 1 
@@ -2741,9 +2747,6 @@ void ClientThink_real( gentity_t *ent ) {
 					ent->client->ps.otherKiller = thrower->s.number;
 					ent->client->ps.otherKillerTime = level.time + 8000;
 					ent->client->ps.otherKillerDebounceTime = level.time + 100;
-					ent->client->otherKillerMOD = MOD_FALLING;
-					ent->client->otherKillerVehWeapon = 0;
-					ent->client->otherKillerWeaponType = WP_NONE;
 				}
 				else
 				{ //see if we can move to be next to the hand.. if it's not clear, break the throw.
@@ -2905,7 +2908,7 @@ void ClientThink_real( gentity_t *ent ) {
 	pm.trace = trap_Trace;
 	pm.pointcontents = trap_PointContents;
 	pm.debugLevel = g_debugMove.integer;
-	pm.noFootsteps = ( g_dmflags.integer & DF_NO_FOOTSTEPS ) > 0;
+	pm.noFootsteps = ( dmflags.integer & DF_NO_FOOTSTEPS ) > 0;
 
 	pm.pmove_fixed = pmove_fixed.integer | client->pers.pmoveFixed;
 	pm.pmove_msec = pmove_msec.integer;
@@ -3179,27 +3182,6 @@ void ClientThink_real( gentity_t *ent ) {
 		pm.checkDuelLoss = 0;
 	}
 
-	if ( ent->client->ps.groundEntityNum < ENTITYNUM_WORLD )
-	{//standing on an ent
-		gentity_t *groundEnt = &g_entities[ent->client->ps.groundEntityNum];
-		if ( groundEnt
-			&& groundEnt->s.eType == ET_NPC
-			&& groundEnt->s.NPC_class == CLASS_VEHICLE 
-			&& groundEnt->inuse
-			&& groundEnt->health > 0
-			&& groundEnt->m_pVehicle )
-		{//standing on a valid, living vehicle
-			if ( !groundEnt->client->ps.speed
-				&& groundEnt->m_pVehicle->m_ucmd.upmove > 0 )
-			{//a vehicle that's trying to take off!
-				//just kill me
-				vec3_t up = {0,0,1};
-				G_Damage( ent, NULL, NULL, up, ent->r.currentOrigin, 9999999, DAMAGE_NO_PROTECTION, MOD_CRUSH );
-				return;
-			}
-		}
-	}
-
 	if (pm.cmd.generic_cmd &&
 		(pm.cmd.generic_cmd != ent->client->lastGenCmd || ent->client->lastGenCmdTime < level.time))
 	{
@@ -3417,8 +3399,7 @@ void ClientThink_real( gentity_t *ent ) {
 	if ( ent->client->ps.eventSequence != oldEventSequence ) {
 		ent->eventTime = level.time;
 	}
-	if (g_smoothClients.integer)
-	{
+	if (g_smoothClients.integer) {
 		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qfalse );
 		//rww - 12-03-02 - Don't snap the origin of players! It screws prediction all up.
 	}
@@ -3531,9 +3512,6 @@ void ClientThink_real( gentity_t *ent ) {
 						faceKicked->client->ps.otherKiller = ent->s.number;
 						faceKicked->client->ps.otherKillerTime = level.time + 5000;
 						faceKicked->client->ps.otherKillerDebounceTime = level.time + 100;
-						faceKicked->client->otherKillerMOD = MOD_MELEE;
-						faceKicked->client->otherKillerVehWeapon = 0;
-						faceKicked->client->otherKillerWeaponType = WP_NONE;
 
 						faceKicked->client->ps.velocity[0] = oppDir[0]*(strength*40);
 						faceKicked->client->ps.velocity[1] = oppDir[1]*(strength*40);
@@ -3555,7 +3533,7 @@ void ClientThink_real( gentity_t *ent ) {
 		// wait for the attack button to be pressed
 		if ( level.time > client->respawnTime && !gDoSlowMoDuel ) {
 			// forcerespawn is to prevent users from waiting out powerups
-			int forceRes = g_forcerespawn.integer;
+			int forceRes = g_forceRespawn.integer;
 
 			if (g_gametype.integer == GT_POWERDUEL)
 			{
@@ -3842,10 +3820,11 @@ void ClientEndFrame( gentity_t *ent ) {
 	P_DamageFeedback (ent);
 
 	// add the EF_CONNECTION flag if we haven't gotten commands recently
+	//Raz: add to ps instead of s
 	if ( level.time - ent->client->lastCmdTime > 1000 ) {
-		ent->s.eFlags |= EF_CONNECTION;
+		ent->client->ps.eFlags |= EF_CONNECTION;
 	} else {
-		ent->s.eFlags &= ~EF_CONNECTION;
+		ent->client->ps.eFlags &= ~EF_CONNECTION;
 	}
 
 	ent->client->ps.stats[STAT_HEALTH] = ent->health;	// FIXME: get rid of ent->health...

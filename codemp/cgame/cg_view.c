@@ -4,7 +4,7 @@
 // for a 3D rendering
 #include "cg_local.h"
 
-#include "bg_saga.h"
+#include "game/bg_saga.h"
 
 #if !defined(CL_LIGHT_H_INC)
 	#include "cg_lights.h"
@@ -150,9 +150,9 @@ static void CG_AddTestModel (void) {
 
 		// allow the position to be adjusted
 		for (i=0 ; i<3 ; i++) {
-			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[0][i] * cg_gun_x.value;
-			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[1][i] * cg_gun_y.value;
-			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[2][i] * cg_gun_z.value;
+			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[0][i] * cg_gunX.value;
+			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[1][i] * cg_gunY.value;
+			cg.testModelEntity.origin[i] += cg.refdef.viewaxis[2][i] * cg_gunZ.value;
 		}
 	}
 
@@ -441,7 +441,10 @@ static void CG_UpdateThirdPersonTargetDamp(void)
 
 		// Note that since there are a finite number of "practical" delta millisecond values possible, 
 		// the ratio should be initialized into a chart ultimately.
-		ratio = powf(dampfactor, dtime);
+		if ( cg_smoothCamera.integer )
+			ratio = powf(dampfactor, dtime);
+		else
+			ratio = Q_powf( dampfactor, dtime );
 		
 		// This value is how much distance is "left" from the ideal.
 		VectorMA(cameraIdealTarget, -ratio, targetdiff, cameraCurTarget);
@@ -528,7 +531,10 @@ static void CG_UpdateThirdPersonCameraDamp(void)
 
 		// Note that since there are a finite number of "practical" delta millisecond values possible, 
 		// the ratio should be initialized into a chart ultimately.
-		ratio = powf(dampfactor, dtime);
+		if ( cg_smoothCamera.integer )
+			ratio = powf(dampfactor, dtime);
+		else
+			ratio = Q_powf( dampfactor, dtime );
 		
 		// This value is how much distance is "left" from the ideal.
 		VectorMA(cameraIdealLoc, -ratio, locdiff, cameraCurLoc);
@@ -968,21 +974,21 @@ static void CG_OffsetFirstPersonView( void ) {
 	VectorCopy( cg.predictedPlayerState.velocity, predictedVelocity );
 
 	delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[0]);
-	angles[PITCH] += delta * cg_runpitch.value;
+	angles[PITCH] += delta * cg_runPitch.value;
 	
 	delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[1]);
-	angles[ROLL] -= delta * cg_runroll.value;
+	angles[ROLL] -= delta * cg_runRoll.value;
 
 	// add angles based on bob
 
 	// make sure the bob is visible even at low speeds
 	speed = cg.xyspeed > 200 ? cg.xyspeed : 200;
 
-	delta = cg.bobfracsin * cg_bobpitch.value * speed;
+	delta = cg.bobfracsin * cg_bobPitch.value * speed;
 	if (cg.predictedPlayerState.pm_flags & PMF_DUCKED)
 		delta *= 3;		// crouching
 	angles[PITCH] += delta;
-	delta = cg.bobfracsin * cg_bobroll.value * speed;
+	delta = cg.bobfracsin * cg_bobRoll.value * speed;
 	if (cg.predictedPlayerState.pm_flags & PMF_DUCKED)
 		delta *= 3;		// crouching accentuates roll
 	if (cg.bobcycle & 1)
@@ -1002,7 +1008,7 @@ static void CG_OffsetFirstPersonView( void ) {
 	}
 
 	// add bob height
-	bob = cg.bobfracsin * cg.xyspeed * cg_bobup.value;
+	bob = cg.bobfracsin * cg.xyspeed * cg_bobUp.value;
 	if (bob > 6) {
 		bob = 6;
 	}
@@ -1169,6 +1175,11 @@ qboolean CG_CalcFOVFromX( float fov_x )
 	cg.refdef.fov_x = fov_x;
 	cg.refdef.fov_y = fov_y;
 
+#ifdef USE_WIDECSREEN
+	if(cg.widescreen)
+		cg.refdef.fov_x *= 1.125f;
+#endif
+
 	return (inwater);
 }
 
@@ -1305,6 +1316,12 @@ static int CG_CalcFov( void ) {
 		inwater = qfalse;
 	}
 
+#ifdef USE_WIDESCREEN
+	if(cg.widescreen)
+		fov_x = fov_y * 1.77777f;
+#endif
+
+
 	// set it
 	cg.refdef.fov_x = fov_x;
 	cg.refdef.fov_y = fov_y;
@@ -1395,7 +1412,7 @@ static qboolean CG_ThirdPersonActionCam(void)
 	vec3_t desiredAngles;
 	vec3_t desiredPos;
 	vec3_t v;
-	const float smoothFactor = 0.1f*cg_timescale.value;
+	const float smoothFactor = 0.1f*timescale.value;
 	int i;
 
 	if (!cent->ghoul2)
@@ -1480,11 +1497,6 @@ qboolean CG_CheckPassengerTurretView( void )
 				{// valid turret
 					if ( vehCent->m_pVehicle->m_pVehicleInfo->turret[turretNum].passengerNum == cg.predictedPlayerState.generic1 )
 					{//I control this turret
-						//Ah, crap, just look around freely... below method is way too wiggy
-						VectorCopy( cg.predictedPlayerState.origin, cg.refdef.vieworg );
-						VectorCopy( cg.predictedPlayerState.viewangles, cg.refdef.viewangles );
-						return qtrue;
-						/*
 						int boltIndex = -1;
 						qboolean hackPosAndAngle = qfalse;
 						if ( vehCent->m_pVehicle->m_iGunnerViewTag[turretNum] != -1 )
@@ -1534,7 +1546,6 @@ qboolean CG_CheckPassengerTurretView( void )
 							}
 							return qtrue;
 						}
-						*/
 					}
 				}
 			}
@@ -1660,9 +1671,7 @@ static int CG_CalcViewValues( void ) {
 		CG_EmplacedView(cg_entities[cg.snap->ps.emplacedIndex].currentState.angles);
 	}
 
-	//FIX: okay, if manning a turret, let view turn freely, 
-	//	   and use the vehicle chase camera info to place vieworg
-	//if ( !manningTurret )
+	if ( !manningTurret )
 	{
 		if ( cg.predictedPlayerState.m_iVehicleNum //in a vehicle
 			&& BG_UnrestrainedPitchRoll( &cg.predictedPlayerState, cg_entities[cg.predictedPlayerState.m_iVehicleNum].m_pVehicle ) )//can roll/pitch without restriction
@@ -2047,20 +2056,20 @@ void CG_SE_UpdateMusic(void)
 
 	if (cgScreenEffects.music_volume_time < cg.time)
 	{
-		if (cgScreenEffects.music_volume_multiplier != 1.0 || cgScreenEffects.music_volume_set)
+		if (cgScreenEffects.music_volume_multiplier != 1.0f || cgScreenEffects.music_volume_set)
 		{
 			char musMultStr[512];
 
-			cgScreenEffects.music_volume_multiplier += 0.1;
-			if (cgScreenEffects.music_volume_multiplier > 1.0)
+			cgScreenEffects.music_volume_multiplier += 0.1f;
+			if (cgScreenEffects.music_volume_multiplier > 1.0f)
 			{
-				cgScreenEffects.music_volume_multiplier = 1.0;
+				cgScreenEffects.music_volume_multiplier = 1.0f;
 			}
 
 			Com_sprintf(musMultStr, sizeof(musMultStr), "%f", cgScreenEffects.music_volume_multiplier);
 			trap_Cvar_Set("s_musicMult", musMultStr);
 
-			if (cgScreenEffects.music_volume_multiplier == 1.0)
+			if (cgScreenEffects.music_volume_multiplier == 1.0f)
 			{
 				cgScreenEffects.music_volume_set = qfalse;
 			}
@@ -2160,9 +2169,7 @@ CG_EmplacedView
 Keep view reasonably constrained in relation to gun -rww
 =================
 */
-
 int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float constraint);
-
 
 void CG_EmplacedView(vec3_t angles)
 {
@@ -2274,7 +2281,7 @@ void CG_DrawAutoMap(void)
 	float			hScale, vScale;
 	float			x, y, w, h;
 
-	if (!cg_autoMap.integer)
+	if (!r_autoMap.integer)
 	{ //don't do anything then
 		return;
 	}
@@ -2360,10 +2367,10 @@ void CG_DrawAutoMap(void)
 	hScale = vWidth/640.0f;
 	vScale = vHeight/480.0f;
 
-	x = cg_autoMapX.value;
-	y = cg_autoMapY.value;
-	w = cg_autoMapW.value;
-	h = cg_autoMapH.value;
+	x = r_autoMapX.value;
+	y = r_autoMapY.value;
+	w = r_autoMapW.value;
+	h = r_autoMapH.value;
 
 	refdef.x = x*hScale;
 	refdef.y = y*vScale;
@@ -2406,6 +2413,90 @@ void CG_DrawAutoMap(void)
 	trap_R_RenderScene( &refdef );
 }
 
+//=========================================================================
+
+/*
+**  Frustum code
+*/
+
+// some culling bits
+typedef struct plane_s {
+	vec3_t normal;
+	float dist;
+} plane_t;
+
+static plane_t frustum[4];
+
+//
+//	CG_SetupFrustum
+//
+void CG_SetupFrustum( void ) {
+	int i;
+	float xs, xc;
+	float ang;
+
+	ang = cg.refdef.fov_x / 180 * M_PI * 0.5f;
+	xs = sin( ang );
+	xc = cos( ang );
+
+	VectorScale( cg.refdef.viewaxis[0], xs, frustum[0].normal );
+	VectorMA( frustum[0].normal, xc, cg.refdef.viewaxis[1], frustum[0].normal );
+
+	VectorScale( cg.refdef.viewaxis[0], xs, frustum[1].normal );
+	VectorMA( frustum[1].normal, -xc, cg.refdef.viewaxis[1], frustum[1].normal );
+
+	ang = cg.refdef.fov_y / 180 * M_PI * 0.5f;
+	xs = sin( ang );
+	xc = cos( ang );
+
+	VectorScale( cg.refdef.viewaxis[0], xs, frustum[2].normal );
+	VectorMA( frustum[2].normal, xc, cg.refdef.viewaxis[2], frustum[2].normal );
+
+	VectorScale( cg.refdef.viewaxis[0], xs, frustum[3].normal );
+	VectorMA( frustum[3].normal, -xc, cg.refdef.viewaxis[2], frustum[3].normal );
+
+	for ( i = 0 ; i < 4 ; i++ ) {
+		frustum[i].dist = DotProduct( cg.refdef.vieworg, frustum[i].normal );
+	}
+}
+
+//
+//	CG_CullPoint - returns true if culled
+//
+qboolean CG_CullPoint( vec3_t pt ) {
+	int i;
+	plane_t *frust;
+
+	// check against frustum planes
+	for ( i = 0 ; i < 4 ; i++ ) {
+		frust = &frustum[i];
+
+		if ( ( DotProduct( pt, frust->normal ) - frust->dist ) < 0 ) {
+			return( qtrue );
+		}
+	}
+
+	return( qfalse );
+}
+
+qboolean CG_CullPointAndRadius( const vec3_t pt, vec_t radius ) {
+	int i;
+	plane_t *frust;
+
+	// check against frustum planes
+	for ( i = 0 ; i < 4 ; i++ ) {
+		frust = &frustum[i];
+
+		if ( ( DotProduct( pt, frust->normal ) - frust->dist ) < -radius ) {
+			return( qtrue );
+		}
+	}
+
+	return( qfalse );
+}
+
+//=========================================================================
+
 /*
 =================
 CG_DrawActiveFrame
@@ -2416,10 +2507,8 @@ Generates and draws a game scene and status information at the given time.
 static qboolean cg_rangedFogging = qfalse; //so we know if we should go back to normal fog
 float cg_linearFogOverride = 0.0f; //designer-specified override for linear fogging style
 
-
 extern void BG_VehicleTurnRateForSpeed( Vehicle_t *pVeh, float speed, float *mPitchOverride, float *mYawOverride );
 extern qboolean PM_InKnockDown( playerState_t *ps );
-
 
 extern qboolean cgQueueLoad;
 extern void CG_ActualLoadDeferredPlayers( void );
@@ -2615,7 +2704,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		cg.renderingThirdPerson = 0;
 	}
 
-
 	if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR)
 	{
 		cg.renderingThirdPerson = 0;
@@ -2623,6 +2711,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	// build cg.refdef
 	inwater = CG_CalcViewValues();
+	CG_SetupFrustum();
 
 	if (cg_linearFogOverride)
 	{
@@ -2660,7 +2749,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		CG_AddMarks();
 		CG_AddParticles ();
 		CG_AddLocalEntities();
-		CG_DrawMiscEnts();
 	}
 	CG_AddViewWeapon( &cg.predictedPlayerState );
 
@@ -2717,19 +2805,19 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 		cg.oldTime = cg.time;
 		CG_AddLagometerFrameInfo();
 	}
-	if (cg_timescale.value != cg_timescaleFadeEnd.value) {
-		if (cg_timescale.value < cg_timescaleFadeEnd.value) {
-			cg_timescale.value += cg_timescaleFadeSpeed.value * ((float)cg.frametime) / 1000;
-			if (cg_timescale.value > cg_timescaleFadeEnd.value)
-				cg_timescale.value = cg_timescaleFadeEnd.value;
+	if (timescale.value != cg_timescaleFadeEnd.value) {
+		if (timescale.value < cg_timescaleFadeEnd.value) {
+			timescale.value += cg_timescaleFadeSpeed.value * ((float)cg.frametime) / 1000;
+			if (timescale.value > cg_timescaleFadeEnd.value)
+				timescale.value = cg_timescaleFadeEnd.value;
 		}
 		else {
-			cg_timescale.value -= cg_timescaleFadeSpeed.value * ((float)cg.frametime) / 1000;
-			if (cg_timescale.value < cg_timescaleFadeEnd.value)
-				cg_timescale.value = cg_timescaleFadeEnd.value;
+			timescale.value -= cg_timescaleFadeSpeed.value * ((float)cg.frametime) / 1000;
+			if (timescale.value < cg_timescaleFadeEnd.value)
+				timescale.value = cg_timescaleFadeEnd.value;
 		}
 		if (cg_timescaleFadeSpeed.value) {
-			trap_Cvar_Set("timescale", va("%f", cg_timescale.value));
+			trap_Cvar_Set("timescale", va("%f", timescale.value));
 		}
 	}
 

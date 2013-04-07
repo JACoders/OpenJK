@@ -10,7 +10,7 @@
  * must know a lot more about the innards of the JPEG code.
  */
 //Anything above this #include will be ignored by the compiler
-#include "../qcommon/exe_headers.h"
+#include "qcommon/exe_headers.h"
 
 #define JPEG_INTERNALS
 #include "jinclude.h"
