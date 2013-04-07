@@ -414,7 +414,7 @@ qboolean CROFFSystem::Unload( int id )
 	{ // requested item found in the list, free mem, then remove from list
 		delete ((CROFF *)(*itr).second);
 
-#ifndef __linux__
+#ifdef _WIN32
 		itr = mROFFList.erase( itr );
 #else
 		// darn stl differences

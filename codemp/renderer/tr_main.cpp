@@ -6,7 +6,7 @@
 #include "ghoul2/G2_local.h"
 // Yeah, this might be kind of bad, but no linux version is planned so far :-) - AReis
 // Gee- thanks guys - jdrews, the linux porter...
-#ifndef __linux__
+#ifdef _WIN32
 	#include "win32/glw_win.h"
 #endif
 
