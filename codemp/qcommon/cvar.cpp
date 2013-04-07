@@ -846,13 +846,6 @@ void Cvar_WriteVariables( fileHandle_t f ) {
 	char	buffer[1024];
 
 	for (var = cvar_vars ; var ; var = var->next) {
-		if( !var->name )
-			continue;
-#ifdef USE_CD_KEY
-		if( Q_stricmp( var->name, "cl_cdkey" ) == 0 ) {
-			continue;
-		}
-#endif // USE_CD_KEY
 		if( var->flags & CVAR_ARCHIVE ) {
 			// write the latched value, even if it hasn't taken effect yet
 			if ( var->latchedString ) {

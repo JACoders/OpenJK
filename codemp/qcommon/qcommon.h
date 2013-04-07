@@ -7,8 +7,6 @@
 
 //#define	PRE_RELEASE_DEMO
 
-//#define		USE_CD_KEY
-
 //============================================================================
 
 //
@@ -206,9 +204,6 @@ PROTOCOL
 
 #define	UPDATE_SERVER_NAME			"updatejk3.ravensoft.com"
 #define MASTER_SERVER_NAME			"masterjk3.ravensoft.com"
-#ifdef USE_CD_KEY
-	#define	AUTHORIZE_SERVER_NAME	"authorizejk3.ravensoft.com"
-#endif
 
 #define	PORT_MASTER			29060
 #define	PORT_UPDATE			29061
