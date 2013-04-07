@@ -694,7 +694,7 @@ cgameImport_t CL_ConvertJK2SysCall( cgameJK2Import_t import )
 			return CG_AS_PARSESETS;
 			break;
 		case CG_AS_ADDENTRY_JK2:
-			return CG_AS_GETBMODELSOUND;
+			return CG_AS_ADDENTRY;
 			break;
 		case CG_AS_GETBMODELSOUND_JK2:
 			return CG_AS_GETBMODELSOUND;
