@@ -586,9 +586,6 @@ void ICARUS_InterrogateScript( const char *filename )
 	stream.Free();
 }
 
-#ifdef _XBOX	// We borrow the one in NPC_stats.c
-extern stringID_table_t BSTable[];
-#else
 stringID_table_t BSTable[] =
 {
 	ENUM2STRING(BS_DEFAULT),//# default behavior for that NPC
@@ -604,7 +601,6 @@ stringID_table_t BSTable[] =
 	//the rest are internal only
 	"",				-1,
 };
-#endif
 
 /*
 ==============

@@ -258,9 +258,7 @@ const char *CG_GameTypeString(void) {
 	return "";
 }
 						 
-#include "../namespace_begin.h"
 extern int MenuFontToHandle(int iMenuFont);
-#include "../namespace_end.h"
 
 // maxX param is initially an X limit, but is also used as feedback. 0 = text was clipped to fit within, else maxX = next pos
 //

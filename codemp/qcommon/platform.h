@@ -2,10 +2,6 @@
 #ifndef _PLATFORM_H
 #define _PLATFORM_H
 
-#if defined(_XBOX)
-#include <xtl.h>
-#endif
-
 #if defined(_WINDOWS)
 #include <windows.h>
 #endif

@@ -25,7 +25,6 @@ vec4_t	console_color = {1.0, 1.0, 1.0, 1.0};
 Con_ToggleConsole_f
 ================
 */
-#ifndef _XBOX	// No console on Xbox
 void Con_ToggleConsole_f (void) {
 	// closing a full screen console restarts the demo loop
 	if ( cls.state == CA_DISCONNECTED && cls.keyCatchers == KEYCATCH_CONSOLE ) {
@@ -39,7 +38,6 @@ void Con_ToggleConsole_f (void) {
 	Con_ClearNotify ();
 	cls.keyCatchers ^= KEYCATCH_CONSOLE;
 }
-#endif
 
 /*
 ================
@@ -302,9 +300,7 @@ void Con_Init (void) {
 		kg.historyEditLines[i].widthInChars = g_console_field_width;
 	}
 
-#ifndef _XBOX	// No console on Xbox
 	Cmd_AddCommand ("toggleconsole", Con_ToggleConsole_f);
-#endif
 	Cmd_AddCommand ("messagemode", Con_MessageMode_f);
 	Cmd_AddCommand ("messagemode2", Con_MessageMode2_f);
 	Cmd_AddCommand ("messagemode3", Con_MessageMode3_f);

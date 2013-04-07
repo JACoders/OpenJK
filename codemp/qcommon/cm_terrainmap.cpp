@@ -16,11 +16,7 @@ static CTerrainMap	*TerrainMap = 0;
 // Hack. This shouldn't be here, but it's easier than including tr_local.h
 typedef unsigned int GLenum;
 
-#ifdef _XBOX
-void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, int *mipcount, GLenum *format );
-#else
 void R_LoadImage( const char *name, byte **pic, int *width, int *height, GLenum *format ) ;
-#endif
 
 void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, 
 					   qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
@@ -79,21 +75,11 @@ CTerrainMap::CTerrainMap(CCMLandScape *landscape) :
 
 	// Load icons for symbols on map
 	GLenum	format;
-#ifdef _XBOX
-	int mipcount;
-
-	R_LoadImage("gfx/menus/rmg/start", (byte**)&mSymStart, &mSymStartWidth, &mSymStartHeight, &mipcount, &format);
-	R_LoadImage("gfx/menus/rmg/end", (byte**)&mSymEnd, &mSymEndWidth, &mSymEndHeight, &mipcount, &format);
-	R_LoadImage("gfx/menus/rmg/objective", (byte**)&mSymObjective, &mSymObjectiveWidth, &mSymObjectiveHeight, &mipcount, &format);
-
-	R_LoadImage("gfx/menus/rmg/building", (byte**)&mSymBld, &mSymBldWidth, &mSymBldHeight, &mipcount, &format);
-#else
 	R_LoadImage("gfx/menus/rmg/start", (byte**)&mSymStart, &mSymStartWidth, &mSymStartHeight, &format);
 	R_LoadImage("gfx/menus/rmg/end", (byte**)&mSymEnd, &mSymEndWidth, &mSymEndHeight, &format);
 	R_LoadImage("gfx/menus/rmg/objective", (byte**)&mSymObjective, &mSymObjectiveWidth, &mSymObjectiveHeight, &format);
 
 	R_LoadImage("gfx/menus/rmg/building", (byte**)&mSymBld, &mSymBldWidth, &mSymBldHeight, &format);
-#endif
 }
 
 CTerrainMap::~CTerrainMap()
@@ -138,13 +124,7 @@ void CTerrainMap::ApplyBackground(void)
 	memset(mImage, 255, sizeof(mBufImage));
 //	R_LoadImage("textures\\kamchatka\\ice", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);0
 	backgroundDepth = 4;
-#ifdef _XBOX
-	int mipcount;
-
-	R_LoadImage("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight, &mipcount, &format);
-#else
 	R_LoadImage("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);
-#endif
 	if (backgroundImage)
 	{
 		outPos = (byte *)mBufImage;

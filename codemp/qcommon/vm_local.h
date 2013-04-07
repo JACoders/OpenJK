@@ -1,7 +1,5 @@
 //rww - so that I may utilize vm debugging features WITHOUT DROPPING TO 0.1FPS
-#ifndef _XBOX
 #define CRAZY_SYMBOL_MAP
-#endif
 
 #ifdef CRAZY_SYMBOL_MAP
 #include <map>

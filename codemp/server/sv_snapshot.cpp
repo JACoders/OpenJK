@@ -307,13 +307,8 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	int		clientarea, clientcluster;
 	int		leafnum;
 	int		c_fullsend;
-#ifdef _XBOX
-	const byte *clientpvs;
-	const byte *bitvector;
-#else
 	byte	*clientpvs;
 	byte	*bitvector;
-#endif
 	vec3_t	difference;
 	float	length, radius;
 
@@ -425,26 +420,16 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 				continue;
 			}
 			l = 0;
-#ifdef _XBOX
-			if(bitvector) {
-#endif
 			for ( i=0 ; i < svEnt->numClusters ; i++ ) {
 				l = svEnt->clusternums[i];
 				if ( bitvector[l >> 3] & (1 << (l&7) ) ) {
 					break;
 				}
 			}
-#ifdef _XBOX
-			}
-#endif
 
 			// if we haven't found it to be visible,
 			// check overflow clusters that coudln't be stored
-#ifdef _XBOX
-			if ( bitvector && i == svEnt->numClusters ) {
-#else
 			if ( i == svEnt->numClusters ) {
-#endif
 				if ( svEnt->lastCluster ) {
 					for ( ; l <= svEnt->lastCluster ; l++ ) {
 						if ( bitvector[l >> 3] & (1 << (l&7) ) ) {
@@ -488,10 +473,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 					}
 				}
 				SV_AddEntitiesVisibleFromPoint( ent->s.origin2, frame, eNums, qtrue );
-#ifdef _XBOX
-				//Must get clientpvs again since above call destroyed it.
-			clientpvs = CM_ClusterPVS (clientcluster);
-#endif
 			}
 		}
 	}
@@ -696,11 +677,7 @@ void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
 		// a gigantic connection message may have already put the nextSnapshotTime
 		// more than a second away, so don't shorten it
 		// do shorten if client is downloading
-#ifdef _XBOX	// No downloads on Xbox
-		if ( client->nextSnapshotTime < svs.time + 1000 ) {
-#else
 		if ( !*client->downloadName && client->nextSnapshotTime < svs.time + 1000 ) {
-#endif
 			client->nextSnapshotTime = svs.time + 1000;
 		}
 	}
@@ -784,9 +761,7 @@ void SV_SendClientSnapshot( client_t *client ) {
 	SV_WriteSnapshotToClient( client, &msg );
 
 	// Add any download data if the client is downloading
-#ifndef _XBOX	// No downloads on Xbox
 	SV_WriteDownloadToClient( client, &msg );
-#endif
 
 	// check for overflow
 	if ( msg.overflowed ) {

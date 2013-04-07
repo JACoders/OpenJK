@@ -432,30 +432,6 @@ void SV_SendMapChange(void)
 
 void R_SVModelInit();
 
-
-#ifdef _XBOX
-//To avoid fragmentation, we want everything free by this point.
-//Much of this probably violates DLL boundaries, so it's done on
-//Xbox only.
-extern void NAV_Free(void);
-extern void CL_ClearLastLevel(void);
-void SV_ClearLastLevel(void)
-{
-	CL_ClearLastLevel();
-	NAV_Free();
-
-	int i;
-	for ( i = 0 ; i < MAX_CONFIGSTRINGS ; i++ ) {
-		if ( sv.configstrings[i] ) {
-			Z_Free( sv.configstrings[i] );
-			sv.configstrings[i] = NULL;
-		}
-	}
-
-}
-#endif
-
-
 /*
 ================
 SV_SpawnServer
@@ -501,11 +477,6 @@ Ghoul2 Insert End
 
 	SV_SendMapChange();
 
-#ifdef _XBOX
-	// disable vsync during load for speed
-	qglDisable(GL_VSYNC);
-#endif
-
 	// if not running a dedicated server CL_MapLoading will connect the client to the server
 	// also print some status stuff
 	CL_MapLoading();
@@ -517,31 +488,11 @@ Ghoul2 Insert End
 
 	CM_ClearMap();
 
-#ifdef _XBOX
-//	extern qboolean RE_RegisterImages_LevelLoadEnd(void);
-//	RE_RegisterImages_LevelLoadEnd();
-	R_DeleteTextures();
-#endif
-
 	// clear the whole hunk because we're (re)loading the server
 	Hunk_Clear();
 
-#ifdef _XBOX
-	SV_ClearLastLevel();
-#endif
-
 	R_InitSkins();
 	R_InitShaders(qtrue);
-
-#if defined(_XBOX) && defined(_DEBUG)
-	//Useful for memory debugging.  Please don't delete.  Comment out if
-	//necessary.
-	extern void Z_DisplayLevelMemory(int, int, int);
-	extern void Z_Details_f(void);
-	extern void Z_TagPointers(memtag_t);
-	Z_DisplayLevelMemory(0, 0, 0);
-	Z_Details_f();
-#endif
 
 	// init client structures and svs.numSnapshotEntities 
 	if ( !Cvar_VariableValue("sv_running") ) {
@@ -626,17 +577,7 @@ Ghoul2 Insert End
 	sv.checksumFeed = ( ((int) rand() << 16) ^ rand() ) ^ Com_Milliseconds();
 	FS_Restart( sv.checksumFeed );
 
-#ifdef _XBOX
-	CL_StartHunkUsers();
 	CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum );
-//	RE_LoadWorldMap(va("maps/%s.bsp", server));
-
-	// Start up voice system if it isn't running yet. (ie, if we're on syslink)
-	if( !logged_on )
-		g_Voice.Initialize();
-#else
-	CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum );
-#endif
 
 	SV_SendMapChange();
 
@@ -854,14 +795,12 @@ void SV_Init (void) {
 	sv_zombietime = Cvar_Get ("sv_zombietime", "2", CVAR_TEMP );
 	Cvar_Get ("nextmap", "", CVAR_TEMP );
 
-#ifndef _XBOX	// No master or downloads on Xbox
 	sv_allowDownload = Cvar_Get ("sv_allowDownload", "0", CVAR_SERVERINFO);
 	sv_master[0] = Cvar_Get ("sv_master1", MASTER_SERVER_NAME, 0 );
 	sv_master[1] = Cvar_Get ("sv_master2", "", CVAR_ARCHIVE );
 	sv_master[2] = Cvar_Get ("sv_master3", "", CVAR_ARCHIVE );
 	sv_master[3] = Cvar_Get ("sv_master4", "", CVAR_ARCHIVE );
 	sv_master[4] = Cvar_Get ("sv_master5", "", CVAR_ARCHIVE );
-#endif
 	sv_reconnectlimit = Cvar_Get ("sv_reconnectlimit", "3", 0);
 	sv_showghoultraces = Cvar_Get ("sv_showghoultraces", "0", 0);
 	sv_showloss = Cvar_Get ("sv_showloss", "0", 0);
@@ -877,9 +816,6 @@ void SV_Init (void) {
 	// init the botlib here because we need the pre-compiler in the UI
 	SV_BotInitBotLib();
 
-#ifdef _XBOX
-	svs.clientRefNum = 0;
-#endif
 	// Only allocated once, no point in moving it around and fragmenting
 	// create a heap for Ghoul2 to use for game side model vertex transforms used in collision detection
 	G2VertSpaceServer = &CMiniHeap_singleton;
@@ -940,9 +876,7 @@ void SV_Shutdown( char *finalmsg )
 	}
 
 	SV_RemoveOperatorCommands();
-#ifndef _XBOX	// No master on Xbox
 	SV_MasterShutdown();
-#endif
 	SV_ShutdownGameProgs();
 /*
 Ghoul2 Insert Start
@@ -968,21 +902,6 @@ Ghoul2 Insert Start
 	Cvar_Set("ui_singlePlayerActive", "0");
 
 //	Com_Printf( "---------------------------\n" );
-
-#ifdef _XBOX
-	// If we were advertising on Live, remove the listing. This also unregisters
-	// the server's key. SysLink keys are never unregistered, so we don't do anything
-	// special here for them.
-	if ( logged_on )
-		XBL_MM_Shutdown();
-
-	// Tear down voice now if we're on system link (Live keeps it active)
-	if( !logged_on )
-		g_Voice.Shutdown();
-
-	// Wipe our player list - this is important
-	memset( &xbOnlineInfo, 0, sizeof(xbOnlineInfo) );
-#endif
 
 	// disconnect any local clients
 	CL_Disconnect( qfalse );

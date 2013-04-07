@@ -7,12 +7,12 @@
 extern void Jedi_Cloak( gentity_t *self );
 extern void Jedi_Decloak( gentity_t *self );
 
-#include "../namespace_begin.h"
+
 qboolean PM_SaberInTransition( int move );
 qboolean PM_SaberInStart( int move );
 qboolean PM_SaberInReturn( int move );
 qboolean WP_SaberStyleValidForSaber( saberInfo_t *saber1, saberInfo_t *saber2, int saberHolstered, int saberAnimLevel );
-#include "../namespace_end.h"
+
 qboolean saberCheckKnockdown_DuelLoss(gentity_t *saberent, gentity_t *saberOwner, gentity_t *other);
 
 extern vmCvar_t g_saberLockRandomNess;
@@ -902,9 +902,9 @@ Events will be passed on to the clients for presentation,
 but any server game effects are handled here
 ================
 */
-#include "../namespace_begin.h"
+
 qboolean BG_InKnockDownOnly( int anim );
-#include "../namespace_end.h"
+
 
 void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 	int		i;//, j;

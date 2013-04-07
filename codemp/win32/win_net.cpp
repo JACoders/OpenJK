@@ -21,9 +21,6 @@ static cvar_t	*net_socksUsername;
 static cvar_t	*net_socksPassword;
 static struct sockaddr	socksRelayAddr;
 
-#ifdef _XBOX
-SOCKET	v_socket = INVALID_SOCKET;
-#endif
 static SOCKET	ip_socket = INVALID_SOCKET;
 static SOCKET	socks_socket = INVALID_SOCKET;
 static SOCKET	ipx_socket = INVALID_SOCKET;
@@ -107,7 +104,6 @@ void NetadrToSockadr( netadr_t *a, struct sockaddr *s ) {
 		((struct sockaddr_in *)s)->sin_addr.s_addr = *(int *)&a->ip;
 		((struct sockaddr_in *)s)->sin_port = a->port;
 	}
-#ifndef _XBOX
 	else if( a->type == NA_IPX ) {
 		((struct sockaddr_ipx *)s)->sa_family = AF_IPX;
 		memcpy( ((struct sockaddr_ipx *)s)->sa_netnum, &a->ipx[0], 4 );
@@ -120,7 +116,6 @@ void NetadrToSockadr( netadr_t *a, struct sockaddr *s ) {
 		memset( ((struct sockaddr_ipx *)s)->sa_nodenum, 0xff, 6 );
 		((struct sockaddr_ipx *)s)->sa_socket = a->port;
 	}
-#endif //_XBOX
 }
 
 
@@ -130,14 +125,12 @@ void SockadrToNetadr( struct sockaddr *s, netadr_t *a ) {
 		*(int *)&a->ip = ((struct sockaddr_in *)s)->sin_addr.s_addr;
 		a->port = ((struct sockaddr_in *)s)->sin_port;
 	}
-#ifndef _XBOX
 	else if( s->sa_family == AF_IPX ) {
 		a->type = NA_IPX;
 		memcpy( &a->ipx[0], ((struct sockaddr_ipx *)s)->sa_netnum, 4 );
 		memcpy( &a->ipx[4], ((struct sockaddr_ipx *)s)->sa_nodenum, 6 );
 		a->port = ((struct sockaddr_ipx *)s)->sa_socket;
 	}
-#endif //_XBOX
 }
 
 
@@ -159,11 +152,9 @@ idnewt
 
 qboolean Sys_StringToSockaddr( const char *s, struct sockaddr *sadr )
 {
-#ifndef _XBOX
 	struct hostent	*h;
 	int		val;
 	char	copy[MAX_STRING_CHARS];
-#endif
 
 	
 	memset( sadr, 0, sizeof( *sadr ) );
@@ -171,9 +162,6 @@ qboolean Sys_StringToSockaddr( const char *s, struct sockaddr *sadr )
 	// check for an IPX address
 	if( ( strlen( s ) == 21 ) && ( s[8] == '.' ) )
 	{
-#ifdef _XBOX
-		assert(!"IPX not supported on XBox");
-#else
 		((struct sockaddr_ipx *)sadr)->sa_family = AF_IPX;
 		((struct sockaddr_ipx *)sadr)->sa_socket = 0;
 		copy[2] = 0;
@@ -187,7 +175,6 @@ qboolean Sys_StringToSockaddr( const char *s, struct sockaddr *sadr )
 		DO(15, sa_nodenum[3]);
 		DO(17, sa_nodenum[4]);
 		DO(19, sa_nodenum[5]);
-#endif
 	}
 	else
 	{
@@ -200,15 +187,11 @@ qboolean Sys_StringToSockaddr( const char *s, struct sockaddr *sadr )
 		}
 		else
 		{
-#ifdef _XBOX
-			assert(!"gethostbyname() - unsupported on XBox");
-#else
-			if( ( h = gethostbyname( s ) ) == 0 ) {	// NOT SUPPORTED ON XBOX!
+			if( ( h = gethostbyname( s ) ) == 0 ) {
 				return (qboolean)0;
 
 			}
 			*(int *)&((struct sockaddr_in *)sadr)->sin_addr = *(int *)h->h_addr_list[0];
-#endif
 		}
 	}
 	
@@ -282,11 +265,6 @@ qboolean Sys_GetPacket( netadr_t *net_from, msg_t *net_message ) {
 			continue;
 		}
 
-#ifdef _XBOX
-		// VVFIXME - SOF2 calls into XBL class
-	    // XBL_RcvdDataPacket(net_message->cursize);
-#endif
-
 		if ( net_socket == ip_socket ) {
 			memset( ((struct sockaddr_in *)&from)->sin_zero, 0, 8 );
 		}
@@ -322,67 +300,6 @@ qboolean Sys_GetPacket( netadr_t *net_from, msg_t *net_message ) {
 
 //=============================================================================
 
-#ifdef _XBOX
-/*
-==================
-Sys_SendVoicePacket
-==================
-*/
-void Sys_SendVoicePacket( int length, const void *data, netadr_t to ) {
-	int				ret;
-	struct sockaddr	addr;
-
-	// check for valid packet intentions (direct send or broadcast)
-	//
-	if( to.type != NA_IP && to.type != NA_BROADCAST ) 
-	{
-		Com_Error( ERR_FATAL, "Sys_SendVoicePacket: bad address type" );
-		return;
-	}
-	
-	// check we have our voice socket set up
-	//
-	if( v_socket == INVALID_SOCKET) {
-		return;
-	}
-
-	NetadrToSockadr( &to, &addr );
-#ifdef SOF2_METRICS
-	gXBL_NumberVoicePacketsSent++;
-	gXBL_SizeVoicePacketsSent += length;
-#endif
-	/*if( usingSocks && to.type == NA_IP ) {
-		vsocksBuf[0] = 0;	// reserved
-		vsocksBuf[1] = 0;
-		vsocksBuf[2] = 0;	// fragment (not fragmented)
-		vsocksBuf[3] = 1;	// address type: IPV4
-		*(int *)&vsocksBuf[4] = ((struct sockaddr_in *)&addr)->sin_addr.s_addr;
-		*(short *)&vsocksBuf[8] = ((struct sockaddr_in *)&addr)->sin_port;
-		memcpy( &vsocksBuf[10], data, length );
-		ret = sendto( v_socket, vsocksBuf, length+10, 0, &socksRelayAddr, sizeof(socksRelayAddr) );
-	}
-	else {*/
-		ret = sendto( v_socket, (const char *)data, length, 0, &addr, sizeof(addr) );
-	//}
-
-	if( ret == SOCKET_ERROR ) {
-		int err = WSAGetLastError();
-
-		// wouldblock is silent
-		if( err == WSAEWOULDBLOCK ) {
-			return;
-		}
-
-		// some PPP links do not allow broadcasts and return an error
-		if( ( err == WSAEADDRNOTAVAIL ) && ( ( to.type == NA_BROADCAST ) || ( to.type == NA_BROADCAST_IPX ) ) ) {
-			return;
-		}
-
-		Com_DPrintf( "NET_SendVoicePacket: %s\n", NET_ErrorString() );
-	}
-}
-#endif
-
 static char socksBuf[4096];
 
 /*
@@ -395,11 +312,6 @@ void Sys_SendPacket( int length, const void *data, netadr_t to ) {
 	struct sockaddr	addr;
 	SOCKET			net_socket;
 
-#ifdef _XBOX
-	// VVFIXME - SOF2 calls into XBL code
-    // XBL_SentDataPacket( length );
-#endif
-
 	if( to.type == NA_BROADCAST ) {
 		net_socket = ip_socket;
 	}
@@ -407,18 +319,10 @@ void Sys_SendPacket( int length, const void *data, netadr_t to ) {
 		net_socket = ip_socket;
 	}
 	else if( to.type == NA_IPX ) {
-#ifdef _XBOX
-		return;
-#else
 		net_socket = ipx_socket;
-#endif
 	}
 	else if( to.type == NA_BROADCAST_IPX ) {
-#ifdef _XBOX
-		return;
-#else
 		net_socket = ipx_socket;
-#endif
 	}
 	else {
 		Com_Error( ERR_FATAL, "Sys_SendPacket: bad address type" );
@@ -431,7 +335,6 @@ void Sys_SendPacket( int length, const void *data, netadr_t to ) {
 
 	NetadrToSockadr( &to, &addr );
 
-#ifndef _XBOX
 	if( usingSocks && to.type == NA_IP ) {
 		socksBuf[0] = 0;	// reserved
 		socksBuf[1] = 0;
@@ -443,11 +346,8 @@ void Sys_SendPacket( int length, const void *data, netadr_t to ) {
 		ret = sendto( net_socket, socksBuf, length+10, 0, &socksRelayAddr, sizeof(socksRelayAddr) );
 	}
 	else {
-#endif
 		ret = sendto( net_socket, (const char *)data, length, 0, &addr, sizeof(addr) );
-#ifndef _XBOX
 	}
-#endif
 	if( ret == SOCKET_ERROR ) {
 		int err = WSAGetLastError();
 
@@ -653,9 +553,7 @@ NET_OpenSocks
 void NET_OpenSocks( int port ) {
 	struct sockaddr_in	address;
 	int					err;
-#ifndef _XBOX
 	struct hostent		*h;
-#endif
 	int					len;
 	qboolean			rfc1929;
 	unsigned char		buf[64];
@@ -670,7 +568,6 @@ void NET_OpenSocks( int port ) {
 		return;
 	}
 
-#ifndef _XBOX
 	h = gethostbyname( net_socksServer->string );
 	if ( h == NULL ) {
 		err = WSAGetLastError();
@@ -684,11 +581,6 @@ void NET_OpenSocks( int port ) {
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = *(int *)h->h_addr_list[0];
 	address.sin_port = htons( (short)net_socksPort->integer );
-#else
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = inet_addr(net_socksServer->string);
-	address.sin_port = htons( (short)net_socksPort->integer );
-#endif //_XBOX
 
 	if ( connect( socks_socket, (struct sockaddr *)&address, sizeof( address ) ) == SOCKET_ERROR ) {
 		err = WSAGetLastError();
@@ -837,8 +729,6 @@ NET_GetLocalAddress
 */
 void NET_GetLocalAddress( void )
 {
-#ifndef _XBOX
-
 	char				hostname[256];
 	struct hostent		*hostInfo;
 	int					error;
@@ -879,31 +769,6 @@ void NET_GetLocalAddress( void )
 		Com_Printf( "IP: %i.%i.%i.%i\n", ( ip >> 24 ) & 0xff, ( ip >> 16 ) & 0xff, ( ip >> 8 ) & 0xff, ip & 0xff );
 		numIP++;
 	}
-
-#else
-	XNADDR xnMyAddr;
-	DWORD dwStatus;
-	do
-	{
-	   // Repeat while pending; OK to do other work in this loop
-	   dwStatus = XNetGetTitleXnAddr( &xnMyAddr );
-	} while( dwStatus == XNET_GET_XNADDR_PENDING );
-
-	// Error checking
-	if( dwStatus == XNET_GET_XNADDR_NONE )
-	{
-		assert(!"Error getting XBox title address.");
-		return;
-	}
-
-	*(u_long*)&localIP[0] = xnMyAddr.ina.S_un.S_addr;
-	*(u_long*)localIP[1] = 0;
-	*(u_long*)localIP[2] = 0;
-	*(u_long*)localIP[3] = 0;
-
-	Com_Printf( "IP: %i.%i.%i.%i\n", localIP[0], localIP[1], localIP[2], localIP[3] );
-
-#endif
 }
 
 /*
@@ -945,10 +810,6 @@ NET_IPXSocket
 */
 int NET_IPXSocket( int port )
 {
-#ifdef _XBOX
-	assert(!"NET_IPXSocket() - Not supported");
-	return INVALID_SOCKET;
-#else
 	SOCKET				newsocket;
 
 	struct sockaddr_ipx	address;
@@ -991,7 +852,6 @@ int NET_IPXSocket( int port )
 		return INVALID_SOCKET;
 	}
 	return newsocket;
-#endif
 }
 
 
@@ -1134,11 +994,9 @@ void NET_Config( qboolean enableNetworking ) {
 		if (! net_noudp->integer ) {
 			NET_OpenIP();
 		}
-#ifndef _XBOX
 		if (! net_noipx->integer ) {
 			NET_OpenIPX();
 		}
-#endif
 	}
 }
 
@@ -1150,23 +1008,6 @@ NET_Init
 */
 void NET_Init( void ) {
 	int		r;
-
-#ifdef _XBOX
-	// Run NetStartup with security bypassed
-	// this allows us to communicate with PCs while developing
-	XNetStartupParams xnsp;
-    ZeroMemory( &xnsp, sizeof(xnsp) );
-    xnsp.cfgSizeOfStruct = sizeof(xnsp);
-
-#ifdef _DEBUG
-	xnsp.cfgFlags |= XNET_STARTUP_BYPASS_SECURITY;
-#else
-	xnsp.cfgFlags |= XNET_STARTUP_BYPASS_SECURITY;
-//	xnsp.cfgFlags = 0;
-#endif
-
-	INT err = XNetStartup( &xnsp );
-#endif
 
 	r = WSAStartup( MAKEWORD( 1, 1 ), &winsockdata );
 	if( r ) {

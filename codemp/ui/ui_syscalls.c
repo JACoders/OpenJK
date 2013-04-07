@@ -7,7 +7,7 @@
 
 static int (QDECL *syscall)( int arg, ... ) = (int (QDECL *)( int, ...))-1;
 
-#include "../namespace_begin.h"
+
 void dllEntry( int (QDECL *syscallptr)( int arg,... ) ) {
 	syscall = syscallptr;
 }
@@ -666,4 +666,4 @@ qboolean trap_G2API_AttachG2Model(void *ghoul2From, int modelIndexFrom, void *gh
 Ghoul2 Insert End
 */
 
-#include "../namespace_end.h"
+

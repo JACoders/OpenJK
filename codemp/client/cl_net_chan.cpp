@@ -17,9 +17,6 @@ CL_Netchan_Encode
 ==============
 */
 static void CL_Netchan_Encode( msg_t *msg ) {
-#ifdef _XBOX
-	return;
-#endif
 	int serverId, messageAcknowledge, reliableAcknowledge;
 	int i, index, srdc, sbit, soob;
 	byte key, *string;
@@ -76,9 +73,6 @@ CL_Netchan_Decode
 ==============
 */
 static void CL_Netchan_Decode( msg_t *msg ) {
-#ifdef _XBOX
-	return;
-#endif
 	long reliableAcknowledge, i, index;
 	byte key, *string;
         int	srdc, sbit, soob;

@@ -20,16 +20,9 @@
 #endif
 #endif
 
-#ifdef _XBOX
-extern void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int iAlign);
-extern void Z_Free(void *pvAddress);
-#endif
-
 #ifdef QAGAME
 extern void Q3_SetParm (int entID, int parmNum, const char *parmValue);
 #endif
-
-#include "../namespace_begin.h"
 
 const char *bgToggleableSurfaces[BG_NUM_TOGGLEABLE_SURFACES] = 
 {
@@ -334,17 +327,11 @@ qboolean BG_FileExists(const char *fileName)
 
 #ifndef UI_EXPORTS //don't need this stuff in the ui
 
-// Following functions don't need to be in namespace, they're already
-// different per-module
-#include "../namespace_end.h"
-
 #ifdef QAGAME
 char *G_NewString( const char *string );
 #else
 char *CG_NewString( const char *string );
 #endif
-
-#include "../namespace_begin.h"
 
 /*
 ===============
@@ -3223,91 +3210,6 @@ int BG_ModelCache(const char *modelName, const char *skinName)
 #endif
 }
 
-#ifdef _XBOX	// Hacky BG_Alloc replacement
-
-// This file claims to be stateless. Yeah, right. Regardless, I'm not setting
-// aside 5.5 MB of static buffers for this crap. Let's use Z_Malloc. Of course,
-// we still need to deal with the fact that any code using BG_Malloc is almost
-// certainly leaking memory like a sieve.
-
-// Dave addendum - TAG_BG_ALLOC is entirely freed when the level starts.
-void *BG_Alloc ( int size )
-{
-	return Z_Malloc(size, TAG_BG_ALLOC, qfalse, 4);
-}
-
-void *BG_AllocUnaligned ( int size )
-{
-	// Ignore the unaligned hint, this function isn't called anyway
-	return Z_Malloc(size, TAG_BG_ALLOC, qfalse, 4);
-}
-
-// Because the interface to BG_TempAlloc/BG_TempFree is brain-dead, we need
-// to remember our last few temporary allocations performed.
-#define MAX_TEMP_ALLOCS	3
-static void	*tempAllocPointers[MAX_TEMP_ALLOCS] = { 0 };
-static int	tempAllocSizes[MAX_TEMP_ALLOCS] = { 0 };
-
-void *BG_TempAlloc( int size )
-{
-	int i;
-
-	// Do we have a free spot?
-	for (i = 0; i < MAX_TEMP_ALLOCS; ++i)
-		if (!tempAllocPointers[i])
-			break;
-
-	if (i == MAX_TEMP_ALLOCS)
-	{
-		assert(!"No space for TempAlloc -> Increase MAX_TEMP_ALLOCS");
-		return NULL;
-	}
-
-	tempAllocPointers[i] = Z_Malloc(size, TAG_TEMP_WORKSPACE, qfalse, 4);
-	tempAllocSizes[i] = size;
-
-	return tempAllocPointers[i];
-}
-
-void BG_TempFree( int size )
-{
-	int i;
-
-	// Find the allocation
-	for (i = MAX_TEMP_ALLOCS - 1; i >= 0; --i)
-		if (tempAllocPointers[i] && (tempAllocSizes[i] == size))
-			break;
-
-	if (i < 0)
-	{
-		assert(!"BG_TempFree doesn't match a call to BG_TempAlloc");
-		return;
-	}
-
-	Z_Free(tempAllocPointers[i]);
-	tempAllocPointers[i] = 0;
-	tempAllocSizes[i] = 0;
-
-	return;
-}
-
-char *BG_StringAlloc ( const char *source )
-{
-	char *dest;
-
-	dest = (char *) BG_Alloc ( strlen ( source ) + 1 );
-	strcpy ( dest, source );
-	return dest;
-}
-
-qboolean BG_OutOfMemory ( void )
-{
-	// Never called
-	return qfalse;
-}
-
-#else // _XBOX
-
 #ifdef QAGAME
 #define MAX_POOL_SIZE	3000000 //1024000
 #elif defined CGAME //don't need as much for cgame stuff. 2mb will be fine.
@@ -3393,7 +3295,3 @@ qboolean BG_OutOfMemory ( void )
 {
 	return bg_poolSize >= MAX_POOL_SIZE;
 }
-
-#endif // _XBOX && QAGAME
-
-#include "../namespace_end.h"

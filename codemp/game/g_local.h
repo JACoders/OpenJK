@@ -1070,7 +1070,7 @@ Ghoul2 Insert Start
 */
 int G_BoneIndex( const char *name );
 
-#include "../namespace_begin.h"
+
 
 qhandle_t	trap_R_RegisterSkin( const char *name );
 
@@ -1145,7 +1145,7 @@ void		trap_G2API_ClearAttachedInstance(int entityNum);
 void		trap_G2API_CleanEntAttachments(void);
 qboolean	trap_G2API_OverrideServer(void *serverInstance);
 
-#include "../namespace_end.h"
+
 
 /*
 Ghoul2 Insert End
@@ -1630,10 +1630,10 @@ extern	vmCvar_t	g_debugUp;
 //extern	vmCvar_t	g_blueteam;
 extern	vmCvar_t	g_smoothClients;
 
-#include "../namespace_begin.h"
+
 extern	vmCvar_t	pmove_fixed;
 extern	vmCvar_t	pmove_msec;
-#include "../namespace_end.h"
+
 
 extern	vmCvar_t	g_enableBreath;
 extern	vmCvar_t	g_singlePlayer;
@@ -1672,7 +1672,7 @@ extern	vmCvar_t	g_powerDuelEndHealth;
 
 extern vmCvar_t		g_showDuelHealths;
 
-#include "../namespace_begin.h"
+
 
 void	trap_Printf( const char *fmt );
 void	trap_Error( const char *fmt );
@@ -1982,4 +1982,4 @@ void trap_RMG_Init(int terrainID);
 void trap_Bot_UpdateWaypoints(int wpnum, wpobject_t **wps);
 void trap_Bot_CalculatePaths(int rmg);
 
-#include "../namespace_end.h"
+

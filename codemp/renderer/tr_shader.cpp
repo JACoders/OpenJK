@@ -917,10 +917,6 @@ static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 	stage->ss->density = density;
 	stage->ss->fadeDist = fadedist;
 
-#ifdef _XBOX
-	shader.needsNormal = true;
-#endif
-
 	// These are defaults that can be overwritten.
 	stage->ss->fadeMax = fadedist*1.33;
 	stage->ss->fadeScale = 0.0;
@@ -1460,33 +1456,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				stage->bundle[0].image = tr.scratchImage[stage->bundle[0].videoMapHandle];
 			}
 		}
-#ifdef _XBOX
-		//
-		// bumpmap <name>
-		//
-		else if ( !Q_stricmp( token, "bumpmap" ) )
-		{
-			token = COM_ParseExt( text, qfalse );
-			if( !token[0] )
-			{
-				Com_Printf( S_COLOR_YELLOW, "WARNING: missing parameter for 'bumpmap' keyword in shader '%s'\n", shader.name );
-				return qfalse;
-			}
 
-			stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, 0, GL_REPEAT );
-			if ( !stage->bundle[0].image )
-			{
-				Com_Printf( S_COLOR_YELLOW, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
-				return qfalse;
-			}
-
-			stage->isBumpMap = qtrue;
-			shader.isBumpMap = qtrue;
-
-			shader.needsNormal = true;
-			shader.needsTangent = true;
-		}
-#endif
 		//
 		// alphafunc <func>
 		//
@@ -1639,9 +1609,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			{
 				stage->rgbGen = CGEN_LIGHTING_DIFFUSE;
 
-#ifdef _XBOX
-				shader.needsNormal = true;
-#endif
 			}
 			else if ( !Q_stricmp( token, "lightingDiffuseEntity" ) )
 			{
@@ -1651,9 +1618,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				}
 				stage->rgbGen = CGEN_LIGHTING_DIFFUSE_ENTITY;
 
-#ifdef _XBOX
-				shader.needsNormal = true;
-#endif
 			}
 			else if ( !Q_stricmp( token, "oneMinusVertex" ) )
 			{
@@ -1755,9 +1719,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			if ( !Q_stricmp( token, "environment" ) )
 			{
 				stage->bundle[0].tcGen = TCGEN_ENVIRONMENT_MAPPED;
-#ifdef _XBOX
-				shader.needsNormal = true;
-#endif
 			}
 			else if ( !Q_stricmp( token, "lightmap" ) )
 			{
@@ -2304,11 +2265,6 @@ static qboolean ParseShader( const char **text )
 
 	s = 0;
 
-#ifdef _XBOX
-	shader.needsNormal = false;
-	shader.needsTangent = false;
-#endif
-
 	token = COM_ParseExt( text, qtrue );
 	if ( token[0] != '{' )
 	{
@@ -2338,12 +2294,10 @@ static qboolean ParseShader( const char **text )
 				return qfalse;
 			}
 			stages[s].active = qtrue;
-#ifndef _XBOX	// GLOWXXX
 			if ( stages[s].glow )
 			{
 				shader.hasGlow = true;
 			}
-#endif
 			s++;
 			continue;
 		}
@@ -2973,9 +2927,6 @@ static int VertexLightingCollapse( void ) {
 		stages[0].stateBits |= GLS_DEPTHMASK_TRUE;
 		if ( shader.lightmapIndex[0] == LIGHTMAP_NONE ) {
 			stages[0].rgbGen = CGEN_LIGHTING_DIFFUSE;
-#ifdef _XBOX
-			shader.needsNormal = true;
-#endif
 		} else {
 			stages[0].rgbGen = CGEN_EXACT_VERTEX;
 		}
@@ -3605,9 +3556,6 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 		stages[0].active = qtrue;
 		stages[0].rgbGen = CGEN_LIGHTING_DIFFUSE;
 		stages[0].stateBits = GLS_DEFAULT;
-#ifdef _XBOX
-		shader.needsNormal = true;
-#endif
 	} else if ( shader.lightmapIndex[0] == LIGHTMAP_BY_VERTEX ) {
 		// explicit colors at vertexes
 		stages[0].bundle[0].image = image;
@@ -4264,7 +4212,6 @@ static void CreateInternalShaders( void ) {
 	shader.defaultShader = qtrue;
 
 	
-#ifndef _XBOX	// GLOWXXX
 	#define GL_PROGRAM_ERROR_STRING_ARB						0x8874
 	#define GL_PROGRAM_ERROR_POSITION_ARB					0x864B
 
@@ -4344,7 +4291,6 @@ static void CreateInternalShaders( void ) {
 		qglGetIntegerv( GL_PROGRAM_ERROR_POSITION_ARB, &iErrPos );
 		assert( iErrPos == -1 );
 	}
-#endif
 }
 
 static void CreateExternalShaders( void ) {

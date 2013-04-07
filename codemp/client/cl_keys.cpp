@@ -746,7 +746,6 @@ Tab expansion
 */
 void CompleteCommand( void ) 
 {
-#ifndef _XBOX
 	field_t		*edit;
 	field_t		temp;
 
@@ -796,7 +795,6 @@ void CompleteCommand( void )
 	// run through again, printing matches
 	Cmd_CommandCompletion( PrintMatches );
 	Cvar_CommandCompletion( PrintMatches );
-#endif
 }
 
 
@@ -1502,7 +1500,6 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	}
 
 	// console key is hardcoded, so the user can never unbind it
-#ifndef _XBOX	// No console on Xbox
 	if (key == A_CONSOLE) {
 		if (!down) {
 			return;
@@ -1511,7 +1508,6 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	    Con_ToggleConsole_f ();
 		return;
 	}
-#endif
 
 	// kg.keys can still be used for bound actions
 	if ( down && /*( key < 128 || key == A_MOUSE1 ) && */
@@ -1540,11 +1536,7 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 		}
 
 		if ( !( cls.keyCatchers & KEYCATCH_UI ) ) {
-#ifdef _XBOX	// No demos on Xbox
-			if ( cls.state == CA_ACTIVE ) {
-#else
 			if ( cls.state == CA_ACTIVE && !clc.demoplaying ) {
-#endif
 				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_INGAME );
 			}
 			else {

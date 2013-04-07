@@ -23,9 +23,9 @@
 
 #pragma warning( disable : 4786) 
 
-#if defined(_WIN32) && !defined(_XBOX)
-#define COM_NO_WINDOWS_H
-#include <objbase.h>
+#if defined(_WIN32)
+	#define COM_NO_WINDOWS_H
+	#include <objbase.h>
 #endif
 
 #include <map>
