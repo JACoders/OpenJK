@@ -38,7 +38,7 @@ static qboolean enemyLOS;
 static qboolean enemyCS;
 static qboolean hitAlly;
 static qboolean faceEnemy;
-static qboolean move;
+static qboolean AImove;
 static qboolean shoot;
 static float	enemyDist;
 static vec3_t	impactPos;
@@ -428,7 +428,7 @@ static void GM_CheckMoveState( void )
 {
 	if ( Q3_TaskIDPending( NPC, TID_MOVE_NAV ) )
 	{//moving toward a goal that a script is waiting on, so don't stop for anything!
-		move = qtrue;
+		AImove = qtrue;
 	}
 
 	//See if we're moving towards a goal, not the enemy
@@ -652,7 +652,7 @@ void NPC_BSGM_Attack( void )
 	}
 
 	enemyLOS = enemyCS = qfalse;
-	move = qtrue;
+	AImove = qtrue;
 	faceEnemy = qfalse;
 	shoot = qfalse;
 	hitAlly = qfalse;
@@ -967,7 +967,7 @@ void NPC_BSGM_Attack( void )
 		}
 		if ( NPCInfo->goalEntity == NPC->enemy )
 		{//for now, always chase the enemy
-			move = qtrue;
+			AImove = qtrue;
 		}
 	}
 	if ( enemyCS )
@@ -983,7 +983,7 @@ void NPC_BSGM_Attack( void )
 		}
 		if ( NPCInfo->goalEntity == NPC->enemy )
 		{//for now, always chase the enemy
-			move = qtrue;
+			AImove = qtrue;
 		}
 	}
 
@@ -1046,17 +1046,17 @@ void NPC_BSGM_Attack( void )
 
 	if ( !TIMER_Done( NPC, "standTime" ) )
 	{
-		move = qfalse;
+		AImove = qfalse;
 	}
 	if ( !(NPCInfo->scriptFlags&SCF_CHASE_ENEMIES) )
 	{//not supposed to chase my enemies
 		if ( NPCInfo->goalEntity == NPC->enemy )
 		{//goal is my entity, so don't move
-			move = qfalse;
+			AImove = qfalse;
 		}
 	}
 
-	if ( move && !NPC->lockCount )
+	if ( AImove && !NPC->lockCount )
 	{//move toward goal
 		if ( NPCInfo->goalEntity 
 			&& NPC->client->ps.legsAnim != BOTH_ALERT1
@@ -1065,11 +1065,11 @@ void NPC_BSGM_Attack( void )
 			&& NPC->client->ps.legsAnim != BOTH_ATTACK5 
 			&& NPC->client->ps.legsAnim != BOTH_ATTACK7 )
 		{
-			move = GM_Move();
+			AImove = GM_Move();
 		}
 		else
 		{
-			move = qfalse;
+			AImove = qfalse;
 		}
 	}
 
@@ -1082,11 +1082,11 @@ void NPC_BSGM_Attack( void )
 
 	if ( !faceEnemy )
 	{//we want to face in the dir we're running
-		if ( !move )
+		if ( !AImove )
 		{//if we haven't moved, we should look in the direction we last looked?
 			VectorCopy( NPC->client->ps.viewangles, NPCInfo->lastPathAngles );
 		}
-		if ( move )
+		if ( AImove )
 		{//don't run away and shoot
 			NPCInfo->desiredYaw = NPCInfo->lastPathAngles[YAW];
 			NPCInfo->desiredPitch = 0;
