@@ -1649,8 +1649,8 @@ void G2_SetRagDoll(CGhoul2Info_v &ghoul2V,CRagDollParams *parms)
 	}
 	int curTime=G2API_GetTime(0);
 	boneInfo_v &blist = ghoul2.mBlist;
-	int	index = G2_Find_Bone_Rag(&ghoul2, blist, "model_root");
 #ifndef DEDICATED
+	int	index = G2_Find_Bone_Rag(&ghoul2, blist, "model_root");
 	switch (parms->RagPhase)
 	{
 	case CRagDollParams::RP_START_DEATH_ANIM:

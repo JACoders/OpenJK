@@ -747,6 +747,7 @@ bool TextFile_Read(CString &strFile, LPCSTR psFullPathedFilename, bool bLoseSlas
 		}
 		fclose(fhTextFile);
 	}
+	// DT EDIT
 	/*
 	else
 	{

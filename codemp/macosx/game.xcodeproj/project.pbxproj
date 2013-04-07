@@ -7,9 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		561636D01710A99C008AA92A /* q_math.c in Sources */ = {isa = PBXBuildFile; fileRef = 561636CE1710A99C008AA92A /* q_math.c */; };
+		561636D11710A99C008AA92A /* q_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 561636CF1710A99C008AA92A /* q_shared.c */; };
 		565DAD140C4FF414008167FA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		565DAD700C4FF414008167FA /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */; };
-		56BB7ACD168CF68800EA91A8 /* g_engine.c in Sources */ = {isa = PBXBuildFile; fileRef = 56BB7ACC168CF68800EA91A8 /* g_engine.c */; };
 		56E4CF02121F0005004E7206 /* ai_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CEA9121F0005004E7206 /* ai_main.c */; };
 		56E4CF03121F0005004E7206 /* ai_util.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CEAA121F0005004E7206 /* ai_util.c */; };
 		56E4CF04121F0005004E7206 /* ai_wpnav.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CEAB121F0005004E7206 /* ai_wpnav.c */; };
@@ -91,8 +92,6 @@
 		56E4CF51121F0005004E7206 /* NPC_stats.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CEF8121F0005004E7206 /* NPC_stats.c */; };
 		56E4CF52121F0005004E7206 /* NPC_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CEF9121F0005004E7206 /* NPC_utils.c */; };
 		56E4CF53121F0005004E7206 /* NPC.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CEFA121F0005004E7206 /* NPC.c */; };
-		56E4CF54121F0005004E7206 /* q_math.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CEFB121F0005004E7206 /* q_math.c */; };
-		56E4CF55121F0005004E7206 /* q_shared.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CEFC121F0005004E7206 /* q_shared.c */; };
 		56E4CF56121F0005004E7206 /* SpeederNPC.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CEFD121F0005004E7206 /* SpeederNPC.c */; };
 		56E4CF57121F0005004E7206 /* tri_coll_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CEFE121F0005004E7206 /* tri_coll_test.c */; };
 		56E4CF58121F0005004E7206 /* w_force.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CEFF121F0005004E7206 /* w_force.c */; };
@@ -104,9 +103,10 @@
 /* Begin PBXFileReference section */
 		089C167EFE841241C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0AA1909FFE8422F4C02AAC07 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
+		561636CE1710A99C008AA92A /* q_math.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_math.c; path = ../qcommon/q_math.c; sourceTree = "<group>"; };
+		561636CF1710A99C008AA92A /* q_shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_shared.c; path = ../qcommon/q_shared.c; sourceTree = "<group>"; };
 		565DAD760C4FF414008167FA /* Info-game.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-game.plist"; sourceTree = "<group>"; };
 		565DAD770C4FF414008167FA /* jampgame.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = jampgame.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
-		56BB7ACC168CF68800EA91A8 /* g_engine.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = g_engine.c; path = ../game/g_engine.c; sourceTree = SOURCE_ROOT; };
 		56E4CEA9121F0005004E7206 /* ai_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ai_main.c; path = ../game/ai_main.c; sourceTree = SOURCE_ROOT; };
 		56E4CEAA121F0005004E7206 /* ai_util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ai_util.c; path = ../game/ai_util.c; sourceTree = SOURCE_ROOT; };
 		56E4CEAB121F0005004E7206 /* ai_wpnav.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ai_wpnav.c; path = ../game/ai_wpnav.c; sourceTree = SOURCE_ROOT; };
@@ -188,8 +188,6 @@
 		56E4CEF8121F0005004E7206 /* NPC_stats.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = NPC_stats.c; path = ../game/NPC_stats.c; sourceTree = SOURCE_ROOT; };
 		56E4CEF9121F0005004E7206 /* NPC_utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = NPC_utils.c; path = ../game/NPC_utils.c; sourceTree = SOURCE_ROOT; };
 		56E4CEFA121F0005004E7206 /* NPC.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = NPC.c; path = ../game/NPC.c; sourceTree = SOURCE_ROOT; };
-		56E4CEFB121F0005004E7206 /* q_math.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_math.c; path = ../game/q_math.c; sourceTree = SOURCE_ROOT; };
-		56E4CEFC121F0005004E7206 /* q_shared.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = q_shared.c; path = ../game/q_shared.c; sourceTree = SOURCE_ROOT; };
 		56E4CEFD121F0005004E7206 /* SpeederNPC.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SpeederNPC.c; path = ../game/SpeederNPC.c; sourceTree = SOURCE_ROOT; };
 		56E4CEFE121F0005004E7206 /* tri_coll_test.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = tri_coll_test.c; path = ../game/tri_coll_test.c; sourceTree = SOURCE_ROOT; };
 		56E4CEFF121F0005004E7206 /* w_force.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = w_force.c; path = ../game/w_force.c; sourceTree = SOURCE_ROOT; };
@@ -249,7 +247,6 @@
 		F5C12684034158F301A80169 /* game */ = {
 			isa = PBXGroup;
 			children = (
-				56BB7ACC168CF68800EA91A8 /* g_engine.c */,
 				56E4CF5B121F000B004E7206 /* npc_headers.h */,
 				56E4CEA9121F0005004E7206 /* ai_main.c */,
 				56E4CEAA121F0005004E7206 /* ai_util.c */,
@@ -326,14 +323,14 @@
 				56E4CEF2121F0005004E7206 /* NPC_misc.c */,
 				56E4CEF3121F0005004E7206 /* NPC_move.c */,
 				56E4CEF4121F0005004E7206 /* NPC_reactions.c */,
+				561636CE1710A99C008AA92A /* q_math.c */,
+				561636CF1710A99C008AA92A /* q_shared.c */,
 				56E4CEF5121F0005004E7206 /* NPC_senses.c */,
 				56E4CEF6121F0005004E7206 /* NPC_sounds.c */,
 				56E4CEF7121F0005004E7206 /* NPC_spawn.c */,
 				56E4CEF8121F0005004E7206 /* NPC_stats.c */,
 				56E4CEF9121F0005004E7206 /* NPC_utils.c */,
 				56E4CEFA121F0005004E7206 /* NPC.c */,
-				56E4CEFB121F0005004E7206 /* q_math.c */,
-				56E4CEFC121F0005004E7206 /* q_shared.c */,
 				56E4CEFD121F0005004E7206 /* SpeederNPC.c */,
 				56E4CEFE121F0005004E7206 /* tri_coll_test.c */,
 				56E4CEFF121F0005004E7206 /* w_force.c */,
@@ -383,7 +380,11 @@
 			isa = PBXProject;
 			buildConfigurationList = 565DAD790C4FF416008167FA /* Build configuration list for PBXProject "game" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
 			mainGroup = 089C166AFE841209C02AAC07 /* cgame */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -500,14 +501,13 @@
 				56E4CF51121F0005004E7206 /* NPC_stats.c in Sources */,
 				56E4CF52121F0005004E7206 /* NPC_utils.c in Sources */,
 				56E4CF53121F0005004E7206 /* NPC.c in Sources */,
-				56E4CF54121F0005004E7206 /* q_math.c in Sources */,
-				56E4CF55121F0005004E7206 /* q_shared.c in Sources */,
 				56E4CF56121F0005004E7206 /* SpeederNPC.c in Sources */,
 				56E4CF57121F0005004E7206 /* tri_coll_test.c in Sources */,
 				56E4CF58121F0005004E7206 /* w_force.c in Sources */,
 				56E4CF59121F0005004E7206 /* w_saber.c in Sources */,
 				56E4CF5A121F0005004E7206 /* WalkerNPC.c in Sources */,
-				56BB7ACD168CF68800EA91A8 /* g_engine.c in Sources */,
+				561636D01710A99C008AA92A /* q_math.c in Sources */,
+				561636D11710A99C008AA92A /* q_shared.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -636,7 +636,7 @@
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = "FINAL_BUILD=1";
-				GCC_VERSION = 4.0;
+				GCC_VERSION = "";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				USER_HEADER_SEARCH_PATHS = "..//**";
 				VALID_ARCHS = "i386 ppc";

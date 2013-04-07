@@ -810,6 +810,7 @@ frame.
 R_ACullModel
 =============
 */
+#ifndef DEDICATED
 static int R_GCullModel( trRefEntity_t *ent ) {
 
 	// scale the radius if need be
@@ -956,6 +957,7 @@ static int G2_ComputeLOD( trRefEntity_t *ent, const model_t *currentModel, int l
 
 	return lod;
 }
+#endif
 
 //======================================================================
 //
