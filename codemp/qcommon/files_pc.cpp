@@ -572,7 +572,7 @@ fileHandle_t FS_FOpenFileAppend( const char *filename ) {
 	return f;
 }
 
-#ifndef __linux__
+#ifdef _WIN32
 
 bool Sys_GetFileTime(LPCSTR psFileName, FILETIME &ft)
 {
@@ -638,7 +638,7 @@ bool Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataFileName
 	return false;
 }
 
-#endif // !__linux__
+#endif // _WIN32
 
 bool FS_FileCacheable(const char* const filename) 
 {
@@ -903,7 +903,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 					&& Q_stricmp( filename + l - 4, ".dat" ) ) {	// for journal files
 					fs_fakeChkSum = random();
 				}
-#ifndef __linux__				
+#ifdef _WIN32
 				// if running with fs_copyfiles 2, and search path == local, then we need to fail to open
 				//	if the time/date stamp != the network version (so it'll loop round again and use the network path,
 				//	which comes later in the search order)
@@ -926,7 +926,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 						dir->path, PATH_SEP, dir->gamedir );
 				}
 
-#ifndef __linux__
+#ifdef _WIN32
 				// if we are getting it from the cdpath, optionally copy it
 				//  to the basepath
 				if ( fs_copyfiles->integer && !Q_stricmp( dir->path, fs_cdpath->string ) ) {

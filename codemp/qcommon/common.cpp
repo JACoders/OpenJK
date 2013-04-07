@@ -207,7 +207,7 @@ void QDECL Com_OPrintf( const char *fmt, ...)
 	va_start (argptr,fmt);
 	vsprintf (msg,fmt,argptr);
 	va_end (argptr);
-#ifndef __linux__	
+#ifdef _WIN32
 	OutputDebugString(msg);
 #else
 	printf(msg);
@@ -1639,7 +1639,7 @@ void Com_Memset (void* dest, const int val, const size_t count)
 }
 #endif
 
-#if !( defined __linux__ || defined __FreeBSD__ )  // r010123 - include FreeBSD
+#if !( defined __linux__ || defined __FreeBSD__ || defined MACOS_X)  // r010123 - include FreeBSD
 #if ((!id386) && (!defined __i386__)) // rcg010212 - for PPC
 
 void Com_Memcpy (void* dest, const void* src, const size_t count)
