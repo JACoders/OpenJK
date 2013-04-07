@@ -21,7 +21,7 @@ char		spawnVarChars[MAX_SPAWN_VARS_CHARS];
 
 //NOTENOTE: Be sure to change the mirrored code in cgmain.cpp
 typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char >  >	namePrecache_m;
-namePrecache_m	as_preCacheMap;
+namePrecache_m	*as_preCacheMap;
 
 qboolean	G_SpawnString( const char *key, const char *defaultString, char **out ) {
 	int		i;
@@ -1283,7 +1283,11 @@ void G_ParsePrecaches( void )
 	gentity_t	*ent = NULL;
 
 	//Clear any old lists
-	as_preCacheMap.clear();
+	if(!as_preCacheMap) {
+		as_preCacheMap = new namePrecache_m;
+	}
+
+	as_preCacheMap->clear();
 
 	for ( int i = 0; i < globals.num_entities; i++ )
 	{
@@ -1291,8 +1295,16 @@ void G_ParsePrecaches( void )
 
 		if VALIDSTRING( ent->soundSet )
 		{
-			as_preCacheMap[ (char *) ent->soundSet ] = 1;
+			(*as_preCacheMap)[ (char *) ent->soundSet ] = 1;
 		}
+	}
+}
+
+void G_ASPreCacheFree(void)
+{
+	if(as_preCacheMap) {
+		delete as_preCacheMap;
+		as_preCacheMap = NULL;
 	}
 }
 
