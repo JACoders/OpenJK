@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>game</ProjectName>
+    <ProjectName>jampgame</ProjectName>
     <ProjectGuid>{5B587283-8429-4F8B-AECA-C09BF364B617}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
