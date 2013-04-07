@@ -1109,7 +1109,7 @@ void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs ) {
 
 //JAC: Moved some math functions from q_shared.h
 
-ID_INLINE void VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) {
+void VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) {
 #ifdef USE_SSE
 	__asm {
 		mov ecx, vec1
@@ -1133,7 +1133,7 @@ ID_INLINE void VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) 
 #endif
 }
 
-ID_INLINE void VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) {
+void VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) {
 #ifdef USE_SSE
 	__asm {
 		mov ecx, vec1
@@ -1157,7 +1157,7 @@ ID_INLINE void VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecO
 #endif
 }
 
-ID_INLINE void VectorScale( const vec3_t vecIn, vec_t scale, vec3_t vecOut ) {
+void VectorScale( const vec3_t vecIn, vec_t scale, vec3_t vecOut ) {
 #ifdef USE_SSE
 	__asm {
 		movss xmm0, scale
@@ -1187,13 +1187,13 @@ void VectorScale4( const vec4_t vecIn, vec_t scale, vec4_t vecOut ) {
 	vecOut[3] = vecIn[3]*scale;
 }
 
-ID_INLINE void VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3_t vecOut ) {
+void VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3_t vecOut ) {
 	vecOut[0] = vec1[0] + scale*vec2[0];
 	vecOut[1] = vec1[1] + scale*vec2[1];
 	vecOut[2] = vec1[2] + scale*vec2[2];
 }
 
-ID_INLINE vec_t VectorLength( const vec3_t vec ) {
+vec_t VectorLength( const vec3_t vec ) {
 #ifdef USE_SSE
 	float res;
 
@@ -1224,7 +1224,7 @@ ID_INLINE vec_t VectorLength( const vec3_t vec ) {
 #endif
 }
 
-ID_INLINE vec_t VectorLengthSquared( const vec3_t vec ) {
+vec_t VectorLengthSquared( const vec3_t vec ) {
 #ifdef USE_SSE
 	float res;
 
@@ -1254,14 +1254,14 @@ ID_INLINE vec_t VectorLengthSquared( const vec3_t vec ) {
 #endif
 }
 
-ID_INLINE vec_t Distance( const vec3_t p1, const vec3_t p2 ) {
+vec_t Distance( const vec3_t p1, const vec3_t p2 ) {
 	vec3_t	v;
 
 	VectorSubtract( p2, p1, v );
 	return VectorLength( v );
 }
 
-ID_INLINE vec_t DistanceSquared( const vec3_t p1, const vec3_t p2 ) {
+vec_t DistanceSquared( const vec3_t p1, const vec3_t p2 ) {
 	vec3_t	v;
 
 	VectorSubtract( p2, p1, v );
@@ -1270,7 +1270,7 @@ ID_INLINE vec_t DistanceSquared( const vec3_t p1, const vec3_t p2 ) {
 
 // fast vector normalize routine that does not check to make sure
 // that length != 0, nor does it return length, uses rsqrt approximation
-ID_INLINE void VectorNormalizeFast( vec3_t vec )
+void VectorNormalizeFast( vec3_t vec )
 {
 	float ilength;
 
@@ -1281,7 +1281,7 @@ ID_INLINE void VectorNormalizeFast( vec3_t vec )
 	vec[2] *= ilength;
 }
 
-ID_INLINE vec_t VectorNormalize( vec3_t vec ) {
+vec_t VectorNormalize( vec3_t vec ) {
 	float	length, ilength;
 
 	length = vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2];
@@ -1297,7 +1297,7 @@ ID_INLINE vec_t VectorNormalize( vec3_t vec ) {
 	return length;
 }
 
-ID_INLINE vec_t VectorNormalize2( const vec3_t vec, vec3_t vecOut ) {
+vec_t VectorNormalize2( const vec3_t vec, vec3_t vecOut ) {
 	float	length, ilength;
 
 	length = vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2];
@@ -1315,53 +1315,53 @@ ID_INLINE vec_t VectorNormalize2( const vec3_t vec, vec3_t vecOut ) {
 	return length;
 }
 
-ID_INLINE void VectorCopy( const vec3_t vecIn, vec3_t vecOut ) {
+void VectorCopy( const vec3_t vecIn, vec3_t vecOut ) {
 	vecOut[0]=vecIn[0]; vecOut[1]=vecIn[1]; vecOut[2]=vecIn[2];
 }
 
-ID_INLINE void VectorCopy4( const vec4_t vecIn, vec4_t vecOut ) {
+void VectorCopy4( const vec4_t vecIn, vec4_t vecOut ) {
 	vecOut[0]=vecIn[0]; vecOut[1]=vecIn[1]; vecOut[2]=vecIn[2]; vecOut[3]=vecIn[3];
 }
 
-ID_INLINE void VectorSet( vec3_t vec, vec_t x, vec_t y, vec_t z ) {
+void VectorSet( vec3_t vec, vec_t x, vec_t y, vec_t z ) {
 	vec[0]=x; vec[1]=y; vec[2]=z;
 }
 
-ID_INLINE void VectorSet4( vec4_t vec, vec_t x, vec_t y, vec_t z, vec_t w ) {
+void VectorSet4( vec4_t vec, vec_t x, vec_t y, vec_t z, vec_t w ) {
 	vec[0]=x; vec[1]=y; vec[2]=z; vec[3]=w;
 }
 
-ID_INLINE void VectorSet5( vec5_t vec, vec_t x, vec_t y, vec_t z, vec_t w, vec_t u ) {
+void VectorSet5( vec5_t vec, vec_t x, vec_t y, vec_t z, vec_t w, vec_t u ) {
 	vec[0]=x; vec[1]=y; vec[2]=z; vec[3]=w; vec[4]=u;
 }
 
-ID_INLINE void VectorClear( vec3_t vec ) {
+void VectorClear( vec3_t vec ) {
 	vec[0] = vec[1] = vec[2] = 0;
 }
 
-ID_INLINE void VectorClear4( vec4_t vec ) {
+void VectorClear4( vec4_t vec ) {
 	vec[0] = vec[1] = vec[2] = vec[3] = 0;
 }
 
-ID_INLINE void VectorInc( vec3_t vec ) {
+void VectorInc( vec3_t vec ) {
 	vec[0] += 1.0f; vec[1] += 1.0f; vec[2] += 1.0f;
 }
 
-ID_INLINE void VectorDec( vec3_t vec ) {
+void VectorDec( vec3_t vec ) {
 	vec[0] -= 1.0f; vec[1] -= 1.0f; vec[2] -= 1.0f;
 }
 
-ID_INLINE void VectorInverse( vec3_t vec ) {
+void VectorInverse( vec3_t vec ) {
 	vec[0] = -vec[0]; vec[1] = -vec[1]; vec[2] = -vec[2];
 }
 
-ID_INLINE void CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) {
+void CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) {
 	vecOut[0] = vec1[1]*vec2[2] - vec1[2]*vec2[1];
 	vecOut[1] = vec1[2]*vec2[0] - vec1[0]*vec2[2];
 	vecOut[2] = vec1[0]*vec2[1] - vec1[1]*vec2[0];
 }
 
-ID_INLINE vec_t DotProduct( const vec3_t vec1, const vec3_t vec2 ) {
+vec_t DotProduct( const vec3_t vec1, const vec3_t vec2 ) {
 #ifdef USE_SSE
 	float res;
 
@@ -1393,7 +1393,7 @@ ID_INLINE vec_t DotProduct( const vec3_t vec1, const vec3_t vec2 ) {
 #endif
 }
 
-ID_INLINE qboolean VectorCompare( const vec3_t vec1, const vec3_t vec2 ) {
+qboolean VectorCompare( const vec3_t vec1, const vec3_t vec2 ) {
 	if ( vec1[0] != vec2[0] || vec1[1] != vec2[1] || vec1[2] != vec2[2] )
 		return qfalse;
 	return qtrue;
