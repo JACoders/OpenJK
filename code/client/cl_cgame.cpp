@@ -792,18 +792,20 @@ Ghoul2 Insert End
 			return CG_UI_GETMENUINFO;
 			break;
 		case CG_SP_REGISTER_JK2:
-			//return CG_SP_REGISTER;			// Not needed in JKA --eez
-			return (cgameImport_t)-1;
-			break;
-		case CG_SP_GETSTRINGTEXTSTRING_JK2:
-			return CG_SP_GETSTRINGTEXTSTRING;
+			return CG_SP_REGISTER;
 			break;
 		case CG_SP_GETSTRINGTEXT_JK2:
-			//return CG_SP_GETSTRINGTEXT;
-			return (cgameImport_t)-1;
+			return CG_SP_GETSTRINGTEXT;
+			break;
+		case CG_SP_GETSTRINGTEXTSTRING_JK2:
+			// Both of these do the same thing --eez
+			return CG_SP_GETSTRINGTEXTSTRING;
 			break;
 		case CG_UI_GETITEMTEXT_JK2:
 			return CG_UI_GETITEMTEXT;
+			break;
+		case CG_ANYLANGUAGE_READFROMSTRING2_JK2:
+			return CG_ANYLANGUAGE_READFROMSTRING2;
 			break;
 	}
 	return (cgameImport_t)-1;
@@ -1072,7 +1074,9 @@ int CL_CgameSystemCalls( int *args ) {
 	case CG_LANGUAGE_USESSPACES:
 		return re.Language_UsesSpaces();
 	case CG_ANYLANGUAGE_READFROMSTRING:
-		return re.AnyLanguage_ReadCharFromString( (const char *) VMA(1), (int *) VMA(2), (qboolean *) VMA(3) );
+		return re.AnyLanguage_ReadCharFromString( (char *) VMA(1), (int *) VMA(2), (qboolean *) VMA(3) );
+	case CG_ANYLANGUAGE_READFROMSTRING2:
+		return re.AnyLanguage_ReadCharFromString2( (char **) VMA(1), (qboolean *) VMA(3) );
 	case CG_R_SETREFRACTIONPROP:
 		tr_distortionAlpha = VMF(1);
 		tr_distortionStretch = VMF(2);
@@ -1416,6 +1420,40 @@ Ghoul2 Insert End
 		return result;
 		
 	case CG_SP_GETSTRINGTEXTSTRING:
+#ifndef __NO_JK2
+	case CG_SP_GETSTRINGTEXT:
+		if(Cvar_VariableIntegerValue("com_jk2"))
+		{
+			const char* text;
+
+			assert(VMA(1));	
+	//		assert(VMA(2));	// can now pass in NULL to just query the size
+
+			if (args[0] == CG_SP_GETSTRINGTEXT)
+			{
+				text = JK2SP_GetStringText( args[1] );
+			}
+			else
+			{
+				text = JK2SP_GetStringTextString( (const char *) VMA(1) );
+			}
+
+			if (VMA(2))	// only if dest buffer supplied...
+			{
+				if ( text[0] )
+				{
+					Q_strncpyz( (char *) VMA(2), text, args[3] );				
+				}
+				else 
+				{
+					Q_strncpyz( (char *) VMA(2), "??", args[3] );			
+				}
+			}
+			return strlen(text);
+		}
+		else
+		{
+#endif
 		const char* text;
 
 		assert(VMA(1));	
@@ -1433,10 +1471,13 @@ Ghoul2 Insert End
 			}
 		}
 		return strlen(text);
+#ifndef __NO_JK2
+		}
 		//break;
-	case -1:
-		// eez: ugly edit!
-		return NULL;
+
+	case CG_SP_REGISTER:
+		return JK2SP_Register( (const char *) VMA(1), args[2]?(SP_REGISTER_MENU|SP_REGISTER_REQUIRED):SP_REGISTER_CLIENT );
+#endif
 	default:
 		Com_Error( ERR_DROP, "Bad cgame system trap: %i", args[0] );
 	}

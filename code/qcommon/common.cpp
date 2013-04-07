@@ -1066,6 +1066,13 @@ void Com_Init( char *commandLine ) {
 		s = va("%s %s %s", Q3_VERSION, CPUSTRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
+#ifndef __NO_JK2
+		if(com_jk2->integer)
+		{
+			JK2SP_Init();
+		}
+		else
+#endif
 		SE_Init();	// Initialize StringEd
 	
 		Sys_Init();	// this also detects CPU type, so I can now do this CPU check below...
@@ -1124,13 +1131,6 @@ void Com_Init( char *commandLine ) {
 	catch (const char* reason) {
 		Sys_Error ("Error during initialization %s", reason);
 	}
-
-#ifdef _XBOX
-	//Load these early to keep them at the beginning of memory.  Perhaps
-	//here is too early though.  After the license screen would be better.
-	extern void SE_CheckForLanguageUpdates(void);
-	SE_CheckForLanguageUpdates();
-#endif
 
 }
 
@@ -1478,7 +1478,6 @@ extern void CM_FreeShaderText(void);
 void Com_Shutdown (void) {
 	CM_ClearMap();
 
-#ifndef _XBOX
 	CM_FreeShaderText();
 
 	if (logfile) {
@@ -1501,14 +1500,14 @@ void Com_Shutdown (void) {
 		FS_FCloseFile( com_journalFile );
 		com_journalFile = 0;
 	}
-#endif
 
-#ifdef _XBOX
-	extern void Sys_StreamShutdown();
-	Sys_StreamShutdown();
-	Sys_ShutdownFileCodes();
+#ifndef __NO_JK2
+	if(com_jk2->integer)
+	{
+		JK2SP_Shutdown();
+	}
+	else
 #endif
-
 	SE_ShutDown();//close the string packages
 
 	extern void Netchan_Shutdown();

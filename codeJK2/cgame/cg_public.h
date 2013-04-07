@@ -8,7 +8,7 @@
 // needs to be larger than PACKET_BACKUP
 
 
-#define	MAX_ENTITIES_IN_SNAPSHOT	256
+#define	MAX_ENTITIES_IN_SNAPSHOT	512
 
 #define	SNAPFLAG_RATE_DELAYED		1		// the server withheld a packet to save bandwidth
 #define	SNAPFLAG_DROPPED_COMMANDS	2		// the server lost some cmds coming from the client
@@ -185,7 +185,7 @@ Ghoul2 Insert End
 	CG_SP_GETSTRINGTEXTSTRING,
 	CG_SP_GETSTRINGTEXT,
 	CG_UI_GETITEMTEXT,
-
+	CG_ANYLANGUAGE_READFROMSTRING2,
 } cgameImport_t;
 
 //----------------------------------------------

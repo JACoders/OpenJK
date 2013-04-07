@@ -3,6 +3,7 @@
 #define __QCOMMON_H__
 
 #include "stringed_ingame.h"
+#include "../../codeJK2/qcommon/stripPublic.h"
 #include "../qcommon/cm_public.h"
 
 

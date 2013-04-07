@@ -35,10 +35,11 @@ Language_e GetLanguageEnum()
 
 	// only re-strcmp() when language string has changed from what we knew it as...
 	//
-	if (iSE_Language_ModificationCount != se_language->modificationCount )
-	{
-		iSE_Language_ModificationCount  = se_language->modificationCount;
-
+#ifndef __NO_JK2
+	if(!Cvar_VariableIntegerValue("com_jk2"))
+#endif
+		if (iSE_Language_ModificationCount != se_language->modificationCount )
+			iSE_Language_ModificationCount  = se_language->modificationCount;
 				if ( Language_IsRussian()	)	eLanguage = eRussian;
 		else	if ( Language_IsPolish()	)	eLanguage = ePolish;
 		else	if ( Language_IsKorean()	)	eLanguage = eKorean;
@@ -47,7 +48,6 @@ Language_e GetLanguageEnum()
 		else	if ( Language_IsChinese()	)	eLanguage = eChinese;
 		else	if ( Language_IsThai()		)	eLanguage = eThai;
 		else	eLanguage = eWestern;
-	}
 
 	return eLanguage;
 }
@@ -657,8 +657,91 @@ static int Thai_InitFields(int &iGlyphTPs, LPCSTR &psLang)
 //
 // Note that I have to have this 3-param form instead of advancing a passed-in "const char **psText" because of VM-crap where you can only change ptr-contents, not ptrs themselves. Bleurgh. Ditto the qtrue:qfalse crap instead of just returning stuff straight through.
 //
-unsigned int AnyLanguage_ReadCharFromString( const char *psText, int *piAdvanceCount, qboolean *pbIsTrailingPunctuation /* = NULL */)
+unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, qboolean *pbIsTrailingPunctuation /* = NULL */)
 {	
+#ifndef __NO_JK2
+	// JK2 does this func a little differently --eez
+	if( Cvar_VariableIntegerValue("com_jk2") )
+	{
+		const byte *psString = (const byte *) psText;	// avoid sign-promote bug
+		unsigned int uiLetter;
+
+		if ( Language_IsKorean() )
+		{
+			if ( Korean_ValidKSC5601Hangul( psString[0], psString[1] ))
+			{
+				uiLetter = (psString[0] * 256) + psString[1];
+				psText += 2;
+
+				// not going to bother testing for korean punctuation here, since korean already 
+				//	uses spaces, and I don't have the punctuation glyphs defined, only the basic 2350 hanguls
+				//
+				if ( pbIsTrailingPunctuation)
+				{
+					*pbIsTrailingPunctuation = qfalse;
+				}
+
+				return uiLetter;
+			}
+		}
+		else
+		if ( Language_IsTaiwanese() )
+		{
+			if ( Taiwanese_ValidBig5Code( (psString[0] * 256) + psString[1] ))
+			{
+				uiLetter = (psString[0] * 256) + psString[1];
+				psText += 2;
+
+				// need to ask if this is a trailing (ie like a comma or full-stop) punctuation?...
+				//
+				if ( pbIsTrailingPunctuation)
+				{
+					*pbIsTrailingPunctuation = Taiwanese_IsTrailingPunctuation( uiLetter );
+				}
+
+				return uiLetter;
+			}
+		}
+		else
+		if ( Language_IsJapanese() )
+		{
+			if ( Japanese_ValidShiftJISCode( psString[0], psString[1] ))
+			{
+				uiLetter = (psString[0] * 256) + psString[1];
+				psText += 2;
+
+				// need to ask if this is a trailing (ie like a comma or full-stop) punctuation?...
+				//
+				if ( pbIsTrailingPunctuation)
+				{
+					*pbIsTrailingPunctuation = Japanese_IsTrailingPunctuation( uiLetter );
+				}
+
+				return uiLetter;
+			}
+		}
+
+		// ... must not have been an MBCS code...
+		//
+		uiLetter = psString[0];
+		psText += 1;	// NOT ++
+
+		if (pbIsTrailingPunctuation)
+		{
+			*pbIsTrailingPunctuation = (uiLetter == '!' || 
+										uiLetter == '?' || 
+										uiLetter == ',' || 
+										uiLetter == '.' || 
+										uiLetter == ';' || 
+										uiLetter == ':'
+										);
+		}
+
+		return uiLetter;
+	}
+	else
+	{
+#endif
 	const byte *psString = (const byte *) psText;	// avoid sign-promote bug
 	unsigned int uiLetter;
 
@@ -777,8 +860,92 @@ unsigned int AnyLanguage_ReadCharFromString( const char *psText, int *piAdvanceC
 	}
 
 	return uiLetter;
+#ifndef __NO_JK2
+	}
+#endif
 }
 
+#ifndef __NO_JK2
+unsigned int AnyLanguage_ReadCharFromString( char **psText, qboolean *pbIsTrailingPunctuation /* = NULL */)
+{	
+	// JK2 does this func a little differently --eez
+	const byte *psString = (const byte *) *psText;	// avoid sign-promote bug
+	unsigned int uiLetter;
+
+	if ( Language_IsKorean() )
+	{
+		if ( Korean_ValidKSC5601Hangul( psString[0], psString[1] ))
+		{
+			uiLetter = (psString[0] * 256) + psString[1];
+			*psText += 2;
+
+			// not going to bother testing for korean punctuation here, since korean already 
+			//	uses spaces, and I don't have the punctuation glyphs defined, only the basic 2350 hanguls
+			//
+			if ( pbIsTrailingPunctuation)
+			{
+				*pbIsTrailingPunctuation = qfalse;
+			}
+
+			return uiLetter;
+		}
+	}
+	else
+	if ( Language_IsTaiwanese() )
+	{
+		if ( Taiwanese_ValidBig5Code( (psString[0] * 256) + psString[1] ))
+		{
+			uiLetter = (psString[0] * 256) + psString[1];
+			*psText += 2;
+
+			// need to ask if this is a trailing (ie like a comma or full-stop) punctuation?...
+			//
+			if ( pbIsTrailingPunctuation)
+			{
+				*pbIsTrailingPunctuation = Taiwanese_IsTrailingPunctuation( uiLetter );
+			}
+
+			return uiLetter;
+		}
+	}
+	else
+	if ( Language_IsJapanese() )
+	{
+		if ( Japanese_ValidShiftJISCode( psString[0], psString[1] ))
+		{
+			uiLetter = (psString[0] * 256) + psString[1];
+			*psText += 2;
+
+			// need to ask if this is a trailing (ie like a comma or full-stop) punctuation?...
+			//
+			if ( pbIsTrailingPunctuation)
+			{
+				*pbIsTrailingPunctuation = Japanese_IsTrailingPunctuation( uiLetter );
+			}
+
+			return uiLetter;
+		}
+	}
+
+	// ... must not have been an MBCS code...
+	//
+	uiLetter = psString[0];
+	*psText += 1;	// NOT ++
+
+	if (pbIsTrailingPunctuation)
+	{
+		*pbIsTrailingPunctuation = (uiLetter == '!' || 
+									uiLetter == '?' || 
+									uiLetter == ',' || 
+									uiLetter == '.' || 
+									uiLetter == ';' || 
+									uiLetter == ':'
+									);
+	}
+
+	return uiLetter;
+}
+#endif
 
 // needed for subtitle printing since original code no longer worked once camera bar height was changed to 480/10
 //	rather than refdef height / 10. I now need to bodge the coords to come out right.
@@ -1320,7 +1487,51 @@ CFontInfo *GetFont(int index)
 
 
 int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float fScale)
-{			
+{	
+#ifndef __NO_JK2
+	// Yes..even this func is a little different, to the point where it doesn't work. --eez
+	if( Cvar_VariableIntegerValue("com_jk2") )
+	{
+		int			iMaxWidth = 0;
+		int			iThisWidth= 0;
+		CFontInfo	*curfont;
+
+		curfont = GetFont(iFontHandle);
+		if(!curfont)
+		{
+			return(0);
+		}
+
+		float fScaleA = fScale;
+		if (Language_IsAsian() && fScale > 0.7f )
+		{
+			fScaleA = fScale * 0.75f;
+		}
+
+		while(*psText)
+		{
+			unsigned int uiLetter = AnyLanguage_ReadCharFromString( (char **)&psText );
+			if (uiLetter == 0x0A)
+			{
+				iThisWidth = 0;
+			}
+			else
+			{
+				int iPixelAdvance = curfont->GetLetterHorizAdvance( uiLetter );
+		
+				iThisWidth += Round(iPixelAdvance * ((uiLetter > 255) ? fScaleA : fScale));
+				if (iThisWidth > iMaxWidth)
+				{
+					iMaxWidth = iThisWidth;
+				}
+			}
+		}
+
+		return iMaxWidth;
+	}
+	else
+	{
+#endif
 	int			iMaxWidth = 0;
 	int			iThisWidth= 0;
 	CFontInfo	*curfont;
@@ -1340,7 +1551,7 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 	while(*psText)
 	{
 		int iAdvanceCount;
-		unsigned int uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
+		unsigned int uiLetter = AnyLanguage_ReadCharFromString( (char *)psText, &iAdvanceCount, NULL );
 		psText += iAdvanceCount;
 
 		if (uiLetter == '^' )
@@ -1348,7 +1559,7 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 			if (*psText >= '0' &&
 				*psText <= '9')
 			{
-				uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
+				uiLetter = AnyLanguage_ReadCharFromString( (char *)psText, &iAdvanceCount, NULL );
 				psText += iAdvanceCount;
 				continue;
 			}
@@ -1372,6 +1583,9 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 	}
 
 	return iMaxWidth;
+#ifndef __NO_JK2
+	}
+#endif
 }
 
 // not really a font function, but keeps naming consistant...
@@ -1387,7 +1601,7 @@ int RE_Font_StrLenChars(const char *psText)
 		// in other words, colour codes and CR/LF don't count as chars, all else does...
 		//
 		int iAdvanceCount;
-		unsigned int uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
+		unsigned int uiLetter = AnyLanguage_ReadCharFromString( (char *)psText, &iAdvanceCount, NULL );
 		psText += iAdvanceCount;
 
 		switch (uiLetter)
@@ -1430,6 +1644,140 @@ int RE_Font_HeightPixels(const int iFontHandle, const float fScale)
 //
 void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, const int iFontHandle, int iMaxPixelWidth, const float fScale)
 {
+	// HAAAAAAAAAAAAAAAX..fix me please --eez
+#ifndef __NO_JK2
+	if( Cvar_VariableIntegerValue("com_jk2") )
+	{
+		static qboolean gbInShadow = qfalse;	// MUST default to this
+		int					x, y, colour, offset;
+		const glyphInfo_t	*pLetter;
+		qhandle_t			hShader;
+
+		assert (psText);
+
+		if(iFontHandle & STYLE_BLINK)
+		{
+			if((Sys_Milliseconds() >> 7) & 1)
+			{
+				return;
+			}
+		}
+
+	/*	if (Language_IsTaiwanese())
+		{
+			psText = "Wp:¶}·F§a ¿p·G´µ¡A§Æ±æ§A¹³¥L­Ì»¡ªº¤@¼Ë¦æ¡C";
+		}
+		else
+		if (Language_IsKorean())
+		{
+			psText = "Wp:¼îÅ¸ÀÓÀÌ´Ù ¸Ö¸°. ±×µéÀÌ ¸»ÇÑ´ë·Î ³×°¡ ÀßÇÒÁö ±â´ëÇÏ°Ú´Ù.";
+		}
+		else
+		if (Language_IsJapanese())
+		{
+			char sBlah[200];
+			sprintf(sBlah,va("%c%c %c%c %c%c %c%c",0x82,0xA9,0x82,0xC8,0x8A,0xBF,0x8E,0x9A));
+			psText = &sBlah[0];
+			//psText = ¡@¡A¡B¡C¡D¡E¡F¡G¡H¡I¡J¡K¡L¡M¡N¡O¡P¡Q¡R¡S¡T¡U¡V¡W¡X¡Y¡Z¡[¡\¡]¡^¡_¡`¡a¡b¡c¡d¡e¡f¡g¡h¡i¡j¡k¡l¡m¡n¡o¡p¡q¡r¡s¡t¡u¡v¡w¡x¡y¡z¡{¡|¡}¡~    ¡¡¡¢¡£¡¤¡¥¡¦¡§¡¨¡©¡ª¡«¡¬¡­¡®¡¯¡°¡±¡²¡³¡´¡µ¡¶¡·¡¸¡¹¡º¡»¡¼¡½¡¾¡¿¡À¡Á¡Â¡Ã¡Ä¡Å¡Æ¡Ç¡È¡É¡Ê¡Ë¡Ì¡Í¡Î¡Ï¡Ð¡Ñ¡Ò¡Ó¡Ô¡Õ¡Ö¡×¡Ø¡Ù¡Ú¡Û¡Ü¡Ý¡Þ¡ß¡à¡á¡â¡ã¡ä¡å¡æ¡ç¡è¡é¡ê¡ë¡ì¡í¡î¡ï¡ð¡ñ¡ò¡ó¡ô¡õ¡ö¡÷¡ø¡ù¡ú¡û¡ü¡ý¡þ 1¢@¢A¢B¢C¢D¢E¢F¢G¢H¢I¢J¢K¢L¢M¢N¢O¢P¢Q¢R¢S¢T¢U¢V¢W¢X¢Y¢Z¢[¢\¢]¢^¢_¢`¢a¢b¢c¢d¢e¢f¢g¢h¢i¢j¢k¢l¢m¢n¢o¢p¢q¢r¢s¢t¢u¢v¢w¢x¢y¢z¢{¢|¢}¢~    ¢¡¢¢¢£¢¤¢¥¢¦¢§¢¨¢©¢ª¢«¢¬¢­¢®¢¯¢°¢±¢²¢³¢´¢µ¢¶¢·¢¸¢¹¢º¢»¢¼¢½¢¾¢¿¢À¢Á¢Â¢Ã¢Ä¢Å¢Æ¢Ç¢È¢É¢Ê¢Ë¢Ì¢Í¢Î¢Ï¢Ð¢Ñ¢Ò¢Ó¢Ô¢Õ¢Ö¢×¢Ø¢Ù¢Ú¢Û¢Ü¢Ý¢Þ¢ß¢à¢á¢â¢ã¢ä¢å¢æ¢ç¢è¢é¢ê¢ë¢ì¢í¢î¢ï¢ð¢ñ¢ò¢ó¢ô¢õ¢ö¢÷¢ø¢ù¢ú¢û¢ü¢ý¢þ 2£@£A£B£C£D£E£F£G£H£I£J£K£L£M£N£O£P£Q£R£S£T£U£V£W£X£Y£Z£[£\£]£^£_£`£a£b£c£d£e£f£g£h£i£j£k£l£m£n£o£p£q£r£s£t£u£v£w£x£y£z£{£|£}£~    £¡£¢£££¤£¥£¦£§£¨£©£ª£«£¬£­£®£¯£°£±£²£³£´£µ£¶£·£¸£¹£º£»£¼£½£¾£¿£À£Á£Â£Ã£Ä£Å£Æ£Ç£È£É£Ê£Ë£Ì£Í£Î£Ï£Ð£Ñ£Ò£Ó£Ô£Õ£Ö£×£Ø£Ù£Ú£Û£Ü£Ý£Þ£ß£à£á£â£ã£ä£å£æ£ç£è£é£ê£ë£ì£í£î£ï£ð£ñ£ò£ó£ô£õ£ö£÷£ø£ù£ú£û£ü£ý£þ 3¤@¤A¤B¤C¤D¤E¤F¤G¤H¤I¤J¤K¤L¤M¤N¤O¤P¤Q¤R¤S¤T¤U¤V¤W¤X¤Y¤Z¤[¤\¤]¤^¤
+		}
+	*/
+
+		CFontInfo *curfont = GetFont(iFontHandle);
+		if(!curfont)
+		{
+			return;
+		}
+
+		float fScaleA = fScale;
+		int iAsianYAdjust = 0;
+		if (Language_IsAsian() && fScale > 0.7f)
+		{
+			fScaleA = fScale * 0.75f;
+			iAsianYAdjust = /*Round*/((((float)curfont->GetPointSize() * fScale) - ((float)curfont->GetPointSize() * fScaleA))/2);
+		}
+
+		// Draw a dropshadow if required
+		if(iFontHandle & STYLE_DROPSHADOW)
+		{
+			offset = Round(curfont->GetPointSize() * fScale * 0.075f);
+
+			gbInShadow = qtrue;
+			RE_Font_DrawString(ox + offset, oy + offset, psText, colorTable[CT_DKGREY2], iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+			gbInShadow = qfalse;
+		}
+			
+		RE_SetColor( rgba );
+
+		x = ox;
+		oy += Round((curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale);
+
+		qboolean bNextTextWouldOverflow = qfalse;
+		while (*psText && !bNextTextWouldOverflow)
+		{
+			unsigned int uiLetter = AnyLanguage_ReadCharFromString((char **)&psText);	// 'psText' ptr has been advanced now
+			switch( uiLetter )
+			{
+			case '^':
+				colour = ColorIndex(*psText++);
+				if (!gbInShadow)
+				{
+					RE_SetColor( g_color_table[colour] );
+				}
+				break;
+			case 10:						//linefeed
+				x = ox;
+				oy += Round(curfont->GetPointSize() * fScale);
+				if (Language_IsAsian())
+				{
+					oy += 4;	// this only comes into effect when playing in asian for "A long time ago in a galaxy" etc, all other text is line-broken in feeder functions
+				}
+				break;
+			case 13:						// Return
+				break;
+			case 32:						// Space
+				pLetter = curfont->GetLetter(' ');			
+				x += Round(pLetter->horizAdvance * fScale);
+				bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((x-ox)>iMaxPixelWidth) );
+				break;
+
+			default:
+				pLetter = curfont->GetLetter( uiLetter, &hShader );			// Description of pLetter
+				if(!pLetter->width)
+				{
+					pLetter = curfont->GetLetter('.');
+				}
+
+				float fThisScale = uiLetter > 255 ? fScaleA : fScale;
+				int iAdvancePixels = Round(pLetter->horizAdvance * fThisScale);
+				bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && (((x+iAdvancePixels)-ox)>iMaxPixelWidth) );
+				if (!bNextTextWouldOverflow)
+				{
+					// this 'mbRoundCalcs' stuff is crap, but the only way to make the font code work. Sigh...
+					//				
+					y = oy - (curfont->mbRoundCalcs ? Round(pLetter->baseline * fThisScale) : pLetter->baseline * fThisScale);
+
+					RE_StretchPic ( x + Round(pLetter->horizOffset * fScale), // float x
+									(uiLetter > 255) ? y - iAsianYAdjust : y,	// float y
+									curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale,	// float w
+									curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
+									pLetter->s,						// float s1
+									pLetter->t,						// float t1
+									pLetter->s2,					// float s2
+									pLetter->t2,					// float t2
+									//lastcolour.c, 
+									hShader							// qhandle_t hShader
+									);
+
+					x += iAdvancePixels;
+				}
+				break;
+			}		
+		}
+		//let it remember the old color //RE_SetColor(NULL);;
+	}
+	else
+	{
+#endif
 	static qboolean gbInShadow = qfalse;	// MUST default to this
 	int					x, y, colour, offset;
 	const glyphInfo_t	*pLetter;
@@ -1522,10 +1870,11 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	oy += Round((curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale);
 
 	qboolean bNextTextWouldOverflow = qfalse;
+
 	while (*psText && !bNextTextWouldOverflow)
 	{
 		int iAdvanceCount;
-		unsigned int uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
+		unsigned int uiLetter = AnyLanguage_ReadCharFromString( (char *)psText, &iAdvanceCount, NULL );
 		psText += iAdvanceCount;
 
 		switch( uiLetter )
@@ -1612,6 +1961,9 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		}		
 	}
 	//let it remember the old color //RE_SetColor(NULL);;
+#ifndef __NO_JK2
+	}
+#endif
 }
 
 int RE_RegisterFont(const char *psName) 

@@ -50,29 +50,29 @@ enum
 
 
 // Registration
-qboolean				SP_Register(const char *Package, unsigned char Registration);
-void					SP_Unload(unsigned char Registration);
+qboolean				JK2SP_Register(const char *Package, unsigned char Registration);
+void					JK2SP_Unload(unsigned char Registration);
 
 // Direct string functions
-int						SP_GetStringID(const char *Reference);
+int						JK2SP_GetStringID(const char *Reference);
 #ifdef _DEBUG
 const char *SP_GetReferenceText(unsigned short ID, const char *&psPackageName, const char *&psPackageReference, const char *&psText);
 #endif
-const char				*SP_GetStringText(unsigned short ID);
-const char				*SP_GetStringTextString(const char *Reference);
+const char				*JK2SP_GetStringText(unsigned short ID);
+const char				*JK2SP_GetStringTextString(const char *Reference);
 
 // Initialization
-void					SP_Init(void);
-void					SP_CheckForLanguageUpdates(void);
-inline void				SP_Shutdown(void)
+void					JK2SP_Init(void);
+void					JK2SP_CheckForLanguageUpdates(void);
+inline void				JK2SP_Shutdown(void)
 {
-	SP_Unload(SP_REGISTER_CLIENT | SP_REGISTER_SERVER | SP_REGISTER_MENU | SP_REGISTER_REQUIRED );
+	JK2SP_Unload(SP_REGISTER_CLIENT | SP_REGISTER_SERVER | SP_REGISTER_MENU | SP_REGISTER_REQUIRED );
 }
 
 extern cvar_t	*sp_language;
 // query function from font code
 // 
-inline qboolean Language_IsKorean(void)
+/*inline qboolean Language_IsKorean(void)
 {
 	return (sp_language && sp_language->integer == SP_LANGUAGE_KOREAN);
 }
@@ -86,7 +86,7 @@ inline qboolean Language_IsJapanese(void)
 {
 	return (sp_language && sp_language->integer == SP_LANGUAGE_JAPANESE);
 }
-
+*/
 inline int Language_GetIntegerValue(void)
 {
 	if (sp_language)
