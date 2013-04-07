@@ -118,7 +118,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -270,9 +270,6 @@
     <ClInclude Include="ghoul2\G2_local.h" />
     <ClInclude Include="ghoul2\ghoul2_shared.h" />
     <ClInclude Include="renderer\mdx_format.h" />
-    <ClInclude Include="zlib32\deflate.h" />
-    <ClInclude Include="zlib32\inflate.h" />
-    <ClInclude Include="zlib32\zip.h" />
     <ClInclude Include="RMG\RM_Area.h" />
     <ClInclude Include="RMG\RM_Headers.h" />
     <ClInclude Include="RMG\RM_Instance.h" />
@@ -485,9 +482,6 @@
     <ClCompile Include="ghoul2\G2_bones.cpp" />
     <ClCompile Include="ghoul2\G2_misc.cpp" />
     <ClCompile Include="ghoul2\G2_surfaces.cpp" />
-    <ClCompile Include="zlib32\deflate.cpp" />
-    <ClCompile Include="zlib32\inflate.cpp" />
-    <ClCompile Include="zlib32\zipcommon.cpp" />
     <ClCompile Include="RMG\RM_Area.cpp" />
     <ClCompile Include="RMG\RM_Instance.cpp" />
     <ClCompile Include="RMG\RM_InstanceFile.cpp" />
@@ -538,6 +532,7 @@
     <ClCompile Include="icarus\Sequence.cpp" />
     <ClCompile Include="icarus\Sequencer.cpp" />
     <ClCompile Include="icarus\TaskManager.cpp" />
+    <ClCompile Include="zlib\ioapi.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
