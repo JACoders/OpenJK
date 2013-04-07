@@ -6236,8 +6236,14 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 
 	// keeps us from computing the widths and heights more than once
 	if (*width == 0 || (item->type == ITEM_TYPE_OWNERDRAW && item->textalignment == ITEM_ALIGN_CENTER)
+#ifndef __NO_JK2
+		|| (item->text && item->text[0]=='@' && 
+		((!Cvar_VariableIntegerValue("com_jk2") && item->asset != se_language->modificationCount) ||
+		((Cvar_VariableIntegerValue("com_jk2") && item->asset != sp_language->modificationCount)))	//string package language changed
+#else
 		|| (item->text && item->text[0]=='@' && item->asset != se_language->modificationCount )	//string package language changed
-		) 
+#endif
+		))
 	{
 		int originalWidth;
 
@@ -6437,10 +6443,24 @@ void Item_Text_Paint(itemDef_t *item)
 	{
 		textPtr = item->text;
 	}
+#ifndef __NO_JK2
+	if(!Cvar_VariableIntegerValue("com_jk2"))
+	{
+#endif
 	if (*textPtr == '@')	// string reference
 	{
 		textPtr = SE_GetString( &textPtr[1] );
 	}
+#ifndef __NO_JK2
+	}
+	else
+	{
+		if(*textPtr == '@')
+		{
+			textPtr = JK2SP_GetStringTextString(&textPtr[1]);
+		}
+	}
+#endif
 
 	// this needs to go here as it sets extents for cvar types as well
 	Item_SetTextExtents(item, &width, &height, textPtr);

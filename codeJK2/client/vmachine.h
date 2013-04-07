@@ -17,7 +17,7 @@ typedef enum {
 	CG_DRAW_ACTIVE_FRAME,
 	CG_CROSSHAIR_PLAYER,
 	CG_CAMERA_POS,
-	
+	CG_CAMERA_ANG,
 /*
 Ghoul2 Insert Start
 */
