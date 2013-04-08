@@ -129,7 +129,7 @@ DLL_ONLY=false
 
   THREAD_LDFLAGS=-lpthread
   #LDFLAGS=/opt/sxl/lib/sxlgcc3.a -lpthread -ldl -lm -lstdc++ -static -Wl --gc-sections
-  LDFLAGS= -ldl -lm -lz
+  LDFLAGS= -ldl -lm
   GLLDFLAGS=-L/usr/X11R6/lib -L$(MESADIR)/lib -lX11 -lXext -lXxf86dga -lXxf86vm
 
   TARGETS=\
@@ -175,6 +175,7 @@ makedirs:
 	@if [ ! -d $(B) ];then mkdir $(B);fi
 #	@if [ ! -d $(B)/client ];then mkdir $(B)/client;fi
 	@if [ ! -d $(B)/ded ];then mkdir $(B)/ded;fi
+	@if [ ! -d $(B)/zlib ];then mkdir $(B)/zlib;fi
 #	@if [ ! -d $(B)/ref ];then mkdir $(B)/ref;fi
 #	@if [ ! -d $(B)/ft2 ];then mkdir $(B)/ft2;fi
 	@if [ ! -d $(B)/baseq3 ];then mkdir $(B)/baseq3;fi
@@ -318,6 +319,23 @@ Q3DOBJ = \
 	$(B)/ded/cm_terrain.o \
 	$(B)/ded/cm_randomterrain.o \
 	$(B)/ded/cm_shader.o \
+	\
+	$(B)/zlib/adler32.o \
+	$(B)/zlib/compress.o \
+	$(B)/zlib/crc32.o \
+	$(B)/zlib/deflate.o \
+	$(B)/zlib/gzclose.o \
+	$(B)/zlib/gzlib.o \
+	$(B)/zlib/gzread.o \
+	$(B)/zlib/gzwrite.o \
+	$(B)/zlib/infback.o \
+	$(B)/zlib/inffast.o \
+	$(B)/zlib/inflate.o \
+	$(B)/zlib/inftrees.o \
+	$(B)/zlib/trees.o \
+	$(B)/zlib/uncompr.o \
+	$(B)/zlib/zutil.o
+
 #	$(B)/ded/tr_terrain.o \
 #	\
 #	$(B)/ded/null_main.o \
@@ -427,6 +445,8 @@ $(B)/ded/RoffSystem.o : $(CMDIR)/RoffSystem.cpp; $(DO_DED_CPP)
 $(B)/ded/inflate.o : $(ZLIB)/inflate.c; $(DO_DED_CPP)
 $(B)/ded/deflate.o : $(ZLIB)/deflate.c; $(DO_DED_CPP)
 $(B)/ded/zipcommon.o : $(ZLIB)/zipcommon.cpp; $(DO_DED_CPP)
+
+$(B)/zlib/%.o : $(ZLIB)/%.c; $(DO_DED_CC)
 
 $(B)/ded/tr_model.o : $(RDIR)/tr_model.cpp; $(DO_DED_CPP)
 $(B)/ded/tr_image.o : $(RDIR)/tr_image.cpp; $(DO_DED_CPP)
