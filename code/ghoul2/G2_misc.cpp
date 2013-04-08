@@ -272,7 +272,7 @@ public:
 void G2_List_Model_Surfaces(const char *fileName)
 {
 	int			i, x;
-  	model_t		*mod_m = R_GetModelByHandle(RE_RegisterModel(fileName));
+	model_t		*mod_m = R_GetModelByHandle(re.RegisterModel(fileName));
 	mdxmSurfHierarchy_t	*surf;
 
 	surf = (mdxmSurfHierarchy_t *) ( (byte *)mod_m->mdxm + mod_m->mdxm->ofsSurfHierarchy );
@@ -302,7 +302,7 @@ void G2_List_Model_Bones(const char *fileName, int frame)
 	int				x, i;
 	mdxaSkel_t		*skel;
 	mdxaSkelOffsets_t	*offsets;
-  	model_t			*mod_m = R_GetModelByHandle(RE_RegisterModel(fileName)); 
+	model_t			*mod_m = R_GetModelByHandle(re.RegisterModel(fileName)); 
 	model_t			*mod_a = R_GetModelByHandle(mod_m->mdxm->animIndex);
 // 	mdxaFrame_t		*aframe=0;
 //	int				frameSize;
@@ -349,7 +349,7 @@ void G2_List_Model_Bones(const char *fileName, int frame)
 qboolean G2_GetAnimFileName(const char *fileName, char **filename)
 {
 	// find the model we want
-	model_t				*mod = R_GetModelByHandle(RE_RegisterModel(fileName));
+	model_t				*mod = R_GetModelByHandle(re.RegisterModel(fileName));
 
 	if (mod && mod->mdxm && (mod->mdxm->animName[0] != 0))
 	{
