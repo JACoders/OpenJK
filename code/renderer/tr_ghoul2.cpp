@@ -4047,7 +4047,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	}
 		
 	// first up, go load in the animation file we need that has the skeletal animation info for this model
-	mdxm->animIndex = RE_RegisterModel(va ("%s.gla",mdxm->animName));
+	mdxm->animIndex = re.RegisterModel(va ("%s.gla",mdxm->animName));
 	if (!strcmp(mdxm->animName,"models/players/_humanoid/_humanoid"))
 	{	//if we're loading the humanoid, look for a cinematic gla for this map
 		const char*mapname = sv_mapname->string;
@@ -4057,7 +4057,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			{
 				mapname = strrchr(mapname,'/')+1;
 			}
-			RE_RegisterModel(va ("models/players/_humanoid_%s/_humanoid_%s.gla",mapname,mapname));
+			re.RegisterModel(va ("models/players/_humanoid_%s/_humanoid_%s.gla",mapname,mapname));
 		}
 	}
 	

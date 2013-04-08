@@ -49,6 +49,8 @@ extern mdxaBone_t		worldMatrixInv;
 
 extern	cvar_t	*r_Ghoul2TimeBase;
 
+extern refexport_t	re;
+
 #define G2_MODEL_OK(g) ((g)&&(g)->mValid&&(g)->aHeader&&(g)->currentModel&&(g)->animModel)
 
 
@@ -578,7 +580,7 @@ void G2API_CleanGhoul2Models(CGhoul2Info_v &ghoul2)
 
 qhandle_t G2API_PrecacheGhoul2Model(const char *fileName)
 {
-	return RE_RegisterModel((char *)fileName);
+	return re.RegisterModel((char *)fileName);
 }
 
 // initialise all that needs to be on a new Ghoul II model
@@ -2038,7 +2040,7 @@ bool G2_TestModelPointers(CGhoul2Info *ghlInfo) // returns true if the model is 
 	ghlInfo->mValid=false;
 	if (ghlInfo->mModelindex != -1)
 	{
-		ghlInfo->mModel = RE_RegisterModel(ghlInfo->mFileName);
+		ghlInfo->mModel = re.RegisterModel(ghlInfo->mFileName);
 		ghlInfo->currentModel = R_GetModelByHandle(ghlInfo->mModel);
 		if (ghlInfo->currentModel)
 		{
