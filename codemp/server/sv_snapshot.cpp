@@ -628,7 +628,7 @@ static int SV_RateMsec( client_t *client, int messageSize ) {
 			rate = sv_maxRate->integer;
 		}
 	}
-	rateMsec = ( messageSize + HEADER_RATE_BYTES ) * 1000 / rate;
+	rateMsec = ( messageSize + HEADER_RATE_BYTES ) * 1000 / ((int) (rate * com_timescale->value));
 
 	return rateMsec;
 }
@@ -682,15 +682,15 @@ void SV_SendMessageToClient( msg_t *msg, client_t *client ) {
 		client->rateDelayed = qtrue;
 	}
 
-	client->nextSnapshotTime = svs.time + rateMsec;
+	client->nextSnapshotTime = svs.time + rateMsec * com_timescale->value;
 
 	// don't pile up empty snapshots while connecting
 	if ( client->state != CS_ACTIVE ) {
 		// a gigantic connection message may have already put the nextSnapshotTime
 		// more than a second away, so don't shorten it
 		// do shorten if client is downloading
-		if ( !*client->downloadName && client->nextSnapshotTime < svs.time + 1000 ) {
-			client->nextSnapshotTime = svs.time + 1000;
+		if ( !*client->downloadName && client->nextSnapshotTime < svs.time + 1000 * com_timescale->value ) {
+			client->nextSnapshotTime = svs.time + 1000 * com_timescale->value;
 		}
 	}
 }
