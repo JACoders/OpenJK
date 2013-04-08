@@ -468,7 +468,11 @@ typedef struct
 } vehTurretStatus_t;
 // This is the implementation of the vehicle interface and any of the other variables needed. This
 // is what actually represents a vehicle. -AReis.
+#ifdef __GNUC__
+struct Vehicle_s
+#else
 typedef struct Vehicle_s
+#endif
 {
 	// The entity who pilots/drives this vehicle.
 	// NOTE: This is redundant (since m_pParentEntity->owner _should_ be the pilot). This makes things clearer though.
@@ -613,8 +617,8 @@ typedef struct Vehicle_s
 
 	//the guy who was previously the pilot
 	bgEntity_t *	m_pOldPilot;
-#if defined(__GCC__) || defined(MINGW32) || defined(MACOS_X)
-	} _Vehicle_t;
+#if defined(__GNUC__) || defined(__GCC__) || defined(MINGW32) || defined(MACOS_X)
+	};
 #else
 	} Vehicle_t;
 #endif

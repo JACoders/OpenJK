@@ -707,7 +707,7 @@ void BG_VehicleTurnRateForSpeed( Vehicle_t *pVeh, float speed, float *mPitchOver
 
 // Following couple things don't belong in the DLL namespace!
 #ifdef QAGAME
-	#if !defined(MACOS_X) && !defined(__GCC__)
+	#if !defined(MACOS_X) && !defined(__GCC__) && !defined(__GNUC__)
 		typedef struct gentity_s gentity_t;
 	#endif
 	gentity_t *G_PlayEffectID( const int fxID, vec3_t org, vec3_t ang );
