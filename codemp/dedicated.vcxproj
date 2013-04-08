@@ -75,7 +75,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>botlib.lib;odbc32.lib;odbccp32.lib;wsock32.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>botlib.lib;odbc32.lib;odbccp32.lib;wsock32.lib;Winmm.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ProgramDatabaseFile>$(IntDir)$(ProjectName).pdb</ProgramDatabaseFile>
@@ -86,6 +86,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
       <AdditionalLibraryDirectories>libs/win32</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
     </Link>
     <Midl>
       <TypeLibraryName>$(IntDir)$(ProjectName).tlb</TypeLibraryName>
@@ -247,8 +248,6 @@
     <ClInclude Include="RMG\RM_Objective.h" />
     <ClInclude Include="RMG\RM_Path.h" />
     <ClInclude Include="RMG\RM_Terrain.h" />
-    <ClInclude Include="zlib32\deflate.h" />
-    <ClInclude Include="zlib32\inflate.h" />
     <ClInclude Include="zlib32\zip.h" />
   </ItemGroup>
   <ItemGroup>
@@ -366,9 +365,7 @@
     <ClCompile Include="rmg\rm_objective.cpp" />
     <ClCompile Include="rmg\rm_path.cpp" />
     <ClCompile Include="rmg\rm_terrain.cpp" />
-    <ClCompile Include="zlib32\deflate.cpp" />
-    <ClCompile Include="zlib32\inflate.cpp" />
-    <ClCompile Include="zlib32\zipcommon.cpp" />
+    <ClCompile Include="zlib\ioapi.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="win32\dedicated.rc" />
