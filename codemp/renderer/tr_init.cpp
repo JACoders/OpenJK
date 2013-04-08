@@ -866,7 +866,6 @@ void R_PrintLongString(const char *string) {
 
 void GfxInfo_f( void ) 
 {
-	cvar_t *sys_cpustring = Cvar_Get( "sys_cpustring", "", CVAR_ROM );
 	const char *enablestrings[] =
 	{
 		"disabled",
@@ -910,7 +909,6 @@ void GfxInfo_f( void )
 	{
 		Com_Printf ("GAMMA: software w/ %d overbright bits\n", tr.overbrightBits );
 	}
-	Com_Printf ("CPU: %s @ %s MHz\n", sys_cpustring->string, Cvar_VariableString("sys_cpuspeed") );
 
 	// rendering primitives
 	{
