@@ -7,7 +7,7 @@
 //#include "server/exe_headers.h"
 #include "tr_local.h"
 
-#include "tr_QuickSprite.h"
+#include "tr_quicksprite.h"
 
 void R_BindAnimatedImage( textureBundle_t *bundle );
 

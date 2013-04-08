@@ -1,3 +1,7 @@
+#ifndef _WIN32
+#include <inttypes.h>
+typedef int64_t __int64;
+#endif
 
 class timing_c
 {
@@ -13,6 +17,7 @@ public:
 	void Start()
 	{
 		const __int64 *s = &start;
+#ifndef __linux
 		__asm
 		{
 			push eax
@@ -28,6 +33,7 @@ public:
 			pop ebx
 			pop eax
 		}
+#endif
 	}
 	int End()
 	{

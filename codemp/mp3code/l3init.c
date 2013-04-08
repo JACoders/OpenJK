@@ -34,7 +34,7 @@ ____________________________________________________________________________*/
 #include <stdio.h>
 #include <float.h>
 #include <math.h>
-#include "L3.h"
+#include "l3.h"
 
 /* get rid of precision loss warnings on conversion */
 #ifdef _MSC_VER

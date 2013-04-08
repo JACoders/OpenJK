@@ -5,7 +5,7 @@
 
 #include "tr_local.h"
 
-#include "tr_QuickSprite.h"
+#include "tr_quicksprite.h"
 #include "tr_WorldEffects.h"
 
 
@@ -86,17 +86,17 @@ vec3_t	ssViewOrigin, ssViewRight, ssViewUp;
 
 static void R_SurfaceSpriteFrameUpdate(void)
 {
-	float dtime, dampfactor;	// Time since last update and damping time for wind changes
 	float ratio;
 	vec3_t ang, diff, retwindvec;
 	float targetspeed;
 	vec3_t up={0,0,1};
+	float dampfactor, dtime;
 
 	if (backEnd.refdef.time == lastSSUpdateTime)
 		return;
 
 	if (backEnd.refdef.time < lastSSUpdateTime)
-	{	// Time is BEFORE the last update time, so reset everything.
+	{
 		curWindGust = 5;
 		curWindSpeed = r_windSpeed->value;
 		nextGustTime = 0;
@@ -108,7 +108,7 @@ static void R_SurfaceSpriteFrameUpdate(void)
 
 	// Adjust for an FOV.  If things look twice as wide on the screen, pretend the shaders have twice the range.
 	// ASSUMPTION HERE IS THAT "standard" fov is the first one rendered.
-	
+
 	if (!standardfovinitialized)
 	{	// This isn't initialized yet.
 		if (backEnd.refdef.fov_x > 50 && backEnd.refdef.fov_x < 135)		// I don't consider anything below 50 or above 135 to be "normal".

@@ -5,7 +5,6 @@
    Structures local to the files_* modules.
 */
 
-#include "zlib32/zip.h"
 #include "unzip.h"
 
 #define	BASEGAME			"base"

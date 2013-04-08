@@ -1030,7 +1030,11 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////
 	// Data
 	////////////////////////////////////////////////////////////////////////////////////
+#ifdef _WIN32
 	typedef typename T					TStorageTraits;
+#else
+	typedef T					TStorageTraits;
+#endif
 	typedef typename T::TArray			TTArray;
 	typedef typename T::TValue			TTValue;
 	typedef typename T::TConstructed	TTConstructed;

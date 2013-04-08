@@ -7,9 +7,7 @@
 #if !defined(CM_DRAW_H_INC)
 #define CM_DRAW_H_INC
 
-#ifndef __linux__
 #include "qcommon/platform.h"
-#endif
 
 // calc offset into image array for a pixel at (x,y)
 #define PIXPOS(x,y,stride) (((y)*(stride))+(x))
