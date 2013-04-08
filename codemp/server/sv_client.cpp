@@ -137,7 +137,7 @@ void SV_AuthorizeIpPacket( netadr_t from ) {
 		if (!r) {
 			NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, "print\nAwaiting Authorization\n" );
 		} else {
-			sprintf(ret, "print\n%s\n", r);
+			Com_sprintf(ret, sizeof(ret), "print\n%s\n", r);
 			NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, ret );
 		}
 		// clear the challenge record so it won't timeout and let them through
@@ -149,7 +149,7 @@ void SV_AuthorizeIpPacket( netadr_t from ) {
 	if (!r) {
 		NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, "print\nAuthorization Failed\n" );
 	} else {
-		sprintf(ret, "print\n%s\n", r);
+		Com_sprintf(ret, sizeof(ret), "print\n%s\n", r);
 		NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, ret );
 	}
 

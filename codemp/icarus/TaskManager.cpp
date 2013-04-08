@@ -571,7 +571,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 					return false;
 				}
 
-				sprintf( (char *) tempBuffer, "%f", temp );
+				Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f", temp );
 				*value = (char *) tempBuffer;
 			}
 			
@@ -588,7 +588,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 					return false;
 				}
 
-				sprintf( (char *) tempBuffer, "%f %f %f", vval[0], vval[1], vval[2] );
+				Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f %f %f", vval[0], vval[1], vval[2] );
 				*value = (char *) tempBuffer;
 			}
 			
@@ -614,7 +614,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 
 		ret = ( m_owner->GetInterface())->I_Random( min, max );
 
-		sprintf( (char *) tempBuffer, "%f", ret );
+		Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f", ret );
 		*value = (char *) tempBuffer;
 
 		return true;
@@ -634,7 +634,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 			return false;
 		}
 
-		sprintf( (char *) tempBuffer, "%f %f %f", vector[0], vector[1], vector[2] );
+		Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f %f %f", vector[0], vector[1], vector[2] );
 		*value = (char *) tempBuffer;
 
 		return true;
@@ -647,7 +647,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 	if ( bm->GetID() == TK_INT )
 	{
 		float fval = (float) (*(int *) block->GetMemberData( memberNum++ ));
-		sprintf( (char *) tempBuffer, "%f", fval );
+		Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f", fval );
 		*value = (char *) tempBuffer;
 
 		return true;
@@ -655,7 +655,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 	else if ( bm->GetID() == TK_FLOAT )
 	{
 		float fval = *(float *) block->GetMemberData( memberNum++ );
-		sprintf( (char *) tempBuffer, "%f", fval );
+		Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f", fval );
 		*value = (char *) tempBuffer;
 
 		return true;
@@ -671,7 +671,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 			if ( GetFloat( entID, block, memberNum, vval[i] ) == false )
 				return false;
 
-			sprintf( (char *) tempBuffer, "%f %f %f", vval[0], vval[1], vval[2] );
+			Com_sprintf( tempBuffer, sizeof(tempBuffer), "%f %f %f", vval[0], vval[1], vval[2] );
 			*value = (char *) tempBuffer;
 		}
 		

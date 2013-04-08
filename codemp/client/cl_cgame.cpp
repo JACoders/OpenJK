@@ -6,7 +6,7 @@
 
 #include "client.h"
 
-#include "game/botlib.h"
+#include "botlib/botlib.h"
 
 #include "RMG/RM_Headers.h"
 

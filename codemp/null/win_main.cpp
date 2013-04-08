@@ -196,7 +196,7 @@ void QDECL Sys_Error( const char *error, ... ) {
     MSG        msg;
 
 	va_start (argptr, error);
-	vsprintf (text, error, argptr);
+	Q_vsnprintf(text, sizeof(text), error, argptr);
 	va_end (argptr);
 
 	Conbuf_AppendText( text );
@@ -516,13 +516,13 @@ static qboolean Sys_ScanForCD( void ) {
 			
 			if (Result && (strcmpi(VolumeName,"JEDIOUTCAST") == 0 ) )
 			{
-				sprintf (test, "%s%s\\%s",drive, CD_BASEDIR, CD_EXE);
+				Com_sprintf (test, sizeof(test), "%s%s\\%s",drive, CD_BASEDIR, CD_EXE);
 				f = fopen( test, "r" );
 				if ( f ) {
 					fclose (f);
 					return qtrue;
 				} else {
-					sprintf(test, "%s%s\\%s", drive, CD_BASEDIR, CD_EXE_LINUX);
+					Com_sprintf (test, sizeof(test), "%s%s\\%s", drive, CD_BASEDIR, CD_EXE_LINUX);
 					f = fopen( test, "r" );
 					if ( f ) {
 						fclose (f);

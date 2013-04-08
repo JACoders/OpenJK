@@ -343,7 +343,7 @@ bool ICARUS_RegisterScript( const char *name, qboolean bCalledDuringInterrogate 
 	if ( ei != ICARUS_BufferList.end() )
 		return (bCalledDuringInterrogate)?false:true;
 	
-	sprintf((char *) newname, "%s%s", name, IBI_EXT );	
+	Com_sprintf( newname, sizeof(newname), "%s%s", name, IBI_EXT );
 
 
 	// small update here, if called during interrogate, don't let gi.FS_ReadFile() complain because it can't
@@ -622,7 +622,7 @@ void ICARUS_PrecacheEnt( sharedEntity_t *ent )
 
 		if ( GetIDForString( BSTable, ent->behaviorSet[i] ) == -1 )
 		{//not a behavior set
-			sprintf((char *) newname, "%s/%s", Q3_SCRIPT_DIR, ent->behaviorSet[i] );
+			Com_sprintf( newname, sizeof(newname), "%s/%s", Q3_SCRIPT_DIR, ent->behaviorSet[i] );
 
 			//Precache this, and all internally referenced scripts
 			ICARUS_InterrogateScript( newname );
