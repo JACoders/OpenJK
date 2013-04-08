@@ -255,9 +255,6 @@ bool cEncryptedFile::GetKey(char *KeyUser, char *KeyPassword)
 		Connection->Print("Info: Name '%s'\r\n", temp);
 		RegCloseKey(entry);
 
-extern int Sys_GetProcessorId( void );
-		Connection->Print("Info: procId: 0x%x\r\n", Sys_GetProcessorId() );
-
 #include "../qcommon/stv_version.h"
 		Connection->Print("Info: Version '" Q3_VERSION " " __DATE__ "'\r\n");
 
