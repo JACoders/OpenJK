@@ -5,11 +5,11 @@
 
 #include "client.h"
 #include "qcommon/stringed_ingame.h"
-#include "ghoul2/g2_local.h"
+#include "ghoul2/G2_local.h"
 #ifdef _DONETPROFILE_
 #include "qcommon/INetProfile.h"
 #endif
-#include "zlib32/zip.h"
+#include "../zlib/zlib.h"
 
 static char hiddenCvarVal[128];
 
@@ -491,7 +491,7 @@ void CL_ParseRMG ( msg_t* msg )
 	{
 		// Read the heightmap
 		memset(&zdata, 0, sizeof(z_stream));
-		inflateInit ( &zdata, Z_SYNC_FLUSH );		
+		inflateInit ( &zdata/*, Z_SYNC_FLUSH*/ );
 
 		MSG_ReadData ( msg, heightmap1, clc.rmgHeightMapSize );
 
@@ -499,7 +499,7 @@ void CL_ParseRMG ( msg_t* msg )
 		zdata.avail_in = clc.rmgHeightMapSize;
 		zdata.next_out = (unsigned char*)clc.rmgHeightMap;
 		zdata.avail_out = MAX_HEIGHTMAP_SIZE;
-		inflate (&zdata);
+		inflate (&zdata,Z_SYNC_FLUSH );
 
 		clc.rmgHeightMapSize = zdata.total_out;
 
@@ -516,7 +516,7 @@ void CL_ParseRMG ( msg_t* msg )
 	{	
 		// Read the flatten map
 		memset(&zdata, 0, sizeof(z_stream));
-		inflateInit ( &zdata, Z_SYNC_FLUSH );
+		inflateInit ( &zdata/*, Z_SYNC_FLUSH*/ );
 
 		MSG_ReadData ( msg, heightmap1, size );
 
@@ -524,7 +524,7 @@ void CL_ParseRMG ( msg_t* msg )
 		zdata.avail_in = clc.rmgHeightMapSize;
 		zdata.next_out = (unsigned char*)clc.rmgFlattenMap;
 		zdata.avail_out = MAX_HEIGHTMAP_SIZE;
-		inflate (&zdata );
+		inflate (&zdata, Z_SYNC_FLUSH);
 		inflateEnd(&zdata);
 	}
 	else
