@@ -1213,10 +1213,6 @@ void CGCam_Shake( float intensity, int duration )
 	client_camera.shake_intensity = intensity;
 	client_camera.shake_duration = duration;
 	client_camera.shake_start = cg.time;
-#ifdef _IMMERSION
-	// FIX ME: This is far too weak... but I don't want it to interfere with other effects.
-	cgi_FF_Shake( int(intensity * 625), duration );	// 625 = (10000 / MAX_SHAKE_INTENSITY)
-#endif // _IMMERSION
 }
 
 /*

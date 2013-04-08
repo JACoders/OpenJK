@@ -5,23 +5,6 @@
 
 // this file is only included when building a dll
 
-
-
-
-#ifdef _IMMERSION
-#include "../ff/ff.h"
-#else
-/////////////////////  this is a bit kludgy, but it only gives access to one
-//							enum table because of the #define. May get changed.
-#define CGAME_ONLY
-#include "../client/fffx.h"
-//
-/////////////////////
-#endif // _IMMERSION
-
-
-
-
 //prototypes
 extern void CG_PreInit();
 
@@ -237,64 +220,6 @@ void	cgi_S_StartBackgroundTrack( const char *intro, const char *loop, qboolean b
 float	cgi_S_GetSampleLength( sfxHandle_t sfx ) {
 	return syscall( CG_S_GETSAMPLELENGTH, sfx);
 }
-
-#ifdef _IMMERSION
-
-void	cgi_FF_Start( ffHandle_t ff, int clientNum ){
-	syscall( CG_FF_START, ff, clientNum );
-}
-
-void	cgi_FF_Stop( ffHandle_t ff, int clientNum ){
-	syscall( CG_FF_STOP, ff, clientNum );
-}
-
-void	cgi_FF_StopAll( void ){
-	syscall( CG_FF_STOPALL );
-}
-
-void	cgi_FF_Shake( int intensity, int duration ){
-	syscall( CG_FF_SHAKE, intensity, duration );
-}
-
-ffHandle_t cgi_FF_Register( const char *name, int channel ){
-	return syscall( CG_FF_REGISTER, name, channel );
-}
-
-void	cgi_FF_AddLoopingForce( ffHandle_t handle, int entNum ){
-	syscall( CG_FF_ADDLOOPINGFORCE, handle, entNum );
-}
-
-#else
-
-void	cgi_FF_StartFX( int iFX ){
-	syscall( CG_FF_STARTFX, iFX );
-}
-
-void	cgi_FF_EnsureFX( int iFX ){
-	syscall( CG_FF_ENSUREFX, iFX );
-}
-
-void	cgi_FF_StopFX( int iFX ){
-	syscall( CG_FF_STOPFX, iFX );
-}
-
-void	cgi_FF_StopAllFX( void ){
-	syscall( CG_FF_STOPALLFX );
-}
-
-#endif // _IMMERSION
-
-#ifdef _XBOX
-
-void	cgi_FF_Xbox_Shake( float intensity, int duration ){
-	syscall( CG_FF_XBOX_SHAKE, PASSFLOAT(intensity), duration );
-}
-
-void	cgi_FF_Xbox_Damage( int damage, float xpos ) {
-	syscall( CG_FF_XBOX_DAMAGE, damage, PASSFLOAT(xpos) );
-}
-
-#endif
 
 void	cgi_R_LoadWorldMap( const char *mapname ) {
 	syscall( CG_R_LOADWORLDMAP, mapname );

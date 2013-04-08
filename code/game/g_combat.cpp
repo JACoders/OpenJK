@@ -4138,16 +4138,6 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		{
 			self->client->ps.SaberDeactivate();
 			G_SoundIndexOnEnt( self, CHAN_AUTO, self->client->ps.saber[0].soundOff );
-#ifdef _IMMERSION
-			if ( self->client->playerTeam == TEAM_PLAYER )
-			{
-				G_Force( self, G_ForceIndex( "fffx/weapons/saber/saberoff", FF_CHANNEL_WEAPON ) );
-			}
-			else
-			{
-				G_Force( self, G_ForceIndex( "fffx/weapons/saber/enemy_saber_off", FF_CHANNEL_WEAPON ) );
-			}
-#endif // _IMMERSION
 		}
 	}
 	else if ( self->s.weapon != WP_BRYAR_PISTOL )

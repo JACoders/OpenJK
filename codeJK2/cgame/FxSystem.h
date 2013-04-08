@@ -58,10 +58,6 @@ struct SFxHelper
 	void	PlaySound( vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx );
 	int		RegisterSound( const char *sound );
 
-#ifdef _IMMERSION
-	void	PlayForce( int entityNum, ffHandle_t ff );
-	ffHandle_t RegisterForce( const char *force, int channel );
-#endif // _IMMERSION
 	// Physics/collision
 	void	Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max, vec3_t end, int skipEntNum, int flags );
 

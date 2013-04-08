@@ -91,14 +91,6 @@ typedef struct weaponData_s
 	char	altChargeSnd[64];	// alt sound to start when the weapon initiates the charging sequence
 	char	selectSnd[64];		// the sound to play when this weapon gets selected
 
-#ifdef _IMMERSION
-	char	firingFrc[64];
-	char	altFiringFrc[64];
-	char	stopFrc[64];
-	char	chargeFrc[64];
-	char	altChargeFrc[64];
-	char	selectFrc[64];
-#endif // _IMMERSION
 	int		ammoIndex;			// Index to proper ammo slot
 	int		ammoLow;			// Count when ammo is low
 

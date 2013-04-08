@@ -133,9 +133,6 @@ enum EPrimType
 	Cylinder,
 	Emitter,		// emits effects as it moves, can also attach a chunk
 	Sound,
-#ifdef _IMMERSION
-	Force,
-#endif // _IMMERSION
 	Decal,			// projected onto architecture
 	OrientedParticle,
 	Electricity,
@@ -299,9 +296,6 @@ public:
 	bool ParseModels( CGPValue *grp );
 	bool ParseShaders( CGPValue *grp );
 	bool ParseSounds( CGPValue *grp );
-#ifdef _IMMERSION
-	bool ParseForces( CGPValue *grp );
-#endif // _IMMERSION
 
 	bool ParseImpactFxStrings( CGPValue *grp );
 	bool ParseDeathFxStrings( CGPValue *grp );
@@ -416,11 +410,7 @@ private:
 	void	AddPrimitiveToEffect( SEffectTemplate *fx, CPrimitiveTemplate *prim );
 	int		ParseEffect( const char *file, CGPGroup *base );
 
-#ifdef _IMMERSION
-	void	CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t axis[3], int lateTime, int hitEntNum = -1 );
-#else
 	void	CreateEffect( CPrimitiveTemplate *fx, vec3_t origin, vec3_t axis[3], int lateTime );
-#endif // _IMMERSION
 	void	CreateEffect( CPrimitiveTemplate *fx, int clientID, int lateTime );
 
 public:
@@ -441,10 +431,6 @@ public:
 
 	void	PlayEffect( const char *file, int clientID );
 
-#ifdef _IMMERSION	// for ff-system
-	void	PlayEffect( int id, int clientNum, vec3_t org, vec3_t fwd );
-	void	PlayEffect( const char *file, int clientNum, vec3_t origin, vec3_t forward );
-#endif // _IMMERSION
 	void	AddScheduledEffects( void );								// call once per CGame frame
 
 	int		NumScheduledFx()	{ return mFxSchedule.size();	}

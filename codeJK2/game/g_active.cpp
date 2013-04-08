@@ -1794,9 +1794,6 @@ void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd )
 		(*ucmd)->buttons &= ~BUTTON_USE;
 
 		G_Sound( ent, G_SoundIndex( "sound/weapons/emplaced/emplaced_dismount.mp3" ));
-#ifdef _IMMERSION
-		G_Force( ent, G_ForceIndex( "fffx/weapons/emplaced/emplaced_dismount", FF_CHANNEL_TOUCH ) );
-#endif // _IMMERSION
 	}
 	else
 	{
@@ -2137,9 +2134,6 @@ extern cvar_t	*g_skippingcin;
 			{
 				// already zooming, so must be wanting to turn it off
 				G_Sound( ent, G_SoundIndex( "sound/weapons/disruptor/zoomend.wav" ));
-#ifdef _IMMERSION
-				G_Force( ent, G_ForceIndex( "fffx/weapons/disruptor/zoomend", FF_CHANNEL_WEAPON ) );
-#endif // _IMMERSION
 				cg.zoomMode = 0;
 				cg.zoomTime = cg.time;
 				cg.zoomLocked = qfalse;

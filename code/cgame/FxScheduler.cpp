@@ -537,12 +537,6 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 		{
 			type = Sound;
 		}
-#ifdef _IMMERSION
-		else if ( !stricmp( grpName, "forcefeedback" ))
-		{
-			type = Force;
-		}
-#endif // _IMMERSION
 		else if ( !stricmp( grpName, "cylinder" ))
 		{
 			type = Cylinder;
@@ -824,60 +818,6 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t forward, bool isPor
 	PlayEffect( id, origin, axis, -1, -1, isPortal );
 }
 
-#ifdef _IMMERSION
-//------------------------------------------------------
-// PlayEffect
-//	Handles scheduling an effect so all the components
-//	happen at the specified time.  Takes a fwd vector
-//	and builds a right and up vector
-//	
-// Input:
-//	Effect file id, the origin, a fwd vector, and clientNum
-//
-// Return:
-//	none
-//------------------------------------------------------
-void CFxScheduler::PlayEffect( int id, int clientNum, vec3_t origin, vec3_t forward, bool isPortal )
-{
-	vec3_t	axis[3];
-
-	// Take the forward vector and create two arbitrary but perpendicular vectors
-	VectorCopy( forward, axis[0] );
-	MakeNormalVectors( forward, axis[1], axis[2] );
-
-	PlayEffect( id, origin, axis, -1, clientNum, isPortal );
-}
-
-//------------------------------------------------------
-// PlayEffect
-//	Handles scheduling an effect so all the components
-//	happen at the specified time.  Takes a forward vector
-//	and uses this to complete the axis field.
-//	
-// Input:
-//	Effect file name, the origin, and a forward vector
-//
-// Return:
-//	none
-//------------------------------------------------------
-void CFxScheduler::PlayEffect( const char *file, int clientNum, vec3_t origin, vec3_t forward, bool isPortal )
-{
-	char	sfile[MAX_QPATH];
-
-	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
-
-	PlayEffect( mEffectIDs[sfile], clientNum, origin, forward, isPortal );
-
-#ifndef FINAL_BUILD
-	if ( mEffectIDs[sfile] == 0 )
-	{
-		theFxHelper.Print( "CFxScheduler::PlayEffect unregistered/non-existent effect: %s\n", file );		
-	}
-#endif
-}
-
-#endif // _IMMERSION
 //------------------------------------------------------
 // PlayEffect
 //	Handles scheduling an effect so all the components
@@ -1145,16 +1085,6 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, int clientID, int delay
 			theFxHelper.PlaySound( NULL, clientID, CHAN_WEAPON, fx->mMediaHandles.GetHandle() );
 		}
 		break;
-
-#ifdef _IMMERSION
-	//---------
-	case Force:
-	//---------
-
-		// Analogous to Sound (same assumption defined in RegisterForce)
-		theFxHelper.PlayForce( clientID, fx->mMediaHandles.GetHandle() );
-		break;
-#endif // _IMMERSION
 	//---------
 	case Light:
 	//---------
@@ -1244,13 +1174,6 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 	int	modelNum = 0, boltNum = -1;
 	int	entityNum = entNum;
 
-#ifdef _IMMERSION
-	entityNum =
-	(	entNum < -1					// HACKHACKHACK (negative if effect plays uncentered on an entity)
-	?	FF_CLIENT( entNum )			// decode -2 as entNum=0, -3 as entNum=1, ...
-	:	entNum						// default
-	);
-#endif // _IMMERSION
 	if ( boltInfo > 0 )
 	{
 		// extract the wraith ID from the bolt info
@@ -1314,11 +1237,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 			// if the delay is so small, we may as well just create this bit right now
 			if ( delay < 1 && !forceScheduling && !isPortal )
 			{
-#ifdef _IMMERSION
-				if ( boltInfo == -1 && entNum > -1 )
-#else
 				if ( boltInfo == -1 && entNum != -1 )
-#endif // _IMMERSION
 				{
 					// Find out where the entity currently is
 					CreateEffect( prim, cg_entities[entNum].lerpOrigin, axis, -delay );
@@ -1344,11 +1263,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 
 				if ( boltInfo == -1 )
 				{
-#ifdef _IMMERSION
-					if ( entNum <= -1 )
-#else
 					if ( entNum == -1 )
-#endif // _IMMERSION
 					{
 						// we aren't bolting, so make sure the spawn system knows this by putting -1's in these fields
 						sfx->mBoltNum = -1;
@@ -1502,18 +1417,6 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 				}
 				else if ((*itr)->mBoltNum == -1)
 				{// normal effect
-	#ifdef _IMMERSION
-					int entNum = (*itr)->mEntNum;
-					int hitEntNum =	(	entNum < -1 ?	FF_CLIENT( entNum )	:	entNum	);
-
-					CreateEffect
-					(	(*itr)->mpTemplate
-					,	(entNum >= 0 ? cg_entities[entNum].lerpOrigin : (*itr)->mOrigin)
-					,	(*itr)->mAxis
-					,	theFxHelper.mTime - (*itr)->mStartTime
-					,	hitEntNum
-					);
-	#else
 					if ( (*itr)->mEntNum != -1 )
 					{
 						// Find out where the entity currently is
@@ -1527,7 +1430,6 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 									(*itr)->mOrigin, (*itr)->mAxis, 
 									theFxHelper.mTime - (*itr)->mStartTime );
 					}
-	#endif // _IMMERSION
 				}
 				else
 				{	//bolted on effect				
@@ -1806,11 +1708,7 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 
 	// handle RGB color, but only for types that will use it
 	//---------------------------------------------------------------------------
-#ifdef _IMMERSION
-	if ( fx->mType != Sound && fx->mType != FxRunner && fx->mType != CameraShake && fx->mType != Force )
-#else
 	if ( fx->mType != Sound && fx->mType != FxRunner && fx->mType != CameraShake )
-#endif // _IMMERSION
 	{
 		if ( fx->mSpawnFlags & FX_RGB_COMPONENT_INTERP )
 		{
@@ -2023,17 +1921,6 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 			theFxHelper.PlaySound( org, ENTITYNUM_NONE, CHAN_AUTO, fx->mMediaHandles.GetHandle() );
 		}
 		break;
-
-#ifdef _IMMERSION
-	//---------
-	case Force:
-	//---------
-
-		if ( clientID > -1 )	// Fix me: Allow or abolish FF_LOCAL_CLIENT?
-		theFxHelper.PlayForce( clientID, fx->mMediaHandles.GetHandle() );
-		break;
-
-#endif // _IMMERSION
 	//---------
 	case FxRunner:
 	//---------

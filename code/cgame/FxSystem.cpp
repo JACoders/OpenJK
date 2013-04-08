@@ -200,16 +200,3 @@ int SFxHelper::GetOriginAxisFromBolt(const centity_t &cent, int modelNum, int bo
 	axis[2][2] = boltMatrix.matrix[2][2];
 	return doesBoltExist;
 }
-#ifdef _IMMERSION
-//------------------------------------------------------
-ffHandle_t SFxHelper::RegisterForce( const char *force, int channel )
-{
-	return cgi_FF_Register( force, channel );
-}
-
-//------------------------------------------------------
-void SFxHelper::PlayForce( int entityNum, ffHandle_t ff )
-{
-	cgi_FF_Start( ff, entityNum );
-}
-#endif // _IMMERSION

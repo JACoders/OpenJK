@@ -6,10 +6,6 @@
 
 #include "ui_local.h"
 
-#ifdef _IMMERSION
-#include "../ff/ff.h"
-#endif // _IMMERSION
-
 // this file is only included when building a dll
 // syscalls.asm is included instead when building a qvm
 
@@ -95,20 +91,6 @@ sfxHandle_t	trap_S_RegisterSound( const char *sample, qboolean compressed )
 {
 	return S_RegisterSound(sample);
 }
-
-#ifdef _IMMERSION
-
-void trap_FF_Start( ffHandle_t ff )
-{
-	FF_AddForce( ff );
-}
-
-ffHandle_t trap_FF_Register( const char *name, int channel )
-{
-	return FF_Register( name, channel, qtrue );
-}
-
-#endif // _IMMERSION
 
 void trap_Key_SetBinding( int keynum, const char *binding ) 
 {

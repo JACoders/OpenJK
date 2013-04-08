@@ -1500,61 +1500,6 @@ bool CPrimitiveTemplate::ParseSounds( CGPValue *grp )
 	return true;
 }
 
-#ifdef _IMMERSION
-//------------------------------------------------------
-// ParseForces
-//	Reads in a group of forces and registers them
-//
-// input:
-//	Parse group that contains the list of forces to parse
-//
-// return:
-//	success of parse operation.
-//------------------------------------------------------
-bool CPrimitiveTemplate::ParseForces( CGPValue *grp )
-{
-	const char	*val;
-	int			handle;
-
-	if ( grp->IsList() )
-	{
-		// If we are a list we have to do separate processing
-		CGPObject *list = grp->GetList();
-
-		while ( list )
-		{
-			// name is actually the value contained in the list
-			val = list->GetName();
-
-			// Assumes FF_CHANNEL_WEAPON because sound mechanism assumes this
-			handle = theFxHelper.RegisterForce( val, FF_CHANNEL_WEAPON );
-			mMediaHandles.AddHandle( handle );
-
-			list = (CGPValue *)list->GetNext();
-		}
-	}
-	else
-	{
-		// Let's get a value
-		val = grp->GetTopValue();
-
-		if ( val )
-		{
-			// Assumes FF_CHANNEL_WEAPON because sound mechanism assumes this
-			handle = theFxHelper.RegisterForce( val, FF_CHANNEL_WEAPON );
-			mMediaHandles.AddHandle( handle );
-		}
-		else
-		{
-			// empty "list"
-			theFxHelper.Print( "CPrimitiveTemplate::ParseForces called with an empty list!\n" );
-			return false;
-		}
-	}
-
-	return true;
-}
-#endif // _IMMERSION
 //------------------------------------------------------
 // ParseModels
 //	Reads in a group of models and registers them
@@ -2198,12 +2143,6 @@ bool CPrimitiveTemplate::ParsePrimitive( CGPGroup *grp )
 		{
 			ParseSounds( pairs );
 		}
-#ifdef _IMMERSION
-		else if ( !stricmp( key, "forces" ) || !stricmp( key, "force" ))
-		{
-			ParseForces( pairs );
-		}
-#endif // _IMMERSION
 		else if ( !stricmp( key, "impactfx" ))
 		{
 			ParseImpactFxStrings( pairs );

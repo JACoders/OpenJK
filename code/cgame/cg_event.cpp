@@ -9,13 +9,6 @@
 
 #include "..\game\anims.h"
 
-#ifdef _XBOX
-#include "..\client\fffx.h"
-#endif
-
-#ifdef _IMMERSION
-#include "../ff/ff.h"
-#endif // _IMMERSION
 extern qboolean CG_TryPlayCustomSound( vec3_t origin, int entityNum, soundChannel_t channel, const char *soundName, int customSoundSet );
 extern void FX_KothosBeam( vec3_t start, vec3_t end );
 
@@ -239,26 +232,7 @@ static void CG_UseItem( centity_t *cent )
 
 }
 
-#ifdef _IMMERSION
-qboolean CG_ConfigForce( int index, const char *&name, int &channel )
-{
-	qboolean result = qfalse;
-	const char *configstring = CG_ConfigString( CS_FORCES + index );
 
-	result = qboolean
-	(	configstring
-	&&	sscanf( configstring, "%d", &channel ) == 1
-	);
-
-	if ( result )
-	{
-		name = strchr( configstring, ',' ) + 1;
-		result = qboolean( name != (char *)1 );
-	}
-
-	return result;
-}
-#endif // _IMMERSION
 /*
 ==============
 CG_EntityEvent
@@ -299,73 +273,22 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	//
 	// movement generated events
 	//
-/*	case EV_FOOTSTEP:
-		DEBUGNAME("EV_FOOTSTEP");
-		if (cg_footsteps.integer) {
-			if ( cent->gent && cent->gent->s.number == 0 && !cg.renderingThirdPerson )//!cg_thirdPerson.integer )
-			{//Everyone else has keyframed footsteps in animevents.cfg
-#ifdef _IMMERSION
-				int index = rand()&3;
-				cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_NORMAL ][index] );
-				cgi_FF_Start( cgs.media.footstepForces[ FOOTSTEP_NORMAL ][ index ], es->number );
-#else
-				cgi_S_StartSound (NULL, es->number, CHAN_BODY, 
-					cgs.media.footsteps[ FOOTSTEP_NORMAL ][rand()&3] );
-#endif // _IMMERSION
-			}
-		}
-		break;
-	case EV_FOOTSTEP_METAL:
-		DEBUGNAME("EV_FOOTSTEP_METAL");
-		if (cg_footsteps.integer) 
-		{
-			if ( cent->gent && cent->gent->s.number == 0 && !cg.renderingThirdPerson )
-			{//Everyone else has keyframed footsteps in animevents.cfg
-#ifdef _IMMERSION
-				int index = rand()&3;
-				cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_METAL ][index] );
-				cgi_FF_Start( cgs.media.footstepForces[ FOOTSTEP_METAL ][ index ], es->number );
-#else
-				cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_METAL ][rand()&3] );
-#endif // _IMMERSION
-			}
-		}
-		break;
-*/
 	case EV_FOOTSPLASH:
 		DEBUGNAME("EV_FOOTSPLASH");
 		if (cg_footsteps.integer) {
-#ifdef _IMMERSION
-			int index = rand()&3;
-			cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_SPLASH ][index] );
-			cgi_FF_Start( cgs.media.footstepForces[ FOOTSTEP_SPLASH ][ index ], es->number );
-#else
 			cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_SPLASH ][rand()&3] );
-#endif // _IMMERSION
 		}
 		break;
 	case EV_FOOTWADE:
 		DEBUGNAME("EV_FOOTWADE");
 		if (cg_footsteps.integer) {
-#ifdef _IMMERSION
-			int index = rand()&3;
-			cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_WADE ][index] );
-			cgi_FF_Start( cgs.media.footstepForces[ FOOTSTEP_WADE ][ index ], es->number );
-#else
 			cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_WADE ][rand()&3] );
-#endif // _IMMERSION
 		}
 		break;
 	case EV_SWIM:
 		DEBUGNAME("EV_SWIM");
 		if (cg_footsteps.integer) {
-#ifdef _IMMERSION
-				int index = rand()&3;
-				cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_SWIM ][index] );
-				cgi_FF_Start( cgs.media.footstepForces[ FOOTSTEP_SWIM ][ index ], es->number );
-#else
 			cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_SWIM ][rand()&3] );
-#endif // _IMMERSION
 		}
 		break;
 
@@ -373,9 +296,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	case EV_FALL_SHORT:
 		DEBUGNAME("EV_FALL_SHORT");
 		cgi_S_StartSound( NULL, es->number, CHAN_AUTO, cgs.media.landSound  );
-#ifdef _IMMERSION
-		cgi_FF_Start( cgs.media.landForce, es->number );
-#endif // _IMMERSION
 		if ( clientNum == cg.predicted_player_state.clientNum ) {
 			// smooth landing z changes
 			cg.landChange = -8;
@@ -389,9 +309,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		if ( g_entities[es->number].health <= 0 ) 
 		{//dead
 			cgi_S_StartSound( NULL, es->number, CHAN_AUTO, cgs.media.landSound  );
-#ifdef _IMMERSION
-			cgi_FF_Start( cgs.media.landForce, es->number );
-#endif // _IMMERSION
 		}
 		else if ( g_entities[es->number].s.weapon == WP_SABER 
 			|| (g_entities[es->number].client && (g_entities[es->number].client->ps.forcePowersKnown&(1<<FP_LEVITATION))) )
@@ -407,9 +324,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			cg.landChange = -16;
 			cg.landTime = cg.time;
 		}
-#ifdef _XBOX
-		cgi_FF_StartFX( fffx_FallingMedium );
-#endif
 		//FIXME: maybe kick up some dust?
 		break;
 	case EV_FALL_FAR:
@@ -422,9 +336,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			cg.landChange = -24;
 			cg.landTime = cg.time;
 		}
-#ifdef _XBOX
-		cgi_FF_StartFX( fffx_FallingFar );
-#endif
 		//FIXME: maybe kick up some dust?
 		break;
 
@@ -479,49 +390,31 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	case EV_LAVA_TOUCH:
 		DEBUGNAME("EV_LAVA_TOUCH");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.lavaInSound );
-#ifdef _IMMERSION
-		cgi_FF_Start( cgs.media.watrInSound, es->number );
-#endif // _IMMERSION
 		break;
 	
 	case EV_LAVA_LEAVE:
 		DEBUGNAME("EV_LAVA_LEAVE");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.lavaOutSound );
-#ifdef _IMMERSION
-		cgi_FF_Start( cgs.media.watrOutSound, es->number );
-#endif // _IMMERSION
 		break;
 	
 	case EV_LAVA_UNDER:
 		DEBUGNAME("EV_LAVA_UNDER");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.lavaUnSound );
-#ifdef _IMMERSION
-		cgi_FF_Start( cgs.media.watrUnSound, es->number );
-#endif // _IMMERSION
 		break;
 	
 	case EV_WATER_TOUCH:
 		DEBUGNAME("EV_WATER_TOUCH");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.watrInSound );
-#ifdef _IMMERSION
-		cgi_FF_Start( cgs.media.watrInSound, es->number );
-#endif // _IMMERSION
 		break;
 	
 	case EV_WATER_LEAVE:
 		DEBUGNAME("EV_WATER_LEAVE");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.watrOutSound );
-#ifdef _IMMERSION
-		cgi_FF_Start( cgs.media.watrOutSound, es->number );
-#endif // _IMMERSION
 		break;
 	
 	case EV_WATER_UNDER:
 		DEBUGNAME("EV_WATER_UNDER");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.watrUnSound );
-#ifdef _IMMERSION
-		cgi_FF_Start( cgs.media.watrUnSound, es->number );
-#endif // _IMMERSION
 		break;
 	
 	case EV_WATER_CLEAR:
@@ -560,9 +453,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			}
 			item = &bg_itemlist[ index ];
 			cgi_S_StartSound (NULL, es->number, CHAN_AUTO,	cgi_S_RegisterSound( item->pickup_sound ) );
-#ifdef _IMMERSION
-			cgi_FF_Start( cgi_FF_Register( item->pickup_force, FF_CHANNEL_TOUCH ), es->number );
-#endif // _IMMERSION
 
 			// show icon and name on status bar
 			if ( es->number == cg.snap->ps.clientNum ) {
@@ -605,17 +495,11 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		{
 			// custom select sound
 			cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgi_S_RegisterSound( weaponData[cg.weaponSelect].selectSnd ));
-#ifdef _IMMERSION
-			cgi_FF_Start( cgi_FF_Register( weaponData[cg.weaponSelect].selectFrc, FF_CHANNEL_WEAPON ), es->number );
-#endif // _IMMERSION
 		}
 		else
 		{
 			// generic sound
 			cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.selectSound );
-#ifdef _IMMERSION
-			cgi_FF_Start( cgs.media.selectForce, es->number );
-#endif // _IMMERSION
 		}
 		break;
 
@@ -841,49 +725,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		}
 		break;
 
-#ifdef _IMMERSION
-	case EV_ENTITY_FORCE:				// Plays force on entity
-		DEBUGNAME("EV_ENTITY_FORCE");
-		if ( !cgs.force_precache[ es->eventParm ] )
-		{
-			const char *name;
-			int channel;
-			if ( CG_ConfigForce( es->eventParm, name, channel ) )
-			{
-				cgs.force_precache[ es->eventParm ] = cgi_FF_Register( name, channel );
-			}
-		}
-		cgi_FF_Start( cgs.force_precache[ es->eventParm ], es->number );
-		break;
-
-	case EV_GLOBAL_FORCE:
-	case EV_AREA_FORCE:
-		DEBUGNAME("EV_AREA_FORCE");	// Plays force for anyone
-		if ( !cgs.force_precache[ es->eventParm ] )
-		{
-			const char *name;
-			int channel;
-			if ( CG_ConfigForce( es->eventParm, name, channel ) )
-			{
-				cgs.force_precache[ es->eventParm ] = cgi_FF_Register( name, channel );
-			}
-		}
-		cgi_FF_Start( cgs.force_precache[ es->eventParm ], es->number );
-		break;
-
-	case EV_FORCE_STOP:
-		DEBUGNAME("EV_FORCE_STOP");
-		if ( es->eventParm < 0 )
-		{
-			cgi_FF_StopAll( );
-		}
-		else if ( es->eventParm < MAX_FORCES && cgs.force_precache[ es->eventParm ] )
-		{
-			cgi_FF_Stop( cgs.force_precache[ es->eventParm ], es->number );
-		}
-		
-		break;
-#endif // _IMMERSION
 	case EV_DRUGGED:
 		DEBUGNAME("EV_DRUGGED");
 		if ( cent->gent && cent->gent->owner && cent->gent->owner->s.number == 0 )
@@ -959,13 +800,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				CrossProduct( axis[0], axis[1], axis[2] );
 
 				// the entNum the effect may be attached to
-	#ifdef _IMMERSION
-				if ( es->saberActive )
-				{
-					theFxScheduler.PlayEffect( s, cent->lerpOrigin, axis, -1, FF_CLIENT( es->otherEntityNum ), portalEnt );
-				}
-				else
-	#endif // _IMMERSION
 				if ( es->otherEntityNum )
 				{
 					theFxScheduler.PlayEffect( s, cent->lerpOrigin, axis, -1, es->otherEntityNum, portalEnt );

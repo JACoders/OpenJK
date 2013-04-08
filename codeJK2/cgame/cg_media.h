@@ -255,28 +255,6 @@ typedef struct {
 	//blaster reflection sounds
 	sfxHandle_t blasterReflectSound[3];
 
-#ifdef _IMMERSION
-	ffHandle_t grenadeBounce1Force;
-	ffHandle_t grenadeBounce2Force;
-
-	ffHandle_t selectForce;
-
-	ffHandle_t footstepForces[FOOTSTEP_TOTAL][4];
-
-	ffHandle_t noAmmoForce;
-
-	ffHandle_t landForce;
-	ffHandle_t messageLitForce;
-
-	ffHandle_t watrInForce;
-	ffHandle_t watrOutForce;
-	ffHandle_t watrUnForce;
-
-	ffHandle_t zoomStartForce;
-	ffHandle_t zoomLoopForce;
-	ffHandle_t zoomEndForce;
-	ffHandle_t disruptorZoomLoopForce;
-#endif // _IMMERSION
 } cgMedia_t;
 
 
@@ -344,9 +322,6 @@ typedef struct {
 	//
 	qhandle_t		model_draw[MAX_MODELS];
 	sfxHandle_t		sound_precache[MAX_SOUNDS];
-#ifdef _IMMERSION
-	ffHandle_t		force_precache[MAX_FORCES];
-#endif // _IMMERSION
 // Ghoul2 start
 	qhandle_t		skins[MAX_CHARSKINS];
 

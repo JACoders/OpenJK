@@ -1,13 +1,10 @@
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C++ Express 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameJKA", "game\game.vcproj", "{52D48192-6C71-4D4A-BE26-D05C0E02939C}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameJKA", "game\game.vcxproj", "{52D48192-6C71-4D4A-BE26-D05C0E02939C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exe", "starwars.vcproj", "{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}"
-	ProjectSection(ProjectDependencies) = postProject
-		{52D48192-6C71-4D4A-BE26-D05C0E02939C} = {52D48192-6C71-4D4A-BE26-D05C0E02939C}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exe", "starwars.vcxproj", "{1BE1D500-A2DB-4585-B3D8-50B8D60C5685}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameJK2", "..\codeJK2\game\gameJK2.vcproj", "{E8D119C5-C6C4-4E78-83F0-5918678700A5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameJK2", "..\codeJK2\game\gameJK2.vcxproj", "{E8D119C5-C6C4-4E78-83F0-5918678700A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

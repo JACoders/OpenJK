@@ -983,33 +983,6 @@ sfxHandle_t	cgi_S_RegisterSound( const char *sample );		// returns buzz if not f
 void	cgi_S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bForceStart );	// empty name stops music
 float	cgi_S_GetSampleLength( sfxHandle_t sfx);
 
-
-#ifdef _IMMERSION
-void	cgi_FF_Start( ffHandle_t ff, int clientNum );
-void	cgi_FF_Ensure( ffHandle_t ff, int clientNum );
-void	cgi_FF_Stop( ffHandle_t ff, int clientNum );
-void	cgi_FF_StopAll( void );
-void	cgi_FF_Shake( int intensity, int duration );
-ffHandle_t	cgi_FF_Register( const char *name, int channel );
-void	cgi_FF_AddLoopingForce( ffHandle_t handle, int entNum );
-#else
-// I've made these into ints instead of original typedefs to cut down on rebuild time
-//	if I update the module they're in. No point in rebuilding all CGAME modules...
-//
-void	cgi_FF_StartFX( int iFX );
-void	cgi_FF_EnsureFX( int iFX );
-void	cgi_FF_StopFX( int iFX );
-void	cgi_FF_StopAllFX( void );
-
-#endif // _IMMERSION
-
-#ifdef _XBOX
-void	cgi_FF_Xbox_Shake( float intensity, int duration );
-void	cgi_FF_Xbox_Damage( int damage, float xpos );
-#endif
-
-
-
 void	cgi_R_LoadWorldMap( const char *mapname );
 
 // all media should be registered during level startup to prevent

@@ -271,10 +271,6 @@ void G_PlayEffect( int fxID, vec3_t origin, vec3_t fwd );
 void G_PlayEffect( int fxID, vec3_t origin, vec3_t axis[3] );
 void G_PlayEffect( int fxID, const int modelIndex, const int boltIndex, const int entNum);
 void G_PlayEffect( int fxID, int entNum, vec3_t fwd );
-#ifdef _IMMERSION
-void G_PlayEffect( const char *name, int clientNum, vec3_t origin, vec3_t fwd );
-void G_PlayEffect( int fxID, int clientNum, vec3_t origin, vec3_t fwd );
-#endif // _IMMERSION
 
 void	G_KillBox (gentity_t *ent);
 gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);
@@ -290,13 +286,6 @@ gentity_t *G_TempEntity( vec3_t origin, int event );
 void	G_Sound( gentity_t *ent, int soundIndex );
 void	G_FreeEntity( gentity_t *e );
 
-#ifdef _IMMERSION
-int		G_ForceIndex( const char *name, int channel );
-void	G_Force( gentity_t *ent, int forceIndex );
-void	G_ForceArea( gentity_t *ent, int forceIndex );
-void	G_ForceBroadcast( gentity_t *ent, int forceIndex );
-void	G_ForceStop( gentity_t* ent, int forceIndex );
-#endif // _IMMERSION
 void	G_TouchTriggers (gentity_t *ent);
 void	G_TouchTeamClients (gentity_t *ent);
 void	G_TouchSolids (gentity_t *ent);

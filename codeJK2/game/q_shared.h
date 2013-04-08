@@ -1175,9 +1175,6 @@ typedef struct {
 
 #define MAX_SUB_BSP			32
 
-#ifdef _IMMERSION
-#define MAX_FORCES			96
-#endif // _IMMERSION
 #define	MAX_SUBMODELS		512		// nine bits
 
 #define MAX_FX				128
@@ -1215,12 +1212,7 @@ Ghoul2 Insert End
 #define	CS_SKYBOXORG		(CS_MODELS+MAX_MODELS)		//rww - skybox info
 
 #define	CS_SOUNDS			(CS_SKYBOXORG+1)
-#ifdef _IMMERSION
-#define CS_FORCES			(CS_SOUNDS+MAX_SOUNDS)
-#define CS_PLAYERS			(CS_FORCES+MAX_FORCES)
-#else
 #define	CS_PLAYERS			(CS_SOUNDS+MAX_SOUNDS)
-#endif // _IMMERSION
 #define	CS_LIGHT_STYLES		(CS_PLAYERS+MAX_CLIENTS)
 #define CS_TERRAINS			(CS_LIGHT_STYLES + (MAX_LIGHT_STYLES*3))
 #define CS_BSP_MODELS		(CS_TERRAINS + MAX_TERRAINS)
@@ -2095,9 +2087,5 @@ typedef enum
 
 
 #include "../game/genericparser2.h"
-
-#ifdef _IMMERSION
-#include "../ff/ff_public.h"
-#endif // _IMMERSION
 
 #endif	// __Q_SHARED_H
