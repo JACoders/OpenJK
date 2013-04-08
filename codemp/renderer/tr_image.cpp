@@ -1015,7 +1015,7 @@ void R_Images_DeleteLightMaps(void)
 		if (pImage->imgName[0] == '*' && strstr(pImage->imgName,"lightmap"))	// loose check, but should be ok
 		{
 			R_Images_DeleteImageContents(pImage);
-#ifndef __linux__
+#ifdef _WIN32
 			itImage = AllocatedImages.erase(itImage);
 			bEraseOccured = qtrue;
 #else
@@ -1119,7 +1119,7 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 				Com_DPrintf (S_COLOR_RED "Dumping image \"%s\"\n",pImage->imgName);
 
 				R_Images_DeleteImageContents(pImage);
-#ifndef __linux__
+#ifdef _WIN32
 				itImage = AllocatedImages.erase(itImage);
 				bEraseOccured = qtrue;
 #else

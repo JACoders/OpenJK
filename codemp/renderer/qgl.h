@@ -22,7 +22,7 @@
 
 #elif defined(MACOS_X)
 
-#include "macosx_glimp.h"
+#include "../macosx/macosx_glimp.h"
 
 #elif defined( __linux__ )
 
@@ -357,7 +357,7 @@ extern	void ( APIENTRY * qglTexSubImage3DEXT) (GLenum, GLint, GLint, GLint, GLin
 
 #elif defined(MACOS_X)
 // This includes #ifdefs for optional logging and GL error checking after every GL call as well as #defines to prevent incorrect usage of the non-'qgl' versions of the GL API.
-#include "macosx_qgl.h"
+#include "../macosx/macosx_qgl.h"
 
 #else
 
