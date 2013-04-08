@@ -83,6 +83,9 @@ DLL_ONLY=false
     BASE_CFLAGS += -DDLL_ONLY
   endif
 
+  ifeq ($(PLATFORM),darwin) #TODO: This should not be mixed in with linux stuff
+    BASE_CFLAGS += -DMACOS_X
+  endif
 
   #GL_CFLAGS = -I$(MESADIR)/include -I/usr/X11R6/include
   GL_CFAGS = -I/usr/X11R6/include 
@@ -145,7 +148,11 @@ DO_DEBUG_CC=$(CC) $(DEBUG_CFLAGS) -o $@ -c $<
 DO_SHLIB_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) -use_msasm -o $@ -c $<
 DO_SHLIB_DEBUG_CC=$(CC) $(DEBUG_CFLAGS) $(SHLIBCFLAGS) -o $@ -c $<
 DO_AS=$(CC) $(CFLAGS) -DELF -x assembler-with-cpp -o $@ -c $<
-DO_NASM=nasm -f elf -o $@  $<
+ifeq ($(PLATFORM),darwin) #TODO: This should not be mixed in with linux stuff
+  DO_NASM=nasm -f macho -o $@  $<
+else
+  DO_NASM=nasm -f elf -o $@  $<
+endif
 DO_DED_CC=$(CC) -DDEDICATED -DC_ONLY $(CFLAGS) -use_msasm -o $@ -c $<
 DO_DED_CC2=$(CC) -D__linux2__ -DDEDICATED -DC_ONLY $(CFLAGS) -o $@ -c $<
 DO_DED_CPP=$(CXX) -DDEDICATED -DC_ONLY $(CFLAGS) -o $@ -c $<

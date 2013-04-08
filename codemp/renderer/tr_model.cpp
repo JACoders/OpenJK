@@ -385,7 +385,7 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 					//CachedModel.pModelDiskImage = NULL;	// REM for reference, erase() call below negates the need for it.
 					bAtLeastoneModelFreed = qtrue;
 				}
-#ifndef __linux__
+#ifdef _WIN32
 				itModel = CachedModels->erase(itModel);
 				bEraseOccured = qtrue;
 #else
@@ -445,7 +445,7 @@ static void RE_RegisterModels_DumpNonPure(void)
 					Z_Free(CachedModel.pModelDiskImage);	
 					//CachedModel.pModelDiskImage = NULL;	// REM for reference, erase() call below negates the need for it.
 				}
-#ifndef __linux__
+#ifdef _WIN32
 				itModel = CachedModels->erase(itModel);
 				bEraseOccured = qtrue;
 #else
@@ -499,7 +499,7 @@ static void RE_RegisterModels_DeleteAll(void)
 		return;	//argh!
 	}
 
-#ifndef __linux__
+#ifdef _WIN32
 	for (CachedModels_t::iterator itModel = CachedModels->begin(); itModel != CachedModels->end(); )
 	{
 		CachedEndianedModelBinary_t &CachedModel = (*itModel).second;

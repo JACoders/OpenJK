@@ -220,12 +220,21 @@ float FloatSwap( const float *f );
 		return fi;
 	}
 
-	#define BigShort
-	static inline short LittleShort( short l ) { return ShortSwap( l ); }
-	#define BigLong
-	static inline int LittleLong( int l ) { return LongSwap( l ); }
-	#define BigFloat
-	static inline float LittleFloat( const float l ) { return FloatSwap( &l ); }
+    #ifdef __ppc__
+        #define LittleShort(x) ShortSwap(x)
+        #define LittleLong(x) LongSwap(x)
+        #define LittleFloat(x) FloatSwap(&x)
+        #define BigShort
+        #define BigLong
+        #define BigFloat
+    #elif defined __i386__
+        #define LittleShort
+        #define LittleLong
+        #define LittleFloat
+        #define BigShort(x) ShortSwap(x)
+        #define BigLong(x) LongSwap(x)
+        #define BigFloat(x) FloatSwap(&x)
+    #endif
 
 #endif // MACOS_X
 

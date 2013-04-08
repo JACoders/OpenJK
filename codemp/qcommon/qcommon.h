@@ -946,7 +946,7 @@ void	Sys_Print( const char *msg );
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (bool baseTime = false);
 
-#if __linux__
+#if defined(__linux__) || defined(MACOS_X)
 extern "C" void	Sys_SnapVector( float *v );
 
 #else
