@@ -184,7 +184,7 @@ float FloatSwap( const float *f );
 	#define __cdecl
 	#define __declspec(x)
 	#define stricmp strcasecmp
-	#define ID_INLINE inline 
+	#define ID_INLINE /*inline*/ 
 
 	#ifdef __ppc__
 		#define CPUSTRING "MacOSX-ppc"
