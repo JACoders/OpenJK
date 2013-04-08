@@ -30,9 +30,9 @@ typedef struct _GUID {
   WORD  Data3;
   BYTE  Data4[8];
 } GUID;
-#define strnicmp strncasecmp
-#define strcmpi strcasecmp
-#define stricmp strcasecmp
+#define strnicmp Q_stricmpn
+#define strcmpi Q_stricmpn
+#define stricmp Q_stricmp
 #define RGB(r,g,b)          ((COLORREF)((r) | ((g) << 8) | ((b) << 16)))
 #endif
 
