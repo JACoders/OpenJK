@@ -27,7 +27,20 @@ void CG_ParseServerinfo( void ) {
 	cgs.timelimit = atoi( Info_ValueForKey( info, "timelimit" ) );
 	cgs.maxclients = 1;
 	mapname = Info_ValueForKey( info, "mapname" );
-	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
+	// FIXME: Some sort of fucked up mangling of the string going on..this needs to be addressed ASAP --eez
+	if(!strncmp(mapname, "maps/", 5))
+	{
+		Q_strncpyz( cgs.mapname, mapname, sizeof( cgs.mapname ) );
+	}
+	else if(!strncmp(mapname, "aps/", 5))
+	{
+		// u_u
+		Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "m%s", mapname );
+	}
+	else
+	{
+		Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
+	}
 	char *p = strrchr(mapname,'/');
 	strcpy( cgs.stripLevelName[0], p?p+1:mapname );
 	strupr( cgs.stripLevelName[0] );
