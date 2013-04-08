@@ -1286,9 +1286,9 @@ WinMain
 //int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 int main(int argc, char **argv)
 {
-	char		cwd[MAX_OSPATH];
-	char *cmdline;
-	int i,len;
+	char	cwd[MAX_OSPATH];
+	int		i;
+	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
 //	int			startTime, endTime;
 
     // should never get a previous instance in Win32
@@ -1296,15 +1296,19 @@ int main(int argc, char **argv)
 //        return 0;
 //	}
 
-	// merge the command line, this is kinda silly
-	for (len = 1, i = 1; i < argc; i++)
-		len += strlen(argv[i]) + 1;
-	cmdline = (char *)malloc(len);
-	*cmdline = 0;
-	for (i = 1; i < argc; i++) {
-		if (i > 1)
-			strcat(cmdline, " ");
-		strcat(cmdline, argv[i]);
+	// Concatenate the command line for passing to Com_Init
+	for( i = 1; i < argc; i++ )
+	{
+		const qboolean containsSpaces = (qboolean)(strchr(argv[i], ' ') != NULL);
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), argv[ i ] );
+
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), " " );
 	}
 
 //	g_wv.hInstance = hInstance;
@@ -1328,7 +1332,7 @@ int main(int argc, char **argv)
 
 	Sys_InitStreamThread();
 
-	Com_Init( cmdline );
+	Com_Init( commandLine );
 
 	NET_Init();
 
