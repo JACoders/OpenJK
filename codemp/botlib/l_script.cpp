@@ -33,7 +33,7 @@ typedef enum {qfalse, qtrue}	qboolean;
 #ifdef BOTLIB
 //include files for usage in the bot library
 #include "qcommon/q_shared.h"
-#include "game/botlib.h"
+#include "botlib.h"
 #include "be_interface.h"
 #include "l_script.h"
 #include "l_memory.h"
@@ -221,7 +221,7 @@ void QDECL ScriptError(script_t *script, char *str, ...)
 	if (script->flags & SCFL_NOERRORS) return;
 
 	va_start(ap, str);
-	vsprintf(text, str, ap);
+	Q_vsnprintf(text, sizeof(text), str, ap);
 	va_end(ap);
 #ifdef BOTLIB
 	botimport.Print(PRT_ERROR, "file %s, line %d: %s\n", script->filename, script->line, text);
@@ -247,7 +247,7 @@ void QDECL ScriptWarning(script_t *script, char *str, ...)
 	if (script->flags & SCFL_NOWARNINGS) return;
 
 	va_start(ap, str);
-	vsprintf(text, str, ap);
+	Q_vsnprintf(text, sizeof(text), str, ap);
 	va_end(ap);
 #ifdef BOTLIB
 	botimport.Print(PRT_WARNING, "file %s, line %d: %s\n", script->filename, script->line, text);
@@ -406,7 +406,7 @@ int PS_ReadEscapeCharacter(script_t *script, char *ch)
 	script->script_p++;
 	//store the escape character
 	*ch = c;
-	//succesfully read escape character
+	//successfully read escape character
 	return 1;
 } //end of the function PS_ReadEscapeCharacter
 //============================================================================
@@ -897,7 +897,7 @@ int PS_ReadToken(script_t *script, token_t *token)
 	} //end if
 	//copy the token into the script structure
 	Com_Memcpy(&script->token, token, sizeof(token_t));
-	//succesfully read a token
+	//successfully read a token
 	return 1;
 } //end of the function PS_ReadToken
 //============================================================================
@@ -1103,7 +1103,7 @@ void StripDoubleQuotes(char *string)
 {
 	if (*string == '\"')
 	{
-		strcpy(string, string+1);
+		memmove(string, string+1, strlen(string));
 	} //end if
 	if (string[strlen(string)-1] == '\"')
 	{
@@ -1120,7 +1120,7 @@ void StripSingleQuotes(char *string)
 {
 	if (*string == '\'')
 	{
-		strcpy(string, string+1);
+		memmove(string, string+1, strlen(string));
 	} //end if
 	if (string[strlen(string)-1] == '\'')
 	{
@@ -1141,13 +1141,21 @@ long double ReadSignedFloat(script_t *script)
 	PS_ExpectAnyToken(script, &token);
 	if (!strcmp(token.string, "-"))
 	{
+		if(!PS_ExpectAnyToken(script, &token))
+		{
+			ScriptError(script, "Missing float value");
+			return 0;
+		}
+
 		sign = -1;
-		PS_ExpectTokenType(script, TT_NUMBER, 0, &token);
-	} //end if
-	else if (token.type != TT_NUMBER)
+	}
+	
+	if (token.type != TT_NUMBER)
 	{
-		ScriptError(script, "expected float value, found %s\n", token.string);
-	} //end else if
+		ScriptError(script, "expected float value, found %s", token.string);
+		return 0;
+	}
+
 	return sign * token.floatvalue;
 } //end of the function ReadSignedFloat
 //============================================================================
@@ -1164,13 +1172,21 @@ signed long int ReadSignedInt(script_t *script)
 	PS_ExpectAnyToken(script, &token);
 	if (!strcmp(token.string, "-"))
 	{
+		if(!PS_ExpectAnyToken(script, &token))
+		{
+			ScriptError(script, "Missing integer value");
+			return 0;
+		}
+
 		sign = -1;
-		PS_ExpectTokenType(script, TT_NUMBER, TT_INTEGER, &token);
-	} //end if
-	else if (token.type != TT_NUMBER || token.subtype == TT_FLOAT)
+	}
+
+	if (token.type != TT_NUMBER || token.subtype == TT_FLOAT)
 	{
-		ScriptError(script, "expected integer value, found %s\n", token.string);
-	} //end else if
+		ScriptError(script, "expected integer value, found %s", token.string);
+		return 0;
+	}
+	
 	return sign * token.intvalue;
 } //end of the function ReadSignedInt
 //============================================================================
@@ -1413,6 +1429,6 @@ void PS_SetBaseFolder(char *path)
 #ifdef BSPC
 	sprintf(basefolder, path);
 #else
-	Com_sprintf(basefolder, sizeof(basefolder), path);
+	Com_sprintf(basefolder, sizeof(basefolder), "%s", path);
 #endif
 } //end of the function PS_SetBaseFolder

@@ -17,7 +17,7 @@
 extern aas_t aasworld;
 
 //AAS error message
-void QDECL AAS_Error(char *fmt, ...);
+void QDECL AAS_Error(char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 //set AAS initialized
 void AAS_SetInitialized(void);
 //setup AAS with the given number of entities and clients
@@ -34,10 +34,6 @@ int AAS_StartFrame(float time);
 int AAS_Initialized(void);
 //returns true if the AAS file is loaded
 int AAS_Loaded(void);
-//returns the model name from the given index
-char *AAS_ModelFromIndex(int index);
-//returns the index from the given model name
-int AAS_IndexFromModel(char *modelname);
 //returns the current time
 float AAS_Time(void);
 //

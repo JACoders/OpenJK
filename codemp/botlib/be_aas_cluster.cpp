@@ -112,7 +112,7 @@ int AAS_UpdatePortal(int areanum, int clusternum)
 	//
 	if (portalnum == aasworld.numportals)
 	{
-		AAS_Error("no portal of area %d", areanum);
+		AAS_Error("no portal of area %d\n", areanum);
 		return qtrue;
 	} //end if
 	//
@@ -139,7 +139,7 @@ int AAS_UpdatePortal(int areanum, int clusternum)
 	} //end else
 	if (aasworld.portalindexsize >= AAS_MAX_PORTALINDEXSIZE)
 	{
-		AAS_Error("AAS_MAX_PORTALINDEXSIZE");
+		AAS_Error("AAS_MAX_PORTALINDEXSIZE\n");
 		return qtrue;
 	} //end if
 	//set the area cluster number to the negative portal number
@@ -166,7 +166,7 @@ int AAS_FloodClusterAreas_r(int areanum, int clusternum)
 	//
 	if (areanum <= 0 || areanum >= aasworld.numareas)
 	{
-		AAS_Error("AAS_FloodClusterAreas_r: areanum out of range");
+		AAS_Error("AAS_FloodClusterAreas_r: areanum out of range\n");
 		return qfalse;
 	} //end if
 	//if the area is already part of a cluster
@@ -176,7 +176,7 @@ int AAS_FloodClusterAreas_r(int areanum, int clusternum)
 		//
 		//there's a reachability going from one cluster to another only in one direction
 		//
-		AAS_Error("cluster %d touched cluster %d at area %d\r\n",
+		AAS_Error("cluster %d touched cluster %d at area %d\n",
 				clusternum, aasworld.areasettings[areanum].cluster, areanum);
 		return qfalse;
 	} //end if
@@ -392,7 +392,7 @@ int AAS_FindClusters(void)
 			continue;
 		if (aasworld.numclusters >= AAS_MAX_CLUSTERS)
 		{
-			AAS_Error("AAS_MAX_CLUSTERS");
+			AAS_Error("AAS_MAX_CLUSTERS\n");
 			return qfalse;
 		} //end if
 		cluster = &aasworld.clusters[aasworld.numclusters];
@@ -431,7 +431,7 @@ void AAS_CreatePortals(void)
 		{
 			if (aasworld.numportals >= AAS_MAX_PORTALS)
 			{
-				AAS_Error("AAS_MAX_PORTALS");
+				AAS_Error("AAS_MAX_PORTALS\n");
 				return;
 			} //end if
 			portal = &aasworld.portals[aasworld.numportals];
@@ -758,7 +758,7 @@ int AAS_GetAdjacentAreasWithLessPresenceTypes_r(int *areanums, int numareas, int
 			{
 				if (numareas >= MAX_PORTALAREAS)
 				{
-					AAS_Error("MAX_PORTALAREAS");
+					AAS_Error("MAX_PORTALAREAS\n");
 					return numareas;
 				} //end if
 				numareas = AAS_GetAdjacentAreasWithLessPresenceTypes_r(areanums, numareas, otherareanum);
