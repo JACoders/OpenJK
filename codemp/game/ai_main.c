@@ -17,15 +17,15 @@
 
 #include "g_local.h"
 #include "qcommon/q_shared.h"
-#include "botlib.h"		//bot lib interface
-#include "be_aas.h"
-#include "be_ea.h"
-#include "be_ai_char.h"
-#include "be_ai_chat.h"
-#include "be_ai_gen.h"
-#include "be_ai_goal.h"
-#include "be_ai_move.h"
-#include "be_ai_weap.h"
+#include "botlib/botlib.h"		//bot lib interface
+#include "botlib/be_aas.h"
+#include "botlib/be_ea.h"
+#include "botlib/be_ai_char.h"
+#include "botlib/be_ai_chat.h"
+#include "botlib/be_ai_gen.h"
+#include "botlib/be_ai_goal.h"
+#include "botlib/be_ai_move.h"
+#include "botlib/be_ai_weap.h"
 //
 #include "ai_main.h"
 #include "w_saber.h"

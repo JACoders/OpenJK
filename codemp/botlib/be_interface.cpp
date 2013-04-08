@@ -141,7 +141,7 @@ int Export_BotLibSetup(void)
 			else if(*basedir)
 				Com_sprintf(logfilename, sizeof(logfilename), "%s%c%s%cbotlib.log", homedir, PATH_SEP, basedir, PATH_SEP);
 			else
-				Com_sprintf(logfilename, sizeof(logfilename), "%s%c" BASEGAME "%cbotlib.log", homedir, PATH_SEP, PATH_SEP);
+				Com_sprintf(logfilename, sizeof(logfilename), "%s%c" "base" "%cbotlib.log", homedir, PATH_SEP, PATH_SEP); //fixme use BASEGAME define
 		}
 		else
 			Com_sprintf(logfilename, sizeof(logfilename), "botlib.log");

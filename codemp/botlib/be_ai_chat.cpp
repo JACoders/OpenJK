@@ -21,12 +21,12 @@
 #include "l_utils.h"
 #include "l_log.h"
 #include "aasfile.h"
-#include "game/botlib.h"
-#include "game/be_aas.h"
+#include "botlib.h"
+#include "be_aas.h"
 #include "be_aas_funcs.h"
 #include "be_interface.h"
-#include "game/be_ea.h"
-#include "game/be_ai_chat.h"
+#include "be_ea.h"
+#include "be_ai_chat.h"
 
 
 //escape character
