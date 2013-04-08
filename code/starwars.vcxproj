@@ -863,13 +863,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="smartheap\SMRTHEAP.C">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="mp3code\cdct.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
@@ -2071,9 +2064,6 @@
     <ClInclude Include="client\OpenAL\altypes.h" />
     <ClInclude Include="client\OpenAL\alu.h" />
     <ClInclude Include="client\OpenAL\alut.h" />
-    <ClInclude Include="smartheap\HEAPAGNT.H" />
-    <ClInclude Include="smartheap\SMRTHEAP.H" />
-    <ClInclude Include="smartheap\smrtheap.hpp" />
     <ClInclude Include="win32\afxres.h" />
     <ClInclude Include="game\anims.h" />
     <ClInclude Include="game\b_public.h" />
@@ -2194,8 +2184,6 @@
     <ClInclude Include="qcommon\MiniHeap.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="SHDebug\HA312W32.DLL" />
-    <None Include="SHDebug\SHW32.DLL" />
     <None Include="win32\background.bmp" />
     <None Include="win32\clear.bmp" />
     <None Include="EaxMan.dll" />

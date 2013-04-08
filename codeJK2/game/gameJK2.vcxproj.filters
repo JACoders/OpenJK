@@ -412,9 +412,6 @@
     <ClCompile Include="q_shared.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
-    <ClCompile Include="..\smartheap\SMRTHEAP.C">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
     <ClCompile Include="..\qcommon\tri_coll_test.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
@@ -632,11 +629,5 @@
     <None Include="game.def">
       <Filter>Resource Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuildStep Include="..\smartheap\HAW32M.LIB" />
-    <CustomBuildStep Include="..\base\ext_data\items.dat" />
-    <CustomBuildStep Include="..\base\ext_data\NPCs.cfg" />
-    <CustomBuildStep Include="..\base\ext_data\weapons.dat" />
   </ItemGroup>
 </Project>
