@@ -612,7 +612,7 @@ static void SV_Status_f( void )
 		else
 		{
 			ping = cl->ping < 9999 ? cl->ping : 9999;
-			sprintf(state, "%4i", ping);
+			Com_sprintf(state, sizeof(state), "%4i", ping);
 		}
 
 		ps = SV_GameClientNum( i );

@@ -1431,8 +1431,8 @@ void CL_CheckForResend( void ) {
 		Info_SetValueForKey( info, "qport", va("%i", port ) );
 		Info_SetValueForKey( info, "challenge", va("%i", clc.challenge ) );
 
-		sprintf(data, "connect \"%s\"", info );
-		NET_OutOfBandData( NS_CLIENT, clc.serverAddress, (unsigned char *)data, strlen(data) );
+		Com_sprintf(data, sizeof(data), "connect \"%s\"", info );
+		NET_OutOfBandData( NS_CLIENT, clc.serverAddress, (byte *)data, strlen(data) );
 
 		// the most current userinfo has been sent, so watch for any
 		// newer changes to userinfo variables
@@ -2054,7 +2054,7 @@ void CL_Frame ( int msec ) {
 		char mess[256];
 		if(!(frameCount&0x1f))
 		{
-			sprintf(mess,"Frame rate=%f\n\n",1000.0f*(1.0/(avgFrametime/32.0f)));
+			Com_sprintf(mess,sizeof(mess),"Frame rate=%f\n\n",1000.0f*(1.0/(avgFrametime/32.0f)));
 	//		OutputDebugString(mess);
 			Com_Printf(mess);
 			avgFrametime=0.0f;
@@ -2127,7 +2127,7 @@ void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
 	char		msg[MAXPRINTMSG];
 	
 	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
+	Q_vsnprintf(msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	if ( print_level == PRINT_ALL ) {

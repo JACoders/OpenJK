@@ -1063,7 +1063,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 	switch ( id )
 	{
 	case TK_FLOAT:
-		sprintf( (char *) tempString1, "%.3f", *(float *) bm->GetData() );
+		Com_sprintf( tempString1, sizeof(tempString1), "%.3f", *(float *) bm->GetData() );
 		p1 = (char *) tempString1;
 		break;
 
@@ -1077,7 +1077,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 			vec[i] = *(float *) bm->GetData();
 		}
 
-		sprintf( (char *) tempString1, "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
+		Com_sprintf( tempString1, sizeof(tempString1), "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
 		p1 = (char *) tempString1;
 
 		break;
@@ -1110,7 +1110,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 					if ( m_ie->I_GetFloat( m_ownerID, type, name, &fVal ) == false)
 						return false;
 
-					sprintf( (char *) tempString1, "%.3f", fVal );
+					Com_sprintf( tempString1, sizeof(tempString1), "%.3f", fVal );
 					p1 = (char *) tempString1;
 				}
 				
@@ -1123,7 +1123,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 					if ( m_ie->I_GetFloat( m_ownerID, type, name, &fVal ) == false)
 						return false;
 
-					sprintf( (char *) tempString1, "%d", (int) fVal );
+					Com_sprintf( tempString1, sizeof(tempString1), "%d", (int) fVal );
 					p1 = (char *) tempString1;
 				}
 				break;
@@ -1142,7 +1142,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 					if ( m_ie->I_GetVector( m_ownerID, type, name, vVal ) == false)
 						return false;
 
-					sprintf( (char *) tempString1, "%.3f %.3f %.3f", vVal[0], vVal[1], vVal[2] );
+					Com_sprintf( tempString1, sizeof(tempString1), "%.3f %.3f %.3f", vVal[0], vVal[1], vVal[2] );
 					p1 = (char *) tempString1;
 				}
 				
@@ -1163,7 +1163,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 			//A float value is returned from the function
 			t1 = TK_FLOAT;
 
-			sprintf( (char *) tempString1, "%.3f", m_ie->I_Random( min, max ) );
+			Com_sprintf( tempString1, sizeof(tempString1), "%.3f", m_ie->I_Random( min, max ) );
 			p1 = (char *) tempString1;
 		}
 
@@ -1186,7 +1186,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 				return false;
 			}
 
-			sprintf( (char *) tempString1, "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
+			Com_sprintf( tempString1, sizeof(tempString1), "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
 			p1 = (char *) tempString1;
 
 			break;
@@ -1233,7 +1233,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 	switch ( id )
 	{
 	case TK_FLOAT:
-		sprintf( (char *) tempString2, "%.3f", *(float *) bm->GetData() );
+		Com_sprintf( tempString2, sizeof(tempString2), "%.3f", *(float *) bm->GetData() );
 		p2 = (char *) tempString2;
 		break;
 
@@ -1247,7 +1247,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 			vec[i] = *(float *) bm->GetData();
 		}
 
-		sprintf( (char *) tempString2, "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
+		Com_sprintf( tempString2, sizeof(tempString2), "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
 		p2 = (char *) tempString2;
 
 		break;
@@ -1280,7 +1280,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 					if ( m_ie->I_GetFloat( m_ownerID, type, name, &fVal ) == false)
 						return false;
 
-					sprintf( (char *) tempString2, "%.3f", fVal );
+					Com_sprintf( tempString2, sizeof(tempString2), "%.3f", fVal );
 					p2 = (char *) tempString2;
 				}
 				
@@ -1293,7 +1293,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 					if ( m_ie->I_GetFloat( m_ownerID, type, name, &fVal ) == false)
 						return false;
 
-					sprintf( (char *) tempString2, "%d", (int) fVal );
+					Com_sprintf( tempString2, sizeof(tempString2), "%d", (int) fVal );
 					p2 = (char *) tempString2;
 				}
 				break;
@@ -1312,7 +1312,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 					if ( m_ie->I_GetVector( m_ownerID, type, name, vVal ) == false)
 						return false;
 
-					sprintf( (char *) tempString2, "%.3f %.3f %.3f", vVal[0], vVal[1], vVal[2] );
+					Com_sprintf( tempString2, sizeof(tempString2), "%.3f %.3f %.3f", vVal[0], vVal[1], vVal[2] );
 					p2 = (char *) tempString2;
 				}
 				
@@ -1334,7 +1334,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 			//A float value is returned from the function
 			t2 = TK_FLOAT;
 
-			sprintf( (char *) tempString2, "%.3f", m_ie->I_Random( min, max ) );
+			Com_sprintf( tempString2, sizeof(tempString2), "%.3f", m_ie->I_Random( min, max ) );
 			p2 = (char *) tempString2;
 		}
 
@@ -1358,7 +1358,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 				return false;
 			}
 
-			sprintf( (char *) tempString2, "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
+			Com_sprintf( tempString2, sizeof(tempString2), "%.3f %.3f %.3f", vec[0], vec[1], vec[2] );
 			p2 = (char *) tempString2;
 
 			break;

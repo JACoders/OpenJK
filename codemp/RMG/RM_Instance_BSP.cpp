@@ -236,7 +236,7 @@ bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 */
 
 	// Spawn in the bsp model
-	sprintf(temp, 
+	Com_sprintf(temp, sizeof(temp),
 		"{\n"
 		"\"classname\"   \"misc_bsp\"\n"
 		"\"bspmodel\"    \"%s\"\n"

@@ -120,7 +120,7 @@ bool CRMManager::LoadMission ( qboolean IsServer )
 	Cvar_VariableStringBuffer("rmg_instances", instances, MAX_QPATH);
 	Cvar_VariableStringBuffer("RMG_mission", temp, MAX_QPATH);
 	Cvar_VariableStringBuffer("rmg_map", map, MAX_QPATH);
-	sprintf(mission, "%s_%s", temp, map);
+	Com_sprintf(mission, sizeof(mission), "%s_%s", temp, map);
 	Cvar_VariableStringBuffer("rmg_course", course, MAX_QPATH);
 
 	// dump existing mission, if any

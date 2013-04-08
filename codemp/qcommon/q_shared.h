@@ -405,6 +405,11 @@ typedef int		clipHandle_t;
 
 #endif
 
+#define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
+#define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
+
+#define PADP(base, alignment)	((void *) PAD((intptr_t) (base), (alignment)))
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
