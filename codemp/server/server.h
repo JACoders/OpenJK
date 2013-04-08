@@ -157,6 +157,7 @@ typedef struct client_s {
 	int				lastUserInfoCount; //allow a certain number of changes within a certain time period -rww
 
 	int				oldServerTime;
+	qboolean		csUpdated[MAX_CONFIGSTRINGS+1];	
 
 } client_t;
 
@@ -260,7 +261,7 @@ void SV_MasterShutdown (void);
 //
 void SV_SetConfigstring( int index, const char *val );
 void SV_GetConfigstring( int index, char *buffer, int bufferSize );
-int SV_AddConfigstring (const char *name, int start, int max);
+void SV_UpdateConfigstrings( client_t *client );
 
 void SV_SetUserinfo( int index, const char *val );
 void SV_GetUserinfo( int index, char *buffer, int bufferSize );
