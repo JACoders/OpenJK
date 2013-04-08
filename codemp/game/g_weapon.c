@@ -4,7 +4,7 @@
 // perform the server side effects of a weapon firing
 
 #include "g_local.h"
-#include "be_aas.h"
+#include "botlib/be_aas.h"
 #include "bg_saga.h"
 #include "ghoul2/G2.h"
 #include "qcommon/q_shared.h"

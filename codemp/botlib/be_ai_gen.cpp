@@ -20,11 +20,11 @@
 #include "l_precomp.h"
 #include "l_struct.h"
 #include "aasfile.h"
-#include "game/botlib.h"
-#include "game/be_aas.h"
+#include "botlib.h"
+#include "be_aas.h"
 #include "be_aas_funcs.h"
 #include "be_interface.h"
-#include "game/be_ai_gen.h"
+#include "be_ai_gen.h"
 
 //===========================================================================
 //

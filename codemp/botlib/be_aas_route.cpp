@@ -22,8 +22,8 @@
 #include "l_precomp.h"
 #include "l_struct.h"
 #include "aasfile.h"
-#include "game/botlib.h"
-#include "game/be_aas.h"
+#include "botlib.h"
+#include "be_aas.h"
 #include "be_aas_funcs.h"
 #include "be_interface.h"
 #include "be_aas_def.h"
@@ -294,7 +294,7 @@ int AAS_EnableRoutingArea(int areanum, int enable)
 
 	if (areanum <= 0 || areanum >= aasworld.numareas)
 	{
-		if (bot_developer)
+		if (botDeveloper)
 		{
 			botimport.Print(PRT_ERROR, "AAS_EnableRoutingArea: areanum %d out of range\n", areanum);
 		} //end if
