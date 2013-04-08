@@ -559,6 +559,13 @@ Ghoul2 Insert End
 	Cvar_Set( "nextmap", "map_restart 0");
 //	Cvar_Set( "nextmap", va("map %s", server) );
 
+	for (i=0 ; i<sv_maxclients->integer ; i++) {
+		// save when the server started for each client already connected
+		if (svs.clients[i].state >= CS_CONNECTED) {
+			svs.clients[i].oldServerTime = svs.time;
+		}
+	}
+
 	// wipe the entire per-level structure
 	SV_ClearServer();
 	for ( i = 0 ; i < MAX_CONFIGSTRINGS ; i++ ) {
@@ -566,7 +573,7 @@ Ghoul2 Insert End
 	}
 
 	//rww - RAGDOLL_BEGIN
-	G2API_SetTime(svs.time,0);
+	G2API_SetTime(sv.time,0);
 	//rww - RAGDOLL_END
 
 	// make sure we are not paused
@@ -608,14 +615,15 @@ Ghoul2 Insert End
 	// run a few frames to allow everything to settle
 	for ( i = 0 ;i < 3 ; i++ ) {
 		//rww - RAGDOLL_BEGIN
-		G2API_SetTime(svs.time,0);
+		G2API_SetTime(sv.time,0);
 		//rww - RAGDOLL_END
-		VM_Call( gvm, GAME_RUN_FRAME, svs.time );
-		SV_BotFrame( svs.time );
+		VM_Call( gvm, GAME_RUN_FRAME, sv.time );
+		SV_BotFrame( sv.time );
+		sv.time += 100;
 		svs.time += 100;
 	}
 	//rww - RAGDOLL_BEGIN
-	G2API_SetTime(svs.time,0);
+	G2API_SetTime(sv.time,0);
 	//rww - RAGDOLL_END
 
 	// create a baseline for more efficient communications
@@ -669,11 +677,12 @@ Ghoul2 Insert End
 	}	
 
 	// run another frame to allow things to look at all the players
-	VM_Call( gvm, GAME_RUN_FRAME, svs.time );
-	SV_BotFrame( svs.time );
+	VM_Call( gvm, GAME_RUN_FRAME, sv.time );
+	SV_BotFrame( sv.time );
+	sv.time += 100;
 	svs.time += 100;
 	//rww - RAGDOLL_BEGIN
-	G2API_SetTime(svs.time,0);
+	G2API_SetTime(sv.time,0);
 	//rww - RAGDOLL_END
 
 	if ( sv_pure->integer ) {
