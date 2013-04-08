@@ -18,13 +18,86 @@ Ghoul2 Insert Start
 
 /*
 ===============
+SV_SendConfigstring
+
+Creates and sends the server command necessary to update the CS index for the
+given client
+===============
+*/
+static void SV_SendConfigstring(client_t *client, int index)
+{
+	int maxChunkSize = MAX_STRING_CHARS - 24;
+	int len;
+
+	len = strlen(sv.configstrings[index]);
+
+	if( len >= maxChunkSize ) {
+		int		sent = 0;
+		int		remaining = len;
+		char	*cmd;
+		char	buf[MAX_STRING_CHARS];
+
+		while (remaining > 0 ) {
+			if ( sent == 0 ) {
+				cmd = "bcs0";
+			}
+			else if( remaining < maxChunkSize ) {
+				cmd = "bcs2";
+			}
+			else {
+				cmd = "bcs1";
+			}
+			Q_strncpyz( buf, &sv.configstrings[index][sent],
+				maxChunkSize );
+
+			SV_SendServerCommand( client, "%s %i \"%s\"\n", cmd,
+				index, buf );
+
+			sent += (maxChunkSize - 1);
+			remaining -= (maxChunkSize - 1);
+		}
+	} else {
+		// standard cs, just send it
+		SV_SendServerCommand( client, "cs %i \"%s\"\n", index,
+			sv.configstrings[index] );
+	}
+}
+
+/*
+===============
+SV_UpdateConfigstrings
+
+Called when a client goes from CS_PRIMED to CS_ACTIVE.  Updates all
+Configstring indexes that have changed while the client was in CS_PRIMED
+===============
+*/
+void SV_UpdateConfigstrings(client_t *client)
+{
+	int index;
+
+	for( index = 0; index <= MAX_CONFIGSTRINGS; index++ ) {
+		// if the CS hasn't changed since we went to CS_PRIMED, ignore
+		if(!client->csUpdated[index])
+			continue;
+
+		// do not always send server info to all clients
+		if ( index == CS_SERVERINFO && client->gentity &&
+			(client->gentity->r.svFlags & SVF_NOSERVERINFO) ) {
+			continue;
+		}
+		SV_SendConfigstring(client, index);
+		client->csUpdated[index] = qfalse;
+	}
+}
+
+/*
+===============
 SV_SetConfigstring
 
 ===============
 */
 void SV_SetConfigstring (int index, const char *val) {
-	int		len, i;
-	int		maxChunkSize = MAX_STRING_CHARS - 24;
+	int		i;
 	client_t	*client;
 
 	if ( index < 0 || index >= MAX_CONFIGSTRINGS ) {
@@ -50,7 +123,9 @@ void SV_SetConfigstring (int index, const char *val) {
 
 		// send the data to all relevent clients
 		for (i = 0, client = svs.clients; i < sv_maxclients->integer ; i++, client++) {
-			if ( client->state < CS_PRIMED ) {
+			if ( client->state < CS_ACTIVE ) {
+				if ( client->state == CS_PRIMED )
+					client->csUpdated[ index ] = qtrue;
 				continue;
 			}
 			// do not always send server info to all clients
@@ -58,39 +133,10 @@ void SV_SetConfigstring (int index, const char *val) {
 				continue;
 			}
 
-			len = strlen( val );
-			if( len >= maxChunkSize ) {
-				int		sent = 0;
-				int		remaining = len;
-				char	*cmd;
-				char	buf[MAX_STRING_CHARS];
-
-				while (remaining > 0 ) {
-					if ( sent == 0 ) {
-						cmd = "bcs0";
-					}
-					else if( remaining < maxChunkSize ) {
-						cmd = "bcs2";
-					}
-					else {
-						cmd = "bcs1";
-					}
-					Q_strncpyz( buf, &val[sent], maxChunkSize );
-
-					SV_SendServerCommand( client, "%s %i \"%s\"\n", cmd, index, buf );
-
-					sent += (maxChunkSize - 1);
-					remaining -= (maxChunkSize - 1);
-				}
-			} else {
-				// standard cs, just send it
-				SV_SendServerCommand( client, "cs %i \"%s\"\n", index, val );
-			}
+			SV_SendConfigstring(client, index);
 		}
 	}
 }
-
-
 
 /*
 ===============
@@ -113,52 +159,6 @@ void SV_GetConfigstring( int index, char *buffer, int bufferSize ) {
 	Q_strncpyz( buffer, sv.configstrings[index], bufferSize );
 }
 
-
-/*
-================
-SV_AddConfigstring
-
-================
-*/
-int SV_AddConfigstring (const char *name, int start, int max)
-{
-	int		i;
-	
-	if (!name || !name[0])
-	{
-		return 0;
-	}
-
-	if (name[0] == '/' || name[0] == '\\')
-	{
-#if _DEBUG
-		Com_DPrintf( "WARNING: Leading slash on '%s'\n", name);
-#endif
-		name++;
-
-		if (!name[0])
-		{
-			return 0;
-		}
-	}
-
-	for (i=1 ; i < max ; i++)
-	{
-		if (sv.configstrings[start+i][0] == 0)
-		{	// Didn't find it
-			SV_SetConfigstring ((start+i), name);
-			break;
-		}
-		else if (!Q_stricmp(sv.configstrings[start+i], name))
-		{
-			return i;
-		}
-	}
-
-	return 0;
-
-}
-
 /*
 ===============
 SV_SetUserinfo
@@ -178,8 +178,6 @@ void SV_SetUserinfo( int index, const char *val ) {
 	Q_strncpyz( svs.clients[index].name, Info_ValueForKey( val, "name" ), sizeof(svs.clients[index].name) );
 }
 
-
-
 /*
 ===============
 SV_GetUserinfo
@@ -195,7 +193,6 @@ void SV_GetUserinfo( int index, char *buffer, int bufferSize ) {
 	}
 	Q_strncpyz( buffer, svs.clients[ index ].userinfo, bufferSize );
 }
-
 
 /*
 ================
@@ -224,7 +221,6 @@ void SV_CreateBaseline( void ) {
 	}
 }
 
-
 /*
 ===============
 SV_BoundMaxClients
@@ -243,7 +239,6 @@ void SV_BoundMaxClients( int minimum ) {
 		Cvar_Set( "sv_maxclients", va("%i", MAX_CLIENTS) );
 	}
 }
-
 
 /*
 ===============
