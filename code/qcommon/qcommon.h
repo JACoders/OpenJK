@@ -1,3 +1,21 @@
+/*
+This file is part of Jedi Academy.
+
+    Jedi Academy is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    Jedi Academy is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+*/
+// Copyright 2001-2013 Raven Software
+
 // qcommon.h -- definitions common between client and server, but not game.or ref modules
 #ifndef __QCOMMON_H__
 #define __QCOMMON_H__
@@ -489,30 +507,6 @@ MISC
 ==============================================================
 */
 
-//==========================================================
-//
-// NOTE NOTE NOTE!!!!!!!!!!!!!
-//
-// Any CPUID_XXXX defined as higher than CPUID_INTEL_MMX *must* have MMX support (eg like CPUID_AMD_3DNOW (0x30) has),
-//	this allows convenient MMX capability checking. If you for some reason want to support some new processor that does
-//	*NOT* have MMX (yeah, right), then define it as a lower number. -slc
-//
-// ( These values are returned by Sys_GetProcessorId )
-//
-#define CPUID_GENERIC			0			// any unrecognized processor
-
-#define CPUID_AXP				0x10
-
-#define CPUID_INTEL_UNSUPPORTED	0x20			// Intel 386/486
-#define CPUID_INTEL_PENTIUM		0x21			// Intel Pentium or PPro
-#define CPUID_INTEL_MMX			0x22			// Intel Pentium/MMX or P2/MMX
-#define CPUID_INTEL_KATMAI		0x23			// Intel Katmai
-#define CPUID_INTEL_WILLIAMETTE	0x24			// Intel Williamette
-
-#define CPUID_AMD_3DNOW			0x30			// AMD K6 3DNOW!
-//
-//==========================================================
-
 #define RoundUp(N, M) ((N) + ((unsigned int)(M)) - (((unsigned int)(N)) % ((unsigned int)(M))))
 #define RoundDown(N, M) ((N) - (((unsigned int)(N)) % ((unsigned int)(M))))
 
@@ -773,8 +767,6 @@ int		Sys_Milliseconds (void);
 
 // the system console is shown when a dedicated server is running
 void	Sys_DisplaySystemConsole( qboolean show );
-
-int		Sys_GetProcessorId( void );
 
 void	Sys_BeginStreamedFile( fileHandle_t f, int readahead );
 void	Sys_EndStreamedFile( fileHandle_t f );

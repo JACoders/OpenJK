@@ -1,3 +1,21 @@
+/*
+This file is part of Jedi Academy.
+
+    Jedi Academy is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    Jedi Academy is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+*/
+// Copyright 2001-2013 Raven Software
+
 // tr_light.c
 
 // leave this as first line for PCH reasons...
@@ -340,7 +358,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 
 			refEnt.renderfx = RF_DEPTHHACK;
 			refEnt.reType = RT_SPRITE;
-			refEnt.customShader = RE_RegisterShader( "gfx/misc/debugAmbient" );
+			refEnt.customShader = re.RegisterShader( "gfx/misc/debugAmbient" );
 			refEnt.shaderRGBA[0] = data->ambientLight[0][0];
 			refEnt.shaderRGBA[1] = data->ambientLight[0][1];
 			refEnt.shaderRGBA[2] = data->ambientLight[0][2];
@@ -350,7 +368,7 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 			RE_AddRefEntityToScene( &refEnt );
 
 			refEnt.reType = RT_LINE;
-			refEnt.customShader = RE_RegisterShader( "gfx/misc/debugArrow" );
+			refEnt.customShader = re.RegisterShader( "gfx/misc/debugArrow" );
 			refEnt.shaderRGBA[0] = data->directLight[0][0];
 			refEnt.shaderRGBA[1] = data->directLight[0][1];
 			refEnt.shaderRGBA[2] = data->directLight[0][2];

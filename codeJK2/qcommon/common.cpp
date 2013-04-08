@@ -1890,20 +1890,6 @@ void Com_Init( char *commandLine ) {
 	
 		Sys_Init();	// this also detects CPU type, so I can now do this CPU check below...
 
-/*		if( !com_FirstTime->integer )	// special request to detect and use top-settings for Intel Williamette chip...	
-		{
-			Cvar_Set( "com_FirstTime", "1" );	// only do this once			
-			//
-			// ( make a local ptr only for quick test, since this is a common module )
-			//
-			cvar_t* s_CPUType = Cvar_Get("sys_cpuid","",0);
-			if (s_CPUType->value == CPUID_INTEL_WILLIAMETTE)
-			{
-				Cbuf_AddText ("exec perfect.cfg\n");
-//				Cbuf_Execute ();
-			}
-		}
-*/
 		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
 //	VM_Init();
 		SV_Init();
