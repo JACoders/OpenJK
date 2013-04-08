@@ -221,7 +221,6 @@ cvar_t		*s_testsound;
 cvar_t		*s_allowDynamicMusic;
 cvar_t		*s_show;
 cvar_t		*s_separation;
-cvar_t		*s_CPUType;
 cvar_t		*s_debugdynamic;
 cvar_t		*s_soundpoolmegs;
 cvar_t		*s_language;	// note that this is distinct from "g_language"
@@ -268,7 +267,6 @@ void S_Init( void ) {
 	s_testsound = Cvar_Get ("s_testsound", "0", CVAR_CHEAT);
 	s_debugdynamic = Cvar_Get("s_debugdynamic","0", CVAR_CHEAT);
 
-	s_CPUType = Cvar_Get("sys_cpuid","",0);
 	s_soundpoolmegs = Cvar_Get("s_soundpoolmegs", "6", CVAR_ARCHIVE);
 
 	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART);

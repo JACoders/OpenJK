@@ -81,10 +81,6 @@ char *Sys_GetClipboardData( void ) {	// FIXME
     return NULL;
 }
 
-int Sys_GetProcessorId( void ) {
-    return CPUID_GENERIC;
-}
-
 void Sys_Mkdir( const char *path ) {
 	char	ospath[MAX_OSPATH];
 	int		err;
