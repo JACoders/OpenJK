@@ -1,6 +1,6 @@
 // unix_net.c
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 
 #include <unistd.h>

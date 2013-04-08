@@ -4,6 +4,9 @@
 #define __TASK_MANAGER__
 
 #include <map>
+#ifndef _WIN32
+#include <string>
+#endif
 
 #include "sequencer.h"
 class CSequencer;
