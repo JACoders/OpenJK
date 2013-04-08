@@ -1,6 +1,6 @@
 # SORRY FOR THE HISTORY CHANGES! #
 
-For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase) on Recovering from upstream rebase for how to fix.
+For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase.html#_recovering_from_upstream_rebase) for how to fix if you've changed anything, or just delete your github fork and local folder and start over if you haven't.
 
 # JACoders "OpenJK" project #
 
