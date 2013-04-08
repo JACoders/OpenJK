@@ -618,7 +618,7 @@ typedef struct Vehicle_s
 	//the guy who was previously the pilot
 	bgEntity_t *	m_pOldPilot;
 #if defined(__GNUC__) || defined(__GCC__) || defined(MINGW32) || defined(MACOS_X)
-	} _Vehicle_t;
+	};
 #else
 	} Vehicle_t;
 #endif
