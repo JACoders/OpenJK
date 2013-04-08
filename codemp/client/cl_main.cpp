@@ -843,7 +843,6 @@ void CL_RequestMotd( void ) {
 	Info_SetValueForKey( info, "rvendor", cls.glconfig.vendor_string );
 	Info_SetValueForKey( info, "version", com_version->string );
 
-	Info_SetValueForKey( info, "cputype", Cvar_VariableString("sys_cpustring") );
 	Info_SetValueForKey( info, "mhz", Cvar_VariableString("sys_cpuspeed") );
 	Info_SetValueForKey( info, "memory", Cvar_VariableString("sys_memory") );
 	Info_SetValueForKey( info, "joystick", Cvar_VariableString("in_joystick") );
