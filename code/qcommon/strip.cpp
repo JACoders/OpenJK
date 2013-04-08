@@ -775,7 +775,7 @@ bool cStringsSingle::UnderstandToken(int token, char *data )
 					SetText(data);
 					return true;
 				}
-				else if (LanguagePair->Name == token && LanguagePair->Value == sp_language->integer)
+				else if (LanguagePair->Name == token && LanguagePair->Value == (unsigned) sp_language->integer)
 				{
 					if (LanguagePair->Name == TK_TEXT_LANGUAGE1 ||
 						LanguagePair->Name == TK_TEXT_LANGUAGE2 ||
