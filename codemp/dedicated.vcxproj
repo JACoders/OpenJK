@@ -115,7 +115,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;wsock32.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;wsock32.lib;Winmm.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -188,17 +188,17 @@
     <ClInclude Include="botlib\l_struct.h" />
     <ClInclude Include="botlib\l_utils.h" />
     <ClInclude Include="game\anims.h" />
-    <ClInclude Include="game\be_aas.h" />
-    <ClInclude Include="game\be_ai_char.h" />
-    <ClInclude Include="game\be_ai_chat.h" />
-    <ClInclude Include="game\be_ai_gen.h" />
-    <ClInclude Include="game\be_ai_goal.h" />
-    <ClInclude Include="game\be_ai_move.h" />
-    <ClInclude Include="game\be_ai_weap.h" />
-    <ClInclude Include="game\be_ea.h" />
+    <ClInclude Include="botlib\be_aas.h" />
+    <ClInclude Include="botlib\be_ai_char.h" />
+    <ClInclude Include="botlib\be_ai_chat.h" />
+    <ClInclude Include="botlib\be_ai_gen.h" />
+    <ClInclude Include="botlib\be_ai_goal.h" />
+    <ClInclude Include="botlib\be_ai_move.h" />
+    <ClInclude Include="botlib\be_ai_weap.h" />
+    <ClInclude Include="botlib\be_ea.h" />
     <ClInclude Include="game\bg_public.h" />
     <ClInclude Include="game\bg_weapons.h" />
-    <ClInclude Include="game\botlib.h" />
+    <ClInclude Include="botlib\botlib.h" />
     <ClInclude Include="cgame\cg_public.h" />
     <ClInclude Include="client\client.h" />
     <ClInclude Include="game\g_public.h" />
