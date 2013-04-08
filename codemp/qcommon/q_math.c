@@ -135,87 +135,6 @@ float	Q_crandom( int *seed ) {
 	return 2.0 * ( Q_random( seed ) - 0.5 );
 }
 
-//i wrote this function in a console test app and it appeared faster
-//in debug and release than the standard crossproduct asm generated
-//by the compiler. however, when inlining the crossproduct function
-//the compiler performs further optimizations and generally ends up
-//being faster than this asm version. but feel free to try this one
-//and see if you're heavily crossproducting in an area and looking
-//for a way to optimize. -rww
-#if 0
-void CrossProductA (float *v1, float *v2, float *cross)
-{
-#if 1
-	static float scratch1, scratch2, scratch3, scratch4, scratch5, scratch6;
-
-	__asm mov   eax,v1
-	__asm mov   ecx,v2
-	__asm mov   edx,cross
-
-	__asm fld   dword ptr[eax+4]
-	__asm fmul  dword ptr[ecx+8]
-	__asm fstp  scratch1
-
-	__asm fld   dword ptr[eax+8]
-	__asm fmul  dword ptr[ecx+4]
-	__asm fstp  scratch2
-
-	__asm fld   dword ptr[eax+8]
-	__asm fmul  dword ptr[ecx]
-	__asm fstp  scratch3
-
-	__asm fld   dword ptr[eax]
-	__asm fmul  dword ptr[ecx+8]
-	__asm fstp  scratch4
-
-	__asm fld   dword ptr[eax]
-	__asm fmul  dword ptr[ecx+4]
-	__asm fstp  scratch5
-
-	__asm fld   dword ptr[eax+4]
-	__asm fmul  dword ptr[ecx]
-	__asm fstp  scratch6
-
-	__asm fld   scratch1
-	__asm fsub  scratch2
-	__asm fstp  dword ptr[edx]
-
-	__asm fld   scratch3
-	__asm fsub  scratch4
-	__asm fstp  dword ptr[edx+4]
-
-	__asm fld   scratch5
-	__asm fsub  scratch6
-	__asm fstp  dword ptr[edx+8]
-#else //doesn't require use of statics, but not nearly as fast.
-	__asm mov   eax,v1
-	__asm mov   ecx,v2
-	__asm mov   edx,cross
-
-	__asm fld   dword ptr[eax+4]
-	__asm fmul  dword ptr[ecx+8]
-	__asm fld   dword ptr[eax+8]
-	__asm fmul  dword ptr[ecx+4]
-	__asm fsubp st(1),st
-	__asm fstp  dword ptr[edx]
-
-	__asm fld   dword ptr[eax+8]
-	__asm fmul  dword ptr[ecx]
-	__asm fld   dword ptr[eax]
-	__asm fmul  dword ptr[ecx+8]
-	__asm fsubp st(1),st
-	__asm fstp  dword ptr[edx+4]
-
-	__asm fld   dword ptr[eax]
-	__asm fmul  dword ptr[ecx+4]
-	__asm fld   dword ptr[eax+4]
-	__asm fmul  dword ptr[ecx]
-	__asm fsubp st(1),st
-	__asm fstp  dword ptr[edx+8]
-#endif
-}
-#endif
-
 //=======================================================
 
 signed char ClampChar( int i ) {
@@ -809,74 +728,21 @@ void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs ) {
 //JAC: Moved some math functions from q_shared.h
 
 ID_INLINE void VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) {
-#ifdef USE_SSE
-	__asm {
-		mov ecx, vec1
-		movss xmm0, [ecx]
-		movhps xmm0, [ecx+4]
-
-		mov edx, vec2
-		movss xmm1, [edx]
-		movhps xmm1, [edx+4]
-
-		addps xmm0, xmm1
-
-		mov eax, vecOut
-		movss [eax], xmm0
-		movhps [eax+4], xmm0
-	}
-#else
 	vecOut[0] = vec1[0]+vec2[0];
 	vecOut[1] = vec1[1]+vec2[1];
 	vecOut[2] = vec1[2]+vec2[2];
-#endif
 }
 
 ID_INLINE void VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut ) {
-#ifdef USE_SSE
-	__asm {
-		mov ecx, vec1
-		movss xmm0, [ecx]
-		movhps xmm0, [ecx+4]
-
-		mov edx, vec2
-		movss xmm1, [edx]
-		movhps xmm1, [edx+4]
-
-		subps xmm0, xmm1
-
-		mov eax, vecOut
-		movss [eax], xmm0
-		movhps [eax+4], xmm0
-	}
-#else
 	vecOut[0] = vec1[0]-vec2[0];
 	vecOut[1] = vec1[1]-vec2[1];
 	vecOut[2] = vec1[2]-vec2[2];
-#endif
 }
 
 ID_INLINE void VectorScale( const vec3_t vecIn, vec_t scale, vec3_t vecOut ) {
-#ifdef USE_SSE
-	__asm {
-		movss xmm0, scale
-		shufps xmm0, xmm0, 0x0
-
-		mov edx, vecIn
-		movss xmm1, [edx]
-		movhps xmm1, [edx+4]
-
-		mulps xmm0, xmm1
-
-		mov eax, vecOut
-		movss [eax], xmm0
-		movhps [eax+4], xmm0
-	}
-#else
 	vecOut[0] = vecIn[0]*scale;
 	vecOut[1] = vecIn[1]*scale;
 	vecOut[2] = vecIn[2]*scale;
-#endif
 }
 
 void VectorScale4( const vec4_t vecIn, vec_t scale, vec4_t vecOut ) {
@@ -893,64 +759,11 @@ ID_INLINE void VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3
 }
 
 ID_INLINE vec_t VectorLength( const vec3_t vec ) {
-#ifdef USE_SSE
-	float res;
-
-	__asm {
-		mov edx, vec
-		movss xmm1, [edx]
-		movhps xmm1, [edx+4]
-
-		movaps xmm2, xmm1
-
-		mulps xmm1, xmm2
-
-		movaps xmm0, xmm1
-
-		shufps xmm0, xmm0, 0x32
-		addps xmm1, xmm0
-
-		shufps xmm0, xmm0, 0x32
-		addps xmm1, xmm0
-
-		sqrtss xmm1, xmm1
-		movss [res], xmm1
-	}
-
-	return res;
-#else
 	return (vec_t)sqrt( vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2] );
-#endif
 }
 
 ID_INLINE vec_t VectorLengthSquared( const vec3_t vec ) {
-#ifdef USE_SSE
-	float res;
-
-	__asm {
-		mov edx, vec
-		movss xmm1, [edx]
-		movhps xmm1, [edx+4]
-
-		movaps xmm2, xmm1
-
-		mulps xmm1, xmm2
-
-		movaps xmm0, xmm1
-
-		shufps xmm0, xmm0, 0x32
-		addps xmm1, xmm0
-
-		shufps xmm0, xmm0, 0x32
-		addps xmm1, xmm0
-
-		movss [res], xmm1
-	}
-
-	return res;
-#else
 	return (vec[0]*vec[0] + vec[1]*vec[1] + vec[2]*vec[2]);
-#endif
 }
 
 ID_INLINE vec_t Distance( const vec3_t p1, const vec3_t p2 ) {
@@ -1061,35 +874,7 @@ ID_INLINE void CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut
 }
 
 ID_INLINE vec_t DotProduct( const vec3_t vec1, const vec3_t vec2 ) {
-#ifdef USE_SSE
-	float res;
-
-	__asm {
-		mov edx, vec1
-		movss xmm1, [edx]
-		movhps xmm1, [edx+4]
-
-		mov edx, vec2
-		movss xmm2, [edx]
-		movhps xmm2, [edx+4]
-
-		mulps xmm1, xmm2
-
-		movaps xmm0, xmm1
-
-		shufps xmm0, xmm0, 0x32
-		addps xmm1, xmm0
-
-		shufps xmm0, xmm0, 0x32
-		addps xmm1, xmm0
-
-		movss [res], xmm1
-	}
-
-	return res;
-#else
 	return vec1[0]*vec2[0] + vec1[1]*vec2[1] + vec1[2]*vec2[2];
-#endif
 }
 
 ID_INLINE qboolean VectorCompare( const vec3_t vec1, const vec3_t vec2 ) {
