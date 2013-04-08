@@ -1866,9 +1866,6 @@
     <ClInclude Include="common_headers.h" />
     <ClInclude Include="dmstates.h" />
     <ClInclude Include="events.h" />
-    <ClInclude Include="..\ff\ff.h" />
-    <ClInclude Include="..\ff\ff_public.h" />
-    <ClInclude Include="..\client\fffx.h" />
     <ClInclude Include="fields.h" />
     <ClInclude Include="..\ghoul2\G2.h" />
     <ClInclude Include="g_functions.h" />

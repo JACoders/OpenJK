@@ -8,24 +8,9 @@
 #include "client.h"
 #include "client_ui.h"
 #include <limits.h>
-#ifdef _IMMERSION
-#include "../ff/ff.h"
-#include "../ff/cl_ff.h"
-#else
-#include "fffx.h"
-#endif // _IMMERSION
 #include "../ghoul2/g2.h"
 
 #include "../RMG/RM_Headers.h"
-
-#ifdef _XBOX
-#include "../ui/ui_splash.h"
-
-#ifndef FINAL_BUILD
-#include <d3d8perf.h>
-#endif
-
-#endif
 
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
@@ -182,10 +167,6 @@ void CL_FlushMemory( void ) {
 
 	cls.soundRegistered = qfalse;
 	cls.rendererStarted = qfalse;
-#ifdef _IMMERSION
-	CL_ShutdownFF();
-	cls.forceStarted = qfalse;
-#endif // _IMMERSION
 }
 
 /*
@@ -433,15 +414,6 @@ void CL_Vid_Restart_f( void ) {
 	cls.cgameStarted = qfalse;
 	cls.soundRegistered = qfalse;
 
-#ifdef _IMMERSION
-	CL_ShutdownFF();
-	cls.forceStarted = qfalse;
-#endif // _IMMERSION
-
-#ifdef _XBOX
-	vidRestartReloadMap = qtrue;
-#endif
-
 	// unpause so the cgame definately gets a snapshot and renders a frame
 	Cvar_Set( "cl_paused", "0" );
 }
@@ -473,34 +445,6 @@ void CL_Snd_Restart_f( void ) {
 	extern void AS_ParseSets(void);
 	AS_ParseSets();
 }
-#ifdef _IMMERSION
-/*
-=================
-CL_FF_Restart_f
-=================
-*/
-void CL_FF_Restart_f( void ) {
-
-	if ( FF_IsInitialized() )
-	{
-		// Apply cvar changes w/o losing registered effects
-		// Allows changing devices in-game without restarting the map
-		if ( !FF_Init() )
-			FF_Shutdown();	// error (shouldn't happen)
-	}
-	else if ( cls.state >= CA_PRIMED )	// maybe > CA_DISCONNECTED
-	{
-		// Restart map or menu
-		CL_Vid_Restart_f();
-	}
-	else if ( cls.uiStarted )
-	{
-		// Restart menu
-		CL_ShutdownUI();
-		cls.forceStarted = qfalse;
-	}
-}
-#endif // _IMMERSION
 /*
 ==================
 CL_Configstrings_f
@@ -975,18 +919,10 @@ void CL_Frame ( int msec,float fractionMsec ) {
 	} else {
 		// update the screen
 		SCR_UpdateScreen();
-
-#if defined(_XBOX) && !defined(FINAL_BUILD)
-		if (D3DPERF_QueryRepeatFrame())
-			SCR_UpdateScreen();
-#endif
 	}
 	// update audio
 	S_Update();
 
-#ifdef _IMMERSION
-	FF_Update();
-#endif // _IMMERSION
 	// advance local effects for next frame
 	SCR_RunCinematic();
 
@@ -1092,35 +1028,6 @@ void CL_StartHunkUsers( void ) {
 		cls.consoleShader = re.RegisterShader( "console" );
 		g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
 		kg.g_consoleField.widthInChars = g_console_field_width;
-#ifndef _IMMERSION
-		//-------
-		//	The latest Immersion Force Feedback system initializes here, not through
-		//	win32 input system. Therefore, the window handle is valid :)
-		//-------
-
-		// now that the renderer has started up we know that the global hWnd is now valid,
-		//	so we can now go ahead and (re)setup the input stuff that needs hWnds for DI...
-		//  (especially Force feedback)...
-		//
-		static qboolean bOnceOnly = qfalse;	// only do once, not every renderer re-start
-		if (!bOnceOnly)
-		{
-			bOnceOnly = qtrue;
-			extern void Sys_In_Restart_f( void );
-			Sys_In_Restart_f();
-		}
-
-#ifdef _XBOX
-		if (vidRestartReloadMap)
-		{
-			int checksum;
-			CM_LoadMap(va("maps/%s.bsp", cl_mapname->string), qfalse, &checksum);
-			RE_LoadWorldMap(va("maps/%s.bsp", cl_mapname->string));
-			vidRestartReloadMap = qfalse;
-		}
-#endif // _XBOX
-
-#endif // _IMMERSION
 	}
 
 	if ( !cls.soundStarted ) {
@@ -1132,13 +1039,6 @@ void CL_StartHunkUsers( void ) {
 		cls.soundRegistered = qtrue;
 		S_BeginRegistration();
 	}
-
-#ifdef _IMMERSION
-	if ( !cls.forceStarted ) {
-		cls.forceStarted = qtrue;
-		CL_InitFF();
-	}
-#endif // _IMMERSION
 
 #if !defined (_XBOX)	//i guess xbox doesn't want the ui loaded all the time?
 	//we require the ui to be loaded here or else it crashes trying to access the ui on command line map loads
@@ -1295,9 +1195,6 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("uimenu", CL_GenericMenu_f);
 	Cmd_AddCommand ("datapad", CL_DataPad_f);
 	Cmd_AddCommand ("endscreendissolve", CL_EndScreenDissolve_f);
-#ifdef _IMMERSION
-	Cmd_AddCommand ("ff_restart", CL_FF_Restart_f);
-#endif // _IMMERSION
 
 	CL_InitRef();
 
@@ -1345,9 +1242,6 @@ void CL_Shutdown( void ) {
 	S_Shutdown();
 	CL_ShutdownRef();
 
-#ifdef _IMMERSION
-	CL_ShutdownFF();
-#endif // _IMMERSION
 	Cmd_RemoveCommand ("cmd");
 	Cmd_RemoveCommand ("configstrings");
 	Cmd_RemoveCommand ("clientinfo");

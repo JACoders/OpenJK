@@ -202,9 +202,6 @@ typedef struct {
 	qboolean	soundRegistered;
 	qboolean	uiStarted;
 	qboolean	cgameStarted;
-#ifdef _IMMERSION
-	qboolean	forceStarted;
-#endif // _IMMERSION
 
 	int			framecount;
 	int			frametime;			// msec since last frame

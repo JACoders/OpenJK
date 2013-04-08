@@ -2,37 +2,37 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{5f0abd45-dca7-4d2c-b3ce-6f9d9f650e96}</UniqueIdentifier>
+      <UniqueIdentifier>{2db557fc-ac8e-4935-9140-c4c7fc28bd04}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90</Extensions>
     </Filter>
     <Filter Include="Source Files\ICARUS">
-      <UniqueIdentifier>{94f817e9-7e60-44c5-8426-bcc0c0769fc6}</UniqueIdentifier>
+      <UniqueIdentifier>{77ff5741-a084-4eab-8c5e-87068e3c73eb}</UniqueIdentifier>
       <Extensions>*.cpp, *.h</Extensions>
     </Filter>
     <Filter Include="Source Files\Cgame">
-      <UniqueIdentifier>{d3b9b1a2-3b52-4e36-81f8-14d105b5f878}</UniqueIdentifier>
+      <UniqueIdentifier>{af00ce82-075f-4ba7-9779-206c6c6704e1}</UniqueIdentifier>
       <Extensions>*.cpp</Extensions>
     </Filter>
     <Filter Include="Source Files\game">
-      <UniqueIdentifier>{60ecae59-0c27-4133-a101-bf5e17a51226}</UniqueIdentifier>
+      <UniqueIdentifier>{d512bb7c-add4-412d-81b6-0185e80ef16b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{81247da6-112e-4bf5-b388-5739a348e3d2}</UniqueIdentifier>
+      <UniqueIdentifier>{58ce1470-74d2-45d1-9c5c-73c818281944}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;fi;fd</Extensions>
     </Filter>
     <Filter Include="Header Files\Icarus Headers">
-      <UniqueIdentifier>{aaed5265-bd3b-40c3-aa92-46acfa3d798a}</UniqueIdentifier>
+      <UniqueIdentifier>{0882a7c3-3e01-4fd5-9d8b-b5567df5b22a}</UniqueIdentifier>
       <Extensions>*.h</Extensions>
     </Filter>
     <Filter Include="Header Files\CGame Headers">
-      <UniqueIdentifier>{54b33b8b-6781-4959-a158-d17decabe605}</UniqueIdentifier>
+      <UniqueIdentifier>{73641c6b-f314-4b84-8aa0-5e60aae2dee3}</UniqueIdentifier>
       <Extensions>*.h</Extensions>
     </Filter>
     <Filter Include="Header Files\Header Files">
-      <UniqueIdentifier>{2efaa4a1-3a1c-4af3-b054-331931ab0ac1}</UniqueIdentifier>
+      <UniqueIdentifier>{e2e52be7-3c94-4f32-aed5-f33ca44d7f4f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files">
-      <UniqueIdentifier>{28b46316-cc09-4049-ada6-11b13778def0}</UniqueIdentifier>
+      <UniqueIdentifier>{54445fd5-340b-4807-8109-7a6529fd1106}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
   </ItemGroup>
@@ -538,15 +538,6 @@
       <Filter>Header Files\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="events.h">
-      <Filter>Header Files\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ff\ff.h">
-      <Filter>Header Files\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ff\ff_public.h">
-      <Filter>Header Files\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\client\fffx.h">
       <Filter>Header Files\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fields.h">

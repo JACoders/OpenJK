@@ -3663,16 +3663,10 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			if ( self->client->playerTeam == TEAM_PLAYER )
 			{
 				G_SoundOnEnt( self, CHAN_AUTO, "sound/weapons/saber/saberoff.wav" );
-#ifdef _IMMERSION
-				G_Force( self, G_ForceIndex( "fffx/weapons/saber/saberoff", FF_CHANNEL_WEAPON ) );
-#endif // _IMMERSION
 			}
 			else
 			{
 				G_SoundOnEnt( self, CHAN_AUTO, "sound/weapons/saber/enemy_saber_off.wav" );
-#ifdef _IMMERSION
-				G_Force( self, G_ForceIndex( "fffx/weapons/saber/enemy_saber_off", FF_CHANNEL_WEAPON ) );
-#endif // _IMMERSION
 			}
 		}
 	}

@@ -4131,38 +4131,6 @@ int CG_SaberHumSoundForEnt( gentity_t *gent )
 	}
 	return saberHumSound;
 }
-#ifdef _IMMERSION
-int CG_SaberHumForceForEnt( gentity_t *gent )
-{
-	//now: based on saber type and npc, pick correct hum sound
-	int	saberHumForce = cgi_FF_Register( "fffx/weapons/saber/saberhum1", FF_CHANNEL_WEAPON );
-	if ( gent && gent->client )
-	{
-		if ( gent->client->NPC_class == CLASS_DESANN )
-		{//desann
-			saberHumForce = cgi_FF_Register( "fffx/weapons/saber/saberhum2", FF_CHANNEL_WEAPON );
-		}
-		else if ( gent->client->NPC_class == CLASS_LUKE )
-		{//luke
-			saberHumForce = cgi_FF_Register( "fffx/weapons/saber/saberhum5", FF_CHANNEL_WEAPON );
-		}
-		else if ( gent->client->NPC_class == CLASS_KYLE )
-		{//Kyle NPC and player
-			saberHumForce = cgi_FF_Register( "fffx/weapons/saber/saberhum4", FF_CHANNEL_WEAPON );
-		}
-		else if ( gent->client->playerTeam == TEAM_ENEMY )//NPC_class == CLASS_TAVION )
-		{//reborn, shadowtroopers, tavion
-			saberHumForce = cgi_FF_Register( "fffx/weapons/saber/saberhum3", FF_CHANNEL_WEAPON );
-		}
-		else
-		{//allies
-			//use default
-			//saberHumSound = cgi_S_RegisterSound( "sound/weapons/saber/saberhum1.wav" );
-		}
-	}
-	return saberHumForce;
-}
-#endif // _IMMERSION
 /*
 ===============
 CG_StopWeaponSounds
@@ -4186,12 +4154,6 @@ void CG_StopWeaponSounds( centity_t *cent )
 			cent->lerpOrigin, 
 			vec3_origin, 
 			CG_SaberHumSoundForEnt( &g_entities[cent->currentState.clientNum] ) );
-#ifdef _IMMERSION
-		cgi_FF_AddLoopingForce
-		(	CG_SaberHumForceForEnt( &g_entities[cent->currentState.clientNum] )
-		,	cent->currentState.number
-		);
-#endif // _IMMERSION
 		return;
 	}
 
@@ -4213,12 +4175,6 @@ void CG_StopWeaponSounds( centity_t *cent )
 				cgi_S_StartSound( cent->lerpOrigin, cent->currentState.number, CHAN_WEAPON, weapon->stopSound );
 			}
 
-#ifdef _IMMERSION
-			if ( weapon->stopForce )
-			{
-				cgi_FF_Start( weapon->stopForce, cent->currentState.number );
-			}
-#endif // _IMMERSION
 			cent->pe.lightningFiring = qfalse;
 		}
 		return;
@@ -4236,12 +4192,6 @@ void CG_StopWeaponSounds( centity_t *cent )
 		{
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->altFiringSound );
 		}
-#ifdef _IMMERSION
-		if ( weapon->altFiringForce )
-		{
-			cgi_FF_AddLoopingForce( weapon->altFiringForce, cent->currentState.number );
-		}
-#endif // _IMMERSION
 		cent->pe.lightningFiring = qtrue;
 	}
 	else if ( cent->currentState.eFlags & EF_FIRING )
@@ -4255,12 +4205,6 @@ void CG_StopWeaponSounds( centity_t *cent )
 
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->firingSound );
 		}
-#ifdef _IMMERSION
-		if ( weapon->firingForce )
-		{
-			cgi_FF_AddLoopingForce( weapon->firingForce, cent->currentState.number/*, vec3_origin*/ );
-		}
-#endif // _IMMERSION
 	}
 }
 
@@ -4630,12 +4574,6 @@ Ghoul2 Insert End
 					*/
 					if ( !Q_irand( 0, 10 ) )
 					{//FIXME: don't do this this way.... :)
-#ifdef _IMMERSION
-						if ( !cent->currentState.saberInFlight )
-						{
-							cgi_FF_Start( cgi_FF_Register( "fffx/weapons/saber/hitwater", FF_CHANNEL_WEAPON ), cent->currentState.number );
-						}
-#endif // _IMMERSION
 						vec3_t	spot;
 						VectorCopy( trace.endpos, spot );
 						spot[2] += 4;
@@ -4662,16 +4600,7 @@ Ghoul2 Insert End
 							if ( cg.time - cent->gent->client->ps.saberHitWallSoundDebounceTime >= 100 )
 							{//ugh, need to have a real sound debouncer... or do this game-side
 								cent->gent->client->ps.saberHitWallSoundDebounceTime = cg.time;
-#ifdef _IMMERSION
-								int index = Q_irand( 1, 3 );
-								cgi_S_StartSound ( cent->lerpOrigin, cent->currentState.clientNum, CHAN_WEAPON, cgi_S_RegisterSound( va ( "sound/weapons/saber/saberhitwall%d.wav", index ) ) );
-								if ( !cent->currentState.saberInFlight )
-								{
-									cgi_FF_Start( cgi_FF_Register( va( "fffx/weapons/saber/saberhitwall%d", index ), FF_CHANNEL_WEAPON ), cent->currentState.clientNum );
-								}
-#else
 								cgi_S_StartSound ( cent->lerpOrigin, cent->currentState.clientNum, CHAN_ITEM, cgi_S_RegisterSound( va ( "sound/weapons/saber/saberhitwall%d.wav", Q_irand( 1, 3 ) ) ) );
-#endif // _IMMERSION
 							}
 						}
 					}
@@ -5313,23 +5242,14 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 				if ( !cent->gent->client->ps.saberLength )
 				{
 					qhandle_t saberOnSound;
-#ifdef _IMMERSION
-					ffHandle_t saberOnForce;
-#endif // _IMMERSION
 
 					if ( cent->gent->client->playerTeam == TEAM_PLAYER )
 					{
 						saberOnSound = cgi_S_RegisterSound( "sound/weapons/saber/saberon.wav" );
-#ifdef _IMMERSION
-						saberOnForce = cgi_FF_Register( "fffx/weapons/saber/saberon", FF_CHANNEL_WEAPON );
-#endif // _IMMERSION
 					}
 					else
 					{
 						saberOnSound = cgi_S_RegisterSound( "sound/weapons/saber/enemy_saber_on.wav" );
-#ifdef _IMMERSION
-						saberOnForce = cgi_FF_Register( "fffx/weapons/saber/enemy_saber_on", FF_CHANNEL_WEAPON );
-#endif // _IMMERSION
 					}
 					if ( !cent->gent->client->ps.weaponTime )
 					{//make us play the turn on anim
@@ -5344,9 +5264,6 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 					else
 					{
 						cgi_S_StartSound (NULL, cent->currentState.number, CHAN_AUTO, saberOnSound );
-#ifdef _IMMERSION
-						cgi_FF_Start( saberOnForce, cent->currentState.number );
-#endif // _IMMERSION
 					}
 				}
 				if ( cg.frametime > 0 )
@@ -5936,9 +5853,6 @@ Ghoul2 Insert End
 						else
 						{
 							cgi_S_StartSound (NULL, cent->currentState.number, CHAN_AUTO, cgi_S_RegisterSound( "sound/weapons/saber/saberon.wav" ) );
-#ifdef _IMMERSION
-							cgi_FF_Start( cgi_FF_Register( "fffx/weapons/saber/saberon", FF_CHANNEL_WEAPON ), cent->currentState.number );
-#endif // _IMMERSION
 						}
 					}
 					cent->gent->client->ps.saberLength += cent->gent->client->ps.saberLengthMax/6 * cg.frametime/100;//= saberLengthMax;

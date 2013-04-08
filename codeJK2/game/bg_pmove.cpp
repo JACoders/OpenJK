@@ -5554,9 +5554,6 @@ static void PM_BeginWeaponChange( int weapon ) {
 			if ( pm->gent )
 			{
 				G_SoundOnEnt( pm->gent, CHAN_WEAPON, "sound/weapons/saber/saberoffquick.wav" );
-#ifdef _IMMERSION
-				G_Force( pm->gent, G_ForceIndex( "fffx/weapons/saber/saberoffquick", FF_CHANNEL_WEAPON ) );
-#endif // _IMMERSION
 			}
 			PM_SetSaberMove(LS_PUTAWAY);
 		}
@@ -5802,22 +5799,13 @@ void PM_SetSaberMove(short newMove)
 	//special check for *starting* a saber swing
 		if ( pm->gent && pm->ps->saberLength > 1 )
 		{
-#ifdef _IMMERSION
-			int index;
-#endif // _IMMERSION
 			if ( PM_SaberInAttack( newMove ) || PM_SaberInSpecialAttack( anim ) )
 			{//playing an attack
 				if ( pm->ps->saberMove != newMove )
 				{//wasn't playing that attack before
 					if ( PM_SaberInSpecialAttack( anim ) )
 					{
-#ifdef _IMMERSION
-						index = Q_irand( 1, 3 );
-						G_SoundOnEnt( pm->gent, CHAN_WEAPON, va( "sound/weapons/saber/saberhup%d.wav", index ) );
-						G_Force( pm->gent, G_ForceIndex( va( "fffx/weapons/saber/saberhup%d", index ), FF_CHANNEL_WEAPON ) );
-#else
 						G_SoundOnEnt( pm->gent, CHAN_WEAPON, va( "sound/weapons/saber/saberhup%d.wav", Q_irand( 1, 3 ) ) );
-#endif // _IMMERSION
 					}
 					else
 					{
@@ -5825,32 +5813,14 @@ void PM_SetSaberMove(short newMove)
 						{
 						case FORCE_LEVEL_4:
 						case FORCE_LEVEL_3:
-#ifdef _IMMERSION
-							index = Q_irand( 7, 9 );
-							G_SoundOnEnt( pm->gent, CHAN_WEAPON, va( "sound/weapons/saber/saberhup%d.wav", index ) );
-							G_Force( pm->gent, G_ForceIndex( va( "fffx/weapons/saber/saberhup%d", index ), FF_CHANNEL_WEAPON ) );
-#else
 							G_SoundOnEnt( pm->gent, CHAN_WEAPON, va( "sound/weapons/saber/saberhup%d.wav", Q_irand( 7, 9 ) ) );
-#endif // _IMMERSION
 							break;
 						case FORCE_LEVEL_2:
-#ifdef _IMMERSION
-							index = Q_irand( 4, 6 );
-							G_SoundOnEnt( pm->gent, CHAN_WEAPON, va( "sound/weapons/saber/saberhup%d.wav", index ) );
-							G_Force( pm->gent, G_ForceIndex( va( "fffx/weapons/saber/saberhup%d", index ), FF_CHANNEL_WEAPON ) );
-#else
 							G_SoundOnEnt( pm->gent, CHAN_WEAPON, va( "sound/weapons/saber/saberhup%d.wav", Q_irand( 4, 6 ) ) );
-#endif // _IMMERSION
 							break;
 						case FORCE_LEVEL_5:
 						case FORCE_LEVEL_1:
-#ifdef _IMMERSION
-							index = Q_irand( 1, 3 );
-							G_SoundOnEnt( pm->gent, CHAN_WEAPON, va( "sound/weapons/saber/saberhup%d.wav", index ) );
-							G_Force( pm->gent, G_ForceIndex( va( "fffx/weapons/saber/saberhup%d", index ), FF_CHANNEL_WEAPON ) );
-#else
 							G_SoundOnEnt( pm->gent, CHAN_WEAPON, va( "sound/weapons/saber/saberhup%d.wav", Q_irand( 1, 3 ) ) );
-#endif // _IMMERSION
 							break;
 						}
 					}
@@ -5858,13 +5828,7 @@ void PM_SetSaberMove(short newMove)
 			}
 			else if ( PM_SaberInStart( newMove ) && pm->ps->saberAnimLevel == FORCE_LEVEL_3 )
 			{
-#ifdef _IMMERSION
-				index = Q_irand( 1, 3 );
-				G_SoundOnEnt( pm->gent, CHAN_WEAPON, va( "sound/weapons/saber/saberhup%d.wav", index ) );
-				G_Force( pm->gent, G_ForceIndex( va( "fffx/weapons/saber/saberhup%d", index ), FF_CHANNEL_WEAPON ) );
-#else
 				G_SoundOnEnt( pm->gent, CHAN_WEAPON, va( "sound/weapons/saber/saberhup%d.wav", Q_irand( 1, 3 ) ) );
-#endif // _IMMERSION
 			}
 		}
 
@@ -7716,12 +7680,6 @@ static bool PM_DoChargedWeapons( void )
 				{
 					G_SoundOnEnt( pm->gent, CHAN_WEAPON, weaponData[pm->ps->weapon].altChargeSnd );
 				}
-#ifdef _IMMERSION
-				if ( cg_weapons[pm->ps->weapon].altChargeForce )
-				{
-					G_Force( pm->gent, G_ForceIndex( weaponData[pm->ps->weapon].altChargeFrc, FF_CHANNEL_WEAPON ) );
-				}
-#endif // _IMMERSION
 			}
 		}
 		else
@@ -7739,25 +7697,10 @@ static bool PM_DoChargedWeapons( void )
 				pm->ps->weaponstate = WEAPON_CHARGING;
 				pm->ps->weaponChargeTime = level.time;
 
-#ifdef _IMMERSION
-				if ( pm->gent && !pm->gent->NPC ) // HACK: !NPC mostly for bowcaster and weequay
-				{
-					if ( cg_weapons[pm->ps->weapon].chargeSound )
-					{
-						G_SoundOnEnt( pm->gent, CHAN_WEAPON, weaponData[pm->ps->weapon].chargeSnd );
-					}
-
-					if ( cg_weapons[pm->ps->weapon].chargeForce )
-					{
-						G_Force( pm->gent, G_ForceIndex( weaponData[pm->ps->weapon].chargeFrc, FF_CHANNEL_WEAPON ) );
-					}
-				}
-#else
 				if ( cg_weapons[pm->ps->weapon].chargeSound && pm->gent && !pm->gent->NPC ) // HACK: !NPC mostly for bowcaster and weequay
 				{
 					G_SoundOnEnt( pm->gent, CHAN_WEAPON, weaponData[pm->ps->weapon].chargeSnd );
 				}
-#endif // _IMMERSION
 			}
 		}
 
@@ -7772,11 +7715,6 @@ static bool PM_DoChargedWeapons( void )
 		// dumb, but since we shoot a charged weapon on button-up, we need to repress this button for now
 		pm->cmd.buttons |= BUTTON_ATTACK;
 		pm->ps->eFlags |= EF_FIRING;
-#ifdef _IMMERSION
-		// HACKHACKHACK - charging sound effect stops when button released,
-		// but I can't find the place where this stop occurs... it's here for now...
-		G_ForceStop( pm->gent, G_ForceIndex( weaponData[pm->ps->weapon].chargeFrc, FF_CHANNEL_WEAPON ) );
-#endif // _IMMERSION
 	}
 	else if ( pm->ps->weaponstate == WEAPON_CHARGING_ALT )
 	{
@@ -7784,11 +7722,6 @@ static bool PM_DoChargedWeapons( void )
 		// dumb, but since we shoot a charged weapon on button-up, we need to repress this button for now
 		pm->cmd.buttons |= BUTTON_ALT_ATTACK;
 		pm->ps->eFlags |= (EF_FIRING|EF_ALT_FIRING);
-#ifdef _IMMERSION
-		// HACKHACKHACK - charging sound effect stops when button released,
-		// but I can't find the place where this stop occurs... it's here for now...
-		G_ForceStop( pm->gent, G_ForceIndex( weaponData[pm->ps->weapon].altChargeFrc, FF_CHANNEL_WEAPON ) );
-#endif // _IMMERSION
 	}
 
 	return false; // continue with the rest of the weapon code
@@ -8629,9 +8562,6 @@ void PM_AdjustAttackStates( pmove_t *pm )
 			if ( cg.zoomMode == 0 || cg.zoomMode == 3 )
 			{
 				G_SoundOnEnt( pm->gent, CHAN_AUTO, "sound/weapons/disruptor/zoomstart.wav" );
-#ifdef _IMMERSION
-				G_Force( pm->gent, G_ForceIndex( "fffx/weapons/disruptor/zoomstart", FF_CHANNEL_WEAPON ) );
-#endif // _IMMERSION
 				// not already zooming, so do it now
 				cg.zoomMode = 2;
 				cg.zoomLocked = qfalse;
@@ -8640,9 +8570,6 @@ void PM_AdjustAttackStates( pmove_t *pm )
 			else if ( cg.zoomMode == 2 )
 			{
 				G_SoundOnEnt( pm->gent, CHAN_AUTO, "sound/weapons/disruptor/zoomend.wav" );
-#ifdef _IMMERSION
-				G_Force( pm->gent, G_ForceIndex( "fffx/weapons/disruptor/zoomend", FF_CHANNEL_WEAPON ) );
-#endif // _IMMERSION
 				// already zooming, so must be wanting to turn it off
 				cg.zoomMode = 0;
 				cg.zoomTime = cg.time;

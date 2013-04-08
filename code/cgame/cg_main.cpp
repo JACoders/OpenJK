@@ -9,9 +9,6 @@
 #include "..\client\vmachine.h"
 #include "cg_lights.h"
 
-#ifdef _IMMERSION
-#include "../ff/ff.h"
-#endif // _IMMERSION
 #include "../qcommon/sstring.h"
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
 typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char >  >	namePrecache_m;
@@ -631,55 +628,6 @@ void CG_RegisterItemSounds( int itemNum ) {
 	}
 }
 
-#ifdef _IMMERSION
-/*
-=================
-CG_RegisterItemForces
-
-The server says this item is used on this level
-=================
-*/
-void CG_RegisterItemForces( int itemNum ) {
-	gitem_t			*item;
-	char			data[MAX_QPATH];
-	char			*s, *start;
-	int				len;
-
-	item = &bg_itemlist[ itemNum ];
-
-	if (item->pickup_force)
-	{
-		cgi_FF_Register( item->pickup_force, FF_CHANNEL_TOUCH );
-	}
-
-	// parse the space seperated precache string for other media
-	s = item->forces;
-	if (!s || !s[0])
-		return;
-
-	while (*s) {
-		start = s;
-		while (*s && *s != ' ') {
-			s++;
-		}
-
-		len = s-start;
-		if (len >= MAX_QPATH) {
-			CG_Error( "PrecacheItem: %s has bad precache string", 
-				item->classname);
-			return;
-		}
-		memcpy (data, start, len);
-		data[len] = 0;
-		if ( *s ) {
-			s++;
-		}
-
-		cgi_FF_Register( data, FF_CHANNEL_TOUCH );
-	}
-}
-#endif // _IMMERSION
-
 /*
 ======================
 CG_LoadingString
@@ -875,69 +823,6 @@ static void CG_RegisterSounds( void ) {
 	}
 }
 
-#ifdef _IMMERSION
-extern qboolean CG_ConfigForce( int index, const char *&name, int &channel );
-/*
-=================
-CG_RegisterForces
-
-called during a precache command
-=================
-*/
-static void CG_RegisterForces( void )
-{
-	char name[512];
-	int i, channel;
-	const char *forceName;
-
-	cgs.media.selectForce = cgi_FF_Register( "fffx/weapons/change", FF_CHANNEL_WEAPON );
-
-	for (i=0 ; i<4 ; i++) {
-		Com_sprintf (name, sizeof(name), "fffx/player/footsteps/step%i", i+1);
-		cgs.media.footstepForces[FOOTSTEP_STONEWALK][i] = cgi_FF_Register( name, FF_CHANNEL_FOOT );
-
-		Com_sprintf (name, sizeof(name), "fffx/player/footsteps/splash%i", i+1);
-		cgs.media.footstepForces[FOOTSTEP_SPLASH][i] = cgi_FF_Register( name, FF_CHANNEL_FOOT );
-
-		Com_sprintf (name, sizeof(name), "fffx/player/footsteps/clank%i", i+1);
-		cgs.media.footstepForces[FOOTSTEP_METALWALK][i] = cgi_FF_Register( name, FF_CHANNEL_FOOT );
-	}
-
-	cgs.media.noAmmoForce = cgi_FF_Register( "fffx/weapons/noammo", FF_CHANNEL_WEAPON );
-	cgs.media.landForce = cgi_FF_Register( "fffx/player/land1", FF_CHANNEL_BODY );
-
-	cgs.media.watrInForce = cgi_FF_Register( "fffx/player/watr_in", FF_CHANNEL_BODY );
-	cgs.media.watrOutForce = cgi_FF_Register( "fffx/player/watr_out", FF_CHANNEL_BODY );
-	cgs.media.watrUnForce = cgi_FF_Register( "fffx/player/watr_un", FF_CHANNEL_BODY );
-
-	cgs.media.zoomStartForce = cgi_FF_Register( "fffx/interface/zoomstart", FF_CHANNEL_WEAPON );
-	cgs.media.zoomLoopForce = cgi_FF_Register( "fffx/interface/zoomloop", FF_CHANNEL_WEAPON );
-	cgs.media.zoomEndForce = cgi_FF_Register( "fffx/interface/zoomend", FF_CHANNEL_WEAPON );
-
-	cgs.media.grenadeBounce1Force = cgi_FF_Register( "fffx/weapons/thermal/bounce1", FF_CHANNEL_WEAPON );
-	cgs.media.grenadeBounce2Force = cgi_FF_Register( "fffx/weapons/thermal/bounce2", FF_CHANNEL_WEAPON );
-
-	for ( i = 1 ; i < bg_numItems ; i++ )
-	{
-		CG_RegisterItemForces( i );
-	}
-
-	for ( i = 1 ; i < MAX_FORCES ; i++ )
-	{
-		if ( !CG_ConfigForce( i, forceName, channel ) )
-			break;
-
-		if ( forceName[0] == '*' ) {
-			continue;	// custom force???
-		}
-		if (!(i&7)) {
-			CG_LoadingString( forceName );
-		}
-
-		cgs.force_precache[i] = cgi_FF_Register( forceName, channel );
-	}
-}
-#endif // _IMMERSION
 /*
 =============================================================================
 
@@ -2004,9 +1889,6 @@ static void CG_GameStateReceived( void ) {
 
 	CG_RegisterSounds();
 
-#ifdef _IMMERSION
-	CG_RegisterForces();
-#endif // _IMMERSION
 	CG_RegisterGraphics();
 
 	//jfm: moved down to preinit

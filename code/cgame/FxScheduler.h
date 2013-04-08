@@ -134,9 +134,6 @@ enum EPrimType
 	Cylinder,
 	Emitter,		// emits effects as it moves, can also attach a chunk
 	Sound,
-#ifdef _IMMERSION
-	Force,
-#endif // _IMMERSION
 	Decal,			// projected onto architecture
 	OrientedParticle,
 	Electricity,
@@ -300,9 +297,6 @@ public:
 	bool ParseModels( CGPValue *grp );
 	bool ParseShaders( CGPValue *grp );
 	bool ParseSounds( CGPValue *grp );
-#ifdef _IMMERSION
-	bool ParseForces( CGPValue *grp );
-#endif // _IMMERSION
 
 	bool ParseImpactFxStrings( CGPValue *grp );
 	bool ParseDeathFxStrings( CGPValue *grp );
@@ -468,11 +462,6 @@ public:
 
 	//for muzzle
 	void	PlayEffect( const char *file, int clientID, bool isPortal = false );
-
-#ifdef _IMMERSION	// for ff-system
-	void	PlayEffect( int id, int clientNum, vec3_t org, vec3_t fwd, bool isPortal = false );
-	void	PlayEffect( const char *file, int clientNum, vec3_t origin, vec3_t forward, bool isPortal = false );
-#endif // _IMMERSION
 
 	void	StopEffect( const char *file, const int boltInfo, bool isPortal = false );	//find a scheduled Looping effect with these parms and kill it
 

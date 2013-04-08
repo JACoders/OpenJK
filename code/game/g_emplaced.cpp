@@ -384,9 +384,6 @@ extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 #endif
 
 	G_Sound( self, G_SoundIndex( "sound/weapons/eweb/eweb_mount.mp3" ));
-#ifdef _IMMERSION
-	G_Force( self, G_ForceIndex( "fffx/weapons/emplaced/emplaced_mount", FF_CHANNEL_TOUCH ) );
-#endif // _IMMERSION
 
 	if ( !(self->spawnflags&EMPLACED_PLAYERUSE) || activator->s.number == 0 )
 	{//player-only usescript or any usescript
@@ -636,9 +633,6 @@ extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 #endif
 
 		G_Sound( self, G_SoundIndex( "sound/weapons/emplaced/emplaced_mount.mp3" ));
-#ifdef _IMMERSION
-		G_Force( self, G_ForceIndex( "fffx/weapons/emplaced/emplaced_mount", FF_CHANNEL_TOUCH ) );
-#endif // _IMMERSION
 
 		if ( !(self->spawnflags&EMPLACED_PLAYERUSE) || activator->s.number == 0 )
 		{//player-only usescript or any usescript
@@ -1084,9 +1078,6 @@ void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd )
 			G_Sound( ent, G_SoundIndex( "sound/weapons/emplaced/emplaced_dismount.mp3" ));
 
 		}
-#ifdef _IMMERSION
-		G_Force( ent, G_ForceIndex( "fffx/weapons/emplaced/emplaced_dismount", FF_CHANNEL_TOUCH ) );
-#endif // _IMMERSION
 
 		ExitEmplacedWeapon( ent );
 		(*ucmd)->buttons &= ~BUTTON_USE;

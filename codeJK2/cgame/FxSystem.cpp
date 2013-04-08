@@ -136,16 +136,3 @@ void SFxHelper::CameraShake( vec3_t origin, float intensity, int radius, int tim
 {
 	CG_ExplosionEffects( origin, intensity, radius, time );
 }
-#ifdef _IMMERSION
-//------------------------------------------------------
-ffHandle_t SFxHelper::RegisterForce( const char *force, int channel )
-{
-	return cgi_FF_Register( force, channel );
-}
-
-//------------------------------------------------------
-void SFxHelper::PlayForce( int entityNum, ffHandle_t ff )
-{
-	cgi_FF_Start( ff, entityNum );
-}
-#endif // _IMMERSION

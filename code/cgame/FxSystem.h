@@ -57,10 +57,6 @@ struct SFxHelper
 	void	PlayLocalSound( sfxHandle_t sfx, int channelNum );
 	int		RegisterSound( const char *sound );
 
-#ifdef _IMMERSION
-	void	PlayForce( int entityNum, ffHandle_t ff );
-	ffHandle_t RegisterForce( const char *force, int channel );
-#endif // _IMMERSION
 	//G2
 	int		GetOriginAxisFromBolt(const centity_t &cent, int modelNum, int boltNum, vec3_t /*out*/origin, vec3_t /*out*/*axis);
 

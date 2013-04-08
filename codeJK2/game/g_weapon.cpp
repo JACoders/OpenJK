@@ -3029,9 +3029,6 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 	vec3_t		mins, maxs, end, start;
 
 	G_Sound( ent, G_SoundIndex( "sound/weapons/baton/fire" ));
-#ifdef _IMMERSION
-	G_Force( ent, G_ForceIndex( "fffx/weapons/baton/fire", FF_CHANNEL_WEAPON ) );
-#endif // _IMMERSION
 
 	VectorCopy( wpMuzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );
@@ -3801,9 +3798,6 @@ extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 #endif
 
 		G_Sound( self, G_SoundIndex( "sound/weapons/emplaced/emplaced_mount.mp3" ));
-#ifdef _IMMERSION
-		G_Force( self, G_ForceIndex( "fffx/weapons/emplaced/emplaced_mount", FF_CHANNEL_TOUCH ) );
-#endif // _IMMERSION
 	}
 }
 

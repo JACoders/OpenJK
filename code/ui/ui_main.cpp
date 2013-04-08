@@ -2584,18 +2584,12 @@ void _UI_Init( qboolean inGameLoad )
 	uiInfo.uiDC.textWidth			= &Text_Width;
 	uiInfo.uiDC.feederItemImage		= &UI_FeederItemImage;
 	uiInfo.uiDC.feederItemText		= &UI_FeederItemText;
-#ifdef _IMMERSION
-	uiInfo.uiDC.registerForce		= &trap_FF_Register;
-	uiInfo.uiDC.startForce			= &trap_FF_Start;
-#endif // _IMMERSION
 	uiInfo.uiDC.ownerDrawHandleKey	= &UI_OwnerDrawHandleKey;
 
 	uiInfo.uiDC.registerSkin		= re.RegisterSkin;
 
-#ifndef _XBOX
 	uiInfo.uiDC.g2_SetSkin = G2API_SetSkin;
 	uiInfo.uiDC.g2_SetBoneAnim = G2API_SetBoneAnim;
-#endif
 	uiInfo.uiDC.g2_RemoveGhoul2Model = G2API_RemoveGhoul2Model;
 	uiInfo.uiDC.g2_InitGhoul2Model = G2API_InitGhoul2Model;
 	uiInfo.uiDC.g2_CleanGhoul2Models = G2API_CleanGhoul2Models;
@@ -3259,53 +3253,6 @@ qboolean Asset_Parse(char **buffer)
 			continue;
 		}
 
-#ifdef _IMMERSION
-
-		if (Q_stricmp(token, "menuEnterForce") == 0)
-		{
-			if (PC_ParseString(&tempStr))
-			{
-				PC_ParseWarning("Bad 1st parameter for keyword 'menuEnterForce'");
-				return qfalse;
-			}
-			uiInfo.uiDC.Assets.menuEnterForce = trap_FF_Register( tempStr );
-			continue;
-		}
-
-		if (Q_stricmp(token, "menuExitForce") == 0)
-		{
-			if (PC_ParseString(&tempStr))
-			{
-				PC_ParseWarning("Bad 1st parameter for keyword 'menuExitForce'");
-				return qfalse;
-			}
-			uiInfo.uiDC.Assets.menuExitForce = trap_FF_Register( tempStr );
-			continue;
-		}
-
-		if (Q_stricmp(token, "itemFocusForce") == 0)
-		{
-			if (PC_ParseString(&tempStr))
-			{
-				PC_ParseWarning("Bad 1st parameter for keyword 'itemFocusForce'");
-				return qfalse;
-			}
-			uiInfo.uiDC.Assets.itemFocusForce = trap_FF_Register( tempStr );
-			continue;
-		}
-
-		if (Q_stricmp(token, "menuBuzzForce") == 0)
-		{
-			if (PC_ParseString(&tempStr))
-			{
-				PC_ParseWarning("Bad 1st parameter for keyword 'menuBuzzForce'");
-				return qfalse;
-			}
-			uiInfo.uiDC.Assets.menuBuzzForce = trap_FF_Register( tempStr );
-			continue;
-		}
-
-#endif // _IMMERSION
 		if (Q_stricmp(token, "cursor") == 0) 
 		{
 			if (PC_ParseString(&tempStr))
@@ -3418,13 +3365,6 @@ static void UI_Update(const char *name)
 		ui.Cmd_ExecuteText( EXEC_APPEND, "snd_restart\n" );
 		return;
 	}
-#ifdef _IMMERSION
-	if (Q_stricmp(name, "ff") == 0) 
-	{
-		ui.Cmd_ExecuteText( EXEC_APPEND, "ff_restart\n");
-		return;
-	}
-#endif // _IMMERSION
 
 	if (Q_stricmp(name, "ui_SetName") == 0) 
 	{

@@ -18,71 +18,40 @@ extern qboolean PM_SaberInTransitionAny( int move );
 extern qboolean PM_SaberInSpecialAttack( int anim );
 
 //-------------------------------------------------------------------------
-#ifdef _IMMERSION
-void G_MissileBounceEffect( gentity_t *ent, int hitEntNum, vec3_t org, vec3_t dir )
-#else
 void G_MissileBounceEffect( gentity_t *ent, vec3_t org, vec3_t dir )
-#endif // _IMMERSION
 {
 	//FIXME: have an EV_BOUNCE_MISSILE event that checks the s.weapon and does the appropriate effect
 	switch( ent->s.weapon )
 	{
 	case WP_BOWCASTER:
-#ifdef _IMMERSION
-		G_PlayEffect( "bowcaster/deflect", hitEntNum, ent->currentOrigin, dir );
-#else
 		G_PlayEffect( "bowcaster/deflect", ent->currentOrigin, dir );
-#endif // _IMMERSION
 		break;
 	case WP_BLASTER:
 	case WP_BRYAR_PISTOL:
-#ifdef _IMMERSION
-		G_PlayEffect( "blaster/deflect", hitEntNum, ent->currentOrigin, dir );
-#else
 		G_PlayEffect( "blaster/deflect", ent->currentOrigin, dir );
-#endif // _IMMERSION
 		break;
 	default:
 		{
 			gentity_t *tent = G_TempEntity( org, EV_GRENADE_BOUNCE );
 			VectorCopy( dir, tent->pos1 );
 			tent->s.weapon = ent->s.weapon;
-#ifdef _IMMERSION
-			if ( hitEntNum != -1 )
-			{
-				tent->s.saberActive = 1;
-				tent->s.otherEntityNum = hitEntNum;
-			}
-#endif // _IMMERSION
 		}
 		break;
 	}
 }
 
-#ifdef _IMMERSION
-void G_MissileReflectEffect( gentity_t *ent, int hitEntNum, vec3_t org, vec3_t dir )
-#else
 void G_MissileReflectEffect( gentity_t *ent, vec3_t org, vec3_t dir )
-#endif // _IMMERSION
 {
 	//FIXME: have an EV_BOUNCE_MISSILE event that checks the s.weapon and does the appropriate effect
 	switch( ent->s.weapon )
 	{
 	case WP_BOWCASTER:
-#ifdef _IMMERSION
-		G_PlayEffect( "bowcaster/deflect", hitEntNum, ent->currentOrigin, dir );
-#else
 		G_PlayEffect( "bowcaster/deflect", ent->currentOrigin, dir );
-#endif // _IMMERSION
 		break;
 	case WP_BLASTER:
 	case WP_BRYAR_PISTOL:
 	default:
-#ifdef _IMMERSION
-		G_PlayEffect( "blaster/deflect", hitEntNum, ent->currentOrigin, dir );
-#else
 		G_PlayEffect( "blaster/deflect", ent->currentOrigin, dir );
-#endif // _IMMERSION
 		break;
 	}
 }
@@ -645,11 +614,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 		{
 			G_MissileAddAlerts( ent );
 		}
-#ifdef _IMMERSION
-		G_MissileBounceEffect( ent, (other->contents & CONTENTS_LIGHTSABER && !other->owner->s.saberInFlight ? other->owner->s.number : -1), trace->endpos, trace->plane.normal );
-#else
 		G_MissileBounceEffect( ent, trace->endpos, trace->plane.normal );
-#endif // _IMMERSION
 
 		return;
 	}
@@ -670,12 +635,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 			{
 				ent->s.eFlags &= ~EF_BOUNCE_SHRAPNEL;
 			}
-#ifdef _IMMERSION
-		// might deflect flechette spam in bespin_platform.bsp
-		G_MissileBounceEffect( ent, (other->contents & CONTENTS_LIGHTSABER && !other->owner->s.saberInFlight ? other->owner->s.number : -1), trace->endpos, trace->plane.normal );
-#else
 			G_MissileBounceEffect( ent, trace->endpos, trace->plane.normal );
-#endif // _IMMERSION
 			return;
 		}
 	}
@@ -750,22 +710,14 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 					//do the effect
 					VectorCopy( ent->s.pos.trDelta, diff );
 					VectorNormalize( diff );
-#ifdef _IMMERSION
-					G_MissileReflectEffect( ent, other->owner->s.number, trace->endpos, trace->plane.normal );
-#else
 					G_MissileReflectEffect( ent, trace->endpos, trace->plane.normal );
-#endif // _IMMERSION
 					return;
 				}
 			}
 		}
 		else
 		{//still do the bounce effect
-#ifdef _IMMERSION
-			G_MissileReflectEffect( ent, other->owner->s.number, trace->endpos, trace->plane.normal );
-#else
 			G_MissileReflectEffect( ent, trace->endpos, trace->plane.normal );
-#endif // _IMMERSION
 		}
 	}
 

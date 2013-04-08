@@ -13,12 +13,6 @@
 	   		
 
 #include "client.h"
-#ifdef _IMMERSION
-#include "../ff/cl_ff.h"
-#include "../ff/ff.h"
-#else
-#include "fffx.h"
-#endif // _IMMERSION
 #include "vmachine.h"
 
 vm_t	cgvm;
@@ -540,39 +534,6 @@ cgameImport_t CL_ConvertJK2SysCall( cgameJK2Import_t import )
 		case CG_S_STARTBACKGROUNDTRACK_JK2:
 			return CG_S_STARTBACKGROUNDTRACK;
 			break;
-#ifdef _IMMERSION
-		case CG_FF_START_JK2:
-			return CG_FF_START;
-			break;
-		case CG_FF_STOP_JK2:	
-			return CG_FF_STOP;
-			break;
-		case CG_FF_STOPALL_JK2:
-			return CG_FF_STOPALL;
-			break;
-		case CG_FF_SHAKE_JK2:
-			return CG_FF_SHAKE;
-			break;
-		case CG_FF_REGISTER_JK2:
-			return CG_FF_REGISTER;
-			break;
-		case CG_FF_ADDLOOPINGFORCE_JK2:
-			return CG_FF_ADDLOOPINGFORCE;
-			break;
-#else
-		case CG_FF_STARTFX_JK2:
-			return CG_FF_STARTFX;
-			break;
-		case CG_FF_ENSUREFX_JK2:
-			return CG_FF_ENSUREFX;
-			break;
-		case CG_FF_STOPFX_JK2:	
-			return CG_FF_STOPFX;
-			break;
-		case CG_FF_STOPALLFX_JK2:
-			return CG_FF_STOPALLFX;
-			break;
-#endif // _IMMERSION
 		case CG_R_LOADWORLDMAP_JK2:
 			return CG_R_LOADWORLDMAP;
 			break;
@@ -1007,46 +968,6 @@ int CL_CgameSystemCalls( int *args ) {
 		return 0;
 	case CG_S_GETSAMPLELENGTH:
 		return S_GetSampleLengthInMilliSeconds(  args[1]);
-#ifdef _IMMERSION
-	case CG_FF_START:
-		CL_FF_Start( (ffHandle_t) args[1], (int) args[2] );
-		return 0;
-	case CG_FF_STOP:
-		CL_FF_Stop( (ffHandle_t) args[1], (int) args[2] );
-		return 0;
-	case CG_FF_STOPALL:
-		FF_StopAll();
-		return 0;
-	case CG_FF_SHAKE:
-		FF_Shake( (int) args[1], (int) args[2] );
-		return 0;
-	case CG_FF_REGISTER:
-		return FF_Register( (const char *) VMA(1), (int) args[2] );
-	case CG_FF_ADDLOOPINGFORCE:
-		CL_FF_AddLoopingForce( (ffHandle_t) args[1], (int) args[2] );
-		return 0;
-#else
-	case CG_FF_STARTFX:
-		FFFX_START( (ffFX_e) args[1] );
-		return 0;
-	case CG_FF_ENSUREFX:
-		FFFX_ENSURE( (ffFX_e) args[1] );
-		return 0;
-	case CG_FF_STOPFX:
-		FFFX_STOP( (ffFX_e) args[1] );
-		return 0;
-	case CG_FF_STOPALLFX:
-		FFFX_STOPALL;
-		return 0;
-#endif // _IMMERSION
-#ifdef _XBOX
-	case CG_FF_XBOX_SHAKE:
-		FF_XboxShake( VMF(1), (int) args[2] );
-		return 0;
-	case CG_FF_XBOX_DAMAGE:
-		FF_XboxDamage( (int) args[1], VMF(2) );
-		return 0;
-#endif
 	case CG_R_LOADWORLDMAP:
 		re.LoadWorld( (const char *) VMA(1) );
 		return 0; 

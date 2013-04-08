@@ -11,9 +11,6 @@
 #include "g_items.h"
 
 #define PICKUPSOUND "sound/weapons/w_pkup.wav"
-#ifdef _IMMERSION
-#define PICKUPFORCE "fffx/weapons/w_pkup"
-#endif // _IMMERSION
 
 //qboolean COM_ParseInt( char **data, int *i );
 //qboolean COM_ParseString( char **data, char **s ); 
@@ -37,9 +34,6 @@ static void IT_PickupSound (const char **holdBuf);
 static void IT_Tag (const char **holdBuf);
 static void IT_Type (const char **holdBuf);
 static void IT_WorldModel (const char **holdBuf);
-#ifdef _IMMERSION
-static void IT_PickupForce( const char **holdBuf);
-#endif // _IMMERSION
 
 
 typedef struct 
@@ -49,11 +43,7 @@ typedef struct
 } itemParms_t;
 
 
-#ifdef _IMMERSION
-#define IT_PARM_MAX 11
-#else
 #define IT_PARM_MAX 10
-#endif // _IMMERSION
 
 itemParms_t ItemParms[IT_PARM_MAX] = 
 {
@@ -67,9 +57,6 @@ itemParms_t ItemParms[IT_PARM_MAX] =
 	"tag",				IT_Tag,
 	"type",				IT_Type,
 	"worldmodel",		IT_WorldModel,
-#ifdef _IMMERSION
-	"pickupforce",		IT_PickupForce,
-#endif // _IMMERSION
 };
 
 static void IT_SetDefaults()
@@ -87,10 +74,6 @@ static void IT_SetDefaults()
 	bg_itemlist[itemParms.itemNum].pickup_sound = PICKUPSOUND;	//give it a default sound
 	bg_itemlist[itemParms.itemNum].precaches = NULL;
 	bg_itemlist[itemParms.itemNum].sounds = NULL;
-#ifdef _IMMERSION
-	bg_itemlist[itemParms.itemNum].pickup_force = PICKUPFORCE;
-	bg_itemlist[itemParms.itemNum].forces = NULL;
-#endif // _IMMERSION
 }
 
 static void IT_Name(const char **holdBuf)
@@ -600,28 +583,6 @@ static void IT_PickupSound(const char **holdBuf)
 	bg_itemlist[itemParms.itemNum].pickup_sound = G_NewString(tokenStr);
 }
 
-#ifdef _IMMERSION
-static void IT_PickupForce(const char **holdBuf)
-{
-	int len;
-	const char	*tokenStr;
-
-	if (COM_ParseString(holdBuf,&tokenStr)) 
-	{
-		return;
-	}
-
-	len = strlen(tokenStr);
-	len++;
-	if (len > 32)
-	{
-		len = 32;
-		gi.Printf("WARNING: Pickup Force too long in external ITEMS.DAT '%s'\n", tokenStr);
-	}
-
-	bg_itemlist[itemParms.itemNum].pickup_force = G_NewString(tokenStr);
-}
-#endif // _IMMERSION
 static void IT_ParseWeaponParms(const char **holdBuf)
 {
 	static int	weaponNum,ammoNum;

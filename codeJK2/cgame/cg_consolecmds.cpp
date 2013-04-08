@@ -96,18 +96,12 @@ void CG_ToggleBinoculars( void )
 		}
 
 		cgi_S_StartSound( NULL, cg.snap->ps.clientNum, CHAN_AUTO, cgs.media.zoomStart );
-#ifdef _IMMERSION
-		cgi_FF_Start( cgs.media.zoomStartForce, cg.snap->ps.clientNum );
-#endif // _IMMERSION
 	}
 	else
 	{
 		cg.zoomMode = 0;
 		cg.zoomTime = cg.time;
 		cgi_S_StartSound( NULL, cg.snap->ps.clientNum, CHAN_AUTO, cgs.media.zoomEnd );
-#ifdef _IMMERSION
-		cgi_FF_Start( cgs.media.zoomEndForce, cg.snap->ps.clientNum );
-#endif // _IMMERSION
 	}
 }
 
@@ -144,18 +138,12 @@ void CG_ToggleLAGoggles( void )
 		}
 
 		cgi_S_StartSound( NULL, cg.snap->ps.clientNum, CHAN_AUTO, cgs.media.zoomStart );
-#ifdef _IMMERSION
-		cgi_FF_Start( cgs.media.zoomStartForce, cg.snap->ps.clientNum );
-#endif // _IMMERSION
 	}
 	else
 	{
 		cg.zoomMode = 0;
 		cg.zoomTime = cg.time;
 		cgi_S_StartSound( NULL, cg.snap->ps.clientNum, CHAN_AUTO, cgs.media.zoomEnd );
-#ifdef _IMMERSION
-		cgi_FF_Start( cgs.media.zoomEndForce, cg.snap->ps.clientNum );
-#endif // _IMMERSION
 	}
 }
 

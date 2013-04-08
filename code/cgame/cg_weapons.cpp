@@ -9,22 +9,6 @@
 
 #include "..\game\anims.h"
 
-#ifdef _IMMERSION
-#include "../ff/ff.h"
-#else
-/////////////////////  this is a bit kludgy, but it only gives access to one
-//							enum table because of the #define. May get changed.
-#define CGAME_ONLY
-#include "../client/fffx.h"
-//
-/////////////////////
-#endif // _IMMERSION
-
-#ifdef _XBOX
-extern bool CL_ExtendSelectTime(void);
-#endif
-
-
 extern void CG_LightningBolt( centity_t *cent, vec3_t origin );
 
 #define	PHASER_HOLDFRAME	2
@@ -174,26 +158,6 @@ void CG_RegisterWeapon( int weaponNum ) {
 		weaponInfo->selectSound = cgi_S_RegisterSound( weaponData[weaponNum].selectSnd );
 	}
 
-#ifdef _IMMERSION
-	if (weaponData[weaponNum].firingFrc[0]) {
-		weaponInfo->firingForce = cgi_FF_Register( weaponData[weaponNum].firingFrc, FF_CHANNEL_WEAPON );
-	}
-	if (weaponData[weaponNum].altFiringFrc[0]) {
-		weaponInfo->altFiringForce = cgi_FF_Register( weaponData[weaponNum].altFiringFrc, FF_CHANNEL_WEAPON );
-	}
-	if (weaponData[weaponNum].stopFrc[0]) {
-		weaponInfo->stopForce = cgi_FF_Register( weaponData[weaponNum].stopFrc, FF_CHANNEL_WEAPON );
-	}
-	if (weaponData[weaponNum].chargeFrc[0]) {
-		weaponInfo->chargeForce = cgi_FF_Register( weaponData[weaponNum].chargeFrc, FF_CHANNEL_WEAPON );
-	}
-	if (weaponData[weaponNum].altChargeFrc[0]) {
-		weaponInfo->altChargeForce = cgi_FF_Register( weaponData[weaponNum].altChargeFrc, FF_CHANNEL_WEAPON );
-	}
-	if (weaponData[weaponNum].selectFrc[0]) {
-		weaponInfo->selectForce = cgi_FF_Register( weaponData[weaponNum].selectFrc, FF_CHANNEL_WEAPON );
-	}
-#endif // _IMMERSION
 	// give us missile models if we should
 	if (weaponData[weaponNum].missileMdl[0]) 	{
 		weaponInfo->missileModel = cgi_R_RegisterModel(weaponData[weaponNum].missileMdl );
@@ -307,42 +271,6 @@ void CG_RegisterWeapon( int weaponNum ) {
 			cgi_S_RegisterSound( va( "sound/weapons/saber/rainfizz%d.wav", i ) );
 		}
 		cgi_S_RegisterSound( "sound/movers/objects/saber_slam" );
-#ifdef _IMMERSION
-		cgi_FF_Register( "fffx/weapons/saber/saberon", FF_CHANNEL_WEAPON );
-		cgi_FF_Register( "fffx/weapons/saber/enemy_saber_on", FF_CHANNEL_WEAPON );
-		cgi_FF_Register( "fffx/weapons/saber/saberonquick", FF_CHANNEL_WEAPON );
-		cgi_FF_Register( "fffx/weapons/saber/saberoff", FF_CHANNEL_WEAPON );
-		cgi_FF_Register( "fffx/weapons/saber/enemy_saber_off", FF_CHANNEL_WEAPON );
-		cgi_FF_Register( "fffx/weapons/saber/saberspinoff", FF_CHANNEL_WEAPON );
-		cgi_FF_Register( "fffx/weapons/saber/saberoffquick", FF_CHANNEL_WEAPON );
-		for ( i = 1; i < 4; i++ )
-		{
-			cgi_FF_Register( va( "fffx/weapons/saber/saberbounce%d", i ), FF_CHANNEL_WEAPON );
-		}
-		cgi_FF_Register( "fffx/weapons/saber/saberhit", FF_CHANNEL_WEAPON );
-		for ( i = 1; i < 4; i++ )
-		{
-			cgi_FF_Register( va( "fffx/weapons/saber/saberhitwall%d", i ), FF_CHANNEL_WEAPON );
-		}
-		for ( i = 1; i < 10; i++ )
-		{
-			cgi_FF_Register( va( "fffx/weapons/saber/saberblock%d", i ), FF_CHANNEL_WEAPON );
-		}
-		for ( i = 1; i < 6; i++ )
-		{
-			cgi_FF_Register( va( "fffx/weapons/saber/saberhum%d", i ), FF_CHANNEL_WEAPON );
-		}
-		for ( i = 1; i < 10; i++ )
-		{
-			cgi_FF_Register( va( "fffx/weapons/saber/saberhup%d", i ), FF_CHANNEL_WEAPON );
-		}
-		cgi_FF_Register( "fffx/weapons/saber/hitwater", FF_CHANNEL_WEAPON );
-		cgi_FF_Register( "fffx/weapons/saber/boiling", FF_CHANNEL_WEAPON );
-		for ( i = 1; i < 4; i++ )
-		{
-			cgi_FF_Register( va( "fffx/weapons/saber/rainfizz%d", i ), FF_CHANNEL_WEAPON );
-		}
-#endif // _IMMERSION
 
 		//force sounds
 		cgi_S_RegisterSound( "sound/weapons/force/heal.mp3" );
@@ -476,9 +404,6 @@ void CG_RegisterWeapon( int weaponNum ) {
 		cgi_S_RegisterSound( "sound/weapons/disruptor/zoomstart.wav" );
 		cgi_S_RegisterSound( "sound/weapons/disruptor/zoomend.wav" );
 		cgs.media.disruptorZoomLoop = cgi_S_RegisterSound( "sound/weapons/disruptor/zoomloop.wav" );
-#ifdef _IMMERSION
-		cgs.media.disruptorZoomLoopForce = cgi_FF_Register( "fffx/weapons/disruptor/zoomloop", FF_CHANNEL_WEAPON );
-#endif // _IMMERSION
 
 		// Disruptor gun zoom interface
 		cgs.media.disruptorMask			= cgi_R_RegisterShader( "gfx/2d/cropCircle2");
@@ -2646,9 +2571,6 @@ void CG_Weapon_f( void )
 						else
 						{
 							cgi_S_StartSound (NULL, cg.snap->ps.clientNum, CHAN_AUTO, cgs.sound_precache[cg_entities[0].gent->client->ps.saber[0].soundOff] );
-#ifdef _IMMERSION
-						cgi_FF_Start( cgi_FF_Register( "fffx/weapons/saber/saberoff", FF_CHANNEL_WEAPON ), cg.snap->ps.clientNum );
-#endif // _IMMERSION
 						}
 					}
 					else
@@ -2716,10 +2638,6 @@ The current weapon has just run out of ammo
 void CG_OutOfAmmoChange( void ) {
 	int		i;
 	int		original;
-
-#ifndef _IMMERSION
-	cgi_FF_StartFX( fffx_OutOfAmmo );
-#endif // _IMMERSION
 
 	if ( cg.weaponSelectTime + 200 > cg.time )
 		return;
@@ -2834,64 +2752,6 @@ void CG_FireWeapon( centity_t *cent, qboolean alt_fire )
 			return;
 		}
 	}
-	
-#ifndef _IMMERSION
-	// force feedback...
-	//
-	if ( cent->gent->s.number == 0 )
-	switch (ent->weapon)
-	{
-		// FIXME: I can NOT get this !@#$% iFeel USB mouse to work, it completely fails to register even with their
-		//		latest drivers, and I haven't got time to get it working now so close to release, so here's a complete 
-		//		guess as to which FX forces go with which weapon. Sorry if they're crap...
-		//
-		case WP_SABER:				
-			cgi_FF_StartFX( fffx_SwitchClick );	// repeat-fire handled above, but this just give an initial jolt
-			break;
-
-		case WP_DISRUPTOR:
-		case WP_BRYAR_PISTOL:	
-		case WP_BLASTER_PISTOL:	
-		case WP_JAWA:	
-		case WP_THERMAL:
-		case WP_DET_PACK:
-			cgi_FF_StartFX( alt_fire ? fffx_Shotgun : fffx_Pistol);	
-			break;
-
-		case WP_FLECHETTE:	
-			cgi_FF_StartFX( alt_fire ? fffx_Shotgun : fffx_ShortPlasma);
-			break;			
-			
-		case WP_REPEATER:
-			cgi_FF_StartFX( alt_fire ? fffx_MachineGun : fffx_GatlingGun);
-			break;
-
-		case WP_BLASTER:
-			cgi_FF_StartFX( alt_fire ? fffx_Shotgun : fffx_Pistol);	
-			break;
- 
-		case WP_ROCKET_LAUNCHER:
-		case WP_CONCUSSION:
-			cgi_FF_StartFX( fffx_RocketLaunch );
-			break;
-
-		case WP_BOWCASTER:
-			cgi_FF_StartFX( alt_fire ? fffx_Land : fffx_Jump);	
-			break;
-
-		case WP_DEMP2:
-			cgi_FF_StartFX( alt_fire ? fffx_Shotgun : fffx_Pistol);	
-			break;
-
-		case WP_STUN_BATON:
-			cgi_FF_StartFX( fffx_Laser1 );
-			break;
-
-		case WP_TRIP_MINE:
-			cgi_FF_StartFX( fffx_OutOfAmmo );
-			break;
-	}
-#endif // _IMMERSION
 
 	// Do overcharge sound that get's added to the top
 /*	if (( ent->powerups & ( 1<<PW_WEAPON_OVERCHARGE )))
@@ -2954,58 +2814,24 @@ void CG_BounceEffect( centity_t *cent, int weapon, vec3_t origin, vec3_t normal 
 	case WP_THERMAL:
 		if ( rand() & 1 ) {
 			cgi_S_StartSound( origin, ENTITYNUM_WORLD, CHAN_AUTO, cgs.media.grenadeBounce1 );
-#ifdef _IMMERSION
-			if ( cent->currentState.saberActive )
-			{
-				cgi_FF_Start( cgs.media.grenadeBounce1Force, cent->currentState.otherEntityNum );
-			}
-#endif // _IMMERSION
 		} else {
 			cgi_S_StartSound( origin, ENTITYNUM_WORLD, CHAN_AUTO, cgs.media.grenadeBounce2 );
-#ifdef _IMMERSION
-			if ( cent->currentState.saberActive )
-			{
-				cgi_FF_Start( cgs.media.grenadeBounce2Force, cent->currentState.otherEntityNum );
-			}
-#endif // _IMMERSION
 		}
 		break;
 
 	case WP_BOWCASTER:
-#ifdef _IMMERSION
-		if ( cent->currentState.saberActive )
-			theFxScheduler.PlayEffect( cgs.effects.bowcasterBounceEffect, FF_CLIENT( cent->currentState.otherEntityNum ), origin, normal );
-		else
-#endif // _IMMERSION
 		theFxScheduler.PlayEffect( cgs.effects.bowcasterBounceEffect, origin, normal );
 		break;
 
 	case WP_FLECHETTE:
-#ifdef _IMMERSION
-		if ( cent->currentState.saberActive )
-			theFxScheduler.PlayEffect( "flechette/ricochet", FF_CLIENT( cent->currentState.otherEntityNum ), origin, normal );
-		else
-#endif // _IMMERSION
 		theFxScheduler.PlayEffect( "flechette/ricochet", origin, normal );
 		break;
 
 	default:
 		if ( rand() & 1 ) {
 			cgi_S_StartSound( origin, ENTITYNUM_WORLD, CHAN_AUTO, cgs.media.grenadeBounce1 );
-#ifdef _IMMERSION
-			if ( cent->currentState.saberActive )
-			{
-				cgi_FF_Start( cgs.media.grenadeBounce1Force, cent->currentState.otherEntityNum );
-			}
-#endif // _IMMERSION
 		} else {
 			cgi_S_StartSound( origin, ENTITYNUM_WORLD, CHAN_AUTO, cgs.media.grenadeBounce2 );
-#ifdef _IMMERSION
-			if ( cent->currentState.saberActive )
-			{
-				cgi_FF_Start( cgs.media.grenadeBounce2Force, cent->currentState.otherEntityNum );
-			}
-#endif // _IMMERSION
 		}
 		break;
 	}

@@ -2233,11 +2233,7 @@ qboolean Script_SetFocus(itemDef_t *item, const char **args)
 		{
 			Menu_ClearFocus((menuDef_t *) item->parent);
 //JLF
-#ifdef _XBOX
-			Item_SetFocus(focusItem, 0,0); 
-#else
 			focusItem->window.flags |= WINDOW_HASFOCUS;
-#endif
 //END JLF
 
 			if (focusItem->onFocus) 
@@ -2248,12 +2244,6 @@ qboolean Script_SetFocus(itemDef_t *item, const char **args)
 			{
 				DC->startLocalSound( DC->Assets.itemFocusSound, CHAN_LOCAL_SOUND );
 			}
-#ifdef _IMMERSION
-			if (DC->Assets.itemFocusForce)
-			{
-				DC->startForce( DC->Assets.itemFocusForce );
-			}
-#endif // _IMMERSION
 		}
 	}
 
@@ -2830,22 +2820,7 @@ qboolean Script_playLooped(itemDef_t *item, const char **args)
 	return qtrue;
 }
 */
-#ifdef _IMMERSION
-/*
-=================
-Script_FFPlay
-=================
-*/
-qboolean Script_FFPlay(itemDef_t *item, const char **args) 
-{
-	const char *val;
-	if (String_Parse(args, &val)) 
-	{
-		DC->startForce(DC->registerForce(val, FF_CHANNEL_MENU));
-	}
-	return qtrue;
-}
-#endif // _IMMERSION
+
 /*
 =================
 Script_Orbit
@@ -2885,9 +2860,6 @@ commandDef_t commandList[] =
   {"playVoice",		&Script_PlayVoice},					// group/name
   {"stopVoice",		&Script_StopVoice},					// group/name
 //  {"playlooped",	&Script_playLooped},			// group/name
-#ifdef _IMMERSION
-  {"ffplay",		&Script_FFPlay},
-#endif // _IMMERSION
   {"setasset",		&Script_SetAsset},				// works on this
   {"setbackground", &Script_SetBackground},			// works on this
   {"setcolor",		&Script_SetColor},				// works on this
@@ -3032,31 +3004,6 @@ qboolean ItemParse_focusSound( itemDef_t *item)
 	item->focusSound = DC->registerSound(temp, qfalse);
 	return qtrue;
 }
-
-
-
-#ifdef _IMMERSION
-/*
-===============
-ItemParse_focusForce
-	name <string>
-===============
-*/
-qboolean ItemParse_focusForce( itemDef_t *item) 
-{
-	const char *temp;
-
-	if (PC_ParseString(&temp)) 
-	{
-//#ifdef _DEBUG
-//extern void UI_Debug_EnterReference(LPCSTR ps4LetterType, LPCSTR psItemString);
-//#endif
-		return qfalse;
-	}
-	item->focusForce = DC->registerForce(temp, FF_CHANNEL_MENU);
-	return qtrue;
-}
-#endif // _IMMERSION
 
 /*
 ===============
@@ -4887,9 +4834,6 @@ keywordHash_t itemParseKeywords[] = {
 	{"feeder",			ItemParse_feeder,			},
 	{"flag",			ItemParse_flag,				},
 	{"focusSound",		ItemParse_focusSound,		},
-#ifdef _IMMERSION
-	{"focusForce",		ItemParse_focusForce,		},
-#endif // _IMMERSION
 	{"font",			ItemParse_font,				},
 	{"forecolor",		ItemParse_forecolor,		},
 	{"group",			ItemParse_group,			},
@@ -9286,10 +9230,6 @@ qboolean Item_SetFocus(itemDef_t *item, float x, float y)
 	itemDef_t *oldFocus;
 	sfxHandle_t *sfx = &DC->Assets.itemFocusSound;
 	qboolean playSound = qfalse;
-#ifdef _IMMERSION
-	ffHandle_t *ff = &DC->Assets.itemFocusForce;
-	qboolean playForce = qfalse;
-#endif // _IMMERSION
 	// sanity check, non-null, not a decoration and does not already have the focus
 	if (item == NULL || item->window.flags & WINDOW_DECORATION || item->window.flags & WINDOW_HASFOCUS || !(item->window.flags & WINDOW_VISIBLE) || (item->window.flags & WINDOW_INACTIVE)) 
 	{
@@ -9316,9 +9256,7 @@ qboolean Item_SetFocus(itemDef_t *item, float x, float y)
 		r = item->textRect;
 		//r.y -= r.h;
 //JLFMOUSE
-#ifndef _XBOX
 		if (Rect_ContainsPoint(&r, x, y)) 
-#endif
 		{
 			item->window.flags |= WINDOW_HASFOCUS;
 			if (item->focusSound) 
@@ -9326,15 +9264,7 @@ qboolean Item_SetFocus(itemDef_t *item, float x, float y)
 				sfx = &item->focusSound;
 			}
 			playSound = qtrue;
-#ifdef _IMMERSION
-			if (item->focusForce)
-			{
-				ff = &item->focusForce;
-			}
-			playForce = qtrue;
-#endif // _IMMERSION
 		}
-#ifndef _XBOX
 		else 
 
 		{
@@ -9347,7 +9277,6 @@ qboolean Item_SetFocus(itemDef_t *item, float x, float y)
 				}
 			}
 		}
-#endif
 	} 
 	else 
 	{
@@ -9361,13 +9290,6 @@ qboolean Item_SetFocus(itemDef_t *item, float x, float y)
 			sfx = &item->focusSound;
 		}
 		playSound = qtrue;
-#ifdef _IMMERSION
-		if (item->focusForce)
-		{
-			ff = &item->focusForce;
-		}
-		playForce = qtrue;
-#endif // _IMMERSION
 	}
 
 	if (playSound && sfx) 
@@ -9375,12 +9297,6 @@ qboolean Item_SetFocus(itemDef_t *item, float x, float y)
 		DC->startLocalSound( *sfx, CHAN_LOCAL_SOUND );
 	}
 
-#ifdef _IMMERSION
-	if (playForce && ff)
-	{
-		DC->startForce( *ff );
-	}
-#endif // _IMMERSION
 	for (i = 0; i < parent->itemCount; i++) 
 	{
 		if (parent->items[i] == item) 

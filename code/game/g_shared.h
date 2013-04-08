@@ -873,15 +873,6 @@ typedef struct weaponInfo_s {
 	sfxHandle_t		altChargeSound;
 
 	sfxHandle_t		selectSound;	// sound played when weapon is selected
-
-#ifdef _IMMERSION
-	ffHandle_t		firingForce;
-	ffHandle_t		altFiringForce;
-	ffHandle_t		stopForce;
-	ffHandle_t		chargeForce;
-	ffHandle_t		altChargeForce;
-	ffHandle_t		selectForce;
-#endif // _IMMERSION
 } weaponInfo_t;
 
 extern sfxHandle_t CAS_GetBModelSound( const char *name, int stage );

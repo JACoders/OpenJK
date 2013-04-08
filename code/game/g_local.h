@@ -300,10 +300,6 @@ void G_PlayEffect( int fxID, const vec3_t origin, const vec3_t fwd );
 void G_PlayEffect( int fxID, const vec3_t origin, const vec3_t axis[3] );
 void G_PlayEffect( int fxID, const int modelIndex, const int boltIndex, const int entNum, const vec3_t origin, int iLoopTime = qfalse, qboolean isRelative = qfalse );//iLoopTime 0 = not looping, 1 for infinite, else duration
 void G_PlayEffect( int fxID, int entNum, const vec3_t fwd );
-#ifdef _IMMERSION
-void G_PlayEffect( const char *name, int clientNum, const vec3_t origin, const vec3_t fwd );
-void G_PlayEffect( int fxID, int clientNum, const vec3_t origin, const vec3_t fwd );
-#endif // _IMMERSION
 void G_StopEffect( int fxID, const int modelIndex, const int boltIndex, const int entNum );
 void G_StopEffect(const char *name, const int modelIndex, const int boltIndex, const int entNum );
 
@@ -323,13 +319,6 @@ gentity_t *G_TempEntity( const vec3_t origin, int event );
 void	G_Sound( gentity_t *ent, int soundIndex );
 void	G_FreeEntity( gentity_t *e );
 
-#ifdef _IMMERSION
-int		G_ForceIndex( const char *name, int channel );
-void	G_Force( gentity_t *ent, int forceIndex );
-void	G_ForceArea( gentity_t *ent, int forceIndex );
-void	G_ForceBroadcast( gentity_t *ent, int forceIndex );
-void	G_ForceStop( gentity_t* ent, int forceIndex );
-#endif // _IMMERSION
 void	G_TouchTriggers (gentity_t *ent);
 void	G_TouchTeamClients (gentity_t *ent);
 void	G_TouchSolids (gentity_t *ent);
