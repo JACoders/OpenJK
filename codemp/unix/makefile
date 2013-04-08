@@ -106,8 +106,8 @@ DLL_ONLY=false
       #NEWPGCC=/loki/global/x86/bin/gcc
       #NEWPGCC=/usr/bin/gcc 
       #NEWPGCC=/usr/local/bin/gcc
-      CC=gcc
-      CXX=g++
+      CC=clang
+      CXX=clang++
 # TTimo: legacy RELEASE_CFLAGS
 # NOTE: the -fomit-frame-pointer option leads to an unstable binary on my test box if it was built on the main box
 #   but building on the Mdk 7.2 baseline seems to work
