@@ -375,7 +375,7 @@ void AAS_ParseBSPEntities(void)
 	{
 		if (strcmp(token.string, "{"))
 		{
-			ScriptError(script, "invalid %s\n", token.string);
+			ScriptError(script, "invalid %s", token.string);
 			AAS_FreeBSPEntities();
 			FreeScript(script);
 			return;
@@ -396,7 +396,7 @@ void AAS_ParseBSPEntities(void)
 			ent->epairs = epair;
 			if (token.type != TT_STRING)
 			{
-				ScriptError(script, "invalid %s\n", token.string);
+				ScriptError(script, "invalid %s", token.string);
 				AAS_FreeBSPEntities();
 				FreeScript(script);
 				return;
@@ -416,7 +416,7 @@ void AAS_ParseBSPEntities(void)
 		} //end while
 		if (strcmp(token.string, "}"))
 		{
-			ScriptError(script, "missing }\n");
+			ScriptError(script, "missing }");
 			AAS_FreeBSPEntities();
 			FreeScript(script);
 			return;
@@ -452,7 +452,7 @@ void AAS_DumpBSPData(void)
 	Com_Memset( &bspworld, 0, sizeof(bspworld) );
 } //end of the function AAS_DumpBSPData
 //===========================================================================
-// load an bsp file
+// load a .bsp file
 //
 // Parameter:				-
 // Returns:					-

@@ -17,9 +17,10 @@
 #include <string.h>
 
 #include "qcommon/q_shared.h"
-#include "game/botlib.h"
+#include "botlib.h"
 #include "be_interface.h"			//for botimport.Print
 #include "l_libvar.h"
+#include "l_log.h"
 
 #define MAX_LOGFILENAMESIZE		1024
 

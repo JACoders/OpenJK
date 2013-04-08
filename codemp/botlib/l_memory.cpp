@@ -13,8 +13,9 @@
  *****************************************************************************/
 
 #include "qcommon/q_shared.h"
-#include "game/botlib.h"
+#include "botlib.h"
 #include "l_log.h"
+#include "l_memory.h"
 #include "be_interface.h"
 
 //#define MEMDEBUG

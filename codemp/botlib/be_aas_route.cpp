@@ -89,7 +89,7 @@ void AAS_RoutingInfo(void)
 // Returns:				-
 // Changes Globals:		-
 //===========================================================================
-__inline int AAS_ClusterAreaNum(int cluster, int areanum)
+static ID_INLINE int AAS_ClusterAreaNum(int cluster, int areanum)
 {
 	int side, areacluster;
 
@@ -149,7 +149,7 @@ void AAS_InitTravelFlagFromType(void)
 // Returns:				-
 // Changes Globals:		-
 //===========================================================================
-__inline int AAS_TravelFlagForType_inline(int traveltype)
+static ID_INLINE int AAS_TravelFlagForType_inline(int traveltype)
 {
 	int tfl;
 
@@ -322,7 +322,7 @@ int AAS_EnableRoutingArea(int areanum, int enable)
 // Returns:				-
 // Changes Globals:		-
 //===========================================================================
-__inline float AAS_RoutingTime(void)
+static ID_INLINE float AAS_RoutingTime(void)
 {
 	return AAS_Time();
 } //end of the function AAS_RoutingTime
@@ -362,7 +362,7 @@ int AAS_GetAreaContentsTravelFlags(int areanum)
 // Returns:				-
 // Changes Globals:		-
 //===========================================================================
-__inline int AAS_AreaContentsTravelFlags_inline(int areanum)
+static ID_INLINE int AAS_AreaContentsTravelFlags_inline(int areanum)
 {
 	return aasworld.areacontentstravelflags[areanum];
 } //end of the function AAS_AreaContentsTravelFlags
@@ -489,9 +489,11 @@ void AAS_CalculateAreaTravelTimes(void)
 	aas_reversedlink_t *revlink;
 	aas_reachability_t *reach;
 	aas_areasettings_t *settings;
+#ifdef DEBUG
 	int starttime;
 
 	starttime = Sys_MilliSeconds();
+#endif
 	//if there are still area travel times, free the memory
 	if (aasworld.areatraveltimes) FreeMemory(aasworld.areatraveltimes);
 	//get the total size of all the area travel times
@@ -504,7 +506,8 @@ void AAS_CalculateAreaTravelTimes(void)
 		//
 		size += settings->numreachableareas * sizeof(unsigned short *);
 		//
-		size += settings->numreachableareas * revreach->numlinks * sizeof(unsigned short);
+		size += settings->numreachableareas *
+			PAD(revreach->numlinks, sizeof(long)) * sizeof(unsigned short);
 	} //end for
 	//allocate memory for the area travel times
 	ptr = (char *) GetClearedMemory(size);
@@ -524,7 +527,7 @@ void AAS_CalculateAreaTravelTimes(void)
 		for (l = 0; l < settings->numreachableareas; l++)
 		{
 			aasworld.areatraveltimes[i][l] = (unsigned short *) ptr;
-			ptr += revreach->numlinks * sizeof(unsigned short);
+			ptr += PAD(revreach->numlinks, sizeof(long)) * sizeof(unsigned short);
 			//reachability link
 			reach = &aasworld.reachability[settings->firstreachablearea + l];
 			//
@@ -869,7 +872,8 @@ void AAS_InitRoutingUpdate(void)
 //===========================================================================
 void AAS_CreateAllRoutingCache(void)
 {
-	int i, j, t;
+	int i, j;
+	//int t;
 
 	aasworld.initialized = qtrue;
 	botimport.Print(PRT_MESSAGE, "AAS_CreateAllRoutingCache\n");
@@ -880,7 +884,8 @@ void AAS_CreateAllRoutingCache(void)
 		{
 			if (i == j) continue;
 			if (!AAS_AreaReachability(j)) continue;
-			t = AAS_AreaTravelTimeToGoalArea(i, aasworld.areas[i].center, j, TFL_DEFAULT);
+			AAS_AreaTravelTimeToGoalArea(i, aasworld.areas[i].center, j, TFL_DEFAULT);
+			//t = AAS_AreaTravelTimeToGoalArea(i, aasworld.areas[i].center, j, TFL_DEFAULT);
 			//Log_Write("traveltime from %d to %d is %d", i, j, t);
 		} //end for
 	} //end for
@@ -1585,7 +1590,7 @@ int AAS_AreaRouteToGoalArea(int areanum, vec3_t origin, int goalareanum, int tra
 	//
 	if (areanum <= 0 || areanum >= aasworld.numareas)
 	{
-		if (bot_developer)
+		if (botDeveloper)
 		{
 			botimport.Print(PRT_ERROR, "AAS_AreaTravelTimeToGoalArea: areanum %d out of range\n", areanum);
 		} //end if
@@ -1593,7 +1598,7 @@ int AAS_AreaRouteToGoalArea(int areanum, vec3_t origin, int goalareanum, int tra
 	} //end if
 	if (goalareanum <= 0 || goalareanum >= aasworld.numareas)
 	{
-		if (bot_developer)
+		if (botDeveloper)
 		{
 			botimport.Print(PRT_ERROR, "AAS_AreaTravelTimeToGoalArea: goalareanum %d out of range\n", goalareanum);
 		} //end if

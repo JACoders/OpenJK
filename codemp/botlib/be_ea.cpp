@@ -17,8 +17,9 @@
 #include "l_script.h"
 #include "l_precomp.h"
 #include "l_struct.h"
-#include "game/botlib.h"
+#include "botlib.h"
 #include "be_interface.h"
+#include "be_ea.h"
 
 #define MAX_USERMOVE				400
 #define MAX_COMMANDARGUMENTS		10
@@ -426,24 +427,6 @@ void EA_View(int client, vec3_t viewangles)
 //===========================================================================
 void EA_EndRegular(int client, float thinktime)
 {
-/*
-	bot_input_t *bi;
-	int jumped = qfalse;
-
-	bi = &botinputs[client];
-
-	bi->actionflags &= ~ACTION_JUMPEDLASTFRAME;
-
-	bi->thinktime = thinktime;
-	botimport.BotInput(client, bi);
-
-	bi->thinktime = 0;
-	VectorClear(bi->dir);
-	bi->speed = 0;
-	jumped = bi->actionflags & ACTION_JUMP;
-	bi->actionflags = 0;
-	if (jumped) bi->actionflags |= ACTION_JUMPEDLASTFRAME;
-*/
 } //end of the function EA_EndRegular
 //===========================================================================
 //
@@ -454,23 +437,10 @@ void EA_EndRegular(int client, float thinktime)
 void EA_GetInput(int client, float thinktime, bot_input_t *input)
 {
 	bot_input_t *bi;
-//	int jumped = qfalse;
 
 	bi = &botinputs[client];
-
-//	bi->actionflags &= ~ACTION_JUMPEDLASTFRAME;
-
 	bi->thinktime = thinktime;
 	Com_Memcpy(input, bi, sizeof(bot_input_t));
-
-	/*
-	bi->thinktime = 0;
-	VectorClear(bi->dir);
-	bi->speed = 0;
-	jumped = bi->actionflags & ACTION_JUMP;
-	bi->actionflags = 0;
-	if (jumped) bi->actionflags |= ACTION_JUMPEDLASTFRAME;
-	*/
 } //end of the function EA_GetInput
 //===========================================================================
 //

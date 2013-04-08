@@ -38,7 +38,7 @@ typedef enum {qfalse, qtrue}	qboolean;
 
 #ifdef BOTLIB
 #include "qcommon/q_shared.h"
-#include "game/botlib.h"
+#include "botlib.h"
 #include "be_interface.h"
 #include "l_memory.h"
 #include "l_script.h"
@@ -120,7 +120,7 @@ void QDECL SourceError(source_t *source, char *str, ...)
 	va_list ap;
 
 	va_start(ap, str);
-	vsprintf(text, str, ap);
+	Q_vsnprintf(text, sizeof(text), str, ap);
 	va_end(ap);
 #ifdef BOTLIB
 	botimport.Print(PRT_ERROR, "file %s, line %d: %s\n", source->scriptstack->filename, source->scriptstack->line, text);
@@ -144,7 +144,7 @@ void QDECL SourceWarning(source_t *source, char *str, ...)
 	va_list ap;
 
 	va_start(ap, str);
-	vsprintf(text, str, ap);
+	Q_vsnprintf(text, sizeof(text), str, ap);
 	va_end(ap);
 #ifdef BOTLIB
 	botimport.Print(PRT_WARNING, "file %s, line %d: %s\n", source->scriptstack->filename, source->scriptstack->line, text);
@@ -258,9 +258,9 @@ token_t *PC_CopyToken(token_t *token)
 	if (!t)
 	{
 #ifdef BSPC
-		Error("out of token space\n");
+		Error("out of token space");
 #else
-		Com_Error(ERR_FATAL, "out of token space\n");
+		Com_Error(ERR_FATAL, "out of token space");
 #endif
 		return NULL;
 	} //end if
@@ -458,9 +458,9 @@ int PC_StringizeTokens(token_t *tokens, token_t *token)
 	strcat(token->string, "\"");
 	for (t = tokens; t; t = t->next)
 	{
-		strncat(token->string, t->string, MAX_TOKEN - strlen(token->string));
+		strncat(token->string, t->string, MAX_TOKEN - strlen(token->string) - 1);
 	} //end for
-	strncat(token->string, "\"", MAX_TOKEN - strlen(token->string));
+	strncat(token->string, "\"", MAX_TOKEN - strlen(token->string) - 1);
 	return qtrue;
 } //end of the function PC_StringizeTokens
 //============================================================================
@@ -654,6 +654,7 @@ void PC_FreeDefine(define_t *define)
 		PC_FreeToken(t);
 	} //end for
 	//free the define
+	FreeMemory(define->name);
 	FreeMemory(define);
 } //end of the function PC_FreeDefine
 //============================================================================
@@ -681,9 +682,9 @@ void PC_AddBuiltinDefines(source_t *source)
 
 	for (i = 0; builtin[i].string; i++)
 	{
-		define = (define_t *) GetMemory(sizeof(define_t) + strlen(builtin[i].string) + 1);
+		define = (define_t *) GetMemory(sizeof(define_t));
 		Com_Memset(define, 0, sizeof(define_t));
-		define->name = (char *) define + sizeof(define_t);
+		define->name = (char *) GetMemory(strlen(builtin[i].string) + 1);
 		strcpy(define->name, builtin[i].string);
 		define->flags |= DEFINE_FIXED;
 		define->builtin = builtin[i].mBuiltin;
@@ -947,7 +948,7 @@ void PC_ConvertPath(char *path)
 		if ((*ptr == '\\' || *ptr == '/') &&
 				(*(ptr+1) == '\\' || *(ptr+1) == '/'))
 		{
-			strcpy(ptr, ptr+1);
+			memmove(ptr, ptr+1, strlen(ptr));
 		} //end if
 		else
 		{
@@ -1011,7 +1012,7 @@ int PC_Directive_include(source_t *source)
 				break;
 			} //end if
 			if (token.type == TT_PUNCTUATION && *token.string == '>') break;
-			strncat(path, token.string, MAX_PATH);
+			strncat(path, token.string, MAX_PATH - 1);
 		} //end while
 		if (*token.string != '>')
 		{
@@ -1220,9 +1221,9 @@ int PC_Directive_define(source_t *source)
 #endif //DEFINEHASHING
 	} //end if
 	//allocate define
-	define = (define_t *) GetMemory(sizeof(define_t) + strlen(token.string) + 1);
+	define = (define_t *) GetMemory(sizeof(define_t));
 	Com_Memset(define, 0, sizeof(define_t));
-	define->name = (char *) define + sizeof(define_t);
+	define->name = (char *) GetMemory(strlen(token.string) + 1);
 	strcpy(define->name, token.string);
 	//add the define to the source
 #if DEFINEHASHING
@@ -1365,7 +1366,7 @@ define_t *PC_DefineFromString(char *string)
 #endif //DEFINEHASHING
 	//
 	FreeScript(script);
-	//if the define was created succesfully
+	//if the define was created successfully
 	if (res > 0) return def;
 	//free the define is created
 	if (src.defines) PC_FreeDefine(def);
@@ -1481,9 +1482,9 @@ define_t *PC_CopyDefine(source_t *source, define_t *define)
 	define_t *newdefine;
 	token_t *token, *newtoken, *lasttoken;
 
-	newdefine = (define_t *) GetMemory(sizeof(define_t) + strlen(define->name) + 1);
+	newdefine = (define_t *) GetMemory(sizeof(define_t));
 	//copy the define name
-	newdefine->name = (char *) newdefine + sizeof(define_t);
+	newdefine->name = (char *) GetMemory(strlen(define->name) + 1);
 	strcpy(newdefine->name, define->name);
 	newdefine->flags = define->flags;
 	newdefine->builtin = define->builtin;
@@ -1709,7 +1710,7 @@ int PC_OperatorPriority(int op)
 #define MAX_OPERATORS	64
 #define AllocValue(val)									\
 	if (numvalues >= MAX_VALUES) {						\
-		SourceError(source, "out of value space\n");		\
+		SourceError(source, "out of value space");		\
 		error = 1;										\
 		break;											\
 	}													\
@@ -1719,7 +1720,7 @@ int PC_OperatorPriority(int op)
 //
 #define AllocOperator(op)								\
 	if (numoperators >= MAX_OPERATORS) {				\
-		SourceError(source, "out of operator space\n");	\
+		SourceError(source, "out of operator space");	\
 		error = 1;										\
 		break;											\
 	}													\
@@ -1741,7 +1742,6 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 	int questmarkintvalue = 0;
 	double questmarkfloatvalue = 0;
 	int gotquestmarkvalue = qfalse;
-	int lastoperatortype = 0;
 	//
 	operator_t operator_heap[MAX_OPERATORS];
 	int numoperators = 0;
@@ -1882,7 +1882,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 						t->subtype == P_BIN_AND || t->subtype == P_BIN_OR ||
 						t->subtype == P_BIN_XOR)
 					{
-						SourceError(source, "illigal operator %s on floating point operands\n", t->string);
+						SourceError(source, "illigal operator %s on floating point operands", t->string);
 						error = 1;
 						break;
 					} //end if
@@ -2049,7 +2049,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 									v1->floatvalue *= v2->floatvalue; break;
 			case P_DIV:				if (!v2->intvalue || !v2->floatvalue)
 									{
-										SourceError(source, "divide by zero in #if/#elif\n");
+										SourceError(source, "divide by zero in #if/#elif");
 										error = 1;
 										break;
 									}
@@ -2057,7 +2057,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 									v1->floatvalue /= v2->floatvalue; break;
 			case P_MOD:				if (!v2->intvalue)
 									{
-										SourceError(source, "divide by zero in #if/#elif\n");
+										SourceError(source, "divide by zero in #if/#elif");
 										error = 1;
 										break;
 									}
@@ -2130,7 +2130,6 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, signed long int *intval
 		else Log_Write("result value = %f", v1->floatvalue);
 #endif //DEBUG_EVAL
 		if (error) break;
-		lastoperatortype = o->mOperator;
 		//if not an operator with arity 1
 		if (o->mOperator != P_LOGIC_NOT
 				&& o->mOperator != P_BIN_NOT)
@@ -2604,12 +2603,16 @@ int PC_DollarDirective_evalint(source_t *source)
 	sprintf(token.string, "%d", abs(value));
 	token.type = TT_NUMBER;
 	token.subtype = TT_INTEGER|TT_LONG|TT_DECIMAL;
+
 #ifdef NUMBERVALUE
-	token.intvalue = value;
-	token.floatvalue = value;
+	token.intvalue = abs(value);
+	token.floatvalue = token.intvalue;
 #endif //NUMBERVALUE
+
 	PC_UnreadSourceToken(source, &token);
-	if (value < 0) UnreadSignToken(source);
+	if (value < 0)
+		UnreadSignToken(source);
+
 	return qtrue;
 } //end of the function PC_DollarDirective_evalint
 //============================================================================
@@ -2631,12 +2634,16 @@ int PC_DollarDirective_evalfloat(source_t *source)
 	sprintf(token.string, "%1.2f", fabs(value));
 	token.type = TT_NUMBER;
 	token.subtype = TT_FLOAT|TT_LONG|TT_DECIMAL;
+
 #ifdef NUMBERVALUE
-	token.intvalue = (unsigned long) value;
-	token.floatvalue = value;
+	token.floatvalue = fabs(value);
+	token.intvalue = (unsigned long) token.floatvalue;
 #endif //NUMBERVALUE
+
 	PC_UnreadSourceToken(source, &token);
-	if (value < 0) UnreadSignToken(source);
+	if (value < 0)
+		UnreadSignToken(source);
+
 	return qtrue;
 } //end of the function PC_DollarDirective_evalfloat
 //============================================================================
@@ -2799,7 +2806,7 @@ int PC_ReadToken(source_t *source, token_t *token)
 					token->string[strlen(token->string)-1] = '\0';
 					if (strlen(token->string) + strlen(newtoken.string+1) + 1 >= MAX_TOKEN)
 					{
-						SourceError(source, "string longer than MAX_TOKEN %d\n", MAX_TOKEN);
+						SourceError(source, "string longer than MAX_TOKEN %d", MAX_TOKEN);
 						return qfalse;
 					}
 					strcat(token->string, newtoken.string+1);
