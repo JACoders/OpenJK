@@ -106,8 +106,8 @@ DLL_ONLY=false
       #NEWPGCC=/loki/global/x86/bin/gcc
       #NEWPGCC=/usr/bin/gcc 
       #NEWPGCC=/usr/local/bin/gcc
-      CC=clang
-      CXX=clang++
+      CC=gcc
+      CXX=g++
 # TTimo: legacy RELEASE_CFLAGS
 # NOTE: the -fomit-frame-pointer option leads to an unstable binary on my test box if it was built on the main box
 #   but building on the Mdk 7.2 baseline seems to work
@@ -520,7 +520,7 @@ $(B)/ded/null_glimp.o : $(NDIR)/null_glimp.cpp; $(DO_DED_CPP)
 $(B)/ded/null_main.o : $(NDIR)/null_main.cpp; $(DO_DED_CPP)
 $(B)/ded/null_net.o : $(NDIR)/null_net.cpp; $(DO_DED_CPP)
 $(B)/ded/null_renderer.o : $(NDIR)/null_renderer.cpp; $(DO_DED_CPP)
-$(B)/ded/ioapi.o : $(ZLIB)/ioapi.c; $(DO_DED_CPP)
+$(B)/ded/ioapi.o : $(ZLIB)/ioapi.c; $(DO_DED_CC)
 $(B)/ded/unzip.o : $(CMDIR)/unzip.cpp; $(DO_DED_CPP) 
 $(B)/ded/vm.o : $(CMDIR)/vm.cpp; $(DO_DED_CPP) 
 $(B)/ded/vm_interpreted.o : $(CMDIR)/vm_interpreted.cpp; $(DO_DED_CPP) 
