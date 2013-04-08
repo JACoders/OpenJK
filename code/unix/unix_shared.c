@@ -357,11 +357,6 @@ char *Sys_DefaultBasePath(void)
 
 //============================================
 
-int Sys_GetProcessorId( void )
-{
-	return CPUID_GENERIC;
-}
-
 void Sys_ShowConsole( int visLevel, qboolean quitOnClose )
 {
 }
