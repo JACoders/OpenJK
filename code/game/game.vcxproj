@@ -901,16 +901,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\Rufl\random.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-      </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">
-      </PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="AnimalNPC.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">CompileAsCpp</CompileAs>
@@ -996,9 +986,6 @@
     <ClInclude Include="common_headers.h" />
     <ClInclude Include="dmstates.h" />
     <ClInclude Include="events.h" />
-    <ClInclude Include="..\ff\ff.h" />
-    <ClInclude Include="..\ff\ff_public.h" />
-    <ClInclude Include="..\client\fffx.h" />
     <ClInclude Include="fields.h" />
     <ClInclude Include="..\ghoul2\G2.h" />
     <ClInclude Include="g_functions.h" />
@@ -1075,7 +1062,6 @@
     <ClInclude Include="..\Ravl\CVec.h" />
     <ClInclude Include="..\Rufl\hfile.h" />
     <ClInclude Include="..\Rufl\hstring.h" />
-    <ClInclude Include="..\Rufl\random.h" />
     <ClInclude Include="g_vehicles.h" />
   </ItemGroup>
   <ItemGroup>

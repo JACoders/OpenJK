@@ -486,9 +486,6 @@
     <ClCompile Include="..\Rufl\hstring.cpp">
       <Filter>Rufl</Filter>
     </ClCompile>
-    <ClCompile Include="..\Rufl\random.cpp">
-      <Filter>Rufl</Filter>
-    </ClCompile>
     <ClCompile Include="AnimalNPC.c">
       <Filter>Vehicles</Filter>
     </ClCompile>
@@ -554,15 +551,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="events.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ff\ff.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ff\ff_public.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\client\fffx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fields.h">
@@ -791,9 +779,6 @@
       <Filter>Rufl</Filter>
     </ClInclude>
     <ClInclude Include="..\Rufl\hstring.h">
-      <Filter>Rufl</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Rufl\random.h">
       <Filter>Rufl</Filter>
     </ClInclude>
     <ClInclude Include="g_vehicles.h">
