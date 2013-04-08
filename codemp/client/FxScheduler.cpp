@@ -16,6 +16,12 @@
 	#include "qcommon/q_shared.h"
 #endif
 
+#ifndef _WIN32
+#include <algorithm>
+#include <cmath>
+#include <string>
+#endif
+
 CFxScheduler	theFxScheduler;
 
 //-----------------------------------------------------------
@@ -262,7 +268,12 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	char sfile[MAX_QPATH];
 
 	COM_StripExtension( file, sfile, sizeof( sfile ) );
+#ifdef _WIN32
 	strlwr(sfile);
+#else
+	string s = sfile;
+	transform(s.begin(), s.end(), s.begin(), ::tolower);
+#endif
 
 	Com_DPrintf("Registering effect : %s\n", sfile);
 

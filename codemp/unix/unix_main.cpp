@@ -26,7 +26,7 @@
 #endif
 
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "../renderer/tr_public.h"
 
@@ -344,6 +344,12 @@ void *Sys_LoadDll( const char *name,
   snprintf (fname, sizeof(fname), "%si386-debug.so", name); // bk010205 - different DLL name
 #else
   snprintf (fname, sizeof(fname), "%si386.so", name);
+#endif
+#elif defined __x86_64__
+#ifndef NDEBUG
+  snprintf (fname, sizeof(fname), "%sx86_64-debug.so", name); // bk010205 - different DLL name
+#else
+  snprintf (fname, sizeof(fname), "%sx86_64.so", name);
 #endif
 #elif defined __powerpc__   //rcg010207 - PPC support.
   snprintf (fname, sizeof(fname), "%sppc.so", name);

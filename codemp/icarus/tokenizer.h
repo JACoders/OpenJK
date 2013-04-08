@@ -19,6 +19,10 @@ using namespace std;
 //#include <windows.h>
 #include "qcommon/platform.h"
 
+#ifndef _WIN32
+#include <string.h>
+#endif
+
 typedef unsigned char byte;
 typedef unsigned short word;
 
@@ -337,6 +341,8 @@ public:
 	void SetValue(int value);
 	int GetValue();
 	byte GetByte();
+	CSymbolLookup** GetChildAddress();
+	CSymbolLookup* GetChild();
 
 protected:
 	void Init(byte theByte);
@@ -587,7 +593,11 @@ protected:
 	void Read(void* buff, UINT buffsize);
 
 //	CFile*			m_file;
+#ifdef _WIN32
 	HANDLE			m_fileHandle;
+#else
+	FILE*			m_fileHandle;
+#endif
 	char*			m_fileName;
 	int				m_curLine;
 	int				m_curPos;

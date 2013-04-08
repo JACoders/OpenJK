@@ -18,6 +18,10 @@
 #include "qcommon/cm_randomterrain.h"
 #endif
 
+#ifndef _WIN32
+#include <string>
+#endif
+
 class CRMPathManager;
 
 // directions you can proceed from cells 
