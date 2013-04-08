@@ -3,7 +3,7 @@
 
 #include "client.h"
 
-#include "game/botlib.h"
+#include "botlib/botlib.h"
 #include "qcommon/stringed_ingame.h"
 
 /*
