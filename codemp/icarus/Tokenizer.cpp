@@ -1,18 +1,23 @@
 // Tokenizer.cpp
 #ifndef NOT_USING_MODULES
 // !!! if you are not using modules, read BELOW !!!
-#include "Module.h" // if you are not using modules, 
+#include "module.h" // if you are not using modules, 
 					// create an empty Module.h in your
 					// project -- use of modules allows
 					// the error handler to be overridden
 					// with a custom CErrHandler
 #endif
-#include "Tokenizer.h"
+#include "tokenizer.h"
 
 #pragma warning(disable : 4100) //unreferenced formal parameter
 #pragma warning(disable : 4127) //conditional expression is constant
 #pragma warning(disable : 4189) //local variable is initialized but not referenced
 #pragma warning(disable : 4244) //conversion from x to x, possible loss of data
+
+#ifndef _WIN32
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 
 enum
 {
@@ -455,7 +460,11 @@ void CParseFile::Delete()
 	}
 	if (m_ownsFile && (m_fileHandle != NULL))
 	{
+#ifdef _WIN32
 		CloseHandle(m_fileHandle);
+#else
+		fclose(m_fileHandle);
+#endif
 		m_fileHandle = NULL;
 	}
 	if (m_fileName != NULL)
@@ -479,16 +488,26 @@ bool CParseFile::Init()
 
 DWORD CParseFile::GetFileSize()
 {
+#ifdef _WIN32
 	DWORD dwCur = SetFilePointer(m_fileHandle, 0L, NULL, FILE_CURRENT);
 	DWORD dwLen = SetFilePointer(m_fileHandle, 0, NULL, FILE_END);
 	SetFilePointer(m_fileHandle, dwCur, NULL, FILE_BEGIN);
+#else
+	fseek(m_fileHandle, 0L, SEEK_END);
+	DWORD dwLen = ftell(m_fileHandle);
+	fseek(m_fileHandle, 0L, SEEK_SET);
+#endif
 	return dwLen;
 }
 
 void CParseFile::Read(void* buff, UINT buffsize)
 {
 	DWORD bytesRead;
+#ifdef _WIN32
 	ReadFile(m_fileHandle, buff, buffsize, &bytesRead, NULL);
+#else
+	fread(buff, buffsize, 1, m_fileHandle);
+#endif
 }
 
 bool CParseFile::Init(LPCTSTR filename, CTokenizer* tokenizer)
@@ -496,6 +515,8 @@ bool CParseFile::Init(LPCTSTR filename, CTokenizer* tokenizer)
 	CParseStream::Init();
 	m_fileName = (char*)malloc(strlen(filename) + 1);
 	strcpy(m_fileName, filename);
+
+#ifdef _WIN32
 		DWORD dwAccess = GENERIC_READ;
 		DWORD dwShareMode = FILE_SHARE_WRITE | FILE_SHARE_READ;
 		SECURITY_ATTRIBUTES sa;
@@ -511,9 +532,19 @@ bool CParseFile::Init(LPCTSTR filename, CTokenizer* tokenizer)
 			tokenizer->Error(TKERR_INCLUDE_FILE_NOTFOUND);
 			Init();
 
-			return false;			
+			return false;
 		}
+#else
+		m_fileHandle = fopen(filename, "r+");
 
+		if (m_fileHandle == NULL)
+		{
+			tokenizer->Error(TKERR_INCLUDE_FILE_NOTFOUND);
+			Init();
+
+			return false;
+		}
+#endif
 		m_filesize = GetFileSize();
 		m_buff = (byte*)malloc(m_filesize);
 		if (m_buff == NULL)

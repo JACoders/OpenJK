@@ -271,7 +271,7 @@ float FloatSwap( const float *f );
 	// bk001205 - from Makefile
 	#define stricmp strcasecmp
 
-	#define ID_INLINE inline 
+	#define ID_INLINE /*inline*/
 
 	#ifdef __i386__
 		#define	CPUSTRING "linux-i386"

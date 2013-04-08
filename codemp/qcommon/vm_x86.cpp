@@ -1130,7 +1130,7 @@ int	VM_CallCompiled( vm_t *vm, int *args ) {
 		memProgramStack	= programStack;
 		memOpStack      = opStack;     
 		memEntryPoint   = entryPoint;  
-		
+				
 		__asm__("	pushal				\r\n" \
 				"	movl %0,%%esi		\r\n" \
 				"	movl %1,%%edi		\r\n" \

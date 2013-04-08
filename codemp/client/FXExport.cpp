@@ -2,7 +2,7 @@
 #include "qcommon/exe_headers.h"
 
 #include "client.h"
-#include "FXScheduler.h"
+#include "FxScheduler.h"
 
 //#define __FXCHECKER
  

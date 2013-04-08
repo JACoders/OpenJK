@@ -165,6 +165,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 		}
 	}
 
+
 #if defined(_WIN32) && defined(_DEBUG)
 	if ( *msg )
 	{
@@ -191,7 +192,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	}
 
 	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	vsprintf (msg,fmt,argptr);
 	va_end (argptr);
 	
 	Com_Printf ("%s", msg);
@@ -204,7 +205,7 @@ void QDECL Com_OPrintf( const char *fmt, ...)
 	char		msg[MAXPRINTMSG];
 		
 	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	vsprintf (msg,fmt,argptr);
 	va_end (argptr);
 #ifndef __linux__	
 	OutputDebugString(msg);
@@ -263,7 +264,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	com_errorEntered = qtrue;
 
 	va_start (argptr,fmt);
-	Q_vsnprintf (com_errorMessage, sizeof(com_errorMessage), fmt, argptr);
+	vsprintf (com_errorMessage,fmt,argptr);
 	va_end (argptr);
 
 	if ( code != ERR_DISCONNECT ) {
@@ -1059,6 +1060,7 @@ static void Com_Crash_f( void ) {
 	* ( int * ) 0 = 0x12345678;
 }
 
+
 #ifdef MEM_DEBUG
 	void SH_Register(void);
 #endif
@@ -1104,10 +1106,6 @@ void Com_Init( char *commandLine ) {
 
 		// done early so bind command exists
 		CL_InitKeyCommands();
-
-#ifdef _WIN32
-		_setmaxstdio(2048);
-#endif
 
 		FS_InitFilesystem ();
 
@@ -1625,6 +1623,8 @@ void Com_Shutdown (void)
 */
 }
 
+
+
 /*
 =====================
 Q_acos
@@ -1693,7 +1693,7 @@ bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cle
 
 	bufParse = buf;
 	parser.Parse(&bufParse, cleanFirst);
-	delete[] buf;
+	delete buf;
 
 	FS_FCloseFile( f );
 
@@ -1732,7 +1732,7 @@ CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool write
 		parse = 0;
 	}
 
-	delete[] buf;
+	delete buf;
 
 	return parse;
 }

@@ -182,7 +182,7 @@ extern PFNGLGETCOMBINEROUTPUTPARAMETERIVNV		qglGetCombinerOutputParameterivNV;
 extern PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV	qglGetFinalCombinerInputParameterfvNV;
 extern PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV	qglGetFinalCombinerInputParameterivNV;
 
-
+#ifdef _WIN32
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Pixel Format extension definitions. - AReis
 /***********************************************************************************************************/
@@ -251,7 +251,7 @@ typedef BOOL (WINAPI * PFNWGLSETPBUFFERATTRIBARBPROC) (HPBUFFERARB hPbuffer, con
 extern PFNWGLBINDTEXIMAGEARBPROC			qwglBindTexImageARB;
 extern PFNWGLRELEASETEXIMAGEARBPROC			qwglReleaseTexImageARB;
 extern PFNWGLSETPBUFFERATTRIBARBPROC		qwglSetPbufferAttribARB;
-
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Vertex and Fragment Program extension definitions. - AReis

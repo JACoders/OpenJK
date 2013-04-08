@@ -2,13 +2,20 @@
 //
 //	-- jweier
 
+#ifdef _WIN32
 #include <direct.h>	//For getcwd()
 #include <conio.h>	//For getch()
+#else
+#include <curses.h>
+#include <unistd.h>
+extern void *ICARUS_Malloc(int iSize);
+extern void  ICARUS_Free(void *pMem);
+#endif
 #include <stdio.h>
 
-#include "Tokenizer.h"
-#include "BlockStream.h"
-#include "Interpreter.h"
+#include "tokenizer.h"
+#include "blockstream.h"
+#include "interpreter.h"
 
 /*
 ===================================================================================================
