@@ -7,7 +7,7 @@
 	#include "ghoul2/G2.h"
 #endif
 #include "ghoul2/G2_local.h"
-#include "MatComp.h"
+#include "matcomp.h"
 
 #ifdef VV_LIGHTING
 #include "tr_lightmanager.h"

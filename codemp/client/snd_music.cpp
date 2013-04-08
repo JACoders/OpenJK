@@ -5,6 +5,10 @@
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
 
+#ifndef _WIN32
+#include <string>
+#include "qcommon/platform.h"
+#endif
 
 #include "qcommon/q_shared.h"
 #include "qcommon/sstring.h"
@@ -763,7 +767,12 @@ sboolean Music_DynamicDataAvailable(const char *psDynamicMusicLabel)
 {		
 	char sLevelName[MAX_QPATH];
 	Q_strncpyz(sLevelName,COM_SkipPath( const_cast<char*>( (psDynamicMusicLabel&&psDynamicMusicLabel[0])?psDynamicMusicLabel:gsLevelNameFromServer.c_str() ) ),sizeof(sLevelName));
+#ifdef _WIN32
 	strlwr(sLevelName);
+#else
+	string s = sLevelName;
+	transform(s.begin(), s.end(), s.begin(), ::tolower);
+#endif
 
 	if (strlen(sLevelName))	// avoid error messages when there's no music waiting to be played and we try and restart it...
 	{

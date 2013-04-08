@@ -160,7 +160,6 @@ cvar_t		*s_lip_threshold_1;
 cvar_t		*s_lip_threshold_2;
 cvar_t		*s_lip_threshold_3;
 cvar_t		*s_lip_threshold_4;
-cvar_t		*s_CPUType;
 cvar_t		*s_language;	// note that this is distinct from "g_language"
 cvar_t		*s_dynamix;
 cvar_t		*s_debugdynamic;
@@ -379,16 +378,6 @@ void S_Init( void ) {
 	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART);
 
 	MP3_InitCvars();
-
-	s_CPUType = Cvar_Get("sys_cpuid","",0);
-
-#if !(defined __linux__ && defined __i386__)
-#if	!id386
-#else
-	extern unsigned int uiMMXAvailable;
-	uiMMXAvailable = !!(s_CPUType->integer >= CPUID_INTEL_MMX);
-#endif
-#endif
 
 	cv = Cvar_Get ("s_initsound", "1", CVAR_ROM);
 	if ( !cv->integer ) {

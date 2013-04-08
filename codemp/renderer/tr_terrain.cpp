@@ -795,8 +795,11 @@ void CTRLandScape::CalculateShaders(void)
 	// Cleanup our temporary array
 	delete[] shaders;
 
+#ifdef _WIN32
 	qsort(mSortedPatches, mSortedCount, sizeof(*mSortedPatches), (int (__cdecl *)(const void *,const void *))ComparePatchInfo);
-
+#else
+	qsort(mSortedPatches, mSortedCount, sizeof(*mSortedPatches), (int (*)(const void *,const void *))ComparePatchInfo);
+#endif
 }
 
 void CTRPatch::SetRenderMap(const int x, const int y) 

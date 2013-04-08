@@ -6,7 +6,8 @@
 #include "server.h"
 #include "qcommon/stringed_ingame.h"
 #include "RMG/RM_Headers.h"
-#include "zlib32/zip.h"
+#include "../zlib/zlib.h"
+//#include "zlib32/zip.h"
 
 static void SV_CloseDownload( client_t *cl );
 
@@ -603,7 +604,7 @@ void SV_SendClientGameState( client_t *client ) {
 
 		// Send the height map
 		memset(&zdata, 0, sizeof(z_stream));
-		deflateInit ( &zdata, Z_MAX_COMPRESSION );
+		deflateInit ( &zdata, Z_BEST_COMPRESSION );
 
 		unsigned char heightmap[15000];
 		zdata.next_out = (unsigned char*)heightmap;
@@ -620,7 +621,7 @@ void SV_SendClientGameState( client_t *client ) {
 
 		// Send the flatten map
 		memset(&zdata, 0, sizeof(z_stream));
-		deflateInit ( &zdata, Z_MAX_COMPRESSION );
+		deflateInit ( &zdata, Z_BEST_COMPRESSION );
 
 		zdata.next_out = (unsigned char*)heightmap;
 		zdata.avail_out = 15000;
@@ -1262,7 +1263,7 @@ void SV_UserinfoChanged( client_t *cl ) {
 
 	// if the client is on the same subnet as the server and we aren't running an
 	// internet public server, assume they don't need a rate choke
-	if ( Sys_IsLANAddress( cl->netchan.remoteAddress ) && com_dedicated->integer != 2 ) {
+	if ( Sys_IsLANAddress( cl->netchan.remoteAddress ) && com_dedicated->integer != 2 && sv_lanForceRate->integer == 1 ) {
 		cl->rate = 99999;	// lans should not rate limit
 	} else {
 		val = Info_ValueForKey (cl->userinfo, "rate");
