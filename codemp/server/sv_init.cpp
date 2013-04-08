@@ -273,8 +273,12 @@ void SV_Startup( void ) {
 	}
 	svs.initialized = qtrue;
 
-	Cvar_Set( "sv_running", "1" );
+	// Don't respect sv_killserver unless a server is actually running
+	if ( sv_killserver->integer ) {
+		Cvar_Set( "sv_killserver", "0" );
+	}
 
+	Cvar_Set( "sv_running", "1" );
 }
 
 /*
@@ -910,6 +914,7 @@ Ghoul2 Insert Start
 //	Com_Printf( "---------------------------\n" );
 
 	// disconnect any local clients
-	CL_Disconnect( qfalse );
+	if( sv_killserver->integer != 2 )
+		CL_Disconnect( qfalse );
 }
 
