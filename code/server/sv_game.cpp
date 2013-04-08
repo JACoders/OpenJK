@@ -641,8 +641,8 @@ Ghoul2 Insert Start
 #endif
 	import.SetActiveSubBSP = SV_SetActiveSubBSP;
 
-	import.RE_RegisterSkin = RE_RegisterSkin;
-	import.RE_GetAnimationCFG = RE_GetAnimationCFG;
+	import.RE_RegisterSkin = re.RegisterSkin;
+	import.RE_GetAnimationCFG = re.GetAnimationCFG;
 
 
 	import.WE_GetWindVector	= R_GetWindVector;

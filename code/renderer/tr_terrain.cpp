@@ -574,7 +574,7 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 				shaderName = items->FindPairValue("shader", "");
 				if(shaderName[0])
 				{
-					shader = RE_RegisterShader(shaderName);
+					shader = re.RegisterShader(shaderName);
 					if(shader)
 					{
 						SetShaders(height, shader); 
@@ -587,7 +587,7 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 			}
 			else if(!stricmp(type, "flattexture"))
 			{
-				mFlatShader = RE_RegisterShader ( items->FindPairValue("shader", "") );
+				mFlatShader = re.RegisterShader ( items->FindPairValue("shader", "") );
 			}
 
 			items = (CGPGroup *)items->GetNext();
