@@ -956,9 +956,6 @@ void	Sys_SnapVector( float *v );
 // the system console is shown when a dedicated server is running
 void	Sys_DisplaySystemConsole( qboolean show );
 
-int		Sys_GetCPUSpeed( void );
-int		Sys_GetPhysicalMemory(void);
-
 void	Sys_BeginStreamedFile( fileHandle_t f, int readahead );
 void	Sys_EndStreamedFile( fileHandle_t f );
 int		Sys_StreamedRead( void *buffer, int size, int count, fileHandle_t f );

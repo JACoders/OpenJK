@@ -1089,8 +1089,6 @@ void Sys_Init( void ) {
 	Cvar_Get( "win_wndproc", va("%i", (int)MainWndProc), CVAR_ROM );
 
 	Cvar_Set( "username", Sys_GetCurrentUser() );
-	Cvar_SetValue( "sys_cpuspeed", Sys_GetCPUSpeed() );
-	Cvar_SetValue( "sys_memory", Sys_GetPhysicalMemory() );
 
 	IN_Init();		// FIXME: not in dedicated?
 }
