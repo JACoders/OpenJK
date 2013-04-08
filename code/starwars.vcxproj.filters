@@ -14,9 +14,6 @@
     <Filter Include="Source Files\OpenAL">
       <UniqueIdentifier>{014eebe8-6a9d-47dd-89df-6e7829028ee3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\smartheap">
-      <UniqueIdentifier>{969175c7-f48d-4e56-86e2-6a7a7b9f4ec4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{a00d3c4f-7a66-4f4d-8e1b-b848a545f1dc}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;fi;fd</Extensions>
@@ -58,6 +55,9 @@
     </Filter>
     <Filter Include="Ghoul2">
       <UniqueIdentifier>{96aa46fe-f9fa-4f44-a413-bd73c68d3fd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RMG\RMG Headers">
+      <UniqueIdentifier>{7e62aac5-166d-467e-9175-6040964d53f2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -237,9 +237,6 @@
     </ClCompile>
     <ClCompile Include="0_compiled_first\0_SH_Leak.cpp">
       <Filter>Source Files\0_compiled_first</Filter>
-    </ClCompile>
-    <ClCompile Include="smartheap\SMRTHEAP.C">
-      <Filter>Source Files\smartheap</Filter>
     </ClCompile>
     <ClCompile Include="mp3code\cdct.c">
       <Filter>MP3 Source</Filter>
@@ -621,15 +618,6 @@
     <ClInclude Include="client\OpenAL\alut.h">
       <Filter>Source Files\OpenAL</Filter>
     </ClInclude>
-    <ClInclude Include="smartheap\HEAPAGNT.H">
-      <Filter>Source Files\smartheap</Filter>
-    </ClInclude>
-    <ClInclude Include="smartheap\SMRTHEAP.H">
-      <Filter>Source Files\smartheap</Filter>
-    </ClInclude>
-    <ClInclude Include="smartheap\smrtheap.hpp">
-      <Filter>Source Files\smartheap</Filter>
-    </ClInclude>
     <ClInclude Include="win32\afxres.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -915,45 +903,6 @@
     <ClInclude Include="jpeg-6\jversion.h">
       <Filter>JPEG</Filter>
     </ClInclude>
-    <ClInclude Include="RMG\RM_Area.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_Headers.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_Instance.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_Instance_BSP.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_Instance_Group.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_Instance_Random.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_Instance_Void.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_InstanceFile.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_Manager.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_Mission.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_Objective.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_Path.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
-    <ClInclude Include="RMG\RM_Terrain.h">
-      <Filter>RMG</Filter>
-    </ClInclude>
     <ClInclude Include="png\png.h">
       <Filter>PNG</Filter>
     </ClInclude>
@@ -984,14 +933,47 @@
     <ClInclude Include="qcommon\MiniHeap.h">
       <Filter>Ghoul2</Filter>
     </ClInclude>
+    <ClInclude Include="RMG\RM_Area.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_Headers.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_Instance.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_Instance_BSP.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_Instance_Group.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_Instance_Random.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_Instance_Void.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_InstanceFile.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_Manager.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_Mission.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_Objective.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_Path.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="RMG\RM_Terrain.h">
+      <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SHDebug\HA312W32.DLL">
-      <Filter>Source Files\smartheap</Filter>
-    </None>
-    <None Include="SHDebug\SHW32.DLL">
-      <Filter>Source Files\smartheap</Filter>
-    </None>
     <None Include="win32\background.bmp">
       <Filter>Resource Files</Filter>
     </None>
@@ -1020,10 +1002,5 @@
     <ResourceCompile Include="win32\winquake.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuildStep Include="smartheap\HAW32M.LIB">
-      <Filter>Source Files\smartheap</Filter>
-    </CustomBuildStep>
   </ItemGroup>
 </Project>
