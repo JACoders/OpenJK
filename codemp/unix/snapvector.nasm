@@ -19,6 +19,34 @@ cw037F  dd 0x037F   ; Rounding to nearest (even).
 segment .text
 
 ; void Sys_SnapVector( float *v )
+global Sys_SnapVector
+Sys_SnapVector:
+	push 	eax
+	push 	ebp
+	mov	ebp, esp
+
+	fnstcw	[fpucw]
+	mov	eax, dword [ebp + 12]
+	fldcw	[cw037F]	
+	fld	dword [eax]
+	fistp	dword [eax]
+	fild	dword [eax]
+	fstp	dword [eax]
+	fld	dword [eax + 4]
+	fistp	dword [eax + 4]
+	fild	dword [eax + 4]
+	fstp	dword [eax + 4]
+	fld	dword [eax + 8]
+	fistp	dword [eax + 8]
+	fild	dword [eax + 8]
+	fstp	dword [eax + 8]
+	fldcw	[fpucw]
+	
+	pop ebp
+	pop eax
+	ret
+
+; void Sys_SnapVector( float *v )
 global _Sys_SnapVector
 _Sys_SnapVector:
 	push 	eax

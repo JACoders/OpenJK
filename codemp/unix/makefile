@@ -382,7 +382,7 @@ Q3DOBJ = \
 #	$(B)/ded/zipcommon.o \
 
 #ifeq ($(ARCH),i386)
-  Q3DOBJ += $(B)/ded/vm_x86.o # $(B)/ded/ftol.o $(B)/ded/snapvector.o
+  Q3DOBJ += $(B)/ded/vm_x86.o $(B)/ded/ftol.o $(B)/ded/snapvector.o
 #endif
 
 ifeq ($(ARCH),ppc)
