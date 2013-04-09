@@ -2,8 +2,10 @@
 //
 //	-- jweier
 
+#ifdef _WIN32
 #include <direct.h>	//For getcwd()
 #include <conio.h>	//For getch()
+#endif
 #include <stdio.h>
 
 #include "Tokenizer.h"

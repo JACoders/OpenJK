@@ -11,7 +11,7 @@
 #include <map>
 using namespace std;
 
-#include <windows.h>
+#include "ibize_platform.h"
 
 typedef unsigned char byte;
 typedef unsigned short word;

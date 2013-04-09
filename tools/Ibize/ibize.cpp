@@ -2,8 +2,13 @@
 //
 //	-- jweier
 
+#ifdef _WIN32
 #include <conio.h>	//For getch()
 #include <io.h>		//For _findXXX
+#else
+#include "ibize_platform.h"
+#include <curses.h>
+#endif
 
 #include "Tokenizer.h"
 #include "BlockStream.h"
@@ -70,7 +75,9 @@ main
 
 int main(int argc, char* argv[])
 {
+#if _WIN32
 	struct _finddata_t fileinfo;
+#endif
 	bool	error_pause = false;
 	char	*filename, error_msg[MAX_STRING_LENGTH], newfilename[MAX_FILENAME_LENGTH];
 	int		handle;
@@ -107,7 +114,7 @@ int main(int argc, char* argv[])
 		{
 			if ( tolower(filename[1]) == 'e' )
 				error_pause = true;
-
+#ifdef _WIN32
 			if ( tolower(filename[1]) == 'a' )
 			{
 				handle = _findfirst ( "*.txt", &fileinfo);
@@ -134,6 +141,7 @@ int main(int argc, char* argv[])
 
 				_findclose (handle);
 			}
+#endif
 			
 			continue;
 		}
