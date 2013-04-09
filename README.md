@@ -20,23 +20,24 @@ Major contributors, in alphabetical order:
 * redsaurus
 
 Major contributors from ioquake3 project:
+
 Maintainers
-  James Canete <use.less01@gmail.com>
-  Ludwig Nussel <ludwig.nussel@suse.de>
-  Thilo Schulz <arny@ats.s.bawue.de>
-  Tim Angus <tim@ngus.net>
-  Tony J. White <tjw@tjw.org>
-  Zachary J. Slater <zachary@ioquake.org>
-  Zack Middleton <zturtleman@gmail.com>
+* James Canete <use.less01@gmail.com>
+* Ludwig Nussel <ludwig.nussel@suse.de>
+* Thilo Schulz <arny@ats.s.bawue.de>
+* Tim Angus <tim@ngus.net>
+* Tony J. White <tjw@tjw.org>
+* Zachary J. Slater <zachary@ioquake.org>
+* Zack Middleton <zturtleman@gmail.com>
 
 Significant contributions from
-  Ryan C. Gordon <icculus@icculus.org>
-  Andreas Kohn <andreas@syndrom23.de>
-  Joerg Dietrich <Dietrich_Joerg@t-online.de>
-  Stuart Dalton <badcdev@gmail.com>
-  Vincent S. Cojot <vincent at cojot dot name>
-  optical <alex@rigbo.se>
-  Aaron Gyes <floam@aaron.gy>
+* Ryan C. Gordon <icculus@icculus.org>
+* Andreas Kohn <andreas@syndrom23.de>
+* Joerg Dietrich <Dietrich_Joerg@t-online.de>
+* Stuart Dalton <badcdev@gmail.com>
+* Vincent S. Cojot <vincent at cojot dot name>
+* optical <alex@rigbo.se>
+* Aaron Gyes <floam@aaron.gy>
 
 ## Dependencies ##
 * OpenGL
