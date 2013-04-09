@@ -2959,6 +2959,14 @@ void ClientThink( int clientNum, usercmd_t *ucmd ) {
 					G_ClearViewEntity( ent );
 					freed = qtrue;
 				}
+				else if ( ucmd->upmove > 0 )
+				{//jumping gets you out of it FIXME: check some other button instead... like ESCAPE... so you could even have total control over an NPC?
+					G_ClearViewEntity( ent );
+					ucmd->upmove = 0;//ucmd->buttons = 0;
+					//stop player from doing anything for a half second after
+					ent->aimDebounceTime = level.time + 500;
+					freed = qtrue;
+				}
 			}
 			else if ( controlled->NPC //an NPC
 				&& PM_GentCantJump( controlled ) //that cannot jump

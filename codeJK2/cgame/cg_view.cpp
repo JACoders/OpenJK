@@ -373,26 +373,30 @@ CG_CalcIdealThirdPersonViewTarget
 static void CG_CalcIdealThirdPersonViewTarget(void)
 {
 	// Initialize IdealTarget
+	qboolean usesViewEntity = (qboolean)(cg.snap->ps.viewEntity && cg.snap->ps.viewEntity < ENTITYNUM_WORLD);
 	VectorCopy(cg.refdef.vieworg, cameraFocusLoc);
 
-	if ( cg.snap->ps.viewEntity > 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )
+	if ( usesViewEntity )
 	{
+
 		gentity_t *gent = &g_entities[cg.snap->ps.viewEntity];
-		if ( gent->client && (gent->client->NPC_class != CLASS_GONK ) 
-			&& (gent->client->NPC_class != CLASS_INTERROGATOR) 
-			&& (gent->client->NPC_class != CLASS_SENTRY) 
-			&& (gent->client->NPC_class != CLASS_PROBE ) 
-			&& (gent->client->NPC_class != CLASS_MOUSE ) 
-			&& (gent->client->NPC_class != CLASS_R2D2 ) 
-			&& (gent->client->NPC_class != CLASS_R5D2) )
-		{//use the NPC's viewheight
-			cameraFocusLoc[2] += gent->client->ps.viewheight;
-		}
-		else
-		{//droids use a generic offset
+		if ( gent->client && (gent->client->NPC_class == CLASS_GONK ) 
+			|| (gent->client->NPC_class == CLASS_INTERROGATOR) 
+			|| (gent->client->NPC_class == CLASS_SENTRY) 
+			|| (gent->client->NPC_class == CLASS_PROBE ) 
+			|| (gent->client->NPC_class == CLASS_MOUSE ) 
+			|| (gent->client->NPC_class == CLASS_R2D2 ) 
+			|| (gent->client->NPC_class == CLASS_R5D2) )
+		{	// Droids use a generic offset
 			cameraFocusLoc[2] += 4;
+			VectorCopy( cameraFocusLoc,  cameraIdealTarget );
+			return;
 		}
-		VectorCopy( cameraFocusLoc,  cameraIdealTarget );
+
+		if( gent->client->ps.pm_flags & PMF_DUCKED )
+		{	// sort of a nasty hack in order to get this to work. Don't tell Ensiform, or I'll have to kill him. --eez
+			cameraFocusLoc[2] -= CAMERA_CROUCH_NUDGE*4;
+		}
 	}
 	else 
 	{
@@ -1562,7 +1566,14 @@ static qboolean CG_CalcViewValues( void ) {
 	// calculate size of 3D view
 	CG_CalcVrect();
 
-	ps = &cg.predicted_player_state;
+	if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )
+	{
+		ps = &g_entities[cg.snap->ps.viewEntity].client->ps;
+	}
+	else
+	{
+		ps = &cg.predicted_player_state;
+	}
 #ifndef FINAL_BUILD
 	trap_Com_SetOrgAngles(ps->origin,ps->viewangles);
 #endif

@@ -981,7 +981,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 	if ( ps->pm_type == PM_INTERMISSION )
 		return;
 
-	cent = &cg_entities[cg.snap->ps.clientNum];
+	cent = &cg_entities[ps->clientNum];
 
 	if ( ps->eFlags & EF_LOCKED_TO_WEAPON )
 	{
@@ -1075,10 +1075,10 @@ void CG_AddViewWeapon( playerState_t *ps )
 		fovOffset = 0;
 	}
 
-	if ( cg.snap->ps.leanofs != 0 )
+	if ( ps->leanofs != 0 )
 	{	//add leaning offset
-		leanOffset = cg.snap->ps.leanofs * 0.25f;
-		fovOffset += abs(cg.snap->ps.leanofs) * -0.1f;
+		leanOffset = ps->leanofs * 0.25f;
+		fovOffset += abs(ps->leanofs) * -0.1f;
 	}
 	else
 	{
