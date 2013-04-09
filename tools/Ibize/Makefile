@@ -12,7 +12,7 @@ SRCS			= BlockStream.cpp \
 OBJS			= $(SRCS:.cpp=.o)
 
 all: $(OBJS)
-	$(CXX) -m32 -o IBIze $(OBJS) -lncurses
+	$(CXX) -m32 -o IBIze $(OBJS)
 
 clean:
 	$(RM) $(OBJS)
