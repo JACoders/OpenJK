@@ -123,7 +123,11 @@ DLL_ONLY=false
 
   LIBEXT=a
 
+ifeq ($(PLATFORM),darwin) #TODO: This should not be mixed in with linux stuff
+  SHLIBEXT=dylib
+else
   SHLIBEXT=so
+endif
   SHLIBCFLAGS=-D_JK2 -DJK2AWARDS -DQAGAME -DMISSIONPACK -m32
   SHLIBLDFLAGS=-m32 -shared $(LDFLAGS)
 
