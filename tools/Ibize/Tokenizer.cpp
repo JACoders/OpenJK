@@ -451,8 +451,13 @@ void CParseFile::Delete()
 	}
 	if (m_ownsFile && (m_fileHandle != NULL))
 	{
+#ifdef _WIN32
 		CloseHandle(m_fileHandle);
+#else
+        fclose(m_fileHandle);
+#endif
 		m_fileHandle = NULL;
+        
 	}
 	if (m_fileName != NULL)
 	{
@@ -475,16 +480,29 @@ bool CParseFile::Init()
 
 DWORD CParseFile::GetFileSize()
 {
-	DWORD dwCur = SetFilePointer(m_fileHandle, 0L, NULL, FILE_CURRENT);
-	DWORD dwLen = SetFilePointer(m_fileHandle, 0, NULL, FILE_END);
+    DWORD dwCur, dwLen;
+#ifdef _WIN32
+	dwCur = SetFilePointer(m_fileHandle, 0L, NULL, FILE_CURRENT);
+	dwLen = SetFilePointer(m_fileHandle, 0, NULL, FILE_END);
 	SetFilePointer(m_fileHandle, dwCur, NULL, FILE_BEGIN);
+#else
+    dwCur = ftell(m_fileHandle);
+    fseek(m_fileHandle, 0, SEEK_END);
+    dwLen = ftell(m_fileHandle);
+    rewind(m_fileHandle);
+    fseek(m_fileHandle, dwCur, SEEK_SET);
+#endif
 	return dwLen;
 }
 
 void CParseFile::Read(void* buff, UINT buffsize)
 {
 	DWORD bytesRead;
+#ifdef _WIN32
 	ReadFile(m_fileHandle, buff, buffsize, &bytesRead, NULL);
+#else
+    fread(buff, 1, buffsize, m_fileHandle);
+#endif
 }
 
 bool CParseFile::Init(LPCTSTR filename, CTokenizer* tokenizer)
@@ -492,6 +510,7 @@ bool CParseFile::Init(LPCTSTR filename, CTokenizer* tokenizer)
 	CParseStream::Init();
 	m_fileName = (char*)malloc(strlen(filename) + 1);
 	strcpy(m_fileName, filename);
+#ifdef _WIN32
 		DWORD dwAccess = GENERIC_READ;
 		DWORD dwShareMode = FILE_SHARE_WRITE | FILE_SHARE_READ;
 		SECURITY_ATTRIBUTES sa;
@@ -499,10 +518,17 @@ bool CParseFile::Init(LPCTSTR filename, CTokenizer* tokenizer)
 		sa.lpSecurityDescriptor = NULL;
 		sa.bInheritHandle = 0;
 		DWORD dwCreateFlag = OPEN_EXISTING;
+#endif
 
+#ifdef _WIN32
 		m_fileHandle = CreateFile(filename, dwAccess, dwShareMode, &sa, dwCreateFlag, FILE_ATTRIBUTE_NORMAL, NULL);
-
-		if (m_fileHandle == (HANDLE)-1)
+    
+        if (m_fileHandle == (HANDLE)-1)
+#else
+        m_fileHandle = fopen(filename, "r");
+    
+        if (m_fileHandle == NULL)
+#endif
 		{
 			tokenizer->Error(TKERR_INCLUDE_FILE_NOTFOUND);
 			Init();
