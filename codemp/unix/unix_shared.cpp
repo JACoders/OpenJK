@@ -63,7 +63,7 @@ int Sys_Milliseconds (bool baseTime)
 
 
 //#if 0 // bk001215 - see snapvector.nasm for replacement
-//#if (defined __APPLE__) // rcg010206 - using this for PPC builds...
+#if (defined __APPLE__) // rcg010206 - using this for PPC builds...
 long fastftol( float f ) { // bk001213 - from win32/win_shared.c
   //static int tmp;
   //	__asm fld f
@@ -72,13 +72,13 @@ long fastftol( float f ) { // bk001213 - from win32/win_shared.c
   return (long)f;
 }
 
-void Sys_SnapVector( float *v ) { // bk001213 - see win32/win_shared.c
+void Sys_SnapVector3( float *v ) { // bk001213 - see win32/win_shared.c
   // bk001213 - old linux
   v[0] = rint(v[0]);
   v[1] = rint(v[1]);
   v[2] = rint(v[2]);
 }
-//#endif
+#endif
 
 
 qboolean Sys_Mkdir( const char *path )
