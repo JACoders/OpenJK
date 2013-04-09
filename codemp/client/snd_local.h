@@ -14,6 +14,9 @@
 #include "OpenAL/alc.h"
 #include "eax\eax.h"
 #include "eax\eaxman.h"
+#elif defined MACOS_X
+#include <OpenAL/al.h>
+#include <OpenAL/alc.h>
 #else
 #include <AL/al.h>
 #include <AL/alc.h>

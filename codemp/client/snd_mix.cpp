@@ -14,7 +14,7 @@ short	*snd_out;
 
 
 // FIXME: proper fix for that ?
-#ifdef __linux__
+#if defined __linux__ || defined MACOS_X
 void S_WriteLinearBlastStereo16 (void)
 {
 	int		i;
@@ -42,7 +42,7 @@ void S_WriteLinearBlastStereo16 (void)
 #endif
 
 
-#if !(defined __linux__ && defined __i386__)
+#if !((defined __linux__ || defined MACOS_X) && defined __i386__)
 #if	!id386
 
 
