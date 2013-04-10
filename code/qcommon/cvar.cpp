@@ -522,7 +522,7 @@ qboolean Cvar_Command( void ) {
 	if (value[0] =='!')	//toggle
 	{
 		char buff[5];
-		sprintf(buff,"%i",!v->value);
+		Com_sprintf(buff, 5, "%i",!v->value);
 		Cvar_Set2 (v->name, buff, qfalse);// toggle the value
 	}
 	else
@@ -578,9 +578,9 @@ void Cvar_Set_f( void ) {
 		if ( l + len >= MAX_STRING_TOKENS - 2 ) {
 			break;
 		}
-		strcat( combined, Cmd_Argv( i ) );
+		Q_strcat( combined, MAX_STRING_TOKENS, Cmd_Argv( i ) );
 		if ( i != c-1 ) {
-			strcat( combined, " " );
+			Q_strcat( combined, MAX_STRING_TOKENS, " " );
 		}
 		l += len;
 	}

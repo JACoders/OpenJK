@@ -68,7 +68,7 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">.\SHDebug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">.\SHDebug\exe\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">.\FinalBuild\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">.\..\bin\FinalBuild\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">.\FinalBuild\exe\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\bin\Release\</OutDir>
@@ -87,6 +87,7 @@
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'" />
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">jasp</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">jasp</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
