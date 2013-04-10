@@ -243,11 +243,7 @@ typedef struct {
 #endif
 } clientStatic_t;
 
-#ifdef _XBOX
-#define	CON_TEXTSIZE	256
-#else
-#define	CON_TEXTSIZE	32768
-#endif
+#define	CON_TEXTSIZE	0x30000 //was 32768
 #define	NUM_CON_TIMES	4
 
 typedef struct {
