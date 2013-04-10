@@ -1011,7 +1011,7 @@ void Com_Init( char *commandLine ) {
 
 		// skip the openjk_sp.cfg if "safe" is on the command line
 		if ( !Com_SafeMode() ) {
-			Cbuf_AddText ("exec "Q3CONFIG_NAME".cfg\n");
+			Cbuf_AddText ("exec "Q3CONFIG_NAME"\n");
 		}
 
 		Cbuf_AddText ("exec autoexec.cfg\n");
