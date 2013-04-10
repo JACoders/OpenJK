@@ -14131,9 +14131,12 @@ static void PM_Weapon( void )
 	}
 
 
-	if(pm->gent && pm->gent->NPC != NULL )
-	{//NPCs have their own refire logic
-		return;
+	if(!PM_ControlledByPlayer())
+	{
+		if(pm->gent && pm->gent->NPC != NULL )
+		{//NPCs have their own refire logic
+			return;
+		}
 	}
 
 	if ( g_timescale != NULL )
