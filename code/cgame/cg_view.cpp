@@ -1577,7 +1577,8 @@ static qboolean CG_CalcViewValues( void ) {
 	// calculate size of 3D view
 	CG_CalcVrect();
 
-	if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )
+	if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD &&
+		g_entities[cg.snap->ps.viewEntity].client)
 	{
 		ps = &g_entities[cg.snap->ps.viewEntity].client->ps;
 		viewEntIsHumanoid = qtrue;
