@@ -45,6 +45,8 @@ This file is part of Jedi Academy.
 #pragma warning(disable : 4711)		// selected for automatic inline expansion
 #pragma warning(disable : 4786)		// identifier was truncated
 
+#pragma warning(disable : 4996)		// This function or variable may be unsafe.
+
 #endif
 
 //rww - conveniently toggle "gore" code, for model decals and stuff.
