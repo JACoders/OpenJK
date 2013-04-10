@@ -510,6 +510,12 @@ issues.
 
 #define	MAX_FILE_HANDLES	64
 
+#ifdef DEDICATED
+#	define Q3CONFIG_CFG PRODUCT_NAME "_server.cfg"
+#else
+#	define Q3CONFIG_CFG PRODUCT_NAME ".cfg"
+#endif
+
 qboolean FS_Initialized();
 
 void	FS_InitFilesystem (void);
