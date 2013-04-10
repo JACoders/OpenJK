@@ -52,6 +52,8 @@ This file is part of Jedi Academy.
 #define _G2_GORE
 #endif
 
+#define Q3CONFIG_NAME		"openjk_sp.cfg"
+
 #ifndef FINAL_BUILD
 #define G2_PERFORMANCE_ANALYSIS
 #endif
