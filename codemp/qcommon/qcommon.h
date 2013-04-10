@@ -203,6 +203,9 @@ PROTOCOL
 #define	UPDATE_SERVER_NAME			"updatejk3.ravensoft.com"
 #define MASTER_SERVER_NAME			"masterjk3.ravensoft.com"
 
+#define JKHUB_MASTER_SERVER_NAME	"master.jkhub.org"
+#define JKHUB_UPDATE_SERVER_NAME	"update.jkhub.org"
+
 #define	PORT_MASTER			29060
 #define	PORT_UPDATE			29061
 //#define	PORT_AUTHORIZE		29062
@@ -506,6 +509,12 @@ issues.
 #define NUM_ID_PAKS		9
 
 #define	MAX_FILE_HANDLES	64
+
+#ifdef DEDICATED
+#	define Q3CONFIG_CFG PRODUCT_NAME "_server.cfg"
+#else
+#	define Q3CONFIG_CFG PRODUCT_NAME ".cfg"
+#endif
 
 qboolean FS_Initialized();
 
@@ -946,7 +955,7 @@ void	Sys_Print( const char *msg );
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (bool baseTime = false);
 
-#if defined(__linux__) || defined(MACOS_X)
+#ifndef _WIN32
 extern "C" void	Sys_SnapVector( float *v );
 
 #else

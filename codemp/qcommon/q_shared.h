@@ -7,6 +7,8 @@
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
+#define PRODUCT_NAME			"openjk"
+
 #define CLIENT_WINDOW_TITLE "OpenJK (MP)"
 #define CLIENT_CONSOLE_TITLE "OpenJK Console (MP)"
 

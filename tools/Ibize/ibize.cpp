@@ -2,8 +2,12 @@
 //
 //	-- jweier
 
+#ifdef _WIN32
 #include <conio.h>	//For getch()
 #include <io.h>		//For _findXXX
+#else
+#include "ibize_platform.h"
+#endif
 
 #include "Tokenizer.h"
 #include "BlockStream.h"
@@ -70,8 +74,10 @@ main
 
 int main(int argc, char* argv[])
 {
+#ifdef _WIN32
 	struct _finddata_t fileinfo;
 	bool	error_pause = false;
+#endif
 	char	*filename, error_msg[MAX_STRING_LENGTH], newfilename[MAX_FILENAME_LENGTH];
 	int		handle;
 
@@ -105,9 +111,10 @@ int main(int argc, char* argv[])
 		//FIXME: There could be better ways to do this...
 		if ( filename[0] == '-' )
 		{
+#ifdef _WIN32
 			if ( tolower(filename[1]) == 'e' )
 				error_pause = true;
-
+ //Can just use a wildcard in the commandline on non-windows
 			if ( tolower(filename[1]) == 'a' )
 			{
 				handle = _findfirst ( "*.txt", &fileinfo);
@@ -134,6 +141,7 @@ int main(int argc, char* argv[])
 
 				_findclose (handle);
 			}
+#endif
 			
 			continue;
 		}
@@ -147,9 +155,11 @@ int main(int argc, char* argv[])
 				// failed
 				//
 				BlockStream.Free();
-				
+
+#ifdef _WIN32
 				if (error_pause)
 					getch();
+#endif
 
 				return iErrorBlock;
 			}
@@ -169,9 +179,10 @@ int main(int argc, char* argv[])
 					//
 					BlockStream.Free();
 
-					if (error_pause)
-						getch();
-
+#ifdef _WIN32
+                    if (error_pause)
+                        getch();
+#endif
 					return iErrorBlock;
 				}
 			}
@@ -181,8 +192,10 @@ int main(int argc, char* argv[])
 				sprintf(error_msg, "ERROR: File '%s' not found!\n", filename);
 				printf(error_msg);
 				
+#ifdef _WIN32
 				if (error_pause)
 					getch();
+#endif
 
 				return 1;	// this will technically mean that there was a problem with cblock 1, but wtf?
 			}
