@@ -840,6 +840,9 @@ void CM_LoadMap( const char *name, qboolean clientload, int *checksum, qboolean 
 	{
 		gbUsingCachedMapDataRightNow = qtrue;	// !!!!!!!!!!!!!!!!!!
 
+#ifndef _DEBUG
+		Com_Printf("CM_LoadMapActual: %s\n", name);
+#endif
 			CM_LoadMap_Actual( name, clientload, checksum, cmg );
 
 		gbUsingCachedMapDataRightNow = qfalse;	// !!!!!!!!!!!!!!!!!!
@@ -1189,7 +1192,7 @@ int CM_LoadSubBSP(const char *name, qboolean clientload)
 	count = cmg.numSubModels;
 	for(i = 0; i < NumSubBSP; i++)
 	{
-		if (!stricmp(name, SubBSP[i].name))
+		if (!Q_stricmp(name, SubBSP[i].name))
 		{
 			return count;
 		}

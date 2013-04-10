@@ -52,11 +52,11 @@ char *Sys_GetCurrentUser( void )
 
 
 	if ( !GetUserName( s_userName, &size ) )
-		strcpy( s_userName, "player" );
+		Q_strncpyz( s_userName, "player", 1024 );
 
 	if ( !s_userName[0] )
 	{
-		strcpy( s_userName, "player" );
+		Q_strncpyz( s_userName, "player", 1024 );
 	}
 
 	return s_userName;
