@@ -218,8 +218,8 @@ LONG WINAPI InputLineWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		if ( wParam == 13 )
 		{
 			GetWindowText( s_wcd.hwndInputLine, inputBuffer, sizeof( inputBuffer ) );
-			strncat( s_wcd.consoleText, inputBuffer, sizeof( s_wcd.consoleText ) - strlen( s_wcd.consoleText ) - 5 );
-			strcat( s_wcd.consoleText, "\n" );
+			strncat_s( s_wcd.consoleText, inputBuffer, sizeof( s_wcd.consoleText ) - strlen( s_wcd.consoleText ) - 5 );
+			Q_strcat( s_wcd.consoleText, 512, "\n" );
 			SetWindowText( s_wcd.hwndInputLine, "" );
 
 			Sys_Print( va( "]%s\n", inputBuffer ) );
@@ -440,7 +440,7 @@ char *Sys_ConsoleInput( void )
 		return NULL;
 	}
 		
-	strcpy( s_wcd.returnedText, s_wcd.consoleText );
+	Q_strncpyz( s_wcd.returnedText, s_wcd.consoleText, 512 );
 	s_wcd.consoleText[0] = 0;
 	
 	return s_wcd.returnedText;

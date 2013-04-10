@@ -344,6 +344,11 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	sv.time = 1000;
 	G2API_SetTime(sv.time,G2T_SV_TIME);
 
+#ifndef _DEBUG
+	Com_Printf("CM_LOADMAP: %s\n", server);
+#endif
+
+
 	CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum, qfalse );
 
 	// set serverinfo visible name
@@ -455,7 +460,7 @@ void SV_Init (void) {
 	sv_serverid = Cvar_Get ("sv_serverid", "0", CVAR_SYSTEMINFO | CVAR_ROM );
 
 	// server vars
-	sv_fps = Cvar_Get ("sv_fps", "20", CVAR_TEMP );
+	sv_fps = Cvar_Get ("sv_fps", "40", CVAR_TEMP );
 	sv_timeout = Cvar_Get ("sv_timeout", "120", CVAR_TEMP );
 	sv_zombietime = Cvar_Get ("sv_zombietime", "2", CVAR_TEMP );
 	Cvar_Get ("nextmap", "", CVAR_TEMP );
