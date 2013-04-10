@@ -115,7 +115,7 @@ DLL_ONLY=false
 # NOTE: the -fomit-frame-pointer option leads to an unstable binary on my test box if it was built on the main box
 #   but building on the Mdk 7.2 baseline seems to work
 # -O2 -unroll
-      RELEASE_CFLAGS=$(BASE_CFLAGS) -DNDEBUG -O2 -unroll 
+      RELEASE_CFLAGS=$(BASE_CFLAGS) -DNDEBUG -O2 -unroll -DFINAL_BUILD
 # TTimo: use this for building on P3 gcc 2.95.3 libc2.2 for all targets (experimental! -fomit-fram-pointer removed)
 #      RELEASE_CFLAGS=$(BASE_CFLAGS) -DNDEBUG -O6 -mcpu=pentiumpro -march=pentium -pipe -ffast-math -malign-loops=2 -malign-jumps=2 -malign-functions=2 -fno-strict-aliasing -fstrength-reduce
     endif

@@ -143,19 +143,17 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	char		msg[MAXPRINTMSG];
 
 	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
+	vsprintf_s (msg,fmt,argptr);
 	va_end (argptr);
 
-#ifndef _XBOX
 	if ( rd_buffer ) {
 		if ((strlen (msg) + strlen(rd_buffer)) > (rd_buffersize - 1)) {
 			rd_flush(rd_buffer);
 			*rd_buffer = 0;
 		}
-		strcat (rd_buffer, msg);
+		Q_strcat (rd_buffer, strlen(rd_buffer), msg);
 		return;
 	}
-#endif
 
 	CL_ConsolePrint( msg );
 
@@ -166,7 +164,6 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	OutputDebugString(msg);
 #endif
 
-#ifndef _XBOX
 	// logfile
 	if ( com_logfile && com_logfile->integer ) {
 		if ( !logfile ) {
@@ -181,7 +178,6 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			FS_Write(msg, strlen(msg), logfile);
 		}
 	}
-#endif
 }
 
 
@@ -201,7 +197,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	}
 
 	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
+	vsprintf_s (msg,fmt,argptr);
 	va_end (argptr);
 	
 	Com_Printf ("%s", msg);
@@ -217,7 +213,7 @@ void Com_WriteCam ( const char *text )
 		extern	cvar_t	*sv_mapname;
 
 		//NOTE: always saves in working dir if using one...
-		sprintf( mapname, "maps/%s_cam.map", sv_mapname->string );
+		Com_sprintf( mapname, MAX_QPATH, "maps/%s_cam.map", sv_mapname->string );
 		camerafile = FS_FOpenFileWrite( mapname );
 	}
 
@@ -245,7 +241,7 @@ void Com_FlushCamFile()
 
 	static	char	flushedMapname[MAX_QPATH];
 	extern	cvar_t	*sv_mapname;
-	sprintf( flushedMapname, "maps/%s_cam.map", sv_mapname->string );
+	Com_sprintf( flushedMapname, MAX_QPATH, "maps/%s_cam.map", sv_mapname->string );
 	Com_Printf("flushed all cams to %s\n", flushedMapname);
 #endif
 }
@@ -293,7 +289,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 //	SCR_UnprecacheScreenshot();
 
 	va_start (argptr,fmt);
-	vsprintf (com_errorMessage,fmt,argptr);
+	vsprintf_s (com_errorMessage,fmt,argptr);
 	va_end (argptr);	
 
 	if ( code != ERR_DISCONNECT ) {
@@ -445,7 +441,7 @@ void Com_StartupVariable( const char *match ) {
 		}
 
 		s = Cmd_Argv(1);
-		if ( !match || !stricmp( s, match ) ) {
+		if ( !match || !Q_stricmp( s, match ) ) {
 			Cvar_Set( s, Cmd_Argv(2) );
 			cv = Cvar_Get( s, "", 0 );
 			cv->flags |= CVAR_USER_CREATED;
@@ -1015,7 +1011,7 @@ void Com_Init( char *commandLine ) {
 
 		// skip the openjk_sp.cfg if "safe" is on the command line
 		if ( !Com_SafeMode() ) {
-			Cbuf_AddText ("exec openjk_sp.cfg\n");
+			Cbuf_AddText ("exec "Q3CONFIG_NAME"\n");
 		}
 
 		Cbuf_AddText ("exec autoexec.cfg\n");
@@ -1038,7 +1034,7 @@ void Com_Init( char *commandLine ) {
 		Cmd_AddCommand ("quit", Com_Quit_f);
 		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
 		
-		com_maxfps = Cvar_Get ("com_maxfps", "85", CVAR_ARCHIVE);
+		com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE);
 		
 		com_developer = Cvar_Get ("developer", "0", CVAR_TEMP );
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
@@ -1178,7 +1174,7 @@ void Com_WriteConfiguration( void ) {
 	}
 	cvar_modifiedFlags &= ~CVAR_ARCHIVE;
 
-	Com_WriteConfigToFile( "openjk_sp.cfg" );
+	Com_WriteConfigToFile( Q3CONFIG_NAME );
 }
 
 
