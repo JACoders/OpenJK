@@ -5,6 +5,10 @@
 #ifndef __QGL_H__
 #define __QGL_H__
 
+#ifndef _WIN32
+#include "unix/unix_qgl.h"
+#else
+
 #if defined( __LINT__ )
 
 #include <GL/gl.h>
@@ -753,5 +757,7 @@ extern void (*qglXSwapBuffers)( Display *dpy, GLXDrawable drawable );
 #endif // __linux__ || __FreeBSD__ // rb010123
 
 #endif	// _WIN32 && __linux__
+
+#endif
 
 #endif

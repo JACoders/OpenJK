@@ -1,14 +1,261 @@
-CC			= gcc
-CXX			= g++
-CXXFLAGS		+= -fpermissive -m32 -w -D_JK2 -D__linux__ -D_M_IX86 -I. -DUSE_LOCAL_HEADERS -ISDL12/include -DDEDICATED
-CFLAGS			+= -fpermissive -m32 -w -D_JK2 -D__linux__ -D_M_IX86 -I. -DUSE_LOCAL_HEADERS -ISDL12/include -DDEDICATED
+CC				= 	gcc
+CXX				= 	g++
+CXXFLAGS		+= 	-fpermissive -m32 -w -D_JK2 -D__linux__ -D_M_IX86 -I. -DUSE_LOCAL_HEADERS -ISDL12
+CFLAGS			+= 	-fpermissive -m32 -w -D_JK2 -D__linux__ -D_M_IX86 -I. -DUSE_LOCAL_HEADERS -ISDL12
 
-SRCS			= 
+OBJS			=   client/FXExport.o \
+			        client/FxPrimitives.o \
+			        client/FxScheduler.o \
+			        client/FxSystem.o \
+			        client/FxTemplate.o \
+			        client/FxUtil.o \
+			        client/cl_cgame.o \
+			        client/cl_cin.o \
+			        client/cl_console.o \
+			        client/cl_input.o \
+			        client/cl_keys.o \
+			        client/cl_main.o \
+			        client/cl_net_chan.o \
+			        client/cl_parse.o \
+			        client/cl_scrn.o \
+			        client/cl_ui.o \
+			        qcommon/CNetProfile.o \
+			        qcommon/GenericParser2.o \
+			        qcommon/RoffSystem.o \
+			        qcommon/cm_draw.o \
+			        qcommon/cm_load.o \
+			        qcommon/cm_patch.o \
+			        qcommon/cm_polylib.o \
+			        qcommon/cm_randomterrain.o \
+			        qcommon/cm_shader.o \
+			        qcommon/cm_terrain.o \
+			        qcommon/cm_terrainmap.o \
+			        qcommon/cm_test.o \
+			        qcommon/cm_trace.o \
+			        qcommon/cmd_common.o \
+			        qcommon/cmd_pc.o \
+			        qcommon/common.o \
+			        qcommon/cvar.o \
+			        qcommon/exe_headers.o \
+			        qcommon/files_common.o \
+			        qcommon/files_pc.o \
+			        qcommon/hstring.o \
+			        qcommon/huffman.o \
+			        qcommon/md4.o \
+			        qcommon/msg.o \
+			        qcommon/net_chan.o \
+			        qcommon/q_math.o \
+			        qcommon/q_shared.o \
+			        qcommon/stringed_ingame.o \
+			        qcommon/stringed_interface.o \
+			        qcommon/unzip.o \
+			        qcommon/vm.o \
+			        qcommon/vm_interpreted.o \
+			        unix_ded/vm_x86.o \
+			        qcommon/z_memman_pc.o \
+			        \
+			        unix/unix_main.o \
+			        unix/unix_glimp.o \
+			        unix/unix_net.o \
+			        unix/unix_snd.o \
+			        unix/snapvector.o \
+			        sys/sys_main.o \
+			        sys/sys_input.o \
+			        sys/sys_unix.o \
+			        \
+			        server/sv_bot.o \
+			        server/sv_ccmds.o \
+			        server/sv_client.o \
+			        server/sv_game.o \
+			        server/sv_init.o \
+			        server/sv_main.o \
+			        server/sv_net_chan.o \
+			        server/sv_snapshot.o \
+			        server/sv_world.o \
+			        server/NPCNav/gameCallbacks.o \
+			        server/NPCNav/navigator.o \
+			        client/snd_ambient.o \
+			        client/snd_dma.o \
+			        client/snd_mem.o \
+			        client/snd_mix.o \
+			        client/snd_mp3.o \
+			        client/snd_music.o \
+			        mp3code/cdct.o \
+			        mp3code/csbt.o \
+			        mp3code/csbtb.o \
+			        mp3code/csbtl3.o \
+			        mp3code/cup.o \
+			        mp3code/cupini.o \
+			        mp3code/cupl1.o \
+			        mp3code/cupl3.o \
+			        mp3code/cwin.o \
+			        mp3code/cwinb.o \
+			        mp3code/cwinm.o \
+			        mp3code/hwin.o \
+			        mp3code/l3dq.o \
+			        mp3code/l3init.o \
+			        mp3code/mdct.o \
+			        mp3code/mhead.o \
+			        mp3code/msis.o \
+			        mp3code/towave.o \
+			        mp3code/uph.o \
+			        mp3code/upsf.o \
+			        mp3code/wavep.o \
+			        renderer/matcomp.o \
+			        renderer/tr_WorldEffects.o \
+			        renderer/tr_animation.o \
+			        renderer/tr_arioche.o \
+			        renderer/tr_backend.o \
+			        renderer/tr_bsp.o \
+			        renderer/tr_cmds.o \
+			        renderer/tr_curve.o \
+			        renderer/tr_font.o \
+			        renderer/tr_ghoul2.o \
+			        renderer/tr_image.o \
+			        renderer/tr_init.o \
+			        renderer/tr_light.o \
+			        renderer/tr_main.o \
+			        renderer/tr_marks.o \
+			        renderer/tr_mesh.o \
+			        renderer/tr_model.o \
+			        renderer/tr_noise.o \
+			        renderer/tr_quicksprite.o \
+			        renderer/tr_scene.o \
+			        renderer/tr_shade.o \
+			        renderer/tr_shade_calc.o \
+			        renderer/tr_shader.o \
+			        renderer/tr_shadows.o \
+			        renderer/tr_sky.o \
+			        renderer/tr_surface.o \
+			        renderer/tr_surfacesprites.o \
+			        renderer/tr_terrain.o \
+			        renderer/tr_world.o \
+			        jpeg-6/jcapimin.o \
+			        jpeg-6/jccoefct.o \
+			        jpeg-6/jccolor.o \
+			        jpeg-6/jcdctmgr.o \
+			        jpeg-6/jchuff.o \
+			        jpeg-6/jcinit.o \
+			        jpeg-6/jcmainct.o \
+			        jpeg-6/jcmarker.o \
+			        jpeg-6/jcmaster.o \
+			        jpeg-6/jcomapi.o \
+			        jpeg-6/jcparam.o \
+			        jpeg-6/jcphuff.o \
+			        jpeg-6/jcprepct.o \
+			        jpeg-6/jcsample.o \
+			        jpeg-6/jctrans.o \
+			        jpeg-6/jdapimin.o \
+			        jpeg-6/jdapistd.o \
+			        jpeg-6/jdatadst.o \
+			        jpeg-6/jdatasrc.o \
+			        jpeg-6/jdcoefct.o \
+			        jpeg-6/jdcolor.o \
+			        jpeg-6/jddctmgr.o \
+			        jpeg-6/jdhuff.o \
+			        jpeg-6/jdinput.o \
+			        jpeg-6/jdmainct.o \
+			        jpeg-6/jdmarker.o \
+			        jpeg-6/jdmaster.o \
+			        jpeg-6/jdpostct.o \
+			        jpeg-6/jdsample.o \
+			        jpeg-6/jdtrans.o \
+			        jpeg-6/jerror.o \
+			        jpeg-6/jfdctflt.o \
+			        jpeg-6/jidctflt.o \
+			        jpeg-6/jmemmgr.o \
+			        jpeg-6/jmemnobs.o \
+			        jpeg-6/jutils.o \
+			        png/png.o \
+			        ghoul2/G2_API.o \
+			        ghoul2/G2_bolts.o \
+			        ghoul2/G2_bones.o \
+			        ghoul2/G2_misc.o \
+			        ghoul2/G2_surfaces.o \
+			        RMG/RM_Area.o \
+			        RMG/RM_Instance.o \
+			        RMG/RM_InstanceFile.o \
+			        RMG/RM_Instance_BSP.o \
+			        RMG/RM_Instance_Group.o \
+			        RMG/RM_Instance_Random.o \
+			        RMG/RM_Instance_Void.o \
+			        RMG/RM_Manager.o \
+			        RMG/RM_Mission.o \
+			        RMG/RM_Objective.o \
+			        RMG/RM_Path.o \
+			        RMG/RM_Terrain.o \
+			        botlib/be_aas_bspq3.o \
+			        botlib/be_aas_cluster.o \
+			        botlib/be_aas_debug.o \
+			        botlib/be_aas_entity.o \
+			        botlib/be_aas_file.o \
+			        botlib/be_aas_main.o \
+			        botlib/be_aas_move.o \
+			        botlib/be_aas_optimize.o \
+			        botlib/be_aas_reach.o \
+			        botlib/be_aas_route.o \
+			        botlib/be_aas_routealt.o \
+			        botlib/be_aas_sample.o \
+			        botlib/be_ai_char.o \
+			        botlib/be_ai_chat.o \
+			        botlib/be_ai_gen.o \
+			        botlib/be_ai_goal.o \
+			        botlib/be_ai_move.o \
+			        botlib/be_ai_weap.o \
+			        botlib/be_ai_weight.o \
+			        botlib/be_ea.o \
+			        botlib/be_interface.o \
+			        botlib/l_crc.o \
+			        botlib/l_libvar.o \
+			        botlib/l_log.o \
+			        botlib/l_memory.o \
+			        botlib/l_precomp.o \
+			        botlib/l_script.o \
+			        botlib/l_struct.o \
+			        icarus/BlockStream.o \
+			        icarus/GameInterface.o \
+			        icarus/Instance.o \
+			        icarus/Interface.o \
+			        icarus/Memory.o \
+			        icarus/Q3_Interface.o \
+			        icarus/Q3_Registers.o \
+			        icarus/Sequence.o \
+			        icarus/Sequencer.o \
+			        icarus/TaskManager.o \
+			        zlib/ioapi.o \
+			        zlib/adler32.o \
+			        zlib/compress.o \
+			        zlib/crc32.o \
+			        zlib/deflate.o \
+			        zlib/gzclose.o \
+			        zlib/gzlib.o \
+			        zlib/gzread.o \
+			        zlib/gzwrite.o \
+			        zlib/infback.o \
+			        zlib/inffast.o \
+			        zlib/inflate.o \
+			        zlib/inftrees.o \
+			        zlib/trees.o \
+			        zlib/uncompr.o \
+			        zlib/zutil.o
 
-MP3OBJS			= $(MP3SRCS:.c=.o)
+zlib/%.o: zlib/%.c
+	$(CC) $(CXXFLAGS) -c $< -o $@
+	
+mp3code/%.o: mp3code/%.c
+	$(CC) $(CXXFLAGS) -c $< -o $@
 
-all: $(OBJS) $(MP3OBJS) botlib
-	$(CXX) -m32 -o jamp $(OBJS) -lopenal
+%.o: %.c
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+		        
+botlib/%.o: botlib/%.cpp
+	$(CXX) $(CXXFLAGS) -DBOTLIB -c $< -o $@
+	
+unix/%.o: unix/%.nasm
+	nasm -f elf -o $@  $<
+
+all: $(OBJS)
+	$(CXX) -m32 -o jamp $(OBJS) -lopenal -lGL `sdl-config --libs`
 
 clean:
-	$(RM) $(OBJS) $(MP3OBJS) $(BOTLIBOBJS)
+	$(RM) $(OBJS)
