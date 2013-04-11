@@ -5220,7 +5220,8 @@ void G_ApplyKnockback( gentity_t *targ, vec3_t newDir, float knockback )
 		&& targ->client 
 		&& ( targ->client->NPC_class == CLASS_ATST
 			|| targ->client->NPC_class == CLASS_RANCOR
-			|| targ->client->NPC_class == CLASS_SAND_CREATURE ) )
+			|| targ->client->NPC_class == CLASS_SAND_CREATURE
+			|| targ->client->NPC_class == CLASS_WAMPA) )
 	{//much to large to *ever* throw
 		return;
 	}
