@@ -2647,11 +2647,23 @@ void _UI_Init( qboolean inGameLoad )
 		UI_LoadMenus(menuSet, qtrue);
 	}
 
+#ifdef FINAL_BUILD
+	Com_Printf("UI_LoadMenus completed\n");
+#endif
+
 	Menus_CloseAll();
+
+#ifdef FINAL_BUILD
+	Com_Printf("Menus_CloseAll completed\n");
+#endif
 
 	uiInfo.uiDC.whiteShader = ui.R_RegisterShaderNoMip( "white" );
 
 	AssetCache();
+
+#ifdef FINAL_BUILD
+	Com_Printf("AssetCache() completed\n");
+#endif
 
 	uis.debugMode = qfalse;
 	
@@ -2677,6 +2689,9 @@ void _UI_Init( qboolean inGameLoad )
 
 	trap_S_RegisterSound("sound/interface/weapon_deselect", qfalse);
 
+#ifdef FINAL_BUILD
+	Com_Printf("_UI_Init completed\n");
+#endif
 
 }
 
@@ -2734,7 +2749,6 @@ void UI_ParseMenu(const char *menuFile)
 //	pc_token_t token;
 
 	//Com_DPrintf("Parsing menu file:%s\n", menuFile);
-
 	len = PC_StartParseSession(menuFile,&buffer);
 
 	holdBuffer = buffer;
@@ -2913,7 +2927,7 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 		} 
 	}
 
-	//Com_Printf("UI menu load time = %d milli seconds\n", Sys_Milliseconds() - start);
+	Com_Printf("UI menu load time = %d milli seconds\n", Sys_Milliseconds() - start);
 
 	ui.FS_FreeFile( buffer );	//let go of the buffer
 }

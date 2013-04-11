@@ -87,6 +87,7 @@
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'" />
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">jagamex86</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">jagamex86</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">
     <Midl>
