@@ -6545,6 +6545,14 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 	int			int_data, toSet;
 	vec3_t		vector_data;
 
+	// eezstreet: In response to issue #75 (Cvars being affected by set command)
+	if( !Q_stricmpn(type_name, "cvar_", 5) &&
+		strlen(type_name) > 5 )
+	{
+		cgi_Cvar_Set(type_name+5, data);
+		return;
+	}
+
 	//Set this for callbacks
 	toSet = GetIDForString( setTable, type_name );
 
