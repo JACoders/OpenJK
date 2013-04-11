@@ -5905,7 +5905,7 @@ PC_EndParseSession
 */
 void PC_EndParseSession(char *buffer)
 {
-	parseDataCount--;
+	parseDataCount--;		// FIXME: should return to default?
 	ui.FS_FreeFile( buffer );	//let go of the buffer
 }
 
@@ -5921,12 +5921,17 @@ void PC_ParseWarning(const char *message)
 
 char *PC_ParseExt(void)
 {
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "PC_ParseExt: parseDataCount < 0 (be sure to call PC_StartParseSession!)");
 	return (COM_ParseExt(&parseData[parseDataCount].bufferCurrent, qtrue));
 }
 
 qboolean PC_ParseString(const char **string)
 {
 	int	hold;
+
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "PC_ParseString: parseDataCount < 0 (be sure to call PC_StartParseSession!)");
 
 	hold = COM_ParseString(&parseData[parseDataCount].bufferCurrent,string);
 
@@ -5940,16 +5945,25 @@ qboolean PC_ParseString(const char **string)
 
 qboolean PC_ParseInt(int *number)
 {
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "PC_ParseInt: parseDataCount < 0 (be sure to call PC_StartParseSession!)");
+
 	return(COM_ParseInt(&parseData[parseDataCount].bufferCurrent,number));
 }
 
 qboolean PC_ParseFloat(float *number)
 {
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "PC_ParseFloat: parseDataCount < 0 (be sure to call PC_StartParseSession!)");
+
 	return(COM_ParseFloat(&parseData[parseDataCount].bufferCurrent,number));
 }
 
 qboolean PC_ParseColor(vec4_t *color)
 {
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "PC_ParseColor: parseDataCount < 0 (be sure to call PC_StartParseSession!)");
+
 	return(COM_ParseVec4(&parseData[parseDataCount].bufferCurrent, color));
 }
 

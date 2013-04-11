@@ -269,6 +269,9 @@ void COM_BeginParseSession( void )
 
 int COM_GetCurrentParseLine( int index )
 {
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "COM_GetCurrentParseLine: parseDataCount < 0 (be sure to call COM_BeginParseSession!)");
+
 	return parseData[parseDataCount].com_lines;
 }
 
@@ -292,6 +295,9 @@ a newline.
 const char *SkipWhitespace( const char *data, qboolean *hasNewLines ) 
 {
 	int c;
+
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "SkipWhitespace: parseDataCount < 0");
 
 	while( (c = *data) <= ' ') 
 	{
@@ -326,6 +332,9 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 		*data_p = NULL;
 		return com_token;
 	}
+
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "COM_ParseExt: parseDataCount < 0 (be sure to call COM_BeginParseSession!)");
 
 	while ( 1 )
 	{
@@ -551,6 +560,9 @@ SkipRestOfLine
 void SkipRestOfLine ( const char **data ) {
 	const char	*p;
 	int		c;
+
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "SkipRestOfLine: parseDataCount < 0");
 
 	p = *data;
 	while ( (c = *p++) != 0 ) {
