@@ -119,29 +119,16 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	}
 	qglColor3f( tr.identityLight, tr.identityLight, tr.identityLight );
 
-#ifdef _XBOX
-	qglBeginEXT (GL_TRIANGLE_STRIP, 4, 0, 0, 4, 0);//, 0, 0);
-	qglTexCoord2f ( 0.5 / cols,  0.5 / rows );
-	qglVertex2f (x, y);
-	qglTexCoord2f ( ( cols - 0.5 ) / cols ,  0.5 / rows );
-	qglVertex2f (x+w, y);
-	qglTexCoord2f ( 0.5 / cols, ( rows - 0.5 ) / rows );
-	qglVertex2f (x, y+h);
-	qglTexCoord2f ( ( cols - 0.5 ) / cols, ( rows - 0.5 ) / rows );
-	qglVertex2f (x+w, y+h);
-	qglEnd ();
-#else
 	qglBegin (GL_QUADS);
-	qglTexCoord2f ( 0.5 / cols,  0.5 / rows );
+	qglTexCoord2f ( 0.5f / cols,  0.5f / rows );
 	qglVertex2f (x, y);
-	qglTexCoord2f ( ( cols - 0.5 ) / cols ,  0.5 / rows );
+	qglTexCoord2f ( ( cols - 0.5f ) / cols ,  0.5f / rows );
 	qglVertex2f (x+w, y);
-	qglTexCoord2f ( ( cols - 0.5 ) / cols, ( rows - 0.5 ) / rows );
+	qglTexCoord2f ( ( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows );
 	qglVertex2f (x+w, y+h);
-	qglTexCoord2f ( 0.5 / cols, ( rows - 0.5 ) / rows );
+	qglTexCoord2f ( 0.5f / cols, ( rows - 0.5f ) / rows );
 	qglVertex2f (x, y+h);
 	qglEnd ();
-#endif
 }
 
 

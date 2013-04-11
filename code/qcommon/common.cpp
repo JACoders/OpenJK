@@ -1101,9 +1101,9 @@ void Com_Init( char *commandLine ) {
 		com_frameTime = Com_Milliseconds();
 
 		// add + commands from command line
-#ifndef _XBOX
+//#ifndef _XBOX
 		if ( !Com_AddStartupCommands() ) {
-#ifdef NDEBUG
+//#ifdef NDEBUG
 			// if the user didn't give any commands, run default action
 //			if ( !com_dedicated->integer ) 
 			{
@@ -1113,9 +1113,9 @@ void Com_Init( char *commandLine ) {
 //					Cvar_Set( "nextmap", "cinematic intro" );
 //				}
 			}
-#endif	
+//#endif	
 		}
-#endif
+//#endif
 		com_fullyInitialized = qtrue;
 		Com_Printf ("--- Common Initialization Complete ---\n");
 
