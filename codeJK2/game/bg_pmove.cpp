@@ -8043,8 +8043,9 @@ static void PM_Weapon( void )
 
 	// check for weapon change
 	// can't change if weapon is firing, but can change again if lowering or raising
-	if ( pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING ) {
-		if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD)) {
+	if ( (pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING) && pm->ps->weaponstate != WEAPON_CHARGING_ALT && pm->ps->weaponstate != WEAPON_CHARGING) {
+		// eez- don't switch weapons if we're charging our current one up
+		if ( pm->ps->weapon != pm->cmd.weapon && (!pm->ps->viewEntity || pm->ps->viewEntity >= ENTITYNUM_WORLD) && !PM_DoChargedWeapons()) {
 			PM_BeginWeaponChange( pm->cmd.weapon );
 		}
 	}
@@ -8061,6 +8062,11 @@ static void PM_Weapon( void )
 	}
 
 	if ( pm->ps->weapon == WP_NONE )
+	{
+		return;
+	}
+
+	if ( PM_DoChargedWeapons() )
 	{
 		return;
 	}
@@ -8087,12 +8093,6 @@ static void PM_Weapon( void )
 				break;
 			}
 		}
-		return;
-	}
-
-	if ( PM_DoChargedWeapons())
-	{
-		// In some cases the charged weapon code may want us to short circuit the rest of the firing code
 		return;
 	}
 
