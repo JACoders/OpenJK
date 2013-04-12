@@ -990,9 +990,10 @@ void Cmd_UseInventory_f(gentity_t *ent)
 		case INV_ELECTROBINOCULARS :
 			Cmd_UseElectrobinoculars_f(ent);
 			return;
-		//case INV_BACTA_CANISTER :
-		//	Cmd_UseBacta_f(ent);
-		//	return;
+			// WTF WHY WAS THIS COMMENTED OUT --eez
+		case INV_BACTA_CANISTER :
+			Cmd_UseBacta_f(ent);
+			return;
 		case INV_SEEKER :
 			Cmd_UseSeeker_f(ent);
 			return;
