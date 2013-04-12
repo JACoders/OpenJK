@@ -772,6 +772,11 @@ void Console_Key (int key) {
 		Cbuf_AddText ("\n");
 		Com_Printf ( "]%s\n", kg.g_consoleField.buffer );
 
+		if (!kg.g_consoleField.buffer[0])
+		{
+			return; // empty lines just scroll the console without adding to history
+		}
+
 		// copy line to history buffer
 		kg.historyEditLines[kg.nextHistoryLine % COMMAND_HISTORY] = kg.g_consoleField;
 		kg.nextHistoryLine++;

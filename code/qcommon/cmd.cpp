@@ -520,6 +520,26 @@ Cmd_RemoveCommand
 ============
 */
 void	Cmd_RemoveCommand( const char *cmd_name ) {
+	cmd_function_t	*cmd, **back;
+
+	back = &cmd_functions;
+	while( 1 ) {
+		cmd = *back;
+		if ( !cmd ) {
+			// command wasn't active
+			return;
+		}
+		if ( !strcmp( cmd_name, cmd->name ) ) {
+			*back = cmd->next;
+			if (cmd->name) {
+				Z_Free(cmd->name);
+			}
+			Z_Free (cmd);
+			return;
+		}
+		back = &cmd->next;
+	}
+#if 0
 	cmd_function_t	*cmd;
 
 	for ( cmd = cmd_functions; cmd; cmd = cmd->next )
@@ -529,6 +549,7 @@ void	Cmd_RemoveCommand( const char *cmd_name ) {
 			return;
 		}
 	}
+#endif
 }
 
 char *Cmd_CompleteCommandNext (char *partial, char *last)

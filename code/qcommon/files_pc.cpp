@@ -64,7 +64,7 @@ long FS_HashFileName( const char *fname, int hashSize ) {
 
 
 static FILE	*FS_FileForHandle( fileHandle_t f ) {
-	if ( f < 0 || f > MAX_FILE_HANDLES ) {
+	if ( f < 1 || f >= MAX_FILE_HANDLES ) {
 		Com_Error( ERR_DROP, "FS_FileForHandle: out of reange" );
 	}
 	if (fsh[f].zipFile == (int)qtrue) {
@@ -437,7 +437,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 
 				// if we are running restricted, the only files we
 				// will allow to come from the directory are .cfg files
-				if ( fs_restrict->integer /*|| fs_numServerPaks*/ ) {
+				if ( 0/*fs_restrict->integer*/ /*|| fs_numServerPaks*/ ) {
 					int		l;
 
 					l = strlen( filename );
@@ -1557,33 +1557,60 @@ FS_Startup
 ================
 */
 void FS_Startup( const char *gameName ) {
+	const char *homePath;
+
 	Com_Printf( "----- FS_Startup -----\n" );
 
 	fs_debug = Cvar_Get( "fs_debug", "0", 0 );
 	fs_copyfiles = Cvar_Get( "fs_copyfiles", "0", CVAR_INIT );
 	fs_cdpath = Cvar_Get ("fs_cdpath", Sys_DefaultCDPath(), CVAR_INIT );
 	fs_basepath = Cvar_Get ("fs_basepath", Sys_DefaultBasePath(), CVAR_INIT );
+	fs_basegame = Cvar_Get ("fs_basegame", "", CVAR_INIT );
+	homePath = Sys_DefaultHomePath();
+	if (!homePath || !homePath[0]) {
+		homePath = fs_basepath->string;
+	}
+	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT );
+	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
+	//Cvar_Get( "com_demo", "", CVAR_INIT );
 
-	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SERVERINFO );
-	fs_restrict = Cvar_Get ("fs_restrict", "", CVAR_INIT );
-	Cvar_Get( "com_demo", "", CVAR_INIT );
-
-	// set up cdpath
+	// add search path elements in reverse priority order
 	if (fs_cdpath->string[0]) {
-		FS_AddGameDirectory ( fs_cdpath->string, gameName );
+		FS_AddGameDirectory( fs_cdpath->string, gameName );
+	}
+	if (fs_basepath->string[0]) {
+		FS_AddGameDirectory( fs_basepath->string, gameName );
+	}
+	// fs_homepath is somewhat particular to *nix systems, only add if relevant
+	// NOTE: same filtering below for mods and basegame
+	if (fs_basepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
+		FS_AddGameDirectory( fs_homepath->string, gameName );
 	}
 
-	// set up basepath
-	FS_AddGameDirectory ( fs_basepath->string, gameName );
-
-	// check for game override
-	if ( fs_gamedirvar->string[0] && 
-		!Q_stricmp( gameName, BASEGAME ) &&
-		Q_stricmp( fs_gamedirvar->string, gameName ) ) {
-		if ( fs_cdpath->string[0] ) {
-			FS_AddGameDirectory( fs_cdpath->string, fs_gamedirvar->string );
+	// check for additional base game so mods can be based upon other mods
+	if ( fs_basegame->string[0] && !Q_stricmp( gameName, BASEGAME ) && Q_stricmp( fs_basegame->string, gameName ) ) {
+		if (fs_cdpath->string[0]) {
+			FS_AddGameDirectory(fs_cdpath->string, fs_basegame->string);
 		}
-		FS_AddGameDirectory( fs_basepath->string, fs_gamedirvar->string );
+		if (fs_basepath->string[0]) {
+			FS_AddGameDirectory(fs_basepath->string, fs_basegame->string);
+		}
+		if (fs_homepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
+			FS_AddGameDirectory(fs_homepath->string, fs_basegame->string);
+		}
+	}
+
+	// check for additional game folder for mods
+	if ( fs_gamedirvar->string[0] && !Q_stricmp( gameName, BASEGAME ) && Q_stricmp( fs_gamedirvar->string, gameName ) ) {
+		if (fs_cdpath->string[0]) {
+			FS_AddGameDirectory(fs_cdpath->string, fs_gamedirvar->string);
+		}
+		if (fs_basepath->string[0]) {
+			FS_AddGameDirectory(fs_basepath->string, fs_gamedirvar->string);
+		}
+		if (fs_homepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
+			FS_AddGameDirectory(fs_homepath->string, fs_gamedirvar->string);
+		}
 	}
 
 	// add our commands
@@ -1594,82 +1621,11 @@ void FS_Startup( const char *gameName ) {
 	// print the current search paths
 	FS_Path_f();
 
+	fs_gamedirvar->modified = qfalse; // We just loaded, it's not modified
+
 	Com_Printf( "----------------------\n" );
 	Com_Printf( "%d files in pk3 files\n", fs_packFiles );
 }
-
-
-/*
-===================
-FS_SetRestrictions
-
-Looks for product keys and restricts media add on ability
-if the full version is not found
-===================
-*/
-void FS_SetRestrictions( void ) {
-	searchpath_t	*path;
-
-//#ifndef PRE_RELEASE_DEMO
-#if 0
-	byte	*productId;
-
-	// if fs_restrict is set, don't even look for the id file,
-	// which allows the demo release to be tested even if
-	// the full game is present
-	if ( !fs_restrict->integer ) {
-		// look for the full game id
-		FS_ReadFile( "productid.txt", (void **)&productId );
-		if ( productId ) {
-			// check against the hardcoded string
-			unsigned int		seed, i;
-
-			seed = 102270;
-			for ( i = 0 ; i < sizeof( fs_scrambledProductId ) ; i++ ) {
-#if 0
-				fs_scrambledProductId[i]  = productId[i] ^ (seed&255);
-				Com_Printf("%3i, ", fs_scrambledProductId[i]);
-#endif
-				if ( ( fs_scrambledProductId[i] ^ (seed&255) ) != productId[i] ) {
-					break;
-				}
-				seed = (69069 * seed + 1);
-			}
-
-			FS_FreeFile( productId );
-
-			if ( i == sizeof( fs_scrambledProductId ) ) {
-				return;	// no restrictions
-			}
-			Com_Error( ERR_FATAL, "Invalid product identification" );
-		}
-	}
-#endif
-	if(!Cvar_VariableIntegerValue("com_demo"))
-	{
-		return;
-	}
-
-	Cvar_Set( "fs_restrict", "1" );
-	Cvar_Set( "com_demo", "1" );
-
-	Com_Printf( "\nRunning in restricted demo mode.\n\n" );
-
-	// restart the filesystem with just the demo directory
-	FS_Shutdown();
-	FS_Startup( DEMOGAME );
-
-	// make sure that the pak file has the header checksum we expect
-	for ( path = fs_searchpaths ; path ; path = path->next ) {
-		if ( path->pack ) {
-			// a tiny attempt to keep the checksum from being scannable from the exe
-			if ( (path->pack->checksum ^ 0x10228436u) != (DEMO_PAK_CHECKSUM ^ 0x10228436u) ) {
-				Com_Error( ERR_FATAL, "Corrupted pk3: %u", path->pack->checksum );
-			}
-		}
-	}
-}
-
 
 /*
 ================
@@ -1684,15 +1640,33 @@ void FS_Restart( void ) {
 	// try to start up normally
 	FS_Startup( BASEGAME );
 
-	// see if we are going to allow add-ons
-	FS_SetRestrictions();
-
 	// if we can't find default.cfg, assume that the paths are
 	// busted and error out now, rather than getting an unreadable
 	// graphics screen when the font fails to load
 	if ( FS_ReadFile( "default.cfg", NULL ) <= 0 ) {
+		// this might happen when connecting to a pure server not using BASEGAME/pak0.pk3
+		// (for instance a TA demo server)
+		if (lastValidBase[0]) {
+			Cvar_Set("fs_basepath", lastValidBase);
+			Cvar_Set("fs_game", lastValidGame);
+			lastValidBase[0] = '\0';
+			lastValidGame[0] = '\0';
+			FS_Restart();
+			Com_Error( ERR_DROP, "Invalid game folder\n" );
+			return;
+		}
 		Com_Error( ERR_FATAL, "Couldn't load default.cfg" );
 	}
+
+	if ( Q_stricmp(fs_gamedirvar->string, lastValidGame) ) {
+		// skip the jampconfig.cfg if "safe" is on the command line
+		if ( !Com_SafeMode() ) {
+			Cbuf_AddText ("exec " Q3CONFIG_NAME "\n");
+		}
+	}
+
+	Q_strncpyz(lastValidBase, fs_basepath->string, sizeof(lastValidBase));
+	Q_strncpyz(lastValidGame, fs_gamedirvar->string, sizeof(lastValidGame));
 }
 
 /*

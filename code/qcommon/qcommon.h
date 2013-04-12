@@ -523,6 +523,7 @@ int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
 unsigned	Com_BlockChecksum( const void *buffer, int length );
 int			Com_Filter(char *filter, char *name, int casesensitive);
+qboolean	Com_SafeMode( void );
 
 void		Com_StartupVariable( const char *match );
 // checks for and removes command line "+set var arg" constructs
@@ -782,6 +783,7 @@ void	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );
 char	*Sys_DefaultCDPath(void);
 char	*Sys_DefaultBasePath(void);
+char	*Sys_DefaultHomePath(void);
 
 char **Sys_ListFiles( const char *directory, const char *extension, int *numfiles, qboolean wantsubs );
 void	Sys_FreeFileList( char **filelist );

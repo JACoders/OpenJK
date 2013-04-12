@@ -110,15 +110,20 @@ extern fileHandleData_t	fsh[MAX_FILE_HANDLES];
 extern searchpath_t	*fs_searchpaths;
 extern char			fs_gamedir[MAX_OSPATH];	// this will be a single file name with no separators
 extern cvar_t		*fs_debug;
+extern cvar_t		*fs_homepath;
 extern cvar_t		*fs_basepath;
+extern cvar_t		*fs_basegame;
 extern cvar_t		*fs_cdpath;
 extern cvar_t		*fs_copyfiles;
 extern cvar_t		*fs_gamedirvar;
-extern cvar_t		*fs_restrict;
 extern int			fs_readCount;			// total bytes read
 extern int			fs_loadCount;			// total files read
 extern int			fs_packFiles;			// total number of files in packs
 
+
+// last valid game folder used
+extern char		lastValidBase[MAX_OSPATH];
+extern char		lastValidGame[MAX_OSPATH];
 
 void			FS_Startup( const char *gameName );
 void			FS_CreatePath(char *OSPath);
@@ -128,7 +133,6 @@ fileHandle_t	FS_HandleForFile(void);
 qboolean		FS_FilenameCompare( const char *s1, const char *s2 );
 int				FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp );
 void			FS_Shutdown( void );
-void			FS_SetRestrictions(void);
 void			FS_CheckInit(void);
 void			FS_ReplaceSeparators( char *path );
 
