@@ -450,17 +450,17 @@ zlib/%.o: zlib/%.c
 mp3code/%.o: mp3code/%.c
 	$(CC) $(ENGINE_CFLAGS) -c $< -o $@
 
-%.o: %.c
-	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
-
-%.o: %.cpp
-	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
-
 botlib/%.o: botlib/%.cpp
 	$(CXX) $(ENGINE_CFLAGS) -DBOTLIB -c $< -o $@
 
 unix/%.o: unix/%.nasm
 	nasm -f elf -o $@  $<
+
+%.o: %.c
+	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
+
+%.o: %.cpp
+	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
 
 clean:
 	$(RM) $(ENGINE_OBJS) $(G_OBJS) $(CG_OBJS) $(UI_OBJS)
