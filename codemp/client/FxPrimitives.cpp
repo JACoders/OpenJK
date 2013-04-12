@@ -532,7 +532,14 @@ void CParticle::UpdateRGB(void)
 	res[1] = Com_Clamp(0.0f, 1.0f, res[1]) * 255.0f;
 	res[2] = Com_Clamp(0.0f, 1.0f, res[2]) * 255.0f;
 
+#ifdef _WIN32
 	*(int *)mRefEnt.shaderRGBA = VectorToInt(res);
+#else
+    mRefEnt.shaderRGBA[0] = (char)res[0];
+    mRefEnt.shaderRGBA[1] = (char)res[1];
+    mRefEnt.shaderRGBA[2] = (char)res[2];
+#endif
+
 }
 
 //----------------------------
