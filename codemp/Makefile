@@ -442,7 +442,7 @@ ui/%.o: ui/%.c
 	$(CC) $(UI_CFLAGS) -fPIC -c $< -o $@
 
 engine: $(ENGINE_OBJS)
-	$(CXX) -m32 -o jamp $(ENGINE_OBJS) -lopenal -lGL `sdl2-config --libs`
+	$(CXX) -m32 -o jamp $(ENGINE_OBJS) `sdl2-config --libs` -lGL -lopenal
 
 zlib/%.o: zlib/%.c
 	$(CC) $(ENGINE_CFLAGS) -c $< -o $@
