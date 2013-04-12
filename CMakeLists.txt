@@ -28,9 +28,9 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules" ${CMAKE_MODULE_PATH})
 set(Architecture "x86")
 
 # Binary names
-set(SPEngine "openjksp.${Architecture}")
+set(SPEngine "openjk_sp.${Architecture}")
 set(SPGame "jagame${Architecture}")
-set(MPEngine "openjkmp.${Architecture}")
+set(MPEngine "openjk.${Architecture}")
 set(MPDed "openjkded.${Architecture}")
 set(MPGame "jampgame${Architecture}")
 set(MPCGame "cgame${Architecture}")
@@ -48,6 +48,9 @@ if(WIN32)
 else(WIN32)
 	message("Please find out what the defines for your platform are and add them to CMakeLists.txt")
 endif(WIN32)
+
+set(DebugDefines "_DEBUG")
+set(ReleaseDefines "NDEBUG" "FINAL_BUILD")
 
 #    Add projects
 #add_subdirectory(${SPDir})
