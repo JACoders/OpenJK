@@ -22,7 +22,6 @@ Major contributors, in alphabetical order:
 ## Dependencies ##
 * OpenGL
 * OpenAL (included on Windows)
-* ALUT (included on Windows)
 * libpng (optional)
 * libjpeg (optional)
 * zlib (included on Windows)
