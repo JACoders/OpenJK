@@ -124,8 +124,6 @@ void WPN_FireTime (const char **holdBuf);
 void WPN_FiringSnd (const char **holdBuf);
 void WPN_AltFiringSnd(const char **holdBuf );
 void WPN_StopSnd( const char **holdBuf );
-//void WPN_FlashSnd (char **holdBuf);
-//void WPN_AltFlashSnd (char **holdBuf);
 void WPN_ChargeSnd (const char **holdBuf);
 void WPN_AltChargeSnd (const char **holdBuf);
 void WPN_SelectSnd (const char **holdBuf);
@@ -152,20 +150,369 @@ void WPN_MissileHitSound(const char **holdBuf);
 void WPN_AltMissileHitSound(const char **holdBuf);
 void WPN_MuzzleEffect(const char **holdBuf);
 void WPN_AltMuzzleEffect(const char **holdBuf);
-//#ifdef _IMMERSION
-void WPN_FiringFrc(const char **holdBuf);
-void WPN_AltFiringFrc(const char **holdBuf);
-void WPN_ChargeFrc(const char **holdBuf);
-void WPN_AltChargeFrc(const char **holdBuf);
-void WPN_StopFrc(const char **holdBuf);
-void WPN_SelectFrc(const char **holdBuf);
-//#endif // _IMMERSION
+
+// OPENJK ADD
+
+void WPN_Damage(const char **holdBuf);
+void WPN_AltDamage(const char **holdBuf);
+void WPN_SplashDamage(const char **holdBuf);
+void WPN_SplashRadius(const char **holdBuf);
+void WPN_AltSplashDamage(const char **holdBuf);
+void WPN_AltSplashRadius(const char **holdBuf);
 
 typedef struct 
 {
 	char	*parmName;
 	void	(*func)(const char **holdBuf);
 } wpnParms_t;
+
+// Bryar Pistol
+//--------
+#define BRYAR_PISTOL_VEL			1800
+#define BRYAR_PISTOL_DAMAGE			14
+#define BRYAR_CHARGE_UNIT			200.0f	// bryar charging gives us one more unit every 200ms--if you change this, you'll have to do the same in bg_pmove
+
+// E11 Blaster
+//---------
+#define BLASTER_MAIN_SPREAD			0.5f
+#define BLASTER_ALT_SPREAD			1.5f
+#define BLASTER_NPC_SPREAD			0.5f
+#define BLASTER_VELOCITY			2300
+#define BLASTER_NPC_VEL_CUT			0.5f
+#define BLASTER_NPC_HARD_VEL_CUT	0.7f
+#define BLASTER_DAMAGE				20
+#define	BLASTER_NPC_DAMAGE_EASY		6
+#define	BLASTER_NPC_DAMAGE_NORMAL	12 // 14
+#define	BLASTER_NPC_DAMAGE_HARD		16 // 18
+
+// Tenloss Disruptor
+//----------
+#define DISRUPTOR_MAIN_DAMAGE			14
+#define DISRUPTOR_NPC_MAIN_DAMAGE_EASY	5
+#define DISRUPTOR_NPC_MAIN_DAMAGE_MEDIUM	10
+#define DISRUPTOR_NPC_MAIN_DAMAGE_HARD	15
+
+#define DISRUPTOR_ALT_DAMAGE			12
+#define DISRUPTOR_NPC_ALT_DAMAGE_EASY	15
+#define DISRUPTOR_NPC_ALT_DAMAGE_MEDIUM	25
+#define DISRUPTOR_NPC_ALT_DAMAGE_HARD	30
+#define DISRUPTOR_ALT_TRACES			3		// can go through a max of 3 entities
+#define DISRUPTOR_CHARGE_UNIT			150.0f	// distruptor charging gives us one more unit every 150ms--if you change this, you'll have to do the same in bg_pmove
+
+// Wookie Bowcaster
+//----------
+#define	BOWCASTER_DAMAGE			45
+#define	BOWCASTER_VELOCITY			1300
+#define	BOWCASTER_NPC_DAMAGE_EASY	12
+#define	BOWCASTER_NPC_DAMAGE_NORMAL	24
+#define	BOWCASTER_NPC_DAMAGE_HARD	36
+#define BOWCASTER_SPLASH_DAMAGE		0
+#define BOWCASTER_SPLASH_RADIUS		0
+#define BOWCASTER_SIZE				2
+
+#define BOWCASTER_ALT_SPREAD		5.0f
+#define BOWCASTER_VEL_RANGE			0.3f
+#define BOWCASTER_CHARGE_UNIT		200.0f	// bowcaster charging gives us one more unit every 200ms--if you change this, you'll have to do the same in bg_pmove
+
+// Heavy Repeater
+//----------
+#define REPEATER_SPREAD				1.4f
+#define REPEATER_NPC_SPREAD			0.7f
+#define	REPEATER_DAMAGE				8
+#define	REPEATER_VELOCITY			1600
+#define	REPEATER_NPC_DAMAGE_EASY	2
+#define	REPEATER_NPC_DAMAGE_NORMAL	4
+#define	REPEATER_NPC_DAMAGE_HARD	6
+
+#define REPEATER_ALT_SIZE				3	// half of bbox size
+#define	REPEATER_ALT_DAMAGE				60
+#define REPEATER_ALT_SPLASH_DAMAGE		60
+#define REPEATER_ALT_SPLASH_RADIUS		128
+#define	REPEATER_ALT_VELOCITY			1100
+#define	REPEATER_ALT_NPC_DAMAGE_EASY	15
+#define	REPEATER_ALT_NPC_DAMAGE_NORMAL	30
+#define	REPEATER_ALT_NPC_DAMAGE_HARD	45
+
+// DEMP2
+//----------
+#define	DEMP2_DAMAGE				15
+#define	DEMP2_VELOCITY				1800
+#define	DEMP2_NPC_DAMAGE_EASY		6
+#define	DEMP2_NPC_DAMAGE_NORMAL		12
+#define	DEMP2_NPC_DAMAGE_HARD		18
+#define	DEMP2_SIZE					2		// half of bbox size
+
+#define DEMP2_ALT_DAMAGE			15
+#define DEMP2_CHARGE_UNIT			500.0f	// demp2 charging gives us one more unit every 500ms--if you change this, you'll have to do the same in bg_pmove
+#define DEMP2_ALT_RANGE				4096
+#define DEMP2_ALT_SPLASHRADIUS		256
+
+// Golan Arms Flechette
+//---------
+#define FLECHETTE_SHOTS				6
+#define FLECHETTE_SPREAD			4.0f
+#define FLECHETTE_DAMAGE			15
+#define FLECHETTE_VEL				3500
+#define FLECHETTE_SIZE				1
+
+#define FLECHETTE_ALT_DAMAGE		20
+#define FLECHETTE_ALT_SPLASH_DAM	20
+#define FLECHETTE_ALT_SPLASH_RAD	128
+
+// NOT CURRENTLY USED
+#define FLECHETTE_MINE_RADIUS_CHECK		200
+#define FLECHETTE_MINE_VEL				1000
+#define FLECHETTE_MINE_DAMAGE			100
+#define FLECHETTE_MINE_SPLASH_DAMAGE	200
+#define FLECHETTE_MINE_SPLASH_RADIUS	200
+
+// Personal Rocket Launcher
+//---------
+#define	ROCKET_VELOCITY				900
+#define	ROCKET_DAMAGE				100
+#define	ROCKET_SPLASH_DAMAGE		100
+#define	ROCKET_SPLASH_RADIUS		160
+#define ROCKET_NPC_DAMAGE_EASY		20
+#define ROCKET_NPC_DAMAGE_NORMAL	40
+#define ROCKET_NPC_DAMAGE_HARD		60
+#define ROCKET_SIZE					3
+
+#define ROCKET_ALT_THINK_TIME		100
+
+// Emplaced Gun
+//--------------
+#define EMPLACED_VEL				6000	// very fast
+#define EMPLACED_DAMAGE				150		// and very damaging
+#define EMPLACED_SIZE				5		// make it easier to hit things
+
+// ATST Main Gun
+//--------------
+#define ATST_MAIN_VEL				4000	// 
+#define ATST_MAIN_DAMAGE			25		// 
+#define ATST_MAIN_SIZE				3		// make it easier to hit things
+
+// ATST Side Gun
+//---------------
+#define ATST_SIDE_MAIN_DAMAGE				75
+#define ATST_SIDE_MAIN_VELOCITY				1300
+#define ATST_SIDE_MAIN_NPC_DAMAGE_EASY		30
+#define ATST_SIDE_MAIN_NPC_DAMAGE_NORMAL	40
+#define ATST_SIDE_MAIN_NPC_DAMAGE_HARD		50
+#define ATST_SIDE_MAIN_SIZE					4
+#define ATST_SIDE_MAIN_SPLASH_DAMAGE		10	// yeah, pretty small, either zero out or make it worth having?
+#define ATST_SIDE_MAIN_SPLASH_RADIUS		16	// yeah, pretty small, either zero out or make it worth having?
+
+#define ATST_SIDE_ALT_VELOCITY				1100
+#define ATST_SIDE_ALT_NPC_VELOCITY			600
+#define ATST_SIDE_ALT_DAMAGE				130
+
+#define ATST_SIDE_ROCKET_NPC_DAMAGE_EASY	30
+#define ATST_SIDE_ROCKET_NPC_DAMAGE_NORMAL	50
+#define ATST_SIDE_ROCKET_NPC_DAMAGE_HARD	90
+
+#define	ATST_SIDE_ALT_SPLASH_DAMAGE			130
+#define	ATST_SIDE_ALT_SPLASH_RADIUS			200
+#define ATST_SIDE_ALT_ROCKET_SIZE			5
+#define ATST_SIDE_ALT_ROCKET_SPLASH_SCALE	0.5f	// scales splash for NPC's
+
+// Stun Baton
+//--------------
+#define STUN_BATON_DAMAGE			22
+#define STUN_BATON_ALT_DAMAGE		22
+#define STUN_BATON_RANGE			25
+
+// Laser Trip Mine
+//--------------
+#define LT_DAMAGE			150
+#define LT_SPLASH_RAD		256.0f
+#define LT_SPLASH_DAM		90
+
+#define LT_VELOCITY			250.0f
+#define LT_ALT_VELOCITY		1000.0f
+
+#define PROX_MINE_RADIUS_CHECK		190
+
+#define LT_SIZE				3.0f
+#define LT_ALT_TIME			2000
+#define	LT_ACTIVATION_DELAY	1000
+#define	LT_DELAY_TIME		50
+
+// Thermal Detonator
+//--------------
+#define TD_DAMAGE			100
+#define TD_NPC_DAMAGE_CUT	0.6f	// NPC thrown dets deliver only 60% of the damage that a player thrown one does
+#define TD_SPLASH_RAD		128
+#define TD_SPLASH_DAM		90
+#define TD_VELOCITY			900
+#define TD_MIN_CHARGE		0.15f
+#define TD_TIME				4000
+#define TD_THINK_TIME		300		// don't think too often?
+#define TD_TEST_RAD			(TD_SPLASH_RAD * 0.8f) // no sense in auto-blowing up if exactly on the radius edge--it would hardly do any damage
+#define TD_ALT_TIME			3000
+
+#define TD_ALT_DAMAGE		100
+#define TD_ALT_SPLASH_RAD	128
+#define TD_ALT_SPLASH_DAM	90
+#define TD_ALT_VELOCITY		600
+#define TD_ALT_MIN_CHARGE	0.15f
+#define TD_ALT_TIME			3000
+
+// This is used as a fallback for each new field, in case they're using base files --eez
+const int defaultDamage[] = {
+	0,							// WP_NONE
+	0,							// WP_SABER										// handled elsewhere
+	BRYAR_PISTOL_DAMAGE,		// WP_BRYAR_PISTOL
+	BLASTER_DAMAGE,				// WP_BLASTER
+	DISRUPTOR_MAIN_DAMAGE,		// WP_DISRUPTOR
+	BOWCASTER_DAMAGE,			// WP_BOWCASTER
+	REPEATER_DAMAGE,			// WP_REPEATER
+	DEMP2_DAMAGE,				// WP_DEMP2
+	FLECHETTE_DAMAGE,			// WP_FLECHETTE
+	ROCKET_DAMAGE,				// WP_ROCKET_LAUNCHER
+	TD_DAMAGE,					// WP_THERMAL
+	LT_DAMAGE,					// WP_TRIP_MINE
+	FLECHETTE_MINE_DAMAGE,		// WP_DET_PACK									// HACK, this is what the code sez.
+	STUN_BATON_DAMAGE,			// WP_STUN_BATON
+	0,							// WP_MELEE										// handled by the melee attack function
+	EMPLACED_DAMAGE,			// WP_EMPLACED
+	BRYAR_PISTOL_DAMAGE,		// WP_BOT_LASER
+	0,							// WP_TURRET									// handled elsewhere
+	ATST_MAIN_DAMAGE,			// WP_ATST_MAIN
+	ATST_SIDE_MAIN_DAMAGE,		// WP_ATST_SIDE
+	EMPLACED_DAMAGE,			// WP_TIE_FIGHTER
+	EMPLACED_DAMAGE,			// WP_RAPID_FIRE_CONC
+	BRYAR_PISTOL_DAMAGE			// WP_BLASTER_PISTOL
+};
+
+const int defaultAltDamage[] = {
+	0,							// WP_NONE
+	0,							// WP_SABER										// handled elsewhere
+	BRYAR_PISTOL_DAMAGE,		// WP_BRYAR_PISTOL
+	BLASTER_DAMAGE,				// WP_BLASTER
+	DISRUPTOR_ALT_DAMAGE,		// WP_DISRUPTOR
+	BOWCASTER_DAMAGE,			// WP_BOWCASTER
+	REPEATER_ALT_DAMAGE,		// WP_REPEATER
+	DEMP2_ALT_DAMAGE,			// WP_DEMP2
+	FLECHETTE_ALT_DAMAGE,		// WP_FLECHETTE
+	ROCKET_DAMAGE,				// WP_ROCKET_LAUNCHER
+	TD_ALT_DAMAGE,				// WP_THERMAL
+	LT_DAMAGE,					// WP_TRIP_MINE
+	FLECHETTE_MINE_DAMAGE,		// WP_DET_PACK									// HACK, this is what the code sez.
+	STUN_BATON_ALT_DAMAGE,		// WP_STUN_BATON
+	0,							// WP_MELEE										// handled by the melee attack function
+	EMPLACED_DAMAGE,			// WP_EMPLACED
+	BRYAR_PISTOL_DAMAGE,		// WP_BOT_LASER
+	0,							// WP_TURRET									// handled elsewhere
+	ATST_MAIN_DAMAGE,			// WP_ATST_MAIN
+	ATST_SIDE_ALT_DAMAGE,		// WP_ATST_SIDE
+	EMPLACED_DAMAGE,			// WP_TIE_FIGHTER
+	0,							// WP_RAPID_FIRE_CONC							// repeater alt damage is used instead
+	BRYAR_PISTOL_DAMAGE			// WP_BLASTER_PISTOL
+};
+
+const int defaultSplashDamage[] = {
+	0,									// WP_NONE
+	0,									// WP_SABER
+	0,									// WP_BRYAR_PISTOL
+	0,									// WP_BLASTER
+	0,									// WP_DISRUPTOR
+	BOWCASTER_SPLASH_DAMAGE,			// WP_BOWCASTER
+	0,									// WP_REPEATER
+	0,									// WP_DEMP2
+	0,									// WP_FLECHETTE
+	ROCKET_SPLASH_DAMAGE,				// WP_ROCKET_LAUNCHER
+	TD_SPLASH_DAM,						// WP_THERMAL
+	LT_SPLASH_DAM,						// WP_TRIP_MINE
+	FLECHETTE_MINE_SPLASH_DAMAGE,		// WP_DET_PACK									// HACK, this is what the code sez.
+	0,									// WP_STUN_BATON
+	0,									// WP_MELEE
+	0,									// WP_EMPLACED
+	0,									// WP_BOT_LASER
+	0,									// WP_TURRET
+	0,									// WP_ATST_MAIN
+	ATST_SIDE_MAIN_SPLASH_DAMAGE,		// WP_ATST_SIDE
+	0,									// WP_TIE_FIGHTER
+	0,									// WP_RAPID_FIRE_CONC
+	0									// WP_BLASTER_PISTOL
+};
+
+const float defaultSplashRadius[] = {
+	0,									// WP_NONE
+	0,									// WP_SABER
+	0,									// WP_BRYAR_PISTOL
+	0,									// WP_BLASTER
+	0,									// WP_DISRUPTOR
+	BOWCASTER_SPLASH_RADIUS,			// WP_BOWCASTER
+	0,									// WP_REPEATER
+	0,									// WP_DEMP2
+	0,									// WP_FLECHETTE
+	ROCKET_SPLASH_RADIUS,				// WP_ROCKET_LAUNCHER
+	TD_SPLASH_RAD,						// WP_THERMAL
+	LT_SPLASH_RAD,						// WP_TRIP_MINE
+	FLECHETTE_MINE_SPLASH_RADIUS,		// WP_DET_PACK									// HACK, this is what the code sez.
+	0,									// WP_STUN_BATON
+	0,									// WP_MELEE
+	0,									// WP_EMPLACED
+	0,									// WP_BOT_LASER
+	0,									// WP_TURRET
+	0,									// WP_ATST_MAIN
+	ATST_SIDE_MAIN_SPLASH_RADIUS,		// WP_ATST_SIDE
+	0,									// WP_TIE_FIGHTER
+	0,									// WP_RAPID_FIRE_CONC
+	0									// WP_BLASTER_PISTOL
+};
+
+const int defaultAltSplashDamage[] = {
+	0,									// WP_NONE
+	0,									// WP_SABER										// handled elsewhere
+	0,									// WP_BRYAR_PISTOL
+	0,									// WP_BLASTER
+	0,									// WP_DISRUPTOR
+	BOWCASTER_SPLASH_DAMAGE,			// WP_BOWCASTER
+	REPEATER_ALT_SPLASH_DAMAGE,			// WP_REPEATER
+	DEMP2_ALT_DAMAGE,					// WP_DEMP2
+	FLECHETTE_ALT_SPLASH_DAM,			// WP_FLECHETTE
+	ROCKET_SPLASH_DAMAGE,				// WP_ROCKET_LAUNCHER
+	TD_ALT_SPLASH_DAM,					// WP_THERMAL
+	TD_ALT_SPLASH_DAM,					// WP_TRIP_MINE
+	FLECHETTE_MINE_SPLASH_DAMAGE,		// WP_DET_PACK									// HACK, this is what the code sez.
+	0,									// WP_STUN_BATON
+	0,									// WP_MELEE										// handled by the melee attack function
+	0,									// WP_EMPLACED
+	0,									// WP_BOT_LASER
+	0,									// WP_TURRET									// handled elsewhere
+	0,									// WP_ATST_MAIN
+	ATST_SIDE_ALT_SPLASH_DAMAGE,		// WP_ATST_SIDE
+	0,									// WP_TIE_FIGHTER
+	0,									// WP_RAPID_FIRE_CONC
+	0									// WP_BLASTER_PISTOL
+};
+
+const float defaultAltSplashRadius[] = {
+	0,							// WP_NONE
+	0,							// WP_SABER										// handled elsewhere
+	0,							// WP_BRYAR_PISTOL
+	0,							// WP_BLASTER
+	0,							// WP_DISRUPTOR
+	BOWCASTER_SPLASH_RADIUS,	// WP_BOWCASTER
+	REPEATER_ALT_SPLASH_RADIUS,	// WP_REPEATER
+	DEMP2_ALT_SPLASHRADIUS,		// WP_DEMP2
+	FLECHETTE_ALT_SPLASH_RAD,	// WP_FLECHETTE
+	ROCKET_SPLASH_RADIUS,		// WP_ROCKET_LAUNCHER
+	TD_ALT_SPLASH_RAD,			// WP_THERMAL
+	LT_SPLASH_RAD,				// WP_TRIP_MINE
+	FLECHETTE_ALT_SPLASH_RAD,	// WP_DET_PACK									// HACK, this is what the code sez.
+	0,							// WP_STUN_BATON
+	0,							// WP_MELEE										// handled by the melee attack function
+	0,							// WP_EMPLACED
+	0,							// WP_BOT_LASER
+	0,							// WP_TURRET									// handled elsewhere
+	0,							// WP_ATST_MAIN
+	ATST_SIDE_ALT_SPLASH_RADIUS,// WP_ATST_SIDE
+	0,							// WP_TIE_FIGHTER
+	0,							// WP_RAPID_FIRE_CONC
+	0							// WP_BLASTER_PISTOL
+};
 
 wpnParms_t WpnParms[] = 
 {
@@ -178,8 +525,6 @@ wpnParms_t WpnParms[] =
 	"fireTime",			WPN_FireTime,
 	"firingsound",		WPN_FiringSnd,
 	"altfiringsound",	WPN_AltFiringSnd,
-//	"flashsound",		WPN_FlashSnd,
-//	"altflashsound",	WPN_AltFlashSnd,
 	"stopsound",		WPN_StopSnd,
 	"chargesound",		WPN_ChargeSnd,
 	"altchargesound",	WPN_AltChargeSnd,
@@ -206,15 +551,14 @@ wpnParms_t WpnParms[] =
 	"missileHitSound",		WPN_MissileHitSound,
 	"altmissileHitSound",	WPN_AltMissileHitSound,
 	"muzzleEffect",			WPN_MuzzleEffect,
-	"altmuzzleEffect",		WPN_AltMuzzleEffect
-//#ifdef _IMMERSION
-,	"firingForce",		WPN_FiringFrc
-,	"altFiringForce",	WPN_AltFiringFrc
-,	"chargeForce",		WPN_ChargeFrc
-,	"altChargeForce",	WPN_AltChargeFrc
-,	"stopForce",		WPN_StopFrc
-,	"selectForce",		WPN_SelectFrc
-//#endif // _IMMERSION
+	"altmuzzleEffect",		WPN_AltMuzzleEffect,
+	// OPENJK NEW FIELDS
+	"damage",			WPN_Damage,
+	"altdamage",		WPN_AltDamage,
+	"splashDamage",		WPN_SplashDamage,
+	"splashRadius",		WPN_SplashRadius,
+	"altSplashDamage",	WPN_AltSplashDamage,
+	"altSplashRadius",	WPN_AltSplashRadius,
 };
 
 const int WPN_PARM_MAX =  sizeof(WpnParms) / sizeof(WpnParms[0]);
@@ -457,51 +801,6 @@ void WPN_StopSnd( const char **holdBuf )
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].stopSnd,tokenStr,len);
 }
-/*
-//--------------------------------------------
-void WPN_FlashSnd(const char **holdBuf)
-{
-	const char	*tokenStr;
-	int		len;
-
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
-	{
-		return;
-	}
-
-	len = strlen(tokenStr);
-	len++;
-	if (len > 64)
-	{
-		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: flashSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
-	}
-
-	Q_strncpyz(weaponData[wpnParms.weaponNum].flashSnd,tokenStr,len);
-}
-
-//--------------------------------------------
-void WPN_AltFlashSnd(const char **holdBuf)
-{
-	const char	*tokenStr;
-	int		len;
-
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
-	{
-		return;
-	}
-
-	len = strlen(tokenStr);
-	len++;
-	if (len > 64)
-	{
-		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: altFlashSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
-	}
-
-	Q_strncpyz(weaponData[wpnParms.weaponNum].altFlashSnd,tokenStr,len);
-}
-*/
 //--------------------------------------------
 void WPN_ChargeSnd(const char **holdBuf)
 {
@@ -568,138 +867,6 @@ void WPN_SelectSnd( const char **holdBuf )
 
 	Q_strncpyz( weaponData[wpnParms.weaponNum].selectSnd,tokenStr,len);
 }
-
-//#ifdef _IMMERSION
-
-//--------------------------------------------
-void WPN_FiringFrc( const char **holdBuf )
-{
-	const char	*tokenStr;
-	int		len;
-
-	if ( COM_ParseString( holdBuf,&tokenStr )) 
-	{
-		return;
-	}
-
-	len = strlen( tokenStr );
-	len++;
-
-	if (len > 64)
-	{
-		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: firingFrc too long in external WEAPONS.DAT '%s'\n", tokenStr);
-	}
-}
-
-//--------------------------------------------
-void WPN_AltFiringFrc( const char **holdBuf )
-{
-	const char	*tokenStr;
-	int		len;
-
-	if ( COM_ParseString( holdBuf,&tokenStr )) 
-	{
-		return;
-	}
-
-	len = strlen( tokenStr );
-	len++;
-
-	if (len > 64)
-	{
-		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: altFiringFrc too long in external WEAPONS.DAT '%s'\n", tokenStr);
-	}
-}
-
-//--------------------------------------------
-void WPN_ChargeFrc( const char **holdBuf )
-{
-	const char	*tokenStr;
-	int		len;
-
-	if ( COM_ParseString( holdBuf,&tokenStr )) 
-	{
-		return;
-	}
-
-	len = strlen( tokenStr );
-	len++;
-
-	if (len > 64)
-	{
-		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: chargeFrc too long in external WEAPONS.DAT '%s'\n", tokenStr);
-	}
-}
-
-//--------------------------------------------
-void WPN_AltChargeFrc( const char **holdBuf )
-{
-	const char	*tokenStr;
-	int		len;
-
-	if ( COM_ParseString( holdBuf,&tokenStr )) 
-	{
-		return;
-	}
-
-	len = strlen( tokenStr );
-	len++;
-
-	if (len > 64)
-	{
-		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: altChargeFrc too long in external WEAPONS.DAT '%s'\n", tokenStr);
-	}
-}
-
-//--------------------------------------------
-void WPN_StopFrc( const char **holdBuf )
-{
-	const char	*tokenStr;
-	int		len;
-
-	if ( COM_ParseString( holdBuf,&tokenStr )) 
-	{
-		return;
-	}
-
-	len = strlen( tokenStr );
-	len++;
-
-	if (len > 64)
-	{
-		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: stopFrc too long in external WEAPONS.DAT '%s'\n", tokenStr);
-	}
-}
-
-//--------------------------------------------
-void WPN_SelectFrc( const char **holdBuf )
-{
-	const char	*tokenStr;
-	int		len;
-
-	if ( COM_ParseString( holdBuf,&tokenStr )) 
-	{
-		return;
-	}
-
-	len = strlen( tokenStr );
-	len++;
-
-	if (len > 64)
-	{
-		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: selectFrc too long in external WEAPONS.DAT '%s'\n", tokenStr);
-	}
-}
-// FIXME: this damn parser is so screwed up ._.
-
-
-//#endif // _IMMERSION
 
 //--------------------------------------------
 void WPN_FireTime(const char **holdBuf)
@@ -1290,6 +1457,90 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 }
 
 //--------------------------------------------
+
+void WPN_Damage(const char **holdBuf)
+{
+	const char *tokenStr;
+
+	if( COM_ParseString(holdBuf,&tokenStr))
+	{
+		return;
+	}
+
+	weaponData[wpnParms.weaponNum].damage = atoi( tokenStr );
+}
+
+//--------------------------------------------
+
+void WPN_AltDamage(const char **holdBuf)
+{
+	const char *tokenStr;
+
+	if( COM_ParseString(holdBuf,&tokenStr))
+	{
+		return;
+	}
+
+	weaponData[wpnParms.weaponNum].altDamage = atoi( tokenStr );
+}
+
+//--------------------------------------------
+
+void WPN_SplashDamage(const char **holdBuf)
+{
+	const char *tokenStr;
+
+	if( COM_ParseString(holdBuf,&tokenStr))
+	{
+		return;
+	}
+
+	weaponData[wpnParms.weaponNum].splashDamage = atoi( tokenStr );
+}
+
+//--------------------------------------------
+
+void WPN_SplashRadius(const char **holdBuf)
+{
+	const char *tokenStr;
+
+	if( COM_ParseString(holdBuf,&tokenStr))
+	{
+		return;
+	}
+
+	weaponData[wpnParms.weaponNum].splashRadius = (float)atof( tokenStr );
+}
+
+//--------------------------------------------
+
+void WPN_AltSplashDamage(const char **holdBuf)
+{
+	const char *tokenStr;
+
+	if( COM_ParseString(holdBuf,&tokenStr))
+	{
+		return;
+	}
+
+	weaponData[wpnParms.weaponNum].altSplashDamage = atoi( tokenStr );
+}
+
+//--------------------------------------------
+
+void WPN_AltSplashRadius(const char **holdBuf)
+{
+	const char *tokenStr;
+
+	if( COM_ParseString(holdBuf,&tokenStr))
+	{
+		return;
+	}
+
+	weaponData[wpnParms.weaponNum].altSplashRadius = (float)atof( tokenStr );
+}
+
+//--------------------------------------------
 static void WP_ParseParms(const char *buffer)
 {
 	const char	*holdBuf;
@@ -1322,6 +1573,17 @@ void WP_LoadWeaponParms (void)
 
 	// initialise the data area
 	memset(weaponData, 0, WP_NUM_WEAPONS * sizeof(weaponData_t));	
+
+	// put in the default values, because backwards compatibility is awesome!
+	for(int i = 0; i < WP_NUM_WEAPONS; i++)
+	{
+		weaponData[i].damage = defaultDamage[i];
+		weaponData[i].altDamage = defaultAltDamage[i];
+		weaponData[i].splashDamage = defaultSplashDamage[i];
+		weaponData[i].altSplashDamage = defaultAltSplashDamage[i];
+		weaponData[i].splashRadius = defaultSplashRadius[i];
+		weaponData[i].altSplashRadius = defaultAltSplashRadius[i];
+	}
 
 	WP_ParseParms(buffer);
 
