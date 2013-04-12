@@ -10,8 +10,8 @@
 
 // Open AL Specific
 #ifdef _WIN32
-#include "OpenAL/al.h"
-#include "OpenAL/alc.h"
+#include <al.h>
+#include <alc.h>
 #include "eax\eax.h"
 #include "eax\eaxman.h"
 #elif defined MACOS_X
