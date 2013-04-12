@@ -1,9 +1,170 @@
-CC				= 	gcc
-CXX				= 	g++
-CXXFLAGS		+= 	-fpermissive -m32 -w -D_JK2 -D__linux__ -D_M_IX86 -I. -DUSE_LOCAL_HEADERS -ISDL12
-CFLAGS			+= 	-fpermissive -m32 -w -D_JK2 -D__linux__ -D_M_IX86 -I. -DUSE_LOCAL_HEADERS -ISDL12
+CC			= 	gcc
+CXX			= 	g++
 
-OBJS			=   client/FXExport.o \
+ENGINE_CFLAGS		+= 	-fpermissive -m32 -w -D_JK2 -D__linux__ -DNDEBUG -D_JK2 -D_JK2MP -DFINAL_BUILD -D_M_IX86 -I. -ggdb3
+
+G_CFLAGS		=	-m32 -I. -D_M_IX86 -DNDEBUG -D__linux__ -DMISSIONPACK -DQAGAME -DJK2AWARDS -D_JK2 -DFINAL_BUILD -ggdb3
+
+G_OBJS			=	game/ai_main.o \
+				game/ai_util.o \
+				game/ai_wpnav.o \
+				game/AnimalNPC.o \
+				game/bg_g2_utils.o \
+				game/bg_misc.o \
+				game/bg_panimate.o \
+				game/bg_pmove.o \
+				game/bg_saber.o \
+				game/bg_saberLoad.o \
+				game/bg_saga.o \
+				game/bg_slidemove.o \
+				game/bg_vehicleLoad.o \
+				game/bg_weapons.o \
+				game/FighterNPC.o \
+				game/g_active.o \
+				game/g_arenas.o \
+				game/g_bot.o \
+				game/g_client.o \
+				game/g_cmds.o \
+				game/g_combat.o \
+				game/g_exphysics.o \
+				game/g_ICARUScb.o \
+				game/g_items.o \
+				game/g_log.o \
+				game/g_main.o \
+				game/g_mem.o \
+				game/g_misc.o \
+				game/g_missile.o \
+				game/g_mover.o \
+				game/g_nav.o \
+				game/g_navnew.o \
+				game/g_object.o \
+				game/g_saga.o \
+				game/g_session.o \
+				game/g_spawn.o \
+				game/g_strap.o \
+				game/g_svcmds.o \
+				game/g_syscalls.o \
+				game/g_target.o \
+				game/g_team.o \
+				game/g_timer.o \
+				game/g_trigger.o \
+				game/g_turret.o \
+				game/g_turret_G2.o \
+				game/g_utils.o \
+				game/g_vehicles.o \
+				game/g_vehicleTurret.o \
+				game/g_weapon.o \
+				game/NPC.o \
+				game/NPC_AI_Atst.o \
+				game/NPC_AI_Default.o \
+				game/NPC_AI_Droid.o \
+				game/NPC_AI_GalakMech.o \
+				game/NPC_AI_Grenadier.o \
+				game/NPC_AI_Howler.o \
+				game/NPC_AI_ImperialProbe.o \
+				game/NPC_AI_Interrogator.o \
+				game/NPC_AI_Jedi.o \
+				game/NPC_AI_Mark1.o \
+				game/NPC_AI_Mark2.o \
+				game/NPC_AI_MineMonster.o \
+				game/NPC_AI_Rancor.o \
+				game/NPC_AI_Remote.o \
+				game/NPC_AI_Seeker.o \
+				game/NPC_AI_Sentry.o \
+				game/NPC_AI_Sniper.o \
+				game/NPC_AI_Stormtrooper.o \
+				game/NPC_AI_Utils.o \
+				game/NPC_AI_Wampa.o \
+				game/NPC_behavior.o \
+				game/NPC_combat.o \
+				game/NPC_goal.o \
+				game/NPC_misc.o \
+				game/NPC_move.o \
+				game/NPC_reactions.o \
+				game/NPC_senses.o \
+				game/NPC_sounds.o \
+				game/NPC_spawn.o \
+				game/NPC_stats.o \
+				game/NPC_utils.o \
+				game/q_math.o \
+				game/q_shared.o \
+				game/SpeederNPC.o \
+				game/tri_coll_test.o \
+				game/w_force.o \
+				game/w_saber.o \
+				game/WalkerNPC.o
+
+CG_CFLAGS		=	-m32 -I. -DNDEBUG -D__linux__ -DMISSIONPACK -DCGAME -D_JK2 -DFINAL_BUILD -ggdb3
+
+CG_OBJS			=	cgame/AnimalNPC.o \
+				cgame/bg_g2_utils.o \
+				cgame/bg_misc.o \
+				cgame/bg_panimate.o \
+				cgame/bg_pmove.o \
+				cgame/bg_saber.o \
+				cgame/bg_saberLoad.o \
+				cgame/bg_saga.o \
+				cgame/bg_slidemove.o \
+				cgame/bg_vehicleLoad.o \
+				cgame/bg_weapons.o \
+				cgame/cg_consolecmds.o \
+				cgame/cg_draw.o \
+				cgame/cg_drawtools.o \
+				cgame/cg_effects.o \
+				cgame/cg_ents.o \
+				cgame/cg_event.o \
+				cgame/cg_info.o \
+				cgame/cg_light.o \
+				cgame/cg_localents.o \
+				cgame/cg_main.o \
+				cgame/cg_marks.o \
+				cgame/cg_newDraw.o \
+				cgame/cg_players.o \
+				cgame/cg_playerstate.o \
+				cgame/cg_predict.o \
+				cgame/cg_saga.o \
+				cgame/cg_scoreboard.o \
+				cgame/cg_servercmds.o \
+				cgame/cg_snapshot.o \
+				cgame/cg_spawn.o \
+				cgame/cg_strap.o \
+				cgame/cg_syscalls.o \
+				cgame/cg_turret.o \
+				cgame/cg_view.o \
+				cgame/cg_weaponinit.o \
+				cgame/cg_weapons.o \
+				cgame/FighterNPC.o \
+				cgame/fx_blaster.o \
+				cgame/fx_bowcaster.o \
+				cgame/fx_bryarpistol.o \
+				cgame/fx_demp2.o \
+				cgame/fx_disruptor.o \
+				cgame/fx_flechette.o \
+				cgame/fx_force.o \
+				cgame/fx_heavyrepeater.o \
+				cgame/fx_rocketlauncher.o \
+				cgame/q_math.o \
+				cgame/q_shared.o \
+				cgame/SpeederNPC.o \
+				cgame/ui_shared.o \
+				cgame/WalkerNPC.o
+
+UI_CFLAGS		=	-m32 -I. -DNDEBUG -D_USRDL -D__linux__ -DUI_EXPORTS -DMISSIONPACK -D_JK2 -DFINAL_BUILD -fPIC -ggdb3
+UI_OBJS			=     	ui/bg_misc.o \
+				ui/bg_saga.o \
+				ui/bg_vehicleLoad.o \
+				ui/bg_weapons.o \
+				ui/q_math.o \
+				ui/q_shared.o \
+				ui/ui_atoms.o \
+                                ui/ui_force.o \
+                                ui/ui_gameinfo.o \
+                                ui/ui_main.o \
+                                ui/ui_saber.o \
+                                ui/ui_shared.o \
+                                ui/ui_syscalls.o
+
+ENGINE_OBJS		=   	client/FXExport.o \
 			        client/FxPrimitives.o \
 			        client/FxScheduler.o \
 			        client/FxSystem.o \
@@ -54,14 +215,14 @@ OBJS			=   client/FXExport.o \
 			        unix_ded/vm_x86.o \
 			        qcommon/z_memman_pc.o \
 			        \
-			        unix/unix_main.o \
-			        unix/unix_glimp.o \
-			        unix/unix_net.o \
-			        unix/unix_snd.o \
-			        unix/snapvector.o \
+			        sdl/sdl_glimp.o \
+			        sdl/sdl_snd.o \
+			        sdl/sdl_input.o \
 			        sys/sys_main.o \
-			        sys/sys_input.o \
 			        sys/sys_unix.o \
+			        unix/unix_main.o \
+			        sys/sys_net.o \
+			        unix/snapvector.o \
 			        \
 			        server/sv_bot.o \
 			        server/sv_ccmds.o \
@@ -239,23 +400,67 @@ OBJS			=   client/FXExport.o \
 			        zlib/uncompr.o \
 			        zlib/zutil.o
 
+all: engine game cgame ui
+
+game: $(G_OBJS)
+	$(CC) -m32 -shared -o jampgamei386.so $(G_OBJS) -lm
+
+game/%.o: game/%.c
+	$(CC) $(G_CFLAGS) -fPIC -c $< -o $@
+
+game/q_%.o: qcommon/q_%.c
+	$(CC) $(G_CFLAGS) -fPIC -c $< -o $@
+
+cgame: $(CG_OBJS)
+	$(CC) -m32 -shared -o cgamei386.so $(CG_OBJS) -lm
+
+cgame/q_%.o: qcommon/q_%.c
+	$(CC) $(CG_CFLAGS) -fPIC -c $< -o $@
+
+cgame/%NPC.o: game/%NPC.c
+	$(CC) $(CG_CFLAGS) -fPIC -c $< -o $@
+
+cgame/ui_%.o: ui/ui_%.c
+	$(CC) $(CG_CFLAGS) -fPIC -c $< -o $@
+
+cgame/bg_%.o: game/bg_%.c
+	$(CC) $(CG_CFLAGS) -fPIC -c $< -o $@
+
+cgame/%.o: cgame/%.c
+	$(CC) $(CG_CFLAGS) -fPIC -c $< -o $@
+
+ui: $(UI_OBJS)
+	$(CC) -m32 -shared -o uii386.so $(UI_OBJS) -lm
+
+ui/q_%.o: qcommon/q_%.c
+	$(CC) $(UI_CFLAGS) -fPIC -c $< -o $@
+
+ui/bg_%.o: game/bg_%.c
+	$(CC) $(UI_CFLAGS) -fPIC -c $< -o $@
+
+ui/%.o: ui/%.c
+	$(CC) $(UI_CFLAGS) -fPIC -c $< -o $@
+
+engine: $(ENGINE_OBJS)
+	$(CXX) -m32 -o jamp $(ENGINE_OBJS) -lopenal -lGL `sdl2-config --libs`
+
 zlib/%.o: zlib/%.c
-	$(CC) $(CXXFLAGS) -c $< -o $@
-	
+	$(CC) $(ENGINE_CFLAGS) -c $< -o $@
+
 mp3code/%.o: mp3code/%.c
-	$(CC) $(CXXFLAGS) -c $< -o $@
+	$(CC) $(ENGINE_CFLAGS) -c $< -o $@
 
 %.o: %.c
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-		        
+	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
+
+%.o: %.cpp
+	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
+
 botlib/%.o: botlib/%.cpp
-	$(CXX) $(CXXFLAGS) -DBOTLIB -c $< -o $@
-	
+	$(CXX) $(ENGINE_CFLAGS) -DBOTLIB -c $< -o $@
+
 unix/%.o: unix/%.nasm
 	nasm -f elf -o $@  $<
 
-all: $(OBJS)
-	$(CXX) -m32 -o jamp $(OBJS) -lopenal -lGL `sdl-config --libs`
-
 clean:
-	$(RM) $(OBJS)
+	$(RM) $(ENGINE_OBJS) $(G_OBJS) $(CG_OBJS) $(UI_OBJS)

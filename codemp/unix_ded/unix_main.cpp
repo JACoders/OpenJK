@@ -17,7 +17,7 @@
 #include <sys/mman.h>
 #include <errno.h>
 #ifdef __linux__ // rb010123
-#include <mntent.h>
+//#include <mntent.h>
 #endif
 #include <dlfcn.h>
 

@@ -10,7 +10,11 @@ typedef unsigned int GLuint;
 #include "qcommon/qfiles.h"
 #include "tr_public.h"
 #ifndef DEDICATED
+#ifdef _WIN32
 	#include "qgl.h"
+#else
+	#include "sdl/sdl_qgl.h"
+#endif
 #endif 
 #include "ghoul2/ghoul2_shared.h" //rwwRMG - added
 

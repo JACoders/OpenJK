@@ -211,6 +211,7 @@ Ghoul2 Insert End
 */
 
 #ifndef DEDICATED
+#ifdef _WIN32
 void ( APIENTRY * qglMultiTexCoord2fARB )( GLenum texture, GLfloat s, GLfloat t );
 void ( APIENTRY * qglActiveTextureARB )( GLenum texture );
 void ( APIENTRY * qglClientActiveTextureARB )( GLenum texture );
@@ -241,7 +242,6 @@ PFNGLGETCOMBINEROUTPUTPARAMETERIVNV		qglGetCombinerOutputParameterivNV = NULL;
 PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV	qglGetFinalCombinerInputParameterfvNV = NULL;
 PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV	qglGetFinalCombinerInputParameterivNV = NULL;
 
-#ifdef _WIN32
 // Declare Pixel Format function pointers.
 PFNWGLGETPIXELFORMATATTRIBIVARBPROC		qwglGetPixelFormatAttribivARB = NULL;
 PFNWGLGETPIXELFORMATATTRIBFVARBPROC		qwglGetPixelFormatAttribfvARB = NULL;
@@ -258,7 +258,6 @@ PFNWGLQUERYPBUFFERARBPROC				qwglQueryPbufferARB = NULL;
 PFNWGLBINDTEXIMAGEARBPROC				qwglBindTexImageARB = NULL;
 PFNWGLRELEASETEXIMAGEARBPROC			qwglReleaseTexImageARB = NULL;
 PFNWGLSETPBUFFERATTRIBARBPROC			qwglSetPbufferAttribARB = NULL;
-#endif
 
 // Declare Vertex and Fragment Program function pointers.
 PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB = NULL;
@@ -280,6 +279,7 @@ PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC qglGetProgramLocalParameterfvARB = NULL;
 PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB = NULL;
 PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB = NULL;
 PFNGLISPROGRAMARBPROC qglIsProgramARB = NULL;
+#endif
 
 void RE_SetLightStyle(int style, int color);
 

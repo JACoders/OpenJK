@@ -52,6 +52,15 @@ int Sys_Milliseconds (bool baseTime)
 	return curtime;
 }
 
+void Sys_SetEnv(const char *name, const char *value)
+{
+	if(value && *value)
+		setenv(name, value, 1);
+	else
+		unsetenv(name);
+}
+
+
 /*
 ==================
 Sys_BeginProfiling
@@ -472,6 +481,7 @@ void Sys_Error( const char *error, ... )
 	va_end (argptr);
 
 	//Sys_ErrorDialog( string );
+	Sys_Print( string );
 
 	Sys_Exit( 3 );
 }

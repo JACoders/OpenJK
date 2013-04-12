@@ -46,13 +46,8 @@ Suite 120, Rockville, Maryland 20850 USA.
 #		define Sys_LibraryError() dlerror()
 #	endif
 #else
-#	ifdef USE_LOCAL_HEADERS
-#		include "SDL2/SDL.h"
-#		include "SDL2/SDL_loadso.h"
-#	else
-#		include <SDL.h>
-#		include <SDL_loadso.h>
-#	endif
+#	include "SDL2/SDL.h"
+#	include "SDL2/SDL_loadso.h"
 #	define Sys_LoadLibrary(f) SDL_LoadObject(f)
 #	define Sys_UnloadLibrary(h) SDL_UnloadObject(h)
 #	define Sys_LoadFunction(h,fn) SDL_LoadFunction(h,fn)
