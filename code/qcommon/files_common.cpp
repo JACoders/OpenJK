@@ -180,11 +180,12 @@ or configs will never get loaded from disk!
 
 char		fs_gamedir[MAX_OSPATH];	// this will be a single file name with no separators
 cvar_t		*fs_debug;
+cvar_t		*fs_homepath;
 cvar_t		*fs_basepath;
+cvar_t		*fs_basegame;
 cvar_t		*fs_cdpath;
 cvar_t		*fs_copyfiles;
 cvar_t		*fs_gamedirvar;
-cvar_t		*fs_restrict;
 searchpath_t	*fs_searchpaths;
 int			fs_readCount;			// total bytes read
 int			fs_loadCount;			// total files read
@@ -192,7 +193,9 @@ int			fs_packFiles;			// total number of files in packs
 
 qboolean initialized = qfalse;
 
-
+// last valid game folder used
+char lastValidBase[MAX_OSPATH];
+char lastValidGame[MAX_OSPATH];
 
 
 
@@ -250,10 +253,18 @@ Fix things up differently for win/unix/mac
 */
 void FS_ReplaceSeparators( char *path ) {
 	char	*s;
+	qboolean lastCharWasSep = qfalse;
 
 	for ( s = path ; *s ; s++ ) {
 		if ( *s == '/' || *s == '\\' ) {
-			*s = PATH_SEP;
+			if ( !lastCharWasSep ) {
+				*s = PATH_SEP;
+				lastCharWasSep = qtrue;
+			} else {
+				memmove (s, s + 1, strlen (s));
+			}
+		} else {
+			lastCharWasSep = qfalse;
 		}
 	}
 }
@@ -577,16 +588,13 @@ void FS_InitFilesystem( void ) {
 	// has already been initialized
 	Com_StartupVariable( "fs_cdpath" );
 	Com_StartupVariable( "fs_basepath" );
+	Com_StartupVariable( "fs_homepath" );
 	Com_StartupVariable( "fs_game" );
 	Com_StartupVariable( "fs_copyfiles" );
-	Com_StartupVariable( "fs_restrict" );
 
 	// try to start up normally
 	FS_Startup( BASEGAME );
 	initialized = qtrue;
-
-	// see if we are going to allow add-ons
-	FS_SetRestrictions();
 
 	// if we can't find default.cfg, assume that the paths are
 	// busted and error out now, rather than getting an unreadable
@@ -594,6 +602,9 @@ void FS_InitFilesystem( void ) {
 	if ( FS_ReadFile( "default.cfg", NULL ) <= 0 ) {
 		Com_Error( ERR_FATAL, "Couldn't load default.cfg" );
 	}
+
+	Q_strncpyz(lastValidBase, fs_basepath->string, sizeof(lastValidBase));
+	Q_strncpyz(lastValidGame, fs_gamedirvar->string, sizeof(lastValidGame));
 }
 
 

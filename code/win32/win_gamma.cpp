@@ -107,11 +107,11 @@ void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned 
 		table[2][i] = ( ( ( unsigned short ) blue[i] ) << 8 ) | blue[i];
 	}
 
-	// Win2K puts this odd restriction on gamma ramps...
+	// Win2K and newer puts this odd restriction on gamma ramps...
 	vinfo.dwOSVersionInfoSize = sizeof(vinfo);
 	GetVersionEx( &vinfo );
-	if ( vinfo.dwMajorVersion == 5 && vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT ) {
-		Com_DPrintf( "performing W2K gamma clamp.\n" );
+	if ( vinfo.dwMajorVersion >= 5 && vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT ) {
+		Com_DPrintf( "performing gamma clamp.\n" );
 		for ( j = 0 ; j < 3 ; j++ ) {
 			for ( i = 0 ; i < 128 ; i++ ) {
 				if ( table[j][i] > ( (128+i) << 8 ) ) {
@@ -123,7 +123,7 @@ void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned 
 			}
 		}
 	} else {
-		Com_DPrintf( "skipping W2K gamma clamp.\n" );
+		Com_DPrintf( "skipping gamma clamp.\n" );
 	}
 
 	// enforce constantly increasing
@@ -134,7 +134,6 @@ void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned 
 			}
 		}
 	}
-
 
 	ret = SetDeviceGammaRamp( glw_state.hDC, table );
 	if ( !ret ) {

@@ -610,7 +610,6 @@ public:
 	float& pitch()															{return v[0];}
 	float& yaw()															{return v[1];}
 	float& roll()															{return v[2];}
-	float& radius()															{return v[3];}
 
     ////////////////////////////////////////////////////////////////////////////////////
 	// Equality / Inequality Operators
