@@ -110,6 +110,7 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
 		{
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
@@ -122,11 +123,13 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 	}
 	if ( !p ) 
 	{
+		COM_EndParseSession(  );
 		return qfalse;
 	}
 
 	if ( UI_ParseLiteral( &p, "{" ) ) 
 	{
+		COM_EndParseSession(  );
 		return qfalse;
 	}
 		
@@ -137,6 +140,7 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 		if ( !token[0] ) 
 		{
 			ui.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", saberName );
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
@@ -152,6 +156,7 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 				continue;
 			}
 			strcpy( saberData, value );
+			COM_EndParseSession(  );
 			return qtrue;
 		}
 
@@ -159,6 +164,7 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 		continue;
 	}
 
+	COM_EndParseSession(  );
 	return qfalse;
 }
 

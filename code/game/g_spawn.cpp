@@ -1209,12 +1209,15 @@ qboolean G_ParseSpawnVars( const char **data ) {
 	numSpawnVarChars = 0;
 
 	// parse the opening brace	
+	COM_BeginParseSession();
 	com_token = COM_Parse( data );
 	if ( !*data ) {
 		// end of spawn string
+		COM_EndParseSession();
 		return qfalse;
 	}
 	if ( com_token[0] != '{' ) {
+		COM_EndParseSession();
 		G_Error( "G_ParseSpawnVars: found %s when expecting {",com_token );
 	}
 
@@ -1226,6 +1229,7 @@ qboolean G_ParseSpawnVars( const char **data ) {
 			break;
 		}
 		if ( !data ) {
+			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
 		}
 
@@ -1234,12 +1238,15 @@ qboolean G_ParseSpawnVars( const char **data ) {
 		// parse value	
 		com_token = COM_Parse( data );
 		if ( com_token[0] == '}' ) {
+			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: closing brace without data" );
 		}
 		if ( !data ) {
+			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
 		}
 		if ( numSpawnVars == MAX_SPAWN_VARS ) {
+			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: MAX_SPAWN_VARS" );
 		}
 		spawnVars[ numSpawnVars ][0] = G_AddSpawnVarToken( keyname );
@@ -1247,6 +1254,7 @@ qboolean G_ParseSpawnVars( const char **data ) {
 		numSpawnVars++;
 	}
 
+	COM_EndParseSession();
 	return qtrue;
 }
 

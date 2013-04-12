@@ -1241,6 +1241,8 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 	world_t	*w;
 	float ambient = 1;
 
+	COM_BeginParseSession();
+
 	w = &worldData;
 	w->lightGridSize[0] = 64;
 	w->lightGridSize[1] = 64;
@@ -1253,6 +1255,7 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 
 	token = COM_ParseExt( &p, qtrue );
 	if (!*token || *token != '{') {
+		COM_EndParseSession();
 		return;
 	}
 
@@ -1327,6 +1330,8 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 	}
 	//both default to 1 so no harm if not present.
 	VectorScale( tr.sunAmbient, ambient, tr.sunAmbient);
+
+	COM_EndParseSession();
 }
 
 

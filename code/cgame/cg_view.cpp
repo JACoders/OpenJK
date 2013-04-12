@@ -1795,6 +1795,8 @@ static void CG_DrawSkyBoxPortal(void)
 
 	backuprefdef = cg.refdef;
 
+	// asdf --eez
+	COM_BeginParseSession();
 	token = COM_ParseExt(&cstr, qfalse);
 	if (!token || !token[0])
 	{
@@ -1873,6 +1875,7 @@ static void CG_DrawSkyBoxPortal(void)
 		}
 	}
 
+	COM_EndParseSession();
 /*
 	static float lastfov = cg_zoomFov;	// for transitions back from zoomed in modes
 	float fov_x;

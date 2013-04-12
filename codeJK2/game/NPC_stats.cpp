@@ -595,7 +595,9 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 	{
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
+		{
 			return;
+		}
 
 		if ( !Q_stricmp( token, NPC_type ) ) 
 		{
@@ -744,7 +746,9 @@ void NPC_Precache ( gentity_t *spawner )
 	{
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
+		{
 			return;
+		}
 
 		if ( !Q_stricmp( token, spawner->NPC_type ) ) 
 		{
@@ -961,6 +965,7 @@ void NPC_Precache ( gentity_t *spawner )
 
 	CG_RegisterNPCCustomSounds( &ci );
 	CG_RegisterNPCEffects( playerTeam );
+
 	//FIXME: Look for a "sounds" directory and precache death, pain, alert sounds
 }
 
