@@ -101,7 +101,7 @@ set(MPGameSortMe
 	"${MPDir}/game/w_force.c"
 	"${MPDir}/game/w_saber.c"
 	"${MPDir}/game/WalkerNPC.c"
-
+	
 	"${MPDir}/game/ai.h"
 	"${MPDir}/game/ai_main.h"
 	"${MPDir}/game/anims.h"
@@ -153,8 +153,8 @@ set(MPGameSortMe
 set(MPGameFiles ${MPGameSortMe})
 
 add_library(${MPGame} SHARED ${MPGameFiles})
-set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPGameDefines};NDEBUG")
-set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPGameDefines};_DEBUG")
+set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPGameDefines};${ReleaseDefines}")
+set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPGameDefines};${DebugDefines}")
 set_target_properties(${MPGame} PROPERTIES INCLUDE_DIRECTORIES "${MPGameIncludeDirectories}")
 # no libraries used
 if(MPGameLibraries)
