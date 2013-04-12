@@ -4,7 +4,7 @@ For legal reasons we had to make changes to the history. This likely broke every
 
 # JACoders "OpenJK" project #
 
-**Caution! Do not create JK2 SP mods, they likely won't be supported. Wait for the official JK2 SP mod for Jedi Academy, then base your work off that.** (Or help create it, first.)
+IRC: irc.arloria.net / #JACoders
 
 ## Description ##
 
