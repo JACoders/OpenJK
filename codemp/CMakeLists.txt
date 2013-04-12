@@ -5,19 +5,21 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
+set(MPSharedDefines ${SharedDefines} "_JK2")
+
 #    Add Game Project
 if(BuildMPGame)
-	# (TODO)
+	add_subdirectory("${MPDir}/game")
 endif(BuildMPGame)
 
 #    Add CGame Project
 if(BuildMPCGame)
-	# (TODO)
+	add_subdirectory("${MPDir}/cgame")
 endif(BuildMPCGame)
 
 #    Add UI Project
 if(BuildMPUI)
-	# (TODO)
+	add_subdirectory("${MPDir}/ui")
 endif(BuildMPUI)
 
 
@@ -121,12 +123,6 @@ if(BuildMPEngine OR BuildMPDed)
 	endif(WIN32)
 	# Include directories
 	set(MPEngineAndDedIncludeDirectories ${MPDir}) # codemp folder, since includes are not always relative in the files
-	# Preprocessor Definition
-	if(WIN32)
-		set(MPEngineAndDedDefines "WIN32" "_WINDOWS" "_WIN32")
-	else(WIN32)
-		message("Please find out what the defines for your platform are and add them to codemp/CMakeLists.txt")
-	endif(WIN32)
 	
 	if(UseInternalZlib)
 		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} "${MPDir}/zlib")
@@ -327,7 +323,7 @@ if(BuildMPEngine)
 	set(MPEngineLibraries ${MPEngineAndDedLibraries})
 	set(MPEngineIncludeDirectories ${MPEngineAndDedIncludeDirectories})
 	set(MPEngineFiles ${MPEngineAndDedFiles})
-	set(MPEngineDefines ${MPEngineAndDedDefines} "_JK2" "_JK2MP")
+	set(MPEngineDefines ${MPSharedDefines} "_JK2MP")
 	
 	#    Dependencies
 	
@@ -542,7 +538,8 @@ if(BuildMPEngine)
 	else(WIN32)
 		add_executable(${MPEngine} ${MPEngineFiles})
 	endif(WIN32)
-	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS "${MPEngineDefines}")
+	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPEngineDefines};NDEBUG")
+	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPEngineDefines};_DEBUG")
 	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
 	target_link_libraries(${MPEngine} ${MPEngineLibraries})
 
@@ -554,7 +551,7 @@ if(BuildMPDed)
 	set(MPDedLibraries ${MPEngineAndDedLibraries})
 	set(MPDedIncludeDirectories ${MPEngineAndDedIncludeDirectories})
 	set(MPDedFiles ${MPEngineAndDedFiles})
-	set(MPDedDefines ${MPEngineAndDedDefines} "_CONSOLE" "DEDICATED")
+	set(MPDedDefines ${MPSharedDefines} "_CONSOLE" "DEDICATED")
 	
 	# TODO sort this, fix capitalization
 	set(MPDedSortMe
@@ -572,7 +569,8 @@ if(BuildMPDed)
 	source_group("SortMe" FILES ${MPDedSortMe})
 	
 	add_executable(${MPDed} ${MPDedFiles})
-	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS "${MPDedDefines}")
+	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPDedDefines};NDEBUG")
+	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPDedDefines};_DEBUG")
 	set_target_properties(${MPDed} PROPERTIES INCLUDE_DIRECTORIES "${MPDedIncludeDirectories}")
 	target_link_libraries(${MPDed} ${MPDedLibraries})
 endif(BuildMPDed)

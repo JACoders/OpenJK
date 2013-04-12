@@ -23,20 +23,31 @@ endif(WIN32)
 # Custom CMake Modules needed
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules" ${CMAKE_MODULE_PATH})
 
+# Arch Suffix
+# TODO don't hardcode
+set(Architecture "x86")
+
 # Binary names
-set(SPEngine "openjksp")
-set(SPGame "jagame")
-set(SPCGame "jacgame")
-set(MPEngine "openjkmp")
-set(MPDed "openjkded")
-set(MPGame "jampgame")
-set(MPCGame "jampcgame")
+set(SPEngine "openjksp.${Architecture}")
+set(SPGame "jagame${Architecture}")
+set(MPEngine "openjkmp.${Architecture}")
+set(MPDed "openjkded.${Architecture}")
+set(MPGame "jampgame${Architecture}")
+set(MPCGame "cgame${Architecture}")
+set(MPUI "ui${Architecture}")
 # Library names
 set(MPBotLib "botlib")
 
 # Paths
 set(SPDir "${CMAKE_SOURCE_DIR}/code")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
+
+# Common settings
+if(WIN32)
+	set(SharedDefines "WIN32" "_WINDOWS")
+else(WIN32)
+	message("Please find out what the defines for your platform are and add them to CMakeLists.txt")
+endif(WIN32)
 
 #    Add projects
 #add_subdirectory(${SPDir})
