@@ -4,7 +4,7 @@
 
 #if defined(_WINDOWS)
 #define PATH_SEP '\\'
-#define DLL_EXT ".dll"
+#define DLL_EXT "dll"
 #include <windows.h>
 #endif
 
@@ -39,7 +39,7 @@ typedef struct _GUID {
 #define stricmp Q_stricmp
 #define RGB(r,g,b)          ((COLORREF)((r) | ((g) << 8) | ((b) << 16)))
 
-#define DLL_EXT ".so"
+#define DLL_EXT "so"
 #endif
 
 #if defined (MACOS_X)
@@ -74,7 +74,7 @@ typedef struct _GUID {
 #define RGB(r,g,b)          ((COLORREF)((r) | ((g) << 8) | ((b) << 16)))
 
 #define _isnan isnan
-#define DLL_EXT ".dylib"
+#define DLL_EXT "dylib"
 #endif
 
 #endif

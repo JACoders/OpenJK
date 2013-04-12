@@ -93,56 +93,14 @@ char *Sys_DefaultCDPath(void)
 =================
 Sys_LoadDll
 
-First try to load library name from system library path,
-from executable path, then fs_basepath.
+Used to load a development dll instead of a virtual machine
 =================
 */
-#if 0
-void *Sys_LoadDll(const char *name, qboolean useSystemLib)
-{
-	void *dllhandle;
+extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 
-	if(useSystemLib)
-		Com_Printf("Trying to load \"%s\"...\n", name);
-
-	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
-	{
-		const char *topDir;
-		char libPath[MAX_OSPATH];
-
-		topDir = Sys_BinaryPath();
-
-		if(!*topDir)
-			topDir = ".";
-
-		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
-		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
-
-		if(!(dllhandle = Sys_LoadLibrary(libPath)))
-		{
-			const char *basePath = Cvar_VariableString("fs_basepath");
-
-			if(!basePath || !*basePath)
-				basePath = ".";
-
-			if(FS_FilenameCompare(topDir, basePath))
-			{
-				Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, basePath);
-				Com_sprintf(libPath, sizeof(libPath), "%s%c%s", basePath, PATH_SEP, name);
-				dllhandle = Sys_LoadLibrary(libPath);
-			}
-
-			if(!dllhandle)
-				Com_Printf("Loading \"%s\" failed\n", name);
-		}
-	}
-
-	return dllhandle;
-}
-#else
 void *Sys_LoadDll( const char *name,
 		   int (**entryPoint)(int, ...),
-		   int (*systemcalls)(int, ...) )
+		   int (*systemcalls)(int, ...) ) 
 {
   void *libHandle;
   void	(*dllEntry)( int (*syscallptr)(int, ...) );
@@ -181,7 +139,7 @@ void *Sys_LoadDll( const char *name,
 #error Unknown arch
 #endif
 
-// bk001129 - was RTLD_LAZY
+// bk001129 - was RTLD_LAZY 
 #define Q_RTLD    RTLD_NOW
 
 #if 0 // bk010205 - was NDEBUG // bk001129 - FIXME: what is this good for?
@@ -189,10 +147,10 @@ void *Sys_LoadDll( const char *name,
   Q_strncpyz(loadname, curpath, sizeof(loadname));
   // bk001129 - from cvs1.17 (mkv)
   Q_strcat(loadname, sizeof(loadname), "/");
-
+  
   Q_strcat(loadname, sizeof(loadname), fname);
   Com_Printf( "Sys_LoadDll(%s)... \n", loadname );
-  libHandle = dlopen( loadname, Q_RTLD );
+  libHandle = Sys_LoadLibrary( loadname );
   //if ( !libHandle ) {
   // bk001206 - report any problem
   //Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", loadname, dlerror() );
@@ -201,67 +159,65 @@ void *Sys_LoadDll( const char *name,
   basepath = Cvar_VariableString( "fs_basepath" );
   cdpath = Cvar_VariableString( "fs_cdpath" );
   gamedir = Cvar_VariableString( "fs_game" );
-
+  
   fn = FS_BuildOSPath( basepath, gamedir, fname );
   // bk001206 - verbose
   Com_Printf( "Sys_LoadDll(%s)... \n", fn );
-
+  
   // bk001129 - from cvs1.17 (mkv), was fname not fn
-  libHandle = dlopen( fn, Q_RTLD );
-
+  libHandle = Sys_LoadLibrary( fn );
+ 
 #ifndef NDEBUG
   if (libHandle == NULL)  Com_Printf("Failed to open DLL\n");
 #endif
-
+ 
   if ( !libHandle ) {
     if( cdpath[0] ) {
       // bk001206 - report any problem
-      Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, dlerror() );
+      Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 
       fn = FS_BuildOSPath( cdpath, gamedir, fname );
-      libHandle = dlopen( fn, Q_RTLD );
+      libHandle = Sys_LoadLibrary( fn );
       if ( !libHandle ) {
 	// bk001206 - report any problem
-	Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, dlerror() );
+	Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
       }
       else
 	Com_Printf ( "Sys_LoadDll(%s): succeeded ...\n", fn );
     }
     else
-      Com_Printf ( "Sys_LoadDll(%s): succeeded ...\n", fn );
-
-    if ( !libHandle ) {
+      {
 #ifdef NDEBUG // bk001206 - in debug abort on failure
-      Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed dlopen() completely!\n", name  );
+	Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 #else
-      Com_Printf ( "Sys_LoadDll(%s) failed dlopen() completely!\n", name );
+	Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 #endif
-      return NULL;
-    }
+	return NULL;
+      }
   }
   // bk001206 - no different behavior
   //#ifndef NDEBUG }
   //else Com_Printf ( "Sys_LoadDll(%s): succeeded ...\n", loadname );
   //#endif
 
-  dllEntry = (void (*)(int (*)(int,...))) dlsym( libHandle, "dllEntry" );
+  dllEntry = (void (*)(int (*)(int,...))) Sys_LoadFunction( libHandle, "dllEntry" ); 
   if (!dllEntry)
   {
-     err = dlerror();
+     err = Sys_LibraryError();
      Com_Printf("Sys_LoadDLL(%s) failed dlsym(dllEntry): \"%s\" ! \n",name,err);
   }
   //int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  )
-  *entryPoint = (int(*)(int,...))dlsym( libHandle, "vmMain" );
+  *entryPoint = (int(*)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
   if (!*entryPoint)
-     err = dlerror();
+     err = Sys_LibraryError();
   if ( !*entryPoint || !dllEntry ) {
 #ifdef NDEBUG // bk001206 - in debug abort on failure
     Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed dlsym(vmMain): \"%s\" !\n", name, err );
 #else
     Com_Printf ( "Sys_LoadDll(%s) failed dlsym(vmMain): \"%s\" !\n", name, err );
 #endif
-    dlclose( libHandle );
-    err = dlerror();
+    Sys_UnloadLibrary( libHandle );
+    err = Sys_LibraryError();
     if ( err != NULL )
       Com_Printf ( "Sys_LoadDll(%s) failed dlcose: \"%s\"\n", name, err );
     return NULL;
@@ -271,4 +227,3 @@ void *Sys_LoadDll( const char *name,
   Com_Printf ( "Sys_LoadDll(%s) succeeded!\n", name );
   return libHandle;
 }
-#endif

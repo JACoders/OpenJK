@@ -1,7 +1,7 @@
 #ifndef SYS_LOCAL_H_
 #define SYS_LOCAL_H_
 
-void 		IN_Init( void );
+void 		IN_Init( void *windowData );
 void 		IN_Frame (void);
 void 		IN_Shutdown( void );
 void 		IN_Restart( void );
