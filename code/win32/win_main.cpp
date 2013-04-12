@@ -291,6 +291,15 @@ char *Sys_DefaultBasePath( void ) {
 }
 
 /*
+==============
+Sys_DefaultHomePath
+==============
+*/
+char *Sys_DefaultHomePath( void ) {
+	return "";
+}
+
+/*
 ==============================================================
 
 DIRECTORY SCANNING
