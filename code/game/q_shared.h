@@ -1179,6 +1179,7 @@ void	 COM_BeginParseSession( bool nested = false );
 #else
 void	 COM_BeginParseSession( void );
 #endif
+void	 COM_EndParseSession( void );
 
 int		 COM_GetCurrentParseLine( void );
 char	*COM_Parse( const char **data_p );

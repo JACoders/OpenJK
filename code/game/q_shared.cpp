@@ -267,6 +267,12 @@ void COM_BeginParseSession( void )
 
 #endif
 
+void COM_EndParseSession( void )
+{
+	// FIXME: I have no idea if I'm doing this right ( :D... )
+	parseDataCount = -1;
+}
+
 int COM_GetCurrentParseLine( int index )
 {
 	if(parseDataCount < 0)

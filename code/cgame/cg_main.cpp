@@ -1826,8 +1826,10 @@ void CG_StartMusic( qboolean bForceStart ) {
 
 	// start the background music
 	s = (char *)CG_ConfigString( CS_MUSIC );
+	COM_BeginParseSession();
 	Q_strncpyz( parm1, COM_Parse( &s ), sizeof( parm1 ) );
 	Q_strncpyz( parm2, COM_Parse( &s ), sizeof( parm2 ) );
+	COM_EndParseSession();
 
 	cgi_S_StartBackgroundTrack( parm1, parm2, !bForceStart );
 }
@@ -2973,7 +2975,9 @@ void CG_LoadMenus(const char *menuFile)
 
 	while ( 1 ) 
 	{
+		COM_BeginParseSession();
 		token = COM_ParseExt( &p, qtrue );
+		COM_EndParseSession();
 		if( !token || token[0] == 0 || token[0] == '}') 
 		{
 			break;
@@ -2986,7 +2990,10 @@ void CG_LoadMenus(const char *menuFile)
 
 		if (Q_stricmp(token, "loadmenu") == 0) 
 		{
-			if (CG_Load_Menu(&p)) 
+			COM_BeginParseSession();
+			int menuLoad = CG_Load_Menu(&p);
+			COM_EndParseSession();
+			if (menuLoad) 
 			{
 				continue;
 			} 

@@ -350,6 +350,7 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
 		{
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
@@ -362,17 +363,20 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 	}
 	if ( !p ) 
 	{
+		COM_EndParseSession(  );
 		return qfalse;
 	}
 
 	token = COM_ParseExt( &p, qtrue );
 	if ( token[0] == 0 )
 	{//barf
+		COM_EndParseSession(  );
 		return VEH_WEAPON_NONE;
 	}
 
 	if ( Q_stricmp( token, "{" ) != 0 ) 
 	{
+		COM_EndParseSession(  );
 		return VEH_WEAPON_NONE;
 	}
 	
@@ -384,6 +388,7 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 		if ( !token[0] ) 
 		{
 			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing Vehicle Weapon '%s'\n", vehWeaponName );
+			COM_EndParseSession(  );
 			return VEH_WEAPON_NONE;
 		}
 
@@ -425,6 +430,7 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 		trap_S_RegisterSound( "sound/vehicles/common/lockalarm3.wav" );
 #endif
 	}
+	COM_EndParseSession(  );
 	return (numVehicleWeapons++);
 }
 
@@ -1040,6 +1046,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
 		{
+			COM_EndParseSession(  );
 			return VEHICLE_NONE;
 		}
 
@@ -1053,17 +1060,20 @@ int VEH_LoadVehicle( const char *vehicleName )
 
 	if ( !p )
 	{
+		COM_EndParseSession(  );
 		return VEHICLE_NONE;
 	}
 
 	token = COM_ParseExt( &p, qtrue );
 	if ( token[0] == 0 )
 	{//barf
+		COM_EndParseSession(  );
 		return VEHICLE_NONE;
 	}
 
 	if ( Q_stricmp( token, "{" ) != 0 ) 
 	{
+		COM_EndParseSession(  );
 		return VEHICLE_NONE;
 	}
 	
@@ -1076,6 +1086,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 		if ( !token[0] ) 
 		{
 			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing Vehicle '%s'\n", vehicleName );
+			COM_EndParseSession(  );
 			return VEHICLE_NONE;
 		}
 
@@ -1376,6 +1387,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 	}
 #endif
 
+	COM_EndParseSession(  );
 	return (numVehicles++);
 }
 

@@ -2348,11 +2348,14 @@ static qboolean ParseShader( const char  **text )
 	shader.needsNormal = false;
 	shader.needsTangent = false;
 #endif
+	COM_BeginParseSession();
+
 
 	token = COM_ParseExt( text, qtrue );
 	if ( token[0] != '{' )
 	{
 		VID_Printf( PRINT_WARNING, "WARNING: expecting '{', found '%s' instead in shader '%s'\n", token, shader.name );
+		COM_EndParseSession();
 		return qfalse;
 	}
 
@@ -2362,6 +2365,7 @@ static qboolean ParseShader( const char  **text )
 		if ( !token[0] )
 		{
 			VID_Printf( PRINT_WARNING, "WARNING: no concluding '}' in shader %s\n", shader.name );
+			COM_EndParseSession();
 			return qfalse;
 		}
 
@@ -2375,6 +2379,7 @@ static qboolean ParseShader( const char  **text )
 		{
 			if ( !ParseStage( &stages[s], text ) )
 			{
+				COM_EndParseSession();
 				return qfalse;
 			}
 			stages[s].active = true;
@@ -2495,6 +2500,7 @@ static qboolean ParseShader( const char  **text )
 		{
 			shader.fogParms = (fogParms_t *)Hunk_Alloc( sizeof( fogParms_t ), qtrue );
 			if ( !ParseVector( text, 3, shader.fogParms->color ) ) {
+				COM_EndParseSession();
 				return qfalse;
 			}
 
@@ -2594,6 +2600,7 @@ Ghoul2 Insert End
 		else
 		{
 			VID_Printf( PRINT_WARNING, "WARNING: unknown general shader parameter '%s' in '%s'\n", token, shader.name );
+			COM_EndParseSession();
 			return qfalse;
 		}
 	}
@@ -2602,11 +2609,13 @@ Ghoul2 Insert End
 	// ignore shaders that don't have any stages, unless it is a sky or fog
 	//
 	if ( s == 0 && !shader.sky && !(shader.contentFlags & CONTENTS_FOG ) ) {
+		COM_EndParseSession();
 		return qfalse;
 	}
 
 	shader.explicitlyDefined = true;
 
+	COM_EndParseSession();
 	return qtrue;
 }
 
@@ -3750,6 +3759,9 @@ static void SetupShaderEntryPtrs(void)
 	if ( !p ) 	
 		return;
 
+	// FIXED this nasty little bugger --eez
+	COM_BeginParseSession();
+
 	while (1) 
 	{
 		token = COM_ParseExt( &p, qtrue );
@@ -3771,6 +3783,8 @@ static void SetupShaderEntryPtrs(void)
 			SkipRestOfLine( &p );		// now legally skip over this name and go get the next one
 		}
 	}
+
+	COM_EndParseSession(  );
 
 	//VID_Printf( PRINT_DEVELOPER, "SetupShaderEntryPtrs(): Stored %d shader ptrs\n",ShaderEntryPtrs_Size() );
 }

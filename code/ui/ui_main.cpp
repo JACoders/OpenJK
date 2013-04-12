@@ -2121,6 +2121,7 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 	}
 
 	// read information for each frame
+	COM_BeginParseSession();
 	while(1) 
 	{
 		token = COM_Parse( &text_p );
@@ -2189,6 +2190,7 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 
 //		animations[animNum].initialLerp = ceil(1000.0f / fabs(fps));
 	}
+	COM_EndParseSession();
 
 	return qtrue;
 }
@@ -2315,6 +2317,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 		token = COM_ParseExt( &p, qtrue );	//looking for the shader
 		if ( token[0] == 0 )
 		{
+			COM_EndParseSession(  );
 			return species.ColorCount;
 		}
 		Q_strncpyz( species.ColorShader[species.ColorCount], token, sizeof(species.ColorShader[0]), qtrue );
@@ -2322,6 +2325,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 		token = COM_ParseExt( &p, qtrue );	//looking for action block {
 		if ( token[0] != '{' )
 		{
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
@@ -2331,6 +2335,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 		{
 			if ( token[0] == 0)
 			{	//EOF
+				COM_EndParseSession(  );
 				return qfalse;
 			}
 			assert(species.ColorCount < sizeof(species.ColorActionText)/sizeof(species.ColorActionText[0]) );
@@ -2340,6 +2345,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 		}
 		species.ColorCount++;	//next color please
 	}
+	COM_EndParseSession(  );
 	return qtrue;//never get here
 }
 
@@ -2647,23 +2653,11 @@ void _UI_Init( qboolean inGameLoad )
 		UI_LoadMenus(menuSet, qtrue);
 	}
 
-#ifdef FINAL_BUILD
-	Com_Printf("UI_LoadMenus completed\n");
-#endif
-
 	Menus_CloseAll();
-
-#ifdef FINAL_BUILD
-	Com_Printf("Menus_CloseAll completed\n");
-#endif
 
 	uiInfo.uiDC.whiteShader = ui.R_RegisterShaderNoMip( "white" );
 
 	AssetCache();
-
-#ifdef FINAL_BUILD
-	Com_Printf("AssetCache() completed\n");
-#endif
 
 	uis.debugMode = qfalse;
 	
@@ -2688,10 +2682,6 @@ void _UI_Init( qboolean inGameLoad )
 	uiInfo.uiDC.Assets.nullSound = trap_S_RegisterSound("sound/null", qfalse);
 
 	trap_S_RegisterSound("sound/interface/weapon_deselect", qfalse);
-
-#ifdef FINAL_BUILD
-	Com_Printf("_UI_Init completed\n");
-#endif
 
 }
 
@@ -2817,8 +2807,10 @@ Load_Menu
 qboolean Load_Menu(const char **holdBuffer) 
 {
 	const char	*token2;
-
+	
+	COM_BeginParseSession();
 	token2 = COM_ParseExt( holdBuffer, qtrue );
+	COM_EndParseSession();
 
 	if (!token2[0])
 	{
@@ -2832,7 +2824,9 @@ qboolean Load_Menu(const char **holdBuffer)
 
 	while ( 1 ) 
 	{
+		COM_BeginParseSession();
 		token2 = COM_ParseExt( holdBuffer, qtrue );
+		COM_EndParseSession();
 
 		if ((!token2) || (token2 == 0))
 		{
@@ -2895,7 +2889,9 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 	holdBuffer = buffer;
 	while ( 1 ) 
 	{
+		COM_BeginParseSession();
 		token2 = COM_ParseExt( &holdBuffer, qtrue );
+		COM_EndParseSession();
 		if (!*token2)
 		{
 			break;
@@ -3004,7 +3000,7 @@ qboolean Asset_Parse(char **buffer)
     
 	while ( 1 ) 
 	{
-
+		COM_BeginParseSession();		// HACK
 		token = PC_ParseExt();
 
 		if (!token)
