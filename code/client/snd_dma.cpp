@@ -865,6 +865,7 @@ sfx_t *S_FindName( const char *name ) {
 S_DefaultSound
 =================
 */
+#ifdef _DEBUG
 static void S_DefaultSound( sfx_t *sfx ) {
 	
 	int		i;
@@ -878,6 +879,7 @@ static void S_DefaultSound( sfx_t *sfx ) {
 		sfx->pSoundData[i] = i;
 	}
 }
+#endif
 
 
 /*
