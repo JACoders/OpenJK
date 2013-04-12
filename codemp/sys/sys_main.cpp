@@ -188,7 +188,7 @@ void *Sys_LoadDll( const char *name,
     else
       {
 #ifdef NDEBUG // bk001206 - in debug abort on failure
-	Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+//	Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 #else
 	Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 #endif
@@ -212,7 +212,7 @@ void *Sys_LoadDll( const char *name,
      err = Sys_LibraryError();
   if ( !*entryPoint || !dllEntry ) {
 #ifdef NDEBUG // bk001206 - in debug abort on failure
-    Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed dlsym(vmMain): \"%s\" !\n", name, err );
+//    Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed dlsym(vmMain): \"%s\" !\n", name, err );
 #else
     Com_Printf ( "Sys_LoadDll(%s) failed dlsym(vmMain): \"%s\" !\n", name, err );
 #endif
