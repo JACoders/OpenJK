@@ -192,6 +192,44 @@ void *Sys_LoadDll( const char *name,
 #else
 	Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 #endif
+	//return NULL;
+      }
+  }
+
+  gamedir = BASEGAME;
+
+  fn = FS_BuildOSPath( basepath, gamedir, fname );
+  // bk001206 - verbose
+  Com_Printf( "Sys_LoadDll(%s)... \n", fn );
+
+  // bk001129 - from cvs1.17 (mkv), was fname not fn
+  libHandle = Sys_LoadLibrary( fn );
+
+#ifndef NDEBUG
+  if (libHandle == NULL)  Com_Printf("Failed to open DLL\n");
+#endif
+
+  if ( !libHandle ) {
+    if( cdpath[0] ) {
+      // bk001206 - report any problem
+      Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+
+      fn = FS_BuildOSPath( cdpath, gamedir, fname );
+      libHandle = Sys_LoadLibrary( fn );
+      if ( !libHandle ) {
+	// bk001206 - report any problem
+	Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+      }
+      else
+	Com_Printf ( "Sys_LoadDll(%s): succeeded ...\n", fn );
+    }
+    else
+      {
+#ifdef NDEBUG // bk001206 - in debug abort on failure
+//	Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#else
+	Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#endif
 	return NULL;
       }
   }
