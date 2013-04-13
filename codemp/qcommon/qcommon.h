@@ -203,6 +203,9 @@ PROTOCOL
 #define	UPDATE_SERVER_NAME			"updatejk3.ravensoft.com"
 #define MASTER_SERVER_NAME			"masterjk3.ravensoft.com"
 
+#define JKHUB_MASTER_SERVER_NAME	"master.jkhub.org"
+#define JKHUB_UPDATE_SERVER_NAME	"update.jkhub.org"
+
 #define	PORT_MASTER			29060
 #define	PORT_UPDATE			29061
 //#define	PORT_AUTHORIZE		29062
@@ -507,6 +510,12 @@ issues.
 
 #define	MAX_FILE_HANDLES	64
 
+#ifdef DEDICATED
+#	define Q3CONFIG_CFG PRODUCT_NAME "_server.cfg"
+#else
+#	define Q3CONFIG_CFG PRODUCT_NAME ".cfg"
+#endif
+
 qboolean FS_Initialized();
 
 void	FS_InitFilesystem (void);
@@ -523,6 +532,9 @@ char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles
 
 void	FS_FreeFileList( char **fileList );
 //rwwRMG - changed to fileList to not conflict with list type
+
+void FS_Remove( const char *osPath );
+void FS_HomeRemove( const char *homePath );
 
 qboolean FS_FileExists( const char *file );
 
@@ -858,6 +870,9 @@ void S_ClearSoundBuffer( void );
 // call before filesystem access
 
 void SCR_DebugGraph (float value, int color);	// FIXME: move logging to common?
+
+// AVI files have the start of pixel lines 4 byte-aligned
+#define AVI_LINE_PADDING 4
 
 
 //

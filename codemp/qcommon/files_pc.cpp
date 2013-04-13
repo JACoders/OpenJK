@@ -3007,11 +3007,7 @@ void FS_Restart( int checksumFeed ) {
 	if ( Q_stricmp(fs_gamedirvar->string, lastValidGame) ) {
 		// skip the jampconfig.cfg if "safe" is on the command line
 		if ( !Com_SafeMode() ) {
-#ifdef DEDICATED
-			Cbuf_AddText ("exec jampserver.cfg\n");
-#else
-			Cbuf_AddText ("exec jampconfig.cfg\n");
-#endif
+			Cbuf_AddText ("exec " Q3CONFIG_CFG "\n");
 		}
 	}
 

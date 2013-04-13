@@ -398,42 +398,39 @@ static void CG_CalcIdealThirdPersonViewTarget(void)
 			cameraFocusLoc[2] -= CAMERA_CROUCH_NUDGE*4;
 		}
 	}
-	else 
+	// Add in the new viewheight
+	cameraFocusLoc[2] += cg.predicted_player_state.viewheight;
+	if ( cg.overrides.active & CG_OVERRIDE_3RD_PERSON_VOF )
 	{
-		// Add in the new viewheight
-		cameraFocusLoc[2] += cg.predicted_player_state.viewheight;
-		if ( cg.overrides.active & CG_OVERRIDE_3RD_PERSON_VOF )
+		// Add in a vertical offset from the viewpoint, which puts the actual target above the head, regardless of angle.
+		VectorCopy( cameraFocusLoc, cameraIdealTarget );
+		cameraIdealTarget[2] += cg.overrides.thirdPersonVertOffset;
+		//VectorMA(cameraFocusLoc, cg.overrides.thirdPersonVertOffset, cameraup, cameraIdealTarget);
+	}
+	else
+	{
+		// Add in a vertical offset from the viewpoint, which puts the actual target above the head, regardless of angle.
+		VectorCopy( cameraFocusLoc, cameraIdealTarget );
+		cameraIdealTarget[2] += cg_thirdPersonVertOffset.value;
+		//VectorMA(cameraFocusLoc, cg_thirdPersonVertOffset.value, cameraup, cameraIdealTarget);
+	}
+
+	// Now, if the player is crouching, do a little special tweak.  The problem is that the player's head is way out of his bbox.
+	if (cg.predicted_player_state.pm_flags & PMF_DUCKED)
+	{ // Nudge to focus location up a tad.
+		vec3_t nudgepos;
+		trace_t trace;
+
+		VectorCopy(cameraFocusLoc, nudgepos);
+		nudgepos[2]+=CAMERA_CROUCH_NUDGE;
+		CG_Trace(&trace, cameraFocusLoc, cameramins, cameramaxs, nudgepos, cg.predicted_player_state.clientNum, MASK_CAMERACLIP);
+		if (trace.fraction < 1.0)
 		{
-			// Add in a vertical offset from the viewpoint, which puts the actual target above the head, regardless of angle.
-			VectorCopy( cameraFocusLoc, cameraIdealTarget );
-			cameraIdealTarget[2] += cg.overrides.thirdPersonVertOffset;
-			//VectorMA(cameraFocusLoc, cg.overrides.thirdPersonVertOffset, cameraup, cameraIdealTarget);
+			VectorCopy(trace.endpos, cameraFocusLoc);
 		}
 		else
 		{
-			// Add in a vertical offset from the viewpoint, which puts the actual target above the head, regardless of angle.
-			VectorCopy( cameraFocusLoc, cameraIdealTarget );
-			cameraIdealTarget[2] += cg_thirdPersonVertOffset.value;
-			//VectorMA(cameraFocusLoc, cg_thirdPersonVertOffset.value, cameraup, cameraIdealTarget);
-		}
-
-		// Now, if the player is crouching, do a little special tweak.  The problem is that the player's head is way out of his bbox.
-		if (cg.predicted_player_state.pm_flags & PMF_DUCKED)
-		{ // Nudge to focus location up a tad.
-			vec3_t nudgepos;
-			trace_t trace;
-
-			VectorCopy(cameraFocusLoc, nudgepos);
-			nudgepos[2]+=CAMERA_CROUCH_NUDGE;
-			CG_Trace(&trace, cameraFocusLoc, cameramins, cameramaxs, nudgepos, cg.predicted_player_state.clientNum, MASK_CAMERACLIP);
-			if (trace.fraction < 1.0)
-			{
-				VectorCopy(trace.endpos, cameraFocusLoc);
-			}
-			else
-			{
-				VectorCopy(nudgepos, cameraFocusLoc);
-			}
+			VectorCopy(nudgepos, cameraFocusLoc);
 		}
 	}
 }
@@ -1960,6 +1957,10 @@ wasForceSpeed=isForceSpeed;
 		&& ( cg.snap->ps.viewEntity == 0 || cg.snap->ps.viewEntity >= ENTITYNUM_WORLD ) )
 	{
 		CG_AddViewWeapon( &cg.predicted_player_state );
+	}
+	else if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )
+	{
+		CG_AddViewWeapon( &g_entities[cg.snap->ps.viewEntity ].client->ps );	// HAX - because I wanted to --eez
 	}
 
 	if ( !cg.hyperspace ) 

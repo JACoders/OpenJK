@@ -271,6 +271,9 @@ vmCvar_t	cg_debugAnim;
 vmCvar_t	cg_debugAnimTarget;
 vmCvar_t	cg_gun_frame;
 #endif
+vmCvar_t	cg_gun_x;
+vmCvar_t	cg_gun_y;
+vmCvar_t	cg_gun_z;
 vmCvar_t	cg_debugSaber;
 vmCvar_t	cg_debugEvents;
 vmCvar_t	cg_errorDecay;
@@ -316,6 +319,7 @@ vmCvar_t	cg_panoNumShots;
 
 vmCvar_t	fx_freeze;
 vmCvar_t	fx_debug;
+vmCvar_t	fx_flashRadius;
 
 vmCvar_t	cg_missionInfoFlashTime;
 vmCvar_t	cg_hudFiles;
@@ -389,6 +393,9 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_gun_frame, "gun_frame", "0", CVAR_CHEAT },
 	{ &cg_debugAnimTarget, "cg_debugAnimTarget", "0", CVAR_CHEAT },
 #endif	
+	{ &cg_gun_x, "cg_gunX", "0", CVAR_CHEAT },
+	{ &cg_gun_y, "cg_gunY", "0", CVAR_CHEAT },
+	{ &cg_gun_z, "cg_gunZ", "0", CVAR_CHEAT },
 	{ &cg_debugSaber, "cg_debugsaber", "0", CVAR_CHEAT },
 	{ &cg_debugEvents, "cg_debugevents", "0", CVAR_CHEAT },
 	{ &cg_errorDecay, "cg_errordecay", "100", 0 },
@@ -421,6 +428,7 @@ static cvarTable_t cvarTable[] = {
 
 	{ &fx_freeze, "fx_freeze", "0", 0 },
 	{ &fx_debug, "fx_debug", "0", 0 },
+	{ &fx_flashRadius, "fx_flashRadius", "12.0", CVAR_ARCHIVE },
 	// the following variables are created in other parts of the system,
 	// but we also reference them here
 
@@ -1824,8 +1832,10 @@ void CG_StartMusic( qboolean bForceStart ) {
 
 	// start the background music
 	s = (char *)CG_ConfigString( CS_MUSIC );
+	COM_BeginParseSession();
 	Q_strncpyz( parm1, COM_Parse( &s ), sizeof( parm1 ) );
 	Q_strncpyz( parm2, COM_Parse( &s ), sizeof( parm2 ) );
+	COM_EndParseSession();
 
 	cgi_S_StartBackgroundTrack( parm1, parm2, !bForceStart );
 }
@@ -2971,7 +2981,9 @@ void CG_LoadMenus(const char *menuFile)
 
 	while ( 1 ) 
 	{
+		COM_BeginParseSession();
 		token = COM_ParseExt( &p, qtrue );
+		COM_EndParseSession();
 		if( !token || token[0] == 0 || token[0] == '}') 
 		{
 			break;
@@ -2984,7 +2996,10 @@ void CG_LoadMenus(const char *menuFile)
 
 		if (Q_stricmp(token, "loadmenu") == 0) 
 		{
-			if (CG_Load_Menu(&p)) 
+			COM_BeginParseSession();
+			int menuLoad = CG_Load_Menu(&p);
+			COM_EndParseSession();
+			if (menuLoad) 
 			{
 				continue;
 			} 

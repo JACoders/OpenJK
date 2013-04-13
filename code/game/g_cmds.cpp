@@ -99,7 +99,7 @@ Remove case and control characters
 */
 void SanitizeString( char *in, char *out ) {
 	while ( *in ) {
-		if ( *in == 27 ) {
+		if ( *in == 94 ) {
 			in += 2;		// skip color code
 			continue;
 		}
@@ -990,9 +990,10 @@ void Cmd_UseInventory_f(gentity_t *ent)
 		case INV_ELECTROBINOCULARS :
 			Cmd_UseElectrobinoculars_f(ent);
 			return;
-		//case INV_BACTA_CANISTER :
-		//	Cmd_UseBacta_f(ent);
-		//	return;
+			// WTF WHY WAS THIS COMMENTED OUT --eez
+		case INV_BACTA_CANISTER :
+			Cmd_UseBacta_f(ent);
+			return;
 		case INV_SEEKER :
 			Cmd_UseSeeker_f(ent);
 			return;

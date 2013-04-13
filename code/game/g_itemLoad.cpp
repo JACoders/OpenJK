@@ -690,6 +690,8 @@ static void IT_ParseParms(const char *buffer)
 		 
 	}
 
+	COM_EndParseSession(  );
+
 //	--bg_numItems;
 
 }

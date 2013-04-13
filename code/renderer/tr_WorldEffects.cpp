@@ -1846,10 +1846,13 @@ void R_WorldEffectCommand(const char *command)
 
 	const char	*token;//, *origCommand;
 
+	COM_BeginParseSession();
+
 	token = COM_ParseExt(&command, qfalse);
 
 	if ( !token )
 	{
+		COM_EndParseSession();
 		return;
 	}
 
@@ -1892,6 +1895,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mWindZones.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CWindZone& nWind = mWindZones.push_back();
@@ -1904,6 +1908,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mWindZones.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CWindZone& nWind = mWindZones.push_back();
@@ -1922,6 +1927,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mWindZones.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CWindZone& nWind = mWindZones.push_back();
@@ -1947,6 +1953,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mWindZones.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CWindZone& nWind = mWindZones.push_back();
@@ -1959,6 +1966,7 @@ void R_WorldEffectCommand(const char *command)
 		{
 			assert("Wind Zone: Unable To Parse Mins Vector!"==0);
 			mWindZones.pop_back();
+			COM_EndParseSession();
 			return;
 		}
 
@@ -1967,6 +1975,7 @@ void R_WorldEffectCommand(const char *command)
 		{
 			assert("Wind Zone: Unable To Parse Maxs Vector!"==0);
 			mWindZones.pop_back();
+			COM_EndParseSession();
 			return;
 		}
 
@@ -1988,6 +1997,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mParticleClouds.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CParticleCloud& nCloud = mParticleClouds.push_back();
@@ -2009,6 +2019,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mParticleClouds.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CParticleCloud& nCloud = mParticleClouds.push_back();
@@ -2030,6 +2041,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mParticleClouds.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CParticleCloud& nCloud = mParticleClouds.push_back();
@@ -2058,6 +2070,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mParticleClouds.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CParticleCloud& nCloud = mParticleClouds.push_back();
@@ -2079,6 +2092,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mParticleClouds.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CParticleCloud& nCloud = mParticleClouds.push_back();
@@ -2103,6 +2117,7 @@ void R_WorldEffectCommand(const char *command)
 		int count;
 		if (mParticleClouds.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		token = COM_ParseExt(&command, qfalse);
@@ -2133,6 +2148,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mParticleClouds.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CParticleCloud& nCloud = mParticleClouds.push_back();
@@ -2160,6 +2176,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mParticleClouds.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CParticleCloud& nCloud = mParticleClouds.push_back();
@@ -2184,6 +2201,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mParticleClouds.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CParticleCloud& nCloud = mParticleClouds.push_back();
@@ -2211,6 +2229,7 @@ void R_WorldEffectCommand(const char *command)
 	{
 		if (mParticleClouds.full())
 		{
+			COM_EndParseSession();
 			return;
 		}
 		CParticleCloud& nCloud = mParticleClouds.push_back();
@@ -2262,6 +2281,7 @@ void R_WorldEffectCommand(const char *command)
 		Com_Printf( "	outsideshake\n" );
 		Com_Printf( "	outsidepain\n" );
 	}
+	COM_EndParseSession();
 }
 
 

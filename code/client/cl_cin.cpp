@@ -1411,7 +1411,7 @@ int CIN_PlayCinematic( const char *arg, int x, int y, int w, int h, int systemBi
 	memset(&cin, 0, sizeof(cinematics_t) );
 	currentHandle = CIN_HandleForVideo();
 	
-	strcpy(cinTable[currentHandle].fileName, name);
+	Q_strncpyz(cinTable[currentHandle].fileName, name, MAX_OSPATH);
 
 	cinTable[currentHandle].ROQSize = 0;
 	cinTable[currentHandle].ROQSize = FS_FOpenFileRead (cinTable[currentHandle].fileName, &cinTable[currentHandle].iFile, qtrue);
@@ -1705,8 +1705,8 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 		//
 		if (!CIN_HardwareReadyToPlayVideos())	
 		{
-			strcpy(sPendingCinematic_Arg,arg);
-			strcpy(sPendingCinematic_s , (s&&s[0])?s:"");
+			Q_strncpyz(sPendingCinematic_Arg,arg, 256);
+			Q_strncpyz(sPendingCinematic_s , (s&&s[0])?s:"", 256);
 			gbPendingCinematic = qtrue;
 			return;
 		}
@@ -1728,10 +1728,10 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 		// work out associated audio-overlay file, if any...
 		//
 		extern cvar_t *s_language;
-		qboolean	bIsForeign	= s_language && stricmp(s_language->string,"english") && stricmp(s_language->string,"");
+		qboolean	bIsForeign	= s_language && stricmp(s_language->string,"english") && Q_stricmp(s_language->string,"");
 		LPCSTR		psAudioFile	= NULL;
 		qhandle_t	hCrawl = 0;
-		if (!stricmp(arg,"video/jk0101_sw.roq"))
+		if (!Q_stricmp(arg,"video/jk0101_sw.roq"))
 		{
 			psAudioFile = "music/cinematic_1";
 			if ( Cvar_VariableIntegerValue("com_demo") )
@@ -1768,13 +1768,13 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 		else
 		if (bIsForeign)
 		{
-			if (!stricmp(arg,"video/jk05.roq"))
+			if (!Q_stricmp(arg,"video/jk05.roq"))
 			{
 				psAudioFile = "sound/chars/video/cinematic_5";
 				bits |= CIN_silent;	// knock out existing english track
 			}
 			else
-			if (!stricmp(arg,"video/jk06.roq"))
+			if (!Q_stricmp(arg,"video/jk06.roq"))
 			{
 				psAudioFile = "sound/chars/video/cinematic_6";
 				bits |= CIN_silent;	// knock out existing english track
@@ -1862,7 +1862,7 @@ void CL_PlayInGameCinematic_f(void)
 	else
 	{
 		qbInGameCinematicOnStandBy = qtrue;
-		strcpy(sInGameCinematicStandingBy,Cmd_Argv(1));
+		Q_strncpyz(sInGameCinematicStandingBy,Cmd_Argv(1), MAX_QPATH);
 	}
 }
 

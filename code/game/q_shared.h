@@ -45,12 +45,16 @@ This file is part of Jedi Academy.
 #pragma warning(disable : 4711)		// selected for automatic inline expansion
 #pragma warning(disable : 4786)		// identifier was truncated
 
+#pragma warning(disable : 4996)		// This function or variable may be unsafe.
+
 #endif
 
 //rww - conveniently toggle "gore" code, for model decals and stuff.
 #ifndef _XBOX
 #define _G2_GORE
 #endif
+
+#define Q3CONFIG_NAME		"openjk_sp.cfg"
 
 #ifndef FINAL_BUILD
 #define G2_PERFORMANCE_ANALYSIS
@@ -1175,6 +1179,7 @@ void	 COM_BeginParseSession( bool nested = false );
 #else
 void	 COM_BeginParseSession( void );
 #endif
+void	 COM_EndParseSession( void );
 
 int		 COM_GetCurrentParseLine( void );
 char	*COM_Parse( const char **data_p );

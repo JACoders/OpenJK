@@ -1217,6 +1217,12 @@ Ghoul2 Insert End
 		char **holdPtr;
 
 		holdPtr = (char **) VMA(1);
+
+		if(!holdPtr)
+		{
+			Com_Error(ERR_FATAL, "CG_UI_PARSEEXT: NULL holdPtr");
+		}
+
 		*holdPtr = PC_ParseExt();
 		return 0;
 
