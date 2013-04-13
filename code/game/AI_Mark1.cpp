@@ -166,8 +166,8 @@ void Mark1Dead_FireRocket (void)
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	missile->methodOfDeath = MOD_ENERGY;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	missile->splashDamage = weaponData[WP_BOWCASTER].altSplashDamage;
-	missile->splashRadius = weaponData[WP_BOWCASTER].altSplashRadius;
+	missile->splashDamage = BOWCASTER_SPLASH_DAMAGE;
+	missile->splashRadius = BOWCASTER_SPLASH_RADIUS;
 
 	// we don't want it to bounce
 	missile->bounceCount = 0;
