@@ -35,6 +35,12 @@
       <UniqueIdentifier>{54445fd5-340b-4807-8109-7a6529fd1106}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
+    <Filter Include="Source Files\game\AI">
+      <UniqueIdentifier>{eb805254-c569-4ba0-a971-c937ff179e16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\game\Weapons">
+      <UniqueIdentifier>{a7689c41-917b-4d7b-a1d2-4f7a9d94f709}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Icarus\BlockStream.cpp">
@@ -190,60 +196,6 @@
     <ClCompile Include="..\cgame\FxUtil.cpp">
       <Filter>Source Files\Cgame</Filter>
     </ClCompile>
-    <ClCompile Include="AI_Atst.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Default.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Droid.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_GalakMech.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Grenadier.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Howler.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_ImperialProbe.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Interrogator.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Jedi.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Mark1.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Mark2.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_MineMonster.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Remote.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Seeker.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Sentry.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Sniper.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Stormtrooper.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Utils.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
     <ClCompile Include="g_active.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
@@ -364,42 +316,6 @@
     <ClCompile Include="genericparser2.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
-    <ClCompile Include="NPC.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_behavior.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_combat.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_goal.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_misc.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_move.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_reactions.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_senses.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_sounds.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_spawn.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_stats.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_utils.cpp">
-      <Filter>Source Files\game</Filter>
-    </ClCompile>
     <ClCompile Include="Q3_Interface.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
@@ -415,8 +331,146 @@
     <ClCompile Include="..\qcommon\tri_coll_test.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
+    <ClCompile Include="AI_Atst.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Utils.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Default.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Droid.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_GalakMech.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Grenadier.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Howler.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_ImperialProbe.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Interrogator.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Jedi.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Mark1.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Mark2.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_MineMonster.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Remote.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Seeker.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Sentry.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Sniper.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Stormtrooper.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_utils.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_behavior.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_combat.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_goal.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_misc.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_move.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_reactions.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_senses.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_sounds.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_spawn.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_stats.cpp">
+      <Filter>Source Files\game\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_bryar_pistol.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
     <ClCompile Include="wp_saber.cpp">
-      <Filter>Source Files\game</Filter>
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_blaster_rifle.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_disruptor.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_bowcaster.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_repeater.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_demp2.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_flechette.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_rocket_launcher.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_thermal.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_emplaced_gun.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_trip_mine.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_det_pack.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_stun_baton.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_atst.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_bot_laser.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_melee.cpp">
+      <Filter>Source Files\game\Weapons</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -622,6 +676,9 @@
       <Filter>Header Files\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wp_saber.h">
+      <Filter>Header Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="w_local.h">
       <Filter>Header Files\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
