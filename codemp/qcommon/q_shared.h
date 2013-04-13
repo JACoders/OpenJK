@@ -182,6 +182,7 @@ float FloatSwap( const float *f );
 #ifdef MACOS_X
 
 	#include <sys/mman.h>
+    #include <unistd.h>
 
 	#define __cdecl
 	#define __declspec(x)
@@ -1505,6 +1506,7 @@ void SkipRestOfLine ( const char **data );
 void Parse1DMatrix (const char **buf_p, int x, float *m);
 void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
+int Com_HexStrToInt( const char *str );
 
 int	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
 

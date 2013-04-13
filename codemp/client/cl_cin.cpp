@@ -603,7 +603,7 @@ static void ROQ_GenYUVTables( void )
 * Description:	
 *
 ******************************************************************************/
-#if defined(MACOS_X)
+#if 0//defined(MACOS_X) //this was causing odd colours with the .roq files in the menus
 
 static inline unsigned int yuv_to_rgb24( long y, long u, long v )
 { 
@@ -820,10 +820,10 @@ static void readQuadInfo( byte *qData )
 			Com_Printf("HACK: approxmimating cinematic for Rage Pro or Voodoo\n");
 		}
 	}
-#if defined(MACOS_X)
+/*#if defined(MACOS_X)
 	cinTable[currentHandle].drawX = 256;
 	cinTable[currentHandle].drawX = 256;
-#endif
+#endif*/
 }
 
 /******************************************************************************
