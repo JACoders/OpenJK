@@ -950,7 +950,7 @@ static void WP_ParseWeaponParms(const char **holdBuf)
 		{
 			continue;
 		}
-		Com_Error(ERR_FATAL,"bad parameter in external weapon data '%s'\n", token);		
+		Com_Printf("^3WARNING: bad parameter in external weapon data '%s'\n", token);		
 	}
 }
 
