@@ -327,9 +327,6 @@
     <ClCompile Include="..\icarus\TaskManager.cpp">
       <Filter>ICARUS</Filter>
     </ClCompile>
-    <ClCompile Include="bg_lib.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
     <ClCompile Include="bg_misc.cpp">
       <Filter>Cgame</Filter>
     </ClCompile>
@@ -486,23 +483,23 @@
     <ClCompile Include="..\Rufl\hstring.cpp">
       <Filter>Rufl</Filter>
     </ClCompile>
-    <ClCompile Include="AnimalNPC.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="AnimalNPC.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bg_vehicleLoad.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="bg_vehicleLoad.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FighterNPC.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="FighterNPC.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="g_vehicles.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="g_vehicles.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SpeederNPC.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="SpeederNPC.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WalkerNPC.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="WalkerNPC.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

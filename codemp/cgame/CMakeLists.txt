@@ -91,6 +91,7 @@ set(MPCGameSortMe
 	"${MPDir}/ui/ui_shared.h"
 	)
 set(MPCGameFiles ${MPCGameSortMe})
+source_group("SortMe" FILES ${MPCGameSortMe})
 
 add_library(${MPCGame} SHARED ${MPCGameFiles})
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPCGameDefines};${ReleaseDefines}")

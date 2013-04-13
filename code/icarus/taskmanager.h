@@ -21,6 +21,8 @@ This file is part of Jedi Academy.
 #ifndef __TASK_MANAGER__
 #define __TASK_MANAGER__
 
+#include "../game/q_shared.h"
+
 typedef unsigned long DWORD;
 
 #define MAX_TASK_NAME	64

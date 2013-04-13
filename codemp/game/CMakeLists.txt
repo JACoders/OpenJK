@@ -151,6 +151,7 @@ set(MPGameSortMe
 	"${MPDir}/game/w_saber.h"
 	)
 set(MPGameFiles ${MPGameSortMe})
+source_group("SortMe" FILES ${MPGameSortMe})
 
 add_library(${MPGame} SHARED ${MPGameFiles})
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPGameDefines};${ReleaseDefines}")
