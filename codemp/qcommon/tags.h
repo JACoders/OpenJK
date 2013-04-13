@@ -58,6 +58,7 @@
 	TAGDEF(VM_ALLOCATED),				// allocated by game or cgame via memory shifting
 
 	TAGDEF(TEMP_HUNKALLOC),
+	TAGDEF(AVI),
 	TAGDEF(COUNT)
 
 

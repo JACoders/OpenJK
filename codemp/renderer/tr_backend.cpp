@@ -1885,6 +1885,9 @@ void RB_ExecuteRenderCommands( const void *data ) {
 		case RC_SWAP_BUFFERS:
 			data = RB_SwapBuffers( data );
 			break;
+		case RC_VIDEOFRAME:
+			data = RB_TakeVideoFrameCmd( data );
+			break;
 		case RC_WORLD_EFFECTS:
 			data = RB_WorldEffects( data );
 			break;
