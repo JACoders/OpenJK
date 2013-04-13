@@ -1577,7 +1577,8 @@ static qboolean CG_CalcViewValues( void ) {
 	// calculate size of 3D view
 	CG_CalcVrect();
 
-	if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )
+	if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD &&
+		g_entities[cg.snap->ps.viewEntity].client)
 	{
 		ps = &g_entities[cg.snap->ps.viewEntity].client->ps;
 		viewEntIsHumanoid = qtrue;
@@ -1794,6 +1795,8 @@ static void CG_DrawSkyBoxPortal(void)
 
 	backuprefdef = cg.refdef;
 
+	// asdf --eez
+	COM_BeginParseSession();
 	token = COM_ParseExt(&cstr, qfalse);
 	if (!token || !token[0])
 	{
@@ -1872,6 +1875,7 @@ static void CG_DrawSkyBoxPortal(void)
 		}
 	}
 
+	COM_EndParseSession();
 /*
 	static float lastfov = cg_zoomFov;	// for transitions back from zoomed in modes
 	float fov_x;

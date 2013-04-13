@@ -1113,7 +1113,6 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 			out->parms.color[0] = 1.0f;
 			out->parms.color[1] = 0.0f;
 			out->parms.color[2] = 0.0f;
-			out->parms.color[3] = 0.0f;
 			out->parms.depthForOpaque = 250.0f;
 		}
 		else
@@ -1153,7 +1152,6 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 		out->parms.color[0] = 0.0f;
 		out->parms.color[1] = 0.0f;
 		out->parms.color[2] = 0.0f;
-		out->parms.color[3] = 0.0f;
 		out->parms.depthForOpaque = 0.0f;
 		out->colorInt = 0x00000000;
 		out->tcScale = 0.0f;
@@ -1241,6 +1239,8 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 	world_t	*w;
 	float ambient = 1;
 
+	COM_BeginParseSession();
+
 	w = &worldData;
 	w->lightGridSize[0] = 64;
 	w->lightGridSize[1] = 64;
@@ -1253,6 +1253,7 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 
 	token = COM_ParseExt( &p, qtrue );
 	if (!*token || *token != '{') {
+		COM_EndParseSession();
 		return;
 	}
 
@@ -1327,6 +1328,8 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 	}
 	//both default to 1 so no harm if not present.
 	VectorScale( tr.sunAmbient, ambient, tr.sunAmbient);
+
+	COM_EndParseSession();
 }
 
 

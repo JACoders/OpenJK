@@ -1102,12 +1102,22 @@ void CG_AddViewWeapon( playerState_t *ps )
 	// set up gun position
 	CG_CalculateWeaponPosition( hand.origin, angles );
 
-	//VectorMA( hand.origin, cg_gun_x.value, cg.refdef.viewaxis[0], hand.origin );
-	//VectorMA( hand.origin, (cg_gun_y.value+leanOffset), cg.refdef.viewaxis[1], hand.origin );
-	//VectorMA( hand.origin, (cg_gun_z.value+fovOffset), cg.refdef.viewaxis[2], hand.origin );
-	VectorMA( hand.origin, 0, cg.refdef.viewaxis[0], hand.origin );
-	VectorMA( hand.origin, (0+leanOffset), cg.refdef.viewaxis[1], hand.origin );
-	VectorMA( hand.origin, (0+fovOffset), cg.refdef.viewaxis[2], hand.origin );
+	vec3_t extraOffset;
+	extraOffset[0] = extraOffset[1] = extraOffset[2] = 0.0f;
+
+	if( ps->weapon == WP_TUSKEN_RIFLE || ps->weapon == WP_NOGHRI_STICK || ps->weapon == WP_TUSKEN_STAFF )
+	{
+		extraOffset[0] = 2;
+		extraOffset[1] = -3;
+		extraOffset[2] = -6;
+	}
+
+	VectorMA( hand.origin, cg_gun_x.value+extraOffset[0], cg.refdef.viewaxis[0], hand.origin );
+	VectorMA( hand.origin, (cg_gun_y.value+leanOffset+extraOffset[1]), cg.refdef.viewaxis[1], hand.origin );
+	VectorMA( hand.origin, (cg_gun_z.value+fovOffset+extraOffset[2]), cg.refdef.viewaxis[2], hand.origin );
+	//VectorMA( hand.origin, 0, cg.refdef.viewaxis[0], hand.origin );
+	//VectorMA( hand.origin, (0+leanOffset), cg.refdef.viewaxis[1], hand.origin );
+	//VectorMA( hand.origin, (0+fovOffset), cg.refdef.viewaxis[2], hand.origin );
 
 	AnglesToAxis( angles, hand.axis );
 

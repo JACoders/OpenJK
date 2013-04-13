@@ -191,7 +191,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
  	{
  		skel = (mdxaSkel_t *)((byte *)ghlInfo->aHeader + sizeof(mdxaHeader_t) + offsets->offsets[x]);
  		// if name is the same, we found it
- 		if (!stricmp(skel->name, boneName))
+ 		if (!Q_stricmp(skel->name, boneName))
 		{
 			break;
 		}

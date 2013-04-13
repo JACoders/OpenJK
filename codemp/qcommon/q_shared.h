@@ -7,6 +7,8 @@
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
+#define PRODUCT_NAME			"openjk"
+
 #define CLIENT_WINDOW_TITLE "OpenJK (MP)"
 #define CLIENT_CONSOLE_TITLE "OpenJK Console (MP)"
 
@@ -1528,9 +1530,6 @@ int Q_isprint( int c );
 int Q_islower( int c );
 int Q_isupper( int c );
 int Q_isalpha( int c );
-qboolean Q_isanumber( const char *s );
-qboolean Q_isintegral( float f );
-
 qboolean Q_isanumber( const char *s );
 qboolean Q_isintegral( float f );
 

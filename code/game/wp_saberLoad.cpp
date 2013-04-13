@@ -537,6 +537,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
 		{
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
@@ -549,11 +550,13 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 	}
 	if ( !p ) 
 	{
+		COM_EndParseSession(  );
 		return qfalse;
 	}
 
 	if ( G_ParseLiteral( &p, "{" ) ) 
 	{
+		COM_EndParseSession(  );
 		return qfalse;
 	}
 		
@@ -564,6 +567,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 		if ( !token[0] ) 
 		{
 			gi.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", SaberName );
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
@@ -571,6 +575,10 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 		{
 			break;
 		}
+
+#ifdef _WIN32
+#pragma region(Saber Parms)
+#endif
 
 		//saber fullName
 		if ( !Q_stricmp( token, "name" ) ) 
@@ -2421,7 +2429,10 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 	{//precache all the sith sword sounds
 		Saber_SithSwordPrecache();
 	}
-
+#ifdef _WIN32
+#pragma endregion
+#endif
+	COM_EndParseSession(  );
 	return qtrue;
 }
 

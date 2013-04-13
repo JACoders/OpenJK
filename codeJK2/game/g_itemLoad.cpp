@@ -657,7 +657,6 @@ static void IT_ParseParms(const char *buffer)
 		}
 		 
 	}
-
 //	--bg_numItems;
 
 }

@@ -267,8 +267,17 @@ void COM_BeginParseSession( void )
 
 #endif
 
+void COM_EndParseSession( void )
+{
+	// FIXME: I have no idea if I'm doing this right ( :D... )
+	parseDataCount = -1;
+}
+
 int COM_GetCurrentParseLine( int index )
 {
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "COM_GetCurrentParseLine: parseDataCount < 0 (be sure to call COM_BeginParseSession!)");
+
 	return parseData[parseDataCount].com_lines;
 }
 
@@ -292,6 +301,9 @@ a newline.
 const char *SkipWhitespace( const char *data, qboolean *hasNewLines ) 
 {
 	int c;
+
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "SkipWhitespace: parseDataCount < 0");
 
 	while( (c = *data) <= ' ') 
 	{
@@ -326,6 +338,9 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 		*data_p = NULL;
 		return com_token;
 	}
+
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "COM_ParseExt: parseDataCount < 0 (be sure to call COM_BeginParseSession!)");
 
 	while ( 1 )
 	{
@@ -384,7 +399,7 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 				*data_p = ( char * ) data;
 				return com_token;
 			}
-			if (len < MAX_TOKEN_CHARS)
+			if (len < MAX_TOKEN_CHARS-1)
 			{
 				com_token[len] = c;
 				len++;
@@ -395,7 +410,7 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 	// parse a regular word
 	do
 	{
-		if (len < MAX_TOKEN_CHARS)
+		if (len < MAX_TOKEN_CHARS-1)
 		{
 			com_token[len] = c;
 			len++;
@@ -408,17 +423,11 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 		}
 	} while (c>32);
 
-	if (len == MAX_TOKEN_CHARS)
-	{
-		Com_Printf ("Token exceeded %i chars, discarded.\n", MAX_TOKEN_CHARS);
-		len = 0;
-	}
 	com_token[len] = 0;
 
 	*data_p = ( char * ) data;
 	return com_token;
 }
-
 
 /*
 ==============
@@ -551,6 +560,9 @@ SkipRestOfLine
 void SkipRestOfLine ( const char **data ) {
 	const char	*p;
 	int		c;
+
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "SkipRestOfLine: parseDataCount < 0");
 
 	p = *data;
 	while ( (c = *p++) != 0 ) {

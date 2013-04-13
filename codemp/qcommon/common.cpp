@@ -1115,11 +1115,7 @@ void Com_Init( char *commandLine ) {
 
 		// skip the jampconfig.cfg if "safe" is on the command line
 		if ( !Com_SafeMode() ) {
-#ifdef DEDICATED
-			Cbuf_AddText ("exec jampserver.cfg\n");
-#else
-			Cbuf_AddText ("exec jampconfig.cfg\n");
-#endif
+			Cbuf_AddText ("exec " Q3CONFIG_CFG "\n");
 		}
 
 		Cbuf_AddText ("exec autoexec.cfg\n");
@@ -1316,11 +1312,7 @@ void Com_WriteConfiguration( void ) {
 	}
 	cvar_modifiedFlags &= ~CVAR_ARCHIVE;
 
-#ifdef DEDICATED
-	Com_WriteConfigToFile( "jampserver.cfg" );
-#else
-	Com_WriteConfigToFile( "jampconfig.cfg" );
-#endif
+	Com_WriteConfigToFile( Q3CONFIG_CFG );
 }
 
 
@@ -1685,7 +1677,7 @@ bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cle
 
 	bufParse = buf;
 	parser.Parse(&bufParse, cleanFirst);
-	delete buf;
+	delete[] buf;
 
 	FS_FCloseFile( f );
 
@@ -1724,7 +1716,7 @@ CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool write
 		parse = 0;
 	}
 
-	delete buf;
+	delete[] buf;
 
 	return parse;
 }

@@ -2239,6 +2239,12 @@ void CG_ParseMenu(const char *menuFile)
 	{
 		cgi_UI_ParseExt(&token);
 
+		if(!token)
+		{
+			// NULL checking is the best kind of checking --eez
+			Com_Error(ERR_FATAL, "cgi_UI_ParseExt: NULL token parameter");
+		}
+
 		if (!*token)	// All done?
 		{
 			break;

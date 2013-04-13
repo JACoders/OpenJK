@@ -1157,27 +1157,34 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 			p = surfOff;
 			while ( 1 ) 
 			{
+				COM_BeginParseSession();
 				token = COM_ParseExt( &p, qtrue );
 				if ( !token[0] ) 
 				{//reached end of list
+					COM_EndParseSession();
 					break;
 				}
 				//turn off this surf
 				gi.G2API_SetSurfaceOnOff( &ent->ghoul2[ent->playerModel], token, 0x00000002/*G2SURFACEFLAG_OFF*/ );
+				COM_EndParseSession();
 			}
+
 		}
 		if ( surfOn && surfOn[0] )
 		{
 			p = surfOn;
 			while ( 1 )
 			{
+				COM_BeginParseSession();
 				token = COM_ParseExt( &p, qtrue );
 				if ( !token[0] ) 
 				{//reached end of list
+					COM_EndParseSession();
 					break;
 				}
 				//turn on this surf
 				gi.G2API_SetSurfaceOnOff( &ent->ghoul2[ent->playerModel], token, 0 );
+				COM_EndParseSession();
 			}
 		}
 		if ( ent->client->NPC_class == CLASS_IMPERIAL && ent->message )

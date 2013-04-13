@@ -772,6 +772,11 @@ void Console_Key (int key) {
 		Cbuf_AddText ("\n");
 		Com_Printf ( "]%s\n", kg.g_consoleField.buffer );
 
+		if (!kg.g_consoleField.buffer[0])
+		{
+			return; // empty lines just scroll the console without adding to history
+		}
+
 		// copy line to history buffer
 		kg.historyEditLines[kg.nextHistoryLine % COMMAND_HISTORY] = kg.g_consoleField;
 		kg.nextHistoryLine++;
@@ -1389,13 +1394,6 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 		{
 			return;
 		}
-
-#ifdef FINAL_BUILD
-		if (!(cls.keyCatchers & KEYCATCH_CONSOLE) && !kg.keys[A_SHIFT].down )	//we're not in the console
-		{//so we require the control keys to get in
-			return;
-		}
-#endif
 
 	    Con_ToggleConsole_f ();
 		return;

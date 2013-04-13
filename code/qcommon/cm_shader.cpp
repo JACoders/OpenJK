@@ -71,6 +71,7 @@ void CM_CreateShaderTextHash(void)
 	CCMShaderText		*shader;
 
 	p = shaderText;
+	COM_BeginParseSession();
 	// look for label
 	while (p) 
 	{
@@ -85,6 +86,7 @@ void CM_CreateShaderTextHash(void)
 
 		SkipBracedSection(&p);
 	}
+	COM_EndParseSession();
 }
 
 /*
@@ -370,10 +372,12 @@ void CM_ParseShader( CCMShader *shader, const char **text )
 {
 	char	*token;
 
+	COM_BeginParseSession();
 	token = COM_ParseExt( text, qtrue );
 	if ( token[0] != '{' )
 	{
 		Com_Printf( S_COLOR_YELLOW "WARNING: expecting '{', found '%s' instead in shader '%s'\n", token, shader->shader );
+		COM_EndParseSession();
 		return;
 	}
 
@@ -383,6 +387,7 @@ void CM_ParseShader( CCMShader *shader, const char **text )
 		if ( !token[0] )
 		{
 			Com_Printf( S_COLOR_YELLOW "WARNING: no concluding '}' in shader %s\n", shader->shader );
+			COM_EndParseSession();
 			return;
 		}
 
@@ -442,6 +447,7 @@ void CM_ParseShader( CCMShader *shader, const char **text )
 			vec3_t				fogColor;
 			if ( !CM_ParseVector( shader, text, 3, fogColor ) ) 
 			{
+				COM_EndParseSession();
 				return;
 			}
 
@@ -458,7 +464,7 @@ void CM_ParseShader( CCMShader *shader, const char **text )
 			continue;
 		}
 	}
-	return;
+	COM_EndParseSession();
 }
 
 /*

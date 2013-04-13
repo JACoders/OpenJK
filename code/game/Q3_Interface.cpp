@@ -8159,6 +8159,14 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 	int			int_data, toSet;
 	vec3_t		vector_data;
 
+	// eezstreet: Add support for cvars getting modified thru ICARUS script
+	if(!Q_stricmpn(type_name, "cvar_", 5) &&
+		strlen(type_name) > 5)
+	{
+		cgi_Cvar_Set(type_name+5, data);
+		return;
+	}
+
 	//Set this for callbacks
 	toSet = GetIDForString( setTable, type_name );
 
@@ -9782,6 +9790,13 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 		return false;
 	}
 
+	if( !Q_stricmpn(name, "cvar_", 5) &&
+		strlen(name) > 5 )
+	{
+		*value = (float)gi.Cvar_VariableIntegerValue(name+5);
+		return true;
+	}
+
 	int toGet = GetIDForString( setTable, name );	//FIXME: May want to make a "getTable" as well
 	//FIXME: I'm getting really sick of these huge switch statements!
 
@@ -10468,6 +10483,13 @@ int		CQuake3GameInterface::GetString( int entID, const char *name, char **value 
 	if ( !ent )
 	{
 		return false;
+	}
+
+	if( !Q_stricmpn(name, "cvar_", 5) &&
+		strlen(name) > 5 )
+	{
+		gi.Cvar_VariableStringBuffer(name+5, *value, strlen(*value));
+		return true;
 	}
 
 	int toGet = GetIDForString( setTable, name );	//FIXME: May want to make a "getTable" as well

@@ -196,7 +196,7 @@ void QDECL Sys_Error( const char *error, ... ) {
     MSG        msg;
 
 	va_start (argptr, error);
-	vsprintf (text, error, argptr);
+	vsprintf_s (text, error, argptr);
 	va_end (argptr);
 
 	Conbuf_AppendText( text );
@@ -288,6 +288,15 @@ Sys_DefaultBasePath
 */
 char *Sys_DefaultBasePath( void ) {
 	return Sys_Cwd();
+}
+
+/*
+==============
+Sys_DefaultHomePath
+==============
+*/
+char *Sys_DefaultHomePath( void ) {
+	return "";
 }
 
 /*
@@ -455,7 +464,7 @@ char *Sys_GetClipboardData( void ) {
 		if ( ( hClipboardData = GetClipboardData( CF_TEXT ) ) != 0 ) {
 			if ( ( cliptext = (char *) GlobalLock( hClipboardData ) ) != 0 ) {
 				data = (char *) Z_Malloc( GlobalSize( hClipboardData ) + 1, TAG_CLIPBOARD, qfalse);
-				strcpy( data, cliptext );
+				Q_strncpyz( data, cliptext, strlen(data) );
 				GlobalUnlock( hClipboardData );
 				
 				strtok( data, "\n\r\b" );
@@ -951,7 +960,7 @@ sysEvent_t Sys_GetEvent( void ) {
 
 		len = strlen( s ) + 1;
 		b = (char *) Z_Malloc( len, TAG_EVENT, qfalse);
-		strcpy( b, s );
+		Q_strncpyz( b, s, len );
 		Sys_QueEvent( 0, SE_CONSOLE, 0, 0, len, b );
 	}
 
