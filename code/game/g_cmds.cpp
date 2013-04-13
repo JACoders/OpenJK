@@ -99,7 +99,7 @@ Remove case and control characters
 */
 void SanitizeString( char *in, char *out ) {
 	while ( *in ) {
-		if ( *in == 27 ) {
+		if ( *in == 94 ) {
 			in += 2;		// skip color code
 			continue;
 		}
