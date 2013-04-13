@@ -946,7 +946,7 @@ void	cgi_SendClientCommand( const char *s );
 void	cgi_UpdateScreen( void );
 
 // model collision
-void	cgi_CM_LoadMap( const char *mapname );
+void	cgi_CM_LoadMap( const char *mapname, qboolean subBSP );
 int		cgi_CM_NumInlineModels( void );
 clipHandle_t cgi_CM_InlineModel( int index );		// 0 = world, 1+ = bmodels
 clipHandle_t cgi_CM_TempBoxModel( const vec3_t mins, const vec3_t maxs );//, const int contents );
