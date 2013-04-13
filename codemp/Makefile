@@ -535,6 +535,52 @@ DEDICATED_OBJS		= $(B)/dedicated/server/sv_bot.o \
 			  $(B)/dedicated/qcommon/cm_terrain.o \
 			  $(B)/dedicated/qcommon/cm_randomterrain.o \
 			  $(B)/dedicated/qcommon/cm_shader.o \
+			  $(B)/dedicated/jpeg-8c/jaricom.o \
+			  $(B)/dedicated/jpeg-8c/jcapimin.o \
+			  $(B)/dedicated/jpeg-8c/jcapistd.o \
+			  $(B)/dedicated/jpeg-8c/jcarith.o \
+			  $(B)/dedicated/jpeg-8c/jccoefct.o \
+			  $(B)/dedicated/jpeg-8c/jccolor.o \
+			  $(B)/dedicated/jpeg-8c/jcdctmgr.o \
+			  $(B)/dedicated/jpeg-8c/jchuff.o \
+			  $(B)/dedicated/jpeg-8c/jcinit.o \
+			  $(B)/dedicated/jpeg-8c/jcmainct.o \
+			  $(B)/dedicated/jpeg-8c/jcmarker.o \
+			  $(B)/dedicated/jpeg-8c/jcmaster.o \
+			  $(B)/dedicated/jpeg-8c/jcomapi.o \
+			  $(B)/dedicated/jpeg-8c/jcparam.o \
+			  $(B)/dedicated/jpeg-8c/jcprepct.o \
+			  $(B)/dedicated/jpeg-8c/jcsample.o \
+			  $(B)/dedicated/jpeg-8c/jctrans.o \
+			  $(B)/dedicated/jpeg-8c/jdapimin.o \
+			  $(B)/dedicated/jpeg-8c/jdapistd.o \
+			  $(B)/dedicated/jpeg-8c/jdarith.o \
+			  $(B)/dedicated/jpeg-8c/jdatadst.o \
+			  $(B)/dedicated/jpeg-8c/jdatasrc.o \
+			  $(B)/dedicated/jpeg-8c/jdcoefct.o \
+			  $(B)/dedicated/jpeg-8c/jdcolor.o \
+			  $(B)/dedicated/jpeg-8c/jddctmgr.o \
+			  $(B)/dedicated/jpeg-8c/jdhuff.o \
+			  $(B)/dedicated/jpeg-8c/jdinput.o \
+			  $(B)/dedicated/jpeg-8c/jdmainct.o \
+			  $(B)/dedicated/jpeg-8c/jdmarker.o \
+			  $(B)/dedicated/jpeg-8c/jdmaster.o \
+			  $(B)/dedicated/jpeg-8c/jdmerge.o \
+			  $(B)/dedicated/jpeg-8c/jdpostct.o \
+			  $(B)/dedicated/jpeg-8c/jdsample.o \
+			  $(B)/dedicated/jpeg-8c/jdtrans.o \
+			  $(B)/dedicated/jpeg-8c/jerror.o \
+			  $(B)/dedicated/jpeg-8c/jfdctflt.o \
+			  $(B)/dedicated/jpeg-8c/jfdctfst.o \
+			  $(B)/dedicated/jpeg-8c/jfdctint.o \
+			  $(B)/dedicated/jpeg-8c/jidctflt.o \
+			  $(B)/dedicated/jpeg-8c/jidctfst.o \
+			  $(B)/dedicated/jpeg-8c/jidctint.o \
+			  $(B)/dedicated/jpeg-8c/jmemmgr.o \
+			  $(B)/dedicated/jpeg-8c/jmemnobs.o \
+			  $(B)/dedicated/jpeg-8c/jquant1.o \
+			  $(B)/dedicated/jpeg-8c/jquant2.o \
+			  $(B)/dedicated/jpeg-8c/jutils.o \
 			  $(B)/dedicated/zlib/adler32.o \
 			  $(B)/dedicated/zlib/compress.o \
 			  $(B)/dedicated/zlib/crc32.o \
@@ -562,6 +608,7 @@ makedirs:
 	@if [ ! -d $(B)/dedicated/ghoul2 ];then mkdir $(B)/dedicated/ghoul2;fi
 	@if [ ! -d $(B)/dedicated/null ];then mkdir $(B)/dedicated/null;fi
 	@if [ ! -d $(B)/dedicated/icarus ];then mkdir $(B)/dedicated/icarus;fi
+	@if [ ! -d $(B)/dedicated/jpeg-8c ];then mkdir $(B)/dedicated/jpeg-8c;fi
 	@if [ ! -d $(B)/dedicated/ghoul2 ];then mkdir $(B)/dedicated/ghoul2;fi
 	@if [ ! -d $(B)/dedicated/renderer ];then mkdir $(B)/dedicated/renderer;fi
 	@if [ ! -d $(B)/dedicated/server ];then mkdir $(B)/dedicated/server;fi
