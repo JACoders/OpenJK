@@ -46,226 +46,10 @@ extern qboolean G_HasKnockdownAnims( gentity_t *ent );
 static gentity_t *ent_list[MAX_GENTITIES];
 extern cvar_t	*g_debugMelee;
 
-// Bryar Pistol
-//--------
-#define BRYAR_PISTOL_VEL			1800
-#define BRYAR_PISTOL_DAMAGE			14
-#define BRYAR_CHARGE_UNIT			200.0f	// bryar charging gives us one more unit every 200ms--if you change this, you'll have to do the same in bg_pmove
-
-// E11 Blaster
-//---------
-#define BLASTER_MAIN_SPREAD			0.5f
-#define BLASTER_ALT_SPREAD			1.5f
-#define BLASTER_NPC_SPREAD			0.5f
-#define BLASTER_VELOCITY			2300
-#define BLASTER_NPC_VEL_CUT			0.5f
-#define BLASTER_NPC_HARD_VEL_CUT	0.7f
-#define BLASTER_DAMAGE				20
-#define	BLASTER_NPC_DAMAGE_EASY		6
-#define	BLASTER_NPC_DAMAGE_NORMAL	12 // 14
-#define	BLASTER_NPC_DAMAGE_HARD		16 // 18
-
-// Tenloss Disruptor
-//----------
-#define DISRUPTOR_MAIN_DAMAGE			14
-#define DISRUPTOR_NPC_MAIN_DAMAGE_EASY	5
-#define DISRUPTOR_NPC_MAIN_DAMAGE_MEDIUM	10
-#define DISRUPTOR_NPC_MAIN_DAMAGE_HARD	15
-
-#define DISRUPTOR_ALT_DAMAGE			12
-#define DISRUPTOR_NPC_ALT_DAMAGE_EASY	15
-#define DISRUPTOR_NPC_ALT_DAMAGE_MEDIUM	25
-#define DISRUPTOR_NPC_ALT_DAMAGE_HARD	30
-#define DISRUPTOR_ALT_TRACES			3		// can go through a max of 3 entities
-#define DISRUPTOR_CHARGE_UNIT			150.0f	// distruptor charging gives us one more unit every 150ms--if you change this, you'll have to do the same in bg_pmove
-
-// Wookie Bowcaster
-//----------
-#define	BOWCASTER_DAMAGE			45
-#define	BOWCASTER_VELOCITY			1300
-#define	BOWCASTER_NPC_DAMAGE_EASY	12
-#define	BOWCASTER_NPC_DAMAGE_NORMAL	24
-#define	BOWCASTER_NPC_DAMAGE_HARD	36
-#define BOWCASTER_SPLASH_DAMAGE		0
-#define BOWCASTER_SPLASH_RADIUS		0
-#define BOWCASTER_SIZE				2
-
-#define BOWCASTER_ALT_SPREAD		5.0f
-#define BOWCASTER_VEL_RANGE			0.3f
-#define BOWCASTER_CHARGE_UNIT		200.0f	// bowcaster charging gives us one more unit every 200ms--if you change this, you'll have to do the same in bg_pmove
-
-// Heavy Repeater
-//----------
-#define REPEATER_SPREAD				1.4f
-#define REPEATER_NPC_SPREAD			0.7f
-#define	REPEATER_DAMAGE				8
-#define	REPEATER_VELOCITY			1600
-#define	REPEATER_NPC_DAMAGE_EASY	2
-#define	REPEATER_NPC_DAMAGE_NORMAL	4
-#define	REPEATER_NPC_DAMAGE_HARD	6
-
-#define REPEATER_ALT_SIZE				3	// half of bbox size
-#define	REPEATER_ALT_DAMAGE				60
-#define REPEATER_ALT_SPLASH_DAMAGE		60
-#define REPEATER_ALT_SPLASH_RADIUS		128
-#define	REPEATER_ALT_VELOCITY			1100
-#define	REPEATER_ALT_NPC_DAMAGE_EASY	15
-#define	REPEATER_ALT_NPC_DAMAGE_NORMAL	30
-#define	REPEATER_ALT_NPC_DAMAGE_HARD	45
-
-// DEMP2
-//----------
-#define	DEMP2_DAMAGE				15
-#define	DEMP2_VELOCITY				1800
-#define	DEMP2_NPC_DAMAGE_EASY		6
-#define	DEMP2_NPC_DAMAGE_NORMAL		12
-#define	DEMP2_NPC_DAMAGE_HARD		18
-#define	DEMP2_SIZE					2		// half of bbox size
-
-#define DEMP2_ALT_DAMAGE			15
-#define DEMP2_CHARGE_UNIT			500.0f	// demp2 charging gives us one more unit every 500ms--if you change this, you'll have to do the same in bg_pmove
-#define DEMP2_ALT_RANGE				4096
-#define DEMP2_ALT_SPLASHRADIUS		256
-
-// Golan Arms Flechette
-//---------
-#define FLECHETTE_SHOTS				6
-#define FLECHETTE_SPREAD			4.0f
-#define FLECHETTE_DAMAGE			15
-#define FLECHETTE_VEL				3500
-#define FLECHETTE_SIZE				1
-
-#define FLECHETTE_ALT_DAMAGE		20
-#define FLECHETTE_ALT_SPLASH_DAM	20
-#define FLECHETTE_ALT_SPLASH_RAD	128
-
-// NOT CURRENTLY USED
-#define FLECHETTE_MINE_RADIUS_CHECK		200
-#define FLECHETTE_MINE_VEL				1000
-#define FLECHETTE_MINE_DAMAGE			100
-#define FLECHETTE_MINE_SPLASH_DAMAGE	200
-#define FLECHETTE_MINE_SPLASH_RADIUS	200
-
-// Personal Rocket Launcher
-//---------
-#define	ROCKET_VELOCITY				900
-#define	ROCKET_DAMAGE				100
-#define	ROCKET_SPLASH_DAMAGE		100
-#define	ROCKET_SPLASH_RADIUS		160
-#define ROCKET_NPC_DAMAGE_EASY		20
-#define ROCKET_NPC_DAMAGE_NORMAL	40
-#define ROCKET_NPC_DAMAGE_HARD		60
-#define ROCKET_SIZE					3
-
-#define	ROCKET_ALT_VELOCITY			(ROCKET_VELOCITY*0.5)
-#define ROCKET_ALT_THINK_TIME		100
-
 // some naughty little things that are used cg side
 int g_rocketLockEntNum = ENTITYNUM_NONE;
 int g_rocketLockTime = 0;
 int	g_rocketSlackTime = 0;
-
-// Concussion Rifle
-//---------
-//primary
-#define	CONC_VELOCITY				3000
-#define	CONC_DAMAGE					150
-#define CONC_NPC_SPREAD				0.7f
-#define	CONC_NPC_DAMAGE_EASY		15
-#define	CONC_NPC_DAMAGE_NORMAL		30
-#define	CONC_NPC_DAMAGE_HARD		50
-#define	CONC_SPLASH_DAMAGE			50
-#define	CONC_SPLASH_RADIUS			300
-//alt
-#define CONC_ALT_DAMAGE				225//100
-#define CONC_ALT_NPC_DAMAGE_EASY	10
-#define CONC_ALT_NPC_DAMAGE_MEDIUM	20
-#define CONC_ALT_NPC_DAMAGE_HARD	30
-
-// Emplaced Gun
-//--------------
-#define EMPLACED_VEL				6000	// very fast
-#define EMPLACED_DAMAGE				150		// and very damaging
-#define EMPLACED_SIZE				5		// make it easier to hit things
-
-// ATST Main Gun
-//--------------
-#define ATST_MAIN_VEL				4000	// 
-#define ATST_MAIN_DAMAGE			25		// 
-#define ATST_MAIN_SIZE				3		// make it easier to hit things
-
-// ATST Side Gun
-//---------------
-#define ATST_SIDE_MAIN_DAMAGE				75
-#define ATST_SIDE_MAIN_VELOCITY				1300
-#define ATST_SIDE_MAIN_NPC_DAMAGE_EASY		30
-#define ATST_SIDE_MAIN_NPC_DAMAGE_NORMAL	40
-#define ATST_SIDE_MAIN_NPC_DAMAGE_HARD		50
-#define ATST_SIDE_MAIN_SIZE					4
-#define ATST_SIDE_MAIN_SPLASH_DAMAGE		10	// yeah, pretty small, either zero out or make it worth having?
-#define ATST_SIDE_MAIN_SPLASH_RADIUS		16	// yeah, pretty small, either zero out or make it worth having?
-
-#define ATST_SIDE_ALT_VELOCITY				1100
-#define ATST_SIDE_ALT_NPC_VELOCITY			600
-#define ATST_SIDE_ALT_DAMAGE				130
-
-#define ATST_SIDE_ROCKET_NPC_DAMAGE_EASY	30
-#define ATST_SIDE_ROCKET_NPC_DAMAGE_NORMAL	50
-#define ATST_SIDE_ROCKET_NPC_DAMAGE_HARD	90
-
-#define	ATST_SIDE_ALT_SPLASH_DAMAGE			130
-#define	ATST_SIDE_ALT_SPLASH_RADIUS			200
-#define ATST_SIDE_ALT_ROCKET_SIZE			5
-#define ATST_SIDE_ALT_ROCKET_SPLASH_SCALE	0.5f	// scales splash for NPC's
-
-// Stun Baton
-//--------------
-#define STUN_BATON_DAMAGE			22
-#define STUN_BATON_ALT_DAMAGE		22
-#define STUN_BATON_RANGE			25
-
-// Laser Trip Mine
-//--------------
-#define LT_DAMAGE			150
-#define LT_SPLASH_RAD		256.0f
-#define LT_SPLASH_DAM		90
-
-#define LT_VELOCITY			250.0f
-#define LT_ALT_VELOCITY		1000.0f
-
-#define PROX_MINE_RADIUS_CHECK		190
-
-#define LT_SIZE				3.0f
-#define LT_ALT_TIME			2000
-#define	LT_ACTIVATION_DELAY	1000
-#define	LT_DELAY_TIME		50
-
-// Thermal Detonator
-//--------------
-#define TD_DAMAGE			100
-#define TD_NPC_DAMAGE_CUT	0.6f	// NPC thrown dets deliver only 60% of the damage that a player thrown one does
-#define TD_SPLASH_RAD		128
-#define TD_SPLASH_DAM		90
-#define TD_VELOCITY			900
-#define TD_MIN_CHARGE		0.15f
-#define TD_TIME				4000
-#define TD_THINK_TIME		300		// don't think too often?
-#define TD_TEST_RAD			(TD_SPLASH_RAD * 0.8f) // no sense in auto-blowing up if exactly on the radius edge--it would hardly do any damage
-#define TD_ALT_TIME			3000
-
-#define TD_ALT_DAMAGE		100
-#define TD_ALT_SPLASH_RAD	128
-#define TD_ALT_SPLASH_DAM	90
-#define TD_ALT_VELOCITY		600
-#define TD_ALT_MIN_CHARGE	0.15f
-#define TD_ALT_TIME			3000
-
-// Tusken Rifle Shot
-//--------------
-#define TUSKEN_RIFLE_VEL			3000	// fast
-#define TUSKEN_RIFLE_DAMAGE_EASY	20		// damaging
-#define TUSKEN_RIFLE_DAMAGE_MEDIUM	30		// very damaging
-#define TUSKEN_RIFLE_DAMAGE_HARD	50		// extremely damaging
 
 // Weapon Helper Functions
 float weaponSpeed[WP_NUM_WEAPONS][2] =
@@ -794,7 +578,7 @@ static void WP_FireBryarPistol( gentity_t *ent, qboolean alt_fire )
 //---------------------------------------------------------
 {
 	vec3_t	start;
-	int		damage = BRYAR_PISTOL_DAMAGE;
+	int		damage = !alt_fire ? weaponData[WP_BRYAR_PISTOL].damage : weaponData[WP_BRYAR_PISTOL].altDamage;
 
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
@@ -896,7 +680,7 @@ static void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qbo
 //---------------------------------------------------------
 {
 	int velocity	= BLASTER_VELOCITY;
-	int	damage		= BLASTER_DAMAGE;
+	int	damage		= altFire ? weaponData[WP_BLASTER].damage : weaponData[WP_BLASTER].damage;
 
 	if ( ent && ent->client && ent->client->NPC_class == CLASS_VEHICLE )
 	{
@@ -1083,7 +867,7 @@ int G_GetHitLocFromTrace( trace_t *trace, int mod )
 static void WP_DisruptorMainFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int			damage = DISRUPTOR_MAIN_DAMAGE;
+	int			damage = weaponData[WP_DISRUPTOR].damage;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end, spot;
 	trace_t		tr;
@@ -1195,7 +979,7 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 void WP_DisruptorAltFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int			damage = DISRUPTOR_ALT_DAMAGE, skip, traces = DISRUPTOR_ALT_TRACES;
+	int			damage = weaponData[WP_DISRUPTOR].altDamage, skip, traces = DISRUPTOR_ALT_TRACES;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end;
 	vec3_t		muzzle2, spot, dir;
@@ -1255,7 +1039,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		}
 		//else do full traces
 
-		damage = damage * count + DISRUPTOR_MAIN_DAMAGE * 0.5f; // give a boost to low charge shots
+		damage = damage * count + weaponData[WP_DISRUPTOR].damage * 0.5f; // give a boost to low charge shots
 	}
 
 	skip = ent->s.number;
@@ -1410,7 +1194,7 @@ static void WP_FireDisruptor( gentity_t *ent, qboolean alt_fire )
 static void WP_BowcasterMainFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int			damage	= BOWCASTER_DAMAGE, count;
+	int			damage	= weaponData[WP_BOWCASTER].damage, count;
 	float		vel;
 	vec3_t		angs, dir, start;
 	gentity_t	*missile;
@@ -1499,8 +1283,8 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 		missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 		missile->methodOfDeath = MOD_BOWCASTER;
 		missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-		missile->splashDamage = BOWCASTER_SPLASH_DAMAGE;
-		missile->splashRadius = BOWCASTER_SPLASH_RADIUS;
+		missile->splashDamage = weaponData[WP_BOWCASTER].splashDamage;
+		missile->splashRadius = weaponData[WP_BOWCASTER].splashRadius;
 
 		// we don't want it to bounce
 		missile->bounceCount = 0;
@@ -1513,7 +1297,7 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 //---------------------------------------------------------
 {
 	vec3_t	start;
-	int		damage	= BOWCASTER_DAMAGE;
+	int		damage	= weaponData[WP_BOWCASTER].altDamage;
 
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
@@ -1559,8 +1343,8 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	missile->methodOfDeath = MOD_BOWCASTER_ALT;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	missile->splashDamage = BOWCASTER_SPLASH_DAMAGE;
-	missile->splashRadius = BOWCASTER_SPLASH_RADIUS;
+	missile->splashDamage = weaponData[WP_BOWCASTER].altSplashDamage;
+	missile->splashRadius = weaponData[WP_BOWCASTER].altSplashRadius;
 }
 
 //---------------------------------------------------------
@@ -1587,7 +1371,7 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 //---------------------------------------------------------
 {
 	vec3_t	start;
-	int		damage	= REPEATER_DAMAGE;
+	int		damage	= weaponData[WP_REPEATER].damage;
 
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
@@ -1637,7 +1421,7 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 //---------------------------------------------------------
 {
 	vec3_t	start;
-	int		damage	= REPEATER_ALT_DAMAGE;
+	int		damage	= weaponData[WP_REPEATER].altDamage;
 	gentity_t *missile = NULL;
 
 	VectorCopy( muzzle, start );
@@ -1691,8 +1475,8 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 	missile->methodOfDeath = MOD_REPEATER_ALT;
 	missile->splashMethodOfDeath = MOD_REPEATER_ALT;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	missile->splashDamage = REPEATER_ALT_SPLASH_DAMAGE;
-	missile->splashRadius = REPEATER_ALT_SPLASH_RADIUS;
+	missile->splashDamage = weaponData[WP_REPEATER].splashDamage;
+	missile->splashRadius = weaponData[WP_REPEATER].splashRadius;
 
 	// we don't want it to bounce forever
 	missile->bounceCount = 8;
@@ -1750,7 +1534,7 @@ static void WP_DEMP2_MainFire( gentity_t *ent )
 //---------------------------------------------------------
 {
 	vec3_t	start;
-	int		damage	= DEMP2_DAMAGE;
+	int		damage	= weaponData[WP_DEMP2].damage;
 
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
@@ -1871,7 +1655,7 @@ void DEMP2_AltRadiusDamage( gentity_t *ent )
 		// push the center of mass higher than the origin so players get knocked into the air more
 		dir[2] += 12;
 
-		G_Damage( gent, ent, ent->owner, dir, ent->currentOrigin, DEMP2_ALT_DAMAGE, DAMAGE_DEATH_KNOCKBACK, ent->splashMethodOfDeath );
+		G_Damage( gent, ent, ent->owner, dir, ent->currentOrigin, weaponData[WP_DEMP2].altDamage, DAMAGE_DEATH_KNOCKBACK, ent->splashMethodOfDeath );
 		if ( gent->takedamage && gent->client ) 
 		{
 			gent->s.powerups |= ( 1 << PW_SHOCKED );
@@ -1912,7 +1696,7 @@ void DEMP2_AltDetonate( gentity_t *ent )
 static void WP_DEMP2_AltFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int		damage	= DEMP2_ALT_DAMAGE;
+	int		damage	= weaponData[WP_REPEATER].altDamage;
 	int		count;
 	vec3_t	start;
 	trace_t	tr;
@@ -1950,7 +1734,7 @@ static void WP_DEMP2_AltFire( gentity_t *ent )
 
 	missile->splashDamage = missile->damage = damage;
 	missile->splashMethodOfDeath = missile->methodOfDeath = MOD_DEMP2_ALT;
-	missile->splashRadius = DEMP2_ALT_SPLASHRADIUS;
+	missile->splashRadius = weaponData[WP_DEMP2].altSplashRadius;
 
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
@@ -1984,7 +1768,7 @@ static void WP_FlechetteMainFire( gentity_t *ent )
 {
 	vec3_t		fwd, angs, start;
 	gentity_t	*missile;
-	float		damage = FLECHETTE_DAMAGE, vel = FLECHETTE_VEL;
+	float		damage = weaponData[WP_FLECHETTE].damage, vel = FLECHETTE_VEL;
 
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
@@ -2184,10 +1968,10 @@ static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *
 
 	missile->s.eFlags |= EF_BOUNCE_HALF;
 
-	missile->damage = FLECHETTE_ALT_DAMAGE;
+	missile->damage = weaponData[WP_FLECHETTE].altDamage;
 	missile->dflags = 0;
-	missile->splashDamage = FLECHETTE_ALT_SPLASH_DAM;
-	missile->splashRadius = FLECHETTE_ALT_SPLASH_RAD;
+	missile->splashDamage = weaponData[WP_FLECHETTE].altSplashDamage;
+	missile->splashRadius = weaponData[WP_FLECHETTE].altSplashRadius;
 
 	missile->svFlags = SVF_USE_CURRENT_ORIGIN;
 
@@ -2382,7 +2166,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 //---------------------------------------------------------
 {
 	vec3_t	start;
-	int		damage	= ROCKET_DAMAGE;
+	int		damage	= weaponData[WP_ROCKET_LAUNCHER].damage;
 	float	vel = ROCKET_VELOCITY;
 
 	if ( alt_fire )
@@ -2509,8 +2293,8 @@ static void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 	}
 
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	missile->splashDamage = ROCKET_SPLASH_DAMAGE;
-	missile->splashRadius = ROCKET_SPLASH_RADIUS;
+	missile->splashDamage = weaponData[WP_ROCKET_LAUNCHER].splashDamage;
+	missile->splashRadius = weaponData[WP_ROCKET_LAUNCHER].splashRadius;
 
 	// we don't want it to ever bounce
 	missile->bounceCount = 0;
@@ -2518,7 +2302,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 
 static void WP_FireConcussionAlt( gentity_t *ent )
 {//a rail-gun-like beam
-	int			damage = CONC_ALT_DAMAGE, skip, traces = DISRUPTOR_ALT_TRACES;
+	int			damage = weaponData[WP_CONCUSSION].altDamage, skip, traces = DISRUPTOR_ALT_TRACES;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end;
 	vec3_t		muzzle2, spot, dir;
@@ -2742,7 +2526,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 static void WP_FireConcussion( gentity_t *ent )
 {//a fast rocket-like projectile
 	vec3_t	start;
-	int		damage	= CONC_DAMAGE;
+	int		damage	= weaponData[WP_CONCUSSION].damage;
 	float	vel = CONC_VELOCITY;
 
 	if (ent->s.number >= MAX_CLIENTS)
@@ -2802,8 +2586,8 @@ static void WP_FireConcussion( gentity_t *ent )
 	missile->splashMethodOfDeath = MOD_CONC;
 
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	missile->splashDamage = CONC_SPLASH_DAMAGE;
-	missile->splashRadius = CONC_SPLASH_RADIUS;
+	missile->splashDamage = weaponData[WP_CONCUSSION].splashDamage;
+	missile->splashRadius = weaponData[WP_CONCUSSION].splashRadius;
 
 	// we don't want it to ever bounce
 	missile->bounceCount = 0;
@@ -2865,11 +2649,11 @@ static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir )
 	missile->s.eFlags |= EF_MISSILE_STICK;
 	missile->e_TouchFunc = touchF_charge_stick;
 	
-	missile->damage = FLECHETTE_MINE_DAMAGE;
+	missile->damage = weaponData[WP_DET_PACK].damage;
 	missile->methodOfDeath = MOD_DETPACK;
 
-	missile->splashDamage = FLECHETTE_MINE_SPLASH_DAMAGE;
-	missile->splashRadius = FLECHETTE_MINE_SPLASH_RADIUS;
+	missile->splashDamage = weaponData[WP_DET_PACK].splashDamage;
+	missile->splashRadius = weaponData[WP_DET_PACK].splashRadius;
 	missile->splashMethodOfDeath = MOD_DETPACK;// ?SPLASH;
 
 	missile->clipmask = (CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_SHOTCLIP);//MASK_SHOT;
@@ -3087,9 +2871,9 @@ void CreateLaserTrap( gentity_t *laserTrap, vec3_t start, gentity_t *owner )
 		laserTrap->classname = "tripmine";
 	}
 
-	laserTrap->splashDamage = LT_SPLASH_DAM;
-	laserTrap->splashRadius = LT_SPLASH_RAD;
-	laserTrap->damage = LT_DAMAGE;
+	laserTrap->splashDamage = weaponData[WP_TRIP_MINE].splashDamage;
+	laserTrap->splashRadius = weaponData[WP_TRIP_MINE].splashRadius;
+	laserTrap->damage = weaponData[WP_TRIP_MINE].damage;
 	laserTrap->methodOfDeath = MOD_LASERTRIP;
 	laserTrap->splashMethodOfDeath = MOD_LASERTRIP;//? SPLASH;
 
@@ -3235,7 +3019,7 @@ void thermalDetonatorExplode( gentity_t *ent )
 	{
 		ent->takedamage = qfalse; // don't allow double deaths!
 
-		G_Damage( ent->activator, ent, ent->owner, vec3_origin, ent->currentOrigin, TD_ALT_DAMAGE, 0, MOD_EXPLOSIVE );
+		G_Damage( ent->activator, ent, ent->owner, vec3_origin, ent->currentOrigin, weaponData[WP_THERMAL].altDamage, 0, MOD_EXPLOSIVE );
 		G_PlayEffect( "thermal/explosion", ent->currentOrigin );
 		G_PlayEffect( "thermal/shockwave", ent->currentOrigin );
 
@@ -3256,7 +3040,7 @@ void thermalDetonatorExplode( gentity_t *ent )
 
 		ent->takedamage = qfalse; // don't allow double deaths!
 
-		G_RadiusDamage( ent->currentOrigin, ent->owner, TD_SPLASH_DAM, TD_SPLASH_RAD, NULL, MOD_EXPLOSIVE_SPLASH );
+		G_RadiusDamage( ent->currentOrigin, ent->owner, weaponData[WP_THERMAL].splashDamage, weaponData[WP_THERMAL].splashRadius, NULL, MOD_EXPLOSIVE_SPLASH );
 
 		G_PlayEffect( "thermal/explosion", ent->currentOrigin );
 		G_PlayEffect( "thermal/shockwave", ent->currentOrigin );
@@ -3616,10 +3400,10 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean alt_fire )
 
 	bolt->s.loopSound = G_SoundIndex( "sound/weapons/thermal/thermloop.wav" );
 
-	bolt->damage = TD_DAMAGE * damageScale;
+	bolt->damage = weaponData[WP_THERMAL].damage * damageScale;
 	bolt->dflags = 0;
-	bolt->splashDamage = TD_SPLASH_DAM * damageScale;
-	bolt->splashRadius = TD_SPLASH_RAD;
+	bolt->splashDamage = weaponData[WP_THERMAL].splashDamage * damageScale;
+	bolt->splashRadius = weaponData[WP_THERMAL].splashRadius;
 
 	bolt->s.eType = ET_MISSILE;
 	bolt->svFlags = SVF_USE_CURRENT_ORIGIN;
@@ -3679,7 +3463,7 @@ void WP_BotLaser( gentity_t *ent )
 void WP_EmplacedFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	float damage = EMPLACED_DAMAGE * ( ent->NPC ? 0.1f : 1.0f );
+	float damage = weaponData[WP_EMPLACED_GUN].damage * ( ent->NPC ? 0.1f : 1.0f );
 	float vel = EMPLACED_VEL * ( ent->NPC ? 0.4f : 1.0f );
 
 	WP_MissileTargetHint(ent, muzzle, forwardVec);
@@ -3741,7 +3525,7 @@ void WP_ATSTMainFire( gentity_t *ent )
 	missile->classname = "atst_main_proj";
 	missile->s.weapon = WP_ATST_MAIN;
 
-	missile->damage = ATST_MAIN_DAMAGE;
+	missile->damage = weaponData[WP_ATST_MAIN].damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK|DAMAGE_HEAVY_WEAP_CLASS;
 	missile->methodOfDeath = MOD_ENERGY;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
@@ -3758,7 +3542,7 @@ void WP_ATSTMainFire( gentity_t *ent )
 void WP_ATSTSideAltFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int	damage	= ATST_SIDE_ALT_DAMAGE;
+	int	damage	= weaponData[WP_ATST_SIDE].altDamage;
 	float	vel = ATST_SIDE_ALT_NPC_VELOCITY;
 
 	if ( ent->client && (ent->client->ps.eFlags & EF_IN_ATST ))
@@ -3803,8 +3587,8 @@ void WP_ATSTSideAltFire( gentity_t *ent )
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
 	// Scale damage down a bit if it is coming from an NPC
-	missile->splashDamage = ATST_SIDE_ALT_SPLASH_DAMAGE * ( ent->s.number == 0 ? 1.0f : ATST_SIDE_ALT_ROCKET_SPLASH_SCALE );
-	missile->splashRadius = ATST_SIDE_ALT_SPLASH_RADIUS;
+	missile->splashDamage = weaponData[WP_ATST_SIDE].altSplashDamage * ( ent->s.number == 0 ? 1.0f : ATST_SIDE_ALT_ROCKET_SPLASH_SCALE );
+	missile->splashRadius = weaponData[WP_ATST_SIDE].altSplashRadius;
 
 	// we don't want it to ever bounce
 	missile->bounceCount = 0;
@@ -3815,7 +3599,7 @@ void WP_ATSTSideAltFire( gentity_t *ent )
 void WP_ATSTSideFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int	damage	= ATST_SIDE_MAIN_DAMAGE;
+	int	damage	= weaponData[WP_ATST_SIDE].damage;
 
 	gentity_t *missile = CreateMissile( muzzle, forwardVec, ATST_SIDE_MAIN_VELOCITY, 10000, ent, qfalse );
 
@@ -3847,8 +3631,8 @@ void WP_ATSTSideFire( gentity_t *ent )
 	missile->methodOfDeath = MOD_ENERGY;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
-	missile->splashDamage = ATST_SIDE_MAIN_SPLASH_DAMAGE * ( ent->s.number == 0 ? 1.0f : 0.6f );
-	missile->splashRadius = ATST_SIDE_MAIN_SPLASH_RADIUS;
+	missile->splashDamage = weaponData[WP_REPEATER].splashDamage * ( ent->s.number == 0 ? 1.0f : 0.6f );
+	missile->splashRadius = weaponData[WP_REPEATER].splashRadius;
 
 	// we don't want it to bounce
 	missile->bounceCount = 0;
@@ -3888,7 +3672,7 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 //		G_Sound( tr_ent, G_SoundIndex( va("sound/weapons/melee/punch%d", Q_irand(1, 4)) ) );
 		tr_ent->client->ps.powerups[PW_SHOCKED] = level.time + 1500;
 
-		G_Damage( tr_ent, ent, ent, forwardVec, tr.endpos, STUN_BATON_DAMAGE, DAMAGE_NO_KNOCKBACK, MOD_MELEE );
+		G_Damage( tr_ent, ent, ent, forwardVec, tr.endpos, weaponData[WP_STUN_BATON].damage, DAMAGE_NO_KNOCKBACK, MOD_MELEE );
 	}
 	else if ( tr_ent->svFlags & SVF_GLASS_BRUSH || ( tr_ent->svFlags & SVF_BBRUSH && tr_ent->material == 12 )) // material grate...we are breaking a grate!
 	{
