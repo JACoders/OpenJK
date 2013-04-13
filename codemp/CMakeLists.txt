@@ -139,7 +139,7 @@ if(BuildMPEngine OR BuildMPDed)
 	endif(UseInternalZlib)
 	
 	# All the rest, yet to be sorted (let's just get it to compile first)
-	# TODO sort this, fix capitalization
+	# TODO sort this
 	set(MPEngineAndDedAllSortMe
 		"${MPDir}/cgame/cg_public.h"
 		"${MPDir}/cgame/tr_types.h"
@@ -328,6 +328,7 @@ if(BuildMPEngine)
 	#    Dependencies
 	
 	# OpenGL
+	# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
 	find_package(OpenGL REQUIRED)
 	set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENGL_INCLUDE_DIR})
 	set(MPEngineLibraries ${MPEngineLibraries} ${OPENGL_LIBRARIES})
@@ -336,6 +337,7 @@ if(BuildMPEngine)
 	if(UseInternalOpenAL)
 		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} "${MPDir}/client/OpenAL")
 		# There's a libs/OpenAL32.lib
+		# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
 		find_library(OpenALLibrary NAMES OpenAL32 PATHS "${MPDir}/libs/win32")
 		if(NOT OpenALLibrary)
 			message(FATAL_ERROR "UseInternalOpenAL set, but codemp/libs/win32/OpenAL32 not found!")
@@ -359,10 +361,8 @@ if(BuildMPEngine)
 	
 	file(GLOB_RECURSE J_SRC "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
 	
-	# TODO sort this, fix capitalization
+	# TODO sort this
 	set(MPEngineSortMe
-		#"${MPDir}/alut.lib"
-		#"${MPDir}/client/0_sh_leak.cpp"
 		"${MPDir}/client/cl_avi.cpp"
 		"${MPDir}/client/cl_cgame.cpp"
 		"${MPDir}/client/cl_cin.cpp"
@@ -560,7 +560,7 @@ if(BuildMPDed)
 	set(MPDedFiles ${MPEngineAndDedFiles})
 	set(MPDedDefines ${MPSharedDefines} "_CONSOLE" "DEDICATED")
 	
-	# TODO sort this, fix capitalization
+	# TODO sort this
 	set(MPDedSortMe
 		"${MPDir}/null/null_client.cpp"
 		"${MPDir}/null/null_glimp.cpp"

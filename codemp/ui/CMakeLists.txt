@@ -48,6 +48,7 @@ set(MPUISortMe
 	"${MPDir}/ui/ui_shared.h"
 	)
 set(MPUIFiles ${MPUISortMe})
+source_group("SortMe" FILES ${MPUISortMe})
 
 add_library(${MPUI} SHARED ${MPUIFiles})
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPUIDefines};${ReleaseDefines}")

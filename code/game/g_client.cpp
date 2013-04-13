@@ -20,7 +20,7 @@ This file is part of Jedi Academy.
 #include "g_headers.h"
 
 
-#include "IcarusInterface.h"
+#include "../ICARUS/IcarusInterface.h"
 #include "Q3_Interface.h"
 #include "g_local.h"
 #include "g_functions.h"
