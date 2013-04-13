@@ -219,7 +219,6 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/qcommon/unzip.o \
 			  $(B)/engine/qcommon/vm.o \
 			  $(B)/engine/qcommon/vm_interpreted.o \
-			  $(B)/engine/unix_ded/vm_x86.o \
 			  $(B)/engine/qcommon/z_memman_pc.o \
 			  \
 			  $(B)/engine/sdl/sdl_glimp.o \
@@ -230,6 +229,7 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/unix/unix_main.o \
 			  $(B)/engine/sys/sys_net.o \
 			  $(B)/engine/unix/snapvector.o \
+			  $(B)/engine/unix/vm_x86.o \
 			  \
 			  $(B)/engine/server/sv_bot.o \
 			  $(B)/engine/server/sv_ccmds.o \
@@ -417,11 +417,158 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/zlib/uncompr.o \
 			  $(B)/engine/zlib/zutil.o
 
-all: makedirs engine game cgame ui
+DEDICATED_NAME		= $(B)/linuxjampded
+DEDICATED_CFLAGS	+= -m32 -fpermissive -w -DDEDICATED -O2 -unroll -D_JK2 -DNDEBUG -DC_ONLY -DFINAL_BUILD -D_M_IX86 -I.
+DEDICATED_LDFLAGS	= -m32 -ldl
+DEDICATED_OBJS		= $(B)/dedicated/server/sv_bot.o \
+			  $(B)/dedicated/server/sv_client.o \
+			  $(B)/dedicated/server/sv_ccmds.o \
+			  $(B)/dedicated/server/sv_game.o \
+			  $(B)/dedicated/server/sv_init.o \
+			  $(B)/dedicated/server/sv_main.o \
+			  $(B)/dedicated/server/sv_net_chan.o \
+			  $(B)/dedicated/server/sv_snapshot.o \
+			  $(B)/dedicated/server/sv_world.o \
+			  $(B)/dedicated/qcommon/cm_load.o \
+			  $(B)/dedicated/qcommon/stringed_ingame.o \
+			  $(B)/dedicated/qcommon/stringed_interface.o \
+			  $(B)/dedicated/qcommon/GenericParser2.o \
+			  $(B)/dedicated/qcommon/cm_patch.o \
+			  $(B)/dedicated/qcommon/cm_polylib.o \
+			  $(B)/dedicated/qcommon/cm_test.o \
+			  $(B)/dedicated/qcommon/cm_trace.o \
+			  $(B)/dedicated/qcommon/common.o \
+			  $(B)/dedicated/qcommon/cvar.o \
+			  $(B)/dedicated/qcommon/md4.o \
+			  $(B)/dedicated/qcommon/msg.o \
+			  $(B)/dedicated/qcommon/net_chan.o \
+			  $(B)/dedicated/qcommon/huffman.o \
+			  $(B)/dedicated/qcommon/q_math.o \
+			  $(B)/dedicated/qcommon/q_shared.o \
+			  $(B)/dedicated/qcommon/z_memman_pc.o \
+			  $(B)/dedicated/zlib/ioapi.o \
+			  $(B)/dedicated/qcommon/unzip.o \
+			  $(B)/dedicated/qcommon/vm.o \
+			  $(B)/dedicated/qcommon/vm_interpreted.o \
+			  $(B)/dedicated/botlib/be_aas_bspq3.o \
+			  $(B)/dedicated/botlib/be_aas_cluster.o \
+			  $(B)/dedicated/botlib/be_aas_debug.o \
+			  $(B)/dedicated/botlib/be_aas_entity.o \
+			  $(B)/dedicated/botlib/be_aas_file.o \
+			  $(B)/dedicated/botlib/be_aas_main.o \
+			  $(B)/dedicated/botlib/be_aas_move.o \
+			  $(B)/dedicated/botlib/be_aas_optimize.o \
+			  $(B)/dedicated/botlib/be_aas_reach.o \
+			  $(B)/dedicated/botlib/be_aas_route.o \
+			  $(B)/dedicated/botlib/be_aas_routealt.o \
+			  $(B)/dedicated/botlib/be_aas_sample.o \
+			  $(B)/dedicated/botlib/be_ai_char.o \
+			  $(B)/dedicated/botlib/be_ai_chat.o \
+			  $(B)/dedicated/botlib/be_ai_gen.o \
+			  $(B)/dedicated/botlib/be_ai_goal.o \
+			  $(B)/dedicated/botlib/be_ai_move.o \
+			  $(B)/dedicated/botlib/be_ai_weap.o \
+			  $(B)/dedicated/botlib/be_ai_weight.o \
+			  $(B)/dedicated/botlib/be_ea.o \
+			  $(B)/dedicated/botlib/be_interface.o \
+			  $(B)/dedicated/botlib/l_crc.o \
+			  $(B)/dedicated/botlib/l_libvar.o \
+			  $(B)/dedicated/botlib/l_log.o \
+			  $(B)/dedicated/botlib/l_memory.o \
+			  $(B)/dedicated/botlib/l_precomp.o \
+			  $(B)/dedicated/botlib/l_script.o \
+			  $(B)/dedicated/botlib/l_struct.o \
+			  $(B)/dedicated/unix_ded/linux_common.o \
+			  $(B)/dedicated/unix_ded/unix_main.o \
+			  $(B)/dedicated/unix_ded/unix_net.o \
+			  $(B)/dedicated/unix_ded/unix_shared.o \
+			  $(B)/dedicated/unix/snapvector.o \
+			  $(B)/dedicated/unix/vm_x86.o \
+			  $(B)/dedicated/ghoul2/G2_API.o \
+			  $(B)/dedicated/ghoul2/G2_bolts.o \
+			  $(B)/dedicated/ghoul2/G2_surfaces.o \
+			  $(B)/dedicated/ghoul2/G2_misc.o \
+			  $(B)/dedicated/null/null_client.o \
+			  $(B)/dedicated/null/null_input.o \
+			  $(B)/dedicated/null/null_snddma.o \
+			  $(B)/dedicated/null/null_glimp.o \
+			  $(B)/dedicated/null/null_renderer.o \
+			  $(B)/dedicated/icarus/BlockStream.o \
+			  $(B)/dedicated/icarus/GameInterface.o \
+			  $(B)/dedicated/icarus/Instance.o \
+			  $(B)/dedicated/icarus/Interface.o \
+			  $(B)/dedicated/icarus/Memory.o \
+			  $(B)/dedicated/icarus/Q3_Interface.o \
+			  $(B)/dedicated/icarus/Q3_Registers.o \
+			  $(B)/dedicated/icarus/Sequence.o \
+			  $(B)/dedicated/icarus/Sequencer.o \
+			  $(B)/dedicated/icarus/TaskManager.o \
+			  $(B)/dedicated/renderer/tr_model.o \
+			  $(B)/dedicated/renderer/tr_image.o \
+			  $(B)/dedicated/qcommon/RoffSystem.o \
+			  $(B)/dedicated/renderer/tr_ghoul2.o \
+			  $(B)/dedicated/renderer/matcomp.o \
+			  $(B)/dedicated/renderer/tr_init.o \
+			  $(B)/dedicated/renderer/tr_main.o \
+			  $(B)/dedicated/renderer/tr_backend.o \
+			  $(B)/dedicated/renderer/tr_mesh.o \
+			  $(B)/dedicated/ghoul2/G2_bones.o \
+			  $(B)/dedicated/renderer/tr_shader.o \
+			  $(B)/dedicated/qcommon/cmd_pc.o \
+			  $(B)/dedicated/server/NPCNav/navigator.o \
+			  $(B)/dedicated/server/NPCNav/gameCallbacks.o \
+			  $(B)/dedicated/qcommon/files_common.o \
+			  $(B)/dedicated/qcommon/cmd_common.o \
+			  $(B)/dedicated/qcommon/files_pc.o \
+			  $(B)/dedicated/RMG/RM_Manager.o \
+			  $(B)/dedicated/RMG/RM_Mission.o \
+			  $(B)/dedicated/RMG/RM_Instance.o \
+			  $(B)/dedicated/RMG/RM_InstanceFile.o \
+			  $(B)/dedicated/RMG/RM_Instance_BSP.o \
+			  $(B)/dedicated/RMG/RM_Instance_Group.o \
+			  $(B)/dedicated/RMG/RM_Instance_Void.o \
+			  $(B)/dedicated/RMG/RM_Instance_Random.o \
+			  $(B)/dedicated/RMG/RM_Objective.o \
+			  $(B)/dedicated/RMG/RM_Terrain.o \
+			  $(B)/dedicated/RMG/RM_Path.o \
+			  $(B)/dedicated/RMG/RM_Area.o \
+			  $(B)/dedicated/qcommon/cm_terrain.o \
+			  $(B)/dedicated/qcommon/cm_randomterrain.o \
+			  $(B)/dedicated/qcommon/cm_shader.o \
+			  $(B)/dedicated/zlib/adler32.o \
+			  $(B)/dedicated/zlib/compress.o \
+			  $(B)/dedicated/zlib/crc32.o \
+			  $(B)/dedicated/zlib/deflate.o \
+			  $(B)/dedicated/zlib/gzclose.o \
+			  $(B)/dedicated/zlib/gzlib.o \
+			  $(B)/dedicated/zlib/gzread.o \
+			  $(B)/dedicated/zlib/gzwrite.o \
+			  $(B)/dedicated/zlib/infback.o \
+			  $(B)/dedicated/zlib/inffast.o \
+			  $(B)/dedicated/zlib/inflate.o \
+			  $(B)/dedicated/zlib/inftrees.o \
+			  $(B)/dedicated/zlib/trees.o \
+			  $(B)/dedicated/zlib/uncompr.o \
+			  $(B)/dedicated/zlib/zutil.o
+
+all: makedirs engine game cgame ui dedicated
 
 makedirs:
 	@if [ ! -d $(B) ];then mkdir $(B);fi
 	@if [ ! -d $(B)/dedicated ];then mkdir $(B)/dedicated;fi
+	@if [ ! -d $(B)/dedicated/botlib ];then mkdir $(B)/dedicated/botlib;fi
+	@if [ ! -d $(B)/dedicated/unix ];then mkdir $(B)/dedicated/unix;fi
+	@if [ ! -d $(B)/dedicated/unix_ded ];then mkdir $(B)/dedicated/unix_ded;fi
+	@if [ ! -d $(B)/dedicated/ghoul2 ];then mkdir $(B)/dedicated/ghoul2;fi
+	@if [ ! -d $(B)/dedicated/null ];then mkdir $(B)/dedicated/null;fi
+	@if [ ! -d $(B)/dedicated/icarus ];then mkdir $(B)/dedicated/icarus;fi
+	@if [ ! -d $(B)/dedicated/ghoul2 ];then mkdir $(B)/dedicated/ghoul2;fi
+	@if [ ! -d $(B)/dedicated/renderer ];then mkdir $(B)/dedicated/renderer;fi
+	@if [ ! -d $(B)/dedicated/server ];then mkdir $(B)/dedicated/server;fi
+	@if [ ! -d $(B)/dedicated/server/NPCNav ];then mkdir $(B)/dedicated/server/NPCNav;fi
+	@if [ ! -d $(B)/dedicated/qcommon ];then mkdir $(B)/dedicated/qcommon;fi
+	@if [ ! -d $(B)/dedicated/RMG ];then mkdir $(B)/dedicated/RMG;fi
+	@if [ ! -d $(B)/dedicated/zlib ];then mkdir $(B)/dedicated/zlib;fi
 	@if [ ! -d $(B)/engine ];then mkdir $(B)/engine;fi
 	@if [ ! -d $(B)/engine/botlib ];then mkdir $(B)/engine/botlib;fi
 	@if [ ! -d $(B)/engine/client ];then mkdir $(B)/engine/client;fi
@@ -448,8 +595,10 @@ makedirs:
 # GAME RULES
 #
 
-game: $(GAME_OBJS)
-	$(CC) -o jampgamei386.so $(GAME_OBJS) $(GAME_LDFLAGS)
+game: $(GAME_NAME)
+
+$(GAME_NAME): $(GAME_OBJS)
+	$(CC) -o $(GAME_NAME) $(GAME_OBJS) $(GAME_LDFLAGS)
 
 $(B)/game/q_%.o: qcommon/q_%.c
 	$(CC) $(GAME_CFLAGS) -fPIC -c $< -o $@
@@ -461,8 +610,10 @@ $(B)/game/%.o: game/%.c
 # CGAME RULES
 #
 
-cgame: $(CGAME_OBJS)
-	$(CC) -o cgamei386.so $(CGAME_OBJS) $(CGAME_LDFLAGS)
+cgame: $(CGAME_NAME)
+
+$(CGAME_NAME): $(CGAME_OBJS)
+	$(CC) -o $(CGAME_NAME) $(CGAME_OBJS) $(CGAME_LDFLAGS)
 
 $(B)/cgame/q_%.o: qcommon/q_%.c
 	$(CC) $(CGAME_CFLAGS) -fPIC -c $< -o $@
@@ -483,7 +634,9 @@ $(B)/cgame/%.o: cgame/%.c
 # UI RULES
 #
 
-ui: $(UI_OBJS)
+ui: $(UI_NAME)
+
+$(UI_NAME): $(UI_OBJS)
 	$(CC) -o $(UI_NAME) $(UI_OBJS) $(UI_LDFLAGS)
 
 $(B)/ui/q_%.o: qcommon/q_%.c
@@ -499,7 +652,9 @@ $(B)/ui/%.o: ui/%.c
 # ENGINE RULES
 #
 
-engine: $(ENGINE_OBJS)
+engine: $(ENGINE_NAME)
+
+$(ENGINE_NAME): $(ENGINE_OBJS)
 	$(CXX) -o $(ENGINE_NAME) $(ENGINE_OBJS) $(ENGINE_LDFLAGS)
 
 $(B)/engine/zlib/%.o: zlib/%.c
@@ -523,6 +678,36 @@ $(B)/engine/%.o: %.c
 $(B)/engine/%.o: %.cpp
 	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
 
+#
+# DEDICATED RULES
+#
+
+dedicated: $(DEDICATED_NAME)
+
+$(DEDICATED_NAME): $(DEDICATED_OBJS)
+	$(CXX) -o $(DEDICATED_NAME) $(DEDICATED_OBJS) $(DEDICATED_LDFLAGS)
+
+$(B)/dedicated/zlib/%.o: zlib/%.c
+	$(CC) $(DEDICATED_CFLAGS) -c $< -o $@
+
+$(B)/dedicated/jpeg-8c/%.o: jpeg-8c/%.c
+	$(CC) $(DEDICATED_CFLAGS) -c $< -o $@
+
+$(B)/dedicated/mp3code/%.o: mp3code/%.c
+	$(CC) $(DEDICATED_CFLAGS) -c $< -o $@
+
+$(B)/dedicated/botlib/%.o: botlib/%.cpp
+	$(CXX) $(DEDICATED_CFLAGS) -DBOTLIB -c $< -o $@
+
+$(B)/dedicated/unix/%.o: unix/%.nasm
+	nasm -f elf -o $@  $<
+
+$(B)/dedicated/%.o: %.c
+	$(CXX) $(DEDICATED_CFLAGS) -c $< -o $@
+
+$(B)/dedicated/%.o: %.cpp
+	$(CXX) $(DEDICATED_CFLAGS) -c $< -o $@
+
 clean:
-	$(RM) $(ENGINE_OBJS) $(GAME_OBJS) $(CGAME_OBJS) $(UI_OBJS) \
-	$(ENGINE_NAME) $(GAME_NAME) $(CGAME_NAME) $(UI_NAME)
+	$(RM) $(ENGINE_OBJS) $(GAME_OBJS) $(CGAME_OBJS) $(UI_OBJS) $(DEDICATED_OBJS) \
+	$(ENGINE_NAME) $(GAME_NAME) $(CGAME_NAME) $(UI_NAME) $(DEDICATED_NAME)
