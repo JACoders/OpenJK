@@ -960,6 +960,7 @@ void	Sys_Print( const char *msg );
 // Sys_Milliseconds should only be used for profiling purposes,
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (bool baseTime = false);
+void 	Sys_SetEnv(const char *name, const char *value);
 
 #ifndef _WIN32
 extern "C" void	Sys_SnapVector( float *v );
