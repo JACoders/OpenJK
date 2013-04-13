@@ -1,466 +1,528 @@
-CC			= 	gcc
-CXX			= 	g++
+CC			= gcc
+CXX			= g++
+B			= build
 
-ENGINE_CFLAGS		+= 	-fpermissive -m32 -w -D_JK2 -D__linux__ -DNDEBUG -D_JK2 -D_JK2MP -DFINAL_BUILD -D_M_IX86 -I. -ggdb3
+GAME_NAME		= $(B)/jampgamei386.so
+GAME_CFLAGS		= -m32 -I. -D_M_IX86 -DNDEBUG -D__linux__ -DMISSIONPACK -DQAGAME -DJK2AWARDS -D_JK2 -DFINAL_BUILD
+GAME_LDFLAGS		= -m32 -shared -lm
+GAME_OBJS		= $(B)/game/ai_main.o \
+			  $(B)/game/ai_util.o \
+			  $(B)/game/ai_wpnav.o \
+			  $(B)/game/AnimalNPC.o \
+			  $(B)/game/bg_g2_utils.o \
+			  $(B)/game/bg_misc.o \
+			  $(B)/game/bg_panimate.o \
+			  $(B)/game/bg_pmove.o \
+			  $(B)/game/bg_saber.o \
+			  $(B)/game/bg_saberLoad.o \
+			  $(B)/game/bg_saga.o \
+			  $(B)/game/bg_slidemove.o \
+			  $(B)/game/bg_vehicleLoad.o \
+			  $(B)/game/bg_weapons.o \
+			  $(B)/game/FighterNPC.o \
+			  $(B)/game/g_active.o \
+			  $(B)/game/g_arenas.o \
+			  $(B)/game/g_bot.o \
+			  $(B)/game/g_client.o \
+			  $(B)/game/g_cmds.o \
+			  $(B)/game/g_combat.o \
+			  $(B)/game/g_exphysics.o \
+			  $(B)/game/g_ICARUScb.o \
+			  $(B)/game/g_items.o \
+			  $(B)/game/g_log.o \
+			  $(B)/game/g_main.o \
+			  $(B)/game/g_mem.o \
+			  $(B)/game/g_misc.o \
+			  $(B)/game/g_missile.o \
+			  $(B)/game/g_mover.o \
+			  $(B)/game/g_nav.o \
+			  $(B)/game/g_navnew.o \
+			  $(B)/game/g_object.o \
+			  $(B)/game/g_saga.o \
+			  $(B)/game/g_session.o \
+			  $(B)/game/g_spawn.o \
+			  $(B)/game/g_strap.o \
+			  $(B)/game/g_svcmds.o \
+			  $(B)/game/g_syscalls.o \
+			  $(B)/game/g_target.o \
+			  $(B)/game/g_team.o \
+			  $(B)/game/g_timer.o \
+			  $(B)/game/g_trigger.o \
+			  $(B)/game/g_turret.o \
+			  $(B)/game/g_turret_G2.o \
+			  $(B)/game/g_utils.o \
+			  $(B)/game/g_vehicles.o \
+			  $(B)/game/g_vehicleTurret.o \
+			  $(B)/game/g_weapon.o \
+			  $(B)/game/NPC.o \
+			  $(B)/game/NPC_AI_Atst.o \
+			  $(B)/game/NPC_AI_Default.o \
+			  $(B)/game/NPC_AI_Droid.o \
+			  $(B)/game/NPC_AI_GalakMech.o \
+			  $(B)/game/NPC_AI_Grenadier.o \
+			  $(B)/game/NPC_AI_Howler.o \
+			  $(B)/game/NPC_AI_ImperialProbe.o \
+			  $(B)/game/NPC_AI_Interrogator.o \
+			  $(B)/game/NPC_AI_Jedi.o \
+			  $(B)/game/NPC_AI_Mark1.o \
+			  $(B)/game/NPC_AI_Mark2.o \
+			  $(B)/game/NPC_AI_MineMonster.o \
+			  $(B)/game/NPC_AI_Rancor.o \
+			  $(B)/game/NPC_AI_Remote.o \
+			  $(B)/game/NPC_AI_Seeker.o \
+			  $(B)/game/NPC_AI_Sentry.o \
+			  $(B)/game/NPC_AI_Sniper.o \
+			  $(B)/game/NPC_AI_Stormtrooper.o \
+			  $(B)/game/NPC_AI_Utils.o \
+			  $(B)/game/NPC_AI_Wampa.o \
+			  $(B)/game/NPC_behavior.o \
+			  $(B)/game/NPC_combat.o \
+			  $(B)/game/NPC_goal.o \
+			  $(B)/game/NPC_misc.o \
+			  $(B)/game/NPC_move.o \
+			  $(B)/game/NPC_reactions.o \
+			  $(B)/game/NPC_senses.o \
+			  $(B)/game/NPC_sounds.o \
+			  $(B)/game/NPC_spawn.o \
+			  $(B)/game/NPC_stats.o \
+			  $(B)/game/NPC_utils.o \
+			  $(B)/game/q_math.o \
+			  $(B)/game/q_shared.o \
+			  $(B)/game/SpeederNPC.o \
+			  $(B)/game/tri_coll_test.o \
+			  $(B)/game/w_force.o \
+			  $(B)/game/w_saber.o \
+			  $(B)/game/WalkerNPC.o
 
-G_CFLAGS		=	-m32 -I. -D_M_IX86 -DNDEBUG -D__linux__ -DMISSIONPACK -DQAGAME -DJK2AWARDS -D_JK2 -DFINAL_BUILD -ggdb3
+CGAME_NAME		= $(B)/cgamei386.so
+CGAME_CFLAGS		= -m32 -I. -DNDEBUG -D__linux__ -DMISSIONPACK -DCGAME -D_JK2 -DFINAL_BUILD -ggdb3
+CGAME_LDFLAGS		= -m32 -shared -lm
+CGAME_OBJS		= $(B)/cgame/AnimalNPC.o \
+			  $(B)/cgame/bg_g2_utils.o \
+			  $(B)/cgame/bg_misc.o \
+			  $(B)/cgame/bg_panimate.o \
+			  $(B)/cgame/bg_pmove.o \
+			  $(B)/cgame/bg_saber.o \
+			  $(B)/cgame/bg_saberLoad.o \
+			  $(B)/cgame/bg_saga.o \
+			  $(B)/cgame/bg_slidemove.o \
+			  $(B)/cgame/bg_vehicleLoad.o \
+			  $(B)/cgame/bg_weapons.o \
+			  $(B)/cgame/cg_consolecmds.o \
+			  $(B)/cgame/cg_draw.o \
+			  $(B)/cgame/cg_drawtools.o \
+			  $(B)/cgame/cg_effects.o \
+			  $(B)/cgame/cg_ents.o \
+			  $(B)/cgame/cg_event.o \
+			  $(B)/cgame/cg_info.o \
+			  $(B)/cgame/cg_light.o \
+			  $(B)/cgame/cg_localents.o \
+			  $(B)/cgame/cg_main.o \
+			  $(B)/cgame/cg_marks.o \
+			  $(B)/cgame/cg_newDraw.o \
+			  $(B)/cgame/cg_players.o \
+			  $(B)/cgame/cg_playerstate.o \
+			  $(B)/cgame/cg_predict.o \
+			  $(B)/cgame/cg_saga.o \
+			  $(B)/cgame/cg_scoreboard.o \
+			  $(B)/cgame/cg_servercmds.o \
+			  $(B)/cgame/cg_snapshot.o \
+			  $(B)/cgame/cg_spawn.o \
+			  $(B)/cgame/cg_strap.o \
+			  $(B)/cgame/cg_syscalls.o \
+			  $(B)/cgame/cg_turret.o \
+			  $(B)/cgame/cg_view.o \
+			  $(B)/cgame/cg_weaponinit.o \
+			  $(B)/cgame/cg_weapons.o \
+			  $(B)/cgame/FighterNPC.o \
+			  $(B)/cgame/fx_blaster.o \
+			  $(B)/cgame/fx_bowcaster.o \
+			  $(B)/cgame/fx_bryarpistol.o \
+			  $(B)/cgame/fx_demp2.o \
+			  $(B)/cgame/fx_disruptor.o \
+			  $(B)/cgame/fx_flechette.o \
+			  $(B)/cgame/fx_force.o \
+			  $(B)/cgame/fx_heavyrepeater.o \
+			  $(B)/cgame/fx_rocketlauncher.o \
+			  $(B)/cgame/q_math.o \
+			  $(B)/cgame/q_shared.o \
+			  $(B)/cgame/SpeederNPC.o \
+			  $(B)/cgame/ui_shared.o \
+			  $(B)/cgame/WalkerNPC.o
 
-G_OBJS			=	game/ai_main.o \
-				game/ai_util.o \
-				game/ai_wpnav.o \
-				game/AnimalNPC.o \
-				game/bg_g2_utils.o \
-				game/bg_misc.o \
-				game/bg_panimate.o \
-				game/bg_pmove.o \
-				game/bg_saber.o \
-				game/bg_saberLoad.o \
-				game/bg_saga.o \
-				game/bg_slidemove.o \
-				game/bg_vehicleLoad.o \
-				game/bg_weapons.o \
-				game/FighterNPC.o \
-				game/g_active.o \
-				game/g_arenas.o \
-				game/g_bot.o \
-				game/g_client.o \
-				game/g_cmds.o \
-				game/g_combat.o \
-				game/g_exphysics.o \
-				game/g_ICARUScb.o \
-				game/g_items.o \
-				game/g_log.o \
-				game/g_main.o \
-				game/g_mem.o \
-				game/g_misc.o \
-				game/g_missile.o \
-				game/g_mover.o \
-				game/g_nav.o \
-				game/g_navnew.o \
-				game/g_object.o \
-				game/g_saga.o \
-				game/g_session.o \
-				game/g_spawn.o \
-				game/g_strap.o \
-				game/g_svcmds.o \
-				game/g_syscalls.o \
-				game/g_target.o \
-				game/g_team.o \
-				game/g_timer.o \
-				game/g_trigger.o \
-				game/g_turret.o \
-				game/g_turret_G2.o \
-				game/g_utils.o \
-				game/g_vehicles.o \
-				game/g_vehicleTurret.o \
-				game/g_weapon.o \
-				game/NPC.o \
-				game/NPC_AI_Atst.o \
-				game/NPC_AI_Default.o \
-				game/NPC_AI_Droid.o \
-				game/NPC_AI_GalakMech.o \
-				game/NPC_AI_Grenadier.o \
-				game/NPC_AI_Howler.o \
-				game/NPC_AI_ImperialProbe.o \
-				game/NPC_AI_Interrogator.o \
-				game/NPC_AI_Jedi.o \
-				game/NPC_AI_Mark1.o \
-				game/NPC_AI_Mark2.o \
-				game/NPC_AI_MineMonster.o \
-				game/NPC_AI_Rancor.o \
-				game/NPC_AI_Remote.o \
-				game/NPC_AI_Seeker.o \
-				game/NPC_AI_Sentry.o \
-				game/NPC_AI_Sniper.o \
-				game/NPC_AI_Stormtrooper.o \
-				game/NPC_AI_Utils.o \
-				game/NPC_AI_Wampa.o \
-				game/NPC_behavior.o \
-				game/NPC_combat.o \
-				game/NPC_goal.o \
-				game/NPC_misc.o \
-				game/NPC_move.o \
-				game/NPC_reactions.o \
-				game/NPC_senses.o \
-				game/NPC_sounds.o \
-				game/NPC_spawn.o \
-				game/NPC_stats.o \
-				game/NPC_utils.o \
-				game/q_math.o \
-				game/q_shared.o \
-				game/SpeederNPC.o \
-				game/tri_coll_test.o \
-				game/w_force.o \
-				game/w_saber.o \
-				game/WalkerNPC.o
+UI_NAME			= $(B)/uii386.so
+UI_CFLAGS		= -m32 -I. -DNDEBUG -D_USRDL -D__linux__ -DUI_EXPORTS -DMISSIONPACK -D_JK2 -DFINAL_BUILD -fPIC -ggdb3
+UI_LDFLAGS		= -m32 -shared -lm
+UI_OBJS			= $(B)/ui/bg_misc.o \
+			  $(B)/ui/bg_saga.o \
+			  $(B)/ui/bg_vehicleLoad.o \
+			  $(B)/ui/bg_weapons.o \
+			  $(B)/ui/q_math.o \
+			  $(B)/ui/q_shared.o \
+			  $(B)/ui/ui_atoms.o \
+			  $(B)/ui/ui_force.o \
+			  $(B)/ui/ui_gameinfo.o \
+			  $(B)/ui/ui_main.o \
+			  $(B)/ui/ui_saber.o \
+			  $(B)/ui/ui_shared.o \
+			  $(B)/ui/ui_syscalls.o
 
-CG_CFLAGS		=	-m32 -I. -DNDEBUG -D__linux__ -DMISSIONPACK -DCGAME -D_JK2 -DFINAL_BUILD -ggdb3
+ENGINE_NAME		= $(B)/jamp
+ENGINE_CFLAGS		+= -m32 -fpermissive -w -D_JK2 -DNDEBUG -D_JK2 -D_JK2MP -DFINAL_BUILD -D_M_IX86 -I.
+ENGINE_LDFLAGS		= -m32 `sdl2-config --libs` -lGL -lopenal
+ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
+			  $(B)/engine/client/FxPrimitives.o \
+			  $(B)/engine/client/FxScheduler.o \
+			  $(B)/engine/client/FxSystem.o \
+			  $(B)/engine/client/FxTemplate.o \
+			  $(B)/engine/client/FxUtil.o \
+			  $(B)/engine/client/cl_avi.o \
+			  $(B)/engine/client/cl_cgame.o \
+			  $(B)/engine/client/cl_cin.o \
+			  $(B)/engine/client/cl_console.o \
+			  $(B)/engine/client/cl_input.o \
+			  $(B)/engine/client/cl_keys.o \
+			  $(B)/engine/client/cl_main.o \
+			  $(B)/engine/client/cl_net_chan.o \
+			  $(B)/engine/client/cl_parse.o \
+			  $(B)/engine/client/cl_scrn.o \
+			  $(B)/engine/client/cl_ui.o \
+			  $(B)/engine/qcommon/CNetProfile.o \
+			  $(B)/engine/qcommon/GenericParser2.o \
+			  $(B)/engine/qcommon/RoffSystem.o \
+			  $(B)/engine/qcommon/cm_draw.o \
+			  $(B)/engine/qcommon/cm_load.o \
+			  $(B)/engine/qcommon/cm_patch.o \
+			  $(B)/engine/qcommon/cm_polylib.o \
+			  $(B)/engine/qcommon/cm_randomterrain.o \
+			  $(B)/engine/qcommon/cm_shader.o \
+			  $(B)/engine/qcommon/cm_terrain.o \
+			  $(B)/engine/qcommon/cm_terrainmap.o \
+			  $(B)/engine/qcommon/cm_test.o \
+			  $(B)/engine/qcommon/cm_trace.o \
+			  $(B)/engine/qcommon/cmd_common.o \
+			  $(B)/engine/qcommon/cmd_pc.o \
+			  $(B)/engine/qcommon/common.o \
+			  $(B)/engine/qcommon/cvar.o \
+			  $(B)/engine/qcommon/exe_headers.o \
+			  $(B)/engine/qcommon/files_common.o \
+			  $(B)/engine/qcommon/files_pc.o \
+			  $(B)/engine/qcommon/hstring.o \
+			  $(B)/engine/qcommon/huffman.o \
+			  $(B)/engine/qcommon/md4.o \
+			  $(B)/engine/qcommon/msg.o \
+			  $(B)/engine/qcommon/net_chan.o \
+			  $(B)/engine/qcommon/q_math.o \
+			  $(B)/engine/qcommon/q_shared.o \
+			  $(B)/engine/qcommon/stringed_ingame.o \
+			  $(B)/engine/qcommon/stringed_interface.o \
+			  $(B)/engine/qcommon/unzip.o \
+			  $(B)/engine/qcommon/vm.o \
+			  $(B)/engine/qcommon/vm_interpreted.o \
+			  $(B)/engine/unix_ded/vm_x86.o \
+			  $(B)/engine/qcommon/z_memman_pc.o \
+			  \
+			  $(B)/engine/sdl/sdl_glimp.o \
+			  $(B)/engine/sdl/sdl_snd.o \
+			  $(B)/engine/sdl/sdl_input.o \
+			  $(B)/engine/sys/sys_main.o \
+			  $(B)/engine/sys/sys_unix.o \
+			  $(B)/engine/unix/unix_main.o \
+			  $(B)/engine/sys/sys_net.o \
+			  $(B)/engine/unix/snapvector.o \
+			  \
+			  $(B)/engine/server/sv_bot.o \
+			  $(B)/engine/server/sv_ccmds.o \
+			  $(B)/engine/server/sv_client.o \
+			  $(B)/engine/server/sv_game.o \
+			  $(B)/engine/server/sv_init.o \
+			  $(B)/engine/server/sv_main.o \
+			  $(B)/engine/server/sv_net_chan.o \
+			  $(B)/engine/server/sv_snapshot.o \
+			  $(B)/engine/server/sv_world.o \
+			  $(B)/engine/server/NPCNav/gameCallbacks.o \
+			  $(B)/engine/server/NPCNav/navigator.o \
+			  $(B)/engine/client/snd_ambient.o \
+			  $(B)/engine/client/snd_dma.o \
+			  $(B)/engine/client/snd_mem.o \
+			  $(B)/engine/client/snd_mix.o \
+			  $(B)/engine/client/snd_mp3.o \
+			  $(B)/engine/client/snd_music.o \
+			  $(B)/engine/mp3code/cdct.o \
+			  $(B)/engine/mp3code/csbt.o \
+			  $(B)/engine/mp3code/csbtb.o \
+			  $(B)/engine/mp3code/csbtl3.o \
+			  $(B)/engine/mp3code/cup.o \
+			  $(B)/engine/mp3code/cupini.o \
+			  $(B)/engine/mp3code/cupl1.o \
+			  $(B)/engine/mp3code/cupl3.o \
+			  $(B)/engine/mp3code/cwin.o \
+			  $(B)/engine/mp3code/cwinb.o \
+			  $(B)/engine/mp3code/cwinm.o \
+			  $(B)/engine/mp3code/hwin.o \
+			  $(B)/engine/mp3code/l3dq.o \
+			  $(B)/engine/mp3code/l3init.o \
+			  $(B)/engine/mp3code/mdct.o \
+			  $(B)/engine/mp3code/mhead.o \
+			  $(B)/engine/mp3code/msis.o \
+			  $(B)/engine/mp3code/towave.o \
+			  $(B)/engine/mp3code/uph.o \
+			  $(B)/engine/mp3code/upsf.o \
+			  $(B)/engine/mp3code/wavep.o \
+			  $(B)/engine/renderer/matcomp.o \
+			  $(B)/engine/renderer/tr_WorldEffects.o \
+			  $(B)/engine/renderer/tr_animation.o \
+			  $(B)/engine/renderer/tr_arioche.o \
+			  $(B)/engine/renderer/tr_backend.o \
+			  $(B)/engine/renderer/tr_bsp.o \
+			  $(B)/engine/renderer/tr_cmds.o \
+			  $(B)/engine/renderer/tr_curve.o \
+			  $(B)/engine/renderer/tr_font.o \
+			  $(B)/engine/renderer/tr_ghoul2.o \
+			  $(B)/engine/renderer/tr_image.o \
+			  $(B)/engine/renderer/tr_init.o \
+			  $(B)/engine/renderer/tr_light.o \
+			  $(B)/engine/renderer/tr_main.o \
+			  $(B)/engine/renderer/tr_marks.o \
+			  $(B)/engine/renderer/tr_mesh.o \
+			  $(B)/engine/renderer/tr_model.o \
+			  $(B)/engine/renderer/tr_noise.o \
+			  $(B)/engine/renderer/tr_quicksprite.o \
+			  $(B)/engine/renderer/tr_scene.o \
+			  $(B)/engine/renderer/tr_shade.o \
+			  $(B)/engine/renderer/tr_shade_calc.o \
+			  $(B)/engine/renderer/tr_shader.o \
+			  $(B)/engine/renderer/tr_shadows.o \
+			  $(B)/engine/renderer/tr_sky.o \
+			  $(B)/engine/renderer/tr_surface.o \
+			  $(B)/engine/renderer/tr_surfacesprites.o \
+			  $(B)/engine/renderer/tr_terrain.o \
+			  $(B)/engine/renderer/tr_world.o \
+			  $(B)/engine/jpeg-8c/jaricom.o \
+			  $(B)/engine/jpeg-8c/jcapimin.o \
+			  $(B)/engine/jpeg-8c/jcapistd.o \
+			  $(B)/engine/jpeg-8c/jcarith.o \
+			  $(B)/engine/jpeg-8c/jccoefct.o \
+			  $(B)/engine/jpeg-8c/jccolor.o \
+			  $(B)/engine/jpeg-8c/jcdctmgr.o \
+			  $(B)/engine/jpeg-8c/jchuff.o \
+			  $(B)/engine/jpeg-8c/jcinit.o \
+			  $(B)/engine/jpeg-8c/jcmainct.o \
+			  $(B)/engine/jpeg-8c/jcmarker.o \
+			  $(B)/engine/jpeg-8c/jcmaster.o \
+			  $(B)/engine/jpeg-8c/jcomapi.o \
+			  $(B)/engine/jpeg-8c/jcparam.o \
+			  $(B)/engine/jpeg-8c/jcprepct.o \
+			  $(B)/engine/jpeg-8c/jcsample.o \
+			  $(B)/engine/jpeg-8c/jctrans.o \
+			  $(B)/engine/jpeg-8c/jdapimin.o \
+			  $(B)/engine/jpeg-8c/jdapistd.o \
+			  $(B)/engine/jpeg-8c/jdarith.o \
+			  $(B)/engine/jpeg-8c/jdatadst.o \
+			  $(B)/engine/jpeg-8c/jdatasrc.o \
+			  $(B)/engine/jpeg-8c/jdcoefct.o \
+			  $(B)/engine/jpeg-8c/jdcolor.o \
+			  $(B)/engine/jpeg-8c/jddctmgr.o \
+			  $(B)/engine/jpeg-8c/jdhuff.o \
+			  $(B)/engine/jpeg-8c/jdinput.o \
+			  $(B)/engine/jpeg-8c/jdmainct.o \
+			  $(B)/engine/jpeg-8c/jdmarker.o \
+			  $(B)/engine/jpeg-8c/jdmaster.o \
+			  $(B)/engine/jpeg-8c/jdmerge.o \
+			  $(B)/engine/jpeg-8c/jdpostct.o \
+			  $(B)/engine/jpeg-8c/jdsample.o \
+			  $(B)/engine/jpeg-8c/jdtrans.o \
+			  $(B)/engine/jpeg-8c/jerror.o \
+			  $(B)/engine/jpeg-8c/jfdctflt.o \
+			  $(B)/engine/jpeg-8c/jfdctfst.o \
+			  $(B)/engine/jpeg-8c/jfdctint.o \
+			  $(B)/engine/jpeg-8c/jidctflt.o \
+			  $(B)/engine/jpeg-8c/jidctfst.o \
+			  $(B)/engine/jpeg-8c/jidctint.o \
+			  $(B)/engine/jpeg-8c/jmemmgr.o \
+			  $(B)/engine/jpeg-8c/jmemnobs.o \
+			  $(B)/engine/jpeg-8c/jquant1.o \
+			  $(B)/engine/jpeg-8c/jquant2.o \
+			  $(B)/engine/jpeg-8c/jutils.o \
+			  $(B)/engine/png/png.o \
+			  $(B)/engine/ghoul2/G2_API.o \
+			  $(B)/engine/ghoul2/G2_bolts.o \
+			  $(B)/engine/ghoul2/G2_bones.o \
+			  $(B)/engine/ghoul2/G2_misc.o \
+			  $(B)/engine/ghoul2/G2_surfaces.o \
+			  $(B)/engine/RMG/RM_Area.o \
+			  $(B)/engine/RMG/RM_Instance.o \
+			  $(B)/engine/RMG/RM_InstanceFile.o \
+			  $(B)/engine/RMG/RM_Instance_BSP.o \
+			  $(B)/engine/RMG/RM_Instance_Group.o \
+			  $(B)/engine/RMG/RM_Instance_Random.o \
+			  $(B)/engine/RMG/RM_Instance_Void.o \
+			  $(B)/engine/RMG/RM_Manager.o \
+			  $(B)/engine/RMG/RM_Mission.o \
+			  $(B)/engine/RMG/RM_Objective.o \
+			  $(B)/engine/RMG/RM_Path.o \
+			  $(B)/engine/RMG/RM_Terrain.o \
+			  $(B)/engine/botlib/be_aas_bspq3.o \
+			  $(B)/engine/botlib/be_aas_cluster.o \
+			  $(B)/engine/botlib/be_aas_debug.o \
+			  $(B)/engine/botlib/be_aas_entity.o \
+			  $(B)/engine/botlib/be_aas_file.o \
+			  $(B)/engine/botlib/be_aas_main.o \
+			  $(B)/engine/botlib/be_aas_move.o \
+			  $(B)/engine/botlib/be_aas_optimize.o \
+			  $(B)/engine/botlib/be_aas_reach.o \
+			  $(B)/engine/botlib/be_aas_route.o \
+			  $(B)/engine/botlib/be_aas_routealt.o \
+			  $(B)/engine/botlib/be_aas_sample.o \
+			  $(B)/engine/botlib/be_ai_char.o \
+			  $(B)/engine/botlib/be_ai_chat.o \
+			  $(B)/engine/botlib/be_ai_gen.o \
+			  $(B)/engine/botlib/be_ai_goal.o \
+			  $(B)/engine/botlib/be_ai_move.o \
+			  $(B)/engine/botlib/be_ai_weap.o \
+			  $(B)/engine/botlib/be_ai_weight.o \
+			  $(B)/engine/botlib/be_ea.o \
+			  $(B)/engine/botlib/be_interface.o \
+			  $(B)/engine/botlib/l_crc.o \
+			  $(B)/engine/botlib/l_libvar.o \
+			  $(B)/engine/botlib/l_log.o \
+			  $(B)/engine/botlib/l_memory.o \
+			  $(B)/engine/botlib/l_precomp.o \
+			  $(B)/engine/botlib/l_script.o \
+			  $(B)/engine/botlib/l_struct.o \
+			  $(B)/engine/icarus/BlockStream.o \
+			  $(B)/engine/icarus/GameInterface.o \
+			  $(B)/engine/icarus/Instance.o \
+			  $(B)/engine/icarus/Interface.o \
+			  $(B)/engine/icarus/Memory.o \
+			  $(B)/engine/icarus/Q3_Interface.o \
+			  $(B)/engine/icarus/Q3_Registers.o \
+			  $(B)/engine/icarus/Sequence.o \
+			  $(B)/engine/icarus/Sequencer.o \
+			  $(B)/engine/icarus/TaskManager.o \
+			  $(B)/engine/zlib/ioapi.o \
+			  $(B)/engine/zlib/adler32.o \
+			  $(B)/engine/zlib/compress.o \
+			  $(B)/engine/zlib/crc32.o \
+			  $(B)/engine/zlib/deflate.o \
+			  $(B)/engine/zlib/gzclose.o \
+			  $(B)/engine/zlib/gzlib.o \
+			  $(B)/engine/zlib/gzread.o \
+			  $(B)/engine/zlib/gzwrite.o \
+			  $(B)/engine/zlib/infback.o \
+			  $(B)/engine/zlib/inffast.o \
+			  $(B)/engine/zlib/inflate.o \
+			  $(B)/engine/zlib/inftrees.o \
+			  $(B)/engine/zlib/trees.o \
+			  $(B)/engine/zlib/uncompr.o \
+			  $(B)/engine/zlib/zutil.o
 
-CG_OBJS			=	cgame/AnimalNPC.o \
-				cgame/bg_g2_utils.o \
-				cgame/bg_misc.o \
-				cgame/bg_panimate.o \
-				cgame/bg_pmove.o \
-				cgame/bg_saber.o \
-				cgame/bg_saberLoad.o \
-				cgame/bg_saga.o \
-				cgame/bg_slidemove.o \
-				cgame/bg_vehicleLoad.o \
-				cgame/bg_weapons.o \
-				cgame/cg_consolecmds.o \
-				cgame/cg_draw.o \
-				cgame/cg_drawtools.o \
-				cgame/cg_effects.o \
-				cgame/cg_ents.o \
-				cgame/cg_event.o \
-				cgame/cg_info.o \
-				cgame/cg_light.o \
-				cgame/cg_localents.o \
-				cgame/cg_main.o \
-				cgame/cg_marks.o \
-				cgame/cg_newDraw.o \
-				cgame/cg_players.o \
-				cgame/cg_playerstate.o \
-				cgame/cg_predict.o \
-				cgame/cg_saga.o \
-				cgame/cg_scoreboard.o \
-				cgame/cg_servercmds.o \
-				cgame/cg_snapshot.o \
-				cgame/cg_spawn.o \
-				cgame/cg_strap.o \
-				cgame/cg_syscalls.o \
-				cgame/cg_turret.o \
-				cgame/cg_view.o \
-				cgame/cg_weaponinit.o \
-				cgame/cg_weapons.o \
-				cgame/FighterNPC.o \
-				cgame/fx_blaster.o \
-				cgame/fx_bowcaster.o \
-				cgame/fx_bryarpistol.o \
-				cgame/fx_demp2.o \
-				cgame/fx_disruptor.o \
-				cgame/fx_flechette.o \
-				cgame/fx_force.o \
-				cgame/fx_heavyrepeater.o \
-				cgame/fx_rocketlauncher.o \
-				cgame/q_math.o \
-				cgame/q_shared.o \
-				cgame/SpeederNPC.o \
-				cgame/ui_shared.o \
-				cgame/WalkerNPC.o
+all: makedirs engine game cgame ui
 
-UI_CFLAGS		=	-m32 -I. -DNDEBUG -D_USRDL -D__linux__ -DUI_EXPORTS -DMISSIONPACK -D_JK2 -DFINAL_BUILD -fPIC -ggdb3
-UI_OBJS			=     	ui/bg_misc.o \
-				ui/bg_saga.o \
-				ui/bg_vehicleLoad.o \
-				ui/bg_weapons.o \
-				ui/q_math.o \
-				ui/q_shared.o \
-				ui/ui_atoms.o \
-                                ui/ui_force.o \
-                                ui/ui_gameinfo.o \
-                                ui/ui_main.o \
-                                ui/ui_saber.o \
-                                ui/ui_shared.o \
-                                ui/ui_syscalls.o
+makedirs:
+	@if [ ! -d $(B) ];then mkdir $(B);fi
+	@if [ ! -d $(B)/dedicated ];then mkdir $(B)/dedicated;fi
+	@if [ ! -d $(B)/engine ];then mkdir $(B)/engine;fi
+	@if [ ! -d $(B)/engine/botlib ];then mkdir $(B)/engine/botlib;fi
+	@if [ ! -d $(B)/engine/client ];then mkdir $(B)/engine/client;fi
+	@if [ ! -d $(B)/engine/ghoul2 ];then mkdir $(B)/engine/ghoul2;fi
+	@if [ ! -d $(B)/engine/icarus ];then mkdir $(B)/engine/icarus;fi
+	@if [ ! -d $(B)/engine/jpeg-8c ];then mkdir $(B)/engine/jpeg-8c;fi
+	@if [ ! -d $(B)/engine/mp3code ];then mkdir $(B)/engine/mp3code;fi
+	@if [ ! -d $(B)/engine/png ];then mkdir $(B)/engine/png;fi
+	@if [ ! -d $(B)/engine/qcommon ];then mkdir $(B)/engine/qcommon;fi
+	@if [ ! -d $(B)/engine/RMG ];then mkdir $(B)/engine/RMG;fi
+	@if [ ! -d $(B)/engine/renderer ];then mkdir $(B)/engine/renderer;fi
+	@if [ ! -d $(B)/engine/sdl ];then mkdir $(B)/engine/sdl;fi
+	@if [ ! -d $(B)/engine/server ];then mkdir $(B)/engine/server;fi
+	@if [ ! -d $(B)/engine/server/NPCNav ];then mkdir $(B)/engine/server/NPCNav;fi
+	@if [ ! -d $(B)/engine/sys ];then mkdir $(B)/engine/sys;fi
+	@if [ ! -d $(B)/engine/unix ];then mkdir $(B)/engine/unix;fi
+	@if [ ! -d $(B)/engine/unix_ded ];then mkdir $(B)/engine/unix_ded;fi
+	@if [ ! -d $(B)/engine/zlib ];then mkdir $(B)/engine/zlib;fi
+	@if [ ! -d $(B)/cgame ];then mkdir $(B)/cgame;fi
+	@if [ ! -d $(B)/game ];then mkdir $(B)/game;fi
+	@if [ ! -d $(B)/ui ];then mkdir $(B)/ui;fi
 
-ENGINE_OBJS		=   	client/FXExport.o \
-			        client/FxPrimitives.o \
-			        client/FxScheduler.o \
-			        client/FxSystem.o \
-			        client/FxTemplate.o \
-			        client/FxUtil.o \
-			        client/cl_cgame.o \
-			        client/cl_cin.o \
-			        client/cl_console.o \
-			        client/cl_input.o \
-			        client/cl_keys.o \
-			        client/cl_main.o \
-			        client/cl_net_chan.o \
-			        client/cl_parse.o \
-			        client/cl_scrn.o \
-			        client/cl_ui.o \
-			        qcommon/CNetProfile.o \
-			        qcommon/GenericParser2.o \
-			        qcommon/RoffSystem.o \
-			        qcommon/cm_draw.o \
-			        qcommon/cm_load.o \
-			        qcommon/cm_patch.o \
-			        qcommon/cm_polylib.o \
-			        qcommon/cm_randomterrain.o \
-			        qcommon/cm_shader.o \
-			        qcommon/cm_terrain.o \
-			        qcommon/cm_terrainmap.o \
-			        qcommon/cm_test.o \
-			        qcommon/cm_trace.o \
-			        qcommon/cmd_common.o \
-			        qcommon/cmd_pc.o \
-			        qcommon/common.o \
-			        qcommon/cvar.o \
-			        qcommon/exe_headers.o \
-			        qcommon/files_common.o \
-			        qcommon/files_pc.o \
-			        qcommon/hstring.o \
-			        qcommon/huffman.o \
-			        qcommon/md4.o \
-			        qcommon/msg.o \
-			        qcommon/net_chan.o \
-			        qcommon/q_math.o \
-			        qcommon/q_shared.o \
-			        qcommon/stringed_ingame.o \
-			        qcommon/stringed_interface.o \
-			        qcommon/unzip.o \
-			        qcommon/vm.o \
-			        qcommon/vm_interpreted.o \
-			        unix_ded/vm_x86.o \
-			        qcommon/z_memman_pc.o \
-			        \
-			        sdl/sdl_glimp.o \
-			        sdl/sdl_snd.o \
-			        sdl/sdl_input.o \
-			        sys/sys_main.o \
-			        sys/sys_unix.o \
-			        unix/unix_main.o \
-			        sys/sys_net.o \
-			        unix/snapvector.o \
-			        \
-			        server/sv_bot.o \
-			        server/sv_ccmds.o \
-			        server/sv_client.o \
-			        server/sv_game.o \
-			        server/sv_init.o \
-			        server/sv_main.o \
-			        server/sv_net_chan.o \
-			        server/sv_snapshot.o \
-			        server/sv_world.o \
-			        server/NPCNav/gameCallbacks.o \
-			        server/NPCNav/navigator.o \
-			        client/snd_ambient.o \
-			        client/snd_dma.o \
-			        client/snd_mem.o \
-			        client/snd_mix.o \
-			        client/snd_mp3.o \
-			        client/snd_music.o \
-			        mp3code/cdct.o \
-			        mp3code/csbt.o \
-			        mp3code/csbtb.o \
-			        mp3code/csbtl3.o \
-			        mp3code/cup.o \
-			        mp3code/cupini.o \
-			        mp3code/cupl1.o \
-			        mp3code/cupl3.o \
-			        mp3code/cwin.o \
-			        mp3code/cwinb.o \
-			        mp3code/cwinm.o \
-			        mp3code/hwin.o \
-			        mp3code/l3dq.o \
-			        mp3code/l3init.o \
-			        mp3code/mdct.o \
-			        mp3code/mhead.o \
-			        mp3code/msis.o \
-			        mp3code/towave.o \
-			        mp3code/uph.o \
-			        mp3code/upsf.o \
-			        mp3code/wavep.o \
-			        renderer/matcomp.o \
-			        renderer/tr_WorldEffects.o \
-			        renderer/tr_animation.o \
-			        renderer/tr_arioche.o \
-			        renderer/tr_backend.o \
-			        renderer/tr_bsp.o \
-			        renderer/tr_cmds.o \
-			        renderer/tr_curve.o \
-			        renderer/tr_font.o \
-			        renderer/tr_ghoul2.o \
-			        renderer/tr_image.o \
-			        renderer/tr_init.o \
-			        renderer/tr_light.o \
-			        renderer/tr_main.o \
-			        renderer/tr_marks.o \
-			        renderer/tr_mesh.o \
-			        renderer/tr_model.o \
-			        renderer/tr_noise.o \
-			        renderer/tr_quicksprite.o \
-			        renderer/tr_scene.o \
-			        renderer/tr_shade.o \
-			        renderer/tr_shade_calc.o \
-			        renderer/tr_shader.o \
-			        renderer/tr_shadows.o \
-			        renderer/tr_sky.o \
-			        renderer/tr_surface.o \
-			        renderer/tr_surfacesprites.o \
-			        renderer/tr_terrain.o \
-			        renderer/tr_world.o \
-			        jpeg-6/jcapimin.o \
-			        jpeg-6/jccoefct.o \
-			        jpeg-6/jccolor.o \
-			        jpeg-6/jcdctmgr.o \
-			        jpeg-6/jchuff.o \
-			        jpeg-6/jcinit.o \
-			        jpeg-6/jcmainct.o \
-			        jpeg-6/jcmarker.o \
-			        jpeg-6/jcmaster.o \
-			        jpeg-6/jcomapi.o \
-			        jpeg-6/jcparam.o \
-			        jpeg-6/jcphuff.o \
-			        jpeg-6/jcprepct.o \
-			        jpeg-6/jcsample.o \
-			        jpeg-6/jctrans.o \
-			        jpeg-6/jdapimin.o \
-			        jpeg-6/jdapistd.o \
-			        jpeg-6/jdatadst.o \
-			        jpeg-6/jdatasrc.o \
-			        jpeg-6/jdcoefct.o \
-			        jpeg-6/jdcolor.o \
-			        jpeg-6/jddctmgr.o \
-			        jpeg-6/jdhuff.o \
-			        jpeg-6/jdinput.o \
-			        jpeg-6/jdmainct.o \
-			        jpeg-6/jdmarker.o \
-			        jpeg-6/jdmaster.o \
-			        jpeg-6/jdpostct.o \
-			        jpeg-6/jdsample.o \
-			        jpeg-6/jdtrans.o \
-			        jpeg-6/jerror.o \
-			        jpeg-6/jfdctflt.o \
-			        jpeg-6/jidctflt.o \
-			        jpeg-6/jmemmgr.o \
-			        jpeg-6/jmemnobs.o \
-			        jpeg-6/jutils.o \
-			        png/png.o \
-			        ghoul2/G2_API.o \
-			        ghoul2/G2_bolts.o \
-			        ghoul2/G2_bones.o \
-			        ghoul2/G2_misc.o \
-			        ghoul2/G2_surfaces.o \
-			        RMG/RM_Area.o \
-			        RMG/RM_Instance.o \
-			        RMG/RM_InstanceFile.o \
-			        RMG/RM_Instance_BSP.o \
-			        RMG/RM_Instance_Group.o \
-			        RMG/RM_Instance_Random.o \
-			        RMG/RM_Instance_Void.o \
-			        RMG/RM_Manager.o \
-			        RMG/RM_Mission.o \
-			        RMG/RM_Objective.o \
-			        RMG/RM_Path.o \
-			        RMG/RM_Terrain.o \
-			        botlib/be_aas_bspq3.o \
-			        botlib/be_aas_cluster.o \
-			        botlib/be_aas_debug.o \
-			        botlib/be_aas_entity.o \
-			        botlib/be_aas_file.o \
-			        botlib/be_aas_main.o \
-			        botlib/be_aas_move.o \
-			        botlib/be_aas_optimize.o \
-			        botlib/be_aas_reach.o \
-			        botlib/be_aas_route.o \
-			        botlib/be_aas_routealt.o \
-			        botlib/be_aas_sample.o \
-			        botlib/be_ai_char.o \
-			        botlib/be_ai_chat.o \
-			        botlib/be_ai_gen.o \
-			        botlib/be_ai_goal.o \
-			        botlib/be_ai_move.o \
-			        botlib/be_ai_weap.o \
-			        botlib/be_ai_weight.o \
-			        botlib/be_ea.o \
-			        botlib/be_interface.o \
-			        botlib/l_crc.o \
-			        botlib/l_libvar.o \
-			        botlib/l_log.o \
-			        botlib/l_memory.o \
-			        botlib/l_precomp.o \
-			        botlib/l_script.o \
-			        botlib/l_struct.o \
-			        icarus/BlockStream.o \
-			        icarus/GameInterface.o \
-			        icarus/Instance.o \
-			        icarus/Interface.o \
-			        icarus/Memory.o \
-			        icarus/Q3_Interface.o \
-			        icarus/Q3_Registers.o \
-			        icarus/Sequence.o \
-			        icarus/Sequencer.o \
-			        icarus/TaskManager.o \
-			        zlib/ioapi.o \
-			        zlib/adler32.o \
-			        zlib/compress.o \
-			        zlib/crc32.o \
-			        zlib/deflate.o \
-			        zlib/gzclose.o \
-			        zlib/gzlib.o \
-			        zlib/gzread.o \
-			        zlib/gzwrite.o \
-			        zlib/infback.o \
-			        zlib/inffast.o \
-			        zlib/inflate.o \
-			        zlib/inftrees.o \
-			        zlib/trees.o \
-			        zlib/uncompr.o \
-			        zlib/zutil.o
+#
+# GAME RULES
+#
 
-all: engine game cgame ui
+game: $(GAME_OBJS)
+	$(CC) -o jampgamei386.so $(GAME_OBJS) $(GAME_LDFLAGS)
 
-game: $(G_OBJS)
-	$(CC) -m32 -shared -o jampgamei386.so $(G_OBJS) -lm
+$(B)/game/q_%.o: qcommon/q_%.c
+	$(CC) $(GAME_CFLAGS) -fPIC -c $< -o $@
 
-game/%.o: game/%.c
-	$(CC) $(G_CFLAGS) -fPIC -c $< -o $@
+$(B)/game/%.o: game/%.c
+	$(CC) $(GAME_CFLAGS) -fPIC -c $< -o $@
 
-game/q_%.o: qcommon/q_%.c
-	$(CC) $(G_CFLAGS) -fPIC -c $< -o $@
+#
+# CGAME RULES
+#
 
-cgame: $(CG_OBJS)
-	$(CC) -m32 -shared -o cgamei386.so $(CG_OBJS) -lm
+cgame: $(CGAME_OBJS)
+	$(CC) -o cgamei386.so $(CGAME_OBJS) $(CGAME_LDFLAGS)
 
-cgame/q_%.o: qcommon/q_%.c
-	$(CC) $(CG_CFLAGS) -fPIC -c $< -o $@
+$(B)/cgame/q_%.o: qcommon/q_%.c
+	$(CC) $(CGAME_CFLAGS) -fPIC -c $< -o $@
 
-cgame/%NPC.o: game/%NPC.c
-	$(CC) $(CG_CFLAGS) -fPIC -c $< -o $@
+$(B)/cgame/%NPC.o: game/%NPC.c
+	$(CC) $(CGAME_CFLAGS) -fPIC -c $< -o $@
 
-cgame/ui_%.o: ui/ui_%.c
-	$(CC) $(CG_CFLAGS) -fPIC -c $< -o $@
+$(B)/cgame/ui_%.o: ui/ui_%.c
+	$(CC) $(CGAME_CFLAGS) -fPIC -c $< -o $@
 
-cgame/bg_%.o: game/bg_%.c
-	$(CC) $(CG_CFLAGS) -fPIC -c $< -o $@
+$(B)/cgame/bg_%.o: game/bg_%.c
+	$(CC) $(CGAME_CFLAGS) -fPIC -c $< -o $@
 
-cgame/%.o: cgame/%.c
-	$(CC) $(CG_CFLAGS) -fPIC -c $< -o $@
+$(B)/cgame/%.o: cgame/%.c
+	$(CC) $(CGAME_CFLAGS) -fPIC -c $< -o $@
+
+#
+# UI RULES
+#
 
 ui: $(UI_OBJS)
-	$(CC) -m32 -shared -o uii386.so $(UI_OBJS) -lm
+	$(CC) -o $(UI_NAME) $(UI_OBJS) $(UI_LDFLAGS)
 
-ui/q_%.o: qcommon/q_%.c
+$(B)/ui/q_%.o: qcommon/q_%.c
 	$(CC) $(UI_CFLAGS) -fPIC -c $< -o $@
 
-ui/bg_%.o: game/bg_%.c
+$(B)/ui/bg_%.o: game/bg_%.c
 	$(CC) $(UI_CFLAGS) -fPIC -c $< -o $@
 
-ui/%.o: ui/%.c
+$(B)/ui/%.o: ui/%.c
 	$(CC) $(UI_CFLAGS) -fPIC -c $< -o $@
+
+#
+# ENGINE RULES
+#
 
 engine: $(ENGINE_OBJS)
-	$(CXX) -m32 -o jamp $(ENGINE_OBJS) `sdl2-config --libs` -lGL -lopenal
+	$(CXX) -o $(ENGINE_NAME) $(ENGINE_OBJS) $(ENGINE_LDFLAGS)
 
-zlib/%.o: zlib/%.c
+$(B)/engine/zlib/%.o: zlib/%.c
 	$(CC) $(ENGINE_CFLAGS) -c $< -o $@
 
-mp3code/%.o: mp3code/%.c
+$(B)/engine/jpeg-8c/%.o: jpeg-8c/%.c
 	$(CC) $(ENGINE_CFLAGS) -c $< -o $@
 
-botlib/%.o: botlib/%.cpp
+$(B)/engine/mp3code/%.o: mp3code/%.c
+	$(CC) $(ENGINE_CFLAGS) -c $< -o $@
+
+$(B)/engine/botlib/%.o: botlib/%.cpp
 	$(CXX) $(ENGINE_CFLAGS) -DBOTLIB -c $< -o $@
 
-unix/%.o: unix/%.nasm
+$(B)/engine/unix/%.o: unix/%.nasm
 	nasm -f elf -o $@  $<
 
-%.o: %.c
+$(B)/engine/%.o: %.c
 	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
 
-%.o: %.cpp
+$(B)/engine/%.o: %.cpp
 	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
 
 clean:
-	$(RM) $(ENGINE_OBJS) $(G_OBJS) $(CG_OBJS) $(UI_OBJS)
+	$(RM) $(ENGINE_OBJS) $(GAME_OBJS) $(CGAME_OBJS) $(UI_OBJS) \
+	$(ENGINE_NAME) $(GAME_NAME) $(CGAME_NAME) $(UI_NAME)
