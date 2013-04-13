@@ -357,10 +357,13 @@ if(BuildMPEngine)
 	
 	#    Source Files
 	
+	file(GLOB_RECURSE J_SRC "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
+	
 	# TODO sort this, fix capitalization
 	set(MPEngineSortMe
 		#"${MPDir}/alut.lib"
 		#"${MPDir}/client/0_sh_leak.cpp"
+		"${MPDir}/client/cl_avi.cpp"
 		"${MPDir}/client/cl_cgame.cpp"
 		"${MPDir}/client/cl_cin.cpp"
 		"${MPDir}/client/cl_console.cpp"
@@ -461,53 +464,56 @@ if(BuildMPEngine)
 		
 		# TODO: replace the following with proper libraries
 		
-		"${MPDir}/jpeg-6/jdatasrc.cpp" #libjpeg
-		"${MPDir}/jpeg-6/jdmainct.cpp"
-		"${MPDir}/jpeg-6/jpegint.h"
-		"${MPDir}/jpeg-6/jcinit.cpp"
-		"${MPDir}/jpeg-6/jddctmgr.cpp"
-		"${MPDir}/jpeg-6/jerror.h"
-		"${MPDir}/jpeg-6/jdsample.cpp"
-		"${MPDir}/jpeg-6/jcapimin.cpp"
-		"${MPDir}/jpeg-6/jdapimin.cpp"
-		"${MPDir}/jpeg-6/jconfig.h"
-		"${MPDir}/jpeg-6/jdcolor.cpp"
-		"${MPDir}/jpeg-6/jccolor.cpp"
-		"${MPDir}/jpeg-6/jdct.h"
-		"${MPDir}/jpeg-6/jdmaster.cpp"
-		"${MPDir}/jpeg-6/jdhuff.cpp"
-		"${MPDir}/jpeg-6/jdpostct.cpp"
-		"${MPDir}/jpeg-6/jmemnobs.cpp"
-		"${MPDir}/jpeg-6/jinclude.h"
-		"${MPDir}/jpeg-6/jcdctmgr.cpp"
-		"${MPDir}/jpeg-6/jdapistd.cpp"
-		"${MPDir}/jpeg-6/jmorecfg.h"
-		"${MPDir}/jpeg-6/jcphuff.cpp"
-		"${MPDir}/jpeg-6/jidctflt.cpp"
-		"${MPDir}/jpeg-6/jdhuff.h"
-		"${MPDir}/jpeg-6/jchuff.cpp"
-		"${MPDir}/jpeg-6/jutils.cpp"
-		"${MPDir}/jpeg-6/jccoefct.cpp"
-		"${MPDir}/jpeg-6/jchuff.h"
-		"${MPDir}/jpeg-6/jdtrans.cpp"
-		"${MPDir}/jpeg-6/jcmaster.cpp"
-		"${MPDir}/jpeg-6/jmemsys.h"
-		"${MPDir}/jpeg-6/jdatadst.cpp"
-		"${MPDir}/jpeg-6/jpeglib.h"
-		"${MPDir}/jpeg-6/jmemmgr.cpp"
-		"${MPDir}/jpeg-6/jcmarker.cpp"
-		"${MPDir}/jpeg-6/jctrans.cpp"
-		"${MPDir}/jpeg-6/jdcoefct.cpp"
-		"${MPDir}/jpeg-6/jcsample.cpp"
-		"${MPDir}/jpeg-6/jdmarker.cpp"
-		"${MPDir}/jpeg-6/jcprepct.cpp"
-		"${MPDir}/jpeg-6/jcomapi.cpp"
-		"${MPDir}/jpeg-6/jdinput.cpp"
-		"${MPDir}/jpeg-6/jcmainct.cpp"
-		"${MPDir}/jpeg-6/jcparam.cpp"
-		"${MPDir}/jpeg-6/jerror.cpp"
-		"${MPDir}/jpeg-6/jfdctflt.cpp"
-		"${MPDir}/jpeg-6/jversion.h"
+		#"${MPDir}/jpeg-8c/*.c"
+		#"${MPDir}/jpeg-8c/*.h"
+		
+		#"${MPDir}/jpeg-6/jdatasrc.cpp" #libjpeg
+		#"${MPDir}/jpeg-6/jdmainct.cpp"
+		#"${MPDir}/jpeg-6/jpegint.h"
+		#"${MPDir}/jpeg-6/jcinit.cpp"
+		#"${MPDir}/jpeg-6/jddctmgr.cpp"
+		#"${MPDir}/jpeg-6/jerror.h"
+		#"${MPDir}/jpeg-6/jdsample.cpp"
+		#"${MPDir}/jpeg-6/jcapimin.cpp"
+		#"${MPDir}/jpeg-6/jdapimin.cpp"
+		#"${MPDir}/jpeg-6/jconfig.h"
+		#"${MPDir}/jpeg-6/jdcolor.cpp"
+		#"${MPDir}/jpeg-6/jccolor.cpp"
+		#"${MPDir}/jpeg-6/jdct.h"
+		#"${MPDir}/jpeg-6/jdmaster.cpp"
+		#"${MPDir}/jpeg-6/jdhuff.cpp"
+		#"${MPDir}/jpeg-6/jdpostct.cpp"
+		#"${MPDir}/jpeg-6/jmemnobs.cpp"
+		#"${MPDir}/jpeg-6/jinclude.h"
+		#"${MPDir}/jpeg-6/jcdctmgr.cpp"
+		#"${MPDir}/jpeg-6/jdapistd.cpp"
+		#"${MPDir}/jpeg-6/jmorecfg.h"
+		#"${MPDir}/jpeg-6/jcphuff.cpp"
+		#"${MPDir}/jpeg-6/jidctflt.cpp"
+		#"${MPDir}/jpeg-6/jdhuff.h"
+		#"${MPDir}/jpeg-6/jchuff.cpp"
+		#"${MPDir}/jpeg-6/jutils.cpp"
+		#"${MPDir}/jpeg-6/jccoefct.cpp"
+		#"${MPDir}/jpeg-6/jchuff.h"
+		#"${MPDir}/jpeg-6/jdtrans.cpp"
+		#"${MPDir}/jpeg-6/jcmaster.cpp"
+		#"${MPDir}/jpeg-6/jmemsys.h"
+		#"${MPDir}/jpeg-6/jdatadst.cpp"
+		#"${MPDir}/jpeg-6/jpeglib.h"
+		#"${MPDir}/jpeg-6/jmemmgr.cpp"
+		#"${MPDir}/jpeg-6/jcmarker.cpp"
+		#"${MPDir}/jpeg-6/jctrans.cpp"
+		#"${MPDir}/jpeg-6/jdcoefct.cpp"
+		#"${MPDir}/jpeg-6/jcsample.cpp"
+		#"${MPDir}/jpeg-6/jdmarker.cpp"
+		#"${MPDir}/jpeg-6/jcprepct.cpp"
+		#"${MPDir}/jpeg-6/jcomapi.cpp"
+		#"${MPDir}/jpeg-6/jdinput.cpp"
+		#"${MPDir}/jpeg-6/jcmainct.cpp"
+		#"${MPDir}/jpeg-6/jcparam.cpp"
+		#"${MPDir}/jpeg-6/jerror.cpp"
+		#"${MPDir}/jpeg-6/jfdctflt.cpp"
+		#"${MPDir}/jpeg-6/jversion.h"
 		)
 	if(WIN32)
 		set(MPEngineSortMe
@@ -528,8 +534,9 @@ if(BuildMPEngine)
 	else(WIN32)
 		message("Please add the OS-Specific files for your OS to codemp/CMakeLists.txt")
 	endif(WIN32)
-	set(MPEngineFiles ${MPEngineFiles} ${MPEngineSortMe})
+	set(MPEngineFiles ${MPEngineFiles} ${MPEngineSortMe} ${J_SRC})
 	source_group("SortMe" FILES ${MPEngineSortMe})
+	source_group("jpeg-8c" FILES ${J_SRC})
 
 	# todo: windows resources
 
@@ -538,8 +545,8 @@ if(BuildMPEngine)
 	else(WIN32)
 		add_executable(${MPEngine} ${MPEngineFiles})
 	endif(WIN32)
-	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPEngineDefines};NDEBUG")
-	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPEngineDefines};_DEBUG")
+	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPEngineDefines};${ReleaseDefines}")
+	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPEngineDefines};${DebugDefines}")
 	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
 	target_link_libraries(${MPEngine} ${MPEngineLibraries})
 

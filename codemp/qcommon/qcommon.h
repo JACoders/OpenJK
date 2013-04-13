@@ -533,6 +533,9 @@ char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles
 void	FS_FreeFileList( char **fileList );
 //rwwRMG - changed to fileList to not conflict with list type
 
+void FS_Remove( const char *osPath );
+void FS_HomeRemove( const char *homePath );
+
 qboolean FS_FileExists( const char *file );
 
 int		FS_LoadStack();
@@ -867,6 +870,9 @@ void S_ClearSoundBuffer( void );
 // call before filesystem access
 
 void SCR_DebugGraph (float value, int color);	// FIXME: move logging to common?
+
+// AVI files have the start of pixel lines 4 byte-aligned
+#define AVI_LINE_PADDING 4
 
 
 //

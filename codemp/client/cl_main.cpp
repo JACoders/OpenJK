@@ -43,7 +43,8 @@ cvar_t	*cl_freezeDemo;
 cvar_t	*cl_shownet;
 cvar_t	*cl_showSend;
 cvar_t	*cl_timedemo;
-cvar_t	*cl_avidemo;
+cvar_t	*cl_aviFrameRate;
+cvar_t	*cl_aviMotionJpeg;
 cvar_t	*cl_forceavidemo;
 
 cvar_t	*cl_freelook;
@@ -261,9 +262,9 @@ void CL_Record_f( void ) {
 		return;
 	}
 
-	if ( !Cvar_VariableValue( "g_synchronousClients" ) ) {
-		Com_Printf ("The server must have 'g_synchronousClients 1' set for demos\n");
-		return;
+	// sync 0 doesn't prevent recording, so not forcing it off .. everyone does g_sync 1 ; record ; g_sync 0 ..
+	if ( NET_IsLocalAddress( clc.serverAddress ) && !Cvar_VariableValue( "g_synchronousClients" ) ) {
+		Com_Printf (S_COLOR_YELLOW "WARNING: You should set 'g_synchronousClients 1' for smoother demo recording\n");
 	}
 
 	if ( Cmd_Argc() == 2 ) {
@@ -299,7 +300,6 @@ void CL_Record_f( void ) {
 	} else {
 	  clc.spDemoRecording = qfalse;
 	}
-
 
 	Q_strncpyz( clc.demoName, demoName, sizeof( clc.demoName ) );
 
@@ -596,6 +596,11 @@ CL_ShutdownAll
 =====================
 */
 void CL_ShutdownAll(void) {
+	if(CL_VideoRecording())
+		CL_CloseAVI();
+
+	if(clc.demorecording)
+		CL_StopRecord_f();
 
 #if 0 //rwwFIXMEFIXME: Disable this before release!!!!!! I am just trying to find a crash bug.
 	//so it doesn't barf on shutdown saying refentities belong to each other
@@ -772,6 +777,13 @@ void CL_Disconnect( qboolean showMainMenu ) {
 	cl_connectedGAME = 0;
 	cl_connectedCGAME = 0;
 	cl_connectedUI = 0;
+
+	// Stop recording any video
+	if( CL_VideoRecording( ) ) {
+		// Finish rendering current frame
+		SCR_UpdateScreen( );
+		CL_CloseAVI( );
+	}
 }
 
 
@@ -1078,6 +1090,14 @@ doesn't know what graphics to reload
 */
 extern bool g_nOverrideChecked;
 void CL_Vid_Restart_f( void ) {
+	// Settings may have changed so stop recording now
+	if( CL_VideoRecording( ) ) {
+		CL_CloseAVI( );
+	}
+
+	if(clc.demorecording)
+		CL_StopRecord_f();
+
 	//rww - sort of nasty, but when a user selects a mod
 	//from the menu all it does is a vid_restart, so we
 	//have to check for new net overrides for the mod then.
@@ -2031,19 +2051,16 @@ void CL_Frame ( int msec ) {
 	}
 
 	// if recording an avi, lock to a fixed fps
-	if ( cl_avidemo->integer && msec) {
+	if ( CL_VideoRecording( ) && cl_aviFrameRate->integer && msec) {
 		// save the current screen
 		if ( cls.state == CA_ACTIVE || cl_forceavidemo->integer) {
-			if (cl_avidemo->integer > 0) {
-				Cbuf_ExecuteText( EXEC_NOW, "screenshot silent\n" );
-			} else {
-				Cbuf_ExecuteText( EXEC_NOW, "screenshot_tga silent\n" );
+			CL_TakeVideoFrame( );
+
+			// fixed time for next frame'
+			msec = (int)ceil( (1000.0f / cl_aviFrameRate->value) * com_timescale->value );
+			if (msec == 0) {
+				msec = 1;
 			}
-		}
-		// fixed time for next frame'
-		msec = (1000 / abs(cl_avidemo->integer)) * com_timescale->value;
-		if (msec == 0) {
-			msec = 1;
 		}
 	}
 
@@ -2281,6 +2298,74 @@ void CL_SetForcePowers_f( void ) {
 	return;
 }
 
+/*
+===============
+CL_Video_f
+
+video
+video [filename]
+===============
+*/
+void CL_Video_f( void )
+{
+	char  filename[ MAX_OSPATH ];
+	int   i, last;
+
+	if( !clc.demoplaying )
+	{
+		Com_Printf( "The video command can only be used when playing back demos\n" );
+		return;
+	}
+
+	if( Cmd_Argc( ) == 2 )
+	{
+		// explicit filename
+		Com_sprintf( filename, MAX_OSPATH, "videos/%s.avi", Cmd_Argv( 1 ) );
+	}
+	else
+	{
+		// scan for a free filename
+		for( i = 0; i <= 9999; i++ )
+		{
+			int a, b, c, d;
+
+			last = i;
+
+			a = last / 1000;
+			last -= a * 1000;
+			b = last / 100;
+			last -= b * 100;
+			c = last / 10;
+			last -= c * 10;
+			d = last;
+
+			Com_sprintf( filename, MAX_OSPATH, "videos/video%d%d%d%d.avi",
+				a, b, c, d );
+
+			if( !FS_FileExists( filename ) )
+				break; // file doesn't exist
+		}
+
+		if( i > 9999 )
+		{
+			Com_Printf( S_COLOR_RED "ERROR: no free file names to create video\n" );
+			return;
+		}
+	}
+
+	CL_OpenAVIForWriting( filename );
+}
+
+/*
+===============
+CL_StopVideo_f
+===============
+*/
+void CL_StopVideo_f( void )
+{
+	CL_CloseAVI( );
+}
+
 #define G2_VERT_SPACE_CLIENT_SIZE 256
 
 /*
@@ -2318,7 +2403,8 @@ void CL_Init( void ) {
 	cl_activeAction = Cvar_Get( "activeAction", "", CVAR_TEMP );
 
 	cl_timedemo = Cvar_Get ("timedemo", "0", 0);
-	cl_avidemo = Cvar_Get ("cl_avidemo", "0", 0);
+	cl_aviFrameRate = Cvar_Get ("cl_aviFrameRate", "25", CVAR_ARCHIVE);
+	cl_aviMotionJpeg = Cvar_Get ("cl_aviMotionJpeg", "1", CVAR_ARCHIVE);
 	cl_forceavidemo = Cvar_Get ("cl_forceavidemo", "0", 0);
 
 	rconAddress = Cvar_Get ("rconAddress", "", 0);
@@ -2426,6 +2512,8 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("fs_referencedList", CL_ReferencedPK3List_f );
 	Cmd_AddCommand ("model", CL_SetModel_f );
 	Cmd_AddCommand ("forcepowers", CL_SetForcePowers_f );
+	Cmd_AddCommand ("video", CL_Video_f );
+	Cmd_AddCommand ("stopvideo", CL_StopVideo_f );
 
 	CL_InitRef();
 
@@ -2493,6 +2581,8 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("showip");
 	Cmd_RemoveCommand ("model");
 	Cmd_RemoveCommand ("forcepowers");
+	Cmd_RemoveCommand ("video");
+	Cmd_RemoveCommand ("stopvideo");
 
 	Cvar_Set( "cl_running", "0" );
 
