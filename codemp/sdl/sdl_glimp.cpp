@@ -26,7 +26,17 @@ typedef enum
 static SDL_Window *screen = NULL;
 static SDL_DisplayMode *videoInfo = NULL;
 
-typedef void* QGLContext;
+/* Just hack it for now. */
+#ifdef MACOS_X
+#include <OpenGL/OpenGL.h>
+typedef CGLContextObj QGLContext;
+#define GLimp_GetCurrentContext() CGLGetCurrentContext()
+#define GLimp_SetCurrentContext(ctx) CGLSetCurrentContext(ctx)
+#else
+typedef void *QGLContext;
+#define GLimp_GetCurrentContext() (NULL)
+#define GLimp_SetCurrentContext(ctx)
+#endif
 static QGLContext opengl_context;
 
 bool g_bTextureRectangleHack = false;
@@ -81,18 +91,6 @@ void ( APIENTRY * qglPointParameterfvEXT)( GLenum param, GLfloat *value );
 
 void ( * qglLockArraysEXT)( int, int);
 void ( * qglUnlockArraysEXT) ( void );
-
-/* Just hack it for now. */
-#ifdef MACOS_X
-#include <OpenGL/OpenGL.h>
-typedef CGLContextObj QGLContext;
-#define GLimp_GetCurrentContext() CGLGetCurrentContext()
-#define GLimp_SetCurrentContext(ctx) CGLSetCurrentContext(ctx)
-#else
-typedef void *QGLContext;
-#define GLimp_GetCurrentContext() (NULL)
-#define GLimp_SetCurrentContext(ctx)
-#endif
 
 void		GLimp_EndFrame( void )
 {
