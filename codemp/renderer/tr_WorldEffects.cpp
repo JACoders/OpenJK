@@ -11,7 +11,7 @@
 
 // Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max)
 inline float WE_flrand(float min, float max) {
-	return ((rand() * (max - min)) / (RAND_MAX+1)) + min;
+	return ((rand() * (max - min)) / (RAND_MAX)) + min;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
