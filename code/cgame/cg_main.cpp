@@ -271,6 +271,9 @@ vmCvar_t	cg_debugAnim;
 vmCvar_t	cg_debugAnimTarget;
 vmCvar_t	cg_gun_frame;
 #endif
+vmCvar_t	cg_gun_x;
+vmCvar_t	cg_gun_y;
+vmCvar_t	cg_gun_z;
 vmCvar_t	cg_debugSaber;
 vmCvar_t	cg_debugEvents;
 vmCvar_t	cg_errorDecay;
@@ -390,6 +393,9 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_gun_frame, "gun_frame", "0", CVAR_CHEAT },
 	{ &cg_debugAnimTarget, "cg_debugAnimTarget", "0", CVAR_CHEAT },
 #endif	
+	{ &cg_gun_x, "cg_gunX", "0", CVAR_CHEAT },
+	{ &cg_gun_y, "cg_gunY", "0", CVAR_CHEAT },
+	{ &cg_gun_z, "cg_gunZ", "0", CVAR_CHEAT },
 	{ &cg_debugSaber, "cg_debugsaber", "0", CVAR_CHEAT },
 	{ &cg_debugEvents, "cg_debugevents", "0", CVAR_CHEAT },
 	{ &cg_errorDecay, "cg_errordecay", "100", 0 },
