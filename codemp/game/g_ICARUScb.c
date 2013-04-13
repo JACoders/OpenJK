@@ -3656,16 +3656,16 @@ void Q3_SetParm (int entID, int parmNum, const char *parmValue)
 	if ( (val = Q3_GameSideCheckStringCounterIncrement( parmValue )) )
 	{
 		val += atof( ent->parms->parm[parmNum] );
-		Com_sprintf( ent->parms->parm[parmNum], sizeof(ent->parms->parm), "%f", val );
+		Com_sprintf( ent->parms->parm[parmNum], sizeof(ent->parms->parm[parmNum]), "%f", val );
 	}
 	else
 	{//Just copy the string
 		//copy only 16 characters
-		strncpy( ent->parms->parm[parmNum], parmValue, sizeof(ent->parms->parm[0]) );
-		//set the last charcter to null in case we had to truncate their passed string
-		if ( ent->parms->parm[parmNum][sizeof(ent->parms->parm[0]) - 1] != 0 )
+		strncpy( ent->parms->parm[parmNum], parmValue, sizeof(ent->parms->parm[parmNum]) );
+		//set the last character to null in case we had to truncate their passed string
+		if ( ent->parms->parm[parmNum][sizeof(ent->parms->parm[parmNum]) - 1] != 0 )
 		{//Tried to set a string that is too long
-			ent->parms->parm[parmNum][sizeof(ent->parms->parm[0]) - 1] = 0;
+			ent->parms->parm[parmNum][sizeof(ent->parms->parm[parmNum]) - 1] = 0;
 			G_DebugPrint( WL_WARNING, "SET_PARM: parm%d string too long, truncated to '%s'!\n", parmNum, ent->parms->parm[parmNum] );
 		}
 	}
