@@ -1,9 +1,19 @@
+PLATFORM=$(shell uname|tr A-Z a-z)
+
 CC			= gcc
 CXX			= g++
 B			= build
 
-GAME_NAME		= $(B)/jampgamei386.so
-GAME_CFLAGS		= -m32 -I. -D_M_IX86 -DNDEBUG -D__linux__ -DMISSIONPACK -DQAGAME -DJK2AWARDS -D_JK2 -DFINAL_BUILD
+ifeq ($(PLATFORM),darwin)
+	DLL_EXT		= dylib
+	BINARY_FMT	= macho
+else
+	DLL_EXT		= so
+	BINARY_FMT	= elf
+endif
+
+GAME_NAME		= $(B)/jampgamei386.$(DLL_EXT)
+GAME_CFLAGS		= -m32 -I. -D_M_IX86 -DNDEBUG -DMISSIONPACK -DQAGAME -DJK2AWARDS -D_JK2 -DFINAL_BUILD
 GAME_LDFLAGS		= -m32 -shared -lm
 GAME_OBJS		= $(B)/game/ai_main.o \
 			  $(B)/game/ai_util.o \
@@ -94,8 +104,8 @@ GAME_OBJS		= $(B)/game/ai_main.o \
 			  $(B)/game/w_saber.o \
 			  $(B)/game/WalkerNPC.o
 
-CGAME_NAME		= $(B)/cgamei386.so
-CGAME_CFLAGS		= -m32 -I. -DNDEBUG -D__linux__ -DMISSIONPACK -DCGAME -D_JK2 -DFINAL_BUILD -ggdb3
+CGAME_NAME		= $(B)/cgamei386.$(DLL_EXT)
+CGAME_CFLAGS		= -m32 -I. -DNDEBUG -DMISSIONPACK -DCGAME -D_JK2 -DFINAL_BUILD -ggdb3
 CGAME_LDFLAGS		= -m32 -shared -lm
 CGAME_OBJS		= $(B)/cgame/AnimalNPC.o \
 			  $(B)/cgame/bg_g2_utils.o \
@@ -150,8 +160,8 @@ CGAME_OBJS		= $(B)/cgame/AnimalNPC.o \
 			  $(B)/cgame/ui_shared.o \
 			  $(B)/cgame/WalkerNPC.o
 
-UI_NAME			= $(B)/uii386.so
-UI_CFLAGS		= -m32 -I. -DNDEBUG -D_USRDL -D__linux__ -DUI_EXPORTS -DMISSIONPACK -D_JK2 -DFINAL_BUILD -fPIC -ggdb3
+UI_NAME			= $(B)/uii386.$(DLL_EXT)
+UI_CFLAGS		= -m32 -I. -DNDEBUG -D_USRDL -DUI_EXPORTS -DMISSIONPACK -D_JK2 -DFINAL_BUILD -fPIC -ggdb3
 UI_LDFLAGS		= -m32 -shared -lm
 UI_OBJS			= $(B)/ui/bg_misc.o \
 			  $(B)/ui/bg_saga.o \
@@ -169,7 +179,11 @@ UI_OBJS			= $(B)/ui/bg_misc.o \
 
 ENGINE_NAME		= $(B)/jamp
 ENGINE_CFLAGS		+= -m32 -fpermissive -w -D_JK2 -DNDEBUG -D_JK2 -D_JK2MP -DFINAL_BUILD -D_M_IX86 -I.
-ENGINE_LDFLAGS		= -m32 `sdl2-config --libs` -lGL -lopenal
+ifeq ($(PLATFORM),darwin)
+	ENGINE_LDFLAGS		= -m32 `sdl2-config --libs` -framework OpenGL -framework OpenAL
+else
+	ENGINE_LDFLAGS		= -m32 `sdl2-config --libs` -lGL -lopenal
+endif
 ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/client/FxPrimitives.o \
 			  $(B)/engine/client/FxScheduler.o \
@@ -417,7 +431,7 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/zlib/uncompr.o \
 			  $(B)/engine/zlib/zutil.o
 
-DEDICATED_NAME		= $(B)/linuxjampded
+DEDICATED_NAME		= $(B)/$(PLATFORM)jampded
 DEDICATED_CFLAGS	+= -m32 -fpermissive -w -DDEDICATED -O2 -unroll -D_JK2 -DNDEBUG -DC_ONLY -DFINAL_BUILD -D_M_IX86 -I.
 DEDICATED_LDFLAGS	= -m32 -ldl
 DEDICATED_OBJS		= $(B)/dedicated/server/sv_bot.o \
@@ -597,6 +611,18 @@ DEDICATED_OBJS		= $(B)/dedicated/server/sv_bot.o \
 			  $(B)/dedicated/zlib/uncompr.o \
 			  $(B)/dedicated/zlib/zutil.o
 
+ifeq ($(PLATFORM),darwin)
+	DEDICATED_CFLAGS += -DMACOS_X
+	ENGINE_CFLAGS += -DMACOS_X
+	UI_CFLAGS += -DMACOS_X
+	CGAME_CFLAGS += -DMACOS_X
+	GAME_CFLAGS += -DMACOS_X
+else
+	GAME_CFLAGS += -D__linux__
+	UI_CFLAGS += -D__linux__
+	CGAME_CFLAGS += -D__linux__
+endif
+
 all: makedirs engine game cgame ui dedicated
 
 makedirs:
@@ -717,7 +743,7 @@ $(B)/engine/botlib/%.o: botlib/%.cpp
 	$(CXX) $(ENGINE_CFLAGS) -DBOTLIB -c $< -o $@
 
 $(B)/engine/unix/%.o: unix/%.nasm
-	nasm -f elf -o $@  $<
+	nasm -f $(BINARY_FMT) -o $@  $<
 
 $(B)/engine/%.o: %.c
 	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
@@ -747,7 +773,7 @@ $(B)/dedicated/botlib/%.o: botlib/%.cpp
 	$(CXX) $(DEDICATED_CFLAGS) -DBOTLIB -c $< -o $@
 
 $(B)/dedicated/unix/%.o: unix/%.nasm
-	nasm -f elf -o $@  $<
+	nasm -f $(BINARY_FMT) -o $@  $<
 
 $(B)/dedicated/%.o: %.c
 	$(CXX) $(DEDICATED_CFLAGS) -c $< -o $@

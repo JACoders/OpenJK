@@ -182,6 +182,7 @@ float FloatSwap( const float *f );
 #ifdef MACOS_X
 
 	#include <sys/mman.h>
+    #include <unistd.h>
 
 	#define __cdecl
 	#define __declspec(x)
