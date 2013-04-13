@@ -430,6 +430,21 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">common_headers.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">common_headers.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="wp_atst.cpp" />
+    <ClCompile Include="wp_blaster_pistol.cpp" />
+    <ClCompile Include="wp_blaster_rifle.cpp" />
+    <ClCompile Include="wp_bot_laser.cpp" />
+    <ClCompile Include="wp_bowcaster.cpp" />
+    <ClCompile Include="wp_concussion.cpp" />
+    <ClCompile Include="wp_demp2.cpp" />
+    <ClCompile Include="wp_det_pack.cpp" />
+    <ClCompile Include="wp_disruptor.cpp" />
+    <ClCompile Include="wp_emplaced_gun.cpp" />
+    <ClCompile Include="wp_flechette.cpp" />
+    <ClCompile Include="wp_melee.cpp" />
+    <ClCompile Include="wp_noghri_stick.cpp" />
+    <ClCompile Include="wp_repeater.cpp" />
+    <ClCompile Include="wp_rocket_launcher.cpp" />
     <ClCompile Include="wp_saber.cpp" />
     <ClCompile Include="wp_saberLoad.cpp" />
     <ClCompile Include="..\icarus\BlockStream.cpp">
@@ -904,6 +919,10 @@
     <ClCompile Include="g_vehicles.cpp" />
     <ClCompile Include="SpeederNPC.cpp" />
     <ClCompile Include="WalkerNPC.cpp" />
+    <ClCompile Include="wp_stun_baton.cpp" />
+    <ClCompile Include="wp_thermal.cpp" />
+    <ClCompile Include="wp_trip_mine.cpp" />
+    <ClCompile Include="wp_tusken.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\win32\game.rc" />
@@ -1000,6 +1019,7 @@
     <ClInclude Include="..\Rufl\hfile.h" />
     <ClInclude Include="..\Rufl\hstring.h" />
     <ClInclude Include="g_vehicles.h" />
+    <ClInclude Include="w_local.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="game.def" />

@@ -80,12 +80,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Raven Software"
             VALUE "CompanyName", "Activision Inc"
-            VALUE "FileDescription", "Jedi Academy SP"
+            VALUE "FileDescription", "OpenJK Singleplayer"
             VALUE "FileVersion",  VERSION_STRING
             VALUE "InternalName", "JASP"
-            VALUE "LegalCopyright", "Copyright (C) 2003"
+            VALUE "LegalCopyright", "Copyright (C) 2013"
             VALUE "OriginalFilename", "jasp.exe"
-            VALUE "ProductName", "Jedi Knight®: Jedi Academy"
+            VALUE "ProductName", "OpenJK Singleplayer"
             VALUE "ProductVersion",  VERSION_STRING
         END
     END
