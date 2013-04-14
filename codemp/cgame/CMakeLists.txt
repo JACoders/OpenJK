@@ -8,8 +8,6 @@ endif(NOT InOpenJK)
 set(MPCGameIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPCGameLibraries "odbc32" "odbccp32") # what are these even?
-else(WIN32)
-	message("codemp/cgame/CMakeLists.txt might need some libraries to link properly on your platform.")
 endif(WIN32)
 set(MPCGameDefines ${MPSharedDefines} "CGAME" "MISSIONPACK" )
 set(MPCGameSortMe

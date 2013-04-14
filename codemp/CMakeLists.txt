@@ -118,8 +118,6 @@ if(BuildMPEngine OR BuildMPDed)
 	# Platform-specific libraries
 	if(WIN32)
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} "winmm" "wsock32")
-	else(WIN32)
-		message("You might need to add some libraries to codemp/CMakeLists.txt or you could get linker errors on non-Windows-OSs.")
 	endif(WIN32)
 	# Include directories
 	set(MPEngineAndDedIncludeDirectories ${MPDir}) # codemp folder, since includes are not always relative in the files
@@ -318,7 +316,6 @@ if(BuildMPEngine OR BuildMPDed)
 			"${MPDir}/qcommon/vm_x86.cpp"
 			)
 	else(WIN32)
-		message("TODO: Non-Win32 support")
 		set(MPEngineAndDedAllSortMe
 			${MPEngineAndDedAllSortMe}
 			"${MPDir}/unix/vm_x86.cpp"
@@ -545,7 +542,6 @@ if(BuildMPEngine)
 			"${MPDir}/win32/engine.rc"
 			)
 	else(WIN32)
-		message("Please add the OS-Specific files for your OS to codemp/CMakeLists.txt")
 		set(MPEngineSortMe
 			${MPEngineSortMe}
 			"${MPDir}/sdl/sdl_glimp.cpp"
@@ -560,7 +556,6 @@ if(BuildMPEngine)
 			"${MPDir}/unix/unix_local.h"
 			"${MPDir}/unix/unix_main.cpp"
 			)
-
 	endif(WIN32)
 
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineSortMe})
@@ -604,7 +599,6 @@ if(BuildMPDed)
 			"${MPDir}/win32/dedicated.rc"
 			)
 	else(WIN32)
-		message( "Add your dedicated server files to codemp/CMakeLists.txt please" )
 		set(MPDedSortMe ${MPDedSortMe}
 			"${MPDir}/unix_ded/unix_main.cpp"
 			"${MPDir}/unix_ded/unix_net.cpp"

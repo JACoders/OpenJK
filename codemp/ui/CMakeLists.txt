@@ -8,8 +8,6 @@ endif(NOT InOpenJK)
 set(MPUIIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPUILibraries "odbc32" "odbccp32") # what are these even?
-else(WIN32)
-	message("codemp/ui/CMakeLists.txt might need some libraries to link properly on your platform.")
 endif(WIN32)
 set(MPUIDefines ${MPSharedDefines} "UI_EXPORTS" "MISSIONPACK" "_USRDLL")
 set(MPUISortMe

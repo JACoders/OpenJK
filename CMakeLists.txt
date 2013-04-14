@@ -45,7 +45,7 @@ set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 # Common settings
 if(WIN32)
 	set(SharedDefines "WIN32" "_WINDOWS")
-else(WIN32)
+else()
 	if (APPLE)
 		set(SharedDefines "MACOS_X" "_M_IX86")
 	else(APPLE)
@@ -56,21 +56,21 @@ else(WIN32)
 	set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
+	# maybe remove these flags later, when the warnings are fixed
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w -fpermissive")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fpermissive")
 
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -w -fpermissive")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -w -fpermissive")
-
+	# additional flags for debug configuration
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 
-	# there are some assembly files to build
-	enable_language(ASM_NASM)
+	enable_language(ASM_NASM) # there are some assembly files to build
 	
 	if (NOT CMAKE_BUILD_TYPE)
  		message("No build type selected, default to RELEASE")
  		set(CMAKE_BUILD_TYPE "RELEASE")
  	endif()
-endif(WIN32)
+endif()
 
 set(DebugDefines "_DEBUG")
 set(ReleaseDefines "NDEBUG" "FINAL_BUILD")
