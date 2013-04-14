@@ -64,7 +64,7 @@ int G_FindConfigstringIndex( const char *name, int start, int max, qboolean crea
 		if ( !s[0] ) {
 			break;
 		}
-		if ( !stricmp( s, name ) ) {
+		if ( !Q_stricmp( s, name ) ) {
 			return i;
 		}
 	}
@@ -282,7 +282,7 @@ void G_EntityPosition( int i, vec3_t ret )
 //===Bypass network for sounds on specific channels====================
 
 extern void cgi_S_StartSound( const vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx );
-#include "..\cgame\cg_media.h"	//access to cgs
+#include "../cgame/cg_media.h"	//access to cgs
 extern qboolean CG_TryPlayCustomSound( vec3_t origin, int entityNum, soundChannel_t channel, const char *soundName, int customSoundSet );
 extern cvar_t *g_timescale;
 //NOTE: Do NOT Try to use this before the cgame DLL is valid, it will NOT work!
@@ -637,7 +637,7 @@ void G_UseTargets2 (gentity_t *ent, gentity_t *activator, const char *string)
 //
 	if (string)
 	{
-		if( !stricmp( string, "self") )
+		if( !Q_stricmp( string, "self") )
 		{
 			t = ent;
 			if (t->e_UseFunc != useF_NULL)	// check can be omitted
@@ -1582,11 +1582,11 @@ static qboolean G_IsTriggerUsable(gentity_t* self, gentity_t* other)
 
 	if ((!G_ValidActivateBehavior (self, BSET_USE) && !self->target) ||
 		(self->target && 
-		(stricmp(self->target, "n") == 0 || 
-		(stricmp(self->target, "neveropen") == 0 || 
-		(stricmp(self->target, "run_gran_drop") == 0) ||
-		(stricmp(self->target, "speaker") == 0) ||
-		(stricmp(self->target, "locked") == 0)
+		(Q_stricmp(self->target, "n") == 0 || 
+		(Q_stricmp(self->target, "neveropen") == 0 || 
+		(Q_stricmp(self->target, "run_gran_drop") == 0) ||
+		(Q_stricmp(self->target, "speaker") == 0) ||
+		(Q_stricmp(self->target, "locked") == 0)
 		))))
 	{
 		return qfalse;

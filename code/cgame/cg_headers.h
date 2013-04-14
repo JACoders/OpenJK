@@ -24,7 +24,7 @@ This file is part of Jedi Academy.
 // down builds? Somewhat. But then again, if I do change headers, I have to
 // tolerate VS.net's piss poor dependency system that requires my to manually
 // delete the .pch for the PC version to work at all. So, I'll live.
-#ifdef _XBOX
+#ifndef _WIN32
 	#include "../game/g_local.h"
 	#include "../game/g_functions.h"
 	#include "../game/b_local.h"

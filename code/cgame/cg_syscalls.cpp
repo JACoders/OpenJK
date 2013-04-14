@@ -19,6 +19,10 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
+#ifndef _WIN32
+#define syscall Q_syscall
+#endif
+
 //#include "cg_local.h"
 
 // this file is only included when building a dll

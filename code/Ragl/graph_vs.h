@@ -106,28 +106,28 @@ This file is part of Jedi Academy.
 	#include "ragl_common.h"
 #endif
 #if !defined(RATL_ARRAY_VS_INC)
-	#include "..\Ratl\array_vs.h"
+	#include "../Ratl/array_vs.h"
 #endif
 #if !defined(RATL_VECTOR_VS_INC)
-	#include "..\Ratl\vector_vs.h"
+	#include "../Ratl/vector_vs.h"
 #endif
 #if !defined(RATL_BITS_INC)
-	#include "..\Ratl\bits_vs.h"
+	#include "../Ratl/bits_vs.h"
 #endif
 #if !defined(RATL_QUEUE_VS_INC)
-	#include "..\Ratl\queue_vs.h"
+	#include "../Ratl/queue_vs.h"
 #endif
 #if !defined(RATL_STACK_VS_INC)
-	#include "..\Ratl\stack_vs.h"
+	#include "../Ratl/stack_vs.h"
 #endif
 #if !defined(RBTREE_MAP_VS_INC)
-	#include "..\Ratl\map_vs.h"
+	#include "../Ratl/map_vs.h"
 #endif
 #if !defined(RATL_POOL_VS_INC)
-	#include "..\Ratl\pool_vs.h"
+	#include "../Ratl/pool_vs.h"
 #endif
 #if !defined(RATL_GRID_VS_INC)
-	#include "..\Ratl\grid_vs.h"
+	#include "../Ratl/grid_vs.h"
 #endif
 namespace ragl
 {
@@ -308,7 +308,7 @@ public:
 			// I. Fill All The Cells With The Points Contained By Those Cells
 			//----------------------------------------------------------------
 			bool full = false;
-			for (TNodes::iterator it=mGraph.nodes_begin(); it!=mGraph.nodes_end() && !full; it++)
+			for (typename TNodes::iterator it=mGraph.nodes_begin(); it!=mGraph.nodes_end() && !full; it++)
 			{
 				TNODE&	node = (*it);
 				SCell&	cell = mCells.get(node[0], node[1]);
@@ -324,8 +324,8 @@ public:
 			// II. Go To All Neighboring Cells And Get Them
 			//==============================================
 			int					iRange = (int)(range) + 1;
-			TCells::riterator	rcell;
-			TCells::riterator	rcellend;
+			typename TCells::riterator	rcell;
+			typename TCells::riterator	rcellend;
 			CVec3				cellCenter(0,0,0);
 			CVec3				nodeCenter(0,0,0);
 
@@ -410,7 +410,7 @@ public:
 			// I. Fill All The Cells With The Points Contained By Those Cells
 			//----------------------------------------------------------------
 			bool full = false;
-			for (TEdges::iterator eit=mGraph.edges_begin(); eit!=mGraph.edges_end() && !full; eit++)
+			for (typename TEdges::iterator eit=mGraph.edges_begin(); eit!=mGraph.edges_end() && !full; eit++)
 			{
 				TEDGE&	edge = (*eit);
 				SCell&	cell = mCells.get(edge[0], edge[1]);
@@ -427,8 +427,8 @@ public:
 			// II. Go To All Neighboring Cells And Get Them
 			//==============================================
 			int					iRange = (int)(range) + 1;
-			TCells::riterator	rcell;
-			TCells::riterator	rcellend;
+			typename TCells::riterator	rcell;
+			typename TCells::riterator	rcellend;
 			CVec3				cellCenter(0,0,0);
 			CVec3				nodeCenter(0,0,0);
 
@@ -1147,7 +1147,7 @@ private:
 		{}
 		search_node(const search_node& t) : 
 			mNode(t.mNode), 
-			mParentVisit(t.mParentVisit)
+			mParentVisit(t.mParentVisit),
 			mCostToGoal(t.mCostToGoal),
 			mCostFromStart(t.mCostFromStart)
 		{}

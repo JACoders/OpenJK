@@ -39,7 +39,7 @@ This file is part of Jedi Academy.
 
 
 #if !defined(RAVL_VEC_INC)
-	#include "..\Ravl\CVec.h"
+	#include "../Ravl/CVec.h"
 #endif
 
 

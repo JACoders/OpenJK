@@ -116,7 +116,11 @@ template<class T, int IS_MULTI>
 class tree_base
 {
 public:
+#ifdef _WIN32
 	typedef typename T TStorageTraits;
+#else
+    typedef T TStorageTraits;
+#endif
 	typedef typename T::TValue TTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
@@ -849,7 +853,11 @@ class set_base : public tree_base<T,IS_MULTI>
 {
 
 public:
+#ifdef _WIN32
 	typedef typename T TStorageTraits;
+#else
+    typedef T TStorageTraits;
+#endif
 	typedef typename T::TValue TTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
@@ -1213,9 +1221,17 @@ template<class K,class V,int IS_MULTI>
 class map_base : public tree_base<K,IS_MULTI>
 {
 public:
+#ifdef _WIN32
 	typedef typename K TKeyStorageTraits;
+#else
+    typedef K TKeyStorageTraits;
+#endif
 	typedef typename K::TValue TKTValue;
+#ifdef _WIN32
 	typedef typename V TValueStorageTraits;
+#else
+    typedef V TValueStorageTraits;
+#endif
 	typedef typename V::TValue TVTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum

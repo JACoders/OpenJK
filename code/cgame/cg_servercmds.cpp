@@ -48,7 +48,7 @@ void CG_ParseServerinfo( void ) {
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
 	char *p = strrchr(mapname,'/');
 	strcpy( cgs.stripLevelName[0], p?p+1:mapname );
-	strupr( cgs.stripLevelName[0] );
+	Q_strupr( cgs.stripLevelName[0] );
 	for (int i=1; i<STRIPED_LEVELNAME_VARIATIONS; i++)	// clear retry-array
 	{
 		cgs.stripLevelName[i][0]='\0';
@@ -63,7 +63,7 @@ void CG_ParseServerinfo( void ) {
 	// additional String files needed for some levels...
 	//
 	// JKA...
-	if (!stricmp(cgs.stripLevelName[0],"YAVIN1B"))
+	if (!Q_stricmp(cgs.stripLevelName[0],"YAVIN1B"))
 	{
 		strcpy( cgs.stripLevelName[1], "YAVIN1");
 	}

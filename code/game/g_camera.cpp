@@ -25,7 +25,7 @@ This file is part of Jedi Academy.
 //#include "Q3_Interface.h"
 //#include "anims.h"
 //#include "b_local.h"
-#include "..\cgame\cg_camera.h"
+#include "../cgame/cg_camera.h"
 #include "g_functions.h"
 
 /*

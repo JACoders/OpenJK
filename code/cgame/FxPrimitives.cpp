@@ -25,6 +25,7 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 
+#ifdef _WIN32
 #pragma warning(disable: 4035)
 static long myftol( float f ) 
 {
@@ -34,6 +35,9 @@ static long myftol( float f )
 	__asm mov eax, tmp
 }
 #pragma warning(default: 4035)
+#else
+#define myftol( f ) (long)(f)
+#endif
 
 extern int drawnFx;
 extern int mParticles;

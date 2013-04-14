@@ -36,8 +36,8 @@ This file is part of Jedi Academy.
 //	#include "../game/IGInterface.h"
 //#endif
 
-// More stuff that we "need" on Xbox, as we don't use PCH
-#ifdef _XBOX
+// More stuff that we "need" if don't use PCH
+#ifndef _WIN32
 	#include "../game/b_local.h"
 	#include "../game/g_functions.h"
 	#include "../game/g_nav.h"
