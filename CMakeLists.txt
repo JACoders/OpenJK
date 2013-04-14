@@ -47,12 +47,25 @@ if(WIN32)
 	set(SharedDefines "WIN32" "_WINDOWS")
 else(WIN32)
 	set(SharedDefines "__linux__" "_M_IX86")
-	SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
-	SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
+	# removes the -rdynamic flag at linking (which causes crashes for some reason)
+	set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
+
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w -fpermissive")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fpermissive")
+
+	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
+
+	# there are some assembly files to build
 	enable_language(ASM_NASM)
-	message("Please find out what the defines for your platform are and add them to CMakeLists.txt")
+	
+	if (NOT CMAKE_BUILD_TYPE)
+ 		message("No build type selected, default to RELEASE")
+ 		set(CMAKE_BUILD_TYPE "RELEASE")
+ 	endif()
 endif(WIN32)
 
 set(DebugDefines "_DEBUG")
