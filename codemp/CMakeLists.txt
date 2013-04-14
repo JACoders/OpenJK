@@ -137,6 +137,14 @@ if(BuildMPEngine OR BuildMPDed)
 		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${ZLIB_INCLUDE_DIR})
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZLIB_LIBRARY})
 	endif(UseInternalZlib)
+
+	if(NOT WIN32)
+		find_package(SDL2 REQUIRED)
+		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${SDL2_INCLUDE_DIR})
+		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${SDL2_LIBRARY})
+	endif(NOT WIN32)
+	
+	file(GLOB_RECURSE J_SRC "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
 	
 	# All the rest, yet to be sorted (let's just get it to compile first)
 	# TODO sort this, fix capitalization
@@ -234,7 +242,6 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/vm.cpp"
 		"${MPDir}/qcommon/vm_interpreted.cpp"
 		"${MPDir}/qcommon/vm_local.h"
-		"${MPDir}/qcommon/vm_x86.cpp"
 		"${MPDir}/qcommon/z_memman_pc.cpp"
 		"${MPDir}/renderer/glext.h"
 		"${MPDir}/renderer/matcomp.c"
@@ -308,12 +315,20 @@ if(BuildMPEngine OR BuildMPDed)
 			"${MPDir}/win32/win_local.h"
 			"${MPDir}/win32/win_net.cpp"
 			"${MPDir}/win32/win_shared.cpp"
+			"${MPDir}/qcommon/vm_x86.cpp"
 			)
 	else(WIN32)
 		message("TODO: Non-Win32 support")
+		set(MPEngineAndDedAllSortMe
+			${MPEngineAndDedAllSortMe}
+			"${MPDir}/unix/vm_x86.cpp"
+			"${MPDir}/unix/snapvector.nasm"
+			)
 	endif(WIN32)
-	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedAllSortMe})
+	
+	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedAllSortMe} ${J_SRC})
 	source_group("SortMe" FILES ${MPEngineAndDedAllSortMe})
+	source_group("jpeg-8c" FILES ${J_SRC})
 	
 endif(BuildMPEngine OR BuildMPDed)
 
@@ -330,7 +345,7 @@ if(BuildMPEngine)
 	# OpenGL
 	find_package(OpenGL REQUIRED)
 	set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENGL_INCLUDE_DIR})
-	set(MPEngineLibraries ${MPEngineLibraries} ${OPENGL_LIBRARIES})
+	set(MPEngineLibraries ${MPEngineLibraries} ${OPENGL_gl_LIBRARY})
 
 	# OpenAL (is optionally included for Windows)
 	if(UseInternalOpenAL)
@@ -356,8 +371,6 @@ if(BuildMPEngine)
 	endif(WIN32)
 	
 	#    Source Files
-	
-	file(GLOB_RECURSE J_SRC "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
 	
 	# TODO sort this, fix capitalization
 	set(MPEngineSortMe
@@ -533,10 +546,25 @@ if(BuildMPEngine)
 			)
 	else(WIN32)
 		message("Please add the OS-Specific files for your OS to codemp/CMakeLists.txt")
+		set(MPEngineSortMe
+			${MPEngineSortMe}
+			"${MPDir}/sdl/sdl_glimp.cpp"
+			"${MPDir}/sdl/sdl_input.cpp"
+			"${MPDir}/sdl/sdl_qgl.h"
+			"${MPDir}/sdl/sdl_snd.cpp"
+			"${MPDir}/sys/sys_loadlib.h"
+			"${MPDir}/sys/sys_local.h"
+			"${MPDir}/sys/sys_main.cpp"
+			"${MPDir}/sys/sys_net.cpp"
+			"${MPDir}/sys/sys_unix.cpp"
+			"${MPDir}/unix/unix_local.h"
+			"${MPDir}/unix/unix_main.cpp"
+			)
+
 	endif(WIN32)
-	set(MPEngineFiles ${MPEngineFiles} ${MPEngineSortMe} ${J_SRC})
+
+	set(MPEngineFiles ${MPEngineFiles} ${MPEngineSortMe})
 	source_group("SortMe" FILES ${MPEngineSortMe})
-	source_group("jpeg-8c" FILES ${J_SRC})
 
 	# todo: windows resources
 
@@ -545,6 +573,7 @@ if(BuildMPEngine)
 	else(WIN32)
 		add_executable(${MPEngine} ${MPEngineFiles})
 	endif(WIN32)
+	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPEngineDefines};${DebugDefines}")
 	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
