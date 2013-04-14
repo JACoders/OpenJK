@@ -57,8 +57,8 @@ else(WIN32)
 	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
 
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w -fpermissive")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fpermissive")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -w -fpermissive")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -w -fpermissive")
 
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
