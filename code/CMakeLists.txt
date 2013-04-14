@@ -316,6 +316,7 @@ if(BuildSPEngine)
 			"${SPDir}/win32/AutoVersion.h"
 			"${SPDir}/win32/resource.h"
 			"${SPDir}/win32/glw_win.h"
+			"${SPDir}/win32/winquake.rc"
 			)
 	else(WIN32)
 		message("Please add the OS-Specific files for your OS to codemp/CMakeLists.txt")
