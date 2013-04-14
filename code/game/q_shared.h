@@ -132,7 +132,7 @@ This file is part of Jedi Academy.
 
 //======================= MAC OS X SERVER DEFINES =====================
 
-#if defined(__MACH__) && defined(__APPLE__)
+#if defined(MACOS_X) || (defined(__MACH__) && defined(__APPLE__))
 
 #define MAC_STATIC
 
@@ -146,9 +146,12 @@ This file is part of Jedi Academy.
 
 #define	PATH_SEP	'/'
 
-#define	GAME_HARD_LINKED
-#define	CGAME_HARD_LINKED
-#define	UI_HARD_LINKED
+#define _snprintf snprintf
+#define strcmpi Q_stricmp
+#define _isnan isnan
+#define strnicmp Q_stricmpn
+
+#define __cdecl
 
 #endif
 
@@ -991,7 +994,7 @@ inline float Q_crandom( int *seed ) {
 
 //  Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max
 inline float Q_flrand(float min, float max) {
-	return ((rand() * (max - min)) / 32768.0F) + min;
+	return ((rand() * (max - min)) / ((float)RAND_MAX)) + min;
 }
 
 // Returns an integer min <= x <= max (ie inclusive)
@@ -1000,10 +1003,14 @@ inline int Q_irand(int min, int max) {
 	return ((rand() * (max - min)) >> 15) + min;
 }
 
+#ifdef _WIN32
 //returns a float between 0 and 1.0
 inline float random() {
 	return (rand() / ((float)0x7fff));
 }
+#else
+#define random() (rand() / ((float)RAND_MAX))
+#endif
 
 //returns a float between -1 and 1.0
 inline float crandom() {
@@ -1225,14 +1232,15 @@ int Q_islower( int c );
 int Q_isupper( int c );
 int Q_isalpha( int c );
 
+#ifndef _WIN32
 // portable case insensitive compare
-//inline  int Q_stricmp (const char *s1, const char *s2) {return Q_stricmpn (s1, s2, 99999);}
-//int		Q_strncmp (const char *s1, const char *s2, int n);
-//int		Q_stricmpn (const char *s1, const char *s2, int n);
-//char	*Q_strlwr( char *s1 );
-//char	*Q_strupr( char *s1 );
-//char	*Q_strrchr( const char* string, int c );
-
+int		Q_strncmp (const char *s1, const char *s2, int n);
+int		Q_stricmpn (const char *s1, const char *s2, int n);
+inline  int Q_stricmp (const char *s1, const char *s2) {return Q_stricmpn (s1, s2, 99999);}
+char	*Q_strlwr( char *s1 );
+char	*Q_strupr( char *s1 );
+char	*Q_strrchr( const char* string, int c );
+#else
 // NON-portable (but faster) versions
 inline int	Q_stricmp (const char *s1, const char *s2) { return stricmp(s1, s2); }
 inline int	Q_strncmp (const char *s1, const char *s2, int n) { return strncmp(s1, s2, n); }
@@ -1240,6 +1248,7 @@ inline int	Q_stricmpn (const char *s1, const char *s2, int n) { return strnicmp(
 inline char	*Q_strlwr( char *s1 ) { return strlwr(s1); }
 inline char	*Q_strupr( char *s1 ) { return strupr(s1); }
 inline const char	*Q_strrchr( const char* str, int c ) { return strrchr(str, c); }
+#endif
 
 
 // buffer size safe library replacements
@@ -1389,7 +1398,7 @@ Ghoul2 Insert Start
 */
 
 #if !defined(GHOUL2_SHARED_H_INC)
-	#include "..\game\ghoul2_shared.h"	//for CGhoul2Info_v
+	#include "../game/ghoul2_shared.h"	//for CGhoul2Info_v
 #endif
 
 /*

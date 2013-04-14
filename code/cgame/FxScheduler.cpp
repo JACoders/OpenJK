@@ -25,7 +25,7 @@ This file is part of Jedi Academy.
 #endif
 
 #if !defined(GHOUL2_SHARED_H_INC)
-	#include "..\game\ghoul2_shared.h"	//for CGhoul2Info_v
+	#include "../game/ghoul2_shared.h"	//for CGhoul2Info_v
 #endif
 
 #if !defined(G2_H_INC)
@@ -522,7 +522,7 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 	if ((pair = base->GetPairs())!=0)
 	{
 		grpName = pair->GetName();
-		if ( !stricmp( grpName, "repeatDelay" ))
+		if ( !Q_stricmp( grpName, "repeatDelay" ))
 		{
 			effect->mRepeatDelay = atoi(pair->GetTopValue());
 		}
@@ -539,55 +539,55 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 		grpName = primitiveGroup->GetName();
 
 		// Huge stricmp lists suxor
-		if ( !stricmp( grpName, "particle" ))
+		if ( !Q_stricmp( grpName, "particle" ))
 		{
 			type = Particle;
 		}
-		else if ( !stricmp( grpName, "line" ))
+		else if ( !Q_stricmp( grpName, "line" ))
 		{
 			type = Line;
 		}
-		else if ( !stricmp( grpName, "tail" ))
+		else if ( !Q_stricmp( grpName, "tail" ))
 		{
 			type = Tail;
 		}
-		else if ( !stricmp( grpName, "sound" ))
+		else if ( !Q_stricmp( grpName, "sound" ))
 		{
 			type = Sound;
 		}
-		else if ( !stricmp( grpName, "cylinder" ))
+		else if ( !Q_stricmp( grpName, "cylinder" ))
 		{
 			type = Cylinder;
 		}
-		else if ( !stricmp( grpName, "electricity" ))
+		else if ( !Q_stricmp( grpName, "electricity" ))
 		{
 			type = Electricity;
 		}
-		else if ( !stricmp( grpName, "emitter" ))
+		else if ( !Q_stricmp( grpName, "emitter" ))
 		{
 			type = Emitter;
 		}
-		else if ( !stricmp( grpName, "decal" ))
+		else if ( !Q_stricmp( grpName, "decal" ))
 		{
 			type = Decal;
 		}
-		else if ( !stricmp( grpName, "orientedparticle" ))
+		else if ( !Q_stricmp( grpName, "orientedparticle" ))
 		{
 			type = OrientedParticle;
 		}
-		else if ( !stricmp( grpName, "fxrunner" ))
+		else if ( !Q_stricmp( grpName, "fxrunner" ))
 		{
 			type = FxRunner;
 		}
-		else if ( !stricmp( grpName, "light" ))
+		else if ( !Q_stricmp( grpName, "light" ))
 		{
 			type = Light;
 		}
-		else if ( !stricmp( grpName, "cameraShake" ))
+		else if ( !Q_stricmp( grpName, "cameraShake" ))
 		{
 			type = CameraShake;
 		}
-		else if ( !stricmp( grpName, "flash" ))
+		else if ( !Q_stricmp( grpName, "flash" ))
 		{
 			type = ScreenFlash;
 		}
@@ -770,7 +770,7 @@ CPrimitiveTemplate *CFxScheduler::GetPrimitiveCopy( SEffectTemplate *effectCopy,
 
 	for ( int i = 0; i < effectCopy->mPrimitiveCount; i++ )
 	{
-		if ( !stricmp( effectCopy->mPrimitives[i]->mName, componentName ))
+		if ( !Q_stricmp( effectCopy->mPrimitives[i]->mName, componentName ))
 		{
 			// we found a match, so return it
 			return effectCopy->mPrimitives[i];
@@ -938,7 +938,11 @@ void CFxScheduler::PlayEffect( const char *file, int clientID, bool isPortal )
 
 		if ( prim->mSpawnFlags & FX_EVEN_DISTRIBUTION )
 		{
+#ifdef _WIN32
 			factor = abs(prim->mSpawnDelay.GetMax() - prim->mSpawnDelay.GetMin()) / (float)count;
+#else
+            factor = fabs(prim->mSpawnDelay.GetMax() - prim->mSpawnDelay.GetMin()) / (float)count;
+#endif
 		}
 
 		// Schedule the random number of bits
@@ -1237,7 +1241,11 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 
 		if ( prim->mSpawnFlags & FX_EVEN_DISTRIBUTION )
 		{
+#ifdef _WIN32
 			factor = abs(prim->mSpawnDelay.GetMax() - prim->mSpawnDelay.GetMin()) / (float)count;
+#else
+            factor = fabs(prim->mSpawnDelay.GetMax() - prim->mSpawnDelay.GetMin()) / (float)count;
+#endif
 		}
 
 		// Schedule the random number of bits

@@ -86,10 +86,10 @@ This file is part of Jedi Academy.
 	#endif
 #endif
 #if !defined(RAVL_VEC_INC)
-	#include "..\Ravl\CVec.h"
+	#include "../Ravl/CVec.h"
 #endif
 #if !defined(RATL_COMMON_INC)
-	#include "..\Ratl\ratl_common.h"
+	#include "../Ratl/ratl_common.h"
 #endif
 namespace ragl
 {

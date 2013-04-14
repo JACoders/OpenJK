@@ -54,7 +54,7 @@ This file is part of Jedi Academy.
 #endif
 
 #ifndef _JK2MP
-#include "..\Ratl\string_vs.h"
+#include "../Ratl/string_vs.h"
 #endif
 
 #ifdef QAGAME

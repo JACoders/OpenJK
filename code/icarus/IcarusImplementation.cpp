@@ -26,6 +26,10 @@ This file is part of Jedi Academy.
 #include "TaskManager.h"
 #include "Sequencer.h"
 
+#ifndef _WIN32
+#include "../game/q_shared.h"
+#endif
+
 #define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); a++ )
 #define STL_INSERT( a, b )		a.insert( a.end(), b );
 
@@ -380,7 +384,7 @@ void CIcarus::Precache(char* buffer, long length)
 			
 			sVal1 = (const char *) block.GetMemberData( 0 );
 
-			if (!stricmp(sVal1,"PLAY_ROFF"))
+			if (!Q_stricmp(sVal1,"PLAY_ROFF"))
 			{
 				sVal1 = (const char *) block.GetMemberData( 1 );
 

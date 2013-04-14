@@ -32,7 +32,7 @@ This file is part of Jedi Academy.
 //	#include "../game/q_math.h"
 //#endif
 
-#ifdef _XBOX
+#ifndef _WIN32
 #define GAME_INCLUDE
 	#include "../game/b_local.h"
 	#include "../cgame/cg_local.h"
