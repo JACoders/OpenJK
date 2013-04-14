@@ -50,6 +50,7 @@ set(MPUISortMe
 set(MPUIFiles ${MPUISortMe})
 
 add_library(${MPUI} SHARED ${MPUIFiles})
+set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPUIDefines};${DebugDefines}")
 set_target_properties(${MPUI} PROPERTIES INCLUDE_DIRECTORIES "${MPUIIncludeDirectories}")

@@ -325,7 +325,7 @@ if(BuildMPEngine OR BuildMPDed)
 			"${MPDir}/unix/snapvector.nasm"
 			)
 	endif(WIN32)
-	
+
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedAllSortMe} ${J_SRC})
 	source_group("SortMe" FILES ${MPEngineAndDedAllSortMe})
 	source_group("jpeg-8c" FILES ${J_SRC})
@@ -577,6 +577,7 @@ if(BuildMPEngine)
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPEngineDefines};${DebugDefines}")
 	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
+
 	target_link_libraries(${MPEngine} ${MPEngineLibraries})
 
 endif(BuildMPEngine)
@@ -604,11 +605,20 @@ if(BuildMPDed)
 			)
 	else(WIN32)
 		message( "Add your dedicated server files to codemp/CMakeLists.txt please" )
+		set(MPDedSortMe ${MPDedSortMe}
+			"${MPDir}/unix_ded/unix_main.cpp"
+			"${MPDir}/unix_ded/unix_net.cpp"
+			"${MPDir}/unix_ded/unix_shared.cpp"
+			"${MPDir}/unix_ded/linux_local.h"
+			"${MPDir}/unix_ded/linux_common.c"
+			)
+		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 	endif(WIN32)
 	set(MPDedFiles ${MPDedFiles} ${MPDedSortMe})
 	source_group("SortMe" FILES ${MPDedSortMe})
 	
 	add_executable(${MPDed} ${MPDedFiles})
+	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPDedDefines};${DebugDefines}")
 	set_target_properties(${MPDed} PROPERTIES INCLUDE_DIRECTORIES "${MPDedIncludeDirectories}")
