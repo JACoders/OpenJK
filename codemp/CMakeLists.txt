@@ -158,7 +158,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/game/anims.h"
 		"${MPDir}/game/bg_public.h"
 		"${MPDir}/game/bg_weapons.h"
-		"${MPDir}/game/botlib.h"
+		"${MPDir}/botlib/botlib.h"
 		"${MPDir}/game/g_public.h"
 		"${MPDir}/game/surfaceflags.h"
 		)
