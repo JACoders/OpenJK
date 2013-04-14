@@ -222,7 +222,7 @@ void ( APIENTRY * qglPointParameterfvEXT)( GLenum, GLfloat *);
 void ( APIENTRY * qglPointParameteriNV)( GLenum, GLint);
 void ( APIENTRY * qglPointParameterivNV)( GLenum, const GLint *);
 
-#ifndef _XBOX	// GLOWXXX
+#ifdef _WIN32	// GLOWXXX
 // Declare Register Combiners function pointers.
 PFNGLCOMBINERPARAMETERFVNV				qglCombinerParameterfvNV = NULL;
 PFNGLCOMBINERPARAMETERIVNV				qglCombinerParameterivNV = NULL;

@@ -227,11 +227,14 @@ int			s_entityWavVol_back[MAX_GENTITIES];
 
 int			s_UseOpenAL	= false;	// Determines if using Open AL or the default software mixer
 
+#ifdef _WIN32
 ALfloat		listener_pos[3];		// Listener Position
 ALfloat		listener_ori[6];		// Listener Orientation
+#endif
 int			s_numChannels;			// Number of AL Sources == Num of Channels
 short		s_rawdata[MAX_RAW_SAMPLES*2];	// Used for Raw Samples (Music etc...)
 
+#ifdef _WIN32
 channel_t *S_OpenALPickChannel(int entnum, int entchannel);
 int  S_MP3PreProcessLipSync(channel_t *ch, short *data);
 void UpdateSingleShotSounds();
@@ -328,6 +331,8 @@ const GUID EAX_REVERB_EFFECT = { 0xcf95c8f, 0xa3cc, 0x4849, { 0xb0, 0xb6, 0x83, 
 *
 \**************************************************************************************************/
 
+#endif /* _WIN32 */
+
 // instead of clearing a whole channel_t struct, we're going to skip the MP3SlidingDecodeBuffer[] buffer in the middle...
 //
 static inline void Channel_Clear(channel_t *ch)
@@ -378,7 +383,7 @@ void S_SoundInfo_f(void) {
 		if ( s_soundMuted ) {
 			Com_Printf ("sound system is muted\n");
 		}
-
+#ifdef _WIN32
 		if (s_UseOpenAL)
 		{
 			Com_Printf("EAX 4.0 %s supported\n",s_bEAX?"is":"not");
@@ -388,13 +393,16 @@ void S_SoundInfo_f(void) {
 		}
 		else
 		{
+#endif
 			Com_Printf("%5d stereo\n", dma.channels - 1);
 			Com_Printf("%5d samples\n", dma.samples);
 			Com_Printf("%5d samplebits\n", dma.samplebits);
 			Com_Printf("%5d submission_chunk\n", dma.submission_chunk);
 			Com_Printf("%5d speed\n", dma.speed);
 			Com_Printf("0x%x dma buffer\n", dma.buffer);
+#ifdef _WIN32
 		}	
+#endif
 
 		if (bMusic_IsDynamic)
 		{		
@@ -482,7 +490,7 @@ void S_Init( void ) {
 	cv = Cvar_Get("s_UseOpenAL" , "0",CVAR_ARCHIVE|CVAR_LATCH);
 	s_UseOpenAL = !!(cv->integer);
 
-
+#ifdef _WIN32
 	if (s_UseOpenAL)
 	{	
 		ALCDevice = alcOpenDevice((ALubyte*)"DirectSound3D");
@@ -603,6 +611,7 @@ void S_Init( void ) {
 	}
 	else
 	{
+#endif
 		r = SNDDMA_Init();
 
 		if ( r ) {
@@ -617,7 +626,9 @@ void S_Init( void ) {
 
 			//S_SoundInfo_f();
 		}
+#ifdef _WIN32
 	}
+#endif
 
 //	Com_Printf("------------------------------------\n");
 
@@ -663,6 +674,7 @@ void S_Shutdown( void )
 	S_FreeAllSFXMem();
 	S_UnCacheDynamicMusic();
 
+#ifdef _WIN32
 	if (s_UseOpenAL)
 	{
 		// Release all the AL Sources (including Music channel (Source 0))
@@ -704,8 +716,11 @@ void S_Shutdown( void )
 	}
 	else
 	{
+#endif
 		SNDDMA_Shutdown();
+#ifdef _WIN32
 	}
+#endif
 
 	s_soundStarted = 0;
 
@@ -852,7 +867,7 @@ sfx_t *S_FindName( const char *name ) {
 	sfx = &s_knownSfx[i];
 	memset (sfx, 0, sizeof(*sfx));
 	Q_strncpyz(sfx->sSoundName, sSoundNameNoExt, sizeof(sfx->sSoundName));
-	strlwr(sfx->sSoundName);//force it down low
+	Q_strlwr(sfx->sSoundName);//force it down low
 
 	sfx->next = sfxHash[hash];
 	sfxHash[hash] = sfx;
@@ -908,6 +923,7 @@ void S_BeginRegistration( void )
 
 	s_soundMuted = qfalse;		// we can play again
 
+#ifdef _WIN32
 	// Find name of level so we can load in the appropriate EAL file
 	if (s_UseOpenAL)
 	{
@@ -919,6 +935,7 @@ void S_BeginRegistration( void )
 			s_FXSlotInfo[i].lEnvID = -1;
 		}
 	}
+#endif
 
 	if (s_numSfx == 0) {
 		SND_setup();
@@ -944,6 +961,7 @@ static void EALFileInit(char *level)
 	char		szEALFilename[MAX_QPATH];
 	int			i;
 
+#ifdef _WIN32
 	// If an EAL File is already unloaded, remove it
 	if (s_bEALFileLoaded)
 	{
@@ -982,6 +1000,7 @@ static void EALFileInit(char *level)
 			}
 		}
 	}
+#endif
 }
 
 
@@ -1093,8 +1112,10 @@ channel_t *S_PickChannel(int entnum, int entchannel)
 	channel_t	*ch, *firstToDie;
 	qboolean	foundChan = qfalse;
 
+#ifdef _WIN32
 	if (s_UseOpenAL)
 		return S_OpenALPickChannel(entnum, entchannel);
+#endif
 
 	if ( entchannel<0 ) {
 		Com_Error (ERR_DROP, "S_PickChannel: entchannel<0");
@@ -1164,6 +1185,7 @@ channel_t *S_PickChannel(int entnum, int entchannel)
 */
 channel_t *S_OpenALPickChannel(int entnum, int entchannel)
 {
+#ifdef _WIN32
     int			ch_idx;
 	channel_t	*ch, *ch_firstToDie;
 	bool	foundChan = false;
@@ -1333,6 +1355,9 @@ channel_t *S_OpenALPickChannel(int entnum, int entchannel)
 	ch_firstToDie->bStreaming = false;
 	
     return ch_firstToDie;
+#else
+    return NULL;
+#endif
 }
 
 
@@ -1539,7 +1564,7 @@ void S_StartSound(const vec3_t origin, int entityNum, soundChannel_t entchannel,
 	if ( s_show->integer == 1 ) {
 		Com_Printf( "%i : %s for ent %d, chan=%d\n", s_paintedtime, sfx->sSoundName, entityNum, entchannel );
 	}
-
+#if _WIN32
 	if (s_UseOpenAL)
 	{
 		if (entchannel == CHAN_VOICE)
@@ -1585,6 +1610,7 @@ void S_StartSound(const vec3_t origin, int entityNum, soundChannel_t entchannel,
 			}
 		}
 	}
+#endif
 
 
 	// pick a channel to play on
@@ -1786,6 +1812,7 @@ void S_StopSounds(void)
 	// stop looping sounds
 	S_ClearLoopingSounds();
 
+#ifdef _WIN32
 	// clear all the s_channels
 	if (s_UseOpenAL)
 	{
@@ -1804,8 +1831,11 @@ void S_StopSounds(void)
 	}
 	else
 	{
+#endif
 		memset(s_channels, 0, sizeof(s_channels));
+#ifdef _WIN32
 	}
+#endif
 
 	// clear out the lip synching override array
 	memset(s_entityWavVol, 0,sizeof(s_entityWavVol));
@@ -2251,6 +2281,7 @@ void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 		Com_Error( ERR_DROP, "S_UpdateEntityPosition: bad entitynum %i", entityNum );
 	}
 
+#ifdef _WIN32
 	if (s_UseOpenAL)
 	{
 		if (entityNum == 0)
@@ -2285,6 +2316,7 @@ void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 			}
 		}
 	}
+#endif
 
 	VectorCopy( origin, s_entityPosition[entityNum] );
 }
@@ -2423,8 +2455,10 @@ Change the volumes of all the playing sounds for changes in their positions
 */
 void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], qboolean inwater )
 {
+#ifdef _WIN32
 	EAXOCCLUSIONPROPERTIES eaxOCProp;
 	EAXACTIVEFXSLOTS eaxActiveSlots;
+#endif
 	unsigned int ulEnvironment;
 	int			i;
 	channel_t	*ch;
@@ -2433,6 +2467,7 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], qboolean 
 		return; 
 	}
 
+#ifdef _WIN32
 	if (s_UseOpenAL)
 	{
 		listener_pos[0] = head[0];
@@ -2522,6 +2557,7 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], qboolean 
 	}
 	else
 	{
+#endif
 		listener_number = entityNum;
 		VectorCopy(head, listener_origin);
 		VectorCopy(axis[0], listener_axis[0]);
@@ -2564,7 +2600,9 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], qboolean 
 
 		// add loopsounds
 		S_AddLoopSounds ();
+#ifdef _WIN32
 	}
+#endif
 
 	return;
 }
@@ -2758,6 +2796,7 @@ void S_Update_(void) {
 		return;
 	}
 
+#ifdef _WIN32
 	if (s_UseOpenAL)
 	{
 		UpdateSingleShotSounds();
@@ -2998,6 +3037,7 @@ void S_Update_(void) {
 	}
 	else
 	{
+#endif
 		// Updates s_soundtime
 		S_GetSoundtime();
 
@@ -3027,12 +3067,15 @@ void S_Update_(void) {
 		SNDDMA_Submit ();
 
 		S_DoLipSynchs( s_oldpaintedtime );
+#ifdef _WIN32
 	}
+#endif
 }
 
 
 void UpdateSingleShotSounds()
 {
+#ifdef _WIN32
 	int i, j, k;
 	ALint state;
 	ALint processed;
@@ -3198,6 +3241,7 @@ void UpdateSingleShotSounds()
 			}
 		}
 	}
+#endif
 }
 
 
@@ -3205,6 +3249,7 @@ void UpdateSingleShotSounds()
 
 void UpdateLoopingSounds()
 {
+#ifdef _WIN32
 	int i,j;
 	ALuint source;
 	channel_t *ch;
@@ -3386,6 +3431,7 @@ void UpdateLoopingSounds()
 				s_channels[source].bPlaying = true;
 		}
 	}
+#endif
 }
 
 
@@ -3394,6 +3440,7 @@ void UpdateLoopingSounds()
 
 void AL_UpdateRawSamples()
 {
+#ifdef _WIN32
 	ALuint buffer;
 	ALint size;
 	ALint processed;
@@ -3509,6 +3556,7 @@ void AL_UpdateRawSamples()
 	if (alGetError() != AL_NO_ERROR)
 		OutputDebugString("OAL Error : UpdateRawSamples\n");
 #endif
+#endif
 }
 
 
@@ -3552,7 +3600,12 @@ void S_SetLipSyncs()
 	char szString[256];
 #endif
 
+#ifdef _WIN32
 	currentTime = timeGetTime();
+#else
+    // FIXME: alternative to timeGetTime ?
+    currentTime = 0;
+#endif
 
 	memset(s_entityWavVol, 0, sizeof(s_entityWavVol));
 
@@ -5251,6 +5304,7 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 */
 void InitEAXManager()
 {
+#ifdef _WIN32
 	LPEAXMANAGERCREATE lpEAXManagerCreateFn;
 	EAXFXSLOTPROPERTIES FXSlotProp;
 	GUID	Effect;
@@ -5360,6 +5414,7 @@ void InitEAXManager()
 	s_bEAX = false;
 
 	return;
+#endif
 }
 
 /*
@@ -5367,6 +5422,7 @@ void InitEAXManager()
 */
 void ReleaseEAXManager()
 {
+#ifdef _WIN32
 	s_bEAX = false;
 
 	UnloadEALFile();
@@ -5381,6 +5437,7 @@ void ReleaseEAXManager()
 		FreeLibrary(s_hEAXManInst);
 		s_hEAXManInst = NULL;
 	}
+#endif
 }
 
 
@@ -5389,6 +5446,7 @@ void ReleaseEAXManager()
 */
 static bool LoadEALFile(char *szEALFilename)
 {
+#ifdef _WIN32
 	char		*ealData = NULL;
 	HRESULT		hr;
 	long		i, j, lID, lEnvID;
@@ -5663,7 +5721,7 @@ static bool LoadEALFile(char *szEALFilename)
 		return true;
 	}
 
-	
+#endif	
 	Com_DPrintf( S_COLOR_YELLOW "Failed to load %s\n", szEALFilename);
 	return false;
 }
@@ -5673,6 +5731,7 @@ static bool LoadEALFile(char *szEALFilename)
 */
 static void UnloadEALFile()
 {
+#ifdef _WIN32
 	HRESULT hr;
 
 	if ((!s_lpEAXManager) || (!s_bEAX))
@@ -5688,6 +5747,7 @@ static void UnloadEALFile()
 	}
 
 	return;
+#endif
 }
 
 /*
@@ -5695,6 +5755,7 @@ static void UnloadEALFile()
 */
 static void UpdateEAXListener()
 {
+#ifdef _WIN32
 	EMPOINT ListPos, ListOri;
 	EMPOINT EMAperture;
 	EMPOINT EMSourcePoint;
@@ -6282,7 +6343,16 @@ static void UpdateEAXBuffer(channel_t *ch)
 	}
 
 	return;
+#endif
 }
+
+#ifndef _WIN32
+typedef struct _EMPOINT {
+    float fX;
+    float fY;
+    float fZ;
+} EMPOINT;
+#endif
 
 float CalcDistance(EMPOINT A, EMPOINT B)
 {

@@ -20,9 +20,9 @@
 #include <windows.h>
 #include <gl/gl.h>
 
-#elif defined( __APPLE__ ) && defined( __MACH__ )
+#elif defined(MACOS_X)
   
-#include <MesaGL/gl.h>
+#include "../macosx/macosx_glimp.h"
 
 #elif defined( __linux__ )
 
@@ -166,7 +166,7 @@ extern PFNGLGETCOMBINEROUTPUTPARAMETERIVNV		qglGetCombinerOutputParameterivNV;
 extern PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV	qglGetFinalCombinerInputParameterfvNV;
 extern PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV	qglGetFinalCombinerInputParameterivNV;
 
-
+#ifdef _WIN32
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Pixel Format extension definitions. - AReis
 /***********************************************************************************************************/
@@ -235,7 +235,7 @@ typedef BOOL (WINAPI * PFNWGLSETPBUFFERATTRIBARBPROC) (HPBUFFERARB hPbuffer, con
 extern PFNWGLBINDTEXIMAGEARBPROC			qwglBindTexImageARB;
 extern PFNWGLRELEASETEXIMAGEARBPROC			qwglReleaseTexImageARB;
 extern PFNWGLSETPBUFFERATTRIBARBPROC		qwglSetPbufferAttribARB;
-
+#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Vertex and Fragment Program extension definitions. - AReis
@@ -335,7 +335,7 @@ extern	void ( APIENTRY * qglPointParameterivNV)( GLenum, const GLint *);
 //===========================================================================
 
 // non-windows systems will just redefine qgl* to gl*
-#if !defined( _WIN32 ) && !defined( __linux__ )
+#if !defined( _WIN32 ) && !defined( __linux__ ) && !defined(MACOS_X)
 
 #include "qgl_linked.h"
 

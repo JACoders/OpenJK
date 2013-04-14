@@ -26,6 +26,7 @@ This file is part of Jedi Academy.
 // this file is only included when building a dll
 // syscalls.asm is included instead when building a qvm
 
+#define syscall Q_syscall
 static int (*syscall)( int arg, ... ) = (int (*)( int, ...))-1;
 
 void dllEntry( int (*syscallptr)( int arg,... ) ) {

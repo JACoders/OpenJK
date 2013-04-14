@@ -778,7 +778,7 @@ Filename are relative to the quake search path
 a null buffer will just return the file length without loading
 ============
 */
-#include "..\client\client.h"
+#include "../client/client.h"
 int FS_ReadFile( const char *qpath, void **buffer ) {
 	fileHandle_t	h;
 	byte*			buf;

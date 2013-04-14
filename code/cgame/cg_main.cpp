@@ -106,6 +106,9 @@ This is the only way control passes into the cgame module.
 This must be the very first function compiled into the .q3vm file
 ================
 */
+#ifndef _WIN32
+extern "C"
+#endif
 int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7 ) {
 	centity_t		*cent;
 
