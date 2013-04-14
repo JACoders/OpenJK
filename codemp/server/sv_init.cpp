@@ -762,7 +762,7 @@ void SV_Init (void) {
 	Cvar_Get ("g_maxHolocronCarry", "3", CVAR_SERVERINFO);
 	Cvar_Get ("g_privateDuel", "1", CVAR_SERVERINFO );
 	Cvar_Get ("g_saberLocking", "1", CVAR_SERVERINFO );
-	Cvar_Get ("g_maxForceRank", "6", CVAR_SERVERINFO );
+	Cvar_Get ("g_maxForceRank", "7", CVAR_SERVERINFO );
 	Cvar_Get ("duel_fraglimit", "10", CVAR_SERVERINFO);
 	Cvar_Get ("g_forceBasedTeams", "0", CVAR_SERVERINFO);
 	Cvar_Get ("g_duelWeaponDisable", "1", CVAR_SERVERINFO);
