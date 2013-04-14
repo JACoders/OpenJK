@@ -8,8 +8,6 @@ endif(NOT InOpenJK)
 set(MPGameIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPGameLibraries "winmm")
-else(WIN32)
-	message("codemp/game/CMakeLists.txt might need some libraries to link properly on your platform.")
 endif(WIN32)
 set(MPGameDefines ${MPSharedDefines} "QAGAME" "MISSIONPACK" )
 set(MPGameSortMe
