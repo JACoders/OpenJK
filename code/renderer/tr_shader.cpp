@@ -3337,7 +3337,7 @@ static const char *FindShaderInShaderText( const char *shadername ) {
 	
 	char sLowerCaseName[MAX_QPATH];
 	Q_strncpyz(sLowerCaseName,shadername,sizeof(sLowerCaseName));
-	strlwr(sLowerCaseName);	// Q_strlwr is pretty gay, so I'm not using it
+	Q_strlwr(sLowerCaseName);	// Q_strlwr is pretty gay, so I'm not using it
 
 	return ShaderEntryPtrs_Lookup(sLowerCaseName);
 
@@ -3774,7 +3774,7 @@ static void SetupShaderEntryPtrs(void)
 		}
 		else
 		{
-			strlwr(token);	// token is always a ptr to com_token here, not the original buffer. 
+			Q_strlwr(token);	// token is always a ptr to com_token here, not the original buffer. 
 							//	(Not that it matters, except for reasons of speed by not strlwr'ing the whole buffer)
 
 			// token = a string of this shader name, p = ptr within s_shadertext it's found at, so store it...

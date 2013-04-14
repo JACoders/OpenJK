@@ -13,7 +13,7 @@ else
 endif
 
 GAME_NAME		= $(B)/jagamei386.$(DLL_EXT)
-GAME_CFLAGS		= -m32 -I.  -fpermissive -D_M_IX86 -DNDEBUG -DMISSIONPACK -DJK2AWARDS -DFINAL_BUILD
+GAME_CFLAGS		= -m32 -I.  -fpermissive -D_M_IX86 -DNDEBUG -DMISSIONPACK -DJK2AWARDS -DFINAL_BUILD -D__NO_JK2
 GAME_LDFLAGS		= -m32 -shared -lm
 GAME_OBJS		= $(B)/game/AI_Animal.o \
 			  $(B)/game/AI_AssassinDroid.o \
@@ -170,34 +170,24 @@ GAME_OBJS		= $(B)/game/AI_Animal.o \
 #$(B)/game/bg_lib.o \
 
 
-ENGINE_NAME		= $(B)/jamp
-ENGINE_CFLAGS		+= -m32 -fpermissive -w -D_JK2 -DNDEBUG -D_JK2 -D_JK2MP -DFINAL_BUILD -D_M_IX86 -I. `sdl2-config --cflags`
-ENGINE_LDFLAGS		= -m32 `sdl2-config --libs`
+ENGINE_NAME		= $(B)/jasp
+ENGINE_CFLAGS		+= -m32 -fpermissive -w -DNDEBUG -DFINAL_BUILD -D_M_IX86 -I. -I/Library/Frameworks/SDL2.framework/Versions/A/Headers/
+ENGINE_LDFLAGS		= -m32
 ifeq ($(PLATFORM),darwin)
-	ENGINE_LDFLAGS		+= -framework OpenGL -framework OpenAL
+	ENGINE_LDFLAGS		+= -framework OpenGL -framework OpenAL -framework SDL2
 else
 	ENGINE_LDFLAGS		+= -lGL -lopenal
 endif
-ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
-			  $(B)/engine/client/FxPrimitives.o \
-			  $(B)/engine/client/FxScheduler.o \
-			  $(B)/engine/client/FxSystem.o \
-			  $(B)/engine/client/FxTemplate.o \
-			  $(B)/engine/client/FxUtil.o \
-			  $(B)/engine/client/cl_avi.o \
-			  $(B)/engine/client/cl_cgame.o \
+ENGINE_OBJS		= $(B)/engine/client/cl_cgame.o \
 			  $(B)/engine/client/cl_cin.o \
 			  $(B)/engine/client/cl_console.o \
 			  $(B)/engine/client/cl_input.o \
 			  $(B)/engine/client/cl_keys.o \
 			  $(B)/engine/client/cl_main.o \
-			  $(B)/engine/client/cl_net_chan.o \
 			  $(B)/engine/client/cl_parse.o \
 			  $(B)/engine/client/cl_scrn.o \
 			  $(B)/engine/client/cl_ui.o \
-			  $(B)/engine/qcommon/CNetProfile.o \
-			  $(B)/engine/qcommon/GenericParser2.o \
-			  $(B)/engine/qcommon/RoffSystem.o \
+			  $(B)/engine/client/cl_mp3.o \
 			  $(B)/engine/qcommon/cm_draw.o \
 			  $(B)/engine/qcommon/cm_load.o \
 			  $(B)/engine/qcommon/cm_patch.o \
@@ -208,53 +198,35 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/qcommon/cm_terrainmap.o \
 			  $(B)/engine/qcommon/cm_test.o \
 			  $(B)/engine/qcommon/cm_trace.o \
-			  $(B)/engine/qcommon/cmd_common.o \
-			  $(B)/engine/qcommon/cmd_pc.o \
+			  $(B)/engine/qcommon/cmd.o \
 			  $(B)/engine/qcommon/common.o \
 			  $(B)/engine/qcommon/cvar.o \
-			  $(B)/engine/qcommon/exe_headers.o \
 			  $(B)/engine/qcommon/files_common.o \
 			  $(B)/engine/qcommon/files_pc.o \
 			  $(B)/engine/qcommon/hstring.o \
-			  $(B)/engine/qcommon/huffman.o \
 			  $(B)/engine/qcommon/md4.o \
 			  $(B)/engine/qcommon/msg.o \
 			  $(B)/engine/qcommon/net_chan.o \
-			  $(B)/engine/qcommon/q_math.o \
-			  $(B)/engine/qcommon/q_shared.o \
+			  $(B)/engine/game/q_math.o \
+			  $(B)/engine/game/q_shared.o \
 			  $(B)/engine/qcommon/stringed_ingame.o \
 			  $(B)/engine/qcommon/stringed_interface.o \
+			  $(B)/engine/qcommon/strip.o \
 			  $(B)/engine/qcommon/unzip.o \
-			  $(B)/engine/qcommon/vm.o \
-			  $(B)/engine/qcommon/vm_interpreted.o \
 			  $(B)/engine/qcommon/z_memman_pc.o \
-			  \
-			  $(B)/engine/sdl/sdl_glimp.o \
-			  $(B)/engine/sdl/sdl_snd.o \
-			  $(B)/engine/sdl/sdl_input.o \
-			  $(B)/engine/sys/sys_main.o \
-			  $(B)/engine/sys/sys_unix.o \
-			  $(B)/engine/unix/unix_main.o \
-			  $(B)/engine/sys/sys_net.o \
-			  $(B)/engine/unix/snapvector.o \
-			  $(B)/engine/unix/vm_x86.o \
-			  \
-			  $(B)/engine/server/sv_bot.o \
 			  $(B)/engine/server/sv_ccmds.o \
 			  $(B)/engine/server/sv_client.o \
 			  $(B)/engine/server/sv_game.o \
 			  $(B)/engine/server/sv_init.o \
 			  $(B)/engine/server/sv_main.o \
-			  $(B)/engine/server/sv_net_chan.o \
+			  $(B)/engine/server/sv_savegame.o \
 			  $(B)/engine/server/sv_snapshot.o \
 			  $(B)/engine/server/sv_world.o \
-			  $(B)/engine/server/NPCNav/gameCallbacks.o \
-			  $(B)/engine/server/NPCNav/navigator.o \
+			  $(B)/engine/server/exe_headers.o \
 			  $(B)/engine/client/snd_ambient.o \
 			  $(B)/engine/client/snd_dma.o \
 			  $(B)/engine/client/snd_mem.o \
 			  $(B)/engine/client/snd_mix.o \
-			  $(B)/engine/client/snd_mp3.o \
 			  $(B)/engine/client/snd_music.o \
 			  $(B)/engine/mp3code/cdct.o \
 			  $(B)/engine/mp3code/csbt.o \
@@ -279,11 +251,11 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/mp3code/wavep.o \
 			  $(B)/engine/renderer/matcomp.o \
 			  $(B)/engine/renderer/tr_WorldEffects.o \
-			  $(B)/engine/renderer/tr_animation.o \
 			  $(B)/engine/renderer/tr_arioche.o \
 			  $(B)/engine/renderer/tr_backend.o \
 			  $(B)/engine/renderer/tr_bsp.o \
 			  $(B)/engine/renderer/tr_cmds.o \
+			  $(B)/engine/renderer/tr_draw.o \
 			  $(B)/engine/renderer/tr_curve.o \
 			  $(B)/engine/renderer/tr_font.o \
 			  $(B)/engine/renderer/tr_ghoul2.o \
@@ -370,41 +342,8 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/RMG/RM_Objective.o \
 			  $(B)/engine/RMG/RM_Path.o \
 			  $(B)/engine/RMG/RM_Terrain.o \
-			  $(B)/engine/botlib/be_aas_bspq3.o \
-			  $(B)/engine/botlib/be_aas_cluster.o \
-			  $(B)/engine/botlib/be_aas_debug.o \
-			  $(B)/engine/botlib/be_aas_entity.o \
-			  $(B)/engine/botlib/be_aas_file.o \
-			  $(B)/engine/botlib/be_aas_main.o \
-			  $(B)/engine/botlib/be_aas_move.o \
-			  $(B)/engine/botlib/be_aas_optimize.o \
-			  $(B)/engine/botlib/be_aas_reach.o \
-			  $(B)/engine/botlib/be_aas_route.o \
-			  $(B)/engine/botlib/be_aas_routealt.o \
-			  $(B)/engine/botlib/be_aas_sample.o \
-			  $(B)/engine/botlib/be_ai_char.o \
-			  $(B)/engine/botlib/be_ai_chat.o \
-			  $(B)/engine/botlib/be_ai_gen.o \
-			  $(B)/engine/botlib/be_ai_goal.o \
-			  $(B)/engine/botlib/be_ai_move.o \
-			  $(B)/engine/botlib/be_ai_weap.o \
-			  $(B)/engine/botlib/be_ai_weight.o \
-			  $(B)/engine/botlib/be_ea.o \
-			  $(B)/engine/botlib/be_interface.o \
-			  $(B)/engine/botlib/l_crc.o \
-			  $(B)/engine/botlib/l_libvar.o \
-			  $(B)/engine/botlib/l_log.o \
-			  $(B)/engine/botlib/l_memory.o \
-			  $(B)/engine/botlib/l_precomp.o \
-			  $(B)/engine/botlib/l_script.o \
-			  $(B)/engine/botlib/l_struct.o \
 			  $(B)/engine/icarus/BlockStream.o \
-			  $(B)/engine/icarus/GameInterface.o \
-			  $(B)/engine/icarus/Instance.o \
-			  $(B)/engine/icarus/Interface.o \
-			  $(B)/engine/icarus/Memory.o \
-			  $(B)/engine/icarus/Q3_Interface.o \
-			  $(B)/engine/icarus/Q3_Registers.o \
+			  $(B)/engine/icarus/IcarusImplementation.o \
 			  $(B)/engine/icarus/Sequence.o \
 			  $(B)/engine/icarus/Sequencer.o \
 			  $(B)/engine/icarus/TaskManager.o \
@@ -423,7 +362,16 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/zlib/inftrees.o \
 			  $(B)/engine/zlib/trees.o \
 			  $(B)/engine/zlib/uncompr.o \
-			  $(B)/engine/zlib/zutil.o
+			  $(B)/engine/zlib/zutil.o \
+			  $(B)/engine/client/vmachine.o \
+			  $(B)/engine/ui/ui_atoms.o \
+			  $(B)/engine/ui/ui_connect.o \
+			  $(B)/engine/ui/ui_debug.o \
+			  $(B)/engine/ui/ui_main.o \
+			  $(B)/engine/ui/ui_saber.o \
+			  $(B)/engine/ui/ui_shared.o \
+			  $(B)/engine/ui/ui_syscalls.o \
+			  $(B)/engine/game/Q3_Interface.o
 
 DEDICATED_NAME		= $(B)/$(PLATFORM)jampded
 DEDICATED_CFLAGS	+= -m32 -fpermissive -w -DDEDICATED -O2 -unroll -D_JK2 -DNDEBUG -DC_ONLY -DFINAL_BUILD -D_M_IX86 -I.

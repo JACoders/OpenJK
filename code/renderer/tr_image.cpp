@@ -1089,7 +1089,13 @@ void R_Images_DeleteLightMaps(void)
 		if (pImage->imgName[0] == '$' /*&& strstr(pImage->imgName,"lightmap")*/)	// loose check, but should be ok
 		{
 			R_Images_DeleteImageContents(pImage);
+#ifdef _WIN32
 			itImage = AllocatedImages.erase(itImage);
+#else
+            AllocatedImages_t::iterator itTemp = itImage;
+            itImage++;
+            AllocatedImages.erase(itTemp);
+#endif
 
 			bEraseOccured = qtrue;
 		}
@@ -1239,8 +1245,14 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 			{	// nope, so dump it...
 				//VID_Printf( PRINT_DEVELOPER, "Dumping image \"%s\"\n",pImage->imgName);
 				R_Images_DeleteImageContents(pImage);
+#ifdef _WIN32
 				itImage = AllocatedImages.erase(itImage);
-				bEraseOccured = qtrue;
+#else
+                AllocatedImages_t::iterator itTemp = itImage;
+                itImage++;
+                AllocatedImages.erase(itTemp);
+#endif
+                bEraseOccured = qtrue;
 			}
 		}
 	}

@@ -43,6 +43,8 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 #include "../qcommon/stv_version.h"
 
+#include "../game/q_shared.h"
+
 #ifdef _XBOX
 #include <xtl.h>
 #define filepathlength 120
@@ -600,8 +602,8 @@ void Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const cha
 	// now print the cursor as well...
 	//
 	char sTemp[1024];
-	int iCopyCount = min(strlen(text), cursorPos);
-		iCopyCount = min(iCopyCount,sizeof(sTemp));
+	int iCopyCount = min((int)strlen(text), cursorPos);
+		iCopyCount = min(iCopyCount,(int)sizeof(sTemp));
 
 	// copy text into temp buffer for pixel measure...
 	//

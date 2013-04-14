@@ -328,7 +328,7 @@ void	FS_CreatePath (char *OSPath) {
 		return;
 	}
 
-	strlwr(OSPath);
+	Q_strlwr(OSPath);
 
 	for (ofs = OSPath+1 ; *ofs ; ofs++) {
 		if (*ofs == PATH_SEP) {	

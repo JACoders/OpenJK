@@ -3038,8 +3038,8 @@ static void RootMatrix(CGhoul2Info_v &ghoul2,int time,const vec3_t scale,mdxaBon
 extern cvar_t	*r_shadowRange;
 static inline bool bInShadowRange(vec3_t location)
 {
-	const float c = DotProduct( tr.viewParms.or.axis[0], tr.viewParms.or.origin );
-	const float dist = DotProduct( tr.viewParms.or.axis[0], location ) - c;
+	const float c = DotProduct( tr.viewParms.ori.axis[0], tr.viewParms.ori.origin );
+	const float dist = DotProduct( tr.viewParms.ori.axis[0], location ) - c;
 
 //	return (dist < tr.distanceCull/1.5f);
 	return (dist < r_shadowRange->value);
@@ -4138,7 +4138,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		LL(surfInfo->numChildren);
 		LL(surfInfo->parentIndex);
 
-		strlwr(surfInfo->name);	//just in case
+		Q_strlwr(surfInfo->name);	//just in case
 		if ( !strcmp( &surfInfo->name[strlen(surfInfo->name)-4],"_off") )
 		{
 			surfInfo->name[strlen(surfInfo->name)-4]=0;	//remove "_off" from name

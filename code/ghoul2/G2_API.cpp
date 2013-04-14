@@ -42,7 +42,7 @@ This file is part of Jedi Academy.
 #endif
 
 #if !defined(MINIHEAP_H_INC)
-	#include "..\qcommon\MiniHeap.h"
+	#include "../qcommon/MiniHeap.h"
 #endif
 
 
