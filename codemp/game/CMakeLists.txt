@@ -154,6 +154,11 @@ set(MPGameFiles ${MPGameSortMe})
 
 add_library(${MPGame} SHARED ${MPGameFiles})
 
+if(NOT WIN32)
+	# remove "lib" prefix for .so/.dylib files
+	set_target_properties(${MPGame} PROPERTIES PREFIX "")
+endif(NOT WIN32)
+
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPGameDefines};${ReleaseDefines}")
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPGameDefines};${DebugDefines}")
 set_target_properties(${MPGame} PROPERTIES INCLUDE_DIRECTORIES "${MPGameIncludeDirectories}")

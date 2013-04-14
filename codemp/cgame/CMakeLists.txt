@@ -94,6 +94,11 @@ set(MPCGameFiles ${MPCGameSortMe})
 
 add_library(${MPCGame} SHARED ${MPCGameFiles})
 
+if(NOT WIN32)
+	# remove "lib" prefix for .so/.dylib files
+	set_target_properties(${MPCGame} PROPERTIES PREFIX "")
+endif(NOT WIN32)
+
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPCGameDefines};${ReleaseDefines}")
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPCGameDefines};${DebugDefines}")
 set_target_properties(${MPCGame} PROPERTIES INCLUDE_DIRECTORIES "${MPCGameIncludeDirectories}")

@@ -51,6 +51,11 @@ set(MPUIFiles ${MPUISortMe})
 
 add_library(${MPUI} SHARED ${MPUIFiles})
 
+if(NOT WIN32)
+	# remove "lib" prefix for .so/.dylib files
+	set_target_properties(${MPUI} PROPERTIES PREFIX "")
+endif(NOT WIN32)
+
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPUIDefines};${DebugDefines}")
 set_target_properties(${MPUI} PROPERTIES INCLUDE_DIRECTORIES "${MPUIIncludeDirectories}")
