@@ -28,7 +28,7 @@ if(BuildMPEngine OR BuildMPDed)
 
 	#    Botlib
 	# the files could arguably just be put into the engine and dedicated projects without having a library for it.
-	set(MPBotlibDefines "BOTLIB")
+	set(MPBotlibDefines ${SharedDefines} "BOTLIB")
 	set(MPBotlibIncludeDirectories "${MPDir}")
 	set(MPBotlibHeaderFiles
 		"${MPDir}/botlib/aasfile.h"
