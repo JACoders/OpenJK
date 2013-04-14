@@ -56,7 +56,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/botlib/be_ai_weight.h"
 		"${MPDir}/botlib/be_ea.h"
 		"${MPDir}/botlib/be_interface.h"
-		"${MPDir}/game/botlib.h"
+		"${MPDir}/botlib/botlib.h"
 		"${MPDir}/qcommon/cm_public.h"
 		"${MPDir}/qcommon/disablewarnings.h"
 		"${MPDir}/botlib/l_crc.h"
