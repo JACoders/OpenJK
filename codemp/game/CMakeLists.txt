@@ -110,7 +110,7 @@ set(MPGameGameFiles
 	"${MPDir}/game/bg_strap.h"
 	"${MPDir}/game/bg_vehicles.h"
 	"${MPDir}/game/bg_weapons.h"
-	"${MPDir}/game/botlib.h"
+	"${MPDir}/botlib/botlib.h"
 	"${MPDir}/game/chars.h"
 	"${MPDir}/game/g_headers.h"
 	"${MPDir}/game/g_ICARUScb.h"
