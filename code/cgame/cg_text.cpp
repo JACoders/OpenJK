@@ -217,7 +217,7 @@ static int cg_SP_GetStringTextStringWithRetry( LPCSTR psReference, char *psDest,
 //	the "filename" part of which should be the same as the StripEd reference we're looking for in the current 
 //	level's string package...
 //
-void CG_CaptionText( const char *str, int sound, int y ) 
+void CG_CaptionText( const char *str, int sound) 
 {
 	const char	*s, *holds;
 	int i;
@@ -258,7 +258,7 @@ void CG_CaptionText( const char *str, int sound, int y )
 	if (in_camera) {
 		cg.captionTextY = SCREEN_HEIGHT - (client_camera.bar_height_dest/2);	// ths is now a centre'd Y, not a start Y
 	} else {	//get above the hud
-		cg.captionTextY = (int) (0.88f * ((float)SCREEN_HEIGHT - (float)fontHeight * 1.5f));	// do NOT move this, it has to fit in between the weapon HUD and the datapad update.
+		cg.captionTextY = (int) (0.78f*((float)SCREEN_HEIGHT - (float)fontHeight * 1.5f));	// do NOT move this, it has to fit in between the weapon HUD and the datapad update.
 	}
 	cg.captionTextCurrentLine = 0;
 
