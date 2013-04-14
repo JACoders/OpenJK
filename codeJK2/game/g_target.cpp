@@ -1055,7 +1055,7 @@ void target_autosave_use(gentity_t *self, gentity_t *other, gentity_t *activator
 	CG_CenterPrint( "@INGAME_CHECKPOINT", SCREEN_HEIGHT * 0.25 );	//jump the network
 
 //	if (self->spawnflags & 1)
-		gi.SendConsoleCommand( "wait 2;save auto*\n" );
+		gi.SendConsoleCommand( "wait 2;save auto\n" );
 }
 
 /*QUAKED target_autosave (1 0 0) (-4 -4 -4) (4 4 4)
