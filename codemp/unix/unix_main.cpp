@@ -339,6 +339,11 @@ void *Sys_LoadDll( const char *name,
   // bk001206 - let's have some paranoia
   assert( name );
 
+  if (!FS_FindPureDLL(name))
+  {
+    return NULL;
+  }
+
   getcwd(curpath, sizeof(curpath));
 #if defined __i386__
 #ifndef NDEBUG
