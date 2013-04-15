@@ -220,7 +220,7 @@ static void GLimp_DetectAvailableModes(void)
 GLimp_SetMode
 ===============
 */
-static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
+static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 {
 	const char *glstring;
 	int perChannelColorBits;
@@ -471,7 +471,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
 		SDL_SetWindowIcon( screen, icon );
 
-		if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
+        if( ( opengl_context = (QGLContext)SDL_GL_CreateContext( screen ) ) == NULL )
 		{
 			Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
 			continue;
@@ -800,7 +800,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 
 		//
 		// TODO: Prompt the user to choose a specific video driver.
-		driverName = SDL_GetVideoDriver( 0 );
+		driverName = (char *)SDL_GetVideoDriver( 0 );
 		Com_Printf( "SDL using driver \"%s\"\n", driverName );
 		Cvar_Set( "r_sdlDriver", driverName );
 	}
@@ -1318,7 +1318,7 @@ void 		GLimp_Init( void )
 	Sys_SetEnv( "SDL_VIDEO_CENTERED", r_centerWindow->integer ? "1" : "" );
 
 	// Create the window and set up the context
-	if(GLimp_StartDriverAndSetMode(r_mode->integer, r_fullscreen->integer, r_noborder->integer))
+	if(GLimp_StartDriverAndSetMode(r_mode->integer, (qboolean)r_fullscreen->integer, (qboolean)r_noborder->integer))
 		goto success;
 
 	// Try again, this time in a platform specific "safe mode"
@@ -1353,10 +1353,10 @@ success:
 	glConfig.deviceSupportsGamma = (qboolean)(SDL_SetGamma( screen, 1.0f, 1.0f, 1.0f ) >= 0);
 
 	if ( -1 == r_ignorehwgamma->integer)
-		glConfig.deviceSupportsGamma = 1;
+		glConfig.deviceSupportsGamma = qtrue;
 
 	if ( 1 == r_ignorehwgamma->integer)
-		glConfig.deviceSupportsGamma = 0;
+		glConfig.deviceSupportsGamma = qfalse;
 
 	// get our config strings
 	Q_strncpyz( glConfig.vendor_string, (char *) qglGetString (GL_VENDOR), sizeof( glConfig.vendor_string ) );
