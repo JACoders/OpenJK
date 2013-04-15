@@ -1001,7 +1001,7 @@ inline float Q_flrand(float min, float max) {
 // Returns an integer min <= x <= max (ie inclusive)
 inline int Q_irand(int min, int max) {
 	max++; //so it can round down
-	return ((rand() * (max - min)) >> 15) + min;
+	return (((rand() % 0x7fff) * (max - min)) >> 15) + min;
 }
 
 #ifdef _WIN32
