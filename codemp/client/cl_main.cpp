@@ -74,6 +74,8 @@ cvar_t	*cl_framerate;
 
 cvar_t	*cl_autolodscale;
 
+cvar_t	*cl_consoleKeys;
+
 vec3_t cl_windVec;
 
 
@@ -2458,6 +2460,8 @@ void CL_Init( void ) {
 
 	Cvar_Get( "cl_maxPing", "800", CVAR_ARCHIVE );
 
+	// ~ and `, as keys and characters
+	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
 
 	// userinfo
 	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE );
