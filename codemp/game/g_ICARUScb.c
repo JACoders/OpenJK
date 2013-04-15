@@ -2779,6 +2779,8 @@ Q3_SetDPitch
 static void Q3_SetDPitch( int entID, float data )
 {
 	gentity_t	*ent  = &g_entities[entID];
+	int pitchMin;
+	int pitchMax;
 
 	if ( !ent )
 	{
@@ -2792,8 +2794,8 @@ static void Q3_SetDPitch( int entID, float data )
 		return;
 	}
 
-	int pitchMin = -ent->client->renderInfo.headPitchRangeUp + 1;
-	int pitchMax = ent->client->renderInfo.headPitchRangeDown - 1;
+	pitchMin = -ent->client->renderInfo.headPitchRangeUp + 1;
+	pitchMax = ent->client->renderInfo.headPitchRangeDown - 1;
 
 	//clamp angle to -180 -> 180
 	data = AngleNormalize180( data );
@@ -3494,7 +3496,7 @@ static void Q3_SetAim(int entID, int int_data)
 
 	if ( !self->NPC )
 	{
-		G_DebugPrint( :WL_ERROR, "Q3_SetAim: '%s' is not an NPC!\n", self->targetname );
+		G_DebugPrint( WL_ERROR, "Q3_SetAim: '%s' is not an NPC!\n", self->targetname );
 		return;
 	}
 
@@ -3930,6 +3932,8 @@ static void Q3_SetMusicState( const char *dms )
 
 static void Q3_SetForcePowerLevel ( int entID, int forcePower, int forceLevel )
 {
+	gentity_t	*self  = &g_entities[entID];
+
 	if ( forcePower < FP_FIRST || forceLevel >= NUM_FORCE_POWERS )
 	{
 		G_DebugPrint( WL_ERROR, "Q3_SetForcePowerLevel: Force Power index %d out of range (%d-%d)\n", forcePower, FP_FIRST, (NUM_FORCE_POWERS-1) );
@@ -3944,8 +3948,6 @@ static void Q3_SetForcePowerLevel ( int entID, int forcePower, int forceLevel )
 			return;
 		}
 	}
-
-	gentity_t	*self  = &g_entities[entID];
 
 	if ( !self )
 	{
@@ -4109,28 +4111,9 @@ Q3_SetIgnoreEnemies
 */
 static void Q3_SetIgnoreEnemies( int entID, qboolean data)
 {
-	gentity_t	*ent  = &g_entities[entID];
 
-	if ( !ent )
-	{
-		G_DebugPrint( WL_WARNING, "Q3_SetIgnoreEnemies: invalid entID %d\n", entID);
-		return;
-	}
-
-	if ( !ent->NPC )
-	{
-		G_DebugPrint( WL_ERROR, "Q3_SetIgnoreEnemies: '%s' is not an NPC!\n", ent->targetname );
-		return;
-	}
-
-	if(data)
-	{
-		ent->svFlags |= SVF_IGNORE_ENEMIES;
-	}
-	else
-	{
-		ent->svFlags &= ~SVF_IGNORE_ENEMIES;
-	}
+	G_DebugPrint( WL_WARNING, "Q3_SetIgnoreEnemies: NOT SUPPORTED IN MP");
+	return;
 }
 
 /*
@@ -5340,6 +5323,7 @@ Q3_LookTarget
 static void Q3_LookTarget( int entID, char *targetName)
 {
 	gentity_t	*ent  = &g_entities[entID];
+	gentity_t	*targ = NULL;
 
 	if ( !ent )
 	{
@@ -5359,7 +5343,7 @@ static void Q3_LookTarget( int entID, char *targetName)
 		return;
 	}
 
-	gentity_t	*targ  = G_Find(NULL, FOFS(targetname), targetName);
+	targ = G_Find(NULL, FOFS(targetname), targetName);
 	if(!targ)
 	{
 		targ  = G_Find(NULL, FOFS(script_targetname), targetName);
