@@ -28,7 +28,7 @@ if(BuildMPEngine OR BuildMPDed)
 
 	#    Botlib
 	# the files could arguably just be put into the engine and dedicated projects without having a library for it.
-	set(MPBotlibDefines "BOTLIB")
+	set(MPBotlibDefines ${SharedDefines} "BOTLIB")
 	set(MPBotlibIncludeDirectories "${MPDir}")
 	set(MPBotlibHeaderFiles
 		"${MPDir}/botlib/aasfile.h"
@@ -137,7 +137,14 @@ if(BuildMPEngine OR BuildMPDed)
 		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${ZLIB_INCLUDE_DIR})
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZLIB_LIBRARY})
 	endif(UseInternalZlib)
+
+	if(NOT WIN32)
+		find_package(SDL2 REQUIRED)
+		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${SDL2_INCLUDE_DIR})
+		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${SDL2_LIBRARY})
+	endif(NOT WIN32)
 	
+	file(GLOB_RECURSE J_SRC "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
 	
 	set(MPEngineAndDedCgameFiles
 		"${MPDir}/cgame/cg_public.h"
@@ -167,6 +174,39 @@ if(BuildMPEngine OR BuildMPDed)
 	
 	set(MPEngineAndDedCommonFiles
 		"${MPDir}/qcommon/q_shared.h"
+		"${MPDir}/game/surfaceflags.h"
+		"${MPDir}/ghoul2/G2.h"
+		"${MPDir}/ghoul2/G2_API.cpp"
+		"${MPDir}/ghoul2/G2_bolts.cpp"
+		"${MPDir}/ghoul2/G2_bones.cpp"
+		"${MPDir}/ghoul2/G2_gore.h"
+		"${MPDir}/ghoul2/G2_local.h"
+		"${MPDir}/ghoul2/G2_misc.cpp"
+		"${MPDir}/ghoul2/G2_surfaces.cpp"
+		"${MPDir}/ghoul2/ghoul2_shared.h"
+		"${MPDir}/icarus/BlockStream.cpp"
+		"${MPDir}/icarus/blockstream.h"
+		"${MPDir}/icarus/GameInterface.cpp"
+		"${MPDir}/icarus/GameInterface.h"
+		"${MPDir}/icarus/icarus.h"
+		"${MPDir}/icarus/Instance.cpp"
+		"${MPDir}/icarus/instance.h"
+		"${MPDir}/icarus/Interface.cpp"
+		"${MPDir}/icarus/interface.h"
+		"${MPDir}/icarus/interpreter.h"
+		"${MPDir}/icarus/Memory.cpp"
+		"${MPDir}/icarus/module.h"
+		"${MPDir}/icarus/Q3_Interface.cpp"
+		"${MPDir}/icarus/Q3_Interface.h"
+		"${MPDir}/icarus/Q3_Registers.cpp"
+		"${MPDir}/icarus/Q3_Registers.h"
+		"${MPDir}/icarus/Sequence.cpp"
+		"${MPDir}/icarus/sequence.h"
+		"${MPDir}/icarus/Sequencer.cpp"
+		"${MPDir}/icarus/sequencer.h"
+		"${MPDir}/icarus/TaskManager.cpp"
+		"${MPDir}/icarus/taskmanager.h"
+		"${MPDir}/icarus/tokenizer.h"
 		"${MPDir}/qcommon/chash.h"
 		"${MPDir}/qcommon/cm_draw.cpp"
 		"${MPDir}/qcommon/cm_draw.h"
@@ -216,7 +256,6 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/vm.cpp"
 		"${MPDir}/qcommon/vm_interpreted.cpp"
 		"${MPDir}/qcommon/vm_local.h"
-		"${MPDir}/qcommon/vm_x86.cpp"
 		"${MPDir}/qcommon/z_memman_pc.cpp"
 		)
 	source_group("common" FILES ${MPEngineAndDedCommonFiles})
@@ -358,16 +397,25 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
 	
 	if(WIN32)
-		set(MPEngineAndDedWin32Files
+		set(MPEngineAndDedAllSortMe
+			${MPEngineAndDedAllSortMe}
 			"${MPDir}/win32/win_local.h"
 			"${MPDir}/win32/win_net.cpp"
 			"${MPDir}/win32/win_shared.cpp"
+			"${MPDir}/qcommon/vm_x86.cpp"
 			)
 		source_group("win32" FILES ${MPEngineAndDedWin32Files})
 		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedWin32Files})
 	else(WIN32)
-		message("TODO: Non-Win32 support")
+		set(MPEngineAndDedAllSortMe
+			${MPEngineAndDedAllSortMe}
+			"${MPDir}/unix/vm_x86.cpp"
+			"${MPDir}/unix/snapvector.nasm"
+			)
 	endif(WIN32)
+	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedAllSortMe})
+	source_group("SortMe" FILES ${MPEngineAndDedAllSortMe})
+	source_group("jpeg-8c" FILES ${J_SRC})
 	
 endif(BuildMPEngine OR BuildMPDed)
 
@@ -542,6 +590,59 @@ if(BuildMPEngine)
 		"${MPDir}/mp3code/uph.c"
 		"${MPDir}/mp3code/upsf.c"
 		"${MPDir}/mp3code/wavep.c"
+		
+		# TODO: replace the following with proper libraries
+		
+		#"${MPDir}/jpeg-8c/*.c"
+		#"${MPDir}/jpeg-8c/*.h"
+		
+		#"${MPDir}/jpeg-6/jdatasrc.cpp" #libjpeg
+		#"${MPDir}/jpeg-6/jdmainct.cpp"
+		#"${MPDir}/jpeg-6/jpegint.h"
+		#"${MPDir}/jpeg-6/jcinit.cpp"
+		#"${MPDir}/jpeg-6/jddctmgr.cpp"
+		#"${MPDir}/jpeg-6/jerror.h"
+		#"${MPDir}/jpeg-6/jdsample.cpp"
+		#"${MPDir}/jpeg-6/jcapimin.cpp"
+		#"${MPDir}/jpeg-6/jdapimin.cpp"
+		#"${MPDir}/jpeg-6/jconfig.h"
+		#"${MPDir}/jpeg-6/jdcolor.cpp"
+		#"${MPDir}/jpeg-6/jccolor.cpp"
+		#"${MPDir}/jpeg-6/jdct.h"
+		#"${MPDir}/jpeg-6/jdmaster.cpp"
+		#"${MPDir}/jpeg-6/jdhuff.cpp"
+		#"${MPDir}/jpeg-6/jdpostct.cpp"
+		#"${MPDir}/jpeg-6/jmemnobs.cpp"
+		#"${MPDir}/jpeg-6/jinclude.h"
+		#"${MPDir}/jpeg-6/jcdctmgr.cpp"
+		#"${MPDir}/jpeg-6/jdapistd.cpp"
+		#"${MPDir}/jpeg-6/jmorecfg.h"
+		#"${MPDir}/jpeg-6/jcphuff.cpp"
+		#"${MPDir}/jpeg-6/jidctflt.cpp"
+		#"${MPDir}/jpeg-6/jdhuff.h"
+		#"${MPDir}/jpeg-6/jchuff.cpp"
+		#"${MPDir}/jpeg-6/jutils.cpp"
+		#"${MPDir}/jpeg-6/jccoefct.cpp"
+		#"${MPDir}/jpeg-6/jchuff.h"
+		#"${MPDir}/jpeg-6/jdtrans.cpp"
+		#"${MPDir}/jpeg-6/jcmaster.cpp"
+		#"${MPDir}/jpeg-6/jmemsys.h"
+		#"${MPDir}/jpeg-6/jdatadst.cpp"
+		#"${MPDir}/jpeg-6/jpeglib.h"
+		#"${MPDir}/jpeg-6/jmemmgr.cpp"
+		#"${MPDir}/jpeg-6/jcmarker.cpp"
+		#"${MPDir}/jpeg-6/jctrans.cpp"
+		#"${MPDir}/jpeg-6/jdcoefct.cpp"
+		#"${MPDir}/jpeg-6/jcsample.cpp"
+		#"${MPDir}/jpeg-6/jdmarker.cpp"
+		#"${MPDir}/jpeg-6/jcprepct.cpp"
+		#"${MPDir}/jpeg-6/jcomapi.cpp"
+		#"${MPDir}/jpeg-6/jdinput.cpp"
+		#"${MPDir}/jpeg-6/jcmainct.cpp"
+		#"${MPDir}/jpeg-6/jcparam.cpp"
+		#"${MPDir}/jpeg-6/jerror.cpp"
+		#"${MPDir}/jpeg-6/jfdctflt.cpp"
+		#"${MPDir}/jpeg-6/jversion.h"
 		)
 	source_group("mp3code" FILES ${MPEngineMp3Files})
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineMp3Files})
@@ -564,8 +665,24 @@ if(BuildMPEngine)
 		source_group("win32" FILES ${MPEngineWin32Files})
 		set(MPEngineFiles ${MPEngineFiles} ${MPEngineWin32Files})
 	else(WIN32)
-		message("Please add the OS-Specific files for your OS to codemp/CMakeLists.txt")
+		set(MPEngineSortMe
+			${MPEngineSortMe}
+			"${MPDir}/sdl/sdl_glimp.cpp"
+			"${MPDir}/sdl/sdl_input.cpp"
+			"${MPDir}/sdl/sdl_qgl.h"
+			"${MPDir}/sdl/sdl_snd.cpp"
+			"${MPDir}/sys/sys_loadlib.h"
+			"${MPDir}/sys/sys_local.h"
+			"${MPDir}/sys/sys_main.cpp"
+			"${MPDir}/sys/sys_net.cpp"
+			"${MPDir}/sys/sys_unix.cpp"
+			"${MPDir}/unix/unix_local.h"
+			"${MPDir}/unix/unix_main.cpp"
+			)
 	endif(WIN32)
+
+	set(MPEngineFiles ${MPEngineFiles} ${MPEngineSortMe})
+	source_group("SortMe" FILES ${MPEngineSortMe})
 
 	# todo: windows resources
 
@@ -607,10 +724,20 @@ if(BuildMPDed)
 		source_group("win32" FILES ${MPDedWin32Files})
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
 	else(WIN32)
-		message( "Add your dedicated server files to codemp/CMakeLists.txt please" )
+		set(MPDedSortMe ${MPDedSortMe}
+			"${MPDir}/unix_ded/unix_main.cpp"
+			"${MPDir}/unix_ded/unix_net.cpp"
+			"${MPDir}/unix_ded/unix_shared.cpp"
+			"${MPDir}/unix_ded/linux_local.h"
+			"${MPDir}/unix_ded/linux_common.c"
+			)
+		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 	endif(WIN32)
+	set(MPDedFiles ${MPDedFiles} ${MPDedSortMe})
+	source_group("SortMe" FILES ${MPDedSortMe})
 	
 	add_executable(${MPDed} ${MPDedFiles})
+	
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPDedDefines};${DebugDefines}")
 	set_target_properties(${MPDed} PROPERTIES INCLUDE_DIRECTORIES "${MPDedIncludeDirectories}")
