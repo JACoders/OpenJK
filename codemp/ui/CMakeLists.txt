@@ -8,8 +8,6 @@ endif(NOT InOpenJK)
 set(MPUIIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPUILibraries "odbc32" "odbccp32") # what are these even?
-else(WIN32)
-	message("codemp/ui/CMakeLists.txt might need some libraries to link properly on your platform.")
 endif(WIN32)
 set(MPUIDefines ${MPSharedDefines} "UI_EXPORTS" "MISSIONPACK" "_USRDLL")
 
@@ -66,6 +64,12 @@ source_group("cgame" FILES ${MPUICgameFiles})
 set(MPUIFiles ${MPUIFiles} ${MPUICgameFiles})
 
 add_library(${MPUI} SHARED ${MPUIFiles})
+
+if(NOT WIN32)
+	# remove "lib" prefix for .so/.dylib files
+	set_target_properties(${MPUI} PROPERTIES PREFIX "")
+endif(NOT WIN32)
+
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPUIDefines};${DebugDefines}")
 set_target_properties(${MPUI} PROPERTIES INCLUDE_DIRECTORIES "${MPUIIncludeDirectories}")

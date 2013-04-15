@@ -52,9 +52,32 @@ set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 # Common settings
 if(WIN32)
 	set(SharedDefines "WIN32" "_WINDOWS")
-else(WIN32)
-	message("Please find out what the defines for your platform are and add them to CMakeLists.txt")
-endif(WIN32)
+else()
+	if (APPLE)
+		set(SharedDefines "MACOS_X" "_M_IX86")
+	else(APPLE)
+		set(SharedDefines "__linux__" "_M_IX86")
+	endif()
+
+	# removes the -rdynamic flag at linking (which causes crashes for some reason)
+	set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
+	# maybe remove these flags later, when the warnings are fixed
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w -fpermissive")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fpermissive")
+
+	# additional flags for debug configuration
+	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
+
+	enable_language(ASM_NASM) # there are some assembly files to build
+	
+	if (NOT CMAKE_BUILD_TYPE)
+ 		message("No build type selected, default to RELEASE")
+ 		set(CMAKE_BUILD_TYPE "RELEASE")
+ 	endif()
+endif()
 
 set(DebugDefines "_DEBUG")
 set(ReleaseDefines "NDEBUG" "FINAL_BUILD")
