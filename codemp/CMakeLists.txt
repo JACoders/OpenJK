@@ -256,7 +256,6 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/vm.cpp"
 		"${MPDir}/qcommon/vm_interpreted.cpp"
 		"${MPDir}/qcommon/vm_local.h"
-		"${MPDir}/qcommon/vm_x86.cpp"
 		"${MPDir}/qcommon/z_memman_pc.cpp"
 		)
 	source_group("common" FILES ${MPEngineAndDedCommonFiles})
