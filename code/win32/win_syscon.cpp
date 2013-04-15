@@ -322,7 +322,7 @@ void Sys_CreateConsole( void )
 
 	s_wcd.hWnd = CreateWindowEx( 0,
 							   DEDCLASS,
-							   "Jedi Knight®: Jedi Academy SP Console",
+							   "OpenJK Singleplayer Console",
 							   DEDSTYLE,
 							   ( swidth - 600 ) / 2, ( sheight - 450 ) / 2 , rect.right - rect.left + 1, rect.bottom - rect.top + 1,
 							   NULL,

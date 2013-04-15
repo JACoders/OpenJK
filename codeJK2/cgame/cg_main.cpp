@@ -1622,7 +1622,7 @@ Ghoul2 Insert End
 	cgs.media.levelLoad = cgi_R_RegisterShaderNoMip( "gfx/hud/mp_levelload" );
 	CG_LoadingString( "collision map" );
 
-	cgi_CM_LoadMap( cgs.mapname );
+	cgi_CM_LoadMap( cgs.mapname, qfalse );
 
 	CG_RegisterSounds();
 

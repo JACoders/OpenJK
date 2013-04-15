@@ -1,6 +1,6 @@
 #include "g_local.h"
 #include "qcommon/q_shared.h"
-#include "botlib.h"
+#include "botlib/botlib.h"
 #include "ai_main.h"
 
 #ifdef BOT_ZMALLOC

@@ -109,8 +109,8 @@ void	cgi_UpdateScreen( void ) {
 	syscall( CG_UPDATESCREEN );
 }
 
-void	cgi_CM_LoadMap( const char *mapname ) {
-	syscall( CG_CM_LOADMAP, mapname );
+void	cgi_CM_LoadMap( const char *mapname, qboolean subBSP ) {
+	syscall( CG_CM_LOADMAP, mapname, subBSP );
 }
 
 int		cgi_CM_NumInlineModels( void ) {

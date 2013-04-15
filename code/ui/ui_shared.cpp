@@ -6949,7 +6949,7 @@ void BindingFromName(const char *cvar)
 
 #ifndef __NO_JK2
 				if(Cvar_VariableIntegerValue( "com_jk2" ))
-					strcat( g_nameBind1, va(" %s ", ui.SP_GetStringTextString("MENUS_KEYBIND_OR" )) );
+					strcat( g_nameBind1, va(" %s ", ui.SP_GetStringTextString("MENUS3_KEYBIND_OR" )) );
 				else
 #endif
 				strcat( g_nameBind1, va(" %s ",SE_GetString("MENUS_KEYBIND_OR" )) );
