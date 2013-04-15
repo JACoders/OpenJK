@@ -316,7 +316,11 @@ public:
 		mRefEnt.reType = RT_SPRITE; mEntNum = -1; mModelNum = -1; mBoltNum = -1;
 	}
 
+#ifdef _WIN32
 	virtual CParticle::~CParticle(void)
+#else
+    virtual ~CParticle(void)
+#endif
 	{
 		mGhoul2.kill();	//remove my model ref without actually deleting
 	}
