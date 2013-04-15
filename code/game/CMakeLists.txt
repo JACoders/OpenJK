@@ -283,7 +283,7 @@ set(SPGameSortMe
 set(SPGameFiles ${SPGameSortMe})
 source_group("SortMe" FILES ${SPGameSortMe})
 if(WIN32)
-	set(SPGameFiles ${SPGameFiles} "${SPDir}/win32/game.rc")
+	set(SPGameFiles ${SPGameFiles} "${SPDir}/win32/game.rc" "${SPDir}/game/game.def")
 endif(WIN32)
 
 add_library(${SPGame} SHARED ${SPGameFiles})
