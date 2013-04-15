@@ -8,8 +8,6 @@ endif(NOT InOpenJK)
 set(MPCGameIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPCGameLibraries "odbc32" "odbccp32") # what are these even?
-else(WIN32)
-	message("codemp/cgame/CMakeLists.txt might need some libraries to link properly on your platform.")
 endif(WIN32)
 set(MPCGameDefines ${MPSharedDefines} "CGAME" "MISSIONPACK" )
 set(MPCGameGameFiles
@@ -113,6 +111,12 @@ source_group("ghoul2" FILES ${MPCGameG2Files})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameG2Files})
 
 add_library(${MPCGame} SHARED ${MPCGameFiles})
+
+if(NOT WIN32)
+	# remove "lib" prefix for .so/.dylib files
+	set_target_properties(${MPCGame} PROPERTIES PREFIX "")
+endif(NOT WIN32)
+
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPCGameDefines};${ReleaseDefines}")
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPCGameDefines};${DebugDefines}")
 set_target_properties(${MPCGame} PROPERTIES INCLUDE_DIRECTORIES "${MPCGameIncludeDirectories}")
