@@ -27,20 +27,9 @@
 
 cvar_t *nostdout;
 
-// Structure containing functions exported from refresh DLL
-refexport_t	re;
-
 unsigned	sys_frame_time;
 
 uid_t saved_euid;
-qboolean stdin_active = qtrue;
-
-// =======================================================================
-// General routines
-// =======================================================================
-
-void Sys_BeginProfiling( void ) {
-}
 
 /*
 =================
@@ -82,32 +71,6 @@ void Sys_Printf (char *fmt, ...)
 	}
 }
 
-void Sys_Quit (void)
-{
-	CL_Shutdown ();
-    fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
-	_exit(0);
-}
-
-void	Sys_Error( const char *error, ...)
-{ 
-    va_list     argptr;
-    char        string[1024];
-
-// change stdin to non blocking
-    fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
-
-	CL_Shutdown ();
-    
-    va_start (argptr,error);
-    vsprintf (string,error,argptr);
-    va_end (argptr);
-	fprintf(stderr, "Error: %s\n", string);
-
-	_exit (1);
-
-} 
-
 void Sys_Warn (char *warning, ...)
 { 
     va_list     argptr;
@@ -140,11 +103,6 @@ void floating_point_exception_handler(int whatever)
 {
 //	Sys_Warn("floating point exception\n");
 	signal(SIGFPE, floating_point_exception_handler);
-}
-
-char *Sys_ConsoleInput(void)
-{
-    return NULL;
 }
 
 /*****************************************************************************/
