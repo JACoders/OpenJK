@@ -19,7 +19,7 @@
 #define ZIP_fread	fread
 #define ZIP_ftell	ftell
 
-#include "../zlib32/zip.h"
+#include "../zlib/zlib.h"
 #include "unzip.h"
 
 /* unzip.h -- IO for uncompress .zip files using zlib 
@@ -67,15 +67,12 @@
 typedef unsigned char  Byte;  /* 8 bits */
 typedef unsigned int   uInt;  /* 16 bits or more */
 typedef unsigned long  uLong; /* 32 bits or more */
-typedef Byte    *voidp;
 
 #ifndef SEEK_SET
 #  define SEEK_SET        0       /* Seek from beginning of file.  */
 #  define SEEK_CUR        1       /* Seek from current position.  */
 #  define SEEK_END        2       /* Set file pointer to EOF plus "offset" */
 #endif
-
-typedef voidp gzFile;
 
 gzFile gzopen  OF((const char *path, const char *mode));
 /*
@@ -924,7 +921,7 @@ static int unzlocal_CheckCurrentFileCoherencyHeader (unz_s* s, uInt* piSizeVar,
 		err=UNZ_BADZIPFILE;
 
     if ((err==UNZ_OK) && (s->cur_file_info.compression_method!=0) &&
-                         (s->cur_file_info.compression_method!=ZF_DEFLATED))
+                         (s->cur_file_info.compression_method!=Z_DEFLATED))
         err=UNZ_BADZIPFILE;
 
 	if (unzlocal_getLong(s->file,&uData) != UNZ_OK) /* date/time */
@@ -1004,7 +1001,7 @@ extern int unzOpenCurrentFile (unzFile file)
 	pfile_in_zip_read_info->stream_initialised=0;
 	
 	if ((s->cur_file_info.compression_method!=0) &&
-        (s->cur_file_info.compression_method!=ZF_DEFLATED))
+        (s->cur_file_info.compression_method!=Z_DEFLATED))
 		err=UNZ_BADZIPFILE;
 	Store = s->cur_file_info.compression_method==0;
 
@@ -1019,7 +1016,7 @@ extern int unzOpenCurrentFile (unzFile file)
 
 	if (!Store)
 	{
-	  err=inflateInit(&pfile_in_zip_read_info->stream, Z_SYNC_FLUSH, 1);
+	  err=inflateInit(&pfile_in_zip_read_info->stream);
 	  if (err == Z_OK)
 	    pfile_in_zip_read_info->stream_initialised=1;
         /* windowBits is passed < 0 to tell that there is no zlib header.
@@ -1142,6 +1139,7 @@ extern int unzReadCurrentFile  (unzFile file, void *buf, unsigned len)
 			uLong uTotalOutBefore,uTotalOutAfter;
 			const Byte *bufBefore;
 			uLong uOutThis;
+            int flush=Z_SYNC_FLUSH;
 
 			uTotalOutBefore = pfile_in_zip_read_info->stream.total_out;
 			bufBefore = pfile_in_zip_read_info->stream.next_out;
@@ -1152,7 +1150,7 @@ extern int unzReadCurrentFile  (unzFile file, void *buf, unsigned len)
 				(pfile_in_zip_read_info->rest_read_compressed == 0))
 				flush = Z_FINISH;
 			*/
-			err=inflate(&pfile_in_zip_read_info->stream);
+			err=inflate(&pfile_in_zip_read_info->stream,flush);
 
 			uTotalOutAfter = pfile_in_zip_read_info->stream.total_out;
 			uOutThis = uTotalOutAfter-uTotalOutBefore;

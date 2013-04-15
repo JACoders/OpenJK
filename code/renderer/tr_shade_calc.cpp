@@ -1202,7 +1202,7 @@ long myftol( float f ) {
 }
 #pragma warning(default: 4035)
 #else
-#define myftol( f ) (long)(f)
+#define myftol( f ) ((int)(f))
 #endif
 
 /*

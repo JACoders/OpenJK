@@ -82,7 +82,9 @@ This file is part of Jedi Academy.
 #if !defined(FINAL_BUILD)
 	#if !defined(RAGL_PROFILE_INC) && !defined(_XBOX)
 		#define  RAGL_PROFILE_INC
-		#include "Windows.h"
+        #ifdef _WIN32
+            #include "Windows.h"
+        #endif
 	#endif
 #endif
 #if !defined(RAVL_VEC_INC)

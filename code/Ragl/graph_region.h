@@ -417,7 +417,7 @@ public:
 		if (mRegionCount)
 		{
 			int RegionEdges = 0;
-			for (TEdges::iterator it=mEdges.begin(); it!=mEdges.end(); it++)
+			for (typename TEdges::iterator it=mEdges.begin(); it!=mEdges.end(); it++)
 			{
 				RegionEdges += (*it).size();
 			}

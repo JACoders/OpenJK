@@ -19,6 +19,7 @@ This file is part of Jedi Academy.
 // IcarusImplementation.cpp
 
 #include "stdafx.h"
+#include "IcarusInterface.h"
 #include "IcarusImplementation.h"
 
 #include "BlockStream.h"

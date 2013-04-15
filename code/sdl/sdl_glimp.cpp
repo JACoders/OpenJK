@@ -1,8 +1,11 @@
 #include <SDL.h>
+#include "game/q_shared.h"
 #include "qcommon/qcommon.h"
 #include "renderer/tr_local.h"
 #include "sdl_qgl.h"
 #include "sys/sys_local.h"
+
+#define CLIENT_WINDOW_TITLE "OpenJK SP"
 
 static SDL_Window *window = NULL;
 
@@ -263,7 +266,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	}
 	else
 	{
-		Com_Memset( &desktopMode, 0, sizeof( SDL_DisplayMode ) );
+		memset( &desktopMode, 0, sizeof( SDL_DisplayMode ) );
 
 		Com_Printf( "Cannot determine display aspect, assuming 1.333\n" );
 	}
@@ -839,12 +842,12 @@ SDL_SetGamma(SDL_Window *win, float red, float green, float blue)
 
     SDL_CalculateGammaRamp(red, red_ramp);
     if (green == red) {
-        Com_Memcpy(&green_ramp, &red_ramp, sizeof(red_ramp));
+        memcpy(&green_ramp, &red_ramp, sizeof(red_ramp));
     } else {
         SDL_CalculateGammaRamp(green, green_ramp);
     }
     if (blue == red) {
-    	Com_Memcpy(blue_ramp, red_ramp, sizeof(red_ramp));
+    	memcpy(blue_ramp, red_ramp, sizeof(red_ramp));
     } else {
         SDL_CalculateGammaRamp(blue, blue_ramp);
     }
@@ -1394,8 +1397,8 @@ void 		GLimp_Shutdown( void )
 
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
 
-	Com_Memset( &glConfig, 0, sizeof( glConfig ) );
-	Com_Memset( &glState, 0, sizeof( glState ) );
+	memset( &glConfig, 0, sizeof( glConfig ) );
+	memset( &glState, 0, sizeof( glState ) );
 }
 
 void		GLimp_EnableLogging( qboolean enable )

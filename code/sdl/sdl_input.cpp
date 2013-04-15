@@ -1,6 +1,6 @@
 #include <SDL.h>
+#include "game/q_shared.h"
 #include "qcommon/qcommon.h"
-#include "qcommon/q_shared.h"
 #include "client/client.h"
 #include "sys/sys_local.h"
 
@@ -88,7 +88,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 	static consoleKey_t consoleKeys[ MAX_CONSOLE_KEYS ];
 	static int numConsoleKeys = 0;
 	int i;
-
+#if 0
 	// Only parse the variable when it changes
 	if( cl_consoleKeys->modified )
 	{
@@ -128,6 +128,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 			numConsoleKeys++;
 		}
 	}
+#endif
 
 	// If the character is the same as the key, prefer the character
 	if( key == character )
@@ -871,7 +872,7 @@ void IN_Frame (void) {
 	// If not DISCONNECTED (main menu) or ACTIVE (in game), we're loading
 	loading = (qboolean)( cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE );
 
-	if( !cls.glconfig.isFullscreen && ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) )
+	if( !cls.glconfig.isFullscreen && ( cls.keyCatchers & KEYCATCH_CONSOLE ) )
 	{
 		// Console is down in windowed mode
 		IN_DeactivateMouse( );

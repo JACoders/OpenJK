@@ -75,6 +75,13 @@ typedef struct _GUID {
 
 #define _isnan isnan
 #define DLL_EXT "dylib"
+
+#define _snprintf snprintf
+
+#define __cdecl
+
+#define vsprintf_s vsprintf
+#define _strnicmp Q_stricmpn
 #endif
 
 #endif
