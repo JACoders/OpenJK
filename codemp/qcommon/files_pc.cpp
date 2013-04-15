@@ -1005,6 +1005,25 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 	return -1;
 }
 
+// Ensiform: This is a bit of a hack but it is used for other 
+// OS'/arch to still be acceptable with pure servers.
+qboolean FS_FindPureDLL(const char *name)
+{
+	char dllName[MAX_OSPATH];
+	fileHandle_t h;
+
+	if(!fs_searchpaths)
+		Com_Error(ERR_FATAL, "Filesystem call made without initialization");
+
+	Com_sprintf(dllName, sizeof(dllName), "%sx86.dll", name);
+
+	if(FS_FOpenFileRead(dllName, &h, qtrue) > 0)
+	{
+		FS_FCloseFile( h );
+		return qtrue;
+	}
+	return qfalse;
+}
 
 /*
 =================

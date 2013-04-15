@@ -12,7 +12,7 @@ else(WIN32)
 	message("codemp/cgame/CMakeLists.txt might need some libraries to link properly on your platform.")
 endif(WIN32)
 set(MPCGameDefines ${MPSharedDefines} "CGAME" "MISSIONPACK" )
-set(MPCGameSortMe
+set(MPCGameGameFiles
 	"${MPDir}/game/AnimalNPC.c"
 	"${MPDir}/game/bg_g2_utils.c"
 	"${MPDir}/game/bg_misc.c"
@@ -24,6 +24,21 @@ set(MPCGameSortMe
 	"${MPDir}/game/bg_slidemove.c"
 	"${MPDir}/game/bg_vehicleLoad.c"
 	"${MPDir}/game/bg_weapons.c"
+	"${MPDir}/game/FighterNPC.c"
+	"${MPDir}/game/SpeederNPC.c"
+	"${MPDir}/game/WalkerNPC.c"
+	"${MPDir}/game/anims.h"
+	"${MPDir}/game/bg_local.h"
+	"${MPDir}/game/bg_public.h"
+	"${MPDir}/game/bg_saga.h"
+	"${MPDir}/game/bg_strap.h"
+	"${MPDir}/game/bg_weapons.h"
+	"${MPDir}/game/surfaceflags.h"
+	)
+source_group("game" FILES ${MPCGameGameFiles})
+set(MPCGameFiles ${MPCGameFiles} ${MPCGameGameFiles})
+
+set(MPCGameCgameFiles
 	"${MPDir}/cgame/cg_consolecmds.c"
 	"${MPDir}/cgame/cg_draw.c"
 	"${MPDir}/cgame/cg_drawtools.c"
@@ -50,7 +65,6 @@ set(MPCGameSortMe
 	"${MPDir}/cgame/cg_view.c"
 	"${MPDir}/cgame/cg_weaponinit.c"
 	"${MPDir}/cgame/cg_weapons.c"
-	"${MPDir}/game/FighterNPC.c"
 	"${MPDir}/cgame/fx_blaster.c"
 	"${MPDir}/cgame/fx_bowcaster.c"
 	"${MPDir}/cgame/fx_bryarpistol.c"
@@ -60,37 +74,43 @@ set(MPCGameSortMe
 	"${MPDir}/cgame/fx_force.c"
 	"${MPDir}/cgame/fx_heavyrepeater.c"
 	"${MPDir}/cgame/fx_rocketlauncher.c"
-	"${MPDir}/qcommon/q_math.c"
-	"${MPDir}/qcommon/q_shared.c"
-	"${MPDir}/game/SpeederNPC.c"
-	"${MPDir}/ui/ui_shared.c"
-	"${MPDir}/game/WalkerNPC.c"
-	
-	"${MPDir}/game/anims.h"
 	"${MPDir}/cgame/animtable.h"
-	"${MPDir}/game/bg_local.h"
-	"${MPDir}/game/bg_public.h"
-	"${MPDir}/game/bg_saga.h"
-	"${MPDir}/game/bg_strap.h"
-	"${MPDir}/game/bg_weapons.h"
 	"${MPDir}/cgame/cg_lights.h"
 	"${MPDir}/cgame/cg_local.h"
 	"${MPDir}/cgame/cg_public.h"
-	"${MPDir}/qcommon/disablewarnings.h"
 	"${MPDir}/cgame/cg_xcvar.h"
 	"${MPDir}/cgame/fx_local.h"
-	"${MPDir}/ghoul2/G2.h"
 	"${MPDir}/cgame/holocronicons.h"
-	"${MPDir}/ui/keycodes.h"
-	"${MPDir}/ui/menudef.h"
+	"${MPDir}/cgame/tr_types.h"
+	)
+source_group("cgame" FILES ${MPCGameCgameFiles})
+set(MPCGameFiles ${MPCGameFiles} ${MPCGameCgameFiles})
+
+set(MPCGameCommonFiles
+	"${MPDir}/qcommon/q_math.c"
+	"${MPDir}/qcommon/q_shared.c"
+	"${MPDir}/qcommon/disablewarnings.h"
 	"${MPDir}/qcommon/q_shared.h"
 	"${MPDir}/qcommon/qfiles.h"
-	"${MPDir}/game/surfaceflags.h"
 	"${MPDir}/qcommon/tags.h"
-	"${MPDir}/cgame/tr_types.h"
+	)
+source_group("common" FILES ${MPCGameCommonFiles})
+set(MPCGameFiles ${MPCGameFiles} ${MPCGameCommonFiles})
+
+set(MPCGameUiFiles
+	"${MPDir}/ui/ui_shared.c"
+	"${MPDir}/ui/keycodes.h"
+	"${MPDir}/ui/menudef.h"
 	"${MPDir}/ui/ui_shared.h"
 	)
-set(MPCGameFiles ${MPCGameSortMe})
+source_group("ui" FILES ${MPCGameUiFiles})
+set(MPCGameFiles ${MPCGameFiles} ${MPCGameUiFiles})
+
+set(MPCGameGFiles
+	"${MPDir}/ghoul2/G2.h"
+	)
+source_group("ghoul2" FILES ${MPCGameG2Files})
+set(MPCGameFiles ${MPCGameFiles} ${MPCGameG2Files})
 
 add_library(${MPCGame} SHARED ${MPCGameFiles})
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPCGameDefines};${ReleaseDefines}")
