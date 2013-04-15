@@ -215,17 +215,10 @@ typedef enum {
 } textureCompression_t;
 
 typedef struct {
-#ifdef _WIN32
 	const char				*renderer_string;
 	const char				*vendor_string;
 	const char				*version_string;
 	const char				*extensions_string;
-#else
-	char					renderer_string[MAX_STRING_CHARS];
-	char					vendor_string[MAX_STRING_CHARS];
-	char					version_string[MAX_STRING_CHARS];
-	char					extensions_string[BIG_INFO_STRING * 4];
-#endif
 	int						maxTextureSize;			// queried from GL
 	int						maxActiveTextures;		// multitexture ability
 	float					maxTextureFilterAnisotropy;
