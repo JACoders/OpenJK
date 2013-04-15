@@ -188,6 +188,7 @@ extern qboolean NPC_UpdateFiringAngles ( qboolean doPitch, qboolean doYaw );
 extern void SetTeamNumbers (void);
 extern qboolean G_ActivateBehavior (gentity_t *self, int bset );
 extern void NPC_AimWiggle( vec3_t enemy_org );
+extern void NPC_ClearLookTarget( gentity_t *self );
 extern void NPC_SetLookTarget( gentity_t *self, int entNum, int clearTime );
 
 //g_nav.cpp
