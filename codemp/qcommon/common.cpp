@@ -1066,6 +1066,27 @@ static void Com_Crash_f( void ) {
 #endif
 
 /*
+==================
+Com_ExecuteCfg
+==================
+*/
+
+void Com_ExecuteCfg(void)
+{
+	Cbuf_ExecuteText(EXEC_NOW, "exec mpdefault.cfg\n");
+	Cbuf_Execute(); // Always execute after exec to prevent text buffer overflowing
+
+	if(!Com_SafeMode())
+	{
+		// skip the q3config.cfg and autoexec.cfg if "safe" is on the command line
+		Cbuf_ExecuteText(EXEC_NOW, "exec " Q3CONFIG_CFG "\n");
+		Cbuf_Execute();
+		Cbuf_ExecuteText(EXEC_NOW, "exec autoexec.cfg\n");
+		Cbuf_Execute();
+	}
+}
+
+/*
 =================
 Com_Init
 =================
@@ -1102,7 +1123,7 @@ void Com_Init( char *commandLine ) {
 		Rand_Init(Sys_Milliseconds(true));
 
 		// get the developer cvar set as early as possible
-		Com_StartupVariable( "developer" );
+		com_developer = Cvar_Get("developer", "0", CVAR_TEMP);
 
 		// done early so bind command exists
 		CL_InitKeyCommands();
@@ -1111,16 +1132,7 @@ void Com_Init( char *commandLine ) {
 
 		Com_InitJournaling();
 
-		Cbuf_AddText ("exec mpdefault.cfg\n");
-
-		// skip the jampconfig.cfg if "safe" is on the command line
-		if ( !Com_SafeMode() ) {
-			Cbuf_AddText ("exec " Q3CONFIG_CFG "\n");
-		}
-
-		Cbuf_AddText ("exec autoexec.cfg\n");
-
-		Cbuf_Execute ();
+		Com_ExecuteCfg();
 
 		// override anything from the config files with command line args
 		Com_StartupVariable( NULL );
@@ -1144,7 +1156,6 @@ void Com_Init( char *commandLine ) {
 		com_maxfps = Cvar_Get ("com_maxfps", "85", CVAR_ARCHIVE);
 		com_blood = Cvar_Get ("com_blood", "1", CVAR_ARCHIVE);
 
-		com_developer = Cvar_Get ("developer", "0", CVAR_TEMP );
 		com_vmdebug = Cvar_Get ("vmdebug", "0", CVAR_TEMP );
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
 
