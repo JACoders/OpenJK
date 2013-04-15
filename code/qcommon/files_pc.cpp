@@ -335,7 +335,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 	directory_t		*dir;
 	long			hash=0;
 	unz_s			*zfi;
-	ZIP_FILE		*temp;
+	void		*temp;
 //	int				i;
 
 	if ( !fs_searchpaths ) {
@@ -380,7 +380,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 	do
 	{
 		bFasterToReOpenUsingNewLocalFile = qfalse;
-
+        
 		for ( search = fs_searchpaths ; search ; search = search->next ) {
 			//
 			if ( search->pack ) {
@@ -389,7 +389,8 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 			// is the element a pak file?
 			if ( search->pack && search->pack->hashTable[hash] ) {
 				// disregard if it doesn't match one of the allowed pure pak files
-	/*			if ( !FS_PakIsPure(search->pack) ) {
+   /*
+				if ( !FS_PakIsPure(search->pack) ) {
 					continue;
 				}
 	*/
@@ -400,9 +401,10 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 					// case and separator insensitive comparisons
 					if ( !FS_FilenameCompare( pakFile->name, filename ) ) {
 						// found it!
+                                                                        
 						if ( uniqueFILE ) {
 							// open a new file on the pakfile
-							fsh[*file].handleFiles.file.z = unzReOpen (pak->pakFilename, pak->handle);
+							fsh[*file].handleFiles.file.z = unzOpen (pak->pakFilename);
 							if (fsh[*file].handleFiles.file.z == NULL) {
 								Com_Error (ERR_FATAL, "Couldn't reopen %s", pak->pakFilename);
 							}
@@ -413,20 +415,20 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 						fsh[*file].zipFile = qtrue;
 						zfi = (unz_s *)fsh[*file].handleFiles.file.z;
 						// in case the file was new
-						temp = zfi->file;
+						temp = zfi->filestream;
 						// set the file position in the zip file (also sets the current file info)
-						unzSetCurrentFileInfoPosition(pak->handle, pakFile->pos);
+						unzSetOffset(pak->handle, pakFile->pos);
 						// copy the file info into the unzip structure
-						memcpy( zfi, pak->handle, sizeof(unz_s));
+						memcpy( zfi, pak->handle, sizeof(unz_s) );
 						// we copy this back into the structure
-						zfi->file = temp;
+						zfi->filestream = temp;
 						// open the file in the zip
 						unzOpenCurrentFile( fsh[*file].handleFiles.file.z );
 						fsh[*file].zipFilePos = pakFile->pos;
-
+                        
 						if ( fs_debug->integer ) {
-							Com_Printf( "FS_FOpenFileRead: %s (found in '%s')\n", 
-								filename, pak->pakFilename );
+							Com_Printf( "FS_FOpenFileRead: %s (found in '%s')\n",
+                                       filename, pak->pakFilename );
 						}
 						return zfi->cur_file_info.uncompressed_size;
 					}
@@ -434,36 +436,24 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 				} while(pakFile != NULL);
 			} else if ( search->dir ) {
 				// check a file in the directory tree
-
+                
 				// if we are running restricted, the only files we
 				// will allow to come from the directory are .cfg files
-				if ( 0/*fs_restrict->integer*/ /*|| fs_numServerPaks*/ ) {
-					int		l;
-
-					l = strlen( filename );
-
-					if ( stricmp( filename + l - 4, ".cfg" )		// for config files
-						&& stricmp( filename + l - 4, ".sav" )  // for save games
-						&& stricmp( filename + l - 4, ".dat" ) ) {	// for journal files
-						continue;
-					}
-				}
-
+                
 				dir = search->dir;
 				
 				netpath = FS_BuildOSPath( dir->path, dir->gamedir, filename );
-
 				fsh[*file].handleFiles.file.o = fopen (netpath, "rb");
 				if ( !fsh[*file].handleFiles.file.o ) {
 					continue;
 				}
-
+                
 #ifdef _WIN32
 				// if running with fs_copyfiles 2, and search path == local, then we need to fail to open
 				//	if the time/date stamp != the network version (so it'll loop round again and use the network path,
 				//	which comes later in the search order)
 				//
-				if ( fs_copyfiles->integer == 2 && fs_cdpath->string[0] && !Q_stricmp( dir->path, fs_basepath->string ) 
+				if ( fs_copyfiles->integer == 2 && fs_cdpath->string[0] && !Q_stricmp( dir->path, fs_basepath->string )
 					&& FS_FileCacheable(filename) )
 				{
 					if ( Sys_FileOutOfDate( netpath, FS_BuildOSPath( fs_cdpath->string, dir->gamedir, filename ) ))
@@ -474,21 +464,20 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 					}
 				}
 #endif
-				
 				Q_strncpyz( fsh[*file].name, filename, sizeof( fsh[*file].name ) );
 				fsh[*file].zipFile = qfalse;
 				if ( fs_debug->integer ) {
-					Com_Printf( "FS_FOpenFileRead: %s (found in '%s/%s')\n", filename,
-						dir->path, dir->gamedir );
+					Com_Printf( "FS_FOpenFileRead: %s (found in '%s%c%s')\n", filename,
+                               dir->path, PATH_SEP, dir->gamedir );
 				}
-
+                
+#ifdef _WIN32
 				// if we are getting it from the cdpath, optionally copy it
 				//  to the basepath
-				if ( fs_copyfiles->integer && !stricmp( dir->path, fs_cdpath->string ) ) {
+				if ( fs_copyfiles->integer && !Q_stricmp( dir->path, fs_cdpath->string ) ) {
 					char	*copypath;
-
+                    
 					copypath = FS_BuildOSPath( fs_basepath->string, dir->gamedir, filename );
-
 					switch ( fs_copyfiles->integer )
 					{
 						default:
@@ -496,20 +485,28 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 						{
 							FS_CopyFile( netpath, copypath );
 						}
-						break;
-#ifdef _WIN32
+                            break;
+                            
 						case 2:
 						{
-					
+                            
 							if (FS_FileCacheable(filename) )
 							{
 								// maybe change this to Com_DPrintf?   On the other hand...
 								//
-								Com_Printf( S_COLOR_CYAN"fs_copyfiles(2), Copying: %s to %s\n", netpath, copypath );
+								Com_Printf( "fs_copyfiles(2), Copying: %s to %s\n", netpath, copypath );
 								
 								FS_CreatePath( copypath );
-
-								if (Sys_CopyFile( netpath, copypath, qtrue ))
+                                
+								bool bOk = true;
+								if (!CopyFile( netpath, copypath, FALSE ))
+								{
+									DWORD dwAttrs = GetFileAttributes(copypath);
+									SetFileAttributes(copypath, dwAttrs & ~FILE_ATTRIBUTE_READONLY);
+									bOk = !!CopyFile( netpath, copypath, FALSE );
+								}
+                                
+								if (bOk)
 								{
 									// clear this handle and setup for re-opening of the new local copy...
 									//
@@ -519,18 +516,24 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 								}
 							}
 						}
-						break;
-#endif
+                            break;
 					}
 				}
-
+#endif
 				if (bFasterToReOpenUsingNewLocalFile)
 				{
 					break;	// and re-read the local copy, not the net version
 				}
-
+                
+#ifndef FINAL_BUILD
+				// Check for unprecached files when in game but not in the menus
+				if((cls.state == CA_ACTIVE) && !(cls.keyCatchers & KEYCATCH_UI))
+				{
+					Com_Printf(S_COLOR_YELLOW "WARNING: File %s not precached\n", filename);
+				}
+#endif
 				return FS_filelength (*file);
-			}
+			}		
 		}
 	}
 	while ( bFasterToReOpenUsingNewLocalFile );
@@ -673,11 +676,11 @@ int FS_Seek( fileHandle_t f, long offset, int origin ) {
 		char	foo[65536];
 		if (offset == 0 && origin == FS_SEEK_SET) {
 			// set the file position in the zip file (also sets the current file info)
-			unzSetCurrentFileInfoPosition(fsh[f].handleFiles.file.z, fsh[f].zipFilePos);
+			unzSetOffset(fsh[f].handleFiles.file.z, fsh[f].zipFilePos);
 			return unzOpenCurrentFile(fsh[f].handleFiles.file.z);
 		} else if (offset<65536) {
 			// set the file position in the zip file (also sets the current file info)
-			unzSetCurrentFileInfoPosition(fsh[f].handleFiles.file.z, fsh[f].zipFilePos);
+			unzSetOffset(fsh[f].handleFiles.file.z, fsh[f].zipFilePos);
 			unzOpenCurrentFile(fsh[f].handleFiles.file.z);
 			return FS_Read(foo, offset, f);
 		} else {
@@ -951,7 +954,7 @@ static pack_t *FS_LoadZipFile( char *zipfile )
 		strcpy( buildBuffer[i].name, filename_inzip );
 		namePtr += strlen(filename_inzip) + 1;
 		// store the file position in the zip
-		unzGetCurrentFileInfoPosition(uf, &buildBuffer[i].pos);
+		buildBuffer[i].pos = unzGetOffset(uf);
 		//
 		buildBuffer[i].next = pack->hashTable[hash];
 		pack->hashTable[hash] = &buildBuffer[i];

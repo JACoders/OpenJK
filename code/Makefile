@@ -13,7 +13,7 @@ else
 endif
 
 GAME_NAME		= $(B)/jagamei386.$(DLL_EXT)
-GAME_CFLAGS		= -m32 -I.  -fpermissive -D_M_IX86 -DNDEBUG -DMISSIONPACK -DJK2AWARDS -DFINAL_BUILD -D__NO_JK2
+GAME_CFLAGS		= -m32 -I.  -fpermissive -D_M_IX86 -DNDEBUG -DMISSIONPACK -DJK2AWARDS -DFINAL_BUILD -D_NO_PCH
 GAME_LDFLAGS		= -m32 -shared -lm
 GAME_OBJS		= $(B)/game/AI_Animal.o \
 			  $(B)/game/AI_AssassinDroid.o \
@@ -166,7 +166,26 @@ GAME_OBJS		= $(B)/game/AI_Animal.o \
 			  $(B)/game/WalkerNPC.o \
 			  $(B)/cgame/cg_syscalls.o \
 			  $(B)/ui/gameinfo.o \
-			  $(B)/qcommon/tri_coll_test.o
+			  $(B)/qcommon/tri_coll_test.o \
+			  $(B)/game/wp_atst.o \
+			  $(B)/game/wp_blaster_pistol.o \
+			  $(B)/game/wp_blaster_rifle.o \
+			  $(B)/game/wp_bot_laser.o \
+			  $(B)/game/wp_bowcaster.o \
+			  $(B)/game/wp_concussion.o \
+			  $(B)/game/wp_demp2.o \
+			  $(B)/game/wp_det_pack.o \
+			  $(B)/game/wp_disruptor.o \
+			  $(B)/game/wp_emplaced_gun.o \
+			  $(B)/game/wp_flechette.o \
+			  $(B)/game/wp_melee.o \
+			  $(B)/game/wp_noghri_stick.o \
+			  $(B)/game/wp_repeater.o \
+			  $(B)/game/wp_rocket_launcher.o \
+			  $(B)/game/wp_stun_baton.o \
+			  $(B)/game/wp_thermal.o \
+			  $(B)/game/wp_trip_mine.o \
+			  $(B)/game/wp_tusken.o
 #$(B)/game/bg_lib.o \
 
 
@@ -342,11 +361,6 @@ ENGINE_OBJS		= $(B)/engine/client/cl_cgame.o \
 			  $(B)/engine/RMG/RM_Objective.o \
 			  $(B)/engine/RMG/RM_Path.o \
 			  $(B)/engine/RMG/RM_Terrain.o \
-			  $(B)/engine/icarus/BlockStream.o \
-			  $(B)/engine/icarus/IcarusImplementation.o \
-			  $(B)/engine/icarus/Sequence.o \
-			  $(B)/engine/icarus/Sequencer.o \
-			  $(B)/engine/icarus/TaskManager.o \
 			  $(B)/engine/zlib/ioapi.o \
 			  $(B)/engine/zlib/adler32.o \
 			  $(B)/engine/zlib/compress.o \
@@ -381,7 +395,7 @@ ENGINE_OBJS		= $(B)/engine/client/cl_cgame.o \
               $(B)/engine/renderer/tr_stl.o \
               $(B)/engine/renderer/tr_jpeg_interface.o \
               $(B)/engine/unix/unix_main.o
-              
+                            
 DEDICATED_NAME		= $(B)/$(PLATFORM)jampded
 DEDICATED_CFLAGS	+= -m32 -fpermissive -w -DDEDICATED -O2 -unroll -D_JK2 -DNDEBUG -DC_ONLY -DFINAL_BUILD -D_M_IX86 -I.
 DEDICATED_LDFLAGS	= -m32 -ldl
