@@ -215,7 +215,7 @@ typedef enum {
 } textureCompression_t;
 
 typedef struct {
-	const char				*renderer_string;
+	char                    *renderer_string;
 	const char				*vendor_string;
 	const char				*version_string;
 	const char				*extensions_string;

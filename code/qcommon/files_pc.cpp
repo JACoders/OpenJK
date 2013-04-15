@@ -458,6 +458,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 					continue;
 				}
 
+#ifdef _WIN32
 				// if running with fs_copyfiles 2, and search path == local, then we need to fail to open
 				//	if the time/date stamp != the network version (so it'll loop round again and use the network path,
 				//	which comes later in the search order)
@@ -472,6 +473,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 						continue;	//carry on to find the cdpath version.
 					}
 				}
+#endif
 				
 				Q_strncpyz( fsh[*file].name, filename, sizeof( fsh[*file].name ) );
 				fsh[*file].zipFile = qfalse;
@@ -495,7 +497,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 							FS_CopyFile( netpath, copypath );
 						}
 						break;
-
+#ifdef _WIN32
 						case 2:
 						{
 					
@@ -518,6 +520,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 							}
 						}
 						break;
+#endif
 					}
 				}
 

@@ -764,6 +764,9 @@ void	Sys_Log( const char *file, const void *buffer, int size, bool flush );
 // Sys_Milliseconds should only be used for profiling purposes,
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (void);
+#ifndef _WIN32
+void 	Sys_SetEnv(const char *name, const char *value);
+#endif
 
 
 // the system console is shown when a dedicated server is running
@@ -779,7 +782,7 @@ void	Sys_SetErrorText( const char *text );
 
 qboolean	Sys_CheckCD( void );
 
-void	Sys_Mkdir( const char *path );
+qboolean	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );
 char	*Sys_DefaultCDPath(void);
 char	*Sys_DefaultBasePath(void);

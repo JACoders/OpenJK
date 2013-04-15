@@ -37,7 +37,7 @@ This file is part of Jedi Academy.
  */
 
 #define JPEG_INTERNALS
-#include "../jpeg-6/jpeglib.h"
+#include "../jpeg-8c/jpeglib.h"
 
 // JPG decompression now subroutinised so I can call it from the savegame stuff...
 //
@@ -85,7 +85,7 @@ void Decompress_JPG( const char *filename, byte *pJPGData, unsigned char **pic, 
 	
 	/* Step 2: specify data source (eg, a file) */
 	
-	jpeg_stdio_src(&cinfo, pJPGData);
+	jpeg_stdio_src(&cinfo, (FILE *)pJPGData);
 	
 	/* Step 3: read file parameters with jpeg_read_header() */
 	
@@ -291,7 +291,7 @@ boolean empty_output_buffer (j_compress_ptr cinfo)
  * wrong thing.
  */
 
-GLOBAL void
+GLOBAL(void)
 jpeg_start_compress (j_compress_ptr cinfo, boolean write_all_tables)
 {
   if (cinfo->global_state != CSTATE_START)
@@ -330,7 +330,7 @@ jpeg_start_compress (j_compress_ptr cinfo, boolean write_all_tables)
  * when using a multiple-scanline buffer.
  */
 
-GLOBAL JDIMENSION
+GLOBAL(JDIMENSION)
 jpeg_write_scanlines (j_compress_ptr cinfo, JSAMPARRAY scanlines,
 		      JDIMENSION num_lines)
 {

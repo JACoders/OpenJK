@@ -1,7 +1,7 @@
 PLATFORM=$(shell uname|tr A-Z a-z)
 
-CC			= gcc
-CXX			= g++
+CC			= /usr/local/bin/gcc-4.2
+CXX			= /usr/local/bin/g++-4.2
 B			= build
 
 ifeq ($(PLATFORM),darwin)
@@ -171,10 +171,10 @@ GAME_OBJS		= $(B)/game/AI_Animal.o \
 
 
 ENGINE_NAME		= $(B)/jasp
-ENGINE_CFLAGS		+= -m32 -fpermissive -w -DNDEBUG -DFINAL_BUILD -D_M_IX86 -I. -I/Library/Frameworks/SDL2.framework/Versions/A/Headers/
-ENGINE_LDFLAGS		= -m32
+ENGINE_CFLAGS		+= -m32 -fpermissive -w -DNDEBUG -DFINAL_BUILD -D_M_IX86 -I. `sdl2-config --cflags` -D_JK2EXE
+ENGINE_LDFLAGS		= -m32 `sdl2-config --libs`
 ifeq ($(PLATFORM),darwin)
-	ENGINE_LDFLAGS		+= -framework OpenGL -framework OpenAL -framework SDL2
+	ENGINE_LDFLAGS		+= -framework OpenGL -framework OpenAL
 else
 	ENGINE_LDFLAGS		+= -lGL -lopenal
 endif
@@ -371,8 +371,17 @@ ENGINE_OBJS		= $(B)/engine/client/cl_cgame.o \
 			  $(B)/engine/ui/ui_saber.o \
 			  $(B)/engine/ui/ui_shared.o \
 			  $(B)/engine/ui/ui_syscalls.o \
-			  $(B)/engine/game/Q3_Interface.o
-
+              $(B)/engine/sdl/sdl_glimp.o \
+              $(B)/engine/sdl/sdl_snd.o \
+              $(B)/engine/sdl/sdl_input.o \
+              $(B)/engine/sys/sys_main.o \
+              $(B)/engine/sys/sys_unix.o \
+              $(B)/engine/sys/sys_net.o \
+              $(B)/engine/game/genericparser2.o \
+              $(B)/engine/renderer/tr_stl.o \
+              $(B)/engine/renderer/tr_jpeg_interface.o \
+              $(B)/engine/unix/unix_main.o
+              
 DEDICATED_NAME		= $(B)/$(PLATFORM)jampded
 DEDICATED_CFLAGS	+= -m32 -fpermissive -w -DDEDICATED -O2 -unroll -D_JK2 -DNDEBUG -DC_ONLY -DFINAL_BUILD -D_M_IX86 -I.
 DEDICATED_LDFLAGS	= -m32 -ldl
