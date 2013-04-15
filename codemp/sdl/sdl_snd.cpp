@@ -232,7 +232,7 @@ qboolean SNDDMA_Init(void)
 	dma.submission_chunk = 1;
 	dma.speed = obtained.freq;
 	dmasize = (dma.samples * (dma.samplebits/8));
-	dma.buffer = calloc(1, dmasize);
+	dma.buffer = (byte *)calloc(1, dmasize);
 
 	Com_Printf("Starting SDL audio callback...\n");
 	SDL_PauseAudio(0);  // start callback.

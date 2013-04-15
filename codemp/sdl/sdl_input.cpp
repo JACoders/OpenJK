@@ -103,7 +103,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 			consoleKey_t *c = &consoleKeys[ numConsoleKeys ];
 			int charCode = 0;
 
-			token = COM_Parse( &text_p );
+			token = COM_Parse( (const char **)&text_p );
 			if( !token[ 0 ] )
 				break;
 
@@ -118,7 +118,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 			else
 			{
 				c->type = consoleKey_t::QUAKE_KEY;
-				c->u.key = Key_StringToKeynum( token );
+				c->u.key = (fakeAscii_t)Key_StringToKeynum( token );
 
 				// 0 isn't a key
 				if( c->u.key <= 0 )
@@ -131,7 +131,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 
 	// If the character is the same as the key, prefer the character
 	if( key == character )
-		key = 0;
+		key = A_NULL;
 
 	for( i = 0; i < numConsoleKeys; i++ )
 	{
@@ -161,12 +161,12 @@ IN_TranslateSDLToQ3Key
 */
 static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down )
 {
-	fakeAscii_t key = 0;
+	fakeAscii_t key = A_NULL;
 
 	if( keysym->sym >= SDLK_BACKSPACE && keysym->sym < SDLK_DELETE )
 	{
 		// These happen to match the ASCII chars
-		key = (int)keysym->sym;
+		key = (fakeAscii_t)keysym->sym;
 	}
 	else
 	{
@@ -288,7 +288,7 @@ static void IN_ActivateMouse( void )
 	if( !mouseActive )
 	{
 		SDL_SetRelativeMouseMode( SDL_TRUE );
-		SDL_SetWindowGrab( SDL_window, 1 );
+		SDL_SetWindowGrab( SDL_window, SDL_TRUE );
 
 		IN_GobbleMotionEvents( );
 	}
@@ -299,9 +299,9 @@ static void IN_ActivateMouse( void )
 		if( in_nograb->modified || !mouseActive )
 		{
 			if( in_nograb->integer )
-				SDL_SetWindowGrab( SDL_window, 0 );
+				SDL_SetWindowGrab( SDL_window, SDL_FALSE );
 			else
-				SDL_SetWindowGrab( SDL_window, 1 );
+				SDL_SetWindowGrab( SDL_window, SDL_TRUE );
 
 			in_nograb->modified = qfalse;
 		}
@@ -332,7 +332,7 @@ static void IN_DeactivateMouse( void )
 	{
 		IN_GobbleMotionEvents( );
 
-		SDL_SetWindowGrab( SDL_window, 0 );
+		SDL_SetWindowGrab( SDL_window, SDL_FALSE );
 		SDL_SetRelativeMouseMode( SDL_FALSE );
 
 		// Don't warp the mouse unless the cursor is within the window
@@ -510,8 +510,8 @@ IN_ProcessEvents
 static void IN_ProcessEvents( void )
 {
 	SDL_Event e;
-	fakeAscii_t key = 0;
-	static fakeAscii_t lastKeyDown = 0;
+	fakeAscii_t key = A_NULL;
+	static fakeAscii_t lastKeyDown = A_NULL;
 
 	if( !SDL_WasInit( SDL_INIT_VIDEO ) )
 			return;
@@ -533,7 +533,7 @@ static void IN_ProcessEvents( void )
 				if( ( key = IN_TranslateSDLToJKKey( &e.key.keysym, qfalse ) ) )
 					Sys_QueEvent( 0, SE_KEY, key, qfalse, 0, NULL );
 
-				lastKeyDown = 0;
+				lastKeyDown = A_NULL;
 				break;
 
 			case SDL_TEXTINPUT:
@@ -574,7 +574,7 @@ static void IN_ProcessEvents( void )
 
 						if( utf32 != 0 )
 						{
-							if( IN_IsConsoleKey( 0, utf32 ) )
+							if( IN_IsConsoleKey( A_NULL, utf32 ) )
 							{
 								Sys_QueEvent( 0, SE_KEY, A_CONSOLE, qtrue, 0, NULL );
 								Sys_QueEvent( 0, SE_KEY, A_CONSOLE, qfalse, 0, NULL );
