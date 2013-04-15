@@ -1,0 +1,77 @@
+/*
+This file is part of OpenJK.
+
+    OpenJK is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    OpenJK is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenJK.  If not, see <http://www.gnu.org/licenses/>.
+*/
+// Copyright 2013 OpenJK
+
+// Stuff from g_weapon.cpp
+extern vec3_t	wpFwd, wpVright, wpUp;
+extern vec3_t	wpMuzzle;
+
+extern gentity_t *ent_list[MAX_GENTITIES];
+
+void drop_charge(gentity_t *ent, vec3_t start, vec3_t dir);
+void ViewHeightFix( const gentity_t * const ent );
+qboolean LogAccuracyHit( gentity_t *target, gentity_t *attacker );
+extern qboolean G_BoxInBounds( const vec3_t point, const vec3_t mins, const vec3_t maxs, const vec3_t boundsMins, const vec3_t boundsMaxs );
+extern qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, int hitLoc );
+extern qboolean PM_DroidMelee( int npc_class );
+
+extern int g_rocketLockEntNum;
+extern int g_rocketLockTime;
+extern int	g_rocketSlackTime;
+
+void WP_TraceSetStart( const gentity_t *ent, vec3_t start, const vec3_t mins, const vec3_t maxs );
+gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life, gentity_t *owner, qboolean altFire = qfalse );
+void WP_Stick( gentity_t *missile, trace_t *trace, float fudge_distance = 0.0f );
+void WP_Explode( gentity_t *self );
+void WP_ExplosiveDie( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath,int dFlags,int hitLoc );
+
+
+// Functions from the wp_ files
+
+void WP_ATSTMainFire( gentity_t *ent );
+void WP_ATSTSideAltFire( gentity_t *ent );
+void WP_ATSTSideFire( gentity_t *ent );
+void WP_FireBlaster( gentity_t *ent, qboolean alt_fire );
+void WP_BotLaser( gentity_t *ent );
+void WP_FireBowcaster( gentity_t *ent, qboolean alt_fire );
+void WP_FireBryarPistol( gentity_t *ent, qboolean alt_fire );
+void WP_FireDEMP2( gentity_t *ent, qboolean alt_fire );
+void WP_FireDetPack( gentity_t *ent, qboolean alt_fire );
+int G_GetHitLocFromTrace( trace_t *trace, int mod );
+void WP_FireDisruptor( gentity_t *ent, qboolean alt_fire );
+void WP_EmplacedFire( gentity_t *ent );
+void WP_FireFlechette( gentity_t *ent, qboolean alt_fire );
+void prox_mine_stick( gentity_t *self, gentity_t *other, trace_t *trace );
+void prox_mine_think( gentity_t *ent );
+void WP_Melee( gentity_t *ent );
+void WP_FireRepeater( gentity_t *ent, qboolean alt_fire );
+void rocketThink( gentity_t *ent );
+void WP_FireRocket( gentity_t *ent, qboolean alt_fire );
+void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire );
+void thermalDetonatorExplode( gentity_t *ent );
+void thermal_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod, int dFlags, int hitLoc );
+qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, vec3_t maxs, int clipmask, 
+				vec3_t velocity, qboolean tracePath, int ignoreEntNum, int enemyNum,
+				float minSpeed = 0, float maxSpeed = 0, float idealSpeed = 0, qboolean mustHit = qfalse );
+void WP_ThermalThink( gentity_t *ent );
+gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean alt_fire );
+gentity_t *WP_DropThermal( gentity_t *ent );
+void touchLaserTrap( gentity_t *ent, gentity_t *other, trace_t *trace );
+void WP_prox_mine_think( gentity_t *ent );
+void laserTrapThink( gentity_t *ent );
+void CreateLaserTrap( gentity_t *laserTrap, vec3_t start, gentity_t *owner );
+void WP_PlaceLaserTrap( gentity_t *ent, qboolean alt_fire );

@@ -87,6 +87,7 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'" />
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">jk2gamex86</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">jk2gamex86</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">jk2gamex86</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">
     <Midl>
@@ -1802,6 +1803,19 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">common_headers.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="wp_atst.cpp" />
+    <ClCompile Include="wp_blaster_rifle.cpp" />
+    <ClCompile Include="wp_bot_laser.cpp" />
+    <ClCompile Include="wp_bowcaster.cpp" />
+    <ClCompile Include="wp_bryar_pistol.cpp" />
+    <ClCompile Include="wp_demp2.cpp" />
+    <ClCompile Include="wp_det_pack.cpp" />
+    <ClCompile Include="wp_disruptor.cpp" />
+    <ClCompile Include="wp_emplaced_gun.cpp" />
+    <ClCompile Include="wp_flechette.cpp" />
+    <ClCompile Include="wp_melee.cpp" />
+    <ClCompile Include="wp_repeater.cpp" />
+    <ClCompile Include="wp_rocket_launcher.cpp" />
     <ClCompile Include="wp_saber.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1812,6 +1826,9 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="wp_stun_baton.cpp" />
+    <ClCompile Include="wp_thermal.cpp" />
+    <ClCompile Include="wp_trip_mine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Icarus\BlockStream.h" />
@@ -1882,6 +1899,7 @@
     <ClInclude Include="teams.h" />
     <ClInclude Include="weapons.h" />
     <ClInclude Include="wp_saber.h" />
+    <ClInclude Include="w_local.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="game.def" />

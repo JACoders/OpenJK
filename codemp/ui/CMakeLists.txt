@@ -8,17 +8,38 @@ endif(NOT InOpenJK)
 set(MPUIIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPUILibraries "odbc32" "odbccp32") # what are these even?
-else(WIN32)
-	message("codemp/ui/CMakeLists.txt might need some libraries to link properly on your platform.")
 endif(WIN32)
 set(MPUIDefines ${MPSharedDefines} "UI_EXPORTS" "MISSIONPACK" "_USRDLL")
-set(MPUISortMe
+
+set(MPUIGameFiles
 	"${MPDir}/game/bg_misc.c"
 	"${MPDir}/game/bg_saga.c"
 	"${MPDir}/game/bg_vehicleLoad.c"
 	"${MPDir}/game/bg_weapons.c"
+	"${MPDir}/game/anims.h"
+	"${MPDir}/game/bg_local.h"
+	"${MPDir}/game/bg_public.h"
+	"${MPDir}/game/bg_saga.h"
+	"${MPDir}/game/bg_strap.h"
+	"${MPDir}/game/bg_weapons.h"
+	"${MPDir}/game/surfaceflags.h"
+	)
+source_group("game" FILES ${MPUIGameFiles})
+set(MPUIFiles ${MPUIFiles} ${MPUIGameFiles})
+
+set(MPUICommonFiles
 	"${MPDir}/qcommon/q_math.c"
 	"${MPDir}/qcommon/q_shared.c"
+	"${MPDir}/qcommon/disablewarnings.h"
+	"${MPDir}/qcommon/game_version.h"
+	"${MPDir}/qcommon/q_shared.h"
+	"${MPDir}/qcommon/qfiles.h"
+	"${MPDir}/qcommon/tags.h"
+	)
+source_group("common" FILES ${MPUICommonFiles})
+set(MPUIFiles ${MPUIFiles} ${MPUICommonFiles})
+
+set(MPUIUIFiles
 	"${MPDir}/ui/ui_atoms.c"
 	"${MPDir}/ui/ui_force.c"
 	"${MPDir}/ui/ui_gameinfo.c"
@@ -26,30 +47,29 @@ set(MPUISortMe
 	"${MPDir}/ui/ui_saber.c"
 	"${MPDir}/ui/ui_shared.c"
 	"${MPDir}/ui/ui_syscalls.c"
-
-	"${MPDir}/game/anims.h"
-	"${MPDir}/game/bg_local.h"
-	"${MPDir}/game/bg_public.h"
-	"${MPDir}/game/bg_saga.h"
-	"${MPDir}/game/bg_strap.h"
-	"${MPDir}/game/bg_weapons.h"
-	"${MPDir}/qcommon/disablewarnings.h"
-	"${MPDir}/qcommon/game_version.h"
 	"${MPDir}/ui/keycodes.h"
 	"${MPDir}/ui/menudef.h"
-	"${MPDir}/qcommon/q_shared.h"
-	"${MPDir}/qcommon/qfiles.h"
-	"${MPDir}/game/surfaceflags.h"
-	"${MPDir}/qcommon/tags.h"
-	"${MPDir}/cgame/tr_types.h"
 	"${MPDir}/ui/ui_force.h"
 	"${MPDir}/ui/ui_local.h"
 	"${MPDir}/ui/ui_public.h"
 	"${MPDir}/ui/ui_shared.h"
 	)
-set(MPUIFiles ${MPUISortMe})
+source_group("ui" FILES ${MPUIUIFiles})
+set(MPUIFiles ${MPUIFiles} ${MPUIUIFiles})
+
+set(MPUICgameFiles
+	"${MPDir}/cgame/tr_types.h"
+	)
+source_group("cgame" FILES ${MPUICgameFiles})
+set(MPUIFiles ${MPUIFiles} ${MPUICgameFiles})
 
 add_library(${MPUI} SHARED ${MPUIFiles})
+
+if(NOT WIN32)
+	# remove "lib" prefix for .so/.dylib files
+	set_target_properties(${MPUI} PROPERTIES PREFIX "")
+endif(NOT WIN32)
+
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPUIDefines};${DebugDefines}")
 set_target_properties(${MPUI} PROPERTIES INCLUDE_DIRECTORIES "${MPUIIncludeDirectories}")

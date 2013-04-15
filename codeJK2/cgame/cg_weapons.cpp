@@ -1008,6 +1008,11 @@ void CG_AddViewWeapon( playerState_t *ps )
 			weapon->firingSound );
 	}
 
+	if ( ps->weapon == WP_NONE )
+	{
+		return;
+	}
+
 	// set up gun position
 	CG_CalculateWeaponPosition( hand.origin, angles );
 

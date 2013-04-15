@@ -8,11 +8,9 @@ endif(NOT InOpenJK)
 set(MPGameIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPGameLibraries "winmm")
-else(WIN32)
-	message("codemp/game/CMakeLists.txt might need some libraries to link properly on your platform.")
 endif(WIN32)
 set(MPGameDefines ${MPSharedDefines} "QAGAME" "MISSIONPACK" )
-set(MPGameSortMe
+set(MPGameGameFiles
 	"${MPDir}/game/ai_main.c"
 	"${MPDir}/game/ai_util.c"
 	"${MPDir}/game/ai_wpnav.c"
@@ -94,20 +92,63 @@ set(MPGameSortMe
 	"${MPDir}/game/NPC_spawn.c"
 	"${MPDir}/game/NPC_stats.c"
 	"${MPDir}/game/NPC_utils.c"
-	"${MPDir}/qcommon/q_math.c"
-	"${MPDir}/qcommon/q_shared.c"
 	"${MPDir}/game/SpeederNPC.c"
 	"${MPDir}/game/tri_coll_test.c"
 	"${MPDir}/game/w_force.c"
 	"${MPDir}/game/w_saber.c"
 	"${MPDir}/game/WalkerNPC.c"
-	
 	"${MPDir}/game/ai.h"
 	"${MPDir}/game/ai_main.h"
 	"${MPDir}/game/anims.h"
-	"${MPDir}/cgame/animtable.h"
 	"${MPDir}/game/b_local.h"
 	"${MPDir}/game/b_public.h"
+	"${MPDir}/game/bg_local.h"
+	"${MPDir}/game/bg_public.h"
+	"${MPDir}/game/bg_saga.h"
+	"${MPDir}/game/bg_strap.h"
+	"${MPDir}/game/bg_vehicles.h"
+	"${MPDir}/game/bg_weapons.h"
+	"${MPDir}/botlib/botlib.h"
+	"${MPDir}/game/chars.h"
+	"${MPDir}/game/g_headers.h"
+	"${MPDir}/game/g_ICARUScb.h"
+	"${MPDir}/game/g_local.h"
+	"${MPDir}/game/g_nav.h"
+	"${MPDir}/game/g_public.h"
+	"${MPDir}/game/g_team.h"
+	"${MPDir}/game/g_xcvar.h"
+	"${MPDir}/game/inv.h"
+	"${MPDir}/game/match.h"
+	"${MPDir}/game/npc_headers.h"
+	"${MPDir}/game/say.h"
+	"${MPDir}/game/surfaceflags.h"
+	"${MPDir}/game/syn.h"
+	"${MPDir}/game/teams.h"
+	"${MPDir}/game/w_saber.h"
+	)
+source_group("game" FILES ${MPGameGameFiles})
+set(MPGameFiles ${MPGameFiles} ${MPGameGameFiles})
+
+set(MPGameCommonFiles
+	"${MPDir}/qcommon/q_math.c"
+	"${MPDir}/qcommon/q_shared.c"
+	"${MPDir}/qcommon/disablewarnings.h"
+	"${MPDir}/qcommon/q_shared.h"
+	"${MPDir}/qcommon/tags.h"
+	)
+source_group("common" FILES ${MPGameCommonFiles})
+set(MPGameFiles ${MPGameFiles} ${MPGameCommonFiles})
+
+set(MPGameCgameFiles
+	"${MPDir}/cgame/animtable.h"
+	"${MPDir}/cgame/cg_local.h"
+	"${MPDir}/cgame/cg_public.h"
+	"${MPDir}/cgame/tr_types.h"
+	)
+source_group("cgame" FILES ${MPGameCgameFiles})
+set(MPGameFiles ${MPGameFiles} ${MPGameCgameFiles})
+
+set(MPGameBotlibFiles
 	"${MPDir}/botlib/be_aas.h"
 	"${MPDir}/botlib/be_ai_char.h"
 	"${MPDir}/botlib/be_ai_chat.h"
@@ -116,43 +157,36 @@ set(MPGameSortMe
 	"${MPDir}/botlib/be_ai_move.h"
 	"${MPDir}/botlib/be_ai_weap.h"
 	"${MPDir}/botlib/be_ea.h"
-	"${MPDir}/game/bg_local.h"
-	"${MPDir}/game/bg_public.h"
-	"${MPDir}/game/bg_saga.h"
-	"${MPDir}/game/bg_strap.h"
-	"${MPDir}/game/bg_vehicles.h"
-	"${MPDir}/game/bg_weapons.h"
-	"${MPDir}/game/botlib.h"
-	"${MPDir}/cgame/cg_local.h"
-	"${MPDir}/cgame/cg_public.h"
-	"${MPDir}/game/chars.h"
-	"${MPDir}/qcommon/disablewarnings.h"
-	"${MPDir}/ghoul2/G2.h"
-	"${MPDir}/game/g_headers.h"
-	"${MPDir}/game/g_ICARUScb.h"
-	"${MPDir}/game/g_local.h"
-	"${MPDir}/game/g_nav.h"
-	"${MPDir}/game/g_public.h"
-	"${MPDir}/game/g_team.h"
-	"${MPDir}/icarus/interpreter.h"
-	"${MPDir}/game/g_xcvar.h"
-	"${MPDir}/game/inv.h"
-	"${MPDir}/game/match.h"
-	"${MPDir}/ui/menudef.h"
-	"${MPDir}/game/npc_headers.h"
-	"${MPDir}/icarus/Q3_Interface.h"
-	"${MPDir}/qcommon/q_shared.h"
-	"${MPDir}/game/say.h"
-	"${MPDir}/game/surfaceflags.h"
-	"${MPDir}/game/syn.h"
-	"${MPDir}/qcommon/tags.h"
-	"${MPDir}/game/teams.h"
-	"${MPDir}/cgame/tr_types.h"
-	"${MPDir}/game/w_saber.h"
 	)
-set(MPGameFiles ${MPGameSortMe})
+source_group("botlib" FILES ${MPGameBotlibFiles})
+set(MPGameFiles ${MPGameFiles} ${MPGameBotlibFiles})
+
+set(MPGameG2Files
+	"${MPDir}/ghoul2/G2.h"
+	)
+source_group("ghoul2" FILES ${MPGameG2Files})
+set(MPGameFiles ${MPGameFiles} ${MPGameG2Files})
+
+set(MPGameIcarusFiles
+	"${MPDir}/icarus/interpreter.h"
+	"${MPDir}/icarus/Q3_Interface.h"
+	)
+source_group("icarus" FILES ${MPGameIcarusFiles})
+set(MPGameFiles ${MPGameFiles} ${MPGameIcarusFiles})
+
+set(MPGameUiFiles
+	"${MPDir}/ui/menudef.h"
+	)
+source_group("ui" FILES ${MPGameUiFiles})
+set(MPGameFiles ${MPGameFiles} ${MPGameUiFiles})
 
 add_library(${MPGame} SHARED ${MPGameFiles})
+
+if(NOT WIN32)
+	# remove "lib" prefix for .so/.dylib files
+	set_target_properties(${MPGame} PROPERTIES PREFIX "")
+endif(NOT WIN32)
+
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPGameDefines};${ReleaseDefines}")
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPGameDefines};${DebugDefines}")
 set_target_properties(${MPGame} PROPERTIES INCLUDE_DIRECTORIES "${MPGameIncludeDirectories}")
