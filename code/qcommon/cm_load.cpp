@@ -833,6 +833,7 @@ void CM_LoadMap( const char *name, qboolean clientload, int *checksum, qboolean 
 {
 	if (subBSP)
 	{
+		Com_DPrintf("^5CM_LoadMap->CMLoadSubBSP(%s, %i)\n", name, qfalse);
 		CM_LoadSubBSP(va("maps/%s.bsp", ((const char *)name) + 1), qfalse);
 		//CM_LoadMap_Actual( name, clientload, checksum, cmg );
 	}
@@ -1203,6 +1204,8 @@ int CM_LoadSubBSP(const char *name, qboolean clientload)
 	{
 		Com_Error (ERR_DROP, "CM_LoadSubBSP: too many unique sub BSPs");
 	}
+
+	Com_DPrintf("CM_LoadSubBSP(%s, %i)\n", name, clientload);
 
 	CM_LoadMap_Actual( name, clientload, &checksum, SubBSP[NumSubBSP] );
 	NumSubBSP++;

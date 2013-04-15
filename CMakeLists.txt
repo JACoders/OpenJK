@@ -12,6 +12,11 @@ option(BuildMPDed "Whether to create projects for the dedicated server (jampded.
 option(BuildMPGame "Whether to create projects for the mp serverside gamecode (jampgamex86.dll)" ON)
 option(BuildMPCGame "Whether to create projects for the mp clientside gamecode (jampcgamex86.dll)" ON)
 option(BuildMPUI "Whether to create projects for the mp ui code (jampuix86.dll)" ON)
+option(BuildSPEngine "Whether to create projects for the sp engine (jasp.exe)" ON)
+option(BuildSPGame "Whether to create projects for the sp gamecode(jagamex86.dll)" ON)
+# (mrw) jk2 has some weird PCH fuckery I cannot replicate with cmake without too much work
+set(BuildJK2SPGame OFF)
+#option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
 if(WIN32)
 	option(UseInternalOpenAL "Whether to use the included OpenAL instead of a locally installed one" ON)
 	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" ON)
@@ -30,6 +35,7 @@ set(Architecture "x86")
 # Binary names
 set(SPEngine "openjk_sp.${Architecture}")
 set(SPGame "jagame${Architecture}")
+set(JK2SPGame "jk2game${Architecture}")
 set(MPEngine "openjk.${Architecture}")
 set(MPDed "openjkded.${Architecture}")
 set(MPGame "jampgame${Architecture}")
@@ -41,17 +47,44 @@ set(MPBotLib "botlib")
 # Paths
 set(SPDir "${CMAKE_SOURCE_DIR}/code")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
+set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 
 # Common settings
 if(WIN32)
 	set(SharedDefines "WIN32" "_WINDOWS")
-else(WIN32)
-	message("Please find out what the defines for your platform are and add them to CMakeLists.txt")
-endif(WIN32)
+else()
+	if (APPLE)
+		set(SharedDefines "MACOS_X" "_M_IX86")
+	else(APPLE)
+		set(SharedDefines "__linux__" "_M_IX86")
+	endif()
+
+	# removes the -rdynamic flag at linking (which causes crashes for some reason)
+	set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
+	# maybe remove these flags later, when the warnings are fixed
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w -fpermissive")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fpermissive")
+
+	# additional flags for debug configuration
+	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
+
+	enable_language(ASM_NASM) # there are some assembly files to build
+	
+	if (NOT CMAKE_BUILD_TYPE)
+ 		message("No build type selected, default to RELEASE")
+ 		set(CMAKE_BUILD_TYPE "RELEASE")
+ 	endif()
+endif()
 
 set(DebugDefines "_DEBUG")
 set(ReleaseDefines "NDEBUG" "FINAL_BUILD")
 
 #    Add projects
-#add_subdirectory(${SPDir})
+add_subdirectory(${SPDir})
+if(BuildJK2SPGame)
+	add_subdirectory("${JK2SPDir}/game")
+endif(BuildJK2SPGame)
 add_subdirectory(${MPDir})

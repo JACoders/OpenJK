@@ -101,6 +101,10 @@ static bool SV_Map_( ForceReload_e eForceReload )
 		SG_WipeSavegame("auto");
 	}
 
+#ifndef _DEBUG
+	Com_Printf("SV_SpawnServer call: %s\n", map);
+#endif
+
 	SV_SpawnServer( map, eForceReload, qtrue );	// start up the map
 	return true;
 }

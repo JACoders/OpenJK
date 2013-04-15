@@ -286,7 +286,8 @@ static void CG_ServerCommand( void ) {
 	// Cinematic text
 	if ( !strcmp( cmd, "ct" ) ) 
 	{
-		CG_CaptionText( CG_Argv(1), cgs.sound_precache[atoi(CG_Argv(2))], SCREEN_HEIGHT * 0.25 );
+		
+		CG_CaptionText( CG_Argv(1), cgs.sound_precache[atoi(CG_Argv(2))] );
 		return;
 	}
 

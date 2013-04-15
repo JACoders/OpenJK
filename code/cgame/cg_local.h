@@ -748,7 +748,7 @@ void CG_TileClear( void );
 void CG_CenterPrint( const char *str, int y );
 void CG_DrawActive( stereoFrame_t stereoView );
 void CG_ScrollText( const char *str, int iPixelWidth );
-void CG_CaptionText( const char *str, int sound, int y );
+void CG_CaptionText( const char *str, int sound );
 void CG_CaptionTextStop( void );
 
 //

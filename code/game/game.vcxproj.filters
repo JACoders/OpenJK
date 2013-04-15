@@ -40,98 +40,17 @@
     <Filter Include="Vehicles">
       <UniqueIdentifier>{8cbae8d2-905b-49d6-b551-9400fa0740ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AI">
+      <UniqueIdentifier>{31ac1675-c894-46aa-b015-bee177a0fb60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Weapons">
+      <UniqueIdentifier>{90529cc1-837f-4ca3-b664-e359347781d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Cgame\FX">
+      <UniqueIdentifier>{aa6607e8-14c0-4d8b-9ca0-7cf70c4dcc73}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="AI_Animal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_AssassinDroid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Atst.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_BobaFett.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Civilian.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Default.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Droid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_GalakMech.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Glider.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Grenadier.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_HazardTrooper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Howler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_ImperialProbe.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Interrogator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Jedi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Mark1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Mark2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_MineMonster.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Rancor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Remote.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_RocketTrooper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_SaberDroid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_SandCreature.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Seeker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Sentry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Sniper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Stormtrooper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Tusken.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AI_Wampa.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="g_active.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -255,42 +174,6 @@
     <ClCompile Include="genericparser2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NPC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_behavior.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_combat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_goal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_misc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_move.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_reactions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_senses.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_sounds.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_spawn.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_stats.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NPC_utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="q_math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -301,12 +184,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\qcommon\tri_coll_test.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="wp_saber.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="wp_saberLoad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\icarus\BlockStream.cpp">
@@ -326,24 +203,6 @@
     </ClCompile>
     <ClCompile Include="..\icarus\TaskManager.cpp">
       <Filter>ICARUS</Filter>
-    </ClCompile>
-    <ClCompile Include="bg_lib.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="bg_misc.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="bg_pangles.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="bg_panimate.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="bg_pmove.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="bg_slidemove.cpp">
-      <Filter>Cgame</Filter>
     </ClCompile>
     <ClCompile Include="..\cgame\cg_camera.cpp">
       <Filter>Cgame</Filter>
@@ -417,60 +276,6 @@
     <ClCompile Include="..\cgame\cg_weapons.cpp">
       <Filter>Cgame</Filter>
     </ClCompile>
-    <ClCompile Include="..\cgame\FX_ATSTMain.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_Blaster.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_Bowcaster.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_BryarPistol.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_Concussion.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_DEMP2.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_Disruptor.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_Emplaced.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_Flechette.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_HeavyRepeater.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_NoghriShot.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_RocketLauncher.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FX_TuskenShot.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FxPrimitives.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FxScheduler.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FxSystem.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FxTemplate.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\cgame\FxUtil.cpp">
-      <Filter>Cgame</Filter>
-    </ClCompile>
     <ClCompile Include="..\Ratl\ratl.cpp">
       <Filter>Ratl</Filter>
     </ClCompile>
@@ -486,23 +291,281 @@
     <ClCompile Include="..\Rufl\hstring.cpp">
       <Filter>Rufl</Filter>
     </ClCompile>
-    <ClCompile Include="AnimalNPC.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="bg_vehicleLoad.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bg_vehicleLoad.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="g_vehicles.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FighterNPC.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="AI_Animal.cpp">
+      <Filter>Source Files\AI</Filter>
     </ClCompile>
-    <ClCompile Include="g_vehicles.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="AnimalNPC.cpp">
+      <Filter>Source Files\AI</Filter>
     </ClCompile>
-    <ClCompile Include="SpeederNPC.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="AI_AssassinDroid.cpp">
+      <Filter>Source Files\AI</Filter>
     </ClCompile>
-    <ClCompile Include="WalkerNPC.c">
-      <Filter>Vehicles</Filter>
+    <ClCompile Include="AI_Atst.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_BobaFett.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Civilian.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Default.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Droid.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_GalakMech.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Glider.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Grenadier.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_HazardTrooper.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Howler.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_ImperialProbe.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Interrogator.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Jedi.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Mark1.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Mark2.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_MineMonster.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Rancor.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Remote.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_RocketTrooper.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_SaberDroid.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_SandCreature.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Seeker.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Sentry.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Sniper.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Stormtrooper.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Tusken.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Utils.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Wampa.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="FighterNPC.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="SpeederNPC.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_utils.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_behavior.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_combat.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_goal.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_misc.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_move.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_reactions.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_senses.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_sounds.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_spawn.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC_stats.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="WalkerNPC.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="bg_misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bg_slidemove.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bg_pangles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bg_panimate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bg_pmove.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_ATSTMain.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FxUtil.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_Blaster.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_Bowcaster.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_BryarPistol.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_Concussion.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_DEMP2.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_Disruptor.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_Emplaced.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_Flechette.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_HeavyRepeater.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_NoghriShot.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_RocketLauncher.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FX_TuskenShot.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FxPrimitives.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FxScheduler.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FxSystem.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cgame\FxTemplate.cpp">
+      <Filter>Cgame\FX</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_stun_baton.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_blaster_pistol.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_blaster_rifle.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_disruptor.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_bowcaster.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_repeater.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_demp2.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_flechette.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_concussion.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_rocket_launcher.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_thermal.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_trip_mine.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_det_pack.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_emplaced_gun.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_noghri_stick.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_tusken.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_saber.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_saberLoad.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_bot_laser.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_atst.cpp">
+      <Filter>Source Files\Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="wp_melee.cpp">
+      <Filter>Source Files\Weapons</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -783,6 +846,9 @@
     </ClInclude>
     <ClInclude Include="g_vehicles.h">
       <Filter>Vehicles</Filter>
+    </ClInclude>
+    <ClInclude Include="w_local.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
