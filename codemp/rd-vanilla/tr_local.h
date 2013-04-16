@@ -3,7 +3,11 @@
 
 #include "qcommon/qfiles.h"
 #include "renderer/tr_public.h"
+#ifdef _WIN32
 #include "qgl.h"
+#else
+#include "../sdl/sdl_qgl.h"
+#endif
 #include "ghoul2/ghoul2_shared.h" //rwwRMG - added
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT

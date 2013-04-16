@@ -1,7 +1,7 @@
 PLATFORM=$(shell uname|tr A-Z a-z)
 
-CC			= gcc
-CXX			= g++
+CC			= /usr/local/bin/gcc-4.2
+CXX			= /usr/local/bin/g++-4.2
 B			= build
 
 ifeq ($(PLATFORM),darwin)
@@ -236,7 +236,6 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/qcommon/vm_interpreted.o \
 			  $(B)/engine/qcommon/z_memman_pc.o \
 			  \
-			  $(B)/engine/sdl/sdl_glimp.o \
 			  $(B)/engine/sdl/sdl_snd.o \
 			  $(B)/engine/sdl/sdl_input.o \
 			  $(B)/engine/sys/sys_main.o \
@@ -284,35 +283,6 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/mp3code/uph.o \
 			  $(B)/engine/mp3code/upsf.o \
 			  $(B)/engine/mp3code/wavep.o \
-			  $(B)/engine/renderer/matcomp.o \
-			  $(B)/engine/renderer/tr_WorldEffects.o \
-			  $(B)/engine/renderer/tr_animation.o \
-			  $(B)/engine/renderer/tr_arioche.o \
-			  $(B)/engine/renderer/tr_backend.o \
-			  $(B)/engine/renderer/tr_bsp.o \
-			  $(B)/engine/renderer/tr_cmds.o \
-			  $(B)/engine/renderer/tr_curve.o \
-			  $(B)/engine/renderer/tr_font.o \
-			  $(B)/engine/renderer/tr_ghoul2.o \
-			  $(B)/engine/renderer/tr_image.o \
-			  $(B)/engine/renderer/tr_init.o \
-			  $(B)/engine/renderer/tr_light.o \
-			  $(B)/engine/renderer/tr_main.o \
-			  $(B)/engine/renderer/tr_marks.o \
-			  $(B)/engine/renderer/tr_mesh.o \
-			  $(B)/engine/renderer/tr_model.o \
-			  $(B)/engine/renderer/tr_noise.o \
-			  $(B)/engine/renderer/tr_quicksprite.o \
-			  $(B)/engine/renderer/tr_scene.o \
-			  $(B)/engine/renderer/tr_shade.o \
-			  $(B)/engine/renderer/tr_shade_calc.o \
-			  $(B)/engine/renderer/tr_shader.o \
-			  $(B)/engine/renderer/tr_shadows.o \
-			  $(B)/engine/renderer/tr_sky.o \
-			  $(B)/engine/renderer/tr_surface.o \
-			  $(B)/engine/renderer/tr_surfacesprites.o \
-			  $(B)/engine/renderer/tr_terrain.o \
-			  $(B)/engine/renderer/tr_world.o \
 			  $(B)/engine/jpeg-8c/jaricom.o \
 			  $(B)/engine/jpeg-8c/jcapimin.o \
 			  $(B)/engine/jpeg-8c/jcapistd.o \

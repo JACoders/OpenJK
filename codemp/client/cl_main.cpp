@@ -24,6 +24,10 @@
 #include "qcommon/INetProfile.h"
 #endif
 
+#ifndef _WIN32
+#include "sys/sys_loadlib.h""
+#endif
+
 cvar_t	*cl_renderer;
 
 cvar_t	*cl_nodelta;
