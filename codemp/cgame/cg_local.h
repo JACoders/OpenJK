@@ -1,7 +1,7 @@
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 #include "qcommon/q_shared.h"
-#include "tr_types.h"
+#include "renderer/tr_types.h"
 #include "game/bg_public.h"
 #include "cg_public.h"
 

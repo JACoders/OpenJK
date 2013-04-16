@@ -280,7 +280,6 @@
     <ClInclude Include="syn.h" />
     <ClInclude Include="..\qcommon\tags.h" />
     <ClInclude Include="teams.h" />
-    <ClInclude Include="..\cgame\tr_types.h" />
     <ClInclude Include="w_saber.h" />
   </ItemGroup>
   <ItemGroup>

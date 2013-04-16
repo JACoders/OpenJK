@@ -3,7 +3,7 @@
 
 
 #include "qcommon/q_shared.h"
-#include "cgame/tr_types.h"
+#include "renderer/tr_types.h"
 #include "keycodes.h"
 
 #include "ui/menudef.h"

@@ -6,7 +6,6 @@
 #include "client/client.h"
 #include "win_local.h"
 
-
 #include "resource.h"
 #include <errno.h>
 #include <float.h>

@@ -397,9 +397,6 @@
     <ClInclude Include="teams.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\cgame\tr_types.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="w_saber.h">
       <Filter>Header Files</Filter>
     </ClInclude>
