@@ -6,14 +6,11 @@
 #include "cm_landscape.h"
 #include "qcommon/GenericParser2.h"
 #include "cm_randomterrain.h"
+#include "client/client.h" // this will do for now. we're not a lib
 
 #if defined(_WIN32) && defined(_MSC_VER) && (_MSC_VER < 1600)
 #pragma optimize("p", on)
 #endif
-
-void R_LoadDataImage	( const char *name, byte **pic, int *width, int *height);
-void R_InvertImage		( byte *data, int width, int height, int depth);
-void R_Resample			( byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
 
 #define _SMOOTH_TERXEL_BRUSH
 
@@ -172,7 +169,7 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 #ifdef DEDICATED
 		imageData=NULL;
 #else
-		R_LoadDataImage(heightMap, &imageData, &iWidth, &iHeight); 
+		re.LoadDataImage(heightMap, &imageData, &iWidth, &iHeight); 
 		if(imageData)
 		{
 			if(strstr(heightMap, "random_"))
@@ -182,8 +179,8 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 			else
 			{
 				// Flip to make the same as GenSurf
-				R_InvertImage(imageData, iWidth, iHeight, 1);
-				R_Resample(imageData, iWidth, iHeight, mHeightMap, GetRealWidth(), GetRealHeight(), 1);
+				re.InvertImage(imageData, iWidth, iHeight, 1);
+				re.Resample(imageData, iWidth, iHeight, mHeightMap, GetRealWidth(), GetRealHeight(), 1);
 			}
 			Z_Free(imageData);
 		}
