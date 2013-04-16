@@ -379,7 +379,7 @@ bool PNG_Pack(byte *out, ulong *size, ulong maxsize, byte *data, int width, int 
 
 	lastline = NULL;
 	source = data + ((height - 1) * rowbytes);
-	for(y = 0; y < height; y++)
+	for(y = 0; y < height-1; y++)
 	{
 		// Refilter using the most compressable filter algo
 		// Assume paeth to speed things up
