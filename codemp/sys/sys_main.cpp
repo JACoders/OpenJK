@@ -101,38 +101,43 @@ extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qp
 
 void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 {
-	void *dllhandle = NULL;
-	char	*fn, *basepath, *homepath, *cdpath, *gamedir;
-    
+	void *dllhandle;
+	
+	if(useSystemLib)
+		Com_Printf("Trying to load \"%s\"...\n", name);
+	
 	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
 	{
-		if ( !dllhandle ) {
-			basepath = Cvar_VariableString( "fs_basepath" );
-			homepath = Cvar_VariableString( "fs_homepath" );
-			cdpath = Cvar_VariableString( "fs_cdpath" );
-			gamedir = Cvar_VariableString( "fs_game" );
-            
-			fn = FS_BuildOSPath( basepath, gamedir, name );
-			dllhandle = Sys_LoadLibrary( fn );
-            
-			if ( !dllhandle ) {
-				if( homepath[0] ) {
-					fn = FS_BuildOSPath( homepath, gamedir, name );
-					dllhandle = Sys_LoadLibrary( fn );
-				}
-				if ( !dllhandle ) {
-					if( cdpath[0] ) {
-						fn = FS_BuildOSPath( cdpath, gamedir, name );
-						dllhandle = Sys_LoadLibrary( fn );
-					}
-					if ( !dllhandle ) {
-						return NULL;
-					}
-				}
+		const char *topDir;
+		char libPath[MAX_OSPATH];
+        
+		topDir = Sys_BinaryPath();
+        
+		if(!*topDir)
+			topDir = ".";
+        
+		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
+		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
+        
+		if(!(dllhandle = Sys_LoadLibrary(libPath)))
+		{
+			const char *basePath = Cvar_VariableString("fs_basepath");
+			
+			if(!basePath || !*basePath)
+				basePath = ".";
+			
+			if(FS_FilenameCompare(topDir, basePath))
+			{
+				Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, basePath);
+				Com_sprintf(libPath, sizeof(libPath), "%s%c%s", basePath, PATH_SEP, name);
+				dllhandle = Sys_LoadLibrary(libPath);
 			}
+			
+			if(!dllhandle)
+				Com_Printf("Loading \"%s\" failed\n", name);
 		}
 	}
-    
+	
 	return dllhandle;
 }
 

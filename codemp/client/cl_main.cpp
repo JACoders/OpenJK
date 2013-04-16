@@ -25,7 +25,8 @@
 #endif
 
 #ifndef _WIN32
-#include "sys/sys_loadlib.h""
+#include "sys/sys_loadlib.h"
+#include "sys/sys_local.h"
 #endif
 
 cvar_t	*cl_renderer;
@@ -2386,6 +2387,11 @@ void CL_InitRef( void ) {
 	// ugly win32 backend
 #ifdef _WIN32
 	ri.GetWinVars = GetWinVars;
+#endif
+#ifndef _WIN32
+    ri.IN_Init = IN_Init;
+    ri.IN_Shutdown = IN_Shutdown;
+    ri.IN_Restart = IN_Restart;
 #endif
 	ri.CM_GetCachedMapDiskImage = CM_GetCachedMapDiskImage;
 	ri.CM_SetCachedMapDiskImage = CM_SetCachedMapDiskImage;

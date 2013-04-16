@@ -18,6 +18,9 @@
 
 #include "client.h"
 #include "snd_local.h"
+#ifndef _WIN32
+#include <cmath>
+#endif
 
 #define MAXSIZE				8
 #define MINSIZE				4
