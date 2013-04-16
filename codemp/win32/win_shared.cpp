@@ -31,6 +31,17 @@ int Sys_Milliseconds (bool baseTime)
 	return sys_curtime;
 }
 
+int Sys_Milliseconds2( void )
+{
+	static int sys_timeBase = timeGetTime();
+	int			sys_curtime;
+
+	sys_curtime = timeGetTime();
+	sys_curtime -= sys_timeBase;
+
+	return sys_curtime;
+}
+
 /*
 ================
 Sys_SnapVector
