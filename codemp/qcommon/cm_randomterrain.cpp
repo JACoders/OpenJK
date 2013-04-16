@@ -1,4 +1,5 @@
 //Anything above this #include will be ignored by the compiler
+#define NOGDI
 #include "qcommon/exe_headers.h"
 
 #include "cm_local.h"
@@ -713,8 +714,8 @@ void CRandomTerrain::Smooth ( void )
 	int		xx, yy, dx, dy;
 	float	total, num;
 
-	R_Resample(mGrid, mWidth, mHeight, temp, mWidth >> 1, mHeight >> 1, 1);
-	R_Resample(temp, mWidth >> 1, mHeight >> 1, mGrid, mWidth, mHeight, 1);
+	re.Resample(mGrid, mWidth, mHeight, temp, mWidth >> 1, mHeight >> 1, 1);
+	re.Resample(temp, mWidth >> 1, mHeight >> 1, mGrid, mWidth, mHeight, 1);
 
 	// now lets filter it.
 	memcpy(temp, mGrid, mWidth * mHeight);

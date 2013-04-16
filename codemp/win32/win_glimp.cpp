@@ -17,7 +17,7 @@
 ** related functions that are relevant ONLY to win_glimp.c
 */
 #include <assert.h>
-#include "renderer/tr_local.h"
+#include "tr_local.h"
 
 #include "resource.h"
 #include "glw_win.h"
@@ -418,7 +418,7 @@ static qboolean GLW_InitDriver( int colorbits )
 	{
 		Com_Printf ("...getting DC: " );
 
-		if ( ( glw_state.hDC = GetDC( g_wv.hWnd ) ) == NULL )
+		if ( ( glw_state.hDC = GetDC( tr.wv->hWnd ) ) == NULL )
 		{
 			Com_Printf ("failed\n" );
 			return qfalse;
@@ -477,7 +477,7 @@ static qboolean GLW_InitDriver( int colorbits )
 			if ( ( r_colorbits->integer == glw_state.desktopBitsPixel ) &&
 				 ( stencilbits == 0 ) )
 			{
-				ReleaseDC( g_wv.hWnd, glw_state.hDC );
+				ReleaseDC( tr.wv->hWnd, glw_state.hDC );
 				glw_state.hDC = NULL;
 
 				Com_Printf ("...failed to find an appropriate PIXELFORMAT\n" );
@@ -497,7 +497,7 @@ static qboolean GLW_InitDriver( int colorbits )
 			{
 				if ( glw_state.hDC )
 				{
-					ReleaseDC( g_wv.hWnd, glw_state.hDC );
+					ReleaseDC( tr.wv->hWnd, glw_state.hDC );
 					glw_state.hDC = NULL;
 				}
 
@@ -554,8 +554,8 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 		wc.lpfnWndProc   = (WNDPROC) glw_state.wndproc;
 		wc.cbClsExtra    = 0;
 		wc.cbWndExtra    = 0;
-		wc.hInstance     = g_wv.hInstance;
-		wc.hIcon         = LoadIcon( g_wv.hInstance, MAKEINTRESOURCE(IDI_ICON1));
+		wc.hInstance     = tr.wv->hInstance;
+		wc.hIcon         = LoadIcon( tr.wv->hInstance, MAKEINTRESOURCE(IDI_ICON1));
 		wc.hCursor       = LoadCursor (NULL,IDC_ARROW);
 		wc.hbrBackground = 0;//(HBRUSH__ *)COLOR_GRAYTEXT;
 		wc.lpszMenuName  = 0;
@@ -572,7 +572,7 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 	//
 	// create the HWND if one does not already exist
 	//
-	if ( !g_wv.hWnd )
+	if ( !tr.wv->hWnd )
 	{
 		//
 		// compute width and height
@@ -604,8 +604,8 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 		}
 		else
 		{
-			vid_xpos = Cvar_Get ("vid_xpos", "", 0);
-			vid_ypos = Cvar_Get ("vid_ypos", "", 0);
+			vid_xpos = ri.Cvar_Get ("vid_xpos", "", 0);
+			vid_ypos = ri.Cvar_Get ("vid_ypos", "", 0);
 			x = vid_xpos->integer;
 			y = vid_ypos->integer;
 
@@ -626,7 +626,7 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 			}
 		}
 
-		g_wv.hWnd = CreateWindowEx (
+		tr.wv->hWnd = CreateWindowEx (
 			 exstyle, 
 			 WINDOW_CLASS_NAME,
 			 WINDOW_CLASS_NAME,
@@ -634,16 +634,16 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 			 x, y, w, h,
 			 NULL,
 			 NULL,
-			 g_wv.hInstance,
+			 tr.wv->hInstance,
 			 NULL);
 
-		if ( !g_wv.hWnd )
+		if ( !tr.wv->hWnd )
 		{
 			Com_Error (ERR_FATAL, "GLW_CreateWindow() - Couldn't create window");
 		}
 	
-		ShowWindow( g_wv.hWnd, SW_SHOW );
-		UpdateWindow( g_wv.hWnd );
+		ShowWindow( tr.wv->hWnd, SW_SHOW );
+		UpdateWindow( tr.wv->hWnd );
 		Com_Printf ("...created window@%d,%d (%dx%d)\n", x, y, w, h );
 	}
 	else
@@ -653,15 +653,15 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 
 	if ( !GLW_InitDriver( colorbits ) )
 	{
-		ShowWindow( g_wv.hWnd, SW_HIDE );
-		DestroyWindow( g_wv.hWnd );
-		g_wv.hWnd = NULL;
+		ShowWindow( tr.wv->hWnd, SW_HIDE );
+		DestroyWindow( tr.wv->hWnd );
+		tr.wv->hWnd = NULL;
 
 		return qfalse;
 	}
 
-	SetForegroundWindow( g_wv.hWnd );
-	SetFocus( g_wv.hWnd );
+	SetForegroundWindow( tr.wv->hWnd );
+	SetFocus( tr.wv->hWnd );
 
 	return qtrue;
 }
@@ -740,7 +740,7 @@ static rserr_t GLW_SetMode( int mode,
 			char sErrorHead[1024];	// ott
 
 			extern qboolean Language_IsAsian(void);
-			Q_strncpyz(sErrorHead, Language_IsAsian() ? "Low Desktop Color Depth" : SE_GetString("CON_TEXT_LOW_DESKTOP_COLOUR_DEPTH"), sizeof(sErrorHead) );
+			Q_strncpyz(sErrorHead, Language_IsAsian() ? "Low Desktop Color Depth" : ri.SE_GetString("CON_TEXT_LOW_DESKTOP_COLOUR_DEPTH"), sizeof(sErrorHead) );
 
 			const char *psErrorBody = Language_IsAsian() ?
 												"It is highly unlikely that a correct windowed\n"
@@ -749,7 +749,7 @@ static rserr_t GLW_SetMode( int mode,
 												"anyway.  Select 'Cancel' to try a fullscreen\n"
 												"mode instead."
 												:
-												SE_GetString("CON_TEXT_TRY_ANYWAY");
+												ri.SE_GetString("CON_TEXT_TRY_ANYWAY");
 
 			if ( MessageBox( NULL, 							
 						psErrorBody,
@@ -1067,7 +1067,7 @@ static void GLW_InitExtensions( void )
 	{
 		Com_Printf ("*** IGNORING OPENGL EXTENSIONS ***\n" );
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_DynamicGlow","0" );
 		return;
 	}
 
@@ -1112,16 +1112,16 @@ static void GLW_InitExtensions( void )
 		{
 			Com_Printf ("...ignoring GL_EXT_texture_filter_anisotropic\n" );
 		}
-		Cvar_Set( "r_ext_texture_filter_anisotropic_avail", va("%f",glConfig.maxTextureFilterAnisotropy) );
+		ri.Cvar_Set( "r_ext_texture_filter_anisotropic_avail", va("%f",glConfig.maxTextureFilterAnisotropy) );
 		if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 		{
-			Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
+			ri.Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
 		}
 	}
 	else
 	{
 		Com_Printf ("...GL_EXT_texture_filter_anisotropic not found\n" );
-		Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
+		ri.Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
 	}
 
 	// GL_EXT_clamp_to_edge
@@ -1473,12 +1473,12 @@ static void GLW_InitExtensions( void )
 	{
 		g_bDynamicGlowSupported = true;
 		// this would overwrite any achived setting gwg
-		// Cvar_Set( "r_DynamicGlow", "1" );
+		// ri.Cvar_Set( "r_DynamicGlow", "1" );
 	}
 	else
 	{
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_DynamicGlow","0" );
 	}
 }
 
@@ -1631,7 +1631,7 @@ static void GLW_StartOpenGL( void )
 void GLimp_Init( void )
 {
 	char	buf[MAX_STRING_CHARS];
-	cvar_t *lastValidRenderer = Cvar_Get( "r_lastValidRenderer", "(uninitialized)", CVAR_ARCHIVE );
+	cvar_t *lastValidRenderer = ri.Cvar_Get( "r_lastValidRenderer", "(uninitialized)", CVAR_ARCHIVE );
 	cvar_t	*cv;
 
 //	Com_Printf ("Initializing OpenGL subsystem\n" );
@@ -1645,13 +1645,13 @@ void GLimp_Init( void )
 	}
 
 	// save off hInstance and wndproc
-	cv = Cvar_Get( "win_hinstance", "", 0 );
-	sscanf( cv->string, "%i", (int *)&g_wv.hInstance );
+	cv = ri.Cvar_Get( "win_hinstance", "", 0 );
+	sscanf( cv->string, "%i", (int *)&tr.wv->hInstance );
 
-	cv = Cvar_Get( "win_wndproc", "", 0 );
+	cv = ri.Cvar_Get( "win_wndproc", "", 0 );
 	sscanf( cv->string, "%i", (int *)&glw_state.wndproc );
 
-	r_allowSoftwareGL = Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
+	r_allowSoftwareGL = ri.Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
 
 	// load appropriate DLL and initialize subsystem
 	GLW_StartOpenGL();
@@ -1686,54 +1686,53 @@ void GLimp_Init( void )
 	// to be overridden when testing driver fixes, etc. but only sets
 	// them to their default state when the hardware is first installed/run.
 	//
-extern qboolean Sys_LowPhysicalMemory();
 	if ( Q_stricmp( lastValidRenderer->string, glConfig.renderer_string ) )
 	{
-		if (Sys_LowPhysicalMemory())
+		if (ri.Sys_LowPhysicalMemory())
 		{
-			Cvar_Set("s_khz", "11");// this will get called before S_Init
+			ri.Cvar_Set("s_khz", "11");// this will get called before S_Init
 		}
 		//reset to defaults
-		Cvar_Set( "r_picmip", "1" );
+		ri.Cvar_Set( "r_picmip", "1" );
 
 		// Savage3D and Savage4 should always have trilinear enabled
 		if ( strstr( buf, "savage3d" ) || strstr( buf, "s3 savage4" ) || strstr( buf, "geforce" ) || strstr( buf, "quadro" ) )
 		{
-			Cvar_Set( "r_texturemode", "GL_LINEAR_MIPMAP_LINEAR" );
+			ri.Cvar_Set( "r_texturemode", "GL_LINEAR_MIPMAP_LINEAR" );
 		}
 		else
 		{
-			Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
+			ri.Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
 		}
 		
 		if ( strstr( buf, "kyro" ) )	
 		{
-			Cvar_Set( "r_ext_texture_filter_anisotropic", "0");	//KYROs have it avail, but suck at it!
-			Cvar_Set( "r_ext_preferred_tc_method", "1");			//(Use DXT1 instead of DXT5 - same quality but much better performance on KYRO)
+			ri.Cvar_Set( "r_ext_texture_filter_anisotropic", "0");	//KYROs have it avail, but suck at it!
+			ri.Cvar_Set( "r_ext_preferred_tc_method", "1");			//(Use DXT1 instead of DXT5 - same quality but much better performance on KYRO)
 		}
 		if ( strstr( buf, "geforce2" ) )	
 		{
-			Cvar_Set( "cg_renderToTextureFX", "0");	// slow to zero bug fix
+			ri.Cvar_Set( "cg_renderToTextureFX", "0");	// slow to zero bug fix
 		}
 
 		if ( strstr( buf, "radeon 9000" ) )	
 		{
-			Cvar_Set( "cg_renderToTextureFX", "0");	// white texture bug
+			ri.Cvar_Set( "cg_renderToTextureFX", "0");	// white texture bug
 		}
 		
 		GLW_InitExtensions();	//get the values for test below
 		//this must be a really sucky card!
 		if ( (glConfig.textureCompression == TC_NONE) || (glConfig.maxActiveTextures < 2)  || (glConfig.maxTextureSize <= 512) )
 		{
-			Cvar_Set( "r_picmip", "2");
-			Cvar_Set( "r_colorbits", "16");
-			Cvar_Set( "r_texturebits", "16");
-			Cvar_Set( "r_mode", "3");	//force 640
-			Cmd_ExecuteString ("exec low.cfg\n");	//get the rest which can be pulled in after init
+			ri.Cvar_Set( "r_picmip", "2");
+			ri.Cvar_Set( "r_colorbits", "16");
+			ri.Cvar_Set( "r_texturebits", "16");
+			ri.Cvar_Set( "r_mode", "3");	//force 640
+			ri.Cmd_ExecuteString ("exec low.cfg\n");	//get the rest which can be pulled in after init
 		}
 	}
 	
-	Cvar_Set( "r_lastValidRenderer", glConfig.renderer_string );
+	ri.Cvar_Set( "r_lastValidRenderer", glConfig.renderer_string );
 	GLW_InitExtensions();
 
 	WG_CheckHardwareGamma();
@@ -1780,18 +1779,18 @@ void GLimp_Shutdown( void )
 	// release DC
 	if ( glw_state.hDC )
 	{
-		retVal = ReleaseDC( g_wv.hWnd, glw_state.hDC ) != 0;
+		retVal = ReleaseDC( tr.wv->hWnd, glw_state.hDC ) != 0;
 //		Com_Printf ("...releasing DC: %s\n", success[retVal] );
 		glw_state.hDC   = NULL;
 	}
 
 	// destroy window
-	if ( g_wv.hWnd )
+	if ( tr.wv->hWnd )
 	{
 //		Com_Printf ("...destroying window\n" );
-		ShowWindow( g_wv.hWnd, SW_HIDE );
-		DestroyWindow( g_wv.hWnd );
-		g_wv.hWnd = NULL;
+		ShowWindow( tr.wv->hWnd, SW_HIDE );
+		DestroyWindow( tr.wv->hWnd );
+		tr.wv->hWnd = NULL;
 		glw_state.pixelFormatSet = qfalse;
 	}
 
