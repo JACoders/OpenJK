@@ -1,7 +1,7 @@
 PLATFORM=$(shell uname|tr A-Z a-z)
 
-CC			= /usr/local/bin/gcc-4.2
-CXX			= /usr/local/bin/g++-4.2
+CC			= gcc
+CXX			= g++
 B			= build
 
 ifeq ($(PLATFORM),darwin)
@@ -474,7 +474,7 @@ RDVANILLA_LDFLAGS		= -m32 -shared `sdl2-config --libs`
 ifeq ($(PLATFORM),darwin)
 	RDVANILLA_LDFLAGS		+= -framework OpenGL
 else
-	RDVANILLA_LDFLAGS		+= -lG
+	RDVANILLA_LDFLAGS		+= -lGL
 endif
 RDVANILLA_OBJS			= $(B)/rd-vanilla/jpeg-8c/jaricom.o \
 			  $(B)/rd-vanilla/jpeg-8c/jcapimin.o \
