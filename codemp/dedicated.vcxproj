@@ -37,11 +37,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../build/</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release/Dedicated\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\build\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.build\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\build\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\build\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\build\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.build\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
@@ -51,7 +51,8 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName).$(PlatformShortName)</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName).$(PlatformShortName)</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName).$(PlatformShortName)</TargetName>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\libs\win32;$(LibraryPath)</LibraryPath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\libs\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -75,7 +76,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>botlib.lib;odbc32.lib;odbccp32.lib;wsock32.lib;Winmm.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;wsock32.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ProgramDatabaseFile>$(IntDir)$(ProjectName).pdb</ProgramDatabaseFile>
@@ -86,7 +87,6 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
       <AdditionalLibraryDirectories>libs/win32</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
     </Link>
     <Midl>
       <TypeLibraryName>$(IntDir)$(ProjectName).tlb</TypeLibraryName>
@@ -115,7 +115,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;wsock32.lib;Winmm.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;wsock32.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -188,37 +188,29 @@
     <ClInclude Include="botlib\l_struct.h" />
     <ClInclude Include="botlib\l_utils.h" />
     <ClInclude Include="game\anims.h" />
-    <ClInclude Include="botlib\be_aas.h" />
-    <ClInclude Include="botlib\be_ai_char.h" />
-    <ClInclude Include="botlib\be_ai_chat.h" />
-    <ClInclude Include="botlib\be_ai_gen.h" />
-    <ClInclude Include="botlib\be_ai_goal.h" />
-    <ClInclude Include="botlib\be_ai_move.h" />
-    <ClInclude Include="botlib\be_ai_weap.h" />
-    <ClInclude Include="botlib\be_ea.h" />
+    <ClInclude Include="game\be_aas.h" />
+    <ClInclude Include="game\be_ai_char.h" />
+    <ClInclude Include="game\be_ai_chat.h" />
+    <ClInclude Include="game\be_ai_gen.h" />
+    <ClInclude Include="game\be_ai_goal.h" />
+    <ClInclude Include="game\be_ai_move.h" />
+    <ClInclude Include="game\be_ai_weap.h" />
+    <ClInclude Include="game\be_ea.h" />
     <ClInclude Include="game\bg_public.h" />
     <ClInclude Include="game\bg_weapons.h" />
-    <ClInclude Include="botlib\botlib.h" />
+    <ClInclude Include="game\botlib.h" />
     <ClInclude Include="cgame\cg_public.h" />
     <ClInclude Include="client\client.h" />
     <ClInclude Include="game\g_public.h" />
-    <ClInclude Include="renderer\glext.h" />
-    <ClInclude Include="jpeg-6\jconfig.h" />
-    <ClInclude Include="jpeg-6\jerror.h" />
-    <ClInclude Include="jpeg-6\jmorecfg.h" />
-    <ClInclude Include="jpeg-6\jpegint.h" />
-    <ClInclude Include="jpeg-6\jpeglib.h" />
     <ClInclude Include="ui\keycodes.h" />
     <ClInclude Include="client\keys.h" />
-    <ClInclude Include="renderer\matcomp.h" />
     <ClInclude Include="renderer\mdx_format.h" />
+    <ClInclude Include="renderer\tr_public.h" />
+    <ClInclude Include="rd-dedicated\tr_local.h" />
+    <ClInclude Include="qcommon\matcomp.h" />
     <ClInclude Include="qcommon\q_shared.h" />
-    <ClInclude Include="renderer\qgl.h" />
     <ClInclude Include="client\snd_public.h" />
     <ClInclude Include="game\surfaceflags.h" />
-    <ClInclude Include="renderer\tr_font.h" />
-    <ClInclude Include="renderer\tr_local.h" />
-    <ClInclude Include="renderer\tr_public.h" />
     <ClInclude Include="cgame\tr_types.h" />
     <ClInclude Include="ui\ui_public.h" />
     <ClInclude Include="win32\win_local.h" />
@@ -248,7 +240,18 @@
     <ClInclude Include="RMG\RM_Objective.h" />
     <ClInclude Include="RMG\RM_Path.h" />
     <ClInclude Include="RMG\RM_Terrain.h" />
-    <ClInclude Include="zlib32\zip.h" />
+    <ClInclude Include="zlib\crc32.h" />
+    <ClInclude Include="zlib\deflate.h" />
+    <ClInclude Include="zlib\gzguts.h" />
+    <ClInclude Include="zlib\inffast.h" />
+    <ClInclude Include="zlib\inffixed.h" />
+    <ClInclude Include="zlib\inflate.h" />
+    <ClInclude Include="zlib\inftrees.h" />
+    <ClInclude Include="zlib\ioapi.h" />
+    <ClInclude Include="zlib\trees.h" />
+    <ClInclude Include="zlib\zconf.h" />
+    <ClInclude Include="zlib\zlib.h" />
+    <ClInclude Include="zlib\zutil.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="qcommon\RoffSystem.cpp" />
@@ -269,6 +272,7 @@
     <ClCompile Include="qcommon\files_pc.cpp" />
     <ClCompile Include="qcommon\genericparser2.cpp" />
     <ClCompile Include="qcommon\huffman.cpp" />
+    <ClCompile Include="qcommon\matcomp.cpp" />
     <ClCompile Include="qcommon\md4.cpp" />
     <ClCompile Include="qcommon\msg.cpp" />
     <ClCompile Include="qcommon\net_chan.cpp" />
@@ -281,11 +285,6 @@
     <ClCompile Include="qcommon\vm_interpreted.cpp" />
     <ClCompile Include="qcommon\vm_x86.cpp" />
     <ClCompile Include="qcommon\z_memman_pc.cpp" />
-    <ClCompile Include="ghoul2\G2_API.cpp" />
-    <ClCompile Include="ghoul2\G2_bolts.cpp" />
-    <ClCompile Include="ghoul2\G2_bones.cpp" />
-    <ClCompile Include="ghoul2\G2_misc.cpp" />
-    <ClCompile Include="ghoul2\G2_surfaces.cpp" />
     <ClCompile Include="server\sv_bot.cpp" />
     <ClCompile Include="server\sv_ccmds.cpp" />
     <ClCompile Include="server\sv_client.cpp" />
@@ -298,21 +297,10 @@
     <ClCompile Include="server\NPCNav\gameCallbacks.cpp" />
     <ClCompile Include="server\NPCNav\navigator.cpp" />
     <ClCompile Include="null\null_client.cpp" />
-    <ClCompile Include="null\null_glimp.cpp" />
     <ClCompile Include="null\null_input.cpp" />
     <ClCompile Include="null\null_renderer.cpp" />
     <ClCompile Include="null\null_snddma.cpp" />
     <ClCompile Include="null\win_main.cpp" />
-    <ClCompile Include="renderer\matcomp.c" />
-    <ClCompile Include="renderer\tr_backend.cpp" />
-    <ClCompile Include="renderer\tr_ghoul2.cpp" />
-    <ClCompile Include="renderer\tr_image.cpp" />
-    <ClCompile Include="renderer\tr_init.cpp" />
-    <ClCompile Include="renderer\tr_main.cpp" />
-    <ClCompile Include="renderer\tr_mesh.cpp" />
-    <ClCompile Include="renderer\tr_model.cpp" />
-    <ClCompile Include="renderer\tr_shader.cpp" />
-    <ClCompile Include="png\png.cpp" />
     <ClCompile Include="win32\win_net.cpp" />
     <ClCompile Include="win32\win_shared.cpp" />
     <ClCompile Include="botlib\be_aas_bspq3.cpp" />
@@ -353,19 +341,48 @@
     <ClCompile Include="icarus\sequence.cpp" />
     <ClCompile Include="icarus\sequencer.cpp" />
     <ClCompile Include="icarus\taskmanager.cpp" />
-    <ClCompile Include="rmg\rm_area.cpp" />
-    <ClCompile Include="rmg\rm_instance.cpp" />
-    <ClCompile Include="rmg\rm_instance_bsp.cpp" />
-    <ClCompile Include="rmg\rm_instance_group.cpp" />
-    <ClCompile Include="rmg\rm_instance_random.cpp" />
-    <ClCompile Include="rmg\rm_instance_void.cpp" />
-    <ClCompile Include="rmg\rm_instancefile.cpp" />
-    <ClCompile Include="rmg\rm_manager.cpp" />
-    <ClCompile Include="rmg\rm_mission.cpp" />
-    <ClCompile Include="rmg\rm_objective.cpp" />
-    <ClCompile Include="rmg\rm_path.cpp" />
-    <ClCompile Include="rmg\rm_terrain.cpp" />
+    <ClCompile Include="rd-dedicated\G2_API.cpp" />
+    <ClCompile Include="rd-dedicated\G2_bolts.cpp" />
+    <ClCompile Include="rd-dedicated\G2_bones.cpp" />
+    <ClCompile Include="rd-dedicated\G2_misc.cpp" />
+    <ClCompile Include="rd-dedicated\G2_surfaces.cpp" />
+    <ClCompile Include="rd-dedicated\tr_backend.cpp" />
+    <ClCompile Include="rd-dedicated\tr_ghoul2.cpp" />
+    <ClCompile Include="rd-dedicated\tr_image.cpp" />
+    <ClCompile Include="rd-dedicated\tr_init.cpp" />
+    <ClCompile Include="rd-dedicated\tr_main.cpp" />
+    <ClCompile Include="rd-dedicated\tr_mesh.cpp" />
+    <ClCompile Include="rd-dedicated\tr_model.cpp" />
+    <ClCompile Include="rd-dedicated\tr_shader.cpp" />
+    <ClCompile Include="png\png.cpp" />
+    <ClCompile Include="RMG\rm_area.cpp" />
+    <ClCompile Include="RMG\rm_instance.cpp" />
+    <ClCompile Include="RMG\rm_instance_bsp.cpp" />
+    <ClCompile Include="RMG\rm_instance_group.cpp" />
+    <ClCompile Include="RMG\rm_instance_random.cpp" />
+    <ClCompile Include="RMG\rm_instance_void.cpp" />
+    <ClCompile Include="RMG\rm_instancefile.cpp" />
+    <ClCompile Include="RMG\rm_manager.cpp" />
+    <ClCompile Include="RMG\rm_mission.cpp" />
+    <ClCompile Include="RMG\rm_objective.cpp" />
+    <ClCompile Include="RMG\rm_path.cpp" />
+    <ClCompile Include="RMG\rm_terrain.cpp" />
+    <ClCompile Include="zlib\adler32.c" />
+    <ClCompile Include="zlib\compress.c" />
+    <ClCompile Include="zlib\crc32.c" />
+    <ClCompile Include="zlib\deflate.c" />
+    <ClCompile Include="zlib\gzclose.c" />
+    <ClCompile Include="zlib\gzlib.c" />
+    <ClCompile Include="zlib\gzread.c" />
+    <ClCompile Include="zlib\gzwrite.c" />
+    <ClCompile Include="zlib\infback.c" />
+    <ClCompile Include="zlib\inffast.c" />
+    <ClCompile Include="zlib\inflate.c" />
+    <ClCompile Include="zlib\inftrees.c" />
     <ClCompile Include="zlib\ioapi.c" />
+    <ClCompile Include="zlib\trees.c" />
+    <ClCompile Include="zlib\uncompr.c" />
+    <ClCompile Include="zlib\zutil.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="win32\dedicated.rc" />

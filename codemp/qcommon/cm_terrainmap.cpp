@@ -10,16 +10,12 @@
 #include "cm_terrainmap.h"
 #include "cm_draw.h"
 #include "png/png.h"
+#include "client/client.h" // good enough for now
 
 static CTerrainMap	*TerrainMap = 0;
 
 // Hack. This shouldn't be here, but it's easier than including tr_local.h
 typedef unsigned int GLenum;
-
-void R_LoadImage( const char *name, byte **pic, int *width, int *height, GLenum *format ) ;
-
-void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, 
-					   qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
 
 // simple function for getting a proper color for a side
 inline CPixel32 SideColor(int side)
@@ -74,12 +70,11 @@ CTerrainMap::CTerrainMap(CCMLandScape *landscape) :
 		}
 
 	// Load icons for symbols on map
-	GLenum	format;
-	R_LoadImage("gfx/menus/rmg/start", (byte**)&mSymStart, &mSymStartWidth, &mSymStartHeight, &format);
-	R_LoadImage("gfx/menus/rmg/end", (byte**)&mSymEnd, &mSymEndWidth, &mSymEndHeight, &format);
-	R_LoadImage("gfx/menus/rmg/objective", (byte**)&mSymObjective, &mSymObjectiveWidth, &mSymObjectiveHeight, &format);
-
-	R_LoadImage("gfx/menus/rmg/building", (byte**)&mSymBld, &mSymBldWidth, &mSymBldHeight, &format);
+	int	format;
+	re.LoadImageJA("gfx/menus/rmg/start", (byte**)&mSymStart, &mSymStartWidth, &mSymStartHeight, &format);
+	re.LoadImageJA("gfx/menus/rmg/end", (byte**)&mSymEnd, &mSymEndWidth, &mSymEndHeight, &format);
+	re.LoadImageJA("gfx/menus/rmg/objective", (byte**)&mSymObjective, &mSymObjectiveWidth, &mSymObjectiveHeight, &format);
+	re.LoadImageJA("gfx/menus/rmg/building", (byte**)&mSymBld, &mSymBldWidth, &mSymBldHeight, &format);
 }
 
 CTerrainMap::~CTerrainMap()
@@ -119,12 +114,12 @@ void CTerrainMap::ApplyBackground(void)
 	byte	*backgroundImage;
 	int		backgroundWidth, backgroundHeight, backgroundDepth;
 	int		pos;
-	GLenum	format;
+	int	format;
 
 	memset(mImage, 255, sizeof(mBufImage));
 //	R_LoadImage("textures\\kamchatka\\ice", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);0
 	backgroundDepth = 4;
-	R_LoadImage("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);
+	re.LoadImageJA("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);
 	if (backgroundImage)
 	{
 		outPos = (byte *)mBufImage;
@@ -361,7 +356,7 @@ void CTerrainMap::Upload(vec3_t player_origin, vec3_t player_angles)
 
 	draw.SetAlphaBuffer(255);
 	
-	R_CreateAutomapImage("*automap", (unsigned char *)draw.buffer, TM_WIDTH, TM_HEIGHT, qfalse, qfalse, qtrue, qfalse);
+	re.CreateAutomapImage("*automap", (unsigned char *)draw.buffer, TM_WIDTH, TM_HEIGHT, qfalse, qfalse, qtrue, qfalse);
 
 	draw.SetBuffer((CPixel32*) mImage);
 }
@@ -370,7 +365,7 @@ void CTerrainMap::SaveImageToDisk(const char * terrainName, const char * mission
 {
 	//ri.COM_SavePNG(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
 	//		(unsigned char *)mImage, TM_WIDTH, TM_HEIGHT, 4);
-	PNG_Save(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
+	re.PNG_Save(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
 			(unsigned char *)mImage, TM_WIDTH, TM_HEIGHT, 4);
 }
 
