@@ -4,6 +4,9 @@
 // cl.input.c  -- builds an intended movement command to send to the server
 
 #include "client.h"
+#ifndef _WIN32
+#include <cmath>
+#endif
 unsigned	frame_msec;
 int			old_com_frameTime;
 

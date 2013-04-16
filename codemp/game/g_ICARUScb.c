@@ -2778,8 +2778,45 @@ Q3_SetDPitch
 */
 static void Q3_SetDPitch( int entID, float data )
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetDPitch: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+	int pitchMin;
+	int pitchMax;
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetDPitch: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC || !ent->client )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetDPitch: '%s' is not an NPC\n", ent->targetname );
+		return;
+	}
+
+	pitchMin = -ent->client->renderInfo.headPitchRangeUp + 1;
+	pitchMax = ent->client->renderInfo.headPitchRangeDown - 1;
+
+	//clamp angle to -180 -> 180
+	data = AngleNormalize180( data );
+
+	//Clamp it to my valid range
+	if ( data < -1 )
+	{
+		if ( data < pitchMin )
+		{
+			data = pitchMin;
+		}
+	}
+	else if ( data > 1 )
+	{
+		if ( data > pitchMax )
+		{
+			data = pitchMax;
+		}
+	}
+
+	ent->NPC->lockedDesiredPitch = ent->NPC->desiredPitch = data;
 }
 
 
@@ -2794,8 +2831,28 @@ Q3_SetDYaw
 */
 static void Q3_SetDYaw( int entID, float data )
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetDYaw: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetDYaw: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetDYaw: '%s' is not an NPC\n", ent->targetname );
+		return;
+	}
+
+	if(!ent->enemy)
+	{//don't mess with this if they're aiming at someone
+		ent->NPC->lockedDesiredYaw = ent->NPC->desiredYaw = ent->s.angles[1] = data;
+	}
+	else
+	{
+		G_DebugPrint( WL_WARNING, "Could not set DYAW: '%s' has an enemy (%s)!\n", ent->targetname, ent->enemy->targetname );
+	}
 }
 
 
@@ -2810,8 +2867,21 @@ Q3_SetShootDist
 */
 static void Q3_SetShootDist( int entID, float data )
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetShootDist: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetShootDist: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetShootDist: '%s' is not an NPC\n", ent->targetname );
+		return;
+	}
+
+	ent->NPC->stats.shootDistance = data;
 }
 
 
@@ -2826,8 +2896,21 @@ Q3_SetVisrange
 */
 static void Q3_SetVisrange( int entID, float data )
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetVisrange: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetVisrange: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetVisrange: '%s' is not an NPC\n", ent->targetname );
+		return;
+	}
+
+	ent->NPC->stats.visrange = data;
 }
 
 
@@ -2842,8 +2925,21 @@ Q3_SetEarshot
 */
 static void Q3_SetEarshot( int entID, float data )
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetEarshot: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetEarshot: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetEarshot: '%s' is not an NPC\n", ent->targetname );
+		return;
+	}
+
+	ent->NPC->stats.earshot = data;
 }
 
 
@@ -2858,8 +2954,21 @@ Q3_SetVigilance
 */
 static void Q3_SetVigilance( int entID, float data )
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetVigilance: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetVigilance: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetVigilance: '%s' is not an NPC\n", ent->targetname );
+		return;
+	}
+
+	ent->NPC->stats.vigilance = data;
 }
 
 
@@ -2874,8 +2983,21 @@ Q3_SetVFOV
 */
 static void Q3_SetVFOV( int entID, int data )
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetVFOV: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetVFOV: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetVFOV: '%s' is not an NPC\n", ent->targetname );
+		return;
+	}
+
+	ent->NPC->stats.vfov = data;
 }
 
 
@@ -2890,8 +3012,21 @@ Q3_SetHFOV
 */
 static void Q3_SetHFOV( int entID, int data )
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetHFOV: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetHFOV: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetHFOV: '%s' is not an NPC\n", ent->targetname );
+		return;
+	}
+
+	ent->NPC->stats.hfov = data;
 }
 
 
@@ -2988,8 +3123,28 @@ Q3_SetGreetAllies
 */
 static void Q3_SetGreetAllies( int entID, qboolean greet )
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetGreetAllies: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetGreetAllies: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !self->NPC )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetGreetAllies: ent %s is not an NPC!\n", self->targetname );
+		return;
+	}
+
+	if ( greet )
+	{
+		self->NPC->aiFlags |= NPCAI_GREET_ALLIES;
+	}
+	else
+	{
+		self->NPC->aiFlags &= ~NPCAI_GREET_ALLIES;
+	}
 }
 
 
@@ -3004,8 +3159,49 @@ Q3_SetViewTarget
 */
 static void Q3_SetViewTarget (int entID, const char *name)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetViewTarget: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+	gentity_t	*viewtarget = G_Find( NULL, FOFS(targetname), (char *) name);
+	vec3_t		viewspot, selfspot, viewvec, viewangles;
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetViewTarget: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !self->client )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetViewTarget: '%s' is not a player/NPC!\n", self->targetname );
+		return;
+	}
+
+	//FIXME: Exception handle here
+	if (viewtarget == NULL)
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetViewTarget: can't find ViewTarget: '%s'\n", name );
+		return;
+	}
+
+	//FIXME: should we set behavior to BS_FACE and keep facing this ent as it moves
+	//around for a script-specified length of time...?
+	VectorCopy ( self->s.origin, selfspot );
+	selfspot[2] += self->client->ps.viewheight;
+
+	if ( viewtarget->client ) 
+	{
+		VectorCopy ( viewtarget->client->renderInfo.eyePoint, viewspot );
+	}
+	else
+	{
+		VectorCopy ( viewtarget->s.origin, viewspot );
+	}
+
+	VectorSubtract( viewspot, selfspot, viewvec );
+
+	vectoangles( viewvec, viewangles );
+
+	Q3_SetDYaw( entID, viewangles[YAW] );
+	Q3_SetDPitch( entID, viewangles[PITCH] );
 }
 
 
@@ -3020,8 +3216,34 @@ Q3_SetWatchTarget
 */
 static void Q3_SetWatchTarget (int entID, const char *name)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetWatchTarget: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+	gentity_t	*watchTarget = NULL;
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetWatchTarget: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !self->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetWatchTarget: '%s' is not an NPC!\n", self->targetname );
+		return;
+	}
+
+	if ( Q_stricmp( "NULL", name ) == 0 || Q_stricmp( "NONE", name ) == 0 || ( self->targetname && (Q_stricmp( self->targetname, name ) == 0) ) )
+	{//clearing watchTarget
+		self->NPC->watchTarget = NULL;
+	}
+
+	watchTarget = G_Find( NULL, FOFS(targetname), (char *) name);
+	if ( watchTarget == NULL )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetWatchTarget: can't find WatchTarget: '%s'\n", name );
+		return;
+	}
+
+	self->NPC->watchTarget = watchTarget;
 }
 
 void Q3_SetLoopSound(int entID, const char *name)
@@ -3202,8 +3424,21 @@ Q3_SetYawSpeed
 */
 static void Q3_SetYawSpeed (int entID, float float_data)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetYawSpeed: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetYawSpeed: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !self->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetYawSpeed: '%s' is not an NPC!\n", self->targetname );
+		return;
+	}
+
+	self->NPC->stats.yawSpeed = float_data;
 }
 
 
@@ -3218,8 +3453,25 @@ Q3_SetAggression
 */
 static void Q3_SetAggression(int entID, int int_data)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetAggression: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetAggression: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !self->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetAggression: '%s' is not an NPC!\n", self->targetname );
+		return;
+	}
+
+	if(int_data < 1 || int_data > 5)
+		return;
+
+	self->NPC->stats.aggression = int_data;
 }
 
 
@@ -3234,8 +3486,24 @@ Q3_SetAim
 */
 static void Q3_SetAim(int entID, int int_data)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetAim: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetAim: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !self->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetAim: '%s' is not an NPC!\n", self->targetname );
+		return;
+	}
+
+	if(int_data < 1 || int_data > 5)
+		return;
+
+	self->NPC->stats.aim = int_data;
 }
 
 
@@ -3265,7 +3533,7 @@ static void Q3_SetFriction(int entID, int int_data)
 	}
 
 	G_DebugPrint( WL_WARNING, "Q3_SetFriction currently unsupported in MP\n");
-//	self->client->ps.friction = int_data;
+	//	self->client->ps.friction = int_data;
 }
 
 
@@ -3328,8 +3596,22 @@ static void Q3_SetWait(int entID, float float_data)
 
 static void Q3_SetShotSpacing(int entID, int int_data)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetShotSpacing: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetShotSpacing: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !self->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetShotSpacing: '%s' is not an NPC!\n", self->targetname );
+		return;
+	}
+
+	self->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
+	self->NPC->burstSpacing = int_data;
 }
 
 /*
@@ -3343,8 +3625,21 @@ Q3_SetFollowDist
 */
 static void Q3_SetFollowDist(int entID, float float_data)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetFollowDist: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetFollowDist: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !self->client || !self->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetFollowDist: '%s' is not an NPC!\n", self->targetname );
+		return;
+	}
+
+	self->NPC->followDist = float_data;
 }
 
 
@@ -3543,8 +3838,28 @@ Q3_SetRemoveTarget
 */
 static void Q3_SetRemoveTarget (int entID, const char *target)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetRemoveTarget: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetRemoveTarget: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !self->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetRemoveTarget: '%s' is not an NPC!\n", self->targetname );
+		return;
+	}
+
+	if( !Q_stricmp("NULL", ((char *)target)) )
+	{
+		self->target3 = NULL;
+	}
+	else
+	{
+		self->target3 = G_NewString( target );
+	}
 }
 
 
@@ -3617,8 +3932,44 @@ static void Q3_SetMusicState( const char *dms )
 
 static void Q3_SetForcePowerLevel ( int entID, int forcePower, int forceLevel )
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetForcePowerLevel: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*self  = &g_entities[entID];
+
+	if ( forcePower < FP_FIRST || forceLevel >= NUM_FORCE_POWERS )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetForcePowerLevel: Force Power index %d out of range (%d-%d)\n", forcePower, FP_FIRST, (NUM_FORCE_POWERS-1) );
+		return;
+	}
+
+	if ( forceLevel < 0 || forceLevel >= NUM_FORCE_POWER_LEVELS )
+	{
+		if ( forcePower != FP_SABER_OFFENSE || forceLevel >= SS_NUM_SABER_STYLES )
+		{
+			G_DebugPrint( WL_ERROR, "Q3_SetForcePowerLevel: Force power setting %d out of range (0-3)\n", forceLevel );
+			return;
+		}
+	}
+
+	if ( !self )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetForcePowerLevel: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !self->client )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetForcePowerLevel: ent %s is not a player or NPC\n", self->targetname );
+		return;
+	}
+
+	self->client->ps.fd.forcePowerLevel[forcePower] = forceLevel;
+	if ( forceLevel )
+	{
+		self->client->ps.fd.forcePowersKnown |= ( 1 << forcePower );
+	}
+	else
+	{
+		self->client->ps.fd.forcePowersKnown &= ~( 1 << forcePower );
+	}
 }
 /*
 ============
@@ -3682,8 +4033,34 @@ Sets the capture spot goal of an entity
 */
 static void Q3_SetCaptureGoal( int entID, const char *name )
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetCaptureGoal: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+	gentity_t	*goal = G_Find( NULL, FOFS(targetname), (char *) name);
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetCaptureGoal: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetCaptureGoal: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	//FIXME: Exception handle here
+	if (goal == NULL)
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetCaptureGoal: can't find CaptureGoal target: '%s'\n", name );
+		return;
+	}
+
+	if(ent->NPC)
+	{
+		ent->NPC->captureGoal = goal;
+		ent->NPC->goalEntity = goal;
+		ent->NPC->goalTime = level.time + 100000;
+	}
 }
 
 /*
@@ -3708,8 +4085,21 @@ Q3_SetIgnorePain
 */
 static void Q3_SetIgnorePain( int entID, qboolean data)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetIgnorePain: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetIgnorePain: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetIgnorePain: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	ent->NPC->ignorePain = data;
 }
 
 /*
@@ -3721,7 +4111,8 @@ Q3_SetIgnoreEnemies
 */
 static void Q3_SetIgnoreEnemies( int entID, qboolean data)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetIgnoreEnemies: NOT SUPPORTED IN MP\n");
+
+	G_DebugPrint( WL_WARNING, "Q3_SetIgnoreEnemies: NOT SUPPORTED IN MP");
 	return;
 }
 
@@ -3734,8 +4125,28 @@ Q3_SetIgnoreAlerts
 */
 static void Q3_SetIgnoreAlerts( int entID, qboolean data)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetIgnoreAlerts: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetIgnoreAlerts: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetIgnoreAlerts: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(data)
+	{
+		ent->NPC->scriptFlags |= SCF_IGNORE_ALERTS;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_IGNORE_ALERTS;
+	}
 }
 
 
@@ -3771,8 +4182,22 @@ Q3_SetDontShoot
 */
 static void Q3_SetDontShoot( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetDontShoot: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetDontShoot: invalid entID %d\n", entID);
+		return;
+	}
+
+	if(add)
+	{
+		ent->flags |= FL_DONT_SHOOT;
+	}
+	else
+	{
+		ent->flags &= ~FL_DONT_SHOOT;
+	}
 }
 
 /*
@@ -3784,8 +4209,28 @@ Q3_SetDontFire
 */
 static void Q3_SetDontFire( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetDontFire: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetDontFire: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetDontFire: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_DONT_FIRE;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_DONT_FIRE;
+	}
 }
 
 /*
@@ -3797,8 +4242,28 @@ Q3_SetFireWeapon
 */
 static void Q3_SetFireWeapon(int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetFireWeapon: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_FireWeapon: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetFireWeapon: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_FIRE_WEAPON;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_FIRE_WEAPON;
+	}
 }
 
 
@@ -3910,8 +4375,28 @@ Q3_SetCrouched
 */
 static void Q3_SetCrouched( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetCrouched: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetCrouched: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetCrouched: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_CROUCHED;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_CROUCHED;
+	}
 }
 
 /*
@@ -3957,8 +4442,28 @@ Q3_SetRunning
 */
 static void Q3_SetRunning( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetRunning: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetRunning: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetRunning: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_RUNNING;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_RUNNING;
+	}
 }
 
 /*
@@ -3970,8 +4475,28 @@ Q3_SetForcedMarch
 */
 static void Q3_SetForcedMarch( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetForcedMarch: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetForcedMarch: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetForcedMarch: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_FORCED_MARCH;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_FORCED_MARCH;
+	}
 }
 /*
 ============
@@ -3982,8 +4507,28 @@ indicates whether the npc should chase after an enemy
 */
 static void Q3_SetChaseEnemies( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetChaseEnemies: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetChaseEnemies: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetChaseEnemies: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_CHASE_ENEMIES;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_CHASE_ENEMIES;
+	}
 }
 
 /*
@@ -3996,8 +4541,28 @@ if not set, npc will ignore enemies
 */
 static void Q3_SetLookForEnemies( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetLookForEnemies: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetLookForEnemies: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetLookForEnemies: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_LOOK_FOR_ENEMIES;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_LOOK_FOR_ENEMIES;
+	}
 }
 
 /*
@@ -4008,8 +4573,28 @@ Q3_SetFaceMoveDir
 */
 static void Q3_SetFaceMoveDir( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetFaceMoveDir: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetFaceMoveDir: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetFaceMoveDir: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_FACE_MOVE_DIR;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_FACE_MOVE_DIR;
+	}
 }
 
 /*
@@ -4021,8 +4606,30 @@ Q3_SetAltFire
 */
 static void Q3_SetAltFire( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetAltFire: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetAltFire: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetAltFire: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_ALT_FIRE;
+	}
+
+	ChangeWeapon( ent, 	ent->client->ps.weapon );
 }
 
 /*
@@ -4034,8 +4641,28 @@ Q3_SetDontFlee
 */
 static void Q3_SetDontFlee( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetDontFlee: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetDontFlee: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetDontFlee: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_DONT_FLEE;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_DONT_FLEE;
+	}
 }
 
 /*
@@ -4047,8 +4674,28 @@ Q3_SetNoResponse
 */
 static void Q3_SetNoResponse( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetNoResponse: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetNoResponse: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetNoResponse: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if(add)
+	{
+		ent->NPC->scriptFlags |= SCF_NO_RESPONSE;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_NO_RESPONSE;
+	}
 }
 
 /*
@@ -4060,8 +4707,28 @@ Q3_SetCombatTalk
 */
 static void Q3_SetCombatTalk( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetCombatTalk: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetCombatTalk: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetCombatTalk: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if ( add )
+	{
+		ent->NPC->scriptFlags |= SCF_NO_COMBAT_TALK;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_NO_COMBAT_TALK;
+	}
 }
 
 /*
@@ -4073,8 +4740,28 @@ Q3_SetAlertTalk
 */
 static void Q3_SetAlertTalk( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetAlertTalk: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetAlertTalk: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetAlertTalk: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if ( add )
+	{
+		ent->NPC->scriptFlags |= SCF_NO_ALERT_TALK;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_NO_ALERT_TALK;
+	}
 }
 
 /*
@@ -4086,8 +4773,28 @@ Q3_SetUseCpNearest
 */
 static void Q3_SetUseCpNearest( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetUseCpNearest: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetUseCpNearest: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetUseCpNearest: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if ( add )
+	{
+		ent->NPC->scriptFlags |= SCF_USE_CP_NEAREST;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_USE_CP_NEAREST;
+	}
 }
 
 /*
@@ -4099,8 +4806,28 @@ Q3_SetNoForce
 */
 static void Q3_SetNoForce( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetNoForce: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetNoForce: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetNoForce: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if ( add )
+	{
+		ent->NPC->scriptFlags |= SCF_NO_FORCE;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_NO_FORCE;
+	}
 }
 
 /*
@@ -4112,8 +4839,28 @@ Q3_SetNoAcrobatics
 */
 static void Q3_SetNoAcrobatics( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetNoAcrobatics: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetNoAcrobatics: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetNoAcrobatics: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if ( add )
+	{
+		ent->NPC->scriptFlags |= SCF_NO_ACROBATICS;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_NO_ACROBATICS;
+	}
 }
 
 /*
@@ -4138,8 +4885,28 @@ Q3_SetNoFallToDeath
 */
 static void Q3_SetNoFallToDeath( int entID, qboolean add)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetNoFallToDeath: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetNoFallToDeath: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->NPC )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_SetNoFallToDeath: '%s' is not an NPC!\n", ent->targetname );
+		return;
+	}
+
+	if ( add )
+	{
+		ent->NPC->scriptFlags |= SCF_NO_FALLTODEATH;
+	}
+	else
+	{
+		ent->NPC->scriptFlags &= ~SCF_NO_FALLTODEATH;
+	}
 }
 
 /*
@@ -4178,8 +4945,22 @@ Q3_SetUndying
 */
 static void Q3_SetUndying( int entID, qboolean undying)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetUndying: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetUndying: invalid entID %d\n", entID);
+		return;
+	}
+
+	if(undying)
+	{
+		ent->flags |= FL_UNDYING;
+	}
+	else
+	{
+		ent->flags &= ~FL_UNDYING;
+	}
 }
 
 /*
@@ -4191,8 +4972,35 @@ Q3_SetInvincible
 */
 static void Q3_SetInvincible( int entID, qboolean invincible)
 {
-	G_DebugPrint( WL_WARNING, "Q3_SetInvicible: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_SetInvincible: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !Q_stricmp( "func_breakable", ent->classname ) )
+	{
+		if ( invincible )
+		{
+			ent->spawnflags |= 1;
+		}
+		else
+		{
+			ent->spawnflags &= ~1;
+		}
+		return;
+	}
+
+	if ( invincible )
+	{
+		ent->flags |= FL_GODMODE;
+	}
+	else
+	{
+		ent->flags &= ~FL_GODMODE;
+	}
 }
 /*
 ============
@@ -4514,8 +5322,43 @@ Q3_LookTarget
 */
 static void Q3_LookTarget( int entID, char *targetName)
 {
-	G_DebugPrint( WL_WARNING, "Q3_LookTarget: NOT SUPPORTED IN MP\n");
-	return;
+	gentity_t	*ent  = &g_entities[entID];
+	gentity_t	*targ = NULL;
+
+	if ( !ent )
+	{
+		G_DebugPrint( WL_WARNING, "Q3_LookTarget: invalid entID %d\n", entID);
+		return;
+	}
+
+	if ( !ent->client )
+	{
+		G_DebugPrint( WL_ERROR, "Q3_LookTarget: '%s' is not an NPC/player!\n", ent->targetname );
+		return;
+	}
+
+	if(Q_stricmp("none", targetName) == 0 || Q_stricmp("NULL", targetName) == 0)
+	{//clearing look target
+		NPC_ClearLookTarget( ent );
+		return;
+	}
+
+	targ = G_Find(NULL, FOFS(targetname), targetName);
+	if(!targ)
+	{
+		targ  = G_Find(NULL, FOFS(script_targetname), targetName);
+		if (!targ)
+		{
+			targ  = G_Find(NULL, FOFS(NPC_targetname), targetName);
+			if (!targ)
+			{
+				G_DebugPrint( WL_ERROR, "Q3_LookTarget: Can't find ent %s\n", targetName );
+				return;
+			}
+		}
+	}
+
+	NPC_SetLookTarget( ent, targ->s.number, 0 );
 }
 
 /*

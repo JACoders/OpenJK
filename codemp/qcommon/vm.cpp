@@ -508,7 +508,7 @@ vm_t *VM_Create( const char *module, int (*systemCalls)(int *),
 	if ( interpret == VMI_NATIVE ) {
 		// try to load as a system dll
 		Com_Printf( "Loading dll file %s.\n", vm->name );
-		vm->dllHandle = Sys_LoadDll( module, &vm->entryPoint, VM_DllSyscall );
+		vm->dllHandle = Sys_LoadGameDll( module, &vm->entryPoint, VM_DllSyscall );
 		if ( vm->dllHandle ) {
 			return vm;
 		}
