@@ -17,6 +17,8 @@
 #include "ghoul2/G2_local.h"
 #endif
 
+#include "G2_local.h"
+#include "png/png.h"
 
 //#ifdef __USEA3D
 //// Defined in snd_a3dg_refcommon.c
@@ -607,6 +609,21 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 
 /* 
 ================== 
+R_TakeScreenshotPNG
+================== 
+*/  
+void R_TakeScreenshotPNG( int x, int y, int width, int height, char *fileName ) {
+	byte *buffer=NULL;
+	size_t offset=0;
+	int padlen=0;
+
+	buffer = RB_ReadPixels( x, y, width, height, &offset, &padlen );
+	PNG_Save( fileName, buffer, width, height, 3 );
+	ri.Hunk_FreeTempMemory( buffer );
+}
+
+/* 
+================== 
 R_TakeScreenshotJPEG
 ================== 
 */  
@@ -631,24 +648,14 @@ void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName )
 R_ScreenshotFilename
 ================== 
 */  
-void R_ScreenshotFilename( int lastNumber, char *fileName, const char *psExt ) {
-	int		a,b,c,d;
+void R_ScreenshotFilename( char *buf, int bufSize, const char *ext ) {
+	time_t rawtime;
+	char timeStr[32] = {0}; // should really only reach ~19 chars
 
-	if ( lastNumber < 0 || lastNumber > 9999 ) {
-		Com_sprintf( fileName, MAX_OSPATH, "screenshots/shot9999%s",psExt );
-		return;
-	}
+	time( &rawtime );
+	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
 
-	a = lastNumber / 1000;
-	lastNumber -= a*1000;
-	b = lastNumber / 100;
-	lastNumber -= b*100;
-	c = lastNumber / 10;
-	lastNumber -= c*10;
-	d = lastNumber;
-
-	Com_sprintf( fileName, MAX_OSPATH, "screenshots/shot%i%i%i%i%s"
-		, a, b, c, d, psExt );
+	Com_sprintf( buf, bufSize, "screenshots/shot%s%s", timeStr, ext );
 }
 
 /*
@@ -731,113 +738,113 @@ screenshot [filename]
 
 Doesn't print the pacifier message if there is a second arg
 ================== 
-*/  
+*/
 void R_ScreenShotTGA_f (void) {
-	char		checkname[MAX_OSPATH];
-	static	int	lastNumber = -1;
-	qboolean	silent;
+	char checkname[MAX_OSPATH] = {0};
+	qboolean silent = qfalse;
 
 	if ( !strcmp( ri.Cmd_Argv(1), "levelshot" ) ) {
 		R_LevelShot();
 		return;
 	}
 
-	if ( !strcmp( ri.Cmd_Argv(1), "silent" ) ) {
+	if ( !strcmp( ri.Cmd_Argv(1), "silent" ) )
 		silent = qtrue;
-	} else {
-		silent = qfalse;
-	}
 
 	if ( ri.Cmd_Argc() == 2 && !silent ) {
 		// explicit filename
-		Com_sprintf( checkname, MAX_OSPATH, "screenshots/%s.tga", ri.Cmd_Argv( 1 ) );
-	} else {
-		// scan for a free filename
+		Com_sprintf( checkname, sizeof( checkname ), "screenshots/%s.tga", ri.Cmd_Argv( 1 ) );
+	}
+	else {
+		// timestamp the file
+		R_ScreenshotFilename( checkname, sizeof( checkname ), ".tga" );
 
-		// if we have saved a previous screenshot, don't scan
-		// again, because recording demo avis can involve
-		// thousands of shots
-		if ( lastNumber == -1 ) {
-			lastNumber = 0;
-		}
-		// scan for a free number
-		for ( ; lastNumber <= 9999 ; lastNumber++ ) {
-			R_ScreenshotFilename( lastNumber, checkname, ".tga" );
-
-			if (!ri.FS_FileExists( checkname ))
-			{
-				break; // file doesn't exist
-			}
-		}
-
-		if ( lastNumber >= 9999 ) {
-			Com_Printf ( "ScreenShot: Couldn't create a file\n"); 
+		if ( ri.FS_FileExists( checkname ) ) {
+			Com_Printf( "ScreenShot: Couldn't create a file\n"); 
 			return;
  		}
-
-		lastNumber++;
 	}
-
 
 	R_TakeScreenshot( 0, 0, glConfig.vidWidth, glConfig.vidHeight, checkname );
 
-	if ( !silent ) {
-		Com_Printf ( "Wrote %s\n", checkname);
+	if ( !silent )
+		Com_Printf( "Wrote %s\n", checkname );
+}
+
+/* 
+================== 
+R_ScreenShotPNG_f
+
+screenshot
+screenshot [silent]
+screenshot [levelshot]
+screenshot [filename]
+
+Doesn't print the pacifier message if there is a second arg
+================== 
+*/
+void R_ScreenShotPNG_f (void) {
+	char checkname[MAX_OSPATH] = {0};
+	qboolean silent = qfalse;
+
+	if ( !strcmp( ri.Cmd_Argv(1), "levelshot" ) ) {
+		R_LevelShot();
+		return;
 	}
+
+	if ( !strcmp( ri.Cmd_Argv(1), "silent" ) )
+		silent = qtrue;
+
+	if ( ri.Cmd_Argc() == 2 && !silent ) {
+		// explicit filename
+		Com_sprintf( checkname, sizeof( checkname ), "screenshots/%s.png", ri.Cmd_Argv( 1 ) );
+	}
+	else {
+		// timestamp the file
+		R_ScreenshotFilename( checkname, sizeof( checkname ), ".png" );
+
+		if ( ri.FS_FileExists( checkname ) ) {
+			Com_Printf( "ScreenShot: Couldn't create a file\n"); 
+			return;
+ 		}
+	}
+
+	R_TakeScreenshotPNG( 0, 0, glConfig.vidWidth, glConfig.vidHeight, checkname );
+
+	if ( !silent )
+		Com_Printf( "Wrote %s\n", checkname );
 } 
 
 //jpeg  vession
 void R_ScreenShot_f (void) {
-	char		checkname[MAX_OSPATH];
-	static	int	lastNumber = -1;
-	qboolean	silent;
+	char checkname[MAX_OSPATH] = {0};
+	qboolean silent = qfalse;
 
 	if ( !strcmp( ri.Cmd_Argv(1), "levelshot" ) ) {
 		R_LevelShot();
 		return;
 	}
-	if ( !strcmp( ri.Cmd_Argv(1), "silent" ) ) {
+	if ( !strcmp( ri.Cmd_Argv(1), "silent" ) )
 		silent = qtrue;
-	} else {
-		silent = qfalse;
-	}
 
 	if ( ri.Cmd_Argc() == 2 && !silent ) {
 		// explicit filename
-		Com_sprintf( checkname, MAX_OSPATH, "screenshots/%s.jpg", ri.Cmd_Argv( 1 ) );
-	} else {
-		// scan for a free filename
+		Com_sprintf( checkname, sizeof( checkname ), "screenshots/%s.jpg", ri.Cmd_Argv( 1 ) );
+	}
+	else {
+		// timestamp the file
+		R_ScreenshotFilename( checkname, sizeof( checkname ), ".jpg" );
 
-		// if we have saved a previous screenshot, don't scan
-		// again, because recording demo avis can involve
-		// thousands of shots
-		if ( lastNumber == -1 ) {
-			lastNumber = 0;
-		}
-		// scan for a free number
-		for ( ; lastNumber <= 9999 ; lastNumber++ ) {
-			R_ScreenshotFilename( lastNumber, checkname, ".jpg" );
-
-			if (!ri.FS_FileExists( checkname ))
-			{
-				break; // file doesn't exist
-			}
-		}
-
-		if ( lastNumber == 10000 ) {
-			Com_Printf ( "ScreenShot: Couldn't create a file\n"); 
+		if ( ri.FS_FileExists( checkname ) ) {
+			Com_Printf( "ScreenShot: Couldn't create a file\n" );
 			return;
  		}
-
-		lastNumber++;
 	}
-
 
 	R_TakeScreenshotJPEG( 0, 0, glConfig.vidWidth, glConfig.vidHeight, checkname );
 
-	if ( !silent ) {
-		Com_Printf ( "Wrote %s\n", checkname);
-	}
+	if ( !silent )
+		Com_Printf( "Wrote %s\n", checkname );
 } 
 
 /*
@@ -1265,6 +1272,9 @@ Ghoul2 Insert End
 	if (ri.Sys_LowPhysicalMemory() )
 		ri.Cvar_Set("r_modelpoolmegs", "0");
 
+	r_aviMotionJpegQuality				= ri.Cvar_Get( "r_aviMotionJpegQuality",			"90",						CVAR_ARCHIVE );
+	r_screenshotJpegQuality				= ri.Cvar_Get( "r_screenshotJpegQuality",			"95",						CVAR_ARCHIVE );
+
 	// make sure all the commands added here are also
 	// removed in R_Shutdown
 	ri.Cmd_AddCommand( "imagelist", R_ImageList_f );
@@ -1272,6 +1282,7 @@ Ghoul2 Insert End
 	ri.Cmd_AddCommand( "skinlist", R_SkinList_f );
 	ri.Cmd_AddCommand( "fontlist", R_FontList_f );
 	ri.Cmd_AddCommand( "screenshot", R_ScreenShot_f );
+	ri.Cmd_AddCommand( "screenshot_png", R_ScreenShotPNG_f );
 	ri.Cmd_AddCommand( "screenshot_tga", R_ScreenShotTGA_f );
 	ri.Cmd_AddCommand( "gfxinfo", GfxInfo_f );
 	ri.Cmd_AddCommand( "r_atihack", R_AtiHackToggle_f );
@@ -1398,6 +1409,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	ri.Cmd_RemoveCommand ("skinlist");
 	ri.Cmd_RemoveCommand ("fontlist");
 	ri.Cmd_RemoveCommand ("screenshot");
+	ri.Cmd_RemoveCommand ("screenshot_png");
 	ri.Cmd_RemoveCommand ("screenshot_tga");
 	ri.Cmd_RemoveCommand ("gfxinfo");
 	ri.Cmd_RemoveCommand ("r_atihack");
@@ -1499,8 +1511,6 @@ void RE_SetLightStyle(int style, int color)
 	}
 }
 
-#include "G2_local.h"
-#include "png/png.h"
 static void SetRangedFog( float range ) { tr.rangedFog = range; }
 
 extern qboolean gG2_GBMNoReconstruct;
