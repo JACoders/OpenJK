@@ -1073,7 +1073,7 @@ Com_Init
 void Com_Init( char *commandLine ) {
 	char	*s;
 
-	Com_Printf( "%s %s %s\n", JK_VERSION, CPUSTRING, __DATE__ );
+	Com_Printf( "%s %s %s\n", JK_VERSION, PLATFORM_STRING, __DATE__ );
 
 	try
 	{
@@ -1141,7 +1141,7 @@ void Com_Init( char *commandLine ) {
 		//
 		// init commands and vars
 		//
-		com_maxfps = Cvar_Get ("com_maxfps", "85", CVAR_ARCHIVE);
+		com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE);
 		com_blood = Cvar_Get ("com_blood", "1", CVAR_ARCHIVE);
 
 		com_developer = Cvar_Get ("developer", "0", CVAR_TEMP );
@@ -1214,7 +1214,7 @@ void Com_Init( char *commandLine ) {
 		Cmd_AddCommand ("changeVectors", MSG_ReportChangeVectors_f );
 		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
 
-		s = va("%s %s %s", JK_VERSION, CPUSTRING, __DATE__ );
+		s = va("%s %s %s", JK_VERSION, PLATFORM_STRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
 		SE_Init();
@@ -1607,50 +1607,6 @@ void Com_Shutdown (void)
 */
 }
 
-
-
-/*
-=====================
-Q_acos
-
-the msvc acos doesn't always return a value between -PI and PI:
-
-int i;
-i = 1065353246;
-acos(*(float*) &i) == -1.#IND0
-
-	This should go in q_math but it is too late to add new traps
-	to game and ui
-=====================
-*/
-float Q_acos(float c) {
-	float angle;
-
-	angle = acos(c);
-
-	if (angle > M_PI) {
-		return (float)M_PI;
-	}
-	if (angle < -M_PI) {
-		return (float)M_PI;
-	}
-	return angle;
-}
-
-float Q_asin(float c) 
-{
-	float angle;
-
-	angle = asin(c);
-
-	if (angle > M_PI) {
-		return (float)M_PI;
-	}
-	if (angle < -M_PI) {
-		return (float)M_PI;
-	}
-	return angle;
-}
 
 //rwwRMG: Inserted:
 /*

@@ -5,8 +5,8 @@
 
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
-#include "renderer/tr_public.h"
 #include "ui/ui_public.h"
+#include "renderer/tr_public.h"
 #include "keys.h"
 #include "snd_public.h"
 #include "cgame/cg_public.h"
@@ -354,7 +354,6 @@ extern	vm_t			*cgvm;	// interface to cgame dll or vm
 extern	vm_t			*uivm;	// interface to ui dll or vm
 extern	refexport_t		re;		// interface to refresh .dll
 
-
 //
 // cvars
 //
@@ -407,7 +406,7 @@ extern	cvar_t	*cl_inGameVideo;
 
 void CL_Init (void);
 void CL_FlushMemory(void);
-void CL_ShutdownAll(void);
+void CL_ShutdownAll( qboolean shutdownRef );
 void CL_AddReliableCommand( const char *cmd );
 
 void CL_StartHunkUsers( void );

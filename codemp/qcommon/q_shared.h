@@ -45,6 +45,7 @@
 //JAC: Added
 #define ARRAY_LEN( x ) ( sizeof( x ) / sizeof( *(x) ) )
 #define STRING( a ) #a
+#define XSTRING( a ) STRING( a )
 
 /*
 #define G2_EHNANCEMENTS
@@ -60,12 +61,13 @@
 */
 
 #ifndef FINAL_BUILD
-	#define G2_PERFORMANCE_ANALYSIS
-	#define _FULL_G2_LEAK_CHECKING
-	extern int g_Ghoul2Allocations;
-	extern int g_G2ServerAlloc;
-	extern int g_G2ClientAlloc;
-	extern int g_G2AllocServer;
+	//RAZFIXME: may want to enable timing and leak checking again. requires G2API changes.
+//	#define G2_PERFORMANCE_ANALYSIS
+//	#define _FULL_G2_LEAK_CHECKING
+//	extern int g_Ghoul2Allocations;
+//	extern int g_G2ServerAlloc;
+//	extern int g_G2ClientAlloc;
+//	extern int g_G2AllocServer;
 #endif
 
 #include <assert.h>
@@ -79,10 +81,14 @@
 #include <limits.h>
 
 //Ignore __attribute__ on non-gcc platforms
-#ifndef __GNUC__
-	#ifndef __attribute__
-		#define __attribute__(x)
-	#endif
+#if !defined(__GNUC__) && !defined(__attribute__)
+	#define __attribute__(x)
+#endif
+
+#if defined(__GNUC__)
+	#define UNUSED_VAR __attribute__((unused))
+#else
+	#define UNUSED_VAR
 #endif
 
 #if (defined _MSC_VER)
@@ -114,9 +120,6 @@
 	#define idppc	0
 #endif
 
-// for windows fastcall option
-#define	QDECL
-
 // the mac compiler can't handle >32k of locals, so we
 // just waste space and make big arrays static...
 #define MAC_STATIC //RAZFIXME
@@ -126,51 +129,70 @@ int LongSwap( int l );
 float FloatSwap( const float *f );
 
 
-// ================================================================
-//
-// WIN32 DEFINES
-//
-// ================================================================
+// for windows fastcall option
+#define QDECL
+#define QCALL
 
+// Win64
+#if defined(_WIN64) || defined(__WIN64__)
+
+	#define idx64
+
+	#undef QDECL
+	#define QDECL __cdecl
+
+	#undef QCALL
+	#define QCALL __stdcall
+
+	#if defined(_MSC_VER)
+		#define OS_STRING "win_msvc64"
+	#elif defined(__MINGW64__)
+		#define OS_STRING "win_mingw64"
+	#endif
+
+	#define QINLINE __inline
+	#define PATH_SEP '\\'
+
+	#if defined(__WIN64__)
+		#define ARCH_STRING "x64"
+	#elif defined(_M_ALPHA)
+		#define ARCH_STRING "AXP"
+	#endif
+
+	#define Q3_LITTLE_ENDIAN
+
+	#define DLL_EXT ".dll"
+#endif
+
+// Win32
 #ifdef WIN32
-
-	//Raz: added
-//	#define WIN32_LEAN_AND_MEAN
-//	#define NOSCROLL
-//	#define NOGDI
-//	#include <windows.h>
 
 	#undef QDECL
 	#define	QDECL __cdecl
 
-	// buildstring will be incorporated into the version string
-	#ifdef NDEBUG
-		#ifdef _M_IX86
-			#define	CPUSTRING "win-x86"
-		#elif defined _M_ALPHA
-			#define	CPUSTRING "win-AXP"
-		#endif
-	#else
-		#ifdef _M_IX86
-			#define	CPUSTRING "win-x86-debug"
-		#elif defined _M_ALPHA
-			#define	CPUSTRING "win-AXP-debug"
-		#endif
+	#undef QCALL
+	#define QCALL __stdcall
+
+	#if defined(_MSC_VER)
+		#define OS_STRING "win_msvc"
+	#elif defined(__MINGW32__)
+		#define OS_STRING "win_mingw"
 	#endif
 
 	#define ID_INLINE __inline
-	#define USE_SSE
+	#define PATH_SEP '\\'
 
-	static ID_INLINE short BigShort( short l) { return ShortSwap(l); }
-	#define LittleShort
-	static ID_INLINE int BigLong(int l) { return LongSwap(l); }
-	#define LittleLong
-	static ID_INLINE float BigFloat(const float *l) { return FloatSwap(l); } //JAC: Actually return something =]
-	#define LittleFloat
+	#if defined(_M_IX86) || defined(__i386__)
+		#define ARCH_STRING "x86"
+	#elif defined _M_ALPHA
+		#define ARCH_STRING "AXP"
+	#endif
 
-	#define	PATH_SEP '\\'
+	#define Q3_LITTLE_ENDIAN
 
-#endif // WIN32
+	#define DLL_EXT ".dll"
+
+#endif
 
 
 // ================================================================
@@ -284,79 +306,159 @@ float FloatSwap( const float *f );
 
 	#define ID_INLINE /*inline*/
 
-	#ifdef __i386__
-		#define	CPUSTRING "linux-i386"
-	#elif defined __axp__
-		#define	CPUSTRING "linux-alpha"
-	#else
-		#define	CPUSTRING "linux-other"
-	#endif
-
 	#define	PATH_SEP '/'
 	#define RAND_MAX 2147483647
 
-	#if !idppc
-		inline static short BigShort( short l ) { return ShortSwap( l ); }
-		#define LittleShort
-		inline static int BigLong( int l ) { return LongSwap( l ); }
-		#define LittleLong
-		inline static float BigFloat( const float *l ) { return FloatSwap( l ); }
-		#define LittleFloat
-	#else // idppc
-		#define BigShort
-		inline static short LittleShort( short l ) { return ShortSwap( l ); }
-		#define BigLong
-		inline static int LittleLong( int l ) { return LongSwap( l ); }
-		#define BigFloat
-		inline static float LittleFloat( const float *l ) { return FloatSwap( l ); }
-	#endif // idppc
-
-#endif // __linux__
-
-
-// ================================================================
-//
-// FREEBSD DEFINES
-//
-// ================================================================
-
-#ifdef __FreeBSD__ // rb010123
-
-	#define stricmp strcasecmp
-
-	#define MAC_STATIC
-	#define ID_INLINE inline 
-
-	#ifdef __i386__
-		#define CPUSTRING "freebsd-i386"
-	#elif defined __axp__
-		#define CPUSTRING "freebsd-alpha"
+	#if defined(__linux__)
+		#define OS_STRING "linux"
 	#else
-		#define CPUSTRING "freebsd-other"
+		#define OS_STRING "kFreeBSD"
 	#endif
 
-	#define	PATH_SEP '/'
+	#ifdef __clang__
+		#define QINLINE static inline
+	#else
+		#define QINLINE inline
+	#endif
 
-	// bk010116 - omitted Q3STATIC (see Linux above), broken target
+	#define PATH_SEP '/'
 
-	#if !idppc
-		static short BigShort( short l ) { return ShortSwap( l ); }
-		#define LittleShort
-		static int BigLong( int l ) { LongSwap( l ); }
-		#define LittleLong
-		static float BigFloat( const float *l ) { FloatSwap( l ); }
-		#define LittleFloat
-	#else // idppc
-		#define BigShort
-		static short LittleShort( short l ) { return ShortSwap( l ); }
-		#define BigLong
-		static int LittleLong( int l ) { return LongSwap( l ); }
-		#define BigFloat
-		static float LittleFloat( const float *l ) { return FloatSwap( l ); }
-	#endif // idppc
+	#if defined(__i386__)
+		#define ARCH_STRING "i386"
+	#elif defined(__x86_64__)
+		#define idx64
+		#define ARCH_STRING "x86_64"
+	#elif defined(__powerpc64__)
+		#define ARCH_STRING "ppc64"
+	#elif defined(__powerpc__)
+		#define ARCH_STRING "ppc"
+	#elif defined(__s390__)
+		#define ARCH_STRING "s390"
+	#elif defined(__s390x__)
+		#define ARCH_STRING "s390x"
+	#elif defined(__ia64__)
+		#define ARCH_STRING "ia64"
+	#elif defined(__alpha__)
+		#define ARCH_STRING "alpha"
+	#elif defined(__sparc__)
+		#define ARCH_STRING "sparc"
+	#elif defined(__arm__)
+		#define ARCH_STRING "arm"
+	#elif defined(__cris__)
+		#define ARCH_STRING "cris"
+	#elif defined(__hppa__)
+		#define ARCH_STRING "hppa"
+	#elif defined(__mips__)
+		#define ARCH_STRING "mips"
+	#elif defined(__sh__)
+		#define ARCH_STRING "sh"
+	#endif
 
-#endif // __FreeBSD__
+	#if __FLOAT_WORD_ORDER == __BIG_ENDIAN
+		#define Q3_BIG_ENDIAN
+	#else
+		#define Q3_LITTLE_ENDIAN
+	#endif
 
+	#define DLL_EXT ".so"
+
+#endif
+
+	// BSD
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+
+	#include <sys/types.h>
+	#include <machine/endian.h>
+	
+	#ifndef __BSD__
+		#define __BSD__
+	#endif
+	
+	#if defined(__FreeBSD__)
+		#define OS_STRING "freebsd"
+	#elif defined(__OpenBSD__)
+		#define OS_STRING "openbsd"
+	#elif defined(__NetBSD__)
+		#define OS_STRING "netbsd"
+	#endif
+	
+	#define QINLINE inline
+	#define PATH_SEP '/'
+	
+	#if defined(__i386__)
+		#define ARCH_STRING "i386"
+	#elif defined(__amd64__)
+		#define idx64
+		#define ARCH_STRING "amd64"
+	#elif defined(__axp__)
+		#define ARCH_STRING "alpha"
+	#endif
+	
+	#if BYTE_ORDER == BIG_ENDIAN
+		#define Q3_BIG_ENDIAN
+	#else
+		#define Q3_LITTLE_ENDIAN
+	#endif
+	
+	#define DLL_EXT ".so"
+
+#endif
+// catch missing defines in above blocks
+#if !defined(OS_STRING)
+	#error "Operating system not supported"
+#endif
+#if !defined(ARCH_STRING)
+	#error "Architecture not supported"
+#endif
+#if !defined(ID_INLINE)
+	#error "ID_INLINE not defined"
+#endif
+#if !defined(PATH_SEP)
+	#error "PATH_SEP not defined"
+#endif
+#if !defined(DLL_EXT)
+	#error "DLL_EXT not defined"
+#endif
+
+
+// endianness
+void CopyShortSwap( void *dest, void *src );
+void CopyLongSwap( void *dest, void *src );
+short ShortSwap( short l );
+int LongSwap( int l );
+float FloatSwap( const float *f );
+
+#if defined(Q3_BIG_ENDIAN) && defined(Q3_LITTLE_ENDIAN)
+	#error "Endianness defined as both big and little"
+#elif defined(Q3_BIG_ENDIAN)
+	#define CopyLittleShort( dest, src )	CopyShortSwap( dest, src )
+	#define CopyLittleLong( dest, src )		CopyLongSwap( dest, src )
+	#define LittleShort( x )				ShortSwap( x )
+	#define LittleLong( x )					LongSwap( x )
+	#define LittleFloat( x )				FloatSwap( &x )
+	#define BigShort
+	#define BigLong
+	#define BigFloat
+#elif defined( Q3_LITTLE_ENDIAN )
+	#define CopyLittleShort( dest, src )	Com_Memcpy(dest, src, 2)
+	#define CopyLittleLong( dest, src )		Com_Memcpy(dest, src, 4)
+	#define LittleShort
+	#define LittleLong
+	#define LittleFloat
+	#define BigShort( x )					ShortSwap( x )
+	#define BigLong( x )					LongSwap( x )
+	#define BigFloat( x )					FloatSwap( &x )
+#else
+	#error "Endianness not defined"
+#endif
+
+
+// platform string
+#if defined(NDEBUG)
+	#define PLATFORM_STRING OS_STRING "-" ARCH_STRING
+#else
+	#define PLATFORM_STRING OS_STRING "-" ARCH_STRING "-debug"
+#endif
 
 // ================================================================
 // TYPE DEFINITIONS
