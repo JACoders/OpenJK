@@ -1139,7 +1139,7 @@ void R_Register( void )
 	r_DynamicGlowSoft					= ri.Cvar_Get( "r_DynamicGlowSoft",					"1",						CVAR_CHEAT );
 	r_DynamicGlowWidth					= ri.Cvar_Get( "r_DynamicGlowWidth",				"320",						CVAR_CHEAT|CVAR_LATCH );
 	r_DynamicGlowHeight					= ri.Cvar_Get( "r_DynamicGlowHeight",				"240",						CVAR_CHEAT|CVAR_LATCH );
-	r_picmip							= ri.Cvar_Get( "r_picmip",							"1",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_picmip							= ri.Cvar_Get( "r_picmip",							"0",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_colorMipLevels					= ri.Cvar_Get( "r_colorMipLevels",					"0",						CVAR_LATCH );
 	AssertCvarRange( r_picmip, 0, 16, qtrue );
 	r_detailTextures					= ri.Cvar_Get( "r_detailtextures",					"1",						CVAR_ARCHIVE|CVAR_LATCH );
