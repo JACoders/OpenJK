@@ -212,7 +212,6 @@ cvar_t *se_language;
 cvar_t *r_aviMotionJpegQuality;
 cvar_t *r_screenshotJpegQuality;
 
-#ifndef DEDICATED
 #ifdef _WIN32
 void ( APIENTRY * qglMultiTexCoord2fARB )( GLenum texture, GLfloat s, GLfloat t );
 void ( APIENTRY * qglActiveTextureARB )( GLenum texture );
