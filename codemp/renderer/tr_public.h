@@ -310,6 +310,11 @@ typedef struct {
 
 	// ugly win32 backend
 	void *			(*GetWinVars)						( void ); //g_wv
+    
+    // input event handling
+	void            (*IN_Init)                          ( void *windowData );
+	void            (*IN_Shutdown)                      ( void );
+	void            (*IN_Restart)                       ( void );
 
 	// gpvCachedMapDiskImage
 	void *			(*CM_GetCachedMapDiskImage)			( void );

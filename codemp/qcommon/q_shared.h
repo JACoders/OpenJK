@@ -258,22 +258,6 @@ float FloatSwap( const float *f );
         #define ARCH_STRING "ppc"
     #endif
 
-    #ifdef __ppc__
-        #define LittleShort(x) ShortSwap(x)
-        #define LittleLong(x) LongSwap(x)
-        #define LittleFloat(x) FloatSwap(&x)
-        #define BigShort
-        #define BigLong
-        #define BigFloat
-    #elif defined __i386__
-        #define LittleShort
-        #define LittleLong
-        #define LittleFloat
-        #define BigShort(x) ShortSwap(x)
-        #define BigLong(x) LongSwap(x)
-        #define BigFloat(x) FloatSwap(&x)
-    #endif
-
     #define DLL_EXT ".dylib"
 
 #if BYTE_ORDER == BIG_ENDIAN

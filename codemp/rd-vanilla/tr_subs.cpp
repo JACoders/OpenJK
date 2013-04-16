@@ -127,3 +127,13 @@ CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool write
 
 	return parse;
 }
+
+#ifndef _WIN32
+void Sys_SetEnv(const char *name, const char *value)
+{
+	if(value && *value)
+		setenv(name, value, 1);
+	else
+		unsetenv(name);
+}
+#endif

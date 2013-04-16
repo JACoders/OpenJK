@@ -311,7 +311,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	if( screen != NULL )
 	{
 		SDL_GetWindowPosition( screen, &x, &y );
-		Com_DPrintf( "Existing window at %dx%d before being destroyed\n", x, y );
+		ri.Printf( "Existing window at %dx%d before being destroyed\n", x, y );
 		SDL_DestroyWindow( screen );
 		screen = NULL;
 	}
@@ -441,7 +441,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		if( ( screen = SDL_CreateWindow( CLIENT_WINDOW_TITLE, x, y,
 				glConfig.vidWidth, glConfig.vidHeight, flags ) ) == 0 )
 		{
-			Com_DPrintf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
+			ri.Printf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
 			continue;
 		}
 
@@ -453,17 +453,17 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 			{
 				case 16: mode.format = SDL_PIXELFORMAT_RGB565; break;
 				case 24: mode.format = SDL_PIXELFORMAT_RGB24;  break;
-				default: Com_DPrintf( "testColorBits is %d, can't fullscreen\n", testColorBits ); continue;
+				default: ri.Printf( "testColorBits is %d, can't fullscreen\n", testColorBits ); continue;
 			}
 
 			mode.w = glConfig.vidWidth;
 			mode.h = glConfig.vidHeight;
-			mode.refresh_rate = glConfig.displayFrequency = Cvar_VariableIntegerValue( "r_displayRefresh" );
+			mode.refresh_rate = glConfig.displayFrequency = ri.Cvar_VariableIntegerValue( "r_displayRefresh" );
 			mode.driverdata = NULL;
 
 			if( SDL_SetWindowDisplayMode( screen, &mode ) < 0 )
 			{
-				Com_DPrintf( "SDL_SetWindowDisplayMode failed: %s\n", SDL_GetError( ) );
+				ri.Printf( "SDL_SetWindowDisplayMode failed: %s\n", SDL_GetError( ) );
 				continue;
 			}
 		}
@@ -805,7 +805,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 		ri.Cvar_Set( "r_sdlDriver", driverName );
 	}
 
-	if (fullscreen && Cvar_VariableIntegerValue( "in_nograb" ) )
+	if (fullscreen && ri.Cvar_VariableIntegerValue( "in_nograb" ) )
 	{
 		Com_Printf( "Fullscreen not allowed with in_nograb 1\n");
 		ri.Cvar_Set( "r_fullscreen", "0" );
@@ -1385,7 +1385,7 @@ success:
 	ri.Cvar_Get( "r_availableModes", "", CVAR_ROM );
 
 	// This depends on SDL_INIT_VIDEO, hence having it here
-	IN_Init( screen );
+	ri.IN_Init( screen );
 }
 
 /*
@@ -1395,7 +1395,7 @@ GLimp_Shutdown
 */
 void 		GLimp_Shutdown( void )
 {
-	IN_Shutdown();
+	ri.IN_Shutdown();
 
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
 
