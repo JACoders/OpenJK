@@ -93,14 +93,63 @@ char *Sys_DefaultCDPath(void)
 =================
 Sys_LoadDll
 
-Used to load a development dll instead of a virtual machine
+First try to load library name from system library path,
+from executable path, then fs_basepath.
 =================
 */
 extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 
-void *Sys_LoadDll( const char *name,
-		   int (**entryPoint)(int, ...),
-		   int (*systemcalls)(int, ...) ) 
+void *Sys_LoadDll(const char *name, qboolean useSystemLib)
+{
+	void *dllhandle;
+	
+	if(useSystemLib)
+		Com_Printf("Trying to load \"%s\"...\n", name);
+	
+	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
+	{
+		const char *topDir;
+		char libPath[MAX_OSPATH];
+        
+		topDir = Sys_BinaryPath();
+        
+		if(!*topDir)
+			topDir = ".";
+        
+		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
+		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
+        
+		if(!(dllhandle = Sys_LoadLibrary(libPath)))
+		{
+			const char *basePath = Cvar_VariableString("fs_basepath");
+			
+			if(!basePath || !*basePath)
+				basePath = ".";
+			
+			if(FS_FilenameCompare(topDir, basePath))
+			{
+				Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, basePath);
+				Com_sprintf(libPath, sizeof(libPath), "%s%c%s", basePath, PATH_SEP, name);
+				dllhandle = Sys_LoadLibrary(libPath);
+			}
+			
+			if(!dllhandle)
+				Com_Printf("Loading \"%s\" failed\n", name);
+		}
+	}
+	
+	return dllhandle;
+}
+
+/*
+ =================
+ Sys_LoadGameDll
+ 
+ Used to load a development dll instead of a virtual machine
+ =================
+ */
+
+void *Sys_LoadGameDll( const char *name, int (**entryPoint)(int, ...), int (*systemcalls)(int, ...) ) 
 {
   void *libHandle;
   void	(*dllEntry)( int (*syscallptr)(int, ...) );
@@ -119,22 +168,22 @@ void *Sys_LoadDll( const char *name,
   getcwd(curpath, sizeof(curpath));
 #if defined __i386__
 #ifndef NDEBUG
-  snprintf (fname, sizeof(fname), "%si386-debug.%s", name, DLL_EXT); // bk010205 - different DLL name
+  snprintf (fname, sizeof(fname), "%si386-debug%s", name, DLL_EXT); // bk010205 - different DLL name
 #else
-  snprintf (fname, sizeof(fname), "%si386.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%si386%s", name, DLL_EXT);
 #endif
 #elif defined __x86_64__
 #ifndef NDEBUG
-  snprintf (fname, sizeof(fname), "%sx86_64-debug.%s", name, DLL_EXT); // bk010205 - different DLL name
+  snprintf (fname, sizeof(fname), "%sx86_64-debug%s", name, DLL_EXT); // bk010205 - different DLL name
 #else
-  snprintf (fname, sizeof(fname), "%sx86_64.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%sx86_64%s", name, DLL_EXT);
 #endif
 #elif defined __powerpc__   //rcg010207 - PPC support.
-  snprintf (fname, sizeof(fname), "%sppc.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%sppc%s", name, DLL_EXT);
 #elif defined __axp__
-  snprintf (fname, sizeof(fname), "%saxp.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%saxp%s", name, DLL_EXT);
 #elif defined __mips__
-  snprintf (fname, sizeof(fname), "%smips.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%smips%s", name, DLL_EXT);
 #else
 #error Unknown arch
 #endif

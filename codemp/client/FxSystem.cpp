@@ -6,6 +6,7 @@
 #if !defined(FX_SCHEDULER_H_INC)
 	#include "FxScheduler.h"
 #endif
+#include "ghoul2/G2.h"
 
 cvar_t	*fx_debug;
 #ifdef _SOF2DEV_
@@ -105,7 +106,7 @@ qboolean SFxHelper::GetOriginAxisFromBolt(CGhoul2Info_v *pGhoul2, int mEntNum, i
 	//Fixme: optimize these VM calls away by storing 
 
 	// go away and get me the bolt position for this frame please
-	doesBoltExist = G2API_GetBoltMatrix(*pGhoul2, modelNum, boltNum, 
+	doesBoltExist = re.G2API_GetBoltMatrix(*pGhoul2, modelNum, boltNum, 
 		&boltMatrix, data->mAngles, data->mOrigin, theFxHelper.mOldTime, 0, data->mScale);
 
 	if (doesBoltExist)

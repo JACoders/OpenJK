@@ -181,9 +181,9 @@ ENGINE_NAME		= $(B)/jamp
 ENGINE_CFLAGS		+= -m32 -fpermissive -w -D_JK2 -DNDEBUG -D_JK2 -D_JK2MP -DFINAL_BUILD -D_M_IX86 -I. `sdl2-config --cflags`
 ENGINE_LDFLAGS		= -m32 `sdl2-config --libs`
 ifeq ($(PLATFORM),darwin)
-	ENGINE_LDFLAGS		+= -framework OpenGL -framework OpenAL
+	ENGINE_LDFLAGS		+= -framework OpenAL
 else
-	ENGINE_LDFLAGS		+= -lGL -lopenal
+	ENGINE_LDFLAGS		+= -lopenal
 endif
 ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/client/FxPrimitives.o \
@@ -236,7 +236,6 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/qcommon/vm_interpreted.o \
 			  $(B)/engine/qcommon/z_memman_pc.o \
 			  \
-			  $(B)/engine/sdl/sdl_glimp.o \
 			  $(B)/engine/sdl/sdl_snd.o \
 			  $(B)/engine/sdl/sdl_input.o \
 			  $(B)/engine/sys/sys_main.o \
@@ -284,87 +283,6 @@ ENGINE_OBJS		= $(B)/engine/client/FXExport.o \
 			  $(B)/engine/mp3code/uph.o \
 			  $(B)/engine/mp3code/upsf.o \
 			  $(B)/engine/mp3code/wavep.o \
-			  $(B)/engine/renderer/matcomp.o \
-			  $(B)/engine/renderer/tr_WorldEffects.o \
-			  $(B)/engine/renderer/tr_animation.o \
-			  $(B)/engine/renderer/tr_arioche.o \
-			  $(B)/engine/renderer/tr_backend.o \
-			  $(B)/engine/renderer/tr_bsp.o \
-			  $(B)/engine/renderer/tr_cmds.o \
-			  $(B)/engine/renderer/tr_curve.o \
-			  $(B)/engine/renderer/tr_font.o \
-			  $(B)/engine/renderer/tr_ghoul2.o \
-			  $(B)/engine/renderer/tr_image.o \
-			  $(B)/engine/renderer/tr_init.o \
-			  $(B)/engine/renderer/tr_light.o \
-			  $(B)/engine/renderer/tr_main.o \
-			  $(B)/engine/renderer/tr_marks.o \
-			  $(B)/engine/renderer/tr_mesh.o \
-			  $(B)/engine/renderer/tr_model.o \
-			  $(B)/engine/renderer/tr_noise.o \
-			  $(B)/engine/renderer/tr_quicksprite.o \
-			  $(B)/engine/renderer/tr_scene.o \
-			  $(B)/engine/renderer/tr_shade.o \
-			  $(B)/engine/renderer/tr_shade_calc.o \
-			  $(B)/engine/renderer/tr_shader.o \
-			  $(B)/engine/renderer/tr_shadows.o \
-			  $(B)/engine/renderer/tr_sky.o \
-			  $(B)/engine/renderer/tr_surface.o \
-			  $(B)/engine/renderer/tr_surfacesprites.o \
-			  $(B)/engine/renderer/tr_terrain.o \
-			  $(B)/engine/renderer/tr_world.o \
-			  $(B)/engine/jpeg-8c/jaricom.o \
-			  $(B)/engine/jpeg-8c/jcapimin.o \
-			  $(B)/engine/jpeg-8c/jcapistd.o \
-			  $(B)/engine/jpeg-8c/jcarith.o \
-			  $(B)/engine/jpeg-8c/jccoefct.o \
-			  $(B)/engine/jpeg-8c/jccolor.o \
-			  $(B)/engine/jpeg-8c/jcdctmgr.o \
-			  $(B)/engine/jpeg-8c/jchuff.o \
-			  $(B)/engine/jpeg-8c/jcinit.o \
-			  $(B)/engine/jpeg-8c/jcmainct.o \
-			  $(B)/engine/jpeg-8c/jcmarker.o \
-			  $(B)/engine/jpeg-8c/jcmaster.o \
-			  $(B)/engine/jpeg-8c/jcomapi.o \
-			  $(B)/engine/jpeg-8c/jcparam.o \
-			  $(B)/engine/jpeg-8c/jcprepct.o \
-			  $(B)/engine/jpeg-8c/jcsample.o \
-			  $(B)/engine/jpeg-8c/jctrans.o \
-			  $(B)/engine/jpeg-8c/jdapimin.o \
-			  $(B)/engine/jpeg-8c/jdapistd.o \
-			  $(B)/engine/jpeg-8c/jdarith.o \
-			  $(B)/engine/jpeg-8c/jdatadst.o \
-			  $(B)/engine/jpeg-8c/jdatasrc.o \
-			  $(B)/engine/jpeg-8c/jdcoefct.o \
-			  $(B)/engine/jpeg-8c/jdcolor.o \
-			  $(B)/engine/jpeg-8c/jddctmgr.o \
-			  $(B)/engine/jpeg-8c/jdhuff.o \
-			  $(B)/engine/jpeg-8c/jdinput.o \
-			  $(B)/engine/jpeg-8c/jdmainct.o \
-			  $(B)/engine/jpeg-8c/jdmarker.o \
-			  $(B)/engine/jpeg-8c/jdmaster.o \
-			  $(B)/engine/jpeg-8c/jdmerge.o \
-			  $(B)/engine/jpeg-8c/jdpostct.o \
-			  $(B)/engine/jpeg-8c/jdsample.o \
-			  $(B)/engine/jpeg-8c/jdtrans.o \
-			  $(B)/engine/jpeg-8c/jerror.o \
-			  $(B)/engine/jpeg-8c/jfdctflt.o \
-			  $(B)/engine/jpeg-8c/jfdctfst.o \
-			  $(B)/engine/jpeg-8c/jfdctint.o \
-			  $(B)/engine/jpeg-8c/jidctflt.o \
-			  $(B)/engine/jpeg-8c/jidctfst.o \
-			  $(B)/engine/jpeg-8c/jidctint.o \
-			  $(B)/engine/jpeg-8c/jmemmgr.o \
-			  $(B)/engine/jpeg-8c/jmemnobs.o \
-			  $(B)/engine/jpeg-8c/jquant1.o \
-			  $(B)/engine/jpeg-8c/jquant2.o \
-			  $(B)/engine/jpeg-8c/jutils.o \
-			  $(B)/engine/png/png.o \
-			  $(B)/engine/ghoul2/G2_API.o \
-			  $(B)/engine/ghoul2/G2_bolts.o \
-			  $(B)/engine/ghoul2/G2_bones.o \
-			  $(B)/engine/ghoul2/G2_misc.o \
-			  $(B)/engine/ghoul2/G2_surfaces.o \
 			  $(B)/engine/RMG/RM_Area.o \
 			  $(B)/engine/RMG/RM_Instance.o \
 			  $(B)/engine/RMG/RM_InstanceFile.o \
@@ -499,15 +417,9 @@ DEDICATED_OBJS		= $(B)/dedicated/server/sv_bot.o \
 			  $(B)/dedicated/unix_ded/unix_shared.o \
 			  $(B)/dedicated/unix/snapvector.o \
 			  $(B)/dedicated/unix/vm_x86.o \
-			  $(B)/dedicated/ghoul2/G2_API.o \
-			  $(B)/dedicated/ghoul2/G2_bolts.o \
-			  $(B)/dedicated/ghoul2/G2_surfaces.o \
-			  $(B)/dedicated/ghoul2/G2_misc.o \
 			  $(B)/dedicated/null/null_client.o \
 			  $(B)/dedicated/null/null_input.o \
 			  $(B)/dedicated/null/null_snddma.o \
-			  $(B)/dedicated/null/null_glimp.o \
-			  $(B)/dedicated/null/null_renderer.o \
 			  $(B)/dedicated/icarus/BlockStream.o \
 			  $(B)/dedicated/icarus/GameInterface.o \
 			  $(B)/dedicated/icarus/Instance.o \
@@ -518,17 +430,7 @@ DEDICATED_OBJS		= $(B)/dedicated/server/sv_bot.o \
 			  $(B)/dedicated/icarus/Sequence.o \
 			  $(B)/dedicated/icarus/Sequencer.o \
 			  $(B)/dedicated/icarus/TaskManager.o \
-			  $(B)/dedicated/renderer/tr_model.o \
-			  $(B)/dedicated/renderer/tr_image.o \
 			  $(B)/dedicated/qcommon/RoffSystem.o \
-			  $(B)/dedicated/renderer/tr_ghoul2.o \
-			  $(B)/dedicated/renderer/matcomp.o \
-			  $(B)/dedicated/renderer/tr_init.o \
-			  $(B)/dedicated/renderer/tr_main.o \
-			  $(B)/dedicated/renderer/tr_backend.o \
-			  $(B)/dedicated/renderer/tr_mesh.o \
-			  $(B)/dedicated/ghoul2/G2_bones.o \
-			  $(B)/dedicated/renderer/tr_shader.o \
 			  $(B)/dedicated/qcommon/cmd_pc.o \
 			  $(B)/dedicated/server/NPCNav/navigator.o \
 			  $(B)/dedicated/server/NPCNav/gameCallbacks.o \
@@ -550,52 +452,6 @@ DEDICATED_OBJS		= $(B)/dedicated/server/sv_bot.o \
 			  $(B)/dedicated/qcommon/cm_terrain.o \
 			  $(B)/dedicated/qcommon/cm_randomterrain.o \
 			  $(B)/dedicated/qcommon/cm_shader.o \
-			  $(B)/dedicated/jpeg-8c/jaricom.o \
-			  $(B)/dedicated/jpeg-8c/jcapimin.o \
-			  $(B)/dedicated/jpeg-8c/jcapistd.o \
-			  $(B)/dedicated/jpeg-8c/jcarith.o \
-			  $(B)/dedicated/jpeg-8c/jccoefct.o \
-			  $(B)/dedicated/jpeg-8c/jccolor.o \
-			  $(B)/dedicated/jpeg-8c/jcdctmgr.o \
-			  $(B)/dedicated/jpeg-8c/jchuff.o \
-			  $(B)/dedicated/jpeg-8c/jcinit.o \
-			  $(B)/dedicated/jpeg-8c/jcmainct.o \
-			  $(B)/dedicated/jpeg-8c/jcmarker.o \
-			  $(B)/dedicated/jpeg-8c/jcmaster.o \
-			  $(B)/dedicated/jpeg-8c/jcomapi.o \
-			  $(B)/dedicated/jpeg-8c/jcparam.o \
-			  $(B)/dedicated/jpeg-8c/jcprepct.o \
-			  $(B)/dedicated/jpeg-8c/jcsample.o \
-			  $(B)/dedicated/jpeg-8c/jctrans.o \
-			  $(B)/dedicated/jpeg-8c/jdapimin.o \
-			  $(B)/dedicated/jpeg-8c/jdapistd.o \
-			  $(B)/dedicated/jpeg-8c/jdarith.o \
-			  $(B)/dedicated/jpeg-8c/jdatadst.o \
-			  $(B)/dedicated/jpeg-8c/jdatasrc.o \
-			  $(B)/dedicated/jpeg-8c/jdcoefct.o \
-			  $(B)/dedicated/jpeg-8c/jdcolor.o \
-			  $(B)/dedicated/jpeg-8c/jddctmgr.o \
-			  $(B)/dedicated/jpeg-8c/jdhuff.o \
-			  $(B)/dedicated/jpeg-8c/jdinput.o \
-			  $(B)/dedicated/jpeg-8c/jdmainct.o \
-			  $(B)/dedicated/jpeg-8c/jdmarker.o \
-			  $(B)/dedicated/jpeg-8c/jdmaster.o \
-			  $(B)/dedicated/jpeg-8c/jdmerge.o \
-			  $(B)/dedicated/jpeg-8c/jdpostct.o \
-			  $(B)/dedicated/jpeg-8c/jdsample.o \
-			  $(B)/dedicated/jpeg-8c/jdtrans.o \
-			  $(B)/dedicated/jpeg-8c/jerror.o \
-			  $(B)/dedicated/jpeg-8c/jfdctflt.o \
-			  $(B)/dedicated/jpeg-8c/jfdctfst.o \
-			  $(B)/dedicated/jpeg-8c/jfdctint.o \
-			  $(B)/dedicated/jpeg-8c/jidctflt.o \
-			  $(B)/dedicated/jpeg-8c/jidctfst.o \
-			  $(B)/dedicated/jpeg-8c/jidctint.o \
-			  $(B)/dedicated/jpeg-8c/jmemmgr.o \
-			  $(B)/dedicated/jpeg-8c/jmemnobs.o \
-			  $(B)/dedicated/jpeg-8c/jquant1.o \
-			  $(B)/dedicated/jpeg-8c/jquant2.o \
-			  $(B)/dedicated/jpeg-8c/jutils.o \
 			  $(B)/dedicated/zlib/adler32.o \
 			  $(B)/dedicated/zlib/compress.o \
 			  $(B)/dedicated/zlib/crc32.o \
@@ -611,6 +467,119 @@ DEDICATED_OBJS		= $(B)/dedicated/server/sv_bot.o \
 			  $(B)/dedicated/zlib/trees.o \
 			  $(B)/dedicated/zlib/uncompr.o \
 			  $(B)/dedicated/zlib/zutil.o
+              
+RDVANILLA_NAME			= $(B)/rd-vanillai386.$(DLL_EXT)
+RDVANILLA_CFLAGS		+= -m32 -fpermissive -w -D_JK2 -DNDEBUG -D_JK2 -D_JK2MP -DFINAL_BUILD -D_M_IX86 -I. -Ird-vanilla `sdl2-config --cflags`
+RDVANILLA_LDFLAGS		= -m32 -shared `sdl2-config --libs`
+ifeq ($(PLATFORM),darwin)
+	RDVANILLA_LDFLAGS		+= -framework OpenGL
+else
+	RDVANILLA_LDFLAGS		+= -lGL
+endif
+RDVANILLA_OBJS			= $(B)/rd-vanilla/jpeg-8c/jaricom.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcapimin.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcapistd.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcarith.o \
+			  $(B)/rd-vanilla/jpeg-8c/jccoefct.o \
+			  $(B)/rd-vanilla/jpeg-8c/jccolor.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcdctmgr.o \
+			  $(B)/rd-vanilla/jpeg-8c/jchuff.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcinit.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcmainct.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcmarker.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcmaster.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcomapi.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcparam.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcprepct.o \
+			  $(B)/rd-vanilla/jpeg-8c/jcsample.o \
+			  $(B)/rd-vanilla/jpeg-8c/jctrans.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdapimin.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdapistd.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdarith.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdatadst.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdatasrc.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdcoefct.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdcolor.o \
+			  $(B)/rd-vanilla/jpeg-8c/jddctmgr.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdhuff.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdinput.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdmainct.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdmarker.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdmaster.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdmerge.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdpostct.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdsample.o \
+			  $(B)/rd-vanilla/jpeg-8c/jdtrans.o \
+			  $(B)/rd-vanilla/jpeg-8c/jerror.o \
+			  $(B)/rd-vanilla/jpeg-8c/jfdctflt.o \
+			  $(B)/rd-vanilla/jpeg-8c/jfdctfst.o \
+			  $(B)/rd-vanilla/jpeg-8c/jfdctint.o \
+			  $(B)/rd-vanilla/jpeg-8c/jidctflt.o \
+			  $(B)/rd-vanilla/jpeg-8c/jidctfst.o \
+			  $(B)/rd-vanilla/jpeg-8c/jidctint.o \
+			  $(B)/rd-vanilla/jpeg-8c/jmemmgr.o \
+			  $(B)/rd-vanilla/jpeg-8c/jmemnobs.o \
+			  $(B)/rd-vanilla/jpeg-8c/jquant1.o \
+			  $(B)/rd-vanilla/jpeg-8c/jquant2.o \
+			  $(B)/rd-vanilla/jpeg-8c/jutils.o \
+			  $(B)/rd-vanilla/png/png.o \
+			  $(B)/rd-vanilla/rd-vanilla/G2_API.o \
+			  $(B)/rd-vanilla/rd-vanilla/G2_bolts.o \
+			  $(B)/rd-vanilla/rd-vanilla/G2_bones.o \
+			  $(B)/rd-vanilla/rd-vanilla/G2_misc.o \
+			  $(B)/rd-vanilla/rd-vanilla/G2_surfaces.o \
+			  $(B)/rd-vanilla/qcommon/matcomp.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_WorldEffects.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_animation.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_arioche.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_backend.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_bsp.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_cmds.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_curve.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_font.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_ghoul2.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_image.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_init.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_light.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_main.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_marks.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_mesh.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_model.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_noise.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_quicksprite.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_scene.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_shade.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_shade_calc.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_shader.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_shadows.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_sky.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_subs.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_surface.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_surfacesprites.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_terrain.o \
+			  $(B)/rd-vanilla/rd-vanilla/tr_world.o \
+			  $(B)/rd-vanilla/qcommon/q_shared.o \
+			  $(B)/rd-vanilla/qcommon/q_math.o \
+			  $(B)/rd-vanilla/zlib/adler32.o \
+			  $(B)/rd-vanilla/zlib/compress.o \
+			  $(B)/rd-vanilla/zlib/crc32.o \
+			  $(B)/rd-vanilla/zlib/deflate.o \
+			  $(B)/rd-vanilla/zlib/gzclose.o \
+			  $(B)/rd-vanilla/zlib/gzlib.o \
+			  $(B)/rd-vanilla/zlib/gzread.o \
+			  $(B)/rd-vanilla/zlib/gzwrite.o \
+			  $(B)/rd-vanilla/zlib/infback.o \
+			  $(B)/rd-vanilla/zlib/inffast.o \
+			  $(B)/rd-vanilla/zlib/inflate.o \
+			  $(B)/rd-vanilla/zlib/inftrees.o \
+			  $(B)/rd-vanilla/zlib/trees.o \
+			  $(B)/rd-vanilla/zlib/uncompr.o \
+			  $(B)/rd-vanilla/zlib/zutil.o \
+			  $(B)/rd-vanilla/qcommon/GenericParser2.o \
+              $(B)/rd-vanilla/sdl/sdl_glimp.o
+
+
+
 
 ifeq ($(PLATFORM),darwin)
 	DEDICATED_CFLAGS += -DMACOS_X
@@ -618,13 +587,14 @@ ifeq ($(PLATFORM),darwin)
 	UI_CFLAGS += -DMACOS_X
 	CGAME_CFLAGS += -DMACOS_X
 	GAME_CFLAGS += -DMACOS_X
+    RDVANILLA_CFLAGS += -DMACOS_X
 else
 	GAME_CFLAGS += -D__linux__
 	UI_CFLAGS += -D__linux__
 	CGAME_CFLAGS += -D__linux__
 endif
 
-all: makedirs engine game cgame ui dedicated
+all: makedirs engine game cgame ui dedicated rd-vanilla
 
 makedirs:
 	@if [ ! -d $(B) ];then mkdir $(B);fi
@@ -650,10 +620,8 @@ makedirs:
 	@if [ ! -d $(B)/engine/icarus ];then mkdir $(B)/engine/icarus;fi
 	@if [ ! -d $(B)/engine/jpeg-8c ];then mkdir $(B)/engine/jpeg-8c;fi
 	@if [ ! -d $(B)/engine/mp3code ];then mkdir $(B)/engine/mp3code;fi
-	@if [ ! -d $(B)/engine/png ];then mkdir $(B)/engine/png;fi
 	@if [ ! -d $(B)/engine/qcommon ];then mkdir $(B)/engine/qcommon;fi
 	@if [ ! -d $(B)/engine/RMG ];then mkdir $(B)/engine/RMG;fi
-	@if [ ! -d $(B)/engine/renderer ];then mkdir $(B)/engine/renderer;fi
 	@if [ ! -d $(B)/engine/sdl ];then mkdir $(B)/engine/sdl;fi
 	@if [ ! -d $(B)/engine/server ];then mkdir $(B)/engine/server;fi
 	@if [ ! -d $(B)/engine/server/NPCNav ];then mkdir $(B)/engine/server/NPCNav;fi
@@ -661,6 +629,13 @@ makedirs:
 	@if [ ! -d $(B)/engine/unix ];then mkdir $(B)/engine/unix;fi
 	@if [ ! -d $(B)/engine/unix_ded ];then mkdir $(B)/engine/unix_ded;fi
 	@if [ ! -d $(B)/engine/zlib ];then mkdir $(B)/engine/zlib;fi
+	@if [ ! -d $(B)/rd-vanilla ];then mkdir $(B)/rd-vanilla;fi
+	@if [ ! -d $(B)/rd-vanilla/jpeg-8c ];then mkdir $(B)/rd-vanilla/jpeg-8c;fi
+	@if [ ! -d $(B)/rd-vanilla/png ];then mkdir $(B)/rd-vanilla/png;fi
+	@if [ ! -d $(B)/rd-vanilla/rd-vanilla ];then mkdir $(B)/rd-vanilla/rd-vanilla;fi
+	@if [ ! -d $(B)/rd-vanilla/qcommon ];then mkdir $(B)/rd-vanilla/qcommon;fi
+	@if [ ! -d $(B)/rd-vanilla/zlib ];then mkdir $(B)/rd-vanilla/zlib;fi
+	@if [ ! -d $(B)/rd-vanilla/sdl ];then mkdir $(B)/rd-vanilla/sdl;fi
 	@if [ ! -d $(B)/cgame ];then mkdir $(B)/cgame;fi
 	@if [ ! -d $(B)/game ];then mkdir $(B)/game;fi
 	@if [ ! -d $(B)/ui ];then mkdir $(B)/ui;fi
@@ -725,7 +700,6 @@ $(B)/ui/%.o: ui/%.c
 #
 # ENGINE RULES
 #
-
 engine: $(ENGINE_NAME)
 
 $(ENGINE_NAME): $(ENGINE_OBJS)
@@ -751,6 +725,25 @@ $(B)/engine/%.o: %.c
 
 $(B)/engine/%.o: %.cpp
 	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
+
+#
+# RENDERER RULES
+#
+
+rd-vanilla: $(RDVANILLA_NAME)
+
+$(RDVANILLA_NAME): $(RDVANILLA_OBJS)
+	$(CXX) -o $(RDVANILLA_NAME) $(RDVANILLA_OBJS) $(RDVANILLA_LDFLAGS)
+
+$(B)/rd-vanilla/zlib/%.o: zlib/%.c
+	$(CC) $(RDVANILLA_CFLAGS) -c $< -o $@
+    
+$(B)/rd-vanilla/jpeg-8c/%.o: jpeg-8c/%.c
+	$(CC) $(RDVANILLA_CFLAGS) -c $< -o $@
+    
+$(B)/rd-vanilla/%.o: %.cpp
+	$(CXX) $(RDVANILLA_CFLAGS) -c $< -o $@
+
 
 #
 # DEDICATED RULES

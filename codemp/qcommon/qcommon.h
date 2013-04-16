@@ -856,7 +856,7 @@ void	CL_ForwardCommandToServer( const char *string );
 // things like godmode, noclip, etc, are commands directed to the server,
 // so when they are typed in at the console, they will need to be forwarded.
 
-void CL_ShutdownAll( void );
+void CL_ShutdownAll( qboolean shutdownRef );
 // shutdown all the client stuff
 
 void CL_FlushMemory( void );
@@ -933,9 +933,17 @@ sysEvent_t	Sys_GetEvent( void );
 
 void	Sys_Init (void);
 
+#ifdef _WIN32
+	#include <windows.h>
+	#define Sys_LoadLibrary(f) (void*)LoadLibrary(f)
+	#define Sys_UnloadLibrary(h) FreeLibrary((HMODULE)h)
+	#define Sys_LoadFunction(h,fn) (void*)GetProcAddress((HMODULE)h,fn)
+	#define Sys_LibraryError() "unknown"
+#endif // linux and mac use SDL in SDL_loadlibrary.h
+
 // general development dll loading for virtual machine testing
-void	* QDECL Sys_LoadDll( const char *name, int (QDECL **entryPoint)(int, ...),
-				  int (QDECL *systemcalls)(int, ...) );
+void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
+void	* QDECL Sys_LoadGameDll( const char *name, int (QDECL **entryPoint)(int, ...), int (QDECL *systemcalls)(int, ...) );
 void	Sys_UnloadDll( void *dllHandle );
 
 void	Sys_UnloadGame( void );
@@ -962,6 +970,7 @@ void	Sys_Print( const char *msg );
 // Sys_Milliseconds should only be used for profiling purposes,
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (bool baseTime = false);
+int		Sys_Milliseconds2(void);
 void 	Sys_SetEnv(const char *name, const char *value);
 
 #ifndef _WIN32

@@ -447,7 +447,7 @@ void S_Init( void ) {
 	s_volumeVoice= Cvar_Get ("s_volumeVoice", "1.0", CVAR_ARCHIVE);
 	s_musicVolume = Cvar_Get ("s_musicvolume", "0.25", CVAR_ARCHIVE);
 	s_separation = Cvar_Get ("s_separation", "0.5", CVAR_ARCHIVE);
-	s_khz = Cvar_Get ("s_khz", "22", CVAR_ARCHIVE|CVAR_LATCH);
+	s_khz = Cvar_Get ("s_khz", "44", CVAR_ARCHIVE|CVAR_LATCH);
 	s_allowDynamicMusic = Cvar_Get ("s_allowDynamicMusic", "1", CVAR_ARCHIVE);
 	s_mixahead = Cvar_Get ("s_mixahead", "0.2", CVAR_ARCHIVE);
 
@@ -631,7 +631,6 @@ void S_Init( void ) {
 
 // only called from snd_restart. QA request...
 //
-int RE_RegisterMedia_GetLevel(void);
 void S_ReloadAllUsedSounds(void)
 {
 	if (s_soundStarted && !s_soundMuted )
@@ -642,7 +641,7 @@ void S_ReloadAllUsedSounds(void)
 		{
 			sfx_t *sfx = &s_knownSfx[i];
 
-			if (!sfx->bInMemory && !sfx->bDefaultSound && sfx->iLastLevelUsedOn == RE_RegisterMedia_GetLevel()){
+			if (!sfx->bInMemory && !sfx->bDefaultSound && sfx->iLastLevelUsedOn == re.RegisterMedia_GetLevel()){
 				S_memoryLoad(sfx);
 			}
 		}
@@ -5193,7 +5192,7 @@ void S_DisplayFreeMemory()
 		{
 			sfx_t *sfx = &s_knownSfx[i];
 
-			if (sfx->iLastLevelUsedOn == RE_RegisterMedia_GetLevel()){
+			if (sfx->iLastLevelUsedOn == re.RegisterMedia_GetLevel()){
 				iSoundDataSize += SND_MemUsed(sfx);
 			}
 		}
@@ -5205,7 +5204,7 @@ void S_DisplayFreeMemory()
 void SND_TouchSFX(sfx_t *sfx)
 {
 	sfx->iLastTimeUsed		= Com_Milliseconds()+1;
-	sfx->iLastLevelUsedOn	= RE_RegisterMedia_GetLevel();
+	sfx->iLastLevelUsedOn	= re.RegisterMedia_GetLevel();
 }
 
 
@@ -5310,11 +5309,11 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 
 				if (bDeleteEverythingNotUsedThisLevel)
 				{
-					bDeleteThis = (sfx->iLastLevelUsedOn != RE_RegisterMedia_GetLevel());
+					bDeleteThis = (sfx->iLastLevelUsedOn != re.RegisterMedia_GetLevel());
 				}
 				else
 				{
-					bDeleteThis = (sfx->iLastLevelUsedOn < RE_RegisterMedia_GetLevel());
+					bDeleteThis = (sfx->iLastLevelUsedOn < re.RegisterMedia_GetLevel());
 				}
 
 				if (bDeleteThis)
