@@ -5,6 +5,8 @@
 
 #include "platform.h"
 
+#include "client/client.h" // hi i'm bad
+
 ////////////////////////////////////////////////
 //
 #ifdef TAGDEF	// itu?
@@ -212,8 +214,7 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 #ifndef DEDICATED
 			// ditch any image_t's (and associated GL memory) not used on this level...
 			//
-			extern qboolean RE_RegisterImages_LevelLoadEnd(void);
-			if (RE_RegisterImages_LevelLoadEnd())
+			if (re.RegisterImages_LevelLoadEnd())
 			{
 				gbMemFreeupOccured = qtrue;
 				continue;		// we've dropped at least one image, so try again with the malloc
@@ -222,8 +223,7 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 
 			// ditch the model-binaries cache...  (must be getting desperate here!)
 			//
-			extern qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel);
-			if (RE_RegisterModels_LevelLoadEnd(qtrue))
+			if ( re.RegisterModels_LevelLoadEnd(qtrue) )
 			{
 				gbMemFreeupOccured = qtrue;
 				continue;
@@ -765,7 +765,9 @@ void Hunk_Clear( void ) {
 	Z_TagFree(TAG_HUNK_MARK1);
 	Z_TagFree(TAG_HUNK_MARK2);
 
-	R_HunkClearCrap();
+	if ( re.HunkClearCrap ) {
+		re.HunkClearCrap();
+	}
 
 //	Com_Printf( "Hunk_Clear: reset the hunk ok\n" );
 	VM_Clear();
