@@ -35,11 +35,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\build\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\build\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\build\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.build\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\build\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\build\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.build\$(Configuration)\$(Platform)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
@@ -73,7 +73,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -118,7 +118,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -178,12 +178,12 @@
     <ClInclude Include="game\g_public.h" />
     <ClInclude Include="qcommon\game_version.h" />
     <ClInclude Include="qcommon\hstring.h" />
+    <ClInclude Include="qcommon\matcomp.h" />
     <ClInclude Include="ui\keycodes.h" />
     <ClInclude Include="client\keys.h" />
     <ClInclude Include="qcommon\q_shared.h" />
     <ClInclude Include="qcommon\qcommon.h" />
     <ClInclude Include="qcommon\qfiles.h" />
-    <ClInclude Include="renderer\qgl.h" />
     <ClInclude Include="qcommon\sstring.h" />
     <ClInclude Include="qcommon\stringed_ingame.h" />
     <ClInclude Include="qcommon\stringed_interface.h" />
@@ -211,6 +211,18 @@
     <ClInclude Include="mp3code\port.h" />
     <ClInclude Include="mp3code\small_header.h" />
     <ClInclude Include="mp3code\tableawd.h" />
+    <ClInclude Include="zlib\crc32.h" />
+    <ClInclude Include="zlib\deflate.h" />
+    <ClInclude Include="zlib\gzguts.h" />
+    <ClInclude Include="zlib\inffast.h" />
+    <ClInclude Include="zlib\inffixed.h" />
+    <ClInclude Include="zlib\inflate.h" />
+    <ClInclude Include="zlib\inftrees.h" />
+    <ClInclude Include="zlib\ioapi.h" />
+    <ClInclude Include="zlib\trees.h" />
+    <ClInclude Include="zlib\zconf.h" />
+    <ClInclude Include="zlib\zlib.h" />
+    <ClInclude Include="zlib\zutil.h" />
     <ClInclude Include="client\eax\EaxMan.h" />
     <ClInclude Include="client\eax\eax.h" />
     <ClInclude Include="client\OpenAL\al.h" />
@@ -219,27 +231,9 @@
     <ClInclude Include="client\OpenAL\altypes.h" />
     <ClInclude Include="client\OpenAL\alu.h" />
     <ClInclude Include="client\OpenAL\alut.h" />
-    <ClInclude Include="renderer\glext.h" />
-    <ClInclude Include="renderer\matcomp.h" />
-    <ClInclude Include="renderer\tr_WorldEffects.h" />
-    <ClInclude Include="renderer\tr_font.h" />
-    <ClInclude Include="renderer\tr_landscape.h" />
-    <ClInclude Include="renderer\tr_local.h" />
     <ClInclude Include="renderer\tr_public.h" />
-    <ClInclude Include="renderer\tr_quicksprite.h" />
+    <ClInclude Include="renderer\mdx_format.h" />
     <ClInclude Include="cgame\tr_types.h" />
-    <ClInclude Include="jpeg-6\jchuff.h" />
-    <ClInclude Include="jpeg-6\jconfig.h" />
-    <ClInclude Include="jpeg-6\jdct.h" />
-    <ClInclude Include="jpeg-6\jdhuff.h" />
-    <ClInclude Include="jpeg-6\jerror.h" />
-    <ClInclude Include="jpeg-6\jinclude.h" />
-    <ClInclude Include="jpeg-6\jmemsys.h" />
-    <ClInclude Include="jpeg-6\jmorecfg.h" />
-    <ClInclude Include="jpeg-6\jpegint.h" />
-    <ClInclude Include="jpeg-6\jpeglib.h" />
-    <ClInclude Include="jpeg-6\jversion.h" />
-    <ClInclude Include="png\png.h" />
     <ClInclude Include="botlib\aasfile.h" />
     <ClInclude Include="botlib\be_aas_bsp.h" />
     <ClInclude Include="botlib\be_aas_cluster.h" />
@@ -267,9 +261,7 @@
     <ClInclude Include="botlib\l_utils.h" />
     <ClInclude Include="ghoul2\G2.h" />
     <ClInclude Include="ghoul2\G2_gore.h" />
-    <ClInclude Include="ghoul2\G2_local.h" />
     <ClInclude Include="ghoul2\ghoul2_shared.h" />
-    <ClInclude Include="renderer\mdx_format.h" />
     <ClInclude Include="RMG\RM_Area.h" />
     <ClInclude Include="RMG\RM_Headers.h" />
     <ClInclude Include="RMG\RM_Instance.h" />
@@ -319,6 +311,7 @@
     <ClCompile Include="client\FxSystem.cpp" />
     <ClCompile Include="client\FxTemplate.cpp" />
     <ClCompile Include="client\FxUtil.cpp" />
+    <ClCompile Include="client\cl_avi.cpp" />
     <ClCompile Include="client\cl_cgame.cpp" />
     <ClCompile Include="client\cl_cin.cpp" />
     <ClCompile Include="client\cl_console.cpp" />
@@ -351,6 +344,7 @@
     <ClCompile Include="qcommon\files_pc.cpp" />
     <ClCompile Include="qcommon\hstring.cpp" />
     <ClCompile Include="qcommon\huffman.cpp" />
+    <ClCompile Include="qcommon\matcomp.cpp" />
     <ClCompile Include="qcommon\md4.cpp" />
     <ClCompile Include="qcommon\msg.cpp" />
     <ClCompile Include="qcommon\net_chan.cpp" />
@@ -408,80 +402,22 @@
     <ClCompile Include="mp3code\uph.c" />
     <ClCompile Include="mp3code\upsf.c" />
     <ClCompile Include="mp3code\wavep.c" />
-    <ClCompile Include="renderer\matcomp.c" />
-    <ClCompile Include="renderer\tr_WorldEffects.cpp" />
-    <ClCompile Include="renderer\tr_animation.cpp" />
-    <ClCompile Include="renderer\tr_arioche.cpp" />
-    <ClCompile Include="renderer\tr_backend.cpp" />
-    <ClCompile Include="renderer\tr_bsp.cpp" />
-    <ClCompile Include="renderer\tr_cmds.cpp" />
-    <ClCompile Include="renderer\tr_curve.cpp" />
-    <ClCompile Include="renderer\tr_font.cpp" />
-    <ClCompile Include="renderer\tr_ghoul2.cpp" />
-    <ClCompile Include="renderer\tr_image.cpp" />
-    <ClCompile Include="renderer\tr_init.cpp" />
-    <ClCompile Include="renderer\tr_light.cpp" />
-    <ClCompile Include="renderer\tr_main.cpp" />
-    <ClCompile Include="renderer\tr_marks.cpp" />
-    <ClCompile Include="renderer\tr_mesh.cpp" />
-    <ClCompile Include="renderer\tr_model.cpp" />
-    <ClCompile Include="renderer\tr_noise.cpp" />
-    <ClCompile Include="renderer\tr_quicksprite.cpp" />
-    <ClCompile Include="renderer\tr_scene.cpp" />
-    <ClCompile Include="renderer\tr_shade.cpp" />
-    <ClCompile Include="renderer\tr_shade_calc.cpp" />
-    <ClCompile Include="renderer\tr_shader.cpp" />
-    <ClCompile Include="renderer\tr_shadows.cpp" />
-    <ClCompile Include="renderer\tr_sky.cpp" />
-    <ClCompile Include="renderer\tr_surface.cpp" />
-    <ClCompile Include="renderer\tr_surfacesprites.cpp" />
-    <ClCompile Include="renderer\tr_terrain.cpp" />
-    <ClCompile Include="renderer\tr_world.cpp" />
-    <ClCompile Include="win32\win_gamma.cpp" />
-    <ClCompile Include="win32\win_glimp.cpp" />
-    <ClCompile Include="win32\win_qgl.cpp" />
-    <ClCompile Include="jpeg-6\jcapimin.cpp" />
-    <ClCompile Include="jpeg-6\jccoefct.cpp" />
-    <ClCompile Include="jpeg-6\jccolor.cpp" />
-    <ClCompile Include="jpeg-6\jcdctmgr.cpp" />
-    <ClCompile Include="jpeg-6\jchuff.cpp" />
-    <ClCompile Include="jpeg-6\jcinit.cpp" />
-    <ClCompile Include="jpeg-6\jcmainct.cpp" />
-    <ClCompile Include="jpeg-6\jcmarker.cpp" />
-    <ClCompile Include="jpeg-6\jcmaster.cpp" />
-    <ClCompile Include="jpeg-6\jcomapi.cpp" />
-    <ClCompile Include="jpeg-6\jcparam.cpp" />
-    <ClCompile Include="jpeg-6\jcphuff.cpp" />
-    <ClCompile Include="jpeg-6\jcprepct.cpp" />
-    <ClCompile Include="jpeg-6\jcsample.cpp" />
-    <ClCompile Include="jpeg-6\jctrans.cpp" />
-    <ClCompile Include="jpeg-6\jdapimin.cpp" />
-    <ClCompile Include="jpeg-6\jdapistd.cpp" />
-    <ClCompile Include="jpeg-6\jdatadst.cpp" />
-    <ClCompile Include="jpeg-6\jdatasrc.cpp" />
-    <ClCompile Include="jpeg-6\jdcoefct.cpp" />
-    <ClCompile Include="jpeg-6\jdcolor.cpp" />
-    <ClCompile Include="jpeg-6\jddctmgr.cpp" />
-    <ClCompile Include="jpeg-6\jdhuff.cpp" />
-    <ClCompile Include="jpeg-6\jdinput.cpp" />
-    <ClCompile Include="jpeg-6\jdmainct.cpp" />
-    <ClCompile Include="jpeg-6\jdmarker.cpp" />
-    <ClCompile Include="jpeg-6\jdmaster.cpp" />
-    <ClCompile Include="jpeg-6\jdpostct.cpp" />
-    <ClCompile Include="jpeg-6\jdsample.cpp" />
-    <ClCompile Include="jpeg-6\jdtrans.cpp" />
-    <ClCompile Include="jpeg-6\jerror.cpp" />
-    <ClCompile Include="jpeg-6\jfdctflt.cpp" />
-    <ClCompile Include="jpeg-6\jidctflt.cpp" />
-    <ClCompile Include="jpeg-6\jmemmgr.cpp" />
-    <ClCompile Include="jpeg-6\jmemnobs.cpp" />
-    <ClCompile Include="jpeg-6\jutils.cpp" />
-    <ClCompile Include="png\png.cpp" />
-    <ClCompile Include="ghoul2\G2_API.cpp" />
-    <ClCompile Include="ghoul2\G2_bolts.cpp" />
-    <ClCompile Include="ghoul2\G2_bones.cpp" />
-    <ClCompile Include="ghoul2\G2_misc.cpp" />
-    <ClCompile Include="ghoul2\G2_surfaces.cpp" />
+    <ClCompile Include="zlib\adler32.c" />
+    <ClCompile Include="zlib\compress.c" />
+    <ClCompile Include="zlib\crc32.c" />
+    <ClCompile Include="zlib\deflate.c" />
+    <ClCompile Include="zlib\gzclose.c" />
+    <ClCompile Include="zlib\gzlib.c" />
+    <ClCompile Include="zlib\gzread.c" />
+    <ClCompile Include="zlib\gzwrite.c" />
+    <ClCompile Include="zlib\infback.c" />
+    <ClCompile Include="zlib\inffast.c" />
+    <ClCompile Include="zlib\inflate.c" />
+    <ClCompile Include="zlib\inftrees.c" />
+    <ClCompile Include="zlib\ioapi.c" />
+    <ClCompile Include="zlib\trees.c" />
+    <ClCompile Include="zlib\uncompr.c" />
+    <ClCompile Include="zlib\zutil.c" />
     <ClCompile Include="RMG\RM_Area.cpp" />
     <ClCompile Include="RMG\RM_Instance.cpp" />
     <ClCompile Include="RMG\RM_InstanceFile.cpp" />
@@ -532,7 +468,6 @@
     <ClCompile Include="icarus\Sequence.cpp" />
     <ClCompile Include="icarus\Sequencer.cpp" />
     <ClCompile Include="icarus\TaskManager.cpp" />
-    <ClCompile Include="zlib\ioapi.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

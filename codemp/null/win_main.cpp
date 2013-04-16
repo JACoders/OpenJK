@@ -655,8 +655,63 @@ Used to load a development dll instead of a virtual machine
 */
 extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 
-void * QDECL Sys_LoadDll( const char *name, int (QDECL **entryPoint)(int, ...),
-				  int (QDECL *systemcalls)(int, ...) ) {
+/*
+=================
+Sys_LoadDll
+
+First try to load library name from system library path,
+from executable path, then fs_basepath.
+=================
+*/
+
+extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
+
+void *Sys_LoadDll(const char *name, qboolean useSystemLib)
+{
+	void *dllhandle = NULL;
+	char	*fn, *basepath, *homepath, *cdpath, *gamedir;
+
+	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
+	{
+		if ( !dllhandle ) {
+			basepath = Cvar_VariableString( "fs_basepath" );
+			homepath = Cvar_VariableString( "fs_homepath" );
+			cdpath = Cvar_VariableString( "fs_cdpath" );
+			gamedir = Cvar_VariableString( "fs_game" );
+
+			fn = FS_BuildOSPath( basepath, gamedir, name );
+			dllhandle = LoadLibrary( fn );
+
+			if ( !dllhandle ) {
+				if( homepath[0] ) {
+					fn = FS_BuildOSPath( homepath, gamedir, name );
+					dllhandle = LoadLibrary( fn );
+				}
+				if ( !dllhandle ) {
+					if( cdpath[0] ) {
+						fn = FS_BuildOSPath( cdpath, gamedir, name );
+						dllhandle = LoadLibrary( fn );
+					}
+					if ( !dllhandle ) {
+						return NULL;
+					}
+				}
+			}
+		}
+	}
+
+	return dllhandle;
+}
+
+/*
+=================
+Sys_LoadGameDll
+
+Used to load a development dll instead of a virtual machine
+=================
+*/
+
+void * QDECL Sys_LoadGameDll( const char *name, int (QDECL **entryPoint)(int, ...), int (QDECL *systemcalls)(int, ...) ) {
 	static int	lastWarning = 0;
 	HINSTANCE	libHandle;
 	void	(QDECL *dllEntry)( int (QDECL *syscallptr)(int, ...) );

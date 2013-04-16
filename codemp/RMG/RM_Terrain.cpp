@@ -2,17 +2,12 @@
 #include "qcommon/exe_headers.h"
 
 #include "qcommon/cm_local.h"
-#include "cgame/tr_types.h"
+#include "renderer/tr_types.h"
 #include "RM_Headers.h"
 
 //#include "qcommon/q_imath.h"
 
 #pragma optimize("", off)
-
-void R_LoadDataImage	( const char *name, byte **pic, int *width, int *height);
-void R_InvertImage		( byte *data, int width, int height, int depth);
-void R_Resample			( byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
-void RE_GetModelBounds	(refEntity_t *refEnt, vec3_t bounds1, vec3_t bounds2);
 
 static CRMLandScape		*rm_landscape;
 static CCMLandScape		*origin_land;
@@ -295,7 +290,7 @@ void CRMLandScape::LoadDensityMap(const char *td)
 #ifdef DEDICATED
 		imageData = NULL;
 #else
-		R_LoadDataImage(densityMap, &imageData, &iWidth, &iHeight);
+		re.LoadDataImage(densityMap, &imageData, &iWidth, &iHeight);
 		if(imageData)
 		{
 			if(strstr(densityMap, "density_"))
@@ -303,8 +298,8 @@ void CRMLandScape::LoadDensityMap(const char *td)
 				seed = strtoul(Info_ValueForKey(td, "seed"),&ptr,10);
 				CreateRandomDensityMap(imageData, iWidth, iHeight, seed);
 			}
-			R_Resample(imageData, iWidth, iHeight, mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
-			R_InvertImage(mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
+			re.Resample(imageData, iWidth, iHeight, mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
+			re.InvertImage(mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
 			Z_Free(imageData);
 		}
 #endif
@@ -360,7 +355,7 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 
 			refEnt.hModel = re.RegisterModel(rm->GetModelName());
 			refEnt.frame = 0;
-			RE_GetModelBounds(&refEnt, bounds[0], bounds[1]);
+			re.ModelBoundsRef(&refEnt, bounds[0], bounds[1]);
 
 			// Calculate the scale using some magic to help ensure that the
 			// scales are never too different from eachother.  Otherwise you

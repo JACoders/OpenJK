@@ -6,9 +6,7 @@
 /*
 Ghoul2 Insert Start
 */
-#if !defined(TR_LOCAL_H)
-	#include "renderer/tr_local.h"
-#endif
+#include "ghoul2/G2.h"
 
 #if !defined (MINIHEAP_H_INC)
 #include "qcommon/MiniHeap.h"
@@ -429,8 +427,6 @@ void SV_SendMapChange(void)
 	}
 }
 
-void R_SVModelInit();
-
 /*
 ================
 SV_SpawnServer
@@ -440,10 +436,6 @@ clients along with it.
 This is NOT called for map_restart
 ================
 */
-extern CMiniHeap *G2VertSpaceServer;
-extern CMiniHeap CMiniHeap_singleton;
-
-extern void RE_RegisterMedia_LevelLoadBegin(const char *psMapName, ForceReload_e eForceReload);
 void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload ) {
 	int			i;
 	int			checksum;
@@ -453,7 +445,7 @@ void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload
 
 	SV_SendMapChange();
 
-	RE_RegisterMedia_LevelLoadBegin(server, eForceReload);
+	re.RegisterMedia_LevelLoadBegin(server, eForceReload);
 
 	// shut down the existing game if it is running
 	SV_ShutdownGameProgs();
@@ -482,7 +474,7 @@ Ghoul2 Insert End
 
 #ifndef DEDICATED
 	// make sure all the client stuff is unloaded
-	CL_ShutdownAll();
+	CL_ShutdownAll( qfalse );
 #endif
 
 	CM_ClearMap();
@@ -490,8 +482,8 @@ Ghoul2 Insert End
 	// clear the whole hunk because we're (re)loading the server
 	Hunk_Clear();
 
-	R_InitSkins();
-	R_InitShaders(qtrue);
+	re.InitSkins();
+	re.InitShaders(qtrue);
 
 	// init client structures and svs.numSnapshotEntities 
 	if ( !Cvar_VariableValue("sv_running") ) {
@@ -525,7 +517,7 @@ Ghoul2 Insert Start
 	*/
 	if (com_dedicated->integer)
 	{
-		R_SVModelInit();
+		re.SVModelInit();
 	}
 
 	SV_SendMapChange();
@@ -572,7 +564,7 @@ Ghoul2 Insert End
 	}
 
 	//rww - RAGDOLL_BEGIN
-	G2API_SetTime(sv.time,0);
+	re.G2API_SetTime(sv.time,0);
 	//rww - RAGDOLL_END
 
 	// make sure we are not paused
@@ -614,7 +606,7 @@ Ghoul2 Insert End
 	// run a few frames to allow everything to settle
 	for ( i = 0 ;i < 3 ; i++ ) {
 		//rww - RAGDOLL_BEGIN
-		G2API_SetTime(sv.time,0);
+		re.G2API_SetTime(sv.time,0);
 		//rww - RAGDOLL_END
 		VM_Call( gvm, GAME_RUN_FRAME, sv.time );
 		SV_BotFrame( sv.time );
@@ -622,7 +614,7 @@ Ghoul2 Insert End
 		svs.time += 100;
 	}
 	//rww - RAGDOLL_BEGIN
-	G2API_SetTime(sv.time,0);
+	re.G2API_SetTime(sv.time,0);
 	//rww - RAGDOLL_END
 
 	// create a baseline for more efficient communications
@@ -681,7 +673,7 @@ Ghoul2 Insert End
 	sv.time += 100;
 	svs.time += 100;
 	//rww - RAGDOLL_BEGIN
-	G2API_SetTime(sv.time,0);
+	re.G2API_SetTime(sv.time,0);
 	//rww - RAGDOLL_END
 
 	if ( sv_pure->integer ) {
@@ -749,6 +741,162 @@ Only called at main exe startup, not for each game
 */
 void SV_BotInitBotLib(void);
 
+#ifdef DEDICATED
+
+#define G2_VERT_SPACE_SERVER_SIZE 256
+CMiniHeap *G2VertSpaceServer = NULL;
+CMiniHeap CMiniHeap_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
+
+
+/*
+================
+CL_RefPrintf
+
+DLL glue
+================
+*/
+#define	MAXPRINTMSG	4096
+void QDECL SV_RefPrintf( int print_level, const char *fmt, ...) {
+	va_list		argptr;
+	char		msg[MAXPRINTMSG];
+	
+	va_start (argptr,fmt);
+	Q_vsnprintf(msg, sizeof(msg), fmt, argptr);
+	va_end (argptr);
+
+	if ( print_level == PRINT_ALL ) {
+		Com_Printf ("%s", msg);
+	} else if ( print_level == PRINT_WARNING ) {
+		Com_Printf (S_COLOR_YELLOW "%s", msg);		// yellow
+	} else if ( print_level == PRINT_DEVELOPER ) {
+		Com_DPrintf (S_COLOR_RED "%s", msg);		// red
+	}
+}
+
+qboolean Com_TheHunkMarkHasBeenMade(void);
+
+//qcommon/vm.cpp
+extern vm_t *currentVM;
+
+//qcommon/cm_load.cpp
+extern void *gpvCachedMapDiskImage;
+extern qboolean gbUsingCachedMapDataRightNow;
+
+static char *GetSharedMemory( void ) { return sv.mSharedMemory; }
+static vm_t *GetCurrentVM( void ) { return currentVM; }
+static void *CM_GetCachedMapDiskImage( void ) { return gpvCachedMapDiskImage; }
+static void CM_SetCachedMapDiskImage( void *ptr ) { gpvCachedMapDiskImage = ptr; }
+static void CM_SetUsingCache( qboolean usingCache ) { gbUsingCachedMapDataRightNow = usingCache; }
+
+//server stuff D:
+extern vm_t *currentVM;
+extern vm_t *gvm;
+static vm_t *GetGameVM( void ) { return gvm; }
+extern void SV_GetConfigstring( int index, char *buffer, int bufferSize );
+extern void SV_SetConfigstring( int index, const char *val );
+
+static CMiniHeap *GetG2VertSpaceServer( void ) {
+	return G2VertSpaceServer;
+}
+
+static void SV_InitRef( void ) {
+	refimport_t	ri = {0};
+	refexport_t	*ret;
+
+	Com_Printf( "----- Initializing Renderer ----\n" );
+
+	//set up the import table
+	ri.Printf = SV_RefPrintf;
+	ri.Error = Com_Error;
+	ri.Milliseconds = Sys_Milliseconds2; //FIXME: unix+mac need this
+	ri.Hunk_AllocateTempMemory = Hunk_AllocateTempMemory;
+	ri.Hunk_FreeTempMemory = Hunk_FreeTempMemory;
+	ri.Hunk_Alloc = Hunk_Alloc;
+	ri.Hunk_MemoryRemaining = Hunk_MemoryRemaining;
+	ri.Z_Malloc = Z_Malloc;
+	ri.Z_Free = Z_Free;
+	ri.Z_MemSize = Z_MemSize;
+	ri.Z_MorphMallocTag = Z_MorphMallocTag;
+	ri.Cmd_ExecuteString = Cmd_ExecuteString;
+	ri.Cmd_Argc = Cmd_Argc;
+	ri.Cmd_Argv = Cmd_Argv;
+	ri.Cmd_ArgsBuffer = Cmd_ArgsBuffer;
+	ri.Cmd_AddCommand = Cmd_AddCommand;
+	ri.Cmd_RemoveCommand = Cmd_RemoveCommand;
+	ri.Cvar_Set = Cvar_Set;
+	ri.Cvar_Get = Cvar_Get;
+	ri.Cvar_VariableStringBuffer = Cvar_VariableStringBuffer;
+	ri.Cvar_VariableString = Cvar_VariableString;
+	ri.Cvar_VariableValue = Cvar_VariableValue;
+	ri.Cvar_VariableIntegerValue = Cvar_VariableIntegerValue;
+	ri.Sys_LowPhysicalMemory = Sys_LowPhysicalMemory;
+	ri.SE_GetString = SE_GetString;
+	ri.FS_FreeFile = FS_FreeFile;
+	ri.FS_FreeFileList = FS_FreeFileList;
+	ri.FS_Read = FS_Read;
+	ri.FS_ReadFile = FS_ReadFile;
+	ri.FS_FCloseFile = FS_FCloseFile;
+	ri.FS_FOpenFileRead = FS_FOpenFileRead;
+	ri.FS_FOpenFileWrite = FS_FOpenFileWrite;
+	ri.FS_FOpenFileByMode = FS_FOpenFileByMode;
+	ri.FS_FileExists = FS_FileExists;
+	ri.FS_FileIsInPAK = FS_FileIsInPAK;
+	ri.FS_ListFiles = FS_ListFiles;
+	ri.FS_Write = FS_Write;
+	ri.FS_WriteFile = FS_WriteFile;
+	ri.CM_BoxTrace = CM_BoxTrace;
+	ri.CM_DrawDebugSurface = CM_DrawDebugSurface;
+//	ri.CM_CullWorldBox = CM_CullWorldBox;
+//	ri.CM_TerrainPatchIterate = CM_TerrainPatchIterate;
+//	ri.CM_RegisterTerrain = CM_RegisterTerrain;
+//	ri.CM_ShutdownTerrain = CM_ShutdownTerrain;
+	ri.CM_ClusterPVS = CM_ClusterPVS;
+	ri.CM_LeafArea = CM_LeafArea;
+	ri.CM_LeafCluster = CM_LeafCluster;
+	ri.CM_PointLeafnum = CM_PointLeafnum;
+	ri.CM_PointContents = CM_PointContents;
+	ri.VM_Call = VM_Call;
+	ri.Com_TheHunkMarkHasBeenMade = Com_TheHunkMarkHasBeenMade;
+	ri.SV_GetConfigstring = SV_GetConfigstring;
+	ri.SV_SetConfigstring = SV_SetConfigstring;
+//	ri.S_RestartMusic = S_RestartMusic;
+//	ri.SND_RegisterAudio_LevelLoadEnd = SND_RegisterAudio_LevelLoadEnd;
+//	ri.CIN_RunCinematic = CIN_RunCinematic;
+//	ri.CIN_PlayCinematic = CIN_PlayCinematic;
+//	ri.CIN_UploadCinematic = CIN_UploadCinematic;
+//	ri.CL_WriteAVIVideoFrame = CL_WriteAVIVideoFrame;
+
+	// g2 data access
+	ri.GetSharedMemory = GetSharedMemory;
+//	ri.GetCgameVM = GetCgameVM;
+	ri.GetGameVM = GetGameVM;
+	ri.GetCurrentVM = GetCurrentVM;
+
+	// ugly win32 backend
+	ri.CM_GetCachedMapDiskImage = CM_GetCachedMapDiskImage;
+	ri.CM_SetCachedMapDiskImage = CM_SetCachedMapDiskImage;
+	ri.CM_SetUsingCache = CM_SetUsingCache;
+
+	//RAZFIXME: Might have to do something about this...
+	ri.GetG2VertSpaceServer = GetG2VertSpaceServer;
+	G2VertSpaceServer = &CMiniHeap_singleton;
+
+	ret = GetRefAPI( REF_API_VERSION, &ri );
+
+#if defined __USEA3D && defined __A3D_GEOM
+	hA3Dg_ExportRenderGeom (ret);
+#endif
+
+//	Com_Printf( "-------------------------------\n");
+
+	if ( !ret ) {
+		Com_Error (ERR_FATAL, "Couldn't initialize refresh" );
+	}
+
+	re = *ret;
+}
+#endif
+
 void SV_Init (void) {
 	SV_AddOperatorCommands ();
 
@@ -795,7 +943,7 @@ void SV_Init (void) {
 	// server vars
 	sv_rconPassword = Cvar_Get ("rconPassword", "", CVAR_TEMP );
 	sv_privatePassword = Cvar_Get ("sv_privatePassword", "", CVAR_TEMP );
-	sv_fps = Cvar_Get ("sv_fps", "20", CVAR_TEMP );
+	sv_fps = Cvar_Get ("sv_fps", "40", CVAR_SERVERINFO );
 	sv_timeout = Cvar_Get ("sv_timeout", "200", CVAR_TEMP );
 	sv_zombietime = Cvar_Get ("sv_zombietime", "2", CVAR_TEMP );
 	Cvar_Get ("nextmap", "", CVAR_TEMP );
@@ -823,7 +971,9 @@ void SV_Init (void) {
 
 	// Only allocated once, no point in moving it around and fragmenting
 	// create a heap for Ghoul2 to use for game side model vertex transforms used in collision detection
-	G2VertSpaceServer = &CMiniHeap_singleton;
+#ifdef DEDICATED
+	SV_InitRef();
+#endif
 }
 
 
@@ -912,4 +1062,3 @@ Ghoul2 Insert Start
 	if( sv_killserver->integer != 2 )
 		CL_Disconnect( qfalse );
 }
-
