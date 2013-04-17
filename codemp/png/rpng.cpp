@@ -6,7 +6,7 @@
 #include "qcommon/qcommon.h"
 
 #include "zlib/zlib.h"
-#include "png.h"
+#include "rpng.h"
 //#include "qcommon/memory.h"
 
 //Raz: hi i'm bad
@@ -362,7 +362,9 @@ bool PNG_Pack(byte *out, ulong *size, ulong maxsize, byte *data, int width, int 
 	ulong			y;
 	const byte		*lastline, *source;
 	// Storage for filter type and filtered row
-	byte			workline[(MAX_PNG_WIDTH * MAX_PNG_DEPTH) + 1];
+	static byte workline[(MAX_PNG_WIDTH * MAX_PNG_DEPTH) + 1];
+
+	memset( workline, 0, sizeof( workline ) );
 
 	// Number of bytes per row
 	rowbytes = width * bytedepth;
@@ -378,7 +380,7 @@ bool PNG_Pack(byte *out, ulong *size, ulong maxsize, byte *data, int width, int 
 	zdata.avail_out = maxsize;
 
 	lastline = NULL;
-	source = data + ((height - 1) * rowbytes);
+	source = data + ((height-1) * rowbytes);
 	for(y = 0; y < height-1; y++)
 	{
 		// Refilter using the most compressable filter algo

@@ -18,7 +18,7 @@
 #endif
 
 #include "G2_local.h"
-#include "png/png.h"
+#include "libpng/png.h"
 
 //#ifdef __USEA3D
 //// Defined in snd_a3dg_refcommon.c
@@ -619,7 +619,7 @@ void R_TakeScreenshotPNG( int x, int y, int width, int height, char *fileName ) 
 	int padlen=0;
 
 	buffer = RB_ReadPixels( x, y, width, height, &offset, &padlen );
-	PNG_Save( fileName, buffer, width, height, 3 );
+	RE_SavePNG( fileName, buffer, width, height, 3 );
 	ri.Hunk_FreeTempMemory( buffer );
 }
 
@@ -1745,7 +1745,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.Resample								= R_Resample;
 	re.LoadImageJA							= RE_LoadImage;
 	re.CreateAutomapImage					= R_CreateAutomapImage;
-	re.PNG_Save								= PNG_Save;
+	re.SavePNG								= RE_SavePNG;
 
 	re.TheGhoul2InfoArray					= TheGhoul2InfoArray;
 	// this is set in R_Init
