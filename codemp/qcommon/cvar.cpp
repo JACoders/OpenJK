@@ -289,7 +289,7 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 		return var;
 	}
 
-//
+	//
 	// allocate a new cvar
 	//
 
