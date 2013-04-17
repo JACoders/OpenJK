@@ -1353,7 +1353,6 @@ void	RE_UploadCinematic (int cols, int rows, const byte *data, int client, qbool
 
 void		RE_BeginFrame( stereoFrame_t stereoFrame );
 void		RE_BeginRegistration( glconfig_t *glconfig );
-void		R_ColorShiftLightingBytes( byte in[4], byte out[4] ); //rwwRMG - added
 void		RE_LoadWorldMap( const char *mapname );
 
 void		RE_SetWorldVisData( const byte *vis );
