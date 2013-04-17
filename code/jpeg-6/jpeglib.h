@@ -13,9 +13,9 @@
 #ifndef JPEGLIB_H
 #define JPEGLIB_H
 
-#if !defined(TR_LOCAL_H)
+/*#if !defined(TR_LOCAL_H)
 	#include "../renderer/tr_local.h"
-#endif
+#endif*/
 
 #ifdef __cplusplus
 extern "C"
