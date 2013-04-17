@@ -680,6 +680,7 @@ void CL_MapLoading( void ) {
 
 	// Set this to localhost.
 	Cvar_Set( "cl_currentServerAddress", "Localhost");
+	Cvar_Set( "cl_currentServerIP", "loopback");
 
 	Con_Close();
 	cls.keyCatchers = 0;
@@ -942,6 +943,7 @@ CL_Connect_f
 */
 void CL_Connect_f( void ) {
 	char	*server;
+	const char	*serverString;
 
 	if ( Cmd_Argc() != 2 ) {
 		Com_Printf( "usage: connect [server]\n");
@@ -984,10 +986,10 @@ void CL_Connect_f( void ) {
 	if (clc.serverAddress.port == 0) {
 		clc.serverAddress.port = BigShort( PORT_SERVER );
 	}
-	Com_Printf( "%s resolved to %i.%i.%i.%i:%i\n", cls.servername,
-		clc.serverAddress.ip[0], clc.serverAddress.ip[1],
-		clc.serverAddress.ip[2], clc.serverAddress.ip[3],
-		BigShort( clc.serverAddress.port ) );
+
+	serverString = NET_AdrToString(clc.serverAddress);
+
+	Com_Printf( "%s resolved to %s\n", cls.servername, serverString );
 
 	// if we aren't playing on a lan, we need to authenticate
 	if ( NET_IsLocalAddress( clc.serverAddress ) ) {
@@ -1002,6 +1004,7 @@ void CL_Connect_f( void ) {
 
 	// server connection string
 	Cvar_Set( "cl_currentServerAddress", server );
+	Cvar_Set( "cl_currentServerIP", serverString );
 }
 
 #define MAX_RCON_MESSAGE 1024
