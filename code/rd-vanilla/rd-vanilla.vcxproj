@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{FB952C0E-5D80-4504-BF99-BFDB6F631CC9}</ProjectGuid>
+    <RootNamespace>rdvanilla</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetExt>.dll</TargetExt>
+    <OutDir>.\..\..\bin\Debug\</OutDir>
+    <IntDir>.\..\Debug\rd-vanilla\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\jpeg-6\jchuff.h" />
+    <ClInclude Include="..\jpeg-6\jconfig.h" />
+    <ClInclude Include="..\jpeg-6\jdct.h" />
+    <ClInclude Include="..\jpeg-6\jdhuff.h" />
+    <ClInclude Include="..\jpeg-6\jerror.h" />
+    <ClInclude Include="..\jpeg-6\jinclude.h" />
+    <ClInclude Include="..\jpeg-6\jmemsys.h" />
+    <ClInclude Include="..\jpeg-6\jmorecfg.h" />
+    <ClInclude Include="..\jpeg-6\jpegint.h" />
+    <ClInclude Include="..\jpeg-6\jpeglib.h" />
+    <ClInclude Include="..\jpeg-6\jversion.h" />
+    <ClInclude Include="..\png\png.h" />
+    <ClInclude Include="..\renderer\mdx_format.h" />
+    <ClInclude Include="..\renderer\tr_public.h" />
+    <ClInclude Include="..\renderer\tr_types.h" />
+    <ClInclude Include="..\zlib32\deflate.h" />
+    <ClInclude Include="..\zlib32\inflate.h" />
+    <ClInclude Include="..\zlib32\zip.h" />
+    <ClInclude Include="amd3d.h" />
+    <ClInclude Include="glext.h" />
+    <ClInclude Include="glext_console.h" />
+    <ClInclude Include="matcomp.h" />
+    <ClInclude Include="mdx_format.h" />
+    <ClInclude Include="qgl.h" />
+    <ClInclude Include="qgl_console.h" />
+    <ClInclude Include="qgl_linked.h" />
+    <ClInclude Include="tr_font.h" />
+    <ClInclude Include="tr_jpeg_interface.h" />
+    <ClInclude Include="tr_landscape.h" />
+    <ClInclude Include="tr_local.h" />
+    <ClInclude Include="tr_public.h" />
+    <ClInclude Include="tr_quicksprite.h" />
+    <ClInclude Include="tr_stl.h" />
+    <ClInclude Include="tr_types.h" />
+    <ClInclude Include="tr_WorldEffects.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\game\q_math.cpp" />
+    <ClCompile Include="..\game\q_shared.cpp" />
+    <ClCompile Include="..\jpeg-6\jcapimin.cpp" />
+    <ClCompile Include="..\jpeg-6\jccoefct.cpp" />
+    <ClCompile Include="..\jpeg-6\jccolor.cpp" />
+    <ClCompile Include="..\jpeg-6\jcdctmgr.cpp" />
+    <ClCompile Include="..\jpeg-6\jchuff.cpp" />
+    <ClCompile Include="..\jpeg-6\jcinit.cpp" />
+    <ClCompile Include="..\jpeg-6\jcmainct.cpp" />
+    <ClCompile Include="..\jpeg-6\jcmarker.cpp" />
+    <ClCompile Include="..\jpeg-6\jcmaster.cpp" />
+    <ClCompile Include="..\jpeg-6\jcomapi.cpp" />
+    <ClCompile Include="..\jpeg-6\jcparam.cpp" />
+    <ClCompile Include="..\jpeg-6\jcphuff.cpp" />
+    <ClCompile Include="..\jpeg-6\jcprepct.cpp" />
+    <ClCompile Include="..\jpeg-6\jcsample.cpp" />
+    <ClCompile Include="..\jpeg-6\jctrans.cpp" />
+    <ClCompile Include="..\jpeg-6\jdapimin.cpp" />
+    <ClCompile Include="..\jpeg-6\jdapistd.cpp" />
+    <ClCompile Include="..\jpeg-6\jdatadst.cpp" />
+    <ClCompile Include="..\jpeg-6\jdatasrc.cpp" />
+    <ClCompile Include="..\jpeg-6\jdcoefct.cpp" />
+    <ClCompile Include="..\jpeg-6\jdcolor.cpp" />
+    <ClCompile Include="..\jpeg-6\jddctmgr.cpp" />
+    <ClCompile Include="..\jpeg-6\jdhuff.cpp" />
+    <ClCompile Include="..\jpeg-6\jdinput.cpp" />
+    <ClCompile Include="..\jpeg-6\jdmainct.cpp" />
+    <ClCompile Include="..\jpeg-6\jdmarker.cpp" />
+    <ClCompile Include="..\jpeg-6\jdmaster.cpp" />
+    <ClCompile Include="..\jpeg-6\jdpostct.cpp" />
+    <ClCompile Include="..\jpeg-6\jdsample.cpp" />
+    <ClCompile Include="..\jpeg-6\jdtrans.cpp" />
+    <ClCompile Include="..\jpeg-6\jerror.cpp" />
+    <ClCompile Include="..\jpeg-6\jfdctflt.cpp" />
+    <ClCompile Include="..\jpeg-6\jidctflt.cpp" />
+    <ClCompile Include="..\jpeg-6\jmemmgr.cpp" />
+    <ClCompile Include="..\jpeg-6\jmemnobs.cpp" />
+    <ClCompile Include="..\jpeg-6\jutils.cpp" />
+    <ClCompile Include="..\png\png.cpp" />
+    <ClCompile Include="..\win32\win_gamma.cpp" />
+    <ClCompile Include="..\win32\win_glimp.cpp" />
+    <ClCompile Include="..\win32\win_qgl.cpp" />
+    <ClCompile Include="..\zlib32\deflate.cpp" />
+    <ClCompile Include="..\zlib32\inflate.cpp" />
+    <ClCompile Include="..\zlib32\zipcommon.cpp" />
+    <ClCompile Include="matcomp.c" />
+    <ClCompile Include="tr_animation.cpp" />
+    <ClCompile Include="tr_arioche.cpp" />
+    <ClCompile Include="tr_backend.cpp" />
+    <ClCompile Include="tr_bsp.cpp" />
+    <ClCompile Include="tr_cmds.cpp" />
+    <ClCompile Include="tr_curve.cpp" />
+    <ClCompile Include="tr_draw.cpp" />
+    <ClCompile Include="tr_flares.cpp" />
+    <ClCompile Include="tr_font.cpp" />
+    <ClCompile Include="tr_ghoul2.cpp" />
+    <ClCompile Include="tr_image.cpp" />
+    <ClCompile Include="tr_init.cpp" />
+    <ClCompile Include="tr_jpeg_interface.cpp" />
+    <ClCompile Include="tr_light.cpp" />
+    <ClCompile Include="tr_main.cpp" />
+    <ClCompile Include="tr_marks.cpp" />
+    <ClCompile Include="tr_mesh.cpp" />
+    <ClCompile Include="tr_model.cpp" />
+    <ClCompile Include="tr_noise.cpp" />
+    <ClCompile Include="tr_quicksprite.cpp" />
+    <ClCompile Include="tr_scene.cpp" />
+    <ClCompile Include="tr_shade.cpp" />
+    <ClCompile Include="tr_shader.cpp" />
+    <ClCompile Include="tr_shade_calc.cpp" />
+    <ClCompile Include="tr_shadows.cpp" />
+    <ClCompile Include="tr_sky.cpp" />
+    <ClCompile Include="tr_stl.cpp" />
+    <ClCompile Include="tr_surface.cpp" />
+    <ClCompile Include="tr_surfacesprites.cpp" />
+    <ClCompile Include="tr_terrain.cpp" />
+    <ClCompile Include="tr_world.cpp" />
+    <ClCompile Include="tr_WorldEffects.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ref_trin.def" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

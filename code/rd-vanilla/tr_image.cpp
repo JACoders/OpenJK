@@ -2888,12 +2888,6 @@ R_InitImages
 */
 void	R_InitImages( void ) {
 	//memset(hashTable, 0, sizeof(hashTable));	// DO NOT DO THIS NOW (because of image cacheing)	-ste.
-#ifdef _XBOX
-	if (!AllocatedImages)
-	{
-		AllocatedImages = new AllocatedImages_t;
-	}
-#endif
 
 	// build brightness translation tables
 	R_SetColorMappings();

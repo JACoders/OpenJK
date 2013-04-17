@@ -29,8 +29,8 @@ This file is part of Jedi Academy.
 #include "server.h"
 #include "..\client\vmachine.h"
 #include "..\client\client.h"
-#include "..\renderer\tr_local.h"
-#include "..\renderer\tr_WorldEffects.h"
+/*#include "..\renderer\tr_local.h"
+#include "..\renderer\tr_WorldEffects.h"*/
 /*
 Ghoul2 Insert Start
 */
@@ -663,14 +663,14 @@ Ghoul2 Insert Start
 	import.RE_GetAnimationCFG = re.GetAnimationCFG;
 
 
-	import.WE_GetWindVector	= R_GetWindVector;
-	import.WE_GetWindGusting = R_GetWindGusting;
-	import.WE_IsOutside	= R_IsOutside;
-	import.WE_IsOutsideCausingPain	= R_IsOutsideCausingPain;
-	import.WE_GetChanceOfSaberFizz = R_GetChanceOfSaberFizz;
-	import.WE_IsShaking = R_IsShaking;
-	import.WE_AddWeatherZone = R_AddWeatherZone;
-	import.WE_SetTempGlobalFogColor = R_SetTempGlobalFogColor;
+	import.WE_GetWindVector	= re.GetWindVector;
+	import.WE_GetWindGusting = re.GetWindGusting;
+	import.WE_IsOutside	= re.IsOutside;
+	import.WE_IsOutsideCausingPain	= re.IsOutsideCausingPain;
+	import.WE_GetChanceOfSaberFizz = re.GetChanceOfSaberFizz;
+	import.WE_IsShaking = re.IsShaking;
+	import.WE_AddWeatherZone = re.AddWeatherZone;
+	import.WE_SetTempGlobalFogColor = re.SetTempGlobalFogColor;
 
 
 /*

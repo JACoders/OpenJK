@@ -1,0 +1,383 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{d20414cc-acf9-4ac5-a664-64eea02a09c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\jpg">
+      <UniqueIdentifier>{f27ea347-fcd8-4b68-9350-98327fedb76b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\GHOUL 2">
+      <UniqueIdentifier>{e4a16c87-0aa7-485c-b030-371083984583}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\Shared Dependencies">
+      <UniqueIdentifier>{5716ab6d-e08b-4d6d-8686-9b4d38424559}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\zlib">
+      <UniqueIdentifier>{ef95cb79-e85a-452e-aa81-4d3e6cdbe76b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libraries\png">
+      <UniqueIdentifier>{e5fc7edf-2cf6-4cf0-83f8-447678d18c34}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="amd3d.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glext.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="glext_console.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="matcomp.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mdx_format.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="qgl.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="qgl_console.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="qgl_linked.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tr_font.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tr_jpeg_interface.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tr_landscape.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tr_local.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tr_public.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tr_quicksprite.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tr_stl.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tr_types.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tr_WorldEffects.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-6\jchuff.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-6\jconfig.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-6\jdct.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-6\jdhuff.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-6\jerror.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-6\jinclude.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-6\jmemsys.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-6\jmorecfg.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-6\jpegint.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-6\jpeglib.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-6\jversion.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib32\deflate.h">
+      <Filter>Libraries\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib32\inflate.h">
+      <Filter>Libraries\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\zlib32\zip.h">
+      <Filter>Libraries\zlib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\png\png.h">
+      <Filter>Libraries\png</Filter>
+    </ClInclude>
+    <ClInclude Include="..\renderer\mdx_format.h">
+      <Filter>Libraries\Shared Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\renderer\tr_public.h">
+      <Filter>Libraries\Shared Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\renderer\tr_types.h">
+      <Filter>Libraries\Shared Dependencies</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="matcomp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_animation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_arioche.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_backend.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_bsp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_cmds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_curve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_flares.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_ghoul2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_init.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_jpeg_interface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_light.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_marks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_noise.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_quicksprite.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_shade.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_shade_calc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_shadows.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_sky.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_stl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_surface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_surfacesprites.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_terrain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_world.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tr_WorldEffects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jcapimin.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jccoefct.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jccolor.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jcdctmgr.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jchuff.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jcinit.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jcmainct.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jcmarker.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jcmaster.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jcomapi.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jcparam.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jcphuff.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jcprepct.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jcsample.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jctrans.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdapimin.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdapistd.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdatadst.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdatasrc.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdcoefct.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdcolor.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jddctmgr.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdhuff.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdinput.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdmainct.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdmarker.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdmaster.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdpostct.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdsample.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jdtrans.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jerror.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jfdctflt.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jidctflt.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jmemmgr.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jmemnobs.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-6\jutils.cpp">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib32\deflate.cpp">
+      <Filter>Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib32\inflate.cpp">
+      <Filter>Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\zlib32\zipcommon.cpp">
+      <Filter>Libraries\zlib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\png\png.cpp">
+      <Filter>Libraries\png</Filter>
+    </ClCompile>
+    <ClCompile Include="..\win32\win_gamma.cpp">
+      <Filter>Libraries\Shared Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\win32\win_glimp.cpp">
+      <Filter>Libraries\Shared Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\win32\win_qgl.cpp">
+      <Filter>Libraries\Shared Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\q_math.cpp">
+      <Filter>Libraries\Shared Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\q_shared.cpp">
+      <Filter>Libraries\Shared Dependencies</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ref_trin.def">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

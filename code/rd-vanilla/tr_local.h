@@ -22,8 +22,8 @@ This file is part of Jedi Academy.
 
 #include "../game/q_shared.h"
 #include "../qcommon/qfiles.h"
-#include "tr_public.h"
-#include "mdx_format.h"
+#include "../renderer/tr_public.h"
+#include "../renderer/mdx_format.h"
 #if defined(_XBOX)
 #include "qgl_console.h"
 #include "glext_console.h"
