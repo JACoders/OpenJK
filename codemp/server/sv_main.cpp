@@ -1131,7 +1131,7 @@ void SV_Frame( int msec ) {
 	}
 
 	//rww - RAGDOLL_BEGIN
-	G2API_SetTime(sv.time,0);
+	re.G2API_SetTime(sv.time,0);
 	//rww - RAGDOLL_END
 
 	if ( com_speeds->integer ) {

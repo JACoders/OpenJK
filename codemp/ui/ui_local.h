@@ -4,7 +4,7 @@
 #define __UI_LOCAL_H__
 
 #include "qcommon/q_shared.h"
-#include "cgame/tr_types.h"
+#include "renderer/tr_types.h"
 #include "ui_public.h"
 #include "keycodes.h"
 #include "game/bg_public.h"
@@ -563,11 +563,11 @@ typedef struct {
 #define MAX_STATUSLENGTH		64
 */
 
-#define MAX_LISTBOXWIDTH		59
+#define MAX_LISTBOXWIDTH		256 //59
 #define UI_FONT_THRESHOLD		0.1
 #define MAX_DISPLAY_SERVERS		2048
 #define MAX_SERVERSTATUS_LINES	128
-#define MAX_SERVERSTATUS_TEXT	1024
+#define MAX_SERVERSTATUS_TEXT	4096 //1024
 #define MAX_FOUNDPLAYER_SERVERS	16
 #define TEAM_MEMBERS 8//5
 #define GAMES_ALL			0

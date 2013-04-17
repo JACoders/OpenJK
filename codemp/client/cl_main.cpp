@@ -13,7 +13,7 @@
 #include "qcommon/cm_landscape.h"
 
 #if !defined(G2_H_INC)
-	#include "ghoul2/G2_local.h"
+	#include "ghoul2/G2.h"
 #endif
 
 #if !defined (MINIHEAP_H_INC)
@@ -23,6 +23,8 @@
 #ifdef _DONETPROFILE_
 #include "qcommon/INetProfile.h"
 #endif
+
+cvar_t	*cl_renderer;
 
 cvar_t	*cl_nodelta;
 cvar_t	*cl_debugMove;
@@ -85,7 +87,13 @@ vm_t				*cgvm;
 netadr_t rcon_address;
 
 // Structure containing functions exported from refresh DLL
-refexport_t	re;
+refexport_t	re = {0};
+static void	*rendererLib = NULL;
+
+//RAZFIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
+IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
+	return re.TheGhoul2InfoArray();
+}
 
 ping_t	cl_pinglist[MAX_PINGREQUESTS];
 
@@ -595,7 +603,7 @@ void CL_NextDemo( void ) {
 CL_ShutdownAll
 =====================
 */
-void CL_ShutdownAll(void) {
+void CL_ShutdownAll( qboolean shutdownRef ) {
 	if(CL_VideoRecording())
 		CL_CloseAVI();
 
@@ -615,6 +623,8 @@ void CL_ShutdownAll(void) {
 	CL_ShutdownUI();
 
 	// shutdown the renderer
+	if(shutdownRef)
+		CL_ShutdownRef();
 	if ( re.Shutdown ) {
 		re.Shutdown( qfalse );		// don't destroy window or context
 	}
@@ -637,7 +647,7 @@ Also called by Com_Error
 void CL_FlushMemory( void ) {
 
 	// shutdown all the client stuff
-	CL_ShutdownAll();
+	CL_ShutdownAll( qfalse );
 
 	// if not running a server clear the whole hunk
 	if ( !com_sv_running->integer ) {
@@ -2023,8 +2033,6 @@ void CL_CheckUserinfo( void ) {
 
 }
 
-extern CMiniHeap *G2VertSpaceServer;
-
 /*
 ==================
 CL_Frame
@@ -2236,10 +2244,152 @@ void CL_StartHunkUsers( void ) {
 CL_InitRef
 ============
 */
-void CL_InitRef( void ) {
-	refexport_t	*ret;
+qboolean Com_TheHunkMarkHasBeenMade(void);
 
-	ret = GetRefAPI( REF_API_VERSION );
+//qcommon/vm.cpp
+extern vm_t *currentVM;
+#ifdef _WIN32
+	//win32/win_main.cpp
+	#include "win32/win_local.h"
+	extern WinVars_t g_wv;
+#endif
+//qcommon/cm_load.cpp
+extern void *gpvCachedMapDiskImage;
+extern qboolean gbUsingCachedMapDataRightNow;
+
+static char *GetSharedMemory( void ) { return cl.mSharedMemory; }
+static vm_t *GetCgameVM( void ) { return cgvm; }
+static vm_t *GetCurrentVM( void ) { return currentVM; }
+#ifdef _WIN32
+	static void *GetWinVars( void ) { return (void *)&g_wv; }
+#endif
+static void *CM_GetCachedMapDiskImage( void ) { return gpvCachedMapDiskImage; }
+static void CM_SetCachedMapDiskImage( void *ptr ) { gpvCachedMapDiskImage = ptr; }
+static void CM_SetUsingCache( qboolean usingCache ) { gbUsingCachedMapDataRightNow = usingCache; }
+
+// for listen servers
+extern vm_t *currentVM;
+extern vm_t *gvm;
+static vm_t *GetGameVM( void ) { return gvm; }
+extern void SV_GetConfigstring( int index, char *buffer, int bufferSize );
+extern void SV_SetConfigstring( int index, const char *val );
+
+#define G2_VERT_SPACE_SERVER_SIZE 256
+CMiniHeap *G2VertSpaceServer = NULL;
+CMiniHeap CMiniHeap_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
+
+static CMiniHeap *GetG2VertSpaceServer( void ) {
+	return G2VertSpaceServer;
+}
+void CL_InitRef( void ) {
+	refimport_t	ri = {0};
+	refexport_t	*ret;
+	GetRefAPI_t	GetRefAPI;
+	char		dllName[MAX_OSPATH];
+
+	Com_Printf( "----- Initializing Renderer ----\n" );
+
+	cl_renderer = Cvar_Get( "cl_renderer", "rd-vanilla", CVAR_ARCHIVE|CVAR_LATCH );
+
+	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
+
+	if( !(rendererLib = Sys_LoadDll( dllName, qtrue )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
+	{
+		Com_Printf( "failed: trying to load fallback renderer\n" );
+		Cvar_ForceReset( "cl_renderer" );
+
+		Com_sprintf( dllName, sizeof( dllName ), "rd-vanilla_" ARCH_STRING DLL_EXT );
+		rendererLib = Sys_LoadDll( dllName, qtrue );
+	}
+
+	if ( !rendererLib ) {
+		Com_Error( ERR_FATAL, "Failed to load renderer" );
+	}
+
+	GetRefAPI = (GetRefAPI_t)Sys_LoadFunction( rendererLib, "GetRefAPI" );
+	if ( !GetRefAPI )
+		Com_Error( ERR_FATAL, "Can't load symbol GetRefAPI: '%s'", Sys_LibraryError() );
+
+	//set up the import table
+	ri.Printf = CL_RefPrintf;
+	ri.Error = Com_Error;
+	ri.Milliseconds = Sys_Milliseconds2; //FIXME: unix+mac need this
+	ri.Hunk_AllocateTempMemory = Hunk_AllocateTempMemory;
+	ri.Hunk_FreeTempMemory = Hunk_FreeTempMemory;
+	ri.Hunk_Alloc = Hunk_Alloc;
+	ri.Hunk_MemoryRemaining = Hunk_MemoryRemaining;
+	ri.Z_Malloc = Z_Malloc;
+	ri.Z_Free = Z_Free;
+	ri.Z_MemSize = Z_MemSize;
+	ri.Z_MorphMallocTag = Z_MorphMallocTag;
+	ri.Cmd_ExecuteString = Cmd_ExecuteString;
+	ri.Cmd_Argc = Cmd_Argc;
+	ri.Cmd_Argv = Cmd_Argv;
+	ri.Cmd_ArgsBuffer = Cmd_ArgsBuffer;
+	ri.Cmd_AddCommand = Cmd_AddCommand;
+	ri.Cmd_RemoveCommand = Cmd_RemoveCommand;
+	ri.Cvar_Set = Cvar_Set;
+	ri.Cvar_Get = Cvar_Get;
+	ri.Cvar_VariableStringBuffer = Cvar_VariableStringBuffer;
+	ri.Cvar_VariableString = Cvar_VariableString;
+	ri.Cvar_VariableValue = Cvar_VariableValue;
+	ri.Cvar_VariableIntegerValue = Cvar_VariableIntegerValue;
+	ri.Sys_LowPhysicalMemory = Sys_LowPhysicalMemory;
+	ri.SE_GetString = SE_GetString;
+	ri.FS_FreeFile = FS_FreeFile;
+	ri.FS_FreeFileList = FS_FreeFileList;
+	ri.FS_Read = FS_Read;
+	ri.FS_ReadFile = FS_ReadFile;
+	ri.FS_FCloseFile = FS_FCloseFile;
+	ri.FS_FOpenFileRead = FS_FOpenFileRead;
+	ri.FS_FOpenFileWrite = FS_FOpenFileWrite;
+	ri.FS_FOpenFileByMode = FS_FOpenFileByMode;
+	ri.FS_FileExists = FS_FileExists;
+	ri.FS_FileIsInPAK = FS_FileIsInPAK;
+	ri.FS_ListFiles = FS_ListFiles;
+	ri.FS_Write = FS_Write;
+	ri.FS_WriteFile = FS_WriteFile;
+	ri.CM_BoxTrace = CM_BoxTrace;
+	ri.CM_DrawDebugSurface = CM_DrawDebugSurface;
+	ri.CM_CullWorldBox = CM_CullWorldBox;
+	ri.CM_TerrainPatchIterate = CM_TerrainPatchIterate;
+	ri.CM_RegisterTerrain = CM_RegisterTerrain;
+	ri.CM_ShutdownTerrain = CM_ShutdownTerrain;
+	ri.CM_ClusterPVS = CM_ClusterPVS;
+	ri.CM_LeafArea = CM_LeafArea;
+	ri.CM_LeafCluster = CM_LeafCluster;
+	ri.CM_PointLeafnum = CM_PointLeafnum;
+	ri.CM_PointContents = CM_PointContents;
+	ri.VM_Call = VM_Call;
+	ri.Com_TheHunkMarkHasBeenMade = Com_TheHunkMarkHasBeenMade;
+	ri.SV_GetConfigstring = SV_GetConfigstring;
+	ri.SV_SetConfigstring = SV_SetConfigstring;
+	ri.S_RestartMusic = S_RestartMusic;
+	ri.SND_RegisterAudio_LevelLoadEnd = SND_RegisterAudio_LevelLoadEnd;
+	ri.CIN_RunCinematic = CIN_RunCinematic;
+	ri.CIN_PlayCinematic = CIN_PlayCinematic;
+	ri.CIN_UploadCinematic = CIN_UploadCinematic;
+	ri.CL_WriteAVIVideoFrame = CL_WriteAVIVideoFrame;
+
+	// g2 data access
+	ri.GetSharedMemory = GetSharedMemory;
+	ri.GetCgameVM = GetCgameVM;
+	ri.GetGameVM = GetGameVM;
+	ri.GetCurrentVM = GetCurrentVM;
+
+	// ugly win32 backend
+#ifdef _WIN32
+	ri.GetWinVars = GetWinVars;
+#endif
+	ri.CM_GetCachedMapDiskImage = CM_GetCachedMapDiskImage;
+	ri.CM_SetCachedMapDiskImage = CM_SetCachedMapDiskImage;
+	ri.CM_SetUsingCache = CM_SetUsingCache;
+
+	//RAZFIXME: Might have to do something about this...
+	ri.GetG2VertSpaceServer = GetG2VertSpaceServer;
+	G2VertSpaceServer = &CMiniHeap_singleton;
+
+	ret = GetRefAPI( REF_API_VERSION, &ri );
 
 #if defined __USEA3D && defined __A3D_GEOM
 	hA3Dg_ExportRenderGeom (ret);
@@ -2413,7 +2563,7 @@ void CL_Init( void ) {
 	cl_pitchspeed = Cvar_Get ("cl_pitchspeed", "140", CVAR_ARCHIVE);
 	cl_anglespeedkey = Cvar_Get ("cl_anglespeedkey", "1.5", CVAR_ARCHIVE);
 
-	cl_maxpackets = Cvar_Get ("cl_maxpackets", "30", CVAR_ARCHIVE );
+	cl_maxpackets = Cvar_Get ("cl_maxpackets", "63", CVAR_ARCHIVE );
 	cl_packetdup = Cvar_Get ("cl_packetdup", "1", CVAR_ARCHIVE );
 
 	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE);
@@ -2461,8 +2611,8 @@ void CL_Init( void ) {
 
 	// userinfo
 	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("rate", "4000", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("snaps", "20", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("snaps", "40", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("model", "kyle/default", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("forcepowers", "7-1-032330000000001333", CVAR_USERINFO | CVAR_ARCHIVE );
 //	Cvar_Get ("g_redTeam", "Empire", CVAR_SERVERINFO | CVAR_ARCHIVE);
@@ -2554,10 +2704,8 @@ void CL_Shutdown( void ) {
 
 	CL_Disconnect( qtrue );
 
-	CL_ShutdownRef();	//must be before shutdown all so the images get dumped in RE_Shutdown
-
 	// RJ: added the shutdown all to close down the cgame (to free up some memory, such as in the fx system)
-	CL_ShutdownAll();
+	CL_ShutdownAll( qtrue );
 
 	S_Shutdown();
 	//CL_ShutdownUI();
