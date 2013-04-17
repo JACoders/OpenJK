@@ -81,7 +81,6 @@ set(MPCGameCgameFiles
 	"${MPDir}/cgame/cg_xcvar.h"
 	"${MPDir}/cgame/fx_local.h"
 	"${MPDir}/cgame/holocronicons.h"
-	"${MPDir}/cgame/tr_types.h"
 	)
 source_group("cgame" FILES ${MPCGameCgameFiles})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameCgameFiles})
@@ -105,6 +104,12 @@ set(MPCGameUiFiles
 	)
 source_group("ui" FILES ${MPCGameUiFiles})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameUiFiles})
+
+set(MPCGameRendererFiles
+	"${MPDir}/renderer/tr_types.h"
+	)
+source_group("renderer" FILES ${MPCGameRendererFiles})
+set(MPCGameFiles ${MPCGameFiles} ${MPCGameRendererFiles})
 
 set(MPCGameGFiles
 	"${MPDir}/ghoul2/G2.h"
