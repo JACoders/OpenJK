@@ -145,10 +145,15 @@ set(MPGameCgameFiles
 	"${MPDir}/cgame/animtable.h"
 	"${MPDir}/cgame/cg_local.h"
 	"${MPDir}/cgame/cg_public.h"
-	"${MPDir}/cgame/tr_types.h"
 	)
 source_group("cgame" FILES ${MPGameCgameFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameCgameFiles})
+
+set(MPGameRendererFiles
+	"${MPDir}/renderer/tr_types.h"
+	)
+source_group("renderer" FILES ${MPGameRendererFiles})
+set(MPGameFiles ${MPGameFiles} ${MPGameRendererFiles})
 
 set(MPGameBotlibFiles
 	"${MPDir}/botlib/be_aas.h"
