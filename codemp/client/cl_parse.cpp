@@ -351,6 +351,12 @@ void CL_ParseSetGame( msg_t *msg )
 	}
 	newGameDir[i] = 0;
 
+	if(FS_CheckDirTraversal(newGameDir))
+	{
+		Com_Printf(S_COLOR_YELLOW "WARNING: Server sent invalid fs_game value %s\n", newGameDir);
+		return;
+	}
+
 	Cvar_Set("fs_game", newGameDir);
 
 	//Update the search path for the mod dir
