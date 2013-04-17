@@ -48,11 +48,13 @@ typedef struct {
 	qhandle_t (*RegisterShader)( const char *name );
 	qhandle_t (*RegisterShaderNoMip)( const char *name );
 	void	(*LoadWorld)( const char *name );
+	void	(*LoadImageJA)( const char *name, byte **pic, int *width, int *height, int *format );
 
 	// these two functions added to help with the new model alloc scheme...
 	//
 	void	(*RegisterMedia_LevelLoadBegin)(const char *psMapName, ForceReload_e eForceReload, qboolean bAllowScreenDissolve);
 	void	(*RegisterMedia_LevelLoadEnd)(void);
+	int		(*RegisterMedia_GetLevel)(void);
 
 	// the vis data is a large enough block of data that we go to the trouble
 	// of sharing it with the clipmodel subsystem
