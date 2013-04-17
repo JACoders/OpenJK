@@ -67,6 +67,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\ghoul2\G2.h" />
+    <ClInclude Include="..\ghoul2\ghoul2_gore.h" />
     <ClInclude Include="..\jpeg-6\jchuff.h" />
     <ClInclude Include="..\jpeg-6\jconfig.h" />
     <ClInclude Include="..\jpeg-6\jdct.h" />
@@ -89,7 +91,6 @@
     <ClInclude Include="glext.h" />
     <ClInclude Include="glext_console.h" />
     <ClInclude Include="matcomp.h" />
-    <ClInclude Include="mdx_format.h" />
     <ClInclude Include="qgl.h" />
     <ClInclude Include="qgl_console.h" />
     <ClInclude Include="qgl_linked.h" />
@@ -97,15 +98,18 @@
     <ClInclude Include="tr_jpeg_interface.h" />
     <ClInclude Include="tr_landscape.h" />
     <ClInclude Include="tr_local.h" />
-    <ClInclude Include="tr_public.h" />
     <ClInclude Include="tr_quicksprite.h" />
     <ClInclude Include="tr_stl.h" />
-    <ClInclude Include="tr_types.h" />
     <ClInclude Include="tr_WorldEffects.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\game\q_math.cpp" />
     <ClCompile Include="..\game\q_shared.cpp" />
+    <ClCompile Include="..\ghoul2\G2_API.cpp" />
+    <ClCompile Include="..\ghoul2\G2_bolts.cpp" />
+    <ClCompile Include="..\ghoul2\G2_bones.cpp" />
+    <ClCompile Include="..\ghoul2\G2_misc.cpp" />
+    <ClCompile Include="..\ghoul2\G2_surfaces.cpp" />
     <ClCompile Include="..\jpeg-6\jcapimin.cpp" />
     <ClCompile Include="..\jpeg-6\jccoefct.cpp" />
     <ClCompile Include="..\jpeg-6\jccolor.cpp" />

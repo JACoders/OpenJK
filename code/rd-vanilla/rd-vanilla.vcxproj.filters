@@ -45,9 +45,6 @@
     <ClInclude Include="matcomp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="mdx_format.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="qgl.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -69,16 +66,10 @@
     <ClInclude Include="tr_local.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="tr_public.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="tr_quicksprite.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="tr_stl.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tr_types.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="tr_WorldEffects.h">
@@ -137,6 +128,12 @@
     </ClInclude>
     <ClInclude Include="..\renderer\tr_types.h">
       <Filter>Libraries\Shared Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ghoul2\G2.h">
+      <Filter>Libraries\GHOUL 2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ghoul2\ghoul2_gore.h">
+      <Filter>Libraries\GHOUL 2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -373,6 +370,21 @@
     </ClCompile>
     <ClCompile Include="..\game\q_shared.cpp">
       <Filter>Libraries\Shared Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ghoul2\G2_API.cpp">
+      <Filter>Libraries\GHOUL 2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ghoul2\G2_bolts.cpp">
+      <Filter>Libraries\GHOUL 2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ghoul2\G2_bones.cpp">
+      <Filter>Libraries\GHOUL 2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ghoul2\G2_misc.cpp">
+      <Filter>Libraries\GHOUL 2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ghoul2\G2_surfaces.cpp">
+      <Filter>Libraries\GHOUL 2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
