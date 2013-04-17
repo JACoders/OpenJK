@@ -119,6 +119,7 @@ A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 void QDECL Com_Printf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
+	static qboolean opening_qconsole = qfalse;
 
 	va_start (argptr,fmt);
 	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
@@ -130,8 +131,9 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			*rd_buffer = 0;
 		}
 		Q_strcat(rd_buffer, rd_buffersize, msg);
-		rd_flush(rd_buffer);			
-		*rd_buffer = 0;
+    // TTimo nooo .. that would defeat the purpose
+		//rd_flush(rd_buffer);			
+		//*rd_buffer = 0;
 		return;
 	}
 
@@ -145,21 +147,33 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 	// logfile
 	if ( com_logfile && com_logfile->integer ) {
-		if ( !logfile && FS_Initialized() ) {
+    // TTimo: only open the qconsole.log if the filesystem is in an initialized state
+    //   also, avoid recursing in the qconsole.log opening (i.e. if fs_debug is on)
+		if ( !logfile && FS_Initialized() && !opening_qconsole ) {
 			struct tm *newtime;
 			time_t aclock;
+
+			opening_qconsole = qtrue;
 
 			time( &aclock );
 			newtime = localtime( &aclock );
 
 			logfile = FS_FOpenFileWrite( "qconsole.log" );
-			Com_Printf( "logfile opened on %s\n", asctime( newtime ) );
-			if ( com_logfile->integer > 1 ) {
-				// force it to not buffer so we get valid
-				// data even if we are crashing
-				FS_ForceFlush(logfile);
+
+			if ( logfile ) {
+				Com_Printf( "logfile opened on %s\n", asctime( newtime ) );
+				if ( com_logfile->integer > 1 ) {
+					// force it to not buffer so we get valid
+					// data even if we are crashing
+					FS_ForceFlush(logfile);
+				}
+			}
+			else {
+				Com_Printf( "Opening qconsole.log failed!\n" );
+				Cvar_SetValue( "logfile", 0 );
 			}
 		}
+		opening_qconsole = qfalse;
 		if ( logfile && FS_Initialized()) {
 			FS_Write(msg, strlen(msg), logfile);
 		}
