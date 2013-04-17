@@ -226,7 +226,7 @@ typedef struct {
 	void				(*Resample)								( byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components );
 	void				(*LoadImageJA)							( const char *name, byte **pic, int *width, int *height, int *format );
 	void				(*CreateAutomapImage)					( const char *name, const byte *pic, int width, int height, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
-	bool				(*PNG_Save)								( const char *name, byte *data, int width, int height, int bytedepth );
+	int					(*SavePNG)								( char *filename, byte *buf, size_t width, size_t height, int byteDepth );
 
 	IGhoul2InfoArray &	(*TheGhoul2InfoArray)					( void );
 } refexport_t;

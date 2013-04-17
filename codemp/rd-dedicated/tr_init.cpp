@@ -14,7 +14,7 @@
 #endif
 
 #include "G2_local.h"
-#include "png/png.h"
+#include "png/rpng.h"
 
 
 //#ifdef __USEA3D
@@ -695,7 +695,7 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.Resample								= R_Resample;
 //	re.LoadImageJA							= RE_LoadImage;
 //	re.CreateAutomapImage					= R_CreateAutomapImage;
-	re.PNG_Save								= PNG_Save;
+	re.SavePNG								= RE_SavePNG;
 
 	re.TheGhoul2InfoArray					= TheGhoul2InfoArray;
 

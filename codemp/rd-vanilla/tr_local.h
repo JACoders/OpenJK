@@ -1953,6 +1953,7 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec );
 void RE_SaveJPG(char * filename, int quality, int image_width, int image_height, byte *image_buffer, int padding);
 size_t RE_SaveJPGToBuffer(byte *buffer, size_t bufSize, int quality, int image_width, int image_height, byte *image_buffer, int padding);
 void RE_TakeVideoFrame( int width, int height, byte *captureBuffer, byte *encodeBuffer, qboolean motionJpeg );
+int RE_SavePNG( char *filename, byte *buf, size_t width, size_t height, int byteDepth );
 
 /*
 Ghoul2 Insert Start
