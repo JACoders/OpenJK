@@ -93,7 +93,6 @@ void SV_GameSendServerCommand( int clientNum, const char *text ) {
 	}
 }
 
-
 /*
 ===============
 SV_GameDropClient
@@ -222,7 +221,6 @@ qboolean SV_inPVS (const vec3_t p1, const vec3_t p2)
 	return qtrue;
 }
 
-
 /*
 =================
 SV_inPVSIgnorePortals
@@ -252,7 +250,6 @@ qboolean SV_inPVSIgnorePortals( const vec3_t p1, const vec3_t p2)
 	return qtrue;
 }
 
-
 /*
 ========================
 SV_AdjustAreaPortalState
@@ -268,10 +265,9 @@ void SV_AdjustAreaPortalState( sharedEntity_t *ent, qboolean open ) {
 	CM_AdjustAreaPortalState( svEnt->areanum, svEnt->areanum2, open );
 }
 
-
 /*
 ==================
-SV_GameAreaEntities
+SV_EntityContact
 ==================
 */
 qboolean	SV_EntityContact( const vec3_t mins, const vec3_t maxs, const sharedEntity_t *gEnt, int capsule ) {
@@ -289,7 +285,6 @@ qboolean	SV_EntityContact( const vec3_t mins, const vec3_t maxs, const sharedEnt
 
 	return (qboolean)trace.startsolid;
 }
-
 
 /*
 ===============
