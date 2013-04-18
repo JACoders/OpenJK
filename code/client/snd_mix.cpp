@@ -33,8 +33,8 @@ short	*snd_out;
 
 
 
-#if !(defined __linux__ && defined __i386__)
-#if	!id386
+#if !(defined __linux__ && defined __i386__) || defined MINGW32
+#if	!id386 || defined MINGW32
 
 
 void S_WriteLinearBlastStereo16 (void)

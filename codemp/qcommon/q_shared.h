@@ -102,7 +102,7 @@
 #endif
 
 // this is the define for determining if we have an asm version of a C function
-#if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__) && !defined(__LCC__)
+#if ((defined(_M_IX86) || defined(__i386__)) && !defined(__sun__) && !defined(__LCC__)) && !defined(C_ONLY)
 	#define id386	1
 #else
 	#define id386	0
@@ -158,7 +158,11 @@ float FloatSwap( const float *f );
 		#endif
 	#endif
 
+	#ifdef MINGW32
+	#define ID_INLINE /*inline*/
+	#else
 	#define ID_INLINE __inline
+	#endif
 	#define USE_SSE
 
 	static ID_INLINE short BigShort( short l) { return ShortSwap(l); }
@@ -1354,7 +1358,7 @@ extern ID_INLINE qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
 #define VectorAverage(a,b,c)			(((c)[0]=((a)[0]+(b)[0])*0.5f),((c)[1]=((a)[1]+(b)[1])*0.5f),((c)[2]=((a)[2]+(b)[2])*0.5f))
 #define VectorNegate(a,b)				((b)[0]=-(a)[0],(b)[1]=-(a)[1],(b)[2]=-(a)[2])
 
-#ifdef __LCC__
+#if (defined __LCC__ )//|| defined MINGW32)
 #ifdef VectorCopy
 #undef VectorCopy
 // this is a little hack to get more efficient copies in our interpreter
@@ -1362,8 +1366,11 @@ typedef struct {
 	float	v[3];
 } vec3struct_t;
 #define VectorCopy(a,b)	*(vec3struct_t *)b=*(vec3struct_t *)a;
-#define ID_INLINE static
 #endif
+#endif
+
+#if defined __LCC__ 
+#define ID_INLINE static
 #endif
 
 #if defined(MACOS_X) || defined(__linux__)

@@ -1048,7 +1048,7 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////
 	// Data
 	////////////////////////////////////////////////////////////////////////////////////
-	typedef typename T					TStorageTraits;
+	typedef /*typename*/ T					TStorageTraits;
 	typedef typename T::TArray			TTArray;
 	typedef typename T::TValue			TTValue;
 	typedef typename T::TConstructed	TTConstructed;

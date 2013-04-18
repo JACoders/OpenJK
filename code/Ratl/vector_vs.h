@@ -56,7 +56,7 @@ template<class T>
 class vector_base : public ratl_base
 {
 public:
-	typedef typename T TStorageTraits;
+	typedef /*typename*/ T TStorageTraits;
 	typedef typename T::TValue TTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
@@ -87,7 +87,7 @@ public:
 		{
 			mArray[i] = B.mArray[i];
 		}
-		mSize = val.mSize;
+		mSize = /*val*/B.mSize;
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////

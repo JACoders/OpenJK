@@ -3,6 +3,14 @@
 #ifndef __EAXMANH
 #define __EAXMANH
 
+#ifdef MINGW32
+//#include <winnt.h>
+//#include <windows.h>
+//#include <basetyps.h>
+#define WINDOWS
+typedef GUID* LPGUID;
+#endif
+
 #define COM_NO_WINDOWS_H
 #include <objbase.h>
 #include "eax.h"

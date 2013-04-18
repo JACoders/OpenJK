@@ -62,6 +62,7 @@ IDI_ICON1               ICON                    "icon.ico"
 //
 
 #include "../qcommon/game_version.h"
+ #ifndef MINGW32
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION VERSION_MAJOR_RELEASE,VERSION_MINOR_RELEASE
@@ -94,7 +95,7 @@ BEGIN
         VALUE "Translation", 0x409, 1200
     END
 END
-
+#endif//mingw32
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

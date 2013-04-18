@@ -47,7 +47,7 @@ ALCAPI ALCvoid    ALCAPIENTRY alcCloseDevice(ALCdevice *device);
 ALCAPI ALCcontext*ALCAPIENTRY alcCreateContext(ALCdevice *device,ALCint *attrList);
 ALCAPI ALCboolean ALCAPIENTRY alcMakeContextCurrent(ALCcontext *context);
 ALCAPI ALCvoid	  ALCAPIENTRY alcProcessContext(ALCcontext *context);
-ALCAPI ALCcontext*ALCAPIENTRY alcGetCurrentContext(ALCvoid);
+ALCAPI ALCcontext*ALCAPIENTRY alcGetCurrentContext(/*ALCvoid*/);
 ALCAPI ALCdevice* ALCAPIENTRY alcGetContextsDevice(ALCcontext *context);
 ALCAPI ALCvoid	  ALCAPIENTRY alcSuspendContext(ALCcontext *context);
 ALCAPI ALCvoid    ALCAPIENTRY alcDestroyContext(ALCcontext *context);

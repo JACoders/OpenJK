@@ -7,7 +7,7 @@
 #include "snd_mp3.h"
 #include "snd_ambient.h"
 
-#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)//#ifndef _WIN32
 #include <algorithm>
 #include <string>
 #include "qcommon/platform.h"

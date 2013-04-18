@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #endif
 
-#ifndef _WIN32
+#if (!defined _WIN32)// || defined MINGW32)//#ifndef _WIN32
 #include <sys/mman.h> // for PROT_ stuff
 #endif
 
@@ -35,7 +35,7 @@ static	int		*instructionPointers = NULL;
 //#undef FTOL_PTR  // bk001213
 #define FTOL_PTR
 
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)//#ifdef _WIN32
 
 #if defined( FTOL_PTR )
 extern "C" int _ftol(float);
@@ -51,6 +51,12 @@ static	int		asmCallPtr = (int)AsmCall;
 // bk001213 - BEWARE: does not work! UI menu etc. broken - stack!
 // bk001119 - added: int gftol( float x ) { return (int)x; }
 
+#ifdef MINGW32
+#if defined( FTOL_PTR )
+extern "C" int _ftol(float);
+static	int		ftolPtr = (int)_ftol;
+#endif
+#else
 extern "C" {
 int qftol( void );     // bk001213 - label, see unix/ftol.nasm
 int qftol027F( void ); // bk001215 - fixed FPU control variants
@@ -60,6 +66,7 @@ int qftol0F7F( void );
 }
 
 static	int		ftolPtr = (int)qftol0F7F;
+#endif
 #endif // FTOL_PTR
 
 extern "C" void doAsmCall( void );
@@ -87,7 +94,7 @@ static	ELastCommand	LastCommand;
 AsmCall
 =================
 */
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)//#ifdef _WIN32
 __declspec( naked ) void AsmCall( void ) {
 int		programStack;
 int		*opStack;
@@ -164,8 +171,8 @@ extern "C" void callAsmCall(void) {
 	*(callOpStack+1) = currentVM->systemCall( (int *)((byte *)currentVM->dataBase + callProgramStack + 4) );
 }
 
-void AsmCall( void ) {
-	__asm__("doAsmCall:      			\n\t" \
+extern "C" void AsmCall( void ) {
+	__asm__("_doAsmCall:      			\n\t" \
 			"	movl (%%edi),%%eax			\n\t" \
 			"	subl $4,%%edi				\n\t" \
 			"   orl %%eax,%%eax				\n\t" \
@@ -174,7 +181,7 @@ void AsmCall( void ) {
 			"	addl %3,%%eax				\n\t" \
 			"	call *(%%eax)				\n\t" \
 		  " movl (%%edi),%%eax   \n\t" \
-	    " andl callMask, %%eax \n\t" \
+	    " andl __ZL8callMask, %%eax \n\t" \
 			"	jmp doret					   \n\t" \
 			"systemCall:					\n\t" \
 			"	negl %%eax					\n\t" \
@@ -185,7 +192,7 @@ void AsmCall( void ) {
 			"	pushl %%ecx					\n\t" \
 			"	pushl %%esi					\n\t" \
 			"	pushl %%edi					\n\t" \
-			"	call callAsmCall			\n\t" \
+			"	call _callAsmCall			\n\t" \
 			"	popl %%edi					\n\t" \
 			"	popl %%esi					\n\t" \
 			"	popl %%ecx					\n\t" \
@@ -1111,7 +1118,7 @@ int	VM_CallCompiled( vm_t *vm, int *args ) {
 	entryPoint = vm->codeBase;
 	opStack = &stack;
 
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)//#ifdef _WIN32
 	__asm  {
 		pushad
 		mov		esi, programStack;

@@ -1297,10 +1297,10 @@ public:
 		// Compute Camera
 		//----------------
 		{
-			mCameraPosition	= backEnd.viewParms.or.origin;
-			mCameraForward	= backEnd.viewParms.or.axis[0];
-			mCameraLeft		= backEnd.viewParms.or.axis[1];
-			mCameraDown		= backEnd.viewParms.or.axis[2];
+			mCameraPosition	= backEnd.viewParms.ori.origin;
+			mCameraForward	= backEnd.viewParms.ori.axis[0];
+			mCameraLeft		= backEnd.viewParms.ori.axis[1];
+			mCameraDown		= backEnd.viewParms.ori.axis[2];
 
 			if (mRotationChangeNext!=-1)
 			{

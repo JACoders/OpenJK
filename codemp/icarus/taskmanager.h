@@ -4,7 +4,8 @@
 #define __TASK_MANAGER__
 
 #include <map>
-#ifndef _WIN32
+
+#if (!defined _WIN32 || defined MINGW32)//#ifndef _WIN32 
 #include <string>
 #endif
 

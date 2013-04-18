@@ -31,6 +31,10 @@ This file is part of Jedi Academy.
 #include "cl_mp3.h"
 #include "snd_music.h"
 
+#ifdef MINGW32
+#define offsetof(type, member)  __builtin_offsetof (type, member)
+#endif
+
 static void S_Play_f(void);
 static void S_SoundList_f(void);
 static void S_Music_f(void);

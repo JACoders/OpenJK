@@ -6,6 +6,10 @@
 #include "client/client.h"
 #include "win_local.h"
 
+#ifdef MINGW32
+//#define CINTERFACE
+//#include <dinput.h>
+#endif
 
 typedef struct {
 	int			oldButtonState;
@@ -407,6 +411,7 @@ void IN_DIMouse( int *mx, int *my ) {
 			break;
 		}
 
+		//extern "C" {
 		switch (od.dwOfs) {
 		case DIMOFS_BUTTON0:
 			if (od.dwData & 0x80)
@@ -445,6 +450,7 @@ void IN_DIMouse( int *mx, int *my ) {
 				Sys_QueEvent( od.dwTimeStamp, SE_KEY, A_MOUSE5, qfalse, 0, NULL );
 			break;
 		}
+		//};
 	}
 
 	// read the raw delta counter and ignore

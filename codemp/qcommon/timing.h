@@ -17,7 +17,7 @@ public:
 	void Start()
 	{
 		const __int64 *s = &start;
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 		__asm
 		{
 			push eax
@@ -39,7 +39,7 @@ public:
 	{
 		const __int64 *e = &end;
 		__int64	time;
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 		__asm
 		{
 			push eax

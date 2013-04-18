@@ -32,6 +32,10 @@ This file is part of Jedi Academy.
 #include "platform.h"
 #endif
 
+#ifdef MINGW32
+#define vsprintf_s snprintf
+#endif
+
 #define	MAXPRINTMSG	4096
 
 #define MAX_NUM_ARGVS	50

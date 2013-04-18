@@ -4,6 +4,11 @@
 #include "client/client.h"
 #include "win_local.h"
 
+#ifdef MINGW32
+//copied from wine's winuser
+#define SPI_SCREENSAVERRUNNING    SPI_SETSCREENSAVERRUNNING
+#endif
+
 WinVars_t	g_wv;
 
 // The only directly referenced keycode - the console key (which gives different ascii codes depending on locale)

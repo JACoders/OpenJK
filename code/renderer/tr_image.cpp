@@ -22,7 +22,7 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
-
+//#include <map>
 
 #include "tr_local.h"
 #ifndef _XBOX
@@ -34,6 +34,7 @@ This file is part of Jedi Academy.
 #include "../png/png.h"
 #include "../qcommon/sstring.h"
 
+//using namespace std;
 
 static byte			 s_intensitytable[256];
 static unsigned char s_gammatable[256];
@@ -1052,7 +1053,7 @@ static void GL_ResetBinds(void)
 
 // special function used in conjunction with "devmapbsp"...
 //
-#ifdef _XBOX
+#if (defined _XBOX)// || defined MINGW32)
 void R_Images_DeleteLightMaps(void)
 {
 	qboolean bEraseOccured = qfalse;
@@ -1089,7 +1090,8 @@ void R_Images_DeleteLightMaps(void)
 		if (pImage->imgName[0] == '$' /*&& strstr(pImage->imgName,"lightmap")*/)	// loose check, but should be ok
 		{
 			R_Images_DeleteImageContents(pImage);
-			itImage = AllocatedImages.erase(itImage);
+			AllocatedImages.erase(itImage);
+			//itImage = 
 
 			bEraseOccured = qtrue;
 		}
@@ -1239,7 +1241,7 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 			{	// nope, so dump it...
 				//VID_Printf( PRINT_DEVELOPER, "Dumping image \"%s\"\n",pImage->imgName);
 				R_Images_DeleteImageContents(pImage);
-				itImage = AllocatedImages.erase(itImage);
+				/*itImage = */AllocatedImages.erase(itImage);
 				bEraseOccured = qtrue;
 			}
 		}

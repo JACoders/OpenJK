@@ -28,7 +28,7 @@ This file is part of Jedi Academy.
 #define WIN32_LEAN_AND_MEAN 1
 #endif
 
-#if defined(_WINDOWS)
+#if (defined _WINDOWS || defined MINGW32)
 #include <windows.h>
 #endif
 

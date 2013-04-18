@@ -19,7 +19,7 @@ set(BuildJK2SPGame OFF)
 #option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
 if(WIN32)
 	option(UseInternalOpenAL "Whether to use the included OpenAL instead of a locally installed one" ON)
-	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" ON)
+	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" FALSE)
 endif(WIN32)
 # External version not yet supported, WIP
 # option(UseInternalJpeg "Whether to use the included libjpeg instead of a locally installed one" ON)
@@ -50,34 +50,35 @@ set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 
 # Common settings
-if(WIN32)
+#if(WIN32)
 	set(SharedDefines "WIN32" "_WINDOWS")
-else()
-	if (APPLE)
-		set(SharedDefines "MACOS_X" "_M_IX86")
-	else(APPLE)
-		set(SharedDefines "__linux__" "_M_IX86")
-	endif()
+#else()
+	#if (APPLE)
+#		set(SharedDefines "MACOS_X" "_M_IX86")
+#	else(APPLE)
+#		set(SharedDefines "__linux__" "_M_IX86")
+		set(SharedDefines "_M_IX86" "MINGW32" "C_ONLY")
+#	endif()
 
 	# removes the -rdynamic flag at linking (which causes crashes for some reason)
 	set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
 	# maybe remove these flags later, when the warnings are fixed
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w -fpermissive")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fpermissive")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -w -fpermissive")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -w -fpermissive")
 
 	# additional flags for debug configuration
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 
-	enable_language(ASM_NASM) # there are some assembly files to build
+	#enable_language(ASM_NASM) # there are some assembly files to build
 	
 	if (NOT CMAKE_BUILD_TYPE)
  		message("No build type selected, default to RELEASE")
  		set(CMAKE_BUILD_TYPE "RELEASE")
  	endif()
-endif()
+#endif()
 
 set(DebugDefines "_DEBUG")
 set(ReleaseDefines "NDEBUG" "FINAL_BUILD")
