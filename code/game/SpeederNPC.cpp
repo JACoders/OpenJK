@@ -61,7 +61,7 @@ This file is part of Jedi Academy.
 #ifndef _JK2MP
 #include "g_functions.h"
 #include "g_vehicles.h"
-#include "..\game\wp_saber.h"
+#include "../game/wp_saber.h"
 #include "../cgame/cg_local.h"
 #else
 #include "bg_vehicles.h"

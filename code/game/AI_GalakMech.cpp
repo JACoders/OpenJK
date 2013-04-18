@@ -35,7 +35,7 @@ This file is part of Jedi Academy.
 #include "g_navigator.h"
 #include "g_Vehicles.h"
 #if !defined(RATL_VECTOR_VS_INC)
-	#include "..\Ratl\vector_vs.h"
+	#include "../Ratl/vector_vs.h"
 #endif
 
 

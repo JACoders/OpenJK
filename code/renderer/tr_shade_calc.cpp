@@ -1192,7 +1192,7 @@ void RB_CalcRotateTexCoords( float degsPerSecond, float *st )
 
 
 
-#if id386 && !(defined __linux__ && defined __i386__) && !MINGW32
+#if id386 && !((defined __linux__ || defined MACOS_X) && defined __i386__) && !MINGW32
 #pragma warning(disable: 4035)
 long myftol( float f ) {
 	static int tmp;
@@ -1201,6 +1201,8 @@ long myftol( float f ) {
 	__asm mov eax, tmp
 }
 #pragma warning(default: 4035)
+#else
+#define myftol( f ) ((int)(f))
 #endif
 
 /*

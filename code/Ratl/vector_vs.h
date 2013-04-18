@@ -56,7 +56,11 @@ template<class T>
 class vector_base : public ratl_base
 {
 public:
-	typedef /*typename*/ T TStorageTraits;
+#if (defined _WIN32 && !defined MINGW32)
+	typedef typename T TStorageTraits;
+#else
+    typedef T TStorageTraits;
+#endif
 	typedef typename T::TValue TTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
@@ -87,7 +91,7 @@ public:
 		{
 			mArray[i] = B.mArray[i];
 		}
-		mSize = /*val*/B.mSize;
+		mSize = B.mSize;
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////

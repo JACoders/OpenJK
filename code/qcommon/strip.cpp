@@ -1044,7 +1044,7 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 	assert(JK2SP_ListByName.size() == JK2SP_ListByID.size());
 
 	Q_strncpyz(Package, inPackage, MAX_QPATH);
-	strupr(Package);
+	Q_strupr(Package);
 
 	i = JK2SP_ListByName.find(Package);
 	if (i != JK2SP_ListByName.end())
@@ -1125,7 +1125,7 @@ int JK2SP_GetStringID(const char *inReference)
 	int													ID;
 	char Reference[MAX_QPATH];
 	Q_strncpyz(Reference, inReference, MAX_QPATH);
-	strupr(Reference);
+	Q_strupr(Reference);
 
 	for(i = JK2SP_ListByID.begin(); i != JK2SP_ListByID.end(); i++)
 	{

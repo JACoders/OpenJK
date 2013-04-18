@@ -22,7 +22,7 @@ This file is part of Jedi Academy.
 
 
 
-#include "..\client\vmachine.h"
+#include "../client/vmachine.h"
 #include "server.h"
 
 

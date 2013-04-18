@@ -207,7 +207,7 @@ cvar_t	*broadsword_dircap=0;
 Ghoul2 Insert End
 */
 
-
+#ifdef _WIN32
 void ( APIENTRY * qglMultiTexCoord2fARB )( GLenum texture, GLfloat s, GLfloat t );
 void ( APIENTRY * qglActiveTextureARB )( GLenum texture );
 void ( APIENTRY * qglClientActiveTextureARB )( GLenum texture );
@@ -217,12 +217,13 @@ void ( APIENTRY * qglUnlockArraysEXT) ( void );
 
 void ( APIENTRY * qglPointParameterfEXT)( GLenum, GLfloat);
 void ( APIENTRY * qglPointParameterfvEXT)( GLenum, GLfloat *);
+#endif
 
 // Added 10/23/02 by Aurelio Reis.
 void ( APIENTRY * qglPointParameteriNV)( GLenum, GLint);
 void ( APIENTRY * qglPointParameterivNV)( GLenum, const GLint *);
 
-#ifndef _XBOX	// GLOWXXX
+#ifdef _WIN32	// GLOWXXX
 // Declare Register Combiners function pointers.
 PFNGLCOMBINERPARAMETERFVNV				qglCombinerParameterfvNV = NULL;
 PFNGLCOMBINERPARAMETERIVNV				qglCombinerParameterivNV = NULL;
@@ -1392,7 +1393,7 @@ void R_Init( void ) {
 	tr.externalVisData = vis;
 #endif
 
-	Swap_Init();
+//	Swap_Init();
 
 #ifndef FINAL_BUILD
 	if ( (int)tess.xyz & 15 ) {

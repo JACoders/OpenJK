@@ -52,6 +52,11 @@ int Sys_Milliseconds (bool baseTime)
 	return curtime;
 }
 
+int Sys_Milliseconds2( void )
+{
+    return Sys_Milliseconds(false);
+}
+
 void Sys_SetEnv(const char *name, const char *value)
 {
 	if(value && *value)

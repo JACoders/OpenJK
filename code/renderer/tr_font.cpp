@@ -20,7 +20,11 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
+#ifdef _WIN32
 #include "../qcommon/sstring.h"	// stl string class won't compile in here (MS shite), so use Gil's.
+#else
+#include <string>
+#endif
 #include "tr_local.h"
 #include "tr_font.h"
 
@@ -268,7 +272,7 @@ float RoundTenth( float fValue )
 
 int							g_iCurrentFontIndex;	// entry 0 is reserved index for missing/invalid, else ++ with each new font registered
 vector<CFontInfo *>			g_vFontArray;
-typedef map<sstring_t, int>	FontIndexMap_t;
+typedef map<string, int>	FontIndexMap_t;
 							FontIndexMap_t g_mapFontIndexes;
 int g_iNonScaledCharRange;	// this is used with auto-scaling of asian fonts, anything below this number is preserved in scale, anything above is scaled down by 0.75f
 
@@ -2066,7 +2070,7 @@ void R_ReloadFonts_f(void)
 {
 	// first, grab all the currently-registered fonts IN THE ORDER THEY WERE REGISTERED...
 	//
-	vector <sstring_t> vstrFonts;
+	vector <string> vstrFonts;
 
 	int iFontToFind = 1;
 	for (; iFontToFind < g_iCurrentFontIndex; iFontToFind++)

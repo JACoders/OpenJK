@@ -27,9 +27,12 @@ This file is part of Jedi Academy.
 #if defined(_XBOX)
 #include "qgl_console.h"
 #include "glext_console.h"
-#else
+#elif defined(_WIN32)
 #include "qgl.h"
 #include "glext.h"
+#elif defined(MACOS_X)
+#include "qgl.h"
+#include "../sdl/sdl_qgl.h"
 #endif
 
 #ifdef _XBOX
@@ -41,7 +44,7 @@ typedef unsigned int glIndex_t;
 #endif
 
 // fast float to int conversion
-#if id386 && !(defined __linux__ && defined __i386__)
+#if id386 && !((defined __linux__ || defined MACOS_X) && defined __i386__)
 long myftol( float f );
 #else
 #define	myftol(x) ((int)(x))
@@ -1700,7 +1703,11 @@ struct shaderCommands_s
 	bool		fading;
 };
 
+#ifdef _WIN32
 typedef __declspec(align(16)) shaderCommands_s	shaderCommands_t;
+#else
+typedef shaderCommands_s	shaderCommands_t;
+#endif
 
 extern	shaderCommands_t	tess;
 

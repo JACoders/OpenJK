@@ -36,9 +36,7 @@ This file is part of Jedi Academy.
 #include "../qcommon/cm_randomterrain.h"
 #endif
 
-#ifdef MINGW32
 #include <string>
-#endif
 
 class CRMPathManager;
 

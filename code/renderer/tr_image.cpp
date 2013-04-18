@@ -1090,8 +1090,13 @@ void R_Images_DeleteLightMaps(void)
 		if (pImage->imgName[0] == '$' /*&& strstr(pImage->imgName,"lightmap")*/)	// loose check, but should be ok
 		{
 			R_Images_DeleteImageContents(pImage);
-			AllocatedImages.erase(itImage);
-			//itImage = 
+#if (defined _WIN32 && !defined MINGW32)
+			itImage = AllocatedImages.erase(itImage);
+#else
+            AllocatedImages_t::iterator itTemp = itImage;
+            itImage++;
+            AllocatedImages.erase(itTemp);
+#endif
 
 			bEraseOccured = qtrue;
 		}
@@ -1241,8 +1246,14 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 			{	// nope, so dump it...
 				//VID_Printf( PRINT_DEVELOPER, "Dumping image \"%s\"\n",pImage->imgName);
 				R_Images_DeleteImageContents(pImage);
-				/*itImage = */AllocatedImages.erase(itImage);
-				bEraseOccured = qtrue;
+#if (defined _WIN32 && !defined MINGW32)
+				itImage = AllocatedImages.erase(itImage);
+#else
+                AllocatedImages_t::iterator itTemp = itImage;
+                itImage++;
+                AllocatedImages.erase(itTemp);
+#endif
+                bEraseOccured = qtrue;
 			}
 		}
 	}
@@ -2032,11 +2043,7 @@ Loads any of the supported image types into a cannonical
 32 bit format.
 =================
 */
-#ifdef _XBOX
-void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, int *mipcount, GLenum *format ) {
-#else
 int R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLenum *format ) {
-#endif
 	int		bytedepth;
 	char	name[MAX_QPATH];
 
@@ -2050,75 +2057,32 @@ int R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLe
 	} else {
 		Q_strncpyz( name, shortname, sizeof( name ) );
 	}
-#ifdef _XBOX
-	*format = GL_RGBA;
-	*mipcount = 1;
-
-	COM_StripExtension(name,name);
-	COM_DefaultExtension(name, sizeof(name), ".tga");
-	LoadTGA( name, pic, width, height );
-
-	if (*pic)
-	{
-		int j = (*width) * (*height) * 4;
-		byte *buf = *pic;
-		byte swap;
-		for (int i = 0 ; i < j ; i+=4 ) {
-			swap = buf[i];
-			buf[i] = buf[i+2];
-			buf[i+2] = swap;
-		}
-		return;
-	}
-
-	/*	// Removing PNG support	2003/05/19
-	COM_StripExtension(name,name);
-	COM_DefaultExtension(name, sizeof(name), ".png");	
-	
-	//No .tga existed, try .png
-	LoadPNG32( name, pic, width, height, &bytedepth );
-	if (*pic)
-	{
-		return;
-	}
-	*/
-
-	// No .png either, fall back to .dds
-	COM_StripExtension(name,name);
-	COM_DefaultExtension(name, sizeof(name), ".dds");
-	LoadDDS( name, pic, width, height, mipcount, format );
-	return;
-
-#else
 	*format = GL_RGBA;
 	COM_StripExtension(name,name);
 	COM_DefaultExtension(name, sizeof(name), ".jpg");
 
-	int fileSize;
-	//First try .jpg
-	fileSize=LoadJPG( name, pic, width, height );
+	LoadJPG( name, pic, width, height );
 	if (*pic)
 	{
-		return fileSize;
+		return;
 	}
 
 	COM_StripExtension(name,name);
 	COM_DefaultExtension(name, sizeof(name), ".png");	
 	
 	//No .jpg existed, try .png
-	fileSize=LoadPNG32( name, pic, width, height, &bytedepth );
+	LoadPNG32( name, pic, width, height, &bytedepth );
 	if (*pic)
 	{
-		return fileSize;
+		return;
 	}
 
 	COM_StripExtension(name,name);
 	COM_DefaultExtension(name, sizeof(name), ".tga");
 
 	//No .jpg existed and no .png existed, try .tga as a last resort.
-	fileSize=LoadTGA( name, pic, width, height );
-	return fileSize;
-#endif
+	LoadTGA( name, pic, width, height );
+	return;
 }
 
 

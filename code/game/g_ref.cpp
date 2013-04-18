@@ -167,7 +167,7 @@ reference_tag_t	*TAG_Find( const char *owner, const char *name )
 		char	tempName[ MAX_REFNAME ];
 
 		Q_strncpyz( (char *) tempName, name, MAX_REFNAME );
-		strlwr( (char *) tempName );	//NOTENOTE: For case insensitive searches on a map
+		Q_strlwr( (char *) tempName );	//NOTENOTE: For case insensitive searches on a map
 
 		rti = tagOwner->tagMap.find( tempName );
 		
@@ -205,7 +205,7 @@ reference_tag_t	*TAG_Add( const char *name, const char *owner, vec3_t origin, ve
 
 	//Copy the name
 	Q_strncpyz( (char *) tag->name, name, MAX_REFNAME );
-	strlwr( (char *) tag->name );	//NOTENOTE: For case insensitive searches on a map
+	Q_strlwr( (char *) tag->name );	//NOTENOTE: For case insensitive searches on a map
 
 	//Make sure this tag's name isn't alread in use
 	if ( TAG_Find( owner, name ) )

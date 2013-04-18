@@ -26,9 +26,7 @@ This file is part of Jedi Academy.
 #include "snd_local.h"
 #include "cl_mp3.h"
 
-#ifdef MINGW32
 #include <string>
-#endif
 
 // Open AL
 void S_PreProcessLipSync(sfx_t *sfx);
@@ -765,7 +763,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 	// make up a local filename to try wav/mp3 substitutes...
 	//	
 	Q_strncpyz(sLoadName, sfx->sSoundName, sizeof(sLoadName));	
-	strlwr( sLoadName );
+	Q_strlwr( sLoadName );
 	//
 	// Ensure name has an extension (which it must have, but you never know), and get ptr to it...
 	//
