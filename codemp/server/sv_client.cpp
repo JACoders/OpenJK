@@ -273,9 +273,6 @@ void SV_DirectConnect( netadr_t from ) {
 				return;
 			}
 		}
-	} else {
-		// force the "ip" info key to "localhost"
-		Info_SetValueForKey( userinfo, "ip", "localhost" );
 	}
 
 	newcl = &temp;
@@ -438,12 +435,13 @@ or crashing -- SV_FinalMessage() will handle that
 void SV_DropClient( client_t *drop, const char *reason ) {
 	int		i;
 	challenge_t	*challenge;
+	const bool isBot = drop->netchan.remoteAddress.type == NA_BOT;
 
 	if ( drop->state == CS_ZOMBIE ) {
 		return;		// already dropped
 	}
 
-	if ( !drop->gentity || !(drop->gentity->r.svFlags & SVF_BOT) ) {
+	if ( !isBot ) {
 		// see if we already have a challenge for this ip
 		challenge = &svs.challenges[0];
 
@@ -461,14 +459,6 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 	// tell everyone why they got dropped
 	SV_SendServerCommand( NULL, "print \"%s" S_COLOR_WHITE " %s\n\"", drop->name, reason );
 
-	Com_DPrintf( "Going to CS_ZOMBIE for %s\n", drop->name );
-	drop->state = CS_ZOMBIE;		// become free in a few seconds
-
-	if (drop->download)	{
-		FS_FCloseFile( drop->download );
-		drop->download = 0;
-	}
-
 	// call the prog function for removing a client
 	// this will remove the body, among other things
 	VM_Call( gvm, GAME_CLIENT_DISCONNECT, drop - svs.clients );
@@ -476,12 +466,20 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 	// add the disconnect command
 	SV_SendServerCommand( drop, va("disconnect \"%s\"", reason ) );
 
-	if ( drop->netchan.remoteAddress.type == NA_BOT ) {
+	if ( isBot ) {
 		SV_BotFreeClient( drop - svs.clients );
 	}
 
 	// nuke user info
 	SV_SetUserinfo( drop - svs.clients, "" );
+
+	if ( isBot ) {
+		// bots shouldn't go zombie, as there's no real net connection.
+		drop->state = CS_FREE;
+	} else {
+		Com_DPrintf( "Going to CS_ZOMBIE for %s\n", drop->name );
+		drop->state = CS_ZOMBIE;		// become free in a few seconds
+	}
 
 	// if this was the last client on the server, send a heartbeat
 	// to the master so it is known the server is empty
@@ -548,6 +546,7 @@ void SV_SendClientGameState( client_t *client ) {
 	if ( client->state == CS_CONNECTED )
 		client->state = CS_PRIMED;
 	client->pureAuthentic = 0;
+	client->gotCP = qfalse;
 
 	// when we receive the first packet from the client, we will
 	// notice that it is from a different serverid and that the
@@ -701,7 +700,11 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 
 	client->deltaMessage = -1;
 	client->nextSnapshotTime = svs.time;	// generate a snapshot immediately
-	client->lastUsercmd = *cmd;
+
+	if(cmd)
+		memcpy(&client->lastUsercmd, cmd, sizeof(client->lastUsercmd));
+	else
+		memset(&client->lastUsercmd, '\0', sizeof(client->lastUsercmd));
 
 	// call the game begin function
 	VM_Call( gvm, GAME_CLIENT_BEGIN, client - svs.clients );
@@ -1220,6 +1223,8 @@ static void SV_VerifyPaks_f( client_t *cl ) {
 			break;
 		}
 
+		cl->gotCP = qtrue;
+
 		if (bGood) {
 			cl->pureAuthentic = 1;
 		} 
@@ -1240,6 +1245,7 @@ SV_ResetPureClient_f
 */
 static void SV_ResetPureClient_f( client_t *cl ) {
 	cl->pureAuthentic = 0;
+	cl->gotCP = qfalse;
 }
 
 /*
@@ -1531,6 +1537,20 @@ static void SV_UserMove( client_t *cl, msg_t *msg, qboolean delta ) {
 	// save time for ping calculation
 	cl->frames[ cl->messageAcknowledge & PACKET_MASK ].messageAcked = svs.time;
 
+	// TTimo
+	// catch the no-cp-yet situation before SV_ClientEnterWorld
+	// if CS_ACTIVE, then it's time to trigger a new gamestate emission
+	// if not, then we are getting remaining parasite usermove commands, which we should ignore
+	if (sv_pure->integer != 0 && cl->pureAuthentic == 0 && !cl->gotCP) {
+		if (cl->state == CS_ACTIVE)
+		{
+			// we didn't get a cp yet, don't assume anything and just send the gamestate all over again
+			Com_DPrintf( "%s: didn't get cp command, resending gamestate\n", cl->name);
+			SV_SendClientGameState( cl );
+		}
+		return;
+	}
+
 	// if this is the first usercmd we have received
 	// this gamestate, put the client into the world
 	if ( cl->state == CS_PRIMED ) {
@@ -1620,9 +1640,15 @@ void SV_ExecuteClientMessage( client_t *cl, msg_t *msg ) {
 	// gamestate it was at.  This allows it to keep downloading even when
 	// the gamestate changes.  After the download is finished, we'll
 	// notice and send it a new game state
-	if ( serverId != sv.serverId && !*cl->downloadName ) {
-		if ( serverId == sv.restartedServerId ) {
+	//
+	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=536
+	// don't drop as long as previous command was a nextdl, after a dl is done, downloadName is set back to ""
+	// but we still need to read the next message to move to next download or send gamestate
+	// I don't like this hack though, it must have been working fine at some point, suspecting the fix is somewhere else
+	if ( serverId != sv.serverId && !*cl->downloadName && !strstr(cl->lastClientCommandString, "nextdl") ) {
+		if ( serverId >= sv.restartedServerId && serverId < sv.serverId ) { // TTimo - use a comparison here to catch multiple map_restart
 			// they just haven't caught the map_restart yet
+			Com_DPrintf("%s : ignoring pre map_restart / outdated client message\n", cl->name);
 			return;
 		}
 		// if we can tell that the client has dropped the last
