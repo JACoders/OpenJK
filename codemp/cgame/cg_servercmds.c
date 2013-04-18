@@ -197,6 +197,12 @@ void CG_ParseServerinfo( void ) {
 
 	//Raz: Fix bogus vote strings
 	Q_strncpyz( cgs.voteString, CG_ConfigString( CS_VOTE_STRING ), sizeof( cgs.voteString ) );
+
+	//Raz: Synchronise our expected snaps/sec with the server's framerate
+	//		OpenJK servers will try to match us to the sv_fps too (sv_client.cpp -> SV_UserinfoChanged)
+	i = atoi( Info_ValueForKey( info, "sv_fps" ) );
+	if ( i )
+		trap_Cvar_Set( "snaps", va( "%i", i ) );
 }
 
 /*

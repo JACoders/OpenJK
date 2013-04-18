@@ -79,7 +79,6 @@ set(MPCGameCgameFiles
 	"${MPDir}/cgame/cg_xcvar.h"
 	"${MPDir}/cgame/fx_local.h"
 	"${MPDir}/cgame/holocronicons.h"
-	"${MPDir}/cgame/tr_types.h"
 	)
 source_group("cgame" FILES ${MPCGameCgameFiles})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameCgameFiles})
@@ -104,6 +103,12 @@ set(MPCGameUiFiles
 source_group("ui" FILES ${MPCGameUiFiles})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameUiFiles})
 
+set(MPCGameRendererFiles
+	"${MPDir}/renderer/tr_types.h"
+	)
+source_group("renderer" FILES ${MPCGameRendererFiles})
+set(MPCGameFiles ${MPCGameFiles} ${MPCGameRendererFiles})
+
 set(MPCGameGFiles
 	"${MPDir}/ghoul2/G2.h"
 	)
@@ -117,6 +122,8 @@ if(NOT WIN32)
 	set_target_properties(${MPCGame} PROPERTIES PREFIX "")
 endif(NOT WIN32)
 
+set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPCGameDefines};${ReleaseDefines}")
+set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPCGameDefines};${ReleaseDefines}")
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPCGameDefines};${ReleaseDefines}")
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPCGameDefines};${DebugDefines}")
 set_target_properties(${MPCGame} PROPERTIES INCLUDE_DIRECTORIES "${MPCGameIncludeDirectories}")

@@ -18,6 +18,10 @@ Ghoul2 Insert End
 
 #define MDXABONEDEF
 #include "renderer/mdx_format.h"
+#include "renderer/tr_types.h"
+//#include "client/client.h"
+#include "qcommon/matcomp.h"
+#include "ghoul2/G2_gore.h"
 
 struct model_s;
 
@@ -26,8 +30,8 @@ struct model_s;
 #define G2T_CG_TIME (1)
 #define NUM_G2T_TIME (2)
 
-void		G2API_SetTime(int currentTime,int clock);
-int			G2API_GetTime(int argTime); // this may or may not return arg depending on ghoul2_time cvar
+//void		G2API_SetTime(int currentTime,int clock);
+//int		G2API_GetTime(int argTime); // this may or may not return arg depending on ghoul2_time cvar
 //rww - RAGDOLL_END
 
 //===================================================================
@@ -323,13 +327,14 @@ public:
 	virtual const vector<CGhoul2Info> &Get(int handle) const=0;
 };
 
-IGhoul2InfoArray &TheGhoul2InfoArray();
+//Raz: externing this out of headers for re access :/
+IGhoul2InfoArray &_TheGhoul2InfoArray();
 
 class CGhoul2Info_v
 {
 	IGhoul2InfoArray &InfoArray() const
 	{
-		return TheGhoul2InfoArray();
+		return _TheGhoul2InfoArray();
 	}
 
 	void Alloc()

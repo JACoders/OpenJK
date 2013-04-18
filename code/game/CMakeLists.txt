@@ -283,10 +283,12 @@ set(SPGameSortMe
 set(SPGameFiles ${SPGameSortMe})
 source_group("SortMe" FILES ${SPGameSortMe})
 if(WIN32)
-	set(SPGameFiles ${SPGameFiles} "${SPDir}/win32/game.rc")
+	set(SPGameFiles ${SPGameFiles} "${SPDir}/win32/game.rc" "${SPDir}/game/game.def")
 endif(WIN32)
 
 add_library(${SPGame} SHARED ${SPGameFiles})
+set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPGameDefines};${ReleaseDefines}")
+set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPGameDefines};${ReleaseDefines}")
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPGameDefines};${ReleaseDefines}")
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPGameDefines};${DebugDefines}")
 set_target_properties(${SPGame} PROPERTIES INCLUDE_DIRECTORIES "${SPGameIncludeDirectories}")

@@ -10,12 +10,12 @@
 
 // Open AL Specific
 #ifdef _WIN32
-#include <al.h>
-#include <alc.h>
-//#ifndef MINGW32
+#include "OpenAL/al.h"
+#include "OpenAL/alc.h"
+#ifndef MINGW32
 #include "eax\eax.h"
 #include "eax\eaxman.h"
-//#endif
+#endif
 #elif defined MACOS_X
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
@@ -225,6 +225,8 @@ byte	*SND_malloc(int iSize, sfx_t *sfx);
 void	 SND_setup();
 int		 SND_FreeOldestSound(sfx_t *pButNotThisOne = NULL);
 void	 SND_TouchSFX(sfx_t *sfx);
+
+qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel /* 99% qfalse */);
 
 void S_DisplayFreeMemory(void);
 void S_memoryLoad(sfx_t *sfx);

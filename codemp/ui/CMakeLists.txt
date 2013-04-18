@@ -57,11 +57,11 @@ set(MPUIUIFiles
 source_group("ui" FILES ${MPUIUIFiles})
 set(MPUIFiles ${MPUIFiles} ${MPUIUIFiles})
 
-set(MPUICgameFiles
-	"${MPDir}/cgame/tr_types.h"
+set(MPUIRendererFiles
+	"${MPDir}/renderer/tr_types.h"
 	)
-source_group("cgame" FILES ${MPUICgameFiles})
-set(MPUIFiles ${MPUIFiles} ${MPUICgameFiles})
+source_group("renderer" FILES ${MPUIRendererFiles})
+set(MPUIFiles ${MPUIFiles} ${MPUIRendererFiles})
 
 add_library(${MPUI} SHARED ${MPUIFiles})
 
@@ -70,6 +70,8 @@ if(NOT WIN32)
 	set_target_properties(${MPUI} PROPERTIES PREFIX "")
 endif(NOT WIN32)
 
+set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPUIDefines};${ReleaseDefines}")
+set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPUIDefines};${DebugDefines}")
 set_target_properties(${MPUI} PROPERTIES INCLUDE_DIRECTORIES "${MPUIIncludeDirectories}")

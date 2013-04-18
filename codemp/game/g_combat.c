@@ -5683,8 +5683,9 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 		}
 
 		//JAC: Avoid infinite loop
-		if ( ent->health <= 0 )
-			continue;
+		//Ensiform: disabling this for now as it breaks corpse shooting
+		//if ( ent->health <= 0 )
+		//	continue;
 
 		points = damage * ( 1.0 - dist / radius );
 

@@ -21,9 +21,9 @@ WinVars_t	g_wv;
 static UINT MSH_MOUSEWHEEL;
 
 // Console variables that we need to access from this module
-cvar_t		*vid_xpos;			// X coordinate of window position
-cvar_t		*vid_ypos;			// Y coordinate of window position
-static cvar_t		*r_fullscreen;
+cvar_t			*vid_xpos;			// X coordinate of window position
+cvar_t			*vid_ypos;			// Y coordinate of window position
+static cvar_t	*r_fullscreen;
 
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
 
@@ -368,7 +368,8 @@ LONG WINAPI MainWndProc (
 		vid_ypos = Cvar_Get ("vid_ypos", "22", CVAR_ARCHIVE);
 		r_fullscreen = Cvar_Get ("r_fullscreen", "1", CVAR_ARCHIVE | CVAR_LATCH );
 
-		MSH_MOUSEWHEEL = RegisterWindowMessage("MSWHEEL_ROLLMSG"); 
+		MSH_MOUSEWHEEL = RegisterWindowMessage("MSWHEEL_ROLLMSG");
+#if 0
 		if ( r_fullscreen->integer )
 		{
 			WIN_DisableAltTab();
@@ -377,6 +378,7 @@ LONG WINAPI MainWndProc (
 		{
 			WIN_EnableAltTab();
 		}
+#endif
 
 		break;
 #if 0
@@ -396,10 +398,12 @@ LONG WINAPI MainWndProc (
 	case WM_DESTROY:
 		// let sound and input know about this?
 		g_wv.hWnd = NULL;
+#if 0
 		if ( r_fullscreen->integer )
 		{
 			WIN_EnableAltTab();
 		}
+#endif
 		break;
 
 	case WM_CLOSE:
@@ -412,6 +416,9 @@ LONG WINAPI MainWndProc (
 
 			fActive = LOWORD(wParam);
 			fMinimized = (BOOL) HIWORD(wParam);
+
+			Cvar_SetValue( "com_unfocused",	(fActive == WA_INACTIVE));
+			Cvar_SetValue( "com_minimized", fMinimized);
 
 			VID_AppActivate( fActive != WA_INACTIVE, fMinimized);
 			SNDDMA_Activate( (qboolean)(fActive != WA_INACTIVE && !fMinimized) );
@@ -494,15 +501,10 @@ LONG WINAPI MainWndProc (
 	case WM_SYSKEYDOWN:
 		if ( wParam == VK_RETURN )
 		{
-			if ( r_fullscreen && cl_allowAltEnter &&
-				(cls.state==CA_DISCONNECTED ||  cls.state==CA_CONNECTED)
-				)
+			if ( r_fullscreen && cl_allowAltEnter && cl_allowAltEnter->integer )
 			{
-				if (cl_allowAltEnter->integer)
-				{
-					Cvar_SetValue( "r_fullscreen", !r_fullscreen->integer );
-					Cbuf_AddText( "vid_restart\n" );
-				}
+				Cvar_SetValue( "r_fullscreen", !r_fullscreen->integer );
+				Cbuf_AddText( "vid_restart\n" );
 			}
 			return 0;
 		}

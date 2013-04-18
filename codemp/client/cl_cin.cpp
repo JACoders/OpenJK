@@ -37,7 +37,6 @@
 
 #define MAX_VIDEO_HANDLES	16
 
-extern glconfig_t glConfig;
 extern	int		s_paintedtime;
 extern	int		s_rawend;
 
@@ -809,7 +808,7 @@ static void readQuadInfo( byte *qData )
     cinTable[currentHandle].drawX = cinTable[currentHandle].CIN_WIDTH;
     cinTable[currentHandle].drawY = cinTable[currentHandle].CIN_HEIGHT;
 	// jic the card sucks
-	if ( glConfig.maxTextureSize <= 256) {
+	if ( cls.glconfig.maxTextureSize <= 256) {
         if (cinTable[currentHandle].drawX>256) {
             cinTable[currentHandle].drawX = 256;
         }

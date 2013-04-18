@@ -10,6 +10,7 @@
 #include "qcommon/qcommon.h"
 #include "game/g_public.h"
 #include "game/bg_public.h"
+#include "renderer/tr_public.h"
 
 //=============================================================================
 
@@ -151,6 +152,7 @@ typedef struct client_s {
 	int				rate;				// bytes / second
 	int				snapshotMsec;		// requests a snapshot every snapshotMsec unless rate choked
 	int				pureAuthentic;
+	qboolean		gotCP; // TTimo - additional flag to distinguish between a bad pure checksum, and no cp command at all
 	netchan_t		netchan;
 
 	int				lastUserInfoChange; //if > svs.time && count > x, deny change -rww
@@ -208,6 +210,9 @@ typedef struct {
 extern	serverStatic_t	svs;				// persistant server info across maps
 extern	server_t		sv;					// cleared each map
 extern	vm_t			*gvm;				// game virtual machine
+
+//RAZFIXME: dedi server probably can't have this..
+extern	refexport_t		re;					// interface to refresh .dll
 
 #define	MAX_MASTER_SERVERS	5
 

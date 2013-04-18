@@ -478,6 +478,7 @@ char	*Cvar_InfoString_Big( int bit );
 // returns an info string containing all the cvars that have the given bit set
 // in their flags ( CVAR_USERINFO, CVAR_SERVERINFO, CVAR_SYSTEMINFO, etc )
 void	Cvar_InfoStringBuffer( int bit, char *buff, int buffsize );
+void Cvar_CheckRange( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
 
 void	Cvar_Restart(qboolean unsetVM);
 void	Cvar_Restart_f( void );
@@ -688,6 +689,8 @@ extern	cvar_t	*com_blood;
 extern	cvar_t	*com_buildScript;		// for building release pak files
 extern	cvar_t	*com_journal;
 extern	cvar_t	*com_cameraMode;
+extern	cvar_t	*com_unfocused;
+extern	cvar_t	*com_minimized;
 
 extern	cvar_t	*com_optvehtrace;
 
@@ -856,7 +859,7 @@ void	CL_ForwardCommandToServer( const char *string );
 // things like godmode, noclip, etc, are commands directed to the server,
 // so when they are typed in at the console, they will need to be forwarded.
 
-void CL_ShutdownAll( void );
+void CL_ShutdownAll( qboolean shutdownRef );
 // shutdown all the client stuff
 
 void CL_FlushMemory( void );
@@ -933,9 +936,23 @@ sysEvent_t	Sys_GetEvent( void );
 
 void	Sys_Init (void);
 
+#ifdef _WIN32
+	#include <windows.h>
+	#define Sys_LoadLibrary(f) (void*)LoadLibrary(f)
+	#define Sys_UnloadLibrary(h) FreeLibrary((HMODULE)h)
+	#define Sys_LoadFunction(h,fn) (void*)GetProcAddress((HMODULE)h,fn)
+	#define Sys_LibraryError() "unknown"
+#else // linux and mac should be fine with this, can use SDL later
+	#include <dlfcn.h>
+	#define Sys_LoadLibrary(f) dlopen(f,RTLD_NOW)
+	#define Sys_UnloadLibrary(h) dlclose(h)
+	#define Sys_LoadFunction(h,fn) dlsym(h,fn)
+	#define Sys_LibraryError() dlerror()
+#endif
+
 // general development dll loading for virtual machine testing
-void	* QDECL Sys_LoadDll( const char *name, int (QDECL **entryPoint)(int, ...),
-				  int (QDECL *systemcalls)(int, ...) );
+void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
+void	* QDECL Sys_LoadGameDll( const char *name, int (QDECL **entryPoint)(int, ...), int (QDECL *systemcalls)(int, ...) );
 void	Sys_UnloadDll( void *dllHandle );
 
 void	Sys_UnloadGame( void );
@@ -963,6 +980,7 @@ void	Sys_Print( const char *msg );
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (bool baseTime = false);
 void 	Sys_SetEnv(const char *name, const char *value);
+int		Sys_Milliseconds2(void);
 
 #ifndef _WIN32
 extern "C" void	Sys_SnapVector( float *v );
