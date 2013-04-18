@@ -1181,7 +1181,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 							{
 								// failed to load a needed file, reset to English...
 								//
-								Cvar_Set("se_language", "english");
+								ri.Cvar_Set("se_language", "english");
 								Com_Error( ERR_DROP, psFailureReason );
 							}
 						}
