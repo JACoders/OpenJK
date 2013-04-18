@@ -24,7 +24,26 @@ This file is part of Jedi Academy.
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
 
-#define	REF_API_VERSION		9
+#define	REF_API_VERSION		10
+
+// Had to add this one too '>_< --eez
+typedef struct {
+	void			(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
+	void			(QDECL *Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
+
+	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
+	int				(*Milliseconds)						( void );
+
+	// memory management (can use tr_subs)
+	void *			(*Hunk_AllocateTempMemory)			( int size );
+	void			(*Hunk_FreeTempMemory)				( void *buf );
+	void *			(*Hunk_Alloc)						( int size, ha_pref preference );
+	int				(*Hunk_MemoryRemaining)				( void );
+	void *			(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean bZeroit /*= qfalse*/, int iAlign /*= 4*/); // return memory NOT zero-filled by default
+	void			(*Z_Free)							( void *ptr );
+	int				(*Z_MemSize)						( memtag_t eTag );
+	void			(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );
+} refimport_t;
 
 //
 // these are the functions exported by the refresh module
