@@ -4,6 +4,10 @@
 // tr_subs.cpp - common function replacements for modular renderer
 #include "tr_local.h"
 
+#ifdef _MSC_VER
+extern int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap);
+#endif
+
 void QDECL Com_Printf( const char *msg, ... )
 {
 	va_list         argptr;
@@ -63,7 +67,7 @@ void Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
 }*/
 
 // Parsing
-
+/*
 #include "qcommon/GenericParser2.h"
 
 bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst)
@@ -127,3 +131,4 @@ CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool write
 
 	return parse;
 }
+*/

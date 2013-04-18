@@ -2420,12 +2420,6 @@ static qboolean ParseShader( const char  **text )
 			tr.sunDirection[0] = cos( a ) * cos( b );
 			tr.sunDirection[1] = sin( a ) * cos( b );
 			tr.sunDirection[2] = sin( b );
-
-#ifdef _XBOX
-			Cvar_SetValue( "r_sundir_x", tr.sunDirection[0] );
-			Cvar_SetValue( "r_sundir_y", tr.sunDirection[1] );
-			Cvar_SetValue( "r_sundir_z", tr.sunDirection[2] );
-#endif
 		}
 		else if ( !Q_stricmp( token, "deformVertexes" ) ) {
 			ParseDeform( text );
@@ -3699,7 +3693,7 @@ void	R_ShaderList_f (void) {
 
 	count = 0;
 	for ( i = 0 ; i < tr.numShaders ; i++ ) {
-		if ( Cmd_Argc() > 1 ) {
+		if ( ri.Cmd_Argc() > 1 ) {
 			shader = tr.sortedShaders[i];
 		} else {
 			shader = tr.shaders[i];
@@ -3810,7 +3804,7 @@ static void ScanAndLoadShaderFiles( void )
 	long sum = 0;
 
 	// scan for shader files
-	shaderFiles = FS_ListFiles( "shaders", ".shader", &numShaders );
+	shaderFiles = ri.FS_ListFiles( "shaders", ".shader", &numShaders );
 
 	if ( !shaderFiles || !numShaders )
 	{
@@ -3830,7 +3824,7 @@ static void ScanAndLoadShaderFiles( void )
 		Com_sprintf( filename, sizeof( filename ), "shaders/%s", shaderFiles[i] );
 		//VID_Printf( PRINT_DEVELOPER, "...loading '%s'\n", filename );
 		// Looks like stripping out crap in the shaders will save about 200k
-		FS_ReadFile( filename, (void **)&buffers[i] );
+		ri.FS_ReadFile( filename, (void **)&buffers[i] );
 		if ( !buffers[i] ) {
 			Com_Error( ERR_DROP, "Couldn't load %s", filename );
 		}
@@ -3838,7 +3832,7 @@ static void ScanAndLoadShaderFiles( void )
 	}
 
 	// free up memory
-	FS_FreeFileList( shaderFiles );
+	ri.FS_FreeFileList( shaderFiles );
 
 	// build single large buffer
 	s_shaderText = (char *) Hunk_Alloc( sum + numShaders*2, qtrue );
@@ -3848,7 +3842,7 @@ static void ScanAndLoadShaderFiles( void )
 		strcat( s_shaderText + sum, "\n" );
 		strcat( s_shaderText + sum, buffers[i] );
 		sum += bufferSizes[i];
-		FS_FreeFile( buffers[i] );
+		ri.FS_FreeFile( buffers[i] );
 	}
 
 	#ifdef USE_STL_FOR_SHADER_LOOKUPS

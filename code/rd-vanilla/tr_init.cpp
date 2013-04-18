@@ -286,19 +286,19 @@ static void AssertCvarRange( cvar_t *cv, float minVal, float maxVal, qboolean sh
 		if ( ( int ) cv->value != cv->integer )
 		{
 			VID_Printf( PRINT_WARNING, "WARNING: cvar '%s' must be integral (%f)\n", cv->name, cv->value );
-			Cvar_Set( cv->name, va( "%d", cv->integer ) );
+			ri.Cvar_Set( cv->name, va( "%d", cv->integer ) );
 		}
 	}
 
 	if ( cv->value < minVal )
 	{
 		VID_Printf( PRINT_WARNING, "WARNING: cvar '%s' out of range (%f < %f)\n", cv->name, cv->value, minVal );
-		Cvar_Set( cv->name, va( "%f", minVal ) );
+		ri.Cvar_Set( cv->name, va( "%f", minVal ) );
 	}
 	else if ( cv->value > maxVal )
 	{
 		VID_Printf( PRINT_WARNING, "WARNING: cvar '%s' out of range (%f > %f)\n", cv->name, cv->value, maxVal );
-		Cvar_Set( cv->name, va( "%f", maxVal ) );
+		ri.Cvar_Set( cv->name, va( "%f", maxVal ) );
 	}
 
 	if (shouldBeMult2)
@@ -309,26 +309,15 @@ static void AssertCvarRange( cvar_t *cv, float minVal, float maxVal, qboolean sh
 			for (newvalue = 1 ; newvalue < cv->integer ; newvalue<<=1)
 				;
 			VID_Printf( PRINT_WARNING, "WARNING: cvar '%s' must be multiple of 2(%f)\n", cv->name, cv->value );
-			Cvar_Set( cv->name, va( "%d", newvalue ) );
+			ri.Cvar_Set( cv->name, va( "%d", newvalue ) );
 		}
 	}
 }
 
 void R_Splash()
 {
-#ifndef _XBOX
 	image_t *pImage;
-/*
-	const char* s = Cvar_VariableString("se_language");
-	if (stricmp(s,"english"))
-	{
-		pImage = R_FindImageFile( "menu/splash_eur", qfalse, qfalse, qfalse, GL_CLAMP);
-	}
-	else
-	{
-		pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
-	}
-*/
+
 	pImage = R_FindImageFile( "menu/splash", qfalse, qfalse, qfalse, GL_CLAMP);
 
 	extern void	RB_SetGL2D (void);
@@ -359,7 +348,6 @@ void R_Splash()
 	qglEnd();
 
 	GLimp_EndFrame();
-#endif
 }
 
 /*
@@ -697,19 +685,19 @@ void R_ScreenShot_f (void) {
 	static	int	lastNumber = -1;
 	qboolean	silent;
 
-	if ( !strcmp( Cmd_Argv(1), "levelshot" ) ) {
+	if ( !strcmp( ri.Cmd_Argv(1), "levelshot" ) ) {
 		R_LevelShot();
 		return;
 	}
-	if ( !strcmp( Cmd_Argv(1), "silent" ) ) {
+	if ( !strcmp( ri.Cmd_Argv(1), "silent" ) ) {
 		silent = qtrue;
 	} else {
 		silent = qfalse;
 	}
 
-	if ( Cmd_Argc() == 2 && !silent ) {
+	if ( ri.Cmd_Argc() == 2 && !silent ) {
 		// explicit filename
-		Com_sprintf( checkname, MAX_OSPATH, "screenshots/%s.jpg", Cmd_Argv( 1 ) );
+		Com_sprintf( checkname, MAX_OSPATH, "screenshots/%s.jpg", ri.Cmd_Argv( 1 ) );
 	} else {
 		// scan for a free filename
 
@@ -768,19 +756,19 @@ void R_ScreenShotTGA_f (void) {
 	static	int	lastNumber = -1;
 	qboolean	silent;
 
-	if ( !strcmp( Cmd_Argv(1), "levelshot" ) ) {
+	if ( !strcmp( ri.Cmd_Argv(1), "levelshot" ) ) {
 		R_LevelShot();
 		return;
 	}
-	if ( !strcmp( Cmd_Argv(1), "silent" ) ) {
+	if ( !strcmp( ri.Cmd_Argv(1), "silent" ) ) {
 		silent = qtrue;
 	} else {
 		silent = qfalse;
 	}
 
-	if ( Cmd_Argc() == 2 && !silent ) {
+	if ( ri.Cmd_Argc() == 2 && !silent ) {
 		// explicit filename
-		Com_sprintf( checkname, MAX_OSPATH, "screenshots/%s.tga", Cmd_Argv( 1 ) );
+		Com_sprintf( checkname, MAX_OSPATH, "screenshots/%s.tga", ri.Cmd_Argv( 1 ) );
 	} else {
 		// scan for a free filename
 
@@ -1039,7 +1027,7 @@ void R_FogDistance_f(void)
 		return;
 	}
 
-	if (Cmd_Argc() <= 1)
+	if (ri.Cmd_Argc() <= 1)
 	{
 //		should not ever be 0.0
 //		if (tr.world->fogs[tr.world->globalFog].tcScale == 0.0)
@@ -1055,13 +1043,13 @@ void R_FogDistance_f(void)
 		return;
 	}
 
-	if (Cmd_Argc() != 2)
+	if (ri.Cmd_Argc() != 2)
 	{
 		VID_Printf(PRINT_ALL, "R_FogDistance_f: Invalid number of arguments to set distance\n");
 		return;
 	}
 
-	distance = atof(Cmd_Argv(1));
+	distance = atof(ri.Cmd_Argv(1));
 	if (distance < 1.0) 
 	{
 		distance = 1.0;
@@ -1097,7 +1085,7 @@ void R_FogColor_f(void)
 		return;
 	}
 
-	if (Cmd_Argc() <= 1)
+	if (ri.Cmd_Argc() <= 1)
 	{
 		unsigned	i = tr.world->fogs[tr.world->globalFog].colorInt;
 
@@ -1108,18 +1096,18 @@ void R_FogColor_f(void)
 		return;
 	}
 
-	if (Cmd_Argc() != 4)
+	if (ri.Cmd_Argc() != 4)
 	{
 		VID_Printf(PRINT_ALL, "R_FogColor_f: Invalid number of arguments to set color\n");
 		return;
 	}
 
-	tr.world->fogs[tr.world->globalFog].parms.color[0] = atof(Cmd_Argv(1));
-	tr.world->fogs[tr.world->globalFog].parms.color[1] = atof(Cmd_Argv(2));
-	tr.world->fogs[tr.world->globalFog].parms.color[2] = atof(Cmd_Argv(3));
-	tr.world->fogs[tr.world->globalFog].colorInt = ColorBytes4 ( atof(Cmd_Argv(1)) * tr.identityLight, 
-			                          atof(Cmd_Argv(2)) * tr.identityLight, 
-			                          atof(Cmd_Argv(3)) * tr.identityLight, 1.0 );
+	tr.world->fogs[tr.world->globalFog].parms.color[0] = atof(ri.Cmd_Argv(1));
+	tr.world->fogs[tr.world->globalFog].parms.color[1] = atof(ri.Cmd_Argv(2));
+	tr.world->fogs[tr.world->globalFog].parms.color[2] = atof(ri.Cmd_Argv(3));
+	tr.world->fogs[tr.world->globalFog].colorInt = ColorBytes4 ( atof(ri.Cmd_Argv(1)) * tr.identityLight, 
+			                          atof(ri.Cmd_Argv(2)) * tr.identityLight, 
+			                          atof(ri.Cmd_Argv(3)) * tr.identityLight, 1.0 );
 }
 
 /*
@@ -1314,31 +1302,29 @@ extern qboolean Sys_LowPhysicalMemory();
 	r_modelpoolmegs = Cvar_Get("r_modelpoolmegs", "20", CVAR_ARCHIVE);
 	if (Sys_LowPhysicalMemory() )
 	{
-		Cvar_Set("r_modelpoolmegs", "0");
+		ri.Cvar_Set("r_modelpoolmegs", "0");
 	}
 
 	// make sure all the commands added here are also
 	// removed in R_Shutdown
-	Cmd_AddCommand( "imagelist", R_ImageList_f );
-	Cmd_AddCommand( "shaderlist", R_ShaderList_f );
-	Cmd_AddCommand( "skinlist", R_SkinList_f );
-	Cmd_AddCommand( "fontlist", R_FontList_f );
-	Cmd_AddCommand( "modellist", R_Modellist_f );
-#ifndef _XBOX
-	Cmd_AddCommand( "modelist", R_ModeList_f );
-	Cmd_AddCommand( "r_atihack", R_AtiHackToggle_f );
-#endif
-	Cmd_AddCommand( "screenshot", R_ScreenShot_f );
-	Cmd_AddCommand( "screenshot_tga", R_ScreenShotTGA_f );
-	Cmd_AddCommand( "gfxinfo", GfxInfo_f );
-	Cmd_AddCommand( "r_fogDistance", R_FogDistance_f);
-	Cmd_AddCommand( "r_fogColor", R_FogColor_f);
-	Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f);
-	Cmd_AddCommand( "imagecacheinfo", RE_RegisterImages_Info_f);
+	ri.Cmd_AddCommand( "imagelist", R_ImageList_f );
+	ri.Cmd_AddCommand( "shaderlist", R_ShaderList_f );
+	ri.Cmd_AddCommand( "skinlist", R_SkinList_f );
+	ri.Cmd_AddCommand( "fontlist", R_FontList_f );
+	ri.Cmd_AddCommand( "modellist", R_Modellist_f );
+	ri.Cmd_AddCommand( "modelist", R_ModeList_f );
+	ri.Cmd_AddCommand( "r_atihack", R_AtiHackToggle_f );
+	ri.Cmd_AddCommand( "screenshot", R_ScreenShot_f );
+	ri.Cmd_AddCommand( "screenshot_tga", R_ScreenShotTGA_f );
+	ri.Cmd_AddCommand( "gfxinfo", GfxInfo_f );
+	ri.Cmd_AddCommand( "r_fogDistance", R_FogDistance_f);
+	ri.Cmd_AddCommand( "r_fogColor", R_FogColor_f);
+	ri.Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f);
+	ri.Cmd_AddCommand( "imagecacheinfo", RE_RegisterImages_Info_f);
 extern void R_WorldEffect_f(void);	//TR_WORLDEFFECTS.CPP
-	Cmd_AddCommand( "r_we", R_WorldEffect_f );
+	ri.Cmd_AddCommand( "r_we", R_WorldEffect_f );
 extern void R_ReloadFonts_f(void);
-	Cmd_AddCommand( "r_reloadfonts", R_ReloadFonts_f );
+	ri.Cmd_AddCommand( "r_reloadfonts", R_ReloadFonts_f );
 	// make sure all the commands added above are also
 	// removed in R_Shutdown
 }
@@ -1470,24 +1456,22 @@ extern void R_ShutdownWorldEffects(void);
 void RE_Shutdown( qboolean destroyWindow ) {	
 	//VID_Printf( PRINT_ALL, "RE_Shutdown( %i )\n", destroyWindow );
 
-	Cmd_RemoveCommand ("imagelist");
-	Cmd_RemoveCommand ("shaderlist");
-	Cmd_RemoveCommand ("skinlist");
-	Cmd_RemoveCommand ("fontlist");
-	Cmd_RemoveCommand ("modellist");
-#ifndef _XBOX
-	Cmd_RemoveCommand ("modelist" );
-	Cmd_RemoveCommand ("r_atihack");
-#endif
-	Cmd_RemoveCommand ("screenshot");
-	Cmd_RemoveCommand ("screenshot_tga");	
-	Cmd_RemoveCommand ("gfxinfo");
-	Cmd_RemoveCommand ("r_fogDistance");
-	Cmd_RemoveCommand ("r_fogColor");
-	Cmd_RemoveCommand ("modelcacheinfo");
-	Cmd_RemoveCommand ("imagecacheinfo");
-	Cmd_RemoveCommand ("r_we");
-	Cmd_RemoveCommand ("r_reloadfonts");
+	ri.Cmd_RemoveCommand ("imagelist");
+	ri.Cmd_RemoveCommand ("shaderlist");
+	ri.Cmd_RemoveCommand ("skinlist");
+	ri.Cmd_RemoveCommand ("fontlist");
+	ri.Cmd_RemoveCommand ("modellist");
+	ri.Cmd_RemoveCommand ("modelist" );
+	ri.Cmd_RemoveCommand ("r_atihack");
+	ri.Cmd_RemoveCommand ("screenshot");
+	ri.Cmd_RemoveCommand ("screenshot_tga");	
+	ri.Cmd_RemoveCommand ("gfxinfo");
+	ri.Cmd_RemoveCommand ("r_fogDistance");
+	ri.Cmd_RemoveCommand ("r_fogColor");
+	ri.Cmd_RemoveCommand ("modelcacheinfo");
+	ri.Cmd_RemoveCommand ("imagecacheinfo");
+	ri.Cmd_RemoveCommand ("r_we");
+	ri.Cmd_RemoveCommand ("r_reloadfonts");
 
 	R_ShutdownWorldEffects();
 #ifndef _XBOX

@@ -1064,7 +1064,7 @@ static void GLW_InitExtensions( void )
 	{
 		VID_Printf( PRINT_ALL, "*** IGNORING OPENGL EXTENSIONS ***\n" );
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_DynamicGlow","0" );
 		return;
 	}
 
@@ -1109,16 +1109,16 @@ static void GLW_InitExtensions( void )
 		{
 			Com_Printf ("...ignoring GL_EXT_texture_filter_anisotropic\n" );
 		}
-		Cvar_Set( "r_ext_texture_filter_anisotropic_avail", va("%f",glConfig.maxTextureFilterAnisotropy) );
+		ri.Cvar_Set( "r_ext_texture_filter_anisotropic_avail", va("%f",glConfig.maxTextureFilterAnisotropy) );
 		if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 		{
-			Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
+			ri.Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
 		}
 	}
 	else
 	{
 		Com_Printf ("...GL_EXT_texture_filter_anisotropic not found\n" );
-		Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
+		ri.Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
 	}
 
 	// GL_EXT_clamp_to_edge
@@ -1490,7 +1490,7 @@ static void GLW_InitExtensions( void )
 	else
 	{
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_DynamicGlow","0" );
 	}
 }
 
@@ -1694,52 +1694,52 @@ extern qboolean Sys_LowPhysicalMemory();
 	{
 		if (Sys_LowPhysicalMemory())
 		{
-			Cvar_Set("s_khz", "11");// this will get called before S_Init
-			Cvar_Set("cg_VariantSoundCap", "2");
-			Cvar_Set("s_allowDynamicMusic","0");
+			ri.Cvar_Set("s_khz", "11");// this will get called before S_Init
+			ri.Cvar_Set("cg_VariantSoundCap", "2");
+			ri.Cvar_Set("s_allowDynamicMusic","0");
 		}
 		//reset to defaults
-		Cvar_Set( "r_picmip", "1" );
+		ri.Cvar_Set( "r_picmip", "1" );
 		
 		// Savage3D and Savage4 should always have trilinear enabled
 		if ( strstr( buf, "savage3d" ) || strstr( buf, "s3 savage4" ) || strstr( buf, "geforce" ) || strstr( buf, "quadro" ) )
 		{
-			Cvar_Set( "r_texturemode", "GL_LINEAR_MIPMAP_LINEAR" );
+			ri.Cvar_Set( "r_texturemode", "GL_LINEAR_MIPMAP_LINEAR" );
 		}
 		else
 		{
-			Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
+			ri.Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
 		}
 
 		if ( strstr( buf, "kyro" ) )	
 		{
-			Cvar_Set( "r_ext_texture_filter_anisotropic", "0");	//KYROs have it avail, but suck at it!
-			Cvar_Set( "r_ext_preferred_tc_method", "1");			//(Use DXT1 instead of DXT5 - same quality but much better performance on KYRO)
+			ri.Cvar_Set( "r_ext_texture_filter_anisotropic", "0");	//KYROs have it avail, but suck at it!
+			ri.Cvar_Set( "r_ext_preferred_tc_method", "1");			//(Use DXT1 instead of DXT5 - same quality but much better performance on KYRO)
 		}
 
 		if ( strstr( buf, "geforce2" ) )	
 		{
-			Cvar_Set( "cg_renderToTextureFX", "0");	// slow to zero bug fix
+			ri.Cvar_Set( "cg_renderToTextureFX", "0");	// slow to zero bug fix
 		}
 
 		if ( strstr( buf, "radeon 9000" ) )	
 		{
-			Cvar_Set( "cg_renderToTextureFX", "0");	// white texture bug
+			ri.Cvar_Set( "cg_renderToTextureFX", "0");	// white texture bug
 		}
 
 		GLW_InitExtensions();	//get the values for test below
 		//this must be a really sucky card!
 		if ( (glConfig.textureCompression == TC_NONE) || (glConfig.maxActiveTextures < 2)  || (glConfig.maxTextureSize <= 512) )
 		{
-			Cvar_Set( "r_picmip", "2");
-			Cvar_Set( "r_colorbits", "16");
-			Cvar_Set( "r_texturebits", "16");
-			Cvar_Set( "r_mode", "3");	//force 640
-			Cmd_ExecuteString ("exec low.cfg\n");	//get the rest which can be pulled in after init
+			ri.Cvar_Set( "r_picmip", "2");
+			ri.Cvar_Set( "r_colorbits", "16");
+			ri.Cvar_Set( "r_texturebits", "16");
+			ri.Cvar_Set( "r_mode", "3");	//force 640
+			ri.Cmd_ExecuteString ("exec low.cfg\n");	//get the rest which can be pulled in after init
 		}
 	}
 	
-	Cvar_Set( "r_lastValidRenderer", glConfig.renderer_string );
+	ri.Cvar_Set( "r_lastValidRenderer", glConfig.renderer_string );
 	GLW_InitExtensions();
 
 	WG_CheckHardwareGamma();

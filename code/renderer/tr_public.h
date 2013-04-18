@@ -51,6 +51,7 @@ typedef struct {
 	float			(*Cvar_VariableValue)				( const char *var_name );
 	int				(*Cvar_VariableIntegerValue)		( const char *var_name );
 
+
 	void			(*FS_FreeFile)						( void *buffer );
 	void			(*FS_FreeFileList)					( char **fileList );
 	int				(*FS_Read)							( void *buffer, int len, fileHandle_t f );
@@ -64,6 +65,17 @@ typedef struct {
 	char **			(*FS_ListFiles)						( const char *directory, const char *extension, int *numfiles );
 	int				(*FS_Write)							( const void *buffer, int len, fileHandle_t f );
 	void			(*FS_WriteFile)						( const char *qpath, const void *buffer, int size );
+
+
+	int				(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
+	byte*			(*CM_ClusterPVS)					( int cluster );
+	void			(*CM_ShaderTableCleanup)			( void );					// FIXME: port to renderer
+
+
+	int				(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height, 
+															int bits, const char *psAudioFile /* = NULL */ );
+	e_status		(*CIN_RunCinematic)					( int handle );
+	void			(*CIN_UploadCinematic)				( int handle );
 } refimport_t;
 
 //

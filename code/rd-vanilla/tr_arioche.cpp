@@ -134,7 +134,7 @@ void R_RMGInit(void)
 			{
 				gfog->tcScale = 1.0f / ( gfog->parms.depthForOpaque * 8.0f );
 				tr.distanceCull = gfog->parms.depthForOpaque;
-				Cvar_Set("RMG_distancecull", va("%f", tr.distanceCull));
+				ri.Cvar_Set("RMG_distancecull", va("%f", tr.distanceCull));
 			}
 			else
 			{

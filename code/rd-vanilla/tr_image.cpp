@@ -141,7 +141,7 @@ void GL_TextureMode( const char *string ) {
 	// If the level they requested is less than possible, set the max possible...
 	if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 	{
-		Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
+		ri.Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
 	}
 
 	// change all the existing mipmap texture objects
@@ -2836,13 +2836,13 @@ void R_SetColorMappings( void ) {
 
 
 	if ( r_intensity->value < 1.0f ) {
-		Cvar_Set( "r_intensity", "1.0" );
+		ri.Cvar_Set( "r_intensity", "1.0" );
 	}
 
 	if ( r_gamma->value < 0.5f ) {
-		Cvar_Set( "r_gamma", "0.5" );
+		ri.Cvar_Set( "r_gamma", "0.5" );
 	} else if ( r_gamma->value > 3.0f ) {
-		Cvar_Set( "r_gamma", "3.0" );
+		ri.Cvar_Set( "r_gamma", "3.0" );
 	}
 
 	g = r_gamma->value;
@@ -3055,17 +3055,17 @@ int RE_GetAnimationCFG(const char *psCFGFilename, char *psDest, int iDestSize)
 		// not found, so load it...
 		//
 		fileHandle_t f;
-		int iLen = FS_FOpenFileRead( psCFGFilename, &f, FS_READ );
+		int iLen = ri.FS_FOpenFileRead( psCFGFilename, &f, FS_READ );
 		if (iLen <= 0)
 		{
 			return 0;
 		}
 
-		psText = (char *) Z_Malloc( iLen+1, TAG_ANIMATION_CFG, qfalse );
+		psText = (char *) ri.Z_Malloc( iLen+1, TAG_ANIMATION_CFG, qfalse );
 
-		FS_Read( psText, iLen, f );
+		ri.FS_Read( psText, iLen, f );
 		psText[iLen] = '\0';
-		FS_FCloseFile( f );
+		ri.FS_FCloseFile( f );
 
 		AnimationCFGs[psCFGFilename] = psText;
 	}

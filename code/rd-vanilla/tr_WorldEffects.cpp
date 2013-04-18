@@ -968,102 +968,6 @@ bool R_SetTempGlobalFogColor(vec3_t color)
 	return true;
 }
 
-
-#ifdef _XBOX	// Xbox point sprite code
-static void pointBegin(GLint verts, float size)
-{
-	assert(!glw_state->inDrawBlock);
-
-	// start the draw block
-	glw_state->inDrawBlock = true;
-	glw_state->primitiveMode = D3DPT_POINTLIST;
-
-	// update DX with any pending state changes
-	glw_state->drawStride = 4;
-	DWORD mask = D3DFVF_XYZ | D3DFVF_DIFFUSE;
-	glw_state->device->SetVertexShader(mask);
-	glw_state->shaderMask = mask;
-
-	if(glw_state->matricesDirty[glwstate_t::MatrixMode_Model])
-	{
-		glw_state->device->SetTransform(D3DTS_VIEW, 
-			glw_state->matrixStack[glwstate_t::MatrixMode_Model]->GetTop());
-
-		glw_state->matricesDirty[glwstate_t::MatrixMode_Model] = false;
-	}
-
-	// Update the texture and states
-	// NOTE: Point sprites ALWAYS go on texture stage 3
-	glwstate_t::texturexlat_t::iterator it = glw_state->textureXlat.find(glw_state->currentTexture[0]);
-	glw_state->device->SetTexture( 3, it->second.mipmap );
-	glw_state->device->SetTextureStageState(3, D3DTSS_COLOROP,   glw_state->textureEnv[0]);
-	glw_state->device->SetTextureStageState(3, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	glw_state->device->SetTextureStageState(3, D3DTSS_COLORARG2, D3DTA_CURRENT);
-	glw_state->device->SetTextureStageState(3, D3DTSS_ALPHAOP,   glw_state->textureEnv[0]);
-	glw_state->device->SetTextureStageState(3, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	glw_state->device->SetTextureStageState(3, D3DTSS_ALPHAARG2, D3DTA_CURRENT);
-	glw_state->device->SetTextureStageState(3, D3DTSS_MAXANISOTROPY, it->second.anisotropy);
-	glw_state->device->SetTextureStageState(3, D3DTSS_MINFILTER, it->second.minFilter);
-	glw_state->device->SetTextureStageState(3, D3DTSS_MIPFILTER, it->second.mipFilter);
-	glw_state->device->SetTextureStageState(3, D3DTSS_MAGFILTER, it->second.magFilter);
-	glw_state->device->SetTextureStageState(3, D3DTSS_ADDRESSU,  it->second.wrapU);
-	glw_state->device->SetTextureStageState(3, D3DTSS_ADDRESSV,  it->second.wrapV);
-
-	glw_state->device->SetTexture( 0, NULL );
-	glw_state->device->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_DISABLE );
-
-	float attena = 1.0f, attenb = 0.0f, attenc = 0.01f;
-	glw_state->device->SetRenderState( D3DRS_POINTSPRITEENABLE, TRUE );
-	glw_state->device->SetRenderState( D3DRS_POINTSCALEENABLE,  TRUE );
-	glw_state->device->SetRenderState( D3DRS_POINTSIZE,         *((DWORD*)&size) );
-	glw_state->device->SetRenderState( D3DRS_POINTSIZE_MIN,     *((DWORD*)&attenb));
-	glw_state->device->SetRenderState( D3DRS_POINTSCALE_A,      *((DWORD*)&attena) );
-	glw_state->device->SetRenderState( D3DRS_POINTSCALE_B,      *((DWORD*)&attenb) );
-	glw_state->device->SetRenderState( D3DRS_POINTSCALE_C,      *((DWORD*)&attenc) );
-
-	// set vertex counters
-	glw_state->numVertices = 0;
-	glw_state->totalVertices = verts;
-	int max = glw_state->totalVertices;
-	if (max > 2040 / glw_state->drawStride)
-	{
-		max = 2040 / glw_state->drawStride;
-	}
-	glw_state->maxVertices = max;	
-
-	// open a draw packet
-	int num_packets;
-	if(verts == 0) {
-		num_packets = 1;
-	} else {
-		num_packets = (verts / glw_state->maxVertices) + (!!(verts % glw_state->maxVertices));
-	}
-	int cmd_size = num_packets * 3;
-	int vert_size = glw_state->drawStride * verts;
-
-	glw_state->device->BeginPush(vert_size + cmd_size + 2, 
-		&glw_state->drawArray);
-
-	glw_state->drawArray[0] = D3DPUSH_ENCODE(D3DPUSH_SET_BEGIN_END, 1);
-	glw_state->drawArray[1] = glw_state->primitiveMode;
-	glw_state->drawArray[2] = D3DPUSH_ENCODE(
-		D3DPUSH_NOINCREMENT_FLAG|D3DPUSH_INLINE_ARRAY, 
-		glw_state->drawStride * glw_state->maxVertices);
-	glw_state->drawArray += 3;
-}
-
-
-static void pointEnd()
-{
-	glw_state->device->SetRenderState( D3DRS_POINTSPRITEENABLE, FALSE );
-	glw_state->device->SetRenderState( D3DRS_POINTSCALEENABLE, FALSE );
-	glw_state->device->SetTexture( 3, NULL );
-	glw_state->device->SetTextureStageState( 3, D3DTSS_COLOROP, D3DTOP_DISABLE );
-}
-#endif // _XBOX
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // Particle Cloud
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -1832,7 +1736,7 @@ void R_WorldEffect_f(void)
 	if (Cvar_VariableIntegerValue("helpUsObi"))
 	{
 		char	temp[2048];
-		Cmd_ArgsBuffer(temp, sizeof(temp));
+		ri.Cmd_ArgsBuffer(temp, sizeof(temp));
 		R_WorldEffectCommand(temp);
 	}
 }

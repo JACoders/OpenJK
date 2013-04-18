@@ -3571,7 +3571,7 @@ void QGL_EnableLogging( qboolean enable )
 	// return if we're already active
 	if ( isEnabled && enable ) {
 		// decrement log counter and stop if it has reached 0
-		Cvar_Set( "r_logFile", va("%d", r_logFile->integer - 1 ) );
+		ri.Cvar_Set( "r_logFile", va("%d", r_logFile->integer - 1 ) );
 		if ( r_logFile->integer ) {
 			return;
 		}
