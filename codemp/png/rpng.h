@@ -34,7 +34,7 @@
 
 // Common defines and typedefs
 
-#define MAX_PNG_WIDTH			4096
+#define MAX_PNG_WIDTH			16384
 #define MAX_PNG_DEPTH			4
 
 typedef unsigned char	byte;
