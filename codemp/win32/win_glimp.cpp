@@ -1817,6 +1817,22 @@ void GLimp_Shutdown( void )
 }
 
 /*
+===============
+GLimp_Minimize
+
+Minimize the game so that user is back at the desktop
+===============
+*/
+void GLimp_Minimize(void)
+{
+	if ( tr.wv->hWnd )
+	{
+		// Todo with viewlog maybe should try to unminimize but mer.
+		ShowWindow( tr.wv->hWnd, SW_MINIMIZE );
+	}
+}
+
+/*
 ** GLimp_LogComment
 */
 void GLimp_LogComment( char *comment ) 

@@ -1274,6 +1274,7 @@ Ghoul2 Insert End
 	ri.Cmd_AddCommand( "modellist", R_Modellist_f );
 	ri.Cmd_AddCommand( "modelist", R_ModeList_f );
 	ri.Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f);
+	ri.Cmd_AddCommand( "minimize", GLimp_Minimize );
 
 }
 
@@ -1401,6 +1402,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	ri.Cmd_RemoveCommand ("modellist");
 	ri.Cmd_RemoveCommand ("modelist");
 	ri.Cmd_RemoveCommand ("modelcacheinfo");
+	ri.Cmd_RemoveCommand ("minimize");
 
 	if ( r_DynamicGlow && r_DynamicGlow->integer )
 	{
