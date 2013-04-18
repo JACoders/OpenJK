@@ -226,7 +226,7 @@ typedef struct {
 	void				(*Resample)								( byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components );
 	void				(*LoadImageJA)							( const char *name, byte **pic, int *width, int *height, int *format );
 	void				(*CreateAutomapImage)					( const char *name, const byte *pic, int width, int height, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
-	bool				(*PNG_Save)								( const char *name, byte *data, int width, int height, int bytedepth );
+	int					(*SavePNG)								( char *filename, byte *buf, size_t width, size_t height, int byteDepth );
 
 	IGhoul2InfoArray &	(*TheGhoul2InfoArray)					( void );
 } refexport_t;
@@ -237,6 +237,7 @@ typedef struct {
 typedef struct {
 	void			(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
 	void			(QDECL *Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
+	void			(QDECL *OPrintf)					( const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 
 	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
 	int				(*Milliseconds)						( void );
@@ -259,6 +260,8 @@ typedef struct {
 	void			(*Cmd_RemoveCommand)				( const char *cmd_name );
 	void			(*Cvar_Set)							( const char *var_name, const char *value );
 	cvar_t *		(*Cvar_Get)							( const char *var_name, const char *value, int flags );
+	void			(*Cvar_SetValue)					( const char *name, float value );
+	void			(*Cvar_CheckRange)					( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
 	void			(*Cvar_VariableStringBuffer)		( const char *var_name, char *buffer, int bufsize );
 	char *			(*Cvar_VariableString)				( const char *var_name );
 	float			(*Cvar_VariableValue)				( const char *var_name );

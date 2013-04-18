@@ -223,7 +223,7 @@ LONG WINAPI InputLineWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				SetWindowText( s_wcd.hwndInputLine, kg.g_consoleField.buffer);
 				SendMessage(s_wcd.hwndInputLine, EM_SETSEL, strlen(kg.g_consoleField.buffer) , MAKELONG(0xffff, 0xffff) );
 			}
-
+			break;
 		case WM_KEYDOWN:
 			if (wParam == VK_UP)
 			{

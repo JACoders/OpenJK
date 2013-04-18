@@ -57,9 +57,7 @@ ICARUS_Instance *ICARUS_Instance::Create( interface_export_t *ie )
 {
 	ICARUS_Instance *instance = new ICARUS_Instance;
 	instance->m_interface = ie;
-#ifdef _WIN32
-	OutputDebugString( "ICARUS Instance successfully created\n" );
-#endif
+	Com_OPrintf( "ICARUS Instance successfully created\n" );
 	return instance;
 }
 
@@ -124,30 +122,22 @@ int ICARUS_Instance::Delete( void )
 	Free();
 
 #ifdef _DEBUG
-	
-	char	buffer[1024];
 
-	OutputDebugString( "\nICARUS Instance Debug Info:\n---------------------------\n" );
+	Com_OPrintf( "\nICARUS Instance Debug Info:\n---------------------------\n" );
 
-	sprintf( (char *) buffer, "Sequencers Allocated:\t%d\n", m_DEBUG_NumSequencerAlloc );
-	OutputDebugString( (const char *) &buffer );
+	Com_OPrintf( "Sequencers Allocated:\t%d\n", m_DEBUG_NumSequencerAlloc );
 
-	sprintf( (char *) buffer, "Sequencers Freed:\t\t%d\n", m_DEBUG_NumSequencerFreed );
-	OutputDebugString( (const char *) &buffer );
+	Com_OPrintf( "Sequencers Freed:\t\t%d\n", m_DEBUG_NumSequencerFreed );
 
-	sprintf( (char *) buffer, "Sequencers Residual:\t%d\n\n", m_DEBUG_NumSequencerResidual );
-	OutputDebugString( (const char *) &buffer );
+	Com_OPrintf( "Sequencers Residual:\t%d\n\n", m_DEBUG_NumSequencerResidual );
 
-	sprintf( (char *) buffer, "Sequences Allocated:\t%d\n", m_DEBUG_NumSequenceAlloc );
-	OutputDebugString( (const char *) &buffer );
+	Com_OPrintf( "Sequences Allocated:\t%d\n", m_DEBUG_NumSequenceAlloc );
 
-	sprintf( (char *) buffer, "Sequences Freed:\t\t%d\n", m_DEBUG_NumSequenceFreed );
-	OutputDebugString( (const char *) &buffer );
+	Com_OPrintf( "Sequences Freed:\t\t%d\n", m_DEBUG_NumSequenceFreed );
 
-	sprintf( (char *) buffer, "Sequences Residual:\t\t%d\n\n", m_DEBUG_NumSequenceResidual );
-	OutputDebugString( (const char *) &buffer );
+	Com_OPrintf( "Sequences Residual:\t\t%d\n\n", m_DEBUG_NumSequenceResidual );
 
-	OutputDebugString( "\n" );
+	Com_OPrintf( "\n" );
 
 #endif
 

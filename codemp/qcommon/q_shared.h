@@ -1654,6 +1654,8 @@ char	*Q_strrchr( const char* string, int c );
 void	Q_strncpyz( char *dest, const char *src, int destsize );
 void	Q_strcat( char *dest, int size, const char *src );
 
+const char *Q_stristr( const char *s, const char *find);
+
 // strlen that discounts Quake color sequences
 int Q_PrintStrlen( const char *string );
 // removes color sequences from string
@@ -1760,6 +1762,11 @@ typedef struct cvar_s {
 	int			modificationCount;	// incremented each time the cvar is changed
 	float		value;				// atof( string )
 	int			integer;			// atoi( string )
+	qboolean	validate;
+	qboolean	integral;
+	float		min;
+	float		max;
+
 	struct cvar_s *next;
 	struct cvar_s *prev;
 	struct cvar_s *hashNext;

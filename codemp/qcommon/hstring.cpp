@@ -402,8 +402,8 @@ public:
 		int i;
 		for (i=1;i<ThePool().mNextStringId;i++)
 		{
-			OutputDebugString(gCharPtrs[i]);
-			OutputDebugString("\n");
+			Com_OPrintf(gCharPtrs[i]);
+			Com_OPrintf("\n");
 		}
 #endif
 #if _DEBUG
