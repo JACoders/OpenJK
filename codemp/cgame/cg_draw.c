@@ -2568,7 +2568,7 @@ qboolean CG_DrawVehicleHud( const centity_t *cent )
 	}
 	veh = &cg_entities[ps->m_iVehicleNum];
 
-	if ( !veh )
+	if ( !veh || !veh->m_pVehicle )
 	{
 		return qtrue;	// Draw player HUD
 	}

@@ -70,14 +70,14 @@ public:
 			    (unsigned int)totalBytes,
 			    (unsigned int)((totalBytes/mElapsedTime)*1000));
 		Sleep(10);
-		OutputDebugString(msg);
+		Com_OPrintf("%s", msg);
 		for(j=sort.begin();j!=sort.end();j++)
 		{
 			percent=(((float)(*j).first)/totalBytes)*100.0f;
 			assert(strlen((*j).second.c_str())<1024);
 			sprintf(msg,"%36s : %3.4f percent : %d bytes \n",(*j).second.c_str(),percent,(*j).first);
 			Sleep(10);
-			OutputDebugString(msg);
+			Com_OPrintf("%s", msg);
 		}
 	}
 };

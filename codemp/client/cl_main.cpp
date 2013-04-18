@@ -680,6 +680,7 @@ void CL_MapLoading( void ) {
 
 	// Set this to localhost.
 	Cvar_Set( "cl_currentServerAddress", "Localhost");
+	Cvar_Set( "cl_currentServerIP", "loopback");
 
 	Con_Close();
 	cls.keyCatchers = 0;
@@ -942,6 +943,7 @@ CL_Connect_f
 */
 void CL_Connect_f( void ) {
 	char	*server;
+	const char	*serverString;
 
 	if ( Cmd_Argc() != 2 ) {
 		Com_Printf( "usage: connect [server]\n");
@@ -984,10 +986,10 @@ void CL_Connect_f( void ) {
 	if (clc.serverAddress.port == 0) {
 		clc.serverAddress.port = BigShort( PORT_SERVER );
 	}
-	Com_Printf( "%s resolved to %i.%i.%i.%i:%i\n", cls.servername,
-		clc.serverAddress.ip[0], clc.serverAddress.ip[1],
-		clc.serverAddress.ip[2], clc.serverAddress.ip[3],
-		BigShort( clc.serverAddress.port ) );
+
+	serverString = NET_AdrToString(clc.serverAddress);
+
+	Com_Printf( "%s resolved to %s\n", cls.servername, serverString );
 
 	// if we aren't playing on a lan, we need to authenticate
 	if ( NET_IsLocalAddress( clc.serverAddress ) ) {
@@ -1002,6 +1004,7 @@ void CL_Connect_f( void ) {
 
 	// server connection string
 	Cvar_Set( "cl_currentServerAddress", server );
+	Cvar_Set( "cl_currentServerIP", serverString );
 }
 
 #define MAX_RCON_MESSAGE 1024
@@ -2084,8 +2087,8 @@ void CL_Frame ( int msec ) {
 		if(!(frameCount&0x1f))
 		{
 			Com_sprintf(mess,sizeof(mess),"Frame rate=%f\n\n",1000.0f*(1.0/(avgFrametime/32.0f)));
-	//		OutputDebugString(mess);
-			Com_Printf(mess);
+	//		Com_OPrintf("%s", mess);
+			Com_Printf("%s", mess);
 			avgFrametime=0.0f;
 		}
 		frameCount++;
@@ -2313,6 +2316,7 @@ void CL_InitRef( void ) {
 	//set up the import table
 	ri.Printf = CL_RefPrintf;
 	ri.Error = Com_Error;
+	ri.OPrintf = Com_OPrintf;
 	ri.Milliseconds = Sys_Milliseconds2; //FIXME: unix+mac need this
 	ri.Hunk_AllocateTempMemory = Hunk_AllocateTempMemory;
 	ri.Hunk_FreeTempMemory = Hunk_FreeTempMemory;
@@ -2330,6 +2334,8 @@ void CL_InitRef( void ) {
 	ri.Cmd_RemoveCommand = Cmd_RemoveCommand;
 	ri.Cvar_Set = Cvar_Set;
 	ri.Cvar_Get = Cvar_Get;
+	ri.Cvar_SetValue = Cvar_SetValue;
+	ri.Cvar_CheckRange = Cvar_CheckRange;
 	ri.Cvar_VariableStringBuffer = Cvar_VariableStringBuffer;
 	ri.Cvar_VariableString = Cvar_VariableString;
 	ri.Cvar_VariableValue = Cvar_VariableValue;

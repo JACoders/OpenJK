@@ -697,7 +697,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 			LPCSTR psMusicState		= (*itMusicData).first.c_str();
 			MusicFile_t &MusicFile	= (*itMusicData).second;
 
-			OutputDebugString(va("Music State:  \"%s\",  File: \"%s\"\n",psMusicState, MusicFile.sFileNameBase.c_str()));
+			Com_OPrintf("Music State:  \"%s\",  File: \"%s\"\n",psMusicState, MusicFile.sFileNameBase.c_str());
 
 			// entry times...
 			//
@@ -706,7 +706,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 				LPCSTR	psMarkerName	= (*itEntryTimes).first.c_str();
 				float	fEntryTime		= (*itEntryTimes).second;
 
-				OutputDebugString(va("Entry time for \"%s\": %f\n", psMarkerName, fEntryTime));
+				Com_OPrintf("Entry time for \"%s\": %f\n", psMarkerName, fEntryTime);
 			}
 
 			// exit points...
@@ -715,7 +715,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 			{
 				MusicExitPoint_t &MusicExitPoint = MusicFile.MusicExitPoints[i];
 
-				OutputDebugString(va("Exit point %d:	sNextFile: \"%s\", sNextMark: \"%s\"\n",i,MusicExitPoint.sNextFile.c_str(),MusicExitPoint.sNextMark.c_str()));
+				Com_OPrintf("Exit point %d:	sNextFile: \"%s\", sNextMark: \"%s\"\n",i,MusicExitPoint.sNextFile.c_str(),MusicExitPoint.sNextMark.c_str());
 			}
 
 			// exit times...
@@ -724,7 +724,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 			{
 				MusicExitTime_t &MusicExitTime = MusicFile.MusicExitTimes[i];
 				
-				OutputDebugString(va("Exit time %d:		fTime: %f, iExitPoint: %d\n",i,MusicExitTime.fTime,MusicExitTime.iExitPoint));
+				Com_OPrintf("Exit time %d:		fTime: %f, iExitPoint: %d\n",i,MusicExitTime.fTime,MusicExitTime.iExitPoint);
 			}
 		}
 	}
@@ -1096,7 +1096,7 @@ float Music_GetRandomEntryTime( MusicState_e eMusicState )
 			}
 			iPrevRandomNumber = iRandomEntryNum;
 
-//			OutputDebugString(va("Music_GetRandomEntryTime(): Entry %d\n",iRandomEntryNum));
+//			Com_OPrintf("Music_GetRandomEntryTime(): Entry %d\n",iRandomEntryNum);
 
 			for (MusicEntryTimes_t::iterator itEntryTime = MusicFile.MusicEntryTimes.begin(); itEntryTime != MusicFile.MusicEntryTimes.end(); ++itEntryTime)
 			{

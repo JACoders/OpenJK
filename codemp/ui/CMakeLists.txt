@@ -59,11 +59,11 @@ set(MPUIUIFiles
 source_group("ui" FILES ${MPUIUIFiles})
 set(MPUIFiles ${MPUIFiles} ${MPUIUIFiles})
 
-set(MPUICgameFiles
-	"${MPDir}/cgame/tr_types.h"
+set(MPUIRendererFiles
+	"${MPDir}/renderer/tr_types.h"
 	)
-source_group("cgame" FILES ${MPUICgameFiles})
-set(MPUIFiles ${MPUIFiles} ${MPUICgameFiles})
+source_group("renderer" FILES ${MPUIRendererFiles})
+set(MPUIFiles ${MPUIFiles} ${MPUIRendererFiles})
 
 add_library(${MPUI} SHARED ${MPUIFiles})
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPUIDefines};${ReleaseDefines}")

@@ -174,7 +174,6 @@
     <ClInclude Include="..\qcommon\qfiles.h" />
     <ClInclude Include="..\game\surfaceflags.h" />
     <ClInclude Include="..\qcommon\tags.h" />
-    <ClInclude Include="..\cgame\tr_types.h" />
     <ClInclude Include="ui_force.h" />
     <ClInclude Include="ui_local.h" />
     <ClInclude Include="ui_public.h" />
