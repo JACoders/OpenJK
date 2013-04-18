@@ -32,8 +32,8 @@ This file is part of Jedi Academy.
 ** QGL_Shutdown() - unloads libraries, NULLs function pointers
 */
 #include <float.h>
-#include "../renderer/tr_local.h"
-#include "glw_win.h"
+#include "tr_local.h"
+#include "../win32/glw_win.h"
 
 void QGL_EnableLogging( qboolean enable );
 

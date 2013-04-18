@@ -38,11 +38,11 @@ This file is part of Jedi Academy.
 ** related functions that are relevant ONLY to win_glimp.c
 */
 #include <assert.h>
-#include "../renderer/tr_local.h"
+#include "tr_local.h"
 #include "../qcommon/qcommon.h"
-#include "glw_win.h"
-#include "win_local.h"
-#include "resource.h"	//JFM: to get icon
+#include "../win32/glw_win.h"
+#include "../win32/win_local.h"
+#include "../win32/resource.h"	//JFM: to get icon
 
 extern void WG_CheckHardwareGamma( void );
 extern void WG_RestoreGamma( void );

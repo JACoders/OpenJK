@@ -18,36 +18,36 @@ This file is part of Jedi Academy.
 
 // leave this as first line for PCH reasons...
 //
-#include "../server/exe_headers.h"
+#include "../../server/exe_headers.h"
 
 
 
 #ifndef __Q_SHARED_H
-	#include "../game/q_shared.h"
+	#include "../../game/q_shared.h"
 #endif
 
 #if !defined(TR_LOCAL_H)
-	#include "../renderer/tr_local.h"
+	#include "../tr_local.h"
 #endif
 
-#include "../renderer/MatComp.h"
+#include "../MatComp.h"
 
 #if !defined(G2_H_INC)
-	#include "G2.h"
+	#include "../../ghoul2/G2.h"
 #endif
 
 #if !defined (MINIHEAP_H_INC)
-	#include "../qcommon/miniheap.h"
+	#include "../../qcommon/miniheap.h"
 #endif
 
 #define G2_MODEL_OK(g) ((g)&&(g)->mValid&&(g)->aHeader&&(g)->currentModel&&(g)->animModel)
 
-#include "../server/server.h"
+#include "../../server/server.h"
 
 #include <FLOAT.H>
 
 #ifdef _G2_GORE
-#include "ghoul2_gore.h"
+#include "../../ghoul2/ghoul2_gore.h"
 
 #define GORE_TAG_UPPER (256)
 #define GORE_TAG_MASK (~255)

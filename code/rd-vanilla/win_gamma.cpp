@@ -26,10 +26,10 @@ This file is part of Jedi Academy.
 
 
 #include <assert.h>
-#include "../renderer/tr_local.h"
+#include "tr_local.h"
 #include "../qcommon/qcommon.h"
-#include "glw_win.h"
-#include "win_local.h"
+#include "../win32/glw_win.h"
+#include "../win32/win_local.h"
 
 static unsigned short s_oldHardwareGamma[3][256];
 
