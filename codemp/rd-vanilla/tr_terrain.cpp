@@ -736,9 +736,9 @@ void CTRLandScape::CalculateShaders(void)
 				}
 
 #ifdef _DEBUG
-				OutputDebugString ( va("Flat Area:  %f %f\n", 
+				Com_OPrintf("Flat Area:  %f %f\n", 
 									GetMins()[0] + (GetMaxs()[0]-GetMins()[0])/width * x,
-									GetMins()[1] + (GetMaxs()[1]-GetMins()[1])/height * y) );
+									GetMins()[1] + (GetMaxs()[1]-GetMins()[1])/height * y );
 #endif
 			}
 		}

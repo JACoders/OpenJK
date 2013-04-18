@@ -27,7 +27,6 @@ set(MPGameGameFiles
 	"${MPDir}/game/bg_weapons.c"
 	"${MPDir}/game/FighterNPC.c"
 	"${MPDir}/game/g_active.c"
-	"${MPDir}/game/g_arenas.c"
 	"${MPDir}/game/g_bot.c"
 	"${MPDir}/game/g_client.c"
 	"${MPDir}/game/g_cmds.c"
@@ -143,10 +142,15 @@ set(MPGameCgameFiles
 	"${MPDir}/cgame/animtable.h"
 	"${MPDir}/cgame/cg_local.h"
 	"${MPDir}/cgame/cg_public.h"
-	"${MPDir}/cgame/tr_types.h"
 	)
 source_group("cgame" FILES ${MPGameCgameFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameCgameFiles})
+
+set(MPGameRendererFiles
+	"${MPDir}/renderer/tr_types.h"
+	)
+source_group("renderer" FILES ${MPGameRendererFiles})
+set(MPGameFiles ${MPGameFiles} ${MPGameRendererFiles})
 
 set(MPGameBotlibFiles
 	"${MPDir}/botlib/be_aas.h"

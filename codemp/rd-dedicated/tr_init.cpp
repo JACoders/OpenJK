@@ -14,7 +14,7 @@
 #endif
 
 #include "G2_local.h"
-#include "png/png.h"
+#include "png/rpng.h"
 
 
 //#ifdef __USEA3D
@@ -201,29 +201,6 @@ Ghoul2 Insert End
 cvar_t *r_aviMotionJpegQuality;
 cvar_t *r_screenshotJpegQuality;
 
-static void AssertCvarRange( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral )
-{
-	if ( shouldBeIntegral )
-	{
-		if ( ( int ) cv->value != cv->integer )
-		{
-			Com_Printf (S_COLOR_YELLOW  "WARNING: cvar '%s' must be integral (%f)\n", cv->name, cv->value );
-			ri.Cvar_Set( cv->name, va( "%d", cv->integer ) );
-		}
-	}
-
-	if ( cv->value < minVal )
-	{
-		Com_Printf (S_COLOR_YELLOW  "WARNING: cvar '%s' out of range (%f < %f)\n", cv->name, cv->value, minVal );
-		ri.Cvar_Set( cv->name, va( "%f", minVal ) );
-	}
-	else if ( cv->value > maxVal )
-	{
-		Com_Printf (S_COLOR_YELLOW  "WARNING: cvar '%s' out of range (%f > %f)\n", cv->name, cv->value, maxVal );
-		ri.Cvar_Set( cv->name, va( "%f", maxVal ) );
-	}
-}
-
 /*
 ** R_GetModeInfo
 */
@@ -328,8 +305,8 @@ void R_Register( void )
 	r_DynamicGlowWidth					= ri.Cvar_Get( "r_DynamicGlowWidth",				"320",						CVAR_CHEAT|CVAR_LATCH );
 	r_DynamicGlowHeight					= ri.Cvar_Get( "r_DynamicGlowHeight",				"240",						CVAR_CHEAT|CVAR_LATCH );
 	r_picmip							= ri.Cvar_Get( "r_picmip",							"1",						CVAR_ARCHIVE|CVAR_LATCH );
+	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
 	r_colorMipLevels					= ri.Cvar_Get( "r_colorMipLevels",					"0",						CVAR_LATCH );
-	AssertCvarRange( r_picmip, 0, 16, qtrue );
 	r_detailTextures					= ri.Cvar_Get( "r_detailtextures",					"1",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_texturebits						= ri.Cvar_Get( "r_texturebits",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_texturebitslm						= ri.Cvar_Get( "r_texturebitslm",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
@@ -352,7 +329,7 @@ void R_Register( void )
 	r_uiFullScreen						= ri.Cvar_Get( "r_uifullscreen",					"0",						CVAR_NONE );
 	r_subdivisions						= ri.Cvar_Get( "r_subdivisions",					"4",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_displayRefresh					= ri.Cvar_Get( "r_displayRefresh",					"0",						CVAR_LATCH );
-	AssertCvarRange( r_displayRefresh, 0, 200, qtrue );
+	ri.Cvar_CheckRange( r_displayRefresh, 0, 200, qtrue );
 	r_fullbright						= ri.Cvar_Get( "r_fullbright",						"0",						CVAR_CHEAT );
 	r_intensity							= ri.Cvar_Get( "r_intensity",						"1",						CVAR_LATCH );
 	r_singleShader						= ri.Cvar_Get( "r_singleShader",					"0",						CVAR_CHEAT|CVAR_LATCH );
@@ -361,7 +338,7 @@ void R_Register( void )
 	r_autolodscalevalue					= ri.Cvar_Get( "r_autolodscalevalue",				"0",						CVAR_ROM );
 	r_flares							= ri.Cvar_Get( "r_flares",							"1",						CVAR_ARCHIVE );
 	r_znear								= ri.Cvar_Get( "r_znear",							"4",						CVAR_CHEAT );
-	AssertCvarRange( r_znear, 0.001f, 200, qtrue );
+	ri.Cvar_CheckRange( r_znear, 0.001f, 200, qfalse ); // was qtrue in JA, is qfalse properly in ioq3
 	r_ignoreGLErrors					= ri.Cvar_Get( "r_ignoreGLErrors",					"1",						CVAR_ARCHIVE );
 	r_fastsky							= ri.Cvar_Get( "r_fastsky",							"0",						CVAR_ARCHIVE );
 	r_inGameVideo						= ri.Cvar_Get( "r_inGameVideo",						"1",						CVAR_ARCHIVE );
@@ -383,6 +360,7 @@ void R_Register( void )
 	r_roofCullCeilDist					= ri.Cvar_Get( "r_roofCullCeilDist",				"256",						CVAR_CHEAT ); //attempted smart method of culling out upwards facing surfaces on roofs for automap shots -rww
 	r_roofCullFloorDist					= ri.Cvar_Get( "r_roofCeilFloorDist",				"128",						CVAR_CHEAT ); //attempted smart method of culling out upwards facing surfaces on roofs for automap shots -rww
 	r_primitives						= ri.Cvar_Get( "r_primitives",						"0",						CVAR_ARCHIVE );
+	ri.Cvar_CheckRange( r_primitives, -1, 3, qtrue );
 	r_ambientScale						= ri.Cvar_Get( "r_ambientScale",					"0.6",						CVAR_CHEAT );
 	r_directedScale						= ri.Cvar_Get( "r_directedScale",					"1",						CVAR_CHEAT );
 	r_autoMap							= ri.Cvar_Get( "r_autoMap",							"0",						CVAR_ARCHIVE ); //automap renderside toggle for debugging -rww
@@ -695,7 +673,7 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.Resample								= R_Resample;
 //	re.LoadImageJA							= RE_LoadImage;
 //	re.CreateAutomapImage					= R_CreateAutomapImage;
-	re.PNG_Save								= PNG_Save;
+	re.SavePNG								= RE_SavePNG;
 
 	re.TheGhoul2InfoArray					= TheGhoul2InfoArray;
 
