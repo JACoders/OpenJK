@@ -408,6 +408,9 @@ LONG WINAPI MainWndProc (
 			fActive = LOWORD(wParam);
 			fMinimized = (BOOL) HIWORD(wParam);
 
+			Cvar_SetValue( "com_unfocused",	(fActive == WA_INACTIVE));
+			Cvar_SetValue( "com_minimized", fMinimized);
+
 			VID_AppActivate( fActive != WA_INACTIVE, fMinimized);
 			SNDDMA_Activate( (qboolean)(fActive != WA_INACTIVE && !fMinimized) );
 		}
