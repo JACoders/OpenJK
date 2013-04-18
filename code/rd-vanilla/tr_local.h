@@ -37,6 +37,8 @@ long myftol( float f );
 #define	myftol(x) ((int)(x))
 #endif
 
+extern refimport_t ri;
+
 
 // 14 bits
 // see QSORT_SHADERNUM_SHIFT
