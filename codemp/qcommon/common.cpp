@@ -119,6 +119,7 @@ A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 void QDECL Com_Printf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
+	static qboolean opening_qconsole = qfalse;
 
 	va_start (argptr,fmt);
 	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
@@ -130,8 +131,9 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			*rd_buffer = 0;
 		}
 		Q_strcat(rd_buffer, rd_buffersize, msg);
-		rd_flush(rd_buffer);			
-		*rd_buffer = 0;
+    // TTimo nooo .. that would defeat the purpose
+		//rd_flush(rd_buffer);			
+		//*rd_buffer = 0;
 		return;
 	}
 
@@ -145,21 +147,33 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 	// logfile
 	if ( com_logfile && com_logfile->integer ) {
-		if ( !logfile && FS_Initialized() ) {
+    // TTimo: only open the qconsole.log if the filesystem is in an initialized state
+    //   also, avoid recursing in the qconsole.log opening (i.e. if fs_debug is on)
+		if ( !logfile && FS_Initialized() && !opening_qconsole ) {
 			struct tm *newtime;
 			time_t aclock;
+
+			opening_qconsole = qtrue;
 
 			time( &aclock );
 			newtime = localtime( &aclock );
 
 			logfile = FS_FOpenFileWrite( "qconsole.log" );
-			Com_Printf( "logfile opened on %s\n", asctime( newtime ) );
-			if ( com_logfile->integer > 1 ) {
-				// force it to not buffer so we get valid
-				// data even if we are crashing
-				FS_ForceFlush(logfile);
+
+			if ( logfile ) {
+				Com_Printf( "logfile opened on %s\n", asctime( newtime ) );
+				if ( com_logfile->integer > 1 ) {
+					// force it to not buffer so we get valid
+					// data even if we are crashing
+					FS_ForceFlush(logfile);
+				}
+			}
+			else {
+				Com_Printf( "Opening qconsole.log failed!\n" );
+				Cvar_SetValue( "logfile", 0 );
 			}
 		}
+		opening_qconsole = qfalse;
 		if ( logfile && FS_Initialized()) {
 			FS_Write(msg, strlen(msg), logfile);
 		}
@@ -192,7 +206,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	}
 
 	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 	
 	Com_Printf ("%s", msg);
@@ -205,7 +219,7 @@ void QDECL Com_OPrintf( const char *fmt, ...)
 	char		msg[MAXPRINTMSG];
 		
 	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 #ifdef _WIN32
 	OutputDebugString(msg);
@@ -264,7 +278,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	com_errorEntered = qtrue;
 
 	va_start (argptr,fmt);
-	vsprintf (com_errorMessage,fmt,argptr);
+	Q_vsnprintf (com_errorMessage,sizeof(com_errorMessage), fmt,argptr);
 	va_end (argptr);
 
 	if ( code != ERR_DISCONNECT ) {
@@ -1066,6 +1080,27 @@ static void Com_Crash_f( void ) {
 #endif
 
 /*
+==================
+Com_ExecuteCfg
+==================
+*/
+
+void Com_ExecuteCfg(void)
+{
+	Cbuf_ExecuteText(EXEC_NOW, "exec mpdefault.cfg\n");
+	Cbuf_Execute(); // Always execute after exec to prevent text buffer overflowing
+
+	if(!Com_SafeMode())
+	{
+		// skip the q3config.cfg and autoexec.cfg if "safe" is on the command line
+		Cbuf_ExecuteText(EXEC_NOW, "exec " Q3CONFIG_CFG "\n");
+		Cbuf_Execute();
+		Cbuf_ExecuteText(EXEC_NOW, "exec autoexec.cfg\n");
+		Cbuf_Execute();
+	}
+}
+
+/*
 =================
 Com_Init
 =================
@@ -1102,7 +1137,7 @@ void Com_Init( char *commandLine ) {
 		Rand_Init(Sys_Milliseconds(true));
 
 		// get the developer cvar set as early as possible
-		Com_StartupVariable( "developer" );
+		com_developer = Cvar_Get("developer", "0", CVAR_TEMP);
 
 		// done early so bind command exists
 		CL_InitKeyCommands();
@@ -1111,16 +1146,7 @@ void Com_Init( char *commandLine ) {
 
 		Com_InitJournaling();
 
-		Cbuf_AddText ("exec mpdefault.cfg\n");
-
-		// skip the jampconfig.cfg if "safe" is on the command line
-		if ( !Com_SafeMode() ) {
-			Cbuf_AddText ("exec " Q3CONFIG_CFG "\n");
-		}
-
-		Cbuf_AddText ("exec autoexec.cfg\n");
-
-		Cbuf_Execute ();
+		Com_ExecuteCfg();
 
 		// override anything from the config files with command line args
 		Com_StartupVariable( NULL );
@@ -1128,8 +1154,10 @@ void Com_Init( char *commandLine ) {
 	  // get dedicated here for proper hunk megs initialization
 	#ifdef DEDICATED
 		com_dedicated = Cvar_Get ("dedicated", "2", CVAR_ROM);
+		Cvar_CheckRange( com_dedicated, 1, 2, qtrue );
 	#else
 		com_dedicated = Cvar_Get ("dedicated", "0", CVAR_LATCH);
+		Cvar_CheckRange( com_dedicated, 0, 2, qtrue );
 	#endif
 		// allocate the stack based hunk allocator
 		Com_InitHunkMemory();
@@ -1144,7 +1172,6 @@ void Com_Init( char *commandLine ) {
 		com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE);
 		com_blood = Cvar_Get ("com_blood", "1", CVAR_ARCHIVE);
 
-		com_developer = Cvar_Get ("developer", "0", CVAR_TEMP );
 		com_vmdebug = Cvar_Get ("vmdebug", "0", CVAR_TEMP );
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
 

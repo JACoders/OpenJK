@@ -268,10 +268,8 @@ void Cmd_Exec_f( void ) {
 		Com_Printf ("couldn't exec %s\n", filename);
 		return;
 	}
-#ifndef FINAL_BUILD
 	if (!quiet)
 		Com_Printf ("execing %s\n", filename);
-#endif
 	
 	Cbuf_InsertText (f.c);
 
