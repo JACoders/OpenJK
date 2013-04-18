@@ -1,5 +1,7 @@
 // tr_flares.c
 
+#if 0		// no longer functional according toe Ensiform --eez
+
 #include "tr_local.h"
 
 /*
@@ -425,3 +427,4 @@ void RB_RenderFlares (void) {
 	qglPopMatrix();
 }
 
+#endif
