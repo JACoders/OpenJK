@@ -2316,6 +2316,7 @@ void CL_InitRef( void ) {
 	//set up the import table
 	ri.Printf = CL_RefPrintf;
 	ri.Error = Com_Error;
+	ri.OPrintf = Com_OPrintf;
 	ri.Milliseconds = Sys_Milliseconds2; //FIXME: unix+mac need this
 	ri.Hunk_AllocateTempMemory = Hunk_AllocateTempMemory;
 	ri.Hunk_FreeTempMemory = Hunk_FreeTempMemory;
