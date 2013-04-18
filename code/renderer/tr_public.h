@@ -20,6 +20,7 @@ This file is part of Jedi Academy.
 #define __TR_PUBLIC_H
 
 #include "tr_types.h"
+#include "../qcommon/qcommon.h"
 
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
@@ -34,15 +35,35 @@ typedef struct {
 	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
 	int				(*Milliseconds)						( void );
 
-	// memory management (can use tr_subs)
-	void *			(*Hunk_AllocateTempMemory)			( int size );
-	void			(*Hunk_FreeTempMemory)				( void *buf );
-	void *			(*Hunk_Alloc)						( int size, ha_pref preference );
-	int				(*Hunk_MemoryRemaining)				( void );
-	void *			(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean bZeroit /*= qfalse*/, int iAlign /*= 4*/); // return memory NOT zero-filled by default
-	void			(*Z_Free)							( void *ptr );
-	int				(*Z_MemSize)						( memtag_t eTag );
-	void			(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );
+
+	void			(*Cmd_ExecuteString)				( const char *text );
+	int				(*Cmd_Argc)							( void );
+	char *			(*Cmd_Argv)							( int arg );
+	void			(*Cmd_ArgsBuffer)					( char *buffer, int bufferLength );
+	void			(*Cmd_AddCommand)					( const char *cmd_name, xcommand_t function );
+	void			(*Cmd_RemoveCommand)				( const char *cmd_name );
+	void			(*Cvar_Set)							( const char *var_name, const char *value );
+	cvar_t *		(*Cvar_Get)							( const char *var_name, const char *value, int flags );
+	void			(*Cvar_SetValue)					( const char *name, float value );
+	void			(*Cvar_CheckRange)					( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
+	void			(*Cvar_VariableStringBuffer)		( const char *var_name, char *buffer, int bufsize );
+	char *			(*Cvar_VariableString)				( const char *var_name );
+	float			(*Cvar_VariableValue)				( const char *var_name );
+	int				(*Cvar_VariableIntegerValue)		( const char *var_name );
+
+	void			(*FS_FreeFile)						( void *buffer );
+	void			(*FS_FreeFileList)					( char **fileList );
+	int				(*FS_Read)							( void *buffer, int len, fileHandle_t f );
+	int				(*FS_ReadFile)						( const char *qpath, void **buffer );
+	void			(*FS_FCloseFile)					( fileHandle_t f );
+	int				(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+	fileHandle_t	(*FS_FOpenFileWrite)				( const char *qpath );
+	int				(*FS_FOpenFileByMode)				( const char *qpath, fileHandle_t *f, fsMode_t mode );
+	qboolean		(*FS_FileExists)					( const char *file );
+	int				(*FS_FileIsInPAK)					( const char *filename, int *pChecksum );
+	char **			(*FS_ListFiles)						( const char *directory, const char *extension, int *numfiles );
+	int				(*FS_Write)							( const void *buffer, int len, fileHandle_t f );
+	void			(*FS_WriteFile)						( const char *qpath, const void *buffer, int size );
 } refimport_t;
 
 //

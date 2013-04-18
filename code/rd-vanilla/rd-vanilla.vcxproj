@@ -178,6 +178,7 @@
     <ClCompile Include="tr_shadows.cpp" />
     <ClCompile Include="tr_sky.cpp" />
     <ClCompile Include="tr_stl.cpp" />
+    <ClCompile Include="tr_subs.cpp" />
     <ClCompile Include="tr_surface.cpp" />
     <ClCompile Include="tr_surfacesprites.cpp" />
     <ClCompile Include="tr_terrain.cpp" />

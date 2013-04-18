@@ -386,6 +386,9 @@
     <ClCompile Include="win_qgl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tr_subs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ref_trin.def">

@@ -29,7 +29,7 @@ void QDECL Com_Error( int level, const char *error, ... )
 }
 
 // HUNK
-void *Hunk_AllocateTempMemory( int size ) {
+/*void *Hunk_AllocateTempMemory( int size ) {
 	return ri.Hunk_AllocateTempMemory( size );
 }
 
@@ -60,7 +60,7 @@ int Z_MemSize( memtag_t eTag ) {
 
 void Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
 	ri.Z_MorphMallocTag( pvBuffer, eDesiredTag );
-}
+}*/
 
 // Parsing
 
