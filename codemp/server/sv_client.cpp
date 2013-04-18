@@ -546,6 +546,7 @@ void SV_SendClientGameState( client_t *client ) {
 	if ( client->state == CS_CONNECTED )
 		client->state = CS_PRIMED;
 	client->pureAuthentic = 0;
+	client->gotCP = qfalse;
 
 	// when we receive the first packet from the client, we will
 	// notice that it is from a different serverid and that the
@@ -1218,6 +1219,8 @@ static void SV_VerifyPaks_f( client_t *cl ) {
 			break;
 		}
 
+		cl->gotCP = qtrue;
+
 		if (bGood) {
 			cl->pureAuthentic = 1;
 		} 
@@ -1238,6 +1241,7 @@ SV_ResetPureClient_f
 */
 static void SV_ResetPureClient_f( client_t *cl ) {
 	cl->pureAuthentic = 0;
+	cl->gotCP = qfalse;
 }
 
 /*
@@ -1536,6 +1540,20 @@ static void SV_UserMove( client_t *cl, msg_t *msg, qboolean delta ) {
 	// save time for ping calculation
 	cl->frames[ cl->messageAcknowledge & PACKET_MASK ].messageAcked = svs.time;
 
+	// TTimo
+	// catch the no-cp-yet situation before SV_ClientEnterWorld
+	// if CS_ACTIVE, then it's time to trigger a new gamestate emission
+	// if not, then we are getting remaining parasite usermove commands, which we should ignore
+	if (sv_pure->integer != 0 && cl->pureAuthentic == 0 && !cl->gotCP) {
+		if (cl->state == CS_ACTIVE)
+		{
+			// we didn't get a cp yet, don't assume anything and just send the gamestate all over again
+			Com_DPrintf( "%s: didn't get cp command, resending gamestate\n", cl->name);
+			SV_SendClientGameState( cl );
+		}
+		return;
+	}
+
 	// if this is the first usercmd we have received
 	// this gamestate, put the client into the world
 	if ( cl->state == CS_PRIMED ) {
@@ -1625,9 +1643,15 @@ void SV_ExecuteClientMessage( client_t *cl, msg_t *msg ) {
 	// gamestate it was at.  This allows it to keep downloading even when
 	// the gamestate changes.  After the download is finished, we'll
 	// notice and send it a new game state
-	if ( serverId != sv.serverId && !*cl->downloadName ) {
-		if ( serverId == sv.restartedServerId ) {
+	//
+	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=536
+	// don't drop as long as previous command was a nextdl, after a dl is done, downloadName is set back to ""
+	// but we still need to read the next message to move to next download or send gamestate
+	// I don't like this hack though, it must have been working fine at some point, suspecting the fix is somewhere else
+	if ( serverId != sv.serverId && !*cl->downloadName && !strstr(cl->lastClientCommandString, "nextdl") ) {
+		if ( serverId >= sv.restartedServerId && serverId < sv.serverId ) { // TTimo - use a comparison here to catch multiple map_restart
 			// they just haven't caught the map_restart yet
+			Com_DPrintf("%s : ignoring pre map_restart / outdated client message\n", cl->name);
 			return;
 		}
 		// if we can tell that the client has dropped the last

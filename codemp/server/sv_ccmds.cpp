@@ -294,7 +294,7 @@ static void SV_MapRestart_f( void ) {
 	svs.snapFlagServerBit ^= SNAPFLAG_SERVERCOUNT;
 
 	// generate a new serverid
-	sv.restartedServerId = sv.serverId;
+	// TTimo - don't update restartedserverId there, otherwise we won't deal correctly with multiple map_restart
 	sv.serverId = com_frameTime;
 	Cvar_Set( "sv_serverid", va("%i", sv.serverId ) );
 
