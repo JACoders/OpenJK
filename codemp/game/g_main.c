@@ -317,6 +317,7 @@ static void G_ValidateGametype( void ) {
 	if ( g_gametype.integer < 0 || g_gametype.integer >= GT_MAX_GAME_TYPE ) {
 		G_Printf( "g_gametype %i is out of range, defaulting to 0\n", g_gametype.integer );
 		trap_Cvar_Set( "g_gametype", "0" );
+		trap_Cvar_Update( &g_gametype );
 	}
 	else if ( g_gametype.integer == GT_HOLOCRON ||
 			g_gametype.integer == GT_JEDIMASTER ||
@@ -324,6 +325,7 @@ static void G_ValidateGametype( void ) {
 	{
 		G_Printf( "This gametype is not supported.\n" );
 		trap_Cvar_Set( "g_gametype", "0" );
+		trap_Cvar_Update( &g_gametype );
 	}
 }
 
