@@ -294,7 +294,7 @@ static void SV_MapRestart_f( void ) {
 	svs.snapFlagServerBit ^= SNAPFLAG_SERVERCOUNT;
 
 	// generate a new serverid
-	sv.restartedServerId = sv.serverId;
+	// TTimo - don't update restartedserverId there, otherwise we won't deal correctly with multiple map_restart
 	sv.serverId = com_frameTime;
 	Cvar_Set( "sv_serverid", va("%i", sv.serverId ) );
 
@@ -353,9 +353,15 @@ static void SV_MapRestart_f( void ) {
 			continue;
 		}
 
-		client->state = CS_ACTIVE;
-
-		SV_ClientEnterWorld( client, &client->lastUsercmd );
+		if(client->state == CS_ACTIVE)
+			SV_ClientEnterWorld(client, &client->lastUsercmd);
+		else
+		{
+			// If we don't reset client->lastUsercmd and are restarting during map load,
+			// the client will hang because we'll use the last Usercmd from the previous map,
+			// which is wrong obviously.
+			SV_ClientEnterWorld(client, NULL);
+		}
 	}	
 
 	// run another frame to allow things to look at all the players

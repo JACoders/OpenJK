@@ -1407,13 +1407,6 @@ extern qboolean G_ClearLOS4( gentity_t *self, gentity_t *ent );
 extern qboolean G_ClearLOS5( gentity_t *self, const vec3_t end );
 
 //
-// g_arenas.c
-//
-void UpdateTournamentInfo( void );
-//void SpawnModelsOnVictoryPads( void );
-//void Svcmd_AbortPodium_f( void );
-
-//
 // g_bot.c
 //
 void G_InitBots( void );
