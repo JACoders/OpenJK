@@ -319,13 +319,6 @@ if(BuildMPEngine OR BuildMPDed)
 	source_group("ui" FILES ${MPEngineAndDedUiFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedUiFiles})
 	
-	#set(MPEngineAndDedPngFiles
-#		"${MPDir}/png/png.h"
-#		"${MPDir}/png/png.cpp"
-#		)
-	#source_group("png" FILES ${MPEngineAndDedPngFiles})
-	#set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedPngFiles})
-	
 	# TODO: replace the following with proper library? Update it?
 	set(MPEngineAndDedMinizipFiles
 		"${MPDir}/qcommon/unzip.cpp"
