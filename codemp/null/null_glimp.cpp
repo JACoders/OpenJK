@@ -28,6 +28,9 @@ void 		GLimp_Init( void )
 void		GLimp_Shutdown( void ) {
 }
 
+void		GLimp_Minimize( void ) {
+}
+
 void		GLimp_EnableLogging( qboolean enable ) {
 }
 

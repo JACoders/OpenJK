@@ -586,7 +586,7 @@ Ghoul2 Insert End
 
 	// serverid should be different each time
 	sv.serverId = com_frameTime;
-	sv.restartedServerId = sv.serverId;
+	sv.restartedServerId = sv.serverId; // I suppose the init here is just to be safe
 	Cvar_Set( "sv_serverid", va("%i", sv.serverId ) );
 
 	// clear physics interaction links
@@ -808,6 +808,7 @@ static void SV_InitRef( void ) {
 	//set up the import table
 	ri.Printf = SV_RefPrintf;
 	ri.Error = Com_Error;
+	ri.OPrintf = Com_OPrintf;
 	ri.Milliseconds = Sys_Milliseconds2; //FIXME: unix+mac need this
 	ri.Hunk_AllocateTempMemory = Hunk_AllocateTempMemory;
 	ri.Hunk_FreeTempMemory = Hunk_FreeTempMemory;

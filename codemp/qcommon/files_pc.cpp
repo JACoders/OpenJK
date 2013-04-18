@@ -1846,55 +1846,55 @@ bk001129 - from cvs1.17 (mkv)
 FIXME TTimo those two should move to common.c next to Sys_ListFiles
 =======================
  */
-static unsigned int Sys_CountFileList(char **list)
+static unsigned int Sys_CountFileList(char **fileList)
 {
-  int i = 0;
+	int i = 0;
 
-  if (list)
-  {
-    while (*list)
-    {
-      list++;
-      i++;
-    }
-  }
-  return i;
+	if (fileList)
+	{
+		while (*fileList)
+		{
+			fileList++;
+			i++;
+		}
+	}
+	return i;
 }
 
 static char** Sys_ConcatenateFileLists( char **list0, char **list1, char **list2 )
 {
-        int totalLength = 0;
+	int totalLength = 0;
 	char** cat = NULL, **dst, **src;
 
-        totalLength += Sys_CountFileList(list0);
-        totalLength += Sys_CountFileList(list1);
-        totalLength += Sys_CountFileList(list2);
-        
+	totalLength += Sys_CountFileList(list0);
+	totalLength += Sys_CountFileList(list1);
+	totalLength += Sys_CountFileList(list2);
+
 	/* Create new list. */
 	dst = cat = (char **)Z_Malloc( ( totalLength + 1 ) * sizeof( char* ), TAG_FILESYS, qtrue );
-        
-	/* Copy over lists. */
-        if (list0) {
-            for (src = list0; *src; src++, dst++)
-                *dst = *src;
-        }
-        if (list1) {
-            for (src = list1; *src; src++, dst++)
-                *dst = *src;
-        }
-        if (list2) {
-            for (src = list2; *src; src++, dst++)
-                *dst = *src;
-        }
 
-        // Terminate the list
+	/* Copy over lists. */
+	if (list0) {
+		for (src = list0; *src; src++, dst++)
+			*dst = *src;
+	}
+	if (list1) {
+		for (src = list1; *src; src++, dst++)
+			*dst = *src;
+	}
+	if (list2) {
+		for (src = list2; *src; src++, dst++)
+			*dst = *src;
+	}
+
+	// Terminate the list
 	*dst = NULL;
 
-  // Free our old lists.
-  // NOTE: not freeing their content, it's been merged in dst and still being used
-  if (list0) Z_Free( list0 );
-  if (list1) Z_Free( list1 );
-  if (list2) Z_Free( list2 );
+	// Free our old lists.
+	// NOTE: not freeing their content, it's been merged in dst and still being used
+	if (list0) Z_Free( list0 );
+	if (list1) Z_Free( list1 );
+	if (list2) Z_Free( list2 );
 
 	return cat;
 }
@@ -1910,116 +1910,116 @@ The directories are searched in base path, cd path and home path
 ================
 */
 int	FS_GetModList( char *listbuf, int bufsize ) {
-  int		nMods, i, j, nTotal, nLen, nPaks, nPotential, nDescLen;
-  char **pFiles = NULL;
-  char **pPaks = NULL;
-  char *name, *path;
-  char descPath[MAX_OSPATH];
-  fileHandle_t descHandle;
+	int		nMods, i, j, nTotal, nLen, nPaks, nPotential, nDescLen;
+	char **pFiles = NULL;
+	char **pPaks = NULL;
+	char *name, *path;
+	char descPath[MAX_OSPATH];
+	fileHandle_t descHandle;
 
-  int dummy;
-  char **pFiles0 = NULL;
-  char **pFiles1 = NULL;
-  char **pFiles2 = NULL;
-  qboolean bDrop = qfalse;
+	int dummy;
+	char **pFiles0 = NULL;
+	char **pFiles1 = NULL;
+	char **pFiles2 = NULL;
+	qboolean bDrop = qfalse;
 
-  *listbuf = 0;
-  nMods = nPotential = nTotal = 0;
+	*listbuf = 0;
+	nMods = nPotential = nTotal = 0;
 
-  pFiles0 = Sys_ListFiles( fs_homepath->string, NULL, NULL, &dummy, qtrue );
-  pFiles1 = Sys_ListFiles( fs_basepath->string, NULL, NULL, &dummy, qtrue );
-  pFiles2 = Sys_ListFiles( fs_cdpath->string, NULL, NULL, &dummy, qtrue );
-  // we searched for mods in the three paths
-  // it is likely that we have duplicate names now, which we will cleanup below
-  pFiles = Sys_ConcatenateFileLists( pFiles0, pFiles1, pFiles2 );
-  nPotential = Sys_CountFileList(pFiles);
+	pFiles0 = Sys_ListFiles( fs_homepath->string, NULL, NULL, &dummy, qtrue );
+	pFiles1 = Sys_ListFiles( fs_basepath->string, NULL, NULL, &dummy, qtrue );
+	pFiles2 = Sys_ListFiles( fs_cdpath->string, NULL, NULL, &dummy, qtrue );
+	// we searched for mods in the three paths
+	// it is likely that we have duplicate names now, which we will cleanup below
+	pFiles = Sys_ConcatenateFileLists( pFiles0, pFiles1, pFiles2 );
+	nPotential = Sys_CountFileList(pFiles);
 
-  for ( i = 0 ; i < nPotential ; i++ ) {
-    name = pFiles[i];
-    // NOTE: cleaner would involve more changes
-    // ignore duplicate mod directories
-    if (i!=0) {
-      bDrop = qfalse;
-      for(j=0; j<i; j++)
-      {
-        if (Q_stricmp(pFiles[j],name)==0) {
-          // this one can be dropped
-          bDrop = qtrue;
-          break;
-        }
-      }
-    }
-    if (bDrop) {
-      continue;
-    }
-    // we drop "base" "." and ".."
-    if (Q_stricmp(name, "base") && Q_stricmpn(name, ".", 1)) {
-      // now we need to find some .pk3 files to validate the mod
-      // NOTE TTimo: (actually I'm not sure why .. what if it's a mod under developement with no .pk3?)
-      // we didn't keep the information when we merged the directory names, as to what OS Path it was found under
-      //   so it could be in base path, cd path or home path
-      //   we will try each three of them here (yes, it's a bit messy)
-      path = FS_BuildOSPath( fs_basepath->string, name, "" );
-      nPaks = 0;
-      pPaks = Sys_ListFiles(path, ".pk3", NULL, &nPaks, qfalse); 
-      Sys_FreeFileList( pPaks ); // we only use Sys_ListFiles to check wether .pk3 files are present
+	for ( i = 0 ; i < nPotential ; i++ ) {
+		name = pFiles[i];
+		// NOTE: cleaner would involve more changes
+		// ignore duplicate mod directories
+		if (i!=0) {
+			bDrop = qfalse;
+			for(j=0; j<i; j++)
+			{
+				if (Q_stricmp(pFiles[j],name)==0) {
+					// this one can be dropped
+					bDrop = qtrue;
+					break;
+				}
+			}
+		}
+		if (bDrop) {
+			continue;
+		}
+		// we drop "base" "." and ".."
+		if (Q_stricmp(name, "base") && Q_stricmpn(name, ".", 1)) {
+			// now we need to find some .pk3 files to validate the mod
+			// NOTE TTimo: (actually I'm not sure why .. what if it's a mod under developement with no .pk3?)
+			// we didn't keep the information when we merged the directory names, as to what OS Path it was found under
+			//   so it could be in base path, cd path or home path
+			//   we will try each three of them here (yes, it's a bit messy)
+			path = FS_BuildOSPath( fs_basepath->string, name, "" );
+			nPaks = 0;
+			pPaks = Sys_ListFiles(path, ".pk3", NULL, &nPaks, qfalse); 
+			Sys_FreeFileList( pPaks ); // we only use Sys_ListFiles to check wether .pk3 files are present
 
-      /* Try on cd path */
-      if( nPaks <= 0 ) {
-        path = FS_BuildOSPath( fs_cdpath->string, name, "" );
-        nPaks = 0;
-        pPaks = Sys_ListFiles( path, ".pk3", NULL, &nPaks, qfalse );
-        Sys_FreeFileList( pPaks );
-      }
+			/* Try on cd path */
+			if( nPaks <= 0 ) {
+				path = FS_BuildOSPath( fs_cdpath->string, name, "" );
+				nPaks = 0;
+				pPaks = Sys_ListFiles( path, ".pk3", NULL, &nPaks, qfalse );
+				Sys_FreeFileList( pPaks );
+			}
 
-      /* try on home path */
-      if ( nPaks <= 0 )
-      {
-        path = FS_BuildOSPath( fs_homepath->string, name, "" );
-        nPaks = 0;
-        pPaks = Sys_ListFiles( path, ".pk3", NULL, &nPaks, qfalse );
-        Sys_FreeFileList( pPaks );
-      }
+			/* try on home path */
+			if ( nPaks <= 0 )
+			{
+				path = FS_BuildOSPath( fs_homepath->string, name, "" );
+				nPaks = 0;
+				pPaks = Sys_ListFiles( path, ".pk3", NULL, &nPaks, qfalse );
+				Sys_FreeFileList( pPaks );
+			}
 
-      if (nPaks > 0) {
-        nLen = strlen(name) + 1;
-        // nLen is the length of the mod path
-        // we need to see if there is a description available
-        descPath[0] = '\0';
-        strcpy(descPath, name);
-        strcat(descPath, "/description.txt");
-        nDescLen = FS_SV_FOpenFileRead( descPath, &descHandle );
-        if ( nDescLen > 0 && descHandle) {
-          FILE *file;
-          file = FS_FileForHandle(descHandle);
-          Com_Memset( descPath, 0, sizeof( descPath ) );
-          nDescLen = fread(descPath, 1, 48, file);
-          if (nDescLen >= 0) {
-            descPath[nDescLen] = '\0';
-          }
-          FS_FCloseFile(descHandle);
-        } else {
-          strcpy(descPath, name);
-        }
-        nDescLen = strlen(descPath) + 1;
+			if (nPaks > 0) {
+				nLen = strlen(name) + 1;
+				// nLen is the length of the mod path
+				// we need to see if there is a description available
+				descPath[0] = '\0';
+				strcpy(descPath, name);
+				strcat(descPath, "/description.txt");
+				nDescLen = FS_SV_FOpenFileRead( descPath, &descHandle );
+				if ( nDescLen > 0 && descHandle) {
+					FILE *file;
+					file = FS_FileForHandle(descHandle);
+					Com_Memset( descPath, 0, sizeof( descPath ) );
+					nDescLen = fread(descPath, 1, 48, file);
+					if (nDescLen >= 0) {
+						descPath[nDescLen] = '\0';
+					}
+					FS_FCloseFile(descHandle);
+				} else {
+					strcpy(descPath, name);
+				}
+				nDescLen = strlen(descPath) + 1;
 
-        if (nTotal + nLen + 1 + nDescLen + 1 < bufsize) {
-          strcpy(listbuf, name);
-          listbuf += nLen;
-          strcpy(listbuf, descPath);
-          listbuf += nDescLen;
-          nTotal += nLen + nDescLen;
-          nMods++;
-        }
-        else {
-          break;
-        }
-      }
-    }
-  }
-  Sys_FreeFileList( pFiles );
+				if (nTotal + nLen + 1 + nDescLen + 1 < bufsize) {
+					strcpy(listbuf, name);
+					listbuf += nLen;
+					strcpy(listbuf, descPath);
+					listbuf += nDescLen;
+					nTotal += nLen + nDescLen;
+					nMods++;
+				}
+				else {
+					break;
+				}
+			}
+		}
+	}
+	Sys_FreeFileList( pFiles );
 
-  return nMods;
+	return nMods;
 }
 
 
@@ -2157,7 +2157,7 @@ void FS_NewDir_f( void ) {
 
 	if ( Cmd_Argc() < 2 ) {
 		Com_Printf( "usage: fdir <filter>\n" );
-		Com_Printf( "example: fdir *q3dm*.bsp\n");
+		Com_Printf( "example: fdir *ffa*.bsp\n");
 		return;
 	}
 
@@ -3042,6 +3042,11 @@ restart if necessary
 =================
 */
 qboolean FS_ConditionalRestart( int checksumFeed ) {
+	if( fs_gamedirvar->modified || checksumFeed != fs_checksumFeed ) {
+		FS_Restart( checksumFeed );
+		return qtrue;
+	}
+#if 0
 	if(fs_gamedirvar->modified)
 	{
 		if(FS_FilenameCompare(lastValidGame, fs_gamedirvar->string) &&
@@ -3060,6 +3065,7 @@ qboolean FS_ConditionalRestart( int checksumFeed ) {
 		FS_Restart(checksumFeed);
 	else if(fs_numServerPaks && !fs_reordered)
 		FS_ReorderPurePaks();
+#endif
 	return qfalse;
 }
 

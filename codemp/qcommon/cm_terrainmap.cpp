@@ -9,7 +9,7 @@
 //#include "qcommon/q_imath.h"
 #include "cm_terrainmap.h"
 #include "cm_draw.h"
-#include "png/png.h"
+#include "png/rpng.h"
 #include "client/client.h" // good enough for now
 
 static CTerrainMap	*TerrainMap = 0;
@@ -365,7 +365,7 @@ void CTerrainMap::SaveImageToDisk(const char * terrainName, const char * mission
 {
 	//ri.COM_SavePNG(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
 	//		(unsigned char *)mImage, TM_WIDTH, TM_HEIGHT, 4);
-	re.PNG_Save(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
+	re.SavePNG(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
 			(unsigned char *)mImage, TM_WIDTH, TM_HEIGHT, 4);
 }
 

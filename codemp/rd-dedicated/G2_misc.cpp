@@ -1753,7 +1753,7 @@ qboolean G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2, char **buffer, int *size)
 	for (i=0; i<ghoul2.size();i++)
 	{
 		// first save out the ghoul2 details themselves
-//		OutputDebugString(va("G2_SaveGhoul2Models(): ghoul2[%d].mModelindex = %d\n",i,ghoul2[i].mModelindex));
+//		Com_OPrintf("G2_SaveGhoul2Models(): ghoul2[%d].mModelindex = %d\n",i,ghoul2[i].mModelindex);
 		memcpy(tempBuffer, &ghoul2[i].mModelindex, ghoul2BlockSize);
 		tempBuffer += ghoul2BlockSize;
 
@@ -1851,7 +1851,7 @@ void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 		ghoul2[i].mValid=false;
 		// load the ghoul2 info from the buffer
 		memcpy(&ghoul2[i].mModelindex, buffer, ghoul2BlockSize);
-//		OutputDebugString(va("G2_LoadGhoul2Model(): ghoul2[%d].mModelindex = %d\n",i,ghoul2[i].mModelindex));
+//		Com_OPrintf("G2_LoadGhoul2Model(): ghoul2[%d].mModelindex = %d\n",i,ghoul2[i].mModelindex);
 		buffer +=ghoul2BlockSize;
 
 		if (ghoul2[i].mModelindex!=-1&&ghoul2[i].mFileName[0])

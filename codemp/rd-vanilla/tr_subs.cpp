@@ -16,6 +16,18 @@ void QDECL Com_Printf( const char *msg, ... )
 	ri.Printf(PRINT_ALL, "%s", text);
 }
 
+void QDECL Com_OPrintf( const char *msg, ... )
+{
+	va_list         argptr;
+	char            text[1024];
+
+	va_start(argptr, msg);
+	Q_vsnprintf(text, sizeof(text), msg, argptr);
+	va_end(argptr);
+
+	ri.OPrintf("%s", text);
+}
+
 void QDECL Com_Error( int level, const char *error, ... )
 {
 	va_list         argptr;
@@ -84,7 +96,7 @@ bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cle
 
 	bufParse = buf;
 	parser.Parse(&bufParse, cleanFirst);
-	delete buf;
+	delete[] buf;
 
 	ri.FS_FCloseFile( f );
 
@@ -123,7 +135,7 @@ CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool write
 		parse = 0;
 	}
 
-	delete buf;
+	delete[] buf;
 
 	return parse;
 }
