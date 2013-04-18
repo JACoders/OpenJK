@@ -830,8 +830,6 @@ void R_ScreenShot_f (void) {
 RB_TakeVideoFrameCmd
 ==================
 */
-// Fixme: Don't do this in modular renderer!!!
-void CL_WriteAVIVideoFrame( const byte *imageBuffer, int size );
 const void *RB_TakeVideoFrameCmd( const void *data )
 {
 	const videoFrameCommand_t	*cmd;
