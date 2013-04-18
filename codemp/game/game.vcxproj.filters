@@ -65,9 +65,6 @@
     <ClCompile Include="g_active.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="g_arenas.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="g_bot.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -301,30 +298,6 @@
     <ClInclude Include="b_public.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="be_aas.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="be_ai_char.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="be_ai_chat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="be_ai_gen.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="be_ai_goal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="be_ai_move.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="be_ai_weap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="be_ea.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="bg_local.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -341,9 +314,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="bg_weapons.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="botlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\cgame\cg_local.h">
