@@ -273,9 +273,6 @@ void SV_DirectConnect( netadr_t from ) {
 				return;
 			}
 		}
-	} else {
-		// force the "ip" info key to "localhost"
-		Info_SetValueForKey( userinfo, "ip", "localhost" );
 	}
 
 	newcl = &temp;
