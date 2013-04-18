@@ -356,35 +356,35 @@
     <ClCompile Include="..\png\png.cpp">
       <Filter>Libraries\png</Filter>
     </ClCompile>
-    <ClCompile Include="..\win32\win_gamma.cpp">
-      <Filter>Libraries\Shared Dependencies</Filter>
-    </ClCompile>
-    <ClCompile Include="..\win32\win_glimp.cpp">
-      <Filter>Libraries\Shared Dependencies</Filter>
-    </ClCompile>
-    <ClCompile Include="..\win32\win_qgl.cpp">
-      <Filter>Libraries\Shared Dependencies</Filter>
-    </ClCompile>
     <ClCompile Include="..\game\q_math.cpp">
       <Filter>Libraries\Shared Dependencies</Filter>
     </ClCompile>
     <ClCompile Include="..\game\q_shared.cpp">
       <Filter>Libraries\Shared Dependencies</Filter>
     </ClCompile>
-    <ClCompile Include="..\ghoul2\G2_API.cpp">
+    <ClCompile Include="ghoul2\G2_API.cpp">
       <Filter>Libraries\GHOUL 2</Filter>
     </ClCompile>
-    <ClCompile Include="..\ghoul2\G2_bolts.cpp">
+    <ClCompile Include="ghoul2\G2_bolts.cpp">
       <Filter>Libraries\GHOUL 2</Filter>
     </ClCompile>
-    <ClCompile Include="..\ghoul2\G2_bones.cpp">
+    <ClCompile Include="ghoul2\G2_bones.cpp">
       <Filter>Libraries\GHOUL 2</Filter>
     </ClCompile>
-    <ClCompile Include="..\ghoul2\G2_misc.cpp">
+    <ClCompile Include="ghoul2\G2_misc.cpp">
       <Filter>Libraries\GHOUL 2</Filter>
     </ClCompile>
-    <ClCompile Include="..\ghoul2\G2_surfaces.cpp">
+    <ClCompile Include="ghoul2\G2_surfaces.cpp">
       <Filter>Libraries\GHOUL 2</Filter>
+    </ClCompile>
+    <ClCompile Include="win_gamma.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="win_glimp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="win_qgl.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

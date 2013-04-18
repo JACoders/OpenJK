@@ -18,30 +18,30 @@ This file is part of Jedi Academy.
 
 // leave this as first line for PCH reasons...
 //
-#include "../server/exe_headers.h"
+#include "../../server/exe_headers.h"
 
 
 
 #ifndef __Q_SHARED_H
-	#include "../game/q_shared.h"
+	#include "../../game/q_shared.h"
 #endif
 
 #if !defined(TR_LOCAL_H)
-	#include "../renderer/tr_local.h"
+	#include "../tr_local.h"
 #endif
 #if !defined(_QCOMMON_H_)
-	#include "../qcommon/qcommon.h"
+	#include "../../qcommon/qcommon.h"
 #endif
 
-#include "../renderer/MatComp.h"
+#include "../MatComp.h"
 
 #if !defined(G2_H_INC)
-	#include "G2.h"
+	#include "../../ghoul2/G2.h"
 #endif
 
 //rww - RAGDOLL_BEGIN
 #include <FLOAT.H>
-#include "ghoul2_gore.h"
+#include "../../ghoul2/ghoul2_gore.h"
 //rww - RAGDOLL_END
 
 extern	cvar_t	*r_Ghoul2BlendMultiplier;

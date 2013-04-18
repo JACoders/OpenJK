@@ -26,7 +26,7 @@
 #include "jpeglib.h"
 #include "jmemsys.h"		/* import the system-dependent declarations */
 
-#include "../renderer/tr_local.h"
+//#include "../renderer/tr_local.h"
 
 /*
  * Memory allocation and ri.Freeing are controlled by the regular library

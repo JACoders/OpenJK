@@ -105,11 +105,6 @@
   <ItemGroup>
     <ClCompile Include="..\game\q_math.cpp" />
     <ClCompile Include="..\game\q_shared.cpp" />
-    <ClCompile Include="..\ghoul2\G2_API.cpp" />
-    <ClCompile Include="..\ghoul2\G2_bolts.cpp" />
-    <ClCompile Include="..\ghoul2\G2_bones.cpp" />
-    <ClCompile Include="..\ghoul2\G2_misc.cpp" />
-    <ClCompile Include="..\ghoul2\G2_surfaces.cpp" />
     <ClCompile Include="..\jpeg-6\jcapimin.cpp" />
     <ClCompile Include="..\jpeg-6\jccoefct.cpp" />
     <ClCompile Include="..\jpeg-6\jccolor.cpp" />
@@ -147,12 +142,14 @@
     <ClCompile Include="..\jpeg-6\jmemnobs.cpp" />
     <ClCompile Include="..\jpeg-6\jutils.cpp" />
     <ClCompile Include="..\png\png.cpp" />
-    <ClCompile Include="..\win32\win_gamma.cpp" />
-    <ClCompile Include="..\win32\win_glimp.cpp" />
-    <ClCompile Include="..\win32\win_qgl.cpp" />
     <ClCompile Include="..\zlib32\deflate.cpp" />
     <ClCompile Include="..\zlib32\inflate.cpp" />
     <ClCompile Include="..\zlib32\zipcommon.cpp" />
+    <ClCompile Include="ghoul2\G2_API.cpp" />
+    <ClCompile Include="ghoul2\G2_bolts.cpp" />
+    <ClCompile Include="ghoul2\G2_bones.cpp" />
+    <ClCompile Include="ghoul2\G2_misc.cpp" />
+    <ClCompile Include="ghoul2\G2_surfaces.cpp" />
     <ClCompile Include="matcomp.c" />
     <ClCompile Include="tr_animation.cpp" />
     <ClCompile Include="tr_arioche.cpp" />
@@ -186,6 +183,9 @@
     <ClCompile Include="tr_terrain.cpp" />
     <ClCompile Include="tr_world.cpp" />
     <ClCompile Include="tr_WorldEffects.cpp" />
+    <ClCompile Include="win_gamma.cpp" />
+    <ClCompile Include="win_glimp.cpp" />
+    <ClCompile Include="win_qgl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ref_trin.def" />

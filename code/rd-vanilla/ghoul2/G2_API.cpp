@@ -18,7 +18,7 @@ This file is part of Jedi Academy.
 
 // leave this as first line for PCH reasons...
 //
-#include "../server/exe_headers.h"
+#include "../../server/exe_headers.h"
 
 #pragma warning( disable : 4786) 
 #pragma warning( disable : 4100) 
@@ -30,19 +30,19 @@ This file is part of Jedi Academy.
 #pragma warning (pop)
 
 #ifndef __Q_SHARED_H
-	#include "../game/q_shared.h"
+	#include "../../game/q_shared.h"
 #endif
 
 #if !defined(TR_LOCAL_H)
-	#include "../renderer/tr_local.h"
+	#include "../tr_local.h"
 #endif
 
 #if !defined(G2_H_INC)
-	#include "G2.h"
+	#include "../../ghoul2/G2.h"
 #endif
 
 #if !defined(MINIHEAP_H_INC)
-	#include "..\qcommon\MiniHeap.h"
+	#include "..\..\qcommon\MiniHeap.h"
 #endif
 
 
@@ -57,7 +57,7 @@ This file is part of Jedi Academy.
 #endif
 
 //rww - RAGDOLL_BEGIN
-#include "ghoul2_gore.h"
+#include "../../ghoul2/ghoul2_gore.h"
 //rww - RAGDOLL_END
 
 using namespace std;
@@ -435,27 +435,6 @@ public:
 #endif
 	}
 
-#ifdef _XBOX
-	// I'm sorry, but I really don't trust this thing any other way.
-	void Clear()
-	{
-		mFreeIndecies.clear();
-		for (int i=0;i<MAX_G2_MODELS;i++)
-		{
-			mInfos[i].clear();
-		}
-	}
-	
-	void Reset()
-	{
-		for (int i=0;i<MAX_G2_MODELS;i++)
-		{
-			mIds[i]=MAX_G2_MODELS+i;
-			mFreeIndecies.push_back(i);
-		}
-	}
-#endif
-
 	int New()
 	{
 		if (mFreeIndecies.empty())
@@ -553,18 +532,6 @@ IGhoul2InfoArray &TheGhoul2InfoArray()
 	static Ghoul2InfoArray singleton;
 	return singleton;
 }
-
-#ifdef _XBOX
-void Ghoul2InfoArray_Free(void)
-{
-	((Ghoul2InfoArray *)(&TheGhoul2InfoArray()))->Clear();
-}
-
-void Ghoul2InfoArray_Reset(void)
-{
-	((Ghoul2InfoArray *)(&TheGhoul2InfoArray()))->Reset();
-}
-#endif
 
 #if G2API_DEBUG
 vector<CGhoul2Info> &DebugG2Info(int handle)

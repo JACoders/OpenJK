@@ -161,7 +161,7 @@ static int CIN_HandleForVideo(void) {
 	int		i;
 
 	//these end up in scratchImage[NUM_SCRATCH_IMAGES], so MAX_VIDEO_HANDLES should match
-	assert (MAX_VIDEO_HANDLES<=NUM_SCRATCH_IMAGES);
+	//assert (MAX_VIDEO_HANDLES<=NUM_SCRATCH_IMAGES);	// derp --eez
 
 	for ( i = 0 ; i < MAX_VIDEO_HANDLES ; i++ ) {
 		if ( cinTable[i].fileName[0] == 0 ) {

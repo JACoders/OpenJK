@@ -352,21 +352,6 @@
     <ClCompile Include="zlib32\zipcommon.cpp">
       <Filter>zlib32</Filter>
     </ClCompile>
-    <ClCompile Include="ghoul2\G2_API.cpp">
-      <Filter>Ghoul2</Filter>
-    </ClCompile>
-    <ClCompile Include="ghoul2\G2_bolts.cpp">
-      <Filter>Ghoul2</Filter>
-    </ClCompile>
-    <ClCompile Include="ghoul2\G2_bones.cpp">
-      <Filter>Ghoul2</Filter>
-    </ClCompile>
-    <ClCompile Include="ghoul2\G2_misc.cpp">
-      <Filter>Ghoul2</Filter>
-    </ClCompile>
-    <ClCompile Include="ghoul2\G2_surfaces.cpp">
-      <Filter>Ghoul2</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\eax\eax.h">
