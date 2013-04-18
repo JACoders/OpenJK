@@ -259,6 +259,8 @@ typedef struct {
 	void			(*Cmd_RemoveCommand)				( const char *cmd_name );
 	void			(*Cvar_Set)							( const char *var_name, const char *value );
 	cvar_t *		(*Cvar_Get)							( const char *var_name, const char *value, int flags );
+	void			(*Cvar_SetValue)					( const char *name, float value );
+	void			(*Cvar_CheckRange)					( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
 	void			(*Cvar_VariableStringBuffer)		( const char *var_name, char *buffer, int bufsize );
 	char *			(*Cvar_VariableString)				( const char *var_name );
 	float			(*Cvar_VariableValue)				( const char *var_name );

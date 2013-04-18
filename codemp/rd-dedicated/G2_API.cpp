@@ -335,11 +335,9 @@ public:
 #if G2API_DEBUG
 	~Ghoul2InfoArray()
 	{
-		char mess[1000];
 		if (mFreeIndecies.size()<MAX_G2_MODELS)
 		{
-			sprintf(mess,"************************\nLeaked %d ghoul2info slots\n", MAX_G2_MODELS - mFreeIndecies.size());
-			OutputDebugString(mess);
+			Com_OPrintf("************************\nLeaked %d ghoul2info slots\n", MAX_G2_MODELS - mFreeIndecies.size());
 			int i;
 			for (i=0;i<MAX_G2_MODELS;i++)
 			{
@@ -351,19 +349,17 @@ public:
 				}
 				if (j==mFreeIndecies.end())
 				{
-					sprintf(mess,"Leaked Info idx=%d id=%d sz=%d\n", i, mIds[i], mInfos[i].size());
-					OutputDebugString(mess);
+					Com_OPrintf("Leaked Info idx=%d id=%d sz=%d\n", i, mIds[i], mInfos[i].size());
 					if (mInfos[i].size())
 					{
-						sprintf(mess,"%s\n", mInfos[i][0].mFileName);
-						OutputDebugString(mess);
+						Com_OPrintf("%s\n", mInfos[i][0].mFileName);
 					}
 				}
 			}
 		}
 		else
 		{
-			OutputDebugString("No ghoul2 info slots leaked\n");
+			Com_OPrintf("No ghoul2 info slots leaked\n");
 		}
 	}
 #endif

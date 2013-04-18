@@ -489,15 +489,10 @@ LONG WINAPI MainWndProc (
 	case WM_SYSKEYDOWN:
 		if ( wParam == VK_RETURN )
 		{
-			if ( r_fullscreen && cl_allowAltEnter &&
-				(cls.state==CA_DISCONNECTED ||  cls.state==CA_CONNECTED)
-				)
+			if ( r_fullscreen && cl_allowAltEnter && cl_allowAltEnter->integer )
 			{
-				if (cl_allowAltEnter->integer)
-				{
-					Cvar_SetValue( "r_fullscreen", !r_fullscreen->integer );
-					Cbuf_AddText( "vid_restart\n" );
-				}
+				Cvar_SetValue( "r_fullscreen", !r_fullscreen->integer );
+				Cbuf_AddText( "vid_restart\n" );
 			}
 			return 0;
 		}
