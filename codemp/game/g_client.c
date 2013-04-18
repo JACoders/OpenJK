@@ -2175,7 +2175,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	else
 	{
 		maxHealth = 100;
-		health = atoi( Info_ValueForKey( userinfo, "handicap" ) );
+		health = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
 	}
 	client->pers.maxHealth = health;
 	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth )
