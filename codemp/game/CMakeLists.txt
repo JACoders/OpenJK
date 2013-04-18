@@ -29,7 +29,6 @@ set(MPGameGameFiles
 	"${MPDir}/game/bg_weapons.c"
 	"${MPDir}/game/FighterNPC.c"
 	"${MPDir}/game/g_active.c"
-	"${MPDir}/game/g_arenas.c"
 	"${MPDir}/game/g_bot.c"
 	"${MPDir}/game/g_client.c"
 	"${MPDir}/game/g_cmds.c"
