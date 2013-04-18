@@ -112,5 +112,7 @@ if(WIN32)
 endif(WIN32)
 
 add_library(${MPVanillaRenderer} SHARED ${MPVanillaRendererFiles})
+set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${ReleaseDefines}")
+set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${DebugDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES INCLUDE_DIRECTORIES "${MPVanillaRendererIncludeDirectories}")
 target_link_libraries(${MPVanillaRenderer} ${MPVanillaRendererLibraries})
