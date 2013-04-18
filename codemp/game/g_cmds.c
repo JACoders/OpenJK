@@ -2481,8 +2481,8 @@ void G_LeaveVehicle( gentity_t* ent, qboolean ConCheck ) {
 		if (veh->inuse && veh->client && veh->m_pVehicle)
 		{
 			if ( ConCheck ) { // check connection
-				int pCon = ent->client->pers.connected;
-				ent->client->pers.connected = 0;
+				clientConnected_t pCon = ent->client->pers.connected;
+				ent->client->pers.connected = CON_DISCONNECTED;
 				veh->m_pVehicle->m_pVehicleInfo->Eject(veh->m_pVehicle, (bgEntity_t *)ent, qtrue);
 				ent->client->pers.connected = pCon;
 			} else { // or not.
