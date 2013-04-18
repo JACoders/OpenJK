@@ -35,6 +35,9 @@ typedef struct {
 	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
 	int				(*Milliseconds)						( void );
 
+	void*			(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt );
+	int				(*Z_Free)							( void *memory );
+
 
 	void			(*Cmd_ExecuteString)				( const char *text );
 	int				(*Cmd_Argc)							( void );

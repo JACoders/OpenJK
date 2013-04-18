@@ -1091,12 +1091,12 @@ CFontInfo::CFontInfo(const char *_fontName)
 				char sTemp[MAX_QPATH];
 
 				sprintf(sTemp,"fonts/%s.tga", g_SBCSOverrideLanguages[i].m_psName );
-				FS_FOpenFileRead( sTemp, &f, qfalse );
-				if (f) FS_FCloseFile( f );
+				ri.FS_FOpenFileRead( sTemp, &f, qfalse );
+				if (f) ri.FS_FCloseFile( f );
 
 				sprintf(sTemp,"fonts/%s.fontdat", g_SBCSOverrideLanguages[i].m_psName );
-				FS_FOpenFileRead( sTemp, &f, qfalse );
-				if (f) FS_FCloseFile( f );
+				ri.FS_FOpenFileRead( sTemp, &f, qfalse );
+				if (f) ri.FS_FCloseFile( f );
 			}
 
 			// asian MBCS override languages...
@@ -1113,14 +1113,14 @@ CFontInfo::CFontInfo(const char *_fontName)
 					{
 						// additional files needed for Thai language...
 						//						
-						FS_FOpenFileRead( sFILENAME_THAI_WIDTHS , &f, qfalse );
+						ri.FS_FOpenFileRead( sFILENAME_THAI_WIDTHS , &f, qfalse );
 						if (f) {
-							FS_FCloseFile( f );
+							ri.FS_FCloseFile( f );
 						}
 
-						FS_FOpenFileRead( sFILENAME_THAI_CODES, &f, qfalse );
+						ri.FS_FOpenFileRead( sFILENAME_THAI_CODES, &f, qfalse );
 						if (f) {
-							FS_FCloseFile( f );
+							ri.FS_FCloseFile( f );
 						}					
 					}
                     break;
@@ -1131,9 +1131,9 @@ CFontInfo::CFontInfo(const char *_fontName)
 					Com_sprintf(sTemp,sizeof(sTemp), "fonts/%s_%d_1024_%d.tga", psLang, 1024/m_iAsianGlyphsAcross, i);
 
 					// RE_RegisterShaderNoMip( sTemp );	// don't actually need to load it, so...					
-					FS_FOpenFileRead( sTemp, &f, qfalse );
+					ri.FS_FOpenFileRead( sTemp, &f, qfalse );
 					if (f) {
-						FS_FCloseFile( f );
+						ri.FS_FCloseFile( f );
 					}
 				}
 			}

@@ -32,6 +32,32 @@ void QDECL Com_Error( int level, const char *error, ... )
 	ri.Error(level, "%s", text);
 }
 
+/*
+================
+VID_Printf
+
+DLL glue
+================
+*/
+#define	MAXPRINTMSG	4096
+void VID_Printf (int print_level, const char *fmt, ...)
+{
+	va_list		argptr;
+	char		msg[MAXPRINTMSG];
+	
+	va_start (argptr,fmt);
+	vsprintf (msg,fmt,argptr);
+	va_end (argptr);
+
+	if ( print_level == PRINT_ALL ) {
+		Com_Printf ("%s", msg);
+	} else if ( print_level == PRINT_WARNING ) {
+		Com_Printf (S_COLOR_YELLOW "%s", msg);		// yellow
+	} else if ( print_level == PRINT_DEVELOPER ) {
+		Com_DPrintf (S_COLOR_RED"%s", msg);
+	}
+}
+
 // HUNK
 /*void *Hunk_AllocateTempMemory( int size ) {
 	return ri.Hunk_AllocateTempMemory( size );
@@ -48,16 +74,16 @@ void *Hunk_Alloc( int size, ha_pref preference ) {
 int Hunk_MemoryRemaining( void ) {
 	return ri.Hunk_MemoryRemaining();
 }
-
+*/
 // ZONE
-void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign ) {
-	return ri.Z_Malloc( iSize, eTag, bZeroit, iAlign );
+void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit/*, int iAlign*/ ) {
+	return ri.Z_Malloc( iSize, eTag, bZeroit/*, iAlign*/ );
 }
 
-void Z_Free( void *ptr ) {
-	ri.Z_Free( ptr );
+int Z_Free( void *ptr ) {
+	return ri.Z_Free( ptr );
 }
-
+/*
 int Z_MemSize( memtag_t eTag ) {
 	return ri.Z_MemSize( eTag );
 }
