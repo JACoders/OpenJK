@@ -2503,7 +2503,7 @@ int G_ItemUsable(playerState_t *ps, int forcedUse)
 	trace_t tr;
 
 	// fix: dead players shouldn't use items
-	if (ps->stats[STAT_HEALTH] <= 0){
+	if (ps->stats[STAT_HEALTH] <= 0) {
 		return 0;
 	}
 
