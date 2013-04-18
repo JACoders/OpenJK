@@ -907,13 +907,13 @@ void UI_SaberAttachToChar( itemDef_t *item )
 				int boltNum;
 				if ( saberNum == 0 )
 				{
-					boltNum = G2API_AddBolt(&item->ghoul2[0], "*r_hand");
+					boltNum = DC->g2_AddBolt(&item->ghoul2[0], "*r_hand");
 				}
 				else
 				{
-					boltNum = G2API_AddBolt(&item->ghoul2[0], "*l_hand");
+					boltNum = DC->g2_AddBolt(&item->ghoul2[0], "*l_hand");
 				}
-				G2API_AttachG2Model(&item->ghoul2[g2Saber], &item->ghoul2[0], boltNum, 0);
+				re.G2API_AttachG2Model(&item->ghoul2[g2Saber], &item->ghoul2[0], boltNum, 0);
 			}
 		}
 	}
