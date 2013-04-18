@@ -1752,6 +1752,11 @@ typedef struct cvar_s {
 	int			modificationCount;	// incremented each time the cvar is changed
 	float		value;				// atof( string )
 	int			integer;			// atoi( string )
+	qboolean	validate;
+	qboolean	integral;
+	float		min;
+	float		max;
+
 	struct cvar_s *next;
 	struct cvar_s *prev;
 	struct cvar_s *hashNext;

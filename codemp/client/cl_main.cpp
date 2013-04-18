@@ -2333,6 +2333,8 @@ void CL_InitRef( void ) {
 	ri.Cmd_RemoveCommand = Cmd_RemoveCommand;
 	ri.Cvar_Set = Cvar_Set;
 	ri.Cvar_Get = Cvar_Get;
+	ri.Cvar_SetValue = Cvar_SetValue;
+	ri.Cvar_CheckRange = Cvar_CheckRange;
 	ri.Cvar_VariableStringBuffer = Cvar_VariableStringBuffer;
 	ri.Cvar_VariableString = Cvar_VariableString;
 	ri.Cvar_VariableValue = Cvar_VariableValue;
