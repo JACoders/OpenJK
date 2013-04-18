@@ -831,23 +831,54 @@ char *Q_CleanStr( char *string ) {
 }
 
 
+#ifdef _MSC_VER
+/*
+=============
+Q_vsnprintf
+ 
+Special wrapper function for Microsoft's broken _vsnprintf() function.
+MinGW comes with its own snprintf() which is not broken.
+=============
+*/
+
+int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
+{
+	int retval;
+
+	retval = _vsnprintf(str, size, format, ap);
+
+	if(retval < 0 || retval == size)
+	{
+		// Microsoft doesn't adhere to the C99 standard of vsnprintf,
+		// which states that the return value must be the number of
+		// bytes written if the output string had sufficient length.
+		//
+		// Obviously we cannot determine that value from Microsoft's
+		// implementation, so we have no choice but to return size.
+
+		str[size - 1] = '\0';
+		return size;
+	}
+
+	return retval;
+}
+#endif
+
+//Raz: Patched version of Com_sprintf
+//Ensiform: But this is better
 void QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
-	int			len;
+	int		len;
 	va_list		argptr;
-	char		bigbuffer[1024];
 
 	va_start (argptr,fmt);
-	len = vsprintf (bigbuffer,fmt,argptr);
+	len = Q_vsnprintf(dest, size, fmt, argptr);
 	va_end (argptr);
-	if ( len >= sizeof( bigbuffer ) ) {
-		Com_Error( ERR_FATAL, "Com_sprintf: overflowed bigbuffer" );
-	}
-	if (len >= size) {
-		Com_Printf ("Com_sprintf: overflow of %i in %i\n", len, size);
-	}
-	Q_strncpyz (dest, bigbuffer, size );
-}
 
+	if(len >= size)
+		Com_Printf("Com_sprintf: Output length %d too short, require %d bytes.\n", size, len + 1);
+	
+	return;
+}
 
 /*
 ============
@@ -858,19 +889,20 @@ varargs versions of all text functions.
 FIXME: make this buffer size safe someday
 ============
 */
-char	* QDECL va( const char *format, ... ) {
-	int len;
-	va_list			argptr;
-	static char		buffers[4][1024];	// in case va is called by nested functions
-	static int		index = 0;
-	char *const buf = buffers[index % 4];
-	index++;
+#define	MAX_VA_STRING	32000
+#define MAX_VA_BUFFERS 4
 
-	va_start (argptr, format);
-	len = vsprintf (buf, format,argptr);
-	va_end (argptr);
+char * QDECL va( const char *format, ... )
+{
+	va_list		argptr;
+	static char	string[MAX_VA_BUFFERS][MAX_VA_STRING];	// in case va is called by nested functions
+	static int	index = 0;
+	char		*buf;
 
-	assert(len<sizeof(buffers[0]));
+	va_start( argptr, format );
+	buf = (char *)&string[index++ & 3];
+	Q_vsnprintf( buf, MAX_VA_STRING-1, format, argptr );
+	va_end( argptr );
 
 	return buf;
 }
