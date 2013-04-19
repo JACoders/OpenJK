@@ -84,7 +84,7 @@ void	Cmd_RemoveCommand( const char *cmd_name ) {
 Cmd_CommandCompletion
 ============
 */
-void	Cmd_CommandCompletion( void(*callback)(const char *s) ) {
+void	Cmd_CommandCompletion( callbackFunc_t callback ) {
 	cmd_function_t	*cmd;
 	
 	for (cmd=cmd_functions ; cmd ; cmd=cmd->next) {
