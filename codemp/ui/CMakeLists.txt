@@ -66,6 +66,7 @@ source_group("renderer" FILES ${MPUIRendererFiles})
 set(MPUIFiles ${MPUIFiles} ${MPUIRendererFiles})
 
 add_library(${MPUI} SHARED ${MPUIFiles})
+install(TARGETS ${MPUI} RUNTIME DESTINATION "OpenJK")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPUIDefines};${ReleaseDefines}")
