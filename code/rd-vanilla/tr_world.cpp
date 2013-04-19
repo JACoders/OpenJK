@@ -792,28 +792,13 @@ static const byte *R_ClusterPVS (int cluster) {
 R_inPVS
 =================
 */
-#ifdef _XBOX
-qboolean R_inPVS( vec3_t p1, vec3_t p2 ) {
-	mleaf_s *leaf;
-	byte	*vis;
-
-	leaf = (mleaf_s*)R_PointInLeaf( p1 );
-	vis = (byte*)CM_ClusterPVS( leaf->cluster );
-	leaf = (mleaf_s*)R_PointInLeaf( p2 );
-
-	if ( !vis || (!(vis[leaf->cluster>>3] & (1<<(leaf->cluster&7)))) ) {
-		return qfalse;
-	}
-	return qtrue;
-}
-#else // _XBOX
 
 qboolean R_inPVS( vec3_t p1, vec3_t p2 ) {
 	mnode_t *leaf;
 	byte	*vis;
 
 	leaf = R_PointInLeaf( p1 );
-	vis = CM_ClusterPVS( leaf->cluster );
+	vis = ri.CM_ClusterPVS( leaf->cluster );
 	leaf = R_PointInLeaf( p2 );
 
 	if ( !(vis[leaf->cluster>>3] & (1<<(leaf->cluster&7))) ) {
@@ -821,7 +806,6 @@ qboolean R_inPVS( vec3_t p1, vec3_t p2 ) {
 	}
 	return qtrue;
 }
-#endif // _XBOX
 
 /*
 ===============

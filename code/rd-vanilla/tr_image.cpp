@@ -1537,7 +1537,7 @@ bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *heigh
 	//
 	// load the file
 	//
-	FS_ReadFile ( ( char * ) name, (void **)&buffer);
+	ri.FS_ReadFile ( ( char * ) name, (void **)&buffer);
 	if (!buffer) {
 		return false;
 	}
@@ -1590,7 +1590,7 @@ bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *heigh
 	}
 	dataStart = buf_p + (targa_header.colormap_length * (targa_header.colormap_size / 4));
 	memcpy(*pic, dataStart, numPixels);
-	FS_FreeFile (buffer);
+	ri.FS_FreeFile (buffer);
 
 	return true;
 }
@@ -1651,7 +1651,7 @@ int LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	// load the file
 	//
 	byte *pTempLoadedBuffer = 0;
-	const int filelen = FS_ReadFile ( ( char * ) name, (void **)&pTempLoadedBuffer);
+	const int filelen = ri.FS_ReadFile ( ( char * ) name, (void **)&pTempLoadedBuffer);
 	if (!pTempLoadedBuffer) {
 		return 0;
 	}
@@ -1946,7 +1946,7 @@ int LoadTGA ( const char *name, byte **pic, int *width, int *height)
 
 TGADone:
 
-	FS_FreeFile (pTempLoadedBuffer);
+	ri.FS_FreeFile (pTempLoadedBuffer);
 
 	if (bFormatErrors)
 	{
@@ -1954,71 +1954,6 @@ TGADone:
 	}
 	return filelen;
 }
-
-/*
-=========================================================
-
-DDS LOADING
-
-=========================================================
-*/
-
-#ifdef _XBOX
-
-void LoadDDS ( const char *name, byte **pic, int *width, int *height, int *mipcount, GLenum *format )
-{
-	fileHandle_t h;
-	int len = FS_FOpenFileRead( name, &h, qfalse );
-	if ( h == 0 )
-	{
-		return;
-	}
-	
-	*pic = (byte*)Z_Malloc( len, TAG_TEMP_WORKSPACE, qfalse , 32);
-	FS_Read( *pic, len, h );
-	FS_FCloseFile( h );
-
-	DWORD dds = MAKEFOURCC('D', 'D', 'S', ' ');
-	if (*(DWORD*)(*pic) != dds)
-	{
-		FS_FreeFile (*pic);
-		*pic = NULL;
-		return;
-	}
-	
-	DDS_HEADER *desc = (DDS_HEADER *)(*pic + sizeof(DWORD));
-	DWORD dxt1 = MAKEFOURCC('D', 'X', 'T', '1');
-	DWORD dxt5 = MAKEFOURCC('D', 'X', 'T', '5');
-	
-	if (desc->ddspf.dwFourCC == dxt1)
-	{
-		*format = GL_DDS1_EXT;
-	}
-	else if (desc->ddspf.dwFourCC == dxt5)
-	{
-		*format = GL_DDS5_EXT;
-	}
-	else if (desc->ddspf.dwRGBBitCount == 16)
-	{
-		*format = GL_DDS_RGB16_EXT;
-	}
-	else if (desc->ddspf.dwRGBBitCount == 32)
-	{
-		*format = GL_DDS_RGBA32_EXT;
-	}
-	else
-	{
-		FS_FreeFile (*pic);
-		*pic = NULL;
-		return;
-	}
-
-	*width = desc->dwWidth;
-	*height = desc->dwHeight;
-	*mipcount = desc->dwMipMapCount;
-}
-
-#endif
 
 //===================================================================
 
@@ -2030,11 +1965,7 @@ Loads any of the supported image types into a cannonical
 32 bit format.
 =================
 */
-#ifdef _XBOX
-void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, int *mipcount, GLenum *format ) {
-#else
 int R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLenum *format ) {
-#endif
 	int		bytedepth;
 	char	name[MAX_QPATH];
 
@@ -2048,46 +1979,7 @@ int R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLe
 	} else {
 		Q_strncpyz( name, shortname, sizeof( name ) );
 	}
-#ifdef _XBOX
-	*format = GL_RGBA;
-	*mipcount = 1;
 
-	COM_StripExtension(name,name);
-	COM_DefaultExtension(name, sizeof(name), ".tga");
-	LoadTGA( name, pic, width, height );
-
-	if (*pic)
-	{
-		int j = (*width) * (*height) * 4;
-		byte *buf = *pic;
-		byte swap;
-		for (int i = 0 ; i < j ; i+=4 ) {
-			swap = buf[i];
-			buf[i] = buf[i+2];
-			buf[i+2] = swap;
-		}
-		return;
-	}
-
-	/*	// Removing PNG support	2003/05/19
-	COM_StripExtension(name,name);
-	COM_DefaultExtension(name, sizeof(name), ".png");	
-	
-	//No .tga existed, try .png
-	LoadPNG32( name, pic, width, height, &bytedepth );
-	if (*pic)
-	{
-		return;
-	}
-	*/
-
-	// No .png either, fall back to .dds
-	COM_StripExtension(name,name);
-	COM_DefaultExtension(name, sizeof(name), ".dds");
-	LoadDDS( name, pic, width, height, mipcount, format );
-	return;
-
-#else
 	*format = GL_RGBA;
 	COM_StripExtension(name,name);
 	COM_DefaultExtension(name, sizeof(name), ".jpg");
@@ -2116,11 +2008,8 @@ int R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLe
 	//No .jpg existed and no .png existed, try .tga as a last resort.
 	fileSize=LoadTGA( name, pic, width, height );
 	return fileSize;
-#endif
 }
 
-
-#ifndef _XBOX	// Only used for terrain
 void R_LoadDataImage( const char *name, byte **pic, int *width, int *height)
 {
 	int		len;
@@ -2146,14 +2035,12 @@ void R_LoadDataImage( const char *name, byte **pic, int *width, int *height)
 	COM_DefaultExtension( work, sizeof( work ), ".png" );
 	LoadPNG8( work, pic, width, height );
 	
-#ifndef _XBOX
 	if (!pic || !*pic)
 	{ //png load failed, try jpeg
 		strcpy(work, name);
 		COM_DefaultExtension( work, sizeof( work ), ".jpg" );
 		LoadJPG( work, pic, width, height );
 	}
-#endif
 
 	if (!pic || !*pic)
 	{ //both png and jpeg failed, try targa
@@ -2171,7 +2058,6 @@ void R_LoadDataImage( const char *name, byte **pic, int *width, int *height)
 	Com_Printf("Couldn't read %s -- dataimage load failed\n", name);
 //	MD_PopTag();
 }
-#endif
 
 void R_InvertImage(byte *data, int width, int height, int depth)
 {
@@ -3245,7 +3131,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 	char		surfName[MAX_QPATH];
 
 	// load and parse the skin file
-    FS_ReadFile( name, (void **)&text );
+    ri.FS_ReadFile( name, (void **)&text );
 	if ( !text ) {
 		VID_Printf( PRINT_ERROR, "WARNING: RE_RegisterSkin( '%s' ) failed to load!\n", name );
 		return 0;
@@ -3298,7 +3184,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 		skin->numSurfaces++;
 	}
 
-	FS_FreeFile( text );
+	ri.FS_FreeFile( text );
 
 
 	// never let a skin have 0 shaders

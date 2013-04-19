@@ -330,7 +330,7 @@ qhandle_t R_GetShaderByNum(int shaderNum, world_t &worldData)
 		Com_Printf( "Warning: Bad index for R_GetShaderByNum - %i", shaderNum );
 		return(0);
 	}
-	shader = re.RegisterShader(worldData.shaders[ shaderNum ].shader);
+	shader = RE_RegisterShader(worldData.shaders[ shaderNum ].shader);
 	return(shader);
 }
 
@@ -1398,7 +1398,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 	{
 		// still needs loading...
 		//
-		FS_ReadFile( name, (void **)&buffer );
+		ri.FS_ReadFile( name, (void **)&buffer );
 		if ( !buffer ) {
 			Com_Error (ERR_DROP, "RE_LoadWorldMap: %s not found", name);
 		}
@@ -1461,7 +1461,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 	}
 	else
 	{
-		FS_FreeFile( buffer );
+		ri.FS_FreeFile( buffer );
 	}
 }
 

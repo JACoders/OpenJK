@@ -156,7 +156,7 @@ qboolean RE_RegisterModels_GetDiskFile( const char *psModelFileName, void **ppvB
 				return qtrue;	
 			}
 
-		FS_ReadFile( sModelName, ppvBuffer );
+		ri.FS_ReadFile( sModelName, ppvBuffer );
 		*pqbAlreadyCached = qfalse;
 
 		const bool bSuccess = !!(*ppvBuffer);
@@ -372,7 +372,7 @@ void RE_RegisterMedia_LevelLoadBegin(const char *psMapName, ForceReload_e eForce
 	{
 		case eForceReload_BSP:
 
-			CM_DeleteCachedMap(qtrue);
+			ri.CM_DeleteCachedMap(qtrue);
 			R_Images_DeleteLightMaps();
 			break;
 
@@ -385,7 +385,7 @@ void RE_RegisterMedia_LevelLoadBegin(const char *psMapName, ForceReload_e eForce
 
 			// BSP...
 			//
-			CM_DeleteCachedMap(qtrue);
+			ri.CM_DeleteCachedMap(qtrue);
 			R_Images_DeleteLightMaps();
 			//
 			// models...
@@ -414,20 +414,18 @@ int RE_RegisterMedia_GetLevel(void)
 	return giRegisterMedia_CurrentLevel;
 }
 
-extern qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel);
-
 void RE_RegisterMedia_LevelLoadEnd(void)
 {
 	RE_RegisterModels_LevelLoadEnd(qfalse);
 	RE_RegisterImages_LevelLoadEnd();
-	SND_RegisterAudio_LevelLoadEnd(qfalse);
+	ri.SND_RegisterAudio_LevelLoadEnd(qfalse);
 
 	if (gbAllowScreenDissolve)
 	{
 		RE_InitDissolve(qfalse);
 	}
 
-	S_RestartMusic();
+	ri.S_RestartMusic();
 	
 	extern qboolean gbAlreadyDoingLoad;
 					gbAlreadyDoingLoad = qfalse;
@@ -698,7 +696,7 @@ Ghoul2 Insert End
 		}
 		
 		if (!bAlreadyCached){	// important to check!!
-			FS_FreeFile (buf);
+			ri.FS_FreeFile (buf);
 		}
 
 		if ( !loaded ) {
@@ -972,7 +970,6 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 
 //=============================================================================
 
-void ShaderTableCleanup();
 void CM_LoadShaderText(bool forceReload);
 void CM_SetupShaderProperties(void);
 
@@ -980,10 +977,8 @@ void CM_SetupShaderProperties(void);
 ** RE_BeginRegistration
 */
 void RE_BeginRegistration( glconfig_t *glconfigOut ) {
-#ifndef _XBOX
-	ShaderTableCleanup();
-#endif
-	Hunk_ClearToMark();
+	ri.CM_ShaderTableCleanup();
+	ri.Hunk_ClearToMark();
 
 	R_Init();
 	*glconfigOut = glConfig;

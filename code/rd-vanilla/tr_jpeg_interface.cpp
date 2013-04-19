@@ -204,15 +204,15 @@ int LoadJPG( const char *filename, unsigned char **pic, int *width, int *height 
 	*pic = NULL;	
 	
 	fileHandle_t	h;
-	const int len = FS_FOpenFileRead( filename, &h, qfalse );
+	const int len = ri.FS_FOpenFileRead( filename, &h, qfalse );
 	if(!h)
 	{
 		return 0;
 	}
 	//JPEG system reads 4K past input buffer so we tack on an additional 4k.
 	byte *pJPGData = (byte *)Z_Malloc(len + 4096, TAG_TEMP_JPG, qfalse);
-	FS_Read(pJPGData, len, h);
-	FS_FCloseFile( h );
+	ri.FS_Read(pJPGData, len, h);
+	ri.FS_FCloseFile( h );
 
 	Decompress_JPG( filename, pJPGData, pic, width, height );
 
@@ -538,7 +538,7 @@ void SaveJPG(const char * filename, int quality, int image_width, int image_heig
 
 	byte *pbOut = Compress_JPG(&iOutputSize, quality, image_width, image_height, image_buffer, qtrue);
 
-	FS_WriteFile( filename, pbOut, iOutputSize );
+	ri.FS_WriteFile( filename, pbOut, iOutputSize );
 
 	Z_Free(pbOut);
 }

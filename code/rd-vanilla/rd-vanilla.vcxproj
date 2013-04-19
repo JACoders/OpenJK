@@ -81,6 +81,7 @@
     <ClInclude Include="..\jpeg-6\jpeglib.h" />
     <ClInclude Include="..\jpeg-6\jversion.h" />
     <ClInclude Include="..\png\png.h" />
+    <ClInclude Include="..\qcommon\cm_landscape.h" />
     <ClInclude Include="..\renderer\mdx_format.h" />
     <ClInclude Include="..\renderer\tr_public.h" />
     <ClInclude Include="..\renderer\tr_types.h" />

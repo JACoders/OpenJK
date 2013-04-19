@@ -1889,4 +1889,7 @@ Ghoul2 Insert End
 // tr_surfacesprites
 void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input);
 
+// tr_subs.cpp
+void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign );
+
 #endif //TR_LOCAL_H
