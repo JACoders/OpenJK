@@ -1,25 +1,20 @@
-# SORRY FOR THE HISTORY CHANGES! #
-
+## SORRY FOR THE HISTORY CHANGES! ##
 For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase.html#_recovering_from_upstream_rebase) for how to fix if you've changed anything, or just delete your github fork and local folder and start over if you haven't.
 
-# JACoders "OpenJK" project #
-
-IRC: irc.arloria.net / #JACoders
-
-## Description ##
+## JACoders "OpenJK" project ##
+IRC: irc.arloria.net / #JACoders ([webchat](http://www.arloria.net/tiramisu/tiramisu.swf?channels=#jacoders))
 
 The purpose of this project is to maintain and improve the Jedi Academy and Jedi Outcast games, developed by Raven Software.
-
 This project will not attempt to rebalance or otherwise modify core gameplay aspects.
 
-Maintainers, in alphabetical order:
+## Maintainers (in alphabetical order) ##
 * eezstreet
 * Ensiform
 * mrwonko
 * Raz0r
 * redsaurus
 
-Significant contributors, in alphabetical order:
+## Significant contributors (in alphabetical order) ##
 * exidl
 * Sil
 * Xycaleth
@@ -70,12 +65,7 @@ Significant contributors, in alphabetical order:
 * Shift-Escape will now also open the console as an alternate (ie: keyboard doesn't support the normal console key)
 * Removed shift key requirement to open console
 
-
-## Known Bugs ##
-
-* Missing Known Bugs list
-
-## Mod Developer Notes ##
+## Developer Notes ##
 
 ### Reserved renderer names ###
 * rd-vanilla (JA's original renderer)
