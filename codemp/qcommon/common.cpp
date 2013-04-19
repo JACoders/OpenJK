@@ -50,7 +50,6 @@ cvar_t	*com_G2Report;
 cvar_t	*com_terrainPhysics; //rwwRMG - added
 
 cvar_t	*com_version;
-cvar_t	*com_blood;
 cvar_t	*com_buildScript;	// for automated data building scripts
 cvar_t	*com_introPlayed;
 cvar_t	*cl_paused;
@@ -1172,7 +1171,6 @@ void Com_Init( char *commandLine ) {
 		// init commands and vars
 		//
 		com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE);
-		com_blood = Cvar_Get ("com_blood", "1", CVAR_ARCHIVE);
 
 		com_vmdebug = Cvar_Get ("vmdebug", "0", CVAR_TEMP );
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
