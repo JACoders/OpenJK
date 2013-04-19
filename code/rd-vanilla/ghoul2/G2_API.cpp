@@ -527,10 +527,13 @@ public:
 };
 
 
+static Ghoul2InfoArray *singleton = NULL;
 IGhoul2InfoArray &TheGhoul2InfoArray()
 {
-	static Ghoul2InfoArray singleton;
-	return singleton;
+	if(!singleton) {
+		singleton = new Ghoul2InfoArray;
+	}
+	return *singleton;
 }
 
 #if G2API_DEBUG

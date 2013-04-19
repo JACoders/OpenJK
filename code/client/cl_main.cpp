@@ -89,6 +89,11 @@ clientStatic_t		cls;
 // Structure containing functions exported from refresh DLL
 refexport_t	re;
 
+//RAZFIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
+IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
+	return re.TheGhoul2InfoArray();
+}
+
 ping_t	cl_pinglist[MAX_PINGREQUESTS];
 
 void CL_ShutdownRef( void );
@@ -1081,10 +1086,68 @@ CL_InitRef
 */
 void CL_InitRef( void ) {
 	refexport_t	*ret;
+	refimport_t rit;
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
 
-	// cinematic stuff
+	rit.CIN_PlayCinematic = CIN_PlayCinematic;
+	rit.CIN_RunCinematic = CIN_RunCinematic;
+	rit.CIN_UploadCinematic = CIN_UploadCinematic;
+	rit.CL_IsRunningInGameCinematic = CL_IsRunningInGameCinematic;
+	rit.Cmd_AddCommand = Cmd_AddCommand;
+	rit.Cmd_Argc = Cmd_Argc;
+	rit.Cmd_ArgsBuffer = Cmd_ArgsBuffer;
+	rit.Cmd_Argv = Cmd_Argv;
+	rit.Cmd_ExecuteString = Cmd_ExecuteString;
+	rit.Cmd_RemoveCommand = Cmd_RemoveCommand;
+	rit.CM_ClusterPVS = CM_ClusterPVS;
+	rit.CM_CullWorldBox = CM_CullWorldBox;
+	rit.CM_DeleteCachedMap = CM_DeleteCachedMap;
+	rit.CM_DrawDebugSurface = CM_DrawDebugSurface;
+	rit.CM_PointContents = CM_PointContents;
+	rit.CM_ShaderTableCleanup = ShaderTableCleanup;
+	rit.CM_ShutdownTerrain = CM_ShutdownTerrain;
+	rit.CM_TerrainPatchIterate = CM_TerrainPatchIterate;
+	rit.Cvar_CheckRange = Cvar_CheckRange;
+	rit.Cvar_Get = Cvar_Get;
+	rit.Cvar_Set = Cvar_Set;
+	rit.Cvar_SetValue = Cvar_SetValue;
+	rit.Cvar_VariableIntegerValue = Cvar_VariableIntegerValue;
+	rit.Cvar_VariableString = Cvar_VariableString;
+	rit.Cvar_VariableStringBuffer = Cvar_VariableStringBuffer;
+	rit.Cvar_VariableValue = Cvar_VariableValue;
+	rit.Error = Com_Error;
+	rit.FS_FCloseFile = FS_FCloseFile;
+	rit.FS_FileExists = FS_FileExists;
+	rit.FS_FileIsInPAK = FS_FileIsInPAK;
+	rit.FS_FOpenFileByMode = FS_FOpenFileByMode;
+	rit.FS_FOpenFileRead = FS_FOpenFileRead;
+	rit.FS_FOpenFileWrite = FS_FOpenFileWrite;
+	rit.FS_FreeFile = FS_FreeFile;
+	rit.FS_FreeFileList = FS_FreeFileList;
+	rit.FS_ListFiles = FS_ListFiles;
+	rit.FS_Read = FS_Read;
+	rit.FS_ReadFile = FS_ReadFile;
+	rit.FS_Write = FS_Write;
+	rit.FS_WriteFile = FS_WriteFile;
+	rit.GetG2VertSpaceServer = ???;
+	rit.GetWinVars = ???;
+	rit.Hunk_ClearToMark = Hunk_ClearToMark;
+	rit.LowPhysicalMemory = Sys_LowPhysicalMemory;
+	rit.Milliseconds = Sys_Milliseconds;
+	rit.Printf = Com_Printf;
+	rit.SE_GetString = need to do some hax heer;
+	rit.SG_Append = SG_Append;
+	rit.SND_RegisterAudio_LevelLoadEnd = SND_RegisterAudio_LevelLoadEnd;
+	rit.SV_GetConfigstring = SV_GetConfigstring;
+	rit.SV_PointContents = SV_PointContents;
+	rit.SV_SetConfigstring = SV_SetConfigstring;
+	rit.SV_Trace = SV_Trace;
+	rit.S_RestartMusic = S_RestartMusic;
+	rit.Z_Free = Z_Free;
+	rit.Z_Malloc = Z_Malloc;
+	rit.Z_MemSize = Z_MemSize;
+	rit.Z_MorphMallocTag = Z_MorphMallocTag;
 
 	ret = GetRefAPI( REF_API_VERSION );
 
