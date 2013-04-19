@@ -27,7 +27,6 @@ void MSG_Clear (msg_t *buf);
 void MSG_WriteData (msg_t *buf, const void *data, int length);
 void MSG_Bitstream( msg_t *buf );
 
-
 struct usercmd_s;
 struct entityState_s;
 struct playerState_s;
