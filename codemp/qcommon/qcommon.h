@@ -27,7 +27,6 @@ void MSG_Clear (msg_t *buf);
 void MSG_WriteData (msg_t *buf, const void *data, int length);
 void MSG_Bitstream( msg_t *buf );
 
-
 struct usercmd_s;
 struct entityState_s;
 struct playerState_s;
@@ -343,6 +342,8 @@ then searches for a command or variable that matches the first token.
 
 typedef void (*xcommand_t) (void);
 
+typedef void ( *callbackFunc_t )( const char *s );
+
 void	Cmd_Init (void);
 
 void	Cmd_AddCommand( const char *cmd_name, xcommand_t function );
@@ -354,7 +355,7 @@ void	Cmd_AddCommand( const char *cmd_name, xcommand_t function );
 
 void	Cmd_RemoveCommand( const char *cmd_name );
 
-void	Cmd_CommandCompletion( void(*callback)(const char *s) );
+void	Cmd_CommandCompletion( callbackFunc_t callback );
 // callback with each valid string
 
 int		Cmd_Argc (void);
@@ -453,7 +454,7 @@ void	Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize 
 int	Cvar_Flags(const char *var_name);
 // returns CVAR_NONEXISTENT if cvar doesn't exist or the flags of that particular CVAR.
 
-void	Cvar_CommandCompletion( void(*callback)(const char *s) );
+void	Cvar_CommandCompletion( callbackFunc_t callback );
 // callback with each valid string
 
 void 	Cvar_Reset( const char *var_name );
