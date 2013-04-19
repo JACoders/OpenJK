@@ -110,11 +110,11 @@ void floating_point_exception_handler(int whatever)
 static void *game_library;
 
 #ifdef __i386__
-	const char *gamename = "qagamei386.so";
+	const char *gamename = "jagamei386." DLL_EXT;
 #elif defined __alpha__
-	const char *gamename = "qagameaxp.so";
+	const char *gamename = "jagameaxp." DLL_EXT;
 #elif defined __mips__
-	const char *gamename = "qagamemips.so";
+	const char *gamename = "jagamemips." DLL_EXT;
 #else
 #error Unknown arch
 #endif
