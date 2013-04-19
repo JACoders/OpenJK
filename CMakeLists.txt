@@ -24,6 +24,7 @@ endif(WIN32)
 # External version not yet supported, WIP
 # option(UseInternalJpeg "Whether to use the included libjpeg instead of a locally installed one" ON)
 # option(UseInternalPng "Whether to use the included libpng instead of a locally installed one" ON)
+option(PackageDir "Where to place the installer/package." "${CMAKE_SOURCE_DIR}/package")
 
 # Custom CMake Modules needed
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules" ${CMAKE_MODULE_PATH})
@@ -66,3 +67,21 @@ if(BuildJK2SPGame)
 	add_subdirectory("${JK2SPDir}/game")
 endif(BuildJK2SPGame)
 add_subdirectory(${MPDir})
+
+#    CPack for installer creation
+# TODO: Which version are we?
+set(CPACK_PACKAGE_PACKAGE_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+# I'm just not appending the version for now
+set(CPACK_PACKAGE_FILE_NAME "OpenJK-${CMAKE_SYSTEM_NAME}-${Architecture}")
+
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "An improved Jedi Academy")
+set(CPACK_PACKAGE_VENDOR "JA Coders") # TODO: What are we called?
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_PACKAGE_DIRECTORY ${PACKAGE_DIR})
+set(CPACK_BINARY_ZIP ON) # always create at least a zip file
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0) # prevent additional directory in zip
+
+include(CPack)
