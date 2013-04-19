@@ -186,11 +186,9 @@ GAME_OBJS		= $(B)/game/AI_Animal.o \
 			  $(B)/game/wp_thermal.o \
 			  $(B)/game/wp_trip_mine.o \
 			  $(B)/game/wp_tusken.o
-#$(B)/game/bg_lib.o \
-
 
 ENGINE_NAME		= $(B)/jasp
-ENGINE_CFLAGS		+= -m32 -fpermissive -w -DNDEBUG -DFINAL_BUILD -D_M_IX86 -I. `sdl2-config --cflags` -D_JK2EXE
+ENGINE_CFLAGS		+= -m32 -fpermissive -w -DNDEBUG -DFINAL_BUILD -D_M_IX86 -I. `sdl2-config --cflags` -D_JK2EXE -fasm-blocks
 ENGINE_LDFLAGS		= -m32 `sdl2-config --libs`
 ifeq ($(PLATFORM),darwin)
 	ENGINE_LDFLAGS		+= -framework OpenGL -framework OpenAL
@@ -297,52 +295,42 @@ ENGINE_OBJS		= $(B)/engine/client/cl_cgame.o \
 			  $(B)/engine/renderer/tr_surfacesprites.o \
 			  $(B)/engine/renderer/tr_terrain.o \
 			  $(B)/engine/renderer/tr_world.o \
-			  $(B)/engine/jpeg-8c/jaricom.o \
-			  $(B)/engine/jpeg-8c/jcapimin.o \
-			  $(B)/engine/jpeg-8c/jcapistd.o \
-			  $(B)/engine/jpeg-8c/jcarith.o \
-			  $(B)/engine/jpeg-8c/jccoefct.o \
-			  $(B)/engine/jpeg-8c/jccolor.o \
-			  $(B)/engine/jpeg-8c/jcdctmgr.o \
-			  $(B)/engine/jpeg-8c/jchuff.o \
-			  $(B)/engine/jpeg-8c/jcinit.o \
-			  $(B)/engine/jpeg-8c/jcmainct.o \
-			  $(B)/engine/jpeg-8c/jcmarker.o \
-			  $(B)/engine/jpeg-8c/jcmaster.o \
-			  $(B)/engine/jpeg-8c/jcomapi.o \
-			  $(B)/engine/jpeg-8c/jcparam.o \
-			  $(B)/engine/jpeg-8c/jcprepct.o \
-			  $(B)/engine/jpeg-8c/jcsample.o \
-			  $(B)/engine/jpeg-8c/jctrans.o \
-			  $(B)/engine/jpeg-8c/jdapimin.o \
-			  $(B)/engine/jpeg-8c/jdapistd.o \
-			  $(B)/engine/jpeg-8c/jdarith.o \
-			  $(B)/engine/jpeg-8c/jdatadst.o \
-			  $(B)/engine/jpeg-8c/jdatasrc.o \
-			  $(B)/engine/jpeg-8c/jdcoefct.o \
-			  $(B)/engine/jpeg-8c/jdcolor.o \
-			  $(B)/engine/jpeg-8c/jddctmgr.o \
-			  $(B)/engine/jpeg-8c/jdhuff.o \
-			  $(B)/engine/jpeg-8c/jdinput.o \
-			  $(B)/engine/jpeg-8c/jdmainct.o \
-			  $(B)/engine/jpeg-8c/jdmarker.o \
-			  $(B)/engine/jpeg-8c/jdmaster.o \
-			  $(B)/engine/jpeg-8c/jdmerge.o \
-			  $(B)/engine/jpeg-8c/jdpostct.o \
-			  $(B)/engine/jpeg-8c/jdsample.o \
-			  $(B)/engine/jpeg-8c/jdtrans.o \
-			  $(B)/engine/jpeg-8c/jerror.o \
-			  $(B)/engine/jpeg-8c/jfdctflt.o \
-			  $(B)/engine/jpeg-8c/jfdctfst.o \
-			  $(B)/engine/jpeg-8c/jfdctint.o \
-			  $(B)/engine/jpeg-8c/jidctflt.o \
-			  $(B)/engine/jpeg-8c/jidctfst.o \
-			  $(B)/engine/jpeg-8c/jidctint.o \
-			  $(B)/engine/jpeg-8c/jmemmgr.o \
-			  $(B)/engine/jpeg-8c/jmemnobs.o \
-			  $(B)/engine/jpeg-8c/jquant1.o \
-			  $(B)/engine/jpeg-8c/jquant2.o \
-			  $(B)/engine/jpeg-8c/jutils.o \
+			  $(B)/engine/jpeg-6/jcapimin.o \
+			  $(B)/engine/jpeg-6/jccoefct.o \
+			  $(B)/engine/jpeg-6/jccolor.o \
+			  $(B)/engine/jpeg-6/jcdctmgr.o \
+			  $(B)/engine/jpeg-6/jchuff.o \
+			  $(B)/engine/jpeg-6/jcinit.o \
+			  $(B)/engine/jpeg-6/jcmainct.o \
+			  $(B)/engine/jpeg-6/jcmarker.o \
+			  $(B)/engine/jpeg-6/jcmaster.o \
+			  $(B)/engine/jpeg-6/jcomapi.o \
+			  $(B)/engine/jpeg-6/jcparam.o \
+			  $(B)/engine/jpeg-6/jcphuff.o \
+			  $(B)/engine/jpeg-6/jcprepct.o \
+			  $(B)/engine/jpeg-6/jcsample.o \
+			  $(B)/engine/jpeg-6/jctrans.o \
+			  $(B)/engine/jpeg-6/jdapimin.o \
+			  $(B)/engine/jpeg-6/jdapistd.o \
+			  $(B)/engine/jpeg-6/jdatadst.o \
+			  $(B)/engine/jpeg-6/jdatasrc.o \
+			  $(B)/engine/jpeg-6/jdcoefct.o \
+			  $(B)/engine/jpeg-6/jdcolor.o \
+			  $(B)/engine/jpeg-6/jddctmgr.o \
+			  $(B)/engine/jpeg-6/jdhuff.o \
+			  $(B)/engine/jpeg-6/jdinput.o \
+			  $(B)/engine/jpeg-6/jdmainct.o \
+			  $(B)/engine/jpeg-6/jdmarker.o \
+			  $(B)/engine/jpeg-6/jdmaster.o \
+			  $(B)/engine/jpeg-6/jdpostct.o \
+			  $(B)/engine/jpeg-6/jdsample.o \
+			  $(B)/engine/jpeg-6/jdtrans.o \
+			  $(B)/engine/jpeg-6/jerror.o \
+			  $(B)/engine/jpeg-6/jfdctflt.o \
+			  $(B)/engine/jpeg-6/jidctflt.o \
+			  $(B)/engine/jpeg-6/jmemmgr.o \
+			  $(B)/engine/jpeg-6/jmemnobs.o \
+			  $(B)/engine/jpeg-6/jutils.o \
 			  $(B)/engine/png/png.o \
 			  $(B)/engine/ghoul2/G2_API.o \
 			  $(B)/engine/ghoul2/G2_bolts.o \
@@ -361,22 +349,7 @@ ENGINE_OBJS		= $(B)/engine/client/cl_cgame.o \
 			  $(B)/engine/RMG/RM_Objective.o \
 			  $(B)/engine/RMG/RM_Path.o \
 			  $(B)/engine/RMG/RM_Terrain.o \
-			  $(B)/engine/zlib/ioapi.o \
-			  $(B)/engine/zlib/adler32.o \
-			  $(B)/engine/zlib/compress.o \
-			  $(B)/engine/zlib/crc32.o \
-			  $(B)/engine/zlib/deflate.o \
-			  $(B)/engine/zlib/gzclose.o \
-			  $(B)/engine/zlib/gzlib.o \
-			  $(B)/engine/zlib/gzread.o \
-			  $(B)/engine/zlib/gzwrite.o \
-			  $(B)/engine/zlib/infback.o \
-			  $(B)/engine/zlib/inffast.o \
-			  $(B)/engine/zlib/inflate.o \
-			  $(B)/engine/zlib/inftrees.o \
-			  $(B)/engine/zlib/trees.o \
-			  $(B)/engine/zlib/uncompr.o \
-			  $(B)/engine/zlib/zutil.o \
+			  $(B)/engine/unix/unix_main.o \
 			  $(B)/engine/client/vmachine.o \
 			  $(B)/engine/ui/ui_atoms.o \
 			  $(B)/engine/ui/ui_connect.o \
@@ -390,192 +363,13 @@ ENGINE_OBJS		= $(B)/engine/client/cl_cgame.o \
               $(B)/engine/sdl/sdl_input.o \
               $(B)/engine/sys/sys_main.o \
               $(B)/engine/sys/sys_unix.o \
-              $(B)/engine/sys/sys_net.o \
               $(B)/engine/game/genericparser2.o \
               $(B)/engine/renderer/tr_stl.o \
               $(B)/engine/renderer/tr_jpeg_interface.o \
-              $(B)/engine/unix/unix_main.o
-                            
-DEDICATED_NAME		= $(B)/$(PLATFORM)jampded
-DEDICATED_CFLAGS	+= -m32 -fpermissive -w -DDEDICATED -O2 -unroll -D_JK2 -DNDEBUG -DC_ONLY -DFINAL_BUILD -D_M_IX86 -I.
-DEDICATED_LDFLAGS	= -m32 -ldl
-DEDICATED_OBJS		= $(B)/dedicated/server/sv_bot.o \
-			  $(B)/dedicated/server/sv_client.o \
-			  $(B)/dedicated/server/sv_ccmds.o \
-			  $(B)/dedicated/server/sv_game.o \
-			  $(B)/dedicated/server/sv_init.o \
-			  $(B)/dedicated/server/sv_main.o \
-			  $(B)/dedicated/server/sv_net_chan.o \
-			  $(B)/dedicated/server/sv_snapshot.o \
-			  $(B)/dedicated/server/sv_world.o \
-			  $(B)/dedicated/qcommon/cm_load.o \
-			  $(B)/dedicated/qcommon/stringed_ingame.o \
-			  $(B)/dedicated/qcommon/stringed_interface.o \
-			  $(B)/dedicated/qcommon/GenericParser2.o \
-			  $(B)/dedicated/qcommon/cm_patch.o \
-			  $(B)/dedicated/qcommon/cm_polylib.o \
-			  $(B)/dedicated/qcommon/cm_test.o \
-			  $(B)/dedicated/qcommon/cm_trace.o \
-			  $(B)/dedicated/qcommon/common.o \
-			  $(B)/dedicated/qcommon/cvar.o \
-			  $(B)/dedicated/qcommon/md4.o \
-			  $(B)/dedicated/qcommon/msg.o \
-			  $(B)/dedicated/qcommon/net_chan.o \
-			  $(B)/dedicated/qcommon/huffman.o \
-			  $(B)/dedicated/qcommon/q_math.o \
-			  $(B)/dedicated/qcommon/q_shared.o \
-			  $(B)/dedicated/qcommon/z_memman_pc.o \
-			  $(B)/dedicated/zlib/ioapi.o \
-			  $(B)/dedicated/qcommon/unzip.o \
-			  $(B)/dedicated/qcommon/vm.o \
-			  $(B)/dedicated/qcommon/vm_interpreted.o \
-			  $(B)/dedicated/botlib/be_aas_bspq3.o \
-			  $(B)/dedicated/botlib/be_aas_cluster.o \
-			  $(B)/dedicated/botlib/be_aas_debug.o \
-			  $(B)/dedicated/botlib/be_aas_entity.o \
-			  $(B)/dedicated/botlib/be_aas_file.o \
-			  $(B)/dedicated/botlib/be_aas_main.o \
-			  $(B)/dedicated/botlib/be_aas_move.o \
-			  $(B)/dedicated/botlib/be_aas_optimize.o \
-			  $(B)/dedicated/botlib/be_aas_reach.o \
-			  $(B)/dedicated/botlib/be_aas_route.o \
-			  $(B)/dedicated/botlib/be_aas_routealt.o \
-			  $(B)/dedicated/botlib/be_aas_sample.o \
-			  $(B)/dedicated/botlib/be_ai_char.o \
-			  $(B)/dedicated/botlib/be_ai_chat.o \
-			  $(B)/dedicated/botlib/be_ai_gen.o \
-			  $(B)/dedicated/botlib/be_ai_goal.o \
-			  $(B)/dedicated/botlib/be_ai_move.o \
-			  $(B)/dedicated/botlib/be_ai_weap.o \
-			  $(B)/dedicated/botlib/be_ai_weight.o \
-			  $(B)/dedicated/botlib/be_ea.o \
-			  $(B)/dedicated/botlib/be_interface.o \
-			  $(B)/dedicated/botlib/l_crc.o \
-			  $(B)/dedicated/botlib/l_libvar.o \
-			  $(B)/dedicated/botlib/l_log.o \
-			  $(B)/dedicated/botlib/l_memory.o \
-			  $(B)/dedicated/botlib/l_precomp.o \
-			  $(B)/dedicated/botlib/l_script.o \
-			  $(B)/dedicated/botlib/l_struct.o \
-			  $(B)/dedicated/unix_ded/linux_common.o \
-			  $(B)/dedicated/unix_ded/unix_main.o \
-			  $(B)/dedicated/unix_ded/unix_net.o \
-			  $(B)/dedicated/unix_ded/unix_shared.o \
-			  $(B)/dedicated/unix/snapvector.o \
-			  $(B)/dedicated/unix/vm_x86.o \
-			  $(B)/dedicated/ghoul2/G2_API.o \
-			  $(B)/dedicated/ghoul2/G2_bolts.o \
-			  $(B)/dedicated/ghoul2/G2_surfaces.o \
-			  $(B)/dedicated/ghoul2/G2_misc.o \
-			  $(B)/dedicated/null/null_client.o \
-			  $(B)/dedicated/null/null_input.o \
-			  $(B)/dedicated/null/null_snddma.o \
-			  $(B)/dedicated/null/null_glimp.o \
-			  $(B)/dedicated/null/null_renderer.o \
-			  $(B)/dedicated/icarus/BlockStream.o \
-			  $(B)/dedicated/icarus/GameInterface.o \
-			  $(B)/dedicated/icarus/Instance.o \
-			  $(B)/dedicated/icarus/Interface.o \
-			  $(B)/dedicated/icarus/Memory.o \
-			  $(B)/dedicated/icarus/Q3_Interface.o \
-			  $(B)/dedicated/icarus/Q3_Registers.o \
-			  $(B)/dedicated/icarus/Sequence.o \
-			  $(B)/dedicated/icarus/Sequencer.o \
-			  $(B)/dedicated/icarus/TaskManager.o \
-			  $(B)/dedicated/renderer/tr_model.o \
-			  $(B)/dedicated/renderer/tr_image.o \
-			  $(B)/dedicated/qcommon/RoffSystem.o \
-			  $(B)/dedicated/renderer/tr_ghoul2.o \
-			  $(B)/dedicated/renderer/matcomp.o \
-			  $(B)/dedicated/renderer/tr_init.o \
-			  $(B)/dedicated/renderer/tr_main.o \
-			  $(B)/dedicated/renderer/tr_backend.o \
-			  $(B)/dedicated/renderer/tr_mesh.o \
-			  $(B)/dedicated/ghoul2/G2_bones.o \
-			  $(B)/dedicated/renderer/tr_shader.o \
-			  $(B)/dedicated/qcommon/cmd_pc.o \
-			  $(B)/dedicated/server/NPCNav/navigator.o \
-			  $(B)/dedicated/server/NPCNav/gameCallbacks.o \
-			  $(B)/dedicated/qcommon/files_common.o \
-			  $(B)/dedicated/qcommon/cmd_common.o \
-			  $(B)/dedicated/qcommon/files_pc.o \
-			  $(B)/dedicated/RMG/RM_Manager.o \
-			  $(B)/dedicated/RMG/RM_Mission.o \
-			  $(B)/dedicated/RMG/RM_Instance.o \
-			  $(B)/dedicated/RMG/RM_InstanceFile.o \
-			  $(B)/dedicated/RMG/RM_Instance_BSP.o \
-			  $(B)/dedicated/RMG/RM_Instance_Group.o \
-			  $(B)/dedicated/RMG/RM_Instance_Void.o \
-			  $(B)/dedicated/RMG/RM_Instance_Random.o \
-			  $(B)/dedicated/RMG/RM_Objective.o \
-			  $(B)/dedicated/RMG/RM_Terrain.o \
-			  $(B)/dedicated/RMG/RM_Path.o \
-			  $(B)/dedicated/RMG/RM_Area.o \
-			  $(B)/dedicated/qcommon/cm_terrain.o \
-			  $(B)/dedicated/qcommon/cm_randomterrain.o \
-			  $(B)/dedicated/qcommon/cm_shader.o \
-			  $(B)/dedicated/jpeg-8c/jaricom.o \
-			  $(B)/dedicated/jpeg-8c/jcapimin.o \
-			  $(B)/dedicated/jpeg-8c/jcapistd.o \
-			  $(B)/dedicated/jpeg-8c/jcarith.o \
-			  $(B)/dedicated/jpeg-8c/jccoefct.o \
-			  $(B)/dedicated/jpeg-8c/jccolor.o \
-			  $(B)/dedicated/jpeg-8c/jcdctmgr.o \
-			  $(B)/dedicated/jpeg-8c/jchuff.o \
-			  $(B)/dedicated/jpeg-8c/jcinit.o \
-			  $(B)/dedicated/jpeg-8c/jcmainct.o \
-			  $(B)/dedicated/jpeg-8c/jcmarker.o \
-			  $(B)/dedicated/jpeg-8c/jcmaster.o \
-			  $(B)/dedicated/jpeg-8c/jcomapi.o \
-			  $(B)/dedicated/jpeg-8c/jcparam.o \
-			  $(B)/dedicated/jpeg-8c/jcprepct.o \
-			  $(B)/dedicated/jpeg-8c/jcsample.o \
-			  $(B)/dedicated/jpeg-8c/jctrans.o \
-			  $(B)/dedicated/jpeg-8c/jdapimin.o \
-			  $(B)/dedicated/jpeg-8c/jdapistd.o \
-			  $(B)/dedicated/jpeg-8c/jdarith.o \
-			  $(B)/dedicated/jpeg-8c/jdatadst.o \
-			  $(B)/dedicated/jpeg-8c/jdatasrc.o \
-			  $(B)/dedicated/jpeg-8c/jdcoefct.o \
-			  $(B)/dedicated/jpeg-8c/jdcolor.o \
-			  $(B)/dedicated/jpeg-8c/jddctmgr.o \
-			  $(B)/dedicated/jpeg-8c/jdhuff.o \
-			  $(B)/dedicated/jpeg-8c/jdinput.o \
-			  $(B)/dedicated/jpeg-8c/jdmainct.o \
-			  $(B)/dedicated/jpeg-8c/jdmarker.o \
-			  $(B)/dedicated/jpeg-8c/jdmaster.o \
-			  $(B)/dedicated/jpeg-8c/jdmerge.o \
-			  $(B)/dedicated/jpeg-8c/jdpostct.o \
-			  $(B)/dedicated/jpeg-8c/jdsample.o \
-			  $(B)/dedicated/jpeg-8c/jdtrans.o \
-			  $(B)/dedicated/jpeg-8c/jerror.o \
-			  $(B)/dedicated/jpeg-8c/jfdctflt.o \
-			  $(B)/dedicated/jpeg-8c/jfdctfst.o \
-			  $(B)/dedicated/jpeg-8c/jfdctint.o \
-			  $(B)/dedicated/jpeg-8c/jidctflt.o \
-			  $(B)/dedicated/jpeg-8c/jidctfst.o \
-			  $(B)/dedicated/jpeg-8c/jidctint.o \
-			  $(B)/dedicated/jpeg-8c/jmemmgr.o \
-			  $(B)/dedicated/jpeg-8c/jmemnobs.o \
-			  $(B)/dedicated/jpeg-8c/jquant1.o \
-			  $(B)/dedicated/jpeg-8c/jquant2.o \
-			  $(B)/dedicated/jpeg-8c/jutils.o \
-			  $(B)/dedicated/zlib/adler32.o \
-			  $(B)/dedicated/zlib/compress.o \
-			  $(B)/dedicated/zlib/crc32.o \
-			  $(B)/dedicated/zlib/deflate.o \
-			  $(B)/dedicated/zlib/gzclose.o \
-			  $(B)/dedicated/zlib/gzlib.o \
-			  $(B)/dedicated/zlib/gzread.o \
-			  $(B)/dedicated/zlib/gzwrite.o \
-			  $(B)/dedicated/zlib/infback.o \
-			  $(B)/dedicated/zlib/inffast.o \
-			  $(B)/dedicated/zlib/inflate.o \
-			  $(B)/dedicated/zlib/inftrees.o \
-			  $(B)/dedicated/zlib/trees.o \
-			  $(B)/dedicated/zlib/uncompr.o \
-			  $(B)/dedicated/zlib/zutil.o
-
+              $(B)/engine/zlib32/inflate.o \
+              $(B)/engine/zlib32/zipcommon.o \
+              $(B)/engine/zlib32/deflate.o
+              
 ifeq ($(PLATFORM),darwin)
 	DEDICATED_CFLAGS += -DMACOS_X
 	ENGINE_CFLAGS += -DMACOS_X
@@ -588,31 +382,16 @@ else
 	CGAME_CFLAGS += -D__linux__
 endif
 
-all: makedirs engine game cgame ui dedicated
+all: makedirs engine game
 
 makedirs:
 	@if [ ! -d $(B) ];then mkdir $(B);fi
-	@if [ ! -d $(B)/dedicated ];then mkdir $(B)/dedicated;fi
-	@if [ ! -d $(B)/dedicated/botlib ];then mkdir $(B)/dedicated/botlib;fi
-	@if [ ! -d $(B)/dedicated/unix ];then mkdir $(B)/dedicated/unix;fi
-	@if [ ! -d $(B)/dedicated/unix_ded ];then mkdir $(B)/dedicated/unix_ded;fi
-	@if [ ! -d $(B)/dedicated/ghoul2 ];then mkdir $(B)/dedicated/ghoul2;fi
-	@if [ ! -d $(B)/dedicated/null ];then mkdir $(B)/dedicated/null;fi
-	@if [ ! -d $(B)/dedicated/icarus ];then mkdir $(B)/dedicated/icarus;fi
-	@if [ ! -d $(B)/dedicated/jpeg-8c ];then mkdir $(B)/dedicated/jpeg-8c;fi
-	@if [ ! -d $(B)/dedicated/ghoul2 ];then mkdir $(B)/dedicated/ghoul2;fi
-	@if [ ! -d $(B)/dedicated/renderer ];then mkdir $(B)/dedicated/renderer;fi
-	@if [ ! -d $(B)/dedicated/server ];then mkdir $(B)/dedicated/server;fi
-	@if [ ! -d $(B)/dedicated/server/NPCNav ];then mkdir $(B)/dedicated/server/NPCNav;fi
-	@if [ ! -d $(B)/dedicated/qcommon ];then mkdir $(B)/dedicated/qcommon;fi
-	@if [ ! -d $(B)/dedicated/RMG ];then mkdir $(B)/dedicated/RMG;fi
-	@if [ ! -d $(B)/dedicated/zlib ];then mkdir $(B)/dedicated/zlib;fi
 	@if [ ! -d $(B)/engine ];then mkdir $(B)/engine;fi
 	@if [ ! -d $(B)/engine/botlib ];then mkdir $(B)/engine/botlib;fi
 	@if [ ! -d $(B)/engine/client ];then mkdir $(B)/engine/client;fi
 	@if [ ! -d $(B)/engine/ghoul2 ];then mkdir $(B)/engine/ghoul2;fi
 	@if [ ! -d $(B)/engine/icarus ];then mkdir $(B)/engine/icarus;fi
-	@if [ ! -d $(B)/engine/jpeg-8c ];then mkdir $(B)/engine/jpeg-8c;fi
+	@if [ ! -d $(B)/engine/jpeg-6 ];then mkdir $(B)/engine/jpeg-6;fi
 	@if [ ! -d $(B)/engine/mp3code ];then mkdir $(B)/engine/mp3code;fi
 	@if [ ! -d $(B)/engine/png ];then mkdir $(B)/engine/png;fi
 	@if [ ! -d $(B)/engine/qcommon ];then mkdir $(B)/engine/qcommon;fi
@@ -620,14 +399,19 @@ makedirs:
 	@if [ ! -d $(B)/engine/renderer ];then mkdir $(B)/engine/renderer;fi
 	@if [ ! -d $(B)/engine/sdl ];then mkdir $(B)/engine/sdl;fi
 	@if [ ! -d $(B)/engine/server ];then mkdir $(B)/engine/server;fi
-	@if [ ! -d $(B)/engine/server/NPCNav ];then mkdir $(B)/engine/server/NPCNav;fi
+	@if [ ! -d $(B)/engine/game ];then mkdir $(B)/engine/game;fi
 	@if [ ! -d $(B)/engine/sys ];then mkdir $(B)/engine/sys;fi
+	@if [ ! -d $(B)/engine/ui ];then mkdir $(B)/engine/ui;fi
 	@if [ ! -d $(B)/engine/unix ];then mkdir $(B)/engine/unix;fi
-	@if [ ! -d $(B)/engine/unix_ded ];then mkdir $(B)/engine/unix_ded;fi
-	@if [ ! -d $(B)/engine/zlib ];then mkdir $(B)/engine/zlib;fi
+	@if [ ! -d $(B)/engine/zlib32 ];then mkdir $(B)/engine/zlib32;fi
 	@if [ ! -d $(B)/cgame ];then mkdir $(B)/cgame;fi
 	@if [ ! -d $(B)/game ];then mkdir $(B)/game;fi
 	@if [ ! -d $(B)/ui ];then mkdir $(B)/ui;fi
+	@if [ ! -d $(B)/icarus ];then mkdir $(B)/icarus;fi
+	@if [ ! -d $(B)/Ratl ];then mkdir $(B)/Ratl;fi
+	@if [ ! -d $(B)/Ravl ];then mkdir $(B)/Ravl;fi
+	@if [ ! -d $(B)/Rufl ];then mkdir $(B)/Rufl;fi
+	@if [ ! -d $(B)/qcommon ];then mkdir $(B)/qcommon;fi
 
 #
 # GAME RULES
@@ -646,48 +430,6 @@ $(B)/%.o: %.cpp
 
 
 #
-# CGAME RULES
-#
-
-cgame: $(CGAME_NAME)
-
-$(CGAME_NAME): $(CGAME_OBJS)
-	$(CC) -o $(CGAME_NAME) $(CGAME_OBJS) $(CGAME_LDFLAGS)
-
-$(B)/cgame/q_%.o: qcommon/q_%.c
-	$(CC) $(CGAME_CFLAGS) -fPIC -c $< -o $@
-
-$(B)/cgame/%NPC.o: game/%NPC.c
-	$(CC) $(CGAME_CFLAGS) -fPIC -c $< -o $@
-
-$(B)/cgame/ui_%.o: ui/ui_%.c
-	$(CC) $(CGAME_CFLAGS) -fPIC -c $< -o $@
-
-$(B)/cgame/bg_%.o: game/bg_%.c
-	$(CC) $(CGAME_CFLAGS) -fPIC -c $< -o $@
-
-$(B)/cgame/%.o: cgame/%.c
-	$(CC) $(CGAME_CFLAGS) -fPIC -c $< -o $@
-
-#
-# UI RULES
-#
-
-ui: $(UI_NAME)
-
-$(UI_NAME): $(UI_OBJS)
-	$(CC) -o $(UI_NAME) $(UI_OBJS) $(UI_LDFLAGS)
-
-$(B)/ui/q_%.o: qcommon/q_%.c
-	$(CC) $(UI_CFLAGS) -fPIC -c $< -o $@
-
-$(B)/ui/bg_%.o: game/bg_%.c
-	$(CC) $(UI_CFLAGS) -fPIC -c $< -o $@
-
-$(B)/ui/%.o: ui/%.c
-	$(CC) $(UI_CFLAGS) -fPIC -c $< -o $@
-
-#
 # ENGINE RULES
 #
 
@@ -699,7 +441,7 @@ $(ENGINE_NAME): $(ENGINE_OBJS)
 $(B)/engine/zlib/%.o: zlib/%.c
 	$(CC) $(ENGINE_CFLAGS) -c $< -o $@
 
-$(B)/engine/jpeg-8c/%.o: jpeg-8c/%.c
+$(B)/engine/jpeg-6/%.o: jpeg-6/%.c
 	$(CC) $(ENGINE_CFLAGS) -c $< -o $@
 
 $(B)/engine/mp3code/%.o: mp3code/%.c
@@ -717,36 +459,7 @@ $(B)/engine/%.o: %.c
 $(B)/engine/%.o: %.cpp
 	$(CXX) $(ENGINE_CFLAGS) -c $< -o $@
 
-#
-# DEDICATED RULES
-#
-
-dedicated: $(DEDICATED_NAME)
-
-$(DEDICATED_NAME): $(DEDICATED_OBJS)
-	$(CXX) -o $(DEDICATED_NAME) $(DEDICATED_OBJS) $(DEDICATED_LDFLAGS)
-
-$(B)/dedicated/zlib/%.o: zlib/%.c
-	$(CC) $(DEDICATED_CFLAGS) -c $< -o $@
-
-$(B)/dedicated/jpeg-8c/%.o: jpeg-8c/%.c
-	$(CC) $(DEDICATED_CFLAGS) -c $< -o $@
-
-$(B)/dedicated/mp3code/%.o: mp3code/%.c
-	$(CC) $(DEDICATED_CFLAGS) -c $< -o $@
-
-$(B)/dedicated/botlib/%.o: botlib/%.cpp
-	$(CXX) $(DEDICATED_CFLAGS) -DBOTLIB -c $< -o $@
-
-$(B)/dedicated/unix/%.o: unix/%.nasm
-	nasm -f $(BINARY_FMT) -o $@  $<
-
-$(B)/dedicated/%.o: %.c
-	$(CXX) $(DEDICATED_CFLAGS) -c $< -o $@
-
-$(B)/dedicated/%.o: %.cpp
-	$(CXX) $(DEDICATED_CFLAGS) -c $< -o $@
 
 clean:
-	$(RM) $(ENGINE_OBJS) $(GAME_OBJS) $(CGAME_OBJS) $(UI_OBJS) $(DEDICATED_OBJS) \
-	$(ENGINE_NAME) $(GAME_NAME) $(CGAME_NAME) $(UI_NAME) $(DEDICATED_NAME)
+	$(RM) $(ENGINE_OBJS) $(GAME_OBJS) \
+	$(ENGINE_NAME) $(GAME_NAME)
