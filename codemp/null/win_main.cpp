@@ -15,11 +15,6 @@
 #include <conio.h>
 #include "qcommon/stringed_ingame.h"
 
-#define	CD_BASEDIR	"gamedata\\gamedata"
-#define	CD_EXE		"jamp.exe"
-#define	CD_BASEDIR_LINUX	"bin\\x86\\glibc-2.1"
-#define	CD_EXE_LINUX "jamp"
-#define	CD_VOLUME	"JEDIACAD"
 #define MEM_THRESHOLD 128*1024*1024
 
 static char		sys_cmdline[MAX_STRING_CHARS];
@@ -34,6 +29,7 @@ void Conbuf_AppendText( const char *pMsg )
 {
 	char		msg[4096];
 	strcpy(msg, pMsg);
+	// Fixme don't do this.  Breaks sectioned prints up incorrectly!!!
 	printf(Q_CleanStr(msg));
 	printf("\n");
 }
@@ -578,7 +574,6 @@ char *Sys_GetClipboardData( void ) {
 	}
 	return data;
 }
-
 
 /*
 ========================================================================
