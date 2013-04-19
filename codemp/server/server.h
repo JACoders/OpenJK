@@ -182,10 +182,6 @@ typedef struct {
 	qboolean	connected;
 } challenge_t;
 
-
-#define	MAX_MASTERS	8				// max recipients for heartbeat packets
-
-
 // this structure will be cleared only when the game dll changes
 typedef struct {
 	qboolean	initialized;				// sv_init has completed
