@@ -27,11 +27,20 @@ endif(WIN32)
 option(PackageDir "Where to place the installer/package." "${CMAKE_SOURCE_DIR}/package")
 
 # Custom CMake Modules needed
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules" ${CMAKE_MODULE_PATH})
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
 
 # Arch Suffix
-# TODO don't hardcode
-set(Architecture "x86")
+if (CMAKE_SIZEOF_VOID_P MATCHES "8")
+	set(Architecture "x64")
+else (CMAKE_SIZEOF_VOID_P MATCHES "8")
+	set(Architecture "x86")
+endif (CMAKE_SIZEOF_VOID_P MATCHES "8")
+
+# Current Git SHA1 hash
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+# TODO: actually use the Git SHA1 for something?
+message("Git revision is ${GIT_SHA1}")
 
 # Binary names
 set(SPEngine "openjk_sp.${Architecture}")
