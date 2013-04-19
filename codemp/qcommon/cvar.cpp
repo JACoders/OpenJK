@@ -173,7 +173,7 @@ int Cvar_Flags( const char *var_name ) {
 Cvar_CommandCompletion
 ============
 */
-void	Cvar_CommandCompletion( void(*callback)(const char *s) ) {
+void	Cvar_CommandCompletion( callbackFunc_t callback ) {
 	cvar_t		*cvar;
 	
 	for ( cvar = cvar_vars ; cvar ; cvar = cvar->next ) {

@@ -255,7 +255,10 @@ CArea *CM_GetFirstObjectiveArea(CCMLandScape *landscape);
 CArea *CM_GetPlayerArea(class CCMLandScape *common);
 CArea *CM_GetNextArea(CCMLandScape *landscape);
 CArea *CM_GetNextObjectiveArea(CCMLandScape *landscape);
-void CM_CircularIterate(byte *data, int width, int height, int xo, int yo, int insideRadius, int outsideRadius, int *user, void (*callback)(byte *, float, int *));
+
+typedef void ( *cm_iterateFunc )( byte *, float, int * );
+
+void CM_CircularIterate(byte *data, int width, int height, int xo, int yo, int insideRadius, int outsideRadius, int *user, cm_iterateFunc callback);
 
 CRandomTerrain *CreateRandomTerrain(const char *config, CCMLandScape *landscape, byte *heightmap, int width, int height);
 
