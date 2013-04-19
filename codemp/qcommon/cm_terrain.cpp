@@ -1046,7 +1046,7 @@ float CCMLandScape::GetWorldHeight(vec3_t origin, const vec3pair_t bounds, bool 
 	return (fabs((float)(BR - TL)) * mTerxelSize[2]) / mTerxelSize[0];
 }
 
-void CM_CircularIterate(byte *data, int width, int height, int xo, int yo, int insideRadius, int outsideRadius, int *user, void (*callback)(byte *, float, int *))
+void CM_CircularIterate(byte *data, int width, int height, int xo, int yo, int insideRadius, int outsideRadius, int *user, cm_iterateFunc callback)
 {
 	int		x, y, offset;
 	byte	*work;

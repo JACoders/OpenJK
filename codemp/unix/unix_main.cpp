@@ -61,33 +61,6 @@ qboolean Sys_LowPhysicalMemory() {
   return qfalse; // bk001207 - FIXME
 }
 
-/*
-==================
-Sys_FunctionCmp
-==================
-*/
-int Sys_FunctionCmp(void *f1, void *f2) {
-	return qtrue;
-}
-
-/*
-==================
-Sys_FunctionCheckSum
-==================
-*/
-int Sys_FunctionCheckSum(void *f1) {
-	return 0;
-}
-
-/*
-==================
-Sys_MonkeyShouldBeSpanked
-==================
-*/
-int Sys_MonkeyShouldBeSpanked( void ) {
-	return 0;
-}
-
 void Sys_BeginProfiling( void ) {
 }
 
@@ -1064,10 +1037,6 @@ sysEvent_t Sys_GetEvent( void ) {
 }
 
 /*****************************************************************************/
-
-qboolean Sys_CheckCD( void ) {
-	return qtrue;
-}
 
 void Sys_AppActivate (void)
 {
