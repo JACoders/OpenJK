@@ -138,6 +138,9 @@
     <ClInclude Include="..\qcommon\cm_landscape.h">
       <Filter>Libraries\Shared Dependencies</Filter>
     </ClInclude>
+    <ClInclude Include="..\game\genericparser2.h">
+      <Filter>Libraries\Shared Dependencies</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="matcomp.c">
@@ -390,6 +393,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tr_subs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\genericparser2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

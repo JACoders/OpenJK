@@ -250,8 +250,6 @@ const bool CTRPatch::HasWater(void) const
 	return(common->GetMins()[2] < owner->GetWaterHeight()); 
 }
 
-bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds);
-
 void CTRPatch::SetVisibility(bool visCheck)
 {
 	if(visCheck)
@@ -263,7 +261,7 @@ void CTRPatch::SetVisibility(bool visCheck)
 		else
 		{
 			// Set the visibility of the patch
-			misVisible = CM_CullWorldBox(backEnd.viewParms.frustum, GetBounds());
+			misVisible = ri.CM_CullWorldBox(backEnd.viewParms.frustum, GetBounds());
 		}
 	}
 	else
@@ -613,7 +611,7 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 		classes = (CGPGroup *)classes->GetNext();
 	}
 	
-	ri.Com_ParseTextFileDestroy(parse);
+	Com_ParseTextFileDestroy(parse);
 #endif // PRE_RELEASE_DEMO
 }
 

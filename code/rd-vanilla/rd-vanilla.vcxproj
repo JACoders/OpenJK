@@ -67,6 +67,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\game\genericparser2.h" />
     <ClInclude Include="..\ghoul2\G2.h" />
     <ClInclude Include="..\ghoul2\ghoul2_gore.h" />
     <ClInclude Include="..\jpeg-6\jchuff.h" />
@@ -104,6 +105,7 @@
     <ClInclude Include="tr_WorldEffects.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\game\genericparser2.cpp" />
     <ClCompile Include="..\game\q_math.cpp" />
     <ClCompile Include="..\game\q_shared.cpp" />
     <ClCompile Include="..\jpeg-6\jcapimin.cpp" />
