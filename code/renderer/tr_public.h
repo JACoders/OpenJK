@@ -115,7 +115,6 @@ typedef struct {
 
 
 	CMiniHeap *			(*GetG2VertSpaceServer)				( void );
-	IGhoul2InfoArray &	(*TheGameGhoul2InfoArray)			( void );
 
 
 	void *				(*GetWinVars)						( void ); //g_wv

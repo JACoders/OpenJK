@@ -968,24 +968,6 @@ void Com_Init( char *commandLine ) {
 
 		Com_InitZoneMemory();
 
-#ifdef _XBOX
-		WF_Init();
-		// set up ri
-		extern void CL_InitRef( void );
-		CL_InitRef();
-
-		// register renderer cvars
-		extern void R_Register(void);
-		R_Register();
-
-		// start the gl render layer
-		extern void GLimp_Init(void);
-		GLimp_Init();
-
-		// put up the license screen
-		SP_DoLicense();
-#endif
-
 		Cmd_Init ();
 		Cvar_Init ();
 

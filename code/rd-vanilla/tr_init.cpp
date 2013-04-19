@@ -167,15 +167,6 @@ cvar_t	*r_debugStyle;
 
 cvar_t	*r_modelpoolmegs;
 
-#ifdef _XBOX
-cvar_t	*r_hdreffect;
-cvar_t  *r_sundir_x;
-cvar_t  *r_sundir_y;
-cvar_t  *r_sundir_z;
-cvar_t  *r_hdrbloom;
-cvar_t	*r_hdrcutoff;
-#endif
-
 /*
 Ghoul2 Insert Start
 */
@@ -202,6 +193,14 @@ cvar_t	*broadsword_extra2=0;
 cvar_t	*broadsword_effcorr=0;
 cvar_t	*broadsword_ragtobase=0;
 cvar_t	*broadsword_dircap=0;
+
+// More bullshit needed for the proper modular renderer --eez
+cvar_t	*sv_mapname;
+cvar_t	*sv_mapChecksum;
+cvar_t	*se_language;			// JKA
+cvar_t	*sp_language;			// JK2
+cvar_t	*com_buildScript;
+
 
 /*
 Ghoul2 Insert End
@@ -1286,6 +1285,13 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+
+	sv_mapname = ri.Cvar_Get ( "mapname", "nomap", CVAR_SERVERINFO | CVAR_ROM );
+	sv_mapChecksum = ri.Cvar_Get ( "sv_mapChecksum", "", CVAR_ROM );
+	se_language = ri.Cvar_Get ( "se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART );
+	sp_language = ri.Cvar_Get ( "sp_language", va("%d", SP_LANGUAGE_ENGLISH), CVAR_ARCHIVE | CVAR_NORESTART );
+	com_buildScript = ri.Cvar_Get ( "com_buildScript", "0", 0 );
+
 	r_modelpoolmegs = ri.Cvar_Get("r_modelpoolmegs", "20", CVAR_ARCHIVE);
 	if (ri.LowPhysicalMemory() )
 	{
@@ -1334,36 +1340,13 @@ void R_Init( void ) {
 	int i;
 
 	//VID_Printf( PRINT_ALL, "----- R_Init -----\n" );
-#ifdef _XBOX
-	extern qboolean vidRestartReloadMap;
-	if (!vidRestartReloadMap)
-	{
-		Hunk_Clear();
-		
-		extern void CM_Free(void);
-		CM_Free();
-		
-		void CM_CleanLeafCache(void);
-		CM_CleanLeafCache();
-	}
-#endif
 
 	ShaderEntryPtrs_Clear();
-
-#ifdef _XBOX
-	//Save visibility info as it has already been set.
-	SPARC<byte> *vis = tr.externalVisData;
-#endif
 
 	// clear all our internal state
 	memset( &tr, 0, sizeof( tr ) );
 	memset( &backEnd, 0, sizeof( backEnd ) );
 	memset( &tess, 0, sizeof( tess ) );
-
-#ifdef _XBOX
-	//Restore visibility info.
-	tr.externalVisData = vis;
-#endif
 
 	Swap_Init();
 
@@ -1564,8 +1547,10 @@ GetRefAPI
 @@@@@@@@@@@@@@@@@@@@@
 */
 extern void R_WorldEffectCommand(const char *command);
-refexport_t *GetRefAPI ( int apiVersion ) {
+refexport_t *GetRefAPI ( int apiVersion, refimport_t *refimp ) {
 	static refexport_t	re;
+
+	ri = *refimp;
 
 	memset( &re, 0, sizeof( re ) );
 
