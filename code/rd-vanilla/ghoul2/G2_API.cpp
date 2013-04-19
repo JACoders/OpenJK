@@ -565,7 +565,7 @@ void G2API_CleanGhoul2Models(CGhoul2Info_v &ghoul2)
 
 qhandle_t G2API_PrecacheGhoul2Model(const char *fileName)
 {
-	return re.RegisterModel((char *)fileName);
+	return RE_RegisterModel((char *)fileName);
 }
 
 // initialise all that needs to be on a new Ghoul II model
@@ -641,7 +641,7 @@ qboolean G2API_SetSkin(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t ren
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
 #ifndef __NO_JK2
-	if(Cvar_VariableIntegerValue("com_JK2"))
+	if(ri.Cvar_VariableIntegerValue("com_JK2"))
 	{
 		if (ghlInfo)
 		{
@@ -1244,7 +1244,7 @@ extern int ragTraceCount;
 void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params)
 {
 #ifndef __NO_JK2
-	if(Cvar_VariableIntegerValue("com_jk2"))
+	if(ri.Cvar_VariableIntegerValue("com_jk2"))
 		return;			// handled elsewhere
 #endif
 	int model;
@@ -2025,7 +2025,7 @@ bool G2_TestModelPointers(CGhoul2Info *ghlInfo) // returns true if the model is 
 	ghlInfo->mValid=false;
 	if (ghlInfo->mModelindex != -1)
 	{
-		ghlInfo->mModel = re.RegisterModel(ghlInfo->mFileName);
+		ghlInfo->mModel = RE_RegisterModel(ghlInfo->mFileName);
 		ghlInfo->currentModel = R_GetModelByHandle(ghlInfo->mModel);
 		if (ghlInfo->currentModel)
 		{

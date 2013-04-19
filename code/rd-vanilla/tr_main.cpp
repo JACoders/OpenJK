@@ -146,7 +146,7 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 
 	// check against frustum planes
 #ifndef __NO_JK2
-	if( Cvar_VariableIntegerValue("com_jk2") )
+	if( ri.Cvar_VariableIntegerValue("com_jk2") )
 	{
 		// They used 4 frustrum planes in JK2, and 5 in JKA --eez
 		for (i = 0 ; i < 4 ; i++) 
@@ -1657,7 +1657,7 @@ void R_DebugGraphics( void ) {
 
 	GL_Bind( tr.whiteImage);
 	GL_Cull( CT_FRONT_SIDED );
-	CM_DrawDebugSurface( R_DebugPolygon );
+	ri.CM_DrawDebugSurface( R_DebugPolygon );
 }
 
 qboolean R_FogParmsMatch( int fog1, int fog2 )
@@ -1677,7 +1677,7 @@ void R_SetViewFogIndex (void)
 	if ( tr.world->numfogs > 1 )
 	{//more than just the LA goggles
 		fog_t *fog;
-		int contents = SV_PointContents( tr.refdef.vieworg, 0 );
+		int contents = ri.SV_PointContents( tr.refdef.vieworg, 0 );
 		if ( (contents&CONTENTS_FOG) )
 		{//only take a tr.refdef.fogIndex if the tr.refdef.vieworg is actually *in* that fog brush (assumption: checks pointcontents for any CONTENTS_FOG, not that particular brush...)
 			for ( tr.refdef.fogIndex = 1 ; tr.refdef.fogIndex < tr.world->numfogs ; tr.refdef.fogIndex++ ) 

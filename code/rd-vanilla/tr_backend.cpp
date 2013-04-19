@@ -684,7 +684,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	// we don't want to pump the event loop too often and waste time, so
 	// we are going to check every shader change
-	macEventTime = Sys_Milliseconds() + MAC_EVENT_PUMP_MSEC;
+	macEventTime = ri.Milliseconds() + MAC_EVENT_PUMP_MSEC;
 #endif
 
 	if (g_bRenderGlowingObjects)
@@ -792,7 +792,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 #ifdef __MACOS__	// crutch up the mac's limited buffer queue size
 				int		t;
 
-				t = Sys_Milliseconds();
+				t = ri.Milliseconds();
 				if ( t > macEventTime ) {
 					macEventTime = t + MAC_EVENT_PUMP_MSEC;
 					Sys_PumpEvents();
@@ -1064,7 +1064,7 @@ void	RB_SetGL2D (void) {
 	qglDisable( GL_CLIP_PLANE0 );
 
 	// set time for 2D shaders
-	backEnd.refdef.time = Sys_Milliseconds();
+	backEnd.refdef.time = ri.Milliseconds();
 	backEnd.refdef.floatTime = backEnd.refdef.time * 0.001;
 }
 
@@ -1502,7 +1502,7 @@ void RB_ShowImages( void ) {
 
 	qglFinish();
 
-	start = Sys_Milliseconds();
+	start = ri.Milliseconds();
 
 	int i=0;
 //	int iNumImages = 
@@ -1540,7 +1540,7 @@ void RB_ShowImages( void ) {
 
 	qglFinish();
 
-	end = Sys_Milliseconds();
+	end = ri.Milliseconds();
 	//VID_Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
 }
 
@@ -1632,7 +1632,7 @@ smp extensions, or asyncronously by another thread.
 void RB_ExecuteRenderCommands( const void *data ) {
 	int		t1, t2;
 
-	t1 = Sys_Milliseconds ();
+	t1 = ri.Milliseconds ();
 
 	while ( 1 ) {
 		switch ( *(const int *)data ) {
@@ -1666,7 +1666,7 @@ void RB_ExecuteRenderCommands( const void *data ) {
 		case RC_END_OF_LIST:
 		default:
 			// stop rendering on this thread
-			t2 = Sys_Milliseconds ();
+			t2 = ri.Milliseconds ();
 			backEnd.pc.msec = t2 - t1;
 			return;
 		}

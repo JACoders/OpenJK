@@ -3598,7 +3598,7 @@ void QGL_EnableLogging( qboolean enable )
 
 			asctime( newtime );
 
-			basedir = Cvar_Get( "fs_basepath", "", 0 );
+			basedir = ri.Cvar_Get( "fs_basepath", "", 0 );
 			Com_sprintf( buffer, sizeof(buffer), "%s/gl.log", basedir->string ); 
 			glw_state.log_fp = fopen( buffer, "wt" );
 

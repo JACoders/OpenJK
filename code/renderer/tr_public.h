@@ -25,6 +25,9 @@ This file is part of Jedi Academy.
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
 
+// suck it
+#include "../qcommon/cm_landscape.h"
+
 #define	REF_API_VERSION		10
 
 // Had to add this one too '>_< --eez
@@ -35,8 +38,13 @@ typedef struct {
 	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
 	int				(*Milliseconds)						( void );
 
+	qboolean		(*LowPhysicalMemory)				( void );
+
+	void			(*Hunk_ClearToMark)					( void );
 	void*			(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt );
 	int				(*Z_Free)							( void *memory );
+	int				(*Z_MemSize)						( memtag_t eTag );
+	void			(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );
 
 
 	void			(*Cmd_ExecuteString)				( const char *text );
@@ -70,16 +78,42 @@ typedef struct {
 	void			(*FS_WriteFile)						( const char *qpath, const void *buffer, int size );
 
 
+	void			(*Com_ParseTextFileDestroy)			( CGenericParser2 &parser );
+
+
 	int				(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
 	byte*			(*CM_ClusterPVS)					( int cluster );
 	void			(*CM_ShaderTableCleanup)			( void );					// FIXME: port to renderer
+	void			(*CM_DrawDebugSurface)				( void (__cdecl *drawPoly)( int color, int numPoints, float *points ) );
+	void			(*CM_TerrainPatchIterate)			( const class CCMLandScape *landscape, void (*IterateFunc)( CCMPatch *, void * ), 
+															void *userdata );
+	void			(*CM_ShutdownTerrain)				( thandle_t terrainId );
+	qboolean		(*CM_DeleteCachedMap)				( qboolean bGuaranteedOkToDelete );
+
+
+	void			(*SV_Trace)							( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+															const int passEntityNum, const int contentmask, 
+															const EG2_Collision eG2TraceType, const int useLod );
+	void			(*SV_SetConfigstring)				( int index, const char *value );
+	void			(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
+	int				(*SV_PointContents)					( const vec3_t p, clipHandle_t model );
 
 
 	int				(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height, 
 															int bits, const char *psAudioFile /* = NULL */ );
 	e_status		(*CIN_RunCinematic)					( int handle );
 	void			(*CIN_UploadCinematic)				( int handle );
+	qboolean		(*CL_IsRunningInGameCinematic)		( void );
+
+
+	void			(*S_RestartMusic)					( void );
+	qboolean		(*SND_RegisterAudio_LevelLoadEnd)	( qboolean bDeleteEverythingNotUsedThisLevel );
+
+	
+	qboolean		(*SG_Append)						( unsigned long chid, const void *pvData, int iLength );
 } refimport_t;
+
+extern refimport_t ri;
 
 //
 // these are the functions exported by the refresh module

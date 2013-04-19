@@ -135,6 +135,9 @@
     <ClInclude Include="..\ghoul2\ghoul2_gore.h">
       <Filter>Libraries\GHOUL 2</Filter>
     </ClInclude>
+    <ClInclude Include="..\qcommon\cm_landscape.h">
+      <Filter>Libraries\Shared Dependencies</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="matcomp.c">

@@ -54,7 +54,7 @@ Language_e GetLanguageEnum()
 	// only re-strcmp() when language string has changed from what we knew it as...
 	//
 #ifndef __NO_JK2
-	if(!Cvar_VariableIntegerValue("com_jk2"))
+	if(!ri.Cvar_VariableIntegerValue("com_jk2"))
 #endif
 		if (iSE_Language_ModificationCount != se_language->modificationCount )
 			iSE_Language_ModificationCount  = se_language->modificationCount;
@@ -146,7 +146,7 @@ struct ThaiCodes_t
 				//
 				// read the valid-codes table in...
 				//
-				int iBytesRead = FS_ReadFile( sFILENAME_THAI_CODES, (void **) &piData );
+				int iBytesRead = ri.FS_ReadFile( sFILENAME_THAI_CODES, (void **) &piData );
 				if (iBytesRead > 0 && !(iBytesRead&3))	// valid length and multiple of 4 bytes long
 				{
 					int iTableEntries = iBytesRead / sizeof(int);
@@ -155,18 +155,18 @@ struct ThaiCodes_t
 					{
 						m_mapValidCodes[ piData[i] ] = i;	// convert MBCS code to sequential index...
 					}
-					FS_FreeFile( piData );	// dispose of original
+					ri.FS_FreeFile( piData );	// dispose of original
 
 					// now read in the widths... (I'll keep these in a simple STL vector, so they'all disappear when the <map> entries do...
 					//		
-					iBytesRead = FS_ReadFile( sFILENAME_THAI_WIDTHS, (void **) &piData );
+					iBytesRead = ri.FS_ReadFile( sFILENAME_THAI_WIDTHS, (void **) &piData );
 					if (iBytesRead > 0 && !(iBytesRead&3) && iBytesRead>>2/*sizeof(int)*/ == iTableEntries)
 					{
 						for (int i=0; i<iTableEntries; i++)
 						{
 							m_viGlyphWidths.push_back( piData[i] );
 						}
-						FS_FreeFile( piData );	// dispose of original
+						ri.FS_FreeFile( piData );	// dispose of original
 					}
 					else
 					{
@@ -679,7 +679,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 {	
 #ifndef __NO_JK2
 	// JK2 does this func a little differently --eez
-	if( Cvar_VariableIntegerValue("com_jk2") )
+	if( ri.Cvar_VariableIntegerValue("com_jk2") )
 	{
 		const byte *psString = (const byte *) psText;	// avoid sign-promote bug
 		unsigned int uiLetter;
@@ -1024,10 +1024,10 @@ CFontInfo::CFontInfo(const char *_fontName)
 	m_fAltSBCSFontScaleFactor = -1;
 	m_bIsFakeAlienLanguage = !strcmp(_fontName,"aurabesh");	// dont try and make SBCS or asian overrides for this
 
-	len = FS_ReadFile(fontName, NULL);
+	len = ri.FS_ReadFile(fontName, NULL);
 	if (len == sizeof(dfontdat_t))
 	{
-		FS_ReadFile(fontName, &buff);
+		ri.FS_ReadFile(fontName, &buff);
 		fontdat = (dfontdat_t *)buff;
 
 		for(i = 0; i < GLYPH_COUNT; i++)
@@ -1050,7 +1050,7 @@ CFontInfo::CFontInfo(const char *_fontName)
             mDescender = mHeight - mAscender;
 		}
 
-		FS_FreeFile(buff);
+		ri.FS_FreeFile(buff);
 	}
 	else
 	{
@@ -1508,7 +1508,7 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 {	
 #ifndef __NO_JK2
 	// Yes..even this func is a little different, to the point where it doesn't work. --eez
-	if( Cvar_VariableIntegerValue("com_jk2") )
+	if( ri.Cvar_VariableIntegerValue("com_jk2") )
 	{
 		int			iMaxWidth = 0;
 		int			iThisWidth= 0;
@@ -1664,7 +1664,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 {
 	// HAAAAAAAAAAAAAAAX..fix me please --eez
 #ifndef __NO_JK2
-	if( Cvar_VariableIntegerValue("com_jk2") )
+	if( ri.Cvar_VariableIntegerValue("com_jk2") )
 	{
 		static qboolean gbInShadow = qfalse;	// MUST default to this
 		int					x, y, colour, offset;
@@ -1675,7 +1675,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 
 		if(iFontHandle & STYLE_BLINK)
 		{
-			if((Sys_Milliseconds() >> 7) & 1)
+			if((ri.Milliseconds() >> 7) & 1)
 			{
 				return;
 			}
@@ -1805,7 +1805,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 
 	if(iFontHandle & STYLE_BLINK)
 	{
-		if((Sys_Milliseconds() >> 7) & 1)
+		if((ri.Milliseconds() >> 7) & 1)
 		{
 			return;
 		}

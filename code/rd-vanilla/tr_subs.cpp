@@ -34,6 +34,25 @@ void QDECL Com_Error( int level, const char *error, ... )
 
 /*
 ================
+Com_DPrintf
+
+DLL glue
+================
+*/
+void Com_DPrintf(const char *format, ...)
+{
+	va_list         argptr;
+	char            text[1024];
+
+	va_start(argptr, format);
+	Q_vsnprintf(text, sizeof(text), format, argptr);
+	va_end(argptr);
+
+	ri.Printf(PRINT_DEVELOPER, "%s", text);
+}
+
+/*
+================
 VID_Printf
 
 DLL glue
@@ -76,21 +95,21 @@ int Hunk_MemoryRemaining( void ) {
 }
 */
 // ZONE
-void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit/*, int iAlign*/ ) {
+void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign ) {
 	return ri.Z_Malloc( iSize, eTag, bZeroit/*, iAlign*/ );
 }
 
 int Z_Free( void *ptr ) {
 	return ri.Z_Free( ptr );
 }
-/*
+
 int Z_MemSize( memtag_t eTag ) {
 	return ri.Z_MemSize( eTag );
 }
 
 void Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
 	ri.Z_MorphMallocTag( pvBuffer, eDesiredTag );
-}*/
+}
 
 // Parsing
 /*

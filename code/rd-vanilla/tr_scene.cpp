@@ -285,7 +285,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 		return;
 	}
 
-	startTime = Sys_Milliseconds();
+	startTime = ri.Milliseconds();
 
 	if (!tr.world && !( fd->rdflags & RDF_NOWORLDMODEL ) ) {
 		Com_Error (ERR_DROP, "R_RenderScene: NULL worldmodel");
@@ -419,6 +419,6 @@ void RE_RenderScene( const refdef_t *fd ) {
 	r_firstSceneDlight = r_numdlights;
 	r_firstScenePoly = r_numpolys;
 
-	tr.frontEndMsec += Sys_Milliseconds() - startTime;
+	tr.frontEndMsec += ri.Milliseconds() - startTime;
 	RE_RenderWorldEffects();
 }

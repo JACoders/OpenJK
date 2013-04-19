@@ -72,7 +72,7 @@ void R_RMGInit(void)
 	int				i;
 	unsigned short	*pos;
 
-	Cvar_VariableStringBuffer("RMG_sky", newSky, MAX_QPATH);
+	ri.Cvar_VariableStringBuffer("RMG_sky", newSky, MAX_QPATH);
 	// Get sunlight - this should set up all the sunlight data
 	sky = R_FindShader( newSky, lightmapsNone, stylesDefault, qfalse );
 
@@ -124,7 +124,7 @@ void R_RMGInit(void)
 	// Override the global fog with the defined one
 	if(tr.world->globalFog != -1)
 	{
-		Cvar_VariableStringBuffer("RMG_fog", newFog, MAX_QPATH);
+		ri.Cvar_VariableStringBuffer("RMG_fog", newFog, MAX_QPATH);
 		fog = R_FindShader( newFog, lightmapsNone, stylesDefault, qfalse);
 		if (fog != tr.defaultShader)
 		{
@@ -146,7 +146,7 @@ void R_RMGInit(void)
 		}
 	}
 
-	Cvar_VariableStringBuffer("RMG_weather", temp, MAX_QPATH);
+	ri.Cvar_VariableStringBuffer("RMG_weather", temp, MAX_QPATH);
 
 	// Set up any weather effects
 	switch(atol(temp))

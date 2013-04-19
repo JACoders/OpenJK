@@ -3118,7 +3118,7 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
 #ifdef _G2_GORE
 	if (goreShader == -1)
 	{
-		goreShader=re.RegisterShader("gfx/damage/burnmark1");
+		goreShader=RE_RegisterShader("gfx/damage/burnmark1");
 	}
 #endif
 
@@ -4065,7 +4065,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	}
 		
 	// first up, go load in the animation file we need that has the skeletal animation info for this model
-	mdxm->animIndex = re.RegisterModel(va ("%s.gla",mdxm->animName));
+	mdxm->animIndex = RE_RegisterModel(va ("%s.gla",mdxm->animName));
 	if (!strcmp(mdxm->animName,"models/players/_humanoid/_humanoid"))
 	{	//if we're loading the humanoid, look for a cinematic gla for this map
 		const char*mapname = sv_mapname->string;
@@ -4075,13 +4075,13 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			{
 				mapname = strrchr(mapname,'/')+1;
 			}
-			re.RegisterModel(va ("models/players/_humanoid_%s/_humanoid_%s.gla",mapname,mapname));
+			RE_RegisterModel(va ("models/players/_humanoid_%s/_humanoid_%s.gla",mapname,mapname));
 		}
 	}
 	
 	bool isAnOldModelFile = false;
 #ifndef __NO_JK2
-	if (!Cvar_VariableIntegerValue("com_jk2")) 
+	if (!ri.Cvar_VariableIntegerValue("com_jk2")) 
 	{
 #endif
 	if (mdxm->numBones == 72 && strstr(mdxm->animName,"_humanoid") )

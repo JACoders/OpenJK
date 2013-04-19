@@ -592,7 +592,7 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 				shaderName = items->FindPairValue("shader", "");
 				if(shaderName[0])
 				{
-					shader = re.RegisterShader(shaderName);
+					shader = RE_RegisterShader(shaderName);
 					if(shader)
 					{
 						SetShaders(height, shader); 
@@ -605,7 +605,7 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 			}
 			else if(!stricmp(type, "flattexture"))
 			{
-				mFlatShader = re.RegisterShader ( items->FindPairValue("shader", "") );
+				mFlatShader = RE_RegisterShader ( items->FindPairValue("shader", "") );
 			}
 
 			items = (CGPGroup *)items->GetNext();
@@ -613,7 +613,7 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 		classes = (CGPGroup *)classes->GetNext();
 	}
 	
-	Com_ParseTextFileDestroy(parse);
+	ri.Com_ParseTextFileDestroy(parse);
 #endif // PRE_RELEASE_DEMO
 }
 
@@ -933,7 +933,7 @@ CTRLandScape::CTRLandScape(const char *configstring)
 	mSortedCount = 2 * common->GetBlockCount();
 	mSortedPatches = (TPatchInfo *)Z_Malloc(sizeof(TPatchInfo) * mSortedCount, TAG_R_TERRAIN, qfalse);
 
-	CM_TerrainPatchIterate(common, InitRendererPatches, this);
+	ri.CM_TerrainPatchIterate(common, InitRendererPatches, this);
 
 	// Calculate shaders dependent on the .terrain file
 	CalculateShaders();
@@ -1040,13 +1040,11 @@ void R_TerrainInit(void)
 		tr.landScape.surfaceType = SF_TERRAIN;
 		tr.landScape.landscape = NULL;
 	}
-	r_terrainTessellate = Cvar_Get("r_terrainTessellate", "3", CVAR_CHEAT);
-	r_drawTerrain = Cvar_Get("r_drawTerrain", "1", CVAR_CHEAT);
-	r_terrainWaterOffset = Cvar_Get("r_terrainWaterOffset", "0", 0);
-	r_count = Cvar_Get("r_count", "2", 0);
+	r_terrainTessellate = ri.Cvar_Get("r_terrainTessellate", "3", CVAR_CHEAT);
+	r_drawTerrain = ri.Cvar_Get("r_drawTerrain", "1", CVAR_CHEAT);
+	r_terrainWaterOffset = ri.Cvar_Get("r_terrainWaterOffset", "0", 0);
+	r_count = ri.Cvar_Get("r_count", "2", 0);
 }
-
-void CM_ShutdownTerrain( thandle_t terrainId);
 
 void R_TerrainShutdown(void)
 {
@@ -1056,7 +1054,7 @@ void R_TerrainShutdown(void)
 	ls = tr.landScape.landscape;
 	if(ls)
 	{
-		CM_ShutdownTerrain(0);
+		ri.CM_ShutdownTerrain(0);
 		delete ls;
 		tr.landScape.landscape = NULL;
 	}
