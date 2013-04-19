@@ -26,7 +26,9 @@ This file is part of Jedi Academy.
 #include "snd_local.h"
 #include "cl_mp3.h"
 
+#ifndef _WIN32
 #include <string>
+#endif
 
 // Open AL
 void S_PreProcessLipSync(sfx_t *sfx);

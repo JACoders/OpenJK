@@ -28,8 +28,8 @@ This file is part of Jedi Academy.
 
 // Open AL Specific
 #ifdef _WIN32
-#include <al.h>
-#include <alc.h>
+#include "openal\al.h"
+#include "openal\alc.h"
 #include "eax\eax.h"
 #include "eax\eaxman.h"
 #elif defined MACOS_X

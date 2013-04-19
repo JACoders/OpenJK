@@ -30,6 +30,10 @@ This file is part of Jedi Academy.
 #include "cl_input_hotswap.h"
 #endif
 
+#ifndef _WIN32
+#include <cmath>
+#endif
+
 unsigned	frame_msec;
 int			old_com_frameTime;
 float cl_mPitchOverride = 0.0f;
@@ -820,10 +824,10 @@ usercmd_t CL_CreateCmd( void ) {
 #ifndef _XBOX
 	if ( cl_debugMove->integer ) {
 		if ( cl_debugMove->integer == 1 ) {
-			SCR_DebugGraph( fabs(cl.viewangles[YAW] - oldAngles[YAW]), 0 );
+			SCR_DebugGraph( abs(cl.viewangles[YAW] - oldAngles[YAW]), 0 );
 		}
 		if ( cl_debugMove->integer == 2 ) {
-			SCR_DebugGraph( fabs(cl.viewangles[PITCH] - oldAngles[PITCH]), 0 );
+			SCR_DebugGraph( abs(cl.viewangles[PITCH] - oldAngles[PITCH]), 0 );
 		}
 	}
 #endif

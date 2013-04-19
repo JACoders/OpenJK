@@ -200,11 +200,7 @@ public:
 		WN_NOAUTOCONNECT,
 		WN_MAX
 	};
-#ifdef _WIN32
-    ratl::bits_vs<EWayNodeFlags::WN_MAX>	mFlags;
-#else
     ratl::bits_vs<WN_MAX>   mFlags;
-#endif
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// Access Operator (For Cells)(For Triangulation)
@@ -264,11 +260,7 @@ public:
 
 		WE_MAX
 	};
-#ifdef _WIN32
-	ratl::bits_vs<EWayEdgeFlags::WE_MAX>	mFlags;		// Should be only one int
-#else
-    ratl::bits_vs<WE_MAX>   mFlags;
-#endif
+	ratl::bits_vs<WE_MAX>	mFlags;		// Should be only one int
 
 
 	////////////////////////////////////////////////////////////////////////////////////
