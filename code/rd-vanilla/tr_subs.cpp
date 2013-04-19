@@ -112,8 +112,8 @@ void Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
 }
 
 // Parsing
-/*
-#include "qcommon/GenericParser2.h"
+
+#include "../game/GenericParser2.h"
 
 bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst)
 {
@@ -176,4 +176,3 @@ CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool write
 
 	return parse;
 }
-*/

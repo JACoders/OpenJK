@@ -32,85 +32,93 @@ This file is part of Jedi Academy.
 
 // Had to add this one too '>_< --eez
 typedef struct {
-	void			(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
-	void			(QDECL *Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
+	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
+	void				(QDECL *Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
 
 	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
-	int				(*Milliseconds)						( void );
+	int					(*Milliseconds)						( void );
 
-	qboolean		(*LowPhysicalMemory)				( void );
+	qboolean			(*LowPhysicalMemory)				( void );
 
-	void			(*Hunk_ClearToMark)					( void );
-	void*			(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt );
-	int				(*Z_Free)							( void *memory );
-	int				(*Z_MemSize)						( memtag_t eTag );
-	void			(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );
-
-
-	void			(*Cmd_ExecuteString)				( const char *text );
-	int				(*Cmd_Argc)							( void );
-	char *			(*Cmd_Argv)							( int arg );
-	void			(*Cmd_ArgsBuffer)					( char *buffer, int bufferLength );
-	void			(*Cmd_AddCommand)					( const char *cmd_name, xcommand_t function );
-	void			(*Cmd_RemoveCommand)				( const char *cmd_name );
-	void			(*Cvar_Set)							( const char *var_name, const char *value );
-	cvar_t *		(*Cvar_Get)							( const char *var_name, const char *value, int flags );
-	void			(*Cvar_SetValue)					( const char *name, float value );
-	void			(*Cvar_CheckRange)					( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
-	void			(*Cvar_VariableStringBuffer)		( const char *var_name, char *buffer, int bufsize );
-	char *			(*Cvar_VariableString)				( const char *var_name );
-	float			(*Cvar_VariableValue)				( const char *var_name );
-	int				(*Cvar_VariableIntegerValue)		( const char *var_name );
+	void				(*Hunk_ClearToMark)					( void );
+	void*				(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt );
+	int					(*Z_Free)							( void *memory );
+	int					(*Z_MemSize)						( memtag_t eTag );
+	void				(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );
 
 
-	void			(*FS_FreeFile)						( void *buffer );
-	void			(*FS_FreeFileList)					( char **fileList );
-	int				(*FS_Read)							( void *buffer, int len, fileHandle_t f );
-	int				(*FS_ReadFile)						( const char *qpath, void **buffer );
-	void			(*FS_FCloseFile)					( fileHandle_t f );
-	int				(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
-	fileHandle_t	(*FS_FOpenFileWrite)				( const char *qpath );
-	int				(*FS_FOpenFileByMode)				( const char *qpath, fileHandle_t *f, fsMode_t mode );
-	qboolean		(*FS_FileExists)					( const char *file );
-	int				(*FS_FileIsInPAK)					( const char *filename, int *pChecksum );
-	char **			(*FS_ListFiles)						( const char *directory, const char *extension, int *numfiles );
-	int				(*FS_Write)							( const void *buffer, int len, fileHandle_t f );
-	void			(*FS_WriteFile)						( const char *qpath, const void *buffer, int size );
+	void				(*Cmd_ExecuteString)				( const char *text );
+	int					(*Cmd_Argc)							( void );
+	char *				(*Cmd_Argv)							( int arg );
+	void				(*Cmd_ArgsBuffer)					( char *buffer, int bufferLength );
+	void				(*Cmd_AddCommand)					( const char *cmd_name, xcommand_t function );
+	void				(*Cmd_RemoveCommand)				( const char *cmd_name );
+	void				(*Cvar_Set)							( const char *var_name, const char *value );
+	cvar_t *			(*Cvar_Get)							( const char *var_name, const char *value, int flags );
+	void				(*Cvar_SetValue)					( const char *name, float value );
+	void				(*Cvar_CheckRange)					( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
+	void				(*Cvar_VariableStringBuffer)		( const char *var_name, char *buffer, int bufsize );
+	char *				(*Cvar_VariableString)				( const char *var_name );
+	float				(*Cvar_VariableValue)				( const char *var_name );
+	int					(*Cvar_VariableIntegerValue)		( const char *var_name );
 
 
-	void			(*Com_ParseTextFileDestroy)			( CGenericParser2 &parser );
+	void				(*FS_FreeFile)						( void *buffer );
+	void				(*FS_FreeFileList)					( char **fileList );
+	int					(*FS_Read)							( void *buffer, int len, fileHandle_t f );
+	int					(*FS_ReadFile)						( const char *qpath, void **buffer );
+	void				(*FS_FCloseFile)					( fileHandle_t f );
+	int					(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+	fileHandle_t		(*FS_FOpenFileWrite)				( const char *qpath );
+	int					(*FS_FOpenFileByMode)				( const char *qpath, fileHandle_t *f, fsMode_t mode );
+	qboolean			(*FS_FileExists)					( const char *file );
+	int					(*FS_FileIsInPAK)					( const char *filename, int *pChecksum );
+	char **				(*FS_ListFiles)						( const char *directory, const char *extension, int *numfiles );
+	int					(*FS_Write)							( const void *buffer, int len, fileHandle_t f );
+	void				(*FS_WriteFile)						( const char *qpath, const void *buffer, int size );
 
 
-	int				(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
-	byte*			(*CM_ClusterPVS)					( int cluster );
-	void			(*CM_ShaderTableCleanup)			( void );					// FIXME: port to renderer
-	void			(*CM_DrawDebugSurface)				( void (__cdecl *drawPoly)( int color, int numPoints, float *points ) );
-	void			(*CM_TerrainPatchIterate)			( const class CCMLandScape *landscape, void (*IterateFunc)( CCMPatch *, void * ), 
+	int					(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
+	byte*				(*CM_ClusterPVS)					( int cluster );
+	void				(*CM_ShaderTableCleanup)			( void );					// FIXME: port to renderer
+	void				(*CM_DrawDebugSurface)				( void (__cdecl *drawPoly)( int color, int numPoints, float *points ) );
+	void				(*CM_TerrainPatchIterate)			( const class CCMLandScape *landscape, void (*IterateFunc)( CCMPatch *, void * ), 
 															void *userdata );
-	void			(*CM_ShutdownTerrain)				( thandle_t terrainId );
-	qboolean		(*CM_DeleteCachedMap)				( qboolean bGuaranteedOkToDelete );
+	void				(*CM_ShutdownTerrain)				( thandle_t terrainId );
+	qboolean			(*CM_DeleteCachedMap)				( qboolean bGuaranteedOkToDelete );
+	bool				(*CM_CullWorldBox)					( const cplane_t *frustrum, const vec3pair_t bounds );
 
 
-	void			(*SV_Trace)							( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+	void				(*SV_Trace)							( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
 															const int passEntityNum, const int contentmask, 
 															const EG2_Collision eG2TraceType, const int useLod );
-	void			(*SV_SetConfigstring)				( int index, const char *value );
-	void			(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
-	int				(*SV_PointContents)					( const vec3_t p, clipHandle_t model );
+	void				(*SV_SetConfigstring)				( int index, const char *value );
+	void				(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
+	int					(*SV_PointContents)					( const vec3_t p, clipHandle_t model );
 
 
-	int				(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height, 
+	int					(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height, 
 															int bits, const char *psAudioFile /* = NULL */ );
-	e_status		(*CIN_RunCinematic)					( int handle );
-	void			(*CIN_UploadCinematic)				( int handle );
-	qboolean		(*CL_IsRunningInGameCinematic)		( void );
+	e_status			(*CIN_RunCinematic)					( int handle );
+	void				(*CIN_UploadCinematic)				( int handle );
+	qboolean			(*CL_IsRunningInGameCinematic)		( void );
 
 
-	void			(*S_RestartMusic)					( void );
-	qboolean		(*SND_RegisterAudio_LevelLoadEnd)	( qboolean bDeleteEverythingNotUsedThisLevel );
+	const char*			(*SE_GetString)						( const char *reference );						// this has to be ultrahacked for JK2 support
+
+
+	void				(*S_RestartMusic)					( void );
+	qboolean			(*SND_RegisterAudio_LevelLoadEnd)	( qboolean bDeleteEverythingNotUsedThisLevel );
 
 	
-	qboolean		(*SG_Append)						( unsigned long chid, const void *pvData, int iLength );
+	qboolean			(*SG_Append)						( unsigned long chid, const void *pvData, int iLength );
+
+
+	CMiniHeap *			(*GetG2VertSpaceServer)				( void );
+	IGhoul2InfoArray &	(*TheGameGhoul2InfoArray)			( void );
+
+
+	void *				(*GetWinVars)						( void ); //g_wv
 } refimport_t;
 
 extern refimport_t ri;
