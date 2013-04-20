@@ -1,23 +1,29 @@
-# SORRY FOR THE HISTORY CHANGES! #
-
+## SORRY FOR THE HISTORY CHANGES! ##
 For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase.html#_recovering_from_upstream_rebase) for how to fix if you've changed anything, or just delete your github fork and local folder and start over if you haven't.
 
 # JACoders "OpenJK" project #
-
-IRC: irc.arloria.net / #JACoders
-
-## Description ##
+IRC: irc.arloria.net / #JACoders ([webchat](http://www.arloria.net/tiramisu/tiramisu.swf?channels=#jacoders))
 
 The purpose of this project is to maintain and improve the Jedi Academy and Jedi Outcast games, developed by Raven Software.
-
 This project will not attempt to rebalance or otherwise modify core gameplay aspects.
 
-Major contributors, in alphabetical order:
+## Installation ##
+
+First, install Jedi Academy.
+
+Then point the OpenJK installer to the GameData folder in the Jedi Academy install, e.g.  just point it to your "Jedi Academy/GameData" folder. If you've downloaded an archive, just unpack it to GameData.
+
+## Maintainers (in alphabetical order) ##
 * eezstreet
 * Ensiform
 * mrwonko
 * Raz0r
 * redsaurus
+
+## Significant contributors (in alphabetical order) ##
+* exidl
+* Sil
+* Xycaleth
 
 ## Dependencies ##
 * OpenGL
@@ -28,18 +34,13 @@ Major contributors, in alphabetical order:
 
 ## Changelog ##
 
-### Major Changes ###
 * The Jedi Academy singleplayer now searches for jagamex86.dll in the mod's folder, too, meaning SP Code mods are possible.
 * Increased Command Buffer from 16384 to 128*1024
 * Increased max cvars from 1224 to 2048
-* Removed unnecessary xbox code.
-
-### Minor Changes ###
 * Added mouse-wheel to console
 * Added misc security fixes to allow servers to deal with connectionless packets.
 * Added security fixes to prevent servers from spoofing clients with connect packets.
 * Added security fixes to prevent anyone from spoofing clients with print packets.
-* Compiles/runs with VS2012.
 * Fixed clients being able to set IP via cvar.
 * Fixed MiniHeapSize issue in SP
 * Fixed widescreen resolution changes causing black screen when UI restarted.
@@ -67,13 +68,17 @@ Major contributors, in alphabetical order:
 * Removed CD Key Code
 * Removed demo restriction code.
 * Removed Anti-Tamper Code.
-* Shift-Escape will now also open the console as an alternate (ie: keyboard doesn't support the normal console key)
+* Shift-Escape will now also open the console as an alternate (e.g.: keyboard doesn't support the normal console key)
 * Removed shift key requirement to open console
 
+## Developer Notes ##
 
-## Known Bugs ##
+### Reserved renderer names ###
+* rd-vanilla (JA's original renderer)
+* rd-dedicated (Stripped down renderer for use with dedicated server)
+* rd-raspberry (OpenGL ES compliant renderer for use with Raspberry Pi - feel free to maintain!)
+* rd-strawberry (Maintainer: Xycaleth)
+* rd-vader (Maintainer: mrwonko)
 
-* Missing Known Bugs list
-
-## Mod Developer Notes ##
+### Engine "hax" ###
 * If your mod intends to use engine "hax" to figure out the nedaddr types (NA_IP, etc) NA_BAD is now 0 and NA_BOT is now 1 instead of vice versa.

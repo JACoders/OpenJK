@@ -50,7 +50,6 @@ cvar_t	*com_G2Report;
 cvar_t	*com_terrainPhysics; //rwwRMG - added
 
 cvar_t	*com_version;
-cvar_t	*com_blood;
 cvar_t	*com_buildScript;	// for automated data building scripts
 cvar_t	*com_introPlayed;
 cvar_t	*cl_paused;
@@ -58,6 +57,7 @@ cvar_t	*sv_paused;
 cvar_t	*com_cameraMode;
 cvar_t	*com_unfocused;
 cvar_t	*com_minimized;
+cvar_t  *com_homepath;
 #if defined(_WIN32) && defined(_DEBUG)
 cvar_t	*com_noErrorInterrupt;
 #endif
@@ -1144,6 +1144,8 @@ void Com_Init( char *commandLine ) {
 		// done early so bind command exists
 		CL_InitKeyCommands();
 
+		com_homepath = Cvar_Get("com_homepath", "", CVAR_INIT);
+
 		FS_InitFilesystem ();
 
 		Com_InitJournaling();
@@ -1172,7 +1174,6 @@ void Com_Init( char *commandLine ) {
 		// init commands and vars
 		//
 		com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE);
-		com_blood = Cvar_Get ("com_blood", "1", CVAR_ARCHIVE);
 
 		com_vmdebug = Cvar_Get ("vmdebug", "0", CVAR_TEMP );
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
@@ -1365,6 +1366,13 @@ void Com_WriteConfig_f( void ) {
 
 	Q_strncpyz( filename, Cmd_Argv(1), sizeof( filename ) );
 	COM_DefaultExtension( filename, sizeof( filename ), ".cfg" );
+
+	if(!COM_CompareExtension(filename, ".cfg"))
+	{
+		Com_Printf( "Com_WriteConfig_f: Only the \".cfg\" extension is supported by this command!\n" );
+		return;
+	}
+
 	Com_Printf( "Writing %s.\n", filename );
 	Com_WriteConfigToFile( filename );
 }

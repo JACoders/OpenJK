@@ -35,7 +35,6 @@ to the new value before sending out any replies.
 cvar_t		*showpackets;
 cvar_t		*showdrop;
 cvar_t		*qport;
-cvar_t		*net_killdroppedfragments;
 
 static char *netsrcString[2] = {
 	"client",
@@ -53,7 +52,6 @@ void Netchan_Init( int port ) {
 	showpackets = Cvar_Get ("showpackets", "0", CVAR_TEMP );
 	showdrop = Cvar_Get ("showdrop", "0", CVAR_TEMP );
 	qport = Cvar_Get ("net_qport", va("%i", port), CVAR_INIT );
-	net_killdroppedfragments = Cvar_Get ("net_killdroppedfragments", "0", CVAR_TEMP);
 }
 
 /*
