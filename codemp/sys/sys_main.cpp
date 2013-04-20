@@ -1,10 +1,12 @@
 #include <dlfcn.h>
+#include <sys/fcntl.h>
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
 #include "qcommon/platform.h"
 #include "qcommon/files.h"
 
 #include "sys_loadlib.h"
+#include "sys_local.h"
 
 static char cdPath[ MAX_OSPATH ] = { 0 };
 static char binaryPath[ MAX_OSPATH ] = { 0 };
@@ -61,6 +63,78 @@ Sys_DefaultAppPath
 char *Sys_DefaultAppPath(void)
 {
 	return Sys_BinaryPath();
+}
+
+/*
+ =================
+ Sys_In_Restart_f
+ 
+ Restart the input subsystem
+ =================
+ */
+void Conbuf_AppendText( const char *pMsg )
+{
+	char		msg[4096];
+	strcpy(msg, pMsg);
+	printf(Q_CleanStr(msg));
+	printf("\n");
+}
+
+void Sys_Print( const char *msg ) {
+	// TTimo - prefix for text that shows up in console but not in notify
+	// backported from RTCW
+	if ( !Q_strncmp( msg, "[skipnotify]", 12 ) ) {
+		msg += 12;
+	}
+	if ( msg[0] == '*' ) {
+		msg += 1;
+	}
+	Conbuf_AppendText( msg );
+}
+
+void Sys_In_Restart_f( void )
+{
+	IN_Restart( );
+}
+
+void	Sys_Init (void) {
+    Cmd_AddCommand ("in_restart", Sys_In_Restart_f);
+    Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
+	Cvar_Set( "username", Sys_GetCurrentUser( ) );
+}
+
+void Sys_Exit( int ex ) {
+#ifdef NDEBUG // regular behavior
+    // We can't do this
+    //  as long as GL DLL's keep installing with atexit...
+    //exit(ex);
+    _exit(ex);
+#else
+    // Give me a backtrace on error exits.
+    assert( ex == 0 );
+    exit(ex);
+#endif
+}
+
+void Sys_Error( const char *error, ... )
+{
+	va_list argptr;
+	char    string[1024];
+    
+	va_start (argptr,error);
+	Q_vsnprintf (string, sizeof(string), error, argptr);
+	va_end (argptr);
+    
+	//Sys_ErrorDialog( string );
+	Sys_Print( string );
+    
+	Sys_Exit( 3 );
+}
+
+void Sys_Quit (void) {
+    CL_Shutdown ();
+    fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
+    Sys_Exit(0);
 }
 
 /*
