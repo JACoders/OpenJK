@@ -36,7 +36,7 @@
 cvar_t *nostdout;
 
 // Structure containing functions exported from refresh DLL
-refexport_t	re;
+//refexport_t	re;
 
 unsigned	sys_frame_time;
 
@@ -321,7 +321,7 @@ Used to load a development dll instead of a virtual machine
 */
 extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 
-void *Sys_LoadDll( const char *name, 
+void *Sys_LoadGameDll( const char *name,
 		   int (**entryPoint)(int, ...),
 		   int (*systemcalls)(int, ...) ) 
 {

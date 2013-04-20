@@ -70,7 +70,7 @@ if(NOT WIN32)
 	set_target_properties(${MPUI} PROPERTIES PREFIX "")
 endif(NOT WIN32)
 
-install(TARGETS ${MPUI} RUNTIME DESTINATION "OpenJK")
+install(TARGETS ${MPUI} LIBRARY DESTINATION "OpenJK")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPUIDefines};${ReleaseDefines}")
