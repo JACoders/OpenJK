@@ -2251,7 +2251,7 @@ int UI_G2SetAnim(CGhoul2Info *ghlInfo, const char *boneName, int animNum, const 
 	int animIndex,blendTime;
 	char *GLAName;
 
-	GLAName = G2API_GetGLAName(ghlInfo);
+	GLAName = re.G2API_GetGLAName(ghlInfo);
 
 	if (!GLAName || !GLAName[0])
 	{
@@ -2295,7 +2295,7 @@ int UI_G2SetAnim(CGhoul2Info *ghlInfo, const char *boneName, int animNum, const 
 		blendTime = 150;
 
 
-		G2API_SetBoneAnim(ghlInfo, boneName, sFrame, eFrame, flags, animSpeed, time, -1, blendTime);
+		re.G2API_SetBoneAnim(ghlInfo, boneName, sFrame, eFrame, flags, animSpeed, time, -1, blendTime);
 
 		return ((anim->frameLerp * (anim->numFrames-2)));
 	}

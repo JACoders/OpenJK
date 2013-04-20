@@ -564,7 +564,7 @@ void SV_Frame( int msec,float fractionMsec ) {
 	while ( sv.timeResidual >= frameMsec ) {
 		sv.timeResidual -= frameMsec;
 		sv.time += frameMsec;
-		G2API_SetTime(sv.time,G2T_SV_TIME);
+		re.G2API_SetTime(sv.time,G2T_SV_TIME);
 
 		// let everything in the world think and move
 		ge->RunFrame( sv.time );

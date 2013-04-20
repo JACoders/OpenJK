@@ -23,10 +23,9 @@ This file is part of Jedi Academy.
 #include "../qcommon/sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
 #include "stv_version.h"
 
-#ifdef _XBOX
-#include "../win32/win_file.h"
-#include "../ui/ui_splash.h"
-#endif
+// Because renderer.
+#include "../renderer/tr_public.h"
+
 
 #ifndef FINAL_BUILD
 #include "platform.h"
@@ -1443,10 +1442,10 @@ try
 #ifdef G2_PERFORMANCE_ANALYSIS
 	if (com_G2Report && com_G2Report->integer)
 	{
-		G2Time_ReportTimers();
+		re.G2Time_ReportTimers();
 	}
 
-	G2Time_ResetTimers();
+	re.G2Time_ResetTimers();
 #endif
 }
 

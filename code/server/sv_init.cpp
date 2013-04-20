@@ -342,7 +342,7 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	}
 
 	sv.time = 1000;
-	G2API_SetTime(sv.time,G2T_SV_TIME);
+	re.G2API_SetTime(sv.time,G2T_SV_TIME);
 
 #ifndef _DEBUG
 	Com_Printf("CM_LOADMAP: %s\n", server);

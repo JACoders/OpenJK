@@ -440,7 +440,7 @@ static qboolean GLW_InitDriver( int colorbits )
 	{
 		VID_Printf( PRINT_ALL, "...getting DC: " );
 
-		if ( ( glw_state.hDC = GetDC( g_wv.hWnd ) ) == NULL )
+		if ( ( glw_state.hDC = GetDC( tr.wv->hWnd ) ) == NULL )
 		{
 			VID_Printf( PRINT_ALL, "failed\n" );
 			return qfalse;
@@ -499,7 +499,7 @@ static qboolean GLW_InitDriver( int colorbits )
 			if ( ( r_colorbits->integer == glw_state.desktopBitsPixel ) &&
 				 ( stencilbits == 0 ) )
 			{
-				ReleaseDC( g_wv.hWnd, glw_state.hDC );
+				ReleaseDC( tr.wv->hWnd, glw_state.hDC );
 				glw_state.hDC = NULL;
 
 				VID_Printf( PRINT_ALL, "...failed to find an appropriate PIXELFORMAT\n" );
@@ -519,7 +519,7 @@ static qboolean GLW_InitDriver( int colorbits )
 			{
 				if ( glw_state.hDC )
 				{
-					ReleaseDC( g_wv.hWnd, glw_state.hDC );
+					ReleaseDC( tr.wv->hWnd, glw_state.hDC );
 					glw_state.hDC = NULL;
 				}
 
@@ -576,8 +576,8 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 		wc.lpfnWndProc   = (WNDPROC) glw_state.wndproc;
 		wc.cbClsExtra    = 0;
 		wc.cbWndExtra    = 0;
-		wc.hInstance     = g_wv.hInstance;
-	    wc.hIcon         = LoadIcon (g_wv.hInstance, MAKEINTRESOURCE(IDI_ICON1));	//jfm: to get icon
+		wc.hInstance     = tr.wv->hInstance;
+	    wc.hIcon         = LoadIcon (tr.wv->hInstance, MAKEINTRESOURCE(IDI_ICON1));	//jfm: to get icon
 		wc.hCursor       = LoadCursor (NULL,IDC_ARROW);
 		wc.hbrBackground = 0;//(struct HBRUSH__ *)COLOR_GRAYTEXT;
 		wc.lpszMenuName  = 0;
@@ -594,7 +594,7 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 	//
 	// create the HWND if one does not already exist
 	//
-	if ( !g_wv.hWnd )
+	if ( !tr.wv->hWnd )
 	{
 		//
 		// compute width and height
@@ -648,7 +648,7 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 			}
 		}
 
-		g_wv.hWnd = CreateWindowEx (
+		tr.wv->hWnd = CreateWindowEx (
 			 exstyle, 
 			 WINDOW_CLASS_NAME,	//class
 			 WINDOW_CLASS_NAME,	//window title
@@ -656,16 +656,16 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 			 x, y, w, h,
 			 NULL,
 			 NULL,
-			 g_wv.hInstance,
+			 tr.wv->hInstance,
 			 NULL);
 
-		if ( !g_wv.hWnd )
+		if ( !tr.wv->hWnd )
 		{
 			Com_Error (ERR_FATAL, "GLW_CreateWindow() - Couldn't create window");
 		}
 	
-		ShowWindow( g_wv.hWnd, SW_SHOW );
-		UpdateWindow( g_wv.hWnd );
+		ShowWindow( tr.wv->hWnd, SW_SHOW );
+		UpdateWindow( tr.wv->hWnd );
 		VID_Printf( PRINT_ALL, "...created window@%d,%d (%dx%d)\n", x, y, w, h );
 	}
 	else
@@ -675,15 +675,15 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 
 	if ( !GLW_InitDriver( colorbits ) )
 	{
-		ShowWindow( g_wv.hWnd, SW_HIDE );
-		DestroyWindow( g_wv.hWnd );
-		g_wv.hWnd = NULL;
+		ShowWindow( tr.wv->hWnd, SW_HIDE );
+		DestroyWindow( tr.wv->hWnd );
+		tr.wv->hWnd = NULL;
 
 		return qfalse;
 	}
 
-	SetForegroundWindow( g_wv.hWnd );
-	SetFocus( g_wv.hWnd );
+	SetForegroundWindow( tr.wv->hWnd );
+	SetFocus( tr.wv->hWnd );
 
 	return qtrue;
 }
@@ -1649,7 +1649,7 @@ void GLimp_Init( void )
 
 	// save off hInstance and wndproc
 	cv = ri.Cvar_Get( "win_hinstance", "", 0 );
-	sscanf( cv->string, "%i", (int *)&g_wv.hInstance );
+	sscanf( cv->string, "%i", (int *)&tr.wv->hInstance );
 
 	cv = ri.Cvar_Get( "win_wndproc", "", 0 );
 	sscanf( cv->string, "%i", (int *)&glw_state.wndproc );
@@ -1785,18 +1785,18 @@ void GLimp_Shutdown( void )
 	// release DC
 	if ( glw_state.hDC )
 	{
-		retVal = ReleaseDC( g_wv.hWnd, glw_state.hDC ) != 0;
+		retVal = ReleaseDC( tr.wv->hWnd, glw_state.hDC ) != 0;
 		VID_Printf( PRINT_ALL, "...releasing DC: %s\n", success[retVal] );
 		glw_state.hDC   = NULL;
 	}
 
 	// destroy window
-	if ( g_wv.hWnd )
+	if ( tr.wv->hWnd )
 	{
 		VID_Printf( PRINT_ALL, "...destroying window\n" );
-		ShowWindow( g_wv.hWnd, SW_HIDE );
-		DestroyWindow( g_wv.hWnd );
-		g_wv.hWnd = NULL;
+		ShowWindow( tr.wv->hWnd, SW_HIDE );
+		DestroyWindow( tr.wv->hWnd );
+		tr.wv->hWnd = NULL;
 		glw_state.pixelFormatSet = qfalse;
 	}
 
