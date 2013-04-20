@@ -1371,15 +1371,13 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 
 	// check for cached disk file from the server first...
 	//
-	extern void *gpvCachedMapDiskImage;
-	extern char  gsCachedMapDiskImage[];
-	if (gpvCachedMapDiskImage)
+	if (ri.gpvCachedMapDiskImage())
 	{
-		if (!strcmp(name, gsCachedMapDiskImage))
+		if (!strcmp(name, ri.gsCachedMapDiskImage()))
 		{
 			// we should always get here, if inside the first IF...
 			//
-			buffer = (byte *)gpvCachedMapDiskImage;
+			buffer = (byte *)ri.gpvCachedMapDiskImage();
 		}
 		else
 		{
@@ -1448,7 +1446,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 	}
 
 
-	if (gpvCachedMapDiskImage && !loadedSubBSP)
+	if (ri.gpvCachedMapDiskImage() && !loadedSubBSP)
 	{
 		// For the moment, I'm going to keep this disk image around in case we need it to respawn.
 		//  No problem for memory, since it'll only be a NZ ptr if we're not low on physical memory
@@ -1468,12 +1466,11 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 
 // new wrapper used for convenience to tell z_malloc()-fail recovery code whether it's safe to dump the cached-bsp or not.
 //
-extern qboolean gbUsingCachedMapDataRightNow;
 void RE_LoadWorldMap( const char *name )
 {
-	gbUsingCachedMapDataRightNow = qtrue;	// !!!!!!!!!!!!
+	*(ri.gbUsingCachedMapDataRightNow()) = qtrue;	// !!!!!!!!!!!!
 
 		RE_LoadWorldMap_Actual( name, s_worldData, 0 );
 
-	gbUsingCachedMapDataRightNow = qfalse;	// !!!!!!!!!!!!
+	*(ri.gbUsingCachedMapDataRightNow()) = qfalse;	// !!!!!!!!!!!!
 }

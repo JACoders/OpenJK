@@ -155,6 +155,12 @@ typedef struct {
 
 	qboolean			(*CL_IsRunningInGameCinematic)		( void );
 
+	void*				(*gpvCachedMapDiskImage)			( void );
+	char*				(*gsCachedMapDiskImage)				( void );
+	qboolean			*(*gbUsingCachedMapDataRightNow)	( void );
+	qboolean			*(*gbAlreadyDoingLoad)				( void );
+	int					(*com_frameTime)					( void );
+
 } refimport_t;
 
 extern refimport_t ri;
