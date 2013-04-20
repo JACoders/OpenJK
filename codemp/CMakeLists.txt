@@ -348,8 +348,8 @@ if(BuildMPEngine OR BuildMPDed)
 	else(WIN32)
 		set(MPEngineAndDedAllSortMe
 			${MPEngineAndDedAllSortMe}
-			"${MPDir}/unix/vm_x86.cpp"
-			"${MPDir}/unix/snapvector.nasm"
+			"${MPDir}/sys/vm_x86.cpp"
+			"${MPDir}/sys/snapvector.nasm"
 			)
 	endif(WIN32)
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedAllSortMe})
@@ -522,7 +522,6 @@ if(BuildMPEngine)
 	else(WIN32)
 		set(MPEngineSortMe
 			${MPEngineSortMe}
-			"${MPDir}/sdl/sdl_glimp.cpp"
 			"${MPDir}/sdl/sdl_input.cpp"
 			"${MPDir}/sdl/sdl_qgl.h"
 			"${MPDir}/sdl/sdl_snd.cpp"
@@ -531,8 +530,8 @@ if(BuildMPEngine)
 			"${MPDir}/sys/sys_main.cpp"
 			"${MPDir}/sys/sys_net.cpp"
 			"${MPDir}/sys/sys_unix.cpp"
-			"${MPDir}/unix/unix_local.h"
-			"${MPDir}/unix/unix_main.cpp"
+			"${MPDir}/sys/unix_local.h"
+			"${MPDir}/sys/unix_main.cpp"
 			)
 	endif(WIN32)
 
@@ -626,11 +625,10 @@ if(BuildMPDed)
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
 	else(WIN32)
 		set(MPDedSortMe ${MPDedSortMe}
-			"${MPDir}/unix_ded/unix_main.cpp"
-			"${MPDir}/unix_ded/unix_net.cpp"
-			"${MPDir}/unix_ded/unix_shared.cpp"
-			"${MPDir}/unix_ded/linux_local.h"
-			"${MPDir}/unix_ded/linux_common.c"
+			"${MPDir}/sys/unix_main_ded.cpp"
+			"${MPDir}/sys/sys_net.cpp"
+			"${MPDir}/sys/unix_shared.cpp"
+			"${MPDir}/sys/linux_local.h"
 			)
 		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 	endif(WIN32)

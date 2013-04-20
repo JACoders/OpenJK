@@ -101,10 +101,10 @@ int main ( int argc, char* argv[] )
 		}*/
 
 #ifdef _DEBUG
-		if (!g_wv.activeApp)
-		{
-			Sleep(50);
-		}
+//		if (!g_wv.activeApp)
+//		{
+//			Sleep(50);
+//		}
 #endif // _DEBUG
 		// set low precision every frame, because some system calls
 		// reset it arbitrarily
