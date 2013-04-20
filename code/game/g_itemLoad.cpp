@@ -662,9 +662,8 @@ static void IT_ParseWeaponParms(const char **holdBuf)
 			continue;
 		}
 
-		gi.Printf("bad parameter in external weapon data '%s'\n", token);
+		Com_Printf("^3WARNING: bad parameter in external item data '%s'\n", token);
 		SkipRestOfLine(holdBuf);
-		
 	}
 }
 

@@ -691,6 +691,7 @@ extern	cvar_t	*com_journal;
 extern	cvar_t	*com_cameraMode;
 extern	cvar_t	*com_unfocused;
 extern	cvar_t	*com_minimized;
+extern	cvar_t	*com_homepath;
 
 extern	cvar_t	*com_optvehtrace;
 
