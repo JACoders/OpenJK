@@ -522,7 +522,6 @@ if(BuildMPEngine)
 	else(WIN32)
 		set(MPEngineSortMe
 			${MPEngineSortMe}
-			"${MPDir}/sdl/sdl_glimp.cpp"
 			"${MPDir}/sdl/sdl_input.cpp"
 			"${MPDir}/sdl/sdl_qgl.h"
 			"${MPDir}/sdl/sdl_snd.cpp"
