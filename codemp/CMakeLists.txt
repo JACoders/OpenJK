@@ -625,11 +625,10 @@ if(BuildMPDed)
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
 	else(WIN32)
 		set(MPDedSortMe ${MPDedSortMe}
-			"${MPDir}/unix_ded/unix_main.cpp"
+			"${MPDir}/sys/unix_main_ded.cpp"
 			"${MPDir}/sys/sys_net.cpp"
 			"${MPDir}/sys/unix_shared.cpp"
 			"${MPDir}/sys/linux_local.h"
-			"${MPDir}/sys/linux_common.c"
 			)
 		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 	endif(WIN32)
