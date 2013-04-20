@@ -45,7 +45,7 @@ typedef	struct modelHash_s
 }modelHash_t;
 
 #define FILE_HASH_SIZE		1024
-static	modelHash_t 		*mhHashTable[FILE_HASH_SIZE];
+modelHash_t 		*mhHashTable[FILE_HASH_SIZE];
 
 
 /*

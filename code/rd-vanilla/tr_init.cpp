@@ -1411,7 +1411,7 @@ void R_Init( void ) {
 	R_TerrainInit();
 #endif
 	R_ModelInit();
-//	R_InitWorldEffects();
+	R_InitWorldEffects();
 	R_InitFonts();
 
 	err = qglGetError();
@@ -1623,8 +1623,9 @@ extern void G2Time_ResetTimers(void);
 extern void G2Time_ReportTimers(void);
 #endif
 
+extern "C" {
 
-refexport_t *GetRefAPI ( int apiVersion, refimport_t *refimp ) {
+__declspec(dllexport) refexport_t *GetRefAPI ( int apiVersion, refimport_t *refimp ) {
 	static refexport_t	re;
 
 	ri = *refimp;
@@ -1735,6 +1736,8 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *refimp ) {
 
 	REX(SetRangedFog);
 
+	re.TheGhoul2InfoArray = TheGhoul2InfoArray;
+
 #define G2EX(x)	re.G2API_##x = G2API_##x
 
 	G2EX(AddBolt);
@@ -1823,3 +1826,4 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *refimp ) {
 	return &re;
 }
 
+}
