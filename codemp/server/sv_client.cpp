@@ -252,7 +252,11 @@ void SV_DirectConnect( netadr_t from ) {
 			return;
 		}
 
-		ping = svs.time - svs.challenges[i].pingTime;
+		if ( !svs.challenges[i].connected ) {
+			svs.challenges[i].challengePing = svs.time - svs.challenges[i].pingTime;
+		}
+
+		ping = svs.challenges[i].challengePing;
 		Com_Printf( SE_GetString("MP_SVGAME", "CLIENT_CONN_WITH_PING"), i, ping);//"Client %i connecting with %i challenge ping\n", i, ping );
 		svs.challenges[i].connected = qtrue;
 
