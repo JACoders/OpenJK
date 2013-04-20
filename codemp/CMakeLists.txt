@@ -178,39 +178,6 @@ if(BuildMPEngine OR BuildMPDed)
 	
 	set(MPEngineAndDedCommonFiles
 		"${MPDir}/qcommon/q_shared.h"
-		"${MPDir}/game/surfaceflags.h"
-		"${MPDir}/ghoul2/G2.h"
-		"${MPDir}/ghoul2/G2_API.cpp"
-		"${MPDir}/ghoul2/G2_bolts.cpp"
-		"${MPDir}/ghoul2/G2_bones.cpp"
-		"${MPDir}/ghoul2/G2_gore.h"
-		"${MPDir}/ghoul2/G2_local.h"
-		"${MPDir}/ghoul2/G2_misc.cpp"
-		"${MPDir}/ghoul2/G2_surfaces.cpp"
-		"${MPDir}/ghoul2/ghoul2_shared.h"
-		"${MPDir}/icarus/BlockStream.cpp"
-		"${MPDir}/icarus/blockstream.h"
-		"${MPDir}/icarus/GameInterface.cpp"
-		"${MPDir}/icarus/GameInterface.h"
-		"${MPDir}/icarus/icarus.h"
-		"${MPDir}/icarus/Instance.cpp"
-		"${MPDir}/icarus/instance.h"
-		"${MPDir}/icarus/Interface.cpp"
-		"${MPDir}/icarus/interface.h"
-		"${MPDir}/icarus/interpreter.h"
-		"${MPDir}/icarus/Memory.cpp"
-		"${MPDir}/icarus/module.h"
-		"${MPDir}/icarus/Q3_Interface.cpp"
-		"${MPDir}/icarus/Q3_Interface.h"
-		"${MPDir}/icarus/Q3_Registers.cpp"
-		"${MPDir}/icarus/Q3_Registers.h"
-		"${MPDir}/icarus/Sequence.cpp"
-		"${MPDir}/icarus/sequence.h"
-		"${MPDir}/icarus/Sequencer.cpp"
-		"${MPDir}/icarus/sequencer.h"
-		"${MPDir}/icarus/TaskManager.cpp"
-		"${MPDir}/icarus/taskmanager.h"
-		"${MPDir}/icarus/tokenizer.h"
 		"${MPDir}/qcommon/chash.h"
 		"${MPDir}/qcommon/cm_draw.cpp"
 		"${MPDir}/qcommon/cm_draw.h"
@@ -534,59 +501,6 @@ if(BuildMPEngine)
 		"${MPDir}/mp3code/uph.c"
 		"${MPDir}/mp3code/upsf.c"
 		"${MPDir}/mp3code/wavep.c"
-		
-		# TODO: replace the following with proper libraries
-		
-		#"${MPDir}/jpeg-8c/*.c"
-		#"${MPDir}/jpeg-8c/*.h"
-		
-		#"${MPDir}/jpeg-6/jdatasrc.cpp" #libjpeg
-		#"${MPDir}/jpeg-6/jdmainct.cpp"
-		#"${MPDir}/jpeg-6/jpegint.h"
-		#"${MPDir}/jpeg-6/jcinit.cpp"
-		#"${MPDir}/jpeg-6/jddctmgr.cpp"
-		#"${MPDir}/jpeg-6/jerror.h"
-		#"${MPDir}/jpeg-6/jdsample.cpp"
-		#"${MPDir}/jpeg-6/jcapimin.cpp"
-		#"${MPDir}/jpeg-6/jdapimin.cpp"
-		#"${MPDir}/jpeg-6/jconfig.h"
-		#"${MPDir}/jpeg-6/jdcolor.cpp"
-		#"${MPDir}/jpeg-6/jccolor.cpp"
-		#"${MPDir}/jpeg-6/jdct.h"
-		#"${MPDir}/jpeg-6/jdmaster.cpp"
-		#"${MPDir}/jpeg-6/jdhuff.cpp"
-		#"${MPDir}/jpeg-6/jdpostct.cpp"
-		#"${MPDir}/jpeg-6/jmemnobs.cpp"
-		#"${MPDir}/jpeg-6/jinclude.h"
-		#"${MPDir}/jpeg-6/jcdctmgr.cpp"
-		#"${MPDir}/jpeg-6/jdapistd.cpp"
-		#"${MPDir}/jpeg-6/jmorecfg.h"
-		#"${MPDir}/jpeg-6/jcphuff.cpp"
-		#"${MPDir}/jpeg-6/jidctflt.cpp"
-		#"${MPDir}/jpeg-6/jdhuff.h"
-		#"${MPDir}/jpeg-6/jchuff.cpp"
-		#"${MPDir}/jpeg-6/jutils.cpp"
-		#"${MPDir}/jpeg-6/jccoefct.cpp"
-		#"${MPDir}/jpeg-6/jchuff.h"
-		#"${MPDir}/jpeg-6/jdtrans.cpp"
-		#"${MPDir}/jpeg-6/jcmaster.cpp"
-		#"${MPDir}/jpeg-6/jmemsys.h"
-		#"${MPDir}/jpeg-6/jdatadst.cpp"
-		#"${MPDir}/jpeg-6/jpeglib.h"
-		#"${MPDir}/jpeg-6/jmemmgr.cpp"
-		#"${MPDir}/jpeg-6/jcmarker.cpp"
-		#"${MPDir}/jpeg-6/jctrans.cpp"
-		#"${MPDir}/jpeg-6/jdcoefct.cpp"
-		#"${MPDir}/jpeg-6/jcsample.cpp"
-		#"${MPDir}/jpeg-6/jdmarker.cpp"
-		#"${MPDir}/jpeg-6/jcprepct.cpp"
-		#"${MPDir}/jpeg-6/jcomapi.cpp"
-		#"${MPDir}/jpeg-6/jdinput.cpp"
-		#"${MPDir}/jpeg-6/jcmainct.cpp"
-		#"${MPDir}/jpeg-6/jcparam.cpp"
-		#"${MPDir}/jpeg-6/jerror.cpp"
-		#"${MPDir}/jpeg-6/jfdctflt.cpp"
-		#"${MPDir}/jpeg-6/jversion.h"
 		)
 	source_group("mp3code" FILES ${MPEngineMp3Files})
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineMp3Files})
@@ -632,6 +546,9 @@ if(BuildMPEngine)
 	else(WIN32)
 		add_executable(${MPEngine} ${MPEngineFiles})
 	endif(WIN32)
+	install(TARGETS ${MPEngine} RUNTIME DESTINATION ".")
+	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPEngineDefines};${ReleaseDefines}")
+	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPEngineDefines};${DebugDefines}")
 	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
@@ -721,7 +638,9 @@ if(BuildMPDed)
 	source_group("SortMe" FILES ${MPDedSortMe})
 	
 	add_executable(${MPDed} ${MPDedFiles})
-	
+	install(TARGETS ${MPDed} RUNTIME DESTINATION ".")
+	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPDedDefines};${ReleaseDefines}")
+	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPDedDefines};${DebugDefines}")
 	set_target_properties(${MPDed} PROPERTIES INCLUDE_DIRECTORIES "${MPDedIncludeDirectories}")

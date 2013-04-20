@@ -9,6 +9,11 @@
 
 #pragma optimize("", off)
 
+// The above optmization triggers this warning:
+// "/GS can not protect parameters and local variables from local buffer overrun because optimizations are disabled in function"
+// We don't give a rats ass.
+#pragma warning(disable: 4748)
+
 static CRMLandScape		*rm_landscape;
 static CCMLandScape		*origin_land;
 
@@ -510,5 +515,7 @@ void RM_ShutdownTerrain(void)
 }
 
 // end
+
+#pragma warning(default: 4748)
 
 #pragma optimize("", on)
