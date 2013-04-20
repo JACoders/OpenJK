@@ -112,6 +112,7 @@ if(WIN32)
 endif(WIN32)
 
 add_library(${MPVanillaRenderer} SHARED ${MPVanillaRendererFiles})
+install(TARGETS ${MPVanillaRenderer} RUNTIME DESTINATION ".")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${ReleaseDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${ReleaseDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${ReleaseDefines}")
