@@ -260,6 +260,8 @@ float FloatSwap( const float *f );
         #define BigFloat(x) FloatSwap(&x)
     #endif
 
+	#define DLL_EXT ".dylib"
+
 #endif // MACOS_X
 
 
@@ -286,6 +288,8 @@ float FloatSwap( const float *f );
 	static inline int LittleLong( int l ) { return LongSwap( l ); }
 	#define BigFloat
 	static inline float LittleFloat( const float l ) { return FloatSwap( &l ); }
+
+	#define DLL_EXT ".dylib"
 
 #endif // __MACOS__
 
@@ -1560,7 +1564,9 @@ int Com_Clampi( int min, int max, int value ); //rwwRMG - added
 float Com_Clamp( float min, float max, float value );
 
 char	*COM_SkipPath( char *pathname );
+const char	*COM_GetExtension( const char *name );
 void	COM_StripExtension( const char *in, char *out, int destsize );
+qboolean COM_CompareExtension(const char *in, const char *ext);
 void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 
 void	COM_BeginParseSession( const char *name );
