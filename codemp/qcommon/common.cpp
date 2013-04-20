@@ -1362,7 +1362,13 @@ void Com_WriteConfig_f( void ) {
 	}
 
 	Q_strncpyz( filename, Cmd_Argv(1), sizeof( filename ) );
-	COM_DefaultExtension( filename, sizeof( filename ), ".cfg" );
+ 	COM_DefaultExtension( filename, sizeof( filename ), ".cfg" );
+
+ 	if ( FS_FileExists(filename) ) {
+ 		Com_Printf( "File already exists.\n" );
+		return;
+    }
+
 	Com_Printf( "Writing %s.\n", filename );
 	Com_WriteConfigToFile( filename );
 }
@@ -1439,7 +1445,7 @@ try
 	G2PerformanceTimer_PreciseFrame.Start();
 #endif
 	int		msec, minMsec;
-	static int	lastTime;
+	static int	lastTime = 0;
  
 	int		timeBeforeFirstEvents;
 	int           timeBeforeServer;
@@ -1482,7 +1488,7 @@ try
 	}
 	do {
 		com_frameTime = Com_EventLoop();
-		if ( lastTime > com_frameTime ) {
+		if ( (lastTime > com_frameTime) || (lastTime == 0) ) {
 			lastTime = com_frameTime;		// possible on first frame
 		}
 		msec = com_frameTime - lastTime;
