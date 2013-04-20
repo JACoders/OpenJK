@@ -1,11 +1,17 @@
 ## SORRY FOR THE HISTORY CHANGES! ##
 For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase.html#_recovering_from_upstream_rebase) for how to fix if you've changed anything, or just delete your github fork and local folder and start over if you haven't.
 
-## JACoders "OpenJK" project ##
+# JACoders "OpenJK" project #
 IRC: irc.arloria.net / #JACoders ([webchat](http://www.arloria.net/tiramisu/tiramisu.swf?channels=#jacoders))
 
 The purpose of this project is to maintain and improve the Jedi Academy and Jedi Outcast games, developed by Raven Software.
 This project will not attempt to rebalance or otherwise modify core gameplay aspects.
+
+## Installation ##
+
+First, install Jedi Academy.
+
+Then point the OpenJK installer to the GameData folder in the Jedi Academy install, e.g.  just point it to your "Jedi Academy/GameData" folder. If you've downloaded an archive, just unpack it to GameData.
 
 ## Maintainers (in alphabetical order) ##
 * eezstreet
@@ -62,7 +68,7 @@ This project will not attempt to rebalance or otherwise modify core gameplay asp
 * Removed CD Key Code
 * Removed demo restriction code.
 * Removed Anti-Tamper Code.
-* Shift-Escape will now also open the console as an alternate (ie: keyboard doesn't support the normal console key)
+* Shift-Escape will now also open the console as an alternate (e.g.: keyboard doesn't support the normal console key)
 * Removed shift key requirement to open console
 
 ## Developer Notes ##
@@ -72,6 +78,7 @@ This project will not attempt to rebalance or otherwise modify core gameplay asp
 * rd-dedicated (Stripped down renderer for use with dedicated server)
 * rd-raspberry (OpenGL ES compliant renderer for use with Raspberry Pi - feel free to maintain!)
 * rd-strawberry (Maintainer: Xycaleth)
+* rd-vader (Maintainer: mrwonko)
 
 ### Engine "hax" ###
 * If your mod intends to use engine "hax" to figure out the nedaddr types (NA_IP, etc) NA_BAD is now 0 and NA_BOT is now 1 instead of vice versa.
