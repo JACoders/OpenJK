@@ -32,6 +32,8 @@ This file is part of Jedi Academy.
 
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
+cvar_t	*cl_renderer;
+
 cvar_t	*cl_nodelta;
 cvar_t	*cl_debugMove;
 
@@ -1142,17 +1144,44 @@ extern void ShaderTableCleanup();
 extern void CM_ShutdownTerrain( thandle_t terrainId);
 extern qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel /* 99% qfalse */);
 extern CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
-
+extern cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force);
 extern CMiniHeap *G2VertSpaceServer;
 static CMiniHeap *GetG2VertSpaceServer( void ) {
 	return G2VertSpaceServer;
 }
 
+static void *rendererLib;
+
 void CL_InitRef( void ) {
 	refexport_t	*ret;
 	refimport_t rit;
+	char		dllName[MAX_OSPATH];
+	GetRefAPI_t	GetRefAPI;
+
+	// FIXME: NOT UNIX COMPATIBLE AT ALL!
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
+
+	cl_renderer = Cvar_Get( "cl_renderer", "rd-vanilla", CVAR_ARCHIVE );
+
+	Com_sprintf( dllName, sizeof( dllName ), "%s.dll", cl_renderer->string );
+
+	rendererLib = (void*)LoadLibrary(dllName);
+	if(!rendererLib && Q_stricmp( cl_renderer->string, cl_renderer->resetString ))
+	{
+		Com_Printf("Failed to load primary renderer, falling back to default\n");
+		Cvar_Set2( "cl_renderer", NULL, qtrue );
+
+		strcpy(dllName, "rd-vanilla.dll");
+		rendererLib = (void*)LoadLibrary(dllName);
+	}
+
+	if(!rendererLib)
+		Com_Error( ERR_FATAL, "CL_InitRef() on %s failed", dllName );
+
+	GetRefAPI = (GetRefAPI_t)GetProcAddress( (HMODULE)rendererLib, "GetRefAPI" );
+	if( !GetRefAPI )
+		Com_Error( ERR_FATAL, "CL_InitRef(): NULL GetRefAPI on handle for %s\n", dllName );
 
 #define RIT(y)	rit.y = y
 	RIT(CIN_PlayCinematic);
@@ -1217,21 +1246,24 @@ void CL_InitRef( void ) {
 	rit.Printf = CL_RefPrintf;
 	rit.SE_GetString = String_GetStringValue;
 
+	rit.CM_ShaderTableCleanup = ShaderTableCleanup;
+	rit.SV_Trace = SV_Trace;
+
 	rit.gpvCachedMapDiskImage = get_gpvCachedMapDiskImage;
 	rit.gsCachedMapDiskImage = get_gsCachedMapDiskImage;
 	rit.gbUsingCachedMapDataRightNow = get_gbUsingCachedMapDataRightNow;
 	rit.gbAlreadyDoingLoad = get_gbAlreadyDoingLoad;
 	rit.com_frameTime = get_com_frameTime;
 
-	ret = GetRefAPI( REF_API_VERSION );
-
-	Com_Printf( "-------------------------------\n");
+	ret = GetRefAPI( REF_API_VERSION, &rit );
 
 	if ( !ret ) {
 		Com_Error (ERR_FATAL, "Couldn't initialize refresh" );
 	}
 
 	re = *ret;
+
+	Com_Printf( "-------------------------------\n");
 
 	// unpause so the cgame definately gets a snapshot and renders a frame
 	Cvar_Set( "cl_paused", "0" );
@@ -1360,11 +1392,6 @@ void CL_Init( void ) {
 	Cbuf_Execute ();
 	
 	Cvar_Set( "cl_running", "1" );
-
-#ifdef _XBOX
-	Com_Printf( "Initializing Cinematics...\n");
-	CIN_Init();
-#endif
 
 	Com_Printf( "----- Client Initialization Complete -----\n" );
 }

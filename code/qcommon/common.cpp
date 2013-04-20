@@ -671,10 +671,11 @@ void Hunk_Clear( void )
 	Z_TagFree(TAG_HUNKALLOC);
 	Z_TagFree(TAG_HUNKMISCMODELS);
 
-	extern void CIN_CloseAllVideos();
-				CIN_CloseAllVideos();
+extern void CIN_CloseAllVideos();
+	CIN_CloseAllVideos();
 
-	re.R_ClearStuffToStopGhoul2CrashingThings();
+	if(re.R_ClearStuffToStopGhoul2CrashingThings)
+		re.R_ClearStuffToStopGhoul2CrashingThings();
 }
 
 
@@ -976,7 +977,7 @@ void Com_Init( char *commandLine ) {
 		CL_InitKeyCommands();
 
 		FS_InitFilesystem ();	//uses z_malloc
-		re.R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
+		//re.R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
 		
 		Cbuf_AddText ("exec default.cfg\n");
 
