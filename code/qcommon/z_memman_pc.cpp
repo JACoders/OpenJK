@@ -215,6 +215,9 @@ const static StaticMem_t gNumberString[] = {
 
 qboolean gbMemFreeupOccured = qfalse;
 
+#include "../renderer/tr_public.h"	// sorta hack sorta not
+extern refexport_t re;
+
 #ifdef DEBUG_ZONE_ALLOCS
 void *_D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine)
 #else

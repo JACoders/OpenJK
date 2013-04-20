@@ -785,14 +785,14 @@ Ghoul2 Insert Start
 					world_angles[YAW] =  touch->client->legsYaw;
 					world_angles[ROLL] =  0;
 
-					G2API_CollisionDetect(clip->trace.G2CollisionMap, touch->ghoul2,
+					re.G2API_CollisionDetect(clip->trace.G2CollisionMap, touch->ghoul2,
 							world_angles, touch->client->origin, sv.time, touch->s.number, clip->start, clip->end, touch->s.modelScale, G2VertSpaceServer, clip->eG2TraceType, clip->useLod,radius);
 				}
 				// no, so use the normal entity state
 				else
 				{
 					//use the correct origin and angles!  is this right now?
-					G2API_CollisionDetect(clip->trace.G2CollisionMap, touch->ghoul2,
+					re.G2API_CollisionDetect(clip->trace.G2CollisionMap, touch->ghoul2,
 						touch->currentAngles, touch->currentOrigin, sv.time, touch->s.number, clip->start, clip->end, touch->s.modelScale, G2VertSpaceServer, clip->eG2TraceType, clip->useLod,radius);
 				}
 

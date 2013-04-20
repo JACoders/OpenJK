@@ -423,7 +423,6 @@ void CL_ShutdownCGame( void ) {
 
 //RMG
 CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
-void RE_InitRendererTerrain( const char *info );
 //RMG
 
 extern float tr_distortionAlpha; //tr_shadows.cpp
@@ -892,16 +891,12 @@ int CL_CgameSystemCalls( int *args ) {
 		return CM_RegisterTerrain((const char *)VMA(1), false)->GetTerrainId();
 
 	case CG_RE_INIT_RENDERER_TERRAIN:
-		RE_InitRendererTerrain((const char *)VMA(1));
+		re.InitRendererTerrain((const char *)VMA(1));
 		return 0;
 #endif	// _XBOX
 
 	case CG_CM_LOADMAP:
-#ifdef _XBOX
-		CL_CM_LoadMap( (const char *) VMA(1) );
-#else
 		CL_CM_LoadMap( (const char *) VMA(1), args[2] );
-#endif
 		return 0;
 	case CG_CM_NUMINLINEMODELS:
 		return CM_NumInlineModels();
@@ -1030,7 +1025,7 @@ int CL_CgameSystemCalls( int *args ) {
 		return 0;
 
 	case CG_R_INPVS:
-		return R_inPVS((float *) VMA(1), (float *) VMA(2));
+		return re.R_inPVS((float *) VMA(1), (float *) VMA(2));
 
 	case CG_R_GETLIGHTING:
 		return re.GetLighting( (const float * ) VMA(1), (float *) VMA(2), (float *) VMA(3), (float *) VMA(4) );

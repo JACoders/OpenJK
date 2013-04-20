@@ -1132,6 +1132,14 @@ const char *String_GetStringValue( const char *reference )
 #endif
 }
 
+#ifdef _WIN32
+// DLL glue --eez
+WinVars_t *GetWindowsVariables( void )
+{
+	return &g_wv;
+}
+#endif
+
 /*
 ============
 CL_InitRef
@@ -1210,7 +1218,9 @@ void CL_InitRef( void ) {
 	rit.Error = Com_Error;
 	rit.FS_FileExists = S_FileExists;
 	rit.GetG2VertSpaceServer = GetG2VertSpaceServer;
-	rit.GetWinVars = ???;
+#ifdef _WIN32
+	rit.GetWinVars = GetWindowsVariables;
+#endif
 	rit.LowPhysicalMemory = Sys_LowPhysicalMemory;
 	rit.Milliseconds = Sys_Milliseconds;
 	rit.Printf = CL_RefPrintf;

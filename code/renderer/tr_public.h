@@ -27,6 +27,10 @@ This file is part of Jedi Academy.
 
 // suck it
 #include "../qcommon/cm_landscape.h"
+#ifdef _WIN32
+// down
+#include "../win32/win_local.h"
+#endif
 
 #define	REF_API_VERSION		10
 
@@ -125,7 +129,9 @@ typedef struct {
 	void				(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
 	void				(*SV_SetConfigstring)				( int index, const char *value );
 
-	void *				(*GetWinVars)						( void ); //g_wv
+#ifdef _WIN32
+	WinVars_t *			(*GetWinVars)						( void ); //g_wv
+#endif
 
 #ifdef __MP_CROSS_DLL
 	void				*unused14;	// CM_GetCachedMapDiskImage
@@ -142,7 +148,7 @@ typedef struct {
 
 	qboolean			(*SG_Append)						( unsigned long chid, const void *pvData, int iLength );
 
-	//int					(*SV_PointContents)					( const vec3_t p, clipHandle_t model );
+	int					(*SV_PointContents)					( const vec3_t p, clipHandle_t model );
 
 	void				(*CM_ShaderTableCleanup)			( void );					// FIXME: port to renderer	// NOT IN MP
 	qboolean			(*CM_DeleteCachedMap)				( qboolean bGuaranteedOkToDelete );	// NOT IN MP
@@ -185,6 +191,8 @@ typedef struct {
 	void	(*RegisterMedia_LevelLoadBegin)(const char *psMapName, ForceReload_e eForceReload, qboolean bAllowScreenDissolve);
 	void	(*RegisterMedia_LevelLoadEnd)(void);
 	int		(*RegisterMedia_GetLevel)(void);
+	qboolean	(*RegisterModels_LevelLoadEnd)(qboolean bDeleteEverythingNotUsedThisLevel );
+	qboolean	(*RegisterImages_LevelLoadEnd)(void);
 
 	// the vis data is a large enough block of data that we go to the trouble
 	// of sharing it with the clipmodel subsystem
@@ -249,6 +257,7 @@ typedef struct {
 
 	void	(*GetBModelVerts)( int bmodelIndex, vec3_t *vec, vec3_t normal );
 	void	(*WorldEffectCommand)(const char *command);
+	void	(*GetModelBounds)(refEntity_t *refEnt, vec3_t bounds1, vec3_t bounds2);
 
 	int		(*RegisterFont)(const char *name);
 
@@ -260,6 +269,19 @@ typedef struct {
 	qboolean (*Language_UsesSpaces) (void);
 	unsigned int (*AnyLanguage_ReadCharFromString)( char *psText, int * piAdvanceCount, qboolean *pbIsTrailingPunctuation /* = NULL */);
 	unsigned int (*AnyLanguage_ReadCharFromString2)( char **psText, qboolean *pbIsTrailingPunctuation /* = NULL */);
+
+	// Misc
+	void	(*R_Resample)(byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
+	void	(*R_LoadDataImage)(const char *name, byte **pic, int *width, int *height);
+	void	(*R_InvertImage)(byte *data, int width, int height, int depth);
+	void	(*R_InitWorldEffects)(void);
+	void	(*R_CreateAutomapImage)( const char *name, const byte *pic, int width, int height,
+		qboolean mipmap, qboolean allowPicmip, qboolean allowTC, qboolean glWrapClampMode );
+	void	(*R_ClearStuffToStopGhoul2CrashingThings)(void);
+	qboolean (*R_inPVS)(vec3_t p1, vec3_t p2);
+
+	// RMG
+	void	(*InitRendererTerrain)( const char *info );
 
 	// Weather effects
 	bool	(*GetWindVector)( vec3_t windVector, vec3_t atPoint );
@@ -356,7 +378,7 @@ typedef struct {
 	qboolean	(*G2API_SetGhoul2ModelFlags)(CGhoul2Info *ghlInfo, const int flags);
 	void		(*G2API_SetGhoul2ModelIndexes)(CGhoul2Info_v &ghoul2, qhandle_t *modelList, qhandle_t *skinList);
 	qboolean	(*G2API_SetLodBias)(CGhoul2Info *ghlInfo, int lodBias);
-	void		(*G2API_SetModelIndexes)(CGhoul2Info_v &ghoul2, qhandle_t *modelList, qhandle_t *skinList);
+	//void		(*G2API_SetModelIndexes)(CGhoul2Info_v &ghoul2, qhandle_t *modelList, qhandle_t *skinList);
 	qboolean	(*G2API_SetNewOrigin)(CGhoul2Info *ghlInfo, const int boltIndex);
 	void		(*G2API_SetRagDoll)(CGhoul2Info_v &ghoul2, CRagDollParams *parms);
 	qboolean	(*G2API_SetRootSurface)(CGhoul2Info_v &ghlInfo, const int modelIndex, const char *surfaceName);
@@ -373,6 +395,10 @@ typedef struct {
 	void		(*G2API_AddSkinGore)(CGhoul2Info_v &ghoul2, SSkinGoreData &gore);
 	void		(*G2API_ClearSkinGore)(CGhoul2Info_v &ghoul2);
 #endif
+
+	// Performance analysis (perform anal)
+	void		(*G2Time_ResetTimers)(void);
+	void		(*G2Time_ReportTimers)(void);
 } refexport_t;
 
 
