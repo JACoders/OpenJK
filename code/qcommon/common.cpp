@@ -23,10 +23,10 @@ This file is part of Jedi Academy.
 #include "../qcommon/sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
 #include "stv_version.h"
 
-#ifdef _XBOX
-#include "../win32/win_file.h"
-#include "../ui/ui_splash.h"
-#endif
+// Because renderer.
+#include "../renderer/tr_public.h"
+extern refexport_t re;
+
 
 #ifndef FINAL_BUILD
 #include "platform.h"
@@ -671,11 +671,11 @@ void Hunk_Clear( void )
 	Z_TagFree(TAG_HUNKALLOC);
 	Z_TagFree(TAG_HUNKMISCMODELS);
 
-	extern void CIN_CloseAllVideos();
-				CIN_CloseAllVideos();
+extern void CIN_CloseAllVideos();
+	CIN_CloseAllVideos();
 
-	extern void R_ClearStuffToStopGhoul2CrashingThings(void);
-				R_ClearStuffToStopGhoul2CrashingThings();
+	if(re.R_ClearStuffToStopGhoul2CrashingThings)
+		re.R_ClearStuffToStopGhoul2CrashingThings();
 }
 
 
@@ -952,7 +952,6 @@ Com_Init
 =================
 */
 extern void Com_InitZoneMemory();
-extern void R_InitWorldEffects();
 void Com_Init( char *commandLine ) {
 	char	*s;
 
@@ -968,24 +967,6 @@ void Com_Init( char *commandLine ) {
 
 		Com_InitZoneMemory();
 
-#ifdef _XBOX
-		WF_Init();
-		// set up ri
-		extern void CL_InitRef( void );
-		CL_InitRef();
-
-		// register renderer cvars
-		extern void R_Register(void);
-		R_Register();
-
-		// start the gl render layer
-		extern void GLimp_Init(void);
-		GLimp_Init();
-
-		// put up the license screen
-		SP_DoLicense();
-#endif
-
 		Cmd_Init ();
 		Cvar_Init ();
 
@@ -995,17 +976,8 @@ void Com_Init( char *commandLine ) {
 		// done early so bind command exists
 		CL_InitKeyCommands();
 
-#ifdef _XBOX
-		extern void Sys_FilecodeScan_f();
-		Sys_InitFileCodes();
-		Cmd_AddCommand("filecodes", Sys_FilecodeScan_f);
-
-		extern void Sys_StreamInit();
-		Sys_StreamInit();
-#endif
-
 		FS_InitFilesystem ();	//uses z_malloc
-		R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
+		//re.R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
 		
 		Cbuf_AddText ("exec default.cfg\n");
 
@@ -1461,10 +1433,10 @@ try
 #ifdef G2_PERFORMANCE_ANALYSIS
 	if (com_G2Report && com_G2Report->integer)
 	{
-		G2Time_ReportTimers();
+		re.G2Time_ReportTimers();
 	}
 
-	G2Time_ResetTimers();
+	re.G2Time_ResetTimers();
 #endif
 }
 

@@ -26,9 +26,9 @@ This file is part of Jedi Academy.
 /*
 Ghoul2 Insert Start
 */
-#if !defined(TR_LOCAL_H)
+/*#if !defined(TR_LOCAL_H)
 	#include "../renderer/tr_local.h"
-#endif
+#endif*/
 
 #if !defined (MINIHEAP_H_INC)
 	#include "../qcommon/miniheap.h"
@@ -253,7 +253,7 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	int			i;
 	int			checksum;
 
-	RE_RegisterMedia_LevelLoadBegin( server, eForceReload, bAllowScreenDissolve );
+	re.RegisterMedia_LevelLoadBegin( server, eForceReload, bAllowScreenDissolve );
 
 
 	Cvar_SetValue( "cl_paused", 0 );
@@ -316,9 +316,9 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	}
 
  	// clear out those shaders, images and Models
-	R_InitImages();
+	/*R_InitImages();
 	R_InitShaders();
-	R_ModelInit();
+	R_ModelInit();*/
 
 	// allocate the snapshot entities 
 	svs.snapshotEntities = (entityState_t *) Z_Malloc (sizeof(entityState_t)*svs.numSnapshotEntities, TAG_CLIENTS, qtrue );
@@ -342,7 +342,7 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	}
 
 	sv.time = 1000;
-	G2API_SetTime(sv.time,G2T_SV_TIME);
+	re.G2API_SetTime(sv.time,G2T_SV_TIME);
 
 #ifndef _DEBUG
 	Com_Printf("CM_LOADMAP: %s\n", server);
@@ -375,7 +375,7 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	for ( i = 0 ;i < 3 ; i++ ) {
 		ge->RunFrame( sv.time );
 		sv.time += 100;
-		G2API_SetTime(sv.time,G2T_SV_TIME);
+		re.G2API_SetTime(sv.time,G2T_SV_TIME);
 	}
 #ifndef __NO_JK2
 	if(!Cvar_VariableIntegerValue("com_jk2"))
@@ -412,7 +412,7 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	// run another frame to allow things to look at all connected clients
 	ge->RunFrame( sv.time );
 	sv.time += 100;
-	G2API_SetTime(sv.time,G2T_SV_TIME);
+	re.G2API_SetTime(sv.time,G2T_SV_TIME);
 
 
 	// save systeminfo and serverinfo strings

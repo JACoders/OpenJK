@@ -830,7 +830,6 @@ char *Q_CleanStr( char *string ) {
 	return string;
 }
 
-
 #ifdef _MSC_VER
 /*
 =============
