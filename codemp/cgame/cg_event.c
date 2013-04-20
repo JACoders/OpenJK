@@ -3201,8 +3201,8 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 					//hear it in the world spot.
 					char vchatstr[1024] = {0};
 					Q_strncpyz(vchatstr, va("<%s^7: %s>\n", ci->name, descr), sizeof( vchatstr ) );
-					CG_Printf(vchatstr);
 					CG_ChatBox_AddString(vchatstr);
+					CG_Printf("*%s", vchatstr);
 				}
 
 				//and play in world for everyone
