@@ -879,8 +879,6 @@ CTRLandScape::~CTRLandScape(void)
 	}
 }
 
-CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
-
 qhandle_t R_GetShaderByNum(int shaderNum, world_t &worldData);
 
 CTRLandScape::CTRLandScape(const char *configstring)
@@ -892,7 +890,7 @@ CTRLandScape::CTRLandScape(const char *configstring)
 	memset(this, 0, sizeof(*this));
 
 	// Sets up the common aspects of the terrain
-	common = CM_RegisterTerrain(configstring, false);
+	common = ri.CM_RegisterTerrain(configstring, false);
 	SetCommon(common);
 
 	tr.landScape.landscape = this;

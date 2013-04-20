@@ -526,7 +526,7 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	{
 		// JPG saver expects to be fed RGBA data, though it presumably ignores 'A'...
 		//
-		buffer = (unsigned char *) ri.Z_Malloc(glConfig.vidWidth*glConfig.vidHeight*4, TAG_TEMP_WORKSPACE, qfalse);
+		buffer = (unsigned char *) ri.Z_Malloc(glConfig.vidWidth*glConfig.vidHeight*4, TAG_TEMP_WORKSPACE, qfalse, 4);
 		qglReadPixels( x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer ); 
 
 		// gamma correct
@@ -540,7 +540,7 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	{
 		// TGA...
 		//
-		buffer = (unsigned char *) ri.Z_Malloc(glConfig.vidWidth*glConfig.vidHeight*3 + 18, TAG_TEMP_WORKSPACE, qfalse);
+		buffer = (unsigned char *) ri.Z_Malloc(glConfig.vidWidth*glConfig.vidHeight*3 + 18, TAG_TEMP_WORKSPACE, qfalse, 4);
 		memset (buffer, 0, 18);
 		buffer[2] = 2;		// uncompressed type
 		buffer[12] = width & 255;
@@ -617,9 +617,9 @@ void R_LevelShot( void ) {
 
 	sprintf( checkname, "levelshots/%s.tga", tr.worldDir + strlen("maps/") );
 
-	source = (byte*) ri.Z_Malloc( glConfig.vidWidth * glConfig.vidHeight * 3, TAG_TEMP_WORKSPACE, qfalse );
+	source = (byte*) ri.Z_Malloc( glConfig.vidWidth * glConfig.vidHeight * 3, TAG_TEMP_WORKSPACE, qfalse, 4 );
 
-	buffer = (byte*) ri.Z_Malloc( LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18, TAG_TEMP_WORKSPACE, qfalse );
+	buffer = (byte*) ri.Z_Malloc( LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18, TAG_TEMP_WORKSPACE, qfalse, 4 );
 	memset (buffer, 0, 18);
 	buffer[2] = 2;		// uncompressed type
 	buffer[12] = LEVELSHOTSIZE & 255;
