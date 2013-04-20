@@ -320,22 +320,22 @@ void *Sys_LoadDll( const char *name,
   getcwd(curpath, sizeof(curpath));
 #if defined __i386__
 #ifndef NDEBUG
-  snprintf (fname, sizeof(fname), "%si386-debug.%s", name, DLL_EXT); // bk010205 - different DLL name
+  snprintf (fname, sizeof(fname), "%si386-debug%s", name, DLL_EXT); // bk010205 - different DLL name
 #else
-  snprintf (fname, sizeof(fname), "%si386.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%si386%s", name, DLL_EXT);
 #endif
 #elif defined __x86_64__
 #ifndef NDEBUG
-  snprintf (fname, sizeof(fname), "%sx86_64-debug.%s", name, DLL_EXT); // bk010205 - different DLL name
+  snprintf (fname, sizeof(fname), "%sx86_64-debug%s", name, DLL_EXT); // bk010205 - different DLL name
 #else
-  snprintf (fname, sizeof(fname), "%sx86_64.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%sx86_64%s", name, DLL_EXT);
 #endif
 #elif defined __powerpc__   //rcg010207 - PPC support.
-  snprintf (fname, sizeof(fname), "%sppc.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%sppc%s", name, DLL_EXT);
 #elif defined __axp__
-  snprintf (fname, sizeof(fname), "%saxp.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%saxp%s", name, DLL_EXT);
 #elif defined __mips__
-  snprintf (fname, sizeof(fname), "%smips.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%smips%s", name, DLL_EXT);
 #else
 #error Unknown arch
 #endif
