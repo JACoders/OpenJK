@@ -16,13 +16,13 @@ typedef unsigned short DWORD;
 //=============================================================================
 
 // Used to determine CD Path
-static char cdPath[MAX_OSPATH];
+static char cdPath[MAX_OSPATH] = { 0 };
 
 // Used to determine local installation path
-static char installPath[MAX_OSPATH];
+static char installPath[MAX_OSPATH] = { 0 };
 
 // Used to determine where to store user-specific files
-static char homePath[MAX_OSPATH];
+static char homePath[MAX_OSPATH] = { 0 };
 
 //DWORD timeGetTime(void)
 //{
@@ -315,6 +315,42 @@ void Sys_SetDefaultHomePath(const char *path)
 	Q_strncpyz(homePath, path, sizeof(homePath));
 }
 
+/*
+==================
+Sys_DefaultHomePath
+==================
+*/
+char *Sys_DefaultHomePath(void)
+{
+	char *p;
+
+	if( !*homePath && com_homepath != NULL )
+	{
+		if( ( p = getenv( "HOME" ) ) != NULL )
+		{
+			Com_sprintf(homePath, sizeof(homePath), "%s%c", p, PATH_SEP);
+#ifdef MACOS_X
+			Q_strcat(homePath, sizeof(homePath),
+				"Library/Application Support/");
+
+			if(com_homepath->string[0])
+				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+			else
+				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_MACOSX);
+#else
+			if(com_homepath->string[0])
+				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+			else
+				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_UNIX);
+#endif
+		}
+	}
+
+	return homePath;
+}
+
+#if 0
+// Bad stuffs here
 char *Sys_DefaultHomePath(void)
 {
 	char *p;
@@ -337,6 +373,7 @@ char *Sys_DefaultHomePath(void)
 	}
 	return ""; // assume current dir
 }
+#endif
 
 //============================================
 

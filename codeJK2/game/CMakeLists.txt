@@ -215,6 +215,7 @@ set(JK2SPGameFiles ${JK2SPGameSortMe})
 source_group("SortMe" FILES ${JK2SPGameSortMe})
 
 add_library(${JK2SPGame} SHARED ${JK2SPGameFiles})
+install(TARGETS ${JK2SPGame} RUNTIME DESTINATION "OpenJK")
 set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${JK2SPGameDefines};${ReleaseDefines}")
 set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${JK2SPGameDefines};${DebugDefines}")
 set_target_properties(${JK2SPGame} PROPERTIES INCLUDE_DIRECTORIES "${JK2SPGameIncludeDirectories}")
