@@ -2947,7 +2947,7 @@ int RE_GetAnimationCFG(const char *psCFGFilename, char *psDest, int iDestSize)
 			return 0;
 		}
 
-		psText = (char *) ri.Z_Malloc( iLen+1, TAG_ANIMATION_CFG, qfalse );
+		psText = (char *) ri.Z_Malloc( iLen+1, TAG_ANIMATION_CFG, qfalse, 4 );
 
 		ri.FS_Read( psText, iLen, f );
 		psText[iLen] = '\0';

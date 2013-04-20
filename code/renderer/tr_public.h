@@ -34,14 +34,15 @@ This file is part of Jedi Academy.
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
 	void				(QDECL *Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
+#ifdef __MP_CROSS_DLL
+	void				*unused1;	// OPrintf
+#endif
 
 	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
 	int					(*Milliseconds)						( void );
 
-	qboolean			(*LowPhysicalMemory)				( void );
-
 	void				(*Hunk_ClearToMark)					( void );
-	void*				(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt );
+	void*				(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt, int iAlign );
 	int					(*Z_Free)							( void *memory );
 	int					(*Z_MemSize)						( memtag_t eTag );
 	void				(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );
@@ -56,11 +57,17 @@ typedef struct {
 	void				(*Cvar_Set)							( const char *var_name, const char *value );
 	cvar_t *			(*Cvar_Get)							( const char *var_name, const char *value, int flags );
 	void				(*Cvar_SetValue)					( const char *name, float value );
-	void				(*Cvar_CheckRange)					( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
+#ifdef __MP_CROSS_DLL
+	void				*unused2;	// Cvar_CheckRange
+#endif
 	void				(*Cvar_VariableStringBuffer)		( const char *var_name, char *buffer, int bufsize );
 	char *				(*Cvar_VariableString)				( const char *var_name );
 	float				(*Cvar_VariableValue)				( const char *var_name );
 	int					(*Cvar_VariableIntegerValue)		( const char *var_name );
+
+
+	qboolean			(*LowPhysicalMemory)				( void );
+	const char*			(*SE_GetString)						( const char *reference );						// this has to be ultrahacked for JK2 support
 
 
 	void				(*FS_FreeFile)						( void *buffer );
@@ -72,52 +79,76 @@ typedef struct {
 	fileHandle_t		(*FS_FOpenFileWrite)				( const char *qpath );
 	int					(*FS_FOpenFileByMode)				( const char *qpath, fileHandle_t *f, fsMode_t mode );
 	qboolean			(*FS_FileExists)					( const char *file );
-	int					(*FS_FileIsInPAK)					( const char *filename, int *pChecksum );
+	int					(*FS_FileIsInPAK)					( const char *filename );
 	char **				(*FS_ListFiles)						( const char *directory, const char *extension, int *numfiles );
 	int					(*FS_Write)							( const void *buffer, int len, fileHandle_t f );
 	void				(*FS_WriteFile)						( const char *qpath, const void *buffer, int size );
 
 
-	int					(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
-	byte*				(*CM_ClusterPVS)					( int cluster );
-	void				(*CM_ShaderTableCleanup)			( void );					// FIXME: port to renderer
+#ifdef __MP_CROSS_DLL
+	void				*unused3;	// CM_BoxTrace
+#endif
 	void				(*CM_DrawDebugSurface)				( void (__cdecl *drawPoly)( int color, int numPoints, float *points ) );
-	void				(*CM_TerrainPatchIterate)			( const class CCMLandScape *landscape, void (*IterateFunc)( CCMPatch *, void * ), 
-															void *userdata );
-	void				(*CM_ShutdownTerrain)				( thandle_t terrainId );
-	qboolean			(*CM_DeleteCachedMap)				( qboolean bGuaranteedOkToDelete );
 	bool				(*CM_CullWorldBox)					( const cplane_t *frustrum, const vec3pair_t bounds );
-
-
-	void				(*SV_Trace)							( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
-															const int passEntityNum, const int contentmask, 
-															const EG2_Collision eG2TraceType, const int useLod );
-	void				(*SV_SetConfigstring)				( int index, const char *value );
-	void				(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
-	int					(*SV_PointContents)					( const vec3_t p, clipHandle_t model );
-
-
-	int					(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height, 
-															int bits, const char *psAudioFile /* = NULL */ );
-	e_status			(*CIN_RunCinematic)					( int handle );
-	void				(*CIN_UploadCinematic)				( int handle );
-	qboolean			(*CL_IsRunningInGameCinematic)		( void );
-
-
-	const char*			(*SE_GetString)						( const char *reference );						// this has to be ultrahacked for JK2 support
-
-
+	void				(*CM_TerrainPatchIterate)			( const class CCMLandScape *landscape, void (*IterateFunc)( CCMPatch *, void * ),
+															void *userdata );
+	CCMLandScape *		(*CM_RegisterTerrain)				( const char *config, bool server );
+	void				(*CM_ShutdownTerrain)				( thandle_t terrainId );
+	byte*				(*CM_ClusterPVS)					( int cluster );
+#ifdef __MP_CROSS_DLL
+	void				*unused4;	// CM_LeafArea
+	void				*unused5;	// CM_LeafCluster
+	void				*unused6;	// CM_PointLeafNum
+#endif
+	int					(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
+#ifdef __MP_CROSS_DLL
+	void				*unused7;	// VM_Call
+	void				*unused8;	// Com_TheHunkMarkHasBeenMade
+#endif
 	void				(*S_RestartMusic)					( void );
 	qboolean			(*SND_RegisterAudio_LevelLoadEnd)	( qboolean bDeleteEverythingNotUsedThisLevel );
 
-	
-	qboolean			(*SG_Append)						( unsigned long chid, const void *pvData, int iLength );
+	e_status			(*CIN_RunCinematic)					( int handle );
+	int					(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height, 
+															int bits, const char *psAudioFile /* = NULL */ );
+	void				(*CIN_UploadCinematic)				( int handle );
 
+#ifdef __MP_CROSS_DLL
+	void				*unused9;	// CL_WriteAVIVideoFrame
+
+	void				*unused10;	// GetSharedMemory
+	void				*unused11;	// GetCgameVM
+	void				*unused12;	// GetCurrentVM
+	void				*unused13;	// GetGameVM
+#endif
+
+	void				(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
+	void				(*SV_SetConfigstring)				( int index, const char *value );
+
+	void *				(*GetWinVars)						( void ); //g_wv
+
+#ifdef __MP_CROSS_DLL
+	void				*unused14;	// CM_GetCachedMapDiskImage
+	void				*unused15;	// CM_SetCachedMapDiskImage
+	void				*unused16;	// CM_SetUsingCache
+#endif
 
 	CMiniHeap *			(*GetG2VertSpaceServer)				( void );
 
+	// ============= NOT IN MP BEYOND THIS POINT
+	void				(*SV_Trace)							( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+															const int passEntityNum, const int contentmask, 
+															const EG2_Collision eG2TraceType, const int useLod );
 
-	void *				(*GetWinVars)						( void ); //g_wv
+	qboolean			(*SG_Append)						( unsigned long chid, const void *pvData, int iLength );
+
+	//int					(*SV_PointContents)					( const vec3_t p, clipHandle_t model );
+
+	void				(*CM_ShaderTableCleanup)			( void );					// FIXME: port to renderer	// NOT IN MP
+	qboolean			(*CM_DeleteCachedMap)				( qboolean bGuaranteedOkToDelete );	// NOT IN MP
+
+	qboolean			(*CL_IsRunningInGameCinematic)		( void );
+
 } refimport_t;
 
 extern refimport_t ri;

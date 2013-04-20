@@ -1080,74 +1080,141 @@ void CL_StartHunkUsers( void ) {
 }
 
 /*
+================
+CL_RefPrintf
+
+DLL glue
+================
+*/
+#define	MAXPRINTMSG	4096
+extern int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap);
+void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
+	va_list		argptr;
+	char		msg[MAXPRINTMSG];
+	
+	va_start (argptr,fmt);
+	Q_vsnprintf(msg, sizeof(msg), fmt, argptr);
+	va_end (argptr);
+
+	if ( print_level == PRINT_ALL ) {
+		Com_Printf ("%s", msg);
+	} else if ( print_level == PRINT_WARNING ) {
+		Com_Printf (S_COLOR_YELLOW "%s", msg);		// yellow
+	} else if ( print_level == PRINT_DEVELOPER ) {
+		Com_DPrintf (S_COLOR_RED "%s", msg);		// red
+	}
+}
+
+/*
+============
+String_GetStringValue
+
+DLL glue, but highly reusuable DLL glue at that
+============
+*/
+
+#ifndef __NO_JK2
+extern cStringsSingle *JK2SP_GetString(const char *Reference);
+#endif
+const char *String_GetStringValue( const char *reference )
+{
+#ifdef __NO_JK2
+	return SE_GetString(reference);
+#else
+	if( Cvar_VariableIntegerValue("com_jk2") )
+	{
+		return const_cast<const char *>(JK2SP_GetString( reference )->GetText());
+	}
+	else
+	{
+		return const_cast<const char *>(SE_GetString((LPCSTR)reference));
+	}
+#endif
+}
+
+/*
 ============
 CL_InitRef
 ============
 */
+extern qboolean S_FileExists( const char *psFilename );
+extern bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds);
+extern void ShaderTableCleanup();
+extern void CM_ShutdownTerrain( thandle_t terrainId);
+extern qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel /* 99% qfalse */);
+extern CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
+
+extern CMiniHeap *G2VertSpaceServer;
+static CMiniHeap *GetG2VertSpaceServer( void ) {
+	return G2VertSpaceServer;
+}
+
 void CL_InitRef( void ) {
 	refexport_t	*ret;
 	refimport_t rit;
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
 
-	rit.CIN_PlayCinematic = CIN_PlayCinematic;
-	rit.CIN_RunCinematic = CIN_RunCinematic;
-	rit.CIN_UploadCinematic = CIN_UploadCinematic;
-	rit.CL_IsRunningInGameCinematic = CL_IsRunningInGameCinematic;
-	rit.Cmd_AddCommand = Cmd_AddCommand;
-	rit.Cmd_Argc = Cmd_Argc;
-	rit.Cmd_ArgsBuffer = Cmd_ArgsBuffer;
-	rit.Cmd_Argv = Cmd_Argv;
-	rit.Cmd_ExecuteString = Cmd_ExecuteString;
-	rit.Cmd_RemoveCommand = Cmd_RemoveCommand;
-	rit.CM_ClusterPVS = CM_ClusterPVS;
-	rit.CM_CullWorldBox = CM_CullWorldBox;
-	rit.CM_DeleteCachedMap = CM_DeleteCachedMap;
-	rit.CM_DrawDebugSurface = CM_DrawDebugSurface;
-	rit.CM_PointContents = CM_PointContents;
-	rit.CM_ShaderTableCleanup = ShaderTableCleanup;
-	rit.CM_ShutdownTerrain = CM_ShutdownTerrain;
-	rit.CM_TerrainPatchIterate = CM_TerrainPatchIterate;
-	rit.Cvar_CheckRange = Cvar_CheckRange;
-	rit.Cvar_Get = Cvar_Get;
-	rit.Cvar_Set = Cvar_Set;
-	rit.Cvar_SetValue = Cvar_SetValue;
-	rit.Cvar_VariableIntegerValue = Cvar_VariableIntegerValue;
-	rit.Cvar_VariableString = Cvar_VariableString;
-	rit.Cvar_VariableStringBuffer = Cvar_VariableStringBuffer;
-	rit.Cvar_VariableValue = Cvar_VariableValue;
+#define RIT(y)	rit.y = y
+	RIT(CIN_PlayCinematic);
+	RIT(CIN_RunCinematic);
+	RIT(CIN_UploadCinematic);
+	RIT(CL_IsRunningInGameCinematic);
+	RIT(Cmd_AddCommand);
+	RIT(Cmd_Argc);
+	RIT(Cmd_ArgsBuffer);
+	RIT(Cmd_Argv);
+	RIT(Cmd_ExecuteString);
+	RIT(Cmd_RemoveCommand);
+	RIT(CM_ClusterPVS);
+	RIT(CM_CullWorldBox);
+	RIT(CM_DeleteCachedMap);
+	RIT(CM_DrawDebugSurface);
+	RIT(CM_PointContents);
+	RIT(CM_RegisterTerrain);
+	RIT(CM_ShutdownTerrain);
+	RIT(CM_TerrainPatchIterate);
+	RIT(Cvar_Get);
+	RIT(Cvar_Set);
+	RIT(Cvar_SetValue);
+	RIT(Cvar_VariableIntegerValue);
+	RIT(Cvar_VariableString);
+	RIT(Cvar_VariableStringBuffer);
+	RIT(Cvar_VariableValue);
+	RIT(FS_FCloseFile);
+	RIT(FS_FileIsInPAK);
+	RIT(FS_FOpenFileByMode);
+	RIT(FS_FOpenFileRead);
+	RIT(FS_FOpenFileWrite);
+	RIT(FS_FreeFile);
+	RIT(FS_FreeFileList);
+	RIT(FS_ListFiles);
+	RIT(FS_Read);
+	RIT(FS_ReadFile);
+	RIT(FS_Write);
+	RIT(FS_WriteFile);
+	RIT(Hunk_ClearToMark);
+	RIT(SG_Append);
+	RIT(SND_RegisterAudio_LevelLoadEnd);
+	RIT(SV_GetConfigstring);
+	//RIT(SV_PointContents);
+	RIT(SV_SetConfigstring);
+	RIT(SV_Trace);
+	RIT(S_RestartMusic);
+	RIT(Z_Free);
+	RIT(Z_Malloc);
+	RIT(Z_MemSize);
+	RIT(Z_MorphMallocTag);
+
+	// Not-so-nice usage / doesn't go along with my epic macro
 	rit.Error = Com_Error;
-	rit.FS_FCloseFile = FS_FCloseFile;
-	rit.FS_FileExists = FS_FileExists;
-	rit.FS_FileIsInPAK = FS_FileIsInPAK;
-	rit.FS_FOpenFileByMode = FS_FOpenFileByMode;
-	rit.FS_FOpenFileRead = FS_FOpenFileRead;
-	rit.FS_FOpenFileWrite = FS_FOpenFileWrite;
-	rit.FS_FreeFile = FS_FreeFile;
-	rit.FS_FreeFileList = FS_FreeFileList;
-	rit.FS_ListFiles = FS_ListFiles;
-	rit.FS_Read = FS_Read;
-	rit.FS_ReadFile = FS_ReadFile;
-	rit.FS_Write = FS_Write;
-	rit.FS_WriteFile = FS_WriteFile;
-	rit.GetG2VertSpaceServer = ???;
+	rit.FS_FileExists = S_FileExists;
+	rit.GetG2VertSpaceServer = GetG2VertSpaceServer;
 	rit.GetWinVars = ???;
-	rit.Hunk_ClearToMark = Hunk_ClearToMark;
 	rit.LowPhysicalMemory = Sys_LowPhysicalMemory;
 	rit.Milliseconds = Sys_Milliseconds;
-	rit.Printf = Com_Printf;
-	rit.SE_GetString = need to do some hax heer;
-	rit.SG_Append = SG_Append;
-	rit.SND_RegisterAudio_LevelLoadEnd = SND_RegisterAudio_LevelLoadEnd;
-	rit.SV_GetConfigstring = SV_GetConfigstring;
-	rit.SV_PointContents = SV_PointContents;
-	rit.SV_SetConfigstring = SV_SetConfigstring;
-	rit.SV_Trace = SV_Trace;
-	rit.S_RestartMusic = S_RestartMusic;
-	rit.Z_Free = Z_Free;
-	rit.Z_Malloc = Z_Malloc;
-	rit.Z_MemSize = Z_MemSize;
-	rit.Z_MorphMallocTag = Z_MorphMallocTag;
+	rit.Printf = CL_RefPrintf;
+	rit.SE_GetString = String_GetStringValue;
 
 	ret = GetRefAPI( REF_API_VERSION );
 
