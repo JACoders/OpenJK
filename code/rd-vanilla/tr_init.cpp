@@ -1543,6 +1543,54 @@ void RE_SetLightStyle(int style, int color)
 	}
 }
 
+/*
+=====================
+tr_distortionX
+
+DLL glue
+=====================
+*/
+
+extern float tr_distortionAlpha;
+extern float tr_distortionStretch;
+extern qboolean tr_distortionPrePost;
+extern qboolean tr_distortionNegate;
+
+float *get_tr_distortionAlpha( void )
+{
+	return &tr_distortionAlpha;
+}
+
+float *get_tr_distortionStretch( void )
+{
+	return &tr_distortionStretch;
+}
+
+qboolean *get_tr_distortionPrePost( void )
+{
+	return &tr_distortionPrePost;
+}
+
+qboolean *get_tr_distortionNegate( void )
+{
+	return &tr_distortionNegate;
+}
+
+float g_oldRangedFog = 0.0f;
+void RE_SetRangedFog( float dist )
+{
+	if (tr.rangedFog <= 0.0f)
+	{
+		g_oldRangedFog = tr.rangedFog;
+	}
+	tr.rangedFog = dist;
+	if (tr.rangedFog == 0.0f && g_oldRangedFog)
+	{ //restore to previous state if applicable
+		tr.rangedFog = g_oldRangedFog;
+	}
+}
+
+static void RE_LoadImage( const char *shortname, byte **pic, int *width, int *height, int *format ) { R_LoadImage( shortname, pic, width, height, (GLenum*)format ); }
 
 /*
 @@@@@@@@@@@@@@@@@@@@@
@@ -1550,7 +1598,14 @@ GetRefAPI
 
 @@@@@@@@@@@@@@@@@@@@@
 */
+extern void R_Resample(byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
+extern void R_LoadDataImage( const char *name, byte **pic, int *width, int *height);
+extern int R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLenum *format );
+extern void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, 
+					   qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
+extern void R_InvertImage(byte *data, int width, int height, int depth);
 extern void R_WorldEffectCommand(const char *command);
+extern qboolean R_inPVS( vec3_t p1, vec3_t p2 );
 extern void RE_InitRendererTerrain( const char *info );
 extern void RE_GetModelBounds(refEntity_t *refEnt, vec3_t bounds1, vec3_t bounds2);
 extern void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params);
@@ -1594,24 +1649,18 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *refimp ) {
 	REX(GetAnimationCFG);
 	REX(RegisterShader);
 	REX(RegisterShaderNoMip);
-	REX(SetWorldVisData);
-	REX(EndRegistration);
 	re.LoadWorld = RE_LoadWorldMap;
+	re.LoadImageJA = RE_LoadImage;
 
 	REX(RegisterMedia_LevelLoadBegin);
 	REX(RegisterMedia_LevelLoadEnd);
+	REX(RegisterMedia_GetLevel);
 	REX(RegisterImages_LevelLoadEnd);
 	REX(RegisterModels_LevelLoadEnd);
 
-	REX(BeginFrame);
-	REX(EndFrame);
+	REX(SetWorldVisData);
 
-	REX(ProcessDissolve);
-	REX(InitDissolve);
-
-	re.MarkFragments = R_MarkFragments;
-	re.LerpTag = R_LerpTag;
-	re.ModelBounds = R_ModelBounds;
+	REX(EndRegistration);
 
 	REX(ClearScene);
 	REX(AddRefEntityToScene);
@@ -1619,30 +1668,40 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *refimp ) {
 	REX(AddPolyToScene);
 	REX(AddLightToScene);
 	REX(RenderScene);
+	REX(GetLighting);
 
 	REX(SetColor);
-	REX(UploadCinematic);
 	re.DrawStretchPic = RE_StretchPic;
-	re.DrawStretchRaw = RE_StretchRaw;
-
 	re.DrawRotatePic = RE_RotatePic;
 	re.DrawRotatePic2 = RE_RotatePic2;
 	REX(LAGoggles);
 	REX(Scissor);
 
+	re.DrawStretchRaw = RE_StretchRaw;
+	REX(UploadCinematic);
+
+	REX(BeginFrame);
+	REX(EndFrame);
+
+	REX(ProcessDissolve);
+	REX(InitDissolve);
+
 	REX(GetScreenShot);
 	REX(TempRawImage_ReadFromFile);
 	REX(TempRawImage_CleanUp);
 
+	re.MarkFragments = R_MarkFragments;
+	re.LerpTag = R_LerpTag;
+	re.ModelBounds = R_ModelBounds;
 	REX(GetLightStyle);
 	REX(SetLightStyle);
-	re.WorldEffectCommand = R_WorldEffectCommand;
-
 	REX(GetBModelVerts);
+	re.WorldEffectCommand = R_WorldEffectCommand;
+	REX(GetModelBounds);
 
 	REX(RegisterFont);
-	REX(Font_StrLenPixels);
 	REX(Font_HeightPixels);
+	REX(Font_StrLenPixels);
 	REX(Font_DrawString);
 	REX(Font_StrLenChars);
 	re.Language_IsAsian = Language_IsAsian;
@@ -1650,8 +1709,31 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *refimp ) {
 	re.AnyLanguage_ReadCharFromString = AnyLanguage_ReadCharFromString;
 	re.AnyLanguage_ReadCharFromString2 = AnyLanguage_ReadCharFromString;
 
+	re.R_Resample = R_Resample;
+	re.R_LoadDataImage = R_LoadDataImage;
+	re.R_InvertImage = R_InvertImage;
+	re.R_InitWorldEffects = R_InitWorldEffects;
+	re.R_CreateAutomapImage = R_CreateAutomapImage;
+	re.R_ClearStuffToStopGhoul2CrashingThings = R_ClearStuffToStopGhoul2CrashingThings;
+	re.R_inPVS = R_inPVS;
+
 	REX(InitRendererTerrain);
-	REX(GetModelBounds);
+
+	re.tr_distortionAlpha = get_tr_distortionAlpha;
+	re.tr_distortionStretch = get_tr_distortionStretch;
+	re.tr_distortionPrePost = get_tr_distortionPrePost;
+	re.tr_distortionNegate = get_tr_distortionNegate;
+
+	re.GetWindVector = R_GetWindVector;
+	re.GetWindGusting = R_GetWindGusting;
+	re.IsOutside = R_IsOutside;
+	re.IsOutsideCausingPain = R_IsOutsideCausingPain;
+	re.GetChanceOfSaberFizz = R_GetChanceOfSaberFizz;
+	re.IsShaking = R_IsShaking;
+	re.AddWeatherZone = R_AddWeatherZone;
+	re.SetTempGlobalFogColor = R_SetTempGlobalFogColor;
+
+	REX(SetRangedFog);
 
 #define G2EX(x)	re.G2API_##x = G2API_##x
 

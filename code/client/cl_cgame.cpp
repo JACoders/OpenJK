@@ -425,13 +425,6 @@ void CL_ShutdownCGame( void ) {
 CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
 //RMG
 
-extern float tr_distortionAlpha; //tr_shadows.cpp
-extern float tr_distortionStretch; //tr_shadows.cpp
-extern qboolean tr_distortionPrePost; //tr_shadows.cpp
-extern qboolean tr_distortionNegate; //tr_shadows.cpp
-
-float g_oldRangedFog = 0.0f;
-
 #ifndef __NO_JK2
 /*
 ====================
@@ -1012,10 +1005,10 @@ int CL_CgameSystemCalls( int *args ) {
 	case CG_ANYLANGUAGE_READFROMSTRING2:
 		return re.AnyLanguage_ReadCharFromString2( (char **) VMA(1), (qboolean *) VMA(3) );
 	case CG_R_SETREFRACTIONPROP:
-		tr_distortionAlpha = VMF(1);
-		tr_distortionStretch = VMF(2);
-		tr_distortionPrePost = (qboolean)args[3];
-		tr_distortionNegate = (qboolean)args[4];
+		*(re.tr_distortionAlpha()) = VMF(1);
+		*(re.tr_distortionStretch()) = VMF(2);
+		*(re.tr_distortionPrePost()) = (qboolean)args[3];
+		*(re.tr_distortionNegate()) = (qboolean)args[4];
 		return 0;
 	case CG_R_CLEARSCENE:
 		re.ClearScene();

@@ -289,6 +289,12 @@ typedef struct {
 	// RMG
 	void	(*InitRendererTerrain)( const char *info );
 
+	// Distortion effects
+	float*		(*tr_distortionAlpha)( void );
+	float*		(*tr_distortionStretch)( void );
+	qboolean*	(*tr_distortionPrePost)( void );
+	qboolean*	(*tr_distortionNegate)( void );
+
 	// Weather effects
 	bool	(*GetWindVector)( vec3_t windVector, vec3_t atPoint );
 	bool	(*GetWindGusting)( vec3_t atpoint );

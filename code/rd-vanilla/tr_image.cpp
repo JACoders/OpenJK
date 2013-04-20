@@ -1348,83 +1348,6 @@ R_CreateImage
 This is the only way any image_t are created
 ================
 */
-#ifdef _XBOX
-image_t *R_CreateImage( const char *name, const byte *pic, int width, int height, 
-					   GLenum format, int mipcount, qboolean allowPicmip, 
-					   int glWrapClampMode )
-{
-	image_t		*image;
-	qboolean	isLightmap = qfalse;
-
-	if (strlen(name) >= MAX_QPATH ) {
-		Com_Error (ERR_DROP, "R_CreateImage: \"%s\" is too long\n", name);
-	}
-
-	if(glConfig.clampToEdgeAvailable && glWrapClampMode == GL_CLAMP) {
-		glWrapClampMode = GL_CLAMP_TO_EDGE;
-	}
-
-	if (name[0] == '$')
-	{
-		isLightmap = qtrue;
-	}
-
-	if ( (width&(width-1)) || (height&(height-1)) )
-	{
-		Com_Error( ERR_FATAL, "R_CreateImage: %s dimensions (%i x %i) not power of 2!\n",name,width,height);
-	}
-
-	image = R_FindImageFile_NoLoad(name, mipcount, allowPicmip, glWrapClampMode );
-	if (image) {
-		return image;
-	}
-
-	image = (image_t*) Z_Malloc( sizeof( image_t ), TAG_IMAGE_T, qtrue );
-
-//	image->imgfileSize=0;
-	
-	qglGenTextures(1, (GLuint*)&image->texnum);
-
-	image->iLastLevelUsedOn = RE_RegisterMedia_GetLevel();
-
-	image->mipcount = mipcount;
-	image->allowPicmip = allowPicmip;
-
-	image->imgCode = crc32(0, (const Bytef *)name, strlen(name));
-
-	image->width = width;
-	image->height = height;
-
-	image->isSystem = (name[0] == '*');
-	image->isLightmap = isLightmap;
-
-	GL_SelectTexture( 0 );
-
-	GL_Bind(image);
-
-	Upload32( (unsigned *)pic,	image->width, image->height, 
-								format,
-								image->mipcount,
-								allowPicmip, 
-								isLightmap, 
-								&image->internalFormat );
-
-	qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapClampMode );
-	qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapClampMode );
-
-	qglBindTexture( GL_TEXTURE_2D, 0 );	//jfm: i don't know why this is here, but it breaks lightmaps when there's only 1
-	glState.currenttextures[glState.currenttmu] = 0;	//mark it not bound
-
-	const char* psNewName = GenerateImageMappingName(name);
-	image->imgCode = crc32(0, (const Bytef *)psNewName, strlen(psNewName));
-
-	(*AllocatedImages)[ image->imgCode ] = image;
-
-	return image;
-}
-
-#else // _XBOX
-
 image_t *R_CreateImage( const char *name, const byte *pic, int width, int height, 
 					   GLenum format, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode,int fileSize)
 {
@@ -1500,16 +1423,11 @@ image_t *R_CreateImage( const char *name, const byte *pic, int width, int height
 
 	return image;
 }
-#endif // _XBOX
 
 void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, 
 					   qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode ) 
 {
-#ifdef _XBOX
-	R_CreateImage(name, pic, width, height, GL_RGBA, mipmap, allowPicmip, glWrapClampMode);
-#else
 	R_CreateImage(name, pic, width, height, GL_RGBA, mipmap, allowPicmip, allowTC, glWrapClampMode);
-#endif
 }
 
 /*
@@ -2278,45 +2196,6 @@ Finds or loads the given image.
 Returns NULL if it fails, not a default image.
 ==============
 */
-#ifdef _XBOX
-image_t	*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode ) {
-	image_t	*image;
-	int		width, height;
-	int		mipcount;
-	byte	*pic;
-	GLenum	format;
-   
-	if (!name) {
-		return NULL;
-	}
-
-	// need to do this here as well as in R_CreateImage, or R_FindImageFile_NoLoad() may complain about
-	//	different clamp parms used...
-	//
-	if(glConfig.clampToEdgeAvailable && glWrapClampMode == GL_CLAMP) {
-		glWrapClampMode = GL_CLAMP_TO_EDGE;
-	}
-
-	image = R_FindImageFile_NoLoad(name, mipmap, allowPicmip, glWrapClampMode );
-	if (image) {
-		return image;
-	}
-
-	//
-	// load the pic from disk
-	//
-	R_LoadImage( name, &pic, &width, &height, &mipcount, &format );
-	if ( !pic ) {
-        return NULL;            
-	}
-
-	image = R_CreateImage( ( char * ) name, pic, width, height, format, mipcount, allowPicmip, glWrapClampMode );
-	Z_Free( pic );
-	return image;
-}
-
-#else // _XBOX
-
 image_t	*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode ) {
 	image_t	*image;
 	int		width, height;
@@ -2353,7 +2232,6 @@ image_t	*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmi
 	return image;
 }
 
-#endif // _XBOX
 
 
 // EF dlight image creation code
