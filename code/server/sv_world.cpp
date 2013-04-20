@@ -35,7 +35,7 @@ Ghoul2 Insert Start
 	#include "../ghoul2/G2.h"
 #endif
 #if !defined (MINIHEAP_H_INC)
-	#include "../qcommon/miniheap.h"
+	#include "../qcommon/MiniHeap.h"
 #endif
 
 #ifdef _DEBUG

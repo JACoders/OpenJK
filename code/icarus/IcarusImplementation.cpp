@@ -18,14 +18,14 @@ This file is part of Jedi Academy.
 
 // IcarusImplementation.cpp
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "IcarusInterface.h"
 #include "IcarusImplementation.h"
 
-#include "BlockStream.h"
-#include "Sequence.h"
-#include "TaskManager.h"
-#include "Sequencer.h"
+#include "blockstream.h"
+#include "sequence.h"
+#include "taskmanager.h"
+#include "sequencer.h"
 
 #include "../game/q_shared.h"
 

@@ -27,8 +27,6 @@
 #elif defined( __linux__ )
 
 #include <GL/gl.h>
-#include <GL/glx.h>
-#include <GL/fxmesa.h>
 
 #else
 
@@ -709,7 +707,7 @@ extern BOOL ( WINAPI * qwglSwapIntervalEXT)( int interval );
 
 #endif	// _WIN32
 
-#if defined( __linux__ )
+#if 0 //defined( __linux__ )
 
 //FX Mesa Functions
 extern fxMesaContext (*qfxMesaCreateContext)(GLuint win, GrScreenResolution_t, GrScreenRefresh_t, const GLint attribList[]);

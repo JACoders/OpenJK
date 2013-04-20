@@ -177,6 +177,8 @@ void Sys_PumpEvents( void );
 // just waste space and make big arrays static...
 #ifdef __linux__
 
+#include <unistd.h>
+
 #define	MAC_STATIC
 
 #ifdef __i386__
