@@ -31,7 +31,7 @@
 #include "../renderer/tr_public.h"
 #include "../qcommon/platform.h"
 
-#include "linux_local.h" // bk001204
+#include "../sys/linux_local.h" // bk001204
 
 cvar_t *nostdout;
 
