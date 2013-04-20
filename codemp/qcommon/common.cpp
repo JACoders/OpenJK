@@ -1439,7 +1439,7 @@ try
 	G2PerformanceTimer_PreciseFrame.Start();
 #endif
 	int		msec, minMsec;
-	static int	lastTime;
+	static int	lastTime = 0;
  
 	int		timeBeforeFirstEvents;
 	int           timeBeforeServer;
@@ -1482,7 +1482,7 @@ try
 	}
 	do {
 		com_frameTime = Com_EventLoop();
-		if ( lastTime > com_frameTime ) {
+		if ( (lastTime > com_frameTime) || (lastTime == 0) ) {
 			lastTime = com_frameTime;		// possible on first frame
 		}
 		msec = com_frameTime - lastTime;
