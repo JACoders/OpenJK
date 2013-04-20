@@ -61,6 +61,12 @@ int Sys_Milliseconds (bool baseTime)
 
 }
 
+int Sys_Milliseconds2( void )
+{
+    return Sys_Milliseconds(false);
+}
+
+
 
 //#if 0 // bk001215 - see snapvector.nasm for replacement
 #if (defined __APPLE__) // rcg010206 - using this for PPC builds...
