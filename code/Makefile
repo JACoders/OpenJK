@@ -1,7 +1,7 @@
 PLATFORM=$(shell uname|tr A-Z a-z)
 
-CC			= /usr/local/bin/gcc-4.2
-CXX			= /usr/local/bin/g++-4.2
+CC			= gcc
+CXX			= g++
 B			= build
 
 ifeq ($(PLATFORM),darwin)
@@ -188,7 +188,7 @@ GAME_OBJS		= $(B)/game/AI_Animal.o \
 			  $(B)/game/wp_tusken.o
 
 ENGINE_NAME		= $(B)/jasp
-ENGINE_CFLAGS		+= -m32 -fpermissive -w -DNDEBUG -DFINAL_BUILD -D_M_IX86 -I. `sdl2-config --cflags` -D_JK2EXE -fasm-blocks
+ENGINE_CFLAGS		+= -m32 -fpermissive -w -DNDEBUG -DFINAL_BUILD -D_M_IX86 -I. `sdl2-config --cflags` -D_JK2EXE
 ENGINE_LDFLAGS		= -m32 `sdl2-config --libs`
 ifeq ($(PLATFORM),darwin)
 	ENGINE_LDFLAGS		+= -framework OpenGL -framework OpenAL
@@ -371,15 +371,11 @@ ENGINE_OBJS		= $(B)/engine/client/cl_cgame.o \
               $(B)/engine/zlib32/deflate.o
               
 ifeq ($(PLATFORM),darwin)
-	DEDICATED_CFLAGS += -DMACOS_X
-	ENGINE_CFLAGS += -DMACOS_X
-	UI_CFLAGS += -DMACOS_X
-	CGAME_CFLAGS += -DMACOS_X
+	ENGINE_CFLAGS += -DMACOS_X -fasm-blocks
 	GAME_CFLAGS += -DMACOS_X
 else
+	ENGINE_CFLAGS += -masm=intel
 	GAME_CFLAGS += -D__linux__
-	UI_CFLAGS += -D__linux__
-	CGAME_CFLAGS += -D__linux__
 endif
 
 all: makedirs engine game

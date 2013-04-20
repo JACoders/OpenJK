@@ -342,9 +342,9 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 
 #ifndef _JK2MP//SP
 	curTime = level.time;
-#elif QAGAME//MP GAME
+#elif defined QAGAME//MP GAME
 	curTime = level.time;
-#elif CGAME//MP CGAME
+#elif defined CGAME//MP CGAME
 	//FIXME: pass in ucmd?  Not sure if this is reliable...
 	curTime = pm->cmd.serverTime;
 #endif
@@ -800,9 +800,9 @@ void AnimateRiders( Vehicle_t *pVeh )
 
 #ifndef _JK2MP//SP
 	curTime = level.time;
-#elif QAGAME//MP GAME
+#elif defined QAGAME//MP GAME
 	curTime = level.time;
-#elif CGAME//MP CGAME
+#elif defined CGAME//MP CGAME
 	//FIXME: pass in ucmd?  Not sure if this is reliable...
 	curTime = pm->cmd.serverTime;
 #endif

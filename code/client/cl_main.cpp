@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 #include "client.h"
 #include "client_ui.h"
 #include <limits.h>
-#include "../ghoul2/g2.h"
+#include "../ghoul2/G2.h"
 
 #include "../RMG/RM_Headers.h"
 
