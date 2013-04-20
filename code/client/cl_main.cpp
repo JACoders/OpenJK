@@ -801,46 +801,14 @@ void CL_Frame ( int msec,float fractionMsec ) {
 	// load the ref / cgame if needed
 	CL_StartHunkUsers();
 
-#if defined (_XBOX)// && !defined(_DEBUG)
-	// Play the intro movies once
-	static bool firstRun = true;
-	if(firstRun)
-	{
-	//	SP_DoLicense();
-		SP_DisplayLogos();
-	}
-	
-#endif
-
-#if defined (_XBOX)	//xbox doesn't load ui in StartHunkUsers, so check it here
-	// load ui if needed
-	if ( !cls.uiStarted && cls.state != CA_CINEMATIC) {
-		cls.uiStarted = qtrue;
-		SCR_StopCinematic();
-		CL_InitUI();
-	}
-#endif
-
 	if ( cls.state == CA_DISCONNECTED && !( cls.keyCatchers & KEYCATCH_UI )
 		&& !com_sv_running->integer ) {		
 		// if disconnected, bring up the menu
 		if (!CL_CheckPendingCinematic())	// this avoid having the menu flash for one frame before pending cinematics
 		{
-#ifdef _XBOX
-			if (firstRun)
-			{
-			
-				UI_SetActiveMenu("splashMenu", NULL);
-			}
-			else
-#endif
 			UI_SetActiveMenu( "mainMenu",NULL );
 		}
 	}
-
-#ifdef _XBOX
-	firstRun = false;
-#endif
 
 
 	// if recording an avi, lock to a fixed fps
@@ -890,16 +858,9 @@ void CL_Frame ( int msec,float fractionMsec ) {
 		}
 		cls.realtimeFraction-=1.0f;
 	}
-#ifndef _XBOX
 	if ( cl_timegraph->integer ) {
 		SCR_DebugGraph ( cls.realFrametime * 0.25, 0 );
 	}
-#endif
-
-#ifdef _XBOX
-	//Check on the hot swappable button states.
-	CL_UpdateHotSwap();
-#endif
 
 	// see if we need to update any userinfo
 	CL_CheckUserinfo();
@@ -1140,6 +1101,36 @@ WinVars_t *GetWindowsVariables( void )
 }
 #endif
 
+extern qboolean gbAlreadyDoingLoad;
+extern void *gpvCachedMapDiskImage;
+extern char  gsCachedMapDiskImage[MAX_QPATH];
+extern qboolean gbUsingCachedMapDataRightNow;
+
+char *get_gsCachedMapDiskImage( void )
+{
+	return gsCachedMapDiskImage;
+}
+
+void *get_gpvCachedMapDiskImage( void )
+{
+	return gpvCachedMapDiskImage;
+}
+
+qboolean *get_gbUsingCachedMapDataRightNow( void )
+{
+	return &gbUsingCachedMapDataRightNow;
+}
+
+qboolean *get_gbAlreadyDoingLoad( void )
+{
+	return &gbAlreadyDoingLoad;
+}
+
+int get_com_frameTime( void )
+{
+	return com_frameTime;
+}
+
 /*
 ============
 CL_InitRef
@@ -1225,6 +1216,12 @@ void CL_InitRef( void ) {
 	rit.Milliseconds = Sys_Milliseconds;
 	rit.Printf = CL_RefPrintf;
 	rit.SE_GetString = String_GetStringValue;
+
+	rit.gpvCachedMapDiskImage = get_gpvCachedMapDiskImage;
+	rit.gsCachedMapDiskImage = get_gsCachedMapDiskImage;
+	rit.gbUsingCachedMapDataRightNow = get_gbUsingCachedMapDataRightNow;
+	rit.gbAlreadyDoingLoad = get_gbAlreadyDoingLoad;
+	rit.com_frameTime = get_com_frameTime;
 
 	ret = GetRefAPI( REF_API_VERSION );
 

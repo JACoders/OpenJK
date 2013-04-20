@@ -25,6 +25,7 @@ This file is part of Jedi Academy.
 
 // Because renderer.
 #include "../renderer/tr_public.h"
+extern refexport_t re;
 
 
 #ifndef FINAL_BUILD
@@ -673,8 +674,7 @@ void Hunk_Clear( void )
 	extern void CIN_CloseAllVideos();
 				CIN_CloseAllVideos();
 
-	extern void R_ClearStuffToStopGhoul2CrashingThings(void);
-				R_ClearStuffToStopGhoul2CrashingThings();
+	re.R_ClearStuffToStopGhoul2CrashingThings();
 }
 
 
@@ -951,7 +951,6 @@ Com_Init
 =================
 */
 extern void Com_InitZoneMemory();
-extern void R_InitWorldEffects();
 void Com_Init( char *commandLine ) {
 	char	*s;
 
@@ -976,17 +975,8 @@ void Com_Init( char *commandLine ) {
 		// done early so bind command exists
 		CL_InitKeyCommands();
 
-#ifdef _XBOX
-		extern void Sys_FilecodeScan_f();
-		Sys_InitFileCodes();
-		Cmd_AddCommand("filecodes", Sys_FilecodeScan_f);
-
-		extern void Sys_StreamInit();
-		Sys_StreamInit();
-#endif
-
 		FS_InitFilesystem ();	//uses z_malloc
-		R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
+		re.R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
 		
 		Cbuf_AddText ("exec default.cfg\n");
 

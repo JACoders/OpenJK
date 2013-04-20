@@ -427,8 +427,7 @@ void RE_RegisterMedia_LevelLoadEnd(void)
 
 	ri.S_RestartMusic();
 	
-	extern qboolean gbAlreadyDoingLoad;
-					gbAlreadyDoingLoad = qfalse;
+	*(ri.gbAlreadyDoingLoad()) = qfalse;
 }
 
 

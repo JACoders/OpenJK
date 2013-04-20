@@ -30,9 +30,6 @@ This file is part of Jedi Academy.
 
 static CTerrainMap	*TerrainMap = 0;
 
-void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, 
-					   qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
-
 // simple function for getting a proper color for a side
 inline CPixel32 SideColor(int side)
 {
@@ -375,7 +372,7 @@ void CTerrainMap::Upload(vec3_t player_origin, vec3_t player_angles)
 
 	draw.SetAlphaBuffer(255);
 	
-	R_CreateAutomapImage("*automap", (unsigned char *)draw.buffer, TM_WIDTH, TM_HEIGHT, qfalse, qfalse, qtrue, qfalse);
+	re.R_CreateAutomapImage("*automap", (unsigned char *)draw.buffer, TM_WIDTH, TM_HEIGHT, qfalse, qfalse, qtrue, qfalse);
 
 	draw.SetBuffer((CPixel32*) mImage);
 }

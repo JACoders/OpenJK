@@ -62,7 +62,7 @@ void R_NoiseInit( void )
 		s_noise_table[i] = ( float ) ( ( ( rand() / ( float ) RAND_MAX ) * 2.0 - 1.0 ) );
 		s_noise_perm[i] = ( unsigned char ) ( rand() / ( float ) RAND_MAX * 255 );
 	}
-	srand( com_frameTime );
+	srand( ri.com_frameTime() );
 }
 
 float R_NoiseGet4f( float x, float y, float z, float t )
