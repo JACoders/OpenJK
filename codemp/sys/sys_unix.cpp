@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include "qcommon/qcommon.h"
 #include "qcommon/q_shared.h"
@@ -101,6 +103,21 @@ void Sys_BeginProfiling( void ) {
 }
 
 /*
+ ==================
+ Sys_GetCurrentUser
+ ==================
+ */
+char *Sys_GetCurrentUser( void )
+{
+	struct passwd *p;
+    
+	if ( (p = getpwuid( getuid() )) == NULL ) {
+		return "player";
+	}
+	return p->pw_name;
+}
+
+/*
 ==================
 Sys_GetClipboardData
 ==================
@@ -109,6 +126,8 @@ char *Sys_GetClipboardData(void)
 {
 	return NULL;
 }
+
+#define MEM_THRESHOLD 96*1024*1024
 
 /*
 ==================
@@ -120,26 +139,6 @@ TODO
 qboolean Sys_LowPhysicalMemory( void )
 {
 	return qfalse;
-}
-
-void Conbuf_AppendText( const char *pMsg )
-{
-	char		msg[4096];
-	strcpy(msg, pMsg);
-	printf(Q_CleanStr(msg));
-	printf("\n");
-}
-
-void Sys_Print( const char *msg ) {
-	// TTimo - prefix for text that shows up in console but not in notify
-	// backported from RTCW
-	if ( !Q_strncmp( msg, "[skipnotify]", 12 ) ) {
-		msg += 12;
-	}
-	if ( msg[0] == '*' ) {
-		msg += 1;
-	}
-	Conbuf_AppendText( msg );
 }
 
 /*
@@ -463,45 +462,43 @@ void Sys_ShowConsole( int visLevel, qboolean quitOnClose )
 {
 }
 
-void Sys_Exit( int ex ) {
-#ifdef NDEBUG // regular behavior
-  // We can't do this
-  //  as long as GL DLL's keep installing with atexit...
-  //exit(ex);
-  _exit(ex);
-#else
-  // Give me a backtrace on error exits.
-  assert( ex == 0 );
-  exit(ex);
-#endif
-}
-
-void Sys_Error( const char *error, ... )
+void Sys_SetDefaultHomePath(const char *path)
 {
-	va_list argptr;
-	char    string[1024];
-
-	va_start (argptr,error);
-	Q_vsnprintf (string, sizeof(string), error, argptr);
-	va_end (argptr);
-
-	//Sys_ErrorDialog( string );
-	Sys_Print( string );
-
-	Sys_Exit( 3 );
+	Q_strncpyz(homePath, path, sizeof(homePath));
 }
 
-void Sys_Quit (void) {
-  CL_Shutdown ();
-  fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
-  Sys_Exit(0);
-}
-
-void	Sys_Init (void) {
-}
-
-char	*Sys_DefaultHomePath(void) {
-	return NULL;
+/*
+ ==================
+ Sys_DefaultHomePath
+ ==================
+ */
+char *Sys_DefaultHomePath(void)
+{
+	char *p;
+    
+	if( !*homePath && com_homepath != NULL )
+	{
+		if( ( p = getenv( "HOME" ) ) != NULL )
+		{
+			Com_sprintf(homePath, sizeof(homePath), "%s%c", p, PATH_SEP);
+#ifdef MACOS_X
+			Q_strcat(homePath, sizeof(homePath),
+                     "Library/Application Support/");
+            
+			if(com_homepath->string[0])
+				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+			else
+				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_MACOSX);
+#else
+			if(com_homepath->string[0])
+				Q_strcat(homePath, sizeof(homePath), com_homepath->string);
+			else
+				Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_UNIX);
+#endif
+		}
+	}
+    
+	return homePath;
 }
 
 char *Sys_ConsoleInput(void)

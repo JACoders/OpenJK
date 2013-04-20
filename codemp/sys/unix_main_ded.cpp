@@ -31,7 +31,10 @@
 #include "../renderer/tr_public.h"
 #include "../qcommon/platform.h"
 
-#include "linux_local.h" // bk001204
+#include "unix_local.h" // bk001204
+
+static char cdPath[ MAX_OSPATH ] = { 0 };
+static char installPath[ MAX_OSPATH ] = { 0 };
 
 cvar_t *nostdout;
 
@@ -41,7 +44,6 @@ cvar_t *nostdout;
 unsigned	sys_frame_time;
 
 uid_t saved_euid;
-qboolean stdin_active = qtrue;
 
 // =======================================================================
 // General routines
@@ -54,12 +56,12 @@ qboolean stdin_active = qtrue;
 Sys_LowPhysicalMemory()
 ==================
 */
-qboolean Sys_LowPhysicalMemory() {
+/*qboolean Sys_LowPhysicalMemory() {
   //MEMORYSTATUS stat;
   //GlobalMemoryStatus (&stat);
   //return (stat.dwTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
   return qfalse; // bk001207 - FIXME
-}
+}*/
 
 /*
 ==================
@@ -88,7 +90,27 @@ int Sys_MonkeyShouldBeSpanked( void ) {
 	return 0;
 }
 
-void Sys_BeginProfiling( void ) {
+/*
+ =================
+ Sys_SetDefaultInstallPath
+ =================
+ */
+void Sys_SetDefaultInstallPath(const char *path)
+{
+	Q_strncpyz(installPath, path, sizeof(installPath));
+}
+
+/*
+ =================
+ Sys_DefaultInstallPath
+ =================
+ */
+char *Sys_DefaultInstallPath(void)
+{
+	if (*installPath)
+		return installPath;
+	else
+		return Sys_Cwd();
 }
 
 /*
@@ -102,6 +124,12 @@ void Sys_In_Restart_f( void )
 {
 	IN_Shutdown();
 	IN_Init();
+}
+
+void	Sys_Init (void) {
+    Cmd_AddCommand ("in_restart", Sys_In_Restart_f);
+    Cvar_Set( "arch", OS_STRING " " ARCH_STRING );
+	Cvar_Set( "username", Sys_GetCurrentUser( ) );
 }
 
 void Sys_ConsoleOutput (char *string)
@@ -151,61 +179,6 @@ void Sys_Exit( int ex ) {
 #endif
 }
 
-
-void Sys_Quit (void) {
-  CL_Shutdown ();
-  fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
-  Sys_Exit(0);
-}
-
-void Sys_Init(void)
-{
-	Cmd_AddCommand ("in_restart", Sys_In_Restart_f);
-
-#if defined __linux__
-#if defined __i386__
-	Cvar_Set( "arch", "linux i386" );
-#elif defined __alpha__
-	Cvar_Set( "arch", "linux alpha" );
-#elif defined __sparc__
-	Cvar_Set( "arch", "linux sparc" );
-#elif defined __FreeBSD__
-
-#if defined __i386__ // FreeBSD
-        Cvar_Set( "arch", "freebsd i386" );
-#elif defined __alpha__
-        Cvar_Set( "arch", "freebsd alpha" );
-#else
-        Cvar_Set( "arch", "freebsd unknown" );
-#endif // FreeBSD
-
-#else
-	Cvar_Set( "arch", "linux unknown" );
-#endif
-#elif defined __sun__
-#if defined __i386__
-	Cvar_Set( "arch", "solaris x86" );
-#elif defined __sparc__
-	Cvar_Set( "arch", "solaris sparc" );
-#else
-	Cvar_Set( "arch", "solaris unknown" );
-#endif
-#elif defined __sgi__
-#if defined __mips__
-	Cvar_Set( "arch", "sgi mips" );
-#else
-	Cvar_Set( "arch", "sgi unknown" );
-#endif
-#else
-	Cvar_Set( "arch", "unknown" );
-#endif
-
-	Cvar_Set( "username", Sys_GetCurrentUser() );
-
-	IN_Init();
-
-}
-
 void	Sys_Error( const char *error, ...)
 { 
     va_list     argptr;
@@ -223,6 +196,12 @@ void	Sys_Error( const char *error, ...)
     
     Sys_Exit( 1 ); // bk010104 - use single exit point.
 } 
+
+void Sys_Quit (void) {
+    CL_Shutdown ();
+    fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
+    Sys_Exit(0);
+}
 
 void Sys_Warn (char *warning, ...)
 { 
@@ -257,39 +236,6 @@ void floating_point_exception_handler(int whatever)
 	signal(SIGFPE, floating_point_exception_handler);
 }
 
-char *Sys_ConsoleInput(void)
-{
-    static char text[256];
-    int     len;
-	fd_set	fdset;
-    struct timeval timeout;
-
-	if (!com_dedicated || !com_dedicated->value)
-		return NULL;
-
-	if (!stdin_active)
-		return NULL;
-
-	FD_ZERO(&fdset);
-	FD_SET(0, &fdset); // stdin
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
-	if (select (1, &fdset, NULL, NULL, &timeout) == -1 || !FD_ISSET(0, &fdset))
-		return NULL;
-
-	len = read (0, text, sizeof(text));
-	if (len == 0) { // eof!
-		stdin_active = qfalse;
-		return NULL;
-	}
-
-	if (len < 1)
-		return NULL;
-	text[len-1] = 0;    // rip off the /n and terminate
-
-	return text;
-}
-
 /*****************************************************************************/
 
 /*
@@ -298,6 +244,7 @@ Sys_UnloadDll
 
 =================
 */
+
 void Sys_UnloadDll( void *dllHandle ) {
   // bk001206 - verbose error reporting
   const char* err; // rb010123 - now const
@@ -311,6 +258,15 @@ void Sys_UnloadDll( void *dllHandle ) {
     Com_Printf ( "Sys_UnloadGame failed on dlclose: \"%s\"!\n", err );
 }
 
+void Sys_SetDefaultCDPath(const char *path)
+{
+	Q_strncpyz(cdPath, path, sizeof(cdPath));
+}
+
+char *Sys_DefaultCDPath(void)
+{
+    return cdPath;
+}
 
 /*
 =================
@@ -753,29 +709,7 @@ BACKGROUND FILE STREAMING
 ========================================================================
 */
 
-#if 1
-
-void Sys_InitStreamThread( void ) {
-}
-
-void Sys_ShutdownStreamThread( void ) {
-}
-
-void Sys_BeginStreamedFile( fileHandle_t f, int readAhead ) {
-}
-
-void Sys_EndStreamedFile( fileHandle_t f ) {
-}
-
-int Sys_StreamedRead( void *buffer, int size, int count, fileHandle_t f ) {
-   return FS_Read( buffer, size * count, f );
-}
-
-void Sys_StreamSeek( fileHandle_t f, int offset, int origin ) {
-   FS_Seek( f, offset, origin );
-}
-
-#else
+#if 0
 
 typedef struct {
 	fileHandle_t file;
@@ -960,109 +894,6 @@ int		eventHead = 0;
 int             eventTail = 0;
 byte		sys_packetReceived[MAX_MSGLEN];
 
-/*
-================
-Sys_QueEvent
-
-A time of 0 will get the current time
-Ptr should either be null, or point to a block of data that can
-be freed by the game later.
-================
-*/
-void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr ) {
-	sysEvent_t	*ev;
-
-	ev = &eventQue[ eventHead & MASK_QUED_EVENTS ];
-
-	// bk000305 - was missing
-	if ( eventHead - eventTail >= MAX_QUED_EVENTS ) {
-	  Com_Printf("Sys_QueEvent: overflow\n");
-	  // we are discarding an event, but don't leak memory
-	  if ( ev->evPtr ) {
-	    Z_Free( ev->evPtr );
-	  }
-	  eventTail++;
-	}
-
-	eventHead++;
-
-	if ( time == 0 ) {
-		time = Sys_Milliseconds();
-	}
-
-	ev->evTime = time;
-	ev->evType = type;
-	ev->evValue = value;
-	ev->evValue2 = value2;
-	ev->evPtrLength = ptrLength;
-	ev->evPtr = ptr;
-}
-
-/*
-================
-Sys_GetEvent
-
-================
-*/
-sysEvent_t Sys_GetEvent( void ) {
-	sysEvent_t	ev;
-	char		*s;
-	msg_t		netmsg;
-	netadr_t	adr;
-
-	// return if we have data
-	if ( eventHead > eventTail ) {
-		eventTail++;
-		return eventQue[ ( eventTail - 1 ) & MASK_QUED_EVENTS ];
-	}
-
-	// pump the message loop
-	// in vga this calls KBD_Update, under X, it calls GetEvent
-	Sys_SendKeyEvents ();
-
-	// check for console commands
-	s = Sys_ConsoleInput();
-	if ( s ) {
-		char	*b;
-		int		len;
-
-		len = strlen( s ) + 1;
-		b = (char *)Z_Malloc( len,TAG_EVENT,qfalse );
-		strcpy( b, s );
-		Sys_QueEvent( 0, SE_CONSOLE, 0, 0, len, b );
-	}
-
-	// check for other input devices
-	IN_Frame();
-
-	// check for network packets
-	MSG_Init( &netmsg, sys_packetReceived, sizeof( sys_packetReceived ) );
-	if ( Sys_GetPacket ( &adr, &netmsg ) ) {
-		netadr_t		*buf;
-		int				len;
-
-		// copy out to a seperate buffer for qeueing
-		len = sizeof( netadr_t ) + netmsg.cursize;
-		buf = (netadr_t *)Z_Malloc( len,TAG_EVENT,qfalse );
-		*buf = adr;
-		memcpy( buf+1, netmsg.data, netmsg.cursize );
-		Sys_QueEvent( 0, SE_PACKET, 0, 0, len, buf );
-	}
-
-	// return if we have data
-	if ( eventHead > eventTail ) {
-		eventTail++;
-		return eventQue[ ( eventTail - 1 ) & MASK_QUED_EVENTS ];
-	}
-
-	// create an empty event to return
-
-	memset( &ev, 0, sizeof( ev ) );
-	ev.evTime = Sys_Milliseconds();
-
-	return ev;
-}
-
 /*****************************************************************************/
 
 qboolean Sys_CheckCD( void ) {
@@ -1071,11 +902,6 @@ qboolean Sys_CheckCD( void ) {
 
 void Sys_AppActivate (void)
 {
-}
-
-char *Sys_GetClipboardData(void)
-{
-	return NULL;
 }
 
 void	Sys_Print( const char *msg )
