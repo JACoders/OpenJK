@@ -11,6 +11,9 @@
 
 #define CLIENT_WINDOW_TITLE "OpenJK (MP)"
 #define CLIENT_CONSOLE_TITLE "OpenJK Console (MP)"
+#define HOMEPATH_NAME_UNIX ".openjk"
+#define HOMEPATH_NAME_WIN "OpenJK"
+#define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 
 //NOTENOTE: Only change this to re-point ICARUS to a new script directory
 #define Q3_SCRIPT_DIR	"scripts"
@@ -260,6 +263,8 @@ float FloatSwap( const float *f );
         #define BigFloat(x) FloatSwap(&x)
     #endif
 
+	#define DLL_EXT ".dylib"
+
 #endif // MACOS_X
 
 
@@ -286,6 +291,8 @@ float FloatSwap( const float *f );
 	static inline int LittleLong( int l ) { return LongSwap( l ); }
 	#define BigFloat
 	static inline float LittleFloat( const float l ) { return FloatSwap( &l ); }
+
+	#define DLL_EXT ".dylib"
 
 #endif // __MACOS__
 
@@ -1560,7 +1567,9 @@ int Com_Clampi( int min, int max, int value ); //rwwRMG - added
 float Com_Clamp( float min, float max, float value );
 
 char	*COM_SkipPath( char *pathname );
+const char	*COM_GetExtension( const char *name );
 void	COM_StripExtension( const char *in, char *out, int destsize );
+qboolean COM_CompareExtension(const char *in, const char *ext);
 void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 
 void	COM_BeginParseSession( const char *name );
@@ -1645,6 +1654,8 @@ char	*Q_strrchr( const char* string, int c );
 // buffer size safe library replacements
 void	Q_strncpyz( char *dest, const char *src, int destsize );
 void	Q_strcat( char *dest, int size, const char *src );
+
+const char *Q_stristr( const char *s, const char *find);
 
 // strlen that discounts Quake color sequences
 int Q_PrintStrlen( const char *string );

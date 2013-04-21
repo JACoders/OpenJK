@@ -220,7 +220,6 @@
     <ClInclude Include="..\qcommon\qfiles.h" />
     <ClInclude Include="..\game\surfaceflags.h" />
     <ClInclude Include="..\qcommon\tags.h" />
-    <ClInclude Include="tr_types.h" />
     <ClInclude Include="..\ui\ui_shared.h" />
   </ItemGroup>
   <ItemGroup>

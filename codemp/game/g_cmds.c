@@ -2196,7 +2196,6 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		}
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, n );
 	}
-
 	else
 	{
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s \"%s\"", arg1, arg2 );
@@ -2255,7 +2254,7 @@ void Cmd_Vote_f( gentity_t *ent ) {
 
 	trap_Argv( 1, msg, sizeof( msg ) );
 
-	if ( msg[0] == 'y' || msg[1] == 'Y' || msg[1] == '1' ) {
+	if ( tolower( msg[0] ) == 'y' || msg[0] == '1' ) {
 		level.voteYes++;
 		trap_SetConfigstring( CS_VOTE_YES, va("%i", level.voteYes ) );
 	} else {
@@ -2433,7 +2432,7 @@ void Cmd_TeamVote_f( gentity_t *ent ) {
 
 	trap_Argv( 1, msg, sizeof( msg ) );
 
-	if ( msg[0] == 'y' || msg[1] == 'Y' || msg[1] == '1' ) {
+	if ( tolower( msg[0] ) == 'y' || msg[0] == '1' ) {
 		level.teamVoteYes[cs_offset]++;
 		trap_SetConfigstring( CS_TEAMVOTE_YES + cs_offset, va("%i", level.teamVoteYes[cs_offset] ) );
 	} else {
@@ -2482,8 +2481,8 @@ void G_LeaveVehicle( gentity_t* ent, qboolean ConCheck ) {
 		if (veh->inuse && veh->client && veh->m_pVehicle)
 		{
 			if ( ConCheck ) { // check connection
-				int pCon = ent->client->pers.connected;
-				ent->client->pers.connected = 0;
+				clientConnected_t pCon = ent->client->pers.connected;
+				ent->client->pers.connected = CON_DISCONNECTED;
 				veh->m_pVehicle->m_pVehicleInfo->Eject(veh->m_pVehicle, (bgEntity_t *)ent, qtrue);
 				ent->client->pers.connected = pCon;
 			} else { // or not.
@@ -2504,7 +2503,7 @@ int G_ItemUsable(playerState_t *ps, int forcedUse)
 	trace_t tr;
 
 	// fix: dead players shouldn't use items
-	if (ps->stats[STAT_HEALTH] <= 0){
+	if (ps->stats[STAT_HEALTH] <= 0) {
 		return 0;
 	}
 

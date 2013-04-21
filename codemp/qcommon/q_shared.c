@@ -93,21 +93,23 @@ char *COM_SkipPath (char *pathname)
 
 /*
 ============
+COM_GetExtension
+============
+*/
+const char *COM_GetExtension( const char *name )
+{
+	const char *dot = strrchr(name, '.'), *slash;
+	if (dot && (!(slash = strrchr(name, '/')) || slash < dot))
+		return dot + 1;
+	else
+		return "";
+}
+
+/*
+============
 COM_StripExtension
 ============
 */
-
-#if 0 //jamp
-
-void COM_StripExtension( const char *in, char *out ) {
-	while ( *in && *in != '.' ) {
-		*out++ = *in++;
-	}
-	*out = 0;
-}
-
-#else //iojamp
-
 void COM_StripExtension( const char *in, char *out, int destsize )
 {
 	const char *dot = strrchr(in, '.'), *slash;
@@ -117,41 +119,36 @@ void COM_StripExtension( const char *in, char *out, int destsize )
 		Q_strncpyz(out, in, destsize);
 }
 
-#endif
+/*
+============
+COM_CompareExtension
 
+string compare the end of the strings and return qtrue if strings match
+============
+*/
+qboolean COM_CompareExtension(const char *in, const char *ext)
+{
+	int inlen, extlen;
 
+	inlen = strlen(in);
+	extlen = strlen(ext);
+
+	if(extlen <= inlen)
+	{
+		in += inlen - extlen;
+
+		if(!Q_stricmp(in, ext))
+			return qtrue;
+	}
+
+	return qfalse;
+}
 
 /*
 ==================
 COM_DefaultExtension
 ==================
 */
-
-#if 0 //jamp
-
-void COM_DefaultExtension (char *path, int maxSize, const char *extension ) {
-	char	oldPath[MAX_QPATH];
-	char    *src;
-
-//
-// if path doesn't have a .EXT, append extension
-// (extension should include the .)
-//
-	src = path + strlen(path) - 1;
-
-	while (*src != '/' && src != path) {
-		if ( *src == '.' ) {
-			return;                 // it has an extension
-		}
-		src--;
-	}
-
-	Q_strncpyz( oldPath, path, sizeof( oldPath ) );
-	Com_sprintf( path, maxSize, "%s%s", oldPath, extension );
-}
-
-#else //iojamp
-
 void COM_DefaultExtension( char *path, int maxSize, const char *extension )
 {
 	const char *dot = strrchr(path, '.'), *slash;
@@ -160,8 +157,6 @@ void COM_DefaultExtension( char *path, int maxSize, const char *extension )
 	else
 		Q_strcat(path, maxSize, extension);
 }
-
-#endif
 
 /*
 ============================================================================
@@ -986,6 +981,37 @@ void Q_strcat( char *dest, int size, const char *src ) {
 	Q_strncpyz( dest + l1, src, size - l1 );
 }
 
+/*
+* Find the first occurrence of find in s.
+*/
+const char *Q_stristr( const char *s, const char *find)
+{
+  char c, sc;
+  size_t len;
+
+  if ((c = *find++) != 0)
+  {
+    if (c >= 'a' && c <= 'z')
+    {
+      c -= ('a' - 'A');
+    }
+    len = strlen(find);
+    do
+    {
+      do
+      {
+        if ((sc = *s++) == 0)
+          return NULL;
+        if (sc >= 'a' && sc <= 'z')
+        {
+          sc -= ('a' - 'A');
+        }
+      } while (sc != c);
+    } while (Q_stricmpn(s, find, len) != 0);
+    s--;
+  }
+  return s;
+}
 
 int Q_PrintStrlen( const char *string ) {
 	int			len;

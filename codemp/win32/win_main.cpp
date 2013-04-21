@@ -14,11 +14,6 @@
 #include <conio.h>
 #include "qcommon/stringed_ingame.h"
 
-#define	CD_BASEDIR	"gamedata\\gamedata"
-#define	CD_EXE		"jamp.exe"
-#define	CD_BASEDIR_LINUX	"bin\\x86\\glibc-2.1"
-#define	CD_EXE_LINUX "jamp"
-#define	CD_VOLUME	"JEDIACAD"
 #define MEM_THRESHOLD 128*1024*1024
 
 static char		sys_cmdline[MAX_STRING_CHARS];
@@ -364,74 +359,6 @@ void	Sys_FreeFileList( char **psList ) {
 
 //========================================================
 
-
-/*
-================
-Sys_ScanForCD
-
-Search all the drives to see if there is a valid CD to grab
-the cddir from
-================
-*/
-#ifdef FINAL_BUILD
-static qboolean Sys_ScanForCD( void ) {
-	char		drive[4];
-	FILE		*f;
-	char		test[MAX_OSPATH];
-
-	drive[0] = 'c';
-	drive[1] = ':';
-	drive[2] = '\\';
-	drive[3] = 0;
-
-	// scan the drives
-	for ( drive[0] = 'c' ; drive[0] <= 'z' ; drive[0]++ ) {
-		if ( GetDriveType (drive) == DRIVE_CDROM ) {
-			BOOL Result;
-			char VolumeName[MAX_PATH],FileSystemName[MAX_PATH];
-			DWORD VolumeSerialNumber,MaximumComponentLength,FileSystemFlags;
-			
-			Result = GetVolumeInformation(drive,VolumeName,sizeof(VolumeName),&VolumeSerialNumber,
-				&MaximumComponentLength,&FileSystemFlags,FileSystemName,sizeof(FileSystemName));
-			
-			if (Result && (strnicmp(VolumeName,CD_VOLUME,8) == 0 ) )
-			{
-				sprintf (test, "%s%s\\%s",drive, CD_BASEDIR, CD_EXE);
-				f = fopen( test, "r" );
-				if ( f ) {
-					fclose (f);
-					return qtrue;
-				} else {
-					sprintf(test, "%s%s\\%s", drive, CD_BASEDIR, CD_EXE_LINUX);
-					f = fopen( test, "r" );
-					if ( f ) {
-						fclose (f);
-						return qtrue;
-					}
-				}
-			}
-		}
-	}
-
-	return qfalse;
-}
-#endif
-/*
-================
-Sys_CheckCD
-
-Return true if the proper CD is in the drive
-================
-*/
-qboolean	Sys_CheckCD( void ) {
-#ifdef FINAL_BUILD
-	return Sys_ScanForCD();
-#else
-	return qtrue;
-#endif
-}
-
-
 /*
 ================
 Sys_GetClipboardData
@@ -584,7 +511,6 @@ Used to load a development dll instead of a virtual machine
 */
 
 void * QDECL Sys_LoadGameDll( const char *name, int (QDECL **entryPoint)(int, ...), int (QDECL *systemcalls)(int, ...) ) {
-	static int	lastWarning = 0;
 	HINSTANCE	libHandle;
 	void	(QDECL *dllEntry)( int (QDECL *syscallptr)(int, ...) );
 	char	*basepath;

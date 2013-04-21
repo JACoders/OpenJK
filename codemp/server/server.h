@@ -152,6 +152,7 @@ typedef struct client_s {
 	int				rate;				// bytes / second
 	int				snapshotMsec;		// requests a snapshot every snapshotMsec unless rate choked
 	int				pureAuthentic;
+	qboolean		gotCP; // TTimo - additional flag to distinguish between a bad pure checksum, and no cp command at all
 	netchan_t		netchan;
 
 	int				lastUserInfoChange; //if > svs.time && count > x, deny change -rww
@@ -180,10 +181,6 @@ typedef struct {
 	int			firstTime;			// time the adr was first used, for authorize timeout checks
 	qboolean	connected;
 } challenge_t;
-
-
-#define	MAX_MASTERS	8				// max recipients for heartbeat packets
-
 
 // this structure will be cleared only when the game dll changes
 typedef struct {

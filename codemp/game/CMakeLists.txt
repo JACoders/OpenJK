@@ -29,7 +29,6 @@ set(MPGameGameFiles
 	"${MPDir}/game/bg_weapons.c"
 	"${MPDir}/game/FighterNPC.c"
 	"${MPDir}/game/g_active.c"
-	"${MPDir}/game/g_arenas.c"
 	"${MPDir}/game/g_bot.c"
 	"${MPDir}/game/g_client.c"
 	"${MPDir}/game/g_cmds.c"
@@ -188,6 +187,9 @@ source_group("ui" FILES ${MPGameUiFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameUiFiles})
 
 add_library(${MPGame} SHARED ${MPGameFiles})
+install(TARGETS ${MPGame} RUNTIME DESTINATION "OpenJK")
+set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPGameDefines};${ReleaseDefines}")
+set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPGameDefines};${ReleaseDefines}")
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPGameDefines};${ReleaseDefines}")
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPGameDefines};${DebugDefines}")
 set_target_properties(${MPGame} PROPERTIES INCLUDE_DIRECTORIES "${MPGameIncludeDirectories}")
