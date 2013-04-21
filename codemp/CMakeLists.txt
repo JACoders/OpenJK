@@ -531,7 +531,6 @@ if(BuildMPEngine)
 			"${MPDir}/sys/sys_net.cpp"
 			"${MPDir}/sys/sys_unix.cpp"
 			"${MPDir}/sys/unix_local.h"
-			"${MPDir}/sys/unix_main.cpp"
 			)
 	endif(WIN32)
 
@@ -625,10 +624,10 @@ if(BuildMPDed)
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
 	else(WIN32)
 		set(MPDedSortMe ${MPDedSortMe}
-			"${MPDir}/sys/unix_main_ded.cpp"
+			"${MPDir}/sys/sys_main.cpp"
 			"${MPDir}/sys/sys_net.cpp"
-			"${MPDir}/sys/unix_shared.cpp"
-			"${MPDir}/sys/linux_local.h"
+			"${MPDir}/sys/sys_unix.cpp"
+			"${MPDir}/sys/unix_local.h"
 			)
 		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 	endif(WIN32)
