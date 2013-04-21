@@ -101,35 +101,6 @@ void		GLimp_EndFrame( void )
 }
 
 /*
-* Find the first occurrence of find in s.
-*/
-// bk001130 - from cvs1.17 (mkv), const
-// bk001130 - made first argument const
-static const char *Q_stristr( const char *s, const char *find)
-{
-register char c, sc;
-register size_t len;
-
-	if ((c = *find++) != 0) {
-		if (c >= 'a' && c <= 'z') {
-			c -= ('a' - 'A');
-		}
-		len = strlen(find);
-		do {
-			do {
-				if ((sc = *s++) == 0)
-					return NULL;
-				if (sc >= 'a' && sc <= 'z') {
-					sc -= ('a' - 'A');
-				}
-			} while (sc != c);
-		} while (Q_stricmpn(s, find, (int)len) != 0);
-		s--;
-	}
-	return s;
-}
-
-/*
 ===============
 GLimp_CompareModes
 ===============
@@ -733,12 +704,9 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		}
 #endif
 
-		// FIXME: Product name
-		cvar_t *com_productName = Cvar_Get("com_productName", "OpenJK" /* PRODUCT_NAME */, CVAR_ROM);
-		//SDL_SetWindowTitle(com_productName->string, com_productName->string);
 		SDL_ShowCursor(0);
 
-		if (!(window = SDL_CreateWindow(com_productName->string, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, glConfig.vidWidth, glConfig.vidHeight, flags)))
+		if (!(window = SDL_CreateWindow(CLIENT_WINDOW_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, glConfig.vidWidth, glConfig.vidHeight, flags)))
 		{
 			Com_Printf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
 			continue;
