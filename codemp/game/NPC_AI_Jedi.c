@@ -1395,6 +1395,7 @@ static void Jedi_CheckDecreaseSaberAnimLevel( void )
 	}
 }
 
+extern void ForceDrain( gentity_t *self );
 static void Jedi_CombatDistance( int enemy_dist )
 {//FIXME: for many of these checks, what we really want is horizontal distance to enemy
 	if ( NPC->client->ps.fd.forcePowersActive&(1<<FP_GRIP) &&
@@ -1512,35 +1513,6 @@ static void Jedi_CombatDistance( int enemy_dist )
 			Jedi_Retreat();
 		}
 	}
-	/*
-	else if ( NPC->enemy->s.weapon == WP_TURRET 
-		&& !Q_stricmp( "PAS", NPC->enemy->classname ) 
-		&& NPC->enemy->s.apos.trType == TR_STATIONARY )
-	{
-		int	testlevel;
-		if ( enemy_dist > forcePushPullRadius[FORCE_LEVEL_1] - 16 )
-		{
-			Jedi_Advance();
-		}
-		if ( NPC->client->ps.fd.forcePowerLevel[FP_PUSH] < FORCE_LEVEL_1 )
-		{//
-			testlevel = FORCE_LEVEL_1;
-		}
-		else
-		{
-			testlevel = NPC->client->ps.fd.forcePowerLevel[FP_PUSH];
-		}
-		if ( enemy_dist < forcePushPullRadius[testlevel] - 16 )
-		{//close enough to push
-			if ( InFront( NPC->enemy->r.currentOrigin, NPC->client->renderInfo.eyePoint, NPC->client->renderInfo.eyeAngles, 0.6f ) )
-			{//knock it down
-				WP_KnockdownTurret( NPC, NPC->enemy );
-				//do the forcethrow call just for effect
-				ForceThrow( NPC, qfalse );
-			}
-		}
-	}
-	*/
 	//rwwFIXMEFIXME: Give them the ability to do this again (turret needs to be fixed up to allow it)
 	else if ( enemy_dist <= 64 
 		&& ((NPCInfo->scriptFlags&SCF_DONT_FIRE)||(!Q_stricmp("Yoda",NPC->NPC_type)&&!Q_irand(0,10))) )
@@ -1646,12 +1618,6 @@ static void Jedi_CombatDistance( int enemy_dist )
 			}
 		}
 	}
-	/*
-	else if ( enemy_dist < 96 && NPC->enemy && NPC->enemy->client && NPC->enemy->client->ps.groundEntityNum == ENTITYNUM_NONE )
-	{//too close and in air, so retreat
-		Jedi_Retreat();
-	}
-	*/
 	//FIXME: enemy_dist calc needs to include all blade lengths, and include distance from hand to start of blade....
 	else if ( enemy_dist > 50 )//FIXME: not hardcoded- base on our reach (modelScale?) and saberLengthMax
 	{//we're out of striking range and we are allowed to attack
@@ -1731,9 +1697,9 @@ static void Jedi_CombatDistance( int enemy_dist )
 				&& enemy_dist < 500 
 				&& (Q_irand( 0, chanceScale*10 )<5 || (NPC->enemy->client && NPC->enemy->client->ps.weapon != WP_SABER && !Q_irand( 0, chanceScale ) ) ) )
 			{//else, randomly try some kind of attack every now and then
-				if ( (NPCInfo->rank == RANK_ENSIGN || NPCInfo->rank > RANK_LT_JG) && !Q_irand( 0, 1 ) )
+				if ( (NPCInfo->rank == RANK_ENSIGN || NPCInfo->rank > RANK_LT_JG) && !Q_irand( 0, 1 ) || NPC->s.weapon != WP_SABER )
 				{
-					if ( WP_ForcePowerAvailable( NPC, FP_PULL, 0 ) && !Q_irand( 0, 2 ) )
+					if ( WP_ForcePowerUsable( NPC, FP_PULL, 0 ) && !Q_irand( 0, 2 ) )
 					{
 						//force pull the guy to me!
 						//FIXME: check forcePushRadius[NPC->client->ps.fd.forcePowerLevel[FP_PUSH]]
@@ -1745,7 +1711,8 @@ static void Jedi_CombatDistance( int enemy_dist )
 							ucmd.buttons |= BUTTON_ATTACK;
 						}
 					}
-					else if ( WP_ForcePowerAvailable( NPC, FP_LIGHTNING, 0 ) && Q_irand( 0, 1 ) )
+					else if ( WP_ForcePowerUsable( NPC, FP_LIGHTNING, 0 )
+						&& ((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_lightning",NPC->NPC_type) || Q_irand( 0, 1 )))
 					{
 						ForceLightning( NPC );
 						if ( NPC->client->ps.fd.forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_1 )
@@ -1755,34 +1722,35 @@ static void Jedi_CombatDistance( int enemy_dist )
 						}
 						TIMER_Set( NPC, "attackDelay", NPC->client->ps.weaponTime );
 					}
-					/*else if ( NPC->health < NPC->client->pers.maxHealth * 0.75f
-						&& Q_irand( FORCE_LEVEL_0, NPC->client->ps.fd.forcePowerLevel[FP_DRAIN] ) > FORCE_LEVEL_1
-						&& WP_ForcePowerAvailable( NPC, FP_DRAIN, 0 ) 
-						&& Q_irand( 0, 1 ) )
-					{
-						ForceDrain2( NPC );
-						NPC->client->ps.weaponTime = Q_irand( 1000, 3000+(g_npcspskill.integer*500) );
-						TIMER_Set( NPC, "draining", NPC->client->ps.weaponTime );
-						TIMER_Set( NPC, "attackDelay", NPC->client->ps.weaponTime );
-					}*/
 					//rwwFIXMEFIXME: After new drain stuff from SP is in re-enable this.
-					else if ( WP_ForcePowerAvailable( NPC, FP_GRIP, 0 ) )
-					{
-						//taunt
-						if ( TIMER_Done( NPC, "chatter" ) && jediSpeechDebounceTime[NPC->client->playerTeam] < level.time && NPCInfo->blockedSpeechDebounceTime < level.time )
+					else if ( NPC->health < NPC->client->ps.stats[STAT_MAX_HEALTH] * 0.75f
+							&& Q_irand( FORCE_LEVEL_0, NPC->client->ps.fd.forcePowerLevel[FP_DRAIN] ) > FORCE_LEVEL_1
+							&& WP_ForcePowerUsable( NPC, FP_DRAIN, 0 ) 
+							&& ((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPC->NPC_type) || Q_irand( 0, 1 )) )
 						{
-							G_AddVoiceEvent( NPC, Q_irand( EV_TAUNT1, EV_TAUNT3 ), 3000 );
-							jediSpeechDebounceTime[NPC->client->playerTeam] = NPCInfo->blockedSpeechDebounceTime = level.time + 3000;
-							TIMER_Set( NPC, "chatter", 3000 );
+							ForceDrain( NPC );
+							NPC->client->ps.weaponTime = Q_irand( 1000, 3000+(g_npcspskill.integer*500) );
+							TIMER_Set( NPC, "draining", NPC->client->ps.weaponTime );
+							TIMER_Set( NPC, "attackDelay", NPC->client->ps.weaponTime );
 						}
+						else if ( WP_ForcePowerUsable( NPC, FP_GRIP, 0 )
+							&& NPC->enemy && InFOV( NPC->enemy, NPC, 20, 30 ) )
+						{
+							//taunt
+							if ( TIMER_Done( NPC, "chatter" ) && jediSpeechDebounceTime[NPC->client->playerTeam] < level.time && NPCInfo->blockedSpeechDebounceTime < level.time )
+							{
+								G_AddVoiceEvent( NPC, Q_irand( EV_TAUNT1, EV_TAUNT3 ), 3000 );
+								jediSpeechDebounceTime[NPC->client->playerTeam] = NPCInfo->blockedSpeechDebounceTime = level.time + 3000;
+								TIMER_Set( NPC, "chatter", 3000 );
+							}
 
-						//grip
-						TIMER_Set( NPC, "gripping", 3000 );
-						TIMER_Set( NPC, "attackDelay", 3000 );
-					}
+							//grip
+							TIMER_Set( NPC, "gripping", 3000 );
+							TIMER_Set( NPC, "attackDelay", 3000 );
+						}
 					else
 					{
-						if ( WP_ForcePowerAvailable( NPC, FP_SABERTHROW, 0 ) 
+						if ( WP_ForcePowerUsable( NPC, FP_SABERTHROW, 0 ) 
 							&& !(NPC->client->ps.fd.forcePowersActive&(1 << FP_SPEED))
 							&& !(NPC->client->ps.saberEventFlags&SEF_INWATER) )//saber not in water
 						{//throw saber
