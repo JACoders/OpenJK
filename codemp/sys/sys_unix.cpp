@@ -50,6 +50,12 @@ int Sys_Milliseconds (bool baseTime)
 	}
 
 	curtime = (tp.tv_sec - sys_timeBase)*1000 + tp.tv_usec/1000;
+    
+    static int sys_timeBase = curtime;
+	if (!baseTime)
+	{
+		curtime -= sys_timeBase;
+	}
 
 	return curtime;
 }
@@ -152,9 +158,9 @@ EVENT LOOP
 #define	MAX_QUED_EVENTS		256
 #define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
 
-extern sysEvent_t	eventQue[MAX_QUED_EVENTS];
-extern int			eventHead, eventTail;
-extern byte		sys_packetReceived[MAX_MSGLEN];
+sysEvent_t	eventQue[MAX_QUED_EVENTS];
+int			eventHead, eventTail;
+byte		sys_packetReceived[MAX_MSGLEN];
 
 sysEvent_t Sys_GetEvent( void ) {
 	sysEvent_t	ev;
