@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 // Precompiled header file for the game dll
 
 #include "g_headers.h"
-#include "NPC_Headers.h"
+#include "npc_headers.h"
 #include "../cgame/cg_headers.h"
 
 

@@ -26,13 +26,18 @@ This file is part of Jedi Academy.
 #include "snd_public.h"
 #include "../mp3code/mp3struct.h"
 
+// Open AL Specific
+#ifdef _WIN32
 #include "OpenAL/al.h"
 #include "OpenAL/alc.h"
-
-// Open AL Specific
-#if (defined _WIN32)// && !defined MINGW32)
 #include "eax/eax.h"
 #include "eax/eaxman.h"
+#elif defined MACOS_X
+#include <OpenAL/al.h>
+#include <OpenAL/alc.h>
+#else
+#include <AL/al.h>
+#include <AL/alc.h>
 #endif
 
 

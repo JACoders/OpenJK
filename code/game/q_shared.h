@@ -137,7 +137,7 @@ This file is part of Jedi Academy.
 
 //======================= MAC OS X SERVER DEFINES =====================
 
-#if defined(MACOS_X) || (defined(__MACH__) && defined(__APPLE__))
+#if defined(MACOS_X)
 
 #define MAC_STATIC
 
@@ -177,6 +177,8 @@ void Sys_PumpEvents( void );
 // just waste space and make big arrays static...
 #ifdef __linux__
 
+#include <unistd.h>
+
 #define	MAC_STATIC
 
 #ifdef __i386__
@@ -210,6 +212,39 @@ typedef int		sfxHandle_t;
 typedef int		fileHandle_t;
 typedef int		clipHandle_t;
 
+//Raz: can't think of a better place to put this atm,
+//		should probably be in the platform specific definitions
+#if defined (_MSC_VER) && (_MSC_VER >= 1600)
+
+#include <stdint.h>
+
+// vsnprintf is ISO/IEC 9899:1999
+// abstracting this to make it portable
+int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+
+#elif defined (_MSC_VER)
+
+#include <io.h>
+
+typedef signed __int64 int64_t;
+typedef signed __int32 int32_t;
+typedef signed __int16 int16_t;
+typedef signed __int8  int8_t;
+typedef unsigned __int64 uint64_t;
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int16 uint16_t;
+typedef unsigned __int8  uint8_t;
+
+// vsnprintf is ISO/IEC 9899:1999
+// abstracting this to make it portable
+int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+#else // not using MSVC
+
+#include <stdint.h>
+
+#define Q_vsnprintf vsnprintf
+
+#endif
 
 #ifndef NULL
 #define NULL ((void *)0)

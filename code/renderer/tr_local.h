@@ -30,7 +30,7 @@ This file is part of Jedi Academy.
 #elif defined(_WIN32)
 #include "qgl.h"
 #include "glext.h"
-#elif defined(MACOS_X)
+#else
 #include "qgl.h"
 #include "../sdl/sdl_qgl.h"
 #endif

@@ -348,8 +348,8 @@ if(BuildMPEngine OR BuildMPDed)
 	else(WIN32)
 		set(MPEngineAndDedAllSortMe
 			${MPEngineAndDedAllSortMe}
-			"${MPDir}/unix/vm_x86.cpp"
-			"${MPDir}/unix/snapvector.nasm"
+			"${MPDir}/sys/vm_x86.cpp"
+			"${MPDir}/sys/snapvector.nasm"
 			)
 	endif(WIN32)
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedAllSortMe})
@@ -501,59 +501,6 @@ if(BuildMPEngine)
 		"${MPDir}/mp3code/uph.c"
 		"${MPDir}/mp3code/upsf.c"
 		"${MPDir}/mp3code/wavep.c"
-		
-		# TODO: replace the following with proper libraries
-		
-		#"${MPDir}/jpeg-8c/*.c"
-		#"${MPDir}/jpeg-8c/*.h"
-		
-		#"${MPDir}/jpeg-6/jdatasrc.cpp" #libjpeg
-		#"${MPDir}/jpeg-6/jdmainct.cpp"
-		#"${MPDir}/jpeg-6/jpegint.h"
-		#"${MPDir}/jpeg-6/jcinit.cpp"
-		#"${MPDir}/jpeg-6/jddctmgr.cpp"
-		#"${MPDir}/jpeg-6/jerror.h"
-		#"${MPDir}/jpeg-6/jdsample.cpp"
-		#"${MPDir}/jpeg-6/jcapimin.cpp"
-		#"${MPDir}/jpeg-6/jdapimin.cpp"
-		#"${MPDir}/jpeg-6/jconfig.h"
-		#"${MPDir}/jpeg-6/jdcolor.cpp"
-		#"${MPDir}/jpeg-6/jccolor.cpp"
-		#"${MPDir}/jpeg-6/jdct.h"
-		#"${MPDir}/jpeg-6/jdmaster.cpp"
-		#"${MPDir}/jpeg-6/jdhuff.cpp"
-		#"${MPDir}/jpeg-6/jdpostct.cpp"
-		#"${MPDir}/jpeg-6/jmemnobs.cpp"
-		#"${MPDir}/jpeg-6/jinclude.h"
-		#"${MPDir}/jpeg-6/jcdctmgr.cpp"
-		#"${MPDir}/jpeg-6/jdapistd.cpp"
-		#"${MPDir}/jpeg-6/jmorecfg.h"
-		#"${MPDir}/jpeg-6/jcphuff.cpp"
-		#"${MPDir}/jpeg-6/jidctflt.cpp"
-		#"${MPDir}/jpeg-6/jdhuff.h"
-		#"${MPDir}/jpeg-6/jchuff.cpp"
-		#"${MPDir}/jpeg-6/jutils.cpp"
-		#"${MPDir}/jpeg-6/jccoefct.cpp"
-		#"${MPDir}/jpeg-6/jchuff.h"
-		#"${MPDir}/jpeg-6/jdtrans.cpp"
-		#"${MPDir}/jpeg-6/jcmaster.cpp"
-		#"${MPDir}/jpeg-6/jmemsys.h"
-		#"${MPDir}/jpeg-6/jdatadst.cpp"
-		#"${MPDir}/jpeg-6/jpeglib.h"
-		#"${MPDir}/jpeg-6/jmemmgr.cpp"
-		#"${MPDir}/jpeg-6/jcmarker.cpp"
-		#"${MPDir}/jpeg-6/jctrans.cpp"
-		#"${MPDir}/jpeg-6/jdcoefct.cpp"
-		#"${MPDir}/jpeg-6/jcsample.cpp"
-		#"${MPDir}/jpeg-6/jdmarker.cpp"
-		#"${MPDir}/jpeg-6/jcprepct.cpp"
-		#"${MPDir}/jpeg-6/jcomapi.cpp"
-		#"${MPDir}/jpeg-6/jdinput.cpp"
-		#"${MPDir}/jpeg-6/jcmainct.cpp"
-		#"${MPDir}/jpeg-6/jcparam.cpp"
-		#"${MPDir}/jpeg-6/jerror.cpp"
-		#"${MPDir}/jpeg-6/jfdctflt.cpp"
-		#"${MPDir}/jpeg-6/jversion.h"
 		)
 	source_group("mp3code" FILES ${MPEngineMp3Files})
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineMp3Files})
@@ -575,7 +522,6 @@ if(BuildMPEngine)
 	else(WIN32)
 		set(MPEngineSortMe
 			${MPEngineSortMe}
-			"${MPDir}/sdl/sdl_glimp.cpp"
 			"${MPDir}/sdl/sdl_input.cpp"
 			"${MPDir}/sdl/sdl_qgl.h"
 			"${MPDir}/sdl/sdl_snd.cpp"
@@ -584,8 +530,8 @@ if(BuildMPEngine)
 			"${MPDir}/sys/sys_main.cpp"
 			"${MPDir}/sys/sys_net.cpp"
 			"${MPDir}/sys/sys_unix.cpp"
-			"${MPDir}/unix/unix_local.h"
-			"${MPDir}/unix/unix_main.cpp"
+			"${MPDir}/sys/unix_local.h"
+			"${MPDir}/sys/unix_main.cpp"
 			)
 	endif(WIN32)
 
@@ -599,6 +545,7 @@ if(BuildMPEngine)
 	else(WIN32)
 		add_executable(${MPEngine} ${MPEngineFiles})
 	endif(WIN32)
+	install(TARGETS ${MPEngine} RUNTIME DESTINATION ".")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPEngineDefines};${ReleaseDefines}")
@@ -678,11 +625,10 @@ if(BuildMPDed)
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
 	else(WIN32)
 		set(MPDedSortMe ${MPDedSortMe}
-			"${MPDir}/unix_ded/unix_main.cpp"
-			"${MPDir}/unix_ded/unix_net.cpp"
-			"${MPDir}/unix_ded/unix_shared.cpp"
-			"${MPDir}/unix_ded/linux_local.h"
-			"${MPDir}/unix_ded/linux_common.c"
+			"${MPDir}/sys/unix_main_ded.cpp"
+			"${MPDir}/sys/sys_net.cpp"
+			"${MPDir}/sys/unix_shared.cpp"
+			"${MPDir}/sys/linux_local.h"
 			)
 		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 	endif(WIN32)
@@ -690,7 +636,7 @@ if(BuildMPDed)
 	source_group("SortMe" FILES ${MPDedSortMe})
 	
 	add_executable(${MPDed} ${MPDedFiles})
-
+	install(TARGETS ${MPDed} RUNTIME DESTINATION ".")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPDedDefines};${ReleaseDefines}")

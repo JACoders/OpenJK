@@ -16,9 +16,7 @@ This file is part of Jedi Academy.
 */
 // Copyright 2002-2013 Activision
 
-#ifndef _WIN32
 #include "../game/q_shared.h"
-#endif
 
 #if !defined(RATL_COMMON_INC)
 	#include "ratl_common.h"

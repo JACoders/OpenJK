@@ -25,7 +25,7 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 
-#ifdef _WIN32
+#if id386 && !((defined __linux__ || defined MACOS_X) && defined __i386__)
 #pragma warning(disable: 4035)
 static long myftol( float f ) 
 {
@@ -36,7 +36,7 @@ static long myftol( float f )
 }
 #pragma warning(default: 4035)
 #else
-#define myftol( f ) (long)(f)
+#define	myftol(x) ((int)(x))
 #endif
 
 extern int drawnFx;

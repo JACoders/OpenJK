@@ -23,8 +23,8 @@ This file is part of Jedi Academy.
 #include "../server/exe_headers.h"
 
 
-#include "tr_QuickSprite.h"
-#include "tr_worldeffects.h"
+#include "tr_quicksprite.h"
+#include "tr_WorldEffects.h"
 #include <float.h> //for isnan
 
 /////===== Part of the VERTIGON system =====/////

@@ -23,10 +23,11 @@ This file is part of Jedi Academy.
 //Anything above this #include will be ignored by the compiler
 #include "../server/exe_headers.h"
 
-
 #include "../qcommon/sstring.h"
 #include <algorithm>
+#ifndef _WIN32
 #include <string>
+#endif
 
 #ifdef _XBOX
 #include "snd_local_console.h"

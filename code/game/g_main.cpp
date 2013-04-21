@@ -1694,7 +1694,7 @@ qboolean G_RagDoll(gentity_t *ent, vec3_t forcedAngles)
 #if (defined _WIN32 && !defined MINGW32)
 		tParms.RagPhase=CRagDollParams::ERagPhase::RP_DEATH_COLLISION;
 #else
-        tParms.RagPhase=CRagDollParams::RP_DEATH_COLLISION;
+	        tParms.RagPhase=CRagDollParams::RP_DEATH_COLLISION;
 #endif
 		tParms.fShotStrength = 4;
 

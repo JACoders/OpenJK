@@ -26,14 +26,14 @@ This file is part of Jedi Academy.
 #include "../client/vmachine.h"
 
 #ifdef _XBOX
-#include "../qcommon/miniheap.h"
+#include "../qcommon/MiniHeap.h"
 #endif
 						  
 #if !defined(TR_LOCAL_H)
 	#include "tr_local.h"
 #endif
 
-#include "MatComp.h"
+#include "matcomp.h"
 #if !defined(_QCOMMON_H_)
 	#include "../qcommon/qcommon.h"
 #endif
@@ -75,7 +75,7 @@ void G2Time_ReportTimers(void)
 #endif
 
 //rww - RAGDOLL_BEGIN
-#include <FLOAT.H>
+#include <float.h>
 //rww - RAGDOLL_END
 
 extern	cvar_t	*r_Ghoul2UnSqash;

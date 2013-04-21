@@ -5,6 +5,8 @@ set(InOpenJK TRUE)
 #    Project name
 project("OpenJK")
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
 #    Customizable options
 #option(InstallDir "Where to install the binaries to" "${CMAKE_SOURCE_DIR}/install") # just use CMAKE_INSTALL_PREFIX
 option(BuildMPEngine "Whether to create projects for the mp engine (jamp.exe)" ON)
@@ -19,18 +21,28 @@ set(BuildJK2SPGame OFF)
 #option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
 if(WIN32)
 	option(UseInternalOpenAL "Whether to use the included OpenAL instead of a locally installed one" ON)
-	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" OFF)
+	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" ON)
 endif(WIN32)
 # External version not yet supported, WIP
 # option(UseInternalJpeg "Whether to use the included libjpeg instead of a locally installed one" ON)
 # option(UseInternalPng "Whether to use the included libpng instead of a locally installed one" ON)
+option(PackageDir "Where to place the installer/package." "${CMAKE_SOURCE_DIR}/package")
 
 # Custom CMake Modules needed
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules" ${CMAKE_MODULE_PATH})
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
 
 # Arch Suffix
-# TODO don't hardcode
-set(Architecture "x86")
+if (CMAKE_SIZEOF_VOID_P MATCHES "8")
+	set(Architecture "x64")
+else (CMAKE_SIZEOF_VOID_P MATCHES "8")
+	set(Architecture "x86")
+endif (CMAKE_SIZEOF_VOID_P MATCHES "8")
+
+# Current Git SHA1 hash
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+# TODO: actually use the Git SHA1 for something?
+message("Git revision is ${GIT_SHA1}")
 
 # Binary names
 set(SPEngine "openjk_sp.${Architecture}")
@@ -98,3 +110,21 @@ if(BuildJK2SPGame)
 	add_subdirectory("${JK2SPDir}/game")
 endif(BuildJK2SPGame)
 add_subdirectory(${MPDir})
+
+#    CPack for installer creation
+# TODO: Which version are we?
+set(CPACK_PACKAGE_PACKAGE_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+# I'm just not appending the version for now
+set(CPACK_PACKAGE_FILE_NAME "OpenJK-${CMAKE_SYSTEM_NAME}-${Architecture}")
+
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "An improved Jedi Academy")
+set(CPACK_PACKAGE_VENDOR "JA Coders") # TODO: What are we called?
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_PACKAGE_DIRECTORY ${PACKAGE_DIR})
+set(CPACK_BINARY_ZIP ON) # always create at least a zip file
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0) # prevent additional directory in zip
+
+include(CPack)

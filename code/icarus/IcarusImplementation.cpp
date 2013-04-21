@@ -18,18 +18,16 @@ This file is part of Jedi Academy.
 
 // IcarusImplementation.cpp
 
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "IcarusInterface.h"
 #include "IcarusImplementation.h"
 
-#include "BlockStream.h"
-#include "Sequence.h"
-#include "TaskManager.h"
-#include "Sequencer.h"
+#include "blockstream.h"
+#include "sequence.h"
+#include "taskmanager.h"
+#include "sequencer.h"
 
-#ifndef _WIN32
 #include "../game/q_shared.h"
-#endif
 
 #define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); a++ )
 #define STL_INSERT( a, b )		a.insert( a.end(), b );

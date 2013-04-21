@@ -122,6 +122,7 @@ if(NOT WIN32)
 	set_target_properties(${MPCGame} PROPERTIES PREFIX "")
 endif(NOT WIN32)
 
+install(TARGETS ${MPCGame} LIBRARY DESTINATION "OpenJK")
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPCGameDefines};${ReleaseDefines}")
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPCGameDefines};${ReleaseDefines}")
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPCGameDefines};${ReleaseDefines}")

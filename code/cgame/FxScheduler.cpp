@@ -36,6 +36,10 @@ This file is part of Jedi Academy.
 	#include "../game/q_shared.h"
 #endif
 
+#ifndef _WIN32
+    #include <cmath>
+#endif
+
 
 CFxScheduler	theFxScheduler;
 
@@ -938,11 +942,7 @@ void CFxScheduler::PlayEffect( const char *file, int clientID, bool isPortal )
 
 		if ( prim->mSpawnFlags & FX_EVEN_DISTRIBUTION )
 		{
-#ifdef _WIN32
 			factor = abs(prim->mSpawnDelay.GetMax() - prim->mSpawnDelay.GetMin()) / (float)count;
-#else
-            factor = fabs(prim->mSpawnDelay.GetMax() - prim->mSpawnDelay.GetMin()) / (float)count;
-#endif
 		}
 
 		// Schedule the random number of bits
@@ -1241,11 +1241,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 
 		if ( prim->mSpawnFlags & FX_EVEN_DISTRIBUTION )
 		{
-#ifdef _WIN32
 			factor = abs(prim->mSpawnDelay.GetMax() - prim->mSpawnDelay.GetMin()) / (float)count;
-#else
-            factor = fabs(prim->mSpawnDelay.GetMax() - prim->mSpawnDelay.GetMin()) / (float)count;
-#endif
 		}
 
 		// Schedule the random number of bits

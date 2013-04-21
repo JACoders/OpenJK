@@ -32,7 +32,7 @@ This file is part of Jedi Academy.
 
 typedef int wfhandle_t;
 #else
-#include "../zlib/zlib.h"
+#include "../zlib32/zip.h"
 #include "unzip.h"
 #endif
 

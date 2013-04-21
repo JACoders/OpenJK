@@ -185,17 +185,6 @@ sysEvent_t Sys_GetEvent( void ) {
 
 	// check for network packets
 	MSG_Init( &netmsg, sys_packetReceived, sizeof( sys_packetReceived ) );
-	if ( Sys_GetPacket ( &adr, &netmsg ) ) {
-		netadr_t		*buf;
-		int				len;
-
-		// copy out to a seperate buffer for qeueing
-		len = sizeof( netadr_t ) + netmsg.cursize;
-		buf = (netadr_t *)Z_Malloc( len,TAG_EVENT,qfalse );
-		*buf = adr;
-		memcpy( buf+1, netmsg.data, netmsg.cursize );
-		Sys_QueEvent( 0, SE_PACKET, 0, 0, len, buf );
-	}
 
 	// return if we have data
 	if ( eventHead > eventTail ) {

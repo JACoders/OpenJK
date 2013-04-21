@@ -193,7 +193,11 @@ public:
 	int					entNum;
 	int					modelIndex;
 	skin_t				*skin;
-	/*struct*/ shader_t		*cust_shader;
+#if (defined _WIN32 && !defined MINGW32)
+	struct shader_t		*cust_shader;
+#else
+    shader_t            *cust_shader;
+#endif
 	int					*TransformedVertsArray;
 	int					traceFlags;
 	bool				hitOne;

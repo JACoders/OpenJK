@@ -1,6 +1,6 @@
 #include <SDL.h>
 #include "qcommon/qcommon.h"
-#include "tr_local.h"
+#include "../rd-vanilla/tr_local.h"
 #include "sdl_qgl.h"
 #include "sys/sys_local.h"
 
@@ -91,6 +91,9 @@ void ( APIENTRY * qglPointParameterfvEXT)( GLenum param, GLfloat *value );
 
 void ( * qglLockArraysEXT)( int, int);
 void ( * qglUnlockArraysEXT) ( void );
+
+void		GLimp_Minimize( void ) {
+}
 
 void		GLimp_EndFrame( void )
 {

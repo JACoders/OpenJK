@@ -66,7 +66,15 @@ typedef struct _GUID {
 #define stricmp Q_stricmp
 #define RGB(r,g,b)          ((COLORREF)((r) | ((g) << 8) | ((b) << 16)))
 
+#define _isnan isnan
 #define DLL_EXT "so"
+
+#define _snprintf snprintf
+
+#define __cdecl
+
+#define vsprintf_s vsprintf
+#define _strnicmp Q_stricmpn
 #endif
 
 #if defined (MACOS_X)
