@@ -61,33 +61,6 @@ qboolean Sys_LowPhysicalMemory() {
   return qfalse; // bk001207 - FIXME
 }
 
-/*
-==================
-Sys_FunctionCmp
-==================
-*/
-int Sys_FunctionCmp(void *f1, void *f2) {
-	return qtrue;
-}
-
-/*
-==================
-Sys_FunctionCheckSum
-==================
-*/
-int Sys_FunctionCheckSum(void *f1) {
-	return 0;
-}
-
-/*
-==================
-Sys_MonkeyShouldBeSpanked
-==================
-*/
-int Sys_MonkeyShouldBeSpanked( void ) {
-	return 0;
-}
-
 void Sys_BeginProfiling( void ) {
 }
 
@@ -347,22 +320,22 @@ void *Sys_LoadDll( const char *name,
   getcwd(curpath, sizeof(curpath));
 #if defined __i386__
 #ifndef NDEBUG
-  snprintf (fname, sizeof(fname), "%si386-debug.%s", name, DLL_EXT); // bk010205 - different DLL name
+  snprintf (fname, sizeof(fname), "%si386-debug%s", name, DLL_EXT); // bk010205 - different DLL name
 #else
-  snprintf (fname, sizeof(fname), "%si386.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%si386%s", name, DLL_EXT);
 #endif
 #elif defined __x86_64__
 #ifndef NDEBUG
-  snprintf (fname, sizeof(fname), "%sx86_64-debug.%s", name, DLL_EXT); // bk010205 - different DLL name
+  snprintf (fname, sizeof(fname), "%sx86_64-debug%s", name, DLL_EXT); // bk010205 - different DLL name
 #else
-  snprintf (fname, sizeof(fname), "%sx86_64.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%sx86_64%s", name, DLL_EXT);
 #endif
 #elif defined __powerpc__   //rcg010207 - PPC support.
-  snprintf (fname, sizeof(fname), "%sppc.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%sppc%s", name, DLL_EXT);
 #elif defined __axp__
-  snprintf (fname, sizeof(fname), "%saxp.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%saxp%s", name, DLL_EXT);
 #elif defined __mips__
-  snprintf (fname, sizeof(fname), "%smips.%s", name, DLL_EXT);
+  snprintf (fname, sizeof(fname), "%smips%s", name, DLL_EXT);
 #else
 #error Unknown arch
 #endif
@@ -1064,10 +1037,6 @@ sysEvent_t Sys_GetEvent( void ) {
 }
 
 /*****************************************************************************/
-
-qboolean Sys_CheckCD( void ) {
-	return qtrue;
-}
 
 void Sys_AppActivate (void)
 {

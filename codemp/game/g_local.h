@@ -26,7 +26,7 @@ extern vec3_t gPainPoint;
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"basejka"
+#define	GAMEVERSION	"basejka_modbase"
 
 #define SECURITY_LOG "security.log"
 
@@ -1405,13 +1405,6 @@ extern qboolean G_ClearLOS2( gentity_t *self, gentity_t *ent, const vec3_t end )
 extern qboolean G_ClearLOS3( gentity_t *self, const vec3_t start, gentity_t *ent );
 extern qboolean G_ClearLOS4( gentity_t *self, gentity_t *ent );
 extern qboolean G_ClearLOS5( gentity_t *self, const vec3_t end );
-
-//
-// g_arenas.c
-//
-void UpdateTournamentInfo( void );
-//void SpawnModelsOnVictoryPads( void );
-//void Svcmd_AbortPodium_f( void );
 
 //
 // g_bot.c

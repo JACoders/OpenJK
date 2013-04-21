@@ -1227,6 +1227,8 @@ void CG_DrawHUD(centity_t	*cent)
 
 	// Draw the left HUD 
 	menuHUD = Menus_FindByName("lefthud");
+	Menu_Paint( menuHUD, qtrue );
+
 	if (menuHUD)
 	{
 		itemDef_t *focusItem;
@@ -1310,6 +1312,7 @@ void CG_DrawHUD(centity_t	*cent)
 	}
 
 	menuHUD = Menus_FindByName("righthud");
+	Menu_Paint( menuHUD, qtrue );
 
 	if (menuHUD)
 	{
@@ -2568,7 +2571,7 @@ qboolean CG_DrawVehicleHud( const centity_t *cent )
 	}
 	veh = &cg_entities[ps->m_iVehicleNum];
 
-	if ( !veh )
+	if ( !veh || !veh->m_pVehicle )
 	{
 		return qtrue;	// Draw player HUD
 	}
