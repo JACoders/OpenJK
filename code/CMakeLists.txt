@@ -54,10 +54,9 @@ if(BuildSPEngine)
 	
 	#    Source Files
 	
-	file(GLOB_RECURSE J_SRC "${SPDir}/jpeg-6/*.cpp" "${SPDir}/jpeg-6/*.h")
-	source_group("jpeg-6" FILES ${J_SRC})
+	file(GLOB_RECURSE J_SRC "${SPDir}/jpeg-8c/*.c" "${SPDir}/jpeg-8c/*.h")
+	source_group("jpeg-8c" FILES ${J_SRC})
 	set(SPEngineFiles ${SPEngineFiles} ${J_SRC})
-
 
 	# Client files
 	set(SPEngineClientFiles
@@ -355,12 +354,20 @@ if(BuildSPEngine)
 
 	# zlib files
 	set(SPEngineZlibFiles
-		"${SPDir}/zlib32/deflate.cpp"
-		"${SPDir}/zlib32/inflate.cpp"
-		"${SPDir}/zlib32/zipcommon.cpp"
-		"${SPDir}/zlib32/deflate.h"
-		"${SPDir}/zlib32/inflate.h"
-		"${SPDir}/zlib32/zip.h"
+		"${SPDir}/zlib/deflate.c"
+		"${SPDir}/zlib/inflate.c"
+		"${SPDir}/zlib/crc32.c"
+		"${SPDir}/zlib/adler32.c"
+		"${SPDir}/zlib/trees.c"
+		"${SPDir}/zlib/infback.c"
+		"${SPDir}/zlib/inftrees.c"
+		"${SPDir}/zlib/inffast.c"
+		"${SPDir}/zlib/ioapi.c"
+		"${SPDir}/zlib/ioapi.h"
+		"${SPDir}/zlib/deflate.h"
+		"${SPDir}/zlib/inflate.h"
+		"${SPDir}/zlib/zutil.c"
+		"${SPDir}/zlib/zlib.h"
 		)
 	source_group("zlib" FILES ${SPEngineZlibFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineZlibFiles})

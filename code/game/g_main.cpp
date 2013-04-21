@@ -1691,7 +1691,7 @@ qboolean G_RagDoll(gentity_t *ent, vec3_t forcedAngles)
 		tParms.groundEnt = ent->client->ps.groundEntityNum;
 
 		tParms.collisionType = 1;
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 		tParms.RagPhase=CRagDollParams::ERagPhase::RP_DEATH_COLLISION;
 #else
         tParms.RagPhase=CRagDollParams::RP_DEATH_COLLISION;

@@ -2,10 +2,10 @@
 
 // leave this as first line for PCH reasons...
 //
-#include "game/q_shared.h"
-#include "qcommon/qcommon.h"
+#include "../game/q_shared.h"
+#include "../qcommon/qcommon.h"
 
-#include "zlib/zlib.h"
+#include "../zlib/zlib.h"
 #include "png.h"
 //#include "qcommon/memory.h"
 

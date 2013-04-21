@@ -116,7 +116,7 @@ template<class T, int IS_MULTI>
 class tree_base
 {
 public:
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	typedef typename T TStorageTraits;
 #else
     typedef T TStorageTraits;
@@ -853,7 +853,7 @@ class set_base : public tree_base<T,IS_MULTI>
 {
 
 public:
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	typedef typename T TStorageTraits;
 #else
     typedef T TStorageTraits;
@@ -1221,13 +1221,13 @@ template<class K,class V,int IS_MULTI>
 class map_base : public tree_base<K,IS_MULTI>
 {
 public:
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	typedef typename K TKeyStorageTraits;
 #else
     typedef K TKeyStorageTraits;
 #endif
 	typedef typename K::TValue TKTValue;
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	typedef typename V TValueStorageTraits;
 #else
     typedef V TValueStorageTraits;
@@ -1260,7 +1260,7 @@ public:
 	{
 		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
 
-		alloc_key(key);
+		this->alloc_key(key);
 		insert_alloced_key();		
 		assert(check_validity());
 		mValues.construct(index_of_alloced_key(),value);
@@ -1325,10 +1325,10 @@ public:
 	void		erase(const TKTValue &key)
 	{
 		//fixme this is a double search currently
-		int i=find_index(key);
+		int i=this->find_index(key);
 		if (i!=tree_node::NULL_NODE)
 		{
-			erase_index(i);
+			this->erase_index(i);
 			mValues.destruct(i);
 		}
 	}
@@ -1524,7 +1524,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	find(const TKTValue &key)
 	{
-		return iterator(this,find_index(key));		
+		return iterator(this,this->find_index(key));		
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////

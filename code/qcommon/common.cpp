@@ -34,6 +34,7 @@ This file is part of Jedi Academy.
 
 #ifdef MINGW32
 #define vsprintf_s snprintf
+//#define Q_vsnprintf snprintf
 #endif
 
 #define	MAXPRINTMSG	4096

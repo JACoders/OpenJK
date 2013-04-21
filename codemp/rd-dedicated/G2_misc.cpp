@@ -193,7 +193,7 @@ public:
 	int					entNum;
 	int					modelIndex;
 	skin_t				*skin;
-	struct shader_t		*cust_shader;
+	/*struct*/ shader_t		*cust_shader;
 	int					*TransformedVertsArray;
 	int					traceFlags;
 	bool				hitOne;

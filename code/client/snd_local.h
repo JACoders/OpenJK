@@ -26,19 +26,16 @@ This file is part of Jedi Academy.
 #include "snd_public.h"
 #include "../mp3code/mp3struct.h"
 
+#include "OpenAL/al.h"
+#include "OpenAL/alc.h"
+
 // Open AL Specific
-#ifdef _WIN32
-#include <al.h>
-#include <alc.h>
-#include "eax\eax.h"
-#include "eax\eaxman.h"
-#elif defined MACOS_X
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
-#else
-#include <AL/al.h>
-#include <AL/alc.h>
+#if (defined _WIN32)// && !defined MINGW32)
+#include "eax/eax.h"
+#include "eax/eaxman.h"
 #endif
+
+
 
 // Added for Open AL to know when to mute all sounds (e.g when app. loses focus)
 void S_AL_MuteAllSounds(qboolean bMute);

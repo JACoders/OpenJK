@@ -22,7 +22,7 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
-
+#include "../qcommon/platform.h"
 
 #include "../client/client.h"
 #include "win_local.h"
@@ -34,7 +34,9 @@ This file is part of Jedi Academy.
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
+#ifndef MINGW32
 #include <crtdbg.h>
+#endif
 
 // The following macros set and clear, respectively, given bits
 // of the C runtime library debug flag, as specified by a bitmask.
@@ -196,7 +198,7 @@ void QDECL Sys_Error( const char *error, ... ) {
     MSG        msg;
 
 	va_start (argptr, error);
-	vsprintf_s (text, error, argptr);
+	Q_vsnprintf (text, error, argptr);
 	va_end (argptr);
 
 	Conbuf_AppendText( text );
@@ -257,7 +259,6 @@ Sys_Mkdir
 void Sys_Mkdir( const char *path ) {
 	_mkdir (path);
 }
-
 /*
 ==============
 Sys_Cwd

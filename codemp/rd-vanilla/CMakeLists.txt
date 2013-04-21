@@ -116,5 +116,6 @@ set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELWIT
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${ReleaseDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${ReleaseDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${DebugDefines}")
+set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS "${SharedDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES INCLUDE_DIRECTORIES "${MPVanillaRendererIncludeDirectories}")
 target_link_libraries(${MPVanillaRenderer} ${MPVanillaRendererLibraries})
