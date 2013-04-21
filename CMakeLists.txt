@@ -33,9 +33,17 @@ list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
 
 # Arch Suffix
 if (CMAKE_SIZEOF_VOID_P MATCHES "8")
-	set(Architecture "x64")
+	if (WIN32)
+		set(Architecture "x64")
+	else (WIN32)
+		set(Architecture "x86_64")
+	endif(WIN32)
 else (CMAKE_SIZEOF_VOID_P MATCHES "8")
-	set(Architecture "x86")
+	if (WIN32)
+		set(Architecture "x86")
+	else (WIN32)
+		set(Architecture "i386")
+	endif(WIN32)
 endif (CMAKE_SIZEOF_VOID_P MATCHES "8")
 
 # Current Git SHA1 hash
