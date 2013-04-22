@@ -910,7 +910,7 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 	playerState_t	*ps;
 	int				i;
 	vec4_t			calcColor;
-	float			value,inc = 0.0f,percent;
+	float			value=0.0f,inc = 0.0f,percent;
 	itemDef_t		*focusItem;
 
 	ps = &cg.snap->ps;
@@ -932,8 +932,17 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 		return;
 	}
 
+	//
+	// ammo
+	//
+	if (cg.oldammo < value)
+	{
+		cg.oldAmmoTime = cg.time + 200;
+	}
+
+	cg.oldammo = value;
+
 	focusItem = Menu_FindItemByName(menuHUD, "ammoamount");
-	trap_R_SetColor( colorTable[CT_WHITE] );
 
 	if (weaponData[cent->currentState.weapon].energyPerShot == 0 &&
 		weaponData[cent->currentState.weapon].altEnergyPerShot == 0)
@@ -942,7 +951,7 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 		value = 8;
 
 		focusItem = Menu_FindItemByName(menuHUD, "ammoinfinite");
-		trap_R_SetColor( colorTable[CT_WHITE] );
+		trap_R_SetColor( colorTable[CT_YELLOW] );
 		if (focusItem)
 		{
 			UI_DrawProportionalString(focusItem->window.rect.x, focusItem->window.rect.y, "--", NUM_FONT_SMALL, focusItem->window.foreColor);
@@ -951,7 +960,34 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 	else
 	{
 		focusItem = Menu_FindItemByName(menuHUD, "ammoamount");
-		trap_R_SetColor( colorTable[CT_WHITE] );
+
+		// Firing or reloading?
+		if (( cg.predictedPlayerState.weaponstate == WEAPON_FIRING
+			&& cg.predictedPlayerState.weaponTime > 100 ))
+		{
+			memcpy(calcColor, colorTable[CT_LTGREY], sizeof(vec4_t));
+		} 
+		else 
+		{
+			if ( value > 0 ) 
+			{
+				if (cg.oldAmmoTime > cg.time)
+				{
+					memcpy(calcColor, colorTable[CT_YELLOW], sizeof(vec4_t));
+				}
+				else
+				{
+					memcpy(calcColor, focusItem->window.foreColor, sizeof(vec4_t));
+				}
+			} 
+			else 
+			{
+				memcpy(calcColor, colorTable[CT_RED], sizeof(vec4_t));
+			}
+		}
+
+
+		trap_R_SetColor( calcColor );
 		if (focusItem)
 		{
 
@@ -976,6 +1012,8 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 				qfalse);
 		}
 	}
+
+	trap_R_SetColor( colorTable[CT_WHITE] );
 
 	// Draw tics
 	for (i=MAX_HUD_TICS-1;i>=0;i--)
