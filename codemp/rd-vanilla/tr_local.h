@@ -3,11 +3,19 @@
 
 #include "qcommon/qfiles.h"
 #include "renderer/tr_public.h"
+#ifdef _WIN32
 #include "qgl.h"
+#else
+#include "../sdl/sdl_qgl.h"
+#endif
 #include "ghoul2/ghoul2_shared.h" //rwwRMG - added
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
+
+#ifndef _WIN32
+#include "qcommon/platform.h"
+#endif
 
 // fast float to int conversion
 #if id386 && !( (defined __linux__ || defined __FreeBSD__ || defined MACOS_X) && (defined __i386__ ) ) // rb010123
@@ -881,6 +889,7 @@ extern refimport_t ri;
 class CPBUFFER
 {
 private:
+#ifdef _WIN32
 	// Pixel Buffer Rendering and Device Contexts.
 	HGLRC m_hRC;
 	HDC m_hDC;
@@ -891,7 +900,7 @@ private:
 
 	// Buffer handle.
 	HPBUFFERARB m_hBuffer;
-
+#endif
 	// Buffer Dimensions.
 	int m_iWidth, m_iHeight;
 

@@ -215,7 +215,7 @@ public:
 	}
 
 	void	CameraShake( vec3_t origin, float intensity, int radius, int time );
-	qboolean SFxHelper::GetOriginAxisFromBolt(CGhoul2Info_v *pGhoul2, int mEntNum, int modelNum, int boltNum, vec3_t /*out*/origin, vec3_t /*out*/axis[3]);
+	qboolean GetOriginAxisFromBolt(CGhoul2Info_v *pGhoul2, int mEntNum, int modelNum, int boltNum, vec3_t /*out*/origin, vec3_t /*out*/axis[3]);
 };
 
 extern SFxHelper	theFxHelper;
