@@ -9,7 +9,7 @@
 #if defined (__linux__)
 typedef const char *LPCTSTR;
 typedef const char *LPCSTR;
-typedef unsigned int DWORD;
+typedef unsigned long DWORD;
 typedef unsigned int UINT;
 typedef void* HANDLE;
 typedef HANDLE HINSTANCE;
@@ -39,7 +39,7 @@ typedef struct _GUID {
 #if defined (MACOS_X)
 typedef const char *LPCTSTR;
 typedef const char *LPCSTR;
-typedef unsigned int DWORD;
+typedef unsigned long DWORD;
 typedef unsigned int UINT;
 typedef void* HANDLE;
 typedef HANDLE HINSTANCE;
