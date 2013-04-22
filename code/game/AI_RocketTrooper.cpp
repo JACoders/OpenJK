@@ -376,8 +376,11 @@ void RT_FlyStart( gentity_t *self )
 		self->svFlags |= SVF_CUSTOM_GRAVITY;
 		self->client->moveType = MT_FLYSWIM;
 		//Inform NPC_HandleAIFlags we want to fly
-		self->NPC->aiFlags |= NPCAI_FLY;
-		self->lastInAirTime = level.time;
+		
+		if (self->NPC){
+			self->NPC->aiFlags |= NPCAI_FLY;
+			self->lastInAirTime = level.time;
+		}
 		
 		//start jet effect
 		self->client->jetPackTime = Q3_INFINITE;
