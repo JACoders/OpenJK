@@ -51,6 +51,13 @@ if(BuildSPEngine)
 			"${SPDir}/client/eax/EaxMan.h"
 			)
 	endif(WIN32)
+
+	if(NOT WIN32)
+		find_package(SDL2 REQUIRED)
+		set(SPEngineIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${SDL2_INCLUDE_DIR})
+		set(SPEngineLibraries ${MPEngineAndDedLibraries} ${SDL2_LIBRARY})
+	endif(NOT WIN32)
+
 	
 	#    Source Files
 	
