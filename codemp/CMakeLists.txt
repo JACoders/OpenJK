@@ -33,7 +33,7 @@ if(BuildMPEngine OR BuildMPDed)
 
 	#    Botlib
 	# the files could arguably just be put into the engine and dedicated projects without having a library for it.
-	set(MPBotlibDefines "BOTLIB")
+	set(MPBotlibDefines ${SharedDefines} "BOTLIB")
 	set(MPBotlibIncludeDirectories "${MPDir}")
 	set(MPBotlibHeaderFiles
 		"${MPDir}/botlib/aasfile.h"
@@ -142,7 +142,14 @@ if(BuildMPEngine OR BuildMPDed)
 		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${ZLIB_INCLUDE_DIR})
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZLIB_LIBRARY})
 	endif(UseInternalZlib)
+
+	if(NOT WIN32)
+		find_package(SDL2 REQUIRED)
+		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${SDL2_INCLUDE_DIR})
+		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${SDL2_LIBRARY})
+	endif(NOT WIN32)
 	
+	file(GLOB_RECURSE J_SRC "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
 	
 	set(MPEngineAndDedCgameFiles
 		"${MPDir}/cgame/cg_public.h"
@@ -222,7 +229,6 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/vm.cpp"
 		"${MPDir}/qcommon/vm_interpreted.cpp"
 		"${MPDir}/qcommon/vm_local.h"
-		"${MPDir}/qcommon/vm_x86.cpp"
 		"${MPDir}/qcommon/z_memman_pc.cpp"
 		)
 	source_group("common" FILES ${MPEngineAndDedCommonFiles})
@@ -330,16 +336,25 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
 	
 	if(WIN32)
-		set(MPEngineAndDedWin32Files
+		set(MPEngineAndDedAllSortMe
+			${MPEngineAndDedAllSortMe}
 			"${MPDir}/win32/win_local.h"
 			"${MPDir}/win32/win_net.cpp"
 			"${MPDir}/win32/win_shared.cpp"
+			"${MPDir}/qcommon/vm_x86.cpp"
 			)
 		source_group("win32" FILES ${MPEngineAndDedWin32Files})
 		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedWin32Files})
 	else(WIN32)
-		message("TODO: Non-Win32 support")
+		set(MPEngineAndDedAllSortMe
+			${MPEngineAndDedAllSortMe}
+			"${MPDir}/sys/vm_x86.cpp"
+			"${MPDir}/sys/snapvector.nasm"
+			)
 	endif(WIN32)
+	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedAllSortMe})
+	source_group("SortMe" FILES ${MPEngineAndDedAllSortMe})
+	source_group("jpeg-8c" FILES ${J_SRC})
 	
 endif(BuildMPEngine OR BuildMPDed)
 
@@ -505,8 +520,22 @@ if(BuildMPEngine)
 		source_group("win32" FILES ${MPEngineWin32Files})
 		set(MPEngineFiles ${MPEngineFiles} ${MPEngineWin32Files})
 	else(WIN32)
-		message("Please add the OS-Specific files for your OS to codemp/CMakeLists.txt")
+		set(MPEngineSortMe
+			${MPEngineSortMe}
+			"${MPDir}/sdl/sdl_input.cpp"
+			"${MPDir}/sdl/sdl_qgl.h"
+			"${MPDir}/sdl/sdl_snd.cpp"
+			"${MPDir}/sys/sys_loadlib.h"
+			"${MPDir}/sys/sys_local.h"
+			"${MPDir}/sys/sys_main.cpp"
+			"${MPDir}/sys/sys_net.cpp"
+			"${MPDir}/sys/sys_unix.cpp"
+			"${MPDir}/sys/unix_local.h"
+			)
 	endif(WIN32)
+
+	set(MPEngineFiles ${MPEngineFiles} ${MPEngineSortMe})
+	source_group("SortMe" FILES ${MPEngineSortMe})
 
 	# todo: windows resources
 
@@ -594,8 +623,16 @@ if(BuildMPDed)
 		source_group("win32" FILES ${MPDedWin32Files})
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
 	else(WIN32)
-		message( "Add your dedicated server files to codemp/CMakeLists.txt please" )
+		set(MPDedSortMe ${MPDedSortMe}
+			"${MPDir}/sys/sys_main.cpp"
+			"${MPDir}/sys/sys_net.cpp"
+			"${MPDir}/sys/sys_unix.cpp"
+			"${MPDir}/sys/unix_local.h"
+			)
+		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 	endif(WIN32)
+	set(MPDedFiles ${MPDedFiles} ${MPDedSortMe})
+	source_group("SortMe" FILES ${MPDedSortMe})
 	
 	add_executable(${MPDed} ${MPDedFiles})
 	install(TARGETS ${MPDed} RUNTIME DESTINATION ".")

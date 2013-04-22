@@ -212,6 +212,7 @@ extern	refexport_t		re;					// interface to refresh .dll
 
 #define	MAX_MASTER_SERVERS	5
 
+extern	cvar_t	*sv_snaps;
 extern	cvar_t	*sv_fps;
 extern	cvar_t	*sv_timeout;
 extern	cvar_t	*sv_zombietime;
