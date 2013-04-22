@@ -179,7 +179,7 @@ extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qp
 
 void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 {
-	void *dllhandle;
+	void *dllhandle = NULL;
 	
 	if(useSystemLib)
 		Com_Printf("Trying to load \"%s\"...\n", name);
