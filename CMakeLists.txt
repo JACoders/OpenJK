@@ -66,7 +66,7 @@ set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 if(WIN32)
 	if(MSVC)
 		set(SharedDefines "WIN32" "_WINDOWS" "_CRT_SECURE_NO_WARNINGS")
-	else
+	else(MSVC)
 		set(SharedDefines "WIN32" "_WINDOWS")
 	endif(MSVC)
 else(WIN32)
