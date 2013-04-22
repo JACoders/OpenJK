@@ -285,7 +285,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	if( screen != NULL )
 	{
 		SDL_GetWindowPosition( screen, &x, &y );
-		ri.Printf( "Existing window at %dx%d before being destroyed\n", x, y );
+		ri.Printf( PRINT_DEVELOPER, "Existing window at %dx%d before being destroyed\n", x, y );
 		SDL_DestroyWindow( screen );
 		screen = NULL;
 	}
@@ -415,7 +415,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		if( ( screen = SDL_CreateWindow( CLIENT_WINDOW_TITLE, x, y,
 				glConfig.vidWidth, glConfig.vidHeight, flags ) ) == 0 )
 		{
-			ri.Printf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
+			ri.Printf( PRINT_DEVELOPER, "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
 			continue;
 		}
 
@@ -427,7 +427,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 			{
 				case 16: mode.format = SDL_PIXELFORMAT_RGB565; break;
 				case 24: mode.format = SDL_PIXELFORMAT_RGB24;  break;
-				default: ri.Printf( "testColorBits is %d, can't fullscreen\n", testColorBits ); continue;
+				default: ri.Printf( PRINT_DEVELOPER, "testColorBits is %d, can't fullscreen\n", testColorBits ); continue;
 			}
 
 			mode.w = glConfig.vidWidth;
@@ -437,7 +437,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 			if( SDL_SetWindowDisplayMode( screen, &mode ) < 0 )
 			{
-				ri.Printf( "SDL_SetWindowDisplayMode failed: %s\n", SDL_GetError( ) );
+				ri.Printf( PRINT_DEVELOPER, "SDL_SetWindowDisplayMode failed: %s\n", SDL_GetError( ) );
 				continue;
 			}
 		}
