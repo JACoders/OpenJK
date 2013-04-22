@@ -745,11 +745,16 @@ void RE_RenderScene( const refdef_t *fd ) {
 
 	tr.refdef.time = fd->time;
 	tr.refdef.frametime = fd->time - lastTime;
-	lastTime = fd->time;
 
 	if (fd->rdflags & RDF_SKYBOXPORTAL)
 	{
 		skyboxportal = 1;
+	}
+	else
+	{
+		// pasted this from SP
+		// cdr - only change last time for the real render, not the portal
+		lastTime = fd->time;
 	}
 
 	if (fd->rdflags & RDF_DRAWSKYBOX)
