@@ -5460,6 +5460,16 @@ static void PM_Footsteps( void ) {
 					desiredAnim = BOTH_WALK1;
 				}
 			}
+#ifdef QAGAME
+			else if ( pm->ps->clientNum >= MAX_CLIENTS &&
+				pm_entSelf &&
+				pm_entSelf->s.NPC_class == CLASS_JAWA)
+			{
+				// Jawa has a special run animation :D
+				desiredAnim = BOTH_RUN4;
+				bobmove = 0.2f;
+			} 
+#endif
 			else if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN )
 			{
 				switch (pm->ps->fd.saberAnimLevel)
