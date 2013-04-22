@@ -64,7 +64,11 @@ set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 
 # Common settings
 if(WIN32)
-	set(SharedDefines "WIN32" "_WINDOWS")
+	if(MSVC)
+		set(SharedDefines "WIN32" "_WINDOWS" "_CRT_SECURE_NO_WARNINGS")
+	else
+		set(SharedDefines "WIN32" "_WINDOWS")
+	endif(MSVC)
 else(WIN32)
 	message("Please find out what the defines for your platform are and add them to CMakeLists.txt")
 endif(WIN32)
