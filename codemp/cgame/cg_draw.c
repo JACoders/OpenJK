@@ -21,9 +21,6 @@ void CG_DrawDuelistHealth ( float x, float y, float w, float h, int duelist );
 // used for scoreboard
 extern displayContextDef_t cgDC;
 menuDef_t *menuScoreboard = NULL;
-vec4_t	bluehudtint = {0.5, 0.5, 1.0, 1.0};
-vec4_t	redhudtint = {1.0, 0.5, 0.5, 1.0};
-float	*hudTintColor;
 
 int sortedTeamPlayers[TEAM_MAXOVERLAY];
 int	numSortedTeamPlayers;
@@ -638,7 +635,7 @@ void CG_DrawHealth( menuDef_t *menuHUD )
 			continue;
 		}
 
-		memcpy(calcColor, hudTintColor, sizeof(vec4_t));
+		memcpy(calcColor, colorTable[CT_WHITE], sizeof(vec4_t));
 
 		if (currValue <= 0)	// don't show tic
 		{
@@ -711,7 +708,7 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 	currValue = ps->stats[STAT_ARMOR];
 	inc = (float) maxArmor / MAX_HUD_TICS;
 
-	memcpy(calcColor, hudTintColor, sizeof(vec4_t));
+	memcpy(calcColor, colorTable[CT_WHITE], sizeof(vec4_t));
 	for (i=(MAX_HUD_TICS-1);i>=0;i--)
 	{
 		focusItem = Menu_FindItemByName(menuHUD, armorTicName[i]);
@@ -721,7 +718,7 @@ void CG_DrawArmor( menuDef_t *menuHUD )
 			continue;
 		}
 
-		memcpy(calcColor, hudTintColor, sizeof(vec4_t));
+		memcpy(calcColor, colorTable[CT_WHITE], sizeof(vec4_t));
 
 		if (currValue <= 0)	// don't show tic
 		{
@@ -852,7 +849,7 @@ static void CG_DrawSaberStyle( centity_t *cent, menuDef_t *menuHUD)
 
 		if (focusItem)
 		{
-			trap_R_SetColor( hudTintColor );
+			trap_R_SetColor( colorTable[CT_WHITE] );
 
 			CG_DrawPic( 
 				focusItem->window.rect.x,
@@ -871,7 +868,7 @@ static void CG_DrawSaberStyle( centity_t *cent, menuDef_t *menuHUD)
 
 		if (focusItem)
 		{
-			trap_R_SetColor( hudTintColor );
+			trap_R_SetColor( colorTable[CT_WHITE] );
 
 			CG_DrawPic( 
 				focusItem->window.rect.x,
@@ -888,7 +885,7 @@ static void CG_DrawSaberStyle( centity_t *cent, menuDef_t *menuHUD)
 
 		if (focusItem)
 		{
-			trap_R_SetColor( hudTintColor );
+			trap_R_SetColor( colorTable[CT_WHITE] );
 
 			CG_DrawPic( 
 				focusItem->window.rect.x,
@@ -936,7 +933,7 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 	}
 
 	focusItem = Menu_FindItemByName(menuHUD, "ammoamount");
-	trap_R_SetColor( hudTintColor );
+	trap_R_SetColor( colorTable[CT_WHITE] );
 
 	if (weaponData[cent->currentState.weapon].energyPerShot == 0 &&
 		weaponData[cent->currentState.weapon].altEnergyPerShot == 0)
@@ -945,7 +942,7 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 		value = 8;
 
 		focusItem = Menu_FindItemByName(menuHUD, "ammoinfinite");
-		trap_R_SetColor( hudTintColor );
+		trap_R_SetColor( colorTable[CT_WHITE] );
 		if (focusItem)
 		{
 			UI_DrawProportionalString(focusItem->window.rect.x, focusItem->window.rect.y, "--", NUM_FONT_SMALL, focusItem->window.foreColor);
@@ -954,7 +951,7 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 	else
 	{
 		focusItem = Menu_FindItemByName(menuHUD, "ammoamount");
-		trap_R_SetColor( hudTintColor );
+		trap_R_SetColor( colorTable[CT_WHITE] );
 		if (focusItem)
 		{
 
@@ -990,7 +987,7 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 			continue;
 		}
 
-		memcpy(calcColor, hudTintColor, sizeof(vec4_t));
+		memcpy(calcColor, colorTable[CT_WHITE], sizeof(vec4_t));
 
 		if ( value <= 0 )	// done
 		{
@@ -1080,7 +1077,7 @@ void CG_DrawForcePower( menuDef_t *menuHUD )
 			continue;
 		}
 
-//		memcpy(calcColor, hudTintColor, sizeof(vec4_t));
+//		memcpy(calcColor, colorTable[CT_WHITE], sizeof(vec4_t));
 
 		if ( value <= 0 )	// done
 		{
@@ -1164,215 +1161,213 @@ void CG_DrawHUD(centity_t	*cent)
 		char ammoString[64];
 		int weapX = x;
 
-		UI_DrawProportionalString( x+16, y+40, va( "%i", cg.snap->ps.stats[STAT_HEALTH] ),
-			UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_RED] );
-
-		UI_DrawProportionalString( x+18+14, y+40+14, va( "%i", cg.snap->ps.stats[STAT_ARMOR] ),
-			UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_GREEN] );
-
-		if (cg.snap->ps.weapon == WP_SABER)
+		if (cg.predictedPlayerState.pm_type != PM_SPECTATOR)
 		{
-			if (cg.snap->ps.fd.saberDrawAnimLevel == SS_DUAL)
+			UI_DrawProportionalString( x+16, y+40, va( "%i", cg.snap->ps.stats[STAT_HEALTH] ),
+				UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_RED] );
+
+			UI_DrawProportionalString( x+18+14, y+40+14, va( "%i", cg.snap->ps.stats[STAT_ARMOR] ),
+				UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_GREEN] );
+
+			if (cg.snap->ps.weapon == WP_SABER)
 			{
-				Com_sprintf(ammoString, sizeof(ammoString), "AKIMBO");
+				if (cg.snap->ps.fd.saberDrawAnimLevel == SS_DUAL)
+				{
+					Com_sprintf(ammoString, sizeof(ammoString), "AKIMBO");
+					weapX += 16;
+				}
+				else if (cg.snap->ps.fd.saberDrawAnimLevel == SS_STAFF)
+				{
+					Com_sprintf(ammoString, sizeof(ammoString), "STAFF");
+					weapX += 16;
+				}
+				else if (cg.snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_3)
+				{
+					Com_sprintf(ammoString, sizeof(ammoString), "STRONG");
+					weapX += 16;
+				}
+				else if (cg.snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_2)
+				{
+					Com_sprintf(ammoString, sizeof(ammoString), "MEDIUM");
+					weapX += 16;
+				}
+				else
+				{
+					Com_sprintf(ammoString, sizeof(ammoString), "FAST");
+				}
+			}
+			else if (cg.snap->ps.weapon == WP_MELEE)
+			{
+				Com_sprintf(ammoString, sizeof(ammoString), "MELEE");
 				weapX += 16;
 			}
-			else if (cg.snap->ps.fd.saberDrawAnimLevel == SS_STAFF)
+			else if (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0)
 			{
-				Com_sprintf(ammoString, sizeof(ammoString), "STAFF");
-				weapX += 16;
-			}
-			else if (cg.snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_3)
-			{
-				Com_sprintf(ammoString, sizeof(ammoString), "STRONG");
-				weapX += 16;
-			}
-			else if (cg.snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_2)
-			{
-				Com_sprintf(ammoString, sizeof(ammoString), "MEDIUM");
-				weapX += 16;
+				Q_strncpyz(ammoString, "--", sizeof(ammoString));
 			}
 			else
 			{
-				Com_sprintf(ammoString, sizeof(ammoString), "FAST");
+				Com_sprintf(ammoString, sizeof(ammoString), "%i", cg.snap->ps.ammo[weaponData[cent->currentState.weapon].ammoIndex]);
 			}
-		}
-		else
-		{
-			Com_sprintf(ammoString, sizeof(ammoString), "%i", cg.snap->ps.ammo[weaponData[cent->currentState.weapon].ammoIndex]);
-		}
 		
-		UI_DrawProportionalString( SCREEN_WIDTH-(weapX+16+32), y+40, va( "%s", ammoString ),
-			UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_ORANGE] );
+			UI_DrawProportionalString( SCREEN_WIDTH-(weapX+16+32), y+40, va( "%s", ammoString ),
+				UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_ORANGE] );
 
-		UI_DrawProportionalString( SCREEN_WIDTH-(x+18+14+32), y+40+14, va( "%i", cg.snap->ps.fd.forcePower),
-			UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_ICON_BLUE] );
+			UI_DrawProportionalString( SCREEN_WIDTH-(x+18+14+32), y+40+14, va( "%i", cg.snap->ps.fd.forcePower),
+				UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_ICON_BLUE] );
+		}
 
 		return;
 	}
 
-	if (cgs.gametype >= GT_TEAM && cgs.gametype != GT_SIEGE)
-	{	// tint the hud items based on team
-		if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_RED )
-			hudTintColor = redhudtint;
-		else if (cg.snap->ps.persistant[PERS_TEAM] == TEAM_BLUE )
-			hudTintColor = bluehudtint;
-		else // If we're not on a team for whatever reason, leave things as they are.
-			hudTintColor = colorTable[CT_WHITE];
-	}
-	else
-	{	// tint the hud items white (dont' tint)
-		hudTintColor = colorTable[CT_WHITE];
-	}
-
-	// Draw the left HUD 
-	menuHUD = Menus_FindByName("lefthud");
-	Menu_Paint( menuHUD, qtrue );
-
-	if (menuHUD)
+	if (cg.predictedPlayerState.pm_type != PM_SPECTATOR)
 	{
-		itemDef_t *focusItem;
+		// Draw the left HUD 
+		menuHUD = Menus_FindByName("lefthud");
+		Menu_Paint( menuHUD, qtrue );
 
-		// Print scanline
-		focusItem = Menu_FindItemByName(menuHUD, "scanline");
-		if (focusItem)
+		if (menuHUD)
 		{
-			trap_R_SetColor( hudTintColor );	
-			CG_DrawPic( 
-				focusItem->window.rect.x, 
-				focusItem->window.rect.y, 
-				focusItem->window.rect.w, 
-				focusItem->window.rect.h, 
-				focusItem->window.background 
-				);			
-		}
+			itemDef_t *focusItem;
 
-		// Print frame
-		focusItem = Menu_FindItemByName(menuHUD, "frame");
-		if (focusItem)
-		{
-			trap_R_SetColor( hudTintColor );	
-			CG_DrawPic( 
-				focusItem->window.rect.x, 
-				focusItem->window.rect.y, 
-				focusItem->window.rect.w, 
-				focusItem->window.rect.h, 
-				focusItem->window.background 
-				);			
-		}
+			// Print scanline
+			focusItem = Menu_FindItemByName(menuHUD, "scanline");
+			if (focusItem)
+			{
+				trap_R_SetColor( colorTable[CT_WHITE] );	
+				CG_DrawPic( 
+					focusItem->window.rect.x, 
+					focusItem->window.rect.y, 
+					focusItem->window.rect.w, 
+					focusItem->window.rect.h, 
+					focusItem->window.background 
+					);			
+			}
 
-		if (cg.predictedPlayerState.pm_type != PM_SPECTATOR)
-		{
+			// Print frame
+			focusItem = Menu_FindItemByName(menuHUD, "frame");
+			if (focusItem)
+			{
+				trap_R_SetColor( colorTable[CT_WHITE] );	
+				CG_DrawPic( 
+					focusItem->window.rect.x, 
+					focusItem->window.rect.y, 
+					focusItem->window.rect.w, 
+					focusItem->window.rect.h, 
+					focusItem->window.background 
+					);			
+			}
+
 			CG_DrawArmor(menuHUD);
 			CG_DrawHealth(menuHUD);
 		}
-	}
-	else
-	{ 
-		//CG_Error("CG_ChatBox_ArrayInsert: unable to locate HUD menu file ");
-	}
+		else
+		{ 
+			//CG_Error("CG_ChatBox_ArrayInsert: unable to locate HUD menu file ");
+		}
 
-	//scoreStr = va("Score: %i", cgs.clientinfo[cg.snap->ps.clientNum].score);
-	if ( cgs.gametype == GT_DUEL )
-	{//A duel that requires more than one kill to knock the current enemy back to the queue
-		//show current kills out of how many needed
-		scoreStr = va("%s: %i/%i", CG_GetStringEdString("MP_INGAME", "SCORE"), cg.snap->ps.persistant[PERS_SCORE], cgs.fraglimit);
-	}
-	else if (0 && cgs.gametype < GT_TEAM )
-	{	// This is a teamless mode, draw the score bias.
-		scoreBias = cg.snap->ps.persistant[PERS_SCORE] - cgs.scores1;
-		if (scoreBias == 0)
-		{	// We are the leader!
-			if (cgs.scores2 <= 0)
-			{	// Nobody to be ahead of yet.
-				Com_sprintf(scoreBiasStr, sizeof(scoreBiasStr), "");
-			}
-			else
-			{
-				scoreBias = cg.snap->ps.persistant[PERS_SCORE] - cgs.scores2;
-				if (scoreBias == 0)
-				{
-					Com_sprintf(scoreBiasStr, sizeof(scoreBiasStr), " (Tie)");
+		//scoreStr = va("Score: %i", cgs.clientinfo[cg.snap->ps.clientNum].score);
+		if ( cgs.gametype == GT_DUEL )
+		{//A duel that requires more than one kill to knock the current enemy back to the queue
+			//show current kills out of how many needed
+			scoreStr = va("%s: %i/%i", CG_GetStringEdString("MP_INGAME", "SCORE"), cg.snap->ps.persistant[PERS_SCORE], cgs.fraglimit);
+		}
+		else if (0 && cgs.gametype < GT_TEAM )
+		{	// This is a teamless mode, draw the score bias.
+			scoreBias = cg.snap->ps.persistant[PERS_SCORE] - cgs.scores1;
+			if (scoreBias == 0)
+			{	// We are the leader!
+				if (cgs.scores2 <= 0)
+				{	// Nobody to be ahead of yet.
+					Com_sprintf(scoreBiasStr, sizeof(scoreBiasStr), "");
 				}
 				else
 				{
-					Com_sprintf(scoreBiasStr, sizeof(scoreBiasStr), " (+%d)", scoreBias);
+					scoreBias = cg.snap->ps.persistant[PERS_SCORE] - cgs.scores2;
+					if (scoreBias == 0)
+					{
+						Com_sprintf(scoreBiasStr, sizeof(scoreBiasStr), " (Tie)");
+					}
+					else
+					{
+						Com_sprintf(scoreBiasStr, sizeof(scoreBiasStr), " (+%d)", scoreBias);
+					}
 				}
 			}
-		}
-		else // if (scoreBias < 0)
-		{	// We are behind!
-			Com_sprintf(scoreBiasStr, sizeof(scoreBiasStr), " (%d)", scoreBias);
-		}
-		scoreStr = va("%s: %i%s", CG_GetStringEdString("MP_INGAME", "SCORE"), cg.snap->ps.persistant[PERS_SCORE], scoreBiasStr);
-	}
-	else
-	{	// Don't draw a bias.
-		scoreStr = va("%s: %i", CG_GetStringEdString("MP_INGAME", "SCORE"), cg.snap->ps.persistant[PERS_SCORE]);
-	}
-
-	menuHUD = Menus_FindByName("righthud");
-	Menu_Paint( menuHUD, qtrue );
-
-	if (menuHUD)
-	{
-		if (cgs.gametype != GT_POWERDUEL)
-		{
-			focusItem = Menu_FindItemByName(menuHUD, "score_line");
-			if (focusItem)
-			{
-				UI_DrawScaledProportionalString(
-					focusItem->window.rect.x, 
-					focusItem->window.rect.y, 
-					scoreStr, 
-					UI_RIGHT|UI_DROPSHADOW, 
-					focusItem->window.foreColor, 
-					0.7f);
+			else // if (scoreBias < 0)
+			{	// We are behind!
+				Com_sprintf(scoreBiasStr, sizeof(scoreBiasStr), " (%d)", scoreBias);
 			}
-		}
-
-		// Print scanline
-		focusItem = Menu_FindItemByName(menuHUD, "scanline");
-		if (focusItem)
-		{
-			trap_R_SetColor( hudTintColor );	
-			CG_DrawPic( 
-				focusItem->window.rect.x, 
-				focusItem->window.rect.y, 
-				focusItem->window.rect.w, 
-				focusItem->window.rect.h, 
-				focusItem->window.background 
-				);			
-		}
-
-		focusItem = Menu_FindItemByName(menuHUD, "frame");
-		if (focusItem)
-		{
-			trap_R_SetColor( hudTintColor );	
-			CG_DrawPic( 
-				focusItem->window.rect.x, 
-				focusItem->window.rect.y, 
-				focusItem->window.rect.w, 
-				focusItem->window.rect.h, 
-				focusItem->window.background 
-				);			
-		}
-
-		CG_DrawForcePower(menuHUD);
-
-		// Draw ammo tics or saber style
-		if ( cent->currentState.weapon == WP_SABER )
-		{
-			CG_DrawSaberStyle(cent,menuHUD);
+			scoreStr = va("%s: %i%s", CG_GetStringEdString("MP_INGAME", "SCORE"), cg.snap->ps.persistant[PERS_SCORE], scoreBiasStr);
 		}
 		else
-		{
-			CG_DrawAmmo(cent,menuHUD);
+		{	// Don't draw a bias.
+			scoreStr = va("%s: %i", CG_GetStringEdString("MP_INGAME", "SCORE"), cg.snap->ps.persistant[PERS_SCORE]);
 		}
-	}
-	else
-	{ 
-		//CG_Error("CG_ChatBox_ArrayInsert: unable to locate HUD menu file ");
+
+		menuHUD = Menus_FindByName("righthud");
+		Menu_Paint( menuHUD, qtrue );
+
+		if (menuHUD)
+		{
+			if (cgs.gametype != GT_POWERDUEL)
+			{
+				focusItem = Menu_FindItemByName(menuHUD, "score_line");
+				if (focusItem)
+				{
+					UI_DrawScaledProportionalString(
+						focusItem->window.rect.x, 
+						focusItem->window.rect.y, 
+						scoreStr, 
+						UI_RIGHT|UI_DROPSHADOW, 
+						focusItem->window.foreColor, 
+						0.7f);
+				}
+			}
+
+			// Print scanline
+			focusItem = Menu_FindItemByName(menuHUD, "scanline");
+			if (focusItem)
+			{
+				trap_R_SetColor( colorTable[CT_WHITE] );	
+				CG_DrawPic( 
+					focusItem->window.rect.x, 
+					focusItem->window.rect.y, 
+					focusItem->window.rect.w, 
+					focusItem->window.rect.h, 
+					focusItem->window.background 
+					);			
+			}
+
+			focusItem = Menu_FindItemByName(menuHUD, "frame");
+			if (focusItem)
+			{
+				trap_R_SetColor( colorTable[CT_WHITE] );	
+				CG_DrawPic( 
+					focusItem->window.rect.x, 
+					focusItem->window.rect.y, 
+					focusItem->window.rect.w, 
+					focusItem->window.rect.h, 
+					focusItem->window.background 
+					);			
+			}
+
+			CG_DrawForcePower(menuHUD);
+
+			// Draw ammo tics or saber style
+			if ( cent->currentState.weapon == WP_SABER )
+			{
+				CG_DrawSaberStyle(cent,menuHUD);
+			}
+			else
+			{
+				CG_DrawAmmo(cent,menuHUD);
+			}
+		}
+		else
+		{ 
+			//CG_Error("CG_ChatBox_ArrayInsert: unable to locate HUD menu file ");
+		}
 	}
 }
 

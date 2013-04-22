@@ -4,10 +4,6 @@
 #include "cg_local.h"
 #include "fx_local.h"
 
-extern vec4_t	bluehudtint;
-extern vec4_t	redhudtint;
-extern float	*hudTintColor;
-
 /*
 Ghoul2 Insert Start
 */
