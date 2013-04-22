@@ -11,12 +11,12 @@ typedef const char *LPCTSTR;
 typedef const char *LPCSTR;
 typedef unsigned int DWORD;
 typedef unsigned int UINT;
-typedef int INT32;
 typedef void* HANDLE;
 typedef HANDLE HINSTANCE;
 typedef void *PVOID;
 typedef DWORD COLORREF;
 typedef unsigned char BYTE;
+typedef unsigned char byte;
 typedef long LONG;
 typedef struct tagPOINT {
   LONG x;
@@ -41,12 +41,12 @@ typedef const char *LPCTSTR;
 typedef const char *LPCSTR;
 typedef unsigned int DWORD;
 typedef unsigned int UINT;
-typedef int INT32;
 typedef void* HANDLE;
 typedef HANDLE HINSTANCE;
 typedef void *PVOID;
 typedef DWORD COLORREF;
 typedef unsigned char BYTE;
+typedef unsigned char byte;
 typedef long LONG;
 typedef struct tagPOINT {
     LONG x;
