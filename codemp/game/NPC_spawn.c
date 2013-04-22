@@ -261,7 +261,10 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 	{//FIXME: extern this into NPC.cfg?
 		ent->NPC->scriptFlags |= SCF_NO_FORCE;//force powers don't work on him
 	}
-	if ( !Q_stricmp( "emperor", ent->NPC_type ) )
+	if ( !Q_stricmp( "emperor", ent->NPC_type ) 
+		|| !Q_stricmp( "cultist_grip", ent->NPC_type )
+		|| !Q_stricmp( "cultist_drain", ent->NPC_type )
+		|| !Q_stricmp( "cultist_lightning", ent->NPC_type ))
 	{//FIXME: extern this into NPC.cfg?
 		ent->NPC->scriptFlags |= SCF_DONT_FIRE;//so he uses only force powers
 	}
