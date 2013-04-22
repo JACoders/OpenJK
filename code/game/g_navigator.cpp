@@ -200,7 +200,7 @@ public:
 		WN_NOAUTOCONNECT,
 		WN_MAX
 	};
-    ratl::bits_vs<WN_MAX>   mFlags;
+	ratl::bits_vs<WN_MAX>	mFlags;
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// Access Operator (For Cells)(For Triangulation)
