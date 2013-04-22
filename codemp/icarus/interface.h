@@ -6,7 +6,7 @@
 //#include "server/server.h"
 //#include "game/g_public.h"
 
-typedef unsigned int       DWORD;
+typedef unsigned long       DWORD;
 
 typedef	float	vec_t;
 typedef	vec_t	vec3_t[3];
