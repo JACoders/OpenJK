@@ -27,6 +27,11 @@ This file is part of Jedi Academy.
 
 #pragma optimize("", off)
 
+// The above optmization triggers this warning:
+// "/GS can not protect parameters and local variables from local buffer overrun because optimizations are disabled in function"
+// We don't give a rats ass.
+#pragma warning(disable: 4748)
+
 void R_LoadDataImage	( const char *name, byte **pic, int *width, int *height);
 void R_InvertImage		( byte *data, int width, int height, int depth);
 void R_Resample			( byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
@@ -547,5 +552,7 @@ void RM_ShutdownTerrain(void)
 }
 
 // end
+
+#pragma warning(default: 4748)
 
 #pragma optimize("", on)
