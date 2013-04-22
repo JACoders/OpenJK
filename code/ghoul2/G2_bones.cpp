@@ -1573,11 +1573,11 @@ void G2_SetRagDoll(CGhoul2Info_v &ghoul2V,CRagDollParams *parms)
 	int	index = G2_Find_Bone_Rag(&ghoul2, blist, "model_root");
 	switch (parms->RagPhase)
 	{
-	case CRagDollParams::ERagPhase::RP_START_DEATH_ANIM:
+	case CRagDollParams::RP_START_DEATH_ANIM:
 		ghoul2.mFlags|=GHOUL2_RAG_PENDING;
 		return;  /// not doing anything with this yet
 		break;
-	case CRagDollParams::ERagPhase::RP_END_DEATH_ANIM:
+	case CRagDollParams::RP_END_DEATH_ANIM:
 		ghoul2.mFlags|=GHOUL2_RAG_PENDING|GHOUL2_RAG_DONE;
 		if (broadsword_waitforshot &&
 			broadsword_waitforshot->integer)
@@ -1596,7 +1596,7 @@ void G2_SetRagDoll(CGhoul2Info_v &ghoul2V,CRagDollParams *parms)
 			}
 		}
 		break;
-	case CRagDollParams::ERagPhase::RP_DEATH_COLLISION:
+	case CRagDollParams::RP_DEATH_COLLISION:
 		if (parms->collisionType)
 		{
 			ghoul2.mFlags|=GHOUL2_RAG_COLLISION_SLIDE;
@@ -1615,7 +1615,7 @@ void G2_SetRagDoll(CGhoul2Info_v &ghoul2V,CRagDollParams *parms)
 			}
 		}
 		break;
-	case CRagDollParams::ERagPhase::RP_CORPSE_SHOT:
+	case CRagDollParams::RP_CORPSE_SHOT:
 		if (broadsword_kickorigin &&
 			broadsword_kickorigin->integer)
 		{
@@ -1650,14 +1650,14 @@ void G2_SetRagDoll(CGhoul2Info_v &ghoul2V,CRagDollParams *parms)
 			}
 		}
 		break;
-	case CRagDollParams::ERagPhase::RP_GET_PELVIS_OFFSET:
-		if (parms->RagPhase==CRagDollParams::ERagPhase::RP_GET_PELVIS_OFFSET)
+	case CRagDollParams::RP_GET_PELVIS_OFFSET:
+		if (parms->RagPhase==CRagDollParams::RP_GET_PELVIS_OFFSET)
 		{
 			VectorClear(parms->pelvisAnglesOffset);
 			VectorClear(parms->pelvisPositionOffset);
 		}
 		// intentional lack of a break
-	case CRagDollParams::ERagPhase::RP_SET_PELVIS_OFFSET:
+	case CRagDollParams::RP_SET_PELVIS_OFFSET:
 		if (index>=0&&index<blist.size())
 		{
 			boneInfo_t &bone=blist[index];
@@ -1665,7 +1665,7 @@ void G2_SetRagDoll(CGhoul2Info_v &ghoul2V,CRagDollParams *parms)
 			{
 				if (bone.flags & BONE_ANGLES_RAGDOLL)
 				{
-					if (parms->RagPhase==CRagDollParams::ERagPhase::RP_GET_PELVIS_OFFSET)
+					if (parms->RagPhase==CRagDollParams::RP_GET_PELVIS_OFFSET)
 					{
 						VectorCopy(bone.anglesOffset,parms->pelvisAnglesOffset);
 						VectorCopy(bone.positionOffset,parms->pelvisPositionOffset);
@@ -1680,7 +1680,7 @@ void G2_SetRagDoll(CGhoul2Info_v &ghoul2V,CRagDollParams *parms)
 		}
 		return;
 		break;
-	case CRagDollParams::ERagPhase::RP_DISABLE_EFFECTORS:
+	case CRagDollParams::RP_DISABLE_EFFECTORS:
 		// not doing anything with this yet
 		return;
 		break;

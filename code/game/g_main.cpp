@@ -1688,7 +1688,7 @@ qboolean G_RagDoll(gentity_t *ent, vec3_t forcedAngles)
 		tParms.groundEnt = ent->client->ps.groundEntityNum;
 
 		tParms.collisionType = 1;
-		tParms.RagPhase=CRagDollParams::ERagPhase::RP_DEATH_COLLISION;
+		tParms.RagPhase=CRagDollParams::RP_DEATH_COLLISION;
 		tParms.fShotStrength = 4;
 
 		gi.G2API_SetRagDoll(ent->ghoul2, &tParms);

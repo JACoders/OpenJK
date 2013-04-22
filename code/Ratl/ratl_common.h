@@ -73,6 +73,7 @@ This file is part of Jedi Academy.
 	#pragma warning ( disable : 4512 )			// unable to generate default operator=
 	#pragma warning ( disable : 4130 )			// logical operation on address of string constant
 	#pragma warning ( disable : 4127 )			// conditional expression is constant
+	#pragma warning ( disable : 4996 )			// This function or variable may be unsafe.
 #endif
 
 
