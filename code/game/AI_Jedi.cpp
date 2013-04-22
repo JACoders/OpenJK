@@ -6843,7 +6843,8 @@ static void Jedi_Attack( void )
 			}
 		}
 	}
-	if ( NPC->enemy->NPC  
+	else if ( NPC->enemy &&
+		NPC->enemy->NPC  
 		&& NPC->enemy->NPC->charmedTime > level.time )
 	{//my enemy was charmed
 		if ( OnSameTeam( NPC, NPC->enemy ) )
