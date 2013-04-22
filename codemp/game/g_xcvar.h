@@ -148,7 +148,7 @@ XCVAR_DEF( pmove_fixed,					"0",			NULL,				CVAR_SYSTEMINFO|CVAR_ARCHIVE,					qf
 XCVAR_DEF( pmove_msec,					"8",			NULL,				CVAR_SYSTEMINFO,								qfalse )
 XCVAR_DEF( RMG,							"0",			NULL,				CVAR_NONE,										qtrue )
 XCVAR_DEF( sv_cheats,					"",				NULL,				CVAR_NONE,										qfalse )
-XCVAR_DEF( sv_fps,						"20",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( sv_fps,						"40",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( sv_maxclients,				"32",			NULL,				CVAR_SERVERINFO|CVAR_LATCH|CVAR_ARCHIVE,		qfalse )
 XCVAR_DEF( timelimit,					"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NORESTART,	qtrue )
 

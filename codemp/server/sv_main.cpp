@@ -11,6 +11,7 @@ serverStatic_t	svs;				// persistant server info
 server_t		sv;					// local server
 vm_t			*gvm = NULL;				// game virtual machine // bk001212 init
 
+cvar_t	*sv_snaps;				// maximum snapshots/sec a client can request, also limited by sv_fps
 cvar_t	*sv_fps;				// time rate for running non-clients
 cvar_t	*sv_timeout;			// seconds without any message
 cvar_t	*sv_zombietime;			// seconds to sink messages after disconnect
@@ -1000,13 +1001,13 @@ SV_CheckCvars
 ==================
 */
 void SV_CheckCvars( void ) {
-	static int lastMod = -1;
-	qboolean	changed = qfalse;
+	static int lastModHostname = -1, lastModFramerate = -1, lastModSnaps = -1;
+	qboolean changed = qfalse;
 	
-	if ( sv_hostname->modificationCount != lastMod ) {
+	if ( sv_hostname->modificationCount != lastModHostname ) {
 		char hostname[MAX_INFO_STRING];
 		char *c = hostname;
-		lastMod = sv_hostname->modificationCount;
+		lastModHostname = sv_hostname->modificationCount;
 		
 		strcpy( hostname, sv_hostname->string );
 		while( *c )
@@ -1022,7 +1023,21 @@ void SV_CheckCvars( void ) {
 		{
 			Cvar_Set("sv_hostname", hostname );
 		}
-		
+	}
+
+	// check limits on client "snaps" value based on server framerate and snapshot rate
+	if ( sv_fps->modificationCount != lastModFramerate || sv_snaps->modificationCount != lastModSnaps ) {
+		client_t *cl = NULL;
+		int i=0;
+		int limit = min( sv_fps->integer, sv_snaps->integer );
+
+		lastModFramerate = sv_fps->modificationCount;
+		lastModSnaps = sv_snaps->modificationCount;
+
+		for ( i=0, cl=svs.clients; i<sv_maxclients->integer; i++, cl++ ) {
+			if ( cl->snapshotMsec > 1000/limit )
+				cl->snapshotMsec = 1000/limit;
+		}
 	}
 }
 
