@@ -1,4 +1,7 @@
-// linux_local.h: Linux-specific Quake3 header file
+#ifndef UNIX_LOCAL_H
+#define UNIX_LOCAL_H
+
+// unix_local.h: Linux-specific Quake3 header file
 
 void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr );
 qboolean Sys_GetPacket ( netadr_t *net_from, msg_t *net_message );
@@ -26,4 +29,4 @@ void QGL_Shutdown( void );
 // bk001130 - win32
 // void IN_JoystickCommands (void);
 
-char *strlwr (char *s);
+#endif /* UNIX_LOCAL_H */

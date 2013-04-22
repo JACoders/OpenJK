@@ -398,6 +398,8 @@ extern	cvar_t	*cl_allowAltEnter;
 extern	cvar_t	*cl_conXOffset;
 extern	cvar_t	*cl_inGameVideo;
 
+extern	cvar_t	*cl_consoleKeys;
+
 //=================================================
 
 //
