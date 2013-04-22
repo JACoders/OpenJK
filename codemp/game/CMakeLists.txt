@@ -8,8 +8,6 @@ endif(NOT InOpenJK)
 set(MPGameIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPGameLibraries "winmm")
-else(WIN32)
-	message("codemp/game/CMakeLists.txt might need some libraries to link properly on your platform.")
 endif(WIN32)
 set(MPGameDefines ${MPSharedDefines} "QAGAME" "MISSIONPACK" )
 set(MPGameGameFiles
@@ -187,7 +185,13 @@ source_group("ui" FILES ${MPGameUiFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameUiFiles})
 
 add_library(${MPGame} SHARED ${MPGameFiles})
-install(TARGETS ${MPGame} RUNTIME DESTINATION "OpenJK")
+
+if(NOT WIN32)
+	# remove "lib" prefix for .so/.dylib files
+	set_target_properties(${MPGame} PROPERTIES PREFIX "")
+endif(NOT WIN32)
+
+install(TARGETS ${MPGame} LIBRARY DESTINATION "OpenJK")
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPGameDefines};${ReleaseDefines}")
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPGameDefines};${ReleaseDefines}")
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPGameDefines};${ReleaseDefines}")

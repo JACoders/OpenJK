@@ -207,11 +207,14 @@ float FloatSwap( const float *f );
 #ifdef MACOS_X
 
 	#include <sys/mman.h>
+    #include <unistd.h>
 
 	#define __cdecl
 	#define __declspec(x)
 	#define stricmp strcasecmp
 	#define ID_INLINE /*inline*/ 
+
+    #define OS_STRING "MacOSX"
 
 	#ifdef __ppc__
 		#define CPUSTRING "MacOSX-ppc"
@@ -247,23 +250,25 @@ float FloatSwap( const float *f );
 		return fi;
 	}
 
-    #ifdef __ppc__
-        #define LittleShort(x) ShortSwap(x)
-        #define LittleLong(x) LongSwap(x)
-        #define LittleFloat(x) FloatSwap(&x)
-        #define BigShort
-        #define BigLong
-        #define BigFloat
-    #elif defined __i386__
-        #define LittleShort
-        #define LittleLong
-        #define LittleFloat
-        #define BigShort(x) ShortSwap(x)
-        #define BigLong(x) LongSwap(x)
-        #define BigFloat(x) FloatSwap(&x)
+    #if defined(__i386__)
+        #define ARCH_STRING "i386"
+    #elif defined(__x86_64__)
+        #define idx64
+        #define ARCH_STRING "x86_64"
+    #elif defined(__powerpc64__)
+        #define ARCH_STRING "ppc64"
+    #elif defined(__powerpc__)
+        #define ARCH_STRING "ppc"
     #endif
 
-	#define DLL_EXT ".dylib"
+    #define DLL_EXT ".dylib"
+
+#if BYTE_ORDER == BIG_ENDIAN
+#define Q3_BIG_ENDIAN
+#else
+#define Q3_LITTLE_ENDIAN
+#endif
+
 
 #endif // MACOS_X
 
@@ -1616,6 +1621,7 @@ void SkipRestOfLine ( const char **data );
 void Parse1DMatrix (const char **buf_p, int x, float *m);
 void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
+int Com_HexStrToInt( const char *str );
 
 int	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
 
