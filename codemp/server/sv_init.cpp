@@ -944,6 +944,7 @@ void SV_Init (void) {
 	// server vars
 	sv_rconPassword = Cvar_Get ("rconPassword", "", CVAR_TEMP );
 	sv_privatePassword = Cvar_Get ("sv_privatePassword", "", CVAR_TEMP );
+	sv_snaps = Cvar_Get ("sv_snaps", "40", CVAR_ARCHIVE );
 	sv_fps = Cvar_Get ("sv_fps", "40", CVAR_SERVERINFO );
 	sv_timeout = Cvar_Get ("sv_timeout", "200", CVAR_TEMP );
 	sv_zombietime = Cvar_Get ("sv_zombietime", "2", CVAR_TEMP );

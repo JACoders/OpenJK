@@ -4,10 +4,6 @@
 #include "cg_local.h"
 #include "fx_local.h"
 
-extern vec4_t	bluehudtint;
-extern vec4_t	redhudtint;
-extern float	*hudTintColor;
-
 /*
 Ghoul2 Insert Start
 */
@@ -841,7 +837,8 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 		hand.frame = hand.oldframe = cg_debugGun.integer;
 		hand.backlerp = 0;
 	} else {
-		float currentFrame;
+		float currentFrame, animSpeed;
+		int startFrame, endFrame, flags;
 
 		// get clientinfo for animation map
 		if (cent->currentState.eType == ET_NPC)
@@ -858,9 +855,9 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 			ci = &cgs.clientinfo[ cent->currentState.clientNum ];
 		}
 
-		trap_G2API_GetBoneFrame(cent->ghoul2, "lower_lumbar", cg.time, &currentFrame, cgs.gameModels, 0);
-		hand.frame = CG_MapTorsoToWeaponFrame( ci, ceil( currentFrame ), cent->currentState.torsoAnim );
-		hand.oldframe = CG_MapTorsoToWeaponFrame( ci, floor( currentFrame ), cent->currentState.torsoAnim );
+		trap_G2API_GetBoneAnim(cent->ghoul2, "lower_lumbar", cg.time, &currentFrame, &startFrame, &endFrame, &flags, &animSpeed, cgs.gameModels, 0);
+		hand.frame = CG_MapTorsoToWeaponFrame( ci, ceil( currentFrame ), ps->torsoAnim );
+		hand.oldframe = CG_MapTorsoToWeaponFrame( ci, floor( currentFrame ), ps->torsoAnim );
 		hand.backlerp = 1.0f - (currentFrame-floor(currentFrame));
 
 		// Handle the fringe situation where oldframe is invalid

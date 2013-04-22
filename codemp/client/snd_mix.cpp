@@ -71,7 +71,7 @@ void S_WriteLinearBlastStereo16 (void)
 			snd_out[i+1] = val;
 	}
 }
-#else
+#elif !defined(__linux__)
 unsigned int uiMMXAvailable = 0;	// leave as 32 bit
 __declspec( naked ) void S_WriteLinearBlastStereo16 (void)
 {

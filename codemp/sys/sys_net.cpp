@@ -70,7 +70,7 @@ void SockadrToNetadr (struct sockaddr_in *s, netadr_t *a)
 char	*NET_BaseAdrToString (netadr_t a)
 {
 	static	char	s[64];
-	
+
 	Com_sprintf (s, sizeof(s), "%i.%i.%i.%i", a.ip[0], a.ip[1], a.ip[2], a.ip[3]);
 
 	return s;
@@ -88,12 +88,12 @@ qboolean	Sys_StringToSockaddr (const char *s, struct sockaddr *sadr)
 {
 	struct hostent	*h;
 	//char	*colon; // bk001204 - unused
-	
+
 	memset (sadr, 0, sizeof(*sadr));
 	((struct sockaddr_in *)sadr)->sin_family = AF_INET;
-	
+
 	((struct sockaddr_in *)sadr)->sin_port = 0;
-	
+
 	if ( s[0] >= '0' && s[0] <= '9')
 	{
 		*(int *)&((struct sockaddr_in *)sadr)->sin_addr = inet_addr(s);
@@ -104,7 +104,7 @@ qboolean	Sys_StringToSockaddr (const char *s, struct sockaddr *sadr)
 			return qfalse;
 		*(int *)&((struct sockaddr_in *)sadr)->sin_addr = *(int *)h->h_addr_list[0];
 	}
-	
+
 	return qtrue;
 }
 
@@ -279,7 +279,7 @@ qboolean	Sys_IsLANAddress (netadr_t adr) {
 		}
 		return qfalse;
 	}
-*/ 
+*/
 	//we only look at class C since ISPs and Universities are using class A but we don't want to consider them on the same LAN.
 	// Class C
 	for ( i = 0 ; i < numIP ; i++ ) {
@@ -327,12 +327,12 @@ void NET_GetLocalAddress( void ) {
         struct sockaddr_dl *sdl;
         int interfaceSocket;
         int family;
-        
+
         //Com_Printf("NET_GetLocalAddress: Querying for network interfaces\n");
-        
+
         // Set this early so we can just return if there is an error
 	numIP = 0;
-        
+
         ifc.ifc_len = sizeof(requestBuffer);
         ifc.ifc_buf = (caddr_t)requestBuffer;
 
@@ -377,9 +377,9 @@ void NET_GetLocalAddress( void ) {
                             } else {
                                 struct sockaddr_in *sin;
                                 int ip;
-            
+
                                 sin = (struct sockaddr_in *)&ifr.ifr_addr;
-            
+
                                 ip = ntohl(sin->sin_addr.s_addr);
                                 localIP[ numIP ][0] = (ip >> 24) & 0xff;
                                 localIP[ numIP ][1] = (ip >> 16) & 0xff;

@@ -1399,7 +1399,10 @@ void NPC_RunBehavior( int team, int bState )
 		NPC_CheckCharmed();
 		return;
 	}
-	else if ( NPC->client->ps.weapon == WP_SABER )
+//	else if ( NPC->client->ps.weapon == WP_SABER )		// this is an _extremely_ shitty comparison.. FIXME: make a CLASS_CULTIST? --eez
+	else if ( NPC->client->NPC_class == CLASS_JEDI || 
+		NPC->client->NPC_class == CLASS_REBORN ||
+		NPC->client->ps.weapon == WP_SABER )
 	{//jedi
 		NPC_BehaviorSet_Jedi( bState );
 		dontSetAim = qtrue;
