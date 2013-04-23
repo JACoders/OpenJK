@@ -4,7 +4,7 @@
 
 #if (defined _WINDOWS || defined MINGW32)
 #define PATH_SEP '\\'
-#define DLL_EXT "dll"
+#define DLL_EXT ".dll"
 #include <windows.h>
 #endif
 
@@ -67,7 +67,8 @@ typedef struct _GUID {
 #define RGB(r,g,b)          ((COLORREF)((r) | ((g) << 8) | ((b) << 16)))
 
 #define _isnan isnan
-#define DLL_EXT "so"
+#define ARCH "i386"
+#define DLL_EXT ".so"
 
 #define _snprintf snprintf
 
@@ -75,6 +76,8 @@ typedef struct _GUID {
 
 #define vsprintf_s vsprintf
 #define _strnicmp Q_stricmpn
+
+#define OutputDebugString printf
 #endif
 
 #if defined (MACOS_X)
@@ -109,7 +112,8 @@ typedef struct _GUID {
 #define RGB(r,g,b)          ((COLORREF)((r) | ((g) << 8) | ((b) << 16)))
 
 #define _isnan isnan
-#define DLL_EXT "dylib"
+#define ARCH "i386"
+#define DLL_EXT ".dylib"
 
 #define _snprintf snprintf
 
@@ -117,6 +121,8 @@ typedef struct _GUID {
 
 #define vsprintf_s vsprintf
 #define _strnicmp Q_stricmpn
+
+#define OutputDebugString printf
 #endif
 
 #endif

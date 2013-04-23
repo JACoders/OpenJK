@@ -213,7 +213,7 @@ void FS_DeleteUserGenFile( const char *filename )
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
 	}
 
-	ospath = FS_BuildOSPath( fs_basepath->string, fs_gamedir, filename );
+	ospath = FS_BuildOSPath( fs_homepath->string, fs_gamedir, filename );
 
 	if ( fs_debug->integer ) 
 	{
@@ -237,8 +237,8 @@ qboolean FS_MoveUserGenFile( const char *filename_src, const char *filename_dst 
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
 	}
 
-	ospath_src = FS_BuildOSPath( fs_basepath->string, fs_gamedir, filename_src );
-	ospath_dst = FS_BuildOSPath( fs_basepath->string, fs_gamedir, filename_dst );
+	ospath_src = FS_BuildOSPath( fs_homepath->string, fs_gamedir, filename_src );
+	ospath_dst = FS_BuildOSPath( fs_homepath->string, fs_gamedir, filename_dst );
 
 	if ( fs_debug->integer ) 
 	{
@@ -288,7 +288,7 @@ fileHandle_t FS_FOpenFileWrite( const char *filename ) {
 	f = FS_HandleForFile();
 	fsh[f].zipFile = qfalse;
 
-	ospath = FS_BuildOSPath( fs_basepath->string, fs_gamedir, filename );
+	ospath = FS_BuildOSPath( fs_homepath->string, fs_gamedir, filename );
 
 	if ( fs_debug->integer ) {
 		Com_Printf( "FS_FOpenFileWrite: %s\n", ospath );
@@ -1282,6 +1282,73 @@ int	FS_GetFileList(  const char *path, const char *extension, char *listbuf, int
 	return nfiles;
 }
 
+// NOTE: could prolly turn out useful for the win32 version too, but it's used only by linux and Mac OS X
+//#if defined(__linux__) || defined(MACOS_X)
+/*
+ =======================
+ Sys_ConcatenateFileLists
+ 
+ mkv: Naive implementation. Concatenates three lists into a
+ new list, and frees the old lists from the heap.
+ bk001129 - from cvs1.17 (mkv)
+ 
+ FIXME TTimo those two should move to common.c next to Sys_ListFiles
+ =======================
+ */
+static unsigned int Sys_CountFileList(char **fileList)
+{
+	int i = 0;
+	
+	if (fileList)
+	{
+		while (*fileList)
+		{
+			fileList++;
+			i++;
+		}
+	}
+	return i;
+}
+
+static char** Sys_ConcatenateFileLists( char **list0, char **list1, char **list2 )
+{
+	int totalLength = 0;
+	char** cat = NULL, **dst, **src;
+	
+	totalLength += Sys_CountFileList(list0);
+	totalLength += Sys_CountFileList(list1);
+	totalLength += Sys_CountFileList(list2);
+	
+	/* Create new list. */
+	dst = cat = (char **)Z_Malloc( ( totalLength + 1 ) * sizeof( char* ), TAG_FILESYS, qtrue );
+	
+	/* Copy over lists. */
+	if (list0) {
+		for (src = list0; *src; src++, dst++)
+			*dst = *src;
+	}
+	if (list1) {
+		for (src = list1; *src; src++, dst++)
+			*dst = *src;
+	}
+	if (list2) {
+		for (src = list2; *src; src++, dst++)
+			*dst = *src;
+	}
+	
+	// Terminate the list
+	*dst = NULL;
+	
+	// Free our old lists.
+	// NOTE: not freeing their content, it's been merged in dst and still being used
+	if (list0) Z_Free( list0 );
+	if (list1) Z_Free( list1 );
+	if (list2) Z_Free( list2 );
+	
+	return cat;
+}
+//#endif
+
 /*
 ================
 FS_GetModList
@@ -1292,25 +1359,75 @@ A mod directory is a peer to base with a pk3 in it
 ================
 */
 int	FS_GetModList( char *listbuf, int bufsize ) {
-	int		nMods, i, nTotal, nLen, nPaks, nPotential, nDescLen;
-  char **pFiles = NULL;
-  char **pPaks = NULL;
-  char *name, *path;
-  char descPath[MAX_OSPATH];
-  fileHandle_t descHandle;
+	int		nMods, i, j, nTotal, nLen, nPaks, nPotential, nDescLen;
+	char **pFiles = NULL;
+	char **pPaks = NULL;
+	char *name, *path;
+	char descPath[MAX_OSPATH];
+	fileHandle_t descHandle;
 
-  *listbuf = 0;
-  nMods = nPotential = nTotal = 0;
+	int dummy;
+	char **pFiles0 = NULL;
+	char **pFiles1 = NULL;
+	char **pFiles2 = NULL;
+	qboolean bDrop = qfalse;
+	
+	*listbuf = 0;
+	nMods = nPotential = nTotal = 0;
 
-	pFiles = Sys_ListFiles( fs_basepath->string, ".*", &nPotential, qtrue );
+	pFiles0 = Sys_ListFiles( fs_homepath->string, ".*", &dummy, qtrue );
+	pFiles1 = Sys_ListFiles( fs_basepath->string, ".*", &dummy, qtrue );
+	pFiles2 = Sys_ListFiles( fs_cdpath->string, ".*", &dummy, qtrue );
+
+	// we searched for mods in the three paths
+	// it is likely that we have duplicate names now, which we will cleanup below
+	pFiles = Sys_ConcatenateFileLists( pFiles0, pFiles1, pFiles2 );
+	nPotential = Sys_CountFileList(pFiles);
+
 	for ( i = 0 ; i < nPotential ; i++ ) {
     name = pFiles[i];
+		// NOTE: cleaner would involve more changes
+		// ignore duplicate mod directories
+		if (i!=0) {
+			bDrop = qfalse;
+			for(j=0; j<i; j++)
+			{
+				if (Q_stricmp(pFiles[j],name)==0) {
+					// this one can be dropped
+					bDrop = qtrue;
+					break;
+				}
+			}
+		}
+		if (bDrop) {
+			continue;
+		}
+		// we drop "base" "." and ".."
     if (Q_stricmp(name, BASEGAME) && Q_stricmpn(name, ".", 1)) {
       // ignore base
-			path = FS_BuildOSPath( fs_basepath->string, name, "" );
-      nPaks = 0;
-      pPaks = Sys_ListFiles(path, ".pk3", &nPaks, qfalse); 
-      if (nPaks > 0) {
+		path = FS_BuildOSPath( fs_basepath->string, name, "" );
+		nPaks = 0;
+		pPaks = Sys_ListFiles(path, ".pk3", &nPaks, qfalse);
+		Sys_FreeFileList( pPaks );// we only use Sys_ListFiles to check wether .pk3 files are present
+		
+		/* Try on cd path */
+		if( nPaks <= 0 ) {
+			path = FS_BuildOSPath( fs_cdpath->string, name, "" );
+			nPaks = 0;
+			pPaks = Sys_ListFiles( path, ".pk3", &nPaks, qfalse );
+			Sys_FreeFileList( pPaks );
+		}
+		
+		/* try on home path */
+		if ( nPaks <= 0 )
+		{
+			path = FS_BuildOSPath( fs_homepath->string, name, "" );
+			nPaks = 0;
+			pPaks = Sys_ListFiles( path, ".pk3", &nPaks, qfalse );
+			Sys_FreeFileList( pPaks );
+		}
+
+		if (nPaks > 0) {
         nLen = strlen(name) + 1;
         // nLen is the length of the mod path
         // we need to see if there is a description available
@@ -1344,7 +1461,6 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
           break;
         }
       }
-	  	Sys_FreeFileList( pPaks );
     }
   }
  	Sys_FreeFileList( pFiles );

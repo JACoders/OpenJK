@@ -105,7 +105,7 @@
 #endif
 
 #if defined(__linux__) && !defined(__GCC__)
-#define Q_EXPORT_C extern "C"
+#define Q_EXPORT_C// extern "C"
 #else
 #define Q_EXPORT_C
 #endif

@@ -865,6 +865,9 @@ typedef struct {
 	char		centerPrint[1024];
 	int			centerPrintLines;
 
+	int			oldammo;
+	int			oldAmmoTime;
+
 	// low ammo warning state
 	int			lowAmmoWarning;		// 1 = low, 2 = empty
 

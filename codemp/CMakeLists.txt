@@ -515,7 +515,7 @@ if(BuildMPEngine)
 			"${MPDir}/win32/win_snd.cpp"
 			"${MPDir}/win32/win_syscon.cpp"
 			"${MPDir}/win32/win_wndproc.cpp"
-			"${MPDir}/win32/engine.rc"
+			"${MPDir}/win32/openjk.rc"
 			)
 		source_group("win32" FILES ${MPEngineWin32Files})
 		set(MPEngineFiles ${MPEngineFiles} ${MPEngineWin32Files})
@@ -531,7 +531,6 @@ if(BuildMPEngine)
 			"${MPDir}/sys/sys_net.cpp"
 			"${MPDir}/sys/sys_unix.cpp"
 			"${MPDir}/sys/unix_local.h"
-			"${MPDir}/sys/unix_main.cpp"
 			)
 	endif(WIN32)
 
@@ -545,7 +544,7 @@ if(BuildMPEngine)
 	else(WIN32)
 		add_executable(${MPEngine} ${MPEngineFiles})
 	endif(WIN32)
-	install(TARGETS ${MPEngine} RUNTIME DESTINATION ".")
+    install(TARGETS ${MPEngine} RUNTIME DESTINATION ".")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPEngineDefines};${ReleaseDefines}")
@@ -619,16 +618,16 @@ if(BuildMPDed)
 	if(WIN32)
 		set(MPDedWin32Files
 			"${MPDir}/null/win_main.cpp"
-			"${MPDir}/win32/dedicated.rc"
+			"${MPDir}/win32/openjkded.rc"
 			)
 		source_group("win32" FILES ${MPDedWin32Files})
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
 	else(WIN32)
 		set(MPDedSortMe ${MPDedSortMe}
-			"${MPDir}/sys/unix_main_ded.cpp"
+			"${MPDir}/sys/sys_main.cpp"
 			"${MPDir}/sys/sys_net.cpp"
-			"${MPDir}/sys/unix_shared.cpp"
-			"${MPDir}/sys/linux_local.h"
+			"${MPDir}/sys/sys_unix.cpp"
+			"${MPDir}/sys/unix_local.h"
 			)
 		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
 	endif(WIN32)

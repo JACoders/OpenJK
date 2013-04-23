@@ -51,6 +51,13 @@ if(BuildSPEngine)
 			"${SPDir}/client/eax/EaxMan.h"
 			)
 	endif(WIN32)
+
+	if(NOT WIN32)
+		find_package(SDL2 REQUIRED)
+		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
+		set(SPEngineLibraries ${SPEngineLibraries} ${SDL2_LIBRARY})
+	endif(NOT WIN32)
+
 	
 	#    Source Files
 	
@@ -412,7 +419,19 @@ if(BuildSPEngine)
 		source_group("win32" FILES ${SPEngineWin32Files})
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineWin32Files})
 	else(WIN32)
-		message("Please add the OS-Specific files for your OS to codemp/CMakeLists.txt")
+		set(SPEngineSortMe
+			${SPEngineSortMe}
+			"${SPDir}/sys/sys_main.cpp"
+			"${SPDir}/sys/sys_unix.cpp"
+			"${SPDir}/sys/sys_local.h"
+			"${SPDir}/sys/sys_loadlib.h"
+			"${SPDir}/sdl/sdl_glimp.cpp"
+			"${SPDir}/sdl/sdl_qgl.h"
+			"${SPDir}/sdl/sdl_snd.cpp"
+			"${SPDir}/sdl/sdl_input.cpp"
+			)
+		source_group("SortMe" FILES ${SPEngineSortMe})
+		set(SPEngineFiles ${SPEngineFiles} ${SPEngineSortMe})
 	endif(WIN32)
 
 	# todo: windows resources

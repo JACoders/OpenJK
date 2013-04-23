@@ -33,9 +33,17 @@ list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
 
 # Arch Suffix
 if (CMAKE_SIZEOF_VOID_P MATCHES "8")
-	set(Architecture "x64")
+	if (WIN32)
+		set(Architecture "x64")
+	else (WIN32)
+		set(Architecture "x86_64")
+	endif(WIN32)
 else (CMAKE_SIZEOF_VOID_P MATCHES "8")
-	set(Architecture "x86")
+	if (WIN32)
+		set(Architecture "x86")
+	else (WIN32)
+		set(Architecture "i386")
+	endif(WIN32)
 endif (CMAKE_SIZEOF_VOID_P MATCHES "8")
 
 # Current Git SHA1 hash
@@ -62,16 +70,19 @@ set(SPDir "${CMAKE_SOURCE_DIR}/code")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 
-# Common settings
 if(WIN32)
-	set(SharedDefines "WIN32" "_WINDOWS")
-	if(MINGW OR MSYS)
-		set(SharedDefines ${SharedDefines} "_M_IX86" "MINGW32" "C_ONLY")
-	endif()
+	set(Win32SharedDefines "WIN32" "_WINDOWS")
 endif()
 
+# Common settings
+if(MSVC) # i.e. WIN32
+	set(SharedDefines ${Win32SharedDefines} "_CRT_SECURE_NO_WARNINGS")
+else(MSVC)
 #i.e. OSes other than Windows and Windows with MINGW or MSYS
-if((NOT WIN32) OR (MINGW OR MSYS))
+
+	if(MINGW OR MSYS)
+		set(SharedDefines ${Win32SharedDefines} "_M_IX86" "MINGW32" "C_ONLY")
+	endif()
 
 	if (APPLE)
 		set(SharedDefines "MACOS_X" "_M_IX86")
@@ -99,7 +110,7 @@ if((NOT WIN32) OR (MINGW OR MSYS))
  		message("No build type selected, default to RELEASE")
  		set(CMAKE_BUILD_TYPE "RELEASE")
  	endif()
-endif()
+endif(MSVC)
 
 set(DebugDefines "_DEBUG")
 set(ReleaseDefines "NDEBUG" "FINAL_BUILD")

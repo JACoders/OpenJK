@@ -1,10 +1,11 @@
 #include <dlfcn.h>
-#include "game/q_shared.h"
-#include "qcommon/qcommon.h"
-#include "qcommon/platform.h"
-#include "qcommon/files.h"
+#include "../game/q_shared.h"
+#include "../qcommon/qcommon.h"
+#include "../qcommon/platform.h"
+#include "../qcommon/files.h"
 
 #include "sys_loadlib.h"
+#include "sys_local.h"
 
 static char cdPath[ MAX_OSPATH ] = { 0 };
 static char binaryPath[ MAX_OSPATH ] = { 0 };
@@ -89,165 +90,190 @@ char *Sys_DefaultCDPath(void)
         return cdPath;
 }
 
-/*
-=================
-Sys_LoadDll
+static void *game_library;
 
-Used to load a development dll instead of a virtual machine
-=================
-*/
+/*
+ =================
+ Sys_UnloadGame
+ =================
+ */
+void Sys_UnloadGame (void)
+{
+	Com_Printf("------ Unloading Game ------\n");
+	if (game_library)
+		Sys_UnloadLibrary (game_library);
+	game_library = NULL;
+}
+
+/*
+ =================
+ Sys_GetGameAPI
+ 
+ Loads the game dll
+ =================
+ */
 extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 
-void *Sys_LoadDll( const char *name,
-		   int (**entryPoint)(int, ...),
-		   int (*systemcalls)(int, ...) ) 
+void *Sys_GetGameAPI (void *parms)
 {
-  void *libHandle;
-  void	(*dllEntry)( int (*syscallptr)(int, ...) );
-  char	curpath[MAX_OSPATH];
-  char	fname[MAX_OSPATH];
-  //char	loadname[MAX_OSPATH];
-  char	*basepath;
-  char	*cdpath;
-  char	*gamedir;
-  char	*fn;
-  const char*  err = NULL; // bk001206 // rb0101023 - now const
+	void	*(*GetGameAPI) (void *);
+	
+	char	name[MAX_OSPATH];
+	char	*path;
+	char	*basepath;
+	char	*cdpath;
+	char	*gamedir;
+	char	*homepath;
+	char	*fn;
+	
+	const char *gamename;
+	if(Cvar_VariableIntegerValue("com_jk2"))
+	{
+		gamename = "jk2game" ARCH DLL_EXT;
+	}
+	else
+	{
+		gamename = "jagame" ARCH DLL_EXT;
+	}
+	
+	if (game_library)
+		Com_Error (ERR_FATAL, "Sys_GetGameAPI without Sys_UnloadingGame");
+	
+	// check the current debug directory first for development purposes
+	homepath = Cvar_VariableString( "fs_homepath" );
+	basepath = Cvar_VariableString( "fs_basepath" );
+	cdpath = Cvar_VariableString( "fs_cdpath" );
+	gamedir = Cvar_VariableString( "fs_game" );
+	
+	if(!gamedir || !gamedir[0])
+		gamedir = BASEGAME;
+	
+	fn = FS_BuildOSPath( basepath, gamedir, gamename );
+	
+	game_library = Sys_LoadLibrary( fn );
+	
+//First try in mod directories. basepath -> homepath -> cdpath
+	if (!game_library) {
+		if (homepath[0]) {
+			Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+			
+			fn = FS_BuildOSPath( homepath, gamedir, gamename);
+			game_library = Sys_LoadLibrary( fn );
+		}
+	}
+	
+	if (!game_library) {
+		if( cdpath[0] ) {
+			Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+			
+			fn = FS_BuildOSPath( cdpath, gamedir, gamename );
+			game_library = Sys_LoadLibrary( fn );
+		}
+	}
+	
+//Now try in base. basepath -> homepath -> cdpath
+	if (!game_library) {
+		Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+		
+		fn = FS_BuildOSPath( basepath, BASEGAME, gamename);
+		game_library = Sys_LoadLibrary( fn );
+	}
+	
+	if (!game_library) {
+		if ( homepath[0] ) {
+			Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+			
+			fn = FS_BuildOSPath( homepath, BASEGAME, gamename);
+			game_library = Sys_LoadLibrary( fn );
+		}
+	}
+	
+	if (!game_library) {
+		if( cdpath[0] ) {
+			Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+			
+			fn = FS_BuildOSPath( cdpath, BASEGAME, gamename );
+			game_library = Sys_LoadLibrary( fn );
+		}
+	}
+//Still couldn't find it.
+	if (!game_library) {
+		Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+		Com_Error( ERR_FATAL, "Couldn't load game" );
+	}
+	
+	
+	Com_Printf ( "Sys_GetGameAPI(%s): succeeded ...\n", fn );
 
-  // bk001206 - let's have some paranoia
-  assert( name );
+	GetGameAPI = (void *)Sys_LoadFunction (game_library, "GetGameAPI");
+	if (!GetGameAPI)
+	{
+		Sys_UnloadGame ();
+		return NULL;
+	}
+	
+	return GetGameAPI (parms);
+}
 
-  getcwd(curpath, sizeof(curpath));
-#if defined __i386__
-#ifndef NDEBUG
-  snprintf (fname, sizeof(fname), "%si386-debug.%s", name, DLL_EXT); // bk010205 - different DLL name
-#else
-  snprintf (fname, sizeof(fname), "%si386.%s", name, DLL_EXT);
-#endif
-#elif defined __x86_64__
-#ifndef NDEBUG
-  snprintf (fname, sizeof(fname), "%sx86_64-debug.%s", name, DLL_EXT); // bk010205 - different DLL name
-#else
-  snprintf (fname, sizeof(fname), "%sx86_64.%s", name, DLL_EXT);
-#endif
-#elif defined __powerpc__   //rcg010207 - PPC support.
-  snprintf (fname, sizeof(fname), "%sppc.%s", name, DLL_EXT);
-#elif defined __axp__
-  snprintf (fname, sizeof(fname), "%saxp.%s", name, DLL_EXT);
-#elif defined __mips__
-  snprintf (fname, sizeof(fname), "%smips.%s", name, DLL_EXT);
-#else
-#error Unknown arch
-#endif
-
-// bk001129 - was RTLD_LAZY 
-#define Q_RTLD    RTLD_NOW
-
-  basepath = Cvar_VariableString( "fs_basepath" );
-  cdpath = Cvar_VariableString( "fs_cdpath" );
-  gamedir = Cvar_VariableString( "fs_game" );
-  
-  fn = FS_BuildOSPath( basepath, gamedir, fname );
-  // bk001206 - verbose
-  Com_Printf( "Sys_LoadDll(%s)... \n", fn );
-  
-  // bk001129 - from cvs1.17 (mkv), was fname not fn
-  libHandle = Sys_LoadLibrary( fn );
+/*
+ =================
+ Sys_LoadCgame
  
-#ifndef NDEBUG
-  if (libHandle == NULL)  Com_Printf("Failed to open DLL\n");
-#endif
- 
-  if ( !libHandle ) {
-    if( cdpath[0] ) {
-      // bk001206 - report any problem
-      Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+ Used to hook up a development dll
+ =================
+ */
+void * Sys_LoadCgame( int (**entryPoint)(int, ...), int (*systemcalls)(int, ...) )
+{
+	void	(*dllEntry)( int (*syscallptr)(int, ...) );
+    
+	dllEntry = ( void (*)( int (*)( int, ... ) ) )Sys_LoadFunction( game_library, "dllEntry" );
+	*entryPoint = (int (*)(int,...))Sys_LoadFunction( game_library, "vmMain" );
+	if ( !*entryPoint || !dllEntry ) {
+		Sys_UnloadLibrary( game_library );
+		return NULL;
+	}
+    
+	dllEntry( systemcalls );
+	return game_library;
+}
 
-      fn = FS_BuildOSPath( cdpath, gamedir, fname );
-      libHandle = Sys_LoadLibrary( fn );
-      if ( !libHandle ) {
-	// bk001206 - report any problem
-	Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-      }
-      else
-	Com_Printf ( "Sys_LoadDll(%s): succeeded ...\n", fn );
+int main (int argc, char **argv)
+{
+	int 	oldtime, newtime;
+	int		len, i;
+	char	*cmdline;
+	void SetProgramPath(char *path);
+	
+	
+	// get the initial time base
+	Sys_Milliseconds();
+	
+	// merge the command line, this is kinda silly
+	for (len = 1, i = 1; i < argc; i++)
+		len += strlen(argv[i]) + 1;
+	cmdline = malloc(len);
+	*cmdline = 0;
+	for (i = 1; i < argc; i++) {
+		if (i > 1)
+			strcat(cmdline, " ");
+		strcat(cmdline, argv[i]);
+	}
+	Com_Init(cmdline);
+		
+    while (1)
+    {
+		// set low precision every frame, because some system calls
+		// reset it arbitrarily
+#ifdef _DEBUG
+//		if (!g_wv.activeApp)
+//		{
+//			Sleep(50);
+//		}
+#endif // _DEBUG
+        
+        // make sure mouse and joystick are only called once a frame
+		IN_Frame();
+		
+        Com_Frame ();
     }
-    else
-      {
-#ifdef NDEBUG // bk001206 - in debug abort on failure
-//	Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-#else
-	Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-#endif
-	//return NULL;
-      }
-  }
-
-  gamedir = BASEGAME;
-
-  fn = FS_BuildOSPath( basepath, gamedir, fname );
-  // bk001206 - verbose
-  Com_Printf( "Sys_LoadDll(%s)... \n", fn );
-
-  // bk001129 - from cvs1.17 (mkv), was fname not fn
-  libHandle = Sys_LoadLibrary( fn );
-
-#ifndef NDEBUG
-  if (libHandle == NULL)  Com_Printf("Failed to open DLL\n");
-#endif
-
-  if ( !libHandle ) {
-    if( cdpath[0] ) {
-      // bk001206 - report any problem
-      Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-
-      fn = FS_BuildOSPath( cdpath, gamedir, fname );
-      libHandle = Sys_LoadLibrary( fn );
-      if ( !libHandle ) {
-	// bk001206 - report any problem
-	Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-      }
-      else
-	Com_Printf ( "Sys_LoadDll(%s): succeeded ...\n", fn );
-    }
-    else
-      {
-#ifdef NDEBUG // bk001206 - in debug abort on failure
-//	Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-#else
-	Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-#endif
-	return NULL;
-      }
-  }
-  // bk001206 - no different behavior
-  //#ifndef NDEBUG }
-  //else Com_Printf ( "Sys_LoadDll(%s): succeeded ...\n", loadname );
-  //#endif
-
-  dllEntry = (void (*)(int (*)(int,...))) Sys_LoadFunction( libHandle, "dllEntry" ); 
-  if (!dllEntry)
-  {
-     err = Sys_LibraryError();
-     Com_Printf("Sys_LoadDLL(%s) failed dlsym(dllEntry): \"%s\" ! \n",name,err);
-  }
-  //int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  )
-  *entryPoint = (int(*)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
-  if (!*entryPoint)
-     err = Sys_LibraryError();
-  if ( !*entryPoint || !dllEntry ) {
-#ifdef NDEBUG // bk001206 - in debug abort on failure
-//    Com_Error ( ERR_FATAL, "Sys_LoadDll(%s) failed dlsym(vmMain): \"%s\" !\n", name, err );
-#else
-    Com_Printf ( "Sys_LoadDll(%s) failed dlsym(vmMain): \"%s\" !\n", name, err );
-#endif
-    Sys_UnloadLibrary( libHandle );
-    err = Sys_LibraryError();
-    if ( err != NULL )
-      Com_Printf ( "Sys_LoadDll(%s) failed dlcose: \"%s\"\n", name, err );
-    return NULL;
-  }
-  Com_Printf ( "Sys_LoadDll(%s) found **vmMain** at  %p  \n", name, *entryPoint ); // bk001212
-  dllEntry( systemcalls );
-  Com_Printf ( "Sys_LoadDll(%s) succeeded!\n", name );
-  return libHandle;
 }

@@ -7,8 +7,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "game/q_shared.h"
-#include "qcommon/qcommon.h"
+#include "../game/q_shared.h"
+#include "../qcommon/qcommon.h"
 #include "sys_local.h"
 
 #define	MAX_QUED_EVENTS		256
@@ -344,14 +344,14 @@ void Sys_Sleep( int msec )
 Sys_Mkdir
 ==================
 */
-qboolean Sys_Mkdir( const char *path )
+/*qboolean*/void Sys_Mkdir( const char *path )
 {
 	int result = mkdir( path, 0750 );
 
-	if( result != 0 )
+/*	if( result != 0 )
 		return (qboolean)(errno == EEXIST);
 
-	return qtrue;
+	return qtrue;*/
 }
 
 char *Sys_Cwd( void )
@@ -414,8 +414,31 @@ void Sys_Quit (void) {
 void	Sys_Init (void) {
 }
 
-char	*Sys_DefaultHomePath(void) {
-	return NULL;
+/*
+ ==================
+ Sys_DefaultHomePath
+ ==================
+ */
+char *Sys_DefaultHomePath(void)
+{
+	char *p;
+    
+	if( !*homePath)
+	{
+		if( ( p = getenv( "HOME" ) ) != NULL )
+		{
+			Com_sprintf(homePath, sizeof(homePath), "%s%c", p, PATH_SEP);
+#ifdef MACOS_X
+			Q_strcat(homePath, sizeof(homePath),
+                     "Library/Application Support/");
+			Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_MACOSX);
+#else
+			Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_UNIX);
+#endif
+		}
+	}
+    
+	return homePath;
 }
 
 char *Sys_ConsoleInput(void)

@@ -1508,7 +1508,7 @@ void Com_Shutdown (void) {
 	}
 
 #ifndef __NO_JK2
-	if(com_jk2->integer)
+	if(com_jk2 && com_jk2->integer)
 	{
 		JK2SP_Shutdown();
 	}

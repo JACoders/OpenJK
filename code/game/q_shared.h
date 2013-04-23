@@ -54,10 +54,20 @@ This file is part of Jedi Academy.
 #define _G2_GORE
 #endif
 
-#define Q3CONFIG_NAME		"openjk_sp.cfg"
+#define PRODUCT_NAME			"openjk_sp"
+
+#define CLIENT_WINDOW_TITLE "OpenJK (SP)"
+#define CLIENT_CONSOLE_TITLE "OpenJK Console (SP)"
+#define HOMEPATH_NAME_UNIX ".openjk"
+#define HOMEPATH_NAME_WIN "OpenJK"
+#define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
+
+#define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
 
 #ifndef FINAL_BUILD
+#ifdef _WIN32
 #define G2_PERFORMANCE_ANALYSIS
+#endif
 #endif
 
 #include <assert.h>
@@ -142,11 +152,11 @@ This file is part of Jedi Academy.
 #define MAC_STATIC
 
 #ifdef __ppc__
-#define CPUSTRING	"MacOSXS-ppc"
+#define CPUSTRING	"MacOSX-ppc"
 #elif defined __i386__
-#define CPUSTRING	"MacOSXS-i386"
+#define CPUSTRING	"MacOSX-i386"
 #else
-#define CPUSTRING	"MacOSXS-other"
+#define CPUSTRING	"MacOSX-other"
 #endif
 
 #define	PATH_SEP	'/'
@@ -1036,7 +1046,12 @@ inline float Q_flrand(float min, float max) {
 // Returns an integer min <= x <= max (ie inclusive)
 inline int Q_irand(int min, int max) {
 	max++; //so it can round down
+#ifdef _WIN32
+	return ((rand() * (max - min)) >> 15) + min;
+#else
+	//rand() returns much larger values on OSX/Linux, so make the result smaller
 	return (((rand() % 0x7fff) * (max - min)) >> 15) + min;
+#endif
 }
 
 #ifdef _WIN32
@@ -1243,6 +1258,7 @@ void SkipRestOfLine ( const char **data );
 void Parse1DMatrix (const char **buf_p, int x, float *m);
 void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
+int Com_HexStrToInt( const char *str );
 
 void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
 

@@ -1,8 +1,8 @@
 #include <SDL.h>
-#include "game/q_shared.h"
-#include "qcommon/qcommon.h"
-#include "client/client.h"
-#include "sys/sys_local.h"
+#include "../game/q_shared.h"
+#include "../qcommon/qcommon.h"
+#include "../client/client.h"
+#include "../sys/sys_local.h"
 
 static cvar_t *in_keyboardDebug     = NULL;
 
@@ -88,7 +88,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 	static consoleKey_t consoleKeys[ MAX_CONSOLE_KEYS ];
 	static int numConsoleKeys = 0;
 	int i;
-#if 0
+
 	// Only parse the variable when it changes
 	if( cl_consoleKeys->modified )
 	{
@@ -103,7 +103,9 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 			consoleKey_t *c = &consoleKeys[ numConsoleKeys ];
 			int charCode = 0;
 
+			COM_BeginParseSession();
 			token = COM_Parse( &text_p );
+			COM_EndParseSession();
 			if( !token[ 0 ] )
 				break;
 
@@ -128,7 +130,6 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 			numConsoleKeys++;
 		}
 	}
-#endif
 
 	// If the character is the same as the key, prefer the character
 	if( key == character )
