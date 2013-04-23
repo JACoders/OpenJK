@@ -1142,6 +1142,31 @@ static void GLimp_InitExtensions( void )
 	{
 		Com_Printf ("...GL_EXT_point_parameters not found\n" );
 	}
+	
+	qglPointParameteriNV = NULL;
+	qglPointParameterivNV = NULL;
+	if ( strstr( glConfig.extensions_string, "GL_NV_point_sprite" ) )
+	{
+		if ( r_ext_nv_point_sprite->integer )
+		{
+			qglPointParameteriNV = ( void ( APIENTRY * )( GLenum, GLint) ) SDL_GL_GetProcAddress( "glPointParameteriNV" );
+			qglPointParameterivNV = ( void ( APIENTRY * )( GLenum, const GLint *) ) SDL_GL_GetProcAddress( "glPointParameterivNV" );
+			if (!qglPointParameteriNV || !qglPointParameterivNV)
+			{
+				Com_Error( ERR_FATAL, "Bad GetProcAddress for GL_NV_point_sprite");
+			}
+			Com_Printf( "...using GL_NV_point_sprite\n" );
+		}
+		else
+		{
+			Com_Printf( "...ignoring GL_NV_point_sprite\n" );
+		}
+	}
+	else
+	{
+		Com_Printf( "...GL_NV_point_sprite not found\n" );
+	}
+
 
 	bool bNVRegisterCombiners = false;
 	// Register Combiners.
@@ -1281,7 +1306,7 @@ static void GLimp_InitExtensions( void )
 	qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
 
 	// Only allow dynamic glows/flares if they have the hardware
-	/*if ( bTexRectSupported && bARBVertexProgram && bHasRenderTexture && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
+	if ( bTexRectSupported && bARBVertexProgram /*whee && bHasRenderTexture*/ && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
 		( ( bNVRegisterCombiners && iNumGeneralCombiners >= 2 ) || bARBFragmentProgram ) )
 	{
 		g_bDynamicGlowSupported = true;
@@ -1292,7 +1317,7 @@ static void GLimp_InitExtensions( void )
 	{
 		g_bDynamicGlowSupported = false;
 		Cvar_Set( "r_DynamicGlow","0" );
-	}*/
+	}
 }
 
 void 		GLimp_Init( void )
