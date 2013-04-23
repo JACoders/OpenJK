@@ -142,7 +142,7 @@ void CG_ParseServerinfo( void ) {
 		cg.timelimitWarnings &= ~(1|2);
 	cgs.timelimit = i;
 
-	cgs.maxclients = atoi( Info_ValueForKey( info, "sv_maxclients" ) );
+	cgs.maxclients = Com_Clampi( 0, MAX_CLIENTS, atoi( Info_ValueForKey( info, "sv_maxclients" ) ) );
 	mapname = Info_ValueForKey( info, "mapname" );
 
 	//rww - You must do this one here, Info_ValueForKey always uses the same memory pointer.
