@@ -142,11 +142,11 @@ This file is part of Jedi Academy.
 #define MAC_STATIC
 
 #ifdef __ppc__
-#define CPUSTRING	"MacOSXS-ppc"
+#define CPUSTRING	"MacOSX-ppc"
 #elif defined __i386__
-#define CPUSTRING	"MacOSXS-i386"
+#define CPUSTRING	"MacOSX-i386"
 #else
-#define CPUSTRING	"MacOSXS-other"
+#define CPUSTRING	"MacOSX-other"
 #endif
 
 #define	PATH_SEP	'/'
