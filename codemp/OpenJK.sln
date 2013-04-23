@@ -1,8 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dedicated", "dedicated.vcxproj", "{D1AF49E8-2E0B-4CF8-858B-40D72A6C041B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openjkded", "openjkded.vcxproj", "{F64AAF22-7B8D-963C-82BD-ED6A7E7FC686}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "engine", "engine.vcxproj", "{940CECBC-C6E6-DBE5-B493-0A64D54AFDF6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "openjk", "openjk.vcxproj", "{940CECBC-C6E6-DBE5-B493-0A64D54AFDF6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ui", "ui\ui.vcxproj", "{2DDA2041-6A68-4754-B342-14039CC91695}"
 EndProject
@@ -18,10 +18,10 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D1AF49E8-2E0B-4CF8-858B-40D72A6C041B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{D1AF49E8-2E0B-4CF8-858B-40D72A6C041B}.Debug|Win32.Build.0 = Debug|Win32
-		{D1AF49E8-2E0B-4CF8-858B-40D72A6C041B}.Release|Win32.ActiveCfg = Release|Win32
-		{D1AF49E8-2E0B-4CF8-858B-40D72A6C041B}.Release|Win32.Build.0 = Release|Win32
+		{F64AAF22-7B8D-963C-82BD-ED6A7E7FC686}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F64AAF22-7B8D-963C-82BD-ED6A7E7FC686}.Debug|Win32.Build.0 = Debug|Win32
+		{F64AAF22-7B8D-963C-82BD-ED6A7E7FC686}.Release|Win32.ActiveCfg = Release|Win32
+		{F64AAF22-7B8D-963C-82BD-ED6A7E7FC686}.Release|Win32.Build.0 = Release|Win32
 		{940CECBC-C6E6-DBE5-B493-0A64D54AFDF6}.Debug|Win32.ActiveCfg = Debug|Win32
 		{940CECBC-C6E6-DBE5-B493-0A64D54AFDF6}.Debug|Win32.Build.0 = Debug|Win32
 		{940CECBC-C6E6-DBE5-B493-0A64D54AFDF6}.Release|Win32.ActiveCfg = Release|Win32
