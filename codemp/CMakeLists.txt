@@ -515,7 +515,7 @@ if(BuildMPEngine)
 			"${MPDir}/win32/win_snd.cpp"
 			"${MPDir}/win32/win_syscon.cpp"
 			"${MPDir}/win32/win_wndproc.cpp"
-			"${MPDir}/win32/engine.rc"
+			"${MPDir}/win32/openjk.rc"
 			)
 		source_group("win32" FILES ${MPEngineWin32Files})
 		set(MPEngineFiles ${MPEngineFiles} ${MPEngineWin32Files})
@@ -618,7 +618,7 @@ if(BuildMPDed)
 	if(WIN32)
 		set(MPDedWin32Files
 			"${MPDir}/null/win_main.cpp"
-			"${MPDir}/win32/dedicated.rc"
+			"${MPDir}/win32/openjkded.rc"
 			)
 		source_group("win32" FILES ${MPDedWin32Files})
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
