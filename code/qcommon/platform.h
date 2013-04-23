@@ -48,6 +48,8 @@ typedef struct _GUID {
 
 #define vsprintf_s vsprintf
 #define _strnicmp Q_stricmpn
+
+#define OutputDebugString printf
 #endif
 
 #if defined (MACOS_X)
@@ -90,6 +92,8 @@ typedef struct _GUID {
 
 #define vsprintf_s vsprintf
 #define _strnicmp Q_stricmpn
+
+#define OutputDebugString printf
 #endif
 
 #endif

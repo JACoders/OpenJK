@@ -7,8 +7,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "game/q_shared.h"
-#include "qcommon/qcommon.h"
+#include "../game/q_shared.h"
+#include "../qcommon/qcommon.h"
 #include "sys_local.h"
 
 #define	MAX_QUED_EVENTS		256

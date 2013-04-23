@@ -1,8 +1,8 @@
 #include <dlfcn.h>
-#include "game/q_shared.h"
-#include "qcommon/qcommon.h"
-#include "qcommon/platform.h"
-#include "qcommon/files.h"
+#include "../game/q_shared.h"
+#include "../qcommon/qcommon.h"
+#include "../qcommon/platform.h"
+#include "../qcommon/files.h"
 
 #include "sys_loadlib.h"
 

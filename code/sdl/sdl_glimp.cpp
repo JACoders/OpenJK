@@ -1,9 +1,9 @@
 #include <SDL.h>
-#include "game/q_shared.h"
-#include "qcommon/qcommon.h"
-#include "renderer/tr_local.h"
+#include "../game/q_shared.h"
+#include "../qcommon/qcommon.h"
+#include "../renderer/tr_local.h"
 #include "sdl_qgl.h"
-#include "sys/sys_local.h"
+#include "../sys/sys_local.h"
 
 #define CLIENT_WINDOW_TITLE "OpenJK SP"
 
