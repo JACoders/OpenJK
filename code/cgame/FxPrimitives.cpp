@@ -25,7 +25,7 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 
-#if id386 && !((defined __linux__ || defined MACOS_X) && defined __i386__)
+#if id386 && !((defined __linux__ || defined MACOS_X || defined MINGW32) && defined __i386__)
 #pragma warning(disable: 4035)
 static long myftol( float f ) 
 {

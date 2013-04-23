@@ -34,7 +34,7 @@ static int (*syscall)( int arg, ... ) = (int (*)( int, ...))-1;
 
 #ifdef _XBOX
 void cg_dllEntry( int (*syscallptr)( int arg,... ) ) {
-#elif !defined(_WIN32)
+#elif (!defined _WIN32 || defined MINGW32)
 extern "C" void dllEntry( int (*syscallptr)( int arg,... ) ) {
 #else
 void dllEntry( int (*syscallptr)( int arg,... ) ) {

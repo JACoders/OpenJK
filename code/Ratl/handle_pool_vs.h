@@ -159,7 +159,7 @@ public:
 	{
 		if (mHandles[i&mMASK_HANDLE_TO_INDEX]==i)
 		{
-			return is_used_index(i&mMASK_HANDLE_TO_INDEX);
+			return this->is_used_index(i&mMASK_HANDLE_TO_INDEX);
 		}
 		return false;
 	}

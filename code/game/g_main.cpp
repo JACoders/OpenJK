@@ -890,7 +890,7 @@ and global variables
 =================
 */
 extern int PM_ValidateAnimRange( const int startFrame, const int endFrame, const float animSpeed );
-#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)
 extern "C"
 #endif
 game_export_t *GetGameAPI( game_import_t *import ) {

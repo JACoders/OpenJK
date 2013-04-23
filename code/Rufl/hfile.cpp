@@ -32,7 +32,7 @@ This file is part of Jedi Academy.
 // Includes
 ////////////////////////////////////////////////////////////////////////////////////////
 #include "../game/q_shared.h"
-#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)
 #define Pool FilePool
 #endif
 #include "hfile.h"

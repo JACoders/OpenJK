@@ -501,7 +501,7 @@ inline byte *qcopy(byte *dst, byte *src, int count)
 	byte 	*retval;
 #if (defined __linux__ || defined MINGW32)
 //FIXME?? - not tested
-	retval = memcopy(dst, src, count);
+	retval = memcpy(dst, src, count);
 #else
 	_asm
 	{

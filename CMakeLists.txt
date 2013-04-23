@@ -21,7 +21,7 @@ set(BuildJK2SPGame OFF)
 #option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
 if(WIN32)
 	option(UseInternalOpenAL "Whether to use the included OpenAL instead of a locally installed one" ON)
-	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" ON)
+	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" OFF)
 endif(WIN32)
 # External version not yet supported, WIP
 # option(UseInternalJpeg "Whether to use the included libjpeg instead of a locally installed one" ON)
@@ -71,7 +71,7 @@ set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 
 if(WIN32)
-	set(Win32SharedDefines "WIN32" "_WINDOWS")
+	set(Win32SharedDefines "WIN32" "_WIN32" "_WINDOWS")
 endif()
 
 # Common settings

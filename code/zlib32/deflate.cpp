@@ -1210,7 +1210,7 @@ static void lm_init(deflate_state *s)
 inline byte *qcmp(byte *scan, byte *match, ulong count)
 {
 	byte	*retval;
-#ifdef __linux__
+#if (defined __linux__ || defined MINGW32)
 //FIXME
 #else
 	_asm
