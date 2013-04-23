@@ -145,6 +145,9 @@ void *Sys_GetGameAPI (void *parms)
 	cdpath = Cvar_VariableString( "fs_cdpath" );
 	gamedir = Cvar_VariableString( "fs_game" );
 	
+	if(!gamedir || !gamedir[0])
+		gamedir = BASEGAME;
+	
 	fn = FS_BuildOSPath( basepath, gamedir, gamename );
 	
 	game_library = Sys_LoadLibrary( fn );
@@ -262,10 +265,10 @@ int main (int argc, char **argv)
 		// set low precision every frame, because some system calls
 		// reset it arbitrarily
 #ifdef _DEBUG
-		if (!g_wv.activeApp)
-		{
-			Sleep(50);
-		}
+//		if (!g_wv.activeApp)
+//		{
+//			Sleep(50);
+//		}
 #endif // _DEBUG
         
         // make sure mouse and joystick are only called once a frame

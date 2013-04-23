@@ -65,7 +65,9 @@ This file is part of Jedi Academy.
 #define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
 
 #ifndef FINAL_BUILD
+#ifdef _WIN32
 #define G2_PERFORMANCE_ANALYSIS
+#endif
 #endif
 
 #include <assert.h>
