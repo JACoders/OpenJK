@@ -54,7 +54,15 @@ This file is part of Jedi Academy.
 #define _G2_GORE
 #endif
 
-#define Q3CONFIG_NAME		"openjk_sp.cfg"
+#define PRODUCT_NAME			"openjk_sp"
+
+#define CLIENT_WINDOW_TITLE "OpenJK (SP)"
+#define CLIENT_CONSOLE_TITLE "OpenJK Console (SP)"
+#define HOMEPATH_NAME_UNIX ".openjk"
+#define HOMEPATH_NAME_WIN "OpenJK"
+#define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
+
+#define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
 
 #ifndef FINAL_BUILD
 #define G2_PERFORMANCE_ANALYSIS
@@ -1243,6 +1251,7 @@ void SkipRestOfLine ( const char **data );
 void Parse1DMatrix (const char **buf_p, int x, float *m);
 void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
+int Com_HexStrToInt( const char *str );
 
 void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
 

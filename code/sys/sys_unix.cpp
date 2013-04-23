@@ -414,8 +414,31 @@ void Sys_Quit (void) {
 void	Sys_Init (void) {
 }
 
-char	*Sys_DefaultHomePath(void) {
-	return NULL;
+/*
+ ==================
+ Sys_DefaultHomePath
+ ==================
+ */
+char *Sys_DefaultHomePath(void)
+{
+	char *p;
+    
+	if( !*homePath)
+	{
+		if( ( p = getenv( "HOME" ) ) != NULL )
+		{
+			Com_sprintf(homePath, sizeof(homePath), "%s%c", p, PATH_SEP);
+#ifdef MACOS_X
+			Q_strcat(homePath, sizeof(homePath),
+                     "Library/Application Support/");
+			Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_MACOSX);
+#else
+			Q_strcat(homePath, sizeof(homePath), HOMEPATH_NAME_UNIX);
+#endif
+		}
+	}
+    
+	return homePath;
 }
 
 char *Sys_ConsoleInput(void)
