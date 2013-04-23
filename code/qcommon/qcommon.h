@@ -782,7 +782,7 @@ void	Sys_SetErrorText( const char *text );
 
 qboolean	Sys_CheckCD( void );
 
-qboolean	Sys_Mkdir( const char *path );
+void	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );
 char	*Sys_DefaultCDPath(void);
 char	*Sys_DefaultBasePath(void);
