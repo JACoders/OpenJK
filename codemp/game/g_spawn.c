@@ -100,7 +100,7 @@ typedef struct
 } field_t;
 
 field_t fields[] = {
-	{ "alliedTeam",				FOFS( alliedTeam ),						F_INT },//for misc_turrets
+	{ "alliedteam",				FOFS( alliedTeam ),						F_INT },//for misc_turrets
 	{ "angerscript",			FOFS( behaviorSet[BSET_ANGER] ),		F_STRING },//name of script to run
 	{ "angle",					FOFS( s.angles ),						F_ANGLEHACK },
 	{ "angles",					FOFS( s.angles ),						F_VECTOR },
@@ -119,7 +119,7 @@ field_t fields[] = {
 	{ "ffdeathscript",			FOFS( behaviorSet[BSET_FFDEATH] ),		F_STRING },//name of script to run
 	{ "ffirescript",			FOFS( behaviorSet[BSET_FFIRE] ),		F_STRING },//name of script to run
 	{ "fleescript",				FOFS( behaviorSet[BSET_FLEE] ),			F_STRING },//name of script to run
-	{ "fullName",				FOFS( fullName ),						F_STRING },
+	{ "fullname",				FOFS( fullName ),						F_STRING },
 	{ "goaltarget",				FOFS( goaltarget ),						F_STRING },//for siege
 	{ "healingclass",			FOFS( healingclass ),					F_STRING },
 	{ "healingrate",			FOFS( healingrate ),					F_INT },
@@ -164,7 +164,7 @@ field_t fields[] = {
 	{ "roffname",				FOFS( roffname ),						F_STRING },
 	{ "rofftarget",				FOFS( rofftarget ),						F_STRING },
 	{ "script_targetname",		FOFS( script_targetname ),				F_STRING },//scripts look for this when "affecting"
-	{ "soundSet",				FOFS( soundSet ),						F_STRING },
+	{ "soundset",				FOFS( soundSet ),						F_STRING },
 	{ "spawnflags",				FOFS( spawnflags ),						F_INT },
 	{ "spawnscript",			FOFS( behaviorSet[BSET_SPAWN] ),		F_STRING },//name of script to run
 	{ "speed",					FOFS( speed ),							F_FLOAT },
@@ -175,12 +175,12 @@ field_t fields[] = {
 	{ "target5",				FOFS( target5 ),						F_STRING },
 	{ "target6",				FOFS( target6 ),						F_STRING },
 	{ "targetname",				FOFS( targetname ),						F_STRING },
+	{ "team",					FOFS( team ),							F_STRING },
 	{ "teamnodmg",				FOFS( teamnodmg ),						F_INT },
 	{ "teamowner",				FOFS( s.teamowner ),					F_INT },
 	{ "teamuser",				FOFS( alliedTeam ),						F_INT },
-	{ "team",					FOFS( team ),							F_STRING },
-	{ "targetShaderName",		FOFS( targetShaderName ),				F_STRING },
-	{ "targetShaderNewName",	FOFS( targetShaderNewName ),			F_STRING },
+	{ "targetshadername",		FOFS( targetShaderName ),				F_STRING },
+	{ "targetshadernewname",	FOFS( targetShaderNewName ),			F_STRING },
 	{ "usescript",				FOFS( behaviorSet[BSET_USE] ),			F_STRING },//name of script to run
 	{ "victoryscript",			FOFS( behaviorSet[BSET_VICTORY] ),		F_STRING },//name of script to run
 	{ "wait",					FOFS( wait ),							F_FLOAT },
