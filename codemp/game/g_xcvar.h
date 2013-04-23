@@ -137,7 +137,7 @@ XCVAR_DEF( g_synchronousClients,		"0",			NULL,				CVAR_SYSTEMINFO,								qfalse
 XCVAR_DEF( g_teamAutoJoin,				"0",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_teamForceBalance,			"0",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_timeouttospec,				"70",			NULL,				CVAR_ARCHIVE,									qfalse )
-XCVAR_DEF( g_userinfoValidate,			"-1",			NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_userinfoValidate,			"25165823",		NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_useWhileThrowing,			"1",			NULL,				CVAR_NONE,										qtrue )
 XCVAR_DEF( g_warmup,					"20",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_weaponDisable,				"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_LATCH,		qtrue )
@@ -147,9 +147,9 @@ XCVAR_DEF( gamename,					GAMEVERSION,	NULL,				CVAR_SERVERINFO|CVAR_ROM,						qf
 XCVAR_DEF( pmove_fixed,					"0",			NULL,				CVAR_SYSTEMINFO|CVAR_ARCHIVE,					qfalse )
 XCVAR_DEF( pmove_msec,					"8",			NULL,				CVAR_SYSTEMINFO,								qfalse )
 XCVAR_DEF( RMG,							"0",			NULL,				CVAR_NONE,										qtrue )
-XCVAR_DEF( sv_cheats,					"",				NULL,				CVAR_NONE,										qfalse )
-XCVAR_DEF( sv_fps,						"40",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( sv_maxclients,				"32",			NULL,				CVAR_SERVERINFO|CVAR_LATCH|CVAR_ARCHIVE,		qfalse )
+XCVAR_DEF( sv_cheats,					"1",			NULL,				CVAR_SYSTEMINFO|CVAR_ROM,						qfalse )
+XCVAR_DEF( sv_fps,						"40",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qtrue )
+XCVAR_DEF( sv_maxclients,				"8",			NULL,				CVAR_SERVERINFO|CVAR_LATCH|CVAR_ARCHIVE,		qfalse )
 XCVAR_DEF( timelimit,					"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NORESTART,	qtrue )
 
 #undef XCVAR_DEF
