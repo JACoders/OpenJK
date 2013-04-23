@@ -933,7 +933,7 @@ void CL_Frame ( int msec,float fractionMsec ) {
 		if (cl_skippingcin->modified){
 			S_StopSounds();		//kill em all but music	
 			cl_skippingcin->modified=qfalse;
-			Com_Printf (va(S_COLOR_YELLOW"%s"), SE_GetString("CON_TEXT_SKIPPING"));
+			Com_Printf (S_COLOR_YELLOW "%s", SE_GetString("CON_TEXT_SKIPPING"));
 			SCR_UpdateScreen();
 		}
 	} else {
