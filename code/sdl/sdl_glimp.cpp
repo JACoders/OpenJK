@@ -5,8 +5,6 @@
 #include "sdl_qgl.h"
 #include "../sys/sys_local.h"
 
-#define CLIENT_WINDOW_TITLE "OpenJK SP"
-
 static SDL_Window *window = NULL;
 
 static float displayAspect;

@@ -88,7 +88,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 	static consoleKey_t consoleKeys[ MAX_CONSOLE_KEYS ];
 	static int numConsoleKeys = 0;
 	int i;
-#if 0
+
 	// Only parse the variable when it changes
 	if( cl_consoleKeys->modified )
 	{
@@ -128,7 +128,6 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 			numConsoleKeys++;
 		}
 	}
-#endif
 
 	// If the character is the same as the key, prefer the character
 	if( key == character )

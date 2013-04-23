@@ -316,6 +316,8 @@ extern	cvar_t	*cl_activeAction;
 
 extern	cvar_t	*cl_thumbStickMode;
 
+extern	cvar_t	*cl_consoleKeys;
+
 //=================================================
 
 //
