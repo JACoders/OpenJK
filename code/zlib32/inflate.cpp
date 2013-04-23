@@ -499,8 +499,9 @@ static ulong needout(z_stream *z, inflate_blocks_state_t *s, ulong bytesToEnd)
 inline byte *qcopy(byte *dst, byte *src, int count)
 {
 	byte 	*retval;
-#ifdef __linux__
-//FIXME
+#if (defined __linux__ || defined MINGW32)
+//FIXME?? - not tested
+	retval = memcopy(dst, src, count);
 #else
 	_asm
 	{
