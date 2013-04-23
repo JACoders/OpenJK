@@ -344,14 +344,14 @@ void Sys_Sleep( int msec )
 Sys_Mkdir
 ==================
 */
-qboolean Sys_Mkdir( const char *path )
+/*qboolean*/void Sys_Mkdir( const char *path )
 {
 	int result = mkdir( path, 0750 );
 
-	if( result != 0 )
+/*	if( result != 0 )
 		return (qboolean)(errno == EEXIST);
 
-	return qtrue;
+	return qtrue;*/
 }
 
 char *Sys_Cwd( void )

@@ -2042,7 +2042,11 @@ Loads any of the supported image types into a cannonical
 32 bit format.
 =================
 */
+#ifdef _XBOX
+void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, int *mipcount, GLenum *format ) {
+#else
 int R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLenum *format ) {
+#endif
 	int		bytedepth;
 	char	name[MAX_QPATH];
 
@@ -2056,34 +2060,76 @@ int R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLe
 	} else {
 		Q_strncpyz( name, shortname, sizeof( name ) );
 	}
+#ifdef _XBOX
 	*format = GL_RGBA;
-	COM_StripExtension(name,name);
-	COM_DefaultExtension(name, sizeof(name), ".jpg");
+	*mipcount = 1;
 
-	LoadJPG( name, pic, width, height );
+	COM_StripExtension(name,name);
+	COM_DefaultExtension(name, sizeof(name), ".tga");
+	LoadTGA( name, pic, width, height );
+
 	if (*pic)
 	{
+		int j = (*width) * (*height) * 4;
+		byte *buf = *pic;
+		byte swap;
+		for (int i = 0 ; i < j ; i+=4 ) {
+			swap = buf[i];
+			buf[i] = buf[i+2];
+			buf[i+2] = swap;
+		}
 		return;
 	}
 
+	/*	// Removing PNG support	2003/05/19
 	COM_StripExtension(name,name);
 	COM_DefaultExtension(name, sizeof(name), ".png");	
 	
-	//No .jpg existed, try .png
+	//No .tga existed, try .png
 	LoadPNG32( name, pic, width, height, &bytedepth );
 	if (*pic)
 	{
 		return;
+	}
+	*/
+
+	// No .png either, fall back to .dds
+	COM_StripExtension(name,name);
+	COM_DefaultExtension(name, sizeof(name), ".dds");
+	LoadDDS( name, pic, width, height, mipcount, format );
+	return;
+
+#else
+	*format = GL_RGBA;
+	COM_StripExtension(name,name);
+	COM_DefaultExtension(name, sizeof(name), ".jpg");
+
+	int fileSize;
+	//First try .jpg
+	fileSize=LoadJPG( name, pic, width, height );
+	if (*pic)
+	{
+		return fileSize;
+	}
+
+	COM_StripExtension(name,name);
+	COM_DefaultExtension(name, sizeof(name), ".png");	
+
+	//No .jpg existed, try .png
+	fileSize=LoadPNG32( name, pic, width, height, &bytedepth );
+	if (*pic)
+	{
+		return fileSize;
 	}
 
 	COM_StripExtension(name,name);
 	COM_DefaultExtension(name, sizeof(name), ".tga");
 
 	//No .jpg existed and no .png existed, try .tga as a last resort.
-	LoadTGA( name, pic, width, height );
-	return;
+	fileSize=LoadTGA( name, pic, width, height );
+	return fileSize;
+#endif
 }
-
 
 #ifndef _XBOX	// Only used for terrain
 void R_LoadDataImage( const char *name, byte **pic, int *width, int *height)
