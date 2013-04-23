@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>engine</ProjectName>
+    <ProjectName>openjk</ProjectName>
     <ProjectGuid>{940CECBC-C6E6-DBE5-B493-0A64D54AFDF6}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -299,7 +299,7 @@
     <None Include="win32\icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="win32\engine.rc">
+    <ResourceCompile Include="win32\openjk.rc">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">win32</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">win32</AdditionalIncludeDirectories>
     </ResourceCompile>
