@@ -12,7 +12,7 @@ Status
 ======
 
 * can fully compile and run codemp
-* code binary compiles, but not dll(s)
+* can compile code (sp) but it won't run - garbled text in edit box then "DROPPED"
 
 Note
 ====
