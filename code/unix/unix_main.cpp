@@ -22,8 +22,8 @@
 #include "../game/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "../renderer/tr_public.h"
-#include "sys/sys_local.h"
-#include "sys/sys_loadlib.h"
+#include "../sys/sys_local.h"
+#include "../sys/sys_loadlib.h"
 
 cvar_t *nostdout;
 
