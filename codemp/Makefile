@@ -31,7 +31,6 @@ GAME_OBJS		= $(B)/game/ai_main.o \
 			  $(B)/game/bg_weapons.o \
 			  $(B)/game/FighterNPC.o \
 			  $(B)/game/g_active.o \
-			  $(B)/game/g_arenas.o \
 			  $(B)/game/g_bot.o \
 			  $(B)/game/g_client.o \
 			  $(B)/game/g_cmds.o \
