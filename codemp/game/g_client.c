@@ -3284,7 +3284,7 @@ void ClientSpawn(gentity_t *ent) {
 	}
 	else
 	{
-		maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
+		maxHealth = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
 	}
 	client->pers.maxHealth = maxHealth;//atoi( Info_ValueForKey( userinfo, "handicap" ) );
 	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth ) {
