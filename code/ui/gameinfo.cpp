@@ -27,10 +27,11 @@ This file is part of Jedi Academy.
 
 
 #include "gameinfo.h"
-#include "..\game\weapons.h"
+#include "../game/weapons.h"
 
-
+#ifdef _USRDLL
 gameinfo_import_t	gi;
+#endif
 
 weaponData_t weaponData[WP_NUM_WEAPONS];
 ammoData_t ammoData[AMMO_MAX];
@@ -47,7 +48,9 @@ GI_Init
 ===============
 */
 void GI_Init( gameinfo_import_t *import ) {
+#ifdef _USRDLL
 	gi = *import;
+#endif
 
 	WP_LoadWeaponParms ();
 }

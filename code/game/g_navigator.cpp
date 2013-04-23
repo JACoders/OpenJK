@@ -60,25 +60,25 @@ extern vec3_t		playerMaxs;
 #include "b_local.h"
 #include "g_navigator.h"
 #if !defined(RAGL_GRAPH_VS_INC)
-	#include "..\Ragl\graph_vs.h"
+	#include "../Ragl/graph_vs.h"
 #endif
 #if !defined(RATL_GRAPH_REGION_INC)
-	#include "..\Ragl\graph_region.h"
+	#include "../Ragl/graph_region.h"
 #endif
 //#if !defined(RATL_GRAPH_TRIANGULATE_INC)
-//	#include "..\Ragl\graph_triangulate.h"
+//	#include "../Ragl/graph_triangulate.h"
 //#endif
 #if !defined(RATL_VECTOR_VS_INC)
-	#include "..\Ratl\vector_vs.h"
+	#include "../Ratl/vector_vs.h"
 #endif
 #if !defined(RUFL_HSTRING_INC)
-	#include "..\Rufl\hstring.h"
+	#include "../Rufl/hstring.h"
 #endif
 #if !defined(RUFL_HFILE_INC)
-	#include "..\Rufl\hfile.h"
+	#include "../Rufl/hfile.h"
 #endif
 #if !defined(RAVL_BOUNDS_INC)
-	#include "..\Ravl\CBounds.h"
+	#include "../Ravl/CBounds.h"
 #endif
 
 
@@ -1892,8 +1892,8 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 		bool	CanGo		= false;
 		bool	IsDebugEdge = 
 			(g_nav1->string[0] && g_nav2->string[0] && 
-			(!stricmp(*(a.mName), g_nav1->string) || !stricmp(*(b.mName), g_nav1->string)) && 
-			(!stricmp(*(a.mName), g_nav2->string) || !stricmp(*(b.mName), g_nav2->string)));
+			(!Q_stricmp(*(a.mName), g_nav1->string) || !Q_stricmp(*(b.mName), g_nav1->string)) && 
+			(!Q_stricmp(*(a.mName), g_nav2->string) || !Q_stricmp(*(b.mName), g_nav2->string)));
 
 		// For debugging a connection between two known points:
 		//------------------------------------------------------

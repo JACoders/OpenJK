@@ -20,7 +20,7 @@ This file is part of Jedi Academy.
 #define __B_PUBLIC_H__
 
 #include "bstate.h"
-#include "AI.h"
+#include "ai.h"
 
 #define NPCAI_CHECK_WEAPON		0x00000001
 #define NPCAI_BURST_WEAPON		0x00000002

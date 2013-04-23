@@ -23,7 +23,7 @@ This file is part of Jedi Academy.
 #include "../server/exe_headers.h"
 
 #include "tr_local.h"
-#include "MatComp.h"
+#include "matcomp.h"
 #include "../qcommon/sstring.h"
 
 #define	LL(x) x=LittleLong(x)
@@ -296,7 +296,13 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 					bAtLeastoneModelFreed = qtrue;
 				}
 
+#ifdef _WIN32
 				itModel = CachedModels->erase(itModel);
+#else
+                CachedModels_t::iterator itTemp = itModel;
+                itModel++;
+                CachedModels->erase(itTemp);
+#endif
 				bEraseOccured = qtrue;
 
 				iLoadedModelBytes = GetModelDataAllocSize();				
@@ -345,8 +351,13 @@ static void RE_RegisterModels_DeleteAll(void)
 		if (CachedModel.pModelDiskImage) {
 			Z_Free(CachedModel.pModelDiskImage);					
 		}
-
-		itModel = CachedModels->erase(itModel);			
+#ifdef _WIN32
+		itModel = CachedModels->erase(itModel);	
+#else
+        CachedModels_t::iterator itTemp = itModel;
+        itModel++;
+        CachedModels->erase(itTemp);
+#endif
 	}
 
 	extern void RE_AnimationCFGs_DeleteAll(void);

@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 #ifndef __Q3_INTERFACE__
 #define __Q3_INTERFACE__
 
-#include "../Icarus/IcarusInterface.h"
+#include "../icarus/IcarusInterface.h"
 
 //NOTENOTE: The enums and tables in this file will obviously bitch if they are included multiple times, don't do that
 

@@ -1536,7 +1536,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 	}
 	else
 	{
-		newent->NPC_type = strlwr( G_NewString( ent->NPC_type ) );	//get my own copy so i can free it when i die
+		newent->NPC_type = Q_strlwr( G_NewString( ent->NPC_type ) );	//get my own copy so i can free it when i die
 	}
 
 	newent->NPC = (gNPC_t*) gi.Malloc(sizeof(gNPC_t), TAG_G_ALLOC, qtrue);
@@ -4133,7 +4133,7 @@ static void NPC_Spawn_f(void)
 
 	gi.linkentity(NPCspawner);
 
-	NPCspawner->NPC_type = strlwr( G_NewString( npc_type ) );
+	NPCspawner->NPC_type = Q_strlwr( G_NewString( npc_type ) );
 	NPCspawner->NPC_targetname = G_NewString(gi.argv( 3 ));
 
 	NPCspawner->count = 1;

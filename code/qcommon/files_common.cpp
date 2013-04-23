@@ -285,6 +285,10 @@ char *FS_BuildOSPath( const char *qpath )
 	
 	toggle ^= 1;		// flip-flop to allow two returns without clash
 
+	// Fix for filenames that are given to FS with a leading "/" (/botfiles/Foo)
+	if (qpath[0] == '\\' || qpath[0] == '/')
+		qpath++;
+
 	Com_sprintf( temp, sizeof(temp), "/%s/%s", fs_gamedirvar->string, qpath );
 
 	FS_ReplaceSeparators( temp );	
@@ -301,6 +305,10 @@ char *FS_BuildOSPath( const char *base, const char *game, const char *qpath ) {
 	static int toggle;
 	
 	toggle = (++toggle)&3;	// allows four returns without clash (increased from 2 during fs_copyfiles 2 enhancement)
+	
+	if( !game || !game[0] ) {
+		game = fs_gamedir;
+	}
 
 	Com_sprintf( temp, sizeof(temp), "/%s/%s", game, qpath );
 	FS_ReplaceSeparators( temp );	
@@ -328,7 +336,7 @@ void	FS_CreatePath (char *OSPath) {
 		return;
 	}
 
-	strlwr(OSPath);
+	Q_strlwr(OSPath);
 
 	for (ofs = OSPath+1 ; *ofs ; ofs++) {
 		if (*ofs == PATH_SEP) {	
@@ -349,8 +357,8 @@ FS_SV_FOpenFileRead
 ===========
 */
 int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
-  char *ospath;
-	fileHandle_t	f;
+	char *ospath;
+	fileHandle_t	f = 0;
 
 	if ( !fs_searchpaths ) {
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
@@ -367,7 +375,7 @@ int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
 #ifdef _XBOX
 	ospath = FS_BuildOSPath( filename );
 #else
-	ospath = FS_BuildOSPath( fs_basepath->string, filename, "" );
+	ospath = FS_BuildOSPath( fs_homepath->string, filename, "" );
 #endif
 	// remove trailing slash
   ospath[strlen(ospath)-1] = '\0';
@@ -379,7 +387,44 @@ int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
 	fsh[f].handleFiles.file.o = fopen( ospath, "rb" );
 	fsh[f].handleSync = qfalse;
 	if (!fsh[f].handleFiles.file.o) {
-		f = 0;
+		// NOTE TTimo on non *nix systems, fs_homepath == fs_basepath, might want to avoid
+		if (Q_stricmp(fs_homepath->string,fs_basepath->string))
+		{
+			// search basepath
+			ospath = FS_BuildOSPath( fs_basepath->string, filename, "" );
+			ospath[strlen(ospath)-1] = '\0';
+			
+			if ( fs_debug->integer )
+			{
+				Com_Printf( "FS_SV_FOpenFileRead (fs_basepath): %s\n", ospath );
+			}
+			
+			fsh[f].handleFiles.file.o = fopen( ospath, "rb" );
+			fsh[f].handleSync = qfalse;
+			
+			if ( !fsh[f].handleFiles.file.o )
+			{
+				f = 0;
+			}
+		}
+	}
+	
+	if (!fsh[f].handleFiles.file.o) {
+		// search cd path
+		ospath = FS_BuildOSPath( fs_cdpath->string, filename, "" );
+		ospath[strlen(ospath)-1] = '\0';
+		
+		if (fs_debug->integer)
+		{
+			Com_Printf( "FS_SV_FOpenFileRead (fs_cdpath) : %s\n", ospath );
+		}
+		
+		fsh[f].handleFiles.file.o = fopen( ospath, "rb" );
+		fsh[f].handleSync = qfalse;
+		
+		if( !fsh[f].handleFiles.file.o ) {
+			f = 0;
+		}
 	}
   
   *fp = f;
@@ -417,7 +462,7 @@ fileHandle_t FS_FOpenFileAppend( const char *filename ) {
 #ifdef _XBOX
 	ospath = FS_BuildOSPath( filename );
 #else
-	ospath = FS_BuildOSPath( fs_basepath->string, fs_gamedir, filename );
+	ospath = FS_BuildOSPath( fs_homepath->string, fs_gamedir, filename );
 #endif
 
 	if ( fs_debug->integer ) {

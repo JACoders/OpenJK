@@ -34,6 +34,10 @@ This file is part of Jedi Academy.
 #include "ui_shared.h"
 #include "menudef.h"
 
+#ifndef _WIN32
+#include <cmath>
+#endif
+
 void		UI_LoadMenus(const char *menuFile, qboolean reset);
 
 #ifdef _XBOX
@@ -4460,7 +4464,7 @@ qboolean ItemParse_cvarStrList( itemDef_t *item)
 	{
 		for (; multiPtr->count < uiInfo.playerSpeciesCount; multiPtr->count++)
 		{
-			multiPtr->cvarList[multiPtr->count] = String_Alloc(strupr(va("@MENUS_%s",uiInfo.playerSpecies[multiPtr->count].Name )));	//look up translation
+			multiPtr->cvarList[multiPtr->count] = String_Alloc(Q_strupr(va("@MENUS_%s",uiInfo.playerSpecies[multiPtr->count].Name )));	//look up translation
 			multiPtr->cvarStr[multiPtr->count] = uiInfo.playerSpecies[multiPtr->count].Name;	//value
 		}
 		return qtrue;

@@ -20,6 +20,10 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
+#ifndef _WIN32
+#include <limits.h>
+#include <string>
+#endif
 #include "../qcommon/sstring.h"	// stl string class won't compile in here (MS shite), so use Gil's.
 #include "tr_local.h"
 #include "tr_font.h"
@@ -1683,12 +1687,12 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 
 	/*	if (Language_IsTaiwanese())
 		{
-			psText = "Wp:¶}·F§a ¿p·G´µ¡A§Æ±æ§A¹³¥L­Ì»¡ªº¤@¼Ë¦æ¡C";
+			psText = "Wp:\B6}\B7F\A7a \BFp\B7G\B4\B5\A1A\A7Æ±\E6\A7A\B9\B3\A5L\ADÌ»\A1\AA\BA\A4@\BCË¦\E6\A1C";
 		}
 		else
 		if (Language_IsKorean())
 		{
-			psText = "Wp:¼îÅ¸ÀÓÀÌ´Ù ¸Ö¸°. ±×µéÀÌ ¸»ÇÑ´ë·Î ³×°¡ ÀßÇÒÁö ±â´ëÇÏ°Ú´Ù.";
+			psText = "Wp:\BC\EEÅ¸\C0\D3\C0Ì´\D9 \B8Ö¸\B0. \B1×µ\E9\C0\CC \B8\BB\C7Ñ´\EB\B7\CE \B3×°\A1 \C0\DF\C7\D2\C1\F6 \B1\E2\B4\EB\C7Ï°Ú´\D9.";
 		}
 		else
 		if (Language_IsJapanese())
@@ -1696,7 +1700,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 			char sBlah[200];
 			sprintf(sBlah,va("%c%c %c%c %c%c %c%c",0x82,0xA9,0x82,0xC8,0x8A,0xBF,0x8E,0x9A));
 			psText = &sBlah[0];
-			//psText = ¡@¡A¡B¡C¡D¡E¡F¡G¡H¡I¡J¡K¡L¡M¡N¡O¡P¡Q¡R¡S¡T¡U¡V¡W¡X¡Y¡Z¡[¡\¡]¡^¡_¡`¡a¡b¡c¡d¡e¡f¡g¡h¡i¡j¡k¡l¡m¡n¡o¡p¡q¡r¡s¡t¡u¡v¡w¡x¡y¡z¡{¡|¡}¡~    ¡¡¡¢¡£¡¤¡¥¡¦¡§¡¨¡©¡ª¡«¡¬¡­¡®¡¯¡°¡±¡²¡³¡´¡µ¡¶¡·¡¸¡¹¡º¡»¡¼¡½¡¾¡¿¡À¡Á¡Â¡Ã¡Ä¡Å¡Æ¡Ç¡È¡É¡Ê¡Ë¡Ì¡Í¡Î¡Ï¡Ð¡Ñ¡Ò¡Ó¡Ô¡Õ¡Ö¡×¡Ø¡Ù¡Ú¡Û¡Ü¡Ý¡Þ¡ß¡à¡á¡â¡ã¡ä¡å¡æ¡ç¡è¡é¡ê¡ë¡ì¡í¡î¡ï¡ð¡ñ¡ò¡ó¡ô¡õ¡ö¡÷¡ø¡ù¡ú¡û¡ü¡ý¡þ 1¢@¢A¢B¢C¢D¢E¢F¢G¢H¢I¢J¢K¢L¢M¢N¢O¢P¢Q¢R¢S¢T¢U¢V¢W¢X¢Y¢Z¢[¢\¢]¢^¢_¢`¢a¢b¢c¢d¢e¢f¢g¢h¢i¢j¢k¢l¢m¢n¢o¢p¢q¢r¢s¢t¢u¢v¢w¢x¢y¢z¢{¢|¢}¢~    ¢¡¢¢¢£¢¤¢¥¢¦¢§¢¨¢©¢ª¢«¢¬¢­¢®¢¯¢°¢±¢²¢³¢´¢µ¢¶¢·¢¸¢¹¢º¢»¢¼¢½¢¾¢¿¢À¢Á¢Â¢Ã¢Ä¢Å¢Æ¢Ç¢È¢É¢Ê¢Ë¢Ì¢Í¢Î¢Ï¢Ð¢Ñ¢Ò¢Ó¢Ô¢Õ¢Ö¢×¢Ø¢Ù¢Ú¢Û¢Ü¢Ý¢Þ¢ß¢à¢á¢â¢ã¢ä¢å¢æ¢ç¢è¢é¢ê¢ë¢ì¢í¢î¢ï¢ð¢ñ¢ò¢ó¢ô¢õ¢ö¢÷¢ø¢ù¢ú¢û¢ü¢ý¢þ 2£@£A£B£C£D£E£F£G£H£I£J£K£L£M£N£O£P£Q£R£S£T£U£V£W£X£Y£Z£[£\£]£^£_£`£a£b£c£d£e£f£g£h£i£j£k£l£m£n£o£p£q£r£s£t£u£v£w£x£y£z£{£|£}£~    £¡£¢£££¤£¥£¦£§£¨£©£ª£«£¬£­£®£¯£°£±£²£³£´£µ£¶£·£¸£¹£º£»£¼£½£¾£¿£À£Á£Â£Ã£Ä£Å£Æ£Ç£È£É£Ê£Ë£Ì£Í£Î£Ï£Ð£Ñ£Ò£Ó£Ô£Õ£Ö£×£Ø£Ù£Ú£Û£Ü£Ý£Þ£ß£à£á£â£ã£ä£å£æ£ç£è£é£ê£ë£ì£í£î£ï£ð£ñ£ò£ó£ô£õ£ö£÷£ø£ù£ú£û£ü£ý£þ 3¤@¤A¤B¤C¤D¤E¤F¤G¤H¤I¤J¤K¤L¤M¤N¤O¤P¤Q¤R¤S¤T¤U¤V¤W¤X¤Y¤Z¤[¤\¤]¤^¤
+			//psText = \A1@\A1A\A1B\A1C\A1D\A1E\A1F\A1G\A1H\A1I\A1J\A1K\A1L\A1M\A1N\A1O\A1P\A1Q\A1R\A1S\A1T\A1U\A1V\A1W\A1X\A1Y\A1Z\A1[\A1\\A1]\A1^\A1_\A1`\A1a\A1b\A1c\A1d\A1e\A1f\A1g\A1h\A1i\A1j\A1k\A1l\A1m\A1n\A1o\A1p\A1q\A1r\A1s\A1t\A1u\A1v\A1w\A1x\A1y\A1z\A1{\A1|\A1}\A1~    \A1\A1\A1\A2\A1\A3\A1\A4\A1\A5\A1\A6\A1\A7\A1\A8\A1\A9\A1\AA\A1\AB\A1\AC\A1\AD\A1\AE\A1\AF\A1\B0\A1\B1\A1\B2\A1\B3\A1\B4\A1\B5\A1\B6\A1\B7\A1\B8\A1\B9\A1\BA\A1\BB\A1\BC\A1\BD\A1\BE\A1\BF\A1\C0\A1\C1\A1Â¡Ã¡Ä¡Å¡Æ¡Ç¡È¡É¡Ê¡Ë¡Ì¡Í¡Î¡Ï¡Ð¡Ñ¡Ò¡Ó¡Ô¡Õ¡Ö¡×¡Ø¡Ù¡Ú¡Û¡Ü¡Ý¡Þ¡ß¡\E0\A1\E1\A1\E2\A1\E3\A1\E4\A1\E5\A1\E6\A1\E7\A1\E8\A1\E9\A1\EA\A1\EB\A1\EC\A1\ED\A1\EE\A1\EF\A1\F0\A1\F1\A1\F2\A1\F3\A1\F4\A1\F5\A1\F6\A1\F7\A1\F8\A1\F9\A1\FA\A1\FB\A1\FC\A1\FD\A1\FE 1\A2@\A2A\A2B\A2C\A2D\A2E\A2F\A2G\A2H\A2I\A2J\A2K\A2L\A2M\A2N\A2O\A2P\A2Q\A2R\A2S\A2T\A2U\A2V\A2W\A2X\A2Y\A2Z\A2[\A2\\A2]\A2^\A2_\A2`\A2a\A2b\A2c\A2d\A2e\A2f\A2g\A2h\A2i\A2j\A2k\A2l\A2m\A2n\A2o\A2p\A2q\A2r\A2s\A2t\A2u\A2v\A2w\A2x\A2y\A2z\A2{\A2|\A2}\A2~    \A2\A1\A2\A2\A2\A3\A2\A4\A2\A5\A2\A6\A2\A7\A2\A8\A2\A9\A2\AA\A2\AB\A2\AC\A2\AD\A2\AE\A2\AF\A2\B0\A2\B1\A2\B2\A2\B3\A2\B4\A2\B5\A2\B6\A2\B7\A2\B8\A2\B9\A2\BA\A2\BB\A2\BC\A2\BD\A2\BE\A2\BF\A2\C0\A2\C1\A2Â¢Ã¢Ä¢Å¢Æ¢Ç¢È¢É¢Ê¢Ë¢Ì¢Í¢Î¢Ï¢Ð¢Ñ¢Ò¢Ó¢Ô¢Õ¢Ö¢×¢Ø¢Ù¢Ú¢Û¢Ü¢Ý¢Þ¢ß¢\E0\A2\E1\A2\E2\A2\E3\A2\E4\A2\E5\A2\E6\A2\E7\A2\E8\A2\E9\A2\EA\A2\EB\A2\EC\A2\ED\A2\EE\A2\EF\A2\F0\A2\F1\A2\F2\A2\F3\A2\F4\A2\F5\A2\F6\A2\F7\A2\F8\A2\F9\A2\FA\A2\FB\A2\FC\A2\FD\A2\FE 2\A3@\A3A\A3B\A3C\A3D\A3E\A3F\A3G\A3H\A3I\A3J\A3K\A3L\A3M\A3N\A3O\A3P\A3Q\A3R\A3S\A3T\A3U\A3V\A3W\A3X\A3Y\A3Z\A3[\A3\\A3]\A3^\A3_\A3`\A3a\A3b\A3c\A3d\A3e\A3f\A3g\A3h\A3i\A3j\A3k\A3l\A3m\A3n\A3o\A3p\A3q\A3r\A3s\A3t\A3u\A3v\A3w\A3x\A3y\A3z\A3{\A3|\A3}\A3~    \A3\A1\A3\A2\A3\A3\A3\A4\A3\A5\A3\A6\A3\A7\A3\A8\A3\A9\A3\AA\A3\AB\A3\AC\A3\AD\A3\AE\A3\AF\A3\B0\A3\B1\A3\B2\A3\B3\A3\B4\A3\B5\A3\B6\A3\B7\A3\B8\A3\B9\A3\BA\A3\BB\A3\BC\A3\BD\A3\BE\A3\BF\A3\C0\A3\C1\A3Â£Ã£Ä£Å£Æ£Ç£È£É£Ê£Ë£Ì£Í£Î£Ï£Ð£Ñ£Ò£Ó£Ô£Õ£Ö£×£Ø£Ù£Ú£Û£Ü£Ý£Þ£ß£\E0\A3\E1\A3\E2\A3\E3\A3\E4\A3\E5\A3\E6\A3\E7\A3\E8\A3\E9\A3\EA\A3\EB\A3\EC\A3\ED\A3\EE\A3\EF\A3\F0\A3\F1\A3\F2\A3\F3\A3\F4\A3\F5\A3\F6\A3\F7\A3\F8\A3\F9\A3\FA\A3\FB\A3\FC\A3\FD\A3\FE 3\A4@\A4A\A4B\A4C\A4D\A4E\A4F\A4G\A4H\A4I\A4J\A4K\A4L\A4M\A4N\A4O\A4P\A4Q\A4R\A4S\A4T\A4U\A4V\A4W\A4X\A4Y\A4Z\A4[\A4\\A4]\A4^\A4
 		}
 	*/
 
@@ -1814,26 +1818,26 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 //	// test code only
 //	if (GetLanguageEnum() == eTaiwanese)
 //	{
-//		psText = "Wp:¶}·F§a ¿p·G´µ¡A§Æ±æ§A¹³¥L­Ì»¡ªº¤@¼Ë¦æ¡C";
+//		psText = "Wp:\B6}\B7F\A7a \BFp\B7G\B4\B5\A1A\A7Æ±\E6\A7A\B9\B3\A5L\ADÌ»\A1\AA\BA\A4@\BCË¦\E6\A1C";
 //	}
 //	else 
 //	if (GetLanguageEnum() == eChinese)
 //	{
-//		//psText = "Ó¶±øÕ½³¡II  Ô¼º²?ÄªÁÖË¹  ÈÎÎñÊ§°Ü  ÄãÒªÌ×ÓÃ»­ÃæÉè¶¨µÄ±ä¸üÂð£¿  Ô¤Éè,S3 Ñ¹Ëõ,DXT1 Ñ¹Ëõ,DXT5 Ñ¹Ëõ,16 Bit,32 Bit";
-//		psText = "Ó¶±øÕ½³¡II";
+//		//psText = "Ó¶\B1\F8Õ½\B3\A1II  Ô¼\BA\B2?Äª\C1\D6Ë¹  \C8\CE\CE\F1Ê§\B0\DC  \C4\E3Òª\CC\D7\D3Ã»\AD\C3\E6\C9è¶¨\B5Ä±\E4\B8\FC\C2\F0\A3\BF  Ô¤\C9\E8,S3 Ñ¹\CB\F5,DXT1 Ñ¹\CB\F5,DXT5 Ñ¹\CB\F5,16 Bit,32 Bit";
+//		psText = "Ó¶\B1\F8Õ½\B3\A1II";
 //	}
 //	else 
 //	if (GetLanguageEnum() == eThai)
 //	{
-//		//psText = "ÁÒµÃ°Ò¹¼ÅÔµÀÑ³±ìÍØµÊÒË¡ÃÃÁÃËÑÊÊÓËÃÑºÍÑ¡¢ÃÐä·Â·Õèãªé¡Ñº¤ÍÁ¾ÔÇàµÍÃì";
-//		psText = "ÁÒµÃ°Ò¹¼ÅÔµ";
-//		psText = "ÃËÑÊÊÓËÃÑº";
-//		psText = "ÃËÑÊÊÓËÃÑº   ÍÒ_¡Ô¹_¤ÍÃì·_1415";
+//		//psText = "\C1ÒµÃ°Ò¹\BC\C5Ôµ\C0Ñ³\B1\EC\CDØµ\CA\D2Ë¡\C3\C3\C1\C3\CB\D1\CA\CA\D3\CB\C3Ñº\CDÑ¡\A2\C3\D0\E4\B7Â·\D5\E8\E3\AA\E9\A1Ñº\A4\CD\C1\BE\D4\C7\E0\B5\CD\C3\EC";
+//		psText = "\C1ÒµÃ°Ò¹\BC\C5Ôµ";
+//		psText = "\C3\CB\D1\CA\CA\D3\CB\C3Ñº";
+//		psText = "\C3\CB\D1\CA\CA\D3\CB\C3Ñº   \CD\D2_\A1Ô¹_\A4\CD\C3\EC\B7_1415";
 //	}
 //	else
 //	if (GetLanguageEnum() == eKorean)
 //	{
-//		psText = "Wp:¼îÅ¸ÀÓÀÌ´Ù ¸Ö¸°. ±×µéÀÌ ¸»ÇÑ´ë·Î ³×°¡ ÀßÇÒÁö ±â´ëÇÏ°Ú´Ù.";
+//		psText = "Wp:\BC\EEÅ¸\C0\D3\C0Ì´\D9 \B8Ö¸\B0. \B1×µ\E9\C0\CC \B8\BB\C7Ñ´\EB\B7\CE \B3×°\A1 \C0\DF\C7\D2\C1\F6 \B1\E2\B4\EB\C7Ï°Ú´\D9.";
 //	}
 //	else
 //	if (GetLanguageEnum() == eJapanese)
@@ -1845,14 +1849,14 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 //	else
 //	if (GetLanguageEnum() == eRussian)
 //	{
-////		//psText = "Íà âåðøèíå õîëìà ñòîèò ñòàðûé äîì ñ ïðèâèäåíèÿìè è áàøíÿ ñ âîëøåáíûìè ÷àñàìè."
-//		psText = "Íà âåðøèíå õîëìà ñòîèò";
+////		//psText = "\CD\E0 \E2\E5\F0\F8\E8\ED\E5 \F5\EE\EB\EC\E0 \F1\F2\EE\E8\F2 \F1\F2\E0\F0\FB\E9 \E4\EE\EC \F1 \EF\F0\E8\E2\E8\E4\E5\ED\E8\FF\EC\E8 \E8 \E1\E0\F8\ED\FF \F1 \E2\EE\EB\F8\E5\E1\ED\FB\EC\E8 \F7\E0\F1\E0\EC\E8."
+//		psText = "\CD\E0 \E2\E5\F0\F8\E8\ED\E5 \F5\EE\EB\EC\E0 \F1\F2\EE\E8\F2";
 //	}
 //	else
 //	if (GetLanguageEnum() == ePolish)
 //	{
-//		psText = "za³o¿ony w 1364 roku, jest najstarsz¹ polsk¹ uczelni¹ i nale¿y...";
-//		psText = "za³o¿ony nale¿y";
+//		psText = "za\B3o\BFony w 1364 roku, jest najstarsz\B9 polsk\B9 uczelni\B9 i nale\BFy...";
+//		psText = "za\B3o\BFony nale\BFy";
 //	}
 
 

@@ -23,9 +23,11 @@ This file is part of Jedi Academy.
 //Anything above this #include will be ignored by the compiler
 #include "../server/exe_headers.h"
 
-
 #include "../qcommon/sstring.h"
 #include <algorithm>
+#ifndef _WIN32
+#include <string>
+#endif
 
 #ifdef _XBOX
 #include "snd_local_console.h"
@@ -816,7 +818,7 @@ qboolean Music_DynamicDataAvailable(const char *psDynamicMusicLabel)
 {		
 	char sLevelName[MAX_QPATH];
 	Q_strncpyz(sLevelName,COM_SkipPath( const_cast<char*>( (psDynamicMusicLabel&&psDynamicMusicLabel[0])?psDynamicMusicLabel:gsLevelNameFromServer.c_str() ) ),sizeof(sLevelName));
-	strlwr(sLevelName);
+	Q_strlwr(sLevelName);
 
 	if (strlen(sLevelName))	// avoid error messages when there's no music waiting to be played and we try and restart it...
 	{

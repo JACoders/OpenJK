@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 #ifndef __TR_TYPES_H
 #define __TR_TYPES_H
 
-#include "..\game\ghoul2_shared.h"
+#include "../game/ghoul2_shared.h"
 
 #define	MAX_DLIGHTS		32			// can't be increased, because bit flags are used on surfaces
 #ifdef _XBOX
@@ -219,7 +219,6 @@ typedef struct {
 	const char				*vendor_string;
 	const char				*version_string;
 	const char				*extensions_string;
-
 	int						maxTextureSize;			// queried from GL
 	int						maxActiveTextures;		// multitexture ability
 	float					maxTextureFilterAnisotropy;

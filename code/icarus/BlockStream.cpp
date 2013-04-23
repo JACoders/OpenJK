@@ -21,12 +21,16 @@ This file is part of Jedi Academy.
 //	-- jweier
 
 // this include must remain at the top of every Icarus CPP file
-#include "stdafx.h"
+#include "StdAfx.h"
 
 #include "IcarusInterface.h"
 #include "IcarusImplementation.h"
 
-#include "BlockStream.h"
+#ifdef __linux__
+#include <string.h>
+#include <stdio.h>
+#endif
+#include "blockstream.h"
 
 /*
 ===================================================================================================

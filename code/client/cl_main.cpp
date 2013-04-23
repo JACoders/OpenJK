@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 #include "client.h"
 #include "client_ui.h"
 #include <limits.h>
-#include "../ghoul2/g2.h"
+#include "../ghoul2/G2.h"
 
 #include "../RMG/RM_Headers.h"
 
@@ -81,6 +81,8 @@ cvar_t	*cl_updateInfoString;
 cvar_t	*cl_ingameVideo;
 
 cvar_t	*cl_thumbStickMode;
+
+cvar_t	*cl_consoleKeys;
 
 clientActive_t		cl;
 clientConnection_t	clc;
@@ -931,7 +933,7 @@ void CL_Frame ( int msec,float fractionMsec ) {
 		if (cl_skippingcin->modified){
 			S_StopSounds();		//kill em all but music	
 			cl_skippingcin->modified=qfalse;
-			Com_Printf (va(S_COLOR_YELLOW"%s"), SE_GetString("CON_TEXT_SKIPPING"));
+			Com_Printf (S_COLOR_YELLOW "%s", SE_GetString("CON_TEXT_SKIPPING"));
 			SCR_UpdateScreen();
 		}
 	} else {
@@ -1184,6 +1186,9 @@ void CL_Init( void ) {
 	m_forward = Cvar_Get ("m_forward", "0.25", CVAR_ARCHIVE);
 	m_side = Cvar_Get ("m_side", "0.25", CVAR_ARCHIVE);
 	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
+	
+	// ~ and `, as keys and characters
+	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
 
 #ifdef _XBOX
 	cl_mapname = Cvar_Get ("cl_mapname", "t3_bounty", CVAR_TEMP);

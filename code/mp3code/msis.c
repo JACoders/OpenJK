@@ -45,7 +45,7 @@ is_process does ms or stereo in "forbidded sf regions"
 #include <stdio.h>
 #include <float.h>
 #include <math.h>
-#include "L3.h"
+#include "l3.h"
 
 #include "mp3struct.h"
 

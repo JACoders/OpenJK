@@ -24,8 +24,8 @@ This file is part of Jedi Academy.
 
 //#include "cg_local.h"
 #include "cg_media.h"
-#include "..\game\objectives.h"
-#include "..\game\g_vehicles.h"
+#include "../game/objectives.h"
+#include "../game/g_vehicles.h"
 
 #ifdef _XBOX
 #include "../client/fffx.h"

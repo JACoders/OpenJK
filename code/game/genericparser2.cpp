@@ -692,7 +692,7 @@ CGPGroup *CGPGroup::FindSubGroup(const char *name)
 	group = mSubGroups;
 	while(group)
 	{
-		if(!stricmp(name, group->GetName()))
+		if(!Q_stricmp(name, group->GetName()))
 		{
 			return(group);
 		}

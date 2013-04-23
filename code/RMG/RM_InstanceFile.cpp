@@ -28,13 +28,13 @@ This file is part of Jedi Academy.
 
 #include "../server/exe_headers.h"
 
-#include "rm_headers.h"
+#include "RM_Headers.h"
 
-//#include "rm_instance_npc.h"
-#include "rm_instance_bsp.h"
-#include "rm_instance_random.h"
-#include "rm_instance_group.h"
-#include "rm_instance_void.h"
+//#include "RM_instance_npc.h"
+#include "RM_Instance_BSP.h"
+#include "RM_Instance_Random.h"
+#include "RM_Instance_Group.h"
+#include "RM_Instance_Void.h"
 
 /************************************************************************************************
  * CRMInstanceFile::CRMInstanceFile
