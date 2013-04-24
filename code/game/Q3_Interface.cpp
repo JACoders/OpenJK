@@ -7849,7 +7849,7 @@ unsigned int CQuake3GameInterface::GetTime( void )
 // NOTE: This extern does not really fit here, fix later please...
 extern void G_SoundBroadcast( gentity_t *ent, int soundIndex );
 // Plays a sound from an entity.
-int 	CQuake3GameInterface::PlaySound( int taskID, int entID, const char *name, const char *channel )
+int 	CQuake3GameInterface::PlayIcarusSound( int taskID, int entID, const char *name, const char *channel )
 {
 	gentity_t		*ent = &g_entities[entID];
 	char			finalName[MAX_QPATH];

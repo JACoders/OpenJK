@@ -963,6 +963,8 @@ void SV_Init (void) {
 	sv_mapChecksum = Cvar_Get ("sv_mapChecksum", "", CVAR_ROM);
 	sv_lanForceRate = Cvar_Get ("sv_lanForceRate", "1", CVAR_ARCHIVE );
 
+	sv_filterCommands = Cvar_Get( "sv_filterCommands", "0", CVAR_ARCHIVE );
+
 //	sv_debugserver = Cvar_Get ("sv_debugserver", "0", 0);
 
 	// initialize bot cvars so they are listed and can be set before loading the botlib

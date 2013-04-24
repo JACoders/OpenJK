@@ -87,8 +87,8 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 // These buffers are filled in with the same contents and then just read from in
 // a few places. We only need one copy on Xbox.
-#define MAX_VEH_WEAPON_DATA_SIZE 0x20000
-#define MAX_VEHICLE_DATA_SIZE 0x80000
+#define MAX_VEH_WEAPON_DATA_SIZE 0x40000
+#define MAX_VEHICLE_DATA_SIZE 0x100000
 
 #if !defined(_XBOX) || defined(QAGAME)
 	char	VehWeaponParms[MAX_VEH_WEAPON_DATA_SIZE];

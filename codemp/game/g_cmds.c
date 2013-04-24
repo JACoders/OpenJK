@@ -921,6 +921,7 @@ void SetTeam( gentity_t *ent, char *s ) {
 		if ( (g_gametype.integer != GT_DUEL) || (oldTeam != TEAM_SPECTATOR) )	{//so you don't get dropped to the bottom of the queue for changing skins, etc.
 			client->sess.spectatorTime = level.time;
 		}
+		G_ClearVote( ent );
 	}
 
 	client->sess.sessionTeam = team;
@@ -2168,7 +2169,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	//Raz: bounds checking
 	else if ( !Q_stricmp( arg1, "timelimit" ) )
 	{
-		int tl = Com_Clamp( 0.0f, 35790.0f, atof( arg2 ) );
+		float tl = Com_Clamp( 0.0f, 35790.0f, atof( arg2 ) );
 		if ( trap_Argc() < 3 )
 		{
 			trap_SendServerCommand( ent-g_entities, "print \"Usage: /callvote timelimit <time>.\n\"" );
@@ -2196,6 +2197,13 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		}
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, n );
 	}
+	else if ( !Q_stricmp( arg1, "map_restart" ) )
+	{
+		int n = Com_Clampi( 0, 60, atoi( arg2 ) );
+		if ( trap_Argc() < 3 )
+			n = 5;
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, n );
+	}
 	else
 	{
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s \"%s\"", arg1, arg2 );
@@ -2214,8 +2222,10 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
 		level.clients[i].mGameFlags &= ~PSG_VOTED;
+		level.clients[i].pers.vote = 0;
 	}
 	ent->client->mGameFlags |= PSG_VOTED;
+	ent->client->pers.vote = 1;
 
 	trap_SetConfigstring( CS_VOTE_TIME, va("%i", level.voteTime ) );
 	trap_SetConfigstring( CS_VOTE_STRING, level.voteDisplayString );	
@@ -2256,9 +2266,11 @@ void Cmd_Vote_f( gentity_t *ent ) {
 
 	if ( tolower( msg[0] ) == 'y' || msg[0] == '1' ) {
 		level.voteYes++;
+		ent->client->pers.vote = 1;
 		trap_SetConfigstring( CS_VOTE_YES, va("%i", level.voteYes ) );
 	} else {
 		level.voteNo++;
+		ent->client->pers.vote = 2;
 		trap_SetConfigstring( CS_VOTE_NO, va("%i", level.voteNo ) );	
 	}
 

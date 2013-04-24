@@ -1227,7 +1227,7 @@ int CTaskManager::Sound( CTask *task, CIcarus* icarus )
 	#endif
 	
 	//Only instantly complete if the user has requested it
-	if( icarus->GetGame()->PlaySound( task->GetGUID(), m_ownerID, sVal2, sVal ) )
+	if( icarus->GetGame()->PlayIcarusSound( task->GetGUID(), m_ownerID, sVal2, sVal ) )
 		Completed( task->GetGUID() );
 	
 	return TASK_OK;

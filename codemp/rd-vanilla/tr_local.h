@@ -1247,6 +1247,8 @@ extern cvar_t	*r_ext_compiled_vertex_array;
 extern cvar_t	*r_ext_texture_env_add;
 extern cvar_t	*r_ext_texture_filter_anisotropic;
 
+extern cvar_t	*r_environmentMapping;
+
 extern cvar_t	*r_DynamicGlow;
 extern cvar_t	*r_DynamicGlowPasses;
 extern cvar_t	*r_DynamicGlowDelta;
