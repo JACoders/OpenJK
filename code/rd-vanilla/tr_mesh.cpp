@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 
 
 #include "tr_local.h"
-#include "MatComp.h"
+#include "matcomp.h"
 
 #ifdef VV_LIGHTING
 #include "tr_lightmanager.h"
@@ -41,8 +41,8 @@ float ProjectRadius( float r, vec3_t location )
 	float width;
 	float depth;
 
-	c = DotProduct( tr.viewParms.or.axis[0], tr.viewParms.or.origin );
-	dist = DotProduct( tr.viewParms.or.axis[0], location ) - c;
+	c = DotProduct( tr.viewParms.ori.axis[0], tr.viewParms.ori.origin );
+	dist = DotProduct( tr.viewParms.ori.axis[0], location ) - c;
 
 	if ( dist <= 0 )
 		return 0;

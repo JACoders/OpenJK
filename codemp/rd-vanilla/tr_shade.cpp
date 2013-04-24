@@ -1526,7 +1526,12 @@ static void ComputeTexCoords( shaderStage_t *pStage ) {
 //#ifdef VV_LIGHTING
 //			tess.shader->stages[tess.currentPass].isEnvironment = qtrue;
 //#else
-			RB_CalcEnvironmentTexCoords( ( float * ) tess.svars.texcoords[b] );
+			if ( r_environmentMapping->integer ) {
+				RB_CalcEnvironmentTexCoords( ( float * ) tess.svars.texcoords[b] );
+			}
+			else {
+				memset( tess.svars.texcoords[b], 0, sizeof( float ) * 2 * tess.numVertexes );
+			}
 //#endif
 			break;
 		case TCGEN_BAD:

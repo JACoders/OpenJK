@@ -1201,10 +1201,10 @@ public:
 		// Compute Camera
 		//----------------
 		{
-			mCameraPosition	= backEnd.viewParms.or.origin;
-			mCameraForward	= backEnd.viewParms.or.axis[0];
-			mCameraLeft		= backEnd.viewParms.or.axis[1];
-			mCameraDown		= backEnd.viewParms.or.axis[2];
+			mCameraPosition	= backEnd.viewParms.ori.origin;
+			mCameraForward	= backEnd.viewParms.ori.axis[0];
+			mCameraLeft		= backEnd.viewParms.ori.axis[1];
+			mCameraDown		= backEnd.viewParms.ori.axis[2];
 
 			if (mRotationChangeNext!=-1)
 			{
@@ -1479,8 +1479,13 @@ public:
 			qglEnable(GL_POINT_SPRITE_NV);
 
 			qglPointSize(mWidth);
+#ifdef WIN32
 			qglPointParameterfEXT( GL_POINT_SIZE_MIN_EXT, 4.0f );
 			qglPointParameterfEXT( GL_POINT_SIZE_MAX_EXT, 2047.0f );
+#else
+			qglPointParameterfEXT( GL_POINT_SIZE_MIN, 4.0f );
+			qglPointParameterfEXT( GL_POINT_SIZE_MAX, 2047.0f );
+#endif
 
 			qglTexEnvi(GL_POINT_SPRITE_NV, GL_COORD_REPLACE_NV, GL_TRUE);
 		}

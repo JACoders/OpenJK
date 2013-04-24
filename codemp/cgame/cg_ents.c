@@ -3086,7 +3086,7 @@ void CG_CalcEntityLerpPositions( centity_t *cent ) {
 	// if this player does not want to see extrapolated players
 	if ( !cg_smoothClients.integer ) {
 		// make sure the clients use TR_INTERPOLATE
-		if ( cent->currentState.number < MAX_CLIENTS ) {
+		if ( cent->currentState.number < MAX_CLIENTS || cent->currentState.eType == ET_NPC ) {
 			cent->currentState.pos.trType = TR_INTERPOLATE;
 			cent->nextState.pos.trType = TR_INTERPOLATE;
 		}
@@ -3114,7 +3114,7 @@ void CG_CalcEntityLerpPositions( centity_t *cent ) {
 	// first see if we can interpolate between two snaps for
 	// linear extrapolated clients
 	if ( cent->interpolate && cent->currentState.pos.trType == TR_LINEAR_STOP &&
-											cent->currentState.number < MAX_CLIENTS) {
+			(cent->currentState.number < MAX_CLIENTS || cent->currentState.eType == ET_NPC) ) {
 		CG_InterpolateEntityPosition( cent );
 		goAway = qtrue;
 	}

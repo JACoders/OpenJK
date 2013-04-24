@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 #ifndef __Q3_INTERFACE__
 #define __Q3_INTERFACE__
 
-#include "../Icarus/IcarusInterface.h"
+#include "../icarus/IcarusInterface.h"
 
 //NOTENOTE: The enums and tables in this file will obviously bitch if they are included multiple times, don't do that
 
@@ -651,7 +651,7 @@ public:
 	void	DebugPrint( e_DebugPrintLevel, const char *, ... );
 	unsigned int GetTime( void );							//Gets the current time
 	//DWORD	GetTimeScale(void );
-	int 	PlaySound( int taskID, int entID, const char *name, const char *channel );	
+	int 	PlayIcarusSound( int taskID, int entID, const char *name, const char *channel );	
 	void	Lerp2Pos( int taskID, int entID, vec3_t origin, vec3_t angles, float duration );
 	//void	Lerp2Origin( int taskID, int entID, vec3_t origin, float duration );
 	void	Lerp2Angles( int taskID, int entID, vec3_t angles, float duration );

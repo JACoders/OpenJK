@@ -31,11 +31,9 @@ typedef struct _GUID {
   BYTE  Data4[8];
 } GUID;
 #define strnicmp Q_stricmpn
-#define strcmpi Q_stricmpn
+#define strcmpi Q_stricmp
 #define stricmp Q_stricmp
 #define RGB(r,g,b)          ((COLORREF)((r) | ((g) << 8) | ((b) << 16)))
-
-#define DLL_EXT "so"
 #endif
 
 #if defined (MACOS_X)
@@ -63,12 +61,11 @@ typedef struct _GUID {
     BYTE  Data4[8];
 } GUID;
 #define strnicmp Q_stricmpn
-#define strcmpi Q_stricmpn
+#define strcmpi Q_stricmp
 #define stricmp Q_stricmp
 #define RGB(r,g,b)          ((COLORREF)((r) | ((g) << 8) | ((b) << 16)))
 
 #define _isnan isnan
-#define DLL_EXT "dylib"
 #endif
 
 #endif

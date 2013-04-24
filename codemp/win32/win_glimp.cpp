@@ -960,6 +960,18 @@ bool GL_CheckForExtension(const char *ext)
 	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
 }
 
+static const char *wglExtensions = NULL;
+
+/* WGL version of the above, ASSUMES wglExtensions is non-null */
+bool WGL_CheckForExtension(const char *ext)
+{
+	const char *ptr = Q_stristr( wglExtensions, ext );
+	if (ptr == NULL)
+		return false;
+	ptr += strlen(ext);
+	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
+}
+
 //--------------------------------------------
 static void GLW_InitTextureCompression( void )
 {
@@ -1390,7 +1402,6 @@ static void GLW_InitExtensions( void )
 	PFNWGLGETEXTENSIONSSTRINGARBPROC			qwglGetExtensionsStringARB;
 	qwglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC) qwglGetProcAddress("wglGetExtensionsStringARB");
 
-	const char *wglExtensions = NULL;
 	bool bHasPixelFormat = false;
 	bool bHasRenderTexture = false;
 
@@ -1404,7 +1415,7 @@ static void GLW_InitExtensions( void )
 	if ( wglExtensions )
 	{
 		// Pixel Format.
-		if ( strstr( wglExtensions, "WGL_ARB_pixel_format" ) )
+		if ( WGL_CheckForExtension( "WGL_ARB_pixel_format" ) )
 		{
 			qwglGetPixelFormatAttribivARB			=	(PFNWGLGETPIXELFORMATATTRIBIVARBPROC) qwglGetProcAddress("wglGetPixelFormatAttribivARB");
 			qwglGetPixelFormatAttribfvARB			=	(PFNWGLGETPIXELFORMATATTRIBFVARBPROC) qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
@@ -1428,7 +1439,7 @@ static void GLW_InitExtensions( void )
 		// Offscreen pixel-buffer.
 		// NOTE: VV guys can use the equivelant SetRenderTarget() with the correct texture surfaces.
 		bool bWGLARBPbuffer = false;
-		if ( strstr( wglExtensions, "WGL_ARB_pbuffer" ) && bHasPixelFormat )
+		if ( WGL_CheckForExtension( "WGL_ARB_pbuffer" ) && bHasPixelFormat )
 		{
 			bWGLARBPbuffer = true;
 			qwglCreatePbufferARB		=	(PFNWGLCREATEPBUFFERARBPROC) qwglGetProcAddress("wglCreatePbufferARB");
@@ -1451,7 +1462,7 @@ static void GLW_InitExtensions( void )
 		}
 
 		// Render-Texture (requires pbuffer ext (and it's dependancies of course).
-		if ( strstr( wglExtensions, "WGL_ARB_render_texture" ) && bWGLARBPbuffer )
+		if ( WGL_CheckForExtension( "WGL_ARB_render_texture" ) && bWGLARBPbuffer )
 		{
 			qwglBindTexImageARB			=	(PFNWGLBINDTEXIMAGEARBPROC) qwglGetProcAddress("wglBindTexImageARB");
 			qwglReleaseTexImageARB		=	(PFNWGLRELEASETEXIMAGEARBPROC) qwglGetProcAddress("wglReleaseTexImageARB");
@@ -1476,7 +1487,8 @@ static void GLW_InitExtensions( void )
 	// Find out how many general combiners they have.
 	#define GL_MAX_GENERAL_COMBINERS_NV       0x854D
 	GLint iNumGeneralCombiners = 0;
-	qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
+	if(bNVRegisterCombiners)
+		qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
 
 	// Only allow dynamic glows/flares if they have the hardware
 	if ( bTexRectSupported && bARBVertexProgram && bHasRenderTexture && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&

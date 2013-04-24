@@ -22,7 +22,10 @@ This file is part of Jedi Academy.
 	    
 #include "b_local.h"
 
-#include "..\Ratl\vector_vs.h"
+#if !defined(RAVL_VEC_INC)
+#include "../Ravl/CVec.h"
+#endif
+#include "../Ratl/vector_vs.h"
 
 #define MAX_PACKS			10
 

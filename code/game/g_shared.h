@@ -22,10 +22,10 @@ This file is part of Jedi Academy.
 #include "bg_public.h"
 #include "g_public.h"
 #include "b_public.h"
-#include "../Icarus/Stdafx.h"	//need stl
+#include "../icarus/StdAfx.h"	//need stl
 #include "../renderer/tr_types.h"
 #include "../cgame/cg_public.h"
-#include "G_Vehicles.h"
+#include "g_vehicles.h"
 #include "hitlocs.h"
 #include "bset.h"
 

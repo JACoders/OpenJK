@@ -21,6 +21,8 @@ USER INTERFACE MAIN
 
 #include "cgame/holocronicons.h"
 
+#define strnicmp Q_stricmpn
+
 extern void UI_SaberAttachToChar( itemDef_t *item );
 
 char *forcepowerDesc[NUM_FORCE_POWERS] = 
@@ -257,7 +259,7 @@ char *BG_GetUIPortraitFile(const int team, const short classIndex, const short c
 
 siegeClass_t *BG_GetClassOnBaseClass(const int team, const short classIndex, const short cntIndex);
 
-Q_EXPORT_C Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
+/*Q_EXPORT_C*/ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
   switch ( command ) {
 	  case UI_GETAPIVERSION:
 		  return UI_API_VERSION;

@@ -30,21 +30,21 @@ This file is part of Jedi Academy.
 	#include "../tr_local.h"
 #endif
 
-#include "../MatComp.h"
+#include "../matcomp.h"
 
 #if !defined(G2_H_INC)
 	#include "../../ghoul2/G2.h"
 #endif
 
 #if !defined (MINIHEAP_H_INC)
-	#include "../../qcommon/miniheap.h"
+	#include "../../qcommon/MiniHeap.h"
 #endif
 
 #define G2_MODEL_OK(g) ((g)&&(g)->mValid&&(g)->aHeader&&(g)->currentModel&&(g)->animModel)
 
 #include "../../server/server.h"
 
-#include <FLOAT.H>
+#include <float.h>
 
 #ifdef _G2_GORE
 #include "../../ghoul2/ghoul2_gore.h"

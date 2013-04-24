@@ -31,7 +31,7 @@ This file is part of Jedi Academy.
 #ifndef _JK2MP
 #include "g_functions.h"
 #include "g_vehicles.h"
-#include "../CGame/cg_Local.h"
+#include "../cgame/cg_local.h"
 #else
 #include "bg_vehicles.h"
 #endif

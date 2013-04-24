@@ -1257,10 +1257,8 @@ into a more C friendly form.
 =================
 */
 void SV_UserinfoChanged( client_t *cl ) {
-	char	*val;
-	char	*ip;
-	int		i;
-	int		len;
+	char	*val=NULL, *ip=NULL;
+	int		i=0, len=0, limit=0;
 
 	// name for C code
 	Q_strncpyz( cl->name, Info_ValueForKey (cl->userinfo, "name"), sizeof(cl->name) );
@@ -1287,17 +1285,19 @@ void SV_UserinfoChanged( client_t *cl ) {
 	}
 
 	// snaps command
+	//Note: cl->snapshotMsec is also validated in sv_main.cpp -> SV_CheckCvars if sv_fps is changed
 	val = Info_ValueForKey (cl->userinfo, "snaps");
+	limit = min( sv_fps->integer, sv_snaps->integer );
 	if (strlen(val)) {
 		i = atoi(val);
 		if ( i < 1 ) {
 			i = 1;
-		} else if ( i > sv_fps->integer ) {
+		} else if ( i > limit ) {
 			i = sv_fps->integer;
 		}
 		cl->snapshotMsec = 1000/i;
 	} else {
-		cl->snapshotMsec = 1000/sv_fps->integer;//50;
+		cl->snapshotMsec = 1000/limit;
 	}
 
 	// TTimo
@@ -1398,7 +1398,9 @@ void SV_ExecuteClientCommand( client_t *cl, const char *s, qboolean clientOK ) {
 	if (clientOK) {
 		// pass unknown strings to the game
 		if (!u->name && sv.state == SS_GAME && (cl->state == CS_ACTIVE || cl->state == CS_PRIMED)) {
-			Cmd_Args_Sanitize();
+			// strip \r \n and ;
+			if ( sv_filterCommands->integer )
+				Cmd_Args_Sanitize();
 			VM_Call( gvm, GAME_CLIENT_COMMAND, cl - svs.clients );
 		}
 	}

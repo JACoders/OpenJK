@@ -438,18 +438,15 @@ char *Cmd_Cmd(void)
    https://bugzilla.icculus.org/show_bug.cgi?id=4769
 */
 
-void Cmd_Args_Sanitize(void)
-{
-	int i;
-
-	for(i = 1; i < cmd_argc; i++)
+void Cmd_Args_Sanitize( void ) {
+	for ( int i=1; i<cmd_argc; i++ )
 	{
 		char *c = cmd_argv[i];
 		
-		if(strlen(c) > MAX_CVAR_VALUE_STRING - 1)
-			c[MAX_CVAR_VALUE_STRING - 1] = '\0';
+		if ( strlen( c ) >= MAX_CVAR_VALUE_STRING )
+			c[MAX_CVAR_VALUE_STRING-1] = '\0';
 		
-		while ((c = strpbrk(c, "\n\r;"))) {
+		while ( (c=strpbrk( c, "\n\r;" )) ) {
 			*c = ' ';
 			++c;
 		}

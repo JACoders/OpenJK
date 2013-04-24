@@ -54,7 +54,7 @@ TO DO: Test mixed blocks (mixed long/short)
 #include <string.h>
 #include <assert.h>
 #include "mhead.h"		/* mpeg header structure */
-#include "L3.h"
+#include "l3.h"
 #include "jdw.h"
 
 #include "mp3struct.h"

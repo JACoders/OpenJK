@@ -23,11 +23,11 @@ This file is part of Jedi Academy.
 
 //#include "cg_local.h"
 #include "cg_media.h"
-#include "..\game\g_functions.h"
-#include "..\ghoul2\g2.h"
+#include "../game/g_functions.h"
+#include "../ghoul2/G2.h"
 #include "FxScheduler.h"
-#include "..\game\wp_saber.h"
-#include "..\game\g_vehicles.h"
+#include "../game/wp_saber.h"
+#include "../game/g_vehicles.h"
 
 extern void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, vec3_t origin, vec3_t angles);
 extern void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int saberNum, int modelIndex, vec3_t origin, vec3_t angles );

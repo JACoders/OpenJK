@@ -16,7 +16,7 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-#include "MatComp.h"
+#include "matcomp.h"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>

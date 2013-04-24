@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 #include "../server/exe_headers.h"
 
 #include "tr_local.h"
-#include "tr_worldeffects.h"
+#include "tr_WorldEffects.h"
 
 // Patches up the loaded map to handle the parameters passed from the UI
 

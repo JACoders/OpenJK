@@ -24,6 +24,11 @@
 #include "qcommon/INetProfile.h"
 #endif
 
+#ifndef _WIN32
+#include "sys/sys_loadlib.h"
+#include "sys/sys_local.h"
+#endif
+
 cvar_t	*cl_renderer;
 
 cvar_t	*cl_nodelta;
@@ -75,6 +80,8 @@ cvar_t	*cl_serverStatusResendTime;
 cvar_t	*cl_framerate;
 
 cvar_t	*cl_autolodscale;
+
+cvar_t	*cl_consoleKeys;
 
 vec3_t cl_windVec;
 
@@ -2387,6 +2394,11 @@ void CL_InitRef( void ) {
 #ifdef _WIN32
 	ri.GetWinVars = GetWinVars;
 #endif
+#ifndef _WIN32
+    ri.IN_Init = IN_Init;
+    ri.IN_Shutdown = IN_Shutdown;
+    ri.IN_Restart = IN_Restart;
+#endif
 	ri.CM_GetCachedMapDiskImage = CM_GetCachedMapDiskImage;
 	ri.CM_SetCachedMapDiskImage = CM_SetCachedMapDiskImage;
 	ri.CM_SetUsingCache = CM_SetUsingCache;
@@ -2614,6 +2626,8 @@ void CL_Init( void ) {
 
 	Cvar_Get( "cl_maxPing", "800", CVAR_ARCHIVE );
 
+	// ~ and `, as keys and characters
+	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
 
 	// userinfo
 	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE );

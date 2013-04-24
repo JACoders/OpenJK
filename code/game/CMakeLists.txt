@@ -287,7 +287,17 @@ if(WIN32)
 endif(WIN32)
 
 add_library(${SPGame} SHARED ${SPGameFiles})
-install(TARGETS ${SPGame} RUNTIME DESTINATION "OpenJK")
+
+if(NOT WIN32)
+	# remove "lib" prefix for .so/.dylib files
+	set_target_properties(${SPGame} PROPERTIES PREFIX "")
+endif(NOT WIN32)
+
+if(WIN32)
+	install(TARGETS ${SPGame} RUNTIME DESTINATION "OpenJK")
+else(WIN32)
+	install(TARGETS ${SPGame} LIBRARY DESTINATION "OpenJK")
+endif(WIN32)
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPGameDefines};${ReleaseDefines}")
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPGameDefines};${ReleaseDefines}")
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPGameDefines};${ReleaseDefines}")

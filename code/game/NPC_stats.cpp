@@ -24,13 +24,13 @@ This file is part of Jedi Academy.
 #include "b_public.h"
 #include "anims.h"
 #include "wp_saber.h"
-#include "g_Vehicles.h"
+#include "g_vehicles.h"
 #if !defined(RUFL_HSTRING_INC)
-	#include "..\Rufl\hstring.h"
+	#include "../Rufl/hstring.h"
 #endif
-	#include "..\Ratl\string_vs.h"
-	#include "..\Rufl\hstring.h"
-	#include "..\Ratl\vector_vs.h"
+	#include "../Ratl/string_vs.h"
+	#include "../Rufl/hstring.h"
+	#include "../Ratl/vector_vs.h"
 
 extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
 extern qboolean NPCsPrecached;
@@ -215,7 +215,7 @@ qboolean G_ParseLiteral( const char **data, const char *string )
 //
 // NPC parameters file : ext_data/NPCs/*.npc*
 //
-#define MAX_NPC_DATA_SIZE 0x20000
+#define MAX_NPC_DATA_SIZE 0x40000
 char	NPCParms[MAX_NPC_DATA_SIZE];
 
 /*
@@ -539,27 +539,27 @@ static void ParseAnimationEvtBlock(int glaIndex, unsigned short modelIndex, cons
 			{
 				break;
 			}
-			if ( stricmp( token, "CHAN_VOICE_ATTEN" ) == 0 )
+			if ( Q_stricmp( token, "CHAN_VOICE_ATTEN" ) == 0 )
 			{
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_VOICE_ATTEN;
 			}
-			else if ( stricmp( token, "CHAN_VOICE_GLOBAL" ) == 0 )
+			else if ( Q_stricmp( token, "CHAN_VOICE_GLOBAL" ) == 0 )
 			{
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_VOICE_GLOBAL;
 			}
-			else if ( stricmp( token, "CHAN_ANNOUNCER" ) == 0 )
+			else if ( Q_stricmp( token, "CHAN_ANNOUNCER" ) == 0 )
 			{
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_ANNOUNCER;
 			}
-			else if ( stricmp( token, "CHAN_BODY" ) == 0 )
+			else if ( Q_stricmp( token, "CHAN_BODY" ) == 0 )
 			{
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_BODY;
 			}
-			else if ( stricmp( token, "CHAN_WEAPON" ) == 0 )
+			else if ( Q_stricmp( token, "CHAN_WEAPON" ) == 0 )
 			{
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_WEAPON;
 			}
-			else if ( stricmp( token, "CHAN_VOICE" ) == 0 )
+			else if ( Q_stricmp( token, "CHAN_VOICE" ) == 0 )
 			{
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_VOICE;
 			} 
@@ -813,7 +813,7 @@ void G_ParseAnimationEvtFile(int glaIndex, const char* eventsDirectory, int file
 	assert(fileIndex>=0 && fileIndex<MAX_ANIM_FILES);
 
 	const char *psAnimFileInternalName = (iRealGLAIndex == -1 ? NULL : gi.G2API_GetAnimFileInternalNameIndex( iRealGLAIndex ));
-	bool bIsFrameSkipped = (psAnimFileInternalName && strlen(psAnimFileInternalName)>5 && !stricmp(&psAnimFileInternalName[strlen(psAnimFileInternalName)-5],"_skip"));
+	bool bIsFrameSkipped = (psAnimFileInternalName && strlen(psAnimFileInternalName)>5 && !Q_stricmp(&psAnimFileInternalName[strlen(psAnimFileInternalName)-5],"_skip"));
 
 	// Open The File, Make Sure It Is Safe
 	//-------------------------------------
@@ -1123,7 +1123,7 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 
 		// Get The Cinematic GLA Name
 		//----------------------------
-		if (stricmp(skeletonName, "_humanoid")==0)
+		if (Q_stricmp(skeletonName, "_humanoid")==0)
 		{
 			const char* mapName = strrchr( level.mapname, '/' );
 			if (mapName)
@@ -1194,9 +1194,9 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 
 		// Only Do The Event File If The Model Is Not The Same As The Skeleton
 		//---------------------------------------------------------------------
-		if (stricmp(skeletonName, modelName)!=0)
+		if (Q_stricmp(skeletonName, modelName)!=0)
 		{
-			const int iGLAIndexToCheckForSkip = (stricmp(skeletonName, "_humanoid")?-1:gi.G2API_PrecacheGhoul2Model("models/players/_humanoid/_humanoid.gla")); // ;-)
+			const int iGLAIndexToCheckForSkip = (Q_stricmp(skeletonName, "_humanoid")?-1:gi.G2API_PrecacheGhoul2Model("models/players/_humanoid/_humanoid.gla")); // ;-)
 
 			G_ParseAnimationEvtFile(0, modelName, fileIndex, iGLAIndexToCheckForSkip, true);	
 		}

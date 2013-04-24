@@ -12,6 +12,10 @@ typedef unsigned int GLuint;
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
 
+#ifndef _WIN32
+#include "qcommon/platform.h"
+#endif
+
 // fast float to int conversion
 #if id386 && !( (defined __linux__ || defined __FreeBSD__ || defined MACOS_X) && (defined __i386__ ) ) // rb010123
 inline long myftol( float f );
