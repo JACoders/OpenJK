@@ -2455,9 +2455,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		obit = modNames[ meansOfDeath ];
 	}
 
-	G_LogPrintf("Kill: %i %i %i: %s killed %s by %s\n", 
-		killer, self->s.number, meansOfDeath, killerName, 
-		self->client->pers.netname, obit );
+	G_LogPrintf("Kill: %i %i %i: %s killed %s by %s\n", killer, self->s.number, meansOfDeath, killerName, self->s.eType == ET_NPC ? self->NPC_type : self->client->pers.netname, obit );
 
 	if ( g_austrian.integer 
 		&& (g_gametype.integer == GT_DUEL) 
