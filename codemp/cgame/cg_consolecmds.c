@@ -135,6 +135,46 @@ static void CG_spLose_f( void) {
 	CG_CenterPrint(CG_GetStringEdString("MP_INGAME", "YOU_LOSE"), SCREEN_HEIGHT * .30, 0);
 }
 
+void CG_ClientList_f( void )
+{
+	clientInfo_t *ci;
+	int i;
+	int count = 0;
+
+	for( i = 0; i < MAX_CLIENTS; i++ ) 
+	{
+		ci = &cgs.clientinfo[ i ];
+		if( !ci->infoValid ) 
+			continue;
+
+		switch( ci->team ) 
+		{
+		case TEAM_FREE:
+			Com_Printf( "%2d " S_COLOR_YELLOW "F   %s" S_COLOR_WHITE "%s\n", i, ci->name, (ci->botSkill != -1) ? " (bot)" : "" );
+			break;
+
+		case TEAM_RED:
+			Com_Printf( "%2d " S_COLOR_RED "R   " S_COLOR_WHITE "%s" S_COLOR_WHITE "%s\n", i,
+				ci->name, (ci->botSkill != -1) ? " (bot)" : "" );
+			break;
+
+		case TEAM_BLUE:
+			Com_Printf( "%2d " S_COLOR_BLUE "B   " S_COLOR_WHITE "%s" S_COLOR_WHITE "%s\n", i,
+				ci->name, (ci->botSkill != -1) ? " (bot)" : "" );
+			break;
+
+		default:
+		case TEAM_SPECTATOR:
+			Com_Printf( "%2d " S_COLOR_YELLOW "S   " S_COLOR_WHITE "%s" S_COLOR_WHITE "%s\n", i, ci->name, (ci->botSkill != -1) ? " (bot)" : "" );
+			break;
+		}
+
+		count++;
+	}
+
+	Com_Printf( "Listed %2d clients\n", count );
+}
+
 
 static void CG_TellTarget_f( void ) {
 	int		clientNum;
@@ -296,6 +336,7 @@ static consoleCommand_t	commands[] = {
 	{ "briefing", CG_SiegeBriefing_f },
 	{ "siegeCvarUpdate", CG_SiegeCvarUpdate_f },
 	{ "siegeCompleteCvarUpdate", CG_SiegeCompleteCvarUpdate_f },
+	{ "clientlist", CG_ClientList_f },
 };
 
 
