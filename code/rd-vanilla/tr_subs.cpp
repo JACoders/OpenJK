@@ -78,22 +78,11 @@ void VID_Printf (int print_level, const char *fmt, ...)
 }
 
 // HUNK
-/*void *Hunk_AllocateTempMemory( int size ) {
-	return ri.Hunk_AllocateTempMemory( size );
-}
 
-void Hunk_FreeTempMemory( void *buf ) {
-	ri.Hunk_FreeTempMemory( buf );
-}
+//int Hunk_MemoryRemaining( void ) {
+//	return ri.Hunk_MemoryRemaining();
+//}
 
-void *Hunk_Alloc( int size, ha_pref preference ) {
-	return ri.Hunk_Alloc( size, preference );
-}
-
-int Hunk_MemoryRemaining( void ) {
-	return ri.Hunk_MemoryRemaining();
-}
-*/
 // ZONE
 void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign ) {
 	return ri.Z_Malloc( iSize, eTag, bZeroit, iAlign );
