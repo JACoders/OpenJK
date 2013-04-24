@@ -2081,6 +2081,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	char		*killerName, *obit;
 	qboolean	wasJediMaster = qfalse;
 	int			sPMType = 0;
+	char		buf[512] = {0};
 
 	if ( self->client->ps.pm_type == PM_DEAD ) {
 		return;
@@ -2455,7 +2456,19 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		obit = modNames[ meansOfDeath ];
 	}
 
-	G_LogPrintf("Kill: %i %i %i: %s killed %s by %s\n", killer, self->s.number, meansOfDeath, killerName, self->s.eType == ET_NPC ? self->NPC_type : self->client->pers.netname, obit );
+	// log the victim and attacker's names with the method of death
+	Com_sprintf( buf, sizeof( buf ), "Kill: %i %i %i: %s killed ", killer, self->s.number, meansOfDeath, killerName );
+	if ( self->s.eType == ET_NPC ) {
+		// check for named NPCs
+		if ( self->targetname )
+			Q_strcat( buf, sizeof( buf ), va( "%s (%s) by %s\n", self->NPC_type, self->targetname, obit ) );
+		else
+			Q_strcat( buf, sizeof( buf ), va( "%s by %s\n", self->NPC_type, obit ) );
+	}
+	else
+		Q_strcat( buf, sizeof( buf ), va( "%s by %s\n", self->client->pers.netname, obit ) );
+	G_LogPrintf( "%s", buf );
+	buf[0] = '\0';
 
 	if ( g_austrian.integer 
 		&& (g_gametype.integer == GT_DUEL) 
