@@ -651,7 +651,7 @@ public:
 	void	DebugPrint( e_DebugPrintLevel, const char *, ... );
 	unsigned int GetTime( void );							//Gets the current time
 	//DWORD	GetTimeScale(void );
-	int 	PlaySound( int taskID, int entID, const char *name, const char *channel );	
+	int 	PlayIcarusSound( int taskID, int entID, const char *name, const char *channel );	
 	void	Lerp2Pos( int taskID, int entID, vec3_t origin, vec3_t angles, float duration );
 	//void	Lerp2Origin( int taskID, int entID, vec3_t origin, float duration );
 	void	Lerp2Angles( int taskID, int entID, vec3_t angles, float duration );
