@@ -517,7 +517,7 @@ void RE_InsertModelIntoHash(const char *name, model_t *mod)
 	// insert this file into the hash table so we can look it up faster later
 	mh = (modelHash_t*)Hunk_Alloc( sizeof( modelHash_t ), qtrue );
 
-	mh->next = mhHashTable[hash];
+	mh->next = mhHashTable[hash];	// I have the breakpoint triggered here where mhHashTable[986] would be assigned
 	mh->handle = mod->index;
 	strcpy(mh->name, name);
 	mhHashTable[hash] = mh;
@@ -584,7 +584,7 @@ Ghoul2 Insert Start
 	// see if the model is already loaded
 	//
 	for (mh=mhHashTable[hash]; mh; mh=mh->next) {
-		if (Q_stricmp(mh->name, name) == 0) {
+		if (Q_stricmp(mh->name, name) == 0) { // show me.
 			if (tr.models[mh->handle]->type == MOD_BAD)
 			{
 				return 0;

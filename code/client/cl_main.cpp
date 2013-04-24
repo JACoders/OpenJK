@@ -1236,6 +1236,9 @@ void CL_InitRef( void ) {
 	RIT(Z_MemSize);
 	RIT(Z_MorphMallocTag);
 
+	RIT(Hunk_ClearToMark);
+
+
 	// Not-so-nice usage / doesn't go along with my epic macro
 	rit.Error = Com_Error;
 	rit.FS_FileExists = S_FileExists;
