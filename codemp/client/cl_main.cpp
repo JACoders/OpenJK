@@ -145,17 +145,24 @@ The given command will be transmitted to the server, and is gauranteed to
 not have future usercmd_t executed before it is executed
 ======================
 */
-void CL_AddReliableCommand( const char *cmd ) {
-	int		index;
+void CL_AddReliableCommand( const char *cmd, qboolean isDisconnectCmd ) {
+	int unacknowledged = clc.reliableSequence - clc.reliableAcknowledge;
 
 	// if we would be losing an old command that hasn't been acknowledged,
 	// we must drop the connection
-	if ( clc.reliableSequence - clc.reliableAcknowledge > MAX_RELIABLE_COMMANDS ) {
-		Com_Error( ERR_DROP, "Client command overflow" );
+	// also leave one slot open for the disconnect command in this case.
+
+	if ((isDisconnectCmd && unacknowledged > MAX_RELIABLE_COMMANDS) ||
+	    (!isDisconnectCmd && unacknowledged >= MAX_RELIABLE_COMMANDS))
+	{
+		if(com_errorEntered)
+			return;
+		else
+			Com_Error(ERR_DROP, "Client command overflow");
 	}
-	clc.reliableSequence++;
-	index = clc.reliableSequence & ( MAX_RELIABLE_COMMANDS - 1 );
-	Q_strncpyz( clc.reliableCommands[ index ], cmd, sizeof( clc.reliableCommands[ index ] ) );
+
+	Q_strncpyz(clc.reliableCommands[++clc.reliableSequence & (MAX_RELIABLE_COMMANDS - 1)],
+		   cmd, sizeof(*clc.reliableCommands));
 }
 
 /*
@@ -576,7 +583,7 @@ Closing the main menu will restart the demo loop
 void CL_StartDemoLoop( void ) {
 	// start the demo loop again
 	Cbuf_AddText ("d1\n");
-	cls.keyCatchers = 0;
+	Key_SetCatcher( 0 );
 }
 
 /*
@@ -690,7 +697,7 @@ void CL_MapLoading( void ) {
 	Cvar_Set( "cl_currentServerIP", "loopback");
 
 	Con_Close();
-	cls.keyCatchers = 0;
+	Key_SetCatcher( 0 );
 
 	// if we are already connected to the local host, stay connected
 	if ( cls.state >= CA_CONNECTED && !Q_stricmp( cls.servername, "localhost" ) ) {
@@ -706,7 +713,7 @@ void CL_MapLoading( void ) {
 		CL_Disconnect( qtrue );
 		Q_strncpyz( cls.servername, "localhost", sizeof(cls.servername) );
 		cls.state = CA_CHALLENGING;		// so the connect screen is drawn
-		cls.keyCatchers = 0;
+		Key_SetCatcher( 0 );
 		SCR_UpdateScreen();
 		clc.connectTime = -RETRANSMIT_TIMEOUT;
 		NET_StringToAdr( cls.servername, &clc.serverAddress);
@@ -774,7 +781,7 @@ void CL_Disconnect( qboolean showMainMenu ) {
 	// send a disconnect message to the server
 	// send it a few times in case one is dropped
 	if ( cls.state >= CA_CONNECTED ) {
-		CL_AddReliableCommand( "disconnect" );
+		CL_AddReliableCommand( "disconnect", qtrue );
 		CL_WritePacket();
 		CL_WritePacket();
 		CL_WritePacket();
@@ -825,14 +832,14 @@ void CL_ForwardCommandToServer( const char *string ) {
 	}
 
 	if (clc.demoplaying || cls.state < CA_CONNECTED || cmd[0] == '+' ) {
-		Com_Printf ("Unknown command \"%s\"\n", cmd);
+		Com_Printf ("Unknown command \"%s" S_COLOR_WHITE "\"\n", cmd);
 		return;
 	}
 
 	if ( Cmd_Argc() > 1 ) {
-		CL_AddReliableCommand( string );
+		CL_AddReliableCommand( string, qfalse );
 	} else {
-		CL_AddReliableCommand( cmd );
+		CL_AddReliableCommand( cmd, qfalse );
 	}
 }
 
@@ -908,7 +915,7 @@ void CL_ForwardToServer_f( void ) {
 	
 	// don't forward the first argument
 	if ( Cmd_Argc() > 1 ) {
-		CL_AddReliableCommand( Cmd_Args() );
+		CL_AddReliableCommand( Cmd_Args(), qfalse );
 	}
 }
 
@@ -1005,7 +1012,7 @@ void CL_Connect_f( void ) {
 		cls.state = CA_CONNECTING;
 	}
 
-	cls.keyCatchers = 0;
+	Key_SetCatcher( 0 );
 	clc.connectTime = -99999;	// CL_CheckForResend() will fire immediately
 	clc.connectPacketCount = 0;
 
@@ -1086,7 +1093,7 @@ void CL_SendPureChecksums( void ) {
 	for (i = 0; i < 2; i++) {
 		cMsg[i] += 10;
 	}
-	CL_AddReliableCommand( cMsg );
+	CL_AddReliableCommand( cMsg, qfalse );
 }
 
 /*
@@ -1095,7 +1102,7 @@ CL_ResetPureClientAtServer
 =================
 */
 void CL_ResetPureClientAtServer( void ) {
-	CL_AddReliableCommand( va("vdr") );
+	CL_AddReliableCommand( "vdr", qfalse );
 }
 
 /*
@@ -1273,7 +1280,7 @@ void CL_DownloadsComplete( void ) {
 		FS_Restart(clc.checksumFeed); // We possibly downloaded a pak, restart the file system to load it
 
 		// inform the server so we get new gamestate info
-		CL_AddReliableCommand( "donedl" );
+		CL_AddReliableCommand( "donedl", qfalse );
 
 		// by sending the donenl command we request a new gamestate
 		// so we don't want to load stuff yet
@@ -1341,7 +1348,7 @@ void CL_BeginDownload( const char *localName, const char *remoteName ) {
 	clc.downloadBlock = 0; // Starting new file
 	clc.downloadCount = 0;
 
-	CL_AddReliableCommand( va("download %s", remoteName) );
+	CL_AddReliableCommand( va("download %s", remoteName), qfalse );
 }
 
 /*
@@ -1354,6 +1361,19 @@ A download completed or failed
 void CL_NextDownload(void) {
 	char *s;
 	char *remoteName, *localName;
+
+	// A download has finished, check whether this matches a referenced checksum
+	if(*clc.downloadName)
+	{
+		char *zippath = FS_BuildOSPath(Cvar_VariableString("fs_homepath"), clc.downloadName, "");
+		zippath[strlen(zippath)-1] = '\0';
+
+		if(!FS_CompareZipChecksum(zippath))
+			Com_Error(ERR_DROP, "Incorrect checksum for file: %s", clc.downloadName);
+	}
+
+	*clc.downloadTempName = *clc.downloadName = 0;
+	Cvar_Set("cl_downloadName", "");
 
 	// We are looking to start a download here
 	if (*clc.downloadList) {
@@ -1378,7 +1398,13 @@ void CL_NextDownload(void) {
 		else
 			s = localName + strlen(localName); // point at the nul byte
 
-		CL_BeginDownload( localName, remoteName );
+		if (!cl_allowDownload->integer) {
+			Com_Error(ERR_DROP, "UDP Downloads are disabled on your client. (cl_allowDownload is %d)", cl_allowDownload->integer);
+			return;	
+		}
+		else {
+			CL_BeginDownload( localName, remoteName );
+		}
 
 		clc.downloadRestart = qtrue;
 
@@ -1422,6 +1448,10 @@ void CL_InitDownloads(void) {
 		if ( *clc.downloadList ) {
 			// if autodownloading is not enabled on the server
 			cls.state = CA_CONNECTED;
+
+			*clc.downloadTempName = *clc.downloadName = 0;
+			Cvar_Set( "cl_downloadName", "" );
+
 			CL_NextDownload();
 			return;
 		}
@@ -2038,7 +2068,7 @@ void CL_CheckUserinfo( void ) {
 	// send a reliable userinfo update if needed
 	if ( cvar_modifiedFlags & CVAR_USERINFO ) {
 		cvar_modifiedFlags &= ~CVAR_USERINFO;
-		CL_AddReliableCommand( va("userinfo \"%s\"", Cvar_InfoString( CVAR_USERINFO ) ) );
+		CL_AddReliableCommand( va("userinfo \"%s\"", Cvar_InfoString( CVAR_USERINFO ) ), qfalse );
 	}
 
 }
@@ -2061,8 +2091,8 @@ void CL_Frame ( int msec ) {
 	SE_CheckForLanguageUpdates();	// will take zero time to execute unless language changes, then will reload strings.
 									//	of course this still doesn't work for menus...
 
-	if ( cls.state == CA_DISCONNECTED && !( cls.keyCatchers & KEYCATCH_UI )
-		&& !com_sv_running->integer ) {
+	if ( cls.state == CA_DISCONNECTED && !( Key_GetCatcher( ) & KEYCATCH_UI )
+		&& !com_sv_running->integer && uivm ) {
 		// if disconnected, bring up the menu
 		S_StopAllSounds();
 		VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
@@ -2757,6 +2787,7 @@ void CL_Shutdown( void ) {
 	recursive = qfalse;
 
 	Com_Memset( &cls, 0, sizeof( cls ) );
+	Key_SetCatcher( 0 );
 
 	//Com_Printf( "-----------------------\n" );
 

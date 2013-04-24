@@ -47,7 +47,9 @@ kbutton_t	in_lookup, in_lookdown, in_moveleft, in_moveright;
 kbutton_t	in_strafe, in_speed;
 kbutton_t	in_up, in_down;
 
-kbutton_t	in_buttons[16];
+#define MAX_KBUTTONS 16
+
+kbutton_t	in_buttons[MAX_KBUTTONS];
 
 
 qboolean	in_mlooking;
@@ -735,10 +737,7 @@ void IN_StrafeDown(void) {IN_KeyDown(&in_strafe);}
 void IN_StrafeUp(void) {IN_KeyUp(&in_strafe);}
 
 void IN_Button0Down(void) {IN_KeyDown(&in_buttons[0]);}
-void IN_Button0Up(void)
-{
-	IN_KeyUp(&in_buttons[0]);
-}
+void IN_Button0Up(void) {IN_KeyUp(&in_buttons[0]);}
 void IN_Button1Down(void) {IN_KeyDown(&in_buttons[1]);}
 void IN_Button1Up(void) {IN_KeyUp(&in_buttons[1]);}
 void IN_Button2Down(void) {IN_KeyDown(&in_buttons[2]);}
@@ -762,10 +761,7 @@ void IN_Button5Up(void) {IN_KeyUp(&in_buttons[5]);}
 void IN_Button6Down(void) {IN_KeyDown(&in_buttons[6]);}
 void IN_Button6Up(void) {IN_KeyUp(&in_buttons[6]);}
 void IN_Button7Down(void) {IN_KeyDown(&in_buttons[7]);}
-void IN_Button7Up(void)
-{
-	IN_KeyUp(&in_buttons[7]);
-}
+void IN_Button7Up(void){IN_KeyUp(&in_buttons[7]);}
 void IN_Button8Down(void) {IN_KeyDown(&in_buttons[8]);}
 void IN_Button8Up(void) {IN_KeyUp(&in_buttons[8]);}
 void IN_Button9Down(void) {IN_KeyDown(&in_buttons[9]);}
@@ -782,11 +778,6 @@ void IN_Button14Down(void) {IN_KeyDown(&in_buttons[14]);}
 void IN_Button14Up(void) {IN_KeyUp(&in_buttons[14]);}
 void IN_Button15Down(void) {IN_KeyDown(&in_buttons[15]);}
 void IN_Button15Up(void) {IN_KeyUp(&in_buttons[15]);}
-
-void IN_ButtonDown (void) {
-	IN_KeyDown(&in_buttons[1]);}
-void IN_ButtonUp (void) {
-	IN_KeyUp(&in_buttons[1]);}
 
 void IN_CenterView (void) {
 	cl.viewangles[PITCH] = -SHORT2ANGLE(cl.snap.ps.delta_angles[PITCH]);
@@ -934,9 +925,9 @@ void CL_MouseEvent( int dx, int dy, int time ) {
 		g_clAutoMapInput.yaw = 0.0f;
 		g_clAutoMapInput.pitch = 0.0f;
 	}
-	else if ( cls.keyCatchers & KEYCATCH_UI ) {
+	else if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
 		VM_Call( uivm, UI_MOUSE_EVENT, dx, dy );
-	} else if (cls.keyCatchers & KEYCATCH_CGAME) {
+	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME ) {
 		VM_Call (cgvm, CG_MOUSE_EVENT, dx, dy);
 	} else {
 		cl.mouseDx[cl.mouseIndex] += dx;
@@ -1150,7 +1141,7 @@ void CL_CmdButtons( usercmd_t *cmd ) {
 	// send a button bit even if the key was pressed and released in
 	// less than a frame
 	//	
-	for (i = 0 ; i < 15 ; i++) {
+	for (i = 0 ; i < MAX_KBUTTONS ; i++) {
 		if ( in_buttons[i].active || in_buttons[i].wasPressed ) {
 			cmd->buttons |= 1 << i;
 		}
@@ -1166,13 +1157,13 @@ void CL_CmdButtons( usercmd_t *cmd ) {
 		}
 	}
 
-	if ( cls.keyCatchers ) {
+	if ( Key_GetCatcher( ) ) {
 		cmd->buttons |= BUTTON_TALK;
 	}
 
 	// allow the game to know if any key at all is
 	// currently pressed, even if it isn't bound to anything
-	if ( kg.anykeydown && !cls.keyCatchers ) {
+	if ( kg.anykeydown && Key_GetCatcher( ) == 0 ) {
 		cmd->buttons |= BUTTON_ANY;
 	}
 }
@@ -1667,6 +1658,8 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-button13", IN_Button13Up);
 	Cmd_AddCommand ("+button14", IN_Button14Down);
 	Cmd_AddCommand ("-button14", IN_Button14Up);
+	Cmd_AddCommand ("+button15", IN_Button15Down);
+	Cmd_AddCommand ("-button15", IN_Button15Up);
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);
 
