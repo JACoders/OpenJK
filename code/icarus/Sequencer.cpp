@@ -21,13 +21,13 @@ This file is part of Jedi Academy.
 //	-- jweier
 
 // this include must remain at the top of every Icarus CPP file
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "IcarusImplementation.h"
 
-#include "BlockStream.h"
-#include "Sequence.h"
-#include "TaskManager.h"
-#include "Sequencer.h"
+#include "blockstream.h"
+#include "sequence.h"
+#include "taskmanager.h"
+#include "sequencer.h"
 
 #define S_FAILED(a) (a!=SEQ_OK)
 
@@ -2401,7 +2401,13 @@ int CSequencer::DestroySequence( CSequence *sequence, CIcarus* icarus )
 	{
 		if((*tsi).second == sequence)
 		{
+#ifdef _WIN32
 			tsi = m_taskSequences.erase(tsi);
+#else
+			taskSequence_m::iterator itTemp = tsi;
+			tsi++;
+			m_taskSequences.erase(itTemp);
+#endif
 		}
 		else
 		{

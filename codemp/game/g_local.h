@@ -464,6 +464,8 @@ typedef struct {
 	//		userinfo -> pers in ClientUserinfoChanged
 	char		saber1[MAX_QPATH];
 	char		saber2[MAX_QPATH];
+
+	int			vote; // 0 = none, 1 = yes, 2 = no
 } clientPersistant_t;
 
 typedef struct renderInfo_s
@@ -1361,6 +1363,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset );
 void G_BreakArm(gentity_t *ent, int arm);
 void G_UpdateClientAnims(gentity_t *self, float animSpeedScale);
 void ClientCommand( int clientNum );
+void G_ClearVote( gentity_t *ent );
 
 //
 // g_active.c
@@ -1830,10 +1833,15 @@ void trap_Bot_UpdateWaypoints(int wpnum, wpobject_t **wps);
 void trap_Bot_CalculatePaths(int rmg);
 
 // userinfo validation bitflags
+// default is all except extended ascii
+// numUserinfoFields + USERINFO_VALIDATION_MAX should not exceed 31
 typedef enum userinfoValidationBits_e {
 	// validation & (1<<(numUserinfoFields+USERINFO_VALIDATION_BLAH))
 	USERINFO_VALIDATION_SIZE=0,
 	USERINFO_VALIDATION_SLASH,
 	USERINFO_VALIDATION_EXTASCII,
 	USERINFO_VALIDATION_CONTROLCHARS,
+	USERINFO_VALIDATION_MAX
 } userinfoValidationBits_t;
+
+void Svcmd_ToggleUserinfoValidation_f( void );

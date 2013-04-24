@@ -499,6 +499,9 @@ static ulong needout(z_stream *z, inflate_blocks_state_t *s, ulong bytesToEnd)
 inline byte *qcopy(byte *dst, byte *src, int count)
 {
 	byte 	*retval;
+#ifdef __linux__
+//FIXME
+#else
 	_asm
 	{
 		push ecx  
@@ -515,6 +518,7 @@ inline byte *qcopy(byte *dst, byte *src, int count)
 		pop esi
 		pop ecx
 	}
+#endif
 	return(retval);
 }
 
@@ -748,6 +752,7 @@ static void inflate_codes(z_stream *z, inflate_blocks_state_t *s)
 		{			  
 		// x: set up for LEN
 		case START:
+#ifndef __linux__ //TODO: replace zlib32 with zlib so this isn't needed
 			if((bytesToEnd >= 258) && (z->avail_in >= 10))
 			{
 				z->error = inflate_fast(inflate_mask[infCodes->lbits], inflate_mask[infCodes->dbits], infCodes->ltree, infCodes->dtree, s, z);
@@ -758,6 +763,7 @@ static void inflate_codes(z_stream *z, inflate_blocks_state_t *s)
 					break;
 				}
 			}
+#endif
 			infCodes->code.need = infCodes->lbits;
 			infCodes->code.tree = infCodes->ltree;
 			infCodes->mode = LEN;

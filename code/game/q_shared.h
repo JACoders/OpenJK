@@ -54,10 +54,20 @@ This file is part of Jedi Academy.
 #define _G2_GORE
 #endif
 
-#define Q3CONFIG_NAME		"openjk_sp.cfg"
+#define PRODUCT_NAME			"openjk_sp"
+
+#define CLIENT_WINDOW_TITLE "OpenJK (SP)"
+#define CLIENT_CONSOLE_TITLE "OpenJK Console (SP)"
+#define HOMEPATH_NAME_UNIX ".openjk"
+#define HOMEPATH_NAME_WIN "OpenJK"
+#define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
+
+#define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
 
 #ifndef FINAL_BUILD
+#ifdef _WIN32
 #define G2_PERFORMANCE_ANALYSIS
+#endif
 #endif
 
 #include <assert.h>
@@ -68,8 +78,8 @@ This file is part of Jedi Academy.
 #include <stdlib.h>
 #include <time.h>
 #include <ctype.h>
+#include "../qcommon/platform.h"
 #include <limits.h>
-
 //=======================================================================
 
 //Ignore __attribute__ on non-gcc platforms
@@ -110,6 +120,10 @@ This file is part of Jedi Academy.
 
 #define	QDECL
 
+//JAC: Added
+#define ARRAY_LEN( x ) ( sizeof( x ) / sizeof( *(x) ) )
+#define STRING( a ) #a
+
 //======================= WIN32 DEFINES =================================
 
 #ifdef WIN32
@@ -141,16 +155,16 @@ This file is part of Jedi Academy.
 
 //======================= MAC OS X SERVER DEFINES =====================
 
-#if defined(__MACH__) && defined(__APPLE__)
+#if defined(MACOS_X)
 
 #define MAC_STATIC
 
 #ifdef __ppc__
-#define CPUSTRING	"MacOSXS-ppc"
+#define CPUSTRING	"MacOSX-ppc"
 #elif defined __i386__
-#define CPUSTRING	"MacOSXS-i386"
+#define CPUSTRING	"MacOSX-i386"
 #else
-#define CPUSTRING	"MacOSXS-other"
+#define CPUSTRING	"MacOSX-other"
 #endif
 
 #define	PATH_SEP	'/'
@@ -185,6 +199,8 @@ void Sys_PumpEvents( void );
 // just waste space and make big arrays static...
 #ifdef __linux__
 
+#include <unistd.h>
+
 #define	MAC_STATIC
 
 #ifdef __i386__
@@ -218,6 +234,39 @@ typedef int		sfxHandle_t;
 typedef int		fileHandle_t;
 typedef int		clipHandle_t;
 
+//Raz: can't think of a better place to put this atm,
+//		should probably be in the platform specific definitions
+#if defined (_MSC_VER) && (_MSC_VER >= 1600)
+
+#include <stdint.h>
+
+// vsnprintf is ISO/IEC 9899:1999
+// abstracting this to make it portable
+int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+
+#elif defined (_MSC_VER)
+
+#include <io.h>
+
+typedef signed __int64 int64_t;
+typedef signed __int32 int32_t;
+typedef signed __int16 int16_t;
+typedef signed __int8  int8_t;
+typedef unsigned __int64 uint64_t;
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int16 uint16_t;
+typedef unsigned __int8  uint8_t;
+
+// vsnprintf is ISO/IEC 9899:1999
+// abstracting this to make it portable
+int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+#else // not using MSVC
+
+#include <stdint.h>
+
+#define Q_vsnprintf vsnprintf
+
+#endif
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -242,6 +291,9 @@ typedef int		clipHandle_t;
 #define	MAX_INFO_KEY		1024
 #define	MAX_INFO_VALUE		1024
 
+#define	BIG_INFO_STRING		8192  // used for system info key only
+#define	BIG_INFO_KEY		  8192
+#define	BIG_INFO_VALUE		8192
 
 #define	MAX_QPATH			64		// max length of a quake game pathname
 #define	MAX_OSPATH			260		// max length of a filesystem pathname
@@ -1000,19 +1052,28 @@ inline float Q_crandom( int *seed ) {
 
 //  Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max
 inline float Q_flrand(float min, float max) {
-	return ((rand() * (max - min)) / 32768.0F) + min;
+	return ((rand() * (max - min)) / ((float)RAND_MAX)) + min;
 }
 
 // Returns an integer min <= x <= max (ie inclusive)
 inline int Q_irand(int min, int max) {
 	max++; //so it can round down
+#ifdef _WIN32
 	return ((rand() * (max - min)) >> 15) + min;
+#else
+	//rand() returns much larger values on OSX/Linux, so make the result smaller
+	return (((rand() % 0x7fff) * (max - min)) >> 15) + min;
+#endif
 }
 
+#ifdef _WIN32
 //returns a float between 0 and 1.0
 inline float random() {
 	return (rand() / ((float)0x7fff));
 }
+#else
+#define random() (rand() / ((float)RAND_MAX))
+#endif
 
 //returns a float between -1 and 1.0
 inline float crandom() {
@@ -1209,6 +1270,7 @@ void SkipRestOfLine ( const char **data );
 void Parse1DMatrix (const char **buf_p, int x, float *m);
 void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
+int Com_HexStrToInt( const char *str );
 
 void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
 
@@ -1234,14 +1296,15 @@ int Q_islower( int c );
 int Q_isupper( int c );
 int Q_isalpha( int c );
 
+#ifndef _WIN32
 // portable case insensitive compare
-//inline  int Q_stricmp (const char *s1, const char *s2) {return Q_stricmpn (s1, s2, 99999);}
-//int		Q_strncmp (const char *s1, const char *s2, int n);
-//int		Q_stricmpn (const char *s1, const char *s2, int n);
-//char	*Q_strlwr( char *s1 );
-//char	*Q_strupr( char *s1 );
-//char	*Q_strrchr( const char* string, int c );
-
+int		Q_strncmp (const char *s1, const char *s2, int n);
+int		Q_stricmpn (const char *s1, const char *s2, int n);
+inline  int Q_stricmp (const char *s1, const char *s2) {return Q_stricmpn (s1, s2, 99999);}
+char	*Q_strlwr( char *s1 );
+char	*Q_strupr( char *s1 );
+char	*Q_strrchr( const char* string, int c );
+#else
 // NON-portable (but faster) versions
 inline int	Q_stricmp (const char *s1, const char *s2) { return stricmp(s1, s2); }
 inline int	Q_strncmp (const char *s1, const char *s2, int n) { return strncmp(s1, s2, n); }
@@ -1249,6 +1312,7 @@ inline int	Q_stricmpn (const char *s1, const char *s2, int n) { return strnicmp(
 inline char	*Q_strlwr( char *s1 ) { return strlwr(s1); }
 inline char	*Q_strupr( char *s1 ) { return strupr(s1); }
 inline const char	*Q_strrchr( const char* str, int c ) { return strrchr(str, c); }
+#endif
 
 
 // buffer size safe library replacements
@@ -1398,7 +1462,7 @@ Ghoul2 Insert Start
 */
 
 #if !defined(GHOUL2_SHARED_H_INC)
-	#include "..\game\ghoul2_shared.h"	//for CGhoul2Info_v
+	#include "../game/ghoul2_shared.h"	//for CGhoul2Info_v
 #endif
 
 /*

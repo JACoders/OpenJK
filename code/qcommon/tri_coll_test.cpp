@@ -31,7 +31,7 @@ This file is part of Jedi Academy.
  */
 
 // leave this at the top for PCH reasons...
-#include "common_headers.h"
+#include "../game/common_headers.h"
 
 
 

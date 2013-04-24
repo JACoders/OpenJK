@@ -27,9 +27,9 @@ This file is part of Jedi Academy.
 
 #include "../server/exe_headers.h"
 
-#include "rm_headers.h"
+#include "RM_Headers.h"
 
-#include "rm_instance_random.h"
+#include "RM_Instance_Random.h"
 
 /************************************************************************************************
  * CRMRandomInstance::CRMRandomInstance

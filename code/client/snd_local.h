@@ -27,10 +27,18 @@ This file is part of Jedi Academy.
 #include "../mp3code/mp3struct.h"
 
 // Open AL Specific
+#ifdef _WIN32
 #include "openal\al.h"
 #include "openal\alc.h"
 #include "eax\eax.h"
 #include "eax\eaxman.h"
+#elif defined MACOS_X
+#include <OpenAL/al.h>
+#include <OpenAL/alc.h>
+#else
+#include <AL/al.h>
+#include <AL/alc.h>
+#endif
 
 // Added for Open AL to know when to mute all sounds (e.g when app. loses focus)
 void S_AL_MuteAllSounds(qboolean bMute);

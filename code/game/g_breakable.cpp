@@ -22,7 +22,7 @@ This file is part of Jedi Academy.
 
 #include "g_local.h"
 #include "g_functions.h"
-#include "..\cgame\cg_media.h"
+#include "../cgame/cg_media.h"
 
 //client side shortcut hacks from cg_local.h
 //extern void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shake_speed, qboolean smoke );

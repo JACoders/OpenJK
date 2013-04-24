@@ -22,13 +22,13 @@ This file is part of Jedi Academy.
 
 
 // this include must remain at the top of every Icarus CPP file
-#include "stdafx.h"
+#include "StdAfx.h"
 #include "IcarusImplementation.h"
 
-#include "BlockStream.h"
-#include "Sequence.h"
-#include "TaskManager.h"
-#include "Sequencer.h"
+#include "blockstream.h"
+#include "sequence.h"
+#include "taskmanager.h"
+#include "sequencer.h"
 
 #define ICARUS_VALIDATE(a) if ( a == false ) return TASK_FAILED;
 
@@ -1221,7 +1221,7 @@ int CTaskManager::Sound( CTask *task, CIcarus* icarus )
 	icarus->GetGame()->DebugPrint(IGameInterface::WL_DEBUG, "%4d sound(\"%s\", \"%s\"); [%d]", m_ownerID, sVal, sVal2, task->GetTimeStamp() );
 
 	//Only instantly complete if the user has requested it
-	if( icarus->GetGame()->PlaySound( task->GetGUID(), m_ownerID, sVal2, sVal ) )
+	if( icarus->GetGame()->PlayIcarusSound( task->GetGUID(), m_ownerID, sVal2, sVal ) )
 		Completed( task->GetGUID() );
 	
 	return TASK_OK;

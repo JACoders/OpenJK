@@ -1000,7 +1000,7 @@ void set_mission_stats_cvars( void )
 
 }
 
-#include "..\cgame\cg_media.h"	//access to cgs
+#include "../cgame/cg_media.h"	//access to cgs
 extern void G_ChangeMap (const char *mapname, const char *spawntarget, qboolean hub);	//g_utils
 void target_level_change_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 {

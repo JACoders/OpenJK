@@ -1882,36 +1882,75 @@ qboolean G_SetSaber(gentity_t *ent, int saberNum, char *saberName, qboolean sieg
 void G_ValidateSiegeClassForTeam(gentity_t *ent, int team);
 
 typedef struct userinfoValidate_s {
-	const char		*field;
-	const char		*fieldClean;
-	unsigned int	minCount;
-	unsigned int	maxCount;
+	const char		*field, *fieldClean;
+	unsigned int	minCount, maxCount;
 } userinfoValidate_t;
 
+#define UIF( x, _min, _max ) { STRING(\\) #x STRING(\\), STRING( x ), _min, _max }
 static userinfoValidate_t userinfoFields[] = {
-	{ "\\cl_guid\\",			"cl_guid",			0, 0 }, // not allowed, q3fill protection
-	{ "\\cl_punkbuster\\",		"cl_punkbuster",	0, 0 }, // not allowed, q3fill protection
-	{ "\\ip\\",					"ip",				0, 1 }, // engine adds this at the end
-	{ "\\name\\",				"name",				1, 1 },
-	{ "\\rate\\",				"rate",				1, 1 },
-	{ "\\snaps\\",				"snaps",			1, 1 },
-	{ "\\model\\",				"model",			1, 1 },
-	{ "\\forcepowers\\",		"forcepowers",		1, 1 },
-	{ "\\color1\\",				"color1",			1, 1 },
-	{ "\\color2\\",				"color2",			1, 1 },
-	{ "\\handicap\\",			"handicap",			1, 1 },
-	{ "\\sex\\",				"sex",				0, 1 },
-	{ "\\cg_predictItems\\",	"cg_predictItems",	1, 1 },
-	{ "\\saber1\\",				"saber1",			1, 1 },
-	{ "\\saber2\\",				"saber2",			1, 1 },
-	{ "\\char_color_red\\",		"char_color_red",	1, 1 },
-	{ "\\char_color_green\\",	"char_color_green",	1, 1 },
-	{ "\\char_color_blue\\",	"char_color_blue",	1, 1 },
-	{ "\\teamtask\\",			"teamtask",			1, 1 },
-	{ "\\password\\",			"password",			0, 1 }, // optional
-	{ "\\teamoverlay\\",		"teamoverlay",		0, 1 }, // only registered in cgame, not sent when connecting
+	UIF( cl_guid,			0, 0 ), // not allowed, q3fill protection
+	UIF( cl_punkbuster,		0, 0 ), // not allowed, q3fill protection
+	UIF( ip,				0, 1 ), // engine adds this at the end
+	UIF( name,				1, 1 ),
+	UIF( rate,				1, 1 ),
+	UIF( snaps,				1, 1 ),
+	UIF( model,				1, 1 ),
+	UIF( forcepowers,		1, 1 ),
+	UIF( color1,			1, 1 ),
+	UIF( color2,			1, 1 ),
+	UIF( handicap,			1, 1 ),
+	UIF( sex,				0, 1 ),
+	UIF( cg_predictItems,	1, 1 ),
+	UIF( saber1,			1, 1 ),
+	UIF( saber2,			1, 1 ),
+	UIF( char_color_red,	1, 1 ),
+	UIF( char_color_green,	1, 1 ),
+	UIF( char_color_blue,	1, 1 ),
+	UIF( teamtask,			1, 1 ),
+	UIF( password,			0, 1 ), // optional
+	UIF( teamoverlay,		0, 1 ), // only registered in cgame, not sent when connecting
 };
 static size_t numUserinfoFields = ARRAY_LEN( userinfoFields );
+
+static const char *userinfoValidateExtra[USERINFO_VALIDATION_MAX] = {
+	"Size",					// USERINFO_VALIDATION_SIZE
+	"# of slashes",			// USERINFO_VALIDATION_SLASH
+	"Extended ascii",		// USERINFO_VALIDATION_EXTASCII
+	"Control characters",	// USERINFO_VALIDATION_CONTROLCHARS
+};
+
+void Svcmd_ToggleUserinfoValidation_f( void ) {
+	if ( trap_Argc() == 1 ) {
+		int i=0;
+		for ( i=0; i<numUserinfoFields; i++ ) {
+			if ( (g_userinfoValidate.integer & (1<<i)) )	G_Printf( "%2d [X] %s\n", i, userinfoFields[i].fieldClean );
+			else											G_Printf( "%2d [ ] %s\n", i, userinfoFields[i].fieldClean );
+		}
+		for ( ; i<numUserinfoFields+USERINFO_VALIDATION_MAX; i++ ) {
+			if ( (g_userinfoValidate.integer & (1<<i)) )	G_Printf( "%2d [X] %s\n", i, userinfoValidateExtra[i-numUserinfoFields] );
+			else											G_Printf( "%2d [ ] %s\n", i, userinfoValidateExtra[i-numUserinfoFields] );
+		}
+		return;
+	}
+	else {
+		char arg[8]={0};
+		int index;
+
+		trap_Argv( 1, arg, sizeof( arg ) );
+		index = atoi( arg );
+
+		if ( index < 0 || index > numUserinfoFields+USERINFO_VALIDATION_MAX-1 ) {
+			Com_Printf( "ToggleUserinfoValidation: Invalid range: %i [0, %i]\n", index, numUserinfoFields+USERINFO_VALIDATION_MAX-1 );
+			return;
+		}
+
+		trap_Cvar_Set( "g_userinfoValidate", va( "%i", (1<<index) ^ g_userinfoValidate.integer ) );
+		trap_Cvar_Update( &g_userinfoValidate );
+
+		if ( index < numUserinfoFields )	Com_Printf( "%s %s\n", userinfoFields[index].fieldClean,				((g_userinfoValidate.integer & (1<<index)) ? "Validated" : "Ignored") );
+		else								Com_Printf( "%s %s\n", userinfoValidateExtra[index-numUserinfoFields],	((g_userinfoValidate.integer & (1<<index)) ? "Validated" : "Ignored") );
+	}
+}
 
 char *G_ValidateUserinfo( const char *userinfo )
 {
@@ -1943,7 +1982,7 @@ char *G_ValidateUserinfo( const char *userinfo )
 			if ( userinfo[i] == '\\' )
 				count++;
 		}
-		if ( count%2 != 0 )
+		if ( (count&1) ) // odd
 			return "Bad number of slashes";
 	}
 
@@ -3245,7 +3284,7 @@ void ClientSpawn(gentity_t *ent) {
 	}
 	else
 	{
-		maxHealth = atoi( Info_ValueForKey( userinfo, "handicap" ) );
+		maxHealth = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
 	}
 	client->pers.maxHealth = maxHealth;//atoi( Info_ValueForKey( userinfo, "handicap" ) );
 	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth ) {
@@ -3766,6 +3805,25 @@ server system housekeeping.
 ============
 */
 extern void G_LeaveVehicle( gentity_t* ent, qboolean ConCheck );
+
+void G_ClearVote( gentity_t *ent ) {
+	if ( !level.voteTime )
+		return;
+
+	if ( ent->client->mGameFlags & PSG_VOTED ) {
+		if ( ent->client->pers.vote == 1 ) {
+			level.voteYes--;
+			trap_SetConfigstring( CS_VOTE_YES, va( "%i", level.voteYes ) );
+		}
+		else if ( ent->client->pers.vote == 2 ) {
+			level.voteNo--;
+			trap_SetConfigstring( CS_VOTE_NO, va( "%i", level.voteNo ) );
+		}
+	}
+	ent->client->mGameFlags &= ~(PSG_VOTED|PSG_TEAMVOTED);
+	ent->client->pers.vote = 0;
+}
+
 void ClientDisconnect( int clientNum ) {
 	gentity_t	*ent;
 	gentity_t	*tent;
@@ -3879,6 +3937,8 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->ps.persistant[PERS_TEAM] = TEAM_FREE;
 	ent->client->sess.sessionTeam = TEAM_FREE;
 	ent->r.contents = 0;
+
+	G_ClearVote( ent );
 
 	if (ent->client->holdingObjectiveItem > 0)
 	{ //carrying a siege objective item - make sure it updates and removes itself from us now in case this is an instant death-respawn situation

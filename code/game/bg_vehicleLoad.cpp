@@ -54,7 +54,7 @@ This file is part of Jedi Academy.
 #endif
 
 #ifndef _JK2MP
-#include "..\Ratl\string_vs.h"
+#include "../Ratl/string_vs.h"
 #endif
 
 #ifdef QAGAME
@@ -64,7 +64,7 @@ extern int G_SoundIndex( const char *name );
 	#ifdef _JK2MP
 		extern int G_EffectIndex( const char *name );
 	#endif
-#elif CGAME
+#elif defined CGAME
 #include "../namespace_begin.h"
 extern qhandle_t	trap_R_RegisterModel( const char *name );			// returns rgb axis if not found
 extern qhandle_t	trap_R_RegisterSkin( const char *name );			// returns all white if not found
@@ -87,8 +87,8 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 // These buffers are filled in with the same contents and then just read from in
 // a few places. We only need one copy on Xbox.
-#define MAX_VEH_WEAPON_DATA_SIZE 0x20000
-#define MAX_VEHICLE_DATA_SIZE 0x80000
+#define MAX_VEH_WEAPON_DATA_SIZE 0x40000
+#define MAX_VEHICLE_DATA_SIZE 0x100000
 
 #if !defined(_XBOX) || defined(QAGAME)
 	char	VehWeaponParms[MAX_VEH_WEAPON_DATA_SIZE];
@@ -256,7 +256,7 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 			case VF_MODEL_CLIENT:	// (MP cgame only) take the string, get the G_ModelIndex
 #ifndef _JK2MP
 				*(int *)(b+vehWeaponFields[i].ofs) = G_ModelIndex( value );
-#elif QAGAME
+#elif defined QAGAME
 				//*(int *)(b+vehWeaponFields[i].ofs) = G_ModelIndex( value );
 #else
 				*(int *)(b+vehWeaponFields[i].ofs) = trap_R_RegisterModel( value );
@@ -265,23 +265,23 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 			case VF_EFFECT:	// take the string, get the G_EffectIndex
 #ifdef QAGAME
 				*(int *)(b+vehWeaponFields[i].ofs) = G_EffectIndex( value );
-#elif CGAME
+#elif defined CGAME
 				*(int *)(b+vehWeaponFields[i].ofs) = trap_FX_RegisterEffect( value );
 #endif
 				break;
 			case VF_EFFECT_CLIENT:	// (MP cgame only) take the string, get the index
 #ifndef _JK2MP
 				*(int *)(b+vehWeaponFields[i].ofs) = G_EffectIndex( value );
-#elif QAGAME
+#elif defined QAGAME
 				//*(int *)(b+vehWeaponFields[i].ofs) = G_EffectIndex( value );
-#elif CGAME
+#elif defined CGAME
 				*(int *)(b+vehWeaponFields[i].ofs) = trap_FX_RegisterEffect( value );
 #endif
 				break;
 			case VF_SHADER:	// (cgame only) take the string, call trap_R_RegisterShader
 #ifdef WE_ARE_IN_THE_UI
 				*(int *)(b+vehWeaponFields[i].ofs) = trap_R_RegisterShaderNoMip( value );
-#elif CGAME
+#elif defined CGAME
 				*(int *)(b+vehWeaponFields[i].ofs) = trap_R_RegisterShader( value );
 #endif
 				break;
@@ -300,7 +300,7 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 			case VF_SOUND_CLIENT:	// (MP cgame only) take the string, get the index
 #ifndef _JK2MP
 				*(int *)(b+vehWeaponFields[i].ofs) = G_SoundIndex( value );
-#elif QAGAME
+#elif defined QAGAME
 				//*(int *)(b+vehWeaponFields[i].ofs) = G_SoundIndex( value );
 #else
 				*(int *)(b+vehWeaponFields[i].ofs) = trap_S_RegisterSound( value );
@@ -416,7 +416,7 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 		//Hmm, no need fo have server register this, is there?
 		//G_SoundIndex( "sound/weapons/torpedo/tick.wav" );
 		//G_SoundIndex( "sound/weapons/torpedo/lock.wav" );
-#elif CGAME
+#elif defined CGAME
 		trap_S_RegisterSound( "sound/vehicles/weapons/common/tick.wav" );
 		trap_S_RegisterSound( "sound/vehicles/weapons/common/lock.wav" );
 		trap_S_RegisterSound( "sound/vehicles/common/lockalarm1.wav" );
@@ -936,7 +936,7 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, cha
 			case VF_MODEL_CLIENT:	// (MP cgame only) take the string, get the G_ModelIndex
 #ifndef _JK2MP
 				*(int *)(b+vehicleFields[i].ofs) = G_ModelIndex( value );
-#elif QAGAME
+#elif defined QAGAME
 				//*(int *)(b+vehicleFields[i].ofs) = G_ModelIndex( value );
 #else
 				*(int *)(b+vehicleFields[i].ofs) = trap_R_RegisterModel( value );
@@ -945,23 +945,23 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, cha
 			case VF_EFFECT:	// take the string, get the G_EffectIndex
 #ifdef QAGAME
 				*(int *)(b+vehicleFields[i].ofs) = G_EffectIndex( value );
-#elif CGAME
+#elif defined CGAME
 				*(int *)(b+vehicleFields[i].ofs) = trap_FX_RegisterEffect( value );
 #endif
 				break;
 			case VF_EFFECT_CLIENT:	// (MP cgame only) take the string, get the G_EffectIndex
 #ifndef _JK2MP
 				*(int *)(b+vehicleFields[i].ofs) = G_EffectIndex( value );
-#elif QAGAME
+#elif defined QAGAME
 				//*(int *)(b+vehicleFields[i].ofs) = G_EffectIndex( value );
-#elif CGAME
+#elif defined CGAME
 				*(int *)(b+vehicleFields[i].ofs) = trap_FX_RegisterEffect( value );
 #endif
 				break;
 			case VF_SHADER:	// (cgame only) take the string, call trap_R_RegisterShader
 #ifdef WE_ARE_IN_THE_UI
 				*(int *)(b+vehicleFields[i].ofs) = trap_R_RegisterShaderNoMip( value );
-#elif CGAME
+#elif defined CGAME
 				*(int *)(b+vehicleFields[i].ofs) = trap_R_RegisterShader( value );
 #endif
 				break;
@@ -980,7 +980,7 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, cha
 			case VF_SOUND_CLIENT:	// (MP cgame only) take the string, get the G_SoundIndex
 #ifndef _JK2MP
 				*(int *)(b+vehicleFields[i].ofs) = G_SoundIndex( value );
-#elif QAGAME
+#elif defined QAGAME
 				//*(int *)(b+vehicleFields[i].ofs) = G_SoundIndex( value );
 #else
 				*(int *)(b+vehicleFields[i].ofs) = trap_S_RegisterSound( value );
@@ -1336,7 +1336,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 	{
 #ifdef QAGAME
 		G_EffectIndex( "ships/ship_explosion_mark" );
-#elif CGAME
+#elif defined CGAME
 		trap_FX_RegisterEffect( "ships/ship_explosion_mark" );
 #endif
 	}
@@ -1344,7 +1344,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 	{
 #ifdef QAGAME
 		G_SoundIndex( "sound/vehicles/common/fire_lp.wav" );
-#elif CGAME
+#elif defined CGAME
 		trap_S_RegisterSound( "sound/vehicles/common/fire_lp.wav" );
 #else
 		trap_S_RegisterSound( "sound/vehicles/common/fire_lp.wav" );
@@ -1355,9 +1355,9 @@ int VEH_LoadVehicle( const char *vehicleName )
 	{
 #ifndef _JK2MP
 		G_EffectIndex( "ships/swoop_dust" );
-#elif QAGAME
+#elif defined QAGAME
 		G_EffectIndex( "ships/swoop_dust" );
-#elif CGAME
+#elif defined CGAME
 		trap_FX_RegisterEffect( "ships/swoop_dust" );
 #endif
 	}
@@ -1366,7 +1366,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 	G_EffectIndex( "volumetric/black_smoke" );
 	G_EffectIndex( "ships/fire" );
 	G_SoundIndex( "sound/vehicles/common/release.wav" );
-#elif CGAME
+#elif defined CGAME
 	trap_R_RegisterShader( "gfx/menus/radar/bracket" );
 	trap_R_RegisterShader( "gfx/menus/radar/lead" );
 	trap_R_RegisterShaderNoMip( "gfx/menus/radar/asteroid" );

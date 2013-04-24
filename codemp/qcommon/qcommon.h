@@ -691,6 +691,7 @@ extern	cvar_t	*com_journal;
 extern	cvar_t	*com_cameraMode;
 extern	cvar_t	*com_unfocused;
 extern	cvar_t	*com_minimized;
+extern	cvar_t	*com_homepath;
 
 extern	cvar_t	*com_optvehtrace;
 
@@ -942,13 +943,7 @@ void	Sys_Init (void);
 	#define Sys_UnloadLibrary(h) FreeLibrary((HMODULE)h)
 	#define Sys_LoadFunction(h,fn) (void*)GetProcAddress((HMODULE)h,fn)
 	#define Sys_LibraryError() "unknown"
-#else // linux and mac should be fine with this, can use SDL later
-	#include <dlfcn.h>
-	#define Sys_LoadLibrary(f) dlopen(f,RTLD_NOW)
-	#define Sys_UnloadLibrary(h) dlclose(h)
-	#define Sys_LoadFunction(h,fn) dlsym(h,fn)
-	#define Sys_LibraryError() dlerror()
-#endif
+#endif // linux and mac use SDL in SDL_loadlibrary.h
 
 // general development dll loading for virtual machine testing
 void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
@@ -980,6 +975,7 @@ void	Sys_Print( const char *msg );
 // any game related timing information should come from event timestamps
 int		Sys_Milliseconds (bool baseTime = false);
 int		Sys_Milliseconds2(void);
+void 	Sys_SetEnv(const char *name, const char *value);
 
 #ifndef _WIN32
 extern "C" void	Sys_SnapVector( float *v );

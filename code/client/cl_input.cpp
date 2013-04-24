@@ -30,6 +30,10 @@ This file is part of Jedi Academy.
 #include "cl_input_hotswap.h"
 #endif
 
+#ifndef _WIN32
+#include <cmath>
+#endif
+
 unsigned	frame_msec;
 int			old_com_frameTime;
 float cl_mPitchOverride = 0.0f;

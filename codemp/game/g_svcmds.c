@@ -429,7 +429,7 @@ void	Svcmd_ForceTeam_f( void ) {
 	SetTeam( &g_entities[cl - level.clients], str );
 }
 
-char	*ConcatArgs( int start );
+char *ConcatArgs( int start );
 
 /*
 =================
@@ -479,6 +479,11 @@ qboolean	ConsoleCommand( void ) {
 
 	if (Q_stricmp (cmd, "listip") == 0) {
 		trap_SendConsoleCommand( EXEC_NOW, "g_banIPs\n" );
+		return qtrue;
+	}
+
+	if ( !Q_stricmp( cmd, "toggleuserinfovalidation" ) ) {
+		Svcmd_ToggleUserinfoValidation_f();
 		return qtrue;
 	}
 

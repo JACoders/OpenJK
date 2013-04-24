@@ -20,7 +20,7 @@ This file is part of Jedi Academy.
 #include "g_headers.h"
 
 
-#include "../ICARUS/IcarusInterface.h"
+#include "../icarus/IcarusInterface.h"
 #include "Q3_Interface.h"
 #include "g_local.h"
 #include "g_functions.h"
@@ -886,6 +886,7 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 /*
 Ghoul2 Insert Start
 */
+
 static void G_SetSkin( gentity_t *ent )
 {
 	char	skinName[MAX_QPATH];
@@ -2135,6 +2136,7 @@ qboolean G_CheckPlayerDarkSide( void )
 	return qfalse;
 }
 
+void G_ChangePlayerModel( gentity_t *ent, const char *newModel );
 qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded ) 
 {
 	int		index;
@@ -2178,9 +2180,23 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		// clear entity state values
 		PlayerStateToEntityState( &client->ps, &ent->s );
 
-		//FIXME: make sure ent->NPC_type is saved out
-		G_LoadAnimFileSet( ent, ent->NPC_type );
-		G_SetSkin( ent );
+		// ALL OF MY RAGE... they decided it would be a great idea to treat NPC_type like a player model here,
+		// which is all kinds of unbelievable. I will be having a stern talk with James later. --eez
+		if( ent->NPC_type &&
+			Q_stricmp( ent->NPC_type, "player" ) )
+		{
+			// FIXME: game doesn't like it when you pass ent->NPC_type into this func. Insert all kinds of noises here --eez
+			char bleh[1024];
+			strncpy(bleh, ent->NPC_type, strlen(ent->NPC_type));
+			bleh[strlen(ent->NPC_type)] = '\0';
+
+			G_ChangePlayerModel( ent, bleh );
+		}
+		else
+		{
+			G_LoadAnimFileSet( ent, ent->NPC_type );
+			G_SetSkin( ent );
+		}
 
 		//setup sabers
 		G_ReloadSaberData( ent );
@@ -2366,8 +2382,21 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		}
 		else
 		{//autoload
-			G_LoadAnimFileSet( ent, ent->NPC_type );
-			G_SetSkin( ent );
+			if( ent->NPC_type &&
+			Q_stricmp( ent->NPC_type, "player" ) )
+			{
+				// FIXME: game doesn't like it when you pass ent->NPC_type into this func. Insert all kinds of noises here --eez
+				char bleh[1024];
+				strncpy(bleh, ent->NPC_type, strlen(ent->NPC_type));
+				bleh[strlen(ent->NPC_type)] = '\0';
+
+				G_ChangePlayerModel( ent, bleh );
+			}
+			else
+			{
+				G_LoadAnimFileSet( ent, ent->NPC_type );
+				G_SetSkin( ent );
+			}
 			G_ReloadSaberData( ent );
 			//force power levels should already be set
 		}

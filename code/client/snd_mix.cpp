@@ -30,10 +30,37 @@ portable_samplepair_t paintbuffer[PAINTBUFFER_SIZE];
 int 	*snd_p, snd_linear_count, snd_vol;
 short	*snd_out;
 
+// FIXME: proper fix for that ?
+#if defined __linux__ || defined MACOS_X
+void S_WriteLinearBlastStereo16 (void)
+{
+	int		i;
+	int		val;
+    
+	for (i=0 ; i<snd_linear_count ; i+=2)
+	{
+		val = snd_p[i]>>8;
+		if (val > 0x7fff)
+			snd_out[i] = 0x7fff;
+		else if (val < (short)0x8000)
+			snd_out[i] = (short)0x8000;
+		else
+			snd_out[i] = val;
+        
+		val = snd_p[i+1]>>8;
+		if (val > 0x7fff)
+			snd_out[i+1] = 0x7fff;
+		else if (val < (short)0x8000)
+			snd_out[i+1] = (short)0x8000;
+		else
+			snd_out[i+1] = val;
+	}
+}
+#endif
 
 
 
-#if !(defined __linux__ && defined __i386__)
+#if !((defined __linux__ || defined MACOS_X) && defined __i386__)
 #if	!id386
 
 

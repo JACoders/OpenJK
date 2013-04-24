@@ -73,6 +73,7 @@ This file is part of Jedi Academy.
 	#pragma warning ( disable : 4512 )			// unable to generate default operator=
 	#pragma warning ( disable : 4130 )			// logical operation on address of string constant
 	#pragma warning ( disable : 4127 )			// conditional expression is constant
+	#pragma warning ( disable : 4996 )			// This function or variable may be unsafe.
 #endif
 
 
@@ -243,19 +244,19 @@ namespace str
 	}
 	inline int		icmp(const char *s1,const char *s2)
 	{
-		return stricmp(s1,s2);
+		return Q_stricmp(s1,s2);
 	}
 	inline int		cmpi(const char *s1,const char *s2)
 	{
-		return stricmp(s1,s2);
+		return Q_stricmp(s1,s2);
 	}
 	inline bool	ieql(const char *s1,const char *s2)
 	{
-		return !stricmp(s1,s2);
+		return !Q_stricmp(s1,s2);
 	}
 	inline bool	eqli(const char *s1,const char *s2)
 	{
-		return !stricmp(s1,s2);
+		return !Q_stricmp(s1,s2);
 	}
 
 	inline char	*tok(char *s,const char *gap)
@@ -1048,7 +1049,11 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////
 	// Data
 	////////////////////////////////////////////////////////////////////////////////////
+#ifdef _WIN32
 	typedef typename T					TStorageTraits;
+#else
+    typedef T                           TStorageTraits;
+#endif
 	typedef typename T::TArray			TTArray;
 	typedef typename T::TValue			TTValue;
 	typedef typename T::TConstructed	TTConstructed;

@@ -16,6 +16,8 @@ This file is part of Jedi Academy.
 */
 // Copyright 2002-2013 Activision
 
+#include "../game/q_shared.h"
+
 #if !defined(RATL_COMMON_INC)
 	#include "ratl_common.h"
 #endif
@@ -53,7 +55,7 @@ This file is part of Jedi Academy.
 
 
 #if !defined(RUFL_HFILE_INC)
-	#include "..\Rufl\hfile.h"
+	#include "../Rufl/hfile.h"
 #endif
 
 
