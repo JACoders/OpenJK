@@ -854,7 +854,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 	#ifndef DEDICATED
 	#ifndef FINAL_BUILD
 						// Check for unprecached files when in game but not in the menus
-						if((cls.state == CA_ACTIVE) && !(cls.keyCatchers & KEYCATCH_UI))
+						if((cls.state == CA_ACTIVE) && !(Key_GetCatcher( ) & KEYCATCH_UI))
 						{
 							Com_Printf(S_COLOR_YELLOW "WARNING: File %s not precached\n", filename);
 						}
@@ -983,7 +983,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 	#ifndef DEDICATED
 	#ifndef FINAL_BUILD
 				// Check for unprecached files when in game but not in the menus
-				if((cls.state == CA_ACTIVE) && !(cls.keyCatchers & KEYCATCH_UI))
+				if((cls.state == CA_ACTIVE) && !(Key_GetCatcher( ) & KEYCATCH_UI))
 				{
 					Com_Printf(S_COLOR_YELLOW "WARNING: File %s not precached\n", filename);
 				}
