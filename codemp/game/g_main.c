@@ -2855,14 +2855,16 @@ void CheckVote( void ) {
 	if ( !level.voteTime ) {
 		return;
 	}
-	if ( level.time - level.voteTime >= VOTE_TIME ) {
+	if ( level.time-level.voteTime >= VOTE_TIME || level.voteYes + level.voteNo == 0 ) {
 		trap_SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
-	} else {
+	}
+	else {
 		if ( level.voteYes > level.numVotingClients/2 ) {
 			// execute the command, then remove the vote
 			trap_SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
 			level.voteExecuteTime = level.time + 3000;
 		}
+
 		// same behavior as a timeout
 		//Raz: Fix uneven vote bug
 		/*	"that reminds me another bug that enty discovered recently,
@@ -2871,16 +2873,14 @@ void CheckVote( void ) {
 			i.e. if player A calls vote, player B votes No, then vote fails,
 			even if player C would vote Yes and it should have been 2:1 and passed */
 	//	else if ( level.voteNo >= level.numVotingClients/2 )
-		else if ( level.voteNo >= (level.numVotingClients+1)/2 ) {
+		else if ( level.voteNo >= (level.numVotingClients+1)/2 )
 			trap_SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
-		} else {
-			// still waiting for a majority
+
+		else // still waiting for a majority
 			return;
-		}
 	}
 	level.voteTime = 0;
 	trap_SetConfigstring( CS_VOTE_TIME, "" );
-
 }
 
 /*
