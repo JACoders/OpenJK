@@ -269,7 +269,6 @@ typedef struct {
 
 typedef struct {
 	connstate_t	state;				// connection status
-	int			keyCatchers;		// bit flags
 
 	char		servername[MAX_OSPATH];		// name of server from original connect (used by reconnect)
 
