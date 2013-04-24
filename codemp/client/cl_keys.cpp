@@ -972,7 +972,7 @@ void Message_Key( int key ) {
 			else
 				Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"\n", chatField.buffer );
 
-			CL_AddReliableCommand( buffer );
+			CL_AddReliableCommand( buffer, qfalse );
 		}
 		Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_MESSAGE );
 		Field_Clear( &chatField );
@@ -1674,7 +1674,6 @@ void CL_CharEvent( int key ) {
 		Field_CharEvent( &kg.g_consoleField, key );
 	}
 }
-
 
 /*
 ===================

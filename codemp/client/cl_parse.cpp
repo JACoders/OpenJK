@@ -738,7 +738,7 @@ void CL_ParseDownload ( msg_t *msg ) {
 
 		if (!clc.download) {
 			Com_Printf( "Could not create %s\n", clc.downloadTempName );
-			CL_AddReliableCommand( "stopdl" );
+			CL_AddReliableCommand( "stopdl", qfalse );
 			CL_NextDownload();
 			return;
 		}
@@ -747,7 +747,7 @@ void CL_ParseDownload ( msg_t *msg ) {
 	if (size)
 		FS_Write( data, size, clc.download );
 
-	CL_AddReliableCommand( va("nextdl %d", clc.downloadBlock) );
+	CL_AddReliableCommand( va("nextdl %d", clc.downloadBlock), qfalse );
 	clc.downloadBlock++;
 
 	clc.downloadCount += size;
