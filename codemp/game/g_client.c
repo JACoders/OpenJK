@@ -3805,6 +3805,25 @@ server system housekeeping.
 ============
 */
 extern void G_LeaveVehicle( gentity_t* ent, qboolean ConCheck );
+
+void G_ClearVote( gentity_t *ent ) {
+	if ( !level.voteTime )
+		return;
+
+	if ( ent->client->mGameFlags & PSG_VOTED ) {
+		if ( ent->client->pers.vote == 1 ) {
+			level.voteYes--;
+			trap_SetConfigstring( CS_VOTE_YES, va( "%i", level.voteYes ) );
+		}
+		else if ( ent->client->pers.vote == 2 ) {
+			level.voteNo--;
+			trap_SetConfigstring( CS_VOTE_NO, va( "%i", level.voteNo ) );
+		}
+	}
+	ent->client->mGameFlags &= ~(PSG_VOTED|PSG_TEAMVOTED);
+	ent->client->pers.vote = 0;
+}
+
 void ClientDisconnect( int clientNum ) {
 	gentity_t	*ent;
 	gentity_t	*tent;
@@ -3918,6 +3937,8 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->ps.persistant[PERS_TEAM] = TEAM_FREE;
 	ent->client->sess.sessionTeam = TEAM_FREE;
 	ent->r.contents = 0;
+
+	G_ClearVote( ent );
 
 	if (ent->client->holdingObjectiveItem > 0)
 	{ //carrying a siege objective item - make sure it updates and removes itself from us now in case this is an instant death-respawn situation
