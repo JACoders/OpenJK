@@ -1362,6 +1362,19 @@ void CL_NextDownload(void) {
 	char *s;
 	char *remoteName, *localName;
 
+	// A download has finished, check whether this matches a referenced checksum
+	if(*clc.downloadName)
+	{
+		char *zippath = FS_BuildOSPath(Cvar_VariableString("fs_homepath"), clc.downloadName, "");
+		zippath[strlen(zippath)-1] = '\0';
+
+		if(!FS_CompareZipChecksum(zippath))
+			Com_Error(ERR_DROP, "Incorrect checksum for file: %s", clc.downloadName);
+	}
+
+	*clc.downloadTempName = *clc.downloadName = 0;
+	Cvar_Set("cl_downloadName", "");
+
 	// We are looking to start a download here
 	if (*clc.downloadList) {
 		s = clc.downloadList;
@@ -1385,7 +1398,13 @@ void CL_NextDownload(void) {
 		else
 			s = localName + strlen(localName); // point at the nul byte
 
-		CL_BeginDownload( localName, remoteName );
+		if (!cl_allowDownload->integer) {
+			Com_Error(ERR_DROP, "UDP Downloads are disabled on your client. (cl_allowDownload is %d)", cl_allowDownload->integer);
+			return;	
+		}
+		else {
+			CL_BeginDownload( localName, remoteName );
+		}
 
 		clc.downloadRestart = qtrue;
 
@@ -1429,6 +1448,10 @@ void CL_InitDownloads(void) {
 		if ( *clc.downloadList ) {
 			// if autodownloading is not enabled on the server
 			cls.state = CA_CONNECTED;
+
+			*clc.downloadTempName = *clc.downloadName = 0;
+			Cvar_Set( "cl_downloadName", "" );
+
 			CL_NextDownload();
 			return;
 		}
