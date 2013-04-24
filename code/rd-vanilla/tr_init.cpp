@@ -517,7 +517,6 @@ R_TakeScreenshot
 //	note that if the last extension is ".jpg", then it'll save a JPG, else TGA
 //
 void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
-#ifndef _XBOX
 	byte		*buffer;
 	int			i, c, temp;
 
@@ -568,7 +567,6 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	}
 	
 	Z_Free( buffer );
-#endif
 }
 
 /* 
@@ -606,7 +604,6 @@ the menu system, sampled down from full screen distorted images
 */
 #define LEVELSHOTSIZE 256
 void R_LevelShot( void ) {
-#ifndef _XBOX
 	char		checkname[MAX_OSPATH];
 	byte		*buffer;
 	byte		*source;
@@ -663,7 +660,6 @@ void R_LevelShot( void ) {
 	Z_Free( source );
 
 	VID_Printf( PRINT_ALL, "Wrote %s\n", checkname );
-#endif
 }
 
 /* 
@@ -679,7 +675,6 @@ Doesn't print the pacifier message if there is a second arg
 ================== 
 */  
 void R_ScreenShot_f (void) {
-#ifndef _XBOX
 	char		checkname[MAX_OSPATH];
 	int			len;
 	static	int	lastNumber = -1;
@@ -732,7 +727,6 @@ void R_ScreenShot_f (void) {
 	if ( !silent ) {
 		VID_Printf (PRINT_ALL, "Wrote %s\n", checkname);
 	}
-#endif
 } 
 
 
@@ -750,7 +744,6 @@ Doesn't print the pacifier message if there is a second arg
 ================== 
 */  
 void R_ScreenShotTGA_f (void) {
-#ifndef _XBOX
 	char		checkname[MAX_OSPATH];
 	int			len;
 	static	int	lastNumber = -1;
@@ -803,7 +796,6 @@ void R_ScreenShotTGA_f (void) {
 	if ( !silent ) {
 		VID_Printf (PRINT_ALL, "Wrote %s\n", checkname);
 	}
-#endif
 } 
 
 
@@ -855,9 +847,6 @@ void GL_SetDefaultState( void )
 	qglDisable( GL_BLEND );
 	qglDisable( GL_ALPHA_TEST );
 	qglBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-#ifdef _XBOX
-	qglDisable( GL_LIGHTING );
-#endif
 }
 
 
