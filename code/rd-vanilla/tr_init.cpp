@@ -1824,6 +1824,8 @@ __declspec(dllexport) refexport_t *GetRefAPI ( int apiVersion, refimport_t *refi
 	re.G2Time_ResetTimers = G2Time_ResetTimers;
 #endif
 
+	Swap_Init();
+
 	return &re;
 }
 
