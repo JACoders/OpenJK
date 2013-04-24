@@ -324,9 +324,6 @@ void Con_Init (void) {
 	Cmd_AddCommand ("messagemode4", Con_MessageMode4_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
-
-	//Initialize values on first print
-	con.initialized = qfalse;
 }
 
 
@@ -797,7 +794,7 @@ Scroll it up or down
 */
 void Con_RunConsole (void) {
 	// decide on the destination height of the console
-	if ( cls.keyCatchers & KEYCATCH_CONSOLE )
+	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
 		con.finalFrac = 0.5;		// half screen
 	else
 		con.finalFrac = 0;				// none visible
