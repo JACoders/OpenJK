@@ -746,7 +746,7 @@ int CL_CgameSystemCalls( int *args ) {
 		Cmd_RemoveCommand( (const char *)VMA(1) );
 		return 0;
 	case CG_SENDCLIENTCOMMAND:
-		CL_AddReliableCommand( (const char *)VMA(1) );
+		CL_AddReliableCommand( (const char *)VMA(1), qfalse );
 		return 0;
 	case CG_UPDATESCREEN:
 		// this is used during lengthy level loading, so pump message loop

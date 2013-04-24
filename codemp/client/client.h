@@ -408,7 +408,7 @@ extern	cvar_t	*cl_consoleKeys;
 void CL_Init (void);
 void CL_FlushMemory(void);
 void CL_ShutdownAll( qboolean shutdownRef );
-void CL_AddReliableCommand( const char *cmd );
+void CL_AddReliableCommand( const char *cmd, qboolean isDisconnectCmd );
 
 void CL_StartHunkUsers( void );
 
