@@ -24,12 +24,14 @@
 typedef struct fileInPack_s {
 	char					*name;		// name of the file
 	unsigned long			pos;		// file info position in zip
+	unsigned long			len;		// uncompress file size
 	struct	fileInPack_s*	next;		// next file in the hash
 } fileInPack_t;
 
 typedef struct {
-	char			pakFilename[MAX_OSPATH];	// c:\quake3\base\pak0.pk3
-	char			pakBasename[MAX_OSPATH];	// pak0
+	char			pakPathname[MAX_OSPATH];	// c:\jediacademy\gamedata\base
+	char			pakFilename[MAX_OSPATH];	// c:\jediacademy\gamedata\base\assets0.pk3
+	char			pakBasename[MAX_OSPATH];	// assets0
 	char			pakGamename[MAX_OSPATH];	// base
 	unzFile			handle;						// handle to zip file
 	int				checksum;					// regular checksum
@@ -42,7 +44,8 @@ typedef struct {
 } pack_t;
 
 typedef struct {
-	char		path[MAX_OSPATH];		// c:\jk2
+	char		path[MAX_OSPATH];		// c:\jediacademy\gamedata
+	char		fullpath[MAX_OSPATH];	// c:\jediacademy\gamedata\base
 	char		gamedir[MAX_OSPATH];	// base
 } directory_t;
 
@@ -129,5 +132,6 @@ int				FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp );
 void			FS_Shutdown( void );
 void			FS_CheckInit(void);
 void			FS_ReplaceSeparators( char *path );
+void			FS_FreePak( pack_t *thepak );
 
 #endif
