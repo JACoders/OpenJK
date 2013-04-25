@@ -361,6 +361,9 @@ struct gentity_s {
 	float		epGravFactor;
 
 	gitem_t		*item;			// for bonus items
+
+	// OpenJK add
+	int			useDebounceTime;	// for cultist_destroyer
 };
 
 #define DAMAGEREDIRECT_HEAD		1

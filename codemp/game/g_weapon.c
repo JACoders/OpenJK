@@ -322,6 +322,59 @@ void WP_FireTurretMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean al
 	missile->bounceCount = 8;
 }
 
+//-----------------------------------------------------------------------------
+void WP_Explode( gentity_t *self )
+//-----------------------------------------------------------------------------
+{
+	gentity_t	*attacker = self;
+	vec3_t		forwardVec={0,0,1};
+
+	// stop chain reaction runaway loops
+	self->takedamage = qfalse;
+
+	self->s.loopSound = 0;
+
+//	VectorCopy( self->currentOrigin, self->s.pos.trBase );
+	if ( !self->client )
+	{
+	AngleVectors( self->s.angles, forwardVec, NULL, NULL );
+	}
+
+	// FIXME
+	/*if ( self->e > 0 )
+	{
+		G_PlayEffect( self->fxID, self->r.currentOrigin, forwardVec );
+	}*/
+	
+	if ( self->s.owner && self->s.owner != 1023 )
+	{
+		attacker = &g_entities[self->s.owner];
+	}
+	else if ( self->activator )
+	{
+		attacker = self->activator;
+	}
+	else if ( self->client )
+	{
+		attacker = self;
+	}
+
+	if ( self->splashDamage > 0 && self->splashRadius > 0 )
+	{ 
+		G_RadiusDamage( self->r.currentOrigin, attacker, self->splashDamage, self->splashRadius, 0/*don't ignore attacker*/, self, MOD_UNKNOWN );
+	}
+
+	if ( self->target )
+	{
+		G_UseTargets( self, attacker );
+	}
+
+	G_SetOrigin( self, self->r.currentOrigin );
+
+	self->nextthink = level.time + 50;
+	self->think = G_FreeEntity;
+}
+
 //Currently only the seeker drone uses this, but it might be useful for other things as well.
 
 //---------------------------------------------------------

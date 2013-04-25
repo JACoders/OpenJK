@@ -1379,6 +1379,7 @@ extern void NPC_BSEmplaced( void );
 extern qboolean NPC_CheckSurrender( void );
 extern void Boba_FlyStop( gentity_t *self );
 extern void NPC_BSWampa_Default( void );
+extern qboolean Jedi_CultistDestroyer( gentity_t *self );
 void NPC_RunBehavior( int team, int bState )
 {
 	qboolean dontSetAim = qfalse;
@@ -1433,6 +1434,11 @@ void NPC_RunBehavior( int team, int bState )
 		{
 			NPC_BehaviorSet_Jedi( bState );
 		}
+		dontSetAim = qtrue;
+	}
+	else if ( Jedi_CultistDestroyer( NPC ) )
+	{
+		NPC_BSJedi_Default();
 		dontSetAim = qtrue;
 	}
 	else if ( NPCInfo->scriptFlags & SCF_FORCED_MARCH )
