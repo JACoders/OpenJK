@@ -3806,22 +3806,42 @@ server system housekeeping.
 */
 extern void G_LeaveVehicle( gentity_t* ent, qboolean ConCheck );
 
-void G_ClearVote( gentity_t *ent ) {
-	if ( !level.voteTime )
-		return;
+void G_ClearVote( gentity_t *ent, int team ) {
+	int voteteam;
 
-	if ( ent->client->mGameFlags & PSG_VOTED ) {
-		if ( ent->client->pers.vote == 1 ) {
-			level.voteYes--;
-			trap_SetConfigstring( CS_VOTE_YES, va( "%i", level.voteYes ) );
+	if ( level.voteTime ) {
+		if ( ent->client->mGameFlags & PSG_VOTED ) {
+			if ( ent->client->pers.vote == 1 ) {
+				level.voteYes--;
+				trap_SetConfigstring( CS_VOTE_YES, va( "%i", level.voteYes ) );
+			}
+			else if ( ent->client->pers.vote == 2 ) {
+				level.voteNo--;
+				trap_SetConfigstring( CS_VOTE_NO, va( "%i", level.voteNo ) );
+			}
 		}
-		else if ( ent->client->pers.vote == 2 ) {
-			level.voteNo--;
-			trap_SetConfigstring( CS_VOTE_NO, va( "%i", level.voteNo ) );
-		}
+		ent->client->mGameFlags &= ~(PSG_VOTED);
+		ent->client->pers.vote = 0;
 	}
-	ent->client->mGameFlags &= ~(PSG_VOTED|PSG_TEAMVOTED);
-	ent->client->pers.vote = 0;
+
+		 if ( team == TEAM_RED )	voteteam = 0;
+	else if ( team == TEAM_BLUE )	voteteam = 1;
+	else							return;
+
+	if ( level.teamVoteTime[voteteam] ) {
+		if ( ent->client->mGameFlags & PSG_TEAMVOTED ) {
+			if ( ent->client->pers.teamvote == 1 ) {
+				level.teamVoteYes[voteteam]--;
+				trap_SetConfigstring( CS_TEAMVOTE_YES, va( "%i", level.teamVoteYes[voteteam] ) );
+			}
+			else if ( ent->client->pers.teamvote == 2 ) {
+				level.teamVoteNo[voteteam]--;
+				trap_SetConfigstring( CS_TEAMVOTE_NO, va( "%i", level.teamVoteNo[voteteam] ) );
+			}
+		}
+		ent->client->mGameFlags &= ~(PSG_TEAMVOTED);
+		ent->client->pers.teamvote = 0;
+	}
 }
 
 void ClientDisconnect( int clientNum ) {
@@ -3929,6 +3949,8 @@ void ClientDisconnect( int clientNum ) {
 		i++;
 	}
 
+	G_ClearVote( ent, ent->client->ps.persistant[PERS_TEAM] );
+
 	trap_UnlinkEntity (ent);
 	ent->s.modelindex = 0;
 	ent->inuse = qfalse;
@@ -3937,8 +3959,6 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->ps.persistant[PERS_TEAM] = TEAM_FREE;
 	ent->client->sess.sessionTeam = TEAM_FREE;
 	ent->r.contents = 0;
-
-	G_ClearVote( ent );
 
 	if (ent->client->holdingObjectiveItem > 0)
 	{ //carrying a siege objective item - make sure it updates and removes itself from us now in case this is an instant death-respawn situation
