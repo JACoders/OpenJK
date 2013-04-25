@@ -921,8 +921,12 @@ void SetTeam( gentity_t *ent, char *s ) {
 		if ( (g_gametype.integer != GT_DUEL) || (oldTeam != TEAM_SPECTATOR) )	{//so you don't get dropped to the bottom of the queue for changing skins, etc.
 			client->sess.spectatorTime = level.time;
 		}
-		G_ClearVote( ent );
 	}
+
+	// clear votes if going to spectator
+	// also clear team votes if switching red/blue or going to spec
+	if ( team != TEAM_FREE )
+		G_ClearVote( ent, oldTeam );
 
 	client->sess.sessionTeam = team;
 	client->sess.spectatorState = specState;
@@ -2388,10 +2392,13 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 	level.teamVoteNo[cs_offset] = 0;
 
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		if (level.clients[i].sess.sessionTeam == team)
+		if (level.clients[i].sess.sessionTeam == team) {
 			level.clients[i].mGameFlags &= ~PSG_TEAMVOTED;
+			level.clients[i].pers.teamvote = 0;
+		}
 	}
 	ent->client->mGameFlags |= PSG_TEAMVOTED;
+	ent->client->pers.teamvote = 1;
 
 	trap_SetConfigstring( CS_TEAMVOTE_TIME + cs_offset, va("%i", level.teamVoteTime[cs_offset] ) );
 	trap_SetConfigstring( CS_TEAMVOTE_STRING + cs_offset, level.teamVoteString[cs_offset] );
@@ -2437,9 +2444,11 @@ void Cmd_TeamVote_f( gentity_t *ent ) {
 
 	if ( tolower( msg[0] ) == 'y' || msg[0] == '1' ) {
 		level.teamVoteYes[cs_offset]++;
+		ent->client->pers.teamvote = 1;
 		trap_SetConfigstring( CS_TEAMVOTE_YES + cs_offset, va("%i", level.teamVoteYes[cs_offset] ) );
 	} else {
 		level.teamVoteNo[cs_offset]++;
+		ent->client->pers.teamvote = 2;
 		trap_SetConfigstring( CS_TEAMVOTE_NO + cs_offset, va("%i", level.teamVoteNo[cs_offset] ) );	
 	}
 

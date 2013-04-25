@@ -463,7 +463,7 @@ typedef struct {
 	char		saber1[MAX_QPATH];
 	char		saber2[MAX_QPATH];
 
-	int			vote; // 0 = none, 1 = yes, 2 = no
+	int			vote, teamvote; // 0 = none, 1 = yes, 2 = no
 } clientPersistant_t;
 
 typedef struct renderInfo_s
@@ -1361,7 +1361,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset );
 void G_BreakArm(gentity_t *ent, int arm);
 void G_UpdateClientAnims(gentity_t *self, float animSpeedScale);
 void ClientCommand( int clientNum );
-void G_ClearVote( gentity_t *ent );
+void G_ClearVote( gentity_t *ent, int team );
 
 //
 // g_active.c
