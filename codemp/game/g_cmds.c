@@ -2058,6 +2058,8 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	}
 
+	level.votingGametype = qfalse;
+
 	// if there is still a vote to be executed
 	if ( level.voteExecuteTime ) {
 		level.voteExecuteTime = 0;
