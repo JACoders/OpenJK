@@ -245,10 +245,10 @@ void *Sys_LoadGameDll( const char *name, int (**entryPoint)(int, ...), int (*sys
   // bk001206 - let's have some paranoia
   assert( name );
 
-  if (!FS_FindPureDLL(name))
-  {
-      return NULL;
-  }
+  //if (!FS_FindPureDLL(name))
+  //{
+  //    return NULL;
+  //}
     
 #ifndef NDEBUG
   Com_sprintf (fname, sizeof(fname), "%s" ARCH_STRING "-debug" DLL_EXT, name); // bk010205 - different DLL name
