@@ -146,7 +146,7 @@ qboolean G_ParseLiteral( const char **data, const char *string )
 //
 // NPC parameters file : scripts/NPCs.cfg
 //
-#define MAX_NPC_DATA_SIZE 0x10000
+#define MAX_NPC_DATA_SIZE 0x40000
 char	NPCParms[MAX_NPC_DATA_SIZE];
 
 team_t TranslateTeamName( const char *name ) 
