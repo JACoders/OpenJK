@@ -191,6 +191,9 @@ Ghoul2 Insert End
 	CG_SP_GETSTRINGTEXT,
 	CG_UI_GETITEMTEXT,
 	CG_ANYLANGUAGE_READFROMSTRING2,
+
+	CG_OPENJK_MENU_PAINT,
+	CG_OPENJK_GETMENU_BYNAME,
 } cgameImport_t;
 
 //----------------------------------------------
