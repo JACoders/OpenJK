@@ -2382,8 +2382,21 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		}
 		else
 		{//autoload
-			G_LoadAnimFileSet( ent, ent->NPC_type );
-			G_SetSkin( ent );
+			if( ent->NPC_type &&
+			Q_stricmp( ent->NPC_type, "player" ) )
+			{
+				// FIXME: game doesn't like it when you pass ent->NPC_type into this func. Insert all kinds of noises here --eez
+				char bleh[1024];
+				strncpy(bleh, ent->NPC_type, strlen(ent->NPC_type));
+				bleh[strlen(ent->NPC_type)] = '\0';
+
+				G_ChangePlayerModel( ent, bleh );
+			}
+			else
+			{
+				G_LoadAnimFileSet( ent, ent->NPC_type );
+				G_SetSkin( ent );
+			}
 			G_ReloadSaberData( ent );
 			//force power levels should already be set
 		}

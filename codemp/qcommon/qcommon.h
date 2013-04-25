@@ -542,6 +542,9 @@ qboolean FS_FileExists( const char *file );
 
 int		FS_LoadStack();
 
+char   *FS_BuildOSPath( const char *base, const char *game, const char *qpath );
+qboolean FS_CompareZipChecksum(const char *zipfile);
+
 int		FS_GetFileList(  const char *path, const char *extension, char *listbuf, int bufsize );
 int		FS_GetModList(  char *listbuf, int bufsize );
 
@@ -664,8 +667,7 @@ void 		Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
 unsigned	Com_BlockChecksum( const void *buffer, int length );
-unsigned	Com_BlockChecksumKey (void *buffer, int length, int key);
-int			Com_HashKey(char *string, int maxlen);
+int      Com_HashKey(char *string, int maxlen);
 int			Com_Filter(char *filter, char *name, int casesensitive);
 int			Com_FilterPath(char *filter, char *name, int casesensitive);
 int			Com_RealTime(qtime_t *qtime);
