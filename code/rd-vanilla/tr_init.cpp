@@ -575,23 +575,13 @@ R_ScreenshotFilename
 ================== 
 */  
 void R_ScreenshotFilename( int lastNumber, char *fileName, const char *psExt ) {
-	int		a,b,c,d;
+	time_t rawtime;
+	char timeStr[32] = {0}; // should really only reach ~19 chars
 
-	if ( lastNumber < 0 || lastNumber > 9999 ) {
-		Com_sprintf( fileName, MAX_OSPATH, "screenshots/shot9999%s",psExt );
-		return;
-	}
+	time( &rawtime );
+	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
 
-	a = lastNumber / 1000;
-	lastNumber -= a*1000;
-	b = lastNumber / 100;
-	lastNumber -= b*100;
-	c = lastNumber / 10;
-	lastNumber -= c*10;
-	d = lastNumber;
-
-	Com_sprintf( fileName, MAX_OSPATH, "screenshots/shot%i%i%i%i%s"
-		, a, b, c, d, psExt );
+	Com_sprintf( fileName, MAX_QPATH, "screenshots/shot%s%s", timeStr, psExt );
 }
 
 /*
