@@ -278,6 +278,176 @@ void SP_misc_model_static(gentity_t *ent)
 	G_FreeEntity( ent );
 }
 
+/*QUAKED misc_model_breakable (1 0 0) (-16 -16 -16) (16 16 16) SOLID AUTOANIMATE DEADSOLID NO_DMODEL NO_SMOKE USE_MODEL USE_NOT_BREAK PLAYER_USE NO_EXPLOSION
+SOLID - Movement is blocked by it, if not set, can still be broken by explosions and shots if it has health
+AUTOANIMATE - Will cycle it's anim
+DEADSOLID - Stay solid even when destroyed (in case damage model is rather large).
+NO_DMODEL - Makes it NOT display a damage model when destroyed, even if one exists
+USE_MODEL - When used, will toggle to it's usemodel (model name + "_u1.md3")... this obviously does nothing if USE_NOT_BREAK is not checked
+USE_NOT_BREAK - Using it, doesn't make it break, still can be destroyed by damage
+PLAYER_USE - Player can use it with the use button
+NO_EXPLOSION - By default, will explode when it dies...this is your override.
+
+"model"		arbitrary .md3 file to display
+"health"	how much health to have - default is zero (not breakable)  If you don't set the SOLID flag, but give it health, it can be shot but will not block NPCs or players from moving
+"targetname" when used, dies and displays damagemodel, if any (if not, removes itself)
+"target" What to use when it dies
+"target2" What to use when it's repaired
+"target3" What to use when it's used while it's broken
+"paintarget" target to fire when hit (but not destroyed)
+"count"  the amount of armor/health/ammo given (default 50)
+"gravity"	if set to 1, this will be affected by gravity
+"radius"  Chunk code tries to pick a good volume of chunks, but you can alter this to scale the number of spawned chunks. (default 1)  (.5) is half as many chunks, (2) is twice as many chunks
+
+Damage: default is none
+"splashDamage" - damage to do (will make it explode on death)
+"splashRadius" - radius for above damage
+
+"team" - This cannot take damage from members of this team:
+	"player"
+	"neutral"
+	"enemy"
+
+"material" - default is "8 - MAT_NONE" - choose from this list:
+0 = MAT_METAL		(grey metal)
+1 = MAT_GLASS		
+2 = MAT_ELECTRICAL	(sparks only)
+3 = MAT_ELEC_METAL	(METAL chunks and sparks)
+4 =	MAT_DRK_STONE	(brown stone chunks)
+5 =	MAT_LT_STONE	(tan stone chunks)
+6 =	MAT_GLASS_METAL (glass and METAL chunks)
+7 = MAT_METAL2		(blue/grey metal)
+8 = MAT_NONE		(no chunks-DEFAULT)
+9 = MAT_GREY_STONE	(grey colored stone)
+10 = MAT_METAL3		(METAL and METAL2 chunk combo)
+11 = MAT_CRATE1		(yellow multi-colored crate chunks)
+12 = MAT_GRATE1		(grate chunks--looks horrible right now)
+13 = MAT_ROPE		(for yavin_trial, no chunks, just wispy bits )
+14 = MAT_CRATE2		(red multi-colored crate chunks)
+15 = MAT_WHITE_METAL (white angular chunks for Stu, NS_hideout )
+FIXME/TODO: 
+set size better?
+multiple damage models?
+custom explosion effect/sound?
+*/
+void misc_model_breakable_gravity_init( gentity_t *ent, qboolean dropToFloor );
+void misc_model_breakable_init( gentity_t *ent );
+
+void SP_misc_model_breakable( gentity_t *ent ) 
+{
+	float grav;
+	G_SpawnInt( "material", "8", (int*)&ent->material );
+	G_SpawnFloat( "radius", "1", &ent->radius ); // used to scale chunk code if desired by a designer
+
+	misc_model_breakable_init( ent );
+
+	if ( !ent->r.mins[0] && !ent->r.mins[1] && !ent->r.mins[2] )
+	{
+		VectorSet (ent->r.mins, -16, -16, -16);
+	}
+	if ( !ent->r.maxs[0] && !ent->r.maxs[1] && !ent->r.maxs[2] )
+	{
+		VectorSet (ent->r.maxs, 16, 16, 16);
+	}
+
+	G_SetOrigin( ent, ent->s.origin );
+	G_SetAngles( ent, ent->s.angles );
+	trap_LinkEntity (ent);
+
+	if ( ent->spawnflags & 128 )
+	{//Can be used by the player's BUTTON_USE
+		ent->r.svFlags |= SVF_PLAYER_USABLE;
+	}
+
+	ent->s.teamowner = 0;
+
+	G_SpawnFloat( "gravity", "0", &grav );
+	if ( grav )
+	{//affected by gravity
+		G_SetAngles( ent, ent->s.angles );
+		G_SetOrigin( ent, ent->r.currentOrigin );
+		misc_model_breakable_gravity_init( ent, qtrue );
+	}
+}
+
+void misc_model_breakable_gravity_init( gentity_t *ent, qboolean dropToFloor )
+{
+	trace_t		tr;
+	vec3_t		top, bottom;
+
+	ent->s.eType = ET_GENERAL;
+	//ent->s.eFlags |= EF_BOUNCE_HALF;	// FIXME
+	ent->clipmask = MASK_SOLID|CONTENTS_BODY|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP;//?
+	ent->physicsBounce = ent->mass = VectorLength( ent->r.maxs ) + VectorLength( ent->r.mins );
+
+	//drop to floor
+
+	if ( dropToFloor )
+	{
+		VectorCopy( ent->r.currentOrigin, top );
+		top[2] += 1;
+		VectorCopy( ent->r.currentOrigin, bottom );
+		bottom[2] = MIN_WORLD_COORD;
+		trap_Trace( &tr, top, ent->r.mins, ent->r.maxs, bottom, ent->s.number, MASK_NPCSOLID );
+		if ( !tr.allsolid && !tr.startsolid && tr.fraction < 1.0 )
+		{
+			G_SetOrigin( ent, tr.endpos );
+			trap_LinkEntity( ent );
+		}
+	}
+	else
+	{
+		G_SetOrigin( ent, ent->r.currentOrigin );
+		trap_LinkEntity( ent );
+	}
+	//set up for object thinking
+	if ( VectorCompare( ent->s.pos.trDelta, vec3_origin ) )
+	{//not moving
+		ent->s.pos.trType = TR_STATIONARY;
+	}
+	else
+	{
+		ent->s.pos.trType = TR_GRAVITY;
+	}
+	VectorCopy( ent->r.currentOrigin, ent->s.pos.trBase );
+	VectorClear( ent->s.pos.trDelta );
+	ent->s.pos.trTime = level.time;
+	if ( VectorCompare( ent->s.apos.trDelta, vec3_origin ) )
+	{//not moving
+		ent->s.apos.trType = TR_STATIONARY;
+	}
+	else
+	{
+		ent->s.apos.trType = TR_LINEAR;
+	}
+	VectorCopy( ent->r.currentAngles, ent->s.apos.trBase );
+	VectorClear( ent->s.apos.trDelta );
+	ent->s.apos.trTime = level.time;
+}
+
+void misc_model_breakable_init( gentity_t *ent )
+{
+	if (!ent->model) {
+		G_Error("no model set on %s at (%.1f %.1f %.1f)\n", ent->classname, ent->s.origin[0],ent->s.origin[1],ent->s.origin[2]);
+	}
+
+	//Main model
+	ent->s.modelindex = ent->sound2to1 = G_ModelIndex( ent->model );
+
+	if ( ent->spawnflags & 1 )
+	{//Blocks movement
+		ent->r.contents = CONTENTS_SOLID|CONTENTS_OPAQUE|CONTENTS_BODY|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP;//Was CONTENTS_SOLID, but only architecture should be this
+	}
+	else if ( ent->health )
+	{//Can only be shot
+		ent->r.contents = CONTENTS_SHOTCLIP;
+	}
+
+	// TODO: fix using
+
+	// TODO: fix health/dying funcs
+}
+
 /*QUAKED misc_G2model (1 0 0) (-16 -16 -16) (16 16 16)
 "model"		arbitrary .glm file to display
 */
