@@ -151,6 +151,7 @@ typedef struct client_s {
 	int				ping;
 	int				rate;				// bytes / second
 	int				snapshotMsec;		// requests a snapshot every snapshotMsec unless rate choked
+	int				wishSnaps;			// requested snapshot/sec rate
 	int				pureAuthentic;
 	qboolean		gotCP; // TTimo - additional flag to distinguish between a bad pure checksum, and no cp command at all
 	netchan_t		netchan;
@@ -212,7 +213,8 @@ extern	refexport_t		re;					// interface to refresh .dll
 
 #define	MAX_MASTER_SERVERS	5
 
-extern	cvar_t	*sv_snaps;
+extern	cvar_t	*sv_snapsMin;
+extern	cvar_t	*sv_snapsMax;
 extern	cvar_t	*sv_fps;
 extern	cvar_t	*sv_timeout;
 extern	cvar_t	*sv_zombietime;
