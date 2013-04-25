@@ -99,6 +99,8 @@ typedef struct
 	fieldtype_t	type;
 } field_t;
 
+/* This array MUST be sorted correctly by alphabetical name field */
+/* for conformity, use lower-case names too */
 field_t fields[] = {
 	{ "alliedteam",				FOFS( alliedTeam ),						F_INT },//for misc_turrets
 	{ "angerscript",			FOFS( behaviorSet[BSET_ANGER] ),		F_STRING },//name of script to run
@@ -466,6 +468,8 @@ void SP_gametype_item ( gentity_t* ent )
 
 void SP_emplaced_gun( gentity_t *ent );
 
+/* This array MUST be sorted correctly by alphabetical name field */
+/* for conformity, use lower-case names too */
 spawn_t	spawns[] = {
 	{ "emplaced_gun",						SP_emplaced_gun },
 	{ "func_bobbing",						SP_func_bobbing },
