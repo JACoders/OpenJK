@@ -542,7 +542,7 @@ public:
 		//---------------------------------------------------------------------
 		if (!mWeatherZones.size())
 		{
-			Com_Printf("WARNING: No Weather Zones Encountered");
+			Com_Printf("WARNING: No Weather Zones Encountered\n");
 			AddWeatherZone(tr.world->bmodels[0].bounds[0], tr.world->bmodels[0].bounds[1]);
 		}
 
@@ -1451,12 +1451,9 @@ void RB_RenderWorldEffects(void)
 
 void R_WorldEffect_f(void)
 {
-	if (ri.Cvar_VariableIntegerValue("sv_cheats"))
-	{
-		char	temp[2048];
-		ri.Cmd_ArgsBuffer(temp, sizeof(temp));
-		RE_WorldEffectCommand(temp);
-	}
+	char temp[2048] = {0};
+	ri.Cmd_ArgsBuffer( temp, sizeof( temp ) );
+	RE_WorldEffectCommand( temp );
 }
 
 void RE_WorldEffectCommand(const char *command)
