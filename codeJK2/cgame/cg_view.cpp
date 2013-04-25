@@ -1565,7 +1565,15 @@ static qboolean CG_CalcViewValues( void ) {
 
 	if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )
 	{
-		ps = &g_entities[cg.snap->ps.viewEntity].client->ps;
+		if( g_entities[cg.snap->ps.viewEntity].client && g_entities[cg.snap->ps.viewEntity].NPC )
+		{
+			ps = &g_entities[cg.snap->ps.viewEntity].client->ps;
+		}
+		else
+		{
+			ps = &cg.predicted_player_state;
+			viewEntIsCam = qtrue;
+		}
 	}
 	else
 	{
@@ -1958,7 +1966,8 @@ wasForceSpeed=isForceSpeed;
 	{
 		CG_AddViewWeapon( &cg.predicted_player_state );
 	}
-	else if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )
+	else if( cg.snap->ps.viewEntity != 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD &&
+		g_entities[cg.snap->ps.viewEntity].client)
 	{
 		CG_AddViewWeapon( &g_entities[cg.snap->ps.viewEntity ].client->ps );	// HAX - because I wanted to --eez
 	}
