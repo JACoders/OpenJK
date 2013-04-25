@@ -138,6 +138,11 @@ void CG_ToggleBinoculars( void )
 		cg.zoomMode = 1;
 		cg.zoomLocked = qfalse;
 
+		if ( cg.weaponSelect == WP_SABER )
+		{
+			cg.weaponSelect = WP_NONE;
+		}
+
 		if ( cg.snap->ps.batteryCharge )
 		{
 			// when you have batteries, you can actually zoom in
@@ -159,6 +164,12 @@ void CG_ToggleBinoculars( void )
 		cg.zoomMode = 0;
 		cg.zoomTime = cg.time;
 		cgi_S_StartSound( NULL, cg.snap->ps.clientNum, CHAN_AUTO, cgs.media.zoomEnd );
+
+		if( cg.weaponSelect == WP_NONE && cg.snap->ps.stats[STAT_WEAPONS] & ( 1 << WP_SABER ) )
+		{
+			// FIXME: this is pretty damn ugly but whatever
+			cg.weaponSelect = WP_SABER;
+		}
 	}
 }
 

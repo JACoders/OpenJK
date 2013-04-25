@@ -6862,6 +6862,12 @@ void CG_Player( centity_t *cent ) {
 		return;
 	}
 
+	if( cent->gent->s.number == 0 && cg.weaponSelect == WP_NONE && cg.zoomMode == 1 )
+	{
+		// HACK
+		return;
+	}
+
 	calcedMp = qfalse;
 	ent = &cent->currentState;
 
