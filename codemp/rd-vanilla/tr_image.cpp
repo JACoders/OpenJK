@@ -677,15 +677,12 @@ static void Upload32( unsigned *data,
 			}
 			else if ( isLightmap && r_texturebitslm->integer > 0 )
 			{
+				int lmBits = r_texturebitslm->integer & 0x30; // 16 or 32
 				// Allow different bit depth when we are a lightmap
-				if ( r_texturebitslm->integer == 16 )
-				{
+				if ( lmBits == 16 )
 					*pformat = GL_RGB5;
-				}
-				else if ( r_texturebitslm->integer == 32 )
-				{
+				else
 					*pformat = GL_RGB8;
-				}
 			}
 			else if ( r_texturebits->integer == 16 )
 			{
