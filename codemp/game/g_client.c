@@ -3806,9 +3806,7 @@ server system housekeeping.
 */
 extern void G_LeaveVehicle( gentity_t* ent, qboolean ConCheck );
 
-void G_ClearVote( gentity_t *ent, int team ) {
-	int voteteam;
-
+void G_ClearVote( gentity_t *ent ) {
 	if ( level.voteTime ) {
 		if ( ent->client->mGameFlags & PSG_VOTED ) {
 			if ( ent->client->pers.vote == 1 ) {
@@ -3823,6 +3821,9 @@ void G_ClearVote( gentity_t *ent, int team ) {
 		ent->client->mGameFlags &= ~(PSG_VOTED);
 		ent->client->pers.vote = 0;
 	}
+}
+void G_ClearTeamVote( gentity_t *ent, int team ) {
+	int voteteam;
 
 		 if ( team == TEAM_RED )	voteteam = 0;
 	else if ( team == TEAM_BLUE )	voteteam = 1;
