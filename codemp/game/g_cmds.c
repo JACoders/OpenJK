@@ -923,10 +923,11 @@ void SetTeam( gentity_t *ent, char *s ) {
 		}
 	}
 
-	// clear votes if going to spectator
+	// clear votes if going to spectator (specs can't vote)
+	if ( team == TEAM_SPECTATOR )
+		G_ClearVote( ent );
 	// also clear team votes if switching red/blue or going to spec
-	if ( team != TEAM_FREE )
-		G_ClearVote( ent, oldTeam );
+	G_ClearTeamVote( ent, oldTeam );
 
 	client->sess.sessionTeam = team;
 	client->sess.spectatorState = specState;
