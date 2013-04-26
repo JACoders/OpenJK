@@ -3951,7 +3951,7 @@ void ClientDisconnect( int clientNum ) {
 	}
 
 	G_ClearVote( ent );
-	G_ClearVote( ent, ent->client->sess.sessionTeam );
+	G_ClearTeamVote( ent, ent->client->sess.sessionTeam );
 
 	trap_UnlinkEntity (ent);
 	ent->s.modelindex = 0;
