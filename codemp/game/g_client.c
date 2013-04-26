@@ -3950,7 +3950,8 @@ void ClientDisconnect( int clientNum ) {
 		i++;
 	}
 
-	G_ClearVote( ent, ent->client->ps.persistant[PERS_TEAM] );
+	G_ClearVote( ent );
+	G_ClearTeamVote( ent, ent->client->ps.persistant[PERS_TEAM] );
 
 	trap_UnlinkEntity (ent);
 	ent->s.modelindex = 0;
