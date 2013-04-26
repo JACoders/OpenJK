@@ -6247,46 +6247,6 @@ static void CG_ScanForCrosshairEntity( void ) {
 	cg.crosshairClientTime = cg.time;
 }
 
-void CG_SanitizeString( char *in, char *out )
-{
-	int i = 0;
-	int r = 0;
-
-	while (in[i])
-	{
-		if (i >= 128-1)
-		{ //the ui truncates the name here..
-			break;
-		}
-
-		if (in[i] == '^')
-		{
-			if (in[i+1] >= 48 && //'0'
-				in[i+1] <= 57) //'9'
-			{ //only skip it if there's a number after it for the color
-				i += 2;
-				continue;
-			}
-			else
-			{ //just skip the ^
-				i++;
-				continue;
-			}
-		}
-
-		if (in[i] < 32)
-		{
-			i++;
-			continue;
-		}
-
-		out[r] = in[i];
-		r++;
-		i++;
-	}
-	out[r] = 0;
-}
-
 /*
 =====================
 CG_DrawCrosshairNames
@@ -6296,7 +6256,6 @@ static void CG_DrawCrosshairNames( void ) {
 	float		*color;
 	vec4_t		tcolor;
 	char		*name;
-	char		sanitized[1024];
 	int			baseColor;
 	qboolean	isVeh = qfalse;
 
@@ -6344,7 +6303,7 @@ static void CG_DrawCrosshairNames( void ) {
 		return;
 	}
 
-	name = cgs.clientinfo[ cg.crosshairClientNum ].name;
+	name = cgs.clientinfo[ cg.crosshairClientNum ].cleanname;
 
 	if (cgs.gametype >= GT_TEAM)
 	{
@@ -6405,17 +6364,15 @@ static void CG_DrawCrosshairNames( void ) {
 	tcolor[2] = colorTable[baseColor][2];
 	tcolor[3] = color[3]*0.5f;
 
-	CG_SanitizeString(name, sanitized);
-
 	if (isVeh)
 	{
 		char str[MAX_STRING_CHARS];
-		Com_sprintf(str, MAX_STRING_CHARS, "%s (pilot)", sanitized);
+		Com_sprintf(str, MAX_STRING_CHARS, "%s (pilot)", name);
 		UI_DrawProportionalString(320, 170, str, UI_CENTER, tcolor);
 	}
 	else
 	{
-		UI_DrawProportionalString(320, 170, sanitized, UI_CENTER, tcolor);
+		UI_DrawProportionalString(320, 170, name, UI_CENTER, tcolor);
 	}
 
 	trap_R_SetColor( NULL );
