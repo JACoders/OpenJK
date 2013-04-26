@@ -17,7 +17,6 @@ inline float WE_flrand(float min, float max) {
 ////////////////////////////////////////////////////////////////////////////////////////
 // Externs & Fwd Decl.
 ////////////////////////////////////////////////////////////////////////////////////////
-extern qboolean		ParseVector( const char **text, int count, float *v );
 extern void			SetViewportAndScissor( void );
 
 
@@ -1456,6 +1455,40 @@ void R_WorldEffect_f(void)
 	RE_WorldEffectCommand( temp );
 }
 
+/*
+===============
+WE_ParseVector
+===============
+*/
+qboolean WE_ParseVector( const char **text, int count, float *v ) {
+	char	*token;
+	int		i;
+
+	// FIXME: spaces are currently required after parens, should change parseext...
+	token = COM_ParseExt( text, qfalse );
+	if ( strcmp( token, "(" ) ) {
+		ri.Printf (PRINT_WARNING, "WARNING: missing parenthesis in weather effect\n" );
+		return qfalse;
+	}
+
+	for ( i = 0 ; i < count ; i++ ) {
+		token = COM_ParseExt( text, qfalse );
+		if ( !token[0] ) {
+			ri.Printf (PRINT_WARNING, "WARNING: missing vector element in weather effect\n" );
+			return qfalse;
+		}
+		v[i] = atof( token );
+	}
+
+	token = COM_ParseExt( text, qfalse );
+	if ( strcmp( token, ")" ) ) {
+		ri.Printf (PRINT_WARNING, "WARNING: missing parenthesis in weather effect\n" );
+		return qfalse;
+	}
+
+	return qtrue;
+}
+
 void RE_WorldEffectCommand(const char *command)
 {
 	if ( !command )
@@ -1505,7 +1538,7 @@ void RE_WorldEffectCommand(const char *command)
 	{
 		vec3_t	mins;
 		vec3_t	maxs;
-		if (ParseVector(&command, 3, mins) && ParseVector(&command, 3, maxs))
+		if (WE_ParseVector(&command, 3, mins) && WE_ParseVector(&command, 3, maxs))
 		{
 			mOutside.AddWeatherZone(mins, maxs);
 		}
@@ -1533,7 +1566,7 @@ void RE_WorldEffectCommand(const char *command)
 		}
 		CWindZone& nWind = mWindZones.push_back();
 		nWind.Initialize();
-		if (!ParseVector(&command, 3, nWind.mCurrentVelocity.v))
+		if (!WE_ParseVector(&command, 3, nWind.mCurrentVelocity.v))
 		{
 			nWind.mCurrentVelocity.Clear();
 			nWind.mCurrentVelocity[1] = 800.0f;
