@@ -1079,20 +1079,11 @@ CL_SendPureChecksums
 =================
 */
 void CL_SendPureChecksums( void ) {
-	const char *pChecksums;
 	char cMsg[MAX_INFO_VALUE];
-	int i;
 
 	// if we are pure we need to send back a command with our referenced pk3 checksums
-	pChecksums = FS_ReferencedPakPureChecksums();
+	Com_sprintf(cMsg, sizeof(cMsg), "cp %s", FS_ReferencedPakPureChecksums());
 
-	// "cp"
-	// "Yf"
-	Com_sprintf(cMsg, sizeof(cMsg), "Yf ");
-	Q_strcat(cMsg, sizeof(cMsg), pChecksums);
-	for (i = 0; i < 2; i++) {
-		cMsg[i] += 10;
-	}
 	CL_AddReliableCommand( cMsg, qfalse );
 }
 
