@@ -83,7 +83,8 @@ static client_t *SV_GetPlayerByHandle( void ) {
 		}
 
 		Q_strncpyz( cleanName, cl->name, sizeof(cleanName) );
-		Q_CleanStr( cleanName );
+		Q_StripColor( cleanName );
+		//Q_CleanStr( cleanName );
 		if ( !Q_stricmp( cleanName, s ) ) {
 			return cl;
 		}
@@ -402,7 +403,8 @@ static void SV_KickBlankPlayers( void ) {
 		}
 
 		Q_strncpyz( cleanName, cl->name, sizeof(cleanName) );
-		Q_CleanStr( cleanName );
+		Q_StripColor( cleanName );
+		//Q_CleanStr( cleanName );
 		if ( !Q_stricmp( cleanName, "" ) ) {
 			SV_DropClient( cl, SV_GetStringEdString("MP_SVGAME","WAS_KICKED"));	// "was kicked" );
 			cl->lastPacketTime = svs.time;	// in case there is a funny zombie

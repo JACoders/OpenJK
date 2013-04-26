@@ -202,7 +202,8 @@ int ClientNumberFromString( gentity_t *to, char *s ) {
 			continue;
 
 		Q_strncpyz( cleanName, cl->pers.netname, sizeof( cleanName ) );
-		Q_CleanStr( cleanName );
+		Q_StripColor( cleanName );
+		//Q_CleanStr( cleanName );
 		if ( !Q_stricmp( cleanName, s ) )
 			return idnum;
 	}
@@ -2353,14 +2354,16 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 			}
 			else {
 				Q_strncpyz(leader, arg2, sizeof(leader));
-				Q_CleanStr(leader);
+				Q_StripColor(leader);
+				//Q_CleanStr(leader);
 				for ( i = 0 ; i < level.maxclients ; i++ ) {
 					if ( level.clients[i].pers.connected == CON_DISCONNECTED )
 						continue;
 					if (level.clients[i].sess.sessionTeam != team)
 						continue;
 					Q_strncpyz(netname, level.clients[i].pers.netname, sizeof(netname));
-					Q_CleanStr(netname);
+					Q_StripColor(netname);
+					//Q_CleanStr(netname);
 					if ( !Q_stricmp(netname, leader) ) {
 						break;
 					}
