@@ -2986,12 +2986,12 @@ void CheckTeamVote( int team ) {
 			//
 			if ( !Q_strncmp( "leader", level.teamVoteString[cs_offset], 6) ) {
 				//set the team leader
-				//SetLeader(team, atoi(level.teamVoteString[cs_offset] + 7));
+				SetLeader(team, atoi(level.teamVoteString[cs_offset] + 7));
 			}
 			else {
 				trap_SendConsoleCommand( EXEC_APPEND, va("%s\n", level.teamVoteString[cs_offset] ) );
 			}
-		} else if ( level.teamVoteNo[cs_offset] >= level.numteamVotingClients[cs_offset]/2 ) {
+		} else if ( level.teamVoteNo[cs_offset] >= (level.numteamVotingClients[cs_offset]+1)/2 ) {
 			// same behavior as a timeout
 			trap_SendServerCommand( -1, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEFAILED")) );
 		} else {

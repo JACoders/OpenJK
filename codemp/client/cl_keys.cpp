@@ -1470,7 +1470,7 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	if (down)
 	{
 		kg.keys[ keynames[key].upper ].repeats++;
-		if ( kg.keys[ keynames[key].upper ].repeats == 1 && key != A_SCROLLLOCK && key != A_NUMLOCK && key != A_CAPSLOCK )
+		if ( kg.keys[ keynames[key].upper ].repeats == 1 )
 		{
 			kg.anykeydown = qtrue;
 			kg.keyDownCount++;
@@ -1479,8 +1479,7 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	else
 	{
 		kg.keys[ keynames[key].upper ].repeats = 0;
-		if( key != A_SCROLLLOCK && key != A_NUMLOCK && key != A_CAPSLOCK )
-			kg.keyDownCount--;
+		kg.keyDownCount--;
 		if(kg.keyDownCount <= 0)
 		{
 			kg.anykeydown = qfalse;
@@ -1687,9 +1686,6 @@ void Key_ClearStates (void)
 	kg.anykeydown = qfalse;
 
 	for ( i=0 ; i < MAX_KEYS ; i++ ) {
-		if (i == A_SCROLLLOCK || i == A_NUMLOCK || i == A_CAPSLOCK)
-			continue;
-
 		if ( kg.keys[i].down ) {
 			CL_KeyEvent( i, qfalse, 0 );
 		}

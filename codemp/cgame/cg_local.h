@@ -202,6 +202,7 @@ typedef struct {
 	char			saber2Name[64];
 
 	char			name[MAX_QPATH];
+	char			cleanname[MAX_QPATH];
 	team_t			team;
 
 	int				duelTeam;

@@ -202,7 +202,8 @@ int ClientNumberFromString( gentity_t *to, char *s ) {
 			continue;
 
 		Q_strncpyz( cleanName, cl->pers.netname, sizeof( cleanName ) );
-		Q_CleanStr( cleanName );
+		Q_StripColor( cleanName );
+		//Q_CleanStr( cleanName );
 		if ( !Q_stricmp( cleanName, s ) )
 			return idnum;
 	}
@@ -921,8 +922,13 @@ void SetTeam( gentity_t *ent, char *s ) {
 		if ( (g_gametype.integer != GT_DUEL) || (oldTeam != TEAM_SPECTATOR) )	{//so you don't get dropped to the bottom of the queue for changing skins, etc.
 			client->sess.spectatorTime = level.time;
 		}
-		G_ClearVote( ent );
 	}
+
+	// clear votes if going to spectator (specs can't vote)
+	if ( team == TEAM_SPECTATOR )
+		G_ClearVote( ent );
+	// also clear team votes if switching red/blue or going to spec
+	G_ClearTeamVote( ent, oldTeam );
 
 	client->sess.sessionTeam = team;
 	client->sess.spectatorState = specState;
@@ -1324,7 +1330,7 @@ void Cmd_ForceChanged_f( gentity_t *ent )
 
 	strcpy(fpChStr, buf);
 
-	trap_SendServerCommand( ent-g_entities, va("print \"%s%s\n\n\"", S_COLOR_GREEN, fpChStr) );
+	trap_SendServerCommand( ent-g_entities, va("print \"%s%s\n\"", S_COLOR_GREEN, fpChStr) );
 
 	ent->client->ps.fd.forceDoInit = 1;
 argCheck:
@@ -2002,12 +2008,9 @@ extern void SiegeClearSwitchData(void); //g_saga.c
 const char *G_GetArenaInfoByMap( const char *map );
 void Cmd_CallVote_f( gentity_t *ent ) {
 	int		i;
-	char	arg1[MAX_STRING_TOKENS];
-	char	arg2[MAX_STRING_TOKENS];
-//	int		n = 0;
-//	char*	type = NULL;
-	char*		mapName = 0;
-	const char*	arenaInfo;
+	char	arg1[MAX_CVAR_VALUE_STRING], arg2[MAX_CVAR_VALUE_STRING];
+	char	*mapName = NULL;
+	const char *arenaInfo = NULL;
 
 	if ( !g_allowVote.integer ) {
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTE")) );
@@ -2016,10 +2019,6 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 	if ( level.voteTime || level.voteExecuteTime >= level.time ) {
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "VOTEINPROGRESS")) );
-		return;
-	}
-	if ( ent->client->pers.voteCount >= MAX_VOTE_COUNT ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "MAXVOTES")) );
 		return;
 	}
 
@@ -2060,6 +2059,8 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		trap_SendServerCommand( ent-g_entities, "print \"Vote commands are: map_restart, nextmap, map <mapname>, g_gametype <n>, kick <player>, clientkick <clientnum>, g_doWarmup, timelimit <time>, fraglimit <frags>, capturelimit <captures>.\n\"" );
 		return;
 	}
+
+	level.votingGametype = qfalse;
 
 	// if there is still a vote to be executed
 	if ( level.voteExecuteTime ) {
@@ -2305,10 +2306,6 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEALREADY")) );
 		return;
 	}
-	if ( ent->client->pers.teamVoteCount >= MAX_VOTE_COUNT ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "MAXTEAMVOTES")) );
-		return;
-	}
 	if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOSPECVOTE")) );
 		return;
@@ -2357,14 +2354,16 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 			}
 			else {
 				Q_strncpyz(leader, arg2, sizeof(leader));
-				Q_CleanStr(leader);
+				Q_StripColor(leader);
+				//Q_CleanStr(leader);
 				for ( i = 0 ; i < level.maxclients ; i++ ) {
 					if ( level.clients[i].pers.connected == CON_DISCONNECTED )
 						continue;
 					if (level.clients[i].sess.sessionTeam != team)
 						continue;
 					Q_strncpyz(netname, level.clients[i].pers.netname, sizeof(netname));
-					Q_CleanStr(netname);
+					Q_StripColor(netname);
+					//Q_CleanStr(netname);
 					if ( !Q_stricmp(netname, leader) ) {
 						break;
 					}
@@ -2397,10 +2396,13 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 	level.teamVoteNo[cs_offset] = 0;
 
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		if (level.clients[i].sess.sessionTeam == team)
+		if (level.clients[i].sess.sessionTeam == team) {
 			level.clients[i].mGameFlags &= ~PSG_TEAMVOTED;
+			level.clients[i].pers.teamvote = 0;
+		}
 	}
 	ent->client->mGameFlags |= PSG_TEAMVOTED;
+	ent->client->pers.teamvote = 1;
 
 	trap_SetConfigstring( CS_TEAMVOTE_TIME + cs_offset, va("%i", level.teamVoteTime[cs_offset] ) );
 	trap_SetConfigstring( CS_TEAMVOTE_STRING + cs_offset, level.teamVoteString[cs_offset] );
@@ -2446,9 +2448,11 @@ void Cmd_TeamVote_f( gentity_t *ent ) {
 
 	if ( tolower( msg[0] ) == 'y' || msg[0] == '1' ) {
 		level.teamVoteYes[cs_offset]++;
+		ent->client->pers.teamvote = 1;
 		trap_SetConfigstring( CS_TEAMVOTE_YES + cs_offset, va("%i", level.teamVoteYes[cs_offset] ) );
 	} else {
 		level.teamVoteNo[cs_offset]++;
+		ent->client->pers.teamvote = 2;
 		trap_SetConfigstring( CS_TEAMVOTE_NO + cs_offset, va("%i", level.teamVoteNo[cs_offset] ) );	
 	}
 

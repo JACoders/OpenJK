@@ -9039,7 +9039,8 @@ static void PM_BeginWeaponChange( int weapon ) {
 	}
 
 	// turn of any kind of zooming when weapon switching....except the LA Goggles
-	if ( pm->ps->clientNum == 0 )
+	// eezstreet edit: also ignore if we change to WP_NONE..sorta hacky fix for binoculars using WP_SABER
+	if ( pm->ps->clientNum == 0 && cg.weaponSelect != WP_NONE )
 	{
 		if ( cg.zoomMode > 0 && cg.zoomMode < 3 )
 		{

@@ -537,3 +537,18 @@ int cgi_EndGame(void)
 	//CMD_CGCam_Disable();	//can't do it here because it will draw the hud when we're out of camera
 	return syscall( CG_SENDCONSOLECOMMAND, "cam_disable; set nextmap disconnect; cinematic outcast\n" );
 }
+
+/*
+OpenJK Add
+Since the modules are incompatible, might as well break base compat even further amirite?
+*/
+
+void *cgi_UI_GetMenuByName( const char *menu )
+{
+	return (void *)syscall( CG_OPENJK_GETMENU_BYNAME, menu );
+}
+
+void cgi_UI_Menu_Paint( void *menu, qboolean force )
+{
+	syscall( CG_OPENJK_MENU_PAINT, menu, force );
+}

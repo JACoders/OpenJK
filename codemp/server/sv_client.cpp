@@ -1258,7 +1258,7 @@ into a more C friendly form.
 */
 void SV_UserinfoChanged( client_t *cl ) {
 	char	*val=NULL, *ip=NULL;
-	int		i=0, len=0, limit=0;
+	int		i=0, len=0;
 
 	// name for C code
 	Q_strncpyz( cl->name, Info_ValueForKey (cl->userinfo, "name"), sizeof(cl->name) );
@@ -1285,20 +1285,13 @@ void SV_UserinfoChanged( client_t *cl ) {
 	}
 
 	// snaps command
-	//Note: cl->snapshotMsec is also validated in sv_main.cpp -> SV_CheckCvars if sv_fps is changed
-	val = Info_ValueForKey (cl->userinfo, "snaps");
-	limit = min( sv_fps->integer, sv_snaps->integer );
-	if (strlen(val)) {
-		i = atoi(val);
-		if ( i < 1 ) {
-			i = 1;
-		} else if ( i > limit ) {
-			i = sv_fps->integer;
-		}
-		cl->snapshotMsec = 1000/i;
-	} else {
-		cl->snapshotMsec = 1000/limit;
-	}
+	//Note: cl->snapshotMsec is also validated in sv_main.cpp -> SV_CheckCvars if sv_fps, sv_snapsMin or sv_snapsMax is changed
+	int minSnaps = Com_Clampi( 1, sv_snapsMax->integer, sv_snapsMin->integer ); // between 1 and sv_snapsMax ( 1 <-> 40 )
+	int maxSnaps = min( sv_fps->integer, sv_snapsMax->integer ); // can't produce more than sv_fps snapshots/sec, but can send less than sv_fps snapshots/sec
+	val = Info_ValueForKey( cl->userinfo, "snaps" );
+	cl->wishSnaps = atoi( val );
+	i = Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
+	cl->snapshotMsec = 1000/i;
 
 	// TTimo
 	// maintain the IP information

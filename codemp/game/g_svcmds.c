@@ -391,7 +391,8 @@ gclient_t	*ClientForString( const char *s ) {
 			continue;
 		}
 		Q_strncpyz(cleanName, cl->pers.netname, sizeof(cleanName));
-		Q_CleanStr(cleanName);
+		Q_StripColor(cleanName);
+		//Q_CleanStr(cleanName);
 		if ( !Q_stricmp( cleanName, s ) ) {
 			return cl;
 		}

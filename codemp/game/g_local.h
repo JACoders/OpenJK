@@ -361,6 +361,9 @@ struct gentity_s {
 	float		epGravFactor;
 
 	gitem_t		*item;			// for bonus items
+
+	// OpenJK add
+	int			useDebounceTime;	// for cultist_destroyer
 };
 
 #define DAMAGEREDIRECT_HEAD		1
@@ -453,8 +456,6 @@ typedef struct {
 	int			maxHealth;			// for handicapping
 	int			enterTime;			// level.time the client entered the game
 	playerTeamState_t teamState;	// status in teamplay games
-	int			voteCount;			// to prevent people from constantly calling votes
-	int			teamVoteCount;		// to prevent people from constantly calling votes
 	qboolean	teamInfo;			// send team overlay updates?
 
 	//JAC: Added
@@ -465,7 +466,7 @@ typedef struct {
 	char		saber1[MAX_QPATH];
 	char		saber2[MAX_QPATH];
 
-	int			vote; // 0 = none, 1 = yes, 2 = no
+	int			vote, teamvote; // 0 = none, 1 = yes, 2 = no
 } clientPersistant_t;
 
 typedef struct renderInfo_s
@@ -1364,6 +1365,7 @@ void G_BreakArm(gentity_t *ent, int arm);
 void G_UpdateClientAnims(gentity_t *self, float animSpeedScale);
 void ClientCommand( int clientNum );
 void G_ClearVote( gentity_t *ent );
+void G_ClearTeamVote( gentity_t *ent, int team );
 
 //
 // g_active.c
