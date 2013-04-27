@@ -188,11 +188,7 @@ static	void R_LoadLightmaps( lump_t *l, const char *psMapName, world_t &worldDat
 {
 	byte				*buf, *buf_p;
 	int					len;
-#ifdef _WIN32
-	static byte			image[LIGHTMAP_SIZE*LIGHTMAP_SIZE*4];
-#else
 	MAC_STATIC byte		image[LIGHTMAP_SIZE*LIGHTMAP_SIZE*4];
-#endif
 	int					i, j;
 	float				maxIntensity = 0;
 	double				sumIntensity = 0;
@@ -478,11 +474,7 @@ static void ParseMesh ( dsurface_t *ds, mapVert_t *verts, msurface_t *surf, worl
 	srfGridMesh_t	*grid;
 	int				i, j, k;
 	int				width, height, numPoints;
-#ifdef _WIN32
-	static drawVert_t points[MAX_PATCH_SIZE*MAX_PATCH_SIZE];
-#else
 	MAC_STATIC drawVert_t points[MAX_PATCH_SIZE*MAX_PATCH_SIZE];
-#endif
 	int				lightmapNum[MAXLIGHTMAPS];
 	vec3_t			bounds[2];
 	vec3_t			tmpVec;

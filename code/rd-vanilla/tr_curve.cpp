@@ -741,11 +741,7 @@ srfGridMesh_t *R_SubdividePatchToGrid( int width, int height,
 	float		len, maxLen;
 	int			dir;
 	int			t;
-#ifdef _WIN32
-	static drawVert_t		ctrl[MAX_GRID_SIZE][MAX_GRID_SIZE];
-#else
 	MAC_STATIC drawVert_t	ctrl[MAX_GRID_SIZE][MAX_GRID_SIZE];
-#endif
 	float		errorTable[2][MAX_GRID_SIZE];
 	srfGridMesh_t	*grid;
 	drawVert_t	*vert;
