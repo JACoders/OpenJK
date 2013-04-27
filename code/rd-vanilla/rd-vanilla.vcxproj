@@ -53,6 +53,7 @@
     <TargetExt>.dll</TargetExt>
     <OutDir>.\..\..\bin\Debug\</OutDir>
     <IntDir>.\..\Debug\rd-vanilla\</IntDir>
+    <TargetName>rdsp-vanilla_x86</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">
     <OutDir>.\..\..\bin\FinalBuild\</OutDir>

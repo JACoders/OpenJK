@@ -988,15 +988,15 @@ void CM_SetupShaderProperties(void);
 */
 void RE_BeginRegistration( glconfig_t *glconfigOut ) {
 	ri.CM_ShaderTableCleanup();
-	//ri.Hunk_ClearToMark();
+	ri.Hunk_ClearToMark();
 
 	R_Init();
 
 	*glconfigOut = glConfig;
 
-	R_SyncRenderThread();
-
 	tr.viewCluster = -1;		// force markleafs to regenerate
+
+	R_SyncRenderThread();
 
 	RE_ClearScene();
 
