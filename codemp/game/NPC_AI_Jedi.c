@@ -43,7 +43,7 @@ extern void ForceProtect( gentity_t *self );
 extern void ForceAbsorb( gentity_t *self );
 extern int WP_MissileBlockForBlock( int saberBlock );
 extern qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hitLoc, vec3_t point, vec3_t dir, vec3_t bladeDir, int mod );
-extern qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
+extern qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower );
 extern qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
 extern void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower );
 extern void WP_DeactivateSaber( gentity_t *self, qboolean clearLength ); //clearLength = qfalse
@@ -1721,7 +1721,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 			{//else, randomly try some kind of attack every now and then
 				if ( (NPCInfo->rank == RANK_ENSIGN || NPCInfo->rank > RANK_LT_JG) && !Q_irand( 0, 1 ) || NPC->s.weapon != WP_SABER )
 				{
-					if ( WP_ForcePowerUsable( NPC, FP_PULL, 0 ) && !Q_irand( 0, 2 ) )
+					if ( WP_ForcePowerUsable( NPC, FP_PULL ) && !Q_irand( 0, 2 ) )
 					{
 						//force pull the guy to me!
 						//FIXME: check forcePushRadius[NPC->client->ps.fd.forcePowerLevel[FP_PUSH]]
@@ -1733,7 +1733,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 							ucmd.buttons |= BUTTON_ATTACK;
 						}
 					}
-					else if ( WP_ForcePowerUsable( NPC, FP_LIGHTNING, 0 )
+					else if ( WP_ForcePowerUsable( NPC, FP_LIGHTNING )
 						&& ((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_lightning",NPC->NPC_type) || Q_irand( 0, 1 )))
 					{
 						ForceLightning( NPC );
@@ -1747,7 +1747,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 					//rwwFIXMEFIXME: After new drain stuff from SP is in re-enable this.
 					else if ( NPC->health < NPC->client->ps.stats[STAT_MAX_HEALTH] * 0.75f
 							&& Q_irand( FORCE_LEVEL_0, NPC->client->ps.fd.forcePowerLevel[FP_DRAIN] ) > FORCE_LEVEL_1
-							&& WP_ForcePowerUsable( NPC, FP_DRAIN, 0 ) 
+							&& WP_ForcePowerUsable( NPC, FP_DRAIN ) 
 							&& ((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPC->NPC_type) || Q_irand( 0, 1 )) )
 						{
 							ForceDrain( NPC );
@@ -1755,7 +1755,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 							TIMER_Set( NPC, "draining", NPC->client->ps.weaponTime );
 							TIMER_Set( NPC, "attackDelay", NPC->client->ps.weaponTime );
 						}
-						else if ( WP_ForcePowerUsable( NPC, FP_GRIP, 0 )
+						else if ( WP_ForcePowerUsable( NPC, FP_GRIP )
 							&& NPC->enemy && InFOV( NPC->enemy, NPC, 20, 30 ) )
 						{
 							//taunt
@@ -1772,7 +1772,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 						}
 					else
 					{
-						if ( WP_ForcePowerUsable( NPC, FP_SABERTHROW, 0 ) 
+						if ( WP_ForcePowerUsable( NPC, FP_SABERTHROW ) 
 							&& !(NPC->client->ps.fd.forcePowersActive&(1 << FP_SPEED))
 							&& !(NPC->client->ps.saberEventFlags&SEF_INWATER) )//saber not in water
 						{//throw saber
