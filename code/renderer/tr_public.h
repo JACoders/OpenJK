@@ -286,6 +286,8 @@ typedef struct {
 	void	(*R_ClearStuffToStopGhoul2CrashingThings)(void);
 	qboolean (*R_inPVS)(vec3_t p1, vec3_t p2);
 
+	void	(*SVModelInit)(void);
+
 	// RMG
 	void	(*InitRendererTerrain)( const char *info );
 

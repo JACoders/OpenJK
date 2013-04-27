@@ -582,7 +582,7 @@ Ghoul2 Insert Start
 
 	//
 	// see if the model is already loaded
-	//
+	//_
 	for (mh=mhHashTable[hash]; mh; mh=mh->next) {
 		if(!mh->name || !mh->name[0]) break;	// HACK -- mem is getting screwed up somewhere, cbf to fix. This is a good enough solution in the meantime. --eez
 		if (Q_stricmp(mh->name, name) == 0) {
@@ -989,17 +989,19 @@ void CM_SetupShaderProperties(void);
 */
 void RE_BeginRegistration( glconfig_t *glconfigOut ) {
 	ri.CM_ShaderTableCleanup();
-	ri.Hunk_ClearToMark();
+	//ri.Hunk_ClearToMark();
 
 	R_Init();
+
 	*glconfigOut = glConfig;
+
+	R_SyncRenderThread();
+
+	tr.viewCluster = -1;		// force markleafs to regenerate
 
 	RE_ClearScene();
 
-	tr.viewCluster = -1;		// force markleafs to regenerate
 	tr.registered = qtrue;
-
-	R_SyncRenderThread();
 
 }
 
@@ -1012,24 +1014,13 @@ R_ModelInit
 */
 void R_ModelInit( void ) 
 {
-#ifdef _XBOX
-	// Sorry Raven, but static maps == fragmentation
-	if (!CachedModels)
-	{
-		CachedModels = new CachedModels_t;
-	}
-#else
 	static CachedModels_t singleton;	// sorry vv, your dynamic allocation was a (false) memory leak
 	CachedModels = &singleton;
-#endif
 
 	model_t		*mod;
 
 	// leave a space for NULL model
 	tr.numModels = 0;
-
-	mod = R_AllocModel();
-	mod->type = MOD_BAD;
 /*
 Ghoul2 Insert Start
 */
@@ -1038,6 +1029,9 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+
+	mod = R_AllocModel();
+	mod->type = MOD_BAD;
 
 }
 

@@ -265,6 +265,13 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	Com_Printf ("------ Server Initialization ------\n%s\n", com_version->string);
 	Com_Printf ("Server: %s\n",server);	
 
+	// Moved up from below to help reduce fragmentation
+	if (svs.snapshotEntities)
+	{
+		Z_Free(svs.snapshotEntities);
+		svs.snapshotEntities = NULL;
+	}
+
 	// don't let sound stutter and dump all stuff on the hunk
 	CL_MapLoading();
 
@@ -281,13 +288,6 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	G2VertSpaceServer->ResetHeap();
 
 	Hunk_Clear();
-
-	// Moved up from below to help reduce fragmentation
-	if (svs.snapshotEntities)
-	{
-		Z_Free(svs.snapshotEntities);
-		svs.snapshotEntities = NULL;
-	}
 
 	// wipe the entire per-level structure
 	// Also moved up, trying to do all freeing before new allocs
@@ -319,6 +319,8 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 	/*R_InitImages();
 	R_InitShaders();
 	R_ModelInit();*/
+
+	re.SVModelInit();
 
 	// allocate the snapshot entities 
 	svs.snapshotEntities = (entityState_t *) Z_Malloc (sizeof(entityState_t)*svs.numSnapshotEntities, TAG_CLIENTS, qtrue );

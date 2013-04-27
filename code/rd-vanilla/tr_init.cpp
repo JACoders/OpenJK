@@ -1572,6 +1572,13 @@ void RE_SetRangedFog( float dist )
 
 static void RE_LoadImage( const char *shortname, byte **pic, int *width, int *height, int *format ) { R_LoadImage( shortname, pic, width, height, (GLenum*)format ); }
 
+void RE_SVModelInit( void )
+{
+	R_InitImages();
+	R_InitShaders();
+	R_ModelInit();
+}
+
 /*
 @@@@@@@@@@@@@@@@@@@@@
 GetRefAPI
@@ -1680,6 +1687,8 @@ __declspec(dllexport) refexport_t *GetRefAPI ( int apiVersion, refimport_t *refi
 	REX(GetBModelVerts);
 	re.WorldEffectCommand = R_WorldEffectCommand;
 	REX(GetModelBounds);
+
+	REX(SVModelInit);
 
 	REX(RegisterFont);
 	REX(Font_HeightPixels);
