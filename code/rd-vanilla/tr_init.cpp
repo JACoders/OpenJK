@@ -1574,7 +1574,10 @@ static void RE_LoadImage( const char *shortname, byte **pic, int *width, int *he
 
 void RE_SVModelInit( void )
 {
-	ri.CM_ShaderTableCleanup();
+	//ri.CM_ShaderTableCleanup();
+	tr.numModels = 0;
+	tr.numShaders = 0;
+	tr.numSkins = 0;
 	R_InitImages();
 	R_InitShaders();
 	R_ModelInit();
