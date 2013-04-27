@@ -1079,20 +1079,11 @@ CL_SendPureChecksums
 =================
 */
 void CL_SendPureChecksums( void ) {
-	const char *pChecksums;
 	char cMsg[MAX_INFO_VALUE];
-	int i;
 
 	// if we are pure we need to send back a command with our referenced pk3 checksums
-	pChecksums = FS_ReferencedPakPureChecksums();
+	Com_sprintf(cMsg, sizeof(cMsg), "cp %s", FS_ReferencedPakPureChecksums());
 
-	// "cp"
-	// "Yf"
-	Com_sprintf(cMsg, sizeof(cMsg), "Yf ");
-	Q_strcat(cMsg, sizeof(cMsg), pChecksums);
-	for (i = 0; i < 2; i++) {
-		cMsg[i] += 10;
-	}
 	CL_AddReliableCommand( cMsg, qfalse );
 }
 
@@ -1586,13 +1577,8 @@ void CL_MotdPacket( netadr_t from ) {
 CL_InitServerInfo
 ===================
 */
-void CL_InitServerInfo( serverInfo_t *server, serverAddress_t *address ) {
-	server->adr.type  = NA_IP;
-	server->adr.ip[0] = address->ip[0];
-	server->adr.ip[1] = address->ip[1];
-	server->adr.ip[2] = address->ip[2];
-	server->adr.ip[3] = address->ip[3];
-	server->adr.port  = address->port;
+void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
+	server->adr = *address;
 	server->clients = 0;
 	server->hostName[0] = '\0';
 	server->mapName[0] = '\0';
@@ -1617,9 +1603,9 @@ void CL_InitServerInfo( serverInfo_t *server, serverAddress_t *address ) {
 CL_ServersResponsePacket
 ===================
 */
-void CL_ServersResponsePacket( netadr_t from, msg_t *msg ) {
-	int				i, count, max, total;
-	serverAddress_t addresses[MAX_SERVERSPERPACKET];
+void CL_ServersResponsePacket( const netadr_t *from, msg_t *msg ) {
+	int				i, j, count, total;
+	netadr_t addresses[MAX_SERVERSPERPACKET];
 	int				numservers;
 	byte*			buffptr;
 	byte*			buffend;
@@ -1632,71 +1618,70 @@ void CL_ServersResponsePacket( netadr_t from, msg_t *msg ) {
 		cls.numGlobalServerAddresses = 0;
 	}
 
-	if (cls.nummplayerservers == -1) {
-		cls.nummplayerservers = 0;
-	}
-
 	// parse through server response string
 	numservers = 0;
 	buffptr    = msg->data;
 	buffend    = buffptr + msg->cursize;
-	while (buffptr+1 < buffend) {
-		// advance to initial token
-		do {
-			if (*buffptr++ == '\\')
-				break;		
-		}
-		while (buffptr < buffend);
 
-		if ( buffptr >= buffend - 6 ) {
+	// advance to initial token
+	do
+	{
+		if(*buffptr == '\\')
 			break;
+		
+		buffptr++;
+	} while (buffptr < buffend);
+
+	while (buffptr + 1 < buffend)
+	{
+		// IPv4 address
+		if (*buffptr == '\\')
+		{
+			buffptr++;
+
+			if (buffend - buffptr < sizeof(addresses[numservers].ip) + sizeof(addresses[numservers].port) + 1)
+				break;
+
+			for(i = 0; i < sizeof(addresses[numservers].ip); i++)
+				addresses[numservers].ip[i] = *buffptr++;
+
+			addresses[numservers].type = NA_IP;
 		}
-
-		// parse out ip
-		addresses[numservers].ip[0] = *buffptr++;
-		addresses[numservers].ip[1] = *buffptr++;
-		addresses[numservers].ip[2] = *buffptr++;
-		addresses[numservers].ip[3] = *buffptr++;
-
+		else
+			// syntax error!
+			break;
+			
 		// parse out port
-		addresses[numservers].port = (unsigned short) ((*buffptr++)<<8);		
-		addresses[numservers].port += (unsigned short) (*buffptr++);
+		addresses[numservers].port = (*buffptr++) << 8;
+		addresses[numservers].port += *buffptr++;
 		addresses[numservers].port = BigShort( addresses[numservers].port );
 
 		// syntax check
-		if (*buffptr != '\\') {
+		if (*buffptr != '\\' && *buffptr != '/')
 			break;
-		}
-
-		Com_DPrintf( "server: %d ip: %d.%d.%d.%d:%d\n",numservers,
-				addresses[numservers].ip[0],
-				addresses[numservers].ip[1],
-				addresses[numservers].ip[2],
-				addresses[numservers].ip[3],
-				addresses[numservers].port );
-
+	
 		numservers++;
-		if (numservers >= MAX_SERVERSPERPACKET) {
+		if (numservers >= MAX_SERVERSPERPACKET)
 			break;
-		}
-
-		// parse out EOT
-		if (buffptr[1] == 'E' && buffptr[2] == 'O' && buffptr[3] == 'T') {
-			break;
-		}
 	}
 
-	if (cls.masterNum == 0) {
-		count = cls.numglobalservers;
-		max = MAX_GLOBAL_SERVERS;
-	} else {
-		count = cls.nummplayerservers;
-		max = MAX_OTHER_SERVERS;
-	}
+	count = cls.numglobalservers;
 
-	for (i = 0; i < numservers && count < max; i++) {
+	for (i = 0; i < numservers && count < MAX_GLOBAL_SERVERS; i++) {
 		// build net address
-		serverInfo_t *server = (cls.masterNum == 0) ? &cls.globalServers[count] : &cls.mplayerServers[count];
+		serverInfo_t *server = &cls.globalServers[count];
+
+		// Tequila: It's possible to have sent many master server requests. Then
+		// we may receive many times the same addresses from the master server.
+		// We just avoid to add a server if it is still in the global servers list.
+		for (j = 0; j < count; j++)
+		{
+			if (NET_CompareAdr(cls.globalServers[j].adr, addresses[i]))
+				break;
+		}
+
+		if (j < count)
+			continue;
 
 		CL_InitServerInfo( server, &addresses[i] );
 		// advance to next slot
@@ -1704,29 +1689,18 @@ void CL_ServersResponsePacket( netadr_t from, msg_t *msg ) {
 	}
 
 	// if getting the global list
-	if (cls.masterNum == 0) {
-		if ( cls.numGlobalServerAddresses < MAX_GLOBAL_SERVERS ) {
-			// if we couldn't store the servers in the main list anymore
-			for (; i < numservers && count >= max; i++) {
-				serverAddress_t *addr;
-				// just store the addresses in an additional list
-				addr = &cls.globalServerAddresses[cls.numGlobalServerAddresses++];
-				addr->ip[0] = addresses[i].ip[0];
-				addr->ip[1] = addresses[i].ip[1];
-				addr->ip[2] = addresses[i].ip[2];
-				addr->ip[3] = addresses[i].ip[3];
-				addr->port  = addresses[i].port;
-			}
+	if ( count >= MAX_GLOBAL_SERVERS && cls.numGlobalServerAddresses < MAX_GLOBAL_SERVERS )
+	{
+		// if we couldn't store the servers in the main list anymore
+		for (; i < numservers && cls.numGlobalServerAddresses < MAX_GLOBAL_SERVERS; i++)
+		{
+			// just store the addresses in an additional list
+			cls.globalServerAddresses[cls.numGlobalServerAddresses++] = addresses[i];
 		}
 	}
 
-	if (cls.masterNum == 0) {
-		cls.numglobalservers = count;
-		total = count + cls.numGlobalServerAddresses;
-	} else {
-		cls.nummplayerservers = count;
-		total = count;
-	}
+	cls.numglobalservers = count;
+	total = count + cls.numGlobalServerAddresses;
 
 	Com_Printf("%d servers parsed (total %d)\n", numservers, total);
 }
@@ -1936,9 +1910,8 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	}
 
 	// echo request from server
-//	if ( !Q_stricmp(c, "getserversResponse\\") ) {
 	if ( !Q_strncmp(c, "getserversResponse", 18) ) {
-		CL_ServersResponsePacket( from, msg );
+		CL_ServersResponsePacket( &from, msg );
 		return;
 	}
 
@@ -2622,7 +2595,7 @@ void CL_Init( void ) {
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
 	cl_allowDownload = Cvar_Get ("cl_allowDownload", "0", CVAR_ARCHIVE);
-	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "0", CVAR_ARCHIVE);
+	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE);
 
 	cl_autolodscale = Cvar_Get( "cl_autolodscale", "1", CVAR_ARCHIVE );
 
@@ -2825,12 +2798,6 @@ static void CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
 		}
 	}
 
-	for (i = 0; i < MAX_OTHER_SERVERS; i++) {
-		if (NET_CompareAdr(from, cls.mplayerServers[i].adr)) {
-			CL_SetServerInfo(&cls.mplayerServers[i], info, ping);
-		}
-	}
-
 	for (i = 0; i < MAX_GLOBAL_SERVERS; i++) {
 		if (NET_CompareAdr(from, cls.globalServers[i].adr)) {
 			CL_SetServerInfo(&cls.globalServers[i], info, ping);
@@ -2842,7 +2809,6 @@ static void CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
 			CL_SetServerInfo(&cls.favoriteServers[i], info, ping);
 		}
 	}
-
 }
 
 /*
@@ -2872,7 +2838,7 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 		if ( cl_pinglist[i].adr.port && !cl_pinglist[i].time && NET_CompareAdr( from, cl_pinglist[i].adr ) )
 		{
 			// calc ping time
-			cl_pinglist[i].time = cls.realtime - cl_pinglist[i].start + 1;
+			cl_pinglist[i].time = Sys_Milliseconds() - cl_pinglist[i].start;
 			Com_DPrintf( "ping time %dms from %s\n", cl_pinglist[i].time, NET_AdrToString( from ) );
 
 			// save of info
@@ -2951,7 +2917,7 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 	Q_strncpyz( info, MSG_ReadString( msg ), MAX_INFO_STRING );
 	if (strlen(info)) {
 		if (info[strlen(info)-1] != '\n') {
-			strncat(info, "\n", sizeof(info));
+			strncat(info, "\n", sizeof(info) -1);
 		}
 		Com_Printf( "%s: %s", NET_AdrToString( from ), info );
 	}
@@ -2963,10 +2929,8 @@ CL_GetServerStatus
 ===================
 */
 serverStatus_t *CL_GetServerStatus( netadr_t from ) {
-	serverStatus_t *serverStatus;
 	int i, oldest, oldestTime;
 
-	serverStatus = NULL;
 	for (i = 0; i < MAX_SERVERSTATUSREQUESTS; i++) {
 		if ( NET_CompareAdr( from, cl_serverStatusList[i].address ) ) {
 			return &cl_serverStatusList[i];
@@ -3023,7 +2987,7 @@ int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen )
 
 	// if this server status request has the same address
 	if ( NET_CompareAdr( to, serverStatus->address) ) {
-		// if we recieved an response for this server status request
+		// if we received a response for this server status request
 		if (!serverStatus->pending) {
 			Q_strncpyz(serverStatusString, serverStatus->string, maxLen);
 			serverStatus->retrieved = qtrue;
@@ -3204,11 +3168,10 @@ CL_GlobalServers_f
 */
 void CL_GlobalServers_f( void ) {
 	netadr_t	to;
-	int			i;
-	int			count;
+	int			count, i, masterNum;
 	char		command[1024];
 	
-	if ((count = Cmd_Argc()) < 3 || (cls.masterNum = atoi(Cmd_Argv(1))) < 0 || cls.masterNum > 1)
+	if ((count = Cmd_Argc()) < 3 || (masterNum = atoi(Cmd_Argv(1))) < 0 || masterNum > 1)
 	{
 		Com_Printf("usage: globalservers <master# 0-1> <protocol> [keywords]\n");
 		return;
@@ -3241,7 +3204,7 @@ void CL_GlobalServers_f( void ) {
 		Q_strcat(command, sizeof(command), Cmd_Argv(i));
 	}
 
-	NET_OutOfBandPrint(NS_SERVER, to, command);
+	NET_OutOfBandPrint( NS_SERVER, to, "%s", command );
 }
 
 /*
@@ -3255,9 +3218,9 @@ void CL_GetPing( int n, char *buf, int buflen, int *pingtime )
 	int		time;
 	int		maxPing;
 
-	if (!cl_pinglist[n].adr.port)
+	if (n < 0 || n >= MAX_PINGREQUESTS || !cl_pinglist[n].adr.port)
 	{
-		// empty slot
+		// empty or invalid slot
 		buf[0]    = '\0';
 		*pingtime = 0;
 		return;
@@ -3270,7 +3233,7 @@ void CL_GetPing( int n, char *buf, int buflen, int *pingtime )
 	if (!time)
 	{
 		// check for timeout
-		time = cls.realtime - cl_pinglist[n].start;
+		time = Sys_Milliseconds() - cl_pinglist[n].start;
 		maxPing = Cvar_VariableIntegerValue( "cl_maxPing" );
 		if( maxPing < 100 ) {
 			maxPing = 100;
@@ -3289,29 +3252,14 @@ void CL_GetPing( int n, char *buf, int buflen, int *pingtime )
 
 /*
 ==================
-CL_UpdateServerInfo
-==================
-*/
-void CL_UpdateServerInfo( int n )
-{
-	if (!cl_pinglist[n].adr.port)
-	{
-		return;
-	}
-
-	CL_SetServerInfoByAddress(cl_pinglist[n].adr, cl_pinglist[n].info, cl_pinglist[n].time );
-}
-
-/*
-==================
 CL_GetPingInfo
 ==================
 */
 void CL_GetPingInfo( int n, char *buf, int buflen )
 {
-	if (!cl_pinglist[n].adr.port)
+	if (n < 0 || n >= MAX_PINGREQUESTS || !cl_pinglist[n].adr.port)
 	{
-		// empty slot
+		// empty or invalid slot
 		if (buflen)
 			buf[0] = '\0';
 		return;
@@ -3377,7 +3325,7 @@ ping_t* CL_GetFreePing( void )
 		{
 			if (!pingptr->time)
 			{
-				if (cls.realtime - pingptr->start < 500)
+				if (Sys_Milliseconds() - pingptr->start < 500)
 				{
 					// still waiting for response
 					continue;
@@ -3402,7 +3350,7 @@ ping_t* CL_GetFreePing( void )
 	for (i=0; i<MAX_PINGREQUESTS; i++, pingptr++ )
 	{
 		// scan for oldest
-		time = cls.realtime - pingptr->start;
+		time = Sys_Milliseconds() - pingptr->start;
 		if (time > oldest)
 		{
 			oldest = time;
@@ -3439,7 +3387,7 @@ void CL_Ping_f( void ) {
 	pingptr = CL_GetFreePing();
 
 	memcpy( &pingptr->adr, &to, sizeof (netadr_t) );
-	pingptr->start = cls.realtime;
+	pingptr->start = Sys_Milliseconds();
 	pingptr->time  = 0;
 
 	CL_SetServerInfoByAddress(pingptr->adr, NULL, 0);
@@ -3469,15 +3417,10 @@ qboolean CL_UpdateVisiblePings_f(int source) {
 	if (slots < MAX_PINGREQUESTS) {
 		serverInfo_t *server = NULL;
 
-		max = (source == AS_GLOBAL) ? MAX_GLOBAL_SERVERS : MAX_OTHER_SERVERS;
 		switch (source) {
 			case AS_LOCAL :
 				server = &cls.localServers[0];
 				max = cls.numlocalservers;
-			break;
-			case AS_MPLAYER :
-				server = &cls.mplayerServers[0];
-				max = cls.nummplayerservers;
 			break;
 			case AS_GLOBAL :
 				server = &cls.globalServers[0];
@@ -3487,6 +3430,8 @@ qboolean CL_UpdateVisiblePings_f(int source) {
 				server = &cls.favoriteServers[0];
 				max = cls.numfavoriteservers;
 			break;
+			default:
+				return qfalse;
 		}
 		for (i = 0; i < max; i++) {
 			if (server[i].visible) {
@@ -3513,7 +3458,7 @@ qboolean CL_UpdateVisiblePings_f(int source) {
 							}
 						}
 						memcpy(&cl_pinglist[j].adr, &server[i].adr, sizeof(netadr_t));
-						cl_pinglist[j].start = cls.realtime;
+						cl_pinglist[j].start = Sys_Milliseconds();
 						cl_pinglist[j].time = 0;
 						NET_OutOfBandPrint( NS_CLIENT, cl_pinglist[j].adr, "getinfo xxx" );
 						slots++;
@@ -3560,11 +3505,9 @@ CL_ServerStatus_f
 ==================
 */
 void CL_ServerStatus_f(void) {
-	netadr_t	to;
+	netadr_t	to, *toptr = NULL;
 	char		*server;
 	serverStatus_t *serverStatus;
-
-	Com_Memset( &to, 0, sizeof(netadr_t) );
 
 	if ( Cmd_Argc() != 2 ) {
 		if ( cls.state != CA_ACTIVE || clc.demoplaying ) {
@@ -3572,20 +3515,25 @@ void CL_ServerStatus_f(void) {
 			Com_Printf( "Usage: serverstatus [server]\n");
 			return;	
 		}
-		server = cls.servername;
+
+		toptr = &clc.serverAddress;
 	}
-	else {
+	
+	if(!toptr)
+	{
+		Com_Memset( &to, 0, sizeof(netadr_t) );
+
 		server = Cmd_Argv(1);
+
+		toptr = &to;
+		if ( !NET_StringToAdr( server, toptr ) )
+			return;
 	}
 
-	if ( !NET_StringToAdr( server, &to ) ) {
-		return;
-	}
+	NET_OutOfBandPrint( NS_CLIENT, *toptr, "getstatus" );
 
-	NET_OutOfBandPrint( NS_CLIENT, to, "getstatus" );
-
-	serverStatus = CL_GetServerStatus( to );
-	serverStatus->address = to;
+	serverStatus = CL_GetServerStatus( *toptr );
+	serverStatus->address = *toptr;
 	serverStatus->print = qtrue;
 	serverStatus->pending = qtrue;
 }

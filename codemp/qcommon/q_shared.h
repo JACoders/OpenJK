@@ -1321,6 +1321,8 @@ extern	vec4_t		colorDkBlue;
 #define Q_COLOR_ESCAPE	'^'
 // you MUST have the last bit on here about colour strings being less than 7 or taiwanese strings register as colour!!!!
 #define Q_IsColorString(p)	( p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE && *((p)+1) <= '7' && *((p)+1) >= '0' )
+// Correct version of the above for Q_StripColor
+#define Q_IsColorStringExt(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && isdigit(*((p)+1))) // ^[0-9]
 
 
 #define COLOR_BLACK		'0'
@@ -1667,6 +1669,7 @@ const char *Q_stristr( const char *s, const char *find);
 int Q_PrintStrlen( const char *string );
 // removes color sequences from string
 char *Q_CleanStr( char *string );
+void Q_StripColor(char *text);
 void Q_strstrip( char *string, const char *strip, const char *repl );
 const char *Q_strchrs( const char *string, const char *search );
 

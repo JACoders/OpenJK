@@ -778,6 +778,12 @@ Ghoul2 Insert End
 		case CG_ANYLANGUAGE_READFROMSTRING2_JK2:
 			return CG_ANYLANGUAGE_READFROMSTRING2;
 			break;
+		case CG_OPENJK_MENU_PAINT_JK2:
+			return CG_OPENJK_MENU_PAINT;
+			break;
+		case CG_OPENJK_GETMENU_BYNAME_JK2:
+			return CG_OPENJK_GETMENU_BYNAME;
+			break;
 	}
 	return (cgameImport_t)-1;
 }
@@ -792,6 +798,8 @@ The cgame module is making a system call
 */
 void *VM_ArgPtr( int intValue );
 void CM_SnapPVS(vec3_t origin,byte *buffer);
+extern void		Menu_Paint(menuDef_t *menu, qboolean forcePaint);
+extern menuDef_t *Menus_FindByName(const char *p);
 //#define	VMA(x) VM_ArgPtr(args[x])
 #define	VMA(x) ((void*)args[x])
 #define	VMF(x)	((float *)args)[x]
@@ -1223,6 +1231,13 @@ Ghoul2 Insert End
 	case CG_UI_MENUPAINT_ALL:
 		Menu_PaintAll();
 		return 0;
+
+	case CG_OPENJK_MENU_PAINT:
+		Menu_Paint( (menuDef_t *)VMA(1), (int)VMA(2) );
+		return 0;
+
+	case CG_OPENJK_GETMENU_BYNAME:
+		return (int)Menus_FindByName( (const char *)VMA(1) );
 
 	case CG_UI_STRING_INIT:
 		String_Init();

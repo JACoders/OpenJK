@@ -2967,13 +2967,13 @@ static void UI_BuildPlayerList() {
 
 		if (info[0]) {
 			Q_strncpyz( uiInfo.playerNames[uiInfo.playerCount], Info_ValueForKey( info, "n" ), MAX_NETNAME );
-			Q_CleanStr( uiInfo.playerNames[uiInfo.playerCount] );
+			Q_StripColor( uiInfo.playerNames[uiInfo.playerCount] );
 			uiInfo.playerIndexes[uiInfo.playerCount] = n;
 			uiInfo.playerCount++;
 			team2 = atoi(Info_ValueForKey(info, "t"));
 			if (team2 == team && n != uiInfo.playerNumber) {
 				Q_strncpyz( uiInfo.teamNames[uiInfo.myTeamCount], Info_ValueForKey( info, "n" ), MAX_NETNAME );
-				Q_CleanStr( uiInfo.teamNames[uiInfo.myTeamCount] );
+				Q_StripColor( uiInfo.teamNames[uiInfo.myTeamCount] );
 				uiInfo.teamClientNums[uiInfo.myTeamCount] = n;
 				if (uiInfo.playerNumber == n) {
 					playerTeamNumber = uiInfo.myTeamCount;
@@ -7707,7 +7707,7 @@ static void UI_BuildFindPlayerList(qboolean force) {
 		uiInfo.numFoundPlayerServers = 0;
 		uiInfo.currentFoundPlayerServer = 0;
 		trap_Cvar_VariableStringBuffer( "ui_findPlayer", uiInfo.findPlayerName, sizeof(uiInfo.findPlayerName));
-		Q_CleanStr(uiInfo.findPlayerName);
+		Q_StripColor(uiInfo.findPlayerName);
 		// should have a string of some length
 		if (!strlen(uiInfo.findPlayerName)) {
 			uiInfo.nextFindPlayerRefresh = 0;
@@ -7747,7 +7747,7 @@ static void UI_BuildFindPlayerList(qboolean force) {
 					}
 					// clean string first
 					Q_strncpyz(name, info.lines[j][3], sizeof(name));
-					Q_CleanStr(name);
+					Q_StripColor(name);
 					// if the player name is a substring
 					if (stristr(name, uiInfo.findPlayerName)) {
 						// add to found server list if we have space (always leave space for a line with the number found)

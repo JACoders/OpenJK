@@ -740,12 +740,17 @@ static void CG_DrawBatteryCharge( void )
 CG_DrawHUD
 ================
 */
+extern void *cgi_UI_GetMenuByName( const char *menu );
+extern void cgi_UI_Menu_Paint( void *menu, qboolean force );
 static void CG_DrawHUD( centity_t *cent )
 {
 	int x,y,value;
 	
 	if (cgi_UI_GetMenuInfo("lefthud",&x,&y))
 	{
+		// Draw all the HUD elements --eez
+		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "lefthud" ), qtrue );
+
 		// Draw armor & health values
 		if ( cg_draw2D.integer == 2 ) 
 		{
@@ -761,6 +766,9 @@ static void CG_DrawHUD( centity_t *cent )
 
 	if (cgi_UI_GetMenuInfo("righthud",&x,&y))
 	{
+		// Draw all the HUD elements --eez
+		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "righthud" ), qtrue );
+
 		// Draw armor & health values
 		if ( cg_draw2D.integer == 2 ) 
 		{

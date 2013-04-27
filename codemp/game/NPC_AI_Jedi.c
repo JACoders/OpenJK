@@ -164,6 +164,21 @@ void NPC_Jedi_PlayConfusionSound( gentity_t *self )
 	}
 }
 
+qboolean Jedi_CultistDestroyer( gentity_t *self )
+{
+	if ( !self || !self->client )
+	{
+		return qfalse;
+	}
+	if( self->client->NPC_class == CLASS_REBORN &&
+		self->s.weapon == WP_MELEE &&
+		!Q_stricmp( "cultist_destroyer", self->NPC_type ) )
+	{
+		return qtrue;
+	}
+	return qfalse;
+}
+
 void Boba_Precache( void )
 {
 	G_SoundIndex( "sound/boba/jeton.wav" );
@@ -1408,6 +1423,13 @@ static void Jedi_CombatDistance( int enemy_dist )
 		TIMER_Set( NPC, "gripping", -level.time );
 		TIMER_Set( NPC, "attackDelay", Q_irand( 0, 1000 ) );
 	}
+
+	if ( Jedi_CultistDestroyer( NPC ) )
+	{
+		Jedi_Advance();
+		NPC->client->ps.speed = NPCInfo->stats.runSpeed;
+		ucmd.buttons &= ~BUTTON_WALKING;
+	}
 	
 	if ( NPC->client->ps.fd.forcePowersActive&(1<<FP_DRAIN) &&
 		NPC->client->ps.fd.forcePowerLevel[FP_DRAIN] > FORCE_LEVEL_1 )
@@ -1828,6 +1850,10 @@ static void Jedi_CombatDistance( int enemy_dist )
 
 static qboolean Jedi_Strafe( int strafeTimeMin, int strafeTimeMax, int nextStrafeTimeMin, int nextStrafeTimeMax, qboolean walking )
 {
+	if( Jedi_CultistDestroyer( NPC ) )
+	{
+		return qfalse;
+	}
 	if ( NPC->client->ps.saberEventFlags&SEF_LOCK_WON && NPC->enemy && NPC->enemy->painDebounceTime > level.time )
 	{//don't strafe if pressing the advantage of winning a saberLock
 		return qfalse;
@@ -4011,6 +4037,11 @@ static void Jedi_TimersApply( void )
 
 static void Jedi_CombatTimersUpdate( int enemy_dist )
 {
+	if( Jedi_CultistDestroyer( NPC ) )
+	{
+		Jedi_Aggression( NPC, 5 );
+		return;
+	}
 	if ( TIMER_Done( NPC, "roamTime" ) )
 	{
 		TIMER_Set( NPC, "roamTime", Q_irand( 2000, 5000 ) );
@@ -4283,6 +4314,28 @@ static void Jedi_CombatIdle( int enemy_dist )
 
 static qboolean Jedi_AttackDecide( int enemy_dist )
 {
+	// Begin fixed cultist_destroyer AI
+	if ( Jedi_CultistDestroyer( NPC ) )
+	{ // destroyer
+		if ( enemy_dist <= 32 )
+		{//go boom!
+			//float?
+			//VectorClear( NPC->client->ps.velocity );
+			//NPC->client->ps.gravity = 0;
+			//NPC->svFlags |= SVF_CUSTOM_GRAVITY;
+			//NPC->client->moveType = MT_FLYSWIM;
+			//NPC->flags |= FL_NO_KNOCKBACK;
+			NPC->flags |= FL_GODMODE;
+			NPC->takedamage = qfalse;
+
+			NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_FORCE_RAGE, SETANIM_FLAG_HOLD|SETANIM_FLAG_OVERRIDE );
+			NPC->client->ps.fd.forcePowersActive |= ( 1 << FP_RAGE );
+			NPC->painDebounceTime = NPC->useDebounceTime = level.time + NPC->client->ps.torsoTimer;
+			return qtrue;
+		}
+		return qfalse;
+	}
+
 	if ( NPC->enemy->client 
 		&& NPC->enemy->s.weapon == WP_SABER 
 		&& NPC->enemy->client->ps.saberLockTime > level.time 
@@ -6110,12 +6163,143 @@ static void Jedi_Attack( void )
 	}
 }
 
+extern void WP_Explode( gentity_t *self );
+qboolean Jedi_InSpecialMove( void )
+{
+	if ( NPC->client->ps.torsoAnim == BOTH_KYLE_PA_1
+		|| NPC->client->ps.torsoAnim == BOTH_KYLE_PA_2 
+		|| NPC->client->ps.torsoAnim == BOTH_KYLE_PA_3 
+		|| NPC->client->ps.torsoAnim == BOTH_PLAYER_PA_1
+		|| NPC->client->ps.torsoAnim == BOTH_PLAYER_PA_2
+		|| NPC->client->ps.torsoAnim == BOTH_PLAYER_PA_3
+		|| NPC->client->ps.torsoAnim == BOTH_FORCE_DRAIN_GRAB_END
+		|| NPC->client->ps.torsoAnim == BOTH_FORCE_DRAIN_GRABBED )
+	{
+		NPC_UpdateAngles( qtrue, qtrue );
+		return qtrue;
+	}
+
+	/*if ( Jedi_InNoAIAnim( NPC ) )
+	{//in special anims, don't do force powers or attacks, just face the enemy
+		if ( NPC->enemy )
+		{
+			NPC_FaceEnemy( qtrue );
+		}
+		else
+		{
+			NPC_UpdateAngles( qtrue, qtrue );
+		}
+		return qtrue;
+	}*/
+
+	if ( NPC->client->ps.torsoAnim == BOTH_FORCE_DRAIN_GRAB_START
+		|| NPC->client->ps.torsoAnim == BOTH_FORCE_DRAIN_GRAB_HOLD )
+	{
+		if ( !TIMER_Done( NPC, "draining" ) )
+		{//FIXME: what do we do if we ran out of power?  NPC's can't?
+			//FIXME: don't keep turning to face enemy or we'll end up spinning around
+			ucmd.buttons |= BUTTON_FORCE_DRAIN;
+		}
+		NPC_UpdateAngles( qtrue, qtrue );
+		return qtrue;
+	}
+
+	if ( NPC->client->ps.torsoAnim == BOTH_TAVION_SWORDPOWER )
+	{
+		NPC->health += Q_irand( 1, 2 ); 
+		if ( NPC->health > NPC->client->ps.stats[STAT_MAX_HEALTH] )
+		{
+			NPC->health = NPC->client->ps.stats[STAT_MAX_HEALTH];
+		}
+		NPC_UpdateAngles( qtrue, qtrue );
+		return qtrue;
+	}
+	/*else if ( NPC->client->ps.torsoAnim == BOTH_SCEPTER_HOLD )
+	{
+		if ( NPC->client->ps.torsoTimer <= 100 )
+		{
+			NPC->s.loopSound = 0;
+			G_StopEffect( G_EffectIndex( "scepter/beam.efx" ), NPC->weaponModel[1], NPC->genericBolt1, NPC->s.number );
+			NPC->client->ps.legsTimer = NPC->client->ps.torsoTimer = 0;
+			NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_SCEPTER_STOP, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+			NPC->painDebounceTime = level.time + NPC->client->ps.torsoTimer;
+			NPC->client->ps.pm_time = NPC->client->ps.torsoTimer;
+			NPC->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
+			VectorClear( NPC->client->ps.velocity );
+			VectorClear( NPC->client->ps.moveDir );
+		}
+		else
+		{
+			Tavion_ScepterDamage();
+		}
+		if ( NPC->enemy )
+		{
+			NPC_FaceEnemy( qtrue );
+		}
+		else
+		{
+			NPC_UpdateAngles( qtrue, qtrue );
+		}
+		return qtrue;
+	}
+	else if ( NPC->client->ps.torsoAnim == BOTH_SCEPTER_STOP )
+	{
+		if ( NPC->enemy )
+		{
+			NPC_FaceEnemy( qtrue );
+		}
+		else
+		{
+			NPC_UpdateAngles( qtrue, qtrue );
+		}
+		return qtrue;
+	}
+	else if ( NPC->client->ps.torsoAnim == BOTH_TAVION_SCEPTERGROUND )
+	{
+		if ( NPC->client->ps.torsoTimer <= 1200 
+			&& !NPC->count ) 
+		{
+			Tavion_ScepterSlam();
+			NPC->count = 1;
+		} 
+		NPC_UpdateAngles( qtrue, qtrue );
+		return qtrue;
+	}*/
+
+	if ( Jedi_CultistDestroyer( NPC ) )
+	{
+		if ( !NPC->takedamage )
+		{//ready to explode
+			if ( NPC->useDebounceTime <= level.time )
+			{
+				//this should damage everyone - FIXME: except other destroyers?
+				NPC->client->playerTeam = NPCTEAM_FREE;//FIXME: will this destroy wampas, tusken & rancors?
+				NPC->splashDamage = 200;	// rough match to SP
+				NPC->splashRadius = 512;	// see above
+				WP_Explode( NPC );
+				return qtrue;
+			}
+			if ( NPC->enemy )
+			{
+				NPC_FaceEnemy( qfalse );
+			}
+			return qtrue;
+		}
+	}
+	return qfalse;
+}
+
 extern void NPC_BSST_Patrol( void );
 extern void NPC_BSSniper_Default( void );
 void NPC_BSJedi_Default( void )
 {
+	if ( Jedi_InSpecialMove() )
+	{
+		return;
+	}
 
 	Jedi_CheckCloak();
+
 	if( !NPC->enemy )
 	{//don't have an enemy, look for one
 		if ( NPC->client->NPC_class == CLASS_BOBAFETT )
@@ -6133,6 +6317,19 @@ void NPC_BSJedi_Default( void )
 		{//we were still waiting to drop down - must have had enemy set on me outside my AI
 			Jedi_Ambush( NPC );
 		}
+
+		if ( Jedi_CultistDestroyer( NPC ) 
+			&& !NPCInfo->charmedTime )
+		{//destroyer
+			//permanent effect
+			NPCInfo->charmedTime = Q3_INFINITE;
+			NPC->client->ps.fd.forcePowersActive |= ( 1 << FP_RAGE );
+			NPC->client->ps.fd.forcePowerDuration[FP_RAGE] = Q3_INFINITE;
+			//NPC->client->ps.eFlags |= EF_FORCE_DRAINED;
+			//FIXME: precache me!
+			NPC->s.loopSound = G_SoundIndex( "sound/movers/objects/green_beam_lp2.wav" );//test/charm.wav" );
+		}
+
 		if ( NPC->client->NPC_class == CLASS_BOBAFETT )
 		{
 			if ( NPC->enemy->enemy != NPC && NPC->health == NPC->client->pers.maxHealth && DistanceSquared( NPC->r.currentOrigin, NPC->enemy->r.currentOrigin )>(800*800) )
@@ -6152,7 +6349,7 @@ void NPC_BSJedi_Default( void )
 			gentity_t *newEnemy;
 
 			NPC->enemy = NULL;
-			newEnemy = NPC_CheckEnemy( NPCInfo->confusionTime < level.time, qfalse, qfalse );
+			newEnemy = NPC_CheckEnemy( (qboolean)(NPCInfo->confusionTime < level.time), qfalse, qfalse );
 			NPC->enemy = sav_enemy;
 			if ( newEnemy && newEnemy != sav_enemy )
 			{//picked up a new enemy!

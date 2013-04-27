@@ -99,6 +99,8 @@ typedef struct
 	fieldtype_t	type;
 } field_t;
 
+/* This array MUST be sorted correctly by alphabetical name field */
+/* for conformity, use lower-case names too */
 field_t fields[] = {
 	{ "alliedteam",				FOFS( alliedTeam ),						F_INT },//for misc_turrets
 	{ "angerscript",			FOFS( behaviorSet[BSET_ANGER] ),		F_STRING },//name of script to run
@@ -274,6 +276,7 @@ void SP_path_corner (gentity_t *self);
 void SP_misc_teleporter_dest (gentity_t *self);
 void SP_misc_model(gentity_t *ent);
 void SP_misc_model_static(gentity_t *ent);
+void SP_misc_model_breakable( gentity_t *ent ) ;
 void SP_misc_G2model(gentity_t *ent);
 void SP_misc_portal_camera(gentity_t *ent);
 void SP_misc_portal_surface(gentity_t *ent);
@@ -465,6 +468,8 @@ void SP_gametype_item ( gentity_t* ent )
 
 void SP_emplaced_gun( gentity_t *ent );
 
+/* This array MUST be sorted correctly by alphabetical name field */
+/* for conformity, use lower-case names too */
 spawn_t	spawns[] = {
 	{ "emplaced_gun",						SP_emplaced_gun },
 	{ "func_bobbing",						SP_func_bobbing },
@@ -486,8 +491,9 @@ spawn_t	spawns[] = {
 	{ "fx_snow",							SP_CreateSnow },
 	{ "fx_spacedust",						SP_CreateSpaceDust },
 	{ "gametype_item",						SP_gametype_item },
-	{ "info_jedimaster_start",				SP_info_jedimaster_start },
+	{ "item_botroam",						SP_item_botroam },
 	{ "info_camp",							SP_info_camp },
+	{ "info_jedimaster_start",				SP_info_jedimaster_start },
 	{ "info_notnull",						SP_info_notnull }, // use target_position instead
 	{ "info_null",							SP_info_null },
 	{ "info_player_deathmatch",				SP_info_player_deathmatch },
@@ -505,7 +511,6 @@ spawn_t	spawns[] = {
 	{ "info_siege_decomplete",				SP_info_siege_decomplete },
 	{ "info_siege_objective",				SP_info_siege_objective },
 	{ "info_siege_radaricon",				SP_info_siege_radaricon },
-	{ "item_botroam",						SP_item_botroam },
 	{ "light",								SP_light },
 	{ "misc_ammo_floor_unit",				SP_misc_ammo_floor_unit },
 	{ "misc_bsp",							SP_misc_bsp },
@@ -515,6 +520,7 @@ spawn_t	spawns[] = {
 	{ "misc_maglock",						SP_misc_maglock },
 	{ "misc_model",							SP_misc_model },
 	{ "misc_model_ammo_power_converter",	SP_misc_model_ammo_power_converter },
+	{ "misc_model_breakable",				SP_misc_model_breakable },
 	{ "misc_model_health_power_converter",	SP_misc_model_health_power_converter },
 	{ "misc_model_shield_power_converter",	SP_misc_model_shield_power_converter },
 	{ "misc_model_static",					SP_misc_model_static },
