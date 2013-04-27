@@ -1154,6 +1154,8 @@ static CMiniHeap *GetG2VertSpaceServer( void ) {
 
 static void *rendererLib;
 
+#define DEFAULT_RENDER_LIBRARY	"rdsp-vanilla_x86"	// NOTENOTE: If you change the output name of rd-vanilla, change this define too!
+
 void CL_InitRef( void ) {
 	refexport_t	*ret;
 	refimport_t rit;
@@ -1164,7 +1166,7 @@ void CL_InitRef( void ) {
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
 
-	cl_renderer = Cvar_Get( "cl_renderer", "rdsp-vanilla_x86", CVAR_ARCHIVE );
+	cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE );
 
 	Com_sprintf( dllName, sizeof( dllName ), "%s.dll", cl_renderer->string );
 
@@ -1174,7 +1176,7 @@ void CL_InitRef( void ) {
 		Com_Printf("Failed to load primary renderer, falling back to default\n");
 		Cvar_Set2( "cl_renderer", NULL, qtrue );
 
-		strcpy(dllName, "rdsp-vanilla_x86.dll");
+		strcpy(dllName, DEFAULT_RENDER_LIBRARY ".dll");
 		rendererLib = (void*)LoadLibrary(dllName);
 	}
 
