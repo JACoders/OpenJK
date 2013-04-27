@@ -53,7 +53,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON1               ICON                    "starwars.ico"
+IDI_ICON1               ICON                    "icon.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -84,7 +84,7 @@ BEGIN
             VALUE "FileVersion",  VERSION_STRING
             VALUE "InternalName", "JASP"
             VALUE "LegalCopyright", "Copyright (C) 2013"
-            VALUE "OriginalFilename", "jasp.exe"
+            VALUE "OriginalFilename", "openjk_sp.exe"
             VALUE "ProductName", "OpenJK Singleplayer"
             VALUE "ProductVersion",  VERSION_STRING
         END
