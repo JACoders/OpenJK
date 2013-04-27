@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Developer Studio generated include file.
-// Used by winquake.rc
+// Used by openjk_sp.rc
 //
 #define IDS_STRING1                     1
 #define IDI_ICON1                       1

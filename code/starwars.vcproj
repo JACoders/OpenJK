@@ -81,13 +81,13 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ALut.lib OpenAL32.lib winmm.lib wsock32.lib ff/ifc/ifc22.lib"
-				OutputFile=".\..\bin\Debug/jasp.exe"
+				OutputFile=".\..\bin\Debug/openjk_sp.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/jasp.pdb"
+				ProgramDatabaseFile=".\Debug/openjk_sp.pdb"
 				GenerateMapFile="true"
-				MapFileName=".\Debug\jasp.map"
+				MapFileName=".\Debug\openjk_sp.map"
 				SubSystem="2"
 				StackReserveSize="8388608"
 				RandomizedBaseAddress="1"
@@ -278,7 +278,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ALut.lib OpenAL32.lib winmm.lib wsock32.lib ff/ifc/ifc22.lib"
-				OutputFile=".\FinalBuild/jasp.exe"
+				OutputFile=".\FinalBuild/openjk_sp.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="false"
@@ -379,13 +379,13 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ALut.lib OpenAL32.lib winmm.lib wsock32.lib ff/ifc/ifc22.lib"
-				OutputFile=".\..\..\bin\Release/jasp.exe"
+				OutputFile=".\..\..\bin\Release/openjk_sp.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Release/jasp.pdb"
+				ProgramDatabaseFile=".\Release/openjk_sp.pdb"
 				GenerateMapFile="true"
-				MapFileName=".\Release\jasp.map"
+				MapFileName=".\Release\openjk_sp.map"
 				SubSystem="2"
 				StackReserveSize="8388608"
 				RandomizedBaseAddress="1"
@@ -3032,11 +3032,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\win32\starwars.ico"
+				RelativePath=".\win32\icon.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\win32\winquake.rc"
+				RelativePath=".\win32\openjk_sp.rc"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"

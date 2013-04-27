@@ -50,7 +50,7 @@ This file is part of Jedi Academy.
 #endif
 
 #define	CD_BASEDIR	"gamedata\\gamedata"
-#define	CD_EXE		"jasp.exe"
+#define	CD_EXE		"openjk_sp.exe"
 #define	CD_VOLUME	"JEDIACAD"
 
 #define MEM_THRESHOLD 128*1024*1024

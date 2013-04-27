@@ -986,7 +986,7 @@
     <None Include="OpenAL32.dll">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="win32\starwars.ico">
+    <None Include="win32\icon.ico">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -999,7 +999,7 @@
     </Library>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="win32\winquake.rc">
+    <ResourceCompile Include="win32\openjk_sp.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

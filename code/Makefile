@@ -187,7 +187,7 @@ GAME_OBJS		= $(B)/game/AI_Animal.o \
 			  $(B)/game/wp_trip_mine.o \
 			  $(B)/game/wp_tusken.o
 
-ENGINE_NAME		= $(B)/jasp
+ENGINE_NAME		= $(B)/openjk_sp
 ENGINE_CFLAGS		+= -m32 -fpermissive -w -DNDEBUG -DFINAL_BUILD -D_M_IX86 -I. `sdl2-config --cflags` -D_JK2EXE
 ENGINE_LDFLAGS		= -m32 `sdl2-config --libs`
 ifeq ($(PLATFORM),darwin)

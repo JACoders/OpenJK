@@ -415,7 +415,7 @@ if(BuildSPEngine)
 			"${SPDir}/win32/AutoVersion.h"
 			"${SPDir}/win32/resource.h"
 			"${SPDir}/win32/glw_win.h"
-			"${SPDir}/win32/winquake.rc"
+			"${SPDir}/win32/openjk_sp.rc"
 			)
 		source_group("win32" FILES ${SPEngineWin32Files})
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineWin32Files})
