@@ -584,7 +584,6 @@ Ghoul2 Insert Start
 	// see if the model is already loaded
 	//_
 	for (mh=mhHashTable[hash]; mh; mh=mh->next) {
-		if(!mh->name || !mh->name[0]) break;	// HACK -- mem is getting screwed up somewhere, cbf to fix. This is a good enough solution in the meantime. --eez
 		if (Q_stricmp(mh->name, name) == 0) {
 			if (tr.models[mh->handle]->type == MOD_BAD)
 			{
