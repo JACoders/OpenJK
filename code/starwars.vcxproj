@@ -87,7 +87,7 @@
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='SHDebug|Win32'" />
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">jasp</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">jasp</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='FinalBuild|Win32'">openjk_sp.x86</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">jasp</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -222,7 +222,7 @@
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\..\bin\FinalBuild/jasp.exe</OutputFile>
+      <OutputFile>.\..\bin\FinalBuild/openjk_sp.x86.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <ProgramDatabaseFile>
