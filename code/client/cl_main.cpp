@@ -1260,6 +1260,8 @@ void CL_InitRef( void ) {
 	rit.gbAlreadyDoingLoad = get_gbAlreadyDoingLoad;
 	rit.com_frameTime = get_com_frameTime;
 
+	rit.SV_PointContents = SV_PointContents;
+
 	ret = GetRefAPI( REF_API_VERSION, &rit );
 
 	if ( !ret ) {

@@ -1602,6 +1602,7 @@ extern void G2API_SetRagDoll(CGhoul2Info_v &ghoul2,CRagDollParams *parms);
 extern void G2Time_ResetTimers(void);
 extern void G2Time_ReportTimers(void);
 #endif
+extern IGhoul2InfoArray &TheGhoul2InfoArray();
 
 extern "C" {
 
