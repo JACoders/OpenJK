@@ -673,7 +673,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 	}
 
 	//got the name we're using for sure
-	strcpy(saber->name, useSaber);
+	Q_strncpyz(saber->name, useSaber, MAX_QPATH);
 
 	if ( BG_ParseLiteral( &p, "{" ) ) 
 	{
