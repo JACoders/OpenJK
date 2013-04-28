@@ -684,7 +684,7 @@ static void CG_OffsetThirdPersonView( void )
 					}
 				}
 			}
-			if ( 0 && cg.predictedPlayerState.m_iVehicleNum //in a vehicle
+			/*if ( 0 && cg.predictedPlayerState.m_iVehicleNum //in a vehicle
 				&& BG_UnrestrainedPitchRoll( &cg.predictedPlayerState, cg_entities[cg.predictedPlayerState.m_iVehicleNum].m_pVehicle ) )//can roll/pitch without restriction
 			{
 				float pitchPerc = ((90.0f-fabs(cameraFocusAngles[ROLL]))/90.0f);
@@ -698,7 +698,7 @@ static void CG_OffsetThirdPersonView( void )
 					cameraFocusAngles[YAW] += pitchOffset-(pitchOffset*pitchPerc);
 				}
 			}
-			else
+			else*/
 			{
 				cameraFocusAngles[PITCH] += pitchOffset;
 			}
@@ -775,14 +775,14 @@ static void CG_OffsetThirdPersonView( void )
 			VectorCopy( camerafwd, diff );
 		}
 	}
-	if ( 0 && cg.predictedPlayerState.m_iVehicleNum //in a vehicle
+	/*if ( 0 && cg.predictedPlayerState.m_iVehicleNum //in a vehicle
 		&& BG_UnrestrainedPitchRoll( &cg.predictedPlayerState, cg_entities[cg.predictedPlayerState.m_iVehicleNum].m_pVehicle ) )//can roll/pitch without restriction
 	{//FIXME: this causes camera jerkiness, need to blend the roll?
 		float sav_Roll = cg.refdef.viewangles[ROLL];
 		vectoangles(diff, cg.refdef.viewangles);
 		cg.refdef.viewangles[ROLL] = sav_Roll;
 	}
-	else
+	else*/
 	{
 		vectoangles(diff, cg.refdef.viewangles);
 	}
