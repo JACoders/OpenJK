@@ -62,15 +62,18 @@ Language_e GetLanguageEnum()
 	{
 #endif
 		if (iSE_Language_ModificationCount != se_language->modificationCount )
+		{
 			iSE_Language_ModificationCount  = se_language->modificationCount;
-				if ( Language_IsRussian()	)	eLanguage = eRussian;
-		else	if ( Language_IsPolish()	)	eLanguage = ePolish;
-		else	if ( Language_IsKorean()	)	eLanguage = eKorean;
-		else	if ( Language_IsTaiwanese()	)	eLanguage = eTaiwanese;
-		else	if ( Language_IsJapanese()	)	eLanguage = eJapanese;
-		else	if ( Language_IsChinese()	)	eLanguage = eChinese;
-		else	if ( Language_IsThai()		)	eLanguage = eThai;
-		else	eLanguage = eWestern;
+				
+			if ( Language_IsRussian()	)	eLanguage = eRussian;
+			else	if ( Language_IsPolish()	)	eLanguage = ePolish;
+			else	if ( Language_IsKorean()	)	eLanguage = eKorean;
+			else	if ( Language_IsTaiwanese()	)	eLanguage = eTaiwanese;
+			else	if ( Language_IsJapanese()	)	eLanguage = eJapanese;
+			else	if ( Language_IsChinese()	)	eLanguage = eChinese;
+			else	if ( Language_IsThai()		)	eLanguage = eThai;
+			else	eLanguage = eWestern;
+		}
 #ifndef __NO_JK2
 	}
 #endif
