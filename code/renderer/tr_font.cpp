@@ -59,6 +59,7 @@ Language_e GetLanguageEnum()
 	//
 #ifndef __NO_JK2
 	if(!Cvar_VariableIntegerValue("com_jk2"))
+	{
 #endif
 		if (iSE_Language_ModificationCount != se_language->modificationCount )
 			iSE_Language_ModificationCount  = se_language->modificationCount;
@@ -70,6 +71,9 @@ Language_e GetLanguageEnum()
 		else	if ( Language_IsChinese()	)	eLanguage = eChinese;
 		else	if ( Language_IsThai()		)	eLanguage = eThai;
 		else	eLanguage = eWestern;
+#ifndef __NO_JK2
+	}
+#endif
 
 	return eLanguage;
 }
