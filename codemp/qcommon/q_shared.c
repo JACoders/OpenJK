@@ -520,7 +520,7 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 				*data_p = ( char * ) data;
 				return com_token;
 			}
-			if (len < MAX_TOKEN_CHARS)
+			if (len < MAX_TOKEN_CHARS - 1)
 			{
 				com_token[len] = c;
 				len++;
@@ -531,7 +531,7 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 	// parse a regular word
 	do
 	{
-		if (len < MAX_TOKEN_CHARS)
+		if (len < MAX_TOKEN_CHARS -1)
 		{
 			com_token[len] = c;
 			len++;
@@ -542,11 +542,6 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 			com_lines++;
 	} while (c>32);
 
-	if (len == MAX_TOKEN_CHARS)
-	{
-//		Com_Printf ("Token exceeded %i chars, discarded.\n", MAX_TOKEN_CHARS);
-		len = 0;
-	}
 	com_token[len] = 0;
 
 	*data_p = ( char * ) data;
