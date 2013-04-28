@@ -3310,7 +3310,7 @@ float CG_DrawRadar ( float y )
 						{
 						
 							// generic enemy index specifies a shader to use for the radar entity.
-							if ( cent->currentState.genericenemyindex )
+							if ( cent->currentState.genericenemyindex && cent->currentState.genericenemyindex < MAX_ICONS )
 							{
 								color[0] = color[1] = color[2] = color[3] = 1.0f;
 								shader = cgs.gameIcons[cent->currentState.genericenemyindex];
@@ -5418,6 +5418,7 @@ void CG_BracketEntity( centity_t *cent, float radius )
 
 	local = &cgs.clientinfo[cg.snap->ps.clientNum];
 	if ( cent->currentState.m_iVehicleNum //vehicle has a driver
+		&& (cent->currentState.m_iVehicleNum-1) < MAX_CLIENTS
 		&& cgs.clientinfo[ cent->currentState.m_iVehicleNum-1 ].infoValid )
 	{
 		if ( cgs.gametype < GT_TEAM )
