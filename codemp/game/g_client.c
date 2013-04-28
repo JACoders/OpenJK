@@ -1505,6 +1505,15 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 	char		GLAName[MAX_QPATH];
 	vec3_t	tempVec = {0,0,0};
 
+	if (strlen(modelname) >= MAX_QPATH )
+	{
+		Com_Error( ERR_FATAL, "SetupGameGhoul2Model(%s): modelname exceeds MAX_QPATH.\n", modelname );
+	}
+	if (strlen(skinName) >= MAX_QPATH )
+	{
+		Com_Error( ERR_FATAL, "SetupGameGhoul2Model(%s): skinName exceeds MAX_QPATH.\n", skinName );
+	}
+
 	// First things first.  If this is a ghoul2 model, then let's make sure we demolish this first.
 	if (ent->ghoul2 && trap_G2_HaveWeGhoul2Models(ent->ghoul2))
 	{

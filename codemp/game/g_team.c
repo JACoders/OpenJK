@@ -1309,6 +1309,9 @@ void CheckTeamStatus(void) {
 		for (i = 0; i < sv_maxclients.integer; i++) {
 			ent = g_entities + i;
 
+			if ( !ent->client ) // uhm
+				continue;
+
 			if ( ent->client->pers.connected != CON_CONNECTED ) {
 				continue;
 			}

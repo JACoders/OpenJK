@@ -2091,6 +2091,9 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		return;
 	}
 
+	if ( !attacker )
+		return;
+
 	//check player stuff
 	g_dontFrickinCheck = qfalse;
 
@@ -2112,7 +2115,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	{ //kill everyone on board in the name of the attacker... if the vehicle has no death delay
 		gentity_t *murderer = NULL;
 		gentity_t *killEnt;
-		int i = 0;
+		i = 0;
 
 		if (self->client->ps.otherKillerTime >= level.time)
 		{ //use the last attacker
@@ -4438,6 +4441,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 	float		famt = 0;
 	float		hamt = 0;
 	float		shieldAbsorbed = 0;
+
+	if (!targ)
+		return;
 
 	if (targ && targ->damageRedirect)
 	{
