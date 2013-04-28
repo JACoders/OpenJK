@@ -2913,7 +2913,7 @@ Ghoul2 Insert End
 	trap_R_AddRefEntityToScene(&ent);
 
 	// add the secondary model
-	if ( s1->modelindex2 ) 
+	if ( s1->modelindex2 && s1->modelindex2 < MAX_MODELS ) 
 	{
 		ent.skinNum = 0;
 		ent.hModel = cgs.gameModels[s1->modelindex2];
