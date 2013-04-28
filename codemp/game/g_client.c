@@ -1509,7 +1509,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 	{
 		Com_Error( ERR_FATAL, "SetupGameGhoul2Model(%s): modelname exceeds MAX_QPATH.\n", modelname );
 	}
-	if (strlen(skinName) >= MAX_QPATH )
+	if (skinName && strlen(skinName) >= MAX_QPATH )
 	{
 		Com_Error( ERR_FATAL, "SetupGameGhoul2Model(%s): skinName exceeds MAX_QPATH.\n", skinName );
 	}
