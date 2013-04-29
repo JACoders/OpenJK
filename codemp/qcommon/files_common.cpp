@@ -489,6 +489,10 @@ void FS_InitFilesystem( void ) {
 	Com_StartupVariable( "fs_homepath" );
 	Com_StartupVariable( "fs_game" );
 	Com_StartupVariable( "fs_copyfiles" );
+	Com_StartupVariable( "fs_dirbeforepak" );
+
+	if(!FS_FilenameCompare(Cvar_VariableString("fs_game"), BASEGAME))
+		Cvar_Set("fs_game", "");
 
 	// try to start up normally
 	FS_Startup( BASEGAME );
