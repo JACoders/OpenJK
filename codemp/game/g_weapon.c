@@ -4649,8 +4649,9 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 			break;
 		}
 	}
-
-	G_LogWeaponFire(ent->s.number, ent->s.weapon);
+	
+	if(ent->s.number < MAX_CLIENTS)
+		G_LogWeaponFire(ent->s.number, ent->s.weapon);
 }
 
 //---------------------------------------------------------
