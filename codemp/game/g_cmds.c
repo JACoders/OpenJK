@@ -131,29 +131,6 @@ char	*ConcatArgs( int start ) {
 
 /*
 ==================
-SanitizeString
-
-Remove case and control characters
-==================
-*/
-void SanitizeString( char *in, char *out ) {
-	while ( *in ) {
-		if ( *in == 94 ) {
-			in += 2;		// skip color code
-			continue;
-		}
-		if ( *in < 32 ) {
-			in++;
-			continue;
-		}
-		*out++ = tolower( (unsigned char) *in++ );
-	}
-
-	*out = 0;
-}
-
-/*
-==================
 StringIsInteger
 ==================
 */
@@ -524,6 +501,7 @@ void Cmd_Kill_f( gentity_t *ent ) {
 	player_die (ent, ent, ent, 100000, MOD_SUICIDE);
 }
 
+/* fixme this is so bad... killother's code too */
 static int G_ClientNumFromNetname(char *name)
 {
 	int i = 0;
@@ -1905,92 +1883,20 @@ Finds the client number of the client with the given name
 */
 int G_ClientNumberFromName ( const char* name )
 {
-	char		s2[MAX_STRING_CHARS];
-	char		n2[MAX_STRING_CHARS];
+	char		cleanInput[MAX_NETNAME];
+	char		cleanName[MAX_NETNAME];
 	int			i;
 	gclient_t*	cl;
 
-	// check for a name match
-	SanitizeString( (char*)name, s2 );
-	for ( i=0, cl=level.clients ; i < level.numConnectedClients ; i++, cl++ ) 
-	{
-		SanitizeString( cl->pers.netname, n2 );
-		if ( !strcmp( n2, s2 ) ) 
-		{
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-/*
-==================
-SanitizeString2
-
-Rich's revised version of SanitizeString
-==================
-*/
-void SanitizeString2( char *in, char *out )
-{
-	int i = 0;
-	int r = 0;
-
-	while (in[i])
-	{
-		if (i >= MAX_NAME_LENGTH-1)
-		{ //the ui truncates the name here..
-			break;
-		}
-
-		if (in[i] == '^')
-		{
-			if (in[i+1] >= 48 && //'0'
-				in[i+1] <= 57) //'9'
-			{ //only skip it if there's a number after it for the color
-				i += 2;
-				continue;
-			}
-			else
-			{ //just skip the ^
-				i++;
-				continue;
-			}
-		}
-
-		if (in[i] < 32)
-		{
-			i++;
+	Q_strncpyz( cleanInput, name, sizeof( cleanInput ) );
+	Q_StripColor( cleanInput );
+	for ( i=0,cl=level.clients; i < level.maxclients; i++,cl++ )
+	{// check for a name match
+		if ( cl->pers.connected != CON_CONNECTED )
 			continue;
-		}
-
-		out[r] = in[i];
-		r++;
-		i++;
-	}
-	out[r] = 0;
-}
-
-/*
-==================
-G_ClientNumberFromStrippedName
-
-Same as above, but strips special characters out of the names before comparing.
-==================
-*/
-int G_ClientNumberFromStrippedName ( const char* name )
-{
-	char		s2[MAX_STRING_CHARS];
-	char		n2[MAX_STRING_CHARS];
-	int			i;
-	gclient_t*	cl;
-
-	// check for a name match
-	SanitizeString2( (char*)name, s2 );
-	for ( i=0, cl=level.clients ; i < level.numConnectedClients ; i++, cl++ ) 
-	{
-		SanitizeString2( cl->pers.netname, n2 );
-		if ( !strcmp( n2, s2 ) ) 
+		Q_strncpyz( cleanName, cl->pers.netname, sizeof( cleanName ) );
+		Q_StripColor( cleanName );
+		if ( !Q_stricmp( cleanName, cleanInput ) )
 		{
 			return i;
 		}
@@ -2126,7 +2032,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			return;
 		}
 
-		if ( g_entities[n].client->pers.connected == CON_DISCONNECTED )
+		if ( g_entities[n].client->pers.connected != CON_CONNECTED )
 		{
 			trap_SendServerCommand( ent-g_entities, va("print \"there is no client with the client number %d.\n\"", n ) );
 			return;
@@ -2141,13 +2047,8 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 		if ( clientid == -1 )
 		{
-			clientid = G_ClientNumberFromStrippedName(arg2);
-
-			if (clientid == -1)
-			{
-				trap_SendServerCommand( ent-g_entities, va("print \"there is no client named '%s' currently on the server.\n\"", arg2 ) );
-				return;
-			}
+			trap_SendServerCommand( ent-g_entities, va("print \"there is no client named '%s' currently on the server.\n\"", arg2 ) );
+			return;
 		}
 
 		Com_sprintf ( level.voteString, sizeof(level.voteString ), "clientkick %d", clientid );
