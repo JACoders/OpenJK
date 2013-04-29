@@ -2996,7 +2996,7 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 	}
 
 	//New: Don't let a player duel if he just did and hasn't waited 10 seconds yet (note: If someone challenges him, his duel timer will reset so he can accept)
-	if (ent->client->ps.fd.privateDuelTime > level.time)
+	/*if (ent->client->ps.fd.privateDuelTime > level.time)
 	{
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_JUSTDID")) );
 		return;
@@ -3006,7 +3006,7 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 	{
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_BUSY")) );
 		return;
-	}
+	}*/
 
 	AngleVectors( ent->client->ps.viewangles, forward, NULL, NULL );
 
