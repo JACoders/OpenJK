@@ -1554,12 +1554,16 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 			if (uiLetter != '_')	// necessary because of fallthrough above
 			{
 				if (*psText >= '0' &&
-					*psText <= '9')
+					*psText <= '7')
+					//*psText <= '9')
 				{
 					colour = ColorIndex(*psText++);
 					if (!gbInShadow)
 					{
-						RE_SetColor( g_color_table[colour] );
+						vec4_t color;
+						Com_Memcpy( color, g_color_table[colour], sizeof( color ) );
+						color[3] = rgba[3];
+						RE_SetColor( color );
 					}
 					break;
 				}
