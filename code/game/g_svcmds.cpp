@@ -1203,6 +1203,12 @@ qboolean	ConsoleCommand( void ) {
 	}
 	if ( Q_stricmp( cmd, "setForceAll" ) == 0 )	
 	{
+		if ( !g_cheats->integer ) 
+		{
+			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
+			return qfalse;
+		}
+
 		Svcmd_ForceJump_f();
 		Svcmd_SaberThrow_f();
 		Svcmd_ForceHeal_f();
