@@ -1234,11 +1234,6 @@ void CG_DrawHUD(centity_t	*cent)
 					Com_sprintf(ammoString, sizeof(ammoString), "FAST");
 				}
 			}
-			else if (cg.snap->ps.weapon == WP_MELEE)
-			{
-				Com_sprintf(ammoString, sizeof(ammoString), "MELEE");
-				weapX += 16;
-			}
 			else if (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0)
 			{
 				Q_strncpyz(ammoString, "--", sizeof(ammoString));
