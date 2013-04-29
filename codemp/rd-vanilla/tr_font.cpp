@@ -1554,8 +1554,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 			if (uiLetter != '_')	// necessary because of fallthrough above
 			{
 				if (*psText >= '0' &&
-					*psText <= '7')
-					//*psText <= '9')
+					*psText <= '9')
 				{
 					colour = ColorIndex(*psText++);
 					if (!gbInShadow)
