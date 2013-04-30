@@ -674,7 +674,7 @@ qboolean G2API_SetSkin(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t ren
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
 #ifndef __NO_JK2
-	if(Cvar_VariableIntegerValue("com_JK2"))
+	if(com_jk2 && com_jk2->integer)
 	{
 		if (ghlInfo)
 		{
@@ -1277,7 +1277,7 @@ extern int ragTraceCount;
 void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params)
 {
 #ifndef __NO_JK2
-	if(Cvar_VariableIntegerValue("com_jk2"))
+	if(com_jk2 && com_jk2->integer)
 		return;			// handled elsewhere
 #endif
 	int model;

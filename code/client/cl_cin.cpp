@@ -1741,7 +1741,7 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 			else
 			{
 #ifndef __NO_JK2
-				if(Cvar_VariableIntegerValue("com_jk2"))
+				if(com_jk2 && com_jk2->integer)
 				{
 					hCrawl = re.RegisterShaderNoMip( va("menu/video/tc_%d", sp_language->string) );
 					if(!hCrawl)
