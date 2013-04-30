@@ -41,6 +41,11 @@ qboolean G_EntIsBreakable( int entityNum );
 qboolean G_EntIsRemovableUsable( int entNum );
 void CP_FindCombatPointWaypoints( void );
 
+void SetNPCGlobals( gentity_t *ent );
+void SaveNPCGlobals(void);
+void RestoreNPCGlobals(void);
+extern gNPC_t *NPCInfo;
+
 /*
 ================
 vmMain
@@ -3065,7 +3070,13 @@ void G_RunThink (gentity_t *ent) {
 runicarus:
 	if ( ent->inuse )
 	{
+		SaveNPCGlobals();
+		if(NPCInfo == NULL && ent->NPC != NULL)
+		{
+			SetNPCGlobals( ent );
+		}
 		trap_ICARUS_MaintainTaskManager(ent->s.number);
+		RestoreNPCGlobals();
 	}
 }
 
