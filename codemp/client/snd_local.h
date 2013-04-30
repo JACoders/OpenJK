@@ -122,6 +122,7 @@ typedef struct
 	int			iMP3SlidingDecodeWritePos;
 	int			iMP3SlidingDecodeWindowPos;
 
+
 	// Open AL specific
 	bool	bLooping;	// Signifies if this channel / source is playing a looping sound
 //	bool	bAmbient;	// Signifies if this channel / source is playing a looping ambient sound

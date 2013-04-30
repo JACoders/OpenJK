@@ -942,7 +942,7 @@ void QDECL G_Error( const char *fmt, ... ) {
 	char		text[1024];
 
 	va_start (argptr, fmt);
-	Q_vsnprintf (text, sizeof(text), fmt, argptr);
+	vsprintf (text, fmt, argptr);
 	va_end (argptr);
 
 	gi.Error( ERR_DROP, "%s", text);
@@ -962,7 +962,7 @@ void Com_Error ( int level, const char *error, ... ) {
 	char		text[1024];
 
 	va_start (argptr, error);
-	Q_vsnprintf (text, sizeof(text), error, argptr);
+	vsprintf (text, error, argptr);
 	va_end (argptr);
 
 	gi.Error( level, "%s", text);
@@ -979,7 +979,7 @@ void Com_Printf( const char *msg, ... ) {
 	char		text[1024];
 
 	va_start (argptr, msg);
-	Q_vsnprintf (text, sizeof(text), msg, argptr);
+	vsprintf (text, msg, argptr);
 	va_end (argptr);
 
 	gi.Printf ("%s", text);

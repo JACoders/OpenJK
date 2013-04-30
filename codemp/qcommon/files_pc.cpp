@@ -1007,8 +1007,6 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 
 // Ensiform: This is a bit of a hack but it is used for other 
 // OS'/arch to still be acceptable with pure servers.
-// Will probably not work if you have your "dlls" in another
-// pk3 that server does not have
 qboolean FS_FindPureDLL(const char *name)
 {
 	char dllName[MAX_OSPATH];
@@ -2464,7 +2462,7 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 		havepak = qfalse;
 
 		// never autodownload any of the id paks
-		if ( FS_idPak(fs_serverReferencedPakNames[i], "base") ) {
+		if ( FS_idPak(fs_serverReferencedPakNames[i], "base") || FS_idPak(fs_serverReferencedPakNames[i], "missionpack") ) {
 			continue;
 		}
 
@@ -2626,7 +2624,6 @@ void FS_Startup( const char *gameName ) {
 	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
 
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED);
-	fs_nounpakdll = Cvar_Get("fs_nounpakdll", "0", CVAR_INIT|CVAR_PROTECTED);
 
 	// add search path elements in reverse priority order
 	if (fs_cdpath->string[0]) {

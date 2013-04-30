@@ -774,7 +774,7 @@ int CL_UISystemCalls( int *args ) {
 		return 0;
 
 	case UI_CVAR_CREATE:
-		Cvar_Register( NULL, (const char *)VMA(1), (const char *)VMA(2), args[3] );
+		Cvar_Get( (const char *)VMA(1), (const char *)VMA(2), args[3] );
 		return 0;
 
 	case UI_CVAR_INFOSTRINGBUFFER:
@@ -1329,9 +1329,21 @@ CL_InitUI
 
 void CL_InitUI( void ) {
 	int		v;
+	vmInterpret_t		interpret;
 
-	// load the dll
-	uivm = VM_Create( "ui", CL_UISystemCalls, VMI_NATIVE );
+	// load the dll or bytecode
+	if ( cl_connectedToPureServer != 0 ) {
+#if 0
+		// if sv_pure is set we only allow qvms to be loaded
+		interpret = VMI_COMPILED;
+#else //load the module type based on what the server is doing -rww
+		interpret = (vmInterpret_t)cl_connectedUI;
+#endif
+	}
+	else {
+		interpret = (vmInterpret_t)(int)Cvar_VariableValue( "vm_ui" );
+	}
+	uivm = VM_Create( "ui", CL_UISystemCalls, interpret );
 	if ( !uivm ) {
 		Com_Error( ERR_FATAL, "VM_Create on UI failed" );
 	}

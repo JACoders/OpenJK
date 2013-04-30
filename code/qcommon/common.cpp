@@ -64,7 +64,6 @@ cvar_t	*cl_paused;
 cvar_t	*sv_paused;
 cvar_t	*com_skippingcin;
 cvar_t	*com_speedslog;		// 1 = buffer log, 2 = flush after each print
-cvar_t  *com_homepath;
 
 // Support for JK2 binaries --eez
 cvar_t	*com_jk2;			// searches for jk2gamex86.dll instead of jagamex86.dll
@@ -144,7 +143,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	char		msg[MAXPRINTMSG];
 
 	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	vsprintf_s (msg,fmt,argptr);
 	va_end (argptr);
 
 	if ( rd_buffer ) {
@@ -198,7 +197,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	}
 
 	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	vsprintf_s (msg,fmt,argptr);
 	va_end (argptr);
 	
 	Com_Printf ("%s", msg);
@@ -290,7 +289,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 //	SCR_UnprecacheScreenshot();
 
 	va_start (argptr,fmt);
-	Q_vsnprintf (com_errorMessage, sizeof(com_errorMessage), fmt, argptr);
+	vsprintf_s (com_errorMessage,fmt,argptr);
 	va_end (argptr);	
 
 	if ( code != ERR_DISCONNECT ) {
@@ -964,7 +963,7 @@ void Com_Init( char *commandLine ) {
 		// cvar and command buffer management
 		Com_ParseCommandLine( commandLine );
 
-		//Swap_Init ();
+		Swap_Init ();
 		Cbuf_Init ();
 
 		Com_InitZoneMemory();
@@ -975,21 +974,8 @@ void Com_Init( char *commandLine ) {
 		// get the commandline cvars set
 		Com_StartupVariable( NULL );
 
-		com_jk2 = Cvar_Get( "com_jk2", "0", CVAR_INIT );
-
 		// done early so bind command exists
 		CL_InitKeyCommands();
-
-#ifdef _XBOX
-		extern void Sys_FilecodeScan_f();
-		Sys_InitFileCodes();
-		Cmd_AddCommand("filecodes", Sys_FilecodeScan_f);
-
-		extern void Sys_StreamInit();
-		Sys_StreamInit();
-#endif
-
-		com_homepath = Cvar_Get("com_homepath", "", CVAR_INIT);
 
 		FS_InitFilesystem ();	//uses z_malloc
 		R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
@@ -1044,6 +1030,8 @@ void Com_Init( char *commandLine ) {
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
+
+		com_jk2			= Cvar_Get( "com_jk2", "0", CVAR_INIT|CVAR_SERVERINFO );
 		
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);
@@ -1055,7 +1043,7 @@ void Com_Init( char *commandLine ) {
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
 #ifndef __NO_JK2
-		if(com_jk2 && com_jk2->integer)
+		if(com_jk2->integer)
 		{
 			JK2SP_Init();
 		}

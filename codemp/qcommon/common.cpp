@@ -181,10 +181,12 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 		}
 	}
 
-#ifdef _DEBUG
+
+#if defined(_WIN32) && defined(_DEBUG)
 	if ( *msg )
 	{
-		Com_OPrintf( "%s\n", Q_CleanStr(msg) );
+		OutputDebugString ( Q_CleanStr(msg) );
+		OutputDebugString ("\n");
 	}
 #endif
 }
@@ -252,16 +254,14 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	}
 #endif
 
-	if ( com_errorEntered )
-		Sys_Error( "recursive error after: %s", com_errorMessage );
-
-	com_errorEntered = qtrue;
-
 	// when we are running automated scripts, make sure we
 	// know if anything failed
 	if ( com_buildScript && com_buildScript->integer ) {
 		code = ERR_FATAL;
 	}
+
+	// make sure we can get at our local stuff
+	FS_PureServerSetLoadedPaks( "", "" );
 
 	// if we are getting a solid stream of ERR_DROP, do an ERR_FATAL
 	currentTime = Sys_Milliseconds();
@@ -274,11 +274,16 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	}
 	lastErrorTime = currentTime;
 
+	if ( com_errorEntered ) {
+		Sys_Error( "recursive error after: %s", com_errorMessage );
+	}
+	com_errorEntered = qtrue;
+
 	va_start (argptr,fmt);
 	Q_vsnprintf (com_errorMessage,sizeof(com_errorMessage), fmt,argptr);
 	va_end (argptr);
 
-	if ( code != ERR_DISCONNECT && code != ERR_NEED_CD ) {
+	if ( code != ERR_DISCONNECT ) {
 		Cvar_Get("com_errorMessage", "", CVAR_ROM);	//give com_errorMessage a default so it won't come back to life after a resetDefaults
 		Cvar_Set("com_errorMessage", com_errorMessage);
 	}
@@ -286,8 +291,6 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	if ( code == ERR_SERVERDISCONNECT ) {
 		CL_Disconnect( qtrue );
 		CL_FlushMemory( );
-		// make sure we can get at our local stuff
-		FS_PureServerSetLoadedPaks( "", "" );
 		com_errorEntered = qfalse;
 
 		throw ("DISCONNECTED\n");
@@ -296,8 +299,6 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage));
 		CL_Disconnect( qtrue );
 		CL_FlushMemory( );
-		// make sure we can get at our local stuff
-		FS_PureServerSetLoadedPaks( "", "" );
 		com_errorEntered = qfalse;
 
 		throw ("DROPPED\n");
@@ -310,11 +311,6 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		} else {
 			Com_Printf("Server didn't have CD\n" );
 		}
-
-		// make sure we can get at our local stuff
-		FS_PureServerSetLoadedPaks( "", "" );
-		com_errorEntered = qfalse;
-
 		throw ("NEED CD\n");
 	} else {
 		CL_Shutdown ();
@@ -670,6 +666,22 @@ int Com_FilterPath(char *filter, char *name, int casesensitive)
 	}
 	new_name[i] = '\0';
 	return Com_Filter(new_filter, new_name, casesensitive);
+}
+
+/*
+============
+Com_HashKey
+============
+*/
+int Com_HashKey(char *string, int maxlen) {
+	int register hash, i;
+
+	hash = 0;
+	for (i = 0; i < maxlen && string[i] != '\0'; i++) {
+		hash += string[i] * (119 + i);
+	}
+	hash = (hash ^ (hash >> 10) ^ (hash >> 20));
+	return hash;
 }
 
 /*

@@ -215,12 +215,6 @@ typedef const char *LPCSTR;
 typedef enum {qfalse, qtrue}	qboolean;
 #define	qboolean	int		//don't want strict type checking on the qboolean
 
-typedef union {
-	float f;
-	int i;
-	unsigned int ui;
-} floatint_t;
-
 typedef int		qhandle_t;
 typedef int		thandle_t;
 typedef int		fxHandle_t;
@@ -232,43 +226,37 @@ typedef int		clipHandle_t;
 //		should probably be in the platform specific definitions
 #if defined (_MSC_VER) && (_MSC_VER >= 1600)
 
-	#include <stdint.h>
+#include <stdint.h>
 
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+// vsnprintf is ISO/IEC 9899:1999
+// abstracting this to make it portable
+int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
 
 #elif defined (_MSC_VER)
 
-	#include <io.h>
+#include <io.h>
 
-	typedef signed __int64 int64_t;
-	typedef signed __int32 int32_t;
-	typedef signed __int16 int16_t;
-	typedef signed __int8  int8_t;
-	typedef unsigned __int64 uint64_t;
-	typedef unsigned __int32 uint32_t;
-	typedef unsigned __int16 uint16_t;
-	typedef unsigned __int8  uint8_t;
+typedef signed __int64 int64_t;
+typedef signed __int32 int32_t;
+typedef signed __int16 int16_t;
+typedef signed __int8  int8_t;
+typedef unsigned __int64 uint64_t;
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int16 uint16_t;
+typedef unsigned __int8  uint8_t;
 
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+// vsnprintf is ISO/IEC 9899:1999
+// abstracting this to make it portable
+int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
 #else // not using MSVC
 
-	#include <stdint.h>
+#include <stdint.h>
 
-	#define Q_vsnprintf vsnprintf
+#define Q_vsnprintf vsnprintf
 
 #endif
 
-#define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
-#define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
-
-#define PADP(base, alignment)	((void *) PAD((intptr_t) (base), (alignment)))
-
 #ifndef NULL
-// NOTE: This is all c++ so casting to void * is wrong
 #define NULL ((void *)0)
 #endif
 
@@ -1272,7 +1260,7 @@ void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
 int Com_HexStrToInt( const char *str );
 
-int	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
+void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
 
 
 // mode parm for FS_FOpenFile
@@ -1326,37 +1314,6 @@ char *Q_CleanStr( char *string );
 
 //=============================================
 
-void CopyShortSwap (void *dest, void *src);
-void CopyLongSwap (void *dest, void *src);
-short ShortSwap (short l);
-int LongSwap (int l);
-float FloatSwap (const float *f);
-
-#ifdef _M_IX86
-
-#define CopyLittleShort(dest, src) Com_Memcpy(dest, src, 2)
-#define CopyLittleLong(dest, src) Com_Memcpy(dest, src, 4)
-#define LittleShort
-#define LittleLong
-#define LittleFloat
-#define BigShort(x) ShortSwap(x)
-#define BigLong(x) LongSwap(x)
-#define BigFloat(x) FloatSwap(&x)
-
-#else
-
-#define CopyLittleShort(dest, src) CopyShortSwap(dest, src)
-#define CopyLittleLong(dest, src) CopyLongSwap(dest, src)
-#define LittleShort(x) ShortSwap(x)
-#define LittleLong(x) LongSwap(x)
-#define LittleFloat(x) FloatSwap(&x)
-#define BigShort
-#define BigLong
-#define BigFloat
-
-#endif
-
-/*
 #ifdef _M_IX86
 //
 // optimised stuff for Intel, since most of our data is in that format anyway...
@@ -1381,8 +1338,8 @@ float	LittleFloat (float l);
 //
 #endif
 
-void	Swap_Init (void);*/
 
+void	Swap_Init (void);
 char	* QDECL va(const char *format, ...);
 
 //=============================================

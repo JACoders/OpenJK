@@ -107,7 +107,6 @@ void COM_DefaultExtension (char *path, int maxSize, const char *extension ) {
 ============================================================================
 */
 
-/*
 // can't just use function pointers, or dll linkage can
 // mess up when qcommon is included in multiple places
 static short	(*_BigShort) (short l);
@@ -140,25 +139,6 @@ float	BigFloat (float l) {return _BigFloat(l);}
 float	LittleFloat (float l) {return _LittleFloat(l);}
 //
 #endif
-*/
-
-void CopyShortSwap(void *dest, void *src)
-{
-	byte *to = (byte *)dest, *from = (byte *)src;
-
-	to[0] = from[1];
-	to[1] = from[0];
-}
-
-void CopyLongSwap(void *dest, void *src)
-{
-	byte *to = (byte *)dest, *from = (byte *)src;
-
-	to[0] = from[3];
-	to[1] = from[2];
-	to[2] = from[1];
-	to[3] = from[0];
-}
 
 short   ShortSwap (short l)
 {
@@ -192,19 +172,26 @@ int	LongNoSwap (int l)
 	return l;
 }
 
-float FloatSwap (const float *f)
+float FloatSwap (float f)
 {
-	floatint_t out;
-
-	out.f = *f;
-	out.ui = LongSwap(out.ui);
-
-	return out.f;
+	union
+	{
+		float	f;
+		byte	b[4];
+	} dat1, dat2;
+	
+	
+	dat1.f = f;
+	dat2.b[0] = dat1.b[3];
+	dat2.b[1] = dat1.b[2];
+	dat2.b[2] = dat1.b[1];
+	dat2.b[3] = dat1.b[0];
+	return dat2.f;
 }
 
-float FloatNoSwap (const float *f)
+float FloatNoSwap (float f)
 {
-	return *f;
+	return f;
 }
 
 /*
@@ -212,7 +199,7 @@ float FloatNoSwap (const float *f)
 Swap_Init
 ================
 */
-/*void Swap_Init (void)
+void Swap_Init (void)
 {
 	byte	swaptest[2] = {1,0};
 
@@ -235,7 +222,8 @@ Swap_Init
 		_BigFloat = FloatNoSwap;
 		_LittleFloat = FloatSwap;
 	}
-}*/
+
+}
 
 
 /*
@@ -274,6 +262,7 @@ void COM_BeginParseSession( void )
 {
 	parseDataCount =0;
 	parseData[parseDataCount].com_lines = 1;
+	
 }
 
 #endif
@@ -701,23 +690,6 @@ int Q_isalpha( int c )
 	return ( 0 );
 }
 
-qboolean Q_isanumber( const char *s )
-{
-	char *p;
-
-	if( *s == '\0' )
-		return qfalse;
-
-	strtod( s, &p );
-
-	return (qboolean)(*p == '\0');
-}
-
-qboolean Q_isintegral( float f )
-{
-	return (qboolean)( (int)f == f );
-}
-
 /*
 char* Q_strrchr( const char* string, int c )
 {
@@ -748,9 +720,6 @@ Safe strncpy that ensures a trailing zero
 */
 void Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong/* = qfalse */ )
 {
-	if ( !dest ) {
-		Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
-	}
 	if ( !src ) {
 		Com_Error( ERR_FATAL, "Q_strncpyz: NULL src" );
 	}
@@ -934,7 +903,7 @@ int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 
 //Raz: Patched version of Com_sprintf
 //Ensiform: But this is better
-int QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
+void QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	int		len;
 	va_list		argptr;
 
@@ -945,7 +914,7 @@ int QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	if(len >= size)
 		Com_Printf("Com_sprintf: Output length %d too short, require %d bytes.\n", size, len + 1);
 	
-	return len;
+	return;
 }
 
 /*
@@ -971,8 +940,10 @@ char * QDECL va( const char *format, ... )
 	buf = (char *)&string[index++ & 3];
 	Q_vsnprintf( buf, MAX_VA_STRING-1, format, argptr );
 	va_end( argptr );
+
 	return buf;
 }
+
 
 /*
 =====================================================================

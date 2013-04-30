@@ -2440,16 +2440,16 @@ static qboolean ParseShader( const char  **text )
 			SkipRestOfLine( text );
 			continue;
 		}
+		// skip stuff that only the q3map needs
+		else if ( !Q_stricmpn( token, "q3map", 5 ) ) {
+			SkipRestOfLine( text );
+			continue;
+		}
 		// material deprecated as of 11 Jan 01
 		// material undeprecated as of 7 May 01 - q3map_material deprecated
 		else if ( !stricmp( token, "material" ) || !stricmp( token, "q3map_material" ) )
 		{
 			ParseMaterial( text );
-		}
-		// skip stuff that only the q3map needs
-		else if ( !Q_stricmpn( token, "q3map", 5 ) ) {
-			SkipRestOfLine( text );
-			continue;
 		}
 		// skip stuff that JK2 doesn't use
 		else if ( !Q_stricmp( token, "lightColor") ) {

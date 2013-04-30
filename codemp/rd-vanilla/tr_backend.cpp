@@ -2,7 +2,6 @@
 #include "qcommon/exe_headers.h"
 
 #include "tr_local.h"
-#include "glext.h"
 
 #if !defined __TR_WORLDEFFECTS_H
 	#include "tr_WorldEffects.h"
@@ -699,7 +698,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	// we don't want to pump the event loop too often and waste time, so
 	// we are going to check every shader change
-	macEventTime = ri.Milliseconds() + MAC_EVENT_PUMP_MSEC;
+	macEventTime = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" ) + MAC_EVENT_PUMP_MSEC;
 #endif
 
 	if (g_bRenderGlowingObjects)
@@ -751,7 +750,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		// change the tess parameters if needed
 		// a "entityMergable" shader is a shader that can have surfaces from seperate
 		// entities merged into a single batch, like smoke and blood puff sprites
-		if (entityNum != REFENTITYNUM_WORLD &&
+		if (entityNum != TR_WORLDENT &&
 			g_numPostRenders < MAX_POST_RENDERS)
 		{
 			if ( (backEnd.refdef.entities[entityNum].e.renderfx & RF_DISTORTION) ||
@@ -857,7 +856,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 #ifdef __MACOS__	// crutch up the mac's limited buffer queue size
 				int		t;
 
-				t = ri.Milliseconds();
+				t = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
 				if ( t > macEventTime ) {
 					macEventTime = t + MAC_EVENT_PUMP_MSEC;
 					Sys_PumpEvents();
@@ -883,7 +882,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		if ( entityNum != oldEntityNum ) {
 			depthRange = 0;
 
-			if ( entityNum != REFENTITYNUM_WORLD ) {
+			if ( entityNum != TR_WORLDENT ) {
 				backEnd.currentEntity = &backEnd.refdef.entities[entityNum];
 
 				backEnd.refdef.floatTime = originalTime - backEnd.currentEntity->e.shaderTime;
@@ -989,7 +988,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			RB_BeginSurface( pRender->shader, pRender->fogNum );
 
 			/*
-			if (!pRender->eValid && pRender->entNum == REFENTITYNUM_WORLD)
+			if (!pRender->eValid && pRender->entNum == TR_WORLDENT)
 			{ //world/other surface
 				backEnd.currentEntity = &tr.worldEntity;
 				backEnd.refdef.floatTime = originalTime;
@@ -1252,7 +1251,7 @@ void	RB_SetGL2D (void) {
 	qglDisable( GL_CLIP_PLANE0 );
 
 	// set time for 2D shaders
-	backEnd.refdef.time = ri.Milliseconds();
+	backEnd.refdef.time = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
 	backEnd.refdef.floatTime = backEnd.refdef.time * 0.001f;
 }
 
@@ -1280,7 +1279,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 
 	start = end = 0;
 	if ( r_speeds->integer ) {
-		start = ri.Milliseconds();
+		start = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
 	}
 
 	// make sure rows and cols are powers of 2
@@ -1298,8 +1297,8 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glConfig.clampToEdgeAvailable ? GL_CLAMP_TO_EDGE : GL_CLAMP );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glConfig.clampToEdgeAvailable ? GL_CLAMP_TO_EDGE : GL_CLAMP );	
+		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );	
 	} else {
 		if (dirty) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
@@ -1309,7 +1308,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	}
 
 	if ( r_speeds->integer ) {
-		end = ri.Milliseconds();
+		end = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
 		Com_Printf ("qglTexSubImage2D %i, %i: %i msec\n", cols, rows, end - start );
 	}
 
@@ -1340,8 +1339,8 @@ void RE_UploadCinematic (int cols, int rows, const byte *data, int client, qbool
 		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glConfig.clampToEdgeAvailable ? GL_CLAMP_TO_EDGE : GL_CLAMP );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glConfig.clampToEdgeAvailable ? GL_CLAMP_TO_EDGE : GL_CLAMP );	
+		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );	
 	} else {
 		if (dirty) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
@@ -1734,7 +1733,7 @@ void RB_ShowImages( void ) {
 
 	qglFinish();
 
-//	start = ri.Milliseconds();
+//	start = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
 
 
 	int i=0;
@@ -1768,7 +1767,7 @@ void RB_ShowImages( void ) {
 
 	qglFinish();
 
-//	end = ri.Milliseconds();
+//	end = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
 //	Com_Printf ("%i msec to draw all images\n", end - start );
 }
 
@@ -1858,11 +1857,9 @@ extern const void *R_DrawWireframeAutomap(const void *data); //tr_world.cpp
 void RB_ExecuteRenderCommands( const void *data ) {
 	int		t1, t2;
 
-	t1 = ri.Milliseconds();
+	t1 = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
 
 	while ( 1 ) {
-		data = PADP(data, sizeof(void *));
-
 		switch ( *(const int *)data ) {
 		case RC_SET_COLOR:
 			data = RB_SetColor( data );
@@ -1897,7 +1894,7 @@ void RB_ExecuteRenderCommands( const void *data ) {
 		case RC_END_OF_LIST:
 		default:
 			// stop rendering on this thread
-			t2 = ri.Milliseconds();
+			t2 = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
 			backEnd.pc.msec = t2 - t1;
 			return;
 		}

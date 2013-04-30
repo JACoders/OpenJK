@@ -45,8 +45,6 @@ This file is part of Jedi Knight 2.
 #pragma warning(disable : 4711)		// selected for automatic inline expansion
 #pragma warning(disable : 4786)		// identifier was truncated
 
-#pragma warning(disable : 4996)		// This function or variable may be unsafe.
-
 #endif
 
 #ifndef _XBOX
@@ -179,47 +177,8 @@ typedef int		sfxHandle_t;
 typedef int		fileHandle_t;
 typedef int		clipHandle_t;
 
-//Raz: can't think of a better place to put this atm,
-//		should probably be in the platform specific definitions
-#if defined (_MSC_VER) && (_MSC_VER >= 1600)
-
-	#include <stdint.h>
-
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-
-#elif defined (_MSC_VER)
-
-	#include <io.h>
-
-	typedef signed __int64 int64_t;
-	typedef signed __int32 int32_t;
-	typedef signed __int16 int16_t;
-	typedef signed __int8  int8_t;
-	typedef unsigned __int64 uint64_t;
-	typedef unsigned __int32 uint32_t;
-	typedef unsigned __int16 uint16_t;
-	typedef unsigned __int8  uint8_t;
-
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-#else // not using MSVC
-
-	#include <stdint.h>
-
-	#define Q_vsnprintf vsnprintf
-
-#endif
-
-#define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
-#define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
-
-#define PADP(base, alignment)	((void *) PAD((intptr_t) (base), (alignment)))
 
 #ifndef NULL
-// NOTE: This is all c++ so casting to void * is wrong
 #define NULL ((void *)0)
 #endif
 
@@ -950,7 +909,7 @@ void Parse1DMatrix (const char **buf_p, int x, float *m);
 void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
 
-int	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
+void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
 
 
 // mode parm for FS_FOpenFile

@@ -7,7 +7,7 @@ typedef struct {
 } qkey_t;
 
 #define	MAX_EDIT_LINE		256
-#define COMMAND_HISTORY		64
+#define COMMAND_HISTORY		32
 
 typedef struct {
 	int		cursor;
@@ -19,12 +19,6 @@ typedef struct {
 typedef struct keyGlobals_s
 {
 	field_t		historyEditLines[COMMAND_HISTORY];
-#if 0
-	std::vector<field_t> history;
-	int historyUp;
-	int historyDown;
-	int historyLineLast;
-#endif
 
 	int			nextHistoryLine;		// the last line in the history buffer, not masked
 	int			historyLine;			// the line being displayed from history buffer
