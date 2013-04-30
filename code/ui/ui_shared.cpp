@@ -264,7 +264,6 @@ void PC_SourceError(int handle, char *format, ...)
 	static char string[4096];
 
 	va_start (argptr, format);
-	Q_vsnprintf (string, sizeof(string), format, argptr);
 	vsprintf (string, format, argptr);
 	va_end (argptr);
 

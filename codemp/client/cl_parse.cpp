@@ -379,6 +379,9 @@ void CL_ParseSetGame( msg_t *msg )
 
 int cl_connectedToPureServer;
 int cl_connectedToCheatServer;
+int cl_connectedGAME;
+int cl_connectedCGAME;
+int cl_connectedUI;
 
 /*
 ==================
@@ -468,6 +471,10 @@ void CL_SystemInfoChanged( void ) {
 		Cvar_Set( "fs_game", "" );
 	}
 	cl_connectedToPureServer = Cvar_VariableValue( "sv_pure" );
+
+	cl_connectedGAME = atoi(Info_ValueForKey( systemInfo, "vm_game" ));
+	cl_connectedCGAME = atoi(Info_ValueForKey( systemInfo, "vm_cgame" ));
+	cl_connectedUI = atoi(Info_ValueForKey( systemInfo, "vm_ui" ));
 }
 
 void CL_ParseAutomapSymbols ( msg_t* msg )
@@ -601,6 +608,36 @@ void CL_ParseGamestate( msg_t *msg ) {
 				Com_Printf("%3i: %d: %s\n", start, i, s);
 			}
 
+			/*
+			if (i == CS_SERVERINFO)
+			{ //get the special value here
+				char *f = strstr(s, "g_debugMelee");
+				if (f)
+				{
+					while (*f && *f != '\\')
+					{ //find the \ after it
+						f++;
+					}
+					if (*f == '\\')
+					{ //got it
+						int i = 0;
+
+						f++;
+						while (*f && *f != '\\' && i < 128)
+						{
+							hiddenCvarVal[i] = *f;
+							i++;
+							f++;
+						}
+						hiddenCvarVal[i] = 0;
+
+						//resume here
+						s = f;
+					}
+				}
+			}
+			*/
+
 			len = strlen( s );
 
 			if ( len + 1 + cl.gameState.dataCount > MAX_GAMESTATE_CHARS ) {
@@ -637,10 +674,6 @@ void CL_ParseGamestate( msg_t *msg ) {
 
 	// parse serverId and other cvars
 	CL_SystemInfoChanged();
-
-	// stop recording now so the demo won't have an unnecessary level load at the end.
-	if(cl_autoRecordDemo->integer && clc.demorecording)
-		CL_StopRecord_f();
 
 	// reinitialize the filesystem if the game directory has changed
 	if( FS_ConditionalRestart( clc.checksumFeed ) ) {
@@ -792,8 +825,56 @@ void CL_ParseCommandString( msg_t *msg ) {
 	clc.serverCommandSequence = seq;
 
 	index = seq & (MAX_RELIABLE_COMMANDS-1);
+	/*
+	if (s[0] == 'c' && s[1] == 's' && s[2] == ' ' && s[3] == '0' && s[4] == ' ')
+	{ //yes.. we seem to have an incoming server info.
+		char *f = strstr(s, "g_debugMelee");
+		if (f)
+		{
+			while (*f && *f != '\\')
+			{ //find the \ after it
+				f++;
+			}
+			if (*f == '\\')
+			{ //got it
+				int i = 0;
+
+				f++;
+				while (*f && *f != '\\' && i < 128)
+				{
+					hiddenCvarVal[i] = *f;
+					i++;
+					f++;
+				}
+				hiddenCvarVal[i] = 0;
+
+				//don't worry about backing over beginning of string I guess,
+				//we already know we successfully strstr'd the initial string
+				//which exceeds this length.
+				//MSG_ReadString appears to just return a static buffer so I
+				//can stomp over its contents safely.
+				f--;
+				*f = '\"';
+				f--;
+				*f = ' ';
+				f--;
+				*f = '0';
+				f--;
+				*f = ' ';
+				f--;
+				*f = 's';
+				f--;
+				*f = 'c';
+
+				//the normal configstring gets to start here...
+				s = f;
+			}
+		}
+	}
+	*/
 	Q_strncpyz( clc.serverCommands[ index ], s, sizeof( clc.serverCommands[ index ] ) );
 }
+
 
 /*
 =====================

@@ -2576,10 +2576,8 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				if ( surfOff[0] )
 				{
-					Q_strcat( surfOff, sizeof(surfOff), "," );
-					Q_strcat( surfOff, sizeof(surfOff), value );
-					//strncat( (char *)surfOff, ",", sizeof(surfOff) );
-					//strncat( (char *)surfOff, value, sizeof(surfOff) );
+					strncat( (char *)surfOff, ",", sizeof(surfOff) );
+					strncat( (char *)surfOff, value, sizeof(surfOff) );
 				}
 				else
 				{
@@ -2597,10 +2595,8 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				if ( surfOn[0] )
 				{
-					Q_strcat( surfOn, sizeof(surfOn), "," );
-					Q_strcat( surfOn, sizeof(surfOn), value );
-					//strncat( (char *)surfOn, ",", sizeof(surfOn) );
-					//strncat( (char *)surfOn, value, sizeof(surfOn) );
+					strncat( (char *)surfOn, ",", sizeof(surfOn) );
+					strncat( (char *)surfOn, value, sizeof(surfOn) );
 				}
 				else
 				{

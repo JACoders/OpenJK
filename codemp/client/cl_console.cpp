@@ -12,16 +12,12 @@ int g_console_field_width = 78;
 
 console_t	con;
 
-cvar_t *notify_xoffset;
-cvar_t *notify_time;
-
-cvar_t *con_speed;
-cvar_t *con_opacity;
-cvar_t *con_height;
+cvar_t		*con_conspeed;
+cvar_t		*con_notifytime;
 
 #define	DEFAULT_CONSOLE_WIDTH	78
 
-vec4_t	console_color = {0.509f, 0.609f, 0.847f, 1.0f};
+vec4_t	console_color = {1.0, 1.0, 1.0, 1.0};
 
 
 /*
@@ -48,7 +44,7 @@ void Con_ToggleConsole_f (void) {
 Con_MessageMode_f
 ================
 */
-void Con_MessageMode_f (void) {
+void Con_MessageMode_f (void) {	//yell
 	chat_playerNum = -1;
 	chat_team = qfalse;
 	Field_Clear( &chatField );
@@ -62,7 +58,7 @@ void Con_MessageMode_f (void) {
 Con_MessageMode2_f
 ================
 */
-void Con_MessageMode2_f (void) {
+void Con_MessageMode2_f (void) {	//team chat
 	chat_playerNum = -1;
 	chat_team = qtrue;
 	Field_Clear( &chatField );
@@ -311,15 +307,8 @@ Con_Init
 void Con_Init (void) {
 	int		i;
 
-	// Keeping the actual cvar strings for legacy reasons
-	notify_time = Cvar_Get ("con_notifytime", "3", 0);
-	notify_xoffset = Cvar_Get ("cl_conXOffset", "0", 0);
-
-	con_speed = Cvar_Get ("scr_conspeed", "3", 0);
-	con_opacity = Cvar_Get( "con_opacity", "1.6", CVAR_ARCHIVE );
-	Cvar_CheckRange( con_opacity, 0.0f, 2.0f, qfalse );
-	con_height = Cvar_Get( "con_height", "0.5", CVAR_ARCHIVE );
-	Cvar_CheckRange( con_height, 0.1f, 1.0f, qfalse );
+	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
+	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
 
 	Field_Clear( &kg.g_consoleField );
 	kg.g_consoleField.widthInChars = g_console_field_width;
@@ -327,7 +316,6 @@ void Con_Init (void) {
 		Field_Clear( &kg.historyEditLines[i] );
 		kg.historyEditLines[i].widthInChars = g_console_field_width;
 	}
-	CL_LoadConsoleHistory();
 
 	Cmd_AddCommand ("toggleconsole", Con_ToggleConsole_f);
 	Cmd_AddCommand ("messagemode", Con_MessageMode_f);
@@ -338,21 +326,6 @@ void Con_Init (void) {
 	Cmd_AddCommand ("condump", Con_Dump_f);
 }
 
-/*
-================
-Con_Shutdown
-================
-*/
-void Con_Shutdown(void)
-{
-	Cmd_RemoveCommand("toggleconsole");
-	Cmd_RemoveCommand("messagemode");
-	Cmd_RemoveCommand("messagemode2");
-	Cmd_RemoveCommand("messagemode3");
-	Cmd_RemoveCommand("messagemode4");
-	Cmd_RemoveCommand("clear");
-	Cmd_RemoveCommand("condump");
-}
 
 /*
 ===============
@@ -549,12 +522,18 @@ void Con_DrawNotify (void)
 		if (time == 0)
 			continue;
 		time = cls.realtime - time;
-		if (time > notify_time->value*1000)
+		if (time > con_notifytime->value*1000)
 			continue;
 		text = con.text + (i % con.totallines)*con.linewidth;
 
 		if (cl.snap.ps.pm_type != PM_INTERMISSION && Key_GetCatcher( ) & (KEYCATCH_UI | KEYCATCH_CGAME) ) {
 			continue;
+		}
+
+
+		if (!cl_conXOffset)
+		{
+			cl_conXOffset = Cvar_Get ("cl_conXOffset", "0", 0);
 		}
 
 		// asian language needs to use the new font system to print glyphs...
@@ -581,7 +560,7 @@ void Con_DrawNotify (void)
 			//
 			// and print...
 			//
-			re.Font_DrawString(notify_xoffset->integer + con.xadjust*(con.xadjust + (1*SMALLCHAR_WIDTH/*aesthetics*/)), con.yadjust*(v), sTemp, g_color_table[currentColor], iFontIndex, -1, fFontScale);
+			re.Font_DrawString(cl_conXOffset->integer + con.xadjust*(con.xadjust + (1*SMALLCHAR_WIDTH/*aesthetics*/)), con.yadjust*(v), sTemp, g_color_table[currentColor], iFontIndex, -1, fFontScale);
 
 			v +=  iPixelHeightToAdvance;
 		}
@@ -595,7 +574,11 @@ void Con_DrawNotify (void)
 					currentColor = (text[x]>>8)&7;
 					re.SetColor( g_color_table[currentColor] );
 				}
-				SCR_DrawSmallChar( (int)(notify_xoffset->integer + con.xadjust + (x+1)*SMALLCHAR_WIDTH), v, text[x] & 0xff );
+				if (!cl_conXOffset)
+				{
+					cl_conXOffset = Cvar_Get ("cl_conXOffset", "0", 0);
+				}
+				SCR_DrawSmallChar( (int)(cl_conXOffset->integer + con.xadjust + (x+1)*SMALLCHAR_WIDTH), v, text[x] & 0xff );
 			}
 
 			v += SMALLCHAR_HEIGHT;
@@ -661,23 +644,13 @@ void Con_DrawSolidConsole( float frac ) {
 		y = 0;
 	}
 	else {
-		// draw the background only if fullscreen
-		if ( frac != 1.0f )
-		{
-			vec4_t	con_color;
-			MAKERGBA( con_color, 0.0f, 0.0f, 0.0f, frac*con_opacity->value );
-			re.SetColor(con_color);
-		}
-		else
-		{
-			re.SetColor(NULL);
-		}
 		SCR_DrawPic( 0, 0, SCREEN_WIDTH, (float) y, cls.consoleShader );
 	}
 
+	const vec4_t color = { 0.509f, 0.609f, 0.847f,  1.0f};
 	// draw the bottom bar and version number
 
-	re.SetColor( console_color );
+	re.SetColor( color );
 	re.DrawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0, 0, 0, cls.whiteShader );
 
 	i = strlen( JK_VERSION );
@@ -698,7 +671,7 @@ void Con_DrawSolidConsole( float frac ) {
 	if (con.display != con.current)
 	{
 	// draw arrows to show the buffer is backscrolled
-		re.SetColor( console_color );
+		re.SetColor( g_color_table[ColorIndex(COLOR_RED)] );
 		for (x=0 ; x<con.linewidth ; x+=4)
 			SCR_DrawSmallChar( (int) (con.xadjust + (x+1)*SMALLCHAR_WIDTH), y, '^' );
 		y -= SMALLCHAR_HEIGHT;
@@ -822,21 +795,21 @@ Scroll it up or down
 void Con_RunConsole (void) {
 	// decide on the destination height of the console
 	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
-		con.finalFrac = con_height->value;		// half screen
+		con.finalFrac = 0.5;		// half screen
 	else
 		con.finalFrac = 0;				// none visible
 	
 	// scroll towards the destination height
 	if (con.finalFrac < con.displayFrac)
 	{
-		con.displayFrac -= con_speed->value*(float)(cls.realFrametime*0.001);
+		con.displayFrac -= con_conspeed->value*(float)(cls.realFrametime*0.001);
 		if (con.finalFrac > con.displayFrac)
 			con.displayFrac = con.finalFrac;
 
 	}
 	else if (con.finalFrac > con.displayFrac)
 	{
-		con.displayFrac += con_speed->value*(float)(cls.realFrametime*0.001);
+		con.displayFrac += con_conspeed->value*(float)(cls.realFrametime*0.001);
 		if (con.finalFrac < con.displayFrac)
 			con.displayFrac = con.finalFrac;
 	}

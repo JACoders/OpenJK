@@ -363,18 +363,12 @@ bool R_GetWindGusting()
 ////////////////////////////////////////////////////////////////////////////////////////
 class COutside
 {
-#define COUTSIDE_STRUCT_VERSION 1	// you MUST increase this any time you change any binary (fields) inside this class, or cahced files will fuck up
 public:
 	////////////////////////////////////////////////////////////////////////////////////
 	//Global Public Outside Variables
 	////////////////////////////////////////////////////////////////////////////////////
-
 	bool			mOutsideShake;
 	float			mOutsidePain;
-
-	CVec3			mFogColor;
-	int				mFogColorInt;
-	bool			mFogColorTempActive;
 
 private:
 	////////////////////////////////////////////////////////////////////////////////////
@@ -385,26 +379,12 @@ private:
 	struct SWeatherZone
 	{
 		static bool	mMarkedOutside;
-		ulong*		mPointCache;			// malloc block ptr
-
-		int			miPointCacheByteSize;	// size of block
+		ulong*		mPointCache;
 		SVecRange	mExtents;
 		SVecRange	mSize;
 		int			mWidth;
 		int			mHeight;
 		int			mDepth;
-
-		void WriteToDisk( fileHandle_t f )
-		{			
-			ri.FS_Write(&mMarkedOutside,sizeof(mMarkedOutside),f);
-			ri.FS_Write( mPointCache, miPointCacheByteSize, f );
-		}
-
-		void ReadFromDisk( fileHandle_t f )
-		{			
-			ri.FS_Read(&mMarkedOutside,sizeof(mMarkedOutside),f);
-			ri.FS_Read( mPointCache, miPointCacheByteSize, f);
-		}
 
 		////////////////////////////////////////////////////////////////////////////////////
 		// Convert To Cell
@@ -486,16 +466,10 @@ public:
 		mOutsidePain = 0.0;
 		mCacheInit = false;
 		SWeatherZone::mMarkedOutside = false;
-
-		mFogColor.Clear();
-		mFogColorInt = 0;
-		mFogColorTempActive = false;
-
 		for (int wz=0; wz<mWeatherZones.size(); wz++)
 		{
 			Z_Free(mWeatherZones[wz].mPointCache);
 			mWeatherZones[wz].mPointCache = 0;
-			mWeatherZones[wz].miPointCacheByteSize = 0;	// not really necessary because of .clear() below, but keeps things together in case stuff changes
 		}
 		mWeatherZones.clear();
 	}
@@ -519,10 +493,6 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////
 	void			AddWeatherZone(vec3_t mins, vec3_t maxs)
 	{
-		if (mCacheInit)
-		{
-			return;
-		}
 		if (!mWeatherZones.full())
 		{
 			SWeatherZone&	Wz = mWeatherZones.push_back();
@@ -541,80 +511,12 @@ public:
 			Wz.mHeight		=  (int)(Wz.mSize.mMaxs[1] - Wz.mSize.mMins[1]);
 			Wz.mDepth		= ((int)(Wz.mSize.mMaxs[2] - Wz.mSize.mMins[2]) + 31) >> 5;
 			
-			Wz.miPointCacheByteSize = (Wz.mWidth * Wz.mHeight * Wz.mDepth) * sizeof(ulong);
-			Wz.mPointCache  = (ulong *)Z_Malloc( Wz.miPointCacheByteSize, TAG_POINTCACHE, qtrue );
+			int arraySize	= (Wz.mWidth * Wz.mHeight * Wz.mDepth);
+			Wz.mPointCache  = (ulong *)Z_Malloc(arraySize*sizeof(ulong), TAG_POINTCACHE, qtrue);
 		}
 	}
 
-	const char *GenCachedWeatherFilename(void)
-	{
-		return va("maps/%s.weather", ri.Cvar_VariableString("mapname"));
-	}
 
-	// weather file format...
-	//
-	struct WeatherFileHeader_t
-	{
-		int m_iVersion;
-		int m_iChecksum;
-
-		WeatherFileHeader_t()
-		{
-			m_iVersion			= COUTSIDE_STRUCT_VERSION;
-			m_iChecksum			= ri.Cvar_VariableIntegerValue("sv_mapChecksum");
-		}
-	};
-	
-	fileHandle_t WriteCachedWeatherFile( void )
-	{
-		fileHandle_t f = ri.FS_FOpenFileWrite( GenCachedWeatherFilename() );
-		if (f)
-		{
-			WeatherFileHeader_t WeatherFileHeader;
-
-			ri.FS_Write(&WeatherFileHeader, sizeof(WeatherFileHeader), f);
-			return f;
-		}
-		else
-		{
-			ri.Printf( PRINT_WARNING, "(Unable to open weather file \"%s\" for writing!)\n",GenCachedWeatherFilename());
-		}
-
-		return 0;
-	}
-
-	// returns 0 for not-found or invalid file, else open handle to continue read from (which you then close yourself)...
-	//
-	fileHandle_t ReadCachedWeatherFile( void )
-	{
-		fileHandle_t f = 0;
-		ri.FS_FOpenFileRead( GenCachedWeatherFilename(), &f, qfalse );
-		if ( f )
-		{
-			// ok, it exists, but is it valid for this map?...
-			//
-			WeatherFileHeader_t WeatherFileHeaderForCompare;
-			WeatherFileHeader_t WeatherFileHeaderFromDisk;
-
-			ri.FS_Read(&WeatherFileHeaderFromDisk, sizeof(WeatherFileHeaderFromDisk), f);
-
-			if (!memcmp(&WeatherFileHeaderForCompare, &WeatherFileHeaderFromDisk, sizeof(WeatherFileHeaderFromDisk)))
-			{
-				// go for it...
-				//
-				return f;
-			}
-
-            ri.Printf( PRINT_WARNING, "( Cached weather file \"%s\" out of date, regenerating... )\n",GenCachedWeatherFilename());
-			ri.FS_FCloseFile( f );
-		}
-		else
-		{
-			ri.Printf( PRINT_WARNING, "( No cached weather file found, generating... )\n");
-		}
-
-		return 0;
-	}
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// Cache - Will Scan the World, Creating The Cache
@@ -626,109 +528,82 @@ public:
 			return;
 		}
 
-		// all this piece of code does really is fill in the bool "SWeatherZone::mMarkedOutside", plus the mPointCache[] for each zone,
-		//	so we can diskload those. Maybe.		
-		fileHandle_t f = ReadCachedWeatherFile();
-		if ( f )
-		{
-			for (int iZone=0; iZone<mWeatherZones.size(); iZone++)
-			{
-				SWeatherZone wz = mWeatherZones[iZone];
-				wz.ReadFromDisk( f );
-			}
+		CVec3		CurPos;
+		CVec3		Size;
+		CVec3		Mins;
+		int			x, y, z, q, zbase;
+		bool		curPosOutside;
+		ulong		contents;
+		ulong		bit;
 
-			mCacheInit = true;
+
+		// Record The Extents Of The World Incase No Other Weather Zones Exist
+		//---------------------------------------------------------------------
+		if (!mWeatherZones.size())
+		{
+			Com_Printf("WARNING: No Weather Zones Encountered\n");
+			AddWeatherZone(tr.world->bmodels[0].bounds[0], tr.world->bmodels[0].bounds[1]);
 		}
-		else
+
+		// Iterate Over All Weather Zones
+		//--------------------------------
+		for (int zone=0; zone<mWeatherZones.size(); zone++)
 		{
-			CVec3		CurPos;
-			CVec3		Size;
-			CVec3		Mins;
-			int			x, y, z, q, zbase;
-			bool		curPosOutside;
-			ulong		contents;
-			ulong		bit;
+			SWeatherZone	wz = mWeatherZones[zone];
 
-
-			// Record The Extents Of The World Incase No Other Weather Zones Exist
-			//---------------------------------------------------------------------
-			if (!mWeatherZones.size())
+			// Make Sure Point Contents Checks Occur At The CENTER Of The Cell
+			//-----------------------------------------------------------------
+			Mins = wz.mExtents.mMins;
+			for (x=0; x<3; x++)
 			{
-				Com_Printf("WARNING: No Weather Zones Encountered\n");
-				AddWeatherZone(tr.world->bmodels[0].bounds[0], tr.world->bmodels[0].bounds[1]);
+				Mins[x] += (POINTCACHE_CELL_SIZE/2);
 			}
 
-			f = WriteCachedWeatherFile();
 
-			// Iterate Over All Weather Zones
-			//--------------------------------
-			for (int zone=0; zone<mWeatherZones.size(); zone++)
+			// Start Scanning
+			//----------------
+			for(z = 0; z < wz.mDepth; z++)
 			{
-				SWeatherZone	wz = mWeatherZones[zone];
-
-				// Make Sure Point Contents Checks Occur At The CENTER Of The Cell
-				//-----------------------------------------------------------------
-				Mins = wz.mExtents.mMins;
-				for (x=0; x<3; x++)
+				for(q = 0; q < 32; q++)
 				{
-					Mins[x] += (POINTCACHE_CELL_SIZE/2);
-				}
+					bit = (1 << q);
+					zbase = (z << 5);
 
-
-				// Start Scanning
-				//----------------
-				for(z = 0; z < wz.mDepth; z++)
-				{
-					for(q = 0; q < 32; q++)
+					for(x = 0; x < wz.mWidth; x++)
 					{
-						bit = (1 << q);
-						zbase = (z << 5);
-
-						for(x = 0; x < wz.mWidth; x++)
+						for(y = 0; y < wz.mHeight; y++)
 						{
-							for(y = 0; y < wz.mHeight; y++)
+							CurPos[0] = x			* POINTCACHE_CELL_SIZE;
+							CurPos[1] = y			* POINTCACHE_CELL_SIZE;
+							CurPos[2] = (zbase + q)	* POINTCACHE_CELL_SIZE;
+							CurPos	  += Mins;
+
+							contents = ri.CM_PointContents(CurPos.v, 0);
+							if (contents&CONTENTS_INSIDE || contents&CONTENTS_OUTSIDE)
 							{
-								CurPos[0] = x			* POINTCACHE_CELL_SIZE;
-								CurPos[1] = y			* POINTCACHE_CELL_SIZE;
-								CurPos[2] = (zbase + q)	* POINTCACHE_CELL_SIZE;
-								CurPos	  += Mins;
-
-								contents = ri.CM_PointContents(CurPos.v, 0);
-								if (contents&CONTENTS_INSIDE || contents&CONTENTS_OUTSIDE)
+								curPosOutside = ((contents&CONTENTS_OUTSIDE)!=0);
+								if (!mCacheInit)
 								{
-									curPosOutside = ((contents&CONTENTS_OUTSIDE)!=0);
-									if (!mCacheInit)
-									{
-										mCacheInit = true;
-										SWeatherZone::mMarkedOutside = curPosOutside;
-									}
-									else if (SWeatherZone::mMarkedOutside!=curPosOutside)
-									{
-										assert(0);
-										Com_Error (ERR_DROP, "Weather Effect: Both Indoor and Outdoor brushs encountered in map.\n" );
-										return;
-									}
-
-									// Mark The Point
-									//----------------
-									wz.mPointCache[((z * wz.mWidth * wz.mHeight) + (y * wz.mWidth) + x)] |= bit;
+									mCacheInit = true;
+									SWeatherZone::mMarkedOutside = curPosOutside;
 								}
-							}// for (y)
-						}// for (x)
-					}// for (q)
-				}// for (z)
-				if (f)
-				{
-					mWeatherZones[ zone ].WriteToDisk( f );
-				}
-			}
+								else if (SWeatherZone::mMarkedOutside!=curPosOutside)
+								{
+									assert(0);
+									Com_Error (ERR_DROP, "Weather Effect: Both Indoor and Outdoor brushs encountered in map.\n" );
+									return;
+								}
+
+								// Mark The Point
+								//----------------
+								wz.mPointCache[((z * wz.mWidth * wz.mHeight) + (y * wz.mWidth) + x)] |= bit;
+							}
+						}// for (y)
+					}// for (x)
+				}// for (q)
+			}// for (z)
 		}
 
-		if (f)
-		{
-			ri.FS_FCloseFile(f);
-			f=0;	// not really necessary, but wtf.
-		}
 
 		// If no indoor or outdoor brushes were found
 		//--------------------------------------------
@@ -738,6 +613,9 @@ public:
 			SWeatherZone::mMarkedOutside = false;		// Assume All Is Outside, Except Solid
 		}
 	}
+
+
+
 
 public:
 	////////////////////////////////////////////////////////////////////////////////////
@@ -831,49 +709,6 @@ float R_IsOutsideCausingPain(vec3_t pos)
 	return (mOutside.mOutsidePain && mOutside.PointOutside(pos));
 }
 
-bool R_SetTempGlobalFogColor(vec3_t color)
-{
-	if (tr.world && tr.world->globalFog != -1)
-	{
-		// If Non Zero, Try To Set The Color
-		//-----------------------------------
-		if (color[0] || color[1] || color[2])
-		{
-			// Remember The Normal Fog Color
-			//-------------------------------
-			if (!mOutside.mFogColorTempActive)
-			{
-				mOutside.mFogColor				= tr.world->fogs[tr.world->globalFog].parms.color;
-				mOutside.mFogColorInt			= tr.world->fogs[tr.world->globalFog].colorInt;
-				mOutside.mFogColorTempActive	= true;
-			}
-
-			// Set The New One
-			//-----------------
-			tr.world->fogs[tr.world->globalFog].parms.color[0] = color[0];
-			tr.world->fogs[tr.world->globalFog].parms.color[1] = color[1];
-			tr.world->fogs[tr.world->globalFog].parms.color[2] = color[2];
-			tr.world->fogs[tr.world->globalFog].colorInt = ColorBytes4 ( 
-												color[0] * tr.identityLight, 
-												color[1] * tr.identityLight, 
-												color[2] * tr.identityLight, 
-												1.0 );
-		}
-
-		// If Unable TO Parse The Command Color Vector, Restore The Previous Fog Color
-		//-----------------------------------------------------------------------------
-		else if (mOutside.mFogColorTempActive)
-		{
-			mOutside.mFogColorTempActive = false;
-
-			tr.world->fogs[tr.world->globalFog].parms.color[0] = mOutside.mFogColor[0];
-			tr.world->fogs[tr.world->globalFog].parms.color[1] = mOutside.mFogColor[1];
-			tr.world->fogs[tr.world->globalFog].parms.color[2] = mOutside.mFogColor[2];
-			tr.world->fogs[tr.world->globalFog].colorInt	   = mOutside.mFogColorInt;
-		}
-	}
-	return true;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Particle Cloud
@@ -1706,19 +1541,6 @@ void RE_WorldEffectCommand(const char *command)
 		if (WE_ParseVector(&command, 3, mins) && WE_ParseVector(&command, 3, maxs))
 		{
 			mOutside.AddWeatherZone(mins, maxs);
-		}
-	}
-
-	else if (strcmpi(token, "tempglobalfog") == 0)
-	{
-		vec3_t color;
-		if(WE_ParseVector(&command, 3, color))
-		{
-			R_SetTempGlobalFogColor(color);
-		}
-		else
-		{
-			R_SetTempGlobalFogColor(vec3_origin);
 		}
 	}
 

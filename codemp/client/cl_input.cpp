@@ -206,20 +206,6 @@ void IN_GenCMD11( void )
 	cl.gcmdValue = GENCMD_FORCE_FORCEPOWEROTHER;
 }
 
-void IN_ForceOtherSide( void )
-{
-	if (cl.snap.ps.fd.forceSide == FORCE_LIGHTSIDE)
-	{
-		cl.gcmdSendValue = qtrue;
-		cl.gcmdValue = GENCMD_FORCE_HEALOTHER;
-	}
-	else if (cl.snap.ps.fd.forceSide == FORCE_DARKSIDE)
-	{
-		cl.gcmdSendValue = qtrue;
-		cl.gcmdValue = GENCMD_FORCE_FORCEPOWEROTHER;
-	}
-}
-
 void IN_GenCMD12( void )
 {
 	cl.gcmdSendValue = qtrue;
@@ -1517,7 +1503,7 @@ void CL_WritePacket( void ) {
 		// also use the message acknowledge
 		key ^= clc.serverMessageSequence;
 		// also use the last acknowledged server command in the key
-		key ^= MSG_HashKey(clc.serverCommands[ clc.serverCommandSequence & (MAX_RELIABLE_COMMANDS-1) ], 32);
+		key ^= Com_HashKey(clc.serverCommands[ clc.serverCommandSequence & (MAX_RELIABLE_COMMANDS-1) ], 32);
 
 		// write all the commands, including the predicted command
 		for ( i = 0 ; i < count ; i++ ) {
@@ -1717,124 +1703,4 @@ void CL_InitInput( void ) {
 
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
-}
-
-/*
-============
-CL_ShutdownInput
-============
-*/
-void CL_ShutdownInput(void)
-{
-	Cmd_RemoveCommand("centerview");
-
-	Cmd_RemoveCommand("+moveup");
-	Cmd_RemoveCommand("-moveup");
-	Cmd_RemoveCommand("+movedown");
-	Cmd_RemoveCommand("-movedown");
-	Cmd_RemoveCommand("+left");
-	Cmd_RemoveCommand("-left");
-	Cmd_RemoveCommand("+right");
-	Cmd_RemoveCommand("-right");
-	Cmd_RemoveCommand("+forward");
-	Cmd_RemoveCommand("-forward");
-	Cmd_RemoveCommand("+back");
-	Cmd_RemoveCommand("-back");
-	Cmd_RemoveCommand("+lookup");
-	Cmd_RemoveCommand("-lookup");
-	Cmd_RemoveCommand("+lookdown");
-	Cmd_RemoveCommand("-lookdown");
-	Cmd_RemoveCommand("+strafe");
-	Cmd_RemoveCommand("-strafe");
-	Cmd_RemoveCommand("+moveleft");
-	Cmd_RemoveCommand("-moveleft");
-	Cmd_RemoveCommand("+moveright");
-	Cmd_RemoveCommand("-moveright");
-	Cmd_RemoveCommand("+speed");
-	Cmd_RemoveCommand("-speed");
-	Cmd_RemoveCommand("+attack");
-	Cmd_RemoveCommand("-attack");
-	Cmd_RemoveCommand("+use");
-	Cmd_RemoveCommand("-use");
-
-	Cmd_RemoveCommand("+force_grip");
-	Cmd_RemoveCommand("-force_grip");
-	Cmd_RemoveCommand("+altattack");
-	Cmd_RemoveCommand("-altattack");
-	Cmd_RemoveCommand("+useforce");
-	Cmd_RemoveCommand("-useforce");
-	Cmd_RemoveCommand("+force_lightning");
-	Cmd_RemoveCommand("-force_lightning");
-	Cmd_RemoveCommand("+force_drain");
-	Cmd_RemoveCommand("-force_drain");
-	Cmd_RemoveCommand("+button0");
-	Cmd_RemoveCommand("-button0");
-	Cmd_RemoveCommand("+button1");
-	Cmd_RemoveCommand("-button1");
-	Cmd_RemoveCommand("+button2");
-	Cmd_RemoveCommand("-button2");
-	Cmd_RemoveCommand("+button3");
-	Cmd_RemoveCommand("-button3");
-	Cmd_RemoveCommand("+button4");
-	Cmd_RemoveCommand("-button4");
-	Cmd_RemoveCommand("+button5");
-	Cmd_RemoveCommand("-button5");
-	Cmd_RemoveCommand("+button6");
-	Cmd_RemoveCommand("-button6");
-	Cmd_RemoveCommand("+button7");
-	Cmd_RemoveCommand("-button7");
-	Cmd_RemoveCommand("+button8");
-	Cmd_RemoveCommand("-button8");
-	Cmd_RemoveCommand("+button9");
-	Cmd_RemoveCommand("-button9");
-	Cmd_RemoveCommand("+button10");
-	Cmd_RemoveCommand("-button10");
-	Cmd_RemoveCommand("+button11");
-	Cmd_RemoveCommand("-button11");
-	Cmd_RemoveCommand("+button12");
-	Cmd_RemoveCommand("-button12");
-	Cmd_RemoveCommand("+button13");
-	Cmd_RemoveCommand("-button13");
-	Cmd_RemoveCommand("+button14");
-	Cmd_RemoveCommand("-button14");
-	Cmd_RemoveCommand("+button15");
-	Cmd_RemoveCommand("-button15");
-	Cmd_RemoveCommand("+mlook");
-	Cmd_RemoveCommand("-mlook");
-	Cmd_RemoveCommand("sv_saberswitch");
-	Cmd_RemoveCommand("engage_duel");
-	Cmd_RemoveCommand("force_heal");
-	Cmd_RemoveCommand("force_speed");
-	Cmd_RemoveCommand("force_pull");
-	Cmd_RemoveCommand("force_distract");
-	Cmd_RemoveCommand("force_rage");
-	Cmd_RemoveCommand("force_protect");
-	Cmd_RemoveCommand("force_absorb");
-	Cmd_RemoveCommand("force_healother");
-	Cmd_RemoveCommand("force_forcepowerother");
-	Cmd_RemoveCommand("force_seeing");
-	Cmd_RemoveCommand("use_seeker");
-	Cmd_RemoveCommand("use_field");
-	Cmd_RemoveCommand("use_bacta");
-	Cmd_RemoveCommand("use_electrobinoculars");
-	Cmd_RemoveCommand("zoom");
-	Cmd_RemoveCommand("use_sentry");
-	Cmd_RemoveCommand("use_jetpack");
-	Cmd_RemoveCommand("use_bactabig");
-	Cmd_RemoveCommand("use_healthdisp");
-	Cmd_RemoveCommand("use_ammodisp");
-	Cmd_RemoveCommand("use_eweb");
-	Cmd_RemoveCommand("use_cloak");
-	Cmd_RemoveCommand("taunt");
-	Cmd_RemoveCommand("bow");
-	Cmd_RemoveCommand("meditate");
-	Cmd_RemoveCommand("flourish");
-
-	Cmd_RemoveCommand("gloat");
-	Cmd_RemoveCommand("saberAttackCycle");
-	Cmd_RemoveCommand("force_throw");
-	Cmd_RemoveCommand("useGivenForce");
-	Cmd_RemoveCommand("automap_button");
-	Cmd_RemoveCommand("automap_toggle");
-	Cmd_RemoveCommand("voicechat");
 }

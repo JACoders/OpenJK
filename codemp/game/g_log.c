@@ -1189,8 +1189,6 @@ qboolean CalculateTeamMVP(gentity_t *ent)
 	return qfalse;
 }
 
-#if 0
-// Unused
 qboolean CalculateTeamMVPByRank(gentity_t *ent)
 {
 	int			i = 0, nBestPlayer = -1, nScore = 0, nHighestScore = 0,
@@ -1242,7 +1240,6 @@ qboolean CalculateTeamMVPByRank(gentity_t *ent)
 	}
 	return qfalse;
 }
-#endif
 
 qboolean CalculateTeamDefender(gentity_t *ent)
 {
@@ -1518,8 +1515,6 @@ qboolean CalculateSection31Award(gentity_t *ent)
 	return qfalse;
 }
 
-#if 0
-// Ensiform this stuff is all unused but leaving incase someone wants
 #define AWARDS_MSG_LENGTH		256
 
 void CalculateAwards(gentity_t *ent, char *msg)
@@ -1707,7 +1702,6 @@ int GetFavoriteWeaponForClient(int nClient)
 	}
 	return fav;
 }
-#endif
 
 // kef -- if a client leaves the game, clear out all counters he may have set
 void QDECL G_ClearClientLog(int client)

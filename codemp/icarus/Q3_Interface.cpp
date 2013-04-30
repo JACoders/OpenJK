@@ -25,7 +25,7 @@ stringID_table_t tagsTable [] =
 */
 
 extern float Q_flrand(float min, float max);
-//extern qboolean COM_ParseString( char **data, char **s ); 
+extern qboolean COM_ParseString( char **data, char **s ); 
 
 //=======================================================================
 

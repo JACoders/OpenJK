@@ -2508,12 +2508,6 @@ void ClientThink_real( gentity_t *ent ) {
 				G_AddEvent(ent, EV_PRIVATE_DUEL, 2);
 
 				ent->client->ps.duelTime = 0;
-				if (ent->health > 0)
-				{
-					if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
-						ent->client->ps.stats[STAT_HEALTH] = ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-					// TODO Add shields?
-				}
 			}
 
 			if (duelAgainst 
@@ -2537,12 +2531,6 @@ void ClientThink_real( gentity_t *ent ) {
 				G_AddEvent(duelAgainst, EV_PRIVATE_DUEL, 2);
 
 				duelAgainst->client->ps.duelTime = 0;
-				if (duelAgainst->health > 0)
-				{
-					if (duelAgainst->health < duelAgainst->client->ps.stats[STAT_MAX_HEALTH])
-						duelAgainst->client->ps.stats[STAT_HEALTH] = duelAgainst->health = duelAgainst->client->ps.stats[STAT_MAX_HEALTH];
-					// TODO Add shields?
-				}
 			}
 		}
 		else

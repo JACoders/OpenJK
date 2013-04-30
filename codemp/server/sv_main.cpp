@@ -76,6 +76,36 @@ char	*SV_ExpandNewlines( char *in ) {
 
 /*
 ======================
+SV_ReplacePendingServerCommands
+
+  This is ugly
+======================
+*/
+int SV_ReplacePendingServerCommands( client_t *client, const char *cmd ) {
+	int i, index, csnum1, csnum2;
+
+	for ( i = client->reliableSent+1; i <= client->reliableSequence; i++ ) {
+		index = i & ( MAX_RELIABLE_COMMANDS - 1 );
+		//
+		if ( !Q_strncmp(cmd, client->reliableCommands[ index ], strlen("cs")) ) {
+			sscanf(cmd, "cs %i", &csnum1);
+			sscanf(client->reliableCommands[ index ], "cs %i", &csnum2);
+			if ( csnum1 == csnum2 ) {
+				Q_strncpyz( client->reliableCommands[ index ], cmd, sizeof( client->reliableCommands[ index ] ) );
+				/*
+				if ( client->netchan.remoteAddress.type != NA_BOT ) {
+					Com_Printf( "WARNING: client %i removed double pending config string %i: %s\n", client-svs.clients, csnum1, cmd );
+				}
+				*/
+				return qtrue;
+			}
+		}
+	}
+	return qfalse;
+}
+
+/*
+======================
 SV_AddServerCommand
 
 The given command will be transmitted to the client, and is guaranteed to
@@ -84,6 +114,12 @@ not have future snapshot_t executed before it is executed
 */
 void SV_AddServerCommand( client_t *client, const char *cmd ) {
 	int		index, i;
+
+	// this is very ugly but it's also a waste to for instance send multiple config string updates
+	// for the same config string index in one snapshot
+//	if ( SV_ReplacePendingServerCommands( client, cmd ) ) {
+//		return;
+//	}
 
 	client->reliableSequence++;
 	// if we would be losing an old command that hasn't been acknowledged,
@@ -218,7 +254,7 @@ void SV_MasterHeartbeat( void ) {
 		// see if we haven't already resolved the name
 		// resolving usually causes hitches on win95, so only
 		// do it when needed
-		if ( sv_master[i]->modified || adr[i].type == NA_BAD || SV_MasterNeedsResolving(i, time) ) {
+		if ( sv_master[i]->modified || SV_MasterNeedsResolving(i, time) ) {
 			sv_master[i]->modified = qfalse;
 
 			g_lastResolveTime[i] = time;
@@ -232,18 +268,19 @@ void SV_MasterHeartbeat( void ) {
 				sv_master[i]->modified = qfalse;
 				continue;
 			}
-			if ( !strchr( sv_master[i]->string, ':' ) ) {
+			if ( !strstr( ":", sv_master[i]->string ) ) {
 				adr[i].port = BigShort( PORT_MASTER );
 			}
-			Com_Printf( "%s resolved to %s\n", sv_master[i]->string, NET_AdrToString(adr[i]) );
+			Com_Printf( "%s resolved to %i.%i.%i.%i:%i\n", sv_master[i]->string,
+				adr[i].ip[0], adr[i].ip[1], adr[i].ip[2], adr[i].ip[3],
+				BigShort( adr[i].port ) );
 		}
 
 
 		Com_Printf ("Sending heartbeat to %s\n", sv_master[i]->string );
 		// this command should be changed if the server info / status format
 		// ever incompatably changes
-		if(adr[i].type != NA_BAD)
-			NET_OutOfBandPrint( NS_SERVER, adr[i], "heartbeat %s\n", HEARTBEAT_GAME );
+		NET_OutOfBandPrint( NS_SERVER, adr[i], "heartbeat %s\n", HEARTBEAT_GAME );
 	}
 }
 
@@ -597,7 +634,6 @@ void SVC_Info( netadr_t from ) {
 	Info_SetValueForKey( infostring, "sv_maxclients", 
 		va("%i", sv_maxclients->integer - sv_privateClients->integer ) );
 	Info_SetValueForKey( infostring, "gametype", va("%i", sv_gametype->integer ) );
-	Info_SetValueForKey( infostring, "pure", va("%i", sv_pure->integer ) );
 	Info_SetValueForKey( infostring, "needpass", va("%i", sv_needpass->integer ) );
 	Info_SetValueForKey( infostring, "truejedi", va("%i", Cvar_VariableIntegerValue( "g_jediVmerc" ) ) );
 	if ( sv_gametype->integer == GT_DUEL || sv_gametype->integer == GT_POWERDUEL )
@@ -754,8 +790,8 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 		// server disconnect messages when their new server sees our final
 		// sequenced messages to the old client
 	} else {
-		Com_DPrintf ("bad connectionless packet from %s:\n%s\n",
-			NET_AdrToString (from), s);
+		Com_DPrintf ("bad connectionless packet from %s:\n%s\n"
+		, NET_AdrToString (from), s);
 	}
 }
 
@@ -818,6 +854,10 @@ void SV_PacketEvent( netadr_t from, msg_t *msg ) {
 		}
 		return;
 	}
+	
+	// if we received a sequenced packet from an address we don't reckognize,
+	// send an out of band disconnect packet to it
+	NET_OutOfBandPrint( NS_SERVER, from, "disconnect" );
 }
 
 

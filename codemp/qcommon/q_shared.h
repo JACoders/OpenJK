@@ -1587,16 +1587,10 @@ char	*COM_ParseExt( const char **data_p, qboolean allowLineBreak );
 int		COM_Compress( char *data_p );
 void	COM_ParseError( char *format, ... );
 void	COM_ParseWarning( char *format, ... );
-
-#define COM_ParseString(data, s) COM_ParseStringExt(data, s, __FILE__, __LINE__)
-#define COM_ParseInt(data, i) COM_ParseIntExt(data, i, __FILE__, __LINE__)
-#define COM_ParseFloat(data, f) COM_ParseFloatExt(data, f, __FILE__, __LINE__)
-#define COM_ParseVec4(data, v) COM_ParseVec4Ext(data, v, __FILE__, __LINE__)
-
-qboolean COM_ParseStringExt( const char **data, const char **s, const char *file, int line );
-qboolean COM_ParseIntExt( const char **data, int *i, const char *file, int line );
-qboolean COM_ParseFloatExt( const char **data, float *f, const char *file, int line );
-qboolean COM_ParseVec4Ext( const char **buffer, vec4_t *c, const char *file, int line );
+qboolean COM_ParseString( const char **data, const char **s );
+qboolean COM_ParseInt( const char **data, int *i );
+qboolean COM_ParseFloat( const char **data, float *f );
+qboolean COM_ParseVec4( const char **buffer, vec4_t *c);
 //int		COM_ParseInfos( char *buf, int max, char infos[][MAX_INFO_STRING] );
 
 #define MAX_TOKENLENGTH		1024

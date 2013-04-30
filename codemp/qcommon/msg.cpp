@@ -165,17 +165,17 @@ void MSG_WriteBits( msg_t *msg, int value, int bits ) {
 			msg->cursize += 1;
 			msg->bit += 8;
 		} else if (bits==16) {
-			short temp = value;
-
-			CopyLittleShort(&msg->data[msg->cursize], &temp);
+			unsigned short *sp = (unsigned short *)&msg->data[msg->cursize];
+			*sp = LittleShort(value);
 			msg->cursize += 2;
 			msg->bit += 16;
 		} else if (bits==32) {
-			CopyLittleLong(&msg->data[msg->cursize], &value);
+			unsigned int *ip = (unsigned int *)&msg->data[msg->cursize];
+			*ip = LittleLong(value);
 			msg->cursize += 4;
-			msg->bit += 32;
+			msg->bit += 8;
 		} else {
-			Com_Error(ERR_DROP, "can't write %d bits\n", bits);
+			Com_Error(ERR_DROP, "can't read %d bits\n", bits);
 		}
 	} else {
 		value &= (0xffffffff>>(32-bits));
@@ -221,14 +221,13 @@ int MSG_ReadBits( msg_t *msg, int bits ) {
 			msg->readcount += 1;
 			msg->bit += 8;
 		} else if (bits==16) {
-			short temp;
-
-			CopyLittleShort(&temp, &msg->data[msg->readcount]);
-			value = temp;
+			unsigned short *sp = (unsigned short *)&msg->data[msg->readcount];
+			value = LittleShort(*sp);
 			msg->readcount += 2;
 			msg->bit += 16;
 		} else if (bits==32) {
-			CopyLittleLong(&value, &msg->data[msg->readcount]);
+			unsigned int *ip = (unsigned int *)&msg->data[msg->readcount];
+			value = LittleLong(*ip);
 			msg->readcount += 4;
 			msg->bit += 32;
 		} else {
@@ -323,7 +322,7 @@ void MSG_WriteString( msg_t *sb, const char *s ) {
 	if ( !s ) {
 		MSG_WriteData (sb, "", 1);
 	} else {
-		int		l, i;
+		int		l;
 		char	string[MAX_STRING_CHARS];
 
 		l = strlen( s );
@@ -333,13 +332,6 @@ void MSG_WriteString( msg_t *sb, const char *s ) {
 			return;
 		}
 		Q_strncpyz( string, s, sizeof( string ) );
-
-		// get rid of '%' chars
-		for ( i = 0 ; i < l ; i++ ) {
-			if ( string[i] == '%' ) {
-				string[i] = '.';
-			}
-		}
 
 // eurofix: eliminating this means you can chat in european languages. WTF are "old clients" anyway?	-ste
 //
@@ -358,7 +350,7 @@ void MSG_WriteBigString( msg_t *sb, const char *s ) {
 	if ( !s ) {
 		MSG_WriteData (sb, "", 1);
 	} else {
-		int		l, i;
+		int		l;
 		char	string[BIG_INFO_STRING];
 
 		l = strlen( s );
@@ -368,13 +360,6 @@ void MSG_WriteBigString( msg_t *sb, const char *s ) {
 			return;
 		}
 		Q_strncpyz( string, s, sizeof( string ) );
-
-		// get rid of '%' chars
-		for ( i = 0 ; i < l ; i++ ) {
-			if ( string[i] == '%' ) {
-				string[i] = '.';
-			}
-		}
 
 // eurofix: remove this so we can chat in european languages...	-ste
 /*
@@ -478,7 +463,6 @@ char *MSG_ReadString( msg_t *msg ) {
 		if ( c == '%' ) {
 			c = '.';
 		}
-
 // eurofix: remove this so we can chat in european languages...	-ste
 //
 //		// don't allow higher ascii values
@@ -490,7 +474,6 @@ char *MSG_ReadString( msg_t *msg ) {
 		l++;
 	} while (l <= sizeof(string)-1);
 	
-	// Fixme wtf raven why is this here? @Ensi
 	// some bonus protection, shouldn't occur cause server doesn't write such things
 	if (l <= sizeof(string)-1)
 	{
@@ -563,22 +546,6 @@ void MSG_ReadData( msg_t *msg, void *data, int len ) {
 	}
 }
 
-// a string hasher which gives the same hash value even if the
-// string is later modified via the legacy MSG read/write code
-int MSG_HashKey(const char *string, int maxlen) {
-	int hash, i;
-
-	hash = 0;
-	for (i = 0; i < maxlen && string[i] != '\0'; i++) {
-		if (string[i] == '%')
-			hash += '.' * (119 + i);
-		else
-			hash += string[i] * (119 + i);
-	}
-	hash = (hash ^ (hash >> 10) ^ (hash >> 20));
-	return hash;
-}
-
 
 /*
 =============================================================================
@@ -588,7 +555,7 @@ delta functions
 =============================================================================
 */
 
-#define	LOG(x) if( cl_shownet && cl_shownet->integer == 4 ) { Com_Printf("%s ", x ); };
+#define	LOG(x) if( cl_shownet->integer == 4 ) { Com_Printf("%s ", x ); };
 
 void MSG_WriteDelta( msg_t *msg, int oldV, int newV, int bits ) {
 	if ( oldV == newV ) {
@@ -657,13 +624,7 @@ void MSG_WriteDeltaKey( msg_t *msg, int key, int oldV, int newV, int bits )
 
 int	MSG_ReadDeltaKey( msg_t *msg, int key, int oldV, int bits ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
-#if 0
-		// Old technically wrong for angles & buttons
 		return MSG_ReadBits( msg, bits ) ^ (key & kbitmask[bits]);
-#else
-		// Correct, not going out of bounds
-		return MSG_ReadBits( msg, bits ) ^ (key & kbitmask[ bits - 1 ]);
-#endif
 	}
 	return oldV;
 }
@@ -696,9 +657,77 @@ usercmd_t communication
 ============================================================================
 */
 
+// ms is allways sent, the others are optional
+#define	CM_ANGLE1 	(1<<0)
+#define	CM_ANGLE2 	(1<<1)
+#define	CM_ANGLE3 	(1<<2)
+#define	CM_FORWARD	(1<<3)
+#define	CM_SIDE		(1<<4)
+#define	CM_UP		(1<<5)
+#define	CM_BUTTONS	(1<<6)
+#define CM_WEAPON	(1<<7)
+//rww - these are new
+#define CM_FORCE	(1<<8)
+#define CM_INVEN	(1<<9)
+
 /*
 =====================
-MSG_WriteDeltaUsercmdKey
+MSG_WriteDeltaUsercmd
+=====================
+*/
+void MSG_WriteDeltaUsercmd( msg_t *msg, usercmd_t *from, usercmd_t *to ) {
+	if ( to->serverTime - from->serverTime < 256 ) {
+		MSG_WriteBits( msg, 1, 1 );
+		MSG_WriteBits( msg, to->serverTime - from->serverTime, 8 );
+	} else {
+		MSG_WriteBits( msg, 0, 1 );
+		MSG_WriteBits( msg, to->serverTime, 32 );
+	}
+	MSG_WriteDelta( msg, from->angles[0], to->angles[0], 16 );
+	MSG_WriteDelta( msg, from->angles[1], to->angles[1], 16 );
+	MSG_WriteDelta( msg, from->angles[2], to->angles[2], 16 );
+	MSG_WriteDelta( msg, from->forwardmove, to->forwardmove, 8 );
+	MSG_WriteDelta( msg, from->rightmove, to->rightmove, 8 );
+	MSG_WriteDelta( msg, from->upmove, to->upmove, 8 );
+	MSG_WriteDelta( msg, from->buttons, to->buttons, 16 );
+	MSG_WriteDelta( msg, from->weapon, to->weapon, 8 );
+
+	MSG_WriteDelta( msg, from->forcesel, to->forcesel, 8 );
+	MSG_WriteDelta( msg, from->invensel, to->invensel, 8 );
+
+	MSG_WriteDelta( msg, from->generic_cmd, to->generic_cmd, 8 );
+}
+
+
+/*
+=====================
+MSG_ReadDeltaUsercmd
+=====================
+*/
+void MSG_ReadDeltaUsercmd( msg_t *msg, usercmd_t *from, usercmd_t *to ) {
+	if ( MSG_ReadBits( msg, 1 ) ) {
+		to->serverTime = from->serverTime + MSG_ReadBits( msg, 8 );
+	} else {
+		to->serverTime = MSG_ReadBits( msg, 32 );
+	}
+	to->angles[0] = MSG_ReadDelta( msg, from->angles[0], 16);
+	to->angles[1] = MSG_ReadDelta( msg, from->angles[1], 16);
+	to->angles[2] = MSG_ReadDelta( msg, from->angles[2], 16);
+	to->forwardmove = MSG_ReadDelta( msg, from->forwardmove, 8);
+	to->rightmove = MSG_ReadDelta( msg, from->rightmove, 8);
+	to->upmove = MSG_ReadDelta( msg, from->upmove, 8);
+	to->buttons = MSG_ReadDelta( msg, from->buttons, 16);
+	to->weapon = MSG_ReadDelta( msg, from->weapon, 8);
+
+	to->forcesel = MSG_ReadDelta( msg, from->forcesel, 8);
+	to->invensel = MSG_ReadDelta( msg, from->invensel, 8);
+
+	to->generic_cmd = MSG_ReadDelta( msg, from->generic_cmd, 8);
+}
+
+/*
+=====================
+MSG_WriteDeltaUsercmd
 =====================
 */
 void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to ) {
@@ -741,9 +770,10 @@ void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *
 	MSG_WriteDeltaKey( msg, key, from->generic_cmd, to->generic_cmd, 8 );
 }
 
+
 /*
 =====================
-MSG_ReadDeltaUsercmdKey
+MSG_ReadDeltaUsercmd
 =====================
 */
 void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to ) {
@@ -804,7 +834,7 @@ typedef struct {
 } netField_t;
 
 // using the stringizing operator to save typing...
-#define	NETF(x) #x,(size_t)&((entityState_t*)0)->x
+#define	NETF(x) #x,(int)&((entityState_t*)0)->x
 
 //rww - Remember to update ext_data/MP/netf_overrides.txt if you change any of this!
 //(for the sake of being consistent)
@@ -1270,7 +1300,7 @@ plyer_state_t communication
 */
 
 // using the stringizing operator to save typing...
-#define	PSF(x) #x,(size_t)&((playerState_t*)0)->x
+#define	PSF(x) #x,(int)&((playerState_t*)0)->x
 
 //rww - Remember to update ext_data/MP/psf_overrides.txt if you change any of this!
 //(for the sake of being consistent)

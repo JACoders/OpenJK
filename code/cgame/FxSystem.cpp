@@ -47,7 +47,7 @@ void SFxHelper::Print( const char *msg, ... )
 	char		text[1024];
 
 	va_start( argptr, msg );
-	Q_vsnprintf (text, sizeof(text), msg, argptr);
+	vsprintf( text, msg, argptr );
 	va_end( argptr );
  
 	gi.Printf( text );

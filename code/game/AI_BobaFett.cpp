@@ -135,7 +135,7 @@ void	Boba_Printf(const char * format, ...)
 
 	// Tack On The Standard Format Around The Given Format
 	//-----------------------------------------------------
-	Com_sprintf(nFormat, sizeof(nFormat), "[BOBA %8d] %s\n", level.time, format);
+	sprintf(nFormat, "[BOBA %8d] %s\n", level.time, format);
 
 
 	// Resolve Remaining Elipsis Parameters Into Newly Formated String
@@ -145,7 +145,7 @@ void	Boba_Printf(const char * format, ...)
 
 	va_list		argptr;
 	va_start (argptr, format);
-	Q_vsnprintf (buf, sizeof(buf), nFormat, argptr);
+	vsprintf (buf, nFormat, argptr);
 	va_end (argptr);
 
 	// Print It To Debug Output Console

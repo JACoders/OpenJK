@@ -384,9 +384,8 @@ extern	cvar_t	*cl_activeAction;
 
 extern	cvar_t	*cl_allowDownload;
 extern	cvar_t	*cl_allowAltEnter;
+extern	cvar_t	*cl_conXOffset;
 extern	cvar_t	*cl_inGameVideo;
-
-extern	cvar_t	*cl_autoRecordDemo;
 
 extern	cvar_t	*cl_consoleKeys;
 
@@ -410,7 +409,6 @@ void CL_Snd_Restart_f (void);
 void CL_StartDemoLoop( void );
 void CL_NextDemo( void );
 void CL_ReadDemoMessage( void );
-void CL_StopRecord_f( void );
 
 void CL_InitDownloads(void);
 void CL_NextDownload(void);
@@ -443,7 +441,6 @@ extern 	kbutton_t 	in_strafe;
 extern 	kbutton_t 	in_speed;
 
 void CL_InitInput (void);
-void CL_ShutdownInput(void);
 void CL_SendCmd (void);
 void CL_ClearState (void);
 void CL_ReadPackets (void);
@@ -461,6 +458,9 @@ const char *Key_KeynumToString( int keynum/*, qboolean bTranslate */ ); //note: 
 //
 extern int cl_connectedToPureServer;
 extern int cl_connectedToCheatServer;
+extern int cl_connectedGAME;
+extern int cl_connectedCGAME;
+extern int cl_connectedUI;
 
 void CL_SystemInfoChanged( void );
 void CL_ParseServerMessage( msg_t *msg );
@@ -483,7 +483,6 @@ void Con_DrawCharacter (int cx, int line, int num);
 
 void Con_CheckResize (void);
 void Con_Init (void);
-void Con_Shutdown(void);
 void Con_Clear_f (void);
 void Con_ToggleConsole_f (void);
 void Con_DrawNotify (void);
@@ -496,8 +495,6 @@ void Con_Top( void );
 void Con_Bottom( void );
 void Con_Close( void );
 
-void CL_LoadConsoleHistory( void );
-void CL_SaveConsoleHistory( void );
 
 //
 // cl_scrn.c

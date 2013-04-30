@@ -248,7 +248,7 @@ void Con_Init (void) {
 
 	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
-	con_conAlpha = Cvar_Get( "conAlpha", "1.6", CVAR_ARCHIVE );
+	con_conAlpha= Cvar_Get( "conAlpha", "1.6", CVAR_ARCHIVE );
 	
 	Field_Clear( &kg.g_consoleField );
 	kg.g_consoleField.widthInChars = g_console_field_width;
@@ -398,7 +398,7 @@ void Con_DrawInput (void) {
 	SCR_DrawSmallChar( con.xadjust + 1 * SMALLCHAR_WIDTH, y, ']' );
 
 	Field_Draw( &kg.g_consoleField, con.xadjust + 2 * SMALLCHAR_WIDTH, y,
-		SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, qtrue, qtrue );
+		SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, qtrue );
 }
 
 
@@ -483,12 +483,11 @@ void Con_DrawNotify (void)
 	// draw the chat line
 	if ( cls.keyCatchers & KEYCATCH_MESSAGE )
 	{
-		const char *chattext = SE_GetString("MP_SVGAME", "SAY");
-		SCR_DrawBigString (8, v, chattext, 1.0f, qfalse );
-		skip = strlen(chattext)+1;
+		SCR_DrawBigString (8, v, "say:", 1.0f );
+		skip = 5;
 
 		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
-			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
+			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue );
 
 		v += BIGCHAR_HEIGHT;
 	}

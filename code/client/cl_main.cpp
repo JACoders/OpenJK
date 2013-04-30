@@ -968,7 +968,7 @@ void VID_Printf (int print_level, const char *fmt, ...)
 	char		msg[MAXPRINTMSG];
 	
 	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
+	vsprintf (msg,fmt,argptr);
 	va_end (argptr);
 
 	if ( print_level == PRINT_ALL ) {

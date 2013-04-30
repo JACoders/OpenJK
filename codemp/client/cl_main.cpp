@@ -73,9 +73,8 @@ cvar_t	*cl_motdString;
 
 cvar_t	*cl_allowDownload;
 cvar_t	*cl_allowAltEnter;
+cvar_t	*cl_conXOffset;
 cvar_t	*cl_inGameVideo;
-
-cvar_t	*cl_autoRecordDemo;
 
 cvar_t	*cl_serverStatusResendTime;
 cvar_t	*cl_framerate;
@@ -223,19 +222,29 @@ void CL_StopRecord_f( void ) {
 	Com_Printf ("Stopped demo.\n");
 }
 
-/*
-==================
+/* 
+================== 
 CL_DemoFilename
-==================
-*/
-void CL_DemoFilename( char *buf, int bufSize, int protocol ) {
-	time_t rawtime;
-	char timeStr[32] = {0}; // should really only reach ~19 chars
+================== 
+*/  
+void CL_DemoFilename( int number, char *fileName ) {
+	int		a,b,c,d;
 
-	time( &rawtime );
-	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
+	if ( number < 0 || number > 9999 ) {
+		Com_sprintf( fileName, MAX_OSPATH, "demo9999.tga" );
+		return;
+	}
 
-	Com_sprintf( buf, bufSize, "demos/demo%s.dm_%d", timeStr, protocol );
+	a = number / 1000;
+	number -= a*1000;
+	b = number / 100;
+	number -= b*100;
+	c = number / 10;
+	number -= c*10;
+	d = number;
+
+	Com_sprintf( fileName, MAX_OSPATH, "demo%i%i%i%i"
+		, a, b, c, d );
 }
 
 /*
@@ -285,13 +294,18 @@ void CL_Record_f( void ) {
 		Q_strncpyz( demoName, s, sizeof( demoName ) );
 		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
 	} else {
-		// timestamp the file
-		CL_DemoFilename( name, sizeof( name ), PROTOCOL_VERSION );
+		int		number;
 
-		if ( FS_FileExists( name ) ) {
-			Com_Printf( "Record: Couldn't create a file\n"); 
-			return;
- 		}
+		// scan for a free demo name
+		for ( number = 0 ; number <= 9999 ; number++ ) {
+			CL_DemoFilename( number, demoName );
+			Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
+
+			len = FS_ReadFile( name, NULL );
+			if ( len <= 0 ) {
+				break;	// file doesn't exist
+			}
+		}
 	}
 
 	// open the demo file
@@ -541,13 +555,13 @@ void CL_PlayDemo_f( void ) {
 		}
 		return;
 	}
-	Q_strncpyz( clc.demoName, arg, sizeof( clc.demoName ) );
+	Q_strncpyz( clc.demoName, Cmd_Argv(1), sizeof( clc.demoName ) );
 
 	Con_Close();
 
 	cls.state = CA_CONNECTED;
 	clc.demoplaying = qtrue;
-	Q_strncpyz( cls.servername, arg, sizeof( cls.servername ) );
+	Q_strncpyz( cls.servername, Cmd_Argv(1), sizeof( cls.servername ) );
 
 	// read demo messages until connected
 	while ( cls.state >= CA_CONNECTED && cls.state < CA_PRIMED ) {
@@ -773,9 +787,6 @@ void CL_Disconnect( qboolean showMainMenu ) {
 		CL_WritePacket();
 	}
 
-	// Remove pure paks
-	FS_PureServerSetLoadedPaks("", "");
-
 	CL_ClearState ();
 
 	// wipe the client connection
@@ -788,6 +799,9 @@ void CL_Disconnect( qboolean showMainMenu ) {
 
 	// not connected to a pure server anymore
 	cl_connectedToPureServer = qfalse;
+	cl_connectedGAME = 0;
+	cl_connectedCGAME = 0;
+	cl_connectedUI = 0;
 
 	// Stop recording any video
 	if( CL_VideoRecording( ) ) {
@@ -842,13 +856,15 @@ void CL_RequestMotd( void ) {
 		return;
 	}
 	Com_Printf( "Resolving %s\n", UPDATE_SERVER_NAME );
-	if ( !NET_StringToAdr( UPDATE_SERVER_NAME, &cls.updateServer ) ) {
+	if ( !NET_StringToAdr( UPDATE_SERVER_NAME, &cls.updateServer  ) ) {
 		Com_Printf( "Couldn't resolve address\n" );
 		return;
 	}
 	cls.updateServer.port = BigShort( PORT_UPDATE );
-	Com_Printf( "%s resolved to %s\n", UPDATE_SERVER_NAME,
-		NET_AdrToString( cls.updateServer ) );
+	Com_Printf( "%s resolved to %i.%i.%i.%i:%i\n", UPDATE_SERVER_NAME,
+		cls.updateServer.ip[0], cls.updateServer.ip[1],
+		cls.updateServer.ip[2], cls.updateServer.ip[3],
+		BigShort( cls.updateServer.port ) );
 	
 	info[0] = 0;
   // NOTE TTimo xoring against Com_Milliseconds, otherwise we may not have a true randomization
@@ -1493,6 +1509,40 @@ void CL_CheckForResend( void ) {
 	}
 }
 
+
+/*
+===================
+CL_DisconnectPacket
+
+Sometimes the server can drop the client and the netchan based
+disconnect can be lost.  If the client continues to send packets
+to the server, the server will send out of band disconnect packets
+to the client so it doesn't have to wait for the full timeout period.
+===================
+*/
+void CL_DisconnectPacket( netadr_t from ) {
+	if ( cls.state < CA_AUTHORIZING ) {
+		return;
+	}
+
+	// if not from our server, ignore it
+	if ( !NET_CompareAdr( from, clc.netchan.remoteAddress ) ) {
+		return;
+	}
+
+	// if we have received packets within three seconds, ignore it
+	// (it might be a malicious spoof)
+	if ( cls.realtime - clc.lastPacketTime < 3000 ) {
+		return;
+	}
+
+	// drop the connection (FIXME: connection dropped dialog)
+	Com_Printf( "Server disconnected for unknown reason\n" );
+
+	CL_Disconnect( qtrue );
+}
+
+
 /*
 ===================
 CL_MotdPacket
@@ -1789,15 +1839,15 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	// server connection
 	if ( !Q_stricmp(c, "connectResponse") ) {
 		if ( cls.state >= CA_CONNECTED ) {
-			Com_Printf ("Dup connect received. Ignored.\n");
+			Com_Printf ("Dup connect received.  Ignored.\n");
 			return;
 		}
 		if ( cls.state != CA_CHALLENGING ) {
-			Com_Printf ("connectResponse packet while not connecting. Ignored.\n");
+			Com_Printf ("connectResponse packet while not connecting.  Ignored.\n");
 			return;
 		}
 		if ( !NET_CompareBaseAdr( from, clc.serverAddress ) ) {
-			Com_Printf( "connectResponse from a different address. Ignored.\n" );
+			Com_Printf( "connectResponse from a different address.  Ignored.\n" );
 			return;
 		}
 		Netchan_Setup (NS_CLIENT, &clc.netchan, from, Cvar_VariableValue( "net_qport" ) );
@@ -1821,8 +1871,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	// a disconnect message from the server, which will happen if the server
 	// dropped the connection but it is still getting packets from us
 	if (!Q_stricmp(c, "disconnect")) {
-		//Ensiform: Don't process these now but return to keep silent
-		//CL_DisconnectPacket( from );
+		CL_DisconnectPacket( from );
 		return;
 	}
 
@@ -2036,44 +2085,6 @@ void CL_Frame ( int msec ) {
 		}
 	}
 
-	if( cl_autoRecordDemo->integer ) {
-		if( cls.state == CA_ACTIVE && !clc.demorecording && !clc.demoplaying ) {
-			// If not recording a demo, and we should be, start one
-			qtime_t	now;
-			char		*nowString;
-			char		*p;
-			char		mapName[ MAX_QPATH ];
-			char		serverName[ MAX_OSPATH ];
-
-			Com_RealTime( &now );
-			nowString = va( "%04d%02d%02d%02d%02d%02d",
-					1900 + now.tm_year,
-					1 + now.tm_mon,
-					now.tm_mday,
-					now.tm_hour,
-					now.tm_min,
-					now.tm_sec );
-
-			Q_strncpyz( serverName, cls.servername, MAX_OSPATH );
-			// Replace the ":" in the address as it is not a valid
-			// file name character
-			p = strstr( serverName, ":" );
-			if( p ) {
-				*p = '.';
-			}
-
-			Q_strncpyz( mapName, COM_SkipPath( cl.mapname ), sizeof( cl.mapname ) );
-			COM_StripExtension(mapName, mapName, sizeof(mapName));
-
-			Cbuf_ExecuteText( EXEC_NOW,
-					va( "record %s-%s-%s", nowString, serverName, mapName ) );
-		}
-		else if( cls.state != CA_ACTIVE && clc.demorecording ) {
-			// Recording, but not CA_ACTIVE, so stop recording
-			CL_StopRecord_f( );
-		}
-	}
-
 	// save the msec before checking pause
 	cls.realFrametime = msec;
 
@@ -2243,16 +2254,6 @@ void CL_StartHunkUsers( void ) {
 
 /*
 ============
-CL_ScaledMilliseconds
-============
-*/
-int CL_ScaledMilliseconds(void) {
-	//Sys_Milliseconds2; //FIXME: unix+mac need this
-	return Sys_Milliseconds2()*com_timescale->value;
-}
-
-/*
-============
 CL_InitRef
 ============
 */
@@ -2305,7 +2306,7 @@ void CL_InitRef( void ) {
 
 	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
 
-	if( !(rendererLib = Sys_LoadDll( dllName, qfalse )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
+	if( !(rendererLib = Sys_LoadDll( dllName, qtrue )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
 	{
 		Com_Printf( "failed: trying to load fallback renderer\n" );
 		Cvar_ForceReset( "cl_renderer" );
@@ -2326,7 +2327,7 @@ void CL_InitRef( void ) {
 	ri.Printf = CL_RefPrintf;
 	ri.Error = Com_Error;
 	ri.OPrintf = Com_OPrintf;
-	ri.Milliseconds = CL_ScaledMilliseconds;
+	ri.Milliseconds = Sys_Milliseconds2; //FIXME: unix+mac need this
 	ri.Hunk_AllocateTempMemory = Hunk_AllocateTempMemory;
 	ri.Hunk_FreeTempMemory = Hunk_FreeTempMemory;
 	ri.Hunk_Alloc = Hunk_Alloc;
@@ -2430,124 +2431,42 @@ void CL_InitRef( void ) {
 
 //===========================================================================================
 
+#define MODEL_CHANGE_DELAY 5000
+int gCLModelDelay = 0;
+
 void CL_SetModel_f( void ) {
 	char	*arg;
 	char	name[256];
 
 	arg = Cmd_Argv( 1 );
-	if (arg[0]) {
+	if (arg[0])
+	{
+		/*
+		//If you wanted to be foolproof you would put this on the server I guess. But that
+		//tends to put things out of sync regarding cvar status. And I sort of doubt someone
+		//is going to write a client and figure out the protocol so that they can annoy people
+		//by changing models real fast.
+		int curTime = Com_Milliseconds();
+		if (gCLModelDelay > curTime)
+		{
+			Com_Printf("You can only change your model every %i seconds.\n", (MODEL_CHANGE_DELAY/1000));
+			return;
+		}
+		
+		gCLModelDelay = curTime + MODEL_CHANGE_DELAY;
+		*/
+		//rwwFIXMEFIXME: This is currently broken and doesn't seem to work for connecting clients
 		Cvar_Set( "model", arg );
-	} else {
+	}
+	else
+	{
 		Cvar_VariableStringBuffer( "model", name, sizeof(name) );
 		Com_Printf("model is set to %s\n", name);
 	}
 }
 
 void CL_SetForcePowers_f( void ) {
-	char	*arg;
-	char	name[256];
-
-	arg = Cmd_Argv( 1 );
-	if (arg[0]) {
-		Cvar_Set( "forcepowers", arg );
-	} else {
-		Cvar_VariableStringBuffer( "forcepowers", name, sizeof(name) );
-		Com_Printf("forcepowers is set to %s\n", name);
-	}
-}
-
-void CL_SetSaber_f( void ) {
-	char	*saber1, *saber2;
-	char	name[256];
-
-	if ( Cmd_Argc() < 2 ) {
-		Cvar_VariableStringBuffer( "saber1", name, sizeof(name) );
-		Com_Printf("saber1 is set to %s\n", name);
-		Cvar_VariableStringBuffer( "saber2", name, sizeof(name) );
-		Com_Printf("saber2 is set to %s\n", name);
-		return;	
-	}
-
-	saber1 = Cmd_Argv( 1 );
-	saber2 = Cmd_Argv( 2 );
-
-	if ( VALIDSTRING( saber1 ) )
-		Cvar_Set( "saber1", saber1 );
-
-	if ( VALIDSTRING( saber2 ) )
-		Cvar_Set( "saber2", saber2 );
-	else
-		Cvar_Set( "saber2", "none" );
-}
-
-int TranslateSaberColor( const char *name ) 
-{
-	if ( !Q_stricmp( name, "red" ) ) 
-	{
-		return SABER_RED;
-	}
-	if ( !Q_stricmp( name, "orange" ) ) 
-	{
-		return SABER_ORANGE;
-	}
-	if ( !Q_stricmp( name, "yellow" ) ) 
-	{
-		return SABER_YELLOW;
-	}
-	if ( !Q_stricmp( name, "green" ) ) 
-	{
-		return SABER_GREEN;
-	}
-	if ( !Q_stricmp( name, "blue" ) ) 
-	{
-		return SABER_BLUE;
-	}
-	if ( !Q_stricmp( name, "purple" ) ) 
-	{
-		return SABER_PURPLE;
-	}
-	if ( !Q_stricmp( name, "random" ) ) 
-	{
-		return Q_irand( SABER_RED, SABER_PURPLE );
-	}
-	return SABER_BLUE;
-}
-
-void CL_SetSaberColor_f( void ) {
-	char	*saber1, *saber2;
-	char	name[256];
-
-	if ( Cmd_Argc() < 2 ) {
-		Cvar_VariableStringBuffer( "color1", name, sizeof(name) );
-		Com_Printf("color1 is set to %s\n", name);
-		Cvar_VariableStringBuffer( "color2", name, sizeof(name) );
-		Com_Printf("color2 is set to %s\n", name);
-		return;	
-	}
-
-	saber1 = Cmd_Argv( 1 );
-	saber2 = Cmd_Argv( 2 );
-
-	if ( VALIDSTRING( saber1 ) )
-		Cvar_SetValue( "color1", TranslateSaberColor(saber1) );
-
-	if ( VALIDSTRING( saber2 ) )
-		Cvar_SetValue( "color2", TranslateSaberColor(saber2) );
-}
-
-/*
-==================
-CL_VideoFilename
-==================
-*/
-void CL_VideoFilename( char *buf, int bufSize ) {
-	time_t rawtime;
-	char timeStr[32] = {0}; // should really only reach ~19 chars
-
-	time( &rawtime );
-	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
-
-	Com_sprintf( buf, bufSize, "videos/video%s.avi", timeStr );
+	return;
 }
 
 /*
@@ -2561,6 +2480,7 @@ video [filename]
 void CL_Video_f( void )
 {
 	char  filename[ MAX_OSPATH ];
+	int   i, last;
 
 	if( !clc.demoplaying )
 	{
@@ -2575,12 +2495,33 @@ void CL_Video_f( void )
 	}
 	else
 	{
-		CL_VideoFilename( filename, MAX_OSPATH );
+		// scan for a free filename
+		for( i = 0; i <= 9999; i++ )
+		{
+			int a, b, c, d;
 
-		if ( FS_FileExists( filename ) ) {
-			Com_Printf( "Video: Couldn't create a file\n"); 
+			last = i;
+
+			a = last / 1000;
+			last -= a * 1000;
+			b = last / 100;
+			last -= b * 100;
+			c = last / 10;
+			last -= c * 10;
+			d = last;
+
+			Com_sprintf( filename, MAX_OSPATH, "videos/video%d%d%d%d.avi",
+				a, b, c, d );
+
+			if( !FS_FileExists( filename ) )
+				break; // file doesn't exist
+		}
+
+		if( i > 9999 )
+		{
+			Com_Printf( S_COLOR_RED "ERROR: no free file names to create video\n" );
 			return;
- 		}
+		}
 	}
 
 	CL_OpenAVIForWriting( filename );
@@ -2633,7 +2574,6 @@ void CL_Init( void ) {
 	cl_activeAction = Cvar_Get( "activeAction", "", CVAR_TEMP );
 
 	cl_timedemo = Cvar_Get ("timedemo", "0", 0);
-	cl_autoRecordDemo = Cvar_Get ("cl_autoRecordDemo", "0", CVAR_ARCHIVE);
 	cl_aviFrameRate = Cvar_Get ("cl_aviFrameRate", "25", CVAR_ARCHIVE);
 	cl_aviMotionJpeg = Cvar_Get ("cl_aviMotionJpeg", "1", CVAR_ARCHIVE);
 	cl_forceavidemo = Cvar_Get ("cl_forceavidemo", "0", 0);
@@ -2659,6 +2599,7 @@ void CL_Init( void ) {
 
 	cl_autolodscale = Cvar_Get( "cl_autolodscale", "1", CVAR_ARCHIVE );
 
+	cl_conXOffset = Cvar_Get ("cl_conXOffset", "0", 0);
 #ifdef MACOS_X
         // In game video is REALLY slow in Mac OS X right now due to driver slowness
 	cl_inGameVideo = Cvar_Get ("r_inGameVideo", "0", CVAR_ARCHIVE);
@@ -2744,8 +2685,6 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("fs_referencedList", CL_ReferencedPK3List_f );
 	Cmd_AddCommand ("model", CL_SetModel_f );
 	Cmd_AddCommand ("forcepowers", CL_SetForcePowers_f );
-	Cmd_AddCommand ("saber", CL_SetSaber_f );
-	Cmd_AddCommand ("saberColor", CL_SetSaberColor_f );
 	Cmd_AddCommand ("video", CL_Video_f );
 	Cmd_AddCommand ("stopvideo", CL_StopVideo_f );
 
@@ -2753,7 +2692,7 @@ void CL_Init( void ) {
 
 	SCR_Init ();
 
-//	Cbuf_Execute ();
+	Cbuf_Execute ();
 
 	Cvar_Set( "cl_running", "1" );
 
@@ -2813,13 +2752,8 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("showip");
 	Cmd_RemoveCommand ("model");
 	Cmd_RemoveCommand ("forcepowers");
-	Cmd_RemoveCommand ("saber");
-	Cmd_RemoveCommand ("saberColor");
 	Cmd_RemoveCommand ("video");
 	Cmd_RemoveCommand ("stopvideo");
-
-	CL_ShutdownInput();
-	Con_Shutdown();
 
 	Cvar_Set( "cl_running", "0" );
 
@@ -2983,7 +2917,7 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 	Q_strncpyz( info, MSG_ReadString( msg ), MAX_INFO_STRING );
 	if (strlen(info)) {
 		if (info[strlen(info)-1] != '\n') {
-			strncat(info, "\n", sizeof(info) - 1);
+			strncat(info, "\n", sizeof(info) -1);
 		}
 		Com_Printf( "%s: %s", NET_AdrToString( from ), info );
 	}
@@ -3115,7 +3049,10 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 	Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "%s", s);
 
 	if (serverStatus->print) {
-		Com_Printf( "Server (%s)\n", NET_AdrToString( serverStatus->address ) );
+		Com_Printf( "Server (%i.%i.%i.%i:%i)\n", 
+			serverStatus->address.ip[0], serverStatus->address.ip[1],
+			serverStatus->address.ip[2], serverStatus->address.ip[3],
+			BigShort( serverStatus->address.port ) );
 		Com_Printf("Server settings:\n");
 		// print cvars
 		while (*s) {

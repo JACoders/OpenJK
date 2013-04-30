@@ -1345,8 +1345,7 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 		if (uiLetter == '^' )
 		{
 			if (*psText >= '0' &&
-				*psText <= '7')
-				//*psText <= '9')
+				*psText <= '9')
 			{
 				uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
 				psText += iAdvanceCount;
@@ -1394,8 +1393,7 @@ int RE_Font_StrLenChars(const char *psText)
 		{
 			case '^':
 				if (*psText >= '0' &&
-					*psText <= '7')
-					//*psText <= '9')
+					*psText <= '9')
 				{
 					psText++;
 				}
@@ -1556,8 +1554,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 			if (uiLetter != '_')	// necessary because of fallthrough above
 			{
 				if (*psText >= '0' &&
-					*psText <= '7')
-					//*psText <= '9')
+					*psText <= '9')
 				{
 					colour = ColorIndex(*psText++);
 					if (!gbInShadow)

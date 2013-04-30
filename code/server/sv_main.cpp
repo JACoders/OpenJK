@@ -122,22 +122,16 @@ A NULL client will broadcast to all clients
 void SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 	va_list		argptr;
 	byte		message[MAX_MSGLEN];
+	int			len;
 	client_t	*client;
 	int			j;
 	
 	message[0] = svc_serverCommand;
 
 	va_start (argptr,fmt);
-	Q_vsnprintf( (char *)message+1, sizeof(message)-1, fmt, argptr );
+	vsprintf ((char *)message+1, fmt,argptr);
 	va_end (argptr);
-
-	// Fix to http://aluigi.altervista.org/adv/q3msgboom-adv.txt
-	// The actual cause of the bug is probably further downstream
-	// and should maybe be addressed later, but this certainly
-	// fixes the problem for now
-	if ( strlen ((char *)message) > (1022 + 1) ) {
-		return;
-	}
+	len = strlen( (char *)message ) + 1;
 
 	if ( cl != NULL ) {
 		SV_AddServerCommand( cl, (char *)message );

@@ -9383,67 +9383,6 @@ qboolean MenuParse_itemDef( itemDef_t *item, int handle ) {
 	}
 	return qtrue;
 }
-
-#ifndef CGAME
-void UI_AddSpotAir( void ) {
-	menuDef_t *menu = Menus_FindByName("ingame_voicechat");
-	itemDef_t *item = NULL;
-	itemDef_t *item04 = NULL;
-	char script[2048] = {0};
-
-	if (!menu)
-		return;
-
-	item = Menu_FindItemByName( menu, "spot_05" );
-	item04 = Menu_FindItemByName( menu, "spot_04" );
-
-	if (!item04 || !item04->text || !item04->text[0])
-		return;
-
-	Q_strncpyz(script, item04->text, sizeof(script));
-
-	Q_strstrip(script, "spot_emplaced", "spot_air");
-
-	if (!item) {
-		if (menu->itemCount < MAX_MENUITEMS) {
-			menu->items[menu->itemCount] = (itemDef_t *) UI_Alloc(sizeof(itemDef_t));
-			Item_Init(menu->items[menu->itemCount]);
-			item = menu->items[menu->itemCount];
-
-			if( !item )
-				return;
-
-			item->window.name = String_Alloc("spot_05");
-			item->window.group = String_Alloc("spot_grp");
-			item->window.rectClient.x = 10;
-			item->window.rectClient.y = 165;
-			item->window.rectClient.w = 160;
-			item->window.rectClient.x = 20;
-
-			item->type = ITEM_TYPE_BUTTON;
-			Item_ValidateTypeData(item);
-
-			item->text = String_Alloc("@MENUS_VC_SPOT_AIR");
-
-			item->textalignment = ITEM_ALIGN_LEFT;
-			item->textalignx = 4.0f;
-			item->textaligny = 12.0f;
-			item->iMenuFont = 4;
-			item->textscale = 1.0f;
-			MAKERGBA(item->window.foreColor, 1.0f, 0.682f, 0.0f, 1.0f);
-			item->window.ownerDraw = UI_CHAT_SPOT;
-			item->type = ITEM_TYPE_OWNERDRAW;
-			item->action = String_Alloc(script);
-			Item_InitControls(menu->items[menu->itemCount]);
-			menu->items[menu->itemCount++]->parent = menu;
-
-			Menu_UpdatePosition(menu);
-		}
-	}
-}
-#endif
-
-
 /*
 =================
 MenuParse_focuscolor

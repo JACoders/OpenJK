@@ -394,7 +394,14 @@ void SV_TouchCGame(void) {
 	fileHandle_t	f;
 	char filename[MAX_QPATH];
 
-	Com_sprintf( filename, sizeof(filename), "cgamex86.dll" );
+	if (Cvar_VariableValue( "vm_cgame" ))
+	{
+		Com_sprintf( filename, sizeof(filename), "vm/%s.qvm", "cgame" );
+	}
+	else
+	{
+		Com_sprintf( filename, sizeof(filename), "cgamex86.dll" );
+	}
 	FS_FOpenFileRead( filename, &f, qfalse );
 	if ( f ) {
 		FS_FCloseFile( f );
@@ -740,20 +747,10 @@ void SV_BotInitBotLib(void);
 CMiniHeap *G2VertSpaceServer = NULL;
 CMiniHeap CMiniHeap_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
 
-/*
-============
-SV_ScaledMilliseconds
-============
-*/
-int SV_ScaledMilliseconds(void) {
-	//Sys_Milliseconds2; //FIXME: unix+mac need this
-	return Sys_Milliseconds2()*com_timescale->value;
-}
-
 
 /*
 ================
-SV_RefPrintf
+CL_RefPrintf
 
 DLL glue
 ================
@@ -812,7 +809,7 @@ static void SV_InitRef( void ) {
 	ri.Printf = SV_RefPrintf;
 	ri.Error = Com_Error;
 	ri.OPrintf = Com_OPrintf;
-	ri.Milliseconds = SV_ScaledMilliseconds;
+	ri.Milliseconds = Sys_Milliseconds2; //FIXME: unix+mac need this
 	ri.Hunk_AllocateTempMemory = Hunk_AllocateTempMemory;
 	ri.Hunk_FreeTempMemory = Hunk_FreeTempMemory;
 	ri.Hunk_Alloc = Hunk_Alloc;
@@ -957,9 +954,6 @@ void SV_Init (void) {
 	sv_allowDownload = Cvar_Get ("sv_allowDownload", "0", CVAR_SERVERINFO);
 	sv_master[0] = Cvar_Get ("sv_master1", MASTER_SERVER_NAME, 0 );
 	sv_master[1] = Cvar_Get("sv_master2", JKHUB_MASTER_SERVER_NAME, 0);
-	// Ensiform: Fixes old configs having sv_master2 blank already archived.
-	if(!sv_master[1]->string[0])
-		Cvar_ForceReset("sv_master2");
 	for(int index = 2; index < MAX_MASTER_SERVERS; index++)
 		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE);
 	sv_reconnectlimit = Cvar_Get ("sv_reconnectlimit", "3", 0);
@@ -1009,7 +1003,7 @@ void SV_FinalMessage( char *message ) {
 				// don't send a disconnect to a local client
 				if ( cl->netchan.remoteAddress.type != NA_LOOPBACK ) {
 					SV_SendServerCommand( cl, "print \"%s\"", message );
-					SV_SendServerCommand( cl, "disconnect \"%s\"", message );
+					SV_SendServerCommand( cl, "disconnect" );
 				}
 				// force a snapshot to be sent
 				cl->nextSnapshotTime = -1;

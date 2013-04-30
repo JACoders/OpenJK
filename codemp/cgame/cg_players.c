@@ -5097,7 +5097,7 @@ void CG_PlayerShieldHit(int entitynum, vec3_t dir, int amount)
 	centity_t *cent;
 	int	time;
 
-	if (entitynum < 0 || entitynum >= MAX_GENTITIES)
+	if (entitynum<0 || entitynum >= MAX_ENTITIES)
 	{
 		return;
 	}
