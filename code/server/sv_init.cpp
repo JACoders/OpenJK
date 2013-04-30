@@ -378,7 +378,7 @@ void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowSc
 		G2API_SetTime(sv.time,G2T_SV_TIME);
 	}
 #ifndef __NO_JK2
-	if(!Cvar_VariableIntegerValue("com_jk2"))
+	if(com_jk2 && !com_jk2->integer)
 #endif
 	ge->ConnectNavs(sv_mapname->string, sv_mapChecksum->integer);
 

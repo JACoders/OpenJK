@@ -217,7 +217,7 @@ CL_InitUI
 */
 void CL_InitUI( void ) {
 #ifndef __NO_JK2
-	if(Cvar_VariableIntegerValue("com_jk2"))
+	if(com_jk2 && com_jk2->integer)
 	{
 		JK2SP_Register("keynames", 0	/*SP_REGISTER_REQUIRED*/);		// reference is KEYNAMES
 	}

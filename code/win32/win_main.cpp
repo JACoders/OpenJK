@@ -552,7 +552,7 @@ void *Sys_GetGameAPI (void *parms)
 	void	*(*GetGameAPI) (void *);
 #if defined _M_IX86
 	const char *gamename;
-	if(Cvar_VariableIntegerValue("com_jk2"))
+	if(com_jk2 && com_jk2->integer)
 	{
 		gamename = "jk2gamex86.dll";
 	}

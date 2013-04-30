@@ -968,24 +968,6 @@ void Com_Init( char *commandLine ) {
 
 		Com_InitZoneMemory();
 
-#ifdef _XBOX
-		WF_Init();
-		// set up ri
-		extern void CL_InitRef( void );
-		CL_InitRef();
-
-		// register renderer cvars
-		extern void R_Register(void);
-		R_Register();
-
-		// start the gl render layer
-		extern void GLimp_Init(void);
-		GLimp_Init();
-
-		// put up the license screen
-		SP_DoLicense();
-#endif
-
 		Cmd_Init ();
 		Cvar_Init ();
 
@@ -994,15 +976,6 @@ void Com_Init( char *commandLine ) {
 
 		// done early so bind command exists
 		CL_InitKeyCommands();
-
-#ifdef _XBOX
-		extern void Sys_FilecodeScan_f();
-		Sys_InitFileCodes();
-		Cmd_AddCommand("filecodes", Sys_FilecodeScan_f);
-
-		extern void Sys_StreamInit();
-		Sys_StreamInit();
-#endif
 
 		FS_InitFilesystem ();	//uses z_malloc
 		R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
