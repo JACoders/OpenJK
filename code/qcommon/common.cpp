@@ -974,6 +974,8 @@ void Com_Init( char *commandLine ) {
 		// get the commandline cvars set
 		Com_StartupVariable( NULL );
 
+		com_jk2 = Cvar_Get( "com_jk2", "0", CVAR_INIT );
+
 		// done early so bind command exists
 		CL_InitKeyCommands();
 
@@ -1030,8 +1032,6 @@ void Com_Init( char *commandLine ) {
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
-
-		com_jk2			= Cvar_Get( "com_jk2", "0", CVAR_INIT|CVAR_SERVERINFO );
 		
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);
@@ -1043,7 +1043,7 @@ void Com_Init( char *commandLine ) {
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
 #ifndef __NO_JK2
-		if(com_jk2->integer)
+		if(com_jk2 && com_jk2->integer)
 		{
 			JK2SP_Init();
 		}
