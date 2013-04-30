@@ -32,11 +32,13 @@ void VM_VmInfo_f( void );
 void VM_VmProfile_f( void );
 
 
+#if 0 // 64bit!
 // converts a VM pointer to a C pointer and
 // checks to make sure that the range is acceptable
 void	*VM_VM2C( vmptr_t p, int length ) {
 	return (void *)p;
 }
+#endif
 
 void VM_Debug( int level ) {
 	vm_debugLevel = level;
@@ -48,12 +50,6 @@ VM_Init
 ==============
 */
 void VM_Init( void ) {
-	Cvar_Get( "vm_cgame", "0", CVAR_SYSTEMINFO|CVAR_ARCHIVE );	// default to DLLs now instead. Our VMs are getting too HUGE.
-	Cvar_Get( "vm_game", "0", CVAR_SYSTEMINFO|CVAR_ARCHIVE );	// 
-	Cvar_Get( "vm_ui", "0", CVAR_SYSTEMINFO|CVAR_ARCHIVE );		// 
-	//client wants to know if the server is using vm's for certain modules,
-	//so if pure we can force the same method (be it vm or dll) -rww
-
 	Cmd_AddCommand ("vmprofile", VM_VmProfile_f );
 	Cmd_AddCommand ("vminfo", VM_VmInfo_f );
 
@@ -162,6 +158,7 @@ int VM_SymbolToValue( vm_t *vm, const char *symbol ) {
 VM_SymbolForCompiledPointer
 =====================
 */
+#if 0 // 64bit!
 const char *VM_SymbolForCompiledPointer( vm_t *vm, void *code ) {
 	int			i;
 
@@ -186,7 +183,7 @@ const char *VM_SymbolForCompiledPointer( vm_t *vm, void *code ) {
 #endif
 	return VM_ValueToSymbol( vm, i );
 }
-
+#endif
 
 
 /*
@@ -514,9 +511,13 @@ vm_t *VM_Create( const char *module, int (*systemCalls)(int *),
 			return vm;
 		}
 
-		Com_Printf( "Failed to load dll, looking for qvm.\n" );
-		interpret = VMI_COMPILED;
+		Com_Printf( "Failed to load dll.\n" );
+		VM_Free( vm );
+		return NULL;
 	}
+
+	VM_Free( vm );
+	return NULL;
 
 	// load the image
 	Com_sprintf( filename, sizeof(filename), "vm/%s.qvm", vm->name );
@@ -597,6 +598,10 @@ VM_Free
 ==============
 */
 void VM_Free( vm_t *vm ) {
+
+	if ( !vm ) {
+		return;
+	}
 
 	if ( vm->dllHandle ) {
 		Sys_UnloadDll( vm->dllHandle );
@@ -786,7 +791,7 @@ int	QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 	va_list ap;
 
 
-	if ( !vm ) {
+	if ( !vm || !vm->name[0] ) {
 		Com_Error( ERR_FATAL, "VM_Call with NULL vm" );
 	}
 

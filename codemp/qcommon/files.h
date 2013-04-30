@@ -89,6 +89,7 @@ extern cvar_t		*fs_cdpath;
 extern cvar_t		*fs_copyfiles;
 extern cvar_t		*fs_gamedirvar;
 extern cvar_t		*fs_dirbeforepak; //rww - when building search path, keep directories at top and insert pk3's under them
+extern cvar_t		*fs_nounpakdll;
 extern searchpath_t	*fs_searchpaths;
 extern int			fs_readCount;			// total bytes read
 extern int			fs_loadCount;			// total files read

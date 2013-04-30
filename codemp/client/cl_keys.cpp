@@ -864,6 +864,8 @@ void Console_Key (int key) {
 
 		kg.g_consoleField.widthInChars = g_console_field_width;
 
+		CL_SaveConsoleHistory( );
+
 		if ( cls.state == CA_DISCONNECTED ) {
 			SCR_UpdateScreen ();	// force an update, because the command
 		}							// may take some time
@@ -1664,6 +1666,12 @@ void CL_CharEvent( int key ) {
 	{
 		VM_Call( uivm, UI_KEY_EVENT, key | K_CHAR_FLAG, qtrue );
 	}
+	// Ensiform: TODO add this and see if it breaks existing mods
+	//           Allows for cgame based messagemode boxes etc
+	//else if ( Key_GetCatcher( ) & KEYCATCH_CGAME )
+	//{
+	//	VM_Call( cgvm, CG_KEY_EVENT, key | K_CHAR_FLAG, qtrue );
+	//}
 	else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) 
 	{
 		Field_CharEvent( &chatField, key );
@@ -1716,4 +1724,138 @@ void Key_SetCatcher( int catcher ) {
 		Key_ClearStates( );
 
 	keyCatchers = catcher;
+}
+
+// Ensiform: TODO this is a little too C for my taste since we are C++ but meh.
+// This must not exceed MAX_CMD_LINE
+#define			MAX_CONSOLE_SAVE_BUFFER	1024
+#define			CONSOLE_HISTORY_FILE    "openjkhistory"
+static char	consoleSaveBuffer[ MAX_CONSOLE_SAVE_BUFFER ];
+static int	consoleSaveBufferSize = 0;
+
+/*
+================
+CL_LoadConsoleHistory
+
+Load the console history from cl_consoleHistory
+================
+*/
+void CL_LoadConsoleHistory( void )
+{
+	const char				*text_p;
+	char					*token;
+	int						i, numChars, numLines = 0;
+	fileHandle_t	f;
+
+	consoleSaveBufferSize = FS_FOpenFileRead( CONSOLE_HISTORY_FILE, &f, qfalse );
+	if( !f )
+	{
+		Com_Printf( "Couldn't read %s.\n", CONSOLE_HISTORY_FILE );
+		return;
+	}
+
+	if( consoleSaveBufferSize <= MAX_CONSOLE_SAVE_BUFFER &&
+			FS_Read( consoleSaveBuffer, consoleSaveBufferSize, f ) == consoleSaveBufferSize )
+	{
+		text_p = consoleSaveBuffer;
+
+		for( i = COMMAND_HISTORY - 1; i >= 0; i-- )
+		{
+			if( !*( token = COM_Parse( &text_p ) ) )
+				break;
+
+			kg.historyEditLines[ i ].cursor = atoi( token );
+
+			if( !*( token = COM_Parse( &text_p ) ) )
+				break;
+
+			kg.historyEditLines[ i ].scroll = atoi( token );
+
+			if( !*( token = COM_Parse( &text_p ) ) )
+				break;
+
+			numChars = atoi( token );
+			text_p++;
+			if( numChars > ( strlen( consoleSaveBuffer ) -	( text_p - consoleSaveBuffer ) ) )
+			{
+				Com_DPrintf( S_COLOR_YELLOW "WARNING: probable corrupt history\n" );
+				break;
+			}
+			Com_Memcpy( kg.historyEditLines[ i ].buffer,
+					text_p, numChars );
+			kg.historyEditLines[ i ].buffer[ numChars ] = '\0';
+			text_p += numChars;
+
+			numLines++;
+		}
+
+		memmove( &kg.historyEditLines[ 0 ], &kg.historyEditLines[ i + 1 ],
+				numLines * sizeof( field_t ) );
+		for( i = numLines; i < COMMAND_HISTORY; i++ )
+			Field_Clear( &kg.historyEditLines[ i ] );
+
+		kg.historyLine = kg.nextHistoryLine = numLines;
+	}
+	else
+		Com_Printf( "Couldn't read %s.\n", CONSOLE_HISTORY_FILE );
+
+	FS_FCloseFile( f );
+}
+
+/*
+================
+CL_SaveConsoleHistory
+
+Save the console history into the cvar cl_consoleHistory
+so that it persists across invocations of q3
+================
+*/
+void CL_SaveConsoleHistory( void )
+{
+	int						i;
+	int						lineLength, saveBufferLength, additionalLength;
+	fileHandle_t	f;
+
+	consoleSaveBuffer[ 0 ] = '\0';
+
+	i = ( kg.nextHistoryLine - 1 ) % COMMAND_HISTORY;
+	do
+	{
+		if( kg.historyEditLines[ i ].buffer[ 0 ] )
+		{
+			lineLength = strlen( kg.historyEditLines[ i ].buffer );
+			saveBufferLength = strlen( consoleSaveBuffer );
+
+			//ICK
+			additionalLength = lineLength + strlen( "999 999 999  " );
+
+			if( saveBufferLength + additionalLength < MAX_CONSOLE_SAVE_BUFFER )
+			{
+				Q_strcat( consoleSaveBuffer, MAX_CONSOLE_SAVE_BUFFER,
+						va( "%d %d %d %s ",
+						kg.historyEditLines[ i ].cursor,
+						kg.historyEditLines[ i ].scroll,
+						lineLength,
+						kg.historyEditLines[ i ].buffer ) );
+			}
+			else
+				break;
+		}
+		i = ( i - 1 + COMMAND_HISTORY ) % COMMAND_HISTORY;
+	}
+	while( i != ( kg.nextHistoryLine - 1 ) % COMMAND_HISTORY );
+
+	consoleSaveBufferSize = strlen( consoleSaveBuffer );
+
+	f = FS_FOpenFileWrite( CONSOLE_HISTORY_FILE );
+	if( !f )
+	{
+		Com_Printf( "Couldn't write %s.\n", CONSOLE_HISTORY_FILE );
+		return;
+	}
+
+	if( FS_Write( consoleSaveBuffer, consoleSaveBufferSize, f ) < consoleSaveBufferSize )
+		Com_Printf( "Couldn't write %s.\n", CONSOLE_HISTORY_FILE );
+
+	FS_FCloseFile( f );
 }

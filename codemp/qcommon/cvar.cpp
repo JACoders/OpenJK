@@ -790,8 +790,6 @@ qboolean Cvar_Command( void ) {
 		return qtrue;
 	}
 
-	//const char *value = Cmd_Argv(1);
-	//if (value[0] == '!')	//toggle
 	if( !strcmp( Cmd_Argv(1), "!" ) )
 	{
 		// Swap the value if our command has ! in it (bind p "cg_thirdPeson !")

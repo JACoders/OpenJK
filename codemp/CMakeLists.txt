@@ -149,7 +149,7 @@ if(BuildMPEngine OR BuildMPDed)
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${SDL2_LIBRARY})
 	endif(NOT WIN32)
 	
-	file(GLOB_RECURSE J_SRC "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
+	#file(GLOB_RECURSE J_SRC "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
 	
 	set(MPEngineAndDedCgameFiles
 		"${MPDir}/cgame/cg_public.h"
@@ -354,7 +354,7 @@ if(BuildMPEngine OR BuildMPDed)
 	endif(WIN32)
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedAllSortMe})
 	source_group("SortMe" FILES ${MPEngineAndDedAllSortMe})
-	source_group("jpeg-8c" FILES ${J_SRC})
+	#source_group("jpeg-8c" FILES ${J_SRC})
 	
 endif(BuildMPEngine OR BuildMPDed)
 
@@ -401,9 +401,10 @@ if(BuildMPEngine)
 	#    Source Files
 	
 	# TODO: Allow for use of external library
-	file(GLOB_RECURSE MPEngineJpegFiles "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
-	source_group("jpeg-8c" FILES ${MPEngineJpegFiles})
-	set(MPEngineFiles ${MPEngineFiles} ${MPEngineJpegFiles})
+	#file(GLOB_RECURSE MPEngineJpegFiles "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
+	#source_group("jpeg-8c" FILES ${MPEngineJpegFiles})
+	set(MPEngineFiles ${MPEngineFiles})
+	#set(MPEngineFiles ${MPEngineFiles} ${MPEngineJpegFiles})
 	
 	set(MPEngineClientFiles
 		"${MPDir}/client/cl_avi.cpp"

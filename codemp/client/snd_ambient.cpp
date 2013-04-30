@@ -317,11 +317,12 @@ static void AS_GetSubWaves( ambientSet_t &set )
 		else
 		{
 			//Construct the wave name (pretty, huh?)
-			strcpy( (char *) waveName, "sound/" );
-			strncat( (char *) waveName, (const char *) dirBuffer, 1024 );
-			strncat( (char *) waveName, "/", 512 );
-			strncat( (char *) waveName, (const char *) waveBuffer, 512 );
-			strncat( (char *) waveName, ".wav", 512 );
+			Com_sprintf( waveName, sizeof(waveName), "sound/%s/%s.wav", dirBuffer, waveBuffer );
+			//strcpy( (char *) waveName, "sound/" );
+			//strncat( (char *) waveName, (const char *) dirBuffer, 1024 );
+			//strncat( (char *) waveName, "/", 512 );
+			//strncat( (char *) waveName, (const char *) waveBuffer, 512 );
+			//strncat( (char *) waveName, ".wav", 512 );
 			
 			//Place this onto the sound directory name
 
@@ -360,9 +361,10 @@ static void AS_GetLoopedWave( ambientSet_t &set )
 	sscanf( parseBuffer+parsePos, "%s %s", &tempBuffer, &waveBuffer );
 
 	//Construct the wave name
-	strcpy( (char *) waveName, "sound/" );
-	strncat( (char *) waveName, (const char *) waveBuffer, 1024 );
-	strncat( (char *) waveName, ".wav", 1024 );
+	Com_sprintf( waveName, sizeof(waveName), "sound/%s.wav", waveBuffer );
+	//strcpy( (char *) waveName, "sound/" );
+	//strncat( (char *) waveName, (const char *) waveBuffer, 1024 );
+	//strncat( (char *) waveName, ".wav", 1024 );
 	
 	//Precache the file at this point and store off the ID instead of the name
 	if ( ( set.loopedWave = S_RegisterSound( waveName ) ) <= 0 )

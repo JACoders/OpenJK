@@ -623,6 +623,23 @@ int Q_isalpha( int c )
 	return ( 0 );
 }
 
+qboolean Q_isanumber( const char *s )
+{
+	char *p;
+
+	if( *s == '\0' )
+		return qfalse;
+
+	strtod( s, &p );
+
+	return (qboolean)(*p == '\0');
+}
+
+qboolean Q_isintegral( float f )
+{
+	return (qboolean)( (int)f == f );
+}
+
 /*
 char* Q_strrchr( const char* string, int c )
 {
@@ -653,6 +670,9 @@ Safe strncpy that ensures a trailing zero
 */
 void Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong/* = qfalse */ )
 {
+	if ( !dest ) {
+		Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
+	}
 	if ( !src ) {
 		Com_Error( ERR_FATAL, "Q_strncpyz: NULL src" );
 	}
@@ -664,7 +684,7 @@ void Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooL
 	{
 		if ( strlen(src)+1 > destsize)
 		{
-			Com_Error(ERR_FATAL,"String dest buffer too small to hold string \"%s\"",src);
+			Com_Error(ERR_FATAL,"String dest buffer too small to hold string \"%s\" %d > %d\n(source addr = %x, dest addr = %x",src, strlen(src)+1, destsize, src, dest);
 		}
 	}
 	strncpy( dest, src, destsize-1 );
@@ -750,6 +770,10 @@ void Q_strcat( char *dest, int size, const char *src ) {
 	if ( l1 >= size ) {
 		Com_Error( ERR_FATAL, "Q_strcat: already overflowed" );
 	}
+	if ( strlen(src)+1 > size - l1)
+	{	//do the error here instead of in Q_strncpyz to get a meaningful msg
+		Com_Error(ERR_FATAL,"Q_strcat: cannot append \"%s\" to \"%s\"", src, dest);
+	}
 	Q_strncpyz( dest + l1, src, size - l1 );
 }
 
@@ -834,7 +858,7 @@ int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 
 //Raz: Patched version of Com_sprintf
 //Ensiform: But this is better
-void QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
+int QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	int		len;
 	va_list		argptr;
 
@@ -844,8 +868,8 @@ void QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 
 	if(len >= size)
 		Com_Printf("Com_sprintf: Output length %d too short, require %d bytes.\n", size, len + 1);
-	
-	return;
+
+	return len;
 }
 
 /*
@@ -874,7 +898,6 @@ char * QDECL va( const char *format, ... )
 
 	return buf;
 }
-
 
 /*
 =====================================================================

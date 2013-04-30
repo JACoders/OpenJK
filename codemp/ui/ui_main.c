@@ -259,6 +259,8 @@ char *BG_GetUIPortraitFile(const int team, const short classIndex, const short c
 
 siegeClass_t *BG_GetClassOnBaseClass(const int team, const short classIndex, const short cntIndex);
 
+void UI_AddSpotAir( void );
+
 /*Q_EXPORT_C*/ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
   switch ( command ) {
 	  case UI_GETAPIVERSION:
@@ -1558,7 +1560,8 @@ void UI_Load() {
 	UI_LoadMenus(menuSet, qtrue);
 	Menus_CloseAll();
 	Menus_ActivateByName(lastName);
-
+	if(uiInfo.inGameLoad)
+		UI_AddSpotAir();
 }
 
 static const char *handicapValues[] = {"None","95","90","85","80","75","70","65","60","55","50","45","40","35","30","25","20","15","10","5",NULL};
@@ -3871,6 +3874,10 @@ static qboolean UI_Chat_Spot_HandleKey(int key)
 	else if ((key == A_4) || ( key == A_STRING))
 	{
 		item = Menu_FindItemByName(menu, "spot_04");
+	}
+	else if ((key == A_5) || ( key == A_PERCENT))
+	{
+		item = Menu_FindItemByName(menu, "spot_05");
 	}
 	else
 	{
@@ -10201,6 +10208,7 @@ void _UI_Init( qboolean inGameLoad ) {
 	if (inGameLoad)
 	{
 		UI_LoadMenus("ui/jampingame.txt", qtrue);
+		UI_AddSpotAir();
 	}
 	else if (!ui_bypassMainMenuLoad.integer)
 	{

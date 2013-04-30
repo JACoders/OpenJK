@@ -360,6 +360,32 @@ void	Sys_FreeFileList( char **psList ) {
 //========================================================
 
 /*
+==============
+Sys_Sleep
+
+Block execution for msec or until input is received.
+==============
+*/
+void Sys_Sleep( int msec )
+{
+	if( msec == 0 )
+		return;
+
+#ifdef DEDICATED
+	if( msec < 0 )
+		WaitForSingleObject( GetStdHandle( STD_INPUT_HANDLE ), INFINITE );
+	else
+		WaitForSingleObject( GetStdHandle( STD_INPUT_HANDLE ), msec );
+#else
+	// Client Sys_Sleep doesn't support waiting on stdin
+	if( msec < 0 )
+		return;
+
+	Sleep( msec );
+#endif
+}
+
+/*
 ================
 Sys_GetClipboardData
 
@@ -470,6 +496,9 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 	void *dllhandle = NULL;
 	char	*fn, *basepath, *homepath, *cdpath, *gamedir;
 
+	if(useSystemLib)
+		Com_Printf("Trying to load \"%s\"...\n", name);
+
 	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
 	{
 		if ( !dllhandle ) {
@@ -509,6 +538,7 @@ Sys_LoadGameDll
 Used to load a development dll instead of a virtual machine
 =================
 */
+extern cvar_t		*fs_nounpakdll;
 
 void * QDECL Sys_LoadGameDll( const char *name, int (QDECL **entryPoint)(int, ...), int (QDECL *systemcalls)(int, ...) ) {
 	HINSTANCE	libHandle;
@@ -522,9 +552,12 @@ void * QDECL Sys_LoadGameDll( const char *name, int (QDECL **entryPoint)(int, ..
 
 	Com_sprintf( filename, sizeof( filename ), "%sx86.dll", name );
 
-	if (!Sys_UnpackDLL(filename))
+	if (!fs_nounpakdll || fs_nounpakdll->integer == 0)
 	{
-		return NULL;
+		if (!Sys_UnpackDLL(filename))
+		{
+			return NULL;
+		}
 	}
 
 	libHandle = LoadLibrary( filename );
@@ -979,27 +1012,6 @@ void Sys_Net_Restart_f( void ) {
 	NET_Restart();
 }
 
-static bool Sys_IsExpired()
-{
-#if 0
-//								sec min Hr Day Mon Yr
-    struct tm t_valid_start	= { 0, 0, 8, 23, 6, 103 };	//zero based months!
-//								sec min Hr Day Mon Yr
-    struct tm t_valid_end	= { 0, 0, 20, 30, 6, 103 };
-//    struct tm t_valid_end	= t_valid_start;
-//	t_valid_end.tm_mday += 8;
-	time_t startTime  = mktime( &t_valid_start);
-	time_t expireTime = mktime( &t_valid_end);
-	time_t now;
-	time(&now);
-	if((now < startTime) || (now> expireTime))
-	{
-		return true;
-	}
-#endif
-	return false;
-}
-
 /*
 ================
 Sys_Init
@@ -1023,9 +1035,6 @@ void Sys_Init( void ) {
 
 	if (!GetVersionEx (&g_wv.osversion))
 		Sys_Error ("Couldn't get OS info");
-	if (Sys_IsExpired()) {
-		g_wv.osversion.dwPlatformId = VER_PLATFORM_WIN32s;	//sneaky: hide the expire with this error
-	}
 
 	if (g_wv.osversion.dwMajorVersion < 4)
 		Sys_Error ("This game requires Windows version 4 or greater");
@@ -1132,12 +1141,6 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	// get the initial time base
 	Sys_Milliseconds();
-
-#if 0
-	// if we find the CD, add a +set cddir xxx command line
-	Sys_ScanForCD();
-#endif
-
 
 	Sys_InitStreamThread();
 
