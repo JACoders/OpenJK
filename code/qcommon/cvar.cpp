@@ -901,8 +901,6 @@ Reads in all archived cvars
 void Cvar_Init (void) {
 	cvar_cheats = Cvar_Get("helpUsObi", "0", CVAR_SYSTEMINFO );
 
-	com_jk2 = Cvar_Get( "com_jk2", "0", CVAR_INIT );
-
 	Cmd_AddCommand ("toggle", Cvar_Toggle_f);
 	Cmd_AddCommand ("set", Cvar_Set_f);
 	Cmd_AddCommand ("sets", Cvar_SetS_f);
