@@ -608,13 +608,13 @@ int COM_ParseInfos( char *buf, int max, char infos[][MAX_INFO_STRING] ) {
 COM_ParseString
 ===============
 */
-qboolean COM_ParseString( const char **data, const char **s ) 
+qboolean COM_ParseStringExt( const char **data, const char **s, const char *file, int line ) 
 {
 //	*s = COM_ParseExt( data, qtrue );
 	*s = COM_ParseExt( data, qfalse );
 	if ( s[0] == 0 ) 
 	{
-		Com_Printf("unexpected EOF\n");
+		Com_Printf("COM_ParseString: unexpected EOF, file %s, line %i\n", file, line);
 		return qtrue;
 	}
 	return qfalse;
@@ -625,14 +625,14 @@ qboolean COM_ParseString( const char **data, const char **s )
 COM_ParseInt
 ===============
 */
-qboolean COM_ParseInt( const char **data, int *i ) 
+qboolean COM_ParseIntExt( const char **data, int *i, const char *file, int line ) 
 {
 	const char	*token;
 
 	token = COM_ParseExt( data, qfalse );
 	if ( token[0] == 0 ) 
 	{
-		Com_Printf( "unexpected EOF\n" );
+		Com_Printf( "COM_ParseInt: unexpected EOF, file %s, line %i\n", file, line);
 		return qtrue;
 	}
 
@@ -645,14 +645,14 @@ qboolean COM_ParseInt( const char **data, int *i )
 COM_ParseFloat
 ===============
 */
-qboolean COM_ParseFloat( const char **data, float *f ) 
+qboolean COM_ParseFloatExt( const char **data, float *f, const char *file, int line ) 
 {
 	const char	*token;
 
 	token = COM_ParseExt( data, qfalse );
 	if ( token[0] == 0 ) 
 	{
-		Com_Printf( "unexpected EOF\n" );
+		Com_Printf( "COM_ParseFloat: unexpected EOF, file %s, line %i\n", file, line);
 		return qtrue;
 	}
 
@@ -665,14 +665,14 @@ qboolean COM_ParseFloat( const char **data, float *f )
 COM_ParseVec4
 ===============
 */
-qboolean COM_ParseVec4( const char **buffer, vec4_t *c) 
+qboolean COM_ParseVec4Ext( const char **buffer, vec4_t *c, const char *file, int line ) 
 {
 	int i;
 	float f;
 
 	for (i = 0; i < 4; i++) 
 	{
-		if (COM_ParseFloat(buffer, &f)) 
+		if (COM_ParseFloatExt(buffer, &f, file, line)) 
 		{
 			return qtrue;
 		}

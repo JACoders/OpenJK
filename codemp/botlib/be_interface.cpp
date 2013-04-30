@@ -121,7 +121,7 @@ int Export_BotLibSetup(void)
 	int		errnum;
 	
 	botDeveloper = LibVarGetValue("bot_developer");
-  memset( &botlibglobals, 0, sizeof(botlibglobals) ); // bk001207 - init
+	memset( &botlibglobals, 0, sizeof(botlibglobals) ); // bk001207 - init
 	//initialize byte swapping (litte endian etc.)
 //	Swap_Init();
 

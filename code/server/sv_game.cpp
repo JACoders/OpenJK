@@ -101,7 +101,7 @@ void SV_GameSendServerCommand( int clientNum, const char *fmt, ... ) {
 	va_list		argptr;
 	
 	va_start (argptr,fmt);
-	vsprintf (msg, fmt, argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	if ( clientNum == -1 ) {

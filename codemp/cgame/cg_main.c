@@ -644,7 +644,7 @@ itemInfo_t			cg_items[MAX_ITEMS];
 
 
 static void CG_SVRunningChange( void ) {
-	cgs.localServer = sv_running.integer;
+	cgs.localServer = (qboolean)(sv_running.integer != 0);
 }
 
 static void CG_ForceModelChange( void ) {

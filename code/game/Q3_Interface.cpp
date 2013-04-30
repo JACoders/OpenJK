@@ -7767,7 +7767,7 @@ void	CQuake3GameInterface::CenterPrint( const char *format, ... )
 	char		text[1024];
 
 	va_start (argptr, format);
-	vsprintf (text, format, argptr);
+	Q_vsnprintf (text, sizeof(text), format, argptr);
 	va_end (argptr);
 
 	// FIXME: added '!' so you can print something that's hasn't been precached, '@' searches only for precache text
@@ -7798,7 +7798,7 @@ void	CQuake3GameInterface::DebugPrint( e_DebugPrintLevel level, const char *form
 	char		text[1024];
 
 	va_start (argptr, format);
-	vsprintf (text, format, argptr);
+	Q_vsnprintf (text, sizeof(text), format, argptr);
 	va_end (argptr);
 
 	//Add the color formatting

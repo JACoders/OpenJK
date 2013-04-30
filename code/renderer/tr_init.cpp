@@ -1393,7 +1393,7 @@ void R_Init( void ) {
 	tr.externalVisData = vis;
 #endif
 
-//	Swap_Init();
+	//Swap_Init();
 
 #ifndef FINAL_BUILD
 	if ( (int)tess.xyz & 15 ) {

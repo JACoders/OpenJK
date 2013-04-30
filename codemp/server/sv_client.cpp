@@ -73,13 +73,6 @@ void SV_GetChallenge( netadr_t from ) {
 		i = oldest;
 	}
 
-	// if they are on a lan address, send the challengeResponse immediately
-	if ( Sys_IsLANAddress( from ) ) {
-		challenge->pingTime = svs.time;
-		NET_OutOfBandPrint( NS_SERVER, from, "challengeResponse %i", challenge->challenge );
-		return;
-	}
-
 	challenge->pingTime = svs.time;
 	NET_OutOfBandPrint( NS_SERVER, challenge->adr, "challengeResponse %i", challenge->challenge );
 }
@@ -190,7 +183,7 @@ void SV_DirectConnect( netadr_t from ) {
 
 	version = atoi( Info_ValueForKey( userinfo, "protocol" ) );
 	if ( version != PROTOCOL_VERSION ) {
-		NET_OutOfBandPrint( NS_SERVER, from, "print\nServer uses protocol version %i.\n", PROTOCOL_VERSION );
+		NET_OutOfBandPrint( NS_SERVER, from, "print\nServer uses protocol version %i (yours is %i).\n", PROTOCOL_VERSION, version );
 		Com_DPrintf ("    rejected connect from version %i\n", version);
 		return;
 	}
@@ -253,8 +246,6 @@ void SV_DirectConnect( netadr_t from ) {
 		}
 
 		ping = svs.time - svs.challenges[i].pingTime;
-		Com_Printf( SE_GetString("MP_SVGAME", "CLIENT_CONN_WITH_PING"), i, ping);//"Client %i connecting with %i challenge ping\n", i, ping );
-		svs.challenges[i].connected = qtrue;
 
 		// never reject a LAN client based on ping
 		if ( !Sys_IsLANAddress( from ) ) {
@@ -273,6 +264,9 @@ void SV_DirectConnect( netadr_t from ) {
 				return;
 			}
 		}
+
+		Com_Printf( SE_GetString("MP_SVGAME", "CLIENT_CONN_WITH_PING"), i, ping);//"Client %i connecting with %i challenge ping\n", i, ping );
+		svs.challenges[i].connected = qtrue;
 	}
 
 	newcl = &temp;
@@ -854,7 +848,6 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 	if(!cl->download)
 	{
 		qboolean idPack = qfalse;
-		qboolean missionPack = qfalse;
 	
  		// Chop off filename extension.
 		Com_sprintf(pakbuf, sizeof(pakbuf), "%s", cl->downloadName);
@@ -882,8 +875,6 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 
 						// now that we know the file is referenced,
 						// check whether it's legal to download it.
-						missionPack = FS_idPak(pakbuf, "missionpack");
-						idPack = missionPack;
 						idPack = (qboolean)(idPack || FS_idPak(pakbuf, "base"));
 
 						break;
@@ -906,15 +897,7 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 			}
 			else if (idPack) {
 				Com_Printf("clientDownload: %d : \"%s\" cannot download id pk3 files\n", (int) (cl - svs.clients), cl->downloadName);
-				if(missionPack)
-				{
-					Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload Team Arena file \"%s\"\n"
-									"The Team Arena mission pack can be found in your local game store.", cl->downloadName);
-				}
-				else
-				{
-					Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload id pk3 file \"%s\"", cl->downloadName);
-				}
+				Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload id pk3 file \"%s\"", cl->downloadName);
 			}
 			else if ( !sv_allowDownload->integer ) {
 				Com_Printf("clientDownload: %d : \"%s\" download disabled\n", (int) (cl - svs.clients), cl->downloadName);
@@ -1099,29 +1082,14 @@ static void SV_VerifyPaks_f( client_t *cl ) {
 	//
 	if ( sv_pure->integer != 0 ) {
 
-		bGood = qtrue;
 		nChkSum1 = nChkSum2 = 0;
 		// we run the game, so determine which cgame and ui the client "should" be running
 		//dlls are valid too now -rww
-		if (Cvar_VariableValue( "vm_cgame" ))
-		{
-			bGood = (qboolean)(FS_FileIsInPAK("vm/cgame.qvm", &nChkSum1) == 1);
-		}
-		else
-		{
-			bGood = (qboolean)(FS_FileIsInPAK("cgamex86.dll", &nChkSum1) == 1);
-		}
+		bGood = (qboolean)(FS_FileIsInPAK("cgamex86.dll", &nChkSum1) == 1);
 
 		if (bGood)
 		{
-			if (Cvar_VariableValue( "vm_ui" ))
-			{
-				bGood = (qboolean)(FS_FileIsInPAK("vm/ui.qvm", &nChkSum2) == 1);
-			}
-			else
-			{
-				bGood = (qboolean)(FS_FileIsInPAK("uix86.dll", &nChkSum2) == 1);
-			}
+			bGood = (qboolean)(FS_FileIsInPAK("uix86.dll", &nChkSum2) == 1);
 		}
 
 		nClientPaks = Cmd_Argc();
@@ -1519,7 +1487,7 @@ static void SV_UserMove( client_t *cl, msg_t *msg, qboolean delta ) {
 	// also use the message acknowledge
 	key ^= cl->messageAcknowledge;
 	// also use the last acknowledged server command in the key
-	key ^= Com_HashKey(cl->reliableCommands[ cl->reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ], 32);
+	key ^= MSG_HashKey(cl->reliableCommands[ cl->reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ], 32);
 
 	Com_Memset( &nullcmd, 0, sizeof(nullcmd) );
 	oldcmd = &nullcmd;

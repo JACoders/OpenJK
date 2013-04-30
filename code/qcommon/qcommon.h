@@ -97,6 +97,7 @@ void MSG_ReadDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct pl
 
 //============================================================================
 
+/*
 #ifdef _M_IX86
 //
 // optimised stuff for Intel, since most of our data is in that format anyway...
@@ -120,6 +121,7 @@ extern	float	BigFloat (float l);
 extern	float	LittleFloat (float l);
 //
 #endif
+*/
 
 
 /*
@@ -538,6 +540,7 @@ extern	cvar_t	*com_sv_running;
 extern	cvar_t	*com_cl_running;
 extern	cvar_t	*com_viewlog;			// 0 = hidden, 1 = visible, 2 = minimized
 extern	cvar_t	*com_version;
+extern	cvar_t	*com_homepath;
 
 #ifndef __NO_JK2
 extern	cvar_t	*com_jk2;
@@ -782,8 +785,6 @@ void	Sys_StreamSeek( fileHandle_t f, int offset, int origin );
 
 void	Sys_ShowConsole( int level, qboolean quitOnClose );
 void	Sys_SetErrorText( const char *text );
-
-qboolean	Sys_CheckCD( void );
 
 void	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );

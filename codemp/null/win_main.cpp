@@ -1223,12 +1223,6 @@ int main(int argc, char **argv)
 	// get the initial time base
 	Sys_Milliseconds();
 
-#if 0
-	// if we find the CD, add a +set cddir xxx command line
-	Sys_ScanForCD();
-#endif
-
-
 	Sys_InitStreamThread();
 
 	Com_Init( commandLine );
