@@ -2887,6 +2887,17 @@ typedef enum Eorientations
 Ghoul2 Insert End
 */
 
+#define BUMP(var, val)				if(var < val) var = val
+#define CAP(var, val)				if(var > val) var = val
+// CLAMP is redefined in cm code, best not to redefine it here --eez
+#ifndef CLAMP
+#define CLAMP(var, min, max)		BUMP(var, min); CAP(var, max)
+#endif
+
+#define ABSBUMP(var, val)			if(var < 0) CAP(var, -val); else BUMP(var, val)
+#define ABSCAP(var, val)			if(var < 0) BUMP(var, -val); else CAP(var, val)
+#define ABSCLAMP(var, min, max)		ABSBUMP(var, min); ABSCAP(var, max)
+
 
 // define the new memory tags for the zone, used by all modules now
 //
