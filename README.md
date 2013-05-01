@@ -9,7 +9,7 @@ This project will not attempt to rebalance or otherwise modify core gameplay asp
 
 ## Installation ##
 
-First, install Jedi Academy.
+First, install [Jedi Academy](http://lmgtfy.com/?q=buy+jedi+academy+online).
 
 Then point the OpenJK installer to the GameData folder in the Jedi Academy install, e.g.  just point it to your "Jedi Academy/GameData" folder. If you've downloaded an archive, just unpack it to GameData.
 
