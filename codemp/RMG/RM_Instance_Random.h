@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(RM_INSTANCE_RANDOM_H_INC)
-#define RM_INSTANCE_RANDOM_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including RM_Instance_Random.h")
@@ -36,5 +34,3 @@ public:
 	virtual bool		PreSpawn			( CRandomTerrain* terrain, qboolean IsServer );
 	virtual bool		Spawn				( CRandomTerrain* terrain, qboolean IsServer );
 };
-
-#endif

@@ -25,8 +25,7 @@ void NPC_Howler_Precache( void )
 Howler_Idle
 -------------------------
 */
-void Howler_Idle( void )
-{
+void Howler_Idle( void ) {
 }
 
 
@@ -38,13 +37,14 @@ Howler_Patrol
 void Howler_Patrol( void )
 {
 	vec3_t dif;
+	gentity_t *NPC = NPCS.NPC;
 
-	NPCInfo->localState = LSTATE_CLEAR;
+	NPCS.NPCInfo->localState = LSTATE_CLEAR;
 
 	//If we have somewhere to go, then do that
 	if ( UpdateGoal() )
 	{
-		ucmd.buttons &= ~BUTTON_WALKING;
+		NPCS.ucmd.buttons &= ~BUTTON_WALKING;
 		NPC_MoveToGoal( qtrue );
 	}
 	else
@@ -77,11 +77,11 @@ Howler_Move
 */
 void Howler_Move( qboolean visible )
 {
-	if ( NPCInfo->localState != LSTATE_WAITING )
+	if ( NPCS.NPCInfo->localState != LSTATE_WAITING )
 	{
-		NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 		NPC_MoveToGoal( qtrue );
-		NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
+		NPCS.NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
 	}
 }
 
@@ -90,6 +90,7 @@ void Howler_TryDamage( gentity_t *enemy, int damage )
 {
 	vec3_t	end, dir;
 	trace_t	tr;
+	gentity_t *NPC = NPCS.NPC;
 
 	if ( !enemy )
 	{
@@ -111,6 +112,7 @@ void Howler_TryDamage( gentity_t *enemy, int damage )
 //------------------------------
 void Howler_Attack( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( !TIMER_Exists( NPC, "attacking" ))
 	{
 		// Going to do ATTACK1
@@ -135,13 +137,14 @@ void Howler_Combat( void )
 {
 	float distance;
 	qboolean advance;
+	gentity_t *NPC = NPCS.NPC;
 
 	// If we cannot see our target or we have somewhere to go, then do that
 	if ( !NPC_ClearLOS4( NPC->enemy ) || UpdateGoal( ))
 	{
-		NPCInfo->combatMove = qtrue;
-		NPCInfo->goalEntity = NPC->enemy;
-		NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
+		NPCS.NPCInfo->combatMove = qtrue;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
 
 		NPC_MoveToGoal( qtrue );
 		return;
@@ -153,15 +156,15 @@ void Howler_Combat( void )
 	distance	= DistanceHorizontalSquared( NPC->r.currentOrigin, NPC->enemy->r.currentOrigin );	
 	advance = (qboolean)( distance > MIN_DISTANCE_SQR ? qtrue : qfalse  );
 
-	if (( advance || NPCInfo->localState == LSTATE_WAITING ) && TIMER_Done( NPC, "attacking" )) // waiting monsters can't attack
+	if (( advance || NPCS.NPCInfo->localState == LSTATE_WAITING ) && TIMER_Done( NPC, "attacking" )) // waiting monsters can't attack
 	{
 		if ( TIMER_Done2( NPC, "takingPain", qtrue ))
 		{
-			NPCInfo->localState = LSTATE_CLEAR;
+			NPCS.NPCInfo->localState = LSTATE_CLEAR;
 		}
 		else
 		{
-			Howler_Move( 1 );
+			Howler_Move( qtrue );
 		}
 	}
 	else
@@ -201,18 +204,14 @@ NPC_BSHowler_Default
 */
 void NPC_BSHowler_Default( void )
 {
+	gentity_t *NPC = NPCS.NPC;
+
 	if ( NPC->enemy )
-	{
 		Howler_Combat();
-	}
-	else if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
-	{
+	else if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 		Howler_Patrol();
-	}
 	else
-	{
 		Howler_Idle();
-	}
 
 	NPC_UpdateAngles( qtrue, qtrue );
 }

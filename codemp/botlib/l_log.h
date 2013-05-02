@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		l_log.h
@@ -26,4 +27,3 @@ void QDECL Log_WriteTimeStamped(char *fmt, ...);
 FILE *Log_FilePointer(void);
 //flush log file
 void Log_Flush(void);
-

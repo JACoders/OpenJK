@@ -1,5 +1,4 @@
-#ifndef __QFILES_H__
-#define __QFILES_H__
+#pragma once
 
 //
 // qfiles.h: quake file formats
@@ -435,6 +434,3 @@ typedef struct dfontdat_s
 } dfontdat_t;
 
 /////////////////// fonts end ////////////////////////////////////
-
-
-#endif

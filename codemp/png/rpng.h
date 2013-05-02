@@ -1,3 +1,5 @@
+#pragma once
+
 // Known chunk types
 
 #define PNG_IHDR		'IHDR'

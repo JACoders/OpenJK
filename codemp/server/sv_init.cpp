@@ -2,16 +2,11 @@
 #include "qcommon/exe_headers.h"
 
 #include "server.h"
-
 /*
 Ghoul2 Insert Start
 */
 #include "ghoul2/G2.h"
-
-#if !defined (MINIHEAP_H_INC)
 #include "qcommon/MiniHeap.h"
-#endif
-
 #include "qcommon/stringed_ingame.h"
 
 /*

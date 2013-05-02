@@ -3,13 +3,11 @@
 // this include must remain at the top of every CPP file
 #include "client.h"
 
-#if !defined(FX_SCHEDULER_H_INC)
-	#include "FxScheduler.h"
-#endif
+#include "FxScheduler.h"
 #include "ghoul2/G2.h"
 
 cvar_t	*fx_debug;
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 cvar_t	*fx_freeze;
 #endif
 cvar_t	*fx_countScale;
@@ -54,7 +52,7 @@ void SFxHelper::Print( const char *msg, ... )
 //------------------------------------------------------
 void SFxHelper::AdjustTime( int frametime )
 {
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 	if ( fx_freeze->integer || ( frametime <= 0 ))
 #else
 	if ( frametime <= 0 )

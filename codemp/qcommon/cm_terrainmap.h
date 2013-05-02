@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(CM_TERRAINMAP_H_INC)
-#define CM_TERRAINMAP_H_INC
 
 #define TM_WIDTH		512
 #define TM_HEIGHT		512
@@ -72,6 +70,3 @@ void	CM_TM_AddBuilding(int x, int y, int side = SIDE_NONE);
 void	CM_TM_Upload(vec3_t player_origin, vec3_t player_angles);
 void	CM_TM_SaveImageToDisk(const char * terrainName, const char * missionName, const char * seed);
 void	CM_TM_ConvertPosition(int &x, int &y, int Width, int Height);
-
-#endif CM_TERRAINMAP_H_INC
-

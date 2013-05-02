@@ -65,12 +65,12 @@ Wampa_Idle
 */
 void Wampa_Idle( void )
 {
-	NPCInfo->localState = LSTATE_CLEAR;
+	NPCS.NPCInfo->localState = LSTATE_CLEAR;
 
 	//If we have somewhere to go, then do that
 	if ( UpdateGoal() )
 	{
-		ucmd.buttons &= ~BUTTON_WALKING;
+		NPCS.ucmd.buttons &= ~BUTTON_WALKING;
 		NPC_MoveToGoal( qtrue );
 	}
 }
@@ -93,12 +93,13 @@ Wampa_Patrol
 */
 void Wampa_Patrol( void )
 {
-	NPCInfo->localState = LSTATE_CLEAR;
+	gentity_t *NPC = NPCS.NPC;
+	NPCS.NPCInfo->localState = LSTATE_CLEAR;
 
 	//If we have somewhere to go, then do that
 	if ( UpdateGoal() )
 	{
-		ucmd.buttons |= BUTTON_WALKING;
+		NPCS.ucmd.buttons |= BUTTON_WALKING;
 		NPC_MoveToGoal( qtrue );
 	}
 	else
@@ -125,46 +126,47 @@ Wampa_Move
 */
 void Wampa_Move( qboolean visible )
 {
-	if ( NPCInfo->localState != LSTATE_WAITING )
+	gentity_t *NPC = NPCS.NPC;
+	if ( NPCS.NPCInfo->localState != LSTATE_WAITING )
 	{
-		NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
 
 		if ( NPC->enemy )
 		{//pick correct movement speed and anim
 			//run by default
-			ucmd.buttons &= ~BUTTON_WALKING;
+			NPCS.ucmd.buttons &= ~BUTTON_WALKING;
 			if ( !TIMER_Done( NPC, "runfar" ) 
 				|| !TIMER_Done( NPC, "runclose" ) )
 			{//keep running with this anim & speed for a bit
 			}
 			else if ( !TIMER_Done( NPC, "walk" ) )
 			{//keep walking for a bit
-				ucmd.buttons |= BUTTON_WALKING;
+				NPCS.ucmd.buttons |= BUTTON_WALKING;
 			}
-			else if ( visible && enemyDist > 384 && NPCInfo->stats.runSpeed == 180 )
+			else if ( visible && enemyDist > 384 && NPCS.NPCInfo->stats.runSpeed == 180 )
 			{//fast run, all fours
-				NPCInfo->stats.runSpeed = 300;
+				NPCS.NPCInfo->stats.runSpeed = 300;
 				TIMER_Set( NPC, "runfar", Q_irand( 2000, 4000 ) );
 			}
-			else if ( enemyDist > 256 && NPCInfo->stats.runSpeed == 300 )
+			else if ( enemyDist > 256 && NPCS.NPCInfo->stats.runSpeed == 300 )
 			{//slow run, upright
-				NPCInfo->stats.runSpeed = 180;
+				NPCS.NPCInfo->stats.runSpeed = 180;
 				TIMER_Set( NPC, "runclose", Q_irand( 3000, 5000 ) );
 			}
 			else if ( enemyDist < 128 )
 			{//walk
-				NPCInfo->stats.runSpeed = 180;
-				ucmd.buttons |= BUTTON_WALKING;
+				NPCS.NPCInfo->stats.runSpeed = 180;
+				NPCS.ucmd.buttons |= BUTTON_WALKING;
 				TIMER_Set( NPC, "walk", Q_irand( 4000, 6000 ) );
 			}
 		}
 
-		if ( NPCInfo->stats.runSpeed == 300 )
+		if ( NPCS.NPCInfo->stats.runSpeed == 300 )
 		{//need to use the alternate run - hunched over on all fours
 			NPC->client->ps.eFlags2 |= EF2_USE_ALT_ANIM;
 		}
 		NPC_MoveToGoal( qtrue );
-		NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
+		NPCS.NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
 	}
 }
 
@@ -183,6 +185,7 @@ void Wampa_Slash( int boltIndex, qboolean backhand )
 	int			i;
 	vec3_t		boltOrg;
 	int			damage = (backhand)?Q_irand(10,15):Q_irand(20,30);
+	gentity_t *NPC = NPCS.NPC;
 
 	numEnts = NPC_GetEntsNearBolt( radiusEntNums, radius, boltIndex, boltOrg );
 
@@ -266,6 +269,7 @@ void Wampa_Slash( int boltIndex, qboolean backhand )
 //------------------------------
 void Wampa_Attack( float distance, qboolean doCharge )
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( !TIMER_Exists( NPC, "attacking" ) )
 	{
 		if ( Q_irand(0, 2) && !doCharge )
@@ -335,14 +339,15 @@ void Wampa_Attack( float distance, qboolean doCharge )
 
 	if ( NPC->client->ps.legsAnim == BOTH_ATTACK1 && distance > (NPC->r.maxs[0]+MIN_DISTANCE) )
 	{//okay to keep moving
-		ucmd.buttons |= BUTTON_WALKING;
-		Wampa_Move( 1 );
+		NPCS.ucmd.buttons |= BUTTON_WALKING;
+		Wampa_Move( qtrue );
 	}
 }
 
 //----------------------------------
 void Wampa_Combat( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	// If we cannot see our target or we have somewhere to go, then do that
 	if ( !NPC_ClearLOS( NPC->r.currentOrigin, NPC->enemy->r.currentOrigin ) )
 	{
@@ -353,20 +358,20 @@ void Wampa_Combat( void )
 				return;
 			}
 		}
-		NPCInfo->combatMove = qtrue;
-		NPCInfo->goalEntity = NPC->enemy;
-		NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
+		NPCS.NPCInfo->combatMove = qtrue;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
 
-		Wampa_Move( 0 );
+		Wampa_Move( qfalse );
 		return;
 	}
 	else if ( UpdateGoal() )
 	{
-		NPCInfo->combatMove = qtrue;
-		NPCInfo->goalEntity = NPC->enemy;
-		NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
+		NPCS.NPCInfo->combatMove = qtrue;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
 
-		Wampa_Move( 1 );
+		Wampa_Move( qtrue );
 		return;
 	}
 	else
@@ -396,15 +401,15 @@ void Wampa_Combat( void )
 			}
 		}
 
-		if (( advance || NPCInfo->localState == LSTATE_WAITING ) && TIMER_Done( NPC, "attacking" )) // waiting monsters can't attack
+		if (( advance || NPCS.NPCInfo->localState == LSTATE_WAITING ) && TIMER_Done( NPC, "attacking" )) // waiting monsters can't attack
 		{
 			if ( TIMER_Done2( NPC, "takingPain", qtrue ))
 			{
-				NPCInfo->localState = LSTATE_CLEAR;
+				NPCS.NPCInfo->localState = LSTATE_CLEAR;
 			}
 			else
 			{
-				Wampa_Move( 1 );
+				Wampa_Move( qtrue );
 			}
 		}
 		else
@@ -505,6 +510,8 @@ NPC_BSWampa_Default
 */
 void NPC_BSWampa_Default( void )
 {
+	gentity_t *NPC = NPCS.NPC;
+
 	NPC->client->ps.eFlags2 &= ~EF2_USE_ALT_ANIM;
 	//NORMAL ANIMS
 	//	stand1 = normal stand
@@ -564,12 +571,12 @@ void NPC_BSWampa_Default( void )
 						if ( (NPC->spawnflags&2) )
 						{//search around me if I don't have an enemy
 							NPC_BSSearchStart( NPC->waypoint, BS_SEARCH );
-							NPCInfo->tempBehavior = BS_DEFAULT;
+							NPCS.NPCInfo->tempBehavior = BS_DEFAULT;
 						}
 						else if ( (NPC->spawnflags&1) )
 						{//wander if I don't have an enemy
 							NPC_BSSearchStart( NPC->waypoint, BS_WANDER );
-							NPCInfo->tempBehavior = BS_DEFAULT;
+							NPCS.NPCInfo->tempBehavior = BS_DEFAULT;
 						}
 						return;
 					}
@@ -578,7 +585,7 @@ void NPC_BSWampa_Default( void )
 				{
 					gentity_t *newEnemy, *sav_enemy = NPC->enemy;//FIXME: what about NPC->lastEnemy?
 					NPC->enemy = NULL;
-					newEnemy = NPC_CheckEnemy( NPCInfo->confusionTime < level.time, qfalse, qfalse );
+					newEnemy = NPC_CheckEnemy( NPCS.NPCInfo->confusionTime < level.time, qfalse, qfalse );
 					NPC->enemy = sav_enemy;
 					if ( newEnemy && newEnemy != sav_enemy )
 					{//picked up a new enemy!
@@ -607,24 +614,24 @@ void NPC_BSWampa_Default( void )
 		}
 		if ( (NPC->spawnflags&2) )
 		{//search around me if I don't have an enemy
-			if ( NPCInfo->homeWp == WAYPOINT_NONE )
+			if ( NPCS.NPCInfo->homeWp == WAYPOINT_NONE )
 			{//no homewap, initialize the search behavior
 				NPC_BSSearchStart( WAYPOINT_NONE, BS_SEARCH );
-				NPCInfo->tempBehavior = BS_DEFAULT;
+				NPCS.NPCInfo->tempBehavior = BS_DEFAULT;
 			}
-			ucmd.buttons |= BUTTON_WALKING;
+			NPCS.ucmd.buttons |= BUTTON_WALKING;
 			NPC_BSSearch();//this automatically looks for enemies
 		}
 		else if ( (NPC->spawnflags&1) )
 		{//wander if I don't have an enemy
-			if ( NPCInfo->homeWp == WAYPOINT_NONE )
+			if ( NPCS.NPCInfo->homeWp == WAYPOINT_NONE )
 			{//no homewap, initialize the wander behavior
 				NPC_BSSearchStart( WAYPOINT_NONE, BS_WANDER );
-				NPCInfo->tempBehavior = BS_DEFAULT;
+				NPCS.NPCInfo->tempBehavior = BS_DEFAULT;
 			}
-			ucmd.buttons |= BUTTON_WALKING;
+			NPCS.ucmd.buttons |= BUTTON_WALKING;
 			NPC_BSWander();
-			if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
+			if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 			{
 				if ( NPC_CheckEnemyExt( qtrue ) == qfalse )
 				{
@@ -639,7 +646,7 @@ void NPC_BSWampa_Default( void )
 		}
 		else
 		{
-			if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
+			if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 			{
 				Wampa_Patrol();
 			}

@@ -7,9 +7,7 @@
 // display context for new ui stuff
 displayContextDef_t cgDC;
 
-#if !defined(CL_LIGHT_H_INC)
-	#include "cg_lights.h"
-#endif
+#include "cg_lights.h"
 
 extern int cgSiegeRoundState;
 extern int cgSiegeRoundTime;

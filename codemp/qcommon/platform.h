@@ -1,7 +1,6 @@
-// Simple header file to dispatch to the relevant platform API headers
-#ifndef _PLATFORM_H
-#define _PLATFORM_H
+#pragma once
 
+// Simple header file to dispatch to the relevant platform API headers
 #if defined(_WINDOWS)
 #include <windows.h>
 #endif
@@ -68,6 +67,4 @@ typedef struct _GUID {
 #define RGB(r,g,b)          ((COLORREF)((r) | ((g) << 8) | ((b) << 16)))
 
 #define _isnan isnan
-#endif
-
 #endif

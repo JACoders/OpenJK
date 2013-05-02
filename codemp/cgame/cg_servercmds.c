@@ -6,9 +6,7 @@
 
 #include "cg_local.h"
 #include "ui/menudef.h"
-#if !defined(CL_LIGHT_H_INC)
-	#include "cg_lights.h"
-#endif
+#include "cg_lights.h"
 #include "ghoul2/G2.h"
 #include "ui/ui_public.h"
 

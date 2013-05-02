@@ -1,11 +1,9 @@
+#pragma once
+
 // Filename:-	sstring.h
 //
 // Gil's string template, used to replace Microsoft's <string> vrsion which doesn't compile under certain stl map<>
 //	conditions...
-
-
-#ifndef SSTRING_H
-#define SSTRING_H
 
 
 template<int MaxSize>
@@ -114,7 +112,4 @@ public:
 
 typedef sstring<MAX_QPATH> sstring_t;
 
-#endif	// #ifndef SSTRING_H
-
 /////////////////// eof ////////////////////
-

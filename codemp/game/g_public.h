@@ -1,10 +1,9 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
-#ifndef G_PUBLIC_H
 
 // g_public.h -- game module information visible to server
-
-#define G_PUBLIC_H
 
 #define Q3_INFINITE			16777216 
 
@@ -927,5 +926,3 @@ typedef struct
 {
 	char string[2048];
 } T_G_ICARUS_GETSETIDFORSTRING;
-
-#endif //G_PUBLIC_H

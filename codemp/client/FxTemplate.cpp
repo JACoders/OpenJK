@@ -2,10 +2,7 @@
 #include "qcommon/exe_headers.h"
 // this include must remain at the top of every CPP file
 #include "client.h"
-
-#if !defined(FX_SCHEDULER_H_INC)
-	#include "FxScheduler.h"
-#endif
+#include "FxScheduler.h"
 
 //------------------------------------------------------
 // CPrimitiveTemplate

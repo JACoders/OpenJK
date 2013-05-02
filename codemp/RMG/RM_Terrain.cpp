@@ -5,8 +5,6 @@
 #include "renderer/tr_types.h"
 #include "RM_Headers.h"
 
-//#include "qcommon/q_imath.h"
-
 #pragma optimize("", off)
 
 // The above optmization triggers this warning:

@@ -1,5 +1,4 @@
-#ifndef __MATH_VECTOR_H__
-#define __MATH_VECTOR_H__
+#pragma once
 
 #if defined(_WIN32)
 #pragma warning(disable : 4244)
@@ -549,5 +548,3 @@ ID_INLINE float idVec5_t::operator[]( int index ) const {
 ID_INLINE float& idVec5_t::operator[]( int index ) {
 	return ( &x )[ index ];
 }
-
-#endif /* !__MATH_VECTOR_H__ */

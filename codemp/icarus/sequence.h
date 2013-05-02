@@ -1,7 +1,6 @@
-// Sequence Header File
+#pragma once
 
-#ifndef __SEQUENCE__
-#define __SEQUENCE__
+// Sequence Header File
 
 #include "blockstream.h"
 #include "interface.h"
@@ -94,5 +93,3 @@ protected:
 	int						m_id;
 	int						m_numCommands;
 };
-
-#endif	//__SEQUENCE__

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SDL_opengl.h>
 
 #define qglAccum glAccum

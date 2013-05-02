@@ -1,9 +1,8 @@
+#pragma once
+
 /*
 ** QGL.H
 */
-
-#ifndef __QGL_H__
-#define __QGL_H__
 
 #if defined( __LINT__ )
 
@@ -756,5 +755,3 @@ extern void (*qglXSwapBuffers)( Display *dpy, GLXDrawable drawable );
 #endif // __linux__ || __FreeBSD__ // rb010123
 
 #endif	// _WIN32 && __linux__
-
-#endif

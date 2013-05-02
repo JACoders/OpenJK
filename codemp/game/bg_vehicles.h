@@ -1,5 +1,4 @@
-#ifndef __BG_VEHICLES_H
-#define __BG_VEHICLES_H
+#pragma once
 
 #include "qcommon/q_shared.h"
 
@@ -624,5 +623,3 @@ typedef struct Vehicle_s
 #endif
 
 extern int BG_VehicleGetIndex( const char *vehicleName );
-
-#endif	// __BG_VEHICLES_H

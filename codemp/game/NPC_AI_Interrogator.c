@@ -63,6 +63,8 @@ Interrogator_PartsMove
 */
 void Interrogator_PartsMove(void)
 {
+	gentity_t *NPC = NPCS.NPC;
+
 	// Syringe
 	if ( TIMER_Done(NPC,"syringeDelay") )
 	{
@@ -91,13 +93,13 @@ void Interrogator_PartsMove(void)
 	if ( TIMER_Done(NPC,"scalpelDelay") )
 	{
 		// Change pitch
-		if ( NPCInfo->localState == LSTATE_BLADEDOWN )	// Blade is moving down
+		if ( NPCS.NPCInfo->localState == LSTATE_BLADEDOWN )	// Blade is moving down
 		{
 			NPC->pos2[0]-= 30;
 			if (NPC->pos2[0] < 180)
 			{
 				NPC->pos2[0] = 180;
-				NPCInfo->localState = LSTATE_BLADEUP;	// Make it move up
+				NPCS.NPCInfo->localState = LSTATE_BLADEUP;	// Make it move up
 			}
 		}
 		else											// Blade is coming back up
@@ -106,7 +108,7 @@ void Interrogator_PartsMove(void)
 			if (NPC->pos2[0] >= 360)
 			{
 				NPC->pos2[0] = 360;
-				NPCInfo->localState = LSTATE_BLADEDOWN;	// Make it move down
+				NPCS.NPCInfo->localState = LSTATE_BLADEDOWN;	// Make it move down
 				TIMER_Set( NPC, "scalpelDelay", Q_irand( 100, 1000 ) );
 			}
 		}
@@ -139,6 +141,7 @@ void Interrogator_MaintainHeight( void )
 	float	dif;
 //	vec3_t	endPos;
 //	trace_t	trace;
+	gentity_t *NPC = NPCS.NPC;
 
 	NPC->s.loopSound = G_SoundIndex( "sound/chars/interrogator/misc/torture_droid_lp" );
 	// Update our angles regardless
@@ -165,13 +168,13 @@ void Interrogator_MaintainHeight( void )
 	{
 		gentity_t *goal = NULL;
 
-		if ( NPCInfo->goalEntity )	// Is there a goal?
+		if ( NPCS.NPCInfo->goalEntity )	// Is there a goal?
 		{
-			goal = NPCInfo->goalEntity;
+			goal = NPCS.NPCInfo->goalEntity;
 		}
 		else
 		{
-			goal = NPCInfo->lastGoalEntity;
+			goal = NPCS.NPCInfo->lastGoalEntity;
 		}
 		if ( goal )
 		{
@@ -179,7 +182,7 @@ void Interrogator_MaintainHeight( void )
 
 			if ( fabs( dif ) > 24 )
 			{
-				ucmd.upmove = ( ucmd.upmove < 0 ? -4 : 4 );
+				NPCS.ucmd.upmove = ( NPCS.ucmd.upmove < 0 ? -4 : 4 );
 			}
 			else
 			{
@@ -241,6 +244,7 @@ void Interrogator_Strafe( void )
 	vec3_t	end, right;
 	trace_t	tr;
 	float	dif;
+	gentity_t *NPC = NPCS.NPC;
 
 	AngleVectors( NPC->client->renderInfo.eyeAngles, NULL, right, NULL );
 
@@ -274,7 +278,7 @@ void Interrogator_Strafe( void )
 
 		// Set the strafe start time 
 		//NPC->fx_time = level.time;
-		NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCS.NPCInfo->standTime = level.time + 3000 + random() * 500;
 	}
 }
 
@@ -291,19 +295,20 @@ void Interrogator_Hunt( qboolean visible, qboolean advance )
 {
 	float	distance, speed;
 	vec3_t	forward;
+	gentity_t *NPC = NPCS.NPC;
 
 	Interrogator_PartsMove();
 
 	NPC_FaceEnemy(qfalse);
 
 	//If we're not supposed to stand still, pursue the player
-	if ( NPCInfo->standTime < level.time )
+	if ( NPCS.NPCInfo->standTime < level.time )
 	{
 		// Only strafe when we can see the player
 		if ( visible )
 		{
 			Interrogator_Strafe();
-			if ( NPCInfo->standTime > level.time )
+			if ( NPCS.NPCInfo->standTime > level.time )
 			{//successfully strafed
 				return;
 			}
@@ -318,8 +323,8 @@ void Interrogator_Hunt( qboolean visible, qboolean advance )
 	if ( visible == qfalse )
 	{
 		// Move towards our goal
-		NPCInfo->goalEntity = NPC->enemy;
-		NPCInfo->goalRadius = 12;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalRadius = 12;
 
 		//Get our direction from the navigator if we can't see our target
 		if ( NPC_GetMoveDirection( forward, &distance ) == qfalse )
@@ -344,6 +349,7 @@ Interrogator_Melee
 */
 void Interrogator_Melee( qboolean visible, qboolean advance )
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( TIMER_Done( NPC, "attackDelay" ) )	// Attack?
 	{
 		// Make sure that we are within the height range before we allow any damage to happen
@@ -367,7 +373,7 @@ void Interrogator_Melee( qboolean visible, qboolean advance )
 		}
 	}
 
-	if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+	if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 	{
 		Interrogator_Hunt( visible, advance );
 	}
@@ -380,9 +386,10 @@ Interrogator_Attack
 */
 void Interrogator_Attack( void )
 {
-	float		distance;	
+	float		distance;
 	qboolean	visible;
 	qboolean	advance;
+	gentity_t *NPC = NPCS.NPC;
 
 	// Always keep a good height off the ground
 	Interrogator_MaintainHeight();
@@ -414,7 +421,7 @@ void Interrogator_Attack( void )
 	{
 		advance = qtrue;
 	}
-	if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+	if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 	{
 		Interrogator_Hunt( visible, advance );
 	}
@@ -436,7 +443,7 @@ void Interrogator_Idle( void )
 {
 	if ( NPC_CheckPlayerTeamStealth() )
 	{
-		G_SoundOnEnt( NPC, CHAN_AUTO, "sound/chars/mark1/misc/anger.wav" );
+		G_SoundOnEnt( NPCS.NPC, CHAN_AUTO, "sound/chars/mark1/misc/anger.wav" );
 		NPC_UpdateAngles( qtrue, qtrue );
 		return;
 	}
@@ -455,7 +462,7 @@ void NPC_BSInterrogator_Default( void )
 {
 	//NPC->e_DieFunc = dieF_Interrogator_die;
 
-	if ( NPC->enemy )
+	if ( NPCS.NPC->enemy )
 	{
 		Interrogator_Attack();
 	}

@@ -115,15 +115,15 @@ Mark2_Hunt
 */
 void Mark2_Hunt(void)
 {
-	if ( NPCInfo->goalEntity == NULL )
+	if ( NPCS.NPCInfo->goalEntity == NULL )
 	{
-		NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 	}
 
 	// Turn toward him before moving towards him.
 	NPC_FaceEnemy( qtrue );
 
-	NPCInfo->combatMove = qtrue;
+	NPCS.NPCInfo->combatMove = qtrue;
 	NPC_MoveToGoal( qtrue );
 }
 
@@ -138,6 +138,7 @@ void Mark2_FireBlaster(qboolean advance)
 	static	vec3_t	forward, vright, up;
 //	static	vec3_t	muzzle;
 	gentity_t	*missile;
+	gentity_t *NPC = NPCS.NPC;
 	mdxaBone_t	boltMatrix;
 	int bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash");
 
@@ -183,9 +184,10 @@ Mark2_BlasterAttack
 */
 void Mark2_BlasterAttack(qboolean advance)
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( TIMER_Done( NPC, "attackDelay" ) )	// Attack?
 	{
-		if (NPCInfo->localState == LSTATE_NONE)	// He's up so shoot less often.
+		if (NPCS.NPCInfo->localState == LSTATE_NONE)	// He's up so shoot less often.
 		{
 			TIMER_Set( NPC, "attackDelay", Q_irand( 500, 2000) );
 		}
@@ -212,6 +214,7 @@ void Mark2_AttackDecision( void )
 	float		distance;
 	qboolean	visible;
 	qboolean	advance;
+	gentity_t *NPC = NPCS.NPC;
 
 	NPC_FaceEnemy( qtrue );
 
@@ -220,14 +223,14 @@ void Mark2_AttackDecision( void )
 	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 
 	// He's been ordered to get up
-	if (NPCInfo->localState == LSTATE_RISINGUP)
+	if (NPCS.NPCInfo->localState == LSTATE_RISINGUP)
 	{
 		NPC->flags &= ~FL_SHIELDED;
 		NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1START, SETANIM_FLAG_HOLD|SETANIM_FLAG_OVERRIDE );
 		if ((NPC->client->ps.legsTimer<=0) && 
 			NPC->client->ps.torsoAnim == BOTH_RUN1START )
 		{
-			NPCInfo->localState = LSTATE_NONE;	// He's up again.
+			NPCS.NPCInfo->localState = LSTATE_NONE;	// He's up again.
 		}
 		return;
 	}
@@ -236,11 +239,11 @@ void Mark2_AttackDecision( void )
 	if ((!visible) || (!NPC_FaceEnemy(qtrue)))
 	{
 		// If he's going down or is down, make him get up
-		if ((NPCInfo->localState == LSTATE_DOWN) || (NPCInfo->localState == LSTATE_DROPPINGDOWN))
+		if ((NPCS.NPCInfo->localState == LSTATE_DOWN) || (NPCS.NPCInfo->localState == LSTATE_DROPPINGDOWN))
 		{
 			if ( TIMER_Done( NPC, "downTime" ) )	// Down being down?? (The delay is so he doesn't pop up and down when the player goes in and out of range)
 			{
-				NPCInfo->localState = LSTATE_RISINGUP;
+				NPCS.NPCInfo->localState = LSTATE_RISINGUP;
 				NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1STOP, SETANIM_FLAG_HOLD|SETANIM_FLAG_OVERRIDE );
 				TIMER_Set( NPC, "runTime", Q_irand( 3000, 8000) );	// So he runs for a while before testing to see if he should drop down.
 			}
@@ -253,9 +256,9 @@ void Mark2_AttackDecision( void )
 	}
 
 	// He's down but he could advance if he wants to.
-	if ((advance) && (TIMER_Done( NPC, "downTime" )) && (NPCInfo->localState == LSTATE_DOWN))
+	if ((advance) && (TIMER_Done( NPC, "downTime" )) && (NPCS.NPCInfo->localState == LSTATE_DOWN))
 	{
-		NPCInfo->localState = LSTATE_RISINGUP;
+		NPCS.NPCInfo->localState = LSTATE_RISINGUP;
 		NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1STOP, SETANIM_FLAG_HOLD|SETANIM_FLAG_OVERRIDE );
 		TIMER_Set( NPC, "runTime", Q_irand( 3000, 8000) );	// So he runs for a while before testing to see if he should drop down.
 	}
@@ -263,7 +266,7 @@ void Mark2_AttackDecision( void )
 	NPC_FaceEnemy( qtrue );
 
 	// Dropping down to shoot
-	if (NPCInfo->localState == LSTATE_DROPPINGDOWN)
+	if (NPCS.NPCInfo->localState == LSTATE_DROPPINGDOWN)
 	{
 		NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1STOP, SETANIM_FLAG_HOLD|SETANIM_FLAG_OVERRIDE );
 		TIMER_Set( NPC, "downTime", Q_irand( 3000, 9000) );
@@ -271,11 +274,11 @@ void Mark2_AttackDecision( void )
 		if ((NPC->client->ps.legsTimer<=0) && NPC->client->ps.torsoAnim == BOTH_RUN1STOP )
 		{
 			NPC->flags |= FL_SHIELDED;
-			NPCInfo->localState = LSTATE_DOWN;
+			NPCS.NPCInfo->localState = LSTATE_DOWN;
 		}
 	}
 	// He's down and shooting
-	else if (NPCInfo->localState == LSTATE_DOWN)
+	else if (NPCS.NPCInfo->localState == LSTATE_DOWN)
 	{
 		NPC->flags |= FL_SHIELDED;//only damagable by lightsabers and missiles
 
@@ -283,7 +286,7 @@ void Mark2_AttackDecision( void )
 	}
 	else if (TIMER_Done( NPC, "runTime" ))	// Lowering down to attack. But only if he's done running at you.
 	{
-		NPCInfo->localState = LSTATE_DROPPINGDOWN;
+		NPCS.NPCInfo->localState = LSTATE_DROPPINGDOWN;
 	}
 	else if (advance)
 	{
@@ -300,6 +303,7 @@ Mark2_Patrol
 */
 void Mark2_Patrol( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( NPC_CheckPlayerTeamStealth() )
 	{
 //		G_Sound( NPC, G_SoundIndex("sound/chars/mark1/misc/anger.wav"));
@@ -312,7 +316,7 @@ void Mark2_Patrol( void )
 	{
 		if ( UpdateGoal() )
 		{
-			ucmd.buttons |= BUTTON_WALKING;
+			NPCS.ucmd.buttons |= BUTTON_WALKING;
 			NPC_MoveToGoal( qtrue );
 			NPC_UpdateAngles( qtrue, qtrue );
 		}
@@ -344,12 +348,13 @@ NPC_BSMark2_Default
 */
 void NPC_BSMark2_Default( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( NPC->enemy )
 	{
-		NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
 		Mark2_AttackDecision();
 	}
-	else if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
+	else if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 	{
 		Mark2_Patrol();
 	}

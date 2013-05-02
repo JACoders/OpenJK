@@ -1,5 +1,4 @@
-#ifndef __Q_SHARED_H
-#define __Q_SHARED_H
+#pragma once
 
 // q_shared.h -- included first by ALL program modules.
 // these are the definitions that have no dependance on
@@ -787,6 +786,3 @@ void Info_NextPair( const char *(*s), char key[MAX_INFO_KEY], char value[MAX_INF
 // get the flags class
 //#include "../shared/idflags.h"
 #endif	// __cplusplus
-
-#endif	// __Q_SHARED_H
-

@@ -446,7 +446,7 @@ qboolean BG_LegalizedForcePowers(char *powerOut, int maxRank, qboolean freeSaber
 	{
 		countDown = 0;
 
-		countDown = final_Powers[i];
+		countDown = Com_Clampi( 0, NUM_FORCE_POWER_LEVELS, final_Powers[i] );
 
 		while (countDown > 0)
 		{

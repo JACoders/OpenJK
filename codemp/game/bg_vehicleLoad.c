@@ -1370,7 +1370,7 @@ int VEH_VehicleIndexForName( const char *vehicleName )
 	//haven't loaded it yet
 	if ( v >= MAX_VEHICLES )
 	{//no more room!
-		Com_Printf( S_COLOR_RED"ERROR: Too many Vehicles (max 64), aborting load on %s!\n", vehicleName );
+		Com_Printf( S_COLOR_RED"ERROR: Too many Vehicles (max %d), aborting load on %s!\n", MAX_VEHICLES, vehicleName );
 		return VEHICLE_NONE;
 	}
 	//we have room for another one, load it up and return the index
@@ -1586,40 +1586,31 @@ int BG_VehicleGetIndex( const char *vehicleName )
 //with a $ in front of it.
 //we are expected to then get the model for the
 //vehicle and stomp over modelname with it.
-void BG_GetVehicleModelName(char *modelname)
+void BG_GetVehicleModelName(char *modelname, int len)
 {
 	char *vehName = &modelname[1];
 	int vIndex = BG_VehicleGetIndex(vehName);
 	assert(modelname[0] == '$');
 	
 	if (vIndex == VEHICLE_NONE)
-	{
 		Com_Error(ERR_DROP, "BG_GetVehicleModelName:  couldn't find vehicle %s", vehName);
-	}
 
-    strcpy(modelname, g_vehicleInfo[vIndex].model);	
+	Q_strncpyz( modelname, g_vehicleInfo[vIndex].model, len );
 }
 
-void BG_GetVehicleSkinName(char *skinname)
+void BG_GetVehicleSkinName(char *skinname, int len)
 {
 	char *vehName = &skinname[1];
 	int vIndex = BG_VehicleGetIndex(vehName);
 	assert(skinname[0] == '$');
 	
 	if (vIndex == VEHICLE_NONE)
-	{
 		Com_Error(ERR_DROP, "BG_GetVehicleSkinName:  couldn't find vehicle %s", vehName);
-	}
 
-    if ( !g_vehicleInfo[vIndex].skin 
-		|| !g_vehicleInfo[vIndex].skin[0] )
-	{
+    if ( !VALIDSTRING( g_vehicleInfo[vIndex].skin ) )
 		skinname[0] = 0;
-	}
 	else
-	{
-		strcpy(skinname, g_vehicleInfo[vIndex].skin);	
-	}
+		Q_strncpyz( skinname, g_vehicleInfo[vIndex].skin, len );
 }
 
 #ifdef _JK2MP

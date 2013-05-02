@@ -106,10 +106,9 @@ Mark1_Idle
 */
 void Mark1_Idle( void )
 {
-
 	NPC_BSIdle();
 
-	NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_SLEEP1, SETANIM_FLAG_NORMAL );
+	NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, BOTH_SLEEP1, SETANIM_FLAG_NORMAL );
 }
 
 /*
@@ -123,7 +122,7 @@ void Mark1Dead_FireRocket (void)
 	mdxaBone_t	boltMatrix;
 	vec3_t	muzzle1,muzzle_dir;
 	gentity_t *missile;
-
+	gentity_t *NPC = NPCS.NPC;
 	int	damage	= 50;
 	int bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash5");
 
@@ -172,6 +171,7 @@ void Mark1Dead_FireBlaster (void)
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
 	int			bolt;
+	gentity_t *NPC = NPCS.NPC;
 
 	bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash1"); 
 
@@ -402,14 +402,14 @@ Mark1_Hunt
 void Mark1_Hunt(void)
 {
 
-	if ( NPCInfo->goalEntity == NULL )
+	if ( NPCS.NPCInfo->goalEntity == NULL )
 	{
-		NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 	}
 
 	NPC_FaceEnemy( qtrue );
 
-	NPCInfo->combatMove = qtrue;
+	NPCS.NPCInfo->combatMove = qtrue;
 	NPC_MoveToGoal( qtrue );
 }
 
@@ -427,26 +427,27 @@ void Mark1_FireBlaster(void)
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
 	int			bolt;
+	gentity_t *NPC = NPCS.NPC;
 
 	// Which muzzle to fire from?
-	if ((NPCInfo->localState <= LSTATE_FIRED0) || (NPCInfo->localState == LSTATE_FIRED4)) 
+	if ((NPCS.NPCInfo->localState <= LSTATE_FIRED0) || (NPCS.NPCInfo->localState == LSTATE_FIRED4)) 
 	{
-		NPCInfo->localState = LSTATE_FIRED1;
+		NPCS.NPCInfo->localState = LSTATE_FIRED1;
 		bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash1"); 
 	}
-	else if (NPCInfo->localState == LSTATE_FIRED1)
+	else if (NPCS.NPCInfo->localState == LSTATE_FIRED1)
 	{
-		NPCInfo->localState = LSTATE_FIRED2;
+		NPCS.NPCInfo->localState = LSTATE_FIRED2;
 		bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash2"); 
 	}
-	else if (NPCInfo->localState == LSTATE_FIRED2)
+	else if (NPCS.NPCInfo->localState == LSTATE_FIRED2)
 	{
-		NPCInfo->localState = LSTATE_FIRED3;
+		NPCS.NPCInfo->localState = LSTATE_FIRED3;
 		bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash3"); 
 	}
 	else
 	{
-		NPCInfo->localState = LSTATE_FIRED4;
+		NPCS.NPCInfo->localState = LSTATE_FIRED4;
 		bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash4"); 
 	}
 
@@ -493,27 +494,28 @@ Mark1_BlasterAttack
 void Mark1_BlasterAttack(qboolean advance )
 {
 	int chance;
+	gentity_t *NPC = NPCS.NPC;
 
 	if ( TIMER_Done( NPC, "attackDelay" ) )	// Attack?
 	{
 		chance = Q_irand( 1, 5);
 	
-		NPCInfo->burstCount++;
+		NPCS.NPCInfo->burstCount++;
 
-		if (NPCInfo->burstCount<3)	// Too few shots this burst?
+		if (NPCS.NPCInfo->burstCount<3)	// Too few shots this burst?
 		{
 			chance = 2;				// Force it to keep firing.
 		}
-		else if (NPCInfo->burstCount>12)	// Too many shots fired this burst?
+		else if (NPCS.NPCInfo->burstCount>12)	// Too many shots fired this burst?
 		{
-			NPCInfo->burstCount = 0;
+			NPCS.NPCInfo->burstCount = 0;
 			chance = 1;				// Force it to stop firing.
 		}
 
 		// Stop firing.
 		if (chance == 1)
 		{
-			NPCInfo->burstCount = 0;
+			NPCS.NPCInfo->burstCount = 0;
 			TIMER_Set( NPC, "attackDelay", Q_irand( 1000, 3000) );
 			NPC->client->ps.torsoTimer=0;						// Just in case the firing anim is running.
 		}
@@ -555,6 +557,7 @@ void Mark1_FireRocket(void)
 	mdxaBone_t	boltMatrix;
 	vec3_t	muzzle1,enemy_org1,delta1,angleToEnemy1;
 	static	vec3_t	forward, vright, up;
+	gentity_t *NPC = NPCS.NPC;
 	int bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash5");
 	gentity_t *missile;
 
@@ -603,6 +606,7 @@ Mark1_RocketAttack
 */
 void Mark1_RocketAttack( qboolean advance )
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( TIMER_Done( NPC, "attackDelay" ) )	// Attack?
 	{
 		TIMER_Set( NPC, "attackDelay", Q_irand( 1000, 3000) );
@@ -627,6 +631,7 @@ void Mark1_AttackDecision( void )
 	distance_e	distRate;
 	qboolean	visible;
 	qboolean	advance;
+	gentity_t *NPC = NPCS.NPC;
 
 	//randomly talk
 	if ( TIMER_Done(NPC,"patrolNoise") )
@@ -708,6 +713,7 @@ Mark1_Patrol
 */
 void Mark1_Patrol( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( NPC_CheckPlayerTeamStealth() )
 	{
 		G_Sound( NPC, CHAN_AUTO, G_SoundIndex("sound/chars/mark1/misc/mark1_wakeup"));
@@ -720,7 +726,7 @@ void Mark1_Patrol( void )
 	{
 		if ( UpdateGoal() )
 		{
-			ucmd.buttons |= BUTTON_WALKING;
+			NPCS.ucmd.buttons |= BUTTON_WALKING;
 			NPC_MoveToGoal( qtrue );
 			NPC_UpdateAngles( qtrue, qtrue );
 		}
@@ -744,14 +750,15 @@ NPC_BSMark1_Default
 */
 void NPC_BSMark1_Default( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	//NPC->e_DieFunc = dieF_Mark1_die;
 
 	if ( NPC->enemy )
 	{
-		NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
 		Mark1_AttackDecision();
 	}
-	else if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
+	else if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 	{
 		Mark1_Patrol();
 	}

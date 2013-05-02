@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(RM_MISSION_H_INC)
-#define RM_MISSION_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including RM_Mission.h")
@@ -124,6 +122,3 @@ private:
 //	void			SpawnNPCTriggers		( CCMLandScape* landscape );
 //	void			AttachNPCTriggers		( CCMLandScape* landscape );
 };
-
-
-#endif

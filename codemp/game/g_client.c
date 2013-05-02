@@ -1493,7 +1493,7 @@ void *g2SaberInstance = NULL;
 
 qboolean BG_IsValidCharacterModel(const char *modelName, const char *skinName);
 qboolean BG_ValidateSkinForTeam( const char *modelName, char *skinName, int team, float *colors );
-void BG_GetVehicleModelName(char *modelname);
+void BG_GetVehicleModelName(char *modelname, int len);
 
 void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 {
@@ -1553,8 +1553,8 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 			// If this is a vehicle, get it's model name.
 			if ( ent->client->NPC_class == CLASS_VEHICLE )
 			{
-				strcpy(vehicleName, modelname);
-				BG_GetVehicleModelName(modelname);
+				Q_strncpyz( vehicleName, modelname, sizeof( vehicleName ) );
+				BG_GetVehicleModelName(modelname, strlen( modelname ));
 				strcpy(truncModelName, modelname);
 				skin[0] = 0;
 				if ( ent->m_pVehicle
@@ -1630,7 +1630,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 							siegeClass_t *scl = &bgSiegeClasses[ent->client->siegeClass];
 							if (scl->forcedSkin[0])
 							{
-								strcpy(skin, scl->forcedSkin);
+								Q_strncpyz( skin, scl->forcedSkin, sizeof( skin ) );
 							}
 						}
 					}
@@ -3347,7 +3347,7 @@ void ClientSpawn(gentity_t *ent) {
 		{//In Team games, force one side to be merc and other to be jedi
 			if ( level.numPlayingClients > 0 )
 			{//already someone in the game
-				int		i, forceTeam = TEAM_SPECTATOR;
+				int forceTeam = TEAM_SPECTATOR;
 				for ( i = 0 ; i < level.maxclients ; i++ ) 
 				{
 					if ( level.clients[i].pers.connected == CON_DISCONNECTED ) {

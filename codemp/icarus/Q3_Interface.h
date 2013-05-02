@@ -1,5 +1,4 @@
-#ifndef __Q3_INTERFACE__
-#define __Q3_INTERFACE__
+#pragma once
 
 //NOTENOTE: The enums and tables in this file will obviously bitch if they are included multiple times, don't do that
 
@@ -293,5 +292,3 @@ extern	void		Q3_FreeVariable( const char *name );
 
 extern	void		Q3_DebugPrint( int level, const char *format, ... );
 #endif //__cplusplus
-
-#endif	//__Q3_INTERFACE__

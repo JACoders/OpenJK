@@ -47,8 +47,8 @@ FIXME do we need fat and thin version of this?
 qboolean CanSee ( gentity_t *ent ) 
 {
 	trace_t		tr;
-	vec3_t		eyes;
-	vec3_t		spot;
+	vec3_t		eyes, spot;
+	gentity_t *NPC = NPCS.NPC;
 
 	CalcEntitySpot( NPC, SPOT_HEAD_LEAN, eyes );
 
@@ -213,7 +213,8 @@ qboolean InVisrange ( gentity_t *ent )
 	vec3_t	eyes;
 	vec3_t	spot;
 	vec3_t	deltaVector;
-	float	visrange = (NPCInfo->stats.visrange*NPCInfo->stats.visrange);
+	float	visrange = (NPCS.NPCInfo->stats.visrange * NPCS.NPCInfo->stats.visrange);
+	gentity_t *NPC = NPCS.NPC;
 
 	CalcEntitySpot( NPC, SPOT_HEAD_LEAN, eyes );
 
@@ -256,6 +257,7 @@ NPC_CheckVisibility
 
 visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags ) 
 {
+	gentity_t *NPC = NPCS.NPC;
 	// flags should never be 0
 	if ( !flags ) 
 	{
@@ -301,7 +303,7 @@ visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags )
 	// check FOV
 	if ( flags & CHECK_FOV ) 
 	{
-		if ( !InFOV ( ent, NPC, NPCInfo->stats.hfov, NPCInfo->stats.vfov) ) 
+		if ( !InFOV ( ent, NPC, NPCS.NPCInfo->stats.hfov, NPCS.NPCInfo->stats.vfov) ) 
 		{
 			return VIS_360;
 		}
@@ -482,6 +484,7 @@ int G_CheckAlertEvents( gentity_t *self, qboolean checkSight, qboolean checkSoun
 	int bestSoundAlert = -1;
 	int bestSightAlert = -1;
 
+	//OJKFIXME: clientnum 0
 	if ( &g_entities[0] == NULL || g_entities[0].health <= 0 )
 	{
 		//player is dead
@@ -531,7 +534,8 @@ int G_CheckAlertEvents( gentity_t *self, qboolean checkSight, qboolean checkSoun
 
 int NPC_CheckAlertEvents( qboolean checkSight, qboolean checkSound, int ignoreAlert, qboolean mustHaveOwner, int minAlertLevel )
 {
-	return G_CheckAlertEvents( NPC, checkSight, checkSound, NPCInfo->stats.visrange, NPCInfo->stats.earshot, ignoreAlert, mustHaveOwner, minAlertLevel );
+	gentity_t *NPC = NPCS.NPC;
+	return G_CheckAlertEvents( NPC, checkSight, checkSound, NPCS.NPCInfo->stats.visrange, NPCS.NPCInfo->stats.earshot, ignoreAlert, mustHaveOwner, minAlertLevel );
 }
 
 qboolean G_CheckForDanger( gentity_t *self, int alertEvent )
@@ -567,6 +571,7 @@ qboolean G_CheckForDanger( gentity_t *self, int alertEvent )
 }
 qboolean NPC_CheckForDanger( int alertEvent )
 {//FIXME: more bStates need to call this?
+	gentity_t *NPC = NPCS.NPC;
 	return G_CheckForDanger( NPC, alertEvent );
 }
 

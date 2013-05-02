@@ -2337,10 +2337,11 @@ int BG_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 	int			nextIndex = bgNumAllAnims;
 	qboolean	dynAlloc = qfalse;
 	qboolean	wasLoaded = qfalse;
-	char		BGPAFtext[60000];
-
+	static char BGPAFtext[60000];
 	fileHandle_t	f;
 	int				animNum;
+
+	BGPAFtext[0] = '\0';
 
 	if (!isHumanoid)
 	{

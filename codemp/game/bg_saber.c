@@ -1161,7 +1161,7 @@ void PM_SaberLockBreak( playerState_t *genemy, qboolean victory, int strength )
 		{//there was some over-power in the win, but not enough to superbreak
 			vec3_t oppDir;
 
-			int strength = 8;
+			int newstrength = 8;
 
 			VectorSubtract(genemy->origin, pm->ps->origin, oppDir);
 			VectorNormalize(oppDir);
@@ -1184,8 +1184,8 @@ void PM_SaberLockBreak( playerState_t *genemy, qboolean victory, int strength )
 				genemy->otherKillerTime = pm->cmd.serverTime + 5000;
 				genemy->otherKillerDebounceTime = pm->cmd.serverTime + 100;
 
-				genemy->velocity[0] = oppDir[0]*(strength*40);
-				genemy->velocity[1] = oppDir[1]*(strength*40);
+				genemy->velocity[0] = oppDir[0]*(newstrength*40);
+				genemy->velocity[1] = oppDir[1]*(newstrength*40);
 				genemy->velocity[2] = 100;
 			}
 
@@ -1198,18 +1198,18 @@ void PM_SaberLockBreak( playerState_t *genemy, qboolean victory, int strength )
 	{ //If no one lost, then shove each player away from the other
 		vec3_t oppDir;
 
-		int strength = 4;
+		int newstrength = 4;
 
 		VectorSubtract(genemy->origin, pm->ps->origin, oppDir);
 		VectorNormalize(oppDir);
-		genemy->velocity[0] = oppDir[0]*(strength*40);
-		genemy->velocity[1] = oppDir[1]*(strength*40);
+		genemy->velocity[0] = oppDir[0]*(newstrength*40);
+		genemy->velocity[1] = oppDir[1]*(newstrength*40);
 		genemy->velocity[2] = 150;
 
 		VectorSubtract(pm->ps->origin, genemy->origin, oppDir);
 		VectorNormalize(oppDir);
-		pm->ps->velocity[0] = oppDir[0]*(strength*40);
-		pm->ps->velocity[1] = oppDir[1]*(strength*40);
+		pm->ps->velocity[0] = oppDir[0]*(newstrength*40);
+		pm->ps->velocity[1] = oppDir[1]*(newstrength*40);
 		pm->ps->velocity[2] = 150;
 
 		genemy->forceHandExtend = HANDEXTEND_WEAPONREADY;

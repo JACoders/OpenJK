@@ -225,7 +225,6 @@
     <ClInclude Include="icarus\instance.h" />
     <ClInclude Include="icarus\interface.h" />
     <ClInclude Include="icarus\interpreter.h" />
-    <ClInclude Include="icarus\module.h" />
     <ClInclude Include="icarus\sequence.h" />
     <ClInclude Include="icarus\sequencer.h" />
     <ClInclude Include="icarus\taskmanager.h" />

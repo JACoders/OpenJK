@@ -2,11 +2,7 @@
 #include "qcommon/exe_headers.h"
 // this include must remain at the top of every CPP file
 #include "client.h"
-
-
-#if !defined(FX_SCHEDULER_H_INC)
-	#include "FxScheduler.h"
-#endif
+#include "FxScheduler.h"
 
 vec3_t	WHITE = {1.0f, 1.0f, 1.0f};
 
@@ -91,7 +87,7 @@ int	FX_Init( refdef_t* refdef )
 	}
 	nextValidEffect = &effectList[0];
 
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 	fx_freeze = Cvar_Get("fx_freeze", "0", CVAR_CHEAT);
 #endif
 	fx_debug = Cvar_Get("fx_debug", "0", CVAR_TEMP);

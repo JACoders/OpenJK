@@ -2115,7 +2115,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	{ //kill everyone on board in the name of the attacker... if the vehicle has no death delay
 		gentity_t *murderer = NULL;
 		gentity_t *killEnt;
-		i = 0;
 
 		if (self->client->ps.otherKillerTime >= level.time)
 		{ //use the last attacker
@@ -2423,7 +2422,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 
 	self->client->ps.fd.forceDeactivateAll = 1;
 
-	if ((self == attacker || !attacker->client) &&
+	if ((self == attacker || (attacker && !attacker->client)) &&
 		(meansOfDeath == MOD_CRUSH || meansOfDeath == MOD_FALLING || meansOfDeath == MOD_TRIGGER_HURT || meansOfDeath == MOD_UNKNOWN) &&
 		self->client->ps.otherKillerTime > level.time)
 	{
@@ -2703,16 +2702,14 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	// send updated scores to any clients that are following this one,
 	// or they would get stale scoreboards
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		gclient_t	*client;
-
-		client = &level.clients[i];
-		if ( client->pers.connected != CON_CONNECTED ) {
+		gclient_t *cl = &level.clients[i];
+		if ( cl->pers.connected != CON_CONNECTED ) {
 			continue;
 		}
-		if ( client->sess.sessionTeam != TEAM_SPECTATOR ) {
+		if ( cl->sess.sessionTeam != TEAM_SPECTATOR ) {
 			continue;
 		}
-		if ( client->sess.spectatorClient == self->s.number ) {
+		if ( cl->sess.spectatorClient == self->s.number ) {
 			Cmd_Score_f( g_entities + i );
 		}
 	}
@@ -2767,7 +2764,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	{
 		// normal death
 		
-		static int i;
+		static int deathAnim;
 
 		anim = G_PickDeathAnim(self, self->pos1, damage, meansOfDeath, HL_NONE);
 
@@ -2814,11 +2811,11 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		//G_AddEvent( self, EV_DEATH1 + i, killer );
 		if (wasJediMaster)
 		{
-			G_AddEvent( self, EV_DEATH1 + i, 1 );
+			G_AddEvent( self, EV_DEATH1 + deathAnim, 1 );
 		}
 		else
 		{
-			G_AddEvent( self, EV_DEATH1 + i, 0 );
+			G_AddEvent( self, EV_DEATH1 + deathAnim, 0 );
 		}
 
 		if (self != attacker)
@@ -2836,7 +2833,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		self->takedamage = qtrue;
 
 		// globally cycle through the different death animations
-		i = ( i + 1 ) % 3;
+		deathAnim = ( deathAnim + 1 ) % 3;
 	}
 
 	if ( self->NPC )
@@ -2893,11 +2890,10 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		}
 		else if (self->client->sess.duelTeam == DUELTEAM_DOUBLE)
 		{
-			int i = 0;
 			gentity_t *check;
 			qboolean heLives = qfalse;
 
-			while (i < MAX_CLIENTS)
+			for ( i=0; i<MAX_CLIENTS; i++ )
 			{
 				check = &g_entities[i];
 				if (check->inuse && check->client && check->s.number != self->s.number &&
@@ -2909,7 +2905,6 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 					heLives = qtrue;
 					break;
 				}
-				i++;
 			}
 
 			if (!heLives)
@@ -3522,7 +3517,7 @@ void G_Dismember( gentity_t *ent, gentity_t *enemy, vec3_t point, int limbType, 
 	}
 
 	//Raz: Limbs now have team colours.
-	if ( g_gametype.integer >= GT_TEAM )
+	if ( g_gametype.integer >= GT_TEAM && ent->s.eType != ET_NPC )
 	{//Team game
 		switch ( ent->client->sess.sessionTeam )
 		{
@@ -3722,7 +3717,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 
 	if ( ent->client 
 		&& ( ent->client->NPC_class == CLASS_R2D2 
-			|| ent->client->NPC_class == CLASS_R2D2 
+			|| ent->client->NPC_class == CLASS_R5D2 
 			|| ent->client->NPC_class == CLASS_GONK
 			|| ent->client->NPC_class == CLASS_MOUSE
 			|| ent->client->NPC_class == CLASS_SENTRY

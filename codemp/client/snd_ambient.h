@@ -1,5 +1,4 @@
-#ifndef	__SND_AMBIENT__
-#define __SND_AMBIENT__
+#pragma once
 
 // Includes
 
@@ -114,5 +113,3 @@ extern void S_UpdateAmbientSet ( const char *name, vec3_t origin );
 extern int S_AddLocalSet( const char *name, vec3_t listener_origin, vec3_t origin, int entID, int time );
 
 extern sfxHandle_t	AS_GetBModelSound( const char *name, int stage );
-
-#endif	//__SND_AMBIENT__

@@ -11,14 +11,8 @@
 //rwwRMG - added:
 #include "qcommon/cm_local.h"
 #include "qcommon/cm_landscape.h"
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-#endif
-
-#if !defined (MINIHEAP_H_INC)
+#include "ghoul2/G2.h"
 #include "qcommon/MiniHeap.h"
-#endif
 
 #ifdef _DONETPROFILE_
 #include "qcommon/INetProfile.h"

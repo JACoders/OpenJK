@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 
@@ -13,6 +15,8 @@
  * $Date: 2003/03/15 23:43:59 $
  *
  *****************************************************************************/
+
+#define AASINTERN
 
 #ifndef MAX_STRINGFIELD
 #define MAX_STRINGFIELD				80

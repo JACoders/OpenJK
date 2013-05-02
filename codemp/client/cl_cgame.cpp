@@ -3,28 +3,16 @@
 #include "qcommon/exe_headers.h"
 
 #include "RMG/RM_Headers.h"
-
 #include "client.h"
-
 #include "botlib/botlib.h"
-
 #include "RMG/RM_Headers.h"
-
-#if !defined(FX_EXPORT_H_INC)
-	#include "FXExport.h"
-#endif
-
+#include "FXExport.h"
 #include "FxUtil.h"
-
-#if !defined(CROFFSYSTEM_H_INC)
-	#include "qcommon/RoffSystem.h"
-#endif
+#include "qcommon/RoffSystem.h"
 
 #ifdef _DONETPROFILE_
 #include "qcommon/INetProfile.h"
 #endif
-
-//#include "renderer/tr_WorldEffects.h"
 
 #ifdef VV_LIGHTING
 #include "renderer/tr_lightmanager.h"
@@ -34,29 +22,19 @@
 Ghoul2 Insert Start
 */
 
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2_local.h"
-#endif
-
 #include "qcommon/stringed_ingame.h"
-
 #include "ghoul2/G2_gore.h"
 
 extern CMiniHeap *G2VertSpaceClient;
 
 #include "snd_ambient.h"
-
 #include "qcommon/timing.h"
-
-//#include "renderer/tr_local.h"
 
 //extern int contentOverride;
 
 /*
 Ghoul2 Insert End
 */
-
-//#include "cgame/cg_local.h"
 
 extern	botlib_export_t	*botlib_export;
 

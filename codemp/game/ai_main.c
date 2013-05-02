@@ -32,7 +32,6 @@
 //
 #include "chars.h"
 #include "inv.h"
-#include "syn.h"
 
 /*
 #define BOT_CTF_DEBUG	1

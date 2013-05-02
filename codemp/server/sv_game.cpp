@@ -3,26 +3,15 @@
 #include "qcommon/exe_headers.h"
 
 #include "server.h"
-
 #include "botlib/botlib.h"
 #include "qcommon/stringed_ingame.h"
-
-#if !defined(CROFFSYSTEM_H_INC)
-	#include "qcommon/RoffSystem.h"
-#endif
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/ghoul2_shared.h"
-#endif
-
+#include "qcommon/RoffSystem.h"
+#include "ghoul2/ghoul2_shared.h"
 #include "RMG/RM_Headers.h"
 #include "qcommon/cm_local.h"
 #include "qcommon/cm_public.h"
-
 #include "icarus/GameInterface.h"
-
 #include "qcommon/timing.h"
-
 #include "NPCNav/navigator.h"
 
 botlib_export_t	*botlib_export;

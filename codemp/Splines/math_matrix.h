@@ -1,5 +1,4 @@
-#ifndef __MATH_MATRIX_H__
-#define __MATH_MATRIX_H__
+#pragma once
 
 #include <string.h>
 #include "math_vector.h"
@@ -198,5 +197,3 @@ ID_INLINE mat3_t SkewSymmetric( idVec3_t const &src ) {
 }
 
 extern mat3_t mat3_default;
-
-#endif /* !__MATH_MATRIX_H__ */

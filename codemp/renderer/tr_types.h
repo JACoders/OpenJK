@@ -1,8 +1,7 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
-#ifndef __TR_TYPES_H
-#define __TR_TYPES_H
-
 
 #define	MAX_DLIGHTS		32			// can't be increased, because bit flags are used on surfaces
 #define	MAX_ENTITIES	2048		// 11 bits, can't be increased without changing drawsurf bit packing (QSORT_ENTITYNUM_SHIFT)
@@ -387,6 +386,3 @@ typedef struct {
 #define OPENGL_DRIVER_NAME	"opengl32"
 
 #endif	// !defined _WIN32
-
-
-#endif	// __TR_TYPES_H

@@ -3,13 +3,9 @@
 
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
-
 #include "renderer/tr_types.h"
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-#endif
-	#include "G2_local.h"
+#include "ghoul2/G2.h"
+#include "G2_local.h"
 #pragma warning(disable : 4512)		//assignment op could not be genereated
 
 class CConstructBoneList

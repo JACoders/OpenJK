@@ -1,8 +1,4 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-#if !defined(GHOUL2_SHARED_H_INC)
-#define GHOUL2_SHARED_H_INC
 
 /*
 Ghoul2 Insert Start
@@ -19,7 +15,6 @@ Ghoul2 Insert End
 #define MDXABONEDEF
 #include "renderer/mdx_format.h"
 #include "renderer/tr_types.h"
-//#include "client/client.h"
 #include "qcommon/matcomp.h"
 #include "ghoul2/G2_gore.h"
 
@@ -476,5 +471,3 @@ enum EG2_Collision
 
 
 //====================================================================
-
-#endif // GHOUL2_SHARED_H_INC

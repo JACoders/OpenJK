@@ -1,7 +1,3 @@
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
-
-	    
 #include "b_local.h"
 
 extern void G_GetBoltPosition( gentity_t *self, int boltIndex, vec3_t pos, int modelIndex );
@@ -52,12 +48,12 @@ Rancor_Idle
 */
 void Rancor_Idle( void )
 {
-	NPCInfo->localState = LSTATE_CLEAR;
+	NPCS.NPCInfo->localState = LSTATE_CLEAR;
 
 	//If we have somewhere to go, then do that
 	if ( UpdateGoal() )
 	{
-		ucmd.buttons &= ~BUTTON_WALKING;
+		NPCS.ucmd.buttons &= ~BUTTON_WALKING;
 		NPC_MoveToGoal( qtrue );
 	}
 }
@@ -82,12 +78,13 @@ Rancor_Patrol
 */
 void Rancor_Patrol( void )
 {
-	NPCInfo->localState = LSTATE_CLEAR;
+	gentity_t *NPC = NPCS.NPC;
+	NPCS.NPCInfo->localState = LSTATE_CLEAR;
 
 	//If we have somewhere to go, then do that
 	if ( UpdateGoal() )
 	{
-		ucmd.buttons &= ~BUTTON_WALKING;
+		NPCS.ucmd.buttons &= ~BUTTON_WALKING;
 		NPC_MoveToGoal( qtrue );
 	}
 	else
@@ -114,18 +111,18 @@ Rancor_Move
 */
 void Rancor_Move( qboolean visible )
 {
-	if ( NPCInfo->localState != LSTATE_WAITING )
+	if ( NPCS.NPCInfo->localState != LSTATE_WAITING )
 	{
-		NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 		if ( !NPC_MoveToGoal( qtrue ) )
 		{
-			NPCInfo->consecutiveBlockedMoves++;
+			NPCS.NPCInfo->consecutiveBlockedMoves++;
 		}
 		else
 		{
-			NPCInfo->consecutiveBlockedMoves = 0;
+			NPCS.NPCInfo->consecutiveBlockedMoves = 0;
 		}
-		NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
+		NPCS.NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
 	}
 }
 
@@ -201,6 +198,7 @@ void Rancor_Swing( qboolean tryGrab )
 	const float	radiusSquared = (radius*radius);
 	int			i;
 	vec3_t		boltOrg;
+	gentity_t *NPC = NPCS.NPC;
 
 	numEnts = NPC_GetEntsNearBolt( radiusEntNums, radius, NPC->client->renderInfo.handRBolt, boltOrg );
 
@@ -315,6 +313,7 @@ void Rancor_Smash( void )
 	float		distSq;
 	int			i;
 	vec3_t		boltOrg;
+	gentity_t *NPC = NPCS.NPC;
 
 	AddSoundEvent( NPC, NPC->r.currentOrigin, 512, AEL_DANGER, qfalse );//, qtrue );
 
@@ -374,6 +373,7 @@ void Rancor_Bite( void )
 	const float	radiusSquared = (radius*radius);
 	int			i;
 	vec3_t		boltOrg;
+	gentity_t *NPC = NPCS.NPC;
 
 	numEnts = NPC_GetEntsNearBolt( radiusEntNums, radius, NPC->client->renderInfo.crotchBolt, boltOrg );//was gutBolt?
 
@@ -430,6 +430,8 @@ void Rancor_Bite( void )
 extern void TossClientItems( gentity_t *self );
 void Rancor_Attack( float distance, qboolean doCharge )
 {
+	gentity_t *NPC = NPCS.NPC;
+
 	if ( !TIMER_Exists( NPC, "attacking" ) )
 	{
 		if ( NPC->count == 2 && NPC->activator )
@@ -616,11 +618,13 @@ void Rancor_Attack( float distance, qboolean doCharge )
 //----------------------------------
 void Rancor_Combat( void )
 {
+	gentity_t *NPC = NPCS.NPC;
+
 	if ( NPC->count )
 	{//holding my enemy
 		if ( TIMER_Done2( NPC, "takingPain", qtrue ))
 		{
-			NPCInfo->localState = LSTATE_CLEAR;
+			NPCS.NPCInfo->localState = LSTATE_CLEAR;
 		}
 		else
 		{
@@ -632,18 +636,18 @@ void Rancor_Combat( void )
 	// If we cannot see our target or we have somewhere to go, then do that
 	if ( !NPC_ClearLOS4( NPC->enemy ) )//|| UpdateGoal( ))
 	{
-		NPCInfo->combatMove = qtrue;
-		NPCInfo->goalEntity = NPC->enemy;
-		NPCInfo->goalRadius = MIN_DISTANCE;//MAX_DISTANCE;	// just get us within combat range
+		NPCS.NPCInfo->combatMove = qtrue;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalRadius = MIN_DISTANCE;//MAX_DISTANCE;	// just get us within combat range
 
 		if ( !NPC_MoveToGoal( qtrue ) )
 		{//couldn't go after him?  Look for a new one
 			TIMER_Set( NPC, "lookForNewEnemy", 0 );
-			NPCInfo->consecutiveBlockedMoves++;
+			NPCS.NPCInfo->consecutiveBlockedMoves++;
 		}
 		else 
 		{
-			NPCInfo->consecutiveBlockedMoves = 0;
+			NPCS.NPCInfo->consecutiveBlockedMoves = 0;
 		}
 		return;
 	}
@@ -680,11 +684,11 @@ void Rancor_Combat( void )
 		{
 			if ( TIMER_Done2( NPC, "takingPain", qtrue ))
 			{
-				NPCInfo->localState = LSTATE_CLEAR;
+				NPCS.NPCInfo->localState = LSTATE_CLEAR;
 			}
 			else
 			{
-				Rancor_Move( 1 );
+				Rancor_Move( qtrue );
 			}
 		}
 		else
@@ -783,11 +787,10 @@ void NPC_Rancor_Pain( gentity_t *self, gentity_t *attacker, int damage )
 
 void Rancor_CheckDropVictim( void )
 {
-	vec3_t mins;
-	vec3_t maxs;
-	vec3_t start; 
-	vec3_t end; 
+	vec3_t mins, maxs;
+	vec3_t start, end; 
 	trace_t	trace;
+	gentity_t *NPC = NPCS.NPC;
 
 	VectorSet( mins, NPC->activator->r.mins[0]-1, NPC->activator->r.mins[1]-1, 0 );
 	VectorSet( maxs, NPC->activator->r.maxs[0]+1, NPC->activator->r.maxs[1]+1, 1 );
@@ -805,6 +808,7 @@ void Rancor_CheckDropVictim( void )
 void Rancor_Crush(void)
 {
 	gentity_t *crush;
+	gentity_t *NPC = NPCS.NPC;
 
 	if (!NPC ||
 		!NPC->client ||
@@ -827,6 +831,7 @@ NPC_BSRancor_Default
 */
 void NPC_BSRancor_Default( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	AddSightEvent( NPC, NPC->r.currentOrigin, 1024, AEL_DANGER_GREAT, 50 );
 
 	Rancor_Crush();
@@ -915,7 +920,7 @@ void NPC_BSRancor_Default( void )
 			{
 				gentity_t *newEnemy, *sav_enemy = NPC->enemy;//FIXME: what about NPC->lastEnemy?
 				NPC->enemy = NULL;
-				newEnemy = NPC_CheckEnemy( NPCInfo->confusionTime < level.time, qfalse, qfalse );
+				newEnemy = NPC_CheckEnemy( NPCS.NPCInfo->confusionTime < level.time, qfalse, qfalse );
 				NPC->enemy = sav_enemy;
 				if ( newEnemy && newEnemy != sav_enemy )
 				{//picked up a new enemy!
@@ -941,7 +946,7 @@ void NPC_BSRancor_Default( void )
 			TIMER_Set( NPC, "idlenoise", Q_irand( 2000, 4000 ) );
 			AddSoundEvent( NPC, NPC->r.currentOrigin, 384, AEL_DANGER, qfalse );//, qfalse );
 		}
-		if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
+		if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 		{
 			Rancor_Patrol();
 		}

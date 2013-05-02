@@ -5293,7 +5293,6 @@ void G_SPSaberDamageTraceLerped( gentity_t *self, int saberNum, int bladeNum, ve
 		if ( saberHitFraction < 1.0f )
 		{
 			//adjust muzzleDir...
-			vec3_t ma1, ma2;
 			vectoangles( md1, ma1 );
 			vectoangles( md2, ma2 );
 			for ( xx = 0; xx < 3; xx++ )

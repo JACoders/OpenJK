@@ -1,6 +1,4 @@
-#ifndef __FIXEDMAP_H
-#define __FIXEDMAP_H
-
+#pragma once
 
 /*
    An STL map-like container.  Quickly thrown together to replace STL maps
@@ -143,6 +141,3 @@ public:
 		}
 	}
 };
-
-
-#endif

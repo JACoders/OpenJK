@@ -36,7 +36,7 @@ void MineMonster_Idle( void )
 {
 	if ( UpdateGoal() )
 	{
-		ucmd.buttons &= ~BUTTON_WALKING;
+		NPCS.ucmd.buttons &= ~BUTTON_WALKING;
 		NPC_MoveToGoal( qtrue );
 	}
 }
@@ -50,13 +50,14 @@ MineMonster_Patrol
 void MineMonster_Patrol( void )
 {
 	vec3_t dif;
+	gentity_t *NPC = NPCS.NPC;
 
-	NPCInfo->localState = LSTATE_CLEAR;
+	NPCS.NPCInfo->localState = LSTATE_CLEAR;
 
 	//If we have somewhere to go, then do that
 	if ( UpdateGoal() )
 	{
-		ucmd.buttons &= ~BUTTON_WALKING;
+		NPCS.ucmd.buttons &= ~BUTTON_WALKING;
 		NPC_MoveToGoal( qtrue );
 	}
 	else
@@ -89,11 +90,11 @@ MineMonster_Move
 */
 void MineMonster_Move( qboolean visible )
 {
-	if ( NPCInfo->localState != LSTATE_WAITING )
+	if ( NPCS.NPCInfo->localState != LSTATE_WAITING )
 	{
-		NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 		NPC_MoveToGoal( qtrue );
-		NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
+		NPCS.NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
 	}
 }
 
@@ -102,6 +103,7 @@ void MineMonster_TryDamage( gentity_t *enemy, int damage )
 {
 	vec3_t	end, dir;
 	trace_t	tr;
+	gentity_t *NPC = NPCS.NPC;
 
 	if ( !enemy )
 	{
@@ -128,6 +130,7 @@ void MineMonster_TryDamage( gentity_t *enemy, int damage )
 //------------------------------
 void MineMonster_Attack( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( !TIMER_Exists( NPC, "attacking" ))
 	{
 		// usually try and play a jump attack if the player somehow got above them....or just really rarely
@@ -190,13 +193,14 @@ void MineMonster_Combat( void )
 {
 	float distance;
 	qboolean advance;
+	gentity_t *NPC = NPCS.NPC;
 
 	// If we cannot see our target or we have somewhere to go, then do that
 	if ( !NPC_ClearLOS4( NPC->enemy ) || UpdateGoal( ))
 	{
-		NPCInfo->combatMove = qtrue;
-		NPCInfo->goalEntity = NPC->enemy;
-		NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
+		NPCS.NPCInfo->combatMove = qtrue;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalRadius = MAX_DISTANCE;	// just get us within combat range
 
 		NPC_MoveToGoal( qtrue );
 		return;
@@ -209,15 +213,15 @@ void MineMonster_Combat( void )
 
 	advance = (qboolean)( distance > MIN_DISTANCE_SQR ? qtrue : qfalse  );
 
-	if (( advance || NPCInfo->localState == LSTATE_WAITING ) && TIMER_Done( NPC, "attacking" )) // waiting monsters can't attack
+	if (( advance || NPCS.NPCInfo->localState == LSTATE_WAITING ) && TIMER_Done( NPC, "attacking" )) // waiting monsters can't attack
 	{
 		if ( TIMER_Done2( NPC, "takingPain", qtrue ))
 		{
-			NPCInfo->localState = LSTATE_CLEAR;
+			NPCS.NPCInfo->localState = LSTATE_CLEAR;
 		}
 		else
 		{
-			MineMonster_Move( 1 );
+			MineMonster_Move( qtrue );
 		}
 	}
 	else
@@ -261,11 +265,11 @@ NPC_BSMineMonster_Default
 */
 void NPC_BSMineMonster_Default( void )
 {
-	if ( NPC->enemy )
+	if ( NPCS.NPC->enemy )
 	{
 		MineMonster_Combat();
 	}
-	else if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
+	else if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 	{
 		MineMonster_Patrol();
 	}

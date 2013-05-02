@@ -1,9 +1,7 @@
+#pragma once
+
 // Filename:-	stringed_ingame.h
 //
-
-#ifndef STRINGED_INGAME_H
-#define	STRINGED_INGAME_H
-
 
 // alter these to suit your own game...
 //
@@ -103,8 +101,4 @@ inline SE_BOOL Language_IsThai(void)
 	return (se_language && !Q_stricmp(se_language->string, "thai")) ? SE_TRUE : SE_FALSE;
 }
 
-
-#endif	// #ifndef STRINGED_INGAME_H
-
 /////////////////// eof ////////////////
-

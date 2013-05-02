@@ -7,7 +7,6 @@
 
 // this include must remain at the top of every Icarus CPP file
 #include "icarus.h"
-//#include "g_headers.h"
 
 #include "assert.h"
 

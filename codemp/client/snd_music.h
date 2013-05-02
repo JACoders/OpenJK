@@ -1,11 +1,8 @@
+#pragma once
+
 // Filename:-	snd_music.h
 //
 //
-
-
-
-#ifndef SND_MUSIC_H
-#define SND_MUSIC_H
 
 // if you change this enum, you MUST update the #defines below
 typedef enum 
@@ -56,10 +53,4 @@ sboolean	Music_AllowedToTransition	( float fPlayingTimeElapsed, MusicState_e eMu
 
 const char *Music_BaseStateToString		( MusicState_e eMusicState, sboolean bDebugPrintQuery = qfalse);
 
-
-#endif	// #ifndef SND_MUSIC_H
-
-
 //////////////// eof /////////////////
-
-

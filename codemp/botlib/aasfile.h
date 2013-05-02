@@ -1,4 +1,4 @@
-
+#pragma once
 
 //NOTE:	int =	default signed
 //				default long

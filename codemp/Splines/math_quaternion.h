@@ -1,5 +1,4 @@
-#ifndef __MATH_QUATERNION_H__
-#define __MATH_QUATERNION_H__
+#pragma once
 
 #include <assert.h>
 #include <math.h>
@@ -165,5 +164,3 @@ inline quat_t& quat_t::Normalize( void ) {
 inline quat_t quat_t::operator-() {
 	return quat_t( -x, -y, -z, -w );
 }
-
-#endif /* !__MATH_QUATERNION_H__ */

@@ -100,7 +100,7 @@ void InitSiegeMode(void)
 	char			teamIcon[128];
 	char			goalreq[64];
 	char			teams[2048];
-	char			objective[MAX_SIEGE_INFO_SIZE];
+	static char objective[MAX_SIEGE_INFO_SIZE];
 	char			objecStr[8192];
 	int				len = 0;
 	int				i = 0;
@@ -108,6 +108,8 @@ void InitSiegeMode(void)
 	int				objectiveNumTeam1 = 0;
 	int				objectiveNumTeam2 = 0;
 	fileHandle_t	f;
+
+	objective[0] = '\0';
 
 	if (g_gametype.integer != GT_SIEGE)
 	{
@@ -1062,10 +1064,12 @@ void siegeTriggerUse(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	char			teamstr[64];
 	char			objectivestr[64];
-	char			desiredobjective[MAX_SIEGE_INFO_SIZE];
+	static char		desiredobjective[MAX_SIEGE_INFO_SIZE];
 	int				clUser = ENTITYNUM_NONE;
 	int				final = 0;
 	int				i = 0;
+
+	desiredobjective[0] = '\0';
 
 	if (!siege_valid)
 	{
@@ -1239,7 +1243,9 @@ void decompTriggerUse(gentity_t *ent, gentity_t *other, gentity_t *activator)
 	int final = 0;
 	char teamstr[1024];
 	char objectivestr[64];
-	char desiredobjective[MAX_SIEGE_INFO_SIZE];
+	static char desiredobjective[MAX_SIEGE_INFO_SIZE];
+
+	desiredobjective[0] = '\0';
 
 	if (gSiegeRoundEnded)
 	{
@@ -1423,10 +1429,7 @@ void SiegeItemThink(gentity_t *ent)
 	}
 
 
-	if (carrier)
-	{
-		gentity_t *carrier = &g_entities[ent->genericValue8];
-
+	if (carrier) {
 		//This checking can be a bit iffy on the death stuff, but in theory we should always
 		//get a think in before the default minimum respawn time is exceeded.
 		if (!carrier->inuse || !carrier->client ||
@@ -1825,7 +1828,7 @@ void SP_misc_siege_item (gentity_t *ent)
 	ent->s.modelindex = G_ModelIndex(ent->model);
 
 	//Is the model a ghoul2 model?
-	if (!Q_stricmp(&ent->model[strlen(ent->model) - 4], ".glm"))
+	if ( ent->model && !Q_stricmp( &ent->model[strlen(ent->model) - 4], ".glm" ) )
 	{ //apparently so.
         ent->s.modelGhoul2 = 1;
 	}

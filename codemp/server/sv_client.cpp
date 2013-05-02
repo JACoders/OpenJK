@@ -7,7 +7,6 @@
 #include "qcommon/stringed_ingame.h"
 #include "RMG/RM_Headers.h"
 #include "../zlib/zlib.h"
-//#include "zlib32/zip.h"
 
 static void SV_CloseDownload( client_t *cl );
 

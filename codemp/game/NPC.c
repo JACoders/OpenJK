@@ -29,11 +29,7 @@ extern void NPC_CheckCharmed( void );
 extern qboolean Boba_Flying( gentity_t *self );
 
 //Local Variables
-gentity_t		*NPC;
-gNPC_t			*NPCInfo;
-gclient_t		*client;
-usercmd_t		ucmd;
-visibility_t	enemyVisibility;
+npcStatic_t NPCS;
 
 void NPC_SetAnim(gentity_t	*ent,int type,int anim,int priority);
 void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope );
@@ -44,8 +40,8 @@ extern int eventClearTime;
 void CorpsePhysics( gentity_t *self )
 {
 	// run the bot through the server like it was a real client
-	memset( &ucmd, 0, sizeof( ucmd ) );
-	ClientThink( self->s.number, &ucmd );
+	memset( &NPCS.ucmd, 0, sizeof( NPCS.ucmd ) );
+	ClientThink( self->s.number, &NPCS.ucmd );
 	//VectorCopy( self->s.origin, self->s.origin2 );
 	//rww - don't get why this is happening.
 	
@@ -323,7 +319,7 @@ static void NPC_RemoveBodyEffect(void)
 //	vec3_t		org;
 //	gentity_t	*tent;
 
-	if ( !NPC || !NPC->client || (NPC->s.eFlags & EF_NODRAW) )
+	if ( !NPCS.NPC || !NPCS.NPC->client || (NPCS.NPC->s.eFlags & EF_NODRAW) )
 		return;
 /*
 	switch(NPC->client->playerTeam)
@@ -349,7 +345,7 @@ static void NPC_RemoveBodyEffect(void)
 	// team no longer indicates species/race, so in this case we'd use NPC_class, but
 	
 	// stub code
-	switch(NPC->client->NPC_class)
+	switch(NPCS.NPC->client->NPC_class)
 	{
 	case CLASS_PROBE:
 	case CLASS_SEEKER:
@@ -476,6 +472,7 @@ DeadThink
 static void DeadThink ( void ) 
 {
 	trace_t	trace;
+	gentity_t *NPC = NPCS.NPC;
 
 	//HACKHACKHACKHACKHACK
 	//We should really have a seperate G2 bounding box (seperate from the physics bbox) for G2 collisions only
@@ -549,7 +546,7 @@ static void DeadThink ( void )
 	*/
 	{
 		//death anim done (or were given a specific amount of time to wait before removal), wait the requisite amount of time them remove
-		if ( level.time >= NPCInfo->timeOfDeath + BodyRemovalPadTime( NPC ) )
+		if ( level.time >= NPCS.NPCInfo->timeOfDeath + BodyRemovalPadTime( NPC ) )
 		{
 			if ( NPC->client->ps.eFlags & EF_NODRAW )
 			{
@@ -580,10 +577,10 @@ static void DeadThink ( void )
 					 npc_class == CLASS_MARK2 || npc_class == CLASS_SENTRY )//npc_class == CLASS_PROTOCOL ||
 				{
 					NPC->client->ps.eFlags |= EF_NODRAW;
-					NPCInfo->timeOfDeath = level.time + FRAMETIME * 8;
+					NPCS.NPCInfo->timeOfDeath = level.time + FRAMETIME * 8;
 				}
 				else
-					NPCInfo->timeOfDeath = level.time + FRAMETIME * 4;
+					NPCS.NPCInfo->timeOfDeath = level.time + FRAMETIME * 4;
 			}
 			return;
 		}
@@ -614,39 +611,30 @@ local function to set globals used throughout the AI code
 */
 void SetNPCGlobals( gentity_t *ent ) 
 {
-	NPC = ent;
-	NPCInfo = ent->NPC;
-	client = ent->client;
-	memset( &ucmd, 0, sizeof( usercmd_t ) );
+	NPCS.NPC = ent;
+	NPCS.NPCInfo = ent->NPC;
+	NPCS.client = ent->client;
+	memset( &NPCS.ucmd, 0, sizeof( usercmd_t ) );
 }
 
-gentity_t	*_saved_NPC;
-gNPC_t		*_saved_NPCInfo;
-gclient_t	*_saved_client;
-usercmd_t	_saved_ucmd;
+npcStatic_t _saved_NPCS;
 
 void SaveNPCGlobals(void) 
 {
-	_saved_NPC = NPC;
-	_saved_NPCInfo = NPCInfo;
-	_saved_client = client;
-	memcpy( &_saved_ucmd, &ucmd, sizeof( usercmd_t ) );
+	memcpy( &_saved_NPCS, &NPCS, sizeof( _saved_NPCS ) );
 }
 
 void RestoreNPCGlobals(void) 
 {
-	NPC = _saved_NPC;
-	NPCInfo = _saved_NPCInfo;
-	client = _saved_client;
-	memcpy( &ucmd, &_saved_ucmd, sizeof( usercmd_t ) );
+	memcpy( &NPCS, &_saved_NPCS, sizeof( _saved_NPCS ) );
 }
 
 //We MUST do this, other funcs were using NPC illegally when "self" wasn't the global NPC
 void ClearNPCGlobals( void ) 
 {
-	NPC = NULL;
-	NPCInfo = NULL;
-	client = NULL;
+	NPCS.NPC = NULL;
+	NPCS.NPCInfo = NULL;
+	NPCS.client = NULL;
 }
 //===============
 
@@ -680,29 +668,29 @@ void NPC_ShowDebugInfo (void)
 
 void NPC_ApplyScriptFlags (void)
 {
-	if ( NPCInfo->scriptFlags & SCF_CROUCHED )
+	if ( NPCS.NPCInfo->scriptFlags & SCF_CROUCHED )
 	{
-		if ( NPCInfo->charmedTime > level.time && (ucmd.forwardmove || ucmd.rightmove) )
+		if ( NPCS.NPCInfo->charmedTime > level.time && (NPCS.ucmd.forwardmove || NPCS.ucmd.rightmove) )
 		{//ugh, if charmed and moving, ignore the crouched command
 		}
 		else
 		{
-			ucmd.upmove = -127;
+			NPCS.ucmd.upmove = -127;
 		}
 	}
 
-	if(NPCInfo->scriptFlags & SCF_RUNNING)
+	if(NPCS.NPCInfo->scriptFlags & SCF_RUNNING)
 	{
-		ucmd.buttons &= ~BUTTON_WALKING;
+		NPCS.ucmd.buttons &= ~BUTTON_WALKING;
 	}
-	else if(NPCInfo->scriptFlags & SCF_WALKING)
+	else if(NPCS.NPCInfo->scriptFlags & SCF_WALKING)
 	{
-		if ( NPCInfo->charmedTime > level.time && (ucmd.forwardmove || ucmd.rightmove) )
+		if ( NPCS.NPCInfo->charmedTime > level.time && (NPCS.ucmd.forwardmove || NPCS.ucmd.rightmove) )
 		{//ugh, if charmed and moving, ignore the walking command
 		}
 		else
 		{
-			ucmd.buttons |= BUTTON_WALKING;
+			NPCS.ucmd.buttons |= BUTTON_WALKING;
 		}
 	}
 /*
@@ -711,24 +699,24 @@ void NPC_ApplyScriptFlags (void)
 		ucmd.buttons |= BUTTON_CAREFUL;
 	}
 */
-	if(NPCInfo->scriptFlags & SCF_LEAN_RIGHT)
+	if(NPCS.NPCInfo->scriptFlags & SCF_LEAN_RIGHT)
 	{
-		ucmd.buttons |= BUTTON_USE;
-		ucmd.rightmove = 127;
-		ucmd.forwardmove = 0;
-		ucmd.upmove = 0;
+		NPCS.ucmd.buttons |= BUTTON_USE;
+		NPCS.ucmd.rightmove = 127;
+		NPCS.ucmd.forwardmove = 0;
+		NPCS.ucmd.upmove = 0;
 	}
-	else if(NPCInfo->scriptFlags & SCF_LEAN_LEFT)
+	else if(NPCS.NPCInfo->scriptFlags & SCF_LEAN_LEFT)
 	{
-		ucmd.buttons |= BUTTON_USE;
-		ucmd.rightmove = -127;
-		ucmd.forwardmove = 0;
-		ucmd.upmove = 0;
+		NPCS.ucmd.buttons |= BUTTON_USE;
+		NPCS.ucmd.rightmove = -127;
+		NPCS.ucmd.forwardmove = 0;
+		NPCS.ucmd.upmove = 0;
 	}
 
-	if ( (NPCInfo->scriptFlags & SCF_ALT_FIRE) && (ucmd.buttons & BUTTON_ATTACK) )
+	if ( (NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) && (NPCS.ucmd.buttons & BUTTON_ATTACK) )
 	{//Use altfire instead
-		ucmd.buttons |= BUTTON_ALT_ATTACK;
+		NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
 	}
 }
 
@@ -736,10 +724,10 @@ void Q3_DebugPrint( int level, const char *format, ... );
 void NPC_HandleAIFlags (void)
 {
 	//FIXME: make these flags checks a function call like NPC_CheckAIFlagsAndTimers
-	if ( NPCInfo->aiFlags & NPCAI_LOST )
+	if ( NPCS.NPCInfo->aiFlags & NPCAI_LOST )
 	{//Print that you need help!
 		//FIXME: shouldn't remove this just yet if cg_draw needs it
-		NPCInfo->aiFlags &= ~NPCAI_LOST;
+		NPCS.NPCInfo->aiFlags &= ~NPCAI_LOST;
 		
 		/*
 		if ( showWaypoints )
@@ -748,7 +736,7 @@ void NPC_HandleAIFlags (void)
 		}
 		*/
 
-		if ( NPCInfo->goalEntity && NPCInfo->goalEntity == NPC->enemy )
+		if ( NPCS.NPCInfo->goalEntity && NPCS.NPCInfo->goalEntity == NPCS.NPC->enemy )
 		{//We can't nav to our enemy
 			//Drop enemy and see if we should search for him
 			NPC_LostEnemyDecideChase();
@@ -806,26 +794,26 @@ void NPC_HandleAIFlags (void)
 	}
 	*/
 	//been told to play a victory sound after a delay
-	if ( NPCInfo->greetingDebounceTime && NPCInfo->greetingDebounceTime < level.time )
+	if ( NPCS.NPCInfo->greetingDebounceTime && NPCS.NPCInfo->greetingDebounceTime < level.time )
 	{
-		G_AddVoiceEvent( NPC, Q_irand(EV_VICTORY1, EV_VICTORY3), Q_irand( 2000, 4000 ) );
-		NPCInfo->greetingDebounceTime = 0;
+		G_AddVoiceEvent( NPCS.NPC, Q_irand(EV_VICTORY1, EV_VICTORY3), Q_irand( 2000, 4000 ) );
+		NPCS.NPCInfo->greetingDebounceTime = 0;
 	}
 
-	if ( NPCInfo->ffireCount > 0 )
+	if ( NPCS.NPCInfo->ffireCount > 0 )
 	{
-		if ( NPCInfo->ffireFadeDebounce < level.time )
+		if ( NPCS.NPCInfo->ffireFadeDebounce < level.time )
 		{
-			NPCInfo->ffireCount--;
+			NPCS.NPCInfo->ffireCount--;
 			//Com_Printf( "drop: %d < %d\n", NPCInfo->ffireCount, 3+((2-g_npcspskill.integer)*2) );
-			NPCInfo->ffireFadeDebounce = level.time + 3000;
+			NPCS.NPCInfo->ffireFadeDebounce = level.time + 3000;
 		}
 	}
 	if ( d_patched.integer )
 	{//use patch-style navigation
-		if ( NPCInfo->consecutiveBlockedMoves > 20 )
+		if ( NPCS.NPCInfo->consecutiveBlockedMoves > 20 )
 		{//been stuck for a while, try again?
-			NPCInfo->consecutiveBlockedMoves = 0;
+			NPCS.NPCInfo->consecutiveBlockedMoves = 0;
 		}
 	}
 }
@@ -837,12 +825,12 @@ void NPC_AvoidWallsAndCliffs (void)
 
 void NPC_CheckAttackScript(void)
 {
-	if(!(ucmd.buttons & BUTTON_ATTACK))
+	if(!(NPCS.ucmd.buttons & BUTTON_ATTACK))
 	{
 		return;
 	}
 
-	G_ActivateBehavior(NPC, BSET_ATTACK);
+	G_ActivateBehavior(NPCS.NPC, BSET_ATTACK);
 }
 
 float NPC_MaxDistSquaredForWeapon (void);
@@ -851,9 +839,9 @@ void NPC_CheckAttackHold(void)
 	vec3_t		vec;
 
 	// If they don't have an enemy they shouldn't hold their attack anim.
-	if ( !NPC->enemy )
+	if ( !NPCS.NPC->enemy )
 	{
-		NPCInfo->attackHoldTime = 0;
+		NPCS.NPCInfo->attackHoldTime = 0;
 		return;
 	}
 
@@ -890,22 +878,22 @@ void NPC_CheckAttackHold(void)
 	}
 	else*/
 	{//everyone else...?  FIXME: need to tie this into AI somehow?
-		VectorSubtract(NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, vec);
+		VectorSubtract(NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, vec);
 		if( VectorLengthSquared(vec) > NPC_MaxDistSquaredForWeapon() )
 		{
-			NPCInfo->attackHoldTime = 0;
+			NPCS.NPCInfo->attackHoldTime = 0;
 		}
-		else if( NPCInfo->attackHoldTime && NPCInfo->attackHoldTime > level.time )
+		else if( NPCS.NPCInfo->attackHoldTime && NPCS.NPCInfo->attackHoldTime > level.time )
 		{
-			ucmd.buttons |= BUTTON_ATTACK;
+			NPCS.ucmd.buttons |= BUTTON_ATTACK;
 		}
-		else if ( ( NPCInfo->attackHold ) && ( ucmd.buttons & BUTTON_ATTACK ) )
+		else if ( ( NPCS.NPCInfo->attackHold ) && ( NPCS.ucmd.buttons & BUTTON_ATTACK ) )
 		{
-			NPCInfo->attackHoldTime = level.time + NPCInfo->attackHold;
+			NPCS.NPCInfo->attackHoldTime = level.time + NPCS.NPCInfo->attackHold;
 		}
 		else
 		{
-			NPCInfo->attackHoldTime = 0;
+			NPCS.NPCInfo->attackHoldTime = 0;
 		}
 	}
 }
@@ -917,14 +905,14 @@ Fills in a default ucmd to keep current angles facing
 */
 void NPC_KeepCurrentFacing(void)
 {
-	if(!ucmd.angles[YAW])
+	if(!NPCS.ucmd.angles[YAW])
 	{
-		ucmd.angles[YAW] = ANGLE2SHORT( client->ps.viewangles[YAW] ) - client->ps.delta_angles[YAW];
+		NPCS.ucmd.angles[YAW] = ANGLE2SHORT( NPCS.client->ps.viewangles[YAW] ) - NPCS.client->ps.delta_angles[YAW];
 	}
 
-	if(!ucmd.angles[PITCH])
+	if(!NPCS.ucmd.angles[PITCH])
 	{
-		ucmd.angles[PITCH] = ANGLE2SHORT( client->ps.viewangles[PITCH] ) - client->ps.delta_angles[PITCH];
+		NPCS.ucmd.angles[PITCH] = ANGLE2SHORT( NPCS.client->ps.viewangles[PITCH] ) - NPCS.client->ps.delta_angles[PITCH];
 	}
 }
 
@@ -1383,6 +1371,7 @@ extern qboolean Jedi_CultistDestroyer( gentity_t *self );
 void NPC_RunBehavior( int team, int bState )
 {
 	qboolean dontSetAim = qfalse;
+	gentity_t *NPC = NPCS.NPC;
 
 	if (NPC->s.NPC_class == CLASS_VEHICLE &&
 		NPC->m_pVehicle)
@@ -1441,7 +1430,7 @@ void NPC_RunBehavior( int team, int bState )
 		NPC_BSJedi_Default();
 		dontSetAim = qtrue;
 	}
-	else if ( NPCInfo->scriptFlags & SCF_FORCED_MARCH )
+	else if ( NPCS.NPCInfo->scriptFlags & SCF_FORCED_MARCH )
 	{//being forced to march
 		NPC_BSDefault();
 	}
@@ -1511,7 +1500,7 @@ void NPC_RunBehavior( int team, int bState )
 				NPC_BehaviorSet_Default( bState );
 				return;
 			}
-			if ( NPC->client->ps.weapon == WP_DISRUPTOR && (NPCInfo->scriptFlags & SCF_ALT_FIRE) )
+			if ( NPC->client->ps.weapon == WP_DISRUPTOR && (NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) )
 			{//a sniper
 				NPC_BehaviorSet_Sniper( bState );
 				return;
@@ -1555,7 +1544,7 @@ void NPC_RunBehavior( int team, int bState )
 			}
 			else
 			{
-				if ( NPCInfo->charmedTime > level.time )
+				if ( NPCS.NPCInfo->charmedTime > level.time )
 				{
 					NPC_BehaviorSet_Charmed( bState );
 				}
@@ -1589,26 +1578,26 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 
 	//FIXME: these next three bits could be a function call, some sort of setup/cleanup func
 	//Lookmode must be reset every think cycle
-	if(NPC->delayScriptTime && NPC->delayScriptTime <= level.time)
+	if(NPCS.NPC->delayScriptTime && NPCS.NPC->delayScriptTime <= level.time)
 	{
-		G_ActivateBehavior( NPC, BSET_DELAYED);
-		NPC->delayScriptTime = 0;
+		G_ActivateBehavior( NPCS.NPC, BSET_DELAYED);
+		NPCS.NPC->delayScriptTime = 0;
 	}
 
 	//Clear this and let bState set it itself, so it automatically handles changing bStates... but we need a set bState wrapper func
-	NPCInfo->combatMove = qfalse;
+	NPCS.NPCInfo->combatMove = qfalse;
 
 	//Execute our bState
-	if(NPCInfo->tempBehavior)
+	if(NPCS.NPCInfo->tempBehavior)
 	{//Overrides normal behavior until cleared
-		bState = NPCInfo->tempBehavior;
+		bState = NPCS.NPCInfo->tempBehavior;
 	}
 	else
 	{
-		if(!NPCInfo->behaviorState)
-			NPCInfo->behaviorState = NPCInfo->defaultBehavior;
+		if(!NPCS.NPCInfo->behaviorState)
+			NPCS.NPCInfo->behaviorState = NPCS.NPCInfo->defaultBehavior;
 
-		bState = NPCInfo->behaviorState;
+		bState = NPCS.NPCInfo->behaviorState;
 	}
 
 	//Pick the proper bstate for us and run it
@@ -1633,61 +1622,61 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 	//FIXME: don't walk off ledges unless we can get to our goal faster that way, or that's our goal's surface
 	//NPCPredict();
 
-	if ( NPC->enemy )
+	if ( NPCS.NPC->enemy )
 	{
-		if ( !NPC->enemy->inuse )
+		if ( !NPCS.NPC->enemy->inuse )
 		{//just in case bState doesn't catch this
-			G_ClearEnemy( NPC );
+			G_ClearEnemy( NPCS.NPC );
 		}
 	}
 
-	if ( NPC->client->ps.saberLockTime && NPC->client->ps.saberLockEnemy != ENTITYNUM_NONE )
+	if ( NPCS.NPC->client->ps.saberLockTime && NPCS.NPC->client->ps.saberLockEnemy != ENTITYNUM_NONE )
 	{
-		NPC_SetLookTarget( NPC, NPC->client->ps.saberLockEnemy, level.time+1000 );
+		NPC_SetLookTarget( NPCS.NPC, NPCS.NPC->client->ps.saberLockEnemy, level.time+1000 );
 	}
-	else if ( !NPC_CheckLookTarget( NPC ) )
+	else if ( !NPC_CheckLookTarget( NPCS.NPC ) )
 	{
-		if ( NPC->enemy )
+		if ( NPCS.NPC->enemy )
 		{
-			NPC_SetLookTarget( NPC, NPC->enemy->s.number, 0 );
+			NPC_SetLookTarget( NPCS.NPC, NPCS.NPC->enemy->s.number, 0 );
 		}
 	}
 
-	if ( NPC->enemy )
+	if ( NPCS.NPC->enemy )
 	{
-		if(NPC->enemy->flags & FL_DONT_SHOOT)
+		if(NPCS.NPC->enemy->flags & FL_DONT_SHOOT)
 		{
-			ucmd.buttons &= ~BUTTON_ATTACK;
-			ucmd.buttons &= ~BUTTON_ALT_ATTACK;
+			NPCS.ucmd.buttons &= ~BUTTON_ATTACK;
+			NPCS.ucmd.buttons &= ~BUTTON_ALT_ATTACK;
 		}
-		else if ( NPC->client->playerTeam != NPCTEAM_ENEMY && NPC->enemy->NPC && (NPC->enemy->NPC->surrenderTime > level.time || (NPC->enemy->NPC->scriptFlags&SCF_FORCED_MARCH)) )
+		else if ( NPCS.NPC->client->playerTeam != NPCTEAM_ENEMY && NPCS.NPC->enemy->NPC && (NPCS.NPC->enemy->NPC->surrenderTime > level.time || (NPCS.NPC->enemy->NPC->scriptFlags&SCF_FORCED_MARCH)) )
 		{//don't shoot someone who's surrendering if you're a good guy
-			ucmd.buttons &= ~BUTTON_ATTACK;
-			ucmd.buttons &= ~BUTTON_ALT_ATTACK;
+			NPCS.ucmd.buttons &= ~BUTTON_ATTACK;
+			NPCS.ucmd.buttons &= ~BUTTON_ALT_ATTACK;
 		}
 
-		if(client->ps.weaponstate == WEAPON_IDLE)
+		if(NPCS.client->ps.weaponstate == WEAPON_IDLE)
 		{
-			client->ps.weaponstate = WEAPON_READY;
+			NPCS.client->ps.weaponstate = WEAPON_READY;
 		}
 	}
 	else 
 	{
-		if(client->ps.weaponstate == WEAPON_READY)
+		if(NPCS.client->ps.weaponstate == WEAPON_READY)
 		{
-			client->ps.weaponstate = WEAPON_IDLE;
+			NPCS.client->ps.weaponstate = WEAPON_IDLE;
 		}
 	}
 
-	if(!(ucmd.buttons & BUTTON_ATTACK) && NPC->attackDebounceTime > level.time)
+	if(!(NPCS.ucmd.buttons & BUTTON_ATTACK) && NPCS.NPC->attackDebounceTime > level.time)
 	{//We just shot but aren't still shooting, so hold the gun up for a while
-		if(client->ps.weapon == WP_SABER )
+		if(NPCS.client->ps.weapon == WP_SABER )
 		{//One-handed
-			NPC_SetAnim(NPC,SETANIM_TORSO,TORSO_WEAPONREADY1,SETANIM_FLAG_NORMAL);
+			NPC_SetAnim(NPCS.NPC,SETANIM_TORSO,TORSO_WEAPONREADY1,SETANIM_FLAG_NORMAL);
 		}
-		else if(client->ps.weapon == WP_BRYAR_PISTOL)
+		else if(NPCS.client->ps.weapon == WP_BRYAR_PISTOL)
 		{//Sniper pose
-			NPC_SetAnim(NPC,SETANIM_TORSO,TORSO_WEAPONREADY3,SETANIM_FLAG_NORMAL);
+			NPC_SetAnim(NPCS.NPC,SETANIM_TORSO,TORSO_WEAPONREADY3,SETANIM_FLAG_NORMAL);
 		}
 		/*//FIXME: What's the proper solution here?
 		else
@@ -1696,13 +1685,13 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 		}
 		*/
 	}
-	else if ( !NPC->enemy )//HACK!
+	else if ( !NPCS.NPC->enemy )//HACK!
 	{
 //		if(client->ps.weapon != WP_TRICORDER)
 		{
-			if( NPC->s.torsoAnim == TORSO_WEAPONREADY1 || NPC->s.torsoAnim == TORSO_WEAPONREADY3 )
+			if( NPCS.NPC->s.torsoAnim == TORSO_WEAPONREADY1 || NPCS.NPC->s.torsoAnim == TORSO_WEAPONREADY3 )
 			{//we look ready for action, using one of the first 2 weapon, let's rest our weapon on our shoulder
-				NPC_SetAnim(NPC,SETANIM_TORSO,TORSO_WEAPONIDLE3,SETANIM_FLAG_NORMAL);
+				NPC_SetAnim(NPCS.NPC,SETANIM_TORSO,TORSO_WEAPONIDLE3,SETANIM_FLAG_NORMAL);
 			}
 		}
 	}
@@ -1715,19 +1704,19 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 
 	// run the bot through the server like it was a real client
 //=== Save the ucmd for the second no-think Pmove ============================
-	ucmd.serverTime = level.time - 50;
-	memcpy( &NPCInfo->last_ucmd, &ucmd, sizeof( usercmd_t ) );
-	if ( !NPCInfo->attackHoldTime )
+	NPCS.ucmd.serverTime = level.time - 50;
+	memcpy( &NPCS.NPCInfo->last_ucmd, &NPCS.ucmd, sizeof( usercmd_t ) );
+	if ( !NPCS.NPCInfo->attackHoldTime )
 	{
-		NPCInfo->last_ucmd.buttons &= ~(BUTTON_ATTACK|BUTTON_ALT_ATTACK);//so we don't fire twice in one think
+		NPCS.NPCInfo->last_ucmd.buttons &= ~(BUTTON_ATTACK|BUTTON_ALT_ATTACK);//so we don't fire twice in one think
 	}
 //============================================================================
 	NPC_CheckAttackScript();
 	NPC_KeepCurrentFacing();
 
-	if ( !NPC->next_roff_time || NPC->next_roff_time < level.time )
+	if ( !NPCS.NPC->next_roff_time || NPCS.NPC->next_roff_time < level.time )
 	{//If we were following a roff, we don't do normal pmoves.
-		ClientThink( NPC->s.number, &ucmd );
+		ClientThink( NPCS.NPC->s.number, &NPCS.ucmd );
 	}
 	else
 	{
@@ -1735,7 +1724,7 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 	}
 
 	// end of thinking cleanup
-	NPCInfo->touchedByPlayer = NULL;
+	NPCS.NPCInfo->touchedByPlayer = NULL;
 
 	NPC_CheckPlayerAim();
 	NPC_CheckAllClear();
@@ -1773,21 +1762,21 @@ void NPC_CheckInSolid(void)
 {
 	trace_t	trace;
 	vec3_t	point;
-	VectorCopy(NPC->r.currentOrigin, point);
+	VectorCopy(NPCS.NPC->r.currentOrigin, point);
 	point[2] -= 0.25;
 
-	trap_Trace(&trace, NPC->r.currentOrigin, NPC->r.mins, NPC->r.maxs, point, NPC->s.number, NPC->clipmask);
+	trap_Trace(&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, point, NPCS.NPC->s.number, NPCS.NPC->clipmask);
 	if(!trace.startsolid && !trace.allsolid)
 	{
-		VectorCopy(NPC->r.currentOrigin, NPCInfo->lastClearOrigin);
+		VectorCopy(NPCS.NPC->r.currentOrigin, NPCS.NPCInfo->lastClearOrigin);
 	}
 	else
 	{
-		if(VectorLengthSquared(NPCInfo->lastClearOrigin))
+		if(VectorLengthSquared(NPCS.NPCInfo->lastClearOrigin))
 		{
 //			Com_Printf("%s stuck in solid at %s: fixing...\n", NPC->script_targetname, vtos(NPC->r.currentOrigin));
-			G_SetOrigin(NPC, NPCInfo->lastClearOrigin);
-			trap_LinkEntity(NPC);
+			G_SetOrigin(NPCS.NPC, NPCS.NPCInfo->lastClearOrigin);
+			trap_LinkEntity(NPCS.NPC);
 		}
 	}
 }
@@ -1843,7 +1832,7 @@ void NPC_Think ( gentity_t *self)//, int msec )
 
 	SetNPCGlobals( self );
 
-	memset( &ucmd, 0, sizeof( ucmd ) );
+	memset( &NPCS.ucmd, 0, sizeof( NPCS.ucmd ) );
 
 	VectorCopy( self->client->ps.moveDir, oldMoveDir );
 	if (self->s.NPC_class != CLASS_VEHICLE)
@@ -1861,7 +1850,7 @@ void NPC_Think ( gentity_t *self)//, int msec )
 	if ( self->health <= 0 ) 
 	{
 		DeadThink();
-		if ( NPCInfo->nextBStateThink <= level.time )
+		if ( NPCS.NPCInfo->nextBStateThink <= level.time )
 		{
 			trap_ICARUS_MaintainTaskManager(self->s.number);
 		}
@@ -1870,10 +1859,10 @@ void NPC_Think ( gentity_t *self)//, int msec )
 	}
 
 	// see if NPC ai is frozen
-	if ( d_npcfreeze.value || (NPC->r.svFlags&SVF_ICARUS_FREEZE) ) 
+	if ( d_npcfreeze.value || (NPCS.NPC->r.svFlags&SVF_ICARUS_FREEZE) ) 
 	{
 		NPC_UpdateAngles( qtrue, qtrue );
-		ClientThink(self->s.number, &ucmd);
+		ClientThink(self->s.number, &NPCS.ucmd);
 		//VectorCopy(self->s.origin, self->s.origin2 );
 		VectorCopy(self->r.currentOrigin, self->client->ps.origin);
 		return;
@@ -1896,8 +1885,8 @@ void NPC_Think ( gentity_t *self)//, int msec )
 				//FIXME: might want to at least make sounds or something?
 				//NPC_UpdateAngles(qtrue, qtrue);
 				//Which ucmd should we send?  Does it matter, since it gets overridden anyway?
-				NPCInfo->last_ucmd.serverTime = level.time - 50;
-				ClientThink( NPC->s.number, &ucmd );
+				NPCS.NPCInfo->last_ucmd.serverTime = level.time - 50;
+				ClientThink( NPCS.NPC->s.number, &NPCS.ucmd );
 				//VectorCopy(self->s.origin, self->s.origin2 );
 				VectorCopy(self->r.currentOrigin, self->client->ps.origin);
 				return;
@@ -1924,29 +1913,29 @@ void NPC_Think ( gentity_t *self)//, int msec )
 			memcpy(&self->m_pVehicle->m_ucmd, &self->client->pers.cmd, sizeof(usercmd_t));
 		}
 	}
-	else if ( NPC->s.m_iVehicleNum )
+	else if ( NPCS.NPC->s.m_iVehicleNum )
 	{//droid in a vehicle?
 		G_DroidSounds( self );
 	}
 
-	if ( NPCInfo->nextBStateThink <= level.time 
-		&& !NPC->s.m_iVehicleNum )//NPCs sitting in Vehicles do NOTHING
+	if ( NPCS.NPCInfo->nextBStateThink <= level.time 
+		&& !NPCS.NPC->s.m_iVehicleNum )//NPCs sitting in Vehicles do NOTHING
 	{
 #if	AI_TIMERS
 		int	startTime = GetTime(0);
 #endif//	AI_TIMERS
-		if ( NPC->s.eType != ET_NPC )
+		if ( NPCS.NPC->s.eType != ET_NPC )
 		{//Something drastic happened in our script
 			return;
 		}
 
-		if ( NPC->s.weapon == WP_SABER && g_npcspskill.integer >= 2 && NPCInfo->rank > RANK_LT_JG )
+		if ( NPCS.NPC->s.weapon == WP_SABER && g_npcspskill.integer >= 2 && NPCS.NPCInfo->rank > RANK_LT_JG )
 		{//Jedi think faster on hard difficulty, except low-rank (reborn)
-			NPCInfo->nextBStateThink = level.time + FRAMETIME/2;
+			NPCS.NPCInfo->nextBStateThink = level.time + FRAMETIME/2;
 		}
 		else
 		{//Maybe even 200 ms?
-			NPCInfo->nextBStateThink = level.time + FRAMETIME;
+			NPCS.NPCInfo->nextBStateThink = level.time + FRAMETIME;
 		}
 
 		//nextthink is set before this so something in here can override it
@@ -1969,13 +1958,13 @@ void NPC_Think ( gentity_t *self)//, int msec )
 	{
 		VectorCopy( oldMoveDir, self->client->ps.moveDir );
 		//or use client->pers.lastCommand?
-		NPCInfo->last_ucmd.serverTime = level.time - 50;
-		if ( !NPC->next_roff_time || NPC->next_roff_time < level.time )
+		NPCS.NPCInfo->last_ucmd.serverTime = level.time - 50;
+		if ( !NPCS.NPC->next_roff_time || NPCS.NPC->next_roff_time < level.time )
 		{//If we were following a roff, we don't do normal pmoves.
 			//FIXME: firing angles (no aim offset) or regular angles?
 			NPC_UpdateAngles(qtrue, qtrue);
-			memcpy( &ucmd, &NPCInfo->last_ucmd, sizeof( usercmd_t ) );
-			ClientThink(NPC->s.number, &ucmd);
+			memcpy( &NPCS.ucmd, &NPCS.NPCInfo->last_ucmd, sizeof( usercmd_t ) );
+			ClientThink(NPCS.NPC->s.number, &NPCS.ucmd);
 		}
 		else
 		{

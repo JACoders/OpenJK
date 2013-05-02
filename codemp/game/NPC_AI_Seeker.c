@@ -49,6 +49,7 @@ void NPC_Seeker_Pain(gentity_t *self, gentity_t *attacker, int damage)
 void Seeker_MaintainHeight( void )
 {	
 	float	dif;
+	gentity_t *NPC = NPCS.NPC;
 
 	// Update our angles regardless
 	NPC_UpdateAngles( qtrue, qtrue );
@@ -94,13 +95,13 @@ void Seeker_MaintainHeight( void )
 	{
 		gentity_t *goal = NULL;
 
-		if ( NPCInfo->goalEntity )	// Is there a goal?
+		if ( NPCS.NPCInfo->goalEntity )	// Is there a goal?
 		{
-			goal = NPCInfo->goalEntity;
+			goal = NPCS.NPCInfo->goalEntity;
 		}
 		else
 		{
-			goal = NPCInfo->lastGoalEntity;
+			goal = NPCS.NPCInfo->lastGoalEntity;
 		}
 		if ( goal )
 		{
@@ -108,7 +109,7 @@ void Seeker_MaintainHeight( void )
 
 			if ( fabs( dif ) > 24 )
 			{
-				ucmd.upmove = ( ucmd.upmove < 0 ? -4 : 4 );
+				NPCS.ucmd.upmove = ( NPCS.ucmd.upmove < 0 ? -4 : 4 );
 			}
 			else
 			{
@@ -153,6 +154,7 @@ void Seeker_Strafe( void )
 	int		side;
 	vec3_t	end, right, dir;
 	trace_t	tr;
+	gentity_t *NPC = NPCS.NPC;
 
 	if ( random() > 0.7f || !NPC->enemy || !NPC->enemy->client )
 	{
@@ -184,7 +186,7 @@ void Seeker_Strafe( void )
 			// Add a slight upward push
 			NPC->client->ps.velocity[2] += upPush;
 
-			NPCInfo->standTime = level.time + 1000 + random() * 500;
+			NPCS.NPCInfo->standTime = level.time + 1000 + random() * 500;
 		}
 	}
 	else
@@ -233,7 +235,7 @@ void Seeker_Strafe( void )
 			// Add a slight upward push
 			NPC->client->ps.velocity[2] += upPush;
 
-			NPCInfo->standTime = level.time + 2500 + random() * 500;
+			NPCS.NPCInfo->standTime = level.time + 2500 + random() * 500;
 		}
 	}
 }
@@ -243,11 +245,12 @@ void Seeker_Hunt( qboolean visible, qboolean advance )
 {
 	float	distance, speed;
 	vec3_t	forward;
+	gentity_t *NPC = NPCS.NPC;
 
 	NPC_FaceEnemy( qtrue );
 
 	// If we're not supposed to stand still, pursue the player
-	if ( NPCInfo->standTime < level.time )
+	if ( NPCS.NPCInfo->standTime < level.time )
 	{
 		// Only strafe when we can see the player
 		if ( visible )
@@ -267,8 +270,8 @@ void Seeker_Hunt( qboolean visible, qboolean advance )
 	if ( visible == qfalse )
 	{
 		// Move towards our goal
-		NPCInfo->goalEntity = NPC->enemy;
-		NPCInfo->goalRadius = 24;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalRadius = 24;
 
 		// Get our direction from the navigator if we can't see our target
 		if ( NPC_GetMoveDirection( forward, &distance ) == qfalse )
@@ -291,6 +294,7 @@ void Seeker_Fire( void )
 {
 	vec3_t		dir, enemy_org, muzzle;
 	gentity_t	*missile;
+	gentity_t *NPC = NPCS.NPC;
 
 	CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_org );
 	VectorSubtract( enemy_org, NPC->r.currentOrigin, dir );
@@ -319,6 +323,7 @@ void Seeker_Fire( void )
 //------------------------------------
 void Seeker_Ranged( qboolean visible, qboolean advance )
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( NPC->client->NPC_class != CLASS_BOBAFETT )
 	{
 		if ( NPC->count > 0 )
@@ -340,7 +345,7 @@ void Seeker_Ranged( qboolean visible, qboolean advance )
 		}
 	}
 
-	if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+	if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 	{
 		Seeker_Hunt( visible, advance );
 	}
@@ -350,8 +355,8 @@ void Seeker_Ranged( qboolean visible, qboolean advance )
 void Seeker_Attack( void )
 {
 	float		distance;
-	qboolean	visible;
-	qboolean	advance;
+	qboolean	visible, advance;
+	gentity_t *NPC = NPCS.NPC;
 
 	// Always keep a good height off the ground
 	Seeker_MaintainHeight();
@@ -369,7 +374,7 @@ void Seeker_Attack( void )
 	// If we cannot see our target, move to see it
 	if ( visible == qfalse )
 	{
-		if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+		if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 		{
 			Seeker_Hunt( visible, advance );
 			return;
@@ -388,6 +393,7 @@ void Seeker_FindEnemy( void )
 	int			entityList[MAX_GENTITIES];
 	gentity_t	*ent, *best = NULL;
 	int			i;
+	gentity_t *NPC = NPCS.NPC;
 
 	VectorSet( maxs, SEEKER_SEEK_RADIUS, SEEKER_SEEK_RADIUS, SEEKER_SEEK_RADIUS );
 	VectorScale( maxs, -1, mins );
@@ -440,6 +446,7 @@ void Seeker_FollowOwner( void )
 {
 	float	dis, minDistSqr;
 	vec3_t	pt, dir;
+	gentity_t *NPC = NPCS.NPC;
 	gentity_t	*owner = &g_entities[NPC->s.owner];
 
 	Seeker_MaintainHeight();
@@ -503,17 +510,17 @@ void Seeker_FollowOwner( void )
 		}
 
 		// Hey come back!
-		NPCInfo->goalEntity = owner;
-		NPCInfo->goalRadius = 32;
+		NPCS.NPCInfo->goalEntity = owner;
+		NPCS.NPCInfo->goalRadius = 32;
 		NPC_MoveToGoal( qtrue );
 		NPC->parent = owner;
 	}
 
-	if ( NPCInfo->enemyCheckDebounceTime < level.time )
+	if ( NPCS.NPCInfo->enemyCheckDebounceTime < level.time )
 	{
 		// check twice a second to find a new enemy
 		Seeker_FindEnemy();
-		NPCInfo->enemyCheckDebounceTime = level.time + 500;
+		NPCS.NPCInfo->enemyCheckDebounceTime = level.time + 500;
 	}
 
 	NPC_UpdateAngles( qtrue, qtrue );
@@ -522,6 +529,7 @@ void Seeker_FollowOwner( void )
 //------------------------------------
 void NPC_BSSeeker_Default( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	/*
 	if ( in_camera )
 	{

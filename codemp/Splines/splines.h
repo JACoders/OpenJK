@@ -1,5 +1,4 @@
-#ifndef __SPLINES_H
-#define __SPLINES_H
+#pragma once
 
 extern "C" {
 #ifdef Q3RADIANT
@@ -1056,6 +1055,3 @@ protected:
 extern bool g_splineMode;
 
 extern idCameraDef *g_splineList;
-
-
-#endif

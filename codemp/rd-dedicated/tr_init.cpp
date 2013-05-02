@@ -4,15 +4,8 @@
 // tr_init.c -- functions that are not called every frame
 
 #include "tr_local.h"
-
 #include "tr_font.h"
-
-#if !defined (MINIHEAP_H_INC)
-	#include "qcommon/MiniHeap.h"
-
-#include "ghoul2/G2_local.h"
-#endif
-
+#include "qcommon/MiniHeap.h"
 #include "G2_local.h"
 #include "png/rpng.h"
 
