@@ -2392,6 +2392,7 @@ typedef struct playerState_s {
 	int			saberEventFlags;
 	int			saberBlockingTime;
 	int			saberAnimLevel;
+	int			saberAnimLevelMindTrick; //Cheap fix, but stores a backup of the saber style before controlling people's minds. --shinyquagsire23
 	int			saberAttackChainCount;
 	int			saberLockTime;
 	int			saberLockEnemy;

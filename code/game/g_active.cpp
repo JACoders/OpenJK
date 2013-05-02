@@ -232,6 +232,7 @@ qboolean G_ClearViewEntity( gentity_t *ent )
 		}
 		CG_SetClientViewAngles( ent->pos4, qtrue );
 		SetClientViewAngle( ent, ent->pos4 );
+		ent->client->ps.saberAnimLevel = ent->client->ps.saberAnimLevelMindTrick;
 	}
 	ent->client->ps.viewEntity = 0;
 	return qtrue;

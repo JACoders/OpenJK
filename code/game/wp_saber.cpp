@@ -10457,6 +10457,7 @@ void ForceTelepathy( gentity_t *self )
 			}
 			else if ( self->client->ps.forcePowerLevel[FP_TELEPATHY] > FORCE_LEVEL_3 )
 			{//control them, even jedi
+				self->client->ps.saberAnimLevelMindTrick = self->client->ps.saberAnimLevel; //Store our saber style before you control their minds --shinyquagsire23
 				G_SetViewEntity( self, traceEnt );
 				traceEnt->NPC->controlledTime = level.time + 30000;
 			}
