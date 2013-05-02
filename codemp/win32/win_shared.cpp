@@ -121,12 +121,8 @@ char	*Sys_DefaultHomePath(void) {
 			return NULL;
 		}
 
-		// FIXME: forcing SHGFP_TYPE_DEFAULT because file creation fails
-		//        when real CSIDL_PERSONAL is on a mapped drive
-		//        or network domain
-		// NOTE: SHGetFolderPath is marked as deprecated
 		if( !SUCCEEDED( qSHGetFolderPath( NULL, CSIDL_PERSONAL,
-						NULL, SHGFP_TYPE_DEFAULT, szPath ) ) )
+						NULL, 0, szPath ) ) )
 		{
 			Com_Printf("Unable to detect CSIDL_PERSONAL\n");
 			FreeLibrary(shfolder);
