@@ -1,5 +1,4 @@
-#ifndef __MATH_ANGLES_H__
-#define __MATH_ANGLES_H__
+#pragma once
 
 #include <stdlib.h>
 #include <assert.h>
@@ -170,5 +169,3 @@ inline angles_t& angles_t::Zero( void ) {
 
 	return *this;
 }
-
-#endif /* !__MATH_ANGLES_H__ */

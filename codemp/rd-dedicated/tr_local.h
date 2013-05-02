@@ -1,5 +1,4 @@
-#ifndef TR_LOCAL_H
-#define TR_LOCAL_H
+#pragma once
 
 typedef const char * LPCSTR;
 typedef unsigned short USHORT;
@@ -1923,5 +1922,3 @@ typedef struct decalPoly_s
 extern refexport_t re;
 
 qboolean ShaderHashTableExists(void);
-
-#endif //TR_LOCAL_H

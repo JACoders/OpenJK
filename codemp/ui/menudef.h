@@ -1,4 +1,5 @@
-
+// this file is parsed at runtime by botlib's text preprocessor (used for .menu scripting)
+// include guards aren't necessary
 
 #define CT_LTBLUE1	0.367	0.261	0.722
 #define CT_DKBLUE1	0.199	0.0		0.398

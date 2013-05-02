@@ -5,7 +5,6 @@
 
 #include "client.h"
 #include "qcommon/stringed_ingame.h"
-//#include "ghoul2/G2_local.h"
 #ifdef _DONETPROFILE_
 #include "qcommon/INetProfile.h"
 #endif

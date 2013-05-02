@@ -184,7 +184,7 @@ void AI_SortGroupByPathCostToEnemy( AIGroupInfo_t *group )
 				{//slot occupied
 					if ( group->member[i].pathCostToEnemy < bestMembers[j].pathCostToEnemy )
 					{//this guy has a shorter path than the one currenly in this spot, bump him and put myself in here
-						for ( k = group->numGroup; k > j; k++ )
+						for ( k = group->numGroup; k < j; k++ )
 						{
 							memcpy( &bestMembers[k], &bestMembers[k-1], sizeof( bestMembers[k] ) );
 						}

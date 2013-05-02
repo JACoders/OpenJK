@@ -1,6 +1,6 @@
+#pragma once
+
 // qcommon.h -- definitions common between client and server, but not game.or ref modules
-#ifndef _QCOMMON_H_
-#define _QCOMMON_H_
 
 #include "qcommon/cm_public.h"
 #include "qcommon/q_shared.h"
@@ -1080,4 +1080,3 @@ inline int Round(float value)
 {
 	return((int)floorf(value + 0.5f));
 }
-#endif // _QCOMMON_H_

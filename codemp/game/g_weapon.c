@@ -9,8 +9,8 @@
 #include "ghoul2/G2.h"
 #include "qcommon/q_shared.h"
 
-static	vec3_t	forward, vright, up;
-static	vec3_t	muzzle;
+static vec3_t forward, vright, up;
+static vec3_t muzzle;
 
 // Bryar Pistol
 //--------
@@ -1705,7 +1705,7 @@ void rocketThink( gentity_t *ent )
 //---------------------------------------------------------
 {
 	vec3_t newdir, targetdir, 
-			up={0,0,1}, right; 
+			rup={0,0,1}, right; 
 	vec3_t	org;
 	float dot, dot2, dis;
 	int i;
@@ -1797,7 +1797,7 @@ void rocketThink( gentity_t *ent )
 		if ( dot < 0.0f )
 		{	
 			// Go in the direction opposite, start a 180.
-			CrossProduct( ent->movedir, up, right );
+			CrossProduct( ent->movedir, rup, right );
 			dot2 = DotProduct( targetdir, right );
 
 			if ( dot2 > 0 )
@@ -3605,7 +3605,7 @@ The down side would be that it does not necessarily look alright from a
 first person perspective.
 ===============
 */
-void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint ) 
+void CalcMuzzlePoint ( gentity_t *ent, const vec3_t inForward, const vec3_t inRight, const vec3_t inUp, vec3_t muzzlePoint ) 
 {
 	int weapontype;
 	vec3_t muzzleOffPoint;
@@ -3618,27 +3618,12 @@ void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, 
 	if (weapontype > WP_NONE && weapontype < WP_NUM_WEAPONS)
 	{	// Use the table to generate the muzzlepoint;
 		{	// Crouching.  Use the add-to-Z method to adjust vertically.
-			VectorMA(muzzlePoint, muzzleOffPoint[0], forward, muzzlePoint);
-			VectorMA(muzzlePoint, muzzleOffPoint[1], right, muzzlePoint);
+			VectorMA(muzzlePoint, muzzleOffPoint[0], inForward, muzzlePoint);
+			VectorMA(muzzlePoint, muzzleOffPoint[1], inRight, muzzlePoint);
 			muzzlePoint[2] += ent->client->ps.viewheight + muzzleOffPoint[2];
 		}
 	}
 
-	// snap to integer coordinates for more efficient network bandwidth usage
-	SnapVector( muzzlePoint );
-}
-
-/*
-===============
-CalcMuzzlePointOrigin
-
-set muzzle location relative to pivoting eye
-===============
-*/
-void CalcMuzzlePointOrigin ( gentity_t *ent, vec3_t origin, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint ) {
-	VectorCopy( ent->s.pos.trBase, muzzlePoint );
-	muzzlePoint[2] += ent->client->ps.viewheight;
-	VectorMA( muzzlePoint, 14, forward, muzzlePoint );
 	// snap to integer coordinates for more efficient network bandwidth usage
 	SnapVector( muzzlePoint );
 }

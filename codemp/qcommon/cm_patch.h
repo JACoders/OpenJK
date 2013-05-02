@@ -1,3 +1,4 @@
+#pragma once
 
 //#define	CULL_BBOX
 

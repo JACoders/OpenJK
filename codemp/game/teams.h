@@ -1,5 +1,4 @@
-#ifndef TEAMS_H
-#define TEAMS_H
+#pragma once
 
 typedef enum //# team_e
 {
@@ -74,5 +73,3 @@ typedef enum
 	
 	CLASS_NUM_CLASSES
 } class_t;
-
-#endif	// #ifndef TEAMS_H

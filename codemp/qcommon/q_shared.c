@@ -860,11 +860,15 @@ int Q_isalpha( int c )
 qboolean Q_isanumber( const char *s )
 {
 	char *p;
+	double ret;
 
 	if( *s == '\0' )
 		return qfalse;
 
-	strtod( s, &p );
+	ret = strtod( s, &p );
+	
+	if ( ret == HUGE_VAL || errno == ERANGE )
+		return qfalse;
 
 	return (qboolean)(*p == '\0');
 }
@@ -902,21 +906,24 @@ Safe strncpy that ensures a trailing zero
 =============
 */
 void Q_strncpyz( char *dest, const char *src, int destsize ) {
-  // bk001129 - also NULL dest
-  if ( !dest ) {
-    Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
-  }
+	// bk001129 - also NULL dest
+	if ( !dest ) {
+		Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
+		return;
+	}
 	if ( !src ) {
 		Com_Error( ERR_FATAL, "Q_strncpyz: NULL src" );
+		return;
 	}
 	if ( destsize < 1 ) {
-		Com_Error(ERR_FATAL,"Q_strncpyz: destsize < 1" ); 
+		Com_Error( ERR_FATAL,"Q_strncpyz: destsize < 1" ); 
+		return;
 	}
 
 	strncpy( dest, src, destsize-1 );
-  dest[destsize-1] = 0;
+	dest[destsize-1] = 0;
 }
-                 
+
 int Q_stricmpn (const char *s1, const char *s2, int n) {
 	int		c1, c2;
 
@@ -1387,13 +1394,13 @@ Info_RemoveKey
 ===================
 */
 void Info_RemoveKey( char *s, const char *key ) {
-	char	*start;
-	char	pkey[MAX_INFO_KEY];
-	char	value[MAX_INFO_VALUE];
-	char	*o;
+	char	*start = NULL, *o = NULL;
+	char	pkey[MAX_INFO_KEY] = {0};
+	char	value[MAX_INFO_VALUE] = {0};
 
 	if ( strlen( s ) >= MAX_INFO_STRING ) {
 		Com_Error( ERR_DROP, "Info_RemoveKey: oversize infostring" );
+		return;
 	}
 
 	if (strchr (key, '\\')) {
@@ -1424,6 +1431,7 @@ void Info_RemoveKey( char *s, const char *key ) {
 		}
 		*o = 0;
 
+		//OJKNOTE: static analysis pointed out pkey may not be null-terminated
 		if (!strcmp (key, pkey) )
 		{
 			memmove(start, s, strlen(s) + 1);	// remove this part
@@ -1442,12 +1450,14 @@ Info_RemoveKey_Big
 */
 void Info_RemoveKey_Big( char *s, const char *key ) {
 	char	*start;
-	char	pkey[BIG_INFO_KEY];
-	char	value[BIG_INFO_VALUE];
+	static char	pkey[BIG_INFO_KEY], value[BIG_INFO_VALUE];
 	char	*o;
+
+	pkey[0] = value[0] = '\0';
 
 	if ( strlen( s ) >= BIG_INFO_STRING ) {
 		Com_Error( ERR_DROP, "Info_RemoveKey_Big: oversize infostring" );
+		return;
 	}
 
 	if (strchr (key, '\\')) {
@@ -1478,6 +1488,7 @@ void Info_RemoveKey_Big( char *s, const char *key ) {
 		}
 		*o = 0;
 
+		//OJKNOTE: static analysis pointed out pkey may not be null-terminated
 		if (!strcmp (key, pkey) )
 		{
 			memmove(start, s, strlen(s) + 1);	// remove this part

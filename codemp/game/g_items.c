@@ -385,8 +385,9 @@ qboolean PlaceShield(gentity_t *playerent)
 	gentity_t	*shield = NULL;
 	trace_t		tr;
 	vec3_t		fwd, pos, dest, mins = {-4,-4, 0}, maxs = {4,4,4};
+	static qboolean registered = qfalse;
 
-	if (shieldAttachSound==0)
+	if ( !registered )
 	{
 		shieldLoopSound = G_SoundIndex("sound/movers/doors/forcefield_lp.wav");
 		shieldAttachSound = G_SoundIndex("sound/weapons/detpack/stick.wav");
@@ -394,6 +395,7 @@ qboolean PlaceShield(gentity_t *playerent)
 		shieldDeactivateSound = G_SoundIndex("sound/movers/doors/forcefield_off.wav");
 		shieldDamageSound = G_SoundIndex("sound/effects/bumpfield.wav");
 		shieldItem = BG_FindItemForHoldable(HI_SHIELD);
+		registered = qtrue;
 	}
 
 	// can we place this in front of us?

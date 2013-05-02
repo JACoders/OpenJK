@@ -1,7 +1,6 @@
-// snd_local.h -- private sound definations
+#pragma once
 
-#ifndef SND_LOCAL_H
-#define SND_LOCAL_H
+// snd_local.h -- private sound definations
 
 #define sboolean int //rww - argh (in SP qboolean type is merely #define'd as an int, but I do not want to do that for MP over the whole base)
 
@@ -232,6 +231,3 @@ void S_memoryLoad(sfx_t *sfx);
 //////////////////////////////////
 
 #include "snd_mp3.h"
-
-#endif	// #ifndef SND_LOCAL_H
-

@@ -1,9 +1,8 @@
+#pragma once
+
 // Filename:-	bg_weapons.h
 //
 // This crosses both client and server.  It could all be crammed into bg_public, but isolation of this type of data is best.
-
-#ifndef __WEAPONS_H__
-#define __WEAPONS_H__
 
 typedef enum {
 	WP_NONE,
@@ -104,9 +103,3 @@ extern ammoData_t ammoData[AMMO_MAX];
 #define DEFAULT_SHOTGUN_COUNT	11
 
 #define	LIGHTNING_RANGE		768
-
-
-
-
-
-#endif//#ifndef __WEAPONS_H__

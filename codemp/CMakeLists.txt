@@ -254,7 +254,6 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/icarus/interface.h"
 		"${MPDir}/icarus/interpreter.h"
 		"${MPDir}/icarus/Memory.cpp"
-		"${MPDir}/icarus/module.h"
 		"${MPDir}/icarus/Q3_Interface.cpp"
 		"${MPDir}/icarus/Q3_Interface.h"
 		"${MPDir}/icarus/Q3_Registers.cpp"

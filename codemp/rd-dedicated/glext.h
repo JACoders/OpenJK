@@ -1,5 +1,4 @@
-#ifndef __glext_h_
-#define __glext_h_
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -3032,6 +3031,4 @@ typedef void (APIENTRY * PFNGLIGLOOINTERFACESGIXPROC) (GLenum pname, const GLvoi
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

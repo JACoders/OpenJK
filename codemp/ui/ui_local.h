@@ -1,7 +1,7 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
-#ifndef __UI_LOCAL_H__
-#define __UI_LOCAL_H__
 
 #include "qcommon/q_shared.h"
 #include "renderer/tr_types.h"
@@ -1133,7 +1133,3 @@ typedef struct postGameInfo_s {
 	int skillBonus;
 	int baseScore;
 } postGameInfo_t;
-
-
-
-#endif

@@ -1,7 +1,6 @@
-// BlockStream.h
+#pragma once
 
-#ifndef __INTERPRETED_BLOCK_STREAM__
-#define	__INTERPRETED_BLOCK_STREAM__
+// BlockStream.h
 
 #pragma warning(disable : 4786)  //identifier was truncated 
 #pragma warning(disable : 4514)  //unreffed inline func removed
@@ -194,5 +193,3 @@ protected:
 	char	*m_stream;							//Stream of data to be parsed
 	long	m_streamPos;
 };
-
-#endif	//__INTERPRETED_BLOCK_STREAM__

@@ -49,6 +49,7 @@ void ImperialProbe_MaintainHeight( void )
 	float	dif;
 //	vec3_t	endPos;
 //	trace_t	trace;
+	gentity_t *NPC = NPCS.NPC;
 
 	// Update our angles regardless
 	NPC_UpdateAngles( qtrue, qtrue );
@@ -63,9 +64,7 @@ void ImperialProbe_MaintainHeight( void )
 		if ( fabs( dif ) > 8 )
 		{
 			if ( fabs( dif ) > 16 )
-			{
 				dif = ( dif < 0 ? -16 : 16 );
-			}
 
 			NPC->client->ps.velocity[2] = (NPC->client->ps.velocity[2]+dif)/2;
 		}
@@ -74,32 +73,25 @@ void ImperialProbe_MaintainHeight( void )
 	{
 		gentity_t *goal = NULL;
 
-		if ( NPCInfo->goalEntity )	// Is there a goal?
-		{
-			goal = NPCInfo->goalEntity;
-		}
+		if ( NPCS.NPCInfo->goalEntity )	// Is there a goal?
+			goal = NPCS.NPCInfo->goalEntity;
 		else
-		{
-			goal = NPCInfo->lastGoalEntity;
-		}
+			goal = NPCS.NPCInfo->lastGoalEntity;
+
 		if ( goal )
 		{
 			dif = goal->r.currentOrigin[2] - NPC->r.currentOrigin[2];
 
-			if ( fabs( dif ) > 24 )
-			{
-				ucmd.upmove = ( ucmd.upmove < 0 ? -4 : 4 );
+			if ( fabs( dif ) > 24 ) {
+				NPCS.ucmd.upmove = ( NPCS.ucmd.upmove < 0 ? -4 : 4 );
 			}
-			else
-			{
+			else {
 				if ( NPC->client->ps.velocity[2] )
 				{
 					NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
 
 					if ( fabs( NPC->client->ps.velocity[2] ) < 2 )
-					{
 						NPC->client->ps.velocity[2] = 0;
-					}
 				}
 			}
 		}
@@ -108,10 +100,8 @@ void ImperialProbe_MaintainHeight( void )
 		{
 			NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
 
-			if ( fabs( NPC->client->ps.velocity[2] ) < 1 )
-			{
+			if ( fabsf( NPC->client->ps.velocity[2] ) < 1 )
 				NPC->client->ps.velocity[2] = 0;
-			}
 		}
 
 		// Stay at a given height until we take on an enemy
@@ -182,6 +172,7 @@ void ImperialProbe_Strafe( void )
 	int		dir;
 	vec3_t	end, right;
 	trace_t	tr;
+	gentity_t *NPC = NPCS.NPC;
 
 	AngleVectors( NPC->client->renderInfo.eyeAngles, NULL, right, NULL );
 
@@ -202,7 +193,7 @@ void ImperialProbe_Strafe( void )
 
 		// Set the strafe start time so we can do a controlled roll
 		//NPC->fx_time = level.time;
-		NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCS.NPCInfo->standTime = level.time + 3000 + random() * 500;
 	}
 }
 
@@ -219,11 +210,12 @@ void ImperialProbe_Hunt( qboolean visible, qboolean advance )
 {
 	float	distance, speed;
 	vec3_t	forward;
+	gentity_t *NPC = NPCS.NPC;
 
 	NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_RUN1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 
 	//If we're not supposed to stand still, pursue the player
-	if ( NPCInfo->standTime < level.time )
+	if ( NPCS.NPCInfo->standTime < level.time )
 	{
 		// Only strafe when we can see the player
 		if ( visible )
@@ -241,8 +233,8 @@ void ImperialProbe_Hunt( qboolean visible, qboolean advance )
 	if ( visible == qfalse )
 	{
 		// Move towards our goal
-		NPCInfo->goalEntity = NPC->enemy;
-		NPCInfo->goalRadius = 12;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalRadius = 12;
 
 		//Get our direction from the navigator if we can't see our target
 		if ( NPC_GetMoveDirection( forward, &distance ) == qfalse )
@@ -271,6 +263,7 @@ void ImperialProbe_FireBlaster(void)
 	int genBolt1;
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
+	gentity_t *NPC = NPCS.NPC;
 
 	genBolt1 = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash");
 
@@ -330,7 +323,7 @@ void ImperialProbe_Ranged( qboolean visible, qboolean advance )
 {
 	int	delay_min,delay_max;
 
-	if ( TIMER_Done( NPC, "attackDelay" ) )	// Attack?
+	if ( TIMER_Done( NPCS.NPC, "attackDelay" ) )	// Attack?
 	{
 
 		if ( g_npcspskill.integer == 0 )
@@ -349,12 +342,12 @@ void ImperialProbe_Ranged( qboolean visible, qboolean advance )
 			delay_max = 1500;
 		}
 
-		TIMER_Set( NPC, "attackDelay", Q_irand( 500, 3000 ) );
+		TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 3000 ) );
 		ImperialProbe_FireBlaster();
 //		ucmd.buttons |= BUTTON_ATTACK;
 	}
 
-	if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+	if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 	{
 		ImperialProbe_Hunt( visible, advance );
 	}
@@ -375,8 +368,8 @@ ImperialProbe_AttackDecision
 void ImperialProbe_AttackDecision( void )
 {
 	float		distance;	
-	qboolean	visible;
-	qboolean	advance;
+	qboolean	visible, advance;
+	gentity_t *NPC = NPCS.NPC;
 
 	// Always keep a good height off the ground
 	ImperialProbe_MaintainHeight();
@@ -409,7 +402,7 @@ void ImperialProbe_AttackDecision( void )
 	// If we cannot see our target, move to see it
 	if ( visible == qfalse )
 	{
-		if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+		if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 		{
 			ImperialProbe_Hunt( visible, advance );
 			return;
@@ -515,6 +508,8 @@ NPC_BSImperialProbe_Patrol
 */
 void ImperialProbe_Patrol( void )
 {
+	gentity_t *NPC = NPCS.NPC;
+
 	ImperialProbe_MaintainHeight();
 
 	if ( NPC_CheckPlayerTeamStealth() )
@@ -532,7 +527,7 @@ void ImperialProbe_Patrol( void )
 		{
 			//start loop sound once we move
 			NPC->s.loopSound = G_SoundIndex( "sound/chars/probe/misc/probedroidloop" );
-			ucmd.buttons |= BUTTON_WALKING;
+			NPCS.ucmd.buttons |= BUTTON_WALKING;
 			NPC_MoveToGoal( qtrue );
 		}
 		//randomly talk
@@ -560,12 +555,14 @@ ImperialProbe_Wait
 */
 void ImperialProbe_Wait(void)
 {
-	if ( NPCInfo->localState == LSTATE_DROP )
+	gentity_t *NPC = NPCS.NPC;
+
+	if ( NPCS.NPCInfo->localState == LSTATE_DROP )
 	{
 		vec3_t endPos;
 		trace_t	trace;
 
-		NPCInfo->desiredYaw = AngleNormalize360( NPCInfo->desiredYaw + 25 );
+		NPCS.NPCInfo->desiredYaw = AngleNormalize360( NPCS.NPCInfo->desiredYaw + 25 );
 
 		VectorSet( endPos, NPC->r.currentOrigin[0], NPC->r.currentOrigin[1], NPC->r.currentOrigin[2] - 32 );
 		trap_Trace( &trace, NPC->r.currentOrigin, NULL, NULL, endPos, NPC->s.number, MASK_SOLID );
@@ -587,16 +584,16 @@ NPC_BSImperialProbe_Default
 void NPC_BSImperialProbe_Default( void )
 {
 
-	if ( NPC->enemy )
+	if ( NPCS.NPC->enemy )
 	{
-		NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 		ImperialProbe_AttackDecision();
 	}
-	else if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
+	else if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 	{
 		ImperialProbe_Patrol();
 	}
-	else if ( NPCInfo->localState == LSTATE_DROP )
+	else if ( NPCS.NPCInfo->localState == LSTATE_DROP )
 	{
 		ImperialProbe_Wait();
 	}

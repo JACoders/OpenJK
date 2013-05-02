@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ui/keycodes.h"
 
 typedef struct {

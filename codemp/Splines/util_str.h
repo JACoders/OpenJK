@@ -1,7 +1,6 @@
-//need to rewrite this
+#pragma once
 
-#ifndef __UTIL_STR_H__
-#define __UTIL_STR_H__
+//need to rewrite this
 
 #include <assert.h>
 #include <string.h>
@@ -792,5 +791,3 @@ inline idStr::operator const char *
    {
    return c_str ();
    }
-
-#endif

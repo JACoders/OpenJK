@@ -1,7 +1,6 @@
-// Filename:-	fffx.h		(Force Feedback FX)
+#pragma once
 
-#ifndef FFFX_H
-#define FFFX_H
+// Filename:-	fffx.h		(Force Feedback FX)
 
 // this part can be seen by the CGAME as well...
 
@@ -123,7 +122,5 @@ void FF_XboxDamage		(int damage, float xpos);
 
 
 #endif	// #ifndef CGAME_ONLY
-#endif	// #ifndef FFFX_H
 
 //////////////////////// eof //////////////////////
-

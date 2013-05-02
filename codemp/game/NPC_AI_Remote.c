@@ -44,6 +44,7 @@ Remote_MaintainHeight
 void Remote_MaintainHeight( void )
 {	
 	float	dif;
+	gentity_t *NPC = NPCS.NPC;
 
 	// Update our angles regardless
 	NPC_UpdateAngles( qtrue, qtrue );
@@ -85,13 +86,13 @@ void Remote_MaintainHeight( void )
 	{
 		gentity_t *goal = NULL;
 
-		if ( NPCInfo->goalEntity )	// Is there a goal?
+		if ( NPCS.NPCInfo->goalEntity )	// Is there a goal?
 		{
-			goal = NPCInfo->goalEntity;
+			goal = NPCS.NPCInfo->goalEntity;
 		}
 		else
 		{
-			goal = NPCInfo->lastGoalEntity;
+			goal = NPCS.NPCInfo->lastGoalEntity;
 		}
 		if ( goal )
 		{
@@ -141,6 +142,7 @@ void Remote_Strafe( void )
 	int		dir;
 	vec3_t	end, right;
 	trace_t	tr;
+	gentity_t *NPC = NPCS.NPC;
 
 	AngleVectors( NPC->client->renderInfo.eyeAngles, NULL, right, NULL );
 
@@ -163,7 +165,7 @@ void Remote_Strafe( void )
 
 		// Set the strafe start time so we can do a controlled roll
 	//	NPC->fx_time = level.time;
-		NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCS.NPCInfo->standTime = level.time + 3000 + random() * 500;
 	}
 }
 
@@ -179,9 +181,10 @@ void Remote_Hunt( qboolean visible, qboolean advance, qboolean retreat )
 {
 	float	distance, speed;
 	vec3_t	forward;
+	gentity_t *NPC = NPCS.NPC;
 
 	//If we're not supposed to stand still, pursue the player
-	if ( NPCInfo->standTime < level.time )
+	if ( NPCS.NPCInfo->standTime < level.time )
 	{
 		// Only strafe when we can see the player
 		if ( visible )
@@ -199,8 +202,8 @@ void Remote_Hunt( qboolean visible, qboolean advance, qboolean retreat )
 	if ( visible == qfalse )
 	{
 		// Move towards our goal
-		NPCInfo->goalEntity = NPC->enemy;
-		NPCInfo->goalRadius = 12;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalRadius = 12;
 
 		//Get our direction from the navigator if we can't see our target
 		if ( NPC_GetMoveDirection( forward, &distance ) == qfalse )
@@ -233,6 +236,7 @@ void Remote_Fire (void)
 	static	vec3_t	forward, vright, up;
 //	static	vec3_t	muzzle;
 	gentity_t	*missile;
+	gentity_t *NPC = NPCS.NPC;
 
 	CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_org1 );
 	VectorCopy( NPC->r.currentOrigin, muzzle1 );
@@ -263,14 +267,14 @@ Remote_Ranged
 */
 void Remote_Ranged( qboolean visible, qboolean advance, qboolean retreat )
 {
-
+	gentity_t *NPC = NPCS.NPC;
 	if ( TIMER_Done( NPC, "attackDelay" ) )	// Attack?
 	{
 		TIMER_Set( NPC, "attackDelay", Q_irand( 500, 3000 ) );
 		Remote_Fire();
 	}
 
-	if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+	if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 	{
 		Remote_Hunt( visible, advance, retreat );
 	}
@@ -292,13 +296,13 @@ void Remote_Attack( void )
 	float		distance;
 	qboolean	visible;
 	float		idealDist;
-	qboolean	advance;
-	qboolean	retreat;
+	qboolean	advance, retreat;
+	gentity_t *NPC = NPCS.NPC;
 
 	if ( TIMER_Done(NPC,"spin") )
 	{
 		TIMER_Set( NPC, "spin", Q_irand( 250, 1500 ) );
-		NPCInfo->desiredYaw += Q_irand( -200, 200 ); 
+		NPCS.NPCInfo->desiredYaw += Q_irand( -200, 200 ); 
 	}
 	// Always keep a good height off the ground
 	Remote_MaintainHeight();
@@ -320,7 +324,7 @@ void Remote_Attack( void )
 	// If we cannot see our target, move to see it
 	if ( visible == qfalse )
 	{
-		if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+		if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 		{
 			Remote_Hunt( visible, advance, retreat );
 			return;
@@ -350,6 +354,7 @@ Remote_Patrol
 */
 void Remote_Patrol( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	Remote_MaintainHeight();
 
 	//If we have somewhere to go, then do that
@@ -358,7 +363,7 @@ void Remote_Patrol( void )
 		if ( UpdateGoal() )
 		{
 			//start loop sound once we move
-			ucmd.buttons |= BUTTON_WALKING;
+			NPCS.ucmd.buttons |= BUTTON_WALKING;
 			NPC_MoveToGoal( qtrue );
 		}
 	}
@@ -374,16 +379,10 @@ NPC_BSRemote_Default
 */
 void NPC_BSRemote_Default( void )
 {
-	if ( NPC->enemy )
-	{
+	if ( NPCS.NPC->enemy )
 		Remote_Attack();
-	}
-	else if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
-	{
+	else if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 		Remote_Patrol();
-	}
 	else
-	{
 		Remote_Idle();
-	}
 }

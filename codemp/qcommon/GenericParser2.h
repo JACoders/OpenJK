@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(GENERICPARSER2_H_INC)
-#define GENERICPARSER2_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including GenericParser2.h")
@@ -198,7 +196,3 @@ bool		GPV_IsList(TGPValue GPV);
 const char	*GPV_GetTopValue(TGPValue GPV);
 bool		GPV_GetTopValue(TGPValue GPV, char *Value);
 TGPValue	GPV_GetList(TGPValue GPV);
-
-
-
-#endif // GENERICPARSER2_H_INC

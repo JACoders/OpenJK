@@ -7,7 +7,6 @@
 
 #include "zlib/zlib.h"
 #include "rpng.h"
-//#include "qcommon/memory.h"
 
 //Raz: hi i'm bad
 #include "renderer/tr_public.h"

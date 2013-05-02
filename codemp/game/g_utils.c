@@ -67,7 +67,7 @@ static int G_FindConfigstringIndex( const char *name, int start, int max, qboole
 	int		i;
 	char	s[MAX_STRING_CHARS];
 
-	if ( !name || !name[0] ) {
+	if ( !VALIDSTRING( name ) ) {
 		return 0;
 	}
 

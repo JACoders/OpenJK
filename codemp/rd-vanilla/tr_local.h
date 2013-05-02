@@ -1,27 +1,28 @@
-#ifndef TR_LOCAL_H
-#define TR_LOCAL_H
+#pragma once
 
 #include "qcommon/qfiles.h"
 #include "renderer/tr_public.h"
+
 #ifdef _WIN32
-#include "qgl.h"
+	#include "qgl.h"
 #else
-#include "../sdl/sdl_qgl.h"
+	#include "../sdl/sdl_qgl.h"
 #endif
+
 #include "ghoul2/ghoul2_shared.h" //rwwRMG - added
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
 
 #ifndef _WIN32
-#include "qcommon/platform.h"
+	#include "qcommon/platform.h"
 #endif
 
 // fast float to int conversion
 #if id386 && !( (defined __linux__ || defined __FreeBSD__ || defined MACOS_X) && (defined __i386__ ) ) // rb010123
-inline long myftol( float f );
+	inline long myftol( float f );
 #else
-#define	myftol(x) ((int)(x))
+	#define	myftol(x) ((int)(x))
 #endif
 
 //for 3d textures -rww
@@ -2000,5 +2001,3 @@ void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input);
 extern refexport_t re;
 
 qboolean ShaderHashTableExists(void);
-
-#endif //TR_LOCAL_H

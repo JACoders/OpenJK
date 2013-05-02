@@ -1,3 +1,5 @@
+#pragma once
+
 //rww - so that I may utilize vm debugging features WITHOUT DROPPING TO 0.1FPS
 #define CRAZY_SYMBOL_MAP
 
@@ -177,4 +179,3 @@ vmSymbol_t *VM_ValueToFunctionSymbol( vm_t *vm, int value );
 int VM_SymbolToValue( vm_t *vm, const char *symbol );
 const char *VM_ValueToSymbol( vm_t *vm, int value );
 void VM_LogSyscalls( int *args );
-

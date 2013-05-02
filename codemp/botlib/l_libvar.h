@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		l_libvar.h
@@ -43,4 +44,3 @@ void LibVarSet(char *var_name, char *value);
 qboolean LibVarChanged(char *var_name);
 //sets the library variable to unmodified
 void LibVarSetNotModified(char *var_name);
-

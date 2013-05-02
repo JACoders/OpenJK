@@ -113,16 +113,16 @@ void Sentry_Fire (void)
 	static	vec3_t	forward, vright, up;
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
-	int			bolt;
-	int			which;
+	int			bolt, which;
+	gentity_t *NPC = NPCS.NPC;
 
 	NPC->flags &= ~FL_SHIELDED;
 
-	if ( NPCInfo->localState == LSTATE_POWERING_UP )
+	if ( NPCS.NPCInfo->localState == LSTATE_POWERING_UP )
 	{
 		if ( TIMER_Done( NPC, "powerup" ))
 		{
-			NPCInfo->localState = LSTATE_ATTACKING;
+			NPCS.NPCInfo->localState = LSTATE_ATTACKING;
 			NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_ATTACK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 		}
 		else
@@ -131,24 +131,24 @@ void Sentry_Fire (void)
 			return;
 		}
 	}
-	else if ( NPCInfo->localState == LSTATE_ACTIVE )
+	else if ( NPCS.NPCInfo->localState == LSTATE_ACTIVE )
 	{
-		NPCInfo->localState = LSTATE_POWERING_UP;
+		NPCS.NPCInfo->localState = LSTATE_POWERING_UP;
 
 		G_Sound( NPC, CHAN_AUTO, G_SoundIndex("sound/chars/sentry/misc/sentry_shield_open") );		
 		NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_POWERUP1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 		TIMER_Set( NPC, "powerup", 250 );
 		return;
 	}
-	else if ( NPCInfo->localState != LSTATE_ATTACKING )
+	else if ( NPCS.NPCInfo->localState != LSTATE_ATTACKING )
 	{
 		// bad because we are uninitialized
-		NPCInfo->localState = LSTATE_ACTIVE;
+		NPCS.NPCInfo->localState = LSTATE_ACTIVE;
 		return;
 	}
 
 	// Which muzzle to fire from?
-	which = NPCInfo->burstCount % 3;
+	which = NPCS.NPCInfo->burstCount % 3;
 	switch( which )
 	{
 	case 0:
@@ -183,7 +183,7 @@ void Sentry_Fire (void)
 	missile->methodOfDeath = MOD_BRYAR_PISTOL;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
-	NPCInfo->burstCount++;
+	NPCS.NPCInfo->burstCount++;
 	NPC->attackDebounceTime = level.time + 50;
 	missile->damage = 5;
 
@@ -208,6 +208,7 @@ Sentry_MaintainHeight
 void Sentry_MaintainHeight( void )
 {	
 	float	dif;
+	gentity_t *NPC = NPCS.NPC;
 
 	NPC->s.loopSound = G_SoundIndex( "sound/chars/sentry/misc/sentry_hover_1_lp" );
 
@@ -235,13 +236,13 @@ void Sentry_MaintainHeight( void )
 	{
 		gentity_t *goal = NULL;
 
-		if ( NPCInfo->goalEntity )	// Is there a goal?
+		if ( NPCS.NPCInfo->goalEntity )	// Is there a goal?
 		{
-			goal = NPCInfo->goalEntity;
+			goal = NPCS.NPCInfo->goalEntity;
 		}
 		else
 		{
-			goal = NPCInfo->lastGoalEntity;
+			goal = NPCS.NPCInfo->lastGoalEntity;
 		}
 
 		if (goal)
@@ -250,7 +251,7 @@ void Sentry_MaintainHeight( void )
 
 			if ( fabs( dif ) > SENTRY_HOVER_HEIGHT )
 			{
-				ucmd.upmove = ( ucmd.upmove < 0 ? -4 : 4 );
+				NPCS.ucmd.upmove = ( NPCS.ucmd.upmove < 0 ? -4 : 4 );
 			}
 			else
 			{
@@ -308,15 +309,16 @@ Sentry_Idle
 */
 void Sentry_Idle( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	Sentry_MaintainHeight();
 
 	// Is he waking up?
-	if (NPCInfo->localState == LSTATE_WAKEUP)
+	if (NPCS.NPCInfo->localState == LSTATE_WAKEUP)
 	{
 		if (NPC->client->ps.torsoTimer<=0)
 		{
-			NPCInfo->scriptFlags |= SCF_LOOK_FOR_ENEMIES;
-			NPCInfo->burstCount = 0;
+			NPCS.NPCInfo->scriptFlags |= SCF_LOOK_FOR_ENEMIES;
+			NPCS.NPCInfo->burstCount = 0;
 		}
 	}
 	else
@@ -338,6 +340,7 @@ void Sentry_Strafe( void )
 	int		dir;
 	vec3_t	end, right;
 	trace_t	tr;
+	gentity_t *NPC = NPCS.NPC;
 
 	AngleVectors( NPC->client->renderInfo.eyeAngles, NULL, right, NULL );
 
@@ -358,7 +361,7 @@ void Sentry_Strafe( void )
 
 		// Set the strafe start time so we can do a controlled roll
 	//	NPC->fx_time = level.time;
-		NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCS.NPCInfo->standTime = level.time + 3000 + random() * 500;
 	}
 }
 
@@ -371,9 +374,10 @@ void Sentry_Hunt( qboolean visible, qboolean advance )
 {
 	float	distance, speed;
 	vec3_t	forward;
+	gentity_t *NPC = NPCS.NPC;
 
 	//If we're not supposed to stand still, pursue the player
-	if ( NPCInfo->standTime < level.time )
+	if ( NPCS.NPCInfo->standTime < level.time )
 	{
 		// Only strafe when we can see the player
 		if ( visible )
@@ -391,8 +395,8 @@ void Sentry_Hunt( qboolean visible, qboolean advance )
 	if ( visible == qfalse )
 	{
 		// Move towards our goal
-		NPCInfo->goalEntity = NPC->enemy;
-		NPCInfo->goalRadius = 12;
+		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalRadius = 12;
 
 		//Get our direction from the navigator if we can't see our target
 		if ( NPC_GetMoveDirection( forward, &distance ) == qfalse )
@@ -415,9 +419,10 @@ Sentry_RangedAttack
 */
 void Sentry_RangedAttack( qboolean visible, qboolean advance )
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( TIMER_Done( NPC, "attackDelay" ) && NPC->attackDebounceTime < level.time && visible )	// Attack?
 	{
-		if ( NPCInfo->burstCount > 6 )
+		if ( NPCS.NPCInfo->burstCount > 6 )
 		{
 			if ( !NPC->fly_sound_debounce_time )
 			{//delay closing down to give the player an opening
@@ -425,8 +430,8 @@ void Sentry_RangedAttack( qboolean visible, qboolean advance )
 			}
 			else if ( NPC->fly_sound_debounce_time < level.time )
 			{
-				NPCInfo->localState = LSTATE_ACTIVE;
-				NPC->fly_sound_debounce_time = NPCInfo->burstCount = 0;
+				NPCS.NPCInfo->localState = LSTATE_ACTIVE;
+				NPC->fly_sound_debounce_time = NPCS.NPCInfo->burstCount = 0;
 				TIMER_Set( NPC, "attackDelay", Q_irand( 2000, 3500) );
 				NPC->flags |= FL_SHIELDED;
 				NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_FLY_SHIELDED, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
@@ -439,7 +444,7 @@ void Sentry_RangedAttack( qboolean visible, qboolean advance )
 		}
 	}
 
-	if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+	if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 	{
 		Sentry_Hunt( visible, advance );
 	}
@@ -453,8 +458,8 @@ Sentry_AttackDecision
 void Sentry_AttackDecision( void )
 {
 	float		distance;	
-	qboolean	visible;
-	qboolean	advance;
+	qboolean	visible, advance;
+	gentity_t *NPC = NPCS.NPC;
 
 	// Always keep a good height off the ground
 	Sentry_MaintainHeight();
@@ -495,7 +500,7 @@ void Sentry_AttackDecision( void )
 	// If we cannot see our target, move to see it
 	if ( visible == qfalse )
 	{
-		if ( NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
+		if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 		{
 			Sentry_Hunt( visible, advance );
 			return;
@@ -516,6 +521,7 @@ NPC_Sentry_Patrol
 */
 void NPC_Sentry_Patrol( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	Sentry_MaintainHeight();
 
 	//If we have somewhere to go, then do that
@@ -531,7 +537,7 @@ void NPC_Sentry_Patrol( void )
 		if ( UpdateGoal() )
 		{
 			//start loop sound once we move
-			ucmd.buttons |= BUTTON_WALKING;
+			NPCS.ucmd.buttons |= BUTTON_WALKING;
 			NPC_MoveToGoal( qtrue );
 		}
 
@@ -554,17 +560,18 @@ NPC_BSSentry_Default
 */
 void NPC_BSSentry_Default( void )
 {
+	gentity_t *NPC = NPCS.NPC;
 	if ( NPC->targetname )
 	{
 		NPC->use = sentry_use;
 	}
 
-	if (( NPC->enemy ) && (NPCInfo->localState != LSTATE_WAKEUP))
+	if (( NPC->enemy ) && (NPCS.NPCInfo->localState != LSTATE_WAKEUP))
 	{
 		// Don't attack if waking up or if no enemy
 		Sentry_AttackDecision();
 	}
-	else if ( NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
+	else if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )
 	{
 		NPC_Sentry_Patrol();
 	}

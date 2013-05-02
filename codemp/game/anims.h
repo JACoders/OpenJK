@@ -1,5 +1,5 @@
-#ifndef __ANIMS_H__
-#define __ANIMS_H__
+#pragma once
+
 // playerAnimations
 
 
@@ -1791,7 +1791,3 @@ typedef enum //# animNumber_e
 } animNumber_t;
 
 #define SABER_ANIM_GROUP_SIZE (BOTH_A2_T__B_ - BOTH_A1_T__B_)
-
-
-#endif// #ifndef __ANIMS_H__
-

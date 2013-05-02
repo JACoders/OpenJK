@@ -4,7 +4,8 @@
 #include "g_local.h"
 #include "g_ICARUScb.h"
 #include "g_nav.h"
-#include "game/bg_saga.h"
+#include "bg_saga.h"
+#include "b_local.h"
 
 level_locals_t	level;
 
@@ -40,11 +41,6 @@ qboolean G_EntIsDoor( int entityNum );
 qboolean G_EntIsBreakable( int entityNum );
 qboolean G_EntIsRemovableUsable( int entNum );
 void CP_FindCombatPointWaypoints( void );
-
-void SetNPCGlobals( gentity_t *ent );
-void SaveNPCGlobals(void);
-void RestoreNPCGlobals(void);
-extern gNPC_t *NPCInfo;
 
 /*
 ================
@@ -623,7 +619,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	if (g_gametype.integer == GT_SIEGE)
 	{ //just get these configstrings registered now...
-		int i = 0;
 		while (i < MAX_CUSTOM_SIEGE_SOUNDS)
 		{
 			if (!bg_customSiegeSoundNames[i])
@@ -726,7 +721,7 @@ void G_ShutdownGame( int restart ) {
 
 //===================================================================
 
-void QDECL Com_Error ( int level, const char *error, ... ) {
+void QDECL Com_Error ( int errorLevel, const char *error, ... ) {
 	va_list		argptr;
 	char		text[1024];
 
@@ -1404,7 +1399,7 @@ void CalculateRanks( void ) {
 			trap_SetConfigstring( CS_SCORES2, va("%i", level.clients[ level.sortedClients[1] ].ps.persistant[PERS_SCORE] ) );
 		}
 
-		if (g_gametype.integer != GT_DUEL || g_gametype.integer != GT_POWERDUEL)
+		if (g_gametype.integer != GT_DUEL && g_gametype.integer != GT_POWERDUEL)
 		{ //when not in duel, use this configstring to pass the index of the player currently in first place
 			if ( level.numConnectedClients >= 1 )
 			{
@@ -2159,10 +2154,9 @@ void CheckExitRules( void ) {
 
 	if (gEscaping)
 	{
-		int i = 0;
 		int numLiveClients = 0;
 
-		while (i < MAX_CLIENTS)
+		for ( i=0; i < MAX_CLIENTS; i++ )
 		{
 			if (g_entities[i].inuse && g_entities[i].client && g_entities[i].health > 0)
 			{
@@ -2172,8 +2166,6 @@ void CheckExitRules( void ) {
 					numLiveClients++;
 				}
 			}
-
-			i++;
 		}
 		if (gEscapeTime < level.time)
 		{
@@ -3071,7 +3063,7 @@ runicarus:
 	if ( ent->inuse )
 	{
 		SaveNPCGlobals();
-		if(NPCInfo == NULL && ent->NPC != NULL)
+		if(NPCS.NPCInfo == NULL && ent->NPC != NULL)
 		{
 			SetNPCGlobals( ent );
 		}
@@ -3166,9 +3158,8 @@ void G_RunFrame( int levelTime ) {
 		g_siegeRespawn.integer &&
 		g_siegeRespawnCheck < level.time)
 	{ //check for a respawn wave
-		int i = 0;
 		gentity_t *clEnt;
-		while (i < MAX_CLIENTS)
+		for ( i=0; i < MAX_CLIENTS; i++ )
 		{
 			clEnt = &g_entities[i];
 
@@ -3179,7 +3170,6 @@ void G_RunFrame( int levelTime ) {
 				respawn(clEnt);
 				clEnt->client->tempSpectate = 0;
 			}
-			i++;
 		}
 
 		g_siegeRespawnCheck = level.time + g_siegeRespawn.integer * 1000;

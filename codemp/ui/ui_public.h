@@ -1,7 +1,7 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
-#ifndef __UI_PUBLIC_H__
-#define __UI_PUBLIC_H__
 
 #define UI_API_VERSION	7
 
@@ -249,5 +249,3 @@ typedef enum {
 
 	UI_MENU_RESET
 } uiExport_t;
-
-#endif

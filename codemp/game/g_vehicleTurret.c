@@ -1,4 +1,3 @@
-#include "g_headers.h"
 #include "bg_vehicles.h"
 #include "b_local.h"
 #include "ghoul2/G2.h"

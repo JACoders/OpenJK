@@ -90,7 +90,7 @@ void NPC_Blocked( gentity_t *self, gentity_t *blocker )
 	//Debug_Printf( d_npcai, DEBUG_LEVEL_WARNING, "%s: Excuse me, %s %s!\n", self->targetname, blocker->classname, blocker->targetname );
 	
 	//If we're being blocked by the player, say something to them
-	if ( ( blocker->s.number == 0 ) && ( ( blocker->client->playerTeam == self->client->playerTeam ) ) )
+	if ( ( blocker->s.number >= 0 && blocker->s.number < MAX_CLIENTS ) && ( ( blocker->client->playerTeam == self->client->playerTeam ) ) )
 	{
 		//guys in formation are not trying to get to a critical point, 
 		//don't make them yell at the player (unless they have an enemy and
@@ -287,7 +287,7 @@ qboolean NAV_ClearPathToPoint( gentity_t *self, vec3_t pmins, vec3_t pmaxs, vec3
 		}
 
 		//Okay, didn't get all the way there, let's see if we got close enough:
-		if ( NAV_HitNavGoal( self->r.currentOrigin, self->parent->r.mins, self->parent->r.maxs, trace.endpos, NPCInfo->goalRadius, FlyingCreature( self->parent ) ) )
+		if ( NAV_HitNavGoal( self->r.currentOrigin, self->parent->r.mins, self->parent->r.maxs, trace.endpos, NPCS.NPCInfo->goalRadius, FlyingCreature( self->parent ) ) )
 		{
 			return qtrue;
 		}
@@ -905,7 +905,7 @@ qboolean NAV_AvoidCollision( gentity_t *self, gentity_t *goal, navInfo_t *info )
 	vec3_t	movepos;
 
 	//Clear our block info for this frame
-	NAV_ClearBlockedInfo( NPC );
+	NAV_ClearBlockedInfo( NPCS.NPC );
 
 	//Cap our distance
 	if ( info->distance > MAX_COLL_AVOID_DIST )
@@ -973,7 +973,7 @@ int NAV_TestBestNode( gentity_t *self, int startID, int endID, qboolean failEdge
 	vec3_t	end;
 	trace_t	trace;
 	vec3_t	mins;
-	int		clipmask = (NPC->clipmask&~CONTENTS_BODY)|CONTENTS_BOTCLIP;
+	int		clipmask = (NPCS.NPC->clipmask&~CONTENTS_BODY)|CONTENTS_BOTCLIP;
 
 	//get the position for the test choice
 	trap_Nav_GetNodePosition( endID, end );
@@ -1095,7 +1095,7 @@ qboolean NAV_MicroError( vec3_t start, vec3_t end )
 {
 	if ( VectorCompare( start, end ) )
 	{
-		if ( DistanceSquared( NPC->r.currentOrigin, start ) < (8*8) )
+		if ( DistanceSquared( NPCS.NPC->r.currentOrigin, start ) < (8*8) )
 		{
 			return qtrue;
 		}
@@ -1145,13 +1145,13 @@ int	NAV_MoveToGoal( gentity_t *self, navInfo_t *info )
 	{
 		if ( NAVDEBUG_showEnemyPath )
 		{
-			vec3_t	origin, torigin;
+			vec3_t	neworigin, torigin;
 
 			trap_Nav_GetNodePosition( self->NPC->goalEntity->waypoint, torigin );
-			trap_Nav_GetNodePosition( self->waypoint, origin );
+			trap_Nav_GetNodePosition( self->waypoint, neworigin );
 
 			G_DrawNode( torigin, NODE_GOAL );
-			G_DrawNode( origin, NODE_GOAL );
+			G_DrawNode( neworigin, NODE_GOAL );
 			G_DrawNode( self->NPC->goalEntity->r.currentOrigin, NODE_START );
 		}
 		

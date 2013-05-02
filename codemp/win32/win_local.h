@@ -5,7 +5,6 @@
 #pragma warning(disable : 4201)
 #pragma warning( push )
 #endif
-//#include <windows.h>
 #include "qcommon/platform.h"
 #if defined (_MSC_VER) && (_MSC_VER >= 1200)
 #pragma warning( pop )

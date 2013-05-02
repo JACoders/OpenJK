@@ -1,5 +1,4 @@
-#ifndef __UTIL_LIST_H__
-#define __UTIL_LIST_H__
+#pragma once
 
 #include <stdlib.h>
 #include <assert.h>
@@ -321,5 +320,3 @@ inline void idList<type>::Sort( cmp_t *compare ) {
 
 	qsort( ( void * )m_list, ( size_t )m_num, sizeof( type ), compare );
 }
-
-#endif /* !__UTIL_LIST_H__ */

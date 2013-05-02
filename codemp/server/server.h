@@ -1,10 +1,4 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-
-#if !defined(SERVER_H_INC)
-#define SERVER_H_INC
-
 
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
@@ -405,5 +399,3 @@ void SV_ClipToEntity( trace_t *trace, const vec3_t start, const vec3_t mins, con
 void SV_Netchan_Transmit( client_t *client, msg_t *msg);	//int length, const byte *data );
 void SV_Netchan_TransmitNextFragment( netchan_t *chan );
 qboolean SV_Netchan_Process( client_t *client, msg_t *msg );
-
-#endif // SERVER_H_INC

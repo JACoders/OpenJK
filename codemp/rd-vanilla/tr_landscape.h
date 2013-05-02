@@ -1,5 +1,4 @@
-#ifndef _INC_LANDSCAPE_H
-#define _INC_LANDSCAPE_H
+#pragma once
 
 // Number of TriTreeNodes available
 #define POOL_SIZE				(50000)
@@ -187,5 +186,3 @@ public:
 
 void R_CalcTerrainVisBounds(CTRLandScape *landscape);
 void R_AddTerrainSurfaces(void);
-
-#endif //INC_LANDSCAPE_H

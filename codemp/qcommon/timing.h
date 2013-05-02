@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef _WIN32
 #include <inttypes.h>
 typedef int64_t __int64;

@@ -4,8 +4,6 @@
 // ICARUS Utility functions
 //rww - mangled to work in server exe setting.
 
-//#include "Q3_Interface.h"
-//#include "g_roff.h"
 #include "game/g_public.h"
 #include "server/server.h"
 #include "interface.h"

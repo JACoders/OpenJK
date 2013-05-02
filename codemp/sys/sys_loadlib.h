@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 ===========================================================================
 Copyright (C) 1999-2010 id Software LLC, a ZeniMax Media company.
@@ -28,9 +30,6 @@ Suite 120, Rockville, Maryland 20850 USA.
 ===========================================================================
 */
 
-#ifndef SYS_LOADLIB_H_
-#define SYS_LOADLIB_H_
-
 #ifdef DEDICATED
 #	ifdef _WIN32
 #		include <windows.h>
@@ -55,5 +54,3 @@ Suite 120, Rockville, Maryland 20850 USA.
 #endif
 
 void * QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
-
-#endif /* SYS_LOADLIB_H_ */

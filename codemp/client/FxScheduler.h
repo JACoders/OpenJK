@@ -1,14 +1,7 @@
+#pragma once
 
-#if !defined(FX_UTIL_H_INC)
-	#include "FxUtil.h"
-#endif
-
-#if !defined(GENERICPARSER2_H_INC)
-	#include "qcommon/GenericParser2.h"
-#endif
-
-#ifndef FX_SCHEDULER_H_INC
-#define FX_SCHEDULER_H_INC
+#include "FxUtil.h"
+#include "qcommon/GenericParser2.h"
 
 #pragma warning (push, 3)	//go back down to 3 for the stl include
 #include <vector>
@@ -501,5 +494,3 @@ public:
 // The one and only
 //-------------------
 extern CFxScheduler theFxScheduler;
-
-#endif // FX_SCHEDULER_H_INC

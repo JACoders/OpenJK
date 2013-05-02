@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 #include "qcommon/q_shared.h"
@@ -10,10 +12,11 @@
 // If you absolutely need something stored, it can either be kept
 // by the server in the server stored userinfos, or stashed in a cvar.
 
+//OJKFIXME: should go in q_platform.h/q_shared.h - just use ID_INLINE
 #ifndef __LCC__
-#define CGAME_INLINE ID_INLINE
+	#define CGAME_INLINE ID_INLINE
 #else
-#define CGAME_INLINE //none
+	#define CGAME_INLINE //none
 #endif
 
 #define NULL_HANDLE			((qhandle_t) 0)

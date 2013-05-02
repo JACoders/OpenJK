@@ -9,8 +9,6 @@
 #include "qcommon/exe_headers.h"
 
 #include "client/client.h"
-//#include "zlib32/zip.h"
-//#include "unzip.h"
 #include "files.h"
 
 #include "platform.h"

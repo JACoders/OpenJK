@@ -5,8 +5,6 @@
 #include "cm_patch.h"
 #include "cm_landscape.h"
 #include "qcommon/GenericParser2.h"
-//#include "image.h"
-//#include "qcommon/q_imath.h"
 #include "cm_terrainmap.h"
 #include "cm_draw.h"
 #include "png/rpng.h"

@@ -862,7 +862,7 @@ void turretG2_base_think( gentity_t *self )
 		if ( turretG2_find_enemies( self ) )
 		{//found one
 			turnOff = qfalse;
-			if ( self->enemy->client )
+			if ( self->enemy && self->enemy->client )
 			{//hold on to clients for a min of 3 seconds
 				self->last_move_time = level.time + 3000;
 			}
