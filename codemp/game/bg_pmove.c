@@ -5430,7 +5430,7 @@ static void PM_Footsteps( void ) {
 		{ //let it finish first
 			bobmove = 0.2f;
 		}
-		else if ( !( pm->cmd.buttons & BUTTON_WALKING ) )
+		else if ( !(abs(pm->cmd.forwardmove) <= 64 && abs(pm->cmd.rightmove) <= 64) )	// Analog joystick improvement --eez
 		{//running
 			bobmove = 0.4f;	// faster speeds bob faster
 			if ( pm->ps->clientNum >= MAX_CLIENTS &&

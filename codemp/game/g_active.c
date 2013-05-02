@@ -2394,6 +2394,10 @@ void ClientThink_real( gentity_t *ent ) {
 			client->ps.speed = ent->NPC->desiredSpeed;
 		}
 
+		// Joystick improvements (for later on) --eez
+		ucmd->forwardmove	= Com_AbsClampi(32, ( ucmd->rightmove > 0 ) ? 127 : 128, ucmd->rightmove );
+		ucmd->rightmove		= Com_AbsClampi(32, ( ucmd->rightmove > 0 ) ? 127 : 128, ucmd->rightmove );
+
 		if (ucmd->buttons & BUTTON_WALKING)
 		{ //sort of a hack I guess since MP handles walking differently from SP (has some proxy cheat prevention methods)
 			/*
