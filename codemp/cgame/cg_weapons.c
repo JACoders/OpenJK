@@ -847,8 +847,9 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 		hand.backlerp = 0;
 	} else {
 		float currentFrame, animSpeed;
+#ifndef SIL_IS_A_COOL_CAT
 		int startFrame, endFrame, flags;
-
+#endif
 		// get clientinfo for animation map
 		if (cent->currentState.eType == ET_NPC)
 		{
@@ -864,7 +865,11 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 			ci = &cgs.clientinfo[ cent->currentState.clientNum ];
 		}
 
+#ifdef SIL_IS_A_COOL_CAT
+		trap_G2API_GetBoneFrame(cent->ghoul2, "lower_lumbar", cg.time, &currentFrame, cgs.gameModels, 0);
+#else
 		trap_G2API_GetBoneAnim(cent->ghoul2, "lower_lumbar", cg.time, &currentFrame, &startFrame, &endFrame, &flags, &animSpeed, cgs.gameModels, 0);
+#endif
 		hand.frame = CG_MapTorsoToWeaponFrame( ci, ceil( currentFrame ), ps->torsoAnim );
 		hand.oldframe = CG_MapTorsoToWeaponFrame( ci, floor( currentFrame ), ps->torsoAnim );
 		hand.backlerp = 1.0f - (currentFrame-floor(currentFrame));
