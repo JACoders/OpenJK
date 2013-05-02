@@ -1570,8 +1570,8 @@ void NormalToLatLong( const vec3_t normal, byte bytes[2] ); //rwwRMG - added
 
 //=============================================
 
-int Com_Clampi( int min, int max, int value ); //rwwRMG - added
-float Com_Clamp( float min, float max, float value );
+ID_INLINE int Com_Clampi( int min, int max, int value ); //rwwRMG - added
+ID_INLINE float Com_Clamp( float min, float max, float value );
 
 char	*COM_SkipPath( char *pathname );
 const char	*COM_GetExtension( const char *name );

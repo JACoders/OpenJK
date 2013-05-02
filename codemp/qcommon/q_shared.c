@@ -48,7 +48,7 @@ const char *GetStringForID( stringID_table_t *table, int id )
 	return NULL;
 }
 
-int Com_Clampi( int min, int max, int value ) 
+ID_INLINE int Com_Clampi( int min, int max, int value ) 
 {
 	if ( value < min ) 
 	{
@@ -61,7 +61,7 @@ int Com_Clampi( int min, int max, int value )
 	return value;
 }
 
-float Com_Clamp( float min, float max, float value ) {
+ID_INLINE float Com_Clamp( float min, float max, float value ) {
 	if ( value < min ) {
 		return min;
 	}
