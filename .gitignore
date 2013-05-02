@@ -65,6 +65,8 @@ local.properties
 .builds
 *.dotCover
 
+*winquake.res
+
 ## TODO: If you have NuGet Package Restore enabled, uncomment this
 #packages/
 
