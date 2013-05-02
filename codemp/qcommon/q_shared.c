@@ -71,6 +71,31 @@ ID_INLINE float Com_Clamp( float min, float max, float value ) {
 	return value;
 }
 
+// some fucking joker deleted my code for ABSCLAMP, precisely before I was going to use it. so I added this --eez
+ID_INLINE int Com_AbsClampi( int min, int max, int value )
+{
+	if( value < 0 )
+	{
+		return Com_Clampi( -max, -min, value );
+	}
+	else
+	{
+		return Com_Clampi( min, max, value );
+	}
+}
+
+ID_INLINE float Com_AbsClamp( float min, float max, float value )
+{
+	if( value < 0.0f )
+	{
+		return Com_Clamp( -max, -min, value );
+	}
+	else
+	{
+		return Com_Clamp( min, max, value );
+	}
+}
+
 
 /*
 ============
