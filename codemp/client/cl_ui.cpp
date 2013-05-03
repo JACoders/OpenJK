@@ -21,7 +21,7 @@ Ghoul2 Insert End
 #endif
 
 extern	botlib_export_t	*botlib_export;
-void SP_Register(const char *Package);
+//void SP_Register(const char *Package);
 
 vm_t *uivm;
 
@@ -40,6 +40,7 @@ static void GetClientState( uiClientState_t *state ) {
 }
 
 // This is for compatibility of old servercache only
+// Remove when 64-bit
 int				cls_nummplayerservers;
 serverInfo_t	cls_mplayerServers[MAX_OTHER_SERVERS];
 
@@ -665,22 +666,11 @@ static int GetConfigString(int index, char *buf, int size)
 	return qtrue;
 }
 
-/*
-====================
-FloatAsInt
-====================
-*/
-static int FloatAsInt( float f ) {
-	int		temp;
-
-	*(float *)&temp = f;
-
-	return temp;
+static int	FloatAsInt( float f ) {
+	floatint_t fi;
+	fi.f = f;
+	return fi.i;
 }
-
-void *VM_ArgPtr( int intValue );
-#define	VMA(x) VM_ArgPtr(args[x])
-#define	VMF(x)	((float *)args)[x]
 
 /*
 ====================
@@ -689,7 +679,7 @@ CL_UISystemCalls
 The ui module is making a system call
 ====================
 */
-int CL_UISystemCalls( int *args ) {
+intptr_t CL_UISystemCalls( intptr_t *args ) {
 	switch( args[0] ) {
 	//rww - alright, DO NOT EVER add a GAME/CGAME/UI generic call without adding a trap to match, and
 	//all of these traps must be shared and have cases in sv_game, cl_cgame, and cl_ui. They must also
@@ -1295,7 +1285,7 @@ Ghoul2 Insert End
 Ghoul2 Insert End
 */
 	default:
-		Com_Error( ERR_DROP, "Bad UI system trap: %i", args[0] );
+		Com_Error( ERR_DROP, "Bad UI system trap: %ld", (long int) args[0] );
 
 	}
 

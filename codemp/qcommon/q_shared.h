@@ -480,6 +480,12 @@ typedef unsigned long		ulong;
 
 typedef enum qboolean_e { qfalse=0, qtrue } qboolean;
 
+typedef union {
+	float f;
+	int i;
+	unsigned int ui;
+} floatint_t;
+
 #ifndef min
 	#define min(x,y) ((x)<(y)?(x):(y))
 #endif
@@ -532,6 +538,12 @@ typedef int		clipHandle_t;
 #define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
 
 #define PADP(base, alignment)	((void *) PAD((intptr_t) (base), (alignment)))
+
+#ifdef __GNUC__
+#define QALIGN(x) __attribute__((aligned(x)))
+#else
+#define QALIGN(x)
+#endif
 
 #ifndef NULL
 #define NULL ((void *)0)
