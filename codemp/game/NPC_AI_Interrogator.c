@@ -63,68 +63,66 @@ Interrogator_PartsMove
 */
 void Interrogator_PartsMove(void)
 {
-	gentity_t *NPC = NPCS.NPC;
-
 	// Syringe
-	if ( TIMER_Done(NPC,"syringeDelay") )
+	if ( TIMER_Done(NPCS.NPC,"syringeDelay") )
 	{
-		NPC->pos1[1] = AngleNormalize360( NPC->pos1[1]);
+		NPCS.NPC->pos1[1] = AngleNormalize360( NPCS.NPC->pos1[1]);
 
-		if ((NPC->pos1[1] < 60) || (NPC->pos1[1] > 300))
+		if ((NPCS.NPC->pos1[1] < 60) || (NPCS.NPC->pos1[1] > 300))
 		{
-			NPC->pos1[1]+=Q_irand( -20, 20 );	// Pitch	
+			NPCS.NPC->pos1[1]+=Q_irand( -20, 20 );	// Pitch	
 		}
-		else if (NPC->pos1[1] > 180)
+		else if (NPCS.NPC->pos1[1] > 180)
 		{
-			NPC->pos1[1]=Q_irand( 300, 360 );	// Pitch	
+			NPCS.NPC->pos1[1]=Q_irand( 300, 360 );	// Pitch	
 		}
 		else 
 		{
-			NPC->pos1[1]=Q_irand( 0, 60 );	// Pitch	
+			NPCS.NPC->pos1[1]=Q_irand( 0, 60 );	// Pitch	
 		}
 
 	//	gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
-		NPC_SetBoneAngles(NPC, "left_arm", NPC->pos1);
+		NPC_SetBoneAngles(NPCS.NPC, "left_arm", NPCS.NPC->pos1);
 
-		TIMER_Set( NPC, "syringeDelay", Q_irand( 100, 1000 ) );
+		TIMER_Set( NPCS.NPC, "syringeDelay", Q_irand( 100, 1000 ) );
 	}
 
 	// Scalpel
-	if ( TIMER_Done(NPC,"scalpelDelay") )
+	if ( TIMER_Done(NPCS.NPC,"scalpelDelay") )
 	{
 		// Change pitch
 		if ( NPCS.NPCInfo->localState == LSTATE_BLADEDOWN )	// Blade is moving down
 		{
-			NPC->pos2[0]-= 30;
-			if (NPC->pos2[0] < 180)
+			NPCS.NPC->pos2[0]-= 30;
+			if (NPCS.NPC->pos2[0] < 180)
 			{
-				NPC->pos2[0] = 180;
+				NPCS.NPC->pos2[0] = 180;
 				NPCS.NPCInfo->localState = LSTATE_BLADEUP;	// Make it move up
 			}
 		}
 		else											// Blade is coming back up
 		{
-			NPC->pos2[0]+= 30;
-			if (NPC->pos2[0] >= 360)
+			NPCS.NPC->pos2[0]+= 30;
+			if (NPCS.NPC->pos2[0] >= 360)
 			{
-				NPC->pos2[0] = 360;
+				NPCS.NPC->pos2[0] = 360;
 				NPCS.NPCInfo->localState = LSTATE_BLADEDOWN;	// Make it move down
-				TIMER_Set( NPC, "scalpelDelay", Q_irand( 100, 1000 ) );
+				TIMER_Set( NPCS.NPC, "scalpelDelay", Q_irand( 100, 1000 ) );
 			}
 		}
 
-		NPC->pos2[0] = AngleNormalize360( NPC->pos2[0]);
+		NPCS.NPC->pos2[0] = AngleNormalize360( NPCS.NPC->pos2[0]);
 	//	gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone2, NPC->pos2, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
 
-		NPC_SetBoneAngles(NPC, "right_arm", NPC->pos2);
+		NPC_SetBoneAngles(NPCS.NPC, "right_arm", NPCS.NPC->pos2);
 	}
 
 	// Claw
-	NPC->pos3[1] += Q_irand( 10, 30 );
-	NPC->pos3[1] = AngleNormalize360( NPC->pos3[1]);
+	NPCS.NPC->pos3[1] += Q_irand( 10, 30 );
+	NPCS.NPC->pos3[1] = AngleNormalize360( NPCS.NPC->pos3[1]);
 	//gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone3, NPC->pos3, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
 
-	NPC_SetBoneAngles(NPC, "claw", NPC->pos3);
+	NPC_SetBoneAngles(NPCS.NPC, "claw", NPCS.NPC->pos3);
 
 }
 
@@ -141,17 +139,16 @@ void Interrogator_MaintainHeight( void )
 	float	dif;
 //	vec3_t	endPos;
 //	trace_t	trace;
-	gentity_t *NPC = NPCS.NPC;
 
-	NPC->s.loopSound = G_SoundIndex( "sound/chars/interrogator/misc/torture_droid_lp" );
+	NPCS.NPC->s.loopSound = G_SoundIndex( "sound/chars/interrogator/misc/torture_droid_lp" );
 	// Update our angles regardless
 	NPC_UpdateAngles( qtrue, qtrue );
 
 	// If we have an enemy, we should try to hover at about enemy eye level
-	if ( NPC->enemy )
+	if ( NPCS.NPC->enemy )
 	{
 		// Find the height difference
-		dif = (NPC->enemy->r.currentOrigin[2] + NPC->enemy->r.maxs[2]) - NPC->r.currentOrigin[2]; 
+		dif = (NPCS.NPC->enemy->r.currentOrigin[2] + NPCS.NPC->enemy->r.maxs[2]) - NPCS.NPC->r.currentOrigin[2]; 
 
 		// cap to prevent dramatic height shifts
 		if ( fabs( dif ) > 2 )
@@ -161,7 +158,7 @@ void Interrogator_MaintainHeight( void )
 				dif = ( dif < 0 ? -16 : 16 );
 			}
 
-			NPC->client->ps.velocity[2] = (NPC->client->ps.velocity[2]+dif)/2;
+			NPCS.NPC->client->ps.velocity[2] = (NPCS.NPC->client->ps.velocity[2]+dif)/2;
 		}
 	}
 	else
@@ -178,7 +175,7 @@ void Interrogator_MaintainHeight( void )
 		}
 		if ( goal )
 		{
-			dif = goal->r.currentOrigin[2] - NPC->r.currentOrigin[2];
+			dif = goal->r.currentOrigin[2] - NPCS.NPC->r.currentOrigin[2];
 
 			if ( fabs( dif ) > 24 )
 			{
@@ -186,47 +183,47 @@ void Interrogator_MaintainHeight( void )
 			}
 			else
 			{
-				if ( NPC->client->ps.velocity[2] )
+				if ( NPCS.NPC->client->ps.velocity[2] )
 				{
-					NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
+					NPCS.NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
 
-					if ( fabs( NPC->client->ps.velocity[2] ) < 2 )
+					if ( fabs( NPCS.NPC->client->ps.velocity[2] ) < 2 )
 					{
-						NPC->client->ps.velocity[2] = 0;
+						NPCS.NPC->client->ps.velocity[2] = 0;
 					}
 				}
 			}
 		}
 		// Apply friction
-		else if ( NPC->client->ps.velocity[2] )
+		else if ( NPCS.NPC->client->ps.velocity[2] )
 		{
-			NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
+			NPCS.NPC->client->ps.velocity[2] *= VELOCITY_DECAY;
 
-			if ( fabs( NPC->client->ps.velocity[2] ) < 1 )
+			if ( fabs( NPCS.NPC->client->ps.velocity[2] ) < 1 )
 			{
-				NPC->client->ps.velocity[2] = 0;
+				NPCS.NPC->client->ps.velocity[2] = 0;
 			}
 		}
 	}
 
 	// Apply friction
-	if ( NPC->client->ps.velocity[0] )
+	if ( NPCS.NPC->client->ps.velocity[0] )
 	{
-		NPC->client->ps.velocity[0] *= VELOCITY_DECAY;
+		NPCS.NPC->client->ps.velocity[0] *= VELOCITY_DECAY;
 
-		if ( fabs( NPC->client->ps.velocity[0] ) < 1 )
+		if ( fabs( NPCS.NPC->client->ps.velocity[0] ) < 1 )
 		{
-			NPC->client->ps.velocity[0] = 0;
+			NPCS.NPC->client->ps.velocity[0] = 0;
 		}
 	}
 
-	if ( NPC->client->ps.velocity[1] )
+	if ( NPCS.NPC->client->ps.velocity[1] )
 	{
-		NPC->client->ps.velocity[1] *= VELOCITY_DECAY;
+		NPCS.NPC->client->ps.velocity[1] *= VELOCITY_DECAY;
 
-		if ( fabs( NPC->client->ps.velocity[1] ) < 1 )
+		if ( fabs( NPCS.NPC->client->ps.velocity[1] ) < 1 )
 		{
-			NPC->client->ps.velocity[1] = 0;
+			NPCS.NPC->client->ps.velocity[1] = 0;
 		}
 	}
 }
@@ -244,27 +241,26 @@ void Interrogator_Strafe( void )
 	vec3_t	end, right;
 	trace_t	tr;
 	float	dif;
-	gentity_t *NPC = NPCS.NPC;
 
-	AngleVectors( NPC->client->renderInfo.eyeAngles, NULL, right, NULL );
+	AngleVectors( NPCS.NPC->client->renderInfo.eyeAngles, NULL, right, NULL );
 
 	// Pick a random strafe direction, then check to see if doing a strafe would be
 	//	reasonable valid
 	dir = ( rand() & 1 ) ? -1 : 1;
-	VectorMA( NPC->r.currentOrigin, HUNTER_STRAFE_DIS * dir, right, end );
+	VectorMA( NPCS.NPC->r.currentOrigin, HUNTER_STRAFE_DIS * dir, right, end );
 
-	trap_Trace( &tr, NPC->r.currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID );
+	trap_Trace( &tr, NPCS.NPC->r.currentOrigin, NULL, NULL, end, NPCS.NPC->s.number, MASK_SOLID );
 
 	// Close enough
 	if ( tr.fraction > 0.9f )
 	{
-		VectorMA( NPC->client->ps.velocity, HUNTER_STRAFE_VEL * dir, right, NPC->client->ps.velocity );
+		VectorMA( NPCS.NPC->client->ps.velocity, HUNTER_STRAFE_VEL * dir, right, NPCS.NPC->client->ps.velocity );
 
 		// Add a slight upward push
-		if ( NPC->enemy )
+		if ( NPCS.NPC->enemy )
 		{
 			// Find the height difference
-			dif = (NPC->enemy->r.currentOrigin[2] + 32) - NPC->r.currentOrigin[2]; 
+			dif = (NPCS.NPC->enemy->r.currentOrigin[2] + 32) - NPCS.NPC->r.currentOrigin[2]; 
 
 			// cap to prevent dramatic height shifts
 			if ( fabs( dif ) > 8 )
@@ -272,12 +268,12 @@ void Interrogator_Strafe( void )
 				dif = ( dif < 0 ? -HUNTER_UPWARD_PUSH : HUNTER_UPWARD_PUSH );
 			}
 
-			NPC->client->ps.velocity[2] += dif;
+			NPCS.NPC->client->ps.velocity[2] += dif;
 
 		}
 
 		// Set the strafe start time 
-		//NPC->fx_time = level.time;
+		//NPCS.NPC->fx_time = level.time;
 		NPCS.NPCInfo->standTime = level.time + 3000 + random() * 500;
 	}
 }
@@ -295,7 +291,6 @@ void Interrogator_Hunt( qboolean visible, qboolean advance )
 {
 	float	distance, speed;
 	vec3_t	forward;
-	gentity_t *NPC = NPCS.NPC;
 
 	Interrogator_PartsMove();
 
@@ -323,7 +318,7 @@ void Interrogator_Hunt( qboolean visible, qboolean advance )
 	if ( visible == qfalse )
 	{
 		// Move towards our goal
-		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 		NPCS.NPCInfo->goalRadius = 12;
 
 		//Get our direction from the navigator if we can't see our target
@@ -332,12 +327,12 @@ void Interrogator_Hunt( qboolean visible, qboolean advance )
 	}
 	else
 	{
-		VectorSubtract( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, forward );
+		VectorSubtract( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, forward );
 		distance = VectorNormalize( forward );
 	}
 
 	speed = HUNTER_FORWARD_BASE_SPEED + HUNTER_FORWARD_MULTIPLIER * g_npcspskill.integer;
-	VectorMA( NPC->client->ps.velocity, speed, forward, NPC->client->ps.velocity );
+	VectorMA( NPCS.NPC->client->ps.velocity, speed, forward, NPCS.NPC->client->ps.velocity );
 }
 
 #define MIN_DISTANCE		64
@@ -349,16 +344,15 @@ Interrogator_Melee
 */
 void Interrogator_Melee( qboolean visible, qboolean advance )
 {
-	gentity_t *NPC = NPCS.NPC;
-	if ( TIMER_Done( NPC, "attackDelay" ) )	// Attack?
+	if ( TIMER_Done( NPCS.NPC, "attackDelay" ) )	// Attack?
 	{
 		// Make sure that we are within the height range before we allow any damage to happen
-		if ( NPC->r.currentOrigin[2] >= NPC->enemy->r.currentOrigin[2]+NPC->enemy->r.mins[2] && NPC->r.currentOrigin[2]+NPC->r.mins[2]+8 < NPC->enemy->r.currentOrigin[2]+NPC->enemy->r.maxs[2] )
+		if ( NPCS.NPC->r.currentOrigin[2] >= NPCS.NPC->enemy->r.currentOrigin[2]+NPCS.NPC->enemy->r.mins[2] && NPCS.NPC->r.currentOrigin[2]+NPCS.NPC->r.mins[2]+8 < NPCS.NPC->enemy->r.currentOrigin[2]+NPCS.NPC->enemy->r.maxs[2] )
 		{
 			//gentity_t *tent;
 
-			TIMER_Set( NPC, "attackDelay", Q_irand( 500, 3000 ) );
-			G_Damage( NPC->enemy, NPC, NPC, 0, 0, 2, DAMAGE_NO_KNOCKBACK, MOD_MELEE );
+			TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 500, 3000 ) );
+			G_Damage( NPCS.NPC->enemy, NPCS.NPC, NPCS.NPC, 0, 0, 2, DAMAGE_NO_KNOCKBACK, MOD_MELEE );
 
 		//	NPC->enemy->client->poisonDamage = 18;
 		//	NPC->enemy->client->poisonTime = level.time + 1000;
@@ -369,7 +363,7 @@ void Interrogator_Melee( qboolean visible, qboolean advance )
 
 			//rwwFIXMEFIXME: poison damage
 
-			G_Sound( NPC, CHAN_AUTO, G_SoundIndex( "sound/chars/interrogator/misc/torture_droid_inject.mp3" ));
+			G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex( "sound/chars/interrogator/misc/torture_droid_inject.mp3" ));
 		}
 	}
 
@@ -389,19 +383,18 @@ void Interrogator_Attack( void )
 	float		distance;
 	qboolean	visible;
 	qboolean	advance;
-	gentity_t *NPC = NPCS.NPC;
 
 	// Always keep a good height off the ground
 	Interrogator_MaintainHeight();
 
 	//randomly talk
-	if ( TIMER_Done(NPC,"patrolNoise") )
+	if ( TIMER_Done(NPCS.NPC,"patrolNoise") )
 	{
-		if (TIMER_Done(NPC,"angerNoise"))
+		if (TIMER_Done(NPCS.NPC,"angerNoise"))
 		{
-			G_SoundOnEnt( NPC, CHAN_AUTO, va("sound/chars/probe/misc/talk.wav",	Q_irand(1, 3)) );
+			G_SoundOnEnt( NPCS.NPC, CHAN_AUTO, va("sound/chars/probe/misc/talk.wav",	Q_irand(1, 3)) );
 
-			TIMER_Set( NPC, "patrolNoise", Q_irand( 4000, 10000 ) );
+			TIMER_Set( NPCS.NPC, "patrolNoise", Q_irand( 4000, 10000 ) );
 		}
 	}
 
@@ -413,8 +406,8 @@ void Interrogator_Attack( void )
 	}
 
 	// Rate our distance to the target, and our visibilty
-	distance	= (int) DistanceHorizontalSquared( NPC->r.currentOrigin, NPC->enemy->r.currentOrigin );	
-	visible		= NPC_ClearLOS4( NPC->enemy );
+	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
+	visible		= NPC_ClearLOS4( NPCS.NPC->enemy );
 	advance		= (qboolean)(distance > MIN_DISTANCE*MIN_DISTANCE );
 
 	if ( !visible )

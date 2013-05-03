@@ -472,52 +472,51 @@ DeadThink
 static void DeadThink ( void ) 
 {
 	trace_t	trace;
-	gentity_t *NPC = NPCS.NPC;
 
 	//HACKHACKHACKHACKHACK
 	//We should really have a seperate G2 bounding box (seperate from the physics bbox) for G2 collisions only
 	//FIXME: don't ever inflate back up?
-	NPC->r.maxs[2] = NPC->client->renderInfo.eyePoint[2] - NPC->r.currentOrigin[2] + 4;
-	if ( NPC->r.maxs[2] < -8 )
+	NPCS.NPC->r.maxs[2] = NPCS.NPC->client->renderInfo.eyePoint[2] - NPCS.NPC->r.currentOrigin[2] + 4;
+	if ( NPCS.NPC->r.maxs[2] < -8 )
 	{
-		NPC->r.maxs[2] = -8;
+		NPCS.NPC->r.maxs[2] = -8;
 	}
-	if ( VectorCompare( NPC->client->ps.velocity, vec3_origin ) )
+	if ( VectorCompare( NPCS.NPC->client->ps.velocity, vec3_origin ) )
 	{//not flying through the air
-		if ( NPC->r.mins[0] > -32 )
+		if ( NPCS.NPC->r.mins[0] > -32 )
 		{
-			NPC->r.mins[0] -= 1;
-			trap_Trace (&trace, NPC->r.currentOrigin, NPC->r.mins, NPC->r.maxs, NPC->r.currentOrigin, NPC->s.number, NPC->clipmask );
+			NPCS.NPC->r.mins[0] -= 1;
+			trap_Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask );
 			if ( trace.allsolid )
 			{
-				NPC->r.mins[0] += 1;
+				NPCS.NPC->r.mins[0] += 1;
 			}
 		}
-		if ( NPC->r.maxs[0] < 32 )
+		if ( NPCS.NPC->r.maxs[0] < 32 )
 		{
-			NPC->r.maxs[0] += 1;
-			trap_Trace (&trace, NPC->r.currentOrigin, NPC->r.mins, NPC->r.maxs, NPC->r.currentOrigin, NPC->s.number, NPC->clipmask );
+			NPCS.NPC->r.maxs[0] += 1;
+			trap_Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask );
 			if ( trace.allsolid )
 			{
-				NPC->r.maxs[0] -= 1;
+				NPCS.NPC->r.maxs[0] -= 1;
 			}
 		}
-		if ( NPC->r.mins[1] > -32 )
+		if ( NPCS.NPC->r.mins[1] > -32 )
 		{
-			NPC->r.mins[1] -= 1;
-			trap_Trace (&trace, NPC->r.currentOrigin, NPC->r.mins, NPC->r.maxs, NPC->r.currentOrigin, NPC->s.number, NPC->clipmask );
+			NPCS.NPC->r.mins[1] -= 1;
+			trap_Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask );
 			if ( trace.allsolid )
 			{
-				NPC->r.mins[1] += 1;
+				NPCS.NPC->r.mins[1] += 1;
 			}
 		}
-		if ( NPC->r.maxs[1] < 32 )
+		if ( NPCS.NPC->r.maxs[1] < 32 )
 		{
-			NPC->r.maxs[1] += 1;
-			trap_Trace (&trace, NPC->r.currentOrigin, NPC->r.mins, NPC->r.maxs, NPC->r.currentOrigin, NPC->s.number, NPC->clipmask );
+			NPCS.NPC->r.maxs[1] += 1;
+			trap_Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask );
 			if ( trace.allsolid )
 			{
-				NPC->r.maxs[1] -= 1;
+				NPCS.NPC->r.maxs[1] -= 1;
 			}
 		}
 	}
@@ -546,15 +545,15 @@ static void DeadThink ( void )
 	*/
 	{
 		//death anim done (or were given a specific amount of time to wait before removal), wait the requisite amount of time them remove
-		if ( level.time >= NPCS.NPCInfo->timeOfDeath + BodyRemovalPadTime( NPC ) )
+		if ( level.time >= NPCS.NPCInfo->timeOfDeath + BodyRemovalPadTime( NPCS.NPC ) )
 		{
-			if ( NPC->client->ps.eFlags & EF_NODRAW )
+			if ( NPCS.NPC->client->ps.eFlags & EF_NODRAW )
 			{
-				if (!trap_ICARUS_IsRunning(NPC->s.number))
+				if (!trap_ICARUS_IsRunning(NPCS.NPC->s.number))
 				//if ( !NPC->taskManager || !NPC->taskManager->IsRunning() )
 				{
-					NPC->think = G_FreeEntity;
-					NPC->nextthink = level.time + FRAMETIME;
+					NPCS.NPC->think = G_FreeEntity;
+					NPCS.NPC->nextthink = level.time + FRAMETIME;
 				}
 			}
 			else
@@ -565,18 +564,18 @@ static void DeadThink ( void )
 				NPC_RemoveBodyEffect();
 
 				//FIXME: keep it running through physics somehow?
-				NPC->think = NPC_RemoveBody;
-				NPC->nextthink = level.time + FRAMETIME;
+				NPCS.NPC->think = NPC_RemoveBody;
+				NPCS.NPC->nextthink = level.time + FRAMETIME;
 			//	if ( NPC->client->playerTeam == NPCTEAM_FORGE )
 			//		NPCInfo->timeOfDeath = level.time + FRAMETIME * 8;
 			//	else if ( NPC->client->playerTeam == NPCTEAM_BOTS )
-				npc_class = NPC->client->NPC_class;
+				npc_class = NPCS.NPC->client->NPC_class;
 				// check for droids
 				if ( npc_class == CLASS_SEEKER || npc_class == CLASS_REMOTE || npc_class == CLASS_PROBE || npc_class == CLASS_MOUSE ||
 					 npc_class == CLASS_GONK || npc_class == CLASS_R2D2 || npc_class == CLASS_R5D2 ||
 					 npc_class == CLASS_MARK2 || npc_class == CLASS_SENTRY )//npc_class == CLASS_PROTOCOL ||
 				{
-					NPC->client->ps.eFlags |= EF_NODRAW;
+					NPCS.NPC->client->ps.eFlags |= EF_NODRAW;
 					NPCS.NPCInfo->timeOfDeath = level.time + FRAMETIME * 8;
 				}
 				else
@@ -587,18 +586,18 @@ static void DeadThink ( void )
 	}
 
 	// If the player is on the ground and the resting position contents haven't been set yet...(BounceCount tracks the contents)
-	if ( NPC->bounceCount < 0 && NPC->s.groundEntityNum >= 0 )
+	if ( NPCS.NPC->bounceCount < 0 && NPCS.NPC->s.groundEntityNum >= 0 )
 	{
 		// if client is in a nodrop area, make him/her nodraw
-		int contents = NPC->bounceCount = trap_PointContents( NPC->r.currentOrigin, -1 );
+		int contents = NPCS.NPC->bounceCount = trap_PointContents( NPCS.NPC->r.currentOrigin, -1 );
 
 		if ( ( contents & CONTENTS_NODROP ) ) 
 		{
-			NPC->client->ps.eFlags |= EF_NODRAW;
+			NPCS.NPC->client->ps.eFlags |= EF_NODRAW;
 		}
 	}
 
-	CorpsePhysics( NPC );
+	CorpsePhysics( NPCS.NPC );
 }
 
 
@@ -1371,10 +1370,9 @@ extern qboolean Jedi_CultistDestroyer( gentity_t *self );
 void NPC_RunBehavior( int team, int bState )
 {
 	qboolean dontSetAim = qfalse;
-	gentity_t *NPC = NPCS.NPC;
 
-	if (NPC->s.NPC_class == CLASS_VEHICLE &&
-		NPC->m_pVehicle)
+	if (NPCS.NPC->s.NPC_class == CLASS_VEHICLE &&
+		NPCS.NPC->m_pVehicle)
 	{ //vehicles don't do AI!
 		return;
 	}
@@ -1383,39 +1381,39 @@ void NPC_RunBehavior( int team, int bState )
 	{
 		NPC_BSCinematic();
 	}
-	else if ( NPC->client->ps.weapon == WP_EMPLACED_GUN )
+	else if ( NPCS.NPC->client->ps.weapon == WP_EMPLACED_GUN )
 	{
 		NPC_BSEmplaced();
 		NPC_CheckCharmed();
 		return;
 	}
-//	else if ( NPC->client->ps.weapon == WP_SABER )		// this is an _extremely_ shitty comparison.. FIXME: make a CLASS_CULTIST? --eez
-	else if ( NPC->client->NPC_class == CLASS_JEDI || 
-		NPC->client->NPC_class == CLASS_REBORN ||
-		NPC->client->ps.weapon == WP_SABER )
+//	else if ( NPCS.NPC->client->ps.weapon == WP_SABER )		// this is an _extremely_ shitty comparison.. FIXME: make a CLASS_CULTIST? --eez
+	else if ( NPCS.NPC->client->NPC_class == CLASS_JEDI || 
+		NPCS.NPC->client->NPC_class == CLASS_REBORN ||
+		NPCS.NPC->client->ps.weapon == WP_SABER )
 	{//jedi
 		NPC_BehaviorSet_Jedi( bState );
 		dontSetAim = qtrue;
 	}
-	else if ( NPC->client->NPC_class == CLASS_WAMPA )
+	else if ( NPCS.NPC->client->NPC_class == CLASS_WAMPA )
 	{//wampa
 		NPC_BSWampa_Default();
 	}
-	else if ( NPC->client->NPC_class == CLASS_RANCOR )
+	else if ( NPCS.NPC->client->NPC_class == CLASS_RANCOR )
 	{//rancor
 		NPC_BehaviorSet_Rancor( bState );
 	}
-	else if ( NPC->client->NPC_class == CLASS_REMOTE )
+	else if ( NPCS.NPC->client->NPC_class == CLASS_REMOTE )
 	{
 		NPC_BehaviorSet_Remote( bState );
 	}
-	else if ( NPC->client->NPC_class == CLASS_SEEKER )
+	else if ( NPCS.NPC->client->NPC_class == CLASS_SEEKER )
 	{
 		NPC_BehaviorSet_Seeker( bState );
 	}
-	else if ( NPC->client->NPC_class == CLASS_BOBAFETT )
+	else if ( NPCS.NPC->client->NPC_class == CLASS_BOBAFETT )
 	{//bounty hunter
-		if ( Boba_Flying( NPC ) )
+		if ( Boba_Flying( NPCS.NPC ) )
 		{
 			NPC_BehaviorSet_Seeker(bState);
 		}
@@ -1425,7 +1423,7 @@ void NPC_RunBehavior( int team, int bState )
 		}
 		dontSetAim = qtrue;
 	}
-	else if ( Jedi_CultistDestroyer( NPC ) )
+	else if ( Jedi_CultistDestroyer( NPCS.NPC ) )
 	{
 		NPC_BSJedi_Default();
 		dontSetAim = qtrue;
@@ -1447,7 +1445,7 @@ void NPC_RunBehavior( int team, int bState )
 		// not sure if TEAM_ENEMY is appropriate here, I think I should be using NPC_class to check for behavior - dmv
 		case NPCTEAM_ENEMY:
 			// special cases for enemy droids
-			switch( NPC->client->NPC_class)
+			switch( NPCS.NPC->client->NPC_class)
 			{
 			case CLASS_ATST:
 				NPC_BehaviorSet_ATST( bState );
@@ -1483,11 +1481,11 @@ void NPC_RunBehavior( int team, int bState )
 				break;
 			}
 
-			if ( NPC->enemy && NPC->s.weapon == WP_NONE && bState != BS_HUNT_AND_KILL && !trap_ICARUS_TaskIDPending( NPC, TID_MOVE_NAV ) )
+			if ( NPCS.NPC->enemy && NPCS.NPC->s.weapon == WP_NONE && bState != BS_HUNT_AND_KILL && !trap_ICARUS_TaskIDPending( NPCS.NPC, TID_MOVE_NAV ) )
 			{//if in battle and have no weapon, run away, fixme: when in BS_HUNT_AND_KILL, they just stand there
 				if ( bState != BS_FLEE )
 				{
-					NPC_StartFlee( NPC->enemy, NPC->enemy->r.currentOrigin, AEL_DANGER_GREAT, 5000, 10000 );
+					NPC_StartFlee( NPCS.NPC->enemy, NPCS.NPC->enemy->r.currentOrigin, AEL_DANGER_GREAT, 5000, 10000 );
 				}
 				else
 				{
@@ -1495,17 +1493,17 @@ void NPC_RunBehavior( int team, int bState )
 				}
 				return;
 			}
-			if ( NPC->client->ps.weapon == WP_SABER )
+			if ( NPCS.NPC->client->ps.weapon == WP_SABER )
 			{//special melee exception
 				NPC_BehaviorSet_Default( bState );
 				return;
 			}
-			if ( NPC->client->ps.weapon == WP_DISRUPTOR && (NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) )
+			if ( NPCS.NPC->client->ps.weapon == WP_DISRUPTOR && (NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) )
 			{//a sniper
 				NPC_BehaviorSet_Sniper( bState );
 				return;
 			}
-			if ( NPC->client->ps.weapon == WP_THERMAL || NPC->client->ps.weapon == WP_STUN_BATON )//FIXME: separate AI for melee fighters
+			if ( NPCS.NPC->client->ps.weapon == WP_THERMAL || NPCS.NPC->client->ps.weapon == WP_STUN_BATON )//FIXME: separate AI for melee fighters
 			{//a grenadier
 				NPC_BehaviorSet_Grenadier( bState );
 				return;
@@ -1520,12 +1518,12 @@ void NPC_RunBehavior( int team, int bState )
 		case NPCTEAM_NEUTRAL: 
 
 			// special cases for enemy droids
-			if ( NPC->client->NPC_class == CLASS_PROTOCOL || NPC->client->NPC_class == CLASS_UGNAUGHT ||
-				NPC->client->NPC_class == CLASS_JAWA)
+			if ( NPCS.NPC->client->NPC_class == CLASS_PROTOCOL || NPCS.NPC->client->NPC_class == CLASS_UGNAUGHT ||
+				NPCS.NPC->client->NPC_class == CLASS_JAWA)
 			{
 				NPC_BehaviorSet_Default(bState);
 			}
-			else if ( NPC->client->NPC_class == CLASS_VEHICLE )
+			else if ( NPCS.NPC->client->NPC_class == CLASS_VEHICLE )
 			{
 				// TODO: Add vehicle behaviors here.
 				NPC_UpdateAngles( qtrue, qtrue );//just face our spawn angles for now
@@ -1538,7 +1536,7 @@ void NPC_RunBehavior( int team, int bState )
 			break;
 
 		default:
-			if ( NPC->client->NPC_class == CLASS_SEEKER )
+			if ( NPCS.NPC->client->NPC_class == CLASS_SEEKER )
 			{
 				NPC_BehaviorSet_Seeker(bState);
 			}
