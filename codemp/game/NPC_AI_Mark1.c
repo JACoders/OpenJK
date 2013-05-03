@@ -122,23 +122,22 @@ void Mark1Dead_FireRocket (void)
 	mdxaBone_t	boltMatrix;
 	vec3_t	muzzle1,muzzle_dir;
 	gentity_t *missile;
-	gentity_t *NPC = NPCS.NPC;
 	int	damage	= 50;
-	int bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash5");
+	int bolt = trap_G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash5");
 
-	trap_G2API_GetBoltMatrix( NPC->ghoul2, 0, 
+	trap_G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0, 
 				bolt,
-				&boltMatrix, NPC->r.currentAngles, NPC->r.currentOrigin, level.time,
-				NULL, NPC->modelScale );
+				&boltMatrix, NPCS.NPC->r.currentAngles, NPCS.NPC->r.currentOrigin, level.time,
+				NULL, NPCS.NPC->modelScale );
 
 	BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, muzzle1 );
 	BG_GiveMeVectorFromMatrix( &boltMatrix, NEGATIVE_Y, muzzle_dir );
 
 	G_PlayEffectID( G_EffectIndex("bryar/muzzle_flash"), muzzle1, muzzle_dir );
 
-	G_Sound( NPC, CHAN_AUTO, G_SoundIndex("sound/chars/mark1/misc/mark1_fire"));
+	G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex("sound/chars/mark1/misc/mark1_fire"));
 
-	missile = CreateMissile( muzzle1, muzzle_dir, BOWCASTER_VELOCITY, 10000, NPC, qfalse );
+	missile = CreateMissile( muzzle1, muzzle_dir, BOWCASTER_VELOCITY, 10000, NPCS.NPC, qfalse );
 
 	missile->classname = "bowcaster_proj";
 	missile->s.weapon = WP_BOWCASTER;
@@ -171,23 +170,22 @@ void Mark1Dead_FireBlaster (void)
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
 	int			bolt;
-	gentity_t *NPC = NPCS.NPC;
 
-	bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash1"); 
+	bolt = trap_G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash1"); 
 
-	trap_G2API_GetBoltMatrix( NPC->ghoul2, 0, 
+	trap_G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0, 
 				bolt,
-				&boltMatrix, NPC->r.currentAngles, NPC->r.currentOrigin, level.time,
-				NULL, NPC->modelScale );
+				&boltMatrix, NPCS.NPC->r.currentAngles, NPCS.NPC->r.currentOrigin, level.time,
+				NULL, NPCS.NPC->modelScale );
 
 	BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, muzzle1 );
 	BG_GiveMeVectorFromMatrix( &boltMatrix, NEGATIVE_Y, muzzle_dir );
 
 	G_PlayEffectID( G_EffectIndex("bryar/muzzle_flash"), muzzle1, muzzle_dir );
 
-	missile = CreateMissile( muzzle1, muzzle_dir, 1600, 10000, NPC, qfalse );
+	missile = CreateMissile( muzzle1, muzzle_dir, 1600, 10000, NPCS.NPC, qfalse );
 
-	G_Sound( NPC, CHAN_AUTO, G_SoundIndex("sound/chars/mark1/misc/mark1_fire"));
+	G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex("sound/chars/mark1/misc/mark1_fire"));
 
 	missile->classname = "bryar_proj";
 	missile->s.weapon = WP_BRYAR_PISTOL;
@@ -427,54 +425,53 @@ void Mark1_FireBlaster(void)
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
 	int			bolt;
-	gentity_t *NPC = NPCS.NPC;
 
 	// Which muzzle to fire from?
 	if ((NPCS.NPCInfo->localState <= LSTATE_FIRED0) || (NPCS.NPCInfo->localState == LSTATE_FIRED4)) 
 	{
 		NPCS.NPCInfo->localState = LSTATE_FIRED1;
-		bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash1"); 
+		bolt = trap_G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash1"); 
 	}
 	else if (NPCS.NPCInfo->localState == LSTATE_FIRED1)
 	{
 		NPCS.NPCInfo->localState = LSTATE_FIRED2;
-		bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash2"); 
+		bolt = trap_G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash2"); 
 	}
 	else if (NPCS.NPCInfo->localState == LSTATE_FIRED2)
 	{
 		NPCS.NPCInfo->localState = LSTATE_FIRED3;
-		bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash3"); 
+		bolt = trap_G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash3"); 
 	}
 	else
 	{
 		NPCS.NPCInfo->localState = LSTATE_FIRED4;
-		bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash4"); 
+		bolt = trap_G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash4"); 
 	}
 
-	trap_G2API_GetBoltMatrix( NPC->ghoul2, 0, 
+	trap_G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0, 
 				bolt,
-				&boltMatrix, NPC->r.currentAngles, NPC->r.currentOrigin, level.time,
-				NULL, NPC->modelScale );
+				&boltMatrix, NPCS.NPC->r.currentAngles, NPCS.NPC->r.currentOrigin, level.time,
+				NULL, NPCS.NPC->modelScale );
 
 	BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, muzzle1 );
 
-	if (NPC->health)
+	if (NPCS.NPC->health)
 	{
-		CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_org1 );
+		CalcEntitySpot( NPCS.NPC->enemy, SPOT_HEAD, enemy_org1 );
 		VectorSubtract (enemy_org1, muzzle1, delta1);
 		vectoangles ( delta1, angleToEnemy1 );
 		AngleVectors (angleToEnemy1, forward, vright, up);
 	}
 	else
 	{
-		AngleVectors (NPC->r.currentAngles, forward, vright, up);
+		AngleVectors (NPCS.NPC->r.currentAngles, forward, vright, up);
 	}
 
 	G_PlayEffectID( G_EffectIndex("bryar/muzzle_flash"), muzzle1, forward );
 
-	G_Sound( NPC, CHAN_AUTO, G_SoundIndex("sound/chars/mark1/misc/mark1_fire"));
+	G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex("sound/chars/mark1/misc/mark1_fire"));
 
-	missile = CreateMissile( muzzle1, forward, 1600, 10000, NPC, qfalse );
+	missile = CreateMissile( muzzle1, forward, 1600, 10000, NPCS.NPC, qfalse );
 
 	missile->classname = "bryar_proj";
 	missile->s.weapon = WP_BRYAR_PISTOL;
@@ -494,9 +491,8 @@ Mark1_BlasterAttack
 void Mark1_BlasterAttack(qboolean advance )
 {
 	int chance;
-	gentity_t *NPC = NPCS.NPC;
 
-	if ( TIMER_Done( NPC, "attackDelay" ) )	// Attack?
+	if ( TIMER_Done( NPCS.NPC, "attackDelay" ) )	// Attack?
 	{
 		chance = Q_irand( 1, 5);
 	
@@ -516,33 +512,33 @@ void Mark1_BlasterAttack(qboolean advance )
 		if (chance == 1)
 		{
 			NPCS.NPCInfo->burstCount = 0;
-			TIMER_Set( NPC, "attackDelay", Q_irand( 1000, 3000) );
-			NPC->client->ps.torsoTimer=0;						// Just in case the firing anim is running.
+			TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 1000, 3000) );
+			NPCS.NPC->client->ps.torsoTimer=0;						// Just in case the firing anim is running.
 		}
 		else
 		{
-			if (TIMER_Done( NPC, "attackDelay2" ))	// Can't be shooting every frame.
+			if (TIMER_Done( NPCS.NPC, "attackDelay2" ))	// Can't be shooting every frame.
 			{
-				TIMER_Set( NPC, "attackDelay2", Q_irand( 50, 50) );
+				TIMER_Set( NPCS.NPC, "attackDelay2", Q_irand( 50, 50) );
 				Mark1_FireBlaster();
- 				NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_ATTACK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+ 				NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, BOTH_ATTACK1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 			}
 			return;
 		}
 	}
 	else if (advance)
 	{
-		if ( NPC->client->ps.torsoAnim == BOTH_ATTACK1 )
+		if ( NPCS.NPC->client->ps.torsoAnim == BOTH_ATTACK1 )
 		{
-			NPC->client->ps.torsoTimer=0;						// Just in case the firing anim is running.
+			NPCS.NPC->client->ps.torsoTimer=0;						// Just in case the firing anim is running.
 		}
 		Mark1_Hunt();
 	}
 	else	// Make sure he's not firing.
 	{
-		if ( NPC->client->ps.torsoAnim == BOTH_ATTACK1 )
+		if ( NPCS.NPC->client->ps.torsoAnim == BOTH_ATTACK1 )
 		{
-			NPC->client->ps.torsoTimer=0;						// Just in case the firing anim is running.
+			NPCS.NPC->client->ps.torsoTimer=0;						// Just in case the firing anim is running.
 		}
 	}
 }
@@ -557,29 +553,28 @@ void Mark1_FireRocket(void)
 	mdxaBone_t	boltMatrix;
 	vec3_t	muzzle1,enemy_org1,delta1,angleToEnemy1;
 	static	vec3_t	forward, vright, up;
-	gentity_t *NPC = NPCS.NPC;
-	int bolt = trap_G2API_AddBolt(NPC->ghoul2, 0, "*flash5");
+	int bolt = trap_G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash5");
 	gentity_t *missile;
 
 	int	damage	= 50;
 
-	trap_G2API_GetBoltMatrix( NPC->ghoul2, 0, 
+	trap_G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0, 
 				bolt,
-				&boltMatrix, NPC->r.currentAngles, NPC->r.currentOrigin, level.time,
-				NULL, NPC->modelScale );
+				&boltMatrix, NPCS.NPC->r.currentAngles, NPCS.NPC->r.currentOrigin, level.time,
+				NULL, NPCS.NPC->modelScale );
 
 	BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, muzzle1 );
 
 //	G_PlayEffect( "blaster/muzzle_flash", muzzle1 );
 
-	CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_org1 );
+	CalcEntitySpot( NPCS.NPC->enemy, SPOT_HEAD, enemy_org1 );
 	VectorSubtract (enemy_org1, muzzle1, delta1);
 	vectoangles ( delta1, angleToEnemy1 );
 	AngleVectors (angleToEnemy1, forward, vright, up);
 
-	G_Sound( NPC, CHAN_AUTO, G_SoundIndex("sound/chars/mark1/misc/mark1_fire" ));
+	G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex("sound/chars/mark1/misc/mark1_fire" ));
 
-	missile = CreateMissile( muzzle1, forward, BOWCASTER_VELOCITY, 10000, NPC, qfalse );
+	missile = CreateMissile( muzzle1, forward, BOWCASTER_VELOCITY, 10000, NPCS.NPC, qfalse );
 
 	missile->classname = "bowcaster_proj";
 	missile->s.weapon = WP_BOWCASTER;
@@ -606,11 +601,10 @@ Mark1_RocketAttack
 */
 void Mark1_RocketAttack( qboolean advance )
 {
-	gentity_t *NPC = NPCS.NPC;
-	if ( TIMER_Done( NPC, "attackDelay" ) )	// Attack?
+	if ( TIMER_Done( NPCS.NPC, "attackDelay" ) )	// Attack?
 	{
-		TIMER_Set( NPC, "attackDelay", Q_irand( 1000, 3000) );
- 		NPC_SetAnim( NPC, SETANIM_TORSO, BOTH_ATTACK2, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+		TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 1000, 3000) );
+ 		NPC_SetAnim( NPCS.NPC, SETANIM_TORSO, BOTH_ATTACK2, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 		Mark1_FireRocket();
 	}
 	else if (advance)
@@ -631,29 +625,28 @@ void Mark1_AttackDecision( void )
 	distance_e	distRate;
 	qboolean	visible;
 	qboolean	advance;
-	gentity_t *NPC = NPCS.NPC;
 
 	//randomly talk
-	if ( TIMER_Done(NPC,"patrolNoise") )
+	if ( TIMER_Done(NPCS.NPC,"patrolNoise") )
 	{
-		if (TIMER_Done(NPC,"angerNoise"))
+		if (TIMER_Done(NPCS.NPC,"angerNoise"))
 		{
 //			G_Sound( NPC, G_SoundIndex(va("sound/chars/mark1/misc/talk%d.wav",	Q_irand(1, 4))));
-			TIMER_Set( NPC, "patrolNoise", Q_irand( 4000, 10000 ) );
+			TIMER_Set( NPCS.NPC, "patrolNoise", Q_irand( 4000, 10000 ) );
 		}
 	}
 
 	// Enemy is dead or he has no enemy.
-	if ((NPC->enemy->health<1) || ( NPC_CheckEnemyExt(qfalse) == qfalse ))
+	if ((NPCS.NPC->enemy->health<1) || ( NPC_CheckEnemyExt(qfalse) == qfalse ))
 	{
-		NPC->enemy = NULL;
+		NPCS.NPC->enemy = NULL;
 		return;
 	}
 
 	// Rate our distance to the target and visibility
-	distance	= (int) DistanceHorizontalSquared( NPC->r.currentOrigin, NPC->enemy->r.currentOrigin );	
+	distance	= (int) DistanceHorizontalSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );	
 	distRate	= ( distance > MIN_MELEE_RANGE_SQR ) ? DIST_LONG : DIST_MELEE;
-	visible		= NPC_ClearLOS4( NPC->enemy );
+	visible		= NPC_ClearLOS4( NPCS.NPC->enemy );
 	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 
 	// If we cannot see our target, move to see it
@@ -664,8 +657,8 @@ void Mark1_AttackDecision( void )
 	}
 
 	// See if the side weapons are there
-	blasterTest = trap_G2API_GetSurfaceRenderStatus( NPC->ghoul2, 0, "l_arm" );
-	rocketTest = trap_G2API_GetSurfaceRenderStatus( NPC->ghoul2, 0, "r_arm" );
+	blasterTest = trap_G2API_GetSurfaceRenderStatus( NPCS.NPC->ghoul2, 0, "l_arm" );
+	rocketTest = trap_G2API_GetSurfaceRenderStatus( NPCS.NPC->ghoul2, 0, "r_arm" );
 
 	// It has both side weapons
 	if (!blasterTest  && !rocketTest)
@@ -684,12 +677,12 @@ void Mark1_AttackDecision( void )
 	}
 	else	// It should never get here, but just in case
 	{ 
-		NPC->health = 0;
-		NPC->client->ps.stats[STAT_HEALTH] = 0;
+		NPCS.NPC->health = 0;
+		NPCS.NPC->client->ps.stats[STAT_HEALTH] = 0;
 		//GEntity_DieFunc(NPC, NPC, NPC, 100, MOD_UNKNOWN);
-		if (NPC->die)
+		if (NPCS.NPC->die)
 		{
-			NPC->die(NPC, NPC, NPC, 100, MOD_UNKNOWN);
+			NPCS.NPC->die(NPCS.NPC, NPCS.NPC, NPCS.NPC, 100, MOD_UNKNOWN);
 		}
 	}
 
@@ -713,16 +706,15 @@ Mark1_Patrol
 */
 void Mark1_Patrol( void )
 {
-	gentity_t *NPC = NPCS.NPC;
 	if ( NPC_CheckPlayerTeamStealth() )
 	{
-		G_Sound( NPC, CHAN_AUTO, G_SoundIndex("sound/chars/mark1/misc/mark1_wakeup"));
+		G_Sound( NPCS.NPC, CHAN_AUTO, G_SoundIndex("sound/chars/mark1/misc/mark1_wakeup"));
 		NPC_UpdateAngles( qtrue, qtrue );
 		return;
 	}
 
 	//If we have somewhere to go, then do that
-	if (!NPC->enemy)
+	if (!NPCS.NPC->enemy)
 	{
 		if ( UpdateGoal() )
 		{
@@ -750,12 +742,11 @@ NPC_BSMark1_Default
 */
 void NPC_BSMark1_Default( void )
 {
-	gentity_t *NPC = NPCS.NPC;
 	//NPC->e_DieFunc = dieF_Mark1_die;
 
-	if ( NPC->enemy )
+	if ( NPCS.NPC->enemy )
 	{
-		NPCS.NPCInfo->goalEntity = NPC->enemy;
+		NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 		Mark1_AttackDecision();
 	}
 	else if ( NPCS.NPCInfo->scriptFlags & SCF_LOOK_FOR_ENEMIES )

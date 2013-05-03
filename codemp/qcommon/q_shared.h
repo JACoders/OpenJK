@@ -24,8 +24,6 @@
 					//	between base<->modbase clients and servers (mismatching events, powerups, etc)
 					// leave this defined to ensure compatibility
 
-//#define USE_WIDESCREEN // Adjust fov for widescreen aspect ratio
-
 #include "qcommon/disablewarnings.h"
 
 #include "game/teams.h" //npc team stuff
