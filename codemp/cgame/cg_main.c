@@ -2783,27 +2783,12 @@ Ghoul2 Insert Start
 // initialise the cg_entities structure - take into account the ghoul2 stl stuff in the active snap shots
 void CG_Init_CG(void)
 {
-#ifdef USE_WIDESCREEN
-	qboolean widescreen = cg.widescreen;
-#endif
 	memset( &cg, 0, sizeof(cg));
-#ifdef USE_WIDESCREEN
-	cg.widescreen = widescreen;
-#endif
 }
-
-#ifdef USE_WIDESCREEN
-void CG_SetWidescreen(qboolean widescreen)
-{
-	cg.widescreen = widescreen;
-}
-#endif
-
 
 // initialise the cg_entities structure - take into account the ghoul2 stl stuff
 void CG_Init_CGents(void)
 {
-	
 	memset(&cg_entities, 0, sizeof(cg_entities));
 }
 

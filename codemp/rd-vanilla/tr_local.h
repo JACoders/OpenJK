@@ -29,11 +29,12 @@ typedef unsigned int glIndex_t;
 #define GL_TEXTURE_3D                     0x806F
 
 // 14 bits
-// see QSORT_SHADERNUM_SHIFT
-#define	MAX_SHADERS				16384
 // can't be increased without changing bit packing for drawsurfs
+// see QSORT_SHADERNUM_SHIFT
+#define SHADERNUM_BITS	14
+#define MAX_SHADERS		(1<<SHADERNUM_BITS)
 
-#define MAX_SHADER_STATES 2048
+//#define MAX_SHADER_STATES 2048
 #define MAX_STATES_PER_SHADER 32
 #define MAX_STATE_NAME 32
 
@@ -952,9 +953,12 @@ the bits are allocated as follows:
 2-6   : fog index
 0-1   : dlightmap index
 */
-#define	QSORT_SHADERNUM_SHIFT	18
-#define	QSORT_ENTITYNUM_SHIFT	7
 #define	QSORT_FOGNUM_SHIFT		2
+#define	QSORT_REFENTITYNUM_SHIFT	7
+#define	QSORT_SHADERNUM_SHIFT	(QSORT_REFENTITYNUM_SHIFT+REFENTITYNUM_BITS)
+#if (QSORT_SHADERNUM_SHIFT+SHADERNUM_BITS) > 32
+	#error "Need to update sorting, too many bits."
+#endif
 
 extern	int			gl_filter_min, gl_filter_max;
 
@@ -1089,7 +1093,7 @@ typedef struct {
 	trRefEntity_t			*currentEntity;
 	trRefEntity_t			worldEntity;		// point currentEntity at this when rendering world
 	int						currentEntityNum;
-	int						shiftedEntityNum;	// currentEntityNum << QSORT_ENTITYNUM_SHIFT
+	int						shiftedEntityNum;	// currentEntityNum << QSORT_REFENTITYNUM_SHIFT
 	model_t					*currentModel;
 
 	viewParms_t				viewParms;
@@ -1931,7 +1935,7 @@ typedef struct {
 #ifndef VV_LIGHTING
 	dlight_t	dlights[MAX_DLIGHTS];
 #endif
-	trRefEntity_t	entities[MAX_ENTITIES];
+	trRefEntity_t	entities[MAX_REFENTITIES];
 	trMiniRefEntity_t	miniEntities[MAX_MINI_ENTITIES];
 	srfPoly_t	*polys;//[MAX_POLYS];
 	polyVert_t	*polyVerts;//[MAX_POLYVERTS];

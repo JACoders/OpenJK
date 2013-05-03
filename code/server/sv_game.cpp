@@ -324,7 +324,7 @@ SV_AdjustAreaPortalState
 ========================
 */
 void SV_AdjustAreaPortalState( gentity_t *ent, qboolean open ) {
-	if ( !(ent->contents&CONTENTS_OPAQUE) )	{
+	if ( !com_jk2->integer && !(ent->contents&CONTENTS_OPAQUE) )	{ //FIXME?: When running the jk2 dll CONTENTS_OPAQUE is not always set correctly, leading to issues. This works around it.
 #ifndef FINAL_BUILD
 //		Com_Printf( "INFO: entity number %d not opaque: not affecting area portal!\n", ent->s.number );
 #endif

@@ -127,7 +127,6 @@ static qboolean Grenadier_Move( void )
 {
 	qboolean	moved;
 	navInfo_t	info;
-	gentity_t *NPC = NPCS.NPC;
 
 	NPCS.NPCInfo->combatMove = qtrue;//always move straight toward our goal
 	moved = NPC_MoveToGoal( qtrue );
@@ -139,7 +138,7 @@ static qboolean Grenadier_Move( void )
 	//If we hit our target, then stop and fire!
 	if ( info.flags & NIF_COLLISION ) 
 	{
-		if ( info.blocker == NPC->enemy )
+		if ( info.blocker == NPCS.NPC->enemy )
 		{
 			Grenadier_HoldPosition();
 		}
@@ -148,7 +147,7 @@ static qboolean Grenadier_Move( void )
 	//If our move failed, then reset
 	if ( moved == qfalse )
 	{//couldn't get to enemy
-		if ( (NPCS.NPCInfo->scriptFlags&SCF_CHASE_ENEMIES) && NPC->client->ps.weapon == WP_THERMAL && NPCS.NPCInfo->goalEntity && NPCS.NPCInfo->goalEntity == NPC->enemy )
+		if ( (NPCS.NPCInfo->scriptFlags&SCF_CHASE_ENEMIES) && NPCS.NPC->client->ps.weapon == WP_THERMAL && NPCS.NPCInfo->goalEntity && NPCS.NPCInfo->goalEntity == NPCS.NPC->enemy )
 		{//we were running after enemy
 			//Try to find a combat point that can hit the enemy
 			int cpFlags = (CP_CLEAR|CP_HAS_ROUTE);
@@ -159,16 +158,16 @@ static qboolean Grenadier_Move( void )
 				cpFlags &= ~(CP_FLANK|CP_APPROACH_ENEMY|CP_CLOSEST);
 				cpFlags |= CP_NEAREST;
 			}
-			cp = NPC_FindCombatPoint( NPC->r.currentOrigin, NPC->r.currentOrigin, NPC->r.currentOrigin, cpFlags, 32, -1 );
+			cp = NPC_FindCombatPoint( NPCS.NPC->r.currentOrigin, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.currentOrigin, cpFlags, 32, -1 );
 			if ( cp == -1 && !(NPCS.NPCInfo->scriptFlags&SCF_USE_CP_NEAREST) )
 			{//okay, try one by the enemy
-				cp = NPC_FindCombatPoint( NPC->r.currentOrigin, NPC->r.currentOrigin, NPC->enemy->r.currentOrigin, CP_CLEAR|CP_HAS_ROUTE|CP_HORZ_DIST_COLL, 32, -1 );
+				cp = NPC_FindCombatPoint( NPCS.NPC->r.currentOrigin, NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin, CP_CLEAR|CP_HAS_ROUTE|CP_HORZ_DIST_COLL, 32, -1 );
 			}
 			//NOTE: there may be a perfectly valid one, just not one within CP_COLLECT_RADIUS of either me or him...
 			if ( cp != -1 )
 			{//found a combat point that has a clear shot to enemy
 				NPC_SetCombatPoint( cp );
-				NPC_SetMoveGoal( NPC, level.combatPoints[cp].origin, 8, qtrue, cp, NULL );
+				NPC_SetMoveGoal( NPCS.NPC, level.combatPoints[cp].origin, 8, qtrue, cp, NULL );
 				return moved;
 			}
 		}
@@ -304,11 +303,10 @@ ST_CheckMoveState
 
 static void Grenadier_CheckMoveState( void )
 {
-	gentity_t *NPC = NPCS.NPC;
 	//See if we're a scout
 	if ( !(NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES) )//behaviorState == BS_STAND_AND_SHOOT )
 	{
-		if ( NPCS.NPCInfo->goalEntity == NPC->enemy )
+		if ( NPCS.NPCInfo->goalEntity == NPCS.NPC->enemy )
 		{
 			move3 = qfalse;
 			return;
@@ -317,7 +315,7 @@ static void Grenadier_CheckMoveState( void )
 	//See if we're running away
 	else if ( NPCS.NPCInfo->squadState == SQUAD_RETREAT )
 	{
-		if ( TIMER_Done( NPC, "flee" ) )
+		if ( TIMER_Done( NPCS.NPC, "flee" ) )
 		{
 			NPCS.NPCInfo->squadState = SQUAD_IDLE;
 		}
@@ -339,10 +337,10 @@ static void Grenadier_CheckMoveState( void )
 	*/
 
 	//See if we're moving towards a goal, not the enemy
-	if ( ( NPCS.NPCInfo->goalEntity != NPC->enemy ) && ( NPCS.NPCInfo->goalEntity != NULL ) )
+	if ( ( NPCS.NPCInfo->goalEntity != NPCS.NPC->enemy ) && ( NPCS.NPCInfo->goalEntity != NULL ) )
 	{
 		//Did we make it?
-		if ( NAV_HitNavGoal( NPC->r.currentOrigin, NPC->r.mins, NPC->r.maxs, NPCS.NPCInfo->goalEntity->r.currentOrigin, 16, FlyingCreature( NPC ) ) || 
+		if ( NAV_HitNavGoal( NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPCInfo->goalEntity->r.currentOrigin, 16, FlyingCreature( NPCS.NPC ) ) || 
 			( NPCS.NPCInfo->squadState == SQUAD_SCOUT && enemyLOS3 && enemyDist3 <= 10000 ) )
 		{
 			int	newSquadState = SQUAD_STAND_AND_SHOOT;
@@ -350,12 +348,12 @@ static void Grenadier_CheckMoveState( void )
 			switch ( NPCS.NPCInfo->squadState )
 			{
 			case SQUAD_RETREAT://was running away
-				TIMER_Set( NPC, "duck", (NPC->client->pers.maxHealth - NPC->health) * 100 );
-				TIMER_Set( NPC, "hideTime", Q_irand( 3000, 7000 ) );
+				TIMER_Set( NPCS.NPC, "duck", (NPCS.NPC->client->pers.maxHealth - NPCS.NPC->health) * 100 );
+				TIMER_Set( NPCS.NPC, "hideTime", Q_irand( 3000, 7000 ) );
 				newSquadState = SQUAD_COVER;
 				break;
 			case SQUAD_TRANSITION://was heading for a combat point
-				TIMER_Set( NPC, "hideTime", Q_irand( 2000, 4000 ) );
+				TIMER_Set( NPCS.NPC, "hideTime", Q_irand( 2000, 4000 ) );
 				break;
 			case SQUAD_SCOUT://was running after player
 				break;
@@ -364,27 +362,27 @@ static void Grenadier_CheckMoveState( void )
 			}
 			NPC_ReachedGoal();
 			//don't attack right away
-			TIMER_Set( NPC, "attackDelay", Q_irand( 250, 500 ) );	//FIXME: Slant for difficulty levels
+			TIMER_Set( NPCS.NPC, "attackDelay", Q_irand( 250, 500 ) );	//FIXME: Slant for difficulty levels
 			//don't do something else just yet
-			TIMER_Set( NPC, "roamTime", Q_irand( 1000, 4000 ) );
+			TIMER_Set( NPCS.NPC, "roamTime", Q_irand( 1000, 4000 ) );
 			//stop fleeing
 			if ( NPCS.NPCInfo->squadState == SQUAD_RETREAT )
 			{
-				TIMER_Set( NPC, "flee", -level.time );
+				TIMER_Set( NPCS.NPC, "flee", -level.time );
 				NPCS.NPCInfo->squadState = SQUAD_IDLE;
 			}
 			return;
 		}
 
 		//keep going, hold of roamTimer until we get there
-		TIMER_Set( NPC, "roamTime", Q_irand( 4000, 8000 ) );
+		TIMER_Set( NPCS.NPC, "roamTime", Q_irand( 4000, 8000 ) );
 	}
 
 	if ( !NPCS.NPCInfo->goalEntity )
 	{
 		if ( NPCS.NPCInfo->scriptFlags & SCF_CHASE_ENEMIES )
 		{
-			NPCS.NPCInfo->goalEntity = NPC->enemy;
+			NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 		}
 	}
 }
@@ -439,13 +437,12 @@ static void Grenadier_CheckFireState( void )
 
 qboolean Grenadier_EvaluateShot( int hit )
 {
-	gentity_t *NPC = NPCS.NPC;
-	if ( !NPC->enemy )
+	if ( !NPCS.NPC->enemy )
 	{
 		return qfalse;
 	}
 
-	if ( hit == NPC->enemy->s.number || (&g_entities[hit] != NULL && (g_entities[hit].r.svFlags&SVF_GLASS_BRUSH)) )
+	if ( hit == NPCS.NPC->enemy->s.number || (&g_entities[hit] != NULL && (g_entities[hit].r.svFlags&SVF_GLASS_BRUSH)) )
 	{//can hit enemy or will hit glass, so shoot anyway
 		return qtrue;
 	}
@@ -460,9 +457,8 @@ NPC_BSGrenadier_Attack
 
 void NPC_BSGrenadier_Attack( void )
 {
-	gentity_t *NPC = NPCS.NPC;
 	//Don't do anything if we're hurt
-	if ( NPC->painDebounceTime > level.time )
+	if ( NPCS.NPC->painDebounceTime > level.time )
 	{
 		NPC_UpdateAngles( qtrue, qtrue );
 		return;
@@ -472,18 +468,18 @@ void NPC_BSGrenadier_Attack( void )
 	//If we don't have an enemy, just idle
 	if ( NPC_CheckEnemyExt(qfalse) == qfalse )//!NPC->enemy )//
 	{
-		NPC->enemy = NULL;
+		NPCS.NPC->enemy = NULL;
 		NPC_BSGrenadier_Patrol();//FIXME: or patrol?
 		return;
 	}
 
-	if ( TIMER_Done( NPC, "flee" ) && NPC_CheckForDanger( NPC_CheckAlertEvents( qtrue, qtrue, -1, qfalse, AEL_DANGER ) ) )
+	if ( TIMER_Done( NPCS.NPC, "flee" ) && NPC_CheckForDanger( NPC_CheckAlertEvents( qtrue, qtrue, -1, qfalse, AEL_DANGER ) ) )
 	{//going to run
 		NPC_UpdateAngles( qtrue, qtrue );
 		return;
 	}
 
-	if ( !NPC->enemy )
+	if ( !NPCS.NPC->enemy )
 	{//WTF?  somehow we lost our enemy?
 		NPC_BSGrenadier_Patrol();//FIXME: or patrol?
 		return;
@@ -493,21 +489,21 @@ void NPC_BSGrenadier_Attack( void )
 	move3 = qtrue;
 	faceEnemy3 = qfalse;
 	shoot3 = qfalse;
-	enemyDist3 = DistanceSquared( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin );
+	enemyDist3 = DistanceSquared( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin );
 
 	//See if we should switch to melee attack
 	if ( enemyDist3 < 16384 //128
-		&& (!NPC->enemy->client
-			|| NPC->enemy->client->ps.weapon != WP_SABER
-			|| BG_SabersOff( &NPC->enemy->client->ps ) 
+		&& (!NPCS.NPC->enemy->client
+			|| NPCS.NPC->enemy->client->ps.weapon != WP_SABER
+			|| BG_SabersOff( &NPCS.NPC->enemy->client->ps ) 
 			) 
 		)
 	{//enemy is close and not using saber
-		if ( NPC->client->ps.weapon == WP_THERMAL )
+		if ( NPCS.NPC->client->ps.weapon == WP_THERMAL )
 		{//grenadier
 			trace_t	trace;
-			trap_Trace ( &trace, NPC->r.currentOrigin, NPC->enemy->r.mins, NPC->enemy->r.maxs, NPC->enemy->r.currentOrigin, NPC->s.number, NPC->enemy->clipmask );
-			if ( !trace.allsolid && !trace.startsolid && (trace.fraction == 1.0 || trace.entityNum == NPC->enemy->s.number ) )
+			trap_Trace ( &trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.mins, NPCS.NPC->enemy->r.maxs, NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->enemy->clipmask );
+			if ( !trace.allsolid && !trace.startsolid && (trace.fraction == 1.0 || trace.entityNum == NPCS.NPC->enemy->s.number ) )
 			{//I can get right to him
 				//reset fire-timing variables
 				NPC_ChangeWeapon( WP_STUN_BATON );
@@ -518,9 +514,9 @@ void NPC_BSGrenadier_Attack( void )
 			}
 		}
 	}
-	else if ( enemyDist3 > 65536 || (NPC->enemy->client && NPC->enemy->client->ps.weapon == WP_SABER && !NPC->enemy->client->ps.saberHolstered) )//256
+	else if ( enemyDist3 > 65536 || (NPCS.NPC->enemy->client && NPCS.NPC->enemy->client->ps.weapon == WP_SABER && !NPCS.NPC->enemy->client->ps.saberHolstered) )//256
 	{//enemy is far or using saber
-		if ( NPC->client->ps.weapon == WP_STUN_BATON && (NPC->client->ps.stats[STAT_WEAPONS]&(1<<WP_THERMAL)) )
+		if ( NPCS.NPC->client->ps.weapon == WP_STUN_BATON && (NPCS.NPC->client->ps.stats[STAT_WEAPONS]&(1<<WP_THERMAL)) )
 		{//fisticuffs, make switch to thermal if have it
 			//reset fire-timing variables
 			NPC_ChangeWeapon( WP_THERMAL );
@@ -528,32 +524,32 @@ void NPC_BSGrenadier_Attack( void )
 	}
 
 	//can we see our target?
-	if ( NPC_ClearLOS4( NPC->enemy ) )
+	if ( NPC_ClearLOS4( NPCS.NPC->enemy ) )
 	{
 		NPCS.NPCInfo->enemyLastSeenTime = level.time;
 		enemyLOS3 = qtrue;
 
-		if ( NPC->client->ps.weapon == WP_STUN_BATON )
+		if ( NPCS.NPC->client->ps.weapon == WP_STUN_BATON )
 		{
-			if ( enemyDist3 <= 4096 && InFOV3( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, NPC->client->ps.viewangles, 90, 45 ) )//within 64 & infront
+			if ( enemyDist3 <= 4096 && InFOV3( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, NPCS.NPC->client->ps.viewangles, 90, 45 ) )//within 64 & infront
 			{
-				VectorCopy( NPC->enemy->r.currentOrigin, NPCS.NPCInfo->enemyLastSeenLocation );
+				VectorCopy( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPCInfo->enemyLastSeenLocation );
 				enemyCS3 = qtrue;
 			}
 		}
-		else if ( InFOV3( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, NPC->client->ps.viewangles, 45, 90 ) )
+		else if ( InFOV3( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, NPCS.NPC->client->ps.viewangles, 45, 90 ) )
 		{//in front of me 
 			//can we shoot our target?
 			//FIXME: how accurate/necessary is this check?
-			int hit = NPC_ShotEntity( NPC->enemy, NULL );
+			int hit = NPC_ShotEntity( NPCS.NPC->enemy, NULL );
 			gentity_t *hitEnt = &g_entities[hit];
-			if ( hit == NPC->enemy->s.number 
-				|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPC->client->enemyTeam ) )
+			if ( hit == NPCS.NPC->enemy->s.number 
+				|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPCS.NPC->client->enemyTeam ) )
 			{
 				float enemyHorzDist;
 
-				VectorCopy( NPC->enemy->r.currentOrigin, NPCS.NPCInfo->enemyLastSeenLocation );
-				enemyHorzDist = DistanceHorizontalSquared( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin );
+				VectorCopy( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPCInfo->enemyLastSeenLocation );
+				enemyHorzDist = DistanceHorizontalSquared( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin );
 				if ( enemyHorzDist < 1048576 )
 				{//within 1024
 					enemyCS3 = qtrue;
@@ -586,11 +582,11 @@ void NPC_BSGrenadier_Attack( void )
 	if ( enemyCS3 )
 	{
 		shoot3 = qtrue;
-		if ( NPC->client->ps.weapon == WP_THERMAL )
+		if ( NPCS.NPC->client->ps.weapon == WP_THERMAL )
 		{//don't chase and throw
 			move3 = qfalse;
 		}
-		else if ( NPC->client->ps.weapon == WP_STUN_BATON && enemyDist3 < (NPC->r.maxs[0]+NPC->enemy->r.maxs[0]+16)*(NPC->r.maxs[0]+NPC->enemy->r.maxs[0]+16) )
+		else if ( NPCS.NPC->client->ps.weapon == WP_STUN_BATON && enemyDist3 < (NPCS.NPC->r.maxs[0]+NPCS.NPC->enemy->r.maxs[0]+16)*(NPCS.NPC->r.maxs[0]+NPCS.NPC->enemy->r.maxs[0]+16) )
 		{//close enough
 			move3 = qfalse;
 		}
@@ -616,7 +612,7 @@ void NPC_BSGrenadier_Attack( void )
 
 	if ( !move3 )
 	{
-		if ( !TIMER_Done( NPC, "duck" ) )
+		if ( !TIMER_Done( NPCS.NPC, "duck" ) )
 		{
 			NPCS.ucmd.upmove = -127;
 		}
@@ -624,7 +620,7 @@ void NPC_BSGrenadier_Attack( void )
 	}
 	else
 	{//stop ducking!
-		TIMER_Set( NPC, "duck", -1 );
+		TIMER_Set( NPCS.NPC, "duck", -1 );
 	}
 
 	if ( !faceEnemy3 )
@@ -650,12 +646,12 @@ void NPC_BSGrenadier_Attack( void )
 	//FIXME: don't shoot right away!
 	if ( shoot3 )
 	{//try to shoot if it's time
-		if ( TIMER_Done( NPC, "attackDelay" ) )
+		if ( TIMER_Done( NPCS.NPC, "attackDelay" ) )
 		{	
 			if( !(NPCS.NPCInfo->scriptFlags & SCF_FIRE_WEAPON) ) // we've already fired, no need to do it again here
 			{
 				WeaponThink( qtrue );
-				TIMER_Set( NPC, "attackDelay", NPCS.NPCInfo->shotTime-level.time );
+				TIMER_Set( NPCS.NPC, "attackDelay", NPCS.NPCInfo->shotTime-level.time );
 			}
 			
 		}

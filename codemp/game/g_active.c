@@ -2916,6 +2916,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 	pmove.pmove_fixed = pmove_fixed.integer | client->pers.pmoveFixed;
 	pmove.pmove_msec = pmove_msec.integer;
+	pmove.pmove_float = pmove_float.integer;
 
 	pmove.animations = bgAllAnims[ent->localAnimIndex].anims;//NULL;
 
