@@ -68,7 +68,6 @@ void SV_GetChallenge( netadr_t from ) {
 		// this is the first time this client has asked for a challenge
 		challenge = &svs.challenges[oldest];
 
-		challenge->challenge = ( (rand() << 16) ^ rand() ) ^ svs.time;
 		challenge->adr = from;
 		challenge->firstTime = svs.time;
 		challenge->time = svs.time;
