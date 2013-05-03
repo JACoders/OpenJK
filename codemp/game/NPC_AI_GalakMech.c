@@ -593,9 +593,8 @@ NPC_BSGM_Attack
 
 void NPC_BSGM_Attack( void )
 {
-	gentity_t *NPC = NPCS.NPC;
 	//Don't do anything if we're hurt
-	if ( NPC->painDebounceTime > level.time )
+	if ( NPCS.NPC->painDebounceTime > level.time )
 	{
 		NPC_UpdateAngles( qtrue, qtrue );
 		return;
@@ -666,9 +665,9 @@ void NPC_BSGM_Attack( void )
 #endif
 
 	//If we don't have an enemy, just idle
-	if ( NPC_CheckEnemyExt(qfalse) == qfalse || !NPC->enemy )
+	if ( NPC_CheckEnemyExt(qfalse) == qfalse || !NPCS.NPC->enemy )
 	{
-		NPC->enemy = NULL;
+		NPCS.NPC->enemy = NULL;
 		NPC_BSGM_Patrol();
 		return;
 	}
@@ -679,56 +678,56 @@ void NPC_BSGM_Attack( void )
 	shoot4 = qfalse;
 	hitAlly4 = qfalse;
 	VectorClear( impactPos4 );
-	enemyDist4 = DistanceSquared( NPC->r.currentOrigin, NPC->enemy->r.currentOrigin );
+	enemyDist4 = DistanceSquared( NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.currentOrigin );
 
 	//if ( NPC->client->ps.torsoAnim == BOTH_ATTACK4 ||
 	//	NPC->client->ps.torsoAnim == BOTH_ATTACK5 )
 	if (0)
 	{
 		shoot4 = qfalse;
-		if ( TIMER_Done( NPC, "smackTime" ) && !NPCS.NPCInfo->blockedDebounceTime )
+		if ( TIMER_Done( NPCS.NPC, "smackTime" ) && !NPCS.NPCInfo->blockedDebounceTime )
 		{//time to smack
 			//recheck enemyDist4 and InFront
-			if ( enemyDist4 < MELEE_DIST_SQUARED && InFront( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, NPC->client->ps.viewangles, 0.3f ) )
+			if ( enemyDist4 < MELEE_DIST_SQUARED && InFront( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, NPCS.NPC->client->ps.viewangles, 0.3f ) )
 			{
 				vec3_t	smackDir;
-				VectorSubtract( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, smackDir );
+				VectorSubtract( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, smackDir );
 				smackDir[2] += 30;
 				VectorNormalize( smackDir );
 				//hurt them
-				G_Sound( NPC->enemy, CHAN_AUTO, G_SoundIndex( "sound/weapons/galak/skewerhit.wav" ) );
-				G_Damage( NPC->enemy, NPC, NPC, smackDir, NPC->r.currentOrigin, (g_npcspskill.integer+1)*Q_irand( 5, 10), DAMAGE_NO_ARMOR|DAMAGE_NO_KNOCKBACK, MOD_CRUSH ); 
-				if ( NPC->client->ps.torsoAnim == BOTH_ATTACK4 )
+				G_Sound( NPCS.NPC->enemy, CHAN_AUTO, G_SoundIndex( "sound/weapons/galak/skewerhit.wav" ) );
+				G_Damage( NPCS.NPC->enemy, NPCS.NPC, NPCS.NPC, smackDir, NPCS.NPC->r.currentOrigin, (g_npcspskill.integer+1)*Q_irand( 5, 10), DAMAGE_NO_ARMOR|DAMAGE_NO_KNOCKBACK, MOD_CRUSH ); 
+				if ( NPCS.NPC->client->ps.torsoAnim == BOTH_ATTACK4 )
 				{//smackdown
 					int knockAnim = BOTH_KNOCKDOWN1;
-					if ( BG_CrouchAnim( NPC->enemy->client->ps.legsAnim ) )
+					if ( BG_CrouchAnim( NPCS.NPC->enemy->client->ps.legsAnim ) )
 					{//knockdown from crouch
 						knockAnim = BOTH_KNOCKDOWN4;
 					}
 					//throw them
 					smackDir[2] = 1;
 					VectorNormalize( smackDir );
-					G_Throw( NPC->enemy, smackDir, 50 );
-					NPC_SetAnim( NPC->enemy, SETANIM_BOTH, knockAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+					G_Throw( NPCS.NPC->enemy, smackDir, 50 );
+					NPC_SetAnim( NPCS.NPC->enemy, SETANIM_BOTH, knockAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 				}
 				else
 				{//uppercut
 					//throw them
-					G_Throw( NPC->enemy, smackDir, 100 );
+					G_Throw( NPCS.NPC->enemy, smackDir, 100 );
 					//make them backflip
-					NPC_SetAnim( NPC->enemy, SETANIM_BOTH, BOTH_KNOCKDOWN5, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+					NPC_SetAnim( NPCS.NPC->enemy, SETANIM_BOTH, BOTH_KNOCKDOWN5, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 				}
 				//done with the damage
 				NPCS.NPCInfo->blockedDebounceTime = 1;
 			}
 		}
 	}
-	else if ( NPC->lockCount ) //already shooting laser
+	else if ( NPCS.NPC->lockCount ) //already shooting laser
 	{//sometimes use the laser beam attack, but only after he's taken down our generator
 		shoot4 = qfalse;
-		if ( NPC->lockCount == 1 )
+		if ( NPCS.NPC->lockCount == 1 )
 		{//charging up
-			if ( TIMER_Done( NPC, "beamDelay" ) )
+			if ( TIMER_Done( NPCS.NPC, "beamDelay" ) )
 			{//time to start the beam
 				int laserAnim;
 				//if ( Q_irand( 0, 1 ) )
@@ -742,18 +741,18 @@ void NPC_BSGM_Attack( void )
 					laserAnim = BOTH_ATTACK7;
 				}
 				*/
-				NPC_SetAnim( NPC, SETANIM_BOTH, laserAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-				TIMER_Set( NPC, "attackDelay", NPC->client->ps.torsoTimer + Q_irand( 1000, 3000 ) );
+				NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, laserAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+				TIMER_Set( NPCS.NPC, "attackDelay", NPCS.NPC->client->ps.torsoTimer + Q_irand( 1000, 3000 ) );
 				//turn on beam effect
-				NPC->lockCount = 2;
-				G_PlayEffectID( G_EffectIndex("galak/trace_beam"), NPC->r.currentOrigin, vec3_origin );
-				NPC->s.loopSound = G_SoundIndex( "sound/weapons/galak/lasercutting.wav" );
+				NPCS.NPC->lockCount = 2;
+				G_PlayEffectID( G_EffectIndex("galak/trace_beam"), NPCS.NPC->r.currentOrigin, vec3_origin );
+				NPCS.NPC->s.loopSound = G_SoundIndex( "sound/weapons/galak/lasercutting.wav" );
 				if ( !NPCS.NPCInfo->coverTarg )
 				{//for moving looping sound at end of trace
 					NPCS.NPCInfo->coverTarg = G_Spawn();
 					if ( NPCS.NPCInfo->coverTarg )
 					{
-						G_SetOrigin( NPCS.NPCInfo->coverTarg, NPC->client->renderInfo.muzzlePoint );
+						G_SetOrigin( NPCS.NPCInfo->coverTarg, NPCS.NPC->client->renderInfo.muzzlePoint );
 						NPCS.NPCInfo->coverTarg->r.svFlags |= SVF_BROADCAST;
 						NPCS.NPCInfo->coverTarg->s.loopSound = G_SoundIndex( "sound/weapons/galak/lasercutting.wav" );
 					}
@@ -762,28 +761,28 @@ void NPC_BSGM_Attack( void )
 		}
 		else
 		{//in the actual attack now
-			if ( NPC->client->ps.torsoTimer <= 0 )
+			if ( NPCS.NPC->client->ps.torsoTimer <= 0 )
 			{//attack done!
-				NPC->lockCount = 0;
+				NPCS.NPC->lockCount = 0;
 				G_FreeEntity( NPCS.NPCInfo->coverTarg );
-				NPC->s.loopSound = 0;
+				NPCS.NPC->s.loopSound = 0;
 #if 0
 				NPC_SetAnim( NPC, SETANIM_TORSO, TORSO_DROPWEAP2, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 #endif
-				TIMER_Set( NPC, "attackDelay", NPC->client->ps.torsoTimer );
+				TIMER_Set( NPCS.NPC, "attackDelay", NPCS.NPC->client->ps.torsoTimer );
 			}
 			else
 			{//attack still going
 				//do the trace and damage
 				trace_t	trace;
 				vec3_t	end, mins={-3,-3,-3}, maxs={3,3,3};
-				VectorMA( NPC->client->renderInfo.muzzlePoint, 1024, NPC->client->renderInfo.muzzleDir, end );
-				trap_Trace( &trace, NPC->client->renderInfo.muzzlePoint, mins, maxs, end, NPC->s.number, MASK_SHOT );
+				VectorMA( NPCS.NPC->client->renderInfo.muzzlePoint, 1024, NPCS.NPC->client->renderInfo.muzzleDir, end );
+				trap_Trace( &trace, NPCS.NPC->client->renderInfo.muzzlePoint, mins, maxs, end, NPCS.NPC->s.number, MASK_SHOT );
 				if ( trace.allsolid || trace.startsolid )
 				{//oops, in a wall
 					if ( NPCS.NPCInfo->coverTarg )
 					{
-						G_SetOrigin( NPCS.NPCInfo->coverTarg, NPC->client->renderInfo.muzzlePoint );
+						G_SetOrigin( NPCS.NPCInfo->coverTarg, NPCS.NPC->client->renderInfo.muzzlePoint );
 					}
 				}
 				else
@@ -794,7 +793,7 @@ void NPC_BSGM_Attack( void )
 						if ( traceEnt && traceEnt->takedamage )
 						{//damage it
 							G_SoundAtLoc( trace.endpos, CHAN_AUTO, G_SoundIndex( "sound/weapons/galak/laserdamage.wav" ) );
-							G_Damage( traceEnt, NPC, NPC, NPC->client->renderInfo.muzzleDir, trace.endpos, 10, 0, MOD_UNKNOWN );
+							G_Damage( traceEnt, NPCS.NPC, NPCS.NPC, NPCS.NPC->client->renderInfo.muzzleDir, trace.endpos, 10, 0, MOD_UNKNOWN );
 						}
 					}
 					if ( NPCS.NPCInfo->coverTarg )
@@ -830,10 +829,10 @@ void NPC_BSGM_Attack( void )
 		if (// !NPC->client->ps.powerups[PW_GALAK_SHIELD] 
 			1 //rwwFIXMEFIXME: just act like the shield is down til the effects and stuff are done
 			&& enemyDist4 < MELEE_DIST_SQUARED 
-			&& InFront( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, NPC->client->ps.viewangles, 0.3f ) 
-			&& NPC->enemy->localAnimIndex <= 1 )//within 80 and in front
+			&& InFront( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, NPCS.NPC->client->ps.viewangles, 0.3f ) 
+			&& NPCS.NPC->enemy->localAnimIndex <= 1 )//within 80 and in front
 		{//our shield is down, and enemy within 80, if very close, use melee attack to slap away
-			if ( TIMER_Done( NPC, "attackDelay" ) )
+			if ( TIMER_Done( NPCS.NPC, "attackDelay" ) )
 			{
 				//animate me
 				int swingAnim = BOTH_ATTACK1;
@@ -848,43 +847,43 @@ void NPC_BSGM_Attack( void )
 				}
 #endif
 				//FIXME: swing sound
-				NPC_SetAnim( NPC, SETANIM_BOTH, swingAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-				TIMER_Set( NPC, "attackDelay", NPC->client->ps.torsoTimer + Q_irand( 1000, 3000 ) );
+				NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, swingAnim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+				TIMER_Set( NPCS.NPC, "attackDelay", NPCS.NPC->client->ps.torsoTimer + Q_irand( 1000, 3000 ) );
 				//delay the hurt until the proper point in the anim
-				TIMER_Set( NPC, "smackTime", 600 );
+				TIMER_Set( NPCS.NPC, "smackTime", 600 );
 				NPCS.NPCInfo->blockedDebounceTime = 0;
 				//FIXME: say something?
 			}
 		}
-		else if ( !NPC->lockCount && NPC->locationDamage[HL_GENERIC1] > GENERATOR_HEALTH
-			&& TIMER_Done( NPC, "attackDelay" )
-			&& InFront( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, NPC->client->ps.viewangles, 0.3f )
+		else if ( !NPCS.NPC->lockCount && NPCS.NPC->locationDamage[HL_GENERIC1] > GENERATOR_HEALTH
+			&& TIMER_Done( NPCS.NPC, "attackDelay" )
+			&& InFront( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, NPCS.NPC->client->ps.viewangles, 0.3f )
 			&& ((!Q_irand( 0, 10*(2-g_npcspskill.integer))&& enemyDist4 > MIN_LOB_DIST_SQUARED&& enemyDist4 < MAX_LOB_DIST_SQUARED)
-				||(!TIMER_Done( NPC, "noLob" )&&!TIMER_Done( NPC, "noRapid" ))) 
-			&& NPC->enemy->s.weapon != WP_TURRET )
+				||(!TIMER_Done( NPCS.NPC, "noLob" )&&!TIMER_Done( NPCS.NPC, "noRapid" ))) 
+			&& NPCS.NPC->enemy->s.weapon != WP_TURRET )
 		{//sometimes use the laser beam attack, but only after he's taken down our generator
 			shoot4 = qfalse;
 			NPC_GM_StartLaser();
 		}
 		else if ( enemyDist4 < MIN_LOB_DIST_SQUARED 
-			&& (NPC->enemy->s.weapon != WP_TURRET || Q_stricmp( "PAS", NPC->enemy->classname ))
-			&& TIMER_Done( NPC, "noRapid" ) )//256
+			&& (NPCS.NPC->enemy->s.weapon != WP_TURRET || Q_stricmp( "PAS", NPCS.NPC->enemy->classname ))
+			&& TIMER_Done( NPCS.NPC, "noRapid" ) )//256
 		{//enemy within 256
-			if ( (NPC->client->ps.weapon == WP_REPEATER) && (NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) )
+			if ( (NPCS.NPC->client->ps.weapon == WP_REPEATER) && (NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) )
 			{//shooting an explosive, but enemy too close, switch to primary fire
 				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-				NPC->alt_fire = qfalse;
+				NPCS.NPC->alt_fire = qfalse;
 				//FIXME: use weap raise & lower anims
 				NPC_ChangeWeapon( WP_REPEATER );
 			}
 		}
-		else if ( (enemyDist4 > MAX_LOB_DIST_SQUARED || (NPC->enemy->s.weapon == WP_TURRET && !Q_stricmp( "PAS", NPC->enemy->classname )))
-			&& TIMER_Done( NPC, "noLob" ) )//448
+		else if ( (enemyDist4 > MAX_LOB_DIST_SQUARED || (NPCS.NPC->enemy->s.weapon == WP_TURRET && !Q_stricmp( "PAS", NPCS.NPC->enemy->classname )))
+			&& TIMER_Done( NPCS.NPC, "noLob" ) )//448
 		{//enemy more than 448 away and we are ready to try lob fire again
-			if ( (NPC->client->ps.weapon == WP_REPEATER) && !(NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) )
+			if ( (NPCS.NPC->client->ps.weapon == WP_REPEATER) && !(NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) )
 			{//enemy far enough away to use lobby explosives
 				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
-				NPC->alt_fire = qtrue;
+				NPCS.NPC->alt_fire = qtrue;
 				//FIXME: use weap raise & lower anims
 				NPC_ChangeWeapon( WP_REPEATER );
 			}
@@ -892,19 +891,19 @@ void NPC_BSGM_Attack( void )
 	}
 
 	//can we see our target?
-	if ( NPC_ClearLOS4( NPC->enemy ) )
+	if ( NPC_ClearLOS4( NPCS.NPC->enemy ) )
 	{
 		NPCS.NPCInfo->enemyLastSeenTime = level.time;//used here for aim debouncing, not always a clear LOS
 		enemyLOS4 = qtrue;
 
-		if ( NPC->client->ps.weapon == WP_NONE )
+		if ( NPCS.NPC->client->ps.weapon == WP_NONE )
 		{
 			enemyCS4 = qfalse;//not true, but should stop us from firing
 			NPC_AimAdjust( -1 );//adjust aim worse longer we have no weapon
 		}
 		else
 		{//can we shoot our target?
-			if ( ((NPC->client->ps.weapon == WP_REPEATER && (NPCS.NPCInfo->scriptFlags&SCF_ALT_FIRE))) && enemyDist4 < MIN_LOB_DIST_SQUARED )//256
+			if ( ((NPCS.NPC->client->ps.weapon == WP_REPEATER && (NPCS.NPCInfo->scriptFlags&SCF_ALT_FIRE))) && enemyDist4 < MIN_LOB_DIST_SQUARED )//256
 			{
 				enemyCS4 = qfalse;//not true, but should stop us from firing
 				hitAlly4 = qtrue;//us!
@@ -912,20 +911,20 @@ void NPC_BSGM_Attack( void )
 			}
 			else
 			{
-				int hit = NPC_ShotEntity( NPC->enemy, impactPos4 );
+				int hit = NPC_ShotEntity( NPCS.NPC->enemy, impactPos4 );
 				gentity_t *hitEnt = &g_entities[hit];
-				if ( hit == NPC->enemy->s.number 
-					|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPC->client->enemyTeam )
+				if ( hit == NPCS.NPC->enemy->s.number 
+					|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPCS.NPC->client->enemyTeam )
 					|| ( hitEnt && hitEnt->takedamage ) )
 				{//can hit enemy or will hit glass or other breakable, so shoot anyway
 					enemyCS4 = qtrue;
 					NPC_AimAdjust( 2 );//adjust aim better longer we have clear shot at enemy
-					VectorCopy( NPC->enemy->r.currentOrigin, NPCS.NPCInfo->enemyLastSeenLocation );
+					VectorCopy( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPCInfo->enemyLastSeenLocation );
 				}
 				else
 				{//Hmm, have to get around this bastard
 					NPC_AimAdjust( 1 );//adjust aim better longer we can see enemy
-					if ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPC->client->playerTeam )
+					if ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPCS.NPC->client->playerTeam )
 					{//would hit an ally, don't fire!!!
 						hitAlly4 = qtrue;
 					}
@@ -936,12 +935,12 @@ void NPC_BSGM_Attack( void )
 			}
 		}
 	}
-	else if ( trap_InPVS( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin ) )
+	else if ( trap_InPVS( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin ) )
 	{
 		int hit;
 		gentity_t *hitEnt;
 
-		if ( TIMER_Done( NPC, "talkDebounce" ) && !Q_irand( 0, 10 ) )
+		if ( TIMER_Done( NPCS.NPC, "talkDebounce" ) && !Q_irand( 0, 10 ) )
 		{
 			if ( NPCS.NPCInfo->enemyCheckDebounceTime < 8 )
 			{
@@ -966,18 +965,18 @@ void NPC_BSGM_Attack( void )
 				NPCS.NPCInfo->enemyCheckDebounceTime++;
 				if ( speech != -1 )
 				{
-					G_AddVoiceEvent( NPC, speech, Q_irand( 3000, 5000 ) );
-					TIMER_Set( NPC, "talkDebounce", Q_irand( 5000, 7000 ) );
+					G_AddVoiceEvent( NPCS.NPC, speech, Q_irand( 3000, 5000 ) );
+					TIMER_Set( NPCS.NPC, "talkDebounce", Q_irand( 5000, 7000 ) );
 				}
 			}
 		}
 
 		NPCS.NPCInfo->enemyLastSeenTime = level.time;
 
-		hit = NPC_ShotEntity( NPC->enemy, impactPos4 );
+		hit = NPC_ShotEntity( NPCS.NPC->enemy, impactPos4 );
 		hitEnt = &g_entities[hit];
-		if ( hit == NPC->enemy->s.number 
-			|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPC->client->enemyTeam )
+		if ( hit == NPCS.NPC->enemy->s.number 
+			|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPCS.NPC->client->enemyTeam )
 			|| ( hitEnt && hitEnt->takedamage ) )
 		{//can hit enemy or will hit glass or other breakable, so shoot anyway
 			enemyCS4 = qtrue;
@@ -997,9 +996,9 @@ void NPC_BSGM_Attack( void )
 	{
 		if ( !NPCS.NPCInfo->goalEntity )
 		{
-			NPCS.NPCInfo->goalEntity = NPC->enemy;
+			NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 		}
-		if ( NPCS.NPCInfo->goalEntity == NPC->enemy )
+		if ( NPCS.NPCInfo->goalEntity == NPCS.NPC->enemy )
 		{//for now, always chase the enemy
 			move4 = qtrue;
 		}
@@ -1013,9 +1012,9 @@ void NPC_BSGM_Attack( void )
 	{
 		if ( !NPCS.NPCInfo->goalEntity )
 		{
-			NPCS.NPCInfo->goalEntity = NPC->enemy;
+			NPCS.NPCInfo->goalEntity = NPCS.NPC->enemy;
 		}
-		if ( NPCS.NPCInfo->goalEntity == NPC->enemy )
+		if ( NPCS.NPCInfo->goalEntity == NPCS.NPC->enemy )
 		{//for now, always chase the enemy
 			move4 = qtrue;
 		}
@@ -1027,7 +1026,7 @@ void NPC_BSGM_Attack( void )
 	//See if we should override shooting decision with any special considerations
 	GM_CheckFireState();
 
-	if ( NPC->client->ps.weapon == WP_REPEATER && (NPCS.NPCInfo->scriptFlags&SCF_ALT_FIRE) && shoot4 && TIMER_Done( NPC, "attackDelay" ) )
+	if ( NPCS.NPC->client->ps.weapon == WP_REPEATER && (NPCS.NPCInfo->scriptFlags&SCF_ALT_FIRE) && shoot4 && TIMER_Done( NPCS.NPC, "attackDelay" ) )
 	{
 		vec3_t	muzzle;
 		vec3_t	angles;
@@ -1036,27 +1035,27 @@ void NPC_BSGM_Attack( void )
 		vec3_t mins = {-REPEATER_ALT_SIZE,-REPEATER_ALT_SIZE,-REPEATER_ALT_SIZE}, maxs = {REPEATER_ALT_SIZE,REPEATER_ALT_SIZE,REPEATER_ALT_SIZE};
 		qboolean clearshot;
 
-		CalcEntitySpot( NPC, SPOT_WEAPON, muzzle );
+		CalcEntitySpot( NPCS.NPC, SPOT_WEAPON, muzzle );
 		
-		VectorCopy( NPC->enemy->r.currentOrigin, target );
+		VectorCopy( NPCS.NPC->enemy->r.currentOrigin, target );
 
 		target[0] += flrand( -5, 5 )+(crandom()*(6-NPCS.NPCInfo->currentAim)*2);
 		target[1] += flrand( -5, 5 )+(crandom()*(6-NPCS.NPCInfo->currentAim)*2);
 		target[2] += flrand( -5, 5 )+(crandom()*(6-NPCS.NPCInfo->currentAim)*2);
 
 		//Find the desired angles
-		clearshot = WP_LobFire( NPC, muzzle, target, mins, maxs, MASK_SHOT|CONTENTS_LIGHTSABER, 
-			velocity, qtrue, NPC->s.number, NPC->enemy->s.number,
+		clearshot = WP_LobFire( NPCS.NPC, muzzle, target, mins, maxs, MASK_SHOT|CONTENTS_LIGHTSABER, 
+			velocity, qtrue, NPCS.NPC->s.number, NPCS.NPC->enemy->s.number,
 			300, 1100, 1500, qtrue );
 		if ( VectorCompare( vec3_origin, velocity ) || (!clearshot&&enemyLOS4&&enemyCS4)  )
 		{//no clear lob shot and no lob shot that will hit something breakable
-			if ( enemyLOS4 && enemyCS4 && TIMER_Done( NPC, "noRapid" ) )
+			if ( enemyLOS4 && enemyCS4 && TIMER_Done( NPCS.NPC, "noRapid" ) )
 			{//have a clear straight shot, so switch to primary
 				NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-				NPC->alt_fire = qfalse;
+				NPCS.NPC->alt_fire = qfalse;
 				NPC_ChangeWeapon( WP_REPEATER );
 				//keep this weap for a bit
-				TIMER_Set( NPC, "noLob", Q_irand( 500, 1000 ) );
+				TIMER_Set( NPCS.NPC, "noLob", Q_irand( 500, 1000 ) );
 			}
 			else
 			{
@@ -1070,8 +1069,8 @@ void NPC_BSGM_Attack( void )
 			NPCS.NPCInfo->desiredYaw		= AngleNormalize360( angles[YAW] );
 			NPCS.NPCInfo->desiredPitch	= AngleNormalize360( angles[PITCH] );
 
-			VectorCopy( velocity, NPC->client->hiddenDir );
-			NPC->client->hiddenDist = VectorNormalize ( NPC->client->hiddenDir );
+			VectorCopy( velocity, NPCS.NPC->client->hiddenDir );
+			NPCS.NPC->client->hiddenDist = VectorNormalize ( NPCS.NPC->client->hiddenDir );
 		}
 	}
 	else if ( faceEnemy4 )
@@ -1079,19 +1078,19 @@ void NPC_BSGM_Attack( void )
 		NPC_FaceEnemy( qtrue );
 	}
 
-	if ( !TIMER_Done( NPC, "standTime" ) )
+	if ( !TIMER_Done( NPCS.NPC, "standTime" ) )
 	{
 		move4 = qfalse;
 	}
 	if ( !(NPCS.NPCInfo->scriptFlags&SCF_CHASE_ENEMIES) )
 	{//not supposed to chase my enemies
-		if ( NPCS.NPCInfo->goalEntity == NPC->enemy )
+		if ( NPCS.NPCInfo->goalEntity == NPCS.NPC->enemy )
 		{//goal is my entity, so don't move
 			move4 = qfalse;
 		}
 	}
 
-	if ( move4 && !NPC->lockCount )
+	if ( move4 && !NPCS.NPC->lockCount )
 	{//move toward goal
 		if ( NPCS.NPCInfo->goalEntity 
 			/*&& NPC->client->ps.legsAnim != BOTH_ALERT1
@@ -1108,7 +1107,7 @@ void NPC_BSGM_Attack( void )
 		}
 	}
 
-	if ( !TIMER_Done( NPC, "flee" ) )
+	if ( !TIMER_Done( NPCS.NPC, "flee" ) )
 	{//running away
 		faceEnemy4 = qfalse;
 	}
@@ -1119,7 +1118,7 @@ void NPC_BSGM_Attack( void )
 	{//we want to face in the dir we're running
 		if ( !move4 )
 		{//if we haven't moved, we should look in the direction we last looked?
-			VectorCopy( NPC->client->ps.viewangles, NPCS.NPCInfo->lastPathAngles );
+			VectorCopy( NPCS.NPC->client->ps.viewangles, NPCS.NPCInfo->lastPathAngles );
 		}
 		if ( move4 )
 		{//don't run away and shoot
@@ -1135,9 +1134,9 @@ void NPC_BSGM_Attack( void )
 		shoot4 = qfalse;
 	}
 
-	if ( NPC->enemy && NPC->enemy->enemy )
+	if ( NPCS.NPC->enemy && NPCS.NPC->enemy->enemy )
 	{
-		if ( NPC->enemy->s.weapon == WP_SABER && NPC->enemy->enemy->s.weapon == WP_SABER )
+		if ( NPCS.NPC->enemy->s.weapon == WP_SABER && NPCS.NPC->enemy->enemy->s.weapon == WP_SABER )
 		{//don't shoot at an enemy jedi who is fighting another jedi, for fear of injuring one or causing rogue blaster deflections (a la Obi Wan/Vader duel at end of ANH)
 			shoot4 = qfalse;
 		}
@@ -1145,7 +1144,7 @@ void NPC_BSGM_Attack( void )
 	//FIXME: don't shoot right away!
 	if ( shoot4 )
 	{//try to shoot if it's time
-		if ( TIMER_Done( NPC, "attackDelay" ) )
+		if ( TIMER_Done( NPCS.NPC, "attackDelay" ) )
 		{
 			if( !(NPCS.NPCInfo->scriptFlags & SCF_FIRE_WEAPON) ) // we've already fired, no need to do it again here
 			{
@@ -1155,25 +1154,25 @@ void NPC_BSGM_Attack( void )
 	}
 
 	//also:
-	if ( NPC->enemy->s.weapon == WP_TURRET && !Q_stricmp( "PAS", NPC->enemy->classname ) )
+	if ( NPCS.NPC->enemy->s.weapon == WP_TURRET && !Q_stricmp( "PAS", NPCS.NPC->enemy->classname ) )
 	{//crush turrets
-		if ( G_BoundsOverlap( NPC->r.absmin, NPC->r.absmax, NPC->enemy->r.absmin, NPC->enemy->r.absmax ) )
+		if ( G_BoundsOverlap( NPCS.NPC->r.absmin, NPCS.NPC->r.absmax, NPCS.NPC->enemy->r.absmin, NPCS.NPC->enemy->r.absmax ) )
 		{//have to do this test because placed turrets are not solid to NPCs (so they don't obstruct navigation)
 			//if ( NPC->client->ps.powerups[PW_GALAK_SHIELD] > 0 )
 			if (0)
 			{
 				#ifdef BASE_COMPAT
-					NPC->client->ps.powerups[PW_BATTLESUIT] = level.time + ARMOR_EFFECT_TIME;
+					NPCS.NPC->client->ps.powerups[PW_BATTLESUIT] = level.time + ARMOR_EFFECT_TIME;
 				#endif
-				G_Damage( NPC->enemy, NPC, NPC, NULL, NPC->r.currentOrigin, 100, DAMAGE_NO_KNOCKBACK, MOD_UNKNOWN ); 
+				G_Damage( NPCS.NPC->enemy, NPCS.NPC, NPCS.NPC, NULL, NPCS.NPC->r.currentOrigin, 100, DAMAGE_NO_KNOCKBACK, MOD_UNKNOWN ); 
 			}
 			else
 			{
-				G_Damage( NPC->enemy, NPC, NPC, NULL, NPC->r.currentOrigin, 100, DAMAGE_NO_KNOCKBACK, MOD_CRUSH ); 
+				G_Damage( NPCS.NPC->enemy, NPCS.NPC, NPCS.NPC, NULL, NPCS.NPC->r.currentOrigin, 100, DAMAGE_NO_KNOCKBACK, MOD_CRUSH ); 
 			}
 		}
 	}
-	else if ( NPCS.NPCInfo->touchedByPlayer != NULL && NPCS.NPCInfo->touchedByPlayer == NPC->enemy )
+	else if ( NPCS.NPCInfo->touchedByPlayer != NULL && NPCS.NPCInfo->touchedByPlayer == NPCS.NPC->enemy )
 	{//touched enemy
 		//if ( NPC->client->ps.powerups[PW_GALAK_SHIELD] > 0 )
 		if (0)
@@ -1184,26 +1183,26 @@ void NPC_BSGM_Attack( void )
 #if 0
 			NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_ATTACK6, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 #endif
-			TIMER_Set( NPC, "attackDelay", NPC->client->ps.torsoTimer );
-			TIMER_Set( NPC, "standTime", NPC->client->ps.legsTimer );
+			TIMER_Set( NPCS.NPC, "attackDelay", NPCS.NPC->client->ps.torsoTimer );
+			TIMER_Set( NPCS.NPC, "standTime", NPCS.NPC->client->ps.legsTimer );
 			//FIXME: debounce this?
 			NPCS.NPCInfo->touchedByPlayer = NULL;
 			//FIXME: some shield effect?
 			#ifdef BASE_COMPAT
-				NPC->client->ps.powerups[PW_BATTLESUIT] = level.time + ARMOR_EFFECT_TIME;
+				NPCS.NPC->client->ps.powerups[PW_BATTLESUIT] = level.time + ARMOR_EFFECT_TIME;
 			#endif
 
-			VectorSubtract( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin, smackDir );
+			VectorSubtract( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin, smackDir );
 			smackDir[2] += 30;
 			VectorNormalize( smackDir );
-			G_Damage( NPC->enemy, NPC, NPC, smackDir, NPC->r.currentOrigin, (g_npcspskill.integer+1)*Q_irand( 5, 10), DAMAGE_NO_KNOCKBACK, MOD_UNKNOWN ); 
+			G_Damage( NPCS.NPC->enemy, NPCS.NPC, NPCS.NPC, smackDir, NPCS.NPC->r.currentOrigin, (g_npcspskill.integer+1)*Q_irand( 5, 10), DAMAGE_NO_KNOCKBACK, MOD_UNKNOWN ); 
 			//throw them
-			G_Throw( NPC->enemy, smackDir, 100 );
+			G_Throw( NPCS.NPC->enemy, smackDir, 100 );
 			//NPC->enemy->s.powerups |= ( 1 << PW_SHOCKED );
-			if ( NPC->enemy->client )
+			if ( NPCS.NPC->enemy->client )
 			{
 			//	NPC->enemy->client->ps.powerups[PW_SHOCKED] = level.time + 1000;
-				NPC->enemy->client->ps.electrifyTime = level.time + 1000;
+				NPCS.NPC->enemy->client->ps.electrifyTime = level.time + 1000;
 			}
 			//stop any attacks
 			NPCS.ucmd.buttons = 0;
@@ -1212,21 +1211,21 @@ void NPC_BSGM_Attack( void )
 
 	if ( NPCS.NPCInfo->movementSpeech < 3 && NPCS.NPCInfo->blockedSpeechDebounceTime <= level.time )
 	{
-		if ( NPC->enemy && NPC->enemy->health > 0 && NPC->enemy->painDebounceTime > level.time )
+		if ( NPCS.NPC->enemy && NPCS.NPC->enemy->health > 0 && NPCS.NPC->enemy->painDebounceTime > level.time )
 		{
-			if ( NPC->enemy->health < 50 && NPCS.NPCInfo->movementSpeech == 2 )
+			if ( NPCS.NPC->enemy->health < 50 && NPCS.NPCInfo->movementSpeech == 2 )
 			{
-				G_AddVoiceEvent( NPC, EV_ANGER2, Q_irand( 2000, 4000 ) );
+				G_AddVoiceEvent( NPCS.NPC, EV_ANGER2, Q_irand( 2000, 4000 ) );
 				NPCS.NPCInfo->movementSpeech = 3;
 			}
-			else if ( NPC->enemy->health < 75 && NPCS.NPCInfo->movementSpeech == 1 )
+			else if ( NPCS.NPC->enemy->health < 75 && NPCS.NPCInfo->movementSpeech == 1 )
 			{
-				G_AddVoiceEvent( NPC, EV_ANGER1, Q_irand( 2000, 4000 ) );
+				G_AddVoiceEvent( NPCS.NPC, EV_ANGER1, Q_irand( 2000, 4000 ) );
 				NPCS.NPCInfo->movementSpeech = 2;
 			}
-			else if ( NPC->enemy->health < 100 && NPCS.NPCInfo->movementSpeech == 0 )
+			else if ( NPCS.NPC->enemy->health < 100 && NPCS.NPCInfo->movementSpeech == 0 )
 			{
-				G_AddVoiceEvent( NPC, EV_ANGER3, Q_irand( 2000, 4000 ) );
+				G_AddVoiceEvent( NPCS.NPC, EV_ANGER3, Q_irand( 2000, 4000 ) );
 				NPCS.NPCInfo->movementSpeech = 1;
 			}
 		}

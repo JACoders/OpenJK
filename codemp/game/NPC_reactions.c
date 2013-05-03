@@ -39,19 +39,14 @@ NPC_CheckAttacker
 
 static void NPC_CheckAttacker( gentity_t *other, int mod )
 {
-	gentity_t *NPC = NPCS.NPC;
 	//FIXME: I don't see anything in here that would stop teammates from taking a teammate
 	//			as an enemy.  Ideally, there would be code before this to prevent that from
 	//			happening, but that is presumptuous.
 	
-	//valid ent - FIXME: a VALIDENT macro would be nice here
-	if ( !other )
+	if ( !VALIDENT( other ) )
 		return;
 
-	if ( other == NPC )
-		return;
-
-	if ( !other->inuse )
+	if ( other == NPCS.NPC )
 		return;
 
 	//Don't take a target that doesn't want to be
@@ -65,34 +60,36 @@ static void NPC_CheckAttacker( gentity_t *other, int mod )
 	//rwwFIXMEFIXME: support this
 
 	//If we haven't taken a target, just get mad
-	if ( NPC->enemy == NULL )//was using "other", fixed to NPC
+	if ( NPCS.NPC->enemy == NULL )//was using "other", fixed to NPC
 	{
-		G_SetEnemy( NPC, other );
+		G_SetEnemy( NPCS.NPC, other );
 		return;
 	}
 
 	//we have an enemy, see if he's dead
-	if ( NPC->enemy->health <= 0 )
+	if ( NPCS.NPC->enemy->health <= 0 )
 	{
-		G_ClearEnemy( NPC );
-		G_SetEnemy( NPC, other );
+		G_ClearEnemy( NPCS.NPC );
+		G_SetEnemy( NPCS.NPC, other );
 		return;
 	}
 
 	//Don't take the same enemy again
-	if ( other == NPC->enemy )
+	if ( other == NPCS.NPC->enemy )
 		return;
 
-	if ( NPC->client->ps.weapon == WP_SABER )
+	if ( NPCS.NPC->client->ps.weapon == WP_SABER )
 	{//I'm a jedi
 		if ( mod == MOD_SABER )
 		{//I was hit by a saber  FIXME: what if this was a thrown saber?
 			//always switch to this enemy if I'm a jedi and hit by another saber
-			G_ClearEnemy( NPC );
-			G_SetEnemy( NPC, other );
+			G_ClearEnemy( NPCS.NPC );
+			G_SetEnemy( NPCS.NPC, other );
 			return;
 		}
 	}
+
+	//OJKFIXME: clientnum 0
 	//Special case player interactions
 	if ( other == &g_entities[0] )
 	{
@@ -122,7 +119,7 @@ static void NPC_CheckAttacker( gentity_t *other, int mod )
 		if ( random() > luckThreshold )
 		{
 			G_ClearEnemy( other );
-			other->enemy = NPC;
+			other->enemy = NPCS.NPC;
 		}
 
 		return;
@@ -367,7 +364,6 @@ void NPC_Pain(gentity_t *self, gentity_t *attacker, int damage)
 	int mod = gPainMOD;
 	int hitLoc = gPainHitLoc;
 	vec3_t point;
-	gentity_t *NPC = NPCS.NPC;
 
 	VectorCopy(gPainPoint, point);
 
@@ -500,7 +496,7 @@ void NPC_Pain(gentity_t *self, gentity_t *attacker, int damage)
 			NPC_ChoosePainAnimation( self, other, point, damage, mod, hitLoc, voiceEvent );
 		}
 		//Check to take a new enemy
-		if ( NPC->enemy != other && NPC != other )
+		if ( NPCS.NPC->enemy != other && NPCS.NPC != other )
 		{//not already mad at them
 			NPC_CheckAttacker( other, mod );
 		}
@@ -536,7 +532,6 @@ NPC_Touch
 extern qboolean INV_SecurityKeyGive( gentity_t *target, const char *keyname );
 void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace) 
 {
-	gentity_t *NPC = NPCS.NPC;
 
 	if(!self->NPC)
 		return;
@@ -616,9 +611,9 @@ void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace)
 					if( NPCS.NPCInfo->behaviorState != BS_HUNT_AND_KILL && !NPCS.NPCInfo->tempBehavior )
 					{//MCG - Begin: checking specific BS mode here, this is bad, a HACK
 						//FIXME: not medics?
-						if ( NPC->enemy != other )
+						if ( NPCS.NPC->enemy != other )
 						{//not already mad at them
-							G_SetEnemy( NPC, other );
+							G_SetEnemy( NPCS.NPC, other );
 						}
 		//				NPCInfo->tempBehavior = BS_HUNT_AND_KILL;
 					}
@@ -958,6 +953,7 @@ void NPC_UseResponse( gentity_t *self, gentity_t *user, qboolean useWhenDone )
 		return;
 	}
 
+	//OJKFIXME: clientnum 0
 	if ( user->s.number != 0 )
 	{//not used by the player
 		if ( useWhenDone )
@@ -1011,7 +1007,6 @@ extern void Add_Batteries( gentity_t *ent, int *count );
 
 void NPC_Use( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 {
-	gentity_t *NPC = NPCS.NPC;
 	if (self->client->ps.pm_type == PM_DEAD)
 	{//or just remove ->pain in player_die?
 		return;
@@ -1046,9 +1041,9 @@ void NPC_Use( gentity_t *self, gentity_t *other, gentity_t *activator )
 				}
 			}
 		}
-		else if ( Jedi_WaitingAmbush( NPC ) )
+		else if ( Jedi_WaitingAmbush( NPCS.NPC ) )
 		{
-			Jedi_Ambush( NPC );
+			Jedi_Ambush( NPCS.NPC );
 		}
 		//Run any use instructions
 		if ( activator && activator->s.number >= 0 && activator->s.number < MAX_CLIENTS && self->client->NPC_class == CLASS_GONK )
