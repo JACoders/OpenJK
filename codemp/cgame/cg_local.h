@@ -828,10 +828,6 @@ typedef struct {
 	// view rendering
 	refdef_t	refdef;
 
-#ifdef USE_WIDESCREEN
-	qboolean widescreen;
-#endif
-
 	// zoom key
 	qboolean	zoomed;
 	int			zoomTime;
