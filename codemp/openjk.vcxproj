@@ -83,6 +83,7 @@
       <SubSystem>Windows</SubSystem>
       <StackReserveSize>8388608</StackReserveSize>
       <AdditionalLibraryDirectories>libs/win32</AdditionalLibraryDirectories>
+      <Profile>true</Profile>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
