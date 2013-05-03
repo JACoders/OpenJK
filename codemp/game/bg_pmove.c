@@ -11171,8 +11171,9 @@ void PmoveSingle (pmove_t *pmove) {
 	// entering / leaving water splashes
 	PM_WaterEvents();
 
-	// snap some parts of playerstate to save network bandwidth
-	trap_SnapVector( pm->ps->velocity );
+	// snap velocity to integer coordinates to save network bandwidth
+	if ( !pm->pmove_float )
+		trap_SnapVector( pm->ps->velocity );
 
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
 	{
