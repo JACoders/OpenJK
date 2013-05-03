@@ -585,11 +585,9 @@ void CL_ShutdownCGame( void ) {
 }
 
 static int	FloatAsInt( float f ) {
-	int		temp;
-
-	*(float *)&temp = f;
-
-	return temp;
+	floatint_t fi;
+	fi.f = f;
+	return fi.i;
 }
 
 /*
@@ -599,15 +597,13 @@ CL_CgameSystemCalls
 The cgame module is making a system call
 ====================
 */
-#define	VMA(x) VM_ArgPtr(args[x])
-#define	VMF(x)	((float *)args)[x]
 extern int s_entityWavVol[MAX_GENTITIES];
 
 extern int CL_GetValueForHidden(const char *s); //cl_parse.cpp
 
 extern qboolean cl_bUseFighterPitch; //cl_input.cpp
 
-int CL_CgameSystemCalls( int *args ) {
+intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	switch( args[0] ) {
 	//rww - alright, DO NOT EVER add a GAME/CGAME/UI generic call without adding a trap to match, and
 	//all of these traps must be shared and have cases in sv_game, cl_cgame, and cl_ui. They must also
@@ -1692,7 +1688,7 @@ Ghoul2 Insert End
 
 	default:
 	        assert(0); // bk010102
-		Com_Error( ERR_DROP, "Bad cgame system trap: %i", args[0] );
+		Com_Error( ERR_DROP, "Bad cgame system trap: %ld", (long int) args[0] );
 	}
 	return 0;
 }
