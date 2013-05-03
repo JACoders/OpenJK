@@ -1004,6 +1004,9 @@ void CL_Connect_f( void ) {
 		cls.state = CA_CHALLENGING;
 	} else {
 		cls.state = CA_CONNECTING;
+
+		// Set a client challenge number that ideally is mirrored back by the server.
+		clc.challenge = ((rand() << 16) ^ rand()) ^ Com_Milliseconds();
 	}
 
 	Key_SetCatcher( 0 );
@@ -1478,7 +1481,11 @@ void CL_CheckForResend( void ) {
 	switch ( cls.state ) {
 	case CA_CONNECTING:
 		// requesting a challenge
-		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, "getchallenge");
+
+		// The challenge request shall be followed by a client challenge so no malicious server can hijack this connection.
+		Com_sprintf(data, sizeof(data), "getchallenge %d", clc.challenge);
+
+		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, data);
 		break;
 		
 	case CA_CHALLENGING:
@@ -1833,15 +1840,15 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	// server connection
 	if ( !Q_stricmp(c, "connectResponse") ) {
 		if ( cls.state >= CA_CONNECTED ) {
-			Com_Printf ("Dup connect received.  Ignored.\n");
+			Com_Printf ("Dup connect received. Ignored.\n");
 			return;
 		}
 		if ( cls.state != CA_CHALLENGING ) {
-			Com_Printf ("connectResponse packet while not connecting.  Ignored.\n");
+			Com_Printf ("connectResponse packet while not connecting. Ignored.\n");
 			return;
 		}
-		if ( !NET_CompareBaseAdr( from, clc.serverAddress ) ) {
-			Com_Printf( "connectResponse from a different address.  Ignored.\n" );
+		if ( !NET_CompareAdr( from, clc.serverAddress ) ) {
+			Com_Printf( "connectResponse from a different address. Ignored.\n" );
 			return;
 		}
 		Netchan_Setup (NS_CLIENT, &clc.netchan, from, Cvar_VariableValue( "net_qport" ) );

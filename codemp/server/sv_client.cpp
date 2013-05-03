@@ -26,12 +26,17 @@ to be sent to the authorize server.
 
 When an authorizeip is returned, a challenge response will be
 sent to that ip.
+
+ioquake3/openjk: we added a possibility for clients to add a challenge
+to their packets, to make it more difficult for malicious servers
+to hi-jack client connections.
 =================
 */
 void SV_GetChallenge( netadr_t from ) {
 	int		i;
 	int		oldest;
 	int		oldestTime;
+	int		clientChallenge;
 	challenge_t	*challenge;
 
 	// ignore if we are in single player
@@ -50,6 +55,7 @@ void SV_GetChallenge( netadr_t from ) {
 
 	// see if we already have a challenge for this ip
 	challenge = &svs.challenges[0];
+	clientChallenge = atoi(Cmd_Argv(1));
 
 	for (i = 0 ; i < MAX_CHALLENGES ; i++, challenge++)
 	{
@@ -72,7 +78,6 @@ void SV_GetChallenge( netadr_t from ) {
 		challenge->firstTime = svs.time;
 		challenge->time = svs.time;
 		challenge->connected = qfalse;
-		i = oldest;
 	}
 
 	// always generate a new challenge number, so the client cannot circumvent sv_maxping
@@ -80,81 +85,7 @@ void SV_GetChallenge( netadr_t from ) {
 	challenge->wasrefused = qfalse;
 
 	challenge->pingTime = svs.time;
-	NET_OutOfBandPrint( NS_SERVER, challenge->adr, "challengeResponse %i", challenge->challenge );
-}
-
-/*
-====================
-SV_AuthorizeIpPacket
-
-A packet has been returned from the authorize server.
-If we have a challenge adr for that ip, send the
-challengeResponse to it
-====================
-*/
-void SV_AuthorizeIpPacket( netadr_t from ) {
-	int		challenge;
-	int		i;
-	char	*s;
-	char	*r;
-	char	ret[1024];
-
-	if ( !NET_CompareBaseAdr( from, svs.authorizeAddress ) ) {
-		Com_Printf( "SV_AuthorizeIpPacket: not from authorize server\n" );
-		return;
-	}
-
-	challenge = atoi( Cmd_Argv( 1 ) );
-
-	for (i = 0 ; i < MAX_CHALLENGES ; i++) {
-		if ( svs.challenges[i].challenge == challenge ) {
-			break;
-		}
-	}
-	if ( i == MAX_CHALLENGES ) {
-		Com_Printf( "SV_AuthorizeIpPacket: challenge not found\n" );
-		return;
-	}
-
-	// send a packet back to the original client
-	svs.challenges[i].pingTime = svs.time;
-	s = Cmd_Argv( 2 );
-	r = Cmd_Argv( 3 );			// reason
-
-	if ( !Q_stricmp( s, "demo" ) ) {
-		// they are a demo client trying to connect to a real server
-		NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, "print\nServer is not a demo server\n" );
-		// clear the challenge record so it won't timeout and let them through
-		Com_Memset( &svs.challenges[i], 0, sizeof( svs.challenges[i] ) );
-		return;
-	}
-	if ( !Q_stricmp( s, "accept" ) ) {
-		NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, 
-			"challengeResponse %i", svs.challenges[i].challenge );
-		return;
-	}
-	if ( !Q_stricmp( s, "unknown" ) ) {
-		if (!r) {
-			NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, "print\nAwaiting Authorization\n" );
-		} else {
-			Com_sprintf(ret, sizeof(ret), "print\n%s\n", r);
-			NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, ret );
-		}
-		// clear the challenge record so it won't timeout and let them through
-		Com_Memset( &svs.challenges[i], 0, sizeof( svs.challenges[i] ) );
-		return;
-	}
-
-	// authorization failed
-	if (!r) {
-		NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, "print\nAuthorization Failed\n" );
-	} else {
-		Com_sprintf(ret, sizeof(ret), "print\n%s\n", r);
-		NET_OutOfBandPrint( NS_SERVER, svs.challenges[i].adr, ret );
-	}
-
-	// clear the challenge record so it won't timeout and let them through
-	Com_Memset( &svs.challenges[i], 0, sizeof( svs.challenges[i] ) );
+	NET_OutOfBandPrint( NS_SERVER, challenge->adr, "challengeResponse %i %i", challenge->challenge, clientChallenge );
 }
 
 /*
@@ -456,9 +387,11 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 		// see if we already have a challenge for this ip
 		challenge = &svs.challenges[0];
 
-		for (i = 0 ; i < MAX_CHALLENGES ; i++, challenge++) {
-			if ( NET_CompareAdr( drop->netchan.remoteAddress, challenge->adr ) ) {
-				challenge->connected = qfalse;
+		for (i = 0 ; i < MAX_CHALLENGES ; i++, challenge++)
+		{
+			if(NET_CompareAdr(drop->netchan.remoteAddress, challenge->adr))
+			{
+				Com_Memset(challenge, 0, sizeof(*challenge));
 				break;
 			}
 		}
