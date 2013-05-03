@@ -125,6 +125,7 @@ XCVAR_DEF( forcepowers,							DEFAULT_FORCEPOWERS,	NULL,					CVAR_USERINFO|CVAR_
 XCVAR_DEF( g_synchronousClients,				"0",					NULL,					CVAR_SYSTEMINFO )
 XCVAR_DEF( model,								DEFAULT_MODEL,			NULL,					CVAR_USERINFO|CVAR_ARCHIVE )
 XCVAR_DEF( pmove_fixed,							"0",					NULL,					CVAR_SYSTEMINFO )
+XCVAR_DEF( pmove_float,							"0",					NULL,					CVAR_SYSTEMINFO )
 XCVAR_DEF( pmove_msec,							"8",					NULL,					CVAR_SYSTEMINFO )
 XCVAR_DEF( r_autoMap,							"0",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( r_autoMapX,							"496",					NULL,					CVAR_ARCHIVE )
