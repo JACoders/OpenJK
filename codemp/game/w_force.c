@@ -2498,6 +2498,10 @@ void ForceJump( gentity_t *self, usercmd_t *ucmd )
 	//self->client->ps.fd.forcePowerDuration[FP_LEVITATION] = level.time + self->client->ps.weaponTime;
 	self->client->ps.fd.forceJumpCharge = 0;
 	self->client->ps.forceJumpFlip = qtrue;
+
+	// We've just jumped, we're not gonna be on the ground in the following frames.
+	// This makes sure npc's wont trigger the ForceJump function multiple times before detecting that they have left the ground.
+	self->client->ps.groundEntityNum = ENTITYNUM_NONE;
 }
 
 void WP_AddAsMindtricked(forcedata_t *fd, int entNum)
