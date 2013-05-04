@@ -464,7 +464,7 @@ char *Sys_GetClipboardData( void ) {
 		if ( ( hClipboardData = GetClipboardData( CF_TEXT ) ) != 0 ) {
 			if ( ( cliptext = (char *) GlobalLock( hClipboardData ) ) != 0 ) {
 				data = (char *) Z_Malloc( GlobalSize( hClipboardData ) + 1, TAG_CLIPBOARD, qfalse);
-				Q_strncpyz( data, cliptext, strlen(data) );
+				Q_strncpyz( data, cliptext, GlobalSize( hClipboardData )+1 );
 				GlobalUnlock( hClipboardData );
 				
 				strtok( data, "\n\r\b" );
