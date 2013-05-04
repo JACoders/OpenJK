@@ -678,13 +678,6 @@ static int spawncmp( const void *a, const void *b ) {
 qboolean G_CallSpawn( gentity_t *ent ) {
 	spawn_t	*s;
 	gitem_t	*item;
-	static qboolean didSort = qfalse;
-
-	if(!didSort)
-	{
-		qsort( spawns, ARRAY_LEN( spawns ), sizeof( spawn_t ), spawncmp );
-		didSort = qtrue;
-	}
 
 	if ( !ent->classname ) {
 		G_Printf( "G_CallSpawn: NULL classname\n" );
@@ -800,13 +793,6 @@ void G_ParseField( const char *key, const char *value, gentity_t *ent )
 	byte	*b;
 	float	v;
 	vec3_t	vec;
-	static qboolean didSort = qfalse;
-
-	if(!didSort)
-	{
-		qsort( fields, ARRAY_LEN( fields ), sizeof( field_t ), fieldcmp );
-		didSort = qtrue;
-	}
 
 	f = (field_t *)bsearch( key, fields, ARRAY_LEN( fields ), sizeof( field_t ), fieldcmp );
 	if ( f )
