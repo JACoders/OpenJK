@@ -350,8 +350,7 @@ static void InitOpenGL( void )
 		// print info the first time only
 		GL_SetDefaultState();
 		R_Splash();	//get something on screen asap
-		if ( ri.Cvar_VariableIntegerValue( "com_developer" ) )
-			GfxInfo_f();
+		GfxInfo_f();
 	}
 	else
 	{
