@@ -1356,7 +1356,7 @@ static void ClientCleanName( const char *in, char *out, int outSize )
 		}
 		else if ( outpos > 0 && out[outpos-1] == Q_COLOR_ESCAPE )
 		{
-			if ( Q_IsColorString( &out[outpos-1] ) )
+			if ( Q_IsColorStringExt( &out[outpos-1] ) )
 			{
 				colorlessLen--;
 				
