@@ -4248,7 +4248,7 @@ static void PM_GroundTrace( void ) {
 					pm->ps->weaponTime <= 0)
 				{
 					gentity_t *servEnt = (gentity_t *)pm_entSelf;
-					if (g_gametype.integer < GT_TEAM ||
+					if (level.gametype < GT_TEAM ||
 						!trEnt->alliedTeam ||
 						(trEnt->alliedTeam == servEnt->client->sess.sessionTeam))
 					{ //not belonging to a team, or client is on same team

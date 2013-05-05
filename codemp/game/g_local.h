@@ -946,6 +946,8 @@ typedef struct {
 	struct {
 		fileHandle_t	log;
 	} security;
+
+	gametype_t	gametype;
 } level_locals_t;
 
 

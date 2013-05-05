@@ -2225,7 +2225,7 @@ int LoadPathData(const char *filename)
 
 	trap_FS_FCloseFile(f);
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{
 		CalculateSiegeGoals();
 	}

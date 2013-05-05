@@ -140,7 +140,7 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 	client->sess.siegeDesiredTeam = TEAM_FREE;
 
 	// initial team determination
-	if ( g_gametype.integer >= GT_TEAM ) {
+	if ( level.gametype >= GT_TEAM ) {
 		if ( g_teamAutoJoin.integer && !(g_entities[client-level.clients].r.svFlags & SVF_BOT) ) {
 			sess->sessionTeam = PickTeam( -1 );
 			BroadcastTeamChange( client, -1 );
@@ -174,7 +174,7 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 			// a willing spectator, not a waiting-in-line
 			sess->sessionTeam = TEAM_SPECTATOR;
 		} else {
-			switch ( g_gametype.integer ) {
+			switch ( level.gametype ) {
 			default:
 			case GT_FFA:
 			case GT_HOLOCRON:
@@ -242,7 +242,7 @@ void G_InitWorldSession( void ) {
 	
 	// if the gametype changed since the last session, don't use any
 	// client sessions
-	if ( g_gametype.integer != gt ) {
+	if ( level.gametype != gt ) {
 		level.newSession = qtrue;
 		G_Printf( "Gametype changed, clearing session data.\n" );
 	}
@@ -257,7 +257,7 @@ G_WriteSessionData
 void G_WriteSessionData( void ) {
 	int		i;
 
-	trap_Cvar_Set( "session", va("%i", g_gametype.integer) );
+	trap_Cvar_Set( "session", va("%i", level.gametype) );
 
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
 		if ( level.clients[i].pers.connected == CON_CONNECTED ) {

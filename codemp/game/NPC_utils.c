@@ -1142,7 +1142,7 @@ qboolean NPC_ValidEnemy( gentity_t *ent )
 	}
 	else if ( ent->client )
 	{
-		if (g_gametype.integer < GT_TEAM)
+		if (level.gametype < GT_TEAM)
 		{
 			entTeam = NPCTEAM_PLAYER;
 		}
