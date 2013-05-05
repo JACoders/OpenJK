@@ -439,6 +439,10 @@ static qboolean turret_find_enemies( gentity_t *self )
 		{
 			continue;
 		}
+		if ( target->client->tempSpectate >= level.time )
+		{
+			continue;
+		}
 		if ( self->alliedTeam )
 		{
 			if ( target->client )
@@ -536,6 +540,10 @@ void turret_base_think( gentity_t *self )
 		}
 	}
 	else if ( self->enemy->client && self->enemy->client->sess.sessionTeam == TEAM_SPECTATOR )
+	{//don't keep going after spectators
+		self->enemy = NULL;
+	}
+	else if ( self->enemy->client && self->enemy->client->tempSpectate >= level.time )
 	{//don't keep going after spectators
 		self->enemy = NULL;
 	}

@@ -1426,6 +1426,10 @@ qboolean ValidEnemy(gentity_t *ent)
 			{//don't go after spectators
 				return qfalse;
 			}
+			else if ( ent->client->tempSpectate >= level.time )
+			{//don't go after spectators
+				return qfalse;
+			}
 			else
 			{
 				int entTeam = TEAM_FREE;

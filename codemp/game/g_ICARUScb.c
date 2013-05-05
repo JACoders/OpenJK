@@ -2519,6 +2519,11 @@ static void Q3_SetHealth( int entID, int data )
 			return;
 		}
 
+		if ( ent->client->tempSpectate >= level.time )
+		{ //this would also be silly
+			return;
+		}
+
 		ent->flags &= ~FL_GODMODE;
 		ent->client->ps.stats[STAT_HEALTH] = ent->health = -999;
 		player_die (ent, ent, ent, 100000, MOD_FALLING);
