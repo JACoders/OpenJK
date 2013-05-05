@@ -459,6 +459,9 @@ void G_SetClientSound( gentity_t *ent ) {
 	else if (ent->client && ent->waterlevel && (ent->watertype&(CONTENTS_LAVA|CONTENTS_SLIME)) ) {
 		ent->client->ps.loopSound = level.snd_fry;
 		ent->s.loopIsSoundset = qfalse;
+	} else if (ent->client) {
+		ent->client->ps.loopSound = 0;
+		ent->s.loopIsSoundset = qfalse;
 	} else {
 		ent->s.loopSound = 0;
 		ent->s.loopIsSoundset = qfalse;
