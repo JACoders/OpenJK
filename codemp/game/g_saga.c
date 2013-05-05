@@ -111,7 +111,7 @@ void InitSiegeMode(void)
 
 	objective[0] = '\0';
 
-	if (g_gametype.integer != GT_SIEGE)
+	if (level.gametype != GT_SIEGE)
 	{
 		goto failure;
 	}
@@ -792,7 +792,7 @@ void SetTeamQuick(gentity_t *ent, int team, qboolean doBegin)
 
 	trap_GetUserinfo( ent->s.number, userinfo, sizeof( userinfo ) );
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{
 		G_ValidateSiegeClassForTeam(ent, team);
 	}
@@ -912,7 +912,7 @@ void SiegeCheckTimers(void)
 	int numTeam1 = 0;
 	int numTeam2 = 0;
 
-	if (g_gametype.integer != GT_SIEGE)
+	if (level.gametype != GT_SIEGE)
 	{
 		return;
 	}
@@ -1143,7 +1143,7 @@ void SP_info_siege_objective (gentity_t *ent)
 {
 	char* s;
 
-	if (!siege_valid || g_gametype.integer != GT_SIEGE)
+	if (!siege_valid || level.gametype != GT_SIEGE)
 	{
 		G_FreeEntity(ent);
 		return;
@@ -1210,7 +1210,7 @@ void SP_info_siege_radaricon (gentity_t *ent)
 	char* s;
 	int i;
 
-	if (!siege_valid || g_gametype.integer != GT_SIEGE)
+	if (!siege_valid || level.gametype != GT_SIEGE)
 	{
 		G_FreeEntity(ent);
 		return;
@@ -1303,7 +1303,7 @@ void decompTriggerUse(gentity_t *ent, gentity_t *other, gentity_t *activator)
 */
 void SP_info_siege_decomplete (gentity_t *ent)
 {
-	if (!siege_valid || g_gametype.integer != GT_SIEGE)
+	if (!siege_valid || level.gametype != GT_SIEGE)
 	{
 		G_FreeEntity(ent);
 		return;
@@ -1331,7 +1331,7 @@ Do a logexit for siege when used.
 */
 void SP_target_siege_end (gentity_t *ent)
 {
-	if (!siege_valid || g_gametype.integer != GT_SIEGE)
+	if (!siege_valid || level.gametype != GT_SIEGE)
 	{
 		G_FreeEntity(ent);
 		return;
@@ -1756,7 +1756,7 @@ void SP_misc_siege_item (gentity_t *ent)
 	int		noradar;
 	char	*s;
 
-	if (!siege_valid || g_gametype.integer != GT_SIEGE)
+	if (!siege_valid || level.gametype != GT_SIEGE)
 	{
 		G_FreeEntity(ent);
 		return;

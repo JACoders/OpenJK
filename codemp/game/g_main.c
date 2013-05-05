@@ -318,6 +318,31 @@ char gSharedBuffer[MAX_G_SHARED_BUFFER_SIZE];
 void WP_SaberLoadParms( void );
 void BG_VehicleLoadParms( void );
 
+void G_CacheGametype( void )
+{
+	// check some things
+	if ( g_gametype.string[0] && isalpha( g_gametype.string[0] ) )
+	{
+		int gt = BG_GetGametypeForString( g_gametype.string );
+		if ( gt == -1 )
+		{
+			G_Printf( "Gametype '%s' unrecognised, defaulting to FFA/Deathmatch\n", g_gametype.string );
+			level.gametype = GT_FFA;
+		}
+		else
+			level.gametype = gt;
+	}
+	else if ( g_gametype.integer < 0 || level.gametype >= GT_MAX_GAME_TYPE )
+	{
+		G_Printf( "g_gametype %i is out of range, defaulting to 0\n", level.gametype );
+		level.gametype = GT_FFA;
+	}
+	else
+		level.gametype = atoi( g_gametype.string );
+
+	trap_Cvar_Set( "g_gametype", va( "%i", level.gametype ) );
+}
+
 /*
 ============
 G_InitGame
@@ -406,6 +431,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	
 	G_LogWeaponInit();
 
+	G_CacheGametype();
+
 	G_InitWorldSession();
 
 	// initialize all entities for this game
@@ -469,15 +496,15 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_FindTeams();
 
 	// make sure we have flags for CTF, etc
-	if( g_gametype.integer >= GT_TEAM ) {
+	if( level.gametype >= GT_TEAM ) {
 		G_CheckTeamItems();
 	}
-	else if ( g_gametype.integer == GT_JEDIMASTER )
+	else if ( level.gametype == GT_JEDIMASTER )
 	{
 		trap_SetConfigstring ( CS_CLIENT_JEDIMASTER, "-1" );
 	}
 
-	if (g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_POWERDUEL)
 	{
 		trap_SetConfigstring ( CS_CLIENT_DUELISTS, va("-1|-1|-1") );
 	}
@@ -493,7 +520,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	//G_Printf ("-----------------------------------\n");
 
-	if( g_gametype.integer == GT_SINGLE_PLAYER || trap_Cvar_VariableIntegerValue( "com_buildScript" ) ) {
+	if( level.gametype == GT_SINGLE_PLAYER || trap_Cvar_VariableIntegerValue( "com_buildScript" ) ) {
 		G_ModelIndex( SP_PODIUM_MODEL );
 		G_SoundIndex( "sound/player/gurp1.wav" );
 		G_SoundIndex( "sound/player/gurp2.wav" );
@@ -510,7 +537,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		G_LoadArenas();
 	}
 
-	if ( g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL )
+	if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL )
 	{
 		G_LogPrintf("Duel Tournament Begun: kill limit %d, win limit: %d\n", fraglimit.integer, duel_fraglimit.integer );
 	}
@@ -539,7 +566,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		//No loading games in MP.
 	}
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{ //just get these configstrings registered now...
 		while (i < MAX_CUSTOM_SIEGE_SOUNDS)
 		{
@@ -1063,7 +1090,7 @@ int QDECL SortRanks( const void *a, const void *b ) {
 	ca = &level.clients[*(int *)a];
 	cb = &level.clients[*(int *)b];
 
-	if (g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_POWERDUEL)
 	{
 		//sort single duelists first
 		if (ca->sess.duelTeam == DUELTEAM_LONE && ca->sess.sessionTeam != TEAM_SPECTATOR)
@@ -1209,7 +1236,7 @@ void CalculateRanks( void ) {
 			level.sortedClients[level.numConnectedClients] = i;
 			level.numConnectedClients++;
 
-			if ( level.clients[i].sess.sessionTeam != TEAM_SPECTATOR || g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL )
+			if ( level.clients[i].sess.sessionTeam != TEAM_SPECTATOR || level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL )
 			{
 				if (level.clients[i].sess.sessionTeam != TEAM_SPECTATOR)
 				{
@@ -1247,14 +1274,14 @@ void CalculateRanks( void ) {
 	//if (!g_warmup.integer)
 	if (1)
 #else
-	if ( !g_warmup.integer || g_gametype.integer == GT_SIEGE )
+	if ( !g_warmup.integer || level.gametype == GT_SIEGE )
 #endif
 	{
 		level.warmupTime = 0;
 	}
 
 	/*
-	if (level.numNonSpectatorClients == 2 && preNumSpec < 2 && nonSpecIndex != -1 && g_gametype.integer == GT_DUEL && !level.warmupTime)
+	if (level.numNonSpectatorClients == 2 && preNumSpec < 2 && nonSpecIndex != -1 && level.gametype == GT_DUEL && !level.warmupTime)
 	{
 		gentity_t *currentWinner = G_GetDuelWinner(&level.clients[nonSpecIndex]);
 
@@ -1271,7 +1298,7 @@ void CalculateRanks( void ) {
 		sizeof(level.sortedClients[0]), SortRanks );
 
 	// set the rank value for all clients that are connected and not spectators
-	if ( g_gametype.integer >= GT_TEAM ) {
+	if ( level.gametype >= GT_TEAM ) {
 		// in team games, rank is just the order of the teams, 0=red, 1=blue, 2=tied
 		for ( i = 0;  i < level.numConnectedClients; i++ ) {
 			cl = &level.clients[ level.sortedClients[i] ];
@@ -1299,14 +1326,14 @@ void CalculateRanks( void ) {
 				level.clients[ level.sortedClients[i] ].ps.persistant[PERS_RANK] = rank | RANK_TIED_FLAG;
 			}
 			score = newScore;
-			if ( g_gametype.integer == GT_SINGLE_PLAYER && level.numPlayingClients == 1 ) {
+			if ( level.gametype == GT_SINGLE_PLAYER && level.numPlayingClients == 1 ) {
 				level.clients[ level.sortedClients[i] ].ps.persistant[PERS_RANK] = rank | RANK_TIED_FLAG;
 			}
 		}
 	}
 
 	// set the CS_SCORES1/2 configstrings, which will be visible to everyone
-	if ( g_gametype.integer >= GT_TEAM ) {
+	if ( level.gametype >= GT_TEAM ) {
 		trap_SetConfigstring( CS_SCORES1, va("%i", level.teamScores[TEAM_RED] ) );
 		trap_SetConfigstring( CS_SCORES2, va("%i", level.teamScores[TEAM_BLUE] ) );
 	} else {
@@ -1321,7 +1348,7 @@ void CalculateRanks( void ) {
 			trap_SetConfigstring( CS_SCORES2, va("%i", level.clients[ level.sortedClients[1] ].ps.persistant[PERS_SCORE] ) );
 		}
 
-		if (g_gametype.integer != GT_DUEL && g_gametype.integer != GT_POWERDUEL)
+		if (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL)
 		{ //when not in duel, use this configstring to pass the index of the player currently in first place
 			if ( level.numConnectedClients >= 1 )
 			{
@@ -1338,7 +1365,7 @@ void CalculateRanks( void ) {
 	CheckExitRules();
 
 	// if we are at the intermission or in multi-frag Duel game mode, send the new info to everyone
-	if ( level.intermissiontime || g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL ) {
+	if ( level.intermissiontime || level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL ) {
 		gQueueScoreMessage = qtrue;
 		gQueueScoreMessageTime = level.time + 500;
 		//SendScoreboardMessageToAllClients();
@@ -1431,7 +1458,7 @@ void FindIntermissionPoint( void ) {
 	vec3_t		dir;
 
 	// find the intermission spot
-	if ( g_gametype.integer == GT_SIEGE
+	if ( level.gametype == GT_SIEGE
 		&& level.intermissiontime
 		&& level.intermissiontime <= level.time
 		&& gSiegeRoundEnded )
@@ -1490,10 +1517,10 @@ void BeginIntermission( void ) {
 	}
 
 	// if in tournement mode, change the wins / losses
-	if ( g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL ) {
+	if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL ) {
 		trap_SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
 
-		if (g_gametype.integer != GT_POWERDUEL)
+		if (level.gametype != GT_POWERDUEL)
 		{
 			AdjustTournamentScores();
 		}
@@ -1517,7 +1544,7 @@ void BeginIntermission( void ) {
 			continue;
 		// respawn if dead
 		if (client->health <= 0) {
-			if (g_gametype.integer != GT_POWERDUEL ||
+			if (level.gametype != GT_POWERDUEL ||
 				!client->client ||
 				client->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{ //don't respawn spectators in powerduel or it will mess the line order all up
@@ -1585,7 +1612,7 @@ void ExitLevel (void) {
 
 	// if we are running a tournement map, kick the loser to spectator status,
 	// which will automatically grab the next spectator and restart
-	if ( g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL ) {
+	if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL ) {
 		if (!DuelLimitHit())
 		{
 			if ( !level.restarted ) {
@@ -1601,7 +1628,7 @@ void ExitLevel (void) {
 	}
 
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		g_siegeTeamSwitch.integer &&
 		g_siegePersistant.beatingTime)
 	{ //restart same map...
@@ -1614,7 +1641,7 @@ void ExitLevel (void) {
 	level.changemap = NULL;
 	level.intermissiontime = 0;
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		g_siegeTeamSwitch.integer)
 	{ //switch out now
 		SiegeDoTeamAssign();
@@ -1736,7 +1763,7 @@ void LogExit( const char *string ) {
 		numSorted = 32;
 	}
 
-	if ( g_gametype.integer >= GT_TEAM ) {
+	if ( level.gametype >= GT_TEAM ) {
 		G_LogPrintf( "red:%i  blue:%i\n",
 			level.teamScores[TEAM_RED], level.teamScores[TEAM_BLUE] );
 	}
@@ -1756,7 +1783,7 @@ void LogExit( const char *string ) {
 		ping = cl->ps.ping < 999 ? cl->ps.ping : 999;
 
 		G_LogPrintf( "score: %i  ping: %i  client: %i %s\n", cl->ps.persistant[PERS_SCORE], ping, level.sortedClients[i],	cl->pers.netname );
-//		if (g_singlePlayer.integer && (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)) {
+//		if (g_singlePlayer.integer && (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)) {
 //			if (g_entities[cl - level.clients].r.svFlags & SVF_BOT && cl->ps.persistant[PERS_RANK] == 0) {
 //				won = qfalse;
 //			}
@@ -1766,7 +1793,7 @@ void LogExit( const char *string ) {
 	//yeah.. how about not.
 	/*
 	if (g_singlePlayer.integer) {
-		if (g_gametype.integer >= GT_CTF) {
+		if (level.gametype >= GT_CTF) {
 			won = level.teamScores[TEAM_RED] > level.teamScores[TEAM_BLUE];
 		}
 		trap_SendConsoleCommand( EXEC_APPEND, (won) ? "spWin\n" : "spLose\n" );
@@ -1815,12 +1842,12 @@ void CheckIntermissionExit( void ) {
 		}
 	}
 
-	if ( (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL) && !gDidDuelStuff &&
+	if ( (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) && !gDidDuelStuff &&
 		(level.time > level.intermissiontime + 2000) )
 	{
 		gDidDuelStuff = qtrue;
 
-		if ( g_austrian.integer && g_gametype.integer != GT_POWERDUEL )
+		if ( g_austrian.integer && level.gametype != GT_POWERDUEL )
 		{
 			G_LogPrintf("Duel Results:\n");
 			//G_LogPrintf("Duel Time: %d\n", level.time );
@@ -1839,7 +1866,7 @@ void CheckIntermissionExit( void ) {
 		// which will automatically grab the next spectator and restart
 		if (!DuelLimitHit())
 		{
-			if (g_gametype.integer == GT_POWERDUEL)
+			if (level.gametype == GT_POWERDUEL)
 			{
 				RemovePowerDuelLosers();
 				AddPowerDuelPlayers();
@@ -1862,7 +1889,7 @@ void CheckIntermissionExit( void ) {
 
 			if ( g_austrian.integer )
 			{
-				if (g_gametype.integer == GT_POWERDUEL)
+				if (level.gametype == GT_POWERDUEL)
 				{
 					G_LogPrintf("Power Duel Initiated: %s %d/%d vs %s %d/%d and %s %d/%d, kill limit: %d\n", 
 						level.clients[level.sortedClients[0]].pers.netname,
@@ -1889,7 +1916,7 @@ void CheckIntermissionExit( void ) {
 				}
 			}
 			
-			if (g_gametype.integer == GT_POWERDUEL)
+			if (level.gametype == GT_POWERDUEL)
 			{
 				if (level.numPlayingClients >= 3 && level.numNonSpectatorClients >= 3)
 				{
@@ -1909,7 +1936,7 @@ void CheckIntermissionExit( void ) {
 			return;	
 		}
 
-		if ( g_austrian.integer && g_gametype.integer != GT_POWERDUEL )
+		if ( g_austrian.integer && level.gametype != GT_POWERDUEL )
 		{
 			G_LogPrintf("Duel Tournament Winner: %s wins/losses: %d/%d\n", 
 				level.clients[level.sortedClients[0]].pers.netname,
@@ -1917,7 +1944,7 @@ void CheckIntermissionExit( void ) {
 				level.clients[level.sortedClients[0]].sess.losses );
 		}
 
-		if (g_gametype.integer == GT_POWERDUEL)
+		if (level.gametype == GT_POWERDUEL)
 		{
 			RemovePowerDuelLosers();
 			AddPowerDuelPlayers();
@@ -1955,7 +1982,7 @@ void CheckIntermissionExit( void ) {
 		}
 	}
 
-	if ((g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL) && !gDuelExit)
+	if ((level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) && !gDuelExit)
 	{ //in duel, we have different behaviour for between-round intermissions
 		if ( level.time > level.intermissiontime + 4000 )
 		{ //automatically go to next after 4 seconds
@@ -2037,7 +2064,7 @@ qboolean ScoreIsTied( void ) {
 		return qfalse;
 	}
 	
-	if ( g_gametype.integer >= GT_TEAM ) {
+	if ( level.gametype >= GT_TEAM ) {
 		return level.teamScores[TEAM_RED] == level.teamScores[TEAM_BLUE];
 	}
 
@@ -2114,7 +2141,7 @@ void CheckExitRules( void ) {
 	}
 
 	/*
-	if (g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_POWERDUEL)
 	{
 		if (level.numPlayingClients < 3)
 		{
@@ -2132,13 +2159,13 @@ void CheckExitRules( void ) {
 	*/
 
 	// check for sudden death
-	if (g_gametype.integer != GT_SIEGE)
+	if (level.gametype != GT_SIEGE)
 	{
 		if ( ScoreIsTied() ) {
 			// always wait for sudden death
-			if ((g_gametype.integer != GT_DUEL) || !timelimit.value)
+			if ((level.gametype != GT_DUEL) || !timelimit.value)
 			{
-				if (g_gametype.integer != GT_POWERDUEL)
+				if (level.gametype != GT_POWERDUEL)
 				{
 					return;
 				}
@@ -2146,7 +2173,7 @@ void CheckExitRules( void ) {
 		}
 	}
 
-	if (g_gametype.integer != GT_SIEGE)
+	if (level.gametype != GT_SIEGE)
 	{
 		if ( timelimit.value > 0.0f && !level.warmupTime ) {
 			if ( level.time - level.startTime >= timelimit.value*60000 ) {
@@ -2162,7 +2189,7 @@ void CheckExitRules( void ) {
 		}
 	}
 
-	if (g_gametype.integer == GT_POWERDUEL && level.numPlayingClients >= 3)
+	if (level.gametype == GT_POWERDUEL && level.numPlayingClients >= 3)
 	{
 		if (g_endPDuel)
 		{
@@ -2280,8 +2307,7 @@ void CheckExitRules( void ) {
 		return;
 	}
 
-	if (g_gametype.integer == GT_DUEL ||
-		g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 	{
 		if (fraglimit.integer > 1)
 		{
@@ -2297,7 +2323,7 @@ void CheckExitRules( void ) {
 	{
 		sKillLimit = "Kill limit hit.";
 	}
-	if ( g_gametype.integer < GT_SIEGE && fraglimit.integer ) {
+	if ( level.gametype < GT_SIEGE && fraglimit.integer ) {
 		if ( level.teamScores[TEAM_RED] >= fraglimit.integer ) {
 			trap_SendServerCommand( -1, va("print \"Red %s\n\"", G_GetStringEdString("MP_SVGAME", "HIT_THE_KILL_LIMIT")) );
 			if (d_powerDuelPrint.integer)
@@ -2327,7 +2353,7 @@ void CheckExitRules( void ) {
 				continue;
 			}
 
-			if ( (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL) && duel_fraglimit.integer && cl->sess.wins >= duel_fraglimit.integer )
+			if ( (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) && duel_fraglimit.integer && cl->sess.wins >= duel_fraglimit.integer )
 			{
 				if (d_powerDuelPrint.integer)
 				{
@@ -2360,7 +2386,7 @@ void CheckExitRules( void ) {
 		}
 	}
 
-	if ( g_gametype.integer >= GT_CTF && capturelimit.integer ) {
+	if ( level.gametype >= GT_CTF && capturelimit.integer ) {
 
 		if ( level.teamScores[TEAM_RED] >= capturelimit.integer ) 
 		{
@@ -2417,11 +2443,11 @@ int g_duelPrintTimer = 0;
 void CheckTournament( void ) {
 	// check because we run 3 game frames before calling Connect and/or ClientBegin
 	// for clients on a map_restart
-//	if ( level.numPlayingClients == 0 && (g_gametype.integer != GT_POWERDUEL) ) {
+//	if ( level.numPlayingClients == 0 && (level.gametype != GT_POWERDUEL) ) {
 //		return;
 //	}
 
-	if (g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_POWERDUEL)
 	{
 		if (level.numPlayingClients >= 3 && level.numNonSpectatorClients >= 3)
 		{
@@ -2436,7 +2462,7 @@ void CheckTournament( void ) {
 		}
 	}
 
-	if ( g_gametype.integer == GT_DUEL )
+	if ( level.gametype == GT_DUEL )
 	{
 		// pull in a spectator if needed
 		if ( level.numPlayingClients < 2 && !level.intermissiontime && !level.intermissionQueued ) {
@@ -2513,7 +2539,7 @@ void CheckTournament( void ) {
 		}
 #endif
 	}
-	else if (g_gametype.integer == GT_POWERDUEL)
+	else if (level.gametype == GT_POWERDUEL)
 	{
 		if (level.numPlayingClients < 2)
 		{ //hmm, ok, pull more in.
@@ -2633,7 +2659,7 @@ void CheckTournament( void ) {
 		int		counts[TEAM_NUM_TEAMS];
 		qboolean	notEnough = qfalse;
 
-		if ( g_gametype.integer > GT_TEAM ) {
+		if ( level.gametype > GT_TEAM ) {
 			counts[TEAM_BLUE] = TeamCount( -1, TEAM_BLUE );
 			counts[TEAM_RED] = TeamCount( -1, TEAM_RED );
 
@@ -2719,7 +2745,7 @@ void CheckVote( void ) {
 
 		if (level.votingGametype)
 		{
-			if (trap_Cvar_VariableIntegerValue("g_gametype") != level.votingGametypeTo)
+			if (level.gametype != level.votingGametypeTo)
 			{ //If we're voting to a different game type, be sure to refresh all the map stuff
 				const char *nextMap = G_RefreshNextMap(level.votingGametypeTo, qtrue);
 
@@ -2742,9 +2768,9 @@ void CheckVote( void ) {
 
 			if (g_fraglimitVoteCorrection.integer)
 			{ //This means to auto-correct fraglimit when voting to and from duel.
-				const int currentGT = trap_Cvar_VariableIntegerValue("g_gametype");
-				const int currentFL = trap_Cvar_VariableIntegerValue("fraglimit");
-				const int currentTL = trap_Cvar_VariableIntegerValue("timelimit");
+				const int currentGT = level.gametype;
+				const int currentFL = fraglimit.integer;
+				const int currentTL = timelimit.integer;
 
 				if ((level.votingGametypeTo == GT_DUEL || level.votingGametypeTo == GT_POWERDUEL) && currentGT != GT_DUEL && currentGT != GT_POWERDUEL)
 				{
@@ -3076,7 +3102,7 @@ void G_RunFrame( int levelTime ) {
 	void		*timer_Queues;
 #endif
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		g_siegeRespawn.integer &&
 		g_siegeRespawnCheck < level.time)
 	{ //check for a respawn wave
@@ -3294,7 +3320,7 @@ void G_RunFrame( int levelTime ) {
 		}
 
 		//fix for self-deactivating areaportals in Siege
-		if ( ent->s.eType == ET_MOVER && g_gametype.integer == GT_SIEGE && level.intermissiontime)
+		if ( ent->s.eType == ET_MOVER && level.gametype == GT_SIEGE && level.intermissiontime)
 		{
 			if ( !Q_stricmp("func_door", ent->classname) && ent->moverState != MOVER_POS1 )
 			{
@@ -3445,7 +3471,7 @@ void G_RunFrame( int levelTime ) {
 				}
 			}
 
-			if (g_gametype.integer == GT_SIEGE &&
+			if (level.gametype == GT_SIEGE &&
 				ent->client->siegeClass != -1 &&
 				(bgSiegeClasses[ent->client->siegeClass].classflags & (1<<CFL_STATVIEWER)))
 			{ //see if it's time to send this guy an update of extended info

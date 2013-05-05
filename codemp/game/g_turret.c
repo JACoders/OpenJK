@@ -725,7 +725,7 @@ qboolean turret_base_spawn_top( gentity_t *base )
 	base->r.ownerNum = top->s.number;
 	top->r.ownerNum = base->s.number;
 
-	if ( base->team && base->team[0] && //g_gametype.integer == GT_SIEGE &&
+	if ( base->team && base->team[0] && //level.gametype == GT_SIEGE &&
 		!base->teamnodmg)
 	{
 		base->teamnodmg = atoi(base->team);
