@@ -446,7 +446,7 @@ qboolean BG_LegalizedForcePowers(char *powerOut, int maxRank, qboolean freeSaber
 	{
 		countDown = 0;
 
-		countDown = final_Powers[i];
+		countDown = Com_Clampi( 0, NUM_FORCE_POWER_LEVELS, final_Powers[i] );
 
 		while (countDown > 0)
 		{
@@ -3199,4 +3199,67 @@ char *BG_StringAlloc ( const char *source )
 qboolean BG_OutOfMemory ( void )
 {
 	return bg_poolSize >= MAX_POOL_SIZE;
+}
+
+const char *gametypeStringShort[GT_MAX_GAME_TYPE] = {
+	"FFA",
+	"HOLO",
+	"JM",
+	"1v1",
+	"2v1",
+	"SP",
+	"TDM",
+	"SAGA",
+	"CTF",
+	"CTY"
+};
+
+const char *BG_GetGametypeString( int gametype )
+{
+	switch ( gametype )
+	{
+	case GT_FFA:
+		return "Free For All";
+	case GT_HOLOCRON:
+		return "Holocron";
+	case GT_JEDIMASTER:
+		return "Jedi Master";
+	case GT_DUEL:
+		return "Duel";
+	case GT_POWERDUEL:
+		return "Power Duel";
+	case GT_SINGLE_PLAYER:
+		return "Cooperative";
+
+	case GT_TEAM:
+		return "Team Deathmatch";
+	case GT_SIEGE:
+		return "Siege";
+	case GT_CTF:
+		return "Capture The Flag";
+	case GT_CTY:
+		return "Capture The Ysalimiri";
+
+	default:
+		return "Unknown Gametype";
+	}
+}
+
+int BG_GetGametypeForString( const char *gametype )
+{
+		 if ( !Q_stricmp( gametype, "ffa" )
+			||!Q_stricmp( gametype, "dm" ) )			return GT_FFA;
+	else if ( !Q_stricmp( gametype, "holocron" ) )		return GT_HOLOCRON;
+	else if ( !Q_stricmp( gametype, "jm" ) )			return GT_JEDIMASTER;
+	else if ( !Q_stricmp( gametype, "duel" ) )			return GT_DUEL;
+	else if ( !Q_stricmp( gametype, "powerduel" ) )		return GT_POWERDUEL;
+	else if ( !Q_stricmp( gametype, "sp" )
+			||!Q_stricmp( gametype, "coop" ) )			return GT_SINGLE_PLAYER;
+	else if ( !Q_stricmp( gametype, "tdm" )
+			||!Q_stricmp( gametype, "tffa" )
+			||!Q_stricmp( gametype, "team" ) )			return GT_TEAM;
+	else if ( !Q_stricmp( gametype, "siege" ) )			return GT_SIEGE;
+	else if ( !Q_stricmp( gametype, "ctf" ) )			return GT_CTF;
+	else if ( !Q_stricmp( gametype, "cty" ) )			return GT_CTY;
+	else												return -1;
 }

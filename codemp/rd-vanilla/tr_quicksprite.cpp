@@ -4,7 +4,6 @@
 // tr_QuickSprite.cpp: implementation of the CQuickSpriteSystem class.
 //
 //////////////////////////////////////////////////////////////////////
-//#include "server/exe_headers.h"
 #include "tr_local.h"
 
 #include "tr_quicksprite.h"

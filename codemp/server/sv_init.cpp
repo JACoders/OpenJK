@@ -2,16 +2,11 @@
 #include "qcommon/exe_headers.h"
 
 #include "server.h"
-
 /*
 Ghoul2 Insert Start
 */
 #include "ghoul2/G2.h"
-
-#if !defined (MINIHEAP_H_INC)
 #include "qcommon/MiniHeap.h"
-#endif
-
 #include "qcommon/stringed_ingame.h"
 
 /*
@@ -931,11 +926,7 @@ void SV_Init (void) {
 	// systeminfo
 	Cvar_Get ("sv_cheats", "1", CVAR_SYSTEMINFO | CVAR_ROM );
 	sv_serverid = Cvar_Get ("sv_serverid", "0", CVAR_SYSTEMINFO | CVAR_ROM );
-#ifndef DLL_ONLY // bk010216 - for DLL-only servers
 	sv_pure = Cvar_Get ("sv_pure", "1", CVAR_SYSTEMINFO );
-#else
-	sv_pure = Cvar_Get ("sv_pure", "0", CVAR_SYSTEMINFO | CVAR_INIT | CVAR_ROM );
-#endif
 	Cvar_Get ("sv_paks", "", CVAR_SYSTEMINFO | CVAR_ROM );
 	Cvar_Get ("sv_pakNames", "", CVAR_SYSTEMINFO | CVAR_ROM );
 	Cvar_Get ("sv_referencedPaks", "", CVAR_SYSTEMINFO | CVAR_ROM );
@@ -944,7 +935,8 @@ void SV_Init (void) {
 	// server vars
 	sv_rconPassword = Cvar_Get ("rconPassword", "", CVAR_TEMP );
 	sv_privatePassword = Cvar_Get ("sv_privatePassword", "", CVAR_TEMP );
-	sv_snaps = Cvar_Get ("sv_snaps", "40", CVAR_ARCHIVE );
+	sv_snapsMin = Cvar_Get ("sv_snapsMin", "10", CVAR_ARCHIVE ); // 1 <=> sv_snapsMax
+	sv_snapsMax = Cvar_Get ("sv_snapsMax", "40", CVAR_ARCHIVE ); // sv_snapsMin <=> sv_fps
 	sv_fps = Cvar_Get ("sv_fps", "40", CVAR_SERVERINFO );
 	sv_timeout = Cvar_Get ("sv_timeout", "200", CVAR_TEMP );
 	sv_zombietime = Cvar_Get ("sv_zombietime", "2", CVAR_TEMP );

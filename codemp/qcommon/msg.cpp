@@ -165,17 +165,17 @@ void MSG_WriteBits( msg_t *msg, int value, int bits ) {
 			msg->cursize += 1;
 			msg->bit += 8;
 		} else if (bits==16) {
-			unsigned short *sp = (unsigned short *)&msg->data[msg->cursize];
-			*sp = LittleShort(value);
+			short temp = value;
+
+			CopyLittleShort(&msg->data[msg->cursize], &temp);
 			msg->cursize += 2;
 			msg->bit += 16;
 		} else if (bits==32) {
-			unsigned int *ip = (unsigned int *)&msg->data[msg->cursize];
-			*ip = LittleLong(value);
+			CopyLittleLong(&msg->data[msg->cursize], &value);
 			msg->cursize += 4;
-			msg->bit += 8;
+			msg->bit += 32;
 		} else {
-			Com_Error(ERR_DROP, "can't read %d bits\n", bits);
+			Com_Error(ERR_DROP, "can't write %d bits\n", bits);
 		}
 	} else {
 		value &= (0xffffffff>>(32-bits));
@@ -221,13 +221,14 @@ int MSG_ReadBits( msg_t *msg, int bits ) {
 			msg->readcount += 1;
 			msg->bit += 8;
 		} else if (bits==16) {
-			unsigned short *sp = (unsigned short *)&msg->data[msg->readcount];
-			value = LittleShort(*sp);
+			short temp;
+
+			CopyLittleShort(&temp, &msg->data[msg->readcount]);
+			value = temp;
 			msg->readcount += 2;
 			msg->bit += 16;
 		} else if (bits==32) {
-			unsigned int *ip = (unsigned int *)&msg->data[msg->readcount];
-			value = LittleLong(*ip);
+			CopyLittleLong(&value, &msg->data[msg->readcount]);
 			msg->readcount += 4;
 			msg->bit += 32;
 		} else {
@@ -309,13 +310,9 @@ void MSG_WriteLong( msg_t *sb, int c ) {
 }
 
 void MSG_WriteFloat( msg_t *sb, float f ) {
-	union {
-		float	f;
-		int	l;
-	} dat;
-	
+	floatint_t dat;
 	dat.f = f;
-	MSG_WriteBits( sb, dat.l, 32 );
+	MSG_WriteBits( sb, dat.i, 32 );
 }
 
 void MSG_WriteString( msg_t *sb, const char *s ) {
@@ -435,13 +432,9 @@ int MSG_ReadLong( msg_t *msg ) {
 }
 
 float MSG_ReadFloat( msg_t *msg ) {
-	union {
-		byte	b[4];
-		float	f;
-		int	l;
-	} dat;
+	floatint_t dat;
 	
-	dat.l = MSG_ReadBits( msg, 32 );
+	dat.i = MSG_ReadBits( msg, 32 );
 	if ( msg->readcount > msg->cursize ) {
 		dat.f = -1;
 	}	
@@ -574,20 +567,22 @@ int	MSG_ReadDelta( msg_t *msg, int oldV, int bits ) {
 }
 
 void MSG_WriteDeltaFloat( msg_t *msg, float oldV, float newV ) {
+	floatint_t fi;
 	if ( oldV == newV ) {
 		MSG_WriteBits( msg, 0, 1 );
 		return;
 	}
+	fi.f = newV;
 	MSG_WriteBits( msg, 1, 1 );
-	MSG_WriteBits( msg, *(int *)&newV, 32 );
+	MSG_WriteBits( msg, fi.i, 32 );
 }
 
 float MSG_ReadDeltaFloat( msg_t *msg, float oldV ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
-		float	newV;
+		floatint_t fi;
 
-		*(int *)&newV = MSG_ReadBits( msg, 32 );
-		return newV;
+		fi.i = MSG_ReadBits( msg, 32 );
+		return fi.f;
 	}
 	return oldV;
 }
@@ -624,26 +619,34 @@ void MSG_WriteDeltaKey( msg_t *msg, int key, int oldV, int newV, int bits )
 
 int	MSG_ReadDeltaKey( msg_t *msg, int key, int oldV, int bits ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
+#if 0
+		// Old technically wrong for angles & buttons
 		return MSG_ReadBits( msg, bits ) ^ (key & kbitmask[bits]);
+#else
+		// Correct, not going out of bounds
+		return MSG_ReadBits( msg, bits ) ^ (key & kbitmask[ bits - 1 ]);
+#endif
 	}
 	return oldV;
 }
 
 void MSG_WriteDeltaKeyFloat( msg_t *msg, int key, float oldV, float newV ) {
+	floatint_t fi;
 	if ( oldV == newV ) {
 		MSG_WriteBits( msg, 0, 1 );
 		return;
 	}
+	fi.f = newV;
 	MSG_WriteBits( msg, 1, 1 );
-	MSG_WriteBits( msg, (*(int *)&newV) ^ key, 32 );
+	MSG_WriteBits( msg, fi.i ^ key, 32 );
 }
 
 float MSG_ReadDeltaKeyFloat( msg_t *msg, int key, float oldV ) {
 	if ( MSG_ReadBits( msg, 1 ) ) {
-		float	newV;
+		floatint_t fi;
 
-		*(int *)&newV = MSG_ReadBits( msg, 32 ) ^ key;
-		return newV;
+		fi.i = MSG_ReadBits( msg, 32 ) ^ key;
+		return fi.f;
 	}
 	return oldV;
 }
@@ -834,7 +837,7 @@ typedef struct {
 } netField_t;
 
 // using the stringizing operator to save typing...
-#define	NETF(x) #x,(int)&((entityState_t*)0)->x
+#define	NETF(x) #x,(size_t)&((entityState_t*)0)->x
 
 //rww - Remember to update ext_data/MP/netf_overrides.txt if you change any of this!
 //(for the sake of being consistent)
@@ -1300,7 +1303,7 @@ plyer_state_t communication
 */
 
 // using the stringizing operator to save typing...
-#define	PSF(x) #x,(int)&((playerState_t*)0)->x
+#define	PSF(x) #x,(size_t)&((playerState_t*)0)->x
 
 //rww - Remember to update ext_data/MP/psf_overrides.txt if you change any of this!
 //(for the sake of being consistent)

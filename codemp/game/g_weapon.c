@@ -9,8 +9,8 @@
 #include "ghoul2/G2.h"
 #include "qcommon/q_shared.h"
 
-static	vec3_t	forward, vright, up;
-static	vec3_t	muzzle;
+static vec3_t forward, vright, up;
+static vec3_t muzzle;
 
 // Bryar Pistol
 //--------
@@ -322,6 +322,59 @@ void WP_FireTurretMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean al
 	missile->bounceCount = 8;
 }
 
+//-----------------------------------------------------------------------------
+void WP_Explode( gentity_t *self )
+//-----------------------------------------------------------------------------
+{
+	gentity_t	*attacker = self;
+	vec3_t		forwardVec={0,0,1};
+
+	// stop chain reaction runaway loops
+	self->takedamage = qfalse;
+
+	self->s.loopSound = 0;
+
+//	VectorCopy( self->currentOrigin, self->s.pos.trBase );
+	if ( !self->client )
+	{
+	AngleVectors( self->s.angles, forwardVec, NULL, NULL );
+	}
+
+	// FIXME
+	/*if ( self->e > 0 )
+	{
+		G_PlayEffect( self->fxID, self->r.currentOrigin, forwardVec );
+	}*/
+	
+	if ( self->s.owner && self->s.owner != 1023 )
+	{
+		attacker = &g_entities[self->s.owner];
+	}
+	else if ( self->activator )
+	{
+		attacker = self->activator;
+	}
+	else if ( self->client )
+	{
+		attacker = self;
+	}
+
+	if ( self->splashDamage > 0 && self->splashRadius > 0 )
+	{ 
+		G_RadiusDamage( self->r.currentOrigin, attacker, self->splashDamage, self->splashRadius, 0/*don't ignore attacker*/, self, MOD_UNKNOWN );
+	}
+
+	if ( self->target )
+	{
+		G_UseTargets( self, attacker );
+	}
+
+	G_SetOrigin( self, self->r.currentOrigin );
+
+	self->nextthink = level.time + 50;
+	self->think = G_FreeEntity;
+}
+
 //Currently only the seeker drone uses this, but it might be useful for other things as well.
 
 //---------------------------------------------------------
@@ -487,7 +540,7 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 	float		shotRange = 8192;
 	int			ignore, traces;
 
-	if ( g_gametype.integer == GT_SIEGE )
+	if ( level.gametype == GT_SIEGE )
 	{
 		damage = DISRUPTOR_MAIN_DAMAGE_SIEGE;
 	}
@@ -660,7 +713,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		start[2] += ent->client->ps.viewheight;//By eyes
 
 		count = ( level.time - ent->client->ps.weaponChargeTime ) / DISRUPTOR_CHARGE_UNIT;
-		if ( g_gametype.integer == GT_SIEGE )
+		if ( level.gametype == GT_SIEGE )
 		{//maybe a full alt-charge should be a *bit* more dangerous in Siege mode?
 			//maxCount = ceil((200.0f-(float)damage)/2.0f);//cap at 200 damage total
 			maxCount = 200;//the previous line ALWAYS evaluated to 135 - was that on purpose?
@@ -1093,7 +1146,7 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 	missile->splashMethodOfDeath = MOD_REPEATER_ALT_SPLASH;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 	missile->splashDamage = REPEATER_ALT_SPLASH_DAMAGE;
-	if ( g_gametype.integer == GT_SIEGE )	// we've been having problems with this being too hyper-potent because of it's radius
+	if ( level.gametype == GT_SIEGE )	// we've been having problems with this being too hyper-potent because of it's radius
 	{
 		missile->splashRadius = REPEATER_ALT_SPLASH_RAD_SIEGE;
 	}
@@ -1652,7 +1705,7 @@ void rocketThink( gentity_t *ent )
 //---------------------------------------------------------
 {
 	vec3_t newdir, targetdir, 
-			up={0,0,1}, right; 
+			rup={0,0,1}, right; 
 	vec3_t	org;
 	float dot, dot2, dis;
 	int i;
@@ -1744,7 +1797,7 @@ void rocketThink( gentity_t *ent )
 		if ( dot < 0.0f )
 		{	
 			// Go in the direction opposite, start a 180.
-			CrossProduct( ent->movedir, up, right );
+			CrossProduct( ent->movedir, rup, right );
 			dot2 = DotProduct( targetdir, right );
 
 			if ( dot2 > 0 )
@@ -1841,7 +1894,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 
 	if (ent->client && ent->client->ps.rocketLockIndex != ENTITYNUM_NONE)
 	{
-		float lockTimeInterval = ((g_gametype.integer==GT_SIEGE)?2400.0f:1200.0f)/16.0f;
+		float lockTimeInterval = ((level.gametype==GT_SIEGE)?2400.0f:1200.0f)/16.0f;
 		rTime = ent->client->ps.rocketLockTime;
 
 		if (rTime == -1)
@@ -3552,7 +3605,7 @@ The down side would be that it does not necessarily look alright from a
 first person perspective.
 ===============
 */
-void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint ) 
+void CalcMuzzlePoint ( gentity_t *ent, const vec3_t inForward, const vec3_t inRight, const vec3_t inUp, vec3_t muzzlePoint ) 
 {
 	int weapontype;
 	vec3_t muzzleOffPoint;
@@ -3565,27 +3618,12 @@ void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, 
 	if (weapontype > WP_NONE && weapontype < WP_NUM_WEAPONS)
 	{	// Use the table to generate the muzzlepoint;
 		{	// Crouching.  Use the add-to-Z method to adjust vertically.
-			VectorMA(muzzlePoint, muzzleOffPoint[0], forward, muzzlePoint);
-			VectorMA(muzzlePoint, muzzleOffPoint[1], right, muzzlePoint);
+			VectorMA(muzzlePoint, muzzleOffPoint[0], inForward, muzzlePoint);
+			VectorMA(muzzlePoint, muzzleOffPoint[1], inRight, muzzlePoint);
 			muzzlePoint[2] += ent->client->ps.viewheight + muzzleOffPoint[2];
 		}
 	}
 
-	// snap to integer coordinates for more efficient network bandwidth usage
-	SnapVector( muzzlePoint );
-}
-
-/*
-===============
-CalcMuzzlePointOrigin
-
-set muzzle location relative to pivoting eye
-===============
-*/
-void CalcMuzzlePointOrigin ( gentity_t *ent, vec3_t origin, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint ) {
-	VectorCopy( ent->s.pos.trBase, muzzlePoint );
-	muzzlePoint[2] += ent->client->ps.viewheight;
-	VectorMA( muzzlePoint, 14, forward, muzzlePoint );
 	// snap to integer coordinates for more efficient network bandwidth usage
 	SnapVector( muzzlePoint );
 }
@@ -4518,26 +4556,14 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 			break;
 
 		case WP_BRYAR_PISTOL:
-			//if ( g_gametype.integer == GT_SIEGE )
-			if (1)
-			{//allow alt-fire
-				WP_FireBryarPistol( ent, altFire );
-			}
-			else
-			{
-				WP_FireBryarPistol( ent, qfalse );
-			}
+			WP_FireBryarPistol( ent, altFire );
 			break;
 
 		case WP_CONCUSSION:
 			if ( altFire )
-			{
 				WP_FireConcussionAlt( ent );
-			}
 			else
-			{
 				WP_FireConcussion( ent );
-			}
 			break;
 
 		case WP_BRYAR_OLD:

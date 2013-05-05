@@ -1,6 +1,3 @@
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
 #include "qcommon/q_shared.h"
 #include "g_local.h"
 
@@ -1684,8 +1681,6 @@ bool Initialize( Vehicle_t *pVeh )
 
 	if ( pVeh->m_pVehicleInfo->maxPassengers > 0 )
 	{
-		int i;
-
 		// Allocate an array of entity pointers.
 #ifndef _JK2MP //this is kind of silly if you ask me, I'm just using a static pointer array
 		pVeh->m_ppPassengers = (gentity_t**)G_Alloc ( sizeof(gentity_t*) * pVeh->m_pVehicleInfo->maxPassengers );
@@ -3053,7 +3048,7 @@ void G_VehicleSetDamageLocFlags( gentity_t *veh, int impactDir, int deathPoint )
 	}
 	else
 	{
-		int	deathPoint, heavyDamagePoint, lightDamagePoint;
+		int	heavyDamagePoint, lightDamagePoint;
 		switch(impactDir)
 		{
 		case SHIPSURF_FRONT:

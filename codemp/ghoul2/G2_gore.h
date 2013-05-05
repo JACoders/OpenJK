@@ -1,8 +1,4 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-#if !defined(G2_GORE_H_INC)
-#define G2_GORE_H_INC
 
 #ifdef _G2_GORE
 
@@ -197,5 +193,4 @@ public:
 	ERagEffector effectorsToTurnOff;  // set this to an | of the above flags for a RP_DISABLE_EFFECTORS
 
 };
-#endif //G2_GORE_H_INC
 //rww - RAGDOLL_END

@@ -1555,6 +1555,8 @@ void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	// isolate the player's name
 	v = Info_ValueForKey(configstring, "n");
 	Q_strncpyz( newInfo.name, v, sizeof( newInfo.name ) );
+	Q_strncpyz( newInfo.cleanname, v, sizeof( newInfo.cleanname ) );
+	Q_StripColor( newInfo.cleanname );
 
 	// colors
 	v = Info_ValueForKey( configstring, "c1" );
@@ -5095,7 +5097,7 @@ void CG_PlayerShieldHit(int entitynum, vec3_t dir, int amount)
 	centity_t *cent;
 	int	time;
 
-	if (entitynum<0 || entitynum >= MAX_ENTITIES)
+	if (entitynum < 0 || entitynum >= MAX_GENTITIES)
 	{
 		return;
 	}
@@ -6882,8 +6884,8 @@ int CG_HandleAppendedSkin(char *modelName)
 }
 
 //Create a temporary ghoul2 instance and get the gla name so we can try loading animation data and sounds.
-void BG_GetVehicleModelName(char *modelname);
-void BG_GetVehicleSkinName(char *skinname);
+void BG_GetVehicleModelName(char *modelname, int len);
+void BG_GetVehicleSkinName(char *skinname, int len);
 
 void CG_CacheG2AnimInfo(char *modelName)
 {
@@ -6898,8 +6900,8 @@ void CG_CacheG2AnimInfo(char *modelName)
 
 	if (modelName[0] == '$')
 	{ //it's a vehicle name actually, let's precache the whole vehicle
-		BG_GetVehicleModelName(useModel);
-		BG_GetVehicleSkinName(useSkin);
+		BG_GetVehicleModelName(useModel, sizeof( useModel ) );
+		BG_GetVehicleSkinName(useSkin, sizeof( useSkin ) );
 		if ( useSkin[0] )
 		{ //use a custom skin
 			trap_R_RegisterSkin(va("models/players/%s/model_%s.skin", useModel, useSkin));
@@ -7060,7 +7062,7 @@ void CG_G2AnimEntModelLoad(centity_t *cent)
 			//attach the handles for fx cgame-side
 			CG_RegisterVehicleAssets(cent->m_pVehicle);
 
-			BG_GetVehicleModelName(modelName);
+			BG_GetVehicleModelName(modelName, sizeof( modelName ) );
 			if (cent->m_pVehicle->m_pVehicleInfo->skin &&
 				cent->m_pVehicle->m_pVehicleInfo->skin[0])
 			{ //use a custom skin

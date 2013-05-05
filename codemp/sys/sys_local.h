@@ -1,5 +1,4 @@
-#ifndef SYS_LOCAL_H_
-#define SYS_LOCAL_H_
+#pragma once
 
 void 		IN_Init( void *windowData );
 void 		IN_Frame (void);
@@ -13,5 +12,3 @@ void 		Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int p
 void 		Sys_ListFilteredFiles( const char *basedir, char *subdirs, char *filter, char **psList, int *numfiles );
 
 void Sys_Exit( int ex );
-
-#endif /* SYS_LOCAL_H_ */

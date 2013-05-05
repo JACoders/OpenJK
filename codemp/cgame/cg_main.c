@@ -7,9 +7,7 @@
 // display context for new ui stuff
 displayContextDef_t cgDC;
 
-#if !defined(CL_LIGHT_H_INC)
-	#include "cg_lights.h"
-#endif
+#include "cg_lights.h"
 
 extern int cgSiegeRoundState;
 extern int cgSiegeRoundTime;
@@ -2560,7 +2558,7 @@ void CG_Text_PaintWithCursor(float x, float y, float scale, vec4_t color, const 
 static int CG_OwnerDrawWidth(int ownerDraw, float scale) {
 	switch (ownerDraw) {
 	  case CG_GAME_TYPE:
-			return CG_Text_Width(CG_GameTypeString(), scale, FONT_MEDIUM);
+			return CG_Text_Width(BG_GetGametypeString( cgs.gametype ), scale, FONT_MEDIUM);
 	  case CG_GAME_STATUS:
 			return CG_Text_Width(CG_GetGameStatusText(), scale, FONT_MEDIUM);
 			break;
@@ -2785,27 +2783,12 @@ Ghoul2 Insert Start
 // initialise the cg_entities structure - take into account the ghoul2 stl stuff in the active snap shots
 void CG_Init_CG(void)
 {
-#ifdef USE_WIDESCREEN
-	qboolean widescreen = cg.widescreen;
-#endif
 	memset( &cg, 0, sizeof(cg));
-#ifdef USE_WIDESCREEN
-	cg.widescreen = widescreen;
-#endif
 }
-
-#ifdef USE_WIDESCREEN
-void CG_SetWidescreen(qboolean widescreen)
-{
-	cg.widescreen = widescreen;
-}
-#endif
-
 
 // initialise the cg_entities structure - take into account the ghoul2 stl stuff
 void CG_Init_CGents(void)
 {
-	
 	memset(&cg_entities, 0, sizeof(cg_entities));
 }
 

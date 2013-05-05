@@ -1,5 +1,3 @@
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
 
 //seems to be a compiler bug, it doesn't clean out the #ifdefs between dif-compiles
 //or something, so the headers spew errors on these defs from the previous compile.

@@ -67,7 +67,7 @@ static int G_FindConfigstringIndex( const char *name, int start, int max, qboole
 	int		i;
 	char	s[MAX_STRING_CHARS];
 
-	if ( !name || !name[0] ) {
+	if ( !VALIDSTRING( name ) ) {
 		return 0;
 	}
 
@@ -164,7 +164,7 @@ qboolean G_PlayerHasCustomSkeleton(gentity_t *ent)
 	/*
 	siegeClass_t *scl;
 
-	if (g_gametype.integer != GT_SIEGE)
+	if (level.gametype != GT_SIEGE)
 	{ //only in siege
 		return qfalse;
 	}
@@ -485,7 +485,7 @@ void G_SetAnim(gentity_t *ent, usercmd_t *ucmd, int setAnimParts, int anim, int 
 	}
 	pmv.trace = trap_Trace;
 	pmv.pointcontents = trap_PointContents;
-	pmv.gametype = g_gametype.integer;
+	pmv.gametype = level.gametype;
 
 	//don't need to bother with ghoul2 stuff, it's not even used in PM_SetAnim.
 	pm = &pmv;
@@ -1504,7 +1504,7 @@ int G_CanUseDispOn(gentity_t *ent, int dispType)
 
 qboolean TryHeal(gentity_t *ent, gentity_t *target)
 {
-	if (g_gametype.integer == GT_SIEGE && ent->client->siegeClass != -1 &&
+	if (level.gametype == GT_SIEGE && ent->client->siegeClass != -1 &&
 		target && target->inuse && target->maxHealth && target->healingclass &&
 		target->healingclass[0] && target->health > 0 && target->health < target->maxHealth)
 	{ //it's not dead yet...
@@ -1581,7 +1581,7 @@ void TryUse( gentity_t *ent )
 	vec3_t		src, dest, vf;
 	vec3_t		viewspot;
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		!gSiegeRoundBegun)
 	{ //nothing can be used til the round starts.
 		return;
@@ -1693,7 +1693,7 @@ void TryUse( gentity_t *ent )
 			}
 			else
 			{ // Otherwise board this vehicle.
-				if (g_gametype.integer < GT_TEAM ||
+				if (level.gametype < GT_TEAM ||
 					!target->alliedTeam ||
 					(target->alliedTeam == ent->client->sess.sessionTeam))
 				{ //not belonging to a team, or client is on same team
@@ -1763,7 +1763,7 @@ void TryUse( gentity_t *ent )
 
 	//Check for a use command
 	if ( ValidUseTarget( target ) 
-		&& (g_gametype.integer != GT_SIEGE 
+		&& (level.gametype != GT_SIEGE 
 			|| !target->alliedTeam 
 			|| target->alliedTeam != ent->client->sess.sessionTeam 
 			|| g_ff_objectives.integer) )

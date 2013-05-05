@@ -48,7 +48,7 @@ const char *GetStringForID( stringID_table_t *table, int id )
 	return NULL;
 }
 
-int Com_Clampi( int min, int max, int value ) 
+ID_INLINE int Com_Clampi( int min, int max, int value ) 
 {
 	if ( value < min ) 
 	{
@@ -61,7 +61,7 @@ int Com_Clampi( int min, int max, int value )
 	return value;
 }
 
-float Com_Clamp( float min, float max, float value ) {
+ID_INLINE float Com_Clamp( float min, float max, float value ) {
 	if ( value < min ) {
 		return min;
 	}
@@ -69,6 +69,31 @@ float Com_Clamp( float min, float max, float value ) {
 		return max;
 	}
 	return value;
+}
+
+// some fucking joker deleted my code for ABSCLAMP, precisely before I was going to use it. so I added this --eez
+ID_INLINE int Com_AbsClampi( int min, int max, int value )
+{
+	if( value < 0 )
+	{
+		return Com_Clampi( -max, -min, value );
+	}
+	else
+	{
+		return Com_Clampi( min, max, value );
+	}
+}
+
+ID_INLINE float Com_AbsClamp( float min, float max, float value )
+{
+	if( value < 0.0f )
+	{
+		return Com_Clamp( -max, -min, value );
+	}
+	else
+	{
+		return Com_Clamp( min, max, value );
+	}
 }
 
 
@@ -240,17 +265,11 @@ qint64 Long64NoSwap (qint64 ll)
 	return ll;
 }
 
-typedef union {
-    float	f;
-    unsigned int i;
-} _FloatByteUnion;
-
 float FloatSwap (const float *f) {
-	const _FloatByteUnion *in;
-	_FloatByteUnion out;
+	floatint_t out;
 
-	in = (_FloatByteUnion *)f;
-	out.i = LongSwap(in->i);
+	out.f = *f;
+	out.ui = LongSwap(out.ui);
 
 	return out.f;
 }
@@ -520,7 +539,7 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 				*data_p = ( char * ) data;
 				return com_token;
 			}
-			if (len < MAX_TOKEN_CHARS)
+			if (len < MAX_TOKEN_CHARS - 1)
 			{
 				com_token[len] = c;
 				len++;
@@ -531,7 +550,7 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 	// parse a regular word
 	do
 	{
-		if (len < MAX_TOKEN_CHARS)
+		if (len < MAX_TOKEN_CHARS -1)
 		{
 			com_token[len] = c;
 			len++;
@@ -542,11 +561,6 @@ char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
 			com_lines++;
 	} while (c>32);
 
-	if (len == MAX_TOKEN_CHARS)
-	{
-//		Com_Printf ("Token exceeded %i chars, discarded.\n", MAX_TOKEN_CHARS);
-		len = 0;
-	}
 	com_token[len] = 0;
 
 	*data_p = ( char * ) data;
@@ -865,11 +879,15 @@ int Q_isalpha( int c )
 qboolean Q_isanumber( const char *s )
 {
 	char *p;
+	double ret;
 
 	if( *s == '\0' )
 		return qfalse;
 
-	strtod( s, &p );
+	ret = strtod( s, &p );
+	
+	if ( ret == HUGE_VAL || errno == ERANGE )
+		return qfalse;
 
 	return (qboolean)(*p == '\0');
 }
@@ -907,21 +925,24 @@ Safe strncpy that ensures a trailing zero
 =============
 */
 void Q_strncpyz( char *dest, const char *src, int destsize ) {
-  // bk001129 - also NULL dest
-  if ( !dest ) {
-    Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
-  }
+	// bk001129 - also NULL dest
+	if ( !dest ) {
+		Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
+		return;
+	}
 	if ( !src ) {
 		Com_Error( ERR_FATAL, "Q_strncpyz: NULL src" );
+		return;
 	}
 	if ( destsize < 1 ) {
-		Com_Error(ERR_FATAL,"Q_strncpyz: destsize < 1" ); 
+		Com_Error( ERR_FATAL,"Q_strncpyz: destsize < 1" ); 
+		return;
 	}
 
 	strncpy( dest, src, destsize-1 );
-  dest[destsize-1] = 0;
+	dest[destsize-1] = 0;
 }
-                 
+
 int Q_stricmpn (const char *s1, const char *s2, int n) {
 	int		c1, c2;
 
@@ -1093,6 +1114,51 @@ char *Q_CleanStr( char *string ) {
 	*d = '\0';
 
 	return string;
+}
+
+/*
+==================
+Q_StripColor
+ 
+Strips coloured strings in-place using multiple passes: "fgs^^56fds" -> "fgs^6fds" -> "fgsfds"
+
+(Also strips ^8 and ^9)
+==================
+*/
+void Q_StripColor(char *text)
+{
+	qboolean doPass = qtrue;
+	char *read;
+	char *write;
+
+	while ( doPass )
+	{
+		doPass = qfalse;
+		read = write = text;
+		while ( *read )
+		{
+			if ( Q_IsColorStringExt(read) )
+			{
+				doPass = qtrue;
+				read += 2;
+			}
+			else
+			{
+				// Avoid writing the same data over itself
+				if (write != read)
+				{
+					*write = *read;
+				}
+				write++;
+				read++;
+			}
+		}
+		if ( write < read )
+		{
+			// Add trailing NUL byte if string has shortened
+			*write = '\0';
+		}
+	}
 }
 
 /*
@@ -1301,7 +1367,6 @@ char *Info_ValueForKey( const char *s, const char *key ) {
 	return "";
 }
 
-
 /*
 ===================
 Info_NextPair
@@ -1342,20 +1407,19 @@ void Info_NextPair( const char **head, char *key, char *value ) {
 	*head = s;
 }
 
-
 /*
 ===================
 Info_RemoveKey
 ===================
 */
 void Info_RemoveKey( char *s, const char *key ) {
-	char	*start;
-	char	pkey[MAX_INFO_KEY];
-	char	value[MAX_INFO_VALUE];
-	char	*o;
+	char	*start = NULL, *o = NULL;
+	char	pkey[MAX_INFO_KEY] = {0};
+	char	value[MAX_INFO_VALUE] = {0};
 
 	if ( strlen( s ) >= MAX_INFO_STRING ) {
 		Com_Error( ERR_DROP, "Info_RemoveKey: oversize infostring" );
+		return;
 	}
 
 	if (strchr (key, '\\')) {
@@ -1386,16 +1450,16 @@ void Info_RemoveKey( char *s, const char *key ) {
 		}
 		*o = 0;
 
+		//OJKNOTE: static analysis pointed out pkey may not be null-terminated
 		if (!strcmp (key, pkey) )
 		{
-			strcpy (start, s);	// remove this part
+			memmove(start, s, strlen(s) + 1);	// remove this part
 			return;
 		}
 
 		if (!*s)
 			return;
 	}
-
 }
 
 /*
@@ -1405,12 +1469,14 @@ Info_RemoveKey_Big
 */
 void Info_RemoveKey_Big( char *s, const char *key ) {
 	char	*start;
-	char	pkey[BIG_INFO_KEY];
-	char	value[BIG_INFO_VALUE];
+	static char	pkey[BIG_INFO_KEY], value[BIG_INFO_VALUE];
 	char	*o;
+
+	pkey[0] = value[0] = '\0';
 
 	if ( strlen( s ) >= BIG_INFO_STRING ) {
 		Com_Error( ERR_DROP, "Info_RemoveKey_Big: oversize infostring" );
+		return;
 	}
 
 	if (strchr (key, '\\')) {
@@ -1441,9 +1507,10 @@ void Info_RemoveKey_Big( char *s, const char *key ) {
 		}
 		*o = 0;
 
+		//OJKNOTE: static analysis pointed out pkey may not be null-terminated
 		if (!strcmp (key, pkey) )
 		{
-			strcpy (start, s);	// remove this part
+			memmove(start, s, strlen(s) + 1);	// remove this part
 			return;
 		}
 
@@ -1452,9 +1519,6 @@ void Info_RemoveKey_Big( char *s, const char *key ) {
 	}
 
 }
-
-
-
 
 /*
 ==================
@@ -1493,27 +1557,19 @@ Changes or adds a key/value pair
 */
 void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 	char	newi[MAX_INFO_STRING];
+	const char* blacklist = "\\;\"";
 
 	if ( strlen( s ) >= MAX_INFO_STRING ) {
 		Com_Error( ERR_DROP, "Info_SetValueForKey: oversize infostring" );
 	}
 
-	if (strchr (key, '\\') || strchr (value, '\\'))
+	for(; *blacklist; ++blacklist)
 	{
-		Com_Printf ("Can't use keys or values with a \\\n");
-		return;
-	}
-
-	if (strchr (key, ';') || strchr (value, ';'))
-	{
-		Com_Printf ("Can't use keys or values with a semicolon\n");
-		return;
-	}
-
-	if (strchr (key, '\"') || strchr (value, '\"'))
-	{
-		Com_Printf ("Can't use keys or values with a \"\n");
-		return;
+		if (strchr (key, *blacklist) || strchr (value, *blacklist))
+		{
+			Com_Printf (S_COLOR_YELLOW "Can't use keys or values with a '%c': %s = %s\n", *blacklist, key, value);
+			return;
+		}
 	}
 
 	Info_RemoveKey (s, key);
@@ -1537,35 +1593,28 @@ void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 Info_SetValueForKey_Big
 
 Changes or adds a key/value pair
+Includes and retains zero-length values
 ==================
 */
 void Info_SetValueForKey_Big( char *s, const char *key, const char *value ) {
 	char	newi[BIG_INFO_STRING];
+	const char* blacklist = "\\;\"";
 
 	if ( strlen( s ) >= BIG_INFO_STRING ) {
-		Com_Error( ERR_DROP, "Info_SetValueForKey: oversize infostring" );
+		Com_Error( ERR_DROP, "Info_SetValueForKey_Big: oversize infostring" );
 	}
 
-	if (strchr (key, '\\') || strchr (value, '\\'))
+	for(; *blacklist; ++blacklist)
 	{
-		Com_Printf ("Can't use keys or values with a \\\n");
-		return;
-	}
-
-	if (strchr (key, ';') || strchr (value, ';'))
-	{
-		Com_Printf ("Can't use keys or values with a semicolon\n");
-		return;
-	}
-
-	if (strchr (key, '\"') || strchr (value, '\"'))
-	{
-		Com_Printf ("Can't use keys or values with a \"\n");
-		return;
+		if (strchr (key, *blacklist) || strchr (value, *blacklist))
+		{
+			Com_Printf (S_COLOR_YELLOW "Can't use keys or values with a '%c': %s = %s\n", *blacklist, key, value);
+			return;
+		}
 	}
 
 	Info_RemoveKey_Big (s, key);
-	if (!value || !strlen(value))
+	if (!value)
 		return;
 
 	Com_sprintf (newi, sizeof(newi), "\\%s\\%s", key, value);

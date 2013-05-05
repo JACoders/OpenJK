@@ -1234,11 +1234,6 @@ void CG_DrawHUD(centity_t	*cent)
 					Com_sprintf(ammoString, sizeof(ammoString), "FAST");
 				}
 			}
-			else if (cg.snap->ps.weapon == WP_MELEE)
-			{
-				Com_sprintf(ammoString, sizeof(ammoString), "MELEE");
-				weapX += 16;
-			}
 			else if (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0)
 			{
 				Q_strncpyz(ammoString, "--", sizeof(ammoString));
@@ -3310,7 +3305,7 @@ float CG_DrawRadar ( float y )
 						{
 						
 							// generic enemy index specifies a shader to use for the radar entity.
-							if ( cent->currentState.genericenemyindex )
+							if ( cent->currentState.genericenemyindex && cent->currentState.genericenemyindex < MAX_ICONS )
 							{
 								color[0] = color[1] = color[2] = color[3] = 1.0f;
 								shader = cgs.gameIcons[cent->currentState.genericenemyindex];
@@ -5418,6 +5413,7 @@ void CG_BracketEntity( centity_t *cent, float radius )
 
 	local = &cgs.clientinfo[cg.snap->ps.clientNum];
 	if ( cent->currentState.m_iVehicleNum //vehicle has a driver
+		&& (cent->currentState.m_iVehicleNum-1) < MAX_CLIENTS
 		&& cgs.clientinfo[ cent->currentState.m_iVehicleNum-1 ].infoValid )
 	{
 		if ( cgs.gametype < GT_TEAM )
@@ -6247,46 +6243,6 @@ static void CG_ScanForCrosshairEntity( void ) {
 	cg.crosshairClientTime = cg.time;
 }
 
-void CG_SanitizeString( char *in, char *out )
-{
-	int i = 0;
-	int r = 0;
-
-	while (in[i])
-	{
-		if (i >= 128-1)
-		{ //the ui truncates the name here..
-			break;
-		}
-
-		if (in[i] == '^')
-		{
-			if (in[i+1] >= 48 && //'0'
-				in[i+1] <= 57) //'9'
-			{ //only skip it if there's a number after it for the color
-				i += 2;
-				continue;
-			}
-			else
-			{ //just skip the ^
-				i++;
-				continue;
-			}
-		}
-
-		if (in[i] < 32)
-		{
-			i++;
-			continue;
-		}
-
-		out[r] = in[i];
-		r++;
-		i++;
-	}
-	out[r] = 0;
-}
-
 /*
 =====================
 CG_DrawCrosshairNames
@@ -6296,7 +6252,6 @@ static void CG_DrawCrosshairNames( void ) {
 	float		*color;
 	vec4_t		tcolor;
 	char		*name;
-	char		sanitized[1024];
 	int			baseColor;
 	qboolean	isVeh = qfalse;
 
@@ -6344,7 +6299,7 @@ static void CG_DrawCrosshairNames( void ) {
 		return;
 	}
 
-	name = cgs.clientinfo[ cg.crosshairClientNum ].name;
+	name = cgs.clientinfo[ cg.crosshairClientNum ].cleanname;
 
 	if (cgs.gametype >= GT_TEAM)
 	{
@@ -6405,17 +6360,15 @@ static void CG_DrawCrosshairNames( void ) {
 	tcolor[2] = colorTable[baseColor][2];
 	tcolor[3] = color[3]*0.5f;
 
-	CG_SanitizeString(name, sanitized);
-
 	if (isVeh)
 	{
 		char str[MAX_STRING_CHARS];
-		Com_sprintf(str, MAX_STRING_CHARS, "%s (pilot)", sanitized);
+		Com_sprintf(str, MAX_STRING_CHARS, "%s (pilot)", name);
 		UI_DrawProportionalString(320, 170, str, UI_CENTER, tcolor);
 	}
 	else
 	{
-		UI_DrawProportionalString(320, 170, sanitized, UI_CENTER, tcolor);
+		UI_DrawProportionalString(320, 170, name, UI_CENTER, tcolor);
 	}
 
 	trap_R_SetColor( NULL );

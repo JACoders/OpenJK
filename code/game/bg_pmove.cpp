@@ -9039,7 +9039,8 @@ static void PM_BeginWeaponChange( int weapon ) {
 	}
 
 	// turn of any kind of zooming when weapon switching....except the LA Goggles
-	if ( pm->ps->clientNum == 0 )
+	// eezstreet edit: also ignore if we change to WP_NONE..sorta hacky fix for binoculars using WP_SABER
+	if ( pm->ps->clientNum == 0 && cg.weaponSelect != WP_NONE )
 	{
 		if ( cg.zoomMode > 0 && cg.zoomMode < 3 )
 		{
@@ -14873,10 +14874,8 @@ void Pmove( pmove_t *pmove )
 
 	// clear results
 	pm->numtouch = 0;
-#ifndef _XBOX
 	pm->watertype = 0;
 	pm->waterlevel = 0;
-#endif
 
 	// Clear the blocked flag
 	//pm->ps->pm_flags &= ~PMF_BLOCKED;
@@ -14991,45 +14990,14 @@ void Pmove( pmove_t *pmove )
 	}
 
 	// set watertype, and waterlevel
-#ifdef _XBOX
-	// if the client is the player do a normal water test
-	// if it's an npc add the client to the npc water test queue
-	// we don't want to update too many npcs in one frame
-	if(pm->ps->clientNum == 0)
-	{
-		PM_SetWaterLevelAtPoint( pm->ps->origin, &pm->waterlevel, &pm->watertype );
-	}
-	else
-	{
-		AddNPCToWaterUpdate(pm->ps->clientNum);
-	}
-#else
 	PM_SetWaterLevelAtPoint( pm->ps->origin, &pm->waterlevel, &pm->watertype );
-#endif
 
 	PM_SetWaterHeight();
 
-#ifdef _XBOX
-	if ( !(pm->watertype & CONTENTS_LADDER) )
-	{//Don't want to remember this for ladders, is only for waterlevel change events (sounds)
-
-		// if we're the player set the water test from the pmove
-		// otherwise set it from the entitity structure
-		if(pm->ps->clientNum == 0 )
-		{
-			pml.previous_waterlevel = pmove->waterlevel;
-		}
-		else
-		{
-			pml.previous_waterlevel = (g_entities + pm->ps->clientNum)->prev_waterlevel;
-		}
-	}
-#else
 	if ( !(pm->watertype & CONTENTS_LADDER) )
 	{//Don't want to remember this for ladders, is only for waterlevel change events (sounds)
 		pml.previous_waterlevel = pmove->waterlevel;
 	}
-#endif
 
 
 	waterForceJump = qfalse;

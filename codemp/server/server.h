@@ -1,10 +1,4 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-
-#if !defined(SERVER_H_INC)
-#define SERVER_H_INC
-
 
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
@@ -151,6 +145,7 @@ typedef struct client_s {
 	int				ping;
 	int				rate;				// bytes / second
 	int				snapshotMsec;		// requests a snapshot every snapshotMsec unless rate choked
+	int				wishSnaps;			// requested snapshot/sec rate
 	int				pureAuthentic;
 	qboolean		gotCP; // TTimo - additional flag to distinguish between a bad pure checksum, and no cp command at all
 	netchan_t		netchan;
@@ -179,6 +174,7 @@ typedef struct {
 	int			time;				// time the last packet was sent to the autherize server
 	int			pingTime;			// time the challenge response was sent to client
 	int			firstTime;			// time the adr was first used, for authorize timeout checks
+	qboolean	wasrefused;
 	qboolean	connected;
 } challenge_t;
 
@@ -212,7 +208,8 @@ extern	refexport_t		re;					// interface to refresh .dll
 
 #define	MAX_MASTER_SERVERS	5
 
-extern	cvar_t	*sv_snaps;
+extern	cvar_t	*sv_snapsMin;
+extern	cvar_t	*sv_snapsMax;
 extern	cvar_t	*sv_fps;
 extern	cvar_t	*sv_timeout;
 extern	cvar_t	*sv_zombietime;
@@ -403,5 +400,3 @@ void SV_ClipToEntity( trace_t *trace, const vec3_t start, const vec3_t mins, con
 void SV_Netchan_Transmit( client_t *client, msg_t *msg);	//int length, const byte *data );
 void SV_Netchan_TransmitNextFragment( netchan_t *chan );
 qboolean SV_Netchan_Process( client_t *client, msg_t *msg );
-
-#endif // SERVER_H_INC

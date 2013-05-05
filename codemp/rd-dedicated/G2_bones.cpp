@@ -9,10 +9,8 @@
 
 #include "qcommon/matcomp.h"
 
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-#endif
-	#include "G2_local.h"
+#include "ghoul2/G2.h"
+#include "G2_local.h"
 	 
 //rww - RAGDOLL_BEGIN
 #ifndef __linux__

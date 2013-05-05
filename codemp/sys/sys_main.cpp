@@ -229,10 +229,10 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 
 //TODO: load mac dlls that are inside zip things inside pk3s.
 
-void *Sys_LoadGameDll( const char *name, int (**entryPoint)(int, ...), int (*systemcalls)(int, ...) )
+void *Sys_LoadGameDll( const char *name, intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) )
 {
   void *libHandle;
-  void	(*dllEntry)( int (*syscallptr)(int, ...) );
+  void	(*dllEntry)( intptr_t (*syscallptr)(intptr_t, ...) );
   char	fname[MAX_OSPATH];
   //char	loadname[MAX_OSPATH];
   char	*basepath;
@@ -245,10 +245,10 @@ void *Sys_LoadGameDll( const char *name, int (**entryPoint)(int, ...), int (*sys
   // bk001206 - let's have some paranoia
   assert( name );
 
-  if (!FS_FindPureDLL(name))
-  {
-      return NULL;
-  }
+  //if (!FS_FindPureDLL(name))
+  //{
+  //    return NULL;
+  //}
     
 #ifndef NDEBUG
   Com_sprintf (fname, sizeof(fname), "%s" ARCH_STRING "-debug" DLL_EXT, name); // bk010205 - different DLL name
@@ -318,14 +318,14 @@ void *Sys_LoadGameDll( const char *name, int (**entryPoint)(int, ...), int (*sys
 	
 	Com_Printf ( "Sys_LoadDll(%s): succeeded ...\n", fn );
  
-  dllEntry = (void (*)(int (*)(int,...))) Sys_LoadFunction( libHandle, "dllEntry" ); 
+  dllEntry = (void (*)(intptr_t (*)(intptr_t,...))) Sys_LoadFunction( libHandle, "dllEntry" ); 
   if (!dllEntry)
   {
      err = Sys_LibraryError();
      Com_Printf("Sys_LoadDLL(%s) failed dlsym(dllEntry): \"%s\" ! \n",name,err);
   }
   //int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  )
-  *entryPoint = (int(*)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
+  *entryPoint = (intptr_t(*)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
   if (!*entryPoint)
      err = Sys_LibraryError();
   if ( !*entryPoint || !dllEntry ) {

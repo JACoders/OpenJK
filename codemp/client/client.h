@@ -1,7 +1,6 @@
-// client.h -- primary header for client
 #pragma once
-#if !defined(CLIENT_H_INC)
-#define CLIENT_H_INC
+
+// client.h -- primary header for client
 
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
@@ -263,13 +262,7 @@ typedef struct {
 } serverInfo_t;
 
 typedef struct {
-	byte	ip[4];
-	unsigned short	port;
-} serverAddress_t;
-
-typedef struct {
 	connstate_t	state;				// connection status
-	int			keyCatchers;		// bit flags
 
 	char		servername[MAX_OSPATH];		// name of server from original connect (used by reconnect)
 
@@ -293,17 +286,12 @@ typedef struct {
 	serverInfo_t  globalServers[MAX_GLOBAL_SERVERS];
 	// additional global servers
 	int			numGlobalServerAddresses;
-	serverAddress_t		globalServerAddresses[MAX_GLOBAL_SERVERS];
+	netadr_t		globalServerAddresses[MAX_GLOBAL_SERVERS];
 
 	int			numfavoriteservers;
 	serverInfo_t	favoriteServers[MAX_OTHER_SERVERS];
 
-	int			nummplayerservers;
-	serverInfo_t	mplayerServers[MAX_OTHER_SERVERS];
-
 	int pingUpdateSource;		// source currently pinging or updating
-
-	int masterNum;
 
 	// update server info
 	netadr_t	updateServer;
@@ -409,7 +397,7 @@ extern	cvar_t	*cl_consoleKeys;
 void CL_Init (void);
 void CL_FlushMemory(void);
 void CL_ShutdownAll( qboolean shutdownRef );
-void CL_AddReliableCommand( const char *cmd );
+void CL_AddReliableCommand( const char *cmd, qboolean isDisconnectCmd );
 
 void CL_StartHunkUsers( void );
 
@@ -585,4 +573,3 @@ void CL_WriteAVIVideoFrame( const byte *imageBuffer, int size );
 void CL_WriteAVIAudioFrame( const byte *pcmBuffer, int size );
 qboolean CL_CloseAVI( void );
 qboolean CL_VideoRecording( void );
-#endif

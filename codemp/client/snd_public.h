@@ -1,5 +1,4 @@
-#ifndef _SND_PUBLIC_H
-#define _SND_PUBLIC_H
+#pragma once
 
 void S_Init( void );
 void S_Shutdown( void );
@@ -55,5 +54,3 @@ sfxHandle_t	S_RegisterSound( const char *sample );
 extern qboolean s_shutUp;
 
 void S_FreeAllSFXMem(void);
-
-#endif

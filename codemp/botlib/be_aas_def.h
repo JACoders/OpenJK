@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_def.h
@@ -251,8 +252,6 @@ typedef struct aas_s
 	int *reachabilityareaindex;
 	aas_reachabilityareas_t *reachabilityareas;
 } aas_t;
-
-#define AASINTERN
 
 #ifndef BSPCINCLUDE
 

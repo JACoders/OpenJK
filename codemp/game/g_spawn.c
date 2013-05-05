@@ -45,7 +45,11 @@ qboolean	G_SpawnVector( const char *key, const char *defaultString, float *out )
 	qboolean	present;
 
 	present = G_SpawnString( key, defaultString, &s );
-	sscanf( s, "%f %f %f", &out[0], &out[1], &out[2] );
+	if ( sscanf( s, "%f %f %f", &out[0], &out[1], &out[2] ) != 3 ) {
+		G_Printf( "G_SpawnVector: Failed sscanf on %s (default: %s)\n", key, defaultString );
+		VectorClear( out );
+		return qfalse;
+	}
 	return present;
 }
 
@@ -99,6 +103,8 @@ typedef struct
 	fieldtype_t	type;
 } field_t;
 
+/* This array MUST be sorted correctly by alphabetical name field */
+/* for conformity, use lower-case names too */
 field_t fields[] = {
 	{ "alliedteam",				FOFS( alliedTeam ),						F_INT },//for misc_turrets
 	{ "angerscript",			FOFS( behaviorSet[BSET_ANGER] ),		F_STRING },//name of script to run
@@ -274,6 +280,7 @@ void SP_path_corner (gentity_t *self);
 void SP_misc_teleporter_dest (gentity_t *self);
 void SP_misc_model(gentity_t *ent);
 void SP_misc_model_static(gentity_t *ent);
+void SP_misc_model_breakable( gentity_t *ent ) ;
 void SP_misc_G2model(gentity_t *ent);
 void SP_misc_portal_camera(gentity_t *ent);
 void SP_misc_portal_surface(gentity_t *ent);
@@ -465,6 +472,8 @@ void SP_gametype_item ( gentity_t* ent )
 
 void SP_emplaced_gun( gentity_t *ent );
 
+/* This array MUST be sorted correctly by alphabetical name field */
+/* for conformity, use lower-case names too */
 spawn_t	spawns[] = {
 	{ "emplaced_gun",						SP_emplaced_gun },
 	{ "func_bobbing",						SP_func_bobbing },
@@ -486,8 +495,9 @@ spawn_t	spawns[] = {
 	{ "fx_snow",							SP_CreateSnow },
 	{ "fx_spacedust",						SP_CreateSpaceDust },
 	{ "gametype_item",						SP_gametype_item },
-	{ "info_jedimaster_start",				SP_info_jedimaster_start },
+	{ "item_botroam",						SP_item_botroam },
 	{ "info_camp",							SP_info_camp },
+	{ "info_jedimaster_start",				SP_info_jedimaster_start },
 	{ "info_notnull",						SP_info_notnull }, // use target_position instead
 	{ "info_null",							SP_info_null },
 	{ "info_player_deathmatch",				SP_info_player_deathmatch },
@@ -505,7 +515,6 @@ spawn_t	spawns[] = {
 	{ "info_siege_decomplete",				SP_info_siege_decomplete },
 	{ "info_siege_objective",				SP_info_siege_objective },
 	{ "info_siege_radaricon",				SP_info_siege_radaricon },
-	{ "item_botroam",						SP_item_botroam },
 	{ "light",								SP_light },
 	{ "misc_ammo_floor_unit",				SP_misc_ammo_floor_unit },
 	{ "misc_bsp",							SP_misc_bsp },
@@ -515,6 +524,7 @@ spawn_t	spawns[] = {
 	{ "misc_maglock",						SP_misc_maglock },
 	{ "misc_model",							SP_misc_model },
 	{ "misc_model_ammo_power_converter",	SP_misc_model_ammo_power_converter },
+	{ "misc_model_breakable",				SP_misc_model_breakable },
 	{ "misc_model_health_power_converter",	SP_misc_model_health_power_converter },
 	{ "misc_model_shield_power_converter",	SP_misc_model_shield_power_converter },
 	{ "misc_model_static",					SP_misc_model_static },
@@ -741,6 +751,9 @@ char *G_NewString_Safe( const char *string )
 	len = strlen( string )+1;
 	new_p = newb = (char *)malloc( len );
 
+	if ( !new_p )
+		return NULL;
+
 	for ( i=0; i<len; i++ )
 	{// turn \n into a real linefeed
 		if ( string[i] == '\\' && i < len-1 )
@@ -791,10 +804,15 @@ void G_ParseField( const char *key, const char *value, gentity_t *ent )
 			*(char **)(b+f->ofs) = G_NewString (value);
 			break;
 		case F_VECTOR:
-			sscanf (value, "%f %f %f", &vec[0], &vec[1], &vec[2]);
-			((float *)(b+f->ofs))[0] = vec[0];
-			((float *)(b+f->ofs))[1] = vec[1];
-			((float *)(b+f->ofs))[2] = vec[2];
+			if ( sscanf( value, "%f %f %f", &vec[0], &vec[1], &vec[2] ) == 3 ) {
+				((float *)(b+f->ofs))[0] = vec[0];
+				((float *)(b+f->ofs))[1] = vec[1];
+				((float *)(b+f->ofs))[2] = vec[2];
+			}
+			else {
+				G_Printf( "G_ParseField: Failed sscanf on F_VECTOR (key/value: %s/%s)\n", key, value );
+				((float *)(b+f->ofs))[0] = ((float *)(b+f->ofs))[1] = ((float *)(b+f->ofs))[2] = 0.0f;
+			}
 			break;
 		case F_INT:
 			*(int *)(b+f->ofs) = atoi(value);
@@ -860,7 +878,7 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 	}
 
 	// check for "notsingle" flag
-	if ( g_gametype.integer == GT_SINGLE_PLAYER ) {
+	if ( level.gametype == GT_SINGLE_PLAYER ) {
 		G_SpawnInt( "notsingle", "0", &i );
 		if ( i ) {
 			ADJUST_AREAPORTAL();
@@ -869,7 +887,7 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 		}
 	}
 	// check for "notteam" flag (GT_FFA, GT_DUEL, GT_SINGLE_PLAYER)
-	if ( g_gametype.integer >= GT_TEAM ) {
+	if ( level.gametype >= GT_TEAM ) {
 		G_SpawnInt( "notteam", "0", &i );
 		if ( i ) {
 			ADJUST_AREAPORTAL();
@@ -886,8 +904,8 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 	}
 
 	if( G_SpawnString( "gametype", NULL, &value ) ) {
-		if( g_gametype.integer >= GT_FFA && g_gametype.integer < GT_MAX_GAME_TYPE ) {
-			gametypeName = gametypeNames[g_gametype.integer];
+		if( level.gametype >= GT_FFA && level.gametype < GT_MAX_GAME_TYPE ) {
+			gametypeName = gametypeNames[level.gametype];
 
 			s = strstr( value, gametypeName );
 			if( !s ) {
@@ -974,7 +992,10 @@ static void HandleEntityAdjustment(void)
 	G_SpawnString("origin", NOVALUE, &value);
 	if (Q_stricmp(value, NOVALUE) != 0)
 	{
-		sscanf( value, "%f %f %f", &origin[0], &origin[1], &origin[2] );
+		if ( sscanf( value, "%f %f %f", &origin[0], &origin[1], &origin[2] ) != 3 ) {
+			G_Printf( "HandleEntityAdjustment: failed sscanf on 'origin' (%s)\n", value );
+			VectorClear( origin );
+		}
 	}
 	else
 	{
@@ -987,17 +1008,20 @@ static void HandleEntityAdjustment(void)
 	newOrigin[2] = origin[2];
 	VectorAdd(newOrigin, level.mOriginAdjust, newOrigin);
 	// damn VMs don't handle outputing a float that is compatible with sscanf in all cases
-	Com_sprintf(temp, MAX_QPATH, "%0.0f %0.0f %0.0f", newOrigin[0], newOrigin[1], newOrigin[2]);
+	Com_sprintf(temp, sizeof( temp ), "%0.0f %0.0f %0.0f", newOrigin[0], newOrigin[1], newOrigin[2]);
 	AddSpawnField("origin", temp);
 
 	G_SpawnString("angles", NOVALUE, &value);
 	if (Q_stricmp(value, NOVALUE) != 0)
 	{
-		sscanf( value, "%f %f %f", &angles[0], &angles[1], &angles[2] );
+		if ( sscanf( value, "%f %f %f", &angles[0], &angles[1], &angles[2] ) != 3 ) {
+			G_Printf( "HandleEntityAdjustment: failed sscanf on 'angles' (%s)\n", value );
+			VectorClear( angles );
+		}
 
-		angles[1] = fmod(angles[1] + level.mRotationAdjust, 360.0f);
+		angles[YAW] = fmod(angles[YAW] + level.mRotationAdjust, 360.0f);
 		// damn VMs don't handle outputing a float that is compatible with sscanf in all cases
-		Com_sprintf(temp, MAX_QPATH, "%0.0f %0.0f %0.0f", angles[0], angles[1], angles[2]);
+		Com_sprintf(temp, sizeof( temp ), "%0.0f %0.0f %0.0f", angles[0], angles[1], angles[2]);
 		AddSpawnField("angles", temp);
 	}
 	else
@@ -1005,14 +1029,14 @@ static void HandleEntityAdjustment(void)
 		G_SpawnString("angle", NOVALUE, &value);
 		if (Q_stricmp(value, NOVALUE) != 0)
 		{
-			sscanf( value, "%f", &angles[1] );
+			angles[YAW] = atof( value );
 		}
 		else
 		{
-			angles[1] = 0.0;
+			angles[YAW] = 0.0;
 		}
-		angles[1] = fmod(angles[1] + level.mRotationAdjust, 360.0f);
-		Com_sprintf(temp, MAX_QPATH, "%0.0f", angles[1]);
+		angles[YAW] = fmod(angles[YAW] + level.mRotationAdjust, 360.0f);
+		Com_sprintf(temp, sizeof( temp ), "%0.0f", angles[YAW]);
 		AddSpawnField("angle", temp);
 	}
 
@@ -1021,14 +1045,17 @@ static void HandleEntityAdjustment(void)
 	G_SpawnString("direction", NOVALUE, &value);
 	if (Q_stricmp(value, NOVALUE) != 0)
 	{
-		sscanf( value, "%f %f %f", &angles[0], &angles[1], &angles[2] );
+		if ( sscanf( value, "%f %f %f", &angles[0], &angles[1], &angles[2] ) != 3 ) {
+			G_Printf( "HandleEntityAdjustment: failed sscanf on 'direction' (%s)\n", value );
+			VectorClear( angles );
+		}
 	}
 	else
 	{
 		angles[0] = angles[1] = angles[2] = 0.0;
 	}
-	angles[1] = fmod(angles[1] + level.mRotationAdjust, 360.0f);
-	Com_sprintf(temp, MAX_QPATH, "%0.0f %0.0f %0.0f", angles[0], angles[1], angles[2]);
+	angles[YAW] = fmod(angles[YAW] + level.mRotationAdjust, 360.0f);
+	Com_sprintf(temp, sizeof( temp ), "%0.0f %0.0f %0.0f", angles[0], angles[1], angles[2]);
 	AddSpawnField("direction", temp);
 
 
@@ -1037,49 +1064,49 @@ static void HandleEntityAdjustment(void)
 	G_SpawnString("targetname", NOVALUE, &value);
 	if (Q_stricmp(value, NOVALUE) != 0)
 	{
-		Com_sprintf(temp, MAX_QPATH, "%s%s", level.mTargetAdjust, value);
+		Com_sprintf(temp, sizeof( temp ), "%s%s", level.mTargetAdjust, value);
 		AddSpawnField("targetname", temp);
 	}
 
 	G_SpawnString("target", NOVALUE, &value);
 	if (Q_stricmp(value, NOVALUE) != 0)
 	{
-		Com_sprintf(temp, MAX_QPATH, "%s%s", level.mTargetAdjust, value);
+		Com_sprintf(temp, sizeof( temp ), "%s%s", level.mTargetAdjust, value);
 		AddSpawnField("target", temp);
 	}
 
 	G_SpawnString("killtarget", NOVALUE, &value);
 	if (Q_stricmp(value, NOVALUE) != 0)
 	{
-		Com_sprintf(temp, MAX_QPATH, "%s%s", level.mTargetAdjust, value);
+		Com_sprintf(temp, sizeof( temp ), "%s%s", level.mTargetAdjust, value);
 		AddSpawnField("killtarget", temp);
 	}
 
 	G_SpawnString("brushparent", NOVALUE, &value);
 	if (Q_stricmp(value, NOVALUE) != 0)
 	{
-		Com_sprintf(temp, MAX_QPATH, "%s%s", level.mTargetAdjust, value);
+		Com_sprintf(temp, sizeof( temp ), "%s%s", level.mTargetAdjust, value);
 		AddSpawnField("brushparent", temp);
 	}
 
 	G_SpawnString("brushchild", NOVALUE, &value);
 	if (Q_stricmp(value, NOVALUE) != 0)
 	{
-		Com_sprintf(temp, MAX_QPATH, "%s%s", level.mTargetAdjust, value);
+		Com_sprintf(temp, sizeof( temp ), "%s%s", level.mTargetAdjust, value);
 		AddSpawnField("brushchild", temp);
 	}
 
 	G_SpawnString("enemy", NOVALUE, &value);
 	if (Q_stricmp(value, NOVALUE) != 0)
 	{
-		Com_sprintf(temp, MAX_QPATH, "%s%s", level.mTargetAdjust, value);
+		Com_sprintf(temp, sizeof( temp ), "%s%s", level.mTargetAdjust, value);
 		AddSpawnField("enemy", temp);
 	}
 
 	G_SpawnString("ICARUSname", NOVALUE, &value);
 	if (Q_stricmp(value, NOVALUE) != 0)
 	{
-		Com_sprintf(temp, MAX_QPATH, "%s%s", level.mTargetAdjust, value);
+		Com_sprintf(temp, sizeof( temp ), "%s%s", level.mTargetAdjust, value);
 		AddSpawnField("ICARUSname", temp);
 	}
 }
@@ -1391,7 +1418,7 @@ void SP_worldspawn( void )
 		}
 	}
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{ //a tad bit of a hack, but..
 		EWebPrecache();
 	}
@@ -1430,7 +1457,6 @@ void SP_worldspawn( void )
 	//Raz: Fix warmup
 #if 0
 	/*
-	else if ( g_doWarmup.integer && g_gametype.integer != GT_DUEL && g_gametype.integer != GT_POWERDUEL ) { // Turn it on
 	else if ( g_doWarmup.integer && level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL ) { // Turn it on
 		level.warmupTime = -1;
 		trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
@@ -1438,7 +1464,7 @@ void SP_worldspawn( void )
 	}
 	*/
 #else
-	else if ( g_doWarmup.integer && g_gametype.integer != GT_DUEL && g_gametype.integer != GT_POWERDUEL && g_gametype.integer != GT_SIEGE ) { // Turn it on
+	else if ( g_doWarmup.integer && level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && level.gametype != GT_SIEGE ) { // Turn it on
 		level.warmupTime = -1;
 		trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
 		G_LogPrintf( "Warmup:\n" );

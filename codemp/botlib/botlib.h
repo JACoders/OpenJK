@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 /*****************************************************************************
@@ -13,8 +15,6 @@
  *
  *****************************************************************************/
 
-#ifndef __BOTLIB_H__
-#define __BOTLIB_H__
 #define	BOTLIB_API_VERSION		2
 
 struct aas_clientmove_s;
@@ -507,5 +507,3 @@ name:						default:			module(s):			description:
 "max_levelitems"			"256"				be_ai_goal.c		maximum number of level items
 
 */
-
-#endif

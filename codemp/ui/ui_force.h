@@ -1,3 +1,5 @@
+#pragma once
+
 #include "qcommon/qfiles.h"
 
 #define NUM_FORCE_STAR_IMAGES  9

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "bg_saga.h"
 
 //#define FORCEJUMP_INSTANTMETHOD 1

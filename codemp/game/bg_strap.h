@@ -1,3 +1,5 @@
+#pragma once
+
 //rww - shared trap call system
 #include "qcommon/q_shared.h"
 #include "bg_public.h"
@@ -33,4 +35,3 @@ qboolean strap_G2API_IKMove(void *ghoul2, int time, sharedIKMoveParams_t *params
 void strap_TrueMalloc(void **ptr, int size);
 
 void strap_TrueFree(void **ptr);
-

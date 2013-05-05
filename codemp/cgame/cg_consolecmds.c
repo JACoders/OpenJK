@@ -135,6 +135,46 @@ static void CG_spLose_f( void) {
 	CG_CenterPrint(CG_GetStringEdString("MP_INGAME", "YOU_LOSE"), SCREEN_HEIGHT * .30, 0);
 }
 
+void CG_ClientList_f( void )
+{
+	clientInfo_t *ci;
+	int i;
+	int count = 0;
+
+	for( i = 0; i < MAX_CLIENTS; i++ ) 
+	{
+		ci = &cgs.clientinfo[ i ];
+		if( !ci->infoValid ) 
+			continue;
+
+		switch( ci->team ) 
+		{
+		case TEAM_FREE:
+			Com_Printf( "%2d " S_COLOR_YELLOW "F   " S_COLOR_WHITE "%s" S_COLOR_WHITE "%s\n", i, ci->name, (ci->botSkill != -1) ? " (bot)" : "" );
+			break;
+
+		case TEAM_RED:
+			Com_Printf( "%2d " S_COLOR_RED "R   " S_COLOR_WHITE "%s" S_COLOR_WHITE "%s\n", i,
+				ci->name, (ci->botSkill != -1) ? " (bot)" : "" );
+			break;
+
+		case TEAM_BLUE:
+			Com_Printf( "%2d " S_COLOR_BLUE "B   " S_COLOR_WHITE "%s" S_COLOR_WHITE "%s\n", i,
+				ci->name, (ci->botSkill != -1) ? " (bot)" : "" );
+			break;
+
+		default:
+		case TEAM_SPECTATOR:
+			Com_Printf( "%2d " S_COLOR_YELLOW "S   " S_COLOR_WHITE "%s" S_COLOR_WHITE "%s\n", i, ci->name, (ci->botSkill != -1) ? " (bot)" : "" );
+			break;
+		}
+
+		count++;
+	}
+
+	Com_Printf( "Listed %2d clients\n", count );
+}
+
 
 static void CG_TellTarget_f( void ) {
 	int		clientNum;
@@ -296,8 +336,10 @@ static consoleCommand_t	commands[] = {
 	{ "briefing", CG_SiegeBriefing_f },
 	{ "siegeCvarUpdate", CG_SiegeCvarUpdate_f },
 	{ "siegeCompleteCvarUpdate", CG_SiegeCompleteCvarUpdate_f },
+	{ "clientlist", CG_ClientList_f },
 };
 
+static size_t numCommands = ARRAY_LEN( commands );
 
 /*
 =================
@@ -313,7 +355,7 @@ qboolean CG_ConsoleCommand( void ) {
 
 	cmd = CG_Argv(0);
 
-	for ( i = 0 ; i < sizeof( commands ) / sizeof( commands[0] ) ; i++ ) {
+	for ( i = 0 ; i < numCommands ; i++ ) {
 		if ( !Q_stricmp( cmd, commands[i].cmd ) ) {
 			commands[i].function();
 			return qtrue;
@@ -323,6 +365,39 @@ qboolean CG_ConsoleCommand( void ) {
 	return qfalse;
 }
 
+static const char *gcmds[] = {
+	"addbot",
+	"callteamvote",
+	"callvote",
+	"duelteam",
+	"follow",
+	"follownext",
+	"followprev",
+	"forcechanged",
+	"give",
+	"god",
+	"kill",
+	"levelshot",
+	"loaddefered",
+	"noclip",
+	"notarget",
+	"NPC",
+	"say",
+	"say_team",
+	"setviewpos",
+	"siegeclass",
+	"stats",
+	//"stopfollow",
+	"team",
+	"teamtask",
+	"teamvote",
+	"tell",
+	"voice_cmd",
+	"vote",
+	"where",
+	"zoom"
+};
+static size_t numgcmds = ARRAY_LEN( gcmds );
 
 /*
 =================
@@ -335,58 +410,13 @@ so it can perform tab completion
 void CG_InitConsoleCommands( void ) {
 	int		i;
 
-	for ( i = 0 ; i < sizeof( commands ) / sizeof( commands[0] ) ; i++ ) {
+	for ( i = 0 ; i < numCommands ; i++ )
 		trap_AddCommand( commands[i].cmd );
-	}
 
 	//
 	// the game server will interpret these commands, which will be automatically
 	// forwarded to the server after they are not recognized locally
 	//
-	trap_AddCommand ("forcechanged");
-	trap_AddCommand ("sv_invnext");
-	trap_AddCommand ("sv_invprev");
-	trap_AddCommand ("sv_forcenext");
-	trap_AddCommand ("sv_forceprev");
-	trap_AddCommand ("sv_saberswitch");
-	trap_AddCommand ("engage_duel");
-	trap_AddCommand ("force_heal");
-	trap_AddCommand ("force_speed");
-	trap_AddCommand ("force_throw");
-	trap_AddCommand ("force_pull");
-	trap_AddCommand ("force_distract");
-	trap_AddCommand ("force_rage");
-	trap_AddCommand ("force_protect");
-	trap_AddCommand ("force_absorb");
-	trap_AddCommand ("force_healother");
-	trap_AddCommand ("force_forcepowerother");
-	trap_AddCommand ("force_seeing");
-	trap_AddCommand ("use_seeker");
-	trap_AddCommand ("use_field");
-	trap_AddCommand ("use_bacta");
-	trap_AddCommand ("use_electrobinoculars");
-	trap_AddCommand ("zoom");
-	trap_AddCommand ("use_sentry");
-	trap_AddCommand ("bot_order");
-	trap_AddCommand ("saberAttackCycle");
-	trap_AddCommand ("kill");
-	trap_AddCommand ("say");
-	trap_AddCommand ("say_team");
-	trap_AddCommand ("tell");
-	trap_AddCommand ("give");
-	trap_AddCommand ("god");
-	trap_AddCommand ("notarget");
-	trap_AddCommand ("noclip");
-	trap_AddCommand ("team");
-	trap_AddCommand ("follow");
-	trap_AddCommand ("levelshot");
-	trap_AddCommand ("addbot");
-	trap_AddCommand ("setviewpos");
-	trap_AddCommand ("callvote");
-	trap_AddCommand ("vote");
-	trap_AddCommand ("callteamvote");
-	trap_AddCommand ("teamvote");
-	trap_AddCommand ("stats");
-	trap_AddCommand ("teamtask");
-	trap_AddCommand ("loaddefered");	// spelled wrong, but not changing for demo
+	for( i = 0; i < numgcmds; i++ )
+		trap_AddCommand( gcmds[i] );
 }

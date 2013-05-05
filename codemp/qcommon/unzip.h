@@ -1,3 +1,5 @@
+#pragma once
+
 /* unzip.h -- IO for uncompress .zip files using zlib
    Version 1.01e, February 12th, 2005
 
@@ -41,9 +43,6 @@
    PkWare has also a specification at :
       ftp://ftp.pkware.com/probdesc.zip
 */
-
-#ifndef _unz_H
-#define _unz_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -413,5 +412,3 @@ extern int ZEXPORT unzSetOffset (unzFile file, uLong pos);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* _unz_H */

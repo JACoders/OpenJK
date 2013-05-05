@@ -278,11 +278,14 @@ Add continuous entity effects, like local entity emission and lighting
 */
 static void CG_EntityEffects( centity_t *cent ) {
 
+	if( !cent ) return;
+
 	// update sound origins
 	CG_SetEntitySoundPosition( cent );
 
 	// add loop sound
-	if ( cent->currentState.loopSound || (cent->currentState.loopIsSoundset && cent->currentState.number >= MAX_CLIENTS) ) {
+	if ( cent->currentState.loopSound || (cent->currentState.loopIsSoundset && cent->currentState.number >= MAX_CLIENTS) 
+		&& cent->currentState.loopSound < MAX_SOUNDS) {
 		sfxHandle_t realSoundIndex = -1;
 			
 		if (cent->currentState.loopIsSoundset && cent->currentState.number >= MAX_CLIENTS)
@@ -811,10 +814,11 @@ static void CG_SiegeEntRenderAboveHead(centity_t *cent)
 
 void CG_AddRadarEnt(centity_t *cent) 
 {
-	if (cg.radarEntityCount == sizeof(cg.radarEntities)/sizeof(cg.radarEntities[0]))
+	static const size_t numRadarEnts = ARRAY_LEN( cg.radarEntities );
+	if (cg.radarEntityCount >= numRadarEnts)
 	{	
 #ifdef _DEBUG
-		Com_Printf("^3Warning: CG_AddRadarEnt full. (%d max)\n", sizeof(cg.radarEntities)/sizeof(cg.radarEntities[0]));
+		Com_Printf("^3Warning: CG_AddRadarEnt full. (%d max)\n", numRadarEnts);
 #endif
 		return;
 	}
@@ -823,10 +827,11 @@ void CG_AddRadarEnt(centity_t *cent)
 
 void CG_AddBracketedEnt(centity_t *cent) 
 {
-	if (cg.bracketedEntityCount == sizeof(cg.bracketedEntities)/sizeof(cg.bracketedEntities[0]))
+	static const size_t numBracketEnts = ARRAY_LEN( cg.bracketedEntities );
+	if (cg.bracketedEntityCount >= numBracketEnts)
 	{	
 #ifdef _DEBUG
-		Com_Printf("^3Warning: CG_AddBracketedEnt full. (%d max)\n", sizeof(cg.radarEntities)/sizeof(cg.bracketedEntities[0]));
+		Com_Printf("^3Warning: CG_AddBracketedEnt full. (%d max)\n", numBracketEnts);
 #endif
 		return;
 	}
@@ -2908,7 +2913,7 @@ Ghoul2 Insert End
 	trap_R_AddRefEntityToScene(&ent);
 
 	// add the secondary model
-	if ( s1->modelindex2 ) 
+	if ( s1->modelindex2 && s1->modelindex2 < MAX_MODELS ) 
 	{
 		ent.skinNum = 0;
 		ent.hModel = cgs.gameModels[s1->modelindex2];

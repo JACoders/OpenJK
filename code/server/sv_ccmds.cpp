@@ -117,7 +117,7 @@ static bool SV_Map_( ForceReload_e eForceReload )
 void SV_Player_EndOfLevelSave(void)						   
 {
 	int	i;	
-	qboolean usesJK2 = (qboolean)Cvar_VariableIntegerValue("com_jk2");
+	qboolean usesJK2 = (qboolean)(com_jk2 && com_jk2->integer);
 
 	// I could just call GetClientState() but that's in sv_bot.cpp, and I'm not sure if that's going to be deleted for
 	//	the single player build, so here's the guts again...

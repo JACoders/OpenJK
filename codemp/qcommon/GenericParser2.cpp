@@ -3,9 +3,7 @@
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
 
-#if !defined(GENERICPARSER2_H_INC)
-	#include "GenericParser2.h"
-#endif
+#include "GenericParser2.h"
 
 #define _EXE
 

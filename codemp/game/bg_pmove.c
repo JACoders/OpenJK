@@ -926,7 +926,7 @@ void PM_AddTouchEnt( int entityNum ) {
 	if ( entityNum == ENTITYNUM_WORLD ) {
 		return;
 	}
-	if ( pm->numtouch == MAXTOUCH ) {
+	if ( pm->numtouch >= MAXTOUCH ) {
 		return;
 	}
 
@@ -938,8 +938,7 @@ void PM_AddTouchEnt( int entityNum ) {
 	}
 
 	// add it
-	pm->touchents[pm->numtouch] = entityNum;
-	pm->numtouch++;
+	pm->touchents[pm->numtouch++] = entityNum;
 }
 
 
@@ -2123,7 +2122,7 @@ static qboolean PM_CheckJump( void )
 	{
 		qboolean allowWallRuns = qtrue;
 		qboolean allowWallFlips = qtrue;
-		qboolean allowFlips = qtrue;
+	//	qboolean allowFlips = qtrue;
 		qboolean allowWallGrabs = qtrue;
 		if ( pm->ps->weapon == WP_SABER )
 		{
@@ -4249,7 +4248,7 @@ static void PM_GroundTrace( void ) {
 					pm->ps->weaponTime <= 0)
 				{
 					gentity_t *servEnt = (gentity_t *)pm_entSelf;
-					if (g_gametype.integer < GT_TEAM ||
+					if (level.gametype < GT_TEAM ||
 						!trEnt->alliedTeam ||
 						(trEnt->alliedTeam == servEnt->client->sess.sessionTeam))
 					{ //not belonging to a team, or client is on same team
@@ -9405,16 +9404,16 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 		}
 		else
 		{ //misc emplaced
-			float dif = AngleSubtract(cent_lerpAngles[YAW], facingAngles[YAW]);
+			float emplacedDif = AngleSubtract(cent_lerpAngles[YAW], facingAngles[YAW]);
 
 			/*
 			if (emplaced->weapon == WP_NONE)
 			{ //offset is a little bit different for the e-web
-				dif -= 16.0f;
+				emplacedDif -= 16.0f;
 			}
 			*/
 
-			VectorSet(facingAngles, -16.0f, -dif, 0.0f);
+			VectorSet(facingAngles, -16.0f, -emplacedDif, 0.0f);
 
 			if (cent->legsAnim == BOTH_STRAFE_LEFT1 || cent->legsAnim == BOTH_STRAFE_RIGHT1)
 			{ //try to adjust so it doesn't look wrong
@@ -9564,9 +9563,10 @@ static ID_INLINE void PM_CmdForSaberMoves(usercmd_t *ucmd)
 		}
 		else
 		{ //saberstaff attacks
-			int aLen = PM_AnimLength(0, (animNumber_t)pm->ps->legsAnim);
 			float lenMin = 1700.0f;
 			float lenMax = 1800.0f;
+
+			aLen = PM_AnimLength(0, (animNumber_t)pm->ps->legsAnim);
 
 			if (pm->ps->legsAnim == BOTH_BUTTERFLY_LEFT)
 			{
@@ -11171,8 +11171,9 @@ void PmoveSingle (pmove_t *pmove) {
 	// entering / leaving water splashes
 	PM_WaterEvents();
 
-	// snap some parts of playerstate to save network bandwidth
-	trap_SnapVector( pm->ps->velocity );
+	// snap velocity to integer coordinates to save network bandwidth
+	if ( !pm->pmove_float )
+		trap_SnapVector( pm->ps->velocity );
 
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
 	{

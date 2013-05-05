@@ -124,7 +124,7 @@ void ShieldThink(gentity_t *self)
 {
 	self->s.trickedentindex = 0;
 
-	if ( g_gametype.integer == GT_SIEGE )
+	if ( level.gametype == GT_SIEGE )
 	{
 		self->health -= SHIELD_SIEGE_HEALTH_DEC;
 	}
@@ -229,7 +229,7 @@ void ShieldGoNotSolid(gentity_t *self)
 // Somebody (a player) has touched the shield.  See if it is a "friend".
 void ShieldTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 {
-	if (g_gametype.integer >= GT_TEAM)
+	if (level.gametype >= GT_TEAM)
 	{ // let teammates through
 		// compare the parent's team to the "other's" team
 		if (self->parent && ( self->parent->client) && (other->client))
@@ -330,7 +330,7 @@ void CreateShield(gentity_t *ent)
 	paramData = (xaxis << 24) | (height << 16) | (posWidth << 8) | (negWidth);
 	ent->s.time2 = paramData;
 
-	if ( g_gametype.integer == GT_SIEGE )
+	if ( level.gametype == GT_SIEGE )
 	{
 		ent->health = ceil((float)(SHIELD_SIEGE_HEALTH*1));
 	}
@@ -385,8 +385,9 @@ qboolean PlaceShield(gentity_t *playerent)
 	gentity_t	*shield = NULL;
 	trace_t		tr;
 	vec3_t		fwd, pos, dest, mins = {-4,-4, 0}, maxs = {4,4,4};
+	static qboolean registered = qfalse;
 
-	if (shieldAttachSound==0)
+	if ( !registered )
 	{
 		shieldLoopSound = G_SoundIndex("sound/movers/doors/forcefield_lp.wav");
 		shieldAttachSound = G_SoundIndex("sound/weapons/detpack/stick.wav");
@@ -394,6 +395,7 @@ qboolean PlaceShield(gentity_t *playerent)
 		shieldDeactivateSound = G_SoundIndex("sound/movers/doors/forcefield_off.wav");
 		shieldDamageSound = G_SoundIndex("sound/effects/bumpfield.wav");
 		shieldItem = BG_FindItemForHoldable(HI_SHIELD);
+		registered = qtrue;
 	}
 
 	// can we place this in front of us?
@@ -450,7 +452,7 @@ qboolean PlaceShield(gentity_t *playerent)
 
 			shield->s.owner = playerent->s.number;
 			shield->s.shouldtarget = qtrue;
-			if (g_gametype.integer >= GT_TEAM)
+			if (level.gametype >= GT_TEAM)
 			{
 				shield->s.teamowner = playerent->client->sess.sessionTeam;
 			}
@@ -1080,7 +1082,7 @@ void ItemUse_Sentry( gentity_t *ent )
 
 	sentry->s.owner = ent->s.number;
 	sentry->s.shouldtarget = qtrue;
-	if (g_gametype.integer >= GT_TEAM)
+	if (level.gametype >= GT_TEAM)
 	{
 		sentry->s.teamowner = ent->client->sess.sessionTeam;
 	}
@@ -1095,7 +1097,7 @@ void ItemUse_Sentry( gentity_t *ent )
 extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle );
 void ItemUse_Seeker(gentity_t *ent)
 {
-	if ( g_gametype.integer == GT_SIEGE && d_siegeSeekerNPC.integer )
+	if ( level.gametype == GT_SIEGE && d_siegeSeekerNPC.integer )
 	{//actualy spawn a remote NPC
 		gentity_t *remote = NPC_SpawnType( ent, "remote", NULL, qfalse );
 		if ( remote && remote->client )
@@ -2061,7 +2063,7 @@ int Pickup_Powerup( gentity_t *ent, gentity_t *other ) {
 
     // if same team in team game, no sound
     // cannot use OnSameTeam as it expects to g_entities, not clients
-  	if ( g_gametype.integer >= GT_TEAM && other->client->sess.sessionTeam == client->sess.sessionTeam  ) {
+  	if ( level.gametype >= GT_TEAM && other->client->sess.sessionTeam == client->sess.sessionTeam  ) {
       continue;
     }
 
@@ -2137,7 +2139,7 @@ int Pickup_Ammo (gentity_t *ent, gentity_t *other)
 
 	if (ent->item->giTag == -1)
 	{ //an ammo_all, give them a bit of everything
-		if ( g_gametype.integer == GT_SIEGE )	// complaints that siege tech's not giving enough ammo.  Does anything else use ammo all?
+		if ( level.gametype == GT_SIEGE )	// complaints that siege tech's not giving enough ammo.  Does anything else use ammo all?
 		{
 			Add_Ammo(other, AMMO_BLASTER, 100);
 			Add_Ammo(other, AMMO_POWERCELL, 100);
@@ -2188,7 +2190,7 @@ int Pickup_Weapon (gentity_t *ent, gentity_t *other) {
 		}
 
 		// dropped items and teamplay weapons always have full ammo
-		if ( ! (ent->flags & FL_DROPPED_ITEM) && g_gametype.integer != GT_TEAM ) {
+		if ( ! (ent->flags & FL_DROPPED_ITEM) && level.gametype != GT_TEAM ) {
 			// respawning rules
 
 			// New method:  If the player has less than half the minimum, give them the minimum, else add 1/2 the min.
@@ -2221,7 +2223,7 @@ int Pickup_Weapon (gentity_t *ent, gentity_t *other) {
 	G_LogWeaponPickup(other->s.number, ent->item->giTag);
 	
 	// team deathmatch has slow weapon respawns
-	if ( g_gametype.integer == GT_TEAM ) 
+	if ( level.gametype == GT_TEAM ) 
 	{
 		return adjustRespawnTime(RESPAWN_TEAM_WEAPON, ent->item->giType, ent->item->giTag);
 	}
@@ -2411,7 +2413,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 	}
 
 	// the same pickup rules are used for client side and server side
-	if ( !BG_CanItemBeGrabbed( g_gametype.integer, &ent->s, &other->client->ps ) ) {
+	if ( !BG_CanItemBeGrabbed( level.gametype, &ent->s, &other->client->ps ) ) {
 		return;
 	}
 
@@ -2681,7 +2683,7 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 	VectorCopy( velocity, dropped->s.pos.trDelta );
 
 	dropped->flags |= FL_BOUNCE_HALF;
-	if ((g_gametype.integer == GT_CTF || g_gametype.integer == GT_CTY) && item->giType == IT_TEAM) { // Special case for CTF flags
+	if ((level.gametype == GT_CTF || level.gametype == GT_CTY) && item->giType == IT_TEAM) { // Special case for CTF flags
 		dropped->think = Team_DroppedFlagThink;
 		dropped->nextthink = level.time + 30000;
 		Team_CheckDroppedItem( dropped );
@@ -2782,7 +2784,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 //	VectorSet( ent->r.mins, -ITEM_RADIUS, -ITEM_RADIUS, -ITEM_RADIUS );
 //	VectorSet( ent->r.maxs, ITEM_RADIUS, ITEM_RADIUS, ITEM_RADIUS );
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{ //in siege remove all powerups
 		if (ent->item->giType == IT_POWERUP)
 		{
@@ -2791,7 +2793,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 	}
 
-	if (g_gametype.integer != GT_JEDIMASTER)
+	if (level.gametype != GT_JEDIMASTER)
 	{
 		if (HasSetSaberOnly())
 		{
@@ -2822,7 +2824,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 	}
 
-	if (g_gametype.integer == GT_HOLOCRON)
+	if (level.gametype == GT_HOLOCRON)
 	{
 		if (ent->item->giType == IT_POWERUP)
 		{
@@ -2849,7 +2851,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 	}
 
-	if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 	{
 		if ( ent->item->giType == IT_ARMOR ||
 			ent->item->giType == IT_HEALTH ||
@@ -2860,8 +2862,8 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 	}
 
-	if (g_gametype.integer != GT_CTF &&
-		g_gametype.integer != GT_CTY &&
+	if (level.gametype != GT_CTF &&
+		level.gametype != GT_CTY &&
 		ent->item->giType == IT_TEAM)
 	{
 		int killMe = 0;
@@ -2973,7 +2975,7 @@ void G_CheckTeamItems( void ) {
 	// Set up team stuff
 	Team_InitGame();
 
-	if( g_gametype.integer == GT_CTF || g_gametype.integer == GT_CTY ) {
+	if( level.gametype == GT_CTF || level.gametype == GT_CTY ) {
 		gitem_t	*item;
 
 		// check for the two flags
@@ -3002,7 +3004,7 @@ void ClearRegisteredItems( void ) {
 	RegisterItem( BG_FindItemForWeapon( WP_MELEE ) );
 	RegisterItem( BG_FindItemForWeapon( WP_SABER ) );
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{ //kind of cheesy, maybe check if siege class with disp's is gonna be on this map too
 		G_PrecacheDispensers();
 	}
@@ -3080,7 +3082,7 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 	G_SpawnFloat( "random", "0", &ent->random );
 	G_SpawnFloat( "wait", "0", &ent->wait );
 
-	if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 	{
 		wDisable = g_duelWeaponDisable.integer;
 	}
@@ -3093,7 +3095,7 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 		wDisable &&
 		(wDisable & (1 << item->giTag)))
 	{
-		if (g_gametype.integer != GT_JEDIMASTER)
+		if (level.gametype != GT_JEDIMASTER)
 		{
 			G_FreeEntity( ent );
 			return;

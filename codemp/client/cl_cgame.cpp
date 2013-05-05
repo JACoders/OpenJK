@@ -3,28 +3,16 @@
 #include "qcommon/exe_headers.h"
 
 #include "RMG/RM_Headers.h"
-
 #include "client.h"
-
 #include "botlib/botlib.h"
-
 #include "RMG/RM_Headers.h"
-
-#if !defined(FX_EXPORT_H_INC)
-	#include "FXExport.h"
-#endif
-
+#include "FXExport.h"
 #include "FxUtil.h"
-
-#if !defined(CROFFSYSTEM_H_INC)
-	#include "qcommon/RoffSystem.h"
-#endif
+#include "qcommon/RoffSystem.h"
 
 #ifdef _DONETPROFILE_
 #include "qcommon/INetProfile.h"
 #endif
-
-//#include "renderer/tr_WorldEffects.h"
 
 #ifdef VV_LIGHTING
 #include "renderer/tr_lightmanager.h"
@@ -34,29 +22,19 @@
 Ghoul2 Insert Start
 */
 
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2_local.h"
-#endif
-
 #include "qcommon/stringed_ingame.h"
-
 #include "ghoul2/G2_gore.h"
 
 extern CMiniHeap *G2VertSpaceClient;
 
 #include "snd_ambient.h"
-
 #include "qcommon/timing.h"
-
-//#include "renderer/tr_local.h"
 
 //extern int contentOverride;
 
 /*
 Ghoul2 Insert End
 */
-
-//#include "cgame/cg_local.h"
 
 extern	botlib_export_t	*botlib_export;
 
@@ -593,7 +571,7 @@ CL_ShutdonwCGame
 ====================
 */
 void CL_ShutdownCGame( void ) {
-	cls.keyCatchers &= ~KEYCATCH_CGAME;
+	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CGAME );
 	cls.cgameStarted = qfalse;
 	if ( !cgvm ) {
 		return;
@@ -607,11 +585,9 @@ void CL_ShutdownCGame( void ) {
 }
 
 static int	FloatAsInt( float f ) {
-	int		temp;
-
-	*(float *)&temp = f;
-
-	return temp;
+	floatint_t fi;
+	fi.f = f;
+	return fi.i;
 }
 
 /*
@@ -621,15 +597,13 @@ CL_CgameSystemCalls
 The cgame module is making a system call
 ====================
 */
-#define	VMA(x) VM_ArgPtr(args[x])
-#define	VMF(x)	((float *)args)[x]
 extern int s_entityWavVol[MAX_GENTITIES];
 
 extern int CL_GetValueForHidden(const char *s); //cl_parse.cpp
 
 extern qboolean cl_bUseFighterPitch; //cl_input.cpp
 
-int CL_CgameSystemCalls( int *args ) {
+intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	switch( args[0] ) {
 	//rww - alright, DO NOT EVER add a GAME/CGAME/UI generic call without adding a trap to match, and
 	//all of these traps must be shared and have cases in sv_game, cl_cgame, and cl_ui. They must also
@@ -746,7 +720,7 @@ int CL_CgameSystemCalls( int *args ) {
 		Cmd_RemoveCommand( (const char *)VMA(1) );
 		return 0;
 	case CG_SENDCLIENTCOMMAND:
-		CL_AddReliableCommand( (const char *)VMA(1) );
+		CL_AddReliableCommand( (const char *)VMA(1), qfalse );
 		return 0;
 	case CG_UPDATESCREEN:
 		// this is used during lengthy level loading, so pump message loop
@@ -976,7 +950,8 @@ int CL_CgameSystemCalls( int *args ) {
   case CG_KEY_GETCATCHER:
 		return Key_GetCatcher();
   case CG_KEY_SETCATCHER:
-		Key_SetCatcher( args[1] );
+		// Don't allow the cgame module to close the console
+		Key_SetCatcher( args[1] | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
     return 0;
   case CG_KEY_GETKEY:
 		return Key_GetKey( (const char *)VMA(1) );
@@ -1713,7 +1688,7 @@ Ghoul2 Insert End
 
 	default:
 	        assert(0); // bk010102
-		Com_Error( ERR_DROP, "Bad cgame system trap: %i", args[0] );
+		Com_Error( ERR_DROP, "Bad cgame system trap: %ld", (long int) args[0] );
 	}
 	return 0;
 }

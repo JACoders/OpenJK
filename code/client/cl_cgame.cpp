@@ -786,6 +786,12 @@ Ghoul2 Insert End
 		case CG_ANYLANGUAGE_READFROMSTRING2_JK2:
 			return CG_ANYLANGUAGE_READFROMSTRING2;
 			break;
+		case CG_OPENJK_MENU_PAINT_JK2:
+			return CG_OPENJK_MENU_PAINT;
+			break;
+		case CG_OPENJK_GETMENU_BYNAME_JK2:
+			return CG_OPENJK_GETMENU_BYNAME;
+			break;
 	}
 	return (cgameImport_t)-1;
 }
@@ -800,12 +806,14 @@ The cgame module is making a system call
 */
 void *VM_ArgPtr( int intValue );
 void CM_SnapPVS(vec3_t origin,byte *buffer);
+extern void		Menu_Paint(menuDef_t *menu, qboolean forcePaint);
+extern menuDef_t *Menus_FindByName(const char *p);
 //#define	VMA(x) VM_ArgPtr(args[x])
 #define	VMA(x) ((void*)args[x])
 #define	VMF(x)	((float *)args)[x]
 int CL_CgameSystemCalls( int *args ) {
 #ifndef __NO_JK2
-	if( Cvar_VariableIntegerValue("com_jk2") )
+	if( com_jk2 && com_jk2->integer )
 	{
 		args[0] = (int)CL_ConvertJK2SysCall((cgameJK2Import_t)args[0]);
 	}
@@ -1234,6 +1242,13 @@ Ghoul2 Insert End
 		Menu_PaintAll();
 		return 0;
 
+	case CG_OPENJK_MENU_PAINT:
+		Menu_Paint( (menuDef_t *)VMA(1), (int)VMA(2) );
+		return 0;
+
+	case CG_OPENJK_GETMENU_BYNAME:
+		return (int)Menus_FindByName( (const char *)VMA(1) );
+
 	case CG_UI_STRING_INIT:
 		String_Init();
 		return 0;
@@ -1242,7 +1257,7 @@ Ghoul2 Insert End
 		menuDef_t *menu;
 		int		*xPos,*yPos,*w,*h,result;
 #ifndef __NO_JK2
-		if(!Cvar_VariableIntegerValue("com_jk2"))
+		if(com_jk2 && !com_jk2->integer)
 		{
 #endif
 
@@ -1367,7 +1382,7 @@ Ghoul2 Insert End
 	case CG_SP_GETSTRINGTEXTSTRING:
 #ifndef __NO_JK2
 	case CG_SP_GETSTRINGTEXT:
-		if(Cvar_VariableIntegerValue("com_jk2"))
+		if(com_jk2 && com_jk2->integer)
 		{
 			const char* text;
 

@@ -1,6 +1,4 @@
-#ifndef __UI_SHARED_H
-#define __UI_SHARED_H
-
+#pragma once
 
 #include "qcommon/q_shared.h"
 #include "renderer/tr_types.h"
@@ -608,4 +606,3 @@ void		trap_G2API_GetSurfaceName(void *ghoul2, int surfNumber, int modelIndex, ch
 /*
 Ghoul2 Insert End
 */
-#endif

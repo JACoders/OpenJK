@@ -3,13 +3,9 @@
 
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
-
 #include "renderer/tr_types.h"
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-#endif
-	#include "G2_local.h"
+#include "ghoul2/G2.h"
+#include "G2_local.h"
 #pragma warning(disable : 4512)		//assignment op could not be genereated
 
 class CConstructBoneList
@@ -74,7 +70,7 @@ int G2_IsSurfaceLegal(void *mod, const char *surfaceName, int *flags)
 			return i;
 		}
 		// find the next surface
-  		surf = (mdxmSurfHierarchy_t *)( (byte *)surf + (int)( &((mdxmSurfHierarchy_t *)0)->childIndexes[ surf->numChildren ] ));
+  		surf = (mdxmSurfHierarchy_t *)( (byte *)surf + (size_t)( &((mdxmSurfHierarchy_t *)0)->childIndexes[ surf->numChildren ] ));
 	}
 	return -1;
 }

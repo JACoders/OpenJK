@@ -1,9 +1,8 @@
+#pragma once
+
 // ICARUS Public Header File
 
 #pragma warning ( disable : 4786 )	//NOTENOTE: STL Debug name length warning
-
-#ifndef	__ICARUS__
-#define __ICARUS__
 
 extern void *ICARUS_Malloc(int iSize);
 extern void  ICARUS_Free(void *pMem);
@@ -27,6 +26,3 @@ extern void  ICARUS_Free(void *pMem);
 #include "instance.h"
 
 #pragma warning( pop )	//restore
-
-
-#endif	//__ICARUS__

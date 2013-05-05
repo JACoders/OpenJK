@@ -9,8 +9,6 @@
 #include "qcommon/exe_headers.h"
 
 #include "client/client.h"
-//#include "zlib32/zip.h"
-//#include "unzip.h"
 #include "files.h"
 
 #include "platform.h"
@@ -192,7 +190,7 @@ searchpath_t	*fs_searchpaths;
 int			fs_readCount;			// total bytes read
 int			fs_loadCount;			// total files read
 int			fs_loadStack;			// total files in memory
-int			fs_packFiles;			// total number of files in packs
+int			fs_packFiles = 0;		// total number of files in packs
 
 int			fs_fakeChkSum;
 int			fs_checksumFeed;
@@ -201,7 +199,7 @@ fileHandleData_t	fsh[MAX_FILE_HANDLES];
 
 
 // never load anything from pk3 files that are not present at the server when pure
-int		fs_numServerPaks;
+int		fs_numServerPaks = 0;
 int		fs_serverPaks[MAX_SEARCH_PATHS];				// checksums
 char		*fs_serverPakNames[MAX_SEARCH_PATHS];			// pk3 names
 
@@ -448,9 +446,7 @@ void FS_Shutdown( qboolean closemfp ) {
 		next = p->next;
 
 		if ( p->pack ) {
-			unzClose(p->pack->handle);
-			Z_Free( p->pack->buildBuffer );
-			Z_Free( p->pack );
+			FS_FreePak( p->pack );
 		}
 		if ( p->dir ) {
 			Z_Free( p->dir );
@@ -491,6 +487,10 @@ void FS_InitFilesystem( void ) {
 	Com_StartupVariable( "fs_homepath" );
 	Com_StartupVariable( "fs_game" );
 	Com_StartupVariable( "fs_copyfiles" );
+	Com_StartupVariable( "fs_dirbeforepak" );
+
+	if(!FS_FilenameCompare(Cvar_VariableString("fs_game"), BASEGAME))
+		Cvar_Set("fs_game", "");
 
 	// try to start up normally
 	FS_Startup( BASEGAME );

@@ -1,7 +1,6 @@
-// Sequencer Header File
+#pragma once
 
-#ifndef __SEQUENCER__
-#define __SEQUENCER__
+// Sequencer Header File
 
 #include "blockstream.h"
 #include "interface.h"
@@ -185,5 +184,3 @@ protected:
 	CBlock				*m_elseOwner;
 	vector<bstream_t*>  m_streamsCreated;
 };
-
-#endif	//__SEQUENCER__

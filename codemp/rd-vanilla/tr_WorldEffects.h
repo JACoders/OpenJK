@@ -1,12 +1,6 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
-#if !defined __TR_WORLDEFFECTS_H
-#define __TR_WORLDEFFECTS_H
 
 class CWorldEffectsSystem;
-
-
 
 #define PARTICLE_FLAG_RENDER			0x00000001
 
@@ -104,5 +98,3 @@ bool R_IsRaining();
 //bool R_IsSnowing();
 bool R_IsPuffing();
 void RE_AddWeatherZone(vec3_t mins, vec3_t maxs);
-
-#endif // __TR_WORLDEFFECTS_H

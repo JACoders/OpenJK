@@ -1,8 +1,7 @@
+#pragma once
+
 // Tokenizer.h
 //
-
-#ifndef __TOKENIZER_H
-#define __TOKENIZER_H
 
 #pragma warning( disable : 4786 )	// identifier was truncated 
 
@@ -609,6 +608,3 @@ protected:
 	DWORD			m_filesize;
 	bool			m_ownsFile;
 };
-
-
-#endif//__TOKENIZER_H

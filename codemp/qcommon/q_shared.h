@@ -24,8 +24,6 @@
 					//	between base<->modbase clients and servers (mismatching events, powerups, etc)
 					// leave this defined to ensure compatibility
 
-//#define USE_WIDESCREEN // Adjust fov for widescreen aspect ratio
-
 #include "qcommon/disablewarnings.h"
 
 #include "game/teams.h" //npc team stuff
@@ -82,6 +80,7 @@
 #include <time.h>
 #include <ctype.h>
 #include <limits.h>
+#include <errno.h>
 
 //Ignore __attribute__ on non-gcc platforms
 #if !defined(__GNUC__) && !defined(__attribute__)
@@ -488,6 +487,12 @@ typedef unsigned long		ulong;
 
 typedef enum qboolean_e { qfalse=0, qtrue } qboolean;
 
+typedef union {
+	float f;
+	int i;
+	unsigned int ui;
+} floatint_t;
+
 #ifndef min
 	#define min(x,y) ((x)<(y)?(x):(y))
 #endif
@@ -540,6 +545,12 @@ typedef int		clipHandle_t;
 #define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
 
 #define PADP(base, alignment)	((void *) PAD((intptr_t) (base), (alignment)))
+
+#ifdef __GNUC__
+#define QALIGN(x) __attribute__((aligned(x)))
+#else
+#define QALIGN(x)
+#endif
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -1327,6 +1338,8 @@ extern	vec4_t		colorDkBlue;
 #define Q_COLOR_ESCAPE	'^'
 // you MUST have the last bit on here about colour strings being less than 7 or taiwanese strings register as colour!!!!
 #define Q_IsColorString(p)	( p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE && *((p)+1) <= '7' && *((p)+1) >= '0' )
+// Correct version of the above for Q_StripColor
+#define Q_IsColorStringExt(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && isdigit(*((p)+1))) // ^[0-9]
 
 
 #define COLOR_BLACK		'0'
@@ -1577,8 +1590,10 @@ void NormalToLatLong( const vec3_t normal, byte bytes[2] ); //rwwRMG - added
 
 //=============================================
 
-int Com_Clampi( int min, int max, int value ); //rwwRMG - added
-float Com_Clamp( float min, float max, float value );
+extern ID_INLINE int Com_Clampi( int min, int max, int value ); //rwwRMG - added
+extern ID_INLINE float Com_Clamp( float min, float max, float value );
+extern ID_INLINE int Com_AbsClampi( int min, int max, int value );
+extern ID_INLINE float Com_AbsClamp( float min, float max, float value );
 
 char	*COM_SkipPath( char *pathname );
 const char	*COM_GetExtension( const char *name );
@@ -1676,6 +1691,7 @@ const char *Q_stristr( const char *s, const char *find);
 int Q_PrintStrlen( const char *string );
 // removes color sequences from string
 char *Q_CleanStr( char *string );
+void Q_StripColor(char *text);
 void Q_strstrip( char *string, const char *strip, const char *repl );
 const char *Q_strchrs( const char *string, const char *search );
 
@@ -2892,7 +2908,6 @@ typedef enum Eorientations
 /*
 Ghoul2 Insert End
 */
-
 
 // define the new memory tags for the zone, used by all modules now
 //

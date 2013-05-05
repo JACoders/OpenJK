@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 #include "qcommon/q_shared.h"
@@ -10,10 +12,11 @@
 // If you absolutely need something stored, it can either be kept
 // by the server in the server stored userinfos, or stashed in a cvar.
 
+//OJKFIXME: should go in q_platform.h/q_shared.h - just use ID_INLINE
 #ifndef __LCC__
-#define CGAME_INLINE ID_INLINE
+	#define CGAME_INLINE ID_INLINE
 #else
-#define CGAME_INLINE //none
+	#define CGAME_INLINE //none
 #endif
 
 #define NULL_HANDLE			((qhandle_t) 0)
@@ -202,6 +205,7 @@ typedef struct {
 	char			saber2Name[64];
 
 	char			name[MAX_QPATH];
+	char			cleanname[MAX_QPATH];
 	team_t			team;
 
 	int				duelTeam;
@@ -823,10 +827,6 @@ typedef struct {
 
 	// view rendering
 	refdef_t	refdef;
-
-#ifdef USE_WIDESCREEN
-	qboolean widescreen;
-#endif
 
 	// zoom key
 	qboolean	zoomed;
@@ -1763,7 +1763,6 @@ const char *CG_GetGameStatusText(void);
 const char *CG_GetKillerText(void);
 void CG_Draw3DModel( float x, float y, float w, float h, qhandle_t model, void *ghoul2, int g2radius, qhandle_t skin, vec3_t origin, vec3_t angles );
 void CG_Text_PaintChar(float x, float y, float width, float height, float scale, float s, float t, float s2, float t2, qhandle_t hShader);
-const char *CG_GameTypeString(void);
 qboolean CG_YourTeamHasFlag(void);
 qboolean CG_OtherTeamHasFlag(void);
 qhandle_t CG_StatusHandle(int task);

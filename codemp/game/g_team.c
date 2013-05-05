@@ -22,7 +22,7 @@ void Team_SetFlagStatus( int team, flagStatus_t status );
 void Team_InitGame( void ) {
 	memset(&teamgame, 0, sizeof teamgame);
 
-	switch( g_gametype.integer ) {
+	switch( level.gametype ) {
 	case GT_CTF:
 	case GT_CTY:
 		teamgame.redStatus = teamgame.blueStatus = -1; // Invalid to force update
@@ -188,7 +188,7 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 ) {
 		return qfalse;
 	}
 
-	if (g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_POWERDUEL)
 	{
 		if (ent1->client->sess.duelTeam == ent2->client->sess.duelTeam)
 		{
@@ -198,7 +198,7 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 ) {
 		return qfalse;
 	}
 
-	if (g_gametype.integer == GT_SINGLE_PLAYER)
+	if (level.gametype == GT_SINGLE_PLAYER)
 	{
 		qboolean ent1IsBot = qfalse;
 		qboolean ent2IsBot = qfalse;
@@ -219,7 +219,7 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 ) {
 		return qfalse;
 	}
 
-	if ( g_gametype.integer < GT_TEAM ) {
+	if ( level.gametype < GT_TEAM ) {
 		return qfalse;
 	}
 
@@ -298,7 +298,7 @@ void Team_SetFlagStatus( int team, flagStatus_t status ) {
 	if( modified ) {
 		char st[4];
 
-		if( g_gametype.integer == GT_CTF || g_gametype.integer == GT_CTY ) {
+		if( level.gametype == GT_CTF || level.gametype == GT_CTY ) {
 			st[0] = ctfFlagStatusRemap[teamgame.redStatus];
 			st[1] = ctfFlagStatusRemap[teamgame.blueStatus];
 			st[2] = 0;
@@ -590,7 +590,7 @@ gentity_t *Team_ResetFlag( int team ) {
 }
 
 void Team_ResetFlags( void ) {
-	if( g_gametype.integer == GT_CTF || g_gametype.integer == GT_CTY ) {
+	if( level.gametype == GT_CTF || level.gametype == GT_CTY ) {
 		Team_ResetFlag( TEAM_RED );
 		Team_ResetFlag( TEAM_BLUE );
 	}
@@ -1061,7 +1061,7 @@ gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team, int siegeClas
 	char		*classname;
 	qboolean	mustBeEnabled = qfalse;
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{
 		if (team == SIEGETEAM_TEAM1)
 		{
@@ -1115,7 +1115,7 @@ gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team, int siegeClas
 		return G_Find( NULL, FOFS(classname), classname);
 	}
 
-	if (g_gametype.integer == GT_SIEGE && siegeClass >= 0 &&
+	if (level.gametype == GT_SIEGE && siegeClass >= 0 &&
 		bgSiegeClasses[siegeClass].name[0])
 	{ //out of the spots found, see if any have an idealclass to match our class name
 		gentity_t *classSpots[MAX_TEAM_SPAWN_POINTS];
@@ -1308,6 +1308,9 @@ void CheckTeamStatus(void) {
 
 		for (i = 0; i < sv_maxclients.integer; i++) {
 			ent = g_entities + i;
+
+			if ( !ent->client ) // uhm
+				continue;
 
 			if ( ent->client->pers.connected != CON_CONNECTED ) {
 				continue;

@@ -1,5 +1,4 @@
-#ifndef __MATCOMP__
-#define __MATCOMP__
+#pragma once
 
 #ifdef __cplusplus
 extern "C"
@@ -26,6 +25,4 @@ void MC_UnCompressQuat(float mat[3][4],const unsigned char * comp);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

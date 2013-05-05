@@ -89,7 +89,7 @@ qboolean G_CanBeEnemy( gentity_t *self, gentity_t *enemy )
 	if ( !self->inuse || !enemy->inuse || !self->client || !enemy->client )
 		return qfalse;
 
-	if (g_gametype.integer < GT_TEAM)
+	if (level.gametype < GT_TEAM)
 		return qtrue;
 
 	if ( g_friendlyFire.integer )
@@ -190,12 +190,12 @@ static GAME_INLINE int G_SaberAttackPower(gentity_t *ent, qboolean attacking)
 		baseLevel = 16;
 	}
 
-	if (g_gametype.integer == GT_POWERDUEL &&
+	if (level.gametype == GT_POWERDUEL &&
 		ent->client->sess.duelTeam == DUELTEAM_LONE)
 	{ //get more power then
 		return baseLevel*2;
 	}
-	else if (attacking && g_gametype.integer == GT_SIEGE)
+	else if (attacking && level.gametype == GT_SIEGE)
 	{ //in siege, saber battles should be quicker and more biased toward the attacker
 		return baseLevel*3;
 	}
@@ -1440,7 +1440,7 @@ qboolean WP_SabersCheckLock( gentity_t *ent1, gentity_t *ent2 )
 	}
 	//for now.. it's not fair to the lone duelist.
 	//we need dual saber lock animations.
-	if (g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_POWERDUEL)
 	{
 		return qfalse;
 	}
@@ -1479,7 +1479,7 @@ qboolean WP_SabersCheckLock( gentity_t *ent1, gentity_t *ent2 )
 			ent1->client->ps.duelIndex != ent2->s.number ||
 			ent2->client->ps.duelIndex != ent1->s.number)
 		{ //only allow saber locking if two players are dueling with each other directly
-			if (g_gametype.integer != GT_DUEL && g_gametype.integer != GT_POWERDUEL)
+			if (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL)
 			{
 				return qfalse;
 			}
@@ -4120,9 +4120,9 @@ static GAME_INLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int
 				}
 			}
 			*/
-			if ( g_gametype.integer != GT_DUEL
-				&& g_gametype.integer != GT_POWERDUEL
-				&& g_gametype.integer != GT_SIEGE )
+			if ( level.gametype != GT_DUEL
+				&& level.gametype != GT_POWERDUEL
+				&& level.gametype != GT_SIEGE )
 			{//in faster-paced games, sabers do more damage
 				fDmg *= 2.0f;
 			}
@@ -4398,13 +4398,13 @@ static GAME_INLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int
 		dmg *= 2;
 	}
 
-	if (dmg > SABER_NONATTACK_DAMAGE && g_gametype.integer == GT_SIEGE &&
+	if (dmg > SABER_NONATTACK_DAMAGE && level.gametype == GT_SIEGE &&
 		self->client->siegeClass != -1 && (bgSiegeClasses[self->client->siegeClass].classflags & (1<<CFL_MORESABERDMG)))
 	{ //this class is flagged to do extra saber damage. I guess 2x will do for now.
 		dmg *= 2;
 	}
 
-	if (g_gametype.integer == GT_POWERDUEL &&
+	if (level.gametype == GT_POWERDUEL &&
 		self->client->sess.duelTeam == DUELTEAM_LONE)
 	{ //always x2 when we're powerdueling alone... er, so, we apparently no longer want this?  So they say.
 		if ( duel_fraglimit.integer )
@@ -4625,7 +4625,7 @@ static GAME_INLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int
 			{
 				if (g_entities[tr.entityNum].client && g_entities[tr.entityNum].client->ps.weapon == WP_SABER)
 				{ //for jedi using the saber, half the damage (this comes with the increased default dmg debounce time)
-					if (g_gametype.integer != GT_SIEGE)
+					if (level.gametype != GT_SIEGE)
 					{ //unless siege..
 						if (dmg > SABER_NONATTACK_DAMAGE && !unblockable)
 						{ //don't reduce damage if it's only 1, or if this is an unblockable attack
@@ -4755,7 +4755,7 @@ static GAME_INLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int
 
 		if ((self->s.eType == ET_NPC || otherOwner->s.eType == ET_NPC) && //just make sure one of us is an npc
 			self->client->playerTeam == otherOwner->client->playerTeam &&
-			g_gametype.integer != GT_SIEGE)
+			level.gametype != GT_SIEGE)
 		{ //don't hit your teammate's sabers if you are an NPC. It can be rather annoying.
 			return qfalse;
 		}
@@ -5293,7 +5293,6 @@ void G_SPSaberDamageTraceLerped( gentity_t *self, int saberNum, int bladeNum, ve
 		if ( saberHitFraction < 1.0f )
 		{
 			//adjust muzzleDir...
-			vec3_t ma1, ma2;
 			vectoangles( md1, ma1 );
 			vectoangles( md2, ma2 );
 			for ( xx = 0; xx < 3; xx++ )
@@ -6213,7 +6212,7 @@ void MakeDeadSaber(gentity_t *ent)
 	//trace stuct used for determining if it's safe to spawn at current location
 	trace_t		tr;  
 	
-	if (g_gametype.integer == GT_JEDIMASTER)
+	if (level.gametype == GT_JEDIMASTER)
 	{ //never spawn a dead saber in JM, because the only saber on the level is really a world object
 		//G_Sound(ent, CHAN_AUTO, saberOffSound);
 		return;
@@ -7190,13 +7189,13 @@ void saberFirstThrown(gentity_t *saberent)
 		}
 	}
 
-	if (BG_HasYsalamiri(g_gametype.integer, &saberOwn->client->ps))
+	if (BG_HasYsalamiri(level.gametype, &saberOwn->client->ps))
 	{
 		thrownSaberTouch(saberent, saberent, NULL);
 		goto runMin;
 	}
 	
-	if (!BG_CanUseFPNow(g_gametype.integer, &saberOwn->client->ps, level.time, FP_SABERTHROW))
+	if (!BG_CanUseFPNow(level.gametype, &saberOwn->client->ps, level.time, FP_SABERTHROW))
 	{
 		thrownSaberTouch(saberent, saberent, NULL);
 		goto runMin;
@@ -8914,8 +8913,8 @@ nextStep:
 							skipSaberTrace = qtrue;
 						}
 						else if (g_saberTraceSaberFirst.integer >= 2 &&
-							g_gametype.integer != GT_DUEL &&
-							g_gametype.integer != GT_POWERDUEL &&
+							level.gametype != GT_DUEL &&
+							level.gametype != GT_POWERDUEL &&
 							!self->client->ps.duelInProgress)
 						{ //if value is >= 2, and not in a duel, skip
 							skipSaberTrace = qtrue;
@@ -9458,12 +9457,12 @@ qboolean HasSetSaberOnly(void)
 	int i = 0;
 	int wDisable = 0;
 
-	if (g_gametype.integer == GT_JEDIMASTER)
+	if (level.gametype == GT_JEDIMASTER)
 	{ //set to 0 
 		return qfalse;
 	}
 
-	if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 	{
 		wDisable = g_duelWeaponDisable.integer;
 	}

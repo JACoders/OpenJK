@@ -677,15 +677,12 @@ static void Upload32( unsigned *data,
 			}
 			else if ( isLightmap && r_texturebitslm->integer > 0 )
 			{
+				int lmBits = r_texturebitslm->integer & 0x30; // 16 or 32
 				// Allow different bit depth when we are a lightmap
-				if ( r_texturebitslm->integer == 16 )
-				{
+				if ( lmBits == 16 )
 					*pformat = GL_RGB5;
-				}
-				else if ( r_texturebitslm->integer == 32 )
-				{
+				else
 					*pformat = GL_RGB8;
-				}
 			}
 			else if ( r_texturebits->integer == 16 )
 			{
@@ -3089,10 +3086,10 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 			}
 			surfName[strlen(surfName)-4] = 0;	//remove the "_off"
 		}
-		if (sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) <= skin->numSurfaces)
+		if ( skin->numSurfaces >= ARRAY_LEN( skin->surfaces ) )
 		{
-			assert( sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) > skin->numSurfaces );
-			Com_Printf( "WARNING: RE_RegisterSkin( '%s' ) more than %d surfaces!\n", name, sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) );
+			assert( ARRAY_LEN( skin->surfaces ) > skin->numSurfaces );
+			Com_Printf( "WARNING: RE_RegisterSkin( '%s' ) more than %d surfaces!\n", name, ARRAY_LEN( skin->surfaces ) );
 			break;
 		}
 		surf = (skinSurface_t *) Hunk_Alloc( sizeof( *skin->surfaces[0] ), h_low );

@@ -728,7 +728,7 @@ void IN_Frame (void) {
 	// If not DISCONNECTED (main menu) or ACTIVE (in game), we're loading
 	qboolean loading = (qboolean)( cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE );
 
-	if( !Cvar_VariableIntegerValue("r_fullscreen") && ( cls.keyCatchers & KEYCATCH_CONSOLE ) ) {
+	if( !Cvar_VariableIntegerValue("r_fullscreen") && ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) ) {
 	//if ( cls.keyCatchers & KEYCATCH_CONSOLE ) {
 		// temporarily deactivate if not in the game and
 		// running on the desktop

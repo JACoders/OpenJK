@@ -1,3 +1,5 @@
+#pragma once
+
 //rww - so that I may utilize vm debugging features WITHOUT DROPPING TO 0.1FPS
 #define CRAZY_SYMBOL_MAP
 
@@ -110,7 +112,7 @@ struct vm_s {
     // DO NOT MOVE OR CHANGE THESE WITHOUT CHANGING THE VM_OFFSET_* DEFINES
     // USED BY THE ASM CODE
     int			programStack;		// the vm may be recursively entered
-    int			(*systemCall)( int *parms );
+    intptr_t	(*systemCall)( intptr_t *parms );
 
 	//------------------------------------
    
@@ -118,7 +120,7 @@ struct vm_s {
 
 	// for dynamic linked modules
 	void		*dllHandle;
-	int			(QDECL *entryPoint)( int callNum, ... );
+	intptr_t	(QDECL *entryPoint)( int callNum, ... );
 
 	// for interpreted modules
 	qboolean	currentlyInterpreting;
@@ -177,4 +179,3 @@ vmSymbol_t *VM_ValueToFunctionSymbol( vm_t *vm, int value );
 int VM_SymbolToValue( vm_t *vm, const char *symbol );
 const char *VM_ValueToSymbol( vm_t *vm, int value );
 void VM_LogSyscalls( int *args );
-

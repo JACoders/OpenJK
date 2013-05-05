@@ -3,15 +3,7 @@
 #include "qcommon/exe_headers.h"
 
 #include "client.h"
-
-#if !defined(FX_SCHEDULER_H_INC)
-	#include "FxScheduler.h"
-#endif
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-	#include "ghoul2/G2_local.h"
-#endif
+#include "FxScheduler.h"
 
 #ifdef VV_LIGHTING
 #include "renderer/tr_lightmanager.h"
@@ -1024,7 +1016,7 @@ bool CTail::Update(void)
 		// Just calc an old point some time in the past, doesn't really matter when
 		VectorMA( org, (time - 0.003f), realVel, mOldOrigin );
 	}
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 	else if ( !fx_freeze->integer )
 #else
 	else

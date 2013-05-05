@@ -4,17 +4,9 @@
 // tr_init.c -- functions that are not called every frame
 
 #include "tr_local.h"
-
-#if !defined __TR_WORLDEFFECTS_H
-	#include "tr_WorldEffects.h"
-#endif
-
+#include "tr_WorldEffects.h"
 #include "tr_font.h"
-
-#if !defined (MINIHEAP_H_INC)
-	#include "qcommon/MiniHeap.h"
-#endif
-
+#include "qcommon/MiniHeap.h"
 #include "G2_local.h"
 #include "libpng/png.h"
 
@@ -359,8 +351,7 @@ static void InitOpenGL( void )
 		// print info the first time only
 		GL_SetDefaultState();
 		R_Splash();	//get something on screen asap
-		if ( ri.Cvar_VariableIntegerValue( "com_developer" ) )
-			GfxInfo_f();
+		GfxInfo_f();
 	}
 	else
 	{
@@ -472,6 +463,8 @@ static void R_ModeList_f( void )
 	int i;
 
 	Com_Printf ("\n" );
+	Com_Printf ("Mode -2: Use desktop resolution\n" );
+	Com_Printf ("Mode -1: Use r_customWidth and r_customHeight variables\n" );
 	for ( i = 0; i < s_numVidModes; i++ )
 	{
 		Com_Printf ("%s\n", r_vidModes[i].description );
@@ -1113,12 +1106,12 @@ void R_Register( void )
 	r_ext_texture_filter_anisotropic	= ri.Cvar_Get( "r_ext_texture_filter_anisotropic",	"16",						CVAR_ARCHIVE );
 	r_environmentMapping				= ri.Cvar_Get( "r_environmentMapping",				"1",						CVAR_ARCHIVE );
 	r_DynamicGlow						= ri.Cvar_Get( "r_DynamicGlow",						"0",						CVAR_ARCHIVE );
-	r_DynamicGlowPasses					= ri.Cvar_Get( "r_DynamicGlowPasses",				"5",						CVAR_CHEAT );
-	r_DynamicGlowDelta					= ri.Cvar_Get( "r_DynamicGlowDelta",				"0.8f",						CVAR_CHEAT );
-	r_DynamicGlowIntensity				= ri.Cvar_Get( "r_DynamicGlowIntensity",			"1.13f",					CVAR_CHEAT );
-	r_DynamicGlowSoft					= ri.Cvar_Get( "r_DynamicGlowSoft",					"1",						CVAR_CHEAT );
-	r_DynamicGlowWidth					= ri.Cvar_Get( "r_DynamicGlowWidth",				"320",						CVAR_CHEAT|CVAR_LATCH );
-	r_DynamicGlowHeight					= ri.Cvar_Get( "r_DynamicGlowHeight",				"240",						CVAR_CHEAT|CVAR_LATCH );
+	r_DynamicGlowPasses					= ri.Cvar_Get( "r_DynamicGlowPasses",				"5",						CVAR_ARCHIVE );
+	r_DynamicGlowDelta					= ri.Cvar_Get( "r_DynamicGlowDelta",				"0.8f",						CVAR_ARCHIVE );
+	r_DynamicGlowIntensity				= ri.Cvar_Get( "r_DynamicGlowIntensity",			"1.13f",					CVAR_ARCHIVE );
+	r_DynamicGlowSoft					= ri.Cvar_Get( "r_DynamicGlowSoft",					"1",						CVAR_ARCHIVE );
+	r_DynamicGlowWidth					= ri.Cvar_Get( "r_DynamicGlowWidth",				"320",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_DynamicGlowHeight					= ri.Cvar_Get( "r_DynamicGlowHeight",				"240",						CVAR_ARCHIVE|CVAR_LATCH );
 	r_picmip							= ri.Cvar_Get( "r_picmip",							"0",						CVAR_ARCHIVE|CVAR_LATCH );
 	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
 	r_colorMipLevels					= ri.Cvar_Get( "r_colorMipLevels",					"0",						CVAR_LATCH );
@@ -1304,7 +1297,7 @@ void R_Init( void ) {
 //	Swap_Init();
 
 #ifndef FINAL_BUILD
-	if ( (int)tess.xyz & 15 ) {
+	if ( (intptr_t)tess.xyz & 15 ) {
 		Com_Printf( "WARNING: tess.xyz not 16 byte aligned (%x)\n",(int)tess.xyz & 15 );
 	}
 #endif

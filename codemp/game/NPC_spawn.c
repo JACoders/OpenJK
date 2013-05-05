@@ -480,7 +480,7 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 	else
 	{
 		//for siege, want "bad" npc's allied with the "bad" team
-		if (g_gametype.integer == GT_SIEGE && ent->s.NPC_class != CLASS_VEHICLE)
+		if (level.gametype == GT_SIEGE && ent->s.NPC_class != CLASS_VEHICLE)
 		{
 			if (ent->client->enemyTeam == NPCTEAM_PLAYER)
 			{
@@ -1113,8 +1113,8 @@ void NPC_Begin (gentity_t *ent)
 	SetNPCGlobals( ent );
 
 	ent->enemy = NULL;
-	NPCInfo->timeOfDeath = 0;
-	NPCInfo->shotTime = 0;
+	NPCS.NPCInfo->timeOfDeath = 0;
+	NPCS.NPCInfo->shotTime = 0;
 	NPC_ClearGoal();
 	NPC_ChangeWeapon( ent->client->ps.weapon );
 
@@ -1127,7 +1127,7 @@ void NPC_Begin (gentity_t *ent)
 
 	//MCG - Begin: NPC hacks
 	//FIXME: Set the team correctly
-	if (ent->s.NPC_class != CLASS_VEHICLE || g_gametype.integer != GT_SIEGE)
+	if (ent->s.NPC_class != CLASS_VEHICLE || level.gametype != GT_SIEGE)
 	{
 		ent->client->ps.persistant[PERS_TEAM] = ent->client->playerTeam;
 	}
@@ -4195,9 +4195,9 @@ void Cmd_NPC_f( gentity_t *ent )
 	else if ( Q_stricmp ( cmd, "score" ) == 0 )
 	{
 		char		cmd2[1024];
-		gentity_t *ent = NULL;
+		gentity_t *thisent = NULL;
 
-		trap_Argv(2, cmd2, 1024);
+		trap_Argv( 2, cmd2, sizeof( cmd2 ) );
 
 		if ( !cmd2[0] )
 		{//Show the score for all NPCs
@@ -4206,19 +4206,19 @@ void Cmd_NPC_f( gentity_t *ent )
 			Com_Printf( "SCORE LIST:\n" );
 			for ( i = 0; i < ENTITYNUM_WORLD; i++ )
 			{
-				ent = &g_entities[i];
-				if ( !ent || !ent->client )
+				thisent = &g_entities[i];
+				if ( !thisent || !thisent->client )
 				{
 					continue;
 				}
-				NPC_PrintScore( ent );
+				NPC_PrintScore( thisent );
 			}
 		}
 		else
 		{
-			if ( (ent = G_Find( NULL, FOFS(targetname), cmd2 )) != NULL && ent->client )
+			if ( (thisent = G_Find( NULL, FOFS(targetname), cmd2 )) != NULL && thisent->client )
 			{
-				NPC_PrintScore( ent );
+				NPC_PrintScore( thisent );
 			}
 			else
 			{

@@ -144,7 +144,7 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 
 	// check against frustum planes
 #ifndef __NO_JK2
-	if( Cvar_VariableIntegerValue("com_jk2") )
+	if( com_jk2 && com_jk2->integer )
 	{
 		// They used 4 frustrum planes in JK2, and 5 in JKA --eez
 		for (i = 0 ; i < 4 ; i++) 
@@ -1401,10 +1401,8 @@ void R_SortDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 #endif
 	}
 
-#ifndef _XBOX
 	// sort the drawsurfs by sort type, then orientation, then shader
-	qsortFast (drawSurfs, numDrawSurfs, sizeof(drawSurf_t) );
-#endif
+	qsortFast ( drawSurfs, numDrawSurfs, sizeof(drawSurf_t) );
 
 	// check for any pass through drawing, which
 	// may cause another view to be rendered first

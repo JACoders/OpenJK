@@ -1,7 +1,6 @@
-// Task Manager header file
+#pragma once
 
-#ifndef __TASK_MANAGER__
-#define __TASK_MANAGER__
+// Task Manager header file
 
 #include <map>
 
@@ -191,5 +190,3 @@ protected:
 
 	//CTask	*m_waitTask;		//Global pointer to the current task that is waiting for callback completion
 };
-
-#endif	//__TASK_MANAGER__

@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(CM_RANDOMTERRAIN_H_INC)
-#define CM_RANDOMTERRAIN_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including cm_randomterrain.h")
@@ -85,5 +83,3 @@ public:
 };
 
 unsigned RMG_CreateSeed(char *TextSeed);
-
-#endif // CM_RANDOM_H_INC

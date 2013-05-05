@@ -9,8 +9,6 @@
 #include "qcommon/exe_headers.h"
 
 #include "client/client.h"
-//#include "zlib32/zip.h"
-//#include "unzip.h"
 #include "files.h"
 
 #include "platform.h"
@@ -854,7 +852,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 	#ifndef DEDICATED
 	#ifndef FINAL_BUILD
 						// Check for unprecached files when in game but not in the menus
-						if((cls.state == CA_ACTIVE) && !(cls.keyCatchers & KEYCATCH_UI))
+						if((cls.state == CA_ACTIVE) && !(Key_GetCatcher( ) & KEYCATCH_UI))
 						{
 							Com_Printf(S_COLOR_YELLOW "WARNING: File %s not precached\n", filename);
 						}
@@ -983,7 +981,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 	#ifndef DEDICATED
 	#ifndef FINAL_BUILD
 				// Check for unprecached files when in game but not in the menus
-				if((cls.state == CA_ACTIVE) && !(cls.keyCatchers & KEYCATCH_UI))
+				if((cls.state == CA_ACTIVE) && !(Key_GetCatcher( ) & KEYCATCH_UI))
 				{
 					Com_Printf(S_COLOR_YELLOW "WARNING: File %s not precached\n", filename);
 				}
@@ -1466,7 +1464,7 @@ Creates a new pak_t in the search chain for the contents
 of a zip file.
 =================
 */
-static pack_t *FS_LoadZipFile( char *zipfile, const char *basename )
+static pack_t *FS_LoadZipFile( const char *zipfile, const char *basename )
 {
 	fileInPack_t	*buildBuffer;
 	pack_t			*pack;
@@ -1489,8 +1487,6 @@ static pack_t *FS_LoadZipFile( char *zipfile, const char *basename )
 	if (err != UNZ_OK)
 		return NULL;
 
-	fs_packFiles += gi.number_entry;
-
 	len = 0;
 	unzGoToFirstFile(uf);
 	for (i = 0; i < gi.number_entry; i++)
@@ -1505,7 +1501,8 @@ static pack_t *FS_LoadZipFile( char *zipfile, const char *basename )
 
 	buildBuffer = (struct fileInPack_s *)Z_Malloc( (gi.number_entry * sizeof( fileInPack_t )) + len, TAG_FILESYS, qtrue );
 	namePtr = ((char *) buildBuffer) + gi.number_entry * sizeof( fileInPack_t );
-	fs_headerLongs = (int *)Z_Malloc( gi.number_entry * sizeof(int), TAG_FILESYS, qtrue );
+	fs_headerLongs = (int *)Z_Malloc( ( gi.number_entry + 1 ) * sizeof(int), TAG_FILESYS, qtrue );
+	fs_headerLongs[ fs_numHeaderLongs++ ] = LittleLong( fs_checksumFeed );
 
 	// get the hash table size from the number of files in the zip
 	// because lots of custom pk3 files have less than 32 or 64 files
@@ -1556,8 +1553,8 @@ static pack_t *FS_LoadZipFile( char *zipfile, const char *basename )
 		unzGoToNextFile(uf);
 	}
 
-	pack->checksum = Com_BlockChecksum( fs_headerLongs, 4 * fs_numHeaderLongs );
-	pack->pure_checksum = Com_BlockChecksumKey( fs_headerLongs, 4 * fs_numHeaderLongs, LittleLong(fs_checksumFeed) );
+	pack->checksum = Com_BlockChecksum( &fs_headerLongs[ 1 ], sizeof(*fs_headerLongs) * ( fs_numHeaderLongs - 1 ) );
+	pack->pure_checksum = Com_BlockChecksum( fs_headerLongs, sizeof(*fs_headerLongs) * fs_numHeaderLongs );
 	pack->checksum = LittleLong( pack->checksum );
 	pack->pure_checksum = LittleLong( pack->pure_checksum );
 
@@ -1565,6 +1562,50 @@ static pack_t *FS_LoadZipFile( char *zipfile, const char *basename )
 
 	pack->buildBuffer = buildBuffer;
 	return pack;
+}
+
+/*
+=================
+FS_FreePak
+
+Frees a pak structure and releases all associated resources
+=================
+*/
+
+void FS_FreePak(pack_t *thepak)
+{
+	unzClose(thepak->handle);
+	Z_Free(thepak->buildBuffer);
+	Z_Free(thepak);
+}
+
+/*
+=================
+FS_GetZipChecksum
+
+Compares whether the given pak file matches a referenced checksum
+=================
+*/
+qboolean FS_CompareZipChecksum(const char *zipfile)
+{
+	pack_t *thepak;
+	int index, checksum;
+
+	thepak = FS_LoadZipFile(zipfile, "");
+
+	if(!thepak)
+		return qfalse;
+
+	checksum = thepak->checksum;
+	FS_FreePak(thepak);
+
+	for(index = 0; index < fs_numServerReferencedPaks; index++)
+	{
+		if(checksum == fs_serverReferencedPaks[index])
+			return qtrue;
+	}
+
+	return qfalse;
 }
 
 /*
@@ -2203,7 +2244,6 @@ void FS_Path_f( void ) {
 		}
 	}
 
-
 	Com_Printf( "\n" );
 	for ( i = 1 ; i < MAX_FILE_HANDLES ; i++ ) {
 		if ( fsh[i].handleFiles.file.o ) {
@@ -2261,7 +2301,7 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	searchpath_t	*search;
 	searchpath_t	*thedir;
 	pack_t			*pak;
-	char			*pakfile;
+	char			curpath[MAX_OSPATH + 1], *pakfile;
 	int				numfiles;
 	char			**pakfiles;
 	char			*sorted[MAX_PAKFILES];
@@ -2276,6 +2316,10 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	
 	Q_strncpyz( fs_gamedir, dir, sizeof( fs_gamedir ) );
 
+	// find all pak files in this directory
+	Q_strncpyz(curpath, FS_BuildOSPath(path, dir, ""), sizeof(curpath));
+	curpath[strlen(curpath) - 1] = '\0';	// strip the trailing slash
+
 	//
 	// add the directory to the search path
 	//
@@ -2283,17 +2327,14 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	search->dir = (directory_t *)Z_Malloc( sizeof( *search->dir ), TAG_FILESYS, qtrue );
 
 	Q_strncpyz( search->dir->path, path, sizeof( search->dir->path ) );
+	Q_strncpyz( search->dir->fullpath, curpath, sizeof( search->dir->fullpath ) );
 	Q_strncpyz( search->dir->gamedir, dir, sizeof( search->dir->gamedir ) );
 	search->next = fs_searchpaths;
 	fs_searchpaths = search;
 
 	thedir = search;
 
-	// find all pak files in this directory
-	pakfile = FS_BuildOSPath( path, dir, "" );
-	pakfile[ strlen(pakfile) - 1 ] = 0;	// strip the trailing slash
-
-	pakfiles = Sys_ListFiles( pakfile, ".pk3", NULL, &numfiles, qfalse );
+	pakfiles = Sys_ListFiles( curpath, ".pk3", NULL, &numfiles, qfalse );
 
 	// sort them so that later alphabetic matches override
 	// earlier ones.  This makes pak1.pk3 override pak0.pk3
@@ -2310,8 +2351,11 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 		pakfile = FS_BuildOSPath( path, dir, sorted[i] );
 		if ( ( pak = FS_LoadZipFile( pakfile, sorted[i] ) ) == 0 )
 			continue;
+		Q_strncpyz(pak->pakPathname, curpath, sizeof(pak->pakPathname));
 		// store the game name for downloading
-		strcpy(pak->pakGamename, dir);
+		Q_strncpyz(pak->pakGamename, dir, sizeof(pak->pakGamename));
+
+		fs_packFiles += pak->numfiles;
 
 		search = (searchpath_s *)Z_Malloc (sizeof(searchpath_t), TAG_FILESYS, qtrue);
 		search->pack = pak;
@@ -2493,6 +2537,7 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 }
 
 //rww - add search paths in for received svc_setgame
+//Ensiform - this is so wrong rww
 void FS_UpdateGamedir(void)
 {
 	if ( fs_gamedirvar->string[0] && Q_stricmp( fs_gamedirvar->string, BASEGAME ) )
@@ -2576,7 +2621,7 @@ void FS_Startup( const char *gameName ) {
 	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT|CVAR_PROTECTED );
 	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
 
-	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT);
+	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED);
 
 	// add search path elements in reverse priority order
 	if (fs_cdpath->string[0]) {
@@ -2640,31 +2685,6 @@ void FS_Startup( const char *gameName ) {
 	}
 #endif
 	Com_Printf( "%d files in pk3 files\n", fs_packFiles );
-}
-
-/*
-=====================
-FS_GamePureChecksum
-
-Returns the checksum of the pk3 from which the server loaded the qagame.qvm
-=====================
-*/
-const char *FS_GamePureChecksum( void ) {
-	static char	info[MAX_STRING_TOKENS];
-	searchpath_t *search;
-
-	info[0] = 0;
-
-	for ( search = fs_searchpaths ; search ; search = search->next ) {
-		// is the element a pak file?
-		if ( search->pack ) {
-			if (search->pack->referenced & FS_QAGAME_REF) {
-				Com_sprintf(info, sizeof(info), "%d", search->pack->checksum);
-			}
-		}
-	}
-
-	return info;
 }
 
 /*
@@ -2846,10 +2866,10 @@ const char *FS_ReferencedPakNames( void ) {
 	for ( search = fs_searchpaths ; search ; search = search->next ) {
 		// is the element a pak file?
 		if ( search->pack ) {
-			if (*info) {
-				Q_strcat(info, sizeof( info ), " " );
-			}
 			if (search->pack->referenced || Q_stricmpn(search->pack->pakGamename, BASEGAME, strlen(BASEGAME))) {
+				if (*info) {
+					Q_strcat(info, sizeof( info ), " " );
+				}
 				Q_strcat( info, sizeof( info ), search->pack->pakGamename );
 				Q_strcat( info, sizeof( info ), "/" );
 				Q_strcat( info, sizeof( info ), search->pack->pakBasename );
@@ -2951,7 +2971,7 @@ checksums to see if any pk3 files need to be auto-downloaded.
 =====================
 */
 void FS_PureServerSetReferencedPaks( const char *pakSums, const char *pakNames ) {
-	int		i, c, d;
+	int		i, c, d = 0;
 
 	Cmd_TokenizeString( pakSums );
 
@@ -2960,30 +2980,36 @@ void FS_PureServerSetReferencedPaks( const char *pakSums, const char *pakNames )
 		c = MAX_SEARCH_PATHS;
 	}
 
-	fs_numServerReferencedPaks = c;
-
 	for ( i = 0 ; i < c ; i++ ) {
 		fs_serverReferencedPaks[i] = atoi( Cmd_Argv( i ) );
 	}
 
-	for ( i = 0 ; i < c ; i++ ) {
-		if (fs_serverReferencedPakNames[i]) {
+	for (i = 0 ; i < ARRAY_LEN(fs_serverReferencedPakNames); i++)
+	{
+		if(fs_serverReferencedPakNames[i])
 			Z_Free(fs_serverReferencedPakNames[i]);
-		}
+
 		fs_serverReferencedPakNames[i] = NULL;
 	}
+
 	if ( pakNames && *pakNames ) {
 		Cmd_TokenizeString( pakNames );
 
 		d = Cmd_Argc();
-		if ( d > MAX_SEARCH_PATHS ) {
-			d = MAX_SEARCH_PATHS;
+		if ( d > c ) {
+			d = c;
 		}
 
 		for ( i = 0 ; i < d ; i++ ) {
 			fs_serverReferencedPakNames[i] = CopyString( Cmd_Argv( i ) );
 		}
 	}
+
+	// ensure that there are as many checksums as there are pak names.
+	if(d < c)
+		c = d;
+
+	fs_numServerReferencedPaks = c;
 }
 
 /*

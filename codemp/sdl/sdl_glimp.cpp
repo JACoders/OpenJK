@@ -209,7 +209,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 	Com_Printf( "Initializing OpenGL display\n");
 
-	if ( r_allowResize->integer )
+	if ( r_allowResize->integer && !fullscreen )
 		flags |= SDL_WINDOW_RESIZABLE;
 
 	/*icon = SDL_CreateRGBSurfaceFrom(
@@ -1382,6 +1382,57 @@ void 		GLimp_LogComment( char *comment )
 {
 }
 
-void		GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] )
+void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] )
 {
+	Uint16 table[3][256];
+	int i, j;
+	
+	if( !glConfig.deviceSupportsGamma || r_ignorehwgamma->integer > 0 )
+		return;
+	
+	for (i = 0; i < 256; i++)
+	{
+		table[0][i] = ( ( ( Uint16 ) red[i] ) << 8 ) | red[i];
+		table[1][i] = ( ( ( Uint16 ) green[i] ) << 8 ) | green[i];
+		table[2][i] = ( ( ( Uint16 ) blue[i] ) << 8 ) | blue[i];
+	}
+	
+#ifdef _WIN32
+#include <windows.h>
+	
+	// Win2K and newer put this odd restriction on gamma ramps...
+	{
+		OSVERSIONINFO	vinfo;
+		
+		vinfo.dwOSVersionInfoSize = sizeof( vinfo );
+		GetVersionEx( &vinfo );
+		if( vinfo.dwMajorVersion >= 5 && vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT )
+		{
+			ri.Printf( PRINT_DEVELOPER, "performing gamma clamp.\n" );
+			for( j = 0 ; j < 3 ; j++ )
+			{
+				for( i = 0 ; i < 128 ; i++ )
+				{
+					if( table[ j ] [ i] > ( ( 128 + i ) << 8 ) )
+						table[ j ][ i ] = ( 128 + i ) << 8;
+				}
+				
+				if( table[ j ] [127 ] > 254 << 8 )
+					table[ j ][ 127 ] = 254 << 8;
+			}
+		}
+	}
+#endif
+	
+	// enforce constantly increasing
+	for (j = 0; j < 3; j++)
+	{
+		for (i = 1; i < 256; i++)
+		{
+			if (table[j][i] < table[j][i-1])
+				table[j][i] = table[j][i-1];
+		}
+	}
+	
+	SDL_SetWindowGammaRamp(screen, table[0], table[1], table[2]);
 }

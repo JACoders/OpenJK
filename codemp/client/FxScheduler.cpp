@@ -2,19 +2,8 @@
 #include "qcommon/exe_headers.h"
 
 #include "client.h"
-
-#if !defined(FX_SCHEDULER_H_INC)
-	#include "FxScheduler.h"
-#endif
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-	#include "ghoul2/G2_local.h"
-#endif
-
-#if !defined(__Q_SHARED_H)
-	#include "qcommon/q_shared.h"
-#endif
+#include "FxScheduler.h"
+#include "qcommon/q_shared.h"
 
 #ifndef _WIN32
 #include <algorithm>
@@ -610,7 +599,7 @@ SEffectTemplate *CFxScheduler::GetEffectCopy( int fxHandle, int *newHandle )
 		return 0;
 	}
 
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 	// never get a copy when time is frozen
 	if ( fx_freeze->integer )
 	{
@@ -829,7 +818,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 		return;
 	}
 
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 	// Don't bother scheduling the effect if the system is currently frozen
 	if ( fx_freeze->integer )
 	{

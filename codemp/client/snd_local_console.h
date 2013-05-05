@@ -1,7 +1,6 @@
-// snd_local.h -- private sound definations
+#pragma once
 
-#ifndef SND_LOCAL_H
-#define SND_LOCAL_H
+// snd_local.h -- private sound definations
 
 // Following #define is ONLY for MP JKA code.
 // They want to keep qboolean pure enum in that code, so all
@@ -116,6 +115,3 @@ bool Sys_StreamIsError(streamHandle_t handle);
 
 //
 //////////////////////////////////
-
-#endif	// #ifndef SND_LOCAL_H
-

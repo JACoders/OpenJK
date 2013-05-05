@@ -973,41 +973,16 @@ void Com_Init( char *commandLine ) {
 
 		Com_InitZoneMemory();
 
-#ifdef _XBOX
-		WF_Init();
-		// set up ri
-		extern void CL_InitRef( void );
-		CL_InitRef();
-
-		// register renderer cvars
-		extern void R_Register(void);
-		R_Register();
-
-		// start the gl render layer
-		extern void GLimp_Init(void);
-		GLimp_Init();
-
-		// put up the license screen
-		SP_DoLicense();
-#endif
-
 		Cmd_Init ();
 		Cvar_Init ();
 
 		// get the commandline cvars set
 		Com_StartupVariable( NULL );
 
+		com_jk2 = Cvar_Get( "com_jk2", "0", CVAR_INIT );
+
 		// done early so bind command exists
 		CL_InitKeyCommands();
-
-#ifdef _XBOX
-		extern void Sys_FilecodeScan_f();
-		Sys_InitFileCodes();
-		Cmd_AddCommand("filecodes", Sys_FilecodeScan_f);
-
-		extern void Sys_StreamInit();
-		Sys_StreamInit();
-#endif
 
 		FS_InitFilesystem ();	//uses z_malloc
 		R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
@@ -1062,8 +1037,6 @@ void Com_Init( char *commandLine ) {
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
-
-		com_jk2			= Cvar_Get( "com_jk2", "0", CVAR_INIT|CVAR_SERVERINFO );
 		
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);
@@ -1075,7 +1048,7 @@ void Com_Init( char *commandLine ) {
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
 #ifndef __NO_JK2
-		if(com_jk2->integer)
+		if(com_jk2 && com_jk2->integer)
 		{
 			JK2SP_Init();
 		}

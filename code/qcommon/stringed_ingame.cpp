@@ -1000,7 +1000,7 @@ LPCSTR SE_GetString( LPCSTR psPackageAndStringReference )
 {
 #ifndef __NO_JK2
 	// Hacky but saves me from fixing 1000000 references --eez
-	if(Cvar_VariableIntegerValue("com_jk2"))
+	if(com_jk2 && com_jk2->integer)
 	{
 extern const char *JK2SP_GetStringTextString(const char *Reference);
 		return (LPCSTR)JK2SP_GetStringTextString((const char *)psPackageAndStringReference); 

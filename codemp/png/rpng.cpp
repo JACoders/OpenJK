@@ -7,7 +7,6 @@
 
 #include "zlib/zlib.h"
 #include "rpng.h"
-//#include "qcommon/memory.h"
 
 //Raz: hi i'm bad
 #include "renderer/tr_public.h"
@@ -165,9 +164,9 @@ bool PNG_HandleIHDR(const byte *data, png_image_t *image)
 
 // Filter a row of data
 
-void PNG_Filter(byte *out, byte filter, const byte *in, const byte *lastline, ulong rowbytes, ulong bpp)
+void PNG_Filter(byte *out, byte filter, const byte *in, const byte *lastline, uint32_t rowbytes, uint32_t bpp)
 {
-	ulong		i;
+	uint32_t	i;
 
 	switch(filter)
 	{
@@ -266,9 +265,9 @@ void PNG_Filter(byte *out, byte filter, const byte *in, const byte *lastline, ul
 
 // Unfilters a row of data
 
-void PNG_Unfilter(byte *out, byte filter, const byte *lastline, ulong rowbytes, ulong bpp)
+void PNG_Unfilter(byte *out, byte filter, const byte *lastline, uint32_t rowbytes, uint32_t bpp)
 {
-	ulong	i;
+	uint32_t	i;
 
 	switch(filter)
 	{
@@ -355,11 +354,11 @@ void PNG_Unfilter(byte *out, byte filter, const byte *lastline, ulong rowbytes, 
 
 // Pack up the image data line by line
 
-bool PNG_Pack(byte *out, ulong *size, ulong maxsize, byte *data, int width, int height, int bytedepth)
+bool PNG_Pack(byte *out, uint32_t *size, ulong maxsize, byte *data, int width, int height, int bytedepth)
 {
 	z_stream		zdata;
-	ulong			rowbytes;
-	ulong			y;
+	uint32_t		rowbytes;
+	uint32_t		y;
 	const byte		*lastline, *source;
 	// Storage for filter type and filtered row
 	static byte workline[(MAX_PNG_WIDTH * MAX_PNG_DEPTH) + 1];
@@ -411,9 +410,9 @@ bool PNG_Pack(byte *out, ulong *size, ulong maxsize, byte *data, int width, int 
 
 // Unpack the image data, line by line
 
-bool PNG_Unpack(const byte *data, const ulong datasize, png_image_t *image)
+bool PNG_Unpack(const byte *data, const uint32_t datasize, png_image_t *image)
 {
-	ulong		rowbytes, zerror, y;
+	uint32_t	rowbytes, zerror, y;
 	byte		filter;
 	z_stream	zdata;
 	byte		*lastline, *out;
@@ -470,12 +469,12 @@ bool PNG_Unpack(const byte *data, const ulong datasize, png_image_t *image)
 
 // Scan through all chunks and process each one
 
-bool PNG_Load(const byte *data, ulong datasize, png_image_t *image)
+bool PNG_Load(const byte *data, uint32_t datasize, png_image_t *image)
 {
 	bool			moredata;
 	const byte		*next;
 	byte			*workspace, *work;
-	ulong			length, type, crc, totallength;
+	uint32_t		length, type, crc, totallength;
 
 	png_error = PNG_ERROR_OK;
 
@@ -493,19 +492,19 @@ bool PNG_Load(const byte *data, ulong datasize, png_image_t *image)
 	moredata = true;
 	while(moredata)
 	{
-		length = BigLong(*(ulong *)data);
-		data += sizeof(ulong);
+		length = BigLong(*(uint32_t *)data);
+		data += sizeof(uint32_t);
 
-		type = BigLong(*(ulong *)data);
+		type = BigLong(*(uint32_t *)data);
 		const byte *crcbase = data;
-		data += sizeof(ulong);
+		data += sizeof(uint32_t);
 
 		// CRC checksum location
-		next = data + length + sizeof(ulong);
+		next = data + length + sizeof(uint32_t);
 
 		// CRC checksum includes header field
-		crc = crc32(0, crcbase, length + sizeof(ulong));
-		if(crc != (ulong)BigLong(*(ulong *)(next - 4)))
+		crc = crc32(0, crcbase, length + sizeof(uint32_t));
+		if(crc != (uint32_t)BigLong(*(uint32_t *)(next - 4)))
 		{
 			if(image->data)
 			{
@@ -554,9 +553,9 @@ bool PNG_Load(const byte *data, ulong datasize, png_image_t *image)
 
 // Outputs a crc'd chunk of PNG data
 
-bool PNG_OutputChunk(fileHandle_t fp, ulong type, byte *data, ulong size)
+bool PNG_OutputChunk(fileHandle_t fp, uint32_t type, byte *data, uint32_t size)
 {
-	ulong	crc, little, outcount;
+	uint32_t	crc, little, outcount;
 
 	// Output a standard PNG chunk - length, type, data, crc
 	little = BigLong(size);
@@ -590,7 +589,7 @@ bool PNG_Save(const char *name, byte *data, int width, int height, int bytedepth
 	byte			*work;
 	fileHandle_t	fp;
 	int				maxsize;
-	ulong			size, outcount;
+	uint32_t		size, outcount;
 	png_ihdr_t		png_header;
 
 	png_error = PNG_ERROR_OK;
@@ -662,7 +661,7 @@ void PNG_ConvertTo32(png_image_t *image)
 {
 	byte	*temp;
 	byte	*old, *old2;
-	ulong	i;
+	uint32_t	i;
 
 	temp = (byte *)Z_Malloc(image->width * image->height * 4, TAG_TEMP_PNG, qtrue);
 	old = image->data;

@@ -1,7 +1,6 @@
-// Interpreter.h
+#pragma once
 
-#ifndef __INTERPRETER__
-#define __INTERPRETER__
+// Interpreter.h
 
 #define ICARUS_VERSION	1.33
 
@@ -221,4 +220,3 @@ protected:
 };
 
 #endif __cplusplus
-#endif	//__INTERPRETER__

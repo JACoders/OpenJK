@@ -5,9 +5,7 @@
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
 
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-#endif
+#include "ghoul2/G2.h"
 #include "G2_local.h"
 
 #include "qcommon/MiniHeap.h"
@@ -2048,7 +2046,7 @@ void G2API_CollisionDetectCache(CollisionRecord_t *collRecMap, CGhoul2Info_v &gh
 					//if we have a pointer, but not a ghoul2_zonetransalloc flag, then that means
 					//it is a miniheap pointer. Just stomp over it.
 					int iSize = g2.currentModel->mdxm->numSurfaces * 4;
-					g2.mTransformedVertsArray = (int *)Z_Malloc(iSize, TAG_GHOUL2, qtrue);
+					g2.mTransformedVertsArray = (size_t *)Z_Malloc(iSize, TAG_GHOUL2, qtrue);
 				}
 
 				g2.mFlags |= GHOUL2_ZONETRANSALLOC;

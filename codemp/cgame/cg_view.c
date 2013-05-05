@@ -3,12 +3,8 @@
 // cg_view.c -- setup all the parameters (position, angle, etc)
 // for a 3D rendering
 #include "cg_local.h"
-
 #include "game/bg_saga.h"
-
-#if !defined(CL_LIGHT_H_INC)
-	#include "cg_lights.h"
-#endif
+#include "cg_lights.h"
 
 #define MASK_CAMERACLIP (MASK_SOLID|CONTENTS_PLAYERCLIP)
 #define CAMERA_SIZE	4
@@ -684,7 +680,7 @@ static void CG_OffsetThirdPersonView( void )
 					}
 				}
 			}
-			if ( 0 && cg.predictedPlayerState.m_iVehicleNum //in a vehicle
+			/*if ( 0 && cg.predictedPlayerState.m_iVehicleNum //in a vehicle
 				&& BG_UnrestrainedPitchRoll( &cg.predictedPlayerState, cg_entities[cg.predictedPlayerState.m_iVehicleNum].m_pVehicle ) )//can roll/pitch without restriction
 			{
 				float pitchPerc = ((90.0f-fabs(cameraFocusAngles[ROLL]))/90.0f);
@@ -698,7 +694,7 @@ static void CG_OffsetThirdPersonView( void )
 					cameraFocusAngles[YAW] += pitchOffset-(pitchOffset*pitchPerc);
 				}
 			}
-			else
+			else*/
 			{
 				cameraFocusAngles[PITCH] += pitchOffset;
 			}
@@ -775,14 +771,14 @@ static void CG_OffsetThirdPersonView( void )
 			VectorCopy( camerafwd, diff );
 		}
 	}
-	if ( 0 && cg.predictedPlayerState.m_iVehicleNum //in a vehicle
+	/*if ( 0 && cg.predictedPlayerState.m_iVehicleNum //in a vehicle
 		&& BG_UnrestrainedPitchRoll( &cg.predictedPlayerState, cg_entities[cg.predictedPlayerState.m_iVehicleNum].m_pVehicle ) )//can roll/pitch without restriction
 	{//FIXME: this causes camera jerkiness, need to blend the roll?
 		float sav_Roll = cg.refdef.viewangles[ROLL];
 		vectoangles(diff, cg.refdef.viewangles);
 		cg.refdef.viewangles[ROLL] = sav_Roll;
 	}
-	else
+	else*/
 	{
 		vectoangles(diff, cg.refdef.viewangles);
 	}
@@ -1142,6 +1138,16 @@ qboolean CG_CalcFOVFromX( float fov_x )
 	float	fov_y;
 	qboolean	inwater;
 
+	if ( cg_fovAspectAdjust.integer ) {
+		// Based on LordHavoc's code for Darkplaces
+		// http://www.quakeworld.nu/forum/topic/53/what-does-your-qw-look-like/page/30
+		const float baseAspect = 0.75f; // 3/4
+		const float aspect = (float)cgs.glconfig.vidWidth/(float)cgs.glconfig.vidHeight;
+		const float desiredFov = fov_x;
+
+		fov_x = atan( tan( desiredFov*M_PI / 360.0f ) * baseAspect*aspect )*360.0f / M_PI;
+	}
+
 	x = cg.refdef.width / tan( fov_x / 360 * M_PI );
 	fov_y = atan2( cg.refdef.height, x );
 	fov_y = fov_y * 360 / M_PI;
@@ -1170,15 +1176,9 @@ qboolean CG_CalcFOVFromX( float fov_x )
 	inwater = qfalse;
 #endif
 
-
 	// set it
 	cg.refdef.fov_x = fov_x;
 	cg.refdef.fov_y = fov_y;
-
-#ifdef USE_WIDECSREEN
-	if(cg.widescreen)
-		cg.refdef.fov_x *= 1.125f;
-#endif
 
 	return (inwater);
 }
@@ -1299,6 +1299,16 @@ static int CG_CalcFov( void ) {
 		}
 	}
 
+	if ( cg_fovAspectAdjust.integer ) {
+		// Based on LordHavoc's code for Darkplaces
+		// http://www.quakeworld.nu/forum/topic/53/what-does-your-qw-look-like/page/30
+		const float baseAspect = 0.75f; // 3/4
+		const float aspect = (float)cgs.glconfig.vidWidth/(float)cgs.glconfig.vidHeight;
+		const float desiredFov = fov_x;
+
+		fov_x = atan( tan( desiredFov*M_PI / 360.0f ) * baseAspect*aspect )*360.0f / M_PI;
+	}
+
 	x = cg.refdef.width / tan( fov_x / 360 * M_PI );
 	fov_y = atan2( cg.refdef.height, x );
 	fov_y = fov_y * 360 / M_PI;
@@ -1315,12 +1325,6 @@ static int CG_CalcFov( void ) {
 	else {
 		inwater = qfalse;
 	}
-
-#ifdef USE_WIDESCREEN
-	if(cg.widescreen)
-		fov_x = fov_y * 1.77777f;
-#endif
-
 
 	// set it
 	cg.refdef.fov_x = fov_x;

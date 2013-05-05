@@ -31,6 +31,7 @@ set(MPGameGameFiles
 	"${MPDir}/game/g_client.c"
 	"${MPDir}/game/g_cmds.c"
 	"${MPDir}/game/g_combat.c"
+	"${MPDir}/game/g_cvar.c"
 	"${MPDir}/game/g_exphysics.c"
 	"${MPDir}/game/g_ICARUScb.c"
 	"${MPDir}/game/g_items.c"
@@ -109,7 +110,6 @@ set(MPGameGameFiles
 	"${MPDir}/game/bg_weapons.h"
 	"${MPDir}/botlib/botlib.h"
 	"${MPDir}/game/chars.h"
-	"${MPDir}/game/g_headers.h"
 	"${MPDir}/game/g_ICARUScb.h"
 	"${MPDir}/game/g_local.h"
 	"${MPDir}/game/g_nav.h"
@@ -121,7 +121,6 @@ set(MPGameGameFiles
 	"${MPDir}/game/npc_headers.h"
 	"${MPDir}/game/say.h"
 	"${MPDir}/game/surfaceflags.h"
-	"${MPDir}/game/syn.h"
 	"${MPDir}/game/teams.h"
 	"${MPDir}/game/w_saber.h"
 	)

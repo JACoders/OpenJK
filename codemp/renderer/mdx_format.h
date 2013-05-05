@@ -1,3 +1,5 @@
+#pragma once
+
 // Filename:-	mdx_format.h
 //
 // DO NOT UPDATE THIS FILE IN ANY WAY WHATSOEVER WITHOUT TELLING ME (-Ste),
@@ -12,10 +14,6 @@
 //	
 //	- All offset fields are relative to the address of the structure they occur in
 //	- So far, the only external symbol needed is MAX_QPATH, plus the typedefs for vec3_t, vec2_t etc
-
-#ifndef MDX_FORMAT_H
-#define MDX_FORMAT_H
-
 
 #define MDXM_IDENT			(('M'<<24)+('G'<<16)+('L'<<8)+'2')
 #define MDXA_IDENT			(('A'<<24)+('G'<<16)+('L'<<8)+'2')
@@ -415,9 +413,4 @@ typedef struct {
 //---------------------------------------------------------------------------
 
 
-#endif	// #ifndef MDX_FORMAT_H
-
 //////////////////////// eof ///////////////////////
-
-
-

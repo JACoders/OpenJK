@@ -1,6 +1,6 @@
+#pragma once
+
 // qcommon.h -- definitions common between client and server, but not game.or ref modules
-#ifndef _QCOMMON_H_
-#define _QCOMMON_H_
 
 #include "qcommon/cm_public.h"
 #include "qcommon/q_shared.h"
@@ -280,7 +280,7 @@ typedef enum {
 } sharedTraps_t;
 
 void	VM_Init( void );
-vm_t	*VM_Create( const char *module, int (*systemCalls)(int *), 
+vm_t	*VM_Create( const char *module, intptr_t (*systemCalls)(intptr_t *), 
 				   vmInterpret_t interpret );
 // module should be bare: "cgame", not "cgame.dll" or "vm/cgame.qvm"
 
@@ -288,15 +288,24 @@ void	VM_Free( vm_t *vm );
 void	VM_Clear(void);
 vm_t	*VM_Restart( vm_t *vm );
 
-int		QDECL VM_Call( vm_t *vm, int callNum, ... );
+intptr_t		QDECL VM_Call( vm_t *vm, int callNum, ... );
 
 void	VM_Debug( int level );
 
 void	VM_Shifted_Alloc(void **ptr, int size);
 void	VM_Shifted_Free(void **ptr);
 
-void	*VM_ArgPtr( int intValue );
-void	*VM_ExplicitArgPtr( vm_t *vm, int intValue );
+void	*VM_ArgPtr( intptr_t intValue );
+void	*VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue );
+
+#define	VMA(x) VM_ArgPtr(args[x])
+static ID_INLINE float _vmf(intptr_t x)
+{
+	floatint_t fi;
+	fi.i = (int) x;
+	return fi.f;
+}
+#define	VMF(x)	_vmf(args[x])
 
 /*
 ==============================================================
@@ -542,6 +551,9 @@ qboolean FS_FileExists( const char *file );
 
 int		FS_LoadStack();
 
+char   *FS_BuildOSPath( const char *base, const char *game, const char *qpath );
+qboolean FS_CompareZipChecksum(const char *zipfile);
+
 int		FS_GetFileList(  const char *path, const char *extension, char *listbuf, int bufsize );
 int		FS_GetModList(  char *listbuf, int bufsize );
 
@@ -609,9 +621,6 @@ int		FS_Seek( fileHandle_t f, long offset, int origin );
 
 qboolean FS_FilenameCompare( const char *s1, const char *s2 );
 
-const char *FS_GamePureChecksum( void );
-// Returns the checksum of the pk3 from which the server loaded the qagame.qvm
-
 const char *FS_LoadedPakNames( void );
 const char *FS_LoadedPakChecksums( void );
 const char *FS_LoadedPakPureChecksums( void );
@@ -664,8 +673,7 @@ void 		Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
 unsigned	Com_BlockChecksum( const void *buffer, int length );
-unsigned	Com_BlockChecksumKey (void *buffer, int length, int key);
-int			Com_HashKey(char *string, int maxlen);
+int      Com_HashKey(char *string, int maxlen);
 int			Com_Filter(char *filter, char *name, int casesensitive);
 int			Com_FilterPath(char *filter, char *name, int casesensitive);
 int			Com_RealTime(qtime_t *qtime);
@@ -947,7 +955,7 @@ void	Sys_Init (void);
 
 // general development dll loading for virtual machine testing
 void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
-void	* QDECL Sys_LoadGameDll( const char *name, int (QDECL **entryPoint)(int, ...), int (QDECL *systemcalls)(int, ...) );
+void	* QDECL Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) );
 void	Sys_UnloadDll( void *dllHandle );
 
 void	Sys_UnloadGame( void );
@@ -1081,4 +1089,3 @@ inline int Round(float value)
 {
 	return((int)floorf(value + 0.5f));
 }
-#endif // _QCOMMON_H_
