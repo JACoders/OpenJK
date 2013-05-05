@@ -76,6 +76,10 @@ public:
 	{
 		return strlen(mStorage.data);
 	}
+	bool empty() const
+	{
+		return mStorage.data[0] != '\0'; //Raz: might want to check MaxSize instead?
+	}
 	bool operator==(const sstring<MaxSize> &o) const
 	{
 		if (!Q_stricmp(mStorage.data,o.mStorage.data))
