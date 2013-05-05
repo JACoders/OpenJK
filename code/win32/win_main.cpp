@@ -1147,7 +1147,9 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	char		cwd[MAX_OSPATH];
 //	int			startTime, endTime;
 
+#ifdef _MSC_VER
    SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
+#endif
 //   _CrtSetBreakAlloc(34804);
 
     // should never get a previous instance in Win32
