@@ -22,10 +22,6 @@
  */
 #include "altypes.h"
 
-//#ifdef MINGW32
-//#define __cplusplus
-//#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif

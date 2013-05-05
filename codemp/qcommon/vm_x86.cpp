@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #endif
 
-#if (!defined _WIN32)// || defined MINGW32)//#ifndef _WIN32
+#if (!defined _WIN32)
 #include <sys/mman.h> // for PROT_ stuff
 #endif
 
@@ -35,7 +35,7 @@ static	int		*instructionPointers = NULL;
 //#undef FTOL_PTR  // bk001213
 #define FTOL_PTR
 
-#if (defined _WIN32 && !defined MINGW32)//#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 
 #if defined( FTOL_PTR )
 extern "C" int _ftol(float);
@@ -94,7 +94,7 @@ static	ELastCommand	LastCommand;
 AsmCall
 =================
 */
-#if (defined _WIN32 && !defined MINGW32)//#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 __declspec( naked ) void AsmCall( void ) {
 int		programStack;
 int		*opStack;
@@ -1117,7 +1117,7 @@ int	VM_CallCompiled( vm_t *vm, int *args ) {
 	entryPoint = vm->codeBase;
 	opStack = &stack;
 
-#if (defined _WIN32 && !defined MINGW32)//#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	__asm  {
 		pushad
 		mov		esi, programStack;

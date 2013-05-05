@@ -5,7 +5,7 @@
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
 
-#if (!defined _WIN32 || defined MINGW32)//#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)
 #include <string>
 #include "qcommon/platform.h"
 #endif

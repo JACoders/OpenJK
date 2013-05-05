@@ -1219,14 +1219,6 @@ int CTaskManager::Sound( CTask *task, CIcarus* icarus )
 	ICARUS_VALIDATE( Get( m_ownerID, block, memberNum, &sVal2, icarus ) );
 	
 	icarus->GetGame()->DebugPrint(IGameInterface::WL_DEBUG, "%4d sound(\"%s\", \"%s\"); [%d]", m_ownerID, sVal, sVal2, task->GetTimeStamp() );
-
-/*
-	#ifdef MINGW32
-	#ifdef PlaySound
-	#undef PlaySound
-	#endif
-	#endif
-*/
 	
 	//Only instantly complete if the user has requested it
 	if( icarus->GetGame()->PlayIcarusSound( task->GetGUID(), m_ownerID, sVal2, sVal ) )

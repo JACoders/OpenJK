@@ -187,7 +187,6 @@ float FloatSwap( const float *f );
 	#define ID_INLINE __inline
 	#endif
 
-	#define USE_SSE
 	#define PATH_SEP '\\'
 
 	#if defined(_M_IX86) || defined(__i386__)
@@ -1486,7 +1485,7 @@ extern ID_INLINE qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
 #define VectorAverage(a,b,c)			(((c)[0]=((a)[0]+(b)[0])*0.5f),((c)[1]=((a)[1]+(b)[1])*0.5f),((c)[2]=((a)[2]+(b)[2])*0.5f))
 #define VectorNegate(a,b)				((b)[0]=-(a)[0],(b)[1]=-(a)[1],(b)[2]=-(a)[2])
 
-#if (defined __LCC__ )//|| defined MINGW32)
+#if (defined __LCC__ )
 #ifdef VectorCopy
 #undef VectorCopy
 // this is a little hack to get more efficient copies in our interpreter

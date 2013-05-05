@@ -11,10 +11,8 @@
 #ifdef _WIN32
 #include "OpenAL/al.h"
 #include "OpenAL/alc.h"
-//#ifndef MINGW32
 #include "eax/eax.h"
 #include "eax/eaxman.h"
-//#endif
 #elif defined MACOS_X
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>

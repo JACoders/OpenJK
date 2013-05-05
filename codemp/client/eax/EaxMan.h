@@ -4,9 +4,6 @@
 #define __EAXMANH
 
 #ifdef MINGW32
-//#include <winnt.h>
-//#include <windows.h>
-//#include <basetyps.h>
 #define WINDOWS
 typedef GUID* LPGUID;
 #endif

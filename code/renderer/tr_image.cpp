@@ -22,8 +22,6 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
-//#include <map>
-
 #include "tr_local.h"
 #ifndef _XBOX
 #include "tr_jpeg_interface.h"
@@ -33,8 +31,6 @@ This file is part of Jedi Academy.
 #endif
 #include "../png/png.h"
 #include "../qcommon/sstring.h"
-
-//using namespace std;
 
 static byte			 s_intensitytable[256];
 static unsigned char s_gammatable[256];

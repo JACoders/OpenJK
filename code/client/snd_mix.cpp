@@ -59,7 +59,7 @@ void S_WriteLinearBlastStereo16 (void)
 #endif
 
 
-#if !((defined __linux__ || defined MACOS_X) && defined __i386__) || defined MINGW32
+#if !((defined __linux__ || defined MACOS_X || defined MINGW32) && defined __i386__)
 #if	!id386 || defined MINGW32
 
 

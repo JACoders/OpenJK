@@ -47,7 +47,11 @@ ALCAPI ALCvoid    ALCAPIENTRY alcCloseDevice(ALCdevice *device);
 ALCAPI ALCcontext*ALCAPIENTRY alcCreateContext(ALCdevice *device,ALCint *attrList);
 ALCAPI ALCboolean ALCAPIENTRY alcMakeContextCurrent(ALCcontext *context);
 ALCAPI ALCvoid	  ALCAPIENTRY alcProcessContext(ALCcontext *context);
-ALCAPI ALCcontext*ALCAPIENTRY alcGetCurrentContext(/*ALCvoid*/);
+#ifdef MINGW32
+ALCAPI ALCcontext*ALCAPIENTRY alcGetCurrentContext();
+#else
+ALCAPI ALCcontext*ALCAPIENTRY alcGetCurrentContext(ALCvoid);
+#endif
 ALCAPI ALCdevice* ALCAPIENTRY alcGetContextsDevice(ALCcontext *context);
 ALCAPI ALCvoid	  ALCAPIENTRY alcSuspendContext(ALCcontext *context);
 ALCAPI ALCvoid    ALCAPIENTRY alcDestroyContext(ALCcontext *context);

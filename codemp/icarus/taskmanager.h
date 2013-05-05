@@ -4,7 +4,7 @@
 
 #include <map>
 
-#if (!defined _WIN32 || defined MINGW32)//#ifndef _WIN32 
+#if (!defined _WIN32 || defined MINGW32)
 #include <string>
 #endif
 

@@ -320,14 +320,14 @@ template <int	SZ>
 class bits_base
 {
 protected:
-	enum //e
+	enum
 	{
 		BITS_SHIFT		= 5,									// 5.  Such A Nice Number
 		BITS_INT_SIZE	= 32,									// Size Of A Single Word
 		BITS_AND		= (BITS_INT_SIZE - 1),					// Used For And Operation
 		ARRAY_SIZE		= ((SZ + BITS_AND)/(BITS_INT_SIZE)),	// Num Words Used
 		BYTE_SIZE		= (ARRAY_SIZE*sizeof(unsigned int)),	// Num Bytes Used
-	} ;
+	};
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// Data
