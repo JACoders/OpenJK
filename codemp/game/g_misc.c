@@ -3454,7 +3454,7 @@ void ref_link ( gentity_t *ent )
 		}
 		else
 		{
-			Com_Printf( S_COLOR_RED"ERROR: ref_tag (%s) has invalid target (%s)", ent->targetname, ent->target );
+			Com_Printf( S_COLOR_RED"ERROR: ref_tag (%s) has invalid target (%s)\n", ent->targetname, ent->target );
 		}
 	}
 	
