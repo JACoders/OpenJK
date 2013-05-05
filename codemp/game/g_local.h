@@ -1525,10 +1525,6 @@ extern	gentity_t		g_entities[MAX_GENTITIES];
 
 #define	FOFS(x) ((size_t)&(((gentity_t *)0)->x))
 
-#define XCVAR_PROTO
-	#include "g_xcvar.h"
-#undef XCVAR_PROTO
-
 void	trap_Print( const char *fmt );
 void	trap_Error( const char *fmt );
 int		trap_Milliseconds( void );
@@ -1850,3 +1846,10 @@ typedef enum userinfoValidationBits_e {
 } userinfoValidationBits_t;
 
 void Svcmd_ToggleUserinfoValidation_f( void );
+
+// g_cvar.c
+#define XCVAR_PROTO
+	#include "g_xcvar.h"
+#undef XCVAR_PROTO
+void G_RegisterCvars( void );
+void G_UpdateCvars( void );
