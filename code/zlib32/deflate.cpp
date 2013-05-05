@@ -1210,9 +1210,7 @@ static void lm_init(deflate_state *s)
 inline byte *qcmp(byte *scan, byte *match, ulong count)
 {
 	byte	*retval;
-#if (defined __linux__ || defined MINGW32)
-//FIXME
-#else
+#if (defined _MSC_VER)
 	_asm
 	{
 		push	esi
@@ -1229,6 +1227,12 @@ inline byte *qcmp(byte *scan, byte *match, ulong count)
 		mov		[retval], esi
 		pop		esi
 	}
+#else
+//from https://github.com/ioquake/jedi-academy/commit/0e3191e122c0a13ac9196b346b54e87cabf75606
+	asm("repe cmpsb;"
+ 		: "=S"(retval)
+	 	: "S"(scan), "D"(match), "c"(count)
+	);
 #endif
 	return(--retval);
 }
