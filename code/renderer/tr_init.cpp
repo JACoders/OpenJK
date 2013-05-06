@@ -908,7 +908,6 @@ extern bool g_bTextureRectangleHack;
 
 void GfxInfo_f( void ) 
 {
-	cvar_t *sys_cpustring = Cvar_Get( "sys_cpustring", "", CVAR_ROM );
 	const char *enablestrings[] =
 	{
 		"disabled",
@@ -953,7 +952,6 @@ void GfxInfo_f( void )
 	{
 		VID_Printf( PRINT_ALL, "GAMMA: software w/ %d overbright bits\n", tr.overbrightBits );
 	}
-	VID_Printf( PRINT_ALL, "CPU: %s\n", sys_cpustring->string );
 
 	// rendering primitives
 	{
