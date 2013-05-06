@@ -612,7 +612,14 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 		else
 		{
 			exstyle = 0;
-			stylebits = WS_SYSMENU|WINDOW_STYLE|WS_MINIMIZEBOX;
+			if ( r_noborder->integer == 0 )
+			{
+				stylebits = WS_SYSMENU|WINDOW_STYLE|WS_MINIMIZEBOX;
+			}
+			else
+			{
+				stylebits = WS_POPUP|WS_VISIBLE;
+			}
 			AdjustWindowRect (&r, stylebits, FALSE);
 		}
 
@@ -628,8 +635,16 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 		{
 			vid_xpos = Cvar_Get ("vid_xpos", "", 0);
 			vid_ypos = Cvar_Get ("vid_ypos", "", 0);
-			x = vid_xpos->integer;
-			y = vid_ypos->integer;
+			if ( r_centerWindow->integer == 0 )
+			{
+				x = vid_xpos->integer;
+				y = vid_ypos->integer;
+			}
+			else
+			{
+				x = ( glw_state.desktopWidth - w ) / 2;
+				y = ( glw_state.desktopHeight - h ) / 2;
+			}
 
 			// adjust window coordinates if necessary 
 			// so that the window is completely on screen

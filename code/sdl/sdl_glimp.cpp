@@ -10,9 +10,7 @@ static SDL_Window *window = NULL;
 static float displayAspect;
 cvar_t *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
 cvar_t *r_allowResize; // make window resizable
-cvar_t *r_centerWindow;
 cvar_t *r_sdlDriver;
-cvar_t *r_noborder;
 
 typedef enum
 {
@@ -1327,8 +1325,6 @@ void 		GLimp_Init( void )
 	r_allowSoftwareGL = Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
 	r_sdlDriver = Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
 	r_allowResize = Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
-	r_centerWindow = Cvar_Get( "r_centerWindow", "0", CVAR_ARCHIVE );
-	r_noborder = Cvar_Get( "r_noborder", "0", CVAR_ARCHIVE );
 
 	/*	if( Cvar_VariableIntegerValue( "com_abnormalExit" ) )
 	{
