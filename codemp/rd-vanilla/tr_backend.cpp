@@ -1671,10 +1671,10 @@ const void	*RB_DrawBuffer( const void *data ) {
 	}
 	else if ( r_clear->integer ) {
 		int i = r_clear->integer;
-		//Raven no, this is bad.  We don't want to give people epilepsy
-		//if (i == 42) {
-		//	i = Q_irand(0,8);
-		//}
+
+		if (i == 42) {
+			i = Q_irand(0,8);
+		}
 		switch (i)
 		{
 		default:
