@@ -1431,7 +1431,6 @@ static void GLW_InitExtensions( void )
 	PFNWGLGETEXTENSIONSSTRINGARBPROC			qwglGetExtensionsStringARB;
 	qwglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC) qwglGetProcAddress("wglGetExtensionsStringARB");
 
-	const char *wglExtensions = NULL;
 	bool bHasPixelFormat = false;
 	bool bHasRenderTexture = false;
 
