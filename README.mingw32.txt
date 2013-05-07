@@ -12,8 +12,8 @@ To compile using MINGW32
 Status
 ======
 
-* can fully compile and run codemp
-* can compile code (sp) but it won't run - garbled text in edit box then "DROPPED"
+* can fully compile and run codemp and code(sp)
+* both run but suffering from at least one crash bug in sp
 
 Note
 ====

@@ -1258,7 +1258,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	void insert(const TKTValue &key,const TVTValue &value)
 	{
-		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
+		assert(!IS_MULTI || this->find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
 
 		this->alloc_key(key);
 		insert_alloced_key();		

@@ -198,11 +198,7 @@ void QDECL Sys_Error( const char *error, ... ) {
     MSG        msg;
 
 	va_start (argptr, error);
-	#ifdef MINGW32
-	vsprintf (text, error, argptr);
-	#else
-	Q_vsnprintf (text, error, argptr);
-	#endif
+	Q_vsnprintf(text, sizeof(text), error, argptr);
 	va_end (argptr);
 
 	Conbuf_AppendText( text );

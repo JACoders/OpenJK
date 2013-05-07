@@ -34,7 +34,6 @@ This file is part of Jedi Academy.
 
 #ifdef MINGW32
 #define vsprintf_s snprintf
-//#define Q_vsnprintf snprintf
 #endif
 
 #define	MAXPRINTMSG	4096
@@ -148,7 +147,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	char		msg[MAXPRINTMSG];
 
 	va_start (argptr,fmt);
-	vsprintf_s (msg,fmt,argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	if ( rd_buffer ) {
@@ -156,7 +155,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			rd_flush(rd_buffer);
 			*rd_buffer = 0;
 		}
-		Q_strcat (rd_buffer, strlen(rd_buffer), msg);
+		Q_strcat(rd_buffer, rd_buffersize, msg);
 		return;
 	}
 
@@ -202,6 +201,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	}
 
 	va_start (argptr,fmt);
+//FIXME: MINGW32 -> Q_vsnprintf?
 	vsprintf_s (msg,fmt,argptr);
 	va_end (argptr);
 	
@@ -271,9 +271,13 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	if ( code != ERR_DISCONNECT ) {
 //		if (com_noErrorInterrupt && !com_noErrorInterrupt->integer) 
 		{
+		#ifndef MINGW32
 			__asm {
 				int 0x03
 			}
+		#else
+			//asm("int 3");
+		#endif
 		}
 	}
 #endif
@@ -294,7 +298,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 //	SCR_UnprecacheScreenshot();
 
 	va_start (argptr,fmt);
-	vsprintf_s (com_errorMessage,fmt,argptr);
+	Q_vsnprintf (com_errorMessage,sizeof(com_errorMessage), fmt,argptr);
 	va_end (argptr);	
 
 	if ( code != ERR_DISCONNECT ) {
@@ -320,6 +324,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		CL_StartHunkUsers();
 		Com_Printf (S_COLOR_RED"********************\n"S_COLOR_MAGENTA"ERROR: %s\n"S_COLOR_RED"********************\n", com_errorMessage);
 		com_errorEntered = qfalse;
+		
 		throw ("DROPPED\n");
 	} else {
 		CL_Shutdown ();
