@@ -668,6 +668,8 @@ static void SV_Status_f( void )
 	Com_Printf ("\n");
 }
 
+#define SVSAY_PREFIX "Server^7\x19: "
+
 /*
 ==================
 SV_ConSay_f
@@ -675,7 +677,7 @@ SV_ConSay_f
 */
 static void SV_ConSay_f(void) {
 	char	*p;
-	char	text[1024];
+	char	text[MAX_SAY_TEXT] = {0};
 
 	if( !com_dedicated->integer ) {
 		Com_Printf( "Server is not dedicated.\n" );
@@ -692,17 +694,9 @@ static void SV_ConSay_f(void) {
 		return;
 	}
 
-	strcpy (text, "Server^7\x19: ");
-	p = Cmd_Args();
+	Cmd_ArgsBuffer( text, sizeof(text) );
 
-	if ( *p == '"' ) {
-		p++;
-		p[strlen(p)-1] = 0;
-	}
-
-	strcat(text, p);
-
-	SV_SendServerCommand(NULL, "chat \"%s\n\"", text);
+	SV_SendServerCommand(NULL, "chat \""SVSAY_PREFIX"%s\"\n", text);
 }
 
 static const char *forceToggleNamePrints[] = 
