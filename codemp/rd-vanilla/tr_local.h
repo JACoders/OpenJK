@@ -887,52 +887,6 @@ extern refimport_t ri;
 //====================================================
 
 
-// An offscreen buffer used for secondary rendering and render-to-texture support (RTT). - AReis
-class CPBUFFER
-{
-private:
-#ifdef _WIN32
-	// Pixel Buffer Rendering and Device Contexts.
-	HGLRC m_hRC;
-	HDC m_hDC;
-
-	// The render and device contexts for the previous render target.
-	HGLRC m_hOldRC;
-	HDC m_hOldDC;
-
-	// Buffer handle.
-	HPBUFFERARB m_hBuffer;
-#endif
-	// Buffer Dimensions.
-	int m_iWidth, m_iHeight;
-
-	// Color, depth, and stencil bits for this buffer.
-	int m_iColorBits, m_iDepthBits, m_iStencilBits;
-
-public:
-	// Texture used for displaying the pbuffer.
-	GLuint m_uiPBufferTexture;
-
-	// Constructor.
-	CPBUFFER() {}
-
-	// Destructor.
-	~CPBUFFER() {}
-
-	// Allocate and create a new PBuffer.
-	bool Create( int iWidth, int iHeight, int iColorBits, int iDepthBits, int iStencilBits );
-
-	// Destroy and deallocate a PBuffer.
-	void Destroy();
-
-	// Make this PBuffer the current render device.
-	bool Begin();
-
-	// Restore the previous render device.
-	bool End();
-};
-
-
 #define	MAX_DRAWIMAGES			2048
 #define	MAX_LIGHTMAPS			256
 #define	MAX_SKINS				1024
