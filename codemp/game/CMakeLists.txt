@@ -108,7 +108,6 @@ set(MPGameGameFiles
 	"${MPDir}/game/bg_strap.h"
 	"${MPDir}/game/bg_vehicles.h"
 	"${MPDir}/game/bg_weapons.h"
-	"${MPDir}/botlib/botlib.h"
 	"${MPDir}/game/chars.h"
 	"${MPDir}/game/g_ICARUScb.h"
 	"${MPDir}/game/g_local.h"
@@ -160,6 +159,7 @@ set(MPGameBotlibFiles
 	"${MPDir}/botlib/be_ai_move.h"
 	"${MPDir}/botlib/be_ai_weap.h"
 	"${MPDir}/botlib/be_ea.h"
+	"${MPDir}/botlib/botlib.h"
 	)
 source_group("botlib" FILES ${MPGameBotlibFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameBotlibFiles})

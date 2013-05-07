@@ -25,13 +25,15 @@ void *Sys_GetBotAIAPI (void *parms ) {
 	return NULL;
 }
 
+// We now expect newlines instead of always appending
+// otherwise sectioned prints get messed up.
+#define CONSOLE_BUFFER_SIZE		16384
 void Conbuf_AppendText( const char *pMsg )
 {
-	char		msg[4096];
-	strcpy(msg, pMsg);
-	// Fixme don't do this.  Breaks sectioned prints up incorrectly!!!
-	printf(Q_CleanStr(msg));
-	printf("\n");
+	char msg[CONSOLE_BUFFER_SIZE];
+	Q_strncpyz(msg, pMsg, sizeof(msg));
+	Q_StripColor(msg);
+	printf("%s", msg);
 }
 
 /*

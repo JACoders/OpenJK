@@ -1,9 +1,0 @@
-SCC = This is a Source Code Control file
-
-[game.dsp]
-SCC_Aux_Path = "\\ravend\vss_projects\StarWars"
-SCC_Project_Name = "$/code", JVOAAAAA
-
-[starwars.dsp]
-SCC_Aux_Path = "\\ravend\vss_projects\StarWars"
-SCC_Project_Name = "$/Code", JVOAAAAA
