@@ -699,84 +699,70 @@ static void SV_ConSay_f(void) {
 	SV_SendServerCommand(NULL, "chat \""SVSAY_PREFIX"%s\"\n", text);
 }
 
-static const char *forceToggleNamePrints[] = 
-{
-	"HEAL",//FP_HEAL
-	"JUMP",//FP_LEVITATION
-	"SPEED",//FP_SPEED
-	"PUSH",//FP_PUSH
-	"PULL",//FP_PULL
-	"MINDTRICK",//FP_TELEPTAHY
-	"GRIP",//FP_GRIP
-	"LIGHTNING",//FP_LIGHTNING
-	"DARK RAGE",//FP_RAGE
-	"PROTECT",//FP_PROTECT
-	"ABSORB",//FP_ABSORB
-	"TEAM HEAL",//FP_TEAM_HEAL
-	"TEAM REPLENISH",//FP_TEAM_FORCE
-	"DRAIN",//FP_DRAIN
-	"SEEING",//FP_SEE
-	"SABER OFFENSE",//FP_SABER_OFFENSE
-	"SABER DEFENSE",//FP_SABER_DEFENSE
-	"SABER THROW",//FP_SABERTHROW
-	NULL
+const char *forceToggleNamePrints[NUM_FORCE_POWERS] = {
+	"HEAL",
+	"JUMP",
+	"SPEED",
+	"PUSH",
+	"PULL",
+	"MINDTRICK",
+	"GRIP",
+	"LIGHTNING",
+	"DARK RAGE",
+	"PROTECT",
+	"ABSORB",
+	"TEAM HEAL",
+	"TEAM REPLENISH",
+	"DRAIN",
+	"SEEING",
+	"SABER OFFENSE",
+	"SABER DEFENSE",
+	"SABER THROW",
 };
 
-/*
-==================
-SV_ForceToggle_f
-==================
-*/
-void SV_ForceToggle_f(void)
-{
-	int i = 0;
-	int fpDisabled = Cvar_VariableValue("g_forcePowerDisable");
-	int targetPower = 0;
-	const char *powerDisabled = "Enabled";
+static void SV_ForceToggle_f( void ) {
+	int bits = Cvar_VariableIntegerValue("g_forcePowerDisable");
+	int i, val;
+	char *s;
+	const char *enablestrings[] =
+	{
+		"Disabled",
+		"Enabled"
+	};
 
-	if ( Cmd_Argc () < 2 )
-	{ //no argument supplied, spit out a list of force powers and their numbers
-		while (i < NUM_FORCE_POWERS)
-		{
-			if (fpDisabled & (1 << i))
-			{
-				powerDisabled = "Disabled";
-			}
-			else
-			{
-				powerDisabled = "Enabled";
-			}
+	// make sure server is running
+	if( !com_sv_running->integer ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
 
-			Com_Printf(va("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], powerDisabled));
-			i++;
+	if ( Cmd_Argc() != 2 ) {
+		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
+			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], enablestrings[!(bits & (1<<i))]);
 		}
-
-		Com_Printf("Example usage: forcetoggle 3\n(toggles PUSH)\n");
+		Com_Printf ("Example usage: forcetoggle 3(toggles PUSH)\n");
 		return;
 	}
 
-	targetPower = atoi(Cmd_Argv(1));
+	s = Cmd_Argv(1);
 
-	if (targetPower < 0 || targetPower >= NUM_FORCE_POWERS)
-	{
-		Com_Printf("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
-		return;
+	if( Q_isanumber( s ) ) {
+		val = atoi(s);
+		if( val >= 0 && val < NUM_FORCE_POWERS) {
+			bits ^= (1 << val);
+			Cvar_SetValue("g_forcePowerDisable", bits);
+			Com_Printf ("%s has been %s.\n", forceToggleNamePrints[val], (bits & (1<<val)) ? "disabled" : "enabled");
+		}
+		else {
+			Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
+		}
 	}
-
-	if (fpDisabled & (1 << targetPower))
-	{
-		powerDisabled = "enabled";
-		fpDisabled &= ~(1 << targetPower);
+	else {
+		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
+			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], enablestrings[!(bits & (1<<i))]);
+		}
+		Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
 	}
-	else
-	{
-		powerDisabled = "disabled";
-		fpDisabled |= (1 << targetPower);
-	}
-
-	Cvar_SetValue("g_forcePowerDisable", fpDisabled);
-
-	Com_Printf("%s has been %s.\n", forceToggleNamePrints[targetPower], powerDisabled);
 }
 
 /*
@@ -798,7 +784,7 @@ Examine the serverinfo string
 ===========
 */
 static void SV_Serverinfo_f( void ) {
-// make sure server is running
+	// make sure server is running
 	if ( !com_sv_running->integer ) {
 		Com_Printf( "Server is not running.\n" );
 		return;
@@ -816,7 +802,7 @@ Examine or change the serverinfo string
 ===========
 */
 static void SV_Systeminfo_f( void ) {
-// make sure server is running
+	// make sure server is running
 	if ( !com_sv_running->integer ) {
 		Com_Printf( "Server is not running.\n" );
 		return;
