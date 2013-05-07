@@ -961,15 +961,41 @@ static rserr_t GLW_SetMode( int mode,
 	return RSERR_OK;
 }
 
+/*
+** GLW_CheckForExtension
+
+  Cannot use strstr directly to differentiate between (for eg) reg_combiners and reg_combiners2
+*/
+
+bool GL_CheckForExtension(const char *ext)
+{
+	const char *ptr = Q_stristr( glConfig.extensions_string, ext );
+	if (ptr == NULL)
+		return false;
+	ptr += strlen(ext);
+	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
+}
+
+static const char *wglExtensions = NULL;
+
+/* WGL version of the above, ASSUMES wglExtensions is non-null */
+bool WGL_CheckForExtension(const char *ext)
+{
+	const char *ptr = Q_stristr( wglExtensions, ext );
+	if (ptr == NULL)
+		return false;
+	ptr += strlen(ext);
+	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
+}
+
 //--------------------------------------------
 static void GLW_InitTextureCompression( void )
 {
-	qboolean newer_tc, old_tc;
+	bool newer_tc, old_tc;
 
 	// Check for available tc methods.
-	newer_tc = ( strstr( glConfig.extensions_string, "ARB_texture_compression" )
-		&& strstr( glConfig.extensions_string, "EXT_texture_compression_s3tc" )) ? qtrue : qfalse;
-	old_tc = ( strstr( glConfig.extensions_string, "GL_S3_s3tc" )) ? qtrue : qfalse;
+	newer_tc = GL_CheckForExtension("ARB_texture_compression") && GL_CheckForExtension("EXT_texture_compression_s3tc");
+	old_tc = GL_CheckForExtension("GL_S3_s3tc");
 
 	if ( old_tc )
 	{
@@ -1090,7 +1116,7 @@ static void GLW_InitExtensions( void )
 
 	// GL_EXT_texture_env_add
 	glConfig.textureEnvAddAvailable = qfalse;
-	if ( strstr( glConfig.extensions_string, "EXT_texture_env_add" ) )
+	if ( GL_CheckForExtension( "EXT_texture_env_add" ) )
 	{
 		if ( r_ext_texture_env_add->integer )
 		{
@@ -1110,7 +1136,7 @@ static void GLW_InitExtensions( void )
 
 	// GL_EXT_texture_filter_anisotropic
 	glConfig.maxTextureFilterAnisotropy = 0;
-	if ( strstr( glConfig.extensions_string, "EXT_texture_filter_anisotropic" ) )
+	if ( GL_CheckForExtension( "EXT_texture_filter_anisotropic" ) )
 	{
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF	//can't include glext.h here ... sigh
 		qglGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &glConfig.maxTextureFilterAnisotropy );
@@ -1138,7 +1164,7 @@ static void GLW_InitExtensions( void )
 
 	// GL_EXT_clamp_to_edge
 	glConfig.clampToEdgeAvailable = qfalse;
-	if ( strstr( glConfig.extensions_string, "GL_EXT_texture_edge_clamp" ) )
+	if ( GL_CheckForExtension( "GL_EXT_texture_edge_clamp" ) )
 	{
 		glConfig.clampToEdgeAvailable = qtrue;
 		VID_Printf( PRINT_ALL, "...Using GL_EXT_texture_edge_clamp\n" );
@@ -1160,7 +1186,7 @@ static void GLW_InitExtensions( void )
 	qglMultiTexCoord2fARB = NULL;
 	qglActiveTextureARB = NULL;
 	qglClientActiveTextureARB = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_ARB_multitexture" )  )
+	if ( GL_CheckForExtension( "GL_ARB_multitexture" )  )
 	{
 		if ( r_ext_multitexture->integer )
 		{
@@ -1198,7 +1224,7 @@ static void GLW_InitExtensions( void )
 	// GL_EXT_compiled_vertex_array
 	qglLockArraysEXT = NULL;
 	qglUnlockArraysEXT = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_EXT_compiled_vertex_array" ) )
+	if ( GL_CheckForExtension( "GL_EXT_compiled_vertex_array" ) )
 	{
 		if ( r_ext_compiled_vertex_array->integer )
 		{
@@ -1222,7 +1248,7 @@ static void GLW_InitExtensions( void )
 	// GL_EXT_point_parameters
 	qglPointParameterfEXT = NULL;
 	qglPointParameterfvEXT = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_EXT_point_parameters" ) )
+	if ( GL_CheckForExtension( "GL_EXT_point_parameters" ) )
 	{
 		if ( r_ext_point_parameters->integer )
 		{
@@ -1247,7 +1273,7 @@ static void GLW_InitExtensions( void )
 	// GL_NV_point_sprite
 	qglPointParameteriNV = NULL;
 	qglPointParameterivNV = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_NV_point_sprite" ) )
+	if ( GL_CheckForExtension( "GL_NV_point_sprite" ) )
 	{
 		if ( r_ext_nv_point_sprite->integer )
 		{
@@ -1271,7 +1297,7 @@ static void GLW_InitExtensions( void )
 
 	bool bNVRegisterCombiners = false;
 	// Register Combiners.
-	if ( strstr( glConfig.extensions_string, "GL_NV_register_combiners" ) )
+	if ( GL_CheckForExtension( "GL_NV_register_combiners" ) )
 	{
 		// NOTE: This extension requires multitexture support (over 2 units).
 		if ( glConfig.maxActiveTextures >= 2 )
@@ -1324,7 +1350,7 @@ static void GLW_InitExtensions( void )
 
 	// Vertex Programs.
 	bool bARBVertexProgram = false;
-	if ( strstr( glConfig.extensions_string, "GL_ARB_vertex_program" ) )
+	if ( GL_CheckForExtension( "GL_ARB_vertex_program" ) )
 	{
 		bARBVertexProgram = true;
 	}
@@ -1336,7 +1362,7 @@ static void GLW_InitExtensions( void )
 
 	bool bARBFragmentProgram = false;
 	// Fragment Programs.
-	if ( strstr( glConfig.extensions_string, "GL_ARB_fragment_program" ) )
+	if ( GL_CheckForExtension( "GL_ARB_fragment_program" ) )
 	{
 		bARBFragmentProgram = true;
 	}
@@ -1395,8 +1421,7 @@ static void GLW_InitExtensions( void )
 		g_bTextureRectangleHack = true;
 	}
 	
-	if ( strstr( glConfig.extensions_string, "GL_NV_texture_rectangle" )
-		   || strstr( glConfig.extensions_string, "GL_EXT_texture_rectangle" ) )
+	if ( GL_CheckForExtension( "GL_NV_texture_rectangle" ) || GL_CheckForExtension( "GL_EXT_texture_rectangle" ) )
 	{
 		bTexRectSupported = true;
 	}
@@ -1406,7 +1431,6 @@ static void GLW_InitExtensions( void )
 	PFNWGLGETEXTENSIONSSTRINGARBPROC			qwglGetExtensionsStringARB;
 	qwglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC) qwglGetProcAddress("wglGetExtensionsStringARB");
 
-	const char *wglExtensions = NULL;
 	bool bHasPixelFormat = false;
 	bool bHasRenderTexture = false;
 
@@ -1420,7 +1444,7 @@ static void GLW_InitExtensions( void )
 	if ( wglExtensions )
 	{
 		// Pixel Format.
-		if ( strstr( wglExtensions, "WGL_ARB_pixel_format" ) )
+		if ( WGL_CheckForExtension( "WGL_ARB_pixel_format" ) )
 		{
 			qwglGetPixelFormatAttribivARB			=	(PFNWGLGETPIXELFORMATATTRIBIVARBPROC) qwglGetProcAddress("wglGetPixelFormatAttribivARB");
 			qwglGetPixelFormatAttribfvARB			=	(PFNWGLGETPIXELFORMATATTRIBFVARBPROC) qwglGetProcAddress("wglGetPixelFormatAttribfvARB");
@@ -1444,7 +1468,7 @@ static void GLW_InitExtensions( void )
 		// Offscreen pixel-buffer.
 		// NOTE: VV guys can use the equivelant SetRenderTarget() with the correct texture surfaces.
 		bool bWGLARBPbuffer = false;
-		if ( strstr( wglExtensions, "WGL_ARB_pbuffer" ) && bHasPixelFormat )
+		if ( WGL_CheckForExtension( "WGL_ARB_pbuffer" ) && bHasPixelFormat )
 		{
 			bWGLARBPbuffer = true;
 			qwglCreatePbufferARB		=	(PFNWGLCREATEPBUFFERARBPROC) qwglGetProcAddress("wglCreatePbufferARB");
@@ -1467,7 +1491,7 @@ static void GLW_InitExtensions( void )
 		}
 
 		// Render-Texture (requires pbuffer ext (and it's dependancies of course).
-		if ( strstr( wglExtensions, "WGL_ARB_render_texture" ) && bWGLARBPbuffer )
+		if ( WGL_CheckForExtension( "WGL_ARB_render_texture" ) && bWGLARBPbuffer )
 		{
 			qwglBindTexImageARB			=	(PFNWGLBINDTEXIMAGEARBPROC) qwglGetProcAddress("wglBindTexImageARB");
 			qwglReleaseTexImageARB		=	(PFNWGLRELEASETEXIMAGEARBPROC) qwglGetProcAddress("wglReleaseTexImageARB");
