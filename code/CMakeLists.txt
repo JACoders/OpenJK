@@ -65,6 +65,7 @@ if(BuildSPEngine)
 	source_group("jpeg-6" FILES ${J_SRC})
 	set(SPEngineFiles ${SPEngineFiles} ${J_SRC})
 
+
 	# Client files
 	set(SPEngineClientFiles
 		"${SPDir}/client/OpenAL/al.h"
@@ -362,10 +363,10 @@ if(BuildSPEngine)
 	# zlib files
 	set(SPEngineZlibFiles
 		"${SPDir}/zlib32/deflate.cpp"
-		"${SPDir}/zlib32/deflate.h"
 		"${SPDir}/zlib32/inflate.cpp"
-		"${SPDir}/zlib32/inflate.h"
 		"${SPDir}/zlib32/zipcommon.cpp"
+		"${SPDir}/zlib32/deflate.h"
+		"${SPDir}/zlib32/inflate.h"
 		"${SPDir}/zlib32/zip.h"
 		)
 	source_group("zlib" FILES ${SPEngineZlibFiles})

@@ -129,10 +129,10 @@ endif(WIN32)
 
 add_library(${MPVanillaRenderer} SHARED ${MPVanillaRendererFiles})
 
-if(NOT WIN32)
+if((NOT WIN32) OR MINGW)
 	# remove "lib" prefix for .so/.dylib files
 	set_target_properties(${MPVanillaRenderer} PROPERTIES PREFIX "")
-endif(NOT WIN32)
+endif((NOT WIN32) OR MINGW)
 
 if(WIN32)
 	install(TARGETS ${MPVanillaRenderer} RUNTIME DESTINATION ".")
@@ -143,6 +143,5 @@ set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELWIT
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SharedDefines};${ReleaseDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SharedDefines};${ReleaseDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SharedDefines};${DebugDefines}")
-#set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS "${SharedDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES INCLUDE_DIRECTORIES "${MPVanillaRendererIncludeDirectories}")
 target_link_libraries(${MPVanillaRenderer} ${MPVanillaRendererLibraries})

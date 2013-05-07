@@ -21,7 +21,7 @@ set(BuildJK2SPGame OFF)
 #option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
 if(WIN32)
 	option(UseInternalOpenAL "Whether to use the included OpenAL instead of a locally installed one" ON)
-	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" OFF)
+	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" ON)
 endif(WIN32)
 # External version not yet supported, WIP
 # option(UseInternalJpeg "Whether to use the included libjpeg instead of a locally installed one" ON)
@@ -104,7 +104,7 @@ else(MSVC)
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 
-	#enable_language(ASM_NASM) # there are some assembly files to build
+	enable_language(ASM_NASM) # there are some assembly files to build
 	
 	if (NOT CMAKE_BUILD_TYPE)
  		message("No build type selected, default to RELEASE")
