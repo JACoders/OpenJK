@@ -610,6 +610,7 @@ static void SV_Status_f( void )
 	}
 
 	Com_Printf ("map: %s\n", sv_mapname->string );
+	Com_Printf ("gametype: %i\n", sv_gametype->integer );
 
 	Com_Printf ("num score ping name            lastmsg address               qport rate\n");
 	Com_Printf ("--- ----- ---- --------------- ------- --------------------- ----- -----\n");
