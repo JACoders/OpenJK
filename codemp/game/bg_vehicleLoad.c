@@ -7,7 +7,7 @@
 #endif
 
 #ifdef _JK2MP
-	#include "qcommon/q_shared.h"
+	#include "../qcommon/q_shared.h"
 	#include "bg_public.h"
 	#include "bg_vehicles.h"
 	#include "bg_weapons.h"
@@ -28,13 +28,13 @@
 #ifndef QAGAME
 #ifndef CGAME
 #define WE_ARE_IN_THE_UI
-#include "ui/ui_local.h"
+#include "../ui/ui_local.h"
 #endif
 #endif
 #endif
 
 #ifndef _JK2MP
-#include "Ratl/string_vs.h"
+#include "../qcommon/string_vs.h"
 #endif
 
 #ifdef QAGAME

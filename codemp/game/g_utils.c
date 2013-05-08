@@ -4,7 +4,7 @@
 
 #include "g_local.h"
 #include "bg_saga.h"
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 
 typedef struct {
   char oldShader[MAX_QPATH];

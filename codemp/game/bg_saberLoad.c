@@ -1,5 +1,5 @@
 //bg_saberLoad.c
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_local.h"
 #include "w_saber.h"

@@ -1,12 +1,12 @@
 // leave this as first line for PCH reasons...
 //
-#include "server/exe_headers.h"
+#include "../server/exe_headers.h"
 
-#include "qcommon/sstring.h"	// stl string class won't compile in here (MS shite), so use Gil's.
+#include "../qcommon/sstring.h"	// stl string class won't compile in here (MS shite), so use Gil's.
 #include "tr_local.h"
 #include "tr_font.h"
 
-#include "qcommon/stringed_ingame.h"
+#include "../qcommon/stringed_ingame.h"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //

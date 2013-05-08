@@ -1,6 +1,6 @@
 #pragma once
 
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 
 typedef struct Vehicle_s Vehicle_t;
 typedef struct bgEntity_s bgEntity_t;

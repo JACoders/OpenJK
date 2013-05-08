@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 // tr_image.c
 #include "tr_local.h"
@@ -20,9 +20,9 @@ using namespace std;
 
 
 #define JPEG_INTERNALS
-#include "jpeg-8c/jpeglib.h"
-#include "png/rpng.h"
-#include "libpng/png.h"
+#include "../jpeg-8c/jpeglib.h"
+#include "../png/rpng.h"
+#include "../libpng/png.h"
 
 // My TGA loader...
 //

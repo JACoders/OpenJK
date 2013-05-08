@@ -1,8 +1,8 @@
 #pragma once
 
-#include "renderer/tr_types.h"
-#include "qcommon/MiniHeap.h"
-#include "ghoul2/ghoul2_shared.h"
+#include "tr_types.h"
+#include "../qcommon/MiniHeap.h"
+#include "../ghoul2/ghoul2_shared.h"
 
 #define	REF_API_VERSION 1
 

@@ -1,11 +1,11 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 // console.c
 
 #include "client.h"
-#include "qcommon/stringed_ingame.h"
-#include "qcommon/game_version.h"
+#include "../qcommon/stringed_ingame.h"
+#include "../qcommon/game_version.h"
 
 
 int g_console_field_width = 78;

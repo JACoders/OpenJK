@@ -1,12 +1,12 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "exe_headers.h"
 
 #include "cm_local.h"
 #include "cm_patch.h"
 #include "cm_landscape.h"
-#include "qcommon/GenericParser2.h"
+#include "GenericParser2.h"
 #include "cm_randomterrain.h"
-#include "client/client.h" // this will do for now. we're not a lib
+#include "../client/client.h" // this will do for now. we're not a lib
 
 #if defined(_WIN32) && defined(_MSC_VER) && (_MSC_VER < 1600)
 #pragma optimize("p", on)

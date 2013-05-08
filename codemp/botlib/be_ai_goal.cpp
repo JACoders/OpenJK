@@ -12,7 +12,7 @@
  *
  *****************************************************************************/
 
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "l_utils.h"
 #include "l_libvar.h"
 #include "l_memory.h"

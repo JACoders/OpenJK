@@ -12,7 +12,7 @@
 	#pragma message("...including RM_Path.h")
 #endif
 
-#include "qcommon/cm_randomterrain.h"
+#include "../qcommon/cm_randomterrain.h"
 
 #ifndef _WIN32
 #include <string>

@@ -1,8 +1,8 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "exe_headers.h"
 
 #include "RoffSystem.h"
-#include "client/client.h"
+#include "../client/client.h"
 
 // The one and only instance...
 CROFFSystem theROFFSystem;

@@ -1,4 +1,4 @@
-#include "qcommon/exe_headers.h"
+#include "exe_headers.h"
 
 typedef struct cmd_function_s
 {

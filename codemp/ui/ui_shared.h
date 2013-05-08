@@ -1,10 +1,10 @@
 #pragma once
 
-#include "qcommon/q_shared.h"
-#include "renderer/tr_types.h"
+#include "../qcommon/q_shared.h"
+#include "../renderer/tr_types.h"
 #include "keycodes.h"
 
-#include "ui/menudef.h"
+#include "menudef.h"
 
 //Raz: Drastically increased some of these
 #define MAX_MENUNAME				32

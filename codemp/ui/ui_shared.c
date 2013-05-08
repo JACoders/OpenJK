@@ -6,9 +6,9 @@
 #endif
 
 #include "ui_shared.h"
-#include "game/bg_public.h"
-#include "game/anims.h"
-#include "ghoul2/G2.h"
+#include "../game/bg_public.h"
+#include "../game/anims.h"
+#include "../ghoul2/G2.h"
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 extern void UI_UpdateCharacterSkin( void );
 

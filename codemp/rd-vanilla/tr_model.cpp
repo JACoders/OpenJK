@@ -1,15 +1,15 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 // tr_models.c -- model loading and caching
 
 #include "tr_local.h"
 
 
-#include "qcommon/disablewarnings.h"
+#include "../qcommon/disablewarnings.h"
 
 #pragma warning (push, 3)	//go back down to 3 for the stl include
-#include "qcommon/sstring.h"	// #include <string>
+#include "../qcommon/sstring.h"	// #include <string>
 #include <vector>
 #include <map>
 #pragma warning (pop)

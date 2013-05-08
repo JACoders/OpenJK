@@ -3,11 +3,11 @@
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 
-#include "qcommon/q_shared.h"
-#include "renderer/tr_types.h"
+#include "../qcommon/q_shared.h"
+#include "../renderer/tr_types.h"
 #include "ui_public.h"
 #include "keycodes.h"
-#include "game/bg_public.h"
+#include "../game/bg_public.h"
 #include "ui_shared.h"
 
 // global display context

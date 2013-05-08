@@ -1,7 +1,7 @@
 #pragma once
 
-#include "qcommon/q_shared.h"	//needs to be in here for entityState_t
-#include "server/server.h"
+#include "q_shared.h"	//needs to be in here for entityState_t
+#include "../server/server.h"
 
 #pragma warning (push, 3)	//go back down to 3 for the stl include
 #include <vector>

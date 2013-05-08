@@ -1,26 +1,26 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 // cl_main.c  -- client main loop
 
 #include "client.h"
-#include "qcommon/stringed_ingame.h"
+#include "../qcommon/stringed_ingame.h"
 #include <limits.h>
 #include "snd_local.h"
 
 //rwwRMG - added:
-#include "qcommon/cm_local.h"
-#include "qcommon/cm_landscape.h"
-#include "ghoul2/G2.h"
-#include "qcommon/MiniHeap.h"
+#include "../qcommon/cm_local.h"
+#include "../qcommon/cm_landscape.h"
+#include "../ghoul2/G2.h"
+#include "../qcommon/MiniHeap.h"
 
 #ifdef _DONETPROFILE_
-#include "qcommon/INetProfile.h"
+#include "../qcommon/INetProfile.h"
 #endif
 
 #ifndef _WIN32
-#include "sys/sys_loadlib.h"
-#include "sys/sys_local.h"
+#include "../sys/sys_loadlib.h"
+#include "../sys/sys_local.h"
 #endif
 
 cvar_t	*cl_renderer;
@@ -2249,7 +2249,7 @@ qboolean Com_TheHunkMarkHasBeenMade(void);
 extern vm_t *currentVM;
 #ifdef _WIN32
 	//win32/win_main.cpp
-	#include "win32/win_local.h"
+	#include "../win32/win_local.h"
 	extern WinVars_t g_wv;
 #endif
 //qcommon/cm_load.cpp

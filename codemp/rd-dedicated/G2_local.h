@@ -2,7 +2,7 @@
 
 // defines to setup the
 
-#include "ghoul2/ghoul2_shared.h"
+#include "../ghoul2/ghoul2_shared.h"
 #include "tr_local.h"
 
 //rww - RAGDOLL_BEGIN

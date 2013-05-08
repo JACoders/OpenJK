@@ -1,9 +1,9 @@
 // win_input.c -- win32 mouse and joystick code
 // 02/21/97 JCB Added extended DirectInput code to support external controllers.
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
-#include "client/client.h"
+#include "../client/client.h"
 #include "win_local.h"
 
 

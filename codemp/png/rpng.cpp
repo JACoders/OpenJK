@@ -2,14 +2,14 @@
 
 // leave this as first line for PCH reasons...
 //
-#include "qcommon/q_shared.h"
-#include "qcommon/qcommon.h"
+#include "../qcommon/q_shared.h"
+#include "../qcommon/qcommon.h"
 
-#include "zlib/zlib.h"
+#include "../zlib/zlib.h"
 #include "rpng.h"
 
 //Raz: hi i'm bad
-#include "renderer/tr_public.h"
+#include "../renderer/tr_public.h"
 extern refimport_t ri;
 
 // Error returns

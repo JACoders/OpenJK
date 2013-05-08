@@ -1,8 +1,8 @@
 #include <SDL.h>
-#include "qcommon/qcommon.h"
-#include "qcommon/q_shared.h"
-#include "client/client.h"
-#include "sys/sys_local.h"
+#include "../qcommon/qcommon.h"
+#include "../qcommon/q_shared.h"
+#include "../client/client.h"
+#include "../sys/sys_local.h"
 
 static cvar_t *in_keyboardDebug     = NULL;
 

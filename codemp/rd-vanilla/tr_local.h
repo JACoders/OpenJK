@@ -1,7 +1,7 @@
 #pragma once
 
-#include "qcommon/qfiles.h"
-#include "renderer/tr_public.h"
+#include "../qcommon/qfiles.h"
+#include "../renderer/tr_public.h"
 
 #ifdef _WIN32
 	#include "qgl.h"
@@ -9,13 +9,13 @@
 	#include "../sdl/sdl_qgl.h"
 #endif
 
-#include "ghoul2/ghoul2_shared.h" //rwwRMG - added
+#include "../ghoul2/ghoul2_shared.h" //rwwRMG - added
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
 
 #ifndef _WIN32
-	#include "qcommon/platform.h"
+	#include "../qcommon/platform.h"
 #endif
 
 // fast float to int conversion

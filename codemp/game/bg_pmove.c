@@ -3,11 +3,11 @@
 // bg_pmove.c -- both games player movement code
 // takes a playerstate and a usercmd as input and returns a modifed playerstate
 
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_local.h"
 #include "bg_strap.h"
-#include "ghoul2/G2.h"
+#include "../ghoul2/G2.h"
 
 #ifdef QAGAME
 #include "g_local.h" //ahahahahhahahaha@$!$!

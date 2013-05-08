@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "exe_headers.h"
 
 // this is only used for visualization tools in cm_ debug functions
 

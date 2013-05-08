@@ -9,7 +9,7 @@
  * $Revision: 1.9 $
  *
  *****************************************************************************/
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "bg_saga.h"
 #include "bg_weapons.h"
 #include "bg_public.h"

@@ -3,7 +3,7 @@
 // cg_view.c -- setup all the parameters (position, angle, etc)
 // for a 3D rendering
 #include "cg_local.h"
-#include "game/bg_saga.h"
+#include "../game/bg_saga.h"
 #include "cg_lights.h"
 
 #define MASK_CAMERACLIP (MASK_SOLID|CONTENTS_PLAYERCLIP)

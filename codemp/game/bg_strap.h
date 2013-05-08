@@ -1,7 +1,7 @@
 #pragma once
 
 //rww - shared trap call system
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "bg_public.h"
 
 

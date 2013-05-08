@@ -1,11 +1,11 @@
 //Anything above this #include will be ignored by the compiler
 #define NOGDI
-#include "qcommon/exe_headers.h"
+#include "exe_headers.h"
 
 #include "cm_local.h"
 #include "cm_patch.h"
 #include "cm_landscape.h"
-#include "qcommon/GenericParser2.h"
+#include "GenericParser2.h"
 #include "cm_randomterrain.h"
 
 

@@ -1,4 +1,4 @@
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "g_local.h"
 
 #ifdef _JK2 //SP does not have this preprocessor for game like MP does
@@ -10,7 +10,7 @@
 #ifndef _JK2MP
 #include "g_functions.h"
 #include "g_vehicles.h"
-#include "cgame/cg_Local.h"
+#include "../cgame/cg_Local.h"
 #else
 #include "bg_vehicles.h"
 #endif

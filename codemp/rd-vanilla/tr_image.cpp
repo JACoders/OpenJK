@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 // tr_image.c
 #include "tr_local.h"
@@ -21,10 +21,10 @@ using namespace std;
 
 
 #define JPEG_INTERNALS
-#include "jpeg-8c/jpeglib.h"
+#include "../jpeg-8c/jpeglib.h"
 
-#include "png/rpng.h"
-#include "libpng/png.h"
+#include "../png/rpng.h"
+#include "../libpng/png.h"
 
 static void LoadTGA( const char *name, byte **pic, int *width, int *height );
 static void LoadJPG( const char *name, byte **pic, int *width, int *height );

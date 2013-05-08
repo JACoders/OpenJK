@@ -10,7 +10,7 @@
 
 #include "small_header.h"	// for SAMPLE and IN_OUT
 #ifndef _WIN32
-#include "qcommon/platform.h"
+#include "../qcommon/platform.h"
 #endif
 
 typedef void (*SBT_FUNCTION) (float *sample, short *pcm, int n);

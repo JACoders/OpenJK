@@ -1,8 +1,8 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 #include "RM_Headers.h"
-#include "qcommon/cm_terrainmap.h"
+#include "../qcommon/cm_terrainmap.h"
 
 /************************************************************************************************
  * CRMInstance::CRMInstance

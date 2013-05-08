@@ -7,7 +7,7 @@
 extern void *ICARUS_Malloc(int iSize);
 extern void  ICARUS_Free(void *pMem);
 
-#include "game/g_public.h"
+#include "../game/g_public.h"
 
 #pragma warning( disable : 4786 )  // identifier was truncated 
 #pragma warning( disable : 4514 )  // unreferenced inline was removed

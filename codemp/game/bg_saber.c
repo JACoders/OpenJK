@@ -1,4 +1,4 @@
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_local.h"
 #include "w_saber.h"
@@ -895,7 +895,7 @@ extern gentity_t g_entities[];
 
 #elif defined CGAME
 
-#include "cgame/cg_local.h" //ahahahahhahahaha@$!$!
+#include "../cgame/cg_local.h" //ahahahahhahahaha@$!$!
 
 #endif
 

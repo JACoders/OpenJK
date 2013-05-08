@@ -24,9 +24,9 @@
 					//	between base<->modbase clients and servers (mismatching events, powerups, etc)
 					// leave this defined to ensure compatibility
 
-#include "qcommon/disablewarnings.h"
+#include "disablewarnings.h"
 
-#include "game/teams.h" //npc team stuff
+#include "../game/teams.h" //npc team stuff
 
 #define MAX_WORLD_COORD		( 64 * 1024 )
 #define MIN_WORLD_COORD		( -64 * 1024 )
@@ -1819,7 +1819,7 @@ COLLISION DETECTION
 ==============================================================
 */
 
-#include "game/surfaceflags.h"			// shared with the q3map utility
+#include "../game/surfaceflags.h"			// shared with the q3map utility
 
 // plane types are used to speed some tests
 // 0-2 are axial planes
@@ -2904,7 +2904,7 @@ Ghoul2 Insert End
 //
 #define TAGDEF(blah) TAG_ ## blah
 typedef enum {
-	#include "qcommon/tags.h"
+	#include "tags.h"
 } memtag;
 typedef char memtag_t;
 

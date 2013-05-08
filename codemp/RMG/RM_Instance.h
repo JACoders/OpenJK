@@ -4,7 +4,7 @@
 	#pragma message("...including RM_Instance.h")
 #endif
 
-#include "qcommon/cm_landscape.h"
+#include "../qcommon/cm_landscape.h"
 
 enum
 {

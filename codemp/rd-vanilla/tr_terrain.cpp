@@ -1,10 +1,10 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 // this include must remain at the top of every CPP file
 #include "tr_local.h"
 
-#include "qcommon/GenericParser2.h"
+#include "../qcommon/GenericParser2.h"
 
 // To do:
 // Alter variance dependent on global distance from player (colour code this for cg_terrainCollisionDebug)
@@ -12,7 +12,7 @@
 // Link to neightbouring terrains or architecture (edge conditions)
 // Post process generated light data to make sure there are no bands within a patch
 
-#include "qcommon/cm_landscape.h"
+#include "../qcommon/cm_landscape.h"
 #include "tr_landscape.h"
 
 cvar_t		*r_drawTerrain;

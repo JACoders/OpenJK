@@ -2,7 +2,7 @@
 //
 #include "g_local.h"
 #include "w_saber.h"
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 
 #define	MISSILE_PRESTEP_TIME	50
 

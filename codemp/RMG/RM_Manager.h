@@ -1,6 +1,6 @@
 #pragma once
 
-#include "qcommon/cm_landscape.h"
+#include "../qcommon/cm_landscape.h"
 
 class CRMManager
 {

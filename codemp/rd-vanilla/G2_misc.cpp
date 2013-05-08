@@ -3,17 +3,17 @@
 
 
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 
-#include "qcommon/matcomp.h"
-#include "ghoul2/G2.h"
-#include "qcommon/MiniHeap.h"
-#include "server/server.h"
+#include "../qcommon/matcomp.h"
+#include "../ghoul2/G2.h"
+#include "../qcommon/MiniHeap.h"
+#include "../server/server.h"
 #include "G2_local.h"
 
 #ifdef _G2_GORE
-#include "ghoul2/G2_gore.h"
+#include "../ghoul2/G2_gore.h"
 
 #define GORE_TAG_UPPER (256)
 #define GORE_TAG_MASK (~255)

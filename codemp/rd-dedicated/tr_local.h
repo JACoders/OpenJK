@@ -4,15 +4,15 @@ typedef const char * LPCSTR;
 typedef unsigned short USHORT;
 typedef unsigned int GLuint;
 
-#include "qcommon/qfiles.h"
-#include "renderer/tr_public.h"
-#include "ghoul2/ghoul2_shared.h" //rwwRMG - added
+#include "../qcommon/qfiles.h"
+#include "../renderer/tr_public.h"
+#include "../ghoul2/ghoul2_shared.h" //rwwRMG - added
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
 
 #ifndef _WIN32
-#include "qcommon/platform.h"
+#include "../qcommon/platform.h"
 #endif
 
 // fast float to int conversion

@@ -1,14 +1,14 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "exe_headers.h"
 
 #include "cm_local.h"
 #include "cm_patch.h"
 #include "cm_landscape.h"
-#include "qcommon/GenericParser2.h"
+#include "GenericParser2.h"
 #include "cm_terrainmap.h"
 #include "cm_draw.h"
-#include "png/rpng.h"
-#include "client/client.h" // good enough for now
+#include "../png/rpng.h"
+#include "../client/client.h" // good enough for now
 
 static CTerrainMap	*TerrainMap = 0;
 

@@ -13,7 +13,7 @@
  *****************************************************************************/
 
 #ifdef BOTLIB
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "botlib.h"				//for the include of be_interface.h
 #include "l_script.h"
 #include "l_precomp.h"

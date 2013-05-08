@@ -6,7 +6,7 @@
 // Basic drawing routines for 32-bit per pixel buffer
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "qcommon/platform.h"
+#include "platform.h"
 
 // calc offset into image array for a pixel at (x,y)
 #define PIXPOS(x,y,stride) (((y)*(stride))+(x))

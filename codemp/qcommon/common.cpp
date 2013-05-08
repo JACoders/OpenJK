@@ -1,13 +1,13 @@
 // common.c -- misc functions used in client and server
 
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "exe_headers.h"
 
 #include "GenericParser2.h"
 #include "stringed_ingame.h"
-#include "qcommon/game_version.h"
+#include "game_version.h"
 #ifndef __linux__
-#include "qcommon/platform.h"
+#include "platform.h"
 #endif
 
 #include "../server/NPCNav/navigator.h"
@@ -1430,7 +1430,7 @@ int Com_ModifyMsec( int msec ) {
 }
 
 #ifdef G2_PERFORMANCE_ANALYSIS
-#include "qcommon/timing.h"
+#include "timing.h"
 void G2Time_ResetTimers(void);
 void G2Time_ReportTimers(void);
 extern timing_c G2PerformanceTimer_PreciseFrame;

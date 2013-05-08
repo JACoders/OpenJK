@@ -1,9 +1,9 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 #include "client.h"
 #include "FxScheduler.h"
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 
 #ifndef _WIN32
 #include <algorithm>

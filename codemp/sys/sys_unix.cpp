@@ -9,8 +9,8 @@
 #include <sys/types.h>
 #include <pwd.h>
 
-#include "qcommon/qcommon.h"
-#include "qcommon/q_shared.h"
+#include "../qcommon/qcommon.h"
+#include "../qcommon/q_shared.h"
 #include "sys_local.h"
 
 #define	MAX_QUED_EVENTS		256

@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 // ICARUS Engine Interface File
 //
@@ -8,8 +8,8 @@
 //
 //	-- jweier
 
-#include "game/g_public.h"
-#include "server/server.h"
+#include "../game/g_public.h"
+#include "../server/server.h"
 #include "interface.h"
 #include "GameInterface.h"
 #include "Q3_Interface.h"

@@ -1,9 +1,9 @@
 #include <dlfcn.h>
 #include <sys/fcntl.h>
-#include "qcommon/q_shared.h"
-#include "qcommon/qcommon.h"
-#include "qcommon/platform.h"
-#include "qcommon/files.h"
+#include "../qcommon/q_shared.h"
+#include "../qcommon/qcommon.h"
+#include "../qcommon/platform.h"
+#include "../qcommon/files.h"
 
 #include "sys_loadlib.h"
 #ifdef DEDICATED

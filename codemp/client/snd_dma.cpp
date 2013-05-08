@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 /*****************************************************************************
  * name:		snd_dma.c
@@ -16,7 +16,7 @@
 #ifndef _WIN32
 #include <algorithm>
 #include <string>
-#include "qcommon/platform.h"
+#include "../qcommon/platform.h"
 #endif
 
 qboolean s_shutUp = qfalse;
