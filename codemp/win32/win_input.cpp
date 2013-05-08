@@ -78,6 +78,130 @@ static void MidiInfo_f( void );
 /*
 ============================================================
 
+RAW INPUT MOUSE CONTROL
+
+============================================================
+*/
+
+#ifndef HID_USAGE_PAGE_GENERIC
+#define HID_USAGE_PAGE_GENERIC	((USHORT) 0x01)
+#endif
+
+#ifndef HID_USAGE_GENERIC_MOUSE
+#define HID_USAGE_GENERIC_MOUSE	((USHORT) 0x02)
+#endif
+
+static qboolean rawMouseInitialized = qfalse;
+static qboolean rawMouseActive = qfalse;
+static LONG rawDeltaX = 0;
+static LONG rawDeltaY = 0;
+
+/*
+================
+IN_InitRawMouse
+================
+*/
+qboolean IN_InitRawMouse( void )
+{
+	RAWINPUTDEVICE Rid[1];
+
+	Com_Printf( "Initializing raw input...\n");
+
+	Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+	Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+	Rid[0].dwFlags = RIDEV_NOLEGACY;
+	Rid[0].hwndTarget = 0;
+
+	if ( RegisterRawInputDevices( Rid, 1, sizeof(Rid[0]) ) == FALSE )
+	{
+		Com_Printf ("Couldn't register raw input devices\n");
+		return qfalse;
+	}
+
+	Com_Printf( "Raw input initialized.\n");
+	rawMouseInitialized = qtrue;
+	rawMouseActive = qfalse;
+	return qtrue;
+}
+
+/*
+================
+IN_ShutdownRawMouse
+================
+*/
+void IN_ShutdownRawMouse( void )
+{
+	if ( rawMouseInitialized )
+	{
+		RAWINPUTDEVICE Rid[1];
+
+		Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
+		Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
+		Rid[0].dwFlags = RIDEV_REMOVE;
+		Rid[0].hwndTarget = 0;
+
+		if ( RegisterRawInputDevices( Rid, 1, sizeof(Rid[0]) ) == FALSE )
+		{
+			Com_Printf ("Couldn't un-register raw input devices\n");
+		}
+
+		rawMouseActive = qfalse;
+		rawMouseInitialized = qfalse;
+	}
+}
+
+/*
+================
+IN_ActivateRawMouse
+================
+*/
+void IN_ActivateRawMouse( void )
+{
+	rawDeltaX = rawDeltaY = 0;
+	rawMouseActive = qtrue;
+}
+
+/*
+================
+IN_DeactivateRawMouse
+================
+*/
+void IN_DeactivateRawMouse( void )
+{
+	rawDeltaX = rawDeltaY = 0;
+	rawMouseActive = qfalse;
+}
+
+/*
+================
+IN_RawMouse
+================
+*/
+void IN_RawMouse( int *mx, int *my )
+{
+	*mx = rawDeltaX;
+	*my = rawDeltaY;
+	rawDeltaX = rawDeltaY = 0;
+}
+
+/*
+================
+IN_RawMouseEvent
+================
+*/
+void IN_RawMouseEvent( int lastX, int lastY )
+{
+	if ( rawMouseActive )
+	{
+		rawDeltaX += lastX;
+		rawDeltaY += lastY;
+	}
+}
+
+
+/*
+============================================================
+
 WIN32 MOUSE CONTROL
 
 ============================================================
@@ -491,7 +615,9 @@ void IN_ActivateMouse( void )
 
 	s_wmv.mouseActive = qtrue;
 
-	if ( in_mouse->integer != -1 ) {
+	if ( in_mouse->integer == 2 ) {
+		IN_ActivateRawMouse();
+	} else if ( in_mouse->integer != -1 ) {
 		IN_ActivateDIMouse();
 	}
 	IN_ActivateWin32Mouse();
@@ -546,6 +672,11 @@ void IN_StartupMouse( void )
 
 	if ( in_mouse->integer == -1 ) {
 		Com_Printf ("Skipping check for DirectInput\n");
+	} else if ( in_mouse->integer == 2 ) {
+		if ( IN_InitRawMouse() ) {
+			return;
+		}
+		Com_Printf ("Falling back to Win32 mouse support...\n");
 	} else {
 		if ( IN_InitDIMouse() ) {
 			return;
@@ -604,7 +735,9 @@ IN_MouseMove
 void IN_MouseMove ( void ) {
 	int		mx, my;
 
-	if ( g_pMouse ) {
+	if ( rawMouseInitialized ) {
+		IN_RawMouse( &mx, &my );
+	} else if ( g_pMouse ) {
 		IN_DIMouse( &mx, &my );
 	} else {
 		IN_Win32Mouse( &mx, &my );
@@ -647,6 +780,7 @@ IN_Shutdown
 */
 void IN_Shutdown( void ) {
 	IN_DeactivateMouse();
+	IN_ShutdownRawMouse();
 	IN_ShutdownDIMouse();
 	IN_ShutdownMIDI();
 	Cmd_RemoveCommand("midiinfo" );

@@ -486,6 +486,25 @@ LONG WINAPI MainWndProc (
 		}
 		break;
 
+	case WM_INPUT:
+		{
+			UINT dwSize = 40;
+			static BYTE lpb[40];
+			RAWINPUT *raw;
+
+			GetRawInputData( (HRAWINPUT) lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER) );
+
+			raw = (RAWINPUT*) lpb;
+
+			if ( raw->header.dwType == RIM_TYPEMOUSE )
+			{
+				LONG xPosRelative = raw->data.mouse.lLastX;
+				LONG yPosRelative = raw->data.mouse.lLastY;
+				IN_RawMouseEvent( xPosRelative, yPosRelative );
+			}
+		}
+		break;
+
 	case WM_SYSCOMMAND:
 		if ( (wParam&0xFFF0) == SC_SCREENSAVE || (wParam&0xFFF0) == SC_MONITORPOWER)
 		{
