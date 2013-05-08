@@ -5471,6 +5471,14 @@ static void PM_Footsteps( void ) {
 #endif
 			else if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN )
 			{
+#ifndef BASE_COMPAT
+				if( pm->ps->weapon != WP_SABER )
+				{
+					desiredAnim = BOTH_RUNBACK1;
+				}
+				else
+				{
+#endif
 				switch (pm->ps->fd.saberAnimLevel)
 				{
 				case SS_STAFF:
@@ -5508,9 +5516,20 @@ static void PM_Footsteps( void ) {
 					}
 					break;
 				}
+#ifndef BASE_COMPAT
+				}
+#endif
 			}
 			else
 			{
+#ifndef BASE_COMPAT					// FIXME: this doesn't break base compatibility at all, remove #ifndef
+				if ( pm->ps->weapon != WP_SABER )
+				{
+					desiredAnim = BOTH_RUN1;
+				}
+				else
+				{
+#endif
 				switch (pm->ps->fd.saberAnimLevel)
 				{
 				case SS_STAFF:
@@ -5559,6 +5578,9 @@ static void PM_Footsteps( void ) {
 					}
 					break;
 				}
+#ifndef BASE_COMPAT
+				}
+#endif
 			}
 			footstep = qtrue;
 		}
@@ -5567,6 +5589,14 @@ static void PM_Footsteps( void ) {
 			bobmove = 0.2f;	// walking bobs slow
 			if ( pm->ps->pm_flags & PMF_BACKWARDS_RUN )
 			{
+#ifndef BASE_COMPAT // fixme, doesn't break base compat if enabled (I tested this to be sure)
+				if( pm->ps->weapon != WP_SABER )
+				{
+					desiredAnim = BOTH_WALKBACK1;
+				}
+				else
+				{
+#endif
 				switch (pm->ps->fd.saberAnimLevel)
 				{
 				case SS_STAFF:
@@ -5608,6 +5638,9 @@ static void PM_Footsteps( void ) {
 					}
 					break;
 				}
+#ifndef BASE_COMPAT
+				}
+#endif
 			}
 			else
 			{
@@ -5619,6 +5652,12 @@ static void PM_Footsteps( void ) {
 				{
 					desiredAnim = BOTH_WALK1;
 				}
+#ifndef BASE_COMPAT
+				else if ( pm->ps->weapon != WP_SABER )
+				{
+					desiredAnim = BOTH_WALK1;
+				}
+#endif
 				else
 				{
 					switch (pm->ps->fd.saberAnimLevel)

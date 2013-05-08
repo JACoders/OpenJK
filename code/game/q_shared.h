@@ -1307,6 +1307,8 @@ inline const char	*Q_strrchr( const char* str, int c ) { return strrchr(str, c);
 void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong=qfalse );
 void	Q_strcat( char *dest, int size, const char *src );
 
+const char *Q_stristr( const char *s, const char *find );
+
 // strlen that discounts Quake color sequences
 int Q_PrintStrlen( const char *string );
 // removes color sequences from string
