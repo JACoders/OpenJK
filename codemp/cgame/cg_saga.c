@@ -10,7 +10,7 @@
  *
  *****************************************************************************/
 #include "cg_local.h"
-#include "game/bg_saga.h"
+#include "../game/bg_saga.h"
 
 int cgSiegeRoundState = 0;
 int cgSiegeRoundTime = 0;

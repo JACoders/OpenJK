@@ -1,11 +1,11 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 // sv_client.c -- server code for dealing with clients
 
 #include "server.h"
-#include "qcommon/stringed_ingame.h"
-#include "RMG/RM_Headers.h"
+#include "../qcommon/stringed_ingame.h"
+#include "../RMG/RM_Headers.h"
 #include "../zlib/zlib.h"
 
 static void SV_CloseDownload( client_t *cl );

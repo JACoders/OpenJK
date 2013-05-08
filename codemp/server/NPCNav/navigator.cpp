@@ -1,4 +1,4 @@
-#include "qcommon/q_shared.h"
+#include "../../qcommon/q_shared.h"
 
 #pragma warning( disable : 4018)
 #pragma warning( disable : 4245)
@@ -12,7 +12,7 @@
 #pragma warning (pop)
 
 #include "navigator.h"
-#include "game/g_nav.h"
+#include "../../game/g_nav.h"
 #include <time.h>
 #ifdef __linux__
 DWORD timeGetTime(void);

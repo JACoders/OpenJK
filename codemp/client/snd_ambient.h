@@ -12,7 +12,7 @@
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
 #pragma warning (push, 3)	//go back down to 3 for the stl include
 
-#include "qcommon/sstring.h"	// #include <string>
+#include "../qcommon/sstring.h"	// #include <string>
 #include <vector>
 #include <map>
 #pragma warning (pop)

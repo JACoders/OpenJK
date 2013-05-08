@@ -1,10 +1,10 @@
 // cmodel.c -- model loading
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "exe_headers.h"
 
 #include "cm_local.h"
 #include "cm_landscape.h" //rwwRMG - include
-#include "RMG/RM_Headers.h" //rwwRMG - include
+#include "../RMG/RM_Headers.h" //rwwRMG - include
 
 #ifdef BSPC
 

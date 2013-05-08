@@ -4,8 +4,8 @@
 // executed by a key binding
 
 #include "cg_local.h"
-#include "ui/ui_shared.h"
-#include "game/bg_saga.h"
+#include "../ui/ui_shared.h"
+#include "../game/bg_saga.h"
 extern menuDef_t *menuScoreboard;
 
 

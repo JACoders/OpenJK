@@ -3,15 +3,15 @@
 //  Stuff to parse in special x-fade music format and handle blending etc
 
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 #ifndef _WIN32
 #include <string>
-#include "qcommon/platform.h"
+#include "../qcommon/platform.h"
 #endif
 
-#include "qcommon/q_shared.h"
-#include "qcommon/sstring.h"
+#include "../qcommon/q_shared.h"
+#include "../qcommon/sstring.h"
 
 #pragma warning ( disable : 4663 )	//spcialize class
 #pragma warning( push, 3 )
@@ -24,7 +24,7 @@
 #include "snd_music.h"
 #include "snd_ambient.h"
 
-#include "qcommon/GenericParser2.h"
+#include "../qcommon/GenericParser2.h"
 
 extern sboolean S_FileExists( const char *psFilename );
 

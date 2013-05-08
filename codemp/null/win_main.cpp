@@ -1,11 +1,11 @@
 // win_main.c
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
-#include "client/client.h"
-#include "qcommon/qcommon.h"
-#include "win32/win_local.h"
-#include "win32/resource.h"
+#include "../client/client.h"
+#include "../qcommon/qcommon.h"
+#include "../win32/win_local.h"
+#include "../win32/resource.h"
 #include <errno.h>
 #include <float.h>
 #include <fcntl.h>
@@ -13,7 +13,7 @@
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
-#include "qcommon/stringed_ingame.h"
+#include "../qcommon/stringed_ingame.h"
 
 #define MEM_THRESHOLD 128*1024*1024
 

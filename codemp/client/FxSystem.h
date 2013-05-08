@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ghoul2/G2.h"
+#include "../ghoul2/G2.h"
 
 extern cvar_t	*fx_debug;
 

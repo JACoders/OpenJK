@@ -6,7 +6,7 @@
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 #pragma warning( disable : 4512 )
 
 // Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max)
@@ -24,13 +24,13 @@ extern void			SetViewportAndScissor( void );
 ////////////////////////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////////////////////////
-#include "qcommon/platform.h"
+#include "../qcommon/platform.h"
 #include "tr_local.h"
 #include "tr_WorldEffects.h"
 
-#include "Ravl/CVec.h"
-#include "Ratl/vector_vs.h"
-#include "Ratl/bits_vs.h"
+#include "../Ravl/CVec.h"
+#include "../Ratl/vector_vs.h"
+#include "../Ratl/bits_vs.h"
 
 #include "glext.h"
 

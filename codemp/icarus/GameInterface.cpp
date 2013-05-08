@@ -1,14 +1,14 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 // ICARUS Utility functions
 //rww - mangled to work in server exe setting.
 
-#include "game/g_public.h"
-#include "server/server.h"
+#include "../game/g_public.h"
+#include "../server/server.h"
 #include "interface.h"
 #include "GameInterface.h"
-#include "qcommon/RoffSystem.h"
+#include "../qcommon/RoffSystem.h"
 #include "Q3_Interface.h"
 
 ICARUS_Instance		*iICARUS;

@@ -1,7 +1,7 @@
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 #include "g_local.h"
-#include "ghoul2/G2.h"
+#include "../ghoul2/G2.h"
 #include "bg_saga.h"
 
 // g_client.c -- client functions that don't happen every frame

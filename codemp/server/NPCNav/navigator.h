@@ -32,8 +32,8 @@
 #include <list>
 using namespace std;
 
-#include "server/server.h"
-#include "qcommon/q_shared.h"
+#include "../server.h"
+#include "../../qcommon/q_shared.h"
 
 
 typedef multimap<int, int> EdgeMultimap;

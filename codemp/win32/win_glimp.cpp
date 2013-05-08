@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 /*
 ** WIN_GLIMP.C
@@ -22,7 +22,7 @@
 #include "resource.h"
 #include "glw_win.h"
 #include "win_local.h"
-#include "qcommon/stringed_ingame.h"
+#include "../qcommon/stringed_ingame.h"
 extern void WG_CheckHardwareGamma( void );
 extern void WG_RestoreGamma( void );
 

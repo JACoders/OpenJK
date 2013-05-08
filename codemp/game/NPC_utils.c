@@ -1,8 +1,8 @@
 //NPC_utils.cpp
 
 #include "b_local.h"
-#include "icarus/Q3_Interface.h"
-#include "ghoul2/G2.h"
+#include "../icarus/Q3_Interface.h"
+#include "../ghoul2/G2.h"
 
 int	teamNumbers[TEAM_NUM_TEAMS];
 int	teamStrength[TEAM_NUM_TEAMS];

@@ -1,7 +1,7 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
-#include "client/client.h"
+#include "../client/client.h"
 #include "win_local.h"
 
 WinVars_t	g_wv;

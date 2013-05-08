@@ -4,7 +4,7 @@
 //
 // g_local.h -- local definitions for game module
 
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_vehicles.h"
 #include "g_public.h"

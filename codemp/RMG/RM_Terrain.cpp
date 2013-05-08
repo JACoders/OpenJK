@@ -1,8 +1,8 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
-#include "qcommon/cm_local.h"
-#include "renderer/tr_types.h"
+#include "../qcommon/cm_local.h"
+#include "../renderer/tr_types.h"
 #include "RM_Headers.h"
 
 #pragma optimize("", off)

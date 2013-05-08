@@ -4,11 +4,11 @@
 //
 //====================================================================================
 
-#include "qcommon/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "bg_public.h"
 #include "b_local.h"
-#include "icarus/Q3_Interface.h"
-#include "icarus/Q3_Registers.h"
+#include "../icarus/Q3_Interface.h"
+#include "../icarus/Q3_Registers.h"
 #include "g_nav.h"
 
 qboolean BG_SabersOff( playerState_t *ps );
@@ -41,7 +41,7 @@ enum
 };
 //#endif
 
-#include "icarus/interpreter.h"
+#include "../icarus/interpreter.h"
 
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "qcommon/q_shared.h"
-#include "qcommon/qcommon.h"
-#include "game/g_public.h"
-#include "game/bg_public.h"
-#include "renderer/tr_public.h"
+#include "../qcommon/q_shared.h"
+#include "../qcommon/qcommon.h"
+#include "../game/g_public.h"
+#include "../game/bg_public.h"
+#include "../renderer/tr_public.h"
 
 //=============================================================================
 

@@ -1,10 +1,10 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 // this include must remain at the top of every CPP file
 #include "client.h"
 
 #include "FxScheduler.h"
-#include "ghoul2/G2.h"
+#include "../ghoul2/G2.h"
 
 cvar_t	*fx_debug;
 #ifdef _DEBUG

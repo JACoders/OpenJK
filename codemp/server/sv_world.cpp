@@ -1,10 +1,10 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 // world.c -- world query functions
 
 #include "server.h"
-#include "ghoul2/ghoul2_shared.h"
+#include "../ghoul2/ghoul2_shared.h"
 
 /*
 ================

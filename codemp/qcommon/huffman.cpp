@@ -4,7 +4,7 @@
  * by the location of a node within a doubly-linked list */
 
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "exe_headers.h"
 
 
 static int			bloc = 0;

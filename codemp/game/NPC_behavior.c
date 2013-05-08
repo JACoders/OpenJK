@@ -8,7 +8,7 @@ we need it...
 
 #include "b_local.h"
 #include "g_nav.h"
-#include "icarus/Q3_Interface.h"
+#include "../icarus/Q3_Interface.h"
 
 extern	qboolean	showBBoxes;
 extern vec3_t NPCDEBUG_BLUE;

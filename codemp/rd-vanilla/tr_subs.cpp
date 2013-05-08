@@ -1,5 +1,5 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 // tr_subs.cpp - common function replacements for modular renderer
 #include "tr_local.h"
@@ -76,7 +76,7 @@ void Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
 
 // Parsing
 
-#include "qcommon/GenericParser2.h"
+#include "../qcommon/GenericParser2.h"
 
 bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst)
 {

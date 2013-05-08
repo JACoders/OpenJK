@@ -1,34 +1,34 @@
 // cl_cgame.c  -- client system interaction with client game
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
-#include "RMG/RM_Headers.h"
+#include "../RMG/RM_Headers.h"
 #include "client.h"
-#include "botlib/botlib.h"
-#include "RMG/RM_Headers.h"
+#include "../botlib/botlib.h"
+#include "../RMG/RM_Headers.h"
 #include "FXExport.h"
 #include "FxUtil.h"
-#include "qcommon/RoffSystem.h"
+#include "../qcommon/RoffSystem.h"
 
 #ifdef _DONETPROFILE_
-#include "qcommon/INetProfile.h"
+#include "../qcommon/INetProfile.h"
 #endif
 
 #ifdef VV_LIGHTING
-#include "renderer/tr_lightmanager.h"
+#include "../renderer/tr_lightmanager.h"
 #endif
 
 /*
 Ghoul2 Insert Start
 */
 
-#include "qcommon/stringed_ingame.h"
-#include "ghoul2/G2_gore.h"
+#include "../qcommon/stringed_ingame.h"
+#include "../ghoul2/G2_gore.h"
 
 extern CMiniHeap *G2VertSpaceClient;
 
 #include "snd_ambient.h"
-#include "qcommon/timing.h"
+#include "../qcommon/timing.h"
 
 //extern int contentOverride;
 

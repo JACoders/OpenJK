@@ -12,7 +12,7 @@
 
 #include "../server/exe_headers.h"
 #include "../client/client.h"
-#include "../win32/win_local.h"
+#include "win_local.h"
 #include "../qcommon/qcommon.h"
 #include "../qcommon/fixedmap.h"
 #include "../zlib/zlib.h"

@@ -15,7 +15,7 @@
 
 using namespace std;
 
-#include "qcommon/platform.h"
+#include "../qcommon/platform.h"
 
 #ifndef _WIN32
 #include <string.h>

@@ -11,15 +11,15 @@ USER INTERFACE MAIN
 // use this to get a demo build without an explicit demo build, i.e. to get the demo ui files to build
 //#define PRE_RELEASE_TADEMO
 
-#include "ghoul2/G2.h"
+#include "../ghoul2/G2.h"
 #include "ui_local.h"
-#include "qcommon/qfiles.h"
-#include "qcommon/game_version.h"
+#include "../qcommon/qfiles.h"
+#include "../qcommon/game_version.h"
 #include "ui_force.h"
-#include "cgame/animtable.h" //we want this to be compiled into the module because we access it in the shared module.
-#include "game/bg_saga.h"
+#include "../cgame/animtable.h" //we want this to be compiled into the module because we access it in the shared module.
+#include "../game/bg_saga.h"
 
-#include "cgame/holocronicons.h"
+#include "../cgame/holocronicons.h"
 
 #define strnicmp Q_stricmpn
 

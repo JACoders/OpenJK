@@ -2,8 +2,8 @@
 //
 // cg_players.c -- handle the media and animation for player entities
 #include "cg_local.h"
-#include "ghoul2/G2.h"
-#include "game/bg_saga.h"
+#include "../ghoul2/G2.h"
+#include "../game/bg_saga.h"
 
 extern vmCvar_t	cg_thirdPersonAlpha;
 

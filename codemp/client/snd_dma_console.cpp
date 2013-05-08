@@ -14,7 +14,7 @@
 
 // #include "../../toolbox/zlib/zlib.h"
 
-#include "../client/client.h"
+#include "client.h"
 
 // Doesn't do anything on Xbox
 qboolean s_shutUp = qfalse;

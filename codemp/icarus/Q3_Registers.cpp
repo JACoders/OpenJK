@@ -1,7 +1,7 @@
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
-#include "game/g_public.h"
+#include "../game/g_public.h"
 #include "Q3_Registers.h"
 
 extern	void	Q3_DebugPrint( int level, const char *format, ... );

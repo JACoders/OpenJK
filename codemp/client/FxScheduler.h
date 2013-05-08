@@ -1,7 +1,7 @@
 #pragma once
 
 #include "FxUtil.h"
-#include "qcommon/GenericParser2.h"
+#include "../qcommon/GenericParser2.h"
 
 #pragma warning (push, 3)	//go back down to 3 for the stl include
 #include <vector>

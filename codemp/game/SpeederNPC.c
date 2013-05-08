@@ -41,7 +41,7 @@
 #ifndef _JK2MP
 #include "g_functions.h"
 #include "g_vehicles.h"
-#include "game/wp_saber.h"
+#include "../game/wp_saber.h"
 #else
 #include "bg_vehicles.h"
 #endif

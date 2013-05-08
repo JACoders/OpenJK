@@ -4,7 +4,7 @@
 // Basic drawing routines for 32-bit buffer
 ///////////////////////////////////////////////////////////////////////////////
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "exe_headers.h"
 
 
 #include "cm_local.h"

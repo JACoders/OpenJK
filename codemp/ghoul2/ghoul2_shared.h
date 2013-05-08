@@ -13,10 +13,10 @@ Ghoul2 Insert End
 */
 
 #define MDXABONEDEF
-#include "renderer/mdx_format.h"
-#include "renderer/tr_types.h"
-#include "qcommon/matcomp.h"
-#include "ghoul2/G2_gore.h"
+#include "../renderer/mdx_format.h"
+#include "../renderer/tr_types.h"
+#include "../qcommon/matcomp.h"
+#include "G2_gore.h"
 
 struct model_s;
 

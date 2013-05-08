@@ -11,9 +11,9 @@
 
 using namespace std;
 
-#include "qcommon/GenericParser2.h"
-#include "qcommon/cm_local.h"
-#include "client/client.h"
+#include "../qcommon/GenericParser2.h"
+#include "../qcommon/cm_local.h"
+#include "../client/client.h"
 
 #define MAX_INSTANCE_TRIES			5
 
@@ -26,7 +26,7 @@ typedef enum
 
 } symmetry_t;
 
-#include "qcommon/cm_terrainmap.h"
+#include "../qcommon/cm_terrainmap.h"
 #include "RM_Area.h"
 #include "RM_Path.h"
 #include "RM_Objective.h"

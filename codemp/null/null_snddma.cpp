@@ -2,7 +2,7 @@
 // snddma_null.c
 // all other sound mixing is portable
 
-#include "client/client.h"
+#include "../client/client.h"
 
 qboolean gbInsideLoadSound = qfalse; // important to default to this!!!
 

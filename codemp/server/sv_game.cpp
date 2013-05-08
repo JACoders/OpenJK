@@ -1,17 +1,17 @@
 // sv_game.c -- interface to the game dll
 //Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
+#include "../qcommon/exe_headers.h"
 
 #include "server.h"
-#include "botlib/botlib.h"
-#include "qcommon/stringed_ingame.h"
-#include "qcommon/RoffSystem.h"
-#include "ghoul2/ghoul2_shared.h"
-#include "RMG/RM_Headers.h"
-#include "qcommon/cm_local.h"
-#include "qcommon/cm_public.h"
-#include "icarus/GameInterface.h"
-#include "qcommon/timing.h"
+#include "../botlib/botlib.h"
+#include "../qcommon/stringed_ingame.h"
+#include "../qcommon/RoffSystem.h"
+#include "../ghoul2/ghoul2_shared.h"
+#include "../RMG/RM_Headers.h"
+#include "../qcommon/cm_local.h"
+#include "../qcommon/cm_public.h"
+#include "../icarus/GameInterface.h"
+#include "../qcommon/timing.h"
 #include "NPCNav/navigator.h"
 
 botlib_export_t	*botlib_export;
