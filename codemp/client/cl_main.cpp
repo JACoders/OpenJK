@@ -499,7 +499,7 @@ void CL_PlayDemo_f( void ) {
 	char		*arg;
 
 	if (Cmd_Argc() != 2) {
-		Com_Printf ("playdemo <demoname>\n");
+		Com_Printf ("demo <demoname>\n");
 		return;
 	}
 
@@ -507,14 +507,11 @@ void CL_PlayDemo_f( void ) {
 	// 2 means don't force disconnect of local client
 	Cvar_Set( "sv_killserver", "2" );
 
-	CL_Disconnect( qtrue );
-
-	/* MrE: 2000-09-13: now called in CL_DownloadsComplete
-	CL_FlushMemory( );
-	*/
-
 	// open the demo file
 	arg = Cmd_Argv(1);
+
+	CL_Disconnect( qtrue );
+
 	Com_sprintf(extension, sizeof(extension), ".dm_%d", PROTOCOL_VERSION);
 	if ( !Q_stricmp( arg + strlen(arg) - strlen(extension), extension ) ) {
 		Com_sprintf (name, sizeof(name), "demos/%s", arg);
