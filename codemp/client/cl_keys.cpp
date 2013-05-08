@@ -1509,6 +1509,11 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 
 	// escape is always handled special
 	if ( key == A_ESCAPE && down ) {
+		if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) {
+			Con_ToggleConsole_f ();
+			// purposely fall through
+		}
+
 		if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) {
 			// clear message mode
 			Message_Key( key );

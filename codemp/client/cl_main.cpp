@@ -216,29 +216,19 @@ void CL_StopRecord_f( void ) {
 	Com_Printf ("Stopped demo.\n");
 }
 
-/* 
-================== 
+/*
+==================
 CL_DemoFilename
-================== 
-*/  
-void CL_DemoFilename( int number, char *fileName ) {
-	int		a,b,c,d;
+==================
+*/
+void CL_DemoFilename( char *buf, int bufSize, int protocol ) {
+	time_t rawtime;
+	char timeStr[32] = {0}; // should really only reach ~19 chars
 
-	if ( number < 0 || number > 9999 ) {
-		Com_sprintf( fileName, MAX_OSPATH, "demo9999.tga" );
-		return;
-	}
+	time( &rawtime );
+	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
 
-	a = number / 1000;
-	number -= a*1000;
-	b = number / 100;
-	number -= b*100;
-	c = number / 10;
-	number -= c*10;
-	d = number;
-
-	Com_sprintf( fileName, MAX_OSPATH, "demo%i%i%i%i"
-		, a, b, c, d );
+	Com_sprintf( buf, bufSize, "demos/demo%s.dm_%d", timeStr, protocol );
 }
 
 /*
@@ -288,18 +278,13 @@ void CL_Record_f( void ) {
 		Q_strncpyz( demoName, s, sizeof( demoName ) );
 		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
 	} else {
-		int		number;
+		// timestamp the file
+		CL_DemoFilename( name, sizeof( name ), PROTOCOL_VERSION );
 
-		// scan for a free demo name
-		for ( number = 0 ; number <= 9999 ; number++ ) {
-			CL_DemoFilename( number, demoName );
-			Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
-
-			len = FS_ReadFile( name, NULL );
-			if ( len <= 0 ) {
-				break;	// file doesn't exist
-			}
-		}
+		if ( FS_FileExists( name ) ) {
+			Com_Printf( "Record: Couldn't create a file\n"); 
+			return;
+ 		}
 	}
 
 	// open the demo file
@@ -2471,6 +2456,21 @@ void CL_SetForcePowers_f( void ) {
 }
 
 /*
+==================
+CL_VideoFilename
+==================
+*/
+void CL_VideoFilename( char *buf, int bufSize ) {
+	time_t rawtime;
+	char timeStr[32] = {0}; // should really only reach ~19 chars
+
+	time( &rawtime );
+	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
+
+	Com_sprintf( buf, bufSize, "videos/video%s.avi", timeStr );
+}
+
+/*
 ===============
 CL_Video_f
 
@@ -2481,7 +2481,6 @@ video [filename]
 void CL_Video_f( void )
 {
 	char  filename[ MAX_OSPATH ];
-	int   i, last;
 
 	if( !clc.demoplaying )
 	{
@@ -2496,33 +2495,12 @@ void CL_Video_f( void )
 	}
 	else
 	{
-		// scan for a free filename
-		for( i = 0; i <= 9999; i++ )
-		{
-			int a, b, c, d;
+		CL_VideoFilename( filename, MAX_OSPATH );
 
-			last = i;
-
-			a = last / 1000;
-			last -= a * 1000;
-			b = last / 100;
-			last -= b * 100;
-			c = last / 10;
-			last -= c * 10;
-			d = last;
-
-			Com_sprintf( filename, MAX_OSPATH, "videos/video%d%d%d%d.avi",
-				a, b, c, d );
-
-			if( !FS_FileExists( filename ) )
-				break; // file doesn't exist
-		}
-
-		if( i > 9999 )
-		{
-			Com_Printf( S_COLOR_RED "ERROR: no free file names to create video\n" );
+		if ( FS_FileExists( filename ) ) {
+			Com_Printf( "Video: Couldn't create a file\n"); 
 			return;
-		}
+ 		}
 	}
 
 	CL_OpenAVIForWriting( filename );
