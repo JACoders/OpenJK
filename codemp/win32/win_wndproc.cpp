@@ -488,18 +488,15 @@ LONG WINAPI MainWndProc (
 
 	case WM_INPUT:
 		{
-			UINT dwSize = 40;
-			static BYTE lpb[40];
-			RAWINPUT *raw;
+			RAWINPUT raw;
+			size_t rawSize = sizeof(raw);
 
-			GetRawInputData( (HRAWINPUT) lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER) );
+			GetRawInputData( (HRAWINPUT) lParam, RID_INPUT, &raw, &rawSize, sizeof(RAWINPUTHEADER) );
 
-			raw = (RAWINPUT*) lpb;
-
-			if ( raw->header.dwType == RIM_TYPEMOUSE )
+			if ( raw.header.dwType == RIM_TYPEMOUSE )
 			{
-				LONG xPosRelative = raw->data.mouse.lLastX;
-				LONG yPosRelative = raw->data.mouse.lLastY;
+				LONG xPosRelative = raw.data.mouse.lLastX;
+				LONG yPosRelative = raw.data.mouse.lLastY;
 				IN_RawMouseEvent( xPosRelative, yPosRelative );
 			}
 		}
