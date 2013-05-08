@@ -92,7 +92,6 @@ RAW INPUT MOUSE CONTROL
 #endif
 
 static qboolean rawMouseInitialized = qfalse;
-static qboolean rawMouseActive = qfalse;
 static LONG rawDeltaX = 0;
 static LONG rawDeltaY = 0;
 
@@ -109,7 +108,7 @@ qboolean IN_InitRawMouse( void )
 
 	Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC;
 	Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE;
-	Rid[0].dwFlags = RIDEV_NOLEGACY;
+	Rid[0].dwFlags = 0;
 	Rid[0].hwndTarget = 0;
 
 	if ( RegisterRawInputDevices( Rid, 1, sizeof(Rid[0]) ) == FALSE )
@@ -120,7 +119,6 @@ qboolean IN_InitRawMouse( void )
 
 	Com_Printf( "Raw input initialized.\n");
 	rawMouseInitialized = qtrue;
-	rawMouseActive = qfalse;
 	return qtrue;
 }
 
@@ -145,7 +143,6 @@ void IN_ShutdownRawMouse( void )
 			Com_Printf ("Couldn't un-register raw input devices\n");
 		}
 
-		rawMouseActive = qfalse;
 		rawMouseInitialized = qfalse;
 	}
 }
@@ -158,7 +155,6 @@ IN_ActivateRawMouse
 void IN_ActivateRawMouse( void )
 {
 	rawDeltaX = rawDeltaY = 0;
-	rawMouseActive = qtrue;
 }
 
 /*
@@ -169,7 +165,6 @@ IN_DeactivateRawMouse
 void IN_DeactivateRawMouse( void )
 {
 	rawDeltaX = rawDeltaY = 0;
-	rawMouseActive = qfalse;
 }
 
 /*
@@ -191,11 +186,8 @@ IN_RawMouseEvent
 */
 void IN_RawMouseEvent( int lastX, int lastY )
 {
-	if ( rawMouseActive )
-	{
-		rawDeltaX += lastX;
-		rawDeltaY += lastY;
-	}
+	rawDeltaX += lastX;
+	rawDeltaY += lastY;
 }
 
 
@@ -640,6 +632,7 @@ void IN_DeactivateMouse( void ) {
 	}
 	s_wmv.mouseActive = qfalse;
 
+	IN_DeactivateRawMouse();
 	IN_DeactivateDIMouse();
 	IN_DeactivateWin32Mouse();
 }
