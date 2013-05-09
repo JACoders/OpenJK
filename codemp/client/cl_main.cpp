@@ -499,7 +499,7 @@ void CL_PlayDemo_f( void ) {
 	char		*arg;
 
 	if (Cmd_Argc() != 2) {
-		Com_Printf ("playdemo <demoname>\n");
+		Com_Printf ("demo <demoname>\n");
 		return;
 	}
 
@@ -507,14 +507,11 @@ void CL_PlayDemo_f( void ) {
 	// 2 means don't force disconnect of local client
 	Cvar_Set( "sv_killserver", "2" );
 
-	CL_Disconnect( qtrue );
-
-	/* MrE: 2000-09-13: now called in CL_DownloadsComplete
-	CL_FlushMemory( );
-	*/
-
 	// open the demo file
 	arg = Cmd_Argv(1);
+
+	CL_Disconnect( qtrue );
+
 	Com_sprintf(extension, sizeof(extension), ".dm_%d", PROTOCOL_VERSION);
 	if ( !Q_stricmp( arg + strlen(arg) - strlen(extension), extension ) ) {
 		Com_sprintf (name, sizeof(name), "demos/%s", arg);
@@ -1255,7 +1252,7 @@ void CL_DownloadsComplete( void ) {
 		// inform the server so we get new gamestate info
 		CL_AddReliableCommand( "donedl", qfalse );
 
-		// by sending the donenl command we request a new gamestate
+		// by sending the donedl command we request a new gamestate
 		// so we don't want to load stuff yet
 		return;
 	}
@@ -1796,6 +1793,10 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 			return;
 		}
 
+		c = Cmd_Argv(2);
+		if(*c)
+			challenge = atoi(c);
+
 		if(!NET_CompareAdr(from, clc.serverAddress))
 		{
 			// This challenge response is not coming from the expected address.
@@ -1809,7 +1810,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 			}
 		}
 
-		// start sending challenge repsonse instead of challenge request packets
+		// start sending challenge response instead of challenge request packets
 		clc.challenge = atoi(Cmd_Argv(1));
 		cls.state = CA_CHALLENGING;
 		clc.connectPacketCount = 0;
@@ -1833,7 +1834,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 			return;
 		}
 		if ( !NET_CompareAdr( from, clc.serverAddress ) ) {
-			Com_Printf( "connectResponse from a different address. Ignored.\n" );
+			Com_Printf( "connectResponse from wrong address. Ignored.\n" );
 			return;
 		}
 		Netchan_Setup (NS_CLIENT, &clc.netchan, from, Cvar_VariableValue( "net_qport" ) );
@@ -1895,7 +1896,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 		return;
 	}
 
-	// echo request from server
+	// list of servers sent back by a master server (classic)
 	if ( !Q_strncmp(c, "getserversResponse", 18) ) {
 		CL_ServersResponsePacket( &from, msg );
 		return;

@@ -1165,8 +1165,14 @@ void Com_Init( char *commandLine ) {
 		com_dedicated = Cvar_Get ("dedicated", "2", CVAR_ROM);
 		Cvar_CheckRange( com_dedicated, 1, 2, qtrue );
 	#else
-		com_dedicated = Cvar_Get ("dedicated", "0", CVAR_LATCH);
-		Cvar_CheckRange( com_dedicated, 0, 2, qtrue );
+		//OJKFIXME: Temporarily disabled dedicated server when not using the dedicated server binary.
+		//			Issue is the server not having a renderer when not using ^^^^^
+		//				and crashing in SV_SpawnServer calling re.RegisterMedia_LevelLoadBegin
+		//			Until we fully remove the renderer from the server, the client executable
+		//				will not have dedicated support capabilities.
+		//			Use the dedicated server package.
+		com_dedicated = Cvar_Get ("_dedicated", "0", CVAR_ROM|CVAR_INIT|CVAR_PROTECTED);
+	//	Cvar_CheckRange( com_dedicated, 0, 2, qtrue );
 	#endif
 		// allocate the stack based hunk allocator
 		Com_InitHunkMemory();
@@ -1525,7 +1531,7 @@ try
 	// but before the client tries to auto-connect
 	if ( com_dedicated->modified ) {
 		// get the latched value
-		Cvar_Get( "dedicated", "0", 0 );
+		Cvar_Get( "_dedicated", "0", 0 );
 		com_dedicated->modified = qfalse;
 		if ( !com_dedicated->integer ) {
 			CL_Init();
