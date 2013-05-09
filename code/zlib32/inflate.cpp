@@ -499,9 +499,13 @@ static ulong needout(z_stream *z, inflate_blocks_state_t *s, ulong bytesToEnd)
 inline byte *qcopy(byte *dst, byte *src, int count)
 {
 	byte 	*retval;
+    while(count--) {
+        *dst++ = *src++;
+    }
+    retval = dst;
 #ifdef __linux__
 //FIXME
-#else
+#elif 0
 	_asm
 	{
 		push ecx  

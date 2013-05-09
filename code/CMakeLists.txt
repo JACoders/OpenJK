@@ -359,7 +359,6 @@ if(BuildSPEngine)
 	source_group("png" FILES ${SPEnginePNGFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEnginePNGFiles})
 
-
 	# zlib files
 	set(SPEngineZlibFiles
 		"${SPDir}/zlib32/deflate.cpp"
