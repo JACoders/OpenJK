@@ -205,7 +205,7 @@ void *Sys_GetGameAPI (void *parms)
 	
 	Com_Printf ( "Sys_GetGameAPI(%s): succeeded ...\n", fn );
 
-	GetGameAPI = (void *)Sys_LoadFunction (game_library, "GetGameAPI");
+	GetGameAPI = (void *(*)(void *))Sys_LoadFunction (game_library, "GetGameAPI");
 	if (!GetGameAPI)
 	{
 		Sys_UnloadGame ();
@@ -251,7 +251,7 @@ int main (int argc, char **argv)
 	// merge the command line, this is kinda silly
 	for (len = 1, i = 1; i < argc; i++)
 		len += strlen(argv[i]) + 1;
-	cmdline = malloc(len);
+	cmdline = (char *)malloc(len);
 	*cmdline = 0;
 	for (i = 1; i < argc; i++) {
 		if (i > 1)

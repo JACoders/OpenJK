@@ -441,7 +441,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
 		SDL_SetWindowIcon( screen, icon );
 
-		if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
+		if( ( opengl_context = (QGLContext)SDL_GL_CreateContext( screen ) ) == NULL )
 		{
 			Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
 			continue;
@@ -752,7 +752,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
 	{
-		char *driverName;
+		const char *driverName;
 
 		if (SDL_Init(SDL_INIT_VIDEO) == -1)
 		{
@@ -783,7 +783,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 		fullscreen = qfalse;
 	}
 
-	err = GLimp_SetMode(mode, fullscreen, noborder);
+	err = (rserr_t)GLimp_SetMode(mode, fullscreen, noborder);
 
 	switch ( err )
 	{
@@ -1149,19 +1149,19 @@ static void GLimp_InitExtensions( void )
 			// NOTE: VV guys will _definetly_ not be able to use regcoms. Pixel Shaders are just as good though :-)
 			// NOTE: Also, this is an nVidia specific extension (of course), so fragment shaders would serve the same purpose
 			// if we needed some kind of fragment/pixel manipulation support.
-			qglCombinerParameterfvNV = SDL_GL_GetProcAddress( "glCombinerParameterfvNV" );
-			qglCombinerParameterivNV = SDL_GL_GetProcAddress( "glCombinerParameterivNV" );
-			qglCombinerParameterfNV = SDL_GL_GetProcAddress( "glCombinerParameterfNV" );
-			qglCombinerParameteriNV = SDL_GL_GetProcAddress( "glCombinerParameteriNV" );
-			qglCombinerInputNV = SDL_GL_GetProcAddress( "glCombinerInputNV" );
-			qglCombinerOutputNV = SDL_GL_GetProcAddress( "glCombinerOutputNV" );
-			qglFinalCombinerInputNV = SDL_GL_GetProcAddress( "glFinalCombinerInputNV" );
-			qglGetCombinerInputParameterfvNV	= SDL_GL_GetProcAddress( "glGetCombinerInputParameterfvNV" );
-			qglGetCombinerInputParameterivNV	= SDL_GL_GetProcAddress( "glGetCombinerInputParameterivNV" );
-			qglGetCombinerOutputParameterfvNV = SDL_GL_GetProcAddress( "glGetCombinerOutputParameterfvNV" );
-			qglGetCombinerOutputParameterivNV = SDL_GL_GetProcAddress( "glGetCombinerOutputParameterivNV" );
-			qglGetFinalCombinerInputParameterfvNV = SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterfvNV" );
-			qglGetFinalCombinerInputParameterivNV = SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterivNV" );
+			qglCombinerParameterfvNV = (PFNGLCOMBINERPARAMETERFVNV)SDL_GL_GetProcAddress( "glCombinerParameterfvNV" );
+			qglCombinerParameterivNV = (PFNGLCOMBINERPARAMETERIVNV)SDL_GL_GetProcAddress( "glCombinerParameterivNV" );
+			qglCombinerParameterfNV = (PFNGLCOMBINERPARAMETERFNV)SDL_GL_GetProcAddress( "glCombinerParameterfNV" );
+			qglCombinerParameteriNV = (PFNGLCOMBINERPARAMETERINV)SDL_GL_GetProcAddress( "glCombinerParameteriNV" );
+			qglCombinerInputNV = (PFNGLCOMBINERINPUTNV)SDL_GL_GetProcAddress( "glCombinerInputNV" );
+			qglCombinerOutputNV = (PFNGLCOMBINEROUTPUTNV)SDL_GL_GetProcAddress( "glCombinerOutputNV" );
+			qglFinalCombinerInputNV = (PFNGLFINALCOMBINERINPUTNV)SDL_GL_GetProcAddress( "glFinalCombinerInputNV" );
+			qglGetCombinerInputParameterfvNV	= (PFNGLGETCOMBINERINPUTPARAMETERFVNV)SDL_GL_GetProcAddress( "glGetCombinerInputParameterfvNV" );
+			qglGetCombinerInputParameterivNV	= (PFNGLGETCOMBINERINPUTPARAMETERIVNV)SDL_GL_GetProcAddress( "glGetCombinerInputParameterivNV" );
+			qglGetCombinerOutputParameterfvNV = (PFNGLGETCOMBINEROUTPUTPARAMETERFVNV)SDL_GL_GetProcAddress( "glGetCombinerOutputParameterfvNV" );
+			qglGetCombinerOutputParameterivNV = (PFNGLGETCOMBINEROUTPUTPARAMETERIVNV)SDL_GL_GetProcAddress( "glGetCombinerOutputParameterivNV" );
+			qglGetFinalCombinerInputParameterfvNV = (PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV)SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterfvNV" );
+			qglGetFinalCombinerInputParameterivNV = (PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV)SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterivNV" );
 
 			// Validate the functions we need.
 			if ( !qglCombinerParameterfvNV || !qglCombinerParameterivNV || !qglCombinerParameterfNV || !qglCombinerParameteriNV || !qglCombinerInputNV ||

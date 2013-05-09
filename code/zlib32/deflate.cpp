@@ -1210,9 +1210,11 @@ static void lm_init(deflate_state *s)
 inline byte *qcmp(byte *scan, byte *match, ulong count)
 {
 	byte	*retval;
+    while(count-- && *scan++ == *match++);
+    return --scan;
 #ifdef __linux__
 //FIXME
-#else
+#elif 0
 	_asm
 	{
 		push	esi
