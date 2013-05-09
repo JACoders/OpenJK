@@ -174,6 +174,9 @@ IN_RawMouse
 */
 void IN_RawMouse( int *mx, int *my )
 {
+	// force the mouse to the center, just to be consistent with default mouse behaviour
+	SetCursorPos (window_center_x, window_center_y);
+
 	*mx = rawDeltaX;
 	*my = rawDeltaY;
 	rawDeltaX = rawDeltaY = 0;
@@ -225,8 +228,8 @@ void IN_ActivateWin32Mouse( void ) {
 	int			width, height;
 	RECT		window_rect;
 
-	width = GetSystemMetrics (SM_CXSCREEN);
-	height = GetSystemMetrics (SM_CYSCREEN);
+	width = GetSystemMetrics (SM_CXVIRTUALSCREEN);
+	height = GetSystemMetrics (SM_CYVIRTUALSCREEN);
 
 	GetWindowRect ( g_wv.hWnd, &window_rect);
 	if (window_rect.left < 0)
