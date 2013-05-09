@@ -250,7 +250,7 @@ void *Sys_LoadGameDll( const char *name, intptr_t (**entryPoint)(int, ...), intp
   //    return NULL;
   //}
     
-#ifndef NDEBUG
+#ifdef NDEBUG
   Com_sprintf (fname, sizeof(fname), "%s" ARCH_STRING "-debug" DLL_EXT, name); // bk010205 - different DLL name
 #else
   Com_sprintf (fname, sizeof(fname), "%s" ARCH_STRING DLL_EXT, name);
