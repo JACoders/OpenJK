@@ -519,7 +519,7 @@ nextInstruction2:
 				*(int *)&image[ programStack + 4 ] = -1 - programCounter;
 
 //VM_LogSyscalls( (int *)&image[ programStack + 4 ] );
-				r = vm->systemCall( (int *)&image[ programStack + 4 ] );
+				r = vm->systemCall( (intptr_t *)&image[ programStack + 4 ] );
 
 #ifdef DEBUG_VM
 				if (com_vmdebug->integer > 1)
