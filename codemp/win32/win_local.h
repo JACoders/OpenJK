@@ -17,6 +17,7 @@
 #include <wsipx.h>
 
 void	IN_MouseEvent (int mstate);
+void	IN_RawMouseEvent( int lastX, int lastY ); // Send raw input events to the input subsystem
 
 void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr );
 
