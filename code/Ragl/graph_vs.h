@@ -773,13 +773,13 @@ public:
 		if (nodeA==nodeB || !nodeA || !nodeB || !mNodes.is_used(nodeA) || !mNodes.is_used(nodeB))
 		{
 			assert("ERROR: Cannot Connect A and B!"==0);
-			return 0;
+			return;
 		}
 
 		if (mLinks[nodeA].full() || (reflexive && mLinks[nodeB].full()))
 		{
 			assert("ERROR: Max edges per node exceeded!"==0);
-			return 0;
+			return;
 		}
 
 
@@ -796,7 +796,7 @@ public:
 			mLinks[nodeB].push_back(nNbr);
 		}
 
-		return nNbr.mEdge;
+		return;
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
