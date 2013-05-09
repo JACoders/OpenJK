@@ -1209,30 +1209,8 @@ static void lm_init(deflate_state *s)
 
 inline byte *qcmp(byte *scan, byte *match, ulong count)
 {
-	byte	*retval;
     while(count-- && *scan++ == *match++);
     return --scan;
-#ifdef __linux__
-//FIXME
-#elif 0
-	_asm
-	{
-		push	esi
-		push	edi
-		push	ecx
-
-		mov		esi, [scan]
-		mov		edi, [match]
-		mov		ecx, [count]
-		repe	cmpsb
-
-		pop		ecx
-		pop		edi
-		mov		[retval], esi
-		pop		esi
-	}
-#endif
-	return(--retval);
 }
 
 static ulong longest_match(deflate_state *s, ulong cur_match)

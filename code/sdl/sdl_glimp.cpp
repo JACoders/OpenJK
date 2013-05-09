@@ -60,7 +60,7 @@ void (APIENTRYP qglGetCombinerInputParameterivNV) (GLenum stage,GLenum portion,G
 void (APIENTRYP qglGetCombinerOutputParameterfvNV) (GLenum stage,GLenum portion,GLenum pname,GLfloat *params);
 void (APIENTRYP qglGetCombinerOutputParameterivNV) (GLenum stage,GLenum portion,GLenum pname,GLint *params);
 void (APIENTRYP qglGetFinalCombinerInputParameterfvNV) (GLenum variable,GLenum pname,GLfloat *params);
-void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLfloat *params);
+void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLint *params);
 
 PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB = NULL;
 PFNGLBINDPROGRAMARBPROC qglBindProgramARB = NULL;
