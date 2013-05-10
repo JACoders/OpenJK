@@ -259,6 +259,7 @@ Sys_Mkdir
 void Sys_Mkdir( const char *path ) {
 	_mkdir (path);
 }
+
 /*
 ==============
 Sys_Cwd
