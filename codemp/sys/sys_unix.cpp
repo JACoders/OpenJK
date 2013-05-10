@@ -148,6 +148,26 @@ qboolean Sys_LowPhysicalMemory( void )
 }
 
 /*
+==================
+Sys_Basename
+==================
+*/
+const char *Sys_Basename( char *path )
+{
+	return basename( path );
+}
+
+/*
+==================
+Sys_Dirname
+==================
+*/
+const char *Sys_Dirname( char *path )
+{
+	return dirname( path );
+}
+
+/*
 ========================================================================
 
 EVENT LOOP
@@ -453,15 +473,6 @@ char *Sys_Cwd( void )
 	cwd[MAX_OSPATH-1] = 0;
 
 	return cwd;
-}
-
-/*
-==============
-Sys_DefaultBasePath
-==============
-*/
-char *Sys_DefaultBasePath( void ) {
-	return Sys_Cwd();
 }
 
 void Sys_ShowConsole( int visLevel, qboolean quitOnClose )
