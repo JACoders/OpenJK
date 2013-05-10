@@ -1249,7 +1249,7 @@ static void GLimp_InitExtensions( void )
 	qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
 
 	// Only allow dynamic glows/flares if they have the hardware
-	/*if ( bTexRectSupported && bARBVertexProgram && bHasRenderTexture && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
+	if ( bTexRectSupported && bARBVertexProgram && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
 		( ( bNVRegisterCombiners && iNumGeneralCombiners >= 2 ) || bARBFragmentProgram ) )
 	{
 		g_bDynamicGlowSupported = true;
@@ -1259,8 +1259,8 @@ static void GLimp_InitExtensions( void )
 	else
 	{
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
-	}*/
+		ri.Cvar_Set( "r_DynamicGlow","0" );
+	}
 }
 
 void 		GLimp_Init( void )
