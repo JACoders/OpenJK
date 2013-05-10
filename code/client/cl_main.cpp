@@ -82,7 +82,9 @@ cvar_t	*cl_ingameVideo;
 
 cvar_t	*cl_thumbStickMode;
 
+#ifndef _WIN32
 cvar_t	*cl_consoleKeys;
+#endif
 
 clientActive_t		cl;
 clientConnection_t	clc;
@@ -1187,8 +1189,10 @@ void CL_Init( void ) {
 	m_side = Cvar_Get ("m_side", "0.25", CVAR_ARCHIVE);
 	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
 	
+#ifndef _WIN32
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
+#endif
 
 #ifdef _XBOX
 	cl_mapname = Cvar_Get ("cl_mapname", "t3_bounty", CVAR_TEMP);
