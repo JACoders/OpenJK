@@ -2715,7 +2715,7 @@ void CL_Shutdown( void ) {
 
 	Cmd_RemoveCommand ("cmd");
 	Cmd_RemoveCommand ("configstrings");
-	Cmd_RemoveCommand ("userinfo");
+	Cmd_RemoveCommand ("clientinfo");
 	Cmd_RemoveCommand ("snd_restart");
 	Cmd_RemoveCommand ("vid_restart");
 	Cmd_RemoveCommand ("disconnect");
