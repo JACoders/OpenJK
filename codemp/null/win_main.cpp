@@ -46,10 +46,15 @@ Sys_LowPhysicalMemory()
 ==================
 */
 
-qboolean Sys_LowPhysicalMemory() {
-	MEMORYSTATUS stat;
-	GlobalMemoryStatus (&stat);
-	return (stat.dwTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
+qboolean Sys_LowPhysicalMemory(void) {
+	static MEMORYSTATUSEX stat;
+	static qboolean bAsked = qfalse;
+	if (!bAsked)	// just in case it takes a little time for GlobalMemoryStatusEx() to gather stats on
+	{				//	stuff we don't care about such as virtual mem etc.
+		bAsked = qtrue;
+		GlobalMemoryStatusEx (&stat);
+	}
+	return (stat.ullTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
 }
 
 /*
