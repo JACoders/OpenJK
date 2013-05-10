@@ -81,7 +81,7 @@ else(MSVC)
 #i.e. OSes other than Windows and Windows with MINGW or MSYS
 
 	if(MINGW OR MSYS)
-		set(SharedDefines ${Win32SharedDefines} "_M_IX86" "MINGW32" "C_ONLY")
+		set(SharedDefines ${Win32SharedDefines} "_M_IX86" "MINGW32" "C_ONLY" "WINVER=0x0501" "_WIN32_WINNT=0x0501")
 	endif()
 
 	if (APPLE)
