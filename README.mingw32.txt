@@ -9,16 +9,17 @@ To compile using MINGW32
 * mkdir build && cd build
 * run "cmake -G "MSYS Makefiles" .."
 
+* to make a debug build (can use with GDB) add -DCMAKE_BUILD_TYPE=DEBUG to cmake command
+
 Status
 ======
 
-* can fully compile and run codemp and code(sp)
-* both run but suffering from at least one crash bug in sp
+* can fully compile and run both codemp and code(sp)
+* not tried to compile codeJK2 yet
 
 Note
 ====
 
-* remove lib prefix from game dlls
 * copy relevant dlls from mingw/bin 
 
  
