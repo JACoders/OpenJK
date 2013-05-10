@@ -1096,7 +1096,7 @@ void QuickMemTest(void)
 	}
 }
 
-/* Public Domain code from Sam */
+/* Begin Sam Lantinga Public Domain 4/13/98 */
 
 static void UnEscapeQuotes(char *arg)
 {
@@ -1178,7 +1178,7 @@ static int ParseCommandLine(char *cmdline, char **argv)
 	return (argc);
 }
 
-/* End Public Domain */
+/* End Sam Lantinga Public Domain 4/13/98 */
 
 //=======================================================================
 //int	totalMsec, countMsec;
@@ -1272,7 +1272,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
         return 0;
 	}
 
-	/* Begin */
+	/* Begin Sam Lantinga Public Domain 4/13/98 */
 
 	TCHAR *text = GetCommandLine();
 	char *cmdline = _strdup(text);
@@ -1289,13 +1289,17 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	}
 	ParseCommandLine(cmdline, argv);
 
-	/* End */
+	/* End Sam Lantinga Public Domain 4/13/98 */
 
 	g_wv.hInstance = hInstance;
+
+	/* Begin Sam Lantinga Public Domain 4/13/98 */
 
 	main(argc, argv);
 
 	free(cmdline);
+
+	/* End Sam Lantinga Public Domain 4/13/98 */
 
 	// never gets here
 	return 0;
