@@ -61,5 +61,5 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 * You will no longer be able to use runtime memory patches. Consider forking OpenJK and adding your engine modifications directly.
 
 ### Links of Interest ###
-* [Buildbot](http://109.200.20.132/)
-* [Buildbot builds](http://109.200.20.132/~builds/)
+* [Buildbot](http://jk.xd.cm/)
+* [Buildbot builds](http://jk.xd.cm/~builds/)
