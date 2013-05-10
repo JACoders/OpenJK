@@ -1325,17 +1325,10 @@ public:
 	void		erase(const TKTValue &key)
 	{
 		//fixme this is a double search currently
-<<<<<<< HEAD
-		int i=this->find_index(key);
-		if (i!=tree_node::NULL_NODE)
-		{
-			this->erase_index(i);
-=======
 		int i=tree_base<K,IS_MULTI>::find_index(key);
 		if (i!=tree_node::NULL_NODE)
 		{
 			tree_base<K,IS_MULTI>::erase_index(i);
->>>>>>> ca3817058e6c64cd07ddd2463011b8436f8065d2
 			mValues.destruct(i);
 		}
 	}
@@ -1531,11 +1524,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	find(const TKTValue &key)
 	{
-<<<<<<< HEAD
-		return iterator(this,this->find_index(key));		
-=======
 		return iterator(this,tree_base<K, IS_MULTI>::find_index(key));		
->>>>>>> ca3817058e6c64cd07ddd2463011b8436f8065d2
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
