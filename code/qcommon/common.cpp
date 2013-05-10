@@ -32,10 +32,6 @@ This file is part of Jedi Academy.
 #include "platform.h"
 #endif
 
-#ifdef MINGW32
-#define vsprintf_s snprintf
-#endif
-
 #define	MAXPRINTMSG	4096
 
 #define MAX_NUM_ARGVS	50
@@ -201,8 +197,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	}
 
 	va_start (argptr,fmt);
-//FIXME: MINGW32 -> Q_vsnprintf?
-	vsprintf_s (msg,fmt,argptr);
+	Q_vsnprintf_s (msg,sizeof(msg),fmt,argptr);
 	va_end (argptr);
 	
 	Com_Printf ("%s", msg);
