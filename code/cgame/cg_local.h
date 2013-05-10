@@ -640,7 +640,6 @@ extern	vmCvar_t		cg_panoNumShots;
 
 extern	vmCvar_t		fx_freeze;
 extern	vmCvar_t		fx_debug;
-extern	vmCvar_t		fx_flashRadius;
 
 extern	vmCvar_t		cg_missionInfoFlashTime;
 extern	vmCvar_t		cg_hudFiles;
