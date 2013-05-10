@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <libgen.h>
 
 #include "qcommon/qcommon.h"
 #include "qcommon/q_shared.h"
