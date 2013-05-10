@@ -1017,9 +1017,14 @@ void	Sys_SetDefaultCDPath(const char *path);
 char	*Sys_DefaultCDPath(void);
 void	Sys_SetDefaultInstallPath(const char *path);
 char	*Sys_DefaultInstallPath(void);
-void     Sys_SetDefaultHomePath(const char *path);
+
+#ifdef MACOS_X
+char    *Sys_DefaultAppPath(void);
+#endif
+
 char	*Sys_DefaultHomePath(void);
-char	*Sys_DefaultBasePath(void);
+const char *Sys_Dirname( char *path );
+const char *Sys_Basename( char *path );
 
 char **Sys_ListFiles( const char *directory, const char *extension, char *filter, int *numfiles, qboolean wantsubs );
 void	Sys_FreeFileList( char **fileList );
