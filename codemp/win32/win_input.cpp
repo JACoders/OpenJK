@@ -901,22 +901,47 @@ JOYSTICK
 =========================================================================
 */
 
-/* 
-=============== 
-IN_StartupJoystick 
-=============== 
-*/  
-void IN_StartupJoystick (void) { 
+#ifndef NO_XINPUT
+
+static XINPUT_STATE xiState;
+
+/*
+===============
+IN_JoystickInitXInput
+
+XBOX 360 controller only
+===============
+*/
+void IN_JoystickInitXInput ( void )
+{
+	Com_Printf("Joystick cvar enabled -- XInput mode\n");
+	ZeroMemory( &xiState, sizeof(XINPUT_GAMEPAD) );
+
+	if (XInputGetState( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something, 
+															// I'll probably add a splitscreen mode just for lulz --eez
+		Com_Printf("XBOX 360 controller not detected -- no drivers or bad connection\n");
+		return;
+	}
+
+	joy.avail = qtrue;	// semi hack, we really have no use for joy. whatever, but we use this to message when connection state changes
+
+}
+
+#endif
+
+/*
+===============
+IN_JoystickInitDInput
+
+DirectInput only
+===============
+*/
+void IN_JoystickInitDInput ( void )
+{
 	int			numdevs;
 	MMRESULT	mmr;
 
-	// assume no joystick
-	joy.avail = qfalse; 
-
-	if (! in_joystick->integer ) {
-		Com_Printf ("Joystick is not active.\n");
-		return;
-	}
+	Com_Printf("Joystick cvar enabled -- DirectInput mode\n");
 
 	// verify joystick driver is present
 	if ((numdevs = joyGetNumDevs ()) == 0)
@@ -975,6 +1000,34 @@ void IN_StartupJoystick (void) {
 	joy.avail = qtrue; 
 }
 
+/* 
+=============== 
+IN_StartupJoystick 
+=============== 
+*/  
+void IN_StartupJoystick (void) { 
+	// assume no joystick
+	joy.avail = qfalse; 
+
+	if ( in_joystick->integer == 1 )
+	{
+		// DirectInput mode --eez
+		IN_JoystickInitDInput();
+	}
+#ifndef NO_XINPUT
+	else if ( in_joystick->integer == 2 )
+	{
+		// xbox 360 awesomeness
+		IN_JoystickInitXInput();
+	}
+#endif
+	else {
+		Com_Printf ("Joystick is not active.\n");
+		return;
+	}
+	
+}
+
 /*
 ===========
 JoyToF
@@ -1019,19 +1072,18 @@ int	joyDirectionKeys[16] = {
 
 /*
 ===========
-IN_JoyMove
+IN_DoDirectInput
+
+Equivalent of IN_JoyMove for DirectInput
 ===========
 */
-void IN_JoyMove( void ) {
+
+void IN_DoDirectInput( void )
+{
 	float	fAxisValue;
 	int		i;
 	DWORD	buttonstate, povstate;
 	int		x, y;
-
-	// verify joystick is available and that the user wants to use it
-	if ( !joy.avail ) {
-		return; 
-	}
 
 	// collect the joystick data, if possible
 	memset (&joy.ji, 0, sizeof(joy.ji));
@@ -1135,6 +1187,61 @@ void IN_JoyMove( void ) {
 			Sys_QueEvent( g_wv.sysMsgTime, SE_MOUSE, x, y, 0, NULL );
 		}
 	}
+}
+
+#ifndef NO_XINPUT
+/*
+===========
+IN_DoXInput
+
+Equivalent of IN_JoyMove for XInput (xbox 360)
+===========
+*/
+
+void IN_DoXInput( void )
+{
+	if(!joy.avail)
+	{
+		// Joystick not found, continue to search for it :>
+		if( XInputGetState(0, &xiState) == ERROR_SUCCESS )
+		{
+			joy.avail = qtrue;
+			Com_Printf("Controller connected.\n");
+		}
+		else
+		{
+			return;
+		}
+	}
+	else
+	{
+		if( XInputGetState(0, &xiState) != ERROR_SUCCESS )
+		{
+			joy.avail = qfalse;
+			Com_Printf("Controller disconnected.\n");
+			return;
+		}
+	}
+}
+#endif
+
+/*
+===========
+IN_JoyMove
+===========
+*/
+void IN_JoyMove( void ) 
+{
+	if( in_joystick->integer == 1 && joy.avail)
+	{
+		IN_DoDirectInput();
+	}
+#ifndef NO_XINPUT
+	else if( in_joystick->integer == 2 )
+	{
+		IN_DoXInput();
+	}
+#endif
 }
 
 /*
