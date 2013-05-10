@@ -6,6 +6,7 @@
 #include "client/client.h"
 #include "win_local.h"
 
+
 typedef struct {
 	int			oldButtonState;
 

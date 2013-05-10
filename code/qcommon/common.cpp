@@ -324,7 +324,6 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		CL_StartHunkUsers();
 		Com_Printf (S_COLOR_RED"********************\n"S_COLOR_MAGENTA"ERROR: %s\n"S_COLOR_RED"********************\n", com_errorMessage);
 		com_errorEntered = qfalse;
-		
 		throw ("DROPPED\n");
 	} else {
 		CL_Shutdown ();

@@ -40,8 +40,6 @@ This file is part of Jedi Academy.
 #include <AL/alc.h>
 #endif
 
-
-
 // Added for Open AL to know when to mute all sounds (e.g when app. loses focus)
 void S_AL_MuteAllSounds(qboolean bMute);
 

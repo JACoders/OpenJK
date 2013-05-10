@@ -921,9 +921,6 @@ static int G2_ComputeLOD( trRefEntity_t *ent, const model_t *currentModel, int l
  		// object intersects near view plane, e.g. view weapon
  		flod = 0;
  	}
-#if (defined DEDICATED)
-#define myftol(x) ((int)(x))
-#endif
  	flod *= currentModel->numLods;
  	lod = myftol( flod );
 

@@ -4,8 +4,7 @@
 #define __EAXMANH
 
 #ifdef MINGW32
-#define WINDOWS
-typedef GUID* LPGUID;
+#include <windows.h>
 #endif
 
 #define COM_NO_WINDOWS_H
