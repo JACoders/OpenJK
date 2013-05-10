@@ -69,19 +69,15 @@ char *Sys_DefaultAppPath(void)
 	return Sys_BinaryPath();
 }
 
-/*
- =================
- Sys_In_Restart_f
- 
- Restart the input subsystem
- =================
- */
+// We now expect newlines instead of always appending
+// otherwise sectioned prints get messed up.
+#define MAXPRINTMSG		4096
 void Conbuf_AppendText( const char *pMsg )
 {
-	char		msg[4096];
-	strcpy(msg, pMsg);
-	printf(Q_CleanStr(msg));
-	printf("\n");
+	char msg[MAXPRINTMSG] = {0};
+	Q_strncpyz(msg, pMsg, sizeof(msg));
+	Q_StripColor(msg);
+	printf("%s", msg);
 }
 
 void Sys_Print( const char *msg ) {
@@ -96,6 +92,11 @@ void Sys_Print( const char *msg ) {
 	Conbuf_AppendText( msg );
 }
 
+/*
+=================
+Sys_In_Restart_f
+=================
+*/
 void Sys_In_Restart_f( void )
 {
 #ifdef DEDICATED
@@ -164,7 +165,7 @@ void Sys_UnloadDll( void *dllHandle )
 
 char *Sys_DefaultCDPath(void)
 {
-        return "";
+	return "";
 }
 
 /*
@@ -212,7 +213,24 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 			}
 			
 			if(!dllhandle)
-				Com_Printf("Loading \"%s\" failed\n", name);
+			{
+				const char *cdPath = Cvar_VariableString("fs_cdpath");
+
+				if(!basePath || !*basePath)
+					basePath = ".";
+
+				if(FS_FilenameCompare(topDir, cdPath))
+				{
+					Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, cdPath);
+					Com_sprintf(libPath, sizeof(libPath), "%s%c%s", cdPath, PATH_SEP, name);
+					dllhandle = Sys_LoadLibrary(libPath);
+				}
+
+				if(!dllhandle)
+				{
+					Com_Printf("Loading \"%s\" failed\n", name);
+				}
+			}
 		}
 	}
 	
@@ -244,11 +262,6 @@ void *Sys_LoadGameDll( const char *name, intptr_t (**entryPoint)(int, ...), intp
 
   // bk001206 - let's have some paranoia
   assert( name );
-
-  //if (!FS_FindPureDLL(name))
-  //{
-  //    return NULL;
-  //}
     
 #ifndef NDEBUG
   Com_sprintf (fname, sizeof(fname), "%s" ARCH_STRING "-debug" DLL_EXT, name); // bk010205 - different DLL name
@@ -366,22 +379,20 @@ void    Sys_ConfigureFPU() { // bk001213 - divide by zero
 #endif // __linux
 }
 
+#ifndef DEFAULT_BASEDIR
+//TODO app bundles
+//#	ifdef MACOS_X
+//#		define DEFAULT_BASEDIR Sys_StripAppBundle(Sys_BinaryPath())
+//#	else
+#		define DEFAULT_BASEDIR Sys_BinaryPath()
+//#	endif
+#endif
+
 int main ( int argc, char* argv[] )
 {
-	int		len, i;
-	char	*cmdline;
-    
-	// merge the command line, this is kinda silly
-	for (len = 1, i = 1; i < argc; i++)
-		len += strlen(argv[i]) + 1;
-	cmdline = (char *)malloc(len);
-	*cmdline = 0;
-	for (i = 1; i < argc; i++) {
-		if (i > 1)
-			strcat(cmdline, " ");
-		strcat(cmdline, argv[i]);
-	}
-    
+	int		i;
+	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
+
 	// done before Com/Sys_Init since we need this for error output
 	//Sys_CreateConsole();
     
@@ -390,15 +401,33 @@ int main ( int argc, char* argv[] )
     
 	// get the initial time base
 	Sys_Milliseconds();
+
+	//Sys_InitStreamThread();
+
+	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
+	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
     
+	// Concatenate the command line for passing to Com_Init
+	for( i = 1; i < argc; i++ )
+	{
+		const bool containsSpaces = (strchr(argv[i], ' ') != NULL);
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), argv[ i ] );
+
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), " " );
+	}
+
 #if 0
 	// if we find the CD, add a +set cddir xxx command line
 	Sys_ScanForCD();
 #endif
-    
-	//Sys_InitStreamThread();
-    
-	Com_Init (cmdline);
+
+	Com_Init (commandLine);
     
 	NET_Init();
     
