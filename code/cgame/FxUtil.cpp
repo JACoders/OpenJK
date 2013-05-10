@@ -1273,11 +1273,6 @@ CFlash *FX_AddFlash( vec3_t origin, vec3_t sRGB, vec3_t eRGB, float rgbParm,
 		return 0;
 	}
 
-	if (fx_flashRadius.value <= 0.0f)
-	{ // disallow adding new flash effects if radius is 0
-		return 0;
-	}
-
 	CFlash *fx = new CFlash;
 
 	if ( fx )

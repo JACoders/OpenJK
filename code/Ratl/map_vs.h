@@ -876,7 +876,7 @@ public:
 		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
 
 		alloc_key(key);
-		insert_alloced_key();
+		tree_base<T, IS_MULTI>::insert_alloced_key();
 
 	}
 
@@ -885,7 +885,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	TTValue & alloc()
 	{		
-		return alloc_key();
+		return tree_base<T, IS_MULTI>::alloc_key();
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -893,7 +893,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	TRatlNew *alloc_raw()
 	{
-		return alloc_key_raw();
+		return tree_base<T, IS_MULTI>::alloc_key_raw();
 	}
 	template<class CAST_TO>
 	CAST_TO *verify_alloc(CAST_TO *p) const
@@ -903,7 +903,7 @@ public:
 
 	void insert_alloced()
 	{
-		insert_alloced_key();
+		tree_base<T, IS_MULTI>::insert_alloced_key();
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -915,7 +915,7 @@ public:
 		int i=find_index(key);
 		if (i!=tree_node::NULL_NODE)
 		{
-			erase_index(i);
+			tree_base<T, IS_MULTI>::erase_index(i);
 		}
 	}
 
@@ -1094,7 +1094,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	begin()
 	{
-		return iterator(this, front());	
+		return iterator(this, tree_base<T, IS_MULTI>::front());	
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -1102,7 +1102,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	rbegin()
 	{
-		return iterator(this, back());
+		return iterator(this, tree_base<T, IS_MULTI>::back());
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1126,7 +1126,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	begin() const
 	{
-		return const_iterator(this, front());	
+		return const_iterator(this, tree_base<T, IS_MULTI>::front());	
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -1134,7 +1134,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	rbegin() const
 	{
-		return const_iterator(this, back());
+		return const_iterator(this, tree_base<T, IS_MULTI>::back());
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1260,10 +1260,10 @@ public:
 	{
 		assert(!IS_MULTI || this->find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
 
-		this->alloc_key(key);
-		insert_alloced_key();		
+		tree_base<K,IS_MULTI>::alloc_key(key);
+		tree_base<K,IS_MULTI>::insert_alloced_key();		
 		assert(check_validity());
-		mValues.construct(index_of_alloced_key(),value);
+		mValues.construct(tree_base<K,IS_MULTI>::index_of_alloced_key(),value);
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1274,10 +1274,10 @@ public:
 		
 		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
 
-		alloc_key(key);
-		insert_alloced_key();		
+		tree_base<K,IS_MULTI>::alloc_key(key);
+		tree_base<K,IS_MULTI>::insert_alloced_key();		
 
-		int idx=index_of_alloced_key();
+		int idx=tree_base<K,IS_MULTI>::index_of_alloced_key();
 		assert(check_validity());
 		mValues.construct(idx);
 		return mValues[idx];
@@ -1290,10 +1290,10 @@ public:
 		
 		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
 
-		alloc_key(key);
-		insert_alloced_key();		
+		tree_base<K,IS_MULTI>::alloc_key(key);
+		tree_base<K,IS_MULTI>::insert_alloced_key();		
 		assert(check_validity());
-		return mValues.alloc_raw(index_of_alloced_key());
+		return mValues.alloc_raw(tree_base<K,IS_MULTI>::index_of_alloced_key());
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1301,8 +1301,8 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	TVTValue &alloc_value()
 	{		
-		mValues.construct(index_of_alloced_key());
-		return mValues[index_of_alloced_key()];
+		mValues.construct(tree_base<K,IS_MULTI>::index_of_alloced_key());
+		return mValues[tree_base<K,IS_MULTI>::index_of_alloced_key()];
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1310,7 +1310,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	TRatlNew *alloc_value_raw()
 	{
-		return mValues.alloc_raw(index_of_alloced_key());
+		return mValues.alloc_raw(tree_base<K,IS_MULTI>::index_of_alloced_key());
 	}
 
 	template<class CAST_TO>
@@ -1325,10 +1325,17 @@ public:
 	void		erase(const TKTValue &key)
 	{
 		//fixme this is a double search currently
+<<<<<<< HEAD
 		int i=this->find_index(key);
 		if (i!=tree_node::NULL_NODE)
 		{
 			this->erase_index(i);
+=======
+		int i=tree_base<K,IS_MULTI>::find_index(key);
+		if (i!=tree_node::NULL_NODE)
+		{
+			tree_base<K,IS_MULTI>::erase_index(i);
+>>>>>>> ca3817058e6c64cd07ddd2463011b8436f8065d2
 			mValues.destruct(i);
 		}
 	}
@@ -1524,7 +1531,11 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	find(const TKTValue &key)
 	{
+<<<<<<< HEAD
 		return iterator(this,this->find_index(key));		
+=======
+		return iterator(this,tree_base<K, IS_MULTI>::find_index(key));		
+>>>>>>> ca3817058e6c64cd07ddd2463011b8436f8065d2
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1532,7 +1543,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	begin()
 	{
-		return iterator(this, front());	
+		return iterator(this, tree_base<K,IS_MULTI>::front());	
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -1540,7 +1551,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	iterator	rbegin()
 	{
-		return iterator(this, back());
+		return iterator(this, tree_base<K,IS_MULTI>::back());
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -1564,7 +1575,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	begin() const
 	{
-		return const_iterator(this, front());	
+		return const_iterator(this, tree_base<K,IS_MULTI>::front());	
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
@@ -1572,7 +1583,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	const_iterator	rbegin() const
 	{
-		return const_iterator(this, back());
+		return const_iterator(this, tree_base<K,IS_MULTI>::back());
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////

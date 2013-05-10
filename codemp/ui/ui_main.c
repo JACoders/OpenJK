@@ -4713,7 +4713,7 @@ static void UI_LoadDemosInDirectory( const char *directory )
 		for( ; uiInfo.loadedDemos<uiInfo.demoCount; uiInfo.loadedDemos++)
 		{
 			len = strlen( demoname );
-			Com_sprintf( uiInfo.demoList[uiInfo.loadedDemos], sizeof( uiInfo.demoList[0] ), "%s/%s", directory + strlen( DEMO_DIRECTORY )+1, demoname );
+			Com_sprintf( uiInfo.demoList[uiInfo.loadedDemos], sizeof( uiInfo.demoList[0] ), "%s/%s", directory + strlen( DEMO_DIRECTORY ), demoname );
 			demoname += len + 1;
 		}
 

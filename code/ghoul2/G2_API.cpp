@@ -1851,7 +1851,8 @@ void G2API_GiveMeVectorFromMatrix(mdxaBone_t &boltMatrix, Eorientations flags, v
 // NOTE if modelIndex = -1 then copy all the models
 void G2API_CopyGhoul2Instance(CGhoul2Info_v &ghoul2From, CGhoul2Info_v &ghoul2To, int modelIndex)
 {
-	assert(modelIndex==-1); // copy individual bolted parts is not used in jk2 and I didn't want to deal with it
+	//Ensiform: I'm commenting this out because modelIndex appears unused and legitimately set in gamecode
+	//assert(modelIndex==-1); // copy individual bolted parts is not used in jk2 and I didn't want to deal with it
 							// if ya want it, we will add it back correctly
 	
 	G2ERROR(ghoul2From.IsValid(),"Invalid ghlInfo");

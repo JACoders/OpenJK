@@ -59,7 +59,7 @@ void (APIENTRYP qglGetCombinerInputParameterivNV) (GLenum stage,GLenum portion,G
 void (APIENTRYP qglGetCombinerOutputParameterfvNV) (GLenum stage,GLenum portion,GLenum pname,GLfloat *params);
 void (APIENTRYP qglGetCombinerOutputParameterivNV) (GLenum stage,GLenum portion,GLenum pname,GLint *params);
 void (APIENTRYP qglGetFinalCombinerInputParameterfvNV) (GLenum variable,GLenum pname,GLfloat *params);
-void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLfloat *params);
+void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLint *params);
 
 PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB = NULL;
 PFNGLBINDPROGRAMARBPROC qglBindProgramARB = NULL;
@@ -1123,19 +1123,19 @@ static void GLimp_InitExtensions( void )
 			// NOTE: VV guys will _definetly_ not be able to use regcoms. Pixel Shaders are just as good though :-)
 			// NOTE: Also, this is an nVidia specific extension (of course), so fragment shaders would serve the same purpose
 			// if we needed some kind of fragment/pixel manipulation support.
-			qglCombinerParameterfvNV = SDL_GL_GetProcAddress( "glCombinerParameterfvNV" );
-			qglCombinerParameterivNV = SDL_GL_GetProcAddress( "glCombinerParameterivNV" );
-			qglCombinerParameterfNV = SDL_GL_GetProcAddress( "glCombinerParameterfNV" );
-			qglCombinerParameteriNV = SDL_GL_GetProcAddress( "glCombinerParameteriNV" );
-			qglCombinerInputNV = SDL_GL_GetProcAddress( "glCombinerInputNV" );
-			qglCombinerOutputNV = SDL_GL_GetProcAddress( "glCombinerOutputNV" );
-			qglFinalCombinerInputNV = SDL_GL_GetProcAddress( "glFinalCombinerInputNV" );
-			qglGetCombinerInputParameterfvNV	= SDL_GL_GetProcAddress( "glGetCombinerInputParameterfvNV" );
-			qglGetCombinerInputParameterivNV	= SDL_GL_GetProcAddress( "glGetCombinerInputParameterivNV" );
-			qglGetCombinerOutputParameterfvNV = SDL_GL_GetProcAddress( "glGetCombinerOutputParameterfvNV" );
-			qglGetCombinerOutputParameterivNV = SDL_GL_GetProcAddress( "glGetCombinerOutputParameterivNV" );
-			qglGetFinalCombinerInputParameterfvNV = SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterfvNV" );
-			qglGetFinalCombinerInputParameterivNV = SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterivNV" );
+			qglCombinerParameterfvNV = (PFNGLCOMBINERPARAMETERFVNVPROC)SDL_GL_GetProcAddress( "glCombinerParameterfvNV" );
+			qglCombinerParameterivNV = (PFNGLCOMBINERPARAMETERIVNVPROC)SDL_GL_GetProcAddress( "glCombinerParameterivNV" );
+			qglCombinerParameterfNV = (PFNGLCOMBINERPARAMETERFNVPROC)SDL_GL_GetProcAddress( "glCombinerParameterfNV" );
+			qglCombinerParameteriNV = (PFNGLCOMBINERPARAMETERINVPROC)SDL_GL_GetProcAddress( "glCombinerParameteriNV" );
+			qglCombinerInputNV = (PFNGLCOMBINERINPUTNVPROC)SDL_GL_GetProcAddress( "glCombinerInputNV" );
+			qglCombinerOutputNV = (PFNGLCOMBINEROUTPUTNVPROC)SDL_GL_GetProcAddress( "glCombinerOutputNV" );
+			qglFinalCombinerInputNV = (PFNGLFINALCOMBINERINPUTNVPROC)SDL_GL_GetProcAddress( "glFinalCombinerInputNV" );
+			qglGetCombinerInputParameterfvNV	= (PFNGLGETCOMBINERINPUTPARAMETERFVNVPROC)SDL_GL_GetProcAddress( "glGetCombinerInputParameterfvNV" );
+			qglGetCombinerInputParameterivNV	= (PFNGLGETCOMBINERINPUTPARAMETERIVNVPROC)SDL_GL_GetProcAddress( "glGetCombinerInputParameterivNV" );
+			qglGetCombinerOutputParameterfvNV = (PFNGLGETCOMBINEROUTPUTPARAMETERFVNVPROC)SDL_GL_GetProcAddress( "glGetCombinerOutputParameterfvNV" );
+			qglGetCombinerOutputParameterivNV = (PFNGLGETCOMBINEROUTPUTPARAMETERIVNVPROC)SDL_GL_GetProcAddress( "glGetCombinerOutputParameterivNV" );
+			qglGetFinalCombinerInputParameterfvNV = (PFNGLGETFINALCOMBINERINPUTPARAMETERFVNVPROC)SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterfvNV" );
+			qglGetFinalCombinerInputParameterivNV = (PFNGLGETFINALCOMBINERINPUTPARAMETERIVNVPROC)SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterivNV" );
 
 			// Validate the functions we need.
 			if ( !qglCombinerParameterfvNV || !qglCombinerParameterivNV || !qglCombinerParameterfNV || !qglCombinerParameteriNV || !qglCombinerInputNV ||
@@ -1249,7 +1249,7 @@ static void GLimp_InitExtensions( void )
 	qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
 
 	// Only allow dynamic glows/flares if they have the hardware
-	/*if ( bTexRectSupported && bARBVertexProgram && bHasRenderTexture && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
+	if ( bTexRectSupported && bARBVertexProgram && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
 		( ( bNVRegisterCombiners && iNumGeneralCombiners >= 2 ) || bARBFragmentProgram ) )
 	{
 		g_bDynamicGlowSupported = true;
@@ -1259,8 +1259,8 @@ static void GLimp_InitExtensions( void )
 	else
 	{
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
-	}*/
+		ri.Cvar_Set( "r_DynamicGlow","0" );
+	}
 }
 
 void 		GLimp_Init( void )
