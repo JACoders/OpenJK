@@ -197,7 +197,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	}
 
 	va_start (argptr,fmt);
-	Q_vsnprintf_s (msg,sizeof(msg),fmt,argptr);
+	Q_vsnprintf (msg,sizeof(msg),fmt,argptr);
 	va_end (argptr);
 	
 	Com_Printf ("%s", msg);
