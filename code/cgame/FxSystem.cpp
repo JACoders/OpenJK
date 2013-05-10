@@ -27,7 +27,6 @@ This file is part of Jedi Academy.
 
 extern vmCvar_t	fx_debug;
 extern vmCvar_t	fx_freeze;
-extern vmCvar_t fx_flashRadius;
 
 extern void CG_ExplosionEffects( vec3_t origin, float intensity, int radius, int time );
 
