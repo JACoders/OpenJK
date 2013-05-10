@@ -517,7 +517,7 @@ void Conbuf_AppendText( const char *pMsg )
 			b[1] = '\n';
 			b += 2;
 		}
-		else if ( Q_IsColorString( &msg[i] ) )
+		else if ( Q_IsColorStringExt( &msg[i] ) )
 		{
 			i++;
 		}
