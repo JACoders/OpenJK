@@ -2306,7 +2306,7 @@ void CFlash::Draw( void )
 	mRefEnt.shaderRGBA[3] = 255;
 
 	VectorCopy( cg.refdef.vieworg, mRefEnt.origin );
-	VectorMA( mRefEnt.origin, 8, cg.refdef.viewaxis[0], mRefEnt.origin );
+	VectorMA( mRefEnt.origin, FLASH_DISTANCE_FROM_VIEWER, cg.refdef.viewaxis[0], mRefEnt.origin );
 	
     // This is assuming that the screen is wider than it is tall.
     mRefEnt.radius = FLASH_DISTANCE_FROM_VIEWER * tan (DEG2RAD (cg.refdef.fov_x * 0.5f));
