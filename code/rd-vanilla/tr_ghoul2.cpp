@@ -4081,7 +4081,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	
 	bool isAnOldModelFile = false;
 #ifndef __NO_JK2
-	if (!ri.Cvar_VariableIntegerValue("com_jk2")) 
+	if (com_jk2 && !com_jk2->integer) 
 	{
 #endif
 	if (mdxm->numBones == 72 && strstr(mdxm->animName,"_humanoid") )
