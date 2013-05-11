@@ -4,6 +4,7 @@
 //
 #include "../game/q_shared.h"
 #include "../qcommon/qcommon.h"
+#include "../renderer/tr_public.h"
 
 #include "../zlib32/zip.h"
 #include "png.h"
@@ -554,20 +555,20 @@ bool PNG_OutputChunk(fileHandle_t fp, ulong type, byte *data, ulong size)
 
 	// Output a standard PNG chunk - length, type, data, crc
 	little = BigLong(size);
-	outcount = FS_Write(&little, sizeof(little), fp);
+	outcount = ri.FS_Write(&little, sizeof(little), fp);
 
 	little = BigLong(type);
 	crc = crc32(0, (byte *)&little, sizeof(little));
-	outcount += FS_Write(&little, sizeof(little), fp);
+	outcount += ri.FS_Write(&little, sizeof(little), fp);
 
 	if(size)
 	{
 		crc = crc32(crc, data, size);
-		outcount += FS_Write(data, size, fp);
+		outcount += ri.FS_Write(data, size, fp);
 	}
 
 	little = BigLong(crc);
-	outcount += FS_Write(&little, sizeof(little), fp);
+	outcount += ri.FS_Write(&little, sizeof(little), fp);
 
 	if(outcount != (size + 12))
 	{
@@ -590,17 +591,17 @@ bool PNG_Save(const char *name, byte *data, int width, int height, int bytedepth
 	png_error = PNG_ERROR_OK;
 
 	// Create the file
-	fp = FS_FOpenFileWrite(name);
+	fp = ri.FS_FOpenFileWrite(name);
 	if(!fp)
 	{
 		png_error = PNG_ERROR_CREATE_FAIL;
 		return(false);
 	}
 	// Write out the PNG signature
-	outcount = FS_Write(png_signature, sizeof(png_signature), fp);
+	outcount = ri.FS_Write(png_signature, sizeof(png_signature), fp);
 	if(outcount != sizeof(png_signature))
 	{
-		FS_FCloseFile(fp);
+		ri.FS_FCloseFile(fp);
 		png_error = PNG_ERROR_WRITE;
 		return(false);
 	}
@@ -608,13 +609,13 @@ bool PNG_Save(const char *name, byte *data, int width, int height, int bytedepth
 	PNG_CreateHeader(&png_header, width, height, bytedepth);
 	if(!PNG_OutputChunk(fp, PNG_IHDR, (byte *)&png_header, sizeof(png_header)))
 	{
-		FS_FCloseFile(fp);
+		ri.FS_FCloseFile(fp);
 		return(false);
 	}
 	// Create and output the copyright info
  	if(!PNG_OutputChunk(fp, PNG_tEXt, (byte *)png_copyright, sizeof(png_copyright)))
 	{
-		FS_FCloseFile(fp);
+		ri.FS_FCloseFile(fp);
 		return(false);
 	}
 	// Max size of compressed image (source size + 0.1% + 12)
@@ -625,24 +626,24 @@ bool PNG_Save(const char *name, byte *data, int width, int height, int bytedepth
 	if(!PNG_Pack(work, &size, maxsize, data, width, height, bytedepth))
 	{
 		Z_Free(work);
-		FS_FCloseFile(fp);
+		ri.FS_FCloseFile(fp);
 		return(false);
 	}
 	// Write out the compressed image data
 	if(!PNG_OutputChunk(fp, PNG_IDAT, (byte *)work, size))
 	{
 		Z_Free(work);
-		FS_FCloseFile(fp);
+		ri.FS_FCloseFile(fp);
 		return(false);
 	}
 	Z_Free(work);
 	// Output terminating chunk
 	if(!PNG_OutputChunk(fp, PNG_IEND, NULL, 0))
 	{
-		FS_FCloseFile(fp);
+		ri.FS_FCloseFile(fp);
 		return(false);
 	}
-	FS_FCloseFile(fp);
+	ri.FS_FCloseFile(fp);
 	return(true);
 }
 
@@ -690,7 +691,7 @@ bool LoadPNG32 (char *name, byte **pixels, int *width, int *height, int *bytedep
 	{
 		bufferptr = NULL;
 	}
-	nLen = FS_ReadFile ( ( char * ) name, (void **)bufferptr);
+	nLen = ri.FS_ReadFile ( ( char * ) name, (void **)bufferptr);
 	if (nLen == -1) 
 	{
 		if(pixels)
@@ -727,7 +728,7 @@ bool LoadPNG32 (char *name, byte **pixels, int *width, int *height, int *bytedep
 	{
 		*bytedepth = png_image.bytedepth;
 	}
-	FS_FreeFile(buffer);
+	ri.FS_FreeFile(buffer);
 	return(true);
 }
 
@@ -747,7 +748,7 @@ bool LoadPNG8 (char *name, byte **pixels, int *width, int *height)
 	{
 		bufferptr = NULL;
 	}
-	nLen = FS_ReadFile ( ( char * ) name, (void **)bufferptr);
+	nLen = ri.FS_ReadFile ( ( char * ) name, (void **)bufferptr);
 	if (nLen == -1) 
 	{
 		if(pixels)
@@ -776,7 +777,7 @@ bool LoadPNG8 (char *name, byte **pixels, int *width, int *height)
 	{
 		*height = png_image.height;
 	}
-	FS_FreeFile(buffer);
+	ri.FS_FreeFile(buffer);
 	return(true);
 }
 

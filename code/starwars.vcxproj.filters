@@ -28,12 +28,6 @@
     <Filter Include="MP3 Source\MP3 Headers">
       <UniqueIdentifier>{314772e2-f614-43a4-8090-8f40b982d80f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Renderer Source">
-      <UniqueIdentifier>{ad6606b1-bacb-48ae-87b6-669a82e2e4ff}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Renderer Source\Renderer Headers">
-      <UniqueIdentifier>{210b371e-2348-4736-98f0-eb9080320a76}</UniqueIdentifier>
-    </Filter>
     <Filter Include="UI Source">
       <UniqueIdentifier>{dbbb0201-3f4c-41fd-9747-9d6958e36c19}</UniqueIdentifier>
     </Filter>
@@ -41,14 +35,8 @@
       <UniqueIdentifier>{fc86e9c4-8046-422e-b2f3-ed87155b93b4}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
-    <Filter Include="JPEG">
-      <UniqueIdentifier>{e183bb87-9b35-48c8-91e4-1f7eabf04a31}</UniqueIdentifier>
-    </Filter>
     <Filter Include="RMG">
       <UniqueIdentifier>{4b17cf6d-fead-4afc-bdd1-b477a2203336}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="PNG">
-      <UniqueIdentifier>{20a9065e-ed16-4fe2-b37b-f9a497859837}</UniqueIdentifier>
     </Filter>
     <Filter Include="zlib32">
       <UniqueIdentifier>{d95e7a41-75e2-4b65-9f0e-a858e125acdb}</UniqueIdentifier>
@@ -301,108 +289,6 @@
     <ClCompile Include="mp3code\wavep.c">
       <Filter>MP3 Source</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\MatComp.c">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_arioche.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_backend.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_bsp.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_cmds.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_curve.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_draw.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_font.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_ghoul2.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_image.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_init.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_jpeg_interface.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_light.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_main.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_marks.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_mesh.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_model.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_noise.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_quicksprite.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_scene.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_shade.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_shade_calc.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_shader.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_shadows.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_sky.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_stl.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_surface.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_surfacesprites.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_terrain.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_world.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer\tr_WorldEffects.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="win32\win_gamma.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="win32\win_glimp.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
-    <ClCompile Include="win32\win_qgl.cpp">
-      <Filter>Renderer Source</Filter>
-    </ClCompile>
     <ClCompile Include="ui\ui_atoms.cpp">
       <Filter>UI Source</Filter>
     </ClCompile>
@@ -420,114 +306,6 @@
     </ClCompile>
     <ClCompile Include="ui\ui_syscalls.cpp">
       <Filter>UI Source</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jcapimin.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jccoefct.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jccolor.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jcdctmgr.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jchuff.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jcinit.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jcmainct.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jcmarker.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jcmaster.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jcomapi.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jcparam.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jcphuff.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jcprepct.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jcsample.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jctrans.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdapimin.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdapistd.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdatadst.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdatasrc.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdcoefct.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdcolor.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jddctmgr.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdhuff.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdinput.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdmainct.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdmarker.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdmaster.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdpostct.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdsample.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jdtrans.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jerror.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jfdctflt.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jidctflt.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jmemmgr.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jmemnobs.cpp">
-      <Filter>JPEG</Filter>
-    </ClCompile>
-    <ClCompile Include="jpeg-6\jutils.cpp">
-      <Filter>JPEG</Filter>
     </ClCompile>
     <ClCompile Include="RMG\RM_Area.cpp">
       <Filter>RMG</Filter>
@@ -565,9 +343,6 @@
     <ClCompile Include="RMG\RM_Terrain.cpp">
       <Filter>RMG</Filter>
     </ClCompile>
-    <ClCompile Include="png\png.cpp">
-      <Filter>PNG</Filter>
-    </ClCompile>
     <ClCompile Include="zlib32\deflate.cpp">
       <Filter>zlib32</Filter>
     </ClCompile>
@@ -576,21 +351,6 @@
     </ClCompile>
     <ClCompile Include="zlib32\zipcommon.cpp">
       <Filter>zlib32</Filter>
-    </ClCompile>
-    <ClCompile Include="ghoul2\G2_API.cpp">
-      <Filter>Ghoul2</Filter>
-    </ClCompile>
-    <ClCompile Include="ghoul2\G2_bolts.cpp">
-      <Filter>Ghoul2</Filter>
-    </ClCompile>
-    <ClCompile Include="ghoul2\G2_bones.cpp">
-      <Filter>Ghoul2</Filter>
-    </ClCompile>
-    <ClCompile Include="ghoul2\G2_misc.cpp">
-      <Filter>Ghoul2</Filter>
-    </ClCompile>
-    <ClCompile Include="ghoul2\G2_surfaces.cpp">
-      <Filter>Ghoul2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -801,42 +561,6 @@
     <ClInclude Include="mp3code\tableawd.h">
       <Filter>MP3 Source\MP3 Headers</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\glext.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="win32\glw_win.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\qgl.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\tr_font.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\tr_jpeg_interface.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\tr_landscape.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\tr_local.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\tr_public.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\tr_quicksprite.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\tr_stl.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\tr_types.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\tr_WorldEffects.h">
-      <Filter>Renderer Source\Renderer Headers</Filter>
-    </ClInclude>
     <ClInclude Include="cgame\animtable.h">
       <Filter>UI Source\UI Headers</Filter>
     </ClInclude>
@@ -869,42 +593,6 @@
     </ClInclude>
     <ClInclude Include="ui\ui_shared.h">
       <Filter>UI Source\UI Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="jpeg-6\jchuff.h">
-      <Filter>JPEG</Filter>
-    </ClInclude>
-    <ClInclude Include="jpeg-6\jconfig.h">
-      <Filter>JPEG</Filter>
-    </ClInclude>
-    <ClInclude Include="jpeg-6\jdct.h">
-      <Filter>JPEG</Filter>
-    </ClInclude>
-    <ClInclude Include="jpeg-6\jdhuff.h">
-      <Filter>JPEG</Filter>
-    </ClInclude>
-    <ClInclude Include="jpeg-6\jerror.h">
-      <Filter>JPEG</Filter>
-    </ClInclude>
-    <ClInclude Include="jpeg-6\jinclude.h">
-      <Filter>JPEG</Filter>
-    </ClInclude>
-    <ClInclude Include="jpeg-6\jmemsys.h">
-      <Filter>JPEG</Filter>
-    </ClInclude>
-    <ClInclude Include="jpeg-6\jmorecfg.h">
-      <Filter>JPEG</Filter>
-    </ClInclude>
-    <ClInclude Include="jpeg-6\jpegint.h">
-      <Filter>JPEG</Filter>
-    </ClInclude>
-    <ClInclude Include="jpeg-6\jpeglib.h">
-      <Filter>JPEG</Filter>
-    </ClInclude>
-    <ClInclude Include="jpeg-6\jversion.h">
-      <Filter>JPEG</Filter>
-    </ClInclude>
-    <ClInclude Include="png\png.h">
-      <Filter>PNG</Filter>
     </ClInclude>
     <ClInclude Include="zlib32\deflate.h">
       <Filter>zlib32</Filter>

@@ -426,8 +426,8 @@ void _UI_Refresh( int realtime )
 	{//if not in full screen, don't mess with ghoul2
 		//rww - ghoul2 needs to know what time it is even if the client/server are not running
 		//FIXME: this screws up the game when you go back to the game...
-		G2API_SetTime(realtime, 0);
-		G2API_SetTime(realtime, 1);
+		re.G2API_SetTime(realtime, 0);
+		re.G2API_SetTime(realtime, 1);
 	}
 
 	uiInfo.uiDC.frameTime = realtime - uiInfo.uiDC.realTime;
@@ -2253,7 +2253,7 @@ int UI_G2SetAnim(CGhoul2Info *ghlInfo, const char *boneName, int animNum, const 
 	int animIndex,blendTime;
 	char *GLAName;
 
-	GLAName = G2API_GetGLAName(ghlInfo);
+	GLAName = re.G2API_GetGLAName(ghlInfo);
 
 	if (!GLAName || !GLAName[0])
 	{
@@ -2297,7 +2297,7 @@ int UI_G2SetAnim(CGhoul2Info *ghlInfo, const char *boneName, int animNum, const 
 		blendTime = 150;
 
 
-		G2API_SetBoneAnim(ghlInfo, boneName, sFrame, eFrame, flags, animSpeed, time, -1, blendTime);
+		re.G2API_SetBoneAnim(ghlInfo, boneName, sFrame, eFrame, flags, animSpeed, time, -1, blendTime);
 
 		return ((anim->frameLerp * (anim->numFrames-2)));
 	}
@@ -2613,14 +2613,14 @@ void _UI_Init( qboolean inGameLoad )
 
 	uiInfo.uiDC.registerSkin		= re.RegisterSkin;
 
-	uiInfo.uiDC.g2_SetSkin = G2API_SetSkin;
-	uiInfo.uiDC.g2_SetBoneAnim = G2API_SetBoneAnim;
-	uiInfo.uiDC.g2_RemoveGhoul2Model = G2API_RemoveGhoul2Model;
-	uiInfo.uiDC.g2_InitGhoul2Model = G2API_InitGhoul2Model;
-	uiInfo.uiDC.g2_CleanGhoul2Models = G2API_CleanGhoul2Models;
-	uiInfo.uiDC.g2_AddBolt = G2API_AddBolt;
-	uiInfo.uiDC.g2_GetBoltMatrix = G2API_GetBoltMatrix;
-	uiInfo.uiDC.g2_GiveMeVectorFromMatrix = G2API_GiveMeVectorFromMatrix;
+	uiInfo.uiDC.g2_SetSkin = re.G2API_SetSkin;
+	uiInfo.uiDC.g2_SetBoneAnim = re.G2API_SetBoneAnim;
+	uiInfo.uiDC.g2_RemoveGhoul2Model = re.G2API_RemoveGhoul2Model;
+	uiInfo.uiDC.g2_InitGhoul2Model = re.G2API_InitGhoul2Model;
+	uiInfo.uiDC.g2_CleanGhoul2Models = re.G2API_CleanGhoul2Models;
+	uiInfo.uiDC.g2_AddBolt = re.G2API_AddBolt;
+	uiInfo.uiDC.g2_GetBoltMatrix = re.G2API_GetBoltMatrix;
+	uiInfo.uiDC.g2_GiveMeVectorFromMatrix = re.G2API_GiveMeVectorFromMatrix;
 
 	uiInfo.uiDC.g2hilev_SetAnim = UI_G2SetAnim;
 
