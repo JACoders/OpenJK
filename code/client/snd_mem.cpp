@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 #include "snd_local.h"
 #include "cl_mp3.h"
 
-#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)
 #include <string>
 #endif
 

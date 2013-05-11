@@ -13,7 +13,7 @@
 #include "snd_music.h"
 #include "client.h"
 
-#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)//#ifndef _WIN32
 #include <algorithm>
 #include <string>
 #include "qcommon/platform.h"
@@ -6101,7 +6101,7 @@ void UpdateEAXListener()
 		float flSin = (float)sin(-flTheta);
 		float flCos = (float)cos(-flTheta);
 
-		for (i = 0; i < min(s_NumFXSlots,s_lNumEnvironments); i++)
+		for (i = 0; i < std::min(s_NumFXSlots,s_lNumEnvironments); i++)
 		{
 			if (s_FXSlotInfo[i].lEnvID == s_EnvironmentID)
 			{

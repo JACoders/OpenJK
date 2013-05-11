@@ -14,7 +14,7 @@
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
 
-#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)//#ifndef _WIN32
 	#include "qcommon/platform.h"
 #endif
 

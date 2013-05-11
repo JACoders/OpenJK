@@ -70,17 +70,25 @@ set(SPDir "${CMAKE_SOURCE_DIR}/code")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 
-# Common settings
 if(WIN32)
-	if(MSVC)
-		set(SharedDefines "WIN32" "_WINDOWS" "_CRT_SECURE_NO_WARNINGS")
-	else(MSVC)
-		set(SharedDefines "WIN32" "_WINDOWS")
-	endif(MSVC)
-else(WIN32)
+	set(Win32SharedDefines "WIN32" "_WIN32" "_WINDOWS")
+endif()
+
+# Common settings
+if(MSVC) # i.e. WIN32
+	set(SharedDefines ${Win32SharedDefines} "_CRT_SECURE_NO_WARNINGS")
+else(MSVC)
+#i.e. OSes other than Windows and Windows with MINGW or MSYS
+
+	if(MINGW OR MSYS)
+		set(SharedDefines ${Win32SharedDefines} "_M_IX86" "MINGW32" "C_ONLY" "WINVER=0x0501" "_WIN32_WINNT=0x0501")
+	endif()
+
 	if (APPLE)
 		set(SharedDefines "MACOS_X" "_M_IX86")
-	else(APPLE)
+	endif()
+	
+	if(NOT (APPLE OR WIN32))
 		set(SharedDefines "__linux__" "_M_IX86")
 	endif()
 
@@ -89,8 +97,8 @@ else(WIN32)
 	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
 	# maybe remove these flags later, when the warnings are fixed
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w -fpermissive")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fpermissive")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -w -fpermissive")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -w -fpermissive")
 
 	# additional flags for debug configuration
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
@@ -102,7 +110,7 @@ else(WIN32)
  		message("No build type selected, default to RELEASE")
  		set(CMAKE_BUILD_TYPE "RELEASE")
  	endif()
-endif()
+endif(MSVC)
 
 set(DebugDefines "_DEBUG")
 set(ReleaseDefines "NDEBUG" "FINAL_BUILD")

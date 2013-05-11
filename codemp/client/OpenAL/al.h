@@ -80,7 +80,11 @@ ALAPI ALubyte*	ALAPIENTRY alGetString( ALenum param );
  * Error support.
  * Obtain the most recent error generated in the AL state machine.
  */
+#ifdef MINGW32
+ALAPI ALenum	ALAPIENTRY alGetError( );
+#else
 ALAPI ALenum	ALAPIENTRY alGetError( ALvoid );
+#endif
 
 /** 
  * Extension support.

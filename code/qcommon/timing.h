@@ -30,7 +30,7 @@ public:
 	void Start()
 	{
 		const __int64 *s = &start;
-
+#if (defined _WIN32 && !defined MINGW32)
 		__asm
 		{
 			push eax
@@ -46,12 +46,13 @@ public:
 			pop ebx
 			pop eax
 		}
+#endif
 	}
 	int End()
 	{
 		const __int64 *e = &end;
 		__int64	time;
-
+#if (defined _WIN32 && !defined MINGW32)
 		__asm
 		{
 			push eax
@@ -67,6 +68,7 @@ public:
 			pop ebx
 			pop eax
 		}
+#endif
 		time = end - start;
 		if (time < 0)
 		{

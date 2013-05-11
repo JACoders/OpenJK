@@ -65,10 +65,10 @@ set(MPUIFiles ${MPUIFiles} ${MPUIRendererFiles})
 
 add_library(${MPUI} SHARED ${MPUIFiles})
 
-if(NOT WIN32)
+if((NOT WIN32) OR MINGW)
 	# remove "lib" prefix for .so/.dylib files
 	set_target_properties(${MPUI} PROPERTIES PREFIX "")
-endif(NOT WIN32)
+endif((NOT WIN32) OR MINGW)
 
 if(WIN32)
 	install(TARGETS ${MPUI} RUNTIME DESTINATION "OpenJK")

@@ -15,9 +15,13 @@
 
 using namespace std;
 
+#ifdef MINGW32
+#include <windows.h>
+#endif
+
 #include "qcommon/platform.h"
 
-#ifndef _WIN32
+#if (defined _WIN32 && defined MINGW32)
 #include <string.h>
 #endif
 

@@ -30,6 +30,11 @@ This file is part of Jedi Academy.
 
 #include "../qcommon/stringed_ingame.h"
 
+#ifdef MINGW32
+#include <string>
+#include <limits.h>
+#endif
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // This file is shared in the single and multiplayer codebases, so be CAREFUL WHAT YOU ADD/CHANGE!!!!!

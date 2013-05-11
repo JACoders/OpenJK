@@ -296,7 +296,7 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 					bAtLeastoneModelFreed = qtrue;
 				}
 
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 				itModel = CachedModels->erase(itModel);
 #else
                 CachedModels_t::iterator itTemp = itModel;
@@ -351,7 +351,7 @@ static void RE_RegisterModels_DeleteAll(void)
 		if (CachedModel.pModelDiskImage) {
 			Z_Free(CachedModel.pModelDiskImage);					
 		}
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 		itModel = CachedModels->erase(itModel);	
 #else
         CachedModels_t::iterator itTemp = itModel;

@@ -185,10 +185,10 @@ set(MPGameFiles ${MPGameFiles} ${MPGameUiFiles})
 
 add_library(${MPGame} SHARED ${MPGameFiles})
 
-if(NOT WIN32)
+if((NOT WIN32) OR MINGW)
 	# remove "lib" prefix for .so/.dylib files
 	set_target_properties(${MPGame} PROPERTIES PREFIX "")
-endif(NOT WIN32)
+endif((NOT WIN32) OR MINGW)
 
 if(WIN32)
 	install(TARGETS ${MPGame} RUNTIME DESTINATION "OpenJK")

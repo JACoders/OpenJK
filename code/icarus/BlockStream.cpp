@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 #include "IcarusInterface.h"
 #include "IcarusImplementation.h"
 
-#ifdef __linux__
+#if (defined __linux__ || defined MINGW32)
 #include <string.h>
 #include <stdio.h>
 #endif

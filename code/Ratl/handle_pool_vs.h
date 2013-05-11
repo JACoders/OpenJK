@@ -60,7 +60,7 @@ template <class T>
 class handle_pool_base : public pool_root<T>
 {
 public:
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	typedef typename T TStorageTraits;
 #else
     typedef T TStorageTraits;
@@ -253,7 +253,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Get An Iterator To The Object At handle
     ////////////////////////////////////////////////////////////////////////////////////
-#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)
     typename
 #endif
 	pool_root<T>::iterator	at(int handle)
@@ -265,7 +265,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Get An Iterator To The Object At handle
     ////////////////////////////////////////////////////////////////////////////////////
-#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)
     typename
 #endif
 	pool_root<T>::const_iterator	at(int handle) const

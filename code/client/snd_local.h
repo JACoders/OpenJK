@@ -28,10 +28,10 @@ This file is part of Jedi Academy.
 
 // Open AL Specific
 #ifdef _WIN32
-#include "openal\al.h"
-#include "openal\alc.h"
-#include "eax\eax.h"
-#include "eax\eaxman.h"
+#include "OpenAL/al.h"
+#include "OpenAL/alc.h"
+#include "eax/eax.h"
+#include "eax/eaxman.h"
 #elif defined MACOS_X
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>

@@ -1052,7 +1052,7 @@ static void GL_ResetBinds(void)
 
 // special function used in conjunction with "devmapbsp"...
 //
-#ifdef _XBOX
+#if (defined _XBOX)// || defined MINGW32)
 void R_Images_DeleteLightMaps(void)
 {
 	qboolean bEraseOccured = qfalse;
@@ -1089,7 +1089,7 @@ void R_Images_DeleteLightMaps(void)
 		if (pImage->imgName[0] == '$' /*&& strstr(pImage->imgName,"lightmap")*/)	// loose check, but should be ok
 		{
 			R_Images_DeleteImageContents(pImage);
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 			itImage = AllocatedImages.erase(itImage);
 #else
             AllocatedImages_t::iterator itTemp = itImage;
@@ -1245,7 +1245,7 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 			{	// nope, so dump it...
 				//VID_Printf( PRINT_DEVELOPER, "Dumping image \"%s\"\n",pImage->imgName);
 				R_Images_DeleteImageContents(pImage);
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 				itImage = AllocatedImages.erase(itImage);
 #else
                 AllocatedImages_t::iterator itTemp = itImage;

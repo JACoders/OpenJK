@@ -58,7 +58,7 @@ template <class T>
 class pool_root : public ratl_base
 {
 public:
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	typedef typename T TStorageTraits;
 #else
     typedef T TStorageTraits;
@@ -534,7 +534,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Get An Iterator To The Object At index
     ////////////////////////////////////////////////////////////////////////////////////
-#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)
     typename
 #endif
 	pool_root<T>::iterator	at(int index)
@@ -545,7 +545,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Get An Iterator To The Object At index
     ////////////////////////////////////////////////////////////////////////////////////
-#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)
     typename
 #endif
 	pool_root<T>::const_iterator	at(int index) const

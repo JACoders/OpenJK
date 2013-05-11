@@ -36,7 +36,7 @@ This file is part of Jedi Academy.
 #include "../qcommon/cm_randomterrain.h"
 #endif
 
-#ifndef _WIN32
+#if (!defined _WIN32 || defined MINGW32)
 #include <string>
 #endif
 

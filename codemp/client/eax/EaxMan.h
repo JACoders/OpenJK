@@ -3,6 +3,10 @@
 #ifndef __EAXMANH
 #define __EAXMANH
 
+#ifdef MINGW32
+#include <windows.h>
+#endif
+
 #define COM_NO_WINDOWS_H
 #include <objbase.h>
 #include "eax.h"

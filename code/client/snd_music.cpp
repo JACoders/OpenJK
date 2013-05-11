@@ -37,6 +37,10 @@ This file is part of Jedi Academy.
 #include "cl_mp3.h"
 #endif
 
+#ifdef MINGW32
+#include <string>
+#endif
+
 //
 #include "snd_music.h"
 

@@ -151,7 +151,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 			rd_flush(rd_buffer);
 			*rd_buffer = 0;
 		}
-		Q_strcat (rd_buffer, strlen(rd_buffer), msg);
+		Q_strcat(rd_buffer, rd_buffersize, msg);
 		return;
 	}
 
@@ -266,9 +266,13 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	if ( code != ERR_DISCONNECT ) {
 //		if (com_noErrorInterrupt && !com_noErrorInterrupt->integer) 
 		{
+		#ifndef MINGW32
 			__asm {
 				int 0x03
 			}
+		#else
+			//asm("int 3");
+		#endif
 		}
 	}
 #endif

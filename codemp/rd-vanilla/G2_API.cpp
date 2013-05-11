@@ -2631,7 +2631,7 @@ qboolean G2_TestModelPointers(CGhoul2Info *ghlInfo) // returns true if the model
 						{
 							if (ghlInfo->currentAnimModelSize!=ghlInfo->aHeader->ofsEnd)
 							{
-								Com_Error(ERR_DROP, "Ghoul2 model was reloaded and has changed, map must be restarted.\n");
+						    Com_Error(ERR_DROP, "Ghoul2 model was reloaded and has changed, map must be restarted.\n");
 							}
 						}
 						ghlInfo->currentAnimModelSize=ghlInfo->aHeader->ofsEnd;
@@ -2730,7 +2730,7 @@ qboolean G2_SetupModelPointers(CGhoul2Info *ghlInfo) // returns true if the mode
 						{
 							if (ghlInfo->currentAnimModelSize!=ghlInfo->aHeader->ofsEnd)
 							{
-								Com_Error(ERR_DROP, "Ghoul2 model was reloaded and has changed, map must be restarted.\n");
+						    Com_Error(ERR_DROP, "Ghoul2 model was reloaded and has changed, map must be restarted.\n");
 							}
 						}
 						ghlInfo->currentAnimModelSize=ghlInfo->aHeader->ofsEnd;

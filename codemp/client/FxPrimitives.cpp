@@ -417,7 +417,7 @@ inline int VectorToInt(vec3_t vec)
 	int			tmp, retval;
 
 	// FIXME: unix compatibility needed
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)//#ifdef _WIN32
 	_asm
 	{
 		push	edx

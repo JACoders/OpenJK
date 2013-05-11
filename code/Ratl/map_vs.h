@@ -116,7 +116,7 @@ template<class T, int IS_MULTI>
 class tree_base
 {
 public:
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	typedef typename T TStorageTraits;
 #else
     typedef T TStorageTraits;
@@ -853,7 +853,7 @@ class set_base : public tree_base<T,IS_MULTI>
 {
 
 public:
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	typedef typename T TStorageTraits;
 #else
     typedef T TStorageTraits;
@@ -1221,13 +1221,13 @@ template<class K,class V,int IS_MULTI>
 class map_base : public tree_base<K,IS_MULTI>
 {
 public:
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	typedef typename K TKeyStorageTraits;
 #else
     typedef K TKeyStorageTraits;
 #endif
 	typedef typename K::TValue TKTValue;
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	typedef typename V TValueStorageTraits;
 #else
     typedef V TValueStorageTraits;
@@ -1258,7 +1258,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	void insert(const TKTValue &key,const TVTValue &value)
 	{
-		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
+		assert(!IS_MULTI || this->find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
 
 		tree_base<K,IS_MULTI>::alloc_key(key);
 		tree_base<K,IS_MULTI>::insert_alloced_key();		

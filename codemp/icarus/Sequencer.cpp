@@ -2277,7 +2277,7 @@ int CSequencer::DestroySequence( CSequence *sequence )
 	{
 		if((*tsi).second == sequence)
 		{
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 			tsi = m_taskSequences.erase(tsi);
 #else
 			taskSequence_m::iterator itTemp = tsi;

@@ -54,7 +54,7 @@ template <class T>
 class stack_base : public ratl_base
 {
 public:
-#ifdef _WIN32
+#if (defined _WIN32 && !defined MINGW32)
 	typedef typename T TStorageTraits;
 #else
     typedef T TStorageTraits;
