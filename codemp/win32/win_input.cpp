@@ -59,6 +59,14 @@ cvar_t	*in_midiport;
 cvar_t	*in_midichannel;
 cvar_t	*in_mididevice;
 
+#ifndef NO_XINPUT
+cvar_t	*xin_invertThumbsticks;
+cvar_t	*xin_rumbleScale;
+
+cvar_t	*xin_invertLookX;
+cvar_t	*xin_invertLookY;
+#endif
+
 cvar_t	*in_mouse;
 cvar_t	*in_joystick;
 cvar_t	*in_joyBallScale;
@@ -804,13 +812,21 @@ void IN_Init( void ) {
 
 	// joystick variables
 	in_joystick				= Cvar_Get ("in_joystick",				"0",		CVAR_ARCHIVE|CVAR_LATCH);
-	in_joyBallScale			= Cvar_Get ("in_joyBallScale",			"0.02",		CVAR_ARCHIVE);
+	in_joyBallScale			= Cvar_Get ("in_joyBallScale",			"0.02",		CVAR_ARCHIVE); // XInput: treat as right stick sens
 	in_debugJoystick		= Cvar_Get ("in_debugjoystick",			"0",		CVAR_TEMP);
 
 	joy_threshold			= Cvar_Get ("joy_threshold",			"0.15",		CVAR_ARCHIVE);
 
+#ifndef NO_XINPUT
+	xin_invertThumbsticks	= Cvar_Get ("xin_invertThumbsticks",	"0",		CVAR_ARCHIVE);
+	xin_invertLookX			= Cvar_Get ("xin_invertLookX",			"0",		CVAR_ARCHIVE);
+	xin_invertLookY			= Cvar_Get ("xin_invertLookY",			"0",		CVAR_ARCHIVE);
+
+	xin_rumbleScale			= Cvar_Get ("xin_rumbleScale",			"1.0",		CVAR_ARCHIVE);
+
+#endif
 	joy_xbutton				= Cvar_Get ("joy_xbutton",			"1",		CVAR_ARCHIVE);	// treat axis as a button
-	joy_ybutton				= Cvar_Get ("joy_ybutton",			"0",		CVAR_ARCHIVE);	// treat axis as a button
+	joy_ybutton				= Cvar_Get ("joy_ybutton",			"0",		CVAR_ARCHIVE);
 
 	IN_Startup();
 }
@@ -1192,6 +1208,32 @@ void IN_DoDirectInput( void )
 #ifndef NO_XINPUT
 /*
 ===========
+XI_ThumbFloat
+
+Gets the percentage going one way or the other (as normalized float)
+===========
+*/
+float ID_INLINE XI_ThumbFloat( signed short thumbValue )
+{
+	return (thumbValue < 0) ? (thumbValue / 32768.0f) : (thumbValue / 32767.0f);
+}
+
+/*
+===========
+XI_ApplySensitivity
+
+Applies sensitivity to the given axis
+===========
+*/
+void ID_INLINE XI_ApplySensitivity( float *normalizedThumbValue )
+{
+	*normalizedThumbValue *= in_joyBallScale->value;
+	if(abs(*normalizedThumbValue) > 1.0f)
+		*normalizedThumbValue = 1.0f;
+}
+
+/*
+===========
 IN_DoXInput
 
 Equivalent of IN_JoyMove for XInput (xbox 360)
@@ -1222,6 +1264,73 @@ void IN_DoXInput( void )
 			return;
 		}
 	}
+
+	// Now that we've dealt with the basic checks for connectivity, let's actually do the _important_ crap.
+	float leftThumbX = XI_ThumbFloat(xiState.Gamepad.sThumbLX);
+	float leftThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbLY);
+	float rightThumbX = XI_ThumbFloat(xiState.Gamepad.sThumbRX);
+	float rightThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbRY);
+
+	// JOYSTICKS
+	// This is complete and utter trash in DirectInput, because it doesn't send like half as much crap as it should.
+	if( xin_invertThumbsticks->integer )
+	{
+		// Left stick functions like right stick
+		XI_ApplySensitivity(&leftThumbX);
+		XI_ApplySensitivity(&leftThumbY);
+
+		// Left stick behavior
+		if( leftThumbX > joy_threshold->value )	// FIXME: what does do about deadzones and sensitivity...
+		{
+
+		}
+		if( leftThumbY > joy_threshold->value )
+		{
+
+		}
+
+		// Right stick behavior
+		// Hardcoded deadzone within the gamecode itself to deal with the situation
+	}
+	else
+	{
+		// Thumbsticks act as they should (right stick = camera, left stick = wasd equivalent)
+		XI_ApplySensitivity(&rightThumbX);
+		XI_ApplySensitivity(&rightThumbY);
+
+		// Left stick behavior
+		// Hardcoded deadzone within the gamecode itself to deal with the situation
+
+		// Right stick behavior
+		if( rightThumbX > joy_threshold->value )
+		{
+
+		}
+		if( rightThumbY > joy_threshold->value )
+		{
+
+		}
+	}
+
+
+	// BUTTONS
+	// Here's a general guideline to how I'll lay it out:
+	// A = JOY1 (ENTER when in UI)
+	// B = JOY2
+	// X = JOY3
+	// Y = JOY4 (ESC when in UI)
+	// Back = JOY5 (ESC when in UI)
+	// Start = JOY6
+	// DPad Up = JOY7 (UP when in UI)
+	// DPad Down = JOY8 (DOWN when in UI)
+	// DPad Right = JOY9 (RIGHT when in UI)
+	// DPad Left = JOY10 (LEFT when in UI)
+	// Left Stick Down = JOY11
+	// Right Stick Down = JOY12
+	// Left Bumper = JOY13
+	// Right Bumper = JOY14
+	// Left Trigger = JOY15
+	// Right Trigger = JOY16
 }
 #endif
 
