@@ -1164,7 +1164,7 @@ void SP_misc_holocron(gentity_t *ent)
 	vec3_t dest;
 	trace_t tr;
 
-	if (g_gametype.integer != GT_HOLOCRON)
+	if (level.gametype != GT_HOLOCRON)
 	{
 		G_FreeEntity(ent);
 		return;
@@ -1406,7 +1406,7 @@ void shield_power_converter_use( gentity_t *self, gentity_t *other, gentity_t *a
 		return;
 	}
 
-	if ( g_gametype.integer == GT_SIEGE 
+	if ( level.gametype == GT_SIEGE 
 		&& other 
 		&& other->client 
 		&& other->client->siegeClass )
@@ -1428,7 +1428,7 @@ void shield_power_converter_use( gentity_t *self, gentity_t *other, gentity_t *a
 		}
 		self->setTime = level.time + 100;
 
-		if ( g_gametype.integer == GT_SIEGE 
+		if ( level.gametype == GT_SIEGE 
 			&& other 
 			&& other->client 
 			&& other->client->siegeClass != -1 )
@@ -1600,12 +1600,12 @@ void ammo_generic_power_converter_use( gentity_t *self, gentity_t *other, gentit
 				( activator->client->ps.ammo[i] < ammoData[i].max ) )
 			{
 				gaveSome = qtrue;
-				if ( g_gametype.integer == GT_SIEGE  && i == AMMO_ROCKETS && activator->client->ps.ammo[i] >= 10 )
+				if ( level.gametype == GT_SIEGE  && i == AMMO_ROCKETS && activator->client->ps.ammo[i] >= 10 )
 				{ //this stuff is already a freaking mess, so..
 					gaveSome = qfalse;
 				}
 				activator->client->ps.ammo[i] += add;
-				if ( g_gametype.integer == GT_SIEGE  && i == AMMO_ROCKETS && activator->client->ps.ammo[i] >= 10 )
+				if ( level.gametype == GT_SIEGE  && i == AMMO_ROCKETS && activator->client->ps.ammo[i] >= 10 )
 				{	// fixme - this should SERIOUSLY be externed.
 					activator->client->ps.ammo[i] = 10;
 				}
@@ -1752,7 +1752,7 @@ void SP_misc_ammo_floor_unit(gentity_t *ent)
 	ent->genericValue7 = G_SoundIndex("sound/interface/ammocon_done");
 	G_SoundIndex("sound/interface/ammocon_empty");
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{ //show on radar from everywhere
 		ent->r.svFlags |= SVF_BROADCAST;
 		ent->s.eFlags |= EF_RADAROBJECT;
@@ -1773,9 +1773,9 @@ void SP_misc_shield_floor_unit( gentity_t *ent )
 	vec3_t dest;
 	trace_t tr;
 
-	if (g_gametype.integer != GT_CTF &&
-		g_gametype.integer != GT_CTY &&
-		g_gametype.integer != GT_SIEGE)
+	if (level.gametype != GT_CTF &&
+		level.gametype != GT_CTY &&
+		level.gametype != GT_SIEGE)
 	{
 		G_FreeEntity( ent );
 		return;
@@ -1847,7 +1847,7 @@ void SP_misc_shield_floor_unit( gentity_t *ent )
 	ent->genericValue7 = G_SoundIndex("sound/interface/shieldcon_done");
 	G_SoundIndex("sound/interface/shieldcon_empty");
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{ //show on radar from everywhere
 		ent->r.svFlags |= SVF_BROADCAST;
 		ent->s.eFlags |= EF_RADAROBJECT;
@@ -2187,7 +2187,7 @@ void SP_misc_model_health_power_converter( gentity_t *ent )
 	G_SoundIndex("sound/player/pickuphealth.wav");
 	ent->genericValue7 = G_SoundIndex("sound/interface/shieldcon_done");
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{ //show on radar from everywhere
 		ent->r.svFlags |= SVF_BROADCAST;
 		ent->s.eFlags |= EF_RADAROBJECT;
@@ -2767,7 +2767,7 @@ void Use_Target_Escapetrig( gentity_t *ent, gentity_t *other, gentity_t *activat
 
 void SP_target_escapetrig(gentity_t *ent)
 {
-	if (g_gametype.integer != GT_SINGLE_PLAYER)
+	if (level.gametype != GT_SINGLE_PLAYER)
 	{
 		G_FreeEntity(ent);
 		return;
@@ -3454,7 +3454,7 @@ void ref_link ( gentity_t *ent )
 		}
 		else
 		{
-			Com_Printf( S_COLOR_RED"ERROR: ref_tag (%s) has invalid target (%s)", ent->targetname, ent->target );
+			Com_Printf( S_COLOR_RED"ERROR: ref_tag (%s) has invalid target (%s)\n", ent->targetname, ent->target );
 		}
 	}
 	

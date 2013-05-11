@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		l_struct.h
@@ -54,5 +55,3 @@ int WriteStructure(FILE *fp, structdef_t *def, char *structure);
 int WriteIndent(FILE *fp, int indent);
 //writes a float without traling zeros
 int WriteFloat(FILE *fp, float value);
-
-

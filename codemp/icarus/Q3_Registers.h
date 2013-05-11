@@ -1,5 +1,4 @@
-#ifndef __Q3_REGISTERS__
-#define __Q3_REGISTERS__
+#pragma once
 
 enum
 {
@@ -32,5 +31,3 @@ extern int  Q3_SetStringVariable( const char *name, const char *value );
 extern int  Q3_SetVectorVariable( const char *name, const char *value );
 
 #endif //__cplusplus
-
-#endif	//__Q3_REGISTERS__

@@ -721,6 +721,10 @@ static qboolean turretG2_find_enemies( gentity_t *self )
 		{
 			continue;
 		}
+		if ( target->client && target->client->tempSpectate >= level.time )
+		{
+			continue;
+		}
 		if ( self->alliedTeam )
 		{
 			if ( target->client )
@@ -862,7 +866,7 @@ void turretG2_base_think( gentity_t *self )
 		if ( turretG2_find_enemies( self ) )
 		{//found one
 			turnOff = qfalse;
-			if ( self->enemy->client )
+			if ( self->enemy && self->enemy->client )
 			{//hold on to clients for a min of 3 seconds
 				self->last_move_time = level.time + 3000;
 			}
@@ -876,6 +880,10 @@ void turretG2_base_think( gentity_t *self )
 	if ( self->enemy != NULL )
 	{
 		if ( self->enemy->client && self->enemy->client->sess.sessionTeam == TEAM_SPECTATOR )
+		{//don't keep going after spectators
+			self->enemy = NULL;
+		}
+		else if ( self->enemy->client && self->enemy->client->tempSpectate >= level.time )
 		{//don't keep going after spectators
 			self->enemy = NULL;
 		}
@@ -1086,7 +1094,7 @@ void finish_spawning_turretG2( gentity_t *base )
 
 	base->s.eType = ET_GENERAL;
 
-	if ( base->team && base->team[0] && //g_gametype.integer == GT_SIEGE &&
+	if ( base->team && base->team[0] && //level.gametype == GT_SIEGE &&
 		!base->teamnodmg)
 	{
 		base->teamnodmg = atoi(base->team);
@@ -1166,7 +1174,7 @@ void finish_spawning_turretG2( gentity_t *base )
 		}
 		//start in "off" anim
 		TurboLaser_SetBoneAnim( base, 4, 5 );
-		if ( g_gametype.integer == GT_SIEGE )
+		if ( level.gametype == GT_SIEGE )
 		{//FIXME: designer-specified?
 			//FIXME: put on other entities, too, particularly siege objectives and bbrushes...
 			base->s.eFlags2 |= EF2_BRACKET_ENTITY;

@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(RM_TERRAIN_H_INC)
-#define RM_TERRAIN_H_INC
 
 #define MAX_RANDOM_MODELS		8
 
@@ -93,5 +91,3 @@ public:
 void RM_CreateRandomModels(int terrainId, const char *terrainInfo);
 void RM_InitTerrain(void);
 void RM_ShutdownTerrain(void);
-
-#endif // RM_TERRAIN_H_INC

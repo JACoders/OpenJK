@@ -208,59 +208,7 @@ void CG_DrawInformation( void ) {
 	}
 
 	// game type
-	switch ( cgs.gametype ) {
-	case GT_FFA:
-			s = CG_GetStringEdString("MENUS", "FREE_FOR_ALL");//"Free For All";
-//		s = "Free For All";
-		break;
-	case GT_HOLOCRON:
-			s = CG_GetStringEdString("MENUS", "HOLOCRON_FFA");//"Holocron FFA";
-//		s = "Holocron FFA";
-		break;
-	case GT_JEDIMASTER:
-			s = CG_GetStringEdString("MENUS", "SAGA");//"Jedi Master";??
-
-//		s = "Jedi Master";
-		break;
-	case GT_SINGLE_PLAYER:
-			s = CG_GetStringEdString("MENUS", "SAGA");//"Team FFA";
-
-		//s = "Single Player";
-		break;
-	case GT_DUEL:
-			s = CG_GetStringEdString("MENUS", "DUEL");//"Team FFA";
-		//s = "Duel";
-		break;
-	case GT_POWERDUEL:
-			s = CG_GetStringEdString("MENUS", "POWERDUEL");//"Team FFA";
-		//s = "Power Duel";
-		break;
-	case GT_TEAM:
-			s = CG_GetStringEdString("MENUS", "TEAM_FFA");//"Team FFA";
-
-		//s = "Team FFA";
-		break;
-	case GT_SIEGE:
-			s = CG_GetStringEdString("MENUS", "SIEGE");//"Siege";
-
-		//s = "Siege";
-		break;
-	case GT_CTF:
-			s = CG_GetStringEdString("MENUS", "CAPTURE_THE_FLAG");//"Capture the Flag";
-
-		//s = "Capture The Flag";
-		break;
-	case GT_CTY:
-			s = CG_GetStringEdString("MENUS", "CAPTURE_THE_YSALIMARI");//"Capture the Ysalamiri";
-
-		//s = "Capture The Ysalamiri";
-		break;
-	default:
-			s = CG_GetStringEdString("MENUS", "SAGA");//"Team FFA";
-
-		//s = "Unknown Gametype";
-		break;
-	}
+	s = BG_GetGametypeString( cgs.gametype );
 	UI_DrawProportionalString( 320, y, s,
 		UI_CENTER|UI_INFOFONT|UI_DROPSHADOW, colorWhite );
 	y += iPropHeight;

@@ -347,7 +347,7 @@ void G_LoadArenas( void ) {
 		Info_SetValueForKey( g_arenaInfos[n], "num", va( "%i", n ) );
 	}
 
-	G_RefreshNextMap(g_gametype.integer, qfalse);
+	G_RefreshNextMap(level.gametype, qfalse);
 #endif
 
 }
@@ -420,7 +420,7 @@ void G_AddRandomBot( int team ) {
 			if ( !(g_entities[i].r.svFlags & SVF_BOT) ) {
 				continue;
 			}
-			if (g_gametype.integer == GT_SIEGE)
+			if (level.gametype == GT_SIEGE)
 			{
 				if ( team >= 0 && cl->sess.siegeDesiredTeam != team ) {
 					continue;
@@ -453,7 +453,7 @@ void G_AddRandomBot( int team ) {
 			if ( !(g_entities[i].r.svFlags & SVF_BOT) ) {
 				continue;
 			}
-			if (g_gametype.integer == GT_SIEGE)
+			if (level.gametype == GT_SIEGE)
 			{
 				if ( team >= 0 && cl->sess.siegeDesiredTeam != team ) {
 					continue;
@@ -508,7 +508,7 @@ int G_RemoveRandomBot( int team ) {
 		if ( cl->sess.sessionTeam == TEAM_SPECTATOR && cl->sess.spectatorState == SPECTATOR_FOLLOW )
 			continue;
 
-		if ( g_gametype.integer == GT_SIEGE && team >= 0 && cl->sess.siegeDesiredTeam != team )
+		if ( level.gametype == GT_SIEGE && team >= 0 && cl->sess.siegeDesiredTeam != team )
 			continue;
 		else if ( team >= 0 && cl->sess.sessionTeam != team )
 			continue;
@@ -563,7 +563,7 @@ int G_CountBotPlayers( int team ) {
 		if ( !(g_entities[i].r.svFlags & SVF_BOT) ) {
 			continue;
 		}
-		if (g_gametype.integer == GT_SIEGE)
+		if (level.gametype == GT_SIEGE)
 		{
 			if ( team >= 0 && cl->sess.siegeDesiredTeam != team ) {
 				continue;
@@ -599,7 +599,7 @@ void G_CheckMinimumPlayers( void ) {
 	int humanplayers, botplayers;
 	static int checkminimumplayers_time;
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{
 		return;
 	}
@@ -637,7 +637,7 @@ void G_CheckMinimumPlayers( void ) {
 	}
 
 	/*
-	if (g_gametype.integer >= GT_TEAM) {
+	if (level.gametype >= GT_TEAM) {
 		int humanplayers2, botplayers2;
 		if (minplayers >= sv_maxclients.integer / 2) {
 			minplayers = (sv_maxclients.integer / 2) -1;
@@ -671,7 +671,7 @@ void G_CheckMinimumPlayers( void ) {
 			}
 		}
 	}
-	else if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL) {
+	else if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) {
 		if (minplayers >= sv_maxclients.integer) {
 			minplayers = sv_maxclients.integer-1;
 		}
@@ -688,7 +688,7 @@ void G_CheckMinimumPlayers( void ) {
 			}
 		}
 	}
-	else if (g_gametype.integer == GT_FFA) {
+	else if (level.gametype == GT_FFA) {
 		if (minplayers >= sv_maxclients.integer) {
 			minplayers = sv_maxclients.integer-1;
 		}
@@ -701,7 +701,7 @@ void G_CheckMinimumPlayers( void ) {
 			G_RemoveRandomBot( TEAM_FREE );
 		}
 	}
-	else if (g_gametype.integer == GT_HOLOCRON || g_gametype.integer == GT_JEDIMASTER) {
+	else if (level.gametype == GT_HOLOCRON || level.gametype == GT_JEDIMASTER) {
 		if (minplayers >= sv_maxclients.integer) {
 			minplayers = sv_maxclients.integer-1;
 		}
@@ -738,7 +738,7 @@ void G_CheckBotSpawn( void ) {
 		botSpawnQueue[n].spawnTime = 0;
 
 		/*
-		if( g_gametype.integer == GT_SINGLE_PLAYER ) {
+		if( level.gametype == GT_SINGLE_PLAYER ) {
 			trap_GetUserinfo( botSpawnQueue[n].clientNum, userinfo, sizeof(userinfo) );
 			PlayerIntroSound( Info_ValueForKey (userinfo, "model") );
 		}
@@ -925,7 +925,7 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 
 	// initialize the bot settings
 	if ( !team || !*team ) {
-		if ( g_gametype.integer >= GT_TEAM ) {
+		if ( level.gametype >= GT_TEAM ) {
 			if ( PickTeam( clientNum ) == TEAM_RED)
 				team = "red";
 			else
@@ -943,7 +943,7 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 	// register the userinfo
 	trap_SetUserinfo( clientNum, userinfo );
 
-	if ( g_gametype.integer >= GT_TEAM )
+	if ( level.gametype >= GT_TEAM )
 	{
 		if ( team && !Q_stricmp( team, "red" ) )
 			bot->client->sess.sessionTeam = TEAM_RED;
@@ -953,7 +953,7 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 			bot->client->sess.sessionTeam = PickTeam( -1 );
 	}
 
-	if ( g_gametype.integer == GT_SIEGE )
+	if ( level.gametype == GT_SIEGE )
 	{
 		bot->client->sess.siegeDesiredTeam = bot->client->sess.sessionTeam;
 		bot->client->sess.sessionTeam = TEAM_SPECTATOR;
@@ -976,7 +976,7 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 			team = "Red";
 		else
 		{
-			if ( g_gametype.integer == GT_SIEGE )
+			if ( level.gametype == GT_SIEGE )
 				team = (bot->client->sess.sessionTeam == TEAM_BLUE) ? "Blue" : "s";
 			else
 				team = "Blue";
@@ -993,8 +993,8 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 			return;
 	}
 
-	if (g_gametype.integer == GT_DUEL ||
-		g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_DUEL ||
+		level.gametype == GT_POWERDUEL)
 	{
 		int loners = 0;
 		int doubles = 0;

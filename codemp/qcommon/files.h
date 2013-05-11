@@ -1,5 +1,4 @@
-#ifndef __FILES_H
-#define __FILES_H
+#pragma once
 
 /*
    Structures local to the files_* modules.
@@ -133,5 +132,3 @@ void			FS_Shutdown( void );
 void			FS_CheckInit(void);
 void			FS_ReplaceSeparators( char *path );
 void			FS_FreePak( pack_t *thepak );
-
-#endif

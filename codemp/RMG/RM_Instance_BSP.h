@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(RM_INSTANCE_BSP_H_INC)
-#define RM_INSTANCE_BSP_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including RM_Instance_BSP.h")
@@ -31,5 +29,3 @@ public:
 	float				GetAngleDiff	 (void) const { return(mAngleDiff); }
 	bool				GetAngularType	 (void) const { return(mAngleDiff != 0.0f); }
 };
-
-#endif

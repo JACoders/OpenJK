@@ -4,9 +4,7 @@
 // this include must remain at the top of every CPP file
 #include "tr_local.h"
 
-#if !defined(GENERICPARSER2_H_INC)
-	#include "qcommon/GenericParser2.h"
-#endif
+#include "qcommon/GenericParser2.h"
 
 // To do:
 // Alter variance dependent on global distance from player (colour code this for cg_terrainCollisionDebug)

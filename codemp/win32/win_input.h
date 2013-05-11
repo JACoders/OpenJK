@@ -1,5 +1,4 @@
-#ifndef _WIN_INPUT_H_
-#define _WIN_INPUT_H_
+#pragma once
 
 bool IN_ControllersChanged(int inserted[], int removed[]);
 
@@ -96,6 +95,3 @@ bool IN_RumbleAdjust(int controller, int left, int right);
 void IN_RumbleInit (void);
 void IN_RumbleShutdown (void);
 void IN_RumbleFrame (void);
-
-
-#endif // END _WIN_INPUT_H_

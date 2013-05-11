@@ -47,13 +47,12 @@ FIXME do we need fat and thin version of this?
 qboolean CanSee ( gentity_t *ent ) 
 {
 	trace_t		tr;
-	vec3_t		eyes;
-	vec3_t		spot;
+	vec3_t		eyes, spot;
 
-	CalcEntitySpot( NPC, SPOT_HEAD_LEAN, eyes );
+	CalcEntitySpot( NPCS.NPC, SPOT_HEAD_LEAN, eyes );
 
 	CalcEntitySpot( ent, SPOT_ORIGIN, spot );
-	trap_Trace ( &tr, eyes, NULL, NULL, spot, NPC->s.number, MASK_OPAQUE );
+	trap_Trace ( &tr, eyes, NULL, NULL, spot, NPCS.NPC->s.number, MASK_OPAQUE );
 	ShotThroughGlass (&tr, ent, spot, MASK_OPAQUE);
 	if ( tr.fraction == 1.0 ) 
 	{
@@ -61,7 +60,7 @@ qboolean CanSee ( gentity_t *ent )
 	}
 
 	CalcEntitySpot( ent, SPOT_HEAD, spot );
-	trap_Trace ( &tr, eyes, NULL, NULL, spot, NPC->s.number, MASK_OPAQUE );
+	trap_Trace ( &tr, eyes, NULL, NULL, spot, NPCS.NPC->s.number, MASK_OPAQUE );
 	ShotThroughGlass (&tr, ent, spot, MASK_OPAQUE);
 	if ( tr.fraction == 1.0 ) 
 	{
@@ -69,7 +68,7 @@ qboolean CanSee ( gentity_t *ent )
 	}
 
 	CalcEntitySpot( ent, SPOT_LEGS, spot );
-	trap_Trace ( &tr, eyes, NULL, NULL, spot, NPC->s.number, MASK_OPAQUE );
+	trap_Trace ( &tr, eyes, NULL, NULL, spot, NPCS.NPC->s.number, MASK_OPAQUE );
 	ShotThroughGlass (&tr, ent, spot, MASK_OPAQUE);
 	if ( tr.fraction == 1.0 ) 
 	{
@@ -213,9 +212,9 @@ qboolean InVisrange ( gentity_t *ent )
 	vec3_t	eyes;
 	vec3_t	spot;
 	vec3_t	deltaVector;
-	float	visrange = (NPCInfo->stats.visrange*NPCInfo->stats.visrange);
+	float	visrange = (NPCS.NPCInfo->stats.visrange * NPCS.NPCInfo->stats.visrange);
 
-	CalcEntitySpot( NPC, SPOT_HEAD_LEAN, eyes );
+	CalcEntitySpot( NPCS.NPC, SPOT_HEAD_LEAN, eyes );
 
 	CalcEntitySpot( ent, SPOT_ORIGIN, spot );
 	VectorSubtract ( spot, eyes, deltaVector);
@@ -265,7 +264,7 @@ visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags )
 	// check PVS
 	if ( flags & CHECK_PVS ) 
 	{
-		if ( !trap_InPVS ( ent->r.currentOrigin, NPC->r.currentOrigin ) ) 
+		if ( !trap_InPVS ( ent->r.currentOrigin, NPCS.NPC->r.currentOrigin ) ) 
 		{
 			return VIS_NOT;
 		}
@@ -301,7 +300,7 @@ visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags )
 	// check FOV
 	if ( flags & CHECK_FOV ) 
 	{
-		if ( !InFOV ( ent, NPC, NPCInfo->stats.hfov, NPCInfo->stats.vfov) ) 
+		if ( !InFOV ( ent, NPCS.NPC, NPCS.NPCInfo->stats.hfov, NPCS.NPCInfo->stats.vfov) ) 
 		{
 			return VIS_360;
 		}
@@ -315,7 +314,7 @@ visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags )
 	// check shootability
 	if ( flags & CHECK_SHOOT ) 
 	{
-		if ( !CanShoot ( ent, NPC ) ) 
+		if ( !CanShoot ( ent, NPCS.NPC ) ) 
 		{
 			return VIS_FOV;
 		}
@@ -482,6 +481,7 @@ int G_CheckAlertEvents( gentity_t *self, qboolean checkSight, qboolean checkSoun
 	int bestSoundAlert = -1;
 	int bestSightAlert = -1;
 
+	//OJKFIXME: clientnum 0
 	if ( &g_entities[0] == NULL || g_entities[0].health <= 0 )
 	{
 		//player is dead
@@ -531,7 +531,7 @@ int G_CheckAlertEvents( gentity_t *self, qboolean checkSight, qboolean checkSoun
 
 int NPC_CheckAlertEvents( qboolean checkSight, qboolean checkSound, int ignoreAlert, qboolean mustHaveOwner, int minAlertLevel )
 {
-	return G_CheckAlertEvents( NPC, checkSight, checkSound, NPCInfo->stats.visrange, NPCInfo->stats.earshot, ignoreAlert, mustHaveOwner, minAlertLevel );
+	return G_CheckAlertEvents( NPCS.NPC, checkSight, checkSound, NPCS.NPCInfo->stats.visrange, NPCS.NPCInfo->stats.earshot, ignoreAlert, mustHaveOwner, minAlertLevel );
 }
 
 qboolean G_CheckForDanger( gentity_t *self, int alertEvent )
@@ -567,7 +567,7 @@ qboolean G_CheckForDanger( gentity_t *self, int alertEvent )
 }
 qboolean NPC_CheckForDanger( int alertEvent )
 {//FIXME: more bStates need to call this?
-	return G_CheckForDanger( NPC, alertEvent );
+	return G_CheckForDanger( NPCS.NPC, alertEvent );
 }
 
 /*

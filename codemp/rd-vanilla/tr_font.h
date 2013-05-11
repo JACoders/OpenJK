@@ -4,9 +4,7 @@
 
 // This file is shared in the single and multiplayer codebases, so be CAREFUL WHAT YOU ADD/CHANGE!!!!!
 
-#ifndef TR_FONT_H
-#define TR_FONT_H
-
+#pragma once
 
 void R_ShutdownFonts(void);
 void R_InitFonts(void);
@@ -27,8 +25,4 @@ unsigned int AnyLanguage_ReadCharFromString( const char *psText, int *piAdvanceC
 qboolean Language_IsAsian(void);
 qboolean Language_UsesSpaces(void);
 
-
-#endif	// #ifndef TR_FONT_H
-
 // end
-

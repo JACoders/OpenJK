@@ -414,6 +414,18 @@ typedef	int	fixed16_t;
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
 
+#if defined(_MSC_VER)
+static __inline long Q_ftol(float f)
+{
+	return (long)f;
+}
+#else
+static inline long Q_ftol(float f)
+{
+	return (long)f;
+}
+#endif
+
 #define NUMVERTEXNORMALS	162
 extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
 
@@ -1318,6 +1330,8 @@ inline const char	*Q_strrchr( const char* str, int c ) { return strrchr(str, c);
 // buffer size safe library replacements
 void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong=qfalse );
 void	Q_strcat( char *dest, int size, const char *src );
+
+const char *Q_stristr( const char *s, const char *find );
 
 // strlen that discounts Quake color sequences
 int Q_PrintStrlen( const char *string );

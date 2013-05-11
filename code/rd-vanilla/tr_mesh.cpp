@@ -223,7 +223,7 @@ static int R_ComputeLOD( trRefEntity_t *ent ) {
 		flod = 0;
 	}
 
-	lod = myftol( flod );
+	lod = Q_ftol( flod );
 
 	if ( lod < 0 ) {
 		lod = 0;

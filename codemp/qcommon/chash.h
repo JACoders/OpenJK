@@ -1,3 +1,5 @@
+#pragma once
+
 // Notes
 // Make sure extension is stripped if it needs to be
 

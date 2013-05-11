@@ -1,12 +1,11 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 // bg_public.h -- definitions shared by both the server game and client game modules
 
 // because games can change separately from the main system version, we need a
 // second version that must match between game and cgame
-
-#ifndef __BG_PUBLIC_H__
-#define __BG_PUBLIC_H__
 
 #include "bg_weapons.h"
 #include "anims.h"
@@ -476,6 +475,7 @@ typedef struct {
 
 	// for fixed msec Pmove
 	int			pmove_fixed;
+	int			pmove_float;
 	int			pmove_msec;
 
 	// callbacks to test the world
@@ -1600,4 +1600,6 @@ extern int forcePowerDarkLight[NUM_FORCE_POWERS];
 #define	HYPERSPACE_SPEED			10000.0f//was 30000
 #define	HYPERSPACE_TURN_RATE		45.0f
 
-#endif //__BG_PUBLIC_H__
+extern const char *gametypeStringShort[GT_MAX_GAME_TYPE];
+const char *BG_GetGametypeString( int gametype );
+int BG_GetGametypeForString( const char *gametype );

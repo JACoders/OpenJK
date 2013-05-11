@@ -4479,7 +4479,7 @@ qboolean ItemParse_cvarStrList( itemDef_t *item)
 			// The cvar value that goes into se_language
 #ifndef __NO_JK2
 			// FIXME
-			if(!Cvar_VariableIntegerValue("com_jk2"))
+			if(com_jk2 && !com_jk2->integer)
 #endif
 			multiPtr->cvarStr[multiPtr->count] = SE_GetLanguageName( multiPtr->count );
 		}
@@ -6221,8 +6221,8 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 	if (*width == 0 || (item->type == ITEM_TYPE_OWNERDRAW && item->textalignment == ITEM_ALIGN_CENTER)
 #ifndef __NO_JK2
 		|| (item->text && item->text[0]=='@' && 
-		((!Cvar_VariableIntegerValue("com_jk2") && item->asset != se_language->modificationCount) ||
-		((Cvar_VariableIntegerValue("com_jk2") && item->asset != sp_language->modificationCount)))	//string package language changed
+		((com_jk2 && !com_jk2->integer && item->asset != se_language->modificationCount) ||
+		((com_jk2 && com_jk2->integer && item->asset != sp_language->modificationCount)))	//string package language changed
 #else
 		|| (item->text && item->text[0]=='@' && item->asset != se_language->modificationCount )	//string package language changed
 #endif
@@ -6261,7 +6261,7 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 
 		ToWindowCoords(&item->textRect.x, &item->textRect.y, &item->window);
 #ifndef __NO_JK2
-		if( Cvar_VariableIntegerValue("com_jk2") )
+		if( com_jk2 && com_jk2->integer )
 		{
 			if(item->text && item->text[0]=='@')
 				item->asset = sp_language->modificationCount;
@@ -6427,7 +6427,7 @@ void Item_Text_Paint(itemDef_t *item)
 		textPtr = item->text;
 	}
 #ifndef __NO_JK2
-	if(!Cvar_VariableIntegerValue("com_jk2"))
+	if(com_jk2 && !com_jk2->integer)
 	{
 #endif
 	if (*textPtr == '@')	// string reference
@@ -6952,7 +6952,7 @@ void BindingFromName(const char *cvar)
 // do NOT do this or it corrupts asian text!!!//				Q_strupr(g_nameBind2);
 
 #ifndef __NO_JK2
-				if(Cvar_VariableIntegerValue( "com_jk2" ))
+				if(com_jk2 && com_jk2->integer)
 					strcat( g_nameBind1, va(" %s ", ui.SP_GetStringTextString("MENUS3_KEYBIND_OR" )) );
 				else
 #endif
@@ -7182,7 +7182,7 @@ void Item_Model_Paint(itemDef_t *item)
 
 	// Fuck all the logic --eez
 #ifndef __NO_JK2
-	if(Cvar_VariableIntegerValue("com_jk2"))
+	if(com_jk2 && com_jk2->integer)
 	{
 		// setup the refdef
 		memset( &refdef, 0, sizeof( refdef ) );
@@ -7538,7 +7538,7 @@ void Item_YesNo_Paint(itemDef_t *item)
 #ifndef __NO_JK2
 	const char *psYes;
 	const char *psNo;
-	if( Cvar_VariableIntegerValue( "com_jk2" ) )
+	if( com_jk2 && com_jk2->integer )
 	{
 		psYes = ui.SP_GetStringTextString( "MENUS_YES" );
 		psNo = ui.SP_GetStringTextString( "MENUS_NO" );

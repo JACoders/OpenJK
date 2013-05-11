@@ -1,5 +1,3 @@
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
 
 //seems to be a compiler bug, it doesn't clean out the #ifdefs between dif-compiles
 //or something, so the headers spew errors on these defs from the previous compile.
@@ -1019,13 +1017,13 @@ static void FighterDamageRoutine( Vehicle_t *pVeh, bgEntity_t *parent, playerSta
 #ifdef QAGAME
 	if ( pVeh->m_LandTrace.fraction < 1.0f )
 	{ //if you land at all when pieces of your ship are missing, then die
-		gentity_t *parent = (gentity_t *)pVeh->m_pParentEntity;
-		gentity_t *killer = parent;
+		gentity_t *vparent = (gentity_t *)pVeh->m_pParentEntity;
+		gentity_t *killer = vparent;
 #ifdef _JK2MP//only have this info in MP...
-		if (parent->client->ps.otherKiller < ENTITYNUM_WORLD &&
-			parent->client->ps.otherKillerTime > level.time)
+		if (vparent->client->ps.otherKiller < ENTITYNUM_WORLD &&
+			vparent->client->ps.otherKillerTime > level.time)
 		{
-			gentity_t *potentialKiller = &g_entities[parent->client->ps.otherKiller];
+			gentity_t *potentialKiller = &g_entities[vparent->client->ps.otherKiller];
 
 			if (potentialKiller->inuse && potentialKiller->client)
 			{ //he's valid I guess
@@ -1033,7 +1031,7 @@ static void FighterDamageRoutine( Vehicle_t *pVeh, bgEntity_t *parent, playerSta
 			}
 		}
 #endif
-		G_Damage(parent, killer, killer, vec3_origin, parent->client->ps.origin, 99999, DAMAGE_NO_ARMOR, MOD_SUICIDE);
+		G_Damage(vparent, killer, killer, vec3_origin, vparent->client->ps.origin, 99999, DAMAGE_NO_ARMOR, MOD_SUICIDE);
 	}
 #endif
 

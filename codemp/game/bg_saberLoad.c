@@ -332,7 +332,6 @@ qboolean WP_UseFirstValidSaberStyle( saberInfo_t *saber1, saberInfo_t *saber2, i
 	}
 	if ( styleInvalid && validStyles )
 	{//using an invalid style and have at least one valid style to use, so switch to it
-		int styleNum;
 		for ( styleNum = SS_FAST; styleNum < SS_NUM_SABER_STYLES; styleNum++ )
 		{
 			if ( (validStyles&(1<<styleNum)) )
@@ -673,7 +672,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 	}
 
 	//got the name we're using for sure
-	strcpy(saber->name, useSaber);
+	Q_strncpyz( saber->name, useSaber, sizeof( saber->name ) );
 
 	if ( BG_ParseLiteral( &p, "{" ) ) 
 	{

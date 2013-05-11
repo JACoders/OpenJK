@@ -3,26 +3,15 @@
 #include "qcommon/exe_headers.h"
 
 #include "server.h"
-
 #include "botlib/botlib.h"
 #include "qcommon/stringed_ingame.h"
-
-#if !defined(CROFFSYSTEM_H_INC)
-	#include "qcommon/RoffSystem.h"
-#endif
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/ghoul2_shared.h"
-#endif
-
+#include "qcommon/RoffSystem.h"
+#include "ghoul2/ghoul2_shared.h"
 #include "RMG/RM_Headers.h"
 #include "qcommon/cm_local.h"
 #include "qcommon/cm_public.h"
-
 #include "icarus/GameInterface.h"
-
 #include "qcommon/timing.h"
-
 #include "NPCNav/navigator.h"
 
 botlib_export_t	*botlib_export;
@@ -363,11 +352,9 @@ void SV_GetUsercmd( int clientNum, usercmd_t *cmd ) {
 //==============================================
 
 static int	FloatAsInt( float f ) {
-	int		temp;
-
-	*(float *)&temp = f;
-
-	return temp;
+	floatint_t fi;
+	fi.f = f;
+	return fi.i;
 }
 
 /*
@@ -377,14 +364,6 @@ SV_GameSystemCalls
 The module is making a system call
 ====================
 */
-//rcg010207 - see my comments in VM_DllSyscall(), in qcommon/vm.c ...
-#if ((defined __linux__) && (defined __powerpc__))
-#define VMA(x) ((void *) args[x])
-#else
-#define	VMA(x) VM_ArgPtr(args[x])
-#endif
-
-#define	VMF(x)	((float *)args)[x]
 
 void SV_BotWaypointReception(int wpnum, wpobject_t **wps);
 void SV_BotCalculatePaths(int rmg);
@@ -435,7 +414,7 @@ sharedEntity_t *ConvertedEntity(sharedEntity_t *ent)
 siegePers_t sv_siegePersData = {qfalse, 0, 0};
 
 extern float g_svCullDist;
-int SV_GameSystemCalls( int *args ) {
+intptr_t SV_GameSystemCalls( intptr_t *args ) {
 	switch( args[0] ) {
 
 	//rww - alright, DO NOT EVER add a GAME/CGAME/UI generic call without adding a trap to match, and
@@ -1631,7 +1610,7 @@ int SV_GameSystemCalls( int *args ) {
 		return SV_GetEntityToken((char *)VMA(1), args[2]);
 
 	default:
-		Com_Error( ERR_DROP, "Bad game system trap: %i", args[0] );
+		Com_Error( ERR_DROP, "Bad game system trap: %ld", (long int) args[0] );
 	}
 	return -1;
 }

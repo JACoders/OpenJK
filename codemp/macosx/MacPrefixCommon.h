@@ -1,5 +1,4 @@
-#ifndef MacPrefixCommon_h
-#define MacPrefixCommon_h
+#pragma once
 
 //#define MAC_PORT		1
 #define _JK2			1
@@ -28,5 +27,3 @@
 
 #define min(X, Y)  ((X) < (Y) ? (X) : (Y))
 #define max(X, Y)  ((X) > (Y) ? (X) : (Y))
-
-#endif

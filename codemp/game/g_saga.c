@@ -100,7 +100,7 @@ void InitSiegeMode(void)
 	char			teamIcon[128];
 	char			goalreq[64];
 	char			teams[2048];
-	char			objective[MAX_SIEGE_INFO_SIZE];
+	static char objective[MAX_SIEGE_INFO_SIZE];
 	char			objecStr[8192];
 	int				len = 0;
 	int				i = 0;
@@ -109,7 +109,9 @@ void InitSiegeMode(void)
 	int				objectiveNumTeam2 = 0;
 	fileHandle_t	f;
 
-	if (g_gametype.integer != GT_SIEGE)
+	objective[0] = '\0';
+
+	if (level.gametype != GT_SIEGE)
 	{
 		goto failure;
 	}
@@ -790,7 +792,7 @@ void SetTeamQuick(gentity_t *ent, int team, qboolean doBegin)
 
 	trap_GetUserinfo( ent->s.number, userinfo, sizeof( userinfo ) );
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{
 		G_ValidateSiegeClassForTeam(ent, team);
 	}
@@ -910,7 +912,7 @@ void SiegeCheckTimers(void)
 	int numTeam1 = 0;
 	int numTeam2 = 0;
 
-	if (g_gametype.integer != GT_SIEGE)
+	if (level.gametype != GT_SIEGE)
 	{
 		return;
 	}
@@ -1062,10 +1064,12 @@ void siegeTriggerUse(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
 	char			teamstr[64];
 	char			objectivestr[64];
-	char			desiredobjective[MAX_SIEGE_INFO_SIZE];
+	static char		desiredobjective[MAX_SIEGE_INFO_SIZE];
 	int				clUser = ENTITYNUM_NONE;
 	int				final = 0;
 	int				i = 0;
+
+	desiredobjective[0] = '\0';
 
 	if (!siege_valid)
 	{
@@ -1139,7 +1143,7 @@ void SP_info_siege_objective (gentity_t *ent)
 {
 	char* s;
 
-	if (!siege_valid || g_gametype.integer != GT_SIEGE)
+	if (!siege_valid || level.gametype != GT_SIEGE)
 	{
 		G_FreeEntity(ent);
 		return;
@@ -1206,7 +1210,7 @@ void SP_info_siege_radaricon (gentity_t *ent)
 	char* s;
 	int i;
 
-	if (!siege_valid || g_gametype.integer != GT_SIEGE)
+	if (!siege_valid || level.gametype != GT_SIEGE)
 	{
 		G_FreeEntity(ent);
 		return;
@@ -1239,7 +1243,9 @@ void decompTriggerUse(gentity_t *ent, gentity_t *other, gentity_t *activator)
 	int final = 0;
 	char teamstr[1024];
 	char objectivestr[64];
-	char desiredobjective[MAX_SIEGE_INFO_SIZE];
+	static char desiredobjective[MAX_SIEGE_INFO_SIZE];
+
+	desiredobjective[0] = '\0';
 
 	if (gSiegeRoundEnded)
 	{
@@ -1297,7 +1303,7 @@ void decompTriggerUse(gentity_t *ent, gentity_t *other, gentity_t *activator)
 */
 void SP_info_siege_decomplete (gentity_t *ent)
 {
-	if (!siege_valid || g_gametype.integer != GT_SIEGE)
+	if (!siege_valid || level.gametype != GT_SIEGE)
 	{
 		G_FreeEntity(ent);
 		return;
@@ -1325,7 +1331,7 @@ Do a logexit for siege when used.
 */
 void SP_target_siege_end (gentity_t *ent)
 {
-	if (!siege_valid || g_gametype.integer != GT_SIEGE)
+	if (!siege_valid || level.gametype != GT_SIEGE)
 	{
 		G_FreeEntity(ent);
 		return;
@@ -1423,10 +1429,7 @@ void SiegeItemThink(gentity_t *ent)
 	}
 
 
-	if (carrier)
-	{
-		gentity_t *carrier = &g_entities[ent->genericValue8];
-
+	if (carrier) {
 		//This checking can be a bit iffy on the death stuff, but in theory we should always
 		//get a think in before the default minimum respawn time is exceeded.
 		if (!carrier->inuse || !carrier->client ||
@@ -1753,7 +1756,7 @@ void SP_misc_siege_item (gentity_t *ent)
 	int		noradar;
 	char	*s;
 
-	if (!siege_valid || g_gametype.integer != GT_SIEGE)
+	if (!siege_valid || level.gametype != GT_SIEGE)
 	{
 		G_FreeEntity(ent);
 		return;
@@ -1825,7 +1828,7 @@ void SP_misc_siege_item (gentity_t *ent)
 	ent->s.modelindex = G_ModelIndex(ent->model);
 
 	//Is the model a ghoul2 model?
-	if (!Q_stricmp(&ent->model[strlen(ent->model) - 4], ".glm"))
+	if ( ent->model && !Q_stricmp( &ent->model[strlen(ent->model) - 4], ".glm" ) )
 	{ //apparently so.
         ent->s.modelGhoul2 = 1;
 	}

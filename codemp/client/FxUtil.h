@@ -1,11 +1,6 @@
+#pragma once
 
-#if !defined(FX_PRIMITIVES_H_INC)
-	#include "FxPrimitives.h"
-#endif
-
-#ifndef FX_UTIL_H_INC
-#define FX_UTIL_H_INC
-
+#include "FxPrimitives.h"
 
 bool	FX_Free( bool templates );	// ditches all active effects;
 int		FX_Init( refdef_t* refdef );	// called in CG_Init to purge the fx system.
@@ -112,5 +107,3 @@ CBezier *FX_AddBezier( vec3_t start, vec3_t end,
 								float alpha1, float alpha2, float alphaParm,
 								vec3_t sRGB, vec3_t eRGB, float rgbParm,
 								int killTime, qhandle_t shader, int flags = 0 );
-
-#endif //FX_UTIL_H_INC

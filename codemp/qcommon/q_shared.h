@@ -24,8 +24,6 @@
 					//	between base<->modbase clients and servers (mismatching events, powerups, etc)
 					// leave this defined to ensure compatibility
 
-//#define USE_WIDESCREEN // Adjust fov for widescreen aspect ratio
-
 #include "qcommon/disablewarnings.h"
 
 #include "game/teams.h" //npc team stuff
@@ -82,6 +80,7 @@
 #include <time.h>
 #include <ctype.h>
 #include <limits.h>
+#include <errno.h>
 
 //Ignore __attribute__ on non-gcc platforms
 #if !defined(__GNUC__) && !defined(__attribute__)
@@ -482,6 +481,12 @@ typedef unsigned long		ulong;
 
 typedef enum qboolean_e { qfalse=0, qtrue } qboolean;
 
+typedef union {
+	float f;
+	int i;
+	unsigned int ui;
+} floatint_t;
+
 #ifndef min
 	#define min(x,y) ((x)<(y)?(x):(y))
 #endif
@@ -534,6 +539,12 @@ typedef int		clipHandle_t;
 #define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
 
 #define PADP(base, alignment)	((void *) PAD((intptr_t) (base), (alignment)))
+
+#ifdef __GNUC__
+#define QALIGN(x) __attribute__((aligned(x)))
+#else
+#define QALIGN(x)
+#endif
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -727,6 +738,18 @@ typedef	int	fixed16_t;
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846f	// matches value in gcc v2 math.h
+#endif
+
+#if defined(_MSC_VER)
+static __inline long Q_ftol(float f)
+{
+	return (long)f;
+}
+#else
+static inline long Q_ftol(float f)
+{
+	return (long)f;
+}
 #endif
 
 
@@ -1570,8 +1593,10 @@ void NormalToLatLong( const vec3_t normal, byte bytes[2] ); //rwwRMG - added
 
 //=============================================
 
-int Com_Clampi( int min, int max, int value ); //rwwRMG - added
-float Com_Clamp( float min, float max, float value );
+extern ID_INLINE int Com_Clampi( int min, int max, int value ); //rwwRMG - added
+extern ID_INLINE float Com_Clamp( float min, float max, float value );
+extern ID_INLINE int Com_AbsClampi( int min, int max, int value );
+extern ID_INLINE float Com_AbsClamp( float min, float max, float value );
 
 char	*COM_SkipPath( char *pathname );
 const char	*COM_GetExtension( const char *name );
@@ -2886,7 +2911,6 @@ typedef enum Eorientations
 /*
 Ghoul2 Insert End
 */
-
 
 // define the new memory tags for the zone, used by all modules now
 //

@@ -1,5 +1,4 @@
-#ifndef __G_NAVIGATOR__
-#define __G_NAVIGATOR__
+#pragma once
 
 #define	__NEWCOLLECT	1
 
@@ -276,5 +275,3 @@ private:
 };
 
 extern CNavigator navigator;
-
-#endif	//__G_NAVIGATOR__

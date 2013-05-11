@@ -1,8 +1,7 @@
+#pragma once
+
 // Tokenizer.h
 //
-
-#ifndef __TOKENIZER_H
-#define __TOKENIZER_H
 
 #pragma warning( disable : 4786 )	// identifier was truncated 
 
@@ -16,7 +15,6 @@
 
 using namespace std;
 
-//#include <windows.h>
 #include "qcommon/platform.h"
 
 #ifndef _WIN32
@@ -606,6 +604,3 @@ protected:
 	DWORD			m_filesize;
 	bool			m_ownsFile;
 };
-
-
-#endif//__TOKENIZER_H

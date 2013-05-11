@@ -1193,24 +1193,6 @@ char	*Cvar_InfoString( int bit ) {
 		}
 	}
 
-	/*
-	for (var = cvar_vars ; var ; var = var->next)
-	{
-		if ((var->flags & CVAR_INTERNAL) &&
-			(var->flags & bit) &&
-			!Q_stricmp(var->name, "g_debugMelee"))
-		{ //this one must go first
-			Info_SetValueForKey (info, var->name, var->string);
-			kungFuSafety = true;
-			break;
-		}
-	}
-	if (!kungFuSafety)
-	{ //even if it was not found, it must be in the info string
-		Info_SetValueForKey (info, "g_debugMelee", "1");
-	}
-	*/
-
 	return info;
 }
 
@@ -1305,7 +1287,7 @@ void	Cvar_Update( vmCvar_t *vmCvar ) {
 	assert(vmCvar); // bk
 
 	if ( (unsigned)vmCvar->handle >= cvar_numIndexes ) {
-		Com_Error( ERR_DROP, "Cvar_Update: handle out of range" );
+		Com_Error( ERR_DROP, "Cvar_Update: handle %u out of range", (unsigned)vmCvar->handle );
 	}
 
 	cv = cvar_indexes + vmCvar->handle;

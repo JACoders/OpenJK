@@ -1,3 +1,5 @@
+#pragma once
+
 /************************************************************************************************
  *
  *	Copyright (C) 2001-2002 Raven Software
@@ -5,10 +7,6 @@
  *  RM_Area.h
  *
  ************************************************************************************************/
-
-#pragma once
-#if !defined(RM_AREA_H_INC)
-#define RM_AREA_H_INC
 
 #ifdef DEBUG_LINKING
 	#pragma message("...including RM_Area.h")
@@ -94,6 +92,3 @@ public:
 
 //	void		CreateMap		( void );
 };
-
-#endif
-

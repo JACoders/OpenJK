@@ -150,7 +150,7 @@ void CG_ClientList_f( void )
 		switch( ci->team ) 
 		{
 		case TEAM_FREE:
-			Com_Printf( "%2d " S_COLOR_YELLOW "F   %s" S_COLOR_WHITE "%s\n", i, ci->name, (ci->botSkill != -1) ? " (bot)" : "" );
+			Com_Printf( "%2d " S_COLOR_YELLOW "F   " S_COLOR_WHITE "%s" S_COLOR_WHITE "%s\n", i, ci->name, (ci->botSkill != -1) ? " (bot)" : "" );
 			break;
 
 		case TEAM_RED:

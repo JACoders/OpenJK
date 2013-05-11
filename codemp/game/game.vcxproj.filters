@@ -278,6 +278,9 @@
     <ClCompile Include="..\qcommon\q_shared.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="g_cvar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ai.h">
@@ -325,9 +328,6 @@
     <ClInclude Include="chars.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="g_headers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="g_ICARUScb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -359,9 +359,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="surfaceflags.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="syn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="teams.h">

@@ -1,3 +1,5 @@
+#pragma once
+
 #define ARMOR_EFFECT_TIME	500
 
 //saberEventFlags

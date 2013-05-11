@@ -1,5 +1,4 @@
-#ifndef __G_ICARUS_H__
-#define __G_ICARUS_H__
+#pragma once
 
 typedef struct pscript_s
 {
@@ -32,5 +31,3 @@ void ICARUS_Shutdown( void );
 void Svcmd_ICARUS_f( void );
 
 extern int		ICARUS_entFilter;
-
-#endif//#ifndef __G_ICARUS_H__

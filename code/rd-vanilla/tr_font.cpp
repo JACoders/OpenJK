@@ -58,18 +58,25 @@ Language_e GetLanguageEnum()
 	// only re-strcmp() when language string has changed from what we knew it as...
 	//
 #ifndef __NO_JK2
-	if(!ri.Cvar_VariableIntegerValue("com_jk2"))
+	if(!com_jk2 || !com_jk2->integer)
+	{
 #endif
 		if (iSE_Language_ModificationCount != se_language->modificationCount )
+		{
 			iSE_Language_ModificationCount  = se_language->modificationCount;
-				if ( Language_IsRussian()	)	eLanguage = eRussian;
-		else	if ( Language_IsPolish()	)	eLanguage = ePolish;
-		else	if ( Language_IsKorean()	)	eLanguage = eKorean;
-		else	if ( Language_IsTaiwanese()	)	eLanguage = eTaiwanese;
-		else	if ( Language_IsJapanese()	)	eLanguage = eJapanese;
-		else	if ( Language_IsChinese()	)	eLanguage = eChinese;
-		else	if ( Language_IsThai()		)	eLanguage = eThai;
-		else	eLanguage = eWestern;
+				
+			if ( Language_IsRussian()	)	eLanguage = eRussian;
+			else	if ( Language_IsPolish()	)	eLanguage = ePolish;
+			else	if ( Language_IsKorean()	)	eLanguage = eKorean;
+			else	if ( Language_IsTaiwanese()	)	eLanguage = eTaiwanese;
+			else	if ( Language_IsJapanese()	)	eLanguage = eJapanese;
+			else	if ( Language_IsChinese()	)	eLanguage = eChinese;
+			else	if ( Language_IsThai()		)	eLanguage = eThai;
+			else	eLanguage = eWestern;
+		}
+#ifndef __NO_JK2
+	}
+#endif
 
 	return eLanguage;
 }
@@ -683,7 +690,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 {	
 #ifndef __NO_JK2
 	// JK2 does this func a little differently --eez
-	if( ri.Cvar_VariableIntegerValue("com_jk2") )
+	if( com_jk2 && com_jk2->integer )
 	{
 		const byte *psString = (const byte *) psText;	// avoid sign-promote bug
 		unsigned int uiLetter;
@@ -1512,7 +1519,7 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 {	
 #ifndef __NO_JK2
 	// Yes..even this func is a little different, to the point where it doesn't work. --eez
-	if( ri.Cvar_VariableIntegerValue("com_jk2") )
+	if( com_jk2 && com_jk2->integer )
 	{
 		int			iMaxWidth = 0;
 		int			iThisWidth= 0;
@@ -1668,7 +1675,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 {
 	// HAAAAAAAAAAAAAAAX..fix me please --eez
 #ifndef __NO_JK2
-	if( ri.Cvar_VariableIntegerValue("com_jk2") )
+	if( com_jk2 && com_jk2->integer )
 	{
 		static qboolean gbInShadow = qfalse;	// MUST default to this
 		int					x, y, colour, offset;

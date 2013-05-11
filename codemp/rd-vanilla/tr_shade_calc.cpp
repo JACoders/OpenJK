@@ -6,7 +6,7 @@
 #include "tr_local.h"
 
 
-#define	WAVEVALUE( table, base, amplitude, phase, freq )  ((base) + table[ myftol( ( ( (phase) + tess.shaderTime * (freq) ) * FUNCTABLE_SIZE ) ) & FUNCTABLE_MASK ] * (amplitude))
+#define	WAVEVALUE( table, base, amplitude, phase, freq )  ((base) + table[ Q_ftol( ( ( (phase) + tess.shaderTime * (freq) ) * FUNCTABLE_SIZE ) ) & FUNCTABLE_MASK ] * (amplitude))
 
 static float *TableForFunc( genFunc_t func ) 
 {
@@ -730,7 +730,7 @@ void RB_CalcWaveColor( const waveForm_t *wf, unsigned char *dstColors )
 		glow = 1;
 	}
 
-	v = myftol( 255 * glow );
+	v = Q_ftol( 255 * glow );
 	color[0] = color[1] = color[2] = v;
 	color[3] = 255;
 	v = *(int *)color;
@@ -1056,26 +1056,6 @@ void RB_CalcRotateTexCoords( float degsPerSecond, float *st )
 
 
 
-#if id386 && !( (defined __linux__ || defined __FreeBSD__ || defined MACOS_X) && (defined __i386__ ) ) // rb010123
-
-#ifndef __GNUC__
-#pragma warning (disable: 4035)//no return value
-inline long myftol( float f ) {
-	static int tmp;
-	__asm fld f
-	__asm fistp tmp
-	__asm mov eax, tmp
-}
-#pragma warning (default: 4035)
-#else
-long myftol( float f )
-{
-  return (long)f;
-}
-#endif
-
-#endif
-
 /*
 ** RB_CalcSpecularAlpha
 **
@@ -1171,19 +1151,19 @@ void RB_CalcDiffuseColor( unsigned char *colors )
 			*(int *)&colors[i*4] = ambientLightInt;
 			continue;
 		} 
-		j = myftol( ambientLight[0] + incoming * directedLight[0] );
+		j = Q_ftol( ambientLight[0] + incoming * directedLight[0] );
 		if ( j > 255 ) {
 			j = 255;
 		}
 		colors[i*4+0] = j;
 
-		j = myftol( ambientLight[1] + incoming * directedLight[1] );
+		j = Q_ftol( ambientLight[1] + incoming * directedLight[1] );
 		if ( j > 255 ) {
 			j = 255;
 		}
 		colors[i*4+1] = j;
 
-		j = myftol( ambientLight[2] + incoming * directedLight[2] );
+		j = Q_ftol( ambientLight[2] + incoming * directedLight[2] );
 		if ( j > 255 ) {
 			j = 255;
 		}
@@ -1225,9 +1205,9 @@ void RB_CalcDiffuseEntityColor( unsigned char *colors )
 	g = backEnd.currentEntity->e.shaderRGBA[1]/255.0f;
 	b = backEnd.currentEntity->e.shaderRGBA[2]/255.0f;
 
-	((byte *)&ambientLightInt)[0] = myftol( r*ent->ambientLight[0] );
-	((byte *)&ambientLightInt)[1] = myftol( g*ent->ambientLight[1] );
-	((byte *)&ambientLightInt)[2] = myftol( b*ent->ambientLight[2] );
+	((byte *)&ambientLightInt)[0] = Q_ftol( r*ent->ambientLight[0] );
+	((byte *)&ambientLightInt)[1] = Q_ftol( g*ent->ambientLight[1] );
+	((byte *)&ambientLightInt)[2] = Q_ftol( b*ent->ambientLight[2] );
 	((byte *)&ambientLightInt)[3] = backEnd.currentEntity->e.shaderRGBA[3];
 
 	v = tess.xyz[0];
@@ -1246,19 +1226,19 @@ void RB_CalcDiffuseEntityColor( unsigned char *colors )
 		if ( j > 255 ) {
 			j = 255;
 		}
-		colors[i*4+0] = myftol(j*r);
+		colors[i*4+0] = Q_ftol(j*r);
 
 		j = ( ambientLight[1] + incoming * directedLight[1] );
 		if ( j > 255 ) {
 			j = 255;
 		}
-		colors[i*4+1] = myftol(j*g);
+		colors[i*4+1] = Q_ftol(j*g);
 
 		j = ( ambientLight[2] + incoming * directedLight[2] );
 		if ( j > 255 ) {
 			j = 255;
 		}
-		colors[i*4+2] = myftol(j*b);
+		colors[i*4+2] = Q_ftol(j*b);
 
 		colors[i*4+3] = backEnd.currentEntity->e.shaderRGBA[3];
 	}

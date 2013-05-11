@@ -999,7 +999,7 @@ int ConnectTrail(int startindex, int endindex, qboolean behindTheScenes)
 	int successnodeindex;
 	int insertindex;
 	int prenodestart;
-	byte extendednodes[MAX_NODETABLE_SIZE]; //for storing checked nodes and not trying to extend them each a bazillion times
+	static byte extendednodes[MAX_NODETABLE_SIZE]; //for storing checked nodes and not trying to extend them each a bazillion times
 	float fvecmeas;
 	float baseheight;
 	float branchDistance;
@@ -1010,6 +1010,8 @@ int ConnectTrail(int startindex, int endindex, qboolean behindTheScenes)
 	vec3_t testspot;
 	vec3_t validspotpos;
 	trace_t tr;
+
+	memset( extendednodes, 0, sizeof( extendednodes ) );
 
 	if (RMG.integer)
 	{ //this might be temporary. Or not.
@@ -2223,7 +2225,7 @@ int LoadPathData(const char *filename)
 
 	trap_FS_FCloseFile(f);
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{
 		CalculateSiegeGoals();
 	}

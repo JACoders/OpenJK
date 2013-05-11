@@ -1,6 +1,4 @@
-#if !defined(MINIHEAP_H_INC)
-#define MINIHEAP_H_INC
-
+#pragma once
 
 class CMiniHeap
 {
@@ -39,7 +37,7 @@ CMiniHeap(int size)
 // give me some space from the heap please
 char *MiniHeapAlloc(int size)
 {
-	if (size < (mSize - ((int)mCurrentHeap - (int)mHeap)))
+	if (size < (mSize - ((size_t)mCurrentHeap - (size_t)mHeap)))
 	{
 		char *tempAddress =  mCurrentHeap;
 		mCurrentHeap += size;
@@ -53,6 +51,3 @@ char *MiniHeapAlloc(int size)
 // this is in the parent executable, so access ri.GetG2VertSpaceServer() from the rd backends!
 extern CMiniHeap *G2VertSpaceServer;
 extern CMiniHeap *G2VertSpaceClient;
-
-
-#endif	//MINIHEAP_H_INC

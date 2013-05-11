@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		l_precomp.h
@@ -165,4 +166,3 @@ int PC_SourceFileAndLine(int handle, char *filename, int *line);
 void PC_CheckOpenSourceHandles(void);
 int PC_LoadGlobalDefines ( const char* filename );
 void PC_RemoveAllGlobalDefines ( void );
-

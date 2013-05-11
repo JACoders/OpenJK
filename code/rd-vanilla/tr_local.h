@@ -35,13 +35,6 @@ This file is part of Jedi Academy.
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
 
-// fast float to int conversion
-#if id386 && !((defined __linux__ || defined MACOS_X) && defined __i386__)
-long myftol( float f );
-#else
-#define	myftol(x) ((int)(x))
-#endif
-
 extern refimport_t ri;
 
 
@@ -1159,6 +1152,8 @@ extern cvar_t	*r_windPointY;
 
 extern cvar_t	*r_mode;				// video mode
 extern cvar_t	*r_fullscreen;
+extern cvar_t	*r_noborder;			// disable border in windowed mode
+extern cvar_t	*r_centerWindow;		// override vid_x/ypos and center the window
 extern cvar_t	*r_gamma;
 extern cvar_t	*r_displayRefresh;		// optional display refresh option
 extern cvar_t	*r_ignorehwgamma;		// overrides hardware gamma capabilities

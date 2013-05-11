@@ -1,4 +1,7 @@
-char *HolocronIcons[] = {
+#pragma once
+
+//OJKFIXME: just keep a single copy, not in a header D:
+const char *HolocronIcons[NUM_FORCE_POWERS] = {
 	"gfx/mp/f_icon_lt_heal",		//FP_HEAL,
 	"gfx/mp/f_icon_levitation",		//FP_LEVITATION,
 	"gfx/mp/f_icon_speed",			//FP_SPEED,

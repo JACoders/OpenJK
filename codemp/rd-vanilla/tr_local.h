@@ -1,38 +1,33 @@
-#ifndef TR_LOCAL_H
-#define TR_LOCAL_H
+#pragma once
 
 #include "qcommon/qfiles.h"
 #include "renderer/tr_public.h"
+
 #ifdef _WIN32
-#include "qgl.h"
+	#include "qgl.h"
 #else
-#include "../sdl/sdl_qgl.h"
+	#include "../sdl/sdl_qgl.h"
 #endif
+
 #include "ghoul2/ghoul2_shared.h" //rwwRMG - added
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
 
 #ifndef _WIN32
-#include "qcommon/platform.h"
-#endif
-
-// fast float to int conversion
-#if id386 && !( (defined __linux__ || defined __FreeBSD__ || defined MACOS_X) && (defined __i386__ ) ) // rb010123
-inline long myftol( float f );
-#else
-#define	myftol(x) ((int)(x))
+	#include "qcommon/platform.h"
 #endif
 
 //for 3d textures -rww
 #define GL_TEXTURE_3D                     0x806F
 
 // 14 bits
-// see QSORT_SHADERNUM_SHIFT
-#define	MAX_SHADERS				16384
 // can't be increased without changing bit packing for drawsurfs
+// see QSORT_SHADERNUM_SHIFT
+#define SHADERNUM_BITS	14
+#define MAX_SHADERS		(1<<SHADERNUM_BITS)
 
-#define MAX_SHADER_STATES 2048
+//#define MAX_SHADER_STATES 2048
 #define MAX_STATES_PER_SHADER 32
 #define MAX_STATE_NAME 32
 
@@ -885,52 +880,6 @@ extern refimport_t ri;
 //====================================================
 
 
-// An offscreen buffer used for secondary rendering and render-to-texture support (RTT). - AReis
-class CPBUFFER
-{
-private:
-#ifdef _WIN32
-	// Pixel Buffer Rendering and Device Contexts.
-	HGLRC m_hRC;
-	HDC m_hDC;
-
-	// The render and device contexts for the previous render target.
-	HGLRC m_hOldRC;
-	HDC m_hOldDC;
-
-	// Buffer handle.
-	HPBUFFERARB m_hBuffer;
-#endif
-	// Buffer Dimensions.
-	int m_iWidth, m_iHeight;
-
-	// Color, depth, and stencil bits for this buffer.
-	int m_iColorBits, m_iDepthBits, m_iStencilBits;
-
-public:
-	// Texture used for displaying the pbuffer.
-	GLuint m_uiPBufferTexture;
-
-	// Constructor.
-	CPBUFFER() {}
-
-	// Destructor.
-	~CPBUFFER() {}
-
-	// Allocate and create a new PBuffer.
-	bool Create( int iWidth, int iHeight, int iColorBits, int iDepthBits, int iStencilBits );
-
-	// Destroy and deallocate a PBuffer.
-	void Destroy();
-
-	// Make this PBuffer the current render device.
-	bool Begin();
-
-	// Restore the previous render device.
-	bool End();
-};
-
-
 #define	MAX_DRAWIMAGES			2048
 #define	MAX_LIGHTMAPS			256
 #define	MAX_SKINS				1024
@@ -951,9 +900,12 @@ the bits are allocated as follows:
 2-6   : fog index
 0-1   : dlightmap index
 */
-#define	QSORT_SHADERNUM_SHIFT	18
-#define	QSORT_ENTITYNUM_SHIFT	7
 #define	QSORT_FOGNUM_SHIFT		2
+#define	QSORT_REFENTITYNUM_SHIFT	7
+#define	QSORT_SHADERNUM_SHIFT	(QSORT_REFENTITYNUM_SHIFT+REFENTITYNUM_BITS)
+#if (QSORT_SHADERNUM_SHIFT+SHADERNUM_BITS) > 32
+	#error "Need to update sorting, too many bits."
+#endif
 
 extern	int			gl_filter_min, gl_filter_max;
 
@@ -1088,7 +1040,7 @@ typedef struct {
 	trRefEntity_t			*currentEntity;
 	trRefEntity_t			worldEntity;		// point currentEntity at this when rendering world
 	int						currentEntityNum;
-	int						shiftedEntityNum;	// currentEntityNum << QSORT_ENTITYNUM_SHIFT
+	int						shiftedEntityNum;	// currentEntityNum << QSORT_REFENTITYNUM_SHIFT
 	model_t					*currentModel;
 
 	viewParms_t				viewParms;
@@ -1231,6 +1183,8 @@ extern cvar_t	*r_windPointY;
 
 extern cvar_t	*r_mode;				// video mode
 extern cvar_t	*r_fullscreen;
+extern cvar_t	*r_noborder;			// disable border in windowed mode
+extern cvar_t	*r_centerWindow;		// override vid_x/ypos and center the window
 extern cvar_t	*r_gamma;
 extern cvar_t	*r_displayRefresh;		// optional display refresh option
 extern cvar_t	*r_ignorehwgamma;		// overrides hardware gamma capabilities
@@ -1930,7 +1884,7 @@ typedef struct {
 #ifndef VV_LIGHTING
 	dlight_t	dlights[MAX_DLIGHTS];
 #endif
-	trRefEntity_t	entities[MAX_ENTITIES];
+	trRefEntity_t	entities[MAX_REFENTITIES];
 	trMiniRefEntity_t	miniEntities[MAX_MINI_ENTITIES];
 	srfPoly_t	*polys;//[MAX_POLYS];
 	polyVert_t	*polyVerts;//[MAX_POLYVERTS];
@@ -2000,5 +1954,3 @@ void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input);
 extern refexport_t re;
 
 qboolean ShaderHashTableExists(void);
-
-#endif //TR_LOCAL_H

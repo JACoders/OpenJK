@@ -5,10 +5,8 @@
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
 
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-#endif
-	#include "G2_local.h"
+#include "ghoul2/G2.h"
+#include "G2_local.h"
 
 //=====================================================================================================================
 // Bolt List handling routines - so entities can attach themselves to any part of the model in question

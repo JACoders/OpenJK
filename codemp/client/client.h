@@ -1,7 +1,6 @@
-// client.h -- primary header for client
 #pragma once
-#if !defined(CLIENT_H_INC)
-#define CLIENT_H_INC
+
+// client.h -- primary header for client
 
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
@@ -387,7 +386,9 @@ extern	cvar_t	*cl_allowAltEnter;
 extern	cvar_t	*cl_conXOffset;
 extern	cvar_t	*cl_inGameVideo;
 
+#ifndef _WIN32
 extern	cvar_t	*cl_consoleKeys;
+#endif
 
 //=================================================
 
@@ -574,4 +575,3 @@ void CL_WriteAVIVideoFrame( const byte *imageBuffer, int size );
 void CL_WriteAVIAudioFrame( const byte *pcmBuffer, int size );
 qboolean CL_CloseAVI( void );
 qboolean CL_VideoRecording( void );
-#endif

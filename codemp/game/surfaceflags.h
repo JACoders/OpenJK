@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 // This file must be identical in the quake and utils directories
@@ -46,7 +48,7 @@
 #define	SURF_NOSTEPS			0x00400000	// no footstep sounds
 #define	SURF_NODLIGHT			0x00800000	// don't dlight even if solid (solid lava, skies)
 #define	SURF_NOMISCENTS			0x01000000	// no client models allowed on this surface
-
+#define	SURF_FORCESIGHT			0x02000000	// not visible without Force Sight
 
 #define MATERIAL_BITS			5
 #define MATERIAL_MASK			0x1f	// mask to get the material type

@@ -1,3 +1,5 @@
+#pragma once
+
 /************************************************************************************************
  *
  *	Copyright (C) 2001-2002 Raven Software
@@ -6,17 +8,11 @@
  *
  ************************************************************************************************/
 
-#pragma once
-#if !defined(RM_PATH_H_INC)
-#define RM_PATH_H_INC
-
 #ifdef DEBUG_LINKING
 	#pragma message("...including RM_Path.h")
 #endif
 
-#if !defined(CM_RANDOMTERRAIN_H_INC)
 #include "qcommon/cm_randomterrain.h"
-#endif
 
 #ifndef _WIN32
 #include <string>
@@ -223,5 +219,3 @@ public:
 	void		GeneratePaths	( symmetry_t symmetric = SYMMETRY_NONE );
 	void		GenerateRivers  ( );
 };
-
-#endif

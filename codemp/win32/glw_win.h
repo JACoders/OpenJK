@@ -1,9 +1,9 @@
+#pragma once
+
 #ifndef _WIN32
-#  error You should not be including this file on this platform
+	#error You should not be including this file on this platform
 #endif
 
-#ifndef __GLW_WIN_H__
-#define __GLW_WIN_H__
 #include <windows.h>
 
 typedef struct
@@ -29,5 +29,3 @@ typedef struct
 extern glwstate_t glw_state;
 
 bool GL_CheckForExtension(const char *ext);
-
-#endif

@@ -152,14 +152,14 @@ public:
 	TTValue&			operator[](int i)											
 	{
 		assert(is_used(i));		//typically this is a stale handle (already been freed)
-		return value_at_index(i&mMASK_HANDLE_TO_INDEX);
+		return pool_root<T>::value_at_index(i&mMASK_HANDLE_TO_INDEX);
 	}
 
 	bool				is_used(int i) const
 	{
 		if (mHandles[i&mMASK_HANDLE_TO_INDEX]==i)
 		{
-			return is_used_index(i&mMASK_HANDLE_TO_INDEX);
+			return pool_root<T>::is_used_index(i&mMASK_HANDLE_TO_INDEX);
 		}
 		return false;
 	}
@@ -179,7 +179,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	int			alloc()
 	{
-		int index=alloc_index();
+		int index=pool_root<T>::alloc_index();
 		return	mHandles[index];
 	}
 
@@ -188,7 +188,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	int			alloc(const TTValue &v)
 	{
-		int index=alloc_index(v);
+		int index=pool_root<T>::alloc_index(v);
 		return	mHandles[index];
 	}
     ////////////////////////////////////////////////////////////////////////////////////
@@ -240,14 +240,14 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	int			pointer_to_handle(const TTValue *me) const 
 	{
-		return index_to_handle(pointer_to_index(me));
+		return index_to_handle(pool_root<T>::pointer_to_index(me));
 	}
 	////////////////////////////////////////////////////////////////////////////////////
 	// converts a T pointer to a handle, generally not something you need, cannot check for stale handles
     ////////////////////////////////////////////////////////////////////////////////////
 	int			pointer_to_handle(const TRatlNew *me) const 
 	{
-		return index_to_handle(pointer_to_index(me));
+		return index_to_handle(pool_root<T>::pointer_to_index(me));
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////

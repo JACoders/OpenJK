@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_file.h
@@ -22,4 +23,3 @@ void AAS_DumpAASData(void);
 //print AAS file information
 void AAS_FileInfo(void);
 #endif //AASINTERN
-

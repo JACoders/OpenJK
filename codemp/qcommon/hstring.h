@@ -1,7 +1,6 @@
-#ifdef _DONETPROFILE_
+#pragma once
 
-#if !defined hString_H
-#define hString_H
+#ifdef _DONETPROFILE_
 
 #include <map>
 #include <list>
@@ -224,6 +223,5 @@ template<class X> void XFree(X *x)
 {
 	GetMapPool().Free((void *)x);
 }
-#endif // hString_H
 
 #endif // _DONETPROFILE_

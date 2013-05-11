@@ -293,7 +293,7 @@ void R_BindAnimatedImage( const textureBundle_t *bundle) {
 	{
 		// it is necessary to do this messy calc to make sure animations line up
 		// exactly with waveforms of the same frequency
-		index = myftol( backEnd.refdef.floatTime * bundle->imageAnimationSpeed * FUNCTABLE_SIZE );
+		index = Q_ftol( backEnd.refdef.floatTime * bundle->imageAnimationSpeed * FUNCTABLE_SIZE );
 		index >>= FUNCTABLE_SIZE2;
 		
 		if ( index < 0 ) {
@@ -708,13 +708,13 @@ static void ProjectDlightTexture( void ) {
 				modulate = 255*2*dist*scale*scale;
 			}
 			tempColor = floatColor[0] + modulate;
-			colors[0] = tempColor > 255 ? 255: myftol(tempColor);
+			colors[0] = tempColor > 255 ? 255: Q_ftol(tempColor);
 			
 			tempColor = floatColor[1] + modulate;
-			colors[1] = tempColor > 255 ? 255: myftol(tempColor);
+			colors[1] = tempColor > 255 ? 255: Q_ftol(tempColor);
 
 			tempColor = floatColor[2] + modulate;
-			colors[2] = tempColor > 255 ? 255: myftol(tempColor);
+			colors[2] = tempColor > 255 ? 255: Q_ftol(tempColor);
 
 //			colors[3] = 255;
 			if ( distVec[2] > radius ) {
@@ -728,7 +728,7 @@ static void ProjectDlightTexture( void ) {
 				if ( distVec[2] < radius * 0.5 ) {
 					colors[3] = 255;
 				} else {
-					colors[3] = myftol(255* (radius - distVec[2]) * scale);
+					colors[3] = Q_ftol(255* (radius - distVec[2]) * scale);
 				}
 			}
 
@@ -962,9 +962,9 @@ static void ProjectDlightTexture2( void ) {
 			oldTexCoordsArray[numIndexes+2][0]=tess.texCoords[c][0][0];
 			oldTexCoordsArray[numIndexes+2][1]=tess.texCoords[c][0][1];
 
-			colorTemp[0] = myftol(floatColor[0] * modulate);
-			colorTemp[1] = myftol(floatColor[1] * modulate);
-			colorTemp[2] = myftol(floatColor[2] * modulate);
+			colorTemp[0] = Q_ftol(floatColor[0] * modulate);
+			colorTemp[1] = Q_ftol(floatColor[1] * modulate);
+			colorTemp[2] = Q_ftol(floatColor[2] * modulate);
 			colorTemp[3] = 255;
 			colorArray[numIndexes]=*(unsigned int *)colorTemp;
 			colorArray[numIndexes+1]=*(unsigned int *)colorTemp;
@@ -1309,9 +1309,9 @@ static void ProjectDlightTexture( void ) {
 			}
 			clipBits[i] = clip;
 
-			colors[0] = myftol(floatColor[0] * modulate);
-			colors[1] = myftol(floatColor[1] * modulate);
-			colors[2] = myftol(floatColor[2] * modulate);
+			colors[0] = Q_ftol(floatColor[0] * modulate);
+			colors[1] = Q_ftol(floatColor[1] * modulate);
+			colors[2] = Q_ftol(floatColor[2] * modulate);
 			colors[3] = 255;
 		}
 		// build a list of triangles that need light
@@ -1841,7 +1841,7 @@ static void ComputeColors( shaderStage_t *pStage, alphaGen_t forceAlphaGen, colo
 				dot = 0.0f;
 			}
 
-			color[0] = color[1] = color[2] = color[3] = myftol( backEnd.currentEntity->e.shaderRGBA[0] * (1-dot) );
+			color[0] = color[1] = color[2] = color[3] = Q_ftol( backEnd.currentEntity->e.shaderRGBA[0] * (1-dot) );
 		}
 
 		forceRGBGen = CGEN_SKIP;
