@@ -8,7 +8,6 @@ project("OpenJK")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 #    Customizable options
-#option(InstallDir "Where to install the binaries to" "${CMAKE_SOURCE_DIR}/install") # just use CMAKE_INSTALL_PREFIX
 option(BuildMPEngine "Whether to create projects for the mp engine (jamp.exe)" ON)
 option(BuildMPDed "Whether to create projects for the dedicated server (jampded.exe)" ON)
 option(BuildMPGame "Whether to create projects for the mp serverside gamecode (jampgamex86.dll)" ON)

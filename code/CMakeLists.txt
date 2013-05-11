@@ -46,10 +46,12 @@ if(BuildSPEngine)
 	
 	# EAX is Windows-Only (right?)
 	if(WIN32)
-		set(SPEngineFiles ${SPEngineFiles}
+		set(SPEngineEAXFiles
 			"${SPDir}/client/eax/eax.h"
 			"${SPDir}/client/eax/EaxMan.h"
 			)
+		source_group("eax" FILES ${SPEngineEAXFiles})
+		set(SPEngineFiles ${SPEngineFiles} ${SPEngineEAXFiles})
 	endif(WIN32)
 
 	if(NOT WIN32)
@@ -110,7 +112,7 @@ if(BuildSPEngine)
 
 
 	# qcommon files
-	set(SPEngineQcommonFiles
+	set(SPEngineCommonFiles
 		"${SPDir}/qcommon/cm_draw.cpp"
 		"${SPDir}/qcommon/cm_load.cpp"
 		"${SPDir}/qcommon/cm_patch.cpp"
@@ -161,8 +163,8 @@ if(BuildSPEngine)
 		"${SPDir}/qcommon/tags.h"
 		"${SPDir}/qcommon/MiniHeap.h"
 		)
-	source_group("qcommon" FILES ${SPEngineQcommonFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEngineQcommonFiles})
+	source_group("common" FILES ${SPEngineCommonFiles})
+	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonFiles})
 
 
 	# Server files
@@ -398,7 +400,6 @@ if(BuildSPEngine)
 	# 
 	if(WIN32)
 		set(SPEngineWin32Files
-			${SPEngineSortMe}
 			"${SPDir}/win32/afxres.h"
 			"${SPDir}/win32/win_input.cpp"
 			"${SPDir}/win32/win_main.cpp"
@@ -419,8 +420,7 @@ if(BuildSPEngine)
 		source_group("win32" FILES ${SPEngineWin32Files})
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineWin32Files})
 	else(WIN32)
-		set(SPEngineSortMe
-			${SPEngineSortMe}
+		set(SPEngineSysFiles
 			"${SPDir}/sys/sys_main.cpp"
 			"${SPDir}/sys/sys_unix.cpp"
 			"${SPDir}/sys/sys_local.h"
@@ -430,8 +430,8 @@ if(BuildSPEngine)
 			"${SPDir}/sdl/sdl_snd.cpp"
 			"${SPDir}/sdl/sdl_input.cpp"
 			)
-		source_group("SortMe" FILES ${SPEngineSortMe})
-		set(SPEngineFiles ${SPEngineFiles} ${SPEngineSortMe})
+		source_group("sys" FILES ${SPEngineSysFiles})
+		set(SPEngineFiles ${SPEngineFiles} ${SPEngineSysFiles})
 	endif(WIN32)
 
 	# todo: windows resources
