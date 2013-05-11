@@ -456,11 +456,14 @@ void G_SetClientSound( gentity_t *ent ) {
 		ent->client->ps.loopSound = level.snd_medSupplied;
 		ent->s.loopIsSoundset = qfalse;
 	}
-	else if (ent->waterlevel && (ent->watertype&(CONTENTS_LAVA|CONTENTS_SLIME)) ) {
+	else if (ent->client && ent->waterlevel && (ent->watertype&(CONTENTS_LAVA|CONTENTS_SLIME)) ) {
 		ent->client->ps.loopSound = level.snd_fry;
 		ent->s.loopIsSoundset = qfalse;
-	} else {
+	} else if (ent->client) {
 		ent->client->ps.loopSound = 0;
+		ent->s.loopIsSoundset = qfalse;
+	} else {
+		ent->s.loopSound = 0;
 		ent->s.loopIsSoundset = qfalse;
 	}
 }
@@ -474,22 +477,22 @@ void G_SetClientSound( gentity_t *ent ) {
 ClientImpacts
 ==============
 */
-void ClientImpacts( gentity_t *ent, pmove_t *pm ) {
+void ClientImpacts( gentity_t *ent, pmove_t *pmove ) {
 	int		i, j;
 	trace_t	trace;
 	gentity_t	*other;
 
 	memset( &trace, 0, sizeof( trace ) );
-	for (i=0 ; i<pm->numtouch ; i++) {
+	for (i=0 ; i<pmove->numtouch ; i++) {
 		for (j=0 ; j<i ; j++) {
-			if (pm->touchents[j] == pm->touchents[i] ) {
+			if (pmove->touchents[j] == pmove->touchents[i] ) {
 				break;
 			}
 		}
 		if (j != i) {
 			continue;	// duplicated
 		}
-		other = &g_entities[ pm->touchents[i] ];
+		other = &g_entities[ pmove->touchents[i] ];
 
 		if ( ( ent->r.svFlags & SVF_BOT ) && ( ent->touch ) ) {
 			ent->touch( ent, other, &trace );
@@ -675,7 +678,7 @@ SpectatorThink
 =================
 */
 void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
-	pmove_t	pm;
+	pmove_t	pmove;
 	gclient_t	*client;
 
 	client = ent->client;
@@ -693,24 +696,24 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 		client->ps.torsoTimer = 0;
 
 		// set up for pmove
-		memset (&pm, 0, sizeof(pm));
-		pm.ps = &client->ps;
-		pm.cmd = *ucmd;
-		pm.tracemask = MASK_PLAYERSOLID & ~CONTENTS_BODY;	// spectators can fly through bodies
-		pm.trace = trap_Trace;
-		pm.pointcontents = trap_PointContents;
+		memset (&pmove, 0, sizeof(pmove));
+		pmove.ps = &client->ps;
+		pmove.cmd = *ucmd;
+		pmove.tracemask = MASK_PLAYERSOLID & ~CONTENTS_BODY;	// spectators can fly through bodies
+		pmove.trace = trap_Trace;
+		pmove.pointcontents = trap_PointContents;
 
-		pm.noSpecMove = g_noSpecMove.integer;
+		pmove.noSpecMove = g_noSpecMove.integer;
 
-		pm.animations = NULL;
-		pm.nonHumanoid = qfalse;
+		pmove.animations = NULL;
+		pmove.nonHumanoid = qfalse;
 
 		//Set up bg entity data
-		pm.baseEnt = (bgEntity_t *)g_entities;
-		pm.entSize = sizeof(gentity_t);
+		pmove.baseEnt = (bgEntity_t *)g_entities;
+		pmove.entSize = sizeof(gentity_t);
 
 		// perform a pmove
-		Pmove (&pm);
+		Pmove (&pmove);
 		// save results of pmove
 		VectorCopy( client->ps.origin, ent->s.origin );
 
@@ -969,7 +972,7 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 				}
 				else
 				{
-					if (g_gametype.integer == GT_SIEGE &&
+					if (level.gametype == GT_SIEGE &&
 						delta > 60)
 					{ //longer falls hurt more
 						damage = delta*1; //good enough for now, I guess
@@ -1151,7 +1154,7 @@ static void G_UpdateJediMasterBroadcasts ( gentity_t *self )
 	int i;
 
 	// Not jedi master mode then nothing to do
-	if ( g_gametype.integer != GT_JEDIMASTER )
+	if ( level.gametype != GT_JEDIMASTER )
 	{
 		return;
 	}
@@ -1671,8 +1674,7 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 	}
 	if ( taunt != TAUNT_TAUNT )
 	{//normal taunt always allowed
-		if ( g_gametype.integer != GT_DUEL
-			&& g_gametype.integer != GT_POWERDUEL )
+		if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL )
 		{//no taunts unless in Duel
 			return;
 		}
@@ -1944,7 +1946,7 @@ once for each server frame, which makes for smooth demo recording.
 */
 void ClientThink_real( gentity_t *ent ) {
 	gclient_t	*client;
-	pmove_t		pm;
+	pmove_t		pmove;
 	int			oldEventSequence;
 	int			msec;
 	usercmd_t	*ucmd;
@@ -1990,7 +1992,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if (!(client->ps.pm_flags & PMF_FOLLOW))
 	{
-		if (g_gametype.integer == GT_SIEGE &&
+		if (level.gametype == GT_SIEGE &&
 			client->siegeClass != -1 &&
 			bgSiegeClasses[client->siegeClass].saberStance)
 		{ //the class says we have to use this stance set.
@@ -2432,7 +2434,7 @@ void ClientThink_real( gentity_t *ent ) {
 		client->ps.speed = g_speed.value;
 
 		//Check for a siege class speed multiplier
-		if (g_gametype.integer == GT_SIEGE &&
+		if (level.gametype == GT_SIEGE &&
 			client->siegeClass != -1)
 		{
 			client->ps.speed *= bgSiegeClasses[client->siegeClass].speed;
@@ -2827,7 +2829,7 @@ void ClientThink_real( gentity_t *ent ) {
 	// set up for pmove
 	oldEventSequence = client->ps.eventSequence;
 
-	memset (&pm, 0, sizeof(pm));
+	memset (&pmove, 0, sizeof(pmove));
 
 	if ( ent->flags & FL_FORCE_GESTURE ) {
 		ent->flags &= ~FL_FORCE_GESTURE;
@@ -2894,29 +2896,30 @@ void ClientThink_real( gentity_t *ent ) {
 	//play/stop any looping sounds tied to controlled movement
 	G_CheckMovingLoopingSounds( ent, ucmd );
 
-	pm.ps = &client->ps;
-	pm.cmd = *ucmd;
-	if ( pm.ps->pm_type == PM_DEAD ) {
-		pm.tracemask = MASK_PLAYERSOLID & ~CONTENTS_BODY;
+	pmove.ps = &client->ps;
+	pmove.cmd = *ucmd;
+	if ( pmove.ps->pm_type == PM_DEAD ) {
+		pmove.tracemask = MASK_PLAYERSOLID & ~CONTENTS_BODY;
 	}
 	else if ( ent->r.svFlags & SVF_BOT ) {
-		pm.tracemask = MASK_PLAYERSOLID | CONTENTS_MONSTERCLIP;
+		pmove.tracemask = MASK_PLAYERSOLID | CONTENTS_MONSTERCLIP;
 	}
 	else {
-		pm.tracemask = MASK_PLAYERSOLID;
+		pmove.tracemask = MASK_PLAYERSOLID;
 	}
-	pm.trace = trap_Trace;
-	pm.pointcontents = trap_PointContents;
-	pm.debugLevel = g_debugMove.integer;
-	pm.noFootsteps = ( dmflags.integer & DF_NO_FOOTSTEPS ) > 0;
+	pmove.trace = trap_Trace;
+	pmove.pointcontents = trap_PointContents;
+	pmove.debugLevel = g_debugMove.integer;
+	pmove.noFootsteps = ( dmflags.integer & DF_NO_FOOTSTEPS ) > 0;
 
-	pm.pmove_fixed = pmove_fixed.integer | client->pers.pmoveFixed;
-	pm.pmove_msec = pmove_msec.integer;
+	pmove.pmove_fixed = pmove_fixed.integer | client->pers.pmoveFixed;
+	pmove.pmove_msec = pmove_msec.integer;
+	pmove.pmove_float = pmove_float.integer;
 
-	pm.animations = bgAllAnims[ent->localAnimIndex].anims;//NULL;
+	pmove.animations = bgAllAnims[ent->localAnimIndex].anims;//NULL;
 
 	//rww - bgghoul2
-	pm.ghoul2 = NULL;
+	pmove.ghoul2 = NULL;
 
 #ifdef _DEBUG
 	if (g_disableServerG2.integer)
@@ -2929,13 +2932,13 @@ void ClientThink_real( gentity_t *ent ) {
 	{
 		if (ent->localAnimIndex > 1)
 		{ //if it isn't humanoid then we will be having none of this.
-			pm.ghoul2 = NULL;
+			pmove.ghoul2 = NULL;
 		}
 		else
 		{
-			pm.ghoul2 = ent->ghoul2;
-			pm.g2Bolts_LFoot = trap_G2API_AddBolt(ent->ghoul2, 0, "*l_leg_foot");
-			pm.g2Bolts_RFoot = trap_G2API_AddBolt(ent->ghoul2, 0, "*r_leg_foot");
+			pmove.ghoul2 = ent->ghoul2;
+			pmove.g2Bolts_LFoot = trap_G2API_AddBolt(ent->ghoul2, 0, "*l_leg_foot");
+			pmove.g2Bolts_RFoot = trap_G2API_AddBolt(ent->ghoul2, 0, "*r_leg_foot");
 		}
 	}
 
@@ -2957,16 +2960,16 @@ void ClientThink_real( gentity_t *ent ) {
 #endif
 
 	//I'll just do this every frame in case the scale changes in realtime (don't need to update the g2 inst for that)
-	VectorCopy(ent->modelScale, pm.modelScale);
+	VectorCopy(ent->modelScale, pmove.modelScale);
 	//rww end bgghoul2
 
-	pm.gametype = g_gametype.integer;
-	pm.debugMelee = g_debugMelee.integer;
-	pm.stepSlideFix = g_stepSlideFix.integer;
+	pmove.gametype = level.gametype;
+	pmove.debugMelee = g_debugMelee.integer;
+	pmove.stepSlideFix = g_stepSlideFix.integer;
 
-	pm.noSpecMove = g_noSpecMove.integer;
+	pmove.noSpecMove = g_noSpecMove.integer;
 
-	pm.nonHumanoid = (ent->localAnimIndex > 0);
+	pmove.nonHumanoid = (ent->localAnimIndex > 0);
 
 	VectorCopy( client->ps.origin, client->oldOrigin );
 
@@ -2986,8 +2989,8 @@ void ClientThink_real( gentity_t *ent ) {
 	*/
 
 	//Set up bg entity data
-	pm.baseEnt = (bgEntity_t *)g_entities;
-	pm.entSize = sizeof(gentity_t);
+	pmove.baseEnt = (bgEntity_t *)g_entities;
+	pmove.entSize = sizeof(gentity_t);
 
 	if (ent->client->ps.saberLockTime > level.time)
 	{
@@ -3074,16 +3077,16 @@ void ClientThink_real( gentity_t *ent ) {
 	{
 		ent->client->ps.saberLockFrame = 0;
 		//check for taunt
-		if ( (pm.cmd.generic_cmd == GENCMD_ENGAGE_DUEL) && (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL) )
+		if ( (pmove.cmd.generic_cmd == GENCMD_ENGAGE_DUEL) && (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) )
 		{//already in a duel, make it a taunt command
-			pm.cmd.buttons |= BUTTON_GESTURE;
+			pmove.cmd.buttons |= BUTTON_GESTURE;
 		}
 	}
 
 	if (ent->s.number >= MAX_CLIENTS)
 	{
-		VectorCopy(ent->r.mins, pm.mins);
-		VectorCopy(ent->r.maxs, pm.maxs);
+		VectorCopy(ent->r.mins, pmove.mins);
+		VectorCopy(ent->r.maxs, pmove.maxs);
 #if 1
 		if (ent->s.NPC_class == CLASS_VEHICLE &&
 			ent->m_pVehicle )
@@ -3097,16 +3100,16 @@ void ClientThink_real( gentity_t *ent ) {
 					msec = 100;
 				}
 
-				memcpy(&pm.cmd, &ent->m_pVehicle->m_ucmd, sizeof(usercmd_t));
+				memcpy(&pmove.cmd, &ent->m_pVehicle->m_ucmd, sizeof(usercmd_t));
 				
 				//no veh can strafe
-				pm.cmd.rightmove = 0;
+				pmove.cmd.rightmove = 0;
 				//no crouching or jumping!
-				pm.cmd.upmove = 0;
+				pmove.cmd.upmove = 0;
 
 				//NOTE: button presses were getting lost!
 				assert(g_entities[ent->m_pVehicle->m_pPilot->s.number].client);
-				pm.cmd.buttons = (g_entities[ent->m_pVehicle->m_pPilot->s.number].client->pers.cmd.buttons&(BUTTON_ATTACK|BUTTON_ALT_ATTACK));
+				pmove.cmd.buttons = (g_entities[ent->m_pVehicle->m_pPilot->s.number].client->pers.cmd.buttons&(BUTTON_ATTACK|BUTTON_ALT_ATTACK));
 			}
 			if ( ent->m_pVehicle->m_pVehicleInfo->type == VH_WALKER )
 			{
@@ -3125,7 +3128,7 @@ void ClientThink_real( gentity_t *ent ) {
 #endif
 	}
 
-	Pmove (&pm);
+	Pmove (&pmove);
 
 	if (ent->client->solidHack)
 	{
@@ -3145,11 +3148,11 @@ void ClientThink_real( gentity_t *ent ) {
 		VectorCopy( ent->client->ps.viewangles, ent->r.currentAngles );
 	}
 
-	if (pm.checkDuelLoss)
+	if (pmove.checkDuelLoss)
 	{
-		if (pm.checkDuelLoss > 0 && (pm.checkDuelLoss <= MAX_CLIENTS || (pm.checkDuelLoss < (MAX_GENTITIES-1) && g_entities[pm.checkDuelLoss-1].s.eType == ET_NPC) ) )
+		if (pmove.checkDuelLoss > 0 && (pmove.checkDuelLoss <= MAX_CLIENTS || (pmove.checkDuelLoss < (MAX_GENTITIES-1) && g_entities[pmove.checkDuelLoss-1].s.eType == ET_NPC) ) )
 		{
-			gentity_t *clientLost = &g_entities[pm.checkDuelLoss-1];
+			gentity_t *clientLost = &g_entities[pmove.checkDuelLoss-1];
 
 			if (clientLost && clientLost->inuse && clientLost->client && Q_irand(0, 40) > clientLost->health)
 			{
@@ -3179,20 +3182,20 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 		}
 
-		pm.checkDuelLoss = 0;
+		pmove.checkDuelLoss = 0;
 	}
 
-	if (pm.cmd.generic_cmd &&
-		(pm.cmd.generic_cmd != ent->client->lastGenCmd || ent->client->lastGenCmdTime < level.time))
+	if (pmove.cmd.generic_cmd &&
+		(pmove.cmd.generic_cmd != ent->client->lastGenCmd || ent->client->lastGenCmdTime < level.time))
 	{
-		ent->client->lastGenCmd = pm.cmd.generic_cmd;
-		if (pm.cmd.generic_cmd != GENCMD_FORCE_THROW &&
-			pm.cmd.generic_cmd != GENCMD_FORCE_PULL)
+		ent->client->lastGenCmd = pmove.cmd.generic_cmd;
+		if (pmove.cmd.generic_cmd != GENCMD_FORCE_THROW &&
+			pmove.cmd.generic_cmd != GENCMD_FORCE_PULL)
 		{ //these are the only two where you wouldn't care about a delay between
 			ent->client->lastGenCmdTime = level.time + 300; //default 100ms debounce between issuing the same command.
 		}
 
-		switch(pm.cmd.generic_cmd)
+		switch(pmove.cmd.generic_cmd)
 		{
 		case 0:
 			break;
@@ -3200,7 +3203,7 @@ void ClientThink_real( gentity_t *ent ) {
 			Cmd_ToggleSaber_f(ent);
 			break;
 		case GENCMD_ENGAGE_DUEL:
-			if ( g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL )
+			if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL )
 			{//already in a duel, made it a taunt command
 			}
 			else
@@ -3426,17 +3429,17 @@ void ClientThink_real( gentity_t *ent ) {
 		!ent->m_pVehicle ||
 		!ent->m_pVehicle->m_iRemovedSurfaces)
 	{ //let vehicles that are getting broken apart do their own crazy sizing stuff
-		VectorCopy (pm.mins, ent->r.mins);
-		VectorCopy (pm.maxs, ent->r.maxs);
+		VectorCopy (pmove.mins, ent->r.mins);
+		VectorCopy (pmove.maxs, ent->r.maxs);
 	}
 
-	ent->waterlevel = pm.waterlevel;
-	ent->watertype = pm.watertype;
+	ent->waterlevel = pmove.waterlevel;
+	ent->watertype = pmove.watertype;
 
 	// execute client events
 	ClientEvents( ent, oldEventSequence );
 
-	if ( pm.useEvent )
+	if ( pmove.useEvent )
 	{
 		//TODO: Use
 //		TryUse( ent );
@@ -3460,7 +3463,7 @@ void ClientThink_real( gentity_t *ent ) {
 //	BotTestAAS(ent->r.currentOrigin);
 
 	// touch other objects
-	ClientImpacts( ent, &pm );
+	ClientImpacts( ent, &pmove );
 
 	// save results of triggers and client events
 	if (ent->client->ps.eventSequence != oldEventSequence) {
@@ -3535,12 +3538,11 @@ void ClientThink_real( gentity_t *ent ) {
 			// forcerespawn is to prevent users from waiting out powerups
 			int forceRes = g_forceRespawn.integer;
 
-			if (g_gametype.integer == GT_POWERDUEL)
+			if (level.gametype == GT_POWERDUEL)
 			{
 				forceRes = 1;
 			}
-			else if (g_gametype.integer == GT_SIEGE &&
-				g_siegeRespawn.integer)
+			else if (level.gametype == GT_SIEGE && g_siegeRespawn.integer)
 			{ //wave respawning on
 				forceRes = 1;
 			}
@@ -3851,5 +3853,3 @@ void ClientEndFrame( gentity_t *ent ) {
 //	i = trap_AAS_PointReachabilityAreaIndex( ent->client->ps.origin );
 //	ent->client->areabits[i >> 3] |= 1 << (i & 7);
 }
-
-

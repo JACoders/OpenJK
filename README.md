@@ -1,6 +1,3 @@
-## SORRY FOR THE HISTORY CHANGES! ##
-For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase.html#_recovering_from_upstream_rebase) for how to fix if you've changed anything, or just delete your github fork and local folder and start over if you haven't.
-
 # JACoders "OpenJK" project #
 IRC: irc.arloria.net / #JACoders ([webchat](http://www.arloria.net/tiramisu/tiramisu.swf?channels=#jacoders))
 
@@ -9,7 +6,7 @@ This project will not attempt to rebalance or otherwise modify core gameplay asp
 
 ## Installation ##
 
-First, install Jedi Academy.
+First, install Jedi Academy. If you don't already own the game you can buy it from either [Steam](http://store.steampowered.com/app/6020/), [Amazon](http://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [Play](http://www.play.com/Games/PC/4-/127805/Star-Wars-Jedi-Knight-Jedi-Academy/Product.html?searchstring=jedi+academy&searchsource=0&searchtype=allproducts&urlrefer=search).
 
 Then point the OpenJK installer to the GameData folder in the Jedi Academy install, e.g.  just point it to your "Jedi Academy/GameData" folder. If you've downloaded an archive, just unpack it to GameData.
 
@@ -22,6 +19,7 @@ Then point the OpenJK installer to the GameData folder in the Jedi Academy insta
 
 ## Significant contributors (in alphabetical order) ##
 * exidl
+* Scooper
 * Sil
 * Xycaleth
 
@@ -55,10 +53,13 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 * rd-strawberry (Maintainer: Xycaleth)
 * rd-vader (Maintainer: mrwonko)
 
+### Sorry for the history changes! ###
+For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase.html#_recovering_from_upstream_rebase) for how to fix if you've changed anything, or just delete your github fork and local folder and start over if you haven't.
+
 ### Engine "hax" ###
 * If your mod intends to use engine "hax" to figure out the nedaddr types (NA_IP, etc) NA_BAD is now 0 and NA_BOT is now 1 instead of vice versa.
 * You will no longer be able to use runtime memory patches. Consider forking OpenJK and adding your engine modifications directly.
 
 ### Links of Interest ###
-* [Buildbot](http://109.200.20.132/)
-* [Buildbot builds](http://109.200.20.132/~builds/)
+* [Buildbot](http://jk.xd.cm/)
+* [Buildbot builds](http://jk.xd.cm/~builds/)

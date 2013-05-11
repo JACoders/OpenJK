@@ -1234,11 +1234,6 @@ void CG_DrawHUD(centity_t	*cent)
 					Com_sprintf(ammoString, sizeof(ammoString), "FAST");
 				}
 			}
-			else if (cg.snap->ps.weapon == WP_MELEE)
-			{
-				Com_sprintf(ammoString, sizeof(ammoString), "MELEE");
-				weapX += 16;
-			}
 			else if (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0)
 			{
 				Q_strncpyz(ammoString, "--", sizeof(ammoString));
@@ -3310,7 +3305,7 @@ float CG_DrawRadar ( float y )
 						{
 						
 							// generic enemy index specifies a shader to use for the radar entity.
-							if ( cent->currentState.genericenemyindex )
+							if ( cent->currentState.genericenemyindex && cent->currentState.genericenemyindex < MAX_ICONS )
 							{
 								color[0] = color[1] = color[2] = color[3] = 1.0f;
 								shader = cgs.gameIcons[cent->currentState.genericenemyindex];
@@ -5418,6 +5413,7 @@ void CG_BracketEntity( centity_t *cent, float radius )
 
 	local = &cgs.clientinfo[cg.snap->ps.clientNum];
 	if ( cent->currentState.m_iVehicleNum //vehicle has a driver
+		&& (cent->currentState.m_iVehicleNum-1) < MAX_CLIENTS
 		&& cgs.clientinfo[ cent->currentState.m_iVehicleNum-1 ].infoValid )
 	{
 		if ( cgs.gametype < GT_TEAM )

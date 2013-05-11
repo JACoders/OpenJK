@@ -316,7 +316,9 @@ extern	cvar_t	*cl_activeAction;
 
 extern	cvar_t	*cl_thumbStickMode;
 
+#ifndef _WIN32
 extern	cvar_t	*cl_consoleKeys;
+#endif
 
 //=================================================
 

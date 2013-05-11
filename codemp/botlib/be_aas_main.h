@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_main.h
@@ -11,6 +12,8 @@
  * $Date: 10/05/99 3:42p $
  *
  *****************************************************************************/
+
+#include "be_aas_def.h"
 
 #ifdef AASINTERN
 
@@ -28,6 +31,7 @@ void AAS_Shutdown(void);
 int AAS_LoadMap(const char *mapname);
 //start a new time frame
 int AAS_StartFrame(float time);
+
 #endif //AASINTERN
 
 //returns true if AAS is initialized

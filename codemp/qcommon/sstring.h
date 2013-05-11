@@ -1,11 +1,9 @@
+#pragma once
+
 // Filename:-	sstring.h
 //
 // Gil's string template, used to replace Microsoft's <string> vrsion which doesn't compile under certain stl map<>
 //	conditions...
-
-
-#ifndef SSTRING_H
-#define SSTRING_H
 
 
 template<int MaxSize>
@@ -78,6 +76,10 @@ public:
 	{
 		return strlen(mStorage.data);
 	}
+	bool empty() const
+	{
+		return mStorage.data[0] == '\0'; //Raz: might want to check MaxSize instead?
+	}
 	bool operator==(const sstring<MaxSize> &o) const
 	{
 		if (!Q_stricmp(mStorage.data,o.mStorage.data))
@@ -114,7 +116,4 @@ public:
 
 typedef sstring<MAX_QPATH> sstring_t;
 
-#endif	// #ifndef SSTRING_H
-
 /////////////////// eof ////////////////////
-

@@ -1,8 +1,5 @@
 #include "cg_local.h"
-
-#if !defined(CG_LIGHTS_H_INC)
-	#include "cg_lights.h"
-#endif
+#include "cg_lights.h"
 
 static	clightstyle_t	cl_lightstyle[MAX_LIGHT_STYLES];
 static	int				lastofs;

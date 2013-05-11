@@ -1,3 +1,4 @@
+#pragma once
 
 #define INVENTORY_NONE				0
 //pickups

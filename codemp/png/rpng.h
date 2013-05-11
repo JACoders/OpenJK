@@ -1,3 +1,5 @@
+#pragma once
+
 // Known chunk types
 
 #define PNG_IHDR		'IHDR'
@@ -39,15 +41,15 @@
 
 typedef unsigned char	byte;
 typedef unsigned short	word;
-typedef unsigned long	ulong;
+typedef unsigned int	uint;
 
 #pragma pack(push)
 #pragma pack(1)
 
 typedef struct png_ihdr_s
 {
-	ulong			width;
-	ulong			height;
+	uint			width;
+	uint			height;
 	byte			bitdepth;			// Bits per sample (not per pixel)
 	byte			colortype;			// bit 0 - palette; bit 1 - RGB; bit 2 - alpha channel
 	byte			compression;		// 0 for zip - error otherwise
@@ -60,9 +62,9 @@ typedef struct png_ihdr_s
 typedef struct png_image_s
 {
 	byte			*data;
-	ulong			width;
-	ulong			height;
-	ulong			bytedepth;
+	uint			width;
+	uint			height;
+	uint			bytedepth;
 	bool			isimage;
 } png_image_t;
 

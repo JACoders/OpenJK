@@ -1,3 +1,5 @@
+#pragma once
+
 // defines to setup the
 
 #include "ghoul2/ghoul2_shared.h"

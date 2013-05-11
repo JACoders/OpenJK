@@ -215,7 +215,7 @@ NPC_ReactionTime
 //FIXME use grandom in here
 int NPC_ReactionTime ( void ) 
 {
-	return 200 * ( 6 - NPCInfo->stats.reactions );
+	return 200 * ( 6 - NPCS.NPCInfo->stats.reactions );
 }
 
 //

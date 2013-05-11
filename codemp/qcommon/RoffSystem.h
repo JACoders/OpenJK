@@ -1,17 +1,7 @@
-#if defined (_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
-#endif
 
-#if !defined(CROFFSYSTEM_H_INC)
-#define CROFFSYSTEM_H_INC
-
-#ifndef __Q_SHARED_H
-	#include "qcommon/q_shared.h"	//needs to be in here for entityState_t
-#endif
-
-#if !defined(SERVER_H_INC)
-	#include "server/server.h"
-#endif
+#include "qcommon/q_shared.h"	//needs to be in here for entityState_t
+#include "server/server.h"
 
 #pragma warning (push, 3)	//go back down to 3 for the stl include
 #include <vector>
@@ -181,5 +171,3 @@ public:
 
 
 extern CROFFSystem theROFFSystem;
-
-#endif // CROFFSYSTEM_H_INC

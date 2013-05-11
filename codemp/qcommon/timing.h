@@ -1,13 +1,10 @@
-#ifndef _WIN32
-#include <inttypes.h>
-typedef int64_t __int64;
-#endif
+#pragma once
 
 class timing_c
 {
 private:
-	__int64	start;
-	__int64	end;
+	int64_t	start;
+	int64_t	end;
 
 	int		reset;
 public:
@@ -16,7 +13,7 @@ public:
 	}
 	void Start()
 	{
-		const __int64 *s = &start;
+		const int64_t *s = &start;
 #ifdef _WIN32
 		__asm
 		{
@@ -37,8 +34,8 @@ public:
 	}
 	int End()
 	{
-		const __int64 *e = &end;
-		__int64	time;
+		const int64_t *e = &end;
+		int64_t	time;
 #ifdef _WIN32
 		__asm
 		{

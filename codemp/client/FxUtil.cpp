@@ -2,11 +2,7 @@
 #include "qcommon/exe_headers.h"
 // this include must remain at the top of every CPP file
 #include "client.h"
-
-
-#if !defined(FX_SCHEDULER_H_INC)
-	#include "FxScheduler.h"
-#endif
+#include "FxScheduler.h"
 
 vec3_t	WHITE = {1.0f, 1.0f, 1.0f};
 
@@ -91,13 +87,12 @@ int	FX_Init( refdef_t* refdef )
 	}
 	nextValidEffect = &effectList[0];
 
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 	fx_freeze = Cvar_Get("fx_freeze", "0", CVAR_CHEAT);
 #endif
 	fx_debug = Cvar_Get("fx_debug", "0", CVAR_TEMP);
 	fx_countScale = Cvar_Get("fx_countScale", "1", CVAR_ARCHIVE);
 	fx_nearCull = Cvar_Get("fx_nearCull", "16", CVAR_ARCHIVE);
-	fx_flashRadius = Cvar_Get("fx_flashRadius", "11.0", CVAR_ARCHIVE);
 
 	theFxHelper.ReInit(refdef);
 
@@ -1091,11 +1086,6 @@ CFlash *FX_AddFlash( vec3_t origin,
 	if (!shader)
 	{ //yeah..this is bad, I guess, but SP seems to handle it by not drawing the flash, so I will too.
 		assert(shader);
-		return 0;
-	}
-
-	if (fx_flashRadius->value <= 0.0f)
-	{ // disallow adding new flash effects if radius is 0
 		return 0;
 	}
 

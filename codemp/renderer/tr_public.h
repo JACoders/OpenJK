@@ -1,5 +1,4 @@
-#ifndef __TR_PUBLIC_H
-#define __TR_PUBLIC_H
+#pragma once
 
 #include "renderer/tr_types.h"
 #include "qcommon/MiniHeap.h"
@@ -292,7 +291,7 @@ typedef struct {
 	int				(*CM_LeafCluster)					( int leafnum );
 	int				(*CM_PointLeafnum)					( const vec3_t p );
 	int				(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
-	int				(QDECL *VM_Call)					( vm_t *vm, int callnum, ... );
+	intptr_t		(QDECL *VM_Call)					( vm_t *vm, int callnum, ... );
 	qboolean		(*Com_TheHunkMarkHasBeenMade)		( void );
 	void			(*S_RestartMusic)					( void );
 	qboolean		(*SND_RegisterAudio_LevelLoadEnd)	( qboolean bDeleteEverythingNotUsedThisLevel );
@@ -333,10 +332,8 @@ typedef struct {
 // this is the only function actually exported at the linker level
 // If the module can't init to a valid rendering state, NULL will be
 // returned.
-#ifdef DEDICATED // dedicated server will statically compiled rd-dedicated
+#ifdef DEDICATED // dedicated server will statically compile rd-dedicated
 	refexport_t *GetRefAPI( int apiVersion, refimport_t *rimp );
 #else
 	typedef	refexport_t* (QDECL *GetRefAPI_t) (int apiVersion, refimport_t *rimp);
 #endif
-
-#endif	// __TR_PUBLIC_H

@@ -5,8 +5,6 @@
 #include "renderer/tr_types.h"
 #include "RM_Headers.h"
 
-//#include "qcommon/q_imath.h"
-
 #pragma optimize("", off)
 
 // The above optmization triggers this warning:
@@ -422,7 +420,7 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 			}*/
 			// Make sure there is no architecture around - doesn't work for ents though =(
 
-			memset(td, sizeof(*td), 0);
+			memset( td, 0, sizeof( *td ) );
 			VectorCopy(origin, td->mStart);
 			VectorCopy(bounds[0], td->mMins);
 			VectorCopy(bounds[1], td->mMaxs);

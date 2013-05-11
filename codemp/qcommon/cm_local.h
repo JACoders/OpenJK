@@ -1,6 +1,4 @@
 #pragma once
-#if !defined(CM_LOCAL_H_INC)
-#define CM_LOCAL_H_INC //rwwRMG - include guard
 
 #include "cm_polylib.h"
 #include "cm_landscape.h" //rwwRMG - include
@@ -219,5 +217,3 @@ void		CM_GetModelFormalName ( const char* model, const char* skin, char* name, i
 
 // cm_load.cpp
 void CM_GetWorldBounds ( vec3_t mins, vec3_t maxs );
-
-#endif

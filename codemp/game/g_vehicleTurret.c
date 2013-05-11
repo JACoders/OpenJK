@@ -1,4 +1,3 @@
-#include "g_headers.h"
 #include "bg_vehicles.h"
 #include "b_local.h"
 #include "ghoul2/G2.h"
@@ -243,6 +242,10 @@ static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh,
 		{
 			continue;
 		}
+		else if ( target->client->tempSpectate >= level.time )
+		{
+			continue;
+		}
 		if ( target == ((gentity_t*)pVeh->m_pPilot)
 			|| target->r.ownerNum == parent->s.number )
 		{//don't get angry at my pilot or passengers?
@@ -361,7 +364,8 @@ void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum )
 			|| turretEnemy == ((gentity_t*)pVeh->m_pPilot)//enemy became my pilot///?
 			|| turretEnemy == parent
 			|| turretEnemy->r.ownerNum == parent->s.number // a passenger?
-			|| ( turretEnemy->client && turretEnemy->client->sess.sessionTeam == TEAM_SPECTATOR ) )
+			|| ( turretEnemy->client && turretEnemy->client->sess.sessionTeam == TEAM_SPECTATOR )
+			|| ( turretEnemy->client && turretEnemy->client->tempSpectate >= level.time ) )
 		{//don't keep going after spectators, pilot, self, dead people, etc.
 			turretEnemy = NULL;
 			pVeh->turretStatus[turretNum].enemyEntNum = ENTITYNUM_NONE;

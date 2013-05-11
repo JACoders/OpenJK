@@ -165,6 +165,7 @@
     <ClCompile Include="g_client.c" />
     <ClCompile Include="g_cmds.c" />
     <ClCompile Include="g_combat.c" />
+    <ClCompile Include="g_cvar.c" />
     <ClCompile Include="g_exphysics.c" />
     <ClCompile Include="g_ICARUScb.c" />
     <ClCompile Include="g_items.c" />
@@ -251,7 +252,6 @@
     <ClInclude Include="chars.h" />
     <ClInclude Include="..\qcommon\disablewarnings.h" />
     <ClInclude Include="..\ghoul2\G2.h" />
-    <ClInclude Include="g_headers.h" />
     <ClInclude Include="g_ICARUScb.h" />
     <ClInclude Include="g_local.h" />
     <ClInclude Include="g_nav.h" />
@@ -267,7 +267,6 @@
     <ClInclude Include="..\qcommon\q_shared.h" />
     <ClInclude Include="say.h" />
     <ClInclude Include="surfaceflags.h" />
-    <ClInclude Include="syn.h" />
     <ClInclude Include="..\qcommon\tags.h" />
     <ClInclude Include="teams.h" />
     <ClInclude Include="w_saber.h" />

@@ -10,9 +10,7 @@ static SDL_Window *window = NULL;
 static float displayAspect;
 cvar_t *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
 cvar_t *r_allowResize; // make window resizable
-cvar_t *r_centerWindow;
 cvar_t *r_sdlDriver;
-cvar_t *r_noborder;
 
 typedef enum
 {
@@ -62,7 +60,7 @@ void (APIENTRYP qglGetCombinerInputParameterivNV) (GLenum stage,GLenum portion,G
 void (APIENTRYP qglGetCombinerOutputParameterfvNV) (GLenum stage,GLenum portion,GLenum pname,GLfloat *params);
 void (APIENTRYP qglGetCombinerOutputParameterivNV) (GLenum stage,GLenum portion,GLenum pname,GLint *params);
 void (APIENTRYP qglGetFinalCombinerInputParameterfvNV) (GLenum variable,GLenum pname,GLfloat *params);
-void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLfloat *params);
+void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLint *params);
 
 PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB = NULL;
 PFNGLBINDPROGRAMARBPROC qglBindProgramARB = NULL;
@@ -96,35 +94,6 @@ void ( * qglUnlockArraysEXT) ( void );
 void		GLimp_EndFrame( void )
 {
   SDL_GL_SwapWindow(screen);
-}
-
-/*
-* Find the first occurrence of find in s.
-*/
-// bk001130 - from cvs1.17 (mkv), const
-// bk001130 - made first argument const
-static const char *Q_stristr( const char *s, const char *find)
-{
-register char c, sc;
-register size_t len;
-
-	if ((c = *find++) != 0) {
-		if (c >= 'a' && c <= 'z') {
-			c -= ('a' - 'A');
-		}
-		len = strlen(find);
-		do {
-			do {
-				if ((sc = *s++) == 0)
-					return NULL;
-				if (sc >= 'a' && sc <= 'z') {
-					sc -= ('a' - 'A');
-				}
-			} while (sc != c);
-		} while (Q_stricmpn(s, find, (int)len) != 0);
-		s--;
-	}
-	return s;
 }
 
 /*
@@ -472,7 +441,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
 		SDL_SetWindowIcon( screen, icon );
 
-		if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
+		if( ( opengl_context = (QGLContext)SDL_GL_CreateContext( screen ) ) == NULL )
 		{
 			Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
 			continue;
@@ -783,7 +752,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
 	{
-		char *driverName;
+		const char *driverName;
 
 		if (SDL_Init(SDL_INIT_VIDEO) == -1)
 		{
@@ -814,7 +783,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 		fullscreen = qfalse;
 	}
 
-	err = GLimp_SetMode(mode, fullscreen, noborder);
+	err = (rserr_t)GLimp_SetMode(mode, fullscreen, noborder);
 
 	switch ( err )
 	{
@@ -1180,19 +1149,19 @@ static void GLimp_InitExtensions( void )
 			// NOTE: VV guys will _definetly_ not be able to use regcoms. Pixel Shaders are just as good though :-)
 			// NOTE: Also, this is an nVidia specific extension (of course), so fragment shaders would serve the same purpose
 			// if we needed some kind of fragment/pixel manipulation support.
-			qglCombinerParameterfvNV = SDL_GL_GetProcAddress( "glCombinerParameterfvNV" );
-			qglCombinerParameterivNV = SDL_GL_GetProcAddress( "glCombinerParameterivNV" );
-			qglCombinerParameterfNV = SDL_GL_GetProcAddress( "glCombinerParameterfNV" );
-			qglCombinerParameteriNV = SDL_GL_GetProcAddress( "glCombinerParameteriNV" );
-			qglCombinerInputNV = SDL_GL_GetProcAddress( "glCombinerInputNV" );
-			qglCombinerOutputNV = SDL_GL_GetProcAddress( "glCombinerOutputNV" );
-			qglFinalCombinerInputNV = SDL_GL_GetProcAddress( "glFinalCombinerInputNV" );
-			qglGetCombinerInputParameterfvNV	= SDL_GL_GetProcAddress( "glGetCombinerInputParameterfvNV" );
-			qglGetCombinerInputParameterivNV	= SDL_GL_GetProcAddress( "glGetCombinerInputParameterivNV" );
-			qglGetCombinerOutputParameterfvNV = SDL_GL_GetProcAddress( "glGetCombinerOutputParameterfvNV" );
-			qglGetCombinerOutputParameterivNV = SDL_GL_GetProcAddress( "glGetCombinerOutputParameterivNV" );
-			qglGetFinalCombinerInputParameterfvNV = SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterfvNV" );
-			qglGetFinalCombinerInputParameterivNV = SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterivNV" );
+			qglCombinerParameterfvNV = (PFNGLCOMBINERPARAMETERFVNV)SDL_GL_GetProcAddress( "glCombinerParameterfvNV" );
+			qglCombinerParameterivNV = (PFNGLCOMBINERPARAMETERIVNV)SDL_GL_GetProcAddress( "glCombinerParameterivNV" );
+			qglCombinerParameterfNV = (PFNGLCOMBINERPARAMETERFNV)SDL_GL_GetProcAddress( "glCombinerParameterfNV" );
+			qglCombinerParameteriNV = (PFNGLCOMBINERPARAMETERINV)SDL_GL_GetProcAddress( "glCombinerParameteriNV" );
+			qglCombinerInputNV = (PFNGLCOMBINERINPUTNV)SDL_GL_GetProcAddress( "glCombinerInputNV" );
+			qglCombinerOutputNV = (PFNGLCOMBINEROUTPUTNV)SDL_GL_GetProcAddress( "glCombinerOutputNV" );
+			qglFinalCombinerInputNV = (PFNGLFINALCOMBINERINPUTNV)SDL_GL_GetProcAddress( "glFinalCombinerInputNV" );
+			qglGetCombinerInputParameterfvNV	= (PFNGLGETCOMBINERINPUTPARAMETERFVNV)SDL_GL_GetProcAddress( "glGetCombinerInputParameterfvNV" );
+			qglGetCombinerInputParameterivNV	= (PFNGLGETCOMBINERINPUTPARAMETERIVNV)SDL_GL_GetProcAddress( "glGetCombinerInputParameterivNV" );
+			qglGetCombinerOutputParameterfvNV = (PFNGLGETCOMBINEROUTPUTPARAMETERFVNV)SDL_GL_GetProcAddress( "glGetCombinerOutputParameterfvNV" );
+			qglGetCombinerOutputParameterivNV = (PFNGLGETCOMBINEROUTPUTPARAMETERIVNV)SDL_GL_GetProcAddress( "glGetCombinerOutputParameterivNV" );
+			qglGetFinalCombinerInputParameterfvNV = (PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV)SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterfvNV" );
+			qglGetFinalCombinerInputParameterivNV = (PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV)SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterivNV" );
 
 			// Validate the functions we need.
 			if ( !qglCombinerParameterfvNV || !qglCombinerParameterivNV || !qglCombinerParameterfNV || !qglCombinerParameteriNV || !qglCombinerInputNV ||
@@ -1327,8 +1296,6 @@ void 		GLimp_Init( void )
 	r_allowSoftwareGL = Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
 	r_sdlDriver = Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
 	r_allowResize = Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
-	r_centerWindow = Cvar_Get( "r_centerWindow", "0", CVAR_ARCHIVE );
-	r_noborder = Cvar_Get( "r_noborder", "0", CVAR_ARCHIVE );
 
 	/*	if( Cvar_VariableIntegerValue( "com_abnormalExit" ) )
 	{
@@ -1430,6 +1397,57 @@ void 		GLimp_LogComment( char *comment )
 {
 }
 
-void		GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] )
+void GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] )
 {
+	Uint16 table[3][256];
+	int i, j;
+	
+	if( !glConfig.deviceSupportsGamma || r_ignorehwgamma->integer > 0 )
+		return;
+	
+	for (i = 0; i < 256; i++)
+	{
+		table[0][i] = ( ( ( Uint16 ) red[i] ) << 8 ) | red[i];
+		table[1][i] = ( ( ( Uint16 ) green[i] ) << 8 ) | green[i];
+		table[2][i] = ( ( ( Uint16 ) blue[i] ) << 8 ) | blue[i];
+	}
+	
+#ifdef _WIN32
+#include <windows.h>
+	
+	// Win2K and newer put this odd restriction on gamma ramps...
+	{
+		OSVERSIONINFO	vinfo;
+		
+		vinfo.dwOSVersionInfoSize = sizeof( vinfo );
+		GetVersionEx( &vinfo );
+		if( vinfo.dwMajorVersion >= 5 && vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT )
+		{
+			ri.Printf( PRINT_DEVELOPER, "performing gamma clamp.\n" );
+			for( j = 0 ; j < 3 ; j++ )
+			{
+				for( i = 0 ; i < 128 ; i++ )
+				{
+					if( table[ j ] [ i] > ( ( 128 + i ) << 8 ) )
+						table[ j ][ i ] = ( 128 + i ) << 8;
+				}
+				
+				if( table[ j ] [127 ] > 254 << 8 )
+					table[ j ][ 127 ] = 254 << 8;
+			}
+		}
+	}
+#endif
+	
+	// enforce constantly increasing
+	for (j = 0; j < 3; j++)
+	{
+		for (i = 1; i < 256; i++)
+		{
+			if (table[j][i] < table[j][i-1])
+				table[j][i] = table[j][i-1];
+		}
+	}
+	
+	SDL_SetWindowGammaRamp(screen, table[0], table[1], table[2]);
 }

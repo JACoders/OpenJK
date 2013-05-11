@@ -1,11 +1,6 @@
+#pragma once
 
-#if !defined(FX_SYSTEM_H_INC)
-	#include "FxSystem.h"
-#endif
-
-#ifndef FX_PRIMITIVES_H_INC
-#define FX_PRIMITIVES_H_INC
-
+#include "FxSystem.h"
 
 #define MAX_EFFECTS			1800
 
@@ -614,6 +609,3 @@ public:
 	inline void SetMotionTimeStamp( int t )				{ mTimeStamp = theFxHelper.GetTime() + t; }
 	inline int	GetMotionTimeStamp()					{ return mTimeStamp; }
 };
-
-
-#endif //FX_PRIMITIVES_H_INC

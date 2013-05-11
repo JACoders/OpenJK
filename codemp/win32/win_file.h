@@ -1,3 +1,4 @@
+#pragma once
 
 /*
  * UNPUBLISHED -- Rights  reserved  under  the  copyright  laws  of the 
@@ -28,5 +29,3 @@ extern int WF_Resize(int size, wfhandle_t handle);
 int Sys_GetFileCode(const char *name);
 void Sys_InitFileCodes(void);
 void Sys_ShutdownFileCodes(void);
-
-#endif _WIN_FILE_

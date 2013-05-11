@@ -2808,7 +2808,7 @@ void SP_func_breakable( gentity_t *self )
 		}
 	}
 	*/
-	if ( self->team && self->team[0] && g_gametype.integer == GT_SIEGE &&
+	if ( self->team && self->team[0] && level.gametype == GT_SIEGE &&
 		!self->teamnodmg)
 	{
 		self->teamnodmg = atoi(self->team);

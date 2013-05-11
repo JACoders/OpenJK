@@ -1,4 +1,3 @@
-//#include "g_local.h"
 #include "b_local.h"
 #include "w_saber.h"
 #include "ai_main.h"
@@ -225,7 +224,7 @@ void WP_InitForcePowers( gentity_t *ent )
 
 	ent->client->ps.fd.forceSide = 0;
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		ent->client->siegeClass != -1)
 	{ //Then use the powers for this class, and skip all this nonsense.
 		i = 0;
@@ -283,20 +282,20 @@ void WP_InitForcePowers( gentity_t *ent )
 	{
 		if (ent->client->sess.sessionTeam == TEAM_RED)
 		{
-			warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), FORCE_DARKSIDE, g_gametype.integer, g_forcePowerDisable.integer));
+			warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), FORCE_DARKSIDE, level.gametype, g_forcePowerDisable.integer));
 		}
 		else if (ent->client->sess.sessionTeam == TEAM_BLUE)
 		{
-			warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), FORCE_LIGHTSIDE, g_gametype.integer, g_forcePowerDisable.integer));
+			warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), FORCE_LIGHTSIDE, level.gametype, g_forcePowerDisable.integer));
 		}
 		else
 		{
-			warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), 0, g_gametype.integer, g_forcePowerDisable.integer));
+			warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), 0, level.gametype, g_forcePowerDisable.integer));
 		}
 	}
 	else
 	{
-		warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), 0, g_gametype.integer, g_forcePowerDisable.integer));
+		warnClient = !(BG_LegalizedForcePowers(forcePowers, maxRank, HasSetSaberOnly(), 0, level.gametype, g_forcePowerDisable.integer));
 	}
 
 	i_r = 0;
@@ -324,7 +323,7 @@ void WP_InitForcePowers( gentity_t *ent )
 	i++;
 
 
-	if ( g_gametype.integer != GT_SIEGE && (ent->r.svFlags & SVF_BOT) && botstates[ent->s.number] )
+	if ( level.gametype != GT_SIEGE && (ent->r.svFlags & SVF_BOT) && botstates[ent->s.number] )
 	{ //hmm..I'm going to cheat here.
 		int oldI = i;
 		i_r = 0;
@@ -439,7 +438,7 @@ void WP_InitForcePowers( gentity_t *ent )
 
 	//rww - It seems we currently want to always do this, even if the player isn't exceeding the max
 	//rank, so..
-//	if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
+//	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 //	{ //totally messes duel up to force someone into spec mode, and besides, each "round" is
 	  //counted as a full restart
 //		ent->client->sess.setForce = qtrue;
@@ -449,7 +448,7 @@ void WP_InitForcePowers( gentity_t *ent )
 	{
 		ent->client->sess.setForce = qtrue;
 	}
-	else if (g_gametype.integer == GT_SIEGE)
+	else if (level.gametype == GT_SIEGE)
 	{
 		if (!ent->client->sess.setForce)
 		{
@@ -462,7 +461,7 @@ void WP_InitForcePowers( gentity_t *ent )
 	{
 		if (warnClient || !ent->client->sess.setForce)
 		{ //the client's rank is too high for the server and has been autocapped, so tell them
-			if (g_gametype.integer != GT_HOLOCRON && g_gametype.integer != GT_JEDIMASTER )
+			if (level.gametype != GT_HOLOCRON && level.gametype != GT_JEDIMASTER )
 			{
 #ifdef EVENT_FORCE_RANK
 				gentity_t *te = G_TempEntity( vec3_origin, EV_GIVE_NEW_RANK );
@@ -474,7 +473,7 @@ void WP_InitForcePowers( gentity_t *ent )
 #endif
 				didEvent = qtrue;
 
-//				if (!(ent->r.svFlags & SVF_BOT) && g_gametype.integer != GT_DUEL && g_gametype.integer != GT_POWERDUEL && ent->s.eType != ET_NPC)
+//				if (!(ent->r.svFlags & SVF_BOT) && level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && ent->s.eType != ET_NPC)
 				if (!(ent->r.svFlags & SVF_BOT) && ent->s.eType != ET_NPC)
 				{
 					if (!g_teamAutoJoin.integer)
@@ -603,7 +602,7 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 		i++;
 	}
 
-	if (g_gametype.integer == GT_HOLOCRON)
+	if (level.gametype == GT_HOLOCRON)
 	{
 		i = 0;
 		while (i < NUM_FORCE_POWERS)
@@ -663,7 +662,7 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 		i++;
 	}
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		ent->client->siegeClass != -1)
 	{ //Then use the powers for this class.
 		i = 0;
@@ -689,12 +688,12 @@ extern qboolean BG_InKnockDown( int anim ); //bg_pmove.c
 
 int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forcePower)
 {
-	if (other && other->client && BG_HasYsalamiri(g_gametype.integer, &other->client->ps))
+	if (other && other->client && BG_HasYsalamiri(level.gametype, &other->client->ps))
 	{
 		return 0;
 	}
 
-	if (attacker && attacker->client && !BG_CanUseFPNow(g_gametype.integer, &attacker->client->ps, level.time, forcePower))
+	if (attacker && attacker->client && !BG_CanUseFPNow(level.gametype, &attacker->client->ps, level.time, forcePower))
 	{
 		return 0;
 	}
@@ -756,7 +755,7 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 	}
 
 	if (other && other->client && other->s.eType == ET_NPC &&
-		g_gametype.integer == GT_SIEGE)
+		level.gametype == GT_SIEGE)
 	{ //can't use powers at all on npc's normally in siege...
 		return 0;
 	}
@@ -805,7 +804,7 @@ qboolean WP_ForcePowerInUse( gentity_t *self, forcePowers_t forcePower )
 
 qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 {
-	if (BG_HasYsalamiri(g_gametype.integer, &self->client->ps))
+	if (BG_HasYsalamiri(level.gametype, &self->client->ps))
 	{
 		return qfalse;
 	}
@@ -829,7 +828,7 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 		return qfalse;
 	}
 
-	if (!BG_CanUseFPNow(g_gametype.integer, &self->client->ps, level.time, forcePower))
+	if (!BG_CanUseFPNow(level.gametype, &self->client->ps, level.time, forcePower))
 	{
 		return qfalse;
 	}
@@ -2499,6 +2498,10 @@ void ForceJump( gentity_t *self, usercmd_t *ucmd )
 	//self->client->ps.fd.forcePowerDuration[FP_LEVITATION] = level.time + self->client->ps.weaponTime;
 	self->client->ps.fd.forceJumpCharge = 0;
 	self->client->ps.forceJumpFlip = qtrue;
+
+	// We've just jumped, we're not gonna be on the ground in the following frames.
+	// This makes sure npc's wont trigger the ForceJump function multiple times before detecting that they have left the ground.
+	self->client->ps.groundEntityNum = ENTITYNUM_NONE;
 }
 
 void WP_AddAsMindtricked(forcedata_t *fd, int entNum)
@@ -2933,7 +2936,7 @@ qboolean CanCounterThrow(gentity_t *self, gentity_t *thrower, qboolean pull)
 		return 0;
 	}
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		pull &&
 		thrower && thrower->client)
 	{ //in siege, pull will affect people if they are not facing you, so they can't run away so much
@@ -3145,7 +3148,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		if (self->client->ps.forceHandExtend == HANDEXTEND_NONE)
 		{
 			self->client->ps.forceHandExtend = HANDEXTEND_FORCEPULL;
-			if ( g_gametype.integer == GT_SIEGE && self->client->ps.weapon == WP_SABER )
+			if ( level.gametype == GT_SIEGE && self->client->ps.weapon == WP_SABER )
 			{//hold less so can attack right after a pull
 				self->client->ps.forceHandExtendTime = level.time + 200;
 			}
@@ -4255,7 +4258,7 @@ static void WP_UpdateMindtrickEnts(gentity_t *self)
 					RemoveTrickedEnt(&self->client->ps.fd, i);
 				}
 			}
-			else if (BG_HasYsalamiri(g_gametype.integer, &ent->client->ps))
+			else if (BG_HasYsalamiri(level.gametype, &ent->client->ps))
 			{
 				RemoveTrickedEnt(&self->client->ps.fd, i);
 			}
@@ -5144,7 +5147,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		self->client->ps.fd.saberAnimLevel = FORCE_LEVEL_1;
 	}
 
-	if (g_gametype.integer != GT_SIEGE)
+	if (level.gametype != GT_SIEGE)
 	{
 		if (!(self->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)))
 		{
@@ -5268,11 +5271,11 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		}
 	}
 
-	if (g_gametype.integer == GT_HOLOCRON)
+	if (level.gametype == GT_HOLOCRON)
 	{
 		HolocronUpdate(self);
 	}
-	if (g_gametype.integer == GT_JEDIMASTER)
+	if (level.gametype == GT_JEDIMASTER)
 	{
 		JediMasterUpdate(self);
 	}
@@ -5284,7 +5287,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		prepower = self->client->ps.fd.forcePower;
 	}
 
-	if (self && self->client && (BG_HasYsalamiri(g_gametype.integer, &self->client->ps) ||
+	if (self && self->client && (BG_HasYsalamiri(level.gametype, &self->client->ps) ||
 		self->client->ps.fd.forceDeactivateAll || self->client->tempSpectate >= level.time))
 	{ //has ysalamiri.. or we want to forcefully stop all his active powers
 		i = 0;
@@ -5320,7 +5323,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		while (i < NUM_FORCE_POWERS)
 		{
 			if ((self->client->ps.fd.forcePowersActive & (1 << i)) && i != FP_LEVITATION &&
-				!BG_CanUseFPNow(g_gametype.integer, &self->client->ps, level.time, i))
+				!BG_CanUseFPNow(level.gametype, &self->client->ps, level.time, i))
 			{
 				WP_ForcePowerStop(self, i);
 			}
@@ -5454,7 +5457,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 	}
 
 #ifndef METROID_JUMP
-	else if ( (ucmd->upmove > 10) && (self->client->ps.pm_flags & PMF_JUMP_HELD) && self->client->ps.groundTime && (level.time - self->client->ps.groundTime) > 150 && !BG_HasYsalamiri(g_gametype.integer, &self->client->ps) && BG_CanUseFPNow(g_gametype.integer, &self->client->ps, level.time, FP_LEVITATION) )
+	else if ( (ucmd->upmove > 10) && (self->client->ps.pm_flags & PMF_JUMP_HELD) && self->client->ps.groundTime && (level.time - self->client->ps.groundTime) > 150 && !BG_HasYsalamiri(level.gametype, &self->client->ps) && BG_CanUseFPNow(level.gametype, &self->client->ps, level.time, FP_LEVITATION) )
 	{//just charging up
 		ForceJumpCharge( self, ucmd );
 		usingForce = qtrue;
@@ -5532,7 +5535,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 	}
 
 	if ( (ucmd->buttons & BUTTON_FORCEPOWER) &&
-		BG_CanUseFPNow(g_gametype.integer, &self->client->ps, level.time, self->client->ps.fd.forcePowerSelected))
+		BG_CanUseFPNow(level.gametype, &self->client->ps, level.time, self->client->ps.fd.forcePowerSelected))
 	{
 		if (self->client->ps.fd.forcePowerSelected == FP_LEVITATION)
 		{
@@ -5594,11 +5597,11 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		{
 			while ( self->client->ps.fd.forcePowerRegenDebounceTime < level.time )
 			{
-				if (g_gametype.integer != GT_HOLOCRON || g_maxHolocronCarry.value)
+				if (level.gametype != GT_HOLOCRON || g_maxHolocronCarry.value)
 				{
 					if ( self->client->ps.powerups[PW_FORCE_BOON] )
 						WP_ForcePowerRegenerate( self, 6 );
-					else if ( self->client->ps.isJediMaster && g_gametype.integer == GT_JEDIMASTER )
+					else if ( self->client->ps.isJediMaster && level.gametype == GT_JEDIMASTER )
 						WP_ForcePowerRegenerate( self, 4 ); //jedi master regenerates 4 times as fast
 					else
 						WP_ForcePowerRegenerate( self, 0 );
@@ -5617,7 +5620,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 					WP_ForcePowerRegenerate(self, holoregen);
 				}
 
-				if (g_gametype.integer == GT_SIEGE)
+				if (level.gametype == GT_SIEGE)
 				{
 					if ( self->client->holdingObjectiveItem && g_entities[self->client->holdingObjectiveItem].inuse && g_entities[self->client->holdingObjectiveItem].genericValue15 )
 						self->client->ps.fd.forcePowerRegenDebounceTime += 7000; //1 point per 7 seconds.. super slow
@@ -5628,7 +5631,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 				}
 				else
 				{
-					if ( g_gametype.integer == GT_POWERDUEL && self->client->sess.duelTeam == DUELTEAM_LONE )
+					if ( level.gametype == GT_POWERDUEL && self->client->sess.duelTeam == DUELTEAM_LONE )
 					{
 						if ( duel_fraglimit.integer )
 							self->client->ps.fd.forcePowerRegenDebounceTime += max(g_forceRegenTime.integer * (0.6 + (.3 * (float)self->client->sess.wins / (float)duel_fraglimit.integer)), 1);

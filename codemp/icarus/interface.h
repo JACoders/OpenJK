@@ -1,10 +1,6 @@
+#pragma once
+
 // ICARUS Interface header file
-
-#ifndef __INTERFACE__
-#define __INTERFACE__
-
-//#include "server/server.h"
-//#include "game/g_public.h"
 
 typedef unsigned long       DWORD;
 
@@ -68,5 +64,3 @@ typedef struct interface_export_s
 	int				(*I_LinkEntity)( int entID, CSequencer *sequencer, CTaskManager *taskManager );
 
 } interface_export_t;
-
-#endif	//__INTERFACE__

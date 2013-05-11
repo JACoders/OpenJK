@@ -1,4 +1,3 @@
-
 #pragma once
 
 typedef enum _DSP_IMAGE_image_FX_INDICES {

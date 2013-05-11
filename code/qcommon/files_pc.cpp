@@ -906,10 +906,6 @@ static pack_t *FS_LoadZipFile( char *zipfile )
 		if (err != UNZ_OK) {
 			break;
 		}
-		if ( file_info.size_filename > MAX_QPATH)
-		{
-			Com_Error(ERR_FATAL, "ERROR: filename length > MAX_QPATH ( strlen(%s) = %d) \n", filename_inzip, file_info.size_filename );
-		}
 		len += strlen(filename_inzip) + 1;
 		unzGoToNextFile(uf);
 	}
@@ -1651,7 +1647,7 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 		sorted[i] = pakfiles[i];
 	}
 
-	qsort( sorted, numfiles, 4, paksort );
+	qsort( sorted, numfiles, sizeof(&sorted), paksort );
 
 	for ( i = 0 ; i < numfiles ; i++ ) {
 		pakfile = FS_BuildOSPath( path, dir, sorted[i] );

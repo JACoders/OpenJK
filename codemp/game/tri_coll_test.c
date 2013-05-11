@@ -41,10 +41,10 @@
 #define SORT(a,b)       \
              if(a>b)    \
              {          \
-               float c; \
-               c=a;     \
+               float tmp; \
+               tmp=a;     \
                a=b;     \
-               b=c;     \
+               b=tmp;     \
              }
 
 #define ISECT(VV0,VV1,VV2,D0,D1,D2,isect0,isect1) \

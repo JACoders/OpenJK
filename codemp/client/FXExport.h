@@ -1,5 +1,4 @@
-#ifndef FX_EXPORT_H_INC
-#define FX_EXPORT_H_INC
+#pragma once
 
 int	FX_RegisterEffect(const char *file);
 
@@ -18,6 +17,3 @@ int			FX_InitSystem( refdef_t* refdef );	// called in CG_Init to purge the fx sy
 void		FX_SetRefDefFromCGame( refdef_t* refdef );
 qboolean	FX_FreeSystem( void );	// ditches all active effects;
 void		FX_AdjustTime( int time );
-
-
-#endif // FX_EXPORT_H_INC

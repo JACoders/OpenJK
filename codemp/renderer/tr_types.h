@@ -1,14 +1,17 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
-#ifndef __TR_TYPES_H
-#define __TR_TYPES_H
-
 
 #define	MAX_DLIGHTS		32			// can't be increased, because bit flags are used on surfaces
-#define	MAX_ENTITIES	2048		// 11 bits, can't be increased without changing drawsurf bit packing (QSORT_ENTITYNUM_SHIFT)
-#define	MAX_MINI_ENTITIES	1024		
+#define	REFENTITYNUM_BITS	11		// can't be increased without changing drawsurf bit packing
+#define	REFENTITYNUM_MASK	((1<<REFENTITYNUM_BITS) - 1)
+// the last N-bit number (2^REFENTITYNUM_BITS - 1) is reserved for the special world refentity,
+//  and this is reflected by the value of MAX_REFENTITIES (which therefore is not a power-of-2)
+#define	MAX_REFENTITIES		((1<<REFENTITYNUM_BITS) - 1)
+#define	REFENTITYNUM_WORLD	((1<<REFENTITYNUM_BITS) - 1)
 
-#define	TR_WORLDENT		(MAX_ENTITIES-1)
+#define	MAX_MINI_ENTITIES	1024
 
 // renderfx flags
 #define	RF_MINLIGHT			0x00001	// allways have some light (viewmodel, some items)
@@ -387,6 +390,3 @@ typedef struct {
 #define OPENGL_DRIVER_NAME	"opengl32"
 
 #endif	// !defined _WIN32
-
-
-#endif	// __TR_TYPES_H

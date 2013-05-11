@@ -1,3 +1,5 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 // g_local.h -- local definitions for game module
@@ -84,6 +86,7 @@ extern vec3_t gPainPoint;
 #define DEBUG_SABER_BOX
 #endif
 
+// make sure this matches game/match.h for botlibs
 #define EC "\x19"
 
 #define	MAX_G_SHARED_BUFFER_SIZE		8192
@@ -943,6 +946,8 @@ typedef struct {
 	struct {
 		fileHandle_t	log;
 	} security;
+
+	gametype_t	gametype;
 } level_locals_t;
 
 
@@ -1279,7 +1284,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
 void WP_FireTurretMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire, int damage, int velocity, int mod, gentity_t *ignore );
 void WP_FireGenericBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire, int damage, int velocity, int mod );
 qboolean LogAccuracyHit( gentity_t *target, gentity_t *attacker );
-void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint );
+void CalcMuzzlePoint ( gentity_t *ent, const vec3_t inForward, const vec3_t inRight, const vec3_t inUp, vec3_t muzzlePoint );
 void SnapVectorTowards( vec3_t v, vec3_t to );
 qboolean CheckGauntletAttack( gentity_t *ent );
 
@@ -1287,7 +1292,7 @@ qboolean CheckGauntletAttack( gentity_t *ent );
 //
 // g_client.c
 //
-team_t TeamCount( int ignoreClientNum, int team );
+int TeamCount( int ignoreClientNum, team_t team );
 int TeamLeader( int team );
 team_t PickTeam( int ignoreClientNum );
 void SetClientViewAngle( gentity_t *ent, vec3_t angle );
@@ -1520,11 +1525,7 @@ int BotAIStartFrame( int time );
 extern	level_locals_t	level;
 extern	gentity_t		g_entities[MAX_GENTITIES];
 
-#define	FOFS(x) ((int)&(((gentity_t *)0)->x))
-
-#define XCVAR_PROTO
-	#include "g_xcvar.h"
-#undef XCVAR_PROTO
+#define	FOFS(x) ((size_t)&(((gentity_t *)0)->x))
 
 void	trap_Print( const char *fmt );
 void	trap_Error( const char *fmt );
@@ -1847,3 +1848,10 @@ typedef enum userinfoValidationBits_e {
 } userinfoValidationBits_t;
 
 void Svcmd_ToggleUserinfoValidation_f( void );
+
+// g_cvar.c
+#define XCVAR_PROTO
+	#include "g_xcvar.h"
+#undef XCVAR_PROTO
+void G_RegisterCvars( void );
+void G_UpdateCvars( void );

@@ -268,7 +268,7 @@ void Q3_TaskIDClear( int *taskID )
 	*taskID = -1;
 }
 
-void G_DebugPrint( int level, const char *format, ... )
+void G_DebugPrint( int printLevel, const char *format, ... )
 {
 	va_list		argptr;
 	char		text[1024] = {0};
@@ -283,7 +283,7 @@ void G_DebugPrint( int level, const char *format, ... )
 	va_end( argptr );
 
 	//Add the color formatting
-	switch ( level )
+	switch ( printLevel )
 	{
 		case WL_ERROR:
 			Com_Printf ( S_COLOR_RED"ERROR: %s", text );
@@ -298,7 +298,7 @@ void G_DebugPrint( int level, const char *format, ... )
 				int		entNum;
 				char	*buffer;
 
-				sscanf( text, "%d", &entNum );
+				entNum = atoi( text );
 
 				//if ( ( ICARUS_entFilter >= 0 ) && ( ICARUS_entFilter != entNum ) )
 				//	return;
@@ -1597,7 +1597,10 @@ int Q3_GetVector( int entID, int type, const char *name, vec3_t value )
 	case SET_PARM14:
 	case SET_PARM15:
 	case SET_PARM16:
-		sscanf( ent->parms->parm[toGet - SET_PARM1], "%f %f %f", &value[0], &value[1], &value[2] );
+		if ( sscanf( ent->parms->parm[toGet - SET_PARM1], "%f %f %f", &value[0], &value[1], &value[2] ) != 3 ) {
+			G_DebugPrint( WL_WARNING, "Q3_GetVector: failed sscanf on SET_PARM%d (%s)\n", toGet, name );
+			VectorClear( value );
+		}
 		break;
 
 	case SET_ORIGIN:
@@ -2513,6 +2516,11 @@ static void Q3_SetHealth( int entID, int data )
 		ent->health = 1;
 		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR )
 		{ //this would be silly
+			return;
+		}
+
+		if ( ent->client->tempSpectate >= level.time )
+		{ //this would also be silly
 			return;
 		}
 
@@ -5856,7 +5864,10 @@ qboolean Q3_Set( int taskID, int entID, const char *type_name, const char *data 
 	switch ( toSet )
 	{
 	case SET_ORIGIN:
-		sscanf( data, "%f %f %f", &vector_data[0], &vector_data[1], &vector_data[2] );
+		if ( sscanf( data, "%f %f %f", &vector_data[0], &vector_data[1], &vector_data[2] ) != 3 ) {
+			G_DebugPrint( WL_WARNING, "Q3_Set: failed sscanf on SET_ORIGIN (%s)\n", type_name );
+			VectorClear( vector_data );
+		}
 		G_SetOrigin( ent, vector_data );
 		if ( Q_strncmp( "NPC_", ent->classname, 4 ) == 0 )
 		{//hack for moving spawners
@@ -5865,7 +5876,10 @@ qboolean Q3_Set( int taskID, int entID, const char *type_name, const char *data 
 		break;
 
 	case SET_TELEPORT_DEST:
-		sscanf( data, "%f %f %f", &vector_data[0], &vector_data[1], &vector_data[2] );
+		if ( sscanf( data, "%f %f %f", &vector_data[0], &vector_data[1], &vector_data[2] ) != 3 ) {
+			G_DebugPrint( WL_WARNING, "Q3_Set: failed sscanf on SET_TELEPORT_DEST (%s)\n", type_name );
+			VectorClear( vector_data );
+		}
 		if ( !Q3_SetTeleportDest( entID, vector_data ) )
 		{
 			trap_ICARUS_TaskIDSet( ent, TID_MOVE_NAV, taskID );
@@ -5879,7 +5893,10 @@ qboolean Q3_Set( int taskID, int entID, const char *type_name, const char *data 
 
 	case SET_ANGLES:
 		//Q3_SetAngles( entID, *(vec3_t *) data);
-		sscanf( data, "%f %f %f", &vector_data[0], &vector_data[1], &vector_data[2] );
+		if ( sscanf( data, "%f %f %f", &vector_data[0], &vector_data[1], &vector_data[2] ) != 3 ) {
+			G_DebugPrint( WL_WARNING, "Q3_Set: failed sscanf on SET_ANGLES (%s)\n", type_name );
+			VectorClear( vector_data );
+		}
 		Q3_SetAngles( entID, vector_data);
 		break;
 

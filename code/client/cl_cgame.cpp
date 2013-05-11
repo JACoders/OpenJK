@@ -805,7 +805,7 @@ extern menuDef_t *Menus_FindByName(const char *p);
 #define	VMF(x)	((float *)args)[x]
 int CL_CgameSystemCalls( int *args ) {
 #ifndef __NO_JK2
-	if( Cvar_VariableIntegerValue("com_jk2") )
+	if( com_jk2 && com_jk2->integer )
 	{
 		args[0] = (int)CL_ConvertJK2SysCall((cgameJK2Import_t)args[0]);
 	}
@@ -1247,7 +1247,7 @@ Ghoul2 Insert End
 		menuDef_t *menu;
 		int		*xPos,*yPos,*w,*h,result;
 #ifndef __NO_JK2
-		if(!Cvar_VariableIntegerValue("com_jk2"))
+		if(com_jk2 && !com_jk2->integer)
 		{
 #endif
 
@@ -1372,7 +1372,7 @@ Ghoul2 Insert End
 	case CG_SP_GETSTRINGTEXTSTRING:
 #ifndef __NO_JK2
 	case CG_SP_GETSTRINGTEXT:
-		if(Cvar_VariableIntegerValue("com_jk2"))
+		if(com_jk2 && com_jk2->integer)
 		{
 			const char* text;
 

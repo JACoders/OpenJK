@@ -11,14 +11,8 @@
 //rwwRMG - added:
 #include "qcommon/cm_local.h"
 #include "qcommon/cm_landscape.h"
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-#endif
-
-#if !defined (MINIHEAP_H_INC)
+#include "ghoul2/G2.h"
 #include "qcommon/MiniHeap.h"
-#endif
 
 #ifdef _DONETPROFILE_
 #include "qcommon/INetProfile.h"
@@ -81,7 +75,9 @@ cvar_t	*cl_framerate;
 
 cvar_t	*cl_autolodscale;
 
+#ifndef _WIN32
 cvar_t	*cl_consoleKeys;
+#endif
 
 vec3_t cl_windVec;
 
@@ -222,29 +218,19 @@ void CL_StopRecord_f( void ) {
 	Com_Printf ("Stopped demo.\n");
 }
 
-/* 
-================== 
+/*
+==================
 CL_DemoFilename
-================== 
-*/  
-void CL_DemoFilename( int number, char *fileName ) {
-	int		a,b,c,d;
+==================
+*/
+void CL_DemoFilename( char *buf, int bufSize, int protocol ) {
+	time_t rawtime;
+	char timeStr[32] = {0}; // should really only reach ~19 chars
 
-	if ( number < 0 || number > 9999 ) {
-		Com_sprintf( fileName, MAX_OSPATH, "demo9999.tga" );
-		return;
-	}
+	time( &rawtime );
+	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
 
-	a = number / 1000;
-	number -= a*1000;
-	b = number / 100;
-	number -= b*100;
-	c = number / 10;
-	number -= c*10;
-	d = number;
-
-	Com_sprintf( fileName, MAX_OSPATH, "demo%i%i%i%i"
-		, a, b, c, d );
+	Com_sprintf( buf, bufSize, "demos/demo%s.dm_%d", timeStr, protocol );
 }
 
 /*
@@ -294,18 +280,13 @@ void CL_Record_f( void ) {
 		Q_strncpyz( demoName, s, sizeof( demoName ) );
 		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
 	} else {
-		int		number;
+		// timestamp the file
+		CL_DemoFilename( name, sizeof( name ), PROTOCOL_VERSION );
 
-		// scan for a free demo name
-		for ( number = 0 ; number <= 9999 ; number++ ) {
-			CL_DemoFilename( number, demoName );
-			Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
-
-			len = FS_ReadFile( name, NULL );
-			if ( len <= 0 ) {
-				break;	// file doesn't exist
-			}
-		}
+		if ( FS_FileExists( name ) ) {
+			Com_Printf( "Record: Couldn't create a file\n"); 
+			return;
+ 		}
 	}
 
 	// open the demo file
@@ -520,7 +501,7 @@ void CL_PlayDemo_f( void ) {
 	char		*arg;
 
 	if (Cmd_Argc() != 2) {
-		Com_Printf ("playdemo <demoname>\n");
+		Com_Printf ("demo <demoname>\n");
 		return;
 	}
 
@@ -528,14 +509,11 @@ void CL_PlayDemo_f( void ) {
 	// 2 means don't force disconnect of local client
 	Cvar_Set( "sv_killserver", "2" );
 
-	CL_Disconnect( qtrue );
-
-	/* MrE: 2000-09-13: now called in CL_DownloadsComplete
-	CL_FlushMemory( );
-	*/
-
 	// open the demo file
 	arg = Cmd_Argv(1);
+
+	CL_Disconnect( qtrue );
+
 	Com_sprintf(extension, sizeof(extension), ".dm_%d", PROTOCOL_VERSION);
 	if ( !Q_stricmp( arg + strlen(arg) - strlen(extension), extension ) ) {
 		Com_sprintf (name, sizeof(name), "demos/%s", arg);
@@ -1010,6 +988,9 @@ void CL_Connect_f( void ) {
 		cls.state = CA_CHALLENGING;
 	} else {
 		cls.state = CA_CONNECTING;
+
+		// Set a client challenge number that ideally is mirrored back by the server.
+		clc.challenge = ((rand() << 16) ^ rand()) ^ Com_Milliseconds();
 	}
 
 	Key_SetCatcher( 0 );
@@ -1273,7 +1254,7 @@ void CL_DownloadsComplete( void ) {
 		// inform the server so we get new gamestate info
 		CL_AddReliableCommand( "donedl", qfalse );
 
-		// by sending the donenl command we request a new gamestate
+		// by sending the donedl command we request a new gamestate
 		// so we don't want to load stuff yet
 		return;
 	}
@@ -1484,7 +1465,11 @@ void CL_CheckForResend( void ) {
 	switch ( cls.state ) {
 	case CA_CONNECTING:
 		// requesting a challenge
-		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, "getchallenge");
+
+		// The challenge request shall be followed by a client challenge so no malicious server can hijack this connection.
+		Com_sprintf(data, sizeof(data), "getchallenge %d", clc.challenge);
+
+		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, data);
 		break;
 		
 	case CA_CHALLENGING:
@@ -1810,6 +1795,10 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 			return;
 		}
 
+		c = Cmd_Argv(2);
+		if(*c)
+			challenge = atoi(c);
+
 		if(!NET_CompareAdr(from, clc.serverAddress))
 		{
 			// This challenge response is not coming from the expected address.
@@ -1823,7 +1812,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 			}
 		}
 
-		// start sending challenge repsonse instead of challenge request packets
+		// start sending challenge response instead of challenge request packets
 		clc.challenge = atoi(Cmd_Argv(1));
 		cls.state = CA_CHALLENGING;
 		clc.connectPacketCount = 0;
@@ -1839,15 +1828,15 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	// server connection
 	if ( !Q_stricmp(c, "connectResponse") ) {
 		if ( cls.state >= CA_CONNECTED ) {
-			Com_Printf ("Dup connect received.  Ignored.\n");
+			Com_Printf ("Dup connect received. Ignored.\n");
 			return;
 		}
 		if ( cls.state != CA_CHALLENGING ) {
-			Com_Printf ("connectResponse packet while not connecting.  Ignored.\n");
+			Com_Printf ("connectResponse packet while not connecting. Ignored.\n");
 			return;
 		}
-		if ( !NET_CompareBaseAdr( from, clc.serverAddress ) ) {
-			Com_Printf( "connectResponse from a different address.  Ignored.\n" );
+		if ( !NET_CompareAdr( from, clc.serverAddress ) ) {
+			Com_Printf( "connectResponse from wrong address. Ignored.\n" );
 			return;
 		}
 		Netchan_Setup (NS_CLIENT, &clc.netchan, from, Cvar_VariableValue( "net_qport" ) );
@@ -1909,7 +1898,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 		return;
 	}
 
-	// echo request from server
+	// list of servers sent back by a master server (classic)
 	if ( !Q_strncmp(c, "getserversResponse", 18) ) {
 		CL_ServersResponsePacket( &from, msg );
 		return;
@@ -2306,13 +2295,13 @@ void CL_InitRef( void ) {
 
 	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
 
-	if( !(rendererLib = Sys_LoadDll( dllName, qtrue )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
+	if( !(rendererLib = Sys_LoadDll( dllName, qfalse )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
 	{
 		Com_Printf( "failed: trying to load fallback renderer\n" );
 		Cvar_ForceReset( "cl_renderer" );
 
 		Com_sprintf( dllName, sizeof( dllName ), "rd-vanilla_" ARCH_STRING DLL_EXT );
-		rendererLib = Sys_LoadDll( dllName, qtrue );
+		rendererLib = Sys_LoadDll( dllName, qfalse );
 	}
 
 	if ( !rendererLib ) {
@@ -2470,6 +2459,21 @@ void CL_SetForcePowers_f( void ) {
 }
 
 /*
+==================
+CL_VideoFilename
+==================
+*/
+void CL_VideoFilename( char *buf, int bufSize ) {
+	time_t rawtime;
+	char timeStr[32] = {0}; // should really only reach ~19 chars
+
+	time( &rawtime );
+	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
+
+	Com_sprintf( buf, bufSize, "videos/video%s.avi", timeStr );
+}
+
+/*
 ===============
 CL_Video_f
 
@@ -2480,7 +2484,6 @@ video [filename]
 void CL_Video_f( void )
 {
 	char  filename[ MAX_OSPATH ];
-	int   i, last;
 
 	if( !clc.demoplaying )
 	{
@@ -2495,33 +2498,12 @@ void CL_Video_f( void )
 	}
 	else
 	{
-		// scan for a free filename
-		for( i = 0; i <= 9999; i++ )
-		{
-			int a, b, c, d;
+		CL_VideoFilename( filename, MAX_OSPATH );
 
-			last = i;
-
-			a = last / 1000;
-			last -= a * 1000;
-			b = last / 100;
-			last -= b * 100;
-			c = last / 10;
-			last -= c * 10;
-			d = last;
-
-			Com_sprintf( filename, MAX_OSPATH, "videos/video%d%d%d%d.avi",
-				a, b, c, d );
-
-			if( !FS_FileExists( filename ) )
-				break; // file doesn't exist
-		}
-
-		if( i > 9999 )
-		{
-			Com_Printf( S_COLOR_RED "ERROR: no free file names to create video\n" );
+		if ( FS_FileExists( filename ) ) {
+			Com_Printf( "Video: Couldn't create a file\n"); 
 			return;
-		}
+ 		}
 	}
 
 	CL_OpenAVIForWriting( filename );
@@ -2629,8 +2611,10 @@ void CL_Init( void ) {
 
 	Cvar_Get( "cl_maxPing", "800", CVAR_ARCHIVE );
 
+#ifndef _WIN32
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
+#endif
 
 	// userinfo
 	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE );
@@ -2735,7 +2719,7 @@ void CL_Shutdown( void ) {
 
 	Cmd_RemoveCommand ("cmd");
 	Cmd_RemoveCommand ("configstrings");
-	Cmd_RemoveCommand ("userinfo");
+	Cmd_RemoveCommand ("clientinfo");
 	Cmd_RemoveCommand ("snd_restart");
 	Cmd_RemoveCommand ("vid_restart");
 	Cmd_RemoveCommand ("disconnect");

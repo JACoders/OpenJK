@@ -498,28 +498,10 @@ static ulong needout(z_stream *z, inflate_blocks_state_t *s, ulong bytesToEnd)
 
 inline byte *qcopy(byte *dst, byte *src, int count)
 {
-	byte 	*retval;
-#ifdef __linux__
-//FIXME
-#else
-	_asm
-	{
-		push ecx  
-		push esi
-		push edi
+    while(count--) 
+        *dst++ = *src++;
 
-		mov edi, [dst]
-		mov esi, [src]
-		mov ecx, [count]
-		rep movsb
-
-		mov [retval], edi
-		pop edi
-		pop esi
-		pop ecx
-	}
-#endif
-	return(retval);
+    return dst;
 }
 
 inline ulong get_remaining(inflate_blocks_state_t *s)

@@ -1,5 +1,4 @@
-#if !defined(CM_LANDSCAPE_H_INC)
-#define CM_LANDSCAPE_H_INC
+#pragma once
 
 #pragma warning (push, 3)	//go back down to 3 for the stl include
 #include <list>
@@ -268,7 +267,5 @@ void CL_LoadInstanceDef(const char *configstring, class CCMLandScape *landscape)
 void CL_LoadMissionDef(const char *configstring, class CCMLandScape *landscape);
 
 extern cvar_t	*com_terrainPhysics;
-
-#endif
 
 // end

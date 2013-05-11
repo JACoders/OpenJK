@@ -131,29 +131,6 @@ char	*ConcatArgs( int start ) {
 
 /*
 ==================
-SanitizeString
-
-Remove case and control characters
-==================
-*/
-void SanitizeString( char *in, char *out ) {
-	while ( *in ) {
-		if ( *in == 94 ) {
-			in += 2;		// skip color code
-			continue;
-		}
-		if ( *in < 32 ) {
-			in++;
-			continue;
-		}
-		*out++ = tolower( (unsigned char) *in++ );
-	}
-
-	*out = 0;
-}
-
-/*
-==================
 StringIsInteger
 ==================
 */
@@ -242,7 +219,7 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 			ent->health = Com_Clampi( 1, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
 		else
 		{
-			if ( g_gametype.integer == GT_SIEGE && ent->client->siegeClass != -1 )
+			if ( level.gametype == GT_SIEGE && ent->client->siegeClass != -1 )
 				ent->health = bgSiegeClasses[ent->client->siegeClass].maxhealth;
 			else
 				ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
@@ -257,7 +234,7 @@ void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi( 0, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
 		else
 		{
-			if ( g_gametype.integer == GT_SIEGE && ent->client->siegeClass != -1 )
+			if ( level.gametype == GT_SIEGE && ent->client->siegeClass != -1 )
 				ent->client->ps.stats[STAT_ARMOR] = bgSiegeClasses[ent->client->siegeClass].maxarmor;
 			else
 				ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_MAX_HEALTH];
@@ -465,7 +442,7 @@ void Cmd_LevelShot_f( gentity_t *ent )
 	}
 
 	// doesn't work in single player
-	if ( g_gametype.integer == GT_SINGLE_PLAYER )
+	if ( level.gametype == GT_SINGLE_PLAYER )
 	{
 		trap_SendServerCommand(ent-g_entities, "print \"Must not be in singleplayer mode for levelshot\n\"" );
 		return;
@@ -509,7 +486,7 @@ Cmd_Kill_f
 =================
 */
 void Cmd_Kill_f( gentity_t *ent ) {
-	if ((g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL) &&
+	if ((level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL) &&
 		level.numPlayingClients > 1 && !level.warmupTime)
 	{
 		if (!g_allowDuelSuicide.integer)
@@ -524,6 +501,7 @@ void Cmd_Kill_f( gentity_t *ent ) {
 	player_die (ent, ent, ent, 100000, MOD_SUICIDE);
 }
 
+/* fixme this is so bad... killother's code too */
 static int G_ClientNumFromNetname(char *name)
 {
 	int i = 0;
@@ -597,7 +575,7 @@ void BroadcastTeamChange( gclient_t *client, int oldTeam )
 {
 	client->ps.fd.forceDoInit = 1; //every time we change teams make sure our force powers are set right
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{ //don't announce these things in siege
 		return;
 	}
@@ -612,7 +590,7 @@ void BroadcastTeamChange( gclient_t *client, int oldTeam )
 		trap_SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
 		client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHESPECTATORS")));
 	} else if ( client->sess.sessionTeam == TEAM_FREE ) {
-		if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
+		if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 		{
 			/*
 			gentity_t *currentWinner = G_GetDuelWinner(client);
@@ -711,7 +689,7 @@ void SetTeam( gentity_t *ent, char *s ) {
 	} else if ( !Q_stricmp( s, "spectator" ) || !Q_stricmp( s, "s" ) ) {
 		team = TEAM_SPECTATOR;
 		specState = SPECTATOR_FREE;
-	} else if ( g_gametype.integer >= GT_TEAM ) {
+	} else if ( level.gametype >= GT_TEAM ) {
 		// if running a team game, assign player to one of the teams
 		specState = SPECTATOR_NOT;
 		if ( !Q_stricmp( s, "red" ) || !Q_stricmp( s, "r" ) ) {
@@ -810,7 +788,7 @@ void SetTeam( gentity_t *ent, char *s ) {
 
 	oldTeam = client->sess.sessionTeam;
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{
 		if (client->tempSpectate >= level.time &&
 			team == TEAM_SPECTATOR)
@@ -868,12 +846,12 @@ void SetTeam( gentity_t *ent, char *s ) {
 	}
 
 	// override decision if limiting the players
-	if ( (g_gametype.integer == GT_DUEL)
+	if ( (level.gametype == GT_DUEL)
 		&& level.numNonSpectatorClients >= 2 )
 	{
 		team = TEAM_SPECTATOR;
 	}
-	else if ( (g_gametype.integer == GT_POWERDUEL)
+	else if ( (level.gametype == GT_POWERDUEL)
 		&& (level.numPlayingClients >= 3 || G_PowerDuelCheckFail(ent)) )
 	{
 		team = TEAM_SPECTATOR;
@@ -896,7 +874,7 @@ void SetTeam( gentity_t *ent, char *s ) {
 	//
 
 	//If it's siege then show the mission briefing for the team you just joined.
-//	if (g_gametype.integer == GT_SIEGE && team != TEAM_SPECTATOR)
+//	if (level.gametype == GT_SIEGE && team != TEAM_SPECTATOR)
 //	{
 //		trap_SendServerCommand(clientNum, va("sb %i", team));
 //	}
@@ -919,7 +897,7 @@ void SetTeam( gentity_t *ent, char *s ) {
 	}
 	// they go to the end of the line for tournements
 	if ( team == TEAM_SPECTATOR ) {
-		if ( (g_gametype.integer != GT_DUEL) || (oldTeam != TEAM_SPECTATOR) )	{//so you don't get dropped to the bottom of the queue for changing skins, etc.
+		if ( (level.gametype != GT_DUEL) || (oldTeam != TEAM_SPECTATOR) )	{//so you don't get dropped to the bottom of the queue for changing skins, etc.
 			client->sess.spectatorTime = level.time;
 		}
 	}
@@ -1046,7 +1024,7 @@ void Cmd_Team_f( gentity_t *ent ) {
 	}
 
 	// if they are playing a tournement game, count as a loss
-	if ( g_gametype.integer == GT_DUEL
+	if ( level.gametype == GT_DUEL
 		&& ent->client->sess.sessionTeam == TEAM_FREE ) {//in a tournament game
 		//disallow changing teams
 		trap_SendServerCommand( ent-g_entities, "print \"Cannot switch teams in Duel\n\"" );
@@ -1055,7 +1033,7 @@ void Cmd_Team_f( gentity_t *ent ) {
 		//ent->client->sess.losses++;
 	}
 
-	if (g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_POWERDUEL)
 	{ //don't let clients change teams manually at all in powerduel, it will be taken care of through automated stuff
 		trap_SendServerCommand( ent-g_entities, "print \"Cannot switch teams in Power Duel\n\"" );
 		return;
@@ -1080,7 +1058,7 @@ void Cmd_DuelTeam_f(gentity_t *ent)
 	int			oldTeam;
 	char		s[MAX_TOKEN_CHARS];
 
-	if (g_gametype.integer != GT_POWERDUEL)
+	if (level.gametype != GT_POWERDUEL)
 	{ //don't bother doing anything if this is not power duel
 		return;
 	}
@@ -1215,7 +1193,7 @@ void Cmd_SiegeClass_f( gentity_t *ent )
 	int preScore;
 	qboolean startedAsSpec = qfalse;
 
-	if (g_gametype.integer != GT_SIEGE)
+	if (level.gametype != GT_SIEGE)
 	{ //classes are only valid for this gametype
 		return;
 	}
@@ -1334,7 +1312,7 @@ void Cmd_ForceChanged_f( gentity_t *ent )
 
 	ent->client->ps.fd.forceDoInit = 1;
 argCheck:
-	if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 	{ //If this is duel, don't even bother changing team in relation to this.
 		return;
 	}
@@ -1358,7 +1336,7 @@ qboolean G_SetSaber(gentity_t *ent, int saberNum, char *saberName, qboolean sieg
 {
 	char truncSaberName[MAX_QPATH] = {0};
 
-	if ( !siegeOverride && g_gametype.integer == GT_SIEGE && ent->client->siegeClass != -1 &&
+	if ( !siegeOverride && level.gametype == GT_SIEGE && ent->client->siegeClass != -1 &&
 		(bgSiegeClasses[ent->client->siegeClass].saberStance || bgSiegeClasses[ent->client->siegeClass].saber1[0] || bgSiegeClasses[ent->client->siegeClass].saber2[0]) )
 	{ //don't let it be changed if the siege class has forced any saber-related things
 		return qfalse;
@@ -1434,7 +1412,7 @@ void Cmd_Follow_f( gentity_t *ent ) {
 	}
 
 	// if they are playing a tournement game, count as a loss
-	if ( (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
+	if ( (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 		&& ent->client->sess.sessionTeam == TEAM_FREE ) {
 		//WTF???
 		ent->client->sess.losses++;
@@ -1460,7 +1438,7 @@ void Cmd_FollowCycle_f( gentity_t *ent, int dir ) {
 	qboolean	looped = qfalse;
 
 	// if they are playing a tournement game, count as a loss
-	if ( (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
+	if ( (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 		&& ent->client->sess.sessionTeam == TEAM_FREE ) {\
 		//WTF???
 		ent->client->sess.losses++;
@@ -1563,7 +1541,7 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 	}
 	/*
 	// no chatting to players in tournements
-	if ( (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
+	if ( (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 		&& other->client->sess.sessionTeam == TEAM_FREE
 		&& ent->client->sess.sessionTeam != TEAM_FREE ) {
 		//Hmm, maybe some option to do so if allowed?  Or at least in developer mode...
@@ -1572,7 +1550,7 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 	*/
 	//They've requested I take this out.
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		ent->client && (ent->client->tempSpectate >= level.time || ent->client->sess.sessionTeam == TEAM_SPECTATOR) &&
 		other->client->sess.sessionTeam != TEAM_SPECTATOR &&
 		other->client->tempSpectate < level.time)
@@ -1604,7 +1582,7 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 	char		location[64];
 	char		*locMsg = NULL;
 
-	if ( g_gametype.integer < GT_TEAM && mode == SAY_TEAM ) {
+	if ( level.gametype < GT_TEAM && mode == SAY_TEAM ) {
 		mode = SAY_ALL;
 	}
 
@@ -1631,7 +1609,7 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 		color = COLOR_CYAN;
 		break;
 	case SAY_TELL:
-		if (target && g_gametype.integer >= GT_TEAM &&
+		if (target && level.gametype >= GT_TEAM &&
 			target->client->sess.sessionTeam == ent->client->sess.sessionTeam &&
 			Team_GetLocationMsg(ent, location, sizeof(location)))
 		{
@@ -1709,7 +1687,7 @@ static void Cmd_SayTeam_f( gentity_t *ent ) {
 		G_SecurityLogPrintf( "Cmd_SayTeam_f from %d (%s) has been truncated: %s\n", ent->s.number, ent->client->pers.netname, p );
 	}
 
-	G_Say( ent, NULL, (g_gametype.integer>=GT_TEAM) ? SAY_TEAM : SAY_ALL, p );
+	G_Say( ent, NULL, (level.gametype>=GT_TEAM) ? SAY_TEAM : SAY_ALL, p );
 }
 
 /*
@@ -1765,7 +1743,7 @@ static void Cmd_VoiceCommand_f(gentity_t *ent)
 	char *s;
 	int i = 0;
 
-	if (g_gametype.integer < GT_TEAM)
+	if (level.gametype < GT_TEAM)
 	{
 		return;
 	}
@@ -1905,92 +1883,20 @@ Finds the client number of the client with the given name
 */
 int G_ClientNumberFromName ( const char* name )
 {
-	char		s2[MAX_STRING_CHARS];
-	char		n2[MAX_STRING_CHARS];
+	char		cleanInput[MAX_NETNAME];
+	char		cleanName[MAX_NETNAME];
 	int			i;
 	gclient_t*	cl;
 
-	// check for a name match
-	SanitizeString( (char*)name, s2 );
-	for ( i=0, cl=level.clients ; i < level.numConnectedClients ; i++, cl++ ) 
-	{
-		SanitizeString( cl->pers.netname, n2 );
-		if ( !strcmp( n2, s2 ) ) 
-		{
-			return i;
-		}
-	}
-
-	return -1;
-}
-
-/*
-==================
-SanitizeString2
-
-Rich's revised version of SanitizeString
-==================
-*/
-void SanitizeString2( char *in, char *out )
-{
-	int i = 0;
-	int r = 0;
-
-	while (in[i])
-	{
-		if (i >= MAX_NAME_LENGTH-1)
-		{ //the ui truncates the name here..
-			break;
-		}
-
-		if (in[i] == '^')
-		{
-			if (in[i+1] >= 48 && //'0'
-				in[i+1] <= 57) //'9'
-			{ //only skip it if there's a number after it for the color
-				i += 2;
-				continue;
-			}
-			else
-			{ //just skip the ^
-				i++;
-				continue;
-			}
-		}
-
-		if (in[i] < 32)
-		{
-			i++;
+	Q_strncpyz( cleanInput, name, sizeof( cleanInput ) );
+	Q_StripColor( cleanInput );
+	for ( i=0,cl=level.clients; i < level.maxclients; i++,cl++ )
+	{// check for a name match
+		if ( cl->pers.connected != CON_CONNECTED )
 			continue;
-		}
-
-		out[r] = in[i];
-		r++;
-		i++;
-	}
-	out[r] = 0;
-}
-
-/*
-==================
-G_ClientNumberFromStrippedName
-
-Same as above, but strips special characters out of the names before comparing.
-==================
-*/
-int G_ClientNumberFromStrippedName ( const char* name )
-{
-	char		s2[MAX_STRING_CHARS];
-	char		n2[MAX_STRING_CHARS];
-	int			i;
-	gclient_t*	cl;
-
-	// check for a name match
-	SanitizeString2( (char*)name, s2 );
-	for ( i=0, cl=level.clients ; i < level.numConnectedClients ; i++, cl++ ) 
-	{
-		SanitizeString2( cl->pers.netname, n2 );
-		if ( !strcmp( n2, s2 ) ) 
+		Q_strncpyz( cleanName, cl->pers.netname, sizeof( cleanName ) );
+		Q_StripColor( cleanName );
+		if ( !Q_stricmp( cleanName, cleanInput ) )
 		{
 			return i;
 		}
@@ -2022,8 +1928,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (g_gametype.integer != GT_DUEL &&
-		g_gametype.integer != GT_POWERDUEL)
+	if (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL)
 	{
 		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
 			trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOSPECVOTE")) );
@@ -2071,17 +1976,35 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	// special case for g_gametype, check for bad values
 	if ( !Q_stricmp( arg1, "g_gametype" ) )
 	{
-		i = atoi( arg2 );
-		if( i == GT_SINGLE_PLAYER || i < GT_FFA || i >= GT_MAX_GAME_TYPE) {
-			trap_SendServerCommand( ent-g_entities, "print \"Invalid gametype.\n\"" );
+		int gt = atoi( arg2 );
+
+		if ( arg2[0] && isalpha( arg2[0] ) )
+		{// ffa, ctf, tdm, etc
+			gt = BG_GetGametypeForString( arg2 );
+			if ( gt == -1 )
+			{
+				trap_SendServerCommand( ent-g_entities, va( "print \"Gametype (%s) unrecognised, defaulting to FFA/Deathmatch\n\"", arg2 ) );
+				gt = GT_FFA;
+			}
+		}
+		else if ( gt < 0 || gt >= GT_MAX_GAME_TYPE )
+		{// numeric but out of range
+			trap_SendServerCommand( ent-g_entities, va( "print \"Gametype (%i) is out of range, defaulting to FFA/Deathmatch\n\"", gt ) );
+			gt = GT_FFA;
+		}
+
+		if ( gt == GT_SINGLE_PLAYER )
+		{// logically invalid gametypes, or gametypes not fully implemented in MP
+			trap_SendServerCommand( ent-g_entities, "print \"This gametype is not supported (%s).\n\"" );
 			return;
 		}
 
 		level.votingGametype = qtrue;
-		level.votingGametypeTo = i;
+		level.votingGametypeTo = gt;
 
-		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d", arg1, i );
-		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %s", arg1, gameNames[i] );
+		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d", arg1, gt );
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %s", arg1, gameNames[gt] );
+		Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
 	}
 	else if ( !Q_stricmp( arg1, "map" ) ) 
 	{
@@ -2089,7 +2012,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		// this allows a player to change maps, but not upset the map rotation
 		char	s[MAX_STRING_CHARS];
 
-		if (!G_DoesMapSupportGametype(arg2, trap_Cvar_VariableIntegerValue("g_gametype")))
+		if (!G_DoesMapSupportGametype(arg2, level.gametype))
 		{
 			//trap_SendServerCommand( ent-g_entities, "print \"You can't vote for this map, it isn't supported by the current gametype.\n\"" );
 			trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTE_MAPNOTSUPPORTEDBYGAME")) );
@@ -2126,7 +2049,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			return;
 		}
 
-		if ( g_entities[n].client->pers.connected == CON_DISCONNECTED )
+		if ( g_entities[n].client->pers.connected != CON_CONNECTED )
 		{
 			trap_SendServerCommand( ent-g_entities, va("print \"there is no client with the client number %d.\n\"", n ) );
 			return;
@@ -2141,13 +2064,8 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 		if ( clientid == -1 )
 		{
-			clientid = G_ClientNumberFromStrippedName(arg2);
-
-			if (clientid == -1)
-			{
-				trap_SendServerCommand( ent-g_entities, va("print \"there is no client named '%s' currently on the server.\n\"", arg2 ) );
-				return;
-			}
+			trap_SendServerCommand( ent-g_entities, va("print \"there is no client named '%s' currently on the server.\n\"", arg2 ) );
+			return;
 		}
 
 		Com_sprintf ( level.voteString, sizeof(level.voteString ), "clientkick %d", clientid );
@@ -2250,8 +2168,7 @@ void Cmd_Vote_f( gentity_t *ent ) {
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "VOTEALREADY")) );
 		return;
 	}
-	if (g_gametype.integer != GT_DUEL &&
-		g_gametype.integer != GT_POWERDUEL)
+	if (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL)
 	{
 		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
 			trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEASSPEC")) );
@@ -2853,7 +2770,7 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent)
 		selectLevel = ent->client->ps.fd.saberAnimLevel;
 	}
 
-	if (g_gametype.integer == GT_SIEGE &&
+	if (level.gametype == GT_SIEGE &&
 		ent->client->siegeClass != -1 &&
 		bgSiegeClasses[ent->client->siegeClass].saberStance)
 	{ //we have a flag of useable stances so cycle through it instead
@@ -2954,14 +2871,14 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 		return;
 	}
 
-	if (g_gametype.integer == GT_DUEL || g_gametype.integer == GT_POWERDUEL)
+	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 	{ //rather pointless in this mode..
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")) );
 		return;
 	}
 
-	//if (g_gametype.integer >= GT_TEAM && g_gametype.integer != GT_SIEGE)
-	if (g_gametype.integer >= GT_TEAM)
+	//if (level.gametype >= GT_TEAM && level.gametype != GT_SIEGE)
+	if (level.gametype >= GT_TEAM)
 	{ //no private dueling in team modes
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")) );
 		return;
@@ -2996,7 +2913,7 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 	}
 
 	//New: Don't let a player duel if he just did and hasn't waited 10 seconds yet (note: If someone challenges him, his duel timer will reset so he can accept)
-	if (ent->client->ps.fd.privateDuelTime > level.time)
+	/*if (ent->client->ps.fd.privateDuelTime > level.time)
 	{
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_JUSTDID")) );
 		return;
@@ -3006,7 +2923,7 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 	{
 		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_BUSY")) );
 		return;
-	}
+	}*/
 
 	AngleVectors( ent->client->ps.viewangles, forward, NULL, NULL );
 
@@ -3028,7 +2945,7 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 			return;
 		}
 
-		if (g_gametype.integer >= GT_TEAM && OnSameTeam(ent, challenged))
+		if (level.gametype >= GT_TEAM && OnSameTeam(ent, challenged))
 		{
 			return;
 		}

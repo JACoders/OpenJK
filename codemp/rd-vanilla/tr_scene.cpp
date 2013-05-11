@@ -3,9 +3,7 @@
 
 #include "tr_local.h"
 
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-#endif
+#include "ghoul2/G2.h"
 #include "G2_local.h"
 #include "qcommon/matcomp.h"
 
@@ -99,8 +97,8 @@ void R_AddPolygonSurfaces( void ) {
 	shader_t	*sh;
 	srfPoly_t	*poly;
 
-	tr.currentEntityNum = TR_WORLDENT;
-	tr.shiftedEntityNum = tr.currentEntityNum << QSORT_ENTITYNUM_SHIFT;
+	tr.currentEntityNum = REFENTITYNUM_WORLD;
+	tr.shiftedEntityNum = tr.currentEntityNum << QSORT_REFENTITYNUM_SHIFT;
 
 	for ( i = 0, poly = tr.refdef.polys; i < tr.refdef.numPolys ; i++, poly++ ) {
 		sh = R_GetShaderByHandle( poly->hShader );
@@ -202,6 +200,20 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 		return;
 	}
 
+	if ( r_numentities >= MAX_REFENTITIES ) {
+		ri.Printf(PRINT_DEVELOPER, "RE_AddRefEntityToScene: Dropping refEntity, reached MAX_REFENTITIES\n");
+		return;
+	}
+
+	/*if ( Q_isnan(ent->origin[0]) || Q_isnan(ent->origin[1]) || Q_isnan(ent->origin[2]) ) {
+		static qboolean firstTime = qtrue;
+		if (firstTime) {
+			firstTime = qfalse;
+			ri.Printf( PRINT_WARNING, "RE_AddRefEntityToScene passed a refEntity which has an origin with a NaN component\n");
+		}
+		return;
+	}*/
+
 	assert(!ent || ent->renderfx >= 0);
 
 	if (ent->reType == RT_ENT_CHAIN)
@@ -216,14 +228,7 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 	}
 #endif
 
-	if ( r_numentities >= TR_WORLDENT )
-	{
-#ifndef FINAL_BUILD
-		Com_Printf( "WARNING: RE_AddRefEntityToScene: too many entities\n");
-#endif
-		return;
-	}
-	if ( ent->reType < 0 || ent->reType >= RT_MAX_REF_ENTITY_TYPE ) {
+	if ( (int)ent->reType < 0 || ent->reType >= RT_MAX_REF_ENTITY_TYPE ) {
 		Com_Error( ERR_DROP, "RE_AddRefEntityToScene: bad reType %i", ent->reType );
 	}
 

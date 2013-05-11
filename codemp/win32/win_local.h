@@ -5,7 +5,6 @@
 #pragma warning(disable : 4201)
 #pragma warning( push )
 #endif
-//#include <windows.h>
 #include "qcommon/platform.h"
 #if defined (_MSC_VER) && (_MSC_VER >= 1200)
 #pragma warning( pop )
@@ -18,6 +17,7 @@
 #include <wsipx.h>
 
 void	IN_MouseEvent (int mstate);
+void	IN_RawMouseEvent( int lastX, int lastY ); // Send raw input events to the input subsystem
 
 void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr );
 

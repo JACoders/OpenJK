@@ -1,3 +1,4 @@
+#pragma once
 
 /*****************************************************************************
  * name:		be_aas_cluster.h
@@ -18,4 +19,3 @@ void AAS_InitClustering(void);
 //
 void AAS_SetViewPortalsAsClusterPortals(void);
 #endif //AASINTERN
-

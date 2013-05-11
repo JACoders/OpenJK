@@ -3,15 +3,7 @@
 #include "qcommon/exe_headers.h"
 
 #include "client.h"
-
-#if !defined(FX_SCHEDULER_H_INC)
-	#include "FxScheduler.h"
-#endif
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-	#include "ghoul2/G2_local.h"
-#endif
+#include "FxScheduler.h"
 
 #ifdef VV_LIGHTING
 #include "renderer/tr_lightmanager.h"
@@ -1024,7 +1016,7 @@ bool CTail::Update(void)
 		// Just calc an old point some time in the past, doesn't really matter when
 		VectorMA( org, (time - 0.003f), realVel, mOldOrigin );
 	}
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 	else if ( !fx_freeze->integer )
 #else
 	else
@@ -2296,6 +2288,9 @@ void CFlash::Init( void )
 //----------------------------
 void CFlash::Draw( void )	
 {
+    // Interestingly, if znear is set > than this, then the flash
+    // doesn't appear at all.
+    const float FLASH_DISTANCE_FROM_VIEWER = 12.0f;
 	mRefEnt.reType = RT_SPRITE;
 
 	if ( mFlags & FX_LOCALIZED_FLASH )
@@ -2313,8 +2308,10 @@ void CFlash::Draw( void )
 	else
 	{
 		VectorCopy( theFxHelper.refdef->vieworg, mRefEnt.origin );
-		VectorMA( mRefEnt.origin, 12, theFxHelper.refdef->viewaxis[0], mRefEnt.origin );
-		mRefEnt.radius = fx_flashRadius->value; // 11.0f
+		VectorMA( mRefEnt.origin, FLASH_DISTANCE_FROM_VIEWER, theFxHelper.refdef->viewaxis[0], mRefEnt.origin );
+
+        // This is assuming that the screen is wider than it is tall.
+        mRefEnt.radius = FLASH_DISTANCE_FROM_VIEWER * tan (DEG2RAD (theFxHelper.refdef->fov_x * 0.5f));
 
 		theFxHelper.AddFxToScene( &mRefEnt );
 	}

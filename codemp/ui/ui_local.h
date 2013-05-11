@@ -1,7 +1,7 @@
+#pragma once
+
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
-#ifndef __UI_LOCAL_H__
-#define __UI_LOCAL_H__
 
 #include "qcommon/q_shared.h"
 #include "renderer/tr_types.h"
@@ -592,7 +592,7 @@ typedef struct {
 #define MAX_PLAYERMODELS 512
 
 //JAC: Added
-#define DEMO_DIRECTORY "demos/"
+#define DEMO_DIRECTORY "demos"
 #define DEMO_EXTENSION "dm_"
 #define MAX_DEMOLIST (MAX_DEMOS * MAX_QPATH)
 
@@ -1133,7 +1133,3 @@ typedef struct postGameInfo_s {
 	int skillBonus;
 	int baseScore;
 } postGameInfo_t;
-
-
-
-#endif

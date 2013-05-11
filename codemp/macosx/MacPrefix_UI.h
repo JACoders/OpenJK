@@ -1,8 +1,5 @@
-#ifndef MacPrefix_UI_h
-#define MacPrefix_UI_h
+#pragma once
 
 #define UI_EXPORTS	1
 
 #include "MacPrefixCommon.h"
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef __BG_VEHICLES_H
-#define __BG_VEHICLES_H
+#pragma once
 
 #include "qcommon/q_shared.h"
 
@@ -63,7 +62,7 @@ typedef struct
 //NOTE: this MUST stay up to date with the number of variables in the vehFields table!!!
 #define NUM_VWEAP_PARMS	25
 
-#define	VWFOFS(x) ((int)&(((vehWeaponInfo_t *)0)->x))
+#define	VWFOFS(x) ((size_t)&(((vehWeaponInfo_t *)0)->x))
 
 #define MAX_VEH_WEAPONS	16	//sigh... no more than 16 different vehicle weapons
 #define VEH_WEAPON_BASE	0
@@ -356,7 +355,7 @@ typedef struct
 } vehicleInfo_t;
 
 
-#define	VFOFS(x) ((int)&(((vehicleInfo_t *)0)->x))
+#define	VFOFS(x) ((size_t)&(((vehicleInfo_t *)0)->x))
 
 #define MAX_VEHICLES	16	//sigh... no more than 64 individual vehicles
 #define VEHICLE_BASE	0
@@ -624,5 +623,3 @@ typedef struct Vehicle_s
 #endif
 
 extern int BG_VehicleGetIndex( const char *vehicleName );
-
-#endif	// __BG_VEHICLES_H

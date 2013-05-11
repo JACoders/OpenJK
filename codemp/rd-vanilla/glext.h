@@ -1,5 +1,4 @@
-#ifndef __glext_h_
-#define __glext_h_
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,12 +34,12 @@ extern "C" {
 */
 
 #if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__)
-#define WIN32_LEAN_AND_MEAN 1
-#include <windows.h>
+	#define WIN32_LEAN_AND_MEAN 1
+	#include <windows.h>
 #endif
 
 #ifndef APIENTRY
-#define APIENTRY
+	#define APIENTRY
 #endif
 
 /*************************************************************/
@@ -3032,6 +3031,4 @@ typedef void (APIENTRY * PFNGLIGLOOINTERFACESGIXPROC) (GLenum pname, const GLvoi
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

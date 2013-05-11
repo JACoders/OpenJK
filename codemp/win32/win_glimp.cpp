@@ -590,7 +590,14 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 		else
 		{
 			exstyle = 0;
-			stylebits = WS_SYSMENU|WINDOW_STYLE|WS_MINIMIZEBOX;
+			if ( r_noborder->integer == 0 )
+			{
+				stylebits = WS_SYSMENU|WINDOW_STYLE|WS_MINIMIZEBOX;
+			}
+			else
+			{
+				stylebits = WS_POPUP|WS_VISIBLE;
+			}
 			AdjustWindowRect (&r, stylebits, FALSE);
 		}
 
@@ -606,8 +613,16 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 		{
 			vid_xpos = ri.Cvar_Get ("vid_xpos", "", 0);
 			vid_ypos = ri.Cvar_Get ("vid_ypos", "", 0);
-			x = vid_xpos->integer;
-			y = vid_ypos->integer;
+			if ( r_centerWindow->integer == 0 )
+			{
+				x = vid_xpos->integer;
+				y = vid_ypos->integer;
+			}
+			else
+			{
+				x = ( glw_state.desktopWidth - w ) / 2;
+				y = ( glw_state.desktopHeight - h ) / 2;
+			}
 
 			// adjust window coordinates if necessary 
 			// so that the window is completely on screen
@@ -1972,162 +1987,3 @@ void GLimp_WakeRenderer( void *data ) {
 	WaitForSingleObject( renderActiveEvent, INFINITE );
 }
 
-
-// Allocate and create a new PBuffer.
-bool CPBUFFER::Create( int iWidth, int iHeight, int iColorBits, int iDepthBits, int iStencilBits )
-{
-	m_iWidth = iWidth;
-	m_iHeight = iHeight;
-	m_iColorBits = iColorBits;
-	m_iDepthBits = iDepthBits;
-	m_iStencilBits = iStencilBits;
-	
-	extern glwstate_t glw_state;
-	m_hOldRC = glw_state.hGLRC; //qwglGetCurrentContext();
-	
-	// Get the current device context.
-	m_hOldDC = glw_state.hDC; //qwglGetCurrentDC();
-
-	if( !m_hOldDC )
-	{
-		return false;
-	}
-
-#define WGL_BIND_TO_TEXTURE_RGB_ARB        0x2070
-
-	// These are standard settings. I suppose if one wanted more control you could pass an attrib list in (but why?).
-	const int iAttribList[] =
-	{
-		WGL_SUPPORT_OPENGL_ARB,			true,       // P-buffer will be used with OpenGL.
-		WGL_DRAW_TO_PBUFFER_ARB,		true,		// Enable render to p-buffer.
-		WGL_BIND_TO_TEXTURE_RGBA_ARB,	true,		// P-buffer will be used as a texture.
-		WGL_RED_BITS_ARB,				8,          // At least 8 bits for RED channel.
-		WGL_GREEN_BITS_ARB,				8,          // At least 8 bits for GREEN channel.
-		WGL_BLUE_BITS_ARB,				8,          // At least 8 bits for BLUE channel.
-		WGL_ALPHA_BITS_ARB,				8,          // At least 8 bits for ALPHA channel.
-		WGL_DEPTH_BITS_ARB,				16,         // At least 16 bits for depth buffer.
-		WGL_DOUBLE_BUFFER_ARB,			false,		// We don't require double buffering
-		0											// Zero terminates the list.
-	};
-
-#define		WGL_TEXTURE_RECTANGLE_NV		0x20A2
-
-	//const float fAttribList[] = { 0 };
-	const int iFlags[] =
-	{
-		WGL_TEXTURE_FORMAT_ARB, WGL_TEXTURE_RGBA_ARB, // Our p-buffer will have a texture format of RGBA.
-		WGL_TEXTURE_TARGET_ARB, WGL_TEXTURE_RECTANGLE_NV,   // Texture target will be GL_TEXTURE_RECTANGLE.
-		0                                             // Zero terminates the list.
-	};
-
-	// Choose pixel format.
-	unsigned int numFormats;
-	GLint pixelFormat;
-	if( !qwglChoosePixelFormatARB( m_hOldDC, iAttribList, NULL, 1, &pixelFormat, &numFormats ) )
-	{
-		return false;
-	}
-
-	// Create the pbuffer.
-	m_hBuffer = qwglCreatePbufferARB( m_hOldDC, pixelFormat, m_iWidth, m_iHeight, iFlags );
-	if( !m_hBuffer )
-	{
-		return false;
-	}
-
-	// Get the pbuffer's device context.
-	m_hDC = qwglGetPbufferDCARB( m_hBuffer );
-	if( !m_hDC )
-	{
-		return false;
-	}
-
-	// Create a rendering context for the pbuffer.
-	m_hRC = qwglCreateContext( m_hDC );
-	if( !m_hRC )
-	{
-		return false;
-	}
-
-	// Share Display Lists and Texture Objects between contexts (NOTE: Could
-	// also just use parent app RC).
-	qwglShareLists( m_hOldRC, m_hRC );
-
-	// Set and output the actual pBuffer dimensions.
-	qwglQueryPbufferARB( m_hBuffer, WGL_PBUFFER_WIDTH_ARB, &m_iWidth );
-	qwglQueryPbufferARB( m_hBuffer, WGL_PBUFFER_HEIGHT_ARB, &m_iHeight );
-	
-
-	// Create the PBuffer Texture.
-	extern int giTextureBindNum;
-	m_uiPBufferTexture = 1024 + giTextureBindNum++;
-
-	qglDisable( GL_TEXTURE_2D );
-	qglEnable( GL_TEXTURE_RECTANGLE_EXT );
-
-	/*int *pTexture = new int [m_iWidth * m_iHeight];
-	memset( pTexture, 0, m_iWidth * m_iHeight * sizeof( int ) );	*/
-
-	qglBindTexture( GL_TEXTURE_RECTANGLE_EXT, m_uiPBufferTexture );
-	//qglTexImage2D( GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGB, m_iWidth, m_iHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, pTexture );
-	qglTexImage2D( GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGB, m_iWidth, m_iHeight, 0, GL_RGB, GL_FLOAT, 0 );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_S, GL_CLAMP );
-	qglTexParameteri( GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_T, GL_CLAMP );
-
-	qglDisable( GL_TEXTURE_RECTANGLE_EXT );
-	qglEnable( GL_TEXTURE_2D );
-
-	//delete [] pTexture;
-
-	return true;
-}
-
-// Destroy and deallocate a PBuffer.
-void CPBUFFER::Destroy()
-{
-	// Release the pbuffer texture.
-	qglDeleteTextures( 1, &m_uiPBufferTexture );
-
-	// Release RC.
-	if( m_hRC )
-	{
-		qwglDeleteContext( m_hRC );
-		m_hRC = NULL;
-	}
-
-	// Release DC.
-	if( m_hDC )
-	{
-		qwglReleasePbufferDCARB( m_hBuffer, m_hDC);
-		m_hDC = NULL;
-	}
-	
-	// Release PBuffer.
-	qwglDestroyPbufferARB( m_hBuffer );
-}
-
-// Make this PBuffer the current render device.
-bool CPBUFFER::Begin()
-{
-	if( !qwglMakeCurrent( m_hDC, m_hRC ) )
-	{
-		return false;
-	}
-
-	qwglCopyContext( m_hOldRC, m_hRC, GL_ALL_ATTRIB_BITS  );
-
-	return true;
-}
-
-// Restore the previous render device.
-bool CPBUFFER::End()
-{
-	if( !qwglMakeCurrent( m_hOldDC, m_hOldRC ) )
-	{
-		return false;
-	}
-
-	return true;
-}

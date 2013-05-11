@@ -1,20 +1,15 @@
+#pragma once
 
-#ifndef FX_SYSTEM_H_INC
-#define FX_SYSTEM_H_INC
-
-#if !defined(G2_H_INC)
-	#include "ghoul2/G2.h"
-#endif
+#include "ghoul2/G2.h"
 
 extern cvar_t	*fx_debug;
 
-#ifdef _SOF2DEV_
+#ifdef _DEBUG
 extern cvar_t	*fx_freeze;
 #endif
 
 extern cvar_t	*fx_countScale;
 extern cvar_t	*fx_nearCull;
-extern cvar_t	*fx_flashRadius;
 
 inline void Vector2Clear(vec2_t a)
 {
@@ -219,5 +214,3 @@ public:
 };
 
 extern SFxHelper	theFxHelper;
-
-#endif // FX_SYSTEM_H_INC

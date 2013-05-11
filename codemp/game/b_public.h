@@ -1,5 +1,4 @@
-#ifndef __B_PUBLIC_H__
-#define __B_PUBLIC_H__
+#pragma once
 
 #include "ai.h"
 
@@ -352,4 +351,3 @@ typedef struct {
 	int			parm;
 } nedge_t;
 */
-#endif

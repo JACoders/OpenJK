@@ -1,7 +1,6 @@
-// ICARUS Intance header
+#pragma once
 
-#ifndef __INSTANCE__
-#define __INSTANCE__
+// ICARUS Intance header
 
 #include "blockstream.h"
 #include "interface.h"
@@ -77,5 +76,3 @@ protected:
 #endif
 
 };
-
-#endif	//__INSTANCE__

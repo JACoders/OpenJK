@@ -1,4 +1,4 @@
-// PCH header file organiser for  NPC_xxxx cpp files' most commonly used headers
+#pragma once
 
 #include "b_local.h"
 #include "anims.h"

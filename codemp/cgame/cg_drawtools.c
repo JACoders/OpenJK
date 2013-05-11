@@ -1,12 +1,3 @@
-/*
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
-//#include "cg_local.h"
-#include "cg_media.h"
-#include "cg_text.h"
-*/
-
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 // cg_drawtools.c -- helper functions called by cg_draw, cg_scoreboard, cg_info, etc

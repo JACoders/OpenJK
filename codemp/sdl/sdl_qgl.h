@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SDL_opengl.h>
 
 #define qglAccum glAccum
@@ -355,7 +357,7 @@ extern void (APIENTRYP qglGetCombinerInputParameterivNV) (GLenum stage,GLenum po
 extern void (APIENTRYP qglGetCombinerOutputParameterfvNV) (GLenum stage,GLenum portion,GLenum pname,GLfloat *params);
 extern void (APIENTRYP qglGetCombinerOutputParameterivNV) (GLenum stage,GLenum portion,GLenum pname,GLint *params);
 extern void (APIENTRYP qglGetFinalCombinerInputParameterfvNV) (GLenum variable,GLenum pname,GLfloat *params);
-extern void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLfloat *params);
+extern void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLint *params);
 
 extern PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB;
 extern PFNGLBINDPROGRAMARBPROC qglBindProgramARB;

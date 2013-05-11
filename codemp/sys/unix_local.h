@@ -1,5 +1,4 @@
-#ifndef UNIX_LOCAL_H
-#define UNIX_LOCAL_H
+#pragma once
 
 // unix_local.h: Linux-specific Quake3 header file
 
@@ -28,5 +27,3 @@ void QGL_Shutdown( void );
 
 // bk001130 - win32
 // void IN_JoystickCommands (void);
-
-#endif /* UNIX_LOCAL_H */

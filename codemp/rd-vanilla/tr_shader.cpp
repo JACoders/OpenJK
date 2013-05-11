@@ -2489,6 +2489,7 @@ infoParm_t	infoParms[] = {
 	{"metalsteps",	-1,					SURF_METALSTEPS,0 },
 	{"nomiscents",	-1,					SURF_NOMISCENTS,0 },						/* No misc ents on this surface */
 	{"forcefield",	-1,					SURF_FORCEFIELD,0 },
+	{"forcesight",	-1,					SURF_FORCESIGHT,0 },						// only visible with force sight
 };
 
 
@@ -2555,6 +2556,11 @@ static qboolean ParseShader( const char **text )
 		// stage definition
 		else if ( token[0] == '{' )
 		{
+			if ( s >= MAX_SHADER_STAGES ) {
+				ri.Printf( PRINT_WARNING, "WARNING: too many stages in shader %s\n", shader.name );
+				return qfalse;
+			}
+
 			if ( !ParseStage( &stages[s], text ) )
 			{
 				return qfalse;
@@ -2946,7 +2952,7 @@ static void FixRenderCommandList( int newShader ) {
 			const void *curCmd = cmdList->cmds;
 
 			while ( 1 ) {
-				//curCmd = PADP(curCmd, sizeof(void *));
+				curCmd = PADP(curCmd, sizeof(void *));
 
 				switch ( *(const int *)curCmd ) {
 				case RC_SET_COLOR:
@@ -3765,6 +3771,12 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 	{
 		lightmapIndex = lightmapsVertex;
 	}
+	else if ( lightmapIndex[0] < LIGHTMAP_2D )
+	{
+		// negative lightmap indexes cause stray pointers (think tr.lightmaps[lightmapIndex])
+		ri.Printf( PRINT_WARNING, "WARNING: shader '%s' has invalid lightmap index of %d\n", name, lightmapIndex[0] );
+		lightmapIndex = lightmapsVertex;
+	}
 
 	COM_StripExtension( name, strippedName, sizeof( strippedName ) );
 
@@ -3787,8 +3799,8 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 	// clear the global shader
 	ClearGlobalShader();
 	Q_strncpyz(shader.name, strippedName, sizeof(shader.name));
-	memcpy(shader.lightmapIndex, lightmapIndex, sizeof(shader.lightmapIndex));
-	memcpy(shader.styles, styles, sizeof(shader.styles));
+	Com_Memcpy(shader.lightmapIndex, lightmapIndex, sizeof(shader.lightmapIndex));
+	Com_Memcpy(shader.styles, styles, sizeof(shader.styles));
 	
 	//
 	// attempt to define shader from an explicit parameter file
@@ -3913,6 +3925,14 @@ qhandle_t RE_RegisterShaderFromImage(const char *name, int *lightmapIndex, byte 
 	shader_t	*sh;
 
 	hash = generateHashValue(name, FILE_HASH_SIZE);
+
+	// probably not necessary since this function
+	// only gets called from tr_font.c with lightmapIndex == LIGHTMAP_2D
+	// but better safe than sorry.
+	// Doesn't actually ever get called in JA at all
+	if ( lightmapIndex[0] >= tr.numLightmaps ) {
+		lightmapIndex = (int *)lightmapsFullBright;
+	}
 	
 	//
 	// see if the shader is already loaded
