@@ -348,7 +348,7 @@ if(BuildMPEngine OR BuildMPDed)
 		set(MPEngineAndDedAllSortMe
 			${MPEngineAndDedAllSortMe}
 			"${MPDir}/sys/vm_x86.cpp"
-			"${MPDir}/sys/snapvector.nasm"
+			"${MPDir}/sys/snapvector.c"
 			)
 	endif(WIN32)
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedAllSortMe})
