@@ -314,6 +314,18 @@ typedef	int	fixed16_t;
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
 
+#if defined(_MSC_VER)
+static __inline long Q_ftol(float f)
+{
+	return (long)f;
+}
+#else
+static inline long Q_ftol(float f)
+{
+	return (long)f;
+}
+#endif
+
 #define NUMVERTEXNORMALS	162
 extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
 
