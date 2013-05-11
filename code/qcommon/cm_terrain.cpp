@@ -28,10 +28,6 @@ This file is part of Jedi Academy.
 #pragma optimize("p", on)
 #endif
 
-void R_LoadDataImage	( const char *name, byte **pic, int *width, int *height);
-void R_InvertImage		( byte *data, int width, int height, int depth);
-void R_Resample			( byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
-
 //#define _SMOOTH_TERXEL_BRUSH
 
 #ifdef _SMOOTH_TERXEL_BRUSH 
@@ -180,7 +176,7 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 		int		iWidth, iHeight;
 
 		Com_DPrintf("CM_Terrain: Loading heightmap %s.....\n", heightMap);
-		R_LoadDataImage(heightMap, &imageData, &iWidth, &iHeight); 
+		re.R_LoadDataImage(heightMap, &imageData, &iWidth, &iHeight); 
 
 		mRandomTerrain = 0;
 
@@ -195,8 +191,8 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 			else
 			{
 				// Flip to make the same as GenSurf
-				R_InvertImage(imageData, iWidth, iHeight, 1);
-				R_Resample(imageData, iWidth, iHeight, mHeightMap, GetRealWidth(), GetRealHeight(), 1);
+				re.R_InvertImage(imageData, iWidth, iHeight, 1);
+				re.R_Resample(imageData, iWidth, iHeight, mHeightMap, GetRealWidth(), GetRealHeight(), 1);
 			}
 			Z_Free(imageData);
 		}

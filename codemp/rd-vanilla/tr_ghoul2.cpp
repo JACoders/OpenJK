@@ -922,7 +922,7 @@ static int G2_ComputeLOD( trRefEntity_t *ent, const model_t *currentModel, int l
  		flod = 0;
  	}
  	flod *= currentModel->numLods;
- 	lod = myftol( flod );
+	lod = Q_ftol( flod );
 
  	if ( lod < 0 )
  	{
@@ -3542,7 +3542,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 			if (surf->fade<1.0)
 			{
 				tess.fading = true;
-				lFade = myftol(254.4f*surf->fade);
+				lFade = Q_ftol(254.4f*surf->fade);
 
 				for (j=0;j<numVerts;j++)
 				{
@@ -3552,7 +3552,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 			else if (surf->fade > 2.0f && surf->fade < 3.0f)
 			{ //hack to fade out on RGB if desired (don't want to add more to CRenderableSurface) -rww
 				tess.fading = true;
-				lFade = myftol(254.4f*(surf->fade-2.0f));
+				lFade = Q_ftol(254.4f*(surf->fade-2.0f));
 
 				for (j=0;j<numVerts;j++)
 				{

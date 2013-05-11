@@ -434,7 +434,7 @@ static int G2_ComputeLOD( trRefEntity_t *ent, const model_t *currentModel, int l
  	}
 
  	flod *= currentModel->numLods;
- 	lod = myftol( flod );
+	lod = Q_ftol( flod );
 
  	if ( lod < 0 )
  	{
