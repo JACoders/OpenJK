@@ -197,7 +197,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	}
 
 	va_start (argptr,fmt);
-	Q_vsnprintf (msg,sizeof(msg),fmt,argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 	
 	Com_Printf ("%s", msg);
@@ -293,7 +293,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 //	SCR_UnprecacheScreenshot();
 
 	va_start (argptr,fmt);
-	Q_vsnprintf (com_errorMessage,sizeof(com_errorMessage), fmt,argptr);
+	Q_vsnprintf (com_errorMessage, sizeof(com_errorMessage), fmt, argptr);
 	va_end (argptr);	
 
 	if ( code != ERR_DISCONNECT ) {

@@ -25,19 +25,10 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 
-#if id386 && !((defined __linux__ || defined MACOS_X || defined MINGW32) && defined __i386__)
-#pragma warning(disable: 4035)
-static long myftol( float f ) 
+static inline long myftol( float f )
 {
-	static int tmp;
-	__asm fld f
-	__asm fistp tmp
-	__asm mov eax, tmp
+	return (long)f;
 }
-#pragma warning(default: 4035)
-#else
-#define	myftol(x) ((int)(x))
-#endif
 
 extern int drawnFx;
 extern int mParticles;
