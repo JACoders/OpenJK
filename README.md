@@ -1,6 +1,3 @@
-## SORRY FOR THE HISTORY CHANGES! ##
-For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase.html#_recovering_from_upstream_rebase) for how to fix if you've changed anything, or just delete your github fork and local folder and start over if you haven't.
-
 # JACoders "OpenJK" project #
 IRC: irc.arloria.net / #JACoders ([webchat](http://www.arloria.net/tiramisu/tiramisu.swf?channels=#jacoders))
 
@@ -55,6 +52,9 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 * rd-raspberry (OpenGL ES compliant renderer for use with Raspberry Pi - feel free to maintain!)
 * rd-strawberry (Maintainer: Xycaleth)
 * rd-vader (Maintainer: mrwonko)
+
+### Sorry for the history changes! ###
+For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase.html#_recovering_from_upstream_rebase) for how to fix if you've changed anything, or just delete your github fork and local folder and start over if you haven't.
 
 ### Engine "hax" ###
 * If your mod intends to use engine "hax" to figure out the nedaddr types (NA_IP, etc) NA_BAD is now 0 and NA_BOT is now 1 instead of vice versa.
