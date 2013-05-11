@@ -30,9 +30,6 @@ This file is part of Jedi Academy.
 
 static CTerrainMap	*TerrainMap = 0;
 
-void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, 
-					   qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
-
 // simple function for getting a proper color for a side
 inline CPixel32 SideColor(int side)
 {
@@ -86,22 +83,13 @@ CTerrainMap::CTerrainMap(CCMLandScape *landscape) :
 		}
 
 	// Load icons for symbols on map
-	GLenum	format;
-#ifdef _XBOX
-	int mipcount;
+	int	format;
 
-	R_LoadImage("gfx/menus/rmg/start", (byte**)&mSymStart, &mSymStartWidth, &mSymStartHeight, &mipcount, &format);
-	R_LoadImage("gfx/menus/rmg/end", (byte**)&mSymEnd, &mSymEndWidth, &mSymEndHeight, &mipcount, &format);
-	R_LoadImage("gfx/menus/rmg/objective", (byte**)&mSymObjective, &mSymObjectiveWidth, &mSymObjectiveHeight, &mipcount, &format);
+	re.LoadImageJA("gfx/menus/rmg/start", (byte**)&mSymStart, &mSymStartWidth, &mSymStartHeight, &format);
+	re.LoadImageJA("gfx/menus/rmg/end", (byte**)&mSymEnd, &mSymEndWidth, &mSymEndHeight, &format);
+	re.LoadImageJA("gfx/menus/rmg/objective", (byte**)&mSymObjective, &mSymObjectiveWidth, &mSymObjectiveHeight, &format);
 
-	R_LoadImage("gfx/menus/rmg/building", (byte**)&mSymBld, &mSymBldWidth, &mSymBldHeight, &mipcount, &format);
-#else
-	R_LoadImage("gfx/menus/rmg/start", (byte**)&mSymStart, &mSymStartWidth, &mSymStartHeight, &format);
-	R_LoadImage("gfx/menus/rmg/end", (byte**)&mSymEnd, &mSymEndWidth, &mSymEndHeight, &format);
-	R_LoadImage("gfx/menus/rmg/objective", (byte**)&mSymObjective, &mSymObjectiveWidth, &mSymObjectiveHeight, &format);
-
-	R_LoadImage("gfx/menus/rmg/building", (byte**)&mSymBld, &mSymBldWidth, &mSymBldHeight, &format);
-#endif
+	re.LoadImageJA("gfx/menus/rmg/building", (byte**)&mSymBld, &mSymBldWidth, &mSymBldHeight, &format);
 }
 
 CTerrainMap::~CTerrainMap()
@@ -141,19 +129,13 @@ void CTerrainMap::ApplyBackground(void)
 	byte	*backgroundImage;
 	int		backgroundWidth, backgroundHeight, backgroundDepth;
 	int		pos;
-	GLenum	format;
+	int		format;
 
 	memset(mImage, 255, sizeof(mBufImage));
 //	R_LoadImage("textures\\kamchatka\\ice", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);0
 	backgroundDepth = 4;
 
-#ifdef _XBOX
-	int mipcount;
-
-	R_LoadImage("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight, &mipcount, &format);
-#else
-	R_LoadImage("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);
-#endif
+	re.LoadImageJA("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);
 	if (backgroundImage)
 	{
 		outPos = (byte *)mBufImage;
@@ -390,7 +372,7 @@ void CTerrainMap::Upload(vec3_t player_origin, vec3_t player_angles)
 
 	draw.SetAlphaBuffer(255);
 	
-	R_CreateAutomapImage("*automap", (unsigned char *)draw.buffer, TM_WIDTH, TM_HEIGHT, qfalse, qfalse, qtrue, qfalse);
+	re.R_CreateAutomapImage("*automap", (unsigned char *)draw.buffer, TM_WIDTH, TM_HEIGHT, qfalse, qfalse, qtrue, qfalse);
 
 	draw.SetBuffer((CPixel32*) mImage);
 }

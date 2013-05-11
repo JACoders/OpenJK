@@ -57,7 +57,6 @@ This file is part of Jedi Academy.
 
 #define MAX_VIDEO_HANDLES	16
 
-extern glconfig_t glConfig;
 extern	int		s_paintedtime;
 extern	int		s_rawend;
 
@@ -161,7 +160,7 @@ static int CIN_HandleForVideo(void) {
 	int		i;
 
 	//these end up in scratchImage[NUM_SCRATCH_IMAGES], so MAX_VIDEO_HANDLES should match
-	assert (MAX_VIDEO_HANDLES<=NUM_SCRATCH_IMAGES);
+	//assert (MAX_VIDEO_HANDLES<=NUM_SCRATCH_IMAGES);	// derp --eez
 
 	for ( i = 0 ; i < MAX_VIDEO_HANDLES ; i++ ) {
 		if ( cinTable[i].fileName[0] == 0 ) {
@@ -917,7 +916,7 @@ static void readQuadInfo( byte *qData )
 	cinTable[currentHandle].drawX = cinTable[currentHandle].CIN_WIDTH;
 	cinTable[currentHandle].drawY = cinTable[currentHandle].CIN_HEIGHT;
 	// jic the card sucks
-	if ( glConfig.maxTextureSize <= 256) {
+	if ( cls.glconfig.maxTextureSize <= 256) {
         if (cinTable[currentHandle].drawX>256) {
             cinTable[currentHandle].drawX = 256;
         }

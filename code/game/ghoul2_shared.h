@@ -338,8 +338,15 @@ public:
 	virtual const vector<CGhoul2Info> &Get(int handle) const=0;
 };
 
+#ifdef RENDERER
 IGhoul2InfoArray &TheGhoul2InfoArray();
+#else
+#ifdef _JK2EXE
+IGhoul2InfoArray &_TheGhoul2InfoArray();
+#else
 IGhoul2InfoArray &TheGameGhoul2InfoArray();
+#endif
+#endif
 
 class CGhoul2Info_v
 {
@@ -347,10 +354,14 @@ class CGhoul2Info_v
 
 	IGhoul2InfoArray &InfoArray() const
 	{
-#ifdef _JK2EXE
+#ifdef RENDERER
 		return TheGhoul2InfoArray();
 #else
+#ifdef _JK2EXE
+		return _TheGhoul2InfoArray();
+#else
 		return TheGameGhoul2InfoArray();
+#endif
 #endif
 	}
 

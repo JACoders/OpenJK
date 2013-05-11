@@ -737,7 +737,7 @@ void Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooL
 	strncpy( dest, src, destsize-1 );
     dest[destsize-1] = 0;
 }
-#if (!defined _WIN32 || defined MINGW32)
+#if 1         
 int Q_stricmpn (const char *s1, const char *s2, int n) {
 	int		c1, c2;
 	
@@ -897,7 +897,6 @@ char *Q_CleanStr( char *string ) {
 
 	return string;
 }
-
 
 #ifdef _MSC_VER
 /*

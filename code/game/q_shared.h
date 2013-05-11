@@ -79,27 +79,35 @@ This file is part of Jedi Academy.
 #include <time.h>
 #include <ctype.h>
 #include "../qcommon/platform.h"
+#include <limits.h>
+//=======================================================================
 
-#ifdef _XBOX
-#define tvector(T) std::vector< T >
-#define tdeque(T) std::deque< T >
+//Ignore __attribute__ on non-gcc platforms
+#if !defined(__GNUC__) && !defined(__attribute__)
+	#define __attribute__(x)
+#endif
 
-#define tlist(T) std::list< T >
-#define tslist(T) std::slist< T >
+#if defined(__GNUC__)
+	#define UNUSED_VAR __attribute__((unused))
+#else
+	#define UNUSED_VAR
+#endif
 
-#define tset(T) std::set< T, std::less< T > >
-#define tmultiset(T) std::multiset< T, std::less< T > >
+#if (defined _MSC_VER)
+	#define Q_EXPORT __declspec(dllexport)
+#elif (defined __SUNPRO_C)
+	#define Q_EXPORT __global
+#elif ((__GNUC__ >= 3) && (!__EMX__) && (!sun))
+	#define Q_EXPORT __attribute__((visibility("default")))
+#else
+	#define Q_EXPORT
+#endif
 
-#define tcset(T,C) std::set< T, C >
-#define tcmultiset(T,C) std::multiset< T, C >
-
-#define tmap(K,T) std::map< K, T, std::less< K > >
-#define tmultimap(K,T) std::multimap< K, T, std::less< K > >
-
-#define tcmap(K,T,C) std::map< K, T, C >
-#define tcmultimap(K,T,C) std::multimap< K, T, C >
-#endif // _XBOX
-
+#if defined(__linux__) && !defined(__GCC__)
+#define Q_EXPORT_C extern "C"
+#else
+#define Q_EXPORT_C
+#endif
 
 // this is the define for determining if we have an asm version of a C function
 #if (defined _M_IX86 || defined __i386__) && !defined __sun__  && !defined __LCC__
@@ -160,6 +168,10 @@ This file is part of Jedi Academy.
 #endif
 
 #define	PATH_SEP	'/'
+
+#define	GAME_HARD_LINKED
+#define	CGAME_HARD_LINKED
+#define	UI_HARD_LINKED
 
 #endif
 
@@ -400,6 +412,18 @@ typedef	int	fixed16_t;
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
+#endif
+
+#if defined(_MSC_VER)
+static __inline long Q_ftol(float f)
+{
+	return (long)f;
+}
+#else
+static inline long Q_ftol(float f)
+{
+	return (long)f;
+}
 #endif
 
 #define NUMVERTEXNORMALS	162
@@ -1284,7 +1308,7 @@ int Q_islower( int c );
 int Q_isupper( int c );
 int Q_isalpha( int c );
 
-#if (!defined _WIN32 || defined MINGW32)
+#if 1
 // portable case insensitive compare
 int		Q_strncmp (const char *s1, const char *s2, int n);
 int		Q_stricmpn (const char *s1, const char *s2, int n);

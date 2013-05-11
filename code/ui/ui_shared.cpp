@@ -4427,7 +4427,7 @@ qboolean ItemParse_cvarFloat( itemDef_t *item)
 	{
 		if (!stricmp(item->cvar,"r_ext_texture_filter_anisotropic"))
 		{//hehe, hook up the correct max value here.
-			editPtr->maxVal=glConfig.maxTextureFilterAnisotropy;
+			editPtr->maxVal=cls.glconfig.maxTextureFilterAnisotropy;
 		}
 		return qtrue;
 	}

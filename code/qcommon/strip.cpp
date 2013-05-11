@@ -88,46 +88,6 @@ static cvar_t	*sp_leet;
 #define SP_REGISTER_MENU	 (0x04)
 #define SP_REGISTER_REQUIRED (0x08)
 
-class cStrings
-{
-private:
-	unsigned int	Flags;
-	char			*Reference;
-	
-public:
-					 cStrings(unsigned int initFlags = 0, char *initReference = NULL);
-	virtual			~cStrings(void);
-
-	virtual void	Clear(void);
-
-	void			SetFlags(unsigned int newFlags);
-	void			SetReference(char *newReference);
-
-	unsigned int	GetFlags(void) { return Flags; }
-	char			*GetReference(void) { return Reference; }
-
-	virtual bool	UnderstandToken(int token, char *data );
-	virtual bool	Load(char *&Data, int &Size );
-};
-
-
-class cStringsSingle : public cStrings
-{
-private:
-	char			*Text;
-
-	virtual void	Clear(void);
-	void			SetText(const char *newText);
-
-public:
-					 cStringsSingle(unsigned int initFlags = 0, char *initReference = NULL);
-	virtual			~cStringsSingle();
-
-	char			*GetText(void) { return Text; }
-
-	virtual bool	UnderstandToken(int token, char *data );
-};
-
 
 //======================================================================
 

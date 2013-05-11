@@ -24,6 +24,10 @@ This file is part of Jedi Academy.
 #include "../../codeJK2/qcommon/strippublic.h"
 #include "../qcommon/cm_public.h"
 
+#ifdef _WIN32
+	#include <windows.h>
+#endif
+
 
 // some zone mem debugging stuff
 #ifndef FINAL_BUILD
