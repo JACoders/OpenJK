@@ -15,13 +15,6 @@ typedef unsigned int glIndex_t;
 // number of possible facial extensions
 #define NUM_SKIN_EXTENSIONS 9
 
-// fast float to int conversion
-#if id386 && !(defined __linux__ && defined __i386__)
-long myftol( float f );
-#else
-#define	myftol(x) ((int)(x))
-#endif
-
 
 // everything that is needed by the backend needs
 // to be double buffered to allow it to run in

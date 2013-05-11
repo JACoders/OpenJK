@@ -25,11 +25,6 @@ This file is part of Jedi Academy.
 
 #include "cg_media.h"
 
-static inline long myftol( float f )
-{
-	return (long)f;
-}
-
 extern int drawnFx;
 extern int mParticles;
 extern int mOParticles;
@@ -47,7 +42,7 @@ void ClampVec( vec3_t dat, byte *res )
 	// clamp all vec values, then multiply the normalized values by 255 to maximize the result
 	for ( int i = 0; i < 3; i++ )
 	{
-		r = myftol(dat[i] * 255.0f);
+		r = Q_ftol(dat[i] * 255.0f);
 
 		if ( r < 0 )
 		{
