@@ -845,7 +845,7 @@ $(B)/$(OPENJKDED)/sys/%.o: sys/%.cpp
 	$(CXX) $(OPENJKDED_CFLAGS) -c $< -o $@
 	
 $(B)/$(OPENJKDED)/sys/snapvector.o: sys/snapvector.c
-	$(CC) $(OPENJK_CFLAGS) -c $< -o $@
+	$(CC) $(OPENJKDED_CFLAGS) -c $< -o $@
 
 $(B)/$(OPENJKDED)/zlib/ioapi.o: zlib/ioapi.c
 	$(CC) $(OPENJKDED_CFLAGS) -c $< -o $@
