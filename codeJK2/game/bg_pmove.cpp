@@ -350,7 +350,7 @@ static void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 	int			i;
 	float		addspeed, accelspeed, currentspeed;
 
-	currentspeed = VectorLength( wishdir );
+	currentspeed = DotProduct (pm->ps->velocity, wishdir);
 
 	addspeed = wishspeed - currentspeed;
 	

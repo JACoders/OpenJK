@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <libgen.h>
 
 #include "qcommon/qcommon.h"
 #include "qcommon/q_shared.h"
@@ -145,6 +146,26 @@ TODO
 qboolean Sys_LowPhysicalMemory( void )
 {
 	return qfalse;
+}
+
+/*
+==================
+Sys_Basename
+==================
+*/
+const char *Sys_Basename( char *path )
+{
+	return basename( path );
+}
+
+/*
+==================
+Sys_Dirname
+==================
+*/
+const char *Sys_Dirname( char *path )
+{
+	return dirname( path );
 }
 
 /*
@@ -453,15 +474,6 @@ char *Sys_Cwd( void )
 	cwd[MAX_OSPATH-1] = 0;
 
 	return cwd;
-}
-
-/*
-==============
-Sys_DefaultBasePath
-==============
-*/
-char *Sys_DefaultBasePath( void ) {
-	return Sys_Cwd();
 }
 
 void Sys_ShowConsole( int visLevel, qboolean quitOnClose )
