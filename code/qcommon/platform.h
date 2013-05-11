@@ -31,8 +31,6 @@
 //from gcc documentation
 #define offsetof(type, member)  __builtin_offsetof (type, member)
 
-#define Q_vsnprintf snprintf
-
 #endif
 
 #if defined (__linux__)
