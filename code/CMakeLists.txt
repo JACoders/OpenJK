@@ -10,6 +10,11 @@ if(BuildSPGame)
 	add_subdirectory("${SPDir}/game")
 endif(BuildSPGame)
 
+#    Add Modular Renderer project
+if(BuildSPVanillaRenderer)
+	add_subdirectory("${SPDir}/rd-vanilla")
+endif(BuildSPVanillaRenderer)
+
 #    Add Engine Project
 if(BuildSPEngine)
 	# Libraries
@@ -62,11 +67,6 @@ if(BuildSPEngine)
 
 	
 	#    Source Files
-	
-	file(GLOB_RECURSE J_SRC "${SPDir}/jpeg-6/*.cpp" "${SPDir}/jpeg-6/*.h")
-	source_group("jpeg-6" FILES ${J_SRC})
-	set(SPEngineFiles ${SPEngineFiles} ${J_SRC})
-
 
 	# Client files
 	set(SPEngineClientFiles
@@ -251,56 +251,11 @@ if(BuildSPEngine)
 	source_group("mp3" FILES ${SPEngineMP3Files})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineMP3Files})
 
-
-	# Renderer files
 	set(SPEngineRendererFiles
-		"${SPDir}/renderer/matcomp.c"
-		"${SPDir}/renderer/tr_arioche.cpp"
-		"${SPDir}/renderer/tr_backend.cpp"
-		"${SPDir}/renderer/tr_bsp.cpp"
-		"${SPDir}/renderer/tr_cmds.cpp"
-		"${SPDir}/renderer/tr_curve.cpp"
-		"${SPDir}/renderer/tr_draw.cpp"
-		"${SPDir}/renderer/tr_font.cpp"
-		"${SPDir}/renderer/tr_ghoul2.cpp"
-		"${SPDir}/renderer/tr_image.cpp"
-		"${SPDir}/renderer/tr_init.cpp"
-		"${SPDir}/renderer/tr_jpeg_interface.cpp"
-		"${SPDir}/renderer/tr_light.cpp"
-		"${SPDir}/renderer/tr_main.cpp"
-		"${SPDir}/renderer/tr_marks.cpp"
-		"${SPDir}/renderer/tr_mesh.cpp"
-		"${SPDir}/renderer/tr_model.cpp"
-		"${SPDir}/renderer/tr_noise.cpp"
-		"${SPDir}/renderer/tr_quicksprite.cpp"
-		"${SPDir}/renderer/tr_scene.cpp"
-		"${SPDir}/renderer/tr_shade.cpp"
-		"${SPDir}/renderer/tr_shade_calc.cpp"
-		"${SPDir}/renderer/tr_shader.cpp"
-		"${SPDir}/renderer/tr_shadows.cpp"
-		"${SPDir}/renderer/tr_sky.cpp"
-		"${SPDir}/renderer/tr_stl.cpp"
-		"${SPDir}/renderer/tr_surface.cpp"
-		"${SPDir}/renderer/tr_surfacesprites.cpp"
-		"${SPDir}/renderer/tr_terrain.cpp"
-		"${SPDir}/renderer/tr_world.cpp"
-		"${SPDir}/renderer/tr_WorldEffects.cpp"
-		"${SPDir}/renderer/matcomp.h"
 		"${SPDir}/renderer/mdx_format.h"
-		"${SPDir}/renderer/glext.h"
-		"${SPDir}/renderer/qgl.h"
-		"${SPDir}/renderer/tr_font.h"
-		"${SPDir}/renderer/tr_jpeg_interface.h"
-		"${SPDir}/renderer/tr_landscape.h"
-		"${SPDir}/renderer/tr_local.h"
 		"${SPDir}/renderer/tr_public.h"
-		"${SPDir}/renderer/tr_quicksprite.h"
-		"${SPDir}/renderer/tr_stl.h"
 		"${SPDir}/renderer/tr_types.h"
-		"${SPDir}/renderer/tr_WorldEffects.h"
 		)
-	source_group("renderer" FILES ${SPEngineRendererFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEngineRendererFiles})
 
 
 	# UI files
@@ -352,15 +307,6 @@ if(BuildSPEngine)
 	source_group("rmg" FILES ${SPEngineRMGFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineRMGFiles})
 
-
-	# Server files
-	set(SPEnginePNGFiles
-		"${SPDir}/png/png.cpp"
-		"${SPDir}/png/png.h"
-		)
-	source_group("png" FILES ${SPEnginePNGFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEnginePNGFiles})
-
 	# zlib files
 	set(SPEngineZlibFiles
 		"${SPDir}/zlib32/deflate.cpp"
@@ -376,11 +322,6 @@ if(BuildSPEngine)
 
 	# Ghoul2 files
 	set(SPEngineGhoul2Files
-		"${SPDir}/ghoul2/G2_API.cpp"
-		"${SPDir}/ghoul2/G2_bolts.cpp"
-		"${SPDir}/ghoul2/G2_bones.cpp"
-		"${SPDir}/ghoul2/G2_misc.cpp"
-		"${SPDir}/ghoul2/G2_surfaces.cpp"
 		"${SPDir}/ghoul2/G2.h"
 		"${SPDir}/ghoul2/ghoul2_gore.h"	
 		)
@@ -408,9 +349,6 @@ if(BuildSPEngine)
 			"${SPDir}/win32/win_syscon.cpp"
 			"${SPDir}/win32/win_video.cpp"
 			"${SPDir}/win32/win_wndproc.cpp"
-			"${SPDir}/win32/win_gamma.cpp"
-			"${SPDir}/win32/win_glimp.cpp"
-			"${SPDir}/win32/win_qgl.cpp"
 			"${SPDir}/win32/win_local.h"
 			"${SPDir}/win32/AutoVersion.h"
 			"${SPDir}/win32/resource.h"

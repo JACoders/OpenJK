@@ -178,11 +178,11 @@ void Sys_SnapVector( float *v )
 	__asm	fistp	i;
 	*v = i;
 	/*
-	*v = myftol(*v);
+	*v = Q_ftol(*v);
 	v++;
-	*v = myftol(*v);
+	*v = Q_ftol(*v);
 	v++;
-	*v = myftol(*v);
+	*v = Q_ftol(*v);
 	*/
 }
 

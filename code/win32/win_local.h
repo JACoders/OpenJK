@@ -18,6 +18,8 @@ This file is part of Jedi Academy.
 
 // win_local.h: Win32-specific Quake3 header file
 
+#pragma once
+
 #if defined (_MSC_VER) && (_MSC_VER >= 1200)
 #pragma warning(disable : 4201)
 #pragma warning( push )
@@ -71,7 +73,6 @@ void Conbuf_AppendText( const char *msg );
 
 void SNDDMA_Activate( qboolean bAppActive );
 
-#ifndef _XBOX
 typedef struct
 {
 	HWND			hWnd;
@@ -86,7 +87,6 @@ typedef struct
 } WinVars_t;
 
 extern WinVars_t	g_wv;
-#endif
 
 
 #define	MAX_QUED_EVENTS		256

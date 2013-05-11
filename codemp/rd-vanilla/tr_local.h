@@ -18,13 +18,6 @@ typedef unsigned int glIndex_t;
 	#include "qcommon/platform.h"
 #endif
 
-// fast float to int conversion
-#if id386 && !( (defined __linux__ || defined __FreeBSD__ || defined MACOS_X) && (defined __i386__ ) ) // rb010123
-	inline long myftol( float f );
-#else
-	#define	myftol(x) ((int)(x))
-#endif
-
 //for 3d textures -rww
 #define GL_TEXTURE_3D                     0x806F
 
