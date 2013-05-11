@@ -14,10 +14,8 @@ RDVA    		= rd-vanilla_i386
 
 ifeq ($(PLATFORM),darwin)
 	DLL_EXT		= dylib
-	BINARY_FMT	= macho
 else
 	DLL_EXT		= so
-	BINARY_FMT	= elf
 endif
 
 GAME_NAME		= $(B)/$(INST)/$(BASE)/jampgamei386.$(DLL_EXT)
@@ -398,7 +396,7 @@ OPENJKDED_OBJS		= $(B)/$(OPENJKDED)/botlib/be_aas_bspq3.o \
 				 	  $(B)/$(OPENJKDED)/botlib/be_aas_main.o \
 					  $(B)/$(OPENJKDED)/botlib/be_aas_move.o \
 					  $(B)/$(OPENJKDED)/botlib/be_aas_optimize.o \
-				      $(B)/$(OPENJKDED)/botlib/be_aas_reach.o \
+				      	  $(B)/$(OPENJKDED)/botlib/be_aas_reach.o \
 					  $(B)/$(OPENJKDED)/botlib/be_aas_route.o \
 					  $(B)/$(OPENJKDED)/botlib/be_aas_routealt.o \
 					  $(B)/$(OPENJKDED)/botlib/be_aas_sample.o \
@@ -798,8 +796,8 @@ $(B)/$(OPENJK)/server/NPCNav/%.o: server/NPCNav/%.cpp
 $(B)/$(OPENJK)/sys/%.o: sys/%.cpp
 	$(CXX) $(OPENJK_CFLAGS) -c $< -o $@
 	
-$(B)/$(OPENJK)/sys/%.o: sys/%.nasm
-	nasm -f $(BINARY_FMT) -o $@  $<
+$(B)/$(OPENJK)/sys/snapvector.o: sys/snapvector.c
+	$(CC) $(OPENJK_CFLAGS) -c $< -o $@
 
 $(B)/$(OPENJK)/zlib/ioapi.o: zlib/ioapi.c
 	$(CC) $(OPENJK_CFLAGS) -c $< -o $@
@@ -846,8 +844,8 @@ $(B)/$(OPENJKDED)/server/NPCNav/%.o: server/NPCNav/%.cpp
 $(B)/$(OPENJKDED)/sys/%.o: sys/%.cpp
 	$(CXX) $(OPENJKDED_CFLAGS) -c $< -o $@
 	
-$(B)/$(OPENJKDED)/sys/%.o: sys/%.nasm
-	nasm -f $(BINARY_FMT) -o $@  $<
+$(B)/$(OPENJKDED)/sys/snapvector.o: sys/snapvector.c
+	$(CC) $(OPENJK_CFLAGS) -c $< -o $@
 
 $(B)/$(OPENJKDED)/zlib/ioapi.o: zlib/ioapi.c
 	$(CC) $(OPENJKDED_CFLAGS) -c $< -o $@
