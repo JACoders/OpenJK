@@ -919,7 +919,10 @@ JOYSTICK
 
 #ifndef NO_XINPUT
 
+#pragma comment(lib, "xinput.lib")
+
 static XINPUT_STATE xiState;
+static int xiButtonDebounce[16];
 
 /*
 ===============
@@ -939,6 +942,7 @@ void IN_JoystickInitXInput ( void )
 		return;
 	}
 
+	ZeroMemory( xiButtonDebounce, sizeof(xiButtonDebounce) );
 	joy.avail = qtrue;	// semi hack, we really have no use for joy. whatever, but we use this to message when connection state changes
 
 }
@@ -1220,16 +1224,17 @@ float ID_INLINE XI_ThumbFloat( signed short thumbValue )
 
 /*
 ===========
-XI_ApplySensitivity
+XI_ApplyInversion
 
-Applies sensitivity to the given axis
+Inverts look up/down and look left/right appropriately
 ===========
 */
-void ID_INLINE XI_ApplySensitivity( float *normalizedThumbValue )
+void XI_ApplyInversion( float *fX, float *fY )
 {
-	*normalizedThumbValue *= in_joyBallScale->value;
-	if(abs(*normalizedThumbValue) > 1.0f)
-		*normalizedThumbValue = 1.0f;
+	if( xin_invertLookX->integer )
+		*fX *= -1.0f;
+	if( xin_invertLookY->integer )
+		*fY *= -1.0f;
 }
 
 /*
@@ -1270,67 +1275,128 @@ void IN_DoXInput( void )
 	float leftThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbLY);
 	float rightThumbX = XI_ThumbFloat(xiState.Gamepad.sThumbRX);
 	float rightThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbRY);
+	int dX = 0, dY = 0;
+
+	/* hi microsoft, go fuck yourself for flipping the Y axis for no reason... */
+	leftThumbY *= -1.0f;
+	rightThumbY *= -1.0f;
 
 	// JOYSTICKS
 	// This is complete and utter trash in DirectInput, because it doesn't send like half as much crap as it should.
 	if( xin_invertThumbsticks->integer )
 	{
 		// Left stick functions like right stick
-		XI_ApplySensitivity(&leftThumbX);
-		XI_ApplySensitivity(&leftThumbY);
+		XI_ApplyInversion(&leftThumbX, &leftThumbY);
 
 		// Left stick behavior
-		if( leftThumbX > joy_threshold->value )	// FIXME: what does do about deadzones and sensitivity...
+		if( abs(leftThumbX) > joy_threshold->value )	// FIXME: what does do about deadzones and sensitivity...
 		{
-
+			dX = (leftThumbX-joy_threshold->value) * in_joyBallScale->value * 1024;
 		}
-		if( leftThumbY > joy_threshold->value )
+		if( abs(leftThumbY) > joy_threshold->value )
 		{
-
+			dY = (leftThumbY-joy_threshold->value) * in_joyBallScale->value * 1024;
 		}
+		// Square it.
+		dX *= abs(dX);
+		dY *= abs(dY);
+		
+		Sys_QueEvent(g_wv.sysMsgTime, SE_MOUSE, dX, dY, 0, NULL);
 
 		// Right stick behavior
 		// Hardcoded deadzone within the gamecode itself to deal with the situation
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_SIDE, rightThumbX * 127, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_FORWARD, rightThumbY * 127, 0, NULL);
 	}
 	else
 	{
 		// Thumbsticks act as they should (right stick = camera, left stick = wasd equivalent)
-		XI_ApplySensitivity(&rightThumbX);
-		XI_ApplySensitivity(&rightThumbY);
+		XI_ApplyInversion(&rightThumbX, &rightThumbY);
+		
 
 		// Left stick behavior
 		// Hardcoded deadzone within the gamecode itself to deal with the situation
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_SIDE, leftThumbX * 127, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_FORWARD, leftThumbY * 127, 0, NULL);
 
 		// Right stick behavior
-		if( rightThumbX > joy_threshold->value )
+		if( abs(rightThumbX) > joy_threshold->value )
 		{
-
+			dX = (rightThumbX-joy_threshold->value) * in_joyBallScale->value * 1024;
 		}
-		if( rightThumbY > joy_threshold->value )
+		if( abs(rightThumbY) > joy_threshold->value )
 		{
-
+			dY = (rightThumbY-joy_threshold->value) * in_joyBallScale->value * 1024;
 		}
+		// Square it.
+		dX *= abs(dX);
+		dY *= abs(dY);
+
+		if(dX || dY)
+			Sys_QueEvent(g_wv.sysMsgTime, SE_MOUSE, dX, dY, 0, NULL);
 	}
 
 
 	// BUTTONS
-	// Here's a general guideline to how I'll lay it out:
-	// A = JOY1 (ENTER when in UI)
-	// B = JOY2
-	// X = JOY3
-	// Y = JOY4 (ESC when in UI)
-	// Back = JOY5 (ESC when in UI)
-	// Start = JOY6
-	// DPad Up = JOY7 (UP when in UI)
-	// DPad Down = JOY8 (DOWN when in UI)
-	// DPad Right = JOY9 (RIGHT when in UI)
-	// DPad Left = JOY10 (LEFT when in UI)
-	// Left Stick Down = JOY11
-	// Right Stick Down = JOY12
-	// Left Bumper = JOY13
-	// Right Bumper = JOY14
-	// Left Trigger = JOY15
-	// Right Trigger = JOY16
+
+	for(int i = 0; i < 14; i++)
+	{
+		if( xiState.Gamepad.wButtons & (1 << i) &&
+			xiButtonDebounce[i] < g_wv.sysMsgTime )
+		{
+			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY1+i, qtrue, 0, NULL);
+			xiButtonDebounce[i] = g_wv.sysMsgTime + 50;
+		}
+		else if( !(xiState.Gamepad.wButtons & (1 << i)) )
+		{
+			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY1+i, qfalse, 0, NULL);
+		}
+	}
+	// extra magic required for the triggers
+	if( xiState.Gamepad.bLeftTrigger && xiButtonDebounce[14] < g_wv.sysMsgTime )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qtrue, 0, NULL);
+		xiButtonDebounce[14] = g_wv.sysMsgTime + 50;
+	}
+	else if( !xiState.Gamepad.bLeftTrigger )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qfalse, 0, NULL);
+	}
+
+	if( xiState.Gamepad.bRightTrigger && xiButtonDebounce[15] < g_wv.sysMsgTime )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qtrue, 0, NULL);
+	}
+	else if( !xiState.Gamepad.bRightTrigger )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qfalse, 0, NULL);
+		xiButtonDebounce[15] = g_wv.sysMsgTime + 50;
+	}
+
+	/*Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY1, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_A), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY2, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_B), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY3, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_X), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY4, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_Y), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY5, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_BACK), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY6, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_START), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY7, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY8, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY9, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY10, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY11, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY12, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY13, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY14, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, (xiState.Gamepad.bLeftTrigger > 0), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, (xiState.Gamepad.bRightTrigger > 0), 0, NULL);*/
+
+	// HACK, these are aliases for the menu. Since the above is sent first, these don't affect keybinds for controls screen :)
+	/*Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_ENTER, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_A), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_ESCAPE, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_B), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_LEFT, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_RIGHT, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_UP, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_DOWN, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN), 0, NULL);*/
 }
 #endif
 
