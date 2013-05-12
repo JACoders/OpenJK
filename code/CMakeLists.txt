@@ -363,7 +363,6 @@ if(BuildSPEngine)
 			"${SPDir}/sys/sys_unix.cpp"
 			"${SPDir}/sys/sys_local.h"
 			"${SPDir}/sys/sys_loadlib.h"
-			"${SPDir}/sdl/sdl_glimp.cpp"
 			"${SPDir}/sdl/sdl_qgl.h"
 			"${SPDir}/sdl/sdl_snd.cpp"
 			"${SPDir}/sdl/sdl_input.cpp"
