@@ -13,7 +13,7 @@ if(NOT WIN32)
 endif(NOT WIN32)
 
 #      Defines
-set(SPVanillaRendererDefines ${SharedDefines} "RENDERER" "_JK2EXE")
+set(SPRDVanillaDefines ${SharedDefines} "RENDERER" "_JK2EXE")
 
 # not sure what to do about OpenGL/OpenAL since I don't actually use Linux (big surprise eh) but I know it isn't included on windows
 if(NOT WIN32)
@@ -26,8 +26,8 @@ endif(NOT WIN32)
 
 # JPEG
 file(GLOB_RECURSE J_SRC "${SPDir}/jpeg-6/*.cpp" "${SPDir}/jpeg-6/*.h")
-	source_group("jpeg-6" FILES ${J_SRC})
-	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${J_SRC})
+source_group("jpeg-6" FILES ${J_SRC})
+set(SPRDVanillaFiles ${SPRDVanillaFiles} ${J_SRC})
 
 # GHOUL 2
 set(SPRDVanillaG2Files
@@ -44,25 +44,28 @@ set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaG2Files})
 
 # PNG
 set(SPRDVanillaPNGFiles
-		"${SPDir}/png/png.cpp"
-		"${SPDir}/png/png.h"
-		)
-	source_group("png" FILES ${SPRDVanillaPNGFiles})
-	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaPNGFiles})
+	"${SPDir}/png/png.cpp"
+	"${SPDir}/png/png.h"
+	)
+source_group("png" FILES ${SPRDVanillaPNGFiles})
+set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaPNGFiles})
 
 # Misc files
-set(SPRDVanillaMiscFiles
-		"${SPDir}/qcommon/cm_landscape.h"
-		"${SPDir}/game/genericparser2.h"
-		"${SPDir}/game/genericparser2.cpp"
-		"${SPDir}/renderer/mdx_format.h"
-		"${SPDir}/game/q_math.cpp"
-		"${SPDir}/game/q_shared.cpp"
-		"${SPDir}/renderer/tr_public.h"
-		"${SPDir}/renderer/tr_types.h"
-		)
-	source_group("misc" FILES ${SPRDVanillaMiscFiles})
-	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaMiscFiles})
+set(SPRDVanillaGameFiles
+	"${SPDir}/game/genericparser2.h"
+	"${SPDir}/game/genericparser2.cpp"
+	"${SPDir}/game/q_math.cpp"
+	"${SPDir}/game/q_shared.cpp"
+	)
+source_group("game" FILES ${SPRDVanillaGameFiles})
+set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaGameFiles})
+
+# Misc files
+set(SPRDVanillaCommonFiles
+	"${SPDir}/qcommon/cm_landscape.h"
+	)
+source_group("common" FILES ${SPRDVanillaCommonFiles})
+set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonFiles})
 
 # zlib files
 set(SPRDVanillaZlibFiles
@@ -73,11 +76,15 @@ set(SPRDVanillaZlibFiles
 	"${SPDir}/zlib32/inflate.h"
 	"${SPDir}/zlib32/zip.h"
 	)
-source_group("rd-zlib" FILES ${SPRDVanillaZlibFiles})
-set(SPEngineFiles ${SPRDVanillaFiles} ${SPRDVanillaZlibFiles})
+source_group("zlib" FILES ${SPRDVanillaZlibFiles})
+set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaZlibFiles})
 
 # main files
 set(SPRDVanillaMainFiles
+	"${SPDir}/renderer/mdx_format.h"
+	"${SPDir}/renderer/tr_public.h"
+	"${SPDir}/renderer/tr_types.h"
+
 	"${SPDir}/rd-vanilla/amd3d.h"
 	"${SPDir}/rd-vanilla/glext.h"
 	"${SPDir}/rd-vanilla/glext_console.h"
@@ -112,6 +119,7 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/tr_quicksprite.cpp"
 	"${SPDir}/rd-vanilla/tr_quicksprite.h"
 	"${SPDir}/rd-vanilla/tr_scene.cpp"
+	"${SPDir}/rd-vanilla/tr_shade.cpp"
 	"${SPDir}/rd-vanilla/tr_shade_calc.cpp"
 	"${SPDir}/rd-vanilla/tr_shader.cpp"
 	"${SPDir}/rd-vanilla/tr_shadows.cpp"
@@ -129,16 +137,24 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/win_glimp.cpp"
 	"${SPDir}/rd-vanilla/win_qgl.cpp"
 	)
-	source_group("SortMe" FILES ${SPEngineSortMe})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEngineSortMe})
+source_group("renderer" FILES ${SPRDVanillaMainFiles})
+set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaMainFiles})
+
+add_library(${SPRDVanillaRenderer} SHARED ${SPRDVanillaFiles})
+if(NOT WIN32)
+	# remove "lib" prefix for .so/.dylib files
+	set_target_properties(${SPRDVanillaRenderer} PROPERTIES PREFIX "")
+endif(NOT WIN32)
 
 if(WIN32)
-	add_executable(${SPRDVanilla} WIN32 ${SPRDVanillaFiles})
+	install(TARGETS ${SPRDVanillaRenderer} RUNTIME DESTINATION ".")
 else(WIN32)
-	add_executable(${SPRDVanilla} ${SPRDVanillaFiles})
+	install(TARGETS ${SPRDVanillaRenderer} LIBRARY DESTINATION ".")
 endif(WIN32)
-install(TARGETS ${SPRDVanilla} RUNTIME DESTINATION ".")
-set_target_properties(${SPRDVanilla} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPRDVanillaDefines};${ReleaseDefines}")
-set_target_properties(${SPRDVanilla} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPRDVanillaDefines};${ReleaseDefines}")
-set_target_properties(${SPRDVanilla} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPRDVanillaDefines};${ReleaseDefines}")
-set_target_properties(${SPRDVanilla} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPRDVanillaDefines};${DebugDefines}")
+
+set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPRDVanillaDefines};${ReleaseDefines}")
+set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPRDVanillaDefines};${ReleaseDefines}")
+set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPRDVanillaDefines};${ReleaseDefines}")
+set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPRDVanillaDefines};${DebugDefines}")
+
+#target_link_libraries(${SPRDVanillaRenderer} ${SPRDVanillaRendererLibraries})
