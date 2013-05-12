@@ -143,12 +143,6 @@ if(BuildMPEngine OR BuildMPDed)
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZLIB_LIBRARY})
 	endif(UseInternalZlib)
 
-	if(NOT WIN32)
-		find_package(SDL2 REQUIRED)
-		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${SDL2_INCLUDE_DIR})
-		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${SDL2_LIBRARY})
-	endif(NOT WIN32)
-	
 	file(GLOB_RECURSE J_SRC "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
 	source_group("jpeg-8c" FILES ${J_SRC})
 	
@@ -390,7 +384,13 @@ if(BuildMPEngine)
 		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENAL_INCLUDE_DIR})
 		set(MPEngineLibraries ${MPEngineLibraries} ${OPENAL_LIBRARY})
 	endif(UseInternalOpenAL)
-	
+
+	if(NOT WIN32)
+		find_package(SDL2 REQUIRED)
+		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
+		set(MPEngineLibraries ${MPEngineLibraries} ${SDL2_LIBRARY})
+	endif(NOT WIN32)
+
 	# EAX is Windows-Only (right?)
 	if(WIN32)
 		set(MPEngineEAXFiles
