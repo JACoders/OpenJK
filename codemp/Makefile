@@ -796,8 +796,8 @@ $(B)/$(OPENJK)/server/NPCNav/%.o: server/NPCNav/%.cpp
 $(B)/$(OPENJK)/sys/%.o: sys/%.cpp
 	$(CXX) $(OPENJK_CFLAGS) -c $< -o $@
 	
-$(B)/$(OPENJK)/sys/snapvector.o: sys/snapvector.c
-	$(CC) $(OPENJK_CFLAGS) -c $< -o $@
+$(B)/$(OPENJK)/sys/snapvector.o: sys/snapvector.cpp
+	$(CXX) $(OPENJK_CFLAGS) -c $< -o $@
 
 $(B)/$(OPENJK)/zlib/ioapi.o: zlib/ioapi.c
 	$(CC) $(OPENJK_CFLAGS) -c $< -o $@
@@ -844,8 +844,8 @@ $(B)/$(OPENJKDED)/server/NPCNav/%.o: server/NPCNav/%.cpp
 $(B)/$(OPENJKDED)/sys/%.o: sys/%.cpp
 	$(CXX) $(OPENJKDED_CFLAGS) -c $< -o $@
 	
-$(B)/$(OPENJKDED)/sys/snapvector.o: sys/snapvector.c
-	$(CC) $(OPENJKDED_CFLAGS) -c $< -o $@
+$(B)/$(OPENJKDED)/sys/snapvector.o: sys/snapvector.cpp
+	$(CXX) $(OPENJKDED_CFLAGS) -c $< -o $@
 
 $(B)/$(OPENJKDED)/zlib/ioapi.o: zlib/ioapi.c
 	$(CC) $(OPENJKDED_CFLAGS) -c $< -o $@
