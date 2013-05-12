@@ -345,13 +345,14 @@ if(BuildMPEngine OR BuildMPDed)
 			"${MPDir}/win32/win_local.h"
 			"${MPDir}/win32/win_net.cpp"
 			"${MPDir}/win32/win_shared.cpp"
+			"${MPDir}/sys/snapvector.cpp"
 			)
 		source_group("win32" FILES ${MPEngineAndDedWin32Files})
 		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedWin32Files})
 	else(WIN32)
 		set(MPEngineAndDedSysFiles
 			"${MPDir}/sys/vm_x86.cpp"
-			"${MPDir}/sys/snapvector.c"
+			"${MPDir}/sys/snapvector.cpp"
 			)
 		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedSysFiles})
 		source_group("sys" FILES ${MPEngineAndDedSysFiles})

@@ -153,40 +153,6 @@ int Sys_Milliseconds2( void )
 	return sys_curtime;
 }
 
-/*
-================
-Sys_SnapVector
-================
-*/
-void Sys_SnapVector( float *v )
-{
-	int i;
-	float f;
-
-	f = *v;
-	__asm	fld		f;
-	__asm	fistp	i;
-	*v = i;
-	v++;
-	f = *v;
-	__asm	fld		f;
-	__asm	fistp	i;
-	*v = i;
-	v++;
-	f = *v;
-	__asm	fld		f;
-	__asm	fistp	i;
-	*v = i;
-	/*
-	*v = Q_ftol(*v);
-	v++;
-	*v = Q_ftol(*v);
-	v++;
-	*v = Q_ftol(*v);
-	*/
-}
-
-
 //============================================
 
 char *Sys_GetCurrentUser( void )
