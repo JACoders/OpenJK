@@ -11,9 +11,9 @@ if(BuildSPGame)
 endif(BuildSPGame)
 
 #    Add Modular Renderer project
-if(BuildSPVanillaRenderer)
+if(BuildSPEngine)
 	add_subdirectory("${SPDir}/rd-vanilla")
-endif(BuildSPVanillaRenderer)
+endif(BuildSPEngine)
 
 #    Add Engine Project
 if(BuildSPEngine)
