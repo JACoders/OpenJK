@@ -28,7 +28,7 @@ if(BuildMPEngine)
 endif(BuildMPEngine)
 
 
-#        Common things between Engine and Dedicated Server
+#    Common things between Engine and Dedicated Server
 if(BuildMPEngine OR BuildMPDed)
 
 	#    Botlib
@@ -150,6 +150,7 @@ if(BuildMPEngine OR BuildMPDed)
 	endif(NOT WIN32)
 	
 	file(GLOB_RECURSE J_SRC "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
+	source_group("jpeg-8c" FILES ${J_SRC})
 	
 	set(MPEngineAndDedCgameFiles
 		"${MPDir}/cgame/cg_public.h"
@@ -231,6 +232,11 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/vm_local.h"
 		"${MPDir}/qcommon/z_memman_pc.cpp"
 		)
+	if(WIN32)
+		set(MPEngineAndDedCommonFiles
+			${MPEngineAndDedCommonFiles}
+			"${MPDir}/qcommon/vm_x86.cpp")
+	endif(WIN32)
 	source_group("common" FILES ${MPEngineAndDedCommonFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedCommonFiles})
 	
@@ -335,26 +341,21 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
 	
 	if(WIN32)
-		set(MPEngineAndDedAllSortMe
-			${MPEngineAndDedAllSortMe}
+		set(MPEngineAndDedWin32Files
 			"${MPDir}/win32/win_local.h"
 			"${MPDir}/win32/win_net.cpp"
 			"${MPDir}/win32/win_shared.cpp"
-			"${MPDir}/qcommon/vm_x86.cpp"
 			)
 		source_group("win32" FILES ${MPEngineAndDedWin32Files})
 		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedWin32Files})
 	else(WIN32)
-		set(MPEngineAndDedAllSortMe
-			${MPEngineAndDedAllSortMe}
+		set(MPEngineAndDedSysFiles
 			"${MPDir}/sys/vm_x86.cpp"
 			"${MPDir}/sys/snapvector.c"
 			)
+		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedSysFiles})
+		source_group("sys" FILES ${MPEngineAndDedSysFiles})
 	endif(WIN32)
-	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedAllSortMe})
-	source_group("SortMe" FILES ${MPEngineAndDedAllSortMe})
-	source_group("jpeg-8c" FILES ${J_SRC})
-	
 endif(BuildMPEngine OR BuildMPDed)
 
 #        Engine/Executable (jamp.exe)
@@ -391,10 +392,12 @@ if(BuildMPEngine)
 	
 	# EAX is Windows-Only (right?)
 	if(WIN32)
-		set(MPEngineFiles ${MPEngineFiles}
+		set(MPEngineEAXFiles
 			"${MPDir}/client/eax/eax.h"
 			"${MPDir}/client/eax/EaxMan.h"
 			)
+		source_group("eax" FILES ${MPEngineEAXFiles})
+		set(MPEngineFiles ${MPEngineFiles} ${MPEngineEAXFiles})
 	endif(WIN32)
 	
 	#    Source Files
@@ -519,8 +522,7 @@ if(BuildMPEngine)
 		source_group("win32" FILES ${MPEngineWin32Files})
 		set(MPEngineFiles ${MPEngineFiles} ${MPEngineWin32Files})
 	else(WIN32)
-		set(MPEngineSortMe
-			${MPEngineSortMe}
+		set(MPEngineSysFiles
 			"${MPDir}/sdl/sdl_input.cpp"
 			"${MPDir}/sdl/sdl_qgl.h"
 			"${MPDir}/sdl/sdl_snd.cpp"
@@ -531,10 +533,9 @@ if(BuildMPEngine)
 			"${MPDir}/sys/sys_unix.cpp"
 			"${MPDir}/sys/unix_local.h"
 			)
+		source_group("sys" FILES ${MPEngineSysFiles})
+		set(MPEngineFiles ${MPEngineFiles} ${MPEngineSysFiles})
 	endif(WIN32)
-
-	set(MPEngineFiles ${MPEngineFiles} ${MPEngineSortMe})
-	source_group("SortMe" FILES ${MPEngineSortMe})
 
 	# todo: windows resources
 
@@ -583,7 +584,7 @@ if(BuildMPDed)
 
 	set(MPDedicatedPngFiles
 		"${MPDir}/png/rpng.cpp")
-	source_group("png" FILES ${MPVanillaRendererPngFiles})
+	source_group("png" FILES ${MPDedicatedPngFiles})
 	set(MPDedFiles ${MPDedFiles} ${MPDedicatedPngFiles})
 
 	set(MPDedLibPngFiles
@@ -605,7 +606,6 @@ if(BuildMPDed)
 	source_group("libpng" FILES ${MPDedLibPngFiles})
 	set(MPDedFiles ${MPDedFiles} ${MPDedLibPngFiles})
 	
-	# TODO sort this
 	set(MPDedNullFiles
 		"${MPDir}/null/null_client.cpp"
 		"${MPDir}/null/null_input.cpp"
@@ -622,16 +622,16 @@ if(BuildMPDed)
 		source_group("win32" FILES ${MPDedWin32Files})
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
 	else(WIN32)
-		set(MPDedSortMe ${MPDedSortMe}
+		set(MPDedSysFiles
 			"${MPDir}/sys/sys_main.cpp"
 			"${MPDir}/sys/sys_net.cpp"
 			"${MPDir}/sys/sys_unix.cpp"
 			"${MPDir}/sys/unix_local.h"
 			)
 		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
+		source_group("sys" FILES ${MPDedSysFiles})
+		set(MPDedFiles ${MPDedFiles} ${MPDedSysFiles})
 	endif(WIN32)
-	set(MPDedFiles ${MPDedFiles} ${MPDedSortMe})
-	source_group("SortMe" FILES ${MPDedSortMe})
 	
 	add_executable(${MPDed} ${MPDedFiles})
 	install(TARGETS ${MPDed} RUNTIME DESTINATION ".")

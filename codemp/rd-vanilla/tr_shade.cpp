@@ -273,6 +273,10 @@ Draws triangle outlines for debugging
 ================
 */
 static void DrawTris (shaderCommands_t *input) {
+    if (input->numVertexes <= 0) {
+        return;
+    }
+
 	GL_Bind( tr.whiteImage );
 	qglColor3f (1,1,1);
 
