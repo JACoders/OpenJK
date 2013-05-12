@@ -133,6 +133,11 @@ typedef struct {
 	WinVars_t *			(*GetWinVars)						( void ); //g_wv
 #endif
 
+    // input event handling
+	void            (*IN_Init)                          ( void *windowData );
+	void            (*IN_Shutdown)                      ( void );
+	void            (*IN_Restart)                       ( void );
+
 #ifdef __MP_CROSS_DLL
 	void				*unused14;	// CM_GetCachedMapDiskImage
 	void				*unused15;	// CM_SetCachedMapDiskImage

@@ -5,22 +5,13 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-#      Modular Renderer crap (let's hope this works..)
+set(SPRDVanillaRendererIncludeDirectories ${SPDir})
+set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} "${SPDir}/rd-vanilla")
 
-# doesn't appear to use any libraries so far as I know, just message non-Windows users about this and go from there
-if(NOT WIN32)
-  message("You might need to add libraries to code/rd-vanilla/CMakeLists.txt for this to link properly (SDL etc)")
-endif(NOT WIN32)
+# Modular Renderer crap (let's hope this works..)
 
-#      Defines
+# Defines
 set(SPRDVanillaDefines ${SharedDefines} "RENDERER" "_JK2EXE")
-
-# not sure what to do about OpenGL/OpenAL since I don't actually use Linux (big surprise eh) but I know it isn't included on windows
-if(NOT WIN32)
-  message("You might need to link OpenGL/OpenAL in code/rd-vanilla/CMakeLists.txt")
-endif(NOT WIN32)
-
-
 
 # Files
 
@@ -133,12 +124,34 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/tr_world.cpp"
 	"${SPDir}/rd-vanilla/tr_WorldEffects.cpp"
 	"${SPDir}/rd-vanilla/tr_WorldEffects.h"
-	"${SPDir}/rd-vanilla/win_gamma.cpp"
-	"${SPDir}/rd-vanilla/win_glimp.cpp"
-	"${SPDir}/rd-vanilla/win_qgl.cpp"
 	)
 source_group("renderer" FILES ${SPRDVanillaMainFiles})
 set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaMainFiles})
+
+if(WIN32)
+    set(SPRDVanillaWin32Files
+        "${SPDir}/rd-vanilla/win_gamma.cpp"
+        "${SPDir}/rd-vanilla/win_glimp.cpp"
+        "${SPDir}/rd-vanilla/win_qgl.cpp"
+        )
+    source_group("win32" FILES ${SPRDVanillaWin32Files)
+    set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaWin32Files})
+else(WIN32)
+    set(SPRDVanillaSdlFiles
+        "${SPDir}/sdl/sdl_glimp.cpp")
+    source_group("sdl" FILES ${SPRDVanillaSdlFiles})
+    set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaSdlFiles})
+endif(WIN32)
+
+if(NOT WIN32)
+	find_package(OpenGL REQUIRED)
+	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
+	set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${OPENGL_LIBRARIES})
+
+	find_package(SDL2 REQUIRED)
+	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${SDL2_INCLUDE_DIR})
+	set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${SDL2_LIBRARY})
+endif(NOT WIN32)
 
 add_library(${SPRDVanillaRenderer} SHARED ${SPRDVanillaFiles})
 if(NOT WIN32)
@@ -156,5 +169,6 @@ set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELW
 set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPRDVanillaDefines};${ReleaseDefines}")
 set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPRDVanillaDefines};${ReleaseDefines}")
 set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPRDVanillaDefines};${DebugDefines}")
+set_target_properties(${SPRDVanillaRenderer} PROPERTIES INCLUDE_DIRECTORIES "${SPRDVanillaRendererIncludeDirectories}")
 
-#target_link_libraries(${SPRDVanillaRenderer} ${SPRDVanillaRendererLibraries})
+target_link_libraries(${SPRDVanillaRenderer} ${SPRDVanillaRendererLibraries})

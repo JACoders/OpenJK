@@ -385,6 +385,7 @@ char 	*Cvar_CompleteVariable( const char *partial );
 // returns NULL if nothing fits
 
 void 	Cvar_Reset( const char *var_name );
+void 	Cvar_ForceReset( const char *var_name );
 
 void	Cvar_SetCheatState( void );
 // reset all testing vars to a safe value
@@ -521,7 +522,7 @@ void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
 void		Com_EndRedirect( void );
 void 		QDECL Com_Printf( const char *fmt, ... );
 void 		QDECL Com_DPrintf( const char *fmt, ... );
-void 		QDECL Com_Error( int code, const char *fmt, ... );
+void 		QDECL Com_Error( int code, const char *fmt, ... ) __attribute__((noreturn));
 void 		Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
