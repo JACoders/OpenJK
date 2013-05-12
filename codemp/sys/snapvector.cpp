@@ -7,12 +7,13 @@
 #endif
 
 #if _MSC_VER
-static __inline float roundfloat(float n)
+static inline float roundfloat(float n)
 {
 	return (n < 0.0f) ? ceilf(n - 0.5f) : floorf(n + 0.5f);
 }
 #endif
 
+extern "C"
 void Sys_SnapVector(float *v)
 {
 #if _MSC_VER
