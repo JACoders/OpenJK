@@ -134,7 +134,7 @@ if(WIN32)
         "${SPDir}/rd-vanilla/win_glimp.cpp"
         "${SPDir}/rd-vanilla/win_qgl.cpp"
         )
-    source_group("win32" FILES ${SPRDVanillaWin32Files)
+    source_group("win32" FILES ${SPRDVanillaWin32Files})
     set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaWin32Files})
 else(WIN32)
     set(SPRDVanillaSdlFiles
