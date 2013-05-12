@@ -985,12 +985,7 @@ int		Sys_Milliseconds (bool baseTime = false);
 int		Sys_Milliseconds2(void);
 void 	Sys_SetEnv(const char *name, const char *value);
 
-#ifndef _WIN32
 extern "C" void	Sys_SnapVector( float *v );
-
-#else
-void	Sys_SnapVector( float *v );
-#endif
 
 // the system console is shown when a dedicated server is running
 void	Sys_DisplaySystemConsole( qboolean show );
