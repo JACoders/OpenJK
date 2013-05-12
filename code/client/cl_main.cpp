@@ -30,6 +30,11 @@ This file is part of Jedi Academy.
 
 #include "../RMG/RM_Headers.h"
 
+#ifndef _WIN32
+#include "../sys/sys_loadlib.h"
+#include "../sys/sys_local.h"
+#endif
+
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
 cvar_t	*cl_renderer;
@@ -1156,7 +1161,7 @@ static CMiniHeap *GetG2VertSpaceServer( void ) {
 
 static void *rendererLib;
 
-#define DEFAULT_RENDER_LIBRARY	"rdsp-vanilla_x86"	// NOTENOTE: If you change the output name of rd-vanilla, change this define too!
+#define DEFAULT_RENDER_LIBRARY	"rdsp-vanilla"	// NOTENOTE: If you change the output name of rd-vanilla, change this define too!
 
 void CL_InitRef( void ) {
 	refexport_t	*ret;
@@ -1164,30 +1169,41 @@ void CL_InitRef( void ) {
 	char		dllName[MAX_OSPATH];
 	GetRefAPI_t	GetRefAPI;
 
-	// FIXME: NOT UNIX COMPATIBLE AT ALL!
-
 	Com_Printf( "----- Initializing Renderer ----\n" );
+    cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH );
 
-	cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE );
+	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
 
-	Com_sprintf( dllName, sizeof( dllName ), "%s.dll", cl_renderer->string );
-
-	rendererLib = (void*)LoadLibrary(dllName);
-	if(!rendererLib && Q_stricmp( cl_renderer->string, cl_renderer->resetString ))
+    #ifdef _WIN32
+    if( !(rendererLib = (void *)LoadLibrary( dllName )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
+    #else
+	if( !(rendererLib = Sys_LoadDll( dllName, qfalse )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
+    #endif
 	{
-		Com_Printf("Failed to load primary renderer, falling back to default\n");
-		Cvar_Set2( "cl_renderer", NULL, qtrue );
+		Com_Printf( "failed: trying to load fallback renderer\n" );
+		Cvar_ForceReset( "cl_renderer" );
 
-		strcpy(dllName, DEFAULT_RENDER_LIBRARY ".dll");
-		rendererLib = (void*)LoadLibrary(dllName);
+		Com_sprintf( dllName, sizeof( dllName ), DEFAULT_RENDER_LIBRARY "_" ARCH_STRING DLL_EXT );
+        #ifdef _WIN32
+        rendererLib = (void *)LoadLibrary( dllName );
+        #else
+		rendererLib = Sys_LoadDll( dllName, qfalse );
+        #endif
 	}
 
-	if(!rendererLib)
-		Com_Error( ERR_FATAL, "CL_InitRef() on %s failed", dllName );
+	if ( !rendererLib ) {
+		Com_Error( ERR_FATAL, "Failed to load renderer" );
+	}
 
-	GetRefAPI = (GetRefAPI_t)GetProcAddress( (HMODULE)rendererLib, "GetRefAPI" );
-	if( !GetRefAPI )
-		Com_Error( ERR_FATAL, "CL_InitRef(): NULL GetRefAPI on handle for %s\n", dllName );
+    #ifdef _WIN32
+    GetRefAPI = (GetRefAPI_t)GetProcAddress( (HMODULE)rendererLib, "GetRefAPI" );
+    if ( !GetRefAPI )
+        Com_Error( ERR_FATAL, "CL_InitRef(): NULL GetRefAPI on handle for %s\n", dllName );
+    #else
+	GetRefAPI = (GetRefAPI_t)Sys_LoadFunction( rendererLib, "GetRefAPI" );
+	if ( !GetRefAPI )
+		Com_Error( ERR_FATAL, "Can't load symbol GetRefAPI: '%s'", Sys_LibraryError() );
+    #endif
 
 #define RIT(y)	rit.y = y
 	RIT(CIN_PlayCinematic);
@@ -1242,6 +1258,11 @@ void CL_InitRef( void ) {
 
 	RIT(Hunk_ClearToMark);
 
+#ifndef _WIN32
+    RIT(IN_Init);
+    RIT(IN_Shutdown);
+    RIT(IN_Restart);
+#endif
 
 	// Not-so-nice usage / doesn't go along with my epic macro
 	rit.Error = Com_Error;
