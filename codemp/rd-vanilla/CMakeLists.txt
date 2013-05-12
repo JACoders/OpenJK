@@ -61,7 +61,7 @@ source_group("qcommon" FILES ${MPVanillaRendererQcommonFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererQcommonFiles})
 
 file(GLOB_RECURSE MPVanillaRendererJpegFiles "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
-source_group("jpeg-8c" FILES ${MPEngineJpegFiles})
+source_group("jpeg-8c" FILES ${MPVanillaRendererJpegFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererJpegFiles})
 
 set(MPVanillaRendererPngFiles
@@ -121,10 +121,10 @@ if(WIN32)
 	source_group("win32" FILES ${MPVanillaRendererWin32Files})
 	set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererWin32Files})
 else(WIN32)
-	set(MPVanillaRendererSortMe ${MPVanillaRendererSortME}
+	set(MPVanillaRendererSysFiles
 		"${MPDir}/sdl/sdl_glimp.cpp")
-	set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererSortMe})
-	source_group("SortMe" FILES ${MPVanillaRendererSortMe})
+	source_group("sys" FILES ${MPVanillaRendererSysFiles})
+	set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererSysFiles})
 endif(WIN32)
 
 add_library(${MPVanillaRenderer} SHARED ${MPVanillaRendererFiles})

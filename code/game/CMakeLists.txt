@@ -14,7 +14,7 @@ endif(WIN32)
 # TODO do we actually want _IMMERSION? I thought we don't have those files?
 set(SPGameDefines ${SharedDefines} "_IMMERSION" "_NO_PCH")
 
-set(SPGameSortMe
+set(SPGameGameFiles
 	"${SPDir}/game/AI_Animal.cpp"
 	"${SPDir}/game/AI_AssassinDroid.cpp"
 	"${SPDir}/game/AI_Atst.cpp"
@@ -84,7 +84,6 @@ set(SPGameSortMe
 	"${SPDir}/game/g_utils.cpp"
 	"${SPDir}/game/g_weapon.cpp"
 	"${SPDir}/game/g_weaponLoad.cpp"
-	"${SPDir}/ui/gameinfo.cpp"
 	"${SPDir}/game/genericparser2.cpp"
 	"${SPDir}/game/NPC.cpp"
 	"${SPDir}/game/NPC_behavior.cpp"
@@ -98,9 +97,9 @@ set(SPGameSortMe
 	"${SPDir}/game/NPC_spawn.cpp"
 	"${SPDir}/game/NPC_stats.cpp"
 	"${SPDir}/game/NPC_utils.cpp"
+	"${SPDir}/game/Q3_Interface.h"
 	"${SPDir}/game/q_math.cpp"
 	"${SPDir}/game/q_shared.cpp"
-	"${SPDir}/qcommon/tri_coll_test.cpp"
 	"${SPDir}/game/wp_atst.cpp"
 	"${SPDir}/game/wp_blaster_pistol.cpp"
 	"${SPDir}/game/wp_blaster_rifle.cpp"
@@ -122,17 +121,58 @@ set(SPGameSortMe
 	"${SPDir}/game/wp_thermal.cpp"
 	"${SPDir}/game/wp_trip_mine.cpp"
 	"${SPDir}/game/wp_tusken.cpp"
-	"${SPDir}/icarus/BlockStream.cpp"
-	"${SPDir}/icarus/IcarusImplementation.cpp"
 	"${SPDir}/game/Q3_Interface.cpp"
-	"${SPDir}/icarus/Sequence.cpp"
-	"${SPDir}/icarus/Sequencer.cpp"
-	"${SPDir}/icarus/TaskManager.cpp"
 	"${SPDir}/game/bg_misc.cpp"
 	"${SPDir}/game/bg_pangles.cpp"
 	"${SPDir}/game/bg_panimate.cpp"
 	"${SPDir}/game/bg_pmove.cpp"
 	"${SPDir}/game/bg_slidemove.cpp"
+	"${SPDir}/game/AnimalNPC.cpp"
+	"${SPDir}/game/bg_vehicleLoad.cpp"
+	"${SPDir}/game/FighterNPC.cpp"
+	"${SPDir}/game/g_vehicles.cpp"
+	"${SPDir}/game/SpeederNPC.cpp"
+	"${SPDir}/game/WalkerNPC.cpp"
+	"${SPDir}/game/ai.h"
+	"${SPDir}/game/anims.h"
+	"${SPDir}/game/b_local.h"
+	"${SPDir}/game/b_public.h"
+	"${SPDir}/game/bg_local.h"
+	"${SPDir}/game/bg_public.h"
+	"${SPDir}/game/bset.h"
+	"${SPDir}/game/bstate.h"
+	"${SPDir}/game/channels.h"
+	"${SPDir}/game/common_headers.h"
+	"${SPDir}/game/dmstates.h"
+	"${SPDir}/game/events.h"
+	"${SPDir}/game/fields.h"
+	"${SPDir}/game/g_functions.h"
+	"${SPDir}/game/g_headers.h"
+	"${SPDir}/game/g_items.h"
+	"${SPDir}/game/g_local.h"
+	"${SPDir}/game/g_nav.h"
+	"${SPDir}/game/g_navigator.h"
+	"${SPDir}/game/g_public.h"
+	"${SPDir}/game/g_roff.h"
+	"${SPDir}/game/g_shared.h"
+	"${SPDir}/game/genericparser2.h"
+	"${SPDir}/game/ghoul2_shared.h"
+	"${SPDir}/game/hitlocs.h"
+	"${SPDir}/game/npc_headers.h"
+	"${SPDir}/game/objectives.h"
+	"${SPDir}/game/q_shared.h"
+	"${SPDir}/game/say.h"
+	"${SPDir}/game/statindex.h"
+	"${SPDir}/game/surfaceflags.h"
+	"${SPDir}/game/teams.h"
+	"${SPDir}/game/weapons.h"
+	"${SPDir}/game/wp_saber.h"
+	"${SPDir}/game/g_vehicles.h"
+	)
+source_group("game" FILES ${SPGameGameFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameGameFiles})
+
+set(SPGameCGameFiles
 	"${SPDir}/cgame/cg_camera.cpp"
 	"${SPDir}/cgame/cg_consolecmds.cpp"
 	"${SPDir}/cgame/cg_credits.cpp"
@@ -175,70 +215,8 @@ set(SPGameSortMe
 	"${SPDir}/cgame/FxSystem.cpp"
 	"${SPDir}/cgame/FxTemplate.cpp"
 	"${SPDir}/cgame/FxUtil.cpp"
-	"${SPDir}/Ratl/ratl.cpp"
-	"${SPDir}/Ravl/CBounds.cpp"
-	"${SPDir}/Ravl/CVec.cpp"
-	"${SPDir}/Rufl/hfile.cpp"
-	"${SPDir}/Rufl/hstring.cpp"
-	
-	"${SPDir}/game/AnimalNPC.cpp"
-	"${SPDir}/game/bg_vehicleLoad.cpp"
-	"${SPDir}/game/FighterNPC.cpp"
-	"${SPDir}/game/g_vehicles.cpp"
-	"${SPDir}/game/SpeederNPC.cpp"
-	"${SPDir}/game/WalkerNPC.cpp"
-	
-	"${SPDir}/game/ai.h"
-	"${SPDir}/game/anims.h"
-	"${SPDir}/game/b_local.h"
-	"${SPDir}/game/b_public.h"
-	"${SPDir}/game/bg_local.h"
-	"${SPDir}/game/bg_public.h"
-	"${SPDir}/game/bset.h"
-	"${SPDir}/game/bstate.h"
 	"${SPDir}/cgame/cg_camera.h"
 	"${SPDir}/cgame/cg_lights.h"
-	"${SPDir}/game/channels.h"
-	"${SPDir}/game/common_headers.h"
-	"${SPDir}/game/dmstates.h"
-	"${SPDir}/game/events.h"
-	"${SPDir}/game/fields.h"
-	"${SPDir}/ghoul2/G2.h"
-	"${SPDir}/game/g_functions.h"
-	"${SPDir}/game/g_headers.h"
-	"${SPDir}/game/g_items.h"
-	"${SPDir}/game/g_local.h"
-	"${SPDir}/game/g_nav.h"
-	"${SPDir}/game/g_navigator.h"
-	"${SPDir}/game/g_public.h"
-	"${SPDir}/game/g_roff.h"
-	"${SPDir}/game/g_shared.h"
-	"${SPDir}/ui/gameinfo.h"
-	"${SPDir}/game/genericparser2.h"
-	"${SPDir}/ghoul2/ghoul2_gore.h"
-	"${SPDir}/game/ghoul2_shared.h"
-	"${SPDir}/game/hitlocs.h"
-	"${SPDir}/renderer/mdx_format.h"
-	"${SPDir}/game/npc_headers.h"
-	"${SPDir}/game/objectives.h"
-	"${SPDir}/game/q_shared.h"
-	"${SPDir}/game/say.h"
-	"${SPDir}/qcommon/sstring.h"
-	"${SPDir}/game/statindex.h"
-	"${SPDir}/game/surfaceflags.h"
-	"${SPDir}/qcommon/tags.h"
-	"${SPDir}/game/teams.h"
-	"${SPDir}/qcommon/timing.h"
-	"${SPDir}/game/weapons.h"
-	"${SPDir}/game/wp_saber.h"
-	"${SPDir}/icarus/blockstream.h"
-	"${SPDir}/icarus/IcarusImplementation.h"
-	"${SPDir}/icarus/IcarusInterface.h"
-	"${SPDir}/game/Q3_Interface.h"
-	"${SPDir}/icarus/sequence.h"
-	"${SPDir}/icarus/sequencer.h"
-	"${SPDir}/icarus/StdAfx.h"
-	"${SPDir}/icarus/taskmanager.h"
 	"${SPDir}/cgame/animtable.h"
 	"${SPDir}/cgame/cg_headers.h"
 	"${SPDir}/cgame/cg_local.h"
@@ -251,8 +229,45 @@ set(SPGameSortMe
 	"${SPDir}/cgame/FxSystem.h"
 	"${SPDir}/cgame/FxUtil.h"
 	"${SPDir}/cgame/strip_objectives.h"
-	"${SPDir}/renderer/tr_types.h"
-	"${SPDir}/client/vmachine.h"
+	)
+source_group("cgame" FILES ${SPGameCGameFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameCGameFiles})
+
+set(SPGameUIFiles
+	"${SPDir}/ui/gameinfo.cpp"
+	"${SPDir}/ui/gameinfo.h"
+	)
+source_group("ui" FILES ${SPGameUIFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameUIFiles})
+
+set(SPGameCommonFiles
+	"${SPDir}/qcommon/tri_coll_test.cpp"
+	"${SPDir}/qcommon/sstring.h"
+	"${SPDir}/qcommon/tags.h"
+	"${SPDir}/qcommon/timing.h"
+	)
+source_group("common" FILES ${SPGameCommonFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameCommonFiles})
+
+set(SPGameIcarusFiles
+	"${SPDir}/icarus/BlockStream.cpp"
+	"${SPDir}/icarus/IcarusImplementation.cpp"
+	"${SPDir}/icarus/Sequence.cpp"
+	"${SPDir}/icarus/Sequencer.cpp"
+	"${SPDir}/icarus/TaskManager.cpp"
+	"${SPDir}/icarus/blockstream.h"
+	"${SPDir}/icarus/IcarusImplementation.h"
+	"${SPDir}/icarus/IcarusInterface.h"
+	"${SPDir}/icarus/sequence.h"
+	"${SPDir}/icarus/sequencer.h"
+	"${SPDir}/icarus/StdAfx.h"
+	"${SPDir}/icarus/taskmanager.h"
+	)
+source_group("icarus" FILES ${SPGameIcarusFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameIcarusFiles})
+
+set(SPGameRatlFiles
+	"${SPDir}/Ratl/ratl.cpp"
 	"${SPDir}/Ratl/array_vs.h"
 	"${SPDir}/Ratl/bits_vs.h"
 	"${SPDir}/Ratl/grid_vs.h"
@@ -268,22 +283,65 @@ set(SPGameSortMe
 	"${SPDir}/Ratl/stack_vs.h"
 	"${SPDir}/Ratl/string_vs.h"
 	"${SPDir}/Ratl/vector_vs.h"
+	)
+source_group("ratl" FILES ${SPGameRatlFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameRatlFiles})
+
+set(SPGameRavlFiles
+	"${SPDir}/Ravl/CBounds.cpp"
+	"${SPDir}/Ravl/CVec.cpp"
+	"${SPDir}/Ravl/CBounds.h"
+	"${SPDir}/Ravl/CMatrix.h"
+	"${SPDir}/Ravl/CVec.h"
+	)
+source_group("ravl" FILES ${SPGameRavlFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameRavlFiles})
+
+set(SPGameRuflFiles
+	"${SPDir}/Rufl/hfile.cpp"
+	"${SPDir}/Rufl/hstring.cpp"
+	"${SPDir}/Rufl/hfile.h"
+	"${SPDir}/Rufl/hstring.h"
+	)
+source_group("rufl" FILES ${SPGameRuflFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameRuflFiles})
+
+set(SPGameRaglFiles
 	"${SPDir}/Ragl/graph_region.h"
 	"${SPDir}/Ragl/graph_triangulate.h"
 	"${SPDir}/Ragl/graph_vs.h"
 	"${SPDir}/Ragl/kdtree_vs.h"
 	"${SPDir}/Ragl/ragl_common.h"
-	"${SPDir}/Ravl/CBounds.h"
-	"${SPDir}/Ravl/CMatrix.h"
-	"${SPDir}/Ravl/CVec.h"
-	"${SPDir}/Rufl/hfile.h"
-	"${SPDir}/Rufl/hstring.h"
-	"${SPDir}/game/g_vehicles.h"
 	)
-set(SPGameFiles ${SPGameSortMe})
-source_group("SortMe" FILES ${SPGameSortMe})
+source_group("ragl" FILES ${SPGameRaglFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameRaglFiles})
+
+set(SPGameG2Files
+	"${SPDir}/ghoul2/G2.h"
+	"${SPDir}/ghoul2/ghoul2_gore.h"
+	)
+source_group("ghoul2" FILES ${SPGameG2Files})
+set(SPGameFiles ${SPGameFiles} ${SPGameG2Files})
+
+set(SPGameRendererFiles
+	"${SPDir}/renderer/mdx_format.h"
+	"${SPDir}/renderer/tr_types.h"
+	)
+source_group("rufl" FILES ${SPGameRendererFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameRendererFiles})
+
+set(SPGameClientFiles
+	"${SPDir}/client/vmachine.h"
+	)
+source_group("client" FILES ${SPGameClientFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameClientFiles})
+
 if(WIN32)
-	set(SPGameFiles ${SPGameFiles} "${SPDir}/win32/game.rc" "${SPDir}/game/game.def")
+	set(SPGameWin32Files
+		"${SPDir}/win32/game.rc"
+		"${SPDir}/game/game.def")
+	source_group("win32" FILES ${SPGameWin32Files})
+	set(SPGameFiles ${SPGameFiles} ${SPGameWin32Files})
 endif(WIN32)
 
 add_library(${SPGame} SHARED ${SPGameFiles})
