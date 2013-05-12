@@ -151,6 +151,14 @@ This file is part of Jedi Academy.
 
 #define	PATH_SEP '\\'
 
+#if defined(_M_IX86) || defined(__i386__)
+	#define ARCH_STRING "x86"
+#elif defined _M_ALPHA
+	#define ARCH_STRING "AXP"
+#endif
+
+#define DLL_EXT ".dll"
+
 #endif
 
 //======================= MAC OS X SERVER DEFINES =====================
@@ -168,10 +176,19 @@ This file is part of Jedi Academy.
 #endif
 
 #define	PATH_SEP	'/'
+        
+#if defined(__i386__)
+    #define ARCH_STRING "i386"
+#elif defined(__x86_64__)
+    #define idx64
+    #define ARCH_STRING "x86_64"
+#elif defined(__powerpc64__)
+    #define ARCH_STRING "ppc64"
+#elif defined(__powerpc__)
+    #define ARCH_STRING "ppc"
+#endif
 
-#define	GAME_HARD_LINKED
-#define	CGAME_HARD_LINKED
-#define	UI_HARD_LINKED
+#define DLL_EXT ".dylib"
 
 #endif
 
@@ -184,10 +201,6 @@ This file is part of Jedi Academy.
 #define	CPUSTRING	"MacOS-PPC"
 
 #define	PATH_SEP ':'
-
-#define	GAME_HARD_LINKED
-#define	CGAME_HARD_LINKED
-#define	UI_HARD_LINKED
 
 void Sys_PumpEvents( void );
 
@@ -212,6 +225,39 @@ void Sys_PumpEvents( void );
 #endif
 
 #define	PATH_SEP '/'
+
+#if defined(__i386__)
+    #define ARCH_STRING "i386"
+#elif defined(__x86_64__)
+    #define idx64
+    #define ARCH_STRING "x86_64"
+#elif defined(__powerpc64__)
+    #define ARCH_STRING "ppc64"
+#elif defined(__powerpc__)
+    #define ARCH_STRING "ppc"
+#elif defined(__s390__)
+    #define ARCH_STRING "s390"
+#elif defined(__s390x__)
+    #define ARCH_STRING "s390x"
+#elif defined(__ia64__)
+    #define ARCH_STRING "ia64"
+#elif defined(__alpha__)
+    #define ARCH_STRING "alpha"
+#elif defined(__sparc__)
+    #define ARCH_STRING "sparc"
+#elif defined(__arm__)
+    #define ARCH_STRING "arm"
+#elif defined(__cris__)
+    #define ARCH_STRING "cris"
+#elif defined(__hppa__)
+    #define ARCH_STRING "hppa"
+#elif defined(__mips__)
+    #define ARCH_STRING "mips"
+#elif defined(__sh__)
+    #define ARCH_STRING "sh"
+#endif
+
+#define DLL_EXT ".so"
 
 #endif
 
