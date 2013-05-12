@@ -1174,22 +1174,36 @@ void CL_InitRef( void ) {
 
 	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
 
+    #ifdef _WIN32
+    if( !(rendererLib = (void *)LoadLibrary( dllName )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
+    #else
 	if( !(rendererLib = Sys_LoadDll( dllName, qfalse )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
+    #endif
 	{
 		Com_Printf( "failed: trying to load fallback renderer\n" );
 		Cvar_ForceReset( "cl_renderer" );
 
 		Com_sprintf( dllName, sizeof( dllName ), DEFAULT_RENDER_LIBRARY "_" ARCH_STRING DLL_EXT );
+        #ifdef _WIN32
+        rendererLib = (void *)LoadLibrary( dllName );
+        #else
 		rendererLib = Sys_LoadDll( dllName, qfalse );
+        #endif
 	}
 
 	if ( !rendererLib ) {
 		Com_Error( ERR_FATAL, "Failed to load renderer" );
 	}
 
+    #ifdef _WIN32
+    GetRefAPI = (GetRefAPI_t)GetProcAddress( (HMODULE)rendererLib, "GetRefAPI" );
+    if ( !GetRefAPI )
+        Com_Error( ERR_FATAL, "CL_InitRef(): NULL GetRefAPI on handle for %s\n", dllName );
+    #else
 	GetRefAPI = (GetRefAPI_t)Sys_LoadFunction( rendererLib, "GetRefAPI" );
 	if ( !GetRefAPI )
 		Com_Error( ERR_FATAL, "Can't load symbol GetRefAPI: '%s'", Sys_LibraryError() );
+    #endif
 
 #define RIT(y)	rit.y = y
 	RIT(CIN_PlayCinematic);

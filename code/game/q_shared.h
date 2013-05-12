@@ -151,10 +151,10 @@ This file is part of Jedi Academy.
 
 #define	PATH_SEP '\\'
 
-#if defined(__WIN64__)
-    #define ARCH_STRING "x64"
-#elif defined(_M_ALPHA)
-    #define ARCH_STRING "AXP"
+#if defined(_M_IX86) || defined(__i386__)
+	#define ARCH_STRING "x86"
+#elif defined _M_ALPHA
+	#define ARCH_STRING "AXP"
 #endif
 
 #define DLL_EXT ".dll"

@@ -21,6 +21,7 @@ This file is part of Jedi Academy.
 #define __QCOMMON_H__
 
 #include "stringed_ingame.h"
+#include "../game/q_shared.h"
 #include "../../codeJK2/qcommon/strippublic.h"
 #include "../qcommon/cm_public.h"
 
@@ -756,6 +757,14 @@ typedef struct {
 sysEvent_t	Sys_GetEvent( void );
 
 void	Sys_Init (void);
+
+#ifdef _WIN32
+	#include <Windows.h>
+	#define Sys_LoadLibrary(f) (void*)LoadLibrary(f)
+	#define Sys_UnloadLibrary(h) FreeLibrary((HMODULE)h)
+	#define Sys_LoadFunction(h,fn) (void*)GetProcAddress((HMODULE)h,fn)
+	#define Sys_LibraryError() "unknown"
+#endif // linux and mac use SDL in SDL_loadlibrary.h
 
 char	*Sys_GetCurrentUser( void );
 
