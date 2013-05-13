@@ -1628,7 +1628,7 @@ extern IGhoul2InfoArray &TheGhoul2InfoArray();
 
 extern "C" {
 
-__declspec(dllexport) refexport_t *GetRefAPI ( int apiVersion, refimport_t *refimp ) {
+Q_EXPORT refexport_t * QDECL GetRefAPI ( int apiVersion, refimport_t *refimp ) {
 	static refexport_t	re;
 
 	ri = *refimp;
