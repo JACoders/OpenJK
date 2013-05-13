@@ -313,7 +313,7 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 	dllEntry = ( void (QDECL *)( intptr_t (QDECL *)( intptr_t, ... ) ) )Sys_LoadFunction( libHandle, "dllEntry" );
 	*entryPoint = (intptr_t (QDECL *)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
 	if ( !*entryPoint || !dllEntry ) {
-		Com_Printf ( "Sys_LoadGameDll(%s) failed to find vmMain function:\n\"%s\" !\n", name, Sys_LibraryError );
+		Com_Printf ( "Sys_LoadGameDll(%s) failed to find vmMain function:\n\"%s\" !\n", name, Sys_LibraryError() );
 		Sys_UnloadLibrary( libHandle );
 		return NULL;
 	}
