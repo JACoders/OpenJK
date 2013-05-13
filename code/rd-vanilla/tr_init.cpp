@@ -1628,7 +1628,11 @@ extern IGhoul2InfoArray &TheGhoul2InfoArray();
 
 extern "C" {
 
+#ifdef _WIN32
 __declspec(dllexport) refexport_t *GetRefAPI ( int apiVersion, refimport_t *refimp ) {
+#else
+refexport_t *GetRefAPI ( int apiVersion, refimport_t *refimp ) {
+#endif
 	static refexport_t	re;
 
 	ri = *refimp;
