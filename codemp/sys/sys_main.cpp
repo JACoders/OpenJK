@@ -247,112 +247,81 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 
 //TODO: load mac dlls that are inside zip things inside pk3s.
 
-void *Sys_LoadGameDll( const char *name, intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) )
+void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) )
 {
-  void *libHandle;
-  void	(*dllEntry)( intptr_t (*syscallptr)(intptr_t, ...) );
-  char	fname[MAX_OSPATH];
-  //char	loadname[MAX_OSPATH];
-  char	*basepath;
-  char	*cdpath;
-  char	*gamedir;
-  char	*homepath;
-  char	*fn;
-  const char*  err = NULL; // bk001206 // rb0101023 - now const
+	void	*libHandle;
+	void	(QDECL *dllEntry)( intptr_t (QDECL *syscallptr)(intptr_t, ...) );
+	char	*basepath;
+	char	*homepath;
+	char	*cdpath;
+	char	*gamedir;
+	char	*fn;
+	char	fname[MAX_OSPATH];
 
-  // bk001206 - let's have some paranoia
-  assert( name );
-    
-#ifndef NDEBUG
-  Com_sprintf (fname, sizeof(fname), "%s" ARCH_STRING "-debug" DLL_EXT, name); // bk010205 - different DLL name
-#else
-  Com_sprintf (fname, sizeof(fname), "%s" ARCH_STRING DLL_EXT, name);
-#endif
-
-  homepath = Cvar_VariableString( "fs_homepath" );
-  basepath = Cvar_VariableString( "fs_basepath" );
-  cdpath = Cvar_VariableString( "fs_cdpath" );
-  gamedir = Cvar_VariableString( "fs_game" );
-  
-  fn = FS_BuildOSPath( basepath, gamedir, fname );
-  
-  // bk001129 - from cvs1.17 (mkv), was fname not fn
-  libHandle = Sys_LoadLibrary( fn );
+	Com_sprintf (fname, sizeof(fname), "%s" ARCH_STRING DLL_EXT, name);
 
 	if (!libHandle) {
-		if ( homepath[0] ) {
-			Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-			
-			fn = FS_BuildOSPath( homepath, gamedir, fname);
-			libHandle = Sys_LoadLibrary( fn );
-		}
-	}
-	
-	if (!libHandle) {
-		if( cdpath[0] ) {
-			Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-			
-			fn = FS_BuildOSPath( cdpath, gamedir, fname );
-			libHandle = Sys_LoadLibrary( fn );
-		}
-	}
-	
-	//Now try in base.
-	if (!libHandle) {
-		Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-		
-		fn = FS_BuildOSPath( basepath, BASEGAME, fname);
+		basepath = Cvar_VariableString( "fs_basepath" );
+		homepath = Cvar_VariableString( "fs_homepath" );
+		cdpath = Cvar_VariableString( "fs_cdpath" );
+		gamedir = Cvar_VariableString( "fs_game" );
+
+		fn = FS_BuildOSPath( basepath, gamedir, filename );
 		libHandle = Sys_LoadLibrary( fn );
-	}
-	
-	if (!libHandle) {
-		if ( homepath[0] ) {
-			Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-			
-			fn = FS_BuildOSPath( homepath, BASEGAME, fname);
-			libHandle = Sys_LoadLibrary( fn );
+
+		if ( !libHandle ) {
+			Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+			if( homepath[0] ) {
+				Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+				fn = FS_BuildOSPath( homepath, gamedir, filename );
+				libHandle = LoadLibrary( fn );
+			}
+			if ( !libHandle ) {
+				Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+				if( cdpath[0] ) {
+					fn = FS_BuildOSPath( cdpath, gamedir, filename );
+					libHandle = Sys_LoadLibrary( fn );
+				}
+				if ( !libHandle ) {
+					Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+					// now we try base
+					fn = FS_BuildOSPath( basepath, BASEGAME, filename );
+					libHandle = Sys_LoadLibrary( fn );
+					if ( !libHandle ) {
+						if( homepath[0] ) {
+							Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+							fn = FS_BuildOSPath( homepath, BASEGAME, filename );
+							libHandle = LoadLibrary( fn );
+						}
+						if ( !libHandle ) {
+							Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+							if( cdpath[0] ) {
+								fn = FS_BuildOSPath( cdpath, BASEGAME, filename );
+								libHandle = Sys_LoadLibrary( fn );
+							}
+							if ( !libHandle ) {
+								Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+								return NULL;
+							}
+						}
+					}
+				}
+			}
 		}
 	}
-	
-	if (!libHandle) {
-		if( cdpath[0] ) {
-			Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-			
-			fn = FS_BuildOSPath( cdpath, BASEGAME, fname );
-			libHandle = Sys_LoadLibrary( fn );
-		}
-	}
-	
-	if (!libHandle) {
-		Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+
+	dllEntry = ( void (QDECL *)( intptr_t (QDECL *)( intptr_t, ... ) ) )Sys_LoadFunction( libHandle, "dllEntry" );
+	*entryPoint = (intptr_t (QDECL *)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
+	if ( !*entryPoint || !dllEntry ) {
+		Com_Printf ( "Sys_LoadGameDll(%s) failed to find vmMain function:\n\"%s\" !\n", name, Sys_LibraryError );
+		Sys_UnloadLibrary( libHandle );
 		return NULL;
 	}
 
-	
-	Com_Printf ( "Sys_LoadDll(%s): succeeded ...\n", fn );
- 
-  dllEntry = (void (*)(intptr_t (*)(intptr_t,...))) Sys_LoadFunction( libHandle, "dllEntry" ); 
-  if (!dllEntry)
-  {
-     err = Sys_LibraryError();
-     Com_Printf("Sys_LoadDLL(%s) failed dlsym(dllEntry): \"%s\" ! \n",name,err);
-  }
-  //int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  )
-  *entryPoint = (intptr_t(*)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
-  if (!*entryPoint)
-     err = Sys_LibraryError();
-  if ( !*entryPoint || !dllEntry ) {
-    Com_Printf ( "Sys_LoadDll(%s) failed dlsym(vmMain): \"%s\" !\n", name, err );
-    Sys_UnloadLibrary( libHandle );
-    err = Sys_LibraryError();
-    if ( err != NULL )
-      Com_Printf ( "Sys_LoadDll(%s) failed dlcose: \"%s\"\n", name, err );
-    return NULL;
-  }
-  Com_Printf ( "Sys_LoadDll(%s) found **vmMain** at  %p  \n", name, *entryPoint ); // bk001212
-  dllEntry( systemcalls );
-  Com_Printf ( "Sys_LoadDll(%s) succeeded!\n", name );
-  return libHandle;
+	Com_Printf ( "Sys_LoadGameDll(%s) found vmMain function at %p\n", name, *entryPoint );
+	dllEntry( systemcalls );
+
+	return libHandle;
 }
 
 void    Sys_ConfigureFPU() { // bk001213 - divide by zero
