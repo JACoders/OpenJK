@@ -192,7 +192,7 @@ to a fixed color.
 Coordinates are at 640 by 480 virtual resolution
 ==================
 */
-void SCR_DrawBigStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor ) {
+void SCR_DrawBigStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor, qboolean noColorEscape ) {
 	vec4_t		color;
 	const char	*s;
 	int			xx;
@@ -204,12 +204,12 @@ void SCR_DrawBigStringExt( int x, int y, const char *string, float *setColor, qb
 	s = string;
 	xx = x;
 	while ( *s ) {
-		if ( Q_IsColorString( s ) ) {
+		if ( !noColorEscape && Q_IsColorString( s ) ) {
 			s += 2;
 			continue;
 		}
 		SCR_DrawBigChar( xx+2, y+2, *s );
-		xx+=16;
+		xx += BIGCHAR_WIDTH;
 		s++;
 	}
 
@@ -225,29 +225,67 @@ void SCR_DrawBigStringExt( int x, int y, const char *string, float *setColor, qb
 				color[3] = setColor[3];
 				re.SetColor( color );
 			}
-			s += 2;
-			continue;
+			if ( !noColorEscape ) {
+				s += 2;
+				continue;
+			}
 		}
 		SCR_DrawBigChar( xx, y, *s );
-		xx+=16;
+		xx += BIGCHAR_WIDTH;
 		s++;
 	}
 	re.SetColor( NULL );
 }
 
 
-void SCR_DrawBigString( int x, int y, const char *s, float alpha ) {
+void SCR_DrawBigString( int x, int y, const char *s, float alpha, qboolean noColorEscape ) {
 	float	color[4];
 
 	color[0] = color[1] = color[2] = 1.0;
 	color[3] = alpha;
-	SCR_DrawBigStringExt( x, y, s, color, qfalse );
+	SCR_DrawBigStringExt( x, y, s, color, qfalse, noColorEscape );
 }
 
-void SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color ) {
-	SCR_DrawBigStringExt( x, y, s, color, qtrue );
+void SCR_DrawBigStringColor( int x, int y, const char *s, vec4_t color, qboolean noColorEscape ) {
+	SCR_DrawBigStringExt( x, y, s, color, qtrue, noColorEscape );
 }
 
+/*
+==================
+SCR_DrawSmallString[Color]
+
+Draws a multi-colored string with a drop shadow, optionally forcing
+to a fixed color.
+==================
+*/
+void SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, qboolean forceColor,
+		qboolean noColorEscape ) {
+	vec4_t		color;
+	const char	*s;
+	int			xx;
+
+	// draw the colored text
+	s = string;
+	xx = x;
+	re.SetColor( setColor );
+	while ( *s ) {
+		if ( Q_IsColorString( s ) ) {
+			if ( !forceColor ) {
+				memcpy( color, g_color_table[ColorIndex(*(s+1))], sizeof( color ) );
+				color[3] = setColor[3];
+				re.SetColor( color );
+			}
+			if ( !noColorEscape ) {
+				s += 2;
+				continue;
+			}
+		}
+		SCR_DrawSmallChar( xx, y, *s );
+		xx += SMALLCHAR_WIDTH;
+		s++;
+	}
+	re.SetColor( NULL );
+}
 
 /*
 ** SCR_Strlen -- skips color escape codes
@@ -272,7 +310,7 @@ static int SCR_Strlen( const char *str ) {
 ** SCR_GetBigStringWidth
 */ 
 int	SCR_GetBigStringWidth( const char *str ) {
-	return SCR_Strlen( str ) * 16;
+	return SCR_Strlen( str ) * BIGCHAR_WIDTH;
 }
 
 //===============================================================================
