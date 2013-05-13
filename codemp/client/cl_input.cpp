@@ -961,6 +961,16 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 		return;
 	}
 
+#ifdef _WIN32
+	if( in_joystick->integer == 2 )
+	{
+		if(abs(cl.joystickAxis[AXIS_FORWARD]) >= 30) cmd->forwardmove = cl.joystickAxis[AXIS_FORWARD];
+		if(abs(cl.joystickAxis[AXIS_SIDE]) >= 30) cmd->rightmove = cl.joystickAxis[AXIS_SIDE];
+		cmd->forwardmove *= -1.0f; // ffff
+	}
+	else
+	{
+#endif
 	int		movespeed;
 	float	anglespeed;
 
@@ -1020,6 +1030,9 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 	}
 
 	cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
+#ifdef _WIN32
+	}
+#endif
 }
 
 /*
