@@ -25,7 +25,7 @@ typedef struct {
 } qkey_t;
 
 #define	MAX_EDIT_LINE		256
-#define	COMMAND_HISTORY		32
+#define	COMMAND_HISTORY		64
 
 typedef struct {
 	int		cursor;
@@ -65,8 +65,8 @@ extern keyname_t	keynames[MAX_KEYS];
 
 void Field_Clear( field_t *edit );
 void Field_KeyDownEvent( field_t *edit, int key );
-void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor );
-void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor );
+void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape );
+void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape );
 
 extern	field_t	chatField;
 
