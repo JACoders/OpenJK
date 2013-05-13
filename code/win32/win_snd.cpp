@@ -20,8 +20,6 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
-
-
 #include <float.h>
 
 #include "../client/snd_local.h"
@@ -31,7 +29,6 @@ HRESULT (WINAPI *pDirectSoundCreate)(GUID FAR *lpGUID, LPDIRECTSOUND FAR *lplpDS
 #define iDirectSoundCreate(a,b,c)	pDirectSoundCreate(a,b,c)
 
 #define SECONDARY_BUFFER_SIZE	0x10000
-
 
 extern int s_UseOpenAL;
 
@@ -43,7 +40,6 @@ static LPDIRECTSOUND pDS;
 static LPDIRECTSOUNDBUFFER pDSBuf, pDSPBuf;
 static HINSTANCE hInstDS;
 
-static int  SNDDMA_InitDS ();
 
 static const char *DSoundError( int error ) {
 	switch ( error ) {

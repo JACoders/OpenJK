@@ -52,7 +52,7 @@ void Debug_Printf (cvar_t *cv, int debugLevel, char *fmt, ...)
 		color = S_COLOR_RED;
 
 	va_start (argptr,fmt);
-	vsprintf (msg, fmt, argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	gi.Printf("%s%5i:%s", color, level.time, msg);
@@ -90,7 +90,7 @@ void Debug_NPCPrintf (gentity_t *printNPC, cvar_t *cv, int debugLevel, char *fmt
 		color = COLOR_RED;
 
 	va_start (argptr,fmt);
-	vsprintf (msg, fmt, argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	gi.Printf ("%c%c%5i (%s) %s", Q_COLOR_ESCAPE, color, level.time, printNPC->targetname, msg);
