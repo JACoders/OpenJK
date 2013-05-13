@@ -274,7 +274,7 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 			if( homepath[0] ) {
 				Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 				fn = FS_BuildOSPath( homepath, gamedir, filename );
-				libHandle = LoadLibrary( fn );
+				libHandle = Sys_LoadLibrary( fn );
 			}
 			if ( !libHandle ) {
 				Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
@@ -291,7 +291,7 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 						if( homepath[0] ) {
 							Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
 							fn = FS_BuildOSPath( homepath, BASEGAME, filename );
-							libHandle = LoadLibrary( fn );
+							libHandle = Sys_LoadLibrary( fn );
 						}
 						if ( !libHandle ) {
 							Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
