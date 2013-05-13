@@ -122,7 +122,7 @@ bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cle
 
 	bufParse = buf;
 	parser.Parse(&bufParse, cleanFirst);
-	delete buf;
+	delete[] buf;
 
 	ri.FS_FCloseFile( f );
 
@@ -161,7 +161,7 @@ CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool write
 		parse = 0;
 	}
 
-	delete buf;
+	delete[] buf;
 
 	return parse;
 }
