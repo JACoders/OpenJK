@@ -256,9 +256,9 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 	char	*cdpath;
 	char	*gamedir;
 	char	*fn;
-	char	fname[MAX_OSPATH];
+	char	filename[MAX_OSPATH];
 
-	Com_sprintf (fname, sizeof(fname), "%s" ARCH_STRING DLL_EXT, name);
+	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
 	if (!libHandle) {
 		basepath = Cvar_VariableString( "fs_basepath" );
