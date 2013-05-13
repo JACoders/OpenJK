@@ -80,6 +80,9 @@ qboolean	in_appactive;
 // forward-referenced functions
 void IN_StartupJoystick (void);
 void IN_JoyMove(void);
+#ifndef NO_XINPUT
+void IN_UnloadXInput ( void );
+#endif
 
 static void MidiInfo_f( void );
 
@@ -789,6 +792,12 @@ void IN_Shutdown( void ) {
 	IN_ShutdownRawMouse();
 	IN_ShutdownDIMouse();
 	IN_ShutdownMIDI();
+#ifndef NO_XINPUT
+	if( in_joystick->integer == 2 )
+	{
+		IN_UnloadXInput();
+	}
+#endif
 	Cmd_RemoveCommand("midiinfo" );
 }
 
@@ -919,10 +928,79 @@ JOYSTICK
 
 #ifndef NO_XINPUT
 
-#pragma comment(lib, "xinput.lib")
-
 static XINPUT_STATE xiState;
 static int xiButtonDebounce[16];
+
+static HMODULE xiLibrary = NULL;
+
+typedef DWORD (__stdcall *XIFuncPointer)(DWORD, void *);
+XIFuncPointer XI_GetStateEx = NULL;
+XIFuncPointer XI_SetState = NULL;
+
+/*
+===============
+IN_LoadXInput
+
+Uses direct DLL loading as opposed to static linkage
+This is because, as Ensiform pointed out, Windows 8
+and Windows 7 use different XInput versions, hence
+different linkage.
+===============
+*/
+
+qboolean IN_LoadXInput ( void )
+{
+	int lastNum;
+	if( xiLibrary )
+		return qfalse;	// already loaded
+
+	for(lastNum = 4; lastNum >= 3; lastNum--)		// increment as more XInput versions become supported
+	{
+		xiLibrary = LoadLibrary( va("XInput1_%i.dll", lastNum) );
+		if( xiLibrary)
+			break;
+	}
+	if( !xiLibrary )
+	{
+		Com_Printf( S_COLOR_RED"XInput not detected on your system. Please download the XBOX 360 drivers from the Microsoft home page.\n" );
+		return qfalse;
+	}
+	
+	// MEGA HACK:
+	// Ordinal 100 in the XInput DLL supposedly contains a modified/improved version
+	// of the XInputGetState function, with one key difference: XInputGetState does
+	// not get the status of the XBOX Guide button, while XInputGetStateEx does.
+	XI_GetStateEx = (XIFuncPointer)GetProcAddress( xiLibrary, (LPCSTR)100 );
+	XI_SetState = (XIFuncPointer)GetProcAddress( xiLibrary, "XInputSetState" );
+
+	if( !XI_GetStateEx || !XI_SetState )
+	{
+		Com_Printf("^1IN_LoadXInput failed on pointer establish\n");
+		IN_UnloadXInput();
+		return qfalse;
+	}
+	return qtrue;
+}
+
+/*
+===============
+IN_UnloadXInput
+
+XInput gets unloaded if we change input modes or we shut
+down the game
+===============
+*/
+
+void IN_UnloadXInput ( void )
+{
+	if( !xiLibrary )
+	{
+		// not loaded, so don't bother trying to unload
+		return;
+	}
+	FreeLibrary( xiLibrary );
+	xiLibrary = NULL;
+}
 
 /*
 ===============
@@ -931,12 +1009,20 @@ IN_JoystickInitXInput
 XBOX 360 controller only
 ===============
 */
+
 void IN_JoystickInitXInput ( void )
 {
 	Com_Printf("Joystick cvar enabled -- XInput mode\n");
+
+	if(!IN_LoadXInput())
+	{
+		Com_Printf("Could not load XInput -- see above error. Controller not enabled.\n");
+		return;
+	}
+
 	ZeroMemory( &xiState, sizeof(XINPUT_GAMEPAD) );
 
-	if (XInputGetState( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something, 
+	if (XI_GetStateEx( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something, 
 															// I'll probably add a splitscreen mode just for lulz --eez
 		Com_Printf("XBOX 360 controller not detected -- no drivers or bad connection\n");
 		return;
@@ -1250,7 +1336,7 @@ void IN_DoXInput( void )
 	if(!joy.avail)
 	{
 		// Joystick not found, continue to search for it :>
-		if( XInputGetState(0, &xiState) == ERROR_SUCCESS )
+		if( XI_GetStateEx(0, &xiState) == ERROR_SUCCESS )
 		{
 			joy.avail = qtrue;
 			Com_Printf("Controller connected.\n");
@@ -1262,7 +1348,7 @@ void IN_DoXInput( void )
 	}
 	else
 	{
-		if( XInputGetState(0, &xiState) != ERROR_SUCCESS )
+		if( XI_GetStateEx(0, &xiState) != ERROR_SUCCESS )
 		{
 			joy.avail = qfalse;
 			Com_Printf("Controller disconnected.\n");
