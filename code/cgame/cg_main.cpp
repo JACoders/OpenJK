@@ -2225,6 +2225,7 @@ void CG_Init( int serverCommandSequence ) {
 	cgi_AddCommand ("saberColor");
 	cgi_AddCommand ("saber");
 	cgi_AddCommand ("saberblade");
+	cgi_AddCommand ("setForceAll");
 
 	cgi_AddCommand ("runscript");
 
