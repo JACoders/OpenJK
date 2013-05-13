@@ -262,7 +262,6 @@ void COM_BeginParseSession( void )
 {
 	parseDataCount =0;
 	parseData[parseDataCount].com_lines = 1;
-	
 }
 
 #endif
@@ -720,6 +719,9 @@ Safe strncpy that ensures a trailing zero
 */
 void Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong/* = qfalse */ )
 {
+	if ( !dest ) {
+		Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
+	}
 	if ( !src ) {
 		Com_Error( ERR_FATAL, "Q_strncpyz: NULL src" );
 	}
@@ -933,7 +935,7 @@ int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 
 //Raz: Patched version of Com_sprintf
 //Ensiform: But this is better
-void QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
+int QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	int		len;
 	va_list		argptr;
 
@@ -944,7 +946,7 @@ void QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	if(len >= size)
 		Com_Printf("Com_sprintf: Output length %d too short, require %d bytes.\n", size, len + 1);
 	
-	return;
+	return len;
 }
 
 /*
@@ -970,10 +972,8 @@ char * QDECL va( const char *format, ... )
 	buf = (char *)&string[index++ & 3];
 	Q_vsnprintf( buf, MAX_VA_STRING-1, format, argptr );
 	va_end( argptr );
-
 	return buf;
 }
-
 
 /*
 =====================================================================

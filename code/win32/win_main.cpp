@@ -196,7 +196,7 @@ void QDECL Sys_Error( const char *error, ... ) {
     MSG        msg;
 
 	va_start (argptr, error);
-	vsprintf_s (text, error, argptr);
+	Q_vsnprintf (text, sizeof(text), error, argptr);
 	va_end (argptr);
 
 	Conbuf_AppendText( text );
