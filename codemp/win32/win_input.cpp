@@ -59,6 +59,14 @@ cvar_t	*in_midiport;
 cvar_t	*in_midichannel;
 cvar_t	*in_mididevice;
 
+#ifndef NO_XINPUT
+cvar_t	*xin_invertThumbsticks;
+cvar_t	*xin_rumbleScale;
+
+cvar_t	*xin_invertLookX;
+cvar_t	*xin_invertLookY;
+#endif
+
 cvar_t	*in_mouse;
 cvar_t	*in_joystick;
 cvar_t	*in_joyBallScale;
@@ -72,6 +80,9 @@ qboolean	in_appactive;
 // forward-referenced functions
 void IN_StartupJoystick (void);
 void IN_JoyMove(void);
+#ifndef NO_XINPUT
+void IN_UnloadXInput ( void );
+#endif
 
 static void MidiInfo_f( void );
 
@@ -781,6 +792,12 @@ void IN_Shutdown( void ) {
 	IN_ShutdownRawMouse();
 	IN_ShutdownDIMouse();
 	IN_ShutdownMIDI();
+#ifndef NO_XINPUT
+	if( in_joystick->integer == 2 )
+	{
+		IN_UnloadXInput();
+	}
+#endif
 	Cmd_RemoveCommand("midiinfo" );
 }
 
@@ -804,13 +821,21 @@ void IN_Init( void ) {
 
 	// joystick variables
 	in_joystick				= Cvar_Get ("in_joystick",				"0",		CVAR_ARCHIVE|CVAR_LATCH);
-	in_joyBallScale			= Cvar_Get ("in_joyBallScale",			"0.02",		CVAR_ARCHIVE);
+	in_joyBallScale			= Cvar_Get ("in_joyBallScale",			"0.02",		CVAR_ARCHIVE); // XInput: treat as right stick sens
 	in_debugJoystick		= Cvar_Get ("in_debugjoystick",			"0",		CVAR_TEMP);
 
 	joy_threshold			= Cvar_Get ("joy_threshold",			"0.15",		CVAR_ARCHIVE);
 
+#ifndef NO_XINPUT
+	xin_invertThumbsticks	= Cvar_Get ("xin_invertThumbsticks",	"0",		CVAR_ARCHIVE);
+	xin_invertLookX			= Cvar_Get ("xin_invertLookX",			"0",		CVAR_ARCHIVE);
+	xin_invertLookY			= Cvar_Get ("xin_invertLookY",			"0",		CVAR_ARCHIVE);
+
+	xin_rumbleScale			= Cvar_Get ("xin_rumbleScale",			"1.0",		CVAR_ARCHIVE);
+
+#endif
 	joy_xbutton				= Cvar_Get ("joy_xbutton",			"1",		CVAR_ARCHIVE);	// treat axis as a button
-	joy_ybutton				= Cvar_Get ("joy_ybutton",			"0",		CVAR_ARCHIVE);	// treat axis as a button
+	joy_ybutton				= Cvar_Get ("joy_ybutton",			"0",		CVAR_ARCHIVE);
 
 	IN_Startup();
 }
@@ -901,22 +926,128 @@ JOYSTICK
 =========================================================================
 */
 
-/* 
-=============== 
-IN_StartupJoystick 
-=============== 
-*/  
-void IN_StartupJoystick (void) { 
+#ifndef NO_XINPUT
+
+static XINPUT_STATE xiState;
+static int xiButtonDebounce[16];
+
+static HMODULE xiLibrary = NULL;
+
+typedef DWORD (__stdcall *XIFuncPointer)(DWORD, void *);
+XIFuncPointer XI_GetStateEx = NULL;
+XIFuncPointer XI_SetState = NULL;
+
+/*
+===============
+IN_LoadXInput
+
+Uses direct DLL loading as opposed to static linkage
+This is because, as Ensiform pointed out, Windows 8
+and Windows 7 use different XInput versions, hence
+different linkage.
+===============
+*/
+
+qboolean IN_LoadXInput ( void )
+{
+	int lastNum;
+	if( xiLibrary )
+		return qfalse;	// already loaded
+
+	for(lastNum = 4; lastNum >= 3; lastNum--)		// increment as more XInput versions become supported
+	{
+		xiLibrary = LoadLibrary( va("XInput1_%i.dll", lastNum) );
+		if( xiLibrary)
+			break;
+	}
+	if( !xiLibrary )
+	{
+		Com_Printf( S_COLOR_RED"XInput not detected on your system. Please download the XBOX 360 drivers from the Microsoft home page.\n" );
+		return qfalse;
+	}
+	
+	// MEGA HACK:
+	// Ordinal 100 in the XInput DLL supposedly contains a modified/improved version
+	// of the XInputGetState function, with one key difference: XInputGetState does
+	// not get the status of the XBOX Guide button, while XInputGetStateEx does.
+	XI_GetStateEx = (XIFuncPointer)GetProcAddress( xiLibrary, (LPCSTR)100 );
+	XI_SetState = (XIFuncPointer)GetProcAddress( xiLibrary, "XInputSetState" );
+
+	if( !XI_GetStateEx || !XI_SetState )
+	{
+		Com_Printf("^1IN_LoadXInput failed on pointer establish\n");
+		IN_UnloadXInput();
+		return qfalse;
+	}
+	return qtrue;
+}
+
+/*
+===============
+IN_UnloadXInput
+
+XInput gets unloaded if we change input modes or we shut
+down the game
+===============
+*/
+
+void IN_UnloadXInput ( void )
+{
+	if( !xiLibrary )
+	{
+		// not loaded, so don't bother trying to unload
+		return;
+	}
+	FreeLibrary( xiLibrary );
+	xiLibrary = NULL;
+}
+
+/*
+===============
+IN_JoystickInitXInput
+
+XBOX 360 controller only
+===============
+*/
+
+void IN_JoystickInitXInput ( void )
+{
+	Com_Printf("Joystick cvar enabled -- XInput mode\n");
+
+	if(!IN_LoadXInput())
+	{
+		Com_Printf("Could not load XInput -- see above error. Controller not enabled.\n");
+		return;
+	}
+
+	ZeroMemory( &xiState, sizeof(XINPUT_GAMEPAD) );
+
+	if (XI_GetStateEx( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something, 
+															// I'll probably add a splitscreen mode just for lulz --eez
+		Com_Printf("XBOX 360 controller not detected -- no drivers or bad connection\n");
+		return;
+	}
+
+	ZeroMemory( xiButtonDebounce, sizeof(xiButtonDebounce) );
+	joy.avail = qtrue;	// semi hack, we really have no use for joy. whatever, but we use this to message when connection state changes
+
+}
+
+#endif
+
+/*
+===============
+IN_JoystickInitDInput
+
+DirectInput only
+===============
+*/
+void IN_JoystickInitDInput ( void )
+{
 	int			numdevs;
 	MMRESULT	mmr;
 
-	// assume no joystick
-	joy.avail = qfalse; 
-
-	if (! in_joystick->integer ) {
-		Com_Printf ("Joystick is not active.\n");
-		return;
-	}
+	Com_Printf("Joystick cvar enabled -- DirectInput mode\n");
 
 	// verify joystick driver is present
 	if ((numdevs = joyGetNumDevs ()) == 0)
@@ -975,6 +1106,34 @@ void IN_StartupJoystick (void) {
 	joy.avail = qtrue; 
 }
 
+/* 
+=============== 
+IN_StartupJoystick 
+=============== 
+*/  
+void IN_StartupJoystick (void) { 
+	// assume no joystick
+	joy.avail = qfalse; 
+
+	if ( in_joystick->integer == 1 )
+	{
+		// DirectInput mode --eez
+		IN_JoystickInitDInput();
+	}
+#ifndef NO_XINPUT
+	else if ( in_joystick->integer == 2 )
+	{
+		// xbox 360 awesomeness
+		IN_JoystickInitXInput();
+	}
+#endif
+	else {
+		Com_Printf ("Joystick is not active.\n");
+		return;
+	}
+	
+}
+
 /*
 ===========
 JoyToF
@@ -1019,19 +1178,18 @@ int	joyDirectionKeys[16] = {
 
 /*
 ===========
-IN_JoyMove
+IN_DoDirectInput
+
+Equivalent of IN_JoyMove for DirectInput
 ===========
 */
-void IN_JoyMove( void ) {
+
+void IN_DoDirectInput( void )
+{
 	float	fAxisValue;
 	int		i;
 	DWORD	buttonstate, povstate;
 	int		x, y;
-
-	// verify joystick is available and that the user wants to use it
-	if ( !joy.avail ) {
-		return; 
-	}
 
 	// collect the joystick data, if possible
 	memset (&joy.ji, 0, sizeof(joy.ji));
@@ -1135,6 +1293,216 @@ void IN_JoyMove( void ) {
 			Sys_QueEvent( g_wv.sysMsgTime, SE_MOUSE, x, y, 0, NULL );
 		}
 	}
+}
+
+#ifndef NO_XINPUT
+/*
+===========
+XI_ThumbFloat
+
+Gets the percentage going one way or the other (as normalized float)
+===========
+*/
+float ID_INLINE XI_ThumbFloat( signed short thumbValue )
+{
+	return (thumbValue < 0) ? (thumbValue / 32768.0f) : (thumbValue / 32767.0f);
+}
+
+/*
+===========
+XI_ApplyInversion
+
+Inverts look up/down and look left/right appropriately
+===========
+*/
+void XI_ApplyInversion( float *fX, float *fY )
+{
+	if( xin_invertLookX->integer )
+		*fX *= -1.0f;
+	if( xin_invertLookY->integer )
+		*fY *= -1.0f;
+}
+
+/*
+===========
+IN_DoXInput
+
+Equivalent of IN_JoyMove for XInput (xbox 360)
+===========
+*/
+
+void IN_DoXInput( void )
+{
+	if(!joy.avail)
+	{
+		// Joystick not found, continue to search for it :>
+		if( XI_GetStateEx(0, &xiState) == ERROR_SUCCESS )
+		{
+			joy.avail = qtrue;
+			Com_Printf("Controller connected.\n");
+		}
+		else
+		{
+			return;
+		}
+	}
+	else
+	{
+		if( XI_GetStateEx(0, &xiState) != ERROR_SUCCESS )
+		{
+			joy.avail = qfalse;
+			Com_Printf("Controller disconnected.\n");
+			return;
+		}
+	}
+
+	// Now that we've dealt with the basic checks for connectivity, let's actually do the _important_ crap.
+	float leftThumbX = XI_ThumbFloat(xiState.Gamepad.sThumbLX);
+	float leftThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbLY);
+	float rightThumbX = XI_ThumbFloat(xiState.Gamepad.sThumbRX);
+	float rightThumbY = XI_ThumbFloat(xiState.Gamepad.sThumbRY);
+	int dX = 0, dY = 0;
+
+	/* hi microsoft, go fuck yourself for flipping the Y axis for no reason... */
+	leftThumbY *= -1.0f;
+	rightThumbY *= -1.0f;
+
+	// JOYSTICKS
+	// This is complete and utter trash in DirectInput, because it doesn't send like half as much crap as it should.
+	if( xin_invertThumbsticks->integer )
+	{
+		// Left stick functions like right stick
+		XI_ApplyInversion(&leftThumbX, &leftThumbY);
+
+		// Left stick behavior
+		if( abs(leftThumbX) > joy_threshold->value )	// FIXME: what does do about deadzones and sensitivity...
+		{
+			dX = (leftThumbX-joy_threshold->value) * in_joyBallScale->value * 1024;
+		}
+		if( abs(leftThumbY) > joy_threshold->value )
+		{
+			dY = (leftThumbY-joy_threshold->value) * in_joyBallScale->value * 1024;
+		}
+		// Square it.
+		dX *= abs(dX);
+		dY *= abs(dY);
+		
+		Sys_QueEvent(g_wv.sysMsgTime, SE_MOUSE, dX, dY, 0, NULL);
+
+		// Right stick behavior
+		// Hardcoded deadzone within the gamecode itself to deal with the situation
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_SIDE, rightThumbX * 127, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_FORWARD, rightThumbY * 127, 0, NULL);
+	}
+	else
+	{
+		// Thumbsticks act as they should (right stick = camera, left stick = wasd equivalent)
+		XI_ApplyInversion(&rightThumbX, &rightThumbY);
+		
+
+		// Left stick behavior
+		// Hardcoded deadzone within the gamecode itself to deal with the situation
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_SIDE, leftThumbX * 127, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_FORWARD, leftThumbY * 127, 0, NULL);
+
+		// Right stick behavior
+		if( abs(rightThumbX) > joy_threshold->value )
+		{
+			dX = (rightThumbX-joy_threshold->value) * in_joyBallScale->value * 1024;
+		}
+		if( abs(rightThumbY) > joy_threshold->value )
+		{
+			dY = (rightThumbY-joy_threshold->value) * in_joyBallScale->value * 1024;
+		}
+		// Square it.
+		dX *= abs(dX);
+		dY *= abs(dY);
+
+		if(dX || dY)
+			Sys_QueEvent(g_wv.sysMsgTime, SE_MOUSE, dX, dY, 0, NULL);
+	}
+
+
+	// BUTTONS
+
+	for(int i = 0; i < 14; i++)
+	{
+		if( xiState.Gamepad.wButtons & (1 << i) &&
+			xiButtonDebounce[i] < g_wv.sysMsgTime )
+		{
+			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY1+i, qtrue, 0, NULL);
+			xiButtonDebounce[i] = g_wv.sysMsgTime + 50;
+		}
+		else if( !(xiState.Gamepad.wButtons & (1 << i)) )
+		{
+			Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY1+i, qfalse, 0, NULL);
+		}
+	}
+	// extra magic required for the triggers
+	if( xiState.Gamepad.bLeftTrigger && xiButtonDebounce[14] < g_wv.sysMsgTime )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qtrue, 0, NULL);
+		xiButtonDebounce[14] = g_wv.sysMsgTime + 50;
+	}
+	else if( !xiState.Gamepad.bLeftTrigger )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, qfalse, 0, NULL);
+	}
+
+	if( xiState.Gamepad.bRightTrigger && xiButtonDebounce[15] < g_wv.sysMsgTime )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qtrue, 0, NULL);
+	}
+	else if( !xiState.Gamepad.bRightTrigger )
+	{
+		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qfalse, 0, NULL);
+		xiButtonDebounce[15] = g_wv.sysMsgTime + 50;
+	}
+
+	/*Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY1, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_A), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY2, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_B), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY3, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_X), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY4, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_Y), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY5, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_BACK), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY6, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_START), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY7, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY8, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY9, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY10, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY11, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY12, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY13, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY14, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, (xiState.Gamepad.bLeftTrigger > 0), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, (xiState.Gamepad.bRightTrigger > 0), 0, NULL);*/
+
+	// HACK, these are aliases for the menu. Since the above is sent first, these don't affect keybinds for controls screen :)
+	/*Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_ENTER, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_A), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_ESCAPE, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_B), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_LEFT, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_RIGHT, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_UP, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP), 0, NULL);
+	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_DOWN, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN), 0, NULL);*/
+}
+#endif
+
+/*
+===========
+IN_JoyMove
+===========
+*/
+void IN_JoyMove( void ) 
+{
+	if( in_joystick->integer == 1 && joy.avail)
+	{
+		IN_DoDirectInput();
+	}
+#ifndef NO_XINPUT
+	else if( in_joystick->integer == 2 )
+	{
+		IN_DoXInput();
+	}
+#endif
 }
 
 /*
