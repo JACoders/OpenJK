@@ -303,6 +303,7 @@
     <ClCompile Include="null\null_renderer.cpp" />
     <ClCompile Include="null\null_snddma.cpp" />
     <ClCompile Include="null\win_main.cpp" />
+    <ClCompile Include="sys\snapvector.cpp" />
     <ClCompile Include="win32\win_net.cpp" />
     <ClCompile Include="win32\win_shared.cpp" />
     <ClCompile Include="botlib\be_aas_bspq3.cpp" />
