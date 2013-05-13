@@ -102,7 +102,7 @@ void Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
 
 // Parsing
 
-#include "../game/GenericParser2.h"
+#include "../game/genericparser2.h"
 
 bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cleanFirst)
 {
