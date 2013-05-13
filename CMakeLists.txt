@@ -89,19 +89,19 @@ else(WIN32)
 	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
 	# maybe remove these flags later, when the warnings are fixed
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w -fpermissive")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fpermissive")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fpermissive")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
 
 	# additional flags for debug configuration
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 
 	enable_language(ASM_NASM) # there are some assembly files to build
-	
+
 	if (NOT CMAKE_BUILD_TYPE)
- 		message("No build type selected, default to RELEASE")
- 		set(CMAKE_BUILD_TYPE "RELEASE")
- 	endif()
+		message("No build type selected, default to RELEASE")
+		set(CMAKE_BUILD_TYPE "RELEASE")
+	endif()
 endif()
 
 set(DebugDefines "_DEBUG")
@@ -116,14 +116,14 @@ add_subdirectory(${MPDir})
 
 #    CPack for installer creation
 # TODO: Which version are we?
-set(CPACK_PACKAGE_PACKAGE_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "1")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 # I'm just not appending the version for now
 set(CPACK_PACKAGE_FILE_NAME "OpenJK-${CMAKE_SYSTEM_NAME}-${Architecture}")
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "An improved Jedi Academy")
-set(CPACK_PACKAGE_VENDOR "JA Coders") # TODO: What are we called?
+set(CPACK_PACKAGE_VENDOR "JACoders")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
 set(CPACK_PACKAGE_DIRECTORY ${PACKAGE_DIR})
