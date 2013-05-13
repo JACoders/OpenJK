@@ -357,6 +357,7 @@
     <ClCompile Include="qcommon\vm_interpreted.cpp" />
     <ClCompile Include="qcommon\vm_x86.cpp" />
     <ClCompile Include="qcommon\z_memman_pc.cpp" />
+    <ClCompile Include="sys\snapvector.cpp" />
     <ClCompile Include="win32\win_input.cpp" />
     <ClCompile Include="win32\win_main.cpp" />
     <ClCompile Include="win32\win_net.cpp" />
