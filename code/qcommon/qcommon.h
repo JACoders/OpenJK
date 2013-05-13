@@ -797,8 +797,6 @@ void	Sys_StreamSeek( fileHandle_t f, int offset, int origin );
 void	Sys_ShowConsole( int level, qboolean quitOnClose );
 void	Sys_SetErrorText( const char *text );
 
-qboolean	Sys_CheckCD( void );
-
 void	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );
 char	*Sys_DefaultCDPath(void);

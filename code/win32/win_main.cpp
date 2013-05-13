@@ -49,10 +49,6 @@ This file is part of Jedi Academy.
 #define  CLEAR_CRT_DEBUG_FIELD(a) ((void) 0)
 #endif
 
-#define	CD_BASEDIR	"gamedata\\gamedata"
-#define	CD_EXE		"jasp.exe"
-#define	CD_VOLUME	"JEDIACAD"
-
 #define MEM_THRESHOLD 128*1024*1024
 
 static char		sys_cmdline[MAX_STRING_CHARS];
@@ -387,66 +383,6 @@ void	Sys_FreeFileList( char **filelist ) {
 }
 
 //========================================================
-
-
-/*
-================
-Sys_ScanForCD
-
-Search all the drives to see if there is a valid CD to grab
-the cddir from
-================
-*/
-#ifdef FINAL_BUILD
-static qboolean Sys_ScanForCD( void ) {
-	char		drive[4];
-	FILE		*f;
-	char		test[MAX_OSPATH];
-
-	drive[0] = 'c';
-	drive[1] = ':';
-	drive[2] = '\\';
-	drive[3] = 0;
-
-	// scan the drives
-	for ( drive[0] = 'c' ; drive[0] <= 'z' ; drive[0]++ ) {
-		if ( GetDriveType (drive) == DRIVE_CDROM ) {			
-			BOOL Result;
-			char VolumeName[MAX_PATH],FileSystemName[MAX_PATH];
-			DWORD VolumeSerialNumber,MaximumComponentLength,FileSystemFlags;
-			
-			Result = GetVolumeInformation(drive,VolumeName,sizeof(VolumeName),&VolumeSerialNumber,
-				&MaximumComponentLength,&FileSystemFlags,FileSystemName,sizeof(FileSystemName));
-
-			if (Result && (strnicmp(VolumeName,CD_VOLUME,8) == 0 ) )
-			{
-				sprintf (test, "%s%s\\%s", drive, CD_BASEDIR, CD_EXE);
-				f = fopen( test, "r");
-				if ( f ) {
-					fclose (f);
-					return Result;
-				}
-			}
-		}
-	}
-
-	return qfalse;
-}
-#endif
-/*
-================
-Sys_CheckCD
-
-Return true if the proper CD is in the drive
-================
-*/
-qboolean	Sys_CheckCD( void ) {
-#ifdef FINAL_BUILD
-	return Sys_ScanForCD();
-#else
-	return qtrue;
-#endif
-}
 
 /*
 ================
@@ -995,27 +931,6 @@ void Sys_In_Restart_f( void ) {
 	IN_Init();
 }
 
-static bool Sys_IsExpired()
-{
-#if 0
-//								sec min Hr Day Mon Yr
-    struct tm t_valid_start	= { 0, 0, 8, 23, 6, 103 };	//zero based months!
-//								sec min Hr Day Mon Yr
-    struct tm t_valid_end	= { 0, 0, 20, 30, 6, 103 };
-//    struct tm t_valid_end	= t_valid_start;
-//	t_valid_end.tm_mday += 8;
-	time_t startTime  = mktime( &t_valid_start);
-	time_t expireTime = mktime( &t_valid_end);
-	time_t now;
-	time(&now);
-	if((now < startTime) || (now> expireTime))
-	{
-		return true;
-	}
-#endif
-	return false;
-}
-
 /*
 ================
 Sys_Init
@@ -1045,9 +960,6 @@ void Sys_Init( void ) {
 
 	if (!GetVersionEx (&g_wv.osversion))
 		Sys_Error ("Couldn't get OS info");
-	if (Sys_IsExpired()) {
-		g_wv.osversion.dwPlatformId = VER_PLATFORM_WIN32s;	//sneaky: hide the expire with this error
-	}
 
 	if (g_wv.osversion.dwMajorVersion < 4)
 		Sys_Error ("This game requires Windows version 4 or greater");
@@ -1160,11 +1072,6 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	// get the initial time base
 	Sys_Milliseconds();
-
-#if 0
-	// if we find the CD, add a +set cddir xxx command line
-	Sys_ScanForCD();
-#endif
 
 	Sys_InitStreamThread();
 

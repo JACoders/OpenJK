@@ -35,7 +35,7 @@ static HANDLE	hBinkFile	= NULL;
 static HBINK	hBink		= NULL;
 */
 
-extern unsigned int SNDDMA_GetDSHandle(void);
+//extern unsigned int SNDDMA_GetDSHandle(void);
 extern			int s_soundStarted;	// if 0, game is running in silent mode
 
 // ret qtrue if success...
