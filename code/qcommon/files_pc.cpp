@@ -990,8 +990,7 @@ static int FS_ReturnPath( const char *zname, char *zpath, int *depth ) {
 		}
 		at++;
 	}
-	strcpy(zpath, zname);
-	zpath[len] = 0;
+	Q_strncpyz(zpath, zname, MAX_QPATH);
 	*depth = newdep;
 
 	return len;
