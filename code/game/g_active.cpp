@@ -1313,7 +1313,12 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 					{//FIXME: for now Jedi take no falling damage, but really they should if pushed off?
 						magnitude = 0;
 					}
-					G_Damage( self, NULL, NULL, NULL, self->currentOrigin, magnitude/2, DAMAGE_NO_ARMOR, MOD_FALLING );//FIXME: MOD_IMPACT
+
+					if ( self->NPC && self->client && Q_stricmp(self->NPC_type, "rosh_penin" ) &&
+						Q_stricmp(self->NPC_type, "rosh_penin_noforce") )
+					{
+						G_Damage( self, NULL, NULL, NULL, self->currentOrigin, magnitude/2, DAMAGE_NO_ARMOR, MOD_FALLING );//FIXME: MOD_IMPACT
+					}
 				}
 			}
 		}
