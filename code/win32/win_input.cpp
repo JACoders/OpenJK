@@ -89,9 +89,16 @@ cvar_t	*in_joystick;
 cvar_t	*in_joyBallScale;
 cvar_t	*in_debugJoystick;
 cvar_t	*joy_threshold;
-cvar_t	*js_ffmult;
 cvar_t	*joy_xbutton;
 cvar_t	*joy_ybutton;
+
+#ifndef NO_XINPUT
+cvar_t	*xin_invertThumbsticks;
+cvar_t	*xin_rumbleScale;
+
+cvar_t	*xin_invertLookX;
+cvar_t	*xin_invertLookY;
+#endif
 
 qboolean	in_appactive;
 
@@ -701,10 +708,17 @@ void IN_Init( void ) {
 
 	joy_threshold			= Cvar_Get ("joy_threshold",			"0.15",		CVAR_ARCHIVE);
 
-	js_ffmult				= Cvar_Get ("js_ffmult",				"3.0",		CVAR_ARCHIVE);	// force feedback
-
 	joy_xbutton			= Cvar_Get ("joy_xbutton",			"1",		CVAR_ARCHIVE);	// treat axis as a button
 	joy_ybutton			= Cvar_Get ("joy_ybutton",			"0",		CVAR_ARCHIVE);	// treat axis as a button
+
+#ifndef NO_XINPUT
+	xin_invertThumbsticks	= Cvar_Get ("xin_invertThumbsticks",	"0",		CVAR_ARCHIVE);
+	xin_invertLookX			= Cvar_Get ("xin_invertLookX",			"0",		CVAR_ARCHIVE);
+	xin_invertLookY			= Cvar_Get ("xin_invertLookY",			"0",		CVAR_ARCHIVE);
+
+	xin_rumbleScale			= Cvar_Get ("xin_rumbleScale",			"1.0",		CVAR_ARCHIVE);
+
+#endif
 
 	IN_Startup();
 }
@@ -919,7 +933,7 @@ void IN_JoystickInitDInput ( void )
 	mmr = 0;
 	for (joy.id=0 ; joy.id<numdevs ; joy.id++)
 	{
-		Com_Memset (&joy.ji, 0, sizeof(joy.ji));
+		memset (&joy.ji, 0, sizeof(joy.ji));
 		joy.ji.dwSize = sizeof(joy.ji);
 		joy.ji.dwFlags = JOY_RETURNCENTERED;
 
@@ -936,7 +950,7 @@ void IN_JoystickInitDInput ( void )
 
 	// get the capabilities of the selected joystick
 	// abort startup if command fails
-	Com_Memset (&joy.jc, 0, sizeof(joy.jc));
+	memset (&joy.jc, 0, sizeof(joy.jc));
 	if ((mmr = joyGetDevCaps (joy.id, &joy.jc, sizeof(joy.jc))) != JOYERR_NOERROR)
 	{
 		Com_Printf ("joystick not found -- invalid joystick capabilities (%x)\n", mmr); 
@@ -1162,7 +1176,7 @@ XI_ThumbFloat
 Gets the percentage going one way or the other (as normalized float)
 ===========
 */
-float ID_INLINE XI_ThumbFloat( signed short thumbValue )
+float __inline XI_ThumbFloat( signed short thumbValue )	// ID_INLINE is not defined in this scope? WTF... I guess __inline works here
 {
 	return (thumbValue < 0) ? (thumbValue / 32768.0f) : (thumbValue / 32767.0f);
 }
