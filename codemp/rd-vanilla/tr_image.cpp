@@ -1743,7 +1743,7 @@ static void R_JPGErrorExit(j_common_ptr cinfo)
 	/* Let the memory manager delete any temp files before we die */
 	jpeg_destroy(cinfo);
 
-	Com_Error(ERR_FATAL, "%s", buffer);
+	Com_Printf("%s", buffer);
 }
 
 static void R_JPGOutputMessage(j_common_ptr cinfo)
@@ -1856,8 +1856,9 @@ static void LoadJPG( const char *filename, unsigned char **pic, int *width, int 
 		ri.FS_FreeFile (fbuffer.v); 
 		jpeg_destroy_decompress(&cinfo); 
 
-		Com_Error(ERR_DROP, "LoadJPG: %s has an invalid image format: %dx%d*4=%d, components: %d", filename, 
+		Com_Printf("LoadJPG: %s has an invalid image format: %dx%d*4=%d, components: %d", filename, 
 			cinfo.output_width, cinfo.output_height, pixelcount * 4, cinfo.output_components);
+        return;
 	}
 
 	memcount = pixelcount * 4;
