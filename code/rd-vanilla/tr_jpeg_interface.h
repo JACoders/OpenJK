@@ -36,7 +36,7 @@ extern "C"
 typedef const char * LPCSTR;
 #endif
 
-int LoadJPG( const char *filename, unsigned char **pic, int *width, int *height );
+void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height );
 void SaveJPG( const char *filename, int quality, int image_width, int image_height, unsigned char *image_buffer);
 
 void JPG_ErrorThrow(LPCSTR message);

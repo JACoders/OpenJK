@@ -1361,7 +1361,7 @@ This is the only way any image_t are created
 ================
 */
 image_t *R_CreateImage( const char *name, const byte *pic, int width, int height, 
-					   GLenum format, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode,int fileSize)
+					   GLenum format, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode)
 {
 	image_t		*image;
 	qboolean	isLightmap = qfalse;
@@ -1895,7 +1895,7 @@ Loads any of the supported image types into a cannonical
 32 bit format.
 =================
 */
-int R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLenum *format ) {
+void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLenum *format ) {
 	int		bytedepth;
 	char	name[MAX_QPATH];
 
@@ -1914,30 +1914,28 @@ int R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLe
 	COM_StripExtension(name,name);
 	COM_DefaultExtension(name, sizeof(name), ".jpg");
 
-	int fileSize;
 	//First try .jpg
-	fileSize=LoadJPG( name, pic, width, height );
+	LoadJPG( name, pic, width, height );
 	if (*pic)
 	{
-		return fileSize;
+		return;
 	}
 
 	COM_StripExtension(name,name);
 	COM_DefaultExtension(name, sizeof(name), ".png");	
 
 	//No .jpg existed, try .png
-	fileSize=LoadPNG32( name, pic, width, height, &bytedepth );
+	LoadPNG32( name, pic, width, height, &bytedepth );
 	if (*pic)
 	{
-		return fileSize;
+		return;
 	}
 
 	COM_StripExtension(name,name);
 	COM_DefaultExtension(name, sizeof(name), ".tga");
 
 	//No .jpg existed and no .png existed, try .tga as a last resort.
-	fileSize=LoadTGA( name, pic, width, height );
-	return fileSize;
+	LoadTGA( name, pic, width, height );
 }
 
 void R_LoadDataImage( const char *name, byte **pic, int *width, int *height)
@@ -2234,12 +2232,12 @@ image_t	*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmi
 	//
 	// load the pic from disk
 	//
-	int fileSize=R_LoadImage( name, &pic, &width, &height, &format );
+	R_LoadImage( name, &pic, &width, &height, &format );
 	if ( !pic ) {
         return NULL;            
 	}
 
-	image = R_CreateImage( ( char * ) name, pic, width, height, format, mipmap, allowPicmip, allowTC, glWrapClampMode,fileSize );
+	image = R_CreateImage( ( char * ) name, pic, width, height, format, mipmap, allowPicmip, allowTC, glWrapClampMode );
 	Z_Free( pic );
 	return image;
 }

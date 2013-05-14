@@ -16,8 +16,8 @@ set(SPRDVanillaDefines ${SharedDefines} "RENDERER" "_JK2EXE")
 # Files
 
 # JPEG
-file(GLOB_RECURSE J_SRC "${SPDir}/jpeg-6/*.cpp" "${SPDir}/jpeg-6/*.h")
-source_group("jpeg-6" FILES ${J_SRC})
+file(GLOB_RECURSE J_SRC "${SPDir}/jpeg-8c/*.c" "${SPDir}/jpeg-8c/*.h")
+source_group("jpeg-8c" FILES ${J_SRC})
 set(SPRDVanillaFiles ${SPRDVanillaFiles} ${J_SRC})
 
 # GHOUL 2
