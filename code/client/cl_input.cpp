@@ -26,10 +26,6 @@ This file is part of Jedi Academy.
 #include "client.h"
 #include "client_ui.h"
 
-#ifdef _XBOX
-#include "cl_input_hotswap.h"
-#endif
-
 #ifndef _WIN32
 #include <cmath>
 #endif
@@ -70,47 +66,12 @@ kbutton_t	in_buttons[9];
 
 qboolean	in_mlooking;
 
+#ifdef _WIN32
+extern cvar_t	*in_joystick;
+#endif
 
-#ifdef _XBOX
-HotSwapManager swapMan1(HOTSWAP_ID_WHITE);
-HotSwapManager swapMan2(HOTSWAP_ID_BLACK);
-
-
-void IN_HotSwap1On(void)
-{
-	swapMan1.SetDown();
-}
-
-
-void IN_HotSwap2On(void)
-{
-	swapMan2.SetDown();
-}
-
-
-void IN_HotSwap1Off(void)
-{
-	swapMan1.SetUp();
-}
-
-
-void IN_HotSwap2Off(void)
-{
-	swapMan2.SetUp();
-}
-
-
-void CL_UpdateHotSwap(void)
-{
-	swapMan1.Update();
-	swapMan2.Update();
-}
-
-
-bool CL_ExtendSelectTime(void)
-{
-	return swapMan1.ButtonDown() || swapMan2.ButtonDown();
-}
+#ifndef NO_XINPUT
+void IN_UnloadXInput ( void );
 #endif
 
 
@@ -500,6 +461,22 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 	int		movespeed;
 	float	anglespeed;
 
+	if ( !in_joystick->integer )
+	{
+		return;
+	}
+
+#ifdef _WIN32
+	if( in_joystick->integer == 2 )
+	{
+		if(abs(cl.joystickAxis[AXIS_FORWARD]) >= 30) cmd->forwardmove = cl.joystickAxis[AXIS_FORWARD];
+		if(abs(cl.joystickAxis[AXIS_SIDE]) >= 30) cmd->rightmove = cl.joystickAxis[AXIS_SIDE];
+		cmd->forwardmove *= -1.0f; // ffff
+	}
+	else
+	{
+#endif
+
 	if ( in_speed.active ^ cl_run->integer ) {
 		movespeed = 2;
 	} else {
@@ -543,6 +520,10 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 	}
 
 	cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
+
+#ifdef _WIN32
+	}
+#endif
 }
 
 /*

@@ -29,12 +29,12 @@ This file is part of Jedi Academy.
 #pragma warning( pop )
 #endif
 
-#ifndef _XBOX
 #define DIRECTINPUT_VERSION 0x0800 //[ 0x0300 | 0x0500 | 0x0700 | 0x0800 ]
 #include <dinput.h>
 #include <dsound.h>
-#else
-#include "../qcommon/platform.h"
+
+#ifndef NO_XINPUT
+#include <Xinput.h>
 #endif
 
 void	IN_MouseEvent (int mstate);
