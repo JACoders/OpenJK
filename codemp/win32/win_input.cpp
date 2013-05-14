@@ -1458,31 +1458,6 @@ void IN_DoXInput( void )
 		Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, qfalse, 0, NULL);
 		xiButtonDebounce[15] = g_wv.sysMsgTime + 50;
 	}
-
-	/*Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY1, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_A), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY2, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_B), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY3, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_X), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY4, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_Y), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY5, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_BACK), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY6, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_START), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY7, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY8, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY9, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY10, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY11, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY12, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY13, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY14, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY15, (xiState.Gamepad.bLeftTrigger > 0), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_JOY16, (xiState.Gamepad.bRightTrigger > 0), 0, NULL);*/
-
-	// HACK, these are aliases for the menu. Since the above is sent first, these don't affect keybinds for controls screen :)
-	/*Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_ENTER, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_A), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_ESCAPE, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_B), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_LEFT, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_RIGHT, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_UP, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP), 0, NULL);
-	Sys_QueEvent(g_wv.sysMsgTime, SE_KEY, A_CURSOR_DOWN, (xiState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN), 0, NULL);*/
 }
 #endif
 
