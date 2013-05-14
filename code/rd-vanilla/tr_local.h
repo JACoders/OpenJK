@@ -1357,7 +1357,7 @@ model_t		*R_AllocModel( void );
 void    	R_Init( void );
 image_t		*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
 
-image_t		*R_CreateImage( const char *name, const byte *pic, int width, int height, GLenum format, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int wrapClampMode,int fileSize=0);
+image_t		*R_CreateImage( const char *name, const byte *pic, int width, int height, GLenum format, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int wrapClampMode);
 
 qboolean	R_GetModeInfo( int *width, int *height, int mode );
 
@@ -1876,7 +1876,7 @@ qboolean	RE_InitDissolve(qboolean bForceCircularExtroWipe);
 
 
 long generateHashValue( const char *fname );
-int R_LoadImage( const char *name, byte **pic, int *width, int *height, GLenum *format );
+void R_LoadImage( const char *name, byte **pic, int *width, int *height, GLenum *format );
 void		RE_InsertModelIntoHash(const char *name, model_t *mod);
 qboolean R_FogParmsMatch( int fog1, int fog2 );
 
