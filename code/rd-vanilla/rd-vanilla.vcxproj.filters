@@ -75,39 +75,6 @@
     <ClInclude Include="tr_WorldEffects.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\jpeg-6\jchuff.h">
-      <Filter>Libraries\jpg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\jpeg-6\jconfig.h">
-      <Filter>Libraries\jpg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\jpeg-6\jdct.h">
-      <Filter>Libraries\jpg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\jpeg-6\jdhuff.h">
-      <Filter>Libraries\jpg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\jpeg-6\jerror.h">
-      <Filter>Libraries\jpg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\jpeg-6\jinclude.h">
-      <Filter>Libraries\jpg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\jpeg-6\jmemsys.h">
-      <Filter>Libraries\jpg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\jpeg-6\jmorecfg.h">
-      <Filter>Libraries\jpg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\jpeg-6\jpegint.h">
-      <Filter>Libraries\jpg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\jpeg-6\jpeglib.h">
-      <Filter>Libraries\jpg</Filter>
-    </ClInclude>
-    <ClInclude Include="..\jpeg-6\jversion.h">
-      <Filter>Libraries\jpg</Filter>
-    </ClInclude>
     <ClInclude Include="..\zlib32\deflate.h">
       <Filter>Libraries\zlib</Filter>
     </ClInclude>
@@ -140,6 +107,33 @@
     </ClInclude>
     <ClInclude Include="..\game\genericparser2.h">
       <Filter>Libraries\Shared Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-8c\jconfig.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-8c\jdct.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-8c\jerror.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-8c\jinclude.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-8c\jmemsys.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-8c\jmorecfg.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-8c\jpegint.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-8c\jpeglib.h">
+      <Filter>Libraries\jpg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jpeg-8c\jversion.h">
+      <Filter>Libraries\jpg</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -242,114 +236,6 @@
     <ClCompile Include="tr_WorldEffects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\jpeg-6\jcapimin.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jccoefct.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jccolor.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jcdctmgr.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jchuff.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jcinit.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jcmainct.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jcmarker.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jcmaster.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jcomapi.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jcparam.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jcphuff.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jcprepct.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jcsample.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jctrans.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdapimin.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdapistd.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdatadst.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdatasrc.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdcoefct.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdcolor.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jddctmgr.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdhuff.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdinput.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdmainct.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdmarker.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdmaster.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdpostct.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdsample.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jdtrans.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jerror.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jfdctflt.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jidctflt.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jmemmgr.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jmemnobs.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\jpeg-6\jutils.cpp">
-      <Filter>Libraries\jpg</Filter>
-    </ClCompile>
     <ClCompile Include="..\zlib32\deflate.cpp">
       <Filter>Libraries\zlib</Filter>
     </ClCompile>
@@ -397,6 +283,144 @@
     </ClCompile>
     <ClCompile Include="..\game\genericparser2.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jaricom.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcapimin.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcapistd.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcarith.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jccoefct.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jccolor.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcdctmgr.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jchuff.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcinit.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcmainct.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcmarker.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcmaster.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcomapi.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcparam.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcprepct.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jcsample.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jctrans.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdapimin.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdapistd.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdarith.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdatadst.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdatasrc.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdcoefct.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdcolor.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jddctmgr.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdhuff.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdinput.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdmainct.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdmarker.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdmaster.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdmerge.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdpostct.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdsample.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jdtrans.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jerror.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jfdctflt.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jfdctfst.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jfdctint.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jidctflt.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jidctfst.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jidctint.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jmemmgr.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jmemnobs.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jquant1.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jquant2.c">
+      <Filter>Libraries\jpg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jpeg-8c\jutils.c">
+      <Filter>Libraries\jpg</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
