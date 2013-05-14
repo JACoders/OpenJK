@@ -1519,7 +1519,7 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 {	
 #ifndef __NO_JK2
 	// Yes..even this func is a little different, to the point where it doesn't work. --eez
-	if( !com_jk2->integer )
+	if( com_jk2->integer )
 	{
 		int			iMaxWidth = 0;
 		int			iThisWidth= 0;
@@ -1675,7 +1675,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 {
 	// HAAAAAAAAAAAAAAAX..fix me please --eez
 #ifndef __NO_JK2
-	if( !com_jk2->integer )
+	if( com_jk2->integer )
 	{
 		static qboolean gbInShadow = qfalse;	// MUST default to this
 		int					x, y, colour, offset;
