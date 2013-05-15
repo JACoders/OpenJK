@@ -1730,7 +1730,7 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 		qboolean	bIsForeign	= s_language && Q_stricmp(s_language->string,"english") && Q_stricmp(s_language->string,"");
 		LPCSTR		psAudioFile	= NULL;
 		qhandle_t	hCrawl = 0;
-		if (!Q_stricmp(arg,"video/jk0101_sw.roq") || !Q_stricmp(arg, "video/ja01.roq"))
+		if (!Q_stricmp(arg,"video/jk0101_sw.roq"))
 		{
 			psAudioFile = "music/cinematic_1";
 			if ( Cvar_VariableIntegerValue("com_demo") )
