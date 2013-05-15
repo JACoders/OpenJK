@@ -59,7 +59,7 @@ This file is part of Jedi Academy.
 #endif
 
 
-void*	ratl::ratl_base::OutputPrint = 0;
+void (*ratl::ratl_base::OutputPrint)(const char*) = 0;
 
 
 

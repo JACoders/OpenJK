@@ -1258,7 +1258,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	void insert(const TKTValue &key,const TVTValue &value)
 	{
-		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
+		assert(!IS_MULTI || (tree_base<K,IS_MULTI>::find_index(key)==tree_node::NULL_NODE)); //fixme handle duplicates more sensibly?
 
 		tree_base<K,IS_MULTI>::alloc_key(key);
 		tree_base<K,IS_MULTI>::insert_alloced_key();		
@@ -1272,7 +1272,7 @@ public:
 	TVTValue &insert(const TKTValue &key)
 	{
 		
-		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
+		assert(!IS_MULTI || (tree_base<K,IS_MULTI>::find_index(key)==tree_node::NULL_NODE)); //fixme handle duplicates more sensibly?
 
 		tree_base<K,IS_MULTI>::alloc_key(key);
 		tree_base<K,IS_MULTI>::insert_alloced_key();		
@@ -1288,7 +1288,7 @@ public:
 	TRatlNew *insert_raw(const TKTValue &key)
 	{
 		
-		assert(!IS_MULTI || find_index(key)==tree_node::NULL_NODE); //fixme handle duplicates more sensibly?
+		assert(!IS_MULTI || (tree_base<K,IS_MULTI>::find_index(key)==tree_node::NULL_NODE)); //fixme handle duplicates more sensibly?
 
 		tree_base<K,IS_MULTI>::alloc_key(key);
 		tree_base<K,IS_MULTI>::insert_alloced_key();		
