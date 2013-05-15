@@ -1314,7 +1314,7 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 						magnitude = 0;
 					}
 
-					if ( self->NPC && self->client && Q_stricmp(self->NPC_type, "rosh_penin" ) &&
+					if ( self->client && Q_stricmp(self->NPC_type, "rosh_penin" ) &&
 						Q_stricmp(self->NPC_type, "rosh_penin_noforce") )
 					{
 						G_Damage( self, NULL, NULL, NULL, self->currentOrigin, magnitude/2, DAMAGE_NO_ARMOR, MOD_FALLING );//FIXME: MOD_IMPACT
