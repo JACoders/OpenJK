@@ -1574,6 +1574,7 @@ then loads the zip headers
 */
 #define	MAX_PAKFILES	1024
 static void FS_AddGameDirectory( const char *path, const char *dir ) {
+	searchpath_t	*sp;
 	int				i;
 	searchpath_t	*search;
 	pack_t			*pak;
@@ -1581,6 +1582,14 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	int				numfiles;
 	char			**pakfiles;
 	char			*sorted[MAX_PAKFILES];
+
+	// this fixes the case where fs_basepath is the same as fs_cdpath
+	// which happens on full installs
+	for ( sp = fs_searchpaths ; sp ; sp = sp->next ) {
+		if ( sp->dir && !Q_stricmp(sp->dir->path, path) && !Q_stricmp(sp->dir->gamedir, dir)) {
+			return;			// we've already got this one
+		}
+	}
 
 	Q_strncpyz( fs_gamedir, dir, sizeof( fs_gamedir ) );
 
