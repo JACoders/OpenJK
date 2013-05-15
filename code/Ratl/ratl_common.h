@@ -327,7 +327,7 @@ public:
 	void	ProfilePrint(const char * format, ...);
 
 public:
-	static	void*	OutputPrint;
+	static	void (*OutputPrint)(const char *);
 };
 
 
