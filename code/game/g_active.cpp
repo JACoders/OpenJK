@@ -1314,11 +1314,9 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 						magnitude = 0;
 					}
 
-					char stupidLittleBuffer[128];
-					gi.Cvar_VariableStringBuffer("mapname", stupidLittleBuffer, 128);
 					if( (!Q_stricmp(self->NPC_type, "rosh_penin") ||
 						!Q_stricmp(self->NPC_type, "rosh_penin_noforce")) &&
-						!Q_stricmp(stupidLittleBuffer, "yavin1b") )
+						!Q_stricmp(level.mapname, "yavin1b") )
 					{
 						// This is a small little fix I implemented over a matter of 3 commits due to bugs/etc.
 						// There is an EXTREMELY frustrating bug on yavin1b where Rosh can take enough damage from howlers to the point
