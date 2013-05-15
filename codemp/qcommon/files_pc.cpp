@@ -1994,7 +1994,7 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 			continue;
 		}
 		// we drop "base" "." and ".."
-		if (Q_stricmp(name, "base") && Q_stricmpn(name, ".", 1)) {
+		if (Q_stricmp(name, BASEGAME) && Q_stricmpn(name, ".", 1)) {
 			// now we need to find some .pk3 files to validate the mod
 			// NOTE TTimo: (actually I'm not sure why .. what if it's a mod under developement with no .pk3?)
 			// we didn't keep the information when we merged the directory names, as to what OS Path it was found under
