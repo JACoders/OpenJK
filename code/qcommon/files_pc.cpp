@@ -990,7 +990,8 @@ static int FS_ReturnPath( const char *zname, char *zpath, int *depth ) {
 		}
 		at++;
 	}
-	Q_strncpyz(zpath, zname, MAX_QPATH);
+	strcpy(zpath, zname);
+	zpath[len] = 0;
 	*depth = newdep;
 
 	return len;
@@ -1034,10 +1035,10 @@ char **FS_ListFiles( const char *path, const char *extension, int *numfiles ) {
 	int				i;
 	int				pathLength;
 	int				extensionLength;
-	int				length, pathDepth;
+	int				length, pathDepth, temp;
 	pack_t			*pak;
 	fileInPack_t	*buildBuffer;
-	char			zpath[MAX_QPATH];
+	char			zpath[MAX_ZPATH];
 
 	if ( !fs_searchpaths ) {
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
@@ -1052,6 +1053,9 @@ char **FS_ListFiles( const char *path, const char *extension, int *numfiles ) {
 	}
 
 	pathLength = strlen( path );
+	if ( path[pathLength-1] == '\\' || path[pathLength-1] == '/' ) {
+		pathLength--;
+	}
 	extensionLength = strlen( extension );
 	nfiles = 0;
 	FS_ReturnPath(path, zpath, &pathDepth);
@@ -1083,11 +1087,15 @@ char **FS_ListFiles( const char *path, const char *extension, int *numfiles ) {
 					continue;
 				}
 
-				if ( stricmp( name + length - extensionLength, extension ) ) {
+				if ( Q_stricmp( name + length - extensionLength, extension ) ) {
 					continue;
 				}
-
 				// unique the match
+
+				temp = pathLength;
+				if (pathLength) {
+					temp++;		// include the '/'
+				}
 				nfiles = FS_AddFileToList( name + pathLength + 1, list, nfiles );
 			}
 		} else if (search->dir) { // scan for files in the filesystem
@@ -1192,89 +1200,35 @@ from all search paths
 */
 int	FS_GetModList( char *listbuf, int bufsize );
 int	FS_GetFileList(  const char *path, const char *extension, char *listbuf, int bufsize ) {
-	int		nfiles;
-	searchpath_t	*search;
-	int				i;
-	int				pathLength;
-	int				extensionLength;
-	int				length, pathDepth;
-	pack_t			*pak;
-	fileInPack_t	*buildBuffer;
-	char			zpath[MAX_QPATH];
+	int		nFiles, i, nTotal, nLen;
+	char **pFiles = NULL;
 
-	if (Q_stricmp(path, "$modlist") == 0)
-	{
+	*listbuf = 0;
+	nFiles = 0;
+	nTotal = 0;
+
+	if (Q_stricmp(path, "$modlist") == 0) {
 		return FS_GetModList(listbuf, bufsize);
 	}
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
+	pFiles = FS_ListFiles(path, extension, &nFiles);
+
+	for (i =0; i < nFiles; i++) {
+		nLen = strlen(pFiles[i]) + 1;
+		if (nTotal + nLen + 1 < bufsize) {
+			strcpy(listbuf, pFiles[i]);
+			listbuf += nLen;
+			nTotal += nLen;
+		}
+		else {
+			nFiles = i;
+			break;
+		}
 	}
 
-	if ( !path ) {
-		return 0;
-	}
-	if ( !extension ) {
-		extension = "";
-	}
+	FS_FreeFileList(pFiles);
 
-	pathLength = strlen( path );
-	extensionLength = strlen( extension );
-	nfiles = 0;
-	*listbuf = 0;
-	FS_ReturnPath(path, zpath, &pathDepth);
-	//
-	// search through the path, one element at a time, adding to list
-	//
-	for (search = fs_searchpaths ; search ; search = search->next) {
-		// is the element a pak file?
-		if (search->pack) {
-			// look through all the pak file elements
-			pak = search->pack;
-			buildBuffer = pak->buildBuffer;
-			for (i=0 ; i<pak->numfiles ; i++) {
-				char	*name;
-				int		zpathLen, depth;
-
-				// check for directory match
-				name = buildBuffer[i].name;
-				zpathLen = FS_ReturnPath(name, zpath, &depth);
-
-				if ( (depth-pathDepth)>2 || pathLength > zpathLen || Q_stricmpn( name, path, pathLength ) ) {
-					continue;
-				}
-
-				// check for extension match
-				length = strlen( name );
-				if ( length < extensionLength || (length == (extensionLength + pathLength))) {
-					continue;
-				}
-
-				if ( stricmp( name + length - extensionLength, extension ) ) {
-					continue;
-				}
-
-				// unique the match
-				nfiles = FS_AddFileToListBuf( name + pathLength, listbuf, bufsize, nfiles );
-			}
-		} else  if (search->dir) { // scan for files in the filesystem
-			char	*netpath;
-			int		numSysFiles;
-			char	**sysFiles;
-			char	*name;
-
-			netpath = FS_BuildOSPath( search->dir->path, search->dir->gamedir, path );
-			sysFiles = Sys_ListFiles( netpath, extension, &numSysFiles, qfalse );
-			for ( i = 0 ; i < numSysFiles ; i++ ) {
-				// unique the match
-				name = sysFiles[i];
-				nfiles = FS_AddFileToListBuf( name, listbuf, bufsize, nfiles );
-			}
-			Sys_FreeFileList( sysFiles );
-		}		
-	}
-
-	return nfiles;
+	return nFiles;
 }
 
 // NOTE: could prolly turn out useful for the win32 version too, but it's used only by linux and Mac OS X
@@ -1366,13 +1320,13 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 	char **pFiles1 = NULL;
 	char **pFiles2 = NULL;
 	qboolean bDrop = qfalse;
-	
+
 	*listbuf = 0;
 	nMods = nPotential = nTotal = 0;
 
-	pFiles0 = Sys_ListFiles( fs_homepath->string, ".*", &dummy, qtrue );
-	pFiles1 = Sys_ListFiles( fs_basepath->string, ".*", &dummy, qtrue );
-	pFiles2 = Sys_ListFiles( fs_cdpath->string, ".*", &dummy, qtrue );
+	pFiles0 = Sys_ListFiles( fs_homepath->string, NULL, &dummy, qtrue );
+	pFiles1 = Sys_ListFiles( fs_basepath->string, NULL, &dummy, qtrue );
+	pFiles2 = Sys_ListFiles( fs_cdpath->string, NULL, &dummy, qtrue );
 
 	// we searched for mods in the three paths
 	// it is likely that we have duplicate names now, which we will cleanup below
@@ -1380,7 +1334,7 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 	nPotential = Sys_CountFileList(pFiles);
 
 	for ( i = 0 ; i < nPotential ; i++ ) {
-    name = pFiles[i];
+		name = pFiles[i];
 		// NOTE: cleaner would involve more changes
 		// ignore duplicate mod directories
 		if (i!=0) {
@@ -1398,69 +1352,69 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 			continue;
 		}
 		// we drop "base" "." and ".."
-    if (Q_stricmp(name, BASEGAME) && Q_stricmpn(name, ".", 1)) {
-      // ignore base
-		path = FS_BuildOSPath( fs_basepath->string, name, "" );
-		nPaks = 0;
-		pPaks = Sys_ListFiles(path, ".pk3", &nPaks, qfalse);
-		Sys_FreeFileList( pPaks );// we only use Sys_ListFiles to check wether .pk3 files are present
-		
-		/* Try on cd path */
-		if( nPaks <= 0 ) {
-			path = FS_BuildOSPath( fs_cdpath->string, name, "" );
+		if (Q_stricmp(name, BASEGAME) && Q_stricmpn(name, ".", 1)) {
+			// ignore base
+			path = FS_BuildOSPath( fs_basepath->string, name, "" );
 			nPaks = 0;
-			pPaks = Sys_ListFiles( path, ".pk3", &nPaks, qfalse );
-			Sys_FreeFileList( pPaks );
+			pPaks = Sys_ListFiles(path, ".pk3", &nPaks, qfalse);
+			Sys_FreeFileList( pPaks );// we only use Sys_ListFiles to check wether .pk3 files are present
+
+			/* Try on cd path */
+			if( nPaks <= 0 ) {
+				path = FS_BuildOSPath( fs_cdpath->string, name, "" );
+				nPaks = 0;
+				pPaks = Sys_ListFiles( path, ".pk3", &nPaks, qfalse );
+				Sys_FreeFileList( pPaks );
+			}
+
+			/* try on home path */
+			if ( nPaks <= 0 )
+			{
+				path = FS_BuildOSPath( fs_homepath->string, name, "" );
+				nPaks = 0;
+				pPaks = Sys_ListFiles( path, ".pk3", &nPaks, qfalse );
+				Sys_FreeFileList( pPaks );
+			}
+
+			if (nPaks > 0) {
+				nLen = strlen(name) + 1;
+				// nLen is the length of the mod path
+				// we need to see if there is a description available
+				descPath[0] = '\0';
+				strcpy(descPath, name);
+				strcat(descPath, "/description.txt");
+				nDescLen = FS_SV_FOpenFileRead( descPath, &descHandle);
+				if ( nDescLen > 0 && descHandle) {
+					FILE *file;
+					file = FS_FileForHandle(descHandle);
+					memset( descPath, 0, sizeof( descPath ) );
+					nDescLen = fread(descPath, 1, 48, file);
+					if (nDescLen >= 0) {
+						descPath[nDescLen] = '\0';
+					}
+					FS_FCloseFile(descHandle);
+				} else {
+					strcpy(descPath, name);
+				}
+				nDescLen = strlen(descPath) + 1;
+
+				if (nTotal + nLen + 1 + nDescLen + 1 < bufsize) {
+					strcpy(listbuf, name);
+					listbuf += nLen;
+					strcpy(listbuf, descPath);
+					listbuf += nDescLen;
+					nTotal += nLen + nDescLen;
+					nMods++;
+				}
+				else {
+					break;
+				}
+			}
 		}
-		
-		/* try on home path */
-		if ( nPaks <= 0 )
-		{
-			path = FS_BuildOSPath( fs_homepath->string, name, "" );
-			nPaks = 0;
-			pPaks = Sys_ListFiles( path, ".pk3", &nPaks, qfalse );
-			Sys_FreeFileList( pPaks );
-		}
+	}
+	Sys_FreeFileList( pFiles );
 
-		if (nPaks > 0) {
-        nLen = strlen(name) + 1;
-        // nLen is the length of the mod path
-        // we need to see if there is a description available
-        descPath[0] = '\0';
-        strcpy(descPath, name);
-        strcat(descPath, "/description.txt");
-        nDescLen = FS_SV_FOpenFileRead( descPath, &descHandle);
-        if ( nDescLen > 0 && descHandle) {
-      		FILE *file;
-      		file = FS_FileForHandle(descHandle);
-			memset( descPath, 0, sizeof( descPath ) );
-          nDescLen = fread(descPath, 1, 48, file);
-          if (nDescLen >= 0) {
-            descPath[nDescLen] = '\0';
-          }
-          FS_FCloseFile(descHandle);
-        } else {
-          strcpy(descPath, name);
-        }
-        nDescLen = strlen(descPath) + 1;
-
-        if (nTotal + nLen + 1 + nDescLen + 1 < bufsize) {
-          strcpy(listbuf, name);
-          listbuf += nLen;
-          strcpy(listbuf, descPath);
-          listbuf += nDescLen;
-          nTotal += nLen + nDescLen;
-          nMods++;
-        }
-        else {
-          break;
-        }
-      }
-    }
-  }
- 	Sys_FreeFileList( pFiles );
-
-  return nMods;
+	return nMods;
 }
 
 //============================================================================
@@ -1502,6 +1456,45 @@ void FS_Dir_f( void ) {
 }
 
 /*
+===========
+FS_PathCmp
+
+Ignore case and seprator char distinctions
+===========
+*/
+int FS_PathCmp( const char *s1, const char *s2 ) {
+	int		c1, c2;
+	
+	do {
+		c1 = *s1++;
+		c2 = *s2++;
+
+		if (c1 >= 'a' && c1 <= 'z') {
+			c1 -= ('a' - 'A');
+		}
+		if (c2 >= 'a' && c2 <= 'z') {
+			c2 -= ('a' - 'A');
+		}
+
+		if ( c1 == '\\' || c1 == ':' ) {
+			c1 = '/';
+		}
+		if ( c2 == '\\' || c2 == ':' ) {
+			c2 = '/';
+		}
+		
+		if (c1 < c2) {
+			return -1;		// strings not equal
+		}
+		if (c1 > c2) {
+			return 1;
+		}
+	} while (c1);
+	
+	return 0;		// strings are equal
+}
+
+/*
 ============
 FS_Path_f
 
@@ -1515,24 +1508,10 @@ void FS_Path_f( void ) {
 	for (s=fs_searchpaths ; s ; s=s->next) {
 		if (s->pack) {
 			Com_Printf ("%s (%i files)\n", s->pack->pakFilename, s->pack->numfiles);
-/*			if ( fs_numServerPaks ) {
-				for ( i = 0 ; i < fs_numServerPaks ; i++ ) {
-					if ( s->pack->checksum == fs_serverPaks[i] ) {
-						break;		// on the aproved list
-					}
-				}
-				if ( i == fs_numServerPaks ) {
-					Com_Printf( "    not on the pure list\n" );
-				} else {
-					Com_Printf( "    on the pure list\n" );
-				}
-			}
-*/
 		} else 	{
-			Com_Printf ("%s/%s\n", s->dir->path, s->dir->gamedir );
+			Com_Printf ("%s%c%s\n", s->dir->path, PATH_SEP, s->dir->gamedir );
 		}
 	}
-
 
 	Com_Printf( "\n" );
 	for ( i = 1 ; i < MAX_FILE_HANDLES ; i++ ) {
@@ -1581,7 +1560,7 @@ static int QDECL paksort( const void *a, const void *b ) {
 	aa = *(char **)a;
 	bb = *(char **)b;
 
-	return stricmp( aa, bb );
+	return FS_PathCmp( aa, bb );
 }
 
 
