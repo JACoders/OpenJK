@@ -355,6 +355,7 @@ stringID_table_t SaberStyleTable[] =
 	"staff",SS_STAFF,
 	"", NULL
 };
+
 //SABER INITIALIZATION======================================================================
 
 void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *psWeaponModel, int boltNum, int weaponNum )
@@ -14479,4 +14480,17 @@ void WP_InitForcePowers( gentity_t *ent )
 			ent->client->ps.forcePowerLevel[FP_GRIP] = FORCE_LEVEL_2;
 		}
 	}
+}
+
+bool WP_DoingMoronicForcedAnimationForForcePowers(gentity_t *ent)
+{
+	// :P --eez
+	if( !ent->client ) return false;
+	if( ent->client->ps.legsAnim == BOTH_FORCE_ABSORB_START ||
+		ent->client->ps.legsAnim == BOTH_FORCE_ABSORB_END ||
+		ent->client->ps.legsAnim == BOTH_FORCE_ABSORB ||
+		ent->client->ps.torsoAnim == BOTH_FORCE_RAGE ||
+		ent->client->ps.legsAnim == BOTH_FORCE_PROTECT )
+		return true;
+	return false;
 }
