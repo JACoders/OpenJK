@@ -152,7 +152,6 @@ void WP_SaberInFlightReflectCheck( gentity_t *self, usercmd_t *ucmd  );
 void WP_SaberDrop( gentity_t *self, gentity_t *saber );
 qboolean WP_SaberLose( gentity_t *self, vec3_t throwDir );
 void WP_SaberReturn( gentity_t *self, gentity_t *saber );
-void WP_SaberBlock( gentity_t *saber, vec3_t hitloc, qboolean missleBlock );
 void WP_SaberBlockNonRandom( gentity_t *self, vec3_t hitloc, qboolean missileBlock );
 qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
 void WP_ForcePowerDrain( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
@@ -7389,112 +7388,6 @@ void WP_SaberBlockNonRandom( gentity_t *self, vec3_t hitloc, qboolean missileBlo
 		{
 			self->client->ps.forcePowerDebounce[FP_SABER_DEFENSE] = level.time + parryReCalcTime;
 		}
-	}
-}
-
-void WP_SaberBlock( gentity_t *saber, vec3_t hitloc, qboolean missileBlock )
-{
-	gentity_t *playerent;
-	vec3_t diff, fwdangles={0,0,0}, right;
-	float rightdot;
-	float zdiff;
-
-	if (saber && saber->owner)
-	{
-		playerent = saber->owner;
-		if (!playerent->client)
-		{
-			return;
-		}
-		if ( playerent->client->ps.weaponstate == WEAPON_DROPPING ||
-			playerent->client->ps.weaponstate == WEAPON_RAISING )
-		{//don't block while changing weapons
-			return;
-		}
-	}
-	else
-	{	// Bad entity passed.
-		return;
-	}
-	
-	//temporarily disabling auto-blocking for NPCs...
-	if ( !missileBlock && playerent->s.number != 0 && playerent->client->ps.saberBlocked != BLOCKED_NONE )
-	{
-		return;
-	}
-
-	if ( PM_SuperBreakLoseAnim( playerent->client->ps.torsoAnim ) )
-	{
-		return;
-	}
-
-	VectorSubtract(hitloc, playerent->currentOrigin, diff);
-	VectorNormalize(diff);
-
-	fwdangles[1] = playerent->client->ps.viewangles[1];
-	// Ultimately we might care if the shot was ahead or behind, but for now, just quadrant is fine.
-	AngleVectors( fwdangles, NULL, right, NULL );
-
-	rightdot = DotProduct(right, diff) + Q_flrand(-0.2f,0.2f);
-	zdiff = hitloc[2] - playerent->currentOrigin[2] + Q_irand(-8,8);
-	
-	// Figure out what quadrant the block was in.
-	if (zdiff > 24)
-	{	// Attack from above
-		if (Q_irand(0,1))
-		{
-			playerent->client->ps.saberBlocked = BLOCKED_TOP;
-		}
-		else
-		{
-			playerent->client->ps.saberBlocked = BLOCKED_UPPER_LEFT;
-		}
-	}
-	else if (zdiff > 13)
-	{	// The upper half has three viable blocks...
-		if (rightdot > 0.25)
-		{	// In the right quadrant...
-			if (Q_irand(0,1))
-			{
-				playerent->client->ps.saberBlocked = BLOCKED_UPPER_LEFT;
-			}
-			else
-			{
-				playerent->client->ps.saberBlocked = BLOCKED_LOWER_LEFT;
-			}
-		}
-		else
-		{
-			switch(Q_irand(0,3))
-			{
-			case 0:
-				playerent->client->ps.saberBlocked = BLOCKED_UPPER_RIGHT;
-				break;
-			case 1:
-			case 2:
-				playerent->client->ps.saberBlocked = BLOCKED_LOWER_RIGHT;
-				break;
-			case 3:
-				playerent->client->ps.saberBlocked = BLOCKED_TOP;
-				break;
-			}
-		}
-	}
-	else
-	{	// The lower half is a bit iffy as far as block coverage.  Pick one of the "low" ones at random.
-		if (Q_irand(0,1))
-		{
-			playerent->client->ps.saberBlocked = BLOCKED_LOWER_RIGHT;
-		}
-		else
-		{
-			playerent->client->ps.saberBlocked = BLOCKED_LOWER_LEFT;
-		}
-	}
-
-	if ( missileBlock )
-	{
-		playerent->client->ps.saberBlocked = WP_MissileBlockForBlock( playerent->client->ps.saberBlocked );
 	}
 }
 
