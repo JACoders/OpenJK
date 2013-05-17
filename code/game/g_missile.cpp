@@ -493,7 +493,6 @@ void G_SpawnNoghriGasCloud( gentity_t *ent )
 	ent->s.time = level.time;
 }
 
-extern void WP_SaberBlock( gentity_t *saber, vec3_t hitloc, qboolean missleBlock );
 extern void laserTrapStick( gentity_t *ent, vec3_t endpos, vec3_t normal );
 extern qboolean W_AccuracyLoggableWeapon( int weapon, qboolean alt_fire, int mod );
 void G_MissileImpacted( gentity_t *ent, gentity_t *other, vec3_t impactPos, vec3_t normal, int hitLoc=HL_NONE )
@@ -839,7 +838,6 @@ extern bool WP_DoingMoronicForcedAnimationForForcePowers(gentity_t *ent);
 					VectorSubtract(ent->currentOrigin, other->currentOrigin, diff);
 					VectorNormalize(diff);
 					G_ReflectMissile( other, ent, diff);
-					//WP_SaberBlock( other, ent->currentOrigin, qtrue );
 					if ( other->owner && other->owner->client )
 					{
 						other->owner->client->ps.saberEventFlags |= SEF_DEFLECTED;
