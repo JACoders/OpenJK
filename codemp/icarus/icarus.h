@@ -15,7 +15,7 @@ extern void  ICARUS_Free(void *pMem);
 
 #pragma warning( push, 3 )	//save current state and change to 3
 
-#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); a++ )
+#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )
 #define STL_INSERT( a, b )		a.insert( a.end(), b );
 
 #include "tokenizer.h"
