@@ -40,7 +40,7 @@
 #define	VALIDATEB( a )	if ( a == NULL ) {	assert(0);	return qfalse;	}
 #define VALIDATEP( a )	if ( a == NULL ) {	assert(0);	return NULL;	}
 
-#define VALIDSTRING( a )	( ( a != 0 ) && ( a[0] != 0 ) )
+#define VALIDSTRING( a )	( ( a != 0 ) && ( a[0] != '\0' ) )
 #define VALIDENT( e )		( ( e != 0 ) && ( (e)->inuse ) )
 
 //JAC: Added

@@ -1453,10 +1453,6 @@ void		Trooper_Think(gentity_t* actor)
 			//--------
 			if (traceTgt==target->s.number)
 			{
-				if (actor->s.weapon==WP_BLASTER)
-				{
-					ucmd.buttons	|= BUTTON_ALT_ATTACK;
-				}
 				WeaponThink(qtrue);
 			}
 			else if (!inSmackAway)
