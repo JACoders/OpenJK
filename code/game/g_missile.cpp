@@ -797,6 +797,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 		return;
 	}
 
+extern bool WP_DoingMoronicForcedAnimationForForcePowers(gentity_t *ent);
 	// check for hitting a lightsaber
 	if ( other->contents & CONTENTS_LIGHTSABER )
 	{
@@ -812,7 +813,9 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 			&& ent->s.weapon != WP_NOGHRI_STICK )//gas bomb, don't reflect
 		{	
 			//FIXME: take other's owner's FP_SABER_DEFENSE into account here somehow?
-			if ( !other->owner || !other->owner->client || other->owner->client->ps.saberInFlight || InFront( ent->currentOrigin, other->owner->currentOrigin, other->owner->client->ps.viewangles, SABER_REFLECT_MISSILE_CONE ) )//other->owner->s.number != 0 || 
+			if (  !other->owner || !other->owner->client || other->owner->client->ps.saberInFlight 
+				|| InFront( ent->currentOrigin, other->owner->currentOrigin, other->owner->client->ps.viewangles, SABER_REFLECT_MISSILE_CONE ) &&
+				!WP_DoingMoronicForcedAnimationForForcePowers(other) )//other->owner->s.number != 0 || 
 			{//Jedi cannot block shots from behind!
 				int blockChance = 0;
 				switch ( other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] )
