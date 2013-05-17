@@ -13740,6 +13740,22 @@ static void PM_Weapon( void )
 				PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
 			}
 		}
+		else if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_HAZARD_TROOPER )
+		{
+			// Kneel attack
+			//--------------
+			if( pm->cmd.upmove == -127 )
+			{
+				PM_SetAnim(pm,SETANIM_TORSO, BOTH_KNEELATTACK, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
+			}
+			else
+			{
+				PM_SetAnim(pm,SETANIM_TORSO,BOTH_ATTACK1,SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_RESTART|SETANIM_FLAG_HOLD);
+			}
+
+			// Standing attack
+			//-----------------
+		}
 		else if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_ASSASSIN_DROID )
 		{
 			// Crouched Attack

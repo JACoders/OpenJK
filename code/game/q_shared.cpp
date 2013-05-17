@@ -1219,7 +1219,7 @@ GetIDForString
 -------------------------
 */
 
-#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != NULL ) )
+#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
 int GetIDForString ( const stringID_table_t *table, const char *string )
 {

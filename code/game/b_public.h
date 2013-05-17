@@ -189,7 +189,6 @@ typedef struct
 	int			shotTime;
 	int			burstCount;
 	int			burstMin;
-	int			burstMean;
 	int			burstMax;
 	int			burstSpacing;
 	int			attackHold;
