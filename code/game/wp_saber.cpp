@@ -12055,7 +12055,7 @@ void ForceProtect( gentity_t *self )
 				}
 				//FIXME: what if in air?
 			}
-			NPC_SetAnim( self, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+			NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 			//don't move or attack during this anim
 			if ( self->client->ps.forcePowerLevel[FP_PROTECT] < FORCE_LEVEL_2 )
 			{
