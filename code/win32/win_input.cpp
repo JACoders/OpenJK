@@ -258,17 +258,19 @@ IN_ActivateWin32Mouse
 ================
 */
 void IN_ActivateWin32Mouse( void ) {
-	int			width, height;
+	int			x, y, width, height;
 	RECT		window_rect;
 
-	width = GetSystemMetrics (SM_CXSCREEN);
-	height = GetSystemMetrics (SM_CYSCREEN);
+	x = GetSystemMetrics (SM_XVIRTUALSCREEN);
+	y = GetSystemMetrics (SM_YVIRTUALSCREEN);
+	width = GetSystemMetrics (SM_CXVIRTUALSCREEN);
+	height = GetSystemMetrics (SM_CYVIRTUALSCREEN);
 
 	GetWindowRect ( g_wv.hWnd, &window_rect);
-	if (window_rect.left < 0)
-		window_rect.left = 0;
-	if (window_rect.top < 0)
-		window_rect.top = 0;
+	if (window_rect.left < x)
+		window_rect.left = x;
+	if (window_rect.top < y)
+		window_rect.top = y;
 	if (window_rect.right >= width)
 		window_rect.right = width-1;
 	if (window_rect.bottom >= height-1)
@@ -758,7 +760,7 @@ void IN_MouseMove ( void ) {
 
 	if ( rawMouseInitialized ) {
 		IN_RawMouse( &mx, &my );
-	else if ( g_pMouse ) {
+	} else if ( g_pMouse ) {
 		IN_DIMouse( &mx, &my );
 	} else {
 		IN_Win32Mouse( &mx, &my );
