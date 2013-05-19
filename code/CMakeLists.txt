@@ -22,6 +22,7 @@ if(BuildSPEngine)
 		set(SPEngineLibraries "winmm")
 	else(WIN32)
 		message("You might need to add libraries to code/CMakeLists.txt for this to link properly on your platform.")
+		include_directories("/usr/include/SDL2")
 	endif(WIN32)
 	# Defines
 	set(SPEngineDefines ${SharedDefines} "_JK2EXE")
