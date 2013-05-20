@@ -1653,11 +1653,6 @@ void CL_FirstSnapshot( void ) {
 	}
 	
 	Sys_BeginProfiling();
-
-#ifdef _XBOX
-	// turn vsync back on - tearing is ugly
-	qglEnable(GL_VSYNC);
-#endif
 }
 
 /*
