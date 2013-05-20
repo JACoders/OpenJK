@@ -62,4 +62,4 @@ For legal reasons we had to make changes to the history. This likely broke every
 
 ### Links of Interest ###
 * [Buildbot](http://jk.xd.cm/)
-* [Buildbot builds](http://jk.xd.cm/~builds/)
+* [Buildbot builds](http://builds.openjk.org/)
