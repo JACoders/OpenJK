@@ -91,5 +91,5 @@ void	CM_TM_Upload(vec3_t player_origin, vec3_t player_angles);
 void	CM_TM_SaveImageToDisk(const char * terrainName, const char * missionName, const char * seed);
 void	CM_TM_ConvertPosition(int &x, int &y, int Width, int Height);
 
-#endif CM_TERRAINMAP_H_INC
+#endif //CM_TERRAINMAP_H_INC
 
