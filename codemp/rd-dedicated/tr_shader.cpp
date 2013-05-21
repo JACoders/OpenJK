@@ -177,6 +177,29 @@ static char *Shader_ParseExt( const char **data_p, qboolean allowLineBreaks ) //
 			}
 		}
 
+		// skip comments
+		while( *in == '#' ) {
+			in++;
+			if( *in == '#' ) {
+				in++;
+				while( *in && *in != '\n' ) in++;  // ignore until newline
+				if( *in ) in++;
+			}
+			else {
+				*out++ = '#';
+				break;
+			}
+			while( *in && *in <= ' ' ) {
+				if( *in++ == '\n') {
+					shader_lines++;
+					if( !allowLineBreaks ) {
+						*data_p = in;
+						return shader_token;
+					}
+				}
+			}
+		}
+
 		// handle quoted strings
 		if( *in == '"' ) {
 			in++;
