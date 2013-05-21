@@ -7409,6 +7409,8 @@ CQuake3GameInterface::CQuake3GameInterface() : IGameInterface()
 
 	m_entFilter = -1;
 
+	player_locked = qfalse;
+
 	gclient_t* client = &level.clients[0];
 	memset(&client->sess, 0, sizeof(client->sess));
 }
