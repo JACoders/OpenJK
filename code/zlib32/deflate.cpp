@@ -1179,7 +1179,7 @@ inline void insert_string(deflate_state *s, ulong str, ulong &match_head)
 
 static void lm_init(deflate_state *s)
 {
-    s->head[HASH_SIZE - 1] = NULL;
+    s->head[HASH_SIZE - 1] = 0;
     memset(s->head, 0, (HASH_SIZE - 1) * sizeof(*s->head));
 
     // Set the default configuration parameters:
@@ -1232,7 +1232,7 @@ static ulong longest_match(deflate_state *s, ulong cur_match)
 
     // Stop when cur_match becomes <= limit. To simplify the code,
     // we prevent matches with the string of window index 0.
-	limit = s->strstart > (WINDOW_SIZE - MIN_LOOKAHEAD) ? s->strstart - (WINDOW_SIZE - MIN_LOOKAHEAD) : NULL;
+	limit = s->strstart > (WINDOW_SIZE - MIN_LOOKAHEAD) ? s->strstart - (WINDOW_SIZE - MIN_LOOKAHEAD) : 0;
 
     scan_end1 = scan[best_len - 1];
     scan_end = scan[best_len];

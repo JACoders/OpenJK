@@ -183,7 +183,7 @@ typedef struct  itemFlagsDef_s {
 
 itemFlagsDef_t itemFlags [] = {
 "WINDOW_INACTIVE",			WINDOW_INACTIVE,
-NULL,					NULL
+NULL,					0
 };
 
 char *styles [] = {

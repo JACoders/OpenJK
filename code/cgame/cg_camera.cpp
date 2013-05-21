@@ -158,7 +158,7 @@ void CGCam_Disable( void )
 		g_entities[0].contents = CONTENTS_BODY;//MASK_PLAYERSOLID;
 	}
 
-	gi.SendServerCommand( NULL, "cts");
+	gi.SendServerCommand( 0, "cts");
 
 	//if ( cg_skippingcin.integer )
 	{//We're skipping the cinematic and it's over now
