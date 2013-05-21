@@ -193,24 +193,6 @@ static int Shader_CompressBracedSection( char **data_p, char **name, char **text
 				continue;
 			}
 
-			// skip comments
-			if( c == '#' ) {
-				// double # comments
-				if( *in == '#' ) {
-					in++;
-					while( *in && *in != '\n' ) in++;  // ignore until newline
-					if( out > *data_p && out[-1] <= ' ' ) out--;
-					if( *in ) in++;
-					shader_lines++;
-					*out++ = '\n';
-				}
-				// not comment
-				else {
-					*out++ = '#';
-				}					
-				continue;
-			}
-
 			// handle quoted strings
 			if( c == '"' )
 			{
@@ -307,29 +289,6 @@ static char *Shader_ParseExt( const char **data_p, qboolean allowLineBreaks ) //
 			}
 			else {
 				*out++ = '/';
-				break;
-			}
-			while( *in && *in <= ' ' ) {
-				if( *in++ == '\n') {
-					shader_lines++;
-					if( !allowLineBreaks ) {
-						*data_p = in;
-						return shader_token;
-					}
-				}
-			}
-		}
-
-		// skip comments
-		while( *in == '#' ) {
-			in++;
-			if( *in == '#' ) {
-				in++;
-				while( *in && *in != '\n' ) in++;  // ignore until newline
-				if( *in ) in++;
-			}
-			else {
-				*out++ = '#';
 				break;
 			}
 			while( *in && *in <= ' ' ) {
