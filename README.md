@@ -30,6 +30,9 @@ Then point the OpenJK installer to the GameData folder in the Jedi Academy insta
 * libjpeg (optional)
 * zlib (included on Windows)
 
+## Dedicated Server ##
+In order to run dedicated server, you must use the openjkded binary, running dedicated from the main executable is currently not allowed because it is broken with the addition of modular renderer.
+
 ## Developer Notes ##
 
 OpenJK is licensed under GPLv2 as free software. You are free to use, modify and redistribute OpenJK following the terms in LICENSE.txt.
