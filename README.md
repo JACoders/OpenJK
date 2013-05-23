@@ -1,5 +1,5 @@
 # JACoders "OpenJK" project #
-IRC: irc.arloria.net / #JACoders ([webchat](http://www.arloria.net/tiramisu/tiramisu.swf?channels=#jacoders))
+IRC: irc.arloria.net / #JACoders ([webchat](http://unic0rn.github.io/tiramisu/jacoders/))
 
 The purpose of this project is to maintain and improve the Jedi Academy and Jedi Outcast games, developed by Raven Software.
 This project will not attempt to rebalance or otherwise modify core gameplay aspects.
