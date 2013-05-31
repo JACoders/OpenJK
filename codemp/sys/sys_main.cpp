@@ -260,6 +260,8 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 
 	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
+	libHandle = Sys_LoadLibrary( filename );
+
 	if (!libHandle) {
 		basepath = Cvar_VariableString( "fs_basepath" );
 		homepath = Cvar_VariableString( "fs_homepath" );

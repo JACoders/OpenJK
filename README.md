@@ -1,5 +1,5 @@
 # JACoders "OpenJK" project #
-IRC: irc.arloria.net / #JACoders ([webchat](http://www.arloria.net/tiramisu/tiramisu.swf?channels=#jacoders))
+IRC: irc.arloria.net / #JACoders ([webchat](http://unic0rn.github.io/tiramisu/jacoders/))
 
 The purpose of this project is to maintain and improve the Jedi Academy and Jedi Outcast games, developed by Raven Software.
 This project will not attempt to rebalance or otherwise modify core gameplay aspects.
@@ -29,6 +29,9 @@ Then point the OpenJK installer to the GameData folder in the Jedi Academy insta
 * libpng (optional)
 * libjpeg (optional)
 * zlib (included on Windows)
+
+## Dedicated Server ##
+In order to run dedicated server, you must use the openjkded binary, running dedicated from the main executable is currently not allowed because it is broken with the addition of modular renderer.
 
 ## Developer Notes ##
 
@@ -62,4 +65,4 @@ For legal reasons we had to make changes to the history. This likely broke every
 
 ### Links of Interest ###
 * [Buildbot](http://jk.xd.cm/)
-* [Buildbot builds](http://jk.xd.cm/~builds/)
+* [Buildbot builds](http://builds.openjk.org/)
