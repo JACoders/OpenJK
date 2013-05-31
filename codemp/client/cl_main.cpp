@@ -223,14 +223,14 @@ void CL_StopRecord_f( void ) {
 CL_DemoFilename
 ==================
 */
-void CL_DemoFilename( char *buf, int bufSize, int protocol ) {
+void CL_DemoFilename( char *buf, int bufSize ) {
 	time_t rawtime;
 	char timeStr[32] = {0}; // should really only reach ~19 chars
 
 	time( &rawtime );
 	strftime( timeStr, sizeof( timeStr ), "%Y-%m-%d_%H-%M-%S", localtime( &rawtime ) ); // or gmtime
 
-	Com_sprintf( buf, bufSize, "demos/demo%s.dm_%d", timeStr, protocol );
+	Com_sprintf( buf, bufSize, "demo%s", timeStr );
 }
 
 /*
@@ -281,7 +281,9 @@ void CL_Record_f( void ) {
 		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
 	} else {
 		// timestamp the file
-		CL_DemoFilename( name, sizeof( name ), PROTOCOL_VERSION );
+		CL_DemoFilename( demoName, sizeof( demoName ) );
+
+		Com_sprintf (name, sizeof(name), "demos/%s.dm_%d", demoName, PROTOCOL_VERSION );
 
 		if ( FS_FileExists( name ) ) {
 			Com_Printf( "Record: Couldn't create a file\n"); 

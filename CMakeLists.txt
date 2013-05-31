@@ -96,8 +96,6 @@ else(WIN32)
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 
-	enable_language(ASM_NASM) # there are some assembly files to build
-
 	if (NOT CMAKE_BUILD_TYPE)
 		message("No build type selected, default to RELEASE")
 		set(CMAKE_BUILD_TYPE "RELEASE")

@@ -1467,7 +1467,7 @@ void S_StartAmbientSound( const vec3_t origin, int entityNum, unsigned char volu
 	if ( !s_soundStarted || s_soundMuted ) {
 		return;
 	}
-	if ( !origin && ( entityNum < 0 || entityNum > MAX_GENTITIES ) )
+	if ( !origin && ( entityNum < 0 || entityNum >= MAX_GENTITIES ) )
 		Com_Error( ERR_DROP, "S_StartAmbientSound: bad entitynum %i", entityNum );
 
 	if ( sfxHandle < 0 || sfxHandle >= s_numSfx )
@@ -1572,7 +1572,7 @@ void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_
 		return;
 	}
 
-	if ( !origin && ( entityNum < 0 || entityNum > MAX_GENTITIES ) ) {
+	if ( !origin && ( entityNum < 0 || entityNum >= MAX_GENTITIES ) ) {
 		Com_Error( ERR_DROP, "S_StartSound: bad entitynum %i", entityNum );
 	}
 
@@ -2316,7 +2316,7 @@ void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 	channel_t *ch;
 	int i;
 
-	if ( entityNum < 0 || entityNum > MAX_GENTITIES ) {
+	if ( entityNum < 0 || entityNum >= MAX_GENTITIES ) {
 		Com_Error( ERR_DROP, "S_UpdateEntityPosition: bad entitynum %i", entityNum );
 	}
 
