@@ -793,7 +793,7 @@ void IN_Shutdown( void ) {
 	IN_ShutdownDIMouse();
 	IN_ShutdownMIDI();
 #ifndef NO_XINPUT
-	if( in_joystick->integer == 2 )
+	if( in_joystick && in_joystick->integer == 2 )
 	{
 		IN_UnloadXInput();
 	}
