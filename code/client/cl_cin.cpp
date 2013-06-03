@@ -1657,6 +1657,9 @@ static qboolean gbPendingCinematic = qfalse;
 static qboolean qbPlayingInGameCinematic = qfalse;
 static qboolean qbInGameCinematicOnStandBy = qfalse;
 static char	 sInGameCinematicStandingBy[MAX_QPATH];
+static char	 sTextCrawlFixedCinematic[MAX_QPATH];
+static qboolean qbTextCrawlFixed = qfalse;
+static int	 stopCinematicCallCount = 0;
 
 
 
@@ -1681,7 +1684,14 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 	Cvar_Set( "timescale", "1" );			// jic we were skipping a scripted cinematic, return to normal after playing video
 	Cvar_Set( "skippingCinematic", "0" );	// "" 
 
-	qbInGameCinematicOnStandBy = qfalse;
+	if(qbInGameCinematicOnStandBy == qfalse)
+	{
+		qbTextCrawlFixed = qfalse;
+	}
+	else
+	{
+		qbInGameCinematicOnStandBy = qfalse;
+	}
 
 	int bits = qbInGame?0:CIN_system;
 
@@ -1730,7 +1740,7 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 		qboolean	bIsForeign	= s_language && Q_stricmp(s_language->string,"english") && Q_stricmp(s_language->string,"");
 		LPCSTR		psAudioFile	= NULL;
 		qhandle_t	hCrawl = 0;
-		if (!Q_stricmp(arg,"video/jk0101_sw.roq") || !Q_stricmp(arg, "video/ja01.roq"))
+		if (!Q_stricmp(arg,"video/jk0101_sw.roq"))
 		{
 			psAudioFile = "music/cinematic_1";
 			if ( Cvar_VariableIntegerValue("com_demo") )
@@ -1853,15 +1863,21 @@ void CL_PlayCinematic_f(void)
 
 void CL_PlayInGameCinematic_f(void)
 {
+	char *arg = Cmd_Argv( 1 );
 	if (cls.state == CA_ACTIVE)
 	{
-		char *arg = Cmd_Argv( 1 );
 		PlayCinematic(arg,NULL,qtrue);
+	}
+	else if( !qbInGameCinematicOnStandBy )
+	{
+		Q_strncpyz(sInGameCinematicStandingBy, arg, MAX_QPATH);
+		qbInGameCinematicOnStandBy = qtrue;
 	}
 	else
 	{
-		qbInGameCinematicOnStandBy = qtrue;
-		Q_strncpyz(sInGameCinematicStandingBy,Cmd_Argv(1), MAX_QPATH);
+		// hack in order to fix text crawl --eez
+		Q_strncpyz(sTextCrawlFixedCinematic, arg, MAX_QPATH);
+		qbTextCrawlFixed = qtrue;
 	}
 }
 
@@ -1873,6 +1889,10 @@ void SCR_DrawCinematic (void)
 	if (CL_InGameCinematicOnStandBy())
 	{
 		PlayCinematic(sInGameCinematicStandingBy,NULL,qtrue);		
+	}
+	else if( qbTextCrawlFixed && stopCinematicCallCount > 1)
+	{
+		PlayCinematic(sTextCrawlFixedCinematic, NULL, qtrue);
 	}
 
 	if (CL_handle >= 0 && CL_handle < MAX_VIDEO_HANDLES) {
@@ -1916,7 +1936,8 @@ void SCR_StopCinematic( qboolean bAllowRefusal /* = qfalse */ )
 		Com_DPrintf("In-game Cinematic Stopped\n");
 	}
 
-	if (CL_handle >= 0 && CL_handle < MAX_VIDEO_HANDLES) {
+	if (CL_handle >= 0 && CL_handle < MAX_VIDEO_HANDLES &&
+		stopCinematicCallCount != 1) {			// hello no, don't want this plz
 		CIN_StopCinematic(CL_handle);
 		S_StopAllSounds ();
 		CL_handle = -1;
@@ -1931,10 +1952,32 @@ void SCR_StopCinematic( qboolean bAllowRefusal /* = qfalse */ )
 		cls.state =  CA_DISCONNECTED;
 	}
 
-	qbPlayingInGameCinematic = qfalse;
-	qbInGameCinematicOnStandBy = qfalse;
-	sInGameCinematicStandingBy[0]=0;
-	Cvar_SetValue( "cl_paused", 0 );
+	if(sInGameCinematicStandingBy && sInGameCinematicStandingBy[0] &&
+		qbTextCrawlFixed)
+	{
+		// Hacky fix to help deal with broken text crawl..
+		// If we are skipping past the one on standby, DO NOT SKIP THE OTHER ONES!
+		stopCinematicCallCount++;
+	}
+	else if(stopCinematicCallCount == 1)
+	{
+		stopCinematicCallCount++;
+	}
+	else
+	{
+		// Skipping the last one in the list, go ahead and kill it.
+		qbTextCrawlFixed = qfalse;
+		sTextCrawlFixedCinematic[0] = 0;
+		stopCinematicCallCount = 0;
+	}
+
+	if(stopCinematicCallCount != 2)
+	{
+		qbPlayingInGameCinematic = qfalse;
+		qbInGameCinematicOnStandBy = qfalse;
+		sInGameCinematicStandingBy[0]=0;
+		Cvar_SetValue( "cl_paused", 0 );
+	}
 	if (cls.state != CA_DISCONNECTED)	// cut down on needless calls to music code
 	{
 		S_RestartMusic();	//restart the level music

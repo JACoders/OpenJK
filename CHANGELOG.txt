@@ -57,8 +57,11 @@ Key: - removed, + added, * modified
 - Removed CD Key Code
 - Removed demo restriction code.
 - Removed Anti-Tamper Code.
+- Removed force feedback code
 * Shift-Escape will now also open the console as an alternate (e.g.: keyboard doesn't support the normal console key)
 * Removed shift key requirement to open console
 + Raw Mouse Input added to windows (MP) (in_mouse 2). An in_restart required if changed while game is running.
 + New cgame cvar cg_fovAspectAdjust for "Automatically adjust field of view on widescreen resolutions"
 + New cgame command, clientlist displays clients by id/name/ and if they are a bot. (Shows real client id unlike serverstatus)
++ Added XInput support for XBOX 360 controllers (Windows only, in_joystick 2). SDL on *nix supports this as well.
++ Updated the JPG library
