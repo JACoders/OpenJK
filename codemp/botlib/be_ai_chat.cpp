@@ -1156,7 +1156,7 @@ bot_matchpiece_t *BotLoadMatchPieces(source_t *source, char *endtoken)
 	{
 		if (token.type == TT_NUMBER && (token.subtype & TT_INTEGER))
 		{
-			if (token.intvalue < 0 || token.intvalue >= MAX_MATCHVARIABLES)
+			if (token.intvalue >= MAX_MATCHVARIABLES)
 			{
 				SourceError(source, "can't have more than %d match variables", MAX_MATCHVARIABLES);
 				FreeSource(source);

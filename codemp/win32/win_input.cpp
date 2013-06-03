@@ -793,7 +793,7 @@ void IN_Shutdown( void ) {
 	IN_ShutdownDIMouse();
 	IN_ShutdownMIDI();
 #ifndef NO_XINPUT
-	if( in_joystick->integer == 2 )
+	if( in_joystick && in_joystick->integer == 2 )
 	{
 		IN_UnloadXInput();
 	}
@@ -1392,7 +1392,7 @@ void IN_DoXInput( void )
 		// Right stick behavior
 		// Hardcoded deadzone within the gamecode itself to deal with the situation
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_SIDE, rightThumbX * 127, 0, NULL);
-		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_FORWARD, rightThumbY * 127, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_FORWARD, rightThumbY * -127, 0, NULL);
 	}
 	else
 	{
@@ -1403,7 +1403,7 @@ void IN_DoXInput( void )
 		// Left stick behavior
 		// Hardcoded deadzone within the gamecode itself to deal with the situation
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_SIDE, leftThumbX * 127, 0, NULL);
-		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_FORWARD, leftThumbY * 127, 0, NULL);
+		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_FORWARD, leftThumbY * -127, 0, NULL);
 
 		// Right stick behavior
 		if( abs(rightThumbX) > joy_threshold->value )

@@ -42,7 +42,7 @@ public:
 	// Constructor
 	CHash(void)
 	{
-		memset(mHashTable, NULL, sizeof(mHashTable));
+		memset(mHashTable, 0, sizeof(mHashTable));
 		mNext = NULL;
 		mCount = 0;
 		mPrevious = NULL;

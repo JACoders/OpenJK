@@ -261,7 +261,7 @@ static void SV_MapTransition_f(void)
 	SV_Player_EndOfLevelSave();
 
 	spawntarget = Cmd_Argv(2);
-	if ( *spawntarget != NULL ) 
+	if ( *spawntarget != '\0' ) 
 	{
 		Cvar_Set( "spawntarget", spawntarget );
 	}
@@ -347,7 +347,7 @@ void SV_LoadTransition_f(void)
 
 	//set the spawntarget if there is one
 	spawntarget = Cmd_Argv(2);
-	if ( *spawntarget != NULL ) 
+	if ( *spawntarget != '\0' ) 
 	{
 		Cvar_Set( "spawntarget", spawntarget );
 	}

@@ -9,6 +9,7 @@
 #include <float.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
@@ -163,6 +164,27 @@ Sys_DefaultCDPath
 */
 char *Sys_DefaultCDPath( void ) {
 	return "";
+}
+
+/* Resolves path names and determines if they are the same */
+/* For use with full OS paths not quake paths */
+/* Returns true if resulting paths are valid and the same, otherwise false */
+bool Sys_PathCmp( const char *path1, const char *path2 ) {
+	char *r1, *r2;
+
+	r1 = _fullpath(NULL, path1, MAX_OSPATH);
+	r2 = _fullpath(NULL, path2, MAX_OSPATH);
+
+	if(r1 && r2 && !Q_stricmp(r1, r2))
+	{
+		free(r1);
+		free(r2);
+		return true;
+	}
+
+	free(r1);
+	free(r2);
+	return false;
 }
 
 /*
@@ -537,7 +559,7 @@ void * QDECL Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(in
 	char	*fn;
 	char	filename[MAX_QPATH];
 
-	Com_sprintf( filename, sizeof( filename ), "%sx86.dll", name );
+	Com_sprintf( filename, sizeof( filename ), "%s" ARCH_STRING DLL_EXT, name );
 
 	if (!Sys_UnpackDLL(filename))
 	{

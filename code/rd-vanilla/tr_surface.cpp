@@ -2162,6 +2162,7 @@ Draws x/y/z lines from the origin for orientation debugging
 */
 static void RB_SurfaceAxis( void ) {
 	GL_Bind( tr.whiteImage );
+	GL_State( GLS_DEFAULT );
 	qglLineWidth( 3 );
 #ifdef _XBOX
 	qglBeginEXT( GL_LINES, 6, 3, 0, 0, 0);
