@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.8)
 
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
@@ -8,8 +8,6 @@ endif(NOT InOpenJK)
 set(SPGameIncludeDirectories "${SPDir}/game")
 if(WIN32)
 	set(SPGameLibraries "winmm")
-else(WIN32)
-	message("code/game/CMakeLists.txt might need some libraries to link properly on your platform.")
 endif(WIN32)
 # TODO do we actually want _IMMERSION? I thought we don't have those files?
 set(SPGameDefines ${SharedDefines} "_IMMERSION" "_NO_PCH")
