@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.8)
 # For checks in subdirectories
 set(InOpenJK TRUE)
 
