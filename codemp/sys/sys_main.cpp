@@ -249,7 +249,7 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 
 void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) )
 {
-	void	*libHandle;
+	void	*libHandle = NULL;
 	void	(QDECL *dllEntry)( intptr_t (QDECL *syscallptr)(intptr_t, ...) );
 	char	*basepath;
 	char	*homepath;
@@ -260,9 +260,13 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 
 	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
+#if 0
 	libHandle = Sys_LoadLibrary( filename );
+#endif
 
 	if (!libHandle) {
+		//Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", filename, Sys_LibraryError() );
+
 		basepath = Cvar_VariableString( "fs_basepath" );
 		homepath = Cvar_VariableString( "fs_homepath" );
 		cdpath = Cvar_VariableString( "fs_cdpath" );
