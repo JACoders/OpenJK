@@ -923,7 +923,7 @@ Prints a message in the center of the screen
 */
 static void Q3_ScrollText ( const char *id)
 {
-	gi.SendServerCommand( NULL, "st \"%s\"", id);
+	gi.SendServerCommand( 0, "st \"%s\"", id);
 
 	return;
 }
@@ -937,7 +937,7 @@ Prints a message in the center of the screen giving it an LCARS frame around it
 */
 static void Q3_LCARSText ( const char *id)
 {
-	gi.SendServerCommand( NULL, "lt \"%s\"", id);
+	gi.SendServerCommand( 0, "lt \"%s\"", id);
 
 	return;
 }
@@ -4047,7 +4047,7 @@ static void Q3_GiveSecurityKey( int entID, char *keyname )
 	other->client->ps.stats[STAT_ITEMS] |= (1<<INV_SECURITY_KEY);
 
 	//give the key
-	gi.SendServerCommand( NULL, "cp @SP_INGAME_YOU_TOOK_SECURITY_KEY" );
+	gi.SendServerCommand( 0, "cp @SP_INGAME_YOU_TOOK_SECURITY_KEY" );
 	INV_SecurityKeyGive( other, keyname );
 	// Got a security key
 
@@ -5912,7 +5912,7 @@ static void Q3_AddRHandModel( int entID, char *addModel)
 {
 	gentity_t	*ent  = &g_entities[entID];
 
-	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), NULL, NULL, 0, 0);
+	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), 0, 0, 0, 0);
 	if ( ent->cinematicModel != -1 )
 	{
 		// attach it to the hand
@@ -5930,7 +5930,7 @@ static void Q3_AddLHandModel( int entID, char *addModel)
 {
 	gentity_t	*ent  = &g_entities[entID];
 
-	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), NULL, NULL, 0, 0);
+	ent->cinematicModel = gi.G2API_InitGhoul2Model(ent->ghoul2, addModel, G_ModelIndex( addModel ), 0, 0, 0, 0);
 	if ( ent->cinematicModel != -1 )
 	{
 		// attach it to the hand
@@ -7409,6 +7409,8 @@ CQuake3GameInterface::CQuake3GameInterface() : IGameInterface()
 
 	m_entFilter = -1;
 
+	player_locked = qfalse;
+
 	gclient_t* client = &level.clients[0];
 	memset(&client->sess, 0, sizeof(client->sess));
 }
@@ -7777,11 +7779,11 @@ void	CQuake3GameInterface::CenterPrint( const char *format, ... )
 	{
 		if( text[0] == '!')
 		{
-			gi.SendServerCommand( NULL, "cp \"%s\"", (text+1) );
+			gi.SendServerCommand( 0, "cp \"%s\"", (text+1) );
 			return;
 		}
 
-		gi.SendServerCommand( NULL, "cp \"%s\"", text );
+		gi.SendServerCommand( 0, "cp \"%s\"", text );
 	}
 
 	DebugPrint( WL_VERBOSE, "%s\n", text); 	// Just a developers note
@@ -7901,8 +7903,8 @@ int 	CQuake3GameInterface::PlayIcarusSound( int taskID, int entID, const char *n
 		if (g_subtitles->integer == 1 || (ent->NPC && (ent->NPC->scriptFlags & SCF_USE_SUBTITLES) ) ) // Show all text
 		{
 			if ( in_camera)	// Cinematic
-			{					
-				gi.SendServerCommand( NULL, "ct \"%s\" %i", finalName, soundHandle );
+			{
+				gi.SendServerCommand( 0, "ct \"%s\" %i", finalName, soundHandle );
 			}
 			else //if (precacheWav[i].speaker==SP_NONE)	//  lower screen text
 			{
@@ -7911,7 +7913,7 @@ int 	CQuake3GameInterface::PlayIcarusSound( int taskID, int entID, const char *n
 				//
 				if (bBroadcast || (DistanceSquared(ent->currentOrigin, ent2->currentOrigin) < ((voice_chan == CHAN_VOICE_ATTEN)?(350 * 350):(1200 * 1200)) ) )
 				{
-					gi.SendServerCommand( NULL, "ct \"%s\" %i", finalName, soundHandle );
+					gi.SendServerCommand( 0, "ct \"%s\" %i", finalName, soundHandle );
 				}
 			}
 		}
@@ -7919,8 +7921,8 @@ int 	CQuake3GameInterface::PlayIcarusSound( int taskID, int entID, const char *n
 		else if (g_subtitles->integer == 2) // Show only talking head text and CINEMATIC
 		{
 			if ( in_camera)	// Cinematic text
-			{							
-				gi.SendServerCommand( NULL, "ct \"%s\" %i", finalName, soundHandle);
+			{
+				gi.SendServerCommand( 0, "ct \"%s\" %i", finalName, soundHandle);
 			}
 		}
 	}
