@@ -6,7 +6,7 @@ if(NOT InOpenJK)
 endif(NOT InOpenJK)
 
 set(SPRDVanillaRendererIncludeDirectories ${SPDir})
-set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} "${SPDir}/rd-vanilla")
+set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} "${SPDir}/rd-vanilla" ${OpenJKLibDir})
 
 # Modular Renderer crap (let's hope this works..)
 
@@ -16,7 +16,7 @@ set(SPRDVanillaDefines ${SharedDefines} "RENDERER" "_JK2EXE")
 # Files
 
 # JPEG
-file(GLOB_RECURSE J_SRC "${SPDir}/jpeg-8c/*.c" "${SPDir}/jpeg-8c/*.h")
+file(GLOB_RECURSE J_SRC "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
 source_group("jpeg-8c" FILES ${J_SRC})
 set(SPRDVanillaFiles ${SPRDVanillaFiles} ${J_SRC})
 
@@ -33,13 +33,37 @@ set(SPRDVanillaG2Files
 source_group("ghoul2" FILES ${SPRDVanillaG2Files})
 set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaG2Files})
 
-# PNG
-set(SPRDVanillaPNGFiles
-	"${SPDir}/png/png.cpp"
-	"${SPDir}/png/png.h"
-	)
-source_group("png" FILES ${SPRDVanillaPNGFiles})
-set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaPNGFiles})
+set(SPRDVanillaLibPngFiles
+	"${OpenJKLibDir}/libpng/png.c"
+	"${OpenJKLibDir}/libpng/pngerror.c"
+	"${OpenJKLibDir}/libpng/pngget.c"
+	"${OpenJKLibDir}/libpng/pngmem.c"
+	"${OpenJKLibDir}/libpng/pngpread.c"
+	"${OpenJKLibDir}/libpng/pngread.c"
+	"${OpenJKLibDir}/libpng/pngrio.c"
+	"${OpenJKLibDir}/libpng/pngrtran.c"
+	"${OpenJKLibDir}/libpng/pngrutil.c"
+	"${OpenJKLibDir}/libpng/pngset.c"
+	"${OpenJKLibDir}/libpng/pngtrans.c"
+	"${OpenJKLibDir}/libpng/pngwio.c"
+	"${OpenJKLibDir}/libpng/pngwrite.c"
+	"${OpenJKLibDir}/libpng/pngwtran.c"
+	"${OpenJKLibDir}/libpng/pngwutil.c")
+source_group("libpng" FILES ${SPRDVanillaLibPngFiles})
+set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaLibPngFiles})
+
+if(UseInternalZlib)
+	# zlib.lib is included for windows
+	find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
+	if(NOT ZlibLibrary)
+		message(FATAL_ERROR "UseInternalZlib set, but libs/zlib not found!")
+	endif(NOT ZlibLibrary)
+	set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${ZlibLibrary})
+else(UseInternalZlib)
+	find_package(ZLIB REQUIRED)
+	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${ZLIB_INCLUDE_DIR})
+	set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${ZLIB_LIBRARY})
+endif(UseInternalZlib)
 
 # Misc files
 set(SPRDVanillaGameFiles
@@ -57,18 +81,6 @@ set(SPRDVanillaCommonFiles
 	)
 source_group("common" FILES ${SPRDVanillaCommonFiles})
 set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonFiles})
-
-# zlib files
-set(SPRDVanillaZlibFiles
-	"${SPDir}/zlib32/deflate.cpp"
-	"${SPDir}/zlib32/inflate.cpp"
-	"${SPDir}/zlib32/zipcommon.cpp"
-	"${SPDir}/zlib32/deflate.h"
-	"${SPDir}/zlib32/inflate.h"
-	"${SPDir}/zlib32/zip.h"
-	)
-source_group("zlib" FILES ${SPRDVanillaZlibFiles})
-set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaZlibFiles})
 
 # main files
 set(SPRDVanillaMainFiles

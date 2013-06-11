@@ -7,7 +7,6 @@
 #include "tr_font.h"
 #include "qcommon/MiniHeap.h"
 #include "G2_local.h"
-#include "png/rpng.h"
 
 
 //#ifdef __USEA3D

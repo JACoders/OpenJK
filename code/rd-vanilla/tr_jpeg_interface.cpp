@@ -37,7 +37,7 @@ This file is part of Jedi Academy.
  */
 
 #define JPEG_INTERNALS
-#include "../jpeg-8c/jpeglib.h"
+#include "jpeg-8c/jpeglib.h"
 
 static void R_JPGErrorExit(j_common_ptr cinfo)
 {
