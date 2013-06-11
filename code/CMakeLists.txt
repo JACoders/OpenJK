@@ -23,6 +23,8 @@ if(BuildSPEngine)
 	endif(WIN32)
 	# Defines
 	set(SPEngineDefines ${SharedDefines} "_JK2EXE")
+
+	set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OpenJKLibDir})
 	
 	#    Dependencies
 	
@@ -149,6 +151,10 @@ if(BuildSPEngine)
 
 		"${SPDir}/qcommon/strip.cpp"
 		"${SPDir}/qcommon/unzip.cpp"
+		"${SPDir}/qcommon/unzip.h"
+		"${OpenJKLibDir}/zlib/ioapi.c"
+		"${OpenJKLibDir}/zlib/ioapi.h"
+		"${SPDir}/qcommon/tags.h"
 		"${SPDir}/qcommon/z_memman_pc.cpp"
 		"${SPDir}/qcommon/chash.h"
 		"${SPDir}/qcommon/platform.h"
@@ -157,8 +163,6 @@ if(BuildSPEngine)
 		"${SPDir}/qcommon/qcommon.h"
 		"${SPDir}/qcommon/stv_version.h"
 		"${SPDir}/qcommon/timing.h"
-		"${SPDir}/qcommon/unzip.h"
-		"${SPDir}/qcommon/tags.h"
 		"${SPDir}/qcommon/MiniHeap.h"
 		)
 	source_group("common" FILES ${SPEngineCommonFiles})
@@ -305,18 +309,6 @@ if(BuildSPEngine)
 	source_group("rmg" FILES ${SPEngineRMGFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineRMGFiles})
 
-	# zlib files
-	set(SPEngineZlibFiles
-		"${SPDir}/zlib32/deflate.cpp"
-		"${SPDir}/zlib32/inflate.cpp"
-		"${SPDir}/zlib32/zipcommon.cpp"
-		"${SPDir}/zlib32/deflate.h"
-		"${SPDir}/zlib32/inflate.h"
-		"${SPDir}/zlib32/zip.h"
-		)
-	source_group("zlib" FILES ${SPEngineZlibFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEngineZlibFiles})
-
 
 	# Ghoul2 files
 	set(SPEngineGhoul2Files
@@ -369,7 +361,18 @@ if(BuildSPEngine)
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineSysFiles})
 	endif(WIN32)
 
-	# todo: windows resources
+	if(UseInternalZlib)
+		# zlib.lib is included for windows
+		find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
+		if(NOT ZlibLibrary)
+			message(FATAL_ERROR "UseInternalZlib set, but lib/zlib not found!")
+		endif(NOT ZlibLibrary)
+		set(SPEngineLibraries ${SPEngineLibraries} ${ZlibLibrary})
+	else(UseInternalZlib)
+		find_package(ZLIB REQUIRED)
+		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${ZLIB_INCLUDE_DIR})
+		set(SPEngineLibraries ${SPEngineLibraries} ${ZLIB_LIBRARY})
+	endif(UseInternalZlib)
 
 	if(WIN32)
 		add_executable(${SPEngine} WIN32 ${SPEngineFiles})

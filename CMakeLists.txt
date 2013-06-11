@@ -102,6 +102,8 @@ else(WIN32)
 	endif()
 endif()
 
+set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
+
 set(DebugDefines "_DEBUG")
 set(ReleaseDefines "NDEBUG" "FINAL_BUILD")
 

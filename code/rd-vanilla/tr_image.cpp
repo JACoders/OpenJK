@@ -31,8 +31,8 @@ This file is part of Jedi Academy.
 #include "../qcommon/sstring.h"
 #include "../zlib/zlib.h"
 #endif
-#include "../png/png.h"
 #include "../qcommon/sstring.h"
+#include "libpng/png.h"
 
 
 static byte			 s_intensitytable[256];
@@ -1887,6 +1887,191 @@ TGADone:
 
 //===================================================================
 
+void user_read_data( png_structp png_ptr, png_bytep data, png_size_t length );
+void png_print_error ( png_structp png_ptr, png_const_charp err )
+{
+	ri.Printf (PRINT_ERROR, "%s\n", err);
+}
+
+void png_print_warning ( png_structp png_ptr, png_const_charp warning )
+{
+	ri.Printf (PRINT_WARNING, "%s\n", warning);
+}
+
+bool IsPowerOfTwo ( int i ) { return (i & (i - 1)) == 0; }
+
+struct PNGFileReader
+{
+	PNGFileReader ( char *buf ) : buf(buf), png_ptr(NULL), info_ptr(NULL), offset(0) {}
+	~PNGFileReader()
+	{
+		ri.FS_FreeFile (buf);
+
+		if ( info_ptr != NULL )
+		{
+			// Destroys both structs
+			png_destroy_info_struct (png_ptr, &info_ptr);
+		}
+		else if ( png_ptr != NULL )
+		{
+			png_destroy_read_struct (&png_ptr, NULL, NULL);
+		}
+	}
+
+	int Read ( byte **data, unsigned int *width, unsigned int *height )
+	{
+		// Setup the pointers
+		*data = NULL;
+		*width = 0;
+		*height = 0;
+
+		// Make sure we're actually reading PNG data.
+		const int SIGNATURE_LEN = 8;
+
+		byte ident[SIGNATURE_LEN];
+		memcpy (ident, buf, SIGNATURE_LEN);
+
+		if ( !png_check_sig (ident, SIGNATURE_LEN) )
+		{
+			ri.Printf (PRINT_ERROR, "PNG signature not found in given image.");
+			return 0;
+		}
+
+		png_ptr = png_create_read_struct (PNG_LIBPNG_VER_STRING, NULL, png_print_error, png_print_warning);
+		if ( png_ptr == NULL )
+		{
+			ri.Printf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
+			return 0;
+		}
+
+		info_ptr = png_create_info_struct (png_ptr);
+		if ( setjmp (png_jmpbuf (png_ptr)) )
+		{
+			return 0;
+		}
+
+		// We've read the signature
+		offset += SIGNATURE_LEN;
+
+		// Setup reading information, and read header
+		png_set_read_fn (png_ptr, (png_voidp)this, &user_read_data);
+		png_set_sig_bytes (png_ptr, SIGNATURE_LEN);
+		png_read_info (png_ptr, info_ptr);
+
+		unsigned int width_;
+		unsigned int height_;
+		int depth;
+		int colortype;
+
+		png_get_IHDR (png_ptr, info_ptr, &width_, &height_, &depth, &colortype, NULL, NULL, NULL);
+
+		// While modern OpenGL can handle non-PoT textures, it's faster to handle only PoT
+		// so that the graphics driver doesn't have to fiddle about with the texture when uploading.
+		if ( !IsPowerOfTwo (width_) || !IsPowerOfTwo (height_) )
+		{
+			ri.Printf (PRINT_ERROR, "Width or height is not a power-of-two.\n");
+			return 0;
+		}
+
+		// This function is equivalent to using what used to be LoadPNG32. LoadPNG8 also existed,
+		// but this only seemed to be used by the RMG system which does not work in JKA. If this
+		// does need to be re-implemented, then colortype should be PNG_COLOR_TYPE_PALETTE or
+		// PNG_COLOR_TYPE_GRAY.
+		if ( colortype != PNG_COLOR_TYPE_RGB && colortype != PNG_COLOR_TYPE_RGBA )
+		{
+			ri.Printf (PRINT_ERROR, "Image is not 24-bit or 32-bit.");
+			return 0;
+		}
+
+		// Read the png data
+		if ( colortype == PNG_COLOR_TYPE_RGB )
+		{
+			// Expand RGB -> RGBA
+			png_set_add_alpha (png_ptr, 0xff, PNG_FILLER_AFTER);
+		}
+
+		png_read_update_info (png_ptr, info_ptr);
+
+		// We always assume there are 4 channels. RGB channels are expanded to RGBA when read.
+		byte *tempData = (byte *)ri.Z_Malloc (width_ * height_ * 4, TAG_TEMP_PNG, qfalse, 4);
+		if ( !tempData )
+		{
+			ri.Printf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
+			return 0;
+		}
+
+		// Dynamic array of row pointers, with 'height' elements, initialized to NULL.
+		byte **row_pointers = (byte **)ri.Z_Malloc (sizeof (byte *) * height_, TAG_TEMP_PNG, qfalse, 4);
+		if ( !row_pointers )
+		{
+			ri.Printf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
+
+			ri.Z_Free (tempData);
+			
+			return 0;
+		}
+
+		// Re-set the jmp so that these new memory allocations can be reclaimed
+		if ( setjmp (png_jmpbuf (png_ptr)) )
+		{
+			ri.Z_Free (row_pointers);
+			ri.Z_Free (tempData);
+			return 0;
+		}
+
+		for ( unsigned int i = 0, j = 0; i < height_; i++, j += 4 )
+		{
+			row_pointers[i] = tempData + j * width_;
+		}
+
+		png_read_image (png_ptr, row_pointers);
+
+		// Finish reading
+		png_read_end (png_ptr, NULL);
+
+		ri.Z_Free (row_pointers);
+
+		// Finally assign all the parameters
+		*data = tempData;
+		*width = width_;
+		*height = height_;
+
+		return 1;
+	}
+
+	void ReadBytes ( void *dest, size_t len )
+	{
+		memcpy (dest, buf + offset, len);
+		offset += len;
+	}
+
+private:
+	char *buf;
+	size_t offset;
+	png_structp png_ptr;
+	png_infop info_ptr;
+};
+
+void user_read_data( png_structp png_ptr, png_bytep data, png_size_t length ) {
+	png_voidp r = png_get_io_ptr (png_ptr);
+	PNGFileReader *reader = (PNGFileReader *)r;
+	reader->ReadBytes (data, length);
+}
+
+// Loads a PNG image from file.
+static int LoadPNG ( const char *filename, byte **data, unsigned int *width, unsigned int *height )
+{
+	char *buf = NULL;
+	int len = ri.FS_ReadFile (filename, (void **)&buf);
+	if ( len < 0 || buf == NULL )
+	{
+		return 0;
+	}
+
+	PNGFileReader reader (buf);
+	return reader.Read (data, width, height);
+}
+
 /*
 =================
 R_LoadImage
@@ -1896,7 +2081,6 @@ Loads any of the supported image types into a cannonical
 =================
 */
 void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLenum *format ) {
-	int		bytedepth;
 	char	name[MAX_QPATH];
 
 	*pic = NULL;
@@ -1925,7 +2109,7 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GL
 	COM_DefaultExtension(name, sizeof(name), ".png");	
 
 	//No .jpg existed, try .png
-	LoadPNG32( name, pic, width, height, &bytedepth );
+	LoadPNG( name, pic, (unsigned int *)width, (unsigned int *)height );
 	if (*pic)
 	{
 		return;
@@ -1960,15 +2144,8 @@ void R_LoadDataImage( const char *name, byte **pic, int *width, int *height)
 
 	strcpy(work, name);
 
-	COM_DefaultExtension( work, sizeof( work ), ".png" );
-	LoadPNG8( work, pic, width, height );
-	
-	if (!pic || !*pic)
-	{ //png load failed, try jpeg
-		strcpy(work, name);
-		COM_DefaultExtension( work, sizeof( work ), ".jpg" );
-		LoadJPG( work, pic, width, height );
-	}
+	COM_DefaultExtension( work, sizeof( work ), ".jpg" );
+	LoadJPG( work, pic, width, height );
 
 	if (!pic || !*pic)
 	{ //both png and jpeg failed, try targa

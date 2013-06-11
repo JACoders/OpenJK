@@ -6,7 +6,7 @@ if(NOT InOpenJK)
 endif(NOT InOpenJK)
 
 set(MPVanillaRendererIncludeDirectories ${MPDir})
-set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} "${MPDir}/rd-vanilla")
+set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} "${MPDir}/rd-vanilla" ${OpenJKLibDir})
 
 set(MPVanillaRendererFiles
 	"${MPDir}/rd-vanilla/glext.h"
@@ -60,40 +60,34 @@ set(MPVanillaRendererQcommonFiles
 source_group("qcommon" FILES ${MPVanillaRendererQcommonFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererQcommonFiles})
 
-file(GLOB_RECURSE MPVanillaRendererJpegFiles "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
+file(GLOB_RECURSE MPVanillaRendererJpegFiles "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
 source_group("jpeg-8c" FILES ${MPVanillaRendererJpegFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererJpegFiles})
 
-set(MPVanillaRendererPngFiles
-	"${MPDir}/png/rpng.cpp")
-source_group("png" FILES ${MPVanillaRendererPngFiles})
-set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererPngFiles})
-
 set(MPVanillaRendererLibPngFiles
-	"${MPDir}/libpng/png.c"
-	"${MPDir}/libpng/pngerror.c"
-	"${MPDir}/libpng/pngget.c"
-	"${MPDir}/libpng/pngmem.c"
-	"${MPDir}/libpng/pngpread.c"
-	"${MPDir}/libpng/pngread.c"
-	"${MPDir}/libpng/pngrio.c"
-	"${MPDir}/libpng/pngrtran.c"
-	"${MPDir}/libpng/pngrutil.c"
-	"${MPDir}/libpng/pngset.c"
-	"${MPDir}/libpng/pngtrans.c"
-	"${MPDir}/libpng/pngwio.c"
-	"${MPDir}/libpng/pngwrite.c"
-	"${MPDir}/libpng/pngwtran.c"
-	"${MPDir}/libpng/pngwutil.c")
+	"${OpenJKLibDir}/libpng/png.c"
+	"${OpenJKLibDir}/libpng/pngerror.c"
+	"${OpenJKLibDir}/libpng/pngget.c"
+	"${OpenJKLibDir}/libpng/pngmem.c"
+	"${OpenJKLibDir}/libpng/pngpread.c"
+	"${OpenJKLibDir}/libpng/pngread.c"
+	"${OpenJKLibDir}/libpng/pngrio.c"
+	"${OpenJKLibDir}/libpng/pngrtran.c"
+	"${OpenJKLibDir}/libpng/pngrutil.c"
+	"${OpenJKLibDir}/libpng/pngset.c"
+	"${OpenJKLibDir}/libpng/pngtrans.c"
+	"${OpenJKLibDir}/libpng/pngwio.c"
+	"${OpenJKLibDir}/libpng/pngwrite.c"
+	"${OpenJKLibDir}/libpng/pngwtran.c"
+	"${OpenJKLibDir}/libpng/pngwutil.c")
 source_group("libpng" FILES ${MPVanillaRendererLibPngFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererLibPngFiles})
 
 if(UseInternalZlib)
-	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} "${MPDir}/zlib")
-	# OpenAL32.lib is included for windows
-	find_library(ZlibLibrary NAMES zlib PATHS "${MPDir}/libs/win32")
+	# zlib.lib is included for windows
+	find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
 	if(NOT ZlibLibrary)
-		message(FATAL_ERROR "UseInternalOpenAL set, but libs/OpenAL32 not found!")
+		message(FATAL_ERROR "UseInternalZlib set, but lib/zlib not found!")
 	endif(NOT ZlibLibrary)
 	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${ZlibLibrary})
 else(UseInternalZlib)
