@@ -38,9 +38,6 @@
     <Filter Include="RMG">
       <UniqueIdentifier>{4b17cf6d-fead-4afc-bdd1-b477a2203336}</UniqueIdentifier>
     </Filter>
-    <Filter Include="zlib32">
-      <UniqueIdentifier>{d95e7a41-75e2-4b65-9f0e-a858e125acdb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Ghoul2">
       <UniqueIdentifier>{96aa46fe-f9fa-4f44-a413-bd73c68d3fd7}</UniqueIdentifier>
     </Filter>
@@ -343,14 +340,8 @@
     <ClCompile Include="RMG\RM_Terrain.cpp">
       <Filter>RMG</Filter>
     </ClCompile>
-    <ClCompile Include="zlib32\deflate.cpp">
-      <Filter>zlib32</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib32\inflate.cpp">
-      <Filter>zlib32</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib32\zipcommon.cpp">
-      <Filter>zlib32</Filter>
+    <ClCompile Include="..\lib\zlib\ioapi.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -594,15 +585,6 @@
     <ClInclude Include="ui\ui_shared.h">
       <Filter>UI Source\UI Headers</Filter>
     </ClInclude>
-    <ClInclude Include="zlib32\deflate.h">
-      <Filter>zlib32</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib32\inflate.h">
-      <Filter>zlib32</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib32\zip.h">
-      <Filter>zlib32</Filter>
-    </ClInclude>
     <ClInclude Include="ghoul2\G2.h">
       <Filter>Ghoul2</Filter>
     </ClInclude>
@@ -659,6 +641,9 @@
     </ClInclude>
     <ClInclude Include="RMG\RM_Terrain.h">
       <Filter>RMG\RMG Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lib\zlib\ioapi.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
