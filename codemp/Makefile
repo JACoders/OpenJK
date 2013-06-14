@@ -11,6 +11,7 @@ UI    			= uii386
 OPENJK    		= openjk.i386
 OPENJKDED    	= openjkded.i386
 RDVA    		= rd-vanilla_i386
+LIB	    		= lib
 
 ifeq ($(PLATFORM),darwin)
 	DLL_EXT		= dylib
@@ -252,52 +253,52 @@ OPENJK_OBJS		= $(B)/$(OPENJK)/botlib/be_aas_bspq3.o \
 				  $(B)/$(OPENJK)/icarus/Sequence.o \
 				  $(B)/$(OPENJK)/icarus/Sequencer.o \
 				  $(B)/$(OPENJK)/icarus/TaskManager.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jaricom.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcapimin.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcapistd.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcarith.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jccoefct.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jccolor.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcdctmgr.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jchuff.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcinit.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcmainct.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcmarker.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcmaster.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcomapi.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcparam.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcprepct.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jcsample.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jctrans.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdapimin.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdapistd.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdarith.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdatadst.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdatasrc.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdcoefct.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdcolor.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jddctmgr.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdhuff.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdinput.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdmainct.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdmarker.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdmaster.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdmerge.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdpostct.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdsample.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jdtrans.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jerror.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jfdctflt.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jfdctfst.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jfdctint.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jidctflt.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jidctfst.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jidctint.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jmemmgr.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jmemnobs.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jquant1.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jquant2.o \
-				  $(B)/$(OPENJK)/jpeg-8c/jutils.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jaricom.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcapimin.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcapistd.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcarith.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jccoefct.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jccolor.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcdctmgr.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jchuff.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcinit.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcmainct.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcmarker.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcmaster.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcomapi.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcparam.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcprepct.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jcsample.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jctrans.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdapimin.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdapistd.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdarith.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdatadst.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdatasrc.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdcoefct.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdcolor.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jddctmgr.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdhuff.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdinput.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdmainct.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdmarker.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdmaster.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdmerge.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdpostct.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdsample.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jdtrans.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jerror.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jfdctflt.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jfdctfst.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jfdctint.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jidctflt.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jidctfst.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jidctint.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jmemmgr.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jmemnobs.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jquant1.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jquant2.o \
+				  $(B)/$(OPENJK)/$(LIB)/jpeg-8c/jutils.o \
 				  $(B)/$(OPENJK)/mp3code/cdct.o \
 				  $(B)/$(OPENJK)/mp3code/csbt.o \
 				  $(B)/$(OPENJK)/mp3code/csbtb.o \
@@ -383,7 +384,7 @@ OPENJK_OBJS		= $(B)/$(OPENJK)/botlib/be_aas_bspq3.o \
 				  $(B)/$(OPENJK)/sys/sys_net.o \
 				  $(B)/$(OPENJK)/sys/sys_unix.o \
 				  $(B)/$(OPENJK)/sys/vm_x86.o \
-				  $(B)/$(OPENJK)/zlib/ioapi.o
+				  $(B)/$(OPENJK)/$(LIB)/zlib/ioapi.o
 
 OPENJKDED_NAME		= $(B)/$(INST)/openjkded.i386
 OPENJKDED_CFLAGS	= -m32 -w -fpermissive -O3 -I. -D_JK2 -DDEDICATED -DNDEBUG -DFINAL_BUILD
@@ -396,7 +397,7 @@ OPENJKDED_OBJS		= $(B)/$(OPENJKDED)/botlib/be_aas_bspq3.o \
 				 	  $(B)/$(OPENJKDED)/botlib/be_aas_main.o \
 					  $(B)/$(OPENJKDED)/botlib/be_aas_move.o \
 					  $(B)/$(OPENJKDED)/botlib/be_aas_optimize.o \
-				      	  $(B)/$(OPENJKDED)/botlib/be_aas_reach.o \
+				      $(B)/$(OPENJKDED)/botlib/be_aas_reach.o \
 					  $(B)/$(OPENJKDED)/botlib/be_aas_route.o \
 					  $(B)/$(OPENJKDED)/botlib/be_aas_routealt.o \
 					  $(B)/$(OPENJKDED)/botlib/be_aas_sample.o \
@@ -426,26 +427,25 @@ OPENJKDED_OBJS		= $(B)/$(OPENJKDED)/botlib/be_aas_bspq3.o \
 					  $(B)/$(OPENJKDED)/icarus/Sequence.o \
 					  $(B)/$(OPENJKDED)/icarus/Sequencer.o \
 					  $(B)/$(OPENJKDED)/icarus/TaskManager.o \
-					  $(B)/$(OPENJKDED)/libpng/png.o \
-					  $(B)/$(OPENJKDED)/libpng/pngerror.o \
-					  $(B)/$(OPENJKDED)/libpng/pngget.o \
-					  $(B)/$(OPENJKDED)/libpng/pngmem.o \
-					  $(B)/$(OPENJKDED)/libpng/pngpread.o \
-					  $(B)/$(OPENJKDED)/libpng/pngread.o \
-					  $(B)/$(OPENJKDED)/libpng/pngrio.o \
-					  $(B)/$(OPENJKDED)/libpng/pngrtran.o \
-					  $(B)/$(OPENJKDED)/libpng/pngrutil.o \
-					  $(B)/$(OPENJKDED)/libpng/pngset.o \
-					  $(B)/$(OPENJKDED)/libpng/pngtrans.o \
-					  $(B)/$(OPENJKDED)/libpng/pngwio.o \
-					  $(B)/$(OPENJKDED)/libpng/pngwrite.o \
-					  $(B)/$(OPENJKDED)/libpng/pngwtran.o \
-					  $(B)/$(OPENJKDED)/libpng/pngwutil.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/png.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngerror.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngget.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngmem.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngpread.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngread.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngrio.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngrtran.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngrutil.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngset.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngtrans.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngwio.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngwrite.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngwtran.o \
+					  $(B)/$(OPENJKDED)/$(LIB)/libpng/pngwutil.o \
 					  $(B)/$(OPENJKDED)/null/null_client.o \
 					  $(B)/$(OPENJKDED)/null/null_input.o \
 					  $(B)/$(OPENJKDED)/null/null_renderer.o \
 					  $(B)/$(OPENJKDED)/null/null_snddma.o \
-					  $(B)/$(OPENJKDED)/png/rpng.o \
 					  $(B)/$(OPENJKDED)/qcommon/cm_draw.o \
 					  $(B)/$(OPENJKDED)/qcommon/cm_load.o \
 					  $(B)/$(OPENJKDED)/qcommon/cm_patch.o \
@@ -517,7 +517,7 @@ OPENJKDED_OBJS		= $(B)/$(OPENJKDED)/botlib/be_aas_bspq3.o \
 					  $(B)/$(OPENJKDED)/sys/sys_net.o \
 					  $(B)/$(OPENJKDED)/sys/sys_unix.o \
 					  $(B)/$(OPENJKDED)/sys/vm_x86.o \
-					  $(B)/$(OPENJKDED)/zlib/ioapi.o
+					  $(B)/$(OPENJKDED)/$(LIB)/zlib/ioapi.o
 
 RDVANILLA_NAME			= $(B)/$(INST)/rd-vanilla_i386.$(DLL_EXT)
 RDVANILLA_CFLAGS		= -m32 -w -fpermissive -O3 -fPIC -I. -D_JK2 -DNDEBUG -DFINAL_BUILD `sdl2-config --cflags`
@@ -527,68 +527,67 @@ ifeq ($(PLATFORM),darwin)
 else
 	RDVANILLA_LDFLAGS		+= -lGL
 endif
-RDVANILLA_OBJS			= $(B)/$(RDVA)/jpeg-8c/jaricom.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcapimin.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcapistd.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcarith.o \
-						  $(B)/$(RDVA)/jpeg-8c/jccoefct.o \
-						  $(B)/$(RDVA)/jpeg-8c/jccolor.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcdctmgr.o \
-						  $(B)/$(RDVA)/jpeg-8c/jchuff.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcinit.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcmainct.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcmarker.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcmaster.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcomapi.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcparam.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcprepct.o \
-						  $(B)/$(RDVA)/jpeg-8c/jcsample.o \
-						  $(B)/$(RDVA)/jpeg-8c/jctrans.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdapimin.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdapistd.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdarith.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdatadst.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdatasrc.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdcoefct.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdcolor.o \
-						  $(B)/$(RDVA)/jpeg-8c/jddctmgr.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdhuff.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdinput.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdmainct.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdmarker.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdmaster.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdmerge.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdpostct.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdsample.o \
-						  $(B)/$(RDVA)/jpeg-8c/jdtrans.o \
-						  $(B)/$(RDVA)/jpeg-8c/jerror.o \
-						  $(B)/$(RDVA)/jpeg-8c/jfdctflt.o \
-						  $(B)/$(RDVA)/jpeg-8c/jfdctfst.o \
-						  $(B)/$(RDVA)/jpeg-8c/jfdctint.o \
-						  $(B)/$(RDVA)/jpeg-8c/jidctflt.o \
-						  $(B)/$(RDVA)/jpeg-8c/jidctfst.o \
-						  $(B)/$(RDVA)/jpeg-8c/jidctint.o \
-						  $(B)/$(RDVA)/jpeg-8c/jmemmgr.o \
-						  $(B)/$(RDVA)/jpeg-8c/jmemnobs.o \
-						  $(B)/$(RDVA)/jpeg-8c/jquant1.o \
-						  $(B)/$(RDVA)/jpeg-8c/jquant2.o \
-						  $(B)/$(RDVA)/jpeg-8c/jutils.o \
-						  $(B)/$(RDVA)/libpng/png.o \
-						  $(B)/$(RDVA)/libpng/pngerror.o \
-						  $(B)/$(RDVA)/libpng/pngget.o \
-						  $(B)/$(RDVA)/libpng/pngmem.o \
-						  $(B)/$(RDVA)/libpng/pngpread.o \
-						  $(B)/$(RDVA)/libpng/pngread.o \
-						  $(B)/$(RDVA)/libpng/pngrio.o \
-						  $(B)/$(RDVA)/libpng/pngrtran.o \
-						  $(B)/$(RDVA)/libpng/pngrutil.o \
-						  $(B)/$(RDVA)/libpng/pngset.o \
-						  $(B)/$(RDVA)/libpng/pngtrans.o \
-						  $(B)/$(RDVA)/libpng/pngwio.o \
-						  $(B)/$(RDVA)/libpng/pngwrite.o \
-						  $(B)/$(RDVA)/libpng/pngwtran.o \
-						  $(B)/$(RDVA)/libpng/pngwutil.o \
-						  $(B)/$(RDVA)/png/rpng.o \
+RDVANILLA_OBJS			= $(B)/$(RDVA)/$(LIB)/jpeg-8c/jaricom.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcapimin.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcapistd.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcarith.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jccoefct.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jccolor.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcdctmgr.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jchuff.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcinit.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcmainct.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcmarker.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcmaster.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcomapi.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcparam.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcprepct.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jcsample.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jctrans.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdapimin.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdapistd.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdarith.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdatadst.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdatasrc.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdcoefct.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdcolor.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jddctmgr.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdhuff.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdinput.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdmainct.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdmarker.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdmaster.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdmerge.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdpostct.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdsample.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jdtrans.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jerror.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jfdctflt.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jfdctfst.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jfdctint.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jidctflt.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jidctfst.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jidctint.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jmemmgr.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jmemnobs.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jquant1.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jquant2.o \
+						  $(B)/$(RDVA)/$(LIB)/jpeg-8c/jutils.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/png.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngerror.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngget.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngmem.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngpread.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngread.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngrio.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngrtran.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngrutil.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngset.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngtrans.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngwio.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngwrite.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngwtran.o \
+						  $(B)/$(RDVA)/$(LIB)/libpng/pngwutil.o \
 						  $(B)/$(RDVA)/qcommon/GenericParser2.o \
 						  $(B)/$(RDVA)/qcommon/matcomp.o \
 						  $(B)/$(RDVA)/qcommon/q_math.o \
@@ -667,7 +666,8 @@ makedirs:
 	@if [ ! -d $(B)/$(OPENJK)/botlib ];then mkdir $(B)/$(OPENJK)/botlib;fi
 	@if [ ! -d $(B)/$(OPENJK)/client ];then mkdir $(B)/$(OPENJK)/client;fi
 	@if [ ! -d $(B)/$(OPENJK)/icarus ];then mkdir $(B)/$(OPENJK)/icarus;fi
-	@if [ ! -d $(B)/$(OPENJK)/jpeg-8c ];then mkdir $(B)/$(OPENJK)/jpeg-8c;fi
+	@if [ ! -d $(B)/$(OPENJK)/$(LIB) ];then mkdir $(B)/$(OPENJK)/$(LIB);fi
+	@if [ ! -d $(B)/$(OPENJK)/$(LIB)/jpeg-8c ];then mkdir $(B)/$(OPENJK)/$(LIB)/jpeg-8c;fi
 	@if [ ! -d $(B)/$(OPENJK)/mp3code ];then mkdir $(B)/$(OPENJK)/mp3code;fi
 	@if [ ! -d $(B)/$(OPENJK)/qcommon ];then mkdir $(B)/$(OPENJK)/qcommon;fi
 	@if [ ! -d $(B)/$(OPENJK)/RMG ];then mkdir $(B)/$(OPENJK)/RMG;fi
@@ -675,24 +675,24 @@ makedirs:
 	@if [ ! -d $(B)/$(OPENJK)/server ];then mkdir $(B)/$(OPENJK)/server;fi
 	@if [ ! -d $(B)/$(OPENJK)/server/NPCNav ];then mkdir $(B)/$(OPENJK)/server/NPCNav;fi
 	@if [ ! -d $(B)/$(OPENJK)/sys ];then mkdir $(B)/$(OPENJK)/sys;fi
-	@if [ ! -d $(B)/$(OPENJK)/zlib ];then mkdir $(B)/$(OPENJK)/zlib;fi
+	@if [ ! -d $(B)/$(OPENJK)/$(LIB)/zlib ];then mkdir $(B)/$(OPENJK)/$(LIB)/zlib;fi
 	@if [ ! -d $(B)/$(OPENJKDED) ];then mkdir $(B)/$(OPENJKDED);fi
 	@if [ ! -d $(B)/$(OPENJKDED)/botlib ];then mkdir $(B)/$(OPENJKDED)/botlib;fi
 	@if [ ! -d $(B)/$(OPENJKDED)/icarus ];then mkdir $(B)/$(OPENJKDED)/icarus;fi
-	@if [ ! -d $(B)/$(OPENJKDED)/libpng ];then mkdir $(B)/$(OPENJKDED)/libpng;fi
+	@if [ ! -d $(B)/$(OPENJKDED)/$(LIB) ];then mkdir $(B)/$(OPENJKDED)/$(LIB);fi
+	@if [ ! -d $(B)/$(OPENJKDED)/$(LIB)/libpng ];then mkdir $(B)/$(OPENJKDED)/$(LIB)/libpng;fi
 	@if [ ! -d $(B)/$(OPENJKDED)/null ];then mkdir $(B)/$(OPENJKDED)/null;fi
-	@if [ ! -d $(B)/$(OPENJKDED)/png ];then mkdir $(B)/$(OPENJKDED)/png;fi
 	@if [ ! -d $(B)/$(OPENJKDED)/qcommon ];then mkdir $(B)/$(OPENJKDED)/qcommon;fi
 	@if [ ! -d $(B)/$(OPENJKDED)/rd-dedicated ];then mkdir $(B)/$(OPENJKDED)/rd-dedicated;fi
 	@if [ ! -d $(B)/$(OPENJKDED)/RMG ];then mkdir $(B)/$(OPENJKDED)/RMG;fi
 	@if [ ! -d $(B)/$(OPENJKDED)/server ];then mkdir $(B)/$(OPENJKDED)/server;fi
 	@if [ ! -d $(B)/$(OPENJKDED)/server/NPCNav ];then mkdir $(B)/$(OPENJKDED)/server/NPCNav;fi
 	@if [ ! -d $(B)/$(OPENJKDED)/sys ];then mkdir $(B)/$(OPENJKDED)/sys;fi
-	@if [ ! -d $(B)/$(OPENJKDED)/zlib ];then mkdir $(B)/$(OPENJKDED)/zlib;fi
+	@if [ ! -d $(B)/$(OPENJKDED)/$(LIB)/zlib ];then mkdir $(B)/$(OPENJKDED)/$(LIB)/zlib;fi
 	@if [ ! -d $(B)/$(RDVA) ];then mkdir $(B)/$(RDVA);fi
-	@if [ ! -d $(B)/$(RDVA)/jpeg-8c ];then mkdir $(B)/$(RDVA)/jpeg-8c;fi
-	@if [ ! -d $(B)/$(RDVA)/libpng ];then mkdir $(B)/$(RDVA)/libpng;fi
-	@if [ ! -d $(B)/$(RDVA)/png ];then mkdir $(B)/$(RDVA)/png;fi
+	@if [ ! -d $(B)/$(RDVA)/$(LIB) ];then mkdir $(B)/$(RDVA)/$(LIB);fi
+	@if [ ! -d $(B)/$(RDVA)/$(LIB)/jpeg-8c ];then mkdir $(B)/$(RDVA)/$(LIB)/jpeg-8c;fi
+	@if [ ! -d $(B)/$(RDVA)/$(LIB)/libpng ];then mkdir $(B)/$(RDVA)/$(LIB)/libpng;fi
 	@if [ ! -d $(B)/$(RDVA)/qcommon ];then mkdir $(B)/$(RDVA)/qcommon;fi
 	@if [ ! -d $(B)/$(RDVA)/rd-vanilla ];then mkdir $(B)/$(RDVA)/rd-vanilla;fi
 	@if [ ! -d $(B)/$(RDVA)/sdl ];then mkdir $(B)/$(RDVA)/sdl;fi
@@ -772,7 +772,7 @@ $(B)/$(OPENJK)/client/%.o: client/%.cpp
 $(B)/$(OPENJK)/icarus/%.o: icarus/%.cpp
 	$(CXX) $(OPENJK_CFLAGS) -c $< -o $@
 
-$(B)/$(OPENJK)/jpeg-8c/%.o: jpeg-8c/%.c
+$(B)/$(OPENJK)/$(LIB)/jpeg-8c/%.o: ../$(LIB)/jpeg-8c/%.c
 	$(CC) $(OPENJK_CFLAGS) -c $< -o $@
 
 $(B)/$(OPENJK)/mp3code/%.o: mp3code/%.c
@@ -799,7 +799,7 @@ $(B)/$(OPENJK)/sys/%.o: sys/%.cpp
 $(B)/$(OPENJK)/sys/snapvector.o: sys/snapvector.cpp
 	$(CXX) $(OPENJK_CFLAGS) -c $< -o $@
 
-$(B)/$(OPENJK)/zlib/ioapi.o: zlib/ioapi.c
+$(B)/$(OPENJK)/$(LIB)/zlib/ioapi.o: ../$(LIB)/zlib/ioapi.c
 	$(CC) $(OPENJK_CFLAGS) -c $< -o $@
 
 #
@@ -817,13 +817,10 @@ $(B)/$(OPENJKDED)/botlib/%.o: botlib/%.cpp
 $(B)/$(OPENJKDED)/icarus/%.o: icarus/%.cpp
 	$(CXX) $(OPENJKDED_CFLAGS) -c $< -o $@
 
-$(B)/$(OPENJKDED)/libpng/%.o: libpng/%.c
+$(B)/$(OPENJKDED)/$(LIB)/libpng/%.o: ../$(LIB)/libpng/%.c
 	$(CC) $(OPENJKDED_CFLAGS) -c $< -o $@
 
 $(B)/$(OPENJKDED)/null/%.o: null/%.cpp
-	$(CXX) $(OPENJKDED_CFLAGS) -c $< -o $@
-
-$(B)/$(OPENJKDED)/png/%.o: png/%.cpp
 	$(CXX) $(OPENJKDED_CFLAGS) -c $< -o $@
 
 $(B)/$(OPENJKDED)/qcommon/%.o: qcommon/%.cpp
@@ -847,7 +844,7 @@ $(B)/$(OPENJKDED)/sys/%.o: sys/%.cpp
 $(B)/$(OPENJKDED)/sys/snapvector.o: sys/snapvector.cpp
 	$(CXX) $(OPENJKDED_CFLAGS) -c $< -o $@
 
-$(B)/$(OPENJKDED)/zlib/ioapi.o: zlib/ioapi.c
+$(B)/$(OPENJKDED)/$(LIB)/zlib/ioapi.o: ../$(LIB)/zlib/ioapi.c
 	$(CC) $(OPENJKDED_CFLAGS) -c $< -o $@
 
 #
@@ -859,14 +856,11 @@ rd-vanilla: $(RDVANILLA_NAME)
 $(RDVANILLA_NAME): $(RDVANILLA_OBJS)
 	$(CXX) -o $(RDVANILLA_NAME) $(RDVANILLA_OBJS) $(RDVANILLA_LDFLAGS)
 
-$(B)/$(RDVA)/jpeg-8c/%.o: jpeg-8c/%.c
+$(B)/$(RDVA)/$(LIB)/jpeg-8c/%.o: ../$(LIB)/jpeg-8c/%.c
 	$(CC) $(RDVANILLA_CFLAGS) -c $< -o $@
 
-$(B)/$(RDVA)/libpng/%.o: libpng/%.c
+$(B)/$(RDVA)/$(LIB)/libpng/%.o: ../$(LIB)/libpng/%.c
 	$(CC) $(RDVANILLA_CFLAGS) -c $< -o $@
-
-$(B)/$(RDVA)/png/%.o: png/%.cpp
-	$(CXX) $(RDVANILLA_CFLAGS) -c $< -o $@
     
 $(B)/$(RDVA)/qcommon/%.o: qcommon/%.cpp
 	$(CXX) $(RDVANILLA_CFLAGS) -D_M_IX86 -c $< -o $@
