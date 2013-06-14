@@ -185,7 +185,7 @@ UI_OBJS			= $(B)/$(UI)/ui/ui_atoms.o \
 				  $(B)/$(UI)/ui/ui_syscalls.o
 
 OPENJK_NAME		= $(B)/$(INST)/openjk.i386
-OPENJK_CFLAGS		= -m32 -w -fpermissive -O3 -I. -D_JK2 -DNDEBUG -DFINAL_BUILD `sdl2-config --cflags`
+OPENJK_CFLAGS		= -m32 -w -fpermissive -O3 -I. -I../lib -D_JK2 -DNDEBUG -DFINAL_BUILD `sdl2-config --cflags`
 OPENJK_LDFLAGS		= -m32 `sdl2-config --libs` -lz
 ifeq ($(PLATFORM),darwin)
 	OPENJK_LDFLAGS		+= -framework OpenAL
@@ -387,7 +387,7 @@ OPENJK_OBJS		= $(B)/$(OPENJK)/botlib/be_aas_bspq3.o \
 				  $(B)/$(OPENJK)/$(LIB)/zlib/ioapi.o
 
 OPENJKDED_NAME		= $(B)/$(INST)/openjkded.i386
-OPENJKDED_CFLAGS	= -m32 -w -fpermissive -O3 -I. -D_JK2 -DDEDICATED -DNDEBUG -DFINAL_BUILD
+OPENJKDED_CFLAGS	= -m32 -w -fpermissive -O3 -I. -I../lib -D_JK2 -DDEDICATED -DNDEBUG -DFINAL_BUILD
 OPENJKDED_LDFLAGS	= -m32 -ldl -lz
 OPENJKDED_OBJS		= $(B)/$(OPENJKDED)/botlib/be_aas_bspq3.o \
 					  $(B)/$(OPENJKDED)/botlib/be_aas_cluster.o \
@@ -520,7 +520,7 @@ OPENJKDED_OBJS		= $(B)/$(OPENJKDED)/botlib/be_aas_bspq3.o \
 					  $(B)/$(OPENJKDED)/$(LIB)/zlib/ioapi.o
 
 RDVANILLA_NAME			= $(B)/$(INST)/rd-vanilla_i386.$(DLL_EXT)
-RDVANILLA_CFLAGS		= -m32 -w -fpermissive -O3 -fPIC -I. -D_JK2 -DNDEBUG -DFINAL_BUILD `sdl2-config --cflags`
+RDVANILLA_CFLAGS		= -m32 -w -fpermissive -O3 -fPIC -I. -I../lib -D_JK2 -DNDEBUG -DFINAL_BUILD `sdl2-config --cflags`
 RDVANILLA_LDFLAGS		= -m32 -shared `sdl2-config --libs`
 ifeq ($(PLATFORM),darwin)
 	RDVANILLA_LDFLAGS		+= -framework OpenGL
