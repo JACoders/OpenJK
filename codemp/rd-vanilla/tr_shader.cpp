@@ -386,7 +386,7 @@ static	shader_t*		hashTable[FILE_HASH_SIZE];
 typedef struct shaderText_s {   // 8 bytes + strlen(text)+1
 	struct shaderText_s *next;	// linked list hashtable
 	char *name;					// shader name
-	char text[0];				// shader text
+	char text[1];				// shader text
 } shaderText_t;
 
 static shaderText_t *shaderTextHashTable[MAX_SHADERTEXT_HASH];
@@ -2896,7 +2896,7 @@ static qboolean CollapseMultitexture( void ) {
 			return qfalse;
 		}
 	}
-	if ( stages[0].alphaGen == CGEN_WAVEFORM )
+	if ( stages[0].alphaGen == AGEN_WAVEFORM )
 	{
 		if ( memcmp( &stages[0].alphaWave,
 					 &stages[1].alphaWave,
@@ -4251,7 +4251,7 @@ static void LoadShaderFromBuffer( char *buff )
 		q3ShaderBug = 0;
 
 		// create the new shader
-		size = sizeof(shaderText_t) + (textLength+1) + (nameLength+1);
+		size = sizeof(shaderText_t) + (textLength) + (nameLength+1);
 		st = (shaderText_t *)ri.Hunk_Alloc( size, h_low );
 
 		// copy shader name and shader text

@@ -985,12 +985,7 @@ int		Sys_Milliseconds (bool baseTime = false);
 int		Sys_Milliseconds2(void);
 void 	Sys_SetEnv(const char *name, const char *value);
 
-#ifndef _WIN32
 extern "C" void	Sys_SnapVector( float *v );
-
-#else
-void	Sys_SnapVector( float *v );
-#endif
 
 // the system console is shown when a dedicated server is running
 void	Sys_DisplaySystemConsole( qboolean show );
@@ -1017,9 +1012,16 @@ void	Sys_SetDefaultCDPath(const char *path);
 char	*Sys_DefaultCDPath(void);
 void	Sys_SetDefaultInstallPath(const char *path);
 char	*Sys_DefaultInstallPath(void);
-void     Sys_SetDefaultHomePath(const char *path);
+
+#ifdef MACOS_X
+char    *Sys_DefaultAppPath(void);
+#endif
+
 char	*Sys_DefaultHomePath(void);
-char	*Sys_DefaultBasePath(void);
+const char *Sys_Dirname( char *path );
+const char *Sys_Basename( char *path );
+
+bool Sys_PathCmp( const char *path1, const char *path2 );
 
 char **Sys_ListFiles( const char *directory, const char *extension, char *filter, int *numfiles, qboolean wantsubs );
 void	Sys_FreeFileList( char **fileList );

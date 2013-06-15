@@ -21,8 +21,13 @@ This file is part of Jedi Academy.
 #define __QCOMMON_H__
 
 #include "stringed_ingame.h"
+#include "../game/q_shared.h"
 #include "../../codeJK2/qcommon/strippublic.h"
 #include "../qcommon/cm_public.h"
+
+#ifdef _WIN32
+	#include <windows.h>
+#endif
 
 
 // some zone mem debugging stuff
@@ -381,6 +386,7 @@ char 	*Cvar_CompleteVariable( const char *partial );
 // returns NULL if nothing fits
 
 void 	Cvar_Reset( const char *var_name );
+void 	Cvar_ForceReset( const char *var_name );
 
 void	Cvar_SetCheatState( void );
 // reset all testing vars to a safe value
@@ -517,7 +523,7 @@ void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
 void		Com_EndRedirect( void );
 void 		QDECL Com_Printf( const char *fmt, ... );
 void 		QDECL Com_DPrintf( const char *fmt, ... );
-void 		QDECL Com_Error( int code, const char *fmt, ... );
+void 		QDECL Com_Error( int code, const char *fmt, ... ) __attribute__((noreturn));
 void 		Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
@@ -752,6 +758,14 @@ sysEvent_t	Sys_GetEvent( void );
 
 void	Sys_Init (void);
 
+#ifdef _WIN32
+	#include <Windows.h>
+	#define Sys_LoadLibrary(f) (void*)LoadLibrary(f)
+	#define Sys_UnloadLibrary(h) FreeLibrary((HMODULE)h)
+	#define Sys_LoadFunction(h,fn) (void*)GetProcAddress((HMODULE)h,fn)
+	#define Sys_LibraryError() "unknown"
+#endif // linux and mac use SDL in SDL_loadlibrary.h
+
 char	*Sys_GetCurrentUser( void );
 
 void	QDECL Sys_Error( const char *error, ...);
@@ -782,8 +796,6 @@ void	Sys_StreamSeek( fileHandle_t f, int offset, int origin );
 
 void	Sys_ShowConsole( int level, qboolean quitOnClose );
 void	Sys_SetErrorText( const char *text );
-
-qboolean	Sys_CheckCD( void );
 
 void	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );

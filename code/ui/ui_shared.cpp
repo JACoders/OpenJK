@@ -264,6 +264,7 @@ void PC_SourceError(int handle, char *format, ...)
 	static char string[4096];
 
 	va_start (argptr, format);
+	Q_vsnprintf (string, sizeof(string), format, argptr);
 	vsprintf (string, format, argptr);
 	va_end (argptr);
 
@@ -4427,7 +4428,7 @@ qboolean ItemParse_cvarFloat( itemDef_t *item)
 	{
 		if (!stricmp(item->cvar,"r_ext_texture_filter_anisotropic"))
 		{//hehe, hook up the correct max value here.
-			editPtr->maxVal=glConfig.maxTextureFilterAnisotropy;
+			editPtr->maxVal=cls.glconfig.maxTextureFilterAnisotropy;
 		}
 		return qtrue;
 	}

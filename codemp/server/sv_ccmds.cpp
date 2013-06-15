@@ -676,7 +676,6 @@ SV_ConSay_f
 ==================
 */
 static void SV_ConSay_f(void) {
-	char	*p;
 	char	text[MAX_SAY_TEXT] = {0};
 
 	if( !com_dedicated->integer ) {

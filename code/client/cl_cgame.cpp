@@ -423,15 +423,7 @@ void CL_ShutdownCGame( void ) {
 
 //RMG
 CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
-void RE_InitRendererTerrain( const char *info );
 //RMG
-
-extern float tr_distortionAlpha; //tr_shadows.cpp
-extern float tr_distortionStretch; //tr_shadows.cpp
-extern qboolean tr_distortionPrePost; //tr_shadows.cpp
-extern qboolean tr_distortionNegate; //tr_shadows.cpp
-
-float g_oldRangedFog = 0.0f;
 
 #ifndef __NO_JK2
 /*
@@ -900,16 +892,12 @@ int CL_CgameSystemCalls( int *args ) {
 		return CM_RegisterTerrain((const char *)VMA(1), false)->GetTerrainId();
 
 	case CG_RE_INIT_RENDERER_TERRAIN:
-		RE_InitRendererTerrain((const char *)VMA(1));
+		re.InitRendererTerrain((const char *)VMA(1));
 		return 0;
 #endif	// _XBOX
 
 	case CG_CM_LOADMAP:
-#ifdef _XBOX
-		CL_CM_LoadMap( (const char *) VMA(1) );
-#else
 		CL_CM_LoadMap( (const char *) VMA(1), args[2] );
-#endif
 		return 0;
 	case CG_CM_NUMINLINEMODELS:
 		return CM_NumInlineModels();
@@ -1025,10 +1013,10 @@ int CL_CgameSystemCalls( int *args ) {
 	case CG_ANYLANGUAGE_READFROMSTRING2:
 		return re.AnyLanguage_ReadCharFromString2( (char **) VMA(1), (qboolean *) VMA(3) );
 	case CG_R_SETREFRACTIONPROP:
-		tr_distortionAlpha = VMF(1);
-		tr_distortionStretch = VMF(2);
-		tr_distortionPrePost = (qboolean)args[3];
-		tr_distortionNegate = (qboolean)args[4];
+		*(re.tr_distortionAlpha()) = VMF(1);
+		*(re.tr_distortionStretch()) = VMF(2);
+		*(re.tr_distortionPrePost()) = (qboolean)args[3];
+		*(re.tr_distortionNegate()) = (qboolean)args[4];
 		return 0;
 	case CG_R_CLEARSCENE:
 		re.ClearScene();
@@ -1038,7 +1026,7 @@ int CL_CgameSystemCalls( int *args ) {
 		return 0;
 
 	case CG_R_INPVS:
-		return R_inPVS((float *) VMA(1), (float *) VMA(2));
+		return re.R_inPVS((float *) VMA(1), (float *) VMA(2));
 
 	case CG_R_GETLIGHTING:
 		return re.GetLighting( (const float * ) VMA(1), (float *) VMA(2), (float *) VMA(3), (float *) VMA(4) );
@@ -1078,7 +1066,8 @@ int CL_CgameSystemCalls( int *args ) {
 		re.DrawRotatePic2( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), VMF(9), args[10] );
 		return 0;
 	case CG_R_SETRANGEFOG:
-		if (tr.rangedFog <= 0.0f)
+		// FIXME: Figure out if this is how it's done in MP :S --eez
+		/*if (tr.rangedFog <= 0.0f)
 		{
 			g_oldRangedFog = tr.rangedFog;
 		}
@@ -1086,7 +1075,8 @@ int CL_CgameSystemCalls( int *args ) {
 		if (tr.rangedFog == 0.0f && g_oldRangedFog)
 		{ //restore to previous state if applicable
 			tr.rangedFog = g_oldRangedFog;
-		}
+		}*/
+		re.SetRangedFog( VMF( 1 ) );
 		return 0;
 	case CG_R_LA_GOGGLES:
 		re.LAGoggles();
@@ -1129,18 +1119,18 @@ Ghoul2 Insert Start
 */
 		
 	case CG_G2_LISTSURFACES:
-		G2API_ListSurfaces( (CGhoul2Info *) VMA(1) );
+		re.G2API_ListSurfaces( (CGhoul2Info *) VMA(1) );
 		return 0;
 
 	case CG_G2_LISTBONES:
-		G2API_ListBones( (CGhoul2Info *) VMA(1), args[2]);
+		re.G2API_ListBones( (CGhoul2Info *) VMA(1), args[2]);
 		return 0;
 
 	case CG_G2_HAVEWEGHOULMODELS:
-		return G2API_HaveWeGhoul2Models( *((CGhoul2Info_v *)VMA(1)) );
+		return re.G2API_HaveWeGhoul2Models( *((CGhoul2Info_v *)VMA(1)) );
 
 	case CG_G2_SETMODELS:
-		G2API_SetGhoul2ModelIndexes( *((CGhoul2Info_v *)VMA(1)),(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
+		re.G2API_SetGhoul2ModelIndexes( *((CGhoul2Info_v *)VMA(1)),(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
 		return 0;
 
 /*
@@ -1532,7 +1522,7 @@ void CL_CGameRendering( stereoFrame_t stereo ) {
 	{
 		timei-=0;
 	}
-	G2API_SetTime(cl.serverTime,G2T_CG_TIME);
+	re.G2API_SetTime(cl.serverTime,G2T_CG_TIME);
 	VM_Call( CG_DRAW_ACTIVE_FRAME,timei, stereo, qfalse );
 //	VM_Debug( 0 );
 }
@@ -1645,7 +1635,7 @@ CL_FirstSnapshot
 */
 void CL_FirstSnapshot( void ) {
 
-	RE_RegisterMedia_LevelLoadEnd();
+	re.RegisterMedia_LevelLoadEnd();
 
 	cls.state = CA_ACTIVE;
 
@@ -1663,11 +1653,6 @@ void CL_FirstSnapshot( void ) {
 	}
 	
 	Sys_BeginProfiling();
-
-#ifdef _XBOX
-	// turn vsync back on - tearing is ugly
-	qglEnable(GL_VSYNC);
-#endif
 }
 
 /*

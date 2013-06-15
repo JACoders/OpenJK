@@ -36,6 +36,7 @@ cvar_t		*con_conAlpha;	//background alpha multiplier
 
 #define	DEFAULT_CONSOLE_WIDTH	78
 
+vec4_t	console_color = {0.509f, 0.609f, 0.847f, 1.0f};
 
 /*
 ================
@@ -248,7 +249,7 @@ void Con_Init (void) {
 
 	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
-	con_conAlpha= Cvar_Get( "conAlpha", "1.6", CVAR_ARCHIVE );
+	con_conAlpha = Cvar_Get( "conAlpha", "1.6", CVAR_ARCHIVE );
 	
 	Field_Clear( &kg.g_consoleField );
 	kg.g_consoleField.widthInChars = g_console_field_width;
@@ -398,7 +399,7 @@ void Con_DrawInput (void) {
 	SCR_DrawSmallChar( con.xadjust + 1 * SMALLCHAR_WIDTH, y, ']' );
 
 	Field_Draw( &kg.g_consoleField, con.xadjust + 2 * SMALLCHAR_WIDTH, y,
-		SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, qtrue );
+		SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, qtrue, qtrue );
 }
 
 
@@ -483,11 +484,12 @@ void Con_DrawNotify (void)
 	// draw the chat line
 	if ( cls.keyCatchers & KEYCATCH_MESSAGE )
 	{
-		SCR_DrawBigString (8, v, "say:", 1.0f );
-		skip = 5;
+		const char *chattext = SE_GetString("MP_SVGAME", "SAY");
+		SCR_DrawBigString (8, v, chattext, 1.0f, qfalse );
+		skip = strlen(chattext)+1;
 
 		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
-			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue );
+			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
 
 		v += BIGCHAR_HEIGHT;
 	}
@@ -537,11 +539,9 @@ void Con_DrawSolidConsole( float frac )
 		SCR_DrawPic( 0, 0, SCREEN_WIDTH, y, cls.consoleShader);
 	}
 
-
-	const vec4_t color = { 0.509f, 0.609f, 0.847f,  1.0f};
 	// draw the bottom bar and version number
 
-	re.SetColor( color );
+	re.SetColor( console_color );
 	re.DrawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0, 0, 0, cls.whiteShader );
 
 	i = strlen( Q3_VERSION );
@@ -550,7 +550,6 @@ void Con_DrawSolidConsole( float frac )
 		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x ) * SMALLCHAR_WIDTH, 
 			(lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), Q3_VERSION[x] );
 	}
-
 
 	// draw the text
 	con.vislines = lines;
@@ -562,7 +561,7 @@ void Con_DrawSolidConsole( float frac )
 	if (con.display != con.current)
 	{
 	// draw arrows to show the buffer is backscrolled
-		re.SetColor( g_color_table[ColorIndex(COLOR_YELLOW)] );
+		re.SetColor( console_color );
 		for (x=0 ; x<con.linewidth ; x+=4)
 			SCR_DrawSmallChar( con.xadjust + (x+1)*SMALLCHAR_WIDTH, y, '^' );
 		y -= SMALLCHAR_HEIGHT;

@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <libgen.h>
 
 #include "qcommon/qcommon.h"
 #include "qcommon/q_shared.h"
@@ -145,6 +146,26 @@ TODO
 qboolean Sys_LowPhysicalMemory( void )
 {
 	return qfalse;
+}
+
+/*
+==================
+Sys_Basename
+==================
+*/
+const char *Sys_Basename( char *path )
+{
+	return basename( path );
+}
+
+/*
+==================
+Sys_Dirname
+==================
+*/
+const char *Sys_Dirname( char *path )
+{
+	return dirname( path );
 }
 
 /*
@@ -455,13 +476,26 @@ char *Sys_Cwd( void )
 	return cwd;
 }
 
-/*
-==============
-Sys_DefaultBasePath
-==============
-*/
-char *Sys_DefaultBasePath( void ) {
-	return Sys_Cwd();
+/* Resolves path names and determines if they are the same */
+/* For use with full OS paths not quake paths */
+/* Returns true if resulting paths are valid and the same, otherwise false */
+bool Sys_PathCmp( const char *path1, const char *path2 )
+{
+	char *r1, *r2;
+
+	r1 = realpath(path1, NULL);
+	r2 = realpath(path2, NULL);
+
+	if(r1 && r2 && !Q_stricmp(r1, r2))
+	{
+		free(r1);
+		free(r2);
+		return true;
+	}
+
+	free(r1);
+	free(r2);
+	return false;
 }
 
 void Sys_ShowConsole( int visLevel, qboolean quitOnClose )

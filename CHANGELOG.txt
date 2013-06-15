@@ -9,31 +9,59 @@ Key: - removed, + added, * modified
 * Added security fixes to prevent servers from spoofing clients with connect packets.
 * Added security fixes to prevent anyone from spoofing clients with print packets.
 * Fixed clients being able to set IP via cvar.
++ Added gametype to /status rcon command.
+* Tweaked forcetoggle rcon command.
++ Add r_noborder option for SP and MP (windowed mode feature).
++ Add r_centerWindow option for SP and MP (windowed mode feature).
++ Add r_mode -2 option for MP (soon SP too) to use desktop resolution.
+* Dedicated server binaries now correctly print sectioned prints without adding newlines erroneously.
+* Fixed a nasty memory issue with clipboard pasting in SP.
+* (jampgame gamecode specific) Fixed very bad out of bounds access in G_LogWeaponFire with NPCs.
++ (cgame/jampgame gamecode specific) Added pmove_float default off optional cvar for no float to integer snapping of velocity on players.
 * Fixed MiniHeapSize issue in SP
 * Fixed widescreen resolution changes causing black screen when UI restarted.
 * Fixed crash when trying to run custom resolutions with a local server.
 * Fixed crash related to ragnos NPC in MP
+* Fixed (SP) intro cinematic only displaying as white screen when on non 4:3 aspect ratio.
+* Fixes some voting issues relating to clients disconnecting and/or switching teams.
+* Fixed some voting issues relating to bad percentage calculation for passing/failing.
 * Fixed Gamma Clamp on WinXP+
+* Fixed weather system incorrectly throwing up a warning with shader data if weather system was unable to parse a vector correctly.
 * Fixed buffer overflow in client side rcon command.
+* (MP) Fixes color code stacking in names where colors were supposed to be stripped.  (This relates to engine and gamecode for full effect)
+* Windows now uses correct memory status code for > 2gb when checking if low on physical memory.
+* Fixes names that contain * or ** at start incorrectly showing up in notify top box and chat box when sending messages.
+* Server side / viewlog console now strips the [skipnotify] and * properly too.
 + (Un)Pausing the MP game in solo play now results in smoother transition.
 * Tweaks to the cvar code to make it more strict in terms of read only/cheats/init.  Fixes a lot of broken rules with cvars.
 + Cheats are now defaulted to 1 in menu.  Do not be alarmed, starting normally will disable them or connecting to a non-cheat server. This allows cheats to work properly while playing back demos.
 * Fixed cvar commands that allow you to "cg_thirdPerson !" prevent you from typing out longer strings starting with a ! as the value.
 + Optimized MP shader loader.  This also fixes some cases where duplicate shaders that are wrong were being used.
-+ Add fx_flashRadius (Defaults to 11) To set the size of FX flash radius. ("Rockets")  Set to 0 to disable completely.
+* FX Flashes now properly scale to fov and window aspect.
 + Add sv_lanForceRate (Defaults to 1) Feature was already enabled, but not toggleable.
 * Timescale frametime fixes.  Frametime < 1 is no longer possible (bad things happen)
 + Tweaked globalservers master server command a bit for better verbosity.
+- MPlayer code removed.
+* Tweaked serverbrowser client engine code.
+* Pure server code cleanups client and server.
 * Fixed a lot of formatting security holes.
 * Several Out-of-bounds memory access and memory leaks fixed.
 + Added fontlist command.  Useful for when making mods with custom fonts.
-+ New serverside kick commands kickall kickallbots and kicknum (alias).
++ New serverside kick commands kickall kickbots and kicknum (alias to clientkick).
 * Improved command line parsing based off of ioquake3 patches.
 * Improved echo command by preserving colors based off of ioquake3 patches.
 * Improved GL_Extensions using ioquake3 to prevent crashes on newer cards.
+* Removed cheat protection from r_we cmd, r_dyanamicGlow* cvars
+* Fixed invalid r_textureBitsLM resulting in fullbright mode without cheats
 - Removed CD Check Code
 - Removed CD Key Code
 - Removed demo restriction code.
 - Removed Anti-Tamper Code.
+- Removed force feedback code
 * Shift-Escape will now also open the console as an alternate (e.g.: keyboard doesn't support the normal console key)
 * Removed shift key requirement to open console
++ Raw Mouse Input added to windows (MP) (in_mouse 2). An in_restart required if changed while game is running.
++ New cgame cvar cg_fovAspectAdjust for "Automatically adjust field of view on widescreen resolutions"
++ New cgame command, clientlist displays clients by id/name/ and if they are a bot. (Shows real client id unlike serverstatus)
++ Added XInput support for XBOX 360 controllers (Windows only, in_joystick 2). SDL on *nix supports this as well.
++ Updated the JPG library

@@ -9,6 +9,7 @@
 #include <float.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
@@ -16,7 +17,11 @@
 
 #define MEM_THRESHOLD 128*1024*1024
 
-static char		sys_cmdline[MAX_STRING_CHARS];
+//static char		sys_cmdline[MAX_STRING_CHARS];
+
+/* win_shared.cpp */
+void Sys_SetBinaryPath(const char *path);
+char *Sys_BinaryPath(void);
 
 /*
 ==================
@@ -24,21 +29,21 @@ Sys_LowPhysicalMemory()
 ==================
 */
 
-qboolean Sys_LowPhysicalMemory() {
-	static MEMORYSTATUS stat;
+qboolean Sys_LowPhysicalMemory(void) {
+	static MEMORYSTATUSEX stat;
 	static qboolean bAsked = qfalse;
 	static cvar_t* sys_lowmem = Cvar_Get( "sys_lowmem", "0", 0 );
 
-	if (!bAsked)	// just in case it takes a little time for GlobalMemoryStatus() to gather stats on
+	if (!bAsked)	// just in case it takes a little time for GlobalMemoryStatusEx() to gather stats on
 	{				//	stuff we don't care about such as virtual mem etc.
 		bAsked = qtrue;
-		GlobalMemoryStatus (&stat);
+		GlobalMemoryStatusEx (&stat);
 	}
 	if (sys_lowmem->integer)
 	{
 		return qtrue;
 	}
-	return (stat.dwTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
+	return (stat.ullTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
 }
 
 /*
@@ -161,13 +166,25 @@ char *Sys_DefaultCDPath( void ) {
 	return "";
 }
 
-/*
-==============
-Sys_DefaultBasePath
-==============
-*/
-char *Sys_DefaultBasePath( void ) {
-	return Sys_Cwd();
+/* Resolves path names and determines if they are the same */
+/* For use with full OS paths not quake paths */
+/* Returns true if resulting paths are valid and the same, otherwise false */
+bool Sys_PathCmp( const char *path1, const char *path2 ) {
+	char *r1, *r2;
+
+	r1 = _fullpath(NULL, path1, MAX_OSPATH);
+	r2 = _fullpath(NULL, path2, MAX_OSPATH);
+
+	if(r1 && r2 && !Q_stricmp(r1, r2))
+	{
+		free(r1);
+		free(r2);
+		return true;
+	}
+
+	free(r1);
+	free(r2);
+	return false;
 }
 
 /*
@@ -463,42 +480,62 @@ from executable path, then fs_basepath.
 =================
 */
 
-extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
-
 void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 {
 	void *dllhandle = NULL;
-	char	*fn, *basepath, *homepath, *cdpath, *gamedir;
 
+	if(useSystemLib)
+		Com_Printf("Trying to load \"%s\"...\n", name);
+	
 	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
 	{
-		if ( !dllhandle ) {
-			basepath = Cvar_VariableString( "fs_basepath" );
-			homepath = Cvar_VariableString( "fs_homepath" );
-			cdpath = Cvar_VariableString( "fs_cdpath" );
-			gamedir = Cvar_VariableString( "fs_game" );
+		const char *topDir;
+		char libPath[MAX_OSPATH];
+        
+		topDir = Sys_BinaryPath();
+        
+		if(!*topDir)
+			topDir = ".";
+        
+		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
+		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
+        
+		if(!(dllhandle = Sys_LoadLibrary(libPath)))
+		{
+			const char *basePath = Cvar_VariableString("fs_basepath");
+			
+			if(!basePath || !*basePath)
+				basePath = ".";
+			
+			if(FS_FilenameCompare(topDir, basePath))
+			{
+				Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, basePath);
+				Com_sprintf(libPath, sizeof(libPath), "%s%c%s", basePath, PATH_SEP, name);
+				dllhandle = Sys_LoadLibrary(libPath);
+			}
+			
+			if(!dllhandle)
+			{
+				const char *cdPath = Cvar_VariableString("fs_cdpath");
 
-			fn = FS_BuildOSPath( basepath, gamedir, name );
-			dllhandle = LoadLibrary( fn );
+				if(!basePath || !*basePath)
+					basePath = ".";
 
-			if ( !dllhandle ) {
-				if( homepath[0] ) {
-					fn = FS_BuildOSPath( homepath, gamedir, name );
-					dllhandle = LoadLibrary( fn );
+				if(FS_FilenameCompare(topDir, cdPath))
+				{
+					Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, cdPath);
+					Com_sprintf(libPath, sizeof(libPath), "%s%c%s", cdPath, PATH_SEP, name);
+					dllhandle = Sys_LoadLibrary(libPath);
 				}
-				if ( !dllhandle ) {
-					if( cdpath[0] ) {
-						fn = FS_BuildOSPath( cdpath, gamedir, name );
-						dllhandle = LoadLibrary( fn );
-					}
-					if ( !dllhandle ) {
-						return NULL;
-					}
+
+				if(!dllhandle)
+				{
+					Com_Printf("Loading \"%s\" failed\n", name);
 				}
 			}
 		}
 	}
-
+	
 	return dllhandle;
 }
 
@@ -510,6 +547,8 @@ Used to load a development dll instead of a virtual machine
 =================
 */
 
+extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
+
 void * QDECL Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) ) {
 	HINSTANCE	libHandle;
 	void	(QDECL *dllEntry)( intptr_t (QDECL *syscallptr)(intptr_t, ...) );
@@ -520,7 +559,7 @@ void * QDECL Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(in
 	char	*fn;
 	char	filename[MAX_QPATH];
 
-	Com_sprintf( filename, sizeof( filename ), "%sx86.dll", name );
+	Com_sprintf( filename, sizeof( filename ), "%s" ARCH_STRING DLL_EXT, name );
 
 	if (!Sys_UnpackDLL(filename))
 	{
@@ -979,27 +1018,6 @@ void Sys_Net_Restart_f( void ) {
 	NET_Restart();
 }
 
-static bool Sys_IsExpired()
-{
-#if 0
-//								sec min Hr Day Mon Yr
-    struct tm t_valid_start	= { 0, 0, 8, 23, 6, 103 };	//zero based months!
-//								sec min Hr Day Mon Yr
-    struct tm t_valid_end	= { 0, 0, 20, 30, 6, 103 };
-//    struct tm t_valid_end	= t_valid_start;
-//	t_valid_end.tm_mday += 8;
-	time_t startTime  = mktime( &t_valid_start);
-	time_t expireTime = mktime( &t_valid_end);
-	time_t now;
-	time(&now);
-	if((now < startTime) || (now> expireTime))
-	{
-		return true;
-	}
-#endif
-	return false;
-}
-
 /*
 ================
 Sys_Init
@@ -1023,9 +1041,6 @@ void Sys_Init( void ) {
 
 	if (!GetVersionEx (&g_wv.osversion))
 		Sys_Error ("Couldn't get OS info");
-	if (Sys_IsExpired()) {
-		g_wv.osversion.dwPlatformId = VER_PLATFORM_WIN32s;	//sneaky: hide the expire with this error
-	}
 
 	if (g_wv.osversion.dwMajorVersion < 4)
 		Sys_Error ("This game requires Windows version 4 or greater");
@@ -1103,28 +1118,106 @@ void QuickMemTest(void)
 	}
 }
 
+/* Begin Sam Lantinga Public Domain 4/13/98 */
+
+static void UnEscapeQuotes(char *arg)
+{
+	char *last = NULL;
+
+	while (*arg) {
+		if (*arg == '"' && (last != NULL && *last == '\\')) {
+			char *c_curr = arg;
+			char *c_last = last;
+
+			while (*c_curr) {
+				*c_last = *c_curr;
+				c_last = c_curr;
+				c_curr++;
+			}
+			*c_last = '\0';
+		}
+		last = arg;
+		arg++;
+	}
+}
+
+/* Parse a command line buffer into arguments */
+static int ParseCommandLine(char *cmdline, char **argv)
+{
+	char *bufp;
+	char *lastp = NULL;
+	int argc, last_argc;
+
+	argc = last_argc = 0;
+	for (bufp = cmdline; *bufp;) {
+		/* Skip leading whitespace */
+		while (isspace(*bufp)) {
+			++bufp;
+		}
+		/* Skip over argument */
+		if (*bufp == '"') {
+			++bufp;
+			if (*bufp) {
+				if (argv) {
+					argv[argc] = bufp;
+				}
+				++argc;
+			}
+			/* Skip over word */
+			lastp = bufp;
+			while (*bufp && (*bufp != '"' || *lastp == '\\')) {
+				lastp = bufp;
+				++bufp;
+			}
+		} else {
+			if (*bufp) {
+				if (argv) {
+					argv[argc] = bufp;
+				}
+				++argc;
+			}
+			/* Skip over word */
+			while (*bufp && !isspace(*bufp)) {
+				++bufp;
+			}
+		}
+		if (*bufp) {
+			if (argv) {
+				*bufp = '\0';
+			}
+			++bufp;
+		}
+
+		/* Strip out \ from \" sequences */
+		if (argv && last_argc != argc) {
+			UnEscapeQuotes(argv[last_argc]);
+		}
+		last_argc = argc;
+	}
+	if (argv) {
+		argv[argc] = NULL;
+	}
+	return (argc);
+}
+
+/* End Sam Lantinga Public Domain 4/13/98 */
 
 //=======================================================================
 //int	totalMsec, countMsec;
 
-/*
-==================
-WinMain
+#ifndef DEFAULT_BASEDIR
+#	ifdef MACOS_X
+#		define DEFAULT_BASEDIR Sys_StripAppBundle(Sys_BinaryPath())
+#	else
+#		define DEFAULT_BASEDIR Sys_BinaryPath()
+#	endif
+#endif
 
-==================
-*/
-int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-//	int			startTime, endTime;
+int main( int argc, char **argv )
+{
+	int		i;
+	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
 
-    // should never get a previous instance in Win32
-    if ( hPrevInstance ) {
-        return 0;
-	}
-
-	g_wv.hInstance = hInstance;
-	Q_strncpyz( sys_cmdline, lpCmdLine, sizeof( sys_cmdline ) );
-
-	// done before Com/Sys_Init since we need this for error output
 	Sys_CreateConsole();
 
 	// no abort/retry/fail errors
@@ -1133,18 +1226,30 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	// get the initial time base
 	Sys_Milliseconds();
 
-#if 0
-	// if we find the CD, add a +set cddir xxx command line
-	Sys_ScanForCD();
-#endif
-
-
 	Sys_InitStreamThread();
 
-	Com_Init( sys_cmdline );
+	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
+	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
+
+	// Concatenate the command line for passing to Com_Init
+	for( i = 1; i < argc; i++ )
+	{
+		const bool containsSpaces = (strchr(argv[i], ' ') != NULL);
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), argv[ i ] );
+
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), " " );
+	}
+
+	Com_Init( commandLine );
 
 #if !defined(DEDICATED)
-		QuickMemTest();
+	QuickMemTest();
 #endif
 
 	NET_Init();
@@ -1169,24 +1274,55 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		}
 #endif // _DEBUG
 
-		// set low precision every frame, because some system calls
-		// reset it arbitrarily
-//		_controlfp( _PC_24, _MCW_PC );
- 
-//		startTime = Sys_Milliseconds();
-
 		// make sure mouse and joystick are only called once a frame
 		IN_Frame();
 
 		// run the game
 		Com_Frame();
-
-//		endTime = Sys_Milliseconds();
-//		totalMsec += endTime - startTime;
-//		countMsec++;
 	}
-
-	// never gets here
 }
 
+/*
+==================
+WinMain
 
+==================
+*/
+int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    // should never get a previous instance in Win32
+    if ( hPrevInstance ) {
+        return 0;
+	}
+
+	/* Begin Sam Lantinga Public Domain 4/13/98 */
+
+	TCHAR *text = GetCommandLine();
+	char *cmdline = _strdup(text);
+	if ( cmdline == NULL ) {
+		MessageBox(NULL, "Out of memory - aborting", "Fatal Error", MB_ICONEXCLAMATION | MB_OK);
+		return 0;
+	}
+
+	int    argc = ParseCommandLine(cmdline, NULL);
+	char **argv = (char **)alloca(sizeof(char *) * argc + 1);
+	if ( argv == NULL ) {
+		MessageBox(NULL, "Out of memory - aborting", "Fatal Error", MB_ICONEXCLAMATION | MB_OK);
+		return 0;
+	}
+	ParseCommandLine(cmdline, argv);
+
+	/* End Sam Lantinga Public Domain 4/13/98 */
+
+	g_wv.hInstance = hInstance;
+
+	/* Begin Sam Lantinga Public Domain 4/13/98 */
+
+	main(argc, argv);
+
+	free(cmdline);
+
+	/* End Sam Lantinga Public Domain 4/13/98 */
+
+	// never gets here
+	return 0;
+}

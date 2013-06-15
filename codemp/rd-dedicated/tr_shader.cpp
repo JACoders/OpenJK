@@ -261,7 +261,7 @@ static	shader_t*		hashTable[FILE_HASH_SIZE];
 typedef struct shaderText_s {   // 8 bytes + strlen(text)+1
 	struct shaderText_s *next;	// linked list hashtable
 	char *name;					// shader name
-	char text[0];				// shader text
+	char text[1];				// shader text
 } shaderText_t;
 
 static shaderText_t *shaderTextHashTable[MAX_SHADERTEXT_HASH];

@@ -79,27 +79,35 @@ This file is part of Jedi Academy.
 #include <time.h>
 #include <ctype.h>
 #include "../qcommon/platform.h"
+#include <limits.h>
+//=======================================================================
 
-#ifdef _XBOX
-#define tvector(T) std::vector< T >
-#define tdeque(T) std::deque< T >
+//Ignore __attribute__ on non-gcc platforms
+#if !defined(__GNUC__) && !defined(__attribute__)
+	#define __attribute__(x)
+#endif
 
-#define tlist(T) std::list< T >
-#define tslist(T) std::slist< T >
+#if defined(__GNUC__)
+	#define UNUSED_VAR __attribute__((unused))
+#else
+	#define UNUSED_VAR
+#endif
 
-#define tset(T) std::set< T, std::less< T > >
-#define tmultiset(T) std::multiset< T, std::less< T > >
+#if (defined _MSC_VER)
+	#define Q_EXPORT __declspec(dllexport)
+#elif (defined __SUNPRO_C)
+	#define Q_EXPORT __global
+#elif ((__GNUC__ >= 3) && (!__EMX__) && (!sun))
+	#define Q_EXPORT __attribute__((visibility("default")))
+#else
+	#define Q_EXPORT
+#endif
 
-#define tcset(T,C) std::set< T, C >
-#define tcmultiset(T,C) std::multiset< T, C >
-
-#define tmap(K,T) std::map< K, T, std::less< K > >
-#define tmultimap(K,T) std::multimap< K, T, std::less< K > >
-
-#define tcmap(K,T,C) std::map< K, T, C >
-#define tcmultimap(K,T,C) std::multimap< K, T, C >
-#endif // _XBOX
-
+#if defined(__linux__) && !defined(__GCC__)
+#define Q_EXPORT_C extern "C"
+#else
+#define Q_EXPORT_C
+#endif
 
 // this is the define for determining if we have an asm version of a C function
 #if (defined _M_IX86 || defined __i386__) && !defined __sun__  && !defined __LCC__
@@ -143,6 +151,14 @@ This file is part of Jedi Academy.
 
 #define	PATH_SEP '\\'
 
+#if defined(_M_IX86) || defined(__i386__)
+	#define ARCH_STRING "x86"
+#elif defined _M_ALPHA
+	#define ARCH_STRING "AXP"
+#endif
+
+#define DLL_EXT ".dll"
+
 #endif
 
 //======================= MAC OS X SERVER DEFINES =====================
@@ -160,6 +176,19 @@ This file is part of Jedi Academy.
 #endif
 
 #define	PATH_SEP	'/'
+        
+#if defined(__i386__)
+    #define ARCH_STRING "i386"
+#elif defined(__x86_64__)
+    #define idx64
+    #define ARCH_STRING "x86_64"
+#elif defined(__powerpc64__)
+    #define ARCH_STRING "ppc64"
+#elif defined(__powerpc__)
+    #define ARCH_STRING "ppc"
+#endif
+
+#define DLL_EXT ".dylib"
 
 #endif
 
@@ -172,10 +201,6 @@ This file is part of Jedi Academy.
 #define	CPUSTRING	"MacOS-PPC"
 
 #define	PATH_SEP ':'
-
-#define	GAME_HARD_LINKED
-#define	CGAME_HARD_LINKED
-#define	UI_HARD_LINKED
 
 void Sys_PumpEvents( void );
 
@@ -200,6 +225,39 @@ void Sys_PumpEvents( void );
 #endif
 
 #define	PATH_SEP '/'
+
+#if defined(__i386__)
+    #define ARCH_STRING "i386"
+#elif defined(__x86_64__)
+    #define idx64
+    #define ARCH_STRING "x86_64"
+#elif defined(__powerpc64__)
+    #define ARCH_STRING "ppc64"
+#elif defined(__powerpc__)
+    #define ARCH_STRING "ppc"
+#elif defined(__s390__)
+    #define ARCH_STRING "s390"
+#elif defined(__s390x__)
+    #define ARCH_STRING "s390x"
+#elif defined(__ia64__)
+    #define ARCH_STRING "ia64"
+#elif defined(__alpha__)
+    #define ARCH_STRING "alpha"
+#elif defined(__sparc__)
+    #define ARCH_STRING "sparc"
+#elif defined(__arm__)
+    #define ARCH_STRING "arm"
+#elif defined(__cris__)
+    #define ARCH_STRING "cris"
+#elif defined(__hppa__)
+    #define ARCH_STRING "hppa"
+#elif defined(__mips__)
+    #define ARCH_STRING "mips"
+#elif defined(__sh__)
+    #define ARCH_STRING "sh"
+#endif
+
+#define DLL_EXT ".so"
 
 #endif
 
@@ -226,37 +284,43 @@ typedef int		clipHandle_t;
 //		should probably be in the platform specific definitions
 #if defined (_MSC_VER) && (_MSC_VER >= 1600)
 
-#include <stdint.h>
+	#include <stdint.h>
 
-// vsnprintf is ISO/IEC 9899:1999
-// abstracting this to make it portable
-int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+	// vsnprintf is ISO/IEC 9899:1999
+	// abstracting this to make it portable
+	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
 
 #elif defined (_MSC_VER)
 
-#include <io.h>
+	#include <io.h>
 
-typedef signed __int64 int64_t;
-typedef signed __int32 int32_t;
-typedef signed __int16 int16_t;
-typedef signed __int8  int8_t;
-typedef unsigned __int64 uint64_t;
-typedef unsigned __int32 uint32_t;
-typedef unsigned __int16 uint16_t;
-typedef unsigned __int8  uint8_t;
+	typedef signed __int64 int64_t;
+	typedef signed __int32 int32_t;
+	typedef signed __int16 int16_t;
+	typedef signed __int8  int8_t;
+	typedef unsigned __int64 uint64_t;
+	typedef unsigned __int32 uint32_t;
+	typedef unsigned __int16 uint16_t;
+	typedef unsigned __int8  uint8_t;
 
-// vsnprintf is ISO/IEC 9899:1999
-// abstracting this to make it portable
-int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+	// vsnprintf is ISO/IEC 9899:1999
+	// abstracting this to make it portable
+	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
 #else // not using MSVC
 
-#include <stdint.h>
+	#include <stdint.h>
 
-#define Q_vsnprintf vsnprintf
+	#define Q_vsnprintf vsnprintf
 
 #endif
 
+#define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
+#define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
+
+#define PADP(base, alignment)	((void *) PAD((intptr_t) (base), (alignment)))
+
 #ifndef NULL
+// NOTE: This is all c++ so casting to void * is wrong
 #define NULL ((void *)0)
 #endif
 
@@ -400,6 +464,18 @@ typedef	int	fixed16_t;
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
+#endif
+
+#if defined(_MSC_VER)
+static __inline long Q_ftol(float f)
+{
+	return (long)f;
+}
+#else
+static inline long Q_ftol(float f)
+{
+	return (long)f;
+}
 #endif
 
 #define NUMVERTEXNORMALS	162
@@ -1260,7 +1336,7 @@ void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
 int Com_HexStrToInt( const char *str );
 
-void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
+int	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
 
 
 // mode parm for FS_FOpenFile
@@ -1284,7 +1360,7 @@ int Q_islower( int c );
 int Q_isupper( int c );
 int Q_isalpha( int c );
 
-#ifndef _WIN32
+#if 1
 // portable case insensitive compare
 int		Q_strncmp (const char *s1, const char *s2, int n);
 int		Q_stricmpn (const char *s1, const char *s2, int n);

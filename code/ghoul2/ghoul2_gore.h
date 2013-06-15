@@ -16,6 +16,9 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
+#ifndef __GHOUL2_GORE_H
+#define __GHOUL2_GORE_H
+
 #ifdef _G2_GORE
 
 #define MAX_LODS (8)
@@ -207,3 +210,5 @@ public:
 
 };
 //rww - RAGDOLL_END
+
+#endif

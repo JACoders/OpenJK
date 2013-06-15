@@ -23,10 +23,10 @@ This file is part of Jedi Academy.
 #include "../qcommon/sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
 #include "stv_version.h"
 
-#ifdef _XBOX
-#include "../win32/win_file.h"
-#include "../ui/ui_splash.h"
-#endif
+// Because renderer.
+#include "../renderer/tr_public.h"
+extern refexport_t re;
+
 
 #ifndef FINAL_BUILD
 #include "platform.h"
@@ -143,7 +143,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	char		msg[MAXPRINTMSG];
 
 	va_start (argptr,fmt);
-	vsprintf_s (msg,fmt,argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	if ( rd_buffer ) {
@@ -197,7 +197,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	}
 
 	va_start (argptr,fmt);
-	vsprintf_s (msg,fmt,argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 	
 	Com_Printf ("%s", msg);
@@ -289,7 +289,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 //	SCR_UnprecacheScreenshot();
 
 	va_start (argptr,fmt);
-	vsprintf_s (com_errorMessage,fmt,argptr);
+	Q_vsnprintf (com_errorMessage, sizeof(com_errorMessage), fmt, argptr);
 	va_end (argptr);	
 
 	if ( code != ERR_DISCONNECT ) {
@@ -671,11 +671,11 @@ void Hunk_Clear( void )
 	Z_TagFree(TAG_HUNKALLOC);
 	Z_TagFree(TAG_HUNKMISCMODELS);
 
-	extern void CIN_CloseAllVideos();
-				CIN_CloseAllVideos();
+extern void CIN_CloseAllVideos();
+	CIN_CloseAllVideos();
 
-	extern void R_ClearStuffToStopGhoul2CrashingThings(void);
-				R_ClearStuffToStopGhoul2CrashingThings();
+	if(re.R_ClearStuffToStopGhoul2CrashingThings)
+		re.R_ClearStuffToStopGhoul2CrashingThings();
 }
 
 
@@ -952,7 +952,6 @@ Com_Init
 =================
 */
 extern void Com_InitZoneMemory();
-extern void R_InitWorldEffects();
 void Com_Init( char *commandLine ) {
 	char	*s;
 
@@ -980,7 +979,7 @@ void Com_Init( char *commandLine ) {
 		CL_InitKeyCommands();
 
 		FS_InitFilesystem ();	//uses z_malloc
-		R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
+		//re.R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
 		
 		Cbuf_AddText ("exec default.cfg\n");
 
@@ -1434,10 +1433,10 @@ try
 #ifdef G2_PERFORMANCE_ANALYSIS
 	if (com_G2Report && com_G2Report->integer)
 	{
-		G2Time_ReportTimers();
+		re.G2Time_ReportTimers();
 	}
 
-	G2Time_ResetTimers();
+	re.G2Time_ResetTimers();
 #endif
 }
 

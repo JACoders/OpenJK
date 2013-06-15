@@ -8,7 +8,7 @@
 #ifdef _DONETPROFILE_
 #include "qcommon/INetProfile.h"
 #endif
-#include "../zlib/zlib.h"
+#include "zlib/zlib.h"
 
 static char hiddenCvarVal[128];
 

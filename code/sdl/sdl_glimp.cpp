@@ -1,7 +1,7 @@
 #include <SDL.h>
 #include "../game/q_shared.h"
 #include "../qcommon/qcommon.h"
-#include "../renderer/tr_local.h"
+#include "../rd-vanilla/tr_local.h"
 #include "sdl_qgl.h"
 #include "../sys/sys_local.h"
 
@@ -181,7 +181,7 @@ static void GLimp_DetectAvailableModes(void)
 	{
 		buf[ strlen( buf ) - 1 ] = 0;
 		Com_Printf( "Available modes: '%s'\n", buf );
-		Cvar_Set( "r_availableModes", buf );
+		ri.Cvar_Set( "r_availableModes", buf );
 	}
 }
 
@@ -428,7 +428,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 			mode.w = glConfig.vidWidth;
 			mode.h = glConfig.vidHeight;
-			mode.refresh_rate = glConfig.displayFrequency = Cvar_VariableIntegerValue( "r_displayRefresh" );
+			mode.refresh_rate = glConfig.displayFrequency = ri.Cvar_VariableIntegerValue( "r_displayRefresh" );
 			mode.driverdata = NULL;
 
 			if( SDL_SetWindowDisplayMode( screen, &mode ) < 0 )
@@ -701,7 +701,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 #endif
 
 		// FIXME: Product name
-		cvar_t *com_productName = Cvar_Get("com_productName", "OpenJK" /* PRODUCT_NAME */, CVAR_ROM);
+		cvar_t *com_productName = ri.Cvar_Get("com_productName", "OpenJK" /* PRODUCT_NAME */, CVAR_ROM);
 		//SDL_SetWindowTitle(com_productName->string, com_productName->string);
 		SDL_ShowCursor(0);
 
@@ -772,13 +772,13 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 		// TODO: Prompt the user to choose a specific video driver.
 		driverName = SDL_GetVideoDriver( 0 );
 		Com_Printf( "SDL using driver \"%s\"\n", driverName );
-		Cvar_Set( "r_sdlDriver", driverName );
+		ri.Cvar_Set( "r_sdlDriver", driverName );
 	}
 
-	if (fullscreen && Cvar_VariableIntegerValue( "in_nograb" ) )
+	if (fullscreen && ri.Cvar_VariableIntegerValue( "in_nograb" ) )
 	{
 		Com_Printf( "Fullscreen not allowed with in_nograb 1\n");
-		Cvar_Set( "r_fullscreen", "0" );
+		ri.Cvar_Set( "r_fullscreen", "0" );
 		r_fullscreen->modified = qfalse;
 		fullscreen = qfalse;
 	}
@@ -950,7 +950,7 @@ static void GLimp_InitExtensions( void )
 	{
 		Com_Printf ("*** IGNORING OPENGL EXTENSIONS ***\n" );
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_DynamicGlow","0" );
 		return;
 	}
 
@@ -995,16 +995,16 @@ static void GLimp_InitExtensions( void )
 		{
 			Com_Printf ("...ignoring GL_EXT_texture_filter_anisotropic\n" );
 		}
-		Cvar_Set( "r_ext_texture_filter_anisotropic_avail", va("%f",glConfig.maxTextureFilterAnisotropy) );
+		ri.Cvar_Set( "r_ext_texture_filter_anisotropic_avail", va("%f",glConfig.maxTextureFilterAnisotropy) );
 		if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 		{
-			Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
+			ri.Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
 		}
 	}
 	else
 	{
 		Com_Printf ("...GL_EXT_texture_filter_anisotropic not found\n" );
-		Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
+		ri.Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
 	}
 
 	// GL_EXT_clamp_to_edge
@@ -1280,32 +1280,32 @@ static void GLimp_InitExtensions( void )
 	{
 		g_bDynamicGlowSupported = true;
 		// this would overwrite any achived setting gwg
-		// Cvar_Set( "r_DynamicGlow", "1" );
+		// ri.Cvar_Set( "r_DynamicGlow", "1" );
 	}
 	else
 	{
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_DynamicGlow","0" );
 	}
 }
 
 void 		GLimp_Init( void )
 {
-	Cvar_Get( "r_restartOnResize", "1", CVAR_ARCHIVE );
-	Cvar_Get( "r_resizeDelay", "1000", CVAR_ARCHIVE );
-	r_allowSoftwareGL = Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
-	r_sdlDriver = Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
-	r_allowResize = Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
+	ri.Cvar_Get( "r_restartOnResize", "1", CVAR_ARCHIVE );
+	ri.Cvar_Get( "r_resizeDelay", "1000", CVAR_ARCHIVE );
+	r_allowSoftwareGL = ri.Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
+	r_sdlDriver = ri.Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
+	r_allowResize = ri.Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
 
-	/*	if( Cvar_VariableIntegerValue( "com_abnormalExit" ) )
+	/*	if( ri.Cvar_VariableIntegerValue( "com_abnormalExit" ) )
 	{
-		Cvar_Set( "r_mode", va( "%d", R_MODE_FALLBACK ) );
-		Cvar_Set( "r_picmap", "1" );
-		Cvar_Set( "r_texturebits", "0" );
-		Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
-		Cvar_Set( "r_fullscreen", "0" );
-		Cvar_Set( "r_centerWindow", "0" );
-		Cvar_Set( "com_abnormalExit", "0" );
+		ri.Cvar_Set( "r_mode", va( "%d", R_MODE_FALLBACK ) );
+		ri.Cvar_Set( "r_picmap", "1" );
+		ri.Cvar_Set( "r_texturebits", "0" );
+		ri.Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
+		ri.Cvar_Set( "r_fullscreen", "0" );
+		ri.Cvar_Set( "r_centerWindow", "0" );
+		ri.Cvar_Set( "com_abnormalExit", "0" );
 		}*/
 
 	Sys_SetEnv( "SDL_VIDEO_CENTERED", r_centerWindow->integer ? "1" : "" );
@@ -1368,10 +1368,10 @@ success:
 	// initialize extensions
 	GLimp_InitExtensions( );
 
-	Cvar_Get( "r_availableModes", "", CVAR_ROM );
+	ri.Cvar_Get( "r_availableModes", "", CVAR_ROM );
 
 	// This depends on SDL_INIT_VIDEO, hence having it here
-	IN_Init( screen );
+	ri.IN_Init( screen );
 }
 
 /*
@@ -1381,7 +1381,7 @@ GLimp_Shutdown
 */
 void 		GLimp_Shutdown( void )
 {
-	IN_Shutdown();
+	ri.IN_Shutdown();
 
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
 

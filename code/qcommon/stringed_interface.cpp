@@ -160,7 +160,7 @@ static void SE_R_ListFiles( const char *psExtension, const char *psDir, string &
 		if (dirFiles[i][0] && dirFiles[i][0] != '.')	// skip blanks, plus ".", ".." etc
 		{
 			char	sDirName[MAX_QPATH];
-			sprintf(sDirName, "%s/%s", psDir, dirFiles[i]);
+			Com_sprintf(sDirName, sizeof(sDirName), "%s/%s", psDir, dirFiles[i]);
 			//
 			// for some reason the quake filesystem in this game now returns an extra slash on the end,
 			//	didn't used to. Sigh...
@@ -177,7 +177,7 @@ static void SE_R_ListFiles( const char *psExtension, const char *psDir, string &
 	for(i=0; i<numSysFiles; i++)
 	{
 		char	sFilename[MAX_QPATH];
-		sprintf(sFilename,"%s/%s", psDir, sysFiles[i]);		
+		Com_sprintf(sFilename, sizeof(sFilename), "%s/%s", psDir, sysFiles[i]);
 			
 //		Com_Printf("%sFound file: %s",!i?"\n":"",sFilename);
 

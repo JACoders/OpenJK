@@ -10,6 +10,7 @@
 #include <float.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
@@ -17,7 +18,11 @@
 
 #define MEM_THRESHOLD 128*1024*1024
 
-static char		sys_cmdline[MAX_STRING_CHARS];
+/* win_shared.cpp */
+void Sys_SetBinaryPath(const char *path);
+char *Sys_BinaryPath(void);
+
+//static char		sys_cmdline[MAX_STRING_CHARS];
 clientStatic_t	cls;
 
 
@@ -27,10 +32,10 @@ void *Sys_GetBotAIAPI (void *parms ) {
 
 // We now expect newlines instead of always appending
 // otherwise sectioned prints get messed up.
-#define CONSOLE_BUFFER_SIZE		16384
+#define MAXPRINTMSG		4096
 void Conbuf_AppendText( const char *pMsg )
 {
-	char msg[CONSOLE_BUFFER_SIZE];
+	char msg[MAXPRINTMSG] = {0};
 	Q_strncpyz(msg, pMsg, sizeof(msg));
 	Q_StripColor(msg);
 	printf("%s", msg);
@@ -42,10 +47,15 @@ Sys_LowPhysicalMemory()
 ==================
 */
 
-qboolean Sys_LowPhysicalMemory() {
-	MEMORYSTATUS stat;
-	GlobalMemoryStatus (&stat);
-	return (stat.dwTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
+qboolean Sys_LowPhysicalMemory(void) {
+	static MEMORYSTATUSEX stat;
+	static qboolean bAsked = qfalse;
+	if (!bAsked)	// just in case it takes a little time for GlobalMemoryStatusEx() to gather stats on
+	{				//	stuff we don't care about such as virtual mem etc.
+		bAsked = qtrue;
+		GlobalMemoryStatusEx (&stat);
+	}
+	return (stat.ullTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
 }
 
 /*
@@ -243,6 +253,14 @@ Sys_Print
 ==============
 */
 void Sys_Print( const char *msg ) {
+	// TTimo - prefix for text that shows up in console but not in notify
+	// backported from RTCW
+	if ( !Q_strncmp( msg, "[skipnotify]", 12 ) ) {
+		msg += 12;
+	}
+	if ( msg[0] == '*' ) {
+		msg += 1;
+	}
 	Conbuf_AppendText( msg );
 }
 
@@ -284,13 +302,25 @@ char *Sys_DefaultCDPath( void ) {
 	return "";
 }
 
-/*
-==============
-Sys_DefaultBasePath
-==============
-*/
-char *Sys_DefaultBasePath( void ) {
-	return Sys_Cwd();
+/* Resolves path names and determines if they are the same */
+/* For use with full OS paths not quake paths */
+/* Returns true if resulting paths are valid and the same, otherwise false */
+bool Sys_PathCmp( const char *path1, const char *path2 ) {
+	char *r1, *r2;
+
+	r1 = _fullpath(NULL, path1, MAX_OSPATH);
+	r2 = _fullpath(NULL, path2, MAX_OSPATH);
+
+	if(r1 && r2 && !Q_stricmp(r1, r2))
+	{
+		free(r1);
+		free(r2);
+		return true;
+	}
+
+	free(r1);
+	free(r2);
+	return false;
 }
 
 /*
@@ -306,7 +336,7 @@ DIRECTORY SCANNING
 void Sys_ListFilteredFiles( const char *basedir, char *subdirs, char *filter, char **psList, int *numfiles ) {
 	char		search[MAX_OSPATH], newsubdirs[MAX_OSPATH];
 	char		filename[MAX_OSPATH];
-	int			findhandle;
+	intptr_t	findhandle;
 	struct _finddata_t findinfo;
 
 	if ( *numfiles >= MAX_FOUND_FILES - 1 ) {
@@ -377,7 +407,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 	char		**listCopy;
 	char		*list[MAX_FOUND_FILES];
 	struct _finddata_t findinfo;
-	int			findhandle;
+	intptr_t	findhandle;
 	int			flag;
 	int			i;
 
@@ -579,56 +609,67 @@ bool Sys_UnpackDLL(const char *name)
 =================
 Sys_LoadDll
 
-Used to load a development dll instead of a virtual machine
-=================
-*/
-extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
-
-/*
-=================
-Sys_LoadDll
-
 First try to load library name from system library path,
 from executable path, then fs_basepath.
 =================
 */
 
-extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
-
 void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 {
 	void *dllhandle = NULL;
-	char	*fn, *basepath, *homepath, *cdpath, *gamedir;
 
+	if(useSystemLib)
+		Com_Printf("Trying to load \"%s\"...\n", name);
+	
 	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
 	{
-		if ( !dllhandle ) {
-			basepath = Cvar_VariableString( "fs_basepath" );
-			homepath = Cvar_VariableString( "fs_homepath" );
-			cdpath = Cvar_VariableString( "fs_cdpath" );
-			gamedir = Cvar_VariableString( "fs_game" );
+		const char *topDir;
+		char libPath[MAX_OSPATH];
+        
+		topDir = Sys_BinaryPath();
+        
+		if(!*topDir)
+			topDir = ".";
+        
+		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
+		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
+        
+		if(!(dllhandle = Sys_LoadLibrary(libPath)))
+		{
+			const char *basePath = Cvar_VariableString("fs_basepath");
+			
+			if(!basePath || !*basePath)
+				basePath = ".";
+			
+			if(FS_FilenameCompare(topDir, basePath))
+			{
+				Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, basePath);
+				Com_sprintf(libPath, sizeof(libPath), "%s%c%s", basePath, PATH_SEP, name);
+				dllhandle = Sys_LoadLibrary(libPath);
+			}
+			
+			if(!dllhandle)
+			{
+				const char *cdPath = Cvar_VariableString("fs_cdpath");
 
-			fn = FS_BuildOSPath( basepath, gamedir, name );
-			dllhandle = LoadLibrary( fn );
+				if(!basePath || !*basePath)
+					basePath = ".";
 
-			if ( !dllhandle ) {
-				if( homepath[0] ) {
-					fn = FS_BuildOSPath( homepath, gamedir, name );
-					dllhandle = LoadLibrary( fn );
+				if(FS_FilenameCompare(topDir, cdPath))
+				{
+					Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, cdPath);
+					Com_sprintf(libPath, sizeof(libPath), "%s%c%s", cdPath, PATH_SEP, name);
+					dllhandle = Sys_LoadLibrary(libPath);
 				}
-				if ( !dllhandle ) {
-					if( cdpath[0] ) {
-						fn = FS_BuildOSPath( cdpath, gamedir, name );
-						dllhandle = LoadLibrary( fn );
-					}
-					if ( !dllhandle ) {
-						return NULL;
-					}
+
+				if(!dllhandle)
+				{
+					Com_Printf("Loading \"%s\" failed\n", name);
 				}
 			}
 		}
 	}
-
+	
 	return dllhandle;
 }
 
@@ -640,10 +681,11 @@ Used to load a development dll instead of a virtual machine
 =================
 */
 
-void * QDECL Sys_LoadGameDll( const char *name, int (QDECL **entryPoint)(int, ...), int (QDECL *systemcalls)(int, ...) ) {
-	static int	lastWarning = 0;
+extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
+
+void * QDECL Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) ) {
 	HINSTANCE	libHandle;
-	void	(QDECL *dllEntry)( int (QDECL *syscallptr)(int, ...) );
+	void	(QDECL *dllEntry)( intptr_t (QDECL *syscallptr)(intptr_t, ...) );
 	char	*basepath;
 	char	*homepath;
 	char	*cdpath;
@@ -651,7 +693,7 @@ void * QDECL Sys_LoadGameDll( const char *name, int (QDECL **entryPoint)(int, ..
 	char	*fn;
 	char	filename[MAX_QPATH];
 
-	Com_sprintf( filename, sizeof( filename ), "%sx86.dll", name );
+	Com_sprintf( filename, sizeof( filename ), "%s" ARCH_STRING DLL_EXT, name );
 
 	if (!Sys_UnpackDLL(filename))
 	{
@@ -685,8 +727,8 @@ void * QDECL Sys_LoadGameDll( const char *name, int (QDECL **entryPoint)(int, ..
 		}
 	}
 
-	dllEntry = ( void (QDECL *)( int (QDECL *)( int, ... ) ) )GetProcAddress( libHandle, "dllEntry" ); 
-	*entryPoint = (int (QDECL *)(int,...))GetProcAddress( libHandle, "vmMain" );
+	dllEntry = ( void (QDECL *)( intptr_t (QDECL *)( intptr_t, ... ) ) )GetProcAddress( libHandle, "dllEntry" ); 
+	*entryPoint = (intptr_t (QDECL *)(int,...))GetProcAddress( libHandle, "vmMain" );
 	if ( !*entryPoint || !dllEntry ) {
 		FreeLibrary( libHandle );
 		return NULL;
@@ -1178,29 +1220,37 @@ void Sys_Init( void ) {
 //=======================================================================
 //int	totalMsec, countMsec;
 
-/*
-==================
-WinMain
+#ifndef DEFAULT_BASEDIR
+#	ifdef MACOS_X
+#		define DEFAULT_BASEDIR Sys_StripAppBundle(Sys_BinaryPath())
+#	else
+#		define DEFAULT_BASEDIR Sys_BinaryPath()
+#	endif
+#endif
 
-==================
-*/
-//int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-int main(int argc, char **argv)
+int main( int argc, char **argv )
 {
-	char	cwd[MAX_OSPATH];
 	int		i;
 	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
-//	int			startTime, endTime;
 
-    // should never get a previous instance in Win32
-//    if ( hPrevInstance ) {
-//        return 0;
-//	}
+	// done before Com/Sys_Init since we need this for error output
+	//Sys_CreateConsole();
+
+	// no abort/retry/fail errors
+	SetErrorMode( SEM_FAILCRITICALERRORS );
+
+	// get the initial time base
+	Sys_Milliseconds();
+
+	Sys_InitStreamThread();
+
+	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
+	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
 
 	// Concatenate the command line for passing to Com_Init
 	for( i = 1; i < argc; i++ )
 	{
-		const qboolean containsSpaces = (qboolean)(strchr(argv[i], ' ') != NULL);
+		const bool containsSpaces = (strchr(argv[i], ' ') != NULL);
 		if (containsSpaces)
 			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
 
@@ -1212,33 +1262,9 @@ int main(int argc, char **argv)
 		Q_strcat( commandLine, sizeof( commandLine ), " " );
 	}
 
-//	g_wv.hInstance = hInstance;
-//	Q_strncpyz( sys_cmdline, lpCmdLine, sizeof( sys_cmdline ) );
-
-
-	// done before Com/Sys_Init since we need this for error output
-//	Sys_CreateConsole();
-
-	// no abort/retry/fail errors
-	SetErrorMode( SEM_FAILCRITICALERRORS );
-
-	// get the initial time base
-	Sys_Milliseconds();
-
-#if 0
-	// if we find the CD, add a +set cddir xxx command line
-	Sys_ScanForCD();
-#endif
-
-
-	Sys_InitStreamThread();
-
 	Com_Init( commandLine );
 
 	NET_Init();
-
-	_getcwd (cwd, sizeof(cwd));
-	Com_Printf("Working directory: %s\n", cwd);
 
 	// hide the early console since we've reached the point where we
 	// have a working graphics subsystems
@@ -1253,25 +1279,13 @@ int main(int argc, char **argv)
 			Sleep( 5 );
 //		}
 
-		// set low precision every frame, because some system calls
-		// reset it arbitrarily
-//		_controlfp( _PC_24, _MCW_PC );
- 
-//		startTime = Sys_Milliseconds();
-
 		// make sure mouse and joystick are only called once a frame
 		IN_Frame();
 
 		// run the game
 		Com_Frame();
-
-//		endTime = Sys_Milliseconds();
-//		totalMsec += endTime - startTime;
-//		countMsec++;
 	}
 
 	// never gets here
 	return 0;
 }
-
-

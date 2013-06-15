@@ -148,7 +148,6 @@
   <ItemGroup>
     <ClInclude Include="game\anims.h" />
     <ClInclude Include="game\bg_weapons.h" />
-    <ClInclude Include="game\botlib.h" />
     <ClInclude Include="qcommon\disablewarnings.h" />
     <ClInclude Include="qcommon\platform.h" />
     <ClInclude Include="win32\resource.h" />
@@ -203,7 +202,6 @@
     <ClInclude Include="client\snd_music.h" />
     <ClInclude Include="client\snd_public.h" />
     <ClInclude Include="mp3code\config.h" />
-    <ClInclude Include="mp3code\copyright.h" />
     <ClInclude Include="mp3code\htable.h" />
     <ClInclude Include="mp3code\jdw.h" />
     <ClInclude Include="mp3code\l3.h" />
@@ -357,6 +355,7 @@
     <ClCompile Include="qcommon\vm_interpreted.cpp" />
     <ClCompile Include="qcommon\vm_x86.cpp" />
     <ClCompile Include="qcommon\z_memman_pc.cpp" />
+    <ClCompile Include="sys\snapvector.cpp" />
     <ClCompile Include="win32\win_input.cpp" />
     <ClCompile Include="win32\win_main.cpp" />
     <ClCompile Include="win32\win_net.cpp" />
