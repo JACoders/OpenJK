@@ -469,7 +469,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 		return Sys_Milliseconds();
 	//rww - precision timer funcs... -ALWAYS- call end after start with supplied ptr, or you'll get a nasty memory leak.
 	//not that you should be using these outside of debug anyway.. because you shouldn't be. So don't.
-	case CG_PRECISIONTIMER_START:
+	case G_PRECISIONTIMER_START:
 		{
 			void **suppliedPtr =(void **)VMA(1); //we passed in a pointer to a point
 			timing_c *newTimer = new timing_c; //create the new timer
@@ -477,7 +477,7 @@ intptr_t SV_GameSystemCalls( intptr_t *args ) {
 			newTimer->Start(); //start the timer
 		}
 		return 0;
-	case CG_PRECISIONTIMER_END:
+	case G_PRECISIONTIMER_END:
 		{
 			int r;
 			timing_c *timer = (timing_c *)args[1]; //this is the pointer we assigned in start, so we can directly cast it back
