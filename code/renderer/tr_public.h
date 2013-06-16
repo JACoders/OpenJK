@@ -54,7 +54,7 @@ typedef struct {
 
 	void				(*Cmd_ExecuteString)				( const char *text );
 	int					(*Cmd_Argc)							( void );
-	char *				(*Cmd_Argv)							( int arg );
+	const char *		(*Cmd_Argv)							( int arg );
 	void				(*Cmd_ArgsBuffer)					( char *buffer, int bufferLength );
 	void				(*Cmd_AddCommand)					( const char *cmd_name, xcommand_t function );
 	void				(*Cmd_RemoveCommand)				( const char *cmd_name );

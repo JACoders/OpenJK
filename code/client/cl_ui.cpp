@@ -349,7 +349,7 @@ qboolean UI_GameCommand( void ) {
 
 void CL_GenericMenu_f(void)
 {		
-	char *arg = Cmd_Argv( 1 );
+	const char *arg = Cmd_Argv( 1 );
 
 	if (cls.uiStarted) {
 		UI_SetActiveMenu("ingame",arg);

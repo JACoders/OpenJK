@@ -431,7 +431,7 @@ be after execing the config and default.
 */
 void Com_StartupVariable( const char *match ) {
 	int		i;
-	char	*s;
+	const char	*s;
 	cvar_t	*cv;
 
 	for (i=0 ; i < com_numConsoleLines ; i++) {
@@ -535,7 +535,7 @@ void Info_Print( const char *s ) {
 Com_StringContains
 ============
 */
-char *Com_StringContains(char *str1, char *str2, int casesensitive) {
+const char *Com_StringContains(const char *str1, const char *str2, int casesensitive) {
 	int len, i, j;
 
 	len = strlen(str1) - strlen(str2);
@@ -564,9 +564,9 @@ char *Com_StringContains(char *str1, char *str2, int casesensitive) {
 Com_Filter
 ============
 */
-int Com_Filter(char *filter, char *name, int casesensitive) {
+int Com_Filter(const char *filter, const char *name, int casesensitive) {
 	char buf[MAX_TOKEN_CHARS];
-	char *ptr;
+	const char *ptr;
 	int i;
 
 	while(*filter) {
@@ -943,7 +943,7 @@ A way to force a bus error for development reasons
 =================
 */
 static void Com_Crash_f( void ) {
-	* ( int * ) 0 = 0x12345678;
+	* ( volatile int * ) 0 = 0x12345678;
 }
 
 /*

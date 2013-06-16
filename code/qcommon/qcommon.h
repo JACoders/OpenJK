@@ -311,7 +311,7 @@ char 	*Cmd_CompleteCommand( const char *partial );
 // returns NULL if nothing fits
 
 int		Cmd_Argc (void);
-char	*Cmd_Argv (int arg);
+const char	*Cmd_Argv (int arg);
 void	Cmd_ArgvBuffer( int arg, char *buffer, int bufferLength );
 char	*Cmd_Args (void);
 void	Cmd_ArgsBuffer( char *buffer, int bufferLength );
@@ -528,7 +528,7 @@ void 		Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
 unsigned	Com_BlockChecksum( const void *buffer, int length );
-int			Com_Filter(char *filter, char *name, int casesensitive);
+int			Com_Filter(const char *filter, const char *name, int casesensitive);
 qboolean	Com_SafeMode( void );
 
 void		Com_StartupVariable( const char *match );
@@ -706,7 +706,7 @@ void SCR_DebugGraph (float value, int color);	// FIXME: move logging to common?
 // server interface
 //
 void SV_Init( void );
-void SV_Shutdown( char *finalmsg );
+void SV_Shutdown( const char *finalmsg );
 void SV_Frame( int msec,float fractionMsec);
 void SV_PacketEvent( netadr_t from, msg_t *msg );
 qboolean SV_GameCommand( void );
@@ -768,7 +768,7 @@ void	Sys_Init (void);
 
 char	*Sys_GetCurrentUser( void );
 
-void	QDECL Sys_Error( const char *error, ...);
+void	QDECL Sys_Error( const char *error, ...) __attribute__((noreturn));
 void	Sys_Quit (void);
 char	*Sys_GetClipboardData( void );	// note that this isn't journaled...
 

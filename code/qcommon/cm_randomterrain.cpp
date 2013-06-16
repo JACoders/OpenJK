@@ -853,7 +853,7 @@ typedef enum
 
 typedef struct SCharacterPiece
 {
-	char	*mPiece;
+	const char	*mPiece;
 	int		mCommonality;
 } TCharacterPiece;
 

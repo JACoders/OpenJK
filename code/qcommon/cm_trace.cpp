@@ -849,7 +849,7 @@ void CM_TraceThroughTree( traceWork_t *tw, clipMap_t *local, int num, float p1f,
 
 #ifdef _XBOX
 	plane = cmg.planes + tr.world->nodes[num].planeNum;
-#else   mnode_s
+#else
 	plane = node->plane;
 #endif
 
