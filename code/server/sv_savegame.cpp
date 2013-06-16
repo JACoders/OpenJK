@@ -462,7 +462,7 @@ void SV_SaveGame_f(void)
 		return;
 	}
 
-	char *psFilename = Cmd_Argv(1);
+	const char *psFilename = Cmd_Argv(1);
 
 	if (!stricmp (psFilename, "current"))
 	{
@@ -1102,7 +1102,7 @@ int Compress_RLE(const byte *pIn, int iLength, byte *pOut)
 
 		if (iIndex-iCount == 1) 
 		{
-			while (iIndex<iLength && iIndex-iCount<127 && (pIn[iIndex]!=pIn[iIndex-1] || iIndex>1 && pIn[iIndex]!=pIn[iIndex-2])){
+			while (iIndex<iLength && iIndex-iCount<127 && (pIn[iIndex]!=pIn[iIndex-1] || (iIndex>1 && pIn[iIndex]!=pIn[iIndex-2]))){
 				iIndex++;
 			}
 			while (iIndex<iLength && pIn[iIndex]==pIn[iIndex-1]){

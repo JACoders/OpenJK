@@ -162,7 +162,7 @@ typedef struct {
 
 	// ClientCommand and ServerCommand parameter access
 	int		(*argc)( void );
-	char	*(*argv)( int n );
+	const char	*(*argv)( int n );
 
 	int		(*FS_FOpenFile)( const char *qpath, fileHandle_t *file, fsMode_t mode );
 	int		(*FS_Read)( void *buffer, int len, fileHandle_t f );
