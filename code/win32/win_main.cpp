@@ -486,7 +486,7 @@ Loads the game dll
 void *Sys_GetGameAPI (void *parms)
 {
 	void	*(*GetGameAPI) (void *);
-#if defined _M_IX86
+#if id386
 	const char *gamename;
 	if(com_jk2 && com_jk2->integer)
 	{
