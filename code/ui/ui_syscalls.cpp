@@ -41,7 +41,7 @@ inline int PASSFLOAT( float x )
 	return *(int *)&floatTemp;
 }
 
-int CL_UISystemCalls( int *args );
+intptr_t CL_UISystemCalls( intptr_t *args );
 
 
 int FloatAsInt( float f );
