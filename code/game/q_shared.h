@@ -1428,7 +1428,7 @@ char *Q_CleanStr( char *string );
 
 //=============================================
 
-#ifdef _M_IX86
+#ifdef id386
 //
 // optimised stuff for Intel, since most of our data is in that format anyway...
 //
