@@ -196,7 +196,7 @@ enum
 };
 
 
-char *Tokens[TK_END] = 
+const char *Tokens[TK_END] = 
 {
 	"TEXT_LANGUAGE1",
 	"TEXT_LANGUAGE2", 
@@ -1183,7 +1183,7 @@ const char *JK2SP_GetReferenceText(unsigned short ID, const char *&psPackageName
 const char *JK2SP_GetStringText(unsigned short ID)
 {
 	cStringsSingle			*string;
-	char					*value;
+	const char					*value;
 
 	string = JK2SP_GetString(ID);
 

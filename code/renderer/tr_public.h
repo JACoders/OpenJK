@@ -65,7 +65,7 @@ typedef struct {
 	void				*unused2;	// Cvar_CheckRange
 #endif
 	void				(*Cvar_VariableStringBuffer)		( const char *var_name, char *buffer, int bufsize );
-	char *				(*Cvar_VariableString)				( const char *var_name );
+	const char *		(*Cvar_VariableString)				( const char *var_name );
 	float				(*Cvar_VariableValue)				( const char *var_name );
 	int					(*Cvar_VariableIntegerValue)		( const char *var_name );
 
