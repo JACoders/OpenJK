@@ -165,7 +165,7 @@ void			UI_AdjustSaveGameListBox( int currentLine );
 void			Menus_CloseByName(const char *p);
 
 // Movedata Sounds
-typedef enum
+enum
 {
 	MDS_NONE = 0,
 	MDS_FORCE_JUMP,
@@ -174,7 +174,7 @@ typedef enum
 	MDS_MOVE_SOUNDS_MAX
 };
 
-typedef enum
+enum
 {
 	MD_ACROBATICS = 0,
 	MD_SINGLE_FAST,
@@ -187,7 +187,7 @@ typedef enum
 
 // Some hard coded badness
 // At some point maybe this should be externalized to a .dat file
-char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
+const char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
 {
 "@MENUS_ACROBATICS",
 "@MENUS_SINGLE_FAST",
@@ -197,7 +197,7 @@ char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
 "@MENUS_SABER_STAFF",
 };
 
-char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
+const char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
 {
 "BOTH_RUN1",
 "BOTH_SABERFAST_STANCE",
@@ -211,9 +211,9 @@ char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
 
 typedef struct 
 {
-	char	*title;	
-	char	*desc;	
-	char	*anim;
+	const char	*title;	
+	const char	*desc;	
+	const char	*anim;
 	short	sound;
 } datpadmovedata_t;
 
@@ -339,8 +339,8 @@ void UI_Load(void);
 
 typedef struct {
 	vmCvar_t	*vmCvar;
-	char		*cvarName;
-	char		*defaultString;
+	const char		*cvarName;
+	const char		*defaultString;
 	int			cvarFlags;
 } cvarTable_t;
 
@@ -1540,7 +1540,7 @@ static float UI_GetValue(int ownerDraw)
 }
 
 //Force Warnings
-typedef enum
+enum
 {
 	FW_VERY_LIGHT = 0,
 	FW_SEMI_LIGHT,
@@ -2628,7 +2628,7 @@ void _UI_Init( qboolean inGameLoad )
 
 	String_Init();
 
-	char *menuSet = UI_Cvar_VariableString("ui_menuFiles");
+	const char *menuSet = UI_Cvar_VariableString("ui_menuFiles");
 
 	if (menuSet == NULL || menuSet[0] == '\0') 
 	{
@@ -2937,7 +2937,7 @@ UI_Load
 */
 void UI_Load(void) 
 {
-	char *menuSet;
+	const char *menuSet;
 	char lastName[1024];
 	menuDef_t *menu = Menu_GetFocused();
 
@@ -4433,7 +4433,7 @@ static void UI_UpdateFightingStyleChoices ( void )
 #define MAX_POWER_ENUMS 16
 
 typedef struct {
-	char	*title;
+	const char	*title;
 	short	powerEnum;
 } powerEnum_t;
 

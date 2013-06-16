@@ -298,7 +298,7 @@ into a more C friendly form.
 =================
 */
 void SV_UserinfoChanged( client_t *cl ) {
-	char	*val;
+	const char	*val;
 	int		i;
 
 	// name for C code

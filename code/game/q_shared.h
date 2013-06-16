@@ -1462,7 +1462,7 @@ char	* QDECL va(const char *format, ...);
 //
 // key / value info strings
 //
-char *Info_ValueForKey( const char *s, const char *key );
+const char *Info_ValueForKey( const char *s, const char *key );
 void Info_RemoveKey( char *s, const char *key );
 void Info_SetValueForKey( char *s, const char *key, const char *value );
 qboolean Info_Validate( const char *s );

@@ -1037,7 +1037,7 @@ key and returns the associated value, or an empty string.
 FIXME: overflow check?
 ===============
 */
-char *Info_ValueForKey( const char *s, const char *key ) {
+const char *Info_ValueForKey( const char *s, const char *key ) {
 	char	pkey[MAX_INFO_KEY];
 	static	char value[2][MAX_INFO_VALUE];	// use two buffers so compares
 											// work without stomping on each other
