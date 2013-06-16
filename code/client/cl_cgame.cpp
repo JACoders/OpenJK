@@ -258,9 +258,10 @@ CL_ConfigstringModified
 =====================
 */
 void CL_ConfigstringModified( void ) {
-	char		*old, *s;
+	const char *s;
+	char		*old;
 	int			i, index;
-	char		*dup;
+	const char		*dup;
 	gameState_t	oldGs;
 	int			len;
 
@@ -322,7 +323,7 @@ Set up argc/argv for the given command
 */
 qboolean CL_GetServerCommand( int serverCommandNumber ) {
 	char	*s;
-	char	*cmd;
+	const char	*cmd;
 
 	// if we have irretrievably lost a reliable command, drop the connection
 	if ( serverCommandNumber <= clc.serverCommandSequence - MAX_RELIABLE_COMMANDS ) {

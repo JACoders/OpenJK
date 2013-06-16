@@ -355,7 +355,7 @@ so when they are typed in at the console, they will need to be forwarded.
 ===================
 */
 void CL_ForwardCommandToServer( void ) {
-	char	*cmd;
+	const char	*cmd;
 	char	string[MAX_STRING_CHARS];
 
 	cmd = Cmd_Argv(0);
@@ -621,7 +621,7 @@ Responses to broadcasts, etc
 */
 void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	char	*s;
-	char	*c;
+	const char	*c;
 	
 	MSG_BeginReading( msg );
 	MSG_ReadLong( msg );	// skip the -1
