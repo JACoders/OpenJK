@@ -211,19 +211,19 @@ keyname_t keynames[MAX_KEYS] =
 			    													
 	{ 0xa0, 0,	  "SHIFT_SPACE", A_SPACE, false							},
 	{ 0xa1, 0xa1, NULL, A_EXCLAMDOWN, false								},	// upside down '!' - undisplayable
-	{ (word)(byte)'¢', (word)(byte)'¢', NULL, A_CENT, false	  			},
-	{ (word)(byte)'£', (word)(byte)'£', NULL, A_POUND, false	  		},
+	{ L'\u00A2', L'\u00A2', NULL, A_CENT, false	  			}, // cent sign
+	{ L'\u00A3', L'\u00A3', NULL, A_POUND, false	  		}, // pound (as in currency) symbol
 	{ 0xa4, 0,    "SHIFT_KP_ENTER", A_KP_ENTER, false					},
-	{ (word)(byte)'¥', (word)(byte)'¥', NULL, A_YEN, false		  		},
+	{ L'\u00A5', L'\u00A5', NULL, A_YEN, false		  		}, // yen symbol
 	{ 0xa6, 0xa6, "MOUSE3", A_MOUSE3, false								},
 	{ 0xa7, 0xa7, "MOUSE4", A_MOUSE4, false								},
 	{ 0xa8, 0xa8, "MOUSE5", A_MOUSE5, false								},
-	{ (word)(byte)'©', (word)(byte)'©', NULL, A_COPYRIGHT, false 		},
+	{ L'\u00A9', L'\u00A9', NULL, A_COPYRIGHT, false 		}, // copyright symbol
 	{ 0xaa, 0xaa, "UPARROW", A_CURSOR_UP, false							},
 	{ 0xab, 0xab, "DOWNARROW", A_CURSOR_DOWN, false						},
 	{ 0xac, 0xac, "LEFTARROW", A_CURSOR_LEFT, false						},
 	{ 0xad, 0xad, "RIGHTARROW", A_CURSOR_RIGHT, false					},
-	{ (word)(byte)'®', (word)(byte)'®', NULL, A_REGISTERED, false		},
+	{ L'\u00AE', L'\u00AE', NULL, A_REGISTERED, false		}, // registered trademark symbol
 	{ 0xaf, 0,	  NULL, A_UNDEFINED_7, false							},
 	{ 0xb0, 0,	  NULL, A_UNDEFINED_8, false							},
 	{ 0xb1, 0,	  NULL, A_UNDEFINED_9, false							},
@@ -240,11 +240,11 @@ keyname_t keynames[MAX_KEYS] =
 	{ 0xbc, 0,	  NULL, A_UNDEFINED_20, false							},
 	{ 0xbd, 0,	  NULL, A_UNDEFINED_21, false							},
 	{ 0xbe, 0,	  NULL, A_UNDEFINED_22, false							},
-	{ (word)(byte)'¿', (word)(byte)'¿', NULL, A_QUESTION_DOWN, false	},
+	{ L'\u00BF', L'\u00BF', NULL, A_QUESTION_DOWN, false	}, // upside-down question mark
 			    		                       
-	{ (word)(byte)'À', (word)(byte)'à', NULL, A_CAP_AGRAVE, false		},
-	{ (word)(byte)'Á', (word)(byte)'á', NULL, A_CAP_AACUTE, false		},
-	{ (word)(byte)'Â', (word)(byte)'â', NULL, A_CAP_ACIRCUMFLEX, false	},
+	{ L'\u00C0', L'\u00E0', NULL, A_CAP_AGRAVE, false		}, // a grave
+	{ L'\u00C1', L'\u00E1', NULL, A_CAP_AACUTE, false		}, // a acute
+	{ L'\u00C2', L'\u00E2', NULL, A_CAP_ACIRCUMFLEX, false	}, // a circumflex
 	{ (word)(byte)'Ã', (word)(byte)'ã', NULL, A_CAP_ATILDE, false		},
 	{ (word)(byte)'Ä', (word)(byte)'ä', NULL, A_CAP_ADIERESIS, false	},
 	{ (word)(byte)'Å', (word)(byte)'å', NULL, A_CAP_ARING, false		},

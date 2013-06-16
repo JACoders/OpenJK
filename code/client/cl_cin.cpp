@@ -226,7 +226,7 @@ static long RllDecodeMonoToMono(unsigned char *from,short *to,unsigned int size,
 	for (z=0;z<size;z++) {
 		prev = to[z] = (short)(prev + cin.sqrTable[from[z]]); 
 	}
-	return size;	//*sizeof(short));
+	return size;
 }
 */
 
