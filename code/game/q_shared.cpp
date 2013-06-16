@@ -116,7 +116,7 @@ static int		(*_LittleLong) (int l);
 static float	(*_BigFloat) (float l);
 static float	(*_LittleFloat) (float l);
 
-#ifdef _M_IX86
+#ifdef id386 // _M_IX86
 //
 // optimised stuff for Intel, since most of our data is in that format anyway...
 //
