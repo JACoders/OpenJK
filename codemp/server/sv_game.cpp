@@ -393,18 +393,18 @@ sharedEntity_t *ConvertedEntity(sharedEntity_t *ent)
 		i++;
 	}
 	i = 0;
-	gLocalModifier.parms = (parms_t *)VM_ArgPtr((int)ent->parms);
+	gLocalModifier.parms = (parms_t *)VM_ArgPtr((intptr_t)ent->parms);
 	while (i < NUM_BSETS)
 	{
-		gLocalModifier.behaviorSet[i] = (char *)VM_ArgPtr((int)ent->behaviorSet[i]);
+		gLocalModifier.behaviorSet[i] = (char *)VM_ArgPtr((intptr_t)ent->behaviorSet[i]);
 		i++;
 	}
 	i = 0;
-	gLocalModifier.script_targetname = (char *)VM_ArgPtr((int)ent->script_targetname);
+	gLocalModifier.script_targetname = (char *)VM_ArgPtr((intptr_t)ent->script_targetname);
 	gLocalModifier.delayScriptTime = ent->delayScriptTime;
-	gLocalModifier.fullName = (char *)VM_ArgPtr((int)ent->fullName);
-	gLocalModifier.targetname = (char *)VM_ArgPtr((int)ent->targetname);
-	gLocalModifier.classname = (char *)VM_ArgPtr((int)ent->classname);
+	gLocalModifier.fullName = (char *)VM_ArgPtr((intptr_t)ent->fullName);
+	gLocalModifier.targetname = (char *)VM_ArgPtr((intptr_t)ent->targetname);
+	gLocalModifier.classname = (char *)VM_ArgPtr((intptr_t)ent->classname);
 
 	gLocalModifier.ghoul2 = ent->ghoul2;
 

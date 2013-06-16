@@ -543,7 +543,7 @@ static void SV_BuildClientSnapshot( client_t *client ) {
 
 		if (veh && veh->playerState)
 		{ //Now VMA it and we've got ourselves a playerState
-			playerState_t *vps = ((playerState_t *)VM_ArgPtr((int)veh->playerState));
+			playerState_t *vps = ((playerState_t *)VM_ArgPtr((intptr_t)veh->playerState));
 
             frame->vps = *vps;
 #ifdef _ONEBIT_COMBO
