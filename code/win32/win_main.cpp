@@ -486,17 +486,18 @@ Loads the game dll
 void *Sys_GetGameAPI (void *parms)
 {
 	void	*(*GetGameAPI) (void *);
-#if id386
+
 	const char *gamename;
-	if(com_jk2 && com_jk2->integer)
+	if(Cvar_VariableIntegerValue("com_jk2"))
 	{
-		gamename = "jk2gamex86.dll";
+		gamename = "jk2game" ARCH_STRING DLL_EXT;
 	}
 	else
 	{
-		gamename = "jagamex86.dll";
+		gamename = "jagame" ARCH_STRING DLL_EXT;
 	}
 
+#if id386
 #ifdef NDEBUG
 	const char *debugdir = "release";
 #elif MEM_DEBUG
@@ -504,18 +505,7 @@ void *Sys_GetGameAPI (void *parms)
 #else
 	const char *debugdir = "debug";
 #endif	//NDEBUG
-
-#elif defined idx64
-	const char *gamename;
-	if(com_jk2 && com_jk2->integer)
-	{
-		gamename = "jk2gamex86_64.dll";
-	}
-	else
-	{
-		gamename = "jagamex86_64.dll";
-	}
-
+#elif idx64
 #ifdef NDEBUG
 	const char *debugdir = "release64";
 #elif MEM_DEBUG
@@ -523,17 +513,13 @@ void *Sys_GetGameAPI (void *parms)
 #else
 	const char *debugdir = "debug64";
 #endif	//NDEBUG
-
 #elif defined _M_ALPHA
-	const char *gamename = "jagameaxp.dll";
-
 #ifdef NDEBUG
 	const char *debugdir = "releaseaxp";
 #else
 	const char *debugdir = "debugaxp";
 #endif //NDEBUG
-
-#endif //id386
+#endif
 
 	if (game_library)
 		Com_Error (ERR_FATAL, "Sys_GetGameAPI without Sys_UnloadingGame");
@@ -567,12 +553,12 @@ Sys_LoadCgame
 Used to hook up a development dll
 =================
 */
-void * Sys_LoadCgame( int (**entryPoint)(int, ...), int (*systemcalls)(int, ...) ) 
+void * Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) ) 
 {
-	void	(*dllEntry)( int (*syscallptr)(int, ...) );
+	void	(*dllEntry)( intptr_t (*syscallptr)(intptr_t, ...) );
 
-	dllEntry = ( void (*)( int (*)( int, ... ) ) )GetProcAddress( game_library, "dllEntry" ); 
-	*entryPoint = (int (*)(int,...))GetProcAddress( game_library, "vmMain" );
+	dllEntry = ( void (*)( intptr_t (*)( intptr_t, ... ) ) )GetProcAddress( game_library, "dllEntry" ); 
+	*entryPoint = (intptr_t (*)(int,...))GetProcAddress( game_library, "vmMain" );
 	if ( !*entryPoint || !dllEntry ) {
 		FreeLibrary( game_library );
 		return NULL;
