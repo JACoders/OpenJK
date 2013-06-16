@@ -34,7 +34,7 @@ ____________________________________________________________________________*/
 
       NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE
 
-/*---- towave.c --------------------------------------------
+----- towave.c --------------------------------------------
   32 bit version only
 
 decode mpeg Layer I/II/III file using portable ANSI C decoder,

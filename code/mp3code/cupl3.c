@@ -599,7 +599,7 @@ static int unpack_side_MPEG2(int igr)
        /* region0 discussion says 54 but this would mix long */
        /* and short in region0 if scale factors switch */
        /* at band 36 (6 long scale factors) */
-	 if ((side_info.gr[igr][ch].block_type == 2))
+	 if (side_info.gr[igr][ch].block_type == 2)
 	 {
 	    side_info.gr[igr][ch].region0_count = (6 - 1);	/* 36 samples */
 	    side_info.gr[igr][ch].region1_count = 20 - (6 - 1);
