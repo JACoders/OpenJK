@@ -85,7 +85,7 @@ VM_Create
 it will attempt to load as a system dll
 ================
 */
-extern void *Sys_LoadCgame( int (**entryPoint)(int, ...), int (*systemcalls)(int, ...) );
+extern void *Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) );
 
 inline void *VM_Create( const char *module) 
 {

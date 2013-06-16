@@ -198,11 +198,11 @@ void *Sys_GetGameAPI (void *parms)
 	const char *gamename;
 	if(Cvar_VariableIntegerValue("com_jk2"))
 	{
-		gamename = "jk2game" ARCH DLL_EXT;
+		gamename = "jk2game" ARCH_STRING DLL_EXT;
 	}
 	else
 	{
-		gamename = "jagame" ARCH DLL_EXT;
+		gamename = "jagame" ARCH_STRING DLL_EXT;
 	}
 	
 	if (game_library)
@@ -291,12 +291,12 @@ void *Sys_GetGameAPI (void *parms)
  Used to hook up a development dll
  =================
  */
-void * Sys_LoadCgame( int (**entryPoint)(int, ...), int (*systemcalls)(int, ...) )
+void * Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) )
 {
-	void	(*dllEntry)( int (*syscallptr)(int, ...) );
+	void	(*dllEntry)( intptr_t (*syscallptr)(intptr_t, ...) );
     
-	dllEntry = ( void (*)( int (*)( int, ... ) ) )Sys_LoadFunction( game_library, "dllEntry" );
-	*entryPoint = (int (*)(int,...))Sys_LoadFunction( game_library, "vmMain" );
+	dllEntry = ( void (*)( intptr_t (*)( intptr_t, ... ) ) )Sys_LoadFunction( game_library, "dllEntry" );
+	*entryPoint = (intptr_t (*)(int,...))Sys_LoadFunction( game_library, "vmMain" );
 	if ( !*entryPoint || !dllEntry ) {
 		Sys_UnloadLibrary( game_library );
 		return NULL;
