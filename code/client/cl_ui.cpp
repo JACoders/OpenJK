@@ -28,7 +28,7 @@ This file is part of Jedi Academy.
 
 int PC_ReadTokenHandle(int handle, struct pc_token_s *pc_token);
 
-int CL_UISystemCalls( int *args );
+intptr_t CL_UISystemCalls( intptr_t *args );
 
 //prototypes
 //extern qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress );
@@ -393,7 +393,7 @@ vm_t	uivm;
 
 #define	VMA(x) ((void*)args[x])
 #define	VMF(x)	((float *)args)[x]
-int CL_UISystemCalls( int *args ) 
+intptr_t CL_UISystemCalls( intptr_t *args ) 
 {
 
 	switch( args[0] ) 

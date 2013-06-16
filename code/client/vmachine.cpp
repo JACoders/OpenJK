@@ -27,7 +27,7 @@ VIRTUAL MACHINE
 
 ==============================================================
 */
-int	VM_Call( int callnum, ... )
+intptr_t	VM_Call( int callnum, ... )
 {
 //	assert (cgvm.entryPoint);
 	//Getting crashes here on OSX with debug dlls.
@@ -105,14 +105,14 @@ we pass this to the cgame dll to call back into the client
  ============
  */
 
-extern int CL_CgameSystemCalls( int *args );
-extern int CL_UISystemCalls( int *args );
+extern intptr_t CL_CgameSystemCalls( intptr_t *args );
+extern intptr_t CL_UISystemCalls( intptr_t *args );
 
-int VM_DllSyscall( int arg, ... ) {
+intptr_t VM_DllSyscall( intptr_t arg, ... ) {
 //	return cgvm->systemCall( &arg );
 #if !id386 || defined __clang__ || defined MACOS_X
 	// rcg010206 - see commentary above
-	int args[16];
+	intptr_t args[16];
 	int i;
 	va_list ap;
 	

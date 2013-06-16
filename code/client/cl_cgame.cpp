@@ -803,11 +803,11 @@ extern menuDef_t *Menus_FindByName(const char *p);
 //#define	VMA(x) VM_ArgPtr(args[x])
 #define	VMA(x) ((void*)args[x])
 #define	VMF(x)	((float *)args)[x]
-int CL_CgameSystemCalls( int *args ) {
+intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 #ifndef __NO_JK2
 	if( com_jk2 && com_jk2->integer )
 	{
-		args[0] = (int)CL_ConvertJK2SysCall((cgameJK2Import_t)args[0]);
+		args[0] = (intptr_t)CL_ConvertJK2SysCall((cgameJK2Import_t)args[0]);
 	}
 #endif
 	switch( args[0] ) {
