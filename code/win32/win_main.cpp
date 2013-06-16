@@ -505,6 +505,25 @@ void *Sys_GetGameAPI (void *parms)
 	const char *debugdir = "debug";
 #endif	//NDEBUG
 
+#elif defined idx64
+	const char *gamename;
+	if(com_jk2 && com_jk2->integer)
+	{
+		gamename = "jk2gamex86_64.dll";
+	}
+	else
+	{
+		gamename = "jagamex86_64.dll";
+	}
+
+#ifdef NDEBUG
+	const char *debugdir = "release64";
+#elif MEM_DEBUG
+	const char *debugdir = "shdebug64";
+#else
+	const char *debugdir = "debug64";
+#endif	//NDEBUG
+
 #elif defined _M_ALPHA
 	const char *gamename = "jagameaxp.dll";
 
@@ -514,7 +533,7 @@ void *Sys_GetGameAPI (void *parms)
 	const char *debugdir = "debugaxp";
 #endif //NDEBUG
 
-#endif //_M__IX86
+#endif //id386
 
 	if (game_library)
 		Com_Error (ERR_FATAL, "Sys_GetGameAPI without Sys_UnloadingGame");
