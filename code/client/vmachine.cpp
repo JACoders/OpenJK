@@ -55,8 +55,8 @@ intptr_t	VM_Call( int callnum, ... )
 			(&callnum)[8],  (&callnum)[9] );
 	}
 	
-	return -1;
 #endif
+	return -1;
 }
 
 /*

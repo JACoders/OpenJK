@@ -190,6 +190,7 @@ const char *Music_BaseStateToString( MusicState_e eMusicState, qboolean bDebugPr
 		case eBGRNDTRACK_EXPLORETRANS2:		if (bDebugPrintQuery) return "explore_tr2";
 		case eBGRNDTRACK_EXPLORETRANS3:		if (bDebugPrintQuery) return "explore_tr3";
 		case eBGRNDTRACK_FADE:				if (bDebugPrintQuery) return "fade";
+		default: break;
 	}
 
 	return NULL;
@@ -334,6 +335,8 @@ static qboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 
 						MUSIC_PARSE_ERROR( va("\"%s\" has %s transitions defined, this is not allowed!\n",psMusicName,psMusicNameKey) );
 						break;					
+					default:
+						break;
 				}
 			}
 		}
