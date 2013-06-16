@@ -7662,7 +7662,6 @@ int CQuake3GameInterface::RegisterScript( const char *strFileName, void **ppBuf,
 // Precache all the resources needed by a Script and it's Entity (or vice-versa).
 int CQuake3GameInterface::PrecacheEntity( gentity_t *pEntity )
 {
-	extern stringID_table_t BSTable[];
 	int		i;
 
 	for ( i = 0; i < NUM_BSETS; i++ )
