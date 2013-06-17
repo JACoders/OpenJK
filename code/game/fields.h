@@ -72,7 +72,7 @@ typedef enum
 
 typedef struct
 {
-	char	*psName;
+	const char	*psName;
 	int		iOffset;
 	fieldtypeSAVE_t	eFieldType;
 } save_field_t;

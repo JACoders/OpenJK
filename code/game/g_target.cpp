@@ -203,7 +203,7 @@ void Use_Target_Speaker (gentity_t *ent, gentity_t *other, gentity_t *activator)
 
 void SP_target_speaker( gentity_t *ent ) {
 	char	buffer[MAX_QPATH];
-	char	*s;
+	const char	*s;
 	int		i;
 
 	if ( VALIDSTRING( ent->soundSet ) )
@@ -929,7 +929,6 @@ void set_mission_stats_cvars( void )
 	{
 		return;
 	}
-	cg_entities[0].gent->client->sess.missionStats.enemiesKilled;
 
 	gi.cvar_set("ui_stats_enemieskilled", va("%d",client->sess.missionStats.enemiesKilled));	//pass this on to the menu
 
@@ -1062,7 +1061,7 @@ void SP_target_level_change( gentity_t *self )
 		return;
 	}
 	
-	char *s;
+	const char *s;
 	if (G_SpawnString( "tier_storyinfo", "", &s )) 
 	{
 		if (*s == '+')
@@ -1176,7 +1175,7 @@ will play.
 */
 void SP_target_play_music( gentity_t *self )
 {
-	char *s;
+	const char *s;
 	G_SetOrigin( self, self->s.origin );
 	if (!G_SpawnString( "music", "", &s )) {
 		G_Error( "target_play_music without a music key at %s", vtos( self->s.origin ) );

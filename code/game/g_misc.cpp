@@ -29,7 +29,7 @@ This file is part of Jedi Academy.
 
 extern gentity_t *G_FindDoorTrigger( gentity_t *door );
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
-extern void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, char *material, int solid_mask,int animFlag, 
+extern void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, const char *material, int solid_mask,int animFlag, 
 									qboolean take_damage, qboolean damage_model);
 
 #define MAX_AMMO_GIVE 4
@@ -397,7 +397,7 @@ loaded as a model in the renderer - does not take up precious bsp space!
 extern void CG_CreateMiscEntFromGent(gentity_t *ent, const vec3_t scale, float zOff); //cg_main.cpp
 void SP_misc_model_static(gentity_t *ent)
 {
-	char		*value;
+	const char	*value;
 	float		temp;
 	float		zOff;
 	vec3_t		scale;
@@ -586,7 +586,7 @@ void G_SubBSPSpawnEntitiesFromString(const char *entityString, vec3_t posOffset,
 void SP_misc_bsp(gentity_t *ent) 
 {
 	char	temp[MAX_QPATH];
-	char	*out;
+	const char	*out;
 	float	newAngle;
 	int		tempint;
 
@@ -655,10 +655,10 @@ numPatches - integer number of patches to split the terrain brush into (default 
 terxels - integer number of terxels on a patch side (default 4) (2 <= count <= 8)
 seed - integer seed for random terrain generation (default 0)
 textureScale - float scale of texture (default 0.005)
-heightmap - name of heightmap data image to use, located in heightmaps/*.png. (must be PNG format)
-terrainDef - defines how the game textures the terrain (file is base/ext_data/rmg/*.terrain - default is grassyhills)
+heightmap - name of heightmap data image to use, located in heightmaps/xxx.png. (must be PNG format)
+terrainDef - defines how the game textures the terrain (file is base/ext_data/rmg/xxx.terrain - default is grassyhills)
 instanceDef - defines which bsp instances appear
-miscentDef - defines which client models spawn on the terrain (file is base/ext_data/rmg/*.miscents)
+miscentDef - defines which client models spawn on the terrain (file is base/ext_data/rmg/xxx.miscents)
 densityMap - how dense the client models are packed
 
 */
@@ -673,7 +673,7 @@ void SP_terrain(gentity_t *ent)
 //	char				missionType[MAX_QPATH];
 //	char				soundSet[MAX_QPATH];
 	int					shaderNum, i;
-	char				*value;
+	const char			*value;
 	int					terrainID;
 
 	//k, found a terrain, just set rmg to 1.
@@ -3257,7 +3257,7 @@ void SP_misc_atst_drivable( gentity_t *ent )
 	G_SoundIndex( "sound/chars/atst/atst_hatch_close" );
 
 	NPC_ATST_Precache();
-	ent->NPC_type = "atst";
+	ent->NPC_type = (char *)"atst";
 	NPC_PrecacheAnimationCFG( ent->NPC_type );
 	//open the hatch
 	misc_atst_setanim( ent, ent->rootBone, BOTH_STAND2 );

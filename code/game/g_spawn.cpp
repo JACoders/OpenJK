@@ -95,7 +95,7 @@ qboolean	G_SpawnString( const char *key, const char *defaultString, const char *
 }
 
 qboolean	G_SpawnFloat( const char *key, const char *defaultString, float *out ) {
-	char		*s;
+	const char		*s;
 	qboolean	present;
 
 	present = G_SpawnString( key, defaultString, &s );
@@ -104,7 +104,7 @@ qboolean	G_SpawnFloat( const char *key, const char *defaultString, float *out ) 
 }
 
 qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out ) {
-	char		*s;
+	const char		*s;
 	qboolean	present;
 
 	present = G_SpawnString( key, defaultString, &s );
@@ -113,7 +113,7 @@ qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out ) {
 }
 
 qboolean	G_SpawnVector( const char *key, const char *defaultString, float *out ) {
-	char		*s;
+	const char		*s;
 	qboolean	present;
 
 	present = G_SpawnString( key, defaultString, &s );
@@ -122,7 +122,7 @@ qboolean	G_SpawnVector( const char *key, const char *defaultString, float *out )
 }
 
 qboolean	G_SpawnVector4( const char *key, const char *defaultString, float *out ) {
-	char		*s;
+	const char		*s;
 	qboolean	present;
 
 	present = G_SpawnString( key, defaultString, &s );
@@ -155,7 +155,7 @@ qboolean	G_SpawnFlag( const char *key, int flag, int *out )
 
 qboolean G_SpawnAngleHack( const char *key, const char *defaultString, float *out )
 {
-	char		*s;
+	const char		*s;
 	qboolean	present;
 	float		temp = 0;
 
@@ -212,7 +212,7 @@ typedef enum {
 
 typedef struct
 {
-	char	*name;
+	const char	*name;
 	int		ofs;
 	fieldtype_t	type;
 	int		flags;
@@ -371,7 +371,7 @@ field_t fields[] = {
 
 
 typedef struct {
-	char	*name;
+	const char	*name;
 	void	(*spawn)(gentity_t *ent);
 } spawn_t;
 
@@ -888,7 +888,7 @@ qboolean G_CallSpawn( gentity_t *ent ) {
 			return qtrue;
 		}
 	}
-	char* str;
+	const char* str;
 	G_SpawnString( "origin", "?", &str );
 	gi.Printf (S_COLOR_RED"ERROR: %s is not a spawn function @(%s)\n", ent->classname, str);
 	delayedShutDown = level.time + 100;
@@ -1258,7 +1258,7 @@ qboolean G_ParseSpawnVars( const char **data ) {
 	return qtrue;
 }
 
-static	char *defaultStyles[LS_NUM_STYLES][3] = 
+static	const char *defaultStyles[LS_NUM_STYLES][3] = 
 {
 	{	// 0 normal
 		"z",
@@ -1448,7 +1448,7 @@ Game Options
 "tier_storyinfo" sets 'tier_storyinfo' cvar
 */
 void SP_worldspawn( void ) {
-	char	*s;
+	const char	*s;
 	int		i;
 
 	g_entities[ENTITYNUM_WORLD].max_health = 0;

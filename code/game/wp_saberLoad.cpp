@@ -2472,7 +2472,7 @@ void WP_RemoveSaber( gentity_t *ent, int saberNum )
 	}
 }
 
-void WP_SetSaber( gentity_t *ent, int saberNum, char *saberName )
+void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName )
 {
 	if ( !ent || !ent->client )
 	{

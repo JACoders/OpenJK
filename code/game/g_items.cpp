@@ -32,7 +32,7 @@ extern void CrystalAmmoSettings(gentity_t *ent);
 extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 extern qboolean PM_InKnockDown( playerState_t *ps );
 extern qboolean PM_InGetUp( playerState_t *ps );
-extern void WP_SetSaber( gentity_t *ent, int saberNum, char *saberName );
+extern void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName );
 extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
 extern void WP_SaberFallSound( gentity_t *owner, gentity_t *saber );
 extern saber_colors_t TranslateSaberColor( const char *name );
