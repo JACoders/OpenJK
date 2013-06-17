@@ -706,6 +706,8 @@ qboolean G_CanPickUpWeapons( gentity_t *other )
 	case CLASS_SENTRY:
 		return qfalse;
 		break;
+	default:
+		break;
 	}
 	return qtrue;
 }

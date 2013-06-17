@@ -75,11 +75,11 @@ qboolean	G_SpawnField( unsigned int uiField, char **ppKey, char **ppValue )
 	return qtrue;
 }
 
-qboolean	G_SpawnString( const char *key, const char *defaultString, char **out ) {
+qboolean	G_SpawnString( const char *key, const char *defaultString, const char **out ) {
 	int		i;
 
 	if ( !spawning ) {
-		*out = (char *)defaultString;
+		*out = defaultString;
 //		G_Error( "G_SpawnString() called while not spawning" );
 	}
 
@@ -90,7 +90,7 @@ qboolean	G_SpawnString( const char *key, const char *defaultString, char **out )
 		}
 	}
 
-	*out = (char *)defaultString;
+	*out = defaultString;
 	return qfalse;
 }
 

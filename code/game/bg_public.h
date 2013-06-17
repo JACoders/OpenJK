@@ -648,19 +648,19 @@ typedef enum
 
 
 typedef struct gitem_s {
-	char		*classname;	// spawning name
-	char		*pickup_sound;
-	char		*world_model;
+	const char	*classname;	// spawning name
+	const char	*pickup_sound;
+	const char	*world_model;
 
-	char		*icon;
+	const char	*icon;
 
 	int			quantity;		// for ammo how much, or duration of powerup
 	itemType_t  giType;			// IT_* flags
 
 	int			giTag;
 
-	char		*precaches;		// string of all models and images this item will use
-	char		*sounds;		// string of all sounds this item will use
+	const char	*precaches;		// string of all models and images this item will use
+	const char	*sounds;		// string of all sounds this item will use
 	vec3_t		mins;			// Bbox
 	vec3_t		maxs;			// Bbox
 } gitem_t;

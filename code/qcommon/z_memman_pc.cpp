@@ -462,9 +462,9 @@ static int Zone_FreeBlock(zoneHeader_t *pMemory)
 
 // stats-query function to to see if it's our malloc
 // returns block size if so
-qboolean Z_IsFromZone(void *pvAddress, memtag_t eTag)
+qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag)
 {
-	zoneHeader_t *pMemory = ((zoneHeader_t *)pvAddress) - 1;
+	const zoneHeader_t *pMemory = ((const zoneHeader_t *)pvAddress) - 1;
 #if 1	//debugging double free
 	if (pMemory->iMagic == 'FREE')
 	{

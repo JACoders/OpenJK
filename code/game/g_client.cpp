@@ -433,14 +433,14 @@ if desired.
 */
 void ClientUserinfoChanged( int clientNum ) {
 	gentity_t *ent;
-	char	*s;
+	const char	*s;
 	char	headModel[MAX_QPATH];
 	char	torsoModel[MAX_QPATH];
 	char	legsModel[MAX_QPATH];
 	char	sound[MAX_QPATH];
 	char	oldname[MAX_STRING_CHARS];
 	gclient_t	*client;
-	char	*sex;
+	const char	*sex;
 	char	userinfo[MAX_INFO_STRING];
 
 	ent = g_entities + clientNum;
@@ -721,7 +721,7 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 								&client->ps.forcePowerRegenRate,
 								&client->ps.forcePowerRegenAmount,
 								//saber 1 data
-								&saber0Name,
+								saber0Name,
 								&client->ps.saber[0].blade[0].active,
 								&client->ps.saber[0].blade[1].active,
 								&client->ps.saber[0].blade[2].active,
@@ -739,7 +739,7 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 								&client->ps.saber[0].blade[6].color,
 								&client->ps.saber[0].blade[7].color,
 								//saber 2 data
-								&saber1Name,
+								saber1Name,
 								&client->ps.saber[1].blade[0].active,
 								&client->ps.saber[1].blade[1].active,
 								&client->ps.saber[1].blade[2].active,
@@ -985,7 +985,7 @@ qboolean G_ClassHasBadBones( int NPC_class )
 	return qfalse;
 }
 
-char *AxesNames[] = 
+const char *AxesNames[] = 
 {
 	"ORIGIN",//ORIGIN, 
 	"POSITIVE_X",//POSITIVE_X,
@@ -1045,7 +1045,7 @@ void G_NextTestAxes( void )
 	}
 }
 
-void G_BoneOrientationsForClass( int NPC_class, char *boneName, Eorientations *oUp, Eorientations *oRt, Eorientations *oFwd )
+void G_BoneOrientationsForClass( int NPC_class, const char *boneName, Eorientations *oUp, Eorientations *oRt, Eorientations *oFwd )
 {
 	//defaults
 	*oUp = POSITIVE_X;
@@ -1971,7 +1971,11 @@ void G_InitPlayerFromCvars( gentity_t *ent )
 	if( ent->NPC_type && gi.bIsFromZone(ent->NPC_type, TAG_G_ALLOC) ) {
 		gi.Free(ent->NPC_type);
 	}
-	ent->NPC_type = "player";//default for now
+
+	// Bad casting I know, but NPC_type can also come the memory manager,
+	// and you can't free a const-pointer later on. This seemed like the
+	// better options.
+	ent->NPC_type = (char *)"player";//default for now
 	if( ent->client->clientInfo.customBasicSoundDir && gi.bIsFromZone(ent->client->clientInfo.customBasicSoundDir, TAG_G_ALLOC) ) {
 		gi.Free(ent->client->clientInfo.customBasicSoundDir);
 	}
@@ -2251,7 +2255,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		ent->m_iIcarusID = IIcarusInterface::ICARUS_INVALID;
 		if ( !ent->NPC_type )
 		{
-			ent->NPC_type = "player";
+			ent->NPC_type = (char *)"player";
 		}
 		ent->classname = "player";
 		ent->targetname = ent->script_targetname = "player";

@@ -1052,7 +1052,7 @@ gentity_t *AI_DistributeAttack( gentity_t *attacker, gentity_t *enemy, team_t te
 			continue;
 
 		//Skip the requested avoid ent if present
-		if ( ( radiusEnts[ j ] == enemy ) )
+		if ( radiusEnts[ j ] == enemy )
 			continue;
 
 		//Must be on the same team
