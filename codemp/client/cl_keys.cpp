@@ -1001,7 +1001,7 @@ Key_IsDown
 ===================
 */
 qboolean Key_IsDown( int keynum ) {
-	if ( keynum == -1 ) {
+	if ( keynum == keynum < 0 || keynum >= MAX_KEYS ) {
 		return qfalse;
 	}
 
@@ -1024,18 +1024,18 @@ to be configured even if they don't have defined names.
 int Key_StringToKeynum( char *str ) {
 	int			i;
 	
-	if ( !str || !str[0] ) 
+	if ( !str || !str[0] )
 	{
 		return -1;
 	}
 	// If single char bind, presume ascii char bind
-	if ( !str[1] ) 
+	if ( !str[1] )
 	{
 		return keynames[ (unsigned char)str[0] ].upper;
 	}
 
 	// scan for a text match
-	for ( i = 0 ; i < MAX_KEYS ; i++ ) 
+	for ( i = 0 ; i < MAX_KEYS ; i++ )
 	{
 		if ( keynames[i].name && !stricmp( str, keynames[i].name ) )
 		{
@@ -1203,15 +1203,13 @@ const char *Key_KeynumToString( int keynum )
 	return name;
 }
 
-
-
 /*
 ===================
 Key_SetBinding
 ===================
 */
 void Key_SetBinding( int keynum, const char *binding ) {
-	if ( keynum == -1 ) {
+	if ( keynum < 0 || keynum >= MAX_KEYS ) {
 		return;
 	}
 
@@ -1239,7 +1237,7 @@ Key_GetBinding
 ===================
 */
 char *Key_GetBinding( int keynum ) {
-	if ( keynum == -1 ) {
+	if ( keynum < 0 || keynum >= MAX_KEYS ) {
 		return "";
 	}
 
@@ -1253,16 +1251,16 @@ Key_GetKey
 */
 
 int Key_GetKey(const char *binding) {
-  int i;
+	int i;
 
-  if (binding) {
-  	for (i=0 ; i<256 ; i++) {
-      if (kg.keys[i].binding && Q_stricmp(binding, kg.keys[i].binding) == 0) {
-        return i;
-      }
-    }
-  }
-  return -1;
+	if (binding) {
+		for (i=0 ; i<MAX_KEYS ; i++) {
+			if (kg.keys[i].binding && Q_stricmp(binding, kg.keys[i].binding) == 0) {
+				return i;
+			}
+		}
+	}
+	return -1;
 }
 
 /*
