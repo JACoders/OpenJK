@@ -70,7 +70,7 @@ extern bool CL_ExtendSelectTime(void);
 
 void CG_LoadHudMenu(void);
 int inv_icons[INV_MAX];
-char *inv_names[] =
+const char *inv_names[] =
 {
 "ELECTROBINOCULARS",
 "BACTA CANISTER",
@@ -343,8 +343,8 @@ vmCvar_t	cg_debugHealthBars;
 
 typedef struct {
 	vmCvar_t	*vmCvar;
-	char		*cvarName;
-	char		*defaultString;
+	const char	*cvarName;
+	const char	*defaultString;
 	int			cvarFlags;
 } cvarTable_t;
 
@@ -616,7 +616,7 @@ The server says this item is used on this level
 void CG_RegisterItemSounds( int itemNum ) {
 	gitem_t			*item;
 	char			data[MAX_QPATH];
-	char			*s, *start;
+	const char		*s, *start;
 	int				len;
 
 	item = &bg_itemlist[ itemNum ];
@@ -3517,7 +3517,7 @@ void CG_DrawInventorySelect( void )
 
 int cgi_UI_GetItemText(char *menuFile,char *itemName, char *text);
 
-char *inventoryDesc[15] = 
+const char *inventoryDesc[15] = 
 {
 "NEURO_SAAV_DESC",
 "BACTA_DESC",
@@ -3741,7 +3741,7 @@ int showPowers[MAX_SHOWPOWERS] =
 	FP_GRIP,
 };
 
-char *showPowersName[MAX_SHOWPOWERS] = 
+const char *showPowersName[MAX_SHOWPOWERS] = 
 {
 	"SP_INGAME_ABSORB2",
 	"SP_INGAME_HEAL2",
@@ -4145,7 +4145,7 @@ void CG_DPPrevForcePower_f( void )
 	cg.DataPadforcepowerSelect = original;
 }
 
-char *forcepowerDesc[NUM_FORCE_POWERS] = 
+const char *forcepowerDesc[NUM_FORCE_POWERS] = 
 {
 "FORCE_ABSORB_DESC",
 "FORCE_HEAL_DESC",
@@ -4168,7 +4168,7 @@ char *forcepowerDesc[NUM_FORCE_POWERS] =
 };
 
 
-char *forcepowerLvl1Desc[NUM_FORCE_POWERS] = 
+const char *forcepowerLvl1Desc[NUM_FORCE_POWERS] = 
 {
 "FORCE_ABSORB_LVL1_DESC",
 "FORCE_HEAL_LVL1_DESC",
@@ -4190,7 +4190,7 @@ char *forcepowerLvl1Desc[NUM_FORCE_POWERS] =
 "FORCE_GRIP_LVL1_DESC",
 };
 
-char *forcepowerLvl2Desc[NUM_FORCE_POWERS] = 
+const char *forcepowerLvl2Desc[NUM_FORCE_POWERS] = 
 {
 "FORCE_ABSORB_LVL2_DESC",
 "FORCE_HEAL_LVL2_DESC",
@@ -4212,7 +4212,7 @@ char *forcepowerLvl2Desc[NUM_FORCE_POWERS] =
 "FORCE_GRIP_LVL2_DESC",
 };
 
-char *forcepowerLvl3Desc[NUM_FORCE_POWERS] = 
+const char *forcepowerLvl3Desc[NUM_FORCE_POWERS] = 
 {
 "FORCE_ABSORB_LVL3_DESC",
 "FORCE_HEAL_LVL3_DESC",

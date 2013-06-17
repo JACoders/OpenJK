@@ -89,7 +89,7 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 		gi.Cvar_VariableStringBuffer("ui_prisonerobj_maxtotal",value,sizeof(value));
 		minTotal = atoi(value);
 
-		sprintf(finalText,va(finalText,currTotal,minTotal));
+		Q_strncpyz(finalText, va(finalText,currTotal,minTotal), sizeof(finalText));
 	}
 
 	pixelLen = cgi_R_Font_StrLenPixels(finalText, cgs.media.qhFontMedium, 1.0f);
@@ -157,7 +157,7 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 			char holdText2[2];
 			pixelLen = 0;
 			charLen = 0;
-			holdText2[1] = NULL;
+			holdText2[1] = '\0';
 			strBegin = str;
 
 			while( *str ) 
@@ -185,7 +185,7 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 					assert( charLen<maxHoldText );	// Too big?
 
 					Q_strncpyz( holdText, strBegin, charLen);
-					holdText[charLen] = NULL;
+					holdText[charLen] = '\0';
 					strBegin = str;
 					pixelLen = 0;
 					charLen = 1;
@@ -201,7 +201,7 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 
 					++missionYcnt;
 				} 
-				else if (*(str+1) == NULL)
+				else if (*(str+1) == '\0')
 				{
 					++charLen;
 
@@ -364,7 +364,7 @@ static void CG_DrawForceCount( const int force, int x, float *y, const int pad,q
 }
 
 
-/*
+/ *
 ====================
 CG_LoadScreen_PersonalInfo
 ====================

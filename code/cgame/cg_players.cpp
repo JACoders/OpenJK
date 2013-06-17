@@ -4416,6 +4416,8 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 			case CLASS_ATST:
 				fxOrg[2] += 120;
 				break;
+			default:
+				break;
 			}
 		}
 	}
@@ -4594,6 +4596,8 @@ void CG_AddForceSightShell( refEntity_t *ent, centity_t *cent )
 					ent->shaderRGBA[2] = 0;
 				}
 			}
+			break;
+		default:
 			break;
 		}
 
@@ -6347,6 +6351,8 @@ Ghoul2 Insert End
 			break;
 		case SABER_SITH_SWORD:
 			//no blade
+			break;
+		default:
 			break;
 		}
 	}

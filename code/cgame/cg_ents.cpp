@@ -1135,7 +1135,7 @@ static void CG_Missile( centity_t *cent ) {
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->alt_missileSound );
 
 		//Don't draw something without a model
-		if ( weapon->alt_missileModel == NULL )
+		if ( weapon->alt_missileModel == 0 )
 			return;
 	}
 	else
@@ -1154,7 +1154,7 @@ static void CG_Missile( centity_t *cent ) {
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->missileSound );
 
 		//Don't draw something without a model
-		if ( weapon->missileModel == NULL )
+		if ( weapon->missileModel == 0 )
 			return;
 	}
 

@@ -60,8 +60,8 @@ typedef enum {
 
 typedef struct HUDMenuItem_s
 {
-	char			*menuName;
-	char			*itemName;
+	const char		*menuName;
+	const char		*itemName;
 	int				xPos;
 	int				yPos;
 	int				width;
