@@ -2827,7 +2827,7 @@ String ID Tables
 */
 typedef struct stringID_table_s
 {
-	char	*name;
+	const char	*name;
 	int		id;
 } stringID_table_t;
 

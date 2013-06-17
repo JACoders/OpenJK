@@ -177,7 +177,7 @@ static int strHandleCount = 0;
 static stringDef_t *strHandle[HASH_TABLE_SIZE];
 
 typedef struct  itemFlagsDef_s {
-	char *string;
+	const char *string;
 	int value;
 }	itemFlagsDef_t;
 
@@ -186,7 +186,7 @@ itemFlagsDef_t itemFlags [] = {
 NULL,					0
 };
 
-char *styles [] = {
+const char *styles [] = {
 "WINDOW_STYLE_EMPTY",
 "WINDOW_STYLE_FILLED",
 "WINDOW_STYLE_GRADIENT",
@@ -196,7 +196,7 @@ char *styles [] = {
 NULL
 };
 
-char *types [] = {
+const char *types [] = {
 "ITEM_TYPE_TEXT",
 "ITEM_TYPE_BUTTON",
 "ITEM_TYPE_RADIOBUTTON",
@@ -215,7 +215,7 @@ char *types [] = {
 NULL
 };
 
-char *alignment [] = {
+const char *alignment [] = {
 "ITEM_ALIGN_LEFT",
 "ITEM_ALIGN_CENTER",
 "ITEM_ALIGN_RIGHT",
@@ -1102,7 +1102,7 @@ qboolean MenuParse_itemDef( itemDef_t *item)
 
 typedef struct keywordHash_s
 {
-	char		*keyword;
+	const char	*keyword;
 	qboolean	(*func)(itemDef_t *item);
 	struct		keywordHash_s *next;
 } keywordHash_t;
@@ -2603,7 +2603,7 @@ qboolean Script_Transition3(itemDef_t *item, const char **args)
 int GetCurrentFeederIndex(itemDef_t * item)
 {
 	float feederID = item->special;
-	char * name;
+	const char * name;
 	int i, max;
 	
 	if (feederID == FEEDER_PLAYER_SPECIES) 
@@ -5437,7 +5437,7 @@ void  Menus_Activate(menuDef_t *menu)
 }
 
 typedef struct {
-	char	*command;
+	const char	*command;
 	int		id;
 	int		defaultbind1;
 	int		defaultbind2;

@@ -179,7 +179,7 @@ typedef struct {
 	qhandle_t litThrowableIcon;
 	qhandle_t unlitThrowableIcon;
 	short		movesTitleIndex;
-	char		*movesBaseAnim;
+	const char	*movesBaseAnim;
 	int			moveAnimTime;
 	int			languageCount;
 	int			languageCountIndex;
