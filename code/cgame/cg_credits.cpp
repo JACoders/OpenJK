@@ -297,7 +297,7 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 	qboolean bCardsFinished = qfalse;
 	int iLineNumber = 0;
 	const char *psTextParse = psMallocText;
-	while (*psTextParse != NULL)
+	while (*psTextParse != '\0')
 	{
 		// read a line...
 		//	
@@ -492,6 +492,8 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 						CreditData.CreditCards.push_back(CreditCard);
 					}
 				}
+				break;
+				default:
 				break;
 			}
 		}
