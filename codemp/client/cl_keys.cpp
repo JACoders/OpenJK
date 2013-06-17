@@ -495,57 +495,51 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 		return;
 	}
 
+	key = tolower( key );
 	len = strlen( edit->buffer );
 
-	if ( key == A_DELETE ) {
-		if ( edit->cursor < len ) {
-			memmove( edit->buffer + edit->cursor, 
-				edit->buffer + edit->cursor + 1, len - edit->cursor );
-		}
-		return;
-	}
+	switch ( key ) {
+		case A_DELETE:
+			if ( edit->cursor < len ) {
+				memmove( edit->buffer + edit->cursor, 
+					edit->buffer + edit->cursor + 1, len - edit->cursor );
+			}
+			break;
 
-	if ( key == A_CURSOR_RIGHT ) 
-	{
-		if ( edit->cursor < len ) {
-			edit->cursor++;
-		}
+		case A_CURSOR_RIGHT:
+			if ( edit->cursor < len ) {
+				edit->cursor++;
+			}
+			break;
 
-		if ( edit->cursor >= edit->scroll + edit->widthInChars && edit->cursor <= len )
-		{
-			edit->scroll++;
-		}
-		return;
-	}
+		case A_CURSOR_LEFT:
+			if ( edit->cursor > 0 ) {
+				edit->cursor--;
+			}
+			break;
 
-	if ( key == A_CURSOR_LEFT ) 
-	{
-		if ( edit->cursor > 0 ) {
-			edit->cursor--;
-		}
-		if ( edit->cursor < edit->scroll )
-		{
-			edit->scroll--;
-		}
-		return;
-	}
+		case A_HOME:
+			edit->cursor = 0;
+			break;
 
-	if ( key == A_HOME || ( keynames[key].lower == 'a' && kg.keys[A_CTRL].down ) ) 
-	{
-		edit->cursor = 0;
-		return;
-	}
+		case A_END:
+			edit->cursor = len;
+			break;
 
-	if ( key == A_END || ( keynames[key].lower == 'e' && kg.keys[A_CTRL].down ) ) 
-	{
-		edit->cursor = len;
-		return;
-	}
+		case A_INSERT:
+			kg.key_overstrikeMode = (qboolean)!kg.key_overstrikeMode;
+			break;
 
-	if ( key == A_INSERT ) {
-		kg.key_overstrikeMode = (qboolean)!kg.key_overstrikeMode;
-		return;
-	}
+		default:
+			break;
+ 	}
+
+	// Change scroll if cursor is no longer visible
+	if ( edit->cursor < edit->scroll ) {
+		edit->scroll = edit->cursor;
+	} else if ( edit->cursor >= edit->scroll + edit->widthInChars && edit->cursor <= len ) {
+		edit->scroll = edit->cursor - edit->widthInChars + 1;
+ 	}
 }
 
 /*
