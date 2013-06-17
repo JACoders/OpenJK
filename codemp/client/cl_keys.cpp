@@ -1309,9 +1309,9 @@ void Key_Bind_f (void)
 	if (c == 2)
 	{
 		if (kg.keys[b].binding)
-			Com_Printf ("\"%s\" = \"%s\"\n", Cmd_Argv(1), kg.keys[b].binding );
+			Com_Printf ("\"%s\" = \"%s\"\n", Key_KeynumToString(b), kg.keys[b].binding );
 		else
-			Com_Printf ("\"%s\" is not bound\n", Cmd_Argv(1) );
+			Com_Printf ("\"%s\" is not bound\n", Key_KeynumToString(b) );
 		return;
 	}
 	
