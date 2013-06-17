@@ -953,7 +953,7 @@ Use_BinaryMover
 void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
 {
 	int	key;
-	char *text;
+	const char *text;
 
 	if ( ent->e_UseFunc == useF_NULL )
 	{//I cannot be used anymore, must be a door with a wait of -1 that's opened.
@@ -2097,7 +2097,7 @@ void SP_func_train (gentity_t *self) {
 		return;
 	}
 
-	char *noise;
+	const char *noise;
 
 	G_SpawnInt( "startframe", "0", &self->startFrame );
 	G_SpawnInt( "endframe", "0", &self->endFrame );

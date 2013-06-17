@@ -1356,7 +1356,7 @@ qboolean infront(gentity_t *from, gentity_t *to)
 
 void Svcmd_Use_f( void )
 {
-	char	*cmd1 = gi.argv(1);
+	const char	*cmd1 = gi.argv(1);
 
 	if ( !cmd1 || !cmd1[0] )
 	{
