@@ -746,6 +746,8 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 		case SABER_SITH_SWORD:
 			//no blade
 			break;
+		default:
+			break;
 		}
 	}
 	if ( saberType == SABER_SITH_SWORD )

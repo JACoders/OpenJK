@@ -380,7 +380,7 @@ typedef struct itemDef_s {
 	int			textStyle;					// ( optional ) style, normal and shadowed are it for now
 	char		*text;						// display text
 	char		*text2;						// display text2
-	char		*descText;					//	Description text
+	const char		*descText;				//	Description text
 	void		*parent;					// menu owner
 	qhandle_t	asset;						// handle to asset
 	CGhoul2Info_v ghoul2;					// ghoul2 instance if available instead of a model.

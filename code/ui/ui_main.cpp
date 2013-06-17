@@ -4310,7 +4310,7 @@ static void UI_GetCharacterCvars ( void )
 	Cvar_Set ( "ui_char_color_green", Cvar_VariableString ( "g_char_color_green" ) );
 	Cvar_Set ( "ui_char_color_blue", Cvar_VariableString ( "g_char_color_blue" ) );
 
-	char* model = Cvar_VariableString ( "g_char_model" );
+	const char* model = Cvar_VariableString ( "g_char_model" );
 	Cvar_Set ( "ui_char_model", model );
 
 	for (int i = 0; i < uiInfo.playerSpeciesCount; i++)
@@ -5612,7 +5612,7 @@ static void	UI_AddWeaponSelection ( const int weaponIndex, const int ammoIndex, 
 	iconItem = (itemDef_s *) Menu_FindItemByName(menu, iconItemName );
 	litIconItem = (itemDef_s *) Menu_FindItemByName(menu, litIconItemName );
 
-	char *chosenItemName, *chosenButtonName;
+	const char *chosenItemName, *chosenButtonName;
 
 	// has this weapon already been chosen?
 	if (weaponIndex == uiInfo.selectedWeapon1)
@@ -5731,7 +5731,7 @@ static void UI_RemoveWeaponSelection ( const int weaponSelectionIndex )
 {
 	itemDef_s  *item;
 	menuDef_t	*menu;
-	char *chosenItemName, *chosenButtonName,*background;
+	const char *chosenItemName, *chosenButtonName,*background;
 	int		ammoIndex,weaponIndex;
 
 	menu = Menu_GetFocused();	// Get current menu
@@ -5921,7 +5921,7 @@ static void	UI_AddThrowWeaponSelection ( const int weaponIndex, const int ammoIn
 	iconItem = (itemDef_s *) Menu_FindItemByName(menu, iconItemName );
 	litIconItem = (itemDef_s *) Menu_FindItemByName(menu, litIconItemName );
 
-	char *chosenItemName, *chosenButtonName;
+	const char *chosenItemName, *chosenButtonName;
 
 	// Has a throw weapon already been chosen?
 	if (uiInfo.selectedThrowWeapon!=NOWEAPON)
@@ -6018,7 +6018,7 @@ static void UI_RemoveThrowWeaponSelection ( void )
 {
 	itemDef_s  *item;
 	menuDef_t	*menu;
-	char *chosenItemName, *chosenButtonName,*background;
+	const char *chosenItemName, *chosenButtonName,*background;
 
 	menu = Menu_GetFocused();	// Get current menu
 
@@ -6246,8 +6246,8 @@ static void UI_UpdateSaberHilt( qboolean secondSaber )
 		return;
 	}
 
-	char *itemName;
-	char *saberCvarName;
+	const char *itemName;
+	const char *saberCvarName;
 	if ( secondSaber )
 	{
 		itemName = "saber2";
