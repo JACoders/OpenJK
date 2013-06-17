@@ -887,9 +887,13 @@ void Console_Key (int key) {
 
 	if ( ( key == A_MWHEELDOWN && kg.keys[A_SHIFT].down ) || ( key == A_CURSOR_DOWN ) || ( key == A_KP_2 ) || ( ( keynames[ key ].lower == 'n' ) && kg.keys[A_CTRL].down ) ) 
 	{
-		if (kg.historyLine == kg.nextHistoryLine)
-			return;
 		kg.historyLine++;
+		if (kg.historyLine >= kg.nextHistoryLine) {
+			kg.historyLine = kg.nextHistoryLine;
+			Field_Clear( &kg.g_consoleField );
+			kg.g_consoleField.widthInChars = g_console_field_width;
+			return;
+		}
 		kg.g_consoleField = kg.historyEditLines[ kg.historyLine % COMMAND_HISTORY ];
 		return;
 	}
