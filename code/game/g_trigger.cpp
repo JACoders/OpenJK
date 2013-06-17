@@ -433,7 +433,7 @@ so, the basic time between firing is a random time between
 void SP_trigger_multiple( gentity_t *ent ) 
 {
 	char	buffer[MAX_QPATH];
-	const char	*s;
+	char	*s;
 	if ( G_SpawnString( "noise", "*NOSOUND*", &s ) ) 
 	{
 		Q_strncpyz( buffer, s, sizeof(buffer) );
@@ -501,7 +501,7 @@ so, the basic time between firing is a random time between
 void SP_trigger_once( gentity_t *ent ) 
 {
 	char	buffer[MAX_QPATH];
-	const char	*s;
+	char	*s;
 	if ( G_SpawnString( "noise", "*NOSOUND*", &s ) ) 
 	{
 		Q_strncpyz( buffer, s, sizeof(buffer) );
@@ -1274,7 +1274,7 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 void SP_trigger_hurt( gentity_t *self ) 
 {
 	char	buffer[MAX_QPATH];
-	const char	*s;
+	char	*s;
 
 	InitTrigger (self);
 

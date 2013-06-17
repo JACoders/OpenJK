@@ -2493,7 +2493,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 
 				if(!Q_stricmp("none", value))
 				{
-					ri->headModelName[0] = NULL;
+					ri->headModelName[0] = '\0';
 					//Zero the head clamp range so the torso & legs don't lag behind
 					ri->headYawRangeLeft = 
 					ri->headYawRangeRight = 
@@ -2517,7 +2517,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 
 				if(!Q_stricmp("none", value))
 				{
-					ri->torsoModelName[0] = NULL;
+					ri->torsoModelName[0] = '\0';
 					//Zero the torso clamp range so the legs don't lag behind
 					ri->torsoYawRangeLeft = 
 					ri->torsoYawRangeRight = 

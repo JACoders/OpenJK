@@ -6973,7 +6973,7 @@ void WP_SaberPull( gentity_t *self, gentity_t *saber )
 	}
 }
 
-char *saberColorStringForColor[SABER_PURPLE+1] =
+const char *saberColorStringForColor[SABER_PURPLE+1] =
 {
 	"red",//SABER_RED
 	"orange",//SABER_ORANGE
@@ -10671,6 +10671,8 @@ void ForceGrip( gentity_t *self )
 				return;
 			}
 			break;
+		default:
+			break;
 		}
 		if ( traceEnt->s.weapon == WP_EMPLACED_GUN )
 		{//FIXME: maybe can pull them out?
@@ -11434,6 +11436,8 @@ qboolean ForceDrain2( gentity_t *self )
 				return qtrue;
 			}
 			break;
+		default:
+			break;
 		}
 		if ( traceEnt->s.weapon == WP_EMPLACED_GUN )
 		{//FIXME: maybe can pull them out?
@@ -11562,6 +11566,7 @@ qboolean FP_ForceDrainableEnt( gentity_t *victim )
 	case CLASS_ASSASSIN_DROID:
 	case CLASS_VEHICLE:
 		return qfalse;
+	default:
 		break;
 	}
 	return qtrue;
@@ -11589,6 +11594,8 @@ qboolean FP_ForceDrainGrippableEnt( gentity_t *victim )
 	case CLASS_ROCKETTROOPER:
 	case CLASS_HAZARD_TROOPER:
 		return qfalse;
+	default:
+		break;
 	}
 	return qtrue;
 }
@@ -12857,6 +12864,7 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower, int ove
 					case FP_LIGHTNING:
 					case FP_DRAIN:
 						return qfalse;
+					default:
 						break;
 					}
 				}
@@ -12883,6 +12891,7 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower, int ove
 				case FP_LIGHTNING:
 				case FP_DRAIN:
 					return qfalse;
+				default:
 					break;
 				}
 			}

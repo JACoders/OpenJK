@@ -148,7 +148,7 @@ typedef enum {
 
 typedef struct
 {
-	char	*name;
+	const char	*name;
 	int		ofs;
 	vehFieldType_t	type;
 } vehField_t;
@@ -726,6 +726,8 @@ void BG_SetSharedVehicleFunctions( vehicleInfo_t *pVehInfo )
 		case VH_WALKER:
 			G_SetWalkerVehicleFunctions( pVehInfo );
 			break;
+		default:
+			break;
 	}
 #endif
 }
@@ -860,7 +862,7 @@ void BG_VehicleClampData( vehicleInfo_t *vehicle )
 	}
 }
 
-static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, char *pValue )
+static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmName, char *pValue )
 {
 	int		i;
 	vec3_t	vec;

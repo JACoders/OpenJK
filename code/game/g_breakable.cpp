@@ -436,7 +436,7 @@ void SP_func_breakable( gentity_t *self )
 	InitBBrush( self );
 
 	char	buffer[MAX_QPATH];
-	const char	*s;
+	char	*s;
 	if ( G_SpawnString( "noise", "*NOSOUND*", &s ) ) 
 	{
 		Q_strncpyz( buffer, s, sizeof(buffer) );

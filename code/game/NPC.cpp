@@ -1688,6 +1688,8 @@ qboolean G_JediInNormalAI( gentity_t *ent )
 	case BS_FOLLOW_LEADER:
 		return qtrue;
 		break;
+	default:
+		break;
 	}
 	return qfalse;
 }
@@ -2100,6 +2102,8 @@ void NPC_RunBehavior( int team, int bState )
 			case CLASS_MARK2:
 				NPC_BehaviorSet_Mark2( bState );
 				return;
+			default:
+				break;
 			}
 
 
@@ -2526,6 +2530,8 @@ void NPC_Think ( gentity_t *self)//, int msec )
 					break;
 				case CLASS_GONK:				// droid
 					G_SoundOnEnt(self, CHAN_AUTO, va("sound/chars/gonk/misc/gonktalk%d.wav",Q_irand(1, 2)) );
+					break;
+				default:
 					break;
 				}
 				TIMER_Set( self, "patrolNoise", Q_irand( 2000, 4000 ) );

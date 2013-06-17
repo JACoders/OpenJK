@@ -224,6 +224,8 @@ void G_ClassSetDontFlee( gentity_t *self )
 	case CLASS_VEHICLE:
 		self->NPC->scriptFlags |= SCF_DONT_FLEE;
 		break;
+	default:
+		break;
 	}
 	if ( (self->NPC->aiFlags&NPCAI_BOSS_CHARACTER) )
 	{
