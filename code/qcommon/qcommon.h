@@ -596,7 +596,7 @@ void  Z_TagFree	( memtag_t eTag );
 int   Z_Free	( void *ptr );	//returns bytes freed
 int	  Z_Size	( void *pvAddress);
 void  Z_MorphMallocTag( void *pvAddress, memtag_t eDesiredTag );
-qboolean Z_IsFromZone(void *pvAddress, memtag_t eTag);	//returns size if true
+qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag);	//returns size if true
 
 #ifdef DEBUG_ZONE_ALLOCS
 

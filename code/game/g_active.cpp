@@ -4457,6 +4457,9 @@ void G_CheckMovingLoopingSounds( gentity_t *ent, usercmd_t *ucmd )
 				break;
 			case CLASS_PROBE:
 				ent->s.loopSound = G_SoundIndex( "sound/chars/probe/misc/probedroidloop" );
+				break;
+			default:
+				break;
 			}
 		}
 		else

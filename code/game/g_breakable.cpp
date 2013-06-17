@@ -72,6 +72,8 @@ static void CacheChunkEffects( material_t material )
 		G_EffectIndex( "chunks/ropebreak" );
 //		G_SoundIndex(); // FIXME: give it a sound
 		break;
+	default:
+		break;
 	}
 }
 
@@ -434,7 +436,7 @@ void SP_func_breakable( gentity_t *self )
 	InitBBrush( self );
 
 	char	buffer[MAX_QPATH];
-	char	*s;
+	const char	*s;
 	if ( G_SpawnString( "noise", "*NOSOUND*", &s ) ) 
 	{
 		Q_strncpyz( buffer, s, sizeof(buffer) );

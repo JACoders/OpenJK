@@ -577,7 +577,7 @@ Ghoul2 Insert End
 	// note: all the char* fields from here on should be left as ptrs, not declared, because of the way that ent-parsing
 	//	works by forcing field offset ptrs as char* and using G_NewString()!! (see G_ParseField() in gmae/g_spawn.cpp -slc
 	//
-	char		*classname;			// set in QuakeEd
+	const char	*classname;			// set in QuakeEd
 	int			spawnflags;			// set in QuakeEd
 
 	int			flags;				// FL_* variables
@@ -617,15 +617,15 @@ Ghoul2 Insert End
 	char		*target;
 	char		*target2;		//For multiple targets, not used for firing/triggering/using, though, only for path branches
 	char		*target3;		//For multiple targets, not used for firing/triggering/using, though, only for path branches
-	char		*target4;		//For multiple targets, not used for firing/triggering/using, though, only for path branches
+	const char		*target4;		//For multiple targets, not used for firing/triggering/using, though, only for path branches
 	char		*targetJump;
-	char		*targetname;
+	const char	*targetname;
 	char		*team;
 
 	union
 	{
-		char	*roff;			// the roff file to use, if there is one
-		char	*fxFile;		// name of the external effect file
+		const char	*roff;			// the roff file to use, if there is one
+		const char	*fxFile;		// name of the external effect file
 	};
 
 	int		roff_ctr;		// current roff frame we are playing
@@ -712,7 +712,7 @@ Ghoul2 Insert End
 	int				taskID[NUM_TIDS];
 	parms_t			*parms;
 	char		*behaviorSet[NUM_BSETS];
-	char		*script_targetname;
+	const char	*script_targetname;
 	int			delayScriptTime;
 
 // Ambient sound info
@@ -720,7 +720,7 @@ Ghoul2 Insert End
 	int				setTime;
 
 //Used by cameras to locate subjects
-	char			*cameraGroup;
+	const char		*cameraGroup;
 
 //For damage
 	team_t		noDamageTeam;

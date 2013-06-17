@@ -56,7 +56,7 @@ static void IT_WorldModel (const char **holdBuf);
 
 typedef struct 
 {
-	char	*parmName;
+	const char	*parmName;
 	void	(*func)(const char **holdBuf);
 } itemParms_t;
 
