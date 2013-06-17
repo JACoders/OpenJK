@@ -11,6 +11,6 @@ void 		Sys_SendKeyEvents (void);
 char		*Sys_ConsoleInput (void);
 void 		Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr );
 
-void Sys_Exit( int ex );
+void Sys_Exit( int ex ) __attribute__((noreturn));
 
 #endif /* SYS_LOCAL_H_ */

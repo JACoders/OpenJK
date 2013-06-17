@@ -519,7 +519,7 @@ void CL_Clientinfo_f( void ) {
 
 //====================================================================
 
-void UI_UpdateConnectionString( char *string );
+void UI_UpdateConnectionString( const char *string );
 
 /*
 =================
