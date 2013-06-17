@@ -1044,43 +1044,17 @@ int Key_StringToKeynum( char *str ) {
 	}
 
 	// check for hex code
-	if ( str[0] == '0' && str[1] == 'x' && strlen( str ) == 4) 
+	if ( strlen( str ) == 4 )
 	{
-		int		n1, n2;
-		
-		n1 = str[2];
-		if ( n1 >= '0' && n1 <= '9' ) 
-		{
-			n1 -= '0';
-		}
-		else if ( n1 >= 'A' && n1 <= 'F' ) 
-		{
-			n1 = n1 - 'A' + 10;
-		}
-		else 
-		{
-			n1 = 0;
-		}
+		int n = Com_HexStrToInt( str );
 
-		n2 = str[3];
-		if ( n2 >= '0' && n2 <= '9' ) 
-		{
-			n2 -= '0';
+		if ( n >= 0 ) {
+			return n;
 		}
-		else if ( n2 >= 'A' && n2 <= 'F' ) 
-		{
-			n2 = n2 - 'A' + 10;
-		}
-		else 
-		{
-			n2 = 0;
-		}
-		return n1 * 16 + n2;
 	}
 
 	return -1;
 }
-
 
 static char tinyString[16];
 static const char *Key_KeynumValid( int keynum )
