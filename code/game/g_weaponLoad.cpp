@@ -35,7 +35,7 @@ extern ammoData_t ammoData[];
 #include "g_local.h"
 
 typedef struct {
-	char	*name;
+	const char	*name;
 	void	(*func)(centity_t *cent, const struct weaponInfo_s *weapon );
 } func_t;
 
@@ -179,7 +179,7 @@ void WPN_FuncSkip(const char **holdBuf);
 
 typedef struct 
 {
-	char	*parmName;
+	const char	*parmName;
 	void	(*func)(const char **holdBuf);
 } wpnParms_t;
 

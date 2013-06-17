@@ -327,7 +327,7 @@ int		Cmd_Argc( void ) {
 Cmd_Argv
 ============
 */
-const char	*Cmd_Argv( int arg ) {
+char	*Cmd_Argv( int arg ) {
 	if ( (unsigned)arg >= cmd_argc ) {
 		return "";
 	}

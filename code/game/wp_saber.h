@@ -160,7 +160,7 @@ extern void ForceSpeed( gentity_t *self, int duration = 0 );
 extern float forceSpeedValue[];
 extern float forceSpeedRangeMod[];
 extern float forceSpeedFOVMod[];
-extern char *saberColorStringForColor[];
+extern const char *saberColorStringForColor[];
 #define FORCE_SPEED_DURATION 10000.0f
 #define FORCE_RAGE_DURATION 10000.0f
 
@@ -445,7 +445,7 @@ typedef enum {
 
 typedef struct
 {
-	char *name;
+	const char *name;
 	int animToUse;
 	int	startQuad;
 	int	endQuad;

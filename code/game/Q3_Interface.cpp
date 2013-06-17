@@ -1034,8 +1034,6 @@ static qboolean G_AddSexToPlayerString ( char *string, qboolean qDoBoth )
 
 
 /*
-
-/*
 =============
 Q3_SetAngles
 
@@ -1605,7 +1603,7 @@ Lerps the origin and angles of an entity to the destination values
 
 		moverState = MOVER_1TO2;
 	}
-	else /*if ( moverState == MOVER_POS2 || moverState == MOVER_1TO2 )*/
+	else / *if ( moverState == MOVER_POS2 || moverState == MOVER_1TO2 )*/
 /*	{
 		VectorCopy( ent->currentOrigin, ent->pos2 );
 		VectorCopy( origin, ent->pos1 );
@@ -11144,7 +11142,7 @@ int		CQuake3GameInterface::GetByName( const char *name )
 	entitylist_t::iterator		ei;
 	char					temp[1024];
 
-	if ( name == NULL || name[0] == NULL )
+	if ( name == NULL || name[0] == '\0' )
 		return -1;
 
 	strncpy( (char *) temp, name, sizeof(temp) );

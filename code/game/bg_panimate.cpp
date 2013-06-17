@@ -3792,7 +3792,13 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 							else
 							{//enemy in front
 								float enemyDistSq = DistanceSquared( pm->gent->currentOrigin, pm->gent->enemy->currentOrigin );
-								if ( (pm->ps->saberAnimLevel == FORCE_LEVEL_1||pm->ps->saberAnimLevel == SS_STAFF||pm->gent->client->NPC_class==CLASS_TAVION||pm->gent->client->NPC_class == CLASS_ALORA||(pm->gent->client->NPC_class==CLASS_DESANN&&!Q_irand(0,3))) && enemyDistSq > 16384 || pm->gent->enemy->health <= 0 )//128 squared
+								if ( ((pm->ps->saberAnimLevel == FORCE_LEVEL_1 ||
+										pm->ps->saberAnimLevel == SS_STAFF ||
+										pm->gent->client->NPC_class == CLASS_TAVION ||
+										pm->gent->client->NPC_class == CLASS_ALORA ||
+										(pm->gent->client->NPC_class == CLASS_DESANN && !Q_irand(0,3))) &&
+									enemyDistSq > 16384) ||
+									pm->gent->enemy->health <= 0 )//128 squared
 								{//my enemy is pretty far in front of me and I'm using fast attacks
 									if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) ||
 										( pm->gent && pm->gent->client && pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG && Q_irand( 0, pm->gent->NPC->rank ) > RANK_ENSIGN ) )
@@ -3803,7 +3809,7 @@ saberMoveName_t PM_SaberAttackForMovement( int forwardmove, int rightmove, int c
 										}
 									}
 								}
-								else if ( (pm->ps->saberAnimLevel >= FORCE_LEVEL_2 || pm->gent->client->NPC_class == CLASS_DESANN) && enemyDistSq > 40000 || pm->gent->enemy->health <= 0 )//200 squared
+								else if ( ((pm->ps->saberAnimLevel >= FORCE_LEVEL_2 || pm->gent->client->NPC_class == CLASS_DESANN) && enemyDistSq > 40000) || pm->gent->enemy->health <= 0 )//200 squared
 								{//enemy is very faw away and I'm using medium/strong attacks
 									if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) ||
 										( pm->gent && pm->gent->client && pm->gent->NPC && pm->gent->NPC->rank >= RANK_LT_JG && Q_irand( 0, pm->gent->NPC->rank ) > RANK_ENSIGN ) )
@@ -3988,6 +3994,8 @@ saberMoveName_t PM_SaberAnimTransitionMove( saberMoveName_t curmove, saberMoveNa
 			//transition is the start
 			retmove = LS_S_TL2BR + (newmove-LS_A_TL2BR);
 			break;
+		default:
+			break;
 		}
 	}
 	else
@@ -4008,6 +4016,8 @@ saberMoveName_t PM_SaberAnimTransitionMove( saberMoveName_t curmove, saberMoveNa
 			case LS_A_T2B:
 				//transition is the return
 				retmove = LS_R_TL2BR + (newmove-LS_A_TL2BR);
+				break;
+			default:
 				break;
 			}
 			break;
@@ -4117,10 +4127,14 @@ saberMoveName_t PM_SaberAnimTransitionMove( saberMoveName_t curmove, saberMoveNa
 					retmove = transitionMove[saberMoveData[curmove].endQuad][saberMoveData[newmove].startQuad];
 					break;
 				//NB: transitioning from transitions is fine
+				default:
+					break;
 				}
 			}
 			break;
 		//transitioning to any other anim is not supported
+		default:
+			break;
 		}
 	}
 
@@ -7183,6 +7197,8 @@ qboolean PM_SaberInKata( saberMoveName_t saberMove )
 	case LS_DUAL_SPIN_PROTECT:
 	case LS_STAFF_SOULCAL:
 		return qtrue;
+	default:
+		break;
 	}
 	return qfalse;
 }

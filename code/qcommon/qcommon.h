@@ -311,7 +311,7 @@ char 	*Cmd_CompleteCommand( const char *partial );
 // returns NULL if nothing fits
 
 int		Cmd_Argc (void);
-const char	*Cmd_Argv (int arg);
+char	*Cmd_Argv (int arg);
 void	Cmd_ArgvBuffer( int arg, char *buffer, int bufferLength );
 char	*Cmd_Args (void);
 void	Cmd_ArgsBuffer( char *buffer, int bufferLength );

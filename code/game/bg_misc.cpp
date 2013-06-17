@@ -448,6 +448,9 @@ qboolean	BG_CanItemBeGrabbed( const entityState_t *ent, const playerState_t *ps 
 			}
 		}
 		return qtrue;
+
+	default:
+		break;
 	}
 
 	return qfalse;
