@@ -5528,7 +5528,7 @@ static const int g_bindCount = sizeof(g_bindings) / sizeof(bind_t);
 Controls_GetKeyAssignment
 =================
 */
-static void Controls_GetKeyAssignment (char *command, int *twokeys)
+static void Controls_GetKeyAssignment (const char *command, int *twokeys)
 {
 	int		count;
 	int		j;
@@ -11360,7 +11360,7 @@ qboolean Item_HandleKey(itemDef_t *item, int key, qboolean down)
 	} 
 	else 
 	{
-		if (down && key == A_MOUSE1 || key == A_MOUSE2 || key == A_MOUSE3) 
+		if (down && (key == A_MOUSE1 || key == A_MOUSE2 || key == A_MOUSE3)) 
 		{
 			Item_StartCapture(item, key);
 		}
@@ -11555,7 +11555,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 #endif
 	{
 		static qboolean inHandleKey = qfalse;
-		if (!inHandleKey && key == A_MOUSE1 || key == A_MOUSE2 || key == A_MOUSE3) 
+		if (!inHandleKey && (key == A_MOUSE1 || key == A_MOUSE2 || key == A_MOUSE3)) 
 		{
 			inHandleKey = qtrue;
 			Menus_HandleOOBClick(menu, key, down);

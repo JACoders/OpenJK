@@ -864,7 +864,7 @@ void CM_LoadMap( const char *name, qboolean clientload, int *checksum, qboolean 
 	*/
 }
 
-qboolean CM_SameMap(char *server)
+qboolean CM_SameMap(const char *server)
 {
 	if (!cmg.name[0] || !server || !server[0])
 	{

@@ -72,7 +72,7 @@ UI_UpdateConnectionString
 
 ========================
 */
-void UI_UpdateConnectionString( char *string ) {
+void UI_UpdateConnectionString( const char *string ) {
 	Q_strncpyz( connectionDialogString, string, sizeof( connectionDialogString )  );
 	UI_UpdateScreen();
 }

@@ -236,7 +236,7 @@ void SV_ClearLastLevel(void)
 }
 #endif
 
-qboolean CM_SameMap(char *server);
+qboolean CM_SameMap(const char *server);
 qboolean CM_HasTerrain(void);
 void Cvar_Defrag(void);
 
@@ -248,7 +248,7 @@ Change the server to a new map, taking all connected
 clients along with it.
 ================
 */
-void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowScreenDissolve )
+void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bAllowScreenDissolve )
 {
 	int			i;
 	int			checksum;

@@ -70,7 +70,7 @@ extern void UI_DataPadMenu(void);
 // ui_connect.c
 //
 extern void UI_DrawConnect( const char *servername, const char * updateInfoString );
-extern void UI_UpdateConnectionString( char *string );
+extern void UI_UpdateConnectionString( const char *string );
 extern void UI_UpdateConnectionMessageString( char *string );
 
 

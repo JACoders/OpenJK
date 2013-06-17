@@ -188,12 +188,12 @@ void *Sys_GetGameAPI (void *parms)
 	void	*(*GetGameAPI) (void *);
 	
 	char	name[MAX_OSPATH];
-	char	*path;
-	char	*basepath;
-	char	*cdpath;
-	char	*gamedir;
-	char	*homepath;
-	char	*fn;
+	const char	*path;
+	const char	*basepath;
+	const char	*cdpath;
+	const char	*gamedir;
+	const char	*homepath;
+	const char	*fn;
 	
 	const char *gamename;
 	if(Cvar_VariableIntegerValue("com_jk2"))
