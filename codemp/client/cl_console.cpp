@@ -17,7 +17,7 @@ cvar_t		*con_notifytime;
 
 #define	DEFAULT_CONSOLE_WIDTH	78
 
-vec4_t	console_color = {1.0, 1.0, 1.0, 1.0};
+vec4_t	console_color = {0.509f, 0.609f, 0.847f, 1.0f};
 
 
 /*
@@ -647,10 +647,9 @@ void Con_DrawSolidConsole( float frac ) {
 		SCR_DrawPic( 0, 0, SCREEN_WIDTH, (float) y, cls.consoleShader );
 	}
 
-	const vec4_t color = { 0.509f, 0.609f, 0.847f,  1.0f};
 	// draw the bottom bar and version number
 
-	re.SetColor( color );
+	re.SetColor( console_color );
 	re.DrawStretchPic( 0, y, SCREEN_WIDTH, 2, 0, 0, 0, 0, cls.whiteShader );
 
 	i = strlen( JK_VERSION );
@@ -671,7 +670,7 @@ void Con_DrawSolidConsole( float frac ) {
 	if (con.display != con.current)
 	{
 	// draw arrows to show the buffer is backscrolled
-		re.SetColor( g_color_table[ColorIndex(COLOR_RED)] );
+		re.SetColor( console_color );
 		for (x=0 ; x<con.linewidth ; x+=4)
 			SCR_DrawSmallChar( (int) (con.xadjust + (x+1)*SMALLCHAR_WIDTH), y, '^' );
 		y -= SMALLCHAR_HEIGHT;
