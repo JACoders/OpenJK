@@ -495,57 +495,51 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 		return;
 	}
 
+	key = tolower( key );
 	len = strlen( edit->buffer );
 
-	if ( key == A_DELETE ) {
-		if ( edit->cursor < len ) {
-			memmove( edit->buffer + edit->cursor, 
-				edit->buffer + edit->cursor + 1, len - edit->cursor );
-		}
-		return;
-	}
+	switch ( key ) {
+		case A_DELETE:
+			if ( edit->cursor < len ) {
+				memmove( edit->buffer + edit->cursor, 
+					edit->buffer + edit->cursor + 1, len - edit->cursor );
+			}
+			break;
 
-	if ( key == A_CURSOR_RIGHT ) 
-	{
-		if ( edit->cursor < len ) {
-			edit->cursor++;
-		}
+		case A_CURSOR_RIGHT:
+			if ( edit->cursor < len ) {
+				edit->cursor++;
+			}
+			break;
 
-		if ( edit->cursor >= edit->scroll + edit->widthInChars && edit->cursor <= len )
-		{
-			edit->scroll++;
-		}
-		return;
-	}
+		case A_CURSOR_LEFT:
+			if ( edit->cursor > 0 ) {
+				edit->cursor--;
+			}
+			break;
 
-	if ( key == A_CURSOR_LEFT ) 
-	{
-		if ( edit->cursor > 0 ) {
-			edit->cursor--;
-		}
-		if ( edit->cursor < edit->scroll )
-		{
-			edit->scroll--;
-		}
-		return;
-	}
+		case A_HOME:
+			edit->cursor = 0;
+			break;
 
-	if ( key == A_HOME || ( keynames[key].lower == 'a' && kg.keys[A_CTRL].down ) ) 
-	{
-		edit->cursor = 0;
-		return;
-	}
+		case A_END:
+			edit->cursor = len;
+			break;
 
-	if ( key == A_END || ( keynames[key].lower == 'e' && kg.keys[A_CTRL].down ) ) 
-	{
-		edit->cursor = len;
-		return;
-	}
+		case A_INSERT:
+			kg.key_overstrikeMode = (qboolean)!kg.key_overstrikeMode;
+			break;
 
-	if ( key == A_INSERT ) {
-		kg.key_overstrikeMode = (qboolean)!kg.key_overstrikeMode;
-		return;
-	}
+		default:
+			break;
+ 	}
+
+	// Change scroll if cursor is no longer visible
+	if ( edit->cursor < edit->scroll ) {
+		edit->scroll = edit->cursor;
+	} else if ( edit->cursor >= edit->scroll + edit->widthInChars && edit->cursor <= len ) {
+		edit->scroll = edit->cursor - edit->widthInChars + 1;
+ 	}
 }
 
 /*
@@ -601,12 +595,14 @@ void Field_CharEvent( field_t *edit, int ch ) {
 	}
 
 	if ( kg.key_overstrikeMode ) {	
-		if ( edit->cursor == MAX_EDIT_LINE - 1 )
+		// - 2 to leave room for the leading slash and trailing \0
+		if ( edit->cursor == MAX_EDIT_LINE - 2 )
 			return;
 		edit->buffer[edit->cursor] = ch;
 		edit->cursor++;
 	} else {	// insert mode
-		if ( len == MAX_EDIT_LINE - 1 ) {
+		// - 2 to leave room for the leading slash and trailing \0
+		if ( len == MAX_EDIT_LINE - 2 ) {
 			return; // all full
 		}
 		memmove( edit->buffer + edit->cursor + 1, 
@@ -804,9 +800,9 @@ void Console_Key (int key) {
 	// enter finishes the line
 	if ( key == A_ENTER || key == A_KP_ENTER ) {
 		// if not in the game explicitly prepent a slash if needed
-		if ( cls.state != CA_ACTIVE && kg.g_consoleField.buffer[0] != '\\' 
-			&& kg.g_consoleField.buffer[0] != '/' ) {
-			char	temp[MAX_STRING_CHARS];
+		if ( cls.state != CA_ACTIVE && kg.g_consoleField.buffer[0] &&
+			kg.g_consoleField.buffer[0] != '\\' && kg.g_consoleField.buffer[0] != '/' ) {
+			char	temp[MAX_EDIT_LINE-1];
 
 			Q_strncpyz( temp, kg.g_consoleField.buffer, sizeof( temp ) );
 			Com_sprintf( kg.g_consoleField.buffer, sizeof( kg.g_consoleField.buffer ), "\\%s", temp );
@@ -891,9 +887,13 @@ void Console_Key (int key) {
 
 	if ( ( key == A_MWHEELDOWN && kg.keys[A_SHIFT].down ) || ( key == A_CURSOR_DOWN ) || ( key == A_KP_2 ) || ( ( keynames[ key ].lower == 'n' ) && kg.keys[A_CTRL].down ) ) 
 	{
-		if (kg.historyLine == kg.nextHistoryLine)
-			return;
 		kg.historyLine++;
+		if (kg.historyLine >= kg.nextHistoryLine) {
+			kg.historyLine = kg.nextHistoryLine;
+			Field_Clear( &kg.g_consoleField );
+			kg.g_consoleField.widthInChars = g_console_field_width;
+			return;
+		}
 		kg.g_consoleField = kg.historyEditLines[ kg.historyLine % COMMAND_HISTORY ];
 		return;
 	}
@@ -1001,7 +1001,7 @@ Key_IsDown
 ===================
 */
 qboolean Key_IsDown( int keynum ) {
-	if ( keynum == -1 ) {
+	if ( keynum == keynum < 0 || keynum >= MAX_KEYS ) {
 		return qfalse;
 	}
 
@@ -1024,18 +1024,18 @@ to be configured even if they don't have defined names.
 int Key_StringToKeynum( char *str ) {
 	int			i;
 	
-	if ( !str || !str[0] ) 
+	if ( !str || !str[0] )
 	{
 		return -1;
 	}
 	// If single char bind, presume ascii char bind
-	if ( !str[1] ) 
+	if ( !str[1] )
 	{
 		return keynames[ (unsigned char)str[0] ].upper;
 	}
 
 	// scan for a text match
-	for ( i = 0 ; i < MAX_KEYS ; i++ ) 
+	for ( i = 0 ; i < MAX_KEYS ; i++ )
 	{
 		if ( keynames[i].name && !stricmp( str, keynames[i].name ) )
 		{
@@ -1044,43 +1044,17 @@ int Key_StringToKeynum( char *str ) {
 	}
 
 	// check for hex code
-	if ( str[0] == '0' && str[1] == 'x' && strlen( str ) == 4) 
+	if ( strlen( str ) == 4 )
 	{
-		int		n1, n2;
-		
-		n1 = str[2];
-		if ( n1 >= '0' && n1 <= '9' ) 
-		{
-			n1 -= '0';
-		}
-		else if ( n1 >= 'A' && n1 <= 'F' ) 
-		{
-			n1 = n1 - 'A' + 10;
-		}
-		else 
-		{
-			n1 = 0;
-		}
+		int n = Com_HexStrToInt( str );
 
-		n2 = str[3];
-		if ( n2 >= '0' && n2 <= '9' ) 
-		{
-			n2 -= '0';
+		if ( n >= 0 ) {
+			return n;
 		}
-		else if ( n2 >= 'A' && n2 <= 'F' ) 
-		{
-			n2 = n2 - 'A' + 10;
-		}
-		else 
-		{
-			n2 = 0;
-		}
-		return n1 * 16 + n2;
 	}
 
 	return -1;
 }
-
 
 static char tinyString[16];
 static const char *Key_KeynumValid( int keynum )
@@ -1203,15 +1177,13 @@ const char *Key_KeynumToString( int keynum )
 	return name;
 }
 
-
-
 /*
 ===================
 Key_SetBinding
 ===================
 */
 void Key_SetBinding( int keynum, const char *binding ) {
-	if ( keynum == -1 ) {
+	if ( keynum < 0 || keynum >= MAX_KEYS ) {
 		return;
 	}
 
@@ -1239,7 +1211,7 @@ Key_GetBinding
 ===================
 */
 char *Key_GetBinding( int keynum ) {
-	if ( keynum == -1 ) {
+	if ( keynum < 0 || keynum >= MAX_KEYS ) {
 		return "";
 	}
 
@@ -1253,16 +1225,16 @@ Key_GetKey
 */
 
 int Key_GetKey(const char *binding) {
-  int i;
+	int i;
 
-  if (binding) {
-  	for (i=0 ; i<256 ; i++) {
-      if (kg.keys[i].binding && Q_stricmp(binding, kg.keys[i].binding) == 0) {
-        return i;
-      }
-    }
-  }
-  return -1;
+	if (binding) {
+		for (i=0 ; i<MAX_KEYS ; i++) {
+			if (kg.keys[i].binding && Q_stricmp(binding, kg.keys[i].binding) == 0) {
+				return i;
+			}
+		}
+	}
+	return -1;
 }
 
 /*
@@ -1337,9 +1309,9 @@ void Key_Bind_f (void)
 	if (c == 2)
 	{
 		if (kg.keys[b].binding)
-			Com_Printf ("\"%s\" = \"%s\"\n", Cmd_Argv(1), kg.keys[b].binding );
+			Com_Printf ("\"%s\" = \"%s\"\n", Key_KeynumToString(b), kg.keys[b].binding );
 		else
-			Com_Printf ("\"%s\" is not bound\n", Cmd_Argv(1) );
+			Com_Printf ("\"%s\" is not bound\n", Key_KeynumToString(b) );
 		return;
 	}
 	
