@@ -123,7 +123,7 @@ void Com_EndRedirect (void)
 	rd_buffersize = 0;
 	rd_flush = NULL;
 }
-#ifndef FINAL_BUILD
+#if !defined(FINAL_BUILD) && defined(_WIN32)
 #define OUTPUT_TO_BUILD_WINDOW
 #endif
 #endif	//not xbox
