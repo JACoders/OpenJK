@@ -58,7 +58,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;DEDICATED;BOTLIB;_WINDOWS;FINAL_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -112,7 +112,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>.;..;..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
@@ -158,14 +158,13 @@
     <ClInclude Include="qcommon\vm_local.h" />
     <ClInclude Include="ghoul2\G2.h" />
     <ClInclude Include="ghoul2\G2_gore.h" />
-    <ClInclude Include="ghoul2\G2_local.h" />
+    <ClInclude Include="rd-dedicated\G2_local.h" />
     <ClInclude Include="ghoul2\ghoul2_shared.h" />
     <ClInclude Include="server\server.h" />
     <ClInclude Include="server\NPCNav\navigator.h" />
-    <ClInclude Include="png\png.h" />
-    <ClInclude Include="libpng\png.h" />
-    <ClInclude Include="libpng\pngconf.h" />
-    <ClInclude Include="libpng\pngstruct.h" />
+    <ClInclude Include="..\lib\libpng\png.h" />
+    <ClInclude Include="..\lib\libpng\pngconf.h" />
+    <ClInclude Include="..\lib\libpng\pngstruct.h" />
     <ClInclude Include="botlib\aasfile.h" />
     <ClInclude Include="botlib\be_aas_bsp.h" />
     <ClInclude Include="botlib\be_aas_cluster.h" />
@@ -192,17 +191,17 @@
     <ClInclude Include="botlib\l_struct.h" />
     <ClInclude Include="botlib\l_utils.h" />
     <ClInclude Include="game\anims.h" />
-    <ClInclude Include="game\be_aas.h" />
-    <ClInclude Include="game\be_ai_char.h" />
-    <ClInclude Include="game\be_ai_chat.h" />
-    <ClInclude Include="game\be_ai_gen.h" />
-    <ClInclude Include="game\be_ai_goal.h" />
-    <ClInclude Include="game\be_ai_move.h" />
-    <ClInclude Include="game\be_ai_weap.h" />
-    <ClInclude Include="game\be_ea.h" />
+    <ClInclude Include="botlib\be_aas.h" />
+    <ClInclude Include="botlib\be_ai_char.h" />
+    <ClInclude Include="botlib\be_ai_chat.h" />
+    <ClInclude Include="botlib\be_ai_gen.h" />
+    <ClInclude Include="botlib\be_ai_goal.h" />
+    <ClInclude Include="botlib\be_ai_move.h" />
+    <ClInclude Include="botlib\be_ai_weap.h" />
+    <ClInclude Include="botlib\be_ea.h" />
     <ClInclude Include="game\bg_public.h" />
     <ClInclude Include="game\bg_weapons.h" />
-    <ClInclude Include="game\botlib.h" />
+    <ClInclude Include="botlib\botlib.h" />
     <ClInclude Include="cgame\cg_public.h" />
     <ClInclude Include="client\client.h" />
     <ClInclude Include="game\g_public.h" />
@@ -215,7 +214,7 @@
     <ClInclude Include="qcommon\q_shared.h" />
     <ClInclude Include="client\snd_public.h" />
     <ClInclude Include="game\surfaceflags.h" />
-    <ClInclude Include="cgame\tr_types.h" />
+    <ClInclude Include="renderer\tr_types.h" />
     <ClInclude Include="ui\ui_public.h" />
     <ClInclude Include="win32\win_local.h" />
     <ClInclude Include="icarus\GameInterface.h" />
@@ -243,18 +242,18 @@
     <ClInclude Include="RMG\RM_Objective.h" />
     <ClInclude Include="RMG\RM_Path.h" />
     <ClInclude Include="RMG\RM_Terrain.h" />
-    <ClInclude Include="zlib\crc32.h" />
-    <ClInclude Include="zlib\deflate.h" />
-    <ClInclude Include="zlib\gzguts.h" />
-    <ClInclude Include="zlib\inffast.h" />
-    <ClInclude Include="zlib\inffixed.h" />
-    <ClInclude Include="zlib\inflate.h" />
-    <ClInclude Include="zlib\inftrees.h" />
-    <ClInclude Include="zlib\ioapi.h" />
-    <ClInclude Include="zlib\trees.h" />
-    <ClInclude Include="zlib\zconf.h" />
-    <ClInclude Include="zlib\zlib.h" />
-    <ClInclude Include="zlib\zutil.h" />
+    <ClInclude Include="..\lib\zlib\crc32.h" />
+    <ClInclude Include="..\lib\zlib\deflate.h" />
+    <ClInclude Include="..\lib\zlib\gzguts.h" />
+    <ClInclude Include="..\lib\zlib\inffast.h" />
+    <ClInclude Include="..\lib\zlib\inffixed.h" />
+    <ClInclude Include="..\lib\zlib\inflate.h" />
+    <ClInclude Include="..\lib\zlib\inftrees.h" />
+    <ClInclude Include="..\lib\zlib\ioapi.h" />
+    <ClInclude Include="..\lib\zlib\trees.h" />
+    <ClInclude Include="..\lib\zlib\zconf.h" />
+    <ClInclude Include="..\lib\zlib\zlib.h" />
+    <ClInclude Include="..\lib\zlib\zutil.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="qcommon\RoffSystem.cpp" />
@@ -358,22 +357,21 @@
     <ClCompile Include="rd-dedicated\tr_mesh.cpp" />
     <ClCompile Include="rd-dedicated\tr_model.cpp" />
     <ClCompile Include="rd-dedicated\tr_shader.cpp" />
-    <ClCompile Include="png\rpng.cpp" />
-    <ClCompile Include="libpng\png.c" />
-    <ClCompile Include="libpng\pngerror.c" />
-    <ClCompile Include="libpng\pngget.c" />
-    <ClCompile Include="libpng\pngmem.c" />
-    <ClCompile Include="libpng\pngpread.c" />
-    <ClCompile Include="libpng\pngread.c" />
-    <ClCompile Include="libpng\pngrio.c" />
-    <ClCompile Include="libpng\pngrtran.c" />
-    <ClCompile Include="libpng\pngrutil.c" />
-    <ClCompile Include="libpng\pngset.c" />
-    <ClCompile Include="libpng\pngtrans.c" />
-    <ClCompile Include="libpng\pngwio.c" />
-    <ClCompile Include="libpng\pngwrite.c" />
-    <ClCompile Include="libpng\pngwtran.c" />
-    <ClCompile Include="libpng\pngwutil.c" />
+    <ClCompile Include="..\lib\libpng\png.c" />
+    <ClCompile Include="..\lib\libpng\pngerror.c" />
+    <ClCompile Include="..\lib\libpng\pngget.c" />
+    <ClCompile Include="..\lib\libpng\pngmem.c" />
+    <ClCompile Include="..\lib\libpng\pngpread.c" />
+    <ClCompile Include="..\lib\libpng\pngread.c" />
+    <ClCompile Include="..\lib\libpng\pngrio.c" />
+    <ClCompile Include="..\lib\libpng\pngrtran.c" />
+    <ClCompile Include="..\lib\libpng\pngrutil.c" />
+    <ClCompile Include="..\lib\libpng\pngset.c" />
+    <ClCompile Include="..\lib\libpng\pngtrans.c" />
+    <ClCompile Include="..\lib\libpng\pngwio.c" />
+    <ClCompile Include="..\lib\libpng\pngwrite.c" />
+    <ClCompile Include="..\lib\libpng\pngwtran.c" />
+    <ClCompile Include="..\lib\libpng\pngwutil.c" />
     <ClCompile Include="RMG\rm_area.cpp" />
     <ClCompile Include="RMG\rm_instance.cpp" />
     <ClCompile Include="RMG\rm_instance_bsp.cpp" />
@@ -386,22 +384,22 @@
     <ClCompile Include="RMG\rm_objective.cpp" />
     <ClCompile Include="RMG\rm_path.cpp" />
     <ClCompile Include="RMG\rm_terrain.cpp" />
-    <ClCompile Include="zlib\adler32.c" />
-    <ClCompile Include="zlib\compress.c" />
-    <ClCompile Include="zlib\crc32.c" />
-    <ClCompile Include="zlib\deflate.c" />
-    <ClCompile Include="zlib\gzclose.c" />
-    <ClCompile Include="zlib\gzlib.c" />
-    <ClCompile Include="zlib\gzread.c" />
-    <ClCompile Include="zlib\gzwrite.c" />
-    <ClCompile Include="zlib\infback.c" />
-    <ClCompile Include="zlib\inffast.c" />
-    <ClCompile Include="zlib\inflate.c" />
-    <ClCompile Include="zlib\inftrees.c" />
-    <ClCompile Include="zlib\ioapi.c" />
-    <ClCompile Include="zlib\trees.c" />
-    <ClCompile Include="zlib\uncompr.c" />
-    <ClCompile Include="zlib\zutil.c" />
+    <ClCompile Include="..\lib\zlib\adler32.c" />
+    <ClCompile Include="..\lib\zlib\compress.c" />
+    <ClCompile Include="..\lib\zlib\crc32.c" />
+    <ClCompile Include="..\lib\zlib\deflate.c" />
+    <ClCompile Include="..\lib\zlib\gzclose.c" />
+    <ClCompile Include="..\lib\zlib\gzlib.c" />
+    <ClCompile Include="..\lib\zlib\gzread.c" />
+    <ClCompile Include="..\lib\zlib\gzwrite.c" />
+    <ClCompile Include="..\lib\zlib\infback.c" />
+    <ClCompile Include="..\lib\zlib\inffast.c" />
+    <ClCompile Include="..\lib\zlib\inflate.c" />
+    <ClCompile Include="..\lib\zlib\inftrees.c" />
+    <ClCompile Include="..\lib\zlib\ioapi.c" />
+    <ClCompile Include="..\lib\zlib\trees.c" />
+    <ClCompile Include="..\lib\zlib\uncompr.c" />
+    <ClCompile Include="..\lib\zlib\zutil.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="win32\openjkded.rc" />
