@@ -97,18 +97,18 @@ public:
 		char mess[1000];
 		int total=0;
 		sprintf(mess,"****** %s Error Report Begin******\n",mName.c_str());
-		OutputDebugString(mess);
+		Com_DPrintf(mess);
 
 		map<string,int>::iterator i;
 		for (i=mErrors.begin();i!=mErrors.end();i++)
 		{
 			total+=(*i).second;
 			sprintf(mess,"%s (hits %d)\n",(*i).first.c_str(),(*i).second);
-			OutputDebugString(mess);
+			Com_DPrintf(mess);
 		}
 		
-		sprintf(mess,"****** %s Error Report End   %d errors of %d kinds******\n",mName.c_str(),total,mErrors.size());
-		OutputDebugString(mess);
+		sprintf(mess,"****** %s Error Report End   %d errors of %ld kinds******\n",mName.c_str(),total,mErrors.size());
+		Com_DPrintf(mess);
 	}
 	int AnimTest(CGhoul2Info_v &ghoul2,const char *m,const char *, int line)
 	{
@@ -272,7 +272,7 @@ public:
 			if (1)
 			{
 				sprintf(mess,"%s (hit # %d)\n",full.c_str(),(*f).second);
-				OutputDebugString(mess);
+				Com_DPrintf(mess);
 			}
 		}
 		return ret;
@@ -400,8 +400,8 @@ public:
 		{
 #if G2API_DEBUG
 			char mess[1000];
-			sprintf(mess,"************************\nLeaked %d ghoul2info slots\n", MAX_G2_MODELS - mFreeIndecies.size());
-			OutputDebugString(mess);
+			sprintf(mess,"************************\nLeaked %ld ghoul2info slots\n", MAX_G2_MODELS - mFreeIndecies.size());
+			Com_DPrintf(mess);
 #endif
 			int i;
 			for (i=0;i<MAX_G2_MODELS;i++)
@@ -415,12 +415,12 @@ public:
 				if (j==mFreeIndecies.end())
 				{
 #if G2API_DEBUG
-					sprintf(mess,"Leaked Info idx=%d id=%d sz=%d\n", i, mIds[i], mInfos[i].size());
-					OutputDebugString(mess);
+					sprintf(mess,"Leaked Info idx=%d id=%d sz=%ld\n", i, mIds[i], mInfos[i].size());
+					Com_DPrintf(mess);
 					if (mInfos[i].size())
 					{
 						sprintf(mess,"%s\n", mInfos[i][0].mFileName);
-						OutputDebugString(mess);
+						Com_DPrintf(mess);
 					}
 #endif
 					DeleteLow(i);
@@ -430,7 +430,7 @@ public:
 #if G2API_DEBUG
 		else
 		{
-			OutputDebugString("No ghoul2 info slots leaked\n");
+			Com_DPrintf("No ghoul2 info slots leaked\n");
 		}
 #endif
 	}

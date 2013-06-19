@@ -251,10 +251,11 @@ public:
 		float				inittheta,
 		int					initgoreShader,
 		CGhoul2Info			*initghoul2info,
-		SSkinGoreData		*initgore):
+		SSkinGoreData		*initgore
 #else
-		float				fRadius):
-#endif		):
+		float				fRadius
+#endif
+		):
 	
 		surfaceNum(initsurfaceNum),
 		rootSList(initrootSList),   

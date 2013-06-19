@@ -978,7 +978,7 @@ static void ParseSurfaceSprites(const char *_text, shaderStage_t *stage )
 	stage->ss->facing = SURFSPRITE_FACING_NORMAL;
 
 	// A vertical parameter that needs a default regardless
-	stage->ss->vertSkew;
+	stage->ss->vertSkew = 0.0f;
 
 	// These are effect parameters that need defaults nonetheless.
 	stage->ss->fxDuration = 1000;		// 1 second
@@ -2229,7 +2229,7 @@ void ParseSort( const char **text )
 // this table is also present in q3map
 
 typedef struct {
-	char	*name;
+	const char	*name;
 	int		clearSolid, surfaceFlags, contents;
 } infoParm_t;
 		
