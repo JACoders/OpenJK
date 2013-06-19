@@ -32,7 +32,9 @@ extern void			SetViewportAndScissor( void );
 #include "Ratl/vector_vs.h"
 #include "Ratl/bits_vs.h"
 
+#ifdef _WIN32
 #include "glext.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Defines

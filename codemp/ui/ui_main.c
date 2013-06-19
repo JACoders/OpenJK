@@ -25,7 +25,7 @@ USER INTERFACE MAIN
 
 extern void UI_SaberAttachToChar( itemDef_t *item );
 
-char *forcepowerDesc[NUM_FORCE_POWERS] = 
+const char *forcepowerDesc[NUM_FORCE_POWERS] = 
 {
 "@MENUS_OF_EFFECT_JEDI_ONLY_NEFFECT",
 "@MENUS_DURATION_IMMEDIATE_NAREA",
@@ -48,7 +48,7 @@ char *forcepowerDesc[NUM_FORCE_POWERS] =
 };
 
 // Movedata Sounds
-typedef enum
+enum
 {
 	MDS_NONE = 0,
 	MDS_FORCE_JUMP,
@@ -57,7 +57,7 @@ typedef enum
 	MDS_MOVE_SOUNDS_MAX
 };
 
-typedef enum
+enum
 {
 	MD_ACROBATICS = 0,
 	MD_SINGLE_FAST,
@@ -70,7 +70,7 @@ typedef enum
 
 // Some hard coded badness
 // At some point maybe this should be externalized to a .dat file
-char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
+const char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
 {
 "@MENUS_ACROBATICS",
 "@MENUS_SINGLE_FAST",
@@ -80,7 +80,7 @@ char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
 "@MENUS_SABER_STAFF",
 };
 
-char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
+const char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
 {
 "BOTH_RUN1",
 "BOTH_SABERFAST_STANCE",
@@ -94,9 +94,9 @@ char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
 
 typedef struct 
 {
-	char	*title;	
-	char	*desc;	
-	char	*anim;
+	const char	*title;	
+	const char	*desc;	
+	const char	*anim;
 	short	sound;
 } datpadmovedata_t;
 
@@ -5806,8 +5806,8 @@ static void UI_ResetCharacterListBoxes( void )
 
 //#define MAX_SABER_HILTS	64
 
-char *saberSingleHiltInfo [MAX_SABER_HILTS];
-char *saberStaffHiltInfo [MAX_SABER_HILTS];
+const char *saberSingleHiltInfo [MAX_SABER_HILTS];
+const char *saberStaffHiltInfo [MAX_SABER_HILTS];
 
 qboolean UI_SaberProperNameForSaber( const char *saberName, char *saberProperName );
 void UI_SaberGetHiltInfo( const char *singleHilts[MAX_SABER_HILTS], const char *staffHilts[MAX_SABER_HILTS] );
@@ -6342,7 +6342,7 @@ static void UI_RunMenuScript(char **args)
 				goTeam = qfalse;
 			}
 			// If new team and class match old team and class, just return to the game.
-			else if ((oldteam == team))
+			else if (oldteam == team)
 			{	// Classes match?
 				if (g_UIGloballySelectedSiegeClass != -1)
 				{	

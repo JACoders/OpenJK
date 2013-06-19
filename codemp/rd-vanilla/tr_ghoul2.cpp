@@ -2497,7 +2497,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 					k++;
 					GoreTextureCoordinates *tex=FindGoreRecord((*kcur).second.mGoreTag);
 					if (!tex ||											 // it is gone, lets get rid of it
-						(*kcur).second.mDeleteTime && curTime>=(*kcur).second.mDeleteTime) // out of time
+						(kcur->second.mDeleteTime && curTime>=kcur->second.mDeleteTime)) // out of time
 					{
 						if (tex)
 						{

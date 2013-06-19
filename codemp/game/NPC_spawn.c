@@ -763,7 +763,7 @@ void NPC_SetWeapons( gentity_t *ent )
 {
 	int			bestWeap = WP_NONE;
 	int			curWeap;
-	int			weapons = NPC_WeaponsForTeam( ent->client->playerTeam, ent->spawnflags, ent->NPC_type );
+	int			weapons = NPC_WeaponsForTeam( (team_t)ent->client->playerTeam, ent->spawnflags, ent->NPC_type );
 
 	ent->client->ps.stats[STAT_WEAPONS] = 0;
 	for ( curWeap = WP_SABER; curWeap < WP_NUM_WEAPONS; curWeap++ )
