@@ -72,7 +72,7 @@ typedef struct campspot_s
 } campspot_t;
 
 //FIXME: these are game specific
-typedef enum {
+enum {
 	GT_FFA,				// free for all
 	GT_HOLOCRON,		// holocron match
 	GT_JEDIMASTER,		// jedi master
