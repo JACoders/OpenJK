@@ -52,7 +52,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;..\..\lib%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDLL;_WIN32;WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -66,7 +66,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;..\..\lib%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WINDLL;_WIN32;WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;FINAL_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -77,68 +77,67 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\jpeg-8c\jaricom.c" />
-    <ClCompile Include="..\jpeg-8c\jcapimin.c" />
-    <ClCompile Include="..\jpeg-8c\jcapistd.c" />
-    <ClCompile Include="..\jpeg-8c\jcarith.c" />
-    <ClCompile Include="..\jpeg-8c\jccoefct.c" />
-    <ClCompile Include="..\jpeg-8c\jccolor.c" />
-    <ClCompile Include="..\jpeg-8c\jcdctmgr.c" />
-    <ClCompile Include="..\jpeg-8c\jchuff.c" />
-    <ClCompile Include="..\jpeg-8c\jcinit.c" />
-    <ClCompile Include="..\jpeg-8c\jcmainct.c" />
-    <ClCompile Include="..\jpeg-8c\jcmarker.c" />
-    <ClCompile Include="..\jpeg-8c\jcmaster.c" />
-    <ClCompile Include="..\jpeg-8c\jcomapi.c" />
-    <ClCompile Include="..\jpeg-8c\jcparam.c" />
-    <ClCompile Include="..\jpeg-8c\jcprepct.c" />
-    <ClCompile Include="..\jpeg-8c\jcsample.c" />
-    <ClCompile Include="..\jpeg-8c\jctrans.c" />
-    <ClCompile Include="..\jpeg-8c\jdapimin.c" />
-    <ClCompile Include="..\jpeg-8c\jdapistd.c" />
-    <ClCompile Include="..\jpeg-8c\jdarith.c" />
-    <ClCompile Include="..\jpeg-8c\jdatadst.c" />
-    <ClCompile Include="..\jpeg-8c\jdatasrc.c" />
-    <ClCompile Include="..\jpeg-8c\jdcoefct.c" />
-    <ClCompile Include="..\jpeg-8c\jdcolor.c" />
-    <ClCompile Include="..\jpeg-8c\jddctmgr.c" />
-    <ClCompile Include="..\jpeg-8c\jdhuff.c" />
-    <ClCompile Include="..\jpeg-8c\jdinput.c" />
-    <ClCompile Include="..\jpeg-8c\jdmainct.c" />
-    <ClCompile Include="..\jpeg-8c\jdmarker.c" />
-    <ClCompile Include="..\jpeg-8c\jdmaster.c" />
-    <ClCompile Include="..\jpeg-8c\jdmerge.c" />
-    <ClCompile Include="..\jpeg-8c\jdpostct.c" />
-    <ClCompile Include="..\jpeg-8c\jdsample.c" />
-    <ClCompile Include="..\jpeg-8c\jdtrans.c" />
-    <ClCompile Include="..\jpeg-8c\jerror.c" />
-    <ClCompile Include="..\jpeg-8c\jfdctflt.c" />
-    <ClCompile Include="..\jpeg-8c\jfdctfst.c" />
-    <ClCompile Include="..\jpeg-8c\jfdctint.c" />
-    <ClCompile Include="..\jpeg-8c\jidctflt.c" />
-    <ClCompile Include="..\jpeg-8c\jidctfst.c" />
-    <ClCompile Include="..\jpeg-8c\jidctint.c" />
-    <ClCompile Include="..\jpeg-8c\jmemmgr.c" />
-    <ClCompile Include="..\jpeg-8c\jmemnobs.c" />
-    <ClCompile Include="..\jpeg-8c\jquant1.c" />
-    <ClCompile Include="..\jpeg-8c\jquant2.c" />
-    <ClCompile Include="..\jpeg-8c\jutils.c" />
-    <ClCompile Include="..\png\rpng.cpp" />
-    <ClCompile Include="..\libpng\png.c" />
-    <ClCompile Include="..\libpng\pngerror.c" />
-    <ClCompile Include="..\libpng\pngget.c" />
-    <ClCompile Include="..\libpng\pngmem.c" />
-    <ClCompile Include="..\libpng\pngpread.c" />
-    <ClCompile Include="..\libpng\pngread.c" />
-    <ClCompile Include="..\libpng\pngrio.c" />
-    <ClCompile Include="..\libpng\pngrtran.c" />
-    <ClCompile Include="..\libpng\pngrutil.c" />
-    <ClCompile Include="..\libpng\pngset.c" />
-    <ClCompile Include="..\libpng\pngtrans.c" />
-    <ClCompile Include="..\libpng\pngwio.c" />
-    <ClCompile Include="..\libpng\pngwrite.c" />
-    <ClCompile Include="..\libpng\pngwtran.c" />
-    <ClCompile Include="..\libpng\pngwutil.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jaricom.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcapimin.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcapistd.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcarith.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jccoefct.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jccolor.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcdctmgr.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jchuff.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcinit.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcmainct.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcmarker.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcmaster.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcomapi.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcparam.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcprepct.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jcsample.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jctrans.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdapimin.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdapistd.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdarith.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdatadst.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdatasrc.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdcoefct.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdcolor.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jddctmgr.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdhuff.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdinput.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdmainct.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdmarker.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdmaster.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdmerge.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdpostct.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdsample.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jdtrans.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jerror.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jfdctflt.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jfdctfst.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jfdctint.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jidctflt.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jidctfst.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jidctint.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jmemmgr.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jmemnobs.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jquant1.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jquant2.c" />
+    <ClCompile Include="..\..\lib\jpeg-8c\jutils.c" />
+    <ClCompile Include="..\..\lib\libpng\png.c" />
+    <ClCompile Include="..\..\lib\libpng\pngerror.c" />
+    <ClCompile Include="..\..\lib\libpng\pngget.c" />
+    <ClCompile Include="..\..\lib\libpng\pngmem.c" />
+    <ClCompile Include="..\..\lib\libpng\pngpread.c" />
+    <ClCompile Include="..\..\lib\libpng\pngread.c" />
+    <ClCompile Include="..\..\lib\libpng\pngrio.c" />
+    <ClCompile Include="..\..\lib\libpng\pngrtran.c" />
+    <ClCompile Include="..\..\lib\libpng\pngrutil.c" />
+    <ClCompile Include="..\..\lib\libpng\pngset.c" />
+    <ClCompile Include="..\..\lib\libpng\pngtrans.c" />
+    <ClCompile Include="..\..\lib\libpng\pngwio.c" />
+    <ClCompile Include="..\..\lib\libpng\pngwrite.c" />
+    <ClCompile Include="..\..\lib\libpng\pngwtran.c" />
+    <ClCompile Include="..\..\lib\libpng\pngwutil.c" />
     <ClCompile Include="..\qcommon\GenericParser2.cpp" />
     <ClCompile Include="..\qcommon\matcomp.cpp" />
     <ClCompile Include="..\qcommon\q_math.cpp" />
@@ -146,22 +145,22 @@
     <ClCompile Include="..\win32\win_gamma.cpp" />
     <ClCompile Include="..\win32\win_glimp.cpp" />
     <ClCompile Include="..\win32\win_qgl.cpp" />
-    <ClCompile Include="..\zlib\adler32.c" />
-    <ClCompile Include="..\zlib\compress.c" />
-    <ClCompile Include="..\zlib\crc32.c" />
-    <ClCompile Include="..\zlib\deflate.c" />
-    <ClCompile Include="..\zlib\gzclose.c" />
-    <ClCompile Include="..\zlib\gzlib.c" />
-    <ClCompile Include="..\zlib\gzread.c" />
-    <ClCompile Include="..\zlib\gzwrite.c" />
-    <ClCompile Include="..\zlib\infback.c" />
-    <ClCompile Include="..\zlib\inffast.c" />
-    <ClCompile Include="..\zlib\inflate.c" />
-    <ClCompile Include="..\zlib\inftrees.c" />
-    <ClCompile Include="..\zlib\ioapi.c" />
-    <ClCompile Include="..\zlib\trees.c" />
-    <ClCompile Include="..\zlib\uncompr.c" />
-    <ClCompile Include="..\zlib\zutil.c" />
+    <ClCompile Include="..\..\lib\zlib\adler32.c" />
+    <ClCompile Include="..\..\lib\zlib\compress.c" />
+    <ClCompile Include="..\..\lib\zlib\crc32.c" />
+    <ClCompile Include="..\..\lib\zlib\deflate.c" />
+    <ClCompile Include="..\..\lib\zlib\gzclose.c" />
+    <ClCompile Include="..\..\lib\zlib\gzlib.c" />
+    <ClCompile Include="..\..\lib\zlib\gzread.c" />
+    <ClCompile Include="..\..\lib\zlib\gzwrite.c" />
+    <ClCompile Include="..\..\lib\zlib\infback.c" />
+    <ClCompile Include="..\..\lib\zlib\inffast.c" />
+    <ClCompile Include="..\..\lib\zlib\inflate.c" />
+    <ClCompile Include="..\..\lib\zlib\inftrees.c" />
+    <ClCompile Include="..\..\lib\zlib\ioapi.c" />
+    <ClCompile Include="..\..\lib\zlib\trees.c" />
+    <ClCompile Include="..\..\lib\zlib\uncompr.c" />
+    <ClCompile Include="..\..\lib\zlib\zutil.c" />
     <ClCompile Include="G2_API.cpp" />
     <ClCompile Include="G2_bolts.cpp" />
     <ClCompile Include="G2_bones.cpp" />
@@ -198,34 +197,33 @@
     <ClCompile Include="tr_WorldEffects.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\jpeg-8c\jconfig.h" />
-    <ClInclude Include="..\jpeg-8c\jdct.h" />
-    <ClInclude Include="..\jpeg-8c\jerror.h" />
-    <ClInclude Include="..\jpeg-8c\jinclude.h" />
-    <ClInclude Include="..\jpeg-8c\jmemsys.h" />
-    <ClInclude Include="..\jpeg-8c\jmorecfg.h" />
-    <ClInclude Include="..\jpeg-8c\jpegint.h" />
-    <ClInclude Include="..\jpeg-8c\jpeglib.h" />
-    <ClInclude Include="..\jpeg-8c\jversion.h" />
+    <ClInclude Include="..\..\lib\jpeg-8c\jconfig.h" />
+    <ClInclude Include="..\..\lib\jpeg-8c\jdct.h" />
+    <ClInclude Include="..\..\lib\jpeg-8c\jerror.h" />
+    <ClInclude Include="..\..\lib\jpeg-8c\jinclude.h" />
+    <ClInclude Include="..\..\lib\jpeg-8c\jmemsys.h" />
+    <ClInclude Include="..\..\lib\jpeg-8c\jmorecfg.h" />
+    <ClInclude Include="..\..\lib\jpeg-8c\jpegint.h" />
+    <ClInclude Include="..\..\lib\jpeg-8c\jpeglib.h" />
+    <ClInclude Include="..\..\lib\jpeg-8c\jversion.h" />
     <ClInclude Include="..\renderer\mdx_format.h" />
     <ClInclude Include="..\renderer\tr_public.h" />
     <ClInclude Include="..\renderer\tr_types.h" />
-    <ClInclude Include="..\png\png.h" />
-    <ClInclude Include="..\libpng\png.h" />
-    <ClInclude Include="..\libpng\pngconf.h" />
-    <ClInclude Include="..\libpng\pngstruct.h" />
-    <ClInclude Include="..\zlib\crc32.h" />
-    <ClInclude Include="..\zlib\deflate.h" />
-    <ClInclude Include="..\zlib\gzguts.h" />
-    <ClInclude Include="..\zlib\inffast.h" />
-    <ClInclude Include="..\zlib\inffixed.h" />
-    <ClInclude Include="..\zlib\inflate.h" />
-    <ClInclude Include="..\zlib\inftrees.h" />
-    <ClInclude Include="..\zlib\ioapi.h" />
-    <ClInclude Include="..\zlib\trees.h" />
-    <ClInclude Include="..\zlib\zconf.h" />
-    <ClInclude Include="..\zlib\zlib.h" />
-    <ClInclude Include="..\zlib\zutil.h" />
+    <ClInclude Include="..\..\lib\libpng\png.h" />
+    <ClInclude Include="..\..\lib\libpng\pngconf.h" />
+    <ClInclude Include="..\..\lib\libpng\pngstruct.h" />
+    <ClInclude Include="..\..\lib\zlib\crc32.h" />
+    <ClInclude Include="..\..\lib\zlib\deflate.h" />
+    <ClInclude Include="..\..\lib\zlib\gzguts.h" />
+    <ClInclude Include="..\..\lib\zlib\inffast.h" />
+    <ClInclude Include="..\..\lib\zlib\inffixed.h" />
+    <ClInclude Include="..\..\lib\zlib\inflate.h" />
+    <ClInclude Include="..\..\lib\zlib\inftrees.h" />
+    <ClInclude Include="..\..\lib\zlib\ioapi.h" />
+    <ClInclude Include="..\..\lib\zlib\trees.h" />
+    <ClInclude Include="..\..\lib\zlib\zconf.h" />
+    <ClInclude Include="..\..\lib\zlib\zlib.h" />
+    <ClInclude Include="..\..\lib\zlib\zutil.h" />
     <ClInclude Include="glext.h" />
     <ClInclude Include="qgl.h" />
     <ClInclude Include="G2_local.h" />

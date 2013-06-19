@@ -55,7 +55,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;BOTLIB;_JK2;_JK2MP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -73,7 +73,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\lib\ALut.lib;..\lib\OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -101,7 +101,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PreprocessorDefinitions>_WIN32;NDEBUG;WIN32;_WINDOWS;BOTLIB;_JK2;_JK2MP;FINAL_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -119,7 +119,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ALut.lib;OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\lib\ALut.lib;..\lib\OpenAL32.lib;winmm.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -210,18 +210,18 @@
     <ClInclude Include="mp3code\port.h" />
     <ClInclude Include="mp3code\small_header.h" />
     <ClInclude Include="mp3code\tableawd.h" />
-    <ClInclude Include="zlib\crc32.h" />
-    <ClInclude Include="zlib\deflate.h" />
-    <ClInclude Include="zlib\gzguts.h" />
-    <ClInclude Include="zlib\inffast.h" />
-    <ClInclude Include="zlib\inffixed.h" />
-    <ClInclude Include="zlib\inflate.h" />
-    <ClInclude Include="zlib\inftrees.h" />
-    <ClInclude Include="zlib\ioapi.h" />
-    <ClInclude Include="zlib\trees.h" />
-    <ClInclude Include="zlib\zconf.h" />
-    <ClInclude Include="zlib\zlib.h" />
-    <ClInclude Include="zlib\zutil.h" />
+    <ClInclude Include="..\lib\zlib\crc32.h" />
+    <ClInclude Include="..\lib\zlib\deflate.h" />
+    <ClInclude Include="..\lib\zlib\gzguts.h" />
+    <ClInclude Include="..\lib\zlib\inffast.h" />
+    <ClInclude Include="..\lib\zlib\inffixed.h" />
+    <ClInclude Include="..\lib\zlib\inflate.h" />
+    <ClInclude Include="..\lib\zlib\inftrees.h" />
+    <ClInclude Include="..\lib\zlib\ioapi.h" />
+    <ClInclude Include="..\lib\zlib\trees.h" />
+    <ClInclude Include="..\lib\zlib\zconf.h" />
+    <ClInclude Include="..\lib\zlib\zlib.h" />
+    <ClInclude Include="..\lib\zlib\zutil.h" />
     <ClInclude Include="client\eax\EaxMan.h" />
     <ClInclude Include="client\eax\eax.h" />
     <ClInclude Include="client\OpenAL\al.h" />
@@ -401,22 +401,22 @@
     <ClCompile Include="mp3code\uph.c" />
     <ClCompile Include="mp3code\upsf.c" />
     <ClCompile Include="mp3code\wavep.c" />
-    <ClCompile Include="zlib\adler32.c" />
-    <ClCompile Include="zlib\compress.c" />
-    <ClCompile Include="zlib\crc32.c" />
-    <ClCompile Include="zlib\deflate.c" />
-    <ClCompile Include="zlib\gzclose.c" />
-    <ClCompile Include="zlib\gzlib.c" />
-    <ClCompile Include="zlib\gzread.c" />
-    <ClCompile Include="zlib\gzwrite.c" />
-    <ClCompile Include="zlib\infback.c" />
-    <ClCompile Include="zlib\inffast.c" />
-    <ClCompile Include="zlib\inflate.c" />
-    <ClCompile Include="zlib\inftrees.c" />
-    <ClCompile Include="zlib\ioapi.c" />
-    <ClCompile Include="zlib\trees.c" />
-    <ClCompile Include="zlib\uncompr.c" />
-    <ClCompile Include="zlib\zutil.c" />
+    <ClCompile Include="..\lib\zlib\adler32.c" />
+    <ClCompile Include="..\lib\zlib\compress.c" />
+    <ClCompile Include="..\lib\zlib\crc32.c" />
+    <ClCompile Include="..\lib\zlib\deflate.c" />
+    <ClCompile Include="..\lib\zlib\gzclose.c" />
+    <ClCompile Include="..\lib\zlib\gzlib.c" />
+    <ClCompile Include="..\lib\zlib\gzread.c" />
+    <ClCompile Include="..\lib\zlib\gzwrite.c" />
+    <ClCompile Include="..\lib\zlib\infback.c" />
+    <ClCompile Include="..\lib\zlib\inffast.c" />
+    <ClCompile Include="..\lib\zlib\inflate.c" />
+    <ClCompile Include="..\lib\zlib\inftrees.c" />
+    <ClCompile Include="..\lib\zlib\ioapi.c" />
+    <ClCompile Include="..\lib\zlib\trees.c" />
+    <ClCompile Include="..\lib\zlib\uncompr.c" />
+    <ClCompile Include="..\lib\zlib\zutil.c" />
     <ClCompile Include="RMG\RM_Area.cpp" />
     <ClCompile Include="RMG\RM_Instance.cpp" />
     <ClCompile Include="RMG\RM_InstanceFile.cpp" />
