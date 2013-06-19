@@ -758,6 +758,9 @@ unsigned int AnyLanguage_ReadCharFromString( const char *psText, int *piAdvanceC
 			}
 		}
 		break;
+
+		default:
+		break;
 	}
 
 	// ... must not have been an MBCS code...
@@ -793,6 +796,8 @@ qboolean Language_IsAsian(void)
 		case eChinese:
 		case eThai:	// this is asian, but the query is normally used for scaling
 			return qtrue;
+		default:
+			break;
 	}
 
 	return qfalse;
@@ -808,6 +813,8 @@ qboolean Language_UsesSpaces(void)
 		case eChinese:		
 		case eThai:			
 			return qfalse;
+		default:
+			break;
 	}
 
 	return qtrue;
@@ -1001,6 +1008,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 						}
 					}
 					break;
+					default: break;
 				}
 
 				// textures need loading...

@@ -4983,7 +4983,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 				targ->enemy = attacker;
 			}
 
-			if ( ( targ->m_pVehicle->m_pVehicleInfo->type == VH_ANIMAL ) )
+			if ( targ->m_pVehicle->m_pVehicleInfo->type == VH_ANIMAL )
 			{
 				//((CVehicleNPC *)targ->NPC)->m_ulFlags |= CVehicleNPC::VEH_BUCKING;
 			}

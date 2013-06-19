@@ -1005,7 +1005,7 @@ void CG_ParseSiegeExtendedDataEntry(const char *conStr)
 		{
 			s[i] = *str;
 			i++;
-			*str++;
+			str++;
 		}
 		s[i] = 0;
         switch (argParses)

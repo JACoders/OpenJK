@@ -1441,6 +1441,8 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 			}
 		}
 		break;
+	default:
+		break;
 	}
 avoidGen:
 	//
