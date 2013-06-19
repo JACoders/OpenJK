@@ -330,7 +330,7 @@ CBlockMember *CBlock::GetMember( int memberNum )
 {
 	if ( memberNum > GetNumMembers()-1 )
 	{
-		return false;
+		return NULL;
 	}
 	return m_members[ memberNum ];
 }
@@ -343,7 +343,7 @@ GetMemberData
 
 void *CBlock::GetMemberData( int memberNum )
 {
-	if ( memberNum > GetNumMembers()-1 )
+	if ( memberNum >= GetNumMembers() )
 	{
 		return NULL;
 	}
@@ -364,7 +364,7 @@ CBlock *CBlock::Duplicate( void )
 	newblock = new CBlock;
 
 	if ( newblock == NULL )
-		return false;
+		return NULL;
 
 	newblock->Create( m_id );
 
@@ -538,7 +538,7 @@ int CBlockStream::Create( char *filename )
 	//Recover that as the active filename
 	strcpy(m_fileName, newName);
 
-	if ( ((m_fileHandle = fopen(m_fileName, "wb")) == NULL) )
+	if ( (m_fileHandle = fopen(m_fileName, "wb")) == NULL )
 	{
 		return false;
 	}

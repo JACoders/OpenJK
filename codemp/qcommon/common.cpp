@@ -226,7 +226,7 @@ void QDECL Com_OPrintf( const char *fmt, ...)
 #ifdef _WIN32
 	OutputDebugString(msg);
 #else
-	printf(msg);
+	printf("%s", msg);
 #endif
 }
 
@@ -1074,7 +1074,7 @@ A way to force a bus error for development reasons
 =================
 */
 static void Com_Crash_f( void ) {
-	* ( int * ) 0 = 0x12345678;
+	* ( volatile int * ) 0 = 0x12345678;
 }
 
 

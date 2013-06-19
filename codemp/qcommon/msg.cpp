@@ -827,7 +827,7 @@ entityState_t communication
 
 
 typedef struct {
-	char	*name;
+	const char	*name;
 	int		offset;
 	int		bits;		// 0 = float
 #ifndef FINAL_BUILD
@@ -3167,7 +3167,7 @@ void MSG_initHuffman() {
 	Cbuf_AddText( "condump dump.txt\n" );
 }
 
-#endif _USINGNEWHUFFTABLE_
+#endif //._USINGNEWHUFFTABLE_
 
 void MSG_shutdownHuffman()
 {

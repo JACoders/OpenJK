@@ -39,7 +39,7 @@ typedef struct
 {
 	word	upper;
 	word	lower;
-	char	*name;
+	const char	*name;
 	int		keynum;
 	bool	menukey;
 } keyname_t;
