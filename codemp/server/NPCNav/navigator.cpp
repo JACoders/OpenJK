@@ -614,7 +614,7 @@ bool CNavigator::Load( const char *filename, int checksum )
 	FS_FOpenFileByMode( va( "maps/%s.nav", filename ), &file, FS_READ );
 
 	//See if we succeeded
-	if ( file == NULL )
+	if ( file == 0 )
 		return false;
 
 	//Check the header id
@@ -676,7 +676,7 @@ bool CNavigator::Save( const char *filename, int checksum )
 	//Attempt to load the file
 	FS_FOpenFileByMode( va( "maps/%s.nav", filename ), &file, FS_WRITE );
 
-	if ( file == NULL )
+	if ( file == 0 )
 		return false;
 
 	//Write out the header id

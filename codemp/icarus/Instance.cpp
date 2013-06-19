@@ -389,7 +389,7 @@ int ICARUS_Instance::SaveSignals( void )
 		const char *name = ((*si).first).c_str();
 		
 		//Make sure this is a valid string
-		assert( ( name != NULL ) && ( name[0] != NULL ) );
+		assert( ( name != NULL ) && ( name[0] != '\0' ) );
 
 		int length = strlen( name ) + 1;
 

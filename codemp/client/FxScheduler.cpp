@@ -1251,7 +1251,9 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		case Sound:
 		case CameraShake:
 			//does not work bolted
-				break;
+			break;
+		default:
+			break;
 		}
 	}
 

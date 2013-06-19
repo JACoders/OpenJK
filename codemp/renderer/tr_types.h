@@ -331,7 +331,7 @@ typedef struct {
 } refdef_t;
 
 
-typedef enum {
+enum {
 	STEREO_CENTER,
 	STEREO_LEFT,
 	STEREO_RIGHT

@@ -219,4 +219,4 @@ protected:
 	static keywordArray_t	m_conditionalKeywords[];	//Conditional
 };
 
-#endif __cplusplus
+#endif //__cplusplus

@@ -2967,7 +2967,7 @@ String ID Tables
 #define ENUM2STRING(arg)   { #arg, arg }
 typedef struct stringID_table_s
 {
-	char	*name;
+	const char	*name;
 	int		id;
 } stringID_table_t;
 
