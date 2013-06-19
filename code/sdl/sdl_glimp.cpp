@@ -1087,7 +1087,7 @@ static void GLimp_InitExtensions( void )
 
 	if ( strstr( glConfig.extensions_string, "GL_EXT_point_parameters" ) )
 	{
-		if ( r_ext_compiled_vertex_array->integer || 1)
+		if ( r_ext_compiled_vertex_array->integer )
 		{
 			Com_Printf ("...using GL_EXT_point_parameters\n" );
 			qglPointParameterfEXT = ( void ( APIENTRY * )( GLenum, GLfloat) ) SDL_GL_GetProcAddress( "glPointParameterfEXT" );
@@ -1393,7 +1393,7 @@ void		GLimp_EnableLogging( qboolean enable )
 {
 }
 
-void 		GLimp_LogComment( char *comment )
+void 		GLimp_LogComment( const char *comment )
 {
 }
 

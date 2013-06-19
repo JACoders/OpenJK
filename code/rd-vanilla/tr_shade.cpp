@@ -2048,6 +2048,8 @@ static void ComputeColors( shaderStage_t *pStage, alphaGen_t forceAlphaGen, colo
 			}
 		}
 		break;
+	default:
+		break;
 	}
 
 	//
@@ -2067,6 +2069,8 @@ static void ComputeColors( shaderStage_t *pStage, alphaGen_t forceAlphaGen, colo
 			RB_CalcModulateRGBAsByFog( ( unsigned char * ) tess.svars.colors );
 			break;
 		case ACFF_NONE:
+			break;
+		default:
 			break;
 		}
 	}

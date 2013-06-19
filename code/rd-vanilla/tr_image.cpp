@@ -56,7 +56,7 @@ void R_GammaCorrect( byte *buffer, int bufSize ) {
 }
 
 typedef struct {
-	char *name;
+	const char *name;
 	int	minimize, maximize;
 } textureMode_t;
 
@@ -1034,9 +1034,9 @@ static void R_Images_DeleteImageContents( image_t *pImage )
 static void GL_ResetBinds(void)
 {
 	memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
-	if ( qglBindTexture ) 
+	if ( &qglBindTexture ) 
 	{
-		if ( qglActiveTextureARB ) 
+		if ( &qglActiveTextureARB ) 
 		{
 			GL_SelectTexture( 1 );
 			qglBindTexture( GL_TEXTURE_2D, 0 );
