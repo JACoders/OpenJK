@@ -185,7 +185,7 @@ int G_FindLookItem( gentity_t *self )
 			continue;
 		}
 		if ( ent->item->giType == IT_WEAPON
-			&& ent->item->giType == WP_SABER )
+			&& ent->item->giTag == WP_SABER )
 		{//a weapon_saber pickup
 			if ( self->client->ps.dualSabers//using 2 sabers already
 				|| (self->client->ps.saber[0].saberFlags&SFL_TWO_HANDED) )//using a 2-handed saber

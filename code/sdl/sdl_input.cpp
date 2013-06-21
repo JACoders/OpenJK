@@ -400,7 +400,7 @@ static int hat_keys[16] = {
 };
 
 
-struct
+struct stick_state_s
 {
 	qboolean buttons[16];  // !!! FIXME: these might be too many.
 	unsigned int oldaxes;
