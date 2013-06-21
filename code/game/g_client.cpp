@@ -703,7 +703,10 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 
 		if (strlen(s))	// actually this would be safe anyway because of the way sscanf() works, but this is clearer
 		{//				|general info				  |-force powers |-saber 1										   |-saber 2										  |-general saber
-			sscanf( s, "%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i", 
+			unsigned int saber1BladeColor[8];
+			unsigned int saber2BladeColor[8];
+
+			sscanf( s, "%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %u %u %u %u %u %u %u %u %s %i %i %i %i %i %i %i %i %u %u %u %u %u %u %u %u %i %i %i %i", 
 								&client->ps.stats[STAT_HEALTH],
 								&client->ps.stats[STAT_ARMOR],
 								&client->ps.stats[STAT_WEAPONS],
@@ -730,14 +733,14 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 								&client->ps.saber[0].blade[5].active,
 								&client->ps.saber[0].blade[6].active,
 								&client->ps.saber[0].blade[7].active,
-								&client->ps.saber[0].blade[0].color,
-								&client->ps.saber[0].blade[1].color,
-								&client->ps.saber[0].blade[2].color,
-								&client->ps.saber[0].blade[3].color,
-								&client->ps.saber[0].blade[4].color,
-								&client->ps.saber[0].blade[5].color,
-								&client->ps.saber[0].blade[6].color,
-								&client->ps.saber[0].blade[7].color,
+								&saber1BladeColor[0],
+								&saber1BladeColor[1],
+								&saber1BladeColor[2],
+								&saber1BladeColor[3],
+								&saber1BladeColor[4],
+								&saber1BladeColor[5],
+								&saber1BladeColor[6],
+								&saber1BladeColor[7],
 								//saber 2 data
 								saber1Name,
 								&client->ps.saber[1].blade[0].active,
@@ -748,20 +751,26 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 								&client->ps.saber[1].blade[5].active,
 								&client->ps.saber[1].blade[6].active,
 								&client->ps.saber[1].blade[7].active,
-								&client->ps.saber[1].blade[0].color,
-								&client->ps.saber[1].blade[1].color,
-								&client->ps.saber[1].blade[2].color,
-								&client->ps.saber[1].blade[3].color,
-								&client->ps.saber[1].blade[4].color,
-								&client->ps.saber[1].blade[5].color,
-								&client->ps.saber[1].blade[6].color,
-								&client->ps.saber[1].blade[7].color,
+								&saber2BladeColor[0],
+								&saber2BladeColor[1],
+								&saber2BladeColor[2],
+								&saber2BladeColor[3],
+								&saber2BladeColor[4],
+								&saber2BladeColor[5],
+								&saber2BladeColor[6],
+								&saber2BladeColor[7],
 								//general saber data
 								&client->ps.saberStylesKnown,
 								&client->ps.saberAnimLevel,
 								&client->ps.saberLockEnemy,
 								&client->ps.saberLockTime
 					);
+			for (int j = 0; j < 8; j++)
+			{
+				client->ps.saber[0].blade[j].color = (saber_colors_t)saber1BladeColor[j];
+				client->ps.saber[1].blade[j].color = (saber_colors_t)saber2BladeColor[j];
+			}
+
 			ent->health = client->ps.stats[STAT_HEALTH];
 
 			if(ent->client->ps.saber[0].name && gi.bIsFromZone(ent->client->ps.saber[0].name, TAG_G_ALLOC)) {

@@ -36,7 +36,7 @@ This file is part of Jedi Academy.
 
 extern gitem_t	bg_itemlist[];
 
-struct 
+struct itemParms_s
 {
 	int	itemNum;
 } itemParms;
