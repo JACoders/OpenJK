@@ -789,6 +789,7 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 			{
 //				Com_DPrintf("(Keeping file \"%s\" as MP3)\n",sLoadName);
 
+#ifdef _WIN32
 				if (s_UseOpenAL)
 				{
 					// Create space for lipsync data (4 lip sync values per streaming AL buffer)
@@ -797,6 +798,7 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 					else
 						sfx->lipSyncData = NULL;
 				}
+#endif
 			}
 			else
 			{
@@ -831,6 +833,7 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 						S_LoadSound_Finalize(&info,sfx,pbUnpackBuffer);
 
 						// Open AL
+#ifdef _WIN32
 						if (s_UseOpenAL)
 						{
 							if ((strstr(sfx->sSoundName, "chars")) || (strstr(sfx->sSoundName, "CHARS")))
@@ -858,6 +861,7 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 								}
 							}
 						}
+#endif
 
 						Z_Free(pbUnpackBuffer);
 					}
@@ -901,6 +905,7 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 		ResampleSfx( sfx, info.rate, info.width, data + info.dataofs );
 
 		// Open AL
+#ifdef _WIN32
 		if (s_UseOpenAL)
 		{
 			if ((strstr(sfx->sSoundName, "chars")) || (strstr(sfx->sSoundName, "CHARS")))
@@ -929,6 +934,7 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 				}
 			}
 		}
+#endif
 
 		Z_Free(samples);
 	}
