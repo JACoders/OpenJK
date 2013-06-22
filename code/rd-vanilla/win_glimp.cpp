@@ -747,7 +747,28 @@ static rserr_t GLW_SetMode( int mode,
 	// print out informational messages
 	//
 	VID_Printf( PRINT_ALL, "...setting mode %d:", mode );
-	if ( !R_GetModeInfo( &glConfig.vidWidth, &glConfig.vidHeight, mode ) )
+	if (mode == -2)
+	{
+		int OSwidth = GetSystemMetrics (SM_CXSCREEN);
+		int OSheight = GetSystemMetrics (SM_CYSCREEN);
+
+		// use desktop video resolution
+		if( OSheight > 0 )
+		{
+			glConfig.vidWidth = OSwidth;
+			glConfig.vidHeight = OSheight;
+		}
+		else
+		{
+			glConfig.vidWidth = 640;
+			glConfig.vidHeight = 480;
+			VID_Printf( PRINT_ALL, "Cannot determine display resolution, assuming 640x480\n" );
+		}
+
+		//TODO Aspect stuff?
+		//glConfig.windowAspect = (float)glConfig.vidWidth / (float)glConfig.vidHeight;
+	}
+	else if ( !R_GetModeInfo( &glConfig.vidWidth, &glConfig.vidHeight, mode ) )
 	{
 		VID_Printf( PRINT_ALL, " invalid mode\n" );
 		return RSERR_INVALID_MODE;
