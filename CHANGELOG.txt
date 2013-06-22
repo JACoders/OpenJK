@@ -3,7 +3,8 @@ Key: - removed, + added, * modified
 
 + The Jedi Academy singleplayer now searches for jagamex86.dll in the mod's folder, too, meaning SP Code mods are possible.
 * Increased Command Buffer from 16384 to 128*1024
-* Increased max cvars from 1224 to 2048
+* Increased max cvars from 1224 to 2048 (MP)
+* Fixed several parsers that broke with characters which wrapped to being negative.
 + Added mouse-wheel to console
 + Added misc security fixes to allow servers to deal with connectionless packets.
 * Added security fixes to prevent servers from spoofing clients with connect packets.
@@ -13,18 +14,23 @@ Key: - removed, + added, * modified
 * Tweaked forcetoggle rcon command.
 + Add r_noborder option for SP and MP (windowed mode feature).
 + Add r_centerWindow option for SP and MP (windowed mode feature).
-+ Add r_mode -2 option for MP (soon SP too) to use desktop resolution.
++ Add r_mode -2 option for SP and MP to use desktop resolution.
 * Dedicated server binaries now correctly print sectioned prints without adding newlines erroneously.
 * Fixed a nasty memory issue with clipboard pasting in SP.
 * (jampgame gamecode specific) Fixed very bad out of bounds access in G_LogWeaponFire with NPCs.
 + (cgame/jampgame gamecode specific) Added pmove_float default off optional cvar for no float to integer snapping of velocity on players.
 * Fixed MiniHeapSize issue in SP
+* Fixed incorrect alphagen enum usage.
 * Fixed widescreen resolution changes causing black screen when UI restarted.
 * Fixed crash when trying to run custom resolutions with a local server.
 * Fixed crash related to ragnos NPC in MP
 * Fixed (SP) intro cinematic only displaying as white screen when on non 4:3 aspect ratio.
 * Fixes some voting issues relating to clients disconnecting and/or switching teams.
 * Fixed some voting issues relating to bad percentage calculation for passing/failing.
+* Fixed some item prediction errors in team games.  (Item prediction still sucks in general though)
+* Fixed potential out of bounds in sound code.
+* Fixed buffer overflow in SP's filesystem code which prevented use of some maps (atlantica).  Raven made a Com_Error to prevent this from happening, we removed that as well.
+* Rosh should no longer randomly die due to falling damage on the first level.
 * Fixed Gamma Clamp on WinXP+
 * Fixed weather system incorrectly throwing up a warning with shader data if weather system was unable to parse a vector correctly.
 * Fixed buffer overflow in client side rcon command.
