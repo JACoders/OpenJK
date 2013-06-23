@@ -97,13 +97,18 @@ else(WIN32)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 
 	if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-		message("Using GCC")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+	elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+		# No nested block comments
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-comment")
 	endif()
 
 	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-		message("Using G++")
+		# Disable invalid offsetof, and deprecated writable strings warnings
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof -Wno-write-strings")
+	elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+		# Disable nested block comments, and deprecated writable strings warnings
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-writable-strings -Wno-comment")
 	endif()
 
 	if (NOT CMAKE_BUILD_TYPE)
