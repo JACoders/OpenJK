@@ -22,7 +22,9 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4710 )	//not inlined
+#endif
 #include "client.h"
 #include "snd_ambient.h"
 #ifdef _XBOX
