@@ -68,10 +68,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
-	{
-		CAPACITY		= T::CAPACITY
-	};
+	static const int CAPACITY		= T::CAPACITY;
 private:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Data
@@ -217,10 +214,7 @@ class queue_vs : public queue_base<storage::value_semantics<T,ARG_CAPACITY> >
 public:
 	typedef typename storage::value_semantics<T,ARG_CAPACITY> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY		= ARG_CAPACITY;
 	queue_vs() {}
 };
 
@@ -230,10 +224,7 @@ class queue_os : public queue_base<storage::object_semantics<T,ARG_CAPACITY> >
 public:
 	typedef typename storage::object_semantics<T,ARG_CAPACITY> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY		= ARG_CAPACITY;
 	queue_os() {}
 };
 
@@ -243,11 +234,8 @@ class queue_is : public queue_base<storage::virtual_semantics<T,ARG_CAPACITY,ARG
 public:
 	typedef typename storage::virtual_semantics<T,ARG_CAPACITY,ARG_MAX_CLASS_SIZE> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY,
-		MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE
-	};
+	static const int CAPACITY		= ARG_CAPACITY;
+	static const int MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE;
 	queue_is() {}
 };
 
