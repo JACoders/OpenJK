@@ -85,7 +85,9 @@ void		DeleteGoreSet(int goreSetTag);
 #endif // _G2_GORE
 
 //rww - RAGDOLL_BEGIN
+#ifdef _MSC_VER
 #pragma warning(disable: 4512)
+#endif
 
 struct SRagDollEffectorCollision
 {
