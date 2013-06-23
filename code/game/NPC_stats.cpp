@@ -443,10 +443,6 @@ static void ParseAnimationEvtBlock(int glaIndex, unsigned short modelIndex, cons
 	// read information for each frame
 	while ( 1 ) 
 	{
-		if ( lastAnimEvent >= MAX_ANIM_EVENTS )
-		{
-			CG_Error( "ParseAnimationEvtBlock: number events in file %s > MAX_ANIM_EVENTS(%i)", aeb_filename, MAX_ANIM_EVENTS );
-		}
 		// Get base frame of sequence
 		token = COM_Parse( text_p );
 		if ( !token || !token[0]) 
