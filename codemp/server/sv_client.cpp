@@ -6,7 +6,7 @@
 #include "server.h"
 #include "qcommon/stringed_ingame.h"
 #include "RMG/RM_Headers.h"
-#include "../zlib/zlib.h"
+#include "zlib/zlib.h"
 
 static void SV_CloseDownload( client_t *cl );
 
@@ -47,6 +47,20 @@ void SV_GetChallenge( netadr_t from ) {
 	*/
 	if (Cvar_VariableValue("ui_singlePlayerActive"))
 	{
+		return;
+	}
+
+	// Prevent using getchallenge as an amplifier
+	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
+		Com_DPrintf( "SV_GetChallenge: rate limit from %s exceeded, dropping request\n",
+			NET_AdrToString( from ) );
+		return;
+	}
+
+	// Allow getchallenge to be DoSed relatively easily, but prevent
+	// excess outbound bandwidth usage when being flooded inbound
+	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
+		Com_DPrintf( "SV_GetChallenge: rate limit exceeded, dropping request\n" );
 		return;
 	}
 

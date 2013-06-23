@@ -1763,7 +1763,6 @@ const char *CG_GetGameStatusText(void);
 const char *CG_GetKillerText(void);
 void CG_Draw3DModel( float x, float y, float w, float h, qhandle_t model, void *ghoul2, int g2radius, qhandle_t skin, vec3_t origin, vec3_t angles );
 void CG_Text_PaintChar(float x, float y, float width, float height, float scale, float s, float t, float s2, float t2, qhandle_t hShader);
-const char *CG_GameTypeString(void);
 qboolean CG_YourTeamHasFlag(void);
 qboolean CG_OtherTeamHasFlag(void);
 qhandle_t CG_StatusHandle(int task);

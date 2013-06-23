@@ -45,7 +45,7 @@ local.properties
 [Dd]ebug/
 [Rr]elease/
 [Ff]inal/
-[Ff]inalBuild/
+[Ff]inal[Bb]uild/
 *_i.c
 *_p.c
 *.ilk
@@ -65,7 +65,7 @@ local.properties
 .builds
 *.dotCover
 
-*winquake.res
+winquake.res
 
 ## TODO: If you have NuGet Package Restore enabled, uncomment this
 #packages/

@@ -107,7 +107,7 @@ void WP_ATSTSideAltFire( gentity_t *ent )
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK | DAMAGE_HEAVY_WEAP_CLASS;
 	missile->methodOfDeath = MOD_EXPLOSIVE;
 	missile->splashMethodOfDeath = MOD_EXPLOSIVE_SPLASH;
-	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+	missile->clipmask = MASK_SHOT;
 
 	// Scale damage down a bit if it is coming from an NPC
 	missile->splashDamage = weaponData[WP_ATST_SIDE].altSplashDamage * ( ent->s.number == 0 ? 1.0f : ATST_SIDE_ALT_ROCKET_SPLASH_SCALE );

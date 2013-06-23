@@ -6,6 +6,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exe", "starwars.vcxproj", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gameJK2", "..\codeJK2\game\gameJK2.vcxproj", "{E8D119C5-C6C4-4E78-83F0-5918678700A5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rd-vanilla", "rd-vanilla\rd-vanilla.vcxproj", "{FB952C0E-5D80-4504-BF99-BFDB6F631CC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -36,6 +38,14 @@ Global
 		{E8D119C5-C6C4-4E78-83F0-5918678700A5}.Release|Win32.Build.0 = Release|Win32
 		{E8D119C5-C6C4-4E78-83F0-5918678700A5}.SHDebug|Win32.ActiveCfg = SHDebug|Win32
 		{E8D119C5-C6C4-4E78-83F0-5918678700A5}.SHDebug|Win32.Build.0 = SHDebug|Win32
+		{FB952C0E-5D80-4504-BF99-BFDB6F631CC9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FB952C0E-5D80-4504-BF99-BFDB6F631CC9}.Debug|Win32.Build.0 = Debug|Win32
+		{FB952C0E-5D80-4504-BF99-BFDB6F631CC9}.FinalBuild|Win32.ActiveCfg = FinalBuild|Win32
+		{FB952C0E-5D80-4504-BF99-BFDB6F631CC9}.FinalBuild|Win32.Build.0 = FinalBuild|Win32
+		{FB952C0E-5D80-4504-BF99-BFDB6F631CC9}.Release|Win32.ActiveCfg = Release|Win32
+		{FB952C0E-5D80-4504-BF99-BFDB6F631CC9}.Release|Win32.Build.0 = Release|Win32
+		{FB952C0E-5D80-4504-BF99-BFDB6F631CC9}.SHDebug|Win32.ActiveCfg = Debug|Win32
+		{FB952C0E-5D80-4504-BF99-BFDB6F631CC9}.SHDebug|Win32.Build.0 = Debug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

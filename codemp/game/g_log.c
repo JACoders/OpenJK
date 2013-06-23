@@ -911,7 +911,7 @@ qboolean CalculateUntouchable(gentity_t *ent)
 	int			playTime;
 	playTime = (level.time - ent->client->pers.enterTime)/60000;
 
-	if ( g_gametype.integer == GT_JEDIMASTER && ent->client->ps.isJediMaster )
+	if ( level.gametype == GT_JEDIMASTER && ent->client->ps.isJediMaster )
 	{//Jedi Master (was Borg queen) can only be killed once anyway
 		return qfalse;
 	}
@@ -1001,7 +1001,7 @@ qboolean CalculateTactician(gentity_t *ent, int *kills)
 	{//duh, only 1 weapon
 		return qfalse;
 	}
-	if ( g_gametype.integer == GT_JEDIMASTER && ent->client->ps.isJediMaster )
+	if ( level.gametype == GT_JEDIMASTER && ent->client->ps.isJediMaster )
 	{//Jedi Master (was Borg queen) has only 1 weapon
 		return qfalse;
 	}
@@ -1189,6 +1189,8 @@ qboolean CalculateTeamMVP(gentity_t *ent)
 	return qfalse;
 }
 
+#if 0
+// Unused
 qboolean CalculateTeamMVPByRank(gentity_t *ent)
 {
 	int			i = 0, nBestPlayer = -1, nScore = 0, nHighestScore = 0,
@@ -1240,6 +1242,7 @@ qboolean CalculateTeamMVPByRank(gentity_t *ent)
 	}
 	return qfalse;
 }
+#endif
 
 qboolean CalculateTeamDefender(gentity_t *ent)
 {
@@ -1458,8 +1461,8 @@ int CalculateTeamAward(gentity_t *ent)
 	{
 		teamAwards |= (1<<TEAM_MVP);
 	}
-	if (GT_CTF == g_gametype.integer ||
-		GT_CTY == g_gametype.integer)
+	if (GT_CTF == level.gametype ||
+		GT_CTY == level.gametype)
 	{
 		if (CalculateTeamDefender(ent))
 		{
@@ -1515,6 +1518,8 @@ qboolean CalculateSection31Award(gentity_t *ent)
 	return qfalse;
 }
 
+#if 0
+// Ensiform this stuff is all unused but leaving incase someone wants
 #define AWARDS_MSG_LENGTH		256
 
 void CalculateAwards(gentity_t *ent, char *msg)
@@ -1567,7 +1572,7 @@ void CalculateAwards(gentity_t *ent, char *msg)
 		strcpy(buf2, buf1);
 		Com_sprintf(buf1, AWARDS_MSG_LENGTH, "%s %d", buf2, streak);
 	}
-	if (g_gametype.integer >= GT_TEAM)
+	if (level.gametype >= GT_TEAM)
 	{
 		teamAwards = CalculateTeamAward(ent);
 		if (teamAwards)
@@ -1702,6 +1707,7 @@ int GetFavoriteWeaponForClient(int nClient)
 	}
 	return fav;
 }
+#endif
 
 // kef -- if a client leaves the game, clear out all counters he may have set
 void QDECL G_ClearClientLog(int client)

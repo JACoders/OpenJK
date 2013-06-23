@@ -540,7 +540,7 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 	float		shotRange = 8192;
 	int			ignore, traces;
 
-	if ( g_gametype.integer == GT_SIEGE )
+	if ( level.gametype == GT_SIEGE )
 	{
 		damage = DISRUPTOR_MAIN_DAMAGE_SIEGE;
 	}
@@ -713,7 +713,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		start[2] += ent->client->ps.viewheight;//By eyes
 
 		count = ( level.time - ent->client->ps.weaponChargeTime ) / DISRUPTOR_CHARGE_UNIT;
-		if ( g_gametype.integer == GT_SIEGE )
+		if ( level.gametype == GT_SIEGE )
 		{//maybe a full alt-charge should be a *bit* more dangerous in Siege mode?
 			//maxCount = ceil((200.0f-(float)damage)/2.0f);//cap at 200 damage total
 			maxCount = 200;//the previous line ALWAYS evaluated to 135 - was that on purpose?
@@ -1146,7 +1146,7 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 	missile->splashMethodOfDeath = MOD_REPEATER_ALT_SPLASH;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 	missile->splashDamage = REPEATER_ALT_SPLASH_DAMAGE;
-	if ( g_gametype.integer == GT_SIEGE )	// we've been having problems with this being too hyper-potent because of it's radius
+	if ( level.gametype == GT_SIEGE )	// we've been having problems with this being too hyper-potent because of it's radius
 	{
 		missile->splashRadius = REPEATER_ALT_SPLASH_RAD_SIEGE;
 	}
@@ -1894,7 +1894,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 
 	if (ent->client && ent->client->ps.rocketLockIndex != ENTITYNUM_NONE)
 	{
-		float lockTimeInterval = ((g_gametype.integer==GT_SIEGE)?2400.0f:1200.0f)/16.0f;
+		float lockTimeInterval = ((level.gametype==GT_SIEGE)?2400.0f:1200.0f)/16.0f;
 		rTime = ent->client->ps.rocketLockTime;
 
 		if (rTime == -1)
@@ -4556,26 +4556,14 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 			break;
 
 		case WP_BRYAR_PISTOL:
-			//if ( g_gametype.integer == GT_SIEGE )
-			if (1)
-			{//allow alt-fire
-				WP_FireBryarPistol( ent, altFire );
-			}
-			else
-			{
-				WP_FireBryarPistol( ent, qfalse );
-			}
+			WP_FireBryarPistol( ent, altFire );
 			break;
 
 		case WP_CONCUSSION:
 			if ( altFire )
-			{
 				WP_FireConcussionAlt( ent );
-			}
 			else
-			{
 				WP_FireConcussion( ent );
-			}
 			break;
 
 		case WP_BRYAR_OLD:

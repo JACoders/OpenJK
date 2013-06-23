@@ -493,7 +493,6 @@ void G_SpawnNoghriGasCloud( gentity_t *ent )
 	ent->s.time = level.time;
 }
 
-extern void WP_SaberBlock( gentity_t *saber, vec3_t hitloc, qboolean missleBlock );
 extern void laserTrapStick( gentity_t *ent, vec3_t endpos, vec3_t normal );
 extern qboolean W_AccuracyLoggableWeapon( int weapon, qboolean alt_fire, int mod );
 void G_MissileImpacted( gentity_t *ent, gentity_t *other, vec3_t impactPos, vec3_t normal, int hitLoc=HL_NONE )
@@ -797,6 +796,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 		return;
 	}
 
+extern bool WP_DoingMoronicForcedAnimationForForcePowers(gentity_t *ent);
 	// check for hitting a lightsaber
 	if ( other->contents & CONTENTS_LIGHTSABER )
 	{
@@ -812,7 +812,9 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 			&& ent->s.weapon != WP_NOGHRI_STICK )//gas bomb, don't reflect
 		{	
 			//FIXME: take other's owner's FP_SABER_DEFENSE into account here somehow?
-			if ( !other->owner || !other->owner->client || other->owner->client->ps.saberInFlight || InFront( ent->currentOrigin, other->owner->currentOrigin, other->owner->client->ps.viewangles, SABER_REFLECT_MISSILE_CONE ) )//other->owner->s.number != 0 || 
+			if (  !other->owner || !other->owner->client || other->owner->client->ps.saberInFlight 
+				|| InFront( ent->currentOrigin, other->owner->currentOrigin, other->owner->client->ps.viewangles, SABER_REFLECT_MISSILE_CONE ) &&
+				!WP_DoingMoronicForcedAnimationForForcePowers(other) )//other->owner->s.number != 0 || 
 			{//Jedi cannot block shots from behind!
 				int blockChance = 0;
 				switch ( other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] )
@@ -836,7 +838,6 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 					VectorSubtract(ent->currentOrigin, other->currentOrigin, diff);
 					VectorNormalize(diff);
 					G_ReflectMissile( other, ent, diff);
-					//WP_SaberBlock( other, ent->currentOrigin, qtrue );
 					if ( other->owner && other->owner->client )
 					{
 						other->owner->client->ps.saberEventFlags |= SEF_DEFLECTED;

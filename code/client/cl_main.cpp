@@ -30,7 +30,14 @@ This file is part of Jedi Academy.
 
 #include "../RMG/RM_Headers.h"
 
+#ifndef _WIN32
+#include "../sys/sys_loadlib.h"
+#include "../sys/sys_local.h"
+#endif
+
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
+
+cvar_t	*cl_renderer;
 
 cvar_t	*cl_nodelta;
 cvar_t	*cl_debugMove;
@@ -82,7 +89,9 @@ cvar_t	*cl_ingameVideo;
 
 cvar_t	*cl_thumbStickMode;
 
+#ifndef _WIN32
 cvar_t	*cl_consoleKeys;
+#endif
 
 clientActive_t		cl;
 clientConnection_t	clc;
@@ -90,6 +99,11 @@ clientStatic_t		cls;
 
 // Structure containing functions exported from refresh DLL
 refexport_t	re;
+
+//RAZFIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
+IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
+	return re.TheGhoul2InfoArray();
+}
 
 ping_t	cl_pinglist[MAX_PINGREQUESTS];
 
@@ -798,46 +812,14 @@ void CL_Frame ( int msec,float fractionMsec ) {
 	// load the ref / cgame if needed
 	CL_StartHunkUsers();
 
-#if defined (_XBOX)// && !defined(_DEBUG)
-	// Play the intro movies once
-	static bool firstRun = true;
-	if(firstRun)
-	{
-	//	SP_DoLicense();
-		SP_DisplayLogos();
-	}
-	
-#endif
-
-#if defined (_XBOX)	//xbox doesn't load ui in StartHunkUsers, so check it here
-	// load ui if needed
-	if ( !cls.uiStarted && cls.state != CA_CINEMATIC) {
-		cls.uiStarted = qtrue;
-		SCR_StopCinematic();
-		CL_InitUI();
-	}
-#endif
-
 	if ( cls.state == CA_DISCONNECTED && !( cls.keyCatchers & KEYCATCH_UI )
 		&& !com_sv_running->integer ) {		
 		// if disconnected, bring up the menu
 		if (!CL_CheckPendingCinematic())	// this avoid having the menu flash for one frame before pending cinematics
 		{
-#ifdef _XBOX
-			if (firstRun)
-			{
-			
-				UI_SetActiveMenu("splashMenu", NULL);
-			}
-			else
-#endif
 			UI_SetActiveMenu( "mainMenu",NULL );
 		}
 	}
-
-#ifdef _XBOX
-	firstRun = false;
-#endif
 
 
 	// if recording an avi, lock to a fixed fps
@@ -887,16 +869,9 @@ void CL_Frame ( int msec,float fractionMsec ) {
 		}
 		cls.realtimeFraction-=1.0f;
 	}
-#ifndef _XBOX
 	if ( cl_timegraph->integer ) {
 		SCR_DebugGraph ( cls.realFrametime * 0.25, 0 );
 	}
-#endif
-
-#ifdef _XBOX
-	//Check on the hot swappable button states.
-	CL_UpdateHotSwap();
-#endif
 
 	// see if we need to update any userinfo
 	CL_CheckUserinfo();
@@ -968,7 +943,7 @@ void VID_Printf (int print_level, const char *fmt, ...)
 	char		msg[MAXPRINTMSG];
 	
 	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
+	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
 
 	if ( print_level == PRINT_ALL ) {
@@ -1077,26 +1052,250 @@ void CL_StartHunkUsers( void ) {
 }
 
 /*
+================
+CL_RefPrintf
+
+DLL glue
+================
+*/
+#define	MAXPRINTMSG	4096
+extern int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap);
+void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
+	va_list		argptr;
+	char		msg[MAXPRINTMSG];
+	
+	va_start (argptr,fmt);
+	Q_vsnprintf(msg, sizeof(msg), fmt, argptr);
+	va_end (argptr);
+
+	if ( print_level == PRINT_ALL ) {
+		Com_Printf ("%s", msg);
+	} else if ( print_level == PRINT_WARNING ) {
+		Com_Printf (S_COLOR_YELLOW "%s", msg);		// yellow
+	} else if ( print_level == PRINT_DEVELOPER ) {
+		Com_DPrintf (S_COLOR_RED "%s", msg);		// red
+	}
+}
+
+/*
+============
+String_GetStringValue
+
+DLL glue, but highly reusuable DLL glue at that
+============
+*/
+
+#ifndef __NO_JK2
+extern cStringsSingle *JK2SP_GetString(const char *Reference);
+#endif
+const char *String_GetStringValue( const char *reference )
+{
+#ifdef __NO_JK2
+	return SE_GetString(reference);
+#else
+	if( Cvar_VariableIntegerValue("com_jk2") )
+	{
+		return const_cast<const char *>(JK2SP_GetString( reference )->GetText());
+	}
+	else
+	{
+		return const_cast<const char *>(SE_GetString((LPCSTR)reference));
+	}
+#endif
+}
+
+#ifdef _WIN32
+// DLL glue --eez
+WinVars_t *GetWindowsVariables( void )
+{
+	return &g_wv;
+}
+#endif
+
+extern qboolean gbAlreadyDoingLoad;
+extern void *gpvCachedMapDiskImage;
+extern char  gsCachedMapDiskImage[MAX_QPATH];
+extern qboolean gbUsingCachedMapDataRightNow;
+
+char *get_gsCachedMapDiskImage( void )
+{
+	return gsCachedMapDiskImage;
+}
+
+void *get_gpvCachedMapDiskImage( void )
+{
+	return gpvCachedMapDiskImage;
+}
+
+qboolean *get_gbUsingCachedMapDataRightNow( void )
+{
+	return &gbUsingCachedMapDataRightNow;
+}
+
+qboolean *get_gbAlreadyDoingLoad( void )
+{
+	return &gbAlreadyDoingLoad;
+}
+
+int get_com_frameTime( void )
+{
+	return com_frameTime;
+}
+
+/*
 ============
 CL_InitRef
 ============
 */
+extern qboolean S_FileExists( const char *psFilename );
+extern bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds);
+extern void ShaderTableCleanup();
+extern void CM_ShutdownTerrain( thandle_t terrainId);
+extern qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel /* 99% qfalse */);
+extern CCMLandScape *CM_RegisterTerrain(const char *config, bool server);
+extern cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force);
+extern CMiniHeap *G2VertSpaceServer;
+static CMiniHeap *GetG2VertSpaceServer( void ) {
+	return G2VertSpaceServer;
+}
+
+static void *rendererLib;
+
+#define DEFAULT_RENDER_LIBRARY	"rdsp-vanilla"	// NOTENOTE: If you change the output name of rd-vanilla, change this define too!
+
 void CL_InitRef( void ) {
 	refexport_t	*ret;
+	refimport_t rit;
+	char		dllName[MAX_OSPATH];
+	GetRefAPI_t	GetRefAPI;
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
+    cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH );
 
-	// cinematic stuff
+	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
 
-	ret = GetRefAPI( REF_API_VERSION );
+    #ifdef _WIN32
+    if( !(rendererLib = (void *)LoadLibrary( dllName )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
+    #else
+	if( !(rendererLib = Sys_LoadDll( dllName, qfalse )) && strcmp( cl_renderer->string, cl_renderer->resetString ) )
+    #endif
+	{
+		Com_Printf( "failed: trying to load fallback renderer\n" );
+		Cvar_ForceReset( "cl_renderer" );
 
-	Com_Printf( "-------------------------------\n");
+		Com_sprintf( dllName, sizeof( dllName ), DEFAULT_RENDER_LIBRARY "_" ARCH_STRING DLL_EXT );
+        #ifdef _WIN32
+        rendererLib = (void *)LoadLibrary( dllName );
+        #else
+		rendererLib = Sys_LoadDll( dllName, qfalse );
+        #endif
+	}
+
+	if ( !rendererLib ) {
+		Com_Error( ERR_FATAL, "Failed to load renderer" );
+	}
+
+    #ifdef _WIN32
+    GetRefAPI = (GetRefAPI_t)GetProcAddress( (HMODULE)rendererLib, "GetRefAPI" );
+    if ( !GetRefAPI )
+        Com_Error( ERR_FATAL, "CL_InitRef(): NULL GetRefAPI on handle for %s\n", dllName );
+    #else
+	GetRefAPI = (GetRefAPI_t)Sys_LoadFunction( rendererLib, "GetRefAPI" );
+	if ( !GetRefAPI )
+		Com_Error( ERR_FATAL, "Can't load symbol GetRefAPI: '%s'", Sys_LibraryError() );
+    #endif
+
+#define RIT(y)	rit.y = y
+	RIT(CIN_PlayCinematic);
+	RIT(CIN_RunCinematic);
+	RIT(CIN_UploadCinematic);
+	RIT(CL_IsRunningInGameCinematic);
+	RIT(Cmd_AddCommand);
+	RIT(Cmd_Argc);
+	RIT(Cmd_ArgsBuffer);
+	RIT(Cmd_Argv);
+	RIT(Cmd_ExecuteString);
+	RIT(Cmd_RemoveCommand);
+	RIT(CM_ClusterPVS);
+	RIT(CM_CullWorldBox);
+	RIT(CM_DeleteCachedMap);
+	RIT(CM_DrawDebugSurface);
+	RIT(CM_PointContents);
+	RIT(CM_RegisterTerrain);
+	RIT(CM_ShutdownTerrain);
+	RIT(CM_TerrainPatchIterate);
+	RIT(Cvar_Get);
+	RIT(Cvar_Set);
+	RIT(Cvar_SetValue);
+	RIT(Cvar_VariableIntegerValue);
+	RIT(Cvar_VariableString);
+	RIT(Cvar_VariableStringBuffer);
+	RIT(Cvar_VariableValue);
+	RIT(FS_FCloseFile);
+	RIT(FS_FileIsInPAK);
+	RIT(FS_FOpenFileByMode);
+	RIT(FS_FOpenFileRead);
+	RIT(FS_FOpenFileWrite);
+	RIT(FS_FreeFile);
+	RIT(FS_FreeFileList);
+	RIT(FS_ListFiles);
+	RIT(FS_Read);
+	RIT(FS_ReadFile);
+	RIT(FS_Write);
+	RIT(FS_WriteFile);
+	RIT(Hunk_ClearToMark);
+	RIT(SG_Append);
+	RIT(SND_RegisterAudio_LevelLoadEnd);
+	RIT(SV_GetConfigstring);
+	//RIT(SV_PointContents);
+	RIT(SV_SetConfigstring);
+	RIT(SV_Trace);
+	RIT(S_RestartMusic);
+	RIT(Z_Free);
+	RIT(Z_Malloc);
+	RIT(Z_MemSize);
+	RIT(Z_MorphMallocTag);
+
+	RIT(Hunk_ClearToMark);
+
+#ifndef _WIN32
+    RIT(IN_Init);
+    RIT(IN_Shutdown);
+    RIT(IN_Restart);
+#endif
+
+	// Not-so-nice usage / doesn't go along with my epic macro
+	rit.Error = Com_Error;
+	rit.FS_FileExists = S_FileExists;
+	rit.GetG2VertSpaceServer = GetG2VertSpaceServer;
+#ifdef _WIN32
+	rit.GetWinVars = GetWindowsVariables;
+#endif
+	rit.LowPhysicalMemory = Sys_LowPhysicalMemory;
+	rit.Milliseconds = Sys_Milliseconds;
+	rit.Printf = CL_RefPrintf;
+	rit.SE_GetString = String_GetStringValue;
+
+	rit.CM_ShaderTableCleanup = ShaderTableCleanup;
+	rit.SV_Trace = SV_Trace;
+
+	rit.gpvCachedMapDiskImage = get_gpvCachedMapDiskImage;
+	rit.gsCachedMapDiskImage = get_gsCachedMapDiskImage;
+	rit.gbUsingCachedMapDataRightNow = get_gbUsingCachedMapDataRightNow;
+	rit.gbAlreadyDoingLoad = get_gbAlreadyDoingLoad;
+	rit.com_frameTime = get_com_frameTime;
+
+	rit.SV_PointContents = SV_PointContents;
+
+	ret = GetRefAPI( REF_API_VERSION, &rit );
 
 	if ( !ret ) {
 		Com_Error (ERR_FATAL, "Couldn't initialize refresh" );
 	}
 
 	re = *ret;
+
+	Com_Printf( "-------------------------------\n");
 
 	// unpause so the cgame definately gets a snapshot and renders a frame
 	Cvar_Set( "cl_paused", "0" );
@@ -1187,8 +1386,10 @@ void CL_Init( void ) {
 	m_side = Cvar_Get ("m_side", "0.25", CVAR_ARCHIVE);
 	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
 	
+#ifndef _WIN32
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
+#endif
 
 #ifdef _XBOX
 	cl_mapname = Cvar_Get ("cl_mapname", "t3_bounty", CVAR_TEMP);
@@ -1228,11 +1429,6 @@ void CL_Init( void ) {
 	Cbuf_Execute ();
 	
 	Cvar_Set( "cl_running", "1" );
-
-#ifdef _XBOX
-	Com_Printf( "Initializing Cinematics...\n");
-	CIN_Init();
-#endif
 
 	Com_Printf( "----- Client Initialization Complete -----\n" );
 }

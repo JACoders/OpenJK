@@ -31,7 +31,7 @@ This file is part of Jedi Academy.
 
 using namespace std;
 
-#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); a++ )
+#define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )
 #define STL_INSERT( a, b )		a.insert( a.end(), b );
 
 #endif

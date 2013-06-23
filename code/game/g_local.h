@@ -80,7 +80,7 @@ This file is part of Jedi Academy.
 #define	VALIDATEB( a )	if ( a == NULL ) {	assert(0);	return qfalse;	}
 #define VALIDATEP( a )	if ( a == NULL ) {	assert(0);	return NULL;	}
 
-#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != NULL ) )
+#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
 //animations
 typedef struct

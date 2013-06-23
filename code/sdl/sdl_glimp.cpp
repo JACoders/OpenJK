@@ -1,7 +1,7 @@
 #include <SDL.h>
 #include "../game/q_shared.h"
 #include "../qcommon/qcommon.h"
-#include "../renderer/tr_local.h"
+#include "../rd-vanilla/tr_local.h"
 #include "sdl_qgl.h"
 #include "../sys/sys_local.h"
 
@@ -10,9 +10,7 @@ static SDL_Window *window = NULL;
 static float displayAspect;
 cvar_t *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
 cvar_t *r_allowResize; // make window resizable
-cvar_t *r_centerWindow;
 cvar_t *r_sdlDriver;
-cvar_t *r_noborder;
 
 typedef enum
 {
@@ -62,7 +60,7 @@ void (APIENTRYP qglGetCombinerInputParameterivNV) (GLenum stage,GLenum portion,G
 void (APIENTRYP qglGetCombinerOutputParameterfvNV) (GLenum stage,GLenum portion,GLenum pname,GLfloat *params);
 void (APIENTRYP qglGetCombinerOutputParameterivNV) (GLenum stage,GLenum portion,GLenum pname,GLint *params);
 void (APIENTRYP qglGetFinalCombinerInputParameterfvNV) (GLenum variable,GLenum pname,GLfloat *params);
-void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLfloat *params);
+void (APIENTRYP qglGetFinalCombinerInputParameterivNV) (GLenum variable,GLenum pname,GLint *params);
 
 PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB = NULL;
 PFNGLBINDPROGRAMARBPROC qglBindProgramARB = NULL;
@@ -96,35 +94,6 @@ void ( * qglUnlockArraysEXT) ( void );
 void		GLimp_EndFrame( void )
 {
   SDL_GL_SwapWindow(screen);
-}
-
-/*
-* Find the first occurrence of find in s.
-*/
-// bk001130 - from cvs1.17 (mkv), const
-// bk001130 - made first argument const
-static const char *Q_stristr( const char *s, const char *find)
-{
-register char c, sc;
-register size_t len;
-
-	if ((c = *find++) != 0) {
-		if (c >= 'a' && c <= 'z') {
-			c -= ('a' - 'A');
-		}
-		len = strlen(find);
-		do {
-			do {
-				if ((sc = *s++) == 0)
-					return NULL;
-				if (sc >= 'a' && sc <= 'z') {
-					sc -= ('a' - 'A');
-				}
-			} while (sc != c);
-		} while (Q_stricmpn(s, find, (int)len) != 0);
-		s--;
-	}
-	return s;
 }
 
 /*
@@ -212,7 +181,7 @@ static void GLimp_DetectAvailableModes(void)
 	{
 		buf[ strlen( buf ) - 1 ] = 0;
 		Com_Printf( "Available modes: '%s'\n", buf );
-		Cvar_Set( "r_availableModes", buf );
+		ri.Cvar_Set( "r_availableModes", buf );
 	}
 }
 
@@ -459,7 +428,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 			mode.w = glConfig.vidWidth;
 			mode.h = glConfig.vidHeight;
-			mode.refresh_rate = glConfig.displayFrequency = Cvar_VariableIntegerValue( "r_displayRefresh" );
+			mode.refresh_rate = glConfig.displayFrequency = ri.Cvar_VariableIntegerValue( "r_displayRefresh" );
 			mode.driverdata = NULL;
 
 			if( SDL_SetWindowDisplayMode( screen, &mode ) < 0 )
@@ -472,7 +441,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
 		SDL_SetWindowIcon( screen, icon );
 
-		if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
+		if( ( opengl_context = (QGLContext)SDL_GL_CreateContext( screen ) ) == NULL )
 		{
 			Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
 			continue;
@@ -732,7 +701,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 #endif
 
 		// FIXME: Product name
-		cvar_t *com_productName = Cvar_Get("com_productName", "OpenJK" /* PRODUCT_NAME */, CVAR_ROM);
+		cvar_t *com_productName = ri.Cvar_Get("com_productName", "OpenJK" /* PRODUCT_NAME */, CVAR_ROM);
 		//SDL_SetWindowTitle(com_productName->string, com_productName->string);
 		SDL_ShowCursor(0);
 
@@ -783,7 +752,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
 	{
-		char *driverName;
+		const char *driverName;
 
 		if (SDL_Init(SDL_INIT_VIDEO) == -1)
 		{
@@ -803,18 +772,18 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 		// TODO: Prompt the user to choose a specific video driver.
 		driverName = SDL_GetVideoDriver( 0 );
 		Com_Printf( "SDL using driver \"%s\"\n", driverName );
-		Cvar_Set( "r_sdlDriver", driverName );
+		ri.Cvar_Set( "r_sdlDriver", driverName );
 	}
 
-	if (fullscreen && Cvar_VariableIntegerValue( "in_nograb" ) )
+	if (fullscreen && ri.Cvar_VariableIntegerValue( "in_nograb" ) )
 	{
 		Com_Printf( "Fullscreen not allowed with in_nograb 1\n");
-		Cvar_Set( "r_fullscreen", "0" );
+		ri.Cvar_Set( "r_fullscreen", "0" );
 		r_fullscreen->modified = qfalse;
 		fullscreen = qfalse;
 	}
 
-	err = GLimp_SetMode(mode, fullscreen, noborder);
+	err = (rserr_t)GLimp_SetMode(mode, fullscreen, noborder);
 
 	switch ( err )
 	{
@@ -981,7 +950,7 @@ static void GLimp_InitExtensions( void )
 	{
 		Com_Printf ("*** IGNORING OPENGL EXTENSIONS ***\n" );
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_DynamicGlow","0" );
 		return;
 	}
 
@@ -1026,16 +995,16 @@ static void GLimp_InitExtensions( void )
 		{
 			Com_Printf ("...ignoring GL_EXT_texture_filter_anisotropic\n" );
 		}
-		Cvar_Set( "r_ext_texture_filter_anisotropic_avail", va("%f",glConfig.maxTextureFilterAnisotropy) );
+		ri.Cvar_Set( "r_ext_texture_filter_anisotropic_avail", va("%f",glConfig.maxTextureFilterAnisotropy) );
 		if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 		{
-			Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
+			ri.Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
 		}
 	}
 	else
 	{
 		Com_Printf ("...GL_EXT_texture_filter_anisotropic not found\n" );
-		Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
+		ri.Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
 	}
 
 	// GL_EXT_clamp_to_edge
@@ -1180,19 +1149,19 @@ static void GLimp_InitExtensions( void )
 			// NOTE: VV guys will _definetly_ not be able to use regcoms. Pixel Shaders are just as good though :-)
 			// NOTE: Also, this is an nVidia specific extension (of course), so fragment shaders would serve the same purpose
 			// if we needed some kind of fragment/pixel manipulation support.
-			qglCombinerParameterfvNV = SDL_GL_GetProcAddress( "glCombinerParameterfvNV" );
-			qglCombinerParameterivNV = SDL_GL_GetProcAddress( "glCombinerParameterivNV" );
-			qglCombinerParameterfNV = SDL_GL_GetProcAddress( "glCombinerParameterfNV" );
-			qglCombinerParameteriNV = SDL_GL_GetProcAddress( "glCombinerParameteriNV" );
-			qglCombinerInputNV = SDL_GL_GetProcAddress( "glCombinerInputNV" );
-			qglCombinerOutputNV = SDL_GL_GetProcAddress( "glCombinerOutputNV" );
-			qglFinalCombinerInputNV = SDL_GL_GetProcAddress( "glFinalCombinerInputNV" );
-			qglGetCombinerInputParameterfvNV	= SDL_GL_GetProcAddress( "glGetCombinerInputParameterfvNV" );
-			qglGetCombinerInputParameterivNV	= SDL_GL_GetProcAddress( "glGetCombinerInputParameterivNV" );
-			qglGetCombinerOutputParameterfvNV = SDL_GL_GetProcAddress( "glGetCombinerOutputParameterfvNV" );
-			qglGetCombinerOutputParameterivNV = SDL_GL_GetProcAddress( "glGetCombinerOutputParameterivNV" );
-			qglGetFinalCombinerInputParameterfvNV = SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterfvNV" );
-			qglGetFinalCombinerInputParameterivNV = SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterivNV" );
+			qglCombinerParameterfvNV = (PFNGLCOMBINERPARAMETERFVNV)SDL_GL_GetProcAddress( "glCombinerParameterfvNV" );
+			qglCombinerParameterivNV = (PFNGLCOMBINERPARAMETERIVNV)SDL_GL_GetProcAddress( "glCombinerParameterivNV" );
+			qglCombinerParameterfNV = (PFNGLCOMBINERPARAMETERFNV)SDL_GL_GetProcAddress( "glCombinerParameterfNV" );
+			qglCombinerParameteriNV = (PFNGLCOMBINERPARAMETERINV)SDL_GL_GetProcAddress( "glCombinerParameteriNV" );
+			qglCombinerInputNV = (PFNGLCOMBINERINPUTNV)SDL_GL_GetProcAddress( "glCombinerInputNV" );
+			qglCombinerOutputNV = (PFNGLCOMBINEROUTPUTNV)SDL_GL_GetProcAddress( "glCombinerOutputNV" );
+			qglFinalCombinerInputNV = (PFNGLFINALCOMBINERINPUTNV)SDL_GL_GetProcAddress( "glFinalCombinerInputNV" );
+			qglGetCombinerInputParameterfvNV	= (PFNGLGETCOMBINERINPUTPARAMETERFVNV)SDL_GL_GetProcAddress( "glGetCombinerInputParameterfvNV" );
+			qglGetCombinerInputParameterivNV	= (PFNGLGETCOMBINERINPUTPARAMETERIVNV)SDL_GL_GetProcAddress( "glGetCombinerInputParameterivNV" );
+			qglGetCombinerOutputParameterfvNV = (PFNGLGETCOMBINEROUTPUTPARAMETERFVNV)SDL_GL_GetProcAddress( "glGetCombinerOutputParameterfvNV" );
+			qglGetCombinerOutputParameterivNV = (PFNGLGETCOMBINEROUTPUTPARAMETERIVNV)SDL_GL_GetProcAddress( "glGetCombinerOutputParameterivNV" );
+			qglGetFinalCombinerInputParameterfvNV = (PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV)SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterfvNV" );
+			qglGetFinalCombinerInputParameterivNV = (PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV)SDL_GL_GetProcAddress( "glGetFinalCombinerInputParameterivNV" );
 
 			// Validate the functions we need.
 			if ( !qglCombinerParameterfvNV || !qglCombinerParameterivNV || !qglCombinerParameterfNV || !qglCombinerParameteriNV || !qglCombinerInputNV ||
@@ -1311,34 +1280,32 @@ static void GLimp_InitExtensions( void )
 	{
 		g_bDynamicGlowSupported = true;
 		// this would overwrite any achived setting gwg
-		// Cvar_Set( "r_DynamicGlow", "1" );
+		// ri.Cvar_Set( "r_DynamicGlow", "1" );
 	}
 	else
 	{
 		g_bDynamicGlowSupported = false;
-		Cvar_Set( "r_DynamicGlow","0" );
+		ri.Cvar_Set( "r_DynamicGlow","0" );
 	}
 }
 
 void 		GLimp_Init( void )
 {
-	Cvar_Get( "r_restartOnResize", "1", CVAR_ARCHIVE );
-	Cvar_Get( "r_resizeDelay", "1000", CVAR_ARCHIVE );
-	r_allowSoftwareGL = Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
-	r_sdlDriver = Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
-	r_allowResize = Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
-	r_centerWindow = Cvar_Get( "r_centerWindow", "0", CVAR_ARCHIVE );
-	r_noborder = Cvar_Get( "r_noborder", "0", CVAR_ARCHIVE );
+	ri.Cvar_Get( "r_restartOnResize", "1", CVAR_ARCHIVE );
+	ri.Cvar_Get( "r_resizeDelay", "1000", CVAR_ARCHIVE );
+	r_allowSoftwareGL = ri.Cvar_Get( "r_allowSoftwareGL", "0", CVAR_LATCH );
+	r_sdlDriver = ri.Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
+	r_allowResize = ri.Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
 
-	/*	if( Cvar_VariableIntegerValue( "com_abnormalExit" ) )
+	/*	if( ri.Cvar_VariableIntegerValue( "com_abnormalExit" ) )
 	{
-		Cvar_Set( "r_mode", va( "%d", R_MODE_FALLBACK ) );
-		Cvar_Set( "r_picmap", "1" );
-		Cvar_Set( "r_texturebits", "0" );
-		Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
-		Cvar_Set( "r_fullscreen", "0" );
-		Cvar_Set( "r_centerWindow", "0" );
-		Cvar_Set( "com_abnormalExit", "0" );
+		ri.Cvar_Set( "r_mode", va( "%d", R_MODE_FALLBACK ) );
+		ri.Cvar_Set( "r_picmap", "1" );
+		ri.Cvar_Set( "r_texturebits", "0" );
+		ri.Cvar_Set( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST" );
+		ri.Cvar_Set( "r_fullscreen", "0" );
+		ri.Cvar_Set( "r_centerWindow", "0" );
+		ri.Cvar_Set( "com_abnormalExit", "0" );
 		}*/
 
 	Sys_SetEnv( "SDL_VIDEO_CENTERED", r_centerWindow->integer ? "1" : "" );
@@ -1401,10 +1368,10 @@ success:
 	// initialize extensions
 	GLimp_InitExtensions( );
 
-	Cvar_Get( "r_availableModes", "", CVAR_ROM );
+	ri.Cvar_Get( "r_availableModes", "", CVAR_ROM );
 
 	// This depends on SDL_INIT_VIDEO, hence having it here
-	IN_Init( screen );
+	ri.IN_Init( screen );
 }
 
 /*
@@ -1414,7 +1381,7 @@ GLimp_Shutdown
 */
 void 		GLimp_Shutdown( void )
 {
-	IN_Shutdown();
+	ri.IN_Shutdown();
 
 	SDL_QuitSubSystem( SDL_INIT_VIDEO );
 

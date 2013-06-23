@@ -90,6 +90,75 @@ char *Sys_DefaultCDPath(void)
         return cdPath;
 }
 
+/*
+=================
+Sys_LoadDll
+
+First try to load library name from system library path,
+from executable path, then fs_basepath.
+=================
+*/
+extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
+
+void *Sys_LoadDll(const char *name, qboolean useSystemLib)
+{
+	void *dllhandle = NULL;
+	
+	if(useSystemLib)
+		Com_Printf("Trying to load \"%s\"...\n", name);
+	
+	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
+	{
+		const char *topDir;
+		char libPath[MAX_OSPATH];
+        
+		topDir = Sys_BinaryPath();
+        
+		if(!*topDir)
+			topDir = ".";
+        
+		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
+		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
+        
+		if(!(dllhandle = Sys_LoadLibrary(libPath)))
+		{
+			const char *basePath = Cvar_VariableString("fs_basepath");
+			
+			if(!basePath || !*basePath)
+				basePath = ".";
+			
+			if(FS_FilenameCompare(topDir, basePath))
+			{
+				Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, basePath);
+				Com_sprintf(libPath, sizeof(libPath), "%s%c%s", basePath, PATH_SEP, name);
+				dllhandle = Sys_LoadLibrary(libPath);
+			}
+			
+			if(!dllhandle)
+			{
+				const char *cdPath = Cvar_VariableString("fs_cdpath");
+
+				if(!basePath || !*basePath)
+					basePath = ".";
+
+				if(FS_FilenameCompare(topDir, cdPath))
+				{
+					Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, cdPath);
+					Com_sprintf(libPath, sizeof(libPath), "%s%c%s", cdPath, PATH_SEP, name);
+					dllhandle = Sys_LoadLibrary(libPath);
+				}
+
+				if(!dllhandle)
+				{
+					Com_Printf("Loading \"%s\" failed\n", name);
+				}
+			}
+		}
+	}
+	
+	return dllhandle;
+}
+
 static void *game_library;
 
 /*
@@ -129,11 +198,11 @@ void *Sys_GetGameAPI (void *parms)
 	const char *gamename;
 	if(Cvar_VariableIntegerValue("com_jk2"))
 	{
-		gamename = "jk2game" ARCH DLL_EXT;
+		gamename = "jk2game" ARCH_STRING DLL_EXT;
 	}
 	else
 	{
-		gamename = "jagame" ARCH DLL_EXT;
+		gamename = "jagame" ARCH_STRING DLL_EXT;
 	}
 	
 	if (game_library)
@@ -205,7 +274,7 @@ void *Sys_GetGameAPI (void *parms)
 	
 	Com_Printf ( "Sys_GetGameAPI(%s): succeeded ...\n", fn );
 
-	GetGameAPI = (void *)Sys_LoadFunction (game_library, "GetGameAPI");
+	GetGameAPI = (void *(*)(void *))Sys_LoadFunction (game_library, "GetGameAPI");
 	if (!GetGameAPI)
 	{
 		Sys_UnloadGame ();
@@ -222,12 +291,12 @@ void *Sys_GetGameAPI (void *parms)
  Used to hook up a development dll
  =================
  */
-void * Sys_LoadCgame( int (**entryPoint)(int, ...), int (*systemcalls)(int, ...) )
+void * Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) )
 {
-	void	(*dllEntry)( int (*syscallptr)(int, ...) );
+	void	(*dllEntry)( intptr_t (*syscallptr)(intptr_t, ...) );
     
-	dllEntry = ( void (*)( int (*)( int, ... ) ) )Sys_LoadFunction( game_library, "dllEntry" );
-	*entryPoint = (int (*)(int,...))Sys_LoadFunction( game_library, "vmMain" );
+	dllEntry = ( void (*)( intptr_t (*)( intptr_t, ... ) ) )Sys_LoadFunction( game_library, "dllEntry" );
+	*entryPoint = (intptr_t (*)(int,...))Sys_LoadFunction( game_library, "vmMain" );
 	if ( !*entryPoint || !dllEntry ) {
 		Sys_UnloadLibrary( game_library );
 		return NULL;
@@ -251,7 +320,7 @@ int main (int argc, char **argv)
 	// merge the command line, this is kinda silly
 	for (len = 1, i = 1; i < argc; i++)
 		len += strlen(argv[i]) + 1;
-	cmdline = malloc(len);
+	cmdline = (char *)malloc(len);
 	*cmdline = 0;
 	for (i = 1; i < argc; i++) {
 		if (i > 1)

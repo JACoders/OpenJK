@@ -69,19 +69,15 @@ char *Sys_DefaultAppPath(void)
 	return Sys_BinaryPath();
 }
 
-/*
- =================
- Sys_In_Restart_f
- 
- Restart the input subsystem
- =================
- */
+// We now expect newlines instead of always appending
+// otherwise sectioned prints get messed up.
+#define MAXPRINTMSG		4096
 void Conbuf_AppendText( const char *pMsg )
 {
-	char		msg[4096];
-	strcpy(msg, pMsg);
-	printf(Q_CleanStr(msg));
-	printf("\n");
+	char msg[MAXPRINTMSG] = {0};
+	Q_strncpyz(msg, pMsg, sizeof(msg));
+	Q_StripColor(msg);
+	printf("%s", msg);
 }
 
 void Sys_Print( const char *msg ) {
@@ -96,6 +92,11 @@ void Sys_Print( const char *msg ) {
 	Conbuf_AppendText( msg );
 }
 
+/*
+=================
+Sys_In_Restart_f
+=================
+*/
 void Sys_In_Restart_f( void )
 {
 #ifdef DEDICATED
@@ -164,7 +165,7 @@ void Sys_UnloadDll( void *dllHandle )
 
 char *Sys_DefaultCDPath(void)
 {
-        return "";
+	return "";
 }
 
 /*
@@ -212,7 +213,24 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 			}
 			
 			if(!dllhandle)
-				Com_Printf("Loading \"%s\" failed\n", name);
+			{
+				const char *cdPath = Cvar_VariableString("fs_cdpath");
+
+				if(!basePath || !*basePath)
+					basePath = ".";
+
+				if(FS_FilenameCompare(topDir, cdPath))
+				{
+					Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, cdPath);
+					Com_sprintf(libPath, sizeof(libPath), "%s%c%s", cdPath, PATH_SEP, name);
+					dllhandle = Sys_LoadLibrary(libPath);
+				}
+
+				if(!dllhandle)
+				{
+					Com_Printf("Loading \"%s\" failed\n", name);
+				}
+			}
 		}
 	}
 	
@@ -229,117 +247,87 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 
 //TODO: load mac dlls that are inside zip things inside pk3s.
 
-void *Sys_LoadGameDll( const char *name, intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) )
+void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) )
 {
-  void *libHandle;
-  void	(*dllEntry)( intptr_t (*syscallptr)(intptr_t, ...) );
-  char	fname[MAX_OSPATH];
-  //char	loadname[MAX_OSPATH];
-  char	*basepath;
-  char	*cdpath;
-  char	*gamedir;
-  char	*homepath;
-  char	*fn;
-  const char*  err = NULL; // bk001206 // rb0101023 - now const
+	void	*libHandle = NULL;
+	void	(QDECL *dllEntry)( intptr_t (QDECL *syscallptr)(intptr_t, ...) );
+	char	*basepath;
+	char	*homepath;
+	char	*cdpath;
+	char	*gamedir;
+	char	*fn;
+	char	filename[MAX_OSPATH];
 
-  // bk001206 - let's have some paranoia
-  assert( name );
+	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
-  //if (!FS_FindPureDLL(name))
-  //{
-  //    return NULL;
-  //}
-    
-#ifndef NDEBUG
-  Com_sprintf (fname, sizeof(fname), "%s" ARCH_STRING "-debug" DLL_EXT, name); // bk010205 - different DLL name
-#else
-  Com_sprintf (fname, sizeof(fname), "%s" ARCH_STRING DLL_EXT, name);
+#if 0
+	libHandle = Sys_LoadLibrary( filename );
 #endif
 
-  homepath = Cvar_VariableString( "fs_homepath" );
-  basepath = Cvar_VariableString( "fs_basepath" );
-  cdpath = Cvar_VariableString( "fs_cdpath" );
-  gamedir = Cvar_VariableString( "fs_game" );
-  
-  fn = FS_BuildOSPath( basepath, gamedir, fname );
-  
-  // bk001129 - from cvs1.17 (mkv), was fname not fn
-  libHandle = Sys_LoadLibrary( fn );
+	if (!libHandle) {
+		//Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", filename, Sys_LibraryError() );
 
-	if (!libHandle) {
-		if ( homepath[0] ) {
-			Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-			
-			fn = FS_BuildOSPath( homepath, gamedir, fname);
-			libHandle = Sys_LoadLibrary( fn );
-		}
-	}
-	
-	if (!libHandle) {
-		if( cdpath[0] ) {
-			Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-			
-			fn = FS_BuildOSPath( cdpath, gamedir, fname );
-			libHandle = Sys_LoadLibrary( fn );
-		}
-	}
-	
-	//Now try in base.
-	if (!libHandle) {
-		Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-		
-		fn = FS_BuildOSPath( basepath, BASEGAME, fname);
+		basepath = Cvar_VariableString( "fs_basepath" );
+		homepath = Cvar_VariableString( "fs_homepath" );
+		cdpath = Cvar_VariableString( "fs_cdpath" );
+		gamedir = Cvar_VariableString( "fs_game" );
+
+		fn = FS_BuildOSPath( basepath, gamedir, filename );
 		libHandle = Sys_LoadLibrary( fn );
-	}
-	
-	if (!libHandle) {
-		if ( homepath[0] ) {
-			Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-			
-			fn = FS_BuildOSPath( homepath, BASEGAME, fname);
-			libHandle = Sys_LoadLibrary( fn );
+
+		if ( !libHandle ) {
+			Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+			if( homepath[0] ) {
+				Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+				fn = FS_BuildOSPath( homepath, gamedir, filename );
+				libHandle = Sys_LoadLibrary( fn );
+			}
+			if ( !libHandle ) {
+				Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+				if( cdpath[0] ) {
+					fn = FS_BuildOSPath( cdpath, gamedir, filename );
+					libHandle = Sys_LoadLibrary( fn );
+				}
+				if ( !libHandle ) {
+					Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+					// now we try base
+					fn = FS_BuildOSPath( basepath, BASEGAME, filename );
+					libHandle = Sys_LoadLibrary( fn );
+					if ( !libHandle ) {
+						if( homepath[0] ) {
+							Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+							fn = FS_BuildOSPath( homepath, BASEGAME, filename );
+							libHandle = Sys_LoadLibrary( fn );
+						}
+						if ( !libHandle ) {
+							Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+							if( cdpath[0] ) {
+								fn = FS_BuildOSPath( cdpath, BASEGAME, filename );
+								libHandle = Sys_LoadLibrary( fn );
+							}
+							if ( !libHandle ) {
+								Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+								return NULL;
+							}
+						}
+					}
+				}
+			}
 		}
 	}
-	
-	if (!libHandle) {
-		if( cdpath[0] ) {
-			Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-			
-			fn = FS_BuildOSPath( cdpath, BASEGAME, fname );
-			libHandle = Sys_LoadLibrary( fn );
-		}
-	}
-	
-	if (!libHandle) {
-		Com_Printf( "Sys_LoadDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+
+	dllEntry = ( void (QDECL *)( intptr_t (QDECL *)( intptr_t, ... ) ) )Sys_LoadFunction( libHandle, "dllEntry" );
+	*entryPoint = (intptr_t (QDECL *)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
+	if ( !*entryPoint || !dllEntry ) {
+		Com_Printf ( "Sys_LoadGameDll(%s) failed to find vmMain function:\n\"%s\" !\n", name, Sys_LibraryError() );
+		Sys_UnloadLibrary( libHandle );
 		return NULL;
 	}
 
-	
-	Com_Printf ( "Sys_LoadDll(%s): succeeded ...\n", fn );
- 
-  dllEntry = (void (*)(intptr_t (*)(intptr_t,...))) Sys_LoadFunction( libHandle, "dllEntry" ); 
-  if (!dllEntry)
-  {
-     err = Sys_LibraryError();
-     Com_Printf("Sys_LoadDLL(%s) failed dlsym(dllEntry): \"%s\" ! \n",name,err);
-  }
-  //int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  )
-  *entryPoint = (intptr_t(*)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
-  if (!*entryPoint)
-     err = Sys_LibraryError();
-  if ( !*entryPoint || !dllEntry ) {
-    Com_Printf ( "Sys_LoadDll(%s) failed dlsym(vmMain): \"%s\" !\n", name, err );
-    Sys_UnloadLibrary( libHandle );
-    err = Sys_LibraryError();
-    if ( err != NULL )
-      Com_Printf ( "Sys_LoadDll(%s) failed dlcose: \"%s\"\n", name, err );
-    return NULL;
-  }
-  Com_Printf ( "Sys_LoadDll(%s) found **vmMain** at  %p  \n", name, *entryPoint ); // bk001212
-  dllEntry( systemcalls );
-  Com_Printf ( "Sys_LoadDll(%s) succeeded!\n", name );
-  return libHandle;
+	Com_Printf ( "Sys_LoadGameDll(%s) found vmMain function at %p\n", name, *entryPoint );
+	dllEntry( systemcalls );
+
+	return libHandle;
 }
 
 void    Sys_ConfigureFPU() { // bk001213 - divide by zero
@@ -366,22 +354,20 @@ void    Sys_ConfigureFPU() { // bk001213 - divide by zero
 #endif // __linux
 }
 
+#ifndef DEFAULT_BASEDIR
+//TODO app bundles
+//#	ifdef MACOS_X
+//#		define DEFAULT_BASEDIR Sys_StripAppBundle(Sys_BinaryPath())
+//#	else
+#		define DEFAULT_BASEDIR Sys_BinaryPath()
+//#	endif
+#endif
+
 int main ( int argc, char* argv[] )
 {
-	int		len, i;
-	char	*cmdline;
-    
-	// merge the command line, this is kinda silly
-	for (len = 1, i = 1; i < argc; i++)
-		len += strlen(argv[i]) + 1;
-	cmdline = (char *)malloc(len);
-	*cmdline = 0;
-	for (i = 1; i < argc; i++) {
-		if (i > 1)
-			strcat(cmdline, " ");
-		strcat(cmdline, argv[i]);
-	}
-    
+	int		i;
+	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
+
 	// done before Com/Sys_Init since we need this for error output
 	//Sys_CreateConsole();
     
@@ -390,15 +376,33 @@ int main ( int argc, char* argv[] )
     
 	// get the initial time base
 	Sys_Milliseconds();
+
+	//Sys_InitStreamThread();
+
+	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
+	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
     
+	// Concatenate the command line for passing to Com_Init
+	for( i = 1; i < argc; i++ )
+	{
+		const bool containsSpaces = (strchr(argv[i], ' ') != NULL);
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), argv[ i ] );
+
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), " " );
+	}
+
 #if 0
 	// if we find the CD, add a +set cddir xxx command line
 	Sys_ScanForCD();
 #endif
-    
-	//Sys_InitStreamThread();
-    
-	Com_Init (cmdline);
+
+	Com_Init (commandLine);
     
 	NET_Init();
     

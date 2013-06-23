@@ -291,7 +291,7 @@ typedef struct {
 	int				(*CM_LeafCluster)					( int leafnum );
 	int				(*CM_PointLeafnum)					( const vec3_t p );
 	int				(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
-	int				(QDECL *VM_Call)					( vm_t *vm, int callnum, ... );
+	intptr_t		(QDECL *VM_Call)					( vm_t *vm, int callnum, ... );
 	qboolean		(*Com_TheHunkMarkHasBeenMade)		( void );
 	void			(*S_RestartMusic)					( void );
 	qboolean		(*SND_RegisterAudio_LevelLoadEnd)	( qboolean bDeleteEverythingNotUsedThisLevel );

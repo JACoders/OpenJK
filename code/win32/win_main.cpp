@@ -49,10 +49,6 @@ This file is part of Jedi Academy.
 #define  CLEAR_CRT_DEBUG_FIELD(a) ((void) 0)
 #endif
 
-#define	CD_BASEDIR	"gamedata\\gamedata"
-#define	CD_EXE		"jasp.exe"
-#define	CD_VOLUME	"JEDIACAD"
-
 #define MEM_THRESHOLD 128*1024*1024
 
 static char		sys_cmdline[MAX_STRING_CHARS];
@@ -196,7 +192,7 @@ void QDECL Sys_Error( const char *error, ... ) {
     MSG        msg;
 
 	va_start (argptr, error);
-	vsprintf_s (text, error, argptr);
+	Q_vsnprintf (text, sizeof(text), error, argptr);
 	va_end (argptr);
 
 	Conbuf_AppendText( text );
@@ -388,66 +384,6 @@ void	Sys_FreeFileList( char **filelist ) {
 
 //========================================================
 
-
-/*
-================
-Sys_ScanForCD
-
-Search all the drives to see if there is a valid CD to grab
-the cddir from
-================
-*/
-#ifdef FINAL_BUILD
-static qboolean Sys_ScanForCD( void ) {
-	char		drive[4];
-	FILE		*f;
-	char		test[MAX_OSPATH];
-
-	drive[0] = 'c';
-	drive[1] = ':';
-	drive[2] = '\\';
-	drive[3] = 0;
-
-	// scan the drives
-	for ( drive[0] = 'c' ; drive[0] <= 'z' ; drive[0]++ ) {
-		if ( GetDriveType (drive) == DRIVE_CDROM ) {			
-			BOOL Result;
-			char VolumeName[MAX_PATH],FileSystemName[MAX_PATH];
-			DWORD VolumeSerialNumber,MaximumComponentLength,FileSystemFlags;
-			
-			Result = GetVolumeInformation(drive,VolumeName,sizeof(VolumeName),&VolumeSerialNumber,
-				&MaximumComponentLength,&FileSystemFlags,FileSystemName,sizeof(FileSystemName));
-
-			if (Result && (strnicmp(VolumeName,CD_VOLUME,8) == 0 ) )
-			{
-				sprintf (test, "%s%s\\%s", drive, CD_BASEDIR, CD_EXE);
-				f = fopen( test, "r");
-				if ( f ) {
-					fclose (f);
-					return Result;
-				}
-			}
-		}
-	}
-
-	return qfalse;
-}
-#endif
-/*
-================
-Sys_CheckCD
-
-Return true if the proper CD is in the drive
-================
-*/
-qboolean	Sys_CheckCD( void ) {
-#ifdef FINAL_BUILD
-	return Sys_ScanForCD();
-#else
-	return qtrue;
-#endif
-}
-
 /*
 ================
 Sys_GetClipboardData
@@ -464,7 +400,7 @@ char *Sys_GetClipboardData( void ) {
 		if ( ( hClipboardData = GetClipboardData( CF_TEXT ) ) != 0 ) {
 			if ( ( cliptext = (char *) GlobalLock( hClipboardData ) ) != 0 ) {
 				data = (char *) Z_Malloc( GlobalSize( hClipboardData ) + 1, TAG_CLIPBOARD, qfalse);
-				Q_strncpyz( data, cliptext, strlen(data) );
+				Q_strncpyz( data, cliptext, GlobalSize( hClipboardData )+1 );
 				GlobalUnlock( hClipboardData );
 				
 				strtok( data, "\n\r\b" );
@@ -550,17 +486,18 @@ Loads the game dll
 void *Sys_GetGameAPI (void *parms)
 {
 	void	*(*GetGameAPI) (void *);
-#if defined _M_IX86
+
 	const char *gamename;
-	if(com_jk2 && com_jk2->integer)
+	if(Cvar_VariableIntegerValue("com_jk2"))
 	{
-		gamename = "jk2gamex86.dll";
+		gamename = "jk2game" ARCH_STRING DLL_EXT;
 	}
 	else
 	{
-		gamename = "jagamex86.dll";
+		gamename = "jagame" ARCH_STRING DLL_EXT;
 	}
 
+#if id386
 #ifdef NDEBUG
 	const char *debugdir = "release";
 #elif MEM_DEBUG
@@ -568,17 +505,21 @@ void *Sys_GetGameAPI (void *parms)
 #else
 	const char *debugdir = "debug";
 #endif	//NDEBUG
-
+#elif idx64
+#ifdef NDEBUG
+	const char *debugdir = "release64";
+#elif MEM_DEBUG
+	const char *debugdir = "shdebug64";
+#else
+	const char *debugdir = "debug64";
+#endif	//NDEBUG
 #elif defined _M_ALPHA
-	const char *gamename = "jagameaxp.dll";
-
 #ifdef NDEBUG
 	const char *debugdir = "releaseaxp";
 #else
 	const char *debugdir = "debugaxp";
 #endif //NDEBUG
-
-#endif //_M__IX86
+#endif
 
 	if (game_library)
 		Com_Error (ERR_FATAL, "Sys_GetGameAPI without Sys_UnloadingGame");
@@ -612,12 +553,12 @@ Sys_LoadCgame
 Used to hook up a development dll
 =================
 */
-void * Sys_LoadCgame( int (**entryPoint)(int, ...), int (*systemcalls)(int, ...) ) 
+void * Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) ) 
 {
-	void	(*dllEntry)( int (*syscallptr)(int, ...) );
+	void	(*dllEntry)( intptr_t (*syscallptr)(intptr_t, ...) );
 
-	dllEntry = ( void (*)( int (*)( int, ... ) ) )GetProcAddress( game_library, "dllEntry" ); 
-	*entryPoint = (int (*)(int,...))GetProcAddress( game_library, "vmMain" );
+	dllEntry = ( void (*)( intptr_t (*)( intptr_t, ... ) ) )GetProcAddress( game_library, "dllEntry" ); 
+	*entryPoint = (intptr_t (*)(int,...))GetProcAddress( game_library, "vmMain" );
 	if ( !*entryPoint || !dllEntry ) {
 		FreeLibrary( game_library );
 		return NULL;
@@ -995,27 +936,6 @@ void Sys_In_Restart_f( void ) {
 	IN_Init();
 }
 
-static bool Sys_IsExpired()
-{
-#if 0
-//								sec min Hr Day Mon Yr
-    struct tm t_valid_start	= { 0, 0, 8, 23, 6, 103 };	//zero based months!
-//								sec min Hr Day Mon Yr
-    struct tm t_valid_end	= { 0, 0, 20, 30, 6, 103 };
-//    struct tm t_valid_end	= t_valid_start;
-//	t_valid_end.tm_mday += 8;
-	time_t startTime  = mktime( &t_valid_start);
-	time_t expireTime = mktime( &t_valid_end);
-	time_t now;
-	time(&now);
-	if((now < startTime) || (now> expireTime))
-	{
-		return true;
-	}
-#endif
-	return false;
-}
-
 /*
 ================
 Sys_Init
@@ -1045,9 +965,6 @@ void Sys_Init( void ) {
 
 	if (!GetVersionEx (&g_wv.osversion))
 		Sys_Error ("Couldn't get OS info");
-	if (Sys_IsExpired()) {
-		g_wv.osversion.dwPlatformId = VER_PLATFORM_WIN32s;	//sneaky: hide the expire with this error
-	}
 
 	if (g_wv.osversion.dwMajorVersion < 4)
 		Sys_Error ("This game requires Windows version 4 or greater");
@@ -1106,8 +1023,7 @@ static void QuickMemTest(void)
 		{
 			// err...
 			//
-			extern qboolean Language_IsAsian(void);
-			LPCSTR psContinue = Language_IsAsian() ? 
+			LPCSTR psContinue = re.Language_IsAsian() ? 
 								"Your machine failed to allocate %dMB in a memory test, which may mean you'll have problems running this game all the way through.\n\nContinue anyway?"
 								: 
 								SE_GetString("CON_TEXT_FAILED_MEMTEST");
@@ -1116,7 +1032,7 @@ static void QuickMemTest(void)
 			#define GetYesNo(psQuery)	(!!(MessageBox(NULL,psQuery,"Query",MB_YESNO|MB_ICONWARNING|MB_TASKMODAL)==IDYES))
 			if (!GetYesNo(va(psContinue,iMemTestMegs)))
 			{
-				LPCSTR psNoMem = Language_IsAsian() ?
+				LPCSTR psNoMem = re.Language_IsAsian() ?
 								"Insufficient memory to run this game!\n"
 								:
 								SE_GetString("CON_TEXT_INSUFFICIENT_MEMORY");
@@ -1161,11 +1077,6 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	// get the initial time base
 	Sys_Milliseconds();
-
-#if 0
-	// if we find the CD, add a +set cddir xxx command line
-	Sys_ScanForCD();
-#endif
 
 	Sys_InitStreamThread();
 

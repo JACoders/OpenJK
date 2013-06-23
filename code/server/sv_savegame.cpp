@@ -22,11 +22,6 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
-// a little naughty, since these are in the renderer, but I need access to them for savegames, so...
-//
-extern void Decompress_JPG( const char *filename, byte *pJPGData, unsigned char **pic, int *width, int *height );
-extern byte *Compress_JPG(int *pOutputSize, int quality, int image_width, int image_height, byte *image_buffer, qboolean bInvertDuringCompression);
-
 #define JPEG_IMAGE_QUALITY 95
 
 

@@ -645,7 +645,7 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 	int					version;
 	int					size;
 
-#ifndef _M_IX86
+#if 0 //#ifndef _M_IX86
 	int					j, k, i;
 	int					frameSize;
 	mdxaFrame_t			*cframe;
@@ -707,7 +707,7 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 		return qtrue;	// All done, stop here, do not LittleLong() etc. Do not pass go...
 	}
 
-#ifndef _M_IX86
+#if 0 //#ifndef _M_IX86
 
 	//
 	// optimisation, we don't bother doing this for standard intel case since our data's already in that format...
@@ -765,7 +765,7 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 	shader_t			*sh;
 	mdxmSurfHierarchy_t	*surfInfo;
 
-#ifndef _M_IX86
+#if 0 //#ifndef _M_IX86
 	int					k;
 	int					frameSize;
 	mdxmTag_t			*tag;
@@ -894,7 +894,7 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 			surf->ident = SF_MDX;
 
 			// register the shaders
-#ifndef _M_IX86
+#if 0 //#ifndef _M_IX86
 //
 // optimisation, we don't bother doing this for standard intel case since our data's already in that format...
 //
@@ -1377,7 +1377,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 	int					version;
 	int					size;
 
-#ifndef _M_IX86
+#if 0 //#ifndef _M_IX86
 	md3Frame_t			*frame;
 	md3Triangle_t		*tri;
 	md3St_t				*st;
@@ -1447,7 +1447,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 		return qtrue;	// All done. Stop, go no further, do not pass Go...
 	}
 
-#ifndef _M_IX86
+#if 0 //#ifndef _M_IX86
 	//
 	// optimisation, we don't bother doing this for standard intel case since our data's already in that format...
 	//
@@ -1510,7 +1510,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 		if ( j > 2 && surf->name[j-2] == '_' ) {
 			surf->name[j-2] = 0;
 		}
-#ifndef _M_IX86
+#if 0 //#ifndef _M_IX86
 //
 // optimisation, we don't bother doing this for standard intel case since our data's already in that format...
 //

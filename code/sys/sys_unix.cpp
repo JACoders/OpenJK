@@ -119,10 +119,10 @@ qboolean Sys_LowPhysicalMemory( void )
 
 void Conbuf_AppendText( const char *pMsg )
 {
-	char		msg[4096];
-	strcpy(msg, pMsg);
-	printf(Q_CleanStr(msg));
-	printf("\n");
+	char msg[4096] = {0};
+	Q_strncpyz(msg, pMsg, sizeof(msg));
+	Q_StripColor(msg);
+	printf("%s", msg);
 }
 
 void Sys_Print( const char *msg ) {

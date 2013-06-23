@@ -41,7 +41,11 @@ ____________________________________________________________________________*/
 /* #define GLOBAL_GAIN_SCALE 0 */
 
 
-#ifdef _M_IX86
+#if (defined _M_IX86 || defined __i386__)
+#define LITTLE_ENDIAN 1
+#endif
+
+#if (defined _M_X64 || defined _WIN64 || defined __WIN64__ || defined __x86_64__)
 #define LITTLE_ENDIAN 1
 #endif
 

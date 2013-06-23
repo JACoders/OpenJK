@@ -278,6 +278,9 @@
     <ClCompile Include="..\qcommon\q_shared.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="g_cvar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ai.h">

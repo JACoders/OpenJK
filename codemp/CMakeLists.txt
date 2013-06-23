@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.8)
 
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
@@ -28,13 +28,13 @@ if(BuildMPEngine)
 endif(BuildMPEngine)
 
 
-#        Common things between Engine and Dedicated Server
+#    Common things between Engine and Dedicated Server
 if(BuildMPEngine OR BuildMPDed)
 
 	#    Botlib
 	# the files could arguably just be put into the engine and dedicated projects without having a library for it.
 	set(MPBotlibDefines ${SharedDefines} "BOTLIB")
-	set(MPBotlibIncludeDirectories "${MPDir}")
+	set(MPBotlibIncludeDirectories ${MPDir})
 	set(MPBotlibHeaderFiles
 		"${MPDir}/botlib/aasfile.h"
 		"${MPDir}/botlib/be_aas.h"
@@ -123,16 +123,14 @@ if(BuildMPEngine OR BuildMPDed)
 	# Platform-specific libraries
 	if(WIN32)
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} "winmm" "wsock32")
-	else(WIN32)
-		message("You might need to add some libraries to codemp/CMakeLists.txt or you could get linker errors on non-Windows-OSs.")
 	endif(WIN32)
 	# Include directories
-	set(MPEngineAndDedIncludeDirectories ${MPDir}) # codemp folder, since includes are not always relative in the files
+	set(MPEngineAndDedIncludeDirectories ${MPDir} ${OpenJKLibDir}) # codemp folder, since includes are not always relative in the files
 	
 	if(UseInternalZlib)
-		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} "${MPDir}/zlib")
+		#set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} "${OpenJKLibDir}/zlib")
 		# OpenAL32.lib is included for windows
-		find_library(ZlibLibrary NAMES zlib PATHS "${MPDir}/libs/win32")
+		find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
 		if(NOT ZlibLibrary)
 			message(FATAL_ERROR "UseInternalOpenAL set, but libs/OpenAL32 not found!")
 		endif(NOT ZlibLibrary)
@@ -143,13 +141,8 @@ if(BuildMPEngine OR BuildMPDed)
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZLIB_LIBRARY})
 	endif(UseInternalZlib)
 
-	if(NOT WIN32)
-		find_package(SDL2 REQUIRED)
-		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${SDL2_INCLUDE_DIR})
-		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${SDL2_LIBRARY})
-	endif(NOT WIN32)
-	
-	file(GLOB_RECURSE J_SRC "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
+	file(GLOB_RECURSE J_SRC "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
+	source_group("jpeg-8c" FILES ${J_SRC})
 	
 	set(MPEngineAndDedCgameFiles
 		"${MPDir}/cgame/cg_public.h"
@@ -231,6 +224,11 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/vm_local.h"
 		"${MPDir}/qcommon/z_memman_pc.cpp"
 		)
+	if(WIN32)
+		set(MPEngineAndDedCommonFiles
+			${MPEngineAndDedCommonFiles}
+			"${MPDir}/qcommon/vm_x86.cpp")
+	endif(WIN32)
 	source_group("common" FILES ${MPEngineAndDedCommonFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedCommonFiles})
 	
@@ -328,33 +326,29 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedMinizipFiles
 		"${MPDir}/qcommon/unzip.cpp"
 		"${MPDir}/qcommon/unzip.h"
-		"${MPDir}/zlib/ioapi.c"
-		"${MPDir}/zlib/ioapi.h"
+		"${OpenJKLibDir}/zlib/ioapi.c"
+		"${OpenJKLibDir}/zlib/ioapi.h"
 		)
 	source_group("minizip" FILES ${MPEngineAndDedMinizipFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
 	
 	if(WIN32)
-		set(MPEngineAndDedAllSortMe
-			${MPEngineAndDedAllSortMe}
+		set(MPEngineAndDedWin32Files
 			"${MPDir}/win32/win_local.h"
 			"${MPDir}/win32/win_net.cpp"
 			"${MPDir}/win32/win_shared.cpp"
-			"${MPDir}/qcommon/vm_x86.cpp"
+			"${MPDir}/sys/snapvector.cpp"
 			)
 		source_group("win32" FILES ${MPEngineAndDedWin32Files})
 		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedWin32Files})
 	else(WIN32)
-		set(MPEngineAndDedAllSortMe
-			${MPEngineAndDedAllSortMe}
+		set(MPEngineAndDedSysFiles
 			"${MPDir}/sys/vm_x86.cpp"
-			"${MPDir}/sys/snapvector.nasm"
+			"${MPDir}/sys/snapvector.cpp"
 			)
+		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedSysFiles})
+		source_group("sys" FILES ${MPEngineAndDedSysFiles})
 	endif(WIN32)
-	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedAllSortMe})
-	source_group("SortMe" FILES ${MPEngineAndDedAllSortMe})
-	source_group("jpeg-8c" FILES ${J_SRC})
-	
 endif(BuildMPEngine OR BuildMPDed)
 
 #        Engine/Executable (jamp.exe)
@@ -378,9 +372,9 @@ if(BuildMPEngine)
 		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} "${MPDir}/client/OpenAL")
 		# There's a libs/OpenAL32.lib
 		# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
-		find_library(OpenALLibrary NAMES OpenAL32 PATHS "${MPDir}/libs/win32")
+		find_library(OpenALLibrary NAMES OpenAL32 PATHS ${OpenJKDir})
 		if(NOT OpenALLibrary)
-			message(FATAL_ERROR "UseInternalOpenAL set, but codemp/libs/win32/OpenAL32 not found!")
+			message(FATAL_ERROR "UseInternalOpenAL set, but lib/OpenAL32 not found!")
 		endif(NOT OpenALLibrary)
 		set(MPEngineLibraries ${MPEngineLibraries} ${OpenALLibrary})
 	else(UseInternalOpenAL)
@@ -388,19 +382,27 @@ if(BuildMPEngine)
 		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENAL_INCLUDE_DIR})
 		set(MPEngineLibraries ${MPEngineLibraries} ${OPENAL_LIBRARY})
 	endif(UseInternalOpenAL)
-	
+
+	if(NOT WIN32)
+		find_package(SDL2 REQUIRED)
+		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
+		set(MPEngineLibraries ${MPEngineLibraries} ${SDL2_LIBRARY})
+	endif(NOT WIN32)
+
 	# EAX is Windows-Only (right?)
 	if(WIN32)
-		set(MPEngineFiles ${MPEngineFiles}
+		set(MPEngineEAXFiles
 			"${MPDir}/client/eax/eax.h"
 			"${MPDir}/client/eax/EaxMan.h"
 			)
+		source_group("eax" FILES ${MPEngineEAXFiles})
+		set(MPEngineFiles ${MPEngineFiles} ${MPEngineEAXFiles})
 	endif(WIN32)
 	
 	#    Source Files
 	
 	# TODO: Allow for use of external library
-	file(GLOB_RECURSE MPEngineJpegFiles "${MPDir}/jpeg-8c/*.c" "${MPDir}/jpeg-8c/*.h")
+	file(GLOB_RECURSE MPEngineJpegFiles "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
 	source_group("jpeg-8c" FILES ${MPEngineJpegFiles})
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineJpegFiles})
 	
@@ -519,8 +521,7 @@ if(BuildMPEngine)
 		source_group("win32" FILES ${MPEngineWin32Files})
 		set(MPEngineFiles ${MPEngineFiles} ${MPEngineWin32Files})
 	else(WIN32)
-		set(MPEngineSortMe
-			${MPEngineSortMe}
+		set(MPEngineSysFiles
 			"${MPDir}/sdl/sdl_input.cpp"
 			"${MPDir}/sdl/sdl_qgl.h"
 			"${MPDir}/sdl/sdl_snd.cpp"
@@ -531,10 +532,9 @@ if(BuildMPEngine)
 			"${MPDir}/sys/sys_unix.cpp"
 			"${MPDir}/sys/unix_local.h"
 			)
+		source_group("sys" FILES ${MPEngineSysFiles})
+		set(MPEngineFiles ${MPEngineFiles} ${MPEngineSysFiles})
 	endif(WIN32)
-
-	set(MPEngineFiles ${MPEngineFiles} ${MPEngineSortMe})
-	source_group("SortMe" FILES ${MPEngineSortMe})
 
 	# todo: windows resources
 
@@ -581,31 +581,25 @@ if(BuildMPDed)
 	source_group("renderer" FILES ${MPDedicatedRendererFiles})
 	set(MPDedFiles ${MPDedFiles} ${MPDedicatedRendererFiles})
 
-	set(MPDedicatedPngFiles
-		"${MPDir}/png/rpng.cpp")
-	source_group("png" FILES ${MPVanillaRendererPngFiles})
-	set(MPDedFiles ${MPDedFiles} ${MPDedicatedPngFiles})
-
 	set(MPDedLibPngFiles
-		"${MPDir}/libpng/png.c"
-		"${MPDir}/libpng/pngerror.c"
-		"${MPDir}/libpng/pngget.c"
-		"${MPDir}/libpng/pngmem.c"
-		"${MPDir}/libpng/pngpread.c"
-		"${MPDir}/libpng/pngread.c"
-		"${MPDir}/libpng/pngrio.c"
-		"${MPDir}/libpng/pngrtran.c"
-		"${MPDir}/libpng/pngrutil.c"
-		"${MPDir}/libpng/pngset.c"
-		"${MPDir}/libpng/pngtrans.c"
-		"${MPDir}/libpng/pngwio.c"
-		"${MPDir}/libpng/pngwrite.c"
-		"${MPDir}/libpng/pngwtran.c"
-		"${MPDir}/libpng/pngwutil.c")
+		"${OpenJKLibDir}/libpng/png.c"
+		"${OpenJKLibDir}/libpng/pngerror.c"
+		"${OpenJKLibDir}/libpng/pngget.c"
+		"${OpenJKLibDir}/libpng/pngmem.c"
+		"${OpenJKLibDir}/libpng/pngpread.c"
+		"${OpenJKLibDir}/libpng/pngread.c"
+		"${OpenJKLibDir}/libpng/pngrio.c"
+		"${OpenJKLibDir}/libpng/pngrtran.c"
+		"${OpenJKLibDir}/libpng/pngrutil.c"
+		"${OpenJKLibDir}/libpng/pngset.c"
+		"${OpenJKLibDir}/libpng/pngtrans.c"
+		"${OpenJKLibDir}/libpng/pngwio.c"
+		"${OpenJKLibDir}/libpng/pngwrite.c"
+		"${OpenJKLibDir}/libpng/pngwtran.c"
+		"${OpenJKLibDir}/libpng/pngwutil.c")
 	source_group("libpng" FILES ${MPDedLibPngFiles})
 	set(MPDedFiles ${MPDedFiles} ${MPDedLibPngFiles})
 	
-	# TODO sort this
 	set(MPDedNullFiles
 		"${MPDir}/null/null_client.cpp"
 		"${MPDir}/null/null_input.cpp"
@@ -622,16 +616,16 @@ if(BuildMPDed)
 		source_group("win32" FILES ${MPDedWin32Files})
 		set(MPDedFiles ${MPDedFiles} ${MPDedWin32Files})
 	else(WIN32)
-		set(MPDedSortMe ${MPDedSortMe}
+		set(MPDedSysFiles
 			"${MPDir}/sys/sys_main.cpp"
 			"${MPDir}/sys/sys_net.cpp"
 			"${MPDir}/sys/sys_unix.cpp"
 			"${MPDir}/sys/unix_local.h"
 			)
 		set(MPDedLibraries ${MPDedLibraries} ${CMAKE_DL_LIBS})
+		source_group("sys" FILES ${MPDedSysFiles})
+		set(MPDedFiles ${MPDedFiles} ${MPDedSysFiles})
 	endif(WIN32)
-	set(MPDedFiles ${MPDedFiles} ${MPDedSortMe})
-	source_group("SortMe" FILES ${MPDedSortMe})
 	
 	add_executable(${MPDed} ${MPDedFiles})
 	install(TARGETS ${MPDed} RUNTIME DESTINATION ".")
