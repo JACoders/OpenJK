@@ -96,8 +96,15 @@ else(WIN32)
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wno-invalid-offsetof -Wno-write-strings")
+	if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+		message("Using GCC")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+	endif()
+
+	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+		message("Using G++")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof -Wno-write-strings")
+	endif()
 
 	if (NOT CMAKE_BUILD_TYPE)
 		message("No build type selected, default to RELEASE")
