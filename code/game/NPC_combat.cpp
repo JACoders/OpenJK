@@ -704,7 +704,6 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		{//commando
 			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
 			ent->NPC->burstMin = 4;
-			ent->NPC->burstMean = 8;
 			ent->NPC->burstMax = 12;
 			if ( g_spskill->integer == 0 )
 				ent->NPC->burstSpacing = 600;//attack debounce
@@ -817,7 +816,6 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		{
 			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
 			ent->NPC->burstMin = 3;
-			ent->NPC->burstMean = 6;
 			ent->NPC->burstMax = 10;
 			if ( g_spskill->integer == 0 )
 				ent->NPC->burstSpacing = 1500;//attack debounce
@@ -890,7 +888,6 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 	case WP_SABER:
 		ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
 		ent->NPC->burstMin = 5;//0.5 sec
-		ent->NPC->burstMean = 10;//1 second
 		ent->NPC->burstMax = 20;//3 seconds
 		ent->NPC->burstSpacing = 2000;//2 seconds
 		ent->NPC->attackHold = 1000;//Hold attack button for a 1-second burst
@@ -899,7 +896,6 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 	case WP_TRICORDER:
 		ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
 		ent->NPC->burstMin = 5;
-		ent->NPC->burstMean = 10;
 		ent->NPC->burstMax = 30;
 		ent->NPC->burstSpacing = 1000;
 		break;
@@ -910,7 +906,6 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		{
 			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
 			ent->NPC->burstMin = 3;
-			ent->NPC->burstMean = 3;
 			ent->NPC->burstMax = 3;
 			if ( g_spskill->integer == 0 )
 				ent->NPC->burstSpacing = 1500;//attack debounce
@@ -967,7 +962,6 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		{
 			ent->NPC->aiFlags |= NPCAI_BURST_WEAPON;
 			ent->NPC->burstMin = 2; // 3 shots, really
-			ent->NPC->burstMean = 2;
 			ent->NPC->burstMax = 2;
 
 			if ( ent->owner ) // if we have an owner, it should be the chair at this point...so query the chair for its shot debounce times, etc.
@@ -1105,23 +1099,6 @@ void ShootThink( void )
 {
 	int			delay;
 
-	ucmd.buttons &= ~BUTTON_ATTACK;
-/*
-	if ( enemyVisibility != VIS_SHOOT) 
-		return;
-*/
-
-	if ( client->ps.weapon == WP_NONE )
-		return;
-
-	if ( client->ps.weaponstate != WEAPON_READY && client->ps.weaponstate != WEAPON_FIRING && client->ps.weaponstate != WEAPON_IDLE) 
-		return;
-
-	if ( level.time < NPCInfo->shotTime ) 
-	{
-		return;
-	}
-
 	ucmd.buttons |= BUTTON_ATTACK;
 
 	NPCInfo->currentAmmo = client->ps.ammo[weaponData[client->ps.weapon].ammoIndex];	// checkme
@@ -1133,17 +1110,6 @@ void ShootThink( void )
 		if ( !NPCInfo->burstCount ) 
 		{
 			NPCInfo->burstCount = Q_irand( NPCInfo->burstMin, NPCInfo->burstMax );
-			/*
-			NPCInfo->burstCount = erandom( NPCInfo->burstMean );
-			if ( NPCInfo->burstCount < NPCInfo->burstMin ) 
-			{
-				NPCInfo->burstCount = NPCInfo->burstMin;
-			}
-			else if ( NPCInfo->burstCount > NPCInfo->burstMax ) 
-			{
-				NPCInfo->burstCount = NPCInfo->burstMax;
-			}
-			*/
 			delay = 0;
 		}
 		else 
@@ -1214,10 +1180,10 @@ Added: hacks for Borg
 */
 void WeaponThink( qboolean inCombat ) 
 {
+	ucmd.buttons &= ~BUTTON_ATTACK;
 	if ( client->ps.weaponstate == WEAPON_RAISING || client->ps.weaponstate == WEAPON_DROPPING ) 
 	{
 		ucmd.weapon = client->ps.weapon;
-		ucmd.buttons &= ~BUTTON_ATTACK;
 		return;
 	}
 
@@ -1234,6 +1200,21 @@ void WeaponThink( qboolean inCombat )
 		return;
 	}
 
+	if ( client->ps.weapon == WP_NONE )
+	{
+		return;
+	}
+
+	if ( client->ps.weaponstate != WEAPON_READY && client->ps.weaponstate != WEAPON_FIRING && client->ps.weaponstate != WEAPON_IDLE) 
+	{
+		return;
+	}
+
+	if ( level.time < NPCInfo->shotTime ) 
+	{
+		return;
+	}
+
 
 //MCG - Begin
 	//For now, no-one runs out of ammo	
@@ -1244,54 +1225,6 @@ void WeaponThink( qboolean inCombat )
 	else if ( NPC->client->ps.ammo[ weaponData[client->ps.weapon].ammoIndex ] < weaponData[client->ps.weapon].altEnergyPerShot )
 	{
 		Add_Ammo( NPC, client->ps.weapon, weaponData[client->ps.weapon].altEnergyPerShot*5 );
-	}
-
-	/*if ( NPC->playerTeam == TEAM_BORG )
-	{//HACK!!!
-		if(!(NPC->client->ps.stats[STAT_WEAPONS] & ( 1 << WP_BORG_WEAPON )))
-			NPC->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BORG_WEAPON );
-
-		if ( client->ps.weapon != WP_BORG_WEAPON ) 
-		{
-			NPC_ChangeWeapon( WP_BORG_WEAPON );
-			Add_Ammo (NPC, client->ps.weapon, 10);
-			NPCInfo->currentAmmo = client->ps.ammo[client->ps.weapon];
-		}
-	}
-	else */
-	
-	/*if ( NPC->client->playerTeam == TEAM_SCAVENGERS )
-	{//HACK!!!
-		if(!(NPC->client->ps.stats[STAT_WEAPONS] & ( 1 << WP_BLASTER )))
-			NPC->client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BLASTER );
-
-		if ( client->ps.weapon != WP_BLASTER )
-			 
-		{
-			NPC_ChangeWeapon( WP_BLASTER );
-			Add_Ammo (NPC, client->ps.weapon, 10);
-//			NPCInfo->currentAmmo = client->ps.ammo[client->ps.weapon];
-			NPCInfo->currentAmmo = client->ps.ammo[weaponData[client->ps.weapon].ammoIndex];	// checkme
-		}
-	}
-	else*/
-//MCG - End
-	{
-		// if the gun in our hands is out of ammo, we need to change
-		/*if ( client->ps.ammo[client->ps.weapon] == 0 ) 
-		{
-			NPCInfo->aiFlags |= NPCAI_CHECK_WEAPON;
-		}
-
-		if ( NPCInfo->aiFlags & NPCAI_CHECK_WEAPON ) 
-		{
-			NPCInfo->aiFlags &= ~NPCAI_CHECK_WEAPON;
-			bestWeapon = ChooseBestWeapon();
-			if ( bestWeapon != client->ps.weapon ) 
-			{
-				NPC_ChangeWeapon( bestWeapon );
-			}
-		}*/
 	}
 
 	ucmd.weapon = client->ps.weapon;

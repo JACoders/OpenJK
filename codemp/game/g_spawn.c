@@ -878,7 +878,7 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 	}
 
 	// check for "notsingle" flag
-	if ( g_gametype.integer == GT_SINGLE_PLAYER ) {
+	if ( level.gametype == GT_SINGLE_PLAYER ) {
 		G_SpawnInt( "notsingle", "0", &i );
 		if ( i ) {
 			ADJUST_AREAPORTAL();
@@ -887,7 +887,7 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 		}
 	}
 	// check for "notteam" flag (GT_FFA, GT_DUEL, GT_SINGLE_PLAYER)
-	if ( g_gametype.integer >= GT_TEAM ) {
+	if ( level.gametype >= GT_TEAM ) {
 		G_SpawnInt( "notteam", "0", &i );
 		if ( i ) {
 			ADJUST_AREAPORTAL();
@@ -904,8 +904,8 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 	}
 
 	if( G_SpawnString( "gametype", NULL, &value ) ) {
-		if( g_gametype.integer >= GT_FFA && g_gametype.integer < GT_MAX_GAME_TYPE ) {
-			gametypeName = gametypeNames[g_gametype.integer];
+		if( level.gametype >= GT_FFA && level.gametype < GT_MAX_GAME_TYPE ) {
+			gametypeName = gametypeNames[level.gametype];
 
 			s = strstr( value, gametypeName );
 			if( !s ) {
@@ -1418,7 +1418,7 @@ void SP_worldspawn( void )
 		}
 	}
 
-	if (g_gametype.integer == GT_SIEGE)
+	if (level.gametype == GT_SIEGE)
 	{ //a tad bit of a hack, but..
 		EWebPrecache();
 	}
@@ -1457,7 +1457,6 @@ void SP_worldspawn( void )
 	//Raz: Fix warmup
 #if 0
 	/*
-	else if ( g_doWarmup.integer && g_gametype.integer != GT_DUEL && g_gametype.integer != GT_POWERDUEL ) { // Turn it on
 	else if ( g_doWarmup.integer && level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL ) { // Turn it on
 		level.warmupTime = -1;
 		trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
@@ -1465,7 +1464,7 @@ void SP_worldspawn( void )
 	}
 	*/
 #else
-	else if ( g_doWarmup.integer && g_gametype.integer != GT_DUEL && g_gametype.integer != GT_POWERDUEL && g_gametype.integer != GT_SIEGE ) { // Turn it on
+	else if ( g_doWarmup.integer && level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && level.gametype != GT_SIEGE ) { // Turn it on
 		level.warmupTime = -1;
 		trap_SetConfigstring( CS_WARMUP, va("%i", level.warmupTime) );
 		G_LogPrintf( "Warmup:\n" );

@@ -415,10 +415,8 @@ bool	CVec4::IsFinite()
 {
 #if defined(_MSC_VER) 
 	return 	(_finite(v[0]) && _finite(v[1]) && _finite(v[2]) && _finite(v[3]));
-#endif
-#if defined(__MWERKS__)
-	//FIXME:  _finite won't compile on the PS2, so commented it out for now, false seemed like the best option
-	return true;
+#else
+	return isfinite(v[0]) && isfinite(v[1]) && isfinite(v[2]);
 #endif
 }
 
@@ -992,10 +990,8 @@ bool	CVec3::IsFinite()
 {
 #if defined(_MSC_VER) 
 		return 	(_finite(v[0]) && _finite(v[1]) && _finite(v[2]));
-#endif
-#if defined(__MWERKS__)
-	//FIXME:  _finite won't compile on the PS2, so commented it out for now, false seemed like the best option
-	return 	true;
+#else
+		return isfinite(v[0]) && isfinite(v[1]) && isfinite(v[2]);
 #endif
 }
 

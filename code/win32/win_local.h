@@ -18,6 +18,8 @@ This file is part of Jedi Academy.
 
 // win_local.h: Win32-specific Quake3 header file
 
+#pragma once
+
 #if defined (_MSC_VER) && (_MSC_VER >= 1200)
 #pragma warning(disable : 4201)
 #pragma warning( push )
@@ -27,15 +29,16 @@ This file is part of Jedi Academy.
 #pragma warning( pop )
 #endif
 
-#ifndef _XBOX
 #define DIRECTINPUT_VERSION 0x0800 //[ 0x0300 | 0x0500 | 0x0700 | 0x0800 ]
 #include <dinput.h>
 #include <dsound.h>
-#else
-#include "../qcommon/platform.h"
+
+#ifndef NO_XINPUT
+#include <Xinput.h>
 #endif
 
 void	IN_MouseEvent (int mstate);
+void	IN_RawMouseEvent( int lastX, int lastY ); // Send raw input events to the input subsystem
 
 void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr );
 
@@ -70,8 +73,8 @@ LONG WINAPI MainWndProc (
 void Conbuf_AppendText( const char *msg );
 
 void SNDDMA_Activate( qboolean bAppActive );
+int  SNDDMA_InitDS ();
 
-#ifndef _XBOX
 typedef struct
 {
 	HWND			hWnd;
@@ -86,7 +89,6 @@ typedef struct
 } WinVars_t;
 
 extern WinVars_t	g_wv;
-#endif
 
 
 #define	MAX_QUED_EVENTS		256

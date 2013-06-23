@@ -1258,6 +1258,18 @@ int VEH_LoadVehicle( const char *vehicleName )
 #endif
 	}
 
+#ifndef BASE_COMPAT
+	// Fix for broken swoop vehicle et al
+	if( vehicle->skin && vehicle->skin[0] )
+	{
+		// Register all of the skins, we're going to need to use them all
+
+	}
+	else
+	{
+		trap_R_RegisterSkin( va( "models/players/%s/model_default.skin", vehicle->model) );
+	}
+#else
 #ifndef _JK2MP
 	//SP
 	if ( vehicle->skin
@@ -1286,6 +1298,11 @@ int VEH_LoadVehicle( const char *vehicleName )
 	{
 		trap_R_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, vehicle->skin) );
 	}
+	else
+	{
+		trap_R_RegisterSkin( va( "models/players/%s/model_default.skin", vehicle->model ) );
+	}
+#endif
 #endif
 #endif
 	//sanity check and clamp the vehicle's data

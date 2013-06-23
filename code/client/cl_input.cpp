@@ -26,10 +26,6 @@ This file is part of Jedi Academy.
 #include "client.h"
 #include "client_ui.h"
 
-#ifdef _XBOX
-#include "cl_input_hotswap.h"
-#endif
-
 #ifndef _WIN32
 #include <cmath>
 #endif
@@ -70,47 +66,10 @@ kbutton_t	in_buttons[9];
 
 qboolean	in_mlooking;
 
+extern cvar_t	*in_joystick;
 
-#ifdef _XBOX
-HotSwapManager swapMan1(HOTSWAP_ID_WHITE);
-HotSwapManager swapMan2(HOTSWAP_ID_BLACK);
-
-
-void IN_HotSwap1On(void)
-{
-	swapMan1.SetDown();
-}
-
-
-void IN_HotSwap2On(void)
-{
-	swapMan2.SetDown();
-}
-
-
-void IN_HotSwap1Off(void)
-{
-	swapMan1.SetUp();
-}
-
-
-void IN_HotSwap2Off(void)
-{
-	swapMan2.SetUp();
-}
-
-
-void CL_UpdateHotSwap(void)
-{
-	swapMan1.Update();
-	swapMan2.Update();
-}
-
-
-bool CL_ExtendSelectTime(void)
-{
-	return swapMan1.ButtonDown() || swapMan2.ButtonDown();
-}
+#ifndef NO_XINPUT
+void IN_UnloadXInput ( void );
 #endif
 
 
@@ -500,49 +459,64 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 	int		movespeed;
 	float	anglespeed;
 
-	if ( in_speed.active ^ cl_run->integer ) {
-		movespeed = 2;
-	} else {
-		movespeed = 1;
-		cmd->buttons |= BUTTON_WALKING;
+	if ( !in_joystick->integer )
+	{
+		return;
 	}
 
-	if ( in_speed.active ) {
-		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
-	} else {
-		anglespeed = 0.001 * cls.frametime;
+	if( in_joystick->integer == 2 )
+	{
+		if(abs(cl.joystickAxis[AXIS_FORWARD]) >= 30) cmd->forwardmove = cl.joystickAxis[AXIS_FORWARD];
+		if(abs(cl.joystickAxis[AXIS_SIDE]) >= 30) cmd->rightmove = cl.joystickAxis[AXIS_SIDE];
+		cmd->forwardmove *= -1.0f; // ffff
 	}
+	else
+	{
+        if ( in_speed.active ^ cl_run->integer ) {
+            movespeed = 2;
+        } else {
+            movespeed = 1;
+            cmd->buttons |= BUTTON_WALKING;
+        }
+
+        if ( in_speed.active ) {
+            anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
+        } else {
+            anglespeed = 0.001 * cls.frametime;
+        }
 
 #ifndef _XBOX
-	if ( !in_strafe.active ) {
-		if ( cl_mYawOverride )
-		{
-			cl.viewangles[YAW] += 5.0f * cl_mYawOverride * cl.joystickAxis[AXIS_SIDE];
-		}
-		else
-		{
-			cl.viewangles[YAW] += anglespeed * (cl_yawspeed->value / 100.0f) * cl.joystickAxis[AXIS_SIDE];
-		}
-	} else
+        if ( !in_strafe.active ) {
+            if ( cl_mYawOverride )
+            {
+                cl.viewangles[YAW] += 5.0f * cl_mYawOverride * cl.joystickAxis[AXIS_SIDE];
+            }
+            else
+            {
+                cl.viewangles[YAW] += anglespeed * (cl_yawspeed->value / 100.0f) * cl.joystickAxis[AXIS_SIDE];
+            }
+        } else
 #endif
-	{
-		cmd->rightmove = ClampChar( cmd->rightmove + cl.joystickAxis[AXIS_SIDE] );
-	}
+        {
+            cmd->rightmove = ClampChar( cmd->rightmove + cl.joystickAxis[AXIS_SIDE] );
+        }
 
-	if ( in_mlooking ) {
-		if ( cl_mPitchOverride )
-		{
-			cl.viewangles[PITCH] += 5.0f * cl_mPitchOverride * cl.joystickAxis[AXIS_FORWARD];
-		}
-		else
-		{
-			cl.viewangles[PITCH] += anglespeed * (cl_pitchspeed->value / 100.0f) * cl.joystickAxis[AXIS_FORWARD];
-		}
-	} else {
-		cmd->forwardmove = ClampChar( cmd->forwardmove + cl.joystickAxis[AXIS_FORWARD] );
-	}
+        if ( in_mlooking ) {
+            if ( cl_mPitchOverride )
+            {
+                cl.viewangles[PITCH] += 5.0f * cl_mPitchOverride * cl.joystickAxis[AXIS_FORWARD];
+            }
+            else
+            {
+                cl.viewangles[PITCH] += anglespeed * (cl_pitchspeed->value / 100.0f) * cl.joystickAxis[AXIS_FORWARD];
+            }
+        } else {
+            cmd->forwardmove = ClampChar( cmd->forwardmove + cl.joystickAxis[AXIS_FORWARD] );
+        }
 
-	cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
+        cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
+
+	}
 }
 
 /*

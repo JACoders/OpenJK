@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.8)
 # For checks in subdirectories
 set(InOpenJK TRUE)
 
@@ -8,7 +8,6 @@ project("OpenJK")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 #    Customizable options
-#option(InstallDir "Where to install the binaries to" "${CMAKE_SOURCE_DIR}/install") # just use CMAKE_INSTALL_PREFIX
 option(BuildMPEngine "Whether to create projects for the mp engine (jamp.exe)" ON)
 option(BuildMPDed "Whether to create projects for the dedicated server (jampded.exe)" ON)
 option(BuildMPGame "Whether to create projects for the mp serverside gamecode (jampgamex86.dll)" ON)
@@ -34,7 +33,7 @@ list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
 # Arch Suffix
 if (CMAKE_SIZEOF_VOID_P MATCHES "8")
 	if (WIN32)
-		set(Architecture "x64")
+		set(Architecture "x86_64")
 	else (WIN32)
 		set(Architecture "x86_64")
 	endif(WIN32)
@@ -55,6 +54,7 @@ message("Git revision is ${GIT_SHA1}")
 # Binary names
 set(SPEngine "openjk_sp.${Architecture}")
 set(SPGame "jagame${Architecture}")
+set(SPRDVanillaRenderer "rdsp-vanilla_${Architecture}")
 set(JK2SPGame "jk2game${Architecture}")
 set(MPEngine "openjk.${Architecture}")
 set(MPVanillaRenderer "rd-vanilla_${Architecture}")
@@ -79,30 +79,27 @@ if(WIN32)
 	endif(MSVC)
 else(WIN32)
 	if (APPLE)
-		set(SharedDefines "MACOS_X" "_M_IX86")
-	else(APPLE)
-		set(SharedDefines "__linux__" "_M_IX86")
+		set(SharedDefines "MACOS_X")
+	#	set(SharedDefines "MACOS_X" "_M_IX86")
+	#else(APPLE)
+	#	set(SharedDefines "__linux__" "_M_IX86")
 	endif()
 
 	# removes the -rdynamic flag at linking (which causes crashes for some reason)
 	set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
 	set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
 
-	# maybe remove these flags later, when the warnings are fixed
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -w -fpermissive")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w -fpermissive")
-
 	# additional flags for debug configuration
 	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 
-	enable_language(ASM_NASM) # there are some assembly files to build
-	
 	if (NOT CMAKE_BUILD_TYPE)
- 		message("No build type selected, default to RELEASE")
- 		set(CMAKE_BUILD_TYPE "RELEASE")
- 	endif()
+		message("No build type selected, default to RELEASE")
+		set(CMAKE_BUILD_TYPE "RELEASE")
+	endif()
 endif()
+
+set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
 
 set(DebugDefines "_DEBUG")
 set(ReleaseDefines "NDEBUG" "FINAL_BUILD")
@@ -116,14 +113,14 @@ add_subdirectory(${MPDir})
 
 #    CPack for installer creation
 # TODO: Which version are we?
-set(CPACK_PACKAGE_PACKAGE_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "1")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 # I'm just not appending the version for now
 set(CPACK_PACKAGE_FILE_NAME "OpenJK-${CMAKE_SYSTEM_NAME}-${Architecture}")
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "An improved Jedi Academy")
-set(CPACK_PACKAGE_VENDOR "JA Coders") # TODO: What are we called?
+set(CPACK_PACKAGE_VENDOR "JACoders")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
 set(CPACK_PACKAGE_DIRECTORY ${PACKAGE_DIR})

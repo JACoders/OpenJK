@@ -1968,7 +1968,7 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 	}
 //rww - RAGDOLL_END
 
-	ghoul2.mBoneCache->frameSize = 0;// can be deleted in new G2 format	//(int)( &((mdxaFrame_t *)0)->boneIndexes[ ghoul2.aHeader->numBones ] );   
+	ghoul2.mBoneCache->frameSize = 0;// can be deleted in new G2 format	//(size_t)( &((mdxaFrame_t *)0)->boneIndexes[ ghoul2.aHeader->numBones ] );   
 
 	ghoul2.mBoneCache->rootBoneList=&rootBoneList;
 	ghoul2.mBoneCache->rootMatrix=rootMatrix;
@@ -3295,7 +3295,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	int					size;
 	mdxmSurfHierarchy_t	*surfInfo;
 
-#ifndef _M_IX86
+#if 0 //#ifndef _M_IX86
 	int					k;
 	int					frameSize;
 	mdxmTag_t			*tag;
@@ -3397,7 +3397,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		RE_RegisterModels_StoreShaderRequest(mod_name, &surfInfo->shader[0], &surfInfo->shaderIndex);		
 
 		// find the next surface
-		surfInfo = (mdxmSurfHierarchy_t *)( (byte *)surfInfo + (int)( &((mdxmSurfHierarchy_t *)0)->childIndexes[ surfInfo->numChildren ] ));
+		surfInfo = (mdxmSurfHierarchy_t *)( (byte *)surfInfo + (size_t)( &((mdxmSurfHierarchy_t *)0)->childIndexes[ surfInfo->numChildren ] ));
   	}
 	
 	// swap all the LOD's	(we need to do the middle part of this even for intel, because of shader reg and err-check)
@@ -3435,7 +3435,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			// change to surface identifier
 			surf->ident = SF_MDX;
 			// register the shaders
-#ifndef _M_IX86
+#if 0 //#ifndef _M_IX86
 //
 // optimisation, we don't bother doing this for standard intel case since our data's already in that format...
 //
@@ -3721,7 +3721,7 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	byte				*sizeMarker;
 #endif
 
-#ifndef _M_IX86
+#if 0 //#ifndef _M_IX86
 	int					j, k, i;
 	int					frameSize;
 	mdxaFrame_t			*cframe;
@@ -3797,7 +3797,7 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	if (!bAlreadyFound)
 	{
 		mdxaSkel_t			*boneParent;
-#ifdef _M_IX86
+#if 0 //#ifdef _M_IX86
 		mdxaSkel_t			*boneInfo;
 		int i, k;
 #endif
@@ -3916,7 +3916,7 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		return qtrue;	// All done, stop here, do not LittleLong() etc. Do not pass go...
 	}
 
-#ifndef _M_IX86
+#if 0 //#ifndef _M_IX86
 
 	//
 	// optimisation, we don't bother doing this for standard intel case since our data's already in that format...
@@ -3934,12 +3934,12 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		}
 
 		// get next bone
-		boneInfo += (int)( &((mdxaSkel_t *)0)->children[ boneInfo->numChildren ] );
+		boneInfo += (size_t)( &((mdxaSkel_t *)0)->children[ boneInfo->numChildren ] );
 	}
 
 
 	// swap all the frames
-	frameSize = (int)( &((mdxaFrame_t *)0)->bones[ mdxa->numBones ] );
+	frameSize = (size_t)( &((mdxaFrame_t *)0)->bones[ mdxa->numBones ] );
 	for ( i = 0 ; i < mdxa->numFrames ; i++) 
 	{
 		cframe = (mdxaFrame_t *) ( (byte *)mdxa + mdxa->ofsFrames + i * frameSize );

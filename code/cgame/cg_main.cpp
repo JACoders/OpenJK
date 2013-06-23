@@ -322,7 +322,6 @@ vmCvar_t	cg_panoNumShots;
 
 vmCvar_t	fx_freeze;
 vmCvar_t	fx_debug;
-vmCvar_t	fx_flashRadius;
 
 vmCvar_t	cg_missionInfoFlashTime;
 vmCvar_t	cg_hudFiles;
@@ -431,7 +430,6 @@ static cvarTable_t cvarTable[] = {
 
 	{ &fx_freeze, "fx_freeze", "0", 0 },
 	{ &fx_debug, "fx_debug", "0", 0 },
-	{ &fx_flashRadius, "fx_flashRadius", "12.0", CVAR_ARCHIVE },
 	// the following variables are created in other parts of the system,
 	// but we also reference them here
 
@@ -574,7 +572,7 @@ void CG_Printf( const char *msg, ... ) {
 	char		text[1024];
 
 	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
+	Q_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end (argptr);
 
 	cgi_Printf( text );
@@ -585,7 +583,7 @@ void CG_Error( const char *msg, ... ) {
 	char		text[1024];
 
 	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
+	Q_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end (argptr);
 
 	cgi_Error( text );
@@ -2227,6 +2225,7 @@ void CG_Init( int serverCommandSequence ) {
 	cgi_AddCommand ("saberColor");
 	cgi_AddCommand ("saber");
 	cgi_AddCommand ("saberblade");
+	cgi_AddCommand ("setForceAll");
 
 	cgi_AddCommand ("runscript");
 

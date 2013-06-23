@@ -20,8 +20,6 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
-
-
 #include <float.h>
 
 #include "../client/snd_local.h"
@@ -31,7 +29,6 @@ HRESULT (WINAPI *pDirectSoundCreate)(GUID FAR *lpGUID, LPDIRECTSOUND FAR *lplpDS
 #define iDirectSoundCreate(a,b,c)	pDirectSoundCreate(a,b,c)
 
 #define SECONDARY_BUFFER_SIZE	0x10000
-
 
 extern int s_UseOpenAL;
 
@@ -43,7 +40,6 @@ static LPDIRECTSOUND pDS;
 static LPDIRECTSOUNDBUFFER pDSBuf, pDSPBuf;
 static HINSTANCE hInstDS;
 
-static int  SNDDMA_InitDS ();
 
 static const char *DSoundError( int error ) {
 	switch ( error ) {
@@ -79,7 +75,8 @@ void SNDDMA_Shutdown( void ) {
 		if ( pDS )
 		{
 			Com_DPrintf( "...setting NORMAL coop level\n" );
-			pDS->SetCooperativeLevel( g_wv.hWnd, DSSCL_NORMAL );
+			// FIXME JA was DSSCL_NORMAL and Q3 says DSSCL_PRIORITY but the printf says setting normal
+			pDS->SetCooperativeLevel( g_wv.hWnd, DSSCL_PRIORITY );
 		}
 
 		if ( pDSBuf )
@@ -115,6 +112,7 @@ void SNDDMA_Shutdown( void ) {
 	pDSPBuf = NULL;
 	dsound_init = qfalse;
 	memset ((void *)&dma, 0, sizeof (dma));
+	CoUninitialize( );
 }
 
 /*
@@ -130,6 +128,8 @@ qboolean SNDDMA_Init(void) {
 	memset ((void *)&dma, 0, sizeof (dma));
 	dsound_init = qfalse;
 
+	CoInitialize(NULL);
+
 	if ( !SNDDMA_InitDS () ) {
 		return qfalse;
 	}
@@ -141,56 +141,45 @@ qboolean SNDDMA_Init(void) {
     return qtrue;
 }
 
+#undef DEFINE_GUID
 
-static int SNDDMA_InitDS ()
+#define DEFINE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+        EXTERN_C const GUID name \
+                = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
+
+// DirectSound Component GUID {47D4D946-62E8-11CF-93BC-444553540000}
+DEFINE_GUID(CLSID_DirectSound, 0x47d4d946, 0x62e8, 0x11cf, 0x93, 0xbc, 0x44, 0x45, 0x53, 0x54, 0x0, 0x0);
+
+// DirectSound 8.0 Component GUID {3901CC3F-84B5-4FA4-BA35-AA8172B8A09B}
+DEFINE_GUID(CLSID_DirectSound8, 0x3901cc3f, 0x84b5, 0x4fa4, 0xba, 0x35, 0xaa, 0x81, 0x72, 0xb8, 0xa0, 0x9b);
+
+DEFINE_GUID(IID_IDirectSound8, 0xC50A7E93, 0xF395, 0x4834, 0x9E, 0xF6, 0x7F, 0xA9, 0x9D, 0xE5, 0x09, 0x66);
+DEFINE_GUID(IID_IDirectSound, 0x279AFA83, 0x4981, 0x11CE, 0xA5, 0x21, 0x00, 0x20, 0xAF, 0x0B, 0xE5, 0x60);
+
+
+int SNDDMA_InitDS ()
 {
 	HRESULT			hresult;
-	qboolean		pauseTried;
 	DSBUFFERDESC	dsbuf;
 	DSBCAPS			dsbcaps;
 	WAVEFORMATEX	format;
+	int				use8;
 
 	Com_Printf( "Initializing DirectSound\n");
 
-	if ( !hInstDS ) {
-		Com_DPrintf( "...loading dsound.dll: " );
-
-		hInstDS = LoadLibrary("dsound.dll");
-		
-		if ( hInstDS == NULL ) {
+	use8 = 1;
+    // Create IDirectSound using the primary sound device
+    if( FAILED( hresult = CoCreateInstance(CLSID_DirectSound8, NULL, CLSCTX_INPROC_SERVER, IID_IDirectSound8, (void **)&pDS))) {
+		use8 = 0;
+	    if( FAILED( hresult = CoCreateInstance(CLSID_DirectSound, NULL, CLSCTX_INPROC_SERVER, IID_IDirectSound, (void **)&pDS))) {
 			Com_Printf ("failed\n");
-			return 0;
-		}
-
-		Com_DPrintf ("ok\n");
-		pDirectSoundCreate = (long (__stdcall *)(struct _GUID *,struct IDirectSound ** ,struct IUnknown *))
-			GetProcAddress(hInstDS,"DirectSoundCreate");
-
-		if ( !pDirectSoundCreate ) {
-			Com_Printf ("*** couldn't get DS proc addr ***\n");
-			return 0;
+			SNDDMA_Shutdown ();
+			return qfalse;
 		}
 	}
 
-	Com_DPrintf( "...creating DS object: " );
-	pauseTried = qfalse;
-	while ( ( hresult = iDirectSoundCreate( NULL, &pDS, NULL ) ) != DS_OK ) {
-		if ( hresult != DSERR_ALLOCATED ) {
-			Com_Printf( "failed\n" );
-			return 0;
-		}
+	hresult = pDS->Initialize( NULL);
 
-		if ( pauseTried ) {
-			Com_Printf ("failed, hardware already in use\n" );
-			return 0;
-		}
-		// first try just waiting five seconds and trying again
-		// this will handle the case of a sysyem beep playing when the
-		// game starts
-		Com_DPrintf ("retrying...\n");
-		Sleep( 3000 );
-		pauseTried = qtrue;
-	}
 	Com_DPrintf( "ok\n" );
 
 	Com_DPrintf("...setting DSSCL_PRIORITY coop level: " );
@@ -226,39 +215,35 @@ static int SNDDMA_InitDS ()
 	memset (&dsbuf, 0, sizeof(dsbuf));
 	dsbuf.dwSize = sizeof(DSBUFFERDESC);
 
-#define idDSBCAPS_GETCURRENTPOSITION2 0x00010000
-
-	dsbuf.dwFlags = DSBCAPS_CTRLFREQUENCY | DSBCAPS_LOCHARDWARE | idDSBCAPS_GETCURRENTPOSITION2;
+	// Micah: take advantage of 2D hardware.if available.
+	dsbuf.dwFlags = DSBCAPS_CTRLFREQUENCY | DSBCAPS_LOCHARDWARE;
+	if (use8) {
+		dsbuf.dwFlags |= DSBCAPS_GETCURRENTPOSITION2;
+	}
+//#define idDSBCAPS_GETCURRENTPOSITION2 0x00010000
 	dsbuf.dwBufferBytes = SECONDARY_BUFFER_SIZE;
 	dsbuf.lpwfxFormat = &format;
 	
+	memset(&dsbcaps, 0, sizeof(dsbcaps));
+	dsbcaps.dwSize = sizeof(dsbcaps);
+	
 	Com_DPrintf( "...creating secondary buffer: " );
-	hresult = pDS->CreateSoundBuffer(&dsbuf, &pDSBuf, NULL);
-	if (hresult != DS_OK) 
-	{
-		if ( hresult == DSERR_CONTROLUNAVAIL )
-		{
-			Com_Printf( " - Ancient version of DirectX - this will slow FPS\n" );
-			dsbuf.dwFlags &= ~idDSBCAPS_GETCURRENTPOSITION2;	// lose this DX8 cursor-position feature, and try again
-			hresult = pDS->CreateSoundBuffer(&dsbuf, &pDSBuf, NULL);
-		}
-
-		if (hresult != DS_OK)
-		{
-			// we can't even specify sounds should be in hardware?...  
-			//
-			//  ( this seems to happen on integrated sound devices (eg SoundMax), regardless of DX version )
-			//
-			dsbuf.dwFlags = DSBCAPS_CTRLFREQUENCY;	// note that DX docs say that this can still use hardware if it wants to, since neither DSBCAPS_LOCHARDWARE nor DSBCAPS_LOCSOFTWARE were specified
-			hresult = pDS->CreateSoundBuffer(&dsbuf, &pDSBuf, NULL);
-			if (hresult != DS_OK) {			
-				Com_Printf( "failed to create secondary buffer - %s\n", DSoundError( hresult ) );
-				SNDDMA_Shutdown ();
-				return qfalse;
-			}
-		}
+	if (DS_OK == pDS->CreateSoundBuffer(&dsbuf, &pDSBuf, NULL)) {
+		Com_Printf( "locked hardware.  ok\n" );
 	}
-	Com_Printf( "locked hardware.  ok\n" );
+	else {
+		// Couldn't get hardware, fallback to software.
+		dsbuf.dwFlags = DSBCAPS_CTRLFREQUENCY | DSBCAPS_LOCSOFTWARE;
+		if (use8) {
+			dsbuf.dwFlags |= DSBCAPS_GETCURRENTPOSITION2;
+		}
+		if (DS_OK != pDS->CreateSoundBuffer(&dsbuf, &pDSBuf, NULL)) {
+			Com_Printf( "failed\n" );
+			SNDDMA_Shutdown ();
+			return qfalse;
+		}
+		Com_DPrintf( "forced to software.  ok\n" );
+	}
 		
 	// Make sure mixer is active
 	if ( DS_OK != pDSBuf->Play(0, 0, DSBPLAY_LOOPING) ) {
@@ -267,8 +252,6 @@ static int SNDDMA_InitDS ()
 		return qfalse;
 	}
 
-	memset(&dsbcaps, 0, sizeof(dsbcaps));
-	dsbcaps.dwSize = sizeof(dsbcaps);
 	// get the returned buffer size
 	if ( DS_OK != pDSBuf->GetCaps (&dsbcaps) ) {
 		Com_Printf ("*** GetCaps failed ***\n");
@@ -415,18 +398,6 @@ void SNDDMA_Activate( qboolean bAppActive )
 		Com_Printf ("sound SetCooperativeLevel failed\n");
 		SNDDMA_Shutdown ();
 	}
-}
-
-
-
-// I know this is a bit horrible, but I need to pass our LPDIRECTSOUND ptr to Bink for video playback,
-//	and I don't want other modules to have to know about LPDIRECTSOUND handles, hence the int casting
-//
-// (I'd prefer to use DWORD, but not all modules understand those)
-//
-unsigned int SNDDMA_GetDSHandle(void)
-{
-	return (unsigned int) pDS;
 }
 
 

@@ -10,16 +10,21 @@ if(BuildSPGame)
 	add_subdirectory("${SPDir}/game")
 endif(BuildSPGame)
 
+#    Add Modular Renderer project
+if(BuildSPEngine)
+	add_subdirectory("${SPDir}/rd-vanilla")
+endif(BuildSPEngine)
+
 #    Add Engine Project
 if(BuildSPEngine)
 	# Libraries
 	if(WIN32)
 		set(SPEngineLibraries "winmm")
-	else(WIN32)
-		message("You might need to add libraries to code/CMakeLists.txt for this to link properly on your platform.")
 	endif(WIN32)
 	# Defines
 	set(SPEngineDefines ${SharedDefines} "_JK2EXE")
+
+	set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OpenJKLibDir})
 	
 	#    Dependencies
 	
@@ -46,10 +51,12 @@ if(BuildSPEngine)
 	
 	# EAX is Windows-Only (right?)
 	if(WIN32)
-		set(SPEngineFiles ${SPEngineFiles}
+		set(SPEngineEAXFiles
 			"${SPDir}/client/eax/eax.h"
 			"${SPDir}/client/eax/EaxMan.h"
 			)
+		source_group("eax" FILES ${SPEngineEAXFiles})
+		set(SPEngineFiles ${SPEngineFiles} ${SPEngineEAXFiles})
 	endif(WIN32)
 
 	if(NOT WIN32)
@@ -60,11 +67,6 @@ if(BuildSPEngine)
 
 	
 	#    Source Files
-	
-	file(GLOB_RECURSE J_SRC "${SPDir}/jpeg-6/*.cpp" "${SPDir}/jpeg-6/*.h")
-	source_group("jpeg-6" FILES ${J_SRC})
-	set(SPEngineFiles ${SPEngineFiles} ${J_SRC})
-
 
 	# Client files
 	set(SPEngineClientFiles
@@ -110,7 +112,7 @@ if(BuildSPEngine)
 
 
 	# qcommon files
-	set(SPEngineQcommonFiles
+	set(SPEngineCommonFiles
 		"${SPDir}/qcommon/cm_draw.cpp"
 		"${SPDir}/qcommon/cm_load.cpp"
 		"${SPDir}/qcommon/cm_patch.cpp"
@@ -149,6 +151,10 @@ if(BuildSPEngine)
 
 		"${SPDir}/qcommon/strip.cpp"
 		"${SPDir}/qcommon/unzip.cpp"
+		"${SPDir}/qcommon/unzip.h"
+		"${OpenJKLibDir}/zlib/ioapi.c"
+		"${OpenJKLibDir}/zlib/ioapi.h"
+		"${SPDir}/qcommon/tags.h"
 		"${SPDir}/qcommon/z_memman_pc.cpp"
 		"${SPDir}/qcommon/chash.h"
 		"${SPDir}/qcommon/platform.h"
@@ -157,12 +163,10 @@ if(BuildSPEngine)
 		"${SPDir}/qcommon/qcommon.h"
 		"${SPDir}/qcommon/stv_version.h"
 		"${SPDir}/qcommon/timing.h"
-		"${SPDir}/qcommon/unzip.h"
-		"${SPDir}/qcommon/tags.h"
 		"${SPDir}/qcommon/MiniHeap.h"
 		)
-	source_group("qcommon" FILES ${SPEngineQcommonFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEngineQcommonFiles})
+	source_group("common" FILES ${SPEngineCommonFiles})
+	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonFiles})
 
 
 	# Server files
@@ -249,56 +253,11 @@ if(BuildSPEngine)
 	source_group("mp3" FILES ${SPEngineMP3Files})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineMP3Files})
 
-
-	# Renderer files
 	set(SPEngineRendererFiles
-		"${SPDir}/renderer/matcomp.c"
-		"${SPDir}/renderer/tr_arioche.cpp"
-		"${SPDir}/renderer/tr_backend.cpp"
-		"${SPDir}/renderer/tr_bsp.cpp"
-		"${SPDir}/renderer/tr_cmds.cpp"
-		"${SPDir}/renderer/tr_curve.cpp"
-		"${SPDir}/renderer/tr_draw.cpp"
-		"${SPDir}/renderer/tr_font.cpp"
-		"${SPDir}/renderer/tr_ghoul2.cpp"
-		"${SPDir}/renderer/tr_image.cpp"
-		"${SPDir}/renderer/tr_init.cpp"
-		"${SPDir}/renderer/tr_jpeg_interface.cpp"
-		"${SPDir}/renderer/tr_light.cpp"
-		"${SPDir}/renderer/tr_main.cpp"
-		"${SPDir}/renderer/tr_marks.cpp"
-		"${SPDir}/renderer/tr_mesh.cpp"
-		"${SPDir}/renderer/tr_model.cpp"
-		"${SPDir}/renderer/tr_noise.cpp"
-		"${SPDir}/renderer/tr_quicksprite.cpp"
-		"${SPDir}/renderer/tr_scene.cpp"
-		"${SPDir}/renderer/tr_shade.cpp"
-		"${SPDir}/renderer/tr_shade_calc.cpp"
-		"${SPDir}/renderer/tr_shader.cpp"
-		"${SPDir}/renderer/tr_shadows.cpp"
-		"${SPDir}/renderer/tr_sky.cpp"
-		"${SPDir}/renderer/tr_stl.cpp"
-		"${SPDir}/renderer/tr_surface.cpp"
-		"${SPDir}/renderer/tr_surfacesprites.cpp"
-		"${SPDir}/renderer/tr_terrain.cpp"
-		"${SPDir}/renderer/tr_world.cpp"
-		"${SPDir}/renderer/tr_WorldEffects.cpp"
-		"${SPDir}/renderer/matcomp.h"
 		"${SPDir}/renderer/mdx_format.h"
-		"${SPDir}/renderer/glext.h"
-		"${SPDir}/renderer/qgl.h"
-		"${SPDir}/renderer/tr_font.h"
-		"${SPDir}/renderer/tr_jpeg_interface.h"
-		"${SPDir}/renderer/tr_landscape.h"
-		"${SPDir}/renderer/tr_local.h"
 		"${SPDir}/renderer/tr_public.h"
-		"${SPDir}/renderer/tr_quicksprite.h"
-		"${SPDir}/renderer/tr_stl.h"
 		"${SPDir}/renderer/tr_types.h"
-		"${SPDir}/renderer/tr_WorldEffects.h"
 		)
-	source_group("renderer" FILES ${SPEngineRendererFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEngineRendererFiles})
 
 
 	# UI files
@@ -351,35 +310,8 @@ if(BuildSPEngine)
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineRMGFiles})
 
 
-	# Server files
-	set(SPEnginePNGFiles
-		"${SPDir}/png/png.cpp"
-		"${SPDir}/png/png.h"
-		)
-	source_group("png" FILES ${SPEnginePNGFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEnginePNGFiles})
-
-
-	# zlib files
-	set(SPEngineZlibFiles
-		"${SPDir}/zlib32/deflate.cpp"
-		"${SPDir}/zlib32/inflate.cpp"
-		"${SPDir}/zlib32/zipcommon.cpp"
-		"${SPDir}/zlib32/deflate.h"
-		"${SPDir}/zlib32/inflate.h"
-		"${SPDir}/zlib32/zip.h"
-		)
-	source_group("zlib" FILES ${SPEngineZlibFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEngineZlibFiles})
-
-
 	# Ghoul2 files
 	set(SPEngineGhoul2Files
-		"${SPDir}/ghoul2/G2_API.cpp"
-		"${SPDir}/ghoul2/G2_bolts.cpp"
-		"${SPDir}/ghoul2/G2_bones.cpp"
-		"${SPDir}/ghoul2/G2_misc.cpp"
-		"${SPDir}/ghoul2/G2_surfaces.cpp"
 		"${SPDir}/ghoul2/G2.h"
 		"${SPDir}/ghoul2/ghoul2_gore.h"	
 		)
@@ -399,7 +331,6 @@ if(BuildSPEngine)
 	# 
 	if(WIN32)
 		set(SPEngineWin32Files
-			${SPEngineSortMe}
 			"${SPDir}/win32/afxres.h"
 			"${SPDir}/win32/win_input.cpp"
 			"${SPDir}/win32/win_main.cpp"
@@ -408,9 +339,6 @@ if(BuildSPEngine)
 			"${SPDir}/win32/win_syscon.cpp"
 			"${SPDir}/win32/win_video.cpp"
 			"${SPDir}/win32/win_wndproc.cpp"
-			"${SPDir}/win32/win_gamma.cpp"
-			"${SPDir}/win32/win_glimp.cpp"
-			"${SPDir}/win32/win_qgl.cpp"
 			"${SPDir}/win32/win_local.h"
 			"${SPDir}/win32/AutoVersion.h"
 			"${SPDir}/win32/resource.h"
@@ -420,22 +348,31 @@ if(BuildSPEngine)
 		source_group("win32" FILES ${SPEngineWin32Files})
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineWin32Files})
 	else(WIN32)
-		set(SPEngineSortMe
-			${SPEngineSortMe}
+		set(SPEngineSysFiles
 			"${SPDir}/sys/sys_main.cpp"
 			"${SPDir}/sys/sys_unix.cpp"
 			"${SPDir}/sys/sys_local.h"
 			"${SPDir}/sys/sys_loadlib.h"
-			"${SPDir}/sdl/sdl_glimp.cpp"
 			"${SPDir}/sdl/sdl_qgl.h"
 			"${SPDir}/sdl/sdl_snd.cpp"
 			"${SPDir}/sdl/sdl_input.cpp"
 			)
-		source_group("SortMe" FILES ${SPEngineSortMe})
-		set(SPEngineFiles ${SPEngineFiles} ${SPEngineSortMe})
+		source_group("sys" FILES ${SPEngineSysFiles})
+		set(SPEngineFiles ${SPEngineFiles} ${SPEngineSysFiles})
 	endif(WIN32)
 
-	# todo: windows resources
+	if(UseInternalZlib)
+		# zlib.lib is included for windows
+		find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
+		if(NOT ZlibLibrary)
+			message(FATAL_ERROR "UseInternalZlib set, but lib/zlib not found!")
+		endif(NOT ZlibLibrary)
+		set(SPEngineLibraries ${SPEngineLibraries} ${ZlibLibrary})
+	else(UseInternalZlib)
+		find_package(ZLIB REQUIRED)
+		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${ZLIB_INCLUDE_DIR})
+		set(SPEngineLibraries ${SPEngineLibraries} ${ZLIB_LIBRARY})
+	endif(UseInternalZlib)
 
 	if(WIN32)
 		add_executable(${SPEngine} WIN32 ${SPEngineFiles})

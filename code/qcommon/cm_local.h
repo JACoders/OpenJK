@@ -21,10 +21,6 @@ This file is part of Jedi Academy.
 #include "cm_polylib.h"
 #include "cm_landscape.h"
 
-#ifdef _XBOX
-#include "sparc.h"
-#endif
-
 #ifndef CM_LOCAL_H
 #define CM_LOCAL_H
 

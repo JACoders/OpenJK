@@ -260,7 +260,7 @@ public:
 	int				mMeshFrameNum;
 	int				mFlags;	// used for determining whether to do full collision detection against this object
 // to here
-	int				*mTransformedVertsArray;	// used to create an array of pointers to transformed verts per surface for collision detection
+	size_t			*mTransformedVertsArray;	// used to create an array of pointers to transformed verts per surface for collision detection
 	CBoneCache		*mBoneCache;
 	int				mSkin;
 

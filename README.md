@@ -1,8 +1,5 @@
-## SORRY FOR THE HISTORY CHANGES! ##
-For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase.html#_recovering_from_upstream_rebase) for how to fix if you've changed anything, or just delete your github fork and local folder and start over if you haven't.
-
 # JACoders "OpenJK" project #
-IRC: irc.arloria.net / #JACoders ([webchat](http://www.arloria.net/tiramisu/tiramisu.swf?channels=#jacoders))
+IRC: irc.arloria.net / #JACoders ([webchat](http://unic0rn.github.io/tiramisu/jacoders/))
 
 The purpose of this project is to maintain and improve the Jedi Academy and Jedi Outcast games, developed by Raven Software.
 This project will not attempt to rebalance or otherwise modify core gameplay aspects.
@@ -22,6 +19,7 @@ Then point the OpenJK installer to the GameData folder in the Jedi Academy insta
 
 ## Significant contributors (in alphabetical order) ##
 * exidl
+* Scooper
 * Sil
 * Xycaleth
 
@@ -31,6 +29,9 @@ Then point the OpenJK installer to the GameData folder in the Jedi Academy insta
 * libpng (optional)
 * libjpeg (optional)
 * zlib (included on Windows)
+
+## Dedicated Server ##
+In order to run dedicated server, you must use the openjkded binary, running dedicated from the main executable is currently not allowed because it is broken with the addition of modular renderer.
 
 ## Developer Notes ##
 
@@ -55,10 +56,13 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 * rd-strawberry (Maintainer: Xycaleth)
 * rd-vader (Maintainer: mrwonko)
 
+### Sorry for the history changes! ###
+For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase.html#_recovering_from_upstream_rebase) for how to fix if you've changed anything, or just delete your github fork and local folder and start over if you haven't.
+
 ### Engine "hax" ###
 * If your mod intends to use engine "hax" to figure out the nedaddr types (NA_IP, etc) NA_BAD is now 0 and NA_BOT is now 1 instead of vice versa.
 * You will no longer be able to use runtime memory patches. Consider forking OpenJK and adding your engine modifications directly.
 
 ### Links of Interest ###
-* [Buildbot](http://109.200.20.132/)
-* [Buildbot builds](http://109.200.20.132/~builds/)
+* [Buildbot](http://jk.xd.cm/)
+* [Buildbot builds](http://builds.openjk.org/)

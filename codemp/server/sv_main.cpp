@@ -76,36 +76,6 @@ char	*SV_ExpandNewlines( char *in ) {
 
 /*
 ======================
-SV_ReplacePendingServerCommands
-
-  This is ugly
-======================
-*/
-int SV_ReplacePendingServerCommands( client_t *client, const char *cmd ) {
-	int i, index, csnum1, csnum2;
-
-	for ( i = client->reliableSent+1; i <= client->reliableSequence; i++ ) {
-		index = i & ( MAX_RELIABLE_COMMANDS - 1 );
-		//
-		if ( !Q_strncmp(cmd, client->reliableCommands[ index ], strlen("cs")) ) {
-			sscanf(cmd, "cs %i", &csnum1);
-			sscanf(client->reliableCommands[ index ], "cs %i", &csnum2);
-			if ( csnum1 == csnum2 ) {
-				Q_strncpyz( client->reliableCommands[ index ], cmd, sizeof( client->reliableCommands[ index ] ) );
-				/*
-				if ( client->netchan.remoteAddress.type != NA_BOT ) {
-					Com_Printf( "WARNING: client %i removed double pending config string %i: %s\n", client-svs.clients, csnum1, cmd );
-				}
-				*/
-				return qtrue;
-			}
-		}
-	}
-	return qfalse;
-}
-
-/*
-======================
 SV_AddServerCommand
 
 The given command will be transmitted to the client, and is guaranteed to
@@ -114,12 +84,6 @@ not have future snapshot_t executed before it is executed
 */
 void SV_AddServerCommand( client_t *client, const char *cmd ) {
 	int		index, i;
-
-	// this is very ugly but it's also a waste to for instance send multiple config string updates
-	// for the same config string index in one snapshot
-//	if ( SV_ReplacePendingServerCommands( client, cmd ) ) {
-//		return;
-//	}
 
 	client->reliableSequence++;
 	// if we would be losing an old command that hasn't been acknowledged,
@@ -313,30 +277,13 @@ CONNECTIONLESS COMMANDS
 ==============================================================================
 */
 
-typedef struct leakyBucket_s leakyBucket_t;
-struct leakyBucket_s {
-	netadrtype_t	type;
-
-	union {
-		byte	_4[4];
-		byte	_x[10];
-	} ipv;
-
-	int						lastTime;
-	signed char		burst;
-
-	long					hash;
-
-	leakyBucket_t *prev, *next;
-};
-
 // This is deliberately quite large to make it more of an effort to DoS
 #define MAX_BUCKETS			16384
 #define MAX_HASHES			1024
 
 static leakyBucket_t buckets[ MAX_BUCKETS ];
 static leakyBucket_t *bucketHashes[ MAX_HASHES ];
-static leakyBucket_t outboundLeakyBucket;
+leakyBucket_t outboundLeakyBucket;
 
 /*
 ================
@@ -452,7 +399,7 @@ static leakyBucket_t *SVC_BucketForAddress( netadr_t address, int burst, int per
 SVC_RateLimit
 ================
 */
-static qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period ) {
+qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period ) {
 	if ( bucket != NULL ) {
 		int now = Sys_Milliseconds();
 		int interval = now - bucket->lastTime;
@@ -484,7 +431,7 @@ SVC_RateLimitAddress
 Rate limit for a particular address
 ================
 */
-static qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period ) {
+qboolean SVC_RateLimitAddress( netadr_t from, int burst, int period ) {
 	leakyBucket_t *bucket = SVC_BucketForAddress( from, burst, period );
 
 	return SVC_RateLimit( bucket, burst, period );

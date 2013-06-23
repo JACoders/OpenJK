@@ -70,7 +70,7 @@ int G2_IsSurfaceLegal(void *mod, const char *surfaceName, int *flags)
 			return i;
 		}
 		// find the next surface
-  		surf = (mdxmSurfHierarchy_t *)( (byte *)surf + (int)( &((mdxmSurfHierarchy_t *)0)->childIndexes[ surf->numChildren ] ));
+  		surf = (mdxmSurfHierarchy_t *)( (byte *)surf + (size_t)( &((mdxmSurfHierarchy_t *)0)->childIndexes[ surf->numChildren ] ));
 	}
 	return -1;
 }

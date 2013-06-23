@@ -1044,7 +1044,7 @@ qboolean NPC_SomeoneLookingAtMe(gentity_t *ent)
 		pEnt = &g_entities[i];
 
 		if (pEnt && pEnt->inuse && pEnt->client && pEnt->client->sess.sessionTeam != TEAM_SPECTATOR &&
-			!(pEnt->client->ps.pm_flags & PMF_FOLLOW) && pEnt->s.weapon != WP_NONE)
+			pEnt->client->tempSpectate < level.time && !(pEnt->client->ps.pm_flags & PMF_FOLLOW) && pEnt->s.weapon != WP_NONE)
 		{
 			if (trap_InPVS(ent->r.currentOrigin, pEnt->r.currentOrigin))
 			{
@@ -1136,13 +1136,17 @@ qboolean NPC_ValidEnemy( gentity_t *ent )
 	{//don't go after spectators
 		return qfalse;
 	}
+	else if ( ent->client && ent->client->tempSpectate >= level.time )
+	{//don't go after spectators
+		return qfalse;
+	}
 	if ( ent->NPC && ent->client )
 	{
 		entTeam = ent->client->playerTeam;
 	}
 	else if ( ent->client )
 	{
-		if (g_gametype.integer < GT_TEAM)
+		if (level.gametype < GT_TEAM)
 		{
 			entTeam = NPCTEAM_PLAYER;
 		}

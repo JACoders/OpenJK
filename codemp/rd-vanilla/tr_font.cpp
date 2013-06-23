@@ -79,7 +79,7 @@ struct ThaiCodes_t
 {
 	map <int, int>	m_mapValidCodes;
 	vector<int>		m_viGlyphWidths;	
-	string			m_strInitFailureReason;	// so we don't have to keep retrying to work this out
+	sstring_t		m_strInitFailureReason;	// so we don't have to keep retrying to work this out
 
 	void Clear( void )
 	{
