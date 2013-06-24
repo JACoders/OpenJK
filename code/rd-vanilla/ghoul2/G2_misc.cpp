@@ -198,7 +198,9 @@ extern mdxaBone_t		worldMatrixInv;
 
 const mdxaBone_t &EvalBoneCache(int index,CBoneCache *boneCache);
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4512)		//assignment op could not be genereated
+#endif
 class CTraceSurface
 {
 public:
@@ -266,9 +268,9 @@ public:
 		modelIndex(initmodelIndex),
 		skin(initskin),
 		cust_shader(initcust_shader),
+		TransformedVertsArray(initTransformedVertsArray),
 		eG2TraceType(einitG2TraceType),
 		hitOne(false),
-		TransformedVertsArray(initTransformedVertsArray),
 #ifdef _G2_GORE
 		m_fRadius(fRadius),
 		ssize(initssize),

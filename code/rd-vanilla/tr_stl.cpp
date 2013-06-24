@@ -21,7 +21,9 @@ This file is part of Jedi Academy.
 #include "../server/exe_headers.h"
 
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)	// identifier was truncated 
+#endif
 
 // Filename:-	tr_stl.cpp
 //
@@ -32,11 +34,13 @@ This file is part of Jedi Academy.
 #include "tr_local.h"	// this isn't actually needed other than getting rid of warnings via pragmas
 #include "tr_stl.h"
 
+#ifdef _MSC_VER
 #pragma warning( push,3 )
 
 #pragma warning(disable : 4514)	// unreferenced inline function has been removed (within STL, not this code)
 #pragma warning(disable : 4710)	// 
 #pragma warning(disable : 4503)	// decorated name length xceeded, name was truncated
+#endif
 
 #include <map>
 #include "../qcommon/sstring.h"	// #include <string>
@@ -88,7 +92,7 @@ const char *ShaderEntryPtrs_Lookup(const char *psShaderName)
 	return NULL;
 }
 
-
-
+#ifdef _MSC_VER
 #pragma warning ( pop )
+#endif
 

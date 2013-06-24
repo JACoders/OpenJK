@@ -1334,13 +1334,13 @@ public:
 
 	public:
 		iterator(map_base<K,V, IS_MULTI> *owner=0, int loc=tree_node::NULL_NODE) : 
-			mOwner(owner), 
-			mLoc(loc)	
+			mLoc(loc),	
+			mOwner(owner)
 		{
 		}
 		iterator(const iterator &o) : 
-			mOwner(o.mOwner), 
-			mLoc(o.mLoc)	
+			mLoc(o.mLoc),
+			mOwner(o.mOwner)
 		{
 		}
 

@@ -50,11 +50,6 @@ extern int PM_AnimLength( int index, animNumber_t anim );
 
 qboolean NPC_CheckPlayerTeamStealth( void );
 
-static qboolean enemyLOS;
-static qboolean enemyCS;
-static qboolean faceEnemy;
-static qboolean move;
-static qboolean shoot;
 static float	enemyDist;
 
 //Local state enums

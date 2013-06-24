@@ -1414,14 +1414,6 @@ void CG_Cylinder( vec3_t start, vec3_t end, float radius, vec3_t color )
 					0, -1, -1 );*/
 }
 
-static vec2_t st[] = 
-{
-	0.0f, 0.0f,
-	1.0f, 0.0f,
-	1.0f, 1.0f,
-	0.0f, 1.0f
-};
-
 void CG_Cube( vec3_t mins, vec3_t maxs, vec3_t color, float alpha ) 
 {
 	vec3_t	point[4], rot={0,0,0};
@@ -2030,7 +2022,6 @@ void CG_Limb ( centity_t *cent )
 		}
 		else
 		{
-extern cvar_t	*g_dismemberment;
 extern cvar_t	*g_saberRealisticCombat;
 			//3) turn off w/descendants that surf in original model
 			if ( cent->gent->target )//stubTagName )

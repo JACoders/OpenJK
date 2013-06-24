@@ -53,7 +53,6 @@ extern void	Pilot_Update(void);
 extern void G_ASPreCacheFree(void);
 
 
-static int 	navCalcPathTime = 0;
 int		eventClearTime = 0;
 
 extern qboolean g_bCollidableRoffs;

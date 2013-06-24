@@ -25,7 +25,9 @@ This file is part of Jedi Academy.
 //
 ////////////////////////////////////////////////////////////////////////////////////////
 #include "../server/exe_headers.h"
+#ifdef _MSC_VER
 #pragma warning( disable : 4512 )
+#endif
 
 
 

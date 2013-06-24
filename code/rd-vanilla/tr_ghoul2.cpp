@@ -95,9 +95,11 @@ qhandle_t		goreShader=-1;
 
 const static mdxaBone_t		identityMatrix = 
 { 
-	0.0f, -1.0f, 0.0f, 0.0f,
-	1.0f, 0.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 0.0f
+	{
+		{ 0.0f, -1.0f, 0.0f, 0.0f },
+		{ 1.0f, 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 1.0f, 0.0f }
+	}
 };
 
 class CTransformBone
@@ -271,8 +273,8 @@ public:
 //	int				mWraithID; // this is just used for debug prints, can use it for any int of interest in JK2
 
 	CBoneCache(const model_t *amod,const mdxaHeader_t *aheader) :
-		mod(amod),
-		header(aheader)
+		header(aheader),
+		mod(amod)
 	{
 		assert(amod);
 		assert(aheader);
@@ -2021,9 +2023,11 @@ void G2_TransformBone (int child,CBoneCache &BC)
 			float	matrixScale = VectorLength((float*)&temp);
 			static mdxaBone_t		toMatrix = 
 			{ 
-				1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f
+				{
+					{ 1.0f, 0.0f, 0.0f, 0.0f },
+					{ 0.0f, 1.0f, 0.0f, 0.0f },
+					{ 0.0f, 0.0f, 1.0f, 0.0f }
+				}
 			};
 			toMatrix.matrix[0][0]=matrixScale;
 			toMatrix.matrix[1][1]=matrixScale;
@@ -3622,8 +3626,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	// NOTE: This is required because a ghoul model might need to be rendered twice a frame (don't cringe,
 	// it's not THAT bad), so we only delete it when doing the glow pass. Warning though, this assumes that
 	// the glow is rendered _second_!!! If that changes, change this!
-	extern bool g_bRenderGlowingObjects;
-	extern bool g_bDynamicGlowSupported;
 #endif
 	tess.numVertexes += surface->numVerts;
 

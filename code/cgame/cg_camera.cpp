@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 #include "../game/g_roff.h"
 
 bool		in_camera = false;
-camera_t	client_camera={0};
+camera_t	client_camera={};
 extern qboolean	player_locked;
 
 extern gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match);

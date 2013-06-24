@@ -337,22 +337,22 @@ float saberAnimSpeedMod[NUM_FORCE_POWER_LEVELS] =
 
 stringID_table_t SaberStyleTable[] =
 {
-	"NULL",SS_NONE,
+	{ "NULL",SS_NONE },
 	ENUM2STRING(SS_FAST),
-	"fast",SS_FAST,
+	{ "fast",SS_FAST },
 	ENUM2STRING(SS_MEDIUM),
-	"medium",SS_MEDIUM,
+	{ "medium",SS_MEDIUM },
 	ENUM2STRING(SS_STRONG),
-	"strong",SS_STRONG,
+	{ "strong",SS_STRONG },
 	ENUM2STRING(SS_DESANN),
-	"desann",SS_DESANN,
+	{ "desann",SS_DESANN },
 	ENUM2STRING(SS_TAVION),
-	"tavion",SS_TAVION,
+	{ "tavion",SS_TAVION },
 	ENUM2STRING(SS_DUAL),
-	"dual",SS_DUAL,
+	{ "dual",SS_DUAL },
 	ENUM2STRING(SS_STAFF),
-	"staff",SS_STAFF,
-	"", NULL
+	{ "staff",SS_STAFF },
+	{ "", NULL },
 };
 
 //SABER INITIALIZATION======================================================================
@@ -6986,7 +6986,6 @@ const char *saberColorStringForColor[SABER_PURPLE+1] =
 // Check if we are throwing it, launch it if needed, update position if needed.
 void WP_SaberThrow( gentity_t *self, usercmd_t *ucmd )
 {
-	static float	MAX_SABER_DIST = 400;
 	vec3_t			saberDiff;
 	trace_t			tr;
 	//static float	SABER_SPEED = 10;
