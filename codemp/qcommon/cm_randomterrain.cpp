@@ -180,11 +180,9 @@ CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by,
 					 float minWidth, float maxWidth, float depth, float deviation, float breadth,
 					 CPathInfo *Connected, unsigned CreationFlags) :
 	mNumPoints(numPoints),
-	mMinWidth(minWidth),
-	mMaxWidth(maxWidth),
 	mDepth(depth),
-	mDeviation(deviation),
-	mBreadth(breadth)
+	mBreadth(breadth),
+	mDeviation(deviation)
 {
 	int		i, numConnected, index;
 	float	position, goal, deltaGoal;
