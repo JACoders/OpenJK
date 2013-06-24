@@ -57,7 +57,7 @@ stringID_table_t animEventTypeTable[] =
 	ENUM2STRING(AEV_SABER_SWING),	//# animID AEV_SABER_SWING framenum CHANNEL randomlow randomhi chancetoplay 
 	ENUM2STRING(AEV_SABER_SPIN),	//# animID AEV_SABER_SPIN framenum CHANNEL chancetoplay 
 	//must be terminated
-	NULL,-1
+	{ NULL,-1 }
 };
 
 stringID_table_t footstepTypeTable[] = 
@@ -67,7 +67,7 @@ stringID_table_t footstepTypeTable[] =
 	ENUM2STRING(FOOTSTEP_HEAVY_R),
 	ENUM2STRING(FOOTSTEP_HEAVY_L),
 	//must be terminated
-	NULL,-1
+	{ NULL,-1 }
 };
 
 stringID_table_t FPTable[] =
@@ -89,21 +89,21 @@ stringID_table_t FPTable[] =
 	ENUM2STRING(FP_ABSORB),
 	ENUM2STRING(FP_DRAIN),
 	ENUM2STRING(FP_SEE),
-	"",	-1
+	{ "",	-1 }
 };
 
 
 stringID_table_t TeamTable[] =
 {
-	"free", TEAM_FREE,			// caution, some code checks a team_t via "if (!team_t_varname)" so I guess this should stay as entry 0, great or what? -slc
+	{ "free", TEAM_FREE },			// caution, some code checks a team_t via "if (!team_t_varname)" so I guess this should stay as entry 0, great or what? -slc
 	ENUM2STRING(TEAM_FREE),			// caution, some code checks a team_t via "if (!team_t_varname)" so I guess this should stay as entry 0, great or what? -slc
-	"player", TEAM_PLAYER,
+	{ "player", TEAM_PLAYER },
 	ENUM2STRING(TEAM_PLAYER),
-	"enemy", TEAM_ENEMY,
+	{ "enemy", TEAM_ENEMY },
 	ENUM2STRING(TEAM_ENEMY),
-	"neutral", TEAM_NEUTRAL,	// most droids are team_neutral, there are some exceptions like Probe,Seeker,Interrogator
+	{ "neutral", TEAM_NEUTRAL },	// most droids are team_neutral, there are some exceptions like Probe,Seeker,Interrogator
 	ENUM2STRING(TEAM_NEUTRAL),	// most droids are team_neutral, there are some exceptions like Probe,Seeker,Interrogator
-	"",	-1
+	{ "",	-1 }
 };
 
 
@@ -176,7 +176,7 @@ stringID_table_t ClassTable[] =
 	ENUM2STRING(CLASS_ASSASSIN_DROID),
 	ENUM2STRING(CLASS_HAZARD_TROOPER),
 	ENUM2STRING(CLASS_VEHICLE),
-	"",	-1
+	{ "",	-1 }
 };
 
 /*
@@ -1589,8 +1589,8 @@ Precaches NPC skins, tgas and md3s.
 */
 void CG_NPC_Precache ( gentity_t *spawner )
 {
-	clientInfo_t	ci={0};
-	renderInfo_t	ri={0};
+	clientInfo_t	ci={};
+	renderInfo_t	ri={};
 	team_t			playerTeam = TEAM_FREE;
 	const char	*token;
 	const char	*value;

@@ -18,9 +18,11 @@ This file is part of Jedi Academy.
 
 // Filename:-	tr_jpeg_interface.h
 //
+#ifdef _MSC_VER
 #pragma warning (disable: 4100)	//unreferenced formal parameter
 #pragma warning (disable: 4127)	//conditional expression is constant
 #pragma warning (disable: 4244)	//int to unsigned short
+#endif
 
 #ifndef TR_JPEG_INTERFACE_H
 #define TR_JPEG_INTERFACE_H

@@ -281,9 +281,9 @@ public:
 		//--------------
 		iterator()									: mOwner(0)
 		{}
-		iterator(pool_root<T>* p, int index)	: mOwner(p), mIndex(index)
+		iterator(pool_root<T>* p, int index)	: mIndex(index), mOwner(p)
 		{}
-		iterator(const iterator &t)	: mOwner(t.mOwner), mIndex(t.mIndex)
+		iterator(const iterator &t)	: mIndex(t.mIndex), mOwner(t.mOwner)
 		{}
 
 		// Assignment Operator

@@ -20,14 +20,18 @@ This file is part of Jedi Academy.
 //
 #include "../../server/exe_headers.h"
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4786) 
 #pragma warning( disable : 4100) 
 #pragma warning( disable : 4511) 
 
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <list>
 #include <string>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 
 #ifndef __Q_SHARED_H
 	#include "../../game/q_shared.h"
@@ -1544,9 +1548,11 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 	G2ERROR(modelIndex>=0&&modelIndex<ghoul2.size(),"Invalid ModelIndex");
 	const static mdxaBone_t		identityMatrix = 
 	{ 
-		0.0f, -1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f
+		{
+			{ 0.0f, -1.0f, 0.0f, 0.0f },
+			{ 1.0f, 0.0f, 0.0f, 0.0f },
+			{ 0.0f, 0.0f, 1.0f, 0.0f }
+		}
 	};
 	G2_GenerateWorldMatrix(angles, position);
 	if (G2_SetupModelPointers(ghoul2))

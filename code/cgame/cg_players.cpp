@@ -6002,7 +6002,7 @@ void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int saberNum, int 
 static void CG_AddSaberBladeGo( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, vec3_t origin, vec3_t angles, int saberNum, int bladeNum )
 {
 	vec3_t	org_, end,//org_future, 
-			axis_[3] = {0,0,0, 0,0,0, 0,0,0};//, axis_future[3]={0,0,0, 0,0,0, 0,0,0};	// shut the compiler up
+			axis_[3] = {{0,0,0}, {0,0,0}, {0,0,0}};//, axis_future[3]={0,0,0, 0,0,0, 0,0,0};	// shut the compiler up
 	trace_t	trace;
 	float	length;
 	int		bolt;

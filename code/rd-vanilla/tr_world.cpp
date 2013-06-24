@@ -30,7 +30,7 @@ This file is part of Jedi Academy.
 #include "../qcommon/sparc.h"
 #endif
 
-static bool lookingForWorstLeaf = false;
+static const bool lookingForWorstLeaf = false;
 
 #ifdef _XBOX
 static bool GetCoordsForLeaf(int leafNum, vec3_t coords)

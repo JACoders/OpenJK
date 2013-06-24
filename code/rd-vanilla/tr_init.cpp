@@ -876,7 +876,6 @@ extern bool g_bTextureRectangleHack;
 
 void GfxInfo_f( void ) 
 {
-	cvar_t *sys_cpustring = ri.Cvar_Get( "sys_cpustring", "", CVAR_ROM );
 	const char *enablestrings[] =
 	{
 		"disabled",
