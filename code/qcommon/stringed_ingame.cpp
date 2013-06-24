@@ -34,16 +34,20 @@ This file is part of Jedi Academy.
 //////////////////////////////////////////////////
 
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4511 )			// copy constructor could not be generated
 #pragma warning ( disable : 4512 )			// assignment operator could not be generated
 #pragma warning ( disable : 4663 )			// C++ language change: blah blah template crap blah blah
+#endif
 #include "stringed_ingame.h"
 #include "stringed_interface.h"
 
 ///////////////////////////////////////////////
 //
 // some STL stuff...
+#ifdef _MSC_VER
 #pragma warning ( disable : 4786 )			// disable the usual stupid and pointless STL warning
+#endif
 #include <list>
 #include <map>
 #include <set>

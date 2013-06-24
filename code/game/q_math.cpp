@@ -126,7 +126,9 @@ vec4_t	g_color_table[8] =
 	{1.0, 1.0, 1.0, 1.0},
 	};
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4305)		// truncation from const double to float
+#endif
 
 vec3_t	bytedirs[NUMVERTEXNORMALS] =
 {
@@ -212,7 +214,9 @@ vec3_t	bytedirs[NUMVERTEXNORMALS] =
 {-0.425325, 0.688191, -0.587785}, {-0.425325, -0.688191, -0.587785}, 
 {-0.587785, -0.425325, -0.688191}, {-0.688191, -0.587785, -0.425325}
 };
+#ifdef _MSC_VER
 #pragma warning(default : 4305)		// truncation from const double to float
+#endif
 
 //==============================================================
 

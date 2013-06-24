@@ -22,7 +22,7 @@ This file is part of Jedi Academy.
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 
 #pragma warning(disable : 4018)     // signed/unsigned mismatch
 //#pragma warning(disable : 4032)		//formal parameter 'number' has different type when promoted
@@ -679,7 +679,7 @@ typedef enum
 // A divide can be avoided by just multiplying by INV_PI_DIV_180(inverse of PI/180) which is 180 divided by PI. - Aurelio
 //#define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
 
-#define ENUM2STRING(arg)   #arg,arg
+#define ENUM2STRING(arg)   { #arg,arg }
 
 struct cplane_s;
 
@@ -2896,7 +2896,7 @@ typedef enum {
 enum {
 	#include "../qcommon/tags.h"
 };
-typedef char memtag_t;
+typedef unsigned memtag_t;
 
 // stuff to help out during development process, force reloading/uncacheing of certain filetypes...
 //

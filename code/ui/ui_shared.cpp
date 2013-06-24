@@ -182,8 +182,8 @@ typedef struct  itemFlagsDef_s {
 }	itemFlagsDef_t;
 
 itemFlagsDef_t itemFlags [] = {
-"WINDOW_INACTIVE",			WINDOW_INACTIVE,
-NULL,					0
+	{ "WINDOW_INACTIVE",	WINDOW_INACTIVE },
+	{ NULL,					0 }
 };
 
 const char *styles [] = {
@@ -5091,7 +5091,6 @@ static void Item_TextScroll_BuildLines ( itemDef_t* item )
 					// Special case, don't consider line breaking if you're on an asian punctuation char of
 					//	a language that doesn't use spaces...
 					//
-					uiLetter = uiLetter;	// breakpoint line only
 				}
 				else
 				{
