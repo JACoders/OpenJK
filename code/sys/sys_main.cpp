@@ -187,8 +187,6 @@ void *Sys_GetGameAPI (void *parms)
 {
 	void	*(*GetGameAPI) (void *);
 	
-	char	name[MAX_OSPATH];
-	const char	*path;
 	const char	*basepath;
 	const char	*cdpath;
 	const char	*gamedir;
@@ -344,7 +342,6 @@ char *Sys_StripAppBundle( char *dir )
 
 int main (int argc, char **argv)
 {
-	int 	oldtime, newtime;
 	int		len, i;
 	char	*cmdline;
 	void SetProgramPath(char *path);

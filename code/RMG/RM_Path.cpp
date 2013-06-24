@@ -71,9 +71,9 @@ CRMNode::CRMNode ( )
  ************************************************************************************************/
 CRMPathManager::CRMPathManager ( CRandomTerrain* terrain )
 : mXNodes(0), mYNodes(0), mPathCount(0), mRiverCount(0), mMaxDepth(0), mDepth(0),
+  mCrossed(false),
   mPathPoints(10), mPathMinWidth(0.02f), mPathMaxWidth(0.04f), mPathDepth(0.3f), mPathDeviation(0.03f), mPathBreadth(5),
-  mRiverDepth(5), mRiverPoints(10), mRiverMinWidth(0.01f), mRiverMaxWidth(0.02f), mRiverBedDepth(1), mRiverDeviation(0.01f), mRiverBreadth(7),
-  mTerrain(terrain), mCrossed(false)
+  mRiverDepth(5), mRiverPoints(10), mRiverMinWidth(0.01f), mRiverMaxWidth(0.02f), mRiverBedDepth(1), mRiverDeviation(0.01f), mRiverBreadth(7), mTerrain(terrain)
 {
 }
 
@@ -375,7 +375,7 @@ void CRMPathManager::PathVisit(const int c_x, const int c_y)
 	{	
 		mCrossed = true; 
 	
-		int directionSet[3][3] = {DIR_NW,DIR_W,DIR_SW,DIR_N,-1,DIR_S,DIR_NE,DIR_E,DIR_SE};
+		int directionSet[3][3] = { { DIR_NW,DIR_W,DIR_SW }, { DIR_N,-1,DIR_S }, { DIR_NE,DIR_E,DIR_SE } };
 		int	ncx	= (mXNodes-1)-c_x;
 		int	ncy	= (mYNodes-1)-c_y;
 

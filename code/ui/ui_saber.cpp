@@ -565,7 +565,7 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 	float bladeLength = UI_SaberBladeLengthForSaber( saberName, bladeNum );
 	float bladeRadius = UI_SaberBladeRadiusForSaber( saberName, bladeNum );
 	vec3_t	bladeOrigin={0};
-	vec3_t	axis[3]={0};
+	vec3_t	axis[3]={};
 	mdxaBone_t	boltMatrix;
 	qboolean tagHack = qfalse;
 

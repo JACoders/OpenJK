@@ -34,9 +34,11 @@ This file is part of Jedi Academy.
 #include "../game/weapons.h"
 #include "../game/g_items.h"
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)  // identifier was truncated (STL crap)
 #pragma warning(disable : 4710)  // function was not inlined (STL crap)
 #pragma warning(disable : 4512)  // yet more STL drivel...
+#endif
 
 #include <map>
 

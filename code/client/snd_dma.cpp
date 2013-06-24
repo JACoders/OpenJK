@@ -440,16 +440,8 @@ S_Init
 ================
 */
 void S_Init( void ) {
-	ALCcontext *ALCContext = NULL;
-	ALCdevice *ALCDevice = NULL;
-	ALfloat listenerPos[]={0.0,0.0,0.0};
-	ALfloat listenerVel[]={0.0,0.0,0.0};
-	ALfloat	listenerOri[]={0.0,0.0,-1.0, 0.0,1.0,0.0};
 	cvar_t	*cv;
 	qboolean	r;
-	int i, j;
-	channel_t *ch;
-	char *mapname;
 
 	Com_Printf("\n------- sound initialization -------\n");
 
@@ -496,12 +488,13 @@ void S_Init( void ) {
 #ifdef _WIN32
 	if (s_UseOpenAL)
 	{	
-		ALCDevice = alcOpenDevice((ALubyte*)"DirectSound3D");
+		int i, j;
+		ALCdevice *ALCDevice = alcOpenDevice((ALubyte*)"DirectSound3D");
 		if (!ALCDevice)
 			return;
 
 		//Create context(s)
-		ALCContext = alcCreateContext(ALCDevice, NULL);
+		ALCcontext *ALCContext = alcCreateContext(ALCDevice, NULL);
 		if (!ALCContext)
 			return;
 
@@ -521,6 +514,9 @@ void S_Init( void ) {
 		//S_SoundInfo_f();
 
 		// Set Listener attributes
+		ALfloat listenerPos[]={0.0,0.0,0.0};
+		ALfloat listenerVel[]={0.0,0.0,0.0};
+		ALfloat	listenerOri[]={0.0,0.0,-1.0, 0.0,1.0,0.0};
 		alListenerfv(AL_POSITION,listenerPos);
 		alListenerfv(AL_VELOCITY,listenerVel);
 		alListenerfv(AL_ORIENTATION,listenerOri);
@@ -567,7 +563,7 @@ void S_Init( void ) {
 		}
 
 		// Generate AL Buffers for streaming audio playback (used for MP3s)
-		ch = s_channels + 1;
+		channel_t *ch = s_channels + 1; 
 		for (i = 1; i < s_numChannels; i++, ch++)
 		{
 			for (j = 0; j < NUM_STREAMING_BUFFERS; j++)
@@ -608,7 +604,7 @@ void S_Init( void ) {
 		// s_init could be called in game, if so there may be an .eal file 
 		// for this level
 
-		mapname = Cvar_VariableString( "mapname" );
+		const char *mapname = Cvar_VariableString( "mapname" );
 		EALFileInit(mapname);
 
 	}
@@ -665,11 +661,6 @@ void S_ReloadAllUsedSounds(void)
 
 void S_Shutdown( void )
 {
-	ALCcontext	*ALCContext;
-	ALCdevice	*ALCDevice;
-	channel_t	*ch;
-	int			i, j;
-
 	if ( !s_soundStarted ) {
 		return;
 	}
@@ -680,6 +671,7 @@ void S_Shutdown( void )
 #ifdef _WIN32
 	if (s_UseOpenAL)
 	{
+		int i, j;
 		// Release all the AL Sources (including Music channel (Source 0))
 		for (i = 0; i < s_numChannels; i++)
 		{
@@ -687,7 +679,7 @@ void S_Shutdown( void )
 		}
 
 		// Release Streaming AL Buffers
-		ch = s_channels + 1;
+		channel_t *ch = s_channels + 1;
 		for (i = 1; i < s_numChannels; i++, ch++)
 		{
 			for (j = 0; j < NUM_STREAMING_BUFFERS; j++)
@@ -704,9 +696,9 @@ void S_Shutdown( void )
 		}
 
 		// Get active context
-		ALCContext = alcGetCurrentContext();
+		ALCcontext *ALCContext = alcGetCurrentContext();
 		// Get device for active context
-		ALCDevice = alcGetContextsDevice(ALCContext);
+		ALCdevice *ALCDevice = alcGetContextsDevice(ALCContext);
 		// Release context(s)
 		alcDestroyContext(ALCContext);
 		// Close device
@@ -922,15 +914,13 @@ S_BeginRegistration
 */
 void S_BeginRegistration( void )
 {
-	char *mapname;
-
 	s_soundMuted = qfalse;		// we can play again
 
 #ifdef _WIN32
 	// Find name of level so we can load in the appropriate EAL file
 	if (s_UseOpenAL)
 	{
-		mapname = Cvar_VariableString( "mapname" );
+		const char *mapname = Cvar_VariableString( "mapname" );
 		EALFileInit(mapname);
 		// clear carry crap from previous map
 		for (int i = 0; i < EAX_MAX_FXSLOTS; i++)
@@ -957,14 +947,9 @@ void S_BeginRegistration( void )
 }
 
 
+#ifdef _WIN32
 static void EALFileInit(char *level)
 {
-	long		lRoom;
-	char		name[MAX_QPATH];
-	char		szEALFilename[MAX_QPATH];
-	int			i;
-
-#ifdef _WIN32
 	// If an EAL File is already unloaded, remove it
 	if (s_bEALFileLoaded)
 	{
@@ -975,7 +960,10 @@ static void EALFileInit(char *level)
 	s_bInWater = false;
 
 	// Try and load an EAL file for the new level
+	char		name[MAX_QPATH];
 	COM_StripExtension(level, name);
+
+	char		szEALFilename[MAX_QPATH];
 	Com_sprintf(szEALFilename, MAX_QPATH, "eagle/%s.eal", name);
 
 	s_bEALFileLoaded = LoadEALFile(szEALFilename);
@@ -995,16 +983,16 @@ static void EALFileInit(char *level)
 		// Mute reverbs if no EAL file is found
 		if ((s_bEAX)&&(s_eaxSet))
 		{
-			lRoom = -10000;
-			for (i = 0; i < s_NumFXSlots; i++)
+			long lRoom = -10000;
+			for (int i = 0; i < s_NumFXSlots; i++)
 			{
 				s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXREVERB_ROOM, NULL,
 					&lRoom, sizeof(long));
 			}
 		}
 	}
-#endif
 }
+#endif
 
 
 
@@ -1542,7 +1530,6 @@ Entchannel 0 will never override a playing sound
 */
 void S_StartSound(const vec3_t origin, int entityNum, soundChannel_t entchannel, sfxHandle_t sfxHandle ) 
 {
-	int i;
 	channel_t	*ch;
 	/*const*/ sfx_t *sfx;
 
@@ -1570,6 +1557,7 @@ void S_StartSound(const vec3_t origin, int entityNum, soundChannel_t entchannel,
 #if _WIN32
 	if (s_UseOpenAL)
 	{
+		int i;
 		if (entchannel == CHAN_VOICE)
 		{
 			// Make howlers and sand_creature VOICE effects use the normal fall-off (they will still be affected
@@ -1805,9 +1793,6 @@ S_StopAllSounds
 */
 void S_StopSounds(void)
 {
-	int i; //, j;
-	channel_t *ch;
-
 	if ( !s_soundStarted ) {
 		return;
 	}
@@ -1819,7 +1804,8 @@ void S_StopSounds(void)
 	// clear all the s_channels
 	if (s_UseOpenAL)
 	{
-		ch = s_channels;
+		channel_t *ch = s_channels;
+		int i;
 		for (i = 0; i < s_numChannels; i++, ch++)
 		{
 			alSourceStop(s_channels[i].alSource);
@@ -2276,10 +2262,6 @@ let the sound system know where an entity currently is
 */
 void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 {
-	ALfloat pos[3];
-	channel_t *ch;
-	int i;
-
 	if ( entityNum < 0 || entityNum >= MAX_GENTITIES ) {
 		Com_Error( ERR_DROP, "S_UpdateEntityPosition: bad entitynum %i", entityNum );
 	}
@@ -2290,14 +2272,15 @@ void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 		if (entityNum == 0)
 			return;
 
-		ch = s_channels + 1;
-		for (i = 1; i < s_numChannels; i++, ch++)
+		channel_t *ch = s_channels + 1;
+		for (int i = 1; i < s_numChannels; i++, ch++)
 		{
-			if ((s_channels[i].bPlaying) & (s_channels[i].entnum == entityNum) & (!s_channels[i].bLooping))
+			if ((s_channels[i].bPlaying) && (s_channels[i].entnum == entityNum) && (!s_channels[i].bLooping))
 			{
 				// Ignore position updates for CHAN_VOICE_GLOBAL
 				if (ch->entchannel != CHAN_VOICE_GLOBAL && ch->entchannel != CHAN_ANNOUNCER)
 				{
+					ALfloat pos[3];
 					pos[0] = origin[0];
 					pos[1] = origin[2];
 					pos[2] = -origin[1];
@@ -2462,7 +2445,6 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], qboolean 
 	EAXOCCLUSIONPROPERTIES eaxOCProp;
 	EAXACTIVEFXSLOTS eaxActiveSlots;
 #endif
-	unsigned int ulEnvironment;
 	int			i;
 	channel_t	*ch;
 
@@ -2502,7 +2484,7 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], qboolean 
 					}
 
 					// Load underwater reverb effect into FX Slot 0, and set this as the Primary FX Slot
-					ulEnvironment = EAX_ENVIRONMENT_UNDERWATER;
+					unsigned int ulEnvironment = EAX_ENVIRONMENT_UNDERWATER;
 					s_eaxSet(&EAXPROPERTYID_EAX40_FXSlot0, EAXREVERB_ENVIRONMENT,
 						NULL, &ulEnvironment, sizeof(unsigned int));
 					s_EnvironmentID = 999;
@@ -2787,13 +2769,6 @@ void S_GetSoundtime(void)
 void S_Update_(void) {
 	unsigned        endtime;
 	int				samps;
-	channel_t		*ch;
-	int i,j;
-	int			source;
-	float		pos[3];
-#ifdef _DEBUG
-	char szString[256];
-#endif
 
 	if ( !s_soundStarted || s_soundMuted ) {
 		return;
@@ -2802,11 +2777,15 @@ void S_Update_(void) {
 #ifdef _WIN32
 	if (s_UseOpenAL)
 	{
+		int i,j;
+		int			source;
 		UpdateSingleShotSounds();
 
-		ch = s_channels + 1;
+		channel_t *ch = s_channels + 1;
 		for ( i = 1; i < MAX_CHANNELS ; i++, ch++ )
 		{	
+			float		pos[3];
+
 			if ( !ch->thesfx || (ch->bPlaying))
 				continue;
 
@@ -2933,6 +2912,7 @@ void S_Update_(void) {
 							else
 							{
 #ifdef _DEBUG
+								char szString[256];
 								sprintf(szString, "Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
 								OutputDebugString(szString);
 #endif
@@ -2990,6 +2970,7 @@ void S_Update_(void) {
 					else
 					{
 #ifdef _DEBUG
+						char szString[256];
 						sprintf(szString, "Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
 						OutputDebugString(szString);
 #endif
@@ -3024,6 +3005,7 @@ void S_Update_(void) {
 					else
 					{
 #ifdef _DEBUG
+						char szString[256];
 						sprintf(szString, "Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
 						OutputDebugString(szString);
 #endif
@@ -5444,12 +5426,12 @@ void ReleaseEAXManager()
 }
 
 
+#ifdef _WIN32
 /*
 	Try to load the given .eal file
 */
 static bool LoadEALFile(char *szEALFilename)
 {
-#ifdef _WIN32
 	char		*ealData = NULL;
 	HRESULT		hr;
 	long		i, j, lID, lEnvID;
@@ -5724,17 +5706,17 @@ static bool LoadEALFile(char *szEALFilename)
 		return true;
 	}
 
-#endif	
 	Com_DPrintf( S_COLOR_YELLOW "Failed to load %s\n", szEALFilename);
 	return false;
 }
+#endif	
 
+#ifdef _WIN32
 /*
 	Unload current .eal file
 */
 static void UnloadEALFile()
 {
-#ifdef _WIN32
 	HRESULT hr;
 
 	if ((!s_lpEAXManager) || (!s_bEAX))
@@ -5750,15 +5732,15 @@ static void UnloadEALFile()
 	}
 
 	return;
-#endif
 }
+#endif
 
+#ifdef _WIN32
 /*
 	Updates the current EAX Reverb setting, based on the location of the listener
 */
 static void UpdateEAXListener()
 {
-#ifdef _WIN32
 	EMPOINT ListPos, ListOri;
 	EMPOINT EMAperture;
 	EMPOINT EMSourcePoint;
@@ -6346,8 +6328,8 @@ static void UpdateEAXBuffer(channel_t *ch)
 	}
 
 	return;
-#endif
 }
+#endif
 
 #ifndef _WIN32
 typedef struct _EMPOINT {

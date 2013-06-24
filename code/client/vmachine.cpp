@@ -19,7 +19,9 @@ This file is part of Jedi Academy.
 // vmachine.cpp -- wrapper to fake virtual machine for client
 
 #include "vmachine.h"
+#ifdef _MSC_VER
 #pragma warning (disable : 4514)
+#endif
 /*
 ==============================================================
 
