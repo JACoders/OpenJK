@@ -12,7 +12,6 @@
 #include "sys_local.h"
 #endif
 
-static char cdPath[ MAX_OSPATH ] = { 0 };
 static char binaryPath[ MAX_OSPATH ] = { 0 };
 static char installPath[ MAX_OSPATH ] = { 0 };
 

@@ -654,6 +654,13 @@ void *VM_ArgPtr( intptr_t intValue ) {
 	}
 }
 
+ID_INLINE float _vmf(intptr_t x)
+{
+	floatint_t fi;
+	fi.i = (int) x;
+	return fi.f;
+}
+
 extern vm_t *gvm;
 void *BotVMShift( int ptr )
 {

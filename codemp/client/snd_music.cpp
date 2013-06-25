@@ -13,10 +13,14 @@
 #include "qcommon/q_shared.h"
 #include "qcommon/sstring.h"
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4663 )	//spcialize class
 #pragma warning( push, 3 )
+#endif
 #include <algorithm>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 
 #include "snd_local.h"
 

@@ -241,7 +241,9 @@ static void Shader_SkipRestOfLine ( const char **data ) {
 #endif
 
 
+#ifndef USE_NEW_SHADER_HASH
 static char *s_shaderText;
+#endif
 
 // the shader is parsed into these global variables, then copied into
 // dynamically allocated memory if it is valid.
@@ -266,8 +268,10 @@ typedef struct shaderText_s {   // 8 bytes + strlen(text)+1
 
 static shaderText_t *shaderTextHashTable[MAX_SHADERTEXT_HASH];
 
+#ifndef DEDICATED
 static int fileShaderCount;		// total .shader files found
 static int shaderCount;			// total shaders parsed
+#endif
 // !drakkar
 #else
 #define MAX_SHADERTEXT_HASH		2048
@@ -3471,7 +3475,6 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 	return FinishShader();
 }
 
-static void ScanAndLoadShaderFiles( const char *path );
 shader_t *R_FindServerShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage ) 
 {
 	char		strippedName[MAX_QPATH];

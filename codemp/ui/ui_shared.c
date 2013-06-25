@@ -109,13 +109,13 @@ static int		allocPoint, outOfMemory;
 
 
 typedef struct  itemFlagsDef_s {
-	char *string;
+	const char *string;
 	int value;
 }	itemFlagsDef_t;
 
 itemFlagsDef_t itemFlags [] = {
-"WINDOW_INACTIVE",		WINDOW_INACTIVE,
-NULL,					(int) NULL
+	{ "WINDOW_INACTIVE",		WINDOW_INACTIVE },
+	{ NULL,					(int) NULL }
 };
 
 char *styles [] = {
@@ -8817,7 +8817,6 @@ static void Item_TextScroll_BuildLines ( itemDef_t* item )
 					// Special case, don't consider line breaking if you're on an asian punctuation char of
 					//	a language that doesn't use spaces...
 					//
-					uiLetter = uiLetter;	// breakpoint line only
 				}
 				else
 				{

@@ -1233,8 +1233,10 @@ static vec3_t			desiredPelvisOffset; // this is for the root
 static float			ragOriginChange=0.0f;
 static vec3_t			ragOriginChangeDir;
 //debug
+#if 0
 static vec3_t			handPos={0,0,0};
 static vec3_t			handPos2={0,0,0};
+#endif
 
 enum ERagState
 {
@@ -1428,9 +1430,11 @@ static int G2_Set_Bone_Angles_Rag(
 		{
 			static mdxaBone_t		id = 
 			{ 
-				1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f
+				{
+					{ 1.0f, 0.0f, 0.0f, 0.0f },
+					{ 0.0f, 1.0f, 0.0f, 0.0f },
+					{ 0.0f, 0.0f, 1.0f, 0.0f }
+				}
 			};
 			memcpy(&bone.ragOverrideMatrix,&id, sizeof(mdxaBone_t));
 			VectorClear(bone.anglesOffset);
@@ -3186,7 +3190,7 @@ static inline void G2_RagGetPelvisLumbarOffsets(CGhoul2Info &ghoul2, CRagDollUpd
 {
 	static mdxaBone_t final;
 	static mdxaBone_t x;
-	static mdxaBone_t *unused1, *unused2;
+	//static mdxaBone_t *unused1, *unused2;
 	//static vec3_t lumbarPos;
 
 	assert(ghoul2.animModel);
@@ -3238,7 +3242,6 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 	static int i;
 	static vec3_t goalSpot;
 	static trace_t tr;
-	static trace_t solidTr;
 	static int k;
 	static const float velocityDampening = 1.0f;
 	static const float velocityMultiplier = 60.0f;
@@ -4324,9 +4327,11 @@ static int G2_Set_Bone_Angles_IK(
 		{
 			static mdxaBone_t		id = 
 			{ 
-				1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f
+				{
+					{ 1.0f, 0.0f, 0.0f, 0.0f },
+					{ 0.0f, 1.0f, 0.0f, 0.0f },
+					{ 0.0f, 0.0f, 1.0f, 0.0f }
+				}
 			};
 			memcpy(&bone.ragOverrideMatrix,&id, sizeof(mdxaBone_t));
 			VectorClear(bone.anglesOffset);

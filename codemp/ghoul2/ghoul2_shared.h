@@ -319,6 +319,8 @@ class CGhoul2Info_v;
 class IGhoul2InfoArray
 {
 public:
+	virtual ~IGhoul2InfoArray() {}
+
 	virtual int New()=0;
 	virtual void Delete(int handle)=0;
 	virtual bool IsValid(int handle) const=0;
