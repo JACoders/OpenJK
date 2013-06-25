@@ -1,5 +1,6 @@
 #include "qcommon/q_shared.h"
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4018)
 #pragma warning( disable : 4245)
 #pragma warning( disable : 4284)
@@ -8,8 +9,11 @@
 
 #pragma warning ( disable : 4663 )	//spcialize class
 #pragma warning( push, 3 )
+#endif
 #include <algorithm>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 
 #include "navigator.h"
 #include "game/g_nav.h"

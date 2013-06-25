@@ -3,7 +3,9 @@
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4710 )	//not inlined
+#endif
 #include "client.h"
 #include "snd_ambient.h"
 #include "snd_local.h"

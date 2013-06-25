@@ -17,7 +17,7 @@ public:
 	typedef map < string, unsigned char >	signal_m;
 
 	ICARUS_Instance( void );
-	~ICARUS_Instance( void );
+	virtual ~ICARUS_Instance( void );
 
 	static	ICARUS_Instance *Create( interface_export_t * );
 	int Delete( void );

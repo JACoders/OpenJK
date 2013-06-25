@@ -9,8 +9,10 @@
 #include "icarus.h"
 
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4100)  //unref formal parm
 #pragma warning(disable : 4710)  //member not inlined
+#endif
 
 #include <string.h>
 #include "blockstream.h"
