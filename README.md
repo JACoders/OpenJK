@@ -5,6 +5,7 @@ The purpose of this project is to maintain and improve the Jedi Academy and Jedi
 This project will not attempt to rebalance or otherwise modify core gameplay aspects.
 
 Major enhancement changes are very low priority at this time unless patches are made available and do not alter the core functionality of gameplay or the stock renderer itself.
+
 Please use discrection when making issue requests here on github.  The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for larger discussions on changes that aren't actually bugs.
 
 ## Installation ##
