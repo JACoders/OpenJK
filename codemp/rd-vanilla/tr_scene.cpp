@@ -11,7 +11,9 @@
 #include "tr_lightmanager.h"
 #endif
 
+#ifdef _MSC_VER
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
+#endif
 #include "qcommon/disablewarnings.h"
 
 static	int			r_firstSceneDrawSurf;
@@ -241,10 +243,6 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 
 		if (!ghoul2[0].mModel)
 		{
-#ifdef _DEBUG
-			CGhoul2Info &g2 = ghoul2[0];
-#endif
-			//DebugBreak();
 			Com_Printf("Your ghoul2 instance has no model!\n");
 		}
 	}

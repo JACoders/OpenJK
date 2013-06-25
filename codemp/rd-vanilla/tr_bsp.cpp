@@ -311,7 +311,7 @@ static shader_t *ShaderForShaderNum( int shaderNum, const int *lightmapNum, cons
 
 	styles = lightmapStyles;
 
-	shaderNum = LittleLong( shaderNum );
+	LL( shaderNum );
 	if ( shaderNum < 0 || shaderNum >= worldData.numShaders ) {
 		Com_Error( ERR_DROP, "ShaderForShaderNum: bad num %i", shaderNum );
 	}

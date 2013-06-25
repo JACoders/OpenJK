@@ -7,9 +7,13 @@
 #include "glext.h"
 #endif
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <map>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 using namespace std;
 
 
@@ -2243,7 +2247,7 @@ bool IsPowerOfTwo ( int i ) { return (i & (i - 1)) == 0; }
 
 struct PNGFileReader
 {
-	PNGFileReader ( char *buf ) : buf(buf), png_ptr(NULL), info_ptr(NULL), offset(0) {}
+	PNGFileReader ( char *buf ) : buf(buf), offset(0), png_ptr(NULL), info_ptr(NULL) {}
 	~PNGFileReader()
 	{
 		ri.FS_FreeFile (buf);

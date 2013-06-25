@@ -366,7 +366,9 @@ static void Shader_SkipRestOfLine ( const char **data ) {
 #endif
 
 
+#ifndef USE_NEW_SHADER_HASH
 static char *s_shaderText;
+#endif
 
 // the shader is parsed into these global variables, then copied into
 // dynamically allocated memory if it is valid.

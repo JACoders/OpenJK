@@ -1245,13 +1245,13 @@ const int CFontInfo::GetCollapsedAsianCode(ulong uiLetter) const
 const int CFontInfo::GetLetterWidth(unsigned int uiLetter)
 {
 	const glyphInfo_t *pGlyph = GetLetter( uiLetter );
-	return pGlyph->width ? pGlyph->width : mGlyphs['.'].width;
+	return pGlyph->width ? pGlyph->width : mGlyphs[(unsigned)'.'].width;
 }
 
 const int CFontInfo::GetLetterHorizAdvance(unsigned int uiLetter)
 {	
 	const glyphInfo_t *pGlyph = GetLetter( uiLetter );
-	return pGlyph->horizAdvance ? pGlyph->horizAdvance : mGlyphs['.'].horizAdvance;
+	return pGlyph->horizAdvance ? pGlyph->horizAdvance : mGlyphs[(unsigned)'.'].horizAdvance;
 }
 
 // ensure any GetFont calls that need SBCS overriding (such as when playing in Russian) have the appropriate stuff done...

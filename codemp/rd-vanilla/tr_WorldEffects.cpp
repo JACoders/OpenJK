@@ -7,7 +7,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////
 #include "qcommon/exe_headers.h"
+#ifdef _MSC_VER
 #pragma warning( disable : 4512 )
+#endif
 
 // Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max)
 inline float WE_flrand(float min, float max) {
