@@ -5,4 +5,6 @@
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 
+#ifdef _MSC_VER
 #pragma hdrstop
+#endif

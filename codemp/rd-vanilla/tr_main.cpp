@@ -1086,10 +1086,6 @@ void R_AddDrawSurf( surfaceType_t *surface, shader_t *shader,
 	{
 		fogIndex = 0;
 	}
-	else
-	{
-		fogIndex = fogIndex;
-	}
 
 	// Ensiform: FIXME implement RDF_ForceSightOn
 	if ( (shader->surfaceFlags & SURF_FORCESIGHT) /*&& !(tr.refdef.rdflags & RDF_ForceSightOn)*/ )

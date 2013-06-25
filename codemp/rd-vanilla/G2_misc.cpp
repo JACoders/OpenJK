@@ -172,7 +172,9 @@ CGoreSet::~CGoreSet()
 
 const mdxaBone_t &EvalBoneCache(int index,CBoneCache *boneCache);
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4512)		//assignment op could not be genereated
+#endif
 class CTraceSurface
 {
 public:
@@ -243,8 +245,8 @@ public:
 	modelIndex(initmodelIndex),
 	skin(initskin),
 	cust_shader(initcust_shader),
-	traceFlags(inittraceFlags),
 	TransformedVertsArray(initTransformedVertsArray),
+	traceFlags(inittraceFlags),
 #ifdef _G2_GORE
 	m_fRadius(fRadius),
 	ssize(initssize),
