@@ -4,6 +4,9 @@ IRC: irc.arloria.net / #JACoders ([webchat](http://unic0rn.github.io/tiramisu/ja
 The purpose of this project is to maintain and improve the Jedi Academy and Jedi Outcast games, developed by Raven Software.
 This project will not attempt to rebalance or otherwise modify core gameplay aspects.
 
+Major enhancement changes are very low priority at this time unless patches are made available and do not alter the core functionality of gameplay or the stock renderer itself.
+Please use discrection when making issue requests here on github.  The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for larger discussions on changes that aren't actually bugs.
+
 ## Installation ##
 
 First, install Jedi Academy. If you don't already own the game you can buy it from either [Steam](http://store.steampowered.com/app/6020/), [Amazon](http://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [Play](http://www.play.com/Games/PC/4-/127805/Star-Wars-Jedi-Knight-Jedi-Academy/Product.html?searchstring=jedi+academy&searchsource=0&searchtype=allproducts&urlrefer=search).
