@@ -1134,7 +1134,6 @@ int L3audio_decode_init(MPEG_HEAD * h, int framebytes_arg,
 
    pMP3Stream->framebytes = framebytes_arg;
 
-   transform_code = transform_code;	/* not used, asm compatability */
    bit_code = 0;
    if (convert_code & 8)
       bit_code = 1;

@@ -6,7 +6,9 @@
 #include "renderer/tr_types.h"
 #include "ghoul2/G2.h"
 #include "G2_local.h"
+#ifdef _MSC_VER
 #pragma warning(disable : 4512)		//assignment op could not be genereated
+#endif
 
 class CConstructBoneList
 {

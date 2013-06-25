@@ -15,7 +15,6 @@ static cvar_t *in_mouse             = NULL;
 static cvar_t *in_nograb;
 
 cvar_t *in_joystick          		= NULL;
-static cvar_t *in_joystickDebug     = NULL;
 static cvar_t *in_joystickThreshold = NULL;
 static cvar_t *in_joystickNo        = NULL;
 static cvar_t *in_joystickUseAnalog = NULL;

@@ -17,7 +17,9 @@
 #include "tr_lightmanager.h"
 #endif
 
+#ifdef _MSC_VER
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
+#endif
 #include "qcommon/disablewarnings.h"
 
 #define	LL(x) x=LittleLong(x)
@@ -113,9 +115,11 @@ static inline int G2_Find_Bone_ByNum(const model_t *mod, boneInfo_v &blist, cons
 
 const static mdxaBone_t		identityMatrix = 
 { 
-	0.0f, -1.0f, 0.0f, 0.0f,
-	1.0f, 0.0f, 0.0f, 0.0f,
-	0.0f, 0.0f, 1.0f, 0.0f
+	{
+		{ 0.0f, -1.0f, 0.0f, 0.0f },
+		{ 1.0f, 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 1.0f, 0.0f }
+	}
 };
 
 // I hate doing this, but this is the simplest way to get this into the routines it needs to be
@@ -323,8 +327,8 @@ public:
 	float			mSmoothFactor;
 
 	CBoneCache(const model_t *amod,const mdxaHeader_t *aheader) :
-		mod(amod),
-		header(aheader)
+		header(aheader),
+		mod(amod)
 	{
 		assert(amod);
 		assert(aheader);
@@ -1553,9 +1557,11 @@ void G2_TransformBone (int child,CBoneCache &BC)
 			float	matrixScale = VectorLength((float*)&temp);
 			static mdxaBone_t		toMatrix = 
 			{ 
-				1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f
+				{
+					{ 1.0f, 0.0f, 0.0f, 0.0f },
+					{ 0.0f, 1.0f, 0.0f, 0.0f },
+					{ 0.0f, 0.0f, 1.0f, 0.0f }
+				}
 			};
 			toMatrix.matrix[0][0]=matrixScale;
 			toMatrix.matrix[1][1]=matrixScale;
@@ -3314,8 +3320,8 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 	if (!bAlreadyCached)
 	{
-		version = LittleLong(version);
-		size	= LittleLong(size);
+		LL(version);
+		LL(size);
 	}
 
 	if (version != MDXM_VERSION) {
@@ -3737,8 +3743,8 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 	if (!bAlreadyCached)
 	{
-		version = LittleLong(version);
-		size	= LittleLong(size);
+		LL(version);
+		LL(size);
 	}
 	
 	if (version != MDXA_VERSION) {
