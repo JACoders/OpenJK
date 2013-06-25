@@ -517,7 +517,9 @@ static float VectorDistance(vec3_t p1, vec3_t p2)
 	return VectorLength(dir);
 }
 #endif
+#ifdef _MSC_VER
 #pragma warning(disable : 4701) //local variable used without having been init
+#endif
 static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 	static int	touchlist[MAX_GENTITIES];
 	int			i, num;
@@ -786,7 +788,9 @@ Ghoul2 Insert End
 */
 	}
 }
+#ifdef _MSC_VER
 #pragma warning(default : 4701) //local variable used without having been init
+#endif
 
 /*
 ==================

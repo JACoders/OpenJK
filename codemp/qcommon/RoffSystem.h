@@ -3,10 +3,14 @@
 #include "qcommon/q_shared.h"	//needs to be in here for entityState_t
 #include "server/server.h"
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <vector>
 #include <map>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 using namespace std;
 
 // ROFF Defines

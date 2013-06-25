@@ -6,15 +6,14 @@ private:
 	int64_t	start;
 	int64_t	end;
 
-	int		reset;
 public:
 	timing_c(void)
 	{
 	}
 	void Start()
 	{
-		const int64_t *s = &start;
 #ifdef _WIN32
+		const int64_t *s = &start;
 		__asm
 		{
 			push eax
@@ -34,9 +33,9 @@ public:
 	}
 	int End()
 	{
-		const int64_t *e = &end;
 		int64_t	time;
 #ifdef _WIN32
+		const int64_t *e = &end;
 		__asm
 		{
 			push eax

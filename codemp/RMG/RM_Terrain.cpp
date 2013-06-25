@@ -5,12 +5,14 @@
 #include "renderer/tr_types.h"
 #include "RM_Headers.h"
 
+#ifdef _MSC_VER
 #pragma optimize("", off)
 
 // The above optmization triggers this warning:
 // "/GS can not protect parameters and local variables from local buffer overrun because optimizations are disabled in function"
 // We don't give a rats ass.
 #pragma warning(disable: 4748)
+#endif
 
 static CRMLandScape		*rm_landscape;
 static CCMLandScape		*origin_land;
@@ -514,6 +516,8 @@ void RM_ShutdownTerrain(void)
 
 // end
 
+#ifdef _MSC_VER
 #pragma warning(default: 4748)
 
 #pragma optimize("", on)
+#endif
