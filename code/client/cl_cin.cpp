@@ -1952,7 +1952,7 @@ void SCR_StopCinematic( qboolean bAllowRefusal /* = qfalse */ )
 		cls.state =  CA_DISCONNECTED;
 	}
 
-	if(sInGameCinematicStandingBy && sInGameCinematicStandingBy[0] &&
+	if(sInGameCinematicStandingBy[0] &&
 		qbTextCrawlFixed)
 	{
 		// Hacky fix to help deal with broken text crawl..

@@ -637,7 +637,7 @@ qboolean CM_DeleteCachedMap(qboolean bGuaranteedOkToDelete)
 
 static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *checksum, clipMap_t &cm ) {
 	const int		*buf;
-	int				i;
+	size_t			i;
 	dheader_t		header;
 	static unsigned	last_checksum;
 	void			*subBSPData = NULL;
