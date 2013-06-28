@@ -4,6 +4,10 @@ IRC: irc.arloria.net / #JACoders ([webchat](http://unic0rn.github.io/tiramisu/ja
 The purpose of this project is to maintain and improve the Jedi Academy and Jedi Outcast games, developed by Raven Software.
 This project will not attempt to rebalance or otherwise modify core gameplay aspects.
 
+Major enhancement changes are very low priority at this time unless patches are made available and do not alter the core functionality of gameplay or the stock renderer itself.
+
+Please use discrection when making issue requests here on github.  The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for larger discussions on changes that aren't actually bugs.
+
 ## Installation ##
 
 First, install Jedi Academy. If you don't already own the game you can buy it from either [Steam](http://store.steampowered.com/app/6020/), [Amazon](http://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [Play](http://www.play.com/Games/PC/4-/127805/Star-Wars-Jedi-Knight-Jedi-Academy/Product.html?searchstring=jedi+academy&searchsource=0&searchtype=allproducts&urlrefer=search).
@@ -60,9 +64,9 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 For legal reasons we had to make changes to the history. This likely broke every forker's repo. See [here](http://git-scm.com/docs/git-rebase.html#_recovering_from_upstream_rebase) for how to fix if you've changed anything, or just delete your github fork and local folder and start over if you haven't.
 
 ### Engine "hax" ###
-* If your mod intends to use engine "hax" to figure out the nedaddr types (NA_IP, etc) NA_BAD is now 0 and NA_BOT is now 1 instead of vice versa.
 * You will no longer be able to use runtime memory patches. Consider forking OpenJK and adding your engine modifications directly.
 
 ### Links of Interest ###
 * [Buildbot](http://jk.xd.cm/)
 * [Buildbot builds](http://builds.openjk.org/)
+* [JKHub sub-forum](http://jkhub.org/forum/51-discussion/)
