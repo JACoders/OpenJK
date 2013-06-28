@@ -1175,7 +1175,7 @@ const char *Key_GetBinding( int keynum ) {
 		return "";
 	}
 
-	assert (keynum < (sizeof(kg.keys)/sizeof(kg.keys[0])));
+	assert ((unsigned)keynum < (sizeof(kg.keys)/sizeof(kg.keys[0])));
 	return kg.keys[ keynum ].binding;
 }
 

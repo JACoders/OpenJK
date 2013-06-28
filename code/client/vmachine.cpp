@@ -34,7 +34,7 @@ intptr_t	VM_Call( int callnum, ... )
 //	assert (cgvm.entryPoint);
 	//Getting crashes here on OSX with debug dlls.
 #ifdef MACOS_X
-	int i;
+	size_t i;
 	int args[10];
 	va_list ap;
 	if (cgvm.entryPoint)
@@ -115,7 +115,7 @@ intptr_t VM_DllSyscall( intptr_t arg, ... ) {
 #if !id386 || defined __clang__ || defined MACOS_X
 	// rcg010206 - see commentary above
 	intptr_t args[16];
-	int i;
+	size_t i;
 	va_list ap;
 	
 	args[0] = arg;
