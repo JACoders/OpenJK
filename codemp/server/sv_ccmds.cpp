@@ -150,16 +150,13 @@ Restart the server on a different map
 ==================
 */
 static void SV_Map_f( void ) {
-	char		*cmd;
-	char		*map;
-	qboolean	killBots, cheat;
-	char		expanded[MAX_QPATH];
-	char		mapname[MAX_QPATH];
+	char		*cmd = NULL, *map = NULL;
+	qboolean	killBots=qfalse, cheat=qfalse;
+	char		expanded[MAX_QPATH] = {0}, mapname[MAX_QPATH] = {0};
 
 	map = Cmd_Argv(1);
-	if ( !map ) {
+	if ( !map )
 		return;
-	}
 
 	// make sure the level exists before trying to change, so that
 	// a typo at the server console won't end the game
@@ -178,28 +175,12 @@ static void SV_Map_f( void ) {
 	Cvar_Get ("g_gametype", "0", CVAR_SERVERINFO | CVAR_LATCH );
 
 	cmd = Cmd_Argv(0);
-	if( Q_stricmpn( cmd, "sp", 2 ) == 0 ) {
-		Cvar_SetValue( "g_gametype", GT_SINGLE_PLAYER );
-		Cvar_SetValue( "g_doWarmup", 0 );
-		// may not set sv_maxclients directly, always set latched
-		Cvar_SetLatched( "sv_maxclients", "8" );
-		cmd += 2;
-		cheat = qfalse;
+	if ( !Q_stricmp( cmd, "devmap" ) ) {
+		cheat = qtrue;
 		killBots = qtrue;
-	}
-	else {
-		if ( !Q_stricmpn( cmd, "devmap",6 ) || !Q_stricmp( cmd, "spdevmap" ) ) {
-			cheat = qtrue;
-			killBots = qtrue;
-		} else {
-			cheat = qfalse;
-			killBots = qfalse;
-		}
-		/*
-		if( sv_gametype->integer == GT_SINGLE_PLAYER ) {
-			Cvar_SetValue( "g_gametype", GT_FFA );
-		}
-		*/
+	} else {
+		cheat = qfalse;
+		killBots = qfalse;
 	}
 
 	// save the map name here cause on a map restart we reload the jampconfig.cfg
@@ -227,11 +208,7 @@ static void SV_Map_f( void ) {
 	// if the level was started with "map <levelname>", then
 	// cheats will not be allowed.  If started with "devmap <levelname>"
 	// then cheats will be allowed
-	if ( cheat ) {
-		Cvar_Set( "sv_cheats", "1" );
-	} else {
-		Cvar_Set( "sv_cheats", "0" );
-	}
+	Cvar_Set( "sv_cheats", cheat ? "1" : "0" );
 }
 
 
@@ -890,8 +867,6 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("sectorlist", SV_SectorList_f);
 	Cmd_AddCommand ("map", SV_Map_f);
 	Cmd_AddCommand ("devmap", SV_Map_f);
-	Cmd_AddCommand ("spmap", SV_Map_f);
-	Cmd_AddCommand ("spdevmap", SV_Map_f);
 //	Cmd_AddCommand ("devmapbsp", SV_Map_f);	// not used in MP codebase, no server BSP_cacheing
 	Cmd_AddCommand ("devmapmdl", SV_Map_f);
 	Cmd_AddCommand ("devmapall", SV_Map_f);
