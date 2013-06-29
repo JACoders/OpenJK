@@ -554,7 +554,6 @@ static void IN_ProcessEvents( void )
 				lastKeyDown = A_NULL;
 				break;
 
-#if 0
 			case SDL_TEXTINPUT:
 				if( lastKeyDown != A_CONSOLE )
 				{
@@ -604,7 +603,6 @@ static void IN_ProcessEvents( void )
 					}
 				}
 				break;
-#endif
 
 			case SDL_MOUSEMOTION:
 				if( mouseActive )
