@@ -180,6 +180,12 @@ or configs will never get loaded from disk!
 char		fs_gamedir[MAX_OSPATH];	// this will be a single file name with no separators
 cvar_t		*fs_debug;
 cvar_t		*fs_homepath;
+
+#ifdef MACOS_X
+// Also search the .app bundle for .pk3 files
+cvar_t          *fs_apppath;
+#endif
+
 cvar_t		*fs_basepath;
 cvar_t		*fs_basegame;
 cvar_t		*fs_cdpath;
