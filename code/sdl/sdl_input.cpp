@@ -524,10 +524,10 @@ static void IN_ProcessEvents( void )
 		switch( e.type )
 		{
 			case SDL_KEYDOWN:
-				if( e.key.keysym.sym == SDLK_BACKSPACE )
-					Sys_QueEvent( 0, SE_CHAR, e.key.keysym.sym, qtrue, 0, NULL );
-				else if( ( key = IN_TranslateSDLToJKKey( &e.key.keysym, qtrue ) ) )
+				if( ( key = IN_TranslateSDLToJKKey( &e.key.keysym, qtrue ) ) )
 					Sys_QueEvent( 0, SE_KEY, key, qtrue, 0, NULL );
+				else
+					Sys_QueEvent( 0, SE_CHAR, e.key.keysym.sym, qtrue, 0, NULL );
 
 				lastKeyDown = key;
 				break;
