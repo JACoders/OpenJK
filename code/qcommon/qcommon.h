@@ -800,8 +800,16 @@ void	Sys_SetErrorText( const char *text );
 void	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );
 char	*Sys_DefaultCDPath(void);
-char	*Sys_DefaultBasePath(void);
+void	Sys_SetDefaultInstallPath(const char *path);
+char	*Sys_DefaultInstallPath(void);
+
+#ifdef MACOS_X
+char    *Sys_DefaultAppPath(void);
+#endif
+
 char	*Sys_DefaultHomePath(void);
+const char *Sys_Dirname( char *path );
+const char *Sys_Basename( char *path );
 
 char **Sys_ListFiles( const char *directory, const char *extension, int *numfiles, qboolean wantsubs );
 void	Sys_FreeFileList( char **filelist );

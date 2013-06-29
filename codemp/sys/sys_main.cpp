@@ -354,13 +354,40 @@ void    Sys_ConfigureFPU() { // bk001213 - divide by zero
 #endif // __linux
 }
 
+#ifdef MACOS_X
+/*
+ =================
+ Sys_StripAppBundle
+ 
+ Discovers if passed dir is suffixed with the directory structure of a Mac OS X
+ .app bundle. If it is, the .app directory structure is stripped off the end and
+ the result is returned. If not, dir is returned untouched.
+ =================
+ */
+char *Sys_StripAppBundle( char *dir )
+{
+	static char cwd[MAX_OSPATH];
+	
+	Q_strncpyz(cwd, dir, sizeof(cwd));
+	if(strcmp(Sys_Basename(cwd), "MacOS"))
+		return dir;
+	Q_strncpyz(cwd, Sys_Dirname(cwd), sizeof(cwd));
+	if(strcmp(Sys_Basename(cwd), "Contents"))
+		return dir;
+	Q_strncpyz(cwd, Sys_Dirname(cwd), sizeof(cwd));
+	if(!strstr(Sys_Basename(cwd), ".app"))
+		return dir;
+	Q_strncpyz(cwd, Sys_Dirname(cwd), sizeof(cwd));
+	return cwd;
+}
+#endif
+
 #ifndef DEFAULT_BASEDIR
-//TODO app bundles
-//#	ifdef MACOS_X
-//#		define DEFAULT_BASEDIR Sys_StripAppBundle(Sys_BinaryPath())
-//#	else
+#	ifdef MACOS_X
+#		define DEFAULT_BASEDIR Sys_StripAppBundle(Sys_BinaryPath())
+#	else
 #		define DEFAULT_BASEDIR Sys_BinaryPath()
-//#	endif
+#	endif
 #endif
 
 int main ( int argc, char* argv[] )

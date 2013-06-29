@@ -306,6 +306,42 @@ void * Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)
 	return game_library;
 }
 
+#ifdef MACOS_X
+/*
+ =================
+ Sys_StripAppBundle
+ 
+ Discovers if passed dir is suffixed with the directory structure of a Mac OS X
+ .app bundle. If it is, the .app directory structure is stripped off the end and
+ the result is returned. If not, dir is returned untouched.
+ =================
+ */
+char *Sys_StripAppBundle( char *dir )
+{
+	static char cwd[MAX_OSPATH];
+	
+	Q_strncpyz(cwd, dir, sizeof(cwd));
+	if(strcmp(Sys_Basename(cwd), "MacOS"))
+		return dir;
+	Q_strncpyz(cwd, Sys_Dirname(cwd), sizeof(cwd));
+	if(strcmp(Sys_Basename(cwd), "Contents"))
+		return dir;
+	Q_strncpyz(cwd, Sys_Dirname(cwd), sizeof(cwd));
+	if(!strstr(Sys_Basename(cwd), ".app"))
+		return dir;
+	Q_strncpyz(cwd, Sys_Dirname(cwd), sizeof(cwd));
+	return cwd;
+}
+#endif
+
+#ifndef DEFAULT_BASEDIR
+#	ifdef MACOS_X
+#		define DEFAULT_BASEDIR Sys_StripAppBundle(Sys_BinaryPath())
+#	else
+#		define DEFAULT_BASEDIR Sys_BinaryPath()
+#	endif
+#endif
+
 int main (int argc, char **argv)
 {
 	int 	oldtime, newtime;
@@ -317,6 +353,9 @@ int main (int argc, char **argv)
 	// get the initial time base
 	Sys_Milliseconds();
 	
+	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
+	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
+
 	// merge the command line, this is kinda silly
 	for (len = 1, i = 1; i < argc; i++)
 		len += strlen(argv[i]) + 1;
