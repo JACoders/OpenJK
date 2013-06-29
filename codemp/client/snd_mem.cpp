@@ -732,7 +732,6 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 	int		size;
 	char	*psExt;
 	char	sLoadName[MAX_QPATH];
-	ALuint  Buffer;
 	
 	int		len = strlen(sfx->sSoundName);
 	if (len<5)
