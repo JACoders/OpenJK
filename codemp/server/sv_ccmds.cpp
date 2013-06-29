@@ -584,7 +584,7 @@ SV_Status_f
 */
 static void SV_Status_f( void ) 
 {
-	int				i;
+	int				i, count;
 	client_t		*cl;
 	playerState_t	*ps;
 	const char		*s;
@@ -609,8 +609,16 @@ static void SV_Status_f( void )
 		}
 	}
 
+	count = 0;
+	for ( i = 0 ; i < sv_maxclients->integer ; i++ ) {
+		if ( svs.clients[i].state >= CS_CONNECTED ) {
+			count++;
+		}
+	}
+
 	Com_Printf ("map: %s\n", sv_mapname->string );
 	Com_Printf ("gametype: %i\n", sv_gametype->integer );
+	Com_Printf ("clients: %i/%i\n", count, sv_maxclients->integer - sv_privateClients->integer);
 
 	Com_Printf ("num score ping name            lastmsg address               qport rate\n");
 	Com_Printf ("--- ----- ---- --------------- ------- --------------------- ----- -----\n");
@@ -668,6 +676,7 @@ static void SV_Status_f( void )
 	Com_Printf ("\n");
 }
 
+char	*SV_ExpandNewlines( char *in );
 #define SVSAY_PREFIX "Server^7\x19: "
 
 /*
@@ -695,6 +704,7 @@ static void SV_ConSay_f(void) {
 
 	Cmd_ArgsBuffer( text, sizeof(text) );
 
+	Com_Printf ("broadcast: "SVSAY_PREFIX"%s\n", SV_ExpandNewlines((char *)text) );
 	SV_SendServerCommand(NULL, "chat \""SVSAY_PREFIX"%s\"\n", text);
 }
 

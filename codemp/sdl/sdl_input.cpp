@@ -156,108 +156,122 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 
 /*
 ===============
-IN_TranslateSDLToQ3Key
+IN_TranslateSDLToJKKey
 ===============
 */
-static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down )
+static const char *IN_TranslateSDLToJKKey( SDL_Keysym *keysym, fakeAscii_t *key, qboolean down )
 {
-	fakeAscii_t key = A_NULL;
+	static unsigned char buf[ 2 ] = { '\0', '\0' };
 
-	if( keysym->sym >= SDLK_BACKSPACE && keysym->sym < SDLK_DELETE )
+	*buf = '\0';
+	*key = A_NULL;
+
+	if( keysym->sym >= SDLK_SPACE && keysym->sym < SDLK_DELETE )
 	{
 		// These happen to match the ASCII chars
-		key = (fakeAscii_t)keysym->sym;
+		*key = (fakeAscii_t)keysym->sym;
 	}
 	else
 	{
 		switch( keysym->sym )
 		{
-			case SDLK_PAGEUP:       key = A_PAGE_UP;          break;
-			case SDLK_KP_9:         key = A_KP_9;       break;
-			case SDLK_PAGEDOWN:     key = A_PAGE_DOWN;          break;
-			case SDLK_KP_3:         key = A_KP_3;       break;
-			case SDLK_KP_7:         key = A_KP_7;       break;
-			case SDLK_HOME:         key = A_HOME;          break;
-			case SDLK_KP_1:         key = A_KP_1;        break;
-			case SDLK_END:          key = A_END;           break;
-			case SDLK_KP_4:         key = A_KP_4;  break;
-			case SDLK_LEFT:         key = A_CURSOR_LEFT;     break;
-			case SDLK_KP_6:         key = A_KP_6;          break;
-			case SDLK_RIGHT:        key = A_CURSOR_RIGHT;  break;
-			case SDLK_KP_2:         key = A_KP_2;  		   break;
-			case SDLK_DOWN:         key = A_CURSOR_DOWN;   break;
-			case SDLK_KP_8:         key = A_KP_8;    	   break;
-			case SDLK_UP:           key = A_CURSOR_UP;     break;
-			case SDLK_ESCAPE:       key = A_ESCAPE;        break;
-			case SDLK_KP_ENTER:     key = A_KP_ENTER;      break;
-			case SDLK_RETURN:       key = A_ENTER;         break;
-			case SDLK_TAB:          key = A_TAB;           break;
-			case SDLK_F1:           key = A_F1;            break;
-			case SDLK_F2:           key = A_F2;            break;
-			case SDLK_F3:           key = A_F3;            break;
-			case SDLK_F4:           key = A_F4;            break;
-			case SDLK_F5:           key = A_F5;            break;
-			case SDLK_F6:           key = A_F6;            break;
-			case SDLK_F7:           key = A_F7;            break;
-			case SDLK_F8:           key = A_F8;            break;
-			case SDLK_F9:           key = A_F9;            break;
-			case SDLK_F10:          key = A_F10;           break;
-			case SDLK_F11:          key = A_F11;           break;
-			case SDLK_F12:          key = A_F12;           break;
-			/*case SDLK_F13:          key = A_F13;           break;
-			case SDLK_F14:          key = A_F14;           break;
-			case SDLK_F15:          key = A_F15;           break;*/
+			case SDLK_PAGEUP:       *key = A_PAGE_UP;       break;
+			case SDLK_KP_9:         *key = A_KP_9;          break;
+			case SDLK_PAGEDOWN:     *key = A_PAGE_DOWN;     break;
+			case SDLK_KP_3:         *key = A_KP_3;          break;
+			case SDLK_KP_7:         *key = A_KP_7;          break;
+			case SDLK_HOME:         *key = A_HOME;          break;
+			case SDLK_KP_1:         *key = A_KP_1;          break;
+			case SDLK_END:          *key = A_END;           break;
+			case SDLK_KP_4:         *key = A_KP_4;          break;
+			case SDLK_LEFT:         *key = A_CURSOR_LEFT;   break;
+			case SDLK_KP_6:         *key = A_KP_6;          break;
+			case SDLK_RIGHT:        *key = A_CURSOR_RIGHT;  break;
+			case SDLK_KP_2:         *key = A_KP_2;          break;
+			case SDLK_DOWN:         *key = A_CURSOR_DOWN;   break;
+			case SDLK_KP_8:         *key = A_KP_8;          break;
+			case SDLK_UP:           *key = A_CURSOR_UP;     break;
+			case SDLK_ESCAPE:       *key = A_ESCAPE;        break;
+			case SDLK_KP_ENTER:     *key = A_KP_ENTER;      break;
+			case SDLK_RETURN:       *key = A_ENTER;         break;
+			case SDLK_TAB:          *key = A_TAB;           break;
+			case SDLK_F1:           *key = A_F1;            break;
+			case SDLK_F2:           *key = A_F2;            break;
+			case SDLK_F3:           *key = A_F3;            break;
+			case SDLK_F4:           *key = A_F4;            break;
+			case SDLK_F5:           *key = A_F5;            break;
+			case SDLK_F6:           *key = A_F6;            break;
+			case SDLK_F7:           *key = A_F7;            break;
+			case SDLK_F8:           *key = A_F8;            break;
+			case SDLK_F9:           *key = A_F9;            break;
+			case SDLK_F10:          *key = A_F10;           break;
+			case SDLK_F11:          *key = A_F11;           break;
+			case SDLK_F12:          *key = A_F12;           break;
 
-			case SDLK_BACKSPACE:    key = A_BACKSPACE;     break;
-			case SDLK_KP_PERIOD:    key = A_KP_PERIOD;        break;
-			case SDLK_DELETE:       key = A_DELETE;           break;
-			case SDLK_PAUSE:        key = A_PAUSE;         break;
+			case SDLK_BACKSPACE:    *key = A_BACKSPACE;     break;
+			case SDLK_KP_PERIOD:    *key = A_KP_PERIOD;     break;
+			case SDLK_DELETE:       *key = A_DELETE;        break;
+			case SDLK_PAUSE:        *key = A_PAUSE;         break;
 
 			case SDLK_LSHIFT:
-			case SDLK_RSHIFT:       key = A_SHIFT;         break;
+			case SDLK_RSHIFT:       *key = A_SHIFT;         break;
 
 			case SDLK_LCTRL:
-			case SDLK_RCTRL:        key = A_CTRL;          break;
-
-			/*case SDLK_RGUI:
-			case SDLK_LGUI:         key = A_COMMAND;       break;*/
+			case SDLK_RCTRL:        *key = A_CTRL;          break;
 
 			case SDLK_RALT:
-			case SDLK_LALT:         key = A_ALT;           break;
+			case SDLK_LALT:         *key = A_ALT;           break;
 
-			case SDLK_KP_5:         key = A_KP_5;          break;
-			case SDLK_INSERT:       key = A_INSERT;           break;
-			case SDLK_KP_0:         key = A_KP_0;        break;
-			case SDLK_KP_MULTIPLY:  key = A_STAR;       break;
-			case SDLK_KP_PLUS:      key = A_KP_PLUS;       break;
-			case SDLK_KP_MINUS:     key = A_KP_MINUS;      break;
-			case SDLK_KP_DIVIDE:    key = A_FORWARD_SLASH;      break;
+			case SDLK_KP_5:         *key = A_KP_5;          break;
+			case SDLK_INSERT:       *key = A_INSERT;        break;
+			case SDLK_KP_0:         *key = A_KP_0;          break;
+			case SDLK_KP_MULTIPLY:  *key = A_STAR;          break;
+			case SDLK_KP_PLUS:      *key = A_KP_PLUS;       break;
+			case SDLK_KP_MINUS:     *key = A_KP_MINUS;      break;
+			case SDLK_KP_DIVIDE:    *key = A_FORWARD_SLASH; break;
 
-			/*case SDLK_MODE:         key = A_MODE;          break;
-			case SDLK_HELP:         key = A_HELP;          break;
-			case SDLK_PRINTSCREEN:  key = A_PRINT;         break;
-			case SDLK_SYSREQ:       key = A_SYSREQ;        break;
-			case SDLK_MENU:         key = A_MENU;          break;
-			case SDLK_POWER:        key = A_POWER;         break;
-			case SDLK_UNDO:         key = A_UNDO;          break;*/
-			case SDLK_SCROLLLOCK:   key = A_SCROLLLOCK;     break;
-			case SDLK_CAPSLOCK:     key = A_CAPSLOCK;      break;
+			case SDLK_SCROLLLOCK:   *key = A_SCROLLLOCK;    break;
+			case SDLK_NUMLOCKCLEAR: *key = A_NUMLOCK;       break;
+			case SDLK_CAPSLOCK:     *key = A_CAPSLOCK;      break;
 
 			default:
 				break;
 		}
 	}
 
-	if( in_keyboardDebug->integer )
-		IN_PrintKey( keysym, key, down );
-
-	if( IN_IsConsoleKey( key, 0 ) )
+	if( down && keysym->unicode && !( keysym->unicode & 0xFF00 ) )
 	{
-		// Console keys can't be bound or generate characters
-		key = A_CONSOLE;
+		unsigned char ch = (unsigned char)keysym->unicode & 0xFF;
+
+		switch( ch )
+		{
+			case 127: // ASCII delete
+				if( *key != A_DELETE )
+				{
+					// ctrl-h
+					*buf = CTRL('h');
+					break;
+				}
+				// fallthrough
+
+			default: *buf = ch; break;
+		}
 	}
 
-	return key;
+	if( in_keyboardDebug->integer )
+		IN_PrintKey( keysym, *key, down );
+
+	if( *key == A_BACKSPACE )
+		*buf = '\b'; // Full-hack ahead!
+
+	if( IN_IsConsoleKey( *key, 0 ) )
+	{
+		// Console keys can't be bound or generate characters
+		*key = A_CONSOLE;
+		*buf = '\0';
+	}
+
+	return (const char *)buf;
 }
 
 /*
@@ -511,6 +525,7 @@ static void IN_ProcessEvents( void )
 {
 	SDL_Event e;
 	fakeAscii_t key = A_NULL;
+	const char *character = NULL;
 	static fakeAscii_t lastKeyDown = A_NULL;
 
 	if( !SDL_WasInit( SDL_INIT_VIDEO ) )
@@ -521,16 +536,19 @@ static void IN_ProcessEvents( void )
 		switch( e.type )
 		{
 			case SDL_KEYDOWN:
-				if( e.key.keysym.sym == SDLK_BACKSPACE )
-					Sys_QueEvent( 0, SE_CHAR, e.key.keysym.sym, qtrue, 0, NULL );
-				else if( ( key = IN_TranslateSDLToJKKey( &e.key.keysym, qtrue ) ) )
+				character = IN_TranslateSDLToJKKey( &e.key.keysym, &key, qtrue );
+				if( key != A_NULL )
 					Sys_QueEvent( 0, SE_KEY, key, qtrue, 0, NULL );
+				
+				if( character )
+					Sys_QueEvent( 0, SE_CHAR, *character, qfalse, 0, NULL );
 
 				lastKeyDown = key;
 				break;
 
 			case SDL_KEYUP:
-				if( ( key = IN_TranslateSDLToJKKey( &e.key.keysym, qfalse ) ) )
+				IN_TranslateSDLToJKKey( &e.key.keysym, &key, qfalse );
+				if( key != A_NULL )
 					Sys_QueEvent( 0, SE_KEY, key, qfalse, 0, NULL );
 
 				lastKeyDown = A_NULL;
