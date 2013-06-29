@@ -111,6 +111,12 @@ extern searchpath_t	*fs_searchpaths;
 extern char			fs_gamedir[MAX_OSPATH];	// this will be a single file name with no separators
 extern cvar_t		*fs_debug;
 extern cvar_t		*fs_homepath;
+
+#ifdef MACOS_X
+// Also search the .app bundle for .pk3 files
+extern cvar_t          *fs_apppath;
+#endif
+
 extern cvar_t		*fs_basepath;
 extern cvar_t		*fs_basegame;
 extern cvar_t		*fs_cdpath;

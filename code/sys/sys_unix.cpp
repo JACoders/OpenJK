@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <libgen.h>
 
 #include "../game/q_shared.h"
 #include "../qcommon/qcommon.h"
@@ -136,6 +137,27 @@ void Sys_Print( const char *msg ) {
 	}
 	Conbuf_AppendText( msg );
 }
+
+/*
+ ==================
+ Sys_Basename
+ ==================
+ */
+const char *Sys_Basename( char *path )
+{
+	return basename( path );
+}
+
+/*
+ ==================
+ Sys_Dirname
+ ==================
+ */
+const char *Sys_Dirname( char *path )
+{
+	return dirname( path );
+}
+
 
 /*
 ========================================================================
