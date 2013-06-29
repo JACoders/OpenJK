@@ -163,7 +163,7 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down )
 {
 	fakeAscii_t key = A_NULL;
 
-	if( keysym->sym >= SDLK_BACKSPACE && keysym->sym < SDLK_DELETE )
+	if( keysym->sym >= SDLK_SPACE && keysym->sym < SDLK_DELETE )
 	{
 		// These happen to match the ASCII chars
 		key = (fakeAscii_t)keysym->sym;
