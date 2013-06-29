@@ -718,7 +718,7 @@ void CG_UpdateCvars( void ) {
 		if ( cv->vmCvar ) {
 			int modCount = cv->vmCvar->modificationCount;
 			trap_Cvar_Update( cv->vmCvar );
-			if ( cv->vmCvar->modificationCount > modCount ) {
+			if ( cv->vmCvar->modificationCount != modCount ) {
 				if ( cv->update )
 					cv->update();
 			}
