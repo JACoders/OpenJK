@@ -1892,12 +1892,10 @@ S_ClearLoopingSounds
 */
 void S_ClearLoopingSounds( void )
 {
-	int i;
-
 #ifdef _WIN32
 	if (s_UseOpenAL)
 	{
-		for (i = 0; i < MAX_LOOP_SOUNDS; i++)
+		for (int i = 0; i < MAX_LOOP_SOUNDS; i++)
 			loopSounds[i].bProcessed = false;
 	}
 #endif
