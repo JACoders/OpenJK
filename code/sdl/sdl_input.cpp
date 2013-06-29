@@ -528,6 +528,7 @@ static void IN_ProcessEvents( void )
 {
 	SDL_Event e;
 	fakeAscii_t key = A_NULL;
+	const char *character = NULL;
 	static fakeAscii_t lastKeyDown = A_NULL;
 
 	if( !SDL_WasInit( SDL_INIT_VIDEO ) )
