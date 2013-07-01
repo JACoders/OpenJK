@@ -802,6 +802,7 @@ char	*Sys_Cwd( void );
 char	*Sys_DefaultCDPath(void);
 void	Sys_SetDefaultInstallPath(const char *path);
 char	*Sys_DefaultInstallPath(void);
+char	*Sys_DefaultBasePath(void);
 
 #ifdef MACOS_X
 char    *Sys_DefaultAppPath(void);
