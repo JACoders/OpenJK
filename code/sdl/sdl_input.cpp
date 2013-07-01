@@ -623,7 +623,7 @@ static void IN_ProcessEvents( void )
 						case 3:   b = A_MOUSE2;     break;
 						case 4:   b = A_MOUSE4;     break;
 						case 5:   b = A_MOUSE5;     break;
-						default:  b = A_AUX1 + ( e.button.button - 8 ) % 16; break;
+						default:  b = A_AUX0 + ( e.button.button - 8 ) % 16; break;
 					}
 					Sys_QueEvent( 0, SE_KEY, b,
 						( e.type == SDL_MOUSEBUTTONDOWN ? qtrue : qfalse ), 0, NULL );
