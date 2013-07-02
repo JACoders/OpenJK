@@ -912,7 +912,7 @@ static void setupQuad( long xOff, long yOff )
 	long numQuadCels, i,x,y;
 	byte *temp;
 
-	if (xOff == cin.oldXOff && yOff == cin.oldYOff && cinTable[currentHandle].ysize == cin.oldysize && cinTable[currentHandle].xsize == cin.oldxsize) {
+	if (xOff == cin.oldXOff && yOff == cin.oldYOff && cinTable[currentHandle].ysize == (unsigned)cin.oldysize && cinTable[currentHandle].xsize == (unsigned)cin.oldxsize) {
 		return;
 	}
 
@@ -1362,7 +1362,7 @@ e_status CIN_RunCinematic (int handle)
 		&& (cinTable[currentHandle].status == FMV_PLAY) ) 
 	{
 		RoQInterrupt();
-		if (start != cinTable[currentHandle].startTime) {
+		if ((unsigned)start != cinTable[currentHandle].startTime) {
 		  cinTable[currentHandle].tfps = ((((Sys_Milliseconds()*com_timescale->value)
 							  - cinTable[currentHandle].startTime)*cinTable[currentHandle].roqFPS)/1000);
 			start = cinTable[currentHandle].startTime;

@@ -2679,7 +2679,7 @@ sboolean S_ScanChannelStarts( void ) {
 		}
 
 		// if it is completely finished by now, clear it
-		if ( ch->startSample + ch->thesfx->iSoundLengthInSamples <= s_paintedtime ) {
+		if ( (int)(ch->startSample + ch->thesfx->iSoundLengthInSamples) <= s_paintedtime ) {
 			ch->thesfx = NULL;
 			continue;
 		}
@@ -3094,7 +3094,7 @@ void S_Update_(void) {
 
 		// never mix more than the complete buffer
 		samps = dma.samples >> (dma.channels-1);
-		if (endtime - s_soundtime > samps)
+		if (endtime - s_soundtime > (unsigned)samps)
 			endtime = s_soundtime + samps;
 
 
@@ -3659,7 +3659,7 @@ void S_SetLipSyncs()
 #endif
 				}
 				
-				if ((ch->thesfx->lipSyncData) && (samples < ch->thesfx->iSoundLengthInSamples))
+				if ((ch->thesfx->lipSyncData) && ((int)samples < ch->thesfx->iSoundLengthInSamples))
 				{
 					s_entityWavVol[ ch->entnum ] = ch->thesfx->lipSyncData[samples / 1000];
 					if ( s_show->integer == 3 ) 
@@ -3683,7 +3683,7 @@ void S_SetLipSyncs()
 #endif
 				}
 
-				if ((ch->thesfx->lipSyncData) && (samples < ch->thesfx->iSoundLengthInSamples))
+				if ((ch->thesfx->lipSyncData) && (samples < (unsigned)ch->thesfx->iSoundLengthInSamples))
 				{
 					s_entityWavVol[ ch->entnum ] = ch->thesfx->lipSyncData[(samples / 576) % 16];
 
@@ -4748,7 +4748,7 @@ static sboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolea
 
 		// our max buffer size
 		fileBytes = fileSamples * (pMusicInfo->s_backgroundInfo.width * pMusicInfo->s_backgroundInfo.channels);
-		if (fileBytes > RAWSIZE ) {
+		if (fileBytes > (int)RAWSIZE ) {
 			fileBytes = RAWSIZE;
 			fileSamples = fileBytes / (pMusicInfo->s_backgroundInfo.width * pMusicInfo->s_backgroundInfo.channels);
 		}
