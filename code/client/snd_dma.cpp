@@ -556,7 +556,9 @@ void S_Init( void ) {
 
 				if (s_eaxSet(&EAXPROPERTYID_EAX40_Source, EAXSOURCE_FLAGS,
 							s_channels[i].alSource, &ulFlags, sizeof(ulFlags))!=AL_NO_ERROR)
+#ifdef _MSC_VER
 							OutputDebugString("Failed to to remove Source flags\n");
+#endif
 			}
 
 			s_numChannels++;
@@ -2422,7 +2424,9 @@ static int S_CheckAmplitude(channel_t	*ch, const int s_oldpaintedtime )
 			sample = 4;
 		}
 
+#ifdef _MSC_VER
 //		OutputDebugString(va("Returning sample %d\n",sample));
+#endif
 
 		// store away the value we got into the back up table
 		s_entityWavVol_back[ ch->entnum ] = sample;
@@ -2912,9 +2916,11 @@ void S_Update_(void) {
 							else
 							{
 #ifdef _DEBUG
+#ifdef _MSC_VER
 								char szString[256];
 								sprintf(szString, "Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
 								OutputDebugString(szString);
+#endif
 #endif
 							}
 						}
@@ -2970,9 +2976,11 @@ void S_Update_(void) {
 					else
 					{
 #ifdef _DEBUG
+#ifdef _MSC_VER
 						char szString[256];
 						sprintf(szString, "Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
 						OutputDebugString(szString);
+#endif
 #endif
 					}
 				}
@@ -3582,7 +3590,9 @@ void S_SetLipSyncs()
 	int currentTime, timePlayed;
 	channel_t *ch;
 #ifdef _DEBUG
+#ifdef _MSC_VER
 	char szString[256];
+#endif
 #endif
 
 #ifdef _WIN32
@@ -3614,8 +3624,10 @@ void S_SetLipSyncs()
 				if (ch->thesfx->lipSyncData == NULL)
 				{
 #ifdef _DEBUG
+#ifdef _MSC_VER
 					sprintf(szString, "Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
 					OutputDebugString(szString);
+#endif
 #endif
 				}
 				
@@ -3641,8 +3653,10 @@ void S_SetLipSyncs()
 				if (ch->thesfx->lipSyncData == NULL)
 				{
 #ifdef _DEBUG
+#ifdef _MSC_VER
 					sprintf(szString, "Missing lip-sync info. for %s\n", ch->thesfx->sSoundName);
 					OutputDebugString(szString);
+#endif
 #endif
 				}
 
@@ -5081,12 +5095,14 @@ static int SND_FreeSFXMem(sfx_t *sfx)
 		{
 			alDeleteBuffers(1, &(sfx->Buffer));
 #ifdef _DEBUG
+#ifdef _MSC_VER
 			char szString[256];
 			if (alGetError() != AL_NO_ERROR)
 			{
 				sprintf(szString, "Failed to delete AL Buffer (%s) ... !\n", sfx->sSoundName);
 				OutputDebugString(szString);
 			}
+#endif
 #endif
 			sfx->Buffer = 0;
 		}
