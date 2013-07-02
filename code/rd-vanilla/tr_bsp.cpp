@@ -1067,14 +1067,14 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 		}
 		else
 		{
-			if ( (unsigned)out->originalBrushNumber >= brushesCount ) {
+			if ( (unsigned)out->originalBrushNumber >= (unsigned)brushesCount ) {
 				Com_Error( ERR_DROP, "fog brushNumber out of range" );
 			}
 			brush = brushes + out->originalBrushNumber;
 
 			firstSide = LittleLong( brush->firstSide );
 
-				if ( (unsigned)firstSide > sidesCount - 6 ) {
+				if ( (unsigned)firstSide > (unsigned)(sidesCount - 6) ) {
 				Com_Error( ERR_DROP, "fog brush sideNumber out of range" );
 			}
 
@@ -1341,7 +1341,6 @@ Called directly from cgame
 =================
 */
 void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
-	int			i;
 	dheader_t	*header;
 	byte		*buffer = NULL;
 	qboolean	loadedSubBSP = qfalse;
@@ -1420,7 +1419,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 	}
 
 	// swap all the lumps
-	for (i=0 ; i<sizeof(dheader_t)/4 ; i++) {
+	for (size_t i=0 ; i<sizeof(dheader_t)/4 ; i++) {
 		((int *)header)[i] = LittleLong ( ((int *)header)[i]);
 	}
 

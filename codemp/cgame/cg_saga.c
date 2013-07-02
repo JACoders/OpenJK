@@ -177,7 +177,7 @@ void CG_InitSiegeMode(void)
 
 	Com_sprintf(levelname, sizeof(levelname), "%s.siege\0", levelname); 
 
-	if (!levelname || !levelname[0])
+	if (!levelname[0])
 	{
 		goto failure;
 	}
@@ -1005,7 +1005,7 @@ void CG_ParseSiegeExtendedDataEntry(const char *conStr)
 		{
 			s[i] = *str;
 			i++;
-			*str++;
+			str++;
 		}
 		s[i] = 0;
         switch (argParses)

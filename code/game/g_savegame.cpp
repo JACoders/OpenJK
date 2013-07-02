@@ -183,7 +183,7 @@ static char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 
 		sString[0]=0;
 
-		assert(iStrlen+1<=sizeof(sString));
+		assert(iStrlen+1<=(int)sizeof(sString));
 		
 		gi.ReadFromSaveGame('STRG', sString, iStrlen, NULL);
 
@@ -260,7 +260,7 @@ static int GetGroupNumber(AIGroupInfo_t *pGroup)
 	}
 
 	int iReturnIndex = pGroup - level.groups;
-	if (iReturnIndex < 0 || iReturnIndex >= (sizeof(level.groups) / sizeof(level.groups[0])) )
+	if (iReturnIndex < 0 || iReturnIndex >= (int)(sizeof(level.groups) / sizeof(level.groups[0])) )
 	{	
 		iReturnIndex = -1;	// will get a NULL ptr on reload
 	}
@@ -274,7 +274,7 @@ static AIGroupInfo_t *GetGroupPtr(int iGroupNum)
 		return NULL;
 	}
 	assert(iGroupNum >= 0);
-	assert(iGroupNum < (sizeof(level.groups) / sizeof(level.groups[0])));
+	assert(iGroupNum < (int)(sizeof(level.groups) / sizeof(level.groups[0])));
 	return (level.groups + iGroupNum);
 }
 

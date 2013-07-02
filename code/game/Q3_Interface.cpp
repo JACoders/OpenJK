@@ -64,7 +64,7 @@ extern void G_PlayDoorSound( gentity_t *ent, int type );
 extern void NPC_SetLookTarget( gentity_t *self, int entNum, int clearTime );
 extern void NPC_ClearLookTarget( gentity_t *self );
 extern void WP_SaberSetColor( gentity_t *ent, int saberNum, int bladeNum, char *colorName );
-extern void WP_SetSaber( gentity_t *ent, int saberNum, char *saberName );
+extern void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName );
 extern qboolean PM_HasAnimation( gentity_t *ent, int animation );
 extern void G_ChangePlayerModel( gentity_t *ent, const char *newModel );
 extern vehicleType_t TranslateVehicleName( char *name );
@@ -83,9 +83,7 @@ extern cvar_t	*g_skippingcin;
 
 extern qboolean	stop_icarus;
 
-static void PrisonerObjCheck(const char *name,const char *data);
-
-#define stringIDExpand(str, strEnum)	str, strEnum, ENUM2STRING(strEnum)
+#define stringIDExpand(str, strEnum)	{ str, strEnum }, ENUM2STRING(strEnum)
 //#define stringIDExpand(str, strEnum)	str,strEnum
 
 /*
@@ -108,7 +106,7 @@ stringID_table_t BSTable[] =
 	ENUM2STRING(BS_CINEMATIC),//# Does nothing but face it's angles and move to a goal if it has one
 	ENUM2STRING(BS_FLEE),//# Run toward the nav goal, avoiding danger
 	//the rest are internal only
-	"",				-1,
+	{ "",				-1 }
 };
 
 
@@ -132,12 +130,12 @@ stringID_table_t BSETTable[] =
 	ENUM2STRING(BSET_FFIRE),//# script to run when player shoots their own teammates
 	ENUM2STRING(BSET_FFDEATH),//# script to run when player kills a teammate
 	stringIDExpand("", BSET_INVALID),
-	"",				-1,
+	{ "",				-1 }
 };
 
 stringID_table_t WPTable[] =
 {
-	"NULL",WP_NONE,
+	{ "NULL",WP_NONE },
 	ENUM2STRING(WP_NONE),
 	// Player weapons
 	ENUM2STRING(WP_SABER),				 // NOTE: lots of code assumes this is the first weapon (... which is crap) so be careful -Ste.
@@ -170,7 +168,7 @@ stringID_table_t WPTable[] =
 	ENUM2STRING(WP_TUSKEN_STAFF),
 	ENUM2STRING(WP_SCEPTER),
 	ENUM2STRING(WP_NOGHRI_STICK),
-	"", NULL
+	{ "", NULL }
 };
 
 stringID_table_t INVTable[] =
@@ -180,31 +178,31 @@ stringID_table_t INVTable[] =
 	ENUM2STRING(INV_SEEKER),
 	ENUM2STRING(INV_LIGHTAMP_GOGGLES),
 	ENUM2STRING(INV_SENTRY),
-	"", NULL
+	{ "", NULL }
 };
 
 stringID_table_t eventTable[] =
 {
 	//BOTH_h
 	//END
-	"",				EV_BAD,
+	{ "",				EV_BAD }
 };
 
 stringID_table_t DMSTable[] =
 {
-	"NULL",-1,
+	{ "NULL",-1 },
 	ENUM2STRING(DM_AUTO),	//# let the game determine the dynamic music as normal
 	ENUM2STRING(DM_SILENCE),	//# stop the music
 	ENUM2STRING(DM_EXPLORE),	//# force the exploration music to play
 	ENUM2STRING(DM_ACTION),	//# force the action music to play
 	ENUM2STRING(DM_BOSS),	//# force the boss battle music to play (if there is any)
 	ENUM2STRING(DM_DEATH),	//# force the "player dead" music to play
-	"", -1
+	{ "", -1 }
 };
 
 stringID_table_t HLTable[] =
 {
-	"NULL",-1,
+	{ "NULL",-1 },
 	ENUM2STRING(HL_FOOT_RT),
 	ENUM2STRING(HL_FOOT_LT),
 	ENUM2STRING(HL_LEG_RT),
@@ -227,7 +225,7 @@ stringID_table_t HLTable[] =
 	ENUM2STRING(HL_GENERIC4),
 	ENUM2STRING(HL_GENERIC5),
 	ENUM2STRING(HL_GENERIC6),
-	"", -1
+	{ "", -1 }
 };
 
 stringID_table_t setTable[] =
@@ -495,7 +493,7 @@ stringID_table_t setTable[] =
 	ENUM2STRING(SET_SABER_ORIGIN),
 	ENUM2STRING(SET_SKIN),
 
-	"",	SET_,
+	{ "",	SET_ }
 };
 
 qboolean COM_ParseString( char **data, char **s ); 
@@ -1032,8 +1030,6 @@ static qboolean G_AddSexToPlayerString ( char *string, qboolean qDoBoth )
 	return qtrue;
 }
 
-
-/*
 
 /*
 =============
@@ -1605,7 +1601,7 @@ Lerps the origin and angles of an entity to the destination values
 
 		moverState = MOVER_1TO2;
 	}
-	else /*if ( moverState == MOVER_POS2 || moverState == MOVER_1TO2 )*/
+	else / *if ( moverState == MOVER_POS2 || moverState == MOVER_1TO2 )*/
 /*	{
 		VectorCopy( ent->currentOrigin, ent->pos2 );
 		VectorCopy( origin, ent->pos1 );
@@ -2215,7 +2211,7 @@ stringID_table_t teamTable [] =
 	ENUM2STRING(TEAM_PLAYER),
 	ENUM2STRING(TEAM_ENEMY),
 	ENUM2STRING(TEAM_NEUTRAL),
-	"", TEAM_FREE,
+	{ "", TEAM_FREE },
 };
 
 
@@ -11144,7 +11140,7 @@ int		CQuake3GameInterface::GetByName( const char *name )
 	entitylist_t::iterator		ei;
 	char					temp[1024];
 
-	if ( name == NULL || name[0] == NULL )
+	if ( name == NULL || name[0] == '\0' )
 		return -1;
 
 	strncpy( (char *) temp, name, sizeof(temp) );

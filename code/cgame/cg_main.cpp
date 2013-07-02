@@ -70,7 +70,7 @@ extern bool CL_ExtendSelectTime(void);
 
 void CG_LoadHudMenu(void);
 int inv_icons[INV_MAX];
-char *inv_names[] =
+const char *inv_names[] =
 {
 "ELECTROBINOCULARS",
 "BACTA CANISTER",
@@ -343,8 +343,8 @@ vmCvar_t	cg_debugHealthBars;
 
 typedef struct {
 	vmCvar_t	*vmCvar;
-	char		*cvarName;
-	char		*defaultString;
+	const char	*cvarName;
+	const char	*defaultString;
 	int			cvarFlags;
 } cvarTable_t;
 
@@ -616,7 +616,7 @@ The server says this item is used on this level
 void CG_RegisterItemSounds( int itemNum ) {
 	gitem_t			*item;
 	char			data[MAX_QPATH];
-	char			*s, *start;
+	const char		*s, *start;
 	int				len;
 
 	item = &bg_itemlist[ itemNum ];
@@ -1234,50 +1234,50 @@ void CG_RegisterClientModels (int entityNum)
 
 HUDMenuItem_t forceTics[] = 
 {
-"rightHUD", "force_tic1", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	// Top 
-"rightHUD", "force_tic2", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	// Top 
-"rightHUD", "force_tic3", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	// Top 
-"rightHUD", "force_tic4", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	// Top 
+	 { "rightHUD", "force_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
+	 { "rightHUD", "force_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
+	 { "rightHUD", "force_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
+	 { "rightHUD", "force_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
 };
 
 HUDMenuItem_t ammoTics[] = 
 {
-"rightHUD", "ammo_tic1", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	// Top 
-"rightHUD", "ammo_tic2", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	// Top 
-"rightHUD", "ammo_tic3", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	// Top 
-"rightHUD", "ammo_tic4", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	// Top 
+	{ "rightHUD", "ammo_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
+	{ "rightHUD", "ammo_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
+	{ "rightHUD", "ammo_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
+	{ "rightHUD", "ammo_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
 };
 
 HUDMenuItem_t armorTics[] = 
 {
-"leftHUD", "armor_tic1", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	// Top 
-"leftHUD", "armor_tic2", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	
-"leftHUD", "armor_tic3", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	
-"leftHUD", "armor_tic4", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	
+	{ "leftHUD", "armor_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
+	{ "leftHUD", "armor_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	
+	{ "leftHUD", "armor_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	
+	{ "leftHUD", "armor_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	
 };
 
 HUDMenuItem_t healthTics[] = 
 {
-"leftHUD", "health_tic1", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL, 	// Top 
-"leftHUD", "health_tic2", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// 
-"leftHUD", "health_tic3", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// 
-"leftHUD", "health_tic4", 0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// Bottom
+	{ "leftHUD", "health_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
+	{ "leftHUD", "health_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// 
+	{ "leftHUD", "health_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// 
+	{ "leftHUD", "health_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// Bottom
 };
 
 
 HUDMenuItem_t otherHUDBits[] = 
 {
-"lefthud", "healthamount",			0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// OHB_HEALTHAMOUNT
-"lefthud", "armoramount",			0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// OHB_ARMORAMOUNT
-"righthud", "forceamount",			0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// OHB_FORCEAMOUNT 
-"righthud", "ammoamount",			0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// OHB_AMMOAMOUNT
-"righthud", "saberstyle_strong",	0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// OHB_SABERSTYLE_STRONG
-"righthud", "saberstyle_medium",	0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// OHB_SABERSTYLE_MEDIUM
-"righthud", "saberstyle_fast",		0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// OHB_SABERSTYLE_FAST
-"lefthud",	"scanline",				0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// OHB_SCANLINE_LEFT
-"righthud",	"scanline",				0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// OHB_SCANLINE_RIGHT
-"lefthud",	"frame",				0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// OHB_FRAME_LEFT
-"righthud",	"frame",				0,  0,  0,  0, 0.0f, 0.0f, 0.0f, 0.0f, NULL,	// OHB_FRAME_RIGHT
+	{ "lefthud", "healthamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_HEALTHAMOUNT
+	{ "lefthud", "armoramount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_ARMORAMOUNT
+	{ "righthud", "forceamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_FORCEAMOUNT 
+	{ "righthud", "ammoamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_AMMOAMOUNT
+	{ "righthud", "saberstyle_strong",	0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_SABERSTYLE_STRONG
+	{ "righthud", "saberstyle_medium",	0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_SABERSTYLE_MEDIUM
+	{ "righthud", "saberstyle_fast",		0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_SABERSTYLE_FAST
+	{ "lefthud",	"scanline",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_SCANLINE_LEFT
+	{ "righthud",	"scanline",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_SCANLINE_RIGHT
+	{ "lefthud",	"frame",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_FRAME_LEFT
+	{ "righthud",	"frame",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_FRAME_RIGHT
 };
 
 /*const char *HolocronIcons[] = {
@@ -1586,7 +1586,7 @@ static void CG_RegisterGraphics( void ) {
 	CG_LoadingString("map brushes");
 	// register the inline models
 	breakPoint = cgs.numInlineModels = cgi_CM_NumInlineModels();
-	assert (cgs.numInlineModels < sizeof(cgs.inlineDrawModel)/sizeof(cgs.inlineDrawModel[0]) );
+	assert ((size_t)cgs.numInlineModels < sizeof(cgs.inlineDrawModel)/sizeof(cgs.inlineDrawModel[0]) );
 	for ( i = 1 ; i < cgs.numInlineModels ; i++ ) {
 		char	name[10];
 		vec3_t			mins, maxs;
@@ -3517,7 +3517,7 @@ void CG_DrawInventorySelect( void )
 
 int cgi_UI_GetItemText(char *menuFile,char *itemName, char *text);
 
-char *inventoryDesc[15] = 
+const char *inventoryDesc[15] = 
 {
 "NEURO_SAAV_DESC",
 "BACTA_DESC",
@@ -3692,7 +3692,7 @@ void CG_DrawDataPadInventorySelect( void )
 	{
 		cgi_SP_GetStringTextString( va("SP_INGAME_%s",inventoryDesc[cg.DataPadInventorySelect]), text, sizeof(text) );
 
-		if (text)
+		if (text[0])
 		{
 			CG_DisplayBoxedText(70,50,500,300,text,
 											cgs.media.qhFontSmall,
@@ -3741,7 +3741,7 @@ int showPowers[MAX_SHOWPOWERS] =
 	FP_GRIP,
 };
 
-char *showPowersName[MAX_SHOWPOWERS] = 
+const char *showPowersName[MAX_SHOWPOWERS] = 
 {
 	"SP_INGAME_ABSORB2",
 	"SP_INGAME_HEAL2",
@@ -4145,7 +4145,7 @@ void CG_DPPrevForcePower_f( void )
 	cg.DataPadforcepowerSelect = original;
 }
 
-char *forcepowerDesc[NUM_FORCE_POWERS] = 
+const char *forcepowerDesc[NUM_FORCE_POWERS] = 
 {
 "FORCE_ABSORB_DESC",
 "FORCE_HEAL_DESC",
@@ -4168,7 +4168,7 @@ char *forcepowerDesc[NUM_FORCE_POWERS] =
 };
 
 
-char *forcepowerLvl1Desc[NUM_FORCE_POWERS] = 
+const char *forcepowerLvl1Desc[NUM_FORCE_POWERS] = 
 {
 "FORCE_ABSORB_LVL1_DESC",
 "FORCE_HEAL_LVL1_DESC",
@@ -4190,7 +4190,7 @@ char *forcepowerLvl1Desc[NUM_FORCE_POWERS] =
 "FORCE_GRIP_LVL1_DESC",
 };
 
-char *forcepowerLvl2Desc[NUM_FORCE_POWERS] = 
+const char *forcepowerLvl2Desc[NUM_FORCE_POWERS] = 
 {
 "FORCE_ABSORB_LVL2_DESC",
 "FORCE_HEAL_LVL2_DESC",
@@ -4212,7 +4212,7 @@ char *forcepowerLvl2Desc[NUM_FORCE_POWERS] =
 "FORCE_GRIP_LVL2_DESC",
 };
 
-char *forcepowerLvl3Desc[NUM_FORCE_POWERS] = 
+const char *forcepowerLvl3Desc[NUM_FORCE_POWERS] = 
 {
 "FORCE_ABSORB_LVL3_DESC",
 "FORCE_HEAL_LVL3_DESC",
@@ -4419,14 +4419,13 @@ void CG_DrawDataPadForceSelect( void )
 		cgi_SP_GetStringTextString( va("SP_INGAME_%s",forcepowerLvl3Desc[cg.DataPadforcepowerSelect]), text2, sizeof(text2) );
 	}
 
-	const short textboxXPos = 40;
-	const short textboxYPos = 60;
-	const int	textboxWidth = 560;
-	const int	textboxHeight = 300;
-	const float	textScale = 1.0f;
-
-	if (text)
+	if (text[0])
 	{
+		const short textboxXPos = 40;
+		const short textboxYPos = 60;
+		const int	textboxWidth = 560;
+		const int	textboxHeight = 300;
+		const float	textScale = 1.0f;
 
 		CG_DisplayBoxedText(textboxXPos,textboxYPos,textboxWidth,textboxHeight,va("%s%s",text,text2),
 													4,

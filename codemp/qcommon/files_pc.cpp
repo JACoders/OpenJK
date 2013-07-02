@@ -182,7 +182,7 @@ void FS_CopyFile( char *fromOSPath, char *toOSPath ) {
 	// we are using direct malloc instead of Z_Malloc here, so it
 	// probably won't work on a mac... Its only for developers anyway...
 	buf = (unsigned char *)malloc( len );
-	if (fread( buf, 1, len, f ) != len)
+	if (fread( buf, 1, len, f ) != (unsigned)len)
 		Com_Error( ERR_FATAL, "Short read in FS_Copyfiles()\n" );
 	fclose( f );
 
@@ -194,7 +194,7 @@ void FS_CopyFile( char *fromOSPath, char *toOSPath ) {
 	if ( !f ) {
 		return;
 	}
-	if (fwrite( buf, 1, len, f ) != len)
+	if (fwrite( buf, 1, len, f ) != (unsigned)len)
 		Com_Error( ERR_FATAL, "Short write in FS_Copyfiles()\n" );
 	fclose( f );
 	free( buf );
@@ -1473,7 +1473,8 @@ static pack_t *FS_LoadZipFile( const char *zipfile, const char *basename )
 	unz_global_info gi;
 	char			filename_inzip[MAX_ZPATH];
 	unz_file_info	file_info;
-	int				i, len;
+	int				len;
+	size_t			i;
 	long			hash;
 	int				fs_numHeaderLongs;
 	int				*fs_headerLongs;
@@ -1515,8 +1516,8 @@ static pack_t *FS_LoadZipFile( const char *zipfile, const char *basename )
 	pack = (pack_t *)Z_Malloc( sizeof( pack_t ) + i * sizeof(fileInPack_t *), TAG_FILESYS, qtrue );
 	pack->hashSize = i;
 	pack->hashTable = (fileInPack_t **) (((char *) pack) + sizeof( pack_t ));
-	for(i = 0; i < pack->hashSize; i++) {
-		pack->hashTable[i] = NULL;
+	for(int j = 0; j < pack->hashSize; j++) {
+		pack->hashTable[j] = NULL;
 	}
 
 	Q_strncpyz( pack->pakFilename, zipfile, sizeof( pack->pakFilename ) );
@@ -2510,7 +2511,7 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring ) {
 
 				// Find out whether it might have overflowed the buffer and don't add this file to the
 				// list if that is the case.
-				if(strlen(origpos) + (origpos - neededpaks) >= len - 1)
+				if(strlen(origpos) + (origpos - neededpaks) >= (unsigned)(len - 1))
 				{
 					*origpos = '\0';
 					break;
@@ -2993,7 +2994,7 @@ void FS_PureServerSetReferencedPaks( const char *pakSums, const char *pakNames )
 		fs_serverReferencedPaks[i] = atoi( Cmd_Argv( i ) );
 	}
 
-	for (i = 0 ; i < ARRAY_LEN(fs_serverReferencedPakNames); i++)
+	for (i = 0 ; i < (int)ARRAY_LEN(fs_serverReferencedPakNames); i++)
 	{
 		if(fs_serverReferencedPakNames[i])
 			Z_Free(fs_serverReferencedPakNames[i]);

@@ -4,10 +4,14 @@
 	#pragma message("...including RM_Headers.h")
 #endif
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)
+#endif
 #include <vector>
 #include <list>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 
 using namespace std;
 

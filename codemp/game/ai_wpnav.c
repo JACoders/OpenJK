@@ -466,7 +466,7 @@ void RemoveWP(void)
 	//B_Free((wpobject_t *)gWPArray[gWPNum]);
 	if (gWPArray[gWPNum])
 	{
-		memset( gWPArray[gWPNum], 0, sizeof(gWPArray[gWPNum]) );
+		memset( gWPArray[gWPNum], 0, sizeof(*gWPArray[gWPNum]) );
 	}
 
 	//gWPArray[gWPNum] = NULL;
@@ -529,7 +529,7 @@ void RemoveWP_InTrail(int afterindex)
 			//B_Free(gWPArray[i]);
 
 			//Keep reusing the memory
-			memset( gWPArray[i], 0, sizeof(gWPArray[i]) );
+			memset( gWPArray[i], 0, sizeof(*gWPArray[i]) );
 
 			//gWPArray[i] = NULL;
 			gWPArray[i]->inuse = 0;
@@ -541,7 +541,7 @@ void RemoveWP_InTrail(int afterindex)
 			//B_Free(gWPArray[i]);
 
 			//Keep reusing the memory
-			memset( gWPArray[i], 0, sizeof(gWPArray[i]) );
+			memset( gWPArray[i], 0, sizeof(*gWPArray[i]) );
 
 			//gWPArray[i] = NULL;
 			gWPArray[i]->inuse = 0;

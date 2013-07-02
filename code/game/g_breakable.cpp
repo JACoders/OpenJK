@@ -72,6 +72,8 @@ static void CacheChunkEffects( material_t material )
 		G_EffectIndex( "chunks/ropebreak" );
 //		G_SoundIndex(); // FIXME: give it a sound
 		break;
+	default:
+		break;
 	}
 }
 

@@ -60,8 +60,8 @@ typedef enum {
 
 typedef struct HUDMenuItem_s
 {
-	char			*menuName;
-	char			*itemName;
+	const char		*menuName;
+	const char		*itemName;
 	int				xPos;
 	int				yPos;
 	int				width;
@@ -94,7 +94,7 @@ typedef enum
 
 #define NUM_CHUNK_MODELS	4
 
-typedef enum 
+enum 
 {
 	CHUNK_METAL1 = 0,
 	CHUNK_METAL2,

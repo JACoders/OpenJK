@@ -20,7 +20,9 @@
 #define	NAV_HEADER_ID	'JNV5'
 #define	NODE_HEADER_ID	'NODE'
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4786) 
+#endif
 
 #if defined(_WIN32)
 	#define COM_NO_WINDOWS_H
@@ -137,7 +139,7 @@ class CNavigator
 
 #if __NEWCOLLECT
 	
-	typedef struct nodeList_t
+	struct nodeList_t
 	{
 		int				nodeID;
 		unsigned int	distance;

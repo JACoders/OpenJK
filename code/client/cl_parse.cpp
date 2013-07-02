@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 #include "client.h"
 #include "client_ui.h"
 
-char *svc_strings[256] = {
+const char *svc_strings[256] = {
 	"svc_bad",
 
 	"svc_nop",
@@ -38,7 +38,7 @@ char *svc_strings[256] = {
 	"svc_snapshot"
 };
 
-void SHOWNET( msg_t *msg, char *s) {
+void SHOWNET( msg_t *msg, const char *s) {
 	if ( cl_shownet->integer >= 2) {
 		Com_Printf ("%3i:%s\n", msg->readcount-1, s);
 	}
@@ -344,7 +344,7 @@ void CL_SystemInfoChanged( void ) {
 	//}
 }
 
-void UI_UpdateConnectionString( char *string );
+void UI_UpdateConnectionString( const char *string );
 
 /*
 ==================

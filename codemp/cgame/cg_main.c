@@ -125,7 +125,6 @@ static void C_Trace(void);
 static void C_G2Trace(void);
 static void C_G2Mark(void);
 static int	CG_RagCallback(int callType);
-static void C_GetBoltPos(void);
 static void C_ImpactMark(void);
 
 extern autoMapInput_t cg_autoMapInput; //cg_view.c
@@ -1957,7 +1956,7 @@ Ghoul2 Insert End
 
 const char *CG_GetStringEdString(char *refSection, char *refName)
 {
-	static char text[2][1024]={0};	//just incase it's nested
+	static char text[2][1024];	//just incase it's nested
 	static int		index = 0;
 
 	index ^= 1;

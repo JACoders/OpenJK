@@ -40,7 +40,9 @@ portable C
 #include <float.h>
 #include <math.h>
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4711 )	// function 'xxxx' selected for automatic inline expansion
+#endif
 
 float coef32[31];	/* 32 pt dct coefs */		// !!!!!!!!!!!!!!!!!! (only generated once (always to same value)
 

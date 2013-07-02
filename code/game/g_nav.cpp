@@ -307,7 +307,7 @@ Svcmd_Nav_f
 
 void Svcmd_Nav_f( void )
 {
-	char	*cmd = gi.argv( 1 );
+	const char	*cmd = gi.argv( 1 );
 
 	if ( Q_stricmp( cmd, "show" ) == 0 )
 	{

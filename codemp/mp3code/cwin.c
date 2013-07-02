@@ -1,5 +1,7 @@
-#pragma warning(disable:4206)	// nonstandard extension used : translation unit is empty
 #ifdef COMPILE_ME
+#ifdef _MSC_VER
+#pragma warning(disable:4206)	// nonstandard extension used : translation unit is empty
+#endif
 /*____________________________________________________________________________
 	
 	FreeAmp - The Free MP3 Player

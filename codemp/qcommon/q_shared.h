@@ -2918,7 +2918,7 @@ Ghoul2 Insert End
 typedef enum {
 	#include "qcommon/tags.h"
 } memtag;
-typedef char memtag_t;
+typedef unsigned memtag_t;
 
 //rww - conveniently toggle "gore" code, for model decals and stuff.
 #define _G2_GORE
@@ -2967,7 +2967,7 @@ String ID Tables
 #define ENUM2STRING(arg)   { #arg, arg }
 typedef struct stringID_table_s
 {
-	char	*name;
+	const char	*name;
 	int		id;
 } stringID_table_t;
 

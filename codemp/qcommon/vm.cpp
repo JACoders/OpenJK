@@ -367,13 +367,12 @@ intptr_t QDECL VM_DllSyscall( intptr_t arg, ... ) {
 #if !id386 || defined __clang__ || defined MACOS_X
   // rcg010206 - see commentary above
   intptr_t args[16];
-  int i;
   va_list ap;
   
   args[0] = arg;
   
   va_start(ap, arg);
-  for (i = 1; i < ARRAY_LEN (args); i++)
+  for (size_t i = 1; i < ARRAY_LEN (args); i++)
     args[i] = va_arg(ap, intptr_t);
   va_end(ap);
   
@@ -395,7 +394,6 @@ vm_t *VM_Restart( vm_t *vm ) {
 	vmHeader_t	*header;
 	int			length;
 	int			dataLength;
-	int			i;
 	char		filename[MAX_QPATH];
 
 	// DLL's can't be restarted in place
@@ -422,7 +420,7 @@ vm_t *VM_Restart( vm_t *vm ) {
 	}
 
 	// byte swap the header
-	for ( i = 0 ; i < sizeof( *header ) / 4 ; i++ ) {
+	for ( size_t i = 0 ; i < sizeof( *header ) / 4 ; i++ ) {
 		((int *)header)[i] = LittleLong( ((int *)header)[i] );
 	}
 
@@ -439,6 +437,7 @@ vm_t *VM_Restart( vm_t *vm ) {
 	// round up to next power of 2 so all data operations can
 	// be mask protected
 	dataLength = header->dataLength + header->litLength + header->bssLength;
+	int i;
 	for ( i = 0 ; dataLength > ( 1 << i ) ; i++ ) {
 	}
 	dataLength = 1 << i;
@@ -532,7 +531,7 @@ vm_t *VM_Create( const char *module, intptr_t (*systemCalls)(intptr_t *),
 	}
 
 	// byte swap the header
-	for ( i = 0 ; i < sizeof( *header ) / 4 ; i++ ) {
+	for ( size_t i = 0 ; i < sizeof( *header ) / 4 ; i++ ) {
 		((int *)header)[i] = LittleLong( ((int *)header)[i] );
 	}
 
@@ -652,6 +651,13 @@ void *VM_ArgPtr( intptr_t intValue ) {
 	else {
 		return (void *)(currentVM->dataBase + (intValue & currentVM->dataMask));
 	}
+}
+
+float _vmf(intptr_t x)
+{
+	floatint_t fi;
+	fi.i = (int) x;
+	return fi.f;
 }
 
 extern vm_t *gvm;
@@ -788,7 +794,6 @@ locals from sp
 intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 	vm_t	*oldVM;
 	intptr_t	r;
-	int i;
 
 	if ( !vm || !vm->name[0] ) {
 		Com_Error( ERR_FATAL, "VM_Call with NULL vm" );
@@ -808,7 +813,7 @@ intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 		int args[16];
 		va_list ap;
 		va_start(ap, callnum);
-		for (i = 0; i < ARRAY_LEN(args); i++) {
+		for (size_t i = 0; i < ARRAY_LEN(args); i++) {
 			args[i] = va_arg(ap, int);
 		}
 		va_end(ap);

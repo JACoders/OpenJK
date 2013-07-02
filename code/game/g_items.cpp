@@ -32,7 +32,7 @@ extern void CrystalAmmoSettings(gentity_t *ent);
 extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 extern qboolean PM_InKnockDown( playerState_t *ps );
 extern qboolean PM_InGetUp( playerState_t *ps );
-extern void WP_SetSaber( gentity_t *ent, int saberNum, char *saberName );
+extern void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName );
 extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
 extern void WP_SaberFallSound( gentity_t *owner, gentity_t *saber );
 extern saber_colors_t TranslateSaberColor( const char *name );
@@ -278,7 +278,7 @@ gentity_t *G_DropSaberItem( const char *saberType, saber_colors_t saberColor, ve
 			newItem->spawnflags |= 64;/*ITMSF_NOGLOW*/
 			newItem->NPC_type = G_NewString( saberType );//saberType
 			//FIXME: transfer per-blade color somehow?
-			newItem->NPC_targetname = saberColorStringForColor[saberColor];
+			newItem->NPC_targetname = (char *)saberColorStringForColor[saberColor];
 			newItem->count = 1;
 			newItem->flags = FL_DROPPED_ITEM;
 			G_SpawnItem( newItem, FindItemForWeapon( WP_SABER ) );
@@ -705,6 +705,8 @@ qboolean G_CanPickUpWeapons( gentity_t *other )
 	case CLASS_UGNAUGHT: //FIXME: in some cases it's okay?
 	case CLASS_SENTRY:
 		return qfalse;
+		break;
+	default:
 		break;
 	}
 	return qtrue;

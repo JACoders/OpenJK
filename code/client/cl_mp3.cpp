@@ -289,7 +289,7 @@ qboolean MP3Stream_InitFromFile( sfx_t* sfx, byte *pbSrcData, int iSrcDatalen, c
 		
 		// now init the low-level MP3 stuff...
 		//
-		MP3STREAM SFX_MP3Stream = {0};	// important to init to all zeroes!
+		MP3STREAM SFX_MP3Stream = {};	// important to init to all zeroes!
 		char *psError = C_MP3Stream_DecodeInit( &SFX_MP3Stream, /*sfx->data*/ /*sfx->soundData*/ pbSrcData, iSrcDatalen,
 												dma.speed,//(s_khz->value == 44)?44100:(s_khz->value == 22)?22050:11025,
 												2/*sfx->width*/ * 8,

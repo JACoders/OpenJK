@@ -786,7 +786,7 @@ bool CLine::Update()
 			return false;
 		}
 
-		vec3_t	ax[3] = {0};
+		vec3_t	ax[3] = {};
 		// Get our current position and direction
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{
@@ -903,7 +903,7 @@ bool CElectricity::Update()
 			return false;
 		}
 
-		vec3_t	ax[3] = {0};
+		vec3_t	ax[3] = {};
 		// Get our current position and direction
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{
@@ -1276,7 +1276,7 @@ bool CCylinder::Update()
 			return false;
 		}
 
-		vec3_t	ax[3] = {0};
+		vec3_t	ax[3] = {};
 		// Get our current position and direction
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{

@@ -29,7 +29,7 @@ void G_SetEnemy( gentity_t *self, gentity_t *enemy );
 void finish_spawning_turret( gentity_t *base );
 void ObjectDie (gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath );
 //special routine for tracking angles between client and server -rww
-void turret_SetBoneAngles(gentity_t *ent, char *bone, const vec3_t angles);
+void turret_SetBoneAngles(gentity_t *ent, const char *bone, const vec3_t angles);
 
 #define	ARM_ANGLE_RANGE		60
 #define	HEAD_ANGLE_RANGE	90
@@ -660,7 +660,7 @@ void turret_base_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 }
 
 //special routine for tracking angles between client and server -rww
-void turret_SetBoneAngles(gentity_t *ent, char *bone, const vec3_t angles)
+void turret_SetBoneAngles(gentity_t *ent, const char *bone, const vec3_t angles)
 {
 	/*
 #ifdef _XBOX

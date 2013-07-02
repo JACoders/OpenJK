@@ -1855,7 +1855,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 							}
 						}
 						else if ( WP_ForcePowerUsable( NPC, FP_LIGHTNING, 0 ) 
-							&& ((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_lightning",NPC->NPC_type) || Q_irand( 0, 1 )) )
+							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_lightning",NPC->NPC_type)) || Q_irand( 0, 1 )) )
 						{
 							ForceLightning( NPC );
 							if ( NPC->client->ps.forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_1 )
@@ -1868,7 +1868,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 						else if ( NPC->health < NPC->max_health * 0.75f
 							&& Q_irand( FORCE_LEVEL_0, NPC->client->ps.forcePowerLevel[FP_DRAIN] ) > FORCE_LEVEL_1
 							&& WP_ForcePowerUsable( NPC, FP_DRAIN, 0 ) 
-							&& ((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPC->NPC_type) || Q_irand( 0, 1 )) )
+							&& (((NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPC->NPC_type)) || Q_irand( 0, 1 )) )
 						{
 							ForceDrain2( NPC );
 							NPC->client->ps.weaponTime = Q_irand( 1000, 3000+(g_spskill->integer*500) );
@@ -2743,11 +2743,7 @@ int Jedi_ReCalcParryTime( gentity_t *self, evasionType_t evasionType )
 				}
 				else if ( self->NPC->rank >= RANK_LT_JG )
 				{//fencers, bosses, shadowtroopers, luke, desann, et al use the norm
-					if ( Q_irand( 0, 2 ) )
-					{//medium speed parry
-						baseTime = baseTime;
-					}
-					else
+					if ( !Q_irand( 0, 2 ) )
 					{//with the occasional fast parry
 						baseTime = ceil(baseTime/2.0f);
 					}

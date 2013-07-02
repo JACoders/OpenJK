@@ -3022,10 +3022,10 @@ void ClientSpawn(gentity_t *ent) {
 	vec3_t				spawn_origin, spawn_angles;
 	gentity_t			*spawnPoint = NULL;
 	gclient_t			*client = NULL;
-	clientPersistant_t	saved = {0};
-	clientSession_t		savedSess = {0};
-	forcedata_t			savedForce = {0};
-	saberInfo_t			saberSaved[MAX_SABERS] = {0};
+	clientPersistant_t	saved;
+	clientSession_t		savedSess;
+	forcedata_t			savedForce;
+	saberInfo_t			saberSaved[MAX_SABERS];
 	int					persistant[MAX_PERSISTANT] = {0};
 	int					flags, gameFlags, savedPing, accuracy_hits, accuracy_shots, eventSequence;
 	void				*g2WeaponPtrs[MAX_SABERS];

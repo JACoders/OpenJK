@@ -19,7 +19,9 @@ extern	cvar_t	*cl_shownet;
 static huffman_t		msgHuff;
 
 static qboolean			msgInit = qfalse;
+#ifdef _NEWHUFFTABLE_
 static FILE				*fp=0;
+#endif
 
 /*
 ==============================================================================
@@ -444,7 +446,8 @@ float MSG_ReadFloat( msg_t *msg ) {
 
 char *MSG_ReadString( msg_t *msg ) {
 	static char	string[MAX_STRING_CHARS];
-	int		l,c;
+	int		c;
+	unsigned int l;
 	
 	l = 0;
 	do {
@@ -482,7 +485,8 @@ char *MSG_ReadString( msg_t *msg ) {
 
 char *MSG_ReadBigString( msg_t *msg ) {
 	static char	string[BIG_INFO_STRING];
-	int		l,c;
+	int		c;
+	unsigned int l;
 	
 	l = 0;
 	do {
@@ -506,7 +510,8 @@ char *MSG_ReadBigString( msg_t *msg ) {
 
 char *MSG_ReadStringLine( msg_t *msg ) {
 	static char	string[MAX_STRING_CHARS];
-	int		l,c;
+	int		c;
+	unsigned int l;
 
 	l = 0;
 	do {
@@ -827,7 +832,7 @@ entityState_t communication
 
 
 typedef struct {
-	char	*name;
+	const char	*name;
 	int		offset;
 	int		bits;		// 0 = float
 #ifndef FINAL_BUILD
@@ -3167,7 +3172,7 @@ void MSG_initHuffman() {
 	Cbuf_AddText( "condump dump.txt\n" );
 }
 
-#endif _USINGNEWHUFFTABLE_
+#endif //._USINGNEWHUFFTABLE_
 
 void MSG_shutdownHuffman()
 {

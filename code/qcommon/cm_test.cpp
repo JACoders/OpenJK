@@ -17,8 +17,6 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 #include "cm_local.h"
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#pragma warning (pop)
 using namespace std;
 
 #ifdef _XBOX

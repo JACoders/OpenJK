@@ -72,7 +72,7 @@ stringID_table_t SaberTable[] =
 	ENUM2STRING(SABER_STAR),
 	ENUM2STRING(SABER_TRIDENT),
 	ENUM2STRING(SABER_SITH_SWORD),
-	"",	-1
+	{ "",	-1 }
 };
 
 stringID_table_t SaberMoveTable[] =
@@ -137,7 +137,7 @@ stringID_table_t SaberMoveTable[] =
 	ENUM2STRING(LS_DUAL_FB),
 	ENUM2STRING(LS_DUAL_LR),
 	ENUM2STRING(LS_HILT_BASH),
-	"",	-1
+	{ "",	-1 }
 };
 
 
@@ -2472,7 +2472,7 @@ void WP_RemoveSaber( gentity_t *ent, int saberNum )
 	}
 }
 
-void WP_SetSaber( gentity_t *ent, int saberNum, char *saberName )
+void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName )
 {
 	if ( !ent || !ent->client )
 	{

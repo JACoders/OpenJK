@@ -3,10 +3,14 @@
 /*
 Ghoul2 Insert Start
 */
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <vector>
 #include <map>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 using namespace std;
 /*
 Ghoul2 Insert End
@@ -282,29 +286,29 @@ public:
 	mCustomShader(0),
 	mCustomSkin(0),
 	mModelBoltLink(0),
-	mModel(0),
 	mSurfaceRoot(0),
+	mLodBias(0),
+	mNewOrigin(-1),
+#ifdef _G2_GORE
+	mGoreSetTag(0),
+#endif
+	mModel(0),
 	mAnimFrameDefault(0),
 	mSkelFrameNum(-1),
 	mMeshFrameNum(-1),
 	mFlags(0),
 	mTransformedVertsArray(0),
-	mLodBias(0),
-	mSkin(0),
-	mNewOrigin(-1),
-#ifdef _G2_GORE
-	mGoreSetTag(0),
-#endif
 	mBoneCache(0),
+	mSkin(0),
+	mValid(false),
 	currentModel(0),
 	currentModelSize(0),
 	animModel(0),
 	currentAnimModelSize(0),
-	aHeader(0),
+	aHeader(0)
 #ifdef _G2_LISTEN_SERVER_OPT
-	entityNum(ENTITYNUM_NONE),
+	, entityNum(ENTITYNUM_NONE)
 #endif
-	mValid(false)
 	{
 		mFileName[0] = 0;
 	}
@@ -315,6 +319,8 @@ class CGhoul2Info_v;
 class IGhoul2InfoArray
 {
 public:
+	virtual ~IGhoul2InfoArray() {}
+
 	virtual int New()=0;
 	virtual void Delete(int handle)=0;
 	virtual bool IsValid(int handle) const=0;

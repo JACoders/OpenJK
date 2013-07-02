@@ -1805,6 +1805,6 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(BOTH_CIN_50),		//# Level specific cinematic
 										
 	//must be terminated
-	NULL,-1
+	{ NULL,-1 }
 };
 #endif	// _XBOX / _UI

@@ -18,6 +18,8 @@ typedef unsigned int glIndex_t;
 	#include "qcommon/platform.h"
 #endif
 
+#define LL(x) x=LittleLong(x)
+
 //for 3d textures -rww
 #define GL_TEXTURE_3D                     0x806F
 
@@ -1670,7 +1672,9 @@ void R_AddAnimSurfaces( trRefEntity_t *ent );
 /*
 Ghoul2 Insert Start
 */
+#ifdef _MSC_VER
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
+#endif
 class CRenderableSurface
 {
 public:

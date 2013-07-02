@@ -17,11 +17,11 @@ extern int		drawnFx;
 //
 //--------------------------
 CEffect::CEffect(void) :
+	mFlags(0),
 	mMatImpactFX(MATIMPACTFX_NONE),
 	mMatImpactParm(-1),
-	mSoundVolume(-1),
 	mSoundRadius(-1),
-	mFlags(0)
+	mSoundVolume(-1)
 {
 	memset( &mRefEnt, 0, sizeof( mRefEnt ));
 }
@@ -414,10 +414,10 @@ void CParticle::UpdateSize(void)
 
 inline int VectorToInt(vec3_t vec)
 {
-	int			tmp, retval;
-
+	int retval = 0;
 	// FIXME: unix compatibility needed
 #ifdef _WIN32
+	int			tmp;
 	_asm
 	{
 		push	edx

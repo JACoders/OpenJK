@@ -280,6 +280,8 @@ void G_AttackDelay( gentity_t *self, gentity_t *enemy )
 		case CLASS_DESANN:			
 			break;
 		*/
+		default:
+			break;
 		}
 
 		switch ( self->s.weapon )

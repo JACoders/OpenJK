@@ -624,7 +624,7 @@ Ghoul2 Insert End
 
 	union
 	{
-		char	*roff;			// the roff file to use, if there is one
+		char      *roff;                  // the roff file to use, if there is one
 		char	*fxFile;		// name of the external effect file
 	};
 

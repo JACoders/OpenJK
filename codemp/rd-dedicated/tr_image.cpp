@@ -4,9 +4,13 @@
 // tr_image.c
 #include "tr_local.h"
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <map>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 using namespace std;
 
 
@@ -396,7 +400,7 @@ int RE_SavePNG( char *filename, byte *buf, size_t width, size_t height, int byte
 	fileHandle_t fp;
 	png_structp png_ptr = NULL;
 	png_infop info_ptr = NULL;
-	int x, y;
+	unsigned int x, y;
 	png_byte ** row_pointers = NULL;
 	/* "status" contains the return value of this function. At first
 	it is set to a value which means 'failure'. When the routine
@@ -812,9 +816,9 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 			}
 			surfName[strlen(surfName)-4] = 0;	//remove the "_off"
 		}
-		if (sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) <= skin->numSurfaces)
+		if ((int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) <= skin->numSurfaces)
 		{
-			assert( sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) > skin->numSurfaces );
+			assert( (int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) > skin->numSurfaces );
 			Com_Printf( "WARNING: RE_RegisterSkin( '%s' ) more than %d surfaces!\n", name, sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) );
 			break;
 		}

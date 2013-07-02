@@ -35,7 +35,7 @@ extern ammoData_t ammoData[];
 #include "g_local.h"
 
 typedef struct {
-	char	*name;
+	const char	*name;
 	void	(*func)(centity_t *cent, const struct weaponInfo_s *weapon );
 } func_t;
 
@@ -120,7 +120,7 @@ func_t	funcs[] = {
 //qboolean COM_ParseString( char **data, char **s ); 
 //qboolean COM_ParseFloat( char **data, float *f );
 
-struct 
+struct wpnParms_s
 {
 	int	weaponNum;	// Current weapon number
 	int	ammoNum;
@@ -179,7 +179,7 @@ void WPN_FuncSkip(const char **holdBuf);
 
 typedef struct 
 {
-	char	*parmName;
+	const char	*parmName;
 	void	(*func)(const char **holdBuf);
 } wpnParms_t;
 
@@ -342,57 +342,57 @@ const float defaultAltSplashRadius[] = {
 
 wpnParms_t WpnParms[] = 
 {
-	"ammo",				WPN_Ammo,	//ammo
-	"ammoicon",			WPN_AmmoIcon,
-	"ammomax",			WPN_AmmoMax,
-	"ammolowcount",		WPN_AmmoLowCnt, //weapons
-	"ammotype",			WPN_AmmoType,
-	"energypershot",	WPN_EnergyPerShot,
-	"fireTime",			WPN_FireTime,
-	"firingsound",		WPN_FiringSnd,
-	"altfiringsound",	WPN_AltFiringSnd,
-//	"flashsound",		WPN_FlashSnd,
-//	"altflashsound",	WPN_AltFlashSnd,
-	"stopsound",		WPN_StopSnd,
-	"chargesound",		WPN_ChargeSnd,
-	"altchargesound",	WPN_AltChargeSnd,
-	"selectsound",		WPN_SelectSnd,
-	"range",			WPN_Range,
-	"weaponclass",		WPN_WeaponClass,
-	"weaponicon",		WPN_WeaponIcon,
-	"weaponmodel",		WPN_WeaponModel,
-	"weapontype",		WPN_WeaponType,
-	"altenergypershot",	WPN_AltEnergyPerShot,
-	"altfireTime",		WPN_AltFireTime,
-	"altrange",			WPN_AltRange,
-	"barrelcount",		WPN_BarrelCount,
-	"missileModel",		WPN_MissileName,
-	"altmissileModel", 	WPN_AltMissileName,
-	"missileSound",		WPN_MissileSound,
-	"altmissileSound", 	WPN_AltMissileSound,
-	"missileLight",		WPN_MissileLight,
-	"altmissileLight", 	WPN_AltMissileLight,
-	"missileLightColor",WPN_MissileLightColor,
-	"altmissileLightColor",	WPN_AltMissileLightColor,
-	"missileFuncName",		WPN_FuncName,
-	"altmissileFuncName",	WPN_AltFuncName,
-	"missileHitSound",		WPN_MissileHitSound,
-	"altmissileHitSound",	WPN_AltMissileHitSound,
-	"muzzleEffect",			WPN_MuzzleEffect,
-	"altmuzzleEffect",		WPN_AltMuzzleEffect,
+	{ "ammo",				WPN_Ammo },	//ammo
+	{ "ammoicon",			WPN_AmmoIcon },
+	{ "ammomax",			WPN_AmmoMax },
+	{ "ammolowcount",		WPN_AmmoLowCnt }, //weapons
+	{ "ammotype",			WPN_AmmoType },
+	{ "energypershot",	WPN_EnergyPerShot },
+	{ "fireTime",			WPN_FireTime },
+	{ "firingsound",		WPN_FiringSnd },
+	{ "altfiringsound",	WPN_AltFiringSnd },
+//	{ "flashsound",		WPN_FlashSnd },
+//	{ "altflashsound",	WPN_AltFlashSnd },
+	{ "stopsound",		WPN_StopSnd },
+	{ "chargesound",		WPN_ChargeSnd },
+	{ "altchargesound",	WPN_AltChargeSnd },
+	{ "selectsound",		WPN_SelectSnd },
+	{ "range",			WPN_Range },
+	{ "weaponclass",		WPN_WeaponClass },
+	{ "weaponicon",		WPN_WeaponIcon },
+	{ "weaponmodel",		WPN_WeaponModel },
+	{ "weapontype",		WPN_WeaponType },
+	{ "altenergypershot",	WPN_AltEnergyPerShot },
+	{ "altfireTime",		WPN_AltFireTime },
+	{ "altrange",			WPN_AltRange },
+	{ "barrelcount",		WPN_BarrelCount },
+	{ "missileModel",		WPN_MissileName },
+	{ "altmissileModel", 	WPN_AltMissileName },
+	{ "missileSound",		WPN_MissileSound },
+	{ "altmissileSound", 	WPN_AltMissileSound },
+	{ "missileLight",		WPN_MissileLight },
+	{ "altmissileLight", 	WPN_AltMissileLight },
+	{ "missileLightColor",WPN_MissileLightColor },
+	{ "altmissileLightColor",	WPN_AltMissileLightColor },
+	{ "missileFuncName",		WPN_FuncName },
+	{ "altmissileFuncName",	WPN_AltFuncName },
+	{ "missileHitSound",		WPN_MissileHitSound },
+	{ "altmissileHitSound",	WPN_AltMissileHitSound },
+	{ "muzzleEffect",			WPN_MuzzleEffect },
+	{ "altmuzzleEffect",		WPN_AltMuzzleEffect },
 	// OPENJK NEW FIELDS
-	"damage",			WPN_Damage,
-	"altdamage",		WPN_AltDamage,
-	"splashDamage",		WPN_SplashDamage,
-	"splashRadius",		WPN_SplashRadius,
-	"altSplashDamage",	WPN_AltSplashDamage,
-	"altSplashRadius",	WPN_AltSplashRadius,
+	{ "damage",			WPN_Damage },
+	{ "altdamage",		WPN_AltDamage },
+	{ "splashDamage",		WPN_SplashDamage },
+	{ "splashRadius",		WPN_SplashRadius },
+	{ "altSplashDamage",	WPN_AltSplashDamage },
+	{ "altSplashRadius",	WPN_AltSplashRadius },
 
 	// Old legacy files contain these, so we skip them to shut up warnings
-	"firingforce",		WPN_FuncSkip,
-	"chargeforce",		WPN_FuncSkip,
-	"altchargeforce",	WPN_FuncSkip,
-	"selectforce",		WPN_FuncSkip,
+	{ "firingforce",		WPN_FuncSkip },
+	{ "chargeforce",		WPN_FuncSkip },
+	{ "altchargeforce",	WPN_FuncSkip },
+	{ "selectforce",		WPN_FuncSkip },
 };
 
 const int WPN_PARM_MAX =  sizeof(WpnParms) / sizeof(WpnParms[0]);
@@ -1407,7 +1407,6 @@ static void WP_ParseParms(const char *buffer)
 
 		if ( !Q_stricmp( token, "{" ) ) 
 		{
-			token =token;
 			WP_ParseWeaponParms(&holdBuf);
 		}
 		 

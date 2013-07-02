@@ -25,6 +25,7 @@ This file is part of Jedi Knight 2.
 
 #include "stringed_ingame.h"
 
+#ifdef _MSC_VER
 #pragma warning(disable:4510)	//default ctor could not be generated
 #pragma warning(disable:4511)
 #pragma warning(disable:4512)
@@ -33,10 +34,13 @@ This file is part of Jedi Knight 2.
 
 #pragma warning (push, 3)		//go back down to 3 for the stl include
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+#endif
 #include <string>
 #include <list>
+#ifdef _MSC_VER
 #pragma warning (pop)
 #pragma warning(disable:4503)	// decorated name length xceeded, name was truncated
+#endif
 
 cvar_t	*sp_language;
 static cvar_t	*sp_show_strip;
@@ -113,7 +117,7 @@ protected:
 
 public:
 					cStringPackage(const char *in, unsigned char initID = 0, char *initDescription = NULL, char *initReference = NULL);
-					~cStringPackage(void);
+	virtual			~cStringPackage(void);
 
 	void			Register(unsigned char newRegistration) { Registration |= newRegistration; }
 	bool			UnRegister(unsigned char oldRegistration) { Registration &= ~oldRegistration; return (Registration == 0); }
@@ -196,7 +200,7 @@ enum
 };
 
 
-char *Tokens[TK_END] = 
+const char *Tokens[TK_END] = 
 {
 	"TEXT_LANGUAGE1",
 	"TEXT_LANGUAGE2", 
@@ -723,7 +727,7 @@ static void FixIllegalChars(char *psText)
 							'O','0','L','1','E','3','A','4','S','5','T','7','I','!','H','#'	// laziness because of strchr()
 						};
 
-		for (int i=0; i<sizeof(cReplace); i+=2)
+		for (size_t i=0; i<sizeof(cReplace); i+=2)
 		{
 			while ((p=strchr(psText,cReplace[i]))!=NULL)
 				*p = cReplace[i+1];
@@ -920,7 +924,7 @@ int cStringPackageSingle::FindStringID(const char *ReferenceLookup)
 	}
 
 	size = strlen(Reference);
-	if (strlen(ReferenceLookup) < size+2)
+	if ((int)strlen(ReferenceLookup) < size+2)
 	{
 		return -1;
 	}
@@ -1070,7 +1074,7 @@ void JK2SP_Unload(unsigned char Registration)
 
 			id = JK2SP_ListByID.find((*i).second->GetID());
 			JK2SP_ListByID.erase(id);
-			delete (*i).second;
+			delete i->second;
 			JK2SP_ListByName.erase(i);
 		}
 	}
@@ -1183,7 +1187,7 @@ const char *JK2SP_GetReferenceText(unsigned short ID, const char *&psPackageName
 const char *JK2SP_GetStringText(unsigned short ID)
 {
 	cStringsSingle			*string;
-	char					*value;
+	const char					*value;
 
 	string = JK2SP_GetString(ID);
 

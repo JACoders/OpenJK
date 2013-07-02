@@ -226,7 +226,7 @@ static long RllDecodeMonoToMono(unsigned char *from,short *to,unsigned int size,
 	for (z=0;z<size;z++) {
 		prev = to[z] = (short)(prev + cin.sqrTable[from[z]]); 
 	}
-	return size;	//*sizeof(short));
+	return size;
 }
 */
 
@@ -1854,7 +1854,7 @@ qboolean CL_CheckPendingCinematic(void)
 
 void CL_PlayCinematic_f(void) 
 {
-	char	*arg, *s;
+	const char	*arg, *s;
 	
 	arg = Cmd_Argv( 1 );
 	s = Cmd_Argv(2);
@@ -1863,7 +1863,7 @@ void CL_PlayCinematic_f(void)
 
 void CL_PlayInGameCinematic_f(void)
 {
-	char *arg = Cmd_Argv( 1 );
+	const char *arg = Cmd_Argv( 1 );
 	if (cls.state == CA_ACTIVE)
 	{
 		PlayCinematic(arg,NULL,qtrue);
@@ -1952,7 +1952,7 @@ void SCR_StopCinematic( qboolean bAllowRefusal /* = qfalse */ )
 		cls.state =  CA_DISCONNECTED;
 	}
 
-	if(sInGameCinematicStandingBy && sInGameCinematicStandingBy[0] &&
+	if(sInGameCinematicStandingBy[0] &&
 		qbTextCrawlFixed)
 	{
 		// Hacky fix to help deal with broken text crawl..

@@ -194,7 +194,6 @@ class	CTroop
 
 	float			mFormSpacingFwd;
 	float			mFormSpacingRight;
-	float			mSurroundFanAngle;
 
 public:
 	bool	Empty()					{return mActors.empty();}

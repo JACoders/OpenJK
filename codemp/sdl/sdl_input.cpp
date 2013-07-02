@@ -15,7 +15,6 @@ static cvar_t *in_mouse             = NULL;
 static cvar_t *in_nograb;
 
 cvar_t *in_joystick          		= NULL;
-static cvar_t *in_joystickDebug     = NULL;
 static cvar_t *in_joystickThreshold = NULL;
 static cvar_t *in_joystickNo        = NULL;
 static cvar_t *in_joystickUseAnalog = NULL;
@@ -397,7 +396,7 @@ static int hat_keys[16] = {
 };
 
 
-struct
+struct stick_state_s
 {
 	qboolean buttons[16];  // !!! FIXME: these might be too many.
 	unsigned int oldaxes;
@@ -722,7 +721,7 @@ static void IN_JoyMove( void )
 	total = SDL_JoystickNumButtons(stick);
 	if (total > 0)
 	{
-		if (total > ARRAY_LEN(stick_state.buttons))
+		if (total > (int)ARRAY_LEN(stick_state.buttons))
 			total = ARRAY_LEN(stick_state.buttons);
 		for (i = 0; i < total; i++)
 		{
