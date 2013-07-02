@@ -2309,8 +2309,7 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 
 		if(ghoul2.mFlags & GHOUL2_RAG_STARTED)
 		{
-			int k;
-			for (k=0;k<rootBoneList.size();k++)
+			for (size_t k=0;k<rootBoneList.size();k++)
 			{
 				boneInfo_t &bone=rootBoneList[k];
 				if (bone.flags&BONE_ANGLES_RAGDOLL)
@@ -2652,7 +2651,7 @@ void G2_GetBoltMatrixLow(CGhoul2Info &ghoul2,int boltNum,const vec3_t scale,mdxa
 	CBoneCache &boneCache=*ghoul2.mBoneCache;
 	assert(boneCache.mod);
 	boltInfo_v &boltList=ghoul2.mBltlist;
-	assert(boltNum>=0&&boltNum<boltList.size());
+	assert(boltNum>=0&&boltNum<(int)boltList.size());
 	if (boltList[boltNum].boneNumber>=0)
 	{
 		mdxaSkel_t		*skel;
@@ -2665,8 +2664,7 @@ void G2_GetBoltMatrixLow(CGhoul2Info &ghoul2,int boltNum,const vec3_t scale,mdxa
 	{
 		const surfaceInfo_t *surfInfo=0;
 		{
-			int i;
-			for (i=0;i<ghoul2.mSlist.size();i++)
+			for (size_t i=0;i<ghoul2.mSlist.size();i++)
 			{
 				surfaceInfo_t &t=ghoul2.mSlist[i];
 				if (t.surface==boltList[boltNum].surfaceNumber)
