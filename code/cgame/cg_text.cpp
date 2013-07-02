@@ -559,8 +559,8 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 			//
 			cg.printText[i][ strlen(cg.printText[i])-1 ] = '\0';	// kill the CR
 			i++;
-			assert (i < (sizeof(cg.printText)/sizeof(cg.printText[0])) );
-			if (i >= (sizeof(cg.printText)/sizeof(cg.printText[0])) )
+			assert (i < (int)(sizeof(cg.printText)/sizeof(cg.printText[0])) );
+			if (i >= (int)(sizeof(cg.printText)/sizeof(cg.printText[0])) )
 			{
 				break;
 			}
@@ -587,7 +587,7 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 			cg.printText[i][ psBestLineBreakSrcPos - holds ] = '\0';
 			holds = s = psBestLineBreakSrcPos;
 			i++;
-			assert (i < (sizeof(cg.printText)/sizeof(cg.printText[0])) );
+			assert (i < (int)(sizeof(cg.printText)/sizeof(cg.printText[0])) );
 			cg.scrollTextLines++;
 		}
 	}
@@ -716,7 +716,7 @@ CG_DrawCenterString
 void CG_DrawCenterString( void ) 
 {
 	char	*start;
-	int		l;
+	unsigned int l;
 	int		x, y, w;
 	float	*color;
 

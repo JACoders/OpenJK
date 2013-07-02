@@ -819,7 +819,7 @@ void G_ParseAnimationEvtFile(int glaIndex, const char* eventsDirectory, int file
 	{//no file
 		return;
 	}
-	if ( len >= sizeof( text ) - 1 ) 
+	if ( len >= (int)(sizeof( text ) - 1) ) 
 	{
 		CG_Printf( "File %s too long\n", eventsPath );
 		return;
@@ -906,7 +906,7 @@ qboolean G_ParseAnimationFile(int glaIndex, const char *skeletonName, int fileIn
 			return qfalse;
 		}
 	}
-	if ( len >= sizeof( text ) - 1 ) 
+	if ( len >= (int)(sizeof( text ) - 1) ) 
 	{
 		G_Error( "G_ParseAnimationFile: File %s too long\n (%d > %d)", skeletonName, len, sizeof( text ) - 1);
 		return qfalse;

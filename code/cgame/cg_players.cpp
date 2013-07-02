@@ -324,10 +324,6 @@ static void CG_RegisterCustomSounds(clientInfo_t *ci, int iSoundEntryBase,
 	{
 		char	s[MAX_QPATH]={0};
 		const char *pS = GetCustomSound_VariantCapped(ppsTable,i, qfalse);
-		if ( !s ) 
-		{
-			break;	// fairly pointless code in original, since there are no NULL's in the table, but wtf...
-		}
 		COM_StripExtension( pS, s );
 
 		sfxHandle_t hSFX = 0;

@@ -1586,7 +1586,7 @@ static void CG_RegisterGraphics( void ) {
 	CG_LoadingString("map brushes");
 	// register the inline models
 	breakPoint = cgs.numInlineModels = cgi_CM_NumInlineModels();
-	assert (cgs.numInlineModels < sizeof(cgs.inlineDrawModel)/sizeof(cgs.inlineDrawModel[0]) );
+	assert ((size_t)cgs.numInlineModels < sizeof(cgs.inlineDrawModel)/sizeof(cgs.inlineDrawModel[0]) );
 	for ( i = 1 ; i < cgs.numInlineModels ; i++ ) {
 		char	name[10];
 		vec3_t			mins, maxs;
@@ -3692,7 +3692,7 @@ void CG_DrawDataPadInventorySelect( void )
 	{
 		cgi_SP_GetStringTextString( va("SP_INGAME_%s",inventoryDesc[cg.DataPadInventorySelect]), text, sizeof(text) );
 
-		if (text)
+		if (text[0])
 		{
 			CG_DisplayBoxedText(70,50,500,300,text,
 											cgs.media.qhFontSmall,
@@ -4419,14 +4419,13 @@ void CG_DrawDataPadForceSelect( void )
 		cgi_SP_GetStringTextString( va("SP_INGAME_%s",forcepowerLvl3Desc[cg.DataPadforcepowerSelect]), text2, sizeof(text2) );
 	}
 
-	const short textboxXPos = 40;
-	const short textboxYPos = 60;
-	const int	textboxWidth = 560;
-	const int	textboxHeight = 300;
-	const float	textScale = 1.0f;
-
-	if (text)
+	if (text[0])
 	{
+		const short textboxXPos = 40;
+		const short textboxYPos = 60;
+		const int	textboxWidth = 560;
+		const int	textboxHeight = 300;
+		const float	textScale = 1.0f;
 
 		CG_DisplayBoxedText(textboxXPos,textboxYPos,textboxWidth,textboxHeight,va("%s%s",text,text2),
 													4,
