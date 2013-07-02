@@ -815,8 +815,9 @@ int Com_HexStrToInt( const char *str )
 	if( str[ 0 ] == '0' && str[ 1 ] == 'x' )
 	{
 		int  n = 0;
+		size_t i;
 
-		for( size_t i = 2; i < strlen( str ); i++ )
+		for( i = 2; i < strlen( str ); i++ )
 		{
 			char digit;
 
