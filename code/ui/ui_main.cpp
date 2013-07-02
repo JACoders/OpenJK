@@ -2112,7 +2112,7 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 	{
 		return qfalse;
 	}
-	if ( len >= sizeof( text ) - 1 ) 
+	if ( len >= (int)(sizeof( text ) - 1) ) 
 	{
 		Com_Error( ERR_FATAL, "UI_ParseAnimationFile: File %s too long\n (%d > %d)", af_filename, len, sizeof( text ) - 1);
 		return qfalse;
@@ -2352,7 +2352,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 				COM_EndParseSession(  );
 				return qfalse;
 			}
-			assert(species.ColorCount < sizeof(species.ColorActionText)/sizeof(species.ColorActionText[0]) );
+			assert((size_t)species.ColorCount < sizeof(species.ColorActionText)/sizeof(species.ColorActionText[0]) );
 			Q_strcat(species.ColorActionText[species.ColorCount], sizeof(species.ColorActionText[0]), token);
 			Q_strcat(species.ColorActionText[species.ColorCount], sizeof(species.ColorActionText[0]), " ");
 			token = COM_ParseExt( &p, qtrue );	//looking for action commands or final }

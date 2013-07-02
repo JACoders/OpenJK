@@ -97,7 +97,7 @@ else(WIN32)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 
 	if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror -Wno-comment")
 	elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
 		# No nested block comments
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Werror -Wno-comment")
@@ -105,7 +105,7 @@ else(WIN32)
 
 	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 		# Disable invalid offsetof, and deprecated writable strings warnings
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-invalid-offsetof -Wno-write-strings")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-invalid-offsetof -Wno-write-strings -Wno-comment")
 	elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 		# Disable nested block comments, and deprecated writable strings warnings
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -Wno-deprecated-writable-strings -Wno-comment")

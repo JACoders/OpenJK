@@ -210,8 +210,7 @@ qboolean UI_SaberShouldDrawBlade( const char *saberName, int bladeNum )
 	char	bladeStyle2StartString[8]={0};
 	char	noBladeString[8]={0};
 	UI_SaberParseParm( saberName, "bladeStyle2Start", bladeStyle2StartString );
-	if ( bladeStyle2StartString
-		&& bladeStyle2StartString[0] )
+	if ( bladeStyle2StartString[0] )
 	{
 		bladeStyle2Start = atoi( bladeStyle2StartString );
 	}
@@ -219,8 +218,7 @@ qboolean UI_SaberShouldDrawBlade( const char *saberName, int bladeNum )
 		&& bladeNum >= bladeStyle2Start )
 	{//use second blade style
 		UI_SaberParseParm( saberName, "noBlade2", noBladeString );
-		if ( noBladeString
-			&& noBladeString[0] )
+		if ( noBladeString[0] )
 		{
 			noBlade = atoi( noBladeString );
 		}
@@ -228,8 +226,7 @@ qboolean UI_SaberShouldDrawBlade( const char *saberName, int bladeNum )
 	else
 	{//use first blade style
 		UI_SaberParseParm( saberName, "noBlade", noBladeString );
-		if ( noBladeString
-			&& noBladeString[0] )
+		if ( noBladeString[0] )
 		{
 			noBlade = atoi( noBladeString );
 		}

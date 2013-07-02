@@ -66,7 +66,7 @@ void AddSpawnField(char *field, char *value)
 
 qboolean	G_SpawnField( unsigned int uiField, char **ppKey, char **ppValue )
 {
-	if ( uiField >= numSpawnVars )
+	if ( (int)uiField >= numSpawnVars )
 		return qfalse;
 
 	(*ppKey) = spawnVars[uiField][0];

@@ -135,7 +135,7 @@ void CRMPathManager::ClearCells(int x_nodes, int y_nodes)
 	CRMCell empty;
 	for (x=0; x < x_nodes * y_nodes; x++)
 	{
-		if (x >= mCells.size())
+		if (x >= (int)mCells.size())
 			mCells.push_back(empty);
 		else
 			mCells[x] = empty;
@@ -267,7 +267,7 @@ void CRMPathManager::PlaceLocation(const int c_x, const int c_y)
 			}
 		}
 
-		if (deepest_loc >= 0 && deepest_loc < mLocations.size())
+		if (deepest_loc >= 0 && deepest_loc < (int)mLocations.size())
 		{	// found a location to place at this node / cell
 			const char * name = mLocations[deepest_loc]->GetName();
 			Node(c_x,c_y)->SetName(name);
