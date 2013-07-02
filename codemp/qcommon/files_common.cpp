@@ -332,7 +332,8 @@ char *FS_BuildOSPath( const char *base, const char *game, const char *qpath ) {
 	//pre-fs_cf2
 	//toggle ^= 1;		// flip-flop to allow two returns without clash
 	//post-fs_cf2
-	toggle = (++toggle)&3;	// allows four returns without clash (increased from 2 during fs_copyfiles 2 enhancement)
+	int nextToggle = (toggle + 1)&3;	// allows four returns without clash (increased from 2 during fs_copyfiles 2 enhancement)
+	toggle = nextToggle;
 
 	if( !game || !game[0] ) {
 		game = fs_gamedir;

@@ -118,7 +118,7 @@ static void lerp(float t, float a0, float a1, vec4_t p0, vec4_t p1, int m, vec4_
     n+1 of them are provided. The work array must have room for n+1 points.
  */
 static int DialASpline(float t, float a[], vec4_t p[], int m, int n, vec4_t work[],
-                    unsigned int Cn, bool interp, vec4_t val)
+                    int Cn, bool interp, vec4_t val)
 {
     register int i, j, k, h, lo, hi;
 

@@ -77,7 +77,7 @@ public:
 	void SetGUID( int GUID );
 	void SetParent( CTaskGroup *group )	{	m_parent = group;	}
 
-	bool Complete(void)		const { return ( m_numCompleted == m_completedTasks.size() ); }
+	bool Complete(void)		const { return ( m_numCompleted == (int)m_completedTasks.size() ); }
 
 	bool MarkTaskComplete( int id );
 
