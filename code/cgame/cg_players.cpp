@@ -2038,7 +2038,7 @@ static void CG_ATSTLegsYaw( centity_t *cent, vec3_t trailingLegsAngles )
 }
 
 extern qboolean G_ClassHasBadBones( int NPC_class );
-extern void G_BoneOrientationsForClass( int NPC_class, char *boneName, Eorientations *oUp, Eorientations *oRt, Eorientations *oFwd );
+extern void G_BoneOrientationsForClass( int NPC_class, const char *boneName, Eorientations *oUp, Eorientations *oRt, Eorientations *oFwd );
 extern qboolean PM_FlippingAnim( int anim );
 extern qboolean PM_SpinningSaberAnim( int anim );
 static CGhoul2Info_v	dummyGhoul2;
