@@ -137,7 +137,7 @@ struct ThaiCodes_t
 
 	int GetWidth( int iGlyphIndex )
 	{
-		if (iGlyphIndex < m_viGlyphWidths.size())
+		if (iGlyphIndex < (int)m_viGlyphWidths.size())
 		{
 			return m_viGlyphWidths[ iGlyphIndex ];
 		}
@@ -1611,7 +1611,7 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 		{
 			int iPixelAdvance = curfont->GetLetterHorizAdvance( uiLetter );
 	
-			float fValue = iPixelAdvance * ((uiLetter > g_iNonScaledCharRange) ? fScaleA : fScale);
+			float fValue = iPixelAdvance * ((uiLetter > (unsigned)g_iNonScaledCharRange) ? fScaleA : fScale);
 			iThisWidth += curfont->mbRoundCalcs ? Round( fValue ) : fValue;
 			if (iThisWidth > iMaxWidth)
 			{
@@ -1960,7 +1960,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				pLetter = curfont->GetLetter('.');
 			}
 
-			float fThisScale = uiLetter > g_iNonScaledCharRange ? fScaleA : fScale;
+			float fThisScale = uiLetter > (unsigned)g_iNonScaledCharRange ? fScaleA : fScale;
 
 			// sigh, super-language-specific hack...
 			//
@@ -1982,7 +1982,7 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				}
 
 				RE_StretchPic ( x + Round(pLetter->horizOffset * fScale), // float x
-								(uiLetter > g_iNonScaledCharRange) ? y - iAsianYAdjust : y,	// float y
+								(uiLetter > (unsigned)g_iNonScaledCharRange) ? y - iAsianYAdjust : y,	// float y
 								curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale,	// float w
 								curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
 								pLetter->s,						// float s1
@@ -2109,13 +2109,13 @@ void R_ReloadFonts_f(void)
 		//
 		// and re-register our fonts in the same order as before (note that some menu items etc cache the string lengths so really a vid_restart is better, but this is just for my testing)
 		//
-		for (int iFont = 0; iFont < vstrFonts.size(); iFont++)
+		for (size_t font = 0; font < vstrFonts.size(); font++)
 		{
 #ifdef _DEBUG
-			int iNewFontHandle = RE_RegisterFont( vstrFonts[iFont].c_str() );
-			assert( iNewFontHandle == iFont+1 );
+			int iNewFontHandle = RE_RegisterFont( vstrFonts[font].c_str() );
+			assert( (unsigned)iNewFontHandle == font+1 );
 #else
-			RE_RegisterFont( vstrFonts[iFont].c_str() );
+			RE_RegisterFont( vstrFonts[font].c_str() );
 #endif
 		}
 		Com_Printf( "Done.\n" );
