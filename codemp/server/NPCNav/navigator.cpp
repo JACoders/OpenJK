@@ -898,14 +898,13 @@ void CNavigator::CalculatePaths( qboolean recalc )
 #else
 #endif	
 
-	int i;
-	for ( i = 0; i < m_nodes.size(); i++ )
+	for ( size_t i = 0; i < m_nodes.size(); i++ )
 	{
 		//Allocate the needed memory
 		m_nodes[i]->InitRanks( m_nodes.size() );
 	}
 
-	for ( i = 0; i < m_nodes.size(); i++ )
+	for ( size_t i = 0; i < m_nodes.size(); i++ )
 	{
 		CalculatePath( m_nodes[i] );
 	}
@@ -1196,7 +1195,7 @@ int	CNavigator::TestBestFirst( sharedEntity_t *ent, int lastID, int flags )
 	if ( lastID == NODE_NONE )
 		return NODE_NONE;
 
-	if ( lastID >= m_nodes.size() )
+	if ( lastID >= (int)m_nodes.size() )
 		return NODE_NONE;
 
 	//Get the info
@@ -1306,7 +1305,7 @@ int CNavigator::CollectNearestNodes( vec3_t origin, int radius, int maxCollect, 
 				added = true;
 				
 				//If we've hit our collection limit, throw off the oldest one
-				if ( nodeChain.size() > maxCollect )
+				if ( (int)nodeChain.size() > maxCollect )
 				{
 					nodeChain.pop_back();
 				}
@@ -1316,7 +1315,7 @@ int CNavigator::CollectNearestNodes( vec3_t origin, int radius, int maxCollect, 
 		}
 
 		//Otherwise, always pad out the collection if possible so we don't miss anything
-		if ( ( added == false ) && ( nodeChain.size() < maxCollect ) )
+		if ( ( added == false ) && ( (int)nodeChain.size() < maxCollect ) )
 		{
 			nChain.nodeID = (*ni)->GetID();
 			nChain.distance = dist;
@@ -1384,7 +1383,7 @@ int CNavigator::GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goa
 			radius	= node->GetRadius();
 			
 			//If we're not within the known clear radius of this node OR out of Z height range...
-			if ( (*nci).distance >= (radius*radius) || ( fabs( position[2] - ent->r.currentOrigin[2] ) >= MAX_Z_DELTA ) )
+			if ( (int)(*nci).distance >= (radius*radius) || ( fabs( position[2] - ent->r.currentOrigin[2] ) >= MAX_Z_DELTA ) )
 			{
 				//We're not *within* this node, so check clear path, etc.
 
@@ -1474,7 +1473,7 @@ int CNavigator::GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goa
 				radius	= node2->GetRadius();
 				
 				//If we're not within the known clear radius of this node OR out of Z height range...
-				if ( (*nci2).distance >= (radius*radius) || ( fabs( position2[2] - goal->r.currentOrigin[2] ) >= MAX_Z_DELTA ) )
+				if ( (int)(*nci2).distance >= (radius*radius) || ( fabs( position2[2] - goal->r.currentOrigin[2] ) >= MAX_Z_DELTA ) )
 				{
 					//We're not *within* this node, so check clear path, etc.
 
@@ -1569,7 +1568,7 @@ int CNavigator::GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int 
 			continue;
 		}
 		//Are we within the known clear radius of this node?
-		if ( (*nci).distance < (radius*radius) )
+		if ( (int)(*nci).distance < (radius*radius) )
 		{
 			//Do a z-difference sanity check
 			if ( fabs( position[2] - ent->r.currentOrigin[2] ) < MAX_Z_DELTA )
@@ -1643,11 +1642,11 @@ ShowPath
 void CNavigator::ShowPath( int start, int end )
 {	
 	//Validate the start position
-	if ( ( start < 0 ) || ( start >= m_nodes.size() ) )
+	if ( ( start < 0 ) || ( start >= (int)m_nodes.size() ) )
 		return;
 
 	//Validate the end position
-	if ( ( end < 0 ) || ( end >= m_nodes.size() ) )
+	if ( ( end < 0 ) || ( end >= (int)m_nodes.size() ) )
 		return;
 
 	CNode	*startNode	= m_nodes[ start ];
@@ -1960,7 +1959,7 @@ void CNavigator::AddFailedEdge( int entID, int startID, int endID )
 	}
 
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 	{
 #ifndef FINAL_BUILD
 		Com_Printf( S_COLOR_RED"NAV ERROR: tried to fail invalid waypoint %d\n", startID );
@@ -1970,7 +1969,7 @@ void CNavigator::AddFailedEdge( int entID, int startID, int endID )
 	}
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 	{
 #ifndef FINAL_BUILD
 		Com_Printf( S_COLOR_RED"NAV ERROR: tried to fail invalid waypoint %d\n", endID );
@@ -2276,11 +2275,11 @@ int CNavigator::GetBestNodeAltRoute( int startID, int endID, int *pathCost, int 
 		return WAYPOINT_NONE;
 
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 		return WAYPOINT_NONE;
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 		return WAYPOINT_NONE;
 
 	//Is it the same node?
@@ -2388,11 +2387,11 @@ GetBestNode
 int CNavigator::GetBestNode( int startID, int endID, int rejectID )
 {
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 		return WAYPOINT_NONE;
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 		return WAYPOINT_NONE;
 
 	if ( startID == endID )
@@ -2455,7 +2454,7 @@ GetNodePosition
 int CNavigator::GetNodePosition( int nodeID, vec3_t out )
 {
 	//Validate the number
-	if ( ( nodeID < 0 ) || ( nodeID >= m_nodes.size() ) )
+	if ( ( nodeID < 0 ) || ( nodeID >= (int)m_nodes.size() ) )
 		return false;
 
 	CNode	*node = m_nodes[ nodeID ];
@@ -2473,7 +2472,7 @@ GetNodeNumEdges
 
 int CNavigator::GetNodeNumEdges( int nodeID )
 {
-	if ( ( nodeID < 0 ) || ( nodeID >=  m_nodes.size() ) )
+	if ( ( nodeID < 0 ) || ( nodeID >=  (int)m_nodes.size() ) )
 		return -1;
 
 	CNode	*node = m_nodes[ nodeID ];
@@ -2491,7 +2490,7 @@ GetNodeEdge
 
 int CNavigator::GetNodeEdge( int nodeID, int edge )
 {
-	if ( ( nodeID < 0 ) || ( nodeID >=  m_nodes.size() ) )
+	if ( ( nodeID < 0 ) || ( nodeID >=  (int)m_nodes.size() ) )
 		return -1;
 
 	CNode	*node = m_nodes[ nodeID ];
@@ -2510,11 +2509,11 @@ Connected
 bool CNavigator::Connected( int startID, int endID )
 {
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 		return false;
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 		return false;
 
 	if ( startID == endID )
@@ -2547,11 +2546,11 @@ GetPathCost
 unsigned int CNavigator::GetPathCost( int startID, int endID )
 {
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 		return Q3_INFINITE; // return 0;
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 		return Q3_INFINITE; // return 0;
 
 	CNode	*startNode	= m_nodes[ startID ];
@@ -2632,11 +2631,11 @@ GetEdgeCost
 unsigned int CNavigator::GetEdgeCost( int startID, int endID )
 {
 	//Validate the start position
-	if ( ( startID < 0 ) || ( startID >= m_nodes.size() ) )
+	if ( ( startID < 0 ) || ( startID >= (int)m_nodes.size() ) )
 		return Q3_INFINITE; // return 0;
 
 	//Validate the end position
-	if ( ( endID < 0 ) || ( endID >= m_nodes.size() ) )
+	if ( ( endID < 0 ) || ( endID >= (int)m_nodes.size() ) )
 		return Q3_INFINITE; // return 0;
 
 	CNode	*start	= m_nodes[startID];
@@ -2654,7 +2653,7 @@ GetProjectedNode
 int CNavigator::GetProjectedNode( vec3_t origin, int nodeID )
 {
 	//Validate the start position
-	if ( ( nodeID < 0 ) || ( nodeID >= m_nodes.size() ) )
+	if ( ( nodeID < 0 ) || ( nodeID >= (int)m_nodes.size() ) )
 		return NODE_NONE;
 
 	CNode	*node = m_nodes[nodeID];

@@ -452,7 +452,7 @@ int ICARUS_Instance::LoadSignals( void )
 		//Get the size of the string
 		m_interface->I_ReadSaveData( 'SIG#', &length, sizeof( length ) );
 
-		assert( length < sizeof( buffer ) );
+		assert( length < (int)sizeof( buffer ) );
 
 		//Get the string
 		m_interface->I_ReadSaveData( 'SIGN', &buffer, length );
