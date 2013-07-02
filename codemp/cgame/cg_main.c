@@ -1956,7 +1956,7 @@ Ghoul2 Insert End
 
 const char *CG_GetStringEdString(char *refSection, char *refName)
 {
-	static char text[2][1024]={};	//just incase it's nested
+	static char text[2][1024];	//just incase it's nested
 	static int		index = 0;
 
 	index ^= 1;

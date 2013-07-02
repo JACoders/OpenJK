@@ -846,6 +846,7 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 							alGetError();
 
 							// Generate AL Buffer
+                            ALuint Buffer;
 							alGenBuffers(1, &Buffer);
 							if (alGetError() == AL_NO_ERROR)
 							{
@@ -918,6 +919,7 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 			alGetError();
 
 			// Generate AL Buffer
+            ALuint Buffer;
 			alGenBuffers(1, &Buffer);
 			if (alGetError() == AL_NO_ERROR)
 			{
