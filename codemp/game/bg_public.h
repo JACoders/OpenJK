@@ -1437,13 +1437,8 @@ qboolean BG_KnockDownable(playerState_t *ps);
 qboolean BG_LegalizedForcePowers(char *powerOut, int maxRank, qboolean freeSaber, int teamForce, int gametype, int fpDisabled);
 
 
-#ifdef __LCC__ //can't inline it then, it is declared over in bg_misc in this case
-void BG_GiveMeVectorFromMatrix(mdxaBone_t *boltMatrix, int flags, vec3_t vec);
-#else
 // given a boltmatrix, return in vec a normalised vector for the axis requested in flags
-void ID_INLINE BG_GiveMeVectorFromMatrix(mdxaBone_t *boltMatrix, int flags, vec3_t vec);
-#endif
-
+void BG_GiveMeVectorFromMatrix(mdxaBone_t *boltMatrix, int flags, vec3_t vec);
 
 void BG_IK_MoveArm(void *ghoul2, int lHandBolt, int time, entityState_t *ent, int basePose, vec3_t desiredPos, qboolean *ikInProgress,
 					 vec3_t origin, vec3_t angles, vec3_t scale, int blendTime, qboolean forceHalt);

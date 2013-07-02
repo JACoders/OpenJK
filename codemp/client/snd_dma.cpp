@@ -281,7 +281,7 @@ bool LoadEALFile(char *szEALFilename);
 void UnloadEALFile();
 void UpdateEAXListener();
 void UpdateEAXBuffer(channel_t *ch);
-void EALFileInit(char *level);
+void EALFileInit(const char *level);
 float CalcDistance(EMPOINT A, EMPOINT B);
 
 void Normalize(EAXVECTOR *v)
@@ -945,7 +945,7 @@ void S_BeginRegistration( void )
 }
 
 
-void EALFileInit(char *level)
+void EALFileInit(const char *level)
 {
 
 #ifdef _WIN32
@@ -2839,6 +2839,7 @@ void S_Update_(void) {
 	if (s_UseOpenAL)
 	{
 		int i,j;
+		float		pos[3];
 		UpdateSingleShotSounds();
 
 		channel_t *ch = s_channels + 1;
@@ -2852,7 +2853,6 @@ void S_Update_(void) {
 			if (ch->entchannel == CHAN_VOICE_GLOBAL || ch->entchannel == CHAN_ANNOUNCER)
 			{
 				// Always play these sounds at 0,0,-1 (in front of listener)
-				float		pos[3];
 				pos[0] = 0.0f;
 				pos[1] = 0.0f;
 				pos[2] = -1.0f;

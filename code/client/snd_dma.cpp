@@ -291,7 +291,7 @@ static bool LoadEALFile(char *szEALFilename);
 static void UnloadEALFile();
 static void UpdateEAXListener();
 static void UpdateEAXBuffer(channel_t *ch);
-static void EALFileInit(char *level);
+static void EALFileInit(const char *level);
 float CalcDistance(EMPOINT A, EMPOINT B);
 
 void Normalize(EAXVECTOR *v)
@@ -950,7 +950,7 @@ void S_BeginRegistration( void )
 
 
 #ifdef _WIN32
-static void EALFileInit(char *level)
+static void EALFileInit(const char *level)
 {
 	// If an EAL File is already unloaded, remove it
 	if (s_bEALFileLoaded)
