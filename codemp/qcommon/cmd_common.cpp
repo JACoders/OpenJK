@@ -340,7 +340,7 @@ Cmd_Argv
 ============
 */
 char	*Cmd_Argv( int arg ) {
-	if ( (unsigned)arg >= cmd_argc ) {
+	if ( (unsigned)arg >= (unsigned)cmd_argc ) {
 		return "";
 	}
 	return cmd_argv[arg];	

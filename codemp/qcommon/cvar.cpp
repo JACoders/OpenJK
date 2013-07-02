@@ -625,7 +625,7 @@ cvar_t *Cvar_Set2Safe( const char *var_name, const char *value, qboolean force )
 {
 	int flags = Cvar_Flags( var_name );
 
-	if((flags != CVAR_NONEXISTENT) && (flags & CVAR_PROTECTED))
+	if(((unsigned)flags != CVAR_NONEXISTENT) && (flags & CVAR_PROTECTED))
 	{
 		if( value )
 			Com_Error( ERR_DROP, "Restricted source tried to set "
@@ -1286,7 +1286,7 @@ void	Cvar_Update( vmCvar_t *vmCvar ) {
 	cvar_t	*cv = NULL; // bk001129
 	assert(vmCvar); // bk
 
-	if ( (unsigned)vmCvar->handle >= cvar_numIndexes ) {
+	if ( (unsigned)vmCvar->handle >= (unsigned)cvar_numIndexes ) {
 		Com_Error( ERR_DROP, "Cvar_Update: handle %u out of range", (unsigned)vmCvar->handle );
 	}
 

@@ -446,7 +446,8 @@ float MSG_ReadFloat( msg_t *msg ) {
 
 char *MSG_ReadString( msg_t *msg ) {
 	static char	string[MAX_STRING_CHARS];
-	int		l,c;
+	int		c;
+	unsigned int l;
 	
 	l = 0;
 	do {
@@ -484,7 +485,8 @@ char *MSG_ReadString( msg_t *msg ) {
 
 char *MSG_ReadBigString( msg_t *msg ) {
 	static char	string[BIG_INFO_STRING];
-	int		l,c;
+	int		c;
+	unsigned int l;
 	
 	l = 0;
 	do {
@@ -508,7 +510,8 @@ char *MSG_ReadBigString( msg_t *msg ) {
 
 char *MSG_ReadStringLine( msg_t *msg ) {
 	static char	string[MAX_STRING_CHARS];
-	int		l,c;
+	int		c;
+	unsigned int l;
 
 	l = 0;
 	do {
