@@ -99,7 +99,7 @@ extern cvar_t	*r_Ghoul2UnSqashAfterSmooth;
 
 static inline int G2_Find_Bone_ByNum(const model_t *mod, boneInfo_v &blist, const int boneNum)
 {
-	int i = 0;
+	size_t i = 0;
 
 	while (i < blist.size())
 	{
@@ -194,11 +194,11 @@ class CBoneCache
 
 	void EvalLow(int index)
 	{
-		assert(index>=0&&index<mBones.size());
+		assert(index>=0&&index<(int)mBones.size());
 		if (mFinalBones[index].touch!=mCurrentTouch)
 		{
 			// need to evaluate the bone
-			assert((mFinalBones[index].parent>=0&&mFinalBones[index].parent<mFinalBones.size())||(index==0&&mFinalBones[index].parent==-1));
+			assert((mFinalBones[index].parent>=0&&mFinalBones[index].parent<(int)mFinalBones.size())||(index==0&&mFinalBones[index].parent==-1));
 			if (mFinalBones[index].parent>=0)
 			{
 				EvalLow(mFinalBones[index].parent); // make sure parent is evaluated
@@ -432,7 +432,7 @@ public:
 		*/
 
 		//Hey, this is what sof2 does. Let's try it out.
-		assert(index>=0&&index<mBones.size());
+		assert(index>=0&&index<(int)mBones.size());
 		if (mFinalBones[index].touch!=mCurrentTouch)
 		{
 			EvalLow(index);
@@ -442,7 +442,7 @@ public:
 	//rww - RAGDOLL_BEGIN
 	const inline mdxaBone_t &EvalRender(int index)
 	{
-		assert(index>=0&&index<mBones.size());
+		assert(index>=0&&index<(int)mBones.size());
 		if (mFinalBones[index].touch!=mCurrentTouch)
 		{
 			mFinalBones[index].touchRender=mCurrentTouchRender;
@@ -462,7 +462,7 @@ public:
 	//rww - RAGDOLL_BEGIN
 	bool WasRendered(int index)
 	{
-		assert(index>=0&&index<mBones.size());
+		assert(index>=0&&index<(int)mBones.size());
 		return mFinalBones[index].touchRender==mCurrentTouchRender;
 	}
 	int GetParent(int index)
@@ -471,7 +471,7 @@ public:
 		{
 			return -1;
 		}
-		assert(index>=0&&index<mBones.size());
+		assert(index>=0&&index<(int)mBones.size());
 		return mFinalBones[index].parent;
 	}
 	//rww - RAGDOLL_END
@@ -1685,7 +1685,7 @@ void G2_TransformBone (int child,CBoneCache &BC)
 	//rww - removed mSkels
 
 	int parent=BC.mFinalBones[child].parent;
-	assert((parent==-1&&child==0)||(parent>=0&&parent<BC.mBones.size()));
+	assert((parent==-1&&child==0)||(parent>=0&&parent<(int)BC.mBones.size()));
 	if (angleOverride & BONE_ANGLES_REPLACE)
 	{
 		bool isRag=!!(angleOverride & BONE_ANGLES_RAGDOLL);
@@ -1966,7 +1966,7 @@ void G2_SetUpBolts( mdxaHeader_t *header, CGhoul2Info &ghoul2, mdxaBone_v &boneP
 	mdxaSkelOffsets_t *offsets;
 	offsets = (mdxaSkelOffsets_t *)((byte *)header + sizeof(mdxaHeader_t));
 
-	for (int i=0; i<boltList.size(); i++)
+	for (size_t i=0; i<boltList.size(); i++)
 	{
 		if (boltList[i].boneNumber != -1)
 		{
@@ -2026,7 +2026,7 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 	}
 	ghoul2.mBoneCache->mod=currentModel;
 	ghoul2.mBoneCache->header=aHeader; 
-	assert(ghoul2.mBoneCache->mBones.size()==aHeader->numBones);
+	assert(ghoul2.mBoneCache->mBones.size()==(unsigned)aHeader->numBones);
 
 	ghoul2.mBoneCache->mSmoothingActive=false;
 	ghoul2.mBoneCache->mUnsquash=false;
@@ -2069,8 +2069,7 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 			}
 			else if(ghoul2.mFlags & GHOUL2_RAG_STARTED)
 			{
-				int k;
-				for (k=0;k<rootBoneList.size();k++)
+				for (size_t k=0;k<rootBoneList.size();k++)
 				{
 					boneInfo_t &bone=rootBoneList[k];
 					if (bone.flags&BONE_ANGLES_RAGDOLL)
@@ -2364,7 +2363,7 @@ void G2_ProcessGeneratedSurfaceBolts(CGhoul2Info &ghoul2, mdxaBone_v &bonePtr, m
 	G2PerformanceTimer_G2_ProcessGeneratedSurfaceBolts.Start();
 #endif
 	// look through the surfaces off the end of the pre-defined model surfaces
-	for (int i=0; i< ghoul2.mSlist.size(); i++)
+	for (size_t i=0; i< ghoul2.mSlist.size(); i++)
 	{
 		// only look for bolts if we are actually a generated surface, and not just an overriden one
 		if (ghoul2.mSlist[i].offFlags & G2SURFACEFLAG_GENERATED)
@@ -3082,7 +3081,7 @@ void G2_GetBoltMatrixLow(CGhoul2Info &ghoul2,int boltNum,const vec3_t scale,mdxa
 		return;
 	}
 
-	assert(boltNum>=0&&boltNum<boltList.size());
+	assert(boltNum>=0&&boltNum<(int)boltList.size());
 #if 0 //rwwFIXMEFIXME: Disable this before release!!!!!! I am just trying to find a crash bug.
 	if (boltNum < 0 || boltNum >= boltList.size())
 	{
@@ -3123,8 +3122,7 @@ void G2_GetBoltMatrixLow(CGhoul2Info &ghoul2,int boltNum,const vec3_t scale,mdxa
 	{
 		const surfaceInfo_t *surfInfo=0;
 		{
-			int i;
-			for (i=0;i<ghoul2.mSlist.size();i++)
+			for (size_t i=0;i<ghoul2.mSlist.size();i++)
 			{
 				surfaceInfo_t &t=ghoul2.mSlist[i];
 				if (t.surface==boltList[boltNum].surfaceNumber)
