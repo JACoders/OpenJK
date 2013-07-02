@@ -125,10 +125,8 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
-	{
-		CAPACITY		= T::CAPACITY,
-	};
+ 	static const int CAPACITY = T::CAPACITY;
+
 private:
 	pool_base<TStorageTraits>		mPool;				// The Allocation Data Pool
 	int								mRoot;
@@ -862,10 +860,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
-	{
-		CAPACITY		= T::CAPACITY
-	};
+	static const int CAPACITY = T::CAPACITY;
 
     ////////////////////////////////////////////////////////////////////////////////////
 	// Adds Element Value At Location Key  - O(log n)
@@ -1182,10 +1177,7 @@ class set_vs : public set_base<storage::value_semantics_node<T,ARG_CAPACITY,tree
 public:
 	typedef typename storage::value_semantics_node<T,ARG_CAPACITY,tree_node> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY = ARG_CAPACITY;
 	set_vs() {}
 };
 
@@ -1195,10 +1187,7 @@ class set_os : public set_base<storage::object_semantics_node<T,ARG_CAPACITY,tre
 public:
 	typedef typename storage::object_semantics_node<T,ARG_CAPACITY,tree_node> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY = ARG_CAPACITY;
 	set_os() {}
 };
 
@@ -1208,11 +1197,8 @@ class set_is : public set_base<storage::virtual_semantics_node<T,ARG_CAPACITY,AR
 public:
 	typedef typename storage::virtual_semantics_node<T,ARG_CAPACITY,ARG_MAX_CLASS_SIZE,tree_node> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY,
-		MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE
-	};
+	static const int CAPACITY = ARG_CAPACITY;
+	static const int MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE;
 	set_is() {}
 };
 
@@ -1236,10 +1222,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
-	{
-		CAPACITY		= K::CAPACITY
-	};
+	static const int CAPACITY = K::CAPACITY;
 private:
 	array_base<TValueStorageTraits>	mValues;
 public:
@@ -1351,13 +1334,13 @@ public:
 
 	public:
 		iterator(map_base<K,V, IS_MULTI> *owner=0, int loc=tree_node::NULL_NODE) : 
-			mOwner(owner), 
-			mLoc(loc)	
+			mLoc(loc),	
+			mOwner(owner)
 		{
 		}
 		iterator(const iterator &o) : 
-			mOwner(o.mOwner), 
-			mLoc(o.mLoc)	
+			mLoc(o.mLoc),
+			mOwner(o.mOwner)
 		{
 		}
 
@@ -1618,10 +1601,7 @@ class map_vs : public map_base<
 public:
 	typedef typename storage::value_semantics<V,ARG_CAPACITY> VStorageTraits;
 	typedef typename VStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY = ARG_CAPACITY;
 	map_vs() {}
 };
 
@@ -1634,10 +1614,7 @@ class map_os : public map_base<
 public:
 	typedef typename storage::object_semantics<V,ARG_CAPACITY> VStorageTraits;
 	typedef typename VStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY = ARG_CAPACITY;
 	map_os() {}
 };
 
@@ -1650,11 +1627,8 @@ class map_is : public map_base<
 public:
 	typedef typename storage::virtual_semantics<V,ARG_CAPACITY,ARG_MAX_CLASS_SIZE> VStorageTraits;
 	typedef typename VStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY,
-		MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE
-	};
+	static const int CAPACITY = ARG_CAPACITY;
+	static const int MAX_CLASS_SIZE = ARG_MAX_CLASS_SIZE;
 	map_is() {}
 };
 

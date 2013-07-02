@@ -34,16 +34,20 @@ This file is part of Jedi Academy.
 //////////////////////////////////////////////////
 
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4511 )			// copy constructor could not be generated
 #pragma warning ( disable : 4512 )			// assignment operator could not be generated
 #pragma warning ( disable : 4663 )			// C++ language change: blah blah template crap blah blah
+#endif
 #include "stringed_ingame.h"
 #include "stringed_interface.h"
 
 ///////////////////////////////////////////////
 //
 // some STL stuff...
+#ifdef _MSC_VER
 #pragma warning ( disable : 4786 )			// disable the usual stupid and pointless STL warning
+#endif
 #include <list>
 #include <map>
 #include <set>
@@ -681,7 +685,7 @@ LPCSTR CStringEdPackage::ParseLine( LPCSTR psLine )
 					psWordEnd++;
 				}
 				char sThisLanguage[1024]={0};
-				int iCharsToCopy = psWordEnd - psLine;
+				size_t iCharsToCopy = psWordEnd - psLine;
 				if (iCharsToCopy > sizeof(sThisLanguage)-1)
 				{
 					iCharsToCopy = sizeof(sThisLanguage)-1;
@@ -779,7 +783,7 @@ LPCSTR Leetify( LPCSTR psString )
 						};
 
 		char *p;
-		for (int i=0; i<sizeof(cReplace); i+=2)
+		for (size_t i=0; i<sizeof(cReplace); i+=2)
 		{
 			while ( ( p = const_cast<char*>( strchr(str.c_str(),cReplace[i]) ) ) != NULL )
 				*p = cReplace[i+1];
@@ -1069,7 +1073,7 @@ int SE_GetNumFlags( void )
 
 LPCSTR SE_GetFlagName( int iFlagIndex )
 {
-	if ( iFlagIndex < TheStringPackage.m_vstrFlagNames.size())
+	if ( iFlagIndex < (int)TheStringPackage.m_vstrFlagNames.size())
 	{
 		return TheStringPackage.m_vstrFlagNames[ iFlagIndex ].c_str();
 	}
@@ -1145,7 +1149,7 @@ int SE_GetNumLanguages(void)
 //
 LPCSTR SE_GetLanguageName( int iLangIndex )
 {
-	if ( iLangIndex < gvLanguagesAvailable.size() )
+	if ( iLangIndex < (int)gvLanguagesAvailable.size() )
 	{
 		return gvLanguagesAvailable[ iLangIndex ].c_str();
 	}
@@ -1158,7 +1162,7 @@ LPCSTR SE_GetLanguageName( int iLangIndex )
 //
 LPCSTR SE_GetLanguageDir( int iLangIndex )
 {
-	if ( iLangIndex < gvLanguagesAvailable.size() )
+	if ( iLangIndex < (int)gvLanguagesAvailable.size() )
 	{
 		return va("%s/%s", sSE_STRINGS_DIR, gvLanguagesAvailable[ iLangIndex ].c_str() );
 	}

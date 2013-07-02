@@ -403,6 +403,8 @@ void RE_RegisterMedia_LevelLoadBegin(const char *psMapName, ForceReload_e eForce
 			//
 			RE_RegisterModels_DeleteAll();
 			break;
+		default:
+			break;
 	}
 
 	// at some stage I'll probably want to put some special logic here, like not incrementing the level number

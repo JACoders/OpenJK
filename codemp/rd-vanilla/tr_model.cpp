@@ -8,11 +8,15 @@
 
 #include "qcommon/disablewarnings.h"
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include "qcommon/sstring.h"	// #include <string>
 #include <vector>
 #include <map>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 
 using namespace std;
 
@@ -694,8 +698,8 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 
 	if (!bAlreadyCached)
 	{
-		version = LittleLong(version);
-		size	= LittleLong(size);
+		LL(version);
+		LL(size);
 	}
 	
 	if (version != MDXA_VERSION) {
@@ -817,8 +821,8 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 
 	if (!bAlreadyCached)
 	{
-		version = LittleLong(version);
-		size	= LittleLong(size);
+		LL(version);
+		LL(size);
 	}
 
 	if (version != MDXM_VERSION) {
@@ -1084,7 +1088,7 @@ Ghoul2 Insert End
 		ident = *(unsigned *)buf;
 		if (!bAlreadyCached)
 		{
-			ident = LittleLong(ident);
+			LL(ident);
 		}
 
 		switch (ident)
@@ -1299,7 +1303,7 @@ Ghoul2 Insert End
 		ident = *(unsigned *)buf;
 		if (!bAlreadyCached)
 		{
-			ident = LittleLong(ident);
+			LL(ident);
 		}
 
 		switch (ident)
@@ -1435,8 +1439,8 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 
 	if (!bAlreadyCached)
 	{
-		version = LittleLong(version);
-		size	= LittleLong(size);
+		LL(version);
+		LL(size);
 	}
 	
 	if (version != MD3_VERSION) {

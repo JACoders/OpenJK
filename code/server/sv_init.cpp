@@ -236,7 +236,7 @@ void SV_ClearLastLevel(void)
 }
 #endif
 
-qboolean CM_SameMap(char *server);
+qboolean CM_SameMap(const char *server);
 qboolean CM_HasTerrain(void);
 void Cvar_Defrag(void);
 
@@ -248,7 +248,7 @@ Change the server to a new map, taking all connected
 clients along with it.
 ================
 */
-void SV_SpawnServer( char *server, ForceReload_e eForceReload, qboolean bAllowScreenDissolve )
+void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bAllowScreenDissolve )
 {
 	int			i;
 	int			checksum;
@@ -494,7 +494,7 @@ not just stuck on the outgoing message list, because the server is going
 to totally exit after returning from this function.
 ==================
 */
-void SV_FinalMessage( char *message ) {
+void SV_FinalMessage( const char *message ) {
 	int			i, j;
 	client_t	*cl;
 	
@@ -522,7 +522,7 @@ Called when each game quits,
 before Sys_Quit or Sys_Error
 ================
 */
-void SV_Shutdown( char *finalmsg ) {
+void SV_Shutdown( const char *finalmsg ) {
 	int i;
 
 	if ( !com_sv_running || !com_sv_running->integer ) {

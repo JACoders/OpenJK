@@ -325,6 +325,49 @@ qboolean BG_FileExists(const char *fileName)
 	return qfalse;
 }
 
+// given a boltmatrix, return in vec a normalised vector for the axis requested in flags
+void ID_INLINE BG_GiveMeVectorFromMatrix(mdxaBone_t *boltMatrix, int flags, vec3_t vec)
+{
+	switch (flags)
+	{
+	case ORIGIN:
+		vec[0] = boltMatrix->matrix[0][3];
+		vec[1] = boltMatrix->matrix[1][3];
+		vec[2] = boltMatrix->matrix[2][3];
+		break;
+	case POSITIVE_Y:
+		vec[0] = boltMatrix->matrix[0][1];
+		vec[1] = boltMatrix->matrix[1][1];
+		vec[2] = boltMatrix->matrix[2][1];
+ 		break;
+	case POSITIVE_X:
+		vec[0] = boltMatrix->matrix[0][0];
+		vec[1] = boltMatrix->matrix[1][0];
+		vec[2] = boltMatrix->matrix[2][0];
+		break;
+	case POSITIVE_Z:
+		vec[0] = boltMatrix->matrix[0][2];
+		vec[1] = boltMatrix->matrix[1][2];
+		vec[2] = boltMatrix->matrix[2][2];
+		break;
+	case NEGATIVE_Y:
+		vec[0] = -boltMatrix->matrix[0][1];
+		vec[1] = -boltMatrix->matrix[1][1];
+		vec[2] = -boltMatrix->matrix[2][1];
+		break;
+	case NEGATIVE_X:
+		vec[0] = -boltMatrix->matrix[0][0];
+		vec[1] = -boltMatrix->matrix[1][0];
+		vec[2] = -boltMatrix->matrix[2][0];
+		break;
+	case NEGATIVE_Z:
+		vec[0] = -boltMatrix->matrix[0][2];
+		vec[1] = -boltMatrix->matrix[1][2];
+		vec[2] = -boltMatrix->matrix[2][2];
+		break;
+	}
+}
+
 /*
 ================
 BG_LegalizedForcePowers

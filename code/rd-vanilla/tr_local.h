@@ -1409,7 +1409,7 @@ void		GLimp_Init( void );
 void		GLimp_Shutdown( void );
 void		GLimp_EndFrame( void );
 
-void		GLimp_LogComment( char *comment );
+void		GLimp_LogComment( const char *comment );
 
 void		GLimp_SetGamma( unsigned char red[256], 
 						    unsigned char green[256],
@@ -1619,7 +1619,9 @@ void R_AddAnimSurfaces( trRefEntity_t *ent );
 /*
 Ghoul2 Insert Start
 */
+#ifdef _MSC_VER
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
+#endif
 class CBoneCache;
 
 class CRenderableSurface

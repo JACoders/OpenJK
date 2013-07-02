@@ -836,7 +836,7 @@ typedef struct {
 	int					playerSpeciesIndex;
 
 	short		movesTitleIndex;
-	char		*movesBaseAnim;
+	const char	*movesBaseAnim;
 	int			moveAnimTime;
 
 	int			languageCount;

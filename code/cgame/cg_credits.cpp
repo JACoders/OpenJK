@@ -297,7 +297,7 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 	qboolean bCardsFinished = qfalse;
 	int iLineNumber = 0;
 	const char *psTextParse = psMallocText;
-	while (*psTextParse != NULL)
+	while (*psTextParse != '\0')
 	{
 		// read a line...
 		//	
@@ -493,6 +493,8 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 					}
 				}
 				break;
+				default:
+				break;
 			}
 		}
 	}
@@ -574,7 +576,7 @@ qboolean CG_Credits_Draw( void )
 			//
 			iYpos += iFontHeight*2;	// skip blank line then move to main pos
 			//
-			for (int i=0; i<CreditCard.vstrText.size(); i++)
+			for (unsigned int i=0; i<CreditCard.vstrText.size(); i++)
 			{
 				StringAndSize_t &StringAndSize = CreditCard.vstrText[i];
 				iWidth = StringAndSize.GetPixelLength();
@@ -647,7 +649,7 @@ qboolean CG_Credits_Draw( void )
 
 						// now print any dotted members...
 						//
-						for (int i=0; i<CreditLine.vstrText.size(); i++)
+						for (unsigned int i=0; i<CreditLine.vstrText.size(); i++)
 						{
 							StringAndSize_t &StringAndSize = CreditLine.vstrText[i];
 							iWidth = StringAndSize.GetPixelLength();

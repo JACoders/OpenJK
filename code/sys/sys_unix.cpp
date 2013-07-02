@@ -178,7 +178,6 @@ sysEvent_t Sys_GetEvent( void ) {
 	sysEvent_t	ev;
 	char		*s;
 	msg_t		netmsg;
-	netadr_t	adr;
 
 	// return if we have data
 	if ( eventHead > eventTail ) {
@@ -368,7 +367,7 @@ Sys_Mkdir
 */
 /*qboolean*/void Sys_Mkdir( const char *path )
 {
-	int result = mkdir( path, 0750 );
+	/*int result = */mkdir( path, 0750 );
 
 /*	if( result != 0 )
 		return (qboolean)(errno == EEXIST);

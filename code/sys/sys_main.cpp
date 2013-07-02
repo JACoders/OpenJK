@@ -187,13 +187,11 @@ void *Sys_GetGameAPI (void *parms)
 {
 	void	*(*GetGameAPI) (void *);
 	
-	char	name[MAX_OSPATH];
-	char	*path;
-	char	*basepath;
-	char	*cdpath;
-	char	*gamedir;
-	char	*homepath;
-	char	*fn;
+	const char	*basepath;
+	const char	*cdpath;
+	const char	*gamedir;
+	const char	*homepath;
+	const char	*fn;
 	
 	const char *gamename;
 	if(Cvar_VariableIntegerValue("com_jk2"))
@@ -344,7 +342,6 @@ char *Sys_StripAppBundle( char *dir )
 
 int main (int argc, char **argv)
 {
-	int 	oldtime, newtime;
 	int		len, i;
 	char	*cmdline;
 	void SetProgramPath(char *path);

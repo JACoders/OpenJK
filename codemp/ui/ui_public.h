@@ -191,7 +191,7 @@ Ghoul2 Insert End
 */
 } uiImport_t;
 
-typedef enum {
+enum {
 	UIMENU_NONE,
 	UIMENU_MAIN,
 	UIMENU_INGAME,

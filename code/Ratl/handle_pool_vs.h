@@ -69,10 +69,7 @@ public:
  	////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
-	{
-		CAPACITY		= T::CAPACITY
-	};
+	static const int CAPACITY		= T::CAPACITY;
 
 private:
 	int							mHandles[CAPACITY];
@@ -281,10 +278,7 @@ class handle_pool_vs : public handle_pool_base<storage::value_semantics<T,ARG_CA
 public:
 	typedef typename storage::value_semantics<T,ARG_CAPACITY> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY		= ARG_CAPACITY;
 	handle_pool_vs() {}
 };
 
@@ -294,10 +288,7 @@ class handle_pool_os : public handle_pool_base<storage::object_semantics<T,ARG_C
 public:
 	typedef typename storage::object_semantics<T,ARG_CAPACITY> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY		= ARG_CAPACITY;
 	handle_pool_os() {}
 };
 
@@ -307,11 +298,8 @@ class handle_pool_is : public handle_pool_base<storage::virtual_semantics<T,ARG_
 public:
 	typedef typename storage::virtual_semantics<T,ARG_CAPACITY,ARG_MAX_CLASS_SIZE> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY,
-		MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE
-	};
+	static const int CAPACITY		= ARG_CAPACITY;
+	static const int MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE;
 	handle_pool_is() {}
 };
 

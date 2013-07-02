@@ -165,7 +165,7 @@ void			UI_AdjustSaveGameListBox( int currentLine );
 void			Menus_CloseByName(const char *p);
 
 // Movedata Sounds
-typedef enum
+enum
 {
 	MDS_NONE = 0,
 	MDS_FORCE_JUMP,
@@ -174,7 +174,7 @@ typedef enum
 	MDS_MOVE_SOUNDS_MAX
 };
 
-typedef enum
+enum
 {
 	MD_ACROBATICS = 0,
 	MD_SINGLE_FAST,
@@ -187,7 +187,7 @@ typedef enum
 
 // Some hard coded badness
 // At some point maybe this should be externalized to a .dat file
-char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
+const char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
 {
 "@MENUS_ACROBATICS",
 "@MENUS_SINGLE_FAST",
@@ -197,7 +197,7 @@ char *datapadMoveTitleData[MD_MOVE_TITLE_MAX] =
 "@MENUS_SABER_STAFF",
 };
 
-char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
+const char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
 {
 "BOTH_RUN1",
 "BOTH_SABERFAST_STANCE",
@@ -211,121 +211,133 @@ char *datapadMoveTitleBaseAnims[MD_MOVE_TITLE_MAX] =
 
 typedef struct 
 {
-	char	*title;	
-	char	*desc;	
-	char	*anim;
+	const char	*title;	
+	const char	*desc;	
+	const char	*anim;
 	short	sound;
 } datpadmovedata_t;
 
 static datpadmovedata_t datapadMoveData[MD_MOVE_TITLE_MAX][MAX_MOVES] = 
 {
+{
 // Acrobatics
-"@MENUS_FORCE_JUMP1",				"@MENUS_FORCE_JUMP1_DESC",			"BOTH_FORCEJUMP1",				MDS_FORCE_JUMP,
-"@MENUS_FORCE_FLIP",				"@MENUS_FORCE_FLIP_DESC",			"BOTH_FLIP_F",					MDS_FORCE_JUMP,
-"@MENUS_ROLL",						"@MENUS_ROLL_DESC",					"BOTH_ROLL_F",					MDS_ROLL,
-"@MENUS_BACKFLIP_OFF_WALL",			"@MENUS_BACKFLIP_OFF_WALL_DESC",	"BOTH_WALL_FLIP_BACK1",			MDS_FORCE_JUMP,
-"@MENUS_SIDEFLIP_OFF_WALL",			"@MENUS_SIDEFLIP_OFF_WALL_DESC",	"BOTH_WALL_FLIP_RIGHT",			MDS_FORCE_JUMP,
-"@MENUS_WALL_RUN",					"@MENUS_WALL_RUN_DESC",				"BOTH_WALL_RUN_RIGHT",			MDS_FORCE_JUMP,
-"@MENUS_LONG_JUMP",					"@MENUS_LONG_JUMP_DESC",			"BOTH_FORCELONGLEAP_START",		MDS_FORCE_JUMP,
-"@MENUS_WALL_GRAB_JUMP",			"@MENUS_WALL_GRAB_JUMP_DESC",		"BOTH_FORCEWALLREBOUND_FORWARD",MDS_FORCE_JUMP,
-"@MENUS_RUN_UP_WALL_BACKFLIP",		"@MENUS_RUN_UP_WALL_BACKFLIP_DESC",	"BOTH_FORCEWALLRUNFLIP_START",	MDS_FORCE_JUMP,
-"@MENUS_JUMPUP_FROM_KNOCKDOWN",		"@MENUS_JUMPUP_FROM_KNOCKDOWN_DESC","BOTH_KNOCKDOWN3",				MDS_NONE,
-"@MENUS_JUMPKICK_FROM_KNOCKDOWN",	"@MENUS_JUMPKICK_FROM_KNOCKDOWN_DESC","BOTH_KNOCKDOWN2",			MDS_NONE,
-"@MENUS_ROLL_FROM_KNOCKDOWN",		"@MENUS_ROLL_FROM_KNOCKDOWN_DESC",	"BOTH_KNOCKDOWN1",				MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_FORCE_JUMP1",				"@MENUS_FORCE_JUMP1_DESC",			"BOTH_FORCEJUMP1",				MDS_FORCE_JUMP },
+{ "@MENUS_FORCE_FLIP",				"@MENUS_FORCE_FLIP_DESC",			"BOTH_FLIP_F",					MDS_FORCE_JUMP },
+{ "@MENUS_ROLL",						"@MENUS_ROLL_DESC",					"BOTH_ROLL_F",					MDS_ROLL },
+{ "@MENUS_BACKFLIP_OFF_WALL",			"@MENUS_BACKFLIP_OFF_WALL_DESC",	"BOTH_WALL_FLIP_BACK1",			MDS_FORCE_JUMP },
+{ "@MENUS_SIDEFLIP_OFF_WALL",			"@MENUS_SIDEFLIP_OFF_WALL_DESC",	"BOTH_WALL_FLIP_RIGHT",			MDS_FORCE_JUMP },
+{ "@MENUS_WALL_RUN",					"@MENUS_WALL_RUN_DESC",				"BOTH_WALL_RUN_RIGHT",			MDS_FORCE_JUMP },
+{ "@MENUS_LONG_JUMP",					"@MENUS_LONG_JUMP_DESC",			"BOTH_FORCELONGLEAP_START",		MDS_FORCE_JUMP },
+{ "@MENUS_WALL_GRAB_JUMP",			"@MENUS_WALL_GRAB_JUMP_DESC",		"BOTH_FORCEWALLREBOUND_FORWARD",MDS_FORCE_JUMP },
+{ "@MENUS_RUN_UP_WALL_BACKFLIP",		"@MENUS_RUN_UP_WALL_BACKFLIP_DESC",	"BOTH_FORCEWALLRUNFLIP_START",	MDS_FORCE_JUMP },
+{ "@MENUS_JUMPUP_FROM_KNOCKDOWN",		"@MENUS_JUMPUP_FROM_KNOCKDOWN_DESC","BOTH_KNOCKDOWN3",				MDS_NONE },
+{ "@MENUS_JUMPKICK_FROM_KNOCKDOWN",	"@MENUS_JUMPKICK_FROM_KNOCKDOWN_DESC","BOTH_KNOCKDOWN2",			MDS_NONE },
+{ "@MENUS_ROLL_FROM_KNOCKDOWN",		"@MENUS_ROLL_FROM_KNOCKDOWN_DESC",	"BOTH_KNOCKDOWN1",				MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+},
 
+{
 //Single Saber, Fast Style
-"@MENUS_STAB_BACK",					"@MENUS_STAB_BACK_DESC",			"BOTH_A2_STABBACK1",			MDS_SABER,
-"@MENUS_LUNGE_ATTACK",				"@MENUS_LUNGE_ATTACK_DESC",			"BOTH_LUNGE2_B__T_",			MDS_SABER,
-"@MENUS_FORCE_PULL_IMPALE",			"@MENUS_FORCE_PULL_IMPALE_DESC",	"BOTH_PULL_IMPALE_STAB",		MDS_SABER,
-"@MENUS_FAST_ATTACK_KATA",			"@MENUS_FAST_ATTACK_KATA_DESC",		"BOTH_A1_SPECIAL",				MDS_SABER,
-"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP,
-"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
-"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_STAB_BACK",					"@MENUS_STAB_BACK_DESC",			"BOTH_A2_STABBACK1",			MDS_SABER },
+{ "@MENUS_LUNGE_ATTACK",				"@MENUS_LUNGE_ATTACK_DESC",			"BOTH_LUNGE2_B__T_",			MDS_SABER },
+{ "@MENUS_FORCE_PULL_IMPALE",			"@MENUS_FORCE_PULL_IMPALE_DESC",	"BOTH_PULL_IMPALE_STAB",		MDS_SABER },
+{ "@MENUS_FAST_ATTACK_KATA",			"@MENUS_FAST_ATTACK_KATA_DESC",		"BOTH_A1_SPECIAL",				MDS_SABER },
+{ "@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP },
+{ "@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP },
+{ "@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+},
 
+{
 //Single Saber, Medium Style
-"@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER,
-"@MENUS_FLIP_ATTACK",				"@MENUS_FLIP_ATTACK_DESC",			"BOTH_JUMPFLIPSLASHDOWN1",		MDS_FORCE_JUMP,
-"@MENUS_FORCE_PULL_SLASH",			"@MENUS_FORCE_PULL_SLASH_DESC",		"BOTH_PULL_IMPALE_SWING",		MDS_SABER,
-"@MENUS_MEDIUM_ATTACK_KATA",		"@MENUS_MEDIUM_ATTACK_KATA_DESC",	"BOTH_A2_SPECIAL",				MDS_SABER,
-"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP,
-"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
-"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER },
+{ "@MENUS_FLIP_ATTACK",				"@MENUS_FLIP_ATTACK_DESC",			"BOTH_JUMPFLIPSLASHDOWN1",		MDS_FORCE_JUMP },
+{ "@MENUS_FORCE_PULL_SLASH",			"@MENUS_FORCE_PULL_SLASH_DESC",		"BOTH_PULL_IMPALE_SWING",		MDS_SABER },
+{ "@MENUS_MEDIUM_ATTACK_KATA",		"@MENUS_MEDIUM_ATTACK_KATA_DESC",	"BOTH_A2_SPECIAL",				MDS_SABER },
+{ "@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP },
+{ "@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP },
+{ "@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+},
 
+{
 //Single Saber, Strong Style
-"@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER,
-"@MENUS_JUMP_ATTACK",				"@MENUS_JUMP_ATTACK_DESC",			"BOTH_FORCELEAP2_T__B_",		MDS_FORCE_JUMP,
-"@MENUS_FORCE_PULL_SLASH",			"@MENUS_FORCE_PULL_SLASH_DESC",		"BOTH_PULL_IMPALE_SWING",		MDS_SABER,
-"@MENUS_STRONG_ATTACK_KATA",		"@MENUS_STRONG_ATTACK_KATA_DESC",	"BOTH_A3_SPECIAL",				MDS_SABER,
-"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP,
-"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
-"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER },
+{ "@MENUS_JUMP_ATTACK",				"@MENUS_JUMP_ATTACK_DESC",			"BOTH_FORCELEAP2_T__B_",		MDS_FORCE_JUMP },
+{ "@MENUS_FORCE_PULL_SLASH",			"@MENUS_FORCE_PULL_SLASH_DESC",		"BOTH_PULL_IMPALE_SWING",		MDS_SABER },
+{ "@MENUS_STRONG_ATTACK_KATA",		"@MENUS_STRONG_ATTACK_KATA_DESC",	"BOTH_A3_SPECIAL",				MDS_SABER },
+{ "@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN",				MDS_FORCE_JUMP },
+{ "@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP },
+{ "@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+},
 
+{
 //Dual Sabers
-"@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER,
-"@MENUS_FLIP_FORWARD_ATTACK",		"@MENUS_FLIP_FORWARD_ATTACK_DESC",	"BOTH_JUMPATTACK6",				MDS_FORCE_JUMP,
-"@MENUS_DUAL_SABERS_TWIRL",			"@MENUS_DUAL_SABERS_TWIRL_DESC",	"BOTH_SPINATTACK6",				MDS_SABER,
-"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN_DUAL",			MDS_FORCE_JUMP,
-"@MENUS_DUAL_SABER_BARRIER",		"@MENUS_DUAL_SABER_BARRIER_DESC",	"BOTH_A6_SABERPROTECT",			MDS_SABER,
-"@MENUS_DUAL_STAB_FRONT_BACK",		"@MENUS_DUAL_STAB_FRONT_BACK_DESC", "BOTH_A6_FB",					MDS_SABER,
-"@MENUS_DUAL_STAB_LEFT_RIGHT",		"@MENUS_DUAL_STAB_LEFT_RIGHT_DESC", "BOTH_A6_LR",					MDS_SABER,
-"@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP,
-"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_SLASH_BACK",				"@MENUS_SLASH_BACK_DESC",			"BOTH_ATTACK_BACK",				MDS_SABER },
+{ "@MENUS_FLIP_FORWARD_ATTACK",		"@MENUS_FLIP_FORWARD_ATTACK_DESC",	"BOTH_JUMPATTACK6",				MDS_FORCE_JUMP },
+{ "@MENUS_DUAL_SABERS_TWIRL",			"@MENUS_DUAL_SABERS_TWIRL_DESC",	"BOTH_SPINATTACK6",				MDS_SABER },
+{ "@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN_DUAL",			MDS_FORCE_JUMP },
+{ "@MENUS_DUAL_SABER_BARRIER",		"@MENUS_DUAL_SABER_BARRIER_DESC",	"BOTH_A6_SABERPROTECT",			MDS_SABER },
+{ "@MENUS_DUAL_STAB_FRONT_BACK",		"@MENUS_DUAL_STAB_FRONT_BACK_DESC", "BOTH_A6_FB",					MDS_SABER },
+{ "@MENUS_DUAL_STAB_LEFT_RIGHT",		"@MENUS_DUAL_STAB_LEFT_RIGHT_DESC", "BOTH_A6_LR",					MDS_SABER },
+{ "@MENUS_CARTWHEEL",					"@MENUS_CARTWHEEL_DESC",			"BOTH_ARIAL_RIGHT",				MDS_FORCE_JUMP },
+{ "@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB_DESC",		"BOTH_ROLL_STAB",				MDS_SABER },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+},
 
+{
 // Saber Staff
-"@MENUS_STAB_BACK",					"@MENUS_STAB_BACK_DESC",			"BOTH_A2_STABBACK1",			MDS_SABER,
-"@MENUS_BACK_FLIP_ATTACK",			"@MENUS_BACK_FLIP_ATTACK_DESC",		"BOTH_JUMPATTACK7",				MDS_FORCE_JUMP,
-"@MENUS_SABER_STAFF_TWIRL",			"@MENUS_SABER_STAFF_TWIRL_DESC",	"BOTH_SPINATTACK7",				MDS_SABER,
-"@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN_STAFF",			MDS_FORCE_JUMP,
-"@MENUS_SPINNING_KATA",				"@MENUS_SPINNING_KATA_DESC",		"BOTH_A7_SOULCAL",				MDS_SABER,
-"@MENUS_KICK1",						"@MENUS_KICK1_DESC",				"BOTH_A7_KICK_F",				MDS_FORCE_JUMP,
-"@MENUS_JUMP_KICK",					"@MENUS_JUMP_KICK_DESC",			"BOTH_A7_KICK_F_AIR",			MDS_FORCE_JUMP,
-"@MENUS_SPLIT_KICK",				"@MENUS_SPLIT_KICK_DESC",			"BOTH_A7_KICK_RL",				MDS_FORCE_JUMP,
-"@MENUS_SPIN_KICK",					"@MENUS_SPIN_KICK_DESC",			"BOTH_A7_KICK_S",				MDS_FORCE_JUMP,
-"@MENUS_FLIP_KICK",					"@MENUS_FLIP_KICK_DESC",			"BOTH_A7_KICK_BF",				MDS_FORCE_JUMP,
-"@MENUS_BUTTERFLY_ATTACK",			"@MENUS_BUTTERFLY_ATTACK_DESC",		"BOTH_BUTTERFLY_FR1",			MDS_SABER,
-"@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
-NULL, NULL, 0,	MDS_NONE,
+{ "@MENUS_STAB_BACK",					"@MENUS_STAB_BACK_DESC",			"BOTH_A2_STABBACK1",			MDS_SABER },
+{ "@MENUS_BACK_FLIP_ATTACK",			"@MENUS_BACK_FLIP_ATTACK_DESC",		"BOTH_JUMPATTACK7",				MDS_FORCE_JUMP },
+{ "@MENUS_SABER_STAFF_TWIRL",			"@MENUS_SABER_STAFF_TWIRL_DESC",	"BOTH_SPINATTACK7",				MDS_SABER },
+{ "@MENUS_ATTACK_ENEMYONGROUND",		"@MENUS_ATTACK_ENEMYONGROUND_DESC", "BOTH_STABDOWN_STAFF",			MDS_FORCE_JUMP },
+{ "@MENUS_SPINNING_KATA",				"@MENUS_SPINNING_KATA_DESC",		"BOTH_A7_SOULCAL",				MDS_SABER },
+{ "@MENUS_KICK1",						"@MENUS_KICK1_DESC",				"BOTH_A7_KICK_F",				MDS_FORCE_JUMP },
+{ "@MENUS_JUMP_KICK",					"@MENUS_JUMP_KICK_DESC",			"BOTH_A7_KICK_F_AIR",			MDS_FORCE_JUMP },
+{ "@MENUS_SPLIT_KICK",				"@MENUS_SPLIT_KICK_DESC",			"BOTH_A7_KICK_RL",				MDS_FORCE_JUMP },
+{ "@MENUS_SPIN_KICK",					"@MENUS_SPIN_KICK_DESC",			"BOTH_A7_KICK_S",				MDS_FORCE_JUMP },
+{ "@MENUS_FLIP_KICK",					"@MENUS_FLIP_KICK_DESC",			"BOTH_A7_KICK_BF",				MDS_FORCE_JUMP },
+{ "@MENUS_BUTTERFLY_ATTACK",			"@MENUS_BUTTERFLY_ATTACK_DESC",		"BOTH_BUTTERFLY_FR1",			MDS_SABER },
+{ "@MENUS_BOTH_ROLL_STAB",			"@MENUS_BOTH_ROLL_STAB2_DESC",		"BOTH_ROLL_STAB",				MDS_SABER },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+{ NULL, NULL, 0,	MDS_NONE },
+}
 };
 
 
@@ -339,8 +351,8 @@ void UI_Load(void);
 
 typedef struct {
 	vmCvar_t	*vmCvar;
-	char		*cvarName;
-	char		*defaultString;
+	const char		*cvarName;
+	const char		*defaultString;
 	int			cvarFlags;
 } cvarTable_t;
 
@@ -1540,7 +1552,7 @@ static float UI_GetValue(int ownerDraw)
 }
 
 //Force Warnings
-typedef enum
+enum
 {
 	FW_VERY_LIGHT = 0,
 	FW_SEMI_LIGHT,
@@ -2100,7 +2112,7 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 	{
 		return qfalse;
 	}
-	if ( len >= sizeof( text ) - 1 ) 
+	if ( len >= (int)(sizeof( text ) - 1) ) 
 	{
 		Com_Error( ERR_FATAL, "UI_ParseAnimationFile: File %s too long\n (%d > %d)", af_filename, len, sizeof( text ) - 1);
 		return qfalse;
@@ -2340,7 +2352,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 				COM_EndParseSession(  );
 				return qfalse;
 			}
-			assert(species.ColorCount < sizeof(species.ColorActionText)/sizeof(species.ColorActionText[0]) );
+			assert((size_t)species.ColorCount < sizeof(species.ColorActionText)/sizeof(species.ColorActionText[0]) );
 			Q_strcat(species.ColorActionText[species.ColorCount], sizeof(species.ColorActionText[0]), token);
 			Q_strcat(species.ColorActionText[species.ColorCount], sizeof(species.ColorActionText[0]), " ");
 			token = COM_ParseExt( &p, qtrue );	//looking for action commands or final }
@@ -2628,7 +2640,7 @@ void _UI_Init( qboolean inGameLoad )
 
 	String_Init();
 
-	char *menuSet = UI_Cvar_VariableString("ui_menuFiles");
+	const char *menuSet = UI_Cvar_VariableString("ui_menuFiles");
 
 	if (menuSet == NULL || menuSet[0] == '\0') 
 	{
@@ -2937,7 +2949,7 @@ UI_Load
 */
 void UI_Load(void) 
 {
-	char *menuSet;
+	const char *menuSet;
 	char lastName[1024];
 	menuDef_t *menu = Menu_GetFocused();
 
@@ -4310,7 +4322,7 @@ static void UI_GetCharacterCvars ( void )
 	Cvar_Set ( "ui_char_color_green", Cvar_VariableString ( "g_char_color_green" ) );
 	Cvar_Set ( "ui_char_color_blue", Cvar_VariableString ( "g_char_color_blue" ) );
 
-	char* model = Cvar_VariableString ( "g_char_model" );
+	const char* model = Cvar_VariableString ( "g_char_model" );
 	Cvar_Set ( "ui_char_model", model );
 
 	for (int i = 0; i < uiInfo.playerSpeciesCount; i++)
@@ -4433,32 +4445,32 @@ static void UI_UpdateFightingStyleChoices ( void )
 #define MAX_POWER_ENUMS 16
 
 typedef struct {
-	char	*title;
+	const char	*title;
 	short	powerEnum;
 } powerEnum_t;
 
 static powerEnum_t powerEnums[MAX_POWER_ENUMS] = 
 {
-"absorb",		FP_ABSORB,			
-"heal",			FP_HEAL,			
-"mindtrick",	FP_TELEPATHY,		
-"protect",		FP_PROTECT,			
+	{ "absorb",		FP_ABSORB },
+	{ "heal",			FP_HEAL },
+	{ "mindtrick",	FP_TELEPATHY },
+	{ "protect",		FP_PROTECT },
 
-			// Core powers
-"jump",			FP_LEVITATION,		
-"pull",			FP_PULL,			
-"push",			FP_PUSH,			
-"sense",		FP_SEE,				
-"speed",		FP_SPEED,			
-"sabdef",		FP_SABER_DEFENSE,	
-"saboff",		FP_SABER_OFFENSE,	
-"sabthrow",		FP_SABERTHROW,		
+				// Core powers
+	{ "jump",			FP_LEVITATION },
+	{ "pull",			FP_PULL },
+	{ "push",			FP_PUSH },
+	{ "sense",		FP_SEE },
+	{ "speed",		FP_SPEED },
+	{ "sabdef",		FP_SABER_DEFENSE },
+	{ "saboff",		FP_SABER_OFFENSE },
+	{ "sabthrow",		FP_SABERTHROW },
 
-			// Dark powers
-"drain",		FP_DRAIN,			
-"grip",			FP_GRIP,			
-"lightning",	FP_LIGHTNING,		
-"rage",			FP_RAGE				
+				// Dark powers
+	{ "drain",		FP_DRAIN },
+	{ "grip",			FP_GRIP },
+	{ "lightning",	FP_LIGHTNING },
+	{ "rage",			FP_RAGE },
 };
 
 
@@ -5612,7 +5624,7 @@ static void	UI_AddWeaponSelection ( const int weaponIndex, const int ammoIndex, 
 	iconItem = (itemDef_s *) Menu_FindItemByName(menu, iconItemName );
 	litIconItem = (itemDef_s *) Menu_FindItemByName(menu, litIconItemName );
 
-	char *chosenItemName, *chosenButtonName;
+	const char *chosenItemName, *chosenButtonName;
 
 	// has this weapon already been chosen?
 	if (weaponIndex == uiInfo.selectedWeapon1)
@@ -5731,7 +5743,7 @@ static void UI_RemoveWeaponSelection ( const int weaponSelectionIndex )
 {
 	itemDef_s  *item;
 	menuDef_t	*menu;
-	char *chosenItemName, *chosenButtonName,*background;
+	const char *chosenItemName, *chosenButtonName,*background;
 	int		ammoIndex,weaponIndex;
 
 	menu = Menu_GetFocused();	// Get current menu
@@ -5921,7 +5933,7 @@ static void	UI_AddThrowWeaponSelection ( const int weaponIndex, const int ammoIn
 	iconItem = (itemDef_s *) Menu_FindItemByName(menu, iconItemName );
 	litIconItem = (itemDef_s *) Menu_FindItemByName(menu, litIconItemName );
 
-	char *chosenItemName, *chosenButtonName;
+	const char *chosenItemName, *chosenButtonName;
 
 	// Has a throw weapon already been chosen?
 	if (uiInfo.selectedThrowWeapon!=NOWEAPON)
@@ -6018,7 +6030,7 @@ static void UI_RemoveThrowWeaponSelection ( void )
 {
 	itemDef_s  *item;
 	menuDef_t	*menu;
-	char *chosenItemName, *chosenButtonName,*background;
+	const char *chosenItemName, *chosenButtonName,*background;
 
 	menu = Menu_GetFocused();	// Get current menu
 
@@ -6246,8 +6258,8 @@ static void UI_UpdateSaberHilt( qboolean secondSaber )
 		return;
 	}
 
-	char *itemName;
-	char *saberCvarName;
+	const char *itemName;
+	const char *saberCvarName;
 	if ( secondSaber )
 	{
 		itemName = "saber2";

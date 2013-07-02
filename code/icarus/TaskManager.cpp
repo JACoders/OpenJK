@@ -944,7 +944,7 @@ CallbackCommand
 
 int	CTaskManager::CallbackCommand( CTask *task, int returnCode, CIcarus* icarus )
 {
-	if ( m_owner->Callback( this, task->GetBlock(), returnCode, icarus ) == CSequencer::SEQ_OK, icarus )
+	if ( m_owner->Callback( this, task->GetBlock(), returnCode, icarus ) == CSequencer::SEQ_OK )
 		return Go(icarus);
 
 	assert(0);

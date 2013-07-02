@@ -1712,7 +1712,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 				&& enemy_dist < 500 
 				&& (Q_irand( 0, chanceScale*10 )<5 || (NPCS.NPC->enemy->client && NPCS.NPC->enemy->client->ps.weapon != WP_SABER && !Q_irand( 0, chanceScale ) ) ) )
 			{//else, randomly try some kind of attack every now and then
-				if ( (NPCS.NPCInfo->rank == RANK_ENSIGN || NPCS.NPCInfo->rank > RANK_LT_JG) && !Q_irand( 0, 1 ) || NPCS.NPC->s.weapon != WP_SABER )
+				if ( ((NPCS.NPCInfo->rank == RANK_ENSIGN || NPCS.NPCInfo->rank > RANK_LT_JG) && !Q_irand( 0, 1 )) || NPCS.NPC->s.weapon != WP_SABER )
 				{
 					if ( WP_ForcePowerUsable( NPCS.NPC, FP_PULL ) && !Q_irand( 0, 2 ) )
 					{
@@ -1726,8 +1726,8 @@ static void Jedi_CombatDistance( int enemy_dist )
 							NPCS.ucmd.buttons |= BUTTON_ATTACK;
 						}
 					}
-					else if ( WP_ForcePowerUsable( NPCS.NPC, FP_LIGHTNING )
-						&& ((NPCS.NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_lightning",NPCS.NPC->NPC_type) || Q_irand( 0, 1 )))
+					else if ( (WP_ForcePowerUsable( NPCS.NPC, FP_LIGHTNING )
+						&& ((NPCS.NPCInfo->scriptFlags & SCF_DONT_FIRE) && Q_stricmp("cultist_lightning",NPCS.NPC->NPC_type))) || Q_irand( 0, 1 ))
 					{
 						ForceLightning( NPCS.NPC );
 						if ( NPCS.NPC->client->ps.fd.forcePowerLevel[FP_LIGHTNING] > FORCE_LEVEL_1 )
@@ -1738,10 +1738,10 @@ static void Jedi_CombatDistance( int enemy_dist )
 						TIMER_Set( NPCS.NPC, "attackDelay", NPCS.NPC->client->ps.weaponTime );
 					}
 					//rwwFIXMEFIXME: After new drain stuff from SP is in re-enable this.
-					else if ( NPCS.NPC->health < NPCS.NPC->client->ps.stats[STAT_MAX_HEALTH] * 0.75f
+					else if ( (NPCS.NPC->health < NPCS.NPC->client->ps.stats[STAT_MAX_HEALTH] * 0.75f
 							&& Q_irand( FORCE_LEVEL_0, NPCS.NPC->client->ps.fd.forcePowerLevel[FP_DRAIN] ) > FORCE_LEVEL_1
 							&& WP_ForcePowerUsable( NPCS.NPC, FP_DRAIN ) 
-							&& ((NPCS.NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPCS.NPC->NPC_type) || Q_irand( 0, 1 )) )
+							&& ((NPCS.NPCInfo->scriptFlags&SCF_DONT_FIRE)&&Q_stricmp("cultist_drain",NPCS.NPC->NPC_type))) || Q_irand( 0, 1 ) )
 						{
 							ForceDrain( NPCS.NPC );
 							NPCS.NPC->client->ps.weaponTime = Q_irand( 1000, 3000+(g_npcspskill.integer*500) );
@@ -2354,11 +2354,7 @@ int Jedi_ReCalcParryTime( gentity_t *self, evasionType_t evasionType )
 				}
 				else if ( self->NPC->rank >= RANK_LT_JG )
 				{//fencers, bosses, shadowtroopers, luke, desann, et al use the norm
-					if ( Q_irand( 0, 2 ) )
-					{//medium speed parry
-						baseTime = baseTime;
-					}
-					else
+					if ( !Q_irand( 0, 2 ) )
 					{//with the occasional fast parry
 						baseTime = ceil(baseTime/2.0f);
 					}

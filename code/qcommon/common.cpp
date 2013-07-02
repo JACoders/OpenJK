@@ -147,7 +147,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	va_end (argptr);
 
 	if ( rd_buffer ) {
-		if ((strlen (msg) + strlen(rd_buffer)) > (rd_buffersize - 1)) {
+		if ((strlen (msg) + strlen(rd_buffer)) > (unsigned)(rd_buffersize - 1)) {
 			rd_flush(rd_buffer);
 			*rd_buffer = 0;
 		}
@@ -431,7 +431,7 @@ be after execing the config and default.
 */
 void Com_StartupVariable( const char *match ) {
 	int		i;
-	char	*s;
+	const char	*s;
 	cvar_t	*cv;
 
 	for (i=0 ; i < com_numConsoleLines ; i++) {
@@ -535,7 +535,7 @@ void Info_Print( const char *s ) {
 Com_StringContains
 ============
 */
-char *Com_StringContains(char *str1, char *str2, int casesensitive) {
+const char *Com_StringContains(const char *str1, const char *str2, int casesensitive) {
 	int len, i, j;
 
 	len = strlen(str1) - strlen(str2);
@@ -564,9 +564,9 @@ char *Com_StringContains(char *str1, char *str2, int casesensitive) {
 Com_Filter
 ============
 */
-int Com_Filter(char *filter, char *name, int casesensitive) {
+int Com_Filter(const char *filter, const char *name, int casesensitive) {
 	char buf[MAX_TOKEN_CHARS];
-	char *ptr;
+	const char *ptr;
 	int i;
 
 	while(*filter) {
@@ -846,7 +846,7 @@ int Com_EventLoop( void ) {
 			// the event buffers are only large enough to hold the
 			// exact payload, but channel messages need to be large
 			// enough to hold fragment reassembly
-			if ( (unsigned)buf.cursize > buf.maxsize ) {
+			if ( (unsigned)buf.cursize > (unsigned)buf.maxsize ) {
 				Com_Printf("Com_EventLoop: oversize packet\n");
 				continue;
 			}
@@ -943,7 +943,7 @@ A way to force a bus error for development reasons
 =================
 */
 static void Com_Crash_f( void ) {
-	* ( int * ) 0 = 0x12345678;
+	* ( volatile int * ) 0 = 0x12345678;
 }
 
 /*
@@ -1243,7 +1243,9 @@ void G2Time_ResetTimers(void);
 void G2Time_ReportTimers(void);
 #endif
 
+#ifdef _MSC_VER
 #pragma warning (disable: 4701)	//local may have been used without init (timing info vars)
+#endif
 void Com_Frame( void ) {
 try 
 {
@@ -1440,7 +1442,9 @@ try
 #endif
 }
 
+#ifdef _MSC_VER
 #pragma warning (default: 4701)	//local may have been used without init
+#endif
 
 /*
 =================

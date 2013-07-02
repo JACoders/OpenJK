@@ -177,16 +177,16 @@ static int strHandleCount = 0;
 static stringDef_t *strHandle[HASH_TABLE_SIZE];
 
 typedef struct  itemFlagsDef_s {
-	char *string;
+	const char *string;
 	int value;
 }	itemFlagsDef_t;
 
 itemFlagsDef_t itemFlags [] = {
-"WINDOW_INACTIVE",			WINDOW_INACTIVE,
-NULL,					0
+	{ "WINDOW_INACTIVE",	WINDOW_INACTIVE },
+	{ NULL,					0 }
 };
 
-char *styles [] = {
+const char *styles [] = {
 "WINDOW_STYLE_EMPTY",
 "WINDOW_STYLE_FILLED",
 "WINDOW_STYLE_GRADIENT",
@@ -196,7 +196,7 @@ char *styles [] = {
 NULL
 };
 
-char *types [] = {
+const char *types [] = {
 "ITEM_TYPE_TEXT",
 "ITEM_TYPE_BUTTON",
 "ITEM_TYPE_RADIOBUTTON",
@@ -215,7 +215,7 @@ char *types [] = {
 NULL
 };
 
-char *alignment [] = {
+const char *alignment [] = {
 "ITEM_ALIGN_LEFT",
 "ITEM_ALIGN_CENTER",
 "ITEM_ALIGN_RIGHT",
@@ -1102,7 +1102,7 @@ qboolean MenuParse_itemDef( itemDef_t *item)
 
 typedef struct keywordHash_s
 {
-	char		*keyword;
+	const char	*keyword;
 	qboolean	(*func)(itemDef_t *item);
 	struct		keywordHash_s *next;
 } keywordHash_t;
@@ -2603,7 +2603,7 @@ qboolean Script_Transition3(itemDef_t *item, const char **args)
 int GetCurrentFeederIndex(itemDef_t * item)
 {
 	float feederID = item->special;
-	char * name;
+	const char * name;
 	int i, max;
 	
 	if (feederID == FEEDER_PLAYER_SPECIES) 
@@ -5091,7 +5091,6 @@ static void Item_TextScroll_BuildLines ( itemDef_t* item )
 					// Special case, don't consider line breaking if you're on an asian punctuation char of
 					//	a language that doesn't use spaces...
 					//
-					uiLetter = uiLetter;	// breakpoint line only
 				}
 				else
 				{
@@ -5437,7 +5436,7 @@ void  Menus_Activate(menuDef_t *menu)
 }
 
 typedef struct {
-	char	*command;
+	const char	*command;
 	int		id;
 	int		defaultbind1;
 	int		defaultbind2;
@@ -5528,7 +5527,7 @@ static const int g_bindCount = sizeof(g_bindings) / sizeof(bind_t);
 Controls_GetKeyAssignment
 =================
 */
-static void Controls_GetKeyAssignment (char *command, int *twokeys)
+static void Controls_GetKeyAssignment (const char *command, int *twokeys)
 {
 	int		count;
 	int		j;
@@ -11360,7 +11359,7 @@ qboolean Item_HandleKey(itemDef_t *item, int key, qboolean down)
 	} 
 	else 
 	{
-		if (down && key == A_MOUSE1 || key == A_MOUSE2 || key == A_MOUSE3) 
+		if (down && (key == A_MOUSE1 || key == A_MOUSE2 || key == A_MOUSE3)) 
 		{
 			Item_StartCapture(item, key);
 		}
@@ -11555,7 +11554,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 #endif
 	{
 		static qboolean inHandleKey = qfalse;
-		if (!inHandleKey && key == A_MOUSE1 || key == A_MOUSE2 || key == A_MOUSE3) 
+		if (!inHandleKey && (key == A_MOUSE1 || key == A_MOUSE2 || key == A_MOUSE3)) 
 		{
 			inHandleKey = qtrue;
 			Menus_HandleOOBClick(menu, key, down);

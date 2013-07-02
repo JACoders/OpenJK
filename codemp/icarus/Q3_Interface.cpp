@@ -222,7 +222,7 @@ static sharedEntity_t *Q3_GetEntityByName( const char *name )
 	entlist_t::iterator		ei;
 	char					temp[1024];
 
-	if ( name == NULL || name[0] == NULL )
+	if ( name == NULL || name[0] == '\0' )
 		return NULL;
 
 	strncpy( (char *) temp, name, sizeof(temp) );

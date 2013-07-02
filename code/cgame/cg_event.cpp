@@ -33,7 +33,7 @@ extern void FX_KothosBeam( vec3_t start, vec3_t end );
 //==========================================================================
 
 qboolean CG_IsFemale( const char *infostring ) {
-	char		*sex;
+	const char		*sex;
 
 	sex = Info_ValueForKey( infostring, "s" );
 	if (sex[0] == 'f' || sex[0] == 'F')

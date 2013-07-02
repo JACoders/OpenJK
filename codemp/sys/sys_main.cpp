@@ -12,7 +12,6 @@
 #include "sys_local.h"
 #endif
 
-static char cdPath[ MAX_OSPATH ] = { 0 };
 static char binaryPath[ MAX_OSPATH ] = { 0 };
 static char installPath[ MAX_OSPATH ] = { 0 };
 
@@ -113,6 +112,7 @@ void	Sys_Init (void) {
 	Cvar_Set( "username", Sys_GetCurrentUser( ) );
 }
 
+void Sys_Exit( int ex ) __attribute__((noreturn));
 void Sys_Exit( int ex ) {
 #ifdef NDEBUG // regular behavior
     // We can't do this

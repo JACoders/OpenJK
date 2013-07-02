@@ -633,7 +633,7 @@ void Blocked_Mover( gentity_t *ent, gentity_t *other )
 	// remove anything other than a client -- no longer the case
 
 	// don't remove security keys or goodie keys
-	if ( (other->s.eType == ET_ITEM) )
+	if ( other->s.eType == ET_ITEM)
 	{
 		// should we be doing anything special if a key blocks it... move it somehow..?
 	}

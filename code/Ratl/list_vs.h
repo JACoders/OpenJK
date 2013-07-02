@@ -74,10 +74,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
-	{
-		CAPACITY		= T::CAPACITY
-	};
+	static const int CAPACITY		= T::CAPACITY;
 private:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Data
@@ -86,10 +83,7 @@ private:
 
 	int				mFront;				// The Beginning Of The List
 	int				mBack;				// The End Of The List
- 	enum 
-	{
-		NULL_NODE		= -1
-	};
+	static const int NULL_NODE		= -1;
 
 public:
     ////////////////////////////////////////////////////////////////////////////////////
@@ -731,10 +725,7 @@ class list_vs : public list_base<storage::value_semantics_node<T,ARG_CAPACITY,li
 public:
 	typedef typename storage::value_semantics_node<T,ARG_CAPACITY,list_node> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY		= ARG_CAPACITY;
 	list_vs() {}
 };
 
@@ -744,10 +735,7 @@ class list_os : public list_base<storage::object_semantics_node<T,ARG_CAPACITY,l
 public:
 	typedef typename storage::object_semantics_node<T,ARG_CAPACITY,list_node> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY
-	};
+	static const int CAPACITY		= ARG_CAPACITY;
 	list_os() {}
 };
 
@@ -757,11 +745,8 @@ class list_is : public list_base<storage::virtual_semantics_node<T,ARG_CAPACITY,
 public:
 	typedef typename storage::virtual_semantics_node<T,ARG_CAPACITY,ARG_MAX_CLASS_SIZE,list_node> TStorageTraits;
 	typedef typename TStorageTraits::TValue TTValue;
- 	enum 
-	{
-		CAPACITY		= ARG_CAPACITY,
-		MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE
-	};
+	static const int CAPACITY		= ARG_CAPACITY;
+	static const int MAX_CLASS_SIZE	= ARG_MAX_CLASS_SIZE;
 	list_is() {}
 };
 

@@ -63,7 +63,6 @@ typedef struct _GUID {
 } GUID;
 #define strnicmp Q_stricmpn
 #define strcmpi Q_stricmp
-#define stricmp Q_stricmp
 #define RGB(r,g,b)          ((COLORREF)((r) | ((g) << 8) | ((b) << 16)))
 
 #define _isnan isnan

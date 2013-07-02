@@ -266,7 +266,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 	}
 	else 
 	{
-		if ( other && other->s.weapon == WP_SABER || mod == MOD_ELECTROCUTE || mod == MOD_CRUSH/*FIXME:MOD_FORCE_GRIP*/ )
+		if ( other && (other->s.weapon == WP_SABER || mod == MOD_ELECTROCUTE || mod == MOD_CRUSH/*FIXME:MOD_FORCE_GRIP*/) )
 		{
 			if ( self->client->ps.weapon == WP_SABER 
 				&& other->s.number < MAX_CLIENTS )
@@ -982,6 +982,8 @@ void NPC_Respond( gentity_t *self, int userNum )
 		{
 			self->NPC->blockedSpeechDebounceTime = level.time + 2000;
 		}
+		break;
+	default:
 		break;
 	}
 	

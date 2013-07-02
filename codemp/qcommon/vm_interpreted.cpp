@@ -373,7 +373,7 @@ nextInstruction2:
 #ifdef DEBUG_VM
 		if (com_vmdebug->integer > 1)
 		{
-			if ( (unsigned)programCounter > vm->codeLength ) {
+			if ( (unsigned)programCounter > (unsigned)vm->codeLength ) {
 				Com_Error( ERR_DROP, "VM pc out of range" );
 			}
 

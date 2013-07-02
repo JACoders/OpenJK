@@ -307,6 +307,7 @@ fileHandle_t FS_FOpenFileWrite( const char *filename ) {
 	return f;
 }
 
+#ifdef _WIN32
 static bool FS_FileCacheable(const char* const filename) 
 {
 	extern	cvar_t	*com_buildScript;
@@ -316,6 +317,7 @@ static bool FS_FileCacheable(const char* const filename)
 	}
 	return( strchr(filename, '/') != 0 );
 }
+#endif
 
 /*
 ===========
@@ -882,7 +884,7 @@ static pack_t *FS_LoadZipFile( char *zipfile )
 	unz_global_info gi;
 	char			filename_inzip[MAX_ZPATH];
 	unz_file_info	file_info;
-	int				i, len;
+	unsigned int	i, len;
 	long			hash;
 	int				fs_numHeaderLongs;
 	int				*fs_headerLongs;
@@ -1156,41 +1158,6 @@ void FS_FreeFileList( char **filelist ) {
 }
 
 /*
-===============
-FS_AddFileToListBuf
-===============
-*/
-static int FS_AddFileToListBuf( char *name, char *listbuf, int bufsize, int nfiles ) {
-	char	*p;
-
-	if ( nfiles == MAX_FOUND_FILES - 1 ) {
-		return nfiles;
-	}
-
-	if (name[0] == '/' || name[0] == '\\') {
-		name++;
-	}
-
-	p = listbuf;
-	while ( *p ) {
-		if ( !stricmp( name, p ) ) {
-			return nfiles;		// already in list
-		}
-		p += strlen( p ) + 1;
-	}
-
-	if ( ( p + strlen( name ) + 2 - listbuf ) > bufsize ) {
-		return nfiles;		// list is full
-	}
-
-	strcpy( p, name );
-	p += strlen( p ) + 1;
-	*p = 0;
-
-	return nfiles + 1;
-}
-
-/*
 ================
 FS_GetFileList
 
@@ -1425,8 +1392,8 @@ FS_Dir_f
 ================
 */
 void FS_Dir_f( void ) {
-	char	*path;
-	char	*extension;
+	const char	*path;
+	const char	*extension;
 	char	**dirnames;
 	int		ndirs;
 	int		i;

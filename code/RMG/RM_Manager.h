@@ -31,7 +31,6 @@ private:
 	CRMMission*			mMission;
 	CCMLandScape*		mLandScape;
 	CRandomTerrain*		mTerrain;
-	int					mPreviewTimer;
 	int					mCurPriority;
 	bool				mUseTimeLimit;
 

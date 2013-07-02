@@ -3,15 +3,19 @@
 // Tokenizer.h
 //
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4786 )	// identifier was truncated 
 
 #pragma warning (push, 3)			// go back down to 3 for the stl include
 #pragma warning (disable:4503)		// decorated name length xceeded, name was truncated
+#endif
 #include <string>
 #include <vector>
 #include <map>
+#ifdef _MSC_VER
 #pragma warning (pop)
 #pragma warning (disable:4503)		// decorated name length xceeded, name was truncated
+#endif
 
 using namespace std;
 
@@ -106,7 +110,7 @@ public:
 	virtual bool IsThisDefinition(void* theDefinition);
 
 protected:
-	virtual bool Init();
+	bool InitBaseStream();
 
 	CParseStream*		m_next;
 };
@@ -127,7 +131,7 @@ public:
 	virtual float GetFloatValue();
 
 protected:
-	virtual void Init();
+	virtual void InitBaseToken();
 
 	char*			m_string;
 	CToken*			m_next;
@@ -144,7 +148,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(byte theByte);
+	void Init(byte theByte);
 };
 
 class CStringToken : public CToken
@@ -158,7 +162,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(LPCTSTR theString);
+	void Init(LPCTSTR theString);
 };
 
 class CIntToken : public CToken
@@ -175,7 +179,7 @@ public:
 	virtual LPCTSTR GetStringValue();
 
 protected:
-	virtual void Init(long value);
+	void Init(long value);
 	
 	long			m_value;
 };
@@ -193,7 +197,7 @@ public:
 	virtual LPCTSTR GetStringValue();
 
 protected:
-	virtual void Init(float value);
+	void Init(float value);
 
 	float			m_value;
 };
@@ -209,7 +213,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(LPCTSTR name);
+	void Init(LPCTSTR name);
 };
 
 class CCommentToken : public CToken
@@ -223,7 +227,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(LPCTSTR name);
+	void Init(LPCTSTR name);
 };
 
 class CUserToken : public CToken
@@ -237,7 +241,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(int value, LPCTSTR string);
+	void Init(int value, LPCTSTR string);
 
 	int				m_value;
 };
@@ -253,7 +257,7 @@ public:
 	virtual int GetType();
 
 protected:
-	virtual void Init(LPCTSTR string);
+	void Init(LPCTSTR string);
 };
 
 class CSymbol
@@ -267,7 +271,7 @@ public:
 	LPCTSTR GetName();
 
 protected:
-	virtual void Init(LPCTSTR symbolName);
+	void InitBaseSymbol(LPCTSTR symbolName);
 
 	char*			m_symbolName;
 };
@@ -286,7 +290,7 @@ public:
 	LPCTSTR GetValue();
 
 protected:
-	virtual void Init(LPCTSTR symbolName);
+	void Init(LPCTSTR symbolName);
 
 	char*			m_value;
 };
@@ -301,7 +305,7 @@ public:
 	int GetValue();
 
 protected:
-	virtual void Init(LPCTSTR symbolName, int value);
+	void Init(LPCTSTR symbolName, int value);
 
 	int				m_value;
 };
@@ -489,7 +493,7 @@ public:
 	virtual long GetRemainingSize();
 
 protected:
-	virtual void Init(byte theByte, int curLine, LPCTSTR filename);
+	void Init(byte theByte, int curLine, LPCTSTR filename);
 
 	byte			m_byte;
 	bool			m_consumed;
@@ -510,7 +514,7 @@ public:
 	virtual long GetRemainingSize();
 
 protected:
-	virtual void Init(byte* data, long datasize);
+	void Init(byte* data, long datasize);
 
 	byte*			m_data;
 	int				m_curLine;
@@ -544,7 +548,7 @@ public:
 	virtual long GetRemainingSize();
 
 protected:
-	virtual void Init(CToken* token);
+	void Init(CToken* token);
 
 	byte*			m_data;
 	int				m_curLine;
@@ -584,8 +588,8 @@ public:
 	virtual bool NextChar(byte& theByte);
 
 protected:
-	virtual bool Init();
-	virtual bool Init(LPCTSTR filename, CTokenizer* tokenizer);
+	bool Init();
+	bool Init(LPCTSTR filename, CTokenizer* tokenizer);
 //	virtual void Init(CFile* file, CTokenizer* tokenizer);
 	DWORD GetFileSize();
 	void Read(void* buff, UINT buffsize);
