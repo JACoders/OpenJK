@@ -360,12 +360,12 @@ static char *StripTrailingWhiteSpaceOnEveryLine(char *pText)
 		// find end of line...
 		//				
 		char *pThisLineEnd = pText;
-		while (*pThisLineEnd && *pThisLineEnd != '\r' && ((pThisLineEnd-pText) < sizeof(sOneLine)-1))
+		while (*pThisLineEnd && *pThisLineEnd != '\r' && ((unsigned)(pThisLineEnd-pText) < sizeof(sOneLine)-1))
 		{
 			pThisLineEnd++;
 		}	
 
-		int iCharsToCopy = pThisLineEnd - pText;
+		unsigned int iCharsToCopy = pThisLineEnd - pText;
 		strncpy(sOneLine, pText, iCharsToCopy);
 				sOneLine[iCharsToCopy]='\0';
 		pText += iCharsToCopy;
@@ -652,7 +652,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 
 			// check all transition music pieces exist, and that entry points into new pieces after transitions also exist...
 			//
-			for (int iExitPoint=0; iExitPoint < MusicFile.MusicExitPoints.size(); iExitPoint++)
+			for (size_t iExitPoint=0; iExitPoint < MusicFile.MusicExitPoints.size(); iExitPoint++)
 			{
 				MusicExitPoint_t &MusicExitPoint = MusicFile.MusicExitPoints[ iExitPoint ];
 
@@ -819,7 +819,7 @@ LPCSTR Music_GetFileNameForState( MusicState_e eMusicState)
 			pMusicFile = Music_GetBaseMusicFile( eBGRNDTRACK_ACTION );
 			if (pMusicFile)
 			{
-				int iTransNum = eMusicState - eBGRNDTRACK_ACTIONTRANS0;
+				unsigned int iTransNum = eMusicState - eBGRNDTRACK_ACTIONTRANS0;
 				if (iTransNum < pMusicFile->MusicExitPoints.size())
 				{
 					return Music_BuildFileName( pMusicFile->MusicExitPoints[iTransNum].sNextFile.c_str(), eMusicState );
@@ -835,7 +835,7 @@ LPCSTR Music_GetFileNameForState( MusicState_e eMusicState)
 			pMusicFile = Music_GetBaseMusicFile( eBGRNDTRACK_EXPLORE );
 			if (pMusicFile)
 			{
-				int iTransNum = eMusicState - eBGRNDTRACK_EXPLORETRANS0;
+				unsigned int iTransNum = eMusicState - eBGRNDTRACK_EXPLORETRANS0;
 				if (iTransNum < pMusicFile->MusicExitPoints.size())
 				{
 					return Music_BuildFileName( pMusicFile->MusicExitPoints[iTransNum].sNextFile.c_str(), eMusicState );
@@ -967,7 +967,7 @@ sboolean Music_AllowedToTransition( float			fPlayingTimeElapsed,
 				//
 				// check legality in case of crap data...
 				//
-				if (iExitPoint < pMusicFile->MusicExitPoints.size())
+				if ((unsigned)iExitPoint < pMusicFile->MusicExitPoints.size())
 				{
 					MusicExitPoint_t &ExitPoint = pMusicFile->MusicExitPoints[ iExitPoint ];
 

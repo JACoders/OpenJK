@@ -1626,10 +1626,10 @@ void CL_ServersResponsePacket( const netadr_t *from, msg_t *msg ) {
 		{
 			buffptr++;
 
-			if (buffend - buffptr < sizeof(addresses[numservers].ip) + sizeof(addresses[numservers].port) + 1)
+			if (buffend - buffptr < (int)(sizeof(addresses[numservers].ip) + sizeof(addresses[numservers].port) + 1))
 				break;
 
-			for(i = 0; i < sizeof(addresses[numservers].ip); i++)
+			for(size_t i = 0; i < sizeof(addresses[numservers].ip); i++)
 				addresses[numservers].ip[i] = *buffptr++;
 
 			addresses[numservers].type = NA_IP;
