@@ -565,7 +565,7 @@ static void R_Images_DeleteImageContents( image_t *pImage )
 	assert(pImage);	// should never be called with NULL
 	if (pImage)
 	{
-		if (&qglDeleteTextures) {	//won't have one if we switched to dedicated.
+		if (qglDeleteTextures != NULL) {	//won't have one if we switched to dedicated.
 			qglDeleteTextures( 1, &pImage->texnum );
 		}
 		Z_Free(pImage);
@@ -981,9 +981,9 @@ done:
 static void GL_ResetBinds(void)
 {
 	memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
-	if ( &qglBindTexture ) 
+	if ( qglBindTexture != NULL ) 
 	{
-		if ( &qglActiveTextureARB ) 
+		if ( qglActiveTextureARB != NULL ) 
 		{
 			GL_SelectTexture( 1 );
 			qglBindTexture( GL_TEXTURE_2D, 0 );
@@ -2143,7 +2143,7 @@ int RE_SavePNG( char *filename, byte *buf, size_t width, size_t height, int byte
 	fileHandle_t fp;
 	png_structp png_ptr = NULL;
 	png_infop info_ptr = NULL;
-	int x, y;
+	unsigned int x, y;
 	png_byte ** row_pointers = NULL;
 	/* "status" contains the return value of this function. At first
 	it is set to a value which means 'failure'. When the routine
@@ -3266,9 +3266,9 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 			}
 			surfName[strlen(surfName)-4] = 0;	//remove the "_off"
 		}
-		if ( skin->numSurfaces >= ARRAY_LEN( skin->surfaces ) )
+		if ( (unsigned)skin->numSurfaces >= ARRAY_LEN( skin->surfaces ) )
 		{
-			assert( ARRAY_LEN( skin->surfaces ) > skin->numSurfaces );
+			assert( ARRAY_LEN( skin->surfaces ) > (unsigned)skin->numSurfaces );
 			Com_Printf( "WARNING: RE_RegisterSkin( '%s' ) more than %d surfaces!\n", name, ARRAY_LEN( skin->surfaces ) );
 			break;
 		}
