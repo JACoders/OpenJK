@@ -569,7 +569,7 @@ retryModel:
 		const char	*p;
 
 		//Now turn on/off any surfaces
-		if ( surfOff && surfOff[0] )
+		if ( surfOff[0] )
 		{
 			p = surfOff;
 			while ( 1 ) 
@@ -583,7 +583,7 @@ retryModel:
 				trap_G2API_SetSurfaceOnOff( ci->ghoul2Model, token, 0x00000002/*G2SURFACEFLAG_OFF*/ );
 			}
 		}
-		if ( surfOn && surfOn[0] )
+		if ( surfOn[0] )
 		{
 			p = surfOn;
 			while ( 1 )

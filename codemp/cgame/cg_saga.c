@@ -177,7 +177,7 @@ void CG_InitSiegeMode(void)
 
 	Com_sprintf(levelname, sizeof(levelname), "%s.siege\0", levelname); 
 
-	if (!levelname || !levelname[0])
+	if (!levelname[0])
 	{
 		goto failure;
 	}
