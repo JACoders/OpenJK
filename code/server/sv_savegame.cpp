@@ -127,7 +127,8 @@ static LPCSTR SG_AddSavePath( LPCSTR psPathlessBaseName )
 	static char sSaveName[8][MAX_OSPATH]; 
 	static int  i=0;
 
-	i=++i&7;
+	int next = i = (i + 1) & 7;
+	i = next;
 
 	if(psPathlessBaseName)
 	{

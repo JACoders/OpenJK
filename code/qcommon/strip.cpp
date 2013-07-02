@@ -727,7 +727,7 @@ static void FixIllegalChars(char *psText)
 							'O','0','L','1','E','3','A','4','S','5','T','7','I','!','H','#'	// laziness because of strchr()
 						};
 
-		for (int i=0; i<sizeof(cReplace); i+=2)
+		for (size_t i=0; i<sizeof(cReplace); i+=2)
 		{
 			while ((p=strchr(psText,cReplace[i]))!=NULL)
 				*p = cReplace[i+1];
@@ -924,7 +924,7 @@ int cStringPackageSingle::FindStringID(const char *ReferenceLookup)
 	}
 
 	size = strlen(Reference);
-	if (strlen(ReferenceLookup) < size+2)
+	if ((int)strlen(ReferenceLookup) < size+2)
 	{
 		return -1;
 	}
