@@ -310,7 +310,8 @@ char *FS_BuildOSPath( const char *base, const char *game, const char *qpath ) {
 	static char ospath[4][MAX_OSPATH];
 	static int toggle;
 	
-	toggle = (++toggle)&3;	// allows four returns without clash (increased from 2 during fs_copyfiles 2 enhancement)
+	int nextToggle = (toggle + 1)&3;	// allows four returns without clash (increased from 2 during fs_copyfiles 2 enhancement)
+	toggle = nextToggle;
 	
 	if( !game || !game[0] ) {
 		game = fs_gamedir;

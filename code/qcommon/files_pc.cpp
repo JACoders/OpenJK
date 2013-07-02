@@ -884,7 +884,7 @@ static pack_t *FS_LoadZipFile( char *zipfile )
 	unz_global_info gi;
 	char			filename_inzip[MAX_ZPATH];
 	unz_file_info	file_info;
-	int				i, len;
+	unsigned int	i, len;
 	long			hash;
 	int				fs_numHeaderLongs;
 	int				*fs_headerLongs;

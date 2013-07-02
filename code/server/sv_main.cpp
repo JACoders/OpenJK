@@ -70,7 +70,7 @@ char	*SV_ExpandNewlines( char *in ) {
 	int		l;
 
 	l = 0;
-	while ( *in && l < sizeof(string) - 3 ) {
+	while ( *in && l < (int)(sizeof(string) - 3) ) {
 		if ( *in == '\n' ) {
 			string[l++] = '\\';
 			string[l++] = 'n';
@@ -202,7 +202,7 @@ void SVC_Status( netadr_t from ) {
 			Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n", 
 				score, cl->ping, cl->name);
 			playerLength = strlen(player);
-			if (statusLength + playerLength >= sizeof(status) ) {
+			if (statusLength + playerLength >= (int)sizeof(status) ) {
 				break;		// can't hold any more
 			}
 			strcpy (status + statusLength, player);
