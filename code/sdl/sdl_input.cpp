@@ -241,25 +241,6 @@ static const char *IN_TranslateSDLToJKKey( SDL_Keysym *keysym, fakeAscii_t *key,
 		}
 	}
 
-	if( down && keysym->unicode && !( keysym->unicode & 0xFF00 ) )
-	{
-		unsigned char ch = (unsigned char)keysym->unicode & 0xFF;
-
-		switch( ch )
-		{
-			case 127: // ASCII delete
-				if( *key != A_DELETE )
-				{
-					// ctrl-h
-					*buf = CTRL('h');
-					break;
-				}
-				// fallthrough
-
-			default: *buf = ch; break;
-		}
-	}
-
 	if( in_keyboardDebug->integer )
 		IN_PrintKey( keysym, *key, down );
 
