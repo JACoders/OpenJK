@@ -33,14 +33,13 @@
 // gla file, not the glm file type.
 int G2_Find_Bone(const model_t *mod, boneInfo_v &blist, const char *boneName)
 {
-	int					i;
 	mdxaSkel_t			*skel;
 	mdxaSkelOffsets_t	*offsets;
    	offsets = (mdxaSkelOffsets_t *)((byte *)mod->mdxa + sizeof(mdxaHeader_t));
 	skel = (mdxaSkel_t *)((byte *)mod->mdxa + sizeof(mdxaHeader_t) + offsets->offsets[0]);
 
 	// look through entire list
-	for(i=0; i<blist.size(); i++)
+	for(size_t i=0; i<blist.size(); i++)
 	{
 		// if this bone entry has no info in it, bounce over it
 		if (blist[i].boneNumber == -1)
@@ -65,7 +64,7 @@ int G2_Find_Bone(const model_t *mod, boneInfo_v &blist, const char *boneName)
 // we need to add a bone to the list - find a free one and see if we can find a corresponding bone in the gla file
 int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 {
-	int i, x;
+	int x;
 	mdxaSkel_t			*skel;
 	mdxaSkelOffsets_t	*offsets;
 	boneInfo_t			tempBone;
@@ -103,7 +102,7 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 	}
 
 	// look through entire list - see if it's already there first
-	for(i=0; i<blist.size(); i++)
+	for(size_t i=0; i<blist.size(); i++)
 	{
 		// if this bone entry has info in it, bounce over it
 		if (blist[i].boneNumber != -1)
@@ -189,10 +188,8 @@ qboolean G2_Remove_Bone_Index ( boneInfo_v &blist, int index)
 // given a bone number, see if there is an override bone in the bone list
 int	G2_Find_Bone_In_List(boneInfo_v &blist, const int boneNum)
 {
-	int i; 
-	
 	// look through entire list
-	for(i=0; i<blist.size(); i++)
+	for(size_t i=0; i<blist.size(); i++)
 	{
 		if (blist[i].boneNumber == boneNum)
 		{
@@ -255,6 +252,8 @@ void G2_Generate_Matrix(const model_t *mod, boneInfo_v &blist, int index, const 
 		case POSITIVE_Z:
 			newAngles[1] = angles[1];
 			break;
+		default:
+			break;
 		}
 
 		// determine what axis newAngles pitch should revolve around
@@ -278,6 +277,8 @@ void G2_Generate_Matrix(const model_t *mod, boneInfo_v &blist, int index, const 
 		case POSITIVE_Z:
 			newAngles[0] = angles[1];
 			break;
+		default:
+			break;
 		}
 
 		// determine what axis newAngles Roll should revolve around
@@ -300,6 +301,8 @@ void G2_Generate_Matrix(const model_t *mod, boneInfo_v &blist, int index, const 
 			break;
 		case POSITIVE_Z:
 			newAngles[2] = angles[1] + 180;
+			break;
+		default:
 			break;
 		}
 
@@ -350,6 +353,8 @@ void G2_Generate_Matrix(const model_t *mod, boneInfo_v &blist, int index, const 
 		case POSITIVE_Z:
 			permutation.matrix[2][0] = 1;
 			break;
+		default:
+			break;
 		}
 
 		// determine what axis newAngles pitch should revolve around
@@ -373,6 +378,8 @@ void G2_Generate_Matrix(const model_t *mod, boneInfo_v &blist, int index, const 
 		case POSITIVE_Z:
 			permutation.matrix[2][1] = 1;
 			break;
+		default:
+			break;
 		}
 
 		// determine what axis newAngles Roll should revolve around
@@ -395,6 +402,8 @@ void G2_Generate_Matrix(const model_t *mod, boneInfo_v &blist, int index, const 
 			break;
 		case POSITIVE_Z:
 			permutation.matrix[2][2] = 1;		// works
+			break;
+		default:
 			break;
 		}
 
@@ -431,7 +440,7 @@ qboolean G2_Set_Bone_Angles_Index( boneInfo_v &blist, const int index,
 							const Eorientations pitch, const Eorientations roll, qhandle_t *modelList,
 							const int modelIndex, const int blendTime, const int currentTime)
 {
-	if ((index >= blist.size()) || (blist[index].boneNumber == -1))
+	if ((index >= (int)blist.size()) || (blist[index].boneNumber == -1))
 	{
 		// we are attempting to set a bone override that doesn't exist
 		assert(0);
@@ -532,7 +541,7 @@ qboolean G2_Set_Bone_Angles_Matrix_Index(boneInfo_v &blist, const int index,
 								   const int modelIndex, const int blendTime, const int currentTime)
 {
 
-	if ((index >= blist.size()) || (blist[index].boneNumber == -1))
+	if ((index >= (int)blist.size()) || (blist[index].boneNumber == -1))
 	{
 		// we are attempting to set a bone override that doesn't exist
 		assert(0);
@@ -630,7 +639,7 @@ qboolean G2_Set_Bone_Anim_Index(
 {
 	int			modFlags = flags;
  
-	if ((index >= blist.size()) || (blist[index].boneNumber == -1))
+	if ((index >= (int)blist.size()) || (blist[index].boneNumber == -1))
 	{
 		// we are attempting to set a bone override that doesn't exist
 		assert(0);
@@ -868,7 +877,7 @@ qboolean G2_Get_Bone_Anim_Index( boneInfo_v &blist, const int index, const int c
 {
   
 	// did we find it?
-	if ((index>=0) && !((index >= blist.size()) || (blist[index].boneNumber == -1)))
+	if ((index>=0) && !((index >= (int)blist.size()) || (blist[index].boneNumber == -1)))
 	{ 
 
 		// are we an animating bone?
@@ -987,7 +996,7 @@ qboolean	G2_IsPaused(const char *fileName, boneInfo_v &blist, const char *boneNa
 qboolean G2_Stop_Bone_Anim_Index(boneInfo_v &blist, const int index)
 {
  
-	if ((index >= blist.size()) || (blist[index].boneNumber == -1))
+	if ((index >= (int)blist.size()) || (blist[index].boneNumber == -1))
 	{
 		// we are attempting to set a bone override that doesn't exist
 		assert(0);
@@ -1022,7 +1031,7 @@ qboolean G2_Stop_Bone_Anim(const char *fileName, boneInfo_v &blist, const char *
 qboolean G2_Stop_Bone_Angles_Index(boneInfo_v &blist, const int index)
 {
  
-	if ((index >= blist.size()) || (blist[index].boneNumber == -1))
+	if ((index >= (int)blist.size()) || (blist[index].boneNumber == -1))
 	{
 		// we are attempting to set a bone override that doesn't exist
 		assert(0);
@@ -1058,11 +1067,10 @@ qboolean G2_Stop_Bone_Angles(const char *fileName, boneInfo_v &blist, const char
 // actually walk the bone list and update each and every bone if we have ended an animation for them.
 void G2_Animate_Bone_List(CGhoul2Info_v &ghoul2, const int currentTime, const int index )
 {
-	int i;
 	boneInfo_v &blist = ghoul2[index].mBlist;
 
 	// look through entire list
-	for(i=0; i<blist.size(); i++)
+	for(size_t i=0; i<blist.size(); i++)
 	{
 		// we we a valid bone override?
 		if (blist[i].boneNumber != -1)
@@ -1221,8 +1229,10 @@ static vec3_t			desiredPelvisOffset; // this is for the root
 static float			ragOriginChange=0.0f;
 static vec3_t			ragOriginChangeDir;
 //debug
+#if 0
 static vec3_t			handPos={0,0,0};
 static vec3_t			handPos2={0,0,0};
+#endif
 
 enum ERagState
 {
@@ -1260,7 +1270,6 @@ static void G2_Generate_MatrixRag(
 
 int G2_Find_Bone_Rag(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName)
 {
-	int					i;
 	mdxaSkel_t			*skel;
 	mdxaSkelOffsets_t	*offsets;
 
@@ -1284,7 +1293,7 @@ int G2_Find_Bone_Rag(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneNa
 	*/
 
 	// look through entire list
-	for(i=0; i<blist.size(); i++)
+	for(size_t i=0; i<blist.size(); i++)
 	{
 		// if this bone entry has no info in it, bounce over it
 		if (blist[i].boneNumber == -1)
@@ -1416,9 +1425,11 @@ static int G2_Set_Bone_Angles_Rag(
 		{
 			static mdxaBone_t		id = 
 			{ 
-				1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f
+				{
+					{ 1.0f, 0.0f, 0.0f, 0.0f },
+					{ 0.0f, 1.0f, 0.0f, 0.0f },
+					{ 0.0f, 0.0f, 1.0f, 0.0f }
+				}
 			};
 			memcpy(&bone.ragOverrideMatrix,&id, sizeof(mdxaBone_t));
 			VectorClear(bone.anglesOffset);
@@ -2126,7 +2137,6 @@ static float G2_RagSetState(CGhoul2Info &ghoul2, boneInfo_t &bone,int frameNum,c
 
 static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,const vec3_t origin,bool anyRendered)
 {
-	int i;
 	int minSurvivingBone=10000;
 	int minSurvivingBoneAt=-1;
 	int minSurvivingBoneAlt=10000;
@@ -2138,7 +2148,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 	int numRendered=0;
 	int numNotRendered=0;
 	int pelvisAt=-1;
-	for(i=0; i<blist.size(); i++)
+	for(size_t i=0; i<blist.size(); i++)
 	{
 		boneInfo_t &bone=blist[i];
 		if (bone.boneNumber>=0)
@@ -2199,7 +2209,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 //OutputDebugString(va("Deleted Effector %d\n",i));
 //					continue;
 				}
-				if (rag.size()<bone.boneNumber+1)
+				if ((int)rag.size()<bone.boneNumber+1)
 				{
 					rag.resize(bone.boneNumber+1,0);
 				}
@@ -2248,7 +2258,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 #endif
 	numRags=0;
 	int ragStartTime=0;
-	for(i=0; i<rag.size(); i++)
+	for(size_t i=0; i<rag.size(); i++)
 	{
 		if (rag[i])
 		{
@@ -2275,7 +2285,6 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 
 static void G2_RagDoll(CGhoul2Info_v &ghoul2V,int g2Index,CRagDollUpdateParams *params, int curTime)
 {
-	int i;
 	if (!broadsword||!broadsword->integer)
 	{
 		return;
@@ -2337,7 +2346,7 @@ static void G2_RagDoll(CGhoul2Info_v &ghoul2V,int g2Index,CRagDollUpdateParams *
 	bool anyRendered=false;
 
 	// this loop checks for settled
-	for(i=0; i<blist.size(); i++)
+	for(size_t i=0; i<blist.size(); i++)
 	{
 		boneInfo_t &bone=blist[i];
 		if (bone.boneNumber>=0)
@@ -2404,7 +2413,7 @@ static void G2_RagDoll(CGhoul2Info_v &ghoul2V,int g2Index,CRagDollUpdateParams *
 		}
 		// ok, now our data structures are compact and set up in topological order
 
-		for (i=0;i<iters;i++)
+		for (int i=0;i<iters;i++)
 		{
 			G2_RagDollCurrentPosition(ghoul2V,g2Index,frameNum,params->angles,dPos,params->scale);
 
@@ -2452,14 +2461,13 @@ static void G2_RagDoll(CGhoul2Info_v &ghoul2V,int g2Index,CRagDollUpdateParams *
 
 static inline char *G2_Get_Bone_Name(CGhoul2Info *ghlInfo, boneInfo_v &blist, int boneNum)
 {
-	int					i;
 	mdxaSkel_t			*skel;
 	mdxaSkelOffsets_t	*offsets;
    	offsets = (mdxaSkelOffsets_t *)((byte *)ghlInfo->aHeader + sizeof(mdxaHeader_t));
 	skel = (mdxaSkel_t *)((byte *)ghlInfo->aHeader + sizeof(mdxaHeader_t) + offsets->offsets[0]);
 
 	// look through entire list
-	for(i=0; i<blist.size(); i++)
+	for(size_t i=0; i<blist.size(); i++)
 	{
 		// if this bone entry has no info in it, bounce over it
 		if (blist[i].boneNumber != boneNum)
@@ -3174,7 +3182,7 @@ static inline void G2_RagGetPelvisLumbarOffsets(CGhoul2Info &ghoul2, CRagDollUpd
 {
 	static mdxaBone_t final;
 	static mdxaBone_t x;
-	static mdxaBone_t *unused1, *unused2;
+	//static mdxaBone_t *unused1, *unused2;
 	//static vec3_t lumbarPos;
 
 	assert(ghoul2.animModel);
@@ -3226,7 +3234,6 @@ static bool G2_RagDollSettlePositionNumeroTrois(CGhoul2Info_v &ghoul2V, const ve
 	static int i;
 	static vec3_t goalSpot;
 	static trace_t tr;
-	static trace_t solidTr;
 	static int k;
 	static const float velocityDampening = 1.0f;
 	static const float velocityMultiplier = 60.0f;
@@ -3853,7 +3860,7 @@ static void G2_RagDollSolve(CGhoul2Info_v &ghoul2V,int g2Index,float decay,int f
 			for (j=0;j<numDep;j++)
 			{
 				//fixme why do this for the special roots?
-				if (!(tempDependents[j]<rag.size()&&rag[tempDependents[j]]))
+				if (!(tempDependents[j]<(int)rag.size()&&rag[tempDependents[j]]))
 				{
 					continue;
 				}
@@ -4096,7 +4103,7 @@ static void G2_IKSolve(CGhoul2Info_v &ghoul2V,int g2Index,float decay,int frameN
 		for (j=0;j<numDep;j++)
 		{
 			//fixme why do this for the special roots?
-			if (!(tempDependents[j]<rag.size()&&rag[tempDependents[j]]))
+			if (!(tempDependents[j]<(int)rag.size()&&rag[tempDependents[j]]))
 			{
 				continue;
 			}
@@ -4235,10 +4242,9 @@ static void G2_DoIK(CGhoul2Info_v &ghoul2V,int g2Index,CRagDollUpdateParams *par
 //rww - cut out the entire non-ragdoll section of this..
 void G2_Animate_Bone_List(CGhoul2Info_v &ghoul2, const int currentTime, const int index,CRagDollUpdateParams *params)
 {
-	int i;
 	bool anyRagDoll=false;
 	bool anyIK = false;
-	for(i=0; i<ghoul2[index].mBlist.size(); i++)
+	for(size_t i=0; i<ghoul2[index].mBlist.size(); i++)
 	{
 		if (ghoul2[index].mBlist[i].boneNumber != -1)
 		{
@@ -4312,9 +4318,11 @@ static int G2_Set_Bone_Angles_IK(
 		{
 			static mdxaBone_t		id = 
 			{ 
-				1.0f, 0.0f, 0.0f, 0.0f,
-				0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 0.0f, 1.0f, 0.0f
+				{
+					{ 1.0f, 0.0f, 0.0f, 0.0f },
+					{ 0.0f, 1.0f, 0.0f, 0.0f },
+					{ 0.0f, 0.0f, 1.0f, 0.0f }
+				}
 			};
 			memcpy(&bone.ragOverrideMatrix,&id, sizeof(mdxaBone_t));
 			VectorClear(bone.anglesOffset);
@@ -4415,7 +4423,7 @@ qboolean G2_SetBoneIKState(CGhoul2Info_v &ghoul2, int time, const char *boneName
 
 		if (ikState == IKS_NONE)
 		{ //this means we want to reset the IK state completely.. run through the bone list, and reset all the appropriate flags
-			int i = 0;
+			size_t i = 0;
 			while (i < blist.size())
 			{ //we can't use this method for ragdoll. However, since we expect them to set their anims/angles again on the PCJ
 			  //limb after they reset it gameside, it's reasonable for IK bones.
@@ -4621,10 +4629,8 @@ void G2_Init_Bone_List(boneInfo_v &blist)
 
 void G2_RemoveRedundantBoneOverrides(boneInfo_v &blist, int *activeBones)
 {
-	int		i;
-
 	// walk the surface list, removing surface overrides or generated surfaces that are pointing at surfaces that aren't active anymore
-	for (i=0; i<blist.size(); i++)
+	for (size_t i=0; i<blist.size(); i++)
 	{
 		if (blist[i].boneNumber != -1)
 		{

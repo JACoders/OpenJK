@@ -190,6 +190,7 @@ const char *Music_BaseStateToString( MusicState_e eMusicState, qboolean bDebugPr
 		case eBGRNDTRACK_EXPLORETRANS2:		if (bDebugPrintQuery) return "explore_tr2";
 		case eBGRNDTRACK_EXPLORETRANS3:		if (bDebugPrintQuery) return "explore_tr3";
 		case eBGRNDTRACK_FADE:				if (bDebugPrintQuery) return "fade";
+		default: break;
 	}
 
 	return NULL;
@@ -334,6 +335,8 @@ static qboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 
 						MUSIC_PARSE_ERROR( va("\"%s\" has %s transitions defined, this is not allowed!\n",psMusicName,psMusicNameKey) );
 						break;					
+					default:
+						break;
 				}
 			}
 		}
@@ -392,16 +395,15 @@ static char *StripTrailingWhiteSpaceOnEveryLine(char *pText)
 
 		// find end of line...
 		//				
-		char *pThisLineEnd = pText;
-		while (*pThisLineEnd && *pThisLineEnd != '\r' && ((pThisLineEnd-pText) < sizeof(sOneLine)-1))
+		size_t pos = 0;
+		while (pText[pos] != '\0' && pText[pos] != '\r' && (pos < sizeof(sOneLine)-1))
 		{
-			pThisLineEnd++;
+			pos++;
 		}	
 
-		int iCharsToCopy = pThisLineEnd - pText;
-		strncpy(sOneLine, pText, iCharsToCopy);
-				sOneLine[iCharsToCopy]='\0';
-		pText += iCharsToCopy;
+		strncpy(sOneLine, pText, pos);
+				sOneLine[pos]='\0';
+		pText += pos;
 		while (*pText == '\n' || *pText == '\r') pText++;
 
 		// trim trailing...
@@ -696,7 +698,7 @@ static qboolean Music_ParseLeveldata(const char *psLevelName)
 
 			// check all transition music pieces exist, and that entry points into new pieces after transitions also exist...
 			//
-			for (int iExitPoint=0; iExitPoint < MusicFile.MusicExitPoints.size(); iExitPoint++)
+			for (size_t iExitPoint=0; iExitPoint < MusicFile.MusicExitPoints.size(); iExitPoint++)
 			{
 				MusicExitPoint_t &MusicExitPoint = MusicFile.MusicExitPoints[ iExitPoint ];
 
@@ -858,7 +860,7 @@ LPCSTR Music_GetFileNameForState( MusicState_e eMusicState)
 			pMusicFile = Music_GetBaseMusicFile( eBGRNDTRACK_ACTION );
 			if (pMusicFile)
 			{
-				int iTransNum = eMusicState - eBGRNDTRACK_ACTIONTRANS0;
+				size_t iTransNum = eMusicState - eBGRNDTRACK_ACTIONTRANS0;
 				if (iTransNum < pMusicFile->MusicExitPoints.size())
 				{
 					return Music_BuildFileName( pMusicFile->MusicExitPoints[iTransNum].sNextFile.c_str(), eMusicState );
@@ -874,7 +876,7 @@ LPCSTR Music_GetFileNameForState( MusicState_e eMusicState)
 			pMusicFile = Music_GetBaseMusicFile( eBGRNDTRACK_EXPLORE );
 			if (pMusicFile)
 			{
-				int iTransNum = eMusicState - eBGRNDTRACK_EXPLORETRANS0;
+				size_t iTransNum = eMusicState - eBGRNDTRACK_EXPLORETRANS0;
 				if (iTransNum < pMusicFile->MusicExitPoints.size())
 				{
 					return Music_BuildFileName( pMusicFile->MusicExitPoints[iTransNum].sNextFile.c_str(), eMusicState );
@@ -997,7 +999,7 @@ qboolean Music_AllowedToTransition( float			fPlayingTimeElapsed,
 			{
 				// got an exit point!, work out feedback params...
 				//
-				int iExitPoint = pExitTime->iExitPoint;
+				size_t iExitPoint = pExitTime->iExitPoint;
 				//
 				// the two params to give back...
 				//

@@ -15,10 +15,14 @@
 
 #include <set>
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <list>
 #include <string>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 
 #ifdef _FULL_G2_LEAK_CHECKING
 int g_Ghoul2Allocations = 0;
@@ -295,17 +299,15 @@ class Ghoul2InfoArray : public IGhoul2InfoArray
 	list<int>			mFreeIndecies;
 	void DeleteLow(int idx)
 	{
+		for (size_t model=0; model< mInfos[idx].size(); model++)
 		{
-			int				model;
-			for (model=0; model< mInfos[idx].size(); model++)
+			if (mInfos[idx][model].mBoneCache)
 			{
-				if (mInfos[idx][model].mBoneCache)
-				{
-					RemoveBoneCache(mInfos[idx][model].mBoneCache);
-					mInfos[idx][model].mBoneCache=0;
-				}
+				RemoveBoneCache(mInfos[idx][model].mBoneCache);
+				mInfos[idx][model].mBoneCache=0;
 			}
 		}
+
 		mInfos[idx].clear();
 
 		if ((mIds[idx]>>G2_MODEL_BITS)>(1<<(31-G2_MODEL_BITS)))
@@ -1719,7 +1721,7 @@ qboolean G2API_GetBoltMatrix_SPMethod(CGhoul2Info_v &ghoul2, const int modelInde
 
 		//assert(boltIndex < ghlInfo->mBltlist.size());
 
-		if (ghlInfo && (boltIndex < ghlInfo->mBltlist.size()) && boltIndex >= 0 )
+		if (ghlInfo && (boltIndex < (int)ghlInfo->mBltlist.size()) && boltIndex >= 0 )
 		{
 			// make sure we have transformed the skeleton
 			if (!gG2_GBMNoReconstruct)
@@ -1784,9 +1786,11 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 	G2ERROR(modelIndex>=0&&modelIndex<ghoul2.size(),"Invalid ModelIndex");
 	const static mdxaBone_t		identityMatrix = 
 	{ 
-		0.0f, -1.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f
+		{
+			{ 0.0f, -1.0f, 0.0f, 0.0f },
+			{ 1.0f, 0.0f, 0.0f, 0.0f },
+			{ 0.0f, 0.0f, 1.0f, 0.0f }
+		}
 	};
 	G2_GenerateWorldMatrix(angles, position);
 	if (G2_SetupModelPointers(ghoul2))
@@ -1797,7 +1801,7 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 			CGhoul2Info *ghlInfo = &ghoul2[modelIndex];
 			G2ERROR(boltIndex >= 0 && (boltIndex < ghlInfo->mBltlist.size()),va("Invalid Bolt Index (%d:%s)",boltIndex,ghlInfo->mFileName));
 
-			if (boltIndex >= 0 && ghlInfo && (boltIndex < ghlInfo->mBltlist.size()) )
+			if (boltIndex >= 0 && ghlInfo && (boltIndex < (int)ghlInfo->mBltlist.size()) )
 			{
 				mdxaBone_t bolt;
 
@@ -1986,7 +1990,7 @@ static int QDECL QsortDistance( const void *a, const void *b ) {
 
 static inline bool G2_NeedRetransform(CGhoul2Info *g2, int frameNum)
 { //see if we need to do another transform
-	int i = 0;
+	size_t i = 0;
 	bool needTrans = false;
 	while (i < g2->mBlist.size())
 	{

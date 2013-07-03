@@ -24,16 +24,20 @@ This file is part of Jedi Academy.
 #include "IcarusInterface.h"
 #endif
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4786 )	// identifier was truncated 
 #pragma warning (push, 3)			// go back down to 3 for the stl include
 #pragma warning (disable:4503)		// decorated name length xceeded, name was truncated
+#endif
 #include <string>
 #include <vector>
 #include <map>
 #include <list>
 #include <algorithm>
+#ifdef _MSC_VER
 #pragma warning (pop)
 #pragma warning (disable:4503)		// decorated name length xceeded, name was truncated
+#endif
 using namespace std;
 
 

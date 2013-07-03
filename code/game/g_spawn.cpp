@@ -66,7 +66,7 @@ void AddSpawnField(char *field, char *value)
 
 qboolean	G_SpawnField( unsigned int uiField, char **ppKey, char **ppValue )
 {
-	if ( uiField >= numSpawnVars )
+	if ( (int)uiField >= numSpawnVars )
 		return qfalse;
 
 	(*ppKey) = spawnVars[uiField][0];
@@ -173,7 +173,7 @@ stringID_table_t flagTable [] =
 {
 	//"noTED", EF_NO_TED,
 	//stringID_table_t Must end with a null entry
-	"", NULL
+	{ "", NULL }
 };
 
 //
@@ -212,7 +212,7 @@ typedef enum {
 
 typedef struct
 {
-	char	*name;
+	const char	*name;
 	int		ofs;
 	fieldtype_t	type;
 	int		flags;
@@ -371,7 +371,7 @@ field_t fields[] = {
 
 
 typedef struct {
-	char	*name;
+	const char	*name;
 	void	(*spawn)(gentity_t *ent);
 } spawn_t;
 
@@ -1258,7 +1258,7 @@ qboolean G_ParseSpawnVars( const char **data ) {
 	return qtrue;
 }
 
-static	char *defaultStyles[LS_NUM_STYLES][3] = 
+static	const char *defaultStyles[LS_NUM_STYLES][3] = 
 {
 	{	// 0 normal
 		"z",

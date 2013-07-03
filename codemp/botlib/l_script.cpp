@@ -197,7 +197,7 @@ void PS_CreatePunctuationTable(script_t *script, punctuation_t *punctuations)
 // Returns:					-
 // Changes Globals:		-
 //===========================================================================
-char *PunctuationFromNum(script_t *script, int num)
+const char *PunctuationFromNum(script_t *script, int num)
 {
 	int i;
 
@@ -768,7 +768,7 @@ int PS_ReadLiteral(script_t *script, token_t *token)
 int PS_ReadPunctuation(script_t *script, token_t *token)
 {
 	int len;
-	char *p;
+	const char *p;
 	punctuation_t *punc;
 
 #ifdef PUNCTABLE
@@ -975,7 +975,7 @@ int PS_ExpectTokenType(script_t *script, int type, int subtype, token_t *token)
 		if (token->subtype != subtype)
 		{
 			ScriptError(script, "expected %s, found %s",
-							script->punctuations[subtype], token->string);
+							script->punctuations[subtype].p, token->string);
 			return 0;
 		} //end if
 	} //end else if

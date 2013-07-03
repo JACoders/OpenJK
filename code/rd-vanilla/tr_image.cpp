@@ -56,7 +56,7 @@ void R_GammaCorrect( byte *buffer, int bufSize ) {
 }
 
 typedef struct {
-	char *name;
+	const char *name;
 	int	minimize, maximize;
 } textureMode_t;
 
@@ -1034,9 +1034,9 @@ static void R_Images_DeleteImageContents( image_t *pImage )
 static void GL_ResetBinds(void)
 {
 	memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
-	if ( qglBindTexture ) 
+	if ( qglBindTexture != NULL ) 
 	{
-		if ( qglActiveTextureARB ) 
+		if ( qglActiveTextureARB != NULL ) 
 		{
 			GL_SelectTexture( 1 );
 			qglBindTexture( GL_TEXTURE_2D, 0 );
@@ -1902,7 +1902,7 @@ bool IsPowerOfTwo ( int i ) { return (i & (i - 1)) == 0; }
 
 struct PNGFileReader
 {
-	PNGFileReader ( char *buf ) : buf(buf), png_ptr(NULL), info_ptr(NULL), offset(0) {}
+	PNGFileReader ( char *buf ) : buf(buf), offset(0), png_ptr(NULL), info_ptr(NULL) {}
 	~PNGFileReader()
 	{
 		ri.FS_FreeFile (buf);
@@ -3237,9 +3237,9 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 			}
 			surfName[strlen(surfName)-4] = 0;	//remove the "_off"
 		}
-		if (sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) <= skin->numSurfaces)
+		if ((int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) <= skin->numSurfaces)
 		{
-			assert( sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) > skin->numSurfaces );
+			assert( (int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) > skin->numSurfaces );
 			VID_Printf( PRINT_ERROR, "WARNING: RE_RegisterSkin( '%s' ) more than %d surfaces!\n", name, sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) );
 			break;
 		}

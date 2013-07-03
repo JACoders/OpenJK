@@ -298,7 +298,7 @@ into a more C friendly form.
 =================
 */
 void SV_UserinfoChanged( client_t *cl ) {
-	char	*val;
+	const char	*val;
 	int		i;
 
 	// name for C code
@@ -341,7 +341,7 @@ static void SV_UpdateUserinfo_f( client_t *cl ) {
 }
 
 typedef struct {
-	char	*name;
+	const char	*name;
 	void	(*func)( client_t *cl );
 } ucmd_t;
 

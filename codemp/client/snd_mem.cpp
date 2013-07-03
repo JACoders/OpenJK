@@ -703,8 +703,7 @@ static sboolean S_LoadSound_DirIsAllowedToKeepMP3s(const char *psFilename)
 //		"sound/chr_d/"	// no need for this now, or any other language, since we'll always compare against english
 	};
 
-	int i;
-	for (i=0; i< (sizeof(psAllowedDirs) / sizeof(psAllowedDirs[0])); i++)
+	for (size_t i=0; i< (sizeof(psAllowedDirs) / sizeof(psAllowedDirs[0])); i++)
 	{
 		if (strnicmp(psFilename, psAllowedDirs[i], strlen(psAllowedDirs[i]))==0)
 			return qtrue;	// found a dir that's allowed to keep MP3s
@@ -732,7 +731,6 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 	int		size;
 	char	*psExt;
 	char	sLoadName[MAX_QPATH];
-	ALuint  Buffer;
 	
 	int		len = strlen(sfx->sSoundName);
 	if (len<5)
@@ -848,6 +846,7 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 							alGetError();
 
 							// Generate AL Buffer
+                            ALuint Buffer;
 							alGenBuffers(1, &Buffer);
 							if (alGetError() == AL_NO_ERROR)
 							{
@@ -920,6 +919,7 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 			alGetError();
 
 			// Generate AL Buffer
+            ALuint Buffer;
 			alGenBuffers(1, &Buffer);
 			if (alGetError() == AL_NO_ERROR)
 			{

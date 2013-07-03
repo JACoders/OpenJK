@@ -485,7 +485,7 @@ CRMArea* CRMAreaManager::EnumArea ( const int index )
 {
 	// This isnt an assertion case because there is no size method for
 	// the area manager so the areas are enumerated until NULL is returned.
-	if ( index < 0 || index >= mAreas.size ( ) )
+	if ( index < 0 || index >= (int)mAreas.size ( ) )
 	{
 		return NULL;
 	}

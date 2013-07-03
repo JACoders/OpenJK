@@ -57,7 +57,7 @@ Converts newlines to "\n" so a line prints nicer
 */
 char	*SV_ExpandNewlines( char *in ) {
 	static	char	string[1024];
-	int		l;
+	unsigned int	l;
 
 	l = 0;
 	while ( *in && l < sizeof(string) - 3 ) {
@@ -293,7 +293,6 @@ SVC_HashForAddress
 static long SVC_HashForAddress( netadr_t address ) {
 	byte 		*ip = NULL;
 	size_t	size = 0;
-	int			i;
 	long		hash = 0;
 
 	switch ( address.type ) {
@@ -302,7 +301,7 @@ static long SVC_HashForAddress( netadr_t address ) {
 		default: break;
 	}
 
-	for ( i = 0; i < size; i++ ) {
+	for ( size_t i = 0; i < size; i++ ) {
 		hash += (long)( ip[ i ] ) * ( i + 119 );
 	}
 
@@ -497,7 +496,7 @@ void SVC_Status( netadr_t from ) {
 			Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n", 
 				ps->persistant[PERS_SCORE], cl->ping, cl->name);
 			playerLength = strlen(player);
-			if (statusLength + playerLength >= sizeof(status) ) {
+			if (statusLength + playerLength >= (int)sizeof(status) ) {
 				break;		// can't hold any more
 			}
 			strcpy (status + statusLength, player);

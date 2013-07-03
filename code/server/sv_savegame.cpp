@@ -34,9 +34,11 @@ This file is part of Jedi Academy.
 #include "../game/weapons.h"
 #include "../game/g_items.h"
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)  // identifier was truncated (STL crap)
 #pragma warning(disable : 4710)  // function was not inlined (STL crap)
 #pragma warning(disable : 4512)  // yet more STL drivel...
+#endif
 
 #include <map>
 
@@ -125,7 +127,8 @@ static LPCSTR SG_AddSavePath( LPCSTR psPathlessBaseName )
 	static char sSaveName[8][MAX_OSPATH]; 
 	static int  i=0;
 
-	i=++i&7;
+	int next = i = (i + 1) & 7;
+	i = next;
 
 	if(psPathlessBaseName)
 	{
@@ -462,7 +465,7 @@ void SV_SaveGame_f(void)
 		return;
 	}
 
-	char *psFilename = Cmd_Argv(1);
+	const char *psFilename = Cmd_Argv(1);
 
 	if (!stricmp (psFilename, "current"))
 	{
@@ -1102,7 +1105,7 @@ int Compress_RLE(const byte *pIn, int iLength, byte *pOut)
 
 		if (iIndex-iCount == 1) 
 		{
-			while (iIndex<iLength && iIndex-iCount<127 && (pIn[iIndex]!=pIn[iIndex-1] || iIndex>1 && pIn[iIndex]!=pIn[iIndex-2])){
+			while (iIndex<iLength && iIndex-iCount<127 && (pIn[iIndex]!=pIn[iIndex-1] || (iIndex>1 && pIn[iIndex]!=pIn[iIndex-2]))){
 				iIndex++;
 			}
 			while (iIndex<iLength && pIn[iIndex]==pIn[iIndex-1]){

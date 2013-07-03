@@ -399,14 +399,20 @@ void CDraw32::DrawLineAveNC(long x1, long y1, long x2, long y2, CPixel32 color)
 			dest = &buffer[row_off[y1] + x1];
 			int i = dx+1;
 			while (i--)
-				*dest++ = AVE_PIX(*dest, color);
+			{
+				*dest = AVE_PIX(*dest, color);
+				dest++;
+			}
 		}
 		else
 		{
 			dest = &buffer[row_off[y1] + x1 + dx];
 			int i = -dx+1;
 			while (i--)
-				*dest++ = AVE_PIX(*dest, color);
+			{
+				*dest = AVE_PIX(*dest, color);
+				dest++;
+			}
 		}
 		return;
 	}

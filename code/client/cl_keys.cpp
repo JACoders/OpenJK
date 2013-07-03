@@ -211,19 +211,19 @@ keyname_t keynames[MAX_KEYS] =
 			    													
 	{ 0xa0, 0,	  "SHIFT_SPACE", A_SPACE, false							},
 	{ 0xa1, 0xa1, NULL, A_EXCLAMDOWN, false								},	// upside down '!' - undisplayable
-	{ (word)(byte)'¢', (word)(byte)'¢', NULL, A_CENT, false	  			},
-	{ (word)(byte)'£', (word)(byte)'£', NULL, A_POUND, false	  		},
+	{ L'\u00A2', L'\u00A2', NULL, A_CENT, false	  			}, // cent sign
+	{ L'\u00A3', L'\u00A3', NULL, A_POUND, false	  		}, // pound (as in currency) symbol
 	{ 0xa4, 0,    "SHIFT_KP_ENTER", A_KP_ENTER, false					},
-	{ (word)(byte)'¥', (word)(byte)'¥', NULL, A_YEN, false		  		},
+	{ L'\u00A5', L'\u00A5', NULL, A_YEN, false		  		}, // yen symbol
 	{ 0xa6, 0xa6, "MOUSE3", A_MOUSE3, false								},
 	{ 0xa7, 0xa7, "MOUSE4", A_MOUSE4, false								},
 	{ 0xa8, 0xa8, "MOUSE5", A_MOUSE5, false								},
-	{ (word)(byte)'©', (word)(byte)'©', NULL, A_COPYRIGHT, false 		},
+	{ L'\u00A9', L'\u00A9', NULL, A_COPYRIGHT, false 		}, // copyright symbol
 	{ 0xaa, 0xaa, "UPARROW", A_CURSOR_UP, false							},
 	{ 0xab, 0xab, "DOWNARROW", A_CURSOR_DOWN, false						},
 	{ 0xac, 0xac, "LEFTARROW", A_CURSOR_LEFT, false						},
 	{ 0xad, 0xad, "RIGHTARROW", A_CURSOR_RIGHT, false					},
-	{ (word)(byte)'®', (word)(byte)'®', NULL, A_REGISTERED, false		},
+	{ L'\u00AE', L'\u00AE', NULL, A_REGISTERED, false		}, // registered trademark symbol
 	{ 0xaf, 0,	  NULL, A_UNDEFINED_7, false							},
 	{ 0xb0, 0,	  NULL, A_UNDEFINED_8, false							},
 	{ 0xb1, 0,	  NULL, A_UNDEFINED_9, false							},
@@ -240,72 +240,72 @@ keyname_t keynames[MAX_KEYS] =
 	{ 0xbc, 0,	  NULL, A_UNDEFINED_20, false							},
 	{ 0xbd, 0,	  NULL, A_UNDEFINED_21, false							},
 	{ 0xbe, 0,	  NULL, A_UNDEFINED_22, false							},
-	{ (word)(byte)'¿', (word)(byte)'¿', NULL, A_QUESTION_DOWN, false	},
+	{ L'\u00BF', L'\u00BF', NULL, A_QUESTION_DOWN, false	}, // upside-down question mark
 			    		                       
-	{ (word)(byte)'À', (word)(byte)'à', NULL, A_CAP_AGRAVE, false		},
-	{ (word)(byte)'Á', (word)(byte)'á', NULL, A_CAP_AACUTE, false		},
-	{ (word)(byte)'Â', (word)(byte)'â', NULL, A_CAP_ACIRCUMFLEX, false	},
-	{ (word)(byte)'Ã', (word)(byte)'ã', NULL, A_CAP_ATILDE, false		},
-	{ (word)(byte)'Ä', (word)(byte)'ä', NULL, A_CAP_ADIERESIS, false	},
-	{ (word)(byte)'Å', (word)(byte)'å', NULL, A_CAP_ARING, false		},
-	{ (word)(byte)'Æ', (word)(byte)'æ', NULL, A_CAP_AE, false			},
-	{ (word)(byte)'Ç', (word)(byte)'ç', NULL, A_CAP_CCEDILLA, false		},
-	{ (word)(byte)'È', (word)(byte)'è', NULL, A_CAP_EGRAVE, false		},
-	{ (word)(byte)'É', (word)(byte)'é', NULL, A_CAP_EACUTE, false		},
-	{ (word)(byte)'Ê', (word)(byte)'ê', NULL, A_CAP_ECIRCUMFLEX, false	},
-	{ (word)(byte)'Ë', (word)(byte)'ë', NULL, A_CAP_EDIERESIS, false	},
-	{ (word)(byte)'Ì', (word)(byte)'ì', NULL, A_CAP_IGRAVE, false		},
-	{ (word)(byte)'Í', (word)(byte)'í', NULL, A_CAP_IACUTE, false		},
-	{ (word)(byte)'Î', (word)(byte)'î', NULL, A_CAP_ICIRCUMFLEX, false	},
-	{ (word)(byte)'Ï', (word)(byte)'ï', NULL, A_CAP_IDIERESIS, false	},
-	{ (word)(byte)'Ð', (word)(byte)'ð', NULL, A_CAP_ETH, false			},
-	{ (word)(byte)'Ñ', (word)(byte)'ñ', NULL, A_CAP_NTILDE, false		},
-	{ (word)(byte)'Ò', (word)(byte)'ò', NULL, A_CAP_OGRAVE, false		},
-	{ (word)(byte)'Ó', (word)(byte)'ó', NULL, A_CAP_OACUTE, false		},
-	{ (word)(byte)'Ô', (word)(byte)'ô', NULL, A_CAP_OCIRCUMFLEX, false	},
-	{ (word)(byte)'Õ', (word)(byte)'õ', NULL, A_CAP_OTILDE, false		},
-	{ (word)(byte)'Ö', (word)(byte)'ö', NULL, A_CAP_ODIERESIS, false	},
-	{ (word)(byte)'×', (word)(byte)'×', "KP_STAR", A_MULTIPLY, false 	},
-	{ (word)(byte)'Ø', (word)(byte)'ø', NULL, A_CAP_OSLASH, false		},  
-	{ (word)(byte)'Ù', (word)(byte)'ù', NULL, A_CAP_UGRAVE, false		},  
-	{ (word)(byte)'Ú', (word)(byte)'ú', NULL, A_CAP_UACUTE, false		},  
-	{ (word)(byte)'Û', (word)(byte)'û', NULL, A_CAP_UCIRCUMFLEX, false	},  
-	{ (word)(byte)'Ü', (word)(byte)'ü', NULL, A_CAP_UDIERESIS, false	},  
-	{ (word)(byte)'Ý', (word)(byte)'ý', NULL, A_CAP_YACUTE, false		},  
-	{ (word)(byte)'Þ', (word)(byte)'þ', NULL, A_CAP_THORN, false		},  
-	{ (word)(byte)'ß', (word)(byte)'ß', NULL, A_GERMANDBLS, false 		},
+	{ L'\u00C0', L'\u00E0', NULL, A_CAP_AGRAVE, false		},
+	{ L'\u00C1', L'\u00E1', NULL, A_CAP_AACUTE, false		},
+	{ L'\u00C2', L'\u00E2', NULL, A_CAP_ACIRCUMFLEX, false	},
+	{ L'\u00C3', L'\u00E3', NULL, A_CAP_ATILDE, false		},
+	{ L'\u00C4', L'\u00E4', NULL, A_CAP_ADIERESIS, false	},
+	{ L'\u00C5', L'\u00E5', NULL, A_CAP_ARING, false		},
+	{ L'\u00C6', L'\u00E6', NULL, A_CAP_AE, false			},
+	{ L'\u00C7', L'\u00E7', NULL, A_CAP_CCEDILLA, false		},
+	{ L'\u00C8', L'\u00E8', NULL, A_CAP_EGRAVE, false		},
+	{ L'\u00C9', L'\u00E9', NULL, A_CAP_EACUTE, false		},
+	{ L'\u00CA', L'\u00EA', NULL, A_CAP_ECIRCUMFLEX, false	},
+	{ L'\u00CB', L'\u00EB', NULL, A_CAP_EDIERESIS, false	},
+	{ L'\u00CC', L'\u00EC', NULL, A_CAP_IGRAVE, false		},
+	{ L'\u00CD', L'\u00ED', NULL, A_CAP_IACUTE, false		},
+	{ L'\u00CE', L'\u00EE', NULL, A_CAP_ICIRCUMFLEX, false	},
+	{ L'\u00CF', L'\u00EF', NULL, A_CAP_IDIERESIS, false	},
+	{ L'\u00D0', L'\u00F0', NULL, A_CAP_ETH, false			},
+	{ L'\u00D1', L'\u00F1', NULL, A_CAP_NTILDE, false		},
+	{ L'\u00D2', L'\u00F2', NULL, A_CAP_OGRAVE, false		},
+	{ L'\u00D3', L'\u00F3', NULL, A_CAP_OACUTE, false		},
+	{ L'\u00D4', L'\u00F4', NULL, A_CAP_OCIRCUMFLEX, false	},
+	{ L'\u00D5', L'\u00F5', NULL, A_CAP_OTILDE, false		},
+	{ L'\u00D6', L'\u00F6', NULL, A_CAP_ODIERESIS, false	},
+	{ L'\u00D7', L'\u00D7', "KP_STAR", A_MULTIPLY, false 	},
+	{ L'\u00D8', L'\u00F8', NULL, A_CAP_OSLASH, false		},  
+	{ L'\u00D9', L'\u00F9', NULL, A_CAP_UGRAVE, false		},  
+	{ L'\u00DA', L'\u00FA', NULL, A_CAP_UACUTE, false		},  
+	{ L'\u00DB', L'\u00FB', NULL, A_CAP_UCIRCUMFLEX, false	},  
+	{ L'\u00DC', L'\u00FC', NULL, A_CAP_UDIERESIS, false	},  
+	{ L'\u00DD', L'\u00FD', NULL, A_CAP_YACUTE, false		},  
+	{ L'\u00DE', L'\u00FE', NULL, A_CAP_THORN, false		},  
+	{ L'\u00DF', L'\u00DF', NULL, A_GERMANDBLS, false 		},
 			    		                       
-	{ (word)(byte)'À', (word)(byte)'à', NULL, A_LOW_AGRAVE, false		},		 
-	{ (word)(byte)'Á', (word)(byte)'á', NULL, A_LOW_AACUTE, false		},		 
-	{ (word)(byte)'Â', (word)(byte)'â', NULL, A_LOW_ACIRCUMFLEX, false	},		 
-	{ (word)(byte)'Ã', (word)(byte)'ã', NULL, A_LOW_ATILDE, false		},		 
-	{ (word)(byte)'Ä', (word)(byte)'ä', NULL, A_LOW_ADIERESIS, false	},		 
-	{ (word)(byte)'Å', (word)(byte)'å', NULL, A_LOW_ARING, false		},		 
-	{ (word)(byte)'Æ', (word)(byte)'æ', NULL, A_LOW_AE, false			},		 
-	{ (word)(byte)'Ç', (word)(byte)'ç', NULL, A_LOW_CCEDILLA, false		},		 
-	{ (word)(byte)'È', (word)(byte)'è', NULL, A_LOW_EGRAVE, false		},		 
-	{ (word)(byte)'É', (word)(byte)'é', NULL, A_LOW_EACUTE, false		},		 
-	{ (word)(byte)'Ê', (word)(byte)'ê', NULL, A_LOW_ECIRCUMFLEX, false	},		 
-	{ (word)(byte)'Ë', (word)(byte)'ë', NULL, A_LOW_EDIERESIS, false	},		 
-	{ (word)(byte)'Ì', (word)(byte)'ì', NULL, A_LOW_IGRAVE, false		},		 
-	{ (word)(byte)'Í', (word)(byte)'í', NULL, A_LOW_IACUTE, false		},		 
-	{ (word)(byte)'Î', (word)(byte)'î', NULL, A_LOW_ICIRCUMFLEX, false	},		 
-	{ (word)(byte)'Ï', (word)(byte)'ï', NULL, A_LOW_IDIERESIS, false	},		 
-	{ (word)(byte)'Ð', (word)(byte)'ð', NULL, A_LOW_ETH, false			},		 
-	{ (word)(byte)'Ñ', (word)(byte)'ñ', NULL, A_LOW_NTILDE, false		},		 
-	{ (word)(byte)'Ò', (word)(byte)'ò', NULL, A_LOW_OGRAVE, false		},		 
-	{ (word)(byte)'Ó', (word)(byte)'ó', NULL, A_LOW_OACUTE, false		},		 
-	{ (word)(byte)'Ô', (word)(byte)'ô', NULL, A_LOW_OCIRCUMFLEX, false	},		 
-	{ (word)(byte)'Õ', (word)(byte)'õ', NULL, A_LOW_OTILDE, false		},		 
-	{ (word)(byte)'Ö', (word)(byte)'ö', NULL, A_LOW_ODIERESIS, false	},		 
-	{ (word)(byte)'÷', (word)(byte)'÷', "KP_SLASH", A_DIVIDE, false 	},		 
-	{ (word)(byte)'Ø', (word)(byte)'ø', NULL, A_LOW_OSLASH, false		},		 
-	{ (word)(byte)'Ù', (word)(byte)'ù', NULL, A_LOW_UGRAVE, false		},		 
-	{ (word)(byte)'Ú', (word)(byte)'ú', NULL, A_LOW_UACUTE, false		},		 
-	{ (word)(byte)'Û', (word)(byte)'û', NULL, A_LOW_UCIRCUMFLEX, false	},		 
-	{ (word)(byte)'Ü', (word)(byte)'ü', NULL, A_LOW_UDIERESIS, false	},		 
-	{ (word)(byte)'Ý', (word)(byte)'ý', NULL, A_LOW_YACUTE, false		},		 
-	{ (word)(byte)'Þ', (word)(byte)'þ', NULL, A_LOW_THORN, false		},		 
+	{ L'\u00C0', L'\u00E0', NULL, A_LOW_AGRAVE, false		},		 
+	{ L'\u00C1', L'\u00E1', NULL, A_LOW_AACUTE, false		},		 
+	{ L'\u00C2', L'\u00E2', NULL, A_LOW_ACIRCUMFLEX, false	},		 
+	{ L'\u00C3', L'\u00E3', NULL, A_LOW_ATILDE, false		},		 
+	{ L'\u00C4', L'\u00E4', NULL, A_LOW_ADIERESIS, false	},		 
+	{ L'\u00C5', L'\u00E5', NULL, A_LOW_ARING, false		},		 
+	{ L'\u00C6', L'\u00E6', NULL, A_LOW_AE, false			},		 
+	{ L'\u00C7', L'\u00E7', NULL, A_LOW_CCEDILLA, false		},		 
+	{ L'\u00C8', L'\u00E8', NULL, A_LOW_EGRAVE, false		},		 
+	{ L'\u00C9', L'\u00E9', NULL, A_LOW_EACUTE, false		},		 
+	{ L'\u00CA', L'\u00EA', NULL, A_LOW_ECIRCUMFLEX, false	},		 
+	{ L'\u00CB', L'\u00EB', NULL, A_LOW_EDIERESIS, false	},		 
+	{ L'\u00CC', L'\u00EC', NULL, A_LOW_IGRAVE, false		},		 
+	{ L'\u00CD', L'\u00ED', NULL, A_LOW_IACUTE, false		},		 
+	{ L'\u00CE', L'\u00EE', NULL, A_LOW_ICIRCUMFLEX, false	},		 
+	{ L'\u00CF', L'\u00EF', NULL, A_LOW_IDIERESIS, false	},		 
+	{ L'\u00D0', L'\u00F0', NULL, A_LOW_ETH, false			},		 
+	{ L'\u00D1', L'\u00F1', NULL, A_LOW_NTILDE, false		},		 
+	{ L'\u00D2', L'\u00F2', NULL, A_LOW_OGRAVE, false		},		 
+	{ L'\u00D3', L'\u00F3', NULL, A_LOW_OACUTE, false		},		 
+	{ L'\u00D4', L'\u00F4', NULL, A_LOW_OCIRCUMFLEX, false	},		 
+	{ L'\u00D5', L'\u00F5', NULL, A_LOW_OTILDE, false		},		 
+	{ L'\u00D6', L'\u00F6', NULL, A_LOW_ODIERESIS, false	},		 
+	{ L'\u00F7', L'\u00F7', "KP_SLASH", A_DIVIDE, false 	},		 
+	{ L'\u00D8', L'\u00F8', NULL, A_LOW_OSLASH, false		},		 
+	{ L'\u00D9', L'\u00F9', NULL, A_LOW_UGRAVE, false		},		 
+	{ L'\u00DA', L'\u00FA', NULL, A_LOW_UACUTE, false		},		 
+	{ L'\u00DB', L'\u00FB', NULL, A_LOW_UCIRCUMFLEX, false	},		 
+	{ L'\u00DC', L'\u00FC', NULL, A_LOW_UDIERESIS, false	},		 
+	{ L'\u00DD', L'\u00FD', NULL, A_LOW_YACUTE, false		},		 
+	{ L'\u00DE', L'\u00FE', NULL, A_LOW_THORN, false		},		 
 	{ 0x9f, 0xff, NULL, A_LOW_YDIERESIS, false							},	// *******
 																		
 	{ 0x100, 0x100, "JOY0", A_JOY0, false								},
@@ -954,7 +954,7 @@ the K_* names are matched up.
 to be configured even if they don't have defined names.
 ===================
 */
-int Key_StringToKeynum( char *str ) {
+int Key_StringToKeynum( const char *str ) {
 	int			i;
 	
 	if ( !str || !str[0] ) 
@@ -1170,12 +1170,12 @@ void Key_SetBinding( int keynum, const char *binding ) {
 Key_GetBinding
 ===================
 */
-char *Key_GetBinding( int keynum ) {
+const char *Key_GetBinding( int keynum ) {
 	if ( keynum == -1 ) {
 		return "";
 	}
 
-	assert (keynum < (sizeof(kg.keys)/sizeof(kg.keys[0])));
+	assert ((unsigned)keynum < (sizeof(kg.keys)/sizeof(kg.keys[0])));
 	return kg.keys[ keynum ].binding;
 }
 

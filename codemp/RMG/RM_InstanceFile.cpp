@@ -136,8 +136,6 @@ void CRMInstanceFile::Close ( void )
  ************************************************************************************************/
 CRMInstance* CRMInstanceFile::CreateInstance ( const char* name )
 {
-	static int instanceID = 0;
-
 	CGPGroup*		group;
 	CRMInstance*	instance;
 

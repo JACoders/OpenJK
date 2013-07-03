@@ -281,7 +281,7 @@ public:
 	{
 		return 1;
 	}
-#endif;
+#endif
 };
 
 
@@ -715,9 +715,6 @@ namespace storage
 			assert(dynamic_cast<const T *>(p));
 			T *ptr=p; // if this doesn't compile, you are trying to alloc something that is not derived from base
 			assert(dynamic_cast<const CAST_TO *>(ptr));
-			int i=VALUE_SIZE;
-			int k=MAX_CLASS_SIZE;
-			int j=sizeof(CAST_TO);
 			compile_assert<sizeof(CAST_TO)<=MAX_CLASS_SIZE>();
 			assert(sizeof(CAST_TO)<=MAX_CLASS_SIZE);
 #endif
@@ -1001,9 +998,6 @@ namespace storage
 			assert(dynamic_cast<const T *>(p));
 			T *ptr=p; // if this doesn't compile, you are trying to alloc something that is not derived from base
 			assert(dynamic_cast<const CAST_TO *>(ptr));
-			int i=VALUE_SIZE;
-			int k=MAX_CLASS_SIZE;
-			int j=sizeof(CAST_TO);
 			compile_assert<sizeof(CAST_TO)<=MAX_CLASS_SIZE>();
 			assert(sizeof(CAST_TO)<=MAX_CLASS_SIZE);
 #endif

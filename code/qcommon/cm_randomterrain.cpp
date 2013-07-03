@@ -132,7 +132,7 @@ static void lerp(float t, float a0, float a1, vec4_t p0, vec4_t p1, int m, vec4_
     n+1 of them are provided. The work array must have room for n+1 points.
  */
 static int DialASpline(float t, float a[], vec4_t p[], int m, int n, vec4_t work[],
-                    unsigned int Cn, bool interp, vec4_t val)
+                    int Cn, bool interp, vec4_t val)
 {
     register int i, j, k, h, lo, hi;
 
@@ -194,11 +194,9 @@ CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by,
 					 float minWidth, float maxWidth, float depth, float deviation, float breadth,
 					 CPathInfo *Connected, unsigned CreationFlags) :
 	mNumPoints(numPoints),
-	mMinWidth(minWidth),
-	mMaxWidth(maxWidth),
 	mDepth(depth),
-	mDeviation(deviation),
-	mBreadth(breadth)
+	mBreadth(breadth),
+	mDeviation(deviation)
 {
 	int		i, numConnected, index;
 	float	position, goal, deltaGoal;
@@ -853,7 +851,7 @@ typedef enum
 
 typedef struct SCharacterPiece
 {
-	char	*mPiece;
+	const char	*mPiece;
 	int		mCommonality;
 } TCharacterPiece;
 

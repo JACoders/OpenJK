@@ -107,7 +107,7 @@ Key_GetBindingBuf
 ====================
 */
 void Key_GetBindingBuf( int keynum, char *buf, int buflen ) {
-	char	*value;
+	const char	*value;
 
 	value = Key_GetBinding( keynum );
 	if ( value ) {
@@ -349,7 +349,7 @@ qboolean UI_GameCommand( void ) {
 
 void CL_GenericMenu_f(void)
 {		
-	char *arg = Cmd_Argv( 1 );
+	const char *arg = Cmd_Argv( 1 );
 
 	if (cls.uiStarted) {
 		UI_SetActiveMenu("ingame",arg);

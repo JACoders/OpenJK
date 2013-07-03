@@ -4,8 +4,6 @@
 #include "sdl_qgl.h"
 #include "sys/sys_local.h"
 
-static SDL_Window *window = NULL;
-
 static float displayAspect;
 cvar_t *r_allowSoftwareGL; // Don't abort out if a hardware visual can't be obtained
 cvar_t *r_allowResize; // make window resizable
@@ -22,7 +20,6 @@ typedef enum
 } rserr_t;
 
 static SDL_Window *screen = NULL;
-static SDL_DisplayMode *videoInfo = NULL;
 
 /* Just hack it for now. */
 #ifdef MACOS_X
@@ -197,7 +194,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	const char *glstring;
 	int perChannelColorBits;
 	int colorBits, depthBits, stencilBits;
-	int samples;
+	//int samples;
 	int i = 0;
 	SDL_Surface *icon = NULL;
 	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
@@ -746,7 +743,6 @@ GLimp_StartDriverAndSetMode
 */
 static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qboolean noborder)
 {
-	int i;
 	rserr_t err;
 
 	if (!SDL_WasInit(SDL_INIT_VIDEO))
@@ -818,15 +814,6 @@ SDL_SetGamma(SDL_Window *win, float red, float green, float blue)
         SDL_CalculateGammaRamp(blue, blue_ramp);
     }
     return SDL_SetWindowGammaRamp(win, red_ramp, green_ramp, blue_ramp);
-}
-
-static qboolean GLimp_HaveExtension(const char *ext)
-{
-	const char *ptr = Q_stristr( glConfig.extensions_string, ext );
-	if (ptr == NULL)
-		return qfalse;
-	ptr += strlen(ext);
-	return (qboolean)(((*ptr == ' ') || (*ptr == '\0')));  // verify it's complete string.
 }
 
 static void GLW_InitTextureCompression( void )
@@ -1086,7 +1073,7 @@ static void GLimp_InitExtensions( void )
 
 	if ( strstr( glConfig.extensions_string, "GL_EXT_point_parameters" ) )
 	{
-		if ( r_ext_compiled_vertex_array->integer || 1)
+		if ( r_ext_compiled_vertex_array->integer )
 		{
 			Com_Printf ("...using GL_EXT_point_parameters\n" );
 			qglPointParameterfEXT = ( void ( APIENTRY * )( GLenum, GLfloat) ) SDL_GL_GetProcAddress( "glPointParameterfEXT" );

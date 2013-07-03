@@ -15,8 +15,6 @@ extern qboolean tr_distortionPrePost; //tr_shadows.cpp
 extern qboolean tr_distortionNegate; //tr_shadows.cpp
 extern void RB_CaptureScreenImage(void); //tr_shadows.cpp
 extern void RB_DistortionFill(void); //tr_shadows.cpp
-static void RB_DrawGlowOverlay();
-static void RB_BlurGlowTexture();
 
 // Whether we are currently rendering only glowing objects or not.
 bool g_bRenderGlowingObjects = false;

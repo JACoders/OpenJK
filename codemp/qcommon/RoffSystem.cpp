@@ -973,8 +973,8 @@ void CROFFSystem::ProcessNote(SROFFEntity *roff_ent, char *note)
 qboolean CROFFSystem::ClearLerp( SROFFEntity *roff_ent )
 {
 	sharedEntity_t	*ent;
-	trajectory_t	*originTrajectory, *angleTrajectory;
-	vec_t			*origin, *angle;
+	trajectory_t	*originTrajectory = NULL, *angleTrajectory = NULL;
+	vec_t			*origin = NULL, *angle = NULL;
 
 	if (roff_ent->mIsClient)
 	{

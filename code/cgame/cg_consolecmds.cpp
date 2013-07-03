@@ -225,7 +225,7 @@ static void CG_InfoUp_f( void )
 }
 
 typedef struct {
-	char	*cmd;
+	const char	*cmd;
 	void	(*function)(void);
 } consoleCommand_t;
 
@@ -309,7 +309,7 @@ Cmd_Argc() / Cmd_Argv()
 */
 qboolean CG_ConsoleCommand( void ) {
 	const char	*cmd;
-	int		i;
+	unsigned int i;
 
 	cmd = CG_Argv(0);
 
@@ -333,7 +333,7 @@ so it can perform tab completion
 =================
 */
 void CG_InitConsoleCommands( void ) {
-	int		i;
+	unsigned int i;
 
 	for ( i = 0 ; i < sizeof( commands ) / sizeof( commands[0] ) ; i++ ) {
 		cgi_AddCommand( commands[i].cmd );

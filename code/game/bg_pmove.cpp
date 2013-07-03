@@ -9756,6 +9756,8 @@ void PM_SetSaberMove(saberMoveName_t newMove)
 			//FIXME: probably more...
 			pm->ps->SaberActivate();
 			break;
+		default:
+			break;
 		}
 
 		pm->ps->saberMove = newMove;
@@ -11493,6 +11495,8 @@ void PM_TryAirKick( saberMoveName_t kickMove )
 					break;
 				case LS_KICK_L_AIR:
 					PM_SetSaberMove( LS_KICK_L );
+					break;
+				default:
 					break;
 				}
 			}

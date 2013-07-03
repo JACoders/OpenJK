@@ -96,7 +96,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 		gi.G2API_PrecacheGhoul2Model( weaponModel ); // correct way is item->world_model
 	}
 
-	if ( weaponInfo->weaponModel == NULL )
+	if ( weaponInfo->weaponModel == 0 )
 	{
 		CG_Error( "Couldn't find weapon model %s for weapon %s\n", weaponData[weaponNum].weaponMdl, weaponData[weaponNum].classname);
 		return;
@@ -1403,7 +1403,7 @@ int CG_WeaponCheck( int weaponIndex )
 
 int cgi_UI_GetItemText(char *menuFile,char *itemName, char *text);
 
-char *weaponDesc[13] = 
+const char *weaponDesc[13] = 
 {
 "SABER_DESC",
 "NEW_BLASTER_PISTOL_DESC",
@@ -1662,14 +1662,14 @@ void CG_DrawDataPadWeaponSelect( void )
 	// Print the weapon description
 	cgi_SP_GetStringTextString( va("SP_INGAME_%s",weaponDesc[cg.DataPadWeaponSelect-1]), text, sizeof(text) );
 
-	const short textboxXPos = 40;
-	const short textboxYPos = 60;
-	const int	textboxWidth = 560;
-	const int	textboxHeight = 300;
-	const float	textScale = 1.0f;
-
-	if (text)
+	if (text[0])
 	{
+		const short textboxXPos = 40;
+		const short textboxYPos = 60;
+		const int	textboxWidth = 560;
+		const int	textboxHeight = 300;
+		const float	textScale = 1.0f;
+
 		CG_DisplayBoxedText(
 			textboxXPos, textboxYPos,
 			textboxWidth, textboxHeight,

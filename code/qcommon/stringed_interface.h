@@ -24,7 +24,9 @@ This file is part of Jedi Academy.
 #ifndef STRINGED_INTERFACE_H
 #define STRINGED_INTERFACE_H
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4786 )			// disable the usual stupid and pointless STL warning
+#endif
 #include <string>
 using namespace std;
 

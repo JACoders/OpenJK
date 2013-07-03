@@ -1135,7 +1135,7 @@ static void CG_Missile( centity_t *cent ) {
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->alt_missileSound );
 
 		//Don't draw something without a model
-		if ( weapon->alt_missileModel == NULL )
+		if ( weapon->alt_missileModel == 0 )
 			return;
 	}
 	else
@@ -1154,7 +1154,7 @@ static void CG_Missile( centity_t *cent ) {
 			cgi_S_AddLoopingSound( cent->currentState.number, cent->lerpOrigin, vec3_origin, weapon->missileSound );
 
 		//Don't draw something without a model
-		if ( weapon->missileModel == NULL )
+		if ( weapon->missileModel == 0 )
 			return;
 	}
 
@@ -1413,14 +1413,6 @@ void CG_Cylinder( vec3_t start, vec3_t end, float radius, vec3_t color )
 					cgs.media.waterDropShader
 					0, -1, -1 );*/
 }
-
-static vec2_t st[] = 
-{
-	0.0f, 0.0f,
-	1.0f, 0.0f,
-	1.0f, 1.0f,
-	0.0f, 1.0f
-};
 
 void CG_Cube( vec3_t mins, vec3_t maxs, vec3_t color, float alpha ) 
 {
@@ -2030,7 +2022,6 @@ void CG_Limb ( centity_t *cent )
 		}
 		else
 		{
-extern cvar_t	*g_dismemberment;
 extern cvar_t	*g_saberRealisticCombat;
 			//3) turn off w/descendants that surf in original model
 			if ( cent->gent->target )//stubTagName )

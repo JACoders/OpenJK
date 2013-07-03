@@ -1,6 +1,8 @@
+#ifdef COMPILE_ME
+#ifdef _MSC_VER
 #pragma warning(disable:4206)	// nonstandard extension used : translation unit is empty
 #pragma warning(disable:4711)	// function 'xxxx' selected for automatic inline expansion
-#ifdef COMPILE_ME
+#endif
 /*____________________________________________________________________________
 	
 	FreeAmp - The Free MP3 Player
@@ -242,8 +244,6 @@ int L1audio_decode_init(MPEG_HEAD * h, int framebytes_arg,
       first_pass = 0;
    }
    pMP3Stream->cs_factorL1 = pMP3Stream->cs_factor[0];
-
-   transform_code = transform_code;	/* not used, asm compatability */
 
    bit_code = 0;
    if (convert_code & 8)
