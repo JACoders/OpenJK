@@ -4681,8 +4681,8 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 	//-------------------------------------------------------
 	if (animations[anim].numFrames==0)
 	{
-		static int	LastAnimWarningNum=0;
 	#ifndef FINAL_BUILD
+		static int	LastAnimWarningNum=0;
 		if (LastAnimWarningNum!=anim)
 		{
 			if ((cg_debugAnim.integer==3)	||												// 3 = do everyone
