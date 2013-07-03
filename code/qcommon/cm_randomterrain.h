@@ -36,7 +36,6 @@ private:
 	vec4_t		*mPoints, *mWork;
 	vec_t		*mWeights;
 	int			mNumPoints;
-	float		mMinWidth, mMaxWidth;
 	float		mInc;
 	float		mDepth, mBreadth;
 	float		mDeviation;

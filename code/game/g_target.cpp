@@ -929,7 +929,6 @@ void set_mission_stats_cvars( void )
 	{
 		return;
 	}
-	cg_entities[0].gent->client->sess.missionStats.enemiesKilled;
 
 	gi.cvar_set("ui_stats_enemieskilled", va("%d",client->sess.missionStats.enemiesKilled));	//pass this on to the menu
 

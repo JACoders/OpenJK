@@ -107,7 +107,7 @@ static void S_SetDynamicMusicState( MusicState_e musicState );
 
 #define fDYNAMIC_XFADE_SECONDS (1.0f)
 
-static MusicInfo_t	tMusic_Info[eBGRNDTRACK_NUMBEROF]	= {0};
+static MusicInfo_t	tMusic_Info[eBGRNDTRACK_NUMBEROF]	= {};
 static sboolean		bMusic_IsDynamic					= qfalse;
 static MusicState_e	eMusic_StateActual					= eBGRNDTRACK_EXPLORE;	// actual state, can be any enum
 static MusicState_e	eMusic_StateRequest					= eBGRNDTRACK_EXPLORE;	// requested state, can only be explore, action, boss, or silence
@@ -281,7 +281,7 @@ bool LoadEALFile(char *szEALFilename);
 void UnloadEALFile();
 void UpdateEAXListener();
 void UpdateEAXBuffer(channel_t *ch);
-void EALFileInit(char *level);
+void EALFileInit(const char *level);
 float CalcDistance(EMPOINT A, EMPOINT B);
 
 void Normalize(EAXVECTOR *v)
@@ -430,16 +430,8 @@ S_Init
 ================
 */
 void S_Init( void ) {
-	ALCcontext *ALCContext = NULL;
-	ALCdevice *ALCDevice = NULL;
-	ALfloat listenerPos[]={0.0,0.0,0.0};
-	ALfloat listenerVel[]={0.0,0.0,0.0};
-	ALfloat	listenerOri[]={0.0,0.0,-1.0, 0.0,1.0,0.0};
 	cvar_t	*cv;
 	sboolean	r;
-	int i, j;
-	channel_t *ch;
-	char *mapname;
 
 	Com_Printf("\n------- sound initialization -------\n");
 
@@ -490,12 +482,14 @@ void S_Init( void ) {
 #ifdef _WIN32
 	if (s_UseOpenAL)
 	{
-		ALCDevice = alcOpenDevice((ALubyte*)"DirectSound3D");
+		int i, j;
+
+		ALCdevice *ALCDevice = alcOpenDevice((ALubyte*)"DirectSound3D");
 		if (!ALCDevice)
 			return;
 
 		//Create context(s)
-		ALCContext = alcCreateContext(ALCDevice, NULL);
+		ALCcontext *ALCContext = alcCreateContext(ALCDevice, NULL);
 		if (!ALCContext)
 			return;
 
@@ -515,6 +509,9 @@ void S_Init( void ) {
 		S_SoundInfo_f();
 
 		// Set Listener attributes
+		ALfloat listenerPos[]={0.0,0.0,0.0};
+		ALfloat listenerVel[]={0.0,0.0,0.0};
+		ALfloat	listenerOri[]={0.0,0.0,-1.0, 0.0,1.0,0.0};
 		alListenerfv(AL_POSITION,listenerPos);
 		alListenerfv(AL_VELOCITY,listenerVel);
 		alListenerfv(AL_ORIENTATION,listenerOri);
@@ -560,7 +557,7 @@ void S_Init( void ) {
 		}
 
 		// Generate AL Buffers for streaming audio playback (used for MP3s)
-		ch = s_channels + 1;
+		channel_t *ch = s_channels + 1;
 		for (i = 1; i < s_numChannels; i++, ch++)
 		{
 			for (j = 0; j < NUM_STREAMING_BUFFERS; j++)
@@ -601,7 +598,7 @@ void S_Init( void ) {
 		// s_init could be called in game, if so there may be an .eal file 
 		// for this level
 
-		mapname = Cvar_VariableString( "mapname" );
+		const char *mapname = Cvar_VariableString( "mapname" );
 		EALFileInit(mapname);
 
 	}
@@ -658,11 +655,6 @@ void S_ReloadAllUsedSounds(void)
 
 void S_Shutdown( void )
 {
-	ALCcontext	*ALCContext;
-	ALCdevice	*ALCDevice;
-	channel_t	*ch;
-	int			i, j;
-
 	if ( !s_soundStarted ) {
 		return;
 	}
@@ -673,6 +665,7 @@ void S_Shutdown( void )
 #ifdef _WIN32
 	if (s_UseOpenAL)
 	{
+		int i, j;
 		// Release all the AL Sources (including Music channel (Source 0))
 		for (i = 0; i < s_numChannels; i++)
 		{
@@ -680,7 +673,7 @@ void S_Shutdown( void )
 		}
 
 		// Release Streaming AL Buffers
-		ch = s_channels + 1;
+		channel_t *ch = s_channels + 1;
 		for (i = 1; i < s_numChannels; i++, ch++)
 		{
 			for (j = 0; j < NUM_STREAMING_BUFFERS; j++)
@@ -697,9 +690,9 @@ void S_Shutdown( void )
 		}
 
 		// Get active context
-		ALCContext = alcGetCurrentContext();
+		ALCcontext *ALCContext = alcGetCurrentContext();
 		// Get device for active context
-		ALCDevice = alcGetContextsDevice(ALCContext);
+		ALCdevice *ALCDevice = alcGetContextsDevice(ALCContext);
 		// Release context(s)
 		alcDestroyContext(ALCContext);
 		// Close device
@@ -918,7 +911,6 @@ S_BeginRegistration
 */
 void S_BeginRegistration( void )
 {
-	char *mapname;
 
 	s_soundMuted = qfalse;		// we can play again
 
@@ -926,7 +918,7 @@ void S_BeginRegistration( void )
 	// Find name of level so we can load in the appropriate EAL file
 	if (s_UseOpenAL)
 	{
-		mapname = Cvar_VariableString( "mapname" );
+		const char *mapname = Cvar_VariableString( "mapname" );
 		EALFileInit(mapname);
 		// clear carry crap from previous map
 		for (int i = 0; i < EAX_MAX_FXSLOTS; i++)
@@ -953,12 +945,8 @@ void S_BeginRegistration( void )
 }
 
 
-void EALFileInit(char *level)
+void EALFileInit(const char *level)
 {
-	long		lRoom;
-	char		name[MAX_QPATH];
-	char		szEALFilename[MAX_QPATH];
-	int			i;
 
 #ifdef _WIN32
 	// If an EAL File is already unloaded, remove it
@@ -971,6 +959,8 @@ void EALFileInit(char *level)
 	s_bInWater = false;
 
 	// Try and load an EAL file for the new level
+	char		name[MAX_QPATH];
+	char		szEALFilename[MAX_QPATH];
 	COM_StripExtension(level, name, sizeof( name ));
 	Com_sprintf(szEALFilename, MAX_QPATH, "eagle/%s.eal", name);
 
@@ -991,8 +981,8 @@ void EALFileInit(char *level)
 		// Mute reverbs if no EAL file is found
 		if ((s_bEAX)&&(s_eaxSet))
 		{
-			lRoom = -10000;
-			for (i = 0; i < s_NumFXSlots; i++)
+			long lRoom = -10000;
+			for (int i = 0; i < s_NumFXSlots; i++)
 			{
 				s_eaxSet(&s_FXSlotInfo[i].FXSlotGuid, EAXREVERB_ROOM, NULL,
 					&lRoom, sizeof(long));
@@ -1572,7 +1562,6 @@ Entchannel 0 will never override a playing sound
 */
 void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfxHandle ) 
 {
-	int i;
 	channel_t	*ch;
 	/*const*/ sfx_t *sfx;
 
@@ -1601,6 +1590,7 @@ void S_StartSound(const vec3_t origin, int entityNum, int entchannel, sfxHandle_
 #ifdef _WIN32
 	if (s_UseOpenAL)
 	{
+		int i;
 		if (entchannel == CHAN_WEAPON)
 		{
 			// Check if we are playing a 'charging' sound, if so, stop it now ..
@@ -1830,8 +1820,6 @@ S_StopAllSounds
 */
 void S_StopSounds(void)
 {
-	int i; //, j;
-	channel_t *ch;
 
 	if ( !s_soundStarted ) {
 		return;
@@ -1844,7 +1832,8 @@ void S_StopSounds(void)
 	// clear all the s_channels
 	if (s_UseOpenAL)
 	{
-		ch = s_channels;
+		int i; //, j;
+		channel_t *ch = s_channels;
 		for (i = 0; i < s_numChannels; i++, ch++)
 		{
 			alSourceStop(s_channels[i].alSource);
@@ -1903,12 +1892,10 @@ S_ClearLoopingSounds
 */
 void S_ClearLoopingSounds( void )
 {
-	int i;
-
 #ifdef _WIN32
 	if (s_UseOpenAL)
 	{
-		for (i = 0; i < MAX_LOOP_SOUNDS; i++)
+		for (int i = 0; i < MAX_LOOP_SOUNDS; i++)
 			loopSounds[i].bProcessed = false;
 	}
 #endif
@@ -2328,10 +2315,6 @@ let the sound system know where an entity currently is
 */
 void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 {
-	ALfloat pos[3];
-	channel_t *ch;
-	int i;
-
 	if ( entityNum < 0 || entityNum >= MAX_GENTITIES ) {
 		Com_Error( ERR_DROP, "S_UpdateEntityPosition: bad entitynum %i", entityNum );
 	}
@@ -2342,7 +2325,8 @@ void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 		if (entityNum == 0)
 			return;
 
-		ch = s_channels + 1;
+		int i;
+		channel_t *ch = s_channels + 1;
 		for (i = 1; i < s_numChannels; i++, ch++)
 		{
 			if ((s_channels[i].bPlaying) & (s_channels[i].entnum == entityNum) & (!s_channels[i].bLooping))
@@ -2350,6 +2334,7 @@ void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 				// Ignore position updates for CHAN_VOICE_GLOBAL
 				if (ch->entchannel != CHAN_VOICE_GLOBAL && ch->entchannel != CHAN_ANNOUNCER)
 				{
+					ALfloat pos[3];
 					pos[0] = origin[0];
 					pos[1] = origin[2];
 					pos[2] = -origin[1];
@@ -2514,7 +2499,6 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], int inwat
 	EAXOCCLUSIONPROPERTIES eaxOCProp;
 	EAXACTIVEFXSLOTS eaxActiveSlots;
 #endif
-	unsigned int ulEnvironment;
 	int			i;
 	channel_t	*ch;
 	vec3_t		origin;
@@ -2555,7 +2539,7 @@ void S_Respatialize( int entityNum, const vec3_t head, vec3_t axis[3], int inwat
 					}
 
 					// Load underwater reverb effect into FX Slot 0, and set this as the Primary FX Slot
-					ulEnvironment = EAX_ENVIRONMENT_UNDERWATER;
+					unsigned int ulEnvironment = EAX_ENVIRONMENT_UNDERWATER;
 					s_eaxSet(&EAXPROPERTYID_EAX40_FXSlot0, EAXREVERB_ENVIRONMENT,
 						NULL, &ulEnvironment, sizeof(unsigned int));
 					s_EnvironmentID = 999;
@@ -2695,7 +2679,7 @@ sboolean S_ScanChannelStarts( void ) {
 		}
 
 		// if it is completely finished by now, clear it
-		if ( ch->startSample + ch->thesfx->iSoundLengthInSamples <= s_paintedtime ) {
+		if ( (int)(ch->startSample + ch->thesfx->iSoundLengthInSamples) <= s_paintedtime ) {
 			ch->thesfx = NULL;
 			continue;
 		}
@@ -2846,13 +2830,6 @@ void S_GetSoundtime(void)
 void S_Update_(void) {
 	unsigned        endtime;
 	int				samps;
-	channel_t		*ch;
-	int i,j;
-	int			source;
-	float		pos[3];
-#ifdef _DEBUG
-	char szString[256];
-#endif
 
 	if ( !s_soundStarted || s_soundMuted ) {
 		return;
@@ -2861,15 +2838,17 @@ void S_Update_(void) {
 #ifdef _WIN32
 	if (s_UseOpenAL)
 	{
+		int i,j;
+		float		pos[3];
 		UpdateSingleShotSounds();
 
-		ch = s_channels + 1;
+		channel_t *ch = s_channels + 1;
 		for ( i = 1; i < MAX_CHANNELS ; i++, ch++ )
 		{	
 			if ( !ch->thesfx || (ch->bPlaying))
 				continue;
 
-			source = ch - s_channels;
+			int source = ch - s_channels;
 
 			if (ch->entchannel == CHAN_VOICE_GLOBAL || ch->entchannel == CHAN_ANNOUNCER)
 			{
@@ -3115,7 +3094,7 @@ void S_Update_(void) {
 
 		// never mix more than the complete buffer
 		samps = dma.samples >> (dma.channels-1);
-		if (endtime - s_soundtime > samps)
+		if (endtime - s_soundtime > (unsigned)samps)
 			endtime = s_soundtime + samps;
 
 
@@ -3646,9 +3625,6 @@ void S_SetLipSyncs()
 	unsigned int samples;
 	int currentTime, timePlayed;
 	channel_t *ch;
-#ifdef _DEBUG
-	char szString[256];
-#endif
 
 #ifdef _WIN32
 	currentTime = timeGetTime();
@@ -3683,7 +3659,7 @@ void S_SetLipSyncs()
 #endif
 				}
 				
-				if ((ch->thesfx->lipSyncData) && (samples < ch->thesfx->iSoundLengthInSamples))
+				if ((ch->thesfx->lipSyncData) && ((int)samples < ch->thesfx->iSoundLengthInSamples))
 				{
 					s_entityWavVol[ ch->entnum ] = ch->thesfx->lipSyncData[samples / 1000];
 					if ( s_show->integer == 3 ) 
@@ -3707,7 +3683,7 @@ void S_SetLipSyncs()
 #endif
 				}
 
-				if ((ch->thesfx->lipSyncData) && (samples < ch->thesfx->iSoundLengthInSamples))
+				if ((ch->thesfx->lipSyncData) && (samples < (unsigned)ch->thesfx->iSoundLengthInSamples))
 				{
 					s_entityWavVol[ ch->entnum ] = ch->thesfx->lipSyncData[(samples / 576) % 16];
 
@@ -4772,7 +4748,7 @@ static sboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, sboolea
 
 		// our max buffer size
 		fileBytes = fileSamples * (pMusicInfo->s_backgroundInfo.width * pMusicInfo->s_backgroundInfo.channels);
-		if (fileBytes > RAWSIZE ) {
+		if (fileBytes > (int)RAWSIZE ) {
 			fileBytes = RAWSIZE;
 			fileSamples = fileBytes / (pMusicInfo->s_backgroundInfo.width * pMusicInfo->s_backgroundInfo.channels);
 		}

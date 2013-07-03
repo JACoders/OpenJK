@@ -311,7 +311,7 @@ static shader_t *ShaderForShaderNum( int shaderNum, const int *lightmapNum, cons
 
 	styles = lightmapStyles;
 
-	shaderNum = LittleLong( shaderNum );
+	LL( shaderNum );
 	if ( shaderNum < 0 || shaderNum >= worldData.numShaders ) {
 		Com_Error( ERR_DROP, "ShaderForShaderNum: bad num %i", shaderNum );
 	}
@@ -1716,14 +1716,14 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 		}
 		else
 		{
-			if ( (unsigned)out->originalBrushNumber >= brushesCount ) {
+			if ( (unsigned)out->originalBrushNumber >= (unsigned)brushesCount ) {
 				Com_Error( ERR_DROP, "fog brushNumber out of range" );
 			}
 			brush = brushes + out->originalBrushNumber;
 
 			firstSide = LittleLong( brush->firstSide );
 
-				if ( (unsigned)firstSide > sidesCount - 6 ) {
+				if ( (unsigned)firstSide > (unsigned)(sidesCount - 6) ) {
 				Com_Error( ERR_DROP, "fog brush sideNumber out of range" );
 			}
 
@@ -1850,7 +1850,7 @@ void R_LoadLightGridArray( lump_t *l, world_t &worldData ) {
 
 	w->numGridArrayElements = w->lightGridBounds[0] * w->lightGridBounds[1] * w->lightGridBounds[2];
 
-	if ( l->filelen != w->numGridArrayElements * sizeof(*w->lightGridArray) ) {
+	if ( (unsigned)l->filelen != w->numGridArrayElements * sizeof(*w->lightGridArray) ) {
 		Com_Printf (S_COLOR_YELLOW  "WARNING: light grid array mismatch\n" );
 		w->lightGridData = NULL;
 		return;
@@ -1992,7 +1992,6 @@ Called directly from cgame
 */
 void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 {
-	int			i;
 	dheader_t	*header;
 	byte		*buffer;
 	byte		*startMarker;
@@ -2048,14 +2047,14 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 	header = (dheader_t *)buffer;
 	fileBase = (byte *)header;
 
-	i = LittleLong (header->version);
+	int i = LittleLong (header->version);
 	if ( i != BSP_VERSION ) {
 		Com_Error (ERR_DROP, "RE_LoadWorldMap: %s has wrong version number (%i should be %i)", 
 			name, i, BSP_VERSION);
 	}
 
 	// swap all the lumps
-	for (i=0 ; i<sizeof(dheader_t)/4 ; i++) {
+	for (size_t i=0 ; i<sizeof(dheader_t)/4 ; i++) {
 		((int *)header)[i] = LittleLong ( ((int *)header)[i]);
 	}
 

@@ -231,7 +231,7 @@ void GLimp_Shutdown( void )
 /*
 ** GLimp_LogComment
 */
-void GLimp_LogComment( char *comment ) 
+void GLimp_LogComment( const char *comment ) 
 {
 }
 

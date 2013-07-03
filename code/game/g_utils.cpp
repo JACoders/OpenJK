@@ -933,11 +933,15 @@ void G_FreeEntity( gentity_t *ed ) {
 			gi.Free(ed->client->clientInfo.customBasicSoundDir);
 		}
 		if(ed->client->clientInfo.customCombatSoundDir) {
-			assert(*(int*)ed->client->clientInfo.customCombatSoundDir != 0xfeeefeee);
+#ifdef _MSC_VER
+			assert(*(unsigned int*)ed->client->clientInfo.customCombatSoundDir != 0xfeeefeee);
+#endif
 			gi.Free(ed->client->clientInfo.customCombatSoundDir);
 		}
 		if(ed->client->clientInfo.customExtraSoundDir) {
-			assert(*(int*)ed->client->clientInfo.customExtraSoundDir != 0xfeeefeee);
+#ifdef _MSC_VER
+			assert(*(unsigned int*)ed->client->clientInfo.customExtraSoundDir != 0xfeeefeee);
+#endif
 			gi.Free(ed->client->clientInfo.customExtraSoundDir);
 		}
 		if(ed->client->clientInfo.customJediSoundDir) {
@@ -1356,7 +1360,7 @@ qboolean infront(gentity_t *from, gentity_t *to)
 
 void Svcmd_Use_f( void )
 {
-	char	*cmd1 = gi.argv(1);
+	const char	*cmd1 = gi.argv(1);
 
 	if ( !cmd1 || !cmd1[0] )
 	{
@@ -2044,7 +2048,7 @@ void removeBoltSurface( gentity_t *ent)
 	// check first to be sure the bolt is still there on the model
 	if ((hitEnt->ghoul2.size() > ent->damage) &&
 		(hitEnt->ghoul2[ent->damage].mModelindex != -1) &&
-		(hitEnt->ghoul2[ent->damage].mSlist.size() > ent->aimDebounceTime) &&
+		(hitEnt->ghoul2[ent->damage].mSlist.size() > (unsigned int)ent->aimDebounceTime) &&
 		(hitEnt->ghoul2[ent->damage].mSlist[ent->aimDebounceTime].surface != -1) &&
 		(hitEnt->ghoul2[ent->damage].mSlist[ent->aimDebounceTime].offFlags == G2SURFACEFLAG_GENERATED)) 
 	{

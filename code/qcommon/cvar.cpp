@@ -119,7 +119,7 @@ int Cvar_VariableIntegerValue( const char *var_name ) {
 Cvar_VariableString
 ============
 */
-char *Cvar_VariableString( const char *var_name ) {
+const char *Cvar_VariableString( const char *var_name ) {
 	cvar_t *var;
 	
 	var = Cvar_FindVar (var_name);
@@ -527,7 +527,7 @@ qboolean Cvar_Command( void ) {
 	}
 
 //JFM toggle test
-	char *value;
+	const char *value;
 	value = Cmd_Argv(1);
 	if (value[0] =='!')	//toggle
 	{
@@ -712,7 +712,7 @@ Cvar_List_f
 void Cvar_List_f( void ) {
 	cvar_t	*var;
 	int		i;
-	char	*match;
+	const char	*match;
 
 	if ( Cmd_Argc() > 1 ) {
 		match = Cmd_Argv( 1 );
@@ -814,7 +814,7 @@ void Cvar_Restart_f( void ) {
 			}
 			// clear the var completely, since we
 			// can't remove the index from the list
-			memset( var, 0, sizeof( var ) );
+			memset( var, 0, sizeof( *var ) );
 			continue;
 		}
 		Cvar_Set( var->name, var->resetString );
@@ -882,7 +882,7 @@ updates an interpreted modules' version of a cvar
 void	Cvar_Update( vmCvar_t *vmCvar ) {
 	cvar_t	*cv;
 
-	if ( (unsigned)vmCvar->handle >= cvar_numIndexes ) {
+	if ( (unsigned)vmCvar->handle >= (unsigned)cvar_numIndexes ) {
 		Com_Error( ERR_DROP, "Cvar_Update: handle out of range" );
 	}
 

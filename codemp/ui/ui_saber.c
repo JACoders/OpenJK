@@ -201,8 +201,7 @@ qboolean UI_SaberShouldDrawBlade( const char *saberName, int bladeNum )
 	char	bladeStyle2StartString[8]={0};
 	char	noBladeString[8]={0};
 	UI_SaberParseParm( saberName, "bladeStyle2Start", bladeStyle2StartString );
-	if ( bladeStyle2StartString
-		&& bladeStyle2StartString[0] )
+	if ( bladeStyle2StartString[0] )
 	{
 		bladeStyle2Start = atoi( bladeStyle2StartString );
 	}
@@ -210,8 +209,7 @@ qboolean UI_SaberShouldDrawBlade( const char *saberName, int bladeNum )
 		&& bladeNum >= bladeStyle2Start )
 	{//use second blade style
 		UI_SaberParseParm( saberName, "noBlade2", noBladeString );
-		if ( noBladeString
-			&& noBladeString[0] )
+		if ( noBladeString[0] )
 		{
 			noBlade = atoi( noBladeString );
 		}
@@ -219,8 +217,7 @@ qboolean UI_SaberShouldDrawBlade( const char *saberName, int bladeNum )
 	else
 	{//use first blade style
 		UI_SaberParseParm( saberName, "noBlade", noBladeString );
-		if ( noBladeString
-			&& noBladeString[0] )
+		if ( noBladeString[0] )
 		{
 			noBlade = atoi( noBladeString );
 		}
@@ -301,7 +298,7 @@ qboolean UI_SaberProperNameForSaber( const char *saberName, char *saberProperNam
 	char	stringedSaberName[1024];
 	qboolean ret = UI_SaberParseParm( saberName, "name", stringedSaberName );
 	// if it's a stringed reference translate it
-	if( ret && stringedSaberName && stringedSaberName[0] == '@')
+	if( ret && stringedSaberName[0] == '@')
 	{
 		trap_SP_GetStringTextString(&stringedSaberName[1], saberProperName, 1024);
 	}
@@ -447,6 +444,8 @@ void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 			glow = purpleSaberGlowShader;
 			blade = purpleSaberCoreShader;
 			VectorSet( rgb, 0.9f, 0.2f, 1.0f );
+			break;
+		default:
 			break;
 	}
 
@@ -617,13 +616,15 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 	saber_colors_t bladeColor;
 	float bladeLength,bladeRadius;
 	vec3_t	bladeOrigin={0};
-	vec3_t	axis[3]={0};
+	vec3_t	axis[3];
 //	vec3_t	angles={0};
 	mdxaBone_t	boltMatrix;
 	qboolean tagHack = qfalse;
 	char *tagName;
 	int bolt;
 	float scale;
+
+    memset (axis, 0, sizeof (axis));
 
 	if ( (item->flags&ITF_ISSABER) && saberModel < 2 )
 	{
@@ -832,6 +833,8 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 			break;
 		case SABER_SITH_SWORD:
 			//no blade
+			break;
+		default:
 			break;
 		}
 	}

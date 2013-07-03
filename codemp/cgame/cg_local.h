@@ -1044,7 +1044,7 @@ extern cgscreffects_t cgScreenEffects;
 void CGCam_Shake( float intensity, int duration );
 void CGCam_SetMusicMult( float multiplier, int duration );
 
-typedef enum 
+enum 
 {
 	CHUNK_METAL1 = 0,
 	CHUNK_METAL2,

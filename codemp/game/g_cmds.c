@@ -1344,7 +1344,7 @@ qboolean G_SetSaber(gentity_t *ent, int saberNum, char *saberName, qboolean sieg
 
 	Q_strncpyz( truncSaberName, saberName, sizeof( truncSaberName ) );
 
-	if ( saberNum == 0 && !Q_stricmp( "none", truncSaberName ) || !Q_stricmp( "remove", truncSaberName ) )
+	if ( saberNum == 0 && (!Q_stricmp( "none", truncSaberName ) || !Q_stricmp( "remove", truncSaberName )) )
 	{ //can't remove saber 0 like this
 		Q_strncpyz( truncSaberName, DEFAULT_SABER, sizeof( truncSaberName ) );
 	}
@@ -1821,7 +1821,7 @@ void Cmd_GameCommand_f( gentity_t *ent ) {
 	trap_Argv( 2, arg, sizeof( arg ) );
 	order = atoi( arg );
 
-	if ( order < 0 || order >= numgc_orders ) {
+	if ( order >= numgc_orders ) {
 		trap_SendServerCommand( ent-g_entities, va("print \"Bad order: %i\n\"", order));
 		return;
 	}

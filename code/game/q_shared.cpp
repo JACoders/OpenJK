@@ -89,7 +89,7 @@ void COM_DefaultExtension (char *path, int maxSize, const char *extension ) {
 		}
 	}
 
-	if (strlen(path)+strlen(extension) >= maxSize)
+	if (strlen(path)+strlen(extension) >= (unsigned int)maxSize)
 	{
 		Com_Printf ("COM_DefaultExtension: overflow adding %s to %s\n", extension, path);
 	}
@@ -626,7 +626,7 @@ int Com_HexStrToInt( const char *str )
 	// check for hex code
 	if( str[ 0 ] == '0' && str[ 1 ] == 'x' )
 	{
-		int i, n = 0;
+		size_t i, n = 0;
 		
 		for( i = 2; i < strlen( str ); i++ )
 		{
@@ -731,7 +731,7 @@ void Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooL
 
 	if (bBarfIfTooLong)
 	{
-		if ( strlen(src)+1 > destsize)
+		if ( strlen(src)+1 > (size_t)destsize)
 		{
 			Com_Error(ERR_FATAL,"String dest buffer too small to hold string \"%s\" %d > %d\n(source addr = %x, dest addr = %x",src, strlen(src)+1, destsize, src, dest);
 		}
@@ -817,7 +817,7 @@ void Q_strcat( char *dest, int size, const char *src ) {
 	if ( l1 >= size ) {
 		Com_Error( ERR_FATAL, "Q_strcat: already overflowed" );
 	}
-	if ( strlen(src)+1 > size - l1)
+	if ( strlen(src)+1 > (size_t)(size - l1))
 	{	//do the error here instead of in Q_strncpyz to get a meaningful msg
 		Com_Error(ERR_FATAL,"Q_strcat: cannot append \"%s\" to \"%s\"", src, dest);
 	}
@@ -1037,7 +1037,7 @@ key and returns the associated value, or an empty string.
 FIXME: overflow check?
 ===============
 */
-char *Info_ValueForKey( const char *s, const char *key ) {
+const char *Info_ValueForKey( const char *s, const char *key ) {
 	char	pkey[MAX_INFO_KEY];
 	static	char value[2][MAX_INFO_VALUE];	// use two buffers so compares
 											// work without stomping on each other

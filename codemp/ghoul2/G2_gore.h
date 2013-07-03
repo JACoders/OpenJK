@@ -72,7 +72,9 @@ void		DeleteGoreSet(int goreSetTag);
 
 /// ragdoll stuff
 
+#ifdef _MSC_VER
 #pragma warning(disable: 4512)
+#endif
 
 struct SRagDollEffectorCollision
 {

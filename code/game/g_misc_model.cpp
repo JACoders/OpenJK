@@ -59,7 +59,7 @@ void SetMiscModelModels( char *modelNameString, gentity_t *ent, qboolean damage_
 }
 
 //------------------------------------------------------------
-void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, char *material, int solid_mask,int animFlag, 
+void SetMiscModelDefaults( gentity_t *ent, useFunc_t use_func, const char *material, int solid_mask,int animFlag, 
 									qboolean take_damage, qboolean damage_model = qfalse )
 {
 	// Apply damage and chunk models if they exist

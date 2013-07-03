@@ -67,7 +67,7 @@ char	*ConcatArgs( int start ) {
 	int		i, c, tlen;
 	static char	line[MAX_STRING_CHARS];
 	int		len;
-	char	*arg;
+	const char	*arg;
 
 	len = 0;
 	c = gi.argc();
@@ -168,7 +168,7 @@ Give items to a client
 */
 void Cmd_Give_f (gentity_t *ent)
 {
-	char		*name;
+	const char	*name;
 	gitem_t		*it;
 	int			i;
 	qboolean	give_all;
@@ -459,7 +459,7 @@ argv(0) god
 */
 void Cmd_God_f (gentity_t *ent)
 {
-	char	*msg;
+	const char	*msg;
 
 	if ( !CheatsOk( ent ) ) {
 		return;
@@ -485,7 +485,7 @@ argv(0) undying
 */
 void Cmd_Undying_f (gentity_t *ent)
 {
-	char	*msg;
+	const char	*msg;
 
 	if ( !CheatsOk( ent ) ) 
 	{
@@ -500,7 +500,7 @@ void Cmd_Undying_f (gentity_t *ent)
 	else
 	{
 		int		max;
-		char	*cmd;
+		const char	*cmd;
 
 		cmd = gi.argv(1);
 		if ( cmd && atoi( cmd ) )
@@ -535,7 +535,7 @@ argv(0) notarget
 ==================
 */
 void Cmd_Notarget_f( gentity_t *ent ) {
-	char	*msg;
+	const char	*msg;
 
 	if ( !CheatsOk( ent ) ) {
 		return;
@@ -559,7 +559,7 @@ argv(0) noclip
 ==================
 */
 void Cmd_Noclip_f( gentity_t *ent ) {
-	char	*msg;
+	const char	*msg;
 
 	if ( !CheatsOk( ent ) ) {
 		return;
@@ -1045,7 +1045,7 @@ void G_Victory( gentity_t *ent )
 	}
 }
 
-typedef enum
+enum
 {
 	TAUNT_TAUNT = 0,
 	TAUNT_BOW,
@@ -1386,7 +1386,7 @@ ClientCommand
 */
 void ClientCommand( int clientNum ) {
 	gentity_t *ent;
-	char	*cmd;
+	const char	*cmd;
 
 	ent = g_entities + clientNum;
 	if ( !ent->client ) {
@@ -1603,7 +1603,7 @@ void ClientCommand( int clientNum ) {
 	}
 	else if (Q_stricmp (cmd, "playmusic") == 0)
 	{
-		char *cmd2 = gi.argv(1);
+		const char *cmd2 = gi.argv(1);
 		if ( cmd2 )
 		{
 			gi.SetConfigstring( CS_MUSIC, cmd2 );
@@ -1615,7 +1615,7 @@ void ClientCommand( int clientNum ) {
 	}
 	else if ( Q_stricmp( cmd, "dropsaber" ) == 0 )
 	{
-		char *cmd2 = gi.argv(1);
+		const char *cmd2 = gi.argv(1);
 		int	saberNum = 2;//by default, drop both
 		if ( cmd2 && cmd2[0] )
 		{

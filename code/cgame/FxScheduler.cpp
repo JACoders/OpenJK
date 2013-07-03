@@ -54,7 +54,7 @@ void CFxScheduler::FX_CopeWithAnyLoadedSaveGames(void)
 		memcpy( mLoopedEffectArray, gLoopedEffectArray, sizeof(mLoopedEffectArray) );
 		assert( g_vstrEffectsNeededPerSlot.size() == MAX_LOOPED_FX );
 
-		for (int iFX = 0; iFX < g_vstrEffectsNeededPerSlot.size(); iFX++)
+		for (size_t iFX = 0; iFX < g_vstrEffectsNeededPerSlot.size(); iFX++)
 		{
 			const char *psFX_Filename = g_vstrEffectsNeededPerSlot[iFX].c_str();
 			if ( psFX_Filename[0] )
@@ -165,7 +165,7 @@ void CMediaHandles::operator=(const CMediaHandles &that )
 {
 	mMediaList.clear();
 
-	for ( int i = 0; i < that.mMediaList.size(); i++ )
+	for ( size_t i = 0; i < that.mMediaList.size(); i++ )
 	{
 		mMediaList.push_back( that.mMediaList[i] );
 	}

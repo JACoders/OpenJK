@@ -254,7 +254,6 @@ void Remote_Fire (void)
 	vec3_t	delta1, enemy_org1, muzzle1;
 	vec3_t	angleToEnemy1;
 	static	vec3_t	forward, vright, up;
-	static	vec3_t	muzzle;
 	gentity_t	*missile;
 
 	CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_org1 );

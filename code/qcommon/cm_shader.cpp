@@ -223,7 +223,7 @@ surfaceparm <name>
 
 typedef struct 
 {
-	char	*name;
+	const char	*name;
 	int		clearSolid, surfaceFlags, contents;
 } infoParm_t;
 

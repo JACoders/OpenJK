@@ -734,7 +734,7 @@ void NPC_Precache ( gentity_t *spawner )
 			}
 			//playerTeam = TranslateTeamName(value);
 			Com_sprintf(tk, sizeof(tk), "NPC%s", token);
-			playerTeam = (team_t)GetIDForString( TeamTable, tk );
+			playerTeam = GetIDForString( TeamTable, tk );
 			continue;
 		}
 
@@ -857,7 +857,7 @@ void NPC_Precache ( gentity_t *spawner )
 	}
 
 	//precache this NPC's possible weapons
-	NPC_PrecacheWeapons( playerTeam, spawner->spawnflags, spawner->NPC_type );
+	NPC_PrecacheWeapons( (team_t)playerTeam, spawner->spawnflags, spawner->NPC_type );
 
 //	CG_RegisterNPCCustomSounds( &ci );
 //	CG_RegisterNPCEffects( playerTeam );
@@ -1823,7 +1823,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					continue;
 				}
 				Com_sprintf(tk, sizeof(tk), "NPC%s", token);
-				NPC->client->enemyTeam = (team_t)GetIDForString( TeamTable, tk );//TranslateTeamName(value);
+				NPC->client->enemyTeam = GetIDForString( TeamTable, tk );//TranslateTeamName(value);
 				continue;
 			}
 

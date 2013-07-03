@@ -36,7 +36,6 @@ qboolean NAV_HitNavGoal( vec3_t point, vec3_t mins, vec3_t maxs, vec3_t dest, in
 
 	if ( radius )
 	{
-		radius;
 		//NOTE:  This needs to do a DistanceSquared on navgoals that had
 		//			a radius manually set! We can't do the smaller navgoals against
 		//			walls to get around this because player-sized traces to them

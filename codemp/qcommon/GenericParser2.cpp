@@ -793,7 +793,7 @@ bool CGPGroup::Write(CTextPool **textPool, int depth)
 CGPValue *CGPGroup::FindPair(const char *key)
 {
 	CGPValue		*pair;
-	int				length;
+	size_t			length;
 	const char		*pos, *separator, *next;
 
 	pos = key;

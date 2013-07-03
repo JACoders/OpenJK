@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 #ifndef HITLOCS_H
 #define HITLOCS_H
 
-typedef enum //# hitloc_e
+enum //# hitloc_e
 {
 	HL_NONE = 0,
 	HL_FOOT_RT,

@@ -597,7 +597,7 @@ stringID_table_t BSTable[] =
 	ENUM2STRING(BS_REMOVE),//# Waits for player to leave PVS then removes itself
 	ENUM2STRING(BS_CINEMATIC),//# Does nothing but face it's angles and move to a goal if it has one
 	//the rest are internal only
-	"",				-1,
+	{ "",				-1 }
 };
 
 /*

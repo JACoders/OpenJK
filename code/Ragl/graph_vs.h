@@ -804,7 +804,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	void		remove_edge(int nodeA, int nodeB, bool reflexive=true)
 	{
-		if (!mNodes.is_used(nodeA) || !mNodes.is_used(nodeB) && nodeA==nodeB)
+		if (!mNodes.is_used(nodeA) || (!mNodes.is_used(nodeB) && nodeA==nodeB))
 		{
 			assert("Unable To Remove Edge"==0);
 			return;

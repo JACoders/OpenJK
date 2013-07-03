@@ -324,7 +324,7 @@ void NPC_BSInvestigate (void)
 	if(	level.time < NPCInfo->walkDebounceTime )
 	{//walk toward investigateGoal
 		
-		/*
+		/ *
 		NPCInfo->goalEntity = NPCInfo->tempGoal;
 		VectorCopy(NPCInfo->investigateGoal, NPCInfo->tempGoal->currentOrigin);
 		*/
@@ -1456,6 +1456,8 @@ qboolean NPC_CanSurrender( void )
 		case CLASS_PLAYER:
 		case CLASS_VEHICLE:
 			return qfalse;
+			break;
+		default:
 			break;
 		}
 		if ( !G_StandardHumanoid( NPC ) )

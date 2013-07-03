@@ -2,16 +2,22 @@
 
 // BlockStream.h
 
+#ifdef _MSC_VER
 #pragma warning(disable : 4786)  //identifier was truncated 
 #pragma warning(disable : 4514)  //unreffed inline func removed
+#endif
 
 #include "qcommon/qcommon.h"
 #include <stdio.h>
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <list>
 #include <vector>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 using namespace std;
 
 #define	IBI_EXT			".IBI"	//(I)nterpreted (B)lock (I)nstructions

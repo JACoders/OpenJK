@@ -63,7 +63,7 @@ static client_t *SV_SetPlayer( void ) {
 //
 static bool SV_Map_( ForceReload_e eForceReload ) 
 {
-	char	*map;
+	const char	*map;
 	char	expanded[MAX_QPATH];
 
 	map = Cmd_Argv(1);
@@ -255,7 +255,7 @@ void SV_Player_EndOfLevelSave(void)
 //extern void	SCR_PrecacheScreenshot();  //scr_scrn.cpp
 static void SV_MapTransition_f(void)
 {		
-	char	*spawntarget;
+	const char	*spawntarget;
 
 //	SCR_PrecacheScreenshot();
 	SV_Player_EndOfLevelSave();
@@ -329,8 +329,8 @@ SV_LoadTransition_f
 */
 void SV_LoadTransition_f(void)
 {
-	char	*map;
-	char	*spawntarget;
+	const char	*map;
+	const char	*spawntarget;
 
 	map = Cmd_Argv(1);
 	if ( !*map ) {

@@ -212,7 +212,6 @@ char PCM_Buffer[PCM_BUFBYTES];	// better off being declared, so we don't do mall
 	 {audio_decode8_init, audio_decode8_info, audio_decode8},
       }
    };
-#else
    static AUDIO audio_table[2][2] =
    {
       {
@@ -676,39 +675,35 @@ unsigned int C_MP3Stream_Decode( LP_MP3STREAM pSFX_MP3Stream )
 
 	pMP3Stream = pSFX_MP3Stream;
 
-	do
+	if ( pSFX_MP3Stream->iSourceBytesRemaining == 0)// || pSFX_MP3Stream->iSourceBytesRemaining < pSFX_MP3Stream->iSourceFrameBytes)
 	{
-		if ( pSFX_MP3Stream->iSourceBytesRemaining == 0)// || pSFX_MP3Stream->iSourceBytesRemaining < pSFX_MP3Stream->iSourceFrameBytes)
-		{
-			uiDecoded = 0;	// finished
-			break;
-		}
+		uiDecoded = 0;	// finished
+		pMP3Stream = &_MP3Stream;
+		return uiDecoded;
+	}
 
-		x = audio.decode(pSFX_MP3Stream->pbSourceData + pSFX_MP3Stream->iSourceReadIndex, (short *) (pSFX_MP3Stream->bDecodeBuffer),
-						 pSFX_MP3Stream->pbSourceData + pSFX_MP3Stream->iRewind_SourceReadIndex + pSFX_MP3Stream->iRewind_SourceBytesRemaining
-						);
+	x = audio.decode(pSFX_MP3Stream->pbSourceData + pSFX_MP3Stream->iSourceReadIndex, (short *) (pSFX_MP3Stream->bDecodeBuffer),
+					 pSFX_MP3Stream->pbSourceData + pSFX_MP3Stream->iRewind_SourceReadIndex + pSFX_MP3Stream->iRewind_SourceBytesRemaining
+					);
 
 #ifdef _DEBUG
-		pSFX_MP3Stream->iSourceFrameCounter++;
+	pSFX_MP3Stream->iSourceFrameCounter++;
 #endif
 
-		pSFX_MP3Stream->iSourceReadIndex		+= x.in_bytes;
-		pSFX_MP3Stream->iSourceBytesRemaining	-= x.in_bytes;
-		pSFX_MP3Stream->iBytesDecodedTotal		+= x.out_bytes;
-		pSFX_MP3Stream->iBytesDecodedThisPacket	 = x.out_bytes;
+	pSFX_MP3Stream->iSourceReadIndex		+= x.in_bytes;
+	pSFX_MP3Stream->iSourceBytesRemaining	-= x.in_bytes;
+	pSFX_MP3Stream->iBytesDecodedTotal		+= x.out_bytes;
+	pSFX_MP3Stream->iBytesDecodedThisPacket	 = x.out_bytes;
 
-		uiDecoded = x.out_bytes;
+	uiDecoded = x.out_bytes;
 
-		if (x.in_bytes <= 0)
-		{
-			//psReturn = "MP3ERR: Bad sync in file";			
-			uiDecoded= 0;	// finished
-			break;
-		}
+	if (x.in_bytes <= 0)
+	{
+		//psReturn = "MP3ERR: Bad sync in file";			
+		uiDecoded= 0;	// finished
+		pMP3Stream = &_MP3Stream;
+		return uiDecoded;
 	}
-	#pragma warning (disable : 4127 )	// conditional expression is constant
-	while (0);	// <g>
-	#pragma warning (default : 4127 )	// conditional expression is constant
 	
 	// restore global stream ptr before returning to normal functions (so the rest of the MP3 code still works)...
 	//

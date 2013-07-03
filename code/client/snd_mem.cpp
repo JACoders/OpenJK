@@ -74,7 +74,7 @@ int GetLittleLong(void)
 	return val;
 }
 
-void FindNextChunk(char *name)
+void FindNextChunk(const char *name)
 {
 	while (1)
 	{
@@ -100,7 +100,7 @@ void FindNextChunk(char *name)
 	}
 }
 
-void FindChunk(char *name)
+void FindChunk(const char *name)
 {
 	last_chunk = iff_data;
 	FindNextChunk (name);
@@ -720,7 +720,7 @@ static qboolean S_LoadSound_DirIsAllowedToKeepMP3s(const char *psFilename)
 //		"sound/chr_d/"	// no need for this now, or any other language, since we'll always compare against english
 	};
 
-	int i;
+	unsigned int i;
 	for (i=0; i< (sizeof(psAllowedDirs) / sizeof(psAllowedDirs[0])); i++)
 	{
 		if (strnicmp(psFilename, psAllowedDirs[i], strlen(psAllowedDirs[i]))==0)

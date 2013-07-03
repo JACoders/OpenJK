@@ -1,8 +1,12 @@
 #pragma once
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 #include <list>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 
 using namespace std;
 

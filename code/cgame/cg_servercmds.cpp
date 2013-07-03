@@ -37,7 +37,7 @@ and whenever the server updates any serverinfo flagged cvars
 */
 void CG_ParseServerinfo( void ) {
 	const char	*info;
-	char	*mapname;
+	const char	*mapname;
 
 	info = CG_ConfigString( CS_SERVERINFO );
 	cgs.dmflags = atoi( Info_ValueForKey( info, "dmflags" ) );
@@ -46,7 +46,7 @@ void CG_ParseServerinfo( void ) {
 	cgs.maxclients = 1;
 	mapname = Info_ValueForKey( info, "mapname" );
 	Com_sprintf( cgs.mapname, sizeof( cgs.mapname ), "maps/%s.bsp", mapname );
-	char *p = strrchr(mapname,'/');
+	const char *p = strrchr(mapname,'/');
 	strcpy( cgs.stripLevelName[0], p?p+1:mapname );
 	Q_strupr( cgs.stripLevelName[0] );
 	for (int i=1; i<STRIPED_LEVELNAME_VARIATIONS; i++)	// clear retry-array

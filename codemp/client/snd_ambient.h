@@ -2,6 +2,7 @@
 
 // Includes
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4786 )
 #pragma warning ( disable : 4511 )	//copy constructor could not be gen
 #pragma warning ( disable : 4512 )	//assign constructor could not be gen
@@ -11,12 +12,15 @@
 //#pragma warning ( disable : 4018 )	//signed/unsigned
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
 #pragma warning (push, 3)	//go back down to 3 for the stl include
+#endif
 
 #include "qcommon/sstring.h"	// #include <string>
 #include <vector>
 #include <map>
+#ifdef _MSC_VER
 #pragma warning (pop)
 #pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+#endif
 
 using namespace std;
 

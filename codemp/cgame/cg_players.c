@@ -569,7 +569,7 @@ retryModel:
 		const char	*p;
 
 		//Now turn on/off any surfaces
-		if ( surfOff && surfOff[0] )
+		if ( surfOff[0] )
 		{
 			p = surfOff;
 			while ( 1 ) 
@@ -583,7 +583,7 @@ retryModel:
 				trap_G2API_SetSurfaceOnOff( ci->ghoul2Model, token, 0x00000002/*G2SURFACEFLAG_OFF*/ );
 			}
 		}
-		if ( surfOn && surfOn[0] )
+		if ( surfOn[0] )
 		{
 			p = surfOn;
 			while ( 1 )
@@ -5246,6 +5246,8 @@ static void CG_RGBForSaberColor( saber_colors_t color, vec3_t rgb )
 		case SABER_PURPLE:
 			VectorSet( rgb, 0.9f, 0.2f, 1.0f );
 			break;
+		default:
+			break;
 	}
 }
 
@@ -6009,7 +6011,7 @@ qboolean BG_SuperBreakWinAnim( int anim );
 void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, int saberNum, int bladeNum, vec3_t origin, vec3_t angles, qboolean fromSaber, qboolean dontDraw)
 {
 	vec3_t	org_, end, v,
-			axis_[3] = {0,0,0, 0,0,0, 0,0,0};	// shut the compiler up
+			axis_[3] = {{0,0,0}, {0,0,0}, {0,0,0}};	// shut the compiler up
 	trace_t	trace;
 	int i = 0;
 	int trailDur;

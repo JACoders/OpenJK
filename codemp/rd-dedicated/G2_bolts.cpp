@@ -14,10 +14,8 @@
 // Given a bone number, see if that bone is already in our bone list
 int G2_Find_Bolt_Bone_Num(boltInfo_v &bltlist, const int boneNum)
 {
-	int		i;
-
 	// look through entire list
-	for(i=0; i<bltlist.size(); i++)
+	for(size_t i=0; i<bltlist.size(); i++)
 	{
 		// if this bone entry has no info in it, bounce over it
 		if (bltlist[i].boneNumber == -1)
@@ -38,10 +36,8 @@ int G2_Find_Bolt_Bone_Num(boltInfo_v &bltlist, const int boneNum)
 // Given a bone number, see if that surface is already in our surfacelist list
 int G2_Find_Bolt_Surface_Num(boltInfo_v &bltlist, const int surfaceNum, const int flags)
 {
-	int		i;
-
 	// look through entire list
-	for(i=0; i<bltlist.size(); i++)
+	for(size_t i=0; i<bltlist.size(); i++)
 	{
 		// if this bone entry has no info in it, bounce over it
 		if (bltlist[i].surfaceNumber == -1)
@@ -65,16 +61,15 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 {
 	assert(ghlInfo && ghlInfo->mValid);
 	boltInfo_t			tempBolt;
-	int					i;
 
 	// first up, make sure have a surface first
-	if (surfNum >= slist.size())
+	if (surfNum >= (int)slist.size())
 	{
 		return -1;
 	}
 
 	 // look through entire list - see if it's already there first
-	for(i=0; i<bltlist.size(); i++)
+	for(size_t i=0; i<bltlist.size(); i++)
 	{
 		// already there??
 		if (bltlist[i].surfaceNumber == surfNum)
@@ -87,7 +82,7 @@ int G2_Add_Bolt_Surf_Num(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_
 
 	// we have a surface 
 	// look through entire list - see if it's already there first
-	for(i=0; i<bltlist.size(); i++)
+	for(size_t i=0; i<bltlist.size(); i++)
 	{
 		// if this surface entry has info in it, bounce over it
 	  	if (bltlist[i].boneNumber == -1 && bltlist[i].surfaceNumber == -1)
@@ -115,7 +110,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	assert(ghlInfo && ghlInfo->mValid);
 	model_t		*mod_m = (model_t *)ghlInfo->currentModel;
 	model_t		*mod_a = (model_t *)ghlInfo->animModel;
-	int					i, x, surfNum = -1;
+	int					x, surfNum = -1;
 	mdxaSkel_t			*skel;
 	mdxaSkelOffsets_t	*offsets;
 	mdxmHierarchyOffsets_t	*surfOffsets;
@@ -130,7 +125,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	if (surfNum != -1)
 	{
 		 // look through entire list - see if it's already there first
-		for(i=0; i<bltlist.size(); i++)
+		for(size_t i=0; i<bltlist.size(); i++)
 		{
 			// already there??
 			if (bltlist[i].surfaceNumber == surfNum)
@@ -142,7 +137,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 		}
 
 		 // look through entire list - see if we can re-use one
-		for(i=0; i<bltlist.size(); i++)
+		for(size_t i=0; i<bltlist.size(); i++)
 		{
 			// if this surface entry has info in it, bounce over it
 		  	if (bltlist[i].boneNumber == -1 && bltlist[i].surfaceNumber == -1)
@@ -191,7 +186,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	}
 
 	// look through entire list - see if it's already there first
-	for(i=0; i<bltlist.size(); i++)
+	for(size_t i=0; i<bltlist.size(); i++)
 	{
 		// already there??
 		if (bltlist[i].boneNumber == x)
@@ -203,7 +198,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	}
 
 	// look through entire list - see if we can re-use it
-	for(i=0; i<bltlist.size(); i++)
+	for(size_t i=0; i<bltlist.size(); i++)
 	{
 		// if this bone entry has info in it, bounce over it
 		if (bltlist[i].boneNumber == -1 && bltlist[i].surfaceNumber == -1)
@@ -280,7 +275,7 @@ void G2_Init_Bolt_List(boltInfo_v &bltlist)
 void G2_RemoveRedundantBolts(boltInfo_v &bltlist, surfaceInfo_v &slist, int *activeSurfaces, int *activeBones)
 {
 	// walk the bolt list
-	for (int i=0; i<bltlist.size(); i++)
+	for (size_t i=0; i<bltlist.size(); i++)
 	{
 		// are we using this bolt?
 		if ((bltlist[i].surfaceNumber != -1) || (bltlist[i].boneNumber != -1))

@@ -813,8 +813,8 @@ extern bool WP_DoingMoronicForcedAnimationForForcePowers(gentity_t *ent);
 		{	
 			//FIXME: take other's owner's FP_SABER_DEFENSE into account here somehow?
 			if (  !other->owner || !other->owner->client || other->owner->client->ps.saberInFlight 
-				|| InFront( ent->currentOrigin, other->owner->currentOrigin, other->owner->client->ps.viewangles, SABER_REFLECT_MISSILE_CONE ) &&
-				!WP_DoingMoronicForcedAnimationForForcePowers(other) )//other->owner->s.number != 0 || 
+				|| (InFront( ent->currentOrigin, other->owner->currentOrigin, other->owner->client->ps.viewangles, SABER_REFLECT_MISSILE_CONE ) &&
+				!WP_DoingMoronicForcedAnimationForForcePowers(other)) )//other->owner->s.number != 0 || 
 			{//Jedi cannot block shots from behind!
 				int blockChance = 0;
 				switch ( other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] )

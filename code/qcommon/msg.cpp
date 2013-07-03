@@ -328,7 +328,8 @@ int MSG_ReadLong( msg_t *msg ) {
 }
 
 char *MSG_ReadString( msg_t *msg ) {
-	static char	string[MAX_STRING_CHARS];
+	static const int STRING_SIZE = MAX_STRING_CHARS;
+	static char	string[STRING_SIZE];
 	int		l,c;
 	
 	MSG_ReadByteAlign( msg );
@@ -345,7 +346,7 @@ char *MSG_ReadString( msg_t *msg ) {
 
 		string[l] = c;
 		l++;
-	} while (l < sizeof(string)-1);
+	} while (l < STRING_SIZE - 1);
 	
 	string[l] = 0;
 	
@@ -353,7 +354,8 @@ char *MSG_ReadString( msg_t *msg ) {
 }
 
 char *MSG_ReadStringLine( msg_t *msg ) {
-	static char	string[MAX_STRING_CHARS];
+	static const int STRING_SIZE = MAX_STRING_CHARS;
+	static char	string[STRING_SIZE];
 	int		l,c;
 
 	MSG_ReadByteAlign( msg );
@@ -369,7 +371,7 @@ char *MSG_ReadStringLine( msg_t *msg ) {
 		}
 		string[l] = c;
 		l++;
-	} while (l < sizeof(string)-1);
+	} while (l < STRING_SIZE - 1);
 	
 	string[l] = 0;
 	
@@ -499,7 +501,7 @@ entityState_t communication
 */
 
 typedef struct {
-	char	*name;
+	const char	*name;
 	int		offset;
 	int		bits;		// 0 = float
 } netField_t;

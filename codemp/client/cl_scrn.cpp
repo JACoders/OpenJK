@@ -608,7 +608,7 @@ void SCR_CenterPrint (char *str)//, PalIdx_t colour)
 
 			scr_center_lines++;
 
-			if ((*s) == NULL || scr_center_lines >= MAX_SCR_LINES)
+			if ((*s) == '\0' || scr_center_lines >= MAX_SCR_LINES)
 			{
 				done = true;
 			}

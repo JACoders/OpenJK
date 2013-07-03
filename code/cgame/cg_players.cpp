@@ -324,10 +324,6 @@ static void CG_RegisterCustomSounds(clientInfo_t *ci, int iSoundEntryBase,
 	{
 		char	s[MAX_QPATH]={0};
 		const char *pS = GetCustomSound_VariantCapped(ppsTable,i, qfalse);
-		if ( !s ) 
-		{
-			break;	// fairly pointless code in original, since there are no NULL's in the table, but wtf...
-		}
 		COM_StripExtension( pS, s );
 
 		sfxHandle_t hSFX = 0;
@@ -2042,7 +2038,7 @@ static void CG_ATSTLegsYaw( centity_t *cent, vec3_t trailingLegsAngles )
 }
 
 extern qboolean G_ClassHasBadBones( int NPC_class );
-extern void G_BoneOrientationsForClass( int NPC_class, char *boneName, Eorientations *oUp, Eorientations *oRt, Eorientations *oFwd );
+extern void G_BoneOrientationsForClass( int NPC_class, const char *boneName, Eorientations *oUp, Eorientations *oRt, Eorientations *oFwd );
 extern qboolean PM_FlippingAnim( int anim );
 extern qboolean PM_SpinningSaberAnim( int anim );
 static CGhoul2Info_v	dummyGhoul2;
@@ -4416,6 +4412,8 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 			case CLASS_ATST:
 				fxOrg[2] += 120;
 				break;
+			default:
+				break;
 			}
 		}
 	}
@@ -4594,6 +4592,8 @@ void CG_AddForceSightShell( refEntity_t *ent, centity_t *cent )
 					ent->shaderRGBA[2] = 0;
 				}
 			}
+			break;
+		default:
 			break;
 		}
 
@@ -5998,7 +5998,7 @@ void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int saberNum, int 
 static void CG_AddSaberBladeGo( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, vec3_t origin, vec3_t angles, int saberNum, int bladeNum )
 {
 	vec3_t	org_, end,//org_future, 
-			axis_[3] = {0,0,0, 0,0,0, 0,0,0};//, axis_future[3]={0,0,0, 0,0,0, 0,0,0};	// shut the compiler up
+			axis_[3] = {{0,0,0}, {0,0,0}, {0,0,0}};//, axis_future[3]={0,0,0, 0,0,0, 0,0,0};	// shut the compiler up
 	trace_t	trace;
 	float	length;
 	int		bolt;
@@ -6347,6 +6347,8 @@ Ghoul2 Insert End
 			break;
 		case SABER_SITH_SWORD:
 			//no blade
+			break;
+		default:
 			break;
 		}
 	}

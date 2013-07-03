@@ -1584,10 +1584,7 @@ int PM_AnimLength( int index, animNumber_t anim )
 	{
 		return -1;
 	}
-	if ( anim < 0 )
-	{
-		Com_Error(ERR_DROP,"ERROR: anim %d < 0\n", anim );
-	}
+
 	return pm->animations[anim].numFrames * fabs((float)(pm->animations[anim].frameLerp));
 }
 
@@ -1760,7 +1757,7 @@ stringID_table_t animEventTypeTable[MAX_ANIM_EVENTS+1] =
 	ENUM2STRING(AEV_SABER_SWING),	//# animID AEV_SABER_SWING framenum CHANNEL randomlow randomhi chancetoplay 
 	ENUM2STRING(AEV_SABER_SPIN),	//# animID AEV_SABER_SPIN framenum CHANNEL chancetoplay 
 	//must be terminated
-	NULL,-1
+	{ NULL,-1 }
 };
 
 stringID_table_t footstepTypeTable[NUM_FOOTSTEP_TYPES+1] = 
@@ -1770,7 +1767,7 @@ stringID_table_t footstepTypeTable[NUM_FOOTSTEP_TYPES+1] =
 	ENUM2STRING(FOOTSTEP_HEAVY_R),
 	ENUM2STRING(FOOTSTEP_HEAVY_L),
 	//must be terminated
-	NULL,-1
+	{ NULL,-1 }
 };
 
 int CheckAnimFrameForEventType( animevent_t *animEvents, int keyFrame, animEventType_t eventType )

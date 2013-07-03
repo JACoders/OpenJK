@@ -284,8 +284,8 @@ static void CG_EntityEffects( centity_t *cent ) {
 	CG_SetEntitySoundPosition( cent );
 
 	// add loop sound
-	if ( cent->currentState.loopSound || (cent->currentState.loopIsSoundset && cent->currentState.number >= MAX_CLIENTS) 
-		&& cent->currentState.loopSound < MAX_SOUNDS) {
+	if ( cent->currentState.loopSound || ((cent->currentState.loopIsSoundset && cent->currentState.number >= MAX_CLIENTS) 
+		&& cent->currentState.loopSound < MAX_SOUNDS)) {
 		sfxHandle_t realSoundIndex = -1;
 			
 		if (cent->currentState.loopIsSoundset && cent->currentState.number >= MAX_CLIENTS)

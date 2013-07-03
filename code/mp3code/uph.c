@@ -38,10 +38,10 @@ Layer 3 audio
 
 #include "l3.h"
 
+#ifdef _MSC_VER
 #pragma warning ( disable : 4711 )	// function 'xxxx' selected for automatic inline expansion
 
 
-#ifdef _MSC_VER
 #pragma warning(disable: 4505)
 #endif
 

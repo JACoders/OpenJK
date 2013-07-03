@@ -27,5 +27,7 @@ This file is part of Jedi Academy.
 #include "../server/server.h"
 //#include "../renderer/tr_local.h"
 
+#ifdef _MSC_VER
 #pragma hdrstop
+#endif
 
