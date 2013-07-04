@@ -502,7 +502,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 							LPCSTR psName_Explore = NULL;
 							LPCSTR psName_Action  = NULL;
 							LPCSTR psName_Boss	  = NULL;
-							LPCSTR psName_Death	  = NULL;
+							//LPCSTR psName_Death	  = NULL;
 							//
 							LPCSTR psName_UseBoss = NULL;
 
@@ -532,11 +532,11 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 									{
 										psName_Boss = psValue;
 									}
-									else
+									/*else
 									if (!Q_stricmp(psKey,sKEY_DEATH))
 									{
 										psName_Death = psValue;
-									}
+									}*/
 								}
 							}
 									
