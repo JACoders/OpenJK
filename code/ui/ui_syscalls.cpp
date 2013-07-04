@@ -34,24 +34,14 @@ void dllEntry( int (*syscallptr)( int arg,... ) ) {
 //	CG_PreInit();
 }
 
-inline int PASSFLOAT( float x ) 
-{
-	float	floatTemp;
-	floatTemp = x;
-	return *(int *)&floatTemp;
-}
-
 intptr_t CL_UISystemCalls( intptr_t *args );
-
-
-int FloatAsInt( float f );
 
 float trap_Cvar_VariableValue( const char *var_name ) 
 {
-	int temp;
-//	temp = syscall( UI_CVAR_VARIABLEVALUE, var_name );
-	temp = FloatAsInt( Cvar_VariableValue(var_name) );
-	return (*(float*)&temp);
+	floatint_t fi;
+//	fi.i = syscall( UI_CVAR_VARIABLEVALUE, var_name );
+	fi.i = Cvar_VariableValue( var_name );
+	return fi.f;
 }
 
 

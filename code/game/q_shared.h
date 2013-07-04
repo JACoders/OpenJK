@@ -309,6 +309,12 @@ typedef const char *LPCSTR;
 typedef enum {qfalse, qtrue}	qboolean;
 #define	qboolean	int		//don't want strict type checking on the qboolean
 
+typedef union {
+	float f;
+	int i;
+	unsigned int ui;
+} floatint_t;
+
 typedef int		qhandle_t;
 typedef int		thandle_t;
 typedef int		fxHandle_t;

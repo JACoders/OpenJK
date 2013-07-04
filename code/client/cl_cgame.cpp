@@ -1447,9 +1447,9 @@ extern qboolean Sys_LowPhysicalMemory();
 void CL_InitCGame( void ) {
 	const char			*info;
 	const char			*mapname;
-	int		t1, t2;
+	//int		t1, t2;
 
-	t1 = Sys_Milliseconds();
+	//t1 = Sys_Milliseconds();
 
 	// put away the console
 	Con_Close();
@@ -1468,7 +1468,7 @@ void CL_InitCGame( void ) {
 	// will cause the server to send us the first snapshot
 	cls.state = CA_PRIMED;
 
-	t2 = Sys_Milliseconds();
+	//t2 = Sys_Milliseconds();
 
 	//Com_Printf( "CL_InitCGame: %5.2f seconds\n", (t2-t1)/1000.0 );
 	// have the renderer touch all its images, so they are present
@@ -1577,18 +1577,10 @@ void CL_AdjustTimeDelta( void ) {
 		Com_Printf( "%i ", cl.serverTimeDelta );
 	}
 */
-	int		resetTime;
 	int		newDelta;
 	int		deltaDelta;
 
 	cl.newSnapshots = qfalse;
-	
-	// if the current time is WAY off, just correct to the current value
-	if ( com_sv_running->integer ) {
-		resetTime = 100;
-	} else {
-		resetTime = RESET_TIME;
-	}
 
 	newDelta = cl.frame.serverTime - cls.realtime;
 	deltaDelta = abs( newDelta - cl.serverTimeDelta );
