@@ -1577,18 +1577,10 @@ void CL_AdjustTimeDelta( void ) {
 		Com_Printf( "%i ", cl.serverTimeDelta );
 	}
 */
-	int		resetTime;
 	int		newDelta;
 	int		deltaDelta;
 
 	cl.newSnapshots = qfalse;
-	
-	// if the current time is WAY off, just correct to the current value
-	if ( com_sv_running->integer ) {
-		resetTime = 100;
-	} else {
-		resetTime = RESET_TIME;
-	}
 
 	newDelta = cl.frame.serverTime - cls.realtime;
 	deltaDelta = abs( newDelta - cl.serverTimeDelta );
