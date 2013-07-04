@@ -224,9 +224,6 @@ void			trap_R_RenderScene( const refdef_t *fd );
 void			trap_S_StopSounds( void );
 sfxHandle_t		trap_S_RegisterSound( const char *sample, qboolean compressed );
 void			trap_S_StartLocalSound( sfxHandle_t sfx, int channelNum );
-#ifndef _XBOX
-int				PASSFLOAT( float x );
-#endif
 
 
 

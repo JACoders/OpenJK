@@ -708,8 +708,6 @@ A packet has arrived from the main event loop
 =================
 */
 void CL_PacketEvent( netadr_t from, msg_t *msg ) {
-	int		headerBytes;
-
 	clc.lastPacketTime = cls.realtime;
 
 	if ( msg->cursize >= 4 && *(int *)msg->data == -1 ) {
@@ -739,9 +737,6 @@ void CL_PacketEvent( netadr_t from, msg_t *msg ) {
 	if (!Netchan_Process( &clc.netchan, msg) ) {
 		return;		// out of order, duplicated, etc
 	}
-
-	// the header is different lengths for reliable and unreliable messages
-	headerBytes = msg->readcount;
 
 	clc.lastPacketTime = cls.realtime;
 	CL_ParseServerMessage( msg );

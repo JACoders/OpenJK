@@ -2695,12 +2695,10 @@ void S_DoLipSynchs( const unsigned s_oldpaintedtime )
 {
 	channel_t		*ch;
 	int				i;
-	sboolean		newSamples;
 
 	// clear out the lip synching override array for this frame
 	memset(s_entityWavVol, 0,(MAX_GENTITIES * 4));
 
-	newSamples = qfalse;
 	ch = s_channels;
 	for (i=0; i<MAX_CHANNELS ; i++, ch++) {
 		if ( !ch->thesfx ) {
