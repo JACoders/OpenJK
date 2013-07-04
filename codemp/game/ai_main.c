@@ -1411,12 +1411,6 @@ void WPConstantRoutine(bot_state_t *bs)
 			bs->jumpTime = level.time + 100;
 		}
 #else
-		float heightDif = (bs->wpCurrent->origin[2] - bs->origin[2]+16);
-
-		if (bs->origin[2]+16 >= bs->wpCurrent->origin[2])
-		{ //then why exactly would we be force jumping?
-			heightDif = 0;
-		}
 
 		if (bs->cur_ps.fd.forceJumpCharge < (forceJumpStrength[bs->cur_ps.fd.forcePowerLevel[FP_LEVITATION]]-100))
 		{
@@ -2804,7 +2798,7 @@ int CTFTakesPriority(bot_state_t *bs)
 	int enemyFlag = 0;
 	int myFlag = 0;
 	int enemyHasOurFlag = 0;
-	int weHaveEnemyFlag = 0;
+	//int weHaveEnemyFlag = 0;
 	int numOnMyTeam = 0;
 	int numOnEnemyTeam = 0;
 	int numAttackers = 0;
@@ -2912,11 +2906,11 @@ int CTFTakesPriority(bot_state_t *bs)
 
 		if (ent && ent->client)
 		{
-			if (ent->client->ps.powerups[enemyFlag] && OnSameTeam(&g_entities[bs->client], ent))
+			/*if (ent->client->ps.powerups[enemyFlag] && OnSameTeam(&g_entities[bs->client], ent))
 			{
 				weHaveEnemyFlag = 1;
 			}
-			else if (ent->client->ps.powerups[myFlag] && !OnSameTeam(&g_entities[bs->client], ent))
+			else */if (ent->client->ps.powerups[myFlag] && !OnSameTeam(&g_entities[bs->client], ent))
 			{
 				enemyHasOurFlag = 1;
 			}
@@ -3253,7 +3247,7 @@ int Siege_CountTeammates(bot_state_t *bs)
 int SiegeTakesPriority(bot_state_t *bs)
 {
 	int attacker;
-	int flagForDefendableObjective;
+	//int flagForDefendableObjective;
 	int flagForAttackableObjective;
 	int defenders, teammates;
 	int idleWP;
@@ -3300,13 +3294,13 @@ int SiegeTakesPriority(bot_state_t *bs)
 	if (bcl->sess.sessionTeam == SIEGETEAM_TEAM1)
 	{
 		attacker = imperial_attackers;
-		flagForDefendableObjective = WPFLAG_SIEGE_REBELOBJ;
+		//flagForDefendableObjective = WPFLAG_SIEGE_REBELOBJ;
 		flagForAttackableObjective = WPFLAG_SIEGE_IMPERIALOBJ;
 	}
 	else
 	{
 		attacker = rebel_attackers;
-		flagForDefendableObjective = WPFLAG_SIEGE_IMPERIALOBJ;
+		//flagForDefendableObjective = WPFLAG_SIEGE_IMPERIALOBJ;
 		flagForAttackableObjective = WPFLAG_SIEGE_REBELOBJ;
 	}
 
@@ -3781,7 +3775,7 @@ void GetIdealDestination(bot_state_t *bs)
 	}
 
 	if (bs->revengeEnemy && bs->revengeEnemy->health > 0 &&
-		bs->revengeEnemy->client && (bs->revengeEnemy->client->pers.connected == CA_ACTIVE || bs->revengeEnemy->client->pers.connected == CA_AUTHORIZING))
+		bs->revengeEnemy->client && bs->revengeEnemy->client->pers.connected == CON_CONNECTED)
 	{ //if we hate someone, always try to get to them
 		if (bs->wpDestSwitchTime < level.time)
 		{
@@ -3804,7 +3798,7 @@ void GetIdealDestination(bot_state_t *bs)
 		}
 	}
 	else if (bs->squadLeader && bs->squadLeader->health > 0 &&
-		bs->squadLeader->client && (bs->squadLeader->client->pers.connected == CA_ACTIVE || bs->squadLeader->client->pers.connected == CA_AUTHORIZING))
+		bs->squadLeader->client && bs->squadLeader->client->pers.connected == CON_CONNECTED)
 	{
 		if (bs->wpDestSwitchTime < level.time)
 		{
@@ -6147,14 +6141,14 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 	}
 
 	if (bs->revengeEnemy && bs->revengeEnemy->client &&
-		bs->revengeEnemy->client->pers.connected != CA_ACTIVE && bs->revengeEnemy->client->pers.connected != CA_AUTHORIZING)
+		bs->revengeEnemy->client->pers.connected != CON_CONNECTED)
 	{
 		bs->revengeEnemy = NULL;
 		bs->revengeHateLevel = 0;
 	}
 
 	if (bs->currentEnemy && bs->currentEnemy->client &&
-		bs->currentEnemy->client->pers.connected != CA_ACTIVE && bs->currentEnemy->client->pers.connected != CA_AUTHORIZING)
+		bs->currentEnemy->client->pers.connected != CON_CONNECTED)
 	{
 		bs->currentEnemy = NULL;
 	}
