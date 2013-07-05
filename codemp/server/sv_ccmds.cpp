@@ -3,6 +3,7 @@
 
 #include "server.h"
 #include "qcommon/stringed_ingame.h"
+#include "qcommon/game_version.h"
 
 /*
 ===============================================================================
@@ -561,7 +562,7 @@ SV_Status_f
 */
 static void SV_Status_f( void ) 
 {
-	int				i, count;
+	int				i, humans, bots;
 	client_t		*cl;
 	playerState_t	*ps;
 	const char		*s;
@@ -586,16 +587,41 @@ static void SV_Status_f( void )
 		}
 	}
 
-	count = 0;
+	humans = bots = 0;
 	for ( i = 0 ; i < sv_maxclients->integer ; i++ ) {
 		if ( svs.clients[i].state >= CS_CONNECTED ) {
-			count++;
+			if ( svs.clients[i].netchan.remoteAddress.type != NA_BOT ) {
+				humans++;
+			}
+			else {
+				bots++;
+			}
 		}
 	}
 
-	Com_Printf ("map: %s\n", sv_mapname->string );
-	Com_Printf ("gametype: %i\n", sv_gametype->integer );
-	Com_Printf ("clients: %i/%i\n", count, sv_maxclients->integer - sv_privateClients->integer);
+#if defined(_WIN32)
+#define STATUS_OS "Windows"
+#elif defined(__linux__)
+#define STATUS_OS "Linux"
+#elif defined(MACOS_X)
+#define STATUS_OS "OSX"
+#else
+#define STATUS_OS "Unknown"
+#endif
+
+	const char *ded_table[] = 
+	{
+		"listen",
+		"lan dedicated",
+		"public dedicated",
+	};
+
+	Com_Printf ("hostname: %s\n", sv_hostname->string );
+	Com_Printf ("version : %s %i\n", VERSION_STRING_DOTTED, PROTOCOL_VERSION );
+	Com_Printf ("game    : %s\n", FS_GetCurrentGameDir() );
+	Com_Printf ("udp/ip  : %s:%i os(%s) type(%s)\n", Cvar_VariableString("net_ip"), Cvar_VariableIntegerValue("net_port"), STATUS_OS, ded_table[com_dedicated->integer]);
+	Com_Printf ("map     : %s gametype(%i)\n", sv_mapname->string, sv_gametype->integer );
+	Com_Printf ("players : %i humans, %i bots (%i max)\n", humans, bots, sv_maxclients->integer - sv_privateClients->integer);
 
 	Com_Printf ("num score ping name            lastmsg address               qport rate\n");
 	Com_Printf ("--- ----- ---- --------------- ------- --------------------- ----- -----\n");
