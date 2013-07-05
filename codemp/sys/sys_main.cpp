@@ -255,6 +255,9 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 	char	*homepath;
 	char	*cdpath;
 	char	*gamedir;
+#ifdef MACOS_X
+    char    *apppath;
+#endif
 	char	*fn;
 	char	filename[MAX_OSPATH];
 
@@ -271,6 +274,9 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 		homepath = Cvar_VariableString( "fs_homepath" );
 		cdpath = Cvar_VariableString( "fs_cdpath" );
 		gamedir = Cvar_VariableString( "fs_game" );
+#ifdef MACOS_X
+        apppath = Cvar_VariableString( "fs_apppath" );
+#endif
 
 		fn = FS_BuildOSPath( basepath, gamedir, filename );
 		libHandle = Sys_LoadLibrary( fn );
@@ -284,34 +290,56 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 			}
 			if ( !libHandle ) {
 				Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-				if( cdpath[0] ) {
-					fn = FS_BuildOSPath( cdpath, gamedir, filename );
+#ifdef MACOS_X
+                if( apppath[0] ) {
+					fn = FS_BuildOSPath( apppath, gamedir, filename );
 					libHandle = Sys_LoadLibrary( fn );
 				}
-				if ( !libHandle ) {
-					Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-					// now we try base
-					fn = FS_BuildOSPath( basepath, BASEGAME, filename );
-					libHandle = Sys_LoadLibrary( fn );
-					if ( !libHandle ) {
-						if( homepath[0] ) {
-							Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-							fn = FS_BuildOSPath( homepath, BASEGAME, filename );
-							libHandle = Sys_LoadLibrary( fn );
-						}
-						if ( !libHandle ) {
-							Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-							if( cdpath[0] ) {
-								fn = FS_BuildOSPath( cdpath, BASEGAME, filename );
-								libHandle = Sys_LoadLibrary( fn );
-							}
-							if ( !libHandle ) {
-								Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-								return NULL;
-							}
-						}
-					}
-				}
+                if ( !libHandle ) {
+                    Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#endif
+                    if( cdpath[0] ) {
+                        fn = FS_BuildOSPath( cdpath, gamedir, filename );
+                        libHandle = Sys_LoadLibrary( fn );
+                    }
+                    if ( !libHandle ) {
+                        Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+                        // now we try base
+                        fn = FS_BuildOSPath( basepath, BASEGAME, filename );
+                        libHandle = Sys_LoadLibrary( fn );
+                        if ( !libHandle ) {
+                            if( homepath[0] ) {
+                                Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+                                fn = FS_BuildOSPath( homepath, BASEGAME, filename );
+                                libHandle = Sys_LoadLibrary( fn );
+                            }
+                            if ( !libHandle ) {
+                                Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#ifdef MACOS_X
+                                if( apppath[0] ) {
+                                    fn = FS_BuildOSPath( apppath, BASEGAME, filename);
+                                    libHandle = Sys_LoadLibrary( fn );
+                                }
+                                if ( !libHandle ) {
+                                    Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#endif
+                                    if( cdpath[0] ) {
+                                        fn = FS_BuildOSPath( cdpath, BASEGAME, filename );
+                                        libHandle = Sys_LoadLibrary( fn );
+                                    }
+                                    if ( !libHandle ) {
+                                        Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+                                        return NULL;
+                                    }
+#ifdef MACOS_X
+                                }
+#endif
+                            }
+                        }
+                    }
+#ifdef MACOS_X
+                }
+#endif
 			}
 		}
 	}
