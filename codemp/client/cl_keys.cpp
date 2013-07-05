@@ -901,11 +901,23 @@ void Console_Key (int key) {
 	// console scrolling
 	if ( key == A_PAGE_UP ) {
 		Con_PageUp();
+		if(kg.keys[A_SHIFT].down) {  // hold <shift> for 5x scrolling
+			Con_PageUp();
+			Con_PageUp();
+			Con_PageUp();
+			Con_PageUp();
+		}
 		return;
 	}
 
 	if ( key == A_PAGE_DOWN ) {
 		Con_PageDown();
+		if(kg.keys[A_SHIFT].down) {  // hold <shift> for 5x scrolling
+			Con_PageDown();
+			Con_PageDown();
+			Con_PageDown();
+			Con_PageDown();
+		}
 		return;
 	}
 
