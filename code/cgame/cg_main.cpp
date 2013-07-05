@@ -2235,6 +2235,12 @@ void CG_Init( int serverCommandSequence ) {
 
 	cgi_AddCommand ("saberAttackCycle");
 
+	cgi_AddCommand ("use_electrobinoculars");
+	cgi_AddCommand ("use_bacta");
+	cgi_AddCommand ("use_seeker");
+	cgi_AddCommand ("use_lightamp_goggles");
+	cgi_AddCommand ("use_sentry");
+
 	cg.weaponPickupTextTime = 0;
 
 	cg.missionInfoFlashTime = 0;
