@@ -806,42 +806,37 @@ void Console_Key (int key) {
 
 	if ( ( key == A_MWHEELDOWN && kg.keys[A_SHIFT].down ) || ( key == A_CURSOR_DOWN ) || ( key == A_KP_2 ) || ( ( keynames[ key ].lower == 'n' ) && kg.keys[A_CTRL].down ) ) 
 	{
-		if (kg.historyLine == kg.nextHistoryLine)
-			return;
 		kg.historyLine++;
+		if (kg.historyLine >= kg.nextHistoryLine) {
+			kg.historyLine = kg.nextHistoryLine;
+			Field_Clear( &kg.g_consoleField );
+			kg.g_consoleField.widthInChars = g_console_field_width;
+			return;
+		}
 		kg.g_consoleField = kg.historyEditLines[ kg.historyLine % COMMAND_HISTORY ];
-		return;
-	}
-
-	// eezstreet - Shift + Page Up/Down = scroll up/down 5x
-	if ( key == A_PAGE_UP && kg.keys[A_SHIFT].down )
-	{
-		Con_PageUp();
-		Con_PageUp();
-		Con_PageUp();
-		Con_PageUp();
-		Con_PageUp();
-		return;
-	}
-
-	if ( key == A_PAGE_DOWN && kg.keys[A_SHIFT].down )
-	{
-		Con_PageDown();
-		Con_PageDown();
-		Con_PageDown();
-		Con_PageDown();
-		Con_PageDown();
 		return;
 	}
 
 	// console scrolling
 	if ( key == A_PAGE_UP ) {
 		Con_PageUp();
+		if(kg.keys[A_SHIFT].down) {  // hold <shift> for 5x scrolling
+			Con_PageUp();
+			Con_PageUp();
+			Con_PageUp();
+			Con_PageUp();
+		}
 		return;
 	}
 
 	if ( key == A_PAGE_DOWN ) {
 		Con_PageDown();
+		if(kg.keys[A_SHIFT].down) {  // hold <shift> for 5x scrolling
+			Con_PageDown();
+			Con_PageDown();
+			Con_PageDown();
+			Con_PageDown();
+		}
 		return;
 	}
 
