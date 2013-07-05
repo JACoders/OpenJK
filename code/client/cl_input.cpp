@@ -61,7 +61,7 @@ kbutton_t	in_lookup, in_lookdown, in_moveleft, in_moveright;
 kbutton_t	in_strafe, in_speed;
 kbutton_t	in_up, in_down;
 
-kbutton_t	in_buttons[9];
+kbutton_t	in_buttons[32];
 
 
 qboolean	in_mlooking;
@@ -310,6 +310,20 @@ void IN_Button7Down(void) {IN_KeyDown(&in_buttons[7]);}
 void IN_Button7Up(void) {IN_KeyUp(&in_buttons[7]);}
 void IN_Button8Down(void) {IN_KeyDown(&in_buttons[8]);}
 void IN_Button8Up(void) {IN_KeyUp(&in_buttons[8]);}
+void IN_Button9Down(void) {IN_KeyDown(&in_buttons[9]);}
+void IN_Button9Up(void) {IN_KeyUp(&in_buttons[9]);}
+void IN_Button10Down(void) {IN_KeyDown(&in_buttons[10]);}
+void IN_Button10Up(void) {IN_KeyUp(&in_buttons[10]);}
+void IN_Button11Down(void) {IN_KeyDown(&in_buttons[11]);}
+void IN_Button11Up(void) {IN_KeyUp(&in_buttons[11]);}
+void IN_Button12Down(void) {IN_KeyDown(&in_buttons[12]);}
+void IN_Button12Up(void) {IN_KeyUp(&in_buttons[12]);}
+void IN_Button13Down(void) {IN_KeyDown(&in_buttons[13]);}
+void IN_Button13Up(void) {IN_KeyUp(&in_buttons[13]);}
+void IN_Button14Down(void) {IN_KeyDown(&in_buttons[14]);}
+void IN_Button14Up(void) {IN_KeyUp(&in_buttons[14]);}
+void IN_Button15Down(void) {IN_KeyDown(&in_buttons[15]);}
+void IN_Button15Up(void) {IN_KeyUp(&in_buttons[15]);}
 
 
 void IN_CenterView (void) {
@@ -695,7 +709,7 @@ void CL_CmdButtons( usercmd_t *cmd ) {
 	// send a button bit even if the key was pressed and released in
 	// less than a frame
 	//	
-	for (i = 0 ; i < 9 ; i++) {
+	for (i = 0 ; i < 32 ; i++) {
 		if ( in_buttons[i].active || in_buttons[i].wasPressed ) {
 			cmd->buttons |= 1 << i;
 		}
@@ -1070,6 +1084,42 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-forcefocus", IN_Button8Up);
 	Cmd_AddCommand ("+block", IN_Button8Down);//manual blocking
 	Cmd_AddCommand ("-block", IN_Button8Up);
+
+	Cmd_AddCommand ("+button0", IN_Button0Down);
+	Cmd_AddCommand ("-button0", IN_Button0Up);
+	Cmd_AddCommand ("+button1", IN_Button1Down);
+	Cmd_AddCommand ("-button1", IN_Button1Up);
+	Cmd_AddCommand ("+button2", IN_Button2Down);
+	Cmd_AddCommand ("-button2", IN_Button2Up);
+	Cmd_AddCommand ("+button3", IN_Button3Down);
+	Cmd_AddCommand ("-button3", IN_Button3Up);
+	Cmd_AddCommand ("+button4", IN_Button4Down);
+	Cmd_AddCommand ("-button4", IN_Button4Up);
+	Cmd_AddCommand ("+button5", IN_Button5Down);
+	Cmd_AddCommand ("-button5", IN_Button5Up);
+	Cmd_AddCommand ("+button6", IN_Button6Down);
+	Cmd_AddCommand ("-button6", IN_Button6Up);
+	Cmd_AddCommand ("+button7", IN_Button7Down);
+	Cmd_AddCommand ("-button7", IN_Button7Up);
+	Cmd_AddCommand ("+button8", IN_Button8Down);
+	Cmd_AddCommand ("-button8", IN_Button8Up);
+	Cmd_AddCommand ("+button9", IN_Button9Down);
+	Cmd_AddCommand ("-button9", IN_Button9Up);
+	Cmd_AddCommand ("+button10", IN_Button10Down);
+	Cmd_AddCommand ("-button10", IN_Button10Up);
+	Cmd_AddCommand ("+button11", IN_Button11Down);
+	Cmd_AddCommand ("-button11", IN_Button11Up);
+	Cmd_AddCommand ("+button12", IN_Button12Down);
+	Cmd_AddCommand ("-button12", IN_Button12Up);
+	Cmd_AddCommand ("+button13", IN_Button13Down);
+	Cmd_AddCommand ("-button13", IN_Button13Up);
+	Cmd_AddCommand ("+button14", IN_Button14Down);
+	Cmd_AddCommand ("-button14", IN_Button14Up);
+	Cmd_AddCommand ("+button15", IN_Button15Down);
+	Cmd_AddCommand ("-button15", IN_Button15Up);
+
+	// can add up to button31 this just brings the number of available binds up to par with MP
+
 	//end buttons
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);
