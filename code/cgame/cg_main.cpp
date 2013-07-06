@@ -109,7 +109,7 @@ This must be the very first function compiled into the .q3vm file
 #ifndef _WIN32
 extern "C"
 #endif
-int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7 ) {
+Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7  ) {
 	centity_t		*cent;
 
 	switch ( command ) {
@@ -351,7 +351,7 @@ typedef struct {
 static cvarTable_t cvarTable[] = {
 	{ &cg_autoswitch, "cg_autoswitch", "1", CVAR_ARCHIVE },
 	{ &cg_drawGun, "cg_drawGun", "1", CVAR_ARCHIVE },
-	{ &cg_fov, "cg_fov", "80", 0 },//must be 80
+	{ &cg_fov, "cg_fov", "80", CVAR_ARCHIVE },//must be 80
 	{ &cg_stereoSeparation, "cg_stereoSeparation", "0.4", CVAR_ARCHIVE  },
 	{ &cg_shadows, "cg_shadows", "1", CVAR_ARCHIVE  },
 	{ &cg_renderToTextureFX, "cg_renderToTextureFX", "1", CVAR_ARCHIVE  },
@@ -823,7 +823,8 @@ static void CG_RegisterSounds( void ) {
 
 	// only register the items that the server says we need
 	char	items[MAX_ITEMS+1];
-	strcpy( items, CG_ConfigString( CS_ITEMS ) );
+	//Raz: Fixed buffer overflow
+	Q_strncpyz(items, CG_ConfigString(CS_ITEMS), sizeof(items));
 
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
 		if ( items[ i ] == '1' )	//even with sound pooling, don't clutter it for low end machines
@@ -1535,7 +1536,7 @@ static void CG_RegisterGraphics( void ) {
 	memset( cg_weapons, 0, sizeof( cg_weapons ) );
 
 	// only register the items that the server says we need
-	strcpy( items, CG_ConfigString( CS_ITEMS) );
+	Q_strncpyz(items, CG_ConfigString(CS_ITEMS), sizeof(items));
 
 	for ( i = 1 ; i < bg_numItems ; i++ ) {
 		if ( items[ i ] == '1' ) 
@@ -2233,6 +2234,12 @@ void CG_Init( int serverCommandSequence ) {
 	cgi_AddCommand ("playermodel");
 
 	cgi_AddCommand ("saberAttackCycle");
+
+	cgi_AddCommand ("use_electrobinoculars");
+	cgi_AddCommand ("use_bacta");
+	cgi_AddCommand ("use_seeker");
+	cgi_AddCommand ("use_lightamp_goggles");
+	cgi_AddCommand ("use_sentry");
 
 	cg.weaponPickupTextTime = 0;
 

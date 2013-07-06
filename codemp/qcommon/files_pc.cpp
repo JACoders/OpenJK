@@ -3182,3 +3182,11 @@ int		FS_FTell( fileHandle_t f ) {
 void	FS_Flush( fileHandle_t f ) {
 	fflush(fsh[f].handleFiles.file.o);
 }
+
+const char *FS_GetCurrentGameDir(bool emptybase)
+{
+	if(fs_gamedirvar->string[0])
+		return fs_gamedirvar->string;
+
+	return emptybase ? "" : BASEGAME;
+}
