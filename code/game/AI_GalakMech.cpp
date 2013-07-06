@@ -266,7 +266,7 @@ bool	Pilot_MasterUpdate()
 		//---------------------------------
 		if (NPCInfo->greetEnt)
 		{
-			ucmd.upmove = 128;
+			ucmd.upmove = 127;
 
 			if (NPCInfo->greetEnt && NPCInfo->greetEnt->m_pVehicle && level.time<NPCInfo->confusionTime)
 			{
