@@ -3149,7 +3149,7 @@ void UpdateSingleShotSounds()
 
 					for (j = 0; j < NUM_STREAMING_BUFFERS; j++)
 					{
-						if ((ch->buffers[j].Status == UNQUEUED) & (ch->MP3StreamHeader.iSourceBytesRemaining > 0))
+						if ((ch->buffers[j].Status == UNQUEUED) && (ch->MP3StreamHeader.iSourceBytesRemaining > 0))
 						{
 							nTotalBytesDecoded = 0;
 		

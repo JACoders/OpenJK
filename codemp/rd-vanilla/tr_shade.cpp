@@ -1686,7 +1686,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 
 		if ( !pStage->active )
 		{
-			assert(pStage->active);//wtf?
 			break;
 		}
 
