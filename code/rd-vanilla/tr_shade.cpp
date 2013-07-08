@@ -2283,7 +2283,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		shaderStage_t *pStage = &tess.xstages[stage];
 		if ( !pStage->active )
 		{
-			assert(pStage->active);//wtf?
 			break;
 		}
 
