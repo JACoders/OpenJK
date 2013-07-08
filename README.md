@@ -8,6 +8,10 @@ Major enhancement changes are very low priority at this time unless patches are 
 
 Please use discrection when making issue requests here on github.  The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for larger discussions on changes that aren't actually bugs.
 
+## 64-bit Support (lack there-of)
+
+Currently, 64-bit is not supported at this time due to the amount of code that is not compatible or would cause direct issues.  If you would like to submit a patch via pull request to correct it fully, feel free to do so as it would be appreciated.
+
 ## Installation ##
 
 First, install Jedi Academy. If you don't already own the game you can buy it from either [Steam](http://store.steampowered.com/app/6020/), [Amazon](http://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [Play](http://www.play.com/Games/PC/4-/127805/Star-Wars-Jedi-Knight-Jedi-Academy/Product.html?searchstring=jedi+academy&searchsource=0&searchtype=allproducts&urlrefer=search).

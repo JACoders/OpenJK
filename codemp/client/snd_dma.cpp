@@ -2329,7 +2329,7 @@ void S_UpdateEntityPosition( int entityNum, const vec3_t origin )
 		channel_t *ch = s_channels + 1;
 		for (i = 1; i < s_numChannels; i++, ch++)
 		{
-			if ((s_channels[i].bPlaying) & (s_channels[i].entnum == entityNum) & (!s_channels[i].bLooping))
+			if ((s_channels[i].bPlaying) && (s_channels[i].entnum == entityNum) && (!s_channels[i].bLooping))
 			{
 				// Ignore position updates for CHAN_VOICE_GLOBAL
 				if (ch->entchannel != CHAN_VOICE_GLOBAL && ch->entchannel != CHAN_ANNOUNCER)
@@ -3194,7 +3194,7 @@ void UpdateSingleShotSounds()
 
 					for (j = 0; j < NUM_STREAMING_BUFFERS; j++)
 					{
-						if ((ch->buffers[j].Status == UNQUEUED) & (ch->MP3StreamHeader.iSourceBytesRemaining > 0))
+						if ((ch->buffers[j].Status == UNQUEUED) && (ch->MP3StreamHeader.iSourceBytesRemaining > 0))
 						{
 							nTotalBytesDecoded = 0;
 		

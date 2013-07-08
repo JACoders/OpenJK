@@ -563,7 +563,7 @@ static qboolean GLW_CreateWindow( int width, int height, int colorbits, qboolean
 
 		if ( !RegisterClass( &wc ) )
 		{
-			Com_Error( ERR_FATAL, "GLW_CreateWindow: could not register window class" );
+			Com_Error( ERR_FATAL, "GLW_CreateWindow: could not register window class, error code: 0x%x", GetLastError() );
 		}
 		s_classRegistered = qtrue;
 //		Com_Printf ("...registered window class\n" );
@@ -1830,6 +1830,16 @@ void GLimp_Shutdown( void )
 		DestroyWindow( tr.wv->hWnd );
 		tr.wv->hWnd = NULL;
 		glw_state.pixelFormatSet = qfalse;
+	}
+
+	// unregister the window class
+	if ( s_classRegistered )
+	{
+		if ( FAILED (UnregisterClass (WINDOW_CLASS_NAME, tr.wv->hInstance)) )
+		{
+			Com_Error (ERR_FATAL, "GLimp_Shutdown: could not unregister window class, error code 0x%x", GetLastError());
+		}
+		s_classRegistered = qfalse;
 	}
 
 	// close the r_logFile
