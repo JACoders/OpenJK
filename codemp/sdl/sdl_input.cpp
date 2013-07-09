@@ -592,7 +592,7 @@ static void IN_ProcessEvents( void )
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEBUTTONUP:
 				{
-					unsigned char b;
+					unsigned short b;
 					switch( e.button.button )
 					{
 						case 1:   b = A_MOUSE1;     break;
@@ -600,7 +600,7 @@ static void IN_ProcessEvents( void )
 						case 3:   b = A_MOUSE2;     break;
 						case 4:   b = A_MOUSE4;     break;
 						case 5:   b = A_MOUSE5;     break;
-						default:  b = A_AUX0 + ( e.button.button - 8 ) % 16; break;
+						default:  b = A_AUX0 + ( e.button.button - 6 ) % 32; break;
 					}
 					Sys_QueEvent( 0, SE_KEY, b,
 						( e.type == SDL_MOUSEBUTTONDOWN ? qtrue : qfalse ), 0, NULL );
