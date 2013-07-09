@@ -191,6 +191,9 @@ void *Sys_GetGameAPI (void *parms)
 	const char	*cdpath;
 	const char	*gamedir;
 	const char	*homepath;
+#ifdef MACOS_X
+    const char  *apppath;
+#endif
 	const char	*fn;
 	
 	const char *gamename;
@@ -211,6 +214,9 @@ void *Sys_GetGameAPI (void *parms)
 	basepath = Cvar_VariableString( "fs_basepath" );
 	cdpath = Cvar_VariableString( "fs_cdpath" );
 	gamedir = Cvar_VariableString( "fs_game" );
+#ifdef MACOS_X
+    apppath = Cvar_VariableString( "fs_apppath" );
+#endif
 	
 	if(!gamedir || !gamedir[0])
 		gamedir = BASEGAME;
@@ -229,6 +235,17 @@ void *Sys_GetGameAPI (void *parms)
 		}
 	}
 	
+#ifdef MACOS_X
+    if (!game_library) {
+		if( apppath[0] ) {
+			Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+			
+			fn = FS_BuildOSPath( apppath, gamedir, gamename );
+			game_library = Sys_LoadLibrary( fn );
+		}
+	}
+#endif
+    
 	if (!game_library) {
 		if( cdpath[0] ) {
 			Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
@@ -254,6 +271,17 @@ void *Sys_GetGameAPI (void *parms)
 			game_library = Sys_LoadLibrary( fn );
 		}
 	}
+    
+#ifdef MACOS_X
+    if (!game_library) {
+		if( apppath[0] ) {
+			Com_Printf( "Sys_GetGameAPI(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+			
+			fn = FS_BuildOSPath( apppath, BASEGAME, gamename );
+			game_library = Sys_LoadLibrary( fn );
+		}
+	}
+#endif
 	
 	if (!game_library) {
 		if( cdpath[0] ) {
