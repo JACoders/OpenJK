@@ -2187,6 +2187,7 @@ void CL_ShutdownRef( void ) {
 
 	if ( rendererLib != NULL ) {
 		Sys_UnloadDll (rendererLib);
+		rendererLib = NULL;
 	}
 	Com_Memset( &re, 0, sizeof( re ) );
 }
