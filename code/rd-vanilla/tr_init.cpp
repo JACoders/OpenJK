@@ -960,9 +960,20 @@ void GfxInfo_f( void )
 	VID_Printf( PRINT_ALL, "compressed textures: %s\n", enablestrings[glConfig.textureCompression != TC_NONE] );
 	VID_Printf( PRINT_ALL, "compressed lightmaps: %s\n", enablestrings[(r_ext_compressed_lightmaps->integer != 0 && glConfig.textureCompression != TC_NONE)] );
 	VID_Printf( PRINT_ALL, "texture compression method: %s\n", tc_table[glConfig.textureCompression] );
-	Com_Printf ("anisotropic filtering: %s  ", enablestrings[(r_ext_texture_filter_anisotropic->integer != 0) && glConfig.maxTextureFilterAnisotropy] );
-		Com_Printf ("(%f of %f)\n", r_ext_texture_filter_anisotropic->value, glConfig.maxTextureFilterAnisotropy );
-	Com_Printf ("Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer] );
+	VID_Printf( PRINT_ALL, "anisotropic filtering: %s  ", enablestrings[(r_ext_texture_filter_anisotropic->integer != 0) && glConfig.maxTextureFilterAnisotropy] );
+	if (r_ext_texture_filter_anisotropic->integer != 0 && glConfig.maxTextureFilterAnisotropy)
+	{
+		if (Q_isintegral(r_ext_texture_filter_anisotropic->value))
+			VID_Printf( PRINT_ALL, "(%i of ", (int)r_ext_texture_filter_anisotropic->value);
+		else
+			VID_Printf( PRINT_ALL, "(%f of ", r_ext_texture_filter_anisotropic->value);
+
+		if (Q_isintegral(glConfig.maxTextureFilterAnisotropy))
+			VID_Printf( PRINT_ALL, "%i)\n", (int)glConfig.maxTextureFilterAnisotropy);
+		else
+			VID_Printf( PRINT_ALL, "%f)\n", glConfig.maxTextureFilterAnisotropy);
+	}
+	VID_Printf( PRINT_ALL, "Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer] );
 	if (g_bTextureRectangleHack) Com_Printf ("Dynamic Glow ATI BAD DRIVER HACK %s\n", enablestrings[g_bTextureRectangleHack] );
 
 	if ( r_finish->integer ) {
