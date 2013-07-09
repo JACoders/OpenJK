@@ -28,7 +28,7 @@ using namespace std;
 
 #define JPEG_INTERNALS
 #include "jpeg-8c/jpeglib.h"
-#include "libpng/png.h"
+#include <png.h>
 
 static void LoadTGA( const char *name, byte **pic, int *width, int *height );
 static void LoadJPG( const char *name, byte **pic, int *width, int *height );
@@ -2303,8 +2303,8 @@ struct PNGFileReader
 		png_set_sig_bytes (png_ptr, SIGNATURE_LEN);
 		png_read_info (png_ptr, info_ptr);
 
-		unsigned int width_;
-		unsigned int height_;
+		png_uint_32 width_;
+		png_uint_32 height_;
 		int depth;
 		int colortype;
 
