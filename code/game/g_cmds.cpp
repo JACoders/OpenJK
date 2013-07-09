@@ -269,7 +269,7 @@ void Cmd_Give_f (gentity_t *ent)
 			return;
 	}
 
-	if (give_all || Q_stricmp(gi.argv(1), "armor") == 0)
+	if (give_all || Q_stricmp(gi.argv(1), "armor") == 0 || Q_stricmp(gi.argv(1), "shield") == 0)
 	{
 		if (gi.argc() == 3)
 			ent->client->ps.stats[STAT_ARMOR] = atoi(gi.argv(2));
