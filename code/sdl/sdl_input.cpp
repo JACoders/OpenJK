@@ -358,25 +358,25 @@ void IN_InitKeyLockStates( void )
 static int joy_keys[16] = {
 	A_CURSOR_LEFT, A_CURSOR_RIGHT,
 	A_CURSOR_UP, A_CURSOR_DOWN,
-	A_JOY17, A_JOY18,
-	A_JOY19, A_JOY20,
-	A_JOY21, A_JOY22,
-	A_JOY23, A_JOY24,
-	A_JOY25, A_JOY26,
-	A_JOY27, A_JOY28
+	A_JOY16, A_JOY17,
+	A_JOY18, A_JOY19,
+	A_JOY20, A_JOY21,
+	A_JOY22, A_JOY23,
+	A_JOY24, A_JOY25,
+	A_JOY26, A_JOY27
 };
 
 // translate hat events into keypresses
 // the 4 highest buttons are used for the first hat ...
 static int hat_keys[16] = {
-	A_JOY29, A_JOY30,
-	A_JOY31, A_AUX0, // JOY32, where are you ?
-	A_JOY25, A_JOY26,
-	A_JOY27, A_JOY28,
-	A_JOY21, A_JOY22,
-	A_JOY23, A_JOY24,
-	A_JOY17, A_JOY18,
-	A_JOY19, A_JOY20
+	A_JOY28, A_JOY29,
+	A_JOY30, A_JOY31,
+	A_JOY24, A_JOY25,
+	A_JOY26, A_JOY27,
+	A_JOY20, A_JOY21,
+	A_JOY22, A_JOY23,
+	A_JOY16, A_JOY17,
+	A_JOY18, A_JOY19
 };
 
 
