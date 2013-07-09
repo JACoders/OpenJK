@@ -689,6 +689,11 @@ int Q_isalpha( int c )
 	return ( 0 );
 }
 
+qboolean Q_isintegral( float f )
+{
+	return (qboolean)( (int)f == f );
+}
+
 /*
 char* Q_strrchr( const char* string, int c )
 {
