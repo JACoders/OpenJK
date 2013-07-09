@@ -894,7 +894,7 @@ extern int PM_ValidateAnimRange( const int startFrame, const int endFrame, const
 #ifndef _WIN32
 extern "C"
 #endif
-game_export_t *GetGameAPI( game_import_t *import ) {
+Q_EXPORT game_export_t *GetGameAPI( game_import_t *import ) {
 	gameinfo_import_t	gameinfo_import;
 
 	gi = *import;
