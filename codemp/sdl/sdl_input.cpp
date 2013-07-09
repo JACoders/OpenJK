@@ -595,12 +595,12 @@ static void IN_ProcessEvents( void )
 					unsigned short b;
 					switch( e.button.button )
 					{
-						case 1:   b = A_MOUSE1;     break;
-						case 2:   b = A_MOUSE3;     break;
-						case 3:   b = A_MOUSE2;     break;
-						case 4:   b = A_MOUSE4;     break;
-						case 5:   b = A_MOUSE5;     break;
-						default:  b = A_AUX0 + ( e.button.button - 6 ) % 32; break;
+						case SDL_BUTTON_LEFT:	b = A_MOUSE1;     break;
+						case SDL_BUTTON_MIDDLE:	b = A_MOUSE3;     break;
+						case SDL_BUTTON_RIGHT:	b = A_MOUSE2;     break;
+						case SDL_BUTTON_X1:		b = A_MOUSE4;     break;
+						case SDL_BUTTON_X2:		b = A_MOUSE5;     break;
+						default: b = A_AUX0 + ( e.button.button - 6 ) % 32; break;
 					}
 					Sys_QueEvent( 0, SE_KEY, b,
 						( e.type == SDL_MOUSEBUTTONDOWN ? qtrue : qfalse ), 0, NULL );
