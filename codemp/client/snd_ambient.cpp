@@ -200,7 +200,7 @@ static int AS_GetSetNameIDForString( const char *name )
 
 	for ( int i = 0; i < NUM_AS_SETS; i++ )
 	{
-		if ( stricmp( name, setNames[i] ) == 0 )
+		if ( Q_stricmp( name, setNames[i] ) == 0 )
 			return i;
 	}
 
@@ -221,7 +221,7 @@ static int AS_GetKeywordIDForString( const char *name )
 
 	for ( int i = 0; i < NUM_AS_KEYWORDS; i++ )
 	{
-		if ( stricmp( name, keywordNames[i] ) == 0 )
+		if ( Q_stricmp( name, keywordNames[i] ) == 0 )
 			return i;
 	}
 
@@ -318,12 +318,8 @@ static void AS_GetSubWaves( ambientSet_t &set )
 		}
 		else
 		{
-			//Construct the wave name (pretty, huh?)
-			strcpy( (char *) waveName, "sound/" );
-			strncat( (char *) waveName, (const char *) dirBuffer, sizeof (waveName) - 1 );
-			strncat( (char *) waveName, "/", sizeof (waveName) - 1 );
-			strncat( (char *) waveName, (const char *) waveBuffer, sizeof (waveName) - 1 );
-			strncat( (char *) waveName, ".wav", sizeof (waveName) - 1 );
+			//Construct the wave name
+			Com_sprintf( waveName, sizeof(waveName), "sound/%s/%s.wav", dirBuffer, waveBuffer );
 			
 			//Place this onto the sound directory name
 
@@ -362,9 +358,7 @@ static void AS_GetLoopedWave( ambientSet_t &set )
 	sscanf( parseBuffer+parsePos, "%s %s", tempBuffer, waveBuffer );
 
 	//Construct the wave name
-	strcpy( (char *) waveName, "sound/" );
-	strncat( (char *) waveName, (const char *) waveBuffer, 1023 );
-	strncat( (char *) waveName, ".wav", 1023 );
+	Com_sprintf( waveName, sizeof(waveName), "sound/%s.wav", waveBuffer );
 	
 	//Precache the file at this point and store off the ID instead of the name
 	if ( ( set.loopedWave = S_RegisterSound( waveName ) ) <= 0 )
@@ -618,7 +612,7 @@ static sboolean AS_ParseSet( int setID, CSetGroup *sg )
 	while ( parsePos <= parseSize )
 	{
 		//Check for a valid set group
-		if ( strncmp( parseBuffer+parsePos, name, strlen(name) ) == 0 )
+		if ( Q_strncmp( parseBuffer+parsePos, name, strlen(name) ) == 0 )
 		{
 			//Update the debug info
 			numSets++;	
@@ -677,7 +671,7 @@ static void AS_ParseHeader( void )
 		case SET_KEYWORD_TYPE:
 			sscanf( parseBuffer+parsePos, "%s %s", tempBuffer, typeBuffer );
 
-			if ( !stricmp( (const char *) typeBuffer, "ambientSet" ) )
+			if ( !Q_stricmp( (const char *) typeBuffer, "ambientSet" ) )
 			{
 				return;
 			}
@@ -769,7 +763,7 @@ AS_AddPrecacheEntry
 
 void AS_AddPrecacheEntry( const char *name )
 {
-	if (!stricmp(name,"#clear"))
+	if (!Q_stricmp(name,"#clear"))
 	{
 		pMap->clear();
 	}
