@@ -24,12 +24,12 @@ Then point the OpenJK installer to the GameData folder in the Jedi Academy insta
 * mrwonko
 * Raz0r
 * redsaurus
+* Xycaleth
 
 ## Significant contributors (in alphabetical order) ##
 * exidl
 * Scooper
 * Sil
-* Xycaleth
 
 ## Dependencies ##
 * OpenGL
