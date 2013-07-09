@@ -140,10 +140,14 @@ void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *vert
 		return;
 	}
 
-	if ( r_numpolyverts + numVerts > MAX_POLYVERTS || r_numpolys >= MAX_POLYS ) {
-#if defined(_DEBUG)
-		Com_Printf(S_COLOR_RED"Poly overflow!  Tell Brian.\n");
-#endif
+	if ( r_numpolyverts + numVerts >= MAX_POLYVERTS || r_numpolys >= MAX_POLYS ) {
+      /*
+      NOTE TTimo this was initially a PRINT_WARNING
+      but it happens a lot with high fighting scenes and particles
+      since we don't plan on changing the const and making for room for those effects
+      simply cut this message to developer only
+      */
+		ri.Printf( PRINT_DEVELOPER, S_COLOR_YELLOW  "WARNING: RE_AddPolyToScene: r_max_polys or r_max_polyverts reached\n");
 		return;
 	}
 
