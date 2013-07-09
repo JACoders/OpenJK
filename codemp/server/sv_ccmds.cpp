@@ -616,7 +616,7 @@ static void SV_Status_f( void )
 		"public dedicated",
 	};
 
-	Com_Printf ("hostname: %s\n", sv_hostname->string );
+	Com_Printf ("hostname: %s^7\n", sv_hostname->string );
 	Com_Printf ("version : %s %i\n", VERSION_STRING_DOTTED, PROTOCOL_VERSION );
 	Com_Printf ("game    : %s\n", FS_GetCurrentGameDir() );
 	Com_Printf ("udp/ip  : %s:%i os(%s) type(%s)\n", Cvar_VariableString("net_ip"), Cvar_VariableIntegerValue("net_port"), STATUS_OS, ded_table[com_dedicated->integer]);
@@ -897,10 +897,7 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("devmapmdl", SV_Map_f);
 	Cmd_AddCommand ("devmapall", SV_Map_f);
 	Cmd_AddCommand ("killserver", SV_KillServer_f);
-//	if( com_dedicated->integer ) 
-	{
-		Cmd_AddCommand ("svsay", SV_ConSay_f);
-	}
+	Cmd_AddCommand ("svsay", SV_ConSay_f);
 
 	Cmd_AddCommand ("forcetoggle", SV_ForceToggle_f);
 }
