@@ -131,7 +131,7 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 	}
 
 	for ( j = 0; j < numPolys; j++ ) {
-		if ( r_numpolyverts + numVerts > max_polyverts || r_numpolys >= max_polys ) {
+		if ( r_numpolyverts + numVerts >= max_polyverts || r_numpolys >= max_polys ) {
       /*
       NOTE TTimo this was initially a PRINT_WARNING
       but it happens a lot with high fighting scenes and particles
