@@ -2127,7 +2127,7 @@ void RE_SaveJPG(char * filename, int quality, int image_width, int image_height,
 }
 
 void user_write_data( png_structp png_ptr, png_bytep data, png_size_t length ) {
-	fileHandle_t fp = (fileHandle_t)png_get_io_ptr( png_ptr );
+	fileHandle_t fp = (fileHandle_t)(intptr_t)png_get_io_ptr( png_ptr );
 	ri.FS_Write( data, length, fp );
 }
 void user_flush_data( png_structp png_ptr ) {

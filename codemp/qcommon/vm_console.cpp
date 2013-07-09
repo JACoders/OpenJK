@@ -177,7 +177,7 @@ int	QDECL VM_Call( vm_t *vm, int callnum, ... )
 }
 
 // This function seems really suspect. Let's cross our fingers...
-void *BotVMShift( int ptr )
+void *BotVMShift( intptr_t ptr )
 {
 	return (void *)ptr;
 }

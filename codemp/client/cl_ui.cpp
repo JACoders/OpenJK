@@ -1070,7 +1070,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		char *languageName,*holdName;
 
 		holdName = ((char *)VMA(2));
-		languageName = (char *) SE_GetLanguageName((const int)VMA(1));
+		languageName = (char *) SE_GetLanguageName(args[1]);
 		Q_strncpyz( holdName, languageName,128 );
 		return 0;
 
