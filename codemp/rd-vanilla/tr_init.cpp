@@ -1063,7 +1063,18 @@ void GfxInfo_f( void )
 	Com_Printf ("compressed lightmaps: %s\n", enablestrings[(r_ext_compressed_lightmaps->integer != 0 && glConfig.textureCompression != TC_NONE)] );
 	Com_Printf ("texture compression method: %s\n", tc_table[glConfig.textureCompression] );
 	Com_Printf ("anisotropic filtering: %s  ", enablestrings[(r_ext_texture_filter_anisotropic->integer != 0) && glConfig.maxTextureFilterAnisotropy] );
-		Com_Printf ("(%f of %f)\n", r_ext_texture_filter_anisotropic->value, glConfig.maxTextureFilterAnisotropy );
+	if (r_ext_texture_filter_anisotropic->integer != 0 && glConfig.maxTextureFilterAnisotropy)
+	{
+		if (Q_isintegral(r_ext_texture_filter_anisotropic->value))
+			Com_Printf ("(%i of ", (int)r_ext_texture_filter_anisotropic->value);
+		else
+			Com_Printf ("(%f of ", r_ext_texture_filter_anisotropic->value);
+
+		if (Q_isintegral(glConfig.maxTextureFilterAnisotropy))
+			Com_Printf ("%i)\n", (int)glConfig.maxTextureFilterAnisotropy);
+		else
+			Com_Printf ("%f)\n", glConfig.maxTextureFilterAnisotropy);
+	}
 	Com_Printf ("Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer] );
 	if (g_bTextureRectangleHack) Com_Printf ("Dynamic Glow ATI BAD DRIVER HACK %s\n", enablestrings[g_bTextureRectangleHack] );
 
