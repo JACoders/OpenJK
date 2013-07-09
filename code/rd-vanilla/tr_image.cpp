@@ -32,7 +32,7 @@ This file is part of Jedi Academy.
 #include "../zlib/zlib.h"
 #endif
 #include "../qcommon/sstring.h"
-#include "libpng/png.h"
+#include <png.h>
 
 
 static byte			 s_intensitytable[256];
@@ -1958,8 +1958,8 @@ struct PNGFileReader
 		png_set_sig_bytes (png_ptr, SIGNATURE_LEN);
 		png_read_info (png_ptr, info_ptr);
 
-		unsigned int width_;
-		unsigned int height_;
+		png_uint_32 width_;
+		png_uint_32 height_;
 		int depth;
 		int colortype;
 

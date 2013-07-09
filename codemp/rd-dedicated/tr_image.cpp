@@ -25,7 +25,7 @@ using namespace std;
 
 #define JPEG_INTERNALS
 #include "jpeg-8c/jpeglib.h"
-#include "libpng/png.h"
+#include <png.h>
 
 // My TGA loader...
 //

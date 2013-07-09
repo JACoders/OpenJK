@@ -18,13 +18,16 @@ option(BuildSPGame "Whether to create projects for the SP gamecode (jagamex86.dl
 # (mrw) jk2 has some weird PCH fuckery I cannot replicate with cmake without too much work
 set(BuildJK2SPGame OFF)
 #option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
+
+# Customizable libraries
+set(UseInternalPNG OFF)
 if(WIN32)
 	option(UseInternalOpenAL "Whether to use the included OpenAL instead of a locally installed one" ON)
 	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" ON)
+	set(UseInternalPNG ON)
 endif(WIN32)
-# External version not yet supported, WIP
-# option(UseInternalJpeg "Whether to use the included libjpeg instead of a locally installed one" ON)
-# option(UseInternalPng "Whether to use the included libpng instead of a locally installed one" ON)
+option(UseInternalPNG "Whether to use the included libpng instead of a locally installed one" ${UseInternalPNG})
+
 option(PackageDir "Where to place the installer/package." "${CMAKE_SOURCE_DIR}/package")
 
 # Custom CMake Modules needed

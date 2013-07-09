@@ -128,12 +128,12 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedIncludeDirectories ${MPDir} ${OpenJKLibDir}) # codemp folder, since includes are not always relative in the files
 	
 	if(UseInternalZlib)
-		#set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} "${OpenJKLibDir}/zlib")
 		# OpenAL32.lib is included for windows
 		find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
 		if(NOT ZlibLibrary)
 			message(FATAL_ERROR "UseInternalOpenAL set, but libs/OpenAL32 not found!")
 		endif(NOT ZlibLibrary)
+		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} "${OpenJKLibDir}/zlib")
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZlibLibrary})
 	else(UseInternalZlib)
 		find_package(ZLIB REQUIRED)
@@ -581,24 +581,31 @@ if(BuildMPDed)
 	source_group("renderer" FILES ${MPDedicatedRendererFiles})
 	set(MPDedFiles ${MPDedFiles} ${MPDedicatedRendererFiles})
 
-	set(MPDedLibPngFiles
-		"${OpenJKLibDir}/libpng/png.c"
-		"${OpenJKLibDir}/libpng/pngerror.c"
-		"${OpenJKLibDir}/libpng/pngget.c"
-		"${OpenJKLibDir}/libpng/pngmem.c"
-		"${OpenJKLibDir}/libpng/pngpread.c"
-		"${OpenJKLibDir}/libpng/pngread.c"
-		"${OpenJKLibDir}/libpng/pngrio.c"
-		"${OpenJKLibDir}/libpng/pngrtran.c"
-		"${OpenJKLibDir}/libpng/pngrutil.c"
-		"${OpenJKLibDir}/libpng/pngset.c"
-		"${OpenJKLibDir}/libpng/pngtrans.c"
-		"${OpenJKLibDir}/libpng/pngwio.c"
-		"${OpenJKLibDir}/libpng/pngwrite.c"
-		"${OpenJKLibDir}/libpng/pngwtran.c"
-		"${OpenJKLibDir}/libpng/pngwutil.c")
-	source_group("libpng" FILES ${MPDedLibPngFiles})
-	set(MPDedFiles ${MPDedFiles} ${MPDedLibPngFiles})
+	if(UseInternalPNG)
+		set(MPDedLibPngFiles
+			"${OpenJKLibDir}/libpng/png.c"
+			"${OpenJKLibDir}/libpng/pngerror.c"
+			"${OpenJKLibDir}/libpng/pngget.c"
+			"${OpenJKLibDir}/libpng/pngmem.c"
+			"${OpenJKLibDir}/libpng/pngpread.c"
+			"${OpenJKLibDir}/libpng/pngread.c"
+			"${OpenJKLibDir}/libpng/pngrio.c"
+			"${OpenJKLibDir}/libpng/pngrtran.c"
+			"${OpenJKLibDir}/libpng/pngrutil.c"
+			"${OpenJKLibDir}/libpng/pngset.c"
+			"${OpenJKLibDir}/libpng/pngtrans.c"
+			"${OpenJKLibDir}/libpng/pngwio.c"
+			"${OpenJKLibDir}/libpng/pngwrite.c"
+			"${OpenJKLibDir}/libpng/pngwtran.c"
+			"${OpenJKLibDir}/libpng/pngwutil.c")
+		source_group("libpng" FILES ${MPDedLibPngFiles})
+		set(MPDedIncludeDirectories ${MPDedIncludeDirectories} "${OpenJKLibDir}/libpng")
+		set(MPDedFiles ${MPDedFiles} ${MPDedLibPngFiles})
+	else(UseInternalPNG)
+		find_package(PNG REQUIRED)
+		set(MPDedIncludeDirectories ${MPDedIncludeDirectories} ${PNG_INCLUDE_DIR})
+		set(MPDedLibraries ${MPDedLibraries} ${PNG_LIBRARIES})
+	endif(UseInternalPNG)
 	
 	set(MPDedNullFiles
 		"${MPDir}/null/null_client.cpp"
