@@ -384,7 +384,9 @@ TGADone:
 void user_read_data( png_structp png_ptr, png_bytep data, png_size_t length ) {
 }
 void user_write_data( png_structp png_ptr, png_bytep data, png_size_t length ) {
-	fileHandle_t fp = (fileHandle_t)png_get_io_ptr( png_ptr );
+	// Double cast is because void* -> fileHandle_t is an error. Need to
+	// type cast to intptr_t, and then truncate intptr_t to fileHandle_t.
+	fileHandle_t fp = (fileHandle_t)(intptr_t)png_get_io_ptr( png_ptr );
 	ri.FS_Write( data, length, fp );
 }
 void user_flush_data( png_structp png_ptr ) {

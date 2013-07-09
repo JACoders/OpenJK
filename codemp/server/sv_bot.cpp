@@ -58,7 +58,7 @@ int SV_OrgVisibleBox(vec3_t org1, vec3_t mins, vec3_t maxs, vec3_t org2, int ign
 	return 0;
 }
 
-void *BotVMShift( int ptr );
+void *BotVMShift( intptr_t ptr );
 
 void SV_BotWaypointReception(int wpnum, wpobject_t **wps)
 {
@@ -68,7 +68,7 @@ void SV_BotWaypointReception(int wpnum, wpobject_t **wps)
 
 	while (i < gWPNum)
 	{
-		gWPArray[i] = (wpobject_t *)BotVMShift((int)wps[i]);
+		gWPArray[i] = (wpobject_t *)BotVMShift((intptr_t)wps[i]);
 		i++;
 	}
 }

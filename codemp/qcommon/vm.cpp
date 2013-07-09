@@ -661,7 +661,7 @@ float _vmf(intptr_t x)
 }
 
 extern vm_t *gvm;
-void *BotVMShift( int ptr )
+void *BotVMShift( intptr_t ptr )
 {
 	if ( !ptr )
 	{
@@ -720,7 +720,7 @@ void VM_Shifted_Alloc(void **ptr, int size)
 
 	//Alright, subtract the database from the memory pointer to get a memory address relative to the VM.
 	//When the VM modifies it it should be modifying the same chunk of memory we have allocated in the engine.
-	*ptr = (void *)((int)mem - (int)currentVM->dataBase);
+	*ptr = (void *)((intptr_t)mem - (intptr_t)currentVM->dataBase);
 }
 
 void VM_Shifted_Free(void **ptr)
@@ -734,7 +734,7 @@ void VM_Shifted_Free(void **ptr)
 	}
 
 	//Shift the VM memory pointer back to get the same pointer we initially allocated in real memory space.
-	mem = (void *)((int)currentVM->dataBase + (int)*ptr);
+	mem = (void *)((intptr_t)currentVM->dataBase + (intptr_t)*ptr);
 
 	if (!mem)
 	{

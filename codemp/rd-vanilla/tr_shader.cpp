@@ -208,7 +208,7 @@ static int Shader_CompressBracedSection( char **data_p, char **name, char **text
 				if( c == '{' && !*name ) {
 					*name = *data_p;
 					if( *(*name) <= ' ' ) (*name)++;
-					*nameLength = (int)out - (int)*name;
+					*nameLength = out - *name;
 					if( (*name)[*nameLength-1] <= ' ' ) (*nameLength)--;
 					*text = out;
 				}
@@ -240,9 +240,9 @@ static int Shader_CompressBracedSection( char **data_p, char **name, char **text
 
 	if( *text && *(*text) <= ' ' ) (*text)++;			// remove begining white char
 	if( out > *data_p && out[-1] <= ' ' ) out--;		// remove ending white char
-	if( *text ) *textLength = (int)out - (int)*text;	// compressed text length
+	if( *text ) *textLength = out - *text;	// compressed text length
 
-	c = (int)out - (int)*data_p;						// uncompressed chars parsed
+	c = out - *data_p;						// uncompressed chars parsed
 
 	*data_p = in;
 
