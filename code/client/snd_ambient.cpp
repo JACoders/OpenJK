@@ -356,8 +356,7 @@ static void AS_GetSubWaves( ambientSet_t &set )
 			if ( ( set.subWaves[set.numSubWaves++] = S_RegisterSound( waveName ) ) <= 0 )
 			{
 				#ifndef FINAL_BUILD
-				//Com_Printf(S_COLOR_RED"ERROR: Unable to load ambient sound \"%s\"\n", waveName);
-				Com_Error(ERR_DROP, "ERROR: Unable to load ambient sound \"%s\"\n", waveName);
+				Com_Printf(S_COLOR_RED"ERROR: Unable to load ambient sound \"%s\"\n", waveName);
 				#endif
 			}
 		}
@@ -396,8 +395,7 @@ static void AS_GetLoopedWave( ambientSet_t &set )
 	if ( ( set.loopedWave = S_RegisterSound( waveName ) ) <= 0 )
 	{
 		#ifndef FINAL_BUILD
-		//Com_Printf(S_COLOR_RED"ERROR: Unable to load ambient sound \"%s\"\n", waveName);
-		Com_Error(ERR_DROP, "ERROR: Unable to load looped ambient sound \"%s\"\n", waveName);
+		Com_Printf(S_COLOR_RED"ERROR: Unable to load ambient sound \"%s\"\n", waveName);
 		#endif
 	}
 
