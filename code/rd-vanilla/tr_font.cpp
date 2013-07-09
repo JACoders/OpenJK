@@ -900,82 +900,8 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 #ifndef __NO_JK2
 unsigned int AnyLanguage_ReadCharFromString( char **psText, qboolean *pbIsTrailingPunctuation /* = NULL */)
 {	
-	// JK2 does this func a little differently --eez
-	const byte *psString = (const byte *) *psText;	// avoid sign-promote bug
-	unsigned int uiLetter;
-
-	if ( Language_IsKorean() )
-	{
-		if ( Korean_ValidKSC5601Hangul( psString[0], psString[1] ))
-		{
-			uiLetter = (psString[0] * 256) + psString[1];
-			*psText += 2;
-
-			// not going to bother testing for korean punctuation here, since korean already 
-			//	uses spaces, and I don't have the punctuation glyphs defined, only the basic 2350 hanguls
-			//
-			if ( pbIsTrailingPunctuation)
-			{
-				*pbIsTrailingPunctuation = qfalse;
-			}
-
-			return uiLetter;
-		}
-	}
-	else
-	if ( Language_IsTaiwanese() )
-	{
-		if ( Taiwanese_ValidBig5Code( (psString[0] * 256) + psString[1] ))
-		{
-			uiLetter = (psString[0] * 256) + psString[1];
-			*psText += 2;
-
-			// need to ask if this is a trailing (ie like a comma or full-stop) punctuation?...
-			//
-			if ( pbIsTrailingPunctuation)
-			{
-				*pbIsTrailingPunctuation = Taiwanese_IsTrailingPunctuation( uiLetter );
-			}
-
-			return uiLetter;
-		}
-	}
-	else
-	if ( Language_IsJapanese() )
-	{
-		if ( Japanese_ValidShiftJISCode( psString[0], psString[1] ))
-		{
-			uiLetter = (psString[0] * 256) + psString[1];
-			*psText += 2;
-
-			// need to ask if this is a trailing (ie like a comma or full-stop) punctuation?...
-			//
-			if ( pbIsTrailingPunctuation)
-			{
-				*pbIsTrailingPunctuation = Japanese_IsTrailingPunctuation( uiLetter );
-			}
-
-			return uiLetter;
-		}
-	}
-
-	// ... must not have been an MBCS code...
-	//
-	uiLetter = psString[0];
-	*psText += 1;	// NOT ++
-
-	if (pbIsTrailingPunctuation)
-	{
-		*pbIsTrailingPunctuation = (uiLetter == '!' || 
-									uiLetter == '?' || 
-									uiLetter == ',' || 
-									uiLetter == '.' || 
-									uiLetter == ';' || 
-									uiLetter == ':'
-									);
-	}
-
-	return uiLetter;
+	int advance = 0;
+	return AnyLanguage_ReadCharFromString (*psText, &advance, pbIsTrailingPunctuation);
 }
 #endif
 

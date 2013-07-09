@@ -1617,6 +1617,12 @@ extern void G2Time_ReportTimers(void);
 #endif
 extern IGhoul2InfoArray &TheGhoul2InfoArray();
 
+#ifndef __NO_JK2
+unsigned int AnyLanguage_ReadCharFromString_JK2 ( char **text, qboolean *pbIsTrailingPunctuation ) {
+	return AnyLanguage_ReadCharFromString (text, pbIsTrailingPunctuation);
+}
+#endif
+
 extern "C" {
 
 Q_EXPORT refexport_t * QDECL GetRefAPI ( int apiVersion, refimport_t *refimp ) {
@@ -1704,7 +1710,9 @@ Q_EXPORT refexport_t * QDECL GetRefAPI ( int apiVersion, refimport_t *refimp ) {
 	re.Language_IsAsian = Language_IsAsian;
 	re.Language_UsesSpaces = Language_UsesSpaces;
 	re.AnyLanguage_ReadCharFromString = AnyLanguage_ReadCharFromString;
-	re.AnyLanguage_ReadCharFromString2 = AnyLanguage_ReadCharFromString;
+#ifndef __NO_JK2
+	re.AnyLanguage_ReadCharFromString2 = AnyLanguage_ReadCharFromString_JK2;
+#endif
 
 	re.R_Resample = R_Resample;
 	re.R_LoadDataImage = R_LoadDataImage;
