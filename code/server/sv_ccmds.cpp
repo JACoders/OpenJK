@@ -117,7 +117,9 @@ static bool SV_Map_( ForceReload_e eForceReload )
 void SV_Player_EndOfLevelSave(void)						   
 {
 	int	i;	
+#ifndef __NO_JK2
 	qboolean usesJK2 = (qboolean)(com_jk2 && com_jk2->integer);
+#endif
 
 	// I could just call GetClientState() but that's in sv_bot.cpp, and I'm not sure if that's going to be deleted for
 	//	the single player build, so here's the guts again...
@@ -136,6 +138,7 @@ void SV_Player_EndOfLevelSave(void)
 		playerState_t*		pState = cl->gentity->client;
 		const char	*s2;
 		const char *s;
+#ifndef __NO_JK2
 		if(usesJK2)
 		{
 			s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %i",
@@ -158,6 +161,7 @@ void SV_Player_EndOfLevelSave(void)
 							);
 		}
 		else
+#endif
 		{
 					//				|general info				  |-force powers |-saber 1		|-saber 2										  |-general saber
 					s = va("%i %i %i %i %i %i %i %f %f %f %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",

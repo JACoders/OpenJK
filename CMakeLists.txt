@@ -8,6 +8,8 @@ project("OpenJK")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 #    Customizable options
+option(BuildJK2Support "Build JK2 support" OFF)
+
 option(BuildMPEngine "Whether to create projects for the MP client (openjk.exe)" ON)
 option(BuildMPDed "Whether to create projects for the MP dedicated server (openjkded.exe)" ON)
 option(BuildMPGame "Whether to create projects for the MP server-side gamecode (jampgamex86.dll)" ON)
@@ -115,6 +117,11 @@ else(WIN32)
 		message("No build type selected, default to RELEASE")
 		set(CMAKE_BUILD_TYPE "RELEASE")
 	endif()
+endif()
+
+# Settings
+if(NOT BuildJK2Support)
+	set(SharedDefines ${SharedDefines} "__NO_JK2")
 endif()
 
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")

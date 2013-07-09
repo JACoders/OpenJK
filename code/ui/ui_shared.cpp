@@ -6200,6 +6200,24 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 	return qtrue;
 }
 
+bool HasStringLanguageChanged ( const itemDef_t *item )
+{
+	if ( !item->text || item->text[0] == '\0' )
+	{
+		return false;
+	}
+
+	int modificationCount = se_language->modificationCount;
+#ifndef __NO_JK2
+	if ( com_jk2 && com_jk2->integer )
+	{
+		modificationCount = sp_language->modificationCount;
+	}
+#endif
+
+	return item->asset != modificationCount;
+}
+
 /*
 =================
 Item_SetTextExtents
@@ -6218,15 +6236,9 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 	*height = item->textRect.h;
 
 	// keeps us from computing the widths and heights more than once
-	if (*width == 0 || (item->type == ITEM_TYPE_OWNERDRAW && item->textalignment == ITEM_ALIGN_CENTER)
-#ifndef __NO_JK2
-		|| (item->text && item->text[0]=='@' && 
-		((com_jk2 && !com_jk2->integer && item->asset != se_language->modificationCount) ||
-		((com_jk2 && com_jk2->integer && item->asset != sp_language->modificationCount)))	//string package language changed
-#else
-		|| (item->text && item->text[0]=='@' && item->asset != se_language->modificationCount )	//string package language changed
-#endif
-		))
+	if (*width == 0 ||
+		(item->type == ITEM_TYPE_OWNERDRAW && item->textalignment == ITEM_ALIGN_CENTER) ||
+		HasStringLanguageChanged (item))
 	{
 		int originalWidth;
 

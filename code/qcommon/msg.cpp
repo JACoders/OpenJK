@@ -990,8 +990,8 @@ static const netField_t	playerStateFields[] =
 { PSF(damageYaw), 8 },
 { PSF(damagePitch), -8 },
 { PSF(damageCount), 8 },
-{ PSF(saberColor), 8 },
 #ifndef __NO_JK2
+{ PSF(saberColor), 8 },
 { PSF(saberActive), 8 },
 { PSF(saberLength), 32 },
 { PSF(saberLengthMax), 32 },
