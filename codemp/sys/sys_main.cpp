@@ -237,6 +237,122 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 	return dllhandle;
 }
 
+#ifdef MACOS_X
+void *Sys_LoadMachOBundle( const char *name )
+{
+    void    *libHandle = NULL;
+    int     len;
+    void    *data;
+    fileHandle_t    f;
+    char    *fn;
+    unzFile dll;
+    byte* buf;
+    char    dllName[MAX_QPATH];
+    char    *tempName;
+    unz_s   *zfi;
+    
+    //read zipped bundle from pk3
+    len = FS_ReadFile(name, &data);
+    
+    if (len < 1) {
+        return NULL;
+    }
+        
+    //write temporary file of zipped bundle to e.g. uixxxxxx
+    //unique filename to avoid any clashes
+    Com_sprintf( dllName, sizeof(dllName), "%sXXXXXX", name );
+    
+    tempName = mktemp( dllName );
+
+    f = FS_FOpenFileWrite( dllName );
+    
+    if ( !f )
+    {
+        FS_FreeFile(data);
+            return NULL;
+    }
+        
+    if (FS_Write( data, len, f ) < len)
+    {
+        FS_FreeFile(data);
+        return NULL;
+    }
+        
+    FS_FCloseFile( f );
+    FS_FreeFile(data);
+    
+    
+    //unzOpen zipped bundle, find the dylib, and try to write it
+    fn = FS_BuildOSPath( fs_homepath->string, fs_gamedir, dllName );
+
+    dll = unzOpen( fn );
+    
+    Com_sprintf (dllName, sizeof(dllName), "%s.bundle/Contents/MacOS/%s", name, name);
+
+    if (unzLocateFile(dll, dllName, NULL) != UNZ_OK)
+    {
+        unzClose(dll);
+        remove( fn );
+        return NULL;
+    }
+    
+    unzOpenCurrentFile( dll );
+        
+    Com_sprintf( dllName, sizeof(dllName), "%s_pk3.dylib", name );
+        
+    f = FS_FOpenFileWrite( dllName );
+    
+    if ( !f )
+    {
+        unzCloseCurrentFile( dll );
+        unzClose( dll );
+        remove( fn );
+        return NULL;
+    }
+    
+    zfi = (unz_s *)dll;
+    
+    len = zfi->cur_file_info.uncompressed_size;
+    
+    buf = (byte*)Z_Malloc( len+1, TAG_FILESYS, qfalse);
+    
+    if (unzReadCurrentFile( dll, buf, len ) < len)
+    {
+        FS_FCloseFile( f );
+        unzCloseCurrentFile( dll );
+        unzClose( dll );
+        return NULL;
+    }
+        
+    if (FS_Write(buf, len, f) < len)
+    {
+        FS_FCloseFile( f );
+        unzCloseCurrentFile( dll );
+        unzClose( dll );
+        return NULL;
+    }
+    
+    FS_FCloseFile( f );
+    unzCloseCurrentFile( dll );
+    unzClose( dll );
+    Z_Free( buf );
+    
+    //remove temporary zipped bundle
+    remove( fn );
+    
+    //load the unzipped library
+    fn = FS_BuildOSPath( fs_homepath->string, fs_gamedir, dllName );
+    
+    libHandle = Sys_LoadLibrary( fn );
+    
+    if (libHandle != NULL){
+        Com_Printf("Loaded pk3 bundle %s.\n", name);
+    }
+    
+    return libHandle;
+}
+#endif
+
 /*
  =================
  Sys_LoadGameDll
@@ -255,6 +371,9 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 	char	*homepath;
 	char	*cdpath;
 	char	*gamedir;
+#ifdef MACOS_X
+    char    *apppath;
+#endif
 	char	*fn;
 	char	filename[MAX_OSPATH];
 
@@ -262,6 +381,12 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 
 #if 0
 	libHandle = Sys_LoadLibrary( filename );
+#endif
+    
+#ifdef MACOS_X
+    //First, look for the old-style mac .bundle that's inside a pk3
+    //It's actually zipped, and the zipfile has the same name as 'name'
+    libHandle = Sys_LoadMachOBundle( name );
 #endif
 
 	if (!libHandle) {
@@ -271,6 +396,9 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 		homepath = Cvar_VariableString( "fs_homepath" );
 		cdpath = Cvar_VariableString( "fs_cdpath" );
 		gamedir = Cvar_VariableString( "fs_game" );
+#ifdef MACOS_X
+        apppath = Cvar_VariableString( "fs_apppath" );
+#endif
 
 		fn = FS_BuildOSPath( basepath, gamedir, filename );
 		libHandle = Sys_LoadLibrary( fn );
@@ -284,34 +412,56 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 			}
 			if ( !libHandle ) {
 				Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-				if( cdpath[0] ) {
-					fn = FS_BuildOSPath( cdpath, gamedir, filename );
+#ifdef MACOS_X
+                if( apppath[0] ) {
+					fn = FS_BuildOSPath( apppath, gamedir, filename );
 					libHandle = Sys_LoadLibrary( fn );
 				}
-				if ( !libHandle ) {
-					Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-					// now we try base
-					fn = FS_BuildOSPath( basepath, BASEGAME, filename );
-					libHandle = Sys_LoadLibrary( fn );
-					if ( !libHandle ) {
-						if( homepath[0] ) {
-							Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-							fn = FS_BuildOSPath( homepath, BASEGAME, filename );
-							libHandle = Sys_LoadLibrary( fn );
-						}
-						if ( !libHandle ) {
-							Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-							if( cdpath[0] ) {
-								fn = FS_BuildOSPath( cdpath, BASEGAME, filename );
-								libHandle = Sys_LoadLibrary( fn );
-							}
-							if ( !libHandle ) {
-								Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
-								return NULL;
-							}
-						}
-					}
-				}
+                if ( !libHandle ) {
+                    Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#endif
+                    if( cdpath[0] ) {
+                        fn = FS_BuildOSPath( cdpath, gamedir, filename );
+                        libHandle = Sys_LoadLibrary( fn );
+                    }
+                    if ( !libHandle ) {
+                        Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+                        // now we try base
+                        fn = FS_BuildOSPath( basepath, BASEGAME, filename );
+                        libHandle = Sys_LoadLibrary( fn );
+                        if ( !libHandle ) {
+                            if( homepath[0] ) {
+                                Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+                                fn = FS_BuildOSPath( homepath, BASEGAME, filename );
+                                libHandle = Sys_LoadLibrary( fn );
+                            }
+                            if ( !libHandle ) {
+                                Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#ifdef MACOS_X
+                                if( apppath[0] ) {
+                                    fn = FS_BuildOSPath( apppath, BASEGAME, filename);
+                                    libHandle = Sys_LoadLibrary( fn );
+                                }
+                                if ( !libHandle ) {
+                                    Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#endif
+                                    if( cdpath[0] ) {
+                                        fn = FS_BuildOSPath( cdpath, BASEGAME, filename );
+                                        libHandle = Sys_LoadLibrary( fn );
+                                    }
+                                    if ( !libHandle ) {
+                                        Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+                                        return NULL;
+                                    }
+#ifdef MACOS_X
+                                }
+#endif
+                            }
+                        }
+                    }
+#ifdef MACOS_X
+                }
+#endif
 			}
 		}
 	}
