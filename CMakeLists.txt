@@ -28,9 +28,9 @@ if(WIN32)
 endif(WIN32)
 
 if(WIN32)
-	set(UseInternalPNG ON CACHE BOOL "Whether to use the included libpng instead of a locally installed one")
+	option(UseInternalPNG "Whether to use the included libpng instead of a locally installed one" ON)
 else(WIN32)
-	set(UseInternalPNG OFF CACHE BOOL "Whether to use the included libpng instead of a locally installed one")
+	option(UseInternalPNG "Whether to use the included libpng instead of a locally installed one" OFF)
 endif(WIN32)
 
 option(PackageDir "Where to place the installer/package." "${CMAKE_SOURCE_DIR}/package")
