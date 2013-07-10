@@ -1088,13 +1088,13 @@ const char *String_GetStringValue( const char *reference )
 #ifdef __NO_JK2
 	return SE_GetString(reference);
 #else
-	if( Cvar_VariableIntegerValue("com_jk2") )
+	if( com_jk2 && com_jk2->integer )
 	{
 		return const_cast<const char *>(JK2SP_GetString( reference )->GetText());
 	}
 	else
 	{
-		return const_cast<const char *>(SE_GetString((LPCSTR)reference));
+		return const_cast<const char *>(SE_GetString(reference));
 	}
 #endif
 }

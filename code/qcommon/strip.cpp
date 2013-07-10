@@ -286,14 +286,14 @@ int FindToken(char *token, bool whole)
 	{
 		if (whole)
 		{
-			if (strcmpi(token, Tokens[token_value]) == 0)
+			if (Q_stricmp(token, Tokens[token_value]) == 0)
 			{
 				return token_value;
 			}
 		}
 		else
 		{
-			if (_strnicmp(token, Tokens[token_value], strlen(Tokens[token_value])) == 0)
+			if (Q_stricmpn(token, Tokens[token_value], strlen(Tokens[token_value])) == 0)
 			{
 				i = strlen(Tokens[token_value]);
 				while(token[i] == ' ')

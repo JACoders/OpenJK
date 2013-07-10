@@ -7,6 +7,10 @@
 #define	BOX_MODEL_HANDLE		(MAX_SUBMODELS-1)
 #define CAPSULE_MODEL_HANDLE	(MAX_SUBMODELS-2)
 
+struct Point
+{
+	long x, y;
+};
 
 typedef struct {
 	cplane_t	*plane;

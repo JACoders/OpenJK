@@ -501,7 +501,7 @@ static void SV_UserMove( client_t *cl, msg_t *msg ) {
 			if ( eSavedGameJustLoaded == eNO )
 			{
 				SG_WriteSavegame("auto",qtrue);
-				if ( strnicmp(sv_mapname->string, "academy", 7) != 0)
+				if ( Q_stricmpn(sv_mapname->string, "academy", 7) != 0)
 				{
 					Com_sprintf (savename, sizeof(savename), "auto_%s",sv_mapname->string);
 					SG_WriteSavegame(savename,qtrue);//can't use va becuase it's nested

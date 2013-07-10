@@ -149,7 +149,7 @@ CRMObjective* CRMMission::FindObjective ( const char* name )
 	for (it = mObjectives.begin(); it != mObjectives.end(); it++)
 	{
 		// Does it match?
-		if (!stricmp ((*it)->GetName(), name ))
+		if (!Q_stricmp ((*it)->GetName(), name ))
 		{
 			return (*it);
 		}
@@ -762,8 +762,8 @@ bool CRMMission::ParseInstancesOnPath ( CGPGroup* group )
 	for ( defenseGroup = group->GetSubGroups(); 
 		  defenseGroup; 
 		  defenseGroup=defenseGroup->GetNext() )
-	if (stricmp ( defenseGroup->GetName ( ), "defenses" )==0 ||
-		stricmp ( defenseGroup->GetName(), "instanceonpath")==0)
+	if (Q_stricmp ( defenseGroup->GetName ( ), "defenses" )==0 ||
+		Q_stricmp ( defenseGroup->GetName(), "instanceonpath")==0)
 	{
 		const char* defName = defenseGroup->FindPairValue ( "instance", "" );
 		if ( *defName )
@@ -1224,7 +1224,7 @@ CGPGroup* CRMMission::ParseRandom ( CGPGroup* randomGroup )
 		  group; 
 		  group = group->GetNext ( ) )
 	{
-		if ( stricmp ( group->GetName ( ), "random_choice" ) )
+		if ( Q_stricmp ( group->GetName ( ), "random_choice" ) )
 		{
 			continue;
 		}
@@ -1405,7 +1405,7 @@ bool CRMMission::Load ( const char* mission, const char* instances, const char* 
 	// Grab the root parser groop and make sure its mission, otherwise this
 	// isnt a valid mission file
 	root = parser.GetBaseParseGroup()->GetSubGroups();
-	if(stricmp(root->GetName(), "mission"))
+	if(Q_stricmp(root->GetName(), "mission"))
 	{
 		Com_Printf("ERROR: '%s' is not a valid mission file\n", mission );
 		parser.Clean();

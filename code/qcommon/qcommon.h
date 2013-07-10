@@ -25,10 +25,6 @@ This file is part of Jedi Academy.
 #include "../../codeJK2/qcommon/strippublic.h"
 #include "../qcommon/cm_public.h"
 
-#ifdef _WIN32
-	#include <windows.h>
-#endif
-
 
 // some zone mem debugging stuff
 #ifndef FINAL_BUILD
@@ -819,8 +815,8 @@ void	Sys_BeginProfiling( void );
 void	Sys_EndProfiling( void );
 
 qboolean Sys_LowPhysicalMemory();
-qboolean Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataFileName /* src */ );
-qboolean Sys_CopyFile(LPCSTR lpExistingFileName, LPCSTR lpNewFileName, qboolean bOverwrite);
+qboolean Sys_FileOutOfDate( const char *psFinalFileName /* dest */, const char *psDataFileName /* src */ );
+qboolean Sys_CopyFile(const char *lpExistingFileName, const char *lpNewFileName, qboolean bOverwrite);
 
 
 byte*	SCR_GetScreenshot(qboolean *qValid);

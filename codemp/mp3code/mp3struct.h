@@ -11,9 +11,7 @@
 #endif
 
 #include "small_header.h"	// for SAMPLE and IN_OUT
-#ifndef _WIN32
-#include "qcommon/platform.h"
-#endif
+#include "qcommon/q_shared.h"
 
 typedef void (*SBT_FUNCTION) (float *sample, short *pcm, int n);
 typedef void (*XFORM_FUNCTION) (void *pcm, int igr);

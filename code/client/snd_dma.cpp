@@ -358,8 +358,8 @@ static void DynamicMusicInfoPrint(void)
 	{
 		// horribly lazy... ;-)
 		//
-		LPCSTR psRequestMusicState	= Music_BaseStateToString( eMusic_StateRequest );
-		LPCSTR psActualMusicState	= Music_BaseStateToString( eMusic_StateActual, qtrue );
+		const char *psRequestMusicState	= Music_BaseStateToString( eMusic_StateRequest );
+		const char *psActualMusicState	= Music_BaseStateToString( eMusic_StateActual, qtrue );
 		if (psRequestMusicState == NULL)
 		{
 			psRequestMusicState = "<unknown>";
@@ -3806,28 +3806,28 @@ void S_SoundList_f( void ) {
 
 	if ( Cmd_Argc() == 2 ) 
 	{
-		if (!stricmp(Cmd_Argv(1), "shouldbeMP3"))
+		if (!Q_stricmp(Cmd_Argv(1), "shouldbeMP3"))
 		{
 			bShouldBeMP3 = qtrue;
 		}
 		else
-		if (!stricmp(Cmd_Argv(1), "wavonly"))
+		if (!Q_stricmp(Cmd_Argv(1), "wavonly"))
 		{
 			bWavOnly = qtrue;
 		}
 		else
 		{
-			if (!stricmp(Cmd_Argv(1), "1"))
+			if (!Q_stricmp(Cmd_Argv(1), "1"))
 			{
 				iVariantCap = 1;
 			}
 			else
-			if (!stricmp(Cmd_Argv(1), "2"))
+			if (!Q_stricmp(Cmd_Argv(1), "2"))
 			{
 				iVariantCap = 2;
 			}
 			else
-			if (!stricmp(Cmd_Argv(1), "3"))
+			if (!Q_stricmp(Cmd_Argv(1), "3"))
 			{
 				iVariantCap = 3;
 			}
@@ -3878,7 +3878,7 @@ void S_SoundList_f( void ) {
 						sfx_t *sfx2;
 						for (sfx2 = s_knownSfx, i2=0 ; i2<s_numSfx ; i2++, sfx2++) 
 						{
-							if (!stricmp(sFindName,sfx2->sSoundName))
+							if (!Q_stricmp(sFindName,sfx2->sSoundName))
 							{
 								bDumpThisOne = qfalse;	// found a %1-variant of this, so use variant capping and ignore this sfx_t
 								break;
@@ -4308,7 +4308,7 @@ static void S_SwitchDynamicTracks( MusicState_e eOldState, MusicState_e eNewStat
 
 	if (s_debugdynamic->integer)
 	{
-		LPCSTR	psNewStateString = Music_BaseStateToString( eNewState, qtrue );
+		const char *psNewStateString = Music_BaseStateToString( eNewState, qtrue );
 				psNewStateString = psNewStateString?psNewStateString:"<unknown>";
 
 		Com_Printf( S_COLOR_MAGENTA "S_SwitchDynamicTracks( \"%s\" )\n", psNewStateString );
@@ -4328,7 +4328,7 @@ static void S_SetDynamicMusicState( MusicState_e eNewState )
 
 		if (s_debugdynamic->integer)
 		{
-			LPCSTR	psNewStateString = Music_BaseStateToString( eNewState, qtrue );
+			const char *psNewStateString = Music_BaseStateToString( eNewState, qtrue );
 					psNewStateString = psNewStateString?psNewStateString:"<unknown>";
 
 			Com_Printf( S_COLOR_MAGENTA "S_SetDynamicMusicState( Request: \"%s\" )\n", psNewStateString );
@@ -4544,7 +4544,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCall
 	//
 	if (!s_allowDynamicMusic->integer && Music_DynamicDataAvailable(intro))	// "intro", NOT "sName" (i.e. don't use version with ".mp3" extension)
 	{
-		LPCSTR psMusicName = Music_GetFileNameForState( eBGRNDTRACK_DATABEGIN );
+		const char *psMusicName = Music_GetFileNameForState( eBGRNDTRACK_DATABEGIN );
 		if (psMusicName && S_FileExists( psMusicName ))
 		{
 			Q_strncpyz(sNameIntro,psMusicName,sizeof(sNameIntro));
@@ -4556,7 +4556,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCall
 	//
 	if ( (strstr(sNameIntro,"/") && S_FileExists( sNameIntro )) )	// strstr() check avoids extra file-exists check at runtime if reverting from streamed music to dynamic since literal files all need at least one slash in their name (eg "music/blah")
 	{
-		LPCSTR psLoopName = S_FileExists( sNameLoop ) ? sNameLoop : sNameIntro;
+		const char *psLoopName = S_FileExists( sNameLoop ) ? sNameLoop : sNameIntro;
 		Com_DPrintf("S_StartBackgroundTrack: Found/using non-dynamic music track '%s' (loop: '%s')\n", sNameIntro, psLoopName);
 		S_StartBackgroundTrack_Actual( &tMusic_Info[eBGRNDTRACK_NONDYNAMIC], bMusic_IsDynamic, sNameIntro, psLoopName );
 	}
@@ -4569,7 +4569,7 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCall
 			for (int i = eBGRNDTRACK_DATABEGIN; i != eBGRNDTRACK_DATAEND; i++)
 			{
 				qboolean bOk = qfalse;
-				LPCSTR psMusicName = Music_GetFileNameForState( (MusicState_e) i);
+				const char *psMusicName = Music_GetFileNameForState( (MusicState_e) i);
 				if (psMusicName && (!Q_stricmp(tMusic_Info[i].sLoadedDataName, psMusicName) || S_FileExists( psMusicName )) )
 				{
 					bOk = S_StartBackgroundTrack_Actual( &tMusic_Info[i], qtrue, psMusicName, loop );
@@ -4826,12 +4826,12 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 
 // used to be just for dynamic, but now even non-dynamic music has to know whether it should be silent or not...
 //
-static LPCSTR S_Music_GetRequestedState(void)
+static const char *S_Music_GetRequestedState(void)
 {
 	int iStringOffset = cl.gameState.stringOffsets[CS_DYNAMIC_MUSIC_STATE];
 	if (iStringOffset)
 	{
-		LPCSTR psCommand = cl.gameState.stringData+iStringOffset; 
+		const char *psCommand = cl.gameState.stringData+iStringOffset; 
 
 		return psCommand;
 	}
@@ -4847,7 +4847,7 @@ static LPCSTR S_Music_GetRequestedState(void)
 //
 static void S_CheckDynamicMusicState(void)
 {
-	LPCSTR psCommand = S_Music_GetRequestedState();
+	const char *psCommand = S_Music_GetRequestedState();
 
 	if (psCommand)
 	{
@@ -5007,8 +5007,8 @@ static void S_UpdateBackgroundTrack( void )
 	{
 		// standard / non-dynamic one-track music...
 		//
-		LPCSTR psCommand = S_Music_GetRequestedState();	// special check just for "silence" case...
-		qboolean bShouldBeSilent = (psCommand && !stricmp(psCommand,"silence"));
+		const char *psCommand = S_Music_GetRequestedState();	// special check just for "silence" case...
+		qboolean bShouldBeSilent = (psCommand && !Q_stricmp(psCommand,"silence"));
 		float fDesiredVolume = bShouldBeSilent ? 0.0f : s_musicVolume->value;
 		//
 		// internal to this code is a volume-smoother...

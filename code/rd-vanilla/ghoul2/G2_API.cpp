@@ -1595,7 +1595,7 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 				{
 					for ( int j = 0; j < 4; j++ )
 					{
-						assert( !_isnan(matrix->matrix[i][j]));
+						assert( !Q_isnan(matrix->matrix[i][j]));
 					}
 				}
 #endif// _DEBUG

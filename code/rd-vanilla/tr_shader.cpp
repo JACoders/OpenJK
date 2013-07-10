@@ -2320,7 +2320,7 @@ static void ParseMaterial( const char **text )
 	}
 	for(i = 0; i < MATERIAL_LAST; i++)
 	{
-		if ( !stricmp( token, materialNames[i] ) ) 
+		if ( !Q_stricmp( token, materialNames[i] ) ) 
 		{
 			shader.surfaceFlags &= ~MATERIAL_MASK;//safety, clear it first
 			shader.surfaceFlags |= i;
@@ -2441,7 +2441,7 @@ static qboolean ParseShader( const char  **text )
 		}
 		// material deprecated as of 11 Jan 01
 		// material undeprecated as of 7 May 01 - q3map_material deprecated
-		else if ( !stricmp( token, "material" ) || !stricmp( token, "q3map_material" ) )
+		else if ( !Q_stricmp( token, "material" ) || !Q_stricmp( token, "q3map_material" ) )
 		{
 			ParseMaterial( text );
 		}

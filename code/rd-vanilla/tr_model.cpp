@@ -771,9 +771,9 @@ qhandle_t RE_RegisterModel( const char *name )
 
 		qhandle_t q = RE_RegisterModel_Actual( name );
 
-if (stricmp(&name[strlen(name)-4],".gla")){
-	gbInsideRegisterModel = qfalse;		// GLA files recursively call this, so don't turn off half way. A reference count would be nice, but if any ERR_DROP ever occurs within the load then the refcount will be knackered from then on
-}
+	if (Q_stricmp(&name[strlen(name)-4],".gla")){
+		gbInsideRegisterModel = qfalse;		// GLA files recursively call this, so don't turn off half way. A reference count would be nice, but if any ERR_DROP ever occurs within the load then the refcount will be knackered from then on
+	}
 
 	return q;
 }

@@ -11,8 +11,6 @@
 #include "client/client.h"
 #include "files.h"
 
-#include "platform.h"
-
 /*
 =============================================================================
 

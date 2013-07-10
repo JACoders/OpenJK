@@ -129,7 +129,7 @@ bool CRMManager::LoadMission ( qboolean IsServer )
 
 	// Grab the arioche variables
 	Cvar_VariableStringBuffer("rmg_usetimelimit", temp, MAX_QPATH);
-	if (strcmpi(temp, "yes") == 0)
+	if (Q_stricmp(temp, "yes") == 0)
 	{
 		mUseTimeLimit = true;
 	}

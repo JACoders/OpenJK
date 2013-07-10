@@ -73,6 +73,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <float.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -1548,6 +1549,7 @@ void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs );
 void VectorRotate( vec3_t in, vec3_t matrix[3], vec3_t out );
 int Q_log2(int val);
 
+qboolean Q_isnan(float f);
 float Q_acos(float c);
 float Q_asin(float c);
 

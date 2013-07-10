@@ -27,11 +27,6 @@ This file is part of Jedi Academy.
 #include "../renderer/tr_public.h"
 extern refexport_t re;
 
-
-#ifndef FINAL_BUILD
-#include "platform.h"
-#endif
-
 #define	MAXPRINTMSG	4096
 
 #define MAX_NUM_ARGVS	50

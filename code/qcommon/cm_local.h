@@ -26,6 +26,11 @@ This file is part of Jedi Academy.
 
 #define	BOX_MODEL_HANDLE	(MAX_SUBMODELS-1)
 
+struct Point
+{
+	long x, y;
+};
+
 #ifdef _XBOX
 #pragma pack(push, 1)
 typedef struct {

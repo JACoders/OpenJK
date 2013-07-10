@@ -157,7 +157,6 @@ if(BuildSPEngine)
 		"${SPDir}/qcommon/tags.h"
 		"${SPDir}/qcommon/z_memman_pc.cpp"
 		"${SPDir}/qcommon/chash.h"
-		"${SPDir}/qcommon/platform.h"
 		"${SPDir}/qcommon/qfiles.h"
 		"${SPDir}/qcommon/files.h"
 		"${SPDir}/qcommon/qcommon.h"

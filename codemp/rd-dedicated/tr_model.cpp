@@ -354,7 +354,7 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 			//
 			if (bDeleteThis)
 			{
-				LPCSTR psModelName = (*itModel).first.c_str();
+				const char *psModelName = (*itModel).first.c_str();
 				ri.Printf( PRINT_DEVELOPER, S_COLOR_RED "Dumping \"%s\"", psModelName);
 
 	#ifdef _DEBUG
@@ -408,7 +408,7 @@ static void RE_RegisterModels_DumpNonPure(void)
 	{			
 		bEraseOccured = qfalse;
 
-		LPCSTR						psModelName	 = (*itModel).first.c_str();
+		const char *psModelName	 = (*itModel).first.c_str();
 		CachedEndianedModelBinary_t &CachedModel = (*itModel).second;
 
 		int iCheckSum = -1;

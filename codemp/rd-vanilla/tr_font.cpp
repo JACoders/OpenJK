@@ -54,7 +54,7 @@ Language_e GetLanguageEnum()
 
 struct SBCSOverrideLanguages_t
 {
-	LPCSTR		m_psName;
+	const char *m_psName;
 	Language_e	m_eLanguage;
 };
 
@@ -292,7 +292,7 @@ static int Korean_CollapseKSC5601HangulCode(unsigned int uiCode)
 	return 0;
 }
 
-static int Korean_InitFields(int &iGlyphTPs, LPCSTR &psLang)
+static int Korean_InitFields(int &iGlyphTPs, const char *&psLang)
 {
 	psLang		= "kor";
 	iGlyphTPs	= GLYPH_MAX_KOREAN_SHADERS;
@@ -374,7 +374,7 @@ static int Taiwanese_CollapseBig5Code( unsigned int uiCode )
 	return 0;
 }
 
-static int Taiwanese_InitFields(int &iGlyphTPs, LPCSTR &psLang)
+static int Taiwanese_InitFields(int &iGlyphTPs, const char *&psLang)
 {
 	psLang		= "tai";
 	iGlyphTPs	= GLYPH_MAX_TAIWANESE_SHADERS;
@@ -469,7 +469,7 @@ static int Japanese_CollapseShiftJISCode( unsigned int uiCode )
 }
 
 
-static int Japanese_InitFields(int &iGlyphTPs, LPCSTR &psLang)
+static int Japanese_InitFields(int &iGlyphTPs, const char *&psLang)
 {
 	psLang		= "jap";
 	iGlyphTPs	= GLYPH_MAX_JAPANESE_SHADERS;
@@ -536,7 +536,7 @@ static int Chinese_CollapseGBCode( unsigned int uiCode )
 	return 0;
 }
 
-static int Chinese_InitFields(int &iGlyphTPs, LPCSTR &psLang)
+static int Chinese_InitFields(int &iGlyphTPs, const char *&psLang)
 {
 	psLang		= "chi";
 	iGlyphTPs	= GLYPH_MAX_CHINESE_SHADERS;
@@ -639,7 +639,7 @@ static int Thai_CollapseTISCode( unsigned int uiCode )
 	return 0;
 }
 
-static int Thai_InitFields(int &iGlyphTPs, LPCSTR &psLang)
+static int Thai_InitFields(int &iGlyphTPs, const char *&psLang)
 {
 	psLang		= "tha";
 	iGlyphTPs	= GLYPH_MAX_THAI_SHADERS;
@@ -993,7 +993,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 
 						if (!m_pThaiData)
 						{
-							LPCSTR psFailureReason = g_ThaiCodes.Init();
+							const char *psFailureReason = g_ThaiCodes.Init();
 							if (!psFailureReason[0])
 							{
 								m_pThaiData = &g_ThaiCodes;
@@ -1256,7 +1256,7 @@ const int CFontInfo::GetLetterHorizAdvance(unsigned int uiLetter)
 
 // ensure any GetFont calls that need SBCS overriding (such as when playing in Russian) have the appropriate stuff done...
 //
-static CFontInfo *GetFont_SBCSOverride(CFontInfo *pFont, Language_e eLanguageSBCS, LPCSTR psLanguageNameSBCS )
+static CFontInfo *GetFont_SBCSOverride(CFontInfo *pFont, Language_e eLanguageSBCS, const char *psLanguageNameSBCS )
 {
 	if ( !pFont->m_bIsFakeAlienLanguage )
 	{

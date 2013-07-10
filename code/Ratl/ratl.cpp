@@ -112,7 +112,7 @@ void	ratl_base::ProfilePrint(const char * format, ...)
 	//----------------------------------
 	if (OutputPrint!=0)
 	{
-		void (*OutputPrintFcn)(const char* text) = (void (__cdecl*)(const char*))OutputPrint;
+		void (*OutputPrintFcn)(const char* text) = (void (*)(const char*))OutputPrint;
 		OutputPrintFcn(buf);
 	}
 }

@@ -92,7 +92,7 @@ typedef struct {
 #ifdef __MP_CROSS_DLL
 	void				*unused3;	// CM_BoxTrace
 #endif
-	void				(*CM_DrawDebugSurface)				( void (__cdecl *drawPoly)( int color, int numPoints, float *points ) );
+	void				(*CM_DrawDebugSurface)				( void (*drawPoly)( int color, int numPoints, float *points ) );
 	bool				(*CM_CullWorldBox)					( const cplane_t *frustrum, const vec3pair_t bounds );
 	void				(*CM_TerrainPatchIterate)			( const class CCMLandScape *landscape, void (*IterateFunc)( CCMPatch *, void * ),
 															void *userdata );

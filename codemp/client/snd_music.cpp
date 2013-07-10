@@ -7,7 +7,6 @@
 
 #ifndef _WIN32
 #include <string>
-#include "qcommon/platform.h"
 #endif
 
 #include "qcommon/q_shared.h"
@@ -103,7 +102,7 @@ void Music_Free(void)
 
 // some sort of error in the music data...
 //
-static void Music_Parse_Error(LPCSTR psError)
+static void Music_Parse_Error(const char *psError)
 {
 #ifdef FINAL_BUILD
 	extern cvar_t *s_debugdynamic;
@@ -119,7 +118,7 @@ static void Music_Parse_Error(LPCSTR psError)
 
 // something to just mention if interested...
 //
-static void Music_Parse_Warning(LPCSTR psError)
+static void Music_Parse_Warning(const char *psError)
 {
 #ifdef FINAL_BUILD
 	extern cvar_t *s_debugdynamic;
@@ -136,7 +135,7 @@ static void Music_Parse_Warning(LPCSTR psError)
 // Unfortunately two of the places that calls this doesn't have much other access to the state other than
 //	a string, not an enum, so for those cases they only pass in BOSS or EXPLORE, so don't rely on it totally.
 //
-static LPCSTR Music_BuildFileName(LPCSTR psFileNameBase, MusicState_e eMusicState )
+static const char *Music_BuildFileName(const char *psFileNameBase, MusicState_e eMusicState )
 {
 	static sstring_t sFileName;
 
@@ -146,7 +145,7 @@ static LPCSTR Music_BuildFileName(LPCSTR psFileNameBase, MusicState_e eMusicStat
 		return "music/death_music.mp3";
 	}
 
-	LPCSTR psDirName = (eMusicState == eBGRNDTRACK_BOSS) ? gsLevelNameForBossLoad.c_str() : gsLevelNameForLoad.c_str();	
+	const char *psDirName = (eMusicState == eBGRNDTRACK_BOSS) ? gsLevelNameForBossLoad.c_str() : gsLevelNameForLoad.c_str();	
 
 	sFileName = va("music/%s/%s.mp3",psDirName,psFileNameBase);
 	return sFileName.c_str();
@@ -180,7 +179,7 @@ const char *Music_BaseStateToString( MusicState_e eMusicState, sboolean bDebugPr
 	return NULL;
 }
 
-static sboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData, CGPGroup *pgMusicFiles, LPCSTR psMusicName, LPCSTR psMusicNameKey, MusicState_e eMusicState)
+static sboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData, CGPGroup *pgMusicFiles, const char *psMusicName, const char *psMusicNameKey, MusicState_e eMusicState)
 {
 	sboolean bReturn = qfalse;
 
@@ -203,8 +202,8 @@ static sboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 			//
 			for (CGPValue *pValue = pEntryGroup->GetPairs(); pValue; pValue = pValue->GetNext())
 			{
-				LPCSTR psKey	= pValue->GetName();
-				LPCSTR psValue	= pValue->GetTopValue();
+				const char *psKey	= pValue->GetName();
+				const char *psValue	= pValue->GetTopValue();
 
 				//if (!strncmp(psKey,sKEY_MARKER,strlen(sKEY_MARKER)))	// for now, assume anything is a marker
 				{
@@ -216,7 +215,7 @@ static sboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 
 		for (CGPGroup *pGroup = pgMusicFile->GetSubGroups(); pGroup; pGroup = pGroup->GetNext())
 		{
-			LPCSTR psGroupName = pGroup->GetName();
+			const char *psGroupName = pGroup->GetName();
 
 			if (!strcmp(psGroupName,sKEY_ENTRY))
 			{
@@ -233,8 +232,8 @@ static sboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 				MusicExitPoint_t MusicExitPoint;
 				for (CGPValue *pValue = pGroup->GetPairs(); pValue; pValue = pValue->GetNext())
 				{
-					LPCSTR psKey	= pValue->GetName();
-					LPCSTR psValue	= pValue->GetTopValue();
+					const char *psKey	= pValue->GetName();
+					const char *psValue	= pValue->GetTopValue();
 
 					if (!strcmp(psKey,sKEY_NEXTFILE))
 					{
@@ -499,17 +498,17 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 						{
 							// these are optional fields, so see which ones we find...
 							//
-							LPCSTR psName_Explore = NULL;
-							LPCSTR psName_Action  = NULL;
-							LPCSTR psName_Boss	  = NULL;
-							//LPCSTR psName_Death	  = NULL;
+							const char *psName_Explore = NULL;
+							const char *psName_Action  = NULL;
+							const char *psName_Boss	  = NULL;
+							//const char *psName_Death	  = NULL;
 							//
-							LPCSTR psName_UseBoss = NULL;
+							const char *psName_UseBoss = NULL;
 
 							for (CGPValue *pValue = pgThisLevelMusic->GetPairs(); pValue; pValue = pValue->GetNext())
 							{
-								LPCSTR psKey	= pValue->GetName();
-								LPCSTR psValue	= pValue->GetTopValue();								
+								const char *psKey	= pValue->GetName();
+								const char *psValue	= pValue->GetTopValue();								
 
 								if (Q_stricmp(psValue,sKEY_PLACEHOLDER))	// ignore "placeholder" items
 								{
@@ -629,7 +628,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 		//
 		for (MusicData_t::iterator itMusicData = MusicData->begin(); itMusicData != MusicData->end(); ++itMusicData)
 		{
-			LPCSTR psMusicStateType	= (*itMusicData).first.c_str();
+			const char *psMusicStateType	= (*itMusicData).first.c_str();
 			MusicFile_t &MusicFile	= (*itMusicData).second;
 
 			// kludge up an enum, only interested in boss or not at the moment, so...
@@ -643,7 +642,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 
 			// check music exists...
 			//
-			LPCSTR psMusicFileName = Music_BuildFileName( MusicFile.sFileNameBase.c_str(), eMusicState );
+			const char *psMusicFileName = Music_BuildFileName( MusicFile.sFileNameBase.c_str(), eMusicState );
 			if (!S_FileExists( psMusicFileName ))
 			{
 				MUSIC_PARSE_ERROR(va("Music file \"%s\" not found!\n",psMusicFileName));
@@ -656,14 +655,14 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 			{
 				MusicExitPoint_t &MusicExitPoint = MusicFile.MusicExitPoints[ iExitPoint ];
 
-				LPCSTR psTransitionFileName = Music_BuildFileName( MusicExitPoint.sNextFile.c_str(), eMusicState );
+				const char *psTransitionFileName = Music_BuildFileName( MusicExitPoint.sNextFile.c_str(), eMusicState );
 				if (!S_FileExists( psTransitionFileName ))
 				{
 					MUSIC_PARSE_ERROR(va("Transition file \"%s\" (entry \"%s\" ) not found!\n",psTransitionFileName, MusicExitPoint.sNextFile.c_str()));
 					return qfalse;		// have to return, because music data destroyed now
 				}
 
-				LPCSTR psNextMark = MusicExitPoint.sNextMark.c_str();
+				const char *psNextMark = MusicExitPoint.sNextMark.c_str();
 				if (strlen(psNextMark))	// always NZ ptr
 				{
 					// then this must be "action" music under current rules...
@@ -701,7 +700,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 	{
 		for (MusicData_t::iterator itMusicData = MusicData->begin(); itMusicData != MusicData->end(); ++itMusicData)
 		{
-			LPCSTR psMusicState		= (*itMusicData).first.c_str();
+			const char *psMusicState		= (*itMusicData).first.c_str();
 			MusicFile_t &MusicFile	= (*itMusicData).second;
 
 			Com_OPrintf("Music State:  \"%s\",  File: \"%s\"\n",psMusicState, MusicFile.sFileNameBase.c_str());
@@ -710,7 +709,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 			//
 			for (MusicEntryTimes_t::iterator itEntryTimes = MusicFile.MusicEntryTimes.begin(); itEntryTimes != MusicFile.MusicEntryTimes.end(); ++itEntryTimes)
 			{
-				LPCSTR	psMarkerName	= (*itEntryTimes).first.c_str();
+				const char *psMarkerName	= (*itEntryTimes).first.c_str();
 				float	fEntryTime		= (*itEntryTimes).second;
 
 				Com_OPrintf("Entry time for \"%s\": %f\n", psMarkerName, fEntryTime);
@@ -744,7 +743,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 
 // returns ptr to music file, or NULL for error/missing...
 //
-static MusicFile_t *Music_GetBaseMusicFile( LPCSTR psMusicState )	// where psMusicState is (eg) "explore", "action" or "boss"
+static MusicFile_t *Music_GetBaseMusicFile( const char *psMusicState )	// where psMusicState is (eg) "explore", "action" or "boss"
 {
 	MusicData_t::iterator it = MusicData->find( psMusicState );
 	if (it != MusicData->end())
@@ -758,7 +757,7 @@ static MusicFile_t *Music_GetBaseMusicFile( LPCSTR psMusicState )	// where psMus
 
 static MusicFile_t *Music_GetBaseMusicFile( MusicState_e eMusicState )
 {
-	LPCSTR	psMusicStateString = Music_BaseStateToString( eMusicState );
+	const char *psMusicStateString = Music_BaseStateToString( eMusicState );
 	if ( psMusicStateString )
 	{
 		return Music_GetBaseMusicFile( psMusicStateString );
@@ -794,7 +793,7 @@ sboolean Music_DynamicDataAvailable(const char *psDynamicMusicLabel)
 	return qfalse;
 }
 
-LPCSTR Music_GetFileNameForState( MusicState_e eMusicState)
+const char *Music_GetFileNameForState( MusicState_e eMusicState)
 {
 	MusicFile_t *pMusicFile = NULL;
 	switch (eMusicState)

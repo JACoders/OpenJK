@@ -780,7 +780,7 @@ void AddSoundEvent( gentity_t *owner, vec3_t position, float radius, alertEventL
 	//			react to enemy alert events in some way?
 
 #ifdef _DEBUG
-	assert( !_isnan(position[0]) && !_isnan(position[1]) && !_isnan(position[2]) );
+	assert( !Q_isnan(position[0]) && !Q_isnan(position[1]) && !Q_isnan(position[2]) );
 #endif
 	VectorCopy( position, level.alertEvents[ level.numAlertEvents ].position );
 
@@ -828,7 +828,7 @@ void AddSightEvent( gentity_t *owner, vec3_t position, float radius, alertEventL
 	//			react to enemy alert events in some way?
 
 #ifdef _DEBUG
-	assert( !_isnan(position[0]) && !_isnan(position[1]) && !_isnan(position[2]) );
+	assert( !Q_isnan(position[0]) && !Q_isnan(position[1]) && !Q_isnan(position[2]) );
 #endif
 	VectorCopy( position, level.alertEvents[ level.numAlertEvents ].position );
 

@@ -3,8 +3,6 @@
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
 
-#include "platform.h"
-
 #include "client/client.h" // hi i'm bad
 
 ////////////////////////////////////////////////

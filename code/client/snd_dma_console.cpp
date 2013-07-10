@@ -12,17 +12,11 @@
 #include "snd_local_console.h"
 #include "snd_music.h"
 
-// #include "../../toolbox/zlib/zlib.h"
-
 #include "../client/client.h"
 #include "../qcommon/fixedmap.h"
 
 #ifdef _XBOX
 #include <Xtl.h>
-#endif
-
-#ifdef _GAMECUBE
-typedef const char* LPCSTR;
 #endif
 
 // Maps CRCs to offsets

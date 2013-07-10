@@ -22,8 +22,6 @@ This file is part of Jedi Academy.
 #include "qcommon.h"
 #include "../qcommon/sstring.h"
 
-#include "platform.h"
-
 #ifdef DEBUG_ZONE_ALLOCS
 int giZoneSnaphotNum=0;
 #define DEBUG_ZONE_ALLOC_OPTIONAL_LABEL_SIZE 256

@@ -61,14 +61,14 @@ CRMBSPInstance::CRMBSPInstance(CGPGroup *instGroup, CRMInstanceFile& instFile)  
 	mHoleRadius		= atof( instGroup->FindPairValue ( "hole", "0" ) );
 
 	const char * automapSymName = instGroup->FindPairValue ( "automap_symbol", "building" );
-	if (0 == strcmpi(automapSymName, "none"))	   	mAutomapSymbol = AUTOMAP_NONE ;
-	else if (0 == strcmpi(automapSymName, "building"))  	mAutomapSymbol = AUTOMAP_BLD  ;
-	else if (0 == strcmpi(automapSymName, "objective")) 	mAutomapSymbol = AUTOMAP_OBJ  ;
-	else if (0 == strcmpi(automapSymName, "start"))	   	mAutomapSymbol = AUTOMAP_START;
-	else if (0 == strcmpi(automapSymName, "end"))	   	mAutomapSymbol = AUTOMAP_END  ;
-	else if (0 == strcmpi(automapSymName, "enemy"))	   	mAutomapSymbol = AUTOMAP_ENEMY;
-	else if (0 == strcmpi(automapSymName, "friend"))	   	mAutomapSymbol = AUTOMAP_FRIEND;
-	else if (0 == strcmpi(automapSymName, "wall"))	   	mAutomapSymbol = AUTOMAP_WALL;
+	if (0 == Q_stricmp(automapSymName, "none"))	   	mAutomapSymbol = AUTOMAP_NONE ;
+	else if (0 == Q_stricmp(automapSymName, "building"))  	mAutomapSymbol = AUTOMAP_BLD  ;
+	else if (0 == Q_stricmp(automapSymName, "objective")) 	mAutomapSymbol = AUTOMAP_OBJ  ;
+	else if (0 == Q_stricmp(automapSymName, "start"))	   	mAutomapSymbol = AUTOMAP_START;
+	else if (0 == Q_stricmp(automapSymName, "end"))	   	mAutomapSymbol = AUTOMAP_END  ;
+	else if (0 == Q_stricmp(automapSymName, "enemy"))	   	mAutomapSymbol = AUTOMAP_ENEMY;
+	else if (0 == Q_stricmp(automapSymName, "friend"))	   	mAutomapSymbol = AUTOMAP_FRIEND;
+	else if (0 == Q_stricmp(automapSymName, "wall"))	   	mAutomapSymbol = AUTOMAP_WALL;
 	else mAutomapSymbol	= atoi( automapSymName );
 
 	// optional instance objective strings
