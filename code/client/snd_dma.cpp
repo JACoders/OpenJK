@@ -215,8 +215,6 @@ int			s_entityWavVol_back[MAX_GENTITIES];
 *
 \**************************************************************************************************/
 
-#define FLT_MAX         3.402823466e+38F
-#define FLT_MIN         1.175494351e-38F
 #define sqr(a)			((a)*(a))
 #define ENV_UPDATE_RATE	100			// Environmental audio update rate (in ms)
 
