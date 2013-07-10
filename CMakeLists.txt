@@ -22,13 +22,16 @@ set(BuildJK2SPGame OFF)
 #option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
 
 # Customizable libraries
-set(UseInternalPNG OFF)
 if(WIN32)
 	option(UseInternalOpenAL "Whether to use the included OpenAL instead of a locally installed one" ON)
 	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" ON)
-	set(UseInternalPNG ON)
 endif(WIN32)
-option(UseInternalPNG "Whether to use the included libpng instead of a locally installed one" ${UseInternalPNG})
+
+if(WIN32)
+	set(UseInternalPNG ON CACHE BOOL "Whether to use the included libpng instead of a locally installed one")
+else(WIN32)
+	set(UseInternalPNG OFF CACHE BOOL "Whether to use the included libpng instead of a locally installed one")
+endif(WIN32)
 
 option(PackageDir "Where to place the installer/package." "${CMAKE_SOURCE_DIR}/package")
 
