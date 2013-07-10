@@ -702,7 +702,6 @@ int Q_log2( int val ) {
 	return answer;
 }
 
-
 /*
 =================
 PlaneTypeForNormal

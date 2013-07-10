@@ -187,7 +187,7 @@ void CG_CaptionTextStop(void)
 //
 // returns 0 if failed, else strlen...
 //
-static int cg_SP_GetStringTextStringWithRetry( LPCSTR psReference, char *psDest, int iSizeofDest)
+static int cg_SP_GetStringTextStringWithRetry( const char *psReference, char *psDest, int iSizeofDest)
 {
 	int iReturn;
 
@@ -240,7 +240,7 @@ void CG_CaptionText( const char *str, int sound)
 	{	
 #ifndef FINAL_BUILD
 		// we only care about some sound dirs...
-		if (!strnicmp(str,"sound/chars/",12))	// whichever language it is, it'll be pathed as english at this point
+		if (!Q_stricmpn(str,"sound/chars/",12))	// whichever language it is, it'll be pathed as english at this point
 		{
 			Com_Printf("WARNING: CG_CaptionText given invalid text key :'%s'\n",str);
 		}

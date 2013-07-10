@@ -1,7 +1,5 @@
 #pragma once
 
-typedef const char * LPCSTR;
-typedef unsigned short USHORT;
 typedef unsigned int GLuint;
 
 #include "qcommon/qfiles.h"
@@ -10,10 +8,6 @@ typedef unsigned int GLuint;
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
-
-#ifndef _WIN32
-#include "qcommon/platform.h"
-#endif
 
 //for 3d textures -rww
 #define GL_TEXTURE_3D                     0x806F
@@ -94,7 +88,7 @@ typedef struct {
 
 typedef struct image_s {
 	char		imgName[MAX_QPATH];		// game path, including extension
-	USHORT		width, height;	// after power of two and picmip but not including clamp to MAX_TEXTURE_SIZE
+	word		width, height;	// after power of two and picmip but not including clamp to MAX_TEXTURE_SIZE
 	GLuint		texnum;					// gl texture binding
 
 	int			frameUsed;			// for texture usage in frame statistics

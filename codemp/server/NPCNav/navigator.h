@@ -74,7 +74,7 @@ class CNode
 	{
 		int		ID;
 		int		cost;
-		BYTE	flags;
+		byte	flags;
 	} edge_t;
 
 	typedef	vector< edge_t >	edge_v;
@@ -99,7 +99,7 @@ public:
 	int	GetEdgeNumToNode( int ID );
 	int GetEdge( int edgeNum );
 	int GetEdgeCost( int edgeNum );
-	BYTE GetEdgeFlags( int edgeNum );
+	byte GetEdgeFlags( int edgeNum );
 	void SetEdgeFlags( int edgeNum, int newFlags );
 	int	GetRadius( void )				const	{	return m_radius;	}
 

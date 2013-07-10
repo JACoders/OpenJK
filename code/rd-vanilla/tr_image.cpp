@@ -766,7 +766,7 @@ static void Upload32( unsigned *data,
 						  qboolean isLightmap, 
 						  qboolean allowTC, 
 						  int *pformat, 
-						  USHORT *pUploadWidth, USHORT *pUploadHeight )
+						  word *pUploadWidth, word *pUploadHeight )
 {
 	if (format == GL_RGBA)
 	{
@@ -967,10 +967,10 @@ typedef tmap (int, image_t *)	AllocatedImages_t;
 class CStringComparator
 {
 public:
-	bool operator()(const char *s1, const char *s2) const { return(stricmp(s1, s2) < 0); } 
+	bool operator()(const char *s1, const char *s2) const { return(Q_stricmp(s1, s2) < 0); } 
 };
 
-typedef map <LPCSTR, image_t *, CStringComparator>	AllocatedImages_t;
+typedef map <const char *, image_t *, CStringComparator>	AllocatedImages_t;
 													AllocatedImages_t AllocatedImages;
 													AllocatedImages_t::iterator itAllocatedImages;
 #endif // _XBOX
@@ -1429,7 +1429,7 @@ image_t *R_CreateImage( const char *name, const byte *pic, int width, int height
 	qglBindTexture( GL_TEXTURE_2D, 0 );	//jfm: i don't know why this is here, but it breaks lightmaps when there's only 1
 	glState.currenttextures[glState.currenttmu] = 0;	//mark it not bound
 
-	LPCSTR psNewName = GenerateImageMappingName(name);
+	const char *psNewName = GenerateImageMappingName(name);
 	Q_strncpyz(image->imgName, psNewName, sizeof(image->imgName));
 	AllocatedImages[ image->imgName ] = image;
 

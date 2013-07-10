@@ -299,7 +299,7 @@ GetEdgeFlags
 -------------------------
 */
 
-BYTE CNode::GetEdgeFlags( int edgeNum )
+byte CNode::GetEdgeFlags( int edgeNum )
 {
 	if ( edgeNum > m_numEdges )
 		return 0;
@@ -827,10 +827,10 @@ void CNavigator::CalculatePath( CNode *node )
 	int	curRank = 0;
 
 	CPriorityQueue	*pathList = new CPriorityQueue();
-	BYTE			*checked;
+	byte			*checked;
 
 	//Init the completion table
-	checked = new BYTE[ m_nodes.size() ];
+	checked = new byte[ m_nodes.size() ];
 	memset( checked, 0, m_nodes.size() );
 
 	//Mark this node as checked

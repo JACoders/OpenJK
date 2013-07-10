@@ -524,7 +524,7 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	byte		*buffer;
 	int			i, c, temp;
 
-	qboolean bSaveAsJPG = !strnicmp(&fileName[strlen(fileName)-4],".jpg",4);
+	qboolean bSaveAsJPG = !Q_stricmpn(&fileName[strlen(fileName)-4],".jpg",4);
 
 	if (bSaveAsJPG)
 	{

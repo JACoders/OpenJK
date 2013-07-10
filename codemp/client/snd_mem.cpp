@@ -10,7 +10,6 @@
 #ifndef _WIN32
 #include <algorithm>
 #include <string>
-#include "qcommon/platform.h"
 #endif
 
 // Open AL
@@ -705,7 +704,7 @@ static sboolean S_LoadSound_DirIsAllowedToKeepMP3s(const char *psFilename)
 
 	for (size_t i=0; i< (sizeof(psAllowedDirs) / sizeof(psAllowedDirs[0])); i++)
 	{
-		if (strnicmp(psFilename, psAllowedDirs[i], strlen(psAllowedDirs[i]))==0)
+		if (Q_stricmpn(psFilename, psAllowedDirs[i], strlen(psAllowedDirs[i]))==0)
 			return qtrue;	// found a dir that's allowed to keep MP3s
 	}
 
@@ -772,7 +771,7 @@ static sboolean S_LoadSound_Actual( sfx_t *sfx )
 	SND_TouchSFX(sfx);
 
 //=========
-	if (strnicmp(psExt,".mp3",4)==0)
+	if (Q_stricmpn(psExt,".mp3",4)==0)
 	{
 		// load MP3 file instead...
 		//		

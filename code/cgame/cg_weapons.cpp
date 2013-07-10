@@ -208,11 +208,11 @@ void CG_RegisterWeapon( int weaponNum ) {
 	// give ourselves the functions if we can
 	if (weaponData[weaponNum].func)
 	{
-		weaponInfo->missileTrailFunc = (void (__cdecl *)(struct centity_s *,const struct weaponInfo_s *))weaponData[weaponNum].func;
+		weaponInfo->missileTrailFunc = (void (*)(struct centity_s *,const struct weaponInfo_s *))weaponData[weaponNum].func;
 	}
 	if (weaponData[weaponNum].altfunc)
 	{
-		weaponInfo->alt_missileTrailFunc = (void (__cdecl *)(struct centity_s *,const struct weaponInfo_s *))weaponData[weaponNum].altfunc;
+		weaponInfo->alt_missileTrailFunc = (void (*)(struct centity_s *,const struct weaponInfo_s *))weaponData[weaponNum].altfunc;
 	}
 
 	switch ( weaponNum )	//extra client only stuff

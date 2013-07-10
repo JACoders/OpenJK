@@ -1738,7 +1738,7 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 		//
 		extern cvar_t *s_language;
 		qboolean	bIsForeign	= s_language && Q_stricmp(s_language->string,"english") && Q_stricmp(s_language->string,"");
-		LPCSTR		psAudioFile	= NULL;
+		const char *psAudioFile	= NULL;
 		qhandle_t	hCrawl = 0;
 		if (!Q_stricmp(arg,"video/jk0101_sw.roq"))
 		{

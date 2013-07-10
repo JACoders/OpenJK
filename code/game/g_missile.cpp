@@ -275,7 +275,7 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 	VectorNormalize( bounce_dir );
 	VectorScale( bounce_dir, speed, missile->s.pos.trDelta );
 #ifdef _DEBUG
-		assert( !_isnan(missile->s.pos.trDelta[0])&&!_isnan(missile->s.pos.trDelta[1])&&!_isnan(missile->s.pos.trDelta[2]));
+		assert( !Q_isnan(missile->s.pos.trDelta[0])&&!Q_isnan(missile->s.pos.trDelta[1])&&!Q_isnan(missile->s.pos.trDelta[2]));
 #endif// _DEBUG
 	missile->s.pos.trTime = level.time - 10;		// move a bit on the very first frame
 	VectorCopy( missile->currentOrigin, missile->s.pos.trBase );

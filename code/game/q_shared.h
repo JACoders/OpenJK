@@ -72,13 +72,13 @@ This file is part of Jedi Academy.
 
 #include <assert.h>
 #include <math.h>
+#include <float.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 #include <ctype.h>
-#include "../qcommon/platform.h"
 #include <limits.h>
 //=======================================================================
 
@@ -301,10 +301,7 @@ void Sys_PumpEvents( void );
 
 typedef unsigned long		ulong;
 typedef unsigned short		word;
-
 typedef unsigned char 		byte;
-
-typedef const char *LPCSTR;
 
 typedef enum {qfalse, qtrue}	qboolean;
 #define	qboolean	int		//don't want strict type checking on the qboolean
@@ -1144,6 +1141,14 @@ inline vec_t VectorNormalize2( const vec3_t v, short out[3]) {
 
 int Q_log2(int val);
 
+inline qboolean Q_isnan ( float f ) {
+#ifdef _WIN32
+	return _isnan (f);
+#else
+	return isnan (f);
+#endif
+}
+
 inline int Q_rand( int *seed ) {
 	*seed = (69069 * *seed + 1);
 	return *seed;
@@ -1424,7 +1429,11 @@ inline const char	*Q_strrchr( const char* str, int c ) { return strrchr(str, c);
 
 
 // buffer size safe library replacements
-void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong=qfalse );
+#ifdef __cplusplus
+void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong = qfalse );
+#else
+void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong );
+#endif
 void	Q_strcat( char *dest, int size, const char *src );
 
 const char *Q_stristr( const char *s, const char *find );

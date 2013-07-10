@@ -452,7 +452,6 @@ if(BuildMPEngine)
 		"${MPDir}/qcommon/hstring.cpp"
 		"${MPDir}/qcommon/hstring.h"
 		"${MPDir}/qcommon/INetProfile.h"
-		"${MPDir}/qcommon/platform.h"
 		)
 	source_group("common" FILES ${MPEngineCommonFiles})
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineCommonFiles})

@@ -242,7 +242,7 @@ public:
 	void				DrawCircleAve(long xc, long yc, long r, CPixel32 edge, CPixel32 fill);
 
 	// draw a polygon (complex) with fill and edge colors 
-	void				DrawPolygon(long nvert, POINT *point, CPixel32 edge, CPixel32 fill);
+	void				DrawPolygon(long nvert, Point *point, CPixel32 edge, CPixel32 fill);
 
 	// simple blit function
 	void				BlitNC(long dstX, long dstY, long dstWidth, long dstHeight, 

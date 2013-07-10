@@ -1160,6 +1160,15 @@ float Q_powf ( float x, int y )
 #endif
 }
 
+qboolean Q_isnan (float f)
+{
+#ifdef _WIN32
+	return (qboolean)(_isnan (f) != 0);
+#else
+	return (qboolean)(isnan (f) != 0);
+#endif
+}
+
 /*
 -------------------------
 DotProductNormalize

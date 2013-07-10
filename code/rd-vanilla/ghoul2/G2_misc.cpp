@@ -1164,7 +1164,7 @@ static bool G2_TracePolys(const mdxmSurface_t *surface, const mdxmSurfHierarchy_
 
 					VectorSubtract(hitPoint, TS.rayStart, distVect);
 					newCol.mDistance = VectorLength(distVect);
-					assert( !_isnan(newCol.mDistance) );
+					assert( !Q_isnan(newCol.mDistance) );
 
 					// put the hit point back into world space
 					TransformAndTranslatePoint(hitPoint, newCol.mCollisionPosition, &worldMatrix);
@@ -1447,7 +1447,7 @@ static bool G2_RadiusTracePolys(
 
 					VectorSubtract(hitPoint, TS.rayStart, distVect);
 					newCol.mDistance = VectorLength(distVect);
-					assert( !_isnan(newCol.mDistance) );
+					assert( !Q_isnan(newCol.mDistance) );
 
 					// put the hit point back into world space
 					TransformAndTranslatePoint(hitPoint, newCol.mCollisionPosition, &worldMatrix);

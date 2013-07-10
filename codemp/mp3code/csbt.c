@@ -37,9 +37,6 @@ portable C
 #include <stdio.h>
 #include <float.h>
 #include <math.h>
-#ifndef _WIN32
-#include "qcommon/platform.h"
-#endif
 
 void fdct32(float *, float *);
 void fdct32_dual(float *, float *);

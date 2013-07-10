@@ -56,11 +56,6 @@ char sLastSaveFileLoaded[MAX_QPATH]={0};
 
 #define iSG_MAPCMD_SIZE MAX_QPATH
 
-#ifndef LPCSTR
-typedef const char * LPCSTR;
-#endif
-
-
 static char *SG_GetSaveGameMapName(const char *psPathlessBaseName);
 static void CompressMem_FreeScratchBuffer(void);
 
@@ -97,7 +92,7 @@ typedef map<unsigned long, CChid> CChidInfo_t;
 CChidInfo_t	save_info;
 #endif
 
-LPCSTR SG_GetChidText(unsigned long chid)
+const char *SG_GetChidText(unsigned long chid)
 {
 	static char	chidtext[5];
 
@@ -122,7 +117,7 @@ static const char *GetString_FailedToOpenSaveGame(const char *psFilename, qboole
 
 // (copes with up to 8 ptr returns at once)
 //
-static LPCSTR SG_AddSavePath( LPCSTR psPathlessBaseName )
+static const char *SG_AddSavePath( const char *psPathlessBaseName )
 {
 	static char sSaveName[8][MAX_OSPATH]; 
 	static int  i=0;
@@ -146,17 +141,17 @@ static LPCSTR SG_AddSavePath( LPCSTR psPathlessBaseName )
 	return sSaveName[i];
 }
 
-void SG_WipeSavegame( LPCSTR psPathlessBaseName )
+void SG_WipeSavegame( const char *psPathlessBaseName )
 {
-	LPCSTR psLocalFilename  = SG_AddSavePath( psPathlessBaseName );
+	const char *psLocalFilename  = SG_AddSavePath( psPathlessBaseName );
 	
 	FS_DeleteUserGenFile( psLocalFilename );
 }
 
-static qboolean SG_Move( LPCSTR psPathlessBaseName_Src, LPCSTR psPathlessBaseName_Dst )
+static qboolean SG_Move( const char *psPathlessBaseName_Src, const char *psPathlessBaseName_Dst )
 {
-	LPCSTR psLocalFilename_Src = SG_AddSavePath( psPathlessBaseName_Src );
-	LPCSTR psLocalFilename_Dst = SG_AddSavePath( psPathlessBaseName_Dst );
+	const char *psLocalFilename_Src = SG_AddSavePath( psPathlessBaseName_Src );
+	const char *psLocalFilename_Dst = SG_AddSavePath( psPathlessBaseName_Dst );
 
 	qboolean qbCopyWentOk = FS_MoveUserGenFile( psLocalFilename_Src, psLocalFilename_Dst );
 
@@ -172,12 +167,12 @@ static qboolean SG_Move( LPCSTR psPathlessBaseName_Src, LPCSTR psPathlessBaseNam
 
 qboolean gbSGWriteFailed = qfalse;
 
-static qboolean SG_Create( LPCSTR psPathlessBaseName )
+static qboolean SG_Create( const char *psPathlessBaseName )
 {
 	gbSGWriteFailed = qfalse;
 
 	SG_WipeSavegame( psPathlessBaseName );
-	LPCSTR psLocalFilename = SG_AddSavePath( psPathlessBaseName );		
+	const char *psLocalFilename = SG_AddSavePath( psPathlessBaseName );		
 	fhSaveGame = FS_FOpenFileWrite( psLocalFilename );
 
 	if(!fhSaveGame)
@@ -243,7 +238,7 @@ qboolean SG_Close()
 }
 
 
-qboolean SG_Open( LPCSTR psPathlessBaseName )
+qboolean SG_Open( const char *psPathlessBaseName )
 {	
 //	if ( fhSaveGame )		// hmmm...
 //	{						//
@@ -256,7 +251,7 @@ qboolean SG_Open( LPCSTR psPathlessBaseName )
 	}
 //JLFSAVEGAME
 
-	LPCSTR psLocalFilename = SG_AddSavePath( psPathlessBaseName );	
+	const char *psLocalFilename = SG_AddSavePath( psPathlessBaseName );	
 	FS_FOpenFileRead( psLocalFilename, &fhSaveGame, qtrue );	//qtrue = dup handle, so I can close it ok later
 	if (!fhSaveGame)
 	{
@@ -292,7 +287,7 @@ void SV_WipeGame_f(void)
 		Com_Printf (S_COLOR_RED "USAGE: wipe <name>\n");
 		return;
 	}
-	if (!stricmp (Cmd_Argv(1), "auto") )
+	if (!Q_stricmp (Cmd_Argv(1), "auto") )
 	{
 		Com_Printf (S_COLOR_RED "Can't wipe 'auto'\n");
 		return;
@@ -356,7 +351,7 @@ void SV_LoadGame_f(void)
 		return;
 	}
 
-	if (!stricmp (psFilename, "current"))
+	if (!Q_stricmp (psFilename, "current"))
 	{
 		Com_Printf (S_COLOR_RED "Can't load from \"current\"\n");
 		return;
@@ -365,7 +360,7 @@ void SV_LoadGame_f(void)
 	// special case, if doing a respawn then check that the available auto-save (if any) is from the same map
 	//	as we're currently on (if in a map at all), if so, load that "auto", else re-load the last-loaded file...
 	//
-	if (!stricmp(psFilename, "*respawn"))
+	if (!Q_stricmp(psFilename, "*respawn"))
 	{
 		psFilename = "auto";	// default to standard respawn behaviour
 
@@ -373,8 +368,8 @@ void SV_LoadGame_f(void)
 		//
 		if ( sLastSaveFileLoaded[0] )
 		{
-			LPCSTR psServerInfo = sv.configstrings[CS_SERVERINFO];
-			LPCSTR psMapName    = Info_ValueForKey( psServerInfo, "mapname" );
+			const char *psServerInfo = sv.configstrings[CS_SERVERINFO];
+			const char *psMapName    = Info_ValueForKey( psServerInfo, "mapname" );
 
 			char *psMapNameOfAutoSave = SG_GetSaveGameMapName("auto");
 
@@ -467,7 +462,7 @@ void SV_SaveGame_f(void)
 
 	const char *psFilename = Cmd_Argv(1);
 
-	if (!stricmp (psFilename, "current"))
+	if (!Q_stricmp (psFilename, "current"))
 	{
 		Com_Printf (S_COLOR_RED "Can't save to 'current'\n");
 		return;
@@ -482,7 +477,7 @@ void SV_SaveGame_f(void)
 	if (!SG_GameAllowedToSaveHere(qfalse))	//full check
 		return;	// this prevents people saving via quick-save now during cinematics.
 
-	if ( !stricmp (psFilename, "auto") )
+	if ( !Q_stricmp (psFilename, "auto") )
 	{
 		
 		SG_StoreSaveGameComment("");	// clear previous comment/description, which will force time/date comment.
@@ -717,7 +712,7 @@ void SG_ReadServerConfigStrings( void )
 
 
 
-static void SG_WriteComment(qboolean qbAutosave, LPCSTR psMapName)
+static void SG_WriteComment(qboolean qbAutosave, const char *psMapName)
 {
 	char	sComment[iSG_COMMENT_SIZE];
 
@@ -897,7 +892,7 @@ qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress )
 }
 
 
-static void SG_WriteScreenshot(qboolean qbAutosave, LPCSTR psMapName)
+static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 {
 #ifndef _XBOX
 	byte *pbRawScreenShot = NULL;
@@ -974,8 +969,8 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 
 	// Write out server data...
 	//
-	LPCSTR psServerInfo = sv.configstrings[CS_SERVERINFO];
-	LPCSTR psMapName    = Info_ValueForKey( psServerInfo, "mapname" );
+	const char *psServerInfo = sv.configstrings[CS_SERVERINFO];
+	const char *psMapName    = Info_ValueForKey( psServerInfo, "mapname" );
 //JLF
 	if ( !strcmp("quick",psPathlessBaseName))
 	{

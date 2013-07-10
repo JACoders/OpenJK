@@ -11,8 +11,6 @@
 #include "client/client.h"
 #include "files.h"
 
-#include "platform.h"
-
 // TTimo - https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=540
 // wether we did a reorder on the current search path when joining the server
 static qboolean fs_reordered;

@@ -6,10 +6,6 @@
 #include "GenericParser2.h"
 #include "stringed_ingame.h"
 #include "qcommon/game_version.h"
-#ifndef __linux__
-#include "qcommon/platform.h"
-#endif
-
 #include "../server/NPCNav/navigator.h"
 
 #define	MAXPRINTMSG	4096
