@@ -995,8 +995,10 @@ static const netField_t	playerStateFields[] =
 { PSF(saberActive), 8 },
 { PSF(saberLength), 32 },
 { PSF(saberLengthMax), 32 },
+#endif
 { PSF(forcePowersActive), 32},
 { PSF(saberInFlight), 8 },
+#ifndef __NO_JK2
 { PSF(vehicleModel), 32 },
 #endif
 
