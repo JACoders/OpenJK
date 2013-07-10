@@ -153,20 +153,20 @@ Sys_LowPhysicalMemory
 */
 qboolean Sys_LowPhysicalMemory() 
 {
-	static MEMORYSTATUS stat;
+	static MEMORYSTATUSEX stat;
 	static qboolean bAsked = qfalse;
 	static cvar_t* sys_lowmem = Cvar_Get( "sys_lowmem", "0", 0 );
 
 	if (!bAsked)	// just in case it takes a little time for GlobalMemoryStatus() to gather stats on
 	{				//	stuff we don't care about such as virtual mem etc.
 		bAsked = qtrue;
-		GlobalMemoryStatus (&stat);
+		GlobalMemoryStatusEx (&stat);
 	}
 	if (sys_lowmem->integer)
 	{
 		return qtrue;
 	}
-	return (stat.dwTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
+	return (stat.ullTotalPhys <= MEM_THRESHOLD) ? qtrue : qfalse;
 }
 
 
