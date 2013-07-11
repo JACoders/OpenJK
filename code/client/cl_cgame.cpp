@@ -1171,7 +1171,7 @@ Ghoul2 Insert End
 	  return 0;
 
 	case CG_Z_MALLOC:
-		return (int)Z_Malloc(args[1], (memtag_t) args[2], qfalse);
+		return (intptr_t)Z_Malloc(args[1], (memtag_t) args[2], qfalse);
 
 	case CG_Z_FREE:
 		Z_Free((void *) VMA(1));
@@ -1234,11 +1234,11 @@ Ghoul2 Insert End
 		return 0;
 
 	case CG_OPENJK_MENU_PAINT:
-		Menu_Paint( (menuDef_t *)VMA(1), (int)VMA(2) );
+		Menu_Paint( (menuDef_t *)VMA(1), (intptr_t)VMA(2) );
 		return 0;
 
 	case CG_OPENJK_GETMENU_BYNAME:
-		return (int)Menus_FindByName( (const char *)VMA(1) );
+		return (intptr_t)Menus_FindByName( (const char *)VMA(1) );
 
 	case CG_UI_STRING_INIT:
 		String_Init();
