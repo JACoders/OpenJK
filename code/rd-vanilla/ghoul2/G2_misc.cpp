@@ -311,7 +311,7 @@ void G2_List_Model_Surfaces(const char *fileName)
 			}
 		}
 		// find the next surface
-  		surf = (mdxmSurfHierarchy_t *)( (byte *)surf + (int)( &((mdxmSurfHierarchy_t *)0)->childIndexes[ surf->numChildren ] ));
+  		surf = (mdxmSurfHierarchy_t *)( (byte *)surf + (intptr_t)( &((mdxmSurfHierarchy_t *)0)->childIndexes[ surf->numChildren ] ));
   		surface =(mdxmSurface_t *)( (byte *)surface + surface->ofsEnd );
 	}
 
@@ -428,7 +428,7 @@ void R_TransformEachSurface( const mdxmSurface_t *surface, vec3_t scale, CMiniHe
    
 	// alloc some space for the transformed verts to get put in
 	TransformedVerts = (float *)G2VertSpace->MiniHeapAlloc(surface->numVerts * 5 * 4);
-	TransformedVertsArray[surface->thisSurfaceIndex] = (int)TransformedVerts;
+	TransformedVertsArray[surface->thisSurfaceIndex] = (intptr_t)TransformedVerts;
 	if (!TransformedVerts)
 	{
 		assert(TransformedVerts);
@@ -1746,7 +1746,7 @@ void *G2_FindSurface(const model_s *mod, int index, int lod)
 	assert(mod->mdxm);
 
 	// point at first lod list
-	byte	*current = (byte*)((int)mod->mdxm + (int)mod->mdxm->ofsLODs);
+	byte	*current = (byte*)((intptr_t)mod->mdxm + (intptr_t)mod->mdxm->ofsLODs);
 	int i;
 
 	//walk the lods
@@ -1785,7 +1785,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 	}
 
 	// this one isn't a define since I couldn't work out how to figure it out at compile time
-	const int ghoul2BlockSize = (int)&ghoul2[0].BSAVE_END_FIELD - (int)&ghoul2[0].BSAVE_START_FIELD;
+	const int ghoul2BlockSize = (intptr_t)&ghoul2[0].BSAVE_END_FIELD - (intptr_t)&ghoul2[0].BSAVE_START_FIELD;
 
 	// add in count for number of ghoul2 models
 	iGhoul2Size += 4;	
@@ -1895,7 +1895,7 @@ void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 	}
 
 	// this one isn't a define since I couldn't work out how to figure it out at compile time
-	const int ghoul2BlockSize = (int)&ghoul2[0].mTransformedVertsArray - (int)&ghoul2[0].mModelindex;
+	const int ghoul2BlockSize = (intptr_t)&ghoul2[0].mTransformedVertsArray - (intptr_t)&ghoul2[0].mModelindex;
 
 	// now we have enough instances, lets go through each one and load up the relevant details
 	for (int i=0; i<ghoul2.size(); i++)
