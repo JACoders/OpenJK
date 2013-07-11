@@ -356,8 +356,8 @@ qboolean CG_ParseSurfsFile( const char *modelName, const char *skinName, char *s
 	// parse the text
 	text_p = text;
 
-	memset( (char *)surfOff, 0, sizeof(surfOff) );
-	memset( (char *)surfOn, 0, sizeof(surfOn) );
+	surfOff[0] = '\0';
+	surfOn[0] = '\0';
 
 	// read information for surfOff and surfOn
 	while ( 1 ) 
