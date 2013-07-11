@@ -34,9 +34,9 @@ public:
 void ResetHeap()
 {
 #if _DEBUG
-	if ((int)mCurrentHeap - (int)mHeap>mMaxAlloc)
+	if ((intptr_t)mCurrentHeap - (intptr_t)mHeap>mMaxAlloc)
 	{
-		mMaxAlloc=(int)mCurrentHeap - (int)mHeap;
+		mMaxAlloc=(intptr_t)mCurrentHeap - (intptr_t)mHeap;
 	}
 #endif
 	mCurrentHeap = mHeap;
