@@ -320,6 +320,13 @@ typedef int		sfxHandle_t;
 typedef int		fileHandle_t;
 typedef int		clipHandle_t;
 
+#define NULL_HANDLE   ((qhandle_t) 0)
+#define NULL_SOUND    ((sfxHandle_t) 0)
+#define NULL_FX       ((fxHandle_t) 0)
+#define NULL_SFX      ((sfxHandle_t) 0)
+#define NULL_FILE     ((fileHandle_t) 0)
+#define NULL_CLIP     ((clipHandle_t) 0)
+
 //Raz: can't think of a better place to put this atm,
 //		should probably be in the platform specific definitions
 #if defined (_MSC_VER) && (_MSC_VER >= 1600)

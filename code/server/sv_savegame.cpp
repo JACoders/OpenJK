@@ -195,7 +195,7 @@ void SG_Shutdown()
 	if (fhSaveGame )
 	{
 		FS_FCloseFile( fhSaveGame );
-		fhSaveGame = NULL;
+		fhSaveGame = NULL_FILE;
 	}
 
 	eSavedGameJustLoaded = eNO;	// important to do this if we ERR_DROP during loading, else next map you load after
@@ -211,7 +211,7 @@ qboolean SG_Close()
 {
 	assert( fhSaveGame );	
 	FS_FCloseFile( fhSaveGame );
-	fhSaveGame = NULL;
+	fhSaveGame = NULL_FILE;
 
 #ifdef SG_PROFILE
 	if (!sv_testsave->integer)

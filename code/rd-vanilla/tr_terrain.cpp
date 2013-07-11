@@ -554,7 +554,7 @@ void CTRLandScape::LoadTerrainDef(const char *td)
 	Com_Printf("R_Terrain: Loading and parsing terrainDef %s.....\n", td);
 
 	mWaterShader = NULL;
-	mFlatShader  = NULL;
+	mFlatShader  = NULL_HANDLE;
 
 	if(!Com_ParseTextFile(terrainDef, parse))
 	{

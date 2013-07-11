@@ -1120,7 +1120,7 @@ void SP_misc_ns_turret( gentity_t *base )
 {
 	base->s.modelindex = G_ModelIndex( "models/map_objects/nar_shaddar/turret/turret.glm" );
 	base->s.modelindex2 = G_ModelIndex( "models/map_objects/imp_mine/turret_damage.md3" ); // FIXME!
-	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/nar_shaddar/turret/turret.glm", base->s.modelindex, NULL, NULL, 0, 0 );
+	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/nar_shaddar/turret/turret.glm", base->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	base->s.radius = 80.0f;
 
 	gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 ); 
@@ -1794,7 +1794,7 @@ void SP_PAS( gentity_t *base )
 	base->speed = base->s.angles[YAW];
 
 	base->s.modelindex = G_ModelIndex( "models/items/psgun.glm" );
-	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/items/psgun.glm", base->s.modelindex, NULL, NULL, 0, 0 );
+	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/items/psgun.glm", base->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	base->s.radius = 30.0f;
 	VectorSet( base->s.modelScale, 1.0f, 1.0f, 1.0f );
 
@@ -2072,7 +2072,7 @@ void SP_misc_ion_cannon( gentity_t *base )
 	G_SetOrigin(base, base->s.origin);
 
 	base->s.modelindex = G_ModelIndex( "models/map_objects/imp_mine/ion_cannon.glm" );
-	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/ion_cannon.glm", base->s.modelindex, NULL, NULL, 0, 0 );
+	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/ion_cannon.glm", base->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	base->s.radius = 320.0f;
 	VectorSet( base->s.modelScale, 2.0f, 2.0f, 2.0f );
 

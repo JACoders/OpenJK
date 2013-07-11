@@ -1067,7 +1067,7 @@ void InitMover( gentity_t *ent )
 		if ( strstr( ent->model2, ".glm" ))
 		{
 			ent->s.modelindex2 = G_ModelIndex( ent->model2 );
-			ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, ent->model2, ent->s.modelindex2, NULL, NULL, 0, 0 );
+			ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, ent->model2, ent->s.modelindex2, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 			if ( ent->playerModel >= 0 )
 			{
 				ent->rootBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "model_root", qtrue );
