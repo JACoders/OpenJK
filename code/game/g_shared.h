@@ -29,7 +29,7 @@ This file is part of Jedi Academy.
 #include "hitlocs.h"
 #include "bset.h"
 
-#define	FOFS(x) ((size_t)&(((gentity_t *)0)->x))
+#define	FOFS(x) offsetof(gentity_t, x)
 
 #ifdef _XBOX
 #define MAX_NPC_WATER_UPDATE_PER_FRAME	2	// maxmum number of NPCs that will get updated water infromation per frame
