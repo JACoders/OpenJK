@@ -1235,50 +1235,50 @@ void CG_RegisterClientModels (int entityNum)
 
 HUDMenuItem_t forceTics[] = 
 {
-	 { "rightHUD", "force_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
-	 { "rightHUD", "force_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
-	 { "rightHUD", "force_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
-	 { "rightHUD", "force_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
+	 { "rightHUD", "force_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top 
+	 { "rightHUD", "force_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top 
+	 { "rightHUD", "force_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top 
+	 { "rightHUD", "force_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top 
 };
 
 HUDMenuItem_t ammoTics[] = 
 {
-	{ "rightHUD", "ammo_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
-	{ "rightHUD", "ammo_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
-	{ "rightHUD", "ammo_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
-	{ "rightHUD", "ammo_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
+	{ "rightHUD", "ammo_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top 
+	{ "rightHUD", "ammo_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top 
+	{ "rightHUD", "ammo_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top 
+	{ "rightHUD", "ammo_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top 
 };
 
 HUDMenuItem_t armorTics[] = 
 {
-	{ "leftHUD", "armor_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
-	{ "leftHUD", "armor_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	
-	{ "leftHUD", "armor_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	
-	{ "leftHUD", "armor_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	
+	{ "leftHUD", "armor_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top 
+	{ "leftHUD", "armor_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	
+	{ "leftHUD", "armor_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	
+	{ "leftHUD", "armor_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	
 };
 
 HUDMenuItem_t healthTics[] = 
 {
-	{ "leftHUD", "health_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL }, 	// Top 
-	{ "leftHUD", "health_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// 
-	{ "leftHUD", "health_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// 
-	{ "leftHUD", "health_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// Bottom
+	{ "leftHUD", "health_tic1", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE }, 	// Top 
+	{ "leftHUD", "health_tic2", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// 
+	{ "leftHUD", "health_tic3", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// 
+	{ "leftHUD", "health_tic4", 0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// Bottom
 };
 
 
 HUDMenuItem_t otherHUDBits[] = 
 {
-	{ "lefthud", "healthamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_HEALTHAMOUNT
-	{ "lefthud", "armoramount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_ARMORAMOUNT
-	{ "righthud", "forceamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_FORCEAMOUNT 
-	{ "righthud", "ammoamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_AMMOAMOUNT
-	{ "righthud", "saberstyle_strong",	0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_SABERSTYLE_STRONG
-	{ "righthud", "saberstyle_medium",	0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_SABERSTYLE_MEDIUM
-	{ "righthud", "saberstyle_fast",		0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_SABERSTYLE_FAST
-	{ "lefthud",	"scanline",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_SCANLINE_LEFT
-	{ "righthud",	"scanline",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_SCANLINE_RIGHT
-	{ "lefthud",	"frame",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_FRAME_LEFT
-	{ "righthud",	"frame",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL },	// OHB_FRAME_RIGHT
+	{ "lefthud", "healthamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_HEALTHAMOUNT
+	{ "lefthud", "armoramount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_ARMORAMOUNT
+	{ "righthud", "forceamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_FORCEAMOUNT 
+	{ "righthud", "ammoamount",			0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_AMMOAMOUNT
+	{ "righthud", "saberstyle_strong",	0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_SABERSTYLE_STRONG
+	{ "righthud", "saberstyle_medium",	0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_SABERSTYLE_MEDIUM
+	{ "righthud", "saberstyle_fast",		0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_SABERSTYLE_FAST
+	{ "lefthud",	"scanline",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_SCANLINE_LEFT
+	{ "righthud",	"scanline",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_SCANLINE_RIGHT
+	{ "lefthud",	"frame",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_FRAME_LEFT
+	{ "righthud",	"frame",				0,  0,  0,  0, { 0.0f, 0.0f, 0.0f, 0.0f }, NULL_HANDLE },	// OHB_FRAME_RIGHT
 };
 
 /*const char *HolocronIcons[] = {

@@ -2785,7 +2785,7 @@ void SP_misc_model_welder( gentity_t *ent )
 
 	ent->s.modelindex = G_ModelIndex( "models/map_objects/cairn/welder.glm" );
 //	ent->s.modelindex2 = G_ModelIndex( "models/map_objects/cairn/welder.md3" );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/cairn/welder.glm", ent->s.modelindex, NULL, NULL, 0, 0 );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/cairn/welder.glm", ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	ent->s.radius = 400.0f;// the origin of the welder is offset by approximately 352, so we need the big radius
 
 	ent->e_ThinkFunc = thinkF_welder_think;
@@ -2840,7 +2840,7 @@ void SP_misc_model_jabba_cam( gentity_t *ent )
 	G_SetAngles( ent, ent->s.angles );
 
 	ent->s.modelindex = G_ModelIndex( "models/map_objects/nar_shaddar/jabacam/jabacam.glm" );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/nar_shaddar/jabacam/jabacam.glm", ent->s.modelindex, NULL, NULL, 0, 0 );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/map_objects/nar_shaddar/jabacam/jabacam.glm", ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	ent->s.radius = 150.0f;  //......
 	VectorSet( ent->s.modelScale, 1.0f, 1.0f, 1.0f );
 
@@ -3238,7 +3238,7 @@ void SP_misc_atst_drivable( gentity_t *ent )
 	extern void NPC_PrecacheAnimationCFG( const char *NPC_type );
 
 	ent->s.modelindex = G_ModelIndex( "models/players/atst/model.glm" );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/players/atst/model.glm", ent->s.modelindex, NULL, NULL, 0, 0 );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, "models/players/atst/model.glm", ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	ent->rootBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "model_root", qtrue );
 	ent->craniumBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "cranium", qtrue );	//FIXME: need to somehow set the anim/frame to the equivalent of BOTH_STAND1...  use to be that BOTH_STAND1 was the first frame of the glm, but not anymore
 	ent->s.radius = 320;

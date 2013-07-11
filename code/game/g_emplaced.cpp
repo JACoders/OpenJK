@@ -464,7 +464,7 @@ void SP_emplaced_eweb( gentity_t *ent )
 	ent->dflags |= DAMAGE_CUSTOM_HUD; // dumb, but we draw a custom hud
 
 	ent->s.modelindex = G_ModelIndex( name );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, name, ent->s.modelindex, NULL, NULL, 0, 0 );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, name, ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 
 	// Activate our tags and bones
 	ent->handLBolt = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*cannonflash" ); //muzzle bolt
@@ -829,7 +829,7 @@ void SP_emplaced_gun( gentity_t *ent )
 	ent->dflags |= DAMAGE_CUSTOM_HUD; // dumb, but we draw a custom hud
 
 	ent->s.modelindex = G_ModelIndex( name );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, name, ent->s.modelindex, NULL, NULL, 0, 0 );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, name, ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 
 	// Activate our tags and bones
 	ent->headBolt = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*seat" );
