@@ -27,7 +27,7 @@ This file is part of Jedi Knight 2.
 #include "../cgame/cg_public.h"
 #include "bset.h"
 
-#define	FOFS(x) ((int)&(((gentity_t *)0)->x))
+#define	FOFS(x) offsetof(gentity_t, x)
 
 typedef enum 
 {

@@ -82,6 +82,7 @@
 #include <ctype.h>
 #include <limits.h>
 #include <errno.h>
+#include <stddef.h>
 
 //Ignore __attribute__ on non-gcc platforms
 #if !defined(__GNUC__) && !defined(__attribute__)
