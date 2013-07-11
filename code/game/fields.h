@@ -30,13 +30,13 @@ This file is part of Jedi Academy.
 #define MAX_GHOULINST_SIZE	16384
 
 #ifndef FOFS
-#define	FOFS(x) ((intptr_t)&(((gentity_t *)0)->x))	// usually already defined in qshared.h
+#define	FOFS(x) ((size_t)&(((gentity_t *)0)->x))	// usually already defined in qshared.h
 #endif
-#define	STOFS(x) ((intptr_t)&(((spawn_temp_t *)0)->x))
-#define	LLOFS(x) ((intptr_t)&(((level_locals_t *)0)->x))
-#define	CLOFS(x) ((intptr_t)&(((gclient_t *)0)->x))
-#define NPCOFS(x) ((intptr_t)&(((gNPC_t *)0)->x)) 
-#define VHOFS(x) ((intptr_t)&(((Vehicle_t *)0)->x)) 
+#define	STOFS(x) ((size_t)&(((spawn_temp_t *)0)->x))
+#define	LLOFS(x) ((size_t)&(((level_locals_t *)0)->x))
+#define	CLOFS(x) ((size_t)&(((gclient_t *)0)->x))
+#define NPCOFS(x) ((size_t)&(((gNPC_t *)0)->x)) 
+#define VHOFS(x) ((size_t)&(((Vehicle_t *)0)->x)) 
 
 //
 #define strFOFS(x)	 #x,FOFS(x)
