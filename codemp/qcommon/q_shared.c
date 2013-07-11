@@ -1295,7 +1295,7 @@ char * QDECL va( const char *format, ... )
 
 	va_start( argptr, format );
 	buf = (char *)&string[index++ & 3];
-	Q_vsnprintf( buf, MAX_VA_STRING-1, format, argptr );
+	Q_vsnprintf( buf, sizeof(*string), format, argptr );
 	va_end( argptr );
 
 	return buf;
