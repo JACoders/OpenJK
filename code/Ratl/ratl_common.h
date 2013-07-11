@@ -785,11 +785,11 @@ namespace storage
 		// this is so node support does not need to be added to the primitive containers
 		static NODE & node(TValue &v)
 		{
-			return *(NODE *)((unsigned char *)(&v)+int(&((TStorage *)0)->nodeData)-int(&((TStorage *)0)->value));
+			return *(NODE *)((unsigned char *)(&v)+intptr_t(&((TStorage *)0)->nodeData)-intptr_t(&((TStorage *)0)->value));
 		}
 		static const NODE & node(const TValue &v)
 		{
-			return *(const NODE *)((unsigned char *)(&v)+int(&((TStorage *)0)->nodeData)-int(&((TStorage *)0)->value));
+			return *(const NODE *)((unsigned char *)(&v)+intptr_t(&((TStorage *)0)->nodeData)-intptr_t(&((TStorage *)0)->value));
 		}
 		static void swap(TStorage *s1,TStorage *s2)
 		{
