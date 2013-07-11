@@ -399,7 +399,7 @@ void G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *psWeaponModel, i
 	int wModelIndex = G_ModelIndex( weaponModel );
 	if ( wModelIndex )
 	{
-		ent->weaponModel[weaponNum] = gi.G2API_InitGhoul2Model(ent->ghoul2, weaponModel, wModelIndex, NULL, NULL, 0, 0 );
+		ent->weaponModel[weaponNum] = gi.G2API_InitGhoul2Model(ent->ghoul2, weaponModel, wModelIndex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 		if ( ent->weaponModel[weaponNum] != -1 )
 		{
 			// attach it to the hand
@@ -607,7 +607,7 @@ void WP_SetSaberEntModelSkin( gentity_t *ent, gentity_t *saberent )
 			gi.G2API_RemoveGhoul2Model( saberent->ghoul2, saberent->playerModel );
 		}
 		//add the new one
-		saberent->playerModel = gi.G2API_InitGhoul2Model( saberent->ghoul2, ent->client->ps.saber[0].model, saberModel, NULL, NULL, 0, 0);
+		saberent->playerModel = gi.G2API_InitGhoul2Model( saberent->ghoul2, ent->client->ps.saber[0].model, saberModel, NULL_HANDLE, NULL_HANDLE, 0, 0);
 		saberent->s.modelindex = saberModel; 
 		newModel = qtrue;
 	}

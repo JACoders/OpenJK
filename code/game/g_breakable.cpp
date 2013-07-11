@@ -1007,7 +1007,7 @@ void TieBomberThink( gentity_t *self )
 		char name1[200] = "models/players/remote/model.glm";
 		gentity_t *bomb = G_CreateObject( self, self->s.pos.trBase, self->s.apos.trBase, 0, 0, TR_GRAVITY, 0 );
 		bomb->s.modelindex = G_ModelIndex( name1 );
-		gi.G2API_InitGhoul2Model( bomb->ghoul2, name1, bomb->s.modelindex, NULL, NULL, 0, 0);
+		gi.G2API_InitGhoul2Model( bomb->ghoul2, name1, bomb->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0);
 		bomb->s.radius = 50;
 		bomb->s.eFlags |= EF_NODRAW;
 
