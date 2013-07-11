@@ -81,7 +81,7 @@ typedef struct
 //NOTE: this MUST stay up to date with the number of variables in the vehFields table!!!
 #define NUM_VWEAP_PARMS	25
 
-#define	VWFOFS(x) ((int)&(((vehWeaponInfo_t *)0)->x))
+#define	VWFOFS(x) ((intptr_t)&(((vehWeaponInfo_t *)0)->x))
 
 #define MAX_VEH_WEAPONS	16	//sigh... no more than 16 different vehicle weapons
 #define VEH_WEAPON_BASE	0
@@ -370,7 +370,7 @@ typedef struct
 	bool (*Inhabited)( Vehicle_t *pVeh );
 } vehicleInfo_t;
 
-#define	VFOFS(x) ((int)&(((vehicleInfo_t *)0)->x))
+#define	VFOFS(x) ((intptr_t)&(((vehicleInfo_t *)0)->x))
 
 #define MAX_VEHICLES	16	//sigh... no more than 64 individual vehicles
 extern vehicleInfo_t g_vehicleInfo[MAX_VEHICLES];

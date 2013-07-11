@@ -374,7 +374,7 @@ TIMER_Exists
 */
 qboolean TIMER_Exists( gentity_t *ent, const char *identifier )
 {
-	return (qboolean)TIMER_GetExisting(ent->s.number, identifier);
+	return (qboolean)(TIMER_GetExisting(ent->s.number, identifier) != NULL);
 }
 
 
