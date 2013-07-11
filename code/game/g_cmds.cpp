@@ -159,131 +159,83 @@ int ClientNumberFromString( gentity_t *to, char *s ) {
 	return -1;
 }
 
-/*
-==================
-Cmd_Give_f
-
-Give items to a client
-==================
-*/
-void Cmd_Give_f (gentity_t *ent)
+void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
 {
-	const char	*name;
 	gitem_t		*it;
 	int			i;
-	qboolean	give_all;
+	qboolean	give_all = qfalse;
 
-	if ( !CheatsOk( ent ) ) {
-		return;
-	}
-
-	name = ConcatArgs( 1 );
-
-	if (Q_stricmp(name, "all") == 0)
+	if ( !Q_stricmp( name, "all" ) )
 		give_all = qtrue;
-	else
-		give_all = qfalse;
 
-	if (give_all || Q_stricmp(name, "force") == 0)
+	if ( give_all || !Q_stricmp( name, "health") )
 	{
-		if ( ent->client )
-		{
-			ent->client->ps.forcePower = FORCE_POWER_MAX;
-		}
-		if (!give_all)
-			return;
-	}
-
-	if (give_all || Q_stricmp(gi.argv(1), "health") == 0)
-	{
-		if (gi.argc() == 3) {
-			ent->health = atoi(gi.argv(2));
-			if (ent->health > ent->client->ps.stats[STAT_MAX_HEALTH]) {
-				ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-			}
-		}
-		else {
-			ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-		}
-		if (!give_all)
-			return;
-	}
-
-
-/*	if (give_all || Q_stricmp(name, "inventory") == 0)
-	{
-		// Huh?  Was doing a INV_MAX+1 which was wrong because then you'd actually have every inventory item including INV_MAX
-		ent->client->ps.stats[STAT_ITEMS] = (1 << (INV_MAX)) - ( 1 << INV_ELECTROBINOCULARS );
-
-		ent->client->ps.inventory[INV_ELECTROBINOCULARS] = 1;
-		//ent->client->ps.inventory[INV_BACTA_CANISTER] = 5;
-		//ent->client->ps.inventory[INV_SEEKER] = 5;
-		ent->client->ps.inventory[INV_LIGHTAMP_GOGGLES] = 1;
-		//ent->client->ps.inventory[INV_SENTRY] = 5;
-		//ent->client->ps.inventory[INV_GOODIE_KEY] = 5;
-		//ent->client->ps.inventory[INV_SECURITY_KEY] = 5;
-
-		if (!give_all)
-		{
-			return;
-		}
-	}
-*/
-	if (give_all || Q_stricmp(name, "weapons") == 0)
-	{
-		ent->client->ps.stats[STAT_WEAPONS] = (1 << (WP_MELEE)) - ( 1 << WP_NONE );
-		if (!give_all)
-			return;
-	}
-
-	if ( !give_all && Q_stricmp(gi.argv(1), "weaponnum") == 0 )
-	{
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << atoi(gi.argv(2)));
-		return;
-	}
-
-	if ( Q_stricmp(name, "eweaps") == 0)	//for developing, gives you all the weapons, including enemy
-	{
-		ent->client->ps.stats[STAT_WEAPONS] = (unsigned)(1 << WP_NUM_WEAPONS) - ( 1 << WP_NONE ); // NOTE: this wasn't giving the last weapon in the list
-		if (!give_all)
-			return;
-	}
-
-	if (give_all || Q_stricmp(name, "ammo") == 0)
-	{
-		for ( i = 0 ; i < AMMO_MAX ; i++ ) {
-			ent->client->ps.ammo[i] = ammoData[i].max;
-		}
-		if (!give_all)
-			return;
-	}
-
-	if (give_all || Q_stricmp(gi.argv(1), "batteries") == 0)
-	{
-		if (gi.argc() == 3)
-			ent->client->ps.batteryCharge = atoi(gi.argv(2));
+		if ( argc == 3 )
+			ent->health = Com_Clampi( 1, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
 		else
-			ent->client->ps.batteryCharge = MAX_BATTERIES;
-
-		if (!give_all)
+			ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+		if ( !give_all )
 			return;
 	}
 
-	if (give_all || Q_stricmp(gi.argv(1), "armor") == 0 || Q_stricmp(gi.argv(1), "shield") == 0)
+	if ( give_all || !Q_stricmp( name, "armor" ) || !Q_stricmp( name, "shield" ) )
 	{
-		if (gi.argc() == 3)
-			ent->client->ps.stats[STAT_ARMOR] = atoi(gi.argv(2));
+		if ( argc == 3 )
+			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi( 0, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
 		else
 			ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_MAX_HEALTH];
 
-		if ( ent->client->ps.stats[STAT_ARMOR] > 0 )
-		{
-			ent->client->ps.powerups[PW_BATTLESUIT] = Q3_INFINITE;
-		}
+		if ( !give_all )
+			return;
+	}
+
+	if ( give_all || !Q_stricmp( name, "force" ) )
+	{
+		if ( argc == 3 )
+			ent->client->ps.forcePower = Com_Clampi( 0, FORCE_POWER_MAX, atoi( args ) );
 		else
-		{
-			ent->client->ps.powerups[PW_BATTLESUIT] = 0;
-		}
+			ent->client->ps.forcePower = FORCE_POWER_MAX;
+
+		if ( !give_all )
+			return;
+	}
+
+	if ( give_all || !Q_stricmp( name, "weapons" ) )
+	{
+		ent->client->ps.stats[STAT_WEAPONS] = (1 << (WP_MELEE)) - ( 1 << WP_NONE );
+		if ( !give_all )
+			return;
+	}
+	
+	if ( !give_all && !Q_stricmp( name, "weaponnum" ) )
+	{
+		ent->client->ps.stats[STAT_WEAPONS] |= (1 << atoi( args ));
+		return;
+	}
+
+	if ( !give_all && !Q_stricmp( name, "eweaps" ) )	//for developing, gives you all the weapons, including enemy
+	{
+		ent->client->ps.stats[STAT_WEAPONS] = (unsigned)(1 << WP_NUM_WEAPONS) - ( 1 << WP_NONE ); // NOTE: this wasn't giving the last weapon in the list
+		return;
+	}
+
+	if ( give_all || !Q_stricmp( name, "ammo" ) )
+	{
+		int num = 999;
+		if ( argc == 3 )
+			num = Com_Clampi( 0, 999, atoi( args ) );
+		for ( i=AMMO_FORCE; i<MAX_AMMO; i++ )
+			ent->client->ps.ammo[i] = num != -1 ? num : ammoData[i].max;
+		if ( !give_all )
+			return;
+	}
+
+	if ( give_all || !Q_stricmp( name, "batteries" ) )
+	{
+		if ( argc == 3 )
+			ent->client->ps.batteryCharge = Com_Clampi( 0, MAX_BATTERIES, atoi( args ) );
+		else
+			ent->client->ps.batteryCharge = MAX_BATTERIES;
 
 		if (!give_all)
 			return;
@@ -293,9 +245,8 @@ void Cmd_Give_f (gentity_t *ent)
 	if ( !give_all ) {
 		gentity_t	*it_ent;
 		trace_t		trace;
-		it = FindItem (name);
+		it = FindItem (args);
 		if (!it) {
-			name = gi.argv(1);
 			it = FindItem (name);
 			if (!it) {
 				gi.SendServerCommand( ent-g_entities, "print \"unknown item\n\"");
@@ -314,6 +265,15 @@ void Cmd_Give_f (gentity_t *ent)
 			G_FreeEntity( it_ent );
 		}
 	}
+}
+
+void Cmd_Give_f( gentity_t *ent )
+{
+	if ( !CheatsOk( ent ) ) {
+		return;
+	}
+
+	G_Give( ent, gi.argv(1), ConcatArgs( 2 ), gi.argc() );
 }
 
 //------------------
