@@ -93,7 +93,7 @@ int			G2API_GetTime(int argTime);
 
 qhandle_t	G2API_PrecacheGhoul2Model(const char *fileName);
 
-int			G2API_InitGhoul2Model(CGhoul2Info_v **ghoul2Ptr, const char *fileName, int modelIndex, qhandle_t customSkin = NULL, qhandle_t customShader = NULL, int modelFlags = 0, int lodBias = 0);
+int			G2API_InitGhoul2Model(CGhoul2Info_v **ghoul2Ptr, const char *fileName, int modelIndex, qhandle_t customSkin = NULL_HANDLE, qhandle_t customShader = NULL_HANDLE, int modelFlags = 0, int lodBias = 0);
 qboolean	G2API_SetLodBias(CGhoul2Info *ghlInfo, int lodBias);
 qboolean	G2API_SetSkin(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t renderSkin);
 qboolean	G2API_SetShader(CGhoul2Info *ghlInfo, qhandle_t customShader);

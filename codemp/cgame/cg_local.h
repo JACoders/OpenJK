@@ -19,10 +19,6 @@
 	#define CGAME_INLINE //none
 #endif
 
-#define NULL_HANDLE			((qhandle_t) 0)
-#define NULL_SOUND			((sfxHandle_t) 0)
-#define NULL_FX				((fxHandle_t) 0)
-
 #define	POWERUP_BLINKS		5
 
 #define	POWERUP_BLINK_TIME	1000
