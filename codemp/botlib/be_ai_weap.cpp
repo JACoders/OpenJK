@@ -31,8 +31,8 @@
 //#define DEBUG_AI_WEAP
 
 //structure field offsets
-#define WEAPON_OFS(x) (size_t)&(((weaponinfo_t *)0)->x)
-#define PROJECTILE_OFS(x) (size_t)&(((projectileinfo_t *)0)->x)
+#define WEAPON_OFS(x) offsetof(weaponinfo_t, x)
+#define PROJECTILE_OFS(x) offsetof(projectileinfo_t, x)
 
 //weapon definition // bk001212 - static
 static fielddef_t weaponinfo_fields[] =

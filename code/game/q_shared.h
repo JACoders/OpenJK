@@ -80,6 +80,7 @@ This file is part of Jedi Academy.
 #include <time.h>
 #include <ctype.h>
 #include <limits.h>
+#include <stddef.h>
 //=======================================================================
 
 //Ignore __attribute__ on non-gcc platforms
