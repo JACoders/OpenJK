@@ -42,19 +42,11 @@ typedef struct svEntity_s {
 	struct svEntity_s *nextEntityInWorldSector;
 	
 	entityState_t	baseline;		// for delta compression of initial sighting
-#ifdef _XBOX
-	signed char		numClusters;		// if -1, use headnode instead
-	short			clusternums[MAX_ENT_CLUSTERS];
-	short			lastCluster;		// if all the clusters don't fit in clusternums
-	short			areanum, areanum2;
-	char			snapshotCounter;	// used to prevent double adding from portal views
-#else
 	int			numClusters;		// if -1, use headnode instead
 	int			clusternums[MAX_ENT_CLUSTERS];
 	int			lastCluster;		// if all the clusters don't fit in clusternums
 	int			areanum, areanum2;
 	int			snapshotCounter;	// used to prevent double adding from portal views
-#endif
 } svEntity_t;
 
 typedef enum {
@@ -66,11 +58,7 @@ typedef enum {
 typedef struct {
 	serverState_t	state;
 	int				serverId;			// changes each server start
-#ifdef _XBOX
-	char			snapshotCounter;	// incremented for each snapshot built
-#else
 	int				snapshotCounter;	// incremented for each snapshot built
-#endif
 	int				time;				// all entities are correct for this time		// These 2 saved out
 	int				timeResidual;		// <= 1000 / sv_frame->value					//   during savegame.
 	float			timeResidualFraction;	// fraction of a msec accumulated

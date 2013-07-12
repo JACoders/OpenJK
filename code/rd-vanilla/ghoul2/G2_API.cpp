@@ -53,11 +53,7 @@ This file is part of Jedi Academy.
 #ifdef FINAL_BUILD
 #define G2API_DEBUG (0) // please don't change this
 #else
-#if defined(_DEBUG) && !defined(_XBOX)
-#define G2API_DEBUG (1)
-#else
 #define G2API_DEBUG (0) // change this to test g2api in release
-#endif 
 #endif
 
 //rww - RAGDOLL_BEGIN

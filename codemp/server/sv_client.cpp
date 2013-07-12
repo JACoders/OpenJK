@@ -124,9 +124,6 @@ void SV_DirectConnect( netadr_t from ) {
 	intptr_t	denied;
 	int			count;
 	char		*ip;
-#ifdef _XBOX
-	bool		reconnect = false;
-#endif
 
 	Com_DPrintf ("SVC_DirectConnect ()\n");
 
@@ -244,9 +241,6 @@ void SV_DirectConnect( netadr_t from ) {
 			|| from.port == cl->netchan.remoteAddress.port ) ) {
 			Com_Printf ("%s:reconnect\n", NET_AdrToString (from));
 			newcl = cl;
-#ifdef _XBOX
-			reconnect = true;
-#endif
 			// VVFIXME - both SOF2 and Wolf remove this call, claiming it blows away the user's info
 			// disconnect the client from the game first so any flags the
 			// player might have are dropped

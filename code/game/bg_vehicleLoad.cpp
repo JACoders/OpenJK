@@ -90,7 +90,7 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 #define MAX_VEH_WEAPON_DATA_SIZE 0x40000
 #define MAX_VEHICLE_DATA_SIZE 0x100000
 
-#if !defined(_XBOX) || defined(QAGAME)
+#if defined(QAGAME)
 	char	VehWeaponParms[MAX_VEH_WEAPON_DATA_SIZE];
 	char	VehicleParms[MAX_VEHICLE_DATA_SIZE];
 

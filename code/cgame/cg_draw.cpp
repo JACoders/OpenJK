@@ -27,10 +27,6 @@ This file is part of Jedi Academy.
 #include "../game/objectives.h"
 #include "../game/g_vehicles.h"
 
-#ifdef _XBOX
-#include "../client/fffx.h"
-#endif
-
 extern vmCvar_t	cg_debugHealthBars;
 
 extern Vehicle_t *G_IsRidingVehicle( gentity_t *ent );
@@ -2363,9 +2359,6 @@ CROSSHAIR
 CG_DrawCrosshair
 =================
 */
-#ifdef _XBOX
-short cg_crossHairStatus = 0;
-#endif
 static void CG_DrawCrosshair( vec3_t worldPoint ) 
 {
 	float		w, h;
@@ -2386,9 +2379,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 		return;
 	}
 
-#ifdef _XBOX
-	cg_crossHairStatus = 0;
-#endif
 	//set color based on what kind of ent is under crosshair
 	if ( g_crosshairEntNum >= ENTITYNUM_WORLD )
 	{
@@ -2416,9 +2406,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 			}
 			else if ( g_entities[0].client && g_entities[0].client->playerTeam == TEAM_FREE )
 			{//evil player: everyone is red
-#ifdef _XBOX
-				cg_crossHairStatus = 1;
-#endif
 				//Enemies are red
 				ecolor[0] = 1.0f;//R
 				ecolor[1] = 0.1f;//G
@@ -2440,9 +2427,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 			}
 			else
 			{
-#ifdef _XBOX
-				cg_crossHairStatus = 1;
-#endif
 				//Enemies are red
 				ecolor[0] = 1.0f;//R
 				ecolor[1] = 0.1f;//G
@@ -2462,9 +2446,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 			else
 			{
 				// hostile ones are red
-#ifdef _XBOX
-				cg_crossHairStatus = 1;
-#endif
 				ecolor[0] = 1.0;//R
 				ecolor[1] = 0.0;//G
 				ecolor[2] = 0.0;//B
@@ -2473,9 +2454,6 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 		else if ( crossEnt->s.weapon == WP_TRIP_MINE )
 		{
 			// tripmines are red
-#ifdef _XBOX
-			cg_crossHairStatus = 1;
-#endif
 			ecolor[0] = 1.0;//R
 			ecolor[1] = 0.0;//G
 			ecolor[2] = 0.0;//B
@@ -3210,24 +3188,12 @@ static void CG_RunRocketLocking( void )
 
 			if ( g_rocketLockEntNum > 0 && g_rocketLockEntNum < ENTITYNUM_WORLD && g_rocketLockTime > 0 )
 			{
-#ifdef _XBOX
-				FFFX_START( fffx_StartConst );
-#endif
 				CG_DrawRocketLocking( g_rocketLockEntNum, g_rocketLockTime );
 			}
-#ifdef _XBOX
-			else
-			{
-				FFFX_START( fffx_StopConst );
-			}
-#endif
 		}
 		else
 		{
 			// disengage any residual locking
-#ifdef _XBOX
-			FFFX_START( fffx_StopConst );
-#endif
 			g_rocketLockEntNum = ENTITYNUM_WORLD;
 			g_rocketLockTime = 0;
 		}
@@ -3276,11 +3242,7 @@ static float CG_DrawFPS( float y ) {
 	static int	previous, lastupdate;
 	int		t, i, fps, total;
 	unsigned short frameTime;
-#ifdef _XBOX
-	const int		xOffset = 30;
-#else
 	const int		xOffset = 0;
-#endif
 
 	// don't use serverTime, because that will be drifting to
 	// correct for internet lag changes, timescales, timedemos, etc
@@ -3884,11 +3846,7 @@ static void CG_Draw2D( void )
 	}
 	CG_SaberClashFlare();
 
-#ifdef _XBOX
-	float y = 32;
-#else
 	float y = 0;
-#endif
 	if (cg_drawSnapshot.integer) {
 		y=CG_DrawSnapshot(y);
 	} 

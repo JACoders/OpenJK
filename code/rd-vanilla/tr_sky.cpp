@@ -370,17 +370,9 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 
 	GL_Bind( image );
 
-#ifdef _XBOX
-	int verts = ((maxs[0]+HALF_SKY_SUBDIVISIONS) - (mins[0]+HALF_SKY_SUBDIVISIONS)) * 2 + 2;
-#endif
-
 	for ( t = mins[1]+HALF_SKY_SUBDIVISIONS; t < maxs[1]+HALF_SKY_SUBDIVISIONS; t++ )
 	{
-#ifdef _XBOX
-		qglBeginEXT( GL_TRIANGLE_STRIP, verts, 0, 0, verts, 0);
-#else
 		qglBegin( GL_TRIANGLE_STRIP );
-#endif
 
 		for ( s = mins[0]+HALF_SKY_SUBDIVISIONS; s <= maxs[0]+HALF_SKY_SUBDIVISIONS; s++ )
 		{
@@ -825,11 +817,7 @@ void RB_StageIteratorSky( void ) {
 	if ( r_showsky->integer ) {
 		qglDepthRange( 0.0, 0.0 );
 	} else {
-#ifdef _XBOX
-		qglDepthRange( 0.99, 1.0 );
-#else
 		qglDepthRange( 1.0, 1.0 );
-#endif
 	}
 
 	// draw the outer skybox

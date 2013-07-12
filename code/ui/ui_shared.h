@@ -113,17 +113,10 @@ typedef struct multiDef_s {
 #define CVAR_SUBSTRING	0x00000010	//when using enable or disable, just check for strstr instead of ==
 
 
-#ifdef _XBOX
-// Super small - doesn't need to be bigger yet, helps us get into 64 MB
-//#define STRING_POOL_SIZE 16*1024
-#define STRING_POOL_SIZE 64*1024
-
-#else
 #ifdef CGAME
 #define STRING_POOL_SIZE 128*1024
 #else
 #define STRING_POOL_SIZE 384*1024
-#endif
 #endif
 
 #define	NUM_CROSSHAIRS			9
@@ -499,11 +492,7 @@ qboolean	PC_ParseString(const char **tempStr);
 qboolean	PC_ParseStringMem(const char **out);
 void		PC_ParseWarning(const char *message);
 qboolean	PC_String_Parse(int handle, const char **out);
-#ifdef _XBOX	
-int			PC_StartParseSession(const char *fileName,char **buffer, bool nested = false);
-#else
 int			PC_StartParseSession(const char *fileName,char **buffer);
-#endif
 char		*PC_ParseExt(void);
 qboolean	PC_ParseInt(int *number);
 qboolean	PC_ParseFloat(float *number);

@@ -40,7 +40,6 @@ This file is part of Jedi Academy.
   1 0 light[x] / light[z]
 
 */
-#ifndef _XBOX
 
 #define _STENCIL_REVERSE
 
@@ -55,10 +54,8 @@ static	edgeDef_t	edgeDefs[SHADER_MAX_VERTEXES][MAX_EDGE_DEFS];
 static	int			numEdgeDefs[SHADER_MAX_VERTEXES];
 static	int			facing[SHADER_MAX_INDEXES/3];
 
-#endif // _XBOX
 
 void R_AddEdgeDef( int i1, int i2, int facing ) {
-#ifndef _XBOX
 	int		c;
 
 	c = numEdgeDefs[ i1 ];
@@ -69,14 +66,9 @@ void R_AddEdgeDef( int i1, int i2, int facing ) {
 	edgeDefs[ i1 ][ c ].facing = facing;
 
 	numEdgeDefs[ i1 ]++;
-#endif // _XBOX
 }
 
 void R_RenderShadowEdges( void ) {
-#if defined(VV_LIGHTING) && defined(_XBOX)
-	StencilShadower.RenderEdges();
-#else
-
 	int		i;
 	int		c;
 	int		j;
@@ -175,7 +167,6 @@ void R_RenderShadowEdges( void ) {
 		qglEnd();
 	}
 #endif
-#endif // VV_LIGHTING && _XBOX
 }
 
 //#define _DEBUG_STENCIL_SHADOWS
@@ -195,19 +186,6 @@ triangleFromEdge[ v1 ][ v2 ]
 void RB_DoShadowTessEnd( vec3_t lightPos );
 void RB_ShadowTessEnd( void )
 {
-#if defined(VV_LIGHTING) && defined(_XBOX)
-	VVdlight_t *dl;
-
-	/*for(int i = 0; i < VVLightMan.num_dlights; i++)
-	{
-		if(tess.dlightBits & (1 << i))
-		{*/
-			dl = &VVLightMan.dlights[0];//i];
-			if(StencilShadower.BuildFromLight(dl))
-				StencilShadower.RenderShadow();
-		/*}
-	}*/
-#else
 #if 0
 	if (backEnd.currentEntity &&
 		(backEnd.currentEntity->directedLight[0] ||
@@ -246,12 +224,10 @@ void RB_ShadowTessEnd( void )
 #else //old ents-only way
 	RB_DoShadowTessEnd(NULL);
 #endif
-#endif // VV_LIGHTING && _XBOX
 }
 
 void RB_DoShadowTessEnd( vec3_t lightPos )
 {
-#ifndef _XBOX
 	int		i;
 	int		numTris;
 	vec3_t	lightDir;
@@ -441,7 +417,6 @@ void RB_DoShadowTessEnd( vec3_t lightPos )
 #ifdef _DEBUG_STENCIL_SHADOWS
 	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
-#endif // _XBOX
 }
 
 
@@ -456,9 +431,6 @@ overlap and double darken.
 =================
 */
 void RB_ShadowFinish( void ) {
-#if defined(VV_LIGHTING) && defined(_XBOX)
-	StencilShadower.FinishShadows();
-#else
 	if ( r_shadows->integer != 2 ) {
 		return;
 	}
@@ -513,7 +485,6 @@ void RB_ShadowFinish( void ) {
 		qglEnable (GL_CLIP_PLANE0);
 	}
 	qglPopMatrix();
-#endif // VV_LIGHTING && _XBOX
 }
 
 
@@ -524,57 +495,6 @@ RB_ProjectionShadowDeform
 =================
 */
 void RB_ProjectionShadowDeform( void ) {
-#ifdef _XBOX
-	float	shadowMat[4][4];
-	vec3_t light, ground;
-	float d, dot;
-
-	ground[0] = backEnd.ori.axis[0][2];
-	ground[1] = backEnd.ori.axis[1][2];
-	ground[2] = backEnd.ori.axis[2][2];
-	d = backEnd.ori.origin[2] - backEnd.currentEntity->e.shadowPlane;
-
-	light[0] = backEnd.currentEntity->lightDir[0];
-	light[1] = backEnd.currentEntity->lightDir[1];
-	light[2] = backEnd.currentEntity->lightDir[2];
-
-	dot = ground[0] * light[0] + 
-		  ground[1] * light[1] + 
-		  ground[2] * light[2]; 
-	// don't let the shadows get too long or go negative
-	if ( dot < 0.5 ) 
-	{
-		VectorMA( light, (0.5 - dot), ground, light );
-		dot = DotProduct( light, ground );
-	}
-
-	shadowMat[0][0] = dot - light[0] * ground[0]; 
-	shadowMat[1][0] = 0.f - light[0] * ground[1]; 
-	shadowMat[2][0] = 0.f - light[0] * ground[2]; 
-	shadowMat[3][0] = 0.f - light[0] * d; 
-	shadowMat[0][1] = 0.f - light[1] * ground[0]; 
-	shadowMat[1][1] = dot - light[1] * ground[1]; 
-	shadowMat[2][1] = 0.f - light[1] * ground[2]; 
-	shadowMat[3][1] = 0.f - light[1] * d; 
-	shadowMat[0][2] = 0.f - light[2] * ground[0]; 
-	shadowMat[1][2] = 0.f - light[2] * ground[1]; 
-	shadowMat[2][2] = dot - light[2] * ground[2]; 
-	shadowMat[3][2] = 0.f - light[2] * d; 
-	shadowMat[0][3] = 0.f; 
-	shadowMat[1][3] = 0.f; 
-	shadowMat[2][3] = 0.f; 
-	shadowMat[3][3] = dot; 
-
-	qglMatrixMode(GL_MODELVIEW);
-	qglMultMatrixf(&shadowMat[0][0]);
-
-	// Turn on stenciling
-	// This is done to prevent overlapping shadow artifacts
-	qglEnable( GL_STENCIL_TEST ); 
-	qglStencilFunc( GL_NOTEQUAL, 0x1, 0xffffffff );
-	qglStencilMask( 0xffffffff );
-	qglStencilOp( GL_KEEP, GL_KEEP, GL_INCR );
-#else
 	float	*xyz;
 	int		i;
 	float	h;
@@ -612,7 +532,6 @@ void RB_ProjectionShadowDeform( void ) {
 		xyz[1] -= light[1] * h;
 		xyz[2] -= light[2] * h;
 	}
-#endif // _XBOX
 }
 
 //update tr.screenImage
@@ -676,11 +595,7 @@ void RB_CaptureScreenImage(void)
 		cY = 0;
 	}
 
-#ifndef _XBOX
 	qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, cX, cY, radX, radY, 0);
-#else
-	qglCopyBackBufferToTexEXT(radX, radY, cX, (480 - cY), (cX + radX), (480 - (cY + radY)));
-#endif // _XBOX
 }
 
 
@@ -753,11 +668,7 @@ void RB_DistortionFill(void)
 		GL_State(0);
 	}
 
-#ifdef _XBOX
-	qglBeginEXT(GL_QUADS, 4, 0, 0, 4, 0);
-#else
 	qglBegin(GL_QUADS);
-#endif // _XBOX
 		qglColor4f(1.0f, 1.0f, 1.0f, alpha);
 		qglTexCoord2f(0+spost2, 1-spost);
 		qglVertex2f(0, 0);
@@ -799,11 +710,7 @@ void RB_DistortionFill(void)
 		}
 		spost2 *= 0.2f;
 
-#ifdef _XBOX
-		qglBeginEXT(GL_QUADS, 4, 0, 0, 4, 0);
-#else
 		qglBegin(GL_QUADS);
-#endif // _XBOX
 			qglColor4f(1.0f, 1.0f, 1.0f, alpha);
 			qglTexCoord2f(0+spost2, 1-spost);
 			qglVertex2f(0, 0);

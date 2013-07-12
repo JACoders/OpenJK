@@ -40,9 +40,6 @@ extern stringID_table_t WPTable[];
 
 #define		MAX_MODELS_PER_LEVEL	40
 
-#ifdef _XBOX
-using dllNamespace::hstring;
-#endif
 hstring		modelsAlreadyDone[MAX_MODELS_PER_LEVEL];
 
 
@@ -268,9 +265,6 @@ static rank_t TranslateRankName( const char *name )
 	return RANK_CIVILIAN;
 }
 
-#ifdef _XBOX
-extern saber_colors_t TranslateSaberColor( const char *name );
-#else
 saber_colors_t TranslateSaberColor( const char *name ) 
 {
 	if ( !Q_stricmp( name, "red" ) ) 
@@ -303,7 +297,6 @@ saber_colors_t TranslateSaberColor( const char *name )
 	}
 	return SABER_BLUE;
 }
-#endif
 
 /* static int MethodNameToNumber( const char *name ) {
 	if ( !Q_stricmp( name, "EXPONENTIAL" ) ) {
@@ -1200,14 +1193,6 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 
 	return fileIndex;
 }
-
-#ifdef _XBOX
-// Utility to wipe the modelsAlreadyDone array, as it is never cleared
-void ClearModelsAlreadyDone(void)
-{
-	memset(modelsAlreadyDone, 0, sizeof(modelsAlreadyDone));
-}
-#endif
 
 extern cvar_t	*g_char_model;
 void G_LoadAnimFileSet( gentity_t *ent, const char *pModelName )
