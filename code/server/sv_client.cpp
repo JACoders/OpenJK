@@ -43,7 +43,7 @@ void SV_DirectConnect( netadr_t from ) {
 	int			clientNum;
 	int			version;
 	int			qport;
-	int			challenge;
+	//int			challenge;
 	char		*denied;
 
 	Com_DPrintf ("SVC_DirectConnect ()\n");
@@ -59,7 +59,7 @@ void SV_DirectConnect( netadr_t from ) {
 
 	qport = atoi( Info_ValueForKey( userinfo, "qport" ) );
 
-	challenge = atoi( Info_ValueForKey( userinfo, "challenge" ) );
+	//challenge = atoi( Info_ValueForKey( userinfo, "challenge" ) );
 
 	// see if the challenge is valid (local clients don't need to challenge)
 	if ( !NET_IsLocalAddress (from) ) {
@@ -447,12 +447,12 @@ static void SV_UserMove( client_t *cl, msg_t *msg ) {
 	usercmd_t	nullcmd;
 	usercmd_t	cmds[MAX_PACKET_USERCMDS];
 	usercmd_t	*cmd, *oldcmd;
-	int			clientTime;
+	//int			clientTime;
 	int			serverId;
 
 	cl->reliableAcknowledge = MSG_ReadLong( msg );
 	serverId = MSG_ReadLong( msg );
-	clientTime = MSG_ReadLong( msg );
+	/*clientTime = */MSG_ReadLong( msg );
 	cl->deltaMessage = MSG_ReadLong( msg );
 
 	// cmdNum is the command number of the most recent included usercmd
