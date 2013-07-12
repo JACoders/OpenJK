@@ -472,6 +472,9 @@ typedef enum {
 #define UI_TINYFONT		0x00010000
 
 
+#define Com_Memset memset
+#define Com_Memcpy memcpy
+
 // stuff for TA's ROQ cinematic code...
 //
 #define CIN_system	1
