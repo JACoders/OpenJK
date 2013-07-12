@@ -943,14 +943,14 @@ Touch all known used data to make sure it is paged in
 ===============
 */
 void Com_TouchMemory( void ) {
-	int		start, end;
+	//int		start, end;
 	int		i, j;
 	int		sum;	
 	int		totalTouched;
 
 	Z_Validate();
 
-	start = Sys_Milliseconds();
+	//start = Sys_Milliseconds();
 
 	sum = 0;
 	totalTouched=0;
@@ -967,7 +967,7 @@ void Com_TouchMemory( void ) {
 		pMemory = pMemory->pNext;
 	}
 
-	end = Sys_Milliseconds();
+	//end = Sys_Milliseconds();
 
 	//Com_Printf( "Com_TouchMemory: %i bytes, %i msec\n", totalTouched, end - start );
 }
