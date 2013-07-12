@@ -762,6 +762,22 @@ typedef map <const char *, image_t *, CStringComparator>	AllocatedImages_t;
 
 int giTextureBindNum = 1024;	// will be set to this anyway at runtime, but wtf?
 
+int R_Images_StartIteration(void)
+{
+	itAllocatedImages = AllocatedImages.begin();
+	return AllocatedImages.size();
+}
+
+image_t *R_Images_GetNextIteration(void)
+{
+	if (itAllocatedImages == AllocatedImages.end())
+		return NULL;
+
+	image_t *pImage = (*itAllocatedImages).second;
+	++itAllocatedImages;
+	return pImage;
+}
+
 // clean up anything to do with an image_t struct, but caller will have to clear the internal to an image_t struct ready for either struct free() or overwrite...
 //
 static void R_Images_DeleteImageContents( image_t *pImage )
