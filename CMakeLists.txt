@@ -33,6 +33,12 @@ else(WIN32)
 	option(UseInternalPNG "Whether to use the included libpng instead of a locally installed one" OFF)
 endif(WIN32)
 
+if(APPLE)
+	option(MakeApplicationBundles "Whether to build .app application bundles for engines built" ON)
+else(APPLE)
+	set(MakeApplicationBundles OFF)
+endif(APPLE)
+
 option(PackageDir "Where to place the installer/package." "${CMAKE_SOURCE_DIR}/package")
 
 # Custom CMake Modules needed

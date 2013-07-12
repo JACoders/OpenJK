@@ -537,12 +537,28 @@ if(BuildMPEngine)
 
 	# todo: windows resources
 
+	if(MakeApplicationBundles)
+		set(MACOSX_BUNDLE_ICON_FILE OpenJK.icns)
+		set_source_files_properties(${MPDir}/macosx/OpenJK.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+		set(MPEngineFiles ${MPEngineFiles} ${MPDir}/macosx/OpenJK.icns)
+	endif(MakeApplicationBundles)
+
 	if(WIN32)
 		add_executable(${MPEngine} WIN32 ${MPEngineFiles})
 	else(WIN32)
-		add_executable(${MPEngine} ${MPEngineFiles})
+		if(MakeApplicationBundles)
+			add_executable(${MPEngine} MACOSX_BUNDLE ${MPEngineFiles})
+		else(MakeApplicationBundles)
+			add_executable(${MPEngine} ${MPEngineFiles})
+		endif(MakeApplicationBundles)
 	endif(WIN32)
-    install(TARGETS ${MPEngine} RUNTIME DESTINATION ".")
+
+	if(MakeApplicationBundles)
+		install(TARGETS ${MPEngine} BUNDLE DESTINATION ".")
+	else(MakeApplicationBundles)
+		install(TARGETS ${MPEngine} RUNTIME DESTINATION ".")
+	endif(MakeApplicationBundles)
+
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPEngineDefines};${ReleaseDefines}")
