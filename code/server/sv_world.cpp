@@ -394,9 +394,6 @@ SV_AreaEntities_r
 void SV_AreaEntities_r( worldSector_t *node, areaParms_t *ap ) {
 	svEntity_t	*check, *next;
 	gentity_t	*gcheck;
-	int			count;
-
-	count = 0;
 
 	for ( check = node->entities  ; check ; check = next ) {
 		next = check->nextEntityInWorldSector;

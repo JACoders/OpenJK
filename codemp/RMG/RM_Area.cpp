@@ -186,7 +186,7 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
 		vec3_t point;
 		vec3_t dir;
 		vec3_t tang;
-		bool   push;
+		//bool   push;
 		float  len;
 
 		VectorSubtract( movedArea->GetOrigin(), bounds[0], point );
@@ -199,7 +199,7 @@ void CRMAreaManager::MoveArea ( CRMArea* movedArea, vec3_t origin)
 		VectorSubtract ( movedArea->GetOrigin(), tang, dir );
 
 		dir[2] = 0;
-		push   = false;
+		//push   = false;
 		len    = VectorNormalize(dir);
 
 		if ( len < movedArea->GetRadius ( ) )

@@ -2570,13 +2570,10 @@ R_CreateFogImage
 static void R_CreateFogImage( void ) {
 	int		x,y;
 	byte	*data;
-	float	g;
 	float	d;
 	float	borderColor[4];
 
 	data = (byte*) Z_Malloc( FOG_S * FOG_T * 4, TAG_TEMP_WORKSPACE, qfalse );
-
-	g = 2.0;
 
 	// S is distance, T is depth
 	for (x=0 ; x<FOG_S ; x++) {

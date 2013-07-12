@@ -997,7 +997,7 @@ void R_AddTerrainSurfaces(void)
 
 void RE_InitRendererTerrain( const char *info )
 {
-	CTRLandScape	*ls;
+	//CTRLandScape	*ls;
 
 	if ( !info || !info[0] )
 	{
@@ -1008,7 +1008,7 @@ void RE_InitRendererTerrain( const char *info )
 	Com_Printf("R_Terrain: Creating RENDERER data.....\n");
 
 	// Create and register a new landscape structure
-	ls = new CTRLandScape(info);
+	/*ls = */new CTRLandScape(info);
 }
 
 void R_TerrainInit(void)

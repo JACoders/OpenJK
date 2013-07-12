@@ -1571,23 +1571,18 @@ R_inPVS
 qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask ) {
 	int		leafnum;
 	int		cluster;
-	int		area1, area2;
 
 	leafnum = ri.CM_PointLeafnum (p1);
 	cluster = ri.CM_LeafCluster (leafnum);
-	area1 = ri.CM_LeafArea (leafnum);
 
 	//agh, the damn snapshot mask doesn't work for this
 	mask = (byte *) ri.CM_ClusterPVS (cluster);
 
 	leafnum = ri.CM_PointLeafnum (p2);
 	cluster = ri.CM_LeafCluster (leafnum);
-	area2 = ri.CM_LeafArea (leafnum);
 	if ( mask && (!(mask[cluster>>3] & (1<<(cluster&7)) ) ) )
 		return qfalse;
-	//this doesn't freakin work
-//	if (!CM_AreasConnected (area1, area2))
-//		return qfalse;		// a door blocks sight
+
 	return qtrue;
 }
 

@@ -347,7 +347,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	int		l;
 	int		clientarea, clientcluster;
 	int		leafnum;
-	int		c_fullsend;
 	const byte *clientpvs;
 	const byte *bitvector;
 	qboolean sightOn = qfalse;
@@ -367,8 +366,6 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	frame->areabytes = CM_WriteAreaBits( frame->areabits, clientarea );
 
 	clientpvs = CM_ClusterPVS (clientcluster);
-
-	c_fullsend = 0;
 
 	if ( !portal )
 	{//not if this if through a portal...???  James said to do this...

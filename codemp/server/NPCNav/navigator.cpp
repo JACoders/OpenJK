@@ -849,13 +849,13 @@ void CNavigator::CalculatePath( CNode *node )
 		pathList->Push( new CEdge( nextNode->GetID(), nextNode->GetID(), node->GetEdgeCost(i) ) );
 	}
 
-	float				minDist;
+	//float				minDist;
 	CEdge				*test;	
 
 	//Now flood fill all the others
 	while ( !pathList->Empty() )
 	{
-		minDist = Q3_INFINITE;			
+		//minDist = Q3_INFINITE;			
 		test	 = pathList->Pop();
 		
 		CNode	*testNode = m_nodes[ (*test).m_first ];
