@@ -685,7 +685,6 @@ with the archive flag set to qtrue.
 ============
 */
 void Cvar_WriteVariables( fileHandle_t f ) {
-#ifndef _XBOX
 	cvar_t	*var;
 	char	buffer[1024];
 
@@ -700,7 +699,6 @@ void Cvar_WriteVariables( fileHandle_t f ) {
 			FS_Printf (f, "%s", buffer);
 		}
 	}
-#endif
 }
 
 /*

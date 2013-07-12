@@ -434,8 +434,6 @@ void GL_CheckErrors( void ) {
     Com_Error( ERR_FATAL, "GL_CheckErrors: %s", s );
 }
 
-#ifndef _XBOX
-
 /*
 ** R_GetModeInfo
 */
@@ -501,8 +499,6 @@ static void R_ModeList_f( void )
 	}
 	VID_Printf( PRINT_ALL, "\n" );
 }
-
-#endif	// _XBOX
 
 /* 
 ============================================================================== 
@@ -1400,9 +1396,7 @@ void R_Init( void ) {
 	R_InitImages();
 	R_InitShaders();
 	R_InitSkins();
-#ifndef _XBOX
 	R_TerrainInit();
-#endif
 	R_ModelInit();
 	R_InitWorldEffects();
 	R_InitFonts();
@@ -1441,13 +1435,10 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	ri.Cmd_RemoveCommand ("r_reloadfonts");
 
 	R_ShutdownWorldEffects();
-#ifndef _XBOX
 	R_TerrainShutdown();
-#endif
 	R_ShutdownFonts();
 
 	if ( tr.registered ) {
-#ifndef _XBOX	// GLOWXXX
 		if ( r_DynamicGlow && r_DynamicGlow->integer )
 		{
 			// Release the Glow Vertex Shader.
@@ -1480,12 +1471,9 @@ void RE_Shutdown( qboolean destroyWindow ) {
 			// Release the blur texture.
 			qglDeleteTextures( 1, &tr.blurImage );
 		}
-#endif
 //		R_SyncRenderThread();
 		R_ShutdownCommandBuffers();
-//#ifndef _XBOX
 		if (destroyWindow)
-//#endif
 		{
 			R_DeleteTextures();	// only do this for vid_restart now, not during things like map load
 		}

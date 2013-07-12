@@ -131,11 +131,9 @@ NET
 ==============================================================
 */
 
-#ifdef _XBOX
-#define PACKET_BACKUP	2
-#else
+
 #define	PACKET_BACKUP	16	// number of old messages that must be kept on client and
-#endif						// server for delta comrpession and ping estimation
+													// server for delta comrpession and ping estimation
 #define	PACKET_MASK		(PACKET_BACKUP-1)
 
 #define	MAX_PACKET_USERCMDS		32		// max number of usercmd_t in a packet
@@ -563,10 +561,8 @@ extern	int		com_frameMsec;
 
 extern	qboolean	com_errorEntered;
 
-#ifndef _XBOX
 extern	fileHandle_t	com_journalFile;
 extern	fileHandle_t	com_journalDataFile;
-#endif
 
 /*
 
@@ -769,10 +765,6 @@ void	Sys_Quit (void);
 char	*Sys_GetClipboardData( void );	// note that this isn't journaled...
 
 void	Sys_Print( const char *msg );
-#ifdef _XBOX
-void	Sys_Log( const char *file, const char *msg );
-void	Sys_Log( const char *file, const void *buffer, int size, bool flush );
-#endif
 
 // Sys_Milliseconds should only be used for profiling purposes,
 // any game related timing information should come from event timestamps
@@ -828,41 +820,5 @@ inline int Round(float value)
 {
 	return((int)floorf(value + 0.5f));
 }
-
-
-#ifdef _XBOX
-//////////////////////////////
-//
-// Map Lump Loader
-//
-struct Lump
-{
-	void* data;
-	int len;
-	
-	Lump() : data(NULL), len(0) {}
-	~Lump() { clear(); }
-
-	void load(const char* map, const char* lump)
-	{
-		clear();
-
-		char path[MAX_QPATH];
-		Com_sprintf(path, MAX_QPATH, "%s/%s.mle", map, lump);
-
-		len = FS_ReadFile(path, &data);
-		if (len < 0) len = 0;
-	}
-
-	void clear(void)
-	{
-		if (data)
-		{
-			FS_FreeFile(data);
-			data = NULL;
-		}
-	}
-};
-#endif //_XBOX
 
 #endif //__QCOMMON_H__

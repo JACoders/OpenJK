@@ -846,13 +846,11 @@ void CG_DrawInformation( void ) {
 	qhandle_t	levelshot;
 
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
-//#ifndef _XBOX
 //	if ( g_eSavedGameJustLoaded == eFULL ) 
 //	{
 //		levelshot = 0;	//use the loaded thumbnail instead of the levelshot
 //	} 
 //	else
-//#endif
 	{
 		levelshot = cgi_R_RegisterShaderNoMip( va( "levelshots/%s", s ) );	
 	#ifndef FINAL_BUILD

@@ -145,13 +145,6 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 	vec3_t			direction;
 	float			totalFactor;
 	unsigned short	*startGridPos;
-#ifdef _XBOX
-	byte zeroArray[3];
-	byte style;
-
-	zeroArray[0] = zeroArray[1] = zeroArray[2] = 0;
-#endif
-
 	
 	if (r_fullbright->integer || (tr.refdef.rdflags & RDF_doLAGoggles) )
 	{
@@ -238,58 +231,6 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 		}
 		data = tr.world->lightGridData + *gridPos;
 
-#ifdef _XBOX
-		const byte *memory = (const byte *)tr.world->lightGridData + data->data;
-
-		style = data->flags & (1 << 4) ? memory[0] : LS_NONE;
-		if ( style == LS_NONE ) 
-		{
-			continue;	// ignore samples in walls
-		}
-
-		totalFactor += factor;
-
-		const byte *array;
-
-		for(j=0;j<MAXLIGHTMAPS;j++)
-		{
-			if(data->flags & (1 << (j + 4))) {
-				style = *memory;
-				memory++;
-			} else {
-				style = LS_NONE;
-			}
-
-			if (style != LS_NONE)
-			{
-				if(data->flags & (1 << j)) {
-					array = memory;
-					memory += 3;
-				} else {
-					array = zeroArray;
-				}
-
-				ent->ambientLight[0] += factor * array[0] * styleColors[style][0] / 255.0f;
-				ent->ambientLight[1] += factor * array[1] * styleColors[style][1] / 255.0f;
-				ent->ambientLight[2] += factor * array[2] * styleColors[style][2] / 255.0f;
-
-				if(array != zeroArray) {
-					array = memory;
-					memory += 3;
-				} 
-
-				ent->directedLight[0] += factor * array[0] * styleColors[style][0] / 255.0f;
-				ent->directedLight[1] += factor * array[1] * styleColors[style][1] / 255.0f;
-				ent->directedLight[2] += factor * array[2] * styleColors[style][2] / 255.0f;
-			}
-			else
-			{
-				break;
-			}
-		}
-
-#else // _XBOX
-
 		if ( data->styles[0] == LS_NONE ) 
 		{
 			continue;	// ignore samples in walls
@@ -324,8 +265,6 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 			}
 		}
 
-#endif // _XBOX
-
 		lat = data->latLong[1];
 		lng = data->latLong[0];
 		lat *= (FUNCTABLE_SIZE/256);
@@ -342,7 +281,6 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 		VectorMA( direction, factor, normal, direction );
 
 #if ACCURATE_LIGHTGRID_SAMPLING
-#ifndef _XBOX
 		if ( r_debugLight->integer && ent->e.hModel == -1 )
 		{
 			//draw 	
@@ -378,7 +316,6 @@ static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
 			refEnt.radius = 1.5f;
 			RE_AddRefEntityToScene( &refEnt );
 		}
-#endif // _XBOX
 #endif
 	}
 

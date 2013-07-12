@@ -1185,11 +1185,6 @@ void SE_NewLanguage(void)
 //
 void SE_Init(void)
 {
-#ifdef _XBOX	// VVFIXME?
-//	extern void Z_SetNewDeleteTemporary(bool);
-//	Z_SetNewDeleteTemporary(true);
-#endif
-
 	TheStringPackage.Clear( SE_FALSE );
 
 #ifdef _DEBUG
@@ -1219,10 +1214,6 @@ void SE_Init(void)
 	{
 		Com_Error( ERR_DROP, "SE_Init() Unable to load language: \"%s\"!\nError: \"%s\"\n", se_language->string,psErrorMessage );
 	}
-
-#ifdef _XBOX
-//	Z_SetNewDeleteTemporary(false);
-#endif
 }
 
 void SE_ShutDown(void)

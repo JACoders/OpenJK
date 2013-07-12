@@ -345,9 +345,6 @@
 //extra, for patch
 #define UI_JEDI_NONJEDI 289
 
-// Xbox-only, for complicated passcode entry screen. Sorry.
-#define UI_XBOX_PASSCODE 290
-
 #define UI_CHAT_MAIN		291
 #define UI_CHAT_ATTACK		292
 #define UI_CHAT_DEFEND		293

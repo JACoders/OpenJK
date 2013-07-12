@@ -232,11 +232,7 @@ fileHandle_t	FS_HandleForFile(void) {
 	int		i;
 
 	for ( i = 1 ; i < MAX_FILE_HANDLES ; i++ ) {
-#ifdef _XBOX
-		if ( !fsh[i].used ) {
-#else
 		if ( fsh[i].handleFiles.file.o == NULL ) {
-#endif
 			return i;
 		}
 	}
@@ -304,7 +300,6 @@ char *FS_BuildOSPath( const char *qpath )
 	return ospath[toggle];
 }
 
-#ifndef _XBOX
 char *FS_BuildOSPath( const char *base, const char *game, const char *qpath ) {
 	char	temp[MAX_OSPATH];
 	static char ospath[4][MAX_OSPATH];
@@ -323,7 +318,6 @@ char *FS_BuildOSPath( const char *base, const char *game, const char *qpath ) {
 	
 	return ospath[toggle];
 }
-#endif
 
 
 /*
@@ -379,11 +373,7 @@ int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
 	// don't let sound stutter
 	S_ClearSoundBuffer();
 
-#ifdef _XBOX
-	ospath = FS_BuildOSPath( filename );
-#else
 	ospath = FS_BuildOSPath( fs_homepath->string, filename, "" );
-#endif
 	// remove trailing slash
   ospath[strlen(ospath)-1] = '\0';
 
@@ -466,11 +456,7 @@ fileHandle_t FS_FOpenFileAppend( const char *filename ) {
 	// don't let sound stutter
 	S_ClearSoundBuffer();
 
-#ifdef _XBOX
-	ospath = FS_BuildOSPath( filename );
-#else
 	ospath = FS_BuildOSPath( fs_homepath->string, fs_gamedir, filename );
-#endif
 
 	if ( fs_debug->integer ) {
 		Com_Printf( "FS_FOpenFileAppend: %s\n", ospath );
@@ -596,9 +582,7 @@ void FS_Shutdown( void ) {
 		next = p->next;
 
 		if ( p->pack ) {
-#ifndef _XBOX
 			unzClose(p->pack->handle);
-#endif
 			Z_Free( p->pack->buildBuffer );
 			Z_Free( p->pack );
 		}

@@ -73,11 +73,7 @@ void CQuickSpriteSystem::Flush(void)
 	{ //enable hardware fog when we draw this thing if applicable -rww
 		fog_t *fog = tr.world->fogs + mFogIndex;
 
-#ifdef _XBOX
-		qglFogi(GL_FOG_MODE, GL_EXP2);
-#else
 		qglFogf(GL_FOG_MODE, GL_EXP2);
-#endif
 		qglFogf(GL_FOG_DENSITY, logtestExp2 / fog->parms.depthForOpaque);
 		qglFogfv(GL_FOG_COLOR, fog->parms.color);
 		qglEnable(GL_FOG);

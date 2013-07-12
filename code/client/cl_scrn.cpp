@@ -323,7 +323,6 @@ DEBUG GRAPH
 
 ===============================================================================
 */
-#ifndef _XBOX
 typedef struct
 {
 	float	value;
@@ -378,7 +377,6 @@ void SCR_DrawDebugGraph (void)
 		re.DrawStretchPic( x+w-1-a, y - h, 1, h, 0, 0, 0, 0, 0 );
 	}
 }
-#endif	// _XBOX
 //=============================================================================
 
 /*
@@ -464,9 +462,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 		}
 	}
 
-#ifndef _XBOX // on xbox this is rendered right before a flip
 	re.ProcessDissolve();
-#endif // _XBOX
 
 	// draw downloading progress bar
 
@@ -477,11 +473,9 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	Con_DrawConsole ();
 
 	// debug graph can be drawn on top of anything
-#ifndef _XBOX
 	if ( cl_debuggraph->integer || cl_timegraph->integer ) {
 		SCR_DrawDebugGraph ();
 	}
-#endif
 }
 
 /*
@@ -549,7 +543,6 @@ void SCR_PrecacheScreenshot()
 		return;
 	}
 
-#ifndef _XBOX
 	if (cls.keyCatchers == 0)
 	{
 		// in-game...
@@ -560,14 +553,6 @@ void SCR_PrecacheScreenshot()
 		re.GetScreenShot( (byte *) &bScreenData, SG_SCR_WIDTH, SG_SCR_HEIGHT);
 		screenDataValid = qtrue;
 	}
-#endif
-
-	// save the current screenshot to the user space to be used
-	// with a savegame
-#ifdef _XBOX
-	extern void SaveCompressedScreenshot( const char* filename );
-	SaveCompressedScreenshot("u:\\saveimage.xbx");
-#endif
 
 }
 

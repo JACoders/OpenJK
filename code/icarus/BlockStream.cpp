@@ -544,23 +544,12 @@ int CBlockStream::ReadBlock( CBlock *get, CIcarus* icarus )
 	get->Create( b_id );
 	get->SetFlags( flags );
 
-	// Stream blocks are generally temporary as they
-	// are just used in an initial parsing phase...
-#ifdef _XBOX
-	extern void Z_SetNewDeleteTemporary(bool bTemp);
-	Z_SetNewDeleteTemporary(true);
-#endif
-
 	while ( numMembers-- > 0)
 	{	
 		bMember = new CBlockMember;
 		bMember->ReadMember( &m_stream, &m_streamPos, icarus );
 		get->AddMember( bMember );
 	}
-
-#ifdef _XBOX
-	Z_SetNewDeleteTemporary(false);
-#endif
 
 	return true;
 }

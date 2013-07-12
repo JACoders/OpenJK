@@ -664,9 +664,6 @@ densityMap - how dense the client models are packed
 */
 void SP_terrain(gentity_t *ent) 
 {
-#ifdef _XBOX
-	assert(0);
-#else
 	char				temp[MAX_INFO_STRING];
 	char				final[MAX_QPATH];
 //	char				seed[MAX_QPATH];
@@ -787,7 +784,6 @@ void SP_terrain(gentity_t *ent)
 		gi.RMG_Init(terrainID);
 	}
 */
-#endif	// _XBOX
 }
 
 //rww - Called by skyportal entities. This will check through entities and flag them

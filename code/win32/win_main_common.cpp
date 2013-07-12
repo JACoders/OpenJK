@@ -6,7 +6,6 @@
 #include "win_local.h"
 #include "resource.h"
 
-#ifndef _GAMECUBE
 #include <errno.h>
 #include <float.h>
 #include <fcntl.h>
@@ -14,7 +13,6 @@
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
-#endif
 
 
 

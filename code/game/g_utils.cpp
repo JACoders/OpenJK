@@ -25,12 +25,6 @@ This file is part of Jedi Academy.
 #include "Q3_Interface.h"
 #include "g_local.h"
 #include "g_functions.h"
-#ifdef _XBOX
-#include "anims.h"
-#include "..\renderer\mdx_format.h"
-#include "..\qcommon\cm_public.h"
-#include "..\qcommon\cm_local.h"
-#endif
 
 #define ACT_ACTIVE		qtrue
 #define ACT_INACTIVE	qfalse
@@ -249,35 +243,6 @@ void G_StopEffect(const char *name, const int modelIndex, const int boltIndex, c
 {
 	G_StopEffect( G_EffectIndex( name ), modelIndex, boltIndex, entNum );
 }
-
-#ifdef _XBOX
-//-----------------------------
-void G_EntityPosition( int i, vec3_t ret )
-{
-	if ( /*g_entities &&*/ i >= 0 && i < MAX_GENTITIES && g_entities[i].inuse)
-	{
-		gentity_t *ent = g_entities + i;
-
-		if (ent->bmodel)
-		{
-			vec3_t mins, maxs;
-			clipHandle_t h = CM_InlineModel( ent->s.modelindex );
-			CM_ModelBounds( cmg, h, mins, maxs );
-			ret[0] = (mins[0] + maxs[0]) / 2 + ent->currentOrigin[0];
-			ret[1] = (mins[1] + maxs[1]) / 2 + ent->currentOrigin[1];
-			ret[2] = (mins[2] + maxs[2]) / 2 + ent->currentOrigin[2];
-		}
-		else
-		{
-			VectorCopy(g_entities[i].currentOrigin, ret);
-		}
-	}
-	else
-	{
-		ret[0] = ret[1] = ret[2] = 0;
-	}
-}
-#endif
 
 //===Bypass network for sounds on specific channels====================
 
@@ -843,7 +808,7 @@ gentity_t *G_Spawn( void )
 	}
 	if ( i == ENTITYNUM_MAX_NORMAL )
 	{
-#ifndef _XBOX
+
 //#ifndef FINAL_BUILD
 		e = &g_entities[0];
 
@@ -873,7 +838,7 @@ gentity_t *G_Spawn( void )
 			}
 		}
 */
-#endif//FINAL_BUILD
+//FINAL_BUILD
 		G_Error( "G_Spawn: no free entities" );
 	}
 	
