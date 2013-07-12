@@ -32,13 +32,7 @@ USER INTERFACE SABER LOADING & DISPLAY CODE
 #include "../ghoul2/G2.h"
 
 #define MAX_SABER_DATA_SIZE 0x80000
-// On Xbox, static linking lets us steal the buffer from wp_saberLoad
-// Just make sure that the saber data size is the same
-#ifdef _XBOX
-extern char SaberParms[MAX_SABER_DATA_SIZE];
-#else
 char	SaberParms[MAX_SABER_DATA_SIZE];
-#endif
 qboolean	ui_saber_parms_parsed = qfalse;
 
 static qhandle_t redSaberGlowShader;

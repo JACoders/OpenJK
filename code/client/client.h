@@ -182,15 +182,9 @@ typedef enum {
 	EXIT_LAUNCH			// quit all the way out of the game on disconnect
 } exitTo_t;
 
-#ifdef _XBOX
-#define	MAX_LOCAL_SERVERS	1
-#define	MAX_GLOBAL_SERVERS	1
-#define MAX_PINGREQUESTS	1
-#else
 #define	MAX_LOCAL_SERVERS	16
 #define	MAX_GLOBAL_SERVERS	256
 #define MAX_PINGREQUESTS	16
-#endif
 
 typedef struct {
 	netadr_t	adr;
@@ -237,10 +231,6 @@ typedef struct {
 	qhandle_t	charSetShader;
 	qhandle_t	whiteShader;
 	qhandle_t	consoleShader;
-
-#ifdef _XBOX
-	short		mainGamepad;
-#endif
 } clientStatic_t;
 
 #define	CON_TEXTSIZE	0x30000 //was 32768
@@ -424,11 +414,6 @@ void	SCR_DrawSmallStringExt( int x, int y, const char *string, float *setColor, 
 void	SCR_DrawBigChar( int x, int y, int ch );
 void	SCR_DrawSmallChar( int x, int y, int ch );
 
-#ifdef _XBOX
-void	SCR_PrecacheScreenshot();
-#endif
-
-
 //
 // cl_cin.c
 //
@@ -449,12 +434,6 @@ void CIN_SetExtents (int handle, int x, int y, int w, int h);
 void CIN_SetLooping (int handle, qboolean loop);
 void CIN_UploadCinematic(int handle);
 void CIN_CloseAllVideos(void);
-
-#ifdef _XBOX
-void CIN_Init(void);
-bool CIN_PlayAllFrames( const char *arg, int x, int y, int w, int h, int systemBits, bool keyBreakAllowed );
-#endif
-
 
 //
 // cl_cgame.c

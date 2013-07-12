@@ -70,12 +70,6 @@ TStrPool&	Pool()
 
 
 
-
-#ifdef _XBOX
-namespace dllNamespace
-{
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // Constructor
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -197,8 +191,4 @@ int			hstring::total_strings()	{return Pool().total_allocs();}
 int			hstring::total_bytes()		{return Pool().size();}
 int			hstring::total_finds()		{return Pool().total_finds();}
 int			hstring::total_collisions()	{return Pool().total_collisions();}
-#endif
-
-#ifdef _XBOX
-} // dllNamespace
 #endif

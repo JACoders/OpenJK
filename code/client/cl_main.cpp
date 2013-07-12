@@ -75,11 +75,9 @@ cvar_t	*m_forward;
 cvar_t	*m_side;
 cvar_t	*m_filter;
 
-#ifdef _XBOX
 //MAP HACK
 cvar_t	*cl_mapname;
 qboolean vidRestartReloadMap = qfalse;
-#endif
 
 cvar_t	*cl_activeAction;
 
@@ -231,19 +229,11 @@ void CL_MapLoading( void ) {
 	} else {
 		// clear nextmap so the cinematic shutdown doesn't execute it
 		Cvar_Set( "nextmap", "" );
-#ifdef _XBOX	// This was done at E3 time - it's nasty, but we may just keep it.
-		connstate_t oldState = cls.state;
-		cls.state = CA_CHALLENGING;
-		SCR_UpdateScreen();
-		cls.state = oldState;
-#endif
 		CL_Disconnect();
 		Q_strncpyz( cls.servername, "localhost", sizeof(cls.servername) );
 		cls.state = CA_CHALLENGING;		// so the connect screen is drawn
 		cls.keyCatchers = 0;
-#ifndef _XBOX
 		SCR_UpdateScreen();
-#endif
 		clc.connectTime = -RETRANSMIT_TIMEOUT;
 		NET_StringToAdr( cls.servername, &clc.serverAddress);
 		// we don't need a challenge on the localhost
@@ -303,21 +293,11 @@ void CL_Disconnect( void ) {
 		return;
 	}
 
-#ifdef _XBOX
-	Cvar_Set("r_norefresh", "0");
-#endif
-
 	if (cls.uiStarted)
 		UI_SetActiveMenu( NULL,NULL );
 
 	SCR_StopCinematic ();
 	S_ClearSoundBuffer();
-
-#ifdef _XBOX
-//	extern qboolean RE_RegisterImages_LevelLoadEnd(void);
-//	RE_RegisterImages_LevelLoadEnd();
-	R_DeleteTextures();
-#endif
 
 	// send a disconnect message to the server
 	// send it a few times in case one is dropped
@@ -999,15 +979,6 @@ void CL_StartHunkUsers( void ) {
 	}
 
 	if ( !cls.rendererStarted ) {
-#ifdef _XBOX
-		//if ((!com_sv_running->integer || com_errorEntered) && !vidRestartReloadMap)
-		//{
-		//	// free up some memory
-		//	extern void SV_ClearLastLevel(void);
-		//	SV_ClearLastLevel();
-		//}
-#endif
-
 		cls.rendererStarted = qtrue;
 		re.BeginRegistration( &cls.glconfig );
 
@@ -1030,13 +1001,11 @@ void CL_StartHunkUsers( void ) {
 		S_BeginRegistration();
 	}
 
-#if !defined (_XBOX)	//i guess xbox doesn't want the ui loaded all the time?
 	//we require the ui to be loaded here or else it crashes trying to access the ui on command line map loads
 	if ( !cls.uiStarted ) {
 		cls.uiStarted = qtrue;
 		CL_InitUI();
 	}
-#endif
 
 //	if ( !cls.cgameStarted && cls.state > CA_CONNECTED && cls.state != CA_CINEMATIC ) {
 	if ( !cls.cgameStarted && cls.state > CA_CONNECTED && (cls.state != CA_CINEMATIC && !CL_IsRunningInGameCinematic()) ) 
@@ -1325,10 +1294,7 @@ void CL_Init( void ) {
 	cls.realtimeFraction=0.0f;	// fraction of a msec accumulated
 
 	CL_InitInput ();
-
-#ifndef _XBOX	// No terrain on Xbox
 	RM_InitTerrain();
-#endif
 
 	//
 	// register our variables
@@ -1384,10 +1350,6 @@ void CL_Init( void ) {
 #ifndef _WIN32
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
-#endif
-
-#ifdef _XBOX
-	cl_mapname = Cvar_Get ("cl_mapname", "t3_bounty", CVAR_TEMP);
 #endif
 
 	cl_updateInfoString = Cvar_Get( "cl_updateInfoString", "", CVAR_ROM );

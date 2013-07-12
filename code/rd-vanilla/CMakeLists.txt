@@ -102,7 +102,6 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/matcomp.c"
 	"${SPDir}/rd-vanilla/matcomp.h"
 	"${SPDir}/rd-vanilla/qgl.h"
-	"${SPDir}/rd-vanilla/qgl_console.h"
 	"${SPDir}/rd-vanilla/qgl_linked.h"
 	"${SPDir}/rd-vanilla/ref_trin.def"
 	"${SPDir}/rd-vanilla/tr_animation.cpp"

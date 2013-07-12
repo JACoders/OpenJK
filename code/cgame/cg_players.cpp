@@ -1241,11 +1241,7 @@ static void CG_PlayerAnimEvents( int animFileIndex, qboolean torso, int oldFrame
 		}
 	}
 
-#ifdef _XBOX
-	using dllNamespace::hstring;
-#endif
 	hstring myModel = g_entities[entNum].NPC_type;		//apparently NPC_type is always the same as the model name???
-
 
 	// Check for anim event
 	for ( i=0; i < MAX_ANIM_EVENTS; ++i )

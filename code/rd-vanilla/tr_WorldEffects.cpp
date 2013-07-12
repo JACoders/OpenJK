@@ -47,10 +47,6 @@ extern void			SetViewportAndScissor( void );
 #include "../Ratl/vector_vs.h"
 #include "../Ratl/bits_vs.h"
 
-#ifdef _XBOX
-#include "../win32/glw_win_dx8.h"
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -59,22 +55,7 @@ extern void			SetViewportAndScissor( void );
 #define MAX_WEATHER_ZONES		50	// so we can more zones that are smaller
 #define	MAX_PUFF_SYSTEMS		2
 #define	MAX_PARTICLE_CLOUDS		5
-
-#ifdef _XBOX
-#define POINTCACHE_CELL_SIZE	32.0f		
-
-// Note to Vv:
-// you guys may want to look into lowering that number.  I've optimized the storage
-// space by breaking it up into small boxes (weather zones) around the areas we care about
-// in order to speed up load time and reduce memory.  A very high number here will mean
-// that weather related effects like rain, fog, snow, etc will bleed through to where
-// they shouldn't...
-
-#else
 #define POINTCACHE_CELL_SIZE	32.0f
-#endif
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Globals
@@ -1083,11 +1064,6 @@ public:
 		}
 
 		mVertexCount = VertexCount;
-#ifdef _XBOX	// Check for point sprite use
-		if(mVertexCount == 1)
-			mGLModeEnum = GL_POINTS;
-		else
-#endif
 		mGLModeEnum = (mVertexCount==3)?(GL_TRIANGLES):(GL_QUADS);
 	}
 
@@ -1469,12 +1445,6 @@ public:
 
 		// Enable And Disable Things
 		//---------------------------
-#ifdef _XBOX	// Simpler pointsprite setup on Xbox
-		if (mGLModeEnum==GL_POINTS)
-		{
-			pointBegin(mParticleCountRender, mWidth);
-		}
-#else
 		if (mGLModeEnum==GL_POINTS && qglPointParameteriNV)
 		{
 			qglEnable(GL_POINT_SPRITE_NV);
@@ -1490,7 +1460,6 @@ public:
 
 			qglTexEnvi(GL_POINT_SPRITE_NV, GL_COORD_REPLACE_NV, GL_TRUE);
 		}
-#endif
 		else
 		{
 			qglEnable(GL_TEXTURE_2D);
@@ -1505,16 +1474,11 @@ public:
 			qglMatrixMode(GL_MODELVIEW);
 			qglPushMatrix();
 
-#ifdef _XBOX
-			qglBeginEXT(mGLModeEnum, mParticleCountRender*mVertexCount, mParticleCountRender, 0, mParticleCountRender*mVertexCount, 0);
-#endif
 		}
 
 		// Begin
 		//-------
-#ifndef _XBOX
 		qglBegin(mGLModeEnum);
-#endif
 		for (particleNum=0; particleNum<mParticleCount; particleNum++)
 		{
 			part = &(mParticles[particleNum]);
@@ -1616,12 +1580,8 @@ public:
 
 		if (mGLModeEnum==GL_POINTS)
 		{
-#ifdef _XBOX
-			pointEnd();
-#else
 			qglDisable(GL_POINT_SPRITE_NV);
 			qglTexEnvi(GL_POINT_SPRITE_NV, GL_COORD_REPLACE_NV, GL_FALSE);
-#endif
 		}
 		else
 		{
@@ -2045,18 +2005,11 @@ void R_WorldEffectCommand(const char *command)
 			return;
 		}
 		CParticleCloud& nCloud = mParticleClouds.push_back();
-#ifdef _XBOX
-		nCloud.Initialize(1000, "gfx/effects/snowflake1.bmp", 1);
-#else
 		nCloud.Initialize(1000, "gfx/effects/snowflake1.bmp");
-#endif
 		nCloud.mBlendMode			= 1;
 		nCloud.mRotationChangeNext	= 0;
 		nCloud.mColor		= 0.75f;
 		nCloud.mWaterParticles = true;
-#ifdef _XBOX
-		nCloud.mWidth = 0.05f;
-#endif
 	}
 
 	// Create A Some stuff

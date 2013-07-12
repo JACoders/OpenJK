@@ -149,13 +149,8 @@ struct centity_s
 {
 	entityState_t	currentState;	// from cg.frame
 	const entityState_t	*nextState;		// from cg.nextFrame, if available
-#ifdef _XBOX
-	byte		interpolate;	// true if next is valid to interpolate to
-	byte		currentValid;	// true if cg.frame holds this entity
-#else
 	qboolean		interpolate;	// true if next is valid to interpolate to
 	qboolean		currentValid;	// true if cg.frame holds this entity
-#endif
 
 	int				muzzleFlashTime;	// move to playerEntity?
 	qboolean		altFire;			// move to playerEntity?
@@ -368,10 +363,6 @@ typedef struct {
 	// view rendering
 	refdef_t	refdef;
 	vec3_t		refdefViewAngles;		// will be converted to refdef.viewaxis
-
-#ifdef _XBOX
-	qboolean	widescreen;
-#endif
 
 	// zoom key
 	int			zoomMode;		// 0 - not zoomed, 1 - binoculars, 2 - disruptor weapon

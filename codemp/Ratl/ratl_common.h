@@ -301,10 +301,8 @@ public:
 class	ratl_base
 {
 public:
-#ifndef _XBOX
 	void	save(hfile& file);
 	void	load(hfile& file);
-#endif
 
 	void	ProfilePrint(const char * format, ...);
 

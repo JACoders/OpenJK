@@ -42,10 +42,6 @@ This file is part of Jedi Academy.
 #include "g_vehicles.h"
 #include <float.h>
 
-#ifdef _XBOX
-#include "../client/fffx.h"
-#endif
-
 extern qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse );
 extern qboolean G_EntIsUnlockedDoor( int entityNum );
 extern qboolean G_EntIsDoor( int entityNum );
@@ -5487,158 +5483,6 @@ void PM_HoverTrace( void )
 	}
 	PM_GroundTraceMissed();
 }
-
-#ifdef _XBOX
-
-short	npcsToUpdate[MAX_NPC_WATER_UPDATE];		// queue of npcs
-short	npcsToUpdateTop = 0;					// top of the queue
-short	npcsToUpdateCount = 0;					// number of npcs in the queue
-
-
-/*
-=============
-PM_SetWaterLevelAtPoint2
-Xbox version does not depend on a pmove structure
-This function is used to update AI waterlevels every few
-frames.
-=============
-*/
-static void PM_SetWaterLevelAtPoint2( vec3_t org, int *waterlevel, int *watertype, int clientNum, int viewHeight ) 
-{
-	vec3_t		point;
-	int			cont;
-	int			sample1;
-	int			sample2;
-
-	// use the server fucntion directly, we don't have a pmove ptr to work with right now
-	extern int SV_PointContents( const vec3_t p, int passEntityNum );
-
-	//
-	// get waterlevel, accounting for ducking
-	//
-	*waterlevel = 0;
-	*watertype = 0;
-
-	point[0] = org[0];
-	point[1] = org[1];
-	point[2] = org[2] + DEFAULT_MINS_2 + 1;	
-	cont = SV_PointContents( point, clientNum );
-
-	if ( cont & (MASK_WATER|CONTENTS_LADDER) ) 
-	{
-		sample2 = viewHeight - DEFAULT_MINS_2;
-		sample1 = sample2 / 2;
-
-		*watertype = cont;
-		*waterlevel = 1;
-		point[2] = org[2] + DEFAULT_MINS_2 + sample1;
-		cont = SV_PointContents( point, clientNum );
-		if ( cont & (MASK_WATER|CONTENTS_LADDER) ) 
-		{
-			*waterlevel = 2;
-			point[2] = org[2] + DEFAULT_MINS_2 + sample2;
-			cont = SV_PointContents( point, clientNum );
-			if ( cont & (MASK_WATER|CONTENTS_LADDER) )
-			{
-				*waterlevel = 3;
-			}
-		}
-	}
-}
-
-/*
-=============
-AddNPCToWaterUpdate
-This function adds an AI to the water level update queue
-=============
-*/
-static void AddNPCToWaterUpdate(int num)
-{
-	// get an entity pointer
-	gentity_t *ent = g_entities + num;
-
-	// only add this client if it isn't already queued
-	if(ent->wupdate == 0)
-	{
-		// check to make sure we don't have too many NPCs in the queue
-		if((npcsToUpdateCount + 1) < MAX_NPC_WATER_UPDATE)
-		{
-			// figure out where to place this npc in the queue
-			int spot = npcsToUpdateTop + npcsToUpdateCount;
-
-			if(spot < MAX_NPC_WATER_UPDATE)
-			{
-				npcsToUpdate[spot] = num;
-			}
-			else
-			{
-				npcsToUpdate[spot - MAX_NPC_WATER_UPDATE] = num;
-			}
-
-			// set the water update flag
-			ent->wupdate = 1;
-
-			// update the queue count
-			npcsToUpdateCount++;
-		}
-		else
-		{
-			// the queue isn't big enough
-			assert(0);
-		}
-	}
-}
-
-/*
-=============
-UpdateNPCWaterLevels
-This function updates the water level for MAX_NPC_WATER_UPDATES_PER_FRAME NPCs
-=============
-*/
-void UpdateNPCWaterLevels(void)
-{
-	int i;
-	gentity_t *ent;
-
-	// update the maxium number per frame
-	for(i = 0; i < MAX_NPC_WATER_UPDATES_PER_FRAME; i++)
-	{
-		// make sure we have something to update
-		if(npcsToUpdateCount)
-		{
-			// if the clientnum is -1, we've got some serious problems
-			assert(npcsToUpdate[npcsToUpdateTop] != -1);
-
-			// get an enitiy pointer
-			ent	= g_entities + npcsToUpdate[npcsToUpdateTop];
-
-			// make sure this client isn't in Jedi heaven
-			if(ent->client)
-			{
-				// set the previous water level... this is used later to update the water state
-				ent->prev_waterlevel = ent->waterlevel;
-				// get our new state
-				PM_SetWaterLevelAtPoint2( ent->currentOrigin, &ent->waterlevel, &ent->watertype, npcsToUpdate[npcsToUpdateTop], ent->client->ps.viewheight );
-				// flag this client as updated
-				ent->wupdate = 0;
-			}
-
-			// clear this client from the queue
-			npcsToUpdate[npcsToUpdateTop] = -1;
-			// move our queue ptr and decr our count
-			npcsToUpdateTop++;
-			npcsToUpdateCount--;
-
-			// if the top is pointing to the end wrap it around the the start
-			if(npcsToUpdateTop == MAX_NPC_WATER_UPDATE)
-			{
-				npcsToUpdateTop = 0;
-			}
-		}
-	}
-}
-
-#endif // _XBOX
 
 /*
 =============
@@ -13056,17 +12900,7 @@ static bool PM_DoChargedWeapons( void )
 				{
 					charging = qtrue;
 					altFire = qtrue; // believe it or not, it really is an alt-fire in this case!
-#ifndef _XBOX
 				}
-#else
-					cgi_FF_StartFX( fffx_StartConst );
-				}
-				else
-				{
-					cgi_FF_StartFX( fffx_StopConst );
-				}
-#endif
-
 			}
 		}
 		else if ( pm->gent && pm->gent->NPC )
@@ -15150,15 +14984,7 @@ void Pmove( pmove_t *pmove )
 	// Note: ok, so long as we don't have water levels that change.
 	if(!(VectorCompare(pm->ps->origin,pml.previous_origin)))
 	{
-#ifdef _XBOX
-		// only do this on xbox if it's a player not an npc
-		if(pm->ps->clientNum == 0)
-		{
-			PM_SetWaterLevelAtPoint( pm->ps->origin, &pm->waterlevel, &pm->watertype );
-		}
-#else
 		PM_SetWaterLevelAtPoint( pm->ps->origin, &pm->waterlevel, &pm->watertype );
-#endif
 		PM_SetWaterHeight();
 	}
 

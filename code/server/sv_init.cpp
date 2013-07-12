@@ -187,55 +187,6 @@ void SV_Startup( void ) {
 	Cvar_Set( "sv_running", "1" );
 }
 
-
-#ifdef _XBOX
-//Xbox-only memory freeing.
-extern void R_ModelFree(void);
-extern void Sys_IORequestQueueClear(void);
-extern void Music_Free(void);
-extern void AS_FreePartial(void);
-extern void G_ASPreCacheFree(void);
-extern void Ghoul2InfoArray_Free(void);
-extern void Ghoul2InfoArray_Reset(void);
-extern void Menu_Reset(void);
-extern void G2_FreeRag(void);
-extern void ClearAllNavStructures(void);
-extern void ClearModelsAlreadyDone(void);
-extern void CL_FreeServerCommands(void);
-extern void CL_FreeReliableCommands(void);
-extern void CM_Free(void);
-extern void ShaderEntryPtrs_Clear(void);
-extern void G_FreeRoffs(void);
-extern int	numVehicles;
-void SV_ClearLastLevel(void)
-{
-	Menu_Reset();
-	Z_TagFree(TAG_G_ALLOC);
-	Z_TagFree(TAG_UI_ALLOC);
-	G_FreeRoffs();
-	R_ModelFree();
-	Music_Free();
-	Sys_IORequestQueueClear();
-	AS_FreePartial();
-	G_ASPreCacheFree();
-	Ghoul2InfoArray_Free();
-	G2_FreeRag();
-	ClearAllNavStructures();
-	ClearModelsAlreadyDone();
-	CL_FreeServerCommands();
-	CL_FreeReliableCommands();
-	CM_Free();
-	ShaderEntryPtrs_Clear();
-
-	numVehicles = 0;
-
-	if (svs.clients)
-	{
-		SV_FreeClient( svs.clients );
-	}
-}
-#endif
-
 qboolean CM_SameMap(const char *server);
 qboolean CM_HasTerrain(void);
 void Cvar_Defrag(void);

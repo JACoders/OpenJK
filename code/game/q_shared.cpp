@@ -285,24 +285,11 @@ void COM_ParseInit( void )
 	COM_BeginParseSession();
 }
 
-#ifdef _XBOX
-void COM_BeginParseSession( bool nested )
-{
-	if (nested)
-		parseDataCount =1;
-	else
-		parseDataCount = 0;
-	parseData[parseDataCount].com_lines = 1;
-	
-}
-#else
 void COM_BeginParseSession( void )
 {
 	parseDataCount =0;
 	parseData[parseDataCount].com_lines = 1;
 }
-
-#endif
 
 void COM_EndParseSession( void )
 {

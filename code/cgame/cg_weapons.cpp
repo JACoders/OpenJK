@@ -1785,14 +1785,6 @@ void CG_DrawWeaponSelect( void )
 		return; 
 	}
 
-#ifdef _XBOX
-	if(CL_ExtendSelectTime()) {
-		cg.weaponSelectTime = cg.time;
-	}
-
-	yOffset = -36;
-#endif
-
 	cg.iconSelectTime = cg.weaponSelectTime;
 
 	// showing weapon select clears pickup item display, but not the blend blob

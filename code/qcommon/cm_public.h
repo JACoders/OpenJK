@@ -22,11 +22,7 @@ This file is part of Jedi Academy.
 #include "qfiles.h"
 
 qboolean CM_DeleteCachedMap(qboolean bGuaranteedOkToDelete);
-#ifdef _XBOX
-void		CM_LoadMap( const char *name, qboolean clientload, int *checksum);
-#else
 void		CM_LoadMap( const char *name, qboolean clientload, int *checksum, qboolean subBSP);
-#endif
 void		CM_ClearMap( void );
 int			CM_TotalMapContents();
 

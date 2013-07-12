@@ -65,14 +65,6 @@ void CGCam_Init( void )
 	}
 }
 
-#ifdef _XBOX
-void CGCam_SetWidescreen( qboolean widescreen )
-{
-	client_camera.widescreen = widescreen;
-	cg.widescreen = widescreen;
-}
-#endif
-
 /*
 -------------------------
 CGCam_Enable

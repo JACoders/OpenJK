@@ -1203,16 +1203,3 @@ void R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs ) {
 		return;
 	}
 }
-
-
-#ifdef _XBOX
-void R_ModelFree(void)
-{
-	if (CachedModels)
-	{
-		RE_RegisterModels_DeleteAll();
-		delete CachedModels;
-		CachedModels = NULL;
-	}
-}
-#endif
