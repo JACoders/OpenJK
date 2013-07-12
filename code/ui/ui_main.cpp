@@ -2301,7 +2301,6 @@ static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean buil
 
 	Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.jpg", dirptr, skinname);
 	ui.FS_FOpenFile(fpath, &f, FS_READ);
-#if defined(_DEBUG)
 	if (!f)
 	{ //not there, try png
 		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.png", dirptr, skinname);
@@ -2312,7 +2311,6 @@ static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean buil
 		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.tga", dirptr, skinname);
 		ui.FS_FOpenFile(fpath, &f, FS_READ);
 	}
-#endif
 	if (f) 
 	{
 		ui.FS_FCloseFile(f);
