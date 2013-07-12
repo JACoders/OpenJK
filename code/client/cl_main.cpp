@@ -83,7 +83,7 @@ cvar_t	*cl_activeAction;
 
 cvar_t	*cl_updateInfoString;
 
-cvar_t	*cl_ingameVideo;
+cvar_t	*cl_inGameVideo;
 
 cvar_t	*cl_thumbStickMode;
 
@@ -1329,7 +1329,7 @@ void CL_Init( void ) {
 
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 
-	cl_ingameVideo = Cvar_Get ("cl_ingameVideo", "1", CVAR_ARCHIVE);
+	cl_inGameVideo = Cvar_Get ("cl_inGameVideo", "1", CVAR_ARCHIVE);
 	cl_VideoQuality = Cvar_Get ("cl_VideoQuality", "0", CVAR_ARCHIVE);
 	cl_VidFadeUp	= Cvar_Get ("cl_VidFadeUp", "1", CVAR_TEMP);
 	cl_VidFadeDown	= Cvar_Get ("cl_VidFadeDown", "1", CVAR_TEMP);
