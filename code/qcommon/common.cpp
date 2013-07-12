@@ -34,13 +34,11 @@ extern refexport_t re;
 int		com_argc;
 char	*com_argv[MAX_NUM_ARGVS+1];
 
-#ifndef _XBOX
 static fileHandle_t	logfile;
 static fileHandle_t	speedslog;
 static fileHandle_t	camerafile;
 fileHandle_t	com_journalFile;
 fileHandle_t	com_journalDataFile;		// config files are written here
-#endif
 
 cvar_t	*com_viewlog;
 cvar_t	*com_speeds;
@@ -92,7 +90,6 @@ void Com_WriteConfig_f( void );
 
 //============================================================================
 
-#ifndef _XBOX
 static char	*rd_buffer;
 static int	rd_buffersize;
 static void	(*rd_flush)( char *buffer );
@@ -121,7 +118,6 @@ void Com_EndRedirect (void)
 #if !defined(FINAL_BUILD) && defined(_WIN32)
 #define OUTPUT_TO_BUILD_WINDOW
 #endif
-#endif	//not xbox
 
 /*
 =============
@@ -200,7 +196,6 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 
 void Com_WriteCam ( const char *text )
 {
-#ifndef _XBOX
 	static	char	mapname[MAX_QPATH];
 	// camerafile
 	if ( !camerafile ) 
@@ -218,12 +213,10 @@ void Com_WriteCam ( const char *text )
 	}
 
 	Com_Printf( "%s\n", mapname );
-#endif
 }
 
 void Com_FlushCamFile()
 {
-#ifndef _XBOX
 	if (!camerafile)
 	{
 		// nothing to flush, right?
@@ -238,7 +231,6 @@ void Com_FlushCamFile()
 	extern	cvar_t	*sv_mapname;
 	Com_sprintf( flushedMapname, MAX_QPATH, "maps/%s_cam.map", sv_mapname->string );
 	Com_Printf("flushed all cams to %s\n", flushedMapname);
-#endif
 }
 
 /*
@@ -1057,13 +1049,6 @@ void Com_Init( char *commandLine ) {
 		
 		CL_Init();
 
-#ifdef _XBOX
-		// Experiment. Sound memory never gets freed, move it earlier. This
-		// will also let us play movies sooner, if we need to.
-		extern void CL_StartSound(void);
-		CL_StartSound();
-#endif
-
 		Sys_ShowConsole( com_viewlog->integer, qfalse );
 		
 		// set com_frameTime so that if a map is started on the
@@ -1072,7 +1057,6 @@ void Com_Init( char *commandLine ) {
 		com_frameTime = Com_Milliseconds();
 
 		// add + commands from command line
-//#ifndef _XBOX
 		if ( !Com_AddStartupCommands() ) {
 //#ifdef NDEBUG
 			// if the user didn't give any commands, run default action
@@ -1086,7 +1070,6 @@ void Com_Init( char *commandLine ) {
 			}
 //#endif	
 		}
-//#endif
 		com_fullyInitialized = qtrue;
 		Com_Printf ("--- Common Initialization Complete ---\n");
 
@@ -1253,7 +1236,6 @@ try
 	static int	lastTime;
 
 	// write config file if anything changed
-#ifndef _XBOX
 	Com_WriteConfiguration(); 
 
 	// if "viewlog" has been modified, show or hide the log console
@@ -1261,7 +1243,6 @@ try
 		Sys_ShowConsole( com_viewlog->integer, qfalse );
 		com_viewlog->modified = qfalse;
 	}
-#endif
 
 	//
 	// main event loop
@@ -1305,19 +1286,8 @@ try
 	//
 	// client system
 	//
-#ifdef _XBOX
-//	extern void G_DemoFrame();
-
-//	G_DemoFrame();
-	extern bool TestDemoTimer();
-	extern void PlayDemo();
-	if ( TestDemoTimer())
-	{
-		PlayDemo();
-	}
 
 
-#endif
 //	if ( !com_dedicated->integer ) 
 	{
 		//
@@ -1362,7 +1332,6 @@ try
 		Com_Printf("fr:%i all:%3i sv:%3i ev:%3i cl:%3i gm:%3i tr:%3i pvs:%3i rf:%3i bk:%3i\n", 
 					com_frameNumber, all, sv, ev, cl, time_game, timeInTrace, timeInPVSCheck, time_frontend, time_backend);
 
-#ifndef _XBOX
 		// speedslog
 		if ( com_speedslog && com_speedslog->integer )
 		{
@@ -1398,7 +1367,6 @@ try
 				bComma=true;
 			}
 		}
-#endif
 
 		timeInTrace = timeInPVSCheck = 0;
 	}

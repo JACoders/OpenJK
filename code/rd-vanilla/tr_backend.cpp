@@ -27,10 +27,6 @@ This file is part of Jedi Academy.
 #include "tr_lightmanager.h"
 #endif
 
-#ifdef _XBOX
-#include "../win32/win_highdynamicrange.h"
-#endif
-
 backEndData_t	*backEndData;
 backEndState_t	backEnd;
 
@@ -51,17 +47,10 @@ bool g_bDynamicGlowSupported = false;
 static const float s_flipMatrix[16] = {
 	// convert from our coordinate system (looking down X)
 	// to OpenGL's coordinate system (looking down -Z)
-#if defined (_XBOX)
-	0, 0, 1, 0,
-	-1, 0, 0, 0,
-	0, 1, 0, 0,
-	0, 0, 0, 1
-#else
 	0, 0, -1, 0,
 	-1, 0, 0, 0,
 	0, 1, 0, 0,
 	0, 0, 0, 1
-#endif
 };
 
 
@@ -78,16 +67,12 @@ void GL_Bind( image_t *image ) {
 		texnum = image->texnum;
 	}
 
-#ifndef _XBOX
 	if ( r_nobind->integer && tr.dlightImage ) {		// performance evaluation option
 		texnum = tr.dlightImage->texnum;
 	}
-#endif
 
 	if ( glState.currenttextures[glState.currenttmu] != texnum ) {
-#ifndef _XBOX
 		image->frameUsed = tr.frameCount;
-#endif
 		glState.currenttextures[glState.currenttmu] = texnum;
 		qglBindTexture (GL_TEXTURE_2D, texnum);
 	}
@@ -211,11 +196,9 @@ void GL_TexEnv( int env )
 	case GL_ADD:
 		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD );
 		break;
-#ifdef _XBOX
 	case GL_NONE:
 		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_NONE );
 		break;
-#endif
 	default:
 		Com_Error( ERR_DROP, "GL_TexEnv: invalid env '%d' passed\n", env );
 		break;
@@ -718,7 +701,6 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		}
 		R_DecomposeSort( drawSurf->sort, &entityNum, &shader, &fogNum, &dlighted );
 
-#ifndef _XBOX	// GLOWXXX
 		// If we're rendering glowing objects, but this shader has no stages with glow, skip it!
 		if ( g_bRenderGlowingObjects && !shader->hasGlow )
 		{
@@ -728,7 +710,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			dlighted = oldDlighted;
 			continue;
 		}
-#endif
+
 		oldSort = drawSurf->sort;
 
 		//
@@ -977,11 +959,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 					}
 
 					//now copy a portion of the screen to this texture
-#ifdef _XBOX
-					qglCopyBackBufferToTexEXT(rad, rad, cX, (480 - cY), (cX + rad), (480 - (cY + rad)));
-#else
 					qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, cX, cY, rad, rad, 0);
-#endif
 
 					lastPostEnt = pRender->entNum;
 				}
@@ -1012,12 +990,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		didShadowPass = true;
 	}
 
-#ifdef _XBOX
-	if (r_hdreffect->integer)
-		HDREffect.Render();
-#endif
-
-	// add light flares on lights that aren't obscured
+// add light flares on lights that aren't obscured
 //	RB_RenderFlares();
 
 #ifdef __MACOS__
@@ -1048,11 +1021,7 @@ void	RB_SetGL2D (void) {
 	qglScissor( 0, 0, glConfig.vidWidth, glConfig.vidHeight );
 	qglMatrixMode(GL_PROJECTION);
     qglLoadIdentity ();
-#ifdef _XBOX
-	qglOrtho (0, 640, 0, 480, 0, 1);
-#else
 	qglOrtho (0, 640, 480, 0, 0, 1);
-#endif
 	qglMatrixMode(GL_MODELVIEW);
     qglLoadIdentity ();
 
@@ -1192,11 +1161,7 @@ const void *RB_RotatePic ( const void *data )
 		qglRotatef(cmd->a, 0.0, 0.0, 1.0);
 		
 		GL_Bind( image );
-#ifdef _XBOX
-		qglBeginEXT (GL_QUADS, 4, 0, 0, 4, 0);
-#else
 		qglBegin (GL_QUADS);
-#endif
 		qglTexCoord2f( cmd->s1, cmd->t1);
 		qglVertex2f( -cmd->w, 0 );
 		qglTexCoord2f( cmd->s2, cmd->t1 );
@@ -1250,11 +1215,7 @@ const void *RB_RotatePic2 ( const void *data )
 			qglRotatef( cmd->a, 0.0, 0.0, 1.0 );
 			
 			GL_Bind( image );
-#ifdef _XBOX
-			qglBeginEXT( GL_QUADS, 4, 0, 0, 4, 0);
-#else
 			qglBegin( GL_QUADS );
-#endif
 				qglTexCoord2f( cmd->s1, cmd->t1);
 				qglVertex2f( -cmd->w * 0.5f, -cmd->h * 0.5f );
 
@@ -1349,7 +1310,6 @@ const void	*RB_DrawSurfs( const void *data ) {
 	*/
 
 	// Render dynamic glowing/flaring objects.
-#ifndef _XBOX	// GLOWXXX
 	if ( !(backEnd.refdef.rdflags & RDF_NOWORLDMODEL) && g_bDynamicGlowSupported && r_DynamicGlow->integer )
 	{
 		// Copy the normal scene to texture.
@@ -1405,7 +1365,6 @@ const void	*RB_DrawSurfs( const void *data ) {
 		// Draw the glow additively over the screen.
 		RB_DrawGlowOverlay(); 
 	}
-#endif	// _XBOX
 
 	return (const void *)(cmd + 1);
 }
@@ -1521,19 +1480,15 @@ void RB_ShowImages( void ) {
 		}
 
 		GL_Bind( image );
-#ifdef _XBOX
-		qglBeginEXT (GL_QUADS, 4, 0, 0, 4, 0);
-#else
 		qglBegin (GL_QUADS);
-#endif
-		qglTexCoord2f( 0, 0 );
-		qglVertex2f( x, y );
-		qglTexCoord2f( 1, 0 );
-		qglVertex2f( x + w, y );
-		qglTexCoord2f( 1, 1 );
-		qglVertex2f( x + w, y + h );
-		qglTexCoord2f( 0, 1 );
-		qglVertex2f( x, y + h );
+			qglTexCoord2f( 0, 0 );
+			qglVertex2f( x, y );
+			qglTexCoord2f( 1, 0 );
+			qglVertex2f( x + w, y );
+			qglTexCoord2f( 1, 1 );
+			qglVertex2f( x + w, y + h );
+			qglTexCoord2f( 0, 1 );
+			qglVertex2f( x, y + h );
 		qglEnd();
 		i++;
 	}
@@ -1569,7 +1524,6 @@ const void	*RB_SwapBuffers( const void *data ) {
 
 	// we measure overdraw by reading back the stencil buffer and
 	// counting up the number of increments that have happened
-#ifndef _XBOX
 	if ( r_measureOverdraw->integer ) {
 		int i;
 		long sum = 0;
@@ -1585,7 +1539,6 @@ const void	*RB_SwapBuffers( const void *data ) {
 		backEnd.pc.c_overDraw += sum;
 		Z_Free( stencilReadback );
 	}
-#endif
 
     if ( !glState.finishCalled ) {
         qglFinish();
@@ -1674,7 +1627,6 @@ void RB_ExecuteRenderCommands( const void *data ) {
 
 }
 
-#ifndef _XBOX	// GLOWXXX
 // What Pixel Shader type is currently active (regcoms or fragment programs).
 GLuint g_uiCurrentPixelShaderType = 0x0;
 
@@ -1978,4 +1930,3 @@ static inline void RB_DrawGlowOverlay()
 	qglMatrixMode(GL_MODELVIEW);
 	qglPopMatrix();
 }
-#endif

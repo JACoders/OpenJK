@@ -276,15 +276,8 @@ typedef struct {
 						// mdxVertex_t - this is an array with number of verts from the surface definition as its bounds. It contains normal info, texture coors and number of weightings for this bone
 						// (this is now kept at 32 bytes for cache-aligning)
 						typedef struct {
-#ifdef _XBOX
-							//short			normal[3];
-							unsigned int	normal;
-							short			vertCoords[3];
-							unsigned int	tangent;
-#else
 							vec3_t			normal;
 							vec3_t			vertCoords;
-#endif
 
 							// packed int...
 							unsigned int	uiNmWeightsAndBoneIndexes;	// 32 bits.  format: 
@@ -344,11 +337,7 @@ static inline float G2_GetVertBoneWeight( const mdxmVertex_t *pVert, const int i
 						// mdxVertex_t - this is an array with number of verts from the surface definition as its bounds. It contains normal info, texture coors and number of weightings for this bone
 
 						typedef struct {
-#ifdef _XBOX
-							short			texCoords[2];
-#else
 							vec2_t			texCoords;
-#endif
 						} mdxmVertexTexCoord_t;
 
 				// } vert

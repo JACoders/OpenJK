@@ -494,7 +494,6 @@ static void SV_UserMove( client_t *cl, msg_t *msg ) {
 	if ( cl->state == CS_PRIMED ) {
 
 		SV_ClientEnterWorld( cl, &cmds[0], eSavedGameJustLoaded );
-#ifndef _XBOX	// No auto-saving for now?
 		if ( sv_mapname->string[0]!='_' )
 		{
 			char savename[MAX_QPATH];
@@ -514,7 +513,6 @@ static void SV_UserMove( client_t *cl, msg_t *msg ) {
 				SG_WriteSavegame( "auto", qfalse );//need a copy for auto, too
 			}
 		}
-#endif
 		eSavedGameJustLoaded = eNO;
 		// the moves can be processed normaly
 	}

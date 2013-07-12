@@ -80,7 +80,7 @@ This file is part of Jedi Academy.
 	#include <assert.h>
 #endif
 #if !defined(FINAL_BUILD)
-	#if !defined(RAGL_PROFILE_INC) && !defined(_XBOX)
+	#if !defined(RAGL_PROFILE_INC)
 		#define  RAGL_PROFILE_INC
         #ifdef _WIN32
             #include "Windows.h"

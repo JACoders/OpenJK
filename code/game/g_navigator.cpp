@@ -97,12 +97,7 @@ namespace NAV
 {
 	enum
 	{
-#ifdef _XBOX
-		// now 11 bytes each
-		NUM_NODES			= 1024,	// Question for VV- is this big enough for all the levels?  if so, we should use it too...
-#else
 		NUM_NODES			= 1024,
-#endif
 		// now 5 bytes each
 		NUM_EDGES			= 3*NUM_NODES,
 		NUM_EDGES_PER_NODE	= 20,
@@ -121,15 +116,8 @@ namespace NAV
 		BIAS_TOOSMALL		= 10000,
 
 		NULL_PATH_USER_INDEX= -1,
-#ifdef _XBOX
-		// This may not be safe, but I REALLY need memory. Better testing will reveal that
-		// these don't work, but in quick tests these numbers were sufficient.
-		MAX_PATH_USERS		= 60,
-		MAX_PATH_SIZE		= 50,
-#else
 		MAX_PATH_USERS		= 100,
 		MAX_PATH_SIZE		= NUM_NODES/7,
-#endif
 
 		Z_CULL_OFFSET		= 60,
 
@@ -1199,7 +1187,6 @@ bool			NAV::LoadFromFile(const char *filename, int checksum)
 	mNodeNames.clear();
 	mNearestNavSort.clear();
 
-#ifndef _XBOX
 	if (SAVE_LOAD)
 	{
 		hfile	navFile(va("maps/%s.navNEW"));
@@ -1213,7 +1200,6 @@ bool			NAV::LoadFromFile(const char *filename, int checksum)
 		navFile.close();
 		return true;
 	}
-#endif
 	return false;
 }
 
@@ -2136,7 +2122,6 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 
 	// PHASE VI: SAVE TO FILE
 	//========================
-#ifndef _XBOX
 	if (SAVE_LOAD)
 	{
 		hfile	navFile(va("maps/%s.navNEW"));
@@ -2149,7 +2134,6 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 		navFile.save(&mCells, sizeof(mCells));
 		navFile.close();
 	}
-#endif
 	return true;
 }
 

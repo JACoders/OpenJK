@@ -92,11 +92,6 @@ typedef struct {
 	// force a screen update, only used during gamestate load
 	void		(*UpdateScreen)( void );
 
-	// stuff for savegame screenshots...
-#ifdef _XBOX
-	void		(*PrecacheScreenshot)( void );
-#endif
-
 	//========= model collision ===============
 
 	// R_LerpTag is only valid for md3 models

@@ -70,11 +70,7 @@ extern bool	HFILEclose(int& handle);
 ////////////////////////////////////////////////////////////////////////////////////////
 struct SOpenFile
 {
-#ifdef _XBOX
-	dllNamespace::hstring mPath;
-#else
 	hstring			mPath;
-#endif
 	bool			mForRead;
 	int				mHandle;
 	float			mVersion;

@@ -95,7 +95,6 @@ Save the console contents out to a file
 */
 void Con_Dump_f (void)
 {
-#ifndef _XBOX
 	int		l, x, i;
 	short	*line;
 	fileHandle_t	f;
@@ -146,7 +145,6 @@ void Con_Dump_f (void)
 	}
 
 	FS_FCloseFile( f );
-#endif
 }
 
 						

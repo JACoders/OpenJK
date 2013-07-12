@@ -62,12 +62,6 @@ Ghoul2 Insert End
 */
 
 
-#ifdef _XBOX
-extern bool CL_ExtendSelectTime(void);
-#endif
-
-
-
 void CG_LoadHudMenu(void);
 int inv_icons[INV_MAX];
 const char *inv_names[] =
@@ -1371,9 +1365,7 @@ static void CG_RegisterGraphics( void ) {
 	cg.loadLCARSStage = 3;
 	CG_LoadingString( cgs.mapname );
 
-#ifndef _XBOX // this gets handled elsewhere on Xbox
 	cgi_R_LoadWorldMap( cgs.mapname );
-#endif
 
 	cg.loadLCARSStage = 4;
 	CG_LoadingString( "game media shaders" );
@@ -1963,21 +1955,11 @@ Ghoul2 Insert Start
 // initialise the cg_entities structure
 void CG_Init_CG(void)
 {
-#ifdef _XBOX
-	qboolean widescreen = cg.widescreen;
-#endif
 	memset( &cg, 0, sizeof(cg));
-#ifdef _XBOX
-	cg.widescreen = widescreen;
-#endif
 }
 
 
-#ifdef _XBOX	// Enough for all maps right now
-#define MAX_MISC_ENTS	1000
-#else
 #define MAX_MISC_ENTS	2000
-#endif
 
 typedef struct cgMiscEntData_s
 {
@@ -2126,14 +2108,7 @@ void CG_PreInit() {
 //moved from CG_GameStateReceived because it's loaded sooner now
 	CG_InitLocalEntities();
 
-#ifdef _XBOX	// I can't believe that this isn't necessary on PC, but I'll hold off
-	NumMiscEnts = 0;
-	memset( MiscEnts, 0, sizeof(MiscEnts) );
-#endif
-
 	CG_InitMarkPolys();
-
-
 }
 
 /*
@@ -3923,14 +3898,6 @@ void CG_DrawForceSelect( void )
 	{
 		return;
 	}
-
-#ifdef _XBOX
-	if(CL_ExtendSelectTime()) {
-		cg.forcepowerSelectTime = cg.time;
-	}
-
-	yOffset = -36;
-#endif
 
 	// count the number of powers owned
 	count = 0;

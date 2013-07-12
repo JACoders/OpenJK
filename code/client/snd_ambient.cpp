@@ -27,11 +27,7 @@ This file is part of Jedi Academy.
 #endif
 #include "client.h"
 #include "snd_ambient.h"
-#ifdef _XBOX
-#include "snd_local_console.h"
-#else
 #include "snd_local.h"
-#endif
 
 static const int MAX_SET_VOLUME =	255;
 

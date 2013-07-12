@@ -366,22 +366,6 @@ qboolean PlaneFromPoints( vec4_t plane, const vec3_t a, const vec3_t b, const ve
 	return qtrue;
 }
 
-#ifdef _XBOX
-qboolean PlaneFromPoints( vec4_t plane, const short a[3], const short b[3], const short c[3] ) {
-	vec3_t	d1, d2;
-
-	VectorSubtract( b, a, d1 );
-	VectorSubtract( c, a, d2 );
-	CrossProduct( d2, d1, plane );
-	if ( VectorNormalize( plane ) == 0 ) {
-		return qfalse;
-	}
-
-	plane[3] = DotProduct( a, plane );
-	return qtrue;
-}
-#endif
-
 /*
 ===============
 RotatePointAroundVector

@@ -783,12 +783,6 @@ void IN_CenterView (void) {
 	cl.viewangles[PITCH] = -SHORT2ANGLE(cl.snap.ps.delta_angles[PITCH]);
 }
 
-#ifdef _XBOX
-void IN_VoiceToggleDown(void) { g_Voice.SetChannel( CHAN_ALL ); }
-void IN_VoiceToggleUp(void) { g_Voice.SetChannel( CHAN_TEAM ); }
-#endif
-
-
 //==========================================================================
 
 cvar_t	*cl_upspeed;

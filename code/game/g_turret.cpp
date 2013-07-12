@@ -663,13 +663,8 @@ void turret_base_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 void turret_SetBoneAngles(gentity_t *ent, const char *bone, const vec3_t angles)
 {
 	/*
-#ifdef _XBOX
-	byte *thebone = &ent->s.boneIndex1;
-	byte *firstFree = NULL;
-#else
 	int *thebone = &ent->s.boneIndex1;
 	int *firstFree = NULL;
-#endif
 	int i = 0;
 	int boneIndex = G_BoneIndex(bone);
 	int flags;

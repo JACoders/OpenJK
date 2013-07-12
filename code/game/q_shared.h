@@ -50,9 +50,7 @@ This file is part of Jedi Academy.
 #endif
 
 //rww - conveniently toggle "gore" code, for model decals and stuff.
-#ifndef _XBOX
 #define _G2_GORE
-#endif
 
 #define PRODUCT_NAME			"openjk_sp"
 
@@ -701,28 +699,6 @@ extern	const vec3_t	axisDefault[3];
 
 #define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
 
-#ifdef _XBOX
-inline void Q_CastShort2Float(float *f, const short *s)
-{
-	*f = ((float)*s);
-}
-
-inline void Q_CastUShort2Float(float *f, const unsigned short *s)
-{
-	*f = ((float)*s);
-}
-
-inline void Q_CastShort2FloatScale(float *f, const short *s, float scale)
-{
-	*f = ((float)*s) * scale;
-}
-
-inline void Q_CastUShort2FloatScale(float *f, const unsigned short *s, float scale)
-{
-	*f = ((float)*s) * scale;
-}
-#endif
-
 float Q_fabs( float f );
 float Q_rsqrt( float f );		// reciprocal square root
 
@@ -757,51 +733,9 @@ inline void VectorMA( const vec3_t veca, float scale, const vec3_t vecb, vec3_t 
 	vecc[2] = veca[2] + scale*vecb[2];
 }
 
-#ifdef _XBOX
-inline void VectorMA( const vec3_t veca, float scale, const short vecb[3], vec3_t vecc) {
-	// The only time this overload gets used is with normals, so
-	// (I think) it's safe to do this....
-	vecc[0] = veca[0] + scale * ((float)vecb[0] / 32767.0f);
-	vecc[1] = veca[1] + scale * ((float)vecb[1] / 32767.0f);
-	vecc[2] = veca[2] + scale * ((float)vecb[2] / 32767.0f);
-}
-#endif
-
 inline vec_t DotProduct( const vec3_t v1, const vec3_t v2 ) {
-#ifdef _XBOX		/// use SSE
-	float res;
-    __asm {
-        mov     edx, v1
-        movss   xmm1, [edx]
-        movhps  xmm1, [edx+4]
-
-        mov     edx, v2
-        movss   xmm2, [edx]
-        movhps  xmm2, [edx+4]
-
-        mulps   xmm1, xmm2
-
-        movaps  xmm0, xmm1
-
-        shufps  xmm0, xmm0, 32h
-        addps   xmm1, xmm0
-
-        shufps  xmm0, xmm0, 32h
-        addps   xmm1, xmm0
-
-        movss   [res], xmm1
-    }
-    return res;
-#else
-	return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
-#endif
-}
-
-#ifdef _XBOX
-inline vec_t DotProduct( const short v1[3], const vec3_t v2 ) {
 	return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
 }
-#endif
 
 inline void CrossProduct( const vec3_t v1, const vec3_t v2, vec3_t cross ) {
 	cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
@@ -810,71 +744,15 @@ inline void CrossProduct( const vec3_t v1, const vec3_t v2, vec3_t cross ) {
 }
 
 inline void VectorSubtract( const vec3_t veca, const vec3_t vecb, vec3_t o ) {
-#ifdef _XBOX
-	__asm {
-        mov      ecx, veca
-        movss    xmm0, [ecx]
-        movhps   xmm0, [ecx+4]
-
-        mov      edx, vecb
-        movss    xmm1, [edx]
-        movhps   xmm1, [edx+4]
-
-        subps    xmm0, xmm1
-
-        mov      eax, o
-        movss    [eax], xmm0
-        movhps   [eax+4], xmm0
-    }
-#else
-	o[0] = veca[0]-vecb[0];
-	o[1] = veca[1]-vecb[1];
-	o[2] = veca[2]-vecb[2];
-#endif
-}
-
-#ifdef _XBOX
-inline void VectorSubtract( const short veca[3], const vec3_t vecb, vec3_t o ) {
 	o[0] = veca[0]-vecb[0];
 	o[1] = veca[1]-vecb[1];
 	o[2] = veca[2]-vecb[2];
 }
-
-inline void VectorSubtract( const vec3_t veca, const short vecb[3], vec3_t o ) {
-	o[0] = veca[0]-vecb[0];
-	o[1] = veca[1]-vecb[1];
-	o[2] = veca[2]-vecb[2];
-}
-
-inline void VectorSubtract( const short veca[3], const short vecb[3], vec3_t o ) {
-	o[0] = veca[0]-vecb[0];
-	o[1] = veca[1]-vecb[1];
-	o[2] = veca[2]-vecb[2];
-}
-#endif
 
 inline void VectorAdd( const vec3_t veca, const vec3_t vecb, vec3_t o ) {
-#ifdef _XBOX
-  __asm {
-        mov      ecx, veca
-        movss    xmm0, [ecx]
-        movhps   xmm0, [ecx+4]
-
-        mov      edx, vecb
-        movss    xmm1, [edx]
-        movhps   xmm1, [edx+4]
-
-        addps    xmm0, xmm1
-
-        mov      eax, o
-        movss    [eax], xmm0
-        movhps   [eax+4], xmm0
-    }
-#else
 	o[0] = veca[0]+vecb[0];
 	o[1] = veca[1]+vecb[1];
 	o[2] = veca[2]+vecb[2];
-#endif
 }
 
 inline void VectorCopy( const vec3_t in, vec3_t out ) {
@@ -883,35 +761,10 @@ inline void VectorCopy( const vec3_t in, vec3_t out ) {
 	out[2] = in[2];
 }
 
-#ifdef _XBOX
-inline void VectorCopy( const short in[3], vec3_t out ) {
-	out[0] = (float)in[0];
-	out[1] = (float)in[1];
-	out[2] = (float)in[2];
-}
-#endif
-
 inline void VectorScale( const vec3_t i, vec_t scale, vec3_t o ) {
-#ifdef _XBOX
-__asm {
-        movss    xmm0, scale
-        shufps   xmm0, xmm0, 0h
-
-        mov      edx, i
-        movss    xmm1, [edx]
-        movhps   xmm1, [edx+4]
-
-        mulps    xmm0, xmm1
-
-        mov      eax, o
-        movss    [eax], xmm0
-        movhps   [eax+4], xmm0
-    }
-#else
 	o[0] = i[0]*scale;
 	o[1] = i[1]*scale;
 	o[2] = i[2]*scale;
-#endif
 }
 
 float DotProductNormalize( const vec3_t inVec1, const vec3_t inVec2 );
@@ -923,31 +776,6 @@ float NormalizeColor( const vec3_t in, vec3_t out );
 float RadiusFromBounds( const vec3_t mins, const vec3_t maxs );
 
 void ClearBounds( vec3_t mins, vec3_t maxs );
-
-#ifdef _XBOX
-inline void AddPointToBounds( const short v[3], vec3_t mins, vec3_t maxs ) {
-	if ( v[0] < mins[0] ) {
-		mins[0] = v[0];
-	}
-	if ( v[0] > maxs[0]) {
-		maxs[0] = v[0];
-	}
-
-	if ( v[1] < mins[1] ) {
-		mins[1] = v[1];
-	}
-	if ( v[1] > maxs[1]) {
-		maxs[1] = v[1];
-	}
-
-	if ( v[2] < mins[2] ) {
-		mins[2] = v[2];
-	}
-	if ( v[2] > maxs[2]) {
-		maxs[2] = v[2];
-	}
-}
-#endif
 
 inline void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs ) {
 	if ( v[0] < mins[0] ) {
@@ -989,63 +817,11 @@ inline int VectorCompare2( const vec3_t v1, const vec3_t v2 ) {
 	return 1;
 }
 inline vec_t VectorLength( const vec3_t v ) {
-#ifdef _XBOX
-	float res;
-
-	__asm {
-        mov     edx, v
-        movss   xmm1, [edx]
-        movhps  xmm1, [edx+4]
-
-        movaps  xmm2, xmm1
-
-        mulps   xmm1, xmm2
-
-        movaps  xmm0, xmm1
-
-        shufps  xmm0, xmm0, 32h
-        addps   xmm1, xmm0
-
-        shufps  xmm0, xmm0, 32h
-        addps   xmm1, xmm0
-
-        sqrtss  xmm1, xmm1
-        movss   [res], xmm1
-    }
-
-    return res;
-#else
 	return (vec_t)sqrt (v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-#endif
 }
 
 inline vec_t VectorLengthSquared( const vec3_t v ) {
-#ifdef _XBOX
-	float res;
-	__asm {
-        mov     edx, v
-        movss   xmm1, [edx]
-        movhps  xmm1, [edx+4]
-
-        movaps  xmm2, xmm1
-
-        mulps   xmm1, xmm2
-
-        movaps  xmm0, xmm1
-
-        shufps  xmm0, xmm0, 32h
-        addps   xmm1, xmm0
-
-        shufps  xmm0, xmm0, 32h
-        addps   xmm1, xmm0
-
-        movss   [res], xmm1
-    }
-
-    return res;
-#else
 	return (v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-#endif
 }
 
 inline vec_t Distance( const vec3_t p1, const vec3_t p2 ) {
@@ -1125,27 +901,6 @@ inline vec_t VectorNormalize2( const vec3_t v, vec3_t out) {
 		
 	return length;
 }
-
-#ifdef _XBOX
-inline vec_t VectorNormalize2( const vec3_t v, short out[3]) {
-	float	length, ilength;
-
-	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
-	length = sqrt (length);
-
-	if (length)
-	{
-		ilength = 1/length;
-		out[0] = (short)(v[0]*ilength * 32767.0f);
-		out[1] = (short)(v[1]*ilength * 32767.0f);
-		out[2] = (short)(v[2]*ilength * 32767.0f);
-	} else {
-		VectorClear( out );
-	}
-
-	return length;
-}
-#endif
 
 int Q_log2(int val);
 
@@ -1339,9 +1094,6 @@ inline float AngleDelta ( float angle1, float angle2 ) {
 }
 
 qboolean PlaneFromPoints( vec4_t plane, const vec3_t a, const vec3_t b, const vec3_t c );
-#ifdef _XBOX
-qboolean PlaneFromPoints( vec4_t plane, const short a[3], const short b[3], const short c[3] );
-#endif
 void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal );
 void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, float degrees );
 void RotateAroundDirection( vec3_t axis[3], float yaw );
@@ -1367,11 +1119,7 @@ void	COM_StripExtension( const char *in, char *out );
 void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 
 //JLFCALLOUT include MPNOTUSED
-#ifdef _XBOX
-void	 COM_BeginParseSession( bool nested = false );
-#else
 void	 COM_BeginParseSession( void );
-#endif
 void	 COM_EndParseSession( void );
 
 int		 COM_GetCurrentParseLine( void );
