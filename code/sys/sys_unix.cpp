@@ -242,8 +242,6 @@ char **Sys_ListFiles( const char *directory, const char *extension, int *numfile
 	int			i;
 	struct stat st;
 
-	int			extLen;
-
 	if ( !extension)
 		extension = "";
 
@@ -251,8 +249,6 @@ char **Sys_ListFiles( const char *directory, const char *extension, int *numfile
 		extension = "";
 		dironly = qtrue;
 	}
-
-	extLen = strlen( extension );
 
 	// search
 	nfiles = 0;

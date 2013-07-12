@@ -181,7 +181,8 @@ static void RllSetupTable( void )
 //
 // Returns:		Number of samples placed in output buffer
 //-----------------------------------------------------------------------------
-long RllDecodeMonoToMono(unsigned char *from,short *to,unsigned int size,char signedOutput ,unsigned short flag)
+/*
+static long RllDecodeMonoToMono(unsigned char *from,short *to,unsigned int size,char signedOutput ,unsigned short flag)
 {
 	unsigned int z;
 	int prev;
@@ -196,6 +197,7 @@ long RllDecodeMonoToMono(unsigned char *from,short *to,unsigned int size,char si
 	}
 	return size;	//*sizeof(short));
 }
+*/
 
 
 //-----------------------------------------------------------------------------
@@ -212,7 +214,7 @@ long RllDecodeMonoToMono(unsigned char *from,short *to,unsigned int size,char si
 //
 // Returns:		Number of samples placed in output buffer
 //-----------------------------------------------------------------------------
-long RllDecodeMonoToStereo(unsigned char *from,short *to,unsigned int size,char signedOutput,unsigned short flag)
+static long RllDecodeMonoToStereo(unsigned char *from,short *to,unsigned int size,char signedOutput,unsigned short flag)
 {
 	unsigned int z;
 	int prev;
@@ -244,7 +246,7 @@ long RllDecodeMonoToStereo(unsigned char *from,short *to,unsigned int size,char 
 //
 // Returns:		Number of samples placed in output buffer
 //-----------------------------------------------------------------------------
-long RllDecodeStereoToStereo(unsigned char *from,short *to,unsigned int size,char signedOutput, unsigned short flag)
+static long RllDecodeStereoToStereo(unsigned char *from,short *to,unsigned int size,char signedOutput, unsigned short flag)
 {
 	unsigned int z;
 	unsigned char *zz = from;
@@ -282,7 +284,8 @@ long RllDecodeStereoToStereo(unsigned char *from,short *to,unsigned int size,cha
 //
 // Returns:		Number of samples placed in output buffer
 //-----------------------------------------------------------------------------
-long RllDecodeStereoToMono(unsigned char *from,short *to,unsigned int size,char signedOutput, unsigned short flag)
+/*
+static long RllDecodeStereoToMono(unsigned char *from,short *to,unsigned int size,char signedOutput, unsigned short flag)
 {
 	unsigned int z;
 	int prevL,prevR;
@@ -303,7 +306,7 @@ long RllDecodeStereoToMono(unsigned char *from,short *to,unsigned int size,char 
 
 	return size;
 }
-
+*/
 /******************************************************************************
 *
 * Function:		
@@ -912,7 +915,7 @@ static void setupQuad( long xOff, long yOff )
 	long numQuadCels, i,x,y;
 	byte *temp;
 
-	if (xOff == cin.oldXOff && yOff == cin.oldYOff && cinTable[currentHandle].ysize == (unsigned)cin.oldysize && cinTable[currentHandle].xsize == (unsigned)cin.oldxsize) {
+	if (xOff == cin.oldXOff && yOff == cin.oldYOff && cinTable[currentHandle].ysize == cin.oldysize && cinTable[currentHandle].xsize == cin.oldxsize) {
 		return;
 	}
 
@@ -976,8 +979,8 @@ static void readQuadInfo( byte *qData )
 	cinTable[currentHandle].t[0] = cinTable[currentHandle].screenDelta;
 	cinTable[currentHandle].t[1] = -cinTable[currentHandle].screenDelta;
 
-    cinTable[currentHandle].drawX = cinTable[currentHandle].CIN_WIDTH;
-    cinTable[currentHandle].drawY = cinTable[currentHandle].CIN_HEIGHT;
+	cinTable[currentHandle].drawX = cinTable[currentHandle].CIN_WIDTH;
+	cinTable[currentHandle].drawY = cinTable[currentHandle].CIN_HEIGHT;
 	// jic the card sucks
 	if ( cls.glconfig.maxTextureSize <= 256) {
         if (cinTable[currentHandle].drawX>256) {

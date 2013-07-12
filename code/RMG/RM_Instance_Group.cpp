@@ -74,8 +74,8 @@ CRMGroupInstance::CRMGroupInstance ( CGPGroup *instGroup, CRMInstanceFile& instF
 		int			 mincount;
 		int			 maxcount;
 		int			 count;
-		float		 minrange;
-		float		 maxrange;
+		//float		 minrange;
+		//float		 maxrange;
 
 		// Make sure only instances are specified as sub groups
 		assert ( 0 == Q_stricmp ( instGroup->GetName ( ), "instance" ) );
@@ -84,8 +84,8 @@ CRMGroupInstance::CRMGroupInstance ( CGPGroup *instGroup, CRMInstanceFile& instF
 		name     = instGroup->FindPairValue ( "name", "" );
 
 		// Grab the range information
-		minrange = atof(instGroup->FindPairValue ( "minrange", "0" ) );
-		maxrange = atof(instGroup->FindPairValue ( "maxrange", "0" ) );
+		//minrange = atof(instGroup->FindPairValue ( "minrange", "0" ) );
+		//maxrange = atof(instGroup->FindPairValue ( "maxrange", "0" ) );
 
 		// Grab the count information and randomly generate a count value
 		mincount = atoi(instGroup->FindPairValue ( "mincount", "1" ) );

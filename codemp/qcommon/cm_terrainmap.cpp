@@ -109,13 +109,12 @@ void CTerrainMap::ApplyBackground(void)
 	byte	*outPos;
 	float	xRel, yRel, xInc, yInc;
 	byte	*backgroundImage;
-	int		backgroundWidth, backgroundHeight, backgroundDepth;
+	int		backgroundWidth, backgroundHeight;
 	int		pos;
 	int	format;
 
 	memset(mImage, 255, sizeof(mBufImage));
 //	R_LoadImage("textures\\kamchatka\\ice", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);0
-	backgroundDepth = 4;
 	re.LoadImageJA("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight, &format);
 	if (backgroundImage)
 	{

@@ -2319,7 +2319,7 @@ void G2API_CopySpecificG2Model(CGhoul2Info_v &ghoul2From, int modelFrom, CGhoul2
 // This version will automatically copy everything about this model, and make a new one if necessary.
 void G2API_DuplicateGhoul2Instance(CGhoul2Info_v &g2From, CGhoul2Info_v **g2To)
 {
-	int ignore;
+	//int ignore;
 
 	if (*g2To)
 	{	// This is bad.  We only want to do this if there is not yet a to declared.
@@ -2342,7 +2342,7 @@ void G2API_DuplicateGhoul2Instance(CGhoul2Info_v &g2From, CGhoul2Info_v **g2To)
 #endif
 	CGhoul2Info_v &ghoul2 = *(*g2To);
 
-	ignore = G2API_CopyGhoul2Instance(g2From, ghoul2, -1);
+	/*ignore = */G2API_CopyGhoul2Instance(g2From, ghoul2, -1);
 	
 	return;
 }

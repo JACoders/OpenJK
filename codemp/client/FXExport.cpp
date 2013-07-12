@@ -71,7 +71,7 @@ void FX_PlayEntityEffectID( int id, vec3_t org,
 	}
 #endif // __FXCHECKER
 
-	theFxScheduler.PlayEffect(id, org, axis, boltInfo, NULL, -1, vol, rad );
+	theFxScheduler.PlayEffect(id, org, axis, boltInfo, 0, -1, vol, rad );
 }
 
 void FX_AddScheduledEffects( qboolean portal )

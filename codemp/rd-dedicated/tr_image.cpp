@@ -464,7 +464,7 @@ int RE_SavePNG( char *filename, byte *buf, size_t width, size_t height, int byte
 	/* Write the image data to "fp". */
 
 //	png_init_io (png_ptr, fp);
-	png_set_write_fn( png_ptr, (png_voidp)fp, user_write_data, user_flush_data );
+	png_set_write_fn( png_ptr, (png_voidp)&fp, user_write_data, user_flush_data );
 	png_set_rows (png_ptr, info_ptr, row_pointers);
 	png_write_png (png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 

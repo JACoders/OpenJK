@@ -1494,7 +1494,7 @@ Also called by RE_EndRegistration
 void RB_ShowImages( void ) {	
 	image_t	*image;
 	float	x, y, w, h;
-	int		start, end;
+	//int		start, end;
 
 	if ( !backEnd.projection2D ) {
 		RB_SetGL2D();
@@ -1502,7 +1502,7 @@ void RB_ShowImages( void ) {
 
 	qglFinish();
 
-	start = ri.Milliseconds();
+	//start = ri.Milliseconds();
 
 	int i=0;
 //	int iNumImages = 
@@ -1540,7 +1540,7 @@ void RB_ShowImages( void ) {
 
 	qglFinish();
 
-	end = ri.Milliseconds();
+	//end = ri.Milliseconds();
 	//VID_Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
 }
 

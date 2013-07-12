@@ -112,9 +112,9 @@ CCMPatch::~CCMPatch(void)
 
 CCMLandScape::CCMLandScape(const char *configstring, bool server)
 {
-	int			numPatches, numBrushesPerPatch, size, seed;
+	int			numPatches, numBrushesPerPatch, size;//, seed;
 	char		heightMap[MAX_QPATH];
-	char		*ptr;
+	//char		*ptr;
 
 	holdrand = 0x89abcdef;
 
@@ -131,7 +131,7 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 	numPatches = atol(Info_ValueForKey(configstring, "numPatches"));
 	mTerxels = atol(Info_ValueForKey(configstring, "terxels"));
 	mHasPhysics = !!atol(Info_ValueForKey(configstring, "physics"));
-	seed = strtoul(Info_ValueForKey(configstring, "seed"), &ptr, 10);
+	//seed = strtoul(Info_ValueForKey(configstring, "seed"), &ptr, 10);
 
 	mBounds[0][0] = (float)atof(Info_ValueForKey(configstring, "minx"));
 	mBounds[0][1] = (float)atof(Info_ValueForKey(configstring, "miny"));

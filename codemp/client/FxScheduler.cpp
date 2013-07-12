@@ -1066,7 +1066,6 @@ bool gEffectsInPortal = qfalse; //this is just because I don't want to have to a
 void CFxScheduler::AddScheduledEffects( bool portal )
 {
 	TScheduledEffect::iterator	itr, next;
-	SScheduledEffect			*schedEffect = 0;
 	vec3_t						origin;
 	vec3_t						axis[3];
 	int							oldEntNum = -1, oldBoltIndex = -1, oldModelNum = -1;
@@ -1087,7 +1086,6 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 	{
 		next = itr;
 		next++;
-		schedEffect = (*itr);
 
 		if (portal == (*itr)->mPortalEffect)
 		{ //only render portal fx on the skyportal pass and vice versa

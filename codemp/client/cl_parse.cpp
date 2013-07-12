@@ -955,7 +955,3 @@ void CL_ParseServerMessage( msg_t *msg ) {
 		}
 	}
 }
-
-
-extern int			scr_center_y;
-void SCR_CenterPrint (char *str);//, PalIdx_t colour)

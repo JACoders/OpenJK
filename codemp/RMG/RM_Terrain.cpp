@@ -277,8 +277,8 @@ void CRMLandScape::CreateRandomDensityMap(byte *density, int width, int height, 
 void CRMLandScape::LoadDensityMap(const char *td)
 {
 	char		densityMap[MAX_QPATH];
-	byte		*imageData;
 #ifndef DEDICATED
+	byte		*imageData;
 	int			iWidth, iHeight, seed;
 	char 		*ptr;
 #endif
@@ -292,9 +292,7 @@ void CRMLandScape::LoadDensityMap(const char *td)
 	if(strlen(densityMap))
 	{
 		Com_DPrintf("CG_Terrain: Loading density map %s.....\n", densityMap);
-#ifdef DEDICATED
-		imageData = NULL;
-#else
+#ifndef DEDICATED
 		re.LoadDataImage(densityMap, &imageData, &iWidth, &iHeight);
 		if(imageData)
 		{

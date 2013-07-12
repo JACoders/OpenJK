@@ -113,11 +113,9 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 	int					x, surfNum = -1;
 	mdxaSkel_t			*skel;
 	mdxaSkelOffsets_t	*offsets;
-	mdxmHierarchyOffsets_t	*surfOffsets;
 	boltInfo_t			tempBolt;
 	int					flags;
-  
-	surfOffsets = (mdxmHierarchyOffsets_t *)((byte*)mod_m->mdxm + sizeof(mdxmHeader_t));
+
 	// first up, we'll search for that which this bolt names in all the surfaces
 	surfNum = G2_IsSurfaceLegal((void*)mod_m, boneName, &flags);
 

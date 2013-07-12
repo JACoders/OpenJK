@@ -2243,9 +2243,9 @@ static float G2_RagSetState(CGhoul2Info &ghoul2, boneInfo_t &bone,int frameNum,c
 static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,const vec3_t origin,bool anyRendered)
 {
 	int minSurvivingBone=10000;
-	int minSurvivingBoneAt=-1;
+	//int minSurvivingBoneAt=-1;
 	int minSurvivingBoneAlt=10000;
-	int minSurvivingBoneAtAlt=-1;
+	//int minSurvivingBoneAtAlt=-1;
 
 	assert(ghoul2.mFileName[0]);
 	boneInfo_v &blist = ghoul2.mBlist;
@@ -2255,7 +2255,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 	rag->clear();
 	int numRendered=0;
 	int numNotRendered=0;
-	int pelvisAt=-1;
+	//int pelvisAt=-1;
 	for(size_t i=0; i<blist.size(); i++)
 	{
 		boneInfo_t &bone=blist[i];
@@ -2281,7 +2281,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 				}
 				if	(bone.RagFlags&RAG_PCJ_PELVIS)
 				{
-					pelvisAt=i;
+					//pelvisAt=i;
 				}
 				else if	(bone.RagFlags&RAG_PCJ_MODEL_ROOT)
 				{
@@ -2291,7 +2291,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 					if (minSurvivingBone>bone.boneNumber)
 					{
 						minSurvivingBone=bone.boneNumber;
-						minSurvivingBoneAt=i;
+						//minSurvivingBoneAt=i;
 					}
 				}
 				else if	(wasRendered)
@@ -2299,7 +2299,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 					if (minSurvivingBoneAlt>bone.boneNumber)
 					{
 						minSurvivingBoneAlt=bone.boneNumber;
-						minSurvivingBoneAtAlt=i;
+						//minSurvivingBoneAtAlt=i;
 					}
 				}
 				if (
@@ -2365,7 +2365,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 	}
 #endif
 	numRags=0;
-	int ragStartTime=0;
+	//int ragStartTime=0;
 	for(size_t i=0; i<rag->size(); i++)
 	{
 		if ((*rag)[i])
@@ -2374,7 +2374,7 @@ static bool G2_RagDollSetup(CGhoul2Info &ghoul2,int frameNum,bool resetOrigin,co
 			assert(bone.boneNumber>=0);
 			assert(numRags<MAX_BONES_RAG);
 
-			ragStartTime=bone.ragStartTime;
+			//ragStartTime=bone.ragStartTime;
 
 			bone.ragIndex=numRags;
 			ragBoneData[numRags]=&bone;

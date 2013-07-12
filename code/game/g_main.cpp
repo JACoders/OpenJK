@@ -2023,6 +2023,7 @@ void G_RunFrame( int levelTime ) {
 
 		if ( ent->s.eType == ET_MOVER ) 
 		{
+			// FIXME string comparison in per-frame thinks wut???
 			if ( ent->model && Q_stricmp( "models/test/mikeg/tie_fighter.md3", ent->model ) == 0 )
 			{
 				TieFighterThink( ent );

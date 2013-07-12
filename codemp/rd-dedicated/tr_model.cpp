@@ -766,7 +766,7 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 	mdxmSurface_t		*surf;
 	int					version;
 	int					size;
-	shader_t			*sh;
+	//shader_t			*sh;
 	mdxmSurfHierarchy_t	*surfInfo;
 
 #if 0 //#ifndef _M_IX86
@@ -853,7 +853,7 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 		}
 
 		// We will not be using shaders on the server.
-		sh = 0;
+		//sh = 0;
 		// insert it in the surface list
 		
 		surfInfo->shaderIndex = 0;

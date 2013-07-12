@@ -192,7 +192,7 @@ CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by,
 	float	currentWidth;
 	float	currentPosition;
 	vec2_t	testPoint, percPoint, diffPoint, normalizedPath;
-	float	distance, length;
+	float	distance;
 	
 	CreateCircle();
 
@@ -214,7 +214,6 @@ CPathInfo::CPathInfo(CCMLandScape *landscape, int numPoints, float bx, float by,
 	mWork = (vec4_t *)malloc(sizeof(vec4_t) * (mNumPoints+1));
 	mWeights = (vec_t *)malloc(sizeof(vec_t) * (mNumPoints+1));
 
-	length = sqrt((ex-bx)*(ex-bx) + (ey-by)*(ey-by));
 	if (fabs(ex - bx) >= fabs(ey - by))
 	{	// this appears to be a horizontal path
 		mInc = 1.0 / fabs(ex - bx);
@@ -392,11 +391,11 @@ void CPathInfo::Stamp(int x, int y, int size, int depth, unsigned char *Data, in
 //	int xPos;
 //	float yPos;
 	int		dx, dy, fx, fy;
-	float	offset;
+	//float	offset;
 	byte	value;
 	byte	invDepth;
 
-	offset = (float)(CIRCLE_STAMP_SIZE-1) / size;
+	//offset = (float)(CIRCLE_STAMP_SIZE-1) / size;
 	invDepth = 255-depth;
 
 	for(dx = -size; dx <= size; dx++)
