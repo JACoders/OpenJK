@@ -387,19 +387,11 @@ CL_CM_LoadMap
 Just adds default parameters that cgame doesn't need to know about
 ====================
 */
-#ifdef _XBOX
-void CL_CM_LoadMap( const char *mapname ) {
-	int		checksum;
-
-	CM_LoadMap( mapname, qtrue, &checksum );
-}
-#else
 void CL_CM_LoadMap( const char *mapname, qboolean subBSP ) {
 	int		checksum;
 
 	CM_LoadMap( mapname, qtrue, &checksum, subBSP );
 }
-#endif // _XBOX
 
 /*
 ====================
@@ -414,9 +406,7 @@ void CL_ShutdownCGame( void ) {
 		return;
 	}
 	VM_Call( CG_SHUTDOWN );
-#ifndef _XBOX	// Not using it
 	RM_ShutdownTerrain();
-#endif
 
 //	VM_Free( cgvm );
 //	cgvm = NULL;
@@ -862,13 +852,6 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		Com_EventLoop();	// FIXME: if a server restarts here, BAD THINGS HAPPEN!
 		SCR_UpdateScreen();
 		return 0;
-
-#ifdef _XBOX
-	case CG_RMG_INIT:
-	case CG_CM_REGISTER_TERRAIN:
-	case CG_RE_INIT_RENDERER_TERRAIN:
-		Com_Error( ERR_FATAL, "ERROR: Terrain unsupported on Xbox.\n" );
-#else
 	case CG_RMG_INIT:
 		/*
 		if (!com_sv_running->integer)
@@ -895,7 +878,6 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_RE_INIT_RENDERER_TERRAIN:
 		re.InitRendererTerrain((const char *)VMA(1));
 		return 0;
-#endif	// _XBOX
 
 	case CG_CM_LOADMAP:
 		CL_CM_LoadMap( (const char *) VMA(1), args[2] );

@@ -31,10 +31,6 @@ This file is part of Jedi Academy.
 
 #define	FOFS(x) offsetof(gentity_t, x)
 
-#ifdef _XBOX
-#define MAX_NPC_WATER_UPDATE_PER_FRAME	2	// maxmum number of NPCs that will get updated water infromation per frame
-#endif
-
 typedef enum //# taskID_e
 {
 	TID_CHAN_VOICE = 0,	// Waiting for a voice sound to complete

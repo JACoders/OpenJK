@@ -729,11 +729,7 @@ void FS_Startup( const char *gameName )
 	};
 
 	if (
-#ifdef _XBOX
-		GOBInit(&mem, &file, &codec, &cache)
-#else
 		GOBInit(&mem, &file, &codec, NULL)
-#endif
 		!= GOBERR_OK)
 	{
 		Com_Error( ERR_FATAL, "Could not initialize GOB" );

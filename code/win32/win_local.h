@@ -62,13 +62,11 @@ void	IN_Activate (qboolean active);
 void	IN_Frame (void);
 
 // window procedure
-#ifndef _XBOX
 LONG WINAPI MainWndProc (
     HWND    hWnd,
     UINT    uMsg,
     WPARAM  wParam,
     LPARAM  lParam);
-#endif
 
 void Conbuf_AppendText( const char *msg );
 

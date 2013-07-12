@@ -45,11 +45,6 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 #include "../game/q_shared.h"
 
-#ifdef _XBOX
-#include <xtl.h>
-#define filepathlength 120
-#endif
-
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
 extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
 extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName );
@@ -75,11 +70,7 @@ static struct
 	int				savegameFromFlag;
 } s_savegame;
 
-#ifdef _XBOX
-#define MAX_SAVELOADFILES	8
-#else
 #define MAX_SAVELOADFILES	100
-#endif
 #define MAX_SAVELOADNAME	32
 
 //byte screenShotBuf[SG_SCR_WIDTH * SG_SCR_HEIGHT * 4];
@@ -479,17 +470,6 @@ void _UI_Refresh( int realtime )
 //		UI_BuildFindPlayerList(qfalse);
 	} 
 
-#ifdef _XBOX
-	// display current map name
-	if (Cvar_VariableIntegerValue( "cl_maphack" ))
-	{
-		float rgba[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
-		extern cvar_t *cl_mapname;
-		Text_Paint(130, 100, /* UI_FONT_DEFAULT, */ 0.9f, rgba, cl_mapname->string, 0, ITEM_TEXTSTYLE_NORMAL, 3);
-	}
-#endif
-
-#ifndef _XBOX
 	// draw cursor
 	UI_SetColor( NULL );
 	if (Menu_Count() > 0)
@@ -499,7 +479,6 @@ void _UI_Refresh( int realtime )
 			UI_DrawHandlePic( uiInfo.uiDC.cursorx, uiInfo.uiDC.cursory, 48, 48, uiInfo.uiDC.Assets.cursor);
 		}
 	}
-#endif
 }
 
 /*
@@ -875,11 +854,6 @@ static qboolean UI_RunMenuScript ( const char **args )
 		}
 		else if (Q_stricmp(name, "loadgame") == 0) 
 		{
-//JLFTODO  PUT THIS BACK (no!)
-//#ifdef _XBOX
-//				Menus_CloseAll();
-//				ui.Cmd_ExecuteText( EXEC_APPEND, va("load JKSG3\n"));
-//#else
 			if (s_savedata[s_savegame.currentLine].currentSaveFileName)// && (*s_file_desc_field.field.buffer))
 			{
 				Menus_CloseAll();
@@ -887,7 +861,6 @@ static qboolean UI_RunMenuScript ( const char **args )
 			}
 			// after loading a game, the list box (and it's highlight) get's reset back to 0, but currentLine sticks around, so set it to 0 here
 			s_savegame.currentLine = 0;
-//#endif
 
 		}
 		else if (Q_stricmp(name, "deletegame") == 0) 
@@ -920,12 +893,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 			// Create a new save game
 //			if ( !s_savedata[s_savegame.currentLine].currentSaveFileName)	// No line was chosen
 			{
-//JLF MPNOTUSED
-#ifdef _XBOX
-				strcpy(fileName, "JKSG3");
-#else
 				CreateNextSaveName(fileName);	// Get a name to save to
-#endif
 			}
 //			else	// Overwrite a current save game? Ask first.
 			{
@@ -1528,13 +1496,6 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_ResetCharacterListBoxes();
 		}
-#ifdef _XBOX
-		else if (Q_stricmp(name, "multiplayer") == 0)
-		{
-			extern void Sys_Reboot( const char *reason );
-			Sys_Reboot("multiplayer");
-		}
-#endif
 		else 
 		{
 			Com_Printf("unknown UI script %s\n", name);
@@ -1753,31 +1714,12 @@ static void UI_HandleLoadSelection()
 		return;
 //	Cvar_Set("ui_gameDesc", s_savedata[s_savegame.currentLine].currentSaveFileComments );	// set comment 
 
-#ifdef _XBOX
-	void R_UpdateSaveGameImage(const char *filename);
-	//create the correctfilename
-	unsigned short saveGameName[filepathlength];
-	char directoryInfo[filepathlength];
-	char psLocalFilename[filepathlength];
-
-	
-	mbstowcs(saveGameName, s_savedata[s_savegame.currentLine].currentSaveFileName, filepathlength);
-
-	XCreateSaveGame("U:\\", saveGameName, OPEN_ALWAYS, 0,directoryInfo, filepathlength);
-
-	strcpy (psLocalFilename , directoryInfo);
-	strcat (psLocalFilename , "saveimage.xbx");
-
-
-	R_UpdateSaveGameImage(psLocalFilename);
-#else
 /*	if (!ui.SG_GetSaveImage(s_savedata[s_savegame.currentLine].currentSaveFileName, &screenShotBuf))
 >>>>>>> 1.30
 	{
 		memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4)); 
 	}
 */
-#endif
 }
 
 /*
@@ -1787,23 +1729,10 @@ UI_FeederCount
 */
 static int UI_FeederCount(float feederID) 
 {
-#ifdef _XBOX 
-//JLF MPNOTNEEDED
-	static bool firstSaveRequest = true;
-#endif
-
 	if (feederID == FEEDER_SAVEGAMES ) 
 	{
-//JLF MPNOTNEEDED
-#ifdef _XBOX 
-		if (s_savegame.saveFileCnt == -1 || firstSaveRequest)
-		{
-			firstSaveRequest = false;
-#else
 		if (s_savegame.saveFileCnt == -1)
 		{
-#endif
-
 			ReadSaveDirectory();	//refresh
 			UI_HandleLoadSelection();
 			UI_AdjustSaveGameListBox(s_savegame.currentLine);
@@ -2079,13 +2008,6 @@ static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, 
 
 //unfortunately we cannot rely on any game/cgame module code to do our animation stuff,
 //because the ui can be loaded while the game/cgame are not loaded. So we're going to recreate what we need here.
-// On Xbox, we need all the RAM we can get, and this is huge. So we just borrow the one from level. I hope
-// this doesn't cause some apocalypse. Getting access to level in here is nigh impossible, as we'd have to
-// include g_local.h, and the consequences of that are bad. So: This pointer is initialized in a global constructor
-// in class UIAnimFileSetInitializer in g_main.cpp! Look there! Don't forget!
-//#ifdef _XBOX
-//animFileSet_t	*ui_knownAnimFileSets = NULL;
-//#else
 #undef MAX_ANIM_FILES
 #define MAX_ANIM_FILES 4
 typedef struct
@@ -2094,7 +2016,6 @@ typedef struct
 	animation_t		animations[MAX_ANIMATIONS];
 } animFileSet_t;
 static animFileSet_t	ui_knownAnimFileSets[MAX_ANIM_FILES];
-//#endif
 
 int				ui_numKnownAnimFileSets;
 
@@ -2377,13 +2298,10 @@ static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean buil
 	char fpath[MAX_QPATH];
 	int f;
 
-#ifdef _XBOX
-	Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.dds", dirptr, skinname);
-#else
+
 	Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.jpg", dirptr, skinname);
-#endif
 	ui.FS_FOpenFile(fpath, &f, FS_READ);
-#if !defined(_XBOX) || defined(_DEBUG)
+#if defined(_DEBUG)
 	if (!f)
 	{ //not there, try png
 		Com_sprintf(fpath, MAX_QPATH, "models/players/%s/icon_%s.png", dirptr, skinname);
@@ -2718,31 +2636,6 @@ static void UI_RegisterCvars( void )
 		Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
 	}
 }
-
-#ifdef _XBOX
-//JLFCALLOUT  MPNOTNEEDED->(INCLUDE WORKS)
-qboolean Menu_Parse(char *buffer, menuDef_t *menu);
-
-char * UI_ParseInclude(const char *menuFile, menuDef_t * menu) 
-{
-	char	*buffer,*holdBuffer,*token2;
-	int len;
-//	pc_token_t token;
-
-	//Com_DPrintf("Parsing menu file:%s\n", menuFile);
-
-	len = PC_StartParseSession(menuFile,&buffer, true);
-
-	if (len<=0) 
-	{
-		Com_Printf("UI_ParseMenu: Unable to load menu %s\n", menuFile);
-		return NULL;
-	}
-
-	//	PC_EndParseSession(buffer);
-	return buffer;
-}
-#endif
 
 /*
 =================
@@ -3820,12 +3713,6 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 
 		case UI_ALLMAPS_SELECTION://saved game thumbnail
 
-//JLF MAPIMAGE MPNOTUSED
-#ifdef _XBOX
-			//create a shader
-			UI_DrawHandlePic(x, y, w, h, shader);
-		
-#else
 			int levelshot;
 			levelshot = ui.R_RegisterShaderNoMip( va( "levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap ) );
 			if (levelshot)
@@ -3836,7 +3723,7 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 			{
 				UI_DrawHandlePic(x, y, w, h, uis.menuBackShader);
 			}
-#endif
+
 			ui.R_Font_DrawString(	x,		// int ox
 									y+h,	// int oy
 									s_savedata[s_savegame.currentLine].currentSaveFileMap,	// const char *text
@@ -4027,14 +3914,6 @@ void _UI_KeyEvent( int key, qboolean down )
 		if (menu) 
 		{
 			//DemoEnd();
-//JLF MPMOVED
-#ifdef _XBOX
-//			extern void G_DemoKeypress();//JLF new
-//			G_DemoKeypress();			//JLF new
-			extern void UpdateDemoTimer();
-			UpdateDemoTimer();
-
-#endif
 			if (key == A_ESCAPE && down && !Menus_AnyFullScreenVisible() && !(menu->window.flags & WINDOW_IGNORE_ESCAPE)) 
 			{
 				Menus_CloseAll();
@@ -4102,10 +3981,6 @@ UI_InGameMenu
 */
 void UI_InGameMenu(const char*menuID)
 {
-#ifdef _XBOX
-	ui.PrecacheScreenshot();
-#endif
-
 	Menus_CloseByName("mainhud");
 
 	if (menuID)
@@ -4886,11 +4761,7 @@ static void UI_ShutdownForceHelp( void )
 		item = (itemDef_s *) Menu_FindItemByName(menu, va("%s_fbutton",powerEnums[uiInfo.forcePowerUpdated].title));
 		if (item)
 		{
-	#ifdef _XBOX
-			Item_SetFocus(item, 0,0); 
-	#else
 			item->window.flags |= WINDOW_HASFOCUS;
-	#endif
 		}
 
 		// Get player state
@@ -5041,11 +4912,7 @@ static void UI_DecrementCurrentForcePower ( void )
 	item = (itemDef_s *) Menu_FindItemByName(menu, va("%s_fbutton",powerEnums[uiInfo.forcePowerUpdated].title));
 	if (item)
 	{
-#ifdef _XBOX
-		Item_SetFocus(item, 0,0); 
-#else
 		item->window.flags |= WINDOW_HASFOCUS;
-#endif
 	}
 
 	uiInfo.forcePowerUpdated = FP_UPDATED_NONE;			// It's as if nothing happened.
@@ -5154,11 +5021,7 @@ static void UI_AffectForcePowerLevel ( const char *forceName )
 			UI_SetItemColor(item,"hexpic","forecolor",color);
 			UI_SetItemColor(item,"iconpic","forecolor",color);
 
-#ifdef _XBOX
-			Item_SetFocus(item, 0,0); 
-#else
 			item->window.flags |= WINDOW_HASFOCUS;
-#endif
 		}
 	}
 
@@ -6442,85 +6305,6 @@ ReadSaveDirectory
 =================
 */
 //JLFSAVEGAME MPNOTUSED
-#ifdef _XBOX //xbox version
-//for the xbox reading the save directory will consist of 
-//iterating through the save game folders
-
-void ReadSaveDirectory (void)
-{
-	int		i;
-	char	*holdChar;
-	int		len;
-	int		fileCnt;
-
-	// Clear out save data
-	memset(s_savedata,0,sizeof(s_savedata));
-	s_savegame.saveFileCnt = 0;
-	Cvar_Set("ui_gameDesc", "" );	// Blank out comment 
-	Cvar_Set("ui_SelectionOK", "0" );
-	//memset( screenShotBuf,0,(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4)); //blank out sshot
-
-	// Get everything in saves directory
-//	fileCnt = ui.FS_GetFileList("saves", ".sav", s_savegame.listBuf, LISTBUFSIZE );
-
-	Cvar_Set("ui_ResumeOK", "0" );
-	holdChar = s_savegame.listBuf;
-	XGAME_FIND_DATA SaveGameData;
-	HANDLE searchhandle;
-	BOOL retval;
-
-    // Any saves?
-	searchhandle = XFindFirstSaveGame( "U:\\", &SaveGameData );
-	if ( searchhandle != INVALID_HANDLE_VALUE )
-    do
-	{
-		 // At least one; count up the rest
-		DWORD dwCount = 1;
-		//get the name of the file
-		char saveGameName[filepathlength];
-		
-		wcstombs(saveGameName, SaveGameData.szSaveGameName, filepathlength);
-		strcpy( holdChar, saveGameName);
-		
-
-		if	( Q_stricmp("current",saveGameName)!=0 )
-		{
-			time_t result;
-			if (Q_stricmp("auto",saveGameName)==0)
-			{
-				Cvar_Set("ui_ResumeOK", "1" );
-			}
-			else
-			{	// Is this a valid file??? & Get comment of file
-				//create full path name
-				
-				result = ui.SG_GetSaveGameComment(saveGameName, s_savedata[s_savegame.saveFileCnt].currentSaveFileComments, s_savedata[s_savegame.saveFileCnt].currentSaveFileMap);
-				if (result != 0) // ignore Bad save game 
-				{
-					strcpy(s_savedata[s_savegame.saveFileCnt].currentSaveFileComments,s_savedata[s_savegame.saveFileCnt].currentSaveFileMap);
-					s_savedata[s_savegame.saveFileCnt].currentSaveFileName = holdChar;
-					s_savedata[s_savegame.saveFileCnt].currentSaveFileDateTime = result;
-					holdChar += strlen(holdChar)+1;
-					
-					struct tm *localTime;
-					localTime = localtime( &result );
-					strcpy(s_savedata[s_savegame.saveFileCnt].currentSaveFileDateTimeString,asctime( localTime ) );
-					s_savegame.saveFileCnt++;
-					if (s_savegame.saveFileCnt == MAX_SAVELOADFILES)
-					{
-						break;
-					}
-				}
-			}
-		}
-		
-		retval =XFindNextSaveGame( searchhandle, &SaveGameData );
-	}while(retval);
-    
-}
-
-#else //pc version
-
 void ReadSaveDirectory (void)
 {
 	int		i;
@@ -6579,5 +6363,3 @@ void ReadSaveDirectory (void)
 	qsort( s_savedata, s_savegame.saveFileCnt, sizeof(savedata_t), UI_SortSaveGames );
 
 }
-
-#endif
