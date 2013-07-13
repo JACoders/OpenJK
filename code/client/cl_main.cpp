@@ -75,10 +75,6 @@ cvar_t	*m_forward;
 cvar_t	*m_side;
 cvar_t	*m_filter;
 
-//MAP HACK
-cvar_t	*cl_mapname;
-qboolean vidRestartReloadMap = qfalse;
-
 cvar_t	*cl_activeAction;
 
 cvar_t	*cl_updateInfoString;
