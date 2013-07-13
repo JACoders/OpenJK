@@ -8826,7 +8826,7 @@ int Item_ListBox_MaxScroll(itemDef_t *item)
 	int count = DC->feederCount(item->special);
 	int max;
 
-	if (item->window.flags & WINDOW_HORIZONTAL) 
+	if (force || (Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) && item->window.flags & WINDOW_HASFOCUS))
 	{
 		max = count - (item->window.rect.w / listPtr->elementWidth) + 1;
 	}
