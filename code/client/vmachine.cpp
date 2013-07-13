@@ -122,7 +122,7 @@ intptr_t VM_DllSyscall( intptr_t arg, ... ) {
 	
 	va_start(ap, arg);
 	for (i = 1; i < sizeof (args) / sizeof (args[i]); i++)
-		args[i] = va_arg(ap, int);
+		args[i] = va_arg(ap, intptr_t);
 	va_end(ap);
 	
 	return CL_CgameSystemCalls( args );
