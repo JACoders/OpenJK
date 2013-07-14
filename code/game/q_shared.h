@@ -129,70 +129,72 @@ This file is part of Jedi Academy.
 // Win64
 #if defined(_WIN64) || defined(__WIN64__)
 
-#define	MAC_STATIC
+  #define	MAC_STATIC
 
-#define idx64
+  #define idx64
 
-#undef QDECL
-#define QDECL __cdecl
+  #undef QDECL
+  #define QDECL __cdecl
 
-#undef QCALL
-#define QCALL __stdcall
+  #undef QCALL
+  #define QCALL __stdcall
 
-#if defined(_MSC_VER)
-	#define OS_STRING "win_msvc64"
-#elif defined(__MINGW64__)
-	#define OS_STRING "win_mingw64"
-#endif
+  #if defined(_MSC_VER)
+  	#define OS_STRING "win_msvc64"
+  #elif defined(__MINGW64__)
+  	#define OS_STRING "win_mingw64"
+  #endif
 
-#define QINLINE __inline
-#define PATH_SEP '\\'
+  #define QINLINE __inline
+  #define PATH_SEP '\\'
 
-#if defined(__WIN64__)
-	#define ARCH_STRING "x84_64"
-#elif defined(_M_ALPHA)
-	#define ARCH_STRING "AXP"
-#endif
+  #if defined(__WIN64__)
+  	#define ARCH_STRING "x84_64"
+  #elif defined(_M_ALPHA)
+  	#define ARCH_STRING "AXP"
+  #endif
 
-#define Q3_LITTLE_ENDIAN
+  #define Q3_LITTLE_ENDIAN
 
-#define DLL_EXT ".dll"
+  #define DLL_EXT ".dll"
 #endif
 
 //======================= WIN32 DEFINES =================================
 
 #ifdef WIN32
 
-#define	MAC_STATIC
+  #define	MAC_STATIC
 
-#undef QDECL
-#define	QDECL	__cdecl
+  #undef QDECL
+  #define	QDECL	__cdecl
 
-// buildstring will be incorporated into the version string
-#ifdef NDEBUG
-#ifdef _M_IX86
-#define	CPUSTRING	"win-x86"
-#elif defined _M_ALPHA
-#define	CPUSTRING	"win-AXP"
-#endif
-#else
-#ifdef _M_IX86
-#define	CPUSTRING	"win-x86-debug"
-#elif defined _M_ALPHA
-#define	CPUSTRING	"win-AXP-debug"
-#endif
-#endif
+  // buildstring will be incorporated into the version string
+  #ifdef NDEBUG
+  #ifdef _M_IX86
+  #define	CPUSTRING	"win-x86"
+  #elif defined _M_ALPHA
+  #define	CPUSTRING	"win-AXP"
+  #endif
+  #else
+  #ifdef _M_IX86
+  #define	CPUSTRING	"win-x86-debug"
+  #elif defined _M_ALPHA
+  #define	CPUSTRING	"win-AXP-debug"
+  #endif
+  #endif
 
 
-#define	PATH_SEP '\\'
+  #define	PATH_SEP '\\'
 
-#if defined(_M_IX86) || defined(__i386__)
-	#define ARCH_STRING "x86"
-#elif defined _M_ALPHA
-	#define ARCH_STRING "AXP"
-#endif
+  #if defined(_M_IX86) || defined(__i386__)
+  	#define ARCH_STRING "x86"
+  #elif defined _M_ALPHA
+  	#define ARCH_STRING "AXP"
+  #endif
 
-#define DLL_EXT ".dll"
+  #define Q3_LITTLE_ENDIAN
+
+  #define DLL_EXT ".dll"
 
 #endif
 
@@ -200,30 +202,36 @@ This file is part of Jedi Academy.
 
 #if defined(MACOS_X)
 
-#define MAC_STATIC
+  #define MAC_STATIC
 
-#ifdef __ppc__
-#define CPUSTRING	"MacOSX-ppc"
-#elif defined __i386__
-#define CPUSTRING	"MacOSX-i386"
-#else
-#define CPUSTRING	"MacOSX-other"
-#endif
+  #ifdef __ppc__
+  #define CPUSTRING	"MacOSX-ppc"
+  #elif defined __i386__
+  #define CPUSTRING	"MacOSX-i386"
+  #else
+  #define CPUSTRING	"MacOSX-other"
+  #endif
 
-#define	PATH_SEP	'/'
-        
-#if defined(__i386__)
-    #define ARCH_STRING "i386"
-#elif defined(__x86_64__)
-    #define idx64
-    #define ARCH_STRING "x86_64"
-#elif defined(__powerpc64__)
-    #define ARCH_STRING "ppc64"
-#elif defined(__powerpc__)
-    #define ARCH_STRING "ppc"
-#endif
+  #define	PATH_SEP	'/'
+          
+  #if defined(__i386__)
+      #define ARCH_STRING "i386"
+  #elif defined(__x86_64__)
+      #define idx64
+      #define ARCH_STRING "x86_64"
+  #elif defined(__powerpc64__)
+      #define ARCH_STRING "ppc64"
+  #elif defined(__powerpc__)
+      #define ARCH_STRING "ppc"
+  #endif
 
-#define DLL_EXT ".dylib"
+  #define DLL_EXT ".dylib"
+
+  #if BYTE_ORDER == BIG_ENDIAN
+    #define Q3_BIG_ENDIAN
+  #else
+    #define Q3_LITTLE_ENDIAN
+  #endif
 
 #endif
 
@@ -231,13 +239,13 @@ This file is part of Jedi Academy.
 
 #ifdef __MACOS__
 
-#define	MAC_STATIC	static
+  #define	MAC_STATIC	static
 
-#define	CPUSTRING	"MacOS-PPC"
+  #define	CPUSTRING	"MacOS-PPC"
 
-#define	PATH_SEP ':'
+  #define	PATH_SEP ':'
 
-void Sys_PumpEvents( void );
+  void Sys_PumpEvents( void );
 
 #endif
 
@@ -247,52 +255,58 @@ void Sys_PumpEvents( void );
 // just waste space and make big arrays static...
 #ifdef __linux__
 
-#include <unistd.h>
+  #include <unistd.h>
 
-#define	MAC_STATIC
+  #define	MAC_STATIC
 
-#ifdef __i386__
-#define	CPUSTRING	"linux-i386"
-#elif defined __axp__
-#define	CPUSTRING	"linux-alpha"
-#else
-#define	CPUSTRING	"linux-other"
-#endif
+  #ifdef __i386__
+  #define	CPUSTRING	"linux-i386"
+  #elif defined __axp__
+  #define	CPUSTRING	"linux-alpha"
+  #else
+  #define	CPUSTRING	"linux-other"
+  #endif
 
-#define	PATH_SEP '/'
+  #define	PATH_SEP '/'
 
-#if defined(__i386__)
-    #define ARCH_STRING "i386"
-#elif defined(__x86_64__)
-    #define idx64
-    #define ARCH_STRING "x86_64"
-#elif defined(__powerpc64__)
-    #define ARCH_STRING "ppc64"
-#elif defined(__powerpc__)
-    #define ARCH_STRING "ppc"
-#elif defined(__s390__)
-    #define ARCH_STRING "s390"
-#elif defined(__s390x__)
-    #define ARCH_STRING "s390x"
-#elif defined(__ia64__)
-    #define ARCH_STRING "ia64"
-#elif defined(__alpha__)
-    #define ARCH_STRING "alpha"
-#elif defined(__sparc__)
-    #define ARCH_STRING "sparc"
-#elif defined(__arm__)
-    #define ARCH_STRING "arm"
-#elif defined(__cris__)
-    #define ARCH_STRING "cris"
-#elif defined(__hppa__)
-    #define ARCH_STRING "hppa"
-#elif defined(__mips__)
-    #define ARCH_STRING "mips"
-#elif defined(__sh__)
-    #define ARCH_STRING "sh"
-#endif
+  #if defined(__i386__)
+      #define ARCH_STRING "i386"
+  #elif defined(__x86_64__)
+      #define idx64
+      #define ARCH_STRING "x86_64"
+  #elif defined(__powerpc64__)
+      #define ARCH_STRING "ppc64"
+  #elif defined(__powerpc__)
+      #define ARCH_STRING "ppc"
+  #elif defined(__s390__)
+      #define ARCH_STRING "s390"
+  #elif defined(__s390x__)
+      #define ARCH_STRING "s390x"
+  #elif defined(__ia64__)
+      #define ARCH_STRING "ia64"
+  #elif defined(__alpha__)
+      #define ARCH_STRING "alpha"
+  #elif defined(__sparc__)
+      #define ARCH_STRING "sparc"
+  #elif defined(__arm__)
+      #define ARCH_STRING "arm"
+  #elif defined(__cris__)
+      #define ARCH_STRING "cris"
+  #elif defined(__hppa__)
+      #define ARCH_STRING "hppa"
+  #elif defined(__mips__)
+      #define ARCH_STRING "mips"
+  #elif defined(__sh__)
+      #define ARCH_STRING "sh"
+  #endif
 
-#define DLL_EXT ".so"
+  #if __FLOAT_WORD_ORDER == __BIG_ENDIAN
+    #define Q3_BIG_ENDIAN
+  #else
+    #define Q3_LITTLE_ENDIAN
+  #endif
+
+  #define DLL_EXT ".so"
 
 #endif
 
@@ -471,6 +485,9 @@ typedef enum {
 #define UI_UNDERLINE	0x00008000
 #define UI_TINYFONT		0x00010000
 
+
+#define Com_Memset memset
+#define Com_Memcpy memcpy
 
 // stuff for TA's ROQ cinematic code...
 //

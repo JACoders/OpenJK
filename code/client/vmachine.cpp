@@ -33,15 +33,14 @@ intptr_t	VM_Call( int callnum, ... )
 {
 //	assert (cgvm.entryPoint);
 	//Getting crashes here on OSX with debug dlls.
-#ifdef MACOS_X
-	size_t i;
-	int args[10];
+#if !id386 || defined(MACOS_X)
+	intptr_t args[10];
 	va_list ap;
 	if (cgvm.entryPoint)
 	{
 		va_start(ap, callnum);
-		for (i = 0; i < sizeof (args) / sizeof (args[i]); i++) {
-			args[i] = va_arg(ap, int);
+		for (size_t i = 0; i < ARRAY_LEN(args); i++) {
+			args[i] = va_arg(ap, intptr_t);
 		}
 		va_end(ap);
 		
@@ -108,7 +107,6 @@ we pass this to the cgame dll to call back into the client
  */
 
 extern intptr_t CL_CgameSystemCalls( intptr_t *args );
-extern intptr_t CL_UISystemCalls( intptr_t *args );
 
 intptr_t VM_DllSyscall( intptr_t arg, ... ) {
 //	return cgvm->systemCall( &arg );
@@ -122,7 +120,7 @@ intptr_t VM_DllSyscall( intptr_t arg, ... ) {
 	
 	va_start(ap, arg);
 	for (i = 1; i < sizeof (args) / sizeof (args[i]); i++)
-		args[i] = va_arg(ap, int);
+		args[i] = va_arg(ap, intptr_t);
 	va_end(ap);
 	
 	return CL_CgameSystemCalls( args );
