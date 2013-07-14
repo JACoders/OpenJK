@@ -107,7 +107,6 @@ we pass this to the cgame dll to call back into the client
  */
 
 extern intptr_t CL_CgameSystemCalls( intptr_t *args );
-extern intptr_t CL_UISystemCalls( intptr_t *args );
 
 intptr_t VM_DllSyscall( intptr_t arg, ... ) {
 //	return cgvm->systemCall( &arg );
