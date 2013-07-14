@@ -72,7 +72,6 @@ struct vm_s {
 typedef struct vm_s vm_t;
 
 extern	vm_t	cgvm;	// interface to cgame dll or vm
-extern	vm_t	uivm;	// interface to ui dll or vm
 
 extern intptr_t	VM_Call( int callnum, ... );
 extern intptr_t VM_DllSyscall( intptr_t arg, ... );
