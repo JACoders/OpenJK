@@ -374,8 +374,6 @@ CL_UISystemCalls
 The ui module is making a system call
 ====================
 */
-vm_t	uivm;
-
 intptr_t CL_UISystemCalls( intptr_t *args ) 
 {
 
