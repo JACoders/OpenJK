@@ -245,6 +245,15 @@ enum clc_ops_e {
 };
 
 
+#define	VMA(x) ((void*)args[x])
+inline float _vmf(intptr_t x)
+{
+	floatint_t fi;
+	fi.i = (int) x;
+	return fi.f;
+}
+#define	VMF(x)	_vmf(args[x])
+
 /*
 ==============================================================
 

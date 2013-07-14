@@ -374,10 +374,6 @@ CL_UISystemCalls
 The ui module is making a system call
 ====================
 */
-vm_t	uivm;
-
-#define	VMA(x) ((void*)args[x])
-#define	VMF(x)	((float *)args)[x]
 intptr_t CL_UISystemCalls( intptr_t *args ) 
 {
 

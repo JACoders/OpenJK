@@ -791,9 +791,6 @@ void *VM_ArgPtr( int intValue );
 void CM_SnapPVS(vec3_t origin,byte *buffer);
 extern void		Menu_Paint(menuDef_t *menu, qboolean forcePaint);
 extern menuDef_t *Menus_FindByName(const char *p);
-//#define	VMA(x) VM_ArgPtr(args[x])
-#define	VMA(x) ((void*)args[x])
-#define	VMF(x)	((float *)args)[x]
 intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 #ifndef __NO_JK2
 	if( com_jk2 && com_jk2->integer )
@@ -811,7 +808,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	case CG_MILLISECONDS:
 		return Sys_Milliseconds();
 	case CG_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t *) VMA(1), (const char *) VMA(2), (const char *) VMA(3), args[4] ); 
+		Cvar_Register( (vmCvar_t *) VMA(1), (const char *) VMA(2), (const char *) VMA(3), args[4] );
 		return 0;
 	case CG_CVAR_UPDATE:
 		Cvar_Update( (vmCvar_t *) VMA(1) );
@@ -1412,7 +1409,7 @@ Ghoul2 Insert End
 		return JK2SP_Register( (const char *) VMA(1), args[2]?(SP_REGISTER_MENU|SP_REGISTER_REQUIRED):SP_REGISTER_CLIENT );
 #endif
 	default:
-		Com_Error( ERR_DROP, "Bad cgame system trap: %i", args[0] );
+		Com_Error( ERR_DROP, "Bad cgame system trap: %ld", (long int) args[0] );
 	}
 	return 0;
 }
