@@ -34,13 +34,13 @@ intptr_t	VM_Call( int callnum, ... )
 //	assert (cgvm.entryPoint);
 	//Getting crashes here on OSX with debug dlls.
 #if !id386 || defined(MACOS_X)
-	int args[10];
+	intptr_t args[10];
 	va_list ap;
 	if (cgvm.entryPoint)
 	{
 		va_start(ap, callnum);
 		for (size_t i = 0; i < ARRAY_LEN(args); i++) {
-			args[i] = va_arg(ap, int);
+			args[i] = va_arg(ap, intptr_t);
 		}
 		va_end(ap);
 		
