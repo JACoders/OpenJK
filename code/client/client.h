@@ -291,7 +291,7 @@ extern	cvar_t	*cl_freelook;
 extern	cvar_t	*cl_mouseAccel;
 extern	cvar_t	*cl_showMouseRate;
 
-extern	cvar_t	*cl_ingameVideo;
+extern	cvar_t	*cl_inGameVideo;
 extern  cvar_t  *cl_VideoQuality;
 extern	cvar_t	*cl_VidFadeUp;
 extern	cvar_t	*cl_VidFadeDown;

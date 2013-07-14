@@ -196,9 +196,6 @@ void GL_TexEnv( int env )
 	case GL_ADD:
 		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD );
 		break;
-	case GL_NONE:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_NONE );
-		break;
 	default:
 		Com_Error( ERR_DROP, "GL_TexEnv: invalid env '%d' passed\n", env );
 		break;
