@@ -305,9 +305,9 @@ qboolean SV_TryLoadTransition( const char *mapname );
 qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave);
 qboolean SG_ReadSavegame(const char *psPathlessBaseName);
 void SG_WipeSavegame(const char *psPathlessBaseName);
-qboolean SG_Append(unsigned long chid, const void *data, int length);
-int SG_Read			(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
-int SG_ReadOptional	(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
+qboolean SG_Append(unsigned int chid, const void *data, int length);
+int SG_Read			(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
+int SG_ReadOptional	(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
 void SG_Shutdown();
 void SG_TestSave(void);
 //

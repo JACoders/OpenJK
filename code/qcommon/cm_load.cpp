@@ -1305,8 +1305,8 @@ Writes the portal state to a savegame file
 ===================
 */
 //
-qboolean SG_Append(unsigned long chid, const void *data, int length);
-int SG_Read(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
+qboolean SG_Append(unsigned int chid, const void *data, int length);
+int SG_Read(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
 
 void CM_WritePortalState ()
 {	
