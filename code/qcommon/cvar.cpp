@@ -280,7 +280,7 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 			Cvar_FreeString( var->resetString );
 			var->resetString = CopyString( var_value );
 		} else if ( var_value[0] && strcmp( var->resetString, var_value ) ) {
-			Com_Printf( "Warning: cvar \"%s\" given initial values: \"%s\" and \"%s\"\n",
+			Com_DPrintf( S_COLOR_YELLOW "Warning: cvar \"%s\" given initial values: \"%s\" and \"%s\"\n",
 				var_name, var->resetString, var_value );
 		}
 		// if we have a latched string, take that value now
