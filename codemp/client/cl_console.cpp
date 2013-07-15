@@ -139,8 +139,8 @@ Save the console contents out to a file
 */
 void Con_Dump_f (void)
 {
-	int				l, x, i;
-	short			*line;
+	int		l, x, i;
+	short	*line;
 	fileHandle_t	f;
 	int		bufferlen;
 	char	*buffer;
@@ -155,14 +155,14 @@ void Con_Dump_f (void)
 	Q_strncpyz( filename, Cmd_Argv( 1 ), sizeof( filename ) );
 	COM_DefaultExtension( filename, sizeof( filename ), ".txt" );
 
-	Com_Printf ("Dumped console text to %s.\n", filename );
-
 	f = FS_FOpenFileWrite( filename );
 	if (!f)
 	{
 		Com_Printf ("ERROR: couldn't open %s.\n", filename);
 		return;
 	}
+
+	Com_Printf ("Dumped console text to %s.\n", filename );
 
 	// skip empty lines
 	for (l = con.current - con.totallines + 1 ; l <= con.current ; l++)
@@ -205,6 +205,7 @@ void Con_Dump_f (void)
 		FS_Write(buffer, strlen(buffer), f);
 	}
 
+	Hunk_FreeTempMemory( buffer );
 	FS_FCloseFile( f );
 }
 
