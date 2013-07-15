@@ -395,9 +395,11 @@ CBlock *CBlock::Duplicate( CIcarus* icarus )
 ===================================================================================================
 */
 
+const int IBI_HEADER_ID_LENGTH = 4; // Length of s_IBI_HEADER_ID + 1 (for null terminating byte)
 char* CBlockStream::s_IBI_EXT				= ".IBI";	//(I)nterpreted (B)lock (I)nstructions
 char* CBlockStream::s_IBI_HEADER_ID			= "IBI";
 const float	CBlockStream::s_IBI_VERSION		= 1.57f;
+
 
 /*
 -------------------------
@@ -562,7 +564,7 @@ Open
 
 int CBlockStream::Open( char *buffer, long size )
 {
-	char	id_header[sizeof(s_IBI_HEADER_ID)];
+	char	id_header[IBI_HEADER_ID_LENGTH];
 	float	version;
 	
 	Init();
