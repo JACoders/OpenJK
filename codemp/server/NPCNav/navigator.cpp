@@ -19,7 +19,7 @@
 #include "game/g_nav.h"
 #include <time.h>
 #ifdef __linux__
-DWORD timeGetTime(void);
+unsigned int timeGetTime(void);
 #endif
 
 extern qboolean GNavCallback_NAV_ClearPathToPoint( sharedEntity_t *self, vec3_t pmins, vec3_t pmaxs, vec3_t point, int clipmask, int okToHitEntNum );
