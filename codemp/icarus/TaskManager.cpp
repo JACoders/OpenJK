@@ -1666,7 +1666,7 @@ void CTaskManager::Save( void )
 	CTaskGroup	*taskGroup;
 	const char	*name;
 	CBlock		*block;
-	DWORD		timeStamp;
+	unsigned int		timeStamp;
 	bool		completed;
 	int			id, numCommands;
 	int			numWritten;
@@ -1794,7 +1794,7 @@ void CTaskManager::Load( void )
 	CTaskGroup		*taskGroup;
 	CBlock			*block;
 	CTask			*task;
-	DWORD			timeStamp;
+	unsigned int			timeStamp;
 	bool			completed;
 	void			*bData;
 	int				id, numTasks, numMembers;
