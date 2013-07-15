@@ -1662,6 +1662,7 @@ int Com_HexStrToInt( const char *str );
 
 int	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
 
+void Com_RandomBytes( byte *string, int len );
 
 // mode parm for FS_FOpenFile
 typedef enum {
