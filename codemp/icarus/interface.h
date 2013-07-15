@@ -2,8 +2,6 @@
 
 // ICARUS Interface header file
 
-typedef unsigned long       DWORD;
-
 typedef	float	vec_t;
 typedef	vec_t	vec3_t[3];
 
@@ -17,8 +15,8 @@ typedef struct interface_export_s
 	void			(*I_CenterPrint)( const char *format, ... );
 	void			(*I_DPrintf)( int, const char *, ... );
 	sharedEntity_t *(*I_GetEntityByName)( const char *name );		//Polls the engine for the sequencer of the entity matching the name passed
-	DWORD			(*I_GetTime)( void );							//Gets the current time
-	DWORD			(*I_GetTimeScale)(void );
+	unsigned int			(*I_GetTime)( void );							//Gets the current time
+	unsigned int			(*I_GetTimeScale)(void );
 	int 			(*I_PlaySound)( int taskID, int entID, const char *name, const char *channel );	
 	void			(*I_Lerp2Pos)( int taskID, int entID, vec3_t origin, vec3_t angles, float duration );
 	void			(*I_Lerp2Origin)( int taskID, int entID, vec3_t origin, float duration );

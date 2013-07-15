@@ -455,7 +455,7 @@ long CBlockStream::GetLong( void )
 {
 	long data;
 
-	data = *(long *) (m_stream + m_streamPos);
+	data = *(int *) (m_stream + m_streamPos);
 	m_streamPos += sizeof( data );
 
 	return data;
