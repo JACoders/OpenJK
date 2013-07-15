@@ -137,6 +137,7 @@ void *R_GetCommandBuffer( int bytes ) {
 	renderCommandList_t	*cmdList;
 
 	cmdList = &backEndData->commands;
+	bytes = PAD(bytes, sizeof (void *));
 
 	assert(cmdList); // bk001205
 
