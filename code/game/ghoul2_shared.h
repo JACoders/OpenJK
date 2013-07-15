@@ -286,7 +286,7 @@ public:
 	int				mFlags;	// used for determining whether to do full collision detection against this object
 // to here
 #define BSAVE_END_FIELD mTransformedVertsArray	// this is the end point for loadsave, keep it up to date it you change anything
-	int				*mTransformedVertsArray;	// used to create an array of pointers to transformed verts per surface for collision detection
+	intptr_t		*mTransformedVertsArray;	// used to create an array of pointers to transformed verts per surface for collision detection
 	CBoneCache		*mBoneCache;
 	int				mSkin;
 

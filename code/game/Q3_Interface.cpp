@@ -11095,12 +11095,12 @@ void	CQuake3GameInterface::FreeVariable( const char *name )
 }
 
 //Save / Load functions
-int		CQuake3GameInterface::WriteSaveData( unsigned long chid, void *data, int length )
+int		CQuake3GameInterface::WriteSaveData( unsigned int chid, void *data, int length )
 {
 	return gi.AppendToSaveGame( chid, data, length );
 }
 
-int		CQuake3GameInterface::ReadSaveData( unsigned long chid, void *address, int length, void **addressptr )
+int		CQuake3GameInterface::ReadSaveData( unsigned int chid, void *address, int length, void **addressptr )
 {
 	return gi.ReadFromSaveGame( chid, address, length, addressptr );
 }
