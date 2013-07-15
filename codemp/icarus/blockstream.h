@@ -22,6 +22,7 @@ using namespace std;
 
 #define	IBI_EXT			".IBI"	//(I)nterpreted (B)lock (I)nstructions
 #define IBI_HEADER_ID	"IBI"
+#define IBI_HEADER_ID_LENGTH 4 // Length of IBI_HEADER_ID + 1 for the null terminating byte.
 
 const	float	IBI_VERSION			= 1.57f;
 const	int		MAX_FILENAME_LENGTH = 1024;
