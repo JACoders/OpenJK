@@ -481,7 +481,6 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 	{
 		if(abs(cl.joystickAxis[AXIS_FORWARD]) >= 30) cmd->forwardmove = cl.joystickAxis[AXIS_FORWARD];
 		if(abs(cl.joystickAxis[AXIS_SIDE]) >= 30) cmd->rightmove = cl.joystickAxis[AXIS_SIDE];
-		cmd->forwardmove *= -1.0f; // ffff
 	}
 	else
 	{
