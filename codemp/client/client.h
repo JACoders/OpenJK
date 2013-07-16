@@ -13,6 +13,10 @@
 
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
+// file full of random crap that gets used to create ja_guid
+#define QKEY_FILE "jakey"
+#define QKEY_SIZE 2048
+
 // Wind
 extern vec3_t cl_windVec;
 
