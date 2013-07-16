@@ -5,7 +5,7 @@
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
 #include "ui/ui_public.h"
-#include "renderer/tr_public.h"
+#include "rd-common/tr_public.h"
 #include "keys.h"
 #include "snd_public.h"
 #include "cgame/cg_public.h"

@@ -145,9 +145,9 @@ source_group("cgame" FILES ${MPGameCgameFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameCgameFiles})
 
 set(MPGameRendererFiles
-	"${MPDir}/renderer/tr_types.h"
+	"${MPDir}/rd-common/tr_types.h"
 	)
-source_group("renderer" FILES ${MPGameRendererFiles})
+source_group("rd-common" FILES ${MPGameRendererFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameRendererFiles})
 
 set(MPGameBotlibFiles
