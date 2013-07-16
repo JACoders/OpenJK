@@ -1,8 +1,10 @@
-#pragma once
+#ifndef TR_PUBLIC_H
+#define TR_PUBLIC_H
 
-#include "renderer/tr_types.h"
-#include "qcommon/MiniHeap.h"
-#include "ghoul2/ghoul2_shared.h"
+#include "../rd-common/tr_types.h"
+#include "../qcommon/MiniHeap.h"
+#include "../qcommon/qcommon.h"
+#include "../ghoul2/ghoul2_shared.h"
 
 #define	REF_API_VERSION 1
 
@@ -223,9 +225,9 @@ typedef struct {
 	void				(*LoadDataImage)						( const char *name, byte **pic, int *width, int *height );
 	void				(*InvertImage)							( byte *data, int width, int height, int depth );
 	void				(*Resample)								( byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components );
-	void				(*LoadImageJA)							( const char *name, byte **pic, int *width, int *height, int *format );
+	void				(*LoadImageJA)							( const char *name, byte **pic, int *width, int *height );
 	void				(*CreateAutomapImage)					( const char *name, const byte *pic, int width, int height, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
-	int					(*SavePNG)								( char *filename, byte *buf, size_t width, size_t height, int byteDepth );
+	int					(*SavePNG)								( const char *filename, byte *buf, size_t width, size_t height, int byteDepth );
 
 	IGhoul2InfoArray &	(*TheGhoul2InfoArray)					( void );
 } refexport_t;
@@ -337,3 +339,6 @@ typedef struct {
 #else
 	typedef	refexport_t* (QDECL *GetRefAPI_t) (int apiVersion, refimport_t *rimp);
 #endif
+
+#endif
+

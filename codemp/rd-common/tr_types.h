@@ -3,6 +3,8 @@
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 
+#include "../qcommon/q_shared.h"
+
 #define	MAX_DLIGHTS		32			// can't be increased, because bit flags are used on surfaces
 #define	REFENTITYNUM_BITS	11		// can't be increased without changing drawsurf bit packing
 #define	REFENTITYNUM_MASK	((1<<REFENTITYNUM_BITS) - 1)
@@ -255,7 +257,7 @@ Ghoul2 Insert End
 Ghoul2 Insert Start
 */
 #define MDXABONEDEF
-#include "renderer/mdx_format.h"
+#include "rd-common/mdx_format.h"
 #include "qcommon/qfiles.h"
 
 // skins allow models to be retextured without modifying the model file

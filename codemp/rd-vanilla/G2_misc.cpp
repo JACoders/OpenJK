@@ -123,17 +123,9 @@ CGoreSet *FindGoreSet(int goreSetTag)
 	return 0;
 }
 
-#ifdef _DEBUG
-int g_goreAllocs = 0;
-int g_goreTexAllocs = 0;
-#endif
-
 CGoreSet *NewGoreSet()
 {
 	CGoreSet *ret=new CGoreSet(CurrentGoreSet++);
-#ifdef _DEBUG
-	g_goreAllocs++;
-#endif
 	GoreSets[ret->mMyGoreSetTag]=ret;
 	ret->mRefCount = 1;
 	return ret;
@@ -146,9 +138,6 @@ void DeleteGoreSet(int goreSetTag)
 	{
 		if ( (*f).second->mRefCount == 0 || (*f).second->mRefCount - 1 == 0 )
 		{
-#ifdef _DEBUG
-			g_goreAllocs--;
-#endif
 			delete (*f).second;
 			GoreSets.erase(f);
 		}
@@ -1005,16 +994,10 @@ void G2_GorePolys( const mdxmSurface_t *surface, CTraceSurface &TS, const mdxmSu
 
 		int *data=(int *)Z_Malloc ( sizeof(int)*size, TAG_GHOUL2_GORE, qtrue );
 
-#ifdef _DEBUG
-		g_goreTexAllocs++;
-#endif
 
 		if ( gore->tex[TS.lod] )
 		{
 			Z_Free(gore->tex[TS.lod]);
-#ifdef _DEBUG
-			g_goreTexAllocs--;
-#endif
 		}
 
 		gore->tex[TS.lod]=(float *)data;

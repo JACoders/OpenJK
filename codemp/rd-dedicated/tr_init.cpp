@@ -4,7 +4,7 @@
 // tr_init.c -- functions that are not called every frame
 
 #include "tr_local.h"
-#include "tr_font.h"
+#include "../rd-common/tr_common.h"
 #include "qcommon/MiniHeap.h"
 #include "G2_local.h"
 

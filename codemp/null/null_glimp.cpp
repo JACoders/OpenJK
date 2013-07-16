@@ -1,5 +1,5 @@
 #include "qcommon/q_shared.h"
-#include "renderer/tr_local.h"
+#include "rd-common/tr_local.h"
 #if defined __linux__ || defined MACOS_X
 typedef unsigned int GLenum;
 #endif
