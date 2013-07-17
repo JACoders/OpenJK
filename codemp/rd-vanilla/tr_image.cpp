@@ -987,25 +987,19 @@ static void GL_ResetBinds(void)
 //
 void R_Images_DeleteLightMaps(void)
 {
-	qboolean bEraseOccured = qfalse;
-	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); bEraseOccured?itImage:++itImage)
-	{			
-		bEraseOccured = qfalse;
-
+	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); /* empty */)
+	{
 		image_t *pImage = (*itImage).second;
 		
 		if (pImage->imgName[0] == '*' && strstr(pImage->imgName,"lightmap"))	// loose check, but should be ok
 		{
 			R_Images_DeleteImageContents(pImage);
-#ifdef _WIN32
-			itImage = AllocatedImages.erase(itImage);
-			bEraseOccured = qtrue;
-#else
-			// MS & Dinkimware got the map::erase return wrong (it's null)
-			AllocatedImages_t::iterator itTemp = itImage;
-			itImage++;
-			AllocatedImages.erase(itTemp);
-#endif
+
+			AllocatedImages.erase(itImage++);
+		}
+		else
+		{
+			++itImage;
 		}
 	}
 
@@ -1082,10 +1076,10 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 
 //	int iNumImages = AllocatedImages.size();	// more for curiosity, really.
 
-	qboolean bEraseOccured = qfalse;
-	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); bEraseOccured?itImage:++itImage)
+	qboolean imageDeleted = qtrue;
+	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); /* blank */)
 	{			
-		bEraseOccured = qfalse;
+		qboolean bEraseOccured = qfalse;
 
 		image_t *pImage = (*itImage).second;
 
@@ -1101,15 +1095,16 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 				ri.Printf( PRINT_DEVELOPER, S_COLOR_RED "Dumping image \"%s\"\n",pImage->imgName);
 
 				R_Images_DeleteImageContents(pImage);
-#ifdef _WIN32
-				itImage = AllocatedImages.erase(itImage);
+
+				AllocatedImages.erase(itImage++);
 				bEraseOccured = qtrue;
-#else
-				AllocatedImages_t::iterator itTemp = itImage;
-				itImage++;
-				AllocatedImages.erase(itTemp);	
-#endif
+				imageDeleted = qtrue;
 			}
+		}
+
+		if ( !bEraseOccured )
+		{
+			++itImage;
 		}
 	}
 
@@ -1126,7 +1121,7 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 
 	GL_ResetBinds();
 
-	return bEraseOccured;
+	return imageDeleted;
 }
 
 

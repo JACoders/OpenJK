@@ -87,8 +87,9 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height ) {
 		}
 
 		const char *name = va ("%s.%s", extensionlessName, tryLoader->extension);
-		tryLoader->loader ( name, pic, width, height );
-		if (*pic) {
+		tryLoader->loader (name, pic, width, height);
+		if ( *pic )
+		{
 			return;
 		}
 	}
