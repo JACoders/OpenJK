@@ -582,7 +582,6 @@ if(BuildMPDed)
 		"${MPDir}/rd-common/mdx_format.h"
 		"${MPDir}/rd-common/tr_image_manipulation.cpp"
 		"${MPDir}/rd-common/tr_image_png.cpp"
-		"${MPDir}/rd-common/tr_image_tga.cpp"
 		"${MPDir}/rd-common/tr_public.h"
 		"${MPDir}/rd-dedicated/tr_local.h"
 		"${MPDir}/rd-dedicated/G2_API.cpp"
