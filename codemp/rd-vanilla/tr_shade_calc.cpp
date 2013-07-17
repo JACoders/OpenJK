@@ -4,6 +4,7 @@
 // tr_shade_calc.c
 
 #include "tr_local.h"
+#include "../rd-common/tr_common.h"
 
 
 #define	WAVEVALUE( table, base, amplitude, phase, freq )  ((base) + table[ Q_ftol( ( ( (phase) + tess.shaderTime * (freq) ) * FUNCTABLE_SIZE ) ) & FUNCTABLE_MASK ] * (amplitude))
@@ -36,7 +37,6 @@ static float *TableForFunc( genFunc_t func )
 **
 ** Evaluates a given waveForm_t, referencing backEnd.refdef.time directly
 */
-extern float GetNoiseTime( int t ); //from tr_noise, returns 0 to 2
 static float EvalWaveForm( const waveForm_t *wf ) 
 {
 	float	*table;

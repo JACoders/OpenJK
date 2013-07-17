@@ -129,7 +129,7 @@ struct PNGFileReader
 		}
 	}
 
-	int Read ( byte **data, unsigned int *width, unsigned int *height )
+	int Read ( byte **data, int *width, int *height )
 	{
 		// Setup the pointers
 		*data = NULL;
@@ -270,16 +270,16 @@ void user_read_data( png_structp png_ptr, png_bytep data, png_size_t length ) {
 }
 
 // Loads a PNG image from file.
-int LoadPNG ( const char *filename, byte **data, unsigned int *width, unsigned int *height )
+void LoadPNG ( const char *filename, byte **data, int *width, int *height )
 {
 	char *buf = NULL;
 	int len = ri.FS_ReadFile (filename, (void **)&buf);
 	if ( len < 0 || buf == NULL )
 	{
-		return 0;
+		return;
 	}
 
 	PNGFileReader reader (buf);
-	return reader.Read (data, width, height);
+	reader.Read (data, width, height);
 }
 

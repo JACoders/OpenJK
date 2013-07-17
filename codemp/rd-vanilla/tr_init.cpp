@@ -1335,6 +1335,7 @@ void R_Init( void ) {
 	}
 	R_InitFogTable();
 
+	R_ImageLoader_Init();
 	R_NoiseInit();
 	R_Register();
 

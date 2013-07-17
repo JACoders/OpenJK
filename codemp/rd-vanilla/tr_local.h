@@ -1267,9 +1267,6 @@ Ghoul2 Insert End
 */
 //====================================================================
 
-float R_NoiseGet4f( float x, float y, float z, float t );
-void  R_NoiseInit( void );
-
 void R_SwapBuffers( int );
 
 void R_RenderView( viewParms_t *parms );
