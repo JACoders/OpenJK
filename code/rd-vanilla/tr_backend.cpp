@@ -1240,16 +1240,6 @@ const void *RB_RotatePic2 ( const void *data )
 
 /*
 =============
-RB_LAGoggles
-=============
-*/
-const void *RB_LAGoggles( const void *data )
-{
-	return data;
-}
-
-/*
-=============
 RB_ScissorPic
 =============
 */
