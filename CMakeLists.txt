@@ -145,8 +145,12 @@ endif()
 
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
 
-set(DebugDefines "_DEBUG")
-set(ReleaseDefines "NDEBUG" "FINAL_BUILD")
+if(NOT MSVC)
+	# CMake already defines _DEBUG for MSVC.
+	set(DebugDefines ${DebugDefines} "_DEBUG")
+endif()
+
+set(ReleaseDefines "FINAL_BUILD")
 
 #    Add projects
 add_subdirectory(${SPDir})
