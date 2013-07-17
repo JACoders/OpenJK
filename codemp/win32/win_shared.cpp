@@ -11,6 +11,7 @@
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
+#include <wincrypt.h>
 #include <shlobj.h>
 
 // Used to determine where to store user-specific files
@@ -151,6 +152,29 @@ int Sys_Milliseconds2( void )
 	sys_curtime -= sys_timeBase;
 
 	return sys_curtime;
+}
+
+/*
+================
+Sys_RandomBytes
+================
+*/
+qboolean Sys_RandomBytes( byte *string, int len )
+{
+	HCRYPTPROV  prov;
+
+	if( !CryptAcquireContext( &prov, NULL, NULL,
+		PROV_RSA_FULL, CRYPT_VERIFYCONTEXT ) )  {
+
+		return qfalse;
+	}
+
+	if( !CryptGenRandom( prov, len, (BYTE *)string ) )  {
+		CryptReleaseContext( prov, 0 );
+		return qfalse;
+	}
+	CryptReleaseContext( prov, 0 );
+	return qtrue;
 }
 
 //============================================
