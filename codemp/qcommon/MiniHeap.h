@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../qcommon/q_shared.h"
+
 class CMiniHeap
 {
 private:
@@ -8,43 +10,43 @@ private:
 	int		mSize;
 public:
 
-// reset the heap back to the start
-void ResetHeap()
-{
-	mCurrentHeap = mHeap;
-}
-
-// initialise the heap
-CMiniHeap(int size)
-{
-	mHeap = (char *)malloc(size);
-	mSize = size;
-	if (mHeap)
+	// reset the heap back to the start
+	void ResetHeap()
 	{
-		ResetHeap();
+		mCurrentHeap = mHeap;
 	}
-}
 
-// free up the heap
-~CMiniHeap()
-{
-	if (mHeap)
+	// initialise the heap
+	CMiniHeap(int size)
 	{
-		free(mHeap);
+		mHeap = (char *)malloc(size);
+		mSize = size;
+		if (mHeap)
+		{
+			ResetHeap();
+		}
 	}
-}
 
-// give me some space from the heap please
-char *MiniHeapAlloc(int size)
-{
-	if ((size_t)size < (mSize - ((size_t)mCurrentHeap - (size_t)mHeap)))
+	// free up the heap
+	~CMiniHeap()
 	{
-		char *tempAddress =  mCurrentHeap;
-		mCurrentHeap += size;
-		return tempAddress;
+		if (mHeap)
+		{
+			free(mHeap);
+		}
 	}
-	return NULL;
-}
+
+	// give me some space from the heap please
+	char *MiniHeapAlloc(int size)
+	{
+		if ((size_t)size < (mSize - ((size_t)mCurrentHeap - (size_t)mHeap)))
+		{
+			char *tempAddress =  mCurrentHeap;
+			mCurrentHeap += size;
+			return tempAddress;
+		}
+		return NULL;
+	}
 
 };
 
