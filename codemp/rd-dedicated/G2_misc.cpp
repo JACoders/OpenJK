@@ -609,14 +609,14 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 		// give us space for the transformed vertex array to be put in
 		if (!(g.mFlags & GHOUL2_ZONETRANSALLOC))
 		{ //do not stomp if we're using zone space
-			g.mTransformedVertsArray = (size_t*)G2VertSpace->MiniHeapAlloc(g.currentModel->mdxm->numSurfaces * 4);
+			g.mTransformedVertsArray = (size_t*)G2VertSpace->MiniHeapAlloc(g.currentModel->mdxm->numSurfaces * sizeof (size_t));
 			if (!g.mTransformedVertsArray)
 			{
 				Com_Error(ERR_DROP, "Ran out of transform space for Ghoul2 Models. Adjust MiniHeapSize in SV_SpawnServer.\n");
 			}
 		}
 
-		memset(g.mTransformedVertsArray, 0,(g.currentModel->mdxm->numSurfaces * 4)); 
+		memset(g.mTransformedVertsArray, 0, g.currentModel->mdxm->numSurfaces * sizeof (size_t));
 
 		G2_FindOverrideSurface(-1,g.mSlist); //reset the quick surface override lookup;
 		// recursively call the model surface transform
