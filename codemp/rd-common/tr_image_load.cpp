@@ -46,6 +46,8 @@ qboolean R_ImageLoader_Add ( const char *extension, ImageLoaderFn imageLoader )
 
 void R_ImageLoader_Init()
 {
+	Com_Memset (imageLoaders, 0, sizeof (imageLoaders));
+
 	R_ImageLoader_Add ("jpg", LoadJPG);
 	R_ImageLoader_Add ("png", LoadPNG);
 	R_ImageLoader_Add ("tga", LoadTGA);
