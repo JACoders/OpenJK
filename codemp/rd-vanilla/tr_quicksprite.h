@@ -1,7 +1,5 @@
 #pragma once
 
-// this include must remain at the top of every CPP file
-
 // tr_QuickSprite.h: interface for the CQuickSprite class.
 //
 //////////////////////////////////////////////////////////////////////
