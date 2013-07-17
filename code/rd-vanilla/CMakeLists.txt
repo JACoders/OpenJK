@@ -121,6 +121,7 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/tr_jpeg_interface.h"
 	"${SPDir}/rd-vanilla/tr_landscape.h"
 	"${SPDir}/rd-vanilla/tr_light.cpp"
+	"${SPDir}/rd-vanilla/tr_local.h"
 	"${SPDir}/rd-vanilla/tr_main.cpp"
 	"${SPDir}/rd-vanilla/tr_marks.cpp"
 	"${SPDir}/rd-vanilla/tr_mesh.cpp"
