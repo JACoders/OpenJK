@@ -9,6 +9,8 @@ set(MPVanillaRendererIncludeDirectories ${MPDir})
 set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} "${MPDir}/rd-vanilla")
 
 set(MPVanillaRendererFiles
+	"${MPDir}/renderer/mdx_format.h"
+	"${MPDir}/renderer/tr_public.h"
 	"${MPDir}/rd-vanilla/glext.h"
 	"${MPDir}/rd-vanilla/qgl.h"
 	"${MPDir}/rd-vanilla/G2_API.cpp"
@@ -29,6 +31,7 @@ set(MPVanillaRendererFiles
 	"${MPDir}/rd-vanilla/tr_init.cpp"
 	"${MPDir}/rd-vanilla/tr_landscape.h"
 	"${MPDir}/rd-vanilla/tr_light.cpp"
+	"${MPDir}/rd-vanilla/tr_local.h"
 	"${MPDir}/rd-vanilla/tr_main.cpp"
 	"${MPDir}/rd-vanilla/tr_marks.cpp"
 	"${MPDir}/rd-vanilla/tr_mesh.cpp"
