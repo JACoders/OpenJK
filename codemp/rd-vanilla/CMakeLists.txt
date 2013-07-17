@@ -32,7 +32,6 @@ set(MPVanillaRendererFiles
 	"${MPDir}/rd-vanilla/tr_marks.cpp"
 	"${MPDir}/rd-vanilla/tr_mesh.cpp"
 	"${MPDir}/rd-vanilla/tr_model.cpp"
-	"${MPDir}/rd-vanilla/tr_noise.cpp"
 	"${MPDir}/rd-vanilla/tr_quicksprite.cpp"
 	"${MPDir}/rd-vanilla/tr_quicksprite.h"
 	"${MPDir}/rd-vanilla/tr_scene.cpp"
@@ -68,6 +67,7 @@ set(MPVanillaRendererRdCommonFiles
 	"${MPDir}/rd-common/tr_image_jpg.cpp"
 	"${MPDir}/rd-common/tr_image_tga.cpp"
 	"${MPDir}/rd-common/tr_image_png.cpp"
+	"${MPDir}/rd-common/tr_noise.cpp"
 	"${MPDir}/rd-common/tr_public.h")
 source_group("rd-common" FILES ${MPVanillaRendererRdCommonFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererRdCommonFiles})
