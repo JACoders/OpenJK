@@ -2,7 +2,7 @@
 #include "qcommon/exe_headers.h"
 
 #include "qcommon/cm_local.h"
-#include "renderer/tr_types.h"
+#include "rd-common/tr_types.h"
 #include "RM_Headers.h"
 
 #ifdef _MSC_VER

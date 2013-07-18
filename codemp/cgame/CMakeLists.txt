@@ -104,9 +104,9 @@ source_group("ui" FILES ${MPCGameUiFiles})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameUiFiles})
 
 set(MPCGameRendererFiles
-	"${MPDir}/renderer/tr_types.h"
+	"${MPDir}/rd-common/tr_types.h"
 	)
-source_group("renderer" FILES ${MPCGameRendererFiles})
+source_group("rd-common" FILES ${MPCGameRendererFiles})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameRendererFiles})
 
 set(MPCGameGFiles

@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // tr_subs.cpp - common function replacements for modular renderer
 #include "tr_local.h"
 

@@ -1,14 +1,10 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // tr_init.c -- functions that are not called every frame
 
 #include "tr_local.h"
+#include "../rd-common/tr_common.h"
 #include "tr_WorldEffects.h"
-#include "tr_font.h"
 #include "qcommon/MiniHeap.h"
 #include "G2_local.h"
-#include "libpng/png.h"
 
 //#ifdef __USEA3D
 //// Defined in snd_a3dg_refcommon.c
@@ -1336,6 +1332,7 @@ void R_Init( void ) {
 	}
 	R_InitFogTable();
 
+	R_ImageLoader_Init();
 	R_NoiseInit();
 	R_Register();
 
@@ -1527,7 +1524,6 @@ extern void R_SVModelInit( void ); //tr_model.cpp
 extern void R_AutomapElevationAdjustment( float newHeight ); //tr_world.cpp
 extern qboolean R_InitializeWireframeAutomap( void ); //tr_world.cpp
 
-static void RE_LoadImage( const char *shortname, byte **pic, int *width, int *height, int *format ) { R_LoadImage( shortname, pic, width, height, (GLenum*)format ); }
 extern void R_LoadDataImage( const char *name, byte **pic, int *width, int *height);
 extern void R_InvertImage(byte *data, int width, int height, int depth);
 extern void R_Resample(byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
@@ -1728,7 +1724,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.LoadDataImage						= R_LoadDataImage;
 	re.InvertImage							= R_InvertImage;
 	re.Resample								= R_Resample;
-	re.LoadImageJA							= RE_LoadImage;
+	re.LoadImageJA							= R_LoadImage;
 	re.CreateAutomapImage					= R_CreateAutomapImage;
 	re.SavePNG								= RE_SavePNG;
 

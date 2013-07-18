@@ -15,6 +15,8 @@
 //	- All offset fields are relative to the address of the structure they occur in
 //	- So far, the only external symbol needed is MAX_QPATH, plus the typedefs for vec3_t, vec2_t etc
 
+#include "../qcommon/q_shared.h"
+
 #define MDXM_IDENT			(('M'<<24)+('G'<<16)+('L'<<8)+'2')
 #define MDXA_IDENT			(('A'<<24)+('G'<<16)+('L'<<8)+'2')
 
