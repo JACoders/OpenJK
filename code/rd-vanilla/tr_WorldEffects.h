@@ -27,7 +27,7 @@ This file is part of Jedi Academy.
 #if !defined __TR_WORLDEFFECTS_H
 #define __TR_WORLDEFFECTS_H
 
-#include "../game/q_shared.h"		// For Vec3_t
+#include "../qcommon/q_shared.h"		// For Vec3_t
 
 
 ////////////////////////////////////////////////////////////////////////////////////////

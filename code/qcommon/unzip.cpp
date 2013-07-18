@@ -35,7 +35,7 @@ woven in by Terry Thorsen 1/2003.
  */
 
 
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
 #include "unzip.h"
 

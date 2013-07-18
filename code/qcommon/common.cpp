@@ -18,9 +18,9 @@ This file is part of Jedi Academy.
 
 // common.c -- misc functions used in client and server
 
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
-#include "../qcommon/sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
+#include "sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
 #include "stv_version.h"
 
 // Because renderer.

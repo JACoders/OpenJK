@@ -77,14 +77,15 @@ endif(UseInternalZlib)
 set(SPRDVanillaGameFiles
 	"${SPDir}/game/genericparser2.h"
 	"${SPDir}/game/genericparser2.cpp"
-	"${SPDir}/game/q_math.cpp"
-	"${SPDir}/game/q_shared.cpp"
 	)
 source_group("game" FILES ${SPRDVanillaGameFiles})
 set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaGameFiles})
 
 # Misc files
 set(SPRDVanillaCommonFiles
+	"${SPDir}/qcommon/q_math.cpp"
+	"${SPDir}/qcommon/q_shared.cpp"
+	"${SPDir}/qcommon/q_shared.h"
 	"${SPDir}/qcommon/cm_landscape.h"
 	)
 source_group("common" FILES ${SPRDVanillaCommonFiles})

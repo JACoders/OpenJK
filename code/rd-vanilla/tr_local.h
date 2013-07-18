@@ -20,7 +20,7 @@ This file is part of Jedi Academy.
 #define TR_LOCAL_H
 
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qfiles.h"
 #include "../renderer/tr_public.h"
 #include "../renderer/mdx_format.h"

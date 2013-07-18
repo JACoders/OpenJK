@@ -22,7 +22,7 @@ This file is part of Jedi Academy.
 #include <string.h>
 #include <limits.h>
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../renderer/tr_types.h"
 #include "../qcommon/qcommon.h"
 #include "ui_public.h"

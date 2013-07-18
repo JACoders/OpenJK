@@ -20,7 +20,7 @@ This file is part of Jedi Academy.
 //	but without exposing too many extra protos, so for now (while I experiment)...
 //
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 
 #include "../client/client.h"

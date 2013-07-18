@@ -1,5 +1,5 @@
 #include <dlfcn.h>
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "../qcommon/files.h"
 

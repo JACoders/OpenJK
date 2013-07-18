@@ -16,7 +16,7 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
 #include "cm_polylib.h"
 #include "cm_landscape.h"

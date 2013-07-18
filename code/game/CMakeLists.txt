@@ -96,8 +96,6 @@ set(SPGameGameFiles
 	"${SPDir}/game/NPC_stats.cpp"
 	"${SPDir}/game/NPC_utils.cpp"
 	"${SPDir}/game/Q3_Interface.h"
-	"${SPDir}/game/q_math.cpp"
-	"${SPDir}/game/q_shared.cpp"
 	"${SPDir}/game/wp_atst.cpp"
 	"${SPDir}/game/wp_blaster_pistol.cpp"
 	"${SPDir}/game/wp_blaster_rifle.cpp"
@@ -158,7 +156,6 @@ set(SPGameGameFiles
 	"${SPDir}/game/hitlocs.h"
 	"${SPDir}/game/npc_headers.h"
 	"${SPDir}/game/objectives.h"
-	"${SPDir}/game/q_shared.h"
 	"${SPDir}/game/say.h"
 	"${SPDir}/game/statindex.h"
 	"${SPDir}/game/surfaceflags.h"
@@ -243,6 +240,9 @@ set(SPGameCommonFiles
 	"${SPDir}/qcommon/sstring.h"
 	"${SPDir}/qcommon/tags.h"
 	"${SPDir}/qcommon/timing.h"
+	"${SPDir}/qcommon/q_math.cpp"
+	"${SPDir}/qcommon/q_shared.cpp"
+	"${SPDir}/qcommon/q_shared.h"
 	)
 source_group("common" FILES ${SPGameCommonFiles})
 set(SPGameFiles ${SPGameFiles} ${SPGameCommonFiles})

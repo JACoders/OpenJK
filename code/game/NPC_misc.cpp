@@ -27,7 +27,7 @@ This file is part of Jedi Academy.
 
 
 #include "b_local.h"
-#include "q_shared.h"
+#include "../qcommon/q_shared.h"
 /*
 Debug_Printf
 */

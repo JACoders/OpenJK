@@ -27,7 +27,7 @@ This file is part of Jedi Academy.
 #include "taskmanager.h"
 #include "sequencer.h"
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 
 #define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )

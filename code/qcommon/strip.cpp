@@ -19,7 +19,7 @@ This file is part of Jedi Knight 2.
 #ifndef __NO_JK2
 // this include must remain at the top of every CPP file
 #include "../server/server.h"
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
 
 

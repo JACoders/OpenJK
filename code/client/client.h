@@ -21,7 +21,7 @@ This file is part of Jedi Academy.
 #ifndef __CLIENT_H__
 #define __CLIENT_H__
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "../renderer/tr_public.h"
 #include "keys.h"

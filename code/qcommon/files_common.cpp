@@ -25,7 +25,7 @@ This file is part of Jedi Academy.
  *****************************************************************************/
 
 
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
 #include "files.h"
 
