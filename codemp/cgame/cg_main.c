@@ -165,6 +165,7 @@ This is the only way control passes into the module.
 This must be the very first function compiled into the .q3vm file
 ================
 */
+intptr_t VMP ( int n ) { return (intptr_t)n; }
 Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
 
 	switch ( command ) {
@@ -207,12 +208,12 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 		return 0;
 
 	case CG_GET_GHOUL2:
-		return (int)cg_entities[arg0].ghoul2; //NOTE: This is used by the effect bolting which is actually not used at all.
+		return (intptr_t)cg_entities[arg0].ghoul2; //NOTE: This is used by the effect bolting which is actually not used at all.
 											  //I'm fairly sure if you try to use it with vm's it will just give you total
 											  //garbage. In other words, use at your own risk.
 
 	case CG_GET_MODEL_LIST:
-		return (int)cgs.gameModels;
+		return (intptr_t)cgs.gameModels;
 
 	case CG_CALC_LERP_POSITIONS:
 		CG_CalcEntityLerpPositions( &cg_entities[arg0] );
@@ -261,21 +262,21 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 		return CG_NoUseableForce();
 
 	case CG_GET_ORIGIN:
-		VectorCopy(cg_entities[arg0].currentState.pos.trBase, (float *)arg1);
+		VectorCopy(cg_entities[arg0].currentState.pos.trBase, (float *)VMP(arg1));
 		return 0;
 
 	case CG_GET_ANGLES:
-		VectorCopy(cg_entities[arg0].currentState.apos.trBase, (float *)arg1);
+		VectorCopy(cg_entities[arg0].currentState.apos.trBase, (float *)VMP(arg1));
 		return 0;
 
 	case CG_GET_ORIGIN_TRAJECTORY:
-		return (int)&cg_entities[arg0].nextState.pos;
+		return (intptr_t)&cg_entities[arg0].nextState.pos;
 
 	case CG_GET_ANGLE_TRAJECTORY:
-		return (int)&cg_entities[arg0].nextState.apos;
+		return (intptr_t)&cg_entities[arg0].nextState.apos;
 
 	case CG_ROFF_NOTETRACK_CALLBACK:
-		CG_ROFF_NotetrackCallback( &cg_entities[arg0], (const char *)arg1 );
+		CG_ROFF_NotetrackCallback( &cg_entities[arg0], (const char *)VMP(arg1) );
 		return 0;
 
 	case CG_IMPACT_MARK:

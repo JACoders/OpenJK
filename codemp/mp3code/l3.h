@@ -40,7 +40,7 @@ ____________________________________________________________________________*/
 #define GLOBAL_GAIN_SCALE (4*15)
 /* #define GLOBAL_GAIN_SCALE 0 */
 
-#if !defined(MACOS_X)
+#ifdef _WIN32
 #if (defined _M_IX86 || defined __i386__)
 #define LITTLE_ENDIAN 1
 #endif

@@ -52,7 +52,7 @@ int	AI_GetGroupSize( vec3_t origin, int radius, team_t playerTeam, gentity_t *av
 			continue;
 
 		//Must be on the same team
-		if ( check->client->playerTeam != playerTeam )
+		if ( check->client->playerTeam != (npcteam_t)playerTeam )
 			continue;
 
 		//Must be alive
@@ -376,7 +376,7 @@ qboolean AI_ValidateGroupMember( AIGroupInfo_t *group, gentity_t *member )
 	//rwwFIXMEFIXME: support this flag
 
 	//Must be on the same team
-	if ( member->client->playerTeam != group->team )
+	if ( member->client->playerTeam != (npcteam_t)group->team )
 		return qfalse;
 
 	if ( member->client->ps.weapon == WP_SABER ||//!= self->s.weapon )

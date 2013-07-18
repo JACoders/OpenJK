@@ -7214,7 +7214,7 @@ VariableSaveFloats
 void CQuake3GameInterface::VariableSaveFloats( varFloat_m &fmap )
 {
 	int numFloats = fmap.size();
-	gi.AppendToSaveGame( 'FVAR', &numFloats, sizeof( numFloats ) );
+	gi.AppendToSaveGame( INT_ID('F','V','A','R'), &numFloats, sizeof( numFloats ) );
 
 	varFloat_m::iterator	vfi;
 	STL_ITERATE( vfi, fmap )
@@ -7223,11 +7223,11 @@ void CQuake3GameInterface::VariableSaveFloats( varFloat_m &fmap )
 		int	idSize = strlen( ((*vfi).first).c_str() );
 		
 		//Save out the real data
-		gi.AppendToSaveGame( 'FIDL', &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( 'FIDS', (void *) ((*vfi).first).c_str(), idSize );
+		gi.AppendToSaveGame( INT_ID('F','I','D','L'), &idSize, sizeof( idSize ) );
+		gi.AppendToSaveGame( INT_ID('F','I','D','S'), (void *) ((*vfi).first).c_str(), idSize );
 
 		//Save out the float value
-		gi.AppendToSaveGame( 'FVAL', &((*vfi).second), sizeof( float ) );
+		gi.AppendToSaveGame( INT_ID('F','V','A','L'), &((*vfi).second), sizeof( float ) );
 	}
 }
 
@@ -7240,7 +7240,7 @@ VariableSaveStrings
 void CQuake3GameInterface::VariableSaveStrings( varString_m &smap )
 {
 	int numStrings = smap.size();
-	gi.AppendToSaveGame( 'SVAR', &numStrings, sizeof( numStrings ) );
+	gi.AppendToSaveGame( INT_ID('S','V','A','R'), &numStrings, sizeof( numStrings ) );
 
 	varString_m::iterator	vsi;
 	STL_ITERATE( vsi, smap )
@@ -7249,14 +7249,14 @@ void CQuake3GameInterface::VariableSaveStrings( varString_m &smap )
 		int	idSize = strlen( ((*vsi).first).c_str() );
 		
 		//Save out the real data
-		gi.AppendToSaveGame( 'SIDL', &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( 'SIDS', (void *) ((*vsi).first).c_str(), idSize );
+		gi.AppendToSaveGame( INT_ID('S','I','D','L'), &idSize, sizeof( idSize ) );
+		gi.AppendToSaveGame( INT_ID('S','I','D','S'), (void *) ((*vsi).first).c_str(), idSize );
 
 		//Save out the string value
 		idSize = strlen( ((*vsi).second).c_str() );
 
-		gi.AppendToSaveGame( 'SVSZ', &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( 'SVAL', (void *) ((*vsi).second).c_str(), idSize );
+		gi.AppendToSaveGame( INT_ID('S','V','S','Z'), &idSize, sizeof( idSize ) );
+		gi.AppendToSaveGame( INT_ID('S','V','A','L'), (void *) ((*vsi).second).c_str(), idSize );
 	}
 }
 
@@ -7286,19 +7286,19 @@ void CQuake3GameInterface::VariableLoadFloats( varFloat_m &fmap )
 	int		numFloats;
 	char	tempBuffer[1024];
 
-	gi.ReadFromSaveGame( 'FVAR', &numFloats, sizeof( numFloats ), NULL );
+	gi.ReadFromSaveGame( INT_ID('F','V','A','R'), &numFloats, sizeof( numFloats ), NULL );
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 		
-		gi.ReadFromSaveGame( 'FIDL', &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( 'FIDS', &tempBuffer, idSize, NULL );
+		gi.ReadFromSaveGame( INT_ID('F','I','D','L'), &idSize, sizeof( idSize ), NULL );
+		gi.ReadFromSaveGame( INT_ID('F','I','D','S'), &tempBuffer, idSize, NULL );
 		tempBuffer[ idSize ] = 0;
 
 		float	val;
 
-		gi.ReadFromSaveGame( 'FVAL', &val, sizeof( float ), NULL );
+		gi.ReadFromSaveGame( INT_ID('F','V','A','L'), &val, sizeof( float ), NULL );
 
 		DeclareVariable( TK_FLOAT, (const char *) &tempBuffer );
 		SetFloatVariable( (const char *) &tempBuffer, val );
@@ -7317,18 +7317,18 @@ void CQuake3GameInterface::VariableLoadStrings( int type, varString_m &fmap )
 	char	tempBuffer[1024];
 	char	tempBuffer2[1024];
 
-	gi.ReadFromSaveGame( 'SVAR', &numFloats, sizeof( numFloats ), NULL );
+	gi.ReadFromSaveGame( INT_ID('S','V','A','R'), &numFloats, sizeof( numFloats ), NULL );
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 		
-		gi.ReadFromSaveGame( 'SIDL', &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( 'SIDS', &tempBuffer, idSize, NULL );
+		gi.ReadFromSaveGame( INT_ID('S','I','D','L'), &idSize, sizeof( idSize ), NULL );
+		gi.ReadFromSaveGame( INT_ID('S','I','D','S'), &tempBuffer, idSize, NULL );
 		tempBuffer[ idSize ] = 0;
 
-		gi.ReadFromSaveGame( 'SVSZ', &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( 'SVAL', &tempBuffer2, idSize, NULL );
+		gi.ReadFromSaveGame( INT_ID('S','V','S','Z'), &idSize, sizeof( idSize ), NULL );
+		gi.ReadFromSaveGame( INT_ID('S','V','A','L'), &tempBuffer2, idSize, NULL );
 		tempBuffer2[ idSize ] = 0;
 
 		switch ( type )
@@ -11053,7 +11053,7 @@ void	CQuake3GameInterface::DeclareVariable( int type, const char *name )
 		break;
 
 	default:
-		DebugPrint( WL_ERROR, "unknown 'type' for declare() function!\n" );
+		DebugPrint( WL_ERROR, "unknown INT_ID('t','y','p','e') for declare() function!\n" );
 		return;
 		break;
 	}

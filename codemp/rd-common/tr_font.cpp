@@ -340,7 +340,7 @@ static bool Taiwanese_IsTrailingPunctuation( unsigned int uiCode )
 	// so far I'm just counting the first 21 chars, those seem to be all the basic punctuation...
 	//
 	if (	uiCode >= ((BIG5_HIBYTE_START0<<8)|BIG5_LOBYTE_LOBOUND0) && 
-			uiCode <  ((BIG5_HIBYTE_START0<<8)|BIG5_LOBYTE_LOBOUND0+20)
+			uiCode <  (((BIG5_HIBYTE_START0<<8)|BIG5_LOBYTE_LOBOUND0)+20)
 		)
 	{
 		return true;
@@ -427,7 +427,7 @@ static bool Japanese_IsTrailingPunctuation( unsigned int uiCode )
 	// so far I'm just counting the first 18 chars, those seem to be all the basic punctuation...
 	//
 	if (	uiCode >= ((SHIFTJIS_HIBYTE_START0<<8)|SHIFTJIS_LOBYTE_START0) && 
-			uiCode <  ((SHIFTJIS_HIBYTE_START0<<8)|SHIFTJIS_LOBYTE_START0+18)
+			uiCode <  (((SHIFTJIS_HIBYTE_START0<<8)|SHIFTJIS_LOBYTE_START0)+18)
 		)
 	{
 		return true;
@@ -505,7 +505,7 @@ static bool Chinese_IsTrailingPunctuation( unsigned int uiCode )
 	// so far I'm just counting the first 13 chars, those seem to be all the basic punctuation...
 	//
 	if (	uiCode >  ((GB_HIBYTE_START<<8)|GB_LOBYTE_LOBOUND) && 
-			uiCode <  ((GB_HIBYTE_START<<8)|GB_LOBYTE_LOBOUND+14)
+			uiCode <  (((GB_HIBYTE_START<<8)|GB_LOBYTE_LOBOUND)+14)
 		)
 	{
 		return true;

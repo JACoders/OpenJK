@@ -50,7 +50,11 @@ This is the only way control passes into the module.
 This must be the very first function compiled into the .q3vm file
 ================
 */
-/*Q_EXPORT_C*/ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
+// Promotes an integer to an intptr_t. It looks odd but
+// it gets around having to double-cast an integer in
+// vmMain below.
+intptr_t VMP ( int n ) { return (intptr_t)n; }
+Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
 	switch ( command ) {
 	case GAME_INIT:
 		G_InitGame( arg0, arg1, arg2 );
@@ -83,7 +87,7 @@ This must be the very first function compiled into the .q3vm file
 	case BOTAI_START_FRAME:
 		return BotAIStartFrame( arg0 );
 	case GAME_ROFF_NOTETRACK_CALLBACK:
-		G_ROFF_NotetrackCallback( &g_entities[arg0], (const char *)arg1 );
+		G_ROFF_NotetrackCallback( &g_entities[arg0], (const char *)VMP(arg1) );
 		return 0;
 	case GAME_SPAWN_RMG_ENTITY:
 		if (G_ParseSpawnVars(qfalse))
@@ -208,11 +212,11 @@ This must be the very first function compiled into the .q3vm file
 	//rww - end icarus callbacks
 
 	case GAME_NAV_CLEARPATHTOPOINT:
-		return NAV_ClearPathToPoint(&g_entities[arg0], (float *)arg1, (float *)arg2, (float *)arg3, arg4, arg5);
+		return NAV_ClearPathToPoint(&g_entities[arg0], (float *)VMP(arg1), (float *)VMP(arg2), (float *)VMP(arg3), arg4, arg5);
 	case GAME_NAV_CLEARLOS:
-		return NPC_ClearLOS2(&g_entities[arg0], (const float *)arg1);
+		return NPC_ClearLOS2(&g_entities[arg0], (const float *)VMP(arg1));
 	case GAME_NAV_CLEARPATHBETWEENPOINTS:
-		return NAVNEW_ClearPathBetweenPoints((float *)arg0, (float *)arg1, (float *)arg2, (float *)arg3, arg4, arg5);
+		return NAVNEW_ClearPathBetweenPoints((float *)VMP(arg0), (float *)VMP(arg1), (float *)VMP(arg2), (float *)VMP(arg3), arg4, arg5);
 	case GAME_NAV_CHECKNODEFAILEDFORENT:
 		return NAV_CheckNodeFailedForEnt(&g_entities[arg0], arg1);
 	case GAME_NAV_ENTISUNLOCKEDDOOR:
