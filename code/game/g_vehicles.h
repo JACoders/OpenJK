@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 #ifndef __G_VEHICLES_H
 #define __G_VEHICLES_H
 
-#include "q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "g_public.h"			   
 
 typedef enum

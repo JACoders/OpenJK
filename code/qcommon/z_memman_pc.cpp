@@ -18,9 +18,9 @@ This file is part of Jedi Academy.
 
 // Created 2/3/03 by Brian Osman - split Zone code from common.cpp
 
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
-#include "../qcommon/sstring.h"
+#include "sstring.h"
 
 #ifdef DEBUG_ZONE_ALLOCS
 int giZoneSnaphotNum=0;
@@ -38,7 +38,7 @@ static void Z_Details_f(void);
 #define TAGDEF(blah) #blah
 static const char *psTagStrings[TAG_COUNT+1]=	// +1 because TAG_COUNT will itself become a string here. Oh well.
 {
-	#include "../qcommon/tags.h"
+	#include "tags.h"
 };
 
 // This handles zone memory allocation.

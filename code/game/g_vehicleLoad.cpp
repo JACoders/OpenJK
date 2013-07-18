@@ -1,7 +1,7 @@
 //g_vehicleLoad.cpp
 // leave this line at the top for all NPC_xxxx.cpp files...
 #include "g_headers.h"
-#include "q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "anims.h"
 #include "g_vehicles.h"
 

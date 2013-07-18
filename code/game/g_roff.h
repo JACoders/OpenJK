@@ -20,7 +20,7 @@ This file is part of Jedi Academy.
 #define __G_ROFF_H__
 
 
-#include "q_shared.h"
+#include "../qcommon/q_shared.h"
 
 
 // ROFF Defines

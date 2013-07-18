@@ -20,7 +20,7 @@ This file is part of Jedi Academy.
 #define __GAMEINFO_H__
 
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include <stdio.h>
 
 

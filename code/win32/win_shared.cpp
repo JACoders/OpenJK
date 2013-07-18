@@ -23,7 +23,7 @@ This file is part of Jedi Academy.
 
 
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "win_local.h"
 

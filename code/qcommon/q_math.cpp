@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 // q_math.c -- stateless support routines that are included in each code module
 
 // leave this at the top for PCH reasons...
-#include "common_headers.h"
+#include "../game/common_headers.h"
 
 
 //#include "q_shared.h"

@@ -26,7 +26,7 @@ This file is part of Jedi Academy.
 #define GAME_INCLUDE
 //#include "../renderer/tr_local.h"
 
-#include "q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "g_shared.h"
 #include "bg_local.h"
 #include "../cgame/cg_local.h"

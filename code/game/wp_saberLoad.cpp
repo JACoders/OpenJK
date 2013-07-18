@@ -20,7 +20,7 @@ This file is part of Jedi Academy.
 // leave this line at the top for all NPC_xxxx.cpp files...
 #include "g_headers.h"
 
-#include "q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "wp_saber.h"
 
 extern qboolean G_ParseLiteral( const char **data, const char *string );

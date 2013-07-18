@@ -20,7 +20,7 @@ This file is part of Jedi Academy.
 #ifndef __VMACHINE_H__
 #define __VMACHINE_H__
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 
 /*
 ==================================================================
@@ -76,8 +76,6 @@ extern	vm_t	cgvm;	// interface to cgame dll or vm
 extern intptr_t	VM_Call( int callnum, ... );
 extern intptr_t VM_DllSyscall( intptr_t arg, ... );
 extern void CL_ShutdownCGame(void);
-
-#include "../game/q_shared.h"
 
 /*
 ================

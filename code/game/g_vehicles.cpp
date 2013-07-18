@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 // leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
 
-#include "q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "g_local.h"
 
 #ifdef _JK2 //SP does not have this preprocessor for game like MP does

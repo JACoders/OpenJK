@@ -37,7 +37,7 @@ This file is part of Jedi Academy.
 
 
 #include <math.h>
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "../game/g_local.h"
 
 /* if USE_EPSILON_TEST is true then we do a check: 

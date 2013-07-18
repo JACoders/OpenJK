@@ -1,5 +1,5 @@
 #include <SDL.h>
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "../rd-vanilla/tr_local.h"
 #include "sdl_qgl.h"

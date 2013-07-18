@@ -25,7 +25,7 @@ This file is part of Jedi Academy.
 #ifndef SSTRING_H
 #define SSTRING_H
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 
 template<int MaxSize>
 class sstring

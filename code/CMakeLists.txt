@@ -143,6 +143,10 @@ if(BuildSPEngine)
 		"${SPDir}/qcommon/msg.cpp"
 		"${SPDir}/qcommon/net_chan.cpp"
 
+		"${SPDir}/qcommon/q_math.cpp"
+		"${SPDir}/qcommon/q_shared.cpp"
+		"${SPDir}/qcommon/q_shared.cpp"
+
 		"${SPDir}/qcommon/sstring.h"
 		"${SPDir}/qcommon/stringed_ingame.cpp"
 		"${SPDir}/qcommon/stringed_interface.cpp"
@@ -189,8 +193,6 @@ if(BuildSPEngine)
 	# Game files
 	set(SPEngineGameFiles
 		"${SPDir}/game/genericparser2.cpp"
-		"${SPDir}/game/q_math.cpp"
-		"${SPDir}/game/q_shared.cpp"
 		"${SPDir}/game/channels.h"
 		"${SPDir}/game/anims.h"
 		"${SPDir}/game/b_public.h"
@@ -205,7 +207,6 @@ if(BuildSPEngine)
 		"${SPDir}/game/g_public.h"
 		"${SPDir}/game/g_shared.h"
 		"${SPDir}/game/genericparser2.h"
-		"${SPDir}/game/q_shared.h"
 		"${SPDir}/game/statindex.h"
 		"${SPDir}/game/teams.h"
 		"${SPDir}/game/weapons.h"

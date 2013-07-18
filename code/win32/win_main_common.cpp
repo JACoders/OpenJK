@@ -1,6 +1,6 @@
 // win_main.h
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "../client/client.h"
 #include "win_local.h"

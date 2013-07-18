@@ -18,7 +18,7 @@ This file is part of Jedi Academy.
 
 #include "../server/exe_headers.h"
 
-#include "../game/q_shared.h"
+#include "q_shared.h"
 
 #include "cm_local.h"
 #include "memory.h"
