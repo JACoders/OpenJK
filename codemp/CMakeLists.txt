@@ -578,8 +578,11 @@ if(BuildMPDed)
 
 	# Dedicated renderer is compiled with the server.
 	set(MPDedicatedRendererFiles
-		"${MPDir}/renderer/mdx_format.h"
-		"${MPDir}/renderer/tr_public.h"
+		"${MPDir}/ghoul2/G2_gore.cpp"
+		"${MPDir}/rd-common/mdx_format.h"
+		"${MPDir}/rd-common/tr_image_manipulation.cpp"
+		"${MPDir}/rd-common/tr_image_png.cpp"
+		"${MPDir}/rd-common/tr_public.h"
 		"${MPDir}/rd-dedicated/tr_local.h"
 		"${MPDir}/rd-dedicated/G2_API.cpp"
 		"${MPDir}/rd-dedicated/G2_bolts.cpp"
@@ -588,12 +591,12 @@ if(BuildMPDed)
 		"${MPDir}/rd-dedicated/G2_surfaces.cpp"
 		"${MPDir}/rd-dedicated/tr_backend.cpp"
 		"${MPDir}/rd-dedicated/tr_ghoul2.cpp"
-		"${MPDir}/rd-dedicated/tr_image.cpp"
 		"${MPDir}/rd-dedicated/tr_init.cpp"
 		"${MPDir}/rd-dedicated/tr_main.cpp"
 		"${MPDir}/rd-dedicated/tr_mesh.cpp"
 		"${MPDir}/rd-dedicated/tr_model.cpp"
-		"${MPDir}/rd-dedicated/tr_shader.cpp")
+		"${MPDir}/rd-dedicated/tr_shader.cpp"
+		"${MPDir}/rd-dedicated/tr_skin.cpp")
 	source_group("renderer" FILES ${MPDedicatedRendererFiles})
 	set(MPDedFiles ${MPDedFiles} ${MPDedicatedRendererFiles})
 

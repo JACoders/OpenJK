@@ -17,8 +17,8 @@ Ghoul2 Insert End
 */
 
 #define MDXABONEDEF
-#include "renderer/mdx_format.h"
-#include "renderer/tr_types.h"
+#include "rd-common/mdx_format.h"
+#include "rd-common/tr_types.h"
 #include "qcommon/matcomp.h"
 #include "ghoul2/G2_gore.h"
 

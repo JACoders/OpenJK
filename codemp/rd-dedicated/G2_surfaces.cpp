@@ -3,7 +3,7 @@
 
 //Anything above this #include will be ignored by the compiler
 #include "qcommon/exe_headers.h"
-#include "renderer/tr_types.h"
+#include "rd-common/tr_types.h"
 #include "ghoul2/G2.h"
 #include "G2_local.h"
 #ifdef _MSC_VER

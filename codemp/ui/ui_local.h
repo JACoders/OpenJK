@@ -4,7 +4,7 @@
 //
 
 #include "qcommon/q_shared.h"
-#include "renderer/tr_types.h"
+#include "rd-common/tr_types.h"
 #include "ui_public.h"
 #include "keycodes.h"
 #include "game/bg_public.h"
