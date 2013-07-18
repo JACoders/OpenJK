@@ -8,6 +8,11 @@ struct ImageLoaderMap
 } imageLoaders[MAX_IMAGE_LOADERS];
 int numImageLoaders;
 
+/*
+=================
+Finds the image loader associated with the given extension.
+=================
+*/
 const ImageLoaderMap *FindImageLoader ( const char *extension )
 {
 	for ( int i = 0; i < numImageLoaders; i++ )
@@ -21,6 +26,12 @@ const ImageLoaderMap *FindImageLoader ( const char *extension )
 	return NULL;
 }
 
+/*
+=================
+Adds a new image loader to load the specified image file extension.
+The 'extension' string should not begin with a period (full stop).
+=================
+*/
 qboolean R_ImageLoader_Add ( const char *extension, ImageLoaderFn imageLoader )
 {
 	if ( numImageLoaders >= MAX_IMAGE_LOADERS )
@@ -44,9 +55,16 @@ qboolean R_ImageLoader_Add ( const char *extension, ImageLoaderFn imageLoader )
 	return qtrue;
 }
 
+/*
+=================
+Initializes the image loader, and adds the built-in
+image loaders
+=================
+*/
 void R_ImageLoader_Init()
 {
 	Com_Memset (imageLoaders, 0, sizeof (imageLoaders));
+	numImageLoaders = 0;
 
 	R_ImageLoader_Add ("jpg", LoadJPG);
 	R_ImageLoader_Add ("png", LoadPNG);
@@ -55,8 +73,6 @@ void R_ImageLoader_Init()
 
 /*
 =================
-R_LoadImage
-
 Loads any of the supported image types into a cannonical
 32 bit format.
 =================
@@ -66,6 +82,7 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height ) {
 	*width = 0;
 	*height = 0;
 
+	// Try loading the image with the original extension (if possible).
 	const char *extension = COM_GetExtension (shortname);
 	const ImageLoaderMap *imageLoader = FindImageLoader (extension);
 	if ( imageLoader != NULL )
@@ -77,6 +94,7 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height ) {
 		}
 	}
 
+	// Loop through all the image loaders trying to load this image.
 	char extensionlessName[MAX_QPATH];
 	COM_StripExtension(shortname, extensionlessName, sizeof( extensionlessName ));
 	for ( int i = 0; i < numImageLoaders; i++ )
@@ -96,9 +114,9 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height ) {
 		}
 	}
 
+	// No image loaders available, print warning.
 	ri.Printf (PRINT_WARNING, "R_LoadImage: Failed to load image \"%s\".\n", shortname);
 }
-
 
 void R_LoadDataImage( const char *name, byte **pic, int *width, int *height )
 {
@@ -139,5 +157,3 @@ void R_LoadDataImage( const char *name, byte **pic, int *width, int *height )
 	// Dataimage loading failed
 	ri.Printf(PRINT_WARNING, "Couldn't read %s -- dataimage load failed\n", name);
 }
-
-
