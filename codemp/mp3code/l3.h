@@ -40,10 +40,9 @@ ____________________________________________________________________________*/
 #define GLOBAL_GAIN_SCALE (4*15)
 /* #define GLOBAL_GAIN_SCALE 0 */
 
-#if !defined(__APPLE__)
+#if !defined(MACOS_X)
 #if (defined _M_IX86 || defined __i386__)
 #define LITTLE_ENDIAN 1
-#endif
 #endif
 
 #if (defined _M_X64 || defined _WIN64 || defined __WIN64__ || defined __x86_64__)
@@ -62,6 +61,7 @@ ____________________________________________________________________________*/
 #define LITTLE_ENDIAN 0
 #elif defined(__INTEL__)
 #define LITTLE_ENDIAN 1
+#endif
 #endif
 
 #ifndef LITTLE_ENDIAN

@@ -168,7 +168,7 @@ stringID_table_t WPTable[] =
 	ENUM2STRING(WP_TUSKEN_STAFF),
 	ENUM2STRING(WP_SCEPTER),
 	ENUM2STRING(WP_NOGHRI_STICK),
-	{ "", NULL }
+	{ "", 0 }
 };
 
 stringID_table_t INVTable[] =
@@ -178,7 +178,7 @@ stringID_table_t INVTable[] =
 	ENUM2STRING(INV_SEEKER),
 	ENUM2STRING(INV_LIGHTAMP_GOGGLES),
 	ENUM2STRING(INV_SENTRY),
-	{ "", NULL }
+	{ "", 0 }
 };
 
 stringID_table_t eventTable[] =

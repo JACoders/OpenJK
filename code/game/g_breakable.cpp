@@ -690,7 +690,7 @@ void misc_model_throw_at_target4( gentity_t *self, gentity_t *activator )
 	}
 	else
 	{
-		self->forcePuller = NULL;
+		self->forcePuller = 0;
 	}
 }
 

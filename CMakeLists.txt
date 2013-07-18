@@ -129,7 +129,7 @@ else(WIN32)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-invalid-offsetof -Wno-write-strings -Wno-comment -fvisibility=hidden -fvisibility-inlines-hidden")
 	elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 		# Disable nested block comments, and deprecated writable strings warnings
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-deprecated-writable-strings -Wno-comment")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-deprecated-writable-strings -Wno-comment -Wno-invalid-offsetof")
 	endif()
 
 	if (NOT CMAKE_BUILD_TYPE)

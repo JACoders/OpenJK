@@ -352,7 +352,7 @@ stringID_table_t SaberStyleTable[] =
 	{ "dual",SS_DUAL },
 	ENUM2STRING(SS_STAFF),
 	{ "staff",SS_STAFF },
-	{ "", NULL },
+	{ "", 0 },
 };
 
 //SABER INITIALIZATION======================================================================
