@@ -490,7 +490,7 @@ static void RE_RegisterModels_DeleteAll(void)
 			Z_Free(CachedModel.pModelDiskImage);					
 		}
 
-		itModel = CachedModels->erase(itModel);			
+		CachedModels->erase(itModel++);
 	}
 }
 
