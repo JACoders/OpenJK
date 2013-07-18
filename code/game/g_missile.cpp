@@ -478,7 +478,7 @@ void NoghriGasCloudThink( gentity_t *self )
 void G_SpawnNoghriGasCloud( gentity_t *ent )
 {//FIXME: force-pushable/dispersable?
 	ent->freeAfterEvent = qfalse;
-	ent->e_TouchFunc = NULL;
+	ent->e_TouchFunc = touchF_NULL;
 	//ent->s.loopSound = G_SoundIndex( "sound/weapons/noghri/smoke.wav" );
 	//G_SoundOnEnt( ent, CHAN_AUTO, "sound/weapons/noghri/smoke.wav" );
 

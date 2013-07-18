@@ -233,7 +233,7 @@ void WP_ThermalThink( gentity_t *ent )
 	if ( (ent->s.eFlags&EF_HELD_BY_SAND_CREATURE) )
 	{//blow once creature is underground (done with anim)
 		//FIXME: chance of being spit out?  Especially if lots of delay left...
-		ent->e_TouchFunc = NULL;//don't impact on anything
+		ent->e_TouchFunc = touchF_NULL;//don't impact on anything
 		if ( !ent->activator 
 			|| !ent->activator->client
 			|| !ent->activator->client->ps.legsAnimTimer )

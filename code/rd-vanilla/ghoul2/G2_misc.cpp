@@ -1774,7 +1774,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 	// is there anything to save?
 	if (!ghoul2.IsValid()||!ghoul2.size())
 	{
-		ri.SG_Append('GHL2',&pGhoul2Data, 4);	//write out a zero buffer
+		ri.SG_Append(INT_ID('G','H','L','2'),&pGhoul2Data, 4);	//write out a zero buffer
 		return;
 	}
 
@@ -1849,7 +1849,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 		}
 	}
 
-	ri.SG_Append('GHL2',pGhoul2Data, iGhoul2Size);
+	ri.SG_Append(INT_ID('G','H','L','2'),pGhoul2Data, iGhoul2Size);
 	Z_Free(pGhoul2Data);
 }
 

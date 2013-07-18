@@ -231,7 +231,7 @@ void SV_LinkEntity( sharedEntity_t *gEnt ) {
 
 		if (gEnt->s.solid == SOLID_BMODEL)
 		{ //yikes, this would make everything explode violently.
-			gEnt->s.solid = (k<<16) | (j<<8) | i-1;
+			gEnt->s.solid = (k<<16) | (j<<8) | (i-1);
 		}
 	}
 	else

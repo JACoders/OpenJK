@@ -1054,7 +1054,7 @@ void G2_TimingModel(boneInfo_t &bone,int currentTime,int numFramesInFile,int &cu
 					}
 				}
 				// sanity check
-				assert ((newFrame < endFrame) && (newFrame >= bone.startFrame) || (animSize < 10)); 
+				assert (((newFrame < endFrame) && (newFrame >= bone.startFrame)) || (animSize < 10)); 
 			}
 			else
 			{

@@ -389,7 +389,7 @@ Save
 int	CNode::Save( int numNodes, fileHandle_t file )
 {
 	//Write out the header
-	unsigned long header = NODE_HEADER_ID;
+	unsigned int header = NODE_HEADER_ID;
 	FS_Write( &header, sizeof( header ), file );
 
 	//Write out the basic information
@@ -429,7 +429,7 @@ Load
 
 int CNode::Load( int numNodes, fileHandle_t file )
 {
-	unsigned long header;
+	unsigned int header;
 	FS_Read( &header, sizeof(header), file );
 
 	//Validate the header
@@ -562,7 +562,7 @@ GetLong
 
 long CNavigator::GetLong( fileHandle_t file )
 {
-	long value;
+	int value;
 
 	FS_Read( &value, sizeof( value ), file );
 
@@ -622,7 +622,7 @@ bool CNavigator::Load( const char *filename, int checksum )
 		return false;
 
 	//Check the header id
-	long navID = GetLong( file );
+	int navID = GetLong( file );
 
 	if ( navID != NAV_HEADER_ID )
 	{
@@ -684,7 +684,7 @@ bool CNavigator::Save( const char *filename, int checksum )
 		return false;
 
 	//Write out the header id
-	unsigned long id = NAV_HEADER_ID;
+	unsigned int id = NAV_HEADER_ID;
 
 	FS_Write( &id, sizeof (id), file );
 
