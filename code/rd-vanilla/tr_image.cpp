@@ -793,20 +793,10 @@ static void R_Images_DeleteImageContents( image_t *pImage )
 static void GL_ResetBinds(void)
 {
 	memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
-	if ( qglBindTexture != NULL ) 
-	{
-		if ( qglActiveTextureARB != NULL ) 
-		{
-			GL_SelectTexture( 1 );
-			qglBindTexture( GL_TEXTURE_2D, 0 );
-			GL_SelectTexture( 0 );
-			qglBindTexture( GL_TEXTURE_2D, 0 );
-		} 
-		else 
-		{
-			qglBindTexture( GL_TEXTURE_2D, 0 );
-		}
-	}
+	GL_SelectTexture( 1 );
+	qglBindTexture( GL_TEXTURE_2D, 0 );
+	GL_SelectTexture( 0 );
+	qglBindTexture( GL_TEXTURE_2D, 0 );
 }
 
 // special function used in conjunction with "devmapbsp"...

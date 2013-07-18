@@ -2603,7 +2603,7 @@ qboolean ForceTelepathyCheckDirectNPCTarget( gentity_t *self, trace_t *tr, qbool
 			WP_ForcePowerStart( self, FP_TELEPATHY, 0 );
 		}
 		else if ( (self->NPC && traceEnt->client->playerTeam != self->client->playerTeam)
-			|| (!self->NPC && traceEnt->client->playerTeam != self->client->sess.sessionTeam) )
+			|| (!self->NPC && traceEnt->client->playerTeam != (npcteam_t)self->client->sess.sessionTeam) )
 		{//an enemy
 			int override = 0;
 			if ( (traceEnt->NPC->scriptFlags&SCF_NO_MIND_TRICK) )

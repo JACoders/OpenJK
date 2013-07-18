@@ -69,7 +69,7 @@ qboolean G_TeamEnemy( gentity_t *self )
 	int	i;
 	gentity_t	*ent;
 
-	if ( !self->client || self->client->playerTeam == TEAM_FREE )
+	if ( !self->client || self->client->playerTeam == NPCTEAM_FREE )
 	{
 		return qfalse;
 	}

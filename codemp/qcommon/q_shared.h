@@ -47,7 +47,6 @@
 #define ARRAY_LEN( x ) ( sizeof( x ) / sizeof( *(x) ) )
 #define STRING( a ) #a
 #define XSTRING( a ) STRING( a )
-
 /*
 #define G2_EHNANCEMENTS
 
@@ -562,6 +561,7 @@ typedef int		clipHandle_t;
 #define	MAX_QINT			0x7fffffff
 #define	MIN_QINT			(-MAX_QINT-1)
 
+#define INT_ID( a, b, c, d ) (uint32_t)((((d) & 0xff) << 24) | (((c) & 0xff) << 16) | (((b) & 0xff) << 8) | ((a) & 0xff))
 
 // angle indexes
 #define	PITCH				0		// up / down

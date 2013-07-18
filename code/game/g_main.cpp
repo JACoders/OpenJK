@@ -105,12 +105,12 @@ qboolean PInUse(unsigned int entNum)
 
 void WriteInUseBits(void)
 {
-	gi.AppendToSaveGame('INUS', &g_entityInUseBits, sizeof(g_entityInUseBits) );
+	gi.AppendToSaveGame(INT_ID('I','N','U','S'), &g_entityInUseBits, sizeof(g_entityInUseBits) );
 }
 
 void ReadInUseBits(void)
 {
-	gi.ReadFromSaveGame('INUS', &g_entityInUseBits, sizeof(g_entityInUseBits), NULL);
+	gi.ReadFromSaveGame(INT_ID('I','N','U','S'), &g_entityInUseBits, sizeof(g_entityInUseBits), NULL);
 	// This is only temporary. Once I have converted all the ent->inuse refs,
 	// it won;t be needed -MW.
 	for(int i=0;i<MAX_GENTITIES;i++)
@@ -2118,14 +2118,14 @@ extern qboolean player_locked;
 
 void G_LoadSave_WriteMiscData(void)
 { 
-	gi.AppendToSaveGame('LCKD', &player_locked, sizeof(player_locked));
+	gi.AppendToSaveGame(INT_ID('L','C','K','D'), &player_locked, sizeof(player_locked));
 }
 
 
 
 void G_LoadSave_ReadMiscData(void)
 {
-	gi.ReadFromSaveGame('LCKD', &player_locked, sizeof(player_locked), NULL);
+	gi.ReadFromSaveGame(INT_ID('L','C','K','D'), &player_locked, sizeof(player_locked), NULL);
 }
 
 
