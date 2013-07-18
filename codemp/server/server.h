@@ -4,7 +4,7 @@
 #include "qcommon/qcommon.h"
 #include "game/g_public.h"
 #include "game/bg_public.h"
-#include "renderer/tr_public.h"
+#include "rd-common/tr_public.h"
 
 //=============================================================================
 

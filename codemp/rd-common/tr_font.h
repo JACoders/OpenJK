@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "../qcommon/q_shared.h"
+
 void R_ShutdownFonts(void);
 void R_InitFonts(void);
 int RE_RegisterFont(const char *psName);

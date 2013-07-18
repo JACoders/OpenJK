@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../qcommon/q_shared.h"
+
 //
 // qfiles.h: quake file formats
 // This file must be identical in the quake and utils directories
@@ -60,24 +62,6 @@ typedef struct {
     char	filler[58];
     unsigned char	data;			// unbounded
 } pcx_t;
-
-
-/*
-========================================================================
-
-TGA files are used for 24/32 bit images
-
-========================================================================
-*/
-
-typedef struct _TargaHeader {
-	unsigned char 	id_length, colormap_type, image_type;
-	unsigned short	colormap_index, colormap_length;
-	unsigned char	colormap_size;
-	unsigned short	x_origin, y_origin, width, height;
-	unsigned char	pixel_size, attributes;
-} TargaHeader;
-
 
 
 /*
