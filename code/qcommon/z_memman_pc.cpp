@@ -440,7 +440,7 @@ static int Zone_FreeBlock(zoneHeader_t *pMemory)
 		}
 		
 		//debugging double frees
-		pMemory->iMagic = 'FREE';
+		pMemory->iMagic = INT_ID('F','R','E','E');
 		free (pMemory);
 
 		
@@ -464,7 +464,7 @@ qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag)
 {
 	const zoneHeader_t *pMemory = ((const zoneHeader_t *)pvAddress) - 1;
 #if 1	//debugging double free
-	if (pMemory->iMagic == 'FREE')
+	if (pMemory->iMagic == INT_ID('F','R','E','E'))
 	{
 		Com_Printf("Z_IsFromZone(%x): Ptr has been freed already!(%9s)\n",pvAddress,pvAddress);
 		return qfalse;
@@ -542,7 +542,7 @@ int Z_Free(void *pvAddress)
 	zoneHeader_t *pMemory = ((zoneHeader_t *)pvAddress) - 1;
 
 #if 1	//debugging double free
-	if (pMemory->iMagic == 'FREE')
+	if (pMemory->iMagic == INT_ID('F','R','E','E'))
 	{
 		Com_Error(ERR_FATAL, "Z_Free(%s): Block already-freed, or not allocated through Z_Malloc!",pvAddress);
 		return -1;

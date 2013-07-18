@@ -288,7 +288,7 @@ void *Sys_LoadMachOBundle( const char *name )
     
     Com_sprintf (dllName, sizeof(dllName), "%s.bundle/Contents/MacOS/%s", name, name);
 
-    if (unzLocateFile(dll, dllName, NULL) != UNZ_OK)
+    if (unzLocateFile(dll, dllName, 0) != UNZ_OK)
     {
         unzClose(dll);
         remove( fn );

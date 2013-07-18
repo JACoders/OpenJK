@@ -358,7 +358,7 @@ NPC_Pain
 */
 void NPC_Pain(gentity_t *self, gentity_t *attacker, int damage)
 {
-	team_t otherTeam = TEAM_FREE;
+	npcteam_t otherTeam = NPCTEAM_FREE;
 	int		voiceEvent = -1;
 	gentity_t *other = attacker;
 	int mod = gPainMOD;
@@ -383,7 +383,7 @@ void NPC_Pain(gentity_t *self, gentity_t *attacker, int damage)
 	//MCG: Ignore damage from your own team for now
 	if ( other->client )
 	{
-		otherTeam = (team_t)other->client->playerTeam;
+		otherTeam = other->client->playerTeam;
 	//	if ( otherTeam == TEAM_DISGUISE )
 	//	{
 	//		otherTeam = TEAM_PLAYER;

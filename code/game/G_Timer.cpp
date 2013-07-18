@@ -170,7 +170,7 @@ void TIMER_Save( void )
 		}
 
 		//Write out the timer information
-		gi.AppendToSaveGame('TIME', (void *)&numTimers, sizeof(numTimers));
+		gi.AppendToSaveGame(INT_ID('T','I','M','E'), (void *)&numTimers, sizeof(numTimers));
 	
 		gtimer_t *p = g_timers[j];
 		assert ((numTimers && p) || (!numTimers && !p));
@@ -184,10 +184,10 @@ void TIMER_Save( void )
 			assert( length < 1024 );//This will cause problems when loading the timer if longer
 
 			//Write out the id string
-			gi.AppendToSaveGame('TMID', (void *) timerID, length);
+			gi.AppendToSaveGame(INT_ID('T','M','I','D'), (void *) timerID, length);
 
 			//Write out the timer data
-			gi.AppendToSaveGame('TDTA', (void *) &time, sizeof( time ) );
+			gi.AppendToSaveGame(INT_ID('T','D','T','A'), (void *) &time, sizeof( time ) );
 			p = p->next;
 		}
 	}
@@ -208,7 +208,7 @@ void TIMER_Load( void )
 	{
 		unsigned char numTimers;
 
-		gi.ReadFromSaveGame( 'TIME', (void *)&numTimers, sizeof(numTimers), NULL );
+		gi.ReadFromSaveGame( INT_ID('T','I','M','E'), (void *)&numTimers, sizeof(numTimers), NULL );
 
 		//Read back all entries
 		for ( int i = 0; i < numTimers; i++ )
@@ -219,8 +219,8 @@ void TIMER_Load( void )
 			assert (sizeof(g_timers[0]->time) == sizeof(time) );//make sure we're reading the same size as we wrote
 
 			//Read the id string and time
-			gi.ReadFromSaveGame( 'TMID', (char *) tempBuffer, 0, NULL );
-			gi.ReadFromSaveGame( 'TDTA', (void *) &time, sizeof( time ), NULL );
+			gi.ReadFromSaveGame( INT_ID('T','M','I','D'), (char *) tempBuffer, 0, NULL );
+			gi.ReadFromSaveGame( INT_ID('T','D','T','A'), (void *) &time, sizeof( time ), NULL );
 
 			//this is odd, we saved all the timers in the autosave, but not all the ents are spawned yet from an auto load, so skip it
 			if (ent->inuse)

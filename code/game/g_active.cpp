@@ -1160,7 +1160,7 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 					}
 				}
 				else if ( self->forcePushTime > level.time - 1000//was force pushed/pulled in the last 1600 milliseconds
-					&& self->forcePuller == other->s.number>=MAX_CLIENTS )//hit the person who pushed/pulled me
+					&& self->forcePuller == other->s.number )//hit the person who pushed/pulled me
 				{//ignore the impact
 				}
 				else if ( other->takedamage )
