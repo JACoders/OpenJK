@@ -1310,7 +1310,7 @@ int SG_Read(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPt
 
 void CM_WritePortalState ()
 {	
-	SG_Append('PRTS', (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
+	SG_Append(INT_ID('P','R','T','S'), (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
 }
 
 /*
@@ -1323,7 +1323,7 @@ and recalculates the area connections
 */
 void	CM_ReadPortalState ()
 {
-	SG_Read('PRTS', (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
+	SG_Read(INT_ID('P','R','T','S'), (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
 	CM_FloodAreaConnections (cmg);
 }
 

@@ -107,14 +107,14 @@ void CFxScheduler::LoadSave_Read()
 {		
 	Clean();	// need to get rid of old pre-cache handles, or it thinks it has some older effects when it doesn't	
 	g_vstrEffectsNeededPerSlot.clear();	// jic
-	gi.ReadFromSaveGame('FXLE', (void *) &gLoopedEffectArray, sizeof(gLoopedEffectArray), NULL);
+	gi.ReadFromSaveGame(INT_ID('F','X','L','E'), (void *) &gLoopedEffectArray, sizeof(gLoopedEffectArray), NULL);
 	//
 	// now read in and re-register the effects we need for those structs...
 	//
 	for (int iFX = 0; iFX < MAX_LOOPED_FX; iFX++)
 	{
 		char sFX_Filename[MAX_QPATH];
-		gi.ReadFromSaveGame('FXFN', sFX_Filename, sizeof(sFX_Filename), NULL);
+		gi.ReadFromSaveGame(INT_ID('F','X','F','N'), sFX_Filename, sizeof(sFX_Filename), NULL);
 		g_vstrEffectsNeededPerSlot.push_back( sFX_Filename );
 	}
 }
@@ -123,7 +123,7 @@ void CFxScheduler::LoadSave_Write()
 {
 	// bsave the data we need...
 	//
-	gi.AppendToSaveGame('FXLE', mLoopedEffectArray, sizeof(mLoopedEffectArray));
+	gi.AppendToSaveGame(INT_ID('F','X','L','E'), mLoopedEffectArray, sizeof(mLoopedEffectArray));
 	//
 	// then cope with the fact that the mID field in each struct of the array we've just saved will not 
 	//	necessarily point at the same thing when reloading, so save out the actual fx filename strings they
@@ -155,7 +155,7 @@ void CFxScheduler::LoadSave_Write()
 
 		// write out this string...
 		//
-		gi.AppendToSaveGame('FXFN', sFX_Filename, sizeof(sFX_Filename));
+		gi.AppendToSaveGame(INT_ID('F','X','F','N'), sFX_Filename, sizeof(sFX_Filename));
 	}
 }
 

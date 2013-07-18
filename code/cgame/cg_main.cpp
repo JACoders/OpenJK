@@ -1937,14 +1937,14 @@ static void CG_GameStateReceived( void ) {
 
 void CG_WriteTheEvilCGHackStuff(void)
 {
-	gi.AppendToSaveGame('FPSL', &cg.forcepowerSelect, sizeof(cg.forcepowerSelect));
-	gi.AppendToSaveGame('IVSL', &cg.inventorySelect,  sizeof(cg.inventorySelect));
+	gi.AppendToSaveGame(INT_ID('F','P','S','L'), &cg.forcepowerSelect, sizeof(cg.forcepowerSelect));
+	gi.AppendToSaveGame(INT_ID('I','V','S','L'), &cg.inventorySelect,  sizeof(cg.inventorySelect));
 
 }
 void CG_ReadTheEvilCGHackStuff(void)
 {
-	gi.ReadFromSaveGame('FPSL', (void *)&gi_cg_forcepowerSelect, sizeof(gi_cg_forcepowerSelect), NULL);
-	gi.ReadFromSaveGame('IVSL', (void *)&gi_cg_inventorySelect,  sizeof(gi_cg_inventorySelect), NULL);
+	gi.ReadFromSaveGame(INT_ID('F','P','S','L'), (void *)&gi_cg_forcepowerSelect, sizeof(gi_cg_forcepowerSelect), NULL);
+	gi.ReadFromSaveGame(INT_ID('I','V','S','L'), (void *)&gi_cg_inventorySelect,  sizeof(gi_cg_inventorySelect), NULL);
 	gbUseTheseValuesFromLoadSave = qtrue;
 }
 

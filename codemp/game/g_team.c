@@ -266,7 +266,6 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 ) {
 	return qfalse;
 }
 
-
 static char ctfFlagStatusRemap[] = { '0', '1', '*', '*', '2' };
 
 void Team_SetFlagStatus( int team, flagStatus_t status ) {
