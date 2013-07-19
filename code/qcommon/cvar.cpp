@@ -367,6 +367,21 @@ cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force ) {
 		value = var->resetString;
 	}
 
+	if((var->flags & CVAR_LATCH) && var->latchedString)
+	{
+		if(!strcmp(value, var->string))
+		{
+			Cvar_FreeString(var->latchedString);
+			var->latchedString = NULL;
+			return var;
+		}
+
+		if(!strcmp(value, var->latchedString))
+			return var;
+	}
+	else if(!strcmp(value, var->string))
+		return var;
+
 	// note what types of cvars have been modified (userinfo, archive, serverinfo, systeminfo)
 	cvar_modifiedFlags |= var->flags;
 
