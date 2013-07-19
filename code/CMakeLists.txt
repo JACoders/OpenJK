@@ -145,7 +145,7 @@ if(BuildSPEngine)
 
 		"${SPDir}/qcommon/q_math.cpp"
 		"${SPDir}/qcommon/q_shared.cpp"
-		"${SPDir}/qcommon/q_shared.cpp"
+		"${SPDir}/qcommon/q_shared.h"
 
 		"${SPDir}/qcommon/sstring.h"
 		"${SPDir}/qcommon/stringed_ingame.cpp"
@@ -401,6 +401,7 @@ if(BuildSPEngine)
 	set_target_properties(${SPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${SPEngine} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPEngineDefines};${DebugDefines}")
 	set_target_properties(${SPEngine} PROPERTIES INCLUDE_DIRECTORIES "${SPEngineIncludeDirectories}")
+	set_target_properties(${SPEngine} PROPERTIES PROJECT_LABEL "SP Client")
 	if(SPEngineLibraries)
 		target_link_libraries(${SPEngine} ${SPEngineLibraries})
 	endif(SPEngineLibraries)

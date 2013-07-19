@@ -359,6 +359,7 @@ set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPG
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPGameDefines};${ReleaseDefines}")
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPGameDefines};${DebugDefines}")
 set_target_properties(${SPGame} PROPERTIES INCLUDE_DIRECTORIES "${SPGameIncludeDirectories}")
+set_target_properties(${SPGame} PROPERTIES PROJECT_LABEL "SP Game Library")
 # no libraries used
 if(SPGameLibraries)
 	target_link_libraries(${SPGame} ${SPGameLibraries})
