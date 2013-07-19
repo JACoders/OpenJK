@@ -769,6 +769,9 @@ void	Sys_Init (void);
 	#define Sys_LibraryError() "unknown"
 #endif // linux and mac use SDL in SDL_loadlibrary.h
 
+void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
+void	Sys_UnloadDll( void *dllHandle );
+
 char	*Sys_GetCurrentUser( void );
 
 void	QDECL Sys_Error( const char *error, ...) __attribute__((noreturn));
