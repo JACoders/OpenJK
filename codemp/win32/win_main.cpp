@@ -1206,11 +1206,7 @@ static int ParseCommandLine(char *cmdline, char **argv)
 //int	totalMsec, countMsec;
 
 #ifndef DEFAULT_BASEDIR
-#	ifdef MACOS_X
-#		define DEFAULT_BASEDIR Sys_StripAppBundle(Sys_BinaryPath())
-#	else
-#		define DEFAULT_BASEDIR Sys_BinaryPath()
-#	endif
+#	define DEFAULT_BASEDIR Sys_BinaryPath()
 #endif
 
 int main( int argc, char **argv )
