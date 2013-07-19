@@ -98,14 +98,13 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 		text_p = cl_consoleKeys->string;
 		numConsoleKeys = 0;
 
+		COM_BeginParseSession();
 		while( numConsoleKeys < MAX_CONSOLE_KEYS )
 		{
 			consoleKey_t *c = &consoleKeys[ numConsoleKeys ];
 			int charCode = 0;
 
-			COM_BeginParseSession();
 			token = COM_Parse( &text_p );
-			COM_EndParseSession();
 			if( !token[ 0 ] )
 				break;
 
@@ -129,6 +128,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 
 			numConsoleKeys++;
 		}
+		COM_EndParseSession();
 	}
 
 	// If the character is the same as the key, prefer the character
