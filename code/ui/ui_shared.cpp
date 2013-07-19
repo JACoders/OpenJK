@@ -4904,7 +4904,6 @@ qboolean Item_Parse(itemDef_t *item)
 
 	while ( 1 ) 
 	{
-		COM_BeginParseSession();			// HACK
 		if (PC_ParseString(&token))
 		{
 			PC_ParseWarning("End of file inside menu item");
@@ -5164,11 +5163,11 @@ void Item_RunScript(itemDef_t *item, const char *s)
 	if (item && s && s[0]) 
 	{
 		p = s;
+		COM_BeginParseSession();			// HACK
 		while (1) 
 		{
 			const char *command;
 			// expect command then arguments, ; ends command, NULL ends script
-			COM_BeginParseSession();			// HACK
 			if (!String_Parse(&p, &command)) 
 			{
 				return;
@@ -6048,11 +6047,11 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 			Q_strncpyz(script, item->enableCvar, sizeof(script), qtrue);
 			p = script;
 		}
+		COM_BeginParseSession();			// HACK HACK HACK!!
 		while (1) 
 		{
 			const char *val;
 			// expect value then ; or NULL, NULL ends list
-			COM_BeginParseSession();			// HACK HACK HACK!!
 			if (!String_Parse(&p, &val)) 
 			{
 				return (item->cvarFlags & flag) ? qfalse : qtrue;
