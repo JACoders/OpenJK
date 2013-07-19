@@ -1074,6 +1074,7 @@ const char *String_GetStringValue( const char *reference )
 // DLL glue --eez
 WinVars_t *GetWindowsVariables( void )
 {
+	extern WinVars_t g_wv;
 	return &g_wv;
 }
 #endif
