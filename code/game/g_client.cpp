@@ -1165,27 +1165,26 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 		if ( surfOff && surfOff[0] )
 		{
 			p = surfOff;
+			COM_BeginParseSession();
 			while ( 1 ) 
 			{
-				COM_BeginParseSession();
 				token = COM_ParseExt( &p, qtrue );
 				if ( !token[0] ) 
 				{//reached end of list
-					COM_EndParseSession();
 					break;
 				}
 				//turn off this surf
 				gi.G2API_SetSurfaceOnOff( &ent->ghoul2[ent->playerModel], token, 0x00000002/*G2SURFACEFLAG_OFF*/ );
-				COM_EndParseSession();
+				
 			}
-
+			COM_EndParseSession();
 		}
 		if ( surfOn && surfOn[0] )
 		{
 			p = surfOn;
+			COM_BeginParseSession();
 			while ( 1 )
 			{
-				COM_BeginParseSession();
 				token = COM_ParseExt( &p, qtrue );
 				if ( !token[0] ) 
 				{//reached end of list
@@ -1194,8 +1193,8 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 				}
 				//turn on this surf
 				gi.G2API_SetSurfaceOnOff( &ent->ghoul2[ent->playerModel], token, 0 );
-				COM_EndParseSession();
 			}
+			COM_EndParseSession();
 		}
 		if ( ent->client->NPC_class == CLASS_IMPERIAL && ent->message )
 		{//carrying a key, turn on the key sleeve surface (assuming we have one)

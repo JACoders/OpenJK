@@ -5163,14 +5163,14 @@ void Item_RunScript(itemDef_t *item, const char *s)
 	if (item && s && s[0]) 
 	{
 		p = s;
-		COM_BeginParseSession();			// HACK
+		COM_BeginParseSession();
 		while (1) 
 		{
 			const char *command;
 			// expect command then arguments, ; ends command, NULL ends script
 			if (!String_Parse(&p, &command)) 
 			{
-				return;
+				break;
 			}
 
 			if (command[0] == ';' && command[1] == '\0') 
@@ -5185,6 +5185,7 @@ void Item_RunScript(itemDef_t *item, const char *s)
 				{
 					if ( !(commandList[i].handler(item, &p)) )
 					{
+						COM_EndParseSession();
 						return;
 					}
 
@@ -5202,6 +5203,7 @@ void Item_RunScript(itemDef_t *item, const char *s)
 				}
 			}
 		}
+		COM_EndParseSession();
 	}
 }
 
@@ -5786,13 +5788,11 @@ int PC_StartParseSession(const char *fileName,char **buffer)
 	// Not there?
 	if ( len>0 ) 
 	{
-		parseDataCount = 0;
+		COM_BeginParseSession();
 
-		strncpy(parseData[parseDataCount].fileName, fileName, MAX_QPATH);
+		Q_strncpyz(parseData[parseDataCount].fileName, fileName, sizeof (parseData[0].fileName));
 		parseData[parseDataCount].bufferStart = *buffer;
 		parseData[parseDataCount].bufferCurrent = *buffer;
-
-		COM_BeginParseSession();
 	}
 
 	return len;
@@ -5805,7 +5805,7 @@ PC_EndParseSession
 */
 void PC_EndParseSession(char *buffer)
 {
-	parseDataCount--;		// FIXME: should return to default?
+	COM_EndParseSession();
 	ui.FS_FreeFile( buffer );	//let go of the buffer
 }
 
@@ -6047,13 +6047,14 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 			Q_strncpyz(script, item->enableCvar, sizeof(script), qtrue);
 			p = script;
 		}
-		COM_BeginParseSession();			// HACK HACK HACK!!
+		COM_BeginParseSession();
 		while (1) 
 		{
 			const char *val;
 			// expect value then ; or NULL, NULL ends list
 			if (!String_Parse(&p, &val)) 
 			{
+				COM_EndParseSession();
 				return (item->cvarFlags & flag) ? qfalse : qtrue;
 			}
 
@@ -6067,6 +6068,7 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 			{
 				if (Q_stricmp(buff, val) == 0) 
 				{
+					COM_EndParseSession();
 					return qtrue;
 				}
 			} 
@@ -6075,10 +6077,12 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 				// disable it if any of the values are true
 				if (Q_stricmp(buff, val) == 0) 
 				{
+					COM_EndParseSession();
 					return qfalse;
 				}
 			}
 		}
+		COM_EndParseSession();
 		return (item->cvarFlags & flag) ? qfalse : qtrue;
 	}
 	return qtrue;
