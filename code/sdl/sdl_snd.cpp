@@ -86,7 +86,7 @@ static void SNDDMA_AudioCallback(void *userdata, Uint8 *stream, int len)
 static struct
 {
 	Uint16	enumFormat;
-	const char *stringFormat;
+	char		*stringFormat;
 } formatToStringTable[ ] =
 {
 	{ AUDIO_U8,     "AUDIO_U8" },
@@ -107,7 +107,7 @@ SNDDMA_PrintAudiospec
 static void SNDDMA_PrintAudiospec(const char *str, const SDL_AudioSpec *spec)
 {
 	int		i;
-	const char	*fmt = NULL;
+	char	*fmt = NULL;
 
 	Com_Printf("%s:\n", str);
 

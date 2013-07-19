@@ -91,7 +91,8 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 	// Only parse the variable when it changes
 	if( cl_consoleKeys->modified )
 	{
-		char *text_p, *token;
+		const char *text_p;
+        char *token;
 
 		cl_consoleKeys->modified = qfalse;
 		text_p = cl_consoleKeys->string;
@@ -102,7 +103,9 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 			consoleKey_t *c = &consoleKeys[ numConsoleKeys ];
 			int charCode = 0;
 
-			token = COM_Parse( (const char **)&text_p );
+			COM_BeginParseSession();
+			token = COM_Parse( &text_p );
+			COM_EndParseSession();
 			if( !token[ 0 ] )
 				break;
 
