@@ -2262,6 +2262,8 @@ int BG_ParseAnimationEvtFile( const char *as_filename, int animFileIndex, int ev
 	upper_i =0;
 	lower_i =0;
 
+	COM_BeginParseSession ("BG_ParseAnimationEvtFile");
+
 	// read information for batches of sounds (UPPER or LOWER)
 	while ( 1 ) 
 	{

@@ -47,6 +47,7 @@ int G_ParseInfos( char *buf, int max, char *infos[] ) {
 
 	count = 0;
 
+	COM_BeginParseSession ("G_ParseInfos");
 	while ( 1 ) {
 		token = COM_Parse( (const char **)(&buf) );
 		if ( !token[0] ) {
