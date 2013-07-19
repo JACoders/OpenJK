@@ -2637,6 +2637,7 @@ void CG_LoadMenus(const char *menuFile)
 	
 	p = buf;
 
+	COM_BeginParseSession ("CG_LoadMenus");
 	while ( 1 ) 
 	{
 		token = COM_ParseExt( &p, qtrue );

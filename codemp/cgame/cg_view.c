@@ -1757,6 +1757,8 @@ void CG_DrawSkyBoxPortal(const char *cstr)
 
 	backuprefdef = cg.refdef;
 
+	COM_BeginParseSession ("CG_DrawSkyBoxPortal");
+
 	token = COM_ParseExt(&cstr, qfalse);
 	if (!token || !token[0])
 	{

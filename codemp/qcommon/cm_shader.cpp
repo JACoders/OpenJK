@@ -42,6 +42,7 @@ void CM_CreateShaderTextHash(void)
 	CCMShaderText		*shader;
 
 	p = shaderText;
+	COM_BeginParseSession ("CM_CreateShaderTextHash");
 	// look for label
 	while (p) 
 	{
@@ -377,6 +378,7 @@ static void CM_ParseShader( CCMShader *shader, const char **text )
 {
 	char	*token;
 
+	COM_BeginParseSession ("CM_ParseShader");
 	token = COM_ParseExt( text, qtrue );
 	if ( token[0] != '{' )
 	{

@@ -1885,6 +1885,8 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 	strcpy( w->entityString, p );
 	w->entityParsePoint = w->entityString;
 
+	COM_BeginParseSession ("R_LoadEntities");
+
 	token = COM_ParseExt( &p, qtrue );
 	if (!*token || *token != '{') {
 		return;

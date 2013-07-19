@@ -438,6 +438,8 @@ int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 //		animset[i].initialLerp = 100;
 	}
 
+	COM_BeginParseSession ("UI_ParseAnimationFile");
+
 	// read information for each frame
 	while(1) 
 	{
@@ -9561,6 +9563,8 @@ static void UI_ParseGameInfo(const char *teamFile) {
 	}
 
 	p = buff;
+
+	COM_BeginParseSession ("UI_ParseGameInfo");
 
 	while ( 1 ) {
 		token = COM_ParseExt( (const char **)(&p), qtrue );

@@ -1497,6 +1497,8 @@ void RE_WorldEffectCommand(const char *command)
 		return;
 	}
 
+	COM_BeginParseSession ("RE_WorldEffectCommand");
+
 	const char	*token;//, *origCommand;
 
 	token = COM_ParseExt(&command, qfalse);
