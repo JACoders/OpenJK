@@ -1352,6 +1352,7 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 					Q_strncpyz( filename, value, sizeof( filename ), qtrue );
 
 					G_ParseAnimFileSet(strippedName, filename);
+					COM_EndParseSession(  );
 					return;
 				}
 			}
@@ -1884,6 +1885,8 @@ void CG_NPC_Precache ( gentity_t *spawner )
 		}
 	}
 
+	COM_EndParseSession(  );
+
 	if ( md3Model )
 	{
 		CG_RegisterClientRenderInfo( &ci, &ri );
@@ -1914,7 +1917,6 @@ void CG_NPC_Precache ( gentity_t *spawner )
 
 	CG_RegisterNPCCustomSounds( &ci );
 
-	COM_EndParseSession(  );
 	//CG_RegisterNPCEffects( playerTeam );
 	//FIXME: Look for a "sounds" directory and precache death, pain, alert sounds
 }
@@ -2081,7 +2083,6 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 		// parse the NPC info block
 		while ( 1 ) 
 		{
-			COM_BeginParseSession();
 			token = COM_ParseExt( &p, qtrue );
 			if ( !token[0] ) 
 			{
@@ -3124,6 +3125,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					if ( !NPC->m_pVehicle )
 					{//you didn't spawn this guy right!
 						Com_Printf ( S_COLOR_RED "ERROR: Tried to spawn a vehicle NPC (%s) without using NPC_Vehicle or 'NPC spawn vehicle <vehiclename>'!!!  Bad, bad, bad!  Shame on you!\n", NPCName );
+						COM_EndParseSession();
 						return qfalse;
 					}
 					md3Model = qfalse;

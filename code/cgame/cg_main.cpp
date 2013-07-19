@@ -2827,6 +2827,7 @@ void CG_ParseMenu(const char *menuFile)
 		if (!result)
 		{
 			Com_Printf("Unable to load default ui/testhud.menu.\n");
+			cgi_UI_EndParseSession (buf);
 			return;
 		}
 	}
@@ -2963,11 +2964,10 @@ void CG_LoadMenus(const char *menuFile)
 
 	p = buf;
 
+	COM_BeginParseSession();
 	while ( 1 ) 
 	{
-		COM_BeginParseSession();
 		token = COM_ParseExt( &p, qtrue );
-		COM_EndParseSession();
 		if( !token || token[0] == 0 || token[0] == '}') 
 		{
 			break;
@@ -2980,9 +2980,7 @@ void CG_LoadMenus(const char *menuFile)
 
 		if (Q_stricmp(token, "loadmenu") == 0) 
 		{
-			COM_BeginParseSession();
 			int menuLoad = CG_Load_Menu(&p);
-			COM_EndParseSession();
 			if (menuLoad) 
 			{
 				continue;
@@ -2993,6 +2991,7 @@ void CG_LoadMenus(const char *menuFile)
 			}
 		}
 	}
+	COM_EndParseSession();
 
 	//Com_Printf("UI menu load time = %d milli seconds\n", cgi_Milliseconds() - start);
 }
