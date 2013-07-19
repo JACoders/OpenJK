@@ -186,8 +186,8 @@ typedef struct
 // This is used as a fallback for each new field, in case they're using base files --eez
 const int defaultDamage[] = {
 	0,							// WP_NONE
-	0,							// WP_SABER										// handled elsewhere
-	BRYAR_PISTOL_DAMAGE,		// WP_BRYAR_PISTOL
+	0,							// WP_SABER				// handled elsewhere
+	BRYAR_PISTOL_DAMAGE,		// WP_BLASTER_PISTOL
 	BLASTER_DAMAGE,				// WP_BLASTER
 	DISRUPTOR_MAIN_DAMAGE,		// WP_DISRUPTOR
 	BOWCASTER_DAMAGE,			// WP_BOWCASTER
@@ -197,147 +197,213 @@ const int defaultDamage[] = {
 	ROCKET_DAMAGE,				// WP_ROCKET_LAUNCHER
 	TD_DAMAGE,					// WP_THERMAL
 	LT_DAMAGE,					// WP_TRIP_MINE
-	FLECHETTE_MINE_DAMAGE,		// WP_DET_PACK									// HACK, this is what the code sez.
-	STUN_BATON_DAMAGE,			// WP_STUN_BATON
-	0,							// WP_MELEE										// handled by the melee attack function
-	EMPLACED_DAMAGE,			// WP_EMPLACED
-	BRYAR_PISTOL_DAMAGE,		// WP_BOT_LASER
-	0,							// WP_TURRET									// handled elsewhere
+	FLECHETTE_MINE_DAMAGE,		// WP_DET_PACK			// HACK, this is what the code sez.
+	CONC_DAMAGE,				// WP_CONCUSSION
+
+	0,							// WP_MELEE				// handled by the melee attack function
+
 	ATST_MAIN_DAMAGE,			// WP_ATST_MAIN
 	ATST_SIDE_MAIN_DAMAGE,		// WP_ATST_SIDE
+
+	STUN_BATON_DAMAGE,			// WP_STUN_BATON
+
+	BRYAR_PISTOL_DAMAGE,		// WP_BRYAR_PISTOL
+	EMPLACED_DAMAGE,			// WP_EMPLACED_GUN
+	BRYAR_PISTOL_DAMAGE,		// WP_BOT_LASER
+	0,							// WP_TURRET			// handled elsewhere
 	EMPLACED_DAMAGE,			// WP_TIE_FIGHTER
-	EMPLACED_DAMAGE,			// WP_RAPID_FIRE_CONC
-	BRYAR_PISTOL_DAMAGE			// WP_BLASTER_PISTOL
+	EMPLACED_DAMAGE,			// WP_RAPID_FIRE_CONC,
+
+	BRYAR_PISTOL_DAMAGE,		// WP_JAWA
+	0,							// WP_TUSKEN_RIFLE
+	0,							// WP_TUSKEN_STAFF
+	0,							// WP_SCEPTER
+	0,							// WP_NOGHRI_STICK
 };
 
 const int defaultAltDamage[] = {
-	0,							// WP_NONE
-	0,							// WP_SABER										// handled elsewhere
-	BRYAR_PISTOL_DAMAGE,		// WP_BRYAR_PISTOL
-	BLASTER_DAMAGE,				// WP_BLASTER
-	DISRUPTOR_ALT_DAMAGE,		// WP_DISRUPTOR
-	BOWCASTER_DAMAGE,			// WP_BOWCASTER
-	REPEATER_ALT_DAMAGE,		// WP_REPEATER
-	DEMP2_ALT_DAMAGE,			// WP_DEMP2
-	FLECHETTE_ALT_DAMAGE,		// WP_FLECHETTE
-	ROCKET_DAMAGE,				// WP_ROCKET_LAUNCHER
-	TD_ALT_DAMAGE,				// WP_THERMAL
-	LT_DAMAGE,					// WP_TRIP_MINE
-	FLECHETTE_MINE_DAMAGE,		// WP_DET_PACK									// HACK, this is what the code sez.
-	STUN_BATON_ALT_DAMAGE,		// WP_STUN_BATON
-	0,							// WP_MELEE										// handled by the melee attack function
-	EMPLACED_DAMAGE,			// WP_EMPLACED
-	BRYAR_PISTOL_DAMAGE,		// WP_BOT_LASER
-	0,							// WP_TURRET									// handled elsewhere
-	ATST_MAIN_DAMAGE,			// WP_ATST_MAIN
-	ATST_SIDE_ALT_DAMAGE,		// WP_ATST_SIDE
-	EMPLACED_DAMAGE,			// WP_TIE_FIGHTER
-	0,							// WP_RAPID_FIRE_CONC							// repeater alt damage is used instead
-	BRYAR_PISTOL_DAMAGE			// WP_BLASTER_PISTOL
+	0,						// WP_NONE
+	0,						// WP_SABER					// handled elsewhere
+	BRYAR_PISTOL_DAMAGE,	// WP_BLASTER_PISTOL
+	BLASTER_DAMAGE,			// WP_BLASTER
+	DISRUPTOR_ALT_DAMAGE,	// WP_DISRUPTOR
+	BOWCASTER_DAMAGE,		// WP_BOWCASTER
+	REPEATER_ALT_DAMAGE,	// WP_REPEATER
+	DEMP2_ALT_DAMAGE,		// WP_DEMP2
+	FLECHETTE_ALT_DAMAGE,	// WP_FLECHETTE
+	ROCKET_DAMAGE,			// WP_ROCKET_LAUNCHER
+	TD_ALT_DAMAGE,			// WP_THERMAL
+	LT_DAMAGE,				// WP_TRIP_MINE
+	FLECHETTE_MINE_DAMAGE,	// WP_DET_PACK				// HACK, this is what the code sez.
+	CONC_ALT_DAMAGE,		// WP_CONCUSION
+
+	0,						// WP_MELEE					// handled by the melee attack function
+
+	ATST_MAIN_DAMAGE,		// WP_ATST_MAIN
+	ATST_SIDE_ALT_DAMAGE,	// WP_ATST_SIDE
+
+	STUN_BATON_ALT_DAMAGE,	// WP_STUN_BATON
+
+	BRYAR_PISTOL_DAMAGE,	// WP_BRYAR_PISTOL
+	EMPLACED_DAMAGE,		// WP_EMPLACED_GUN
+	BRYAR_PISTOL_DAMAGE,	// WP_BOT_LASER
+	0,						// WP_TURRET				// handled elsewhere
+	EMPLACED_DAMAGE,		// WP_TIE_FIGHTER
+	0,						// WP_RAPID_FIRE_CONC		// repeater alt damage is used instead
+
+	BRYAR_PISTOL_DAMAGE,	// WP_JAWA
+	0,						// WP_TUSKEN_RIFLE
+	0,						// WP_TUSKEN_STAFF
+	0,						// WP_SCEPTER
+	0,						// WP_NOGHRI_STICK
 };
 
 const int defaultSplashDamage[] = {
-	0,									// WP_NONE
-	0,									// WP_SABER
-	0,									// WP_BRYAR_PISTOL
-	0,									// WP_BLASTER
-	0,									// WP_DISRUPTOR
-	BOWCASTER_SPLASH_DAMAGE,			// WP_BOWCASTER
-	0,									// WP_REPEATER
-	0,									// WP_DEMP2
-	0,									// WP_FLECHETTE
-	ROCKET_SPLASH_DAMAGE,				// WP_ROCKET_LAUNCHER
-	TD_SPLASH_DAM,						// WP_THERMAL
-	LT_SPLASH_DAM,						// WP_TRIP_MINE
-	FLECHETTE_MINE_SPLASH_DAMAGE,		// WP_DET_PACK									// HACK, this is what the code sez.
-	0,									// WP_STUN_BATON
-	0,									// WP_MELEE
-	0,									// WP_EMPLACED
-	0,									// WP_BOT_LASER
-	0,									// WP_TURRET
-	0,									// WP_ATST_MAIN
-	ATST_SIDE_MAIN_SPLASH_DAMAGE,		// WP_ATST_SIDE
-	0,									// WP_TIE_FIGHTER
-	0,									// WP_RAPID_FIRE_CONC
-	0									// WP_BLASTER_PISTOL
+	0,								// WP_NONE
+	0,								// WP_SABER
+	0,								// WP_BLASTER_PISTOL
+	0,								// WP_BLASTER
+	0,								// WP_DISRUPTOR
+	BOWCASTER_SPLASH_DAMAGE,		// WP_BOWCASTER
+	0,								// WP_REPEATER
+	0,								// WP_DEMP2
+	0,								// WP_FLECHETTE
+	ROCKET_SPLASH_DAMAGE,			// WP_ROCKET_LAUNCHER
+	TD_SPLASH_DAM,					// WP_THERMAL
+	LT_SPLASH_DAM,					// WP_TRIP_MINE
+	FLECHETTE_MINE_SPLASH_DAMAGE,	// WP_DET_PACK		// HACK, this is what the code sez.
+	CONC_SPLASH_DAMAGE,				// WP_CONCUSSION
+
+	0,								// WP_MELEE
+
+	0,								// WP_ATST_MAIN
+	ATST_SIDE_MAIN_SPLASH_DAMAGE,	// WP_ATST_SIDE
+
+	0,								// WP_STUN_BATON
+
+	0,								// WP_BRYAR_PISTOL
+	0,								// WP_EMPLACED_GUN
+	0,								// WP_BOT_LASER
+	0,								// WP_TURRET
+	0,								// WP_TIE_FIGHTER
+	0,								// WP_RAPID_FIRE_CONC
+
+	0,								// WP_JAWA
+	0,								// WP_TUSKEN_RIFLE
+	0,								// WP_TUSKEN_STAFF
+	0,								// WP_SCEPTER
+	0,								// WP_NOGHRI_STICK
 };
 
 const float defaultSplashRadius[] = {
-	0,									// WP_NONE
-	0,									// WP_SABER
-	0,									// WP_BRYAR_PISTOL
-	0,									// WP_BLASTER
-	0,									// WP_DISRUPTOR
-	BOWCASTER_SPLASH_RADIUS,			// WP_BOWCASTER
-	0,									// WP_REPEATER
-	0,									// WP_DEMP2
-	0,									// WP_FLECHETTE
-	ROCKET_SPLASH_RADIUS,				// WP_ROCKET_LAUNCHER
-	TD_SPLASH_RAD,						// WP_THERMAL
-	LT_SPLASH_RAD,						// WP_TRIP_MINE
-	FLECHETTE_MINE_SPLASH_RADIUS,		// WP_DET_PACK									// HACK, this is what the code sez.
-	0,									// WP_STUN_BATON
-	0,									// WP_MELEE
-	0,									// WP_EMPLACED
-	0,									// WP_BOT_LASER
-	0,									// WP_TURRET
-	0,									// WP_ATST_MAIN
-	ATST_SIDE_MAIN_SPLASH_RADIUS,		// WP_ATST_SIDE
-	0,									// WP_TIE_FIGHTER
-	0,									// WP_RAPID_FIRE_CONC
-	0									// WP_BLASTER_PISTOL
+	0.0f,							// WP_NONE
+	0.0f,							// WP_SABER
+	0.0f,							// WP_BLASTER_PISTOL
+	0.0f,							// WP_BLASTER
+	0.0f,							// WP_DISRUPTOR
+	BOWCASTER_SPLASH_RADIUS,		// WP_BOWCASTER
+	0.0f,							// WP_REPEATER
+	0.0f,							// WP_DEMP2
+	0.0f,							// WP_FLECHETTE
+	ROCKET_SPLASH_RADIUS,			// WP_ROCKET_LAUNCHER
+	TD_SPLASH_RAD,					// WP_THERMAL
+	LT_SPLASH_RAD,					// WP_TRIP_MINE
+	FLECHETTE_MINE_SPLASH_RADIUS,	// WP_DET_PACK		// HACK, this is what the code sez.
+	CONC_SPLASH_RADIUS,				// WP_CONCUSSION
+
+	0.0f,							// WP_MELEE
+
+	0.0f,							// WP_ATST_MAIN
+	ATST_SIDE_MAIN_SPLASH_RADIUS,	// WP_ATST_SIDE
+
+	0.0f,							// WP_STUN_BATON
+
+	0.0f,							// WP_BRYAR_PISTOL
+	0.0f,							// WP_EMPLACED_GUN
+	0.0f,							// WP_BOT_LASER
+	0.0f,							// WP_TURRET
+	0.0f,							// WP_TIE_FIGHTER
+	0.0f,							// WP_RAPID_FIRE_CONC
+
+	0.0f,							// WP_JAWA
+	0.0f,							// WP_TUSKEN_RIFLE
+	0.0f,							// WP_TUSKEN_STAFF
+	0.0f,							// WP_SCEPTER
+	0.0f,							// WP_NOGHRI_STICK
 };
 
 const int defaultAltSplashDamage[] = {
-	0,									// WP_NONE
-	0,									// WP_SABER										// handled elsewhere
-	0,									// WP_BRYAR_PISTOL
-	0,									// WP_BLASTER
-	0,									// WP_DISRUPTOR
-	BOWCASTER_SPLASH_DAMAGE,			// WP_BOWCASTER
-	REPEATER_ALT_SPLASH_DAMAGE,			// WP_REPEATER
-	DEMP2_ALT_DAMAGE,					// WP_DEMP2
-	FLECHETTE_ALT_SPLASH_DAM,			// WP_FLECHETTE
-	ROCKET_SPLASH_DAMAGE,				// WP_ROCKET_LAUNCHER
-	TD_ALT_SPLASH_DAM,					// WP_THERMAL
-	TD_ALT_SPLASH_DAM,					// WP_TRIP_MINE
-	FLECHETTE_MINE_SPLASH_DAMAGE,		// WP_DET_PACK									// HACK, this is what the code sez.
-	0,									// WP_STUN_BATON
-	0,									// WP_MELEE										// handled by the melee attack function
-	0,									// WP_EMPLACED
-	0,									// WP_BOT_LASER
-	0,									// WP_TURRET									// handled elsewhere
-	0,									// WP_ATST_MAIN
-	ATST_SIDE_ALT_SPLASH_DAMAGE,		// WP_ATST_SIDE
-	0,									// WP_TIE_FIGHTER
-	0,									// WP_RAPID_FIRE_CONC
-	0									// WP_BLASTER_PISTOL
+	0,								// WP_NONE
+	0,								// WP_SABER			// handled elsewhere
+	0,								// WP_BLASTER_PISTOL
+	0,								// WP_BLASTER
+	0,								// WP_DISRUPTOR
+	BOWCASTER_SPLASH_DAMAGE,		// WP_BOWCASTER
+	REPEATER_ALT_SPLASH_DAMAGE,		// WP_REPEATER
+	DEMP2_ALT_DAMAGE,				// WP_DEMP2
+	FLECHETTE_ALT_SPLASH_DAM,		// WP_FLECHETTE
+	ROCKET_SPLASH_DAMAGE,			// WP_ROCKET_LAUNCHER
+	TD_ALT_SPLASH_DAM,				// WP_THERMAL
+	TD_ALT_SPLASH_DAM,				// WP_TRIP_MINE
+	FLECHETTE_MINE_SPLASH_DAMAGE,	// WP_DET_PACK		// HACK, this is what the code sez.
+	0,								// WP_CONCUSSION
+
+	0,								// WP_MELEE			// handled by the melee attack function
+
+	0,								// WP_ATST_MAIN
+	ATST_SIDE_ALT_SPLASH_DAMAGE,	// WP_ATST_SIDE
+
+	0,								// WP_STUN_BATON
+
+	0,								// WP_BRYAR_PISTOL
+	0,								// WP_EMPLACED_GUN
+	0,								// WP_BOT_LASER
+	0,								// WP_TURRET		// handled elsewhere
+	0,								// WP_TIE_FIGHTER
+	0,								// WP_RAPID_FIRE_CONC
+
+	0,								// WP_JAWA
+	0,								// WP_TUSKEN_RIFLE
+	0,								// WP_TUSKEN_STAFF
+	0,								// WP_SCEPTER
+	0,								// WP_NOGHRI_STICK
 };
 
 const float defaultAltSplashRadius[] = {
-	0,							// WP_NONE
-	0,							// WP_SABER										// handled elsewhere
-	0,							// WP_BRYAR_PISTOL
-	0,							// WP_BLASTER
-	0,							// WP_DISRUPTOR
-	BOWCASTER_SPLASH_RADIUS,	// WP_BOWCASTER
-	REPEATER_ALT_SPLASH_RADIUS,	// WP_REPEATER
-	DEMP2_ALT_SPLASHRADIUS,		// WP_DEMP2
-	FLECHETTE_ALT_SPLASH_RAD,	// WP_FLECHETTE
-	ROCKET_SPLASH_RADIUS,		// WP_ROCKET_LAUNCHER
-	TD_ALT_SPLASH_RAD,			// WP_THERMAL
-	LT_SPLASH_RAD,				// WP_TRIP_MINE
-	FLECHETTE_ALT_SPLASH_RAD,	// WP_DET_PACK									// HACK, this is what the code sez.
-	0,							// WP_STUN_BATON
-	0,							// WP_MELEE										// handled by the melee attack function
-	0,							// WP_EMPLACED
-	0,							// WP_BOT_LASER
-	0,							// WP_TURRET									// handled elsewhere
-	0,							// WP_ATST_MAIN
-	ATST_SIDE_ALT_SPLASH_RADIUS,// WP_ATST_SIDE
-	0,							// WP_TIE_FIGHTER
-	0,							// WP_RAPID_FIRE_CONC
-	0							// WP_BLASTER_PISTOL
+	0.0f,							// WP_NONE
+	0.0f,							// WP_SABER		// handled elsewhere
+	0.0f,							// WP_BLASTER_PISTOL
+	0.0f,							// WP_BLASTER
+	0.0f,							// WP_DISRUPTOR
+	BOWCASTER_SPLASH_RADIUS,		// WP_BOWCASTER
+	REPEATER_ALT_SPLASH_RADIUS,		// WP_REPEATER
+	DEMP2_ALT_SPLASHRADIUS,			// WP_DEMP2
+	FLECHETTE_ALT_SPLASH_RAD,		// WP_FLECHETTE
+	ROCKET_SPLASH_RADIUS,			// WP_ROCKET_LAUNCHER
+	TD_ALT_SPLASH_RAD,				// WP_THERMAL
+	LT_SPLASH_RAD,					// WP_TRIP_MINE
+	FLECHETTE_ALT_SPLASH_RAD,		// WP_DET_PACK		// HACK, this is what the code sez.
+	0.0f,							// WP_CONCUSSION
+
+	0.0f,							// WP_MELEE			// handled by the melee attack function
+
+	0.0f,							// WP_ATST_MAIN
+	ATST_SIDE_ALT_SPLASH_RADIUS,	// WP_ATST_SIDE
+
+	0.0f,							// WP_STUN_BATON
+
+	0.0f,							// WP_BRYAR_PISTOL
+	0.0f,							// WP_EMPLACED_GUN
+	0.0f,							// WP_BOT_LASER
+	0.0f,							// WP_TURRET		// handled elsewhere
+	0.0f,							// WP_TIE_FIGHTER
+	0.0f,							// WP_RAPID_FIRE_CONC
+
+	0.0f,							// WP_JAWA
+	0.0f,							// WP_TUSKEN_RIFLE
+	0.0f,							// WP_TUSKEN_STAFF
+	0.0f,							// WP_SCEPTER
+	0.0f,							// WP_NOGHRI_STICK
 };
 
 wpnParms_t WpnParms[] = 
