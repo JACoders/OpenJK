@@ -196,5 +196,6 @@ set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_MINS
 set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPRDVanillaDefines};${ReleaseDefines}")
 set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPRDVanillaDefines};${DebugDefines}")
 set_target_properties(${SPRDVanillaRenderer} PROPERTIES INCLUDE_DIRECTORIES "${SPRDVanillaRendererIncludeDirectories}")
+set_target_properties(${SPRDVanillaRenderer} PROPERTIES PROJECT_LABEL "SP Vanilla Renderer")
 
 target_link_libraries(${SPRDVanillaRenderer} ${SPRDVanillaRendererLibraries})
