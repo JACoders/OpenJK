@@ -276,7 +276,7 @@ static	char	com_token[MAX_TOKEN_CHARS];
 //JLFCALLOUT MPNOTUSED
 //#include functionality for files
 int parseDataCount = -1;
-const int MAX_PARSE_DATA = 2;
+const int MAX_PARSE_DATA = 5;
 parseData_t parseData[MAX_PARSE_DATA];
 
 void COM_ParseInit( void )
@@ -287,6 +287,7 @@ void COM_ParseInit( void )
 
 void COM_BeginParseSession( void )
 {
+	parseDataCount++;
 #ifdef _DEBUG
 	if ( parseDataCount >= MAX_PARSE_DATA )
 	{
@@ -294,13 +295,15 @@ void COM_BeginParseSession( void )
 	}
 #endif
 
-	parseDataCount++;
 	parseData[parseDataCount].com_lines = 1;
 }
 
 void COM_EndParseSession( void )
 {
 	parseDataCount--;
+#ifdef _DEBUG
+	assert (parseDataCount >= -1 && "COM_EndParseSession: called without a starting COM_BeginParseSession.\n");
+#endif
 }
 
 int COM_GetCurrentParseLine( int index )
