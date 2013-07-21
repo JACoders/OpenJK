@@ -1188,7 +1188,6 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 				token = COM_ParseExt( &p, qtrue );
 				if ( !token[0] ) 
 				{//reached end of list
-					COM_EndParseSession();
 					break;
 				}
 				//turn on this surf

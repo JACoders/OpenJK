@@ -6033,10 +6033,14 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 		{
 			const char *val;
 			p = item->enableCvar;
+			COM_BeginParseSession();
 			if (!String_Parse(&p, &val)) 
 			{//strip the quotes off 
+				COM_EndParseSession();
 				return (item->cvarFlags & flag) ? qfalse : qtrue;
 			}
+
+			COM_EndParseSession();
 			Q_strncpyz(buff, val, sizeof(buff), qtrue);
 			DC->getCVarString(item->cvarTest, script, sizeof(script));
 			p = script;
