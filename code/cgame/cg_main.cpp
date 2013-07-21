@@ -1139,7 +1139,7 @@ static void CG_RegisterEffects( void )
 	if (numFailed && g_delayedShutdown->integer)
 	{
 		//assert(0);
-		CG_Error( "CG_RegisterEffects: %i Effects failed to load.  Please fix, or ask Aurelio.", numFailed );
+		//CG_Error( "CG_RegisterEffects: %i Effects failed to load.  Please fix, or ask Aurelio.", numFailed );
 	}
 
 	// Start world effects
