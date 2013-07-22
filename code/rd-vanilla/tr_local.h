@@ -1214,6 +1214,7 @@ extern	cvar_t	*r_skipBackEnd;
 extern	cvar_t	*r_ignoreGLErrors;
 
 extern	cvar_t	*r_overBrightBits;
+extern	cvar_t	*r_mapOverBrightBits;
 
 extern	cvar_t	*r_debugSurface;
 extern	cvar_t	*r_simpleMipMaps;
