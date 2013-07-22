@@ -101,28 +101,18 @@ R_ColorShiftLightingBytes
 ===============
 */
 void R_ColorShiftLightingBytes( byte in[4], byte out[4] ) {
-	int		shift=0, r, g, b;
+	int shift, r, g, b;
 
-	// should NOT do it if overbrightBits is 0
-	if (tr.overbrightBits)
-		shift = 1 - tr.overbrightBits;
-
-	if (!shift)
-	{
-		out[0] = in[0];
-		out[1] = in[1];
-		out[2] = in[2];
-		out[3] = in[3];
-		return;
-	}
+	// shift the color data based on overbright range
+	shift = r_mapOverBrightBits->integer - tr.overbrightBits;
 
 	// shift the data based on overbright range
 	r = in[0] << shift;
 	g = in[1] << shift;
 	b = in[2] << shift;
-	
+
 	// normalize by color instead of saturating to white
-	if ( ( r | g | b ) > 255 ) {
+	if ( (r|g|b) > 255 ) {
 		int		max;
 
 		max = r > g ? r : g;
@@ -144,24 +134,19 @@ R_ColorShiftLightingBytes
 
 ===============
 */
-static	void R_ColorShiftLightingBytes( byte in[3]) 
-{
-	int		shift=0, r, g, b;
+void R_ColorShiftLightingBytes( byte in[3] ) {
+	int shift, r, g, b;
 
-	// should NOT do it if overbrightBits is 0
-	if (tr.overbrightBits)
-		shift = 1 - tr.overbrightBits;
+	// shift the color data based on overbright range
+	shift = r_mapOverBrightBits->integer - tr.overbrightBits;
 
-	if (!shift) {
-		return;	//no need if not overbright
-	}
 	// shift the data based on overbright range
 	r = in[0] << shift;
 	g = in[1] << shift;
 	b = in[2] << shift;
-	
+
 	// normalize by color instead of saturating to white
-	if ( ( r | g | b ) > 255 ) {
+	if ( (r|g|b) > 255 ) {
 		int		max;
 
 		max = r > g ? r : g;
@@ -175,7 +160,6 @@ static	void R_ColorShiftLightingBytes( byte in[3])
 	in[1] = g;
 	in[2] = b;
 }
-
 
 /*
 ===============
