@@ -6135,7 +6135,7 @@ void Item_OwnerDraw_Paint(itemDef_t *item) {
 void Item_Paint(itemDef_t *item) 
 {
 	vec4_t		red;
-	menuDef_t *parent = (menuDef_t*)item->parent;
+	menuDef_t *parent;
 	int			xPos,textWidth;
 	vec4_t		color = {1, 1, 1, 1};
 
@@ -6146,6 +6146,8 @@ void Item_Paint(itemDef_t *item)
 	{
 		return;
 	}
+
+	parent = (menuDef_t*)item->parent;
 
 	if (item->window.flags & WINDOW_ORBITING) 
 	{
