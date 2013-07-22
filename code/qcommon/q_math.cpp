@@ -553,9 +553,7 @@ float Q_rsqrt( float number )
 	y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
 //	y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
 
-#ifdef __linux__
-	assert( !isnan(y) ); // bk010122 - FPE?
-#endif
+	assert( !Q_isnan(y) ); // bk010122 - FPE?
 	return y;
 }
 
