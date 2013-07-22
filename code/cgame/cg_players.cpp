@@ -6533,12 +6533,6 @@ Ghoul2 Insert End
 						{
 							// if we impact next frame, we'll mark a slash mark
 							client->ps.saber[saberNum].blade[bladeNum].trail.haveOldPos[i] = qtrue;
-							if ( (!WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && !(client->ps.saber[saberNum].saberFlags2&SFL2_NO_WALL_MARKS))
-								|| (WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && !(client->ps.saber[saberNum].saberFlags2&SFL2_NO_WALL_MARKS2)) )
-							{
-								CG_ImpactMark( cgs.media.rivetMarkShader, client->ps.saber[saberNum].blade[bladeNum].trail.oldPos[i], client->ps.saber[saberNum].blade[bladeNum].trail.oldNormal[i],
-									0.0f, 1.0f, 1.0f, 1.0f, 1.0f, qfalse, 1.1f, qfalse );
-							}
 						}
 					}
 				}
