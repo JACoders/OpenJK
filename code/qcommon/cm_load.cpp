@@ -848,9 +848,6 @@ void CM_LoadMap( const char *name, qboolean clientload, int *checksum, qboolean 
 	{
 		gbUsingCachedMapDataRightNow = qtrue;	// !!!!!!!!!!!!!!!!!!
 
-#ifndef _DEBUG
-		Com_Printf("CM_LoadMapActual: %s\n", name);
-#endif
 			CM_LoadMap_Actual( name, clientload, checksum, cmg );
 
 		gbUsingCachedMapDataRightNow = qfalse;	// !!!!!!!!!!!!!!!!!!
