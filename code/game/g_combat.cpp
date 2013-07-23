@@ -2025,7 +2025,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 				 int limbAnim, float limbRollBase, float limbPitchBase,
 				 int damage, int hitLoc )
 {
-	int newBolt;
+	//int newBolt;
 	vec3_t	dir, newPoint, limbAngles = {0,ent->client->ps.legsYaw,0};
 	gentity_t *limb;
 	trace_t	trace;
