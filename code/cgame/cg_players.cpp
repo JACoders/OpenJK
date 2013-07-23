@@ -3471,7 +3471,7 @@ static qboolean _PlayerShadow( const vec3_t origin, const float orientation, flo
 	cgi_CM_BoxTrace( &trace, origin, end, mins, maxs, 0, MASK_PLAYERSOLID );
 
 	// no shadow if too high
-	if ( trace.fraction == 1.0 ) {
+	if ( trace.fraction == 1.0 || (trace.startsolid && trace.allsolid) ) {
 		return qfalse;
 	}
 
