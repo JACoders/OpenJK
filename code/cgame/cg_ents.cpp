@@ -2024,6 +2024,7 @@ void CG_Limb ( centity_t *cent )
 		{
 extern cvar_t	*g_saberRealisticCombat;
 			//3) turn off w/descendants that surf in original model
+#if 0
 			if ( cent->gent->target )//stubTagName )
 			{//add smoke to cap surf, spawn effect
 				if ( cent->gent->delay <= cg.time )
@@ -2036,6 +2037,7 @@ extern cvar_t	*g_saberRealisticCombat;
 					}
 				}
 			}
+#endif
 			if ( cent->gent->target2 )//limbName
 			{//turn the limb off
 				//NOTE: MUST use G2SURFACEFLAG_NODESCENDANTS
