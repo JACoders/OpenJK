@@ -2068,11 +2068,11 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 //2) set the root surf on the limb
 	if ( limbTagName )
 	{//add smoke to cap tag
-		newBolt = gi.G2API_AddBolt( &limb->ghoul2[limb->playerModel], limbTagName );
+		/*newBolt = gi.G2API_AddBolt( &limb->ghoul2[limb->playerModel], limbTagName );
 		if ( newBolt != -1 )
 		{
 			G_PlayEffect( G_EffectIndex("saber/limb_bolton"), limb->playerModel, newBolt, limb->s.number, newPoint);
-		}
+		}*/
 	}
 	/*
 	if ( limbBone && hitLoc == HL_HEAD )

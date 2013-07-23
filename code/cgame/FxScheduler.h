@@ -216,6 +216,7 @@ public:
 
 	CFxRange		mRadius;		// spawn on sphere/ellipse/disk stuff.
 	CFxRange		mHeight;
+	CFxRange		mWindModifier;
 
 	CFxRange		mRotation;
 	CFxRange		mRotationDelta;
@@ -294,6 +295,7 @@ public:
 	bool ParseOrigin2( const char *val );
 	bool ParseRadius( const char *val );
 	bool ParseHeight( const char *val );
+	bool ParseWindModifier( const char *val );
 	bool ParseRotation( const char *val );
 	bool ParseRotationDelta( const char *val );
 	bool ParseAngle( const char *val );
