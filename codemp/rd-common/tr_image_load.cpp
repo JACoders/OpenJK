@@ -113,9 +113,6 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height ) {
 			return;
 		}
 	}
-
-	// No image loaders available, print warning.
-	ri.Printf (PRINT_WARNING, "R_LoadImage: Failed to load image \"%s\".\n", shortname);
 }
 
 void R_LoadDataImage( const char *name, byte **pic, int *width, int *height )
