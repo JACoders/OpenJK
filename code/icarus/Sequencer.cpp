@@ -2314,7 +2314,6 @@ Pops a command off the current sequence
 CBlock *CSequencer::PopCommand( int flag )
 {
 	//Make sure everything is ok
-	assert( m_curSequence );
 	if ( m_curSequence == NULL )
 		return NULL;
 
