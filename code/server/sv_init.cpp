@@ -297,11 +297,6 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 	sv.time = 1000;
 	re.G2API_SetTime(sv.time,G2T_SV_TIME);
 
-#ifndef _DEBUG
-	Com_Printf("CM_LOADMAP: %s\n", server);
-#endif
-
-
 	CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum, qfalse );
 
 	// set serverinfo visible name
