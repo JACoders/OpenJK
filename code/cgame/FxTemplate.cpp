@@ -2280,7 +2280,7 @@ bool CPrimitiveTemplate::ParsePrimitive( CGPGroup *grp )
 		{
 			ParseHeight( val );
 		}
-		else if ( !stricmp( key, "wind" ))
+		else if ( !Q_stricmp( key, "wind" ))
 		{
 			ParseWindModifier( val );
 		}
