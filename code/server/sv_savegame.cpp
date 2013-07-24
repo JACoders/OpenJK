@@ -710,7 +710,10 @@ void SG_ReadServerConfigStrings( void )
 	}
 }
 
-
+static unsigned int SG_UnixTimestamp ( const time_t& t )
+{
+	return static_cast<unsigned int>(t);
+}
 
 static void SG_WriteComment(qboolean qbAutosave, const char *psMapName)
 {
@@ -728,13 +731,16 @@ static void SG_WriteComment(qboolean qbAutosave, const char *psMapName)
 	SG_Append(INT_ID('C','O','M','M'), sComment, sizeof(sComment));
 
 	// Add Date/Time/Map stamp
-	time_t now;
-	time(&now);
-	SG_Append(INT_ID('C','M','T','M'), &now, sizeof(time_t));
+	unsigned int timestamp = SG_UnixTimestamp (time (NULL));
+	SG_Append(INT_ID('C','M','T','M'), &timestamp, sizeof (timestamp));
 
 	Com_DPrintf("Saving: current (%s)\n", sComment);
 }
 
+static time_t SG_GetTime ( unsigned int timestamp )
+{
+	return static_cast<time_t>(timestamp);
+}
 
 // Test to see if the given file name is in the save game directory 
 // then grab the comment if it's there
@@ -754,8 +760,10 @@ int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *
 
 	if (SG_Read( INT_ID('C','O','M','M'), sComment, iSG_COMMENT_SIZE ))
 	{	
-		if (SG_Read( INT_ID('C','M','T','M'), &tFileTime, sizeof( time_t )))	//read
-		{	
+		unsigned int fileTime = 0;
+		if (SG_Read( INT_ID('C','M','T','M'), &fileTime, sizeof(fileTime)))	//read
+		{
+			tFileTime = SG_GetTime (fileTime);
 			if (SG_Read(INT_ID('M','P','C','M'), sMapName, iSG_MAPCMD_SIZE ))	// read
 			{
 				ret = tFileTime;
@@ -1044,7 +1052,7 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 	//
 	SG_Read(INT_ID('C','O','M','M'), sComment, sizeof(sComment));
 	Com_DPrintf("Reading: %s\n", sComment);
-	SG_Read( INT_ID('C','M','T','M'), NULL, sizeof( time_t ));
+	SG_Read( INT_ID('C','M','T','M'), NULL, sizeof( unsigned int ));
 
 //	SG_ReadScreenshot(qtrue);	// qboolean qbSetAsLoadingScreen
 	SG_Read(INT_ID('M','P','C','M'), sMapCmd, sizeof(sMapCmd));
