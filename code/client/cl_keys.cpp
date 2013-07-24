@@ -1283,7 +1283,7 @@ void CL_InitKeyCommands( void ) {
 }
 
 
-void CL_ActionEvent(int key, qboolean down, ulong time)
+void CL_ActionEvent(int key, qboolean down, unsigned time)
 {
 	const char	*kb;
 	char		cmd[1024];
