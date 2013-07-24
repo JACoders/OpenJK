@@ -68,8 +68,6 @@ void Field_KeyDownEvent( field_t *edit, int key );
 void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape );
 void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape );
 
-extern	field_t	chatField;
-
 void Key_WriteBindings( fileHandle_t f );
 void Key_SetBinding( int keynum, const char *binding );
 const char *Key_GetBinding( int keynum );

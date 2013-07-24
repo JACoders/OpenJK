@@ -60,18 +60,6 @@ void Con_ToggleConsole_f (void) {
 
 /*
 ================
-Con_MessageMode_f
-================
-*/
-void Con_MessageMode_f (void) {
-	Field_Clear( &chatField );
-	chatField.widthInChars = 30;
-
-//	cls.keyCatchers ^= KEYCATCH_MESSAGE;
-}
-
-/*
-================
 Con_Clear_f
 ================
 */
@@ -282,7 +270,6 @@ void Con_Init (void) {
 	}
 
 	Cmd_AddCommand ("toggleconsole", Con_ToggleConsole_f);
-	Cmd_AddCommand ("messagemode", Con_MessageMode_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
 }
@@ -503,20 +490,6 @@ void Con_DrawNotify (void)
 	}
 
 	re.SetColor( NULL );
-
-	// draw the chat line
-	if ( cls.keyCatchers & KEYCATCH_MESSAGE )
-	{
-		const char *chattext = SE_GetString("MP_SVGAME", "SAY");
-		SCR_DrawBigString (8, v, chattext, 1.0f, qfalse );
-		skip = strlen(chattext)+1;
-
-		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
-			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
-
-		v += BIGCHAR_HEIGHT;
-	}
-
 }
 
 /*
