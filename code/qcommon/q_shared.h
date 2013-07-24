@@ -1409,7 +1409,6 @@ typedef struct {
 // if none of the catchers are active, bound key strings will be executed
 #define KEYCATCH_CONSOLE	1
 #define	KEYCATCH_UI			2
-#define	KEYCATCH_MESSAGE	4
 
 
 // sound channels

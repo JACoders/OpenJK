@@ -31,7 +31,6 @@ key up events are sent even if in console mode
 */
 
 
-field_t		chatField;
 
 qboolean	key_wastab;		// Hit tab once already? 
 char		keymatch_part[256];
@@ -878,50 +877,13 @@ void Console_Key (int key) {
 
 //============================================================================
 
-
-/*
-================
-Message_Key
-
-In game talk message
-================
-*/
-void Message_Key( int key ) {
-	char	buffer[MAX_STRING_CHARS];
-
-	if (key == A_ESCAPE) {
-		cls.keyCatchers &= ~KEYCATCH_MESSAGE;
-		Field_Clear( &chatField );
-		return;
-	}
-
-	if ( key == A_ENTER || key == A_KP_ENTER )
-	{
-		if ( chatField.buffer[0] && cls.state == CA_ACTIVE ) {
-			Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"\n", chatField.buffer );
-
-			CL_AddReliableCommand( buffer );
-		}
-		cls.keyCatchers &= ~KEYCATCH_MESSAGE;
-		Field_Clear( &chatField );
-		return;
-	}
-
-	Field_KeyDownEvent( &chatField, key );
-}
-
-//============================================================================
-
-
 qboolean Key_GetOverstrikeMode( void ) {
 	return kg.key_overstrikeMode;
 }
 
-
 void Key_SetOverstrikeMode( qboolean state ) {
 	kg.key_overstrikeMode = state;
 }
-
 
 /*
 ===================
@@ -935,7 +897,6 @@ qboolean Key_IsDown( int keynum ) {
 
 	return kg.keys[ keynames[keynum].upper ].down;
 }
-
 
 /*
 ===================
@@ -1406,13 +1367,6 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	// escape is always handled special
 	if ( key == A_ESCAPE && down ) 
 	{
-		if ( cls.keyCatchers & KEYCATCH_MESSAGE ) 
-		{
-			// clear message mode
-			Message_Key( key );
-			return;
-		}
-
 		if ( !( cls.keyCatchers & KEYCATCH_UI ) ) 
 		{
 			if ( cls.state == CA_ACTIVE ) 
@@ -1458,12 +1412,8 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 		Console_Key( key );
 	} else if ( cls.keyCatchers & KEYCATCH_UI ) {
 		_UI_KeyEvent( key,down );
-	} else if ( cls.keyCatchers & KEYCATCH_MESSAGE ) {
-		Message_Key( key );
 	} else if ( cls.state == CA_DISCONNECTED ) {
-
 		Console_Key( key );
-
 	} else {
 		CL_ActionEvent(key, true, time);
 	}
@@ -1491,10 +1441,6 @@ void CL_CharEvent( int key ) {
 	else if ( cls.keyCatchers & KEYCATCH_UI )
 	{
 		_UI_KeyEvent( key | K_CHAR_FLAG, qtrue );
-	}
-	else if ( cls.keyCatchers & KEYCATCH_MESSAGE ) 
-	{
-		Field_CharEvent( &chatField, key );
 	}
 	else if ( cls.state == CA_DISCONNECTED )
 	{
