@@ -2376,7 +2376,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	if( value[0] )
 		Q_strncpyz( client->pers.guid, value, sizeof( client->pers.guid ) );
 	else if( isBot )
-		Q_strncpyz( client->pers.guid, value, sizeof( client->pers.guid ) );
+		Q_strncpyz( client->pers.guid, "BOT", sizeof( client->pers.guid ) );
 	else
 		Q_strncpyz( client->pers.guid, "NOGUID", sizeof( client->pers.guid ) );
 
