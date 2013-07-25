@@ -2354,14 +2354,31 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 				tmpIP[NET_ADDRSTRMAXLEN] = {0};
 
 	ent = &g_entities[ clientNum ];
+	client = &level.clients[ clientNum ];
+
+	// ignore if client already connected
+	if ( client->pers.connected != CON_DISCONNECTED )
+		return NULL;
 
 	ent->s.number = clientNum;
 	ent->classname = "connecting";
 
+	ent->client = client;
+
+	//assign the pointer for bg entity access
+	ent->playerState = &ent->client->ps;
+
+	memset( client, 0, sizeof(*client) );
+
 	trap_GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
 
 	value = Info_ValueForKey( userinfo, "ja_guid" );
-	Q_strncpyz( client->pers.guid, value, sizeof( client->pers.guid ) );
+	if( value[0] )
+		Q_strncpyz( client->pers.guid, value, sizeof( client->pers.guid ) );
+	else if( isBot )
+		Q_strncpyz( client->pers.guid, value, sizeof( client->pers.guid ) );
+	else
+		Q_strncpyz( client->pers.guid, "NOGUID", sizeof( client->pers.guid ) );
 
 	// check to see if they are on the banned IP list
 	value = Info_ValueForKey (userinfo, "ip");
@@ -2419,17 +2436,6 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		// so lets just fix up anything that should happen on a disconnect
 		ClientDisconnect( clientNum );
 	}
-
-	// they can connect
-	ent->client = level.clients + clientNum;
-	client = ent->client;
-
-	//assign the pointer for bg entity access
-	ent->playerState = &ent->client->ps;
-
-//	areabits = client->areabits;
-
-	memset( client, 0, sizeof(*client) );
 
 	client->pers.connected = CON_CONNECTING;
 	client->pers.connectTime = level.time; //JAC: Added
