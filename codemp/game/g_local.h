@@ -470,6 +470,8 @@ typedef struct {
 	char		saber2[MAX_QPATH];
 
 	int			vote, teamvote; // 0 = none, 1 = yes, 2 = no
+
+	char		guid[33];
 } clientPersistant_t;
 
 typedef struct renderInfo_s

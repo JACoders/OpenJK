@@ -2360,6 +2360,9 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 
 	trap_GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
 
+	value = Info_ValueForKey( userinfo, "ja_guid" );
+	Q_strncpyz( client->pers.guid, value, sizeof( client->pers.guid ) );
+
 	// check to see if they are on the banned IP list
 	value = Info_ValueForKey (userinfo, "ip");
 	Q_strncpyz( tmpIP, isBot ? "Bot" : value, sizeof( tmpIP ) );
