@@ -426,7 +426,6 @@ void Con_DrawNotify (void)
 	short	*text;
 	int		i;
 	int		time;
-	int		skip;
 	int		currentColor;
 
 	currentColor = 7;
