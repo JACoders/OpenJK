@@ -2559,6 +2559,32 @@ qboolean Item_TextScroll_HandleKey ( itemDef_t *item, int key, qboolean down, qb
 			return qtrue;
 		}
 
+		//Raz: Added
+		if ( key == A_MWHEELUP ) 
+		{
+			scrollPtr->startPos--;
+			if (scrollPtr->startPos < 0)
+			{
+				scrollPtr->startPos = 0;
+				Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+				return qfalse;
+			}
+			Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+			return qtrue;
+		}
+		if ( key == A_MWHEELDOWN ) 
+		{
+			scrollPtr->startPos++;
+			if (scrollPtr->startPos > max)
+			{
+				scrollPtr->startPos = max;
+				Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+				return qfalse;
+			}
+			Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+			return qtrue;
+		}
+
 		// mouse hit
 		if (key == A_MOUSE1 || key == A_MOUSE2) 
 		{
