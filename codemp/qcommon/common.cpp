@@ -286,7 +286,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 
 	if ( code == ERR_SERVERDISCONNECT ) {
 		CL_Disconnect( qtrue );
-		CL_FlushMemory( );
+		CL_FlushMemory( qtrue );
 		com_errorEntered = qfalse;
 
 		throw ("DISCONNECTED\n");
@@ -294,7 +294,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		Com_Printf ("********************\nERROR: %s\n********************\n", com_errorMessage);
 		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage));
 		CL_Disconnect( qtrue );
-		CL_FlushMemory( );
+		CL_FlushMemory( qtrue );
 		com_errorEntered = qfalse;
 
 		throw ("DROPPED\n");
@@ -302,7 +302,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		SV_Shutdown( "Server didn't have CD\n" );
 		if ( com_cl_running && com_cl_running->integer ) {
 			CL_Disconnect( qtrue );
-			CL_FlushMemory( );
+			CL_FlushMemory( qtrue );
 			com_errorEntered = qfalse;
 		} else {
 			Com_Printf("Server didn't have CD\n" );
@@ -1599,6 +1599,7 @@ try
 
 }//try
 	catch (const char* reason) {
+		VM_FreeRemaining();
 		Com_Printf (reason);
 		return;			// an ERR_DROP was thrown
 	}
