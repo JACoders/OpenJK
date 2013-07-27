@@ -1023,12 +1023,14 @@ sfxHandle_t	S_RegisterSound( const char *name)
 	if ( sfx->bDefaultSound )
 		return 0;
 
+#ifdef _WIN32
 	if (s_UseOpenAL)
 	{
 		if ((sfx->pSoundData) || (sfx->Buffer))
 			return sfx - s_knownSfx;
 	}
 	else
+#endif
 	{
 		if ( sfx->pSoundData )
 		{
@@ -1472,11 +1474,13 @@ void S_StartAmbientSound( const vec3_t origin, int entityNum, unsigned char volu
 	}	
 	SND_TouchSFX(sfx);
 
+#ifdef _WIN32
 	if (s_UseOpenAL)
 	{
 		if (volume==0)
 			return;
 	}
+#endif
 
 	if ( s_show->integer == 1 ) {
 		Com_Printf( "%i : %s on (%d) Ambient\n", s_paintedtime, sfx->sSoundName, entityNum );
@@ -1742,11 +1746,13 @@ void S_ClearSoundBuffer( void ) {
 			memset(dma.buffer, clear, dma.samples * dma.samplebits/8);
 		SNDDMA_Submit ();
 	}
+#ifdef _WIN32
 	else
 	{
 		s_paintedtime = 0;
 		s_soundtime = 0;
 	}
+#endif
 }
 
 
@@ -1769,10 +1775,12 @@ void S_CIN_StopSound(sfxHandle_t sfxHandle)
 		}
 		if (ch->thesfx == sfx)
 		{
+#ifdef _WIN32
 			if (s_UseOpenAL)
 			{
 				alSourceStop(s_channels[i].alSource);
 			}
+#endif
 			SND_FreeSFXMem(ch->thesfx);	// heh, may as well...
 			ch->thesfx = NULL;
 			memset(&ch->MP3StreamHeader, 0, sizeof(MP3STREAM));
@@ -1937,11 +1945,13 @@ void S_AddAmbientLoopingSound( const vec3_t origin, unsigned char volume, sfxHan
 		return;
 	}
 
+#ifdef _WIN32
 	if (s_UseOpenAL)
 	{
 		if (volume == 0)
 			return;
 	}
+#endif
 
 	if ( sfxHandle < 0 || sfxHandle >= s_numSfx ) {
 		Com_Error( ERR_DROP, "S_StartSound: handle %i out of range", sfxHandle );
