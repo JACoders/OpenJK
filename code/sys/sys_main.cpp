@@ -174,6 +174,35 @@ void Sys_UnloadGame (void)
 }
 
 /*
+================
+Sys_DelayedUnloadGame
+================
+*/
+void Sys_DelayedUnloadGame()
+{
+	void *save = game_library;
+	game_library = NULL;
+
+	Sys_UnloadGame();
+
+	game_library = save;
+}
+
+/*
+===============
+Sys_UnloadGamePending
+===============
+*/
+void Sys_UnloadGamePending()
+{
+	if ( game_library != NULL )
+	{
+		Sys_UnloadLibrary (game_library);
+		game_library = NULL;
+	}
+}
+
+/*
  =================
  Sys_GetGameAPI
  
@@ -206,7 +235,7 @@ void *Sys_GetGameAPI (void *parms)
 	}
 	
 	if (game_library)
-		Com_Error (ERR_FATAL, "Sys_GetGameAPI without Sys_UnloadingGame");
+		Com_Error (ERR_FATAL, "Sys_GetGameAPI without calling Sys_UnloadGame");
 	
 	// check the current debug directory first for development purposes
 	homepath = Cvar_VariableString( "fs_homepath" );
