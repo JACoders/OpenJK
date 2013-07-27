@@ -5974,7 +5974,6 @@ static void UI_RunMenuScript(char **args)
 			trap_Cmd_ExecuteText( EXEC_APPEND, "cvar_restart\n");
 			trap_Cmd_ExecuteText( EXEC_APPEND, "exec mpdefault.cfg\n");
 			trap_Cmd_ExecuteText( EXEC_APPEND, "vid_restart\n" );
-			trap_Cvar_Set("com_introPlayed", "1" );
 		} else if (Q_stricmp(name, "loadArenas") == 0) {
 			UI_LoadArenas();
 			UI_MapCountByGameType(qfalse);
