@@ -9,7 +9,7 @@ set(MPCGameIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPCGameLibraries "odbc32" "odbccp32") # what are these even?
 endif(WIN32)
-set(MPCGameDefines ${MPSharedDefines} "CGAME" "MISSIONPACK" )
+set(MPCGameDefines ${MPSharedDefines} "_CGAME" )
 set(MPCGameGameFiles
 	"${MPDir}/game/AnimalNPC.c"
 	"${MPDir}/game/bg_g2_utils.c"

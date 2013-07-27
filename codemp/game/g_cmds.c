@@ -80,7 +80,7 @@ void DeathmatchScoreboardMessage( gentity_t *ent ) {
 	//still want to know the total # of clients
 	i = level.numConnectedClients;
 
-	trap_SendServerCommand( ent-g_entities, va("scores %i %i %i%s", i, 
+	gi.SendServerCommand( ent-g_entities, va("scores %i %i %i%s", i, 
 		level.teamScores[TEAM_RED], level.teamScores[TEAM_BLUE],
 		string ) );
 }
@@ -109,9 +109,9 @@ char	*ConcatArgs( int start ) {
 	char	arg[MAX_STRING_CHARS];
 
 	len = 0;
-	c = trap_Argc();
+	c = gi.Argc();
 	for ( i = start ; i < c ; i++ ) {
-		trap_Argv( i, arg, sizeof( arg ) );
+		gi.Argv( i, arg, sizeof( arg ) );
 		tlen = strlen( arg );
 		if ( len + tlen >= MAX_STRING_CHARS - 1 ) {
 			break;
@@ -185,7 +185,7 @@ int ClientNumberFromString( gentity_t *to, char *s ) {
 			return idnum;
 	}
 
-	trap_SendServerCommand( to-g_entities, va( "print \"User %s is not on the server\n\"", s ) );
+	gi.SendServerCommand( to-g_entities, va( "print \"User %s is not on the server\n\"", s ) );
 	return -1;
 }
 
@@ -322,8 +322,8 @@ void Cmd_Give_f( gentity_t *ent )
 {
 	char name[MAX_TOKEN_CHARS] = {0};
 
-	trap_Argv( 1, name, sizeof( name ) );
-	G_Give( ent, name, ConcatArgs( 2 ), trap_Argc() );
+	gi.Argv( 1, name, sizeof( name ) );
+	G_Give( ent, name, ConcatArgs( 2 ), gi.Argc() );
 }
 
 void Cmd_GiveOther_f( gentity_t *ent )
@@ -333,30 +333,30 @@ void Cmd_GiveOther_f( gentity_t *ent )
 	char		otherindex[MAX_TOKEN_CHARS];
 	gentity_t	*otherEnt = NULL;
 
-	trap_Argv( 1, otherindex, sizeof( otherindex ) );
+	gi.Argv( 1, otherindex, sizeof( otherindex ) );
 	if ( !otherindex[0] )
 	{
-		trap_SendServerCommand( ent-g_entities, "print \"giveother requires that the second argument be a client index number.\n\"" );
+		gi.SendServerCommand( ent-g_entities, "print \"giveother requires that the second argument be a client index number.\n\"" );
 		return;
 	}
 
 	i = atoi( otherindex );
 	if ( i < 0 || i >= MAX_CLIENTS )
 	{
-		trap_SendServerCommand( ent-g_entities, va( "print \"%i is not a client index.\n\"", i ) );
+		gi.SendServerCommand( ent-g_entities, va( "print \"%i is not a client index.\n\"", i ) );
 		return;
 	}
 
 	otherEnt = &g_entities[i];
 	if ( !otherEnt->inuse || !otherEnt->client )
 	{
-		trap_SendServerCommand( ent-g_entities, va( "print \"%i is not an active client.\n\"", i ) );
+		gi.SendServerCommand( ent-g_entities, va( "print \"%i is not an active client.\n\"", i ) );
 		return;
 	}
 
-	trap_Argv( 2, name, sizeof( name ) );
+	gi.Argv( 2, name, sizeof( name ) );
 
-	G_Give( otherEnt, name, ConcatArgs( 3 ), trap_Argc()-1 );
+	G_Give( otherEnt, name, ConcatArgs( 3 ), gi.Argc()-1 );
 }
 
 /*
@@ -377,7 +377,7 @@ void Cmd_God_f( gentity_t *ent ) {
 	else
 		msg = "godmode ON";
 
-	trap_SendServerCommand( ent-g_entities, va( "print \"%s\n\"", msg ) );
+	gi.SendServerCommand( ent-g_entities, va( "print \"%s\n\"", msg ) );
 }
 
 
@@ -399,7 +399,7 @@ void Cmd_Notarget_f( gentity_t *ent ) {
 	else
 		msg = "notarget ON";
 
-	trap_SendServerCommand( ent-g_entities, va( "print \"%s\n\"", msg ) );
+	gi.SendServerCommand( ent-g_entities, va( "print \"%s\n\"", msg ) );
 }
 
 
@@ -419,7 +419,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 	else
 		msg = "noclip ON";
 
-	trap_SendServerCommand( ent-g_entities, va( "print \"%s\n\"", msg ) );
+	gi.SendServerCommand( ent-g_entities, va( "print \"%s\n\"", msg ) );
 }
 
 
@@ -437,19 +437,19 @@ void Cmd_LevelShot_f( gentity_t *ent )
 {
 	if ( !ent->client->pers.localClient )
 	{
-		trap_SendServerCommand(ent-g_entities, "print \"The levelshot command must be executed by a local client\n\"");
+		gi.SendServerCommand(ent-g_entities, "print \"The levelshot command must be executed by a local client\n\"");
 		return;
 	}
 
 	// doesn't work in single player
 	if ( level.gametype == GT_SINGLE_PLAYER )
 	{
-		trap_SendServerCommand(ent-g_entities, "print \"Must not be in singleplayer mode for levelshot\n\"" );
+		gi.SendServerCommand(ent-g_entities, "print \"Must not be in singleplayer mode for levelshot\n\"" );
 		return;
 	}
 
 	BeginIntermission();
-	trap_SendServerCommand( ent-g_entities, "clientLevelShot" );
+	gi.SendServerCommand( ent-g_entities, "clientLevelShot" );
 }
 
 #if 0
@@ -466,15 +466,15 @@ void Cmd_TeamTask_f( gentity_t *ent ) {
 	int task;
 	int client = ent->client - level.clients;
 
-	if ( trap_Argc() != 2 ) {
+	if ( gi.Argc() != 2 ) {
 		return;
 	}
-	trap_Argv( 1, arg, sizeof( arg ) );
+	gi.Argv( 1, arg, sizeof( arg ) );
 	task = atoi( arg );
 
-	trap_GetUserinfo(client, userinfo, sizeof(userinfo));
+	gi.GetUserinfo(client, userinfo, sizeof(userinfo));
 	Info_SetValueForKey(userinfo, "teamtask", va("%d", task));
-	trap_SetUserinfo(client, userinfo);
+	gi.SetUserinfo(client, userinfo);
 	ClientUserinfoChanged(client);
 }
 #endif
@@ -491,7 +491,7 @@ void Cmd_Kill_f( gentity_t *ent ) {
 	{
 		if (!g_allowDuelSuicide.integer)
 		{
-			trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "ATTEMPTDUELKILL")) );
+			gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "ATTEMPTDUELKILL")) );
 			return;
 		}
 	}
@@ -523,12 +523,12 @@ static int G_ClientNumFromNetname(char *name)
 }
 
 void Cmd_KillOther_f( gentity_t *ent ) {
-	if ( trap_Argc() > 1 )
+	if ( gi.Argc() > 1 )
 	{
 		char sArg[MAX_STRING_CHARS] = {0};
 		int entNum = 0;
 
-		trap_Argv( 1, sArg, sizeof( sArg ) );
+		gi.Argv( 1, sArg, sizeof( sArg ) );
 
 		entNum = G_ClientNumFromNetname( sArg );
 
@@ -581,13 +581,13 @@ void BroadcastTeamChange( gclient_t *client, int oldTeam )
 	}
 
 	if ( client->sess.sessionTeam == TEAM_RED ) {
-		trap_SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
+		gi.SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
 			client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEREDTEAM")) );
 	} else if ( client->sess.sessionTeam == TEAM_BLUE ) {
-		trap_SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
+		gi.SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
 		client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBLUETEAM")));
 	} else if ( client->sess.sessionTeam == TEAM_SPECTATOR && oldTeam != TEAM_SPECTATOR ) {
-		trap_SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
+		gi.SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
 		client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHESPECTATORS")));
 	} else if ( client->sess.sessionTeam == TEAM_FREE ) {
 		if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
@@ -597,12 +597,12 @@ void BroadcastTeamChange( gclient_t *client, int oldTeam )
 
 			if (currentWinner && currentWinner->client)
 			{
-				trap_SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s %s\n\"",
+				gi.SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s %s\n\"",
 				currentWinner->client->pers.netname, G_GetStringEdString("MP_SVGAME", "VERSUS"), client->pers.netname));
 			}
 			else
 			{
-				trap_SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
+				gi.SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
 				client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBATTLE")));
 			}
 			*/
@@ -610,7 +610,7 @@ void BroadcastTeamChange( gclient_t *client, int oldTeam )
 		}
 		else
 		{
-			trap_SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
+			gi.SendServerCommand( -1, va("cp \"%s" S_COLOR_WHITE " %s\n\"",
 			client->pers.netname, G_GetStringEdString("MP_SVGAME", "JOINEDTHEBATTLE")));
 		}
 	}
@@ -731,14 +731,14 @@ void SetTeam( gentity_t *ent, char *s ) {
 				/*
 				if (g_forceBasedTeams.integer && ent->client->ps.fd.forceSide == FORCE_DARKSIDE)
 				{
-					trap_SendServerCommand( ent->client->ps.clientNum, 
+					gi.SendServerCommand( ent->client->ps.clientNum, 
 						va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TOOMANYRED_SWITCH")) );
 				}
 				else
 				*/
 				{
 					//JAC: Invalid clientNum was being used
-					trap_SendServerCommand( ent-g_entities, 
+					gi.SendServerCommand( ent-g_entities, 
 						va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TOOMANYRED")) );
 				}
 				return; // ignore the request
@@ -748,14 +748,14 @@ void SetTeam( gentity_t *ent, char *s ) {
 				/*
 				if (g_forceBasedTeams.integer && ent->client->ps.fd.forceSide == FORCE_LIGHTSIDE)
 				{
-					trap_SendServerCommand( ent->client->ps.clientNum, 
+					gi.SendServerCommand( ent->client->ps.clientNum, 
 						va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TOOMANYBLUE_SWITCH")) );
 				}
 				else
 				*/
 				{
 					//JAC: Invalid clientNum was being used
-					trap_SendServerCommand( ent-g_entities, 
+					gi.SendServerCommand( ent-g_entities, 
 						va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TOOMANYBLUE")) );
 				}
 				return; // ignore the request
@@ -770,12 +770,12 @@ void SetTeam( gentity_t *ent, char *s ) {
 		{
 			if (team == TEAM_BLUE && ent->client->ps.fd.forceSide != FORCE_LIGHTSIDE)
 			{
-				trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "MUSTBELIGHT")) );
+				gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "MUSTBELIGHT")) );
 				return;
 			}
 			if (team == TEAM_RED && ent->client->ps.fd.forceSide != FORCE_DARKSIDE)
 			{
-				trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "MUSTBEDARK")) );
+				gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "MUSTBEDARK")) );
 				return;
 			}
 		}
@@ -805,16 +805,16 @@ void SetTeam( gentity_t *ent, char *s ) {
 		if (team != TEAM_SPECTATOR)
 		{ //can't switch to anything in siege unless you want to switch to being a fulltime spectator
 			//fill them in on their objectives for this team now
-			trap_SendServerCommand(ent-g_entities, va("sb %i", client->sess.siegeDesiredTeam));
+			gi.SendServerCommand(ent-g_entities, va("sb %i", client->sess.siegeDesiredTeam));
 
-			trap_SendServerCommand( ent-g_entities, va("print \"You will be on the selected team the next time the round begins.\n\"") );
+			gi.SendServerCommand( ent-g_entities, va("print \"You will be on the selected team the next time the round begins.\n\"") );
 			return;
 		}
 		*/
 		if (client->sess.sessionTeam != TEAM_SPECTATOR &&
 			team != TEAM_SPECTATOR)
 		{ //not a spectator now, and not switching to spec, so you have to wait til you die.
-			//trap_SendServerCommand( ent-g_entities, va("print \"You will be on the selected team the next time you respawn.\n\"") );
+			//gi.SendServerCommand( ent-g_entities, va("print \"You will be on the selected team the next time you respawn.\n\"") );
 			qboolean doBegin;
 			if (ent->client->tempSpectate >= level.time)
 			{
@@ -876,7 +876,7 @@ void SetTeam( gentity_t *ent, char *s ) {
 	//If it's siege then show the mission briefing for the team you just joined.
 //	if (level.gametype == GT_SIEGE && team != TEAM_SPECTATOR)
 //	{
-//		trap_SendServerCommand(clientNum, va("sb %i", team));
+//		gi.SendServerCommand(clientNum, va("sb %i", team));
 //	}
 
 	// if the player was dead leave the body
@@ -995,26 +995,26 @@ void Cmd_Team_f( gentity_t *ent ) {
 
 	oldTeam = ent->client->sess.sessionTeam;
 
-	if ( trap_Argc() != 2 ) {		
+	if ( gi.Argc() != 2 ) {		
 		switch ( oldTeam ) {
 		case TEAM_BLUE:
-			trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PRINTBLUETEAM")) );
+			gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PRINTBLUETEAM")) );
 			break;
 		case TEAM_RED:
-			trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PRINTREDTEAM")) );
+			gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PRINTREDTEAM")) );
 			break;
 		case TEAM_FREE:
-			trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PRINTFREETEAM")) );
+			gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PRINTFREETEAM")) );
 			break;
 		case TEAM_SPECTATOR:
-			trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PRINTSPECTEAM")) );
+			gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PRINTSPECTEAM")) );
 			break;
 		}
 		return;
 	}
 
 	if ( ent->client->switchTeamTime > level.time ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOSWITCH")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOSWITCH")) );
 		return;
 	}
 
@@ -1027,7 +1027,7 @@ void Cmd_Team_f( gentity_t *ent ) {
 	if ( level.gametype == GT_DUEL
 		&& ent->client->sess.sessionTeam == TEAM_FREE ) {//in a tournament game
 		//disallow changing teams
-		trap_SendServerCommand( ent-g_entities, "print \"Cannot switch teams in Duel\n\"" );
+		gi.SendServerCommand( ent-g_entities, "print \"Cannot switch teams in Duel\n\"" );
 		return;
 		//FIXME: why should this be a loss???
 		//ent->client->sess.losses++;
@@ -1035,11 +1035,11 @@ void Cmd_Team_f( gentity_t *ent ) {
 
 	if (level.gametype == GT_POWERDUEL)
 	{ //don't let clients change teams manually at all in powerduel, it will be taken care of through automated stuff
-		trap_SendServerCommand( ent-g_entities, "print \"Cannot switch teams in Power Duel\n\"" );
+		gi.SendServerCommand( ent-g_entities, "print \"Cannot switch teams in Power Duel\n\"" );
 		return;
 	}
 
-	trap_Argv( 1, s, sizeof( s ) );
+	gi.Argv( 1, s, sizeof( s ) );
 
 	SetTeam( ent, s );
 
@@ -1066,24 +1066,24 @@ void Cmd_DuelTeam_f(gentity_t *ent)
 	/*
 	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 	{
-		trap_SendServerCommand( ent-g_entities, va("print \"You cannot change your duel team unless you are a spectator.\n\""));
+		gi.SendServerCommand( ent-g_entities, va("print \"You cannot change your duel team unless you are a spectator.\n\""));
 		return;
 	}
 	*/
 
-	if ( trap_Argc() != 2 )
+	if ( gi.Argc() != 2 )
 	{ //No arg so tell what team we're currently on.
 		oldTeam = ent->client->sess.duelTeam;
 		switch ( oldTeam )
 		{
 		case DUELTEAM_FREE:
-			trap_SendServerCommand( ent-g_entities, va("print \"None\n\"") );
+			gi.SendServerCommand( ent-g_entities, va("print \"None\n\"") );
 			break;
 		case DUELTEAM_LONE:
-			trap_SendServerCommand( ent-g_entities, va("print \"Single\n\"") );
+			gi.SendServerCommand( ent-g_entities, va("print \"Single\n\"") );
 			break;
 		case DUELTEAM_DOUBLE:
-			trap_SendServerCommand( ent-g_entities, va("print \"Double\n\"") );
+			gi.SendServerCommand( ent-g_entities, va("print \"Double\n\"") );
 			break;
 		default:
 			break;
@@ -1093,11 +1093,11 @@ void Cmd_DuelTeam_f(gentity_t *ent)
 
 	if ( ent->client->switchDuelTeamTime > level.time )
 	{ //debounce for changing
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOSWITCH")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOSWITCH")) );
 		return;
 	}
 
-	trap_Argv( 1, s, sizeof( s ) );
+	gi.Argv( 1, s, sizeof( s ) );
 
 	oldTeam = ent->client->sess.duelTeam;
 
@@ -1115,7 +1115,7 @@ void Cmd_DuelTeam_f(gentity_t *ent)
 	}
 	else
 	{
-		trap_SendServerCommand( ent-g_entities, va("print \"'%s' not a valid duel team.\n\"", s) );
+		gi.SendServerCommand( ent-g_entities, va("print \"'%s' not a valid duel team.\n\"", s) );
 	}
 
 	if (oldTeam == ent->client->sess.duelTeam)
@@ -1203,14 +1203,14 @@ void Cmd_SiegeClass_f( gentity_t *ent )
 		return;
 	}
 
-	if (trap_Argc() < 1)
+	if (gi.Argc() < 1)
 	{
 		return;
 	}
 
 	if ( ent->client->switchClassTime > level.time )
 	{
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOCLASSSWITCH")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOCLASSSWITCH")) );
 		return;
 	}
 
@@ -1219,7 +1219,7 @@ void Cmd_SiegeClass_f( gentity_t *ent )
 		startedAsSpec = qtrue;
 	}
 
-	trap_Argv( 1, className, sizeof( className ) );
+	gi.Argv( 1, className, sizeof( className ) );
 
 	team = G_TeamForSiegeClass(className);
 
@@ -1246,7 +1246,7 @@ void Cmd_SiegeClass_f( gentity_t *ent )
 			if (ent->client->sess.sessionTeam != TEAM_SPECTATOR ||
 				ent->client->sess.siegeDesiredTeam != team)
 			{
-				trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOCLASSTEAM")) );
+				gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOCLASSTEAM")) );
 				return;
 			}
 		}
@@ -1298,7 +1298,7 @@ void Cmd_ForceChanged_f( gentity_t *ent )
 //	Cmd_Kill_f(ent);
 	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
 	{ //if it's a spec, just make the changes now
-		//trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "FORCEAPPLIED")) );
+		//gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "FORCEAPPLIED")) );
 		//No longer print it, as the UI calls this a lot.
 		WP_InitForcePowers( ent );
 		goto argCheck;
@@ -1308,7 +1308,7 @@ void Cmd_ForceChanged_f( gentity_t *ent )
 
 	strcpy(fpChStr, buf);
 
-	trap_SendServerCommand( ent-g_entities, va("print \"%s%s\n\"", S_COLOR_GREEN, fpChStr) );
+	gi.SendServerCommand( ent-g_entities, va("print \"%s%s\n\"", S_COLOR_GREEN, fpChStr) );
 
 	ent->client->ps.fd.forceDoInit = 1;
 argCheck:
@@ -1317,11 +1317,11 @@ argCheck:
 		return;
 	}
 
-	if (trap_Argc() > 1)
+	if (gi.Argc() > 1)
 	{
 		char	arg[MAX_TOKEN_CHARS];
 
-		trap_Argv( 1, arg, sizeof( arg ) );
+		gi.Argv( 1, arg, sizeof( arg ) );
 
 		if ( arg[0] )
 		{ //if there's an arg, assume it's a combo team command from the UI.
@@ -1384,14 +1384,14 @@ void Cmd_Follow_f( gentity_t *ent ) {
 	int		i;
 	char	arg[MAX_TOKEN_CHARS];
 
-	if ( trap_Argc() != 2 ) {
+	if ( gi.Argc() != 2 ) {
 		if ( ent->client->sess.spectatorState == SPECTATOR_FOLLOW ) {
 			StopFollowing( ent );
 		}
 		return;
 	}
 
-	trap_Argv( 1, arg, sizeof( arg ) );
+	gi.Argv( 1, arg, sizeof( arg ) );
 	i = ClientNumberFromString( ent, arg );
 	if ( i == -1 ) {
 		return;
@@ -1449,7 +1449,7 @@ void Cmd_FollowCycle_f( gentity_t *ent, int dir ) {
 	}
 
 	if ( dir != 1 && dir != -1 ) {
-		G_Error( "Cmd_FollowCycle_f: bad dir %i", dir );
+		gi.Error( ERR_DROP, "Cmd_FollowCycle_f: bad dir %i", dir );
 	}
 
 	clientnum = ent->client->sess.spectatorClient;
@@ -1560,13 +1560,13 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 
 	if (locMsg)
 	{
-		trap_SendServerCommand( other-g_entities, va("%s \"%s\" \"%s\" \"%c\" \"%s\"", 
+		gi.SendServerCommand( other-g_entities, va("%s \"%s\" \"%s\" \"%c\" \"%s\"", 
 			mode == SAY_TEAM ? "ltchat" : "lchat",
 			name, locMsg, color, message));
 	}
 	else
 	{
-		trap_SendServerCommand( other-g_entities, va("%s \"%s%c%c%s\"", 
+		gi.SendServerCommand( other-g_entities, va("%s \"%s%c%c%s\"", 
 			mode == SAY_TEAM ? "tchat" : "chat",
 			name, Q_COLOR_ESCAPE, color, message));
 	}
@@ -1633,7 +1633,7 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 
 	// echo the text to the console
 	if ( dedicated.integer ) {
-		G_Printf( "%s%s\n", name, text);
+		gi.Print( "%s%s\n", name, text);
 	}
 
 	// send it to all the apropriate clients
@@ -1652,7 +1652,7 @@ Cmd_Say_f
 static void Cmd_Say_f( gentity_t *ent ) {
 	char *p = NULL;
 
-	if ( trap_Argc () < 2 )
+	if ( gi.Argc () < 2 )
 		return;
 
 	p = ConcatArgs( 1 );
@@ -1675,7 +1675,7 @@ Cmd_SayTeam_f
 static void Cmd_SayTeam_f( gentity_t *ent ) {
 	char *p = NULL;
 
-	if ( trap_Argc () < 2 )
+	if ( gi.Argc () < 2 )
 		return;
 
 	p = ConcatArgs( 1 );
@@ -1701,12 +1701,12 @@ static void Cmd_Tell_f( gentity_t *ent ) {
 	char		*p;
 	char		arg[MAX_TOKEN_CHARS];
 
-	if ( trap_Argc () < 3 ) {
-		trap_SendServerCommand( ent-g_entities, "print \"Usage: tell <player id> <message>\n\"" );
+	if ( gi.Argc () < 3 ) {
+		gi.SendServerCommand( ent-g_entities, "print \"Usage: tell <player id> <message>\n\"" );
 		return;
 	}
 
-	trap_Argv( 1, arg, sizeof( arg ) );
+	gi.Argv( 1, arg, sizeof( arg ) );
 	targetNum = ClientNumberFromString( ent, arg );
 	if ( targetNum == -1 ) {
 		return;
@@ -1748,7 +1748,7 @@ static void Cmd_VoiceCommand_f(gentity_t *ent)
 		return;
 	}
 
-	if (trap_Argc() < 2)
+	if (gi.Argc() < 2)
 	{
 		return;
 	}
@@ -1756,11 +1756,11 @@ static void Cmd_VoiceCommand_f(gentity_t *ent)
 	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR ||
 		ent->client->tempSpectate >= level.time)
 	{
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOICECHATASSPEC")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOICECHATASSPEC")) );
 		return;
 	}
 
-	trap_Argv(1, arg, sizeof(arg));
+	gi.Argv(1, arg, sizeof(arg));
 
 	if (arg[0] == '*')
 	{ //hmm.. don't expect a * to be prepended already. maybe someone is trying to be sneaky.
@@ -1813,20 +1813,25 @@ void Cmd_GameCommand_f( gentity_t *ent ) {
 	gentity_t		*target;
 	char			arg[MAX_TOKEN_CHARS] = {0};
 
-	if ( trap_Argc() != 3 ) {
-		trap_SendServerCommand( ent-g_entities, va( "print \"Usage: gc <player id> <order 0-%d>\n\"", numgc_orders - 1 ) );
+	if ( gi.Argc() != 3 ) {
+		gi.SendServerCommand( ent-g_entities, va( "print \"Usage: gc <player id> <order 0-%d>\n\"", numgc_orders - 1 ) );
 		return;
 	}
 
-	trap_Argv( 2, arg, sizeof( arg ) );
+	gi.Argv( 2, arg, sizeof( arg ) );
 	order = atoi( arg );
 
+<<<<<<< HEAD
 	if ( order >= numgc_orders ) {
 		trap_SendServerCommand( ent-g_entities, va("print \"Bad order: %i\n\"", order));
+=======
+	if ( order < 0 || order >= numgc_orders ) {
+		gi.SendServerCommand( ent-g_entities, va("print \"Bad order: %i\n\"", order));
+>>>>>>> Stripping the QVM layer for MP. Major commit, not complete
 		return;
 	}
 
-	trap_Argv( 1, arg, sizeof( arg ) );
+	gi.Argv( 1, arg, sizeof( arg ) );
 	targetNum = ClientNumberFromString( ent, arg );
 	if ( targetNum == -1 )
 		return;
@@ -1852,13 +1857,13 @@ void Cmd_Where_f( gentity_t *ent ) {
 	//JAC: This wasn't working for non-spectators since s.origin doesn't update for active players.
 	if(ent->client && ent->client->sess.sessionTeam != TEAM_SPECTATOR )
 	{//active players use currentOrigin
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", vtos( ent->r.currentOrigin ) ) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", vtos( ent->r.currentOrigin ) ) );
 	}
 	else
 	{
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", vtos( ent->s.origin ) ) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", vtos( ent->s.origin ) ) );
 	}
-	//trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", vtos( ent->s.origin ) ) );
+	//gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", vtos( ent->s.origin ) ) );
 }
 
 static const char *gameNames[] = {
@@ -1919,33 +1924,33 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	const char *arenaInfo = NULL;
 
 	if ( !g_allowVote.integer ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTE")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTE")) );
 		return;
 	}
 
 	if ( level.voteTime || level.voteExecuteTime >= level.time ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "VOTEINPROGRESS")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "VOTEINPROGRESS")) );
 		return;
 	}
 
 	if (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL)
 	{
 		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
-			trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOSPECVOTE")) );
+			gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOSPECVOTE")) );
 			return;
 		}
 	}
 
 	// make sure it is a valid command to vote on
-	trap_Argv( 1, arg1, sizeof( arg1 ) );
-	trap_Argv( 2, arg2, sizeof( arg2 ) );
+	gi.Argv( 1, arg1, sizeof( arg1 ) );
+	gi.Argv( 2, arg2, sizeof( arg2 ) );
 
 	//Raz: callvote exploit, filter \n and \r ==> in both args
 	if ( strchr( arg1, ';' ) || strchr( arg2, ';' ) ||
 		 strchr( arg1, '\r' ) || strchr( arg2, '\r' ) ||
 		 strchr( arg1, '\n' ) || strchr( arg2, '\n' ) )
 	{
-		trap_SendServerCommand( ent-g_entities, "print \"Invalid vote string.\n\"" );
+		gi.SendServerCommand( ent-g_entities, "print \"Invalid vote string.\n\"" );
 		return;
 	}
 
@@ -1960,8 +1965,8 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		 Q_stricmp( arg1, "fraglimit" ) &&
 		 Q_stricmp( arg1, "capturelimit" ) )
 	{
-		trap_SendServerCommand( ent-g_entities, "print \"Invalid vote string.\n\"" );
-		trap_SendServerCommand( ent-g_entities, "print \"Vote commands are: map_restart, nextmap, map <mapname>, g_gametype <n>, kick <player>, clientkick <clientnum>, g_doWarmup, timelimit <time>, fraglimit <frags>, capturelimit <captures>.\n\"" );
+		gi.SendServerCommand( ent-g_entities, "print \"Invalid vote string.\n\"" );
+		gi.SendServerCommand( ent-g_entities, "print \"Vote commands are: map_restart, nextmap, map <mapname>, g_gametype <n>, kick <player>, clientkick <clientnum>, g_doWarmup, timelimit <time>, fraglimit <frags>, capturelimit <captures>.\n\"" );
 		return;
 	}
 
@@ -1970,7 +1975,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	// if there is still a vote to be executed
 	if ( level.voteExecuteTime ) {
 		level.voteExecuteTime = 0;
-		trap_SendConsoleCommand( EXEC_APPEND, va("%s\n", level.voteString ) );
+		gi.SendConsoleCommand( EXEC_APPEND, va("%s\n", level.voteString ) );
 	}
 
 	// special case for g_gametype, check for bad values
@@ -1983,19 +1988,19 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			gt = BG_GetGametypeForString( arg2 );
 			if ( gt == -1 )
 			{
-				trap_SendServerCommand( ent-g_entities, va( "print \"Gametype (%s) unrecognised, defaulting to FFA/Deathmatch\n\"", arg2 ) );
+				gi.SendServerCommand( ent-g_entities, va( "print \"Gametype (%s) unrecognised, defaulting to FFA/Deathmatch\n\"", arg2 ) );
 				gt = GT_FFA;
 			}
 		}
 		else if ( gt < 0 || gt >= GT_MAX_GAME_TYPE )
 		{// numeric but out of range
-			trap_SendServerCommand( ent-g_entities, va( "print \"Gametype (%i) is out of range, defaulting to FFA/Deathmatch\n\"", gt ) );
+			gi.SendServerCommand( ent-g_entities, va( "print \"Gametype (%i) is out of range, defaulting to FFA/Deathmatch\n\"", gt ) );
 			gt = GT_FFA;
 		}
 
 		if ( gt == GT_SINGLE_PLAYER )
 		{// logically invalid gametypes, or gametypes not fully implemented in MP
-			trap_SendServerCommand( ent-g_entities, "print \"This gametype is not supported (%s).\n\"" );
+			gi.SendServerCommand( ent-g_entities, "print \"This gametype is not supported (%s).\n\"" );
 			return;
 		}
 
@@ -2014,12 +2019,12 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 		if (!G_DoesMapSupportGametype(arg2, level.gametype))
 		{
-			//trap_SendServerCommand( ent-g_entities, "print \"You can't vote for this map, it isn't supported by the current gametype.\n\"" );
-			trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTE_MAPNOTSUPPORTEDBYGAME")) );
+			//gi.SendServerCommand( ent-g_entities, "print \"You can't vote for this map, it isn't supported by the current gametype.\n\"" );
+			gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTE_MAPNOTSUPPORTEDBYGAME")) );
 			return;
 		}
 
-		trap_Cvar_VariableStringBuffer( "nextmap", s, sizeof(s) );
+		gi.Cvar_VariableStringBuffer( "nextmap", s, sizeof(s) );
 		if (*s) {
 			Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %s; set nextmap \"%s\"", arg1, arg2, s );
 		} else {
@@ -2045,13 +2050,13 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 		if ( n < 0 || n >= MAX_CLIENTS )
 		{
-			trap_SendServerCommand( ent-g_entities, va("print \"invalid client number %d.\n\"", n ) );
+			gi.SendServerCommand( ent-g_entities, va("print \"invalid client number %d.\n\"", n ) );
 			return;
 		}
 
 		if ( g_entities[n].client->pers.connected != CON_CONNECTED )
 		{
-			trap_SendServerCommand( ent-g_entities, va("print \"there is no client with the client number %d.\n\"", n ) );
+			gi.SendServerCommand( ent-g_entities, va("print \"there is no client with the client number %d.\n\"", n ) );
 			return;
 		}
 			
@@ -2064,7 +2069,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 		if ( clientid == -1 )
 		{
-			trap_SendServerCommand( ent-g_entities, va("print \"there is no client named '%s' currently on the server.\n\"", arg2 ) );
+			gi.SendServerCommand( ent-g_entities, va("print \"there is no client named '%s' currently on the server.\n\"", arg2 ) );
 			return;
 		}
 
@@ -2075,9 +2080,9 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	{
 		char	s[MAX_STRING_CHARS];
 
-		trap_Cvar_VariableStringBuffer( "nextmap", s, sizeof(s) );
+		gi.Cvar_VariableStringBuffer( "nextmap", s, sizeof(s) );
 		if (!*s) {
-			trap_SendServerCommand( ent-g_entities, "print \"nextmap not set.\n\"" );
+			gi.SendServerCommand( ent-g_entities, "print \"nextmap not set.\n\"" );
 			return;
 		}
 		SiegeClearSwitchData();
@@ -2089,9 +2094,9 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	else if ( !Q_stricmp( arg1, "timelimit" ) )
 	{
 		float tl = Com_Clamp( 0.0f, 35790.0f, atof( arg2 ) );
-		if ( trap_Argc() < 3 )
+		if ( gi.Argc() < 3 )
 		{
-			trap_SendServerCommand( ent-g_entities, "print \"Usage: /callvote timelimit <time>.\n\"" );
+			gi.SendServerCommand( ent-g_entities, "print \"Usage: /callvote timelimit <time>.\n\"" );
 			return;
 		}
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %.3f", arg1, tl );
@@ -2099,9 +2104,9 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	else if ( !Q_stricmp( arg1, "fraglimit" ) )
 	{
 		int n = Com_Clampi( 0, 0x7FFFFFFF, atoi( arg2 ) );
-		if ( trap_Argc() < 3 )
+		if ( gi.Argc() < 3 )
 		{
-			trap_SendServerCommand( ent-g_entities, "print \"Usage: /callvote fraglimit <frags>.\n\"" );
+			gi.SendServerCommand( ent-g_entities, "print \"Usage: /callvote fraglimit <frags>.\n\"" );
 			return;
 		}
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, n );
@@ -2109,9 +2114,9 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	else if ( !Q_stricmp( arg1, "capturelimit" ) )
 	{
 		int n = Com_Clampi( 0, 0x7FFFFFFF, atoi( arg2 ) );
-		if ( trap_Argc() < 3 )
+		if ( gi.Argc() < 3 )
 		{
-			trap_SendServerCommand( ent-g_entities, "print \"Usage: /callvote capturelimit <captures>.\n\"" );
+			gi.SendServerCommand( ent-g_entities, "print \"Usage: /callvote capturelimit <captures>.\n\"" );
 			return;
 		}
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, n );
@@ -2119,7 +2124,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	else if ( !Q_stricmp( arg1, "map_restart" ) )
 	{
 		int n = Com_Clampi( 0, 60, atoi( arg2 ) );
-		if ( trap_Argc() < 3 )
+		if ( gi.Argc() < 3 )
 			n = 5;
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, n );
 	}
@@ -2132,7 +2137,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
 	Q_strstrip( level.voteStringClean, "\"\n\r", NULL );
 
-	trap_SendServerCommand( -1, va("print \"%s^7 %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLCALLEDVOTE") ) );
+	gi.SendServerCommand( -1, va("print \"%s^7 %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLCALLEDVOTE") ) );
 
 	// start the voting, the caller autoamtically votes yes
 	level.voteTime = level.time;
@@ -2146,10 +2151,10 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	ent->client->mGameFlags |= PSG_VOTED;
 	ent->client->pers.vote = 1;
 
-	trap_SetConfigstring( CS_VOTE_TIME, va("%i", level.voteTime ) );
-	trap_SetConfigstring( CS_VOTE_STRING, level.voteDisplayString );	
-	trap_SetConfigstring( CS_VOTE_YES, va("%i", level.voteYes ) );
-	trap_SetConfigstring( CS_VOTE_NO, va("%i", level.voteNo ) );	
+	gi.SetConfigstring( CS_VOTE_TIME, va("%i", level.voteTime ) );
+	gi.SetConfigstring( CS_VOTE_STRING, level.voteDisplayString );	
+	gi.SetConfigstring( CS_VOTE_YES, va("%i", level.voteYes ) );
+	gi.SetConfigstring( CS_VOTE_NO, va("%i", level.voteNo ) );	
 }
 
 /*
@@ -2161,35 +2166,35 @@ void Cmd_Vote_f( gentity_t *ent ) {
 	char		msg[64];
 
 	if ( !level.voteTime ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEINPROG")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEINPROG")) );
 		return;
 	}
 	if ( ent->client->mGameFlags & PSG_VOTED ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "VOTEALREADY")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "VOTEALREADY")) );
 		return;
 	}
 	if (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL)
 	{
 		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
-			trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEASSPEC")) );
+			gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEASSPEC")) );
 			return;
 		}
 	}
 
-	trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
+	gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
 
 	ent->client->mGameFlags |= PSG_VOTED;
 
-	trap_Argv( 1, msg, sizeof( msg ) );
+	gi.Argv( 1, msg, sizeof( msg ) );
 
 	if ( tolower( msg[0] ) == 'y' || msg[0] == '1' ) {
 		level.voteYes++;
 		ent->client->pers.vote = 1;
-		trap_SetConfigstring( CS_VOTE_YES, va("%i", level.voteYes ) );
+		gi.SetConfigstring( CS_VOTE_YES, va("%i", level.voteYes ) );
 	} else {
 		level.voteNo++;
 		ent->client->pers.vote = 2;
-		trap_SetConfigstring( CS_VOTE_NO, va("%i", level.voteNo ) );	
+		gi.SetConfigstring( CS_VOTE_NO, va("%i", level.voteNo ) );	
 	}
 
 	// a majority will be determined in CheckVote, which will also account
@@ -2215,33 +2220,33 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 		return;
 
 	if ( !g_allowVote.integer ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTE")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTE")) );
 		return;
 	}
 
 	if ( level.teamVoteTime[cs_offset] ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEALREADY")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEALREADY")) );
 		return;
 	}
 	if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOSPECVOTE")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOSPECVOTE")) );
 		return;
 	}
 
 	// make sure it is a valid command to vote on
-	trap_Argv( 1, arg1, sizeof( arg1 ) );
+	gi.Argv( 1, arg1, sizeof( arg1 ) );
 	arg2[0] = '\0';
-	for ( i = 2; i < trap_Argc(); i++ ) {
+	for ( i = 2; i < gi.Argc(); i++ ) {
 		if (i > 2)
 			strcat(arg2, " ");
-		trap_Argv( i, &arg2[strlen(arg2)], sizeof( arg2 ) - strlen(arg2) );
+		gi.Argv( i, &arg2[strlen(arg2)], sizeof( arg2 ) - strlen(arg2) );
 	}
 
 	if ( strchr( arg1, ';' ) || strchr( arg2, ';' ) ||
 		 strchr( arg1, '\r' ) || strchr( arg2, '\r' ) ||
 		 strchr( arg1, '\n' ) || strchr( arg2, '\n' ) )
 	{
-		trap_SendServerCommand( ent-g_entities, "print \"Invalid vote string.\n\"" );
+		gi.SendServerCommand( ent-g_entities, "print \"Invalid vote string.\n\"" );
 		return;
 	}
 
@@ -2260,12 +2265,12 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 			if ( i >= 3 || !arg2[i]) {
 				i = atoi( arg2 );
 				if ( i < 0 || i >= level.maxclients ) {
-					trap_SendServerCommand( ent-g_entities, va("print \"Bad client slot: %i\n\"", i) );
+					gi.SendServerCommand( ent-g_entities, va("print \"Bad client slot: %i\n\"", i) );
 					return;
 				}
 
 				if ( !g_entities[i].inuse ) {
-					trap_SendServerCommand( ent-g_entities, va("print \"Client %i is not active\n\"", i) );
+					gi.SendServerCommand( ent-g_entities, va("print \"Client %i is not active\n\"", i) );
 					return;
 				}
 			}
@@ -2286,15 +2291,15 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 					}
 				}
 				if ( i >= level.maxclients ) {
-					trap_SendServerCommand( ent-g_entities, va("print \"%s is not a valid player on your team.\n\"", arg2) );
+					gi.SendServerCommand( ent-g_entities, va("print \"%s is not a valid player on your team.\n\"", arg2) );
 					return;
 				}
 			}
 		}
 		Com_sprintf(arg2, sizeof(arg2), "%d", i);
 	} else {
-		trap_SendServerCommand( ent-g_entities, "print \"Invalid vote string.\n\"" );
-		trap_SendServerCommand( ent-g_entities, "print \"Team vote commands are: leader <player>.\n\"" );
+		gi.SendServerCommand( ent-g_entities, "print \"Invalid vote string.\n\"" );
+		gi.SendServerCommand( ent-g_entities, "print \"Team vote commands are: leader <player>.\n\"" );
 		return;
 	}
 
@@ -2304,7 +2309,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 		if ( level.clients[i].pers.connected == CON_DISCONNECTED )
 			continue;
 		if (level.clients[i].sess.sessionTeam == team)
-			trap_SendServerCommand( i, va("print \"%s called a team vote.\n\"", ent->client->pers.netname ) );
+			gi.SendServerCommand( i, va("print \"%s called a team vote.\n\"", ent->client->pers.netname ) );
 	}
 
 	// start the voting, the caller autoamtically votes yes
@@ -2321,10 +2326,10 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 	ent->client->mGameFlags |= PSG_TEAMVOTED;
 	ent->client->pers.teamvote = 1;
 
-	trap_SetConfigstring( CS_TEAMVOTE_TIME + cs_offset, va("%i", level.teamVoteTime[cs_offset] ) );
-	trap_SetConfigstring( CS_TEAMVOTE_STRING + cs_offset, level.teamVoteString[cs_offset] );
-	trap_SetConfigstring( CS_TEAMVOTE_YES + cs_offset, va("%i", level.teamVoteYes[cs_offset] ) );
-	trap_SetConfigstring( CS_TEAMVOTE_NO + cs_offset, va("%i", level.teamVoteNo[cs_offset] ) );
+	gi.SetConfigstring( CS_TEAMVOTE_TIME + cs_offset, va("%i", level.teamVoteTime[cs_offset] ) );
+	gi.SetConfigstring( CS_TEAMVOTE_STRING + cs_offset, level.teamVoteString[cs_offset] );
+	gi.SetConfigstring( CS_TEAMVOTE_YES + cs_offset, va("%i", level.teamVoteYes[cs_offset] ) );
+	gi.SetConfigstring( CS_TEAMVOTE_NO + cs_offset, va("%i", level.teamVoteNo[cs_offset] ) );
 }
 
 /*
@@ -2345,32 +2350,32 @@ void Cmd_TeamVote_f( gentity_t *ent ) {
 		return;
 
 	if ( !level.teamVoteTime[cs_offset] ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOTEAMVOTEINPROG")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOTEAMVOTEINPROG")) );
 		return;
 	}
 	if ( ent->client->mGameFlags & PSG_TEAMVOTED ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEALREADYCAST")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEALREADYCAST")) );
 		return;
 	}
 	if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEASSPEC")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEASSPEC")) );
 		return;
 	}
 
-	trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PLTEAMVOTECAST")) );
+	gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "PLTEAMVOTECAST")) );
 
 	ent->client->mGameFlags |= PSG_TEAMVOTED;
 
-	trap_Argv( 1, msg, sizeof( msg ) );
+	gi.Argv( 1, msg, sizeof( msg ) );
 
 	if ( tolower( msg[0] ) == 'y' || msg[0] == '1' ) {
 		level.teamVoteYes[cs_offset]++;
 		ent->client->pers.teamvote = 1;
-		trap_SetConfigstring( CS_TEAMVOTE_YES + cs_offset, va("%i", level.teamVoteYes[cs_offset] ) );
+		gi.SetConfigstring( CS_TEAMVOTE_YES + cs_offset, va("%i", level.teamVoteYes[cs_offset] ) );
 	} else {
 		level.teamVoteNo[cs_offset]++;
 		ent->client->pers.teamvote = 2;
-		trap_SetConfigstring( CS_TEAMVOTE_NO + cs_offset, va("%i", level.teamVoteNo[cs_offset] ) );	
+		gi.SetConfigstring( CS_TEAMVOTE_NO + cs_offset, va("%i", level.teamVoteNo[cs_offset] ) );	
 	}
 
 	// a majority will be determined in TeamCheckVote, which will also account
@@ -2388,18 +2393,18 @@ void Cmd_SetViewpos_f( gentity_t *ent ) {
 	char		buffer[MAX_TOKEN_CHARS];
 	int			i;
 
-	if ( trap_Argc() != 5 ) {
-		trap_SendServerCommand( ent-g_entities, va("print \"usage: setviewpos x y z yaw\n\""));
+	if ( gi.Argc() != 5 ) {
+		gi.SendServerCommand( ent-g_entities, va("print \"usage: setviewpos x y z yaw\n\""));
 		return;
 	}
 
 	VectorClear( angles );
 	for ( i = 0 ; i < 3 ; i++ ) {
-		trap_Argv( i + 1, buffer, sizeof( buffer ) );
+		gi.Argv( i + 1, buffer, sizeof( buffer ) );
 		origin[i] = atof( buffer );
 	}
 
-	trap_Argv( 4, buffer, sizeof( buffer ) );
+	gi.Argv( 4, buffer, sizeof( buffer ) );
 	angles[YAW] = atof( buffer );
 
 	TeleportPlayer( ent, origin, angles );
@@ -2507,7 +2512,7 @@ int G_ItemUsable(playerState_t *ps, int forcedUse)
 		trtest[1] = fwdorg[1] + fwd[1]*16;
 		trtest[2] = fwdorg[2] + fwd[2]*16;
 
-		trap_Trace(&tr, ps->origin, mins, maxs, trtest, ps->clientNum, MASK_PLAYERSOLID);
+		gi.Trace(&tr, ps->origin, mins, maxs, trtest, ps->clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 		if ((tr.fraction != 1 && tr.entityNum != ps->clientNum) || tr.startsolid || tr.allsolid)
 		{
@@ -2528,12 +2533,12 @@ int G_ItemUsable(playerState_t *ps, int forcedUse)
 		AngleVectors (ps->viewangles, fwd, NULL, NULL);
 		fwd[2] = 0;
 		VectorMA(ps->origin, 64, fwd, dest);
-		trap_Trace(&tr, ps->origin, mins, maxs, dest, ps->clientNum, MASK_SHOT );
+		gi.Trace(&tr, ps->origin, mins, maxs, dest, ps->clientNum, MASK_SHOT, qfalse, 0, 0 );
 		if (tr.fraction > 0.9 && !tr.startsolid && !tr.allsolid)
 		{
 			VectorCopy(tr.endpos, pos);
 			VectorSet( dest, pos[0], pos[1], pos[2] - 4096 );
-			trap_Trace( &tr, pos, mins, maxs, dest, ps->clientNum, MASK_SOLID );
+			gi.Trace( &tr, pos, mins, maxs, dest, ps->clientNum, MASK_SOLID, qfalse, 0, 0 );
 			if ( !tr.startsolid && !tr.allsolid )
 			{
 				return 1;
@@ -2691,7 +2696,7 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent)
 
 			if (d_saberStanceDebug.integer)
 			{
-				trap_SendServerCommand( ent-g_entities, va("print \"SABERSTANCEDEBUG: Attempted to toggle dual saber blade.\n\"") );
+				gi.SendServerCommand( ent-g_entities, va("print \"SABERSTANCEDEBUG: Attempted to toggle dual saber blade.\n\"") );
 			}
 			return;
 		}
@@ -2705,7 +2710,7 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent)
 			{//can't turn second blade back on if it's in the air, you naughty boy!
 				if (d_saberStanceDebug.integer)
 				{
-					trap_SendServerCommand( ent-g_entities, va("print \"SABERSTANCEDEBUG: Attempted to toggle staff blade in air.\n\"") );
+					gi.SendServerCommand( ent-g_entities, va("print \"SABERSTANCEDEBUG: Attempted to toggle staff blade in air.\n\"") );
 				}
 				return;
 			}
@@ -2756,7 +2761,7 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent)
 		}
 		if (d_saberStanceDebug.integer)
 		{
-			trap_SendServerCommand( ent-g_entities, va("print \"SABERSTANCEDEBUG: Attempted to toggle staff blade.\n\"") );
+			gi.SendServerCommand( ent-g_entities, va("print \"SABERSTANCEDEBUG: Attempted to toggle staff blade.\n\"") );
 		}
 		return;
 	}
@@ -2795,7 +2800,7 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent)
 
 		if (d_saberStanceDebug.integer)
 		{
-			trap_SendServerCommand( ent-g_entities, va("print \"SABERSTANCEDEBUG: Attempted to cycle given class stance.\n\"") );
+			gi.SendServerCommand( ent-g_entities, va("print \"SABERSTANCEDEBUG: Attempted to cycle given class stance.\n\"") );
 		}
 	}
 	else
@@ -2807,7 +2812,7 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent)
 		}
 		if (d_saberStanceDebug.integer)
 		{
-			trap_SendServerCommand( ent-g_entities, va("print \"SABERSTANCEDEBUG: Attempted to cycle stance normally.\n\"") );
+			gi.SendServerCommand( ent-g_entities, va("print \"SABERSTANCEDEBUG: Attempted to cycle stance normally.\n\"") );
 		}
 	}
 /*
@@ -2815,13 +2820,13 @@ void Cmd_SaberAttackCycle_f(gentity_t *ent)
 	switch ( selectLevel )
 	{
 	case FORCE_LEVEL_1:
-		trap_SendServerCommand( ent-g_entities, va("print \"Lightsaber Combat Style: %sfast\n\"", S_COLOR_BLUE) );
+		gi.SendServerCommand( ent-g_entities, va("print \"Lightsaber Combat Style: %sfast\n\"", S_COLOR_BLUE) );
 		break;
 	case FORCE_LEVEL_2:
-		trap_SendServerCommand( ent-g_entities, va("print \"Lightsaber Combat Style: %smedium\n\"", S_COLOR_YELLOW) );
+		gi.SendServerCommand( ent-g_entities, va("print \"Lightsaber Combat Style: %smedium\n\"", S_COLOR_YELLOW) );
 		break;
 	case FORCE_LEVEL_3:
-		trap_SendServerCommand( ent-g_entities, va("print \"Lightsaber Combat Style: %sstrong\n\"", S_COLOR_RED) );
+		gi.SendServerCommand( ent-g_entities, va("print \"Lightsaber Combat Style: %sstrong\n\"", S_COLOR_RED) );
 		break;
 	}
 #endif
@@ -2873,14 +2878,14 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 
 	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 	{ //rather pointless in this mode..
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")) );
 		return;
 	}
 
 	//if (level.gametype >= GT_TEAM && level.gametype != GT_SIEGE)
 	if (level.gametype >= GT_TEAM)
 	{ //no private dueling in team modes
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NODUEL_GAMETYPE")) );
 		return;
 	}
 
@@ -2915,13 +2920,13 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 	//New: Don't let a player duel if he just did and hasn't waited 10 seconds yet (note: If someone challenges him, his duel timer will reset so he can accept)
 	/*if (ent->client->ps.fd.privateDuelTime > level.time)
 	{
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_JUSTDID")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_JUSTDID")) );
 		return;
 	}
 
 	if (G_OtherPlayersDueling())
 	{
-		trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_BUSY")) );
+		gi.SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "CANTDUEL_BUSY")) );
 		return;
 	}*/
 
@@ -2931,7 +2936,7 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 	fwdOrg[1] = ent->client->ps.origin[1] + forward[1]*256;
 	fwdOrg[2] = (ent->client->ps.origin[2]+ent->client->ps.viewheight) + forward[2]*256;
 
-	trap_Trace(&tr, ent->client->ps.origin, NULL, NULL, fwdOrg, ent->s.number, MASK_PLAYERSOLID);
+	gi.Trace(&tr, ent->client->ps.origin, NULL, NULL, fwdOrg, ent->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	if (tr.fraction != 1 && tr.entityNum < MAX_CLIENTS)
 	{
@@ -2952,7 +2957,7 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 
 		if (challenged->client->ps.duelIndex == ent->s.number && challenged->client->ps.duelTime >= level.time)
 		{
-			trap_SendServerCommand( /*challenged-g_entities*/-1, va("print \"%s %s %s!\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
+			gi.SendServerCommand( /*challenged-g_entities*/-1, va("print \"%s %s %s!\n\"", challenged->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELACCEPT"), ent->client->pers.netname) );
 
 			ent->client->ps.duelInProgress = qtrue;
 			challenged->client->ps.duelInProgress = qtrue;
@@ -2997,8 +3002,8 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 		else
 		{
 			//Print the message that a player has been challenged in private, only announce the actual duel initiation in private
-			trap_SendServerCommand( challenged-g_entities, va("cp \"%s %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")) );
-			trap_SendServerCommand( ent-g_entities, va("cp \"%s %s\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname) );
+			gi.SendServerCommand( challenged-g_entities, va("cp \"%s %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGE")) );
+			gi.SendServerCommand( ent-g_entities, va("cp \"%s %s\n\"", G_GetStringEdString("MP_SVGAME", "PLDUELCHALLENGED"), challenged->client->pers.netname) );
 		}
 
 		challenged->client->ps.fd.privateDuelTime = 0; //reset the timer in case this player just got out of a duel. He should still be able to accept the challenge.
@@ -3016,7 +3021,7 @@ extern stringID_table_t animTable[MAX_ANIMATIONS+1];
 
 void Cmd_DebugSetSaberMove_f(gentity_t *self)
 {
-	int argNum = trap_Argc();
+	int argNum = gi.Argc();
 	char arg[MAX_STRING_CHARS];
 
 	if (argNum < 2)
@@ -3024,7 +3029,7 @@ void Cmd_DebugSetSaberMove_f(gentity_t *self)
 		return;
 	}
 
-	trap_Argv( 1, arg, sizeof( arg ) );
+	gi.Argv( 1, arg, sizeof( arg ) );
 
 	if (!arg[0])
 	{
@@ -3044,7 +3049,7 @@ void Cmd_DebugSetSaberMove_f(gentity_t *self)
 
 void Cmd_DebugSetBodyAnim_f(gentity_t *self)
 {
-	int argNum = trap_Argc();
+	int argNum = gi.Argc();
 	char arg[MAX_STRING_CHARS];
 	int i = 0;
 
@@ -3053,7 +3058,7 @@ void Cmd_DebugSetBodyAnim_f(gentity_t *self)
 		return;
 	}
 
-	trap_Argv( 1, arg, sizeof( arg ) );
+	gi.Argv( 1, arg, sizeof( arg ) );
 
 	if (!arg[0])
 	{
@@ -3142,12 +3147,12 @@ qboolean TryGrapple(gentity_t *ent)
 
 void Cmd_TargetUse_f( gentity_t *ent )
 {
-	if ( trap_Argc() > 1 )
+	if ( gi.Argc() > 1 )
 	{
 		char sArg[MAX_STRING_CHARS] = {0};
 		gentity_t *targ;
 
-		trap_Argv( 1, sArg, sizeof( sArg ) );
+		gi.Argv( 1, sArg, sizeof( sArg ) );
 		targ = G_Find( NULL, FOFS( targetname ), sArg );
 
 		while ( targ )
@@ -3171,8 +3176,8 @@ void Cmd_BotMoveForward_f( gentity_t *ent ) {
 	int bCl = 0;
 	char sarg[MAX_STRING_CHARS];
 
-	assert( trap_Argc() > 1 );
-	trap_Argv( 1, sarg, sizeof( sarg ) );
+	assert( gi.Argc() > 1 );
+	gi.Argv( 1, sarg, sizeof( sarg ) );
 
 	assert( sarg[0] );
 	bCl = atoi( sarg );
@@ -3184,8 +3189,8 @@ void Cmd_BotMoveBack_f( gentity_t *ent ) {
 	int bCl = 0;
 	char sarg[MAX_STRING_CHARS];
 
-	assert( trap_Argc() > 1 );
-	trap_Argv( 1, sarg, sizeof( sarg ) );
+	assert( gi.Argc() > 1 );
+	gi.Argv( 1, sarg, sizeof( sarg ) );
 
 	assert( sarg[0] );
 	bCl = atoi( sarg );
@@ -3197,8 +3202,8 @@ void Cmd_BotMoveRight_f( gentity_t *ent ) {
 	int bCl = 0;
 	char sarg[MAX_STRING_CHARS];
 
-	assert( trap_Argc() > 1 );
-	trap_Argv( 1, sarg, sizeof( sarg ) );
+	assert( gi.Argc() > 1 );
+	gi.Argv( 1, sarg, sizeof( sarg ) );
 
 	assert( sarg[0] );
 	bCl = atoi( sarg );
@@ -3210,8 +3215,8 @@ void Cmd_BotMoveLeft_f( gentity_t *ent ) {
 	int bCl = 0;
 	char sarg[MAX_STRING_CHARS];
 
-	assert( trap_Argc() > 1 );
-	trap_Argv( 1, sarg, sizeof( sarg ) );
+	assert( gi.Argc() > 1 );
+	gi.Argv( 1, sarg, sizeof( sarg ) );
 
 	assert( sarg[0] );
 	bCl = atoi( sarg );
@@ -3223,8 +3228,8 @@ void Cmd_BotMoveUp_f( gentity_t *ent ) {
 	int bCl = 0;
 	char sarg[MAX_STRING_CHARS];
 
-	assert( trap_Argc() > 1 );
-	trap_Argv( 1, sarg, sizeof( sarg ) );
+	assert( gi.Argc() > 1 );
+	gi.Argv( 1, sarg, sizeof( sarg ) );
 
 	assert( sarg[0] );
 	bCl = atoi( sarg );
@@ -3233,7 +3238,7 @@ void Cmd_BotMoveUp_f( gentity_t *ent ) {
 
 void Cmd_AddBot_f( gentity_t *ent ) {
 	//because addbot isn't a recognized command unless you're the server, but it is in the menus regardless
-	trap_SendServerCommand( ent-g_entities, va( "print \"%s.\n\"", G_GetStringEdString( "MP_SVGAME", "ONLY_ADD_BOTS_AS_SERVER" ) ) );
+	gi.SendServerCommand( ent-g_entities, va( "print \"%s.\n\"", G_GetStringEdString( "MP_SVGAME", "ONLY_ADD_BOTS_AS_SERVER" ) ) );
 }
 
 /*
@@ -3309,7 +3314,7 @@ void ClientCommand( int clientNum ) {
 		return;		// not fully in game yet
 	}
 
-	trap_Argv( 0, cmd, sizeof( cmd ) );
+	gi.Argv( 0, cmd, sizeof( cmd ) );
 
 	//rww - redirect bot commands
 	if ( strstr( cmd, "bot_" ) && AcceptBotCommand( cmd, ent ) )
@@ -3319,21 +3324,21 @@ void ClientCommand( int clientNum ) {
 	command = (command_t *)bsearch( cmd, commands, numCommands, sizeof( commands[0] ), cmdcmp );
 	if ( !command )
 	{
-		trap_SendServerCommand( clientNum, va( "print \"Unknown command %s\n\"", cmd ) );
+		gi.SendServerCommand( clientNum, va( "print \"Unknown command %s\n\"", cmd ) );
 		return;
 	}
 
 	else if ( (command->flags & CMD_NOINTERMISSION)
 		&& level.intermissiontime )
 	{
-		trap_SendServerCommand( clientNum, va( "print \"%s (%s)\n\"", G_GetStringEdString( "MP_SVGAME", "CANNOT_TASK_INTERMISSION" ), cmd ) );
+		gi.SendServerCommand( clientNum, va( "print \"%s (%s)\n\"", G_GetStringEdString( "MP_SVGAME", "CANNOT_TASK_INTERMISSION" ), cmd ) );
 		return;
 	}
 
 	else if ( (command->flags & CMD_CHEAT)
 		&& !sv_cheats.integer )
 	{
-		trap_SendServerCommand( clientNum, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOCHEATS" ) ) );
+		gi.SendServerCommand( clientNum, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOCHEATS" ) ) );
 		return;
 	}
 
@@ -3342,7 +3347,7 @@ void ClientCommand( int clientNum ) {
 			|| ent->client->tempSpectate >= level.time
 			|| ent->client->sess.sessionTeam == TEAM_SPECTATOR) )
 	{
-		trap_SendServerCommand( clientNum, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "MUSTBEALIVE" ) ) );
+		gi.SendServerCommand( clientNum, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "MUSTBEALIVE" ) ) );
 		return;
 	}
 

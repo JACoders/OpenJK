@@ -54,12 +54,6 @@ extern	int		c_pmove;
 
 extern int forcePowerNeeded[NUM_FORCE_POWER_LEVELS][NUM_FORCE_POWERS];
 
-// Had to add these here because there was no file access within the BG right now.
-int		trap_FS_FOpenFile( const char *qpath, fileHandle_t *f, fsMode_t mode );
-void	trap_FS_Read( void *buffer, int len, fileHandle_t f );
-void	trap_FS_Write( const void *buffer, int len, fileHandle_t f );
-void	trap_FS_FCloseFile( fileHandle_t f );
-
 //PM anim utility functions:
 qboolean PM_SaberInParry( int move );
 qboolean PM_SaberInKnockaway( int move );

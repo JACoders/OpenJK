@@ -12,13 +12,6 @@
 // If you absolutely need something stored, it can either be kept
 // by the server in the server stored userinfos, or stashed in a cvar.
 
-//OJKFIXME: should go in q_platform.h/q_shared.h - just use ID_INLINE
-#ifndef __LCC__
-	#define CGAME_INLINE ID_INLINE
-#else
-	#define CGAME_INLINE //none
-#endif
-
 #define	POWERUP_BLINKS		5
 
 #define	POWERUP_BLINK_TIME	1000
@@ -1648,9 +1641,6 @@ extern	markPoly_t		cg_markPolys[MAX_MARK_POLYS];
 const char *CG_ConfigString( int index );
 const char *CG_Argv( int arg );
 
-void QDECL CG_Printf( const char *msg, ... );
-void QDECL CG_Error( const char *msg, ... );
-
 void CG_StartMusic( qboolean bForceStart );
 
 void CG_UpdateCvars( void );
@@ -1977,11 +1967,22 @@ void CG_SiegeObjectiveCompleted(centity_t *ent, int won, int objectivenum);
 
 //===============================================
 
+void		BG_CycleInven(playerState_t *ps, int direction);
+int			BG_ProperForceIndex(int power);
+void		BG_CycleForce(playerState_t *ps, int direction);
+
+typedef enum q3print_e {
+  SYSTEM_PRINT,
+  CHAT_PRINT,
+  TEAMCHAT_PRINT
+} q3print_t; // bk001201 - warning: useless keyword or type name in empty declaration
+
 //
 // system traps
 // These functions are how the cgame communicates with the main game system
 //
 
+#ifndef OJK_NEW_VM_API
 
 // print message on the local console
 void		trap_Print( const char *fmt );
@@ -2204,19 +2205,6 @@ int			trap_Key_GetCatcher( void );
 void		trap_Key_SetCatcher( int catcher );
 int			trap_Key_GetKey( const char *binding );
 
-void		BG_CycleInven(playerState_t *ps, int direction);
-int			BG_ProperForceIndex(int power);
-void		BG_CycleForce(playerState_t *ps, int direction);
-
-
-
-typedef enum {
-  SYSTEM_PRINT,
-  CHAT_PRINT,
-  TEAMCHAT_PRINT
-} q3print_t; // bk001201 - warning: useless keyword or type name in empty declaration
-
-
 int trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits);
 e_status trap_CIN_StopCinematic(int handle);
 e_status trap_CIN_RunCinematic (int handle);
@@ -2240,7 +2228,7 @@ void		trap_FX_PlayEntityEffect	( const char *file, vec3_t org, vec3_t axis[3], c
 void		trap_FX_PlayEffectID		( int id, vec3_t org, vec3_t fwd, int vol, int rad );		// builds arbitrary perp. right vector, does a cross product to define up
 void		trap_FX_PlayPortalEffectID	( int id, vec3_t org, vec3_t fwd, int vol, int rad );		// builds arbitrary perp. right vector, does a cross product to define up
 void		trap_FX_PlayEntityEffectID	( int id, vec3_t org, vec3_t axis[3], const int boltInfo, const int pGhoul2, int vol, int rad );
-void		trap_FX_PlayBoltedEffectID	( int id, vec3_t org, void *pGhoul2, const int boltNum, const int entNum, const int modelNum, int iLooptime, qboolean isRelative );
+qboolean	trap_FX_PlayBoltedEffectID	( int id, vec3_t org, void *pGhoul2, const int boltNum, const int entNum, const int modelNum, int iLooptime, qboolean isRelative );
 void		trap_FX_AddScheduledEffects	( qboolean skyPortal );
 void		trap_FX_Draw2DEffects		( float screenXScale, float screenYScale );
 qboolean	trap_FX_FreeSystem			( void );
@@ -2255,7 +2243,7 @@ void trap_FX_AddSprite( addspriteArgStruct_t *p );
 void trap_FX_AddElectricity( addElectricityArgStruct_t *p );
 
 //void trap_SP_Print(const unsigned ID, byte *Data);
-int trap_SP_GetStringTextString(const char *text, char *buffer, int bufferLength);
+qboolean trap_SP_GetStringTextString(const char *text, char *buffer, int bufferLength);
 
 void		trap_CG_RegisterSharedMemory(char *memory);
 
@@ -2276,78 +2264,9 @@ qboolean	trap_ROFF_Purge_Ent( int entID );
 void	trap_TrueMalloc(void **ptr, int size);
 void	trap_TrueFree(void **ptr);
 
-
-void	CG_ClearParticles (void);
-void	CG_AddParticles (void);
-void	CG_ParticleSnow (qhandle_t pshader, vec3_t origin, vec3_t origin2, int turb, float range, int snum);
-void	CG_ParticleSmoke (qhandle_t pshader, centity_t *cent);
-void	CG_AddParticleShrapnel (localEntity_t *le);
-void	CG_ParticleSnowFlurry (qhandle_t pshader, centity_t *cent);
-void	CG_ParticleBulletDebris (vec3_t	org, vec3_t vel, int duration);
-void	CG_ParticleSparks (vec3_t org, vec3_t vel, int duration, float x, float y, float speed);
-void	CG_ParticleDust (centity_t *cent, vec3_t origin, vec3_t dir);
-void	CG_ParticleMisc (qhandle_t pshader, vec3_t origin, int size, int duration, float alpha);
-void	CG_ParticleExplosion (char *animStr, vec3_t origin, vec3_t vel, int duration, int sizeStart, int sizeEnd);
-const char *CG_GetStringEdString(char *refSection, char *refName);
-extern qboolean		initparticles;
-int CG_NewParticleArea ( int num );
-
-void FX_TurretProjectileThink(  centity_t *cent, const struct weaponInfo_s *weapon );
-void FX_TurretHitWall( vec3_t origin, vec3_t normal );
-void FX_TurretHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
-
-void FX_ConcussionHitWall( vec3_t origin, vec3_t normal );
-void FX_ConcussionHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
-void FX_ConcussionProjectileThink(  centity_t *cent, const struct weaponInfo_s *weapon );
-void FX_ConcAltShot( vec3_t start, vec3_t end );
-
-//-----------------------------
-// Effects related prototypes
-//-----------------------------
-
-// Environmental effects 
-void CG_Spark( vec3_t origin, vec3_t dir );
-
-// Weapon prototypes
-void FX_BryarHitWall( vec3_t origin, vec3_t normal );
-void FX_BryarAltHitWall( vec3_t origin, vec3_t normal, int power );
-void FX_BryarHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
-void FX_BryarAltHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
-
-void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weapon );
-void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon );
-void FX_BlasterWeaponHitWall( vec3_t origin, vec3_t normal );
-void FX_BlasterWeaponHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
-
-
-void FX_ForceDrained(vec3_t origin, vec3_t dir);
-
-
-//-----------------------------
-// Effects related prototypes
-//-----------------------------
-
-// Environmental effects 
-void CG_Spark( vec3_t origin, vec3_t dir );
-
-// Weapon prototypes
-void FX_BryarHitWall( vec3_t origin, vec3_t normal );
-void FX_BryarAltHitWall( vec3_t origin, vec3_t normal, int power );
-void FX_BryarHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
-void FX_BryarAltHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
-
-void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weapon );
-void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon );
-void FX_BlasterWeaponHitWall( vec3_t origin, vec3_t normal );
-void FX_BlasterWeaponHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
-
-
 void		trap_G2API_CollisionDetect		( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,int frameNumber, int entNum, const vec3_t rayStart, const vec3_t rayEnd, const vec3_t scale, int traceFlags, int useLod, float fRadius );
 void		trap_G2API_CollisionDetectCache		( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,int frameNumber, int entNum, const vec3_t rayStart, const vec3_t rayEnd, const vec3_t scale, int traceFlags, int useLod, float fRadius );
 
-/*
-Ghoul2 Insert Start
-*/
 // CG specific API access
 void		trap_G2_ListModelSurfaces(void *ghlInfo);
 void		trap_G2_ListModelBones(void *ghlInfo, int frame);
@@ -2428,6 +2347,71 @@ qboolean	trap_G2API_OverrideServer(void *serverInstance);
 
 void		trap_G2API_GetSurfaceName(void *ghoul2, int surfNumber, int modelIndex, char *fillBuf);
 
+#endif // !OJK_NEW_VM_API
+
+void	CG_ClearParticles (void);
+void	CG_AddParticles (void);
+void	CG_ParticleSnow (qhandle_t pshader, vec3_t origin, vec3_t origin2, int turb, float range, int snum);
+void	CG_ParticleSmoke (qhandle_t pshader, centity_t *cent);
+void	CG_AddParticleShrapnel (localEntity_t *le);
+void	CG_ParticleSnowFlurry (qhandle_t pshader, centity_t *cent);
+void	CG_ParticleBulletDebris (vec3_t	org, vec3_t vel, int duration);
+void	CG_ParticleSparks (vec3_t org, vec3_t vel, int duration, float x, float y, float speed);
+void	CG_ParticleDust (centity_t *cent, vec3_t origin, vec3_t dir);
+void	CG_ParticleMisc (qhandle_t pshader, vec3_t origin, int size, int duration, float alpha);
+void	CG_ParticleExplosion (char *animStr, vec3_t origin, vec3_t vel, int duration, int sizeStart, int sizeEnd);
+const char *CG_GetStringEdString(char *refSection, char *refName);
+extern qboolean		initparticles;
+int CG_NewParticleArea ( int num );
+
+void FX_TurretProjectileThink(  centity_t *cent, const struct weaponInfo_s *weapon );
+void FX_TurretHitWall( vec3_t origin, vec3_t normal );
+void FX_TurretHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
+
+void FX_ConcussionHitWall( vec3_t origin, vec3_t normal );
+void FX_ConcussionHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
+void FX_ConcussionProjectileThink(  centity_t *cent, const struct weaponInfo_s *weapon );
+void FX_ConcAltShot( vec3_t start, vec3_t end );
+
+//-----------------------------
+// Effects related prototypes
+//-----------------------------
+
+// Environmental effects 
+void CG_Spark( vec3_t origin, vec3_t dir );
+
+// Weapon prototypes
+void FX_BryarHitWall( vec3_t origin, vec3_t normal );
+void FX_BryarAltHitWall( vec3_t origin, vec3_t normal, int power );
+void FX_BryarHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
+void FX_BryarAltHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
+
+void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weapon );
+void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon );
+void FX_BlasterWeaponHitWall( vec3_t origin, vec3_t normal );
+void FX_BlasterWeaponHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
+
+
+void FX_ForceDrained(vec3_t origin, vec3_t dir);
+
+
+//-----------------------------
+// Effects related prototypes
+//-----------------------------
+
+// Environmental effects 
+void CG_Spark( vec3_t origin, vec3_t dir );
+
+// Weapon prototypes
+void FX_BryarHitWall( vec3_t origin, vec3_t normal );
+void FX_BryarAltHitWall( vec3_t origin, vec3_t normal, int power );
+void FX_BryarHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
+void FX_BryarAltHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
+
+void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weapon );
+void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon );
+void FX_BlasterWeaponHitWall( vec3_t origin, vec3_t normal );
+void FX_BlasterWeaponHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid );
 
 void		CG_Init_CG(void);
 void		CG_Init_CGents(void);
@@ -2447,3 +2431,5 @@ void CG_SetSiegeTimerCvar( int msec );
 /*
 Ghoul2 Insert End
 */
+
+extern cgameImport_t cgi;

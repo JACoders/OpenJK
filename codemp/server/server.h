@@ -195,13 +195,14 @@ typedef struct {
 	netadr_t	redirectAddress;			// for rcon return messages
 
 	netadr_t	authorizeAddress;			// for rcon return messages
+
+	qboolean	gameStarted;				// gvm is loaded
 } serverStatic_t;
 
 //=============================================================================
 
 extern	serverStatic_t	svs;				// persistant server info across maps
 extern	server_t		sv;					// cleared each map
-extern	vm_t			*gvm;				// game virtual machine
 
 //RAZFIXME: dedi server probably can't have this..
 extern	refexport_t		*re;					// interface to refresh .dll
@@ -339,7 +340,6 @@ svEntity_t	*SV_SvEntityForGentity( sharedEntity_t *gEnt );
 sharedEntity_t *SV_GEntityForSvEntity( svEntity_t *svEnt );
 void		SV_InitGameProgs ( void );
 void		SV_ShutdownGameProgs ( void );
-void		SV_RestartGameProgs( void );
 qboolean	SV_inPVS (const vec3_t p1, const vec3_t p2);
 
 //

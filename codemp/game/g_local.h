@@ -9,12 +9,6 @@
 #include "bg_vehicles.h"
 #include "g_public.h"
 
-#ifndef __LCC__
-#define GAME_INLINE ID_INLINE
-#else
-#define GAME_INLINE //none
-#endif
-
 typedef struct gentity_s gentity_t;
 typedef struct gclient_s gclient_t;
 
@@ -1095,6 +1089,8 @@ Ghoul2 Insert Start
 int G_BoneIndex( const char *name );
 
 
+#ifndef OJK_NEW_VM_API
+
 qhandle_t	trap_R_RegisterSkin( const char *name );
 
 // CG specific API access
@@ -1167,7 +1163,7 @@ void		trap_G2API_AttachInstanceToEntNum(void *ghoul2, int entityNum, qboolean se
 void		trap_G2API_ClearAttachedInstance(int entityNum);
 void		trap_G2API_CleanEntAttachments(void);
 qboolean	trap_G2API_OverrideServer(void *serverInstance);
-
+#endif
 
 /*
 Ghoul2 Insert End
@@ -1357,8 +1353,6 @@ void G_RunThink (gentity_t *ent);
 void QDECL G_LogPrintf( const char *fmt, ... );
 void QDECL G_SecurityLogPrintf( const char *fmt, ... );
 void SendScoreboardMessageToAllClients( void );
-void QDECL G_Printf( const char *fmt, ... );
-void QDECL G_Error( const char *fmt, ... );
 const char *G_GetStringEdString(char *refSection, char *refName);
 
 //
@@ -1528,6 +1522,8 @@ extern	level_locals_t	level;
 extern	gentity_t		g_entities[MAX_GENTITIES];
 
 #define	FOFS(x) offsetof(gentity_t, x)
+
+#ifndef OJK_NEW_VM_API
 
 void	trap_Print( const char *fmt );
 void	trap_Error( const char *fmt );
@@ -1837,6 +1833,9 @@ void trap_RMG_Init(int terrainID);
 void trap_Bot_UpdateWaypoints(int wpnum, wpobject_t **wps);
 void trap_Bot_CalculatePaths(int rmg);
 
+#endif
+
+
 // userinfo validation bitflags
 // default is all except extended ascii
 // numUserinfoFields + USERINFO_VALIDATION_MAX should not exceed 31
@@ -1857,3 +1856,5 @@ void Svcmd_ToggleUserinfoValidation_f( void );
 #undef XCVAR_PROTO
 void G_RegisterCvars( void );
 void G_UpdateCvars( void );
+
+extern gameImport_t gi;

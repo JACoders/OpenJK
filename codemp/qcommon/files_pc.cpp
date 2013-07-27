@@ -790,12 +790,12 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 
 						// jampgame.qvm	- 13
 						// ]^&`cZT`X!di`
-						if (!(pak->referenced & FS_QAGAME_REF))
+						if (!(pak->referenced & FS_GAME_REF))
 						{
 							if (FS_ShiftedStrStr(filename, "]T`cZT`X!di`", 13) ||
 								FS_ShiftedStrStr(filename, "]T`cZT`Xk+)!W__", 13))
 							{
-								pak->referenced |= FS_QAGAME_REF;
+								pak->referenced |= FS_GAME_REF;
 							}
 						}
 						// cgame.qvm	- 7

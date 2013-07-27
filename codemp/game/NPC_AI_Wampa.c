@@ -18,20 +18,20 @@ void Wampa_SetBolts( gentity_t *self )
 	if ( self && self->client )
 	{
 		renderInfo_t *ri = &self->client->renderInfo;
-		ri->headBolt = trap_G2API_AddBolt(self->ghoul2, 0, "*head_eyes");
-		//ri->cervicalBolt = trap_G2API_AddBolt(self->ghoul2, 0, "neck_bone" );
-		//ri->chestBolt = trap_G2API_AddBolt(self->ghoul2, 0, "upper_spine");
-		//ri->gutBolt = trap_G2API_AddBolt(self->ghoul2, 0, "mid_spine");
-		ri->torsoBolt = trap_G2API_AddBolt(self->ghoul2, 0, "lower_spine");
-		ri->crotchBolt = trap_G2API_AddBolt(self->ghoul2, 0, "rear_bone");
-		//ri->elbowLBolt = trap_G2API_AddBolt(self->ghoul2, 0, "*l_arm_elbow");
-		//ri->elbowRBolt = trap_G2API_AddBolt(self->ghoul2, 0, "*r_arm_elbow");
-		ri->handLBolt = trap_G2API_AddBolt(self->ghoul2, 0, "*l_hand");
-		ri->handRBolt = trap_G2API_AddBolt(self->ghoul2, 0, "*r_hand");
-		//ri->kneeLBolt = trap_G2API_AddBolt(self->ghoul2, 0, "*hips_l_knee");
-		//ri->kneeRBolt = trap_G2API_AddBolt(self->ghoul2, 0, "*hips_r_knee");
-		ri->footLBolt = trap_G2API_AddBolt(self->ghoul2, 0, "*l_leg_foot");
-		ri->footRBolt = trap_G2API_AddBolt(self->ghoul2, 0, "*r_leg_foot");
+		ri->headBolt = gi.G2API_AddBolt(self->ghoul2, 0, "*head_eyes");
+		//ri->cervicalBolt = gi.G2API_AddBolt(self->ghoul2, 0, "neck_bone" );
+		//ri->chestBolt = gi.G2API_AddBolt(self->ghoul2, 0, "upper_spine");
+		//ri->gutBolt = gi.G2API_AddBolt(self->ghoul2, 0, "mid_spine");
+		ri->torsoBolt = gi.G2API_AddBolt(self->ghoul2, 0, "lower_spine");
+		ri->crotchBolt = gi.G2API_AddBolt(self->ghoul2, 0, "rear_bone");
+		//ri->elbowLBolt = gi.G2API_AddBolt(self->ghoul2, 0, "*l_arm_elbow");
+		//ri->elbowRBolt = gi.G2API_AddBolt(self->ghoul2, 0, "*r_arm_elbow");
+		ri->handLBolt = gi.G2API_AddBolt(self->ghoul2, 0, "*l_hand");
+		ri->handRBolt = gi.G2API_AddBolt(self->ghoul2, 0, "*r_hand");
+		//ri->kneeLBolt = gi.G2API_AddBolt(self->ghoul2, 0, "*hips_l_knee");
+		//ri->kneeRBolt = gi.G2API_AddBolt(self->ghoul2, 0, "*hips_r_knee");
+		ri->footLBolt = gi.G2API_AddBolt(self->ghoul2, 0, "*l_leg_foot");
+		ri->footRBolt = gi.G2API_AddBolt(self->ghoul2, 0, "*r_leg_foot");
 	}
 }
 

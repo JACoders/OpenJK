@@ -5,8 +5,6 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(MPSharedDefines ${SharedDefines} "_JK2")
-
 #    Add Game Project
 if(BuildMPGame)
 	add_subdirectory("${MPDir}/game")
@@ -222,9 +220,6 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/tags.h"
 		"${MPDir}/qcommon/timing.h"
 		"${MPDir}/qcommon/vm.cpp"
-		"${MPDir}/qcommon/vm_interpreted.cpp"
-		"${MPDir}/qcommon/vm_local.h"
-		"${MPDir}/qcommon/z_memman_pc.cpp"
 		)
 	if(WIN32)
 		set(MPEngineAndDedCommonFiles
@@ -300,7 +295,6 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedRmgFiles})
 	
 	set(MPEngineAndDedServerFiles
-		"${MPDir}/server/NPCNav/gameCallbacks.cpp"
 		"${MPDir}/server/NPCNav/navigator.cpp"
 		"${MPDir}/server/NPCNav/navigator.h"
 		"${MPDir}/server/server.h"
@@ -345,7 +339,6 @@ if(BuildMPEngine OR BuildMPDed)
 		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedWin32Files})
 	else(WIN32)
 		set(MPEngineAndDedSysFiles
-			"${MPDir}/sys/vm_x86.cpp"
 			"${MPDir}/sys/snapvector.cpp"
 			)
 		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedSysFiles})
@@ -359,7 +352,7 @@ if(BuildMPEngine)
 	set(MPEngineLibraries ${MPEngineAndDedLibraries})
 	set(MPEngineIncludeDirectories ${MPEngineAndDedIncludeDirectories})
 	set(MPEngineFiles ${MPEngineAndDedFiles})
-	set(MPEngineDefines ${MPSharedDefines} "_JK2MP")
+	set(MPEngineDefines ${MPSharedDefines})
 	
 	#    Dependencies
 	
@@ -411,15 +404,21 @@ if(BuildMPEngine)
 	set(MPEngineClientFiles
 		"${MPDir}/client/cl_avi.cpp"
 		"${MPDir}/client/cl_cgame.cpp"
+		"${MPDir}/client/cl_cgameapi.cpp"
+		"${MPDir}/client/cl_cgameapi.h"
 		"${MPDir}/client/cl_cin.cpp"
 		"${MPDir}/client/cl_console.cpp"
 		"${MPDir}/client/cl_input.cpp"
 		"${MPDir}/client/cl_keys.cpp"
+		"${MPDir}/client/cl_lan.cpp"
+		"${MPDir}/client/cl_lan.h"
 		"${MPDir}/client/cl_main.cpp"
 		"${MPDir}/client/cl_net_chan.cpp"
 		"${MPDir}/client/cl_parse.cpp"
 		"${MPDir}/client/cl_scrn.cpp"
 		"${MPDir}/client/cl_ui.cpp"
+		"${MPDir}/client/cl_uiapi.cpp"
+		"${MPDir}/client/cl_uiapi.h"
 		"${MPDir}/client/FXExport.cpp"
 		"${MPDir}/client/FXExport.h"
 		"${MPDir}/client/FxPrimitives.cpp"

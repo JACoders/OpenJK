@@ -76,7 +76,7 @@ static qboolean StringToFilter (char *s, ipFilter_t *f)
 				s++;
 				continue;
 			}
-			G_Printf( "Bad filter address: %s\n", s );
+			gi.Print( "Bad filter address: %s\n", s );
 			return qfalse;
 		}
 		
@@ -141,7 +141,7 @@ static void UpdateIPBans (void)
 		}
 	}
 
-	trap_Cvar_Set( "g_banIPs", iplist_final );
+	gi.Cvar_Set( "g_banIPs", iplist_final );
 }
 
 /*
@@ -194,7 +194,7 @@ static void AddIP( char *str )
 	{
 		if (numIPFilters == MAX_IPFILTERS)
 		{
-			G_Printf ("IP filter list is full\n");
+			gi.Print ("IP filter list is full\n");
 			return;
 		}
 		numIPFilters++;
@@ -239,12 +239,12 @@ void Svcmd_AddIP_f (void)
 {
 	char		str[MAX_TOKEN_CHARS];
 
-	if ( trap_Argc() < 2 ) {
-		G_Printf("Usage: addip <ip-mask>\n");
+	if ( gi.Argc() < 2 ) {
+		gi.Print("Usage: addip <ip-mask>\n");
 		return;
 	}
 
-	trap_Argv( 1, str, sizeof( str ) );
+	gi.Argv( 1, str, sizeof( str ) );
 
 	AddIP( str );
 }
@@ -260,12 +260,12 @@ void Svcmd_RemoveIP_f (void)
 	int			i;
 	char		str[MAX_TOKEN_CHARS];
 
-	if ( trap_Argc() < 2 ) {
-		G_Printf("Usage: removeip <ip-mask>\n");
+	if ( gi.Argc() < 2 ) {
+		gi.Print("Usage: removeip <ip-mask>\n");
 		return;
 	}
 
-	trap_Argv( 1, str, sizeof( str ) );
+	gi.Argv( 1, str, sizeof( str ) );
 
 	if (!StringToFilter (str, &f))
 		return;
@@ -274,14 +274,14 @@ void Svcmd_RemoveIP_f (void)
 		if (ipFilters[i].mask == f.mask	&&
 			ipFilters[i].compare == f.compare) {
 			ipFilters[i].compare = 0xffffffffu;
-			G_Printf ("Removed.\n");
+			gi.Print ("Removed.\n");
 
 			UpdateIPBans();
 			return;
 		}
 	}
 
-	G_Printf ( "Didn't find %s.\n", str );
+	gi.Print ( "Didn't find %s.\n", str );
 }
 
 /*
@@ -298,68 +298,68 @@ void	Svcmd_EntityList_f (void) {
 		if ( !check->inuse ) {
 			continue;
 		}
-		G_Printf("%3i:", e);
+		gi.Print("%3i:", e);
 		switch ( check->s.eType ) {
 		case ET_GENERAL:
-			G_Printf("ET_GENERAL          ");
+			gi.Print("ET_GENERAL          ");
 			break;
 		case ET_PLAYER:
-			G_Printf("ET_PLAYER           ");
+			gi.Print("ET_PLAYER           ");
 			break;
 		case ET_ITEM:
-			G_Printf("ET_ITEM             ");
+			gi.Print("ET_ITEM             ");
 			break;
 		case ET_MISSILE:
-			G_Printf("ET_MISSILE          ");
+			gi.Print("ET_MISSILE          ");
 			break;
 		case ET_SPECIAL:
-			G_Printf("ET_SPECIAL          ");
+			gi.Print("ET_SPECIAL          ");
 			break;
 		case ET_HOLOCRON:
-			G_Printf("ET_HOLOCRON         ");
+			gi.Print("ET_HOLOCRON         ");
 			break;
 		case ET_MOVER:
-			G_Printf("ET_MOVER            ");
+			gi.Print("ET_MOVER            ");
 			break;
 		case ET_BEAM:
-			G_Printf("ET_BEAM             ");
+			gi.Print("ET_BEAM             ");
 			break;
 		case ET_PORTAL:
-			G_Printf("ET_PORTAL           ");
+			gi.Print("ET_PORTAL           ");
 			break;
 		case ET_SPEAKER:
-			G_Printf("ET_SPEAKER          ");
+			gi.Print("ET_SPEAKER          ");
 			break;
 		case ET_PUSH_TRIGGER:
-			G_Printf("ET_PUSH_TRIGGER     ");
+			gi.Print("ET_PUSH_TRIGGER     ");
 			break;
 		case ET_TELEPORT_TRIGGER:
-			G_Printf("ET_TELEPORT_TRIGGER ");
+			gi.Print("ET_TELEPORT_TRIGGER ");
 			break;
 		case ET_INVISIBLE:
-			G_Printf("ET_INVISIBLE        ");
+			gi.Print("ET_INVISIBLE        ");
 			break;
 		case ET_NPC:
-			G_Printf("ET_NPC              ");
+			gi.Print("ET_NPC              ");
 			break;
 		case ET_BODY:
-			G_Printf("ET_BODY             ");
+			gi.Print("ET_BODY             ");
 			break;
 		case ET_TERRAIN:
-			G_Printf("ET_TERRAIN          ");
+			gi.Print("ET_TERRAIN          ");
 			break;
 		case ET_FX:
-			G_Printf("ET_FX               ");
+			gi.Print("ET_FX               ");
 			break;
 		default:
-			G_Printf("%-3i                ", check->s.eType);
+			gi.Print("%-3i                ", check->s.eType);
 			break;
 		}
 
 		if ( check->classname ) {
-			G_Printf("%s", check->classname);
+			gi.Print("%s", check->classname);
 		}
-		G_Printf("\n");
+		gi.Print("\n");
 	}
 }
 
@@ -398,7 +398,7 @@ gclient_t	*ClientForString( const char *s ) {
 		}
 	}
 
-	G_Printf( "User %s is not on the server\n", s );
+	gi.Print( "User %s is not on the server\n", s );
 	return NULL;
 }
 
@@ -413,20 +413,20 @@ void	Svcmd_ForceTeam_f( void ) {
 	gclient_t	*cl;
 	char		str[MAX_TOKEN_CHARS];
 
-	if ( trap_Argc() < 3 ) {
-		G_Printf("Usage: forceteam <player> <team>\n");
+	if ( gi.Argc() < 3 ) {
+		gi.Print("Usage: forceteam <player> <team>\n");
 		return;
 	}
 
 	// find the player
-	trap_Argv( 1, str, sizeof( str ) );
+	gi.Argv( 1, str, sizeof( str ) );
 	cl = ClientForString( str );
 	if ( !cl ) {
 		return;
 	}
 
 	// set the team
-	trap_Argv( 2, str, sizeof( str ) );
+	gi.Argv( 2, str, sizeof( str ) );
 	SetTeam( &g_entities[cl - level.clients], str );
 }
 
@@ -441,7 +441,7 @@ ConsoleCommand
 qboolean	ConsoleCommand( void ) {
 	char	cmd[MAX_TOKEN_CHARS];
 
-	trap_Argv( 0, cmd, sizeof( cmd ) );
+	gi.Argv( 0, cmd, sizeof( cmd ) );
 
 	if ( Q_stricmp (cmd, "entitylist") == 0 ) {
 		Svcmd_EntityList_f();
@@ -479,7 +479,7 @@ qboolean	ConsoleCommand( void ) {
 	}
 
 	if (Q_stricmp (cmd, "listip") == 0) {
-		trap_SendConsoleCommand( EXEC_NOW, "g_banIPs\n" );
+		gi.SendConsoleCommand( EXEC_NOW, "g_banIPs\n" );
 		return qtrue;
 	}
 
@@ -490,11 +490,11 @@ qboolean	ConsoleCommand( void ) {
 
 	if (dedicated.integer) {
 		if (Q_stricmp (cmd, "say") == 0) {
-			trap_SendServerCommand( -1, va("print \"server: %s\n\"", ConcatArgs(1) ) );
+			gi.SendServerCommand( -1, va("print \"server: %s\n\"", ConcatArgs(1) ) );
 			return qtrue;
 		}
 		// everything else will NOT also be printed as a say command
-		//trap_SendServerCommand( -1, va("print \"server: %s\n\"", ConcatArgs(0) ) );
+		//gi.SendServerCommand( -1, va("print \"server: %s\n\"", ConcatArgs(0) ) );
 		//return qtrue;
 	}
 

@@ -492,7 +492,7 @@ void NPC_BSFace (void)
 	//Once this is over, it snaps back to what it was facing before- WHY???
 	if( NPC_UpdateAngles ( qtrue, qtrue ) )
 	{
-		trap_ICARUS_TaskIDComplete( NPCS.NPC, TID_BSTATE );
+		gi.ICARUS_TaskIDComplete( (sharedEntity_t *)NPCS.NPC, TID_BSTATE );
 		
 		NPCS.NPCInfo->desiredYaw = NPCS.client->ps.viewangles[YAW];
 		NPCS.NPCInfo->desiredPitch = NPCS.client->ps.viewangles[PITCH];
@@ -507,7 +507,7 @@ void NPC_BSPointShoot (qboolean shoot)
 
 	if ( !NPCS.NPC->enemy || !NPCS.NPC->enemy->inuse || (NPCS.NPC->enemy->NPC && NPCS.NPC->enemy->health <= 0) )
 	{//FIXME: should still keep shooting for a second or two after they actually die...
-		trap_ICARUS_TaskIDComplete( NPCS.NPC, TID_BSTATE );
+		gi.ICARUS_TaskIDComplete( (sharedEntity_t *)NPCS.NPC, TID_BSTATE );
 		goto finished;
 		return;
 	}
@@ -550,7 +550,7 @@ void NPC_BSPointShoot (qboolean shoot)
 		//if ( !shoot || !(NPC->svFlags & SVF_LOCKEDENEMY) )
 		if (1)
 		{//If locked_enemy is on, dont complete until it is destroyed...
-			trap_ICARUS_TaskIDComplete( NPCS.NPC, TID_BSTATE );
+			gi.ICARUS_TaskIDComplete( (sharedEntity_t *)NPCS.NPC, TID_BSTATE );
 			goto finished;
 		}
 	}
@@ -769,7 +769,7 @@ void NPC_BSDefault( void )
 		NPC_CheckGetNewWeapon();
 		if ( NPCS.NPC->client->leader 
 			&& NPCS.NPCInfo->goalEntity == NPCS.NPC->client->leader 
-			&& !trap_ICARUS_TaskIDPending( NPCS.NPC, TID_MOVE_NAV ) )
+			&& !gi.ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) )
 		{
 			NPC_ClearGoal();
 		}
@@ -884,7 +884,7 @@ void NPC_BSDefault( void )
 		if ( !NPCS.NPC->enemy 
 			&& NPCS.NPC->client->leader 
 			&& NPCS.NPCInfo->goalEntity == NPCS.NPC->client->leader 
-			&& !trap_ICARUS_TaskIDPending( NPCS.NPC, TID_MOVE_NAV ) )
+			&& !gi.ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) )
 		{
 			NPC_BSFollowLeader();
 		}

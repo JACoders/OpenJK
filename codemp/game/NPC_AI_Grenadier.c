@@ -502,7 +502,7 @@ void NPC_BSGrenadier_Attack( void )
 		if ( NPCS.NPC->client->ps.weapon == WP_THERMAL )
 		{//grenadier
 			trace_t	trace;
-			trap_Trace ( &trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.mins, NPCS.NPC->enemy->r.maxs, NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->enemy->clipmask );
+			gi.Trace ( &trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->r.mins, NPCS.NPC->enemy->r.maxs, NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->enemy->clipmask, qfalse, 0, 0 );
 			if ( !trace.allsolid && !trace.startsolid && (trace.fraction == 1.0 || trace.entityNum == NPCS.NPC->enemy->s.number ) )
 			{//I can get right to him
 				//reset fire-timing variables
@@ -567,7 +567,7 @@ void NPC_BSGrenadier_Attack( void )
 		NPC_AimAdjust( -1 );//adjust aim worse longer we cannot see enemy
 	}
 	/*
-	else if ( trap_InPVS( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin ) )
+	else if ( gi.InPVS( NPC->enemy->r.currentOrigin, NPC->r.currentOrigin ) )
 	{
 		NPCInfo->enemyLastSeenTime = level.time;
 		faceEnemy3 = qtrue;

@@ -319,9 +319,6 @@
     <ClInclude Include="bg_weapons.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\cgame\cg_local.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\cgame\cg_public.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -7,6 +7,7 @@
 #include "qcommon/stringed_ingame.h"
 #include "RMG/RM_Headers.h"
 #include "zlib/zlib.h"
+#include "server/sv_gameapi.h"
 
 static void SV_CloseDownload( client_t *cl );
 
@@ -121,7 +122,7 @@ void SV_DirectConnect( netadr_t from ) {
 	int			challenge;
 	char		*password;
 	int			startIndex;
-	intptr_t	denied;
+	char		*denied;
 	int			count;
 	char		*ip;
 
@@ -244,7 +245,7 @@ void SV_DirectConnect( netadr_t from ) {
 			// VVFIXME - both SOF2 and Wolf remove this call, claiming it blows away the user's info
 			// disconnect the client from the game first so any flags the
 			// player might have are dropped
-			VM_Call( gvm, GAME_CLIENT_DISCONNECT, newcl - svs.clients );
+			GVM_ClientDisconnect( newcl - svs.clients );
 			//
 			goto gotnewcl;
 		}
@@ -329,13 +330,10 @@ gotnewcl:
 	Q_strncpyz( newcl->userinfo, userinfo, sizeof(newcl->userinfo) );
 
 	// get the game a chance to reject this connection or modify the userinfo
-	denied = VM_Call( gvm, GAME_CLIENT_CONNECT, clientNum, qtrue, qfalse ); // firstTime = qtrue
+	denied = GVM_ClientConnect( clientNum, qtrue, qfalse ); // firstTime = qtrue
 	if ( denied ) {
-		// we can't just use VM_ArgPtr, because that is only valid inside a VM_Call
-		char *str = (char *)VM_ExplicitArgPtr( gvm, denied );
-
-		NET_OutOfBandPrint( NS_SERVER, from, "print\n%s\n", str );
-		Com_DPrintf ("Game rejected a connection: %s.\n", str);
+		NET_OutOfBandPrint( NS_SERVER, from, "print\n%s\n", denied );
+		Com_DPrintf ("Game rejected a connection: %s.\n", denied);
 		return;
 	}
 
@@ -413,7 +411,7 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 
 	// call the prog function for removing a client
 	// this will remove the body, among other things
-	VM_Call( gvm, GAME_CLIENT_DISCONNECT, drop - svs.clients );
+	GVM_ClientDisconnect( drop - svs.clients );
 
 	// add the disconnect command
 	SV_SendServerCommand( drop, va("disconnect \"%s\"", reason ) );
@@ -659,7 +657,7 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 		memset(&client->lastUsercmd, '\0', sizeof(client->lastUsercmd));
 
 	// call the game begin function
-	VM_Call( gvm, GAME_CLIENT_BEGIN, client - svs.clients );
+	GVM_ClientBegin( client - svs.clients, qfalse );
 }
 
 /*
@@ -1055,26 +1053,10 @@ static void SV_VerifyPaks_f( client_t *cl ) {
 		nChkSum1 = nChkSum2 = 0;
 		// we run the game, so determine which cgame and ui the client "should" be running
 		//dlls are valid too now -rww
-		if (Cvar_VariableValue( "vm_cgame" ))
-		{
-			bGood = (qboolean)(FS_FileIsInPAK("vm/cgame.qvm", &nChkSum1) == 1);
-		}
-		else
-		{
-			bGood = (qboolean)(FS_FileIsInPAK("cgamex86.dll", &nChkSum1) == 1);
-		}
+		bGood = (qboolean)(FS_FileIsInPAK("cgamex86.dll", &nChkSum1) == 1);
 
 		if (bGood)
-		{
-			if (Cvar_VariableValue( "vm_ui" ))
-			{
-				bGood = (qboolean)(FS_FileIsInPAK("vm/ui.qvm", &nChkSum2) == 1);
-			}
-			else
-			{
-				bGood = (qboolean)(FS_FileIsInPAK("uix86.dll", &nChkSum2) == 1);
-			}
-		}
+			bGood = (qboolean)(FS_FileIsInPAK("uix86.dll", &nChkSum2) == 1);
 
 		nClientPaks = Cmd_Argc();
 
@@ -1297,7 +1279,7 @@ static void SV_UpdateUserinfo_f( client_t *cl ) {
 
 	SV_UserinfoChanged( cl );
 	// call prog code to allow overrides
-	VM_Call( gvm, GAME_CLIENT_USERINFO_CHANGED, cl - svs.clients );
+	GVM_ClientUserinfoChanged( cl - svs.clients );
 }
 
 typedef struct {
@@ -1346,7 +1328,7 @@ void SV_ExecuteClientCommand( client_t *cl, const char *s, qboolean clientOK ) {
 			// strip \r \n and ;
 			if ( sv_filterCommands->integer )
 				Cmd_Args_Sanitize();
-			VM_Call( gvm, GAME_CLIENT_COMMAND, cl - svs.clients );
+			GVM_ClientCommand( cl - svs.clients );
 		}
 	}
 	else if (!bProcessed)
@@ -1426,7 +1408,7 @@ void SV_ClientThink (client_t *cl, usercmd_t *cmd) {
 		return;		// may have been kicked during the last usercmd
 	}
 
-	VM_Call( gvm, GAME_CLIENT_THINK, cl - svs.clients );
+	GVM_ClientThink( cl - svs.clients, NULL );
 }
 
 /*

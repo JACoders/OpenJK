@@ -24,6 +24,8 @@
 					//	between base<->modbase clients and servers (mismatching events, powerups, etc)
 					// leave this defined to ensure compatibility
 
+#define OJK_NEW_VM_API
+
 #include "qcommon/disablewarnings.h"
 
 #include "game/teams.h" //npc team stuff
@@ -111,7 +113,7 @@
 #endif
 
 // this is the define for determining if we have an asm version of a C function
-#if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__) && !defined(__LCC__)
+#if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__)
 	#define id386	1
 #else
 	#define id386	0
@@ -182,7 +184,7 @@ float FloatSwap( const float *f );
 		#define OS_STRING "win_mingw"
 	#endif
 
-	#define ID_INLINE __inline
+	#define QINLINE __inline
 	#define PATH_SEP '\\'
 
 	#if defined(_M_IX86) || defined(__i386__)
@@ -212,7 +214,7 @@ float FloatSwap( const float *f );
 	#define __cdecl
 	#define __declspec(x)
 	#define stricmp strcasecmp
-	#define ID_INLINE /*inline*/ 
+	#define QINLINE /*inline*/ 
 
     #define OS_STRING "MacOSX"
 
@@ -282,7 +284,7 @@ float FloatSwap( const float *f );
 #ifdef __MACOS__
 
 	#include <MacTypes.h>
-	#define ID_INLINE inline 
+	#define QINLINE inline 
 
 	#define	CPUSTRING "MacOS-PPC"
 
@@ -316,7 +318,7 @@ float FloatSwap( const float *f );
 	// bk001205 - from Makefile
 	#define stricmp strcasecmp
 
-	#define ID_INLINE /*inline*/
+	#define QINLINE /*inline*/
 
 	#define	PATH_SEP '/'
 	#define RAND_MAX 2147483647
@@ -422,8 +424,11 @@ float FloatSwap( const float *f );
 #if !defined(ARCH_STRING)
 	#error "Architecture not supported"
 #endif
-#if !defined(ID_INLINE)
-	#error "ID_INLINE not defined"
+#if !defined(DLL_EXT)
+	#error "DLL_EXT not defined"
+#endif
+#if !defined(QINLINE)
+	#error "QINLINE not defined"
 #endif
 #if !defined(PATH_SEP)
 	#error "PATH_SEP not defined"
@@ -1441,31 +1446,31 @@ void ByteToDir( int b, vec3_t dir );
 #define DEG2RAD( deg ) ( ((deg)*M_PI) / 180.0f )
 #define RAD2DEG( rad ) ( ((rad)*180.0f) / M_PI )
 
-extern ID_INLINE void		VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-extern ID_INLINE void		VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-extern ID_INLINE void		VectorScale( const vec3_t vecIn, vec_t scale, vec3_t vecOut );
-extern ID_INLINE void		VectorScale4( const vec4_t vecIn, vec_t scale, vec4_t vecOut );
-extern ID_INLINE void		VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3_t vecOut );
-extern ID_INLINE vec_t		VectorLength( const vec3_t vec );
-extern ID_INLINE vec_t		VectorLengthSquared( const vec3_t vec );
-extern ID_INLINE vec_t		Distance( const vec3_t p1, const vec3_t p2 );
-extern ID_INLINE vec_t		DistanceSquared( const vec3_t p1, const vec3_t p2 );
-extern ID_INLINE void		VectorNormalizeFast( vec3_t vec );
-extern ID_INLINE vec_t		VectorNormalize( vec3_t vec );
-extern ID_INLINE vec_t		VectorNormalize2( const vec3_t vec, vec3_t vecOut );
-extern ID_INLINE void		VectorCopy( const vec3_t vecIn, vec3_t vecOut );
-extern ID_INLINE void		VectorCopy4( const vec4_t vecIn, vec4_t vecOut );
-extern ID_INLINE void		VectorSet( vec3_t vec, vec_t x, vec_t y, vec_t z );
-extern ID_INLINE void		VectorSet4( vec4_t vec, vec_t x, vec_t y, vec_t z, vec_t w );
-extern ID_INLINE void		VectorSet5( vec5_t vec, vec_t x, vec_t y, vec_t z, vec_t w, vec_t u );
-extern ID_INLINE void		VectorClear( vec3_t vec );
-extern ID_INLINE void		VectorClear4( vec4_t vec );
-extern ID_INLINE void		VectorInc( vec3_t vec );
-extern ID_INLINE void		VectorDec( vec3_t vec );
-extern ID_INLINE void		VectorInverse( vec3_t vec );
-extern ID_INLINE void		CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-extern ID_INLINE vec_t		DotProduct( const vec3_t vec1, const vec3_t vec2 );
-extern ID_INLINE qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
+extern QINLINE void		VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
+extern QINLINE void		VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
+extern QINLINE void		VectorScale( const vec3_t vecIn, vec_t scale, vec3_t vecOut );
+extern QINLINE void		VectorScale4( const vec4_t vecIn, vec_t scale, vec4_t vecOut );
+extern QINLINE void		VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3_t vecOut );
+extern QINLINE vec_t		VectorLength( const vec3_t vec );
+extern QINLINE vec_t		VectorLengthSquared( const vec3_t vec );
+extern QINLINE vec_t		Distance( const vec3_t p1, const vec3_t p2 );
+extern QINLINE vec_t		DistanceSquared( const vec3_t p1, const vec3_t p2 );
+extern QINLINE void		VectorNormalizeFast( vec3_t vec );
+extern QINLINE vec_t		VectorNormalize( vec3_t vec );
+extern QINLINE vec_t		VectorNormalize2( const vec3_t vec, vec3_t vecOut );
+extern QINLINE void		VectorCopy( const vec3_t vecIn, vec3_t vecOut );
+extern QINLINE void		VectorCopy4( const vec4_t vecIn, vec4_t vecOut );
+extern QINLINE void		VectorSet( vec3_t vec, vec_t x, vec_t y, vec_t z );
+extern QINLINE void		VectorSet4( vec4_t vec, vec_t x, vec_t y, vec_t z, vec_t w );
+extern QINLINE void		VectorSet5( vec5_t vec, vec_t x, vec_t y, vec_t z, vec_t w, vec_t u );
+extern QINLINE void		VectorClear( vec3_t vec );
+extern QINLINE void		VectorClear4( vec4_t vec );
+extern QINLINE void		VectorInc( vec3_t vec );
+extern QINLINE void		VectorDec( vec3_t vec );
+extern QINLINE void		VectorInverse( vec3_t vec );
+extern QINLINE void		CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
+extern QINLINE vec_t		DotProduct( const vec3_t vec1, const vec3_t vec2 );
+extern QINLINE qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
 
 #define				VectorAddM( vec1, vec2, vecOut )		((vecOut)[0]=(vec1)[0]+(vec2)[0], (vecOut)[1]=(vec1)[1]+(vec2)[1], (vecOut)[2]=(vec1)[2]+(vec2)[2])
 #define				VectorSubtractM( vec1, vec2, vecOut )	((vecOut)[0]=(vec1)[0]-(vec2)[0], (vecOut)[1]=(vec1)[1]-(vec2)[1], (vecOut)[2]=(vec1)[2]-(vec2)[2])
@@ -1501,24 +1506,12 @@ extern ID_INLINE qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
 #define VectorAverage(a,b,c)			(((c)[0]=((a)[0]+(b)[0])*0.5f),((c)[1]=((a)[1]+(b)[1])*0.5f),((c)[2]=((a)[2]+(b)[2])*0.5f))
 #define VectorNegate(a,b)				((b)[0]=-(a)[0],(b)[1]=-(a)[1],(b)[2]=-(a)[2])
 
-#ifdef __LCC__
-#ifdef VectorCopy
-#undef VectorCopy
-// this is a little hack to get more efficient copies in our interpreter
-typedef struct {
-	float	v[3];
-} vec3struct_t;
-#define VectorCopy(a,b)	*(vec3struct_t *)b=*(vec3struct_t *)a;
-#define ID_INLINE static
-#endif
-#endif
-
 #if defined(MACOS_X) || defined(__linux__)
 	#define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
 #else 
-	#if !defined(__LCC__) && !defined(MINGW32)
+	#if !defined(MINGW32)
 		//pitiful attempt to reduce _ftol2 calls -rww
-		static ID_INLINE void SnapVector( float *v )
+		static QINLINE void SnapVector( float *v )
 		{
 			//RAZTODO: q_math.c plz
 			static int i;
@@ -1541,7 +1534,7 @@ typedef struct {
 		}
 	#else
 		#define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
-	#endif // __LCC__ || MINGW32
+	#endif // !MINGW32
 #endif // MACOS_X || __linux__
 
 unsigned ColorBytes3 (float r, float g, float b);
@@ -1603,10 +1596,10 @@ void NormalToLatLong( const vec3_t normal, byte bytes[2] ); //rwwRMG - added
 
 //=============================================
 
-extern ID_INLINE int Com_Clampi( int min, int max, int value ); //rwwRMG - added
-extern ID_INLINE float Com_Clamp( float min, float max, float value );
-extern ID_INLINE int Com_AbsClampi( int min, int max, int value );
-extern ID_INLINE float Com_AbsClamp( float min, float max, float value );
+extern QINLINE int Com_Clampi( int min, int max, int value ); //rwwRMG - added
+extern QINLINE float Com_Clamp( float min, float max, float value );
+extern QINLINE int Com_AbsClampi( int min, int max, int value );
+extern QINLINE float Com_AbsClamp( float min, float max, float value );
 
 char	*COM_SkipPath( char *pathname );
 const char	*COM_GetExtension( const char *name );

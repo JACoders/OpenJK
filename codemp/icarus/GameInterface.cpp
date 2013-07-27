@@ -10,6 +10,7 @@
 #include "GameInterface.h"
 #include "qcommon/RoffSystem.h"
 #include "Q3_Interface.h"
+#include "server/sv_gameapi.h"
 
 ICARUS_Instance		*iICARUS;
 bufferlist_t		ICARUS_BufferList;
@@ -356,7 +357,7 @@ bool ICARUS_RegisterScript( const char *name, qboolean bCalledDuringInterrogate 
 	{
 		fileHandle_t file;
 
-		gi.FS_FOpenFile( newname, &file, FS_READ );
+		gi.FS_Open( newname, &file, FS_READ );
 		
 		if ( file == NULL )
 		{
@@ -364,7 +365,7 @@ bool ICARUS_RegisterScript( const char *name, qboolean bCalledDuringInterrogate 
 		}
 		else
 		{
-			gi.FS_FCloseFile( file );
+			gi.FS_Close( file );
 		}
 	}
 #endif
@@ -399,9 +400,9 @@ void ICARUS_SoundPrecache(const char *filename)
 {
 	T_G_ICARUS_SOUNDINDEX *sharedMem = (T_G_ICARUS_SOUNDINDEX *)sv.mSharedMemory;
 
-	strcpy(sharedMem->filename, filename);
+	strcpy( sharedMem->filename, filename );
 
-	VM_Call(gvm, GAME_ICARUS_SOUNDINDEX);	
+	GVM_ICARUS_SoundIndex();
 }
 
 int ICARUS_GetIDForString( const char *string )
@@ -410,7 +411,7 @@ int ICARUS_GetIDForString( const char *string )
 
 	strcpy(sharedMem->string, string);
 
-	return VM_Call(gvm, GAME_ICARUS_GETSETIDFORSTRING);
+	return GVM_ICARUS_GetSetIDForString();
 }
 
 /*

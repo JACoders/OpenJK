@@ -15,6 +15,7 @@
 #include "RM_Headers.h"
 
 #include "RM_Instance_BSP.h"
+#include "server/sv_gameapi.h"
 
 
 /************************************************************************************************
@@ -260,7 +261,7 @@ bool CRMBSPInstance::Spawn ( CRandomTerrain* terrain, qboolean IsServer)
 	{	// only allow for true spawning on the server
 		savePtr = sv.entityParsePoint;
 		sv.entityParsePoint = temp;
-		VM_Call( gvm, GAME_SPAWN_RMG_ENTITY );
+		GVM_SpawnRMGEntity();
 		sv.entityParsePoint = savePtr;
 	}
 

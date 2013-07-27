@@ -48,12 +48,12 @@
 #define WINDOW_INTRANSITIONMODEL	0x04000000	// delayed script waiting to run
 
 
-// CGAME cursor type bits
+// cgame cursor type bits
 #define CURSOR_NONE					0x00000001
 #define CURSOR_ARROW				0x00000002
 #define CURSOR_SIZER				0x00000004
 
-#ifdef CGAME
+#ifdef _CGAME
 	#define STRING_POOL_SIZE 128*1024
 #else
 	#define STRING_POOL_SIZE 384*1024
@@ -521,7 +521,7 @@ qboolean UI_OutOfMemory();
 void Controls_GetConfig( void );
 void Controls_SetConfig(qboolean restart);
 
-
+#ifndef OJK_NEW_VM_API
 int			trap_PC_AddGlobalDefine			( char *define );
 int			trap_PC_LoadSource				( const char *filename );
 int			trap_PC_FreeSource				( int handle );
@@ -538,7 +538,7 @@ qboolean	trap_Language_IsAsian(void);
 qboolean	trap_Language_UsesSpaces(void);
 unsigned int trap_AnyLanguage_ReadCharFromString( const char *psText, int *piAdvanceCount, qboolean *pbIsTrailingPunctuation );
 
-int trap_SP_GetStringTextString(const char *text, char *buffer, int bufferLength);
+qboolean trap_SP_GetStringTextString(const char *text, char *buffer, int bufferLength);
 int trap_SP_GetNumLanguages( void );
 void trap_GetLanguageName( const int languageIndex, char *buffer );
 
@@ -601,6 +601,8 @@ qboolean	trap_G2API_SetBoneIKState(void *ghoul2, int time, const char *boneName,
 qboolean	trap_G2API_IKMove(void *ghoul2, int time, sharedIKMoveParams_t *params);
 
 void		trap_G2API_GetSurfaceName(void *ghoul2, int surfNumber, int modelIndex, char *fillBuf);
+
+#endif
 
 
 /*
