@@ -3,6 +3,7 @@
 #include "qcommon/exe_headers.h"
 
 #include "client.h"
+#include "cl_cgameapi.h"
 #include "FxScheduler.h"
 
 #ifdef VV_LIGHTING
@@ -229,7 +230,7 @@ bool CParticle::UpdateOrigin(void)
 				data->mPassEntityNum = ENTITYNUM_WORLD;
 
 				// if this returns solid, we need to do a trace
-				solid = !!(VM_Call( cgvm, CG_POINT_CONTENTS ) & MASK_SOLID); 
+				solid = !!(CGVM_PointContents() & MASK_SOLID); 
 			}
 			else
 			{

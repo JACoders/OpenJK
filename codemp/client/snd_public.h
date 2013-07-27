@@ -13,7 +13,7 @@ void S_StartLocalLoopingSound( sfxHandle_t sfx);
 
 void S_UnCacheDynamicMusic( void );
 void S_RestartMusic( void );
-void S_StartBackgroundTrack( const char *intro, const char *loop, int bCalledByCGameStart );
+void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCalledByCGameStart );
 void S_StopBackgroundTrack( void );
 float S_GetSampleLengthInMilliSeconds( sfxHandle_t sfxHandle);
 

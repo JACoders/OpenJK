@@ -519,7 +519,7 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 ================== 
 R_TakeScreenshot
 ================== 
-*/  
+*/
 void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	byte *allbuf, *buffer;
 	byte *srcptr, *destptr;

@@ -60,6 +60,10 @@ cvar_t	*com_noErrorInterrupt;
 
 cvar_t	*com_RMG;
 
+#ifdef _DEBUG
+cvar_t	*vm_legacy;
+#endif
+
 // com_speeds times
 int		time_game;
 int		time_frontend;		// renderer frontend time
@@ -1232,6 +1236,10 @@ void Com_Init( char *commandLine ) {
 		com_noErrorInterrupt = Cvar_Get( "com_noErrorInterrupt", "0", 0 );
 	#endif
 
+#ifdef _DEBUG
+		vm_legacy = Cvar_Get( "vm_legacy", "0", 0 );
+#endif
+
 		if ( com_dedicated->integer ) {
 			if ( !com_viewlog->integer ) {
 				Cvar_Set( "viewlog", "1" );
@@ -1254,7 +1262,6 @@ void Com_Init( char *commandLine ) {
 
 		Sys_Init();
 		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
-		VM_Init();
 		SV_Init();
 
 		com_dedicated->modified = qfalse;

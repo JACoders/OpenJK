@@ -250,13 +250,30 @@ VIRTUAL MACHINE
 ==============================================================
 */
 
-typedef struct vm_s vm_t;
+typedef enum vmSlots_e {
+	VM_GAME=0,
+	VM_CGAME,
+	VM_UI,
+	MAX_VM
+} vmSlots_t;
 
-typedef enum {
-	VMI_NATIVE,
-	VMI_BYTECODE,
-	VMI_COMPILED
-} vmInterpret_t;
+typedef struct vm_s {
+	vmSlots_t	slot; // VM_GAME, VM_CGAME, VM_UI
+    char		name[MAX_QPATH];
+	void		*dllHandle;
+	qboolean	isLegacy; // uses the legacy syscall/vm_call api, is set by VM_CreateLegacy
+
+	// fill the import/export tables
+	void *		(*GetModuleAPI)( int apiVersion, ... );
+
+	// legacy stuff
+	struct {
+		intptr_t	(QDECL *main)( int callNum, ... );		// module vmMain
+		intptr_t	(QDECL *syscall)( intptr_t *parms );	// engine syscall handler
+	} legacy;
+} vm_t;
+
+extern vm_t *currentVM;
 
 typedef enum {
 	TRAP_MEMSET = 100,
@@ -279,10 +296,16 @@ typedef enum {
 	TRAP_ASIN
 } sharedTraps_t;
 
-void	VM_Init( void );
-vm_t	*VM_Create( const char *module, intptr_t (*systemCalls)(intptr_t *), 
-				   vmInterpret_t interpret );
-// module should be bare: "cgame", not "cgame.dll" or "vm/cgame.qvm"
+vm_t			*VM_CreateLegacy( vmSlots_t vmSlot, intptr_t (*systemCalls)(intptr_t *) );
+vm_t			*VM_Create( vmSlots_t vmSlot );
+void			 VM_Free( vm_t *vm );
+void			 VM_Clear(void);
+vm_t			*VM_Restart( vm_t *vm );
+intptr_t QDECL	 VM_Call( vm_t *vm, int callNum, ... );
+void			 VM_Shifted_Alloc( void **ptr, int size );
+void			 VM_Shifted_Free( void **ptr );
+void			*VM_ArgPtr( intptr_t intValue );
+void			*VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue );
 
 void	VM_FreeRemaining();
 void	VM_DelayedFree ( vm_t *vm );
@@ -302,7 +325,7 @@ void	*VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue );
 
 #define	VMA(x) VM_ArgPtr(args[x])
 float _vmf(intptr_t x);
-#define	VMF(x)	_vmf(args[x])
+#define	VMF(x)	_vmf( args[x] )
 
 /*
 ==============================================================
@@ -512,7 +535,7 @@ issues.
 #define FS_GENERAL_REF	0x01
 #define FS_UI_REF		0x02
 #define FS_CGAME_REF	0x04
-#define FS_QAGAME_REF	0x08
+#define FS_GAME_REF		0x08
 // number of id paks that will never be autodownloaded from base
 #define NUM_ID_PAKS		9
 
@@ -708,6 +731,10 @@ extern	cvar_t	*com_G2Report;
 #endif
 
 extern	cvar_t	*com_RMG;
+
+#ifdef _DEBUG
+extern	cvar_t	*vm_legacy;
+#endif
 
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
@@ -955,17 +982,9 @@ void	Sys_Init (void);
 
 // general development dll loading for virtual machine testing
 void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
-void	* QDECL Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) );
+void	* QDECL Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) );
+void	* QDECL Sys_LoadGameDll( const char *name, void *(QDECL **moduleAPI)(int, ...) );
 void	Sys_UnloadDll( void *dllHandle );
-
-void	Sys_UnloadGame( void );
-void	*Sys_GetGameAPI( void *parms );
-
-void	Sys_UnloadCGame( void );
-void	*Sys_GetCGameAPI( void );
-
-void	Sys_UnloadUI( void );
-void	*Sys_GetUIAPI( void );
 
 //bot libraries
 void	Sys_UnloadBotLib( void );

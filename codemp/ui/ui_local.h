@@ -600,9 +600,9 @@ typedef struct {
 #define MAX_SCROLLTEXT_LINES		64
 
 typedef struct {
-  const char *name;
+	const char *name;
 	const char *imageName;
-  qhandle_t headImage;
+	qhandle_t headImage;
 	const char *base;
 	qboolean active;
 	int reference;
@@ -615,27 +615,27 @@ typedef struct {
 } aliasInfo;
 
 typedef struct {
-  const char *teamName;
+	const char *teamName;
 	const char *imageName;
 	const char *teamMembers[TEAM_MEMBERS];
-  qhandle_t teamIcon;
-  qhandle_t teamIcon_Metal;
-  qhandle_t teamIcon_Name;
+	qhandle_t teamIcon;
+	qhandle_t teamIcon_Metal;
+	qhandle_t teamIcon_Name;
 	int cinematic;
 } teamInfo;
 
 typedef struct {
-  const char *gameType;
-  int gtEnum;
+	const char *gameType;
+	int gtEnum;
 } gameTypeInfo;
 
 typedef struct {
-  const char *mapName;
-  const char *mapLoadName;
+	const char *mapName;
+	const char *mapLoadName;
 	const char *imageName;
 	const char *opponentName;
 	int teamMembers;
-  int typeBits;
+	int typeBits;
 	int cinematic;
 	int timeToBeat[MAX_GAMETYPES];
 	qhandle_t levelShot;
@@ -737,10 +737,10 @@ typedef struct {
 	qboolean newHighScore;
 	qboolean demoAvailable;
 	qboolean soundHighScore;
-	
+
 	int characterCount;
 	int botIndex;
-//	characterInfo characterList[MAX_HEADS];
+	//	characterInfo characterList[MAX_HEADS];
 
 	int aliasCount;
 	aliasInfo aliasList[MAX_ALIASES];
@@ -914,6 +914,7 @@ void UI_SPSkillMenu_Cache( void );
 // ui_syscalls.c
 //
 
+#ifndef OJK_NEW_VM_API
 
 void			trap_Print( const char *string );
 void			trap_Error( const char *string );
@@ -1001,6 +1002,7 @@ void			trap_CIN_SetExtents (int handle, int x, int y, int w, int h);
 int				trap_RealTime(qtime_t *qtime);
 void			trap_R_RemapShader( const char *oldShader, const char *newShader, const char *timeOffset );
 
+#endif
 
 //
 // ui_addbots.c
@@ -1133,3 +1135,5 @@ typedef struct postGameInfo_s {
 	int skillBonus;
 	int baseScore;
 } postGameInfo_t;
+
+extern uiImport_t uii;

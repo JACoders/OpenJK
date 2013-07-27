@@ -5,8 +5,6 @@
 
 #include "GenericParser2.h"
 
-#define _EXE
-
 #define MAX_TOKEN_SIZE	1024
 static char	token[MAX_TOKEN_SIZE];
 
@@ -166,21 +164,13 @@ CTextPool::CTextPool(int initSize) :
 	mSize(initSize),
 	mUsed(0)
 {
-#ifdef _EXE
 //	mPool = (char *)Z_Malloc(mSize, TAG_GP2);
 	mPool = (char *)Z_Malloc(mSize, TAG_TEXTPOOL, qtrue);
-#else
-	mPool = (char *)trap_Z_Malloc(mSize, TAG_GP2);
-#endif
 }
 
 CTextPool::~CTextPool(void)
 {
-#ifdef _EXE
 	Z_Free(mPool);
-#else
-	trap_Z_Free(mPool);
-#endif
 }
 
 char *CTextPool::AllocText(char *text, bool addNULL, CTextPool **poolPtr)

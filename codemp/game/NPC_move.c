@@ -73,7 +73,7 @@ NPC_CheckCombatMove
 -------------------------
 */
 
-ID_INLINE qboolean NPC_CheckCombatMove( void )
+QINLINE qboolean NPC_CheckCombatMove( void )
 {
 	//return NPCInfo->combatMove;
 	if ( ( NPCS.NPCInfo->goalEntity && NPCS.NPC->enemy && NPCS.NPCInfo->goalEntity == NPCS.NPC->enemy ) || ( NPCS.NPCInfo->combatMove ) )
@@ -121,7 +121,7 @@ NPC_GetMoveInformation
 -------------------------
 */
 
-ID_INLINE qboolean NPC_GetMoveInformation( vec3_t dir, float *distance )
+QINLINE qboolean NPC_GetMoveInformation( vec3_t dir, float *distance )
 {
 	//NOTENOTE: Use path stacks!
 
@@ -499,5 +499,5 @@ void NPC_ApplyRoff(void)
 	//rwwFIXMEFIXME: Any significance to this?
 
 	// use the precise origin for linking
-	trap_LinkEntity(NPCS.NPC);
+	gi.LinkEntity((sharedEntity_t *)NPCS.NPC);
 }

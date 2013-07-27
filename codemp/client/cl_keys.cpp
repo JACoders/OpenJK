@@ -2,6 +2,8 @@
 #include "qcommon/exe_headers.h"
 
 #include "client.h"
+#include "cl_cgameapi.h"
+#include "cl_uiapi.h"
 #include "qcommon/stringed_ingame.h"
 /*
 
@@ -817,14 +819,14 @@ void Console_Key (int key) {
 
 		// leading slash is an explicit command
 		if ( kg.g_consoleField.buffer[0] == '\\' || kg.g_consoleField.buffer[0] == '/' ) {
-			if (cgvm && cl.mSharedMemory)
+			if (cls.cgameStarted && cl.mSharedMemory)
 			{ //don't do this unless cgame is inited and shared memory is valid
 				const char *buf = (kg.g_consoleField.buffer+1);
 				TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cl.mSharedMemory;
 
 				strcpy(icc->conCommand, buf);
 				
-				if (VM_Call(cgvm, CG_INCOMING_CONSOLE_COMMAND))
+				if ( CGVM_IncomingConsoleCommand() )
 				{ //rww - let mod authors filter client console messages so they can cut them off if they want.
 					Cbuf_AddText( kg.g_consoleField.buffer+1 );	// valid command
 					Cbuf_AddText ("\n");
@@ -1507,23 +1509,23 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 		// escape always gets out of CGAME stuff
 		if (Key_GetCatcher( ) & KEYCATCH_CGAME) {
 			Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CGAME );
-			VM_Call (cgvm, CG_EVENT_HANDLING, CGAME_EVENT_NONE);
+			CGVM_EventHandling( CGAME_EVENT_NONE );
 			return;
 		}
 
 		if ( !( Key_GetCatcher( ) & KEYCATCH_UI ) ) {
 			if ( cls.state == CA_ACTIVE && !clc.demoplaying ) {
-				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_INGAME );
+				UIVM_SetActiveMenu( UIMENU_INGAME );
 			}
 			else {
 				CL_Disconnect_f();
 				S_StopAllSounds();
-				VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
+				UIVM_SetActiveMenu( UIMENU_MAIN );
 			}
 			return;
 		}
 
-		VM_Call( uivm, UI_KEY_EVENT, key, down );
+		UIVM_KeyEvent( key, down );
 		return;
 	}
 
@@ -1538,10 +1540,10 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 
 		CL_AddKeyUpCommands( key, kb );
 
-		if ( Key_GetCatcher( ) & KEYCATCH_UI && uivm ) {
-			VM_Call( uivm, UI_KEY_EVENT, key, down );
-		} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME && cgvm ) {
-			VM_Call( cgvm, CG_KEY_EVENT, key, down );
+		if ( Key_GetCatcher( ) & KEYCATCH_UI && cls.uiStarted ) {
+			UIVM_KeyEvent( key, down );
+		} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME && cls.cgameStarted ) {
+			CGVM_KeyEvent( key, down );
 		} 
 
 		return;
@@ -1552,12 +1554,12 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) {
 		Console_Key( key );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
-		if ( uivm ) {
-			VM_Call( uivm, UI_KEY_EVENT, key, down );
+		if ( cls.uiStarted ) {
+			UIVM_KeyEvent( key, down );
 		} 
 	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME ) {
-		if ( cgvm ) {
-			VM_Call( cgvm, CG_KEY_EVENT, key, down );
+		if ( cls.cgameStarted ) {
+			CGVM_KeyEvent( key, down );
 		} 
 	} else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) {
 		Message_Key( key );
@@ -1597,13 +1599,13 @@ void CL_KeyEvent (int key, qboolean down, unsigned time) {
 				}
 			} else {
 				// down-only command
-				if (cgvm && cl.mSharedMemory)
+				if (cls.cgameStarted && cl.mSharedMemory)
 				{ //don't do this unless cgame is inited and shared memory is valid
 					TCGIncomingConsoleCommand *icc = (TCGIncomingConsoleCommand *)cl.mSharedMemory;
 
 					strcpy(icc->conCommand, kb);
 					
-					if (VM_Call(cgvm, CG_INCOMING_CONSOLE_COMMAND))
+					if ( CGVM_IncomingConsoleCommand() )
 					{ //rww - let mod authors filter client console messages so they can cut them off if they want.
 						Cbuf_AddText (kb);
 						Cbuf_AddText ("\n");
@@ -1645,22 +1647,10 @@ void CL_CharEvent( int key ) {
 	}
 
 	// distribute the key down event to the apropriate handler
-	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
-	{
-		Field_CharEvent( &kg.g_consoleField, key );
-	}
-	else if ( Key_GetCatcher( ) & KEYCATCH_UI )
-	{
-		VM_Call( uivm, UI_KEY_EVENT, key | K_CHAR_FLAG, qtrue );
-	}
-	else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) 
-	{
-		Field_CharEvent( &chatField, key );
-	}
-	else if ( cls.state == CA_DISCONNECTED )
-	{
-		Field_CharEvent( &kg.g_consoleField, key );
-	}
+		 if ( Key_GetCatcher() & KEYCATCH_CONSOLE )		Field_CharEvent( &kg.g_consoleField, key );
+	else if ( Key_GetCatcher() & KEYCATCH_UI )			UIVM_KeyEvent( key|K_CHAR_FLAG, qtrue );
+	else if ( Key_GetCatcher() & KEYCATCH_MESSAGE )		Field_CharEvent( &chatField, key );
+	else if ( cls.state == CA_DISCONNECTED )			Field_CharEvent( &kg.g_consoleField, key );
 }
 
 /*

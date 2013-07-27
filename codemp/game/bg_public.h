@@ -355,7 +355,7 @@ extern bgLoadedAnim_t bgAllAnims[MAX_ANIM_FILES];
 //cut memory cost.
 //On the bright side this also means we're cutting a rather large size out of
 //required game-side memory.
-#ifndef QAGAME
+#ifndef _GAME
 extern bgLoadedEvents_t bgAllEvents[MAX_ANIM_FILES];
 extern int bgNumAnimEvents;
 #endif
@@ -714,6 +714,8 @@ typedef enum {
 // reward sounds (stored in ps->persistant[PERS_PLAYEREVENTS])
 #define	PLAYEREVENT_DENIEDREWARD		0x0001
 #define	PLAYEREVENT_GAUNTLETREWARD		0x0002
+//OJKFIXME: add holy shit :D
+#define PLAYEREVENT_HOLYSHIT			0x0004
 
 // entityState_t->event values
 // entity events are for effects that take place reletive
@@ -1508,7 +1510,7 @@ qboolean	BG_PlayerTouchesItem( playerState_t *ps, entityState_t *item, int atTim
 void	BG_InitAnimsets(void);
 void	BG_ClearAnimsets(void);
 int		BG_ParseAnimationFile(const char *filename, animation_t *animSet, qboolean isHumanoid);
-#ifndef QAGAME
+#ifndef _GAME
 int		BG_ParseAnimationEvtFile( const char *as_filename, int animFileIndex, int eventFileIndex );
 #endif
 
