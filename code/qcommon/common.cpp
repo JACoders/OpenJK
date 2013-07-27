@@ -53,6 +53,7 @@ cvar_t	*com_showtrace;
 cvar_t	*com_terrainPhysics;
 cvar_t	*com_version;
 cvar_t	*com_buildScript;	// for automated data building scripts
+cvar_t	*com_bootlogo;
 cvar_t	*cl_paused;
 cvar_t	*sv_paused;
 cvar_t	*com_skippingcin;
@@ -1025,6 +1026,8 @@ void Com_Init( char *commandLine ) {
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
+
+		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
 		
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);
@@ -1061,17 +1064,11 @@ void Com_Init( char *commandLine ) {
 
 		// add + commands from command line
 		if ( !Com_AddStartupCommands() ) {
-//#ifdef NDEBUG
 			// if the user didn't give any commands, run default action
-//			if ( !com_dedicated->integer ) 
+			if ( com_bootlogo->integer )
 			{
 				Cbuf_AddText ("cinematic openinglogos\n");
-//				if( !com_introPlayed->integer ) {
-//					Cvar_Set( com_introPlayed->name, "1" );
-//					Cvar_Set( "nextmap", "cinematic intro" );
-//				}
 			}
-//#endif	
 		}
 		com_fullyInitialized = qtrue;
 		Com_Printf ("--- Common Initialization Complete ---\n");
