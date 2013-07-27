@@ -288,7 +288,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 
 	SG_Shutdown();				// close any file pointers
 	if ( code == ERR_DISCONNECT ) {
-		SV_Shutdown("Disconnect");
+		SV_Shutdown("Disconnect", qtrue);
 		CL_Disconnect();
 		CL_FlushMemory();
 		CL_StartHunkUsers();
@@ -298,7 +298,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		// If loading/saving caused the crash/error - delete the temp file
 		SG_WipeSavegame("current");	// delete file
 
-		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage));
+		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage), qtrue);
 		CL_Disconnect();
 		CL_FlushMemory();
 		CL_StartHunkUsers();
@@ -307,7 +307,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		throw ("DROPPED\n");
 	} else {
 		CL_Shutdown ();
-		SV_Shutdown (va(S_COLOR_RED"Server fatal crashed: %s\n", com_errorMessage));
+		SV_Shutdown (va(S_COLOR_RED"Server fatal crashed: %s\n", com_errorMessage), qtrue);
 	}
 
 	Com_Shutdown ();
@@ -1225,6 +1225,8 @@ void G2Time_ResetTimers(void);
 void G2Time_ReportTimers(void);
 #endif
 
+void Sys_UnloadGamePending();
+
 #ifdef _MSC_VER
 #pragma warning (disable: 4701)	//local may have been used without init (timing info vars)
 #endif
@@ -1395,6 +1397,7 @@ try
 	com_frameNumber++;
 }//try
 	catch (const char* reason) {
+		Sys_UnloadGamePending();
 		Com_Printf (reason);
 		return;			// an ERR_DROP was thrown
 	}
