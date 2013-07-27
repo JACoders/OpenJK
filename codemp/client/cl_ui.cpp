@@ -1298,7 +1298,7 @@ Ghoul2 Insert End
 CL_ShutdownUI
 ====================
 */
-void CL_ShutdownUI( void ) {
+void CL_ShutdownUI( qboolean delayFreeVM ) {
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_UI );
 	cls.uiStarted = qfalse;
 	if ( !uivm ) {
@@ -1306,7 +1306,14 @@ void CL_ShutdownUI( void ) {
 	}
 	VM_Call( uivm, UI_SHUTDOWN );
 	VM_Call( uivm, UI_MENU_RESET );
-	VM_Free( uivm );
+	if ( delayFreeVM )
+	{
+		VM_DelayedFree (uivm);
+	}
+	else
+	{
+		VM_Free( uivm );
+	}
 	uivm = NULL;
 }
 

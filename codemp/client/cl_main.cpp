@@ -599,7 +599,7 @@ void CL_NextDemo( void ) {
 CL_ShutdownAll
 =====================
 */
-void CL_ShutdownAll( qboolean shutdownRef ) {
+void CL_ShutdownAll( qboolean shutdownRef, qboolean delayFreeVM ) {
 	if(CL_VideoRecording())
 		CL_CloseAVI();
 
@@ -614,9 +614,9 @@ void CL_ShutdownAll( qboolean shutdownRef ) {
 	// clear sounds
 	S_DisableSounds();
 	// shutdown CGame
-	CL_ShutdownCGame();
+	CL_ShutdownCGame(delayFreeVM);
 	// shutdown UI
-	CL_ShutdownUI();
+	CL_ShutdownUI(delayFreeVM);
 
 	// shutdown the renderer
 	if(shutdownRef)
@@ -640,10 +640,10 @@ ways a client gets into a game
 Also called by Com_Error
 =================
 */
-void CL_FlushMemory( void ) {
+void CL_FlushMemory( qboolean delayFreeVM ) {
 
 	// shutdown all the client stuff
-	CL_ShutdownAll( qfalse );
+	CL_ShutdownAll( qfalse, delayFreeVM );
 
 	// if not running a server clear the whole hunk
 	if ( !com_sv_running->integer ) {
@@ -1137,9 +1137,9 @@ void CL_Vid_Restart_f( void ) {
 	// don't let them loop during the restart
 	S_StopAllSounds();
 	// shutdown the UI
-	CL_ShutdownUI();
+	CL_ShutdownUI(qfalse);
 	// shutdown the CGame
-	CL_ShutdownCGame();
+	CL_ShutdownCGame(qfalse);
 	// shutdown the renderer and clear the renderer interface
 	CL_ShutdownRef();
 	// client is no longer pure untill new checksums are sent
@@ -1310,7 +1310,7 @@ void CL_DownloadsComplete( void ) {
 	// this will also (re)load the UI
 	// if this is a local client then only the client part of the hunk
 	// will be cleared, note that this is done after the hunk mark has been set
-	CL_FlushMemory();
+	CL_FlushMemory(qfalse);
 
 	// initialize the CGame
 	cls.cgameStarted = qtrue;
@@ -2795,7 +2795,7 @@ void CL_Shutdown( void ) {
 	CL_Disconnect( qtrue );
 
 	// RJ: added the shutdown all to close down the cgame (to free up some memory, such as in the fx system)
-	CL_ShutdownAll( qtrue );
+	CL_ShutdownAll( qtrue, qfalse );
 
 	S_Shutdown();
 	//CL_ShutdownUI();

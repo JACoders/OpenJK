@@ -284,6 +284,8 @@ vm_t	*VM_Create( const char *module, intptr_t (*systemCalls)(intptr_t *),
 				   vmInterpret_t interpret );
 // module should be bare: "cgame", not "cgame.dll" or "vm/cgame.qvm"
 
+void	VM_FreeRemaining();
+void	VM_DelayedFree ( vm_t *vm );
 void	VM_Free( vm_t *vm );
 void	VM_Clear(void);
 vm_t	*VM_Restart( vm_t *vm );
@@ -866,10 +868,10 @@ void	CL_ForwardCommandToServer( const char *string );
 // things like godmode, noclip, etc, are commands directed to the server,
 // so when they are typed in at the console, they will need to be forwarded.
 
-void CL_ShutdownAll( qboolean shutdownRef );
+void CL_ShutdownAll( qboolean shutdownRef, qboolean delayFreeVM );
 // shutdown all the client stuff
 
-void CL_FlushMemory( void );
+void CL_FlushMemory( qboolean delayFlushVM );
 // dump all memory on an error
 
 void CL_StartHunkUsers( void );

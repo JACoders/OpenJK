@@ -570,14 +570,21 @@ CL_ShutdonwCGame
 
 ====================
 */
-void CL_ShutdownCGame( void ) {
+void CL_ShutdownCGame( qboolean delayFreeVM ) {
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CGAME );
 	cls.cgameStarted = qfalse;
 	if ( !cgvm ) {
 		return;
 	}
 	VM_Call( cgvm, CG_SHUTDOWN );
-	VM_Free( cgvm );
+	if ( delayFreeVM )
+	{
+		VM_DelayedFree (cgvm);
+	}
+	else
+	{
+		VM_Free( cgvm );
+	}
 	cgvm = NULL;
 #ifdef _DONETPROFILE_
 	ClReadProf().ShowTotals();

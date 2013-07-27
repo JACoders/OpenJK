@@ -27,6 +27,7 @@ int		vm_debugLevel;
 
 #define	MAX_VM		3
 vm_t	vmTable[MAX_VM];
+void	*vmHandlesToDelete[MAX_VM];
 
 void VM_VmInfo_f( void );
 void VM_VmProfile_f( void );
@@ -589,6 +590,41 @@ vm_t *VM_Create( const char *module, intptr_t (*systemCalls)(intptr_t *),
 	return vm;
 }
 
+/*
+==============
+VM_DelayedFree
+==============
+*/
+void VM_DelayedFree ( vm_t *vm )
+{
+	if ( !vm )
+	{
+		return;
+	}
+
+	ptrdiff_t index = vm - vmTable;
+	vmHandlesToDelete[index] = vm->dllHandle;
+
+	Com_Memset (vm, 0, sizeof (*vm));
+	currentVM = lastVM = NULL;
+}
+
+/*
+==============
+VM_FreeRemaining
+==============
+*/
+void VM_FreeRemaining()
+{
+	for ( int i = 0; i < MAX_VM; i++ )
+	{
+		if ( vmHandlesToDelete[i] != NULL )
+		{
+			Sys_UnloadDll (vmHandlesToDelete[i]);
+			vmHandlesToDelete[i] = NULL;
+		}
+	}
+}
 
 /*
 ==============
@@ -603,7 +639,6 @@ void VM_Free( vm_t *vm ) {
 
 	if ( vm->dllHandle ) {
 		Sys_UnloadDll( vm->dllHandle );
-		Com_Memset( vm, 0, sizeof( *vm ) );
 	}
 #if 0	// now automatically freed by hunk
 	if ( vm->codeBase ) {
