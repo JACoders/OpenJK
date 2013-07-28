@@ -200,6 +200,14 @@ typedef enum {
 	GT_MAX_GAME_TYPE
 } gametype_t;
 
+typedef enum _flag_status {
+	FLAG_ATBASE = 0,
+	FLAG_TAKEN,			// CTF
+	FLAG_TAKEN_RED,		// One Flag CTF
+	FLAG_TAKEN_BLUE,	// One Flag CTF
+	FLAG_DROPPED
+} flagStatus_t;
+
 typedef enum { GENDER_MALE, GENDER_FEMALE, GENDER_NEUTER } gender_t;
 
 extern vec3_t WP_MuzzlePoint[WP_NUM_WEAPONS];
