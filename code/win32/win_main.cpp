@@ -582,7 +582,10 @@ Sys_DelayedUnloadGame
 void Sys_DelayedUnloadGame()
 {
 	HINSTANCE save = game_library;
+	game_library = NULL;
+
 	Sys_UnloadGame();
+
 	game_library = save;
 }
 
