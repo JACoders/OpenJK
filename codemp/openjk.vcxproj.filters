@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="zlib\adler32.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
     <ClCompile Include="botlib\be_aas_bspq3.cpp">
       <Filter>Botlib</Filter>
     </ClCompile>
@@ -145,14 +142,8 @@
     <ClCompile Include="qcommon\CNetProfile.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\compress.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
     <ClCompile Include="qcommon\common.cpp">
       <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\crc32.c">
-      <Filter>Zlib</Filter>
     </ClCompile>
     <ClCompile Include="mp3code\csbt.c">
       <Filter>mp3code</Filter>
@@ -186,9 +177,6 @@
     </ClCompile>
     <ClCompile Include="mp3code\cwinb.c">
       <Filter>mp3code</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\deflate.c">
-      <Filter>Zlib</Filter>
     </ClCompile>
     <ClCompile Include="qcommon\exe_headers.cpp">
       <Filter>Common</Filter>
@@ -226,18 +214,6 @@
     <ClCompile Include="qcommon\GenericParser2.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\gzclose.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\gzwrite.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\gzlib.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\gzread.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
     <ClCompile Include="qcommon\hstring.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -247,25 +223,10 @@
     <ClCompile Include="mp3code\hwin.c">
       <Filter>mp3code</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\infback.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\inffast.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\inflate.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\inftrees.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
     <ClCompile Include="icarus\Instance.cpp">
       <Filter>ICARUS</Filter>
     </ClCompile>
     <ClCompile Include="icarus\Interface.cpp">
-      <Filter>ICARUS</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\ioapi.c">
       <Filter>ICARUS</Filter>
     </ClCompile>
     <ClCompile Include="mp3code\l3init.c">
@@ -439,14 +400,8 @@
     <ClCompile Include="mp3code\towave.c">
       <Filter>mp3code</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\trees.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
     <ClCompile Include="qcommon\unzip.cpp">
       <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="zlib\uncompr.c">
-      <Filter>Zlib</Filter>
     </ClCompile>
     <ClCompile Include="mp3code\uph.c">
       <Filter>mp3code</Filter>
@@ -490,9 +445,22 @@
     <ClCompile Include="qcommon\z_memman_pc.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\zutil.c">
-      <Filter>Zlib</Filter>
-    </ClCompile>
+    <ClCompile Include="..\lib\zlib\adler32.c" />
+    <ClCompile Include="..\lib\zlib\compress.c" />
+    <ClCompile Include="..\lib\zlib\crc32.c" />
+    <ClCompile Include="..\lib\zlib\deflate.c" />
+    <ClCompile Include="..\lib\zlib\gzclose.c" />
+    <ClCompile Include="..\lib\zlib\gzlib.c" />
+    <ClCompile Include="..\lib\zlib\gzread.c" />
+    <ClCompile Include="..\lib\zlib\gzwrite.c" />
+    <ClCompile Include="..\lib\zlib\infback.c" />
+    <ClCompile Include="..\lib\zlib\inffast.c" />
+    <ClCompile Include="..\lib\zlib\inflate.c" />
+    <ClCompile Include="..\lib\zlib\inftrees.c" />
+    <ClCompile Include="..\lib\zlib\ioapi.c" />
+    <ClCompile Include="..\lib\zlib\trees.c" />
+    <ClCompile Include="..\lib\zlib\uncompr.c" />
+    <ClCompile Include="..\lib\zlib\zutil.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\OpenAL\al.h">
@@ -612,17 +580,11 @@
     <ClInclude Include="qcommon\cm_terrainmap.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\crc32.h">
-      <Filter>Zlib</Filter>
-    </ClInclude>
     <ClInclude Include="mp3code\config.h">
       <Filter>mp3code</Filter>
     </ClInclude>
     <ClInclude Include="Ravl\CVec.h">
       <Filter>Ravl</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\deflate.h">
-      <Filter>Zlib</Filter>
     </ClInclude>
     <ClInclude Include="qcommon\disablewarnings.h">
       <Filter>Common</Filter>
@@ -678,9 +640,6 @@
     <ClInclude Include="win32\glw_win.h">
       <Filter>win32</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\gzguts.h">
-      <Filter>Zlib</Filter>
-    </ClInclude>
     <ClInclude Include="qcommon\hstring.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -693,18 +652,6 @@
     <ClInclude Include="qcommon\INetProfile.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\inftrees.h">
-      <Filter>Zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\inffast.h">
-      <Filter>Zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\inffixed.h">
-      <Filter>Zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\inflate.h">
-      <Filter>Zlib</Filter>
-    </ClInclude>
     <ClInclude Include="icarus\interpreter.h">
       <Filter>ICARUS</Filter>
     </ClInclude>
@@ -712,9 +659,6 @@
       <Filter>ICARUS</Filter>
     </ClInclude>
     <ClInclude Include="icarus\interface.h">
-      <Filter>ICARUS</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\ioapi.h">
       <Filter>ICARUS</Filter>
     </ClInclude>
     <ClInclude Include="mp3code\jdw.h">
@@ -900,9 +844,6 @@
     <ClInclude Include="cgame\tr_types.h">
       <Filter>Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\trees.h">
-      <Filter>Zlib</Filter>
-    </ClInclude>
     <ClInclude Include="ui\ui_public.h">
       <Filter>Modcode</Filter>
     </ClInclude>
@@ -918,15 +859,18 @@
     <ClInclude Include="win32\win_local.h">
       <Filter>win32</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\zconf.h">
-      <Filter>Zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\zutil.h">
-      <Filter>Zlib</Filter>
-    </ClInclude>
-    <ClInclude Include="zlib\zlib.h">
-      <Filter>Zlib</Filter>
-    </ClInclude>
+    <ClInclude Include="..\lib\zlib\crc32.h" />
+    <ClInclude Include="..\lib\zlib\deflate.h" />
+    <ClInclude Include="..\lib\zlib\gzguts.h" />
+    <ClInclude Include="..\lib\zlib\inffast.h" />
+    <ClInclude Include="..\lib\zlib\inffixed.h" />
+    <ClInclude Include="..\lib\zlib\inflate.h" />
+    <ClInclude Include="..\lib\zlib\inftrees.h" />
+    <ClInclude Include="..\lib\zlib\ioapi.h" />
+    <ClInclude Include="..\lib\zlib\trees.h" />
+    <ClInclude Include="..\lib\zlib\zconf.h" />
+    <ClInclude Include="..\lib\zlib\zlib.h" />
+    <ClInclude Include="..\lib\zlib\zutil.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="EaxMan.dll">
