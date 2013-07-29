@@ -1539,14 +1539,6 @@ static qboolean SV_G2API_GetBoneAnim( void *ghoul2, const char *boneName, const 
 	return re.G2API_GetBoneAnim( &g2[modelIndex], boneName, currentTime, currentFrame, startFrame, endFrame, flags, animSpeed, modelList );
 }
 
-static qboolean SV_G2API_GetBoneFrame( void *ghoul2, const char *boneName, const int currentTime, float *currentFrame, int *modelList, const int modelIndex ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	int iDontCare1 = 0, iDontCare2 = 0, iDontCare3 = 0;
-	float fDontCare1 = 0;
-
-	return re.G2API_GetBoneAnim(&g2[modelIndex], boneName, currentTime, currentFrame, &iDontCare1, &iDontCare2, &iDontCare3, &fDontCare1, modelList);
-}
-
 static void SV_G2API_GetGLAName( void *ghoul2, int modelIndex, char *fillBuf ) {
 	char *tmp = re.G2API_GetGLAName( *((CGhoul2Info_v *)ghoul2), modelIndex );
 	strcpy( fillBuf, tmp );
@@ -1585,43 +1577,12 @@ static qboolean SV_G2API_RemoveGhoul2Models( void *ghlInfo ) {
 	return re.G2API_RemoveGhoul2Models( (CGhoul2Info_v **)ghlInfo );
 }
 
-static qboolean SV_G2API_SkinlessModel( void *ghlInfo, int modelIndex ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghlInfo);
-	return re.G2API_SkinlessModel( &g2[modelIndex] );
-}
-
-static int SV_G2API_GetNumGoreMarks( void *ghlInfo, int modelIndex ) {
-#ifdef _G2_GORE
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghlInfo);
-	return re.G2API_GetNumGoreMarks( &g2[modelIndex] );
-#else
-	return 0;
-#endif
-}
-
-static void SV_G2API_AddSkinGore( void *ghlInfo, SSkinGoreData *gore ) {
-#ifdef _G2_GORE
-	re.G2API_AddSkinGore( *((CGhoul2Info_v *)ghlInfo), *(SSkinGoreData *)gore );
-#endif
-}
-
-static void SV_G2API_ClearSkinGore( void *ghlInfo ) {
-#ifdef _G2_GORE
-	re.G2API_ClearSkinGore( *((CGhoul2Info_v *)ghlInfo) );
-#endif
-}
-
 static int SV_G2API_Ghoul2Size( void *ghlInfo ) {
 	return re.G2API_Ghoul2Size( *((CGhoul2Info_v *)ghlInfo) );
 }
 
 static int SV_G2API_AddBolt( void *ghoul2, int modelIndex, const char *boneName ) {
 	return re.G2API_AddBolt( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName );
-}
-
-static qboolean SV_G2API_AttachEnt( int *boltInfo, void *ghlInfoTo, int toBoltIndex, int entNum, int toModelNum ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghlInfoTo);
-	return re.G2API_AttachEnt( boltInfo, &g2[0], toBoltIndex, entNum, toModelNum );
 }
 
 static void SV_G2API_SetBoltInfo( void *ghoul2, int modelIndex, int boltInfo ) {
@@ -1648,14 +1609,6 @@ static qboolean SV_G2API_DoesBoneExist( void *ghoul2, int modelIndex, const char
 static int SV_G2API_GetSurfaceRenderStatus( void *ghoul2, const int modelIndex, const char *surfaceName ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
 	return re.G2API_GetSurfaceRenderStatus( &g2[modelIndex], surfaceName );
-}
-
-static int SV_G2API_GetTime( void ) {
-	return re.G2API_GetTime( 0 );
-}
-
-static void SV_G2API_SetTime( int time, int clock ) {
-	re.G2API_SetTime( time, clock );
 }
 
 static void SV_G2API_AbsurdSmoothing( void *ghoul2, qboolean status ) {
@@ -3246,6 +3199,7 @@ void SV_BindGame( void ) {
 		ret = GetGameAPI( GAME_API_VERSION, &gi );
 		if ( !ret ) {
 			//free VM?
+			svs.gameStarted = qfalse;
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
 		ge = *ret;
@@ -3253,8 +3207,10 @@ void SV_BindGame( void ) {
 
 	// fall back to legacy syscall/vm_call api
 	gvm = VM_CreateLegacy( VM_GAME, SV_GameSystemCalls );
-	if ( !gvm )
+	if ( !gvm ) {
+		svs.gameStarted = qfalse;
 		Com_Error( ERR_DROP, "VM_CreateLegacy on game failed" );
+	}
 }
 
 void SV_UnbindGame( void ) {
@@ -3264,9 +3220,6 @@ void SV_UnbindGame( void ) {
 }
 
 void SV_RestartGame( void ) {
-	int i=0;
-	client_t *cl = NULL;
-
 	GVM_ShutdownGame( qtrue );
 
 #if 0

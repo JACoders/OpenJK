@@ -220,10 +220,6 @@ static void CL_R_ShaderNameFromIndex( char *name, int index ) {
 		name[0] = '\0';
 }
 
-static void CL_AddCgameCommand( const char *cmdName ) {
-	Cmd_AddCommand( cmdName, NULL );
-}
-
 static void CL_G2API_ListModelSurfaces( void *ghlInfo ) {
 	re.G2API_ListSurfaces( (CGhoul2Info *)ghlInfo );
 }
@@ -333,43 +329,8 @@ static qboolean CL_G2API_RemoveGhoul2Model( void *ghlInfo, int modelIndex ) {
 	return re.G2API_RemoveGhoul2Model( (CGhoul2Info_v **)ghlInfo, modelIndex );
 }
 
-static qboolean CL_G2API_SkinlessModel( void *ghlInfo, int modelIndex ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghlInfo);
-	return re.G2API_SkinlessModel( &g2[modelIndex] );
-}
-
-static int CL_G2API_GetNumGoreMarks( void *ghlInfo, int modelIndex ) {
-#ifdef _G2_GORE
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghlInfo);
-	return re.G2API_GetNumGoreMarks( &g2[modelIndex] );
-#else
-	return 0;
-#endif
-}
-
-static void CL_G2API_AddSkinGore( void *ghlInfo, SSkinGoreData *gore ) {
-#ifdef _G2_GORE
-	re.G2API_AddSkinGore( *((CGhoul2Info_v *)ghlInfo), *(SSkinGoreData *)gore );
-#endif
-}
-
-static void CL_G2API_ClearSkinGore( void *ghlInfo ) {
-#ifdef _G2_GORE
-	re.G2API_ClearSkinGore( *((CGhoul2Info_v *)ghlInfo) );
-#endif
-}
-
-static int CL_G2API_Ghoul2Size( void *ghlInfo ) {
-	return re.G2API_Ghoul2Size( *((CGhoul2Info_v *)ghlInfo) );
-}
-
 static int CL_G2API_AddBolt( void *ghoul2, int modelIndex, const char *boneName ) {
 	return re.G2API_AddBolt( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName );
-}
-
-static qboolean CL_G2API_AttachEnt( int *boltInfo, void *ghlInfoTo, int toBoltIndex, int entNum, int toModelNum ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghlInfoTo);
-	return re.G2API_AttachEnt( boltInfo, &g2[0], toBoltIndex, entNum, toModelNum );
 }
 
 static void CL_G2API_SetBoltInfo( void *ghoul2, int modelIndex, int boltInfo ) {
@@ -388,27 +349,12 @@ static qboolean CL_G2API_SetNewOrigin( void *ghoul2, const int boltIndex ) {
 	return re.G2API_SetNewOrigin( *((CGhoul2Info_v *)ghoul2), boltIndex );
 }
 
-static qboolean CL_G2API_DoesBoneExist( void *ghoul2, int modelIndex, const char *boneName ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re.G2API_DoesBoneExist( &g2[modelIndex], boneName );
-}
-
-static int CL_G2API_GetSurfaceRenderStatus( void *ghoul2, const int modelIndex, const char *surfaceName ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re.G2API_GetSurfaceRenderStatus( &g2[modelIndex], surfaceName );
-}
-
 static int CL_G2API_GetTime( void ) {
 	return re.G2API_GetTime( 0 );
 }
 
 static void CL_G2API_SetTime( int time, int clock ) {
 	re.G2API_SetTime( time, clock );
-}
-
-static void CL_G2API_AbsurdSmoothing( void *ghoul2, qboolean status ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	re.G2API_AbsurdSmoothing( g2, status );
 }
 
 static void CL_G2API_SetRagDoll( void *ghoul2, sharedRagDollParams_t *params ) {
@@ -458,58 +404,12 @@ static void CL_G2API_AnimateG2Models( void *ghoul2, int time, sharedRagDollUpdat
 	re.G2API_AnimateG2ModelsRag( *((CGhoul2Info_v *)ghoul2), time, &rduParams );
 }
 
-static qboolean CL_G2API_RagPCJConstraint( void *ghoul2, const char *boneName, vec3_t min, vec3_t max ) {
-	return re.G2API_RagPCJConstraint( *((CGhoul2Info_v *)ghoul2), boneName, min, max );
-}
-
-static qboolean CL_G2API_RagPCJGradientSpeed( void *ghoul2, const char *boneName, const float speed ) {
-	return re.G2API_RagPCJGradientSpeed( *((CGhoul2Info_v *)ghoul2), boneName, speed );
-}
-
-static qboolean CL_G2API_RagEffectorGoal( void *ghoul2, const char *boneName, vec3_t pos ) {
-	return re.G2API_RagEffectorGoal( *((CGhoul2Info_v *)ghoul2), boneName, pos );
-}
-
-static qboolean CL_G2API_GetRagBonePos( void *ghoul2, const char *boneName, vec3_t pos, vec3_t entAngles, vec3_t entPos, vec3_t entScale ) {
-	return re.G2API_GetRagBonePos( *((CGhoul2Info_v *)ghoul2), boneName, pos, entAngles, entPos, entScale );
-}
-
-static qboolean CL_G2API_RagEffectorKick( void *ghoul2, const char *boneName, vec3_t velocity ) {
-	return re.G2API_RagEffectorKick( *((CGhoul2Info_v *)ghoul2), boneName, velocity );
-}
-
-static qboolean CL_G2API_RagForceSolve( void *ghoul2, qboolean force ) {
-	return re.G2API_RagForceSolve( *((CGhoul2Info_v *)ghoul2), force );
-}
-
 static qboolean CL_G2API_SetBoneIKState( void *ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params ) {
 	return re.G2API_SetBoneIKState( *((CGhoul2Info_v *)ghoul2), time, boneName, ikState, params );
 }
 
 static qboolean CL_G2API_IKMove( void *ghoul2, int time, sharedIKMoveParams_t *params ) {
 	return re.G2API_IKMove( *((CGhoul2Info_v *)ghoul2), time, params );
-}
-
-static qboolean CL_G2API_RemoveBone( void *ghoul2, const char *boneName, int modelIndex ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re.G2API_RemoveBone( &g2[modelIndex], boneName );
-}
-
-static void CL_G2API_AttachInstanceToEntNum( void *ghoul2, int entityNum, qboolean server ) {
-	re.G2API_AttachInstanceToEntNum( *((CGhoul2Info_v *)ghoul2), entityNum, server );
-}
-
-static void CL_G2API_ClearAttachedInstance( int entityNum ) {
-	re.G2API_ClearAttachedInstance( entityNum );
-}
-
-static void CL_G2API_CleanEntAttachments( void ) {
-	re.G2API_CleanEntAttachments();
-}
-
-static qboolean CL_G2API_OverrideServer( void *serverInstance ) {
-	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)serverInstance);
-	return re.G2API_OverrideServerWithClientData( &g2[0] );
 }
 
 static void CL_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelIndex, char *fillBuf ) {
@@ -1270,6 +1170,7 @@ void CL_BindUI( void ) {
 		ret = GetUIAPI( UI_API_VERSION, &uii );
 		if ( !ret ) {
 			//free VM?
+			cls.uiStarted = qfalse;
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
 		uie = *ret;
@@ -1277,8 +1178,10 @@ void CL_BindUI( void ) {
 
 	// fall back to legacy syscall/vm_call api
 	uivm = VM_CreateLegacy( VM_UI, CL_UISystemCalls );
-	if ( !uivm )
+	if ( !uivm ) {
+		cls.uiStarted = qfalse;
 		Com_Error( ERR_DROP, "VM_CreateLegacy on ui failed" );
+	}
 }
 
 void CL_UnbindUI( void ) {

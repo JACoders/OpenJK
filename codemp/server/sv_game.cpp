@@ -86,12 +86,6 @@ qboolean SV_inPVS (const vec3_t p1, const vec3_t p2)
 
 //==============================================
 
-static int	FloatAsInt( float f ) {
-	floatint_t fi;
-	fi.f = f;
-	return fi.i;
-}
-
 /*
 ===============
 SV_ShutdownGameProgs

@@ -350,8 +350,6 @@ int			SV_BotAllocateClient(void);
 void		SV_BotFreeClient( int clientNum );
 
 void		SV_BotInitCvars(void);
-int			SV_BotLibSetup( void );
-int			SV_BotLibShutdown( void );
 int			SV_BotGetSnapshotEntity( int client, int ent );
 int			SV_BotGetConsoleMessage( int client, char *buf, int size );
 
