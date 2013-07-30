@@ -851,6 +851,33 @@ QINLINE qboolean VectorCompare( const vec3_t vec1, const vec3_t vec2 ) {
 	return qtrue;
 }
 
+QINLINE void SnapVector( float *v ) {
+#ifdef _MSC_VER
+	// pitiful attempt to reduce _ftol2 calls -rww
+	static int i;
+	static float f;
+
+	f = *v;
+	__asm fld f
+	__asm fistp	i
+	*v = i;
+	v++;
+	f = *v;
+	__asm fld f
+	__asm fistp i
+	*v = i;
+	v++;
+	f = *v;
+	__asm fld f
+	__asm fistp i
+	*v = i;
+#else // mac, linux, mingw
+	v[0] = (int)v[0];
+	v[1] = (int)v[1];
+	v[2] = (int)v[2];
+#endif
+}
+
 int Q_log2( int val ) {
 	int answer;
 
