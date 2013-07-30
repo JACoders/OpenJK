@@ -4,11 +4,17 @@
 // g_syscalls.asm is included instead when building a qvm
 #include "g_local.h"
 
-#ifndef OJK_NEW_VM_API
+#ifdef OJK_NEW_VM_API
+	static void TranslateSyscalls( void );
+#endif
 
 static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
 Q_EXPORT void dllEntry( intptr_t (QDECL *syscallptr)( intptr_t arg,... ) ) {
 	Q_syscall = syscallptr;
+
+	#ifdef OJK_NEW_VM_API
+		TranslateSyscalls();
+	#endif
 }
 
 int PASSFLOAT( float x ) {
@@ -69,7 +75,7 @@ void trap_FS_FCloseFile( fileHandle_t f ) {
 void trap_SendConsoleCommand( int exec_when, const char *text ) {
 	Q_syscall( G_SEND_CONSOLE_COMMAND, exec_when, text );
 }
-void trap_LocateGameData( gentity_t *gEnts, int numGEntities, int sizeofGEntity_t, playerState_t *clients, int sizeofGClient ) {
+void trap_LocateGameData( sharedEntity_t *gEnts, int numGEntities, int sizeofGEntity_t, playerState_t *clients, int sizeofGClient ) {
 	Q_syscall( G_LOCATE_GAME_DATA, gEnts, numGEntities, sizeofGEntity_t, clients, sizeofGClient );
 }
 void trap_DropClient( int clientNum, const char *reason ) {
@@ -101,7 +107,7 @@ void trap_GetServerinfo( char *buffer, int bufferSize ) {
 void trap_SetServerCull(float cullDistance) {
 	Q_syscall(G_SET_SERVER_CULL, PASSFLOAT(cullDistance));
 }
-void trap_SetBrushModel( gentity_t *ent, const char *name ) {
+void trap_SetBrushModel( sharedEntity_t *ent, const char *name ) {
 	Q_syscall( G_SET_BRUSH_MODEL, ent, name );
 }
 void trap_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask ) {
@@ -119,22 +125,22 @@ qboolean trap_InPVS( const vec3_t p1, const vec3_t p2 ) {
 qboolean trap_InPVSIgnorePortals( const vec3_t p1, const vec3_t p2 ) {
 	return Q_syscall( G_IN_PVS_IGNORE_PORTALS, p1, p2 );
 }
-void trap_AdjustAreaPortalState( gentity_t *ent, qboolean open ) {
+void trap_AdjustAreaPortalState( sharedEntity_t *ent, qboolean open ) {
 	Q_syscall( G_ADJUST_AREA_PORTAL_STATE, ent, open );
 }
 qboolean trap_AreasConnected( int area1, int area2 ) {
 	return Q_syscall( G_AREAS_CONNECTED, area1, area2 );
 }
-void trap_LinkEntity( gentity_t *ent ) {
+void trap_LinkEntity( sharedEntity_t *ent ) {
 	Q_syscall( G_LINKENTITY, ent );
 }
-void trap_UnlinkEntity( gentity_t *ent ) {
+void trap_UnlinkEntity( sharedEntity_t *ent ) {
 	Q_syscall( G_UNLINKENTITY, ent );
 }
 int trap_EntitiesInBox( const vec3_t mins, const vec3_t maxs, int *list, int maxcount ) {
 	return Q_syscall( G_ENTITIES_IN_BOX, mins, maxs, list, maxcount );
 }
-qboolean trap_EntityContact( const vec3_t mins, const vec3_t maxs, const gentity_t *ent ) {
+qboolean trap_EntityContact( const vec3_t mins, const vec3_t maxs, const sharedEntity_t *ent ) {
 	return Q_syscall( G_ENTITY_CONTACT, mins, maxs, ent );
 }
 int trap_BotAllocateClient( void ) {
@@ -173,7 +179,7 @@ void trap_SnapVector( float *v ) {
 void trap_TraceCapsule( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask ) {
 	Q_syscall( G_TRACECAPSULE, results, start, mins, maxs, end, passEntityNum, contentmask, 0, 10 );
 }
-qboolean trap_EntityContactCapsule( const vec3_t mins, const vec3_t maxs, const gentity_t *ent ) {
+qboolean trap_EntityContactCapsule( const vec3_t mins, const vec3_t maxs, const sharedEntity_t *ent ) {
 	return Q_syscall( G_ENTITY_CONTACTCAPSULE, mins, maxs, ent );
 }
 int trap_SP_GetStringTextString(const char *text, char *buffer, int bufferLength) {
@@ -200,7 +206,7 @@ void trap_TrueMalloc(void **ptr, int size) {
 void trap_TrueFree(void **ptr) {
 	Q_syscall(G_TRUEFREE, ptr);
 }
-int trap_ICARUS_RunScript( gentity_t *ent, const char *name ) {
+int trap_ICARUS_RunScript( sharedEntity_t *ent, const char *name ) {
 	return Q_syscall(G_ICARUS_RUNSCRIPT, ent, name);
 }
 qboolean trap_ICARUS_RegisterScript( const char *name, qboolean bCalledDuringInterrogate) {
@@ -209,7 +215,7 @@ qboolean trap_ICARUS_RegisterScript( const char *name, qboolean bCalledDuringInt
 void trap_ICARUS_Init( void ) {
 	Q_syscall(G_ICARUS_INIT);
 }
-qboolean trap_ICARUS_ValidEnt( gentity_t *ent ) {
+qboolean trap_ICARUS_ValidEnt( sharedEntity_t *ent ) {
 	return Q_syscall(G_ICARUS_VALIDENT, ent);
 }
 qboolean trap_ICARUS_IsInitialized( int entID ) {
@@ -221,25 +227,25 @@ qboolean trap_ICARUS_MaintainTaskManager( int entID ) {
 qboolean trap_ICARUS_IsRunning( int entID ) {
 	return Q_syscall(G_ICARUS_ISRUNNING, entID);
 }
-qboolean trap_ICARUS_TaskIDPending(gentity_t *ent, int taskID) {
+qboolean trap_ICARUS_TaskIDPending(sharedEntity_t *ent, int taskID) {
 	return Q_syscall(G_ICARUS_TASKIDPENDING, ent, taskID);
 }
-void trap_ICARUS_InitEnt( gentity_t *ent ) {
+void trap_ICARUS_InitEnt( sharedEntity_t *ent ) {
 	Q_syscall(G_ICARUS_INITENT, ent);
 }
-void trap_ICARUS_FreeEnt( gentity_t *ent ) {
+void trap_ICARUS_FreeEnt( sharedEntity_t *ent ) {
 	Q_syscall(G_ICARUS_FREEENT, ent);
 }
-void trap_ICARUS_AssociateEnt( gentity_t *ent ) {
+void trap_ICARUS_AssociateEnt( sharedEntity_t *ent ) {
 	Q_syscall(G_ICARUS_ASSOCIATEENT, ent);
 }
 void trap_ICARUS_Shutdown( void ) {
 	Q_syscall(G_ICARUS_SHUTDOWN);
 }
-void trap_ICARUS_TaskIDSet(gentity_t *ent, int taskType, int taskID) {
+void trap_ICARUS_TaskIDSet(sharedEntity_t *ent, int taskType, int taskID) {
 	Q_syscall(G_ICARUS_TASKIDSET, ent, taskType, taskID);
 }
-void trap_ICARUS_TaskIDComplete(gentity_t *ent, int taskType) {
+void trap_ICARUS_TaskIDComplete(sharedEntity_t *ent, int taskType) {
 	Q_syscall(G_ICARUS_TASKIDCOMPLETE, ent, taskType);
 }
 void trap_ICARUS_SetVar(int taskID, int entID, const char *type_name, const char *data) {
@@ -287,7 +293,7 @@ void trap_Nav_ShowEdges( void ) {
 void trap_Nav_ShowPath( int start, int end ) {
 	Q_syscall(G_NAV_SHOWPATH, start, end);
 }
-int trap_Nav_GetNearestNode( gentity_t *ent, int lastID, int flags, int targetID ) {
+int trap_Nav_GetNearestNode( sharedEntity_t *ent, int lastID, int flags, int targetID ) {
 	return Q_syscall(G_NAV_GETNEARESTNODE, ent, lastID, flags, targetID);
 }
 int trap_Nav_GetBestNode( int startID, int endID, int rejectID ) {
@@ -317,13 +323,13 @@ int trap_Nav_GetEdgeCost( int startID, int endID ) {
 int trap_Nav_GetProjectedNode( vec3_t origin, int nodeID ) {
 	return Q_syscall(G_NAV_GETPROJECTEDNODE, origin, nodeID);
 }
-void trap_Nav_CheckFailedNodes( gentity_t *ent ) {
+void trap_Nav_CheckFailedNodes( sharedEntity_t *ent ) {
 	Q_syscall(G_NAV_CHECKFAILEDNODES, ent);
 }
-void trap_Nav_AddFailedNode( gentity_t *ent, int nodeID ) {
+void trap_Nav_AddFailedNode( sharedEntity_t *ent, int nodeID ) {
 	Q_syscall(G_NAV_ADDFAILEDNODE, ent, nodeID);
 }
-qboolean trap_Nav_NodeFailed( gentity_t *ent, int nodeID ) {
+qboolean trap_Nav_NodeFailed( sharedEntity_t *ent, int nodeID ) {
 	return Q_syscall(G_NAV_NODEFAILED, ent, nodeID);
 }
 qboolean trap_Nav_NodesAreNeighbors( int startID, int endID ) {
@@ -356,7 +362,7 @@ int trap_Nav_GetBestNodeAltRoute( int startID, int endID, int *pathCost, int rej
 int trap_Nav_GetBestNodeAltRoute2( int startID, int endID, int rejectID ) {
 	return Q_syscall(G_NAV_GETBESTNODEALT2, startID, endID, rejectID);
 }
-int trap_Nav_GetBestPathBetweenEnts( gentity_t *ent, gentity_t *goal, int flags ) {
+int trap_Nav_GetBestPathBetweenEnts( sharedEntity_t *ent, sharedEntity_t *goal, int flags ) {
 	return Q_syscall(G_NAV_GETBESTPATHBETWEENENTS, ent, goal, flags);
 }
 int	trap_Nav_GetNodeRadius( int nodeID ) {
@@ -955,14 +961,14 @@ void trap_G2API_CleanEntAttachments(void) {
 qboolean trap_G2API_OverrideServer(void *serverInstance) {
 	return Q_syscall(G_G2_OVERRIDESERVER, serverInstance);
 }
-void trap_SetActiveSubBSP(int index) {
-	Q_syscall( G_SET_ACTIVE_SUBBSP, index );
+const char *trap_SetActiveSubBSP(int index) {
+	return (char *)Q_syscall( G_SET_ACTIVE_SUBBSP, index );
 }
 int	trap_CM_RegisterTerrain(const char *config) {
 	return Q_syscall(G_CM_REGISTER_TERRAIN, config);
 }
-void trap_RMG_Init(int terrainID) {
-	Q_syscall(G_RMG_INIT, terrainID);
+void trap_RMG_Init( void ) {
+	Q_syscall(G_RMG_INIT);
 }
 void trap_Bot_UpdateWaypoints(int wpnum, wpobject_t **wps) {
 	Q_syscall(G_BOT_UPDATEWAYPOINTS, wpnum, wps);
@@ -971,4 +977,320 @@ void trap_Bot_CalculatePaths(int rmg) {
 	Q_syscall(G_BOT_CALCULATEPATHS, rmg);
 }
 
+#ifdef OJK_NEW_VM_API
+int SVSyscall_FS_Read( void *buffer, int len, fileHandle_t f ) { trap_FS_Read( buffer, len, f ); return 0; }
+int SVSyscall_FS_Write( const void *buffer, int len, fileHandle_t f ) { trap_FS_Write( buffer, len, f ); return 0; }
+qboolean SVSyscall_EntityContact( const vec3_t mins, const vec3_t maxs, const sharedEntity_t *ent, int capsule ) { if ( capsule ) return trap_EntityContactCapsule( mins, maxs, ent ); else return trap_EntityContact( mins, maxs, ent ); }
+void SVSyscall_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int capsule, int traceFlags, int useLod ) { if ( capsule ) trap_TraceCapsule( results, start, mins, maxs, end, passEntityNum, contentmask ); else trap_Trace( results, start, mins, maxs, end, passEntityNum, contentmask ); }
+static void TranslateSyscalls( void ) {
+	gi.Print								= Com_Printf;
+	gi.Error								= Com_Error;
+	gi.Milliseconds							= trap_Milliseconds;
+	gi.PrecisionTimerStart					= trap_PrecisionTimer_Start;
+	gi.PrecisionTimerEnd					= trap_PrecisionTimer_End;
+	gi.SV_RegisterSharedMemory				= trap_SV_RegisterSharedMemory;
+	gi.RealTime								= trap_RealTime;
+	gi.TrueMalloc							= trap_TrueMalloc;
+	gi.TrueFree								= trap_TrueFree;
+	gi.SnapVector							= trap_SnapVector;
+	gi.Cvar_Register						= trap_Cvar_Register;
+	gi.Cvar_Set								= trap_Cvar_Set;
+	gi.Cvar_Update							= trap_Cvar_Update;
+	gi.Cvar_VariableIntegerValue			= trap_Cvar_VariableIntegerValue;
+	gi.Cvar_VariableStringBuffer			= trap_Cvar_VariableStringBuffer;
+	gi.Argc									= trap_Argc;
+	gi.Argv									= trap_Argv;
+	gi.FS_Close								= trap_FS_FCloseFile;
+	gi.FS_GetFileList						= trap_FS_GetFileList;
+	gi.FS_Open								= trap_FS_FOpenFile;
+	gi.FS_Read								= SVSyscall_FS_Read;
+	gi.FS_Write								= SVSyscall_FS_Write;
+	gi.AdjustAreaPortalState				= trap_AdjustAreaPortalState;
+	gi.AreasConnected						= trap_AreasConnected;
+	gi.DebugPolygonCreate					= trap_DebugPolygonCreate;
+	gi.DebugPolygonDelete					= trap_DebugPolygonDelete;
+	gi.DropClient							= trap_DropClient;
+	gi.EntitiesInBox						= trap_EntitiesInBox;
+	gi.EntityContact						= SVSyscall_EntityContact;
+	gi.Trace								= SVSyscall_Trace;
+	gi.GetConfigstring						= trap_GetConfigstring;
+	gi.GetEntityToken						= trap_GetEntityToken;
+	gi.GetServerinfo						= trap_GetServerinfo;
+	gi.GetUsercmd							= trap_GetUsercmd;
+	gi.GetUserinfo							= trap_GetUserinfo;
+	gi.InPVS								= trap_InPVS;
+	gi.InPVSIgnorePortals					= trap_InPVSIgnorePortals;
+	gi.LinkEntity							= trap_LinkEntity;
+	gi.LocateGameData						= trap_LocateGameData;
+	gi.PointContents						= trap_PointContents;
+	gi.SendConsoleCommand					= trap_SendConsoleCommand;
+	gi.SendServerCommand					= trap_SendServerCommand;
+	gi.SetBrushModel						= trap_SetBrushModel;
+	gi.SetConfigstring						= trap_SetConfigstring;
+	gi.SetServerCull						= trap_SetServerCull;
+	gi.SetUserinfo							= trap_SetUserinfo;
+	gi.SiegePersSet							= trap_SiegePersSet;
+	gi.SiegePersGet							= trap_SiegePersGet;
+	gi.UnlinkEntity							= trap_UnlinkEntity;
+	gi.ROFF_Clean							= trap_ROFF_Clean;
+	gi.ROFF_UpdateEntities					= trap_ROFF_UpdateEntities;
+	gi.ROFF_Cache							= trap_ROFF_Cache;
+	gi.ROFF_Play							= trap_ROFF_Play;
+	gi.ROFF_Purge_Ent						= trap_ROFF_Purge_Ent;
+	gi.ICARUS_RunScript						= trap_ICARUS_RunScript;
+	gi.ICARUS_RegisterScript				= trap_ICARUS_RegisterScript;
+	gi.ICARUS_Init							= trap_ICARUS_Init;
+	gi.ICARUS_ValidEnt						= trap_ICARUS_ValidEnt;
+	gi.ICARUS_IsInitialized					= trap_ICARUS_IsInitialized;
+	gi.ICARUS_MaintainTaskManager			= trap_ICARUS_MaintainTaskManager;
+	gi.ICARUS_IsRunning						= trap_ICARUS_IsRunning;
+	gi.ICARUS_TaskIDPending					= trap_ICARUS_TaskIDPending;
+	gi.ICARUS_InitEnt						= trap_ICARUS_InitEnt;
+	gi.ICARUS_FreeEnt						= trap_ICARUS_FreeEnt;
+	gi.ICARUS_AssociateEnt					= trap_ICARUS_AssociateEnt;
+	gi.ICARUS_Shutdown						= trap_ICARUS_Shutdown;
+	gi.ICARUS_TaskIDSet						= trap_ICARUS_TaskIDSet;
+	gi.ICARUS_TaskIDComplete				= trap_ICARUS_TaskIDComplete;
+	gi.ICARUS_SetVar						= trap_ICARUS_SetVar;
+	gi.ICARUS_VariableDeclared				= trap_ICARUS_VariableDeclared;
+	gi.ICARUS_GetFloatVariable				= trap_ICARUS_GetFloatVariable;
+	gi.ICARUS_GetStringVariable				= trap_ICARUS_GetStringVariable;
+	gi.ICARUS_GetVectorVariable				= trap_ICARUS_GetVectorVariable;
+	gi.Nav_Init								= trap_Nav_Init;
+	gi.Nav_Free								= trap_Nav_Free;
+	gi.Nav_Load								= trap_Nav_Load;
+	gi.Nav_Save								= trap_Nav_Save;
+	gi.Nav_AddRawPoint						= trap_Nav_AddRawPoint;
+	gi.Nav_CalculatePaths					= trap_Nav_CalculatePaths;
+	gi.Nav_HardConnect						= trap_Nav_HardConnect;
+	gi.Nav_ShowNodes						= trap_Nav_ShowNodes;
+	gi.Nav_ShowEdges						= trap_Nav_ShowEdges;
+	gi.Nav_ShowPath							= trap_Nav_ShowPath;
+	gi.Nav_GetNearestNode					= trap_Nav_GetNearestNode;
+	gi.Nav_GetBestNode						= trap_Nav_GetBestNode;
+	gi.Nav_GetNodePosition					= trap_Nav_GetNodePosition;
+	gi.Nav_GetNodeNumEdges					= trap_Nav_GetNodeNumEdges;
+	gi.Nav_GetNodeEdge						= trap_Nav_GetNodeEdge;
+	gi.Nav_GetNumNodes						= trap_Nav_GetNumNodes;
+	gi.Nav_Connected						= trap_Nav_Connected;
+	gi.Nav_GetPathCost						= trap_Nav_GetPathCost;
+	gi.Nav_GetEdgeCost						= trap_Nav_GetEdgeCost;
+	gi.Nav_GetProjectedNode					= trap_Nav_GetProjectedNode;
+	gi.Nav_CheckFailedNodes					= trap_Nav_CheckFailedNodes;
+	gi.Nav_AddFailedNode					= trap_Nav_AddFailedNode;
+	gi.Nav_NodeFailed						= trap_Nav_NodeFailed;
+	gi.Nav_NodesAreNeighbors				= trap_Nav_NodesAreNeighbors;
+	gi.Nav_ClearFailedEdge					= trap_Nav_ClearFailedEdge;
+	gi.Nav_ClearAllFailedEdges				= trap_Nav_ClearAllFailedEdges;
+	gi.Nav_EdgeFailed						= trap_Nav_EdgeFailed;
+	gi.Nav_AddFailedEdge					= trap_Nav_AddFailedEdge;
+	gi.Nav_CheckFailedEdge					= trap_Nav_CheckFailedEdge;
+	gi.Nav_CheckAllFailedEdges				= trap_Nav_CheckAllFailedEdges;
+	gi.Nav_RouteBlocked						= trap_Nav_RouteBlocked;
+	gi.Nav_GetBestNodeAltRoute				= trap_Nav_GetBestNodeAltRoute;
+	gi.Nav_GetBestNodeAltRoute2				= trap_Nav_GetBestNodeAltRoute2;
+	gi.Nav_GetBestPathBetweenEnts			= trap_Nav_GetBestPathBetweenEnts;
+	gi.Nav_GetNodeRadius					= trap_Nav_GetNodeRadius;
+	gi.Nav_CheckBlockedEdges				= trap_Nav_CheckBlockedEdges;
+	gi.Nav_ClearCheckedNodes				= trap_Nav_ClearCheckedNodes;
+	gi.Nav_CheckedNode						= trap_Nav_CheckedNode;
+	gi.Nav_SetCheckedNode					= trap_Nav_SetCheckedNode;
+	gi.Nav_FlagAllNodes						= trap_Nav_FlagAllNodes;
+	gi.Nav_GetPathsCalculated				= trap_Nav_GetPathsCalculated;
+	gi.Nav_SetPathsCalculated				= trap_Nav_SetPathsCalculated;
+	gi.BotAllocateClient					= trap_BotAllocateClient;
+	gi.BotFreeClient						= trap_BotFreeClient;
+	gi.BotLoadCharacter						= trap_BotLoadCharacter;
+	gi.BotFreeCharacter						= trap_BotFreeCharacter;
+	gi.Characteristic_Float					= trap_Characteristic_Float;
+	gi.Characteristic_BFloat				= trap_Characteristic_BFloat;
+	gi.Characteristic_Integer				= trap_Characteristic_Integer;
+	gi.Characteristic_BInteger				= trap_Characteristic_BInteger;
+	gi.Characteristic_String				= trap_Characteristic_String;
+	gi.BotAllocChatState					= trap_BotAllocChatState;
+	gi.BotFreeChatState						= trap_BotFreeChatState;
+	gi.BotQueueConsoleMessage				= trap_BotQueueConsoleMessage;
+	gi.BotRemoveConsoleMessage				= trap_BotRemoveConsoleMessage;
+	gi.BotNextConsoleMessage				= trap_BotNextConsoleMessage;
+	gi.BotNumConsoleMessages				= trap_BotNumConsoleMessages;
+	gi.BotInitialChat						= trap_BotInitialChat;
+	gi.BotReplyChat							= trap_BotReplyChat;
+	gi.BotChatLength						= trap_BotChatLength;
+	gi.BotEnterChat							= trap_BotEnterChat;
+	gi.StringContains						= trap_StringContains;
+	gi.BotFindMatch							= trap_BotFindMatch;
+	gi.BotMatchVariable						= trap_BotMatchVariable;
+	gi.UnifyWhiteSpaces						= trap_UnifyWhiteSpaces;
+	gi.BotReplaceSynonyms					= trap_BotReplaceSynonyms;
+	gi.BotLoadChatFile						= trap_BotLoadChatFile;
+	gi.BotSetChatGender						= trap_BotSetChatGender;
+	gi.BotSetChatName						= trap_BotSetChatName;
+	gi.BotResetGoalState					= trap_BotResetGoalState;
+	gi.BotResetAvoidGoals					= trap_BotResetAvoidGoals;
+	gi.BotPushGoal							= trap_BotPushGoal;
+	gi.BotPopGoal							= trap_BotPopGoal;
+	gi.BotEmptyGoalStack					= trap_BotEmptyGoalStack;
+	gi.BotDumpAvoidGoals					= trap_BotDumpAvoidGoals;
+	gi.BotDumpGoalStack						= trap_BotDumpGoalStack;
+	gi.BotGoalName							= trap_BotGoalName;
+	gi.BotGetTopGoal						= trap_BotGetTopGoal;
+	gi.BotGetSecondGoal						= trap_BotGetSecondGoal;
+	gi.BotChooseLTGItem						= trap_BotChooseLTGItem;
+	gi.BotChooseNBGItem						= trap_BotChooseNBGItem;
+	gi.BotTouchingGoal						= trap_BotTouchingGoal;
+	gi.BotItemGoalInVisButNotVisible		= trap_BotItemGoalInVisButNotVisible;
+	gi.BotGetLevelItemGoal					= trap_BotGetLevelItemGoal;
+	gi.BotAvoidGoalTime						= trap_BotAvoidGoalTime;
+	gi.BotInitLevelItems					= trap_BotInitLevelItems;
+	gi.BotUpdateEntityItems					= trap_BotUpdateEntityItems;
+	gi.BotLoadItemWeights					= trap_BotLoadItemWeights;
+	gi.BotFreeItemWeights					= trap_BotFreeItemWeights;
+	gi.BotSaveGoalFuzzyLogic				= trap_BotSaveGoalFuzzyLogic;
+	gi.BotAllocGoalState					= trap_BotAllocGoalState;
+	gi.BotFreeGoalState						= trap_BotFreeGoalState;
+	gi.BotResetMoveState					= trap_BotResetMoveState;
+	gi.BotMoveToGoal						= trap_BotMoveToGoal;
+	gi.BotMoveInDirection					= trap_BotMoveInDirection;
+	gi.BotResetAvoidReach					= trap_BotResetAvoidReach;
+	gi.BotResetLastAvoidReach				= trap_BotResetLastAvoidReach;
+	gi.BotReachabilityArea					= trap_BotReachabilityArea;
+	gi.BotMovementViewTarget				= trap_BotMovementViewTarget;
+	gi.BotAllocMoveState					= trap_BotAllocMoveState;
+	gi.BotFreeMoveState						= trap_BotFreeMoveState;
+	gi.BotInitMoveState						= trap_BotInitMoveState;
+	gi.BotChooseBestFightWeapon				= trap_BotChooseBestFightWeapon;
+	gi.BotGetWeaponInfo						= trap_BotGetWeaponInfo;
+	gi.BotLoadWeaponWeights					= trap_BotLoadWeaponWeights;
+	gi.BotAllocWeaponState					= trap_BotAllocWeaponState;
+	gi.BotFreeWeaponState					= trap_BotFreeWeaponState;
+	gi.BotResetWeaponState					= trap_BotResetWeaponState;
+	gi.GeneticParentsAndChildSelection		= trap_GeneticParentsAndChildSelection;
+	gi.BotInterbreedGoalFuzzyLogic			= trap_BotInterbreedGoalFuzzyLogic;
+	gi.BotMutateGoalFuzzyLogic				= trap_BotMutateGoalFuzzyLogic;
+	gi.BotGetNextCampSpotGoal				= trap_BotGetNextCampSpotGoal;
+	gi.BotGetMapLocationGoal				= trap_BotGetMapLocationGoal;
+	gi.BotNumInitialChats					= trap_BotNumInitialChats;
+	gi.BotGetChatMessage					= trap_BotGetChatMessage;
+	gi.BotRemoveFromAvoidGoals				= trap_BotRemoveFromAvoidGoals;
+	gi.BotPredictVisiblePosition			= trap_BotPredictVisiblePosition;
+	gi.BotSetAvoidGoalTime					= trap_BotSetAvoidGoalTime;
+	gi.BotAddAvoidSpot						= trap_BotAddAvoidSpot;
+	gi.BotLibSetup							= trap_BotLibSetup;
+	gi.BotLibShutdown						= trap_BotLibShutdown;
+	gi.BotLibVarSet							= trap_BotLibVarSet;
+	gi.BotLibVarGet							= trap_BotLibVarGet;
+	gi.BotLibDefine							= trap_BotLibDefine;
+	gi.BotLibStartFrame						= trap_BotLibStartFrame;
+	gi.BotLibLoadMap						= trap_BotLibLoadMap;
+	gi.BotLibUpdateEntity					= trap_BotLibUpdateEntity;
+	gi.BotLibTest							= trap_BotLibTest;
+	gi.BotGetSnapshotEntity					= trap_BotGetSnapshotEntity;
+	gi.BotGetServerCommand					= trap_BotGetServerCommand;
+	gi.BotUserCommand						= trap_BotUserCommand;
+	gi.BotUpdateWaypoints					= trap_Bot_UpdateWaypoints;
+	gi.BotCalculatePaths					= trap_Bot_CalculatePaths;
+	gi.AAS_EnableRoutingArea				= trap_AAS_EnableRoutingArea;
+	gi.AAS_BBoxAreas						= trap_AAS_BBoxAreas;
+	gi.AAS_AreaInfo							= trap_AAS_AreaInfo;
+	gi.AAS_EntityInfo						= trap_AAS_EntityInfo;
+	gi.AAS_Initialized						= trap_AAS_Initialized;
+	gi.AAS_PresenceTypeBoundingBox			= trap_AAS_PresenceTypeBoundingBox;
+	gi.AAS_Time								= trap_AAS_Time;
+	gi.AAS_PointAreaNum						= trap_AAS_PointAreaNum;
+	gi.AAS_TraceAreas						= trap_AAS_TraceAreas;
+	gi.AAS_PointContents					= trap_AAS_PointContents;
+	gi.AAS_NextBSPEntity					= trap_AAS_NextBSPEntity;
+	gi.AAS_ValueForBSPEpairKey				= trap_AAS_ValueForBSPEpairKey;
+	gi.AAS_VectorForBSPEpairKey				= trap_AAS_VectorForBSPEpairKey;
+	gi.AAS_FloatForBSPEpairKey				= trap_AAS_FloatForBSPEpairKey;
+	gi.AAS_IntForBSPEpairKey				= trap_AAS_IntForBSPEpairKey;
+	gi.AAS_AreaReachability					= trap_AAS_AreaReachability;
+	gi.AAS_AreaTravelTimeToGoalArea			= trap_AAS_AreaTravelTimeToGoalArea;
+	gi.AAS_Swimming							= trap_AAS_Swimming;
+	gi.AAS_PredictClientMovement			= trap_AAS_PredictClientMovement;
+	gi.AAS_AlternativeRouteGoals			= trap_AAS_AlternativeRouteGoals;
+	gi.AAS_PredictRoute						= trap_AAS_PredictRoute;
+	gi.AAS_PointReachabilityAreaIndex		= trap_AAS_PointReachabilityAreaIndex;
+	gi.EA_Say								= trap_EA_Say;
+	gi.EA_SayTeam							= trap_EA_SayTeam;
+	gi.EA_Command							= trap_EA_Command;
+	gi.EA_Action							= trap_EA_Action;
+	gi.EA_Gesture							= trap_EA_Gesture;
+	gi.EA_Talk								= trap_EA_Talk;
+	gi.EA_Attack							= trap_EA_Attack;
+	gi.EA_Alt_Attack						= trap_EA_Alt_Attack;
+	gi.EA_ForcePower						= trap_EA_ForcePower;
+	gi.EA_Use								= trap_EA_Use;
+	gi.EA_Respawn							= trap_EA_Respawn;
+	gi.EA_Crouch							= trap_EA_Crouch;
+	gi.EA_MoveUp							= trap_EA_MoveUp;
+	gi.EA_MoveDown							= trap_EA_MoveDown;
+	gi.EA_MoveForward						= trap_EA_MoveForward;
+	gi.EA_MoveBack							= trap_EA_MoveBack;
+	gi.EA_MoveLeft							= trap_EA_MoveLeft;
+	gi.EA_MoveRight							= trap_EA_MoveRight;
+	gi.EA_SelectWeapon						= trap_EA_SelectWeapon;
+	gi.EA_Jump								= trap_EA_Jump;
+	gi.EA_DelayedJump						= trap_EA_DelayedJump;
+	gi.EA_Move								= trap_EA_Move;
+	gi.EA_View								= trap_EA_View;
+	gi.EA_EndRegular						= trap_EA_EndRegular;
+	gi.EA_GetInput							= trap_EA_GetInput;
+	gi.EA_ResetInput						= trap_EA_ResetInput;
+	gi.PC_LoadSource						= trap_PC_LoadSource;
+	gi.PC_FreeSource						= trap_PC_FreeSource;
+	gi.PC_ReadToken							= trap_PC_ReadToken;
+	gi.PC_SourceFileAndLine					= trap_PC_SourceFileAndLine;
+	gi.R_RegisterSkin						= trap_R_RegisterSkin;
+	gi.SetActiveSubBSP						= trap_SetActiveSubBSP;
+	gi.CM_RegisterTerrain					= trap_CM_RegisterTerrain;
+	gi.RMG_Init								= trap_RMG_Init;
+	gi.G2API_ListModelBones					= trap_G2_ListModelBones;
+	gi.G2API_ListModelSurfaces				= trap_G2_ListModelSurfaces;
+	gi.G2API_HaveWeGhoul2Models				= trap_G2_HaveWeGhoul2Models;
+	gi.G2API_SetGhoul2ModelIndexes			= trap_G2_SetGhoul2ModelIndexes;
+	gi.G2API_GetBoltMatrix					= trap_G2API_GetBoltMatrix;
+	gi.G2API_GetBoltMatrix_NoReconstruct	= trap_G2API_GetBoltMatrix_NoReconstruct;
+	gi.G2API_GetBoltMatrix_NoRecNoRot		= trap_G2API_GetBoltMatrix_NoRecNoRot;
+	gi.G2API_InitGhoul2Model				= trap_G2API_InitGhoul2Model;
+	gi.G2API_SetSkin						= trap_G2API_SetSkin;
+	gi.G2API_Ghoul2Size						= trap_G2API_Ghoul2Size;
+	gi.G2API_AddBolt						= trap_G2API_AddBolt;
+	gi.G2API_SetBoltInfo					= trap_G2API_SetBoltInfo;
+	gi.G2API_SetBoneAngles					= trap_G2API_SetBoneAngles;
+	gi.G2API_SetBoneAnim					= trap_G2API_SetBoneAnim;
+	gi.G2API_GetBoneAnim					= trap_G2API_GetBoneAnim;
+	gi.G2API_GetGLAName						= trap_G2API_GetGLAName;
+	gi.G2API_CopyGhoul2Instance				= trap_G2API_CopyGhoul2Instance;
+	gi.G2API_CopySpecificGhoul2Model		= trap_G2API_CopySpecificGhoul2Model;
+	gi.G2API_DuplicateGhoul2Instance		= trap_G2API_DuplicateGhoul2Instance;
+	gi.G2API_HasGhoul2ModelOnIndex			= trap_G2API_HasGhoul2ModelOnIndex;
+	gi.G2API_RemoveGhoul2Model				= trap_G2API_RemoveGhoul2Model;
+	gi.G2API_RemoveGhoul2Models				= trap_G2API_RemoveGhoul2Models;
+	gi.G2API_CleanGhoul2Models				= trap_G2API_CleanGhoul2Models;
+	gi.G2API_CollisionDetect				= trap_G2API_CollisionDetect;
+	gi.G2API_CollisionDetectCache			= trap_G2API_CollisionDetectCache;
+	gi.G2API_SetRootSurface					= trap_G2API_SetRootSurface;
+	gi.G2API_SetSurfaceOnOff				= trap_G2API_SetSurfaceOnOff;
+	gi.G2API_SetNewOrigin					= trap_G2API_SetNewOrigin;
+	gi.G2API_DoesBoneExist					= trap_G2API_DoesBoneExist;
+	gi.G2API_GetSurfaceRenderStatus			= trap_G2API_GetSurfaceRenderStatus;
+	gi.G2API_AbsurdSmoothing				= trap_G2API_AbsurdSmoothing;
+	gi.G2API_SetRagDoll						= trap_G2API_SetRagDoll;
+	gi.G2API_AnimateG2Models				= trap_G2API_AnimateG2Models;
+	gi.G2API_RagPCJConstraint				= trap_G2API_RagPCJConstraint;
+	gi.G2API_RagPCJGradientSpeed			= trap_G2API_RagPCJGradientSpeed;
+	gi.G2API_RagEffectorGoal				= trap_G2API_RagEffectorGoal;
+	gi.G2API_GetRagBonePos					= trap_G2API_GetRagBonePos;
+	gi.G2API_RagEffectorKick				= trap_G2API_RagEffectorKick;
+	gi.G2API_RagForceSolve					= trap_G2API_RagForceSolve;
+	gi.G2API_SetBoneIKState					= trap_G2API_SetBoneIKState;
+	gi.G2API_IKMove							= trap_G2API_IKMove;
+	gi.G2API_RemoveBone						= trap_G2API_RemoveBone;
+	gi.G2API_AttachInstanceToEntNum			= trap_G2API_AttachInstanceToEntNum;
+	gi.G2API_ClearAttachedInstance			= trap_G2API_ClearAttachedInstance;
+	gi.G2API_CleanEntAttachments			= trap_G2API_CleanEntAttachments;
+	gi.G2API_OverrideServer					= trap_G2API_OverrideServer;
+	gi.G2API_GetSurfaceName					= trap_G2API_GetSurfaceName;
+}
 #endif

@@ -3193,7 +3193,7 @@ void SV_BindGame( void ) {
 		gi.G2API_ClearAttachedInstance			= SV_G2API_ClearAttachedInstance;
 		gi.G2API_CleanEntAttachments			= SV_G2API_CleanEntAttachments;
 		gi.G2API_OverrideServer					= SV_G2API_OverrideServer;
-		gi.G2API_GetSurfaceName					= SV_G2API_GetSurfaceName;					
+		gi.G2API_GetSurfaceName					= SV_G2API_GetSurfaceName;
 
 		GetGameAPI = (GetGameAPI_t)gvm->GetModuleAPI;
 		ret = GetGameAPI( GAME_API_VERSION, &gi );
