@@ -469,7 +469,7 @@ void QDECL Com_Error ( int errorLevel, const char *error, ... ) {
 	Q_vsnprintf (text, sizeof( text ), error, argptr);
 	va_end (argptr);
 
-	gi.Error(ERR_DROP, text);
+	trap_Error(text);
 }
 
 void QDECL Com_Printf( const char *msg, ... ) {
@@ -480,7 +480,7 @@ void QDECL Com_Printf( const char *msg, ... ) {
 	Q_vsnprintf (text, sizeof( text ), msg, argptr);
 	va_end (argptr);
 
-	gi.Print(text);
+	trap_Print(text);
 }
 
 /*
@@ -3585,7 +3585,7 @@ Q_EXPORT gameExport_t* QDECL GetModuleAPI( int apiVersion, gameImport_t *import 
 	return &ge;
 }
 
-#else
+#endif
 
 /*
 ================
@@ -3741,5 +3741,3 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 
 	return -1;
 }
-
-#endif

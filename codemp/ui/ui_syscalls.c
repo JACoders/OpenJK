@@ -4,12 +4,18 @@
 // syscalls.asm is included instead when building a qvm
 #include "ui_local.h"
 
-#ifndef OJK_NEW_VM_API
-
 static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
+
+#ifdef OJK_NEW_VM_API
+	static void TranslateSyscalls( void );
+#endif
 
 Q_EXPORT_C Q_EXPORT void dllEntry( intptr_t (QDECL *syscallptr)( intptr_t arg,... ) ) {
 	Q_syscall = syscallptr;
+
+	#ifdef OJK_NEW_VM_API
+		TranslateSyscalls();
+	#endif
 }
 
 int PASSFLOAT( float x ) {
@@ -216,10 +222,10 @@ int trap_LAN_GetPingQueueCount( void ) {
 int trap_LAN_ServerStatus( const char *serverAddress, char *serverStatus, int maxLen ) {
 	return Q_syscall( UI_LAN_SERVERSTATUS, serverAddress, serverStatus, maxLen );
 }
-void trap_LAN_SaveCachedServers() {
+void trap_LAN_SaveCachedServers( void ) {
 	Q_syscall( UI_LAN_SAVECACHEDSERVERS );
 }
-void trap_LAN_LoadCachedServers() {
+void trap_LAN_LoadCachedServers( void ) {
 	Q_syscall( UI_LAN_LOADCACHEDSERVERS );
 }
 void trap_LAN_ResetPings(int n) {
@@ -418,4 +424,155 @@ qboolean trap_G2API_AttachG2Model(void *ghoul2From, int modelIndexFrom, void *gh
 	return Q_syscall(UI_G2_ATTACHG2MODEL, ghoul2From, modelIndexFrom, ghoul2To, toBoltIndex, toModel);
 }
 
+#ifdef OJK_NEW_VM_API
+int UISyscall_FS_Read( void *buffer, int len, fileHandle_t f ) { trap_FS_Read( buffer, len, f ); return 0; }
+int UISyscall_FS_Write( const void *buffer, int len, fileHandle_t f ) { trap_FS_Write( buffer, len, f ); return 0; }
+void UISyscall_R_AddPolysToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts, int num ) { trap_R_AddPolyToScene( hShader, numVerts, verts ); }
+void UISyscall_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) { trap_G2API_CollisionDetect( collRecMap, ghoul2, angles, position, frameNumber, entNum, rayStart, rayEnd, scale, traceFlags, useLod, fRadius ); }
+
+static void TranslateSyscalls( void ) {
+	uii.Print								= Com_Printf;
+	uii.Error								= Com_Error;
+	uii.Milliseconds						= trap_Milliseconds;
+	uii.RealTime							= trap_RealTime;
+	uii.MemoryRemaining						= trap_MemoryRemaining;
+
+	uii.Cvar_Create							= trap_Cvar_Create;
+	uii.Cvar_InfoStringBuffer				= trap_Cvar_InfoStringBuffer;
+	uii.Cvar_Register						= trap_Cvar_Register;
+	uii.Cvar_Reset							= trap_Cvar_Reset;
+	uii.Cvar_Set							= trap_Cvar_Set;
+	uii.Cvar_SetValue						= trap_Cvar_SetValue;
+	uii.Cvar_Update							= trap_Cvar_Update;
+	uii.Cvar_VariableStringBuffer			= trap_Cvar_VariableStringBuffer;
+	uii.Cvar_VariableValue					= trap_Cvar_VariableValue;
+
+	uii.Cmd_Argc							= trap_Argc;
+	uii.Cmd_Argv							= trap_Argv;
+	uii.Cmd_ExecuteText						= trap_Cmd_ExecuteText;
+
+	uii.FS_Close							= trap_FS_FCloseFile;
+	uii.FS_GetFileList						= trap_FS_GetFileList;
+	uii.FS_Open								= trap_FS_FOpenFile;
+	uii.FS_Read								= UISyscall_FS_Read;
+	uii.FS_Write							= UISyscall_FS_Write;
+
+	uii.GetClientState						= trap_GetClientState;
+	uii.GetClipboardData					= trap_GetClipboardData;
+	uii.GetConfigString						= trap_GetConfigString;
+	uii.GetGlconfig							= trap_GetGlconfig;
+	uii.UpdateScreen						= trap_UpdateScreen;
+
+	uii.Key_ClearStates						= trap_Key_ClearStates;
+	uii.Key_GetBindingBuf					= trap_Key_GetBindingBuf;
+	uii.Key_IsDown							= trap_Key_IsDown;
+	uii.Key_KeynumToStringBuf				= trap_Key_KeynumToStringBuf;
+	uii.Key_SetBinding						= trap_Key_SetBinding;
+	uii.Key_GetCatcher						= trap_Key_GetCatcher;
+	uii.Key_GetOverstrikeMode				= trap_Key_GetOverstrikeMode;
+	uii.Key_SetCatcher						= trap_Key_SetCatcher;
+	uii.Key_SetOverstrikeMode				= trap_Key_SetOverstrikeMode;
+
+	uii.PC_AddGlobalDefine					= trap_PC_AddGlobalDefine;
+	uii.PC_FreeSource						= trap_PC_FreeSource;
+	uii.PC_LoadGlobalDefines				= trap_PC_LoadGlobalDefines;
+	uii.PC_LoadSource						= trap_PC_LoadSource;
+	uii.PC_ReadToken						= trap_PC_ReadToken;
+	uii.PC_RemoveAllGlobalDefines			= trap_PC_RemoveAllGlobalDefines;
+	uii.PC_SourceFileAndLine				= trap_PC_SourceFileAndLine;
+
+	uii.CIN_DrawCinematic					= trap_CIN_DrawCinematic;
+	uii.CIN_PlayCinematic					= trap_CIN_PlayCinematic;
+	uii.CIN_RunCinematic					= trap_CIN_RunCinematic;
+	uii.CIN_SetExtents						= trap_CIN_SetExtents;
+	uii.CIN_StopCinematic					= trap_CIN_StopCinematic;
+
+	uii.LAN_AddServer						= trap_LAN_AddServer;
+	uii.LAN_ClearPing						= trap_LAN_ClearPing;
+	uii.LAN_CompareServers					= trap_LAN_CompareServers;
+	uii.LAN_GetPing							= trap_LAN_GetPing;
+	uii.LAN_GetPingInfo						= trap_LAN_GetPingInfo;
+	uii.LAN_GetPingQueueCount				= trap_LAN_GetPingQueueCount;
+	uii.LAN_GetServerAddressString			= trap_LAN_GetServerAddressString;
+	uii.LAN_GetServerCount					= trap_LAN_GetServerCount;
+	uii.LAN_GetServerInfo					= trap_LAN_GetServerInfo;
+	uii.LAN_GetServerPing					= trap_LAN_GetServerPing;
+	uii.LAN_LoadCachedServers				= trap_LAN_LoadCachedServers;
+	uii.LAN_MarkServerVisible				= trap_LAN_MarkServerVisible;
+	uii.LAN_RemoveServer					= trap_LAN_RemoveServer;
+	uii.LAN_ResetPings						= trap_LAN_ResetPings;
+	uii.LAN_SaveCachedServers				= trap_LAN_SaveCachedServers;
+	uii.LAN_ServerIsVisible					= trap_LAN_ServerIsVisible;
+	uii.LAN_ServerStatus					= trap_LAN_ServerStatus;
+	uii.LAN_UpdateVisiblePings				= trap_LAN_UpdateVisiblePings;
+
+	uii.S_StartBackgroundTrack				= trap_S_StartBackgroundTrack;
+	uii.S_StartLocalSound					= trap_S_StartLocalSound;
+	uii.S_StopBackgroundTrack				= trap_S_StopBackgroundTrack;
+	uii.S_RegisterSound						= trap_S_RegisterSound;
+
+	uii.SE_GetLanguageName					= trap_GetLanguageName;
+	uii.SE_GetNumLanguages					= trap_SP_GetNumLanguages;
+	uii.SE_GetStringTextString				= trap_SP_GetStringTextString;
+
+	uii.R_Language_IsAsian					= trap_Language_IsAsian;
+	uii.R_Language_UsesSpaces				= trap_Language_UsesSpaces;
+	uii.R_AnyLanguage_ReadCharFromString	= trap_AnyLanguage_ReadCharFromString;
+
+	uii.R_AddLightToScene					= trap_R_AddLightToScene;
+	uii.R_AddPolysToScene					= UISyscall_R_AddPolysToScene;
+	uii.R_AddRefEntityToScene				= trap_R_AddRefEntityToScene;
+	uii.R_ClearScene						= trap_R_ClearScene;
+	uii.R_DrawStretchPic					= trap_R_DrawStretchPic;
+	uii.R_Font_DrawString					= trap_R_Font_DrawString;
+	uii.R_Font_HeightPixels					= trap_R_Font_HeightPixels;
+	uii.R_Font_StrLenChars					= trap_R_Font_StrLenChars;
+	uii.R_Font_StrLenPixels					= trap_R_Font_StrLenPixels;
+	uii.R_LerpTag							= trap_CM_LerpTag;
+	uii.R_ModelBounds						= trap_R_ModelBounds;
+	uii.R_RegisterFont						= trap_R_RegisterFont;
+	uii.R_RegisterModel						= trap_R_RegisterModel;
+	uii.R_RegisterShaderNoMip				= trap_R_RegisterShaderNoMip;
+	uii.R_RegisterSkin						= trap_R_RegisterSkin;
+	uii.R_RemapShader						= trap_R_RemapShader;
+	uii.R_RenderScene						= trap_R_RenderScene;
+	uii.R_SetColor							= trap_R_SetColor;
+	uii.R_ShaderNameFromIndex				= trap_R_ShaderNameFromIndex;
+
+	uii.G2_ListModelSurfaces				= trap_G2_ListModelSurfaces;
+	uii.G2_ListModelBones					= trap_G2_ListModelBones;
+	uii.G2_SetGhoul2ModelIndexes			= trap_G2_SetGhoul2ModelIndexes;
+	uii.G2_HaveWeGhoul2Models				= trap_G2_HaveWeGhoul2Models;
+	uii.G2API_GetBoltMatrix					= trap_G2API_GetBoltMatrix;
+	uii.G2API_GetBoltMatrix_NoReconstruct	= trap_G2API_GetBoltMatrix_NoReconstruct;
+	uii.G2API_GetBoltMatrix_NoRecNoRot		= trap_G2API_GetBoltMatrix_NoRecNoRot;
+	uii.G2API_InitGhoul2Model				= trap_G2API_InitGhoul2Model;
+	uii.G2API_SetSkin						= trap_G2API_SetSkin;
+	uii.G2API_CollisionDetect				= UISyscall_G2API_CollisionDetect;
+	uii.G2API_CollisionDetectCache			= UISyscall_G2API_CollisionDetect;
+	uii.G2API_CleanGhoul2Models				= trap_G2API_CleanGhoul2Models;
+	uii.G2API_SetBoneAngles					= trap_G2API_SetBoneAngles;
+	uii.G2API_SetBoneAnim					= trap_G2API_SetBoneAnim;
+	uii.G2API_GetBoneAnim					= trap_G2API_GetBoneAnim;
+	uii.G2API_GetBoneFrame					= trap_G2API_GetBoneFrame;
+	uii.G2API_GetGLAName					= trap_G2API_GetGLAName;
+	uii.G2API_CopyGhoul2Instance			= trap_G2API_CopyGhoul2Instance;
+	uii.G2API_CopySpecificGhoul2Model		= trap_G2API_CopySpecificGhoul2Model;
+	uii.G2API_DuplicateGhoul2Instance		= trap_G2API_DuplicateGhoul2Instance;
+	uii.G2API_HasGhoul2ModelOnIndex			= trap_G2API_HasGhoul2ModelOnIndex;
+	uii.G2API_RemoveGhoul2Model				= trap_G2API_RemoveGhoul2Model;
+	uii.G2API_AddBolt						= trap_G2API_AddBolt;
+	uii.G2API_SetBoltInfo					= trap_G2API_SetBoltInfo;
+	uii.G2API_SetRootSurface				= trap_G2API_SetRootSurface;
+	uii.G2API_SetSurfaceOnOff				= trap_G2API_SetSurfaceOnOff;
+	uii.G2API_SetNewOrigin					= trap_G2API_SetNewOrigin;
+	uii.G2API_GetTime						= trap_G2API_GetTime;
+	uii.G2API_SetTime						= trap_G2API_SetTime;
+	uii.G2API_SetRagDoll					= trap_G2API_SetRagDoll;
+	uii.G2API_AnimateG2Models				= trap_G2API_AnimateG2Models;
+	uii.G2API_SetBoneIKState				= trap_G2API_SetBoneIKState;
+	uii.G2API_IKMove						= trap_G2API_IKMove;
+	uii.G2API_GetSurfaceName				= trap_G2API_GetSurfaceName;
+	uii.G2API_AttachG2Model					= trap_G2API_AttachG2Model;
+}
 #endif

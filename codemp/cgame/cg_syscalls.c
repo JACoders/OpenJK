@@ -3,12 +3,19 @@
 // cg_syscalls.c -- this file is only included when building a dll
 // cg_syscalls.asm is included instead when building a qvm
 #include "cg_local.h"
-
-#ifndef OJK_NEW_VM_API
-
+ 
 static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
+
+#ifdef OJK_NEW_VM_API
+	static void TranslateSyscalls( void );
+#endif
+
 Q_EXPORT void dllEntry( intptr_t (QDECL *syscallptr)( intptr_t arg,... ) ) {
 	Q_syscall = syscallptr;
+
+	#ifdef OJK_NEW_VM_API
+		TranslateSyscalls();
+	#endif
 }
 
 int PASSFLOAT( float x ) {
@@ -129,7 +136,7 @@ int trap_S_GetVoiceVolume( int entityNum ) {
 void trap_S_MuteSound( int entityNum, int entchannel ) {
 	Q_syscall( CG_S_MUTESOUND, entityNum, entchannel );
 }
-void trap_S_StartSound( vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx ) {
+void trap_S_StartSound( const vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx ) {
 	Q_syscall( CG_S_STARTSOUND, origin, entityNum, entchannel, sfx );
 }
 void trap_S_StartLocalSound( sfxHandle_t sfx, int channelNum ) {
@@ -296,7 +303,7 @@ void trap_R_AutomapElevAdj(float newHeight) {
 qboolean trap_R_InitWireframeAutomap(void) {
 	return Q_syscall( CG_R_INITWIREFRAMEAUTO );
 }
-void trap_FX_AddLine( const vec3_t start, const vec3_t end, float size1, float size2, float sizeParm, float alpha1, float alpha2, float alphaParm, const vec3_t sRGB, const vec3_t eRGB, float rgbParm, int killTime, qhandle_t shader, int flags) {
+void trap_FX_AddLine( vec3_t start, vec3_t end, float size1, float size2, float sizeParm, float alpha1, float alpha2, float alphaParm, vec3_t sRGB, vec3_t eRGB, float rgbParm, int killTime, qhandle_t shader, int flags) {
 	Q_syscall( CG_FX_ADDLINE, start, end, PASSFLOAT(size1), PASSFLOAT(size2), PASSFLOAT(sizeParm), PASSFLOAT(alpha1), PASSFLOAT(alpha2), PASSFLOAT(alphaParm), sRGB, eRGB, PASSFLOAT(rgbParm), killTime, shader, flags);
 }
 void trap_GetGlconfig( glconfig_t *glconfig ) {
@@ -653,7 +660,7 @@ void trap_G2API_GetSurfaceName(void *ghoul2, int surfNumber, int modelIndex, cha
 void trap_CG_RegisterSharedMemory(char *memory) {
 	Q_syscall(CG_SET_SHARED_BUFFER, memory);
 }
-int	trap_CM_RegisterTerrain(const char *config) {
+int trap_CM_RegisterTerrain(const char *config) {
 	return Q_syscall(CG_CM_REGISTER_TERRAIN, config);
 }
 void trap_RMG_Init(int terrainID, const char *terrainInfo) {
@@ -668,8 +675,225 @@ void trap_R_WeatherContentsOverride( int contents ) {
 void trap_R_WorldEffectCommand(const char *cmd) {
 	Q_syscall(CG_R_WORLDEFFECTCOMMAND, cmd);
 }
-void trap_WE_AddWeatherZone( const vec3_t mins, const vec3_t maxs ) {
+void trap_WE_AddWeatherZone( vec3_t mins, vec3_t maxs ) {
 	Q_syscall( CG_WE_ADDWEATHERZONE, mins, maxs );
 }
 
-#endif // !OJK_NEW_VM_API
+#ifdef OJK_NEW_VM_API
+int CGSyscall_FS_Read( void *buffer, int len, fileHandle_t f ) { trap_FS_Read( buffer, len, f ); return 0; }
+int CGSyscall_FS_Write( const void *buffer, int len, fileHandle_t f ) { trap_FS_Write( buffer, len, f ); return 0; }
+clipHandle_t CGSyscall_CM_TempModel( const vec3_t mins, const vec3_t maxs, int capsule ) { if ( capsule ) return trap_CM_TempCapsuleModel( mins, maxs ); else return trap_CM_TempBoxModel( mins, maxs ); }
+void CGSyscall_CM_Trace( trace_t *results, const vec3_t start, const vec3_t end, const vec3_t mins, const vec3_t maxs, clipHandle_t model, int brushmask, int capsule ) { if ( capsule ) trap_CM_CapsuleTrace( results, start, end, mins, maxs, model, brushmask ); else trap_CM_BoxTrace( results, start, end, mins, maxs, model, brushmask ); }
+void CGSyscall_CM_TransformedTrace( trace_t *results, const vec3_t start, const vec3_t end, const vec3_t mins, const vec3_t maxs, clipHandle_t model, int brushmask, const vec3_t origin, const vec3_t angles, int capsule ) { if ( capsule ) trap_CM_TransformedCapsuleTrace( results, start, end, mins, maxs, model, brushmask, origin, angles ); else trap_CM_TransformedBoxTrace( results, start, end, mins, maxs, model, brushmask, origin, angles ); }
+void CGSyscall_R_AddPolysToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts, int num ) { trap_R_AddPolyToScene( hShader, numVerts, verts ); }
+float CGSyscall_R_GetDistanceCull( void ) { float tmp; trap_R_GetDistanceCull( &tmp ); return tmp; }
+void CGSyscall_FX_PlayEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad, qboolean isPortal ) { if ( isPortal ) trap_FX_PlayPortalEffectID( id, org, fwd, vol, rad ); else trap_FX_PlayEffectID( id, org, fwd, vol, rad ); }
+void CGSyscall_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) { trap_G2API_CollisionDetect( collRecMap, ghoul2, angles, position, frameNumber, entNum, rayStart, rayEnd, scale, traceFlags, useLod, fRadius ); }
+
+static void TranslateSyscalls( void ) {
+	cgi.Print								= Com_Printf;
+	cgi.Error								= Com_Error;
+	cgi.SnapVector							= trap_SnapVector;
+	cgi.MemoryRemaining						= trap_MemoryRemaining;
+	cgi.RegisterSharedMemory				= trap_CG_RegisterSharedMemory;
+	cgi.TrueMalloc							= trap_TrueMalloc;
+	cgi.TrueFree							= trap_TrueFree;
+	cgi.Milliseconds						= trap_Milliseconds;
+	cgi.RealTime							= trap_RealTime;
+	cgi.PrecisionTimerStart					= trap_PrecisionTimer_Start;
+	cgi.PrecisionTimerEnd					= trap_PrecisionTimer_End;
+	cgi.Cvar_Register						= trap_Cvar_Register;
+	cgi.Cvar_Set							= trap_Cvar_Set;
+	cgi.Cvar_Update							= trap_Cvar_Update;
+	cgi.Cvar_VariableStringBuffer			= trap_Cvar_VariableStringBuffer;
+	cgi.AddCommand							= trap_AddCommand;
+	cgi.Cmd_Argc							= trap_Argc;
+	cgi.Cmd_Args							= trap_Args;
+	cgi.Cmd_Argv							= trap_Argv;
+	cgi.RemoveCommand						= trap_RemoveCommand;
+	cgi.SendClientCommand					= trap_SendClientCommand;
+	cgi.SendConsoleCommand					= trap_SendConsoleCommand;
+	cgi.FS_Close							= trap_FS_FCloseFile;
+	cgi.FS_GetFileList						= trap_FS_GetFileList;
+	cgi.FS_Open								= trap_FS_FOpenFile;
+	cgi.FS_Read								= CGSyscall_FS_Read;
+	cgi.FS_Write							= CGSyscall_FS_Write;
+	cgi.UpdateScreen						= trap_UpdateScreen;
+	cgi.CM_InlineModel						= trap_CM_InlineModel;
+	cgi.CM_LoadMap							= trap_CM_LoadMap;
+	cgi.CM_NumInlineModels					= trap_CM_NumInlineModels;
+	cgi.CM_PointContents					= trap_CM_PointContents;
+	cgi.CM_RegisterTerrain					= trap_CM_RegisterTerrain;
+	cgi.CM_TempModel						= CGSyscall_CM_TempModel;
+	cgi.CM_Trace							= CGSyscall_CM_Trace;
+	cgi.CM_TransformedPointContents			= trap_CM_TransformedPointContents;
+	cgi.CM_TransformedTrace					= CGSyscall_CM_TransformedTrace;
+	cgi.RMG_Init							= trap_RMG_Init;
+	cgi.S_AddLocalSet						= trap_S_AddLocalSet;
+	cgi.S_AddLoopingSound					= trap_S_AddLoopingSound;
+	cgi.S_ClearLoopingSounds				= trap_S_ClearLoopingSounds;
+	cgi.S_GetVoiceVolume					= trap_S_GetVoiceVolume;
+	cgi.S_MuteSound							= trap_S_MuteSound;
+	cgi.S_RegisterSound						= trap_S_RegisterSound;
+	cgi.S_Respatialize						= trap_S_Respatialize;
+	cgi.S_Shutup							= trap_S_ShutUp;
+	cgi.S_StartBackgroundTrack				= trap_S_StartBackgroundTrack;
+	cgi.S_StartLocalSound					= trap_S_StartLocalSound;
+	cgi.S_StartSound						= trap_S_StartSound;
+	cgi.S_StopBackgroundTrack				= trap_S_StopBackgroundTrack;
+	cgi.S_StopLoopingSound					= trap_S_StopLoopingSound;
+	cgi.S_UpdateEntityPosition				= trap_S_UpdateEntityPosition;
+	cgi.S_UpdateAmbientSet					= trap_S_UpdateAmbientSet;
+	cgi.AS_AddPrecacheEntry					= trap_AS_AddPrecacheEntry;
+	cgi.AS_GetBModelSound					= trap_AS_GetBModelSound;
+	cgi.AS_ParseSets						= trap_AS_ParseSets;
+	cgi.R_AddAdditiveLightToScene			= trap_R_AddAdditiveLightToScene;
+	cgi.R_AddDecalToScene					= trap_R_AddDecalToScene;
+	cgi.R_AddLightToScene					= trap_R_AddLightToScene;
+	cgi.R_AddPolysToScene					= CGSyscall_R_AddPolysToScene;
+	cgi.R_AddRefEntityToScene				= trap_R_AddRefEntityToScene;
+	cgi.R_AnyLanguage_ReadCharFromString	= trap_AnyLanguage_ReadCharFromString;
+	cgi.R_AutomapElevationAdjustment		= trap_R_AutomapElevAdj;
+	cgi.R_ClearDecals						= trap_R_ClearDecals;
+	cgi.R_ClearScene						= trap_R_ClearScene;
+	cgi.R_DrawStretchPic					= trap_R_DrawStretchPic;
+	cgi.R_DrawRotatePic						= trap_R_DrawRotatePic;
+	cgi.R_DrawRotatePic2					= trap_R_DrawRotatePic2;
+	cgi.R_Font_DrawString					= trap_R_Font_DrawString;
+	cgi.R_Font_HeightPixels					= trap_R_Font_HeightPixels;
+	cgi.R_Font_StrLenChars					= trap_R_Font_StrLenChars;
+	cgi.R_Font_StrLenPixels					= trap_R_Font_StrLenPixels;
+	cgi.R_GetBModelVerts					= trap_R_GetBModelVerts;
+	cgi.R_GetDistanceCull					= CGSyscall_R_GetDistanceCull;
+	cgi.R_GetEntityToken					= trap_GetEntityToken;
+	cgi.R_GetLightStyle						= trap_R_GetLightStyle;
+	cgi.R_GetRealRes						= trap_R_GetRealRes;
+	cgi.R_InitializeWireframeAutomap		= trap_R_InitWireframeAutomap;
+	cgi.R_InPVS								= trap_R_inPVS;
+	cgi.R_Language_IsAsian					= trap_Language_IsAsian;
+	cgi.R_Language_UsesSpaces				= trap_Language_UsesSpaces;
+	cgi.R_LerpTag							= trap_R_LerpTag;
+	cgi.R_LightForPoint						= trap_R_LightForPoint;
+	cgi.R_LoadWorld							= trap_R_LoadWorldMap;
+	cgi.R_MarkFragments						= trap_CM_MarkFragments;
+	cgi.R_ModelBounds						= trap_R_ModelBounds;
+	cgi.R_RegisterFont						= trap_R_RegisterFont;
+	cgi.R_RegisterModel						= trap_R_RegisterModel;
+	cgi.R_RegisterShader					= trap_R_RegisterShader;
+	cgi.R_RegisterShaderNoMip				= trap_R_RegisterShaderNoMip;
+	cgi.R_RegisterSkin						= trap_R_RegisterSkin;
+	cgi.R_RemapShader						= trap_R_RemapShader;
+	cgi.R_RenderScene						= trap_R_RenderScene;
+	cgi.R_SetColor							= trap_R_SetColor;
+	cgi.R_SetLightStyle						= trap_R_SetLightStyle;
+	cgi.R_SetRangedFog						= trap_R_SetRangeFog;
+	cgi.R_SetRefractionProperties			= trap_R_SetRefractProp;
+	cgi.R_WorldEffectCommand				= trap_R_WorldEffectCommand;
+	cgi.RE_InitRendererTerrain				= trap_RE_InitRendererTerrain;
+	cgi.WE_AddWeatherZone					= trap_WE_AddWeatherZone;
+	cgi.GetCurrentSnapshotNumber			= trap_GetCurrentSnapshotNumber;
+	cgi.GetCurrentCmdNumber					= trap_GetCurrentCmdNumber;
+	cgi.GetDefaultState						= trap_GetDefaultState;
+	cgi.GetGameState						= trap_GetGameState;
+	cgi.GetGlconfig							= trap_GetGlconfig;
+	cgi.GetServerCommand					= trap_GetServerCommand;
+	cgi.GetSnapshot							= trap_GetSnapshot;
+	cgi.GetUserCmd							= trap_GetUserCmd;
+	cgi.OpenUIMenu							= trap_OpenUIMenu;
+	cgi.SetClientForceAngle					= trap_SetClientForceAngle;
+	cgi.SetUserCmdValue						= trap_SetUserCmdValue;
+	cgi.Key_GetCatcher						= trap_Key_GetCatcher;
+	cgi.Key_GetKey							= trap_Key_GetKey;
+	cgi.Key_IsDown							= trap_Key_IsDown;
+	cgi.Key_SetCatcher						= trap_Key_SetCatcher;
+	cgi.PC_AddGlobalDefine					= trap_PC_AddGlobalDefine;
+	cgi.PC_FreeSource						= trap_PC_FreeSource;
+	cgi.PC_LoadGlobalDefines				= trap_PC_LoadGlobalDefines;
+	cgi.PC_LoadSource						= trap_PC_LoadSource;
+	cgi.PC_ReadToken						= trap_PC_ReadToken;
+	cgi.PC_RemoveAllGlobalDefines			= trap_PC_RemoveAllGlobalDefines;
+	cgi.PC_SourceFileAndLine				= trap_PC_SourceFileAndLine;
+	cgi.CIN_DrawCinematic					= trap_CIN_DrawCinematic;
+	cgi.CIN_PlayCinematic					= trap_CIN_PlayCinematic;
+	cgi.CIN_RunCinematic					= trap_CIN_RunCinematic;
+	cgi.CIN_SetExtents						= trap_CIN_SetExtents;
+	cgi.CIN_StopCinematic					= trap_CIN_StopCinematic;
+	cgi.FX_AddLine							= trap_FX_AddLine;
+	cgi.FX_RegisterEffect					= trap_FX_RegisterEffect;
+	cgi.FX_PlayEffect						= trap_FX_PlayEffect;
+	cgi.FX_PlayEffectID						= CGSyscall_FX_PlayEffectID;
+	cgi.FX_PlayEntityEffectID				= trap_FX_PlayEntityEffectID;
+	cgi.FX_PlayBoltedEffectID				= trap_FX_PlayBoltedEffectID;
+	cgi.FX_AddScheduledEffects				= trap_FX_AddScheduledEffects;
+	cgi.FX_InitSystem						= trap_FX_InitSystem;
+	cgi.FX_SetRefDef						= trap_FX_SetRefDef;
+	cgi.FX_FreeSystem						= trap_FX_FreeSystem;
+	cgi.FX_AdjustTime						= trap_FX_AdjustTime;
+	cgi.FX_Draw2DEffects					= trap_FX_Draw2DEffects;
+	cgi.FX_AddPoly							= trap_FX_AddPoly;
+	cgi.FX_AddBezier						= trap_FX_AddBezier;
+	cgi.FX_AddPrimitive						= trap_FX_AddPrimitive;
+	cgi.FX_AddSprite						= trap_FX_AddSprite;
+	cgi.FX_AddElectricity					= trap_FX_AddElectricity;
+	cgi.SP_GetStringTextString				= trap_SP_GetStringTextString;
+	cgi.ROFF_Clean							= trap_ROFF_Clean;
+	cgi.ROFF_UpdateEntities					= trap_ROFF_UpdateEntities;
+	cgi.ROFF_Cache							= trap_ROFF_Cache;
+	cgi.ROFF_Play							= trap_ROFF_Play;
+	cgi.ROFF_Purge_Ent						= trap_ROFF_Purge_Ent;
+	cgi.G2_ListModelSurfaces				= trap_G2_ListModelSurfaces;
+	cgi.G2_ListModelBones					= trap_G2_ListModelBones;
+	cgi.G2_SetGhoul2ModelIndexes			= trap_G2_SetGhoul2ModelIndexes;
+	cgi.G2_HaveWeGhoul2Models				= trap_G2_HaveWeGhoul2Models;
+	cgi.G2API_GetBoltMatrix					= trap_G2API_GetBoltMatrix;
+	cgi.G2API_GetBoltMatrix_NoReconstruct	= trap_G2API_GetBoltMatrix_NoReconstruct;
+	cgi.G2API_GetBoltMatrix_NoRecNoRot		= trap_G2API_GetBoltMatrix_NoRecNoRot;
+	cgi.G2API_InitGhoul2Model				= trap_G2API_InitGhoul2Model;
+	cgi.G2API_SetSkin						= trap_G2API_SetSkin;
+	cgi.G2API_CollisionDetect				= CGSyscall_G2API_CollisionDetect;
+	cgi.G2API_CollisionDetectCache			= CGSyscall_G2API_CollisionDetect;
+	cgi.G2API_CleanGhoul2Models				= trap_G2API_CleanGhoul2Models;
+	cgi.G2API_SetBoneAngles					= trap_G2API_SetBoneAngles;
+	cgi.G2API_SetBoneAnim					= trap_G2API_SetBoneAnim;
+	cgi.G2API_GetBoneAnim					= trap_G2API_GetBoneAnim;
+	cgi.G2API_GetBoneFrame					= trap_G2API_GetBoneFrame;
+	cgi.G2API_GetGLAName					= trap_G2API_GetGLAName;
+	cgi.G2API_CopyGhoul2Instance			= trap_G2API_CopyGhoul2Instance;
+	cgi.G2API_CopySpecificGhoul2Model		= trap_G2API_CopySpecificGhoul2Model;
+	cgi.G2API_DuplicateGhoul2Instance		= trap_G2API_DuplicateGhoul2Instance;
+	cgi.G2API_HasGhoul2ModelOnIndex			= trap_G2API_HasGhoul2ModelOnIndex;
+	cgi.G2API_RemoveGhoul2Model				= trap_G2API_RemoveGhoul2Model;
+	cgi.G2API_SkinlessModel					= trap_G2API_SkinlessModel;
+	cgi.G2API_GetNumGoreMarks				= trap_G2API_GetNumGoreMarks;
+	cgi.G2API_AddSkinGore					= trap_G2API_AddSkinGore;
+	cgi.G2API_ClearSkinGore					= trap_G2API_ClearSkinGore;
+	cgi.G2API_Ghoul2Size					= trap_G2API_Ghoul2Size;
+	cgi.G2API_AddBolt						= trap_G2API_AddBolt;
+	cgi.G2API_AttachEnt						= trap_G2API_AttachEnt;
+	cgi.G2API_SetBoltInfo					= trap_G2API_SetBoltInfo;
+	cgi.G2API_SetRootSurface				= trap_G2API_SetRootSurface;
+	cgi.G2API_SetSurfaceOnOff				= trap_G2API_SetSurfaceOnOff;
+	cgi.G2API_SetNewOrigin					= trap_G2API_SetNewOrigin;
+	cgi.G2API_DoesBoneExist					= trap_G2API_DoesBoneExist;
+	cgi.G2API_GetSurfaceRenderStatus		= trap_G2API_GetSurfaceRenderStatus;
+	cgi.G2API_GetTime						= trap_G2API_GetTime;
+	cgi.G2API_SetTime						= trap_G2API_SetTime;
+	cgi.G2API_AbsurdSmoothing				= trap_G2API_AbsurdSmoothing;
+	cgi.G2API_SetRagDoll					= trap_G2API_SetRagDoll;
+	cgi.G2API_AnimateG2Models				= trap_G2API_AnimateG2Models;
+	cgi.G2API_RagPCJConstraint				= trap_G2API_RagPCJConstraint;
+	cgi.G2API_RagPCJGradientSpeed			= trap_G2API_RagPCJGradientSpeed;
+	cgi.G2API_RagEffectorGoal				= trap_G2API_RagEffectorGoal;
+	cgi.G2API_GetRagBonePos					= trap_G2API_GetRagBonePos;
+	cgi.G2API_RagEffectorKick				= trap_G2API_RagEffectorKick;
+	cgi.G2API_RagForceSolve					= trap_G2API_RagForceSolve;
+	cgi.G2API_SetBoneIKState				= trap_G2API_SetBoneIKState;
+	cgi.G2API_IKMove						= trap_G2API_IKMove;
+	cgi.G2API_RemoveBone					= trap_G2API_RemoveBone;
+	cgi.G2API_AttachInstanceToEntNum		= trap_G2API_AttachInstanceToEntNum;
+	cgi.G2API_ClearAttachedInstance			= trap_G2API_ClearAttachedInstance;
+	cgi.G2API_CleanEntAttachments			= trap_G2API_CleanEntAttachments;
+	cgi.G2API_OverrideServer				= trap_G2API_OverrideServer;
+	cgi.G2API_GetSurfaceName				= trap_G2API_GetSurfaceName;
+}
+#endif

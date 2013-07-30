@@ -569,7 +569,7 @@ void QDECL Com_Error( int level, const char *error, ... ) {
 	Q_vsnprintf( text, sizeof( text ), error, argptr );
 	va_end( argptr );
 
-	cgi.Error( level, error );
+	trap_Error( level, text );
 }
 
 void QDECL Com_Printf( const char *msg, ... ) {
@@ -580,7 +580,7 @@ void QDECL Com_Printf( const char *msg, ... ) {
 	Q_vsnprintf( text, sizeof( text ), msg, argptr );
 	va_end( argptr );
 
-	cgi.Print(text);
+	trap_Print(text);
 }
 
 /*
@@ -3234,7 +3234,7 @@ Q_EXPORT cgameExport_t* QDECL GetModuleAPI( int apiVersion, cgameImport_t *impor
 	return &cge;
 }
 
-#else
+#endif
 
 /*
 ================
@@ -3370,5 +3370,3 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 	}
 	return -1;
 }
-
-#endif // OJK_NEW_VM_API

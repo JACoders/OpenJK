@@ -17,7 +17,7 @@ void QDECL Com_Error( int level, const char *error, ... ) {
 	Q_vsnprintf( text, sizeof( text ), error, argptr );
 	va_end (argptr);
 
-	uii.Error( ERR_DROP, va("%s", text) );
+	trap_Error( va("%s", text) );
 }
 
 void QDECL Com_Printf( const char *msg, ... ) {
@@ -30,9 +30,9 @@ void QDECL Com_Printf( const char *msg, ... ) {
 	va_end (argptr);
 
 	if ( ret == -1 )
-		uii.Print( "Com_Printf: overflow of 4096 bytes buffer\n" );
+		trap_Print( "Com_Printf: overflow of 4096 bytes buffer\n" );
 	else
-		uii.Print( va("%s", text) );
+		trap_Print( va("%s", text) );
 }
 
 qboolean newUI = qfalse;
