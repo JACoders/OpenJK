@@ -426,7 +426,7 @@ void MakeNormalVectors( const vec3_t forward, vec3_t right, vec3_t up) {
 }
 
 
-void VectorRotate( vec3_t in, vec3_t matrix[3], vec3_t out )
+void VectorRotate( const vec3_t in, vec3_t matrix[3], vec3_t out )
 {
 	out[0] = DotProduct( in, matrix[0] );
 	out[1] = DotProduct( in, matrix[1] );
