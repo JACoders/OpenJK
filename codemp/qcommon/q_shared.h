@@ -1471,6 +1471,7 @@ extern QINLINE void		VectorInverse( vec3_t vec );
 extern QINLINE void		CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
 extern QINLINE vec_t		DotProduct( const vec3_t vec1, const vec3_t vec2 );
 extern QINLINE qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
+extern QINLINE void		SnapVector( float *v );
 
 #define				VectorAddM( vec1, vec2, vecOut )		((vecOut)[0]=(vec1)[0]+(vec2)[0], (vecOut)[1]=(vec1)[1]+(vec2)[1], (vecOut)[2]=(vec1)[2]+(vec2)[2])
 #define				VectorSubtractM( vec1, vec2, vecOut )	((vecOut)[0]=(vec1)[0]-(vec2)[0], (vecOut)[1]=(vec1)[1]-(vec2)[1], (vecOut)[2]=(vec1)[2]-(vec2)[2])
@@ -1505,37 +1506,6 @@ extern QINLINE qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
 #define VectorAdvance(a,s,b,c)			(((c)[0]=(a)[0] + s * ((b)[0] - (a)[0])),((c)[1]=(a)[1] + s * ((b)[1] - (a)[1])),((c)[2]=(a)[2] + s * ((b)[2] - (a)[2])))
 #define VectorAverage(a,b,c)			(((c)[0]=((a)[0]+(b)[0])*0.5f),((c)[1]=((a)[1]+(b)[1])*0.5f),((c)[2]=((a)[2]+(b)[2])*0.5f))
 #define VectorNegate(a,b)				((b)[0]=-(a)[0],(b)[1]=-(a)[1],(b)[2]=-(a)[2])
-
-#if defined(MACOS_X) || defined(__linux__)
-	#define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
-#else 
-	#if !defined(MINGW32)
-		//pitiful attempt to reduce _ftol2 calls -rww
-		static QINLINE void SnapVector( float *v )
-		{
-			//RAZTODO: q_math.c plz
-			static int i;
-			static float f;
-
-			f = *v;
-			__asm fld f
-			__asm fistp	i
-			*v = i;
-			v++;
-			f = *v;
-			__asm fld f
-			__asm fistp i
-			*v = i;
-			v++;
-			f = *v;
-			__asm fld f
-			__asm fistp i
-			*v = i;
-		}
-	#else
-		#define	SnapVector(v) {v[0]=((int)(v[0]));v[1]=((int)(v[1]));v[2]=((int)(v[2]));}
-	#endif // !MINGW32
-#endif // MACOS_X || __linux__
 
 unsigned ColorBytes3 (float r, float g, float b);
 unsigned ColorBytes4 (float r, float g, float b, float a);
