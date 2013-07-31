@@ -10054,8 +10054,8 @@ void _UI_Init( qboolean inGameLoad ) {
 	uiInfo.uiDC.getBindingBuf					= uii.Key_GetBindingBuf;
 	uiInfo.uiDC.keynumToStringBuf				= uii.Key_KeynumToStringBuf;
 	uiInfo.uiDC.executeText						= uii.Cmd_ExecuteText;
-	uiInfo.uiDC.Error							= uii.Error;
-	uiInfo.uiDC.Print							= uii.Print;
+	uiInfo.uiDC.Error							= Com_Error;
+	uiInfo.uiDC.Print							= Com_Printf;
 	uiInfo.uiDC.Pause							= &UI_Pause;
 	uiInfo.uiDC.ownerDrawWidth					= &UI_OwnerDrawWidth;
 	uiInfo.uiDC.registerSound					= uii.S_RegisterSound;
@@ -10965,11 +10965,11 @@ static void UI_StartServerRefresh(qboolean full)
 
 /*
 ============
-GetUIAPI
+GetModuleAPI
 ============
 */
 
-uiImport_t uii;
+uiImport_t uii = {0};
 
 Q_EXPORT uiExport_t* QDECL GetModuleAPI( int apiVersion, uiImport_t *import )
 {
@@ -10977,6 +10977,8 @@ Q_EXPORT uiExport_t* QDECL GetModuleAPI( int apiVersion, uiImport_t *import )
 	
 	assert( import );
 	uii = *import;
+	Com_Printf = uii.Print;
+	Com_Error = uii.Error;
 
 	memset( &uie, 0, sizeof( uie ) );
 

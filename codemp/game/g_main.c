@@ -457,32 +457,6 @@ void G_ShutdownGame( int restart ) {
 	B_CleanupAlloc(); //clean up all allocations made with B_Alloc
 }
 
-
-
-//===================================================================
-
-void QDECL Com_Error ( int errorLevel, const char *error, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, error);
-	Q_vsnprintf (text, sizeof( text ), error, argptr);
-	va_end (argptr);
-
-	trap_Error(text);
-}
-
-void QDECL Com_Printf( const char *msg, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, msg);
-	Q_vsnprintf (text, sizeof( text ), msg, argptr);
-	va_end (argptr);
-
-	trap_Print(text);
-}
-
 /*
 ========================================================================
 
@@ -3521,11 +3495,11 @@ static qboolean	G_NAV_CheckNodeFailedForEnt( int entID, int nodeNum ) {
 
 /*
 ============
-GetGameAPI
+GetModuleAPI
 ============
 */
 
-gameImport_t gi;
+gameImport_t gi = {0};
 
 Q_EXPORT gameExport_t* QDECL GetModuleAPI( int apiVersion, gameImport_t *import )
 {
@@ -3533,6 +3507,8 @@ Q_EXPORT gameExport_t* QDECL GetModuleAPI( int apiVersion, gameImport_t *import 
 	
 	assert( import );
 	gi = *import;
+	Com_Printf = gi.Print;
+	Com_Error = gi.Error;
 
 	memset( &ge, 0, sizeof( ge ) );
 

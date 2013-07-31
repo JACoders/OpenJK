@@ -430,9 +430,38 @@ int UISyscall_FS_Write( const void *buffer, int len, fileHandle_t f ) { trap_FS_
 void UISyscall_R_AddPolysToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts, int num ) { trap_R_AddPolyToScene( hShader, numVerts, verts ); }
 void UISyscall_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) { trap_G2API_CollisionDetect( collRecMap, ghoul2, angles, position, frameNumber, entNum, rayStart, rayEnd, scale, traceFlags, useLod, fRadius ); }
 
+void QDECL UI_Error( int level, const char *error, ... ) {
+	va_list argptr;
+	char text[4096] = {0};
+
+	va_start( argptr, error );
+	Q_vsnprintf( text, sizeof( text ), error, argptr );
+	va_end( argptr );
+
+	trap_Error( text );
+}
+
+void QDECL UI_Printf( const char *msg, ... ) {
+	va_list argptr;
+	char text[4096] = {0};
+	int ret;
+
+	va_start( argptr, msg );
+	ret = Q_vsnprintf( text, sizeof( text ), msg, argptr );
+	va_end( argptr );
+
+	if ( ret == -1 )
+		trap_Print( "UI_Printf: overflow of 4096 bytes buffer\n" );
+	else
+		trap_Print( text );
+}
+
 static void TranslateSyscalls( void ) {
-	uii.Print								= Com_Printf;
-	uii.Error								= Com_Error;
+	Com_Error								= UI_Error;
+	Com_Printf								= UI_Printf;
+
+	uii.Print								= UI_Printf;
+	uii.Error								= UI_Error;
 	uii.Milliseconds						= trap_Milliseconds;
 	uii.RealTime							= trap_RealTime;
 	uii.MemoryRemaining						= trap_MemoryRemaining;

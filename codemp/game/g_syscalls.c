@@ -982,7 +982,37 @@ int SVSyscall_FS_Read( void *buffer, int len, fileHandle_t f ) { trap_FS_Read( b
 int SVSyscall_FS_Write( const void *buffer, int len, fileHandle_t f ) { trap_FS_Write( buffer, len, f ); return 0; }
 qboolean SVSyscall_EntityContact( const vec3_t mins, const vec3_t maxs, const sharedEntity_t *ent, int capsule ) { if ( capsule ) return trap_EntityContactCapsule( mins, maxs, ent ); else return trap_EntityContact( mins, maxs, ent ); }
 void SVSyscall_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int capsule, int traceFlags, int useLod ) { if ( capsule ) trap_TraceCapsule( results, start, mins, maxs, end, passEntityNum, contentmask ); else trap_Trace( results, start, mins, maxs, end, passEntityNum, contentmask ); }
+
+void QDECL G_Error( int errorLevel, const char *error, ... ) {
+	va_list argptr;
+	char text[1024];
+
+	va_start( argptr, error );
+	Q_vsnprintf( text, sizeof( text ), error, argptr );
+	va_end( argptr );
+
+	trap_Error( text );
+}
+
+void QDECL G_Printf( const char *msg, ... ) {
+	va_list argptr;
+	char text[4096] = {0};
+	int ret;
+
+	va_start( argptr, msg );
+	ret = Q_vsnprintf( text, sizeof( text ), msg, argptr );
+	va_end( argptr );
+
+	if ( ret == -1 )
+		trap_Print( "G_Printf: overflow of 4096 bytes buffer\n" );
+	else
+		trap_Print( text );
+}
+
 static void TranslateSyscalls( void ) {
+	Com_Error								= G_Error;
+	Com_Printf								= G_Printf;
+
 	gi.Print								= Com_Printf;
 	gi.Error								= Com_Error;
 	gi.Milliseconds							= trap_Milliseconds;

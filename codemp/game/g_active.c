@@ -672,6 +672,10 @@ void G_MoverTouchPushTriggers( gentity_t *ent, vec3_t oldOrg )
 	}
 }
 
+static void SV_PMTrace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask ) {
+	gi.Trace( results, start, mins, maxs, end, passEntityNum, contentMask, qfalse, 0, 10 ); 
+}
+
 /*
 =================
 SpectatorThink
@@ -700,7 +704,7 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 		pmove.ps = &client->ps;
 		pmove.cmd = *ucmd;
 		pmove.tracemask = MASK_PLAYERSOLID & ~CONTENTS_BODY;	// spectators can fly through bodies
-		pmove.trace = gi.Trace;
+		pmove.trace = SV_PMTrace;
 		pmove.pointcontents = gi.PointContents;
 
 		pmove.noSpecMove = g_noSpecMove.integer;
@@ -2907,7 +2911,7 @@ void ClientThink_real( gentity_t *ent ) {
 	else {
 		pmove.tracemask = MASK_PLAYERSOLID;
 	}
-	pmove.trace = gi.Trace;
+	pmove.trace = SV_PMTrace;
 	pmove.pointcontents = gi.PointContents;
 	pmove.debugLevel = g_debugMove.integer;
 	pmove.noFootsteps = (dmflags.integer & DF_NO_FOOTSTEPS) > 0;

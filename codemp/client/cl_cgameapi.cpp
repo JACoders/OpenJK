@@ -1641,6 +1641,8 @@ void CL_BindCGame( void ) {
 	GetCGameAPI_t		GetCGameAPI;
 	char				dllName[MAX_OSPATH] = "cgame"ARCH_STRING DLL_EXT;
 
+	memset( &cgi, 0, sizeof( cgi ) );
+
 	cgvm = VM_Create( VM_CGAME );
 	if ( cgvm ) {
 		cgi.Print								= Com_Printf;
