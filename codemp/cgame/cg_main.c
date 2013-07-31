@@ -561,28 +561,6 @@ int CG_LastAttacker( void ) {
 	return cg.snap->ps.persistant[PERS_ATTACKER];
 }
 
-void QDECL Com_Error( int level, const char *error, ... ) {
-	va_list		argptr;
-	char		text[1024] = {0};
-
-	va_start( argptr, error );
-	Q_vsnprintf( text, sizeof( text ), error, argptr );
-	va_end( argptr );
-
-	trap_Error( level, text );
-}
-
-void QDECL Com_Printf( const char *msg, ... ) {
-	va_list		argptr;
-	char		text[1024] = {0};
-
-	va_start( argptr, msg );
-	Q_vsnprintf( text, sizeof( text ), msg, argptr );
-	va_end( argptr );
-
-	trap_Print(text);
-}
-
 /*
 ================
 CG_Argv
@@ -2519,8 +2497,8 @@ void CG_LoadHudMenu()
 	//cgDC.getBindingBuf				= &cgi.Key_GetBindingBuf;
 	//cgDC.keynumToStringBuf			= &cgi.Key_KeynumToStringBuf;
 	//cgDC.executeText					= &cgi.Cmd_ExecuteText;
-	cgDC.Error							= &Com_Error; 
-	cgDC.Print							= &Com_Printf; 
+	cgDC.Error							= Com_Error; 
+	cgDC.Print							= Com_Printf; 
 	cgDC.ownerDrawWidth					= &CG_OwnerDrawWidth;
 	//cgDC.Pause						= &CG_Pause;
 	cgDC.registerSound					= cgi.S_RegisterSound;
@@ -3182,11 +3160,11 @@ static void CG_FX_CameraShake( void ) {
 
 /*
 ============
-GetCGameAPI
+GetModuleAPI
 ============
 */
 
-cgameImport_t cgi;
+cgameImport_t cgi = {0};
 
 Q_EXPORT cgameExport_t* QDECL GetModuleAPI( int apiVersion, cgameImport_t *import )
 {
@@ -3194,6 +3172,8 @@ Q_EXPORT cgameExport_t* QDECL GetModuleAPI( int apiVersion, cgameImport_t *impor
 	
 	assert( import );
 	cgi = *import;
+	Com_Printf = cgi.Print;
+	Com_Error = cgi.Error;
 
 	memset( &cge, 0, sizeof( cge ) );
 

@@ -2883,6 +2883,8 @@ void SV_BindGame( void ) {
 	GetGameAPI_t		GetGameAPI;
 	char				dllName[MAX_OSPATH] = "game"ARCH_STRING DLL_EXT;
 
+	memset( &gi, 0, sizeof( gi ) );
+
 	gvm = VM_Create( VM_GAME );
 	if ( gvm ) {
 		gi.Print								= Com_Printf;

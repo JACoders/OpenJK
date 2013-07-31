@@ -1020,6 +1020,8 @@ void CL_BindUI( void ) {
 	GetUIAPI_t		GetUIAPI;
 	char			dllName[MAX_OSPATH] = "ui"ARCH_STRING DLL_EXT;
 
+	memset( &uii, 0, sizeof( uii ) );
+
 	uivm = VM_Create( VM_UI );
 	if ( uivm ) {
 		uii.Print								= Com_Printf;

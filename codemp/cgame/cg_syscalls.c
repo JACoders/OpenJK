@@ -690,9 +690,38 @@ float CGSyscall_R_GetDistanceCull( void ) { float tmp; trap_R_GetDistanceCull( &
 void CGSyscall_FX_PlayEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad, qboolean isPortal ) { if ( isPortal ) trap_FX_PlayPortalEffectID( id, org, fwd, vol, rad ); else trap_FX_PlayEffectID( id, org, fwd, vol, rad ); }
 void CGSyscall_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) { trap_G2API_CollisionDetect( collRecMap, ghoul2, angles, position, frameNumber, entNum, rayStart, rayEnd, scale, traceFlags, useLod, fRadius ); }
 
+void QDECL CG_Error( int level, const char *error, ... ) {
+	va_list argptr;
+	char text[1024] = {0};
+
+	va_start( argptr, error );
+	Q_vsnprintf( text, sizeof( text ), error, argptr );
+	va_end( argptr );
+
+	trap_Error( text );
+}
+
+void QDECL CG_Printf( const char *msg, ... ) {
+	va_list argptr;
+	char text[4096] = {0};
+	int ret;
+
+	va_start( argptr, msg );
+	ret = Q_vsnprintf( text, sizeof( text ), msg, argptr );
+	va_end( argptr );
+
+	if ( ret == -1 )
+		trap_Print( "CG_Printf: overflow of 4096 bytes buffer\n" );
+	else
+		trap_Print( text );
+}
+
 static void TranslateSyscalls( void ) {
-	cgi.Print								= Com_Printf;
-	cgi.Error								= Com_Error;
+	Com_Error								= CG_Error;
+	Com_Printf								= CG_Printf;
+
+	cgi.Print								= CG_Printf;
+	cgi.Error								= CG_Error;
 	cgi.SnapVector							= trap_SnapVector;
 	cgi.MemoryRemaining						= trap_MemoryRemaining;
 	cgi.RegisterSharedMemory				= trap_CG_RegisterSharedMemory;
