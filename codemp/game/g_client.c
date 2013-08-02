@@ -3936,7 +3936,7 @@ void ClientDisconnect( int clientNum ) {
 		TossClientItems( ent );
 	}
 
-	G_LogPrintf( "ClientDisconnect: %i [%s] (%s) \"%s^7\"\n", clientNum, ent->client->sess.IP, ent->client->pers.guid );
+	G_LogPrintf( "ClientDisconnect: %i [%s] (%s) \"%s^7\"\n", clientNum, ent->client->sess.IP, ent->client->pers.guid, ent->client->pers.netname );
 
 	// if we are playing in tourney mode, give a win to the other player and clear his frags for this round
 	if ( (level.gametype == GT_DUEL )
