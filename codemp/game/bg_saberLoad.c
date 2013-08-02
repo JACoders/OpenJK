@@ -19,7 +19,7 @@ int BG_SoundIndex(char *sound)
 #ifdef _GAME
 	return G_SoundIndex(sound);
 #elif defined(_CGAME)
-	return cgi.S_RegisterSound(sound);
+	return trap->S_RegisterSound(sound);
 #endif
 }
 
@@ -730,9 +730,9 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 				continue;
 			}
 		#ifdef _GAME
-			saber->skin = gi.R_RegisterSkin(value);
+			saber->skin = trap->R_RegisterSkin(value);
 		#elif _CGAME
-			saber->skin = cgi.R_RegisterSkin(value);
+			saber->skin = trap->R_RegisterSkin(value);
 		#endif
 			continue;
 		}
@@ -1790,7 +1790,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 		#ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 		#elif _CGAME
-			saber->g2MarksShader = cgi.R_RegisterShader( value );
+			saber->g2MarksShader = trap->R_RegisterShader( value );
 		#else
 			SkipRestOfLine(&p);
 		#endif
@@ -1808,7 +1808,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 		#ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 		#elif _CGAME
-			saber->g2WeaponMarkShader = cgi.R_RegisterShader( value );
+			saber->g2WeaponMarkShader = trap->R_RegisterShader( value );
 		#else
 			SkipRestOfLine(&p);
 		#endif
@@ -2059,7 +2059,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 		#ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 		#elif _CGAME
-			saber->blockEffect = cgi.FX_RegisterEffect( (char *)value );
+			saber->blockEffect = trap->FX_RegisterEffect( (char *)value );
 		#endif
 			continue;
 		}
@@ -2074,7 +2074,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 		#ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 		#elif _CGAME
-			saber->hitPersonEffect = cgi.FX_RegisterEffect( (char *)value );
+			saber->hitPersonEffect = trap->FX_RegisterEffect( (char *)value );
 		#endif
 			continue;
 		}
@@ -2089,7 +2089,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 		#ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 		#elif _CGAME
-			saber->hitOtherEffect = cgi.FX_RegisterEffect( (char *)value );
+			saber->hitOtherEffect = trap->FX_RegisterEffect( (char *)value );
 		#else
 			SkipRestOfLine(&p);
 		#endif
@@ -2106,7 +2106,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 		#ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 		#elif _CGAME
-			saber->bladeEffect = cgi.FX_RegisterEffect( (char *)value );
+			saber->bladeEffect = trap->FX_RegisterEffect( (char *)value );
 		#endif
 			continue;
 		}
@@ -2195,7 +2195,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 		#ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 		#elif _CGAME
-			saber->g2MarksShader2 = cgi.R_RegisterShader( value );
+			saber->g2MarksShader2 = trap->R_RegisterShader( value );
 		#endif
 			continue;
 		}
@@ -2211,7 +2211,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 		#ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 		#elif _CGAME
-			saber->g2WeaponMarkShader2 = cgi.R_RegisterShader( value );
+			saber->g2WeaponMarkShader2 = trap->R_RegisterShader( value );
 		#else
 			SkipRestOfLine(&p);
 		#endif
@@ -2462,7 +2462,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 #ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 #elif defined _CGAME
-			saber->blockEffect2 = cgi.FX_RegisterEffect( (char *)value );
+			saber->blockEffect2 = trap->FX_RegisterEffect( (char *)value );
 #endif
 			continue;
 		}
@@ -2477,7 +2477,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 #ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 #elif defined _CGAME
-			saber->hitPersonEffect2 = cgi.FX_RegisterEffect( (char *)value );
+			saber->hitPersonEffect2 = trap->FX_RegisterEffect( (char *)value );
 #endif
 			continue;
 		}
@@ -2492,7 +2492,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 #ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 #elif defined _CGAME
-			saber->hitOtherEffect2 = cgi.FX_RegisterEffect( (char *)value );
+			saber->hitOtherEffect2 = trap->FX_RegisterEffect( (char *)value );
 #endif
 			continue;
 		}
@@ -2507,7 +2507,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 #ifdef _GAME//cgame-only cares about this
 			SkipRestOfLine(&p);
 #elif defined _CGAME
-			saber->bladeEffect2 = cgi.FX_RegisterEffect( (char *)value );
+			saber->bladeEffect2 = trap->FX_RegisterEffect( (char *)value );
 #endif
 			continue;
 		}
@@ -2648,7 +2648,7 @@ void WP_RemoveSaber( saberInfo_t *sabers, int saberNum )
 	BG_SI_SetLength(&sabers[saberNum], 0.0f);
 //	if ( ent->weaponModel[saberNum] > 0 )
 //	{
-//		gi.G2API_RemoveGhoul2Model( ent->ghoul2, ent->weaponModel[saberNum] );
+//		trap->G2API_RemoveGhoul2Model( ent->ghoul2, ent->weaponModel[saberNum] );
 //		ent->weaponModel[saberNum] = -1;
 //	}
 //	if ( saberNum == 1 )
@@ -2722,9 +2722,9 @@ void WP_SaberLoadParms( void )
 
 	//now load in the extra .sab extensions
 #ifdef _GAME
-	fileCnt = gi.FS_GetFileList("ext_data/sabers", ".sab", saberExtensionListBuf, sizeof(saberExtensionListBuf) );
+	fileCnt = trap->FS_GetFileList("ext_data/sabers", ".sab", saberExtensionListBuf, sizeof(saberExtensionListBuf) );
 #elif _CGAME
-	fileCnt = cgi.FS_GetFileList("ext_data/sabers", ".sab", saberExtensionListBuf, sizeof(saberExtensionListBuf) );
+	fileCnt = trap->FS_GetFileList("ext_data/sabers", ".sab", saberExtensionListBuf, sizeof(saberExtensionListBuf) );
 #endif
 
 	holdChar = saberExtensionListBuf;
@@ -2733,9 +2733,9 @@ void WP_SaberLoadParms( void )
 		saberExtFNLen = strlen( holdChar );
 
 	#ifdef _GAME
-		len = gi.FS_Open(va( "ext_data/sabers/%s", holdChar), &f, FS_READ);
+		len = trap->FS_Open(va( "ext_data/sabers/%s", holdChar), &f, FS_READ);
 	#elif _CGAME
-		len = cgi.FS_Open(va( "ext_data/sabers/%s", holdChar), &f, FS_READ);
+		len = trap->FS_Open(va( "ext_data/sabers/%s", holdChar), &f, FS_READ);
 	#endif
 
 		if ( len == -1 ) 
@@ -2749,9 +2749,9 @@ void WP_SaberLoadParms( void )
 			}
 
 		#ifdef _GAME
-			gi.FS_Read(bgSaberParseTBuffer, len, f);
+			trap->FS_Read(bgSaberParseTBuffer, len, f);
 		#elif _CGAME
-			cgi.FS_Read(bgSaberParseTBuffer, len, f);
+			trap->FS_Read(bgSaberParseTBuffer, len, f);
 		#endif
 			bgSaberParseTBuffer[len] = 0;
 
@@ -2759,9 +2759,9 @@ void WP_SaberLoadParms( void )
 
 			Q_strcat( marker, MAX_SABER_DATA_SIZE-totallen, bgSaberParseTBuffer );
 		#ifdef _GAME
-			gi.FS_Close(f);
+			trap->FS_Close(f);
 		#elif _CGAME
-			cgi.FS_Close(f);
+			trap->FS_Close(f);
 		#endif
 
 			//get around the stupid problem of not having an endline at the bottom

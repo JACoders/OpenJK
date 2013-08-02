@@ -766,11 +766,11 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 	char parseBuf[4096];
 
 #ifdef _GAME
-	len = gi.FS_Open( filename, &f, FS_READ );
+	len = trap->FS_Open( filename, &f, FS_READ );
 #elif _CGAME
-	len = cgi.FS_Open( filename, &f, FS_READ );
+	len = trap->FS_Open( filename, &f, FS_READ );
 #elif _UI
-	len = uii.FS_Open( filename, &f, FS_READ );
+	len = trap->FS_Open( filename, &f, FS_READ );
 #endif
 
 	if (!f || len >= 4096)
@@ -779,19 +779,19 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 	}
 
 #ifdef _GAME
-	gi.FS_Read( classInfo, len, f );
+	trap->FS_Read( classInfo, len, f );
 #elif _CGAME
-	cgi.FS_Read( classInfo, len, f );
+	trap->FS_Read( classInfo, len, f );
 #elif _UI
-	uii.FS_Read( classInfo, len, f );
+	trap->FS_Read( classInfo, len, f );
 #endif
 
 #ifdef _GAME
-	gi.FS_Close( f );
+	trap->FS_Close( f );
 #elif _CGAME
-	cgi.FS_Close( f );
+	trap->FS_Close( f );
 #elif _UI
-	uii.FS_Close( f );
+	trap->FS_Close( f );
 #endif
 
 	classInfo[len] = 0;
@@ -1001,7 +1001,7 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 			bgSiegeClasses[bgNumSiegeClasses].uiPortraitShader = 0;
 			memset(bgSiegeClasses[bgNumSiegeClasses].uiPortrait,0,sizeof(bgSiegeClasses[bgNumSiegeClasses].uiPortrait));
 		#elif defined(_UI) //ui
-			bgSiegeClasses[bgNumSiegeClasses].uiPortraitShader = uii.R_RegisterShaderNoMip(parseBuf);
+			bgSiegeClasses[bgNumSiegeClasses].uiPortraitShader = trap->R_RegisterShaderNoMip(parseBuf);
 			memcpy(bgSiegeClasses[bgNumSiegeClasses].uiPortrait,parseBuf,sizeof(bgSiegeClasses[bgNumSiegeClasses].uiPortrait));
 		#endif
 	}
@@ -1017,9 +1017,9 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 		bgSiegeClasses[bgNumSiegeClasses].classShader = 0;
 	#else //cgame, ui
 		#if defined(_CGAME)
-			bgSiegeClasses[bgNumSiegeClasses].classShader = cgi.R_RegisterShaderNoMip(parseBuf);
+			bgSiegeClasses[bgNumSiegeClasses].classShader = trap->R_RegisterShaderNoMip(parseBuf);
 		#elif defined(_UI)
-			bgSiegeClasses[bgNumSiegeClasses].classShader = uii.R_RegisterShaderNoMip(parseBuf);
+			bgSiegeClasses[bgNumSiegeClasses].classShader = trap->R_RegisterShaderNoMip(parseBuf);
 		#endif
 		assert( bgSiegeClasses[bgNumSiegeClasses].classShader );
 		if ( !bgSiegeClasses[bgNumSiegeClasses].classShader )
@@ -1213,11 +1213,11 @@ void BG_SiegeLoadClasses(siegeClassDesc_t *descBuffer)
 	bgNumSiegeClasses = 0;
 
 	#if defined(_GAME)
-		numFiles = gi.FS_GetFileList("ext_data/Siege/Classes", ".scl", filelist, sizeof( filelist ) );
+		numFiles = trap->FS_GetFileList("ext_data/Siege/Classes", ".scl", filelist, sizeof( filelist ) );
 	#elif defined(_CGAME)
-		numFiles = cgi.FS_GetFileList("ext_data/Siege/Classes", ".scl", filelist, sizeof( filelist ) );
+		numFiles = trap->FS_GetFileList("ext_data/Siege/Classes", ".scl", filelist, sizeof( filelist ) );
 	#elif defined(_UI)
-		numFiles = uii.FS_GetFileList("ext_data/Siege/Classes", ".scl", filelist, sizeof( filelist ) );
+		numFiles = trap->FS_GetFileList("ext_data/Siege/Classes", ".scl", filelist, sizeof( filelist ) );
 	#endif
 
 	fileptr = filelist;
@@ -1273,11 +1273,11 @@ void BG_SiegeParseTeamFile(const char *filename)
 	qboolean success = qtrue;
 
 	#if defined(_GAME)
-		len = gi.FS_Open(filename, &f, FS_READ);
+		len = trap->FS_Open(filename, &f, FS_READ);
 	#elif defined(_CGAME)
-		len = cgi.FS_Open(filename, &f, FS_READ);
+		len = trap->FS_Open(filename, &f, FS_READ);
 	#elif defined(_UI)
-		len = uii.FS_Open(filename, &f, FS_READ);
+		len = trap->FS_Open(filename, &f, FS_READ);
 	#endif
 
 	if (!f || len >= 2048)
@@ -1286,14 +1286,14 @@ void BG_SiegeParseTeamFile(const char *filename)
 	}
 
 	#if defined(_GAME)
-		gi.FS_Read( teamInfo, len, f );
-		gi.FS_Close( f );
+		trap->FS_Read( teamInfo, len, f );
+		trap->FS_Close( f );
 	#elif defined(_CGAME)
-		cgi.FS_Read( teamInfo, len, f );
-		cgi.FS_Close( f );
+		trap->FS_Read( teamInfo, len, f );
+		trap->FS_Close( f );
 	#elif defined(_UI)
-		uii.FS_Read( teamInfo, len, f );
-		uii.FS_Close( f );
+		trap->FS_Read( teamInfo, len, f );
+		trap->FS_Close( f );
 	#endif
 
 	teamInfo[len] = 0;
@@ -1310,7 +1310,7 @@ void BG_SiegeParseTeamFile(const char *filename)
 	//I don't entirely like doing things this way but it's the easiest way.
 	#ifdef _CGAME
 		if (BG_SiegeGetPairedValue(teamInfo, "FriendlyShader", parseBuf))
-			bgSiegeTeams[bgNumSiegeTeams].friendlyShader = cgi.R_RegisterShaderNoMip(parseBuf);
+			bgSiegeTeams[bgNumSiegeTeams].friendlyShader = trap->R_RegisterShaderNoMip(parseBuf);
 	#else
 		bgSiegeTeams[bgNumSiegeTeams].friendlyShader = 0;
 	#endif
@@ -1364,11 +1364,11 @@ void BG_SiegeLoadTeams(void)
 	bgNumSiegeTeams = 0;
 
 	#if defined(_GAME)
-		numFiles = gi.FS_GetFileList("ext_data/Siege/Teams", ".team", filelist, sizeof( filelist ) );
+		numFiles = trap->FS_GetFileList("ext_data/Siege/Teams", ".team", filelist, sizeof( filelist ) );
 	#elif defined(_CGAME)
-		numFiles = cgi.FS_GetFileList("ext_data/Siege/Teams", ".team", filelist, sizeof( filelist ) );
+		numFiles = trap->FS_GetFileList("ext_data/Siege/Teams", ".team", filelist, sizeof( filelist ) );
 	#elif defined(_UI)
-		numFiles = uii.FS_GetFileList("ext_data/Siege/Teams", ".team", filelist, sizeof( filelist ) );
+		numFiles = trap->FS_GetFileList("ext_data/Siege/Teams", ".team", filelist, sizeof( filelist ) );
 	#endif
 
 	fileptr = filelist;

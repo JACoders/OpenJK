@@ -4,7 +4,6 @@
 
 #include "qcommon/q_shared.h"
 #include "bg_public.h"
-#include "bg_strap.h"
 
 #if defined(_GAME)
 	#include "g_local.h"
@@ -309,20 +308,20 @@ qboolean BG_FileExists(const char *fileName)
 	{
 		int fh = 0;
 	#ifdef _GAME
-		gi.FS_Open(fileName, &fh, FS_READ);
+		trap->FS_Open(fileName, &fh, FS_READ);
 	#elif _CGAME
-		cgi.FS_Open(fileName, &fh, FS_READ);
+		trap->FS_Open(fileName, &fh, FS_READ);
 	#elif _UI
-		uii.FS_Open(fileName, &fh, FS_READ);
+		trap->FS_Open(fileName, &fh, FS_READ);
 	#endif
 		if (fh > 0)
 		{
 		#ifdef _GAME
-			gi.FS_Close(fh);
+			trap->FS_Close(fh);
 		#elif _CGAME
-			cgi.FS_Close(fh);
+			trap->FS_Close(fh);
 		#elif _UI
-			uii.FS_Close(fh);
+			trap->FS_Close(fh);
 		#endif
 			return qtrue;
 		}
@@ -2536,11 +2535,11 @@ void BG_AddPredictableEventToPlayerstate( int newEvent, int eventParm, playerSta
 		if (!isRegistered)
 		{
 		#ifdef _GAME
-			gi.Cvar_Register(&showEvents, "showevents", "0", 0);
+			trap->Cvar_Register(&showEvents, "showevents", "0", 0);
 		#elif _CGAME
-			cgi.Cvar_Register(&showEvents, "showevents", "0", 0);
+			trap->Cvar_Register(&showEvents, "showevents", "0", 0);
 		#elif _UI
-			uii.Cvar_Register(&showEvents, "showevents", "0", 0);
+			trap->Cvar_Register(&showEvents, "showevents", "0", 0);
 		#endif
 			isRegistered = qtrue;
 		}
@@ -3094,28 +3093,28 @@ int BG_ModelCache(const char *modelName, const char *skinName)
 		void *g2 = NULL;
 	
 		if ( VALIDSTRING( skinName ) )
-			gi.R_RegisterSkin( skinName );
+			trap->R_RegisterSkin( skinName );
 	
 		//I could hook up a precache ghoul2 function, but oh well, this works
-		gi.G2API_InitGhoul2Model( &g2, modelName, 0, 0, 0, 0, 0 );
+		trap->G2API_InitGhoul2Model( &g2, modelName, 0, 0, 0, 0, 0 );
 		//now get rid of it
 		if ( g2 )
-			gi.G2API_CleanGhoul2Models( &g2 );
+			trap->G2API_CleanGhoul2Models( &g2 );
 
 		return 0;
 	#else // !_GAME
 		if ( VALIDSTRING( skinName ) )
 		{
 			#ifdef _CGAME
-				cgi.R_RegisterSkin( skinName );
+				trap->R_RegisterSkin( skinName );
 			#else // !_CGAME
-				uii.R_RegisterSkin( skinName );
+				trap->R_RegisterSkin( skinName );
 			#endif // _CGAME
 		}
 		#ifdef _CGAME
-			return cgi.R_RegisterModel( modelName );
+			return trap->R_RegisterModel( modelName );
 		#else // !_CGAME
-			return uii.R_RegisterModel( modelName );
+			return trap->R_RegisterModel( modelName );
 		#endif // _CGAME
 	#endif // _GAME
 }

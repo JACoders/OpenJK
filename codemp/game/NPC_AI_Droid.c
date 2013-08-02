@@ -35,7 +35,7 @@ void R2D2_PartsMove(void)
 		/*
 		if (NPC->genericBone1)
 		{
-			gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+			trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
 		}
 		*/
 		NPC_SetBoneAngles(NPCS.NPC, "f_eye", NPCS.NPC->pos1);
@@ -216,7 +216,7 @@ void Droid_Spin( void )
 		|| NPCS.NPC->client->NPC_class == CLASS_R2D2 )
 	{
 		// No head?
-		if (gi.G2API_GetSurfaceRenderStatus( NPCS.NPC->ghoul2, 0, "head" )>0)
+		if (trap->G2API_GetSurfaceRenderStatus( NPCS.NPC->ghoul2, 0, "head" )>0)
 		{
 			if (TIMER_Done(NPCS.NPC,"smoke") && !TIMER_Done(NPCS.NPC,"droidsmoketotal"))
 			{
@@ -293,7 +293,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 				if (!(self->spawnflags & 2))	// Doesn't have to ALWAYSDIE
 				{
 					if ((self->NPC->localState != LSTATE_SPINNING) && 
-						(!gi.G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "head" )))
+						(!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "head" )))
 					{
 						NPC_SetSurfaceOnOff( self, "head", TURN_OFF );
 
@@ -371,7 +371,7 @@ void NPC_Droid_Pain(gentity_t *self, gentity_t *attacker, int damage)
 				if (!(self->spawnflags & 2))	// Doesn't have to ALWAYSDIE
 				{
 					if ((self->NPC->localState != LSTATE_SPINNING) && 
-						(!gi.G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "head" )))
+						(!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "head" )))
 					{
 						NPC_SetSurfaceOnOff( self, "head", TURN_OFF );
 

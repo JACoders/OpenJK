@@ -28,7 +28,7 @@ qboolean NPC_ClearPathToGoal( vec3_t dir, gentity_t *goal )
 	float radius, dist, tFrac;
 
 	//FIXME: What does do about area portals?  THIS IS BROKEN
-	//if ( gi.inPVS( NPC->r.currentOrigin, goal->r.currentOrigin ) == qfalse )
+	//if ( trap->inPVS( NPC->r.currentOrigin, goal->r.currentOrigin ) == qfalse )
 	//	return qfalse;
 
 	//Look ahead and see if we're clear to move to our goal position
@@ -499,5 +499,5 @@ void NPC_ApplyRoff(void)
 	//rwwFIXMEFIXME: Any significance to this?
 
 	// use the precise origin for linking
-	gi.LinkEntity((sharedEntity_t *)NPCS.NPC);
+	trap->LinkEntity((sharedEntity_t *)NPCS.NPC);
 }

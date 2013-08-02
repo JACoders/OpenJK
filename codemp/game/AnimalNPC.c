@@ -45,7 +45,7 @@ static void DeathUpdate( Vehicle_t *pVeh )
 				//trace down and place mark
 				VectorCopy( parent->currentOrigin, bottom );
 				bottom[2] -= 80;
-				gi.trace( &trace, parent->currentOrigin, vec3_origin, vec3_origin, bottom, parent->s.number, CONTENTS_SOLID );
+				trap->trace( &trace, parent->currentOrigin, vec3_origin, vec3_origin, bottom, parent->s.number, CONTENTS_SOLID );
 				if ( trace.fraction < 1.0f )
 				{
 					VectorCopy( trace.endpos, bottom );
@@ -62,7 +62,7 @@ static void DeathUpdate( Vehicle_t *pVeh )
 				VectorCopy( parent->maxs, maxs );
 				VectorCopy( parent->currentOrigin, bottom );
 				bottom[2] += parent->mins[2] - 32;
-				gi.trace( &trace, parent->currentOrigin, mins, maxs, bottom, parent->s.number, CONTENTS_SOLID );
+				trap->trace( &trace, parent->currentOrigin, mins, maxs, bottom, parent->s.number, CONTENTS_SOLID );
 				G_RadiusDamage( trace.endpos, NULL, pVeh->m_pVehicleInfo->explosionDamage, pVeh->m_pVehicleInfo->explosionRadius, NULL, MOD_EXPLOSIVE );//FIXME: extern damage and radius or base on fuel
 			}
 

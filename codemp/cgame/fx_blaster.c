@@ -17,7 +17,7 @@ void FX_BlasterProjectileThink( centity_t *cent, const struct weaponInfo_s *weap
 		forward[2] = 1.0f;
 	}
 
-	cgi.FX_PlayEffectID( cgs.effects.blasterShotEffect, cent->lerpOrigin, forward, -1, -1, qfalse );
+	trap->FX_PlayEffectID( cgs.effects.blasterShotEffect, cent->lerpOrigin, forward, -1, -1, qfalse );
 }
 
 /*
@@ -34,7 +34,7 @@ void FX_BlasterAltFireThink( centity_t *cent, const struct weaponInfo_s *weapon 
 		forward[2] = 1.0f;
 	}
 
-	cgi.FX_PlayEffectID( cgs.effects.blasterShotEffect, cent->lerpOrigin, forward, -1, -1, qfalse );
+	trap->FX_PlayEffectID( cgs.effects.blasterShotEffect, cent->lerpOrigin, forward, -1, -1, qfalse );
 }
 
 /*
@@ -44,7 +44,7 @@ FX_BlasterWeaponHitWall
 */
 void FX_BlasterWeaponHitWall( vec3_t origin, vec3_t normal )
 {
-	cgi.FX_PlayEffectID( cgs.effects.blasterWallImpactEffect, origin, normal, -1, -1, qfalse );
+	trap->FX_PlayEffectID( cgs.effects.blasterWallImpactEffect, origin, normal, -1, -1, qfalse );
 }
 
 /*
@@ -56,10 +56,10 @@ void FX_BlasterWeaponHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid 
 {
 	if ( humanoid )
 	{
-		cgi.FX_PlayEffectID( cgs.effects.blasterFleshImpactEffect, origin, normal, -1, -1, qfalse );
+		trap->FX_PlayEffectID( cgs.effects.blasterFleshImpactEffect, origin, normal, -1, -1, qfalse );
 	}
 	else
 	{
-		cgi.FX_PlayEffectID( cgs.effects.blasterDroidImpactEffect, origin, normal, -1, -1, qfalse );
+		trap->FX_PlayEffectID( cgs.effects.blasterDroidImpactEffect, origin, normal, -1, -1, qfalse );
 	}
 }

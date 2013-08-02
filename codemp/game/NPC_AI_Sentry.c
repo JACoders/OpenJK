@@ -151,17 +151,17 @@ void Sentry_Fire (void)
 	switch( which )
 	{
 	case 0:
-		bolt = gi.G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash1");
+		bolt = trap->G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash1");
 		break;
 	case 1:
-		bolt = gi.G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash2");
+		bolt = trap->G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash2");
 		break;
 	case 2:
 	default:
-		bolt = gi.G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash03");
+		bolt = trap->G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash03");
 	}
 
-	gi.G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0, 
+	trap->G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0, 
 				bolt,
 				&boltMatrix, NPCS.NPC->r.currentAngles, NPCS.NPC->r.currentOrigin, level.time,
 				NULL, NPCS.NPC->modelScale );
@@ -345,7 +345,7 @@ void Sentry_Strafe( void )
 	dir = ( rand() & 1 ) ? -1 : 1;
 	VectorMA( NPCS.NPC->r.currentOrigin, SENTRY_STRAFE_DIS * dir, right, end );
 
-	gi.Trace( &tr, NPCS.NPC->r.currentOrigin, NULL, NULL, end, NPCS.NPC->s.number, MASK_SOLID, qfalse, 0, 0 );
+	trap->Trace( &tr, NPCS.NPC->r.currentOrigin, NULL, NULL, end, NPCS.NPC->s.number, MASK_SOLID, qfalse, 0, 0 );
 
 	// Close enough
 	if ( tr.fraction > 0.9f )

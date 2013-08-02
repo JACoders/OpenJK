@@ -25,7 +25,7 @@ void Vehicle_SetAnim(gentity_t *ent,int setAnimParts,int anim,int setAnimFlags, 
 
 void G_VehicleTrace( trace_t *results, const vec3_t start, const vec3_t tMins, const vec3_t tMaxs, const vec3_t end, int passEntityNum, int contentmask )
 {
-	gi.Trace(results, start, tMins, tMaxs, end, passEntityNum, contentmask, qfalse, 0, 0);
+	trap->Trace(results, start, tMins, tMaxs, end, passEntityNum, contentmask, qfalse, 0, 0);
 }
 
 Vehicle_t *G_IsRidingVehicle( gentity_t *pEnt )
@@ -53,7 +53,7 @@ void G_VehicleSpawn( gentity_t *self )
 
 	VectorCopy( self->r.currentOrigin, self->s.origin );
 
-	gi.LinkEntity( (sharedEntity_t *)self );
+	trap->LinkEntity( (sharedEntity_t *)self );
 
 	if ( !self->count )
 	{
@@ -110,15 +110,15 @@ void G_AttachToVehicle( gentity_t *pEnt, usercmd_t **ucmd )
 	if ( !vehEnt->m_pVehicle )
 		return;
 
-	crotchBolt = gi.G2API_AddBolt(vehEnt->ghoul2, 0, "*driver");
+	crotchBolt = trap->G2API_AddBolt(vehEnt->ghoul2, 0, "*driver");
 
 	// Get the driver tag.
-	gi.G2API_GetBoltMatrix( vehEnt->ghoul2, 0, crotchBolt, &boltMatrix,
+	trap->G2API_GetBoltMatrix( vehEnt->ghoul2, 0, crotchBolt, &boltMatrix,
 							vehEnt->m_pVehicle->m_vOrientation, vehEnt->r.currentOrigin,
 							level.time, NULL, vehEnt->modelScale );
 	BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, ent->client->ps.origin );
 	G_SetOrigin(ent, ent->client->ps.origin);
-	gi.LinkEntity( (sharedEntity_t *)ent );
+	trap->LinkEntity( (sharedEntity_t *)ent );
 }
 
 // Animate the vehicle and it's riders.
@@ -665,7 +665,7 @@ qboolean Eject( Vehicle_t *pVeh, bgEntity_t *pEnt, qboolean forceEject )
 	// Move them to the exit position.
 	G_SetOrigin( ent, vExitPos );
 	VectorCopy(ent->r.currentOrigin, ent->client->ps.origin);
-	gi.LinkEntity( (sharedEntity_t *)ent );
+	trap->LinkEntity( (sharedEntity_t *)ent );
 
 	// If it's the player, stop overrides.
 	if ( ent->s.number < MAX_CLIENTS )
@@ -855,7 +855,7 @@ getItOutOfMe:
 /*	if ( !ent->s.number && ent->client->ps.weapon != WP_SABER 
 		&& cg_gunAutoFirst.value )
 	{
-		gi.cvar_set( "cg_thirdperson", "0" );
+		trap->cvar_set( "cg_thirdperson", "0" );
 	}*/
 	BG_SetLegsAnimTimer( &ent->client->ps, 0 );
 	BG_SetTorsoAnimTimer( &ent->client->ps, 0 );
@@ -1742,7 +1742,7 @@ static qboolean UpdateRider( Vehicle_t *pVeh, bgEntity_t *pRider, usercmd_t *pUm
 				rider->client->ps.velocity[2] += JUMP_VELOCITY;
 				rider->client->ps.fd.forceJumpZStart = rider->client->ps.origin[2];
 
-				if (!gi.ICARUS_TaskIDPending((sharedEntity_t *)rider, TID_CHAN_VOICE))
+				if (!trap->ICARUS_TaskIDPending((sharedEntity_t *)rider, TID_CHAN_VOICE))
 				{
 					G_AddEvent( rider, EV_JUMP, 0 );
 				}
@@ -1814,7 +1814,7 @@ static void AttachRiders( Vehicle_t *pVeh )
 
 		//assuming we updated him relative to the bolt in AttachRidersGeneric
 		G_SetOrigin( pilot, pilot->client->ps.origin );
-		gi.LinkEntity( (sharedEntity_t *)pilot );
+		trap->LinkEntity( (sharedEntity_t *)pilot );
 	}
 
 	if (pVeh->m_pOldPilot)
@@ -1825,7 +1825,7 @@ static void AttachRiders( Vehicle_t *pVeh )
 
 		//assuming we updated him relative to the bolt in AttachRidersGeneric
 		G_SetOrigin( oldpilot, oldpilot->client->ps.origin );
-		gi.LinkEntity( (sharedEntity_t *)oldpilot );
+		trap->LinkEntity( (sharedEntity_t *)oldpilot );
 	}
 
 	//attach passengers
@@ -1840,20 +1840,20 @@ static void AttachRiders( Vehicle_t *pVeh )
 			int crotchBolt;
 
 			assert(parent->ghoul2);
-			crotchBolt = gi.G2API_AddBolt(parent->ghoul2, 0, "*driver");
+			crotchBolt = trap->G2API_AddBolt(parent->ghoul2, 0, "*driver");
 			assert(parent->client);
 			assert(pilot->client);
 
 			VectorSet(yawOnlyAngles, 0, parent->client->ps.viewangles[YAW], 0);
 
 			// Get the driver tag.
-			gi.G2API_GetBoltMatrix( parent->ghoul2, 0, crotchBolt, &boltMatrix,
+			trap->G2API_GetBoltMatrix( parent->ghoul2, 0, crotchBolt, &boltMatrix,
 									yawOnlyAngles, parent->client->ps.origin,
 									level.time, NULL, parent->modelScale );
 			BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, pilot->client->ps.origin );
 
 			G_SetOrigin( pilot, pilot->client->ps.origin );
-			gi.LinkEntity( (sharedEntity_t *)pilot );
+			trap->LinkEntity( (sharedEntity_t *)pilot );
 		}
 		i++;
 	}
@@ -1876,7 +1876,7 @@ static void AttachRiders( Vehicle_t *pVeh )
 			VectorSet(yawOnlyAngles, 0, parent->client->ps.viewangles[YAW], 0);
 
 			// Get the droid tag.
-			gi.G2API_GetBoltMatrix( parent->ghoul2, 0, pVeh->m_iDroidUnitTag, &boltMatrix,
+			trap->G2API_GetBoltMatrix( parent->ghoul2, 0, pVeh->m_iDroidUnitTag, &boltMatrix,
 									yawOnlyAngles, parent->r.currentOrigin,
 									level.time, NULL, parent->modelScale );
 			BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, droid->client->ps.origin );
@@ -1886,7 +1886,7 @@ static void AttachRiders( Vehicle_t *pVeh )
 			G_SetOrigin( droid, droid->client->ps.origin );
 			G_SetAngles( droid, droid->client->ps.viewangles);
 			SetClientViewAngle( droid, droid->client->ps.viewangles );
-			gi.LinkEntity( (sharedEntity_t *)droid );
+			trap->LinkEntity( (sharedEntity_t *)droid );
 
 			if ( droid->NPC )
 			{
@@ -1985,7 +1985,7 @@ void G_VehicleDamageBoxSizing(Vehicle_t *pVeh)
 	VectorMA(nose, -hDist, up, back);
 
 	//and now, let's trace and see if our new mins/maxs are safe..
-	gi.Trace(&trace, parent->client->ps.origin, back, nose, parent->client->ps.origin, parent->s.number, parent->clipmask, qfalse, 0, 0);
+	trap->Trace(&trace, parent->client->ps.origin, back, nose, parent->client->ps.origin, parent->s.number, parent->clipmask, qfalse, 0, 0);
 	if (!trace.allsolid && !trace.startsolid && trace.fraction == 1.0f)
 	{ //all clear!
 		VectorCopy(nose, parent->r.maxs);
@@ -2022,7 +2022,7 @@ int G_FlyVehicleImpactDir(gentity_t *veh, trace_t *trace)
 
 	//do a trace to determine if the nose is clear
 	VectorMA(veh->client->ps.origin, 256.0f, fwd, fPos);
-	gi.Trace(&localTrace, veh->client->ps.origin, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
+	trap->Trace(&localTrace, veh->client->ps.origin, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
 	if (!localTrace.startsolid && !localTrace.allsolid && localTrace.fraction == 1.0f)
 	{ //otherwise I guess it's not clear..
 		noseClear = qtrue;
@@ -2041,7 +2041,7 @@ int G_FlyVehicleImpactDir(gentity_t *veh, trace_t *trace)
 			!(pVeh->m_iRemovedSurfaces & SHIPSURF_BROKEN_F))
 		{
 			VectorMA(rWing, 256.0f, fwd, fPos);
-			gi.Trace(&localTrace, rWing, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
+			trap->Trace(&localTrace, rWing, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
 			if (localTrace.startsolid || localTrace.allsolid || localTrace.fraction != 1.0f)
 			{ //impact
 				return SHIPSURF_RIGHT;
@@ -2053,7 +2053,7 @@ int G_FlyVehicleImpactDir(gentity_t *veh, trace_t *trace)
 			!(pVeh->m_iRemovedSurfaces & SHIPSURF_BROKEN_D))
 		{
 			VectorMA(lWing, 256.0f, fwd, fPos);
-			gi.Trace(&localTrace, lWing, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
+			trap->Trace(&localTrace, lWing, testMins, testMaxs, fPos, veh->s.number, veh->clipmask, qfalse, 0, 0);
 			if (localTrace.startsolid || localTrace.allsolid || localTrace.fraction != 1.0f)
 			{ //impact
 				return SHIPSURF_LEFT;

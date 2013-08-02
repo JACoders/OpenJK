@@ -16,7 +16,7 @@
 botlib_export_t	*botlib_export;
 
 // game interface
-static gameExport_t ge; // game export table
+static gameExport_t *ge; // game export table
 static vm_t *gvm; // game vm, valid for legacy and new api
 
 //
@@ -30,7 +30,7 @@ void GVM_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 	currentVM = gvm;
 
-	ge.InitGame( levelTime, randomSeed, restart );
+	ge->InitGame( levelTime, randomSeed, restart );
 }
 
 void GVM_ShutdownGame( int restart ) {
@@ -40,7 +40,7 @@ void GVM_ShutdownGame( int restart ) {
 	}
 	currentVM = gvm;
 
-	ge.ShutdownGame( restart );
+	ge->ShutdownGame( restart );
 }
 
 char *GVM_ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
@@ -48,7 +48,7 @@ char *GVM_ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		return (char *)VM_Call( gvm, GAME_CLIENT_CONNECT, clientNum, firstTime, isBot );
 	currentVM = gvm;
 
-	return ge.ClientConnect( clientNum, firstTime, isBot );
+	return ge->ClientConnect( clientNum, firstTime, isBot );
 }
 
 void GVM_ClientBegin( int clientNum, qboolean allowTeamReset ) {
@@ -58,7 +58,7 @@ void GVM_ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	}
 	currentVM = gvm;
 
-	ge.ClientBegin( clientNum, allowTeamReset );
+	ge->ClientBegin( clientNum, allowTeamReset );
 }
 
 qboolean GVM_ClientUserinfoChanged( int clientNum ) {
@@ -66,7 +66,7 @@ qboolean GVM_ClientUserinfoChanged( int clientNum ) {
 		return (qboolean)VM_Call( gvm, GAME_CLIENT_USERINFO_CHANGED, clientNum );
 	currentVM = gvm;
 
-	return ge.ClientUserinfoChanged( clientNum );
+	return ge->ClientUserinfoChanged( clientNum );
 }
 
 void GVM_ClientDisconnect( int clientNum ) {
@@ -76,7 +76,7 @@ void GVM_ClientDisconnect( int clientNum ) {
 	}
 	currentVM = gvm;
 
-	ge.ClientDisconnect( clientNum );
+	ge->ClientDisconnect( clientNum );
 }
 
 void GVM_ClientCommand( int clientNum ) {
@@ -86,7 +86,7 @@ void GVM_ClientCommand( int clientNum ) {
 	}
 	currentVM = gvm;
 
-	ge.ClientCommand( clientNum );
+	ge->ClientCommand( clientNum );
 }
 
 void GVM_ClientThink( int clientNum, usercmd_t *ucmd ) {
@@ -96,7 +96,7 @@ void GVM_ClientThink( int clientNum, usercmd_t *ucmd ) {
 	}
 	currentVM = gvm;
 
-	ge.ClientThink( clientNum, ucmd );
+	ge->ClientThink( clientNum, ucmd );
 }
 
 void GVM_RunFrame( int levelTime ) {
@@ -106,7 +106,7 @@ void GVM_RunFrame( int levelTime ) {
 	}
 	currentVM = gvm;
 
-	ge.RunFrame( levelTime );
+	ge->RunFrame( levelTime );
 }
 
 qboolean GVM_ConsoleCommand( void ) {
@@ -114,7 +114,7 @@ qboolean GVM_ConsoleCommand( void ) {
 		return (qboolean)VM_Call( gvm, GAME_CONSOLE_COMMAND );
 	currentVM = gvm;
 
-	return ge.ConsoleCommand();
+	return ge->ConsoleCommand();
 }
 
 int GVM_BotAIStartFrame( int time ) {
@@ -122,7 +122,7 @@ int GVM_BotAIStartFrame( int time ) {
 		return VM_Call( gvm, BOTAI_START_FRAME, time );
 	currentVM = gvm;
 
-	return ge.BotAIStartFrame( time );
+	return ge->BotAIStartFrame( time );
 }
 
 void GVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
@@ -132,7 +132,7 @@ void GVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
 	}
 	currentVM = gvm;
 
-	ge.ROFF_NotetrackCallback( entID, notetrack );
+	ge->ROFF_NotetrackCallback( entID, notetrack );
 }
 
 void GVM_SpawnRMGEntity( void ) {
@@ -142,7 +142,7 @@ void GVM_SpawnRMGEntity( void ) {
 	}
 	currentVM = gvm;
 
-	ge.SpawnRMGEntity();
+	ge->SpawnRMGEntity();
 }
 
 int GVM_ICARUS_PlaySound( void ) {
@@ -150,7 +150,7 @@ int GVM_ICARUS_PlaySound( void ) {
 		return VM_Call( gvm, GAME_ICARUS_PLAYSOUND );
 	currentVM = gvm;
 
-	return ge.ICARUS_PlaySound();
+	return ge->ICARUS_PlaySound();
 }
 
 qboolean GVM_ICARUS_Set( void ) {
@@ -158,7 +158,7 @@ qboolean GVM_ICARUS_Set( void ) {
 		return (qboolean)VM_Call( gvm, GAME_ICARUS_SET );
 	currentVM = gvm;
 
-	return ge.ICARUS_Set();
+	return ge->ICARUS_Set();
 }
 
 void GVM_ICARUS_Lerp2Pos( void ) {
@@ -168,7 +168,7 @@ void GVM_ICARUS_Lerp2Pos( void ) {
 	}
 	currentVM = gvm;
 
-	ge.ICARUS_Lerp2Pos();
+	ge->ICARUS_Lerp2Pos();
 }
 
 void GVM_ICARUS_Lerp2Origin( void ) {
@@ -178,7 +178,7 @@ void GVM_ICARUS_Lerp2Origin( void ) {
 	}
 	currentVM = gvm;
 
-	ge.ICARUS_Lerp2Origin();
+	ge->ICARUS_Lerp2Origin();
 }
 
 void GVM_ICARUS_Lerp2Angles( void ) {
@@ -188,7 +188,7 @@ void GVM_ICARUS_Lerp2Angles( void ) {
 	}
 	currentVM = gvm;
 
-	ge.ICARUS_Lerp2Angles();
+	ge->ICARUS_Lerp2Angles();
 }
 
 int GVM_ICARUS_GetTag( void ) {
@@ -196,7 +196,7 @@ int GVM_ICARUS_GetTag( void ) {
 		return VM_Call( gvm, GAME_ICARUS_GETTAG );
 	currentVM = gvm;
 
-	return ge.ICARUS_GetTag();
+	return ge->ICARUS_GetTag();
 }
 
 void GVM_ICARUS_Lerp2Start( void ) {
@@ -206,7 +206,7 @@ void GVM_ICARUS_Lerp2Start( void ) {
 	}
 	currentVM = gvm;
 
-	ge.ICARUS_Lerp2Start();
+	ge->ICARUS_Lerp2Start();
 }
 
 void GVM_ICARUS_Lerp2End( void ) {
@@ -216,7 +216,7 @@ void GVM_ICARUS_Lerp2End( void ) {
 	}
 	currentVM = gvm;
 
-	ge.ICARUS_Lerp2End();
+	ge->ICARUS_Lerp2End();
 }
 
 void GVM_ICARUS_Use( void ) {
@@ -226,7 +226,7 @@ void GVM_ICARUS_Use( void ) {
 	}
 	currentVM = gvm;
 
-	ge.ICARUS_Use();
+	ge->ICARUS_Use();
 }
 
 void GVM_ICARUS_Kill( void ) {
@@ -236,7 +236,7 @@ void GVM_ICARUS_Kill( void ) {
 	}
 	currentVM = gvm;
 
-	ge.ICARUS_Kill();
+	ge->ICARUS_Kill();
 }
 
 void GVM_ICARUS_Remove( void ) {
@@ -246,7 +246,7 @@ void GVM_ICARUS_Remove( void ) {
 	}
 	currentVM = gvm;
 
-	ge.ICARUS_Remove();
+	ge->ICARUS_Remove();
 }
 
 void GVM_ICARUS_Play( void ) {
@@ -256,7 +256,7 @@ void GVM_ICARUS_Play( void ) {
 	}
 	currentVM = gvm;
 
-	ge.ICARUS_Play();
+	ge->ICARUS_Play();
 }
 
 int GVM_ICARUS_GetFloat( void ) {
@@ -264,7 +264,7 @@ int GVM_ICARUS_GetFloat( void ) {
 		return VM_Call( gvm, GAME_ICARUS_GETFLOAT );
 	currentVM = gvm;
 
-	return ge.ICARUS_GetFloat();
+	return ge->ICARUS_GetFloat();
 }
 
 int GVM_ICARUS_GetVector( void ) {
@@ -272,7 +272,7 @@ int GVM_ICARUS_GetVector( void ) {
 		return VM_Call( gvm, GAME_ICARUS_GETVECTOR );
 	currentVM = gvm;
 
-	return ge.ICARUS_GetVector();
+	return ge->ICARUS_GetVector();
 }
 
 int GVM_ICARUS_GetString( void ) {
@@ -280,7 +280,7 @@ int GVM_ICARUS_GetString( void ) {
 		return VM_Call( gvm, GAME_ICARUS_GETSTRING );
 	currentVM = gvm;
 
-	return ge.ICARUS_GetString();
+	return ge->ICARUS_GetString();
 }
 
 void GVM_ICARUS_SoundIndex( void ) {
@@ -290,7 +290,7 @@ void GVM_ICARUS_SoundIndex( void ) {
 	}
 	currentVM = gvm;
 
-	ge.ICARUS_SoundIndex();
+	ge->ICARUS_SoundIndex();
 }
 
 int GVM_ICARUS_GetSetIDForString( void ) {
@@ -298,7 +298,7 @@ int GVM_ICARUS_GetSetIDForString( void ) {
 		return VM_Call( gvm, GAME_ICARUS_GETSETIDFORSTRING );
 	currentVM = gvm;
 
-	return ge.ICARUS_GetSetIDForString();
+	return ge->ICARUS_GetSetIDForString();
 }
 
 qboolean GVM_NAV_ClearPathToPoint( int entID, vec3_t pmins, vec3_t pmaxs, vec3_t point, int clipmask, int okToHitEnt ) {
@@ -306,7 +306,7 @@ qboolean GVM_NAV_ClearPathToPoint( int entID, vec3_t pmins, vec3_t pmaxs, vec3_t
 		return (qboolean)VM_Call( gvm, GAME_NAV_CLEARPATHTOPOINT, entID, pmins, pmaxs, point, clipmask, okToHitEnt );
 	currentVM = gvm;
 
-	return ge.NAV_ClearPathToPoint( entID, pmins, pmaxs, point, clipmask, okToHitEnt );
+	return ge->NAV_ClearPathToPoint( entID, pmins, pmaxs, point, clipmask, okToHitEnt );
 }
 
 qboolean GVM_NPC_ClearLOS2( int entID, const vec3_t end ) {
@@ -314,7 +314,7 @@ qboolean GVM_NPC_ClearLOS2( int entID, const vec3_t end ) {
 		return (qboolean)VM_Call( gvm, GAME_NAV_CLEARLOS, entID, end );
 	currentVM = gvm;
 
-	return ge.NPC_ClearLOS2( entID, end );
+	return ge->NPC_ClearLOS2( entID, end );
 }
 
 int GVM_NAVNEW_ClearPathBetweenPoints( vec3_t start, vec3_t end, vec3_t mins, vec3_t maxs, int ignore, int clipmask ) {
@@ -322,7 +322,7 @@ int GVM_NAVNEW_ClearPathBetweenPoints( vec3_t start, vec3_t end, vec3_t mins, ve
 		return VM_Call( gvm, GAME_NAV_CLEARPATHBETWEENPOINTS, start, end, mins, maxs, ignore, clipmask );
 	currentVM = gvm;
 
-	return ge.NAVNEW_ClearPathBetweenPoints( start, end, mins, maxs, ignore, clipmask );
+	return ge->NAVNEW_ClearPathBetweenPoints( start, end, mins, maxs, ignore, clipmask );
 }
 
 qboolean GVM_NAV_CheckNodeFailedForEnt( int entID, int nodeNum ) {
@@ -330,7 +330,7 @@ qboolean GVM_NAV_CheckNodeFailedForEnt( int entID, int nodeNum ) {
 		return (qboolean)VM_Call( gvm, GAME_NAV_CHECKNODEFAILEDFORENT, entID, nodeNum );
 	currentVM = gvm;
 
-	return ge.NAV_CheckNodeFailedForEnt( entID, nodeNum );
+	return ge->NAV_CheckNodeFailedForEnt( entID, nodeNum );
 }
 
 qboolean GVM_NAV_EntIsUnlockedDoor( int entityNum ) {
@@ -338,7 +338,7 @@ qboolean GVM_NAV_EntIsUnlockedDoor( int entityNum ) {
 		return (qboolean)VM_Call( gvm, GAME_NAV_ENTISUNLOCKEDDOOR, entityNum );
 	currentVM = gvm;
 
-	return ge.NAV_EntIsUnlockedDoor( entityNum );
+	return ge->NAV_EntIsUnlockedDoor( entityNum );
 }
 
 qboolean GVM_NAV_EntIsDoor( int entityNum ) {
@@ -346,7 +346,7 @@ qboolean GVM_NAV_EntIsDoor( int entityNum ) {
 		return (qboolean)VM_Call( gvm, GAME_NAV_ENTISDOOR, entityNum );
 	currentVM = gvm;
 
-	return ge.NAV_EntIsDoor( entityNum );
+	return ge->NAV_EntIsDoor( entityNum );
 }
 
 qboolean GVM_NAV_EntIsBreakable( int entityNum ) {
@@ -354,7 +354,7 @@ qboolean GVM_NAV_EntIsBreakable( int entityNum ) {
 		return (qboolean)VM_Call( gvm, GAME_NAV_ENTISBREAKABLE, entityNum );
 	currentVM = gvm;
 
-	return ge.NAV_EntIsBreakable( entityNum );
+	return ge->NAV_EntIsBreakable( entityNum );
 }
 
 qboolean GVM_NAV_EntIsRemovableUsable( int entNum ) {
@@ -362,7 +362,7 @@ qboolean GVM_NAV_EntIsRemovableUsable( int entNum ) {
 		return (qboolean)VM_Call( gvm, GAME_NAV_ENTISREMOVABLEUSABLE, entNum );
 	currentVM = gvm;
 
-	return ge.NAV_EntIsRemovableUsable( entNum );
+	return ge->NAV_EntIsRemovableUsable( entNum );
 }
 
 void GVM_NAV_FindCombatPointWaypoints( void ) {
@@ -372,7 +372,7 @@ void GVM_NAV_FindCombatPointWaypoints( void ) {
 	}
 	currentVM = gvm;
 
-	ge.NAV_FindCombatPointWaypoints();
+	ge->NAV_FindCombatPointWaypoints();
 }
 
 int GVM_BG_GetItemIndexByTag( int tag, int type ) {
@@ -380,7 +380,7 @@ int GVM_BG_GetItemIndexByTag( int tag, int type ) {
 		return VM_Call( gvm, GAME_GETITEMINDEXBYTAG, tag, type );
 	currentVM = gvm;
 
-	return ge.BG_GetItemIndexByTag( tag, type );
+	return ge->BG_GetItemIndexByTag( tag, type );
 }
 
 //
@@ -2878,7 +2878,7 @@ void SV_InitGame( qboolean restart ) {
 }
 
 void SV_BindGame( void ) {
-	gameImport_t		gi;
+	static gameImport_t gi;
 	gameExport_t		*ret;
 	GetGameAPI_t		GetGameAPI;
 	char				dllName[MAX_OSPATH] = "game"ARCH_STRING DLL_EXT;
@@ -3204,7 +3204,7 @@ void SV_BindGame( void ) {
 			svs.gameStarted = qfalse;
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
-		ge = *ret;
+		ge = ret;
 	}
 
 	// fall back to legacy syscall/vm_call api

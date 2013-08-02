@@ -629,7 +629,7 @@ typedef struct cgameImport_s {
 	void			(*FX_AddElectricity)					( addElectricityArgStruct_t *p );
 
 	// stringed
-	qboolean		(*SP_GetStringTextString)				( const char *text, char *buffer, int bufferLength );
+	qboolean		(*SE_GetStringTextString)				( const char *text, char *buffer, int bufferLength );
 
 	// roff
 	qboolean		(*ROFF_Clean)							( void );

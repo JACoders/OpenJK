@@ -5,7 +5,6 @@
 
 #include "qcommon/q_shared.h"
 #include "bg_public.h"
-#include "bg_strap.h"
 
 #if defined(_GAME)
 	#include "g_local.h"
@@ -23,24 +22,24 @@ void BG_AttachToRancor( void *ghoul2, float rancYaw, vec3_t rancOrigin, int time
 	if ( inMouth )
 	{//in mouth
 	#if defined(_GAME)
-		boltIndex = gi.G2API_AddBolt(ghoul2, 0, "jaw_bone");
+		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "jaw_bone");
 	#elif defined(_CGAME)
-		boltIndex = cgi.G2API_AddBolt(ghoul2, 0, "jaw_bone");
+		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "jaw_bone");
 	#endif
 	}
 	else
 	{//in right hand
 	#if defined(_GAME)
-		boltIndex = gi.G2API_AddBolt(ghoul2, 0, "*r_hand");
+		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "*r_hand");
 	#elif defined(_CGAME)
-		boltIndex = cgi.G2API_AddBolt(ghoul2, 0, "*r_hand");
+		boltIndex = trap->G2API_AddBolt(ghoul2, 0, "*r_hand");
 	#endif
 	}
 	VectorSet( rancAngles, 0, rancYaw, 0 );
 #if defined(_GAME)
-	gi.G2API_GetBoltMatrix( ghoul2, 0, boltIndex, &boltMatrix, rancAngles, rancOrigin, time, modelList, modelScale );
+	trap->G2API_GetBoltMatrix( ghoul2, 0, boltIndex, &boltMatrix, rancAngles, rancOrigin, time, modelList, modelScale );
 #elif defined(_CGAME)
-	cgi.G2API_GetBoltMatrix( ghoul2, 0, boltIndex, &boltMatrix, rancAngles, rancOrigin, time, modelList, modelScale );
+	trap->G2API_GetBoltMatrix( ghoul2, 0, boltIndex, &boltMatrix, rancAngles, rancOrigin, time, modelList, modelScale );
 #endif
 	// Storing ent position, bolt position, and bolt axis
 	if ( out_origin )
@@ -93,9 +92,9 @@ void BG_AttachToRancor( void *ghoul2, float rancYaw, vec3_t rancOrigin, int time
 qboolean BG_GetRootSurfNameWithVariant( void *ghoul2, const char *rootSurfName, char *returnSurfName, int returnSize )
 {
 #if defined(_GAME)
-	if ( !ghoul2 || !gi.G2API_GetSurfaceRenderStatus( ghoul2, 0, rootSurfName ) )
+	if ( !ghoul2 || !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, rootSurfName ) )
 #elif defined(_CGAME)
-	if ( !ghoul2 || !cgi.G2API_GetSurfaceRenderStatus( ghoul2, 0, rootSurfName ) )
+	if ( !ghoul2 || !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, rootSurfName ) )
 #endif
 	{//see if the basic name without variants is on
 		Q_strncpyz( returnSurfName, rootSurfName, returnSize );
@@ -108,9 +107,9 @@ qboolean BG_GetRootSurfNameWithVariant( void *ghoul2, const char *rootSurfName, 
 		{
 			Com_sprintf( returnSurfName, returnSize, "%s%c", rootSurfName, 'a'+i );
 		#if defined(_GAME)
-			if ( !gi.G2API_GetSurfaceRenderStatus( ghoul2, 0, returnSurfName ) )
+			if ( !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, returnSurfName ) )
 		#elif defined(_CGAME)
-			if ( !cgi.G2API_GetSurfaceRenderStatus( ghoul2, 0, returnSurfName ) )
+			if ( !trap->G2API_GetSurfaceRenderStatus( ghoul2, 0, returnSurfName ) )
 		#endif
 			{
 				return qtrue;
