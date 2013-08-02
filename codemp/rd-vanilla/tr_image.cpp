@@ -102,7 +102,7 @@ void GL_TextureMode( const char *string ) {
 	// If the level they requested is less than possible, set the max possible...
 	if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 	{
-		ri.Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
+		ri->Cvar_Set( "r_ext_texture_filter_anisotropic", va("%f",glConfig.maxTextureFilterAnisotropy) );
 	}
 	// change all the existing mipmap texture objects
 					 R_Images_StartIteration();
@@ -538,7 +538,7 @@ image_t *R_Images_GetNextIteration(void)
 
 // clean up anything to do with an image_t struct, but caller will have to clear the internal to an image_t struct ready for either struct free() or overwrite...
 //
-// (avoid using ri.xxxx stuff here in case running on dedicated)
+// (avoid using ri->xxxx stuff here in case running on dedicated)
 //
 static void R_Images_DeleteImageContents( image_t *pImage )
 {
@@ -968,7 +968,7 @@ static void GL_ResetBinds(void)
 
 // special function used in conjunction with "devmapbsp"...
 //
-// (avoid using ri.xxxx stuff here in case running on dedicated)
+// (avoid using ri->xxxx stuff here in case running on dedicated)
 //
 void R_Images_DeleteLightMaps(void)
 {
@@ -1037,14 +1037,14 @@ void RE_RegisterImages_Info_f( void )
 	while ( (pImage	= R_Images_GetNextIteration()) != NULL)
 	{
 		Com_Printf ("%d: (%4dx%4dy) \"%s\"",iImage, pImage->width, pImage->height, pImage->imgName);
-		ri.Printf( PRINT_DEVELOPER, S_COLOR_RED ", levused %d",pImage->iLastLevelUsedOn);
+		ri->Printf( PRINT_DEVELOPER, S_COLOR_RED ", levused %d",pImage->iLastLevelUsedOn);
 		Com_Printf ("\n");
 
 		iTexels += pImage->width * pImage->height;
 		iImage++;
 	}
 	Com_Printf ("%d Images. %d (%.2fMB) texels total, (not including mipmaps)\n",iNumImages, iTexels, (float)iTexels / 1024.0f / 1024.0f);
-	ri.Printf( PRINT_DEVELOPER, S_COLOR_RED "RE_RegisterMedia_GetLevel(): %d",RE_RegisterMedia_GetLevel());
+	ri->Printf( PRINT_DEVELOPER, S_COLOR_RED "RE_RegisterMedia_GetLevel(): %d",RE_RegisterMedia_GetLevel());
 }
 
 
@@ -1057,7 +1057,7 @@ void RE_RegisterImages_Info_f( void )
 //
 qboolean RE_RegisterImages_LevelLoadEnd(void)
 {
-	ri.Printf( PRINT_DEVELOPER, S_COLOR_RED "RE_RegisterImages_LevelLoadEnd():\n");
+	ri->Printf( PRINT_DEVELOPER, S_COLOR_RED "RE_RegisterImages_LevelLoadEnd():\n");
 
 //	int iNumImages = AllocatedImages.size();	// more for curiosity, really.
 
@@ -1077,7 +1077,7 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 			{
 				// nope, so dump it...
 				//
-				ri.Printf( PRINT_DEVELOPER, S_COLOR_RED "Dumping image \"%s\"\n",pImage->imgName);
+				ri->Printf( PRINT_DEVELOPER, S_COLOR_RED "Dumping image \"%s\"\n",pImage->imgName);
 
 				R_Images_DeleteImageContents(pImage);
 
@@ -1102,7 +1102,7 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 //		Com_Printf (S_COLOR_YELLOW  "Level uses %d images, old limit was MAX_DRAWIMAGES (%d)\n", iNumImages, MAX_DRAWIMAGES);
 //	}
 
-	ri.Printf( PRINT_DEVELOPER, S_COLOR_RED "RE_RegisterImages_LevelLoadEnd(): Ok\n");	
+	ri->Printf( PRINT_DEVELOPER, S_COLOR_RED "RE_RegisterImages_LevelLoadEnd(): Ok\n");	
 
 	GL_ResetBinds();
 
@@ -1278,7 +1278,7 @@ image_t	*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmi
 	int		width, height;
 	byte	*pic;
 
-	if (!name || ri.Cvar_VariableIntegerValue( "dedicated" ) )	// stop ghoul2 horribleness as regards image loading from server
+	if (!name || ri->Cvar_VariableIntegerValue( "dedicated" ) )	// stop ghoul2 horribleness as regards image loading from server
 	{
 		return NULL;
 	}
@@ -1612,13 +1612,13 @@ void R_SetColorMappings( void ) {
 
 
 	if ( r_intensity->value < 1.0f ) {
-		ri.Cvar_Set( "r_intensity", "1" );
+		ri->Cvar_Set( "r_intensity", "1" );
 	}
 
 	if ( r_gamma->value < 0.5f ) {
-		ri.Cvar_Set( "r_gamma", "0.5" );
+		ri->Cvar_Set( "r_gamma", "0.5" );
 	} else if ( r_gamma->value > 3.0f ) {
-		ri.Cvar_Set( "r_gamma", "3.0" );
+		ri->Cvar_Set( "r_gamma", "3.0" );
 	}
 
 	g = r_gamma->value;

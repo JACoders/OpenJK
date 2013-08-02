@@ -4,8 +4,7 @@
 #include "../rd-common/tr_public.h"
 #include "../rd-common/tr_font.h"
 
-// Refresh module function imports
-extern refimport_t ri;
+extern refimport_t *ri;
 
 /*
 ================================================================================

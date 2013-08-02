@@ -331,6 +331,7 @@ public:
 //Raz: externing this out of headers for re access :/
 IGhoul2InfoArray &_TheGhoul2InfoArray();
 
+extern const CGhoul2Info NullG2;
 class CGhoul2Info_v
 {
 	IGhoul2InfoArray &InfoArray() const
@@ -404,15 +405,17 @@ public:
 	}
 	CGhoul2Info &operator[](int idx)
 	{
-		assert(mItem);
-		assert(idx>=0&&idx<size());
-		return Array()[idx];
+		if ( IsValid() && idx >= 0 && idx < size() /*&& mItem */ )
+			return Array()[idx];
+		else
+			return const_cast<CGhoul2Info&>( NullG2 );
 	}
 	const CGhoul2Info &operator[](int idx) const
 	{
-		assert(mItem);
-		assert(idx>=0&&idx<size());
-		return Array()[idx];
+		if ( idx >=0 && idx < size() /*&& mItem */ )
+			return Array()[idx];
+		else
+			return NullG2;
 	}
 	void resize(int num)
 	{

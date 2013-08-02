@@ -50,6 +50,6 @@ public:
 
 };
 
-// this is in the parent executable, so access ri.GetG2VertSpaceServer() from the rd backends!
+// this is in the parent executable, so access ri->GetG2VertSpaceServer() from the rd backends!
 extern CMiniHeap *G2VertSpaceServer;
 extern CMiniHeap *G2VertSpaceClient;

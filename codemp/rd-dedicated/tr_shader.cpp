@@ -2727,7 +2727,7 @@ static shader_t *GeneratePermanentShader( void ) {
 		return tr.defaultShader;
 	}
 
-	newShader = (struct shader_s *)ri.Hunk_Alloc( sizeof( shader_t ), h_low );
+	newShader = (struct shader_s *)ri->Hunk_Alloc( sizeof( shader_t ), h_low );
 
 	*newShader = shader;
 
@@ -3199,7 +3199,7 @@ static shader_t *FinishShader( void ) {
 	{
 		if (vertexLightmap) 
 		{
-//			ri.DPrintf( "WARNING: shader '%s' has VERTEX forced lightmap!\n", shader.name );
+//			ri->DPrintf( "WARNING: shader '%s' has VERTEX forced lightmap!\n", shader.name );
 		} 
 		else 
 		{
@@ -3424,7 +3424,7 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 	else if ( lightmapIndex[0] < LIGHTMAP_2D )
 	{
 		// negative lightmap indexes cause stray pointers (think tr.lightmaps[lightmapIndex])
-		ri.Printf( PRINT_WARNING, "WARNING: shader '%s' has invalid lightmap index of %d\n", name, lightmapIndex[0] );
+		ri->Printf( PRINT_WARNING, "WARNING: shader '%s' has invalid lightmap index of %d\n", name, lightmapIndex[0] );
 		lightmapIndex = lightmapsVertex;
 	}
 
@@ -3750,7 +3750,7 @@ void R_InitShaders(qboolean server)
 	if (!server)
 	{
 		Shader_BeginParseSession( "R_InitShaders" );
-		time = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
+		time = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
 		mem = Hunk_MemoryRemaining();
 		fileShaderCount = 0;
 		shaderCount = 0;
@@ -3769,7 +3769,7 @@ void R_InitShaders(qboolean server)
 // drakkar - print profiling info
 	if (!server)
 	{
-		time = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" ) - time;
+		time = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" ) - time;
 		mem = mem - Hunk_MemoryRemaining();
 		Com_Printf( "-------------------------\n" );
 		Com_Printf( "%d shader files read \n", fileShaderCount );
