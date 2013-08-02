@@ -36,13 +36,13 @@ qboolean R_ImageLoader_Add ( const char *extension, ImageLoaderFn imageLoader )
 {
 	if ( numImageLoaders >= MAX_IMAGE_LOADERS )
 	{
-		ri.Printf (PRINT_DEVELOPER, "R_AddImageLoader: Cannot add any more image loaders (maximum %d).\n", MAX_IMAGE_LOADERS);
+		ri->Printf (PRINT_DEVELOPER, "R_AddImageLoader: Cannot add any more image loaders (maximum %d).\n", MAX_IMAGE_LOADERS);
 		return qfalse;
 	}
 
 	if ( FindImageLoader (extension) != NULL )
 	{
-		ri.Printf (PRINT_DEVELOPER, "R_AddImageLoader: Image loader already exists for extension \"%s\".\n", extension);
+		ri->Printf (PRINT_DEVELOPER, "R_AddImageLoader: Image loader already exists for extension \"%s\".\n", extension);
 		return qfalse;
 	}
 
@@ -152,5 +152,5 @@ void R_LoadDataImage( const char *name, byte **pic, int *width, int *height )
 	}
 
 	// Dataimage loading failed
-	ri.Printf(PRINT_WARNING, "Couldn't read %s -- dataimage load failed\n", name);
+	ri->Printf(PRINT_WARNING, "Couldn't read %s -- dataimage load failed\n", name);
 }

@@ -873,8 +873,6 @@ void		R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs );
 
 void		R_Modellist_f (void);
 
-extern refimport_t ri;
-
 //====================================================
 
 
@@ -1943,6 +1941,6 @@ typedef struct decalPoly_s
 // tr_surfacesprites
 void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input);
 
-extern refexport_t re;
+extern refimport_t *ri;
 
 qboolean ShaderHashTableExists(void);

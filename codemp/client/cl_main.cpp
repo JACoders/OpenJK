@@ -92,12 +92,13 @@ vm_t				*cgvm;
 netadr_t rcon_address;
 
 // Structure containing functions exported from refresh DLL
-refexport_t	re = {0};
+refexport_t	*re = NULL;
 static void	*rendererLib = NULL;
 
+const CGhoul2Info NullG2;
 //RAZFIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
 IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
-	return re.TheGhoul2InfoArray();
+	return re->TheGhoul2InfoArray();
 }
 
 ping_t	cl_pinglist[MAX_PINGREQUESTS];
@@ -621,8 +622,8 @@ void CL_ShutdownAll( qboolean shutdownRef, qboolean delayFreeVM ) {
 	// shutdown the renderer
 	if(shutdownRef)
 		CL_ShutdownRef();
-	if ( re.Shutdown ) {
-		re.Shutdown( qfalse );		// don't destroy window or context
+	if ( re && re->Shutdown ) {
+		re->Shutdown( qfalse );		// don't destroy window or context
 	}
 
 	cls.uiStarted = qfalse;
@@ -2210,10 +2211,10 @@ CL_ShutdownRef
 ============
 */
 void CL_ShutdownRef( void ) {
-	if ( !re.Shutdown ) {
+	if ( !re->Shutdown ) {
 		return;
 	}
-	re.Shutdown( qtrue );
+	re->Shutdown( qtrue );
 
 	if ( rendererLib != NULL ) {
 		Sys_UnloadDll (rendererLib);
@@ -2229,13 +2230,13 @@ CL_InitRenderer
 */
 void CL_InitRenderer( void ) {
 	// this sets up the renderer and calls R_Init
-	re.BeginRegistration( &cls.glconfig );
+	re->BeginRegistration( &cls.glconfig );
 
 	// load character sets
-	cls.charSetShader = re.RegisterShaderNoMip("gfx/2d/charsgrid_med");
+	cls.charSetShader = re->RegisterShaderNoMip("gfx/2d/charsgrid_med");
 
-	cls.whiteShader = re.RegisterShader( "white" );
-	cls.consoleShader = re.RegisterShader( "console" );
+	cls.whiteShader = re->RegisterShader( "white" );
+	cls.consoleShader = re->RegisterShader( "console" );
 	g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
 	kg.g_consoleField.widthInChars = g_console_field_width;
 }
@@ -2324,7 +2325,7 @@ static CMiniHeap *GetG2VertSpaceServer( void ) {
 #define DEFAULT_RENDER_LIBRARY "rd-vanilla"
 
 void CL_InitRef( void ) {
-	refimport_t	ri = {0};
+	static refimport_t ri;
 	refexport_t	*ret;
 	GetRefAPI_t	GetRefAPI;
 	char		dllName[MAX_OSPATH];
@@ -2347,6 +2348,9 @@ void CL_InitRef( void ) {
 	if ( !rendererLib ) {
 		Com_Error( ERR_FATAL, "Failed to load renderer" );
 	}
+
+	memset( &ri, 0, sizeof( ri ) );
+
 
 	GetRefAPI = (GetRefAPI_t)Sys_LoadFunction( rendererLib, "GetRefAPI" );
 	if ( !GetRefAPI )
@@ -2451,7 +2455,7 @@ void CL_InitRef( void ) {
 		Com_Error (ERR_FATAL, "Couldn't initialize refresh" );
 	}
 
-	re = *ret;
+	re = ret;
 
 	// unpause so the cgame definately gets a snapshot and renders a frame
 	Cvar_Set( "cl_paused", "0" );

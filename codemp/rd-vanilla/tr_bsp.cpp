@@ -1422,7 +1422,7 @@ static	void R_LoadSubmodels( lump_t *l, world_t &worldData, int index ) {
 
 		assert( model != NULL );			// this should never happen
 		if ( model == NULL ) {
-			ri.Error(ERR_DROP, "R_LoadSubmodels: R_AllocModel() failed");
+			ri->Error(ERR_DROP, "R_LoadSubmodels: R_AllocModel() failed");
 		}
 
 		model->type = MOD_BRUSH;
@@ -2020,15 +2020,15 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 
 	// check for cached disk file from the server first...
 	//
-	if (ri.CM_GetCachedMapDiskImage())
+	if (ri->CM_GetCachedMapDiskImage())
 	{
-		buffer = (byte *)ri.CM_GetCachedMapDiskImage();
+		buffer = (byte *)ri->CM_GetCachedMapDiskImage();
 	}
 	else		
 	{
 		// still needs loading...
 		//
-		ri.FS_ReadFile( name, (void **)&buffer );
+		ri->FS_ReadFile( name, (void **)&buffer );
 		if ( !buffer ) {
 			Com_Error (ERR_DROP, "RE_LoadWorldMap: %s not found", name);
 		}
@@ -2079,20 +2079,20 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 		// only set tr.world now that we know the entire level has loaded properly
 		tr.world = &worldData;
 
-		if ( ri.Cvar_VariableIntegerValue( "com_RMG" ) )
+		if ( ri->Cvar_VariableIntegerValue( "com_RMG" ) )
 		{
 			R_RMGInit();
 		}
 	}
 
-	if (ri.CM_GetCachedMapDiskImage())
+	if (ri->CM_GetCachedMapDiskImage())
 	{
-		Z_Free( ri.CM_GetCachedMapDiskImage() );
-		ri.CM_SetCachedMapDiskImage( NULL );
+		Z_Free( ri->CM_GetCachedMapDiskImage() );
+		ri->CM_SetCachedMapDiskImage( NULL );
 	}
 	else
 	{
-		ri.FS_FreeFile( buffer );
+		ri->FS_FreeFile( buffer );
 	}
 }
 
@@ -2101,7 +2101,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 //
 void RE_LoadWorldMap( const char *name )
 {
-	ri.CM_SetUsingCache( qtrue );
+	ri->CM_SetUsingCache( qtrue );
 	RE_LoadWorldMap_Actual( name, s_worldData, 0 );
-	ri.CM_SetUsingCache( qfalse );
+	ri->CM_SetUsingCache( qfalse );
 }

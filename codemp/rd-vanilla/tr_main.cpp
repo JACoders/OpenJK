@@ -18,7 +18,7 @@ static float	s_flipMatrix[16] = {
 	0, 0, 0, 1
 };
 
-refimport_t	ri;
+refimport_t	*ri = NULL;
 
 void R_AddTerrainSurfaces(void);
 
@@ -934,7 +934,7 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 
 	// don't recursively mirror
 	if (tr.viewParms.isPortal) {
-		ri.Printf( PRINT_DEVELOPER, S_COLOR_RED "WARNING: recursive mirror/portal found\n" );
+		ri->Printf( PRINT_DEVELOPER, S_COLOR_RED "WARNING: recursive mirror/portal found\n" );
 		return qfalse;
 	}
 
@@ -1361,7 +1361,7 @@ void R_DebugGraphics( void ) {
 
 	GL_Bind( tr.whiteImage);
 	GL_Cull( CT_FRONT_SIDED );
-	ri.CM_DrawDebugSurface( R_DebugPolygon );
+	ri->CM_DrawDebugSurface( R_DebugPolygon );
 }
 
 

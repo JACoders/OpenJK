@@ -12,7 +12,7 @@
 
 trGlobals_t		tr;
 
-refimport_t	ri;
+refimport_t	*ri = NULL;
 
 void R_AddTerrainSurfaces(void);
 

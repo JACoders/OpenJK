@@ -169,7 +169,7 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 #ifdef DEDICATED
 		imageData=NULL;
 #else
-		re.LoadDataImage(heightMap, &imageData, &iWidth, &iHeight); 
+		re->LoadDataImage(heightMap, &imageData, &iWidth, &iHeight); 
 		if(imageData)
 		{
 			if(strstr(heightMap, "random_"))
@@ -179,8 +179,8 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 			else
 			{
 				// Flip to make the same as GenSurf
-				re.InvertImage(imageData, iWidth, iHeight, 1);
-				re.Resample(imageData, iWidth, iHeight, mHeightMap, GetRealWidth(), GetRealHeight(), 1);
+				re->InvertImage(imageData, iWidth, iHeight, 1);
+				re->Resample(imageData, iWidth, iHeight, mHeightMap, GetRealWidth(), GetRealHeight(), 1);
 			}
 			Z_Free(imageData);
 		}

@@ -67,10 +67,10 @@ CTerrainMap::CTerrainMap(CCMLandScape *landscape) :
 		}
 
 	// Load icons for symbols on map
-	re.LoadImageJA("gfx/menus/rmg/start", (byte**)&mSymStart, &mSymStartWidth, &mSymStartHeight);
-	re.LoadImageJA("gfx/menus/rmg/end", (byte**)&mSymEnd, &mSymEndWidth, &mSymEndHeight);
-	re.LoadImageJA("gfx/menus/rmg/objective", (byte**)&mSymObjective, &mSymObjectiveWidth, &mSymObjectiveHeight);
-	re.LoadImageJA("gfx/menus/rmg/building", (byte**)&mSymBld, &mSymBldWidth, &mSymBldHeight);
+	re->LoadImageJA("gfx/menus/rmg/start", (byte**)&mSymStart, &mSymStartWidth, &mSymStartHeight);
+	re->LoadImageJA("gfx/menus/rmg/end", (byte**)&mSymEnd, &mSymEndWidth, &mSymEndHeight);
+	re->LoadImageJA("gfx/menus/rmg/objective", (byte**)&mSymObjective, &mSymObjectiveWidth, &mSymObjectiveHeight);
+	re->LoadImageJA("gfx/menus/rmg/building", (byte**)&mSymBld, &mSymBldWidth, &mSymBldHeight);
 }
 
 CTerrainMap::~CTerrainMap()
@@ -112,7 +112,7 @@ void CTerrainMap::ApplyBackground(void)
 	int		pos;
 
 	memset(mImage, 255, sizeof(mBufImage));
-	re.LoadImageJA("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight);
+	re->LoadImageJA("gfx\\menus\\rmg\\01_bg", &backgroundImage, &backgroundWidth, &backgroundHeight);
 	if (backgroundImage)
 	{
 		outPos = (byte *)mBufImage;
@@ -349,16 +349,16 @@ void CTerrainMap::Upload(vec3_t player_origin, vec3_t player_angles)
 
 	draw.SetAlphaBuffer(255);
 	
-	re.CreateAutomapImage("*automap", (unsigned char *)draw.buffer, TM_WIDTH, TM_HEIGHT, qfalse, qfalse, qtrue, qfalse);
+	re->CreateAutomapImage("*automap", (unsigned char *)draw.buffer, TM_WIDTH, TM_HEIGHT, qfalse, qfalse, qtrue, qfalse);
 
 	draw.SetBuffer((CPixel32*) mImage);
 }
 
 void CTerrainMap::SaveImageToDisk(const char * terrainName, const char * missionName, const char * seed)
 {
-	//ri.COM_SavePNG(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
+	//ri->COM_SavePNG(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
 	//		(unsigned char *)mImage, TM_WIDTH, TM_HEIGHT, 4);
-	re.SavePNG(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
+	re->SavePNG(va("save/%s_%s_%s.png", terrainName, missionName, seed), 
 			(unsigned char *)mImage, TM_WIDTH, TM_HEIGHT, 4);
 }
 

@@ -12,7 +12,7 @@ GoreTextureCoordinates::~GoreTextureCoordinates()
 	{
 		if ( tex[i] )
 		{
-			ri.Z_Free(tex[i]);
+			ri->Z_Free(tex[i]);
 			tex[i] = NULL;
 		}
 	}
