@@ -439,6 +439,7 @@ void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload
 
 	// shut down the existing game if it is running
 	SV_ShutdownGameProgs();
+	svs.gameStarted = qfalse;
 
 	Com_Printf ("------ Server Initialization ------\n");
 	Com_Printf ("Server: %s\n",server);
