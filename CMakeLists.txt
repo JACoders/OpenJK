@@ -8,6 +8,8 @@ project("OpenJK")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 #    Customizable options
+option(BuildPortableVersion "Build portable version (does not read or write files from your user/home directory" OFF)
+
 option(BuildJK2Support "Build JK2 support" OFF)
 
 option(BuildMPEngine "Whether to create projects for the MP client (openjk.exe)" ON)
@@ -92,15 +94,13 @@ set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 if(WIN32)
 	if(WIN64)
 		if(MSVC)
-			set(SharedDefines "WIN64" "_WINDOWS" "_CRT_SECURE_NO_WARNINGS")
+			set(SharedDefines "WIN64" "_CRT_SECURE_NO_WARNINGS")
 		else(MSVC)
-			set(SharedDefines "WIN64" "_WINDOWS")
+			set(SharedDefines "WIN64")
 		endif(MSVC)
 	else(WIN64)
 		if(MSVC)
-			set(SharedDefines "WIN32" "_WINDOWS" "_CRT_SECURE_NO_WARNINGS")
-		else(MSVC)
-			set(SharedDefines "WIN32" "_WINDOWS")
+			set(SharedDefines "_CRT_SECURE_NO_WARNINGS")
 		endif(MSVC)
 	endif(WIN64)
 else(WIN32)
@@ -120,18 +120,28 @@ else(WIN32)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
 
 	if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-comment -fvisibility=hidden")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-comment")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+		#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-but-set-variable")
 	elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-		# No nested block comments
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-comment")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-comment")
 	endif()
 
 	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-		# Disable invalid offsetof, and deprecated writable strings warnings
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-invalid-offsetof -Wno-write-strings -Wno-comment -fvisibility=hidden -fvisibility-inlines-hidden")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
+		#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
 	elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-		# Disable nested block comments, and deprecated writable strings warnings
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-deprecated-writable-strings -Wno-comment")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-writable-strings")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof")
 	endif()
 
 	if (NOT CMAKE_BUILD_TYPE)
@@ -141,14 +151,22 @@ else(WIN32)
 endif()
 
 # Settings
+if(BuildPortableVersion)
+	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
+endif()
+
 if(NOT BuildJK2Support)
 	set(SharedDefines ${SharedDefines} "__NO_JK2")
 endif()
 
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
 
-set(DebugDefines "_DEBUG")
-set(ReleaseDefines "NDEBUG" "FINAL_BUILD")
+if(NOT MSVC)
+	# CMake already defines _DEBUG for MSVC.
+	set(DebugDefines ${DebugDefines} "_DEBUG")
+endif()
+
+set(ReleaseDefines "FINAL_BUILD")
 
 #    Add projects
 add_subdirectory(${SPDir})

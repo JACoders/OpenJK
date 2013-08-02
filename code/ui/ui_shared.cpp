@@ -4904,7 +4904,6 @@ qboolean Item_Parse(itemDef_t *item)
 
 	while ( 1 ) 
 	{
-		COM_BeginParseSession();			// HACK
 		if (PC_ParseString(&token))
 		{
 			PC_ParseWarning("End of file inside menu item");
@@ -5164,14 +5163,14 @@ void Item_RunScript(itemDef_t *item, const char *s)
 	if (item && s && s[0]) 
 	{
 		p = s;
+		COM_BeginParseSession();
 		while (1) 
 		{
 			const char *command;
 			// expect command then arguments, ; ends command, NULL ends script
-			COM_BeginParseSession();			// HACK
 			if (!String_Parse(&p, &command)) 
 			{
-				return;
+				break;
 			}
 
 			if (command[0] == ';' && command[1] == '\0') 
@@ -5186,6 +5185,7 @@ void Item_RunScript(itemDef_t *item, const char *s)
 				{
 					if ( !(commandList[i].handler(item, &p)) )
 					{
+						COM_EndParseSession();
 						return;
 					}
 
@@ -5203,6 +5203,7 @@ void Item_RunScript(itemDef_t *item, const char *s)
 				}
 			}
 		}
+		COM_EndParseSession();
 	}
 }
 
@@ -5787,13 +5788,11 @@ int PC_StartParseSession(const char *fileName,char **buffer)
 	// Not there?
 	if ( len>0 ) 
 	{
-		parseDataCount = 0;
+		COM_BeginParseSession();
 
-		strncpy(parseData[parseDataCount].fileName, fileName, MAX_QPATH);
+		Q_strncpyz(parseData[parseDataCount].fileName, fileName, sizeof (parseData[0].fileName));
 		parseData[parseDataCount].bufferStart = *buffer;
 		parseData[parseDataCount].bufferCurrent = *buffer;
-
-		COM_BeginParseSession();
 	}
 
 	return len;
@@ -5806,7 +5805,7 @@ PC_EndParseSession
 */
 void PC_EndParseSession(char *buffer)
 {
-	parseDataCount--;		// FIXME: should return to default?
+	COM_EndParseSession();
 	ui.FS_FreeFile( buffer );	//let go of the buffer
 }
 
@@ -6034,10 +6033,14 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 		{
 			const char *val;
 			p = item->enableCvar;
+			COM_BeginParseSession();
 			if (!String_Parse(&p, &val)) 
 			{//strip the quotes off 
+				COM_EndParseSession();
 				return (item->cvarFlags & flag) ? qfalse : qtrue;
 			}
+
+			COM_EndParseSession();
 			Q_strncpyz(buff, val, sizeof(buff), qtrue);
 			DC->getCVarString(item->cvarTest, script, sizeof(script));
 			p = script;
@@ -6048,13 +6051,14 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 			Q_strncpyz(script, item->enableCvar, sizeof(script), qtrue);
 			p = script;
 		}
+		COM_BeginParseSession();
 		while (1) 
 		{
 			const char *val;
 			// expect value then ; or NULL, NULL ends list
-			COM_BeginParseSession();			// HACK HACK HACK!!
 			if (!String_Parse(&p, &val)) 
 			{
+				COM_EndParseSession();
 				return (item->cvarFlags & flag) ? qfalse : qtrue;
 			}
 
@@ -6068,6 +6072,7 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 			{
 				if (Q_stricmp(buff, val) == 0) 
 				{
+					COM_EndParseSession();
 					return qtrue;
 				}
 			} 
@@ -6076,10 +6081,12 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 				// disable it if any of the values are true
 				if (Q_stricmp(buff, val) == 0) 
 				{
+					COM_EndParseSession();
 					return qfalse;
 				}
 			}
 		}
+		COM_EndParseSession();
 		return (item->cvarFlags & flag) ? qfalse : qtrue;
 	}
 	return qtrue;
@@ -7741,7 +7748,7 @@ static qboolean Item_Paint(itemDef_t *item, qboolean bDraw)
 {
 	int		xPos,textWidth;
 	vec4_t red;
-	menuDef_t *parent = (menuDef_t*)item->parent;
+	menuDef_t *parent;
 	red[0] = red[3] = 1;
 	red[1] = red[2] = 0;
 
@@ -7749,6 +7756,8 @@ static qboolean Item_Paint(itemDef_t *item, qboolean bDraw)
 	{
 		return qfalse;
 	}
+
+	parent = (menuDef_t*)item->parent;
 
 	if (item->window.flags & WINDOW_SCRIPTWAITING)
 	{
@@ -8730,6 +8739,32 @@ qboolean Item_TextScroll_HandleKey ( itemDef_t *item, int key, qboolean down, qb
 				scrollPtr->startPos = max;
 			}
 
+			return qtrue;
+		}
+
+		//Raz: Added
+		if ( key == A_MWHEELUP ) 
+		{
+			scrollPtr->startPos--;
+			if (scrollPtr->startPos < 0)
+			{
+				scrollPtr->startPos = 0;
+				Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+				return qfalse;
+			}
+			Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+			return qtrue;
+		}
+		if ( key == A_MWHEELDOWN ) 
+		{
+			scrollPtr->startPos++;
+			if (scrollPtr->startPos > max)
+			{
+				scrollPtr->startPos = max;
+				Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+				return qfalse;
+			}
+			Display_MouseMove(NULL, DC->cursorx, DC->cursory);
 			return qtrue;
 		}
 

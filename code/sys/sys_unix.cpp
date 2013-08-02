@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <libgen.h>
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "sys_local.h"
 

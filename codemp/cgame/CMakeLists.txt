@@ -104,9 +104,9 @@ source_group("ui" FILES ${MPCGameUiFiles})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameUiFiles})
 
 set(MPCGameRendererFiles
-	"${MPDir}/renderer/tr_types.h"
+	"${MPDir}/rd-common/tr_types.h"
 	)
-source_group("renderer" FILES ${MPCGameRendererFiles})
+source_group("rd-common" FILES ${MPCGameRendererFiles})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameRendererFiles})
 
 set(MPCGameGFiles
@@ -132,6 +132,7 @@ set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MP
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPCGameDefines};${ReleaseDefines}")
 set_target_properties(${MPCGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPCGameDefines};${DebugDefines}")
 set_target_properties(${MPCGame} PROPERTIES INCLUDE_DIRECTORIES "${MPCGameIncludeDirectories}")
+set_target_properties(${MPCGame} PROPERTIES PROJECT_LABEL "MP Client Game Library")
 # no libraries used
 if(MPCGameLibraries)
 	target_link_libraries(${MPCGame} ${MPCGameLibraries})

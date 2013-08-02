@@ -121,17 +121,9 @@ CGoreSet *FindGoreSet(int goreSetTag)
 	return 0;
 }
 
-#ifdef _DEBUG
-int g_goreAllocs = 0;
-int g_goreTexAllocs = 0;
-#endif
-
 CGoreSet *NewGoreSet()
 {
 	CGoreSet *ret=new CGoreSet(CurrentGoreSet++);
-#ifdef _DEBUG
-	g_goreAllocs++;
-#endif
 	GoreSets[ret->mMyGoreSetTag]=ret;
 	ret->mRefCount = 1;
 	return ret;
@@ -144,9 +136,6 @@ void DeleteGoreSet(int goreSetTag)
 	{
 		if ( (*f).second->mRefCount == 0 || (*f).second->mRefCount - 1 == 0 )
 		{
-#ifdef _DEBUG
-			g_goreAllocs--;
-#endif
 			delete (*f).second;
 			GoreSets.erase(f);
 		}
@@ -552,7 +541,7 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 
 	if ( cg_g2MarksAllModels == NULL )
 	{
-		cg_g2MarksAllModels = ri.Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
+		cg_g2MarksAllModels = ri->Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
 	}
 
 	if (cg_g2MarksAllModels == NULL
@@ -620,14 +609,14 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 		// give us space for the transformed vertex array to be put in
 		if (!(g.mFlags & GHOUL2_ZONETRANSALLOC))
 		{ //do not stomp if we're using zone space
-			g.mTransformedVertsArray = (size_t*)G2VertSpace->MiniHeapAlloc(g.currentModel->mdxm->numSurfaces * 4);
+			g.mTransformedVertsArray = (size_t*)G2VertSpace->MiniHeapAlloc(g.currentModel->mdxm->numSurfaces * sizeof (size_t));
 			if (!g.mTransformedVertsArray)
 			{
 				Com_Error(ERR_DROP, "Ran out of transform space for Ghoul2 Models. Adjust MiniHeapSize in SV_SpawnServer.\n");
 			}
 		}
 
-		memset(g.mTransformedVertsArray, 0,(g.currentModel->mdxm->numSurfaces * 4)); 
+		memset(g.mTransformedVertsArray, 0, g.currentModel->mdxm->numSurfaces * sizeof (size_t));
 
 		G2_FindOverrideSurface(-1,g.mSlist); //reset the quick surface override lookup;
 		// recursively call the model surface transform
@@ -1003,16 +992,9 @@ void G2_GorePolys( const mdxmSurface_t *surface, CTraceSurface &TS, const mdxmSu
 
 		int *data=(int *)Z_Malloc ( sizeof(int)*size, TAG_GHOUL2_GORE, qtrue );
 
-#ifdef _DEBUG
-		g_goreTexAllocs++;
-#endif
-
 		if ( gore->tex[TS.lod] )
 		{
 			Z_Free(gore->tex[TS.lod]);
-#ifdef _DEBUG
-			g_goreTexAllocs--;
-#endif
 		}
 
 		gore->tex[TS.lod]=(float *)data;
@@ -1507,7 +1489,7 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, Colli
 
 	if ( cg_g2MarksAllModels == NULL )
 	{
-		cg_g2MarksAllModels = ri.Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
+		cg_g2MarksAllModels = ri->Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
 	}
 
 	if (cg_g2MarksAllModels == NULL
@@ -1803,7 +1785,7 @@ int G2_FindConfigStringSpace(char *name, int start, int max)
 	int i;
 	for ( i=1 ; i<max ; i++ ) 
 	{
-		ri.SV_GetConfigstring( start + i, s, sizeof( s ) );
+		ri->SV_GetConfigstring( start + i, s, sizeof( s ) );
 		if ( !s[0] ) 
 		{
 			break;
@@ -1814,7 +1796,7 @@ int G2_FindConfigStringSpace(char *name, int start, int max)
 		}
 	}
 
-	ri.SV_SetConfigstring(start + i, name);
+	ri->SV_SetConfigstring(start + i, name);
 	return i;
 }
 

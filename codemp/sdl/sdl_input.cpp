@@ -91,18 +91,20 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 	// Only parse the variable when it changes
 	if( cl_consoleKeys->modified )
 	{
-		char *text_p, *token;
+		const char *text_p;
+        char *token;
 
 		cl_consoleKeys->modified = qfalse;
 		text_p = cl_consoleKeys->string;
 		numConsoleKeys = 0;
 
+		COM_BeginParseSession("cl_consoleKeys");
 		while( numConsoleKeys < MAX_CONSOLE_KEYS )
 		{
 			consoleKey_t *c = &consoleKeys[ numConsoleKeys ];
 			int charCode = 0;
 
-			token = COM_Parse( (const char **)&text_p );
+			token = COM_Parse( &text_p );
 			if( !token[ 0 ] )
 				break;
 
@@ -470,8 +472,10 @@ void IN_Init( void *windowData )
 	Com_DPrintf( "\n------- Input Initialization -------\n" );
 
 	// joystick variables
-	in_joystick				= Cvar_Get ("in_joystick",				"0",		CVAR_ARCHIVE|CVAR_LATCH);
 	in_keyboardDebug = Cvar_Get( "in_keyboardDebug", "0", CVAR_ARCHIVE );
+
+	in_joystick = Cvar_Get( "in_joystick", "0", CVAR_ARCHIVE|CVAR_LATCH );
+	in_joystickThreshold = Cvar_Get( "joy_threshold", "0.15", CVAR_ARCHIVE );
 
 	// mouse variables
 	in_mouse = Cvar_Get( "in_mouse", "1", CVAR_ARCHIVE );

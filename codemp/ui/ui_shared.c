@@ -115,7 +115,7 @@ typedef struct  itemFlagsDef_s {
 
 itemFlagsDef_t itemFlags [] = {
 	{ "WINDOW_INACTIVE",		WINDOW_INACTIVE },
-	{ NULL,					(int) NULL }
+	{ NULL,					0 }
 };
 
 char *styles [] = {
@@ -2556,6 +2556,32 @@ qboolean Item_TextScroll_HandleKey ( itemDef_t *item, int key, qboolean down, qb
 				scrollPtr->startPos = max;
 			}
 
+			return qtrue;
+		}
+
+		//Raz: Added
+		if ( key == A_MWHEELUP ) 
+		{
+			scrollPtr->startPos--;
+			if (scrollPtr->startPos < 0)
+			{
+				scrollPtr->startPos = 0;
+				Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+				return qfalse;
+			}
+			Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+			return qtrue;
+		}
+		if ( key == A_MWHEELDOWN ) 
+		{
+			scrollPtr->startPos++;
+			if (scrollPtr->startPos > max)
+			{
+				scrollPtr->startPos = max;
+				Display_MouseMove(NULL, DC->cursorx, DC->cursory);
+				return qfalse;
+			}
+			Display_MouseMove(NULL, DC->cursorx, DC->cursory);
 			return qtrue;
 		}
 
@@ -6135,7 +6161,7 @@ void Item_OwnerDraw_Paint(itemDef_t *item) {
 void Item_Paint(itemDef_t *item) 
 {
 	vec4_t		red;
-	menuDef_t *parent = (menuDef_t*)item->parent;
+	menuDef_t *parent;
 	int			xPos,textWidth;
 	vec4_t		color = {1, 1, 1, 1};
 
@@ -6146,6 +6172,8 @@ void Item_Paint(itemDef_t *item)
 	{
 		return;
 	}
+
+	parent = (menuDef_t*)item->parent;
 
 	if (item->window.flags & WINDOW_ORBITING) 
 	{

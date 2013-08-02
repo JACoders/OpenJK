@@ -21,9 +21,7 @@ This file is part of Jedi Academy.
 #ifndef __TASK_MANAGER__
 #define __TASK_MANAGER__
 
-#include "../game/q_shared.h"
-
-typedef unsigned long DWORD;
+#include "../qcommon/q_shared.h"
 
 #define MAX_TASK_NAME	64
 #define TASKFLAG_NORMAL	0x00000000
@@ -56,12 +54,12 @@ public:
 
 	void	Free( void );
 
-	DWORD	GetTimeStamp( void )	const	{	return m_timeStamp;				}
+	unsigned int	GetTimeStamp( void )	const	{	return m_timeStamp;				}
 	CBlock	*GetBlock( void )		const	{	return m_block;					}
 	int		GetGUID( void)			const	{	return m_id;					}
 	int		GetID( void )			const	{	return m_block->GetBlockID();	}
 
-	void	SetTimeStamp( DWORD	timeStamp )		{	m_timeStamp = timeStamp;	}
+	void	SetTimeStamp( unsigned int	timeStamp )		{	m_timeStamp = timeStamp;	}
 	void	SetBlock( CBlock *block )			{	m_block = block;			}
 	void	SetGUID( int id )					{	m_id = id;					}
 
@@ -80,7 +78,7 @@ public:
 protected:
 
 	int		m_id;
-	DWORD	m_timeStamp;
+	unsigned int	m_timeStamp;
 	CBlock	*m_block;
 };
 

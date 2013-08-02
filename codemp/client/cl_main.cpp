@@ -92,12 +92,13 @@ vm_t				*cgvm;
 netadr_t rcon_address;
 
 // Structure containing functions exported from refresh DLL
-refexport_t	re = {0};
+refexport_t	*re = NULL;
 static void	*rendererLib = NULL;
 
+const CGhoul2Info NullG2;
 //RAZFIXME: BAD BAD, maybe? had to move it out of ghoul2_shared.h -> CGhoul2Info_v at the least..
 IGhoul2InfoArray &_TheGhoul2InfoArray( void ) {
-	return re.TheGhoul2InfoArray();
+	return re->TheGhoul2InfoArray();
 }
 
 ping_t	cl_pinglist[MAX_PINGREQUESTS];
@@ -599,7 +600,7 @@ void CL_NextDemo( void ) {
 CL_ShutdownAll
 =====================
 */
-void CL_ShutdownAll( qboolean shutdownRef ) {
+void CL_ShutdownAll( qboolean shutdownRef, qboolean delayFreeVM ) {
 	if(CL_VideoRecording())
 		CL_CloseAVI();
 
@@ -614,15 +615,15 @@ void CL_ShutdownAll( qboolean shutdownRef ) {
 	// clear sounds
 	S_DisableSounds();
 	// shutdown CGame
-	CL_ShutdownCGame();
+	CL_ShutdownCGame(delayFreeVM);
 	// shutdown UI
-	CL_ShutdownUI();
+	CL_ShutdownUI(delayFreeVM);
 
 	// shutdown the renderer
 	if(shutdownRef)
 		CL_ShutdownRef();
-	if ( re.Shutdown ) {
-		re.Shutdown( qfalse );		// don't destroy window or context
+	if ( re && re->Shutdown ) {
+		re->Shutdown( qfalse );		// don't destroy window or context
 	}
 
 	cls.uiStarted = qfalse;
@@ -640,10 +641,10 @@ ways a client gets into a game
 Also called by Com_Error
 =================
 */
-void CL_FlushMemory( void ) {
+void CL_FlushMemory( qboolean delayFreeVM ) {
 
 	// shutdown all the client stuff
-	CL_ShutdownAll( qfalse );
+	CL_ShutdownAll( qfalse, delayFreeVM );
 
 	// if not running a server clear the whole hunk
 	if ( !com_sv_running->integer ) {
@@ -1137,9 +1138,9 @@ void CL_Vid_Restart_f( void ) {
 	// don't let them loop during the restart
 	S_StopAllSounds();
 	// shutdown the UI
-	CL_ShutdownUI();
+	CL_ShutdownUI(qfalse);
 	// shutdown the CGame
-	CL_ShutdownCGame();
+	CL_ShutdownCGame(qfalse);
 	// shutdown the renderer and clear the renderer interface
 	CL_ShutdownRef();
 	// client is no longer pure untill new checksums are sent
@@ -1310,7 +1311,7 @@ void CL_DownloadsComplete( void ) {
 	// this will also (re)load the UI
 	// if this is a local client then only the client part of the hunk
 	// will be cleared, note that this is done after the hunk mark has been set
-	CL_FlushMemory();
+	CL_FlushMemory(qfalse);
 
 	// initialize the CGame
 	cls.cgameStarted = qtrue;
@@ -2210,10 +2211,10 @@ CL_ShutdownRef
 ============
 */
 void CL_ShutdownRef( void ) {
-	if ( !re.Shutdown ) {
+	if ( !re->Shutdown ) {
 		return;
 	}
-	re.Shutdown( qtrue );
+	re->Shutdown( qtrue );
 
 	if ( rendererLib != NULL ) {
 		Sys_UnloadDll (rendererLib);
@@ -2229,13 +2230,13 @@ CL_InitRenderer
 */
 void CL_InitRenderer( void ) {
 	// this sets up the renderer and calls R_Init
-	re.BeginRegistration( &cls.glconfig );
+	re->BeginRegistration( &cls.glconfig );
 
 	// load character sets
-	cls.charSetShader = re.RegisterShaderNoMip("gfx/2d/charsgrid_med");
+	cls.charSetShader = re->RegisterShaderNoMip("gfx/2d/charsgrid_med");
 
-	cls.whiteShader = re.RegisterShader( "white" );
-	cls.consoleShader = re.RegisterShader( "console" );
+	cls.whiteShader = re->RegisterShader( "white" );
+	cls.consoleShader = re->RegisterShader( "console" );
 	g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
 	kg.g_consoleField.widthInChars = g_console_field_width;
 }
@@ -2320,15 +2321,18 @@ CMiniHeap CMiniHeap_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
 static CMiniHeap *GetG2VertSpaceServer( void ) {
 	return G2VertSpaceServer;
 }
+
+#define DEFAULT_RENDER_LIBRARY "rd-vanilla"
+
 void CL_InitRef( void ) {
-	refimport_t	ri = {0};
+	static refimport_t ri;
 	refexport_t	*ret;
 	GetRefAPI_t	GetRefAPI;
 	char		dllName[MAX_OSPATH];
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
 
-	cl_renderer = Cvar_Get( "cl_renderer", "rd-vanilla", CVAR_ARCHIVE|CVAR_LATCH );
+	cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH );
 
 	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
 
@@ -2337,13 +2341,16 @@ void CL_InitRef( void ) {
 		Com_Printf( "failed: trying to load fallback renderer\n" );
 		Cvar_ForceReset( "cl_renderer" );
 
-		Com_sprintf( dllName, sizeof( dllName ), "rd-vanilla_" ARCH_STRING DLL_EXT );
+		Com_sprintf( dllName, sizeof( dllName ), DEFAULT_RENDER_LIBRARY "_" ARCH_STRING DLL_EXT );
 		rendererLib = Sys_LoadDll( dllName, qfalse );
 	}
 
 	if ( !rendererLib ) {
 		Com_Error( ERR_FATAL, "Failed to load renderer" );
 	}
+
+	memset( &ri, 0, sizeof( ri ) );
+
 
 	GetRefAPI = (GetRefAPI_t)Sys_LoadFunction( rendererLib, "GetRefAPI" );
 	if ( !GetRefAPI )
@@ -2448,7 +2455,7 @@ void CL_InitRef( void ) {
 		Com_Error (ERR_FATAL, "Couldn't initialize refresh" );
 	}
 
-	re = *ret;
+	re = ret;
 
 	// unpause so the cgame definately gets a snapshot and renders a frame
 	Cvar_Set( "cl_paused", "0" );
@@ -2792,7 +2799,7 @@ void CL_Shutdown( void ) {
 	CL_Disconnect( qtrue );
 
 	// RJ: added the shutdown all to close down the cgame (to free up some memory, such as in the fx system)
-	CL_ShutdownAll( qtrue );
+	CL_ShutdownAll( qtrue, qfalse );
 
 	S_Shutdown();
 	//CL_ShutdownUI();

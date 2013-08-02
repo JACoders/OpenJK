@@ -212,7 +212,7 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 #ifndef DEDICATED
 			// ditch any image_t's (and associated GL memory) not used on this level...
 			//
-			if (re.RegisterImages_LevelLoadEnd())
+			if (re->RegisterImages_LevelLoadEnd())
 			{
 				gbMemFreeupOccured = qtrue;
 				continue;		// we've dropped at least one image, so try again with the malloc
@@ -221,7 +221,7 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 
 			// ditch the model-binaries cache...  (must be getting desperate here!)
 			//
-			if ( re.RegisterModels_LevelLoadEnd(qtrue) )
+			if ( re->RegisterModels_LevelLoadEnd(qtrue) )
 			{
 				gbMemFreeupOccured = qtrue;
 				continue;
@@ -731,8 +731,8 @@ qboolean Hunk_CheckMark( void ) {
 	return qfalse;
 }
 
-void CL_ShutdownCGame( void );
-void CL_ShutdownUI( void );
+void CL_ShutdownCGame( qboolean delayFreeVM );
+void CL_ShutdownUI( qboolean delayFreeVM );
 void SV_ShutdownGameProgs( void );
 
 /*
@@ -750,8 +750,8 @@ void G2_DEBUG_ReportLeaks(void);
 void Hunk_Clear( void ) {
 
 #ifndef DEDICATED
-	CL_ShutdownCGame();
-	CL_ShutdownUI();
+	CL_ShutdownCGame(qfalse);
+	CL_ShutdownUI(qfalse);
 #endif
 	SV_ShutdownGameProgs();
 
@@ -763,8 +763,8 @@ void Hunk_Clear( void ) {
 	Z_TagFree(TAG_HUNK_MARK1);
 	Z_TagFree(TAG_HUNK_MARK2);
 
-	if ( re.HunkClearCrap ) {
-		re.HunkClearCrap();
+	if ( re && re->HunkClearCrap ) {
+		re->HunkClearCrap();
 	}
 
 //	Com_Printf( "Hunk_Clear: reset the hunk ok\n" );

@@ -1,5 +1,5 @@
 #include <SDL.h>
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "../client/client.h"
 #include "../sys/sys_local.h"
@@ -98,14 +98,13 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 		text_p = cl_consoleKeys->string;
 		numConsoleKeys = 0;
 
+		COM_BeginParseSession();
 		while( numConsoleKeys < MAX_CONSOLE_KEYS )
 		{
 			consoleKey_t *c = &consoleKeys[ numConsoleKeys ];
 			int charCode = 0;
 
-			COM_BeginParseSession();
 			token = COM_Parse( &text_p );
-			COM_EndParseSession();
 			if( !token[ 0 ] )
 				break;
 
@@ -129,6 +128,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 
 			numConsoleKeys++;
 		}
+		COM_EndParseSession();
 	}
 
 	// If the character is the same as the key, prefer the character
@@ -158,7 +158,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 
 /*
 ===============
-IN_TranslateSDLToQ3Key
+IN_TranslateSDLToJKKey
 ===============
 */
 static const char *IN_TranslateSDLToJKKey( SDL_Keysym *keysym, fakeAscii_t *key, qboolean down )
@@ -473,8 +473,10 @@ void IN_Init( void *windowData )
 	Com_DPrintf( "\n------- Input Initialization -------\n" );
 
 	// joystick variables
-	in_joystick				= Cvar_Get ("in_joystick",				"0",		CVAR_ARCHIVE|CVAR_LATCH);
 	in_keyboardDebug = Cvar_Get( "in_keyboardDebug", "0", CVAR_ARCHIVE );
+
+	in_joystick = Cvar_Get( "in_joystick", "0", CVAR_ARCHIVE|CVAR_LATCH );
+	in_joystickThreshold = Cvar_Get( "joy_threshold", "0.15", CVAR_ARCHIVE );
 
 	// mouse variables
 	in_mouse = Cvar_Get( "in_mouse", "1", CVAR_ARCHIVE );
@@ -595,15 +597,15 @@ static void IN_ProcessEvents( void )
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEBUTTONUP:
 				{
-					unsigned char b;
+					unsigned short b;
 					switch( e.button.button )
 					{
-						case 1:   b = A_MOUSE1;     break;
-						case 2:   b = A_MOUSE3;     break;
-						case 3:   b = A_MOUSE2;     break;
-						case 4:   b = A_MOUSE4;     break;
-						case 5:   b = A_MOUSE5;     break;
-						default:  b = A_AUX0 + ( e.button.button - 8 ) % 16; break;
+						case SDL_BUTTON_LEFT:	b = A_MOUSE1;     break;
+						case SDL_BUTTON_MIDDLE:	b = A_MOUSE3;     break;
+						case SDL_BUTTON_RIGHT:	b = A_MOUSE2;     break;
+						case SDL_BUTTON_X1:		b = A_MOUSE4;     break;
+						case SDL_BUTTON_X2:		b = A_MOUSE5;     break;
+						default: b = A_AUX0 + ( e.button.button - 6 ) % 32; break;
 					}
 					Sys_QueEvent( 0, SE_KEY, b,
 						( e.type == SDL_MOUSEBUTTONDOWN ? qtrue : qfalse ), 0, NULL );

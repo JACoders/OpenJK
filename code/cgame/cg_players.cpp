@@ -3471,7 +3471,7 @@ static qboolean _PlayerShadow( const vec3_t origin, const float orientation, flo
 	cgi_CM_BoxTrace( &trace, origin, end, mins, maxs, 0, MASK_PLAYERSOLID );
 
 	// no shadow if too high
-	if ( trace.fraction == 1.0 ) {
+	if ( trace.fraction == 1.0 || (trace.startsolid && trace.allsolid) ) {
 		return qfalse;
 	}
 
@@ -6533,12 +6533,6 @@ Ghoul2 Insert End
 						{
 							// if we impact next frame, we'll mark a slash mark
 							client->ps.saber[saberNum].blade[bladeNum].trail.haveOldPos[i] = qtrue;
-							if ( (!WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && !(client->ps.saber[saberNum].saberFlags2&SFL2_NO_WALL_MARKS))
-								|| (WP_SaberBladeUseSecondBladeStyle( &client->ps.saber[saberNum], bladeNum ) && !(client->ps.saber[saberNum].saberFlags2&SFL2_NO_WALL_MARKS2)) )
-							{
-								CG_ImpactMark( cgs.media.rivetMarkShader, client->ps.saber[saberNum].blade[bladeNum].trail.oldPos[i], client->ps.saber[saberNum].blade[bladeNum].trail.oldNormal[i],
-									0.0f, 1.0f, 1.0f, 1.0f, 1.0f, qfalse, 1.1f, qfalse );
-							}
 						}
 					}
 				}
@@ -6570,8 +6564,8 @@ Ghoul2 Insert End
 							// Hmmm, no impact this frame, but we have an old point
 							// Let's put the mark there, we should use an endcap mark to close the line, but we 
 							//	can probably just get away with a round mark
-							CG_ImpactMark( cgs.media.rivetMarkShader, client->ps.saber[saberNum].blade[bladeNum].trail.oldPos[i], client->ps.saber[saberNum].blade[bladeNum].trail.oldNormal[i],
-									0.0f, 1.0f, 1.0f, 1.0f, 1.0f, qfalse, 1.1f, qfalse );
+							//CG_ImpactMark( cgs.media.rivetMarkShader, client->ps.saber[saberNum].blade[bladeNum].trail.oldPos[i], client->ps.saber[saberNum].blade[bladeNum].trail.oldNormal[i],
+							//		0.0f, 1.0f, 1.0f, 1.0f, 1.0f, qfalse, 1.1f, qfalse );
 						}
 					}
 				}

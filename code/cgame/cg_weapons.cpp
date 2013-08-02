@@ -224,10 +224,10 @@ void CG_RegisterWeapon( int weaponNum ) {
 		theFxScheduler.RegisterEffect( "force/force_touch" );
 		theFxScheduler.RegisterEffect( "saber/saber_block" );
 		theFxScheduler.RegisterEffect( "saber/saber_cut" );
-		theFxScheduler.RegisterEffect( "saber/limb_bolton" );
+		//theFxScheduler.RegisterEffect( "saber/limb_bolton" );
 		theFxScheduler.RegisterEffect( "saber/fizz" );
 		theFxScheduler.RegisterEffect( "saber/boil" );
-		theFxScheduler.RegisterEffect( "saber/fire" );//was "sparks/spark"
+		//theFxScheduler.RegisterEffect( "saber/fire" );//was "sparks/spark"
 
 		cgs.effects.forceHeal			= theFxScheduler.RegisterEffect( "force/heal" );
 		//cgs.effects.forceInvincibility	= theFxScheduler.RegisterEffect( "force/invin" );
@@ -635,7 +635,7 @@ void CG_RegisterItemVisuals( int itemNum ) {
 
 	item = &bg_itemlist[ itemNum ];
 
-	memset( itemInfo, 0, sizeof( &itemInfo ) );
+	memset( itemInfo, 0, sizeof( *itemInfo ) );
 	itemInfo->registered = qtrue;
 
 	itemInfo->models = cgi_R_RegisterModel( item->world_model );

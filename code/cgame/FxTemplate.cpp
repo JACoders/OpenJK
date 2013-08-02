@@ -46,6 +46,7 @@ CPrimitiveTemplate::CPrimitiveTemplate()
 	mSpawnCount.SetRange( 1.0f, 1.0f );
 	mRadius.SetRange( 10.0f, 10.0f );
 	mHeight.SetRange( 10.0f, 10.0f );
+	mWindModifier.SetRange( 1.0f, 1.0f );
 
 	VectorSet( mMin, 0.0f, 0.0f, 0.0f );
 	VectorSet( mMax, 0.0f, 0.0f, 0.0f );
@@ -113,6 +114,7 @@ void CPrimitiveTemplate::operator=(const CPrimitiveTemplate &that)
 
 	mRadius				= that.mRadius;
 	mHeight				= that.mHeight;
+	mWindModifier		= that.mWindModifier;
 
 	mRotation			= that.mRotation;
 	mRotationDelta		= that.mRotationDelta;
@@ -548,6 +550,29 @@ bool CPrimitiveTemplate::ParseHeight( const char *val )
 	if ( ParseFloat( val, &min, &max ) == true )
 	{
 		mHeight.SetRange( min, max );
+		return true;
+	}
+
+	return false;
+}
+
+//------------------------------------------------------
+// ParseWindModifier
+//	Reads in a ranged wind modifier value
+//
+// input:
+//	string that contains one or two floats
+//
+// return:
+//	success of parse operation.
+//------------------------------------------------------
+bool CPrimitiveTemplate::ParseWindModifier( const char *val )
+{
+	float min, max;
+
+	if ( ParseFloat( val, &min, &max ) == true )
+	{
+		mWindModifier.SetRange( min, max );
 		return true;
 	}
 
@@ -2254,6 +2279,10 @@ bool CPrimitiveTemplate::ParsePrimitive( CGPGroup *grp )
 		else if ( !Q_stricmp( key, "height" )) // part of ellipse/cylinder calcs.
 		{
 			ParseHeight( val );
+		}
+		else if ( !Q_stricmp( key, "wind" ))
+		{
+			ParseWindModifier( val );
 		}
 		else if ( !Q_stricmp( key, "rotation" ))
 		{

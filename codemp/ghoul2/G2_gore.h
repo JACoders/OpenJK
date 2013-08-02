@@ -1,5 +1,8 @@
 #pragma once
 
+#include "../ghoul2/ghoul2_shared.h"
+#include "../qcommon/q_shared.h"
+
 #ifdef _G2_GORE
 
 #define MAX_LODS (8)
@@ -7,30 +10,8 @@ struct GoreTextureCoordinates
 {
 	float *tex[MAX_LODS];
 
-	GoreTextureCoordinates()
-	{
-		int i;
-		for (i=0;i<MAX_LODS;i++)
-		{
-			tex[i]=0;
-		}
-	}
-	~GoreTextureCoordinates()
-	{
-		int i;
-		for (i=0;i<MAX_LODS;i++)
-		{
-			if ( tex[i] )
-			{
-#ifdef _DEBUG
-				extern int g_goreTexAllocs;
-				g_goreTexAllocs--;
-#endif
-				Z_Free(tex[i]);
-				tex[i] = 0;
-			}
-		}
-	}
+	GoreTextureCoordinates();
+	~GoreTextureCoordinates();
 };
 
 int AllocGoreRecord();

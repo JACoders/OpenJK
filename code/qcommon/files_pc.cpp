@@ -16,7 +16,7 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
 #include "files.h"
 
@@ -1633,12 +1633,8 @@ void FS_Startup( const char *gameName ) {
 
 	fs_debug = Cvar_Get( "fs_debug", "0", 0 );
 	fs_copyfiles = Cvar_Get( "fs_copyfiles", "0", CVAR_INIT );
-	fs_cdpath = Cvar_Get ("fs_cdpath", Sys_DefaultCDPath(), CVAR_INIT );
-#ifdef _WIN32
-	fs_basepath = Cvar_Get ("fs_basepath", Sys_DefaultBasePath(), CVAR_INIT );
-#else
-	fs_basepath = Cvar_Get ("fs_basepath", Sys_DefaultInstallPath(), CVAR_INIT );
-#endif
+	fs_cdpath = Cvar_Get ("fs_cdpath", Sys_DefaultCDPath(), CVAR_INIT);
+	fs_basepath = Cvar_Get ("fs_basepath", Sys_DefaultInstallPath(), CVAR_INIT);
 	fs_basegame = Cvar_Get ("fs_basegame", "", CVAR_INIT );
 	homePath = Sys_DefaultHomePath();
 	if (!homePath || !homePath[0]) {

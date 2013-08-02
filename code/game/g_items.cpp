@@ -95,13 +95,13 @@ int Pickup_Holdable( gentity_t *ent, gentity_t *other )
 	if ( ent->item->giTag == INV_SECURITY_KEY )
 	{//give the key
 		//FIXME: temp message
-		gi.SendServerCommand( NULL, "cp @SP_INGAME_YOU_TOOK_SECURITY_KEY" );
+		gi.SendServerCommand( 0, "cp @SP_INGAME_YOU_TOOK_SECURITY_KEY" );
 		INV_SecurityKeyGive( other, ent->message );
 	}
 	else if ( ent->item->giTag == INV_GOODIE_KEY )
 	{//give the key
 		//FIXME: temp message
-		gi.SendServerCommand( NULL, "cp @SP_INGAME_YOU_TOOK_SUPPLY_KEY" );
+		gi.SendServerCommand( 0, "cp @SP_INGAME_YOU_TOOK_SUPPLY_KEY" );
 		INV_GoodieKeyGive( other );
 	}
 	else
@@ -1327,7 +1327,7 @@ void item_spawn_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 	self->nextthink = level.time + 50;
 	self->e_ThinkFunc = thinkF_FinishSpawningItem;
 	// I could be fancy and add a count or something like that to be able to spawn the item numerous times...
-	self->e_UseFunc = NULL;
+	self->e_UseFunc = useF_NULL;
 }
 
 /*

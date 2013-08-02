@@ -58,9 +58,9 @@ source_group("ui" FILES ${MPUIUIFiles})
 set(MPUIFiles ${MPUIFiles} ${MPUIUIFiles})
 
 set(MPUIRendererFiles
-	"${MPDir}/renderer/tr_types.h"
+	"${MPDir}/rd-common/tr_types.h"
 	)
-source_group("renderer" FILES ${MPUIRendererFiles})
+source_group("rd-common" FILES ${MPUIRendererFiles})
 set(MPUIFiles ${MPUIFiles} ${MPUIRendererFiles})
 
 add_library(${MPUI} SHARED ${MPUIFiles})
@@ -80,6 +80,7 @@ set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPUID
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPUIDefines};${ReleaseDefines}")
 set_target_properties(${MPUI} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPUIDefines};${DebugDefines}")
 set_target_properties(${MPUI} PROPERTIES INCLUDE_DIRECTORIES "${MPUIIncludeDirectories}")
+set_target_properties(${MPUI} PROPERTIES PROJECT_LABEL "MP UI Library")
 # no libraries used
 if(MPUILibraries)
 	target_link_libraries(${MPUI} ${MPUILibraries})

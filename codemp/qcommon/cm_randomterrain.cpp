@@ -711,8 +711,8 @@ void CRandomTerrain::Smooth ( void )
 	int		xx, yy, dx, dy;
 	float	total, num;
 
-	re.Resample(mGrid, mWidth, mHeight, temp, mWidth >> 1, mHeight >> 1, 1);
-	re.Resample(temp, mWidth >> 1, mHeight >> 1, mGrid, mWidth, mHeight, 1);
+	re->Resample(mGrid, mWidth, mHeight, temp, mWidth >> 1, mHeight >> 1, 1);
+	re->Resample(temp, mWidth >> 1, mHeight >> 1, mGrid, mWidth, mHeight, 1);
 
 	// now lets filter it.
 	memcpy(temp, mGrid, mWidth * mHeight);

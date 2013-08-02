@@ -17,23 +17,21 @@ set(MPVanillaRendererFiles
 	"${MPDir}/rd-vanilla/G2_local.h"
 	"${MPDir}/rd-vanilla/G2_misc.cpp"
 	"${MPDir}/rd-vanilla/G2_surfaces.cpp"
-	"${MPDir}/rd-vanilla/tr_animation.cpp"
 	"${MPDir}/rd-vanilla/tr_arioche.cpp"
 	"${MPDir}/rd-vanilla/tr_backend.cpp"
 	"${MPDir}/rd-vanilla/tr_bsp.cpp"
 	"${MPDir}/rd-vanilla/tr_cmds.cpp"
 	"${MPDir}/rd-vanilla/tr_curve.cpp"
-	"${MPDir}/rd-vanilla/tr_font.cpp"
 	"${MPDir}/rd-vanilla/tr_ghoul2.cpp"
 	"${MPDir}/rd-vanilla/tr_image.cpp"
 	"${MPDir}/rd-vanilla/tr_init.cpp"
 	"${MPDir}/rd-vanilla/tr_landscape.h"
 	"${MPDir}/rd-vanilla/tr_light.cpp"
+	"${MPDir}/rd-vanilla/tr_local.h"
 	"${MPDir}/rd-vanilla/tr_main.cpp"
 	"${MPDir}/rd-vanilla/tr_marks.cpp"
 	"${MPDir}/rd-vanilla/tr_mesh.cpp"
 	"${MPDir}/rd-vanilla/tr_model.cpp"
-	"${MPDir}/rd-vanilla/tr_noise.cpp"
 	"${MPDir}/rd-vanilla/tr_quicksprite.cpp"
 	"${MPDir}/rd-vanilla/tr_quicksprite.h"
 	"${MPDir}/rd-vanilla/tr_scene.cpp"
@@ -41,6 +39,7 @@ set(MPVanillaRendererFiles
 	"${MPDir}/rd-vanilla/tr_shade_calc.cpp"
 	"${MPDir}/rd-vanilla/tr_shader.cpp"
 	"${MPDir}/rd-vanilla/tr_shadows.cpp"
+	"${MPDir}/rd-vanilla/tr_skin.cpp"
 	"${MPDir}/rd-vanilla/tr_sky.cpp"
 	"${MPDir}/rd-vanilla/tr_subs.cpp"
 	"${MPDir}/rd-vanilla/tr_surface.cpp"
@@ -51,6 +50,27 @@ set(MPVanillaRendererFiles
 	"${MPDir}/rd-vanilla/tr_WorldEffects.h"
 	)
 source_group("renderer" FILES ${MPVanillaRendererFiles})
+
+set(MPVanillaRendererGhoul2Files
+	"${MPDir}/ghoul2/G2_gore.cpp"
+	"${MPDir}/ghoul2/G2_gore.h")
+source_group("ghoul2" FILES ${MPVanillaRendererGhoul2Files})
+set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererGhoul2Files})
+
+set(MPVanillaRendererRdCommonFiles
+	"${MPDir}/rd-common/mdx_format.h"
+	"${MPDir}/rd-common/tr_common.h"
+	"${MPDir}/rd-common/tr_font.cpp"
+	"${MPDir}/rd-common/tr_font.h"
+	"${MPDir}/rd-common/tr_image_load.cpp"
+	"${MPDir}/rd-common/tr_image_manipulation.cpp"
+	"${MPDir}/rd-common/tr_image_jpg.cpp"
+	"${MPDir}/rd-common/tr_image_tga.cpp"
+	"${MPDir}/rd-common/tr_image_png.cpp"
+	"${MPDir}/rd-common/tr_noise.cpp"
+	"${MPDir}/rd-common/tr_public.h")
+source_group("rd-common" FILES ${MPVanillaRendererRdCommonFiles})
+set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererRdCommonFiles})
 
 set(MPVanillaRendererQcommonFiles
 	"${MPDir}/qcommon/GenericParser2.cpp"
@@ -94,7 +114,7 @@ if(UseInternalZlib)
 	# zlib.lib is included for windows
 	find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
 	if(NOT ZlibLibrary)
-		message(FATAL_ERROR "UseInternalZlib set, but lib/zlib not found!")
+		message(FATAL_ERROR "UseInternalZlib enabled, but lib/zlib.lib not found!")
 	endif(NOT ZlibLibrary)
 	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} "${OpenJKLibDir}/zlib")
 	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${ZlibLibrary})
@@ -151,4 +171,5 @@ set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_MINSIZ
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SharedDefines};${ReleaseDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SharedDefines};${DebugDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES INCLUDE_DIRECTORIES "${MPVanillaRendererIncludeDirectories}")
+set_target_properties(${MPVanillaRenderer} PROPERTIES PROJECT_LABEL "MP Vanilla Renderer")
 target_link_libraries(${MPVanillaRenderer} ${MPVanillaRendererLibraries})

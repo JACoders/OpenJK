@@ -455,7 +455,7 @@ long CBlockStream::GetLong( void )
 {
 	long data;
 
-	data = *(long *) (m_stream + m_streamPos);
+	data = *(int *) (m_stream + m_streamPos);
 	m_streamPos += sizeof( data );
 
 	return data;
@@ -657,7 +657,7 @@ Open
 
 int CBlockStream::Open( char *buffer, long size )
 {
-	char	id_header[sizeof(IBI_HEADER_ID)];
+	char	id_header[IBI_HEADER_ID_LENGTH];
 	float	version;
 	
 	Init();

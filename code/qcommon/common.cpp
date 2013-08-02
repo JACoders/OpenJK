@@ -18,9 +18,9 @@ This file is part of Jedi Academy.
 
 // common.c -- misc functions used in client and server
 
-#include "../game/q_shared.h"
+#include "q_shared.h"
 #include "qcommon.h"
-#include "../qcommon/sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
+#include "sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
 #include "stv_version.h"
 
 // Because renderer.
@@ -53,10 +53,12 @@ cvar_t	*com_showtrace;
 cvar_t	*com_terrainPhysics;
 cvar_t	*com_version;
 cvar_t	*com_buildScript;	// for automated data building scripts
+cvar_t	*com_bootlogo;
 cvar_t	*cl_paused;
 cvar_t	*sv_paused;
 cvar_t	*com_skippingcin;
 cvar_t	*com_speedslog;		// 1 = buffer log, 2 = flush after each print
+cvar_t  *com_homepath;
 
 // Support for JK2 binaries --eez
 cvar_t	*com_jk2;			// searches for jk2gamex86.dll instead of jagamex86.dll
@@ -286,7 +288,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 
 	SG_Shutdown();				// close any file pointers
 	if ( code == ERR_DISCONNECT ) {
-		SV_Shutdown("Disconnect");
+		SV_Shutdown("Disconnect", qtrue);
 		CL_Disconnect();
 		CL_FlushMemory();
 		CL_StartHunkUsers();
@@ -296,7 +298,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		// If loading/saving caused the crash/error - delete the temp file
 		SG_WipeSavegame("current");	// delete file
 
-		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage));
+		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage), qtrue);
 		CL_Disconnect();
 		CL_FlushMemory();
 		CL_StartHunkUsers();
@@ -305,7 +307,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		throw ("DROPPED\n");
 	} else {
 		CL_Shutdown ();
-		SV_Shutdown (va(S_COLOR_RED"Server fatal crashed: %s\n", com_errorMessage));
+		SV_Shutdown (va(S_COLOR_RED"Server fatal crashed: %s\n", com_errorMessage), qtrue);
 	}
 
 	Com_Shutdown ();
@@ -969,6 +971,8 @@ void Com_Init( char *commandLine ) {
 		// done early so bind command exists
 		CL_InitKeyCommands();
 
+		com_homepath = Cvar_Get("com_homepath", "", CVAR_INIT);
+
 		FS_InitFilesystem ();	//uses z_malloc
 		//re.R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
 		
@@ -1022,6 +1026,8 @@ void Com_Init( char *commandLine ) {
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
+
+		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
 		
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);
@@ -1058,17 +1064,11 @@ void Com_Init( char *commandLine ) {
 
 		// add + commands from command line
 		if ( !Com_AddStartupCommands() ) {
-//#ifdef NDEBUG
 			// if the user didn't give any commands, run default action
-//			if ( !com_dedicated->integer ) 
+			if ( com_bootlogo->integer )
 			{
 				Cbuf_AddText ("cinematic openinglogos\n");
-//				if( !com_introPlayed->integer ) {
-//					Cvar_Set( com_introPlayed->name, "1" );
-//					Cvar_Set( "nextmap", "cinematic intro" );
-//				}
 			}
-//#endif	
 		}
 		com_fullyInitialized = qtrue;
 		Com_Printf ("--- Common Initialization Complete ---\n");
@@ -1224,6 +1224,8 @@ void Com_SetOrgAngles(vec3_t org,vec3_t angles)
 void G2Time_ResetTimers(void);
 void G2Time_ReportTimers(void);
 #endif
+
+void Sys_UnloadGamePending();
 
 #ifdef _MSC_VER
 #pragma warning (disable: 4701)	//local may have been used without init (timing info vars)
@@ -1395,6 +1397,7 @@ try
 	com_frameNumber++;
 }//try
 	catch (const char* reason) {
+		Sys_UnloadGamePending();
 		Com_Printf (reason);
 		return;			// an ERR_DROP was thrown
 	}

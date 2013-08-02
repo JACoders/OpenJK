@@ -848,9 +848,6 @@ void CM_LoadMap( const char *name, qboolean clientload, int *checksum, qboolean 
 	{
 		gbUsingCachedMapDataRightNow = qtrue;	// !!!!!!!!!!!!!!!!!!
 
-#ifndef _DEBUG
-		Com_Printf("CM_LoadMapActual: %s\n", name);
-#endif
 			CM_LoadMap_Actual( name, clientload, checksum, cmg );
 
 		gbUsingCachedMapDataRightNow = qfalse;	// !!!!!!!!!!!!!!!!!!
@@ -1305,12 +1302,12 @@ Writes the portal state to a savegame file
 ===================
 */
 //
-qboolean SG_Append(unsigned long chid, const void *data, int length);
-int SG_Read(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
+qboolean SG_Append(unsigned int chid, const void *data, int length);
+int SG_Read(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
 
 void CM_WritePortalState ()
 {	
-	SG_Append('PRTS', (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
+	SG_Append(INT_ID('P','R','T','S'), (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
 }
 
 /*
@@ -1323,7 +1320,7 @@ and recalculates the area connections
 */
 void	CM_ReadPortalState ()
 {
-	SG_Read('PRTS', (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
+	SG_Read(INT_ID('P','R','T','S'), (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
 	CM_FloodAreaConnections (cmg);
 }
 

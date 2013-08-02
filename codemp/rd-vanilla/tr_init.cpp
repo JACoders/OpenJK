@@ -1,14 +1,10 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // tr_init.c -- functions that are not called every frame
 
 #include "tr_local.h"
+#include "../rd-common/tr_common.h"
 #include "tr_WorldEffects.h"
-#include "tr_font.h"
 #include "qcommon/MiniHeap.h"
 #include "G2_local.h"
-#include "libpng/png.h"
 
 //#ifdef __USEA3D
 //// Defined in snd_a3dg_refcommon.c
@@ -18,9 +14,6 @@
 glconfig_t	glConfig;
 glstate_t	glState;
 static void GfxInfo_f( void );
-
-// global now, we share data directly on it.
-refexport_t re = {0};
 
 cvar_t	*r_verbose;
 cvar_t	*r_ignore;
@@ -284,7 +277,7 @@ void RE_GetBModelVerts( int bmodelIndex, vec3_t *verts, vec3_t normal );
 void R_Splash()
 {
 	image_t *pImage;
-/*	const char* s = ri.Cvar_VariableString("se_language");
+/*	const char* s = ri->Cvar_VariableString("se_language");
 	if (stricmp(s,"english"))
 	{
 		pImage = R_FindImageFile( "menu/splash_eur", qfalse, qfalse, qfalse, GL_CLAMP);
@@ -577,9 +570,9 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	if(glConfig.deviceSupportsGamma)
 		R_GammaCorrect(allbuf + offset, memcount);
 
-	ri.FS_WriteFile(fileName, buffer, memcount + 18);
+	ri->FS_WriteFile(fileName, buffer, memcount + 18);
 
-	ri.Hunk_FreeTempMemory(allbuf);
+	ri->Hunk_FreeTempMemory(allbuf);
 }
 
 /* 
@@ -594,7 +587,7 @@ void R_TakeScreenshotPNG( int x, int y, int width, int height, char *fileName ) 
 
 	buffer = RB_ReadPixels( x, y, width, height, &offset, &padlen );
 	RE_SavePNG( fileName, buffer, width, height, 3 );
-	ri.Hunk_FreeTempMemory( buffer );
+	ri->Hunk_FreeTempMemory( buffer );
 }
 
 /* 
@@ -615,7 +608,7 @@ void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName )
 		R_GammaCorrect(buffer + offset, memcount);
 
 	RE_SaveJPG(fileName, r_screenshotJpegQuality->integer, width, height, buffer + offset, padlen);
-	ri.Hunk_FreeTempMemory(buffer);
+	ri->Hunk_FreeTempMemory(buffer);
 }
 
 /* 
@@ -659,7 +652,7 @@ static void R_LevelShot( void ) {
 	allsource = RB_ReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, &offset, &padlen);
 	source = allsource + offset;
 
-	buffer = (byte *)ri.Hunk_AllocateTempMemory(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18);
+	buffer = (byte *)ri->Hunk_AllocateTempMemory(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18);
 	Com_Memset (buffer, 0, 18);
 	buffer[2] = 2;		// uncompressed type
 	buffer[12] = LEVELSHOTSIZE & 255;
@@ -694,10 +687,10 @@ static void R_LevelShot( void ) {
 		R_GammaCorrect( buffer + 18, LEVELSHOTSIZE * LEVELSHOTSIZE * 3 );
 	}
 
-	ri.FS_WriteFile( checkname, buffer, LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18 );
+	ri->FS_WriteFile( checkname, buffer, LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18 );
 
-	ri.Hunk_FreeTempMemory( buffer );
-	ri.Hunk_FreeTempMemory( allsource );
+	ri->Hunk_FreeTempMemory( buffer );
+	ri->Hunk_FreeTempMemory( allsource );
 
 	Com_Printf ("Wrote %s\n", checkname );
 }
@@ -718,23 +711,23 @@ void R_ScreenShotTGA_f (void) {
 	char checkname[MAX_OSPATH] = {0};
 	qboolean silent = qfalse;
 
-	if ( !strcmp( ri.Cmd_Argv(1), "levelshot" ) ) {
+	if ( !strcmp( ri->Cmd_Argv(1), "levelshot" ) ) {
 		R_LevelShot();
 		return;
 	}
 
-	if ( !strcmp( ri.Cmd_Argv(1), "silent" ) )
+	if ( !strcmp( ri->Cmd_Argv(1), "silent" ) )
 		silent = qtrue;
 
-	if ( ri.Cmd_Argc() == 2 && !silent ) {
+	if ( ri->Cmd_Argc() == 2 && !silent ) {
 		// explicit filename
-		Com_sprintf( checkname, sizeof( checkname ), "screenshots/%s.tga", ri.Cmd_Argv( 1 ) );
+		Com_sprintf( checkname, sizeof( checkname ), "screenshots/%s.tga", ri->Cmd_Argv( 1 ) );
 	}
 	else {
 		// timestamp the file
 		R_ScreenshotFilename( checkname, sizeof( checkname ), ".tga" );
 
-		if ( ri.FS_FileExists( checkname ) ) {
+		if ( ri->FS_FileExists( checkname ) ) {
 			Com_Printf( "ScreenShot: Couldn't create a file\n"); 
 			return;
  		}
@@ -762,23 +755,23 @@ void R_ScreenShotPNG_f (void) {
 	char checkname[MAX_OSPATH] = {0};
 	qboolean silent = qfalse;
 
-	if ( !strcmp( ri.Cmd_Argv(1), "levelshot" ) ) {
+	if ( !strcmp( ri->Cmd_Argv(1), "levelshot" ) ) {
 		R_LevelShot();
 		return;
 	}
 
-	if ( !strcmp( ri.Cmd_Argv(1), "silent" ) )
+	if ( !strcmp( ri->Cmd_Argv(1), "silent" ) )
 		silent = qtrue;
 
-	if ( ri.Cmd_Argc() == 2 && !silent ) {
+	if ( ri->Cmd_Argc() == 2 && !silent ) {
 		// explicit filename
-		Com_sprintf( checkname, sizeof( checkname ), "screenshots/%s.png", ri.Cmd_Argv( 1 ) );
+		Com_sprintf( checkname, sizeof( checkname ), "screenshots/%s.png", ri->Cmd_Argv( 1 ) );
 	}
 	else {
 		// timestamp the file
 		R_ScreenshotFilename( checkname, sizeof( checkname ), ".png" );
 
-		if ( ri.FS_FileExists( checkname ) ) {
+		if ( ri->FS_FileExists( checkname ) ) {
 			Com_Printf( "ScreenShot: Couldn't create a file\n"); 
 			return;
  		}
@@ -795,22 +788,22 @@ void R_ScreenShot_f (void) {
 	char checkname[MAX_OSPATH] = {0};
 	qboolean silent = qfalse;
 
-	if ( !strcmp( ri.Cmd_Argv(1), "levelshot" ) ) {
+	if ( !strcmp( ri->Cmd_Argv(1), "levelshot" ) ) {
 		R_LevelShot();
 		return;
 	}
-	if ( !strcmp( ri.Cmd_Argv(1), "silent" ) )
+	if ( !strcmp( ri->Cmd_Argv(1), "silent" ) )
 		silent = qtrue;
 
-	if ( ri.Cmd_Argc() == 2 && !silent ) {
+	if ( ri->Cmd_Argc() == 2 && !silent ) {
 		// explicit filename
-		Com_sprintf( checkname, sizeof( checkname ), "screenshots/%s.jpg", ri.Cmd_Argv( 1 ) );
+		Com_sprintf( checkname, sizeof( checkname ), "screenshots/%s.jpg", ri->Cmd_Argv( 1 ) );
 	}
 	else {
 		// timestamp the file
 		R_ScreenshotFilename( checkname, sizeof( checkname ), ".jpg" );
 
-		if ( ri.FS_FileExists( checkname ) ) {
+		if ( ri->FS_FileExists( checkname ) ) {
 			Com_Printf( "ScreenShot: Couldn't create a file\n" );
 			return;
  		}
@@ -864,7 +857,7 @@ const void *RB_TakeVideoFrameCmd( const void *data )
 		memcount = RE_SaveJPGToBuffer(cmd->encodeBuffer, linelen * cmd->height,
 			r_aviMotionJpegQuality->integer,
 			cmd->width, cmd->height, cBuf, padlen);
-		ri.CL_WriteAVIVideoFrame(cmd->encodeBuffer, memcount);
+		ri->CL_WriteAVIVideoFrame(cmd->encodeBuffer, memcount);
 	}
 	else
 	{
@@ -893,7 +886,7 @@ const void *RB_TakeVideoFrameCmd( const void *data )
 			srcptr += padlen;
 		}
 		
-		ri.CL_WriteAVIVideoFrame(cmd->encodeBuffer, avipadwidth * cmd->height);
+		ri->CL_WriteAVIVideoFrame(cmd->encodeBuffer, avipadwidth * cmd->height);
 	}
 
 	return (const void *)(cmd + 1);	
@@ -958,7 +951,7 @@ extern bool g_bTextureRectangleHack;
 ================
 R_PrintLongString
 
-Workaround for ri.Printf's 1024 characters buffer limit.
+Workaround for ri->Printf's 1024 characters buffer limit.
 ================
 */
 void R_PrintLongString(const char *string) {
@@ -1104,179 +1097,179 @@ void R_Register( void )
 {
 
 	//RAZFIXME: lol badness
-	se_language = ri.Cvar_Get("se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART);
+	se_language = ri->Cvar_Get("se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART);
 	//
 	// latched and archived variables
 	//
-	r_allowExtensions					= ri.Cvar_Get( "r_allowExtensions",					"1",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_ext_compressed_textures			= ri.Cvar_Get( "r_ext_compress_textures",			"1",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_ext_compressed_lightmaps			= ri.Cvar_Get( "r_ext_compress_lightmaps",			"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_ext_preferred_tc_method			= ri.Cvar_Get( "r_ext_preferred_tc_method",			"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_ext_gamma_control					= ri.Cvar_Get( "r_ext_gamma_control",				"1",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_ext_multitexture					= ri.Cvar_Get( "r_ext_multitexture",				"1",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_ext_compiled_vertex_array			= ri.Cvar_Get( "r_ext_compiled_vertex_array",		"1",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_ext_texture_env_add				= ri.Cvar_Get( "r_ext_texture_env_add",				"1",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_ext_texture_filter_anisotropic	= ri.Cvar_Get( "r_ext_texture_filter_anisotropic",	"16",						CVAR_ARCHIVE );
-	r_environmentMapping				= ri.Cvar_Get( "r_environmentMapping",				"1",						CVAR_ARCHIVE );
-	r_DynamicGlow						= ri.Cvar_Get( "r_DynamicGlow",						"0",						CVAR_ARCHIVE );
-	r_DynamicGlowPasses					= ri.Cvar_Get( "r_DynamicGlowPasses",				"5",						CVAR_ARCHIVE );
-	r_DynamicGlowDelta					= ri.Cvar_Get( "r_DynamicGlowDelta",				"0.8f",						CVAR_ARCHIVE );
-	r_DynamicGlowIntensity				= ri.Cvar_Get( "r_DynamicGlowIntensity",			"1.13f",					CVAR_ARCHIVE );
-	r_DynamicGlowSoft					= ri.Cvar_Get( "r_DynamicGlowSoft",					"1",						CVAR_ARCHIVE );
-	r_DynamicGlowWidth					= ri.Cvar_Get( "r_DynamicGlowWidth",				"320",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_DynamicGlowHeight					= ri.Cvar_Get( "r_DynamicGlowHeight",				"240",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_picmip							= ri.Cvar_Get( "r_picmip",							"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
-	r_colorMipLevels					= ri.Cvar_Get( "r_colorMipLevels",					"0",						CVAR_LATCH );
-	r_detailTextures					= ri.Cvar_Get( "r_detailtextures",					"1",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_texturebits						= ri.Cvar_Get( "r_texturebits",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_texturebitslm						= ri.Cvar_Get( "r_texturebitslm",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_colorbits							= ri.Cvar_Get( "r_colorbits",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_stereo							= ri.Cvar_Get( "r_stereo",							"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_stencilbits						= ri.Cvar_Get( "r_stencilbits",						"8",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_depthbits							= ri.Cvar_Get( "r_depthbits",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_overBrightBits					= ri.Cvar_Get( "r_overBrightBits",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_mapOverBrightBits					= ri.Cvar_Get( "r_mapOverBrightBits",				"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_ignorehwgamma						= ri.Cvar_Get( "r_ignorehwgamma",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_mode								= ri.Cvar_Get( "r_mode",							"4",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_fullscreen						= ri.Cvar_Get( "r_fullscreen",						"1",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_noborder							= ri.Cvar_Get( "r_noborder",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_centerWindow						= ri.Cvar_Get( "r_centerWindow",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_customwidth						= ri.Cvar_Get( "r_customwidth",						"1600",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_customheight						= ri.Cvar_Get( "r_customheight",					"1024",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_simpleMipMaps						= ri.Cvar_Get( "r_simpleMipMaps",					"1",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_vertexLight						= ri.Cvar_Get( "r_vertexLight",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_uiFullScreen						= ri.Cvar_Get( "r_uifullscreen",					"0",						CVAR_NONE );
-	r_subdivisions						= ri.Cvar_Get( "r_subdivisions",					"4",						CVAR_ARCHIVE|CVAR_LATCH );
-	r_displayRefresh					= ri.Cvar_Get( "r_displayRefresh",					"0",						CVAR_LATCH );
-	ri.Cvar_CheckRange( r_displayRefresh, 0, 200, qtrue );
-	r_fullbright						= ri.Cvar_Get( "r_fullbright",						"0",						CVAR_CHEAT );
-	r_intensity							= ri.Cvar_Get( "r_intensity",						"1",						CVAR_LATCH );
-	r_singleShader						= ri.Cvar_Get( "r_singleShader",					"0",						CVAR_CHEAT|CVAR_LATCH );
-	r_lodCurveError						= ri.Cvar_Get( "r_lodCurveError",					"250",						CVAR_ARCHIVE );
-	r_lodbias							= ri.Cvar_Get( "r_lodbias",							"0",						CVAR_ARCHIVE );
-	r_autolodscalevalue					= ri.Cvar_Get( "r_autolodscalevalue",				"0",						CVAR_ROM );
-	r_flares							= ri.Cvar_Get( "r_flares",							"1",						CVAR_ARCHIVE );
-	r_znear								= ri.Cvar_Get( "r_znear",							"4",						CVAR_CHEAT );
-	ri.Cvar_CheckRange( r_znear, 0.001f, 200, qfalse ); // was qtrue in JA, is qfalse properly in ioq3
-	r_ignoreGLErrors					= ri.Cvar_Get( "r_ignoreGLErrors",					"1",						CVAR_ARCHIVE );
-	r_fastsky							= ri.Cvar_Get( "r_fastsky",							"0",						CVAR_ARCHIVE );
-	r_inGameVideo						= ri.Cvar_Get( "r_inGameVideo",						"1",						CVAR_ARCHIVE );
-	r_drawSun							= ri.Cvar_Get( "r_drawSun",							"0",						CVAR_ARCHIVE );
-	r_dynamiclight						= ri.Cvar_Get( "r_dynamiclight",					"1",						CVAR_ARCHIVE );
+	r_allowExtensions					= ri->Cvar_Get( "r_allowExtensions",				"1",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_ext_compressed_textures			= ri->Cvar_Get( "r_ext_compress_textures",			"1",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_ext_compressed_lightmaps			= ri->Cvar_Get( "r_ext_compress_lightmaps",			"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_ext_preferred_tc_method			= ri->Cvar_Get( "r_ext_preferred_tc_method",		"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_ext_gamma_control					= ri->Cvar_Get( "r_ext_gamma_control",				"1",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_ext_multitexture					= ri->Cvar_Get( "r_ext_multitexture",				"1",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_ext_compiled_vertex_array			= ri->Cvar_Get( "r_ext_compiled_vertex_array",		"1",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_ext_texture_env_add				= ri->Cvar_Get( "r_ext_texture_env_add",			"1",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_ext_texture_filter_anisotropic	= ri->Cvar_Get( "r_ext_texture_filter_anisotropic",	"16",						CVAR_ARCHIVE );
+	r_environmentMapping				= ri->Cvar_Get( "r_environmentMapping",				"1",						CVAR_ARCHIVE );
+	r_DynamicGlow						= ri->Cvar_Get( "r_DynamicGlow",					"0",						CVAR_ARCHIVE );
+	r_DynamicGlowPasses					= ri->Cvar_Get( "r_DynamicGlowPasses",				"5",						CVAR_ARCHIVE );
+	r_DynamicGlowDelta					= ri->Cvar_Get( "r_DynamicGlowDelta",				"0.8f",						CVAR_ARCHIVE );
+	r_DynamicGlowIntensity				= ri->Cvar_Get( "r_DynamicGlowIntensity",			"1.13f",					CVAR_ARCHIVE );
+	r_DynamicGlowSoft					= ri->Cvar_Get( "r_DynamicGlowSoft",				"1",						CVAR_ARCHIVE );
+	r_DynamicGlowWidth					= ri->Cvar_Get( "r_DynamicGlowWidth",				"320",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_DynamicGlowHeight					= ri->Cvar_Get( "r_DynamicGlowHeight",				"240",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_picmip							= ri->Cvar_Get( "r_picmip",							"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	ri->Cvar_CheckRange( r_picmip, 0, 16, qtrue );
+	r_colorMipLevels					= ri->Cvar_Get( "r_colorMipLevels",					"0",						CVAR_LATCH );
+	r_detailTextures					= ri->Cvar_Get( "r_detailtextures",					"1",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_texturebits						= ri->Cvar_Get( "r_texturebits",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_texturebitslm						= ri->Cvar_Get( "r_texturebitslm",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_colorbits							= ri->Cvar_Get( "r_colorbits",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_stereo							= ri->Cvar_Get( "r_stereo",							"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_stencilbits						= ri->Cvar_Get( "r_stencilbits",					"8",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_depthbits							= ri->Cvar_Get( "r_depthbits",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_overBrightBits					= ri->Cvar_Get( "r_overBrightBits",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_mapOverBrightBits					= ri->Cvar_Get( "r_mapOverBrightBits",				"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_ignorehwgamma						= ri->Cvar_Get( "r_ignorehwgamma",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_mode								= ri->Cvar_Get( "r_mode",							"4",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_fullscreen						= ri->Cvar_Get( "r_fullscreen",						"1",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_noborder							= ri->Cvar_Get( "r_noborder",						"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_centerWindow						= ri->Cvar_Get( "r_centerWindow",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_customwidth						= ri->Cvar_Get( "r_customwidth",					"1600",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_customheight						= ri->Cvar_Get( "r_customheight",					"1024",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_simpleMipMaps						= ri->Cvar_Get( "r_simpleMipMaps",					"1",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_vertexLight						= ri->Cvar_Get( "r_vertexLight",					"0",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_uiFullScreen						= ri->Cvar_Get( "r_uifullscreen",					"0",						CVAR_NONE );
+	r_subdivisions						= ri->Cvar_Get( "r_subdivisions",					"4",						CVAR_ARCHIVE|CVAR_LATCH );
+	r_displayRefresh					= ri->Cvar_Get( "r_displayRefresh",					"0",						CVAR_LATCH );
+	ri->Cvar_CheckRange( r_displayRefresh, 0, 200, qtrue );
+	r_fullbright						= ri->Cvar_Get( "r_fullbright",						"0",						CVAR_CHEAT );
+	r_intensity							= ri->Cvar_Get( "r_intensity",						"1",						CVAR_LATCH );
+	r_singleShader						= ri->Cvar_Get( "r_singleShader",					"0",						CVAR_CHEAT|CVAR_LATCH );
+	r_lodCurveError						= ri->Cvar_Get( "r_lodCurveError",					"250",						CVAR_ARCHIVE );
+	r_lodbias							= ri->Cvar_Get( "r_lodbias",						"0",						CVAR_ARCHIVE );
+	r_autolodscalevalue					= ri->Cvar_Get( "r_autolodscalevalue",				"0",						CVAR_ROM );
+	r_flares							= ri->Cvar_Get( "r_flares",							"1",						CVAR_ARCHIVE );
+	r_znear								= ri->Cvar_Get( "r_znear",							"4",						CVAR_CHEAT );
+	ri->Cvar_CheckRange( r_znear, 0.001f, 200, qfalse ); // was qtrue in JA, is qfalse properly in ioq3
+	r_ignoreGLErrors					= ri->Cvar_Get( "r_ignoreGLErrors",					"1",						CVAR_ARCHIVE );
+	r_fastsky							= ri->Cvar_Get( "r_fastsky",						"0",						CVAR_ARCHIVE );
+	r_inGameVideo						= ri->Cvar_Get( "r_inGameVideo",					"1",						CVAR_ARCHIVE );
+	r_drawSun							= ri->Cvar_Get( "r_drawSun",						"0",						CVAR_ARCHIVE );
+	r_dynamiclight						= ri->Cvar_Get( "r_dynamiclight",					"1",						CVAR_ARCHIVE );
 	// rjr - removed for hacking
-//	r_dlightBacks						= ri.Cvar_Get( "r_dlightBacks",						"1",						CVAR_CHEAT );
-	r_finish							= ri.Cvar_Get( "r_finish",							"0",						CVAR_ARCHIVE );
-	r_textureMode						= ri.Cvar_Get( "r_textureMode",						"GL_LINEAR_MIPMAP_NEAREST",	CVAR_ARCHIVE );
-	r_swapInterval						= ri.Cvar_Get( "r_swapInterval",					"0",						CVAR_ARCHIVE );
-	r_markcount							= ri.Cvar_Get( "r_markcount",						"100",						CVAR_ARCHIVE );
-	r_gamma								= ri.Cvar_Get( "r_gamma",							"1",						CVAR_ARCHIVE );
-	r_facePlaneCull						= ri.Cvar_Get( "r_facePlaneCull",					"1",						CVAR_ARCHIVE );
-	r_cullRoofFaces						= ri.Cvar_Get( "r_cullRoofFaces",					"0",						CVAR_CHEAT ); //attempted smart method of culling out upwards facing surfaces on roofs for automap shots -rww
-	r_roofCullCeilDist					= ri.Cvar_Get( "r_roofCullCeilDist",				"256",						CVAR_CHEAT ); //attempted smart method of culling out upwards facing surfaces on roofs for automap shots -rww
-	r_roofCullFloorDist					= ri.Cvar_Get( "r_roofCeilFloorDist",				"128",						CVAR_CHEAT ); //attempted smart method of culling out upwards facing surfaces on roofs for automap shots -rww
-	r_primitives						= ri.Cvar_Get( "r_primitives",						"0",						CVAR_ARCHIVE );
-	ri.Cvar_CheckRange( r_primitives, -1, 3, qtrue );
-	r_ambientScale						= ri.Cvar_Get( "r_ambientScale",					"0.6",						CVAR_CHEAT );
-	r_directedScale						= ri.Cvar_Get( "r_directedScale",					"1",						CVAR_CHEAT );
-	r_autoMap							= ri.Cvar_Get( "r_autoMap",							"0",						CVAR_ARCHIVE ); //automap renderside toggle for debugging -rww
-	r_autoMapBackAlpha					= ri.Cvar_Get( "r_autoMapBackAlpha",				"0",						CVAR_NONE ); //alpha of automap bg -rww
-	r_autoMapDisable					= ri.Cvar_Get( "r_autoMapDisable",					"1",						CVAR_NONE );
-	r_showImages						= ri.Cvar_Get( "r_showImages",						"0",						CVAR_CHEAT );
-	r_debugLight						= ri.Cvar_Get( "r_debuglight",						"0",						CVAR_TEMP );
-	r_debugSort							= ri.Cvar_Get( "r_debugSort",						"0",						CVAR_CHEAT );
-	r_dlightStyle						= ri.Cvar_Get( "r_dlightStyle",						"1",						CVAR_TEMP );
-	r_surfaceSprites					= ri.Cvar_Get( "r_surfaceSprites",					"1",						CVAR_TEMP );
-	r_surfaceWeather					= ri.Cvar_Get( "r_surfaceWeather",					"0",						CVAR_TEMP );
-	r_windSpeed							= ri.Cvar_Get( "r_windSpeed",						"0",						CVAR_NONE );
-	r_windAngle							= ri.Cvar_Get( "r_windAngle",						"0",						CVAR_NONE );
-	r_windGust							= ri.Cvar_Get( "r_windGust",						"0",						CVAR_NONE );
-	r_windDampFactor					= ri.Cvar_Get( "r_windDampFactor",					"0.1",						CVAR_NONE );
-	r_windPointForce					= ri.Cvar_Get( "r_windPointForce",					"0",						CVAR_NONE );
-	r_windPointX						= ri.Cvar_Get( "r_windPointX",						"0",						CVAR_NONE );
-	r_windPointY						= ri.Cvar_Get( "r_windPointY",						"0",						CVAR_NONE );
-	r_nocurves							= ri.Cvar_Get( "r_nocurves",						"0",						CVAR_CHEAT );
-	r_drawworld							= ri.Cvar_Get( "r_drawworld",						"1",						CVAR_CHEAT );
-	r_drawfog							= ri.Cvar_Get( "r_drawfog",							"2",						CVAR_CHEAT );
-	r_lightmap							= ri.Cvar_Get( "r_lightmap",						"0",						CVAR_CHEAT );
-	r_portalOnly						= ri.Cvar_Get( "r_portalOnly",						"0",						CVAR_CHEAT );
-	r_skipBackEnd						= ri.Cvar_Get( "r_skipBackEnd",						"0",						CVAR_CHEAT );
-	r_measureOverdraw					= ri.Cvar_Get( "r_measureOverdraw",					"0",						CVAR_CHEAT );
-	r_lodscale							= ri.Cvar_Get( "r_lodscale",						"5",						CVAR_NONE );
-	r_norefresh							= ri.Cvar_Get( "r_norefresh",						"0",						CVAR_CHEAT );
-	r_drawentities						= ri.Cvar_Get( "r_drawentities",					"1",						CVAR_CHEAT );
-	r_ignore							= ri.Cvar_Get( "r_ignore",							"1",						CVAR_CHEAT );
-	r_nocull							= ri.Cvar_Get( "r_nocull",							"0",						CVAR_CHEAT );
-	r_novis								= ri.Cvar_Get( "r_novis",							"0",						CVAR_CHEAT );
-	r_showcluster						= ri.Cvar_Get( "r_showcluster",						"0",						CVAR_CHEAT );
-	r_speeds							= ri.Cvar_Get( "r_speeds",							"0",						CVAR_CHEAT );
-	r_verbose							= ri.Cvar_Get( "r_verbose",							"0",						CVAR_CHEAT );
-	r_logFile							= ri.Cvar_Get( "r_logFile",							"0",						CVAR_CHEAT );
-	r_debugSurface						= ri.Cvar_Get( "r_debugSurface",					"0",						CVAR_CHEAT );
-	r_nobind							= ri.Cvar_Get( "r_nobind",							"0",						CVAR_CHEAT );
-	r_showtris							= ri.Cvar_Get( "r_showtris",						"0",						CVAR_CHEAT );
-	r_showsky							= ri.Cvar_Get( "r_showsky",							"0",						CVAR_CHEAT );
-	r_shownormals						= ri.Cvar_Get( "r_shownormals",						"0",						CVAR_CHEAT );
-	r_clear								= ri.Cvar_Get( "r_clear",							"0",						CVAR_CHEAT );
-	r_offsetFactor						= ri.Cvar_Get( "r_offsetfactor",					"-1",						CVAR_CHEAT );
-	r_offsetUnits						= ri.Cvar_Get( "r_offsetunits",						"-2",						CVAR_CHEAT );
-	r_lockpvs							= ri.Cvar_Get( "r_lockpvs",							"0",						CVAR_CHEAT );
-	r_noportals							= ri.Cvar_Get( "r_noportals",						"0",						CVAR_CHEAT );
-	r_shadows							= ri.Cvar_Get( "cg_shadows",						"1",						CVAR_NONE );
-	r_shadowRange						= ri.Cvar_Get( "r_shadowRange",						"1000",						CVAR_NONE );
-	r_maxpolys							= ri.Cvar_Get( "r_maxpolys",						XSTRING( MAX_POLYS ),		CVAR_NONE );
-	r_maxpolyverts						= ri.Cvar_Get( "r_maxpolyverts",					XSTRING( MAX_POLYVERTS ),	CVAR_NONE );
+//	r_dlightBacks						= ri->Cvar_Get( "r_dlightBacks",					"1",						CVAR_CHEAT );
+	r_finish							= ri->Cvar_Get( "r_finish",							"0",						CVAR_ARCHIVE );
+	r_textureMode						= ri->Cvar_Get( "r_textureMode",					"GL_LINEAR_MIPMAP_NEAREST",	CVAR_ARCHIVE );
+	r_swapInterval						= ri->Cvar_Get( "r_swapInterval",					"0",						CVAR_ARCHIVE );
+	r_markcount							= ri->Cvar_Get( "r_markcount",						"100",						CVAR_ARCHIVE );
+	r_gamma								= ri->Cvar_Get( "r_gamma",							"1",						CVAR_ARCHIVE );
+	r_facePlaneCull						= ri->Cvar_Get( "r_facePlaneCull",					"1",						CVAR_ARCHIVE );
+	r_cullRoofFaces						= ri->Cvar_Get( "r_cullRoofFaces",					"0",						CVAR_CHEAT ); //attempted smart method of culling out upwards facing surfaces on roofs for automap shots -rww
+	r_roofCullCeilDist					= ri->Cvar_Get( "r_roofCullCeilDist",				"256",						CVAR_CHEAT ); //attempted smart method of culling out upwards facing surfaces on roofs for automap shots -rww
+	r_roofCullFloorDist					= ri->Cvar_Get( "r_roofCeilFloorDist",				"128",						CVAR_CHEAT ); //attempted smart method of culling out upwards facing surfaces on roofs for automap shots -rww
+	r_primitives						= ri->Cvar_Get( "r_primitives",						"0",						CVAR_ARCHIVE );
+	ri->Cvar_CheckRange( r_primitives, -1, 3, qtrue );
+	r_ambientScale						= ri->Cvar_Get( "r_ambientScale",					"0.6",						CVAR_CHEAT );
+	r_directedScale						= ri->Cvar_Get( "r_directedScale",					"1",						CVAR_CHEAT );
+	r_autoMap							= ri->Cvar_Get( "r_autoMap",						"0",						CVAR_ARCHIVE ); //automap renderside toggle for debugging -rww
+	r_autoMapBackAlpha					= ri->Cvar_Get( "r_autoMapBackAlpha",				"0",						CVAR_NONE ); //alpha of automap bg -rww
+	r_autoMapDisable					= ri->Cvar_Get( "r_autoMapDisable",					"1",						CVAR_NONE );
+	r_showImages						= ri->Cvar_Get( "r_showImages",						"0",						CVAR_CHEAT );
+	r_debugLight						= ri->Cvar_Get( "r_debuglight",						"0",						CVAR_TEMP );
+	r_debugSort							= ri->Cvar_Get( "r_debugSort",						"0",						CVAR_CHEAT );
+	r_dlightStyle						= ri->Cvar_Get( "r_dlightStyle",					"1",						CVAR_TEMP );
+	r_surfaceSprites					= ri->Cvar_Get( "r_surfaceSprites",					"1",						CVAR_TEMP );
+	r_surfaceWeather					= ri->Cvar_Get( "r_surfaceWeather",					"0",						CVAR_TEMP );
+	r_windSpeed							= ri->Cvar_Get( "r_windSpeed",						"0",						CVAR_NONE );
+	r_windAngle							= ri->Cvar_Get( "r_windAngle",						"0",						CVAR_NONE );
+	r_windGust							= ri->Cvar_Get( "r_windGust",						"0",						CVAR_NONE );
+	r_windDampFactor					= ri->Cvar_Get( "r_windDampFactor",					"0.1",						CVAR_NONE );
+	r_windPointForce					= ri->Cvar_Get( "r_windPointForce",					"0",						CVAR_NONE );
+	r_windPointX						= ri->Cvar_Get( "r_windPointX",						"0",						CVAR_NONE );
+	r_windPointY						= ri->Cvar_Get( "r_windPointY",						"0",						CVAR_NONE );
+	r_nocurves							= ri->Cvar_Get( "r_nocurves",						"0",						CVAR_CHEAT );
+	r_drawworld							= ri->Cvar_Get( "r_drawworld",						"1",						CVAR_CHEAT );
+	r_drawfog							= ri->Cvar_Get( "r_drawfog",						"2",						CVAR_CHEAT );
+	r_lightmap							= ri->Cvar_Get( "r_lightmap",						"0",						CVAR_CHEAT );
+	r_portalOnly						= ri->Cvar_Get( "r_portalOnly",						"0",						CVAR_CHEAT );
+	r_skipBackEnd						= ri->Cvar_Get( "r_skipBackEnd",					"0",						CVAR_CHEAT );
+	r_measureOverdraw					= ri->Cvar_Get( "r_measureOverdraw",				"0",						CVAR_CHEAT );
+	r_lodscale							= ri->Cvar_Get( "r_lodscale",						"5",						CVAR_NONE );
+	r_norefresh							= ri->Cvar_Get( "r_norefresh",						"0",						CVAR_CHEAT );
+	r_drawentities						= ri->Cvar_Get( "r_drawentities",					"1",						CVAR_CHEAT );
+	r_ignore							= ri->Cvar_Get( "r_ignore",							"1",						CVAR_CHEAT );
+	r_nocull							= ri->Cvar_Get( "r_nocull",							"0",						CVAR_CHEAT );
+	r_novis								= ri->Cvar_Get( "r_novis",							"0",						CVAR_CHEAT );
+	r_showcluster						= ri->Cvar_Get( "r_showcluster",					"0",						CVAR_CHEAT );
+	r_speeds							= ri->Cvar_Get( "r_speeds",							"0",						CVAR_CHEAT );
+	r_verbose							= ri->Cvar_Get( "r_verbose",						"0",						CVAR_CHEAT );
+	r_logFile							= ri->Cvar_Get( "r_logFile",						"0",						CVAR_CHEAT );
+	r_debugSurface						= ri->Cvar_Get( "r_debugSurface",					"0",						CVAR_CHEAT );
+	r_nobind							= ri->Cvar_Get( "r_nobind",							"0",						CVAR_CHEAT );
+	r_showtris							= ri->Cvar_Get( "r_showtris",						"0",						CVAR_CHEAT );
+	r_showsky							= ri->Cvar_Get( "r_showsky",						"0",						CVAR_CHEAT );
+	r_shownormals						= ri->Cvar_Get( "r_shownormals",					"0",						CVAR_CHEAT );
+	r_clear								= ri->Cvar_Get( "r_clear",							"0",						CVAR_CHEAT );
+	r_offsetFactor						= ri->Cvar_Get( "r_offsetfactor",					"-1",						CVAR_CHEAT );
+	r_offsetUnits						= ri->Cvar_Get( "r_offsetunits",					"-2",						CVAR_CHEAT );
+	r_lockpvs							= ri->Cvar_Get( "r_lockpvs",						"0",						CVAR_CHEAT );
+	r_noportals							= ri->Cvar_Get( "r_noportals",						"0",						CVAR_CHEAT );
+	r_shadows							= ri->Cvar_Get( "cg_shadows",						"1",						CVAR_NONE );
+	r_shadowRange						= ri->Cvar_Get( "r_shadowRange",					"1000",						CVAR_NONE );
+	r_maxpolys							= ri->Cvar_Get( "r_maxpolys",						XSTRING( MAX_POLYS ),		CVAR_NONE );
+	r_maxpolyverts						= ri->Cvar_Get( "r_maxpolyverts",					XSTRING( MAX_POLYVERTS ),	CVAR_NONE );
 /*
 Ghoul2 Insert Start
 */
 #ifdef _DEBUG
-	r_noPrecacheGLA						= ri.Cvar_Get( "r_noPrecacheGLA",					"0",						CVAR_CHEAT );
+	r_noPrecacheGLA						= ri->Cvar_Get( "r_noPrecacheGLA",					"0",						CVAR_CHEAT );
 #endif
-	r_noServerGhoul2					= ri.Cvar_Get( "r_noserverghoul2",					"0",						CVAR_CHEAT );
-	r_Ghoul2AnimSmooth					= ri.Cvar_Get( "r_ghoul2animsmooth",				"0.3",						CVAR_NONE );
-	r_Ghoul2UnSqashAfterSmooth			= ri.Cvar_Get( "r_ghoul2unsqashaftersmooth",		"1",						CVAR_NONE );
-	broadsword							= ri.Cvar_Get( "broadsword",						"0",						CVAR_NONE );
-	broadsword_kickbones				= ri.Cvar_Get( "broadsword_kickbones",				"1",						CVAR_NONE );
-	broadsword_kickorigin				= ri.Cvar_Get( "broadsword_kickorigin",				"1",						CVAR_NONE );
-	broadsword_dontstopanim				= ri.Cvar_Get( "broadsword_dontstopanim",			"0",						CVAR_NONE );
-	broadsword_waitforshot				= ri.Cvar_Get( "broadsword_waitforshot",			"0",						CVAR_NONE );
-	broadsword_playflop					= ri.Cvar_Get( "broadsword_playflop",				"1",						CVAR_NONE );
-	broadsword_smallbbox				= ri.Cvar_Get( "broadsword_smallbbox",				"0",						CVAR_NONE );
-	broadsword_extra1					= ri.Cvar_Get( "broadsword_extra1",					"0",						CVAR_NONE );
-	broadsword_extra2					= ri.Cvar_Get( "broadsword_extra2",					"0",						CVAR_NONE );
-	broadsword_effcorr					= ri.Cvar_Get( "broadsword_effcorr",				"1",						CVAR_NONE );
-	broadsword_ragtobase				= ri.Cvar_Get( "broadsword_ragtobase",				"2",						CVAR_NONE );
-	broadsword_dircap					= ri.Cvar_Get( "broadsword_dircap",					"64",						CVAR_NONE );
+	r_noServerGhoul2					= ri->Cvar_Get( "r_noserverghoul2",					"0",						CVAR_CHEAT );
+	r_Ghoul2AnimSmooth					= ri->Cvar_Get( "r_ghoul2animsmooth",				"0.3",						CVAR_NONE );
+	r_Ghoul2UnSqashAfterSmooth			= ri->Cvar_Get( "r_ghoul2unsqashaftersmooth",		"1",						CVAR_NONE );
+	broadsword							= ri->Cvar_Get( "broadsword",						"0",						CVAR_NONE );
+	broadsword_kickbones				= ri->Cvar_Get( "broadsword_kickbones",				"1",						CVAR_NONE );
+	broadsword_kickorigin				= ri->Cvar_Get( "broadsword_kickorigin",			"1",						CVAR_NONE );
+	broadsword_dontstopanim				= ri->Cvar_Get( "broadsword_dontstopanim",			"0",						CVAR_NONE );
+	broadsword_waitforshot				= ri->Cvar_Get( "broadsword_waitforshot",			"0",						CVAR_NONE );
+	broadsword_playflop					= ri->Cvar_Get( "broadsword_playflop",				"1",						CVAR_NONE );
+	broadsword_smallbbox				= ri->Cvar_Get( "broadsword_smallbbox",				"0",						CVAR_NONE );
+	broadsword_extra1					= ri->Cvar_Get( "broadsword_extra1",				"0",						CVAR_NONE );
+	broadsword_extra2					= ri->Cvar_Get( "broadsword_extra2",				"0",						CVAR_NONE );
+	broadsword_effcorr					= ri->Cvar_Get( "broadsword_effcorr",				"1",						CVAR_NONE );
+	broadsword_ragtobase				= ri->Cvar_Get( "broadsword_ragtobase",				"2",						CVAR_NONE );
+	broadsword_dircap					= ri->Cvar_Get( "broadsword_dircap",				"64",						CVAR_NONE );
 /*
 Ghoul2 Insert End
 */
-	r_modelpoolmegs = ri.Cvar_Get("r_modelpoolmegs", "20", CVAR_ARCHIVE);
-	if (ri.Sys_LowPhysicalMemory() )
-		ri.Cvar_Set("r_modelpoolmegs", "0");
+	r_modelpoolmegs = ri->Cvar_Get("r_modelpoolmegs", "20", CVAR_ARCHIVE);
+	if (ri->Sys_LowPhysicalMemory() )
+		ri->Cvar_Set("r_modelpoolmegs", "0");
 
-	r_aviMotionJpegQuality				= ri.Cvar_Get( "r_aviMotionJpegQuality",			"90",						CVAR_ARCHIVE );
-	r_screenshotJpegQuality				= ri.Cvar_Get( "r_screenshotJpegQuality",			"95",						CVAR_ARCHIVE );
+	r_aviMotionJpegQuality				= ri->Cvar_Get( "r_aviMotionJpegQuality",			"90",						CVAR_ARCHIVE );
+	r_screenshotJpegQuality				= ri->Cvar_Get( "r_screenshotJpegQuality",			"95",						CVAR_ARCHIVE );
 
-	ri.Cvar_CheckRange( r_aviMotionJpegQuality, 10, 100, qtrue );
-	ri.Cvar_CheckRange( r_screenshotJpegQuality, 10, 100, qtrue );
+	ri->Cvar_CheckRange( r_aviMotionJpegQuality, 10, 100, qtrue );
+	ri->Cvar_CheckRange( r_screenshotJpegQuality, 10, 100, qtrue );
 
 	// make sure all the commands added here are also
 	// removed in R_Shutdown
-	ri.Cmd_AddCommand( "imagelist", R_ImageList_f );
-	ri.Cmd_AddCommand( "shaderlist", R_ShaderList_f );
-	ri.Cmd_AddCommand( "skinlist", R_SkinList_f );
-	ri.Cmd_AddCommand( "fontlist", R_FontList_f );
-	ri.Cmd_AddCommand( "screenshot", R_ScreenShot_f );
-	ri.Cmd_AddCommand( "screenshot_png", R_ScreenShotPNG_f );
-	ri.Cmd_AddCommand( "screenshot_tga", R_ScreenShotTGA_f );
-	ri.Cmd_AddCommand( "gfxinfo", GfxInfo_f );
-	ri.Cmd_AddCommand( "r_atihack", R_AtiHackToggle_f );
-	ri.Cmd_AddCommand( "r_we", R_WorldEffect_f);
-	ri.Cmd_AddCommand( "imagecacheinfo", RE_RegisterImages_Info_f);
-	ri.Cmd_AddCommand( "modellist", R_Modellist_f );
-	ri.Cmd_AddCommand( "modelist", R_ModeList_f );
-	ri.Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f);
-	ri.Cmd_AddCommand( "minimize", GLimp_Minimize );
+	ri->Cmd_AddCommand( "imagelist", R_ImageList_f );
+	ri->Cmd_AddCommand( "shaderlist", R_ShaderList_f );
+	ri->Cmd_AddCommand( "skinlist", R_SkinList_f );
+	ri->Cmd_AddCommand( "fontlist", R_FontList_f );
+	ri->Cmd_AddCommand( "screenshot", R_ScreenShot_f );
+	ri->Cmd_AddCommand( "screenshot_png", R_ScreenShotPNG_f );
+	ri->Cmd_AddCommand( "screenshot_tga", R_ScreenShotTGA_f );
+	ri->Cmd_AddCommand( "gfxinfo", GfxInfo_f );
+	ri->Cmd_AddCommand( "r_atihack", R_AtiHackToggle_f );
+	ri->Cmd_AddCommand( "r_we", R_WorldEffect_f);
+	ri->Cmd_AddCommand( "imagecacheinfo", RE_RegisterImages_Info_f);
+	ri->Cmd_AddCommand( "modellist", R_Modellist_f );
+	ri->Cmd_AddCommand( "modelist", R_ModeList_f );
+	ri->Cmd_AddCommand( "modelcacheinfo", RE_RegisterModels_Info_f);
+	ri->Cmd_AddCommand( "minimize", GLimp_Minimize );
 
 }
 
@@ -1298,7 +1291,7 @@ void R_Init( void ) {
 	memset( &tess, 0, sizeof( tess ) );
 
 #ifdef _WIN32
-	tr.wv = (WinVars_t *)ri.GetWinVars();
+	tr.wv = (WinVars_t *)ri->GetWinVars();
 #endif
 
 //	Swap_Init();
@@ -1336,6 +1329,7 @@ void R_Init( void ) {
 	}
 	R_InitFogTable();
 
+	R_ImageLoader_Init();
 	R_NoiseInit();
 	R_Register();
 
@@ -1390,21 +1384,21 @@ void RE_Shutdown( qboolean destroyWindow ) {
 
 //	Com_Printf ("RE_Shutdown( %i )\n", destroyWindow );
 
-	ri.Cmd_RemoveCommand ("imagelist");
-	ri.Cmd_RemoveCommand ("shaderlist");
-	ri.Cmd_RemoveCommand ("skinlist");
-	ri.Cmd_RemoveCommand ("fontlist");
-	ri.Cmd_RemoveCommand ("screenshot");
-	ri.Cmd_RemoveCommand ("screenshot_png");
-	ri.Cmd_RemoveCommand ("screenshot_tga");
-	ri.Cmd_RemoveCommand ("gfxinfo");
-	ri.Cmd_RemoveCommand ("r_atihack");
-	ri.Cmd_RemoveCommand ("r_we");
-	ri.Cmd_RemoveCommand ("imagecacheinfo");
-	ri.Cmd_RemoveCommand ("modellist");
-	ri.Cmd_RemoveCommand ("modelist");
-	ri.Cmd_RemoveCommand ("modelcacheinfo");
-	ri.Cmd_RemoveCommand ("minimize");
+	ri->Cmd_RemoveCommand ("imagelist");
+	ri->Cmd_RemoveCommand ("shaderlist");
+	ri->Cmd_RemoveCommand ("skinlist");
+	ri->Cmd_RemoveCommand ("fontlist");
+	ri->Cmd_RemoveCommand ("screenshot");
+	ri->Cmd_RemoveCommand ("screenshot_png");
+	ri->Cmd_RemoveCommand ("screenshot_tga");
+	ri->Cmd_RemoveCommand ("gfxinfo");
+	ri->Cmd_RemoveCommand ("r_atihack");
+	ri->Cmd_RemoveCommand ("r_we");
+	ri->Cmd_RemoveCommand ("imagecacheinfo");
+	ri->Cmd_RemoveCommand ("modellist");
+	ri->Cmd_RemoveCommand ("modelist");
+	ri->Cmd_RemoveCommand ("modelcacheinfo");
+	ri->Cmd_RemoveCommand ("minimize");
 
 	if ( r_DynamicGlow && r_DynamicGlow->integer )
 	{
@@ -1468,7 +1462,7 @@ Touch all images to make sure they are resident
 */
 void RE_EndRegistration( void ) {
 	R_SyncRenderThread();
-	if (!ri.Sys_LowPhysicalMemory()) {
+	if (!ri->Sys_LowPhysicalMemory()) {
 		RB_ShowImages();
 	}
 }
@@ -1527,13 +1521,13 @@ extern void R_SVModelInit( void ); //tr_model.cpp
 extern void R_AutomapElevationAdjustment( float newHeight ); //tr_world.cpp
 extern qboolean R_InitializeWireframeAutomap( void ); //tr_world.cpp
 
-static void RE_LoadImage( const char *shortname, byte **pic, int *width, int *height, int *format ) { R_LoadImage( shortname, pic, width, height, (GLenum*)format ); }
 extern void R_LoadDataImage( const char *name, byte **pic, int *width, int *height);
 extern void R_InvertImage(byte *data, int width, int height, int depth);
 extern void R_Resample(byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
 extern void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
 extern qhandle_t RE_RegisterServerSkin( const char *name );
 extern IGhoul2InfoArray &TheGhoul2InfoArray();
+const CGhoul2Info NullG2;
 
 /*
 @@@@@@@@@@@@@@@@@@@@@
@@ -1543,7 +1537,10 @@ GetRefAPI
 */
 extern "C" {
 Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
-	ri = *rimp;
+	static refexport_t re;
+
+	assert( rimp );
+	ri = rimp;
 
 	memset( &re, 0, sizeof( re ) );
 
@@ -1728,7 +1725,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.LoadDataImage						= R_LoadDataImage;
 	re.InvertImage							= R_InvertImage;
 	re.Resample								= R_Resample;
-	re.LoadImageJA							= RE_LoadImage;
+	re.LoadImageJA							= R_LoadImage;
 	re.CreateAutomapImage					= R_CreateAutomapImage;
 	re.SavePNG								= RE_SavePNG;
 

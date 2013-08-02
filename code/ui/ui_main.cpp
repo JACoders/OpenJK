@@ -43,7 +43,7 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 #include "../qcommon/stv_version.h"
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
 extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
@@ -2716,9 +2716,7 @@ qboolean Load_Menu(const char **holdBuffer)
 {
 	const char	*token2;
 	
-	COM_BeginParseSession();
 	token2 = COM_ParseExt( holdBuffer, qtrue );
-	COM_EndParseSession();
 
 	if (!token2[0])
 	{
@@ -2732,9 +2730,7 @@ qboolean Load_Menu(const char **holdBuffer)
 
 	while ( 1 ) 
 	{
-		COM_BeginParseSession();
 		token2 = COM_ParseExt( holdBuffer, qtrue );
-		COM_EndParseSession();
 
 		if ((!token2) || (token2 == 0))
 		{
@@ -2795,11 +2791,10 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 
 	const char	*token2;
 	holdBuffer = buffer;
+	COM_BeginParseSession();
 	while ( 1 ) 
 	{
-		COM_BeginParseSession();
 		token2 = COM_ParseExt( &holdBuffer, qtrue );
-		COM_EndParseSession();
 		if (!*token2)
 		{
 			break;
@@ -2830,6 +2825,7 @@ void UI_LoadMenus(const char *menuFile, qboolean reset)
 			Com_Printf("Unknown keyword '%s' in menus file %s\n", token2, menuFile);
 		} 
 	}
+	COM_EndParseSession();
 
 	Com_Printf("UI menu load time = %d milli seconds\n", Sys_Milliseconds() - start);
 
@@ -2908,7 +2904,6 @@ qboolean Asset_Parse(char **buffer)
     
 	while ( 1 ) 
 	{
-		COM_BeginParseSession();		// HACK
 		token = PC_ParseExt();
 
 		if (!token)

@@ -43,19 +43,19 @@ public:
 
 	void	Free( void );
 
-	DWORD	GetTimeStamp( void )	const	{	return m_timeStamp;				}
+	unsigned int	GetTimeStamp( void )	const	{	return m_timeStamp;				}
 	CBlock	*GetBlock( void )		const	{	return m_block;					}
 	int		GetGUID( void)			const	{	return m_id;					}
 	int		GetID( void )			const	{	return m_block->GetBlockID();	}
 
-	void	SetTimeStamp( DWORD	timeStamp )		{	m_timeStamp = timeStamp;	}
+	void	SetTimeStamp( unsigned int	timeStamp )		{	m_timeStamp = timeStamp;	}
 	void	SetBlock( CBlock *block )			{	m_block = block;			}
 	void	SetGUID( int id )					{	m_id = id;					}
 
 protected:
 
 	int		m_id;
-	DWORD	m_timeStamp;
+	unsigned int	m_timeStamp;
 	CBlock	*m_block;
 };
 

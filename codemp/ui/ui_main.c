@@ -438,6 +438,8 @@ int UI_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 //		animset[i].initialLerp = 100;
 	}
 
+	COM_BeginParseSession ("UI_ParseAnimationFile");
+
 	// read information for each frame
 	while(1) 
 	{
@@ -5972,7 +5974,6 @@ static void UI_RunMenuScript(char **args)
 			trap_Cmd_ExecuteText( EXEC_APPEND, "cvar_restart\n");
 			trap_Cmd_ExecuteText( EXEC_APPEND, "exec mpdefault.cfg\n");
 			trap_Cmd_ExecuteText( EXEC_APPEND, "vid_restart\n" );
-			trap_Cvar_Set("com_introPlayed", "1" );
 		} else if (Q_stricmp(name, "loadArenas") == 0) {
 			UI_LoadArenas();
 			UI_MapCountByGameType(qfalse);
@@ -9561,6 +9562,8 @@ static void UI_ParseGameInfo(const char *teamFile) {
 	}
 
 	p = buff;
+
+	COM_BeginParseSession ("UI_ParseGameInfo");
 
 	while ( 1 ) {
 		token = COM_ParseExt( (const char **)(&p), qtrue );

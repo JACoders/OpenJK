@@ -196,14 +196,13 @@ char *Sys_GetCurrentUser( void )
 	return s_userName;
 }
 
-#ifdef _PORTABLE_VERSION
 char	*Sys_DefaultHomePath(void) {
+#ifdef _PORTABLE_VERSION
 	Com_Printf("Portable install requested, skipping homepath support\n");
 	return NULL;
-}
 #else
-typedef HRESULT (__stdcall * GETFOLDERPATH)(HWND, int, HANDLE, DWORD, LPSTR); 
-char	*Sys_DefaultHomePath(void) {
+	typedef HRESULT (__stdcall * GETFOLDERPATH)(HWND, int, HANDLE, DWORD, LPSTR); 
+
 	TCHAR szPath[MAX_PATH];
 	GETFOLDERPATH qSHGetFolderPath;
 	HMODULE shfolder = LoadLibrary("shfolder.dll");
@@ -242,5 +241,5 @@ char	*Sys_DefaultHomePath(void) {
 
 	FreeLibrary(shfolder);
 	return homePath;
-}
 #endif
+}

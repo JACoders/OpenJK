@@ -570,14 +570,21 @@ CL_ShutdonwCGame
 
 ====================
 */
-void CL_ShutdownCGame( void ) {
+void CL_ShutdownCGame( qboolean delayFreeVM ) {
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CGAME );
 	cls.cgameStarted = qfalse;
 	if ( !cgvm ) {
 		return;
 	}
 	VM_Call( cgvm, CG_SHUTDOWN );
-	VM_Free( cgvm );
+	if ( delayFreeVM )
+	{
+		VM_DelayedFree (cgvm);
+	}
+	else
+	{
+		VM_Free( cgvm );
+	}
 	cgvm = NULL;
 #ifdef _DONETPROFILE_
 	ClReadProf().ShowTotals();
@@ -766,7 +773,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		CM_TransformedBoxTrace( (trace_t *)VMA(1), (const float *)VMA(2), (const float *)VMA(3), (const float *)VMA(4), (const float *)VMA(5), args[6], args[7], (const float *)VMA(8), (const float *)VMA(9), /*int capsule*/ qtrue );
 		return 0;
 	case CG_CM_MARKFRAGMENTS:
-		return re.MarkFragments( args[1], (const vec3_t *)VMA(2), (const float *)VMA(3), args[4], (float *)VMA(5), args[6], (markFragment_t *)VMA(7) );
+		return re->MarkFragments( args[1], (const vec3_t *)VMA(2), (const float *)VMA(3), args[4], (float *)VMA(5), args[6], (markFragment_t *)VMA(7) );
 	case CG_S_GETVOICEVOLUME:
 		return s_entityWavVol[args[1]];
 	case CG_S_MUTESOUND:
@@ -821,94 +828,94 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return AS_GetBModelSound((const char *)VMA(1), args[2]);
 
 	case CG_R_LOADWORLDMAP:
-		re.LoadWorld( (const char *)VMA(1) );
+		re->LoadWorld( (const char *)VMA(1) );
 		return 0; 
 	case CG_R_REGISTERMODEL:
-		return re.RegisterModel( (const char *)VMA(1) );
+		return re->RegisterModel( (const char *)VMA(1) );
 	case CG_R_REGISTERSKIN:
-		return re.RegisterSkin( (const char *)VMA(1) );
+		return re->RegisterSkin( (const char *)VMA(1) );
 	case CG_R_REGISTERSHADER:
-		return re.RegisterShader( (const char *)VMA(1) );
+		return re->RegisterShader( (const char *)VMA(1) );
 	case CG_R_REGISTERSHADERNOMIP:
-		return re.RegisterShaderNoMip( (const char *)VMA(1) );
+		return re->RegisterShaderNoMip( (const char *)VMA(1) );
 	case CG_R_REGISTERFONT:
-		return re.RegisterFont( (const char *)VMA(1) );
+		return re->RegisterFont( (const char *)VMA(1) );
 	case CG_R_FONT_STRLENPIXELS:
-		return re.Font_StrLenPixels( (const char *)VMA(1), args[2], VMF(3) );
+		return re->Font_StrLenPixels( (const char *)VMA(1), args[2], VMF(3) );
 	case CG_R_FONT_STRLENCHARS:
-		return re.Font_StrLenChars( (const char *)VMA(1) );
+		return re->Font_StrLenChars( (const char *)VMA(1) );
 	case CG_R_FONT_STRHEIGHTPIXELS:
-		return re.Font_HeightPixels( args[1], VMF(2) );
+		return re->Font_HeightPixels( args[1], VMF(2) );
 	case CG_R_FONT_DRAWSTRING:
-		re.Font_DrawString( args[1], args[2], (const char *)VMA(3), (const float *) VMA(4), args[5], args[6], VMF(7) );
+		re->Font_DrawString( args[1], args[2], (const char *)VMA(3), (const float *) VMA(4), args[5], args[6], VMF(7) );
 		return 0;
 	case CG_LANGUAGE_ISASIAN:
-		return re.Language_IsAsian();
+		return re->Language_IsAsian();
 	case CG_LANGUAGE_USESSPACES:
-		return re.Language_UsesSpaces();
+		return re->Language_UsesSpaces();
 	case CG_ANYLANGUAGE_READCHARFROMSTRING:
-		return re.AnyLanguage_ReadCharFromString( (const char *) VMA(1), (int *) VMA(2), (qboolean *) VMA(3) );
+		return re->AnyLanguage_ReadCharFromString( (const char *) VMA(1), (int *) VMA(2), (qboolean *) VMA(3) );
 	case CG_R_CLEARSCENE:
-		re.ClearScene();
+		re->ClearScene();
 		return 0;
 	case CG_R_CLEARDECALS:
-		re.ClearDecals();
+		re->ClearDecals();
 		return 0;
 	case CG_R_ADDREFENTITYTOSCENE:
-		re.AddRefEntityToScene( (const refEntity_t *)VMA(1) );
+		re->AddRefEntityToScene( (const refEntity_t *)VMA(1) );
 		return 0;
 	case CG_R_ADDPOLYTOSCENE:
-		re.AddPolyToScene( args[1], args[2], (const polyVert_t *)VMA(3), 1 );
+		re->AddPolyToScene( args[1], args[2], (const polyVert_t *)VMA(3), 1 );
 		return 0;
 	case CG_R_ADDPOLYSTOSCENE:
-		re.AddPolyToScene( args[1], args[2], (const polyVert_t *)VMA(3), args[4] );
+		re->AddPolyToScene( args[1], args[2], (const polyVert_t *)VMA(3), args[4] );
 		return 0;
 	case CG_R_ADDDECALTOSCENE:
-		re.AddDecalToScene( (qhandle_t)args[1], (const float*)VMA(2), (const float*)VMA(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), (qboolean)args[9], VMF(10), (qboolean)args[11] );
+		re->AddDecalToScene( (qhandle_t)args[1], (const float*)VMA(2), (const float*)VMA(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), (qboolean)args[9], VMF(10), (qboolean)args[11] );
 		return 0;
 	case CG_R_LIGHTFORPOINT:
-		return re.LightForPoint( (float *)VMA(1), (float *)VMA(2), (float *)VMA(3), (float *)VMA(4) );
+		return re->LightForPoint( (float *)VMA(1), (float *)VMA(2), (float *)VMA(3), (float *)VMA(4) );
 	case CG_R_ADDLIGHTTOSCENE:
 #ifdef VV_LIGHTING
 		VVLightMan.RE_AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
 #else
-		re.AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
+		re->AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
 #endif
 		return 0;
 	case CG_R_ADDADDITIVELIGHTTOSCENE:
 #ifdef VV_LIGHTING
 		VVLightMan.RE_AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
 #else
-		re.AddAdditiveLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
+		re->AddAdditiveLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
 #endif
 		return 0;
 	case CG_R_RENDERSCENE:
-		re.RenderScene( (const refdef_t *)VMA(1) );
+		re->RenderScene( (const refdef_t *)VMA(1) );
 		return 0;
 	case CG_R_SETCOLOR:
-		re.SetColor( (const float *)VMA(1) );
+		re->SetColor( (const float *)VMA(1) );
 		return 0;
 	case CG_R_DRAWSTRETCHPIC:
-		re.DrawStretchPic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), args[9] );
+		re->DrawStretchPic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), args[9] );
 		return 0;
 	case CG_R_MODELBOUNDS:
-		re.ModelBounds( args[1], (float *)VMA(2), (float *)VMA(3) );
+		re->ModelBounds( args[1], (float *)VMA(2), (float *)VMA(3) );
 		return 0;
 	case CG_R_LERPTAG:
-		return re.LerpTag( (orientation_t *)VMA(1), args[2], args[3], args[4], VMF(5), (const char *)VMA(6) );
+		return re->LerpTag( (orientation_t *)VMA(1), args[2], args[3], args[4], VMF(5), (const char *)VMA(6) );
 	case CG_R_DRAWROTATEPIC:
-		re.DrawRotatePic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), VMF(9), args[10] );
+		re->DrawRotatePic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), VMF(9), args[10] );
 		return 0;
 	case CG_R_DRAWROTATEPIC2:
-		re.DrawRotatePic2( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), VMF(9), args[10] );
+		re->DrawRotatePic2( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), VMF(9), args[10] );
 		return 0;
 	
 	case CG_R_SETRANGEFOG:
-		re.SetRangedFog( VMF(1) );
+		re->SetRangedFog( VMF(1) );
 		return 0;
 
 	case CG_R_SETREFRACTIONPROP:
-		re.SetRefractionProperties( VMF(1), VMF(2), (qboolean)args[3], (qboolean)args[4] );
+		re->SetRefractionProperties( VMF(1), VMF(2), (qboolean)args[3], (qboolean)args[4] );
 		return 0;
 
 	case CG_GETGLCONFIG:
@@ -1001,26 +1008,26 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	  return 0;
 
 	case CG_R_REMAP_SHADER:
-		re.RemapShader( (const char *)VMA(1), (const char *)VMA(2), (const char *)VMA(3) );
+		re->RemapShader( (const char *)VMA(1), (const char *)VMA(2), (const char *)VMA(3) );
 		return 0;
 
 	case CG_R_GET_LIGHT_STYLE:
-		re.GetLightStyle(args[1], (unsigned char *)VMA(2));
+		re->GetLightStyle(args[1], (unsigned char *)VMA(2));
 		return 0;
 
 	case CG_R_SET_LIGHT_STYLE:
-		re.SetLightStyle(args[1], args[2]);
+		re->SetLightStyle(args[1], args[2]);
 		return 0;
 
 	case CG_R_GET_BMODEL_VERTS:
-		re.GetBModelVerts( args[1], (float (*)[3])VMA(2), (float *)VMA(3) );
+		re->GetBModelVerts( args[1], (float (*)[3])VMA(2), (float *)VMA(3) );
 		return 0;
 
 	case CG_R_GETDISTANCECULL:
 		{
 			float *f;
 			f = (float *)VMA(1);
-			*f = re.GetDistanceCull();
+			*f = re->GetDistanceCull();
 		}
 		return 0;
 
@@ -1028,16 +1035,16 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		{
 			int *w = (int *)VMA(1);
 			int *h = (int *)VMA(2);
-			re.GetRealRes( w, h );
+			re->GetRealRes( w, h );
 		}
 		return 0;
 
 	case CG_R_AUTOMAPELEVADJ:
-		re.AutomapElevationAdjustment(VMF(1));
+		re->AutomapElevationAdjustment(VMF(1));
 		return 0;
 
 	case CG_R_INITWIREFRAMEAUTO:
-		return re.InitializeWireframeAutomap();
+		return re->InitializeWireframeAutomap();
 
 /*
 	case CG_LOADCAMERA:
@@ -1051,9 +1058,9 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return getCameraInfo(args[1], VMA(2), VMA(3));
 */
 	case CG_GET_ENTITY_TOKEN:
-		return re.GetEntityToken( (char *)VMA(1), args[2] );
+		return re->GetEntityToken( (char *)VMA(1), args[2] );
 	case CG_R_INPVS:
-		return re.inPVS( (const float *)VMA(1), (const float *)VMA(2), (byte *)VMA(3) );
+		return re->inPVS( (const float *)VMA(1), (const float *)VMA(2), (byte *)VMA(3) );
 
 #ifndef DEBUG_DISABLEFXCALLS
 	case CG_FX_ADDLINE:
@@ -1091,7 +1098,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		//( int id, vec3_t org, void *pGhoul2, const int boltNum, const int entNum, const int modelNum, int iLooptime, qboolean isRelative );
 		CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[3]);
 		int boltInfo=0;
-		if ( re.G2API_AttachEnt( &boltInfo, &g2[args[6]], args[4], args[5], args[6] ) )
+		if ( re->G2API_AttachEnt( &boltInfo, &g2[args[6]], args[4], args[5], args[6] ) )
 		{
 			FX_PlayBoltedEffectID(args[1], (float *)VMA(2), boltInfo, g2.mItem, args[7], (qboolean)args[8] );
 			return 1;
@@ -1254,41 +1261,41 @@ Ghoul2 Insert Start
 */
 		
 	case CG_G2_LISTSURFACES:
-		re.G2API_ListSurfaces( (CGhoul2Info *) args[1] );
+		re->G2API_ListSurfaces( (CGhoul2Info *) args[1] );
 		return 0;
 
 	case CG_G2_LISTBONES:
-		re.G2API_ListBones( (CGhoul2Info *) args[1], args[2]);
+		re->G2API_ListBones( (CGhoul2Info *) args[1], args[2]);
 		return 0;
 
 	case CG_G2_HAVEWEGHOULMODELS:
-		if ( re.G2API_HaveWeGhoul2Models )
-			return re.G2API_HaveWeGhoul2Models( *((CGhoul2Info_v *)args[1]) );
+		if ( re->G2API_HaveWeGhoul2Models )
+			return re->G2API_HaveWeGhoul2Models( *((CGhoul2Info_v *)args[1]) );
 		else
 			return qfalse;
 
 	case CG_G2_SETMODELS:
-		re.G2API_SetGhoul2ModelIndexes( *((CGhoul2Info_v *)args[1]),(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
+		re->G2API_SetGhoul2ModelIndexes( *((CGhoul2Info_v *)args[1]),(qhandle_t *)VMA(2),(qhandle_t *)VMA(3));
 		return 0;
 
 	case CG_G2_GETBOLT:
-		return re.G2API_GetBoltMatrix(*((CGhoul2Info_v *)args[1]), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		return re->G2API_GetBoltMatrix(*((CGhoul2Info_v *)args[1]), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case CG_G2_GETBOLT_NOREC:
-		re.G2API_BoltMatrixReconstruction( qfalse );
-		return re.G2API_GetBoltMatrix(*((CGhoul2Info_v *)args[1]), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		re->G2API_BoltMatrixReconstruction( qfalse );
+		return re->G2API_GetBoltMatrix(*((CGhoul2Info_v *)args[1]), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case CG_G2_GETBOLT_NOREC_NOROT:
 		//gG2_GBMNoReconstruct = qtrue;
 		//Yeah, this was probably BAD.
-		re.G2API_BoltMatrixSPMethod( qtrue );
-		return re.G2API_GetBoltMatrix(*((CGhoul2Info_v *)args[1]), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
+		re->G2API_BoltMatrixSPMethod( qtrue );
+		return re->G2API_GetBoltMatrix(*((CGhoul2Info_v *)args[1]), args[2], args[3], (mdxaBone_t *)VMA(4), (const float *)VMA(5),(const float *)VMA(6), args[7], (qhandle_t *)VMA(8), (float *)VMA(9));
 
 	case CG_G2_INITGHOUL2MODEL:
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-		return	re.G2API_InitGhoul2Model((CGhoul2Info_v **)VMA(1), (const char *)VMA(2), args[3], (qhandle_t) args[4],
+		return	re->G2API_InitGhoul2Model((CGhoul2Info_v **)VMA(1), (const char *)VMA(2), args[3], (qhandle_t) args[4],
 									  (qhandle_t) args[5], args[6], args[7]);
 
 	case CG_G2_SETSKIN:
@@ -1296,11 +1303,11 @@ Ghoul2 Insert Start
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 			int modelIndex = args[2];
 			
-			return re.G2API_SetSkin(&g2[modelIndex], args[3], args[4]);
+			return re->G2API_SetSkin(&g2[modelIndex], args[3], args[4]);
 		}
 
 	case CG_G2_COLLISIONDETECT:
-		re.G2API_CollisionDetect ( (CollisionRecord_t*)VMA(1), *((CGhoul2Info_v *)args[2]), 
+		re->G2API_CollisionDetect ( (CollisionRecord_t*)VMA(1), *((CGhoul2Info_v *)args[2]), 
 								   (const float*)VMA(3),
 								   (const float*)VMA(4),
 								   args[5],
@@ -1315,7 +1322,7 @@ Ghoul2 Insert Start
 		return 0;
 
 	case CG_G2_COLLISIONDETECTCACHE:
-		re.G2API_CollisionDetectCache ( (CollisionRecord_t*)VMA(1), *((CGhoul2Info_v *)args[2]), 
+		re->G2API_CollisionDetectCache ( (CollisionRecord_t*)VMA(1), *((CGhoul2Info_v *)args[2]), 
 								   (const float*)VMA(3),
 								   (const float*)VMA(4),
 								   args[5],
@@ -1330,7 +1337,7 @@ Ghoul2 Insert Start
 		return 0;
 
 	case CG_G2_ANGLEOVERRIDE:
-		return re.G2API_SetBoneAngles(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), (float *)VMA(4), args[5],
+		return re->G2API_SetBoneAngles(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), (float *)VMA(4), args[5],
 							 (const Eorientations) args[6], (const Eorientations) args[7], (const Eorientations) args[8],
 							 (qhandle_t *)VMA(9), args[10], args[11] );
 	
@@ -1338,13 +1345,13 @@ Ghoul2 Insert Start
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-		if ( re.G2API_CleanGhoul2Models )
-			re.G2API_CleanGhoul2Models((CGhoul2Info_v **)VMA(1));
+		if ( re->G2API_CleanGhoul2Models )
+			re->G2API_CleanGhoul2Models((CGhoul2Info_v **)VMA(1));
 	//	G2API_CleanGhoul2Models((CGhoul2Info_v **)args[1]);
 		return 0;
 
 	case CG_G2_PLAYANIM:
-		return re.G2API_SetBoneAnim(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), args[4], args[5],
+		return re->G2API_SetBoneAnim(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), args[4], args[5],
 								args[6], VMF(7), args[8], VMF(9), args[10]);
 
 	case CG_G2_GETBONEANIM:
@@ -1352,7 +1359,7 @@ Ghoul2 Insert Start
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 			int modelIndex = args[10];
 
-			return re.G2API_GetBoneAnim(&g2[modelIndex], (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5),
+			return re->G2API_GetBoneAnim(&g2[modelIndex], (const char*)VMA(2), args[3], (float *)VMA(4), (int *)VMA(5),
 								(int *)VMA(6), (int *)VMA(7), (float *)VMA(8), (int *)VMA(9));
 		}
 
@@ -1363,7 +1370,7 @@ Ghoul2 Insert Start
 			int iDontCare1 = 0, iDontCare2 = 0, iDontCare3 = 0;
 			float fDontCare1 = 0;
 
-			return re.G2API_GetBoneAnim(&g2[modelIndex], (const char*)VMA(2), args[3], (float *)VMA(4), &iDontCare1,
+			return re->G2API_GetBoneAnim(&g2[modelIndex], (const char*)VMA(2), args[3], (float *)VMA(4), &iDontCare1,
 								&iDontCare2, &iDontCare3, &fDontCare1, (int *)VMA(5));
 		}
 
@@ -1372,7 +1379,7 @@ Ghoul2 Insert Start
 		{
 			char *point = ((char *)VMA(3));
 			char *local;
-			local = re.G2API_GetGLAName(*((CGhoul2Info_v *)args[1]), args[2]);
+			local = re->G2API_GetGLAName(*((CGhoul2Info_v *)args[1]), args[2]);
 			if (local)
 			{
 				strcpy(point, local);
@@ -1381,118 +1388,118 @@ Ghoul2 Insert Start
 		return 0;
 
 	case CG_G2_COPYGHOUL2INSTANCE:
-		return re.G2API_CopyGhoul2Instance(*((CGhoul2Info_v *)args[1]), *((CGhoul2Info_v *)args[2]), args[3]);
+		return re->G2API_CopyGhoul2Instance(*((CGhoul2Info_v *)args[1]), *((CGhoul2Info_v *)args[2]), args[3]);
 
 	case CG_G2_COPYSPECIFICGHOUL2MODEL:
-		re.G2API_CopySpecificG2Model(*((CGhoul2Info_v *)args[1]), args[2], *((CGhoul2Info_v *)args[3]), args[4]);
+		re->G2API_CopySpecificG2Model(*((CGhoul2Info_v *)args[1]), args[2], *((CGhoul2Info_v *)args[3]), args[4]);
 		return 0;
 
 	case CG_G2_DUPLICATEGHOUL2INSTANCE:
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-		re.G2API_DuplicateGhoul2Instance(*((CGhoul2Info_v *)args[1]), (CGhoul2Info_v **)VMA(2));
+		re->G2API_DuplicateGhoul2Instance(*((CGhoul2Info_v *)args[1]), (CGhoul2Info_v **)VMA(2));
 		return 0;
 
 	case CG_G2_HASGHOUL2MODELONINDEX:
-		return (int)re.G2API_HasGhoul2ModelOnIndex((CGhoul2Info_v **)VMA(1), args[2]);
+		return (int)re->G2API_HasGhoul2ModelOnIndex((CGhoul2Info_v **)VMA(1), args[2]);
 		//return (int)G2API_HasGhoul2ModelOnIndex((CGhoul2Info_v **)args[1], args[2]);
 
 	case CG_G2_REMOVEGHOUL2MODEL:
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-		return (int)re.G2API_RemoveGhoul2Model((CGhoul2Info_v **)VMA(1), args[2]);
+		return (int)re->G2API_RemoveGhoul2Model((CGhoul2Info_v **)VMA(1), args[2]);
 		//return (int)G2API_RemoveGhoul2Model((CGhoul2Info_v **)args[1], args[2]);
 
 	case CG_G2_SKINLESSMODEL:
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
-			return re.G2API_SkinlessModel(&g2[args[2]]);
+			return re->G2API_SkinlessModel(&g2[args[2]]);
 		}
 
 	case CG_G2_GETNUMGOREMARKS:
 #ifdef _G2_GORE
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
-			return re.G2API_GetNumGoreMarks(&g2[args[2]]);
+			return re->G2API_GetNumGoreMarks(&g2[args[2]]);
 		}
 #endif
 		return 0;
 
 	case CG_G2_ADDSKINGORE:
 #ifdef _G2_GORE
-		re.G2API_AddSkinGore(*((CGhoul2Info_v *)args[1]),*(SSkinGoreData *)VMA(2));
+		re->G2API_AddSkinGore(*((CGhoul2Info_v *)args[1]),*(SSkinGoreData *)VMA(2));
 #endif
 		return 0;
 
 	case CG_G2_CLEARSKINGORE:
 #ifdef _G2_GORE
-		re.G2API_ClearSkinGore ( *((CGhoul2Info_v *)args[1]) );
+		re->G2API_ClearSkinGore ( *((CGhoul2Info_v *)args[1]) );
 #endif
 		return 0;
 
 	case CG_G2_SIZE:
-		return re.G2API_Ghoul2Size ( *((CGhoul2Info_v *)args[1]) );
+		return re->G2API_Ghoul2Size ( *((CGhoul2Info_v *)args[1]) );
 		break;
 
 	case CG_G2_ADDBOLT:
-		return	re.G2API_AddBolt(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3));
+		return	re->G2API_AddBolt(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3));
 
 
 	case CG_G2_ATTACHENT:
 //				G2API_AttachEnt(int *boltInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int entNum, int toModelNum)
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[2]);
-			return	re.G2API_AttachEnt( (int*)VMA(1), &g2[0], args[3], args[4], args[5] );
+			return	re->G2API_AttachEnt( (int*)VMA(1), &g2[0], args[3], args[4], args[5] );
 		}
 
 	case CG_G2_SETBOLTON:
-		re.G2API_SetBoltInfo(*((CGhoul2Info_v *)args[1]), args[2], args[3]);
+		re->G2API_SetBoltInfo(*((CGhoul2Info_v *)args[1]), args[2], args[3]);
 		return 0;
 
 #ifdef _SOF2	
 	case CG_G2_ADDSKINGORE:
-		re.G2API_AddSkinGore(*((CGhoul2Info_v *)args[1]),*(SSkinGoreData *)VMA(2));
+		re->G2API_AddSkinGore(*((CGhoul2Info_v *)args[1]),*(SSkinGoreData *)VMA(2));
 		return 0;
 #endif // _SOF2
 /*
 Ghoul2 Insert End
 */
 	case CG_G2_SETROOTSURFACE:
-		return re.G2API_SetRootSurface(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3));
+		return re->G2API_SetRootSurface(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3));
 
 	case CG_G2_SETSURFACEONOFF:
-		return re.G2API_SetSurfaceOnOff(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), /*(const int)VMA(3)*/args[3]);
+		return re->G2API_SetSurfaceOnOff(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), /*(const int)VMA(3)*/args[3]);
 
 	case CG_G2_SETNEWORIGIN:
-		return re.G2API_SetNewOrigin(*((CGhoul2Info_v *)args[1]), /*(const int)VMA(2)*/args[2]);
+		return re->G2API_SetNewOrigin(*((CGhoul2Info_v *)args[1]), /*(const int)VMA(2)*/args[2]);
 
 	case CG_G2_DOESBONEEXIST:
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
-			return re.G2API_DoesBoneExist(&g2[args[2]], (const char *)VMA(3));
+			return re->G2API_DoesBoneExist(&g2[args[2]], (const char *)VMA(3));
 		}
 
 	case CG_G2_GETSURFACERENDERSTATUS:
 	{
 		CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 
-		return re.G2API_GetSurfaceRenderStatus(&g2[args[2]], (const char *)VMA(3));
+		return re->G2API_GetSurfaceRenderStatus(&g2[args[2]], (const char *)VMA(3));
 	}
 
 	case CG_G2_GETTIME:
-		return re.G2API_GetTime(0);
+		return re->G2API_GetTime(0);
 
 	case CG_G2_SETTIME:
-		re.G2API_SetTime(args[1], args[2]);
+		re->G2API_SetTime(args[1], args[2]);
 		return 0;
 
 	case CG_G2_ABSURDSMOOTHING:
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 
-			re.G2API_AbsurdSmoothing(g2, (qboolean)args[2]);
+			re->G2API_AbsurdSmoothing(g2, (qboolean)args[2]);
 		}
 		return 0;
 
@@ -1505,7 +1512,7 @@ Ghoul2 Insert End
 
 			if (!rdParamst)
 			{
-				re.G2API_ResetRagDoll(*((CGhoul2Info_v *)args[1]));
+				re->G2API_ResetRagDoll(*((CGhoul2Info_v *)args[1]));
 				return 0;
 			}
 
@@ -1528,7 +1535,7 @@ Ghoul2 Insert End
 			rdParams.RagPhase = (CRagDollParams::ERagPhase)rdParamst->RagPhase;
 			rdParams.effectorsToTurnOff = (CRagDollParams::ERagEffector)rdParamst->effectorsToTurnOff;
 
-			re.G2API_SetRagDoll(*((CGhoul2Info_v *)args[1]), &rdParams);
+			re->G2API_SetRagDoll(*((CGhoul2Info_v *)args[1]), &rdParams);
 		}
 		return 0;
 		break;
@@ -1550,52 +1557,52 @@ Ghoul2 Insert End
 			rduParams.me = rduParamst->me;
 			rduParams.settleFrame = rduParamst->settleFrame;
 
-			re.G2API_AnimateG2ModelsRag(*((CGhoul2Info_v *)args[1]), args[2], &rduParams);
+			re->G2API_AnimateG2ModelsRag(*((CGhoul2Info_v *)args[1]), args[2], &rduParams);
 		}
 		return 0;
 		break;
 
 	//additional ragdoll options -rww
 	case CG_G2_RAGPCJCONSTRAINT:
-		return re.G2API_RagPCJConstraint(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4));
+		return re->G2API_RagPCJConstraint(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4));
 	case CG_G2_RAGPCJGRADIENTSPEED:
-		return re.G2API_RagPCJGradientSpeed(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), VMF(3));
+		return re->G2API_RagPCJGradientSpeed(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), VMF(3));
 	case CG_G2_RAGEFFECTORGOAL:
-		return re.G2API_RagEffectorGoal(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), (float *)VMA(3));
+		return re->G2API_RagEffectorGoal(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), (float *)VMA(3));
 	case CG_G2_GETRAGBONEPOS:
-		return re.G2API_GetRagBonePos(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4), (float *)VMA(5), (float *)VMA(6));
+		return re->G2API_GetRagBonePos(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), (float *)VMA(3), (float *)VMA(4), (float *)VMA(5), (float *)VMA(6));
 	case CG_G2_RAGEFFECTORKICK:
-		return re.G2API_RagEffectorKick(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), (float *)VMA(3));
+		return re->G2API_RagEffectorKick(*((CGhoul2Info_v *)args[1]), (const char *)VMA(2), (float *)VMA(3));
 	case CG_G2_RAGFORCESOLVE:
-		return re.G2API_RagForceSolve(*((CGhoul2Info_v *)args[1]), (qboolean)args[2]);
+		return re->G2API_RagForceSolve(*((CGhoul2Info_v *)args[1]), (qboolean)args[2]);
 
 	case CG_G2_SETBONEIKSTATE:
-		return re.G2API_SetBoneIKState(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), args[4], (sharedSetBoneIKStateParams_t *)VMA(5));
+		return re->G2API_SetBoneIKState(*((CGhoul2Info_v *)args[1]), args[2], (const char *)VMA(3), args[4], (sharedSetBoneIKStateParams_t *)VMA(5));
 	case CG_G2_IKMOVE:
-		return re.G2API_IKMove(*((CGhoul2Info_v *)args[1]), args[2], (sharedIKMoveParams_t *)VMA(3));
+		return re->G2API_IKMove(*((CGhoul2Info_v *)args[1]), args[2], (sharedIKMoveParams_t *)VMA(3));
 
 	case CG_G2_REMOVEBONE:
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 
-			return re.G2API_RemoveBone(&g2[args[3]], (const char *)VMA(2));
+			return re->G2API_RemoveBone(&g2[args[3]], (const char *)VMA(2));
 		}
 
 	case CG_G2_ATTACHINSTANCETOENTNUM:
 		{
-			re.G2API_AttachInstanceToEntNum(*((CGhoul2Info_v *)args[1]), args[2], (qboolean)args[3]);
+			re->G2API_AttachInstanceToEntNum(*((CGhoul2Info_v *)args[1]), args[2], (qboolean)args[3]);
 		}
 		return 0;
 	case CG_G2_CLEARATTACHEDINSTANCE:
-		re.G2API_ClearAttachedInstance(args[1]);
+		re->G2API_ClearAttachedInstance(args[1]);
 		return 0;
 	case CG_G2_CLEANENTATTACHMENTS:
-		re.G2API_CleanEntAttachments();
+		re->G2API_CleanEntAttachments();
 		return 0;
 	case CG_G2_OVERRIDESERVER:
 		{
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
-			return re.G2API_OverrideServerWithClientData(&g2[0]);
+			return re->G2API_OverrideServerWithClientData(&g2[0]);
 		}
 
 	case CG_G2_GETSURFACENAME:
@@ -1606,7 +1613,7 @@ Ghoul2 Insert End
 
 			CGhoul2Info_v &g2 = *((CGhoul2Info_v *)args[1]);
 
-			local = re.G2API_GetSurfaceName(&g2[modelindex], args[2]);
+			local = re->G2API_GetSurfaceName(&g2[modelindex], args[2]);
 			if (local)
 			{
 				strcpy(point, local);
@@ -1672,7 +1679,7 @@ Ghoul2 Insert End
 		return 0;
 
 	case CG_RE_INIT_RENDERER_TERRAIN:
-		re.InitRendererTerrain((const char *)VMA(1));
+		re->InitRendererTerrain((const char *)VMA(1));
 		return 0;
 
 	case CG_R_WEATHER_CONTENTS_OVERRIDE:
@@ -1680,11 +1687,11 @@ Ghoul2 Insert End
 		return 0;
 
 	case CG_R_WORLDEFFECTCOMMAND:
-		re.WorldEffectCommand((const char *)VMA(1));
+		re->WorldEffectCommand((const char *)VMA(1));
 		return 0;
 
 	case CG_WE_ADDWEATHERZONE:
-		re.AddWeatherZone( (vec_t *)VMA(1), (vec_t *)VMA(2) );
+		re->AddWeatherZone( (vec_t *)VMA(1), (vec_t *)VMA(2) );
 		return 0;
 
 	default:
@@ -1755,7 +1762,7 @@ void CL_InitCGame( void ) {
 
 	// have the renderer touch all its images, so they are present
 	// on the card even if the driver does deferred loading
-	re.EndRegistration();
+	re->EndRegistration();
 
 	// make sure everything is paged in
 //	if (!Sys_LowPhysicalMemory()) 
@@ -1797,9 +1804,9 @@ void CL_CGameRendering( stereoFrame_t stereo ) {
 	//rww - RAGDOLL_BEGIN
 	if (!com_sv_running->integer)
 	{ //set the server time to match the client time, if we don't have a server going.
-		re.G2API_SetTime(cl.serverTime, 0);
+		re->G2API_SetTime(cl.serverTime, 0);
 	}
-	re.G2API_SetTime(cl.serverTime, 1);
+	re->G2API_SetTime(cl.serverTime, 1);
 	//rww - RAGDOLL_END
 
 	VM_Call( cgvm, CG_DRAW_ACTIVE_FRAME, cl.serverTime, stereo, clc.demoplaying );
@@ -1890,7 +1897,7 @@ void CL_FirstSnapshot( void ) {
 		return;
 	}
 
-	re.RegisterMedia_LevelLoadEnd();
+	re->RegisterMedia_LevelLoadEnd();
 
 	cls.state = CA_ACTIVE;
 

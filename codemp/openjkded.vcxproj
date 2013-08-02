@@ -73,7 +73,7 @@
       <BrowseInformation>true</BrowseInformation>
       <WarningLevel>Level4</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalIncludeDirectories>.;..;..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;..\lib;..\lib\libpng;..\lib\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
@@ -112,7 +112,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..;..\lib;..\lib\libpng;..\lib\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
@@ -302,8 +302,8 @@
     <ClCompile Include="null\null_input.cpp" />
     <ClCompile Include="null\null_renderer.cpp" />
     <ClCompile Include="null\null_snddma.cpp" />
-    <ClCompile Include="null\win_main.cpp" />
     <ClCompile Include="sys\snapvector.cpp" />
+    <ClCompile Include="win32\win_main_ded.cpp" />
     <ClCompile Include="win32\win_net.cpp" />
     <ClCompile Include="win32\win_shared.cpp" />
     <ClCompile Include="botlib\be_aas_bspq3.cpp" />
@@ -344,6 +344,9 @@
     <ClCompile Include="icarus\sequence.cpp" />
     <ClCompile Include="icarus\sequencer.cpp" />
     <ClCompile Include="icarus\taskmanager.cpp" />
+    <ClCompile Include="ghoul2\G2_gore.cpp" />
+    <ClCompile Include="rd-common\tr_image_manipulation.cpp" />
+    <ClCompile Include="rd-common\tr_image_png.cpp" />
     <ClCompile Include="rd-dedicated\G2_API.cpp" />
     <ClCompile Include="rd-dedicated\G2_bolts.cpp" />
     <ClCompile Include="rd-dedicated\G2_bones.cpp" />
@@ -351,12 +354,12 @@
     <ClCompile Include="rd-dedicated\G2_surfaces.cpp" />
     <ClCompile Include="rd-dedicated\tr_backend.cpp" />
     <ClCompile Include="rd-dedicated\tr_ghoul2.cpp" />
-    <ClCompile Include="rd-dedicated\tr_image.cpp" />
     <ClCompile Include="rd-dedicated\tr_init.cpp" />
     <ClCompile Include="rd-dedicated\tr_main.cpp" />
     <ClCompile Include="rd-dedicated\tr_mesh.cpp" />
     <ClCompile Include="rd-dedicated\tr_model.cpp" />
     <ClCompile Include="rd-dedicated\tr_shader.cpp" />
+    <ClCompile Include="rd-dedicated\tr_skin.cpp" />
     <ClCompile Include="..\lib\libpng\png.c" />
     <ClCompile Include="..\lib\libpng\pngerror.c" />
     <ClCompile Include="..\lib\libpng\pngget.c" />

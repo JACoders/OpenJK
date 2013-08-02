@@ -115,6 +115,7 @@ if(BuildMPEngine OR BuildMPDed)
 	add_library(${MPBotLib} STATIC ${MPBotlibHeaderFiles} ${MPBotlibSourceFiles})
 	set_target_properties(${MPBotLib} PROPERTIES COMPILE_DEFINITIONS "${MPBotlibDefines}")
 	set_target_properties(${MPBotLib} PROPERTIES INCLUDE_DIRECTORIES "${MPBotlibIncludeDirectories}")
+	set_target_properties(${MPBotLib} PROPERTIES PROJECT_LABEL "Bot Library")
 	
 	#    Common files/libraries/defines of both Engine and Dedicated Server
 	
@@ -131,7 +132,7 @@ if(BuildMPEngine OR BuildMPDed)
 		# OpenAL32.lib is included for windows
 		find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
 		if(NOT ZlibLibrary)
-			message(FATAL_ERROR "UseInternalOpenAL set, but libs/OpenAL32 not found!")
+			message(FATAL_ERROR "UseInternalZlib enabled, but lib/zlib.lib not found!")
 		endif(NOT ZlibLibrary)
 		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} "${OpenJKLibDir}/zlib")
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZlibLibrary})
@@ -375,7 +376,7 @@ if(BuildMPEngine)
 		# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
 		find_library(OpenALLibrary NAMES OpenAL32 PATHS ${OpenJKDir})
 		if(NOT OpenALLibrary)
-			message(FATAL_ERROR "UseInternalOpenAL set, but lib/OpenAL32 not found!")
+			message(FATAL_ERROR "UseInternalOpenAL enabled, but lib/OpenAL32.lib not found!")
 		endif(NOT OpenALLibrary)
 		set(MPEngineLibraries ${MPEngineLibraries} ${OpenALLibrary})
 	else(UseInternalOpenAL)
@@ -565,6 +566,7 @@ if(BuildMPEngine)
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPEngineDefines};${DebugDefines}")
 	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
+	set_target_properties(${MPEngine} PROPERTIES PROJECT_LABEL "MP Client")
 	target_link_libraries(${MPEngine} ${MPEngineLibraries})
 endif(BuildMPEngine)
 
@@ -578,8 +580,11 @@ if(BuildMPDed)
 
 	# Dedicated renderer is compiled with the server.
 	set(MPDedicatedRendererFiles
-		"${MPDir}/renderer/mdx_format.h"
-		"${MPDir}/renderer/tr_public.h"
+		"${MPDir}/ghoul2/G2_gore.cpp"
+		"${MPDir}/rd-common/mdx_format.h"
+		"${MPDir}/rd-common/tr_image_manipulation.cpp"
+		"${MPDir}/rd-common/tr_image_png.cpp"
+		"${MPDir}/rd-common/tr_public.h"
 		"${MPDir}/rd-dedicated/tr_local.h"
 		"${MPDir}/rd-dedicated/G2_API.cpp"
 		"${MPDir}/rd-dedicated/G2_bolts.cpp"
@@ -588,12 +593,12 @@ if(BuildMPDed)
 		"${MPDir}/rd-dedicated/G2_surfaces.cpp"
 		"${MPDir}/rd-dedicated/tr_backend.cpp"
 		"${MPDir}/rd-dedicated/tr_ghoul2.cpp"
-		"${MPDir}/rd-dedicated/tr_image.cpp"
 		"${MPDir}/rd-dedicated/tr_init.cpp"
 		"${MPDir}/rd-dedicated/tr_main.cpp"
 		"${MPDir}/rd-dedicated/tr_mesh.cpp"
 		"${MPDir}/rd-dedicated/tr_model.cpp"
-		"${MPDir}/rd-dedicated/tr_shader.cpp")
+		"${MPDir}/rd-dedicated/tr_shader.cpp"
+		"${MPDir}/rd-dedicated/tr_skin.cpp")
 	source_group("renderer" FILES ${MPDedicatedRendererFiles})
 	set(MPDedFiles ${MPDedFiles} ${MPDedicatedRendererFiles})
 
@@ -633,7 +638,7 @@ if(BuildMPDed)
 	set(MPDedFiles ${MPDedFiles} ${MPDedNullFiles})
 	if(WIN32)
 		set(MPDedWin32Files
-			"${MPDir}/null/win_main.cpp"
+			"${MPDir}/win32/win_main_ded.cpp"
 			"${MPDir}/win32/openjkded.rc"
 			)
 		source_group("win32" FILES ${MPDedWin32Files})
@@ -657,5 +662,6 @@ if(BuildMPDed)
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPDedDefines};${ReleaseDefines}")
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPDedDefines};${DebugDefines}")
 	set_target_properties(${MPDed} PROPERTIES INCLUDE_DIRECTORIES "${MPDedIncludeDirectories}")
+	set_target_properties(${MPDed} PROPERTIES PROJECT_LABEL "MP Dedicated Server")
 	target_link_libraries(${MPDed} ${MPDedLibraries})
 endif(BuildMPDed)

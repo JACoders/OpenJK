@@ -145,9 +145,9 @@ source_group("cgame" FILES ${MPGameCgameFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameCgameFiles})
 
 set(MPGameRendererFiles
-	"${MPDir}/renderer/tr_types.h"
+	"${MPDir}/rd-common/tr_types.h"
 	)
-source_group("renderer" FILES ${MPGameRendererFiles})
+source_group("rd-common" FILES ${MPGameRendererFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameRendererFiles})
 
 set(MPGameBotlibFiles
@@ -200,6 +200,7 @@ set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPG
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPGameDefines};${ReleaseDefines}")
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPGameDefines};${DebugDefines}")
 set_target_properties(${MPGame} PROPERTIES INCLUDE_DIRECTORIES "${MPGameIncludeDirectories}")
+set_target_properties(${MPGame} PROPERTIES PROJECT_LABEL "MP Game Library")
 # no libraries used
 if(MPGameLibraries)
 	target_link_libraries(${MPGame} ${MPGameLibraries})

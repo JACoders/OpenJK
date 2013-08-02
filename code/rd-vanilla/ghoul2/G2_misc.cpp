@@ -23,7 +23,7 @@ This file is part of Jedi Academy.
 
 
 #ifndef __Q_SHARED_H
-	#include "../../game/q_shared.h"
+	#include "../../qcommon/q_shared.h"
 #endif
 
 #if !defined(TR_LOCAL_H)
@@ -215,7 +215,7 @@ public:
 	const int			modelIndex;
 	const skin_t		*skin;
 	const shader_t		*cust_shader;
-	int					*TransformedVertsArray;
+	intptr_t			*TransformedVertsArray;
 	const EG2_Collision	eG2TraceType;
 	bool				hitOne;
 	float				m_fRadius;
@@ -244,7 +244,7 @@ public:
 		int					initmodelIndex,
 		const skin_t		*initskin,
 		const shader_t		*initcust_shader,
-		int					*initTransformedVertsArray,
+		intptr_t			*initTransformedVertsArray,
 		const EG2_Collision	einitG2TraceType,
 #ifdef _G2_GORE
 		float				fRadius,
@@ -411,7 +411,7 @@ int G2_DecideTraceLod(CGhoul2Info &ghoul2, int useLod)
 	return returnLod;
 }
 
-void R_TransformEachSurface( const mdxmSurface_t *surface, vec3_t scale, CMiniHeap *G2VertSpace, int *TransformedVertsArray,CBoneCache *boneCache) 
+void R_TransformEachSurface( const mdxmSurface_t *surface, vec3_t scale, CMiniHeap *G2VertSpace, intptr_t *TransformedVertsArray,CBoneCache *boneCache) 
 {
 	int				 j, k;
 	mdxmVertex_t 	*v;
@@ -524,7 +524,7 @@ void R_TransformEachSurface( const mdxmSurface_t *surface, vec3_t scale, CMiniHe
 }
 
 void G2_TransformSurfaces(int surfaceNum, surfaceInfo_v &rootSList, 
-					CBoneCache *boneCache, const model_t *currentModel, int lod, vec3_t scale, CMiniHeap *G2VertSpace, int *TransformedVertArray, bool secondTimeAround)
+					CBoneCache *boneCache, const model_t *currentModel, int lod, vec3_t scale, CMiniHeap *G2VertSpace, intptr_t *TransformedVertArray, bool secondTimeAround)
 {
 	int	i;
 	assert(currentModel);
@@ -648,13 +648,13 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 		}
 
 		// give us space for the transformed vertex array to be put in
-		g.mTransformedVertsArray = (int*)G2VertSpace->MiniHeapAlloc(g.currentModel->mdxm->numSurfaces * 4);
+		g.mTransformedVertsArray = (intptr_t *)G2VertSpace->MiniHeapAlloc(g.currentModel->mdxm->numSurfaces * sizeof (intptr_t *));
 		if (!g.mTransformedVertsArray)
 		{
 			Com_Error(ERR_DROP, "Ran out of transform space for Ghoul2 Models. Adjust G2_MINIHEAP_SIZE in sv_init.cpp.\n");
 		}
 
-		memset(g.mTransformedVertsArray, 0,(g.currentModel->mdxm->numSurfaces * 4)); 
+		memset(g.mTransformedVertsArray, 0,(g.currentModel->mdxm->numSurfaces * sizeof (intptr_t *))); 
 
 		G2_FindOverrideSurface(-1,g.mSlist); //reset the quick surface override lookup;
 		// recursively call the model surface transform
@@ -1774,7 +1774,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 	// is there anything to save?
 	if (!ghoul2.IsValid()||!ghoul2.size())
 	{
-		ri.SG_Append('GHL2',&pGhoul2Data, 4);	//write out a zero buffer
+		ri.SG_Append(INT_ID('G','H','L','2'),&pGhoul2Data, 4);	//write out a zero buffer
 		return;
 	}
 
@@ -1849,7 +1849,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 		}
 	}
 
-	ri.SG_Append('GHL2',pGhoul2Data, iGhoul2Size);
+	ri.SG_Append(INT_ID('G','H','L','2'),pGhoul2Data, iGhoul2Size);
 	Z_Free(pGhoul2Data);
 }
 

@@ -53,6 +53,8 @@ This file is part of Jedi Academy.
 
 static char		sys_cmdline[MAX_STRING_CHARS];
 
+void Sys_SetBinaryPath(const char *path);
+char *Sys_BinaryPath(void);
 
 /*
 ==================
@@ -287,15 +289,6 @@ char *Sys_DefaultBasePath( void ) {
 }
 
 /*
-==============
-Sys_DefaultHomePath
-==============
-*/
-char *Sys_DefaultHomePath( void ) {
-	return "";
-}
-
-/*
 ==============================================================
 
 DIRECTORY SCANNING
@@ -411,6 +404,140 @@ char *Sys_GetClipboardData( void ) {
 	return data;
 }
 
+/*
+========================================================================
+
+LOAD/UNLOAD DLL
+
+========================================================================
+*/
+
+/*
+=================
+Sys_UnloadDll
+
+=================
+*/
+void Sys_UnloadDll( void *dllHandle ) {
+	if ( !dllHandle ) {
+		return;
+	}
+	if ( !FreeLibrary( (struct HINSTANCE__ *)dllHandle ) ) {
+		Com_Error (ERR_FATAL, "Sys_UnloadDll FreeLibrary failed");
+	}
+}
+
+//make sure the dll can be opened by the file system, then write the
+//file back out again so it can be loaded is a library. If the read
+//fails then the dll is probably not in the pk3 and we are running
+//a pure server -rww
+bool Sys_UnpackDLL(const char *name)
+{
+	void *data;
+	fileHandle_t f;
+	int len = FS_ReadFile(name, &data);
+
+	if (len < 1)
+	{ //failed to read the file (out of the pk3 if pure)
+		return false;
+	}
+
+	if (FS_FileIsInPAK(name) == -1)
+	{ //alright, it isn't in a pk3 anyway, so we don't need to write it.
+		//this is allowable when running non-pure.
+		FS_FreeFile(data);
+		return true;
+	}
+
+	f = FS_FOpenFileWrite( name );
+	if ( !f )
+	{ //can't open for writing? Might be in use.
+		//This is possibly a malicious user attempt to circumvent dll
+		//replacement so we won't allow it.
+		FS_FreeFile(data);
+		return false;
+	}
+
+	if (FS_Write( data, len, f ) < len)
+	{ //Failed to write the full length. Full disk maybe?
+		FS_FreeFile(data);
+		return false;
+	}
+
+	FS_FCloseFile( f );
+	FS_FreeFile(data);
+
+	return true;
+}
+
+/*
+=================
+Sys_LoadDll
+
+First try to load library name from system library path,
+from executable path, then fs_basepath.
+=================
+*/
+
+void *Sys_LoadDll(const char *name, qboolean useSystemLib)
+{
+	void *dllhandle = NULL;
+
+	if(useSystemLib)
+		Com_Printf("Trying to load \"%s\"...\n", name);
+	
+	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
+	{
+		const char *topDir;
+		char libPath[MAX_OSPATH];
+        
+		topDir = Sys_BinaryPath();
+        
+		if(!*topDir)
+			topDir = ".";
+        
+		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
+		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
+        
+		if(!(dllhandle = Sys_LoadLibrary(libPath)))
+		{
+			const char *basePath = Cvar_VariableString("fs_basepath");
+			
+			if(!basePath || !*basePath)
+				basePath = ".";
+			
+			if(FS_FilenameCompare(topDir, basePath))
+			{
+				Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, basePath);
+				Com_sprintf(libPath, sizeof(libPath), "%s%c%s", basePath, PATH_SEP, name);
+				dllhandle = Sys_LoadLibrary(libPath);
+			}
+			
+			if(!dllhandle)
+			{
+				const char *cdPath = Cvar_VariableString("fs_cdpath");
+
+				if(!basePath || !*basePath)
+					basePath = ".";
+
+				if(FS_FilenameCompare(topDir, cdPath))
+				{
+					Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, cdPath);
+					Com_sprintf(libPath, sizeof(libPath), "%s%c%s", cdPath, PATH_SEP, name);
+					dllhandle = Sys_LoadLibrary(libPath);
+				}
+
+				if(!dllhandle)
+				{
+					Com_Printf("Loading \"%s\" failed\n", name);
+				}
+			}
+		}
+	}
+	
+	return dllhandle;
+}
+
 
 /*
 ========================================================================
@@ -434,6 +561,32 @@ void Sys_UnloadGame( void ) {
 		Com_Error (ERR_FATAL, "FreeLibrary failed for game library");
 	}
 	game_library = NULL;
+}
+
+/*
+=================
+Sys_UnloadGamePending
+This function is kind of redundant in Windows, but the extra
+function is needed because of Linux/Mac version being different.
+=================
+*/
+void Sys_UnloadGamePending() {
+	Sys_UnloadGame();
+}
+
+/*
+=================
+Sys_DelayedUnloadGame
+=================
+*/
+void Sys_DelayedUnloadGame()
+{
+	HINSTANCE save = game_library;
+	game_library = NULL;
+
+	Sys_UnloadGame();
+
+	game_library = save;
 }
 
 /*
@@ -1044,32 +1197,105 @@ static void QuickMemTest(void)
 	}
 }
 
+/* Begin Sam Lantinga Public Domain 4/13/98 */
+
+static void UnEscapeQuotes(char *arg)
+{
+	char *last = NULL;
+
+	while (*arg) {
+		if (*arg == '"' && (last != NULL && *last == '\\')) {
+			char *c_curr = arg;
+			char *c_last = last;
+
+			while (*c_curr) {
+				*c_last = *c_curr;
+				c_last = c_curr;
+				c_curr++;
+			}
+			*c_last = '\0';
+		}
+		last = arg;
+		arg++;
+	}
+}
+
+/* Parse a command line buffer into arguments */
+static int ParseCommandLine(char *cmdline, char **argv)
+{
+	char *bufp;
+	char *lastp = NULL;
+	int argc, last_argc;
+
+	argc = last_argc = 0;
+	for (bufp = cmdline; *bufp;) {
+		/* Skip leading whitespace */
+		while (isspace(*bufp)) {
+			++bufp;
+		}
+		/* Skip over argument */
+		if (*bufp == '"') {
+			++bufp;
+			if (*bufp) {
+				if (argv) {
+					argv[argc] = bufp;
+				}
+				++argc;
+			}
+			/* Skip over word */
+			lastp = bufp;
+			while (*bufp && (*bufp != '"' || *lastp == '\\')) {
+				lastp = bufp;
+				++bufp;
+			}
+		} else {
+			if (*bufp) {
+				if (argv) {
+					argv[argc] = bufp;
+				}
+				++argc;
+			}
+			/* Skip over word */
+			while (*bufp && !isspace(*bufp)) {
+				++bufp;
+			}
+		}
+		if (*bufp) {
+			if (argv) {
+				*bufp = '\0';
+			}
+			++bufp;
+		}
+
+		/* Strip out \ from \" sequences */
+		if (argv && last_argc != argc) {
+			UnEscapeQuotes(argv[last_argc]);
+		}
+		last_argc = argc;
+	}
+	if (argv) {
+		argv[argc] = NULL;
+	}
+	return (argc);
+}
+
+/* End Sam Lantinga Public Domain 4/13/98 */
 
 //=======================================================================
 //int	totalMsec, countMsec;
 
-/*
-==================
-WinMain
+#ifndef DEFAULT_BASEDIR
+#	define DEFAULT_BASEDIR Sys_BinaryPath()
+#endif
 
-==================
-*/
-int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-	char		cwd[MAX_OSPATH];
+int main ( int argc, char **argv )
+{
+	char	commandLine[ MAX_STRING_CHARS ] = { 0 };
 //	int			startTime, endTime;
 
    SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
 //   _CrtSetBreakAlloc(34804);
 
-    // should never get a previous instance in Win32
-    if ( hPrevInstance ) {
-        return 0;
-	}
-
-	g_wv.hInstance = hInstance;
-	Q_strncpyz( sys_cmdline, lpCmdLine, sizeof( sys_cmdline ) );
-
-	// done before Com/Sys_Init since we need this for error output
 	Sys_CreateConsole();
 
 	// no abort/retry/fail errors
@@ -1080,12 +1306,27 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	Sys_InitStreamThread();
 
-	Com_Init( sys_cmdline );
+	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
+	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
+
+	// Concatenate the command line for passing to Com_Init
+	for( int i = 1; i < argc; i++ )
+	{
+		const bool containsSpaces = (strchr(argv[i], ' ') != NULL);
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), argv[ i ] );
+
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), " " );
+	}
+
+	Com_Init( commandLine );
 
 	QuickMemTest();
-
-	_getcwd (cwd, sizeof(cwd));
-	Com_Printf("Working directory: %s\n", cwd);
 
 	// hide the early console since we've reached the point where we
 	// have a working graphics subsystems
@@ -1099,6 +1340,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		if ( g_wv.isMinimized ) {
 			Sleep( 5 );
 		}
+
 #ifdef _DEBUG
 		if (!g_wv.activeApp)
 		{
@@ -1106,22 +1348,55 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		}
 #endif // _DEBUG
 
-		// set low precision every frame, because some system calls
-		// reset it arbitrarily
-//		_controlfp( _PC_24, _MCW_PC );
-
-//		startTime = Sys_Milliseconds();
-
 		// make sure mouse and joystick are only called once a frame
 		IN_Frame();
 
 		// run the game
 		Com_Frame();
+	}
+}
 
-//		endTime = Sys_Milliseconds();
-//		totalMsec += endTime - startTime;
-//		countMsec++;
+/*
+==================
+WinMain
+
+==================
+*/
+int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+	// should never get a previous instance in Win32
+    if ( hPrevInstance ) {
+        return 0;
 	}
 
+	/* Begin Sam Lantinga Public Domain 4/13/98 */
+
+	TCHAR *text = GetCommandLine();
+	char *cmdline = _strdup(text);
+	if ( cmdline == NULL ) {
+		MessageBox(NULL, "Out of memory - aborting", "Fatal Error", MB_ICONEXCLAMATION | MB_OK);
+		return 0;
+	}
+
+	int    argc = ParseCommandLine(cmdline, NULL);
+	char **argv = (char **)alloca(sizeof(char *) * argc + 1);
+	if ( argv == NULL ) {
+		MessageBox(NULL, "Out of memory - aborting", "Fatal Error", MB_ICONEXCLAMATION | MB_OK);
+		return 0;
+	}
+	ParseCommandLine(cmdline, argv);
+
+	/* End Sam Lantinga Public Domain 4/13/98 */
+
+	g_wv.hInstance = hInstance;
+
+	/* Begin Sam Lantinga Public Domain 4/13/98 */
+
+	main(argc, argv);
+
+	free(cmdline);
+
+	/* End Sam Lantinga Public Domain 4/13/98 */
+
 	// never gets here
+	return 0;
 }

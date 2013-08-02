@@ -1862,6 +1862,16 @@ void GLimp_Shutdown( void )
 		glw_state.pixelFormatSet = qfalse;
 	}
 
+	// unregister the window class
+	if ( s_classRegistered )
+	{
+		if ( FAILED (UnregisterClass (WINDOW_CLASS_NAME, tr.wv->hInstance)) )
+		{
+			Com_Error (ERR_FATAL, "GLimp_Shutdown: could not unregister window class, error code 0x%x", GetLastError());
+		}
+		s_classRegistered = qfalse;
+	}
+
 	// close the r_logFile
 	if ( glw_state.log_fp )
 	{

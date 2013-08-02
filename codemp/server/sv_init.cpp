@@ -440,7 +440,7 @@ void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload
 
 	SV_SendMapChange();
 
-	re.RegisterMedia_LevelLoadBegin(server, eForceReload);
+	re->RegisterMedia_LevelLoadBegin(server, eForceReload);
 
 	// shut down the existing game if it is running
 	SV_ShutdownGameProgs();
@@ -469,7 +469,7 @@ Ghoul2 Insert End
 
 #ifndef DEDICATED
 	// make sure all the client stuff is unloaded
-	CL_ShutdownAll( qfalse );
+	CL_ShutdownAll( qfalse, qfalse );
 #endif
 
 	CM_ClearMap();
@@ -477,8 +477,8 @@ Ghoul2 Insert End
 	// clear the whole hunk because we're (re)loading the server
 	Hunk_Clear();
 
-	re.InitSkins();
-	re.InitShaders(qtrue);
+	re->InitSkins();
+	re->InitShaders(qtrue);
 
 	// init client structures and svs.numSnapshotEntities 
 	if ( !Cvar_VariableValue("sv_running") ) {
@@ -512,7 +512,7 @@ Ghoul2 Insert Start
 	*/
 	if (com_dedicated->integer)
 	{
-		re.SVModelInit();
+		re->SVModelInit();
 	}
 
 	SV_SendMapChange();
@@ -559,7 +559,7 @@ Ghoul2 Insert End
 	}
 
 	//rww - RAGDOLL_BEGIN
-	re.G2API_SetTime(sv.time,0);
+	re->G2API_SetTime(sv.time,0);
 	//rww - RAGDOLL_END
 
 	// make sure we are not paused
@@ -601,7 +601,7 @@ Ghoul2 Insert End
 	// run a few frames to allow everything to settle
 	for ( i = 0 ;i < 3 ; i++ ) {
 		//rww - RAGDOLL_BEGIN
-		re.G2API_SetTime(sv.time,0);
+		re->G2API_SetTime(sv.time,0);
 		//rww - RAGDOLL_END
 		VM_Call( gvm, GAME_RUN_FRAME, sv.time );
 		SV_BotFrame( sv.time );
@@ -609,7 +609,7 @@ Ghoul2 Insert End
 		svs.time += 100;
 	}
 	//rww - RAGDOLL_BEGIN
-	re.G2API_SetTime(sv.time,0);
+	re->G2API_SetTime(sv.time,0);
 	//rww - RAGDOLL_END
 
 	// create a baseline for more efficient communications
@@ -668,7 +668,7 @@ Ghoul2 Insert End
 	sv.time += 100;
 	svs.time += 100;
 	//rww - RAGDOLL_BEGIN
-	re.G2API_SetTime(sv.time,0);
+	re->G2API_SetTime(sv.time,0);
 	//rww - RAGDOLL_END
 
 	if ( sv_pure->integer ) {
@@ -741,6 +741,7 @@ void SV_BotInitBotLib(void);
 #define G2_VERT_SPACE_SERVER_SIZE 256
 CMiniHeap *G2VertSpaceServer = NULL;
 CMiniHeap CMiniHeap_singleton(G2_VERT_SPACE_SERVER_SIZE * 1024);
+const CGhoul2Info NullG2;
 
 
 /*
@@ -794,11 +795,15 @@ static CMiniHeap *GetG2VertSpaceServer( void ) {
 	return G2VertSpaceServer;
 }
 
+refexport_t	*re = NULL;
+
 static void SV_InitRef( void ) {
-	refimport_t	ri = {0};
-	refexport_t	*ret;
+	static refimport_t ri;
+	refexport_t *ret;
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
+
+	memset( &ri, 0, sizeof( ri ) );
 
 	//set up the import table
 	ri.Printf = SV_RefPrintf;
@@ -889,7 +894,7 @@ static void SV_InitRef( void ) {
 		Com_Error (ERR_FATAL, "Couldn't initialize refresh" );
 	}
 
-	re = *ret;
+	re = ret;
 }
 #endif
 

@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // tr_shade.c
 
 #include "tr_local.h"
@@ -216,8 +213,8 @@ void R_BindAnimatedImage( textureBundle_t *bundle ) {
 	int		index;
 
 	if ( bundle->isVideoMap ) {
-		ri.CIN_RunCinematic(bundle->videoMapHandle);
-		ri.CIN_UploadCinematic(bundle->videoMapHandle);
+		ri->CIN_RunCinematic(bundle->videoMapHandle);
+		ri->CIN_UploadCinematic(bundle->videoMapHandle);
 		return;
 	}
 
@@ -2117,10 +2114,10 @@ void RB_EndSurface( void ) {
 	//
 	// draw debugging stuff
 	//
-	if ( r_showtris->integer && ri.Cvar_VariableIntegerValue( "developer" ) ) {
+	if ( r_showtris->integer && ri->Cvar_VariableIntegerValue( "developer" ) ) {
 		DrawTris (input);
 	}
-	if ( r_shownormals->integer && ri.Cvar_VariableIntegerValue( "developer" ) && ri.Cvar_VariableIntegerValue( "sv_running" ) ) {
+	if ( r_shownormals->integer && ri->Cvar_VariableIntegerValue( "developer" ) && ri->Cvar_VariableIntegerValue( "sv_running" ) ) {
 		DrawNormals (input);
 	}
 	// clear shader so we can tell we don't have any unclosed surfaces

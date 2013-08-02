@@ -6,22 +6,6 @@
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
-#include "qcommon/exe_headers.h"
-#ifdef _MSC_VER
-#pragma warning( disable : 4512 )
-#endif
-
-// Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max)
-inline float WE_flrand(float min, float max) {
-	return ((rand() * (max - min)) / (RAND_MAX)) + min;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////
-// Externs & Fwd Decl.
-////////////////////////////////////////////////////////////////////////////////////////
-extern void			SetViewportAndScissor( void );
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Includes
@@ -66,6 +50,20 @@ int			mParticlesRendered;
 ////////////////////////////////////////////////////////////////////////////////////////
 // Handy Functions
 ////////////////////////////////////////////////////////////////////////////////////////
+#ifdef _MSC_VER
+#pragma warning( disable : 4512 )
+#endif
+
+// Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max)
+inline float WE_flrand(float min, float max) {
+	return ((rand() * (max - min)) / (RAND_MAX)) + min;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+// Externs & Fwd Decl.
+////////////////////////////////////////////////////////////////////////////////////////
+extern void			SetViewportAndScissor( void );
+
 inline void VectorFloor(vec3_t in)
 {
 	in[0] = floorf(in[0]);
@@ -581,7 +579,7 @@ public:
 							CurPos[2] = (zbase + q)	* POINTCACHE_CELL_SIZE;
 							CurPos	  += Mins;
 
-							contents = ri.CM_PointContents(CurPos.v, 0);
+							contents = ri->CM_PointContents(CurPos.v, 0);
 							if (contents&CONTENTS_INSIDE || contents&CONTENTS_OUTSIDE)
 							{
 								curPosOutside = ((contents&CONTENTS_OUTSIDE)!=0);
@@ -628,7 +626,7 @@ public:
 	{
 		if (!mCacheInit)
 		{
-			return ContentsOutside(ri.CM_PointContents(pos.v, 0));
+			return ContentsOutside(ri->CM_PointContents(pos.v, 0));
 		}
 		for (int zone=0; zone<mWeatherZones.size(); zone++)
 		{
@@ -1359,7 +1357,7 @@ ratl::vector_vs<CWeatherParticleCloud, MAX_PARTICLE_CLOUDS>	mParticleClouds;
 ////////////////////////////////////////////////////////////////////////////////////////
 void R_InitWorldEffects(void)
 {
-	srand(ri.Milliseconds());
+	srand(ri->Milliseconds());
 
 	for (int i=0; i<mParticleClouds.size(); i++)
 	{
@@ -1454,7 +1452,7 @@ void RB_RenderWorldEffects(void)
 void R_WorldEffect_f(void)
 {
 	char temp[2048] = {0};
-	ri.Cmd_ArgsBuffer( temp, sizeof( temp ) );
+	ri->Cmd_ArgsBuffer( temp, sizeof( temp ) );
 	RE_WorldEffectCommand( temp );
 }
 
@@ -1470,14 +1468,14 @@ qboolean WE_ParseVector( const char **text, int count, float *v ) {
 	// FIXME: spaces are currently required after parens, should change parseext...
 	token = COM_ParseExt( text, qfalse );
 	if ( strcmp( token, "(" ) ) {
-		ri.Printf (PRINT_WARNING, "WARNING: missing parenthesis in weather effect\n" );
+		ri->Printf (PRINT_WARNING, "WARNING: missing parenthesis in weather effect\n" );
 		return qfalse;
 	}
 
 	for ( i = 0 ; i < count ; i++ ) {
 		token = COM_ParseExt( text, qfalse );
 		if ( !token[0] ) {
-			ri.Printf (PRINT_WARNING, "WARNING: missing vector element in weather effect\n" );
+			ri->Printf (PRINT_WARNING, "WARNING: missing vector element in weather effect\n" );
 			return qfalse;
 		}
 		v[i] = atof( token );
@@ -1485,7 +1483,7 @@ qboolean WE_ParseVector( const char **text, int count, float *v ) {
 
 	token = COM_ParseExt( text, qfalse );
 	if ( strcmp( token, ")" ) ) {
-		ri.Printf (PRINT_WARNING, "WARNING: missing parenthesis in weather effect\n" );
+		ri->Printf (PRINT_WARNING, "WARNING: missing parenthesis in weather effect\n" );
 		return qfalse;
 	}
 
@@ -1498,6 +1496,8 @@ void RE_WorldEffectCommand(const char *command)
 	{
 		return;
 	}
+
+	COM_BeginParseSession ("RE_WorldEffectCommand");
 
 	const char	*token;//, *origCommand;
 

@@ -2,7 +2,7 @@
 #include "qcommon/exe_headers.h"
 
 #include "qcommon/cm_local.h"
-#include "renderer/tr_types.h"
+#include "rd-common/tr_types.h"
 #include "RM_Headers.h"
 
 #ifdef _MSC_VER
@@ -293,7 +293,7 @@ void CRMLandScape::LoadDensityMap(const char *td)
 	{
 		Com_DPrintf("CG_Terrain: Loading density map %s.....\n", densityMap);
 #ifndef DEDICATED
-		re.LoadDataImage(densityMap, &imageData, &iWidth, &iHeight);
+		re->LoadDataImage(densityMap, &imageData, &iWidth, &iHeight);
 		if(imageData)
 		{
 			if(strstr(densityMap, "density_"))
@@ -301,8 +301,8 @@ void CRMLandScape::LoadDensityMap(const char *td)
 				seed = strtoul(Info_ValueForKey(td, "seed"),&ptr,10);
 				CreateRandomDensityMap(imageData, iWidth, iHeight, seed);
 			}
-			re.Resample(imageData, iWidth, iHeight, mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
-			re.InvertImage(mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
+			re->Resample(imageData, iWidth, iHeight, mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
+			re->InvertImage(mDensityMap, common->GetBlockWidth(), common->GetBlockHeight(), 1);
 			Z_Free(imageData);
 		}
 #endif
@@ -356,9 +356,9 @@ void CRMLandScape::Sprinkle(CCMPatch *patch, CCGHeightDetails *hd, int level)
 
 			rm = hd->GetRandomModel(common);
 
-			refEnt.hModel = re.RegisterModel(rm->GetModelName());
+			refEnt.hModel = re->RegisterModel(rm->GetModelName());
 			refEnt.frame = 0;
-			re.ModelBoundsRef(&refEnt, bounds[0], bounds[1]);
+			re->ModelBoundsRef(&refEnt, bounds[0], bounds[1]);
 
 			// Calculate the scale using some magic to help ensure that the
 			// scales are never too different from eachother.  Otherwise you

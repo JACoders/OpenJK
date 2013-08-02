@@ -359,6 +359,8 @@ qboolean CG_ParseSurfsFile( const char *modelName, const char *skinName, char *s
 	surfOff[0] = '\0';
 	surfOn[0] = '\0';
 
+	COM_BeginParseSession ("CG_ParseSurfsFile");
+
 	// read information for surfOff and surfOn
 	while ( 1 ) 
 	{
@@ -572,6 +574,7 @@ retryModel:
 		if ( surfOff[0] )
 		{
 			p = surfOff;
+			COM_BeginParseSession ("CG_RegisterClientModelname: surfOff");
 			while ( 1 ) 
 			{
 				token = COM_ParseExt( &p, qtrue );
@@ -586,6 +589,7 @@ retryModel:
 		if ( surfOn[0] )
 		{
 			p = surfOn;
+			COM_BeginParseSession ("CG_RegisterClientModelname: surfOn");
 			while ( 1 )
 			{
 				token = COM_ParseExt( &p, qtrue );

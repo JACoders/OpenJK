@@ -47,7 +47,7 @@ cvar_t	*com_terrainPhysics; //rwwRMG - added
 
 cvar_t	*com_version;
 cvar_t	*com_buildScript;	// for automated data building scripts
-cvar_t	*com_introPlayed;
+cvar_t	*com_bootlogo;
 cvar_t	*cl_paused;
 cvar_t	*sv_paused;
 cvar_t	*com_cameraMode;
@@ -286,7 +286,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 
 	if ( code == ERR_SERVERDISCONNECT ) {
 		CL_Disconnect( qtrue );
-		CL_FlushMemory( );
+		CL_FlushMemory( qtrue );
 		com_errorEntered = qfalse;
 
 		throw ("DISCONNECTED\n");
@@ -294,7 +294,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		Com_Printf ("********************\nERROR: %s\n********************\n", com_errorMessage);
 		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage));
 		CL_Disconnect( qtrue );
-		CL_FlushMemory( );
+		CL_FlushMemory( qtrue );
 		com_errorEntered = qfalse;
 
 		throw ("DROPPED\n");
@@ -302,7 +302,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		SV_Shutdown( "Server didn't have CD\n" );
 		if ( com_cl_running && com_cl_running->integer ) {
 			CL_Disconnect( qtrue );
-			CL_FlushMemory( );
+			CL_FlushMemory( qtrue );
 			com_errorEntered = qfalse;
 		} else {
 			Com_Printf("Server didn't have CD\n" );
@@ -1076,7 +1076,6 @@ static void Com_Crash_f( void ) {
 	* ( volatile int * ) 0 = 0x12345678;
 }
 
-
 #ifdef MEM_DEBUG
 	void SH_Register(void);
 #endif
@@ -1232,7 +1231,7 @@ void Com_Init( char *commandLine ) {
 		Cvar_Get ("RMG_course", "standard", CVAR_SYSTEMINFO );
 		Cvar_Get ("RMG_distancecull", "5000", CVAR_CHEAT );
 
-		com_introPlayed = Cvar_Get( "com_introplayed", "0", CVAR_ARCHIVE);
+		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
 
 	#if defined(_WIN32) && defined(_DEBUG)
 		com_noErrorInterrupt = Cvar_Get( "com_noErrorInterrupt", "0", 0 );
@@ -1281,14 +1280,10 @@ void Com_Init( char *commandLine ) {
 			// if the user didn't give any commands, run default action
 			if ( !com_dedicated->integer ) 
 			{
-#ifndef _DEBUG
-				Cbuf_AddText ("cinematic openinglogos.roq\n");
-#endif
-				// intro.roq is iD's.
-//				if( !com_introPlayed->integer ) {
-//					Cvar_Set( com_introPlayed->name, "1" );
-//					Cvar_Set( "nextmap", "cinematic intro.RoQ" );
-//				}
+				if ( com_bootlogo->integer )
+				{
+					Cbuf_AddText ("cinematic openinglogos.roq\n");
+				}
 			}
 		}
 
@@ -1604,6 +1599,7 @@ try
 
 }//try
 	catch (const char* reason) {
+		VM_FreeRemaining();
 		Com_Printf (reason);
 		return;			// an ERR_DROP was thrown
 	}

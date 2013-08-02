@@ -38,9 +38,9 @@ if(BuildSPEngine)
 	if(UseInternalOpenAL)
 		# There's a libs/OpenAL32.lib
 		# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
-		find_library(OpenALLibrary NAMES OpenAL32 PATHS "${SPDir}")
+		find_library(OpenALLibrary NAMES OpenAL32 PATHS "${OpenJKLibDir}")
 		if(NOT OpenALLibrary)
-			message(FATAL_ERROR "UseInternalOpenAL set, but code/OpenAL32 not found!")
+			message(FATAL_ERROR "UseInternalOpenAL enabled, but lib/OpenAL32.lib not found!")
 		endif(NOT OpenALLibrary)
 		set(SPEngineLibraries ${SPEngineLibraries} ${OpenALLibrary})
 	else(UseInternalOpenAL)
@@ -143,6 +143,10 @@ if(BuildSPEngine)
 		"${SPDir}/qcommon/msg.cpp"
 		"${SPDir}/qcommon/net_chan.cpp"
 
+		"${SPDir}/qcommon/q_math.cpp"
+		"${SPDir}/qcommon/q_shared.cpp"
+		"${SPDir}/qcommon/q_shared.h"
+
 		"${SPDir}/qcommon/sstring.h"
 		"${SPDir}/qcommon/stringed_ingame.cpp"
 		"${SPDir}/qcommon/stringed_interface.cpp"
@@ -189,8 +193,6 @@ if(BuildSPEngine)
 	# Game files
 	set(SPEngineGameFiles
 		"${SPDir}/game/genericparser2.cpp"
-		"${SPDir}/game/q_math.cpp"
-		"${SPDir}/game/q_shared.cpp"
 		"${SPDir}/game/channels.h"
 		"${SPDir}/game/anims.h"
 		"${SPDir}/game/b_public.h"
@@ -205,7 +207,6 @@ if(BuildSPEngine)
 		"${SPDir}/game/g_public.h"
 		"${SPDir}/game/g_shared.h"
 		"${SPDir}/game/genericparser2.h"
-		"${SPDir}/game/q_shared.h"
 		"${SPDir}/game/statindex.h"
 		"${SPDir}/game/teams.h"
 		"${SPDir}/game/weapons.h"
@@ -364,7 +365,7 @@ if(BuildSPEngine)
 		# zlib.lib is included for windows
 		find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
 		if(NOT ZlibLibrary)
-			message(FATAL_ERROR "UseInternalZlib set, but lib/zlib not found!")
+			message(FATAL_ERROR "UseInternalZlib enabled, but lib/zlib.lib not found!")
 		endif(NOT ZlibLibrary)
 		set(SPEngineLibraries ${SPEngineLibraries} ${ZlibLibrary})
 	else(UseInternalZlib)
@@ -400,6 +401,7 @@ if(BuildSPEngine)
 	set_target_properties(${SPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPEngineDefines};${ReleaseDefines}")
 	set_target_properties(${SPEngine} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPEngineDefines};${DebugDefines}")
 	set_target_properties(${SPEngine} PROPERTIES INCLUDE_DIRECTORIES "${SPEngineIncludeDirectories}")
+	set_target_properties(${SPEngine} PROPERTIES PROJECT_LABEL "SP Client")
 	if(SPEngineLibraries)
 		target_link_libraries(${SPEngine} ${SPEngineLibraries})
 	endif(SPEngineLibraries)

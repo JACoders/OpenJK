@@ -690,7 +690,7 @@ void misc_model_throw_at_target4( gentity_t *self, gentity_t *activator )
 	}
 	else
 	{
-		self->forcePuller = NULL;
+		self->forcePuller = 0;
 	}
 }
 
@@ -1004,7 +1004,10 @@ void TieBomberThink( gentity_t *self )
 	// Time to attack?
 	if ( player->health > 0 && playerDist < MIN_PLAYER_DIST && self->attackDebounceTime < level.time )  
 	{
-		char name1[200] = "models/players/remote/model.glm";
+		// Doesn't matter what model gets loaded here, as long as it exists.
+		// It's only used as a point on to which the falling effect for the bomb
+		// can be attached to (kinda inefficient, I know).
+		char name1[200] = "models/players/gonk/model.glm";
 		gentity_t *bomb = G_CreateObject( self, self->s.pos.trBase, self->s.apos.trBase, 0, 0, TR_GRAVITY, 0 );
 		bomb->s.modelindex = G_ModelIndex( name1 );
 		gi.G2API_InitGhoul2Model( bomb->ghoul2, name1, bomb->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0);

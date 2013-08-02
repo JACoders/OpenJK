@@ -18,7 +18,7 @@ This file is part of Jedi Academy.
 
 // server.h
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "../game/g_public.h"
 #include "../game/bg_public.h"
@@ -231,7 +231,7 @@ gentity_t	*SV_GentityNum( int num );
 svEntity_t	*SV_SvEntityForGentity( gentity_t *gEnt );
 gentity_t	*SV_GEntityForSvEntity( svEntity_t *svEnt );
 void		SV_InitGameProgs (void);
-void		SV_ShutdownGameProgs (qboolean shutdownCin);
+void		SV_ShutdownGameProgs (qboolean shutdownCin, qboolean delayFreeGame = qfalse);
 qboolean	SV_inPVS (const vec3_t p1, const vec3_t p2);
 
 
@@ -305,9 +305,9 @@ qboolean SV_TryLoadTransition( const char *mapname );
 qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave);
 qboolean SG_ReadSavegame(const char *psPathlessBaseName);
 void SG_WipeSavegame(const char *psPathlessBaseName);
-qboolean SG_Append(unsigned long chid, const void *data, int length);
-int SG_Read			(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
-int SG_ReadOptional	(unsigned long chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
+qboolean SG_Append(unsigned int chid, const void *data, int length);
+int SG_Read			(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
+int SG_ReadOptional	(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
 void SG_Shutdown();
 void SG_TestSave(void);
 //

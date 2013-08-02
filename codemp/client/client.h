@@ -5,7 +5,7 @@
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
 #include "ui/ui_public.h"
-#include "renderer/tr_public.h"
+#include "rd-common/tr_public.h"
 #include "keys.h"
 #include "snd_public.h"
 #include "cgame/cg_public.h"
@@ -344,7 +344,7 @@ extern	clientStatic_t		cls;
 
 extern	vm_t			*cgvm;	// interface to cgame dll or vm
 extern	vm_t			*uivm;	// interface to ui dll or vm
-extern	refexport_t		re;		// interface to refresh .dll
+extern	refexport_t		*re;		// interface to refresh .dll
 
 //
 // cvars
@@ -401,8 +401,8 @@ extern	cvar_t	*cl_consoleKeys;
 //
 
 void CL_Init (void);
-void CL_FlushMemory(void);
-void CL_ShutdownAll( qboolean shutdownRef );
+void CL_FlushMemory(qboolean delayFreeVM);
+void CL_ShutdownAll( qboolean shutdownRef, qboolean delayFreeVM );
 void CL_AddReliableCommand( const char *cmd, qboolean isDisconnectCmd );
 
 void CL_StartHunkUsers( void );
@@ -545,7 +545,7 @@ void CL_UpdateHotSwap(void);
 // cl_cgame.c
 //
 void CL_InitCGame( void );
-void CL_ShutdownCGame( void );
+void CL_ShutdownCGame( qboolean delayFreeVM );
 qboolean CL_GameCommand( void );
 void CL_CGameRendering( stereoFrame_t stereo );
 void CL_SetCGameTime( void );
@@ -556,7 +556,7 @@ void CL_ShaderStateChanged(void);
 // cl_ui.c
 //
 void CL_InitUI( void );
-void CL_ShutdownUI( void );
+void CL_ShutdownUI( qboolean delayFreeVM );
 int Key_GetCatcher( void );
 void Key_SetCatcher( int catcher );
 void LAN_LoadCachedServers();

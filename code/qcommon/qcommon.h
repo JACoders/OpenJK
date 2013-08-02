@@ -21,7 +21,7 @@ This file is part of Jedi Academy.
 #define __QCOMMON_H__
 
 #include "stringed_ingame.h"
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../../codeJK2/qcommon/strippublic.h"
 #include "../qcommon/cm_public.h"
 
@@ -502,6 +502,7 @@ int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode );
 int		FS_Seek( fileHandle_t f, long offset, int origin );
 // seek on a file (doesn't work for zip files!!!!!!!!)
 
+qboolean FS_FilenameCompare( const char *s1, const char *s2 );
 
 // These 2 are generally only used by the save games, filenames are local (eg "saves/blah.sav")
 //
@@ -547,6 +548,7 @@ extern	cvar_t	*com_sv_running;
 extern	cvar_t	*com_cl_running;
 extern	cvar_t	*com_viewlog;			// 0 = hidden, 1 = visible, 2 = minimized
 extern	cvar_t	*com_version;
+extern	cvar_t	*com_homepath;
 
 #ifndef __NO_JK2
 extern	cvar_t	*com_jk2;
@@ -707,7 +709,7 @@ void SCR_DebugGraph (float value, int color);	// FIXME: move logging to common?
 // server interface
 //
 void SV_Init( void );
-void SV_Shutdown( const char *finalmsg );
+void SV_Shutdown( const char *finalmsg, qboolean delayFreeGame = qfalse );
 void SV_Frame( int msec,float fractionMsec);
 void SV_PacketEvent( netadr_t from, msg_t *msg );
 qboolean SV_GameCommand( void );
@@ -766,6 +768,9 @@ void	Sys_Init (void);
 	#define Sys_LoadFunction(h,fn) (void*)GetProcAddress((HMODULE)h,fn)
 	#define Sys_LibraryError() "unknown"
 #endif // linux and mac use SDL in SDL_loadlibrary.h
+
+void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
+void	Sys_UnloadDll( void *dllHandle );
 
 char	*Sys_GetCurrentUser( void );
 

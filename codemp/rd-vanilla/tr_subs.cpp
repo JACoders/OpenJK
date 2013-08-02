@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 // tr_subs.cpp - common function replacements for modular renderer
 #include "tr_local.h"
 
@@ -13,7 +10,7 @@ void QDECL Com_Printf( const char *msg, ... )
 	Q_vsnprintf(text, sizeof(text), msg, argptr);
 	va_end(argptr);
 
-	ri.Printf(PRINT_ALL, "%s", text);
+	ri->Printf(PRINT_ALL, "%s", text);
 }
 
 void QDECL Com_OPrintf( const char *msg, ... )
@@ -25,7 +22,7 @@ void QDECL Com_OPrintf( const char *msg, ... )
 	Q_vsnprintf(text, sizeof(text), msg, argptr);
 	va_end(argptr);
 
-	ri.OPrintf("%s", text);
+	ri->OPrintf("%s", text);
 }
 
 void QDECL Com_Error( int level, const char *error, ... )
@@ -37,41 +34,41 @@ void QDECL Com_Error( int level, const char *error, ... )
 	Q_vsnprintf(text, sizeof(text), error, argptr);
 	va_end(argptr);
 
-	ri.Error(level, "%s", text);
+	ri->Error(level, "%s", text);
 }
 
 // HUNK
 void *Hunk_AllocateTempMemory( int size ) {
-	return ri.Hunk_AllocateTempMemory( size );
+	return ri->Hunk_AllocateTempMemory( size );
 }
 
 void Hunk_FreeTempMemory( void *buf ) {
-	ri.Hunk_FreeTempMemory( buf );
+	ri->Hunk_FreeTempMemory( buf );
 }
 
 void *Hunk_Alloc( int size, ha_pref preference ) {
-	return ri.Hunk_Alloc( size, preference );
+	return ri->Hunk_Alloc( size, preference );
 }
 
 int Hunk_MemoryRemaining( void ) {
-	return ri.Hunk_MemoryRemaining();
+	return ri->Hunk_MemoryRemaining();
 }
 
 // ZONE
 void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign ) {
-	return ri.Z_Malloc( iSize, eTag, bZeroit, iAlign );
+	return ri->Z_Malloc( iSize, eTag, bZeroit, iAlign );
 }
 
 void Z_Free( void *ptr ) {
-	ri.Z_Free( ptr );
+	ri->Z_Free( ptr );
 }
 
 int Z_MemSize( memtag_t eTag ) {
-	return ri.Z_MemSize( eTag );
+	return ri->Z_MemSize( eTag );
 }
 
 void Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag ) {
-	ri.Z_MorphMallocTag( pvBuffer, eDesiredTag );
+	ri->Z_MorphMallocTag( pvBuffer, eDesiredTag );
 }
 
 // Parsing
@@ -84,21 +81,21 @@ bool Com_ParseTextFile(const char *file, class CGenericParser2 &parser, bool cle
 	int				length = 0;
 	char			*buf = 0, *bufParse = 0;
 
-	length = ri.FS_FOpenFileByMode( file, &f, FS_READ );
+	length = ri->FS_FOpenFileByMode( file, &f, FS_READ );
 	if (!f || !length)		
 	{
 		return false;
 	}
 
 	buf = new char [length + 1];
-	ri.FS_Read( buf, length, f );
+	ri->FS_Read( buf, length, f );
 	buf[length] = 0;
 
 	bufParse = buf;
 	parser.Parse(&bufParse, cleanFirst);
 	delete[] buf;
 
-	ri.FS_FCloseFile( f );
+	ri->FS_FCloseFile( f );
 
 	return true;
 }
@@ -115,15 +112,15 @@ CGenericParser2 *Com_ParseTextFile(const char *file, bool cleanFirst, bool write
 	char			*buf = 0, *bufParse = 0;
 	CGenericParser2 *parse;
 
-	length = ri.FS_FOpenFileByMode( file, &f, FS_READ );
+	length = ri->FS_FOpenFileByMode( file, &f, FS_READ );
 	if (!f || !length)		
 	{
 		return 0;
 	}
 
 	buf = new char [length + 1];
-	ri.FS_Read( buf, length, f );
-	ri.FS_FCloseFile( f );
+	ri->FS_Read( buf, length, f );
+	ri->FS_FCloseFile( f );
 	buf[length] = 0;
 
 	bufParse = buf;

@@ -21,7 +21,7 @@ This file is part of Jedi Academy.
 #ifndef SND_LOCAL_H
 #define SND_LOCAL_H
 
-#include "../game/q_shared.h"
+#include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
 #include "snd_public.h"
 #include "../mp3code/mp3struct.h"

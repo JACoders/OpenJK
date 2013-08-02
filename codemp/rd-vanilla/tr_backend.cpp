@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "tr_local.h"
 #ifdef _WIN32
 #include "glext.h"
@@ -701,7 +698,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	// we don't want to pump the event loop too often and waste time, so
 	// we are going to check every shader change
-	macEventTime = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" ) + MAC_EVENT_PUMP_MSEC;
+	macEventTime = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" ) + MAC_EVENT_PUMP_MSEC;
 #endif
 
 	if (g_bRenderGlowingObjects)
@@ -859,7 +856,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 #ifdef __MACOS__	// crutch up the mac's limited buffer queue size
 				int		t;
 
-				t = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
+				t = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
 				if ( t > macEventTime ) {
 					macEventTime = t + MAC_EVENT_PUMP_MSEC;
 					Sys_PumpEvents();
@@ -1254,7 +1251,7 @@ void	RB_SetGL2D (void) {
 	qglDisable( GL_CLIP_PLANE0 );
 
 	// set time for 2D shaders
-	backEnd.refdef.time = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
+	backEnd.refdef.time = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
 	backEnd.refdef.floatTime = backEnd.refdef.time * 0.001f;
 }
 
@@ -1282,7 +1279,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 
 	start = end = 0;
 	if ( r_speeds->integer ) {
-		start = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
+		start = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
 	}
 
 	// make sure rows and cols are powers of 2
@@ -1311,7 +1308,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	}
 
 	if ( r_speeds->integer ) {
-		end = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
+		end = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
 		Com_Printf ("qglTexSubImage2D %i, %i: %i msec\n", cols, rows, end - start );
 	}
 
@@ -1737,7 +1734,7 @@ void RB_ShowImages( void ) {
 
 	qglFinish();
 
-//	start = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
+//	start = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
 
 
 	int i=0;
@@ -1771,7 +1768,7 @@ void RB_ShowImages( void ) {
 
 	qglFinish();
 
-//	end = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
+//	end = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
 //	Com_Printf ("%i msec to draw all images\n", end - start );
 }
 
@@ -1861,7 +1858,7 @@ extern const void *R_DrawWireframeAutomap(const void *data); //tr_world.cpp
 void RB_ExecuteRenderCommands( const void *data ) {
 	int		t1, t2;
 
-	t1 = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
+	t1 = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
 
 	while ( 1 ) {
 		data = PADP(data, sizeof(void *));
@@ -1900,7 +1897,7 @@ void RB_ExecuteRenderCommands( const void *data ) {
 		case RC_END_OF_LIST:
 		default:
 			// stop rendering on this thread
-			t2 = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
+			t2 = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
 			backEnd.pc.msec = t2 - t1;
 			return;
 		}

@@ -1415,7 +1415,7 @@ netField_t	playerStateFields[] =
 { PSF(m_iVehicleNum), GENTITYNUM_BITS }, // 10 bits fits all possible entity nums (2^10 = 1024). - AReis
 //{ PSF(vehTurnaroundTime), 32 },//only used by vehicle?
 { PSF(generic1), 8 },
-{ PSF(jumppad_ent), 10 },
+{ PSF(jumppad_ent), GENTITYNUM_BITS },
 { PSF(hasDetPackPlanted), 1 },
 { PSF(saberInFlight), 1 },
 { PSF(forceDodgeAnim), 16 },
@@ -1584,7 +1584,7 @@ netField_t	pilotPlayerStateFields[] =
 { PSF(forceHandExtend), 8 },
 { PSF(saberHolstered), 2 },
 { PSF(damagePitch), 8 },
-{ PSF(jumppad_ent), 10 },
+{ PSF(jumppad_ent), GENTITYNUM_BITS },
 { PSF(forceDodgeAnim), 16 },
 { PSF(zoomMode), 2 }, // NOTENOTE Are all of these necessary?
 { PSF(hackingTime), 32 },
@@ -1828,7 +1828,7 @@ netField_t	playerStateFields[] =
 { PSF(m_iVehicleNum), GENTITYNUM_BITS }, // 10 bits fits all possible entity nums (2^10 = 1024). - AReis
 { PSF(vehTurnaroundTime), 32 },
 { PSF(generic1), 8 },
-{ PSF(jumppad_ent), 10 },
+{ PSF(jumppad_ent), GENTITYNUM_BITS },
 { PSF(hasDetPackPlanted), 1 },
 { PSF(saberInFlight), 1 },
 { PSF(forceDodgeAnim), 16 },

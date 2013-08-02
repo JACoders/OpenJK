@@ -1139,7 +1139,7 @@ static void CG_RegisterEffects( void )
 	if (numFailed && g_delayedShutdown->integer)
 	{
 		//assert(0);
-		CG_Error( "CG_RegisterEffects: %i Effects failed to load.  Please fix, or ask Aurelio.", numFailed );
+		//CG_Error( "CG_RegisterEffects: %i Effects failed to load.  Please fix, or ask Aurelio.", numFailed );
 	}
 
 	// Start world effects
@@ -1937,14 +1937,14 @@ static void CG_GameStateReceived( void ) {
 
 void CG_WriteTheEvilCGHackStuff(void)
 {
-	gi.AppendToSaveGame('FPSL', &cg.forcepowerSelect, sizeof(cg.forcepowerSelect));
-	gi.AppendToSaveGame('IVSL', &cg.inventorySelect,  sizeof(cg.inventorySelect));
+	gi.AppendToSaveGame(INT_ID('F','P','S','L'), &cg.forcepowerSelect, sizeof(cg.forcepowerSelect));
+	gi.AppendToSaveGame(INT_ID('I','V','S','L'), &cg.inventorySelect,  sizeof(cg.inventorySelect));
 
 }
 void CG_ReadTheEvilCGHackStuff(void)
 {
-	gi.ReadFromSaveGame('FPSL', (void *)&gi_cg_forcepowerSelect, sizeof(gi_cg_forcepowerSelect), NULL);
-	gi.ReadFromSaveGame('IVSL', (void *)&gi_cg_inventorySelect,  sizeof(gi_cg_inventorySelect), NULL);
+	gi.ReadFromSaveGame(INT_ID('F','P','S','L'), (void *)&gi_cg_forcepowerSelect, sizeof(gi_cg_forcepowerSelect), NULL);
+	gi.ReadFromSaveGame(INT_ID('I','V','S','L'), (void *)&gi_cg_inventorySelect,  sizeof(gi_cg_inventorySelect), NULL);
 	gbUseTheseValuesFromLoadSave = qtrue;
 }
 
@@ -2827,6 +2827,7 @@ void CG_ParseMenu(const char *menuFile)
 		if (!result)
 		{
 			Com_Printf("Unable to load default ui/testhud.menu.\n");
+			cgi_UI_EndParseSession (buf);
 			return;
 		}
 	}
@@ -2938,18 +2939,18 @@ void CG_LoadMenus(const char *menuFile)
 	len = cgi_FS_FOpenFile( menuFile, &f, FS_READ );
 	if ( !f ) 
 	{
-		cgi_Error( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );
+		CG_Printf( "hud menu file not found: %s, using default\n", menuFile );
 		len = cgi_FS_FOpenFile( "ui/jahud.txt", &f, FS_READ );
 		if (!f) 
 		{
-			cgi_Error( va( S_COLOR_RED "default menu file not found: ui/hud.txt, unable to continue!\n", menuFile ) );
+			cgi_Error( S_COLOR_RED "default menu file not found: ui/hud.txt, unable to continue!\n" );
 		}
 	}
 
 	if ( len >= MAX_MENUDEFFILE ) 
 	{
-		cgi_Error( va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i", menuFile, len, MAX_MENUDEFFILE ) );
 		cgi_FS_FCloseFile( f );
+		cgi_Error( va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i", menuFile, len, MAX_MENUDEFFILE ) );
 		return;
 	}
 
@@ -2963,11 +2964,10 @@ void CG_LoadMenus(const char *menuFile)
 
 	p = buf;
 
+	COM_BeginParseSession();
 	while ( 1 ) 
 	{
-		COM_BeginParseSession();
 		token = COM_ParseExt( &p, qtrue );
-		COM_EndParseSession();
 		if( !token || token[0] == 0 || token[0] == '}') 
 		{
 			break;
@@ -2980,9 +2980,7 @@ void CG_LoadMenus(const char *menuFile)
 
 		if (Q_stricmp(token, "loadmenu") == 0) 
 		{
-			COM_BeginParseSession();
 			int menuLoad = CG_Load_Menu(&p);
-			COM_EndParseSession();
 			if (menuLoad) 
 			{
 				continue;
@@ -2993,6 +2991,7 @@ void CG_LoadMenus(const char *menuFile)
 			}
 		}
 	}
+	COM_EndParseSession();
 
 	//Com_Printf("UI menu load time = %d milli seconds\n", cgi_Milliseconds() - start);
 }

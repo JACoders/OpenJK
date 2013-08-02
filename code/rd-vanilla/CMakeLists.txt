@@ -63,7 +63,7 @@ if(UseInternalZlib)
 	# zlib.lib is included for windows
 	find_library(ZlibLibrary NAMES zlib PATHS ${OpenJKLibDir})
 	if(NOT ZlibLibrary)
-		message(FATAL_ERROR "UseInternalZlib set, but lib/zlib not found!")
+		message(FATAL_ERROR "UseInternalZlib enabled, but lib/zlib.lib not found!")
 	endif(NOT ZlibLibrary)
 	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} "${OpenJKLibDir}/zlib")
 	set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${ZlibLibrary})
@@ -77,14 +77,15 @@ endif(UseInternalZlib)
 set(SPRDVanillaGameFiles
 	"${SPDir}/game/genericparser2.h"
 	"${SPDir}/game/genericparser2.cpp"
-	"${SPDir}/game/q_math.cpp"
-	"${SPDir}/game/q_shared.cpp"
 	)
 source_group("game" FILES ${SPRDVanillaGameFiles})
 set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaGameFiles})
 
 # Misc files
 set(SPRDVanillaCommonFiles
+	"${SPDir}/qcommon/q_math.cpp"
+	"${SPDir}/qcommon/q_shared.cpp"
+	"${SPDir}/qcommon/q_shared.h"
 	"${SPDir}/qcommon/cm_landscape.h"
 	)
 source_group("common" FILES ${SPRDVanillaCommonFiles})
@@ -121,6 +122,7 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/tr_jpeg_interface.h"
 	"${SPDir}/rd-vanilla/tr_landscape.h"
 	"${SPDir}/rd-vanilla/tr_light.cpp"
+	"${SPDir}/rd-vanilla/tr_local.h"
 	"${SPDir}/rd-vanilla/tr_main.cpp"
 	"${SPDir}/rd-vanilla/tr_marks.cpp"
 	"${SPDir}/rd-vanilla/tr_mesh.cpp"
@@ -194,5 +196,6 @@ set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_MINS
 set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPRDVanillaDefines};${ReleaseDefines}")
 set_target_properties(${SPRDVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPRDVanillaDefines};${DebugDefines}")
 set_target_properties(${SPRDVanillaRenderer} PROPERTIES INCLUDE_DIRECTORIES "${SPRDVanillaRendererIncludeDirectories}")
+set_target_properties(${SPRDVanillaRenderer} PROPERTIES PROJECT_LABEL "SP Vanilla Renderer")
 
 target_link_libraries(${SPRDVanillaRenderer} ${SPRDVanillaRendererLibraries})

@@ -18,7 +18,7 @@ This file is part of Jedi Academy.
 // q_shared.c -- stateless support routines that are included in each code dll
 
 // leave this at the top for PCH reasons...
-#include "common_headers.h"
+#include "../game/common_headers.h"
 
 //#include "q_shared.h"
 
@@ -276,25 +276,34 @@ static	char	com_token[MAX_TOKEN_CHARS];
 //JLFCALLOUT MPNOTUSED
 //#include functionality for files
 int parseDataCount = -1;
-parseData_t parseData[2];
+const int MAX_PARSE_DATA = 5;
+parseData_t parseData[MAX_PARSE_DATA];
 
 void COM_ParseInit( void )
 {
-	memset(&(parseData[0]),0,sizeof(parseData_t));
-	memset(&(parseData[1]),0,sizeof(parseData_t));
-	COM_BeginParseSession();
+	memset(parseData, 0, sizeof(parseData));
+	parseDataCount = -1;
 }
 
 void COM_BeginParseSession( void )
 {
-	parseDataCount =0;
+	parseDataCount++;
+#ifdef _DEBUG
+	if ( parseDataCount >= MAX_PARSE_DATA )
+	{
+		Com_Error (ERR_FATAL, "COM_BeginParseSession: cannot nest more than %d parsing sessions.\n", MAX_PARSE_DATA);
+	}
+#endif
+
 	parseData[parseDataCount].com_lines = 1;
 }
 
 void COM_EndParseSession( void )
 {
-	// FIXME: I have no idea if I'm doing this right ( :D... )
-	parseDataCount = -1;
+	parseDataCount--;
+#ifdef _DEBUG
+	assert (parseDataCount >= -1 && "COM_EndParseSession: called without a starting COM_BeginParseSession.\n");
+#endif
 }
 
 int COM_GetCurrentParseLine( int index )

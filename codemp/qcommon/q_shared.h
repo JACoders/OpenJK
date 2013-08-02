@@ -47,7 +47,6 @@
 #define ARRAY_LEN( x ) ( sizeof( x ) / sizeof( *(x) ) )
 #define STRING( a ) #a
 #define XSTRING( a ) STRING( a )
-
 /*
 #define G2_EHNANCEMENTS
 
@@ -562,6 +561,7 @@ typedef int		clipHandle_t;
 #define	MAX_QINT			0x7fffffff
 #define	MIN_QINT			(-MAX_QINT-1)
 
+#define INT_ID( a, b, c, d ) (uint32_t)((((d) & 0xff) << 24) | (((c) & 0xff) << 16) | (((b) & 0xff) << 8) | ((a) & 0xff))
 
 // angle indexes
 #define	PITCH				0		// up / down
@@ -1554,7 +1554,7 @@ void ClearBounds( vec3_t mins, vec3_t maxs );
 vec_t DistanceHorizontal( const vec3_t p1, const vec3_t p2 );
 vec_t DistanceHorizontalSquared( const vec3_t p1, const vec3_t p2 );
 void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs );
-void VectorRotate( vec3_t in, vec3_t matrix[3], vec3_t out );
+void VectorRotate( const vec3_t in, vec3_t matrix[3], vec3_t out );
 int Q_log2(int val);
 
 qboolean Q_isnan(float f);
@@ -2873,15 +2873,6 @@ typedef enum {
 	FMV_LOOPED,
 	FMV_ID_WAIT
 } e_status;
-
-typedef enum _flag_status {
-	FLAG_ATBASE = 0,
-	FLAG_TAKEN,			// CTF
-	FLAG_TAKEN_RED,		// One Flag CTF
-	FLAG_TAKEN_BLUE,	// One Flag CTF
-	FLAG_DROPPED
-} flagStatus_t;
-
 
 #define	MAX_GLOBAL_SERVERS			2048
 #define	MAX_OTHER_SERVERS			128

@@ -297,11 +297,6 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 	sv.time = 1000;
 	re.G2API_SetTime(sv.time,G2T_SV_TIME);
 
-#ifndef _DEBUG
-	Com_Printf("CM_LOADMAP: %s\n", server);
-#endif
-
-
 	CM_LoadMap( va("maps/%s.bsp", server), qfalse, &checksum, qfalse );
 
 	// set serverinfo visible name
@@ -473,7 +468,7 @@ Called when each game quits,
 before Sys_Quit or Sys_Error
 ================
 */
-void SV_Shutdown( const char *finalmsg ) {
+void SV_Shutdown( const char *finalmsg, qboolean delayFreeGame ) {
 	int i;
 
 	if ( !com_sv_running || !com_sv_running->integer ) {
@@ -487,7 +482,7 @@ void SV_Shutdown( const char *finalmsg ) {
 	}
 
 	SV_RemoveOperatorCommands();
-	SV_ShutdownGameProgs(qfalse);
+	SV_ShutdownGameProgs(qfalse, delayFreeGame);
 
 	if (svs.snapshotEntities)
 	{

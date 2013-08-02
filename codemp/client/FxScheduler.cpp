@@ -1195,7 +1195,7 @@ void CFxScheduler::Draw2DEffects(float screenXScale, float screenYScale)
 		h *= screenYScale;
 
 		//allow 2d effect coloring?
-		re.DrawStretchPic(x - (w*0.5f), y - (h*0.5f), w, h, 0, 0, 1, 1, /*m2DEffects[i].mColor,*/ m2DEffects[i].mShaderHandle);
+		re->DrawStretchPic(x - (w*0.5f), y - (h*0.5f), w, h, 0, 0, 1, 1, /*m2DEffects[i].mColor,*/ m2DEffects[i].mShaderHandle);
 	}
 	// now that all 2D effects have been drawn we can consider the entire array to be free
 	mNextFree2DEffect = 0;

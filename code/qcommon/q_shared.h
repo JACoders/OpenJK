@@ -386,6 +386,7 @@ typedef int		clipHandle_t;
 #define	MAX_QINT			0x7fffffff
 #define	MIN_QINT			(-MAX_QINT-1)
 
+#define INT_ID( a, b, c, d ) (uint32_t)((((a) & 0xff) << 24) | (((b) & 0xff) << 16) | (((c) & 0xff) << 8) | ((d) & 0xff))
 
 // angle indexes
 #define	PITCH				0		// up / down
@@ -1332,7 +1333,7 @@ COLLISION DETECTION
 ==============================================================
 */
 
-#include "surfaceflags.h"			// shared with the q3map utility
+#include "../game/surfaceflags.h"			// shared with the q3map utility
 
 // plane types are used to speed some tests
 // 0-2 are axial planes
@@ -1408,13 +1409,12 @@ typedef struct {
 // if none of the catchers are active, bound key strings will be executed
 #define KEYCATCH_CONSOLE	1
 #define	KEYCATCH_UI			2
-#define	KEYCATCH_MESSAGE	4
 
 
 // sound channels
 // channel 0 never willingly overrides
 // other channels will allways override a playing sound on that channel
-#include "channels.h"
+#include "../game/channels.h"
 
 /*
 ========================================================================

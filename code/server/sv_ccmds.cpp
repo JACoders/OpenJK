@@ -81,9 +81,6 @@ static bool SV_Map_( ForceReload_e eForceReload )
 
 	Com_sprintf (expanded, sizeof(expanded), "maps/%s.bsp", map);
 
-#ifndef _DEBUG
-	Com_Printf("SV_Map_ CHECK HERE: %s\n", expanded);
-#endif
 	if ( FS_ReadFile (expanded, NULL) == -1 ) {
 		Com_Printf ("Can't find map %s\n", expanded);
 		extern	cvar_t	*com_buildScript;
@@ -98,10 +95,6 @@ static bool SV_Map_( ForceReload_e eForceReload )
 	{
 		SG_WipeSavegame("auto");
 	}
-
-#ifndef _DEBUG
-	Com_Printf("SV_SpawnServer call: %s\n", map);
-#endif
 
 	SV_SpawnServer( map, eForceReload, qtrue );	// start up the map
 	return true;

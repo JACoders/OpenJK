@@ -1,6 +1,3 @@
-//Anything above this #include will be ignored by the compiler
-#include "qcommon/exe_headers.h"
-
 #include "tr_local.h"
 
 // tr_shader.c -- this file deals with the parsing and definition of shaders
@@ -1723,7 +1720,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				Com_Printf (S_COLOR_YELLOW  "WARNING: missing parameter for 'videoMap' keyword in shader '%s'\n", shader.name );
 				return qfalse;
 			}
-			stage->bundle[0].videoMapHandle = ri.CIN_PlayCinematic( token, 0, 0, 256, 256, (CIN_loop | CIN_silent | CIN_shader));
+			stage->bundle[0].videoMapHandle = ri->CIN_PlayCinematic( token, 0, 0, 256, 256, (CIN_loop | CIN_silent | CIN_shader));
 			if (stage->bundle[0].videoMapHandle != -1) {
 				stage->bundle[0].isVideoMap = qtrue;
 				assert (stage->bundle[0].videoMapHandle<NUM_SCRATCH_IMAGES);
@@ -2559,7 +2556,7 @@ static qboolean ParseShader( const char **text )
 		else if ( token[0] == '{' )
 		{
 			if ( s >= MAX_SHADER_STAGES ) {
-				ri.Printf( PRINT_WARNING, "WARNING: too many stages in shader %s\n", shader.name );
+				ri->Printf( PRINT_WARNING, "WARNING: too many stages in shader %s\n", shader.name );
 				return qfalse;
 			}
 
@@ -3078,7 +3075,7 @@ static shader_t *GeneratePermanentShader( void ) {
 		return tr.defaultShader;
 	}
 
-	newShader = (struct shader_s *)ri.Hunk_Alloc( sizeof( shader_t ), h_low );
+	newShader = (struct shader_s *)ri->Hunk_Alloc( sizeof( shader_t ), h_low );
 
 	*newShader = shader;
 
@@ -3550,7 +3547,7 @@ static shader_t *FinishShader( void ) {
 	{
 		if (vertexLightmap) 
 		{
-//			ri.DPrintf( "WARNING: shader '%s' has VERTEX forced lightmap!\n", shader.name );
+//			ri->DPrintf( "WARNING: shader '%s' has VERTEX forced lightmap!\n", shader.name );
 		} 
 		else 
 		{
@@ -3776,7 +3773,7 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 	else if ( lightmapIndex[0] < LIGHTMAP_2D )
 	{
 		// negative lightmap indexes cause stray pointers (think tr.lightmaps[lightmapIndex])
-		ri.Printf( PRINT_WARNING, "WARNING: shader '%s' has invalid lightmap index of %d\n", name, lightmapIndex[0] );
+		ri->Printf( PRINT_WARNING, "WARNING: shader '%s' has invalid lightmap index of %d\n", name, lightmapIndex[0] );
 		lightmapIndex = lightmapsVertex;
 	}
 
@@ -3825,7 +3822,7 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 	COM_StripExtension(name,fileName, sizeof( fileName ));
 	image = R_FindImageFile( fileName, mipRawImage, mipRawImage, qtrue, mipRawImage ? GL_REPEAT : GL_CLAMP );
 	if ( !image ) {
-		ri.Printf( PRINT_DEVELOPER, S_COLOR_RED "Couldn't find image for shader %s\n", name );
+		ri->Printf( PRINT_DEVELOPER, S_COLOR_RED "Couldn't find image for shader %s\n", name );
 		shader.defaultShader = true;
 		return FinishShader();
 	}
@@ -4161,7 +4158,7 @@ void	R_ShaderList_f (void) {
 
 	count = 0;
 	for ( i = 0 ; i < tr.numShaders ; i++ ) {
-		if ( ri.Cmd_Argc() > 1 ) {
+		if ( ri->Cmd_Argc() > 1 ) {
 			shader = tr.sortedShaders[i];
 		} else {
 			shader = tr.shaders[i];
@@ -4230,7 +4227,7 @@ static void LoadShaderFromBuffer( char *buff )
 		if( nameLength >= MAX_SHADERNAME_LENGTH ) {
 			strncpy( shadername, name, MAX_SHADERNAME_LENGTH );
 			shadername[MAX_SHADERNAME_LENGTH] = '\0';
-			ri.Printf( PRINT_DEVELOPER, "Warning: Shader name too long '%s'...\n", shadername );
+			ri->Printf( PRINT_DEVELOPER, "Warning: Shader name too long '%s'...\n", shadername );
 			continue;
 		}
 
@@ -4254,7 +4251,7 @@ static void LoadShaderFromBuffer( char *buff )
 
 		// create the new shader
 		size = sizeof(shaderText_t) + (textLength) + (nameLength+1);
-		st = (shaderText_t *)ri.Hunk_Alloc( size, h_low );
+		st = (shaderText_t *)ri->Hunk_Alloc( size, h_low );
 
 		// copy shader name and shader text
 		memcpy( st->text, text, textLength );
@@ -4279,7 +4276,7 @@ static void ScanAndLoadShaderFiles( const char *path ) // drakkar - using LoadSh
 	int    i, numShaderFiles;
 
 	// scan for shader files
-	shaderFiles = ri.FS_ListFiles( path, ".shader", &numShaderFiles );
+	shaderFiles = ri->FS_ListFiles( path, ".shader", &numShaderFiles );
 	if ( !shaderFiles || !numShaderFiles )
 	{
 		Com_Error(ERR_FATAL, "ERROR: no shader files found\n");
@@ -4290,19 +4287,19 @@ static void ScanAndLoadShaderFiles( const char *path ) // drakkar - using LoadSh
 	for( i = numShaderFiles-1; i >= 0; i-- ) // parse shaders in reverse order
 	{
 		Com_sprintf( filename, sizeof(filename), "%s/%s", path, shaderFiles[i] );
-		ri.Printf( PRINT_DEVELOPER, "...loading '%s'\n", filename );
-		ri.FS_ReadFile( filename, (void**)&buffer );
+		ri->Printf( PRINT_DEVELOPER, "...loading '%s'\n", filename );
+		ri->FS_ReadFile( filename, (void**)&buffer );
 		if( !buffer ) Com_Error( ERR_DROP, "Couldn't load %s", filename );
 
 		LoadShaderFromBuffer( buffer ); // extract and index all shaders from the buffer
 
-		ri.FS_FreeFile( buffer );
+		ri->FS_FreeFile( buffer );
 
 		fileShaderCount++;
 	}
 
 	// free up memory
-	ri.FS_FreeFileList( shaderFiles );
+	ri->FS_FreeFileList( shaderFiles );
 
 	return;
 
@@ -4323,7 +4320,7 @@ files if we want to be like SP.
 
 bto (VV) - Rather than keeping all the buffer pointers around forever and
 creating more bugs, do the hash creation with the finalized shadertext.
-Previous code only really worked if ri.FS_ReadFile returned contiguous buffers
+Previous code only really worked if ri->FS_ReadFile returned contiguous buffers
 in ascending order on consecutive calls.
 =====================
 */
@@ -4340,7 +4337,7 @@ static void ScanAndLoadShaderFiles( const char *path )
 
 	long sum = 0, summand;
 	// scan for shader files
-	shaderFiles = ri.FS_ListFiles( path, ".shader", &numShaderFiles );
+	shaderFiles = ri->FS_ListFiles( path, ".shader", &numShaderFiles );
 
 	if ( !shaderFiles || !numShaderFiles )
 	{
@@ -4358,10 +4355,10 @@ static void ScanAndLoadShaderFiles( const char *path )
 		char filename[MAX_QPATH];
 
 		Com_sprintf( filename, sizeof( filename ), "%s/%s", path, shaderFiles[i] );
-		ri.Printf( PRINT_DEVELOPER, "...loading '%s'\n", filename );
-		summand = ri.FS_ReadFile( filename, (void **)&buffers[i] );
+		ri->Printf( PRINT_DEVELOPER, "...loading '%s'\n", filename );
+		summand = ri->FS_ReadFile( filename, (void **)&buffers[i] );
 		if ( !buffers[i] ) {
-			ri.Com_Error( ERR_DROP, "Couldn't load %s", filename );
+			ri->Com_Error( ERR_DROP, "Couldn't load %s", filename );
 		}
 
 		// Do a simple check on the shader structure in that file to make sure one bad shader file cannot fuck up all other shaders.
@@ -4379,7 +4376,7 @@ static void ScanAndLoadShaderFiles( const char *path )
 			if(token[0] != '{' && token[1] != '\0')
 			{
 				Com_Printf(S_COLOR_YELLOW "WARNING: Bad shader file %s has incorrect syntax.\n", filename);
-				ri.FS_FreeFile(buffers[i]);
+				ri->FS_FreeFile(buffers[i]);
 				buffers[i] = NULL;
 				break;
 			}
@@ -4393,7 +4390,7 @@ static void ScanAndLoadShaderFiles( const char *path )
 	}
 
 	// build single large buffer
-	s_shaderText = (char *)ri.Hunk_Alloc( sum + numShaderFiles*2, h_low );
+	s_shaderText = (char *)ri->Hunk_Alloc( sum + numShaderFiles*2, h_low );
 	s_shaderText[ 0 ] = '\0';
 	textEnd = s_shaderText;
  
@@ -4406,13 +4403,13 @@ static void ScanAndLoadShaderFiles( const char *path )
 		strcat( textEnd, buffers[i] );
 		strcat( textEnd, "\n" );
 		textEnd += strlen( textEnd );
-		ri.FS_FreeFile( buffers[i] );
+		ri->FS_FreeFile( buffers[i] );
 	}
 
 	Shader_Compress( s_shaderText );
 
 	// free up memory
-	ri.FS_FreeFileList( shaderFiles );
+	ri->FS_FreeFileList( shaderFiles );
 
 	memset(shaderTextHashTableSizes, 0, sizeof(shaderTextHashTableSizes));
 	size = 0;
@@ -4433,7 +4430,7 @@ static void ScanAndLoadShaderFiles( const char *path )
 
 	size += MAX_SHADERTEXT_HASH;
 
-	hashMem = (char *)ri.Hunk_Alloc( size * sizeof(char *), h_low );
+	hashMem = (char *)ri->Hunk_Alloc( size * sizeof(char *), h_low );
 
 	for (i = 0; i < MAX_SHADERTEXT_HASH; i++) {
 		shaderTextHashTable[i] = (char **) hashMem;
@@ -4742,7 +4739,7 @@ void R_InitShaders(qboolean server)
 	if (!server)
 	{
 		Shader_BeginParseSession( "R_InitShaders" );
-		time = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" );
+		time = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
 		mem = Hunk_MemoryRemaining();
 		fileShaderCount = 0;
 		shaderCount = 0;
@@ -4770,7 +4767,7 @@ void R_InitShaders(qboolean server)
 // drakkar - print profiling info
 	if (!server)
 	{
-		time = ri.Milliseconds()*ri.Cvar_VariableValue( "timescale" ) - time;
+		time = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" ) - time;
 		mem = mem - Hunk_MemoryRemaining();
 		Com_Printf( "-------------------------\n" );
 		Com_Printf( "%d shader files read \n", fileShaderCount );

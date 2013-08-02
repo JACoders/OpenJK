@@ -34,7 +34,7 @@ This file is part of Jedi Academy.
 #endif
 
 #ifndef __Q_SHARED_H
-	#include "../../game/q_shared.h"
+	#include "../../qcommon/q_shared.h"
 #endif
 
 #if !defined(TR_LOCAL_H)
