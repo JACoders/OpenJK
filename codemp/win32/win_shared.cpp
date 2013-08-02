@@ -11,6 +11,7 @@
 #include <direct.h>
 #include <io.h>
 #include <conio.h>
+#include <wincrypt.h>
 #include <shlobj.h>
 
 // Used to determine where to store user-specific files
