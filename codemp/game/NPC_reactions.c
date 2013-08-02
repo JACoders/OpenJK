@@ -134,7 +134,7 @@ void NPC_SetPainEvent( gentity_t *self )
 	//	if( self->client->playerTeam != TEAM_BORG )
 	//	{
 			//if ( !Q3_TaskIDPending( self, TID_CHAN_VOICE ) )
-			if (!gi.ICARUS_TaskIDPending((sharedEntity_t *)self, TID_CHAN_VOICE) && self->client)
+			if (!trap->ICARUS_TaskIDPending((sharedEntity_t *)self, TID_CHAN_VOICE) && self->client)
 			{
 				//G_AddEvent( self, EV_PAIN, floor((float)self->health/self->max_health*100.0f) );
 				G_AddEvent( self, EV_PAIN, floor((float)self->health/self->client->ps.stats[STAT_MAX_HEALTH]*100.0f) );
@@ -584,7 +584,7 @@ void NPC_Touch(gentity_t *self, gentity_t *other, trace_t *trace)
 				//FIXME: need some event to pass to cgame for sound/graphic/message?
 			}
 			//FIXME: temp message
-			gi.SendServerCommand( NULL, text );
+			trap->SendServerCommand( NULL, text );
 			*/
 		}
 	}
@@ -978,7 +978,7 @@ void NPC_UseResponse( gentity_t *self, gentity_t *user, qboolean useWhenDone )
 	}
 
 	/*
-	if ( gi.VoiceVolume[self->s.number] )
+	if ( trap->VoiceVolume[self->s.number] )
 	{//I'm talking already
 		if ( !useWhenDone )
 		{//you're not trying to use me
@@ -1065,7 +1065,7 @@ void NPC_Use( gentity_t *self, gentity_t *other, gentity_t *activator )
 					G_ActivateBehavior( self, BSET_USE );
 				}
 			}
-			else if ( !self->enemy && activator->s.number == 0 && !gi.VoiceVolume[self->s.number] && !(self->NPC->scriptFlags&SCF_NO_RESPONSE) )
+			else if ( !self->enemy && activator->s.number == 0 && !trap->VoiceVolume[self->s.number] && !(self->NPC->scriptFlags&SCF_NO_RESPONSE) )
 			{//I don't have an enemy and I'm not talking and I was used by the player
 				NPC_UseResponse( self, other, qfalse );
 			}

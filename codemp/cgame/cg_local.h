@@ -2068,4 +2068,4 @@ void CG_SetSiegeTimerCvar( int msec );
 Ghoul2 Insert End
 */
 
-extern cgameImport_t cgi;
+extern cgameImport_t *trap;

@@ -16,7 +16,7 @@ extern CMiniHeap *G2VertSpaceClient;
 extern botlib_export_t *botlib_export;
 
 // cgame interface
-static cgameExport_t cge; // cgame export table
+static cgameExport_t *cge; // cgame export table
 static vm_t *cgvm; // cgame vm, valid for legacy and new api
 
 //
@@ -30,7 +30,7 @@ void CGVM_Init( int serverMessageNum, int serverCommandSequence, int clientNum )
 	}
 	currentVM = cgvm;
 
-	cge.Init( serverMessageNum, serverCommandSequence, clientNum );
+	cge->Init( serverMessageNum, serverCommandSequence, clientNum );
 }
 
 void CGVM_Shutdown( void ) {
@@ -40,7 +40,7 @@ void CGVM_Shutdown( void ) {
 	}
 	currentVM = cgvm;
 
-	cge.Shutdown();
+	cge->Shutdown();
 }
 
 qboolean CGVM_ConsoleCommand( void ) {
@@ -49,7 +49,7 @@ qboolean CGVM_ConsoleCommand( void ) {
 	}
 	currentVM = cgvm;
 
-	return cge.ConsoleCommand();
+	return cge->ConsoleCommand();
 }
 
 void CGVM_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demoPlayback ) {
@@ -59,7 +59,7 @@ void CGVM_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean de
 	}
 	currentVM = cgvm;
 
-	cge.DrawActiveFrame( serverTime, stereoView, demoPlayback );
+	cge->DrawActiveFrame( serverTime, stereoView, demoPlayback );
 }
 
 int CGVM_CrosshairPlayer( void ) {
@@ -68,7 +68,7 @@ int CGVM_CrosshairPlayer( void ) {
 	}
 	currentVM = cgvm;
 
-	return cge.CrosshairPlayer();
+	return cge->CrosshairPlayer();
 }
 
 int CGVM_LastAttacker( void ) {
@@ -77,7 +77,7 @@ int CGVM_LastAttacker( void ) {
 	}
 	currentVM = cgvm;
 
-	return cge.LastAttacker();
+	return cge->LastAttacker();
 }
 
 void CGVM_KeyEvent( int key, qboolean down ) {
@@ -87,7 +87,7 @@ void CGVM_KeyEvent( int key, qboolean down ) {
 	}
 	currentVM = cgvm;
 
-	cge.KeyEvent( key, down );
+	cge->KeyEvent( key, down );
 }
 
 void CGVM_MouseEvent( int x, int y ) {
@@ -97,7 +97,7 @@ void CGVM_MouseEvent( int x, int y ) {
 	}
 	currentVM = cgvm;
 
-	cge.MouseEvent( x, y );
+	cge->MouseEvent( x, y );
 }
 
 void CGVM_EventHandling( int type ) {
@@ -107,7 +107,7 @@ void CGVM_EventHandling( int type ) {
 	}
 	currentVM = cgvm;
 
-	cge.EventHandling( type );
+	cge->EventHandling( type );
 }
 
 int CGVM_PointContents( void ) {
@@ -116,7 +116,7 @@ int CGVM_PointContents( void ) {
 	}
 	currentVM = cgvm;
 
-	return cge.PointContents();
+	return cge->PointContents();
 }
 
 void CGVM_GetLerpOrigin( void ) {
@@ -126,7 +126,7 @@ void CGVM_GetLerpOrigin( void ) {
 	}
 	currentVM = cgvm;
 
-	cge.GetLerpOrigin();
+	cge->GetLerpOrigin();
 }
 
 void CGVM_GetLerpData( void ) {
@@ -136,7 +136,7 @@ void CGVM_GetLerpData( void ) {
 	}
 	currentVM = cgvm;
 
-	cge.GetLerpData();
+	cge->GetLerpData();
 }
 
 void CGVM_Trace( void ) {
@@ -146,7 +146,7 @@ void CGVM_Trace( void ) {
 	}
 	currentVM = cgvm;
 
-	cge.Trace();
+	cge->Trace();
 }
 
 void CGVM_G2Trace( void ) {
@@ -156,7 +156,7 @@ void CGVM_G2Trace( void ) {
 	}
 	currentVM = cgvm;
 
-	cge.G2Trace();
+	cge->G2Trace();
 }
 
 void CGVM_G2Mark( void ) {
@@ -166,7 +166,7 @@ void CGVM_G2Mark( void ) {
 	}
 	currentVM = cgvm;
 
-	cge.G2Mark();
+	cge->G2Mark();
 }
 
 int CGVM_RagCallback( int callType ) {
@@ -175,7 +175,7 @@ int CGVM_RagCallback( int callType ) {
 	}
 	currentVM = cgvm;
 
-	return cge.RagCallback( callType );
+	return cge->RagCallback( callType );
 }
 
 qboolean CGVM_IncomingConsoleCommand( void ) {
@@ -184,7 +184,7 @@ qboolean CGVM_IncomingConsoleCommand( void ) {
 	}
 	currentVM = cgvm;
 
-	return cge.IncomingConsoleCommand();
+	return cge->IncomingConsoleCommand();
 }
 
 qboolean CGVM_NoUseableForce( void ) {
@@ -193,7 +193,7 @@ qboolean CGVM_NoUseableForce( void ) {
 	}
 	currentVM = cgvm;
 
-	return cge.NoUseableForce();
+	return cge->NoUseableForce();
 }
 
 void CGVM_GetOrigin( int entID, vec3_t out ) {
@@ -203,7 +203,7 @@ void CGVM_GetOrigin( int entID, vec3_t out ) {
 	}
 	currentVM = cgvm;
 
-	cge.GetOrigin( entID, out );
+	cge->GetOrigin( entID, out );
 }
 
 void CGVM_GetAngles( int entID, vec3_t out ) {
@@ -213,7 +213,7 @@ void CGVM_GetAngles( int entID, vec3_t out ) {
 	}
 	currentVM = cgvm;
 
-	cge.GetAngles( entID, out );
+	cge->GetAngles( entID, out );
 }
 
 trajectory_t *CGVM_GetOriginTrajectory( int entID ) {
@@ -222,7 +222,7 @@ trajectory_t *CGVM_GetOriginTrajectory( int entID ) {
 	}
 	currentVM = cgvm;
 
-	return cge.GetOriginTrajectory( entID );
+	return cge->GetOriginTrajectory( entID );
 }
 
 trajectory_t *CGVM_GetAngleTrajectory( int entID ) {
@@ -231,7 +231,7 @@ trajectory_t *CGVM_GetAngleTrajectory( int entID ) {
 	}
 	currentVM = cgvm;
 
-	return cge.GetAngleTrajectory( entID );
+	return cge->GetAngleTrajectory( entID );
 }
 
 void CGVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
@@ -241,7 +241,7 @@ void CGVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
 	}
 	currentVM = cgvm;
 
-	cge.ROFF_NotetrackCallback( entID, notetrack );
+	cge->ROFF_NotetrackCallback( entID, notetrack );
 }
 
 void CGVM_MapChange( void ) {
@@ -251,7 +251,7 @@ void CGVM_MapChange( void ) {
 	}
 	currentVM = cgvm;
 
-	cge.MapChange();
+	cge->MapChange();
 }
 
 void CGVM_AutomapInput( void ) {
@@ -261,7 +261,7 @@ void CGVM_AutomapInput( void ) {
 	}
 	currentVM = cgvm;
 
-	cge.AutomapInput();
+	cge->AutomapInput();
 }
 
 void CGVM_MiscEnt( void ) {
@@ -271,7 +271,7 @@ void CGVM_MiscEnt( void ) {
 	}
 	currentVM = cgvm;
 
-	cge.MiscEnt();
+	cge->MiscEnt();
 }
 
 void CGVM_CameraShake( void ) {
@@ -281,7 +281,7 @@ void CGVM_CameraShake( void ) {
 	}
 	currentVM = cgvm;
 
-	cge.CameraShake();
+	cge->CameraShake();
 }
 
 
@@ -453,7 +453,7 @@ static qboolean CGFX_PlayBoltedEffectID( int id, vec3_t org, void *ghoul2, const
 	return qfalse;
 }
 
-static qboolean CL_SP_GetStringTextString( const char *text, char *buffer, int bufferLength ) {
+static qboolean CL_SE_GetStringTextString( const char *text, char *buffer, int bufferLength ) {
 	const char *str;
 
 	assert( text && buffer );
@@ -1599,7 +1599,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_SP_GETSTRINGTEXTSTRING:
-		return CL_SP_GetStringTextString( (const char *)VMA(1), (char *)VMA(2), args[3] );
+		return CL_SE_GetStringTextString( (const char *)VMA(1), (char *)VMA(2), args[3] );
 
 	case CG_SET_SHARED_BUFFER:
 		RegisterSharedMemory( (char *)VMA(1) );
@@ -1636,7 +1636,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 }
 
 void CL_BindCGame( void ) {
-	cgameImport_t		cgi;
+	static cgameImport_t cgi;
 	cgameExport_t		*ret;
 	GetCGameAPI_t		GetCGameAPI;
 	char				dllName[MAX_OSPATH] = "cgame"ARCH_STRING DLL_EXT;
@@ -1789,7 +1789,7 @@ void CL_BindCGame( void ) {
 		cgi.FX_AddPrimitive						= CGFX_AddPrimitive;
 		cgi.FX_AddSprite						= CGFX_AddSprite;
 		cgi.FX_AddElectricity					= CGFX_AddElectricity;
-		cgi.SP_GetStringTextString				= CL_SP_GetStringTextString;
+		cgi.SE_GetStringTextString				= CL_SE_GetStringTextString;
 		cgi.ROFF_Clean							= CL_ROFF_Clean;
 		cgi.ROFF_UpdateEntities					= CL_ROFF_UpdateEntities;
 		cgi.ROFF_Cache							= CL_ROFF_Cache;
@@ -1857,7 +1857,7 @@ void CL_BindCGame( void ) {
 			cls.cgameStarted = qfalse;
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
-		cge = *ret;
+		cge = ret;
 	}
 
 	// fall back to legacy syscall/vm_call api

@@ -46,12 +46,12 @@ void *B_Alloc(int size)
 		i++;
 	}
 
-	gi.Print("Allocations used: %i\nFree allocation slots: %i\n", used, free);
+	trap->Print("Allocations used: %i\nFree allocation slots: %i\n", used, free);
 
 	i = 0;
 #endif
 
-	ptr = gi.BotGetMemoryGame(size);
+	ptr = trap->BotGetMemoryGame(size);
 
 	while (i < MAX_BALLOC)
 	{
@@ -67,7 +67,7 @@ void *B_Alloc(int size)
 	{
 		//If this happens we'll have to rely on this chunk being freed manually with B_Free, which it hopefully will be
 #ifdef DEBUG
-		gi.Print("WARNING: MAXIMUM B_ALLOC ALLOCATIONS EXCEEDED\n");
+		trap->Print("WARNING: MAXIMUM B_ALLOC ALLOCATIONS EXCEEDED\n");
 #endif
 	}
 
@@ -102,7 +102,7 @@ void B_Free(void *ptr)
 		i++;
 	}
 
-	gi.Print("Allocations used: %i\nFree allocation slots: %i\n", used, free);
+	trap->Print("Allocations used: %i\nFree allocation slots: %i\n", used, free);
 
 	i = 0;
 #endif
@@ -122,11 +122,11 @@ void B_Free(void *ptr)
 	{
 		//Likely because the limit was exceeded and we're now freeing the chunk manually as we hoped would happen
 #ifdef DEBUG
-		gi.Print("WARNING: Freeing allocation which is not in the allocation structure\n");
+		trap->Print("WARNING: Freeing allocation which is not in the allocation structure\n");
 #endif
 	}
 
-	gi.BotFreeMemoryGame(ptr);
+	trap->BotFreeMemoryGame(ptr);
 #endif
 }
 
@@ -148,7 +148,7 @@ void B_CleanupAlloc(void)
 	{
 		if (BAllocList[i])
 		{
-			gi.BotFreeMemoryGame(BAllocList[i]);
+			trap->BotFreeMemoryGame(BAllocList[i]);
 			BAllocList[i] = NULL;
 		}
 
@@ -347,7 +347,7 @@ int BotDoChat(bot_state_t *bs, char *section, int always)
 		return 0;
 	}
 
-	if (gi.Cvar_VariableIntegerValue("se_language"))
+	if (trap->Cvar_VariableIntegerValue("se_language"))
 	{ //no chatting unless English.
 		return 0;
 	}
@@ -447,7 +447,7 @@ int BotDoChat(bot_state_t *bs, char *section, int always)
 	}
 	chatgroup[inc_2] = '\0';
 
-	//gi.EA_Say(bs->client, chatgroup);
+	//trap->EA_Say(bs->client, chatgroup);
 	inc_1 = 0;
 	inc_2 = 0;
 
@@ -586,7 +586,7 @@ int ReadChatGroups(bot_state_t *bs, char *buf)
 
 	if (strlen(cgroupbegin) >= MAX_CHAT_BUFFER_SIZE)
 	{
-		gi.Print(S_COLOR_RED "Error: Personality chat section exceeds max size\n");
+		trap->Print(S_COLOR_RED "Error: Personality chat section exceeds max size\n");
 		return 0;
 	}
 
@@ -621,25 +621,25 @@ void BotUtilizePersonality(bot_state_t *bs)
 	char *buf = (char *)B_TempAlloc(131072);
 	char *readbuf, *group;
 
-	len = gi.FS_Open(bs->settings.personalityfile, &f, FS_READ);
+	len = trap->FS_Open(bs->settings.personalityfile, &f, FS_READ);
 
 	failed = 0;
 
 	if (!f)
 	{
-		gi.Print(S_COLOR_RED "Error: Specified personality not found\n");
+		trap->Print(S_COLOR_RED "Error: Specified personality not found\n");
 		B_TempFree(131072); //buf
 		return;
 	}
 
 	if (len >= 131072)
 	{
-		gi.Print(S_COLOR_RED "Personality file exceeds maximum length\n");
+		trap->Print(S_COLOR_RED "Personality file exceeds maximum length\n");
 		B_TempFree(131072); //buf
 		return;
 	}
 
-	gi.FS_Read(buf, len, f);
+	trap->FS_Read(buf, len, f);
 
 	rlen = len;
 
@@ -656,7 +656,7 @@ void BotUtilizePersonality(bot_state_t *bs)
 
 	if (!GetValueGroup(buf, "GeneralBotInfo", group))
 	{
-		gi.Print(S_COLOR_RED "Personality file contains no GeneralBotInfo group\n");
+		trap->Print(S_COLOR_RED "Personality file contains no GeneralBotInfo group\n");
 		failed = 1; //set failed so we know to set everything to default values
 	}
 
@@ -863,5 +863,5 @@ void BotUtilizePersonality(bot_state_t *bs)
 	B_TempFree(131072); //buf
 	B_TempFree(1024); //readbuf
 	B_TempFree(65536); //group
-	gi.FS_Close(f);
+	trap->FS_Close(f);
 }

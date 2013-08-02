@@ -16,7 +16,7 @@ extern CMiniHeap *G2VertSpaceClient;
 extern botlib_export_t *botlib_export;
 
 // ui interface
-static uiExport_t uie; // ui export table
+static uiExport_t *uie; // ui export table
 static vm_t *uivm; // ui vm, valid for legacy and new api
 
 //
@@ -30,7 +30,7 @@ void UIVM_Init( qboolean inGameLoad ) {
 	}
 	currentVM = uivm;
 
-	uie.Init( inGameLoad );
+	uie->Init( inGameLoad );
 }
 
 void UIVM_Shutdown( void ) {
@@ -40,7 +40,7 @@ void UIVM_Shutdown( void ) {
 	}
 	currentVM = uivm;
 
-	uie.Shutdown();
+	uie->Shutdown();
 }
 
 void UIVM_KeyEvent( int key, qboolean down ) {
@@ -50,7 +50,7 @@ void UIVM_KeyEvent( int key, qboolean down ) {
 	}
 	currentVM = uivm;
 
-	uie.KeyEvent( key, down );
+	uie->KeyEvent( key, down );
 }
 
 void UIVM_MouseEvent( int dx, int dy ) {
@@ -60,7 +60,7 @@ void UIVM_MouseEvent( int dx, int dy ) {
 	}
 	currentVM = uivm;
 
-	uie.MouseEvent( dx, dy );
+	uie->MouseEvent( dx, dy );
 }
 
 void UIVM_Refresh( int realtime ) {
@@ -70,7 +70,7 @@ void UIVM_Refresh( int realtime ) {
 	}
 	currentVM = uivm;
 
-	uie.Refresh( realtime );
+	uie->Refresh( realtime );
 }
 
 qboolean UIVM_IsFullscreen( void ) {
@@ -79,7 +79,7 @@ qboolean UIVM_IsFullscreen( void ) {
 	}
 	currentVM = uivm;
 
-	return uie.IsFullscreen();
+	return uie->IsFullscreen();
 }
 
 void UIVM_SetActiveMenu( uiMenuCommand_t menu ) {
@@ -89,7 +89,7 @@ void UIVM_SetActiveMenu( uiMenuCommand_t menu ) {
 	}
 	currentVM = uivm;
 
-	uie.SetActiveMenu( menu );
+	uie->SetActiveMenu( menu );
 }
 
 qboolean UIVM_ConsoleCommand( int realTime ) {
@@ -98,7 +98,7 @@ qboolean UIVM_ConsoleCommand( int realTime ) {
 	}
 	currentVM = uivm;
 
-	return uie.ConsoleCommand( realTime );
+	return uie->ConsoleCommand( realTime );
 }
 void UIVM_DrawConnectScreen( qboolean overlay ) {
 	if ( uivm->isLegacy ) {
@@ -107,7 +107,7 @@ void UIVM_DrawConnectScreen( qboolean overlay ) {
 	}
 	currentVM = uivm;
 
-	uie.DrawConnectScreen( overlay );
+	uie->DrawConnectScreen( overlay );
 }
 
 //
@@ -1015,7 +1015,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 }
 
 void CL_BindUI( void ) {
-	uiImport_t		uii;
+	static uiImport_t uii;
 	uiExport_t		*ret;
 	GetUIAPI_t		GetUIAPI;
 	char			dllName[MAX_OSPATH] = "ui"ARCH_STRING DLL_EXT;
@@ -1175,7 +1175,7 @@ void CL_BindUI( void ) {
 			cls.uiStarted = qfalse;
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
-		uie = *ret;
+		uie = ret;
 	}
 
 	// fall back to legacy syscall/vm_call api

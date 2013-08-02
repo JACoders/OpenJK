@@ -560,7 +560,7 @@ void Sniper_FaceEnemy( void )
 								VectorMA( target, NPCS.NPC->enemy->r.mins[2]*flrand(1.5, 4), up, target );
 							}
 						}
-						gi.Trace( &trace, muzzle, vec3_origin, vec3_origin, target, NPCS.NPC->s.number, MASK_SHOT, qfalse, 0, 0 );
+						trap->Trace( &trace, muzzle, vec3_origin, vec3_origin, target, NPCS.NPC->s.number, MASK_SHOT, qfalse, 0, 0 );
 						hit = Sniper_EvaluateShot( trace.entityNum );
 					}
 					NPCS.NPC->count++;
@@ -680,7 +680,7 @@ void NPC_BSSniper_Attack( void )
 			if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
 			{//use primary fire
 				trace_t	trace;
-				gi.Trace ( &trace, NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->enemy->r.mins, NPCS.NPC->enemy->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->s.number, NPCS.NPC->enemy->clipmask, qfalse, 0, 0 );
+				trap->Trace ( &trace, NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->enemy->r.mins, NPCS.NPC->enemy->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->enemy->s.number, NPCS.NPC->enemy->clipmask, qfalse, 0, 0 );
 				if ( !trace.allsolid && !trace.startsolid && (trace.fraction == 1.0 || trace.entityNum == NPCS.NPC->s.number ) )
 				{//he can get right to me
 					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
@@ -710,7 +710,7 @@ void NPC_BSSniper_Attack( void )
 
 	Sniper_UpdateEnemyPos();
 	//can we see our target?
-	if ( NPC_ClearLOS4( NPCS.NPC->enemy ) )//|| (NPCInfo->stats.aim >= 5 && gi.inPVS( NPC->client->renderInfo.eyePoint, NPC->enemy->currentOrigin )) )
+	if ( NPC_ClearLOS4( NPCS.NPC->enemy ) )//|| (NPCInfo->stats.aim >= 5 && trap->inPVS( NPC->client->renderInfo.eyePoint, NPC->enemy->currentOrigin )) )
 	{
 		float maxShootDist;
 
@@ -727,7 +727,7 @@ void NPC_BSSniper_Attack( void )
 			AngleVectors( NPCS.NPC->client->ps.viewangles, fwd, right, up );
 			CalcMuzzlePoint( NPCS.NPC, fwd, right, up, muzzle );
 			VectorMA( muzzle, 8192, fwd, end );
-			gi.Trace ( &tr, muzzle, NULL, NULL, end, NPCS.NPC->s.number, MASK_SHOT, qfalse, 0, 0 );
+			trap->Trace ( &tr, muzzle, NULL, NULL, end, NPCS.NPC->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 			hit = tr.entityNum;
 			//can we shoot our target?
@@ -738,7 +738,7 @@ void NPC_BSSniper_Attack( void )
 		}
 	}
 	/*
-	else if ( gi.inPVS( NPC->enemy->currentOrigin, NPC->currentOrigin ) )
+	else if ( trap->inPVS( NPC->enemy->currentOrigin, NPC->currentOrigin ) )
 	{
 		NPCInfo->enemyLastSeenTime = level.time;
 		faceEnemy2 = qtrue;

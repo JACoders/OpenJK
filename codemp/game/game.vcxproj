@@ -181,7 +181,6 @@
     <ClCompile Include="g_saga.c" />
     <ClCompile Include="g_session.c" />
     <ClCompile Include="g_spawn.c" />
-    <ClCompile Include="g_strap.c" />
     <ClCompile Include="g_svcmds.c" />
     <ClCompile Include="g_syscalls.c" />
     <ClCompile Include="g_target.c" />
@@ -244,7 +243,6 @@
     <ClInclude Include="bg_local.h" />
     <ClInclude Include="bg_public.h" />
     <ClInclude Include="bg_saga.h" />
-    <ClInclude Include="bg_strap.h" />
     <ClInclude Include="bg_vehicles.h" />
     <ClInclude Include="bg_weapons.h" />
     <ClInclude Include="..\cgame\cg_public.h" />

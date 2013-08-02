@@ -60,8 +60,8 @@ typedef enum {
 	VF_MODEL_CLIENT,	// (cgame only) take the string, get the G_ModelIndex
 	VF_EFFECT,	// take the string, get the G_EffectIndex
 	VF_EFFECT_CLIENT,	// (cgame only) take the string, get the index
-	VF_SHADER,	// (cgame only) take the string, call cgi.R_RegisterShader
-	VF_SHADER_NOMIP,// (cgame only) take the string, call cgi.R_RegisterShaderNoMip
+	VF_SHADER,	// (cgame only) take the string, call trap->R_RegisterShader
+	VF_SHADER_NOMIP,// (cgame only) take the string, call trap->R_RegisterShaderNoMip
 	VF_SOUND,	// take the string, get the G_SoundIndex
 	VF_SOUND_CLIENT	// (cgame only) take the string, get the index
 } vehFieldType_t;
@@ -166,64 +166,64 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 				#ifdef _GAME
 					*(int *)(b+vehWeaponFields[i].ofs) = G_ModelIndex( value );
 				#elif _CGAME
-					*(int *)(b+vehWeaponFields[i].ofs) = cgi.R_RegisterModel( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterModel( value );
 				#else
-					*(int *)(b+vehWeaponFields[i].ofs) = uii.R_RegisterModel( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterModel( value );
 				#endif
 				break;
 			case VF_MODEL_CLIENT:	// (MP cgame only) take the string, get the G_ModelIndex
 				#ifdef _GAME
 					*(int *)(b+vehWeaponFields[i].ofs) = G_ModelIndex( value );
 				#elif _CGAME
-					*(int *)(b+vehWeaponFields[i].ofs) = cgi.R_RegisterModel( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterModel( value );
 				#else
-					*(int *)(b+vehWeaponFields[i].ofs) = uii.R_RegisterModel( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterModel( value );
 				#endif
 				break;
 			case VF_EFFECT:	// take the string, get the G_EffectIndex
 				#ifdef _GAME
 				//	*(int *)(b+vehWeaponFields[i].ofs) = G_EffectIndex( value );
 				#elif _CGAME
-					*(int *)(b+vehWeaponFields[i].ofs) = cgi.FX_RegisterEffect( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->FX_RegisterEffect( value );
 				#endif
 				break;
 			case VF_EFFECT_CLIENT:	// (MP cgame only) take the string, get the index
 				#ifdef _GAME
 					//*(int *)(b+vehWeaponFields[i].ofs) = G_EffectIndex( value );
 				#elif _CGAME
-					*(int *)(b+vehWeaponFields[i].ofs) = cgi.FX_RegisterEffect( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->FX_RegisterEffect( value );
 				#endif
 				break;
 			case VF_SHADER:	// (cgame only) take the string, call trap_R_RegisterShader
 				#ifdef _UI
-					*(int *)(b+vehWeaponFields[i].ofs) = uii.R_RegisterShaderNoMip( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
 				#elif _CGAME
-					*(int *)(b+vehWeaponFields[i].ofs) = cgi.R_RegisterShader( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterShader( value );
 				#endif
 				break;
 			case VF_SHADER_NOMIP:// (cgame only) take the string, call trap_R_RegisterShaderNoMip
 				#if defined(_CGAME)
-					*(int *)(b+vehWeaponFields[i].ofs) = cgi.R_RegisterShaderNoMip( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
 				#elif defined(_UI)
-					*(int *)(b+vehWeaponFields[i].ofs) = uii.R_RegisterShaderNoMip( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
 				#endif
 				break;
 			case VF_SOUND:	// take the string, get the G_SoundIndex
 				#ifdef _GAME
 					*(int *)(b+vehWeaponFields[i].ofs) = G_SoundIndex( value );
 				#elif _CGAME
-					*(int *)(b+vehWeaponFields[i].ofs) = cgi.S_RegisterSound( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->S_RegisterSound( value );
 				#else
-					*(int *)(b+vehWeaponFields[i].ofs) = uii.S_RegisterSound( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->S_RegisterSound( value );
 				#endif
 				break;
 			case VF_SOUND_CLIENT:	// (MP cgame only) take the string, get the index
 				#ifdef _GAME
 					//*(int *)(b+vehWeaponFields[i].ofs) = G_SoundIndex( value );
 				#elif _CGAME
-					*(int *)(b+vehWeaponFields[i].ofs) = cgi.S_RegisterSound( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->S_RegisterSound( value );
 				#else
-					*(int *)(b+vehWeaponFields[i].ofs) = uii.S_RegisterSound( value );
+					*(int *)(b+vehWeaponFields[i].ofs) = trap->S_RegisterSound( value );
 				#endif
 				break;
 			default:
@@ -328,17 +328,17 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 		//G_SoundIndex( "sound/weapons/torpedo/tick.wav" );
 		//G_SoundIndex( "sound/weapons/torpedo/lock.wav" );
 #elif defined(_CGAME)
-		cgi.S_RegisterSound( "sound/vehicles/weapons/common/tick.wav" );
-		cgi.S_RegisterSound( "sound/vehicles/weapons/common/lock.wav" );
-		cgi.S_RegisterSound( "sound/vehicles/common/lockalarm1.wav" );
-		cgi.S_RegisterSound( "sound/vehicles/common/lockalarm2.wav" );
-		cgi.S_RegisterSound( "sound/vehicles/common/lockalarm3.wav" );
+		trap->S_RegisterSound( "sound/vehicles/weapons/common/tick.wav" );
+		trap->S_RegisterSound( "sound/vehicles/weapons/common/lock.wav" );
+		trap->S_RegisterSound( "sound/vehicles/common/lockalarm1.wav" );
+		trap->S_RegisterSound( "sound/vehicles/common/lockalarm2.wav" );
+		trap->S_RegisterSound( "sound/vehicles/common/lockalarm3.wav" );
 #else
-		uii.S_RegisterSound( "sound/vehicles/weapons/common/tick.wav" );
-		uii.S_RegisterSound( "sound/vehicles/weapons/common/lock.wav" );
-		uii.S_RegisterSound( "sound/vehicles/common/lockalarm1.wav" );
-		uii.S_RegisterSound( "sound/vehicles/common/lockalarm2.wav" );
-		uii.S_RegisterSound( "sound/vehicles/common/lockalarm3.wav" );
+		trap->S_RegisterSound( "sound/vehicles/weapons/common/tick.wav" );
+		trap->S_RegisterSound( "sound/vehicles/weapons/common/lock.wav" );
+		trap->S_RegisterSound( "sound/vehicles/common/lockalarm1.wav" );
+		trap->S_RegisterSound( "sound/vehicles/common/lockalarm2.wav" );
+		trap->S_RegisterSound( "sound/vehicles/common/lockalarm3.wav" );
 #endif
 	}
 	return (numVehicleWeapons++);
@@ -826,64 +826,64 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, cha
 			#ifdef _GAME
 				*(int *)(b+vehicleFields[i].ofs) = G_ModelIndex( value );
 			#elif _CGAME
-				*(int *)(b+vehicleFields[i].ofs) = cgi.R_RegisterModel( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterModel( value );
 			#else
-				*(int *)(b+vehicleFields[i].ofs) = uii.R_RegisterModel( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterModel( value );
 			#endif
 				break;
 			case VF_MODEL_CLIENT:	// (MP cgame only) take the string, get the G_ModelIndex
 			#ifdef _GAME
 				//*(int *)(b+vehicleFields[i].ofs) = G_ModelIndex( value );
 			#elif _CGAME
-				*(int *)(b+vehicleFields[i].ofs) = cgi.R_RegisterModel( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterModel( value );
 			#else
-				*(int *)(b+vehicleFields[i].ofs) = uii.R_RegisterModel( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterModel( value );
 			#endif
 				break;
 			case VF_EFFECT:	// take the string, get the G_EffectIndex
 			#ifdef _GAME
 				*(int *)(b+vehicleFields[i].ofs) = G_EffectIndex( value );
 			#elif defined(_CGAME)
-				*(int *)(b+vehicleFields[i].ofs) = cgi.FX_RegisterEffect( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->FX_RegisterEffect( value );
 			#endif
 				break;
 			case VF_EFFECT_CLIENT:	// (MP cgame only) take the string, get the G_EffectIndex
 			#ifdef _GAME
 				//*(int *)(b+vehicleFields[i].ofs) = G_EffectIndex( value );
 			#elif defined(_CGAME)
-				*(int *)(b+vehicleFields[i].ofs) = cgi.FX_RegisterEffect( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->FX_RegisterEffect( value );
 			#endif
 				break;
 			case VF_SHADER:	// (cgame only) take the string, call trap_R_RegisterShader
 			#ifdef _UI
-				*(int *)(b+vehicleFields[i].ofs) = uii.R_RegisterShaderNoMip( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
 			#elif defined(_CGAME)
-				*(int *)(b+vehicleFields[i].ofs) = cgi.R_RegisterShader( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterShader( value );
 			#endif
 				break;
 			case VF_SHADER_NOMIP:// (cgame only) take the string, call trap_R_RegisterShaderNoMip
 			#if defined(_CGAME)
-				*(int *)(b+vehicleFields[i].ofs) = cgi.R_RegisterShaderNoMip( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
 			#elif defined(_UI)
-				*(int *)(b+vehicleFields[i].ofs) = uii.R_RegisterShaderNoMip( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
 			#endif
 				break;
 			case VF_SOUND:	// take the string, get the G_SoundIndex
 			#ifdef _GAME
 				*(int *)(b+vehicleFields[i].ofs) = G_SoundIndex( value );
 			#elif _CGAME
-				*(int *)(b+vehicleFields[i].ofs) = cgi.S_RegisterSound( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->S_RegisterSound( value );
 			#else
-				*(int *)(b+vehicleFields[i].ofs) = uii.S_RegisterSound( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->S_RegisterSound( value );
 			#endif
 				break;
 			case VF_SOUND_CLIENT:	// (MP cgame only) take the string, get the G_SoundIndex
 			#ifdef _GAME
 				//*(int *)(b+vehicleFields[i].ofs) = G_SoundIndex( value );
 			#elif _CGAME
-				*(int *)(b+vehicleFields[i].ofs) = cgi.S_RegisterSound( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->S_RegisterSound( value );
 			#else
-				*(int *)(b+vehicleFields[i].ofs) = uii.S_RegisterSound( value );
+				*(int *)(b+vehicleFields[i].ofs) = trap->S_RegisterSound( value );
 			#endif
 				break;
 			default:
@@ -1182,18 +1182,18 @@ int VEH_LoadVehicle( const char *vehicleName )
 		#ifdef _GAME
 			vehicle->modelIndex = G_ModelIndex( va( "models/players/%s/model.glm", vehicle->model ) );
 		#elif _CGAME
-			vehicle->modelIndex = cgi.R_RegisterModel( va( "models/players/%s/model.glm", vehicle->model ) );
+			vehicle->modelIndex = trap->R_RegisterModel( va( "models/players/%s/model.glm", vehicle->model ) );
 		#else
-			vehicle->modelIndex = uii.R_RegisterModel( va( "models/players/%s/model.glm", vehicle->model ) );
+			vehicle->modelIndex = trap->R_RegisterModel( va( "models/players/%s/model.glm", vehicle->model ) );
 		#endif
 	}
 
 	#if defined (_CGAME)
 		if ( VALIDSTRING( vehicle->skin ) )
-			cgi.R_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, vehicle->skin) );
+			trap->R_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, vehicle->skin) );
 	#elif defined(_UI)
 		if ( VALIDSTRING( vehicle->skin ) )
-			uii.R_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, vehicle->skin) );
+			trap->R_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, vehicle->skin) );
 	#endif
 
 #endif
@@ -1207,7 +1207,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 		#ifdef _GAME
 			G_EffectIndex( "ships/ship_explosion_mark" );
 		#elif defined(_CGAME)
-			cgi.FX_RegisterEffect( "ships/ship_explosion_mark" );
+			trap->FX_RegisterEffect( "ships/ship_explosion_mark" );
 		#endif
 	}
 	if ( vehicle->flammable )
@@ -1215,9 +1215,9 @@ int VEH_LoadVehicle( const char *vehicleName )
 		#ifdef _GAME
 			G_SoundIndex( "sound/vehicles/common/fire_lp.wav" );
 		#elif defined(_CGAME)
-			cgi.S_RegisterSound( "sound/vehicles/common/fire_lp.wav" );
+			trap->S_RegisterSound( "sound/vehicles/common/fire_lp.wav" );
 		#elif defined(_UI)
-			uii.S_RegisterSound( "sound/vehicles/common/fire_lp.wav" );
+			trap->S_RegisterSound( "sound/vehicles/common/fire_lp.wav" );
 		#endif
 	}
 
@@ -1226,7 +1226,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 		#ifdef _GAME
 			G_EffectIndex( "ships/swoop_dust" );
 		#elif defined(_CGAME)
-			cgi.FX_RegisterEffect( "ships/swoop_dust" );
+			trap->FX_RegisterEffect( "ships/swoop_dust" );
 		#endif
 	}
 
@@ -1235,23 +1235,23 @@ int VEH_LoadVehicle( const char *vehicleName )
 	G_EffectIndex( "ships/fire" );
 	G_SoundIndex( "sound/vehicles/common/release.wav" );
 #elif defined(_CGAME)
-	cgi.R_RegisterShader( "gfx/menus/radar/bracket" );
-	cgi.R_RegisterShader( "gfx/menus/radar/lead" );
-	cgi.R_RegisterShaderNoMip( "gfx/menus/radar/asteroid" );
-	cgi.S_RegisterSound( "sound/vehicles/common/impactalarm.wav" );
-	cgi.S_RegisterSound( "sound/vehicles/common/linkweaps.wav" );
-	cgi.S_RegisterSound( "sound/vehicles/common/release.wav" );
-	cgi.FX_RegisterEffect("effects/ships/dest_burning.efx");
-	cgi.FX_RegisterEffect("effects/ships/dest_destroyed.efx");
-	cgi.FX_RegisterEffect( "volumetric/black_smoke" );
-	cgi.FX_RegisterEffect( "ships/fire" );
-	cgi.FX_RegisterEffect("ships/hyperspace_stars");
+	trap->R_RegisterShader( "gfx/menus/radar/bracket" );
+	trap->R_RegisterShader( "gfx/menus/radar/lead" );
+	trap->R_RegisterShaderNoMip( "gfx/menus/radar/asteroid" );
+	trap->S_RegisterSound( "sound/vehicles/common/impactalarm.wav" );
+	trap->S_RegisterSound( "sound/vehicles/common/linkweaps.wav" );
+	trap->S_RegisterSound( "sound/vehicles/common/release.wav" );
+	trap->FX_RegisterEffect("effects/ships/dest_burning.efx");
+	trap->FX_RegisterEffect("effects/ships/dest_destroyed.efx");
+	trap->FX_RegisterEffect( "volumetric/black_smoke" );
+	trap->FX_RegisterEffect( "ships/fire" );
+	trap->FX_RegisterEffect("ships/hyperspace_stars");
 
 	if ( vehicle->hideRider )
 	{
-		cgi.R_RegisterShaderNoMip( "gfx/menus/radar/circle_base" );
-		cgi.R_RegisterShaderNoMip( "gfx/menus/radar/circle_base_frame" );
-		cgi.R_RegisterShaderNoMip( "gfx/menus/radar/circle_base_shield" );
+		trap->R_RegisterShaderNoMip( "gfx/menus/radar/circle_base" );
+		trap->R_RegisterShaderNoMip( "gfx/menus/radar/circle_base_frame" );
+		trap->R_RegisterShaderNoMip( "gfx/menus/radar/circle_base_shield" );
 	}
 #endif
 
@@ -1307,11 +1307,11 @@ void BG_VehWeaponLoadParms( void )
 
 	//now load in the extra .veh extensions
 	#ifdef _GAME
-		fileCnt = gi.FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
+		fileCnt = trap->FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
 	#elif _CGAME
-		fileCnt = cgi.FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
+		fileCnt = trap->FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
 	#elif _UI
-		fileCnt = uii.FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
+		fileCnt = trap->FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
 	#endif
 
 	holdChar = vehWeaponExtensionListBuf;
@@ -1329,11 +1329,11 @@ void BG_VehWeaponLoadParms( void )
 //		Com_Printf( "Parsing %s\n", holdChar );
 
 		#ifdef _GAME
-			len = gi.FS_Open(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
+			len = trap->FS_Open(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
 		#elif _CGAME
-			len = cgi.FS_Open(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
+			len = trap->FS_Open(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
 		#elif _UI
-			len = uii.FS_Open(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
+			len = trap->FS_Open(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
 		#endif
 
 		if ( len == -1 ) 
@@ -1343,11 +1343,11 @@ void BG_VehWeaponLoadParms( void )
 		else
 		{
 			#ifdef _GAME
-				gi.FS_Read(tempReadBuffer, len, f);
+				trap->FS_Read(tempReadBuffer, len, f);
 			#elif _CGAME
-				cgi.FS_Read(tempReadBuffer, len, f);
+				trap->FS_Read(tempReadBuffer, len, f);
 			#elif _UI
-				uii.FS_Read(tempReadBuffer, len, f);
+				trap->FS_Read(tempReadBuffer, len, f);
 			#endif
 			tempReadBuffer[len] = 0;
 
@@ -1364,11 +1364,11 @@ void BG_VehWeaponLoadParms( void )
 			}
 			strcat( marker, tempReadBuffer );
 			#ifdef _GAME
-				gi.FS_Close( f );
+				trap->FS_Close( f );
 			#elif _CGAME
-				cgi.FS_Close( f );
+				trap->FS_Close( f );
 			#elif _UI
-				uii.FS_Close( f );
+				trap->FS_Close( f );
 			#endif
 
 			totallen += len;
@@ -1397,11 +1397,11 @@ void BG_VehicleLoadParms( void )
 
 	//now load in the extra .veh extensions
 	#ifdef _GAME
-		fileCnt = gi.FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
+		fileCnt = trap->FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
 	#elif _CGAME
-		fileCnt = cgi.FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
+		fileCnt = trap->FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
 	#elif _UI
-		fileCnt = uii.FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
+		fileCnt = trap->FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
 	#endif
 
 	holdChar = vehExtensionListBuf;
@@ -1419,11 +1419,11 @@ void BG_VehicleLoadParms( void )
 //		Com_Printf( "Parsing %s\n", holdChar );
 
 		#ifdef _GAME
-			len = gi.FS_Open(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
+			len = trap->FS_Open(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
 		#elif _CGAME
-			len = cgi.FS_Open(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
+			len = trap->FS_Open(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
 		#elif _UI
-			len = uii.FS_Open(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
+			len = trap->FS_Open(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
 		#endif
 
 		if ( len == -1 ) 
@@ -1433,11 +1433,11 @@ void BG_VehicleLoadParms( void )
 		else
 		{
 			#ifdef _GAME
-				gi.FS_Read(tempReadBuffer, len, f);
+				trap->FS_Read(tempReadBuffer, len, f);
 			#elif _CGAME
-				cgi.FS_Read(tempReadBuffer, len, f);
+				trap->FS_Read(tempReadBuffer, len, f);
 			#elif _UI
-				uii.FS_Read(tempReadBuffer, len, f);
+				trap->FS_Read(tempReadBuffer, len, f);
 			#endif
 			tempReadBuffer[len] = 0;
 
@@ -1454,11 +1454,11 @@ void BG_VehicleLoadParms( void )
 			}
 			strcat( marker, tempReadBuffer );
 			#ifdef _GAME
-				gi.FS_Close( f );
+				trap->FS_Close( f );
 			#elif _CGAME
-				cgi.FS_Close( f );
+				trap->FS_Close( f );
 			#elif _UI
-				uii.FS_Close( f );
+				trap->FS_Close( f );
 			#endif
 
 			totallen += len;
@@ -1530,9 +1530,9 @@ void AttachRidersGeneric( Vehicle_t *pVeh )
 		bgEntity_t *parent = pVeh->m_pParentEntity;
 		bgEntity_t *pilot = pVeh->m_pPilot;
 	#if defined(_GAME)
-		int crotchBolt = gi.G2API_AddBolt(parent->ghoul2, 0, "*driver");
+		int crotchBolt = trap->G2API_AddBolt(parent->ghoul2, 0, "*driver");
 	#elif defined(_CGAME)
-		int crotchBolt = cgi.G2API_AddBolt(parent->ghoul2, 0, "*driver");
+		int crotchBolt = trap->G2API_AddBolt(parent->ghoul2, 0, "*driver");
 	#endif
 
 		assert(parent->playerState);
@@ -1541,9 +1541,9 @@ void AttachRidersGeneric( Vehicle_t *pVeh )
 
 		// Get the driver tag.
 		#if defined(_GAME)
-			gi.G2API_GetBoltMatrix( parent->ghoul2, 0, crotchBolt, &boltMatrix, yawOnlyAngles, parent->playerState->origin, BG_GetTime(), NULL, parent->modelScale );
+			trap->G2API_GetBoltMatrix( parent->ghoul2, 0, crotchBolt, &boltMatrix, yawOnlyAngles, parent->playerState->origin, BG_GetTime(), NULL, parent->modelScale );
 		#elif defined(_CGAME)
-			cgi.G2API_GetBoltMatrix( parent->ghoul2, 0, crotchBolt, &boltMatrix, yawOnlyAngles, parent->playerState->origin, BG_GetTime(), NULL, parent->modelScale );
+			trap->G2API_GetBoltMatrix( parent->ghoul2, 0, crotchBolt, &boltMatrix, yawOnlyAngles, parent->playerState->origin, BG_GetTime(), NULL, parent->modelScale );
 		#endif
 		BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, pilot->playerState->origin );
 	}

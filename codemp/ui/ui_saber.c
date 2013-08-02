@@ -36,18 +36,18 @@ static qhandle_t purpleSaberCoreShader;
 
 void UI_CacheSaberGlowGraphics( void )
 {//FIXME: these get fucked by vid_restarts
-	redSaberGlowShader			= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/red_glow" );
-	redSaberCoreShader			= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/red_line" );
-	orangeSaberGlowShader		= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/orange_glow" );
-	orangeSaberCoreShader		= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/orange_line" );
-	yellowSaberGlowShader		= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/yellow_glow" );
-	yellowSaberCoreShader		= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/yellow_line" );
-	greenSaberGlowShader		= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/green_glow" );
-	greenSaberCoreShader		= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/green_line" );
-	blueSaberGlowShader			= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/blue_glow" );
-	blueSaberCoreShader			= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/blue_line" );
-	purpleSaberGlowShader		= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/purple_glow" );
-	purpleSaberCoreShader		= uii.R_RegisterShaderNoMip( "gfx/effects/sabers/purple_line" );
+	redSaberGlowShader			= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/red_glow" );
+	redSaberCoreShader			= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/red_line" );
+	orangeSaberGlowShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/orange_glow" );
+	orangeSaberCoreShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/orange_line" );
+	yellowSaberGlowShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/yellow_glow" );
+	yellowSaberCoreShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/yellow_line" );
+	greenSaberGlowShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/green_glow" );
+	greenSaberCoreShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/green_line" );
+	blueSaberGlowShader			= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/blue_glow" );
+	blueSaberCoreShader			= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/blue_line" );
+	purpleSaberGlowShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/purple_glow" );
+	purpleSaberCoreShader		= trap->R_RegisterShaderNoMip( "gfx/effects/sabers/purple_line" );
 }
 
 qboolean UI_ParseLiteral( const char **data, const char *string ) 
@@ -300,7 +300,7 @@ qboolean UI_SaberProperNameForSaber( const char *saberName, char *saberProperNam
 	// if it's a stringed reference translate it
 	if( ret && stringedSaberName[0] == '@')
 	{
-		uii.SE_GetStringTextString(&stringedSaberName[1], saberProperName, 1024);
+		trap->SE_GetStringTextString(&stringedSaberName[1], saberProperName, 1024);
 	}
 	else
 	{
@@ -348,14 +348,14 @@ void UI_SaberLoadParms( void )
 	marker[0] = '\0';
 
 	//now load in the extra .npc extensions
-	fileCnt = uii.FS_GetFileList("ext_data/sabers", ".sab", saberExtensionListBuf, sizeof(saberExtensionListBuf) );
+	fileCnt = trap->FS_GetFileList("ext_data/sabers", ".sab", saberExtensionListBuf, sizeof(saberExtensionListBuf) );
 
 	holdChar = saberExtensionListBuf;
 	for ( i = 0; i < fileCnt; i++, holdChar += saberExtFNLen + 1 ) 
 	{
 		saberExtFNLen = strlen( holdChar );
 
-		len = uii.FS_Open( va( "ext_data/sabers/%s", holdChar), &f, FS_READ );
+		len = trap->FS_Open( va( "ext_data/sabers/%s", holdChar), &f, FS_READ );
 
 		if (!f)
 		{
@@ -372,8 +372,8 @@ void UI_SaberLoadParms( void )
 			{
 				Com_Error( ERR_FATAL, "UI_SaberLoadParms: file %s too large to read (max=%d)", holdChar, sizeof(buffer) );
 			}
-			uii.FS_Read( buffer, len, f );
-			uii.FS_Close( f );
+			trap->FS_Read( buffer, len, f );
+			trap->FS_Close( f );
 			buffer[len] = 0;
 
 			if ( totallen && *(marker-1) == '}' )
@@ -488,7 +488,7 @@ void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
 	//saber.renderfx = rfx;
 
-	uii.R_AddRefEntityToScene( &saber );
+	trap->R_AddRefEntityToScene( &saber );
 
 	// Do the hot core
 	VectorMA( origin, length, dir, saber.origin );
@@ -499,7 +499,7 @@ void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	saber.radius = (radiusStart + crandom() * radiusRange)*radiusmult;
 //	saber.radius = (1.0 + crandom() * 0.2f)*radiusmult;
 
-	uii.R_AddRefEntityToScene( &saber );
+	trap->R_AddRefEntityToScene( &saber );
 }
 
 char * SaberColorToString(saber_colors_t color)
@@ -628,14 +628,14 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 
 	if ( (item->flags&ITF_ISSABER) && saberModel < 2 )
 	{
-		uii.Cvar_VariableStringBuffer("ui_saber_color", bladeColorString, sizeof(bladeColorString) );
+		trap->Cvar_VariableStringBuffer("ui_saber_color", bladeColorString, sizeof(bladeColorString) );
 	}
 	else//if ( item->flags&ITF_ISSABER2 ) - presumed
 	{
-		uii.Cvar_VariableStringBuffer("ui_saber2_color", bladeColorString, sizeof(bladeColorString) );
+		trap->Cvar_VariableStringBuffer("ui_saber2_color", bladeColorString, sizeof(bladeColorString) );
 	}
 
-	if ( !uii.G2API_HasGhoul2ModelOnIndex(&(item->ghoul2),saberModel) )
+	if ( !trap->G2API_HasGhoul2ModelOnIndex(&(item->ghoul2),saberModel) )
 	{//invalid index!
 		return;
 	}
@@ -646,13 +646,13 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 	bladeRadius = UI_SaberBladeRadiusForSaber( saberName, bladeNum );
 
 	tagName = va( "*blade%d", bladeNum+1 );
-	bolt = uii.G2API_AddBolt( item->ghoul2,saberModel, tagName );
+	bolt = trap->G2API_AddBolt( item->ghoul2,saberModel, tagName );
 	
 	if ( bolt == -1 )
 	{
 		tagHack = qtrue;
 		//hmm, just fall back to the most basic tag (this will also make it work with pre-JKA saber models
-		bolt = uii.G2API_AddBolt( item->ghoul2,saberModel, "*flash" );
+		bolt = trap->G2API_AddBolt( item->ghoul2,saberModel, "*flash" );
 		if ( bolt == -1 )
 		{//no tag_flash either?!!
 			bolt = 0;
@@ -662,7 +662,7 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 //	angles[PITCH] = curYaw;
 //	angles[ROLL] = 0;
 
-	uii.G2API_GetBoltMatrix( item->ghoul2, saberModel, bolt, &boltMatrix, angles, origin, uiInfo.uiDC.realTime, NULL, vec3_origin );//NULL was cgs.model_draw
+	trap->G2API_GetBoltMatrix( item->ghoul2, saberModel, bolt, &boltMatrix, angles, origin, uiInfo.uiDC.realTime, NULL, vec3_origin );//NULL was cgs.model_draw
 
 	// work the matrix axis stuff into the original axis and origins used.
 	BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, bladeOrigin);
@@ -854,20 +854,20 @@ void UI_SaberDrawBlades( itemDef_t *item, vec3_t origin, vec3_t angles )
 	char saber[MAX_QPATH];
 	if ( item->flags&ITF_ISSABER )
 	{
-		uii.Cvar_VariableStringBuffer("ui_saber", saber, sizeof(saber) );
+		trap->Cvar_VariableStringBuffer("ui_saber", saber, sizeof(saber) );
 		if ( !UI_SaberValidForPlayerInMP( saber ) )
 		{
-			uii.Cvar_Set( "ui_saber", "kyle" );
-			uii.Cvar_VariableStringBuffer("ui_saber", saber, sizeof(saber) );
+			trap->Cvar_Set( "ui_saber", "kyle" );
+			trap->Cvar_VariableStringBuffer("ui_saber", saber, sizeof(saber) );
 		}
 	}
 	else if ( item->flags&ITF_ISSABER2 )
 	{
-		uii.Cvar_VariableStringBuffer("ui_saber2", saber, sizeof(saber) );
+		trap->Cvar_VariableStringBuffer("ui_saber2", saber, sizeof(saber) );
 		if ( !UI_SaberValidForPlayerInMP( saber ) )
 		{
-			uii.Cvar_Set( "ui_saber2", "kyle" );
-			uii.Cvar_VariableStringBuffer("ui_saber2", saber, sizeof(saber) );
+			trap->Cvar_Set( "ui_saber2", "kyle" );
+			trap->Cvar_VariableStringBuffer("ui_saber2", saber, sizeof(saber) );
 		}
 	}
 	else
@@ -900,20 +900,20 @@ void UI_GetSaberForMenu( char *saber, int saberNum )
 
 	if ( saberNum == 0 )
 	{
-		uii.Cvar_VariableStringBuffer("ui_saber", saber, MAX_QPATH );
+		trap->Cvar_VariableStringBuffer("ui_saber", saber, MAX_QPATH );
 		if ( !UI_SaberValidForPlayerInMP( saber ) )
 		{
-			uii.Cvar_Set( "ui_saber", "kyle" );
-			uii.Cvar_VariableStringBuffer("ui_saber", saber, MAX_QPATH );
+			trap->Cvar_Set( "ui_saber", "kyle" );
+			trap->Cvar_VariableStringBuffer("ui_saber", saber, MAX_QPATH );
 		}
 	}
 	else
 	{
-		uii.Cvar_VariableStringBuffer("ui_saber2", saber, MAX_QPATH );
+		trap->Cvar_VariableStringBuffer("ui_saber2", saber, MAX_QPATH );
 		if ( !UI_SaberValidForPlayerInMP( saber ) )
 		{
-			uii.Cvar_Set( "ui_saber2", "kyle" );
-			uii.Cvar_VariableStringBuffer("ui_saber2", saber, MAX_QPATH );
+			trap->Cvar_Set( "ui_saber2", "kyle" );
+			trap->Cvar_VariableStringBuffer("ui_saber2", saber, MAX_QPATH );
 		}
 	}
 	//read this from the sabers.cfg
@@ -974,21 +974,21 @@ void UI_SaberDrawBlades( itemDef_t *item, vec3_t origin, vec3_t angles )
 		}
 		else if ( (item->flags&ITF_ISSABER) )
 		{
-			uii.Cvar_VariableStringBuffer("ui_saber", saber, sizeof(saber) );
+			trap->Cvar_VariableStringBuffer("ui_saber", saber, sizeof(saber) );
 			if ( !UI_SaberValidForPlayerInMP( saber ) )
 			{
-				uii.Cvar_Set( "ui_saber", "kyle" );
-				uii.Cvar_VariableStringBuffer("ui_saber", saber, sizeof(saber) );
+				trap->Cvar_Set( "ui_saber", "kyle" );
+				trap->Cvar_VariableStringBuffer("ui_saber", saber, sizeof(saber) );
 			}
 			saberModel = 0;
 		}
 		else if ( (item->flags&ITF_ISSABER2) )
 		{
-			uii.Cvar_VariableStringBuffer("ui_saber2", saber, sizeof(saber) );
+			trap->Cvar_VariableStringBuffer("ui_saber2", saber, sizeof(saber) );
 			if ( !UI_SaberValidForPlayerInMP( saber ) )
 			{
-				uii.Cvar_Set( "ui_saber2", "kyle" );
-				uii.Cvar_VariableStringBuffer("ui_saber2", saber, sizeof(saber) );
+				trap->Cvar_Set( "ui_saber2", "kyle" );
+				trap->Cvar_VariableStringBuffer("ui_saber2", saber, sizeof(saber) );
 			}
 			saberModel = 0;
 		}
@@ -1023,13 +1023,13 @@ void UI_SaberAttachToChar( itemDef_t *item )
 	int	numSabers = 1;
  	int	saberNum = 0;
 
-	if ( uii.G2API_HasGhoul2ModelOnIndex(&(item->ghoul2),2) )
+	if ( trap->G2API_HasGhoul2ModelOnIndex(&(item->ghoul2),2) )
 	{//remove any extra models
-		uii.G2API_RemoveGhoul2Model(&(item->ghoul2), 2);
+		trap->G2API_RemoveGhoul2Model(&(item->ghoul2), 2);
 	}
-	if ( uii.G2API_HasGhoul2ModelOnIndex(&(item->ghoul2),1) )
+	if ( trap->G2API_HasGhoul2ModelOnIndex(&(item->ghoul2),1) )
 	{//remove any extra models
-		uii.G2API_RemoveGhoul2Model(&(item->ghoul2), 1);
+		trap->G2API_RemoveGhoul2Model(&(item->ghoul2), 1);
 	}
 
 	if ( uiInfo.movesTitleIndex == 4 /*MD_DUAL_SABERS*/ )
@@ -1048,29 +1048,29 @@ void UI_SaberAttachToChar( itemDef_t *item )
 
 		if ( UI_SaberModelForSaber( saber, modelPath ) )
 		{//successfully found a model
-			int g2Saber = uii.G2API_InitGhoul2Model( &(item->ghoul2), modelPath, 0, 0, 0, 0, 0 ); //add the model
+			int g2Saber = trap->G2API_InitGhoul2Model( &(item->ghoul2), modelPath, 0, 0, 0, 0, 0 ); //add the model
 			if ( g2Saber )
 			{
 				int boltNum;
 				//get the customSkin, if any
 				if ( UI_SaberSkinForSaber( saber, skinPath ) )
 				{
-					int g2skin = uii.R_RegisterSkin(skinPath);
-					uii.G2API_SetSkin( item->ghoul2, g2Saber, 0, g2skin );//this is going to set the surfs on/off matching the skin file
+					int g2skin = trap->R_RegisterSkin(skinPath);
+					trap->G2API_SetSkin( item->ghoul2, g2Saber, 0, g2skin );//this is going to set the surfs on/off matching the skin file
 				}
 				else
 				{
-					uii.G2API_SetSkin( item->ghoul2, g2Saber, 0, 0 );//turn off custom skin
+					trap->G2API_SetSkin( item->ghoul2, g2Saber, 0, 0 );//turn off custom skin
 				}
 				if ( saberNum == 0 )
 				{
-					boltNum = uii.G2API_AddBolt( item->ghoul2, 0, "*r_hand");
+					boltNum = trap->G2API_AddBolt( item->ghoul2, 0, "*r_hand");
 				}
 				else
 				{
-					boltNum = uii.G2API_AddBolt( item->ghoul2, 0, "*l_hand");
+					boltNum = trap->G2API_AddBolt( item->ghoul2, 0, "*l_hand");
 				}
-				uii.G2API_AttachG2Model( item->ghoul2, g2Saber, item->ghoul2, boltNum, 0);
+				trap->G2API_AttachG2Model( item->ghoul2, g2Saber, item->ghoul2, boltNum, 0);
 			}
 		}
 	}

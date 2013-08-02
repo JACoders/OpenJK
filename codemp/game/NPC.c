@@ -114,7 +114,7 @@ void NPC_RemoveBody( gentity_t *self )
 
 	if ( self->NPC->nextBStateThink <= level.time )
 	{
-		gi.ICARUS_MaintainTaskManager(self->s.number);
+		trap->ICARUS_MaintainTaskManager(self->s.number);
 	}
 	self->NPC->nextBStateThink = level.time + FRAMETIME;
 
@@ -139,7 +139,7 @@ void NPC_RemoveBody( gentity_t *self )
 		|| self->client->NPC_class == CLASS_MARK2 )
 	{
 		//if ( !self->taskManager || !self->taskManager->IsRunning() )
-		if (!gi.ICARUS_IsRunning(self->s.number))
+		if (!trap->ICARUS_IsRunning(self->s.number))
 		{
 			if ( !self->activator || !self->activator->client || !(self->activator->client->ps.eFlags2&EF2_HELD_BY_MONSTER) )
 			{//not being held by a Rancor
@@ -197,7 +197,7 @@ void NPC_RemoveBody( gentity_t *self )
 		if ( self->enemy )
 		{
 			//if ( !self->taskManager || !self->taskManager->IsRunning() )
-			if (!gi.ICARUS_IsRunning(self->s.number))
+			if (!trap->ICARUS_IsRunning(self->s.number))
 			{
 				if ( !self->activator || !self->activator->client || !(self->activator->client->ps.eFlags2&EF2_HELD_BY_MONSTER) )
 				{//not being held by a Rancor
@@ -401,7 +401,7 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope )
 		startspot[2] += forwhom->r.mins[2] + 4;
 		VectorCopy( startspot, endspot );
 		endspot[2] -= 300;
-		gi.Trace( &trace, forwhom->r.currentOrigin, vec3_origin, vec3_origin, endspot, forwhom->s.number, MASK_SOLID, qfalse, 0, 0 );
+		trap->Trace( &trace, forwhom->r.currentOrigin, vec3_origin, vec3_origin, endspot, forwhom->s.number, MASK_SOLID, qfalse, 0, 0 );
 //		if(trace_fraction>0.05&&forwhom.movetype==MOVETYPE_STEP)
 //			forwhom.flags(-)FL_ONGROUND;
 
@@ -453,7 +453,7 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope )
 			//FIXME: trace?
 			forwhom->client->ps.origin[2] += (oldmins2 - forwhom->r.mins[2]);
 			forwhom->r.currentOrigin[2] = forwhom->client->ps.origin[2];
-			gi.LinkEntity( (sharedEntity_t *)forwhom );
+			trap->LinkEntity( (sharedEntity_t *)forwhom );
 		}
 	}
 	else
@@ -486,7 +486,7 @@ static void DeadThink ( void )
 		if ( NPCS.NPC->r.mins[0] > -32 )
 		{
 			NPCS.NPC->r.mins[0] -= 1;
-			gi.Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0 );
+			trap->Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0 );
 			if ( trace.allsolid )
 			{
 				NPCS.NPC->r.mins[0] += 1;
@@ -495,7 +495,7 @@ static void DeadThink ( void )
 		if ( NPCS.NPC->r.maxs[0] < 32 )
 		{
 			NPCS.NPC->r.maxs[0] += 1;
-			gi.Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0 );
+			trap->Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0 );
 			if ( trace.allsolid )
 			{
 				NPCS.NPC->r.maxs[0] -= 1;
@@ -504,7 +504,7 @@ static void DeadThink ( void )
 		if ( NPCS.NPC->r.mins[1] > -32 )
 		{
 			NPCS.NPC->r.mins[1] -= 1;
-			gi.Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0 );
+			trap->Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0 );
 			if ( trace.allsolid )
 			{
 				NPCS.NPC->r.mins[1] += 1;
@@ -513,7 +513,7 @@ static void DeadThink ( void )
 		if ( NPCS.NPC->r.maxs[1] < 32 )
 		{
 			NPCS.NPC->r.maxs[1] += 1;
-			gi.Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0 );
+			trap->Trace (&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0 );
 			if ( trace.allsolid )
 			{
 				NPCS.NPC->r.maxs[1] -= 1;
@@ -549,7 +549,7 @@ static void DeadThink ( void )
 		{
 			if ( NPCS.NPC->client->ps.eFlags & EF_NODRAW )
 			{
-				if (!gi.ICARUS_IsRunning(NPCS.NPC->s.number))
+				if (!trap->ICARUS_IsRunning(NPCS.NPC->s.number))
 				//if ( !NPC->taskManager || !NPC->taskManager->IsRunning() )
 				{
 					NPCS.NPC->think = G_FreeEntity;
@@ -589,7 +589,7 @@ static void DeadThink ( void )
 	if ( NPCS.NPC->bounceCount < 0 && NPCS.NPC->s.groundEntityNum >= 0 )
 	{
 		// if client is in a nodrop area, make him/her nodraw
-		int contents = NPCS.NPC->bounceCount = gi.PointContents( NPCS.NPC->r.currentOrigin, -1 );
+		int contents = NPCS.NPC->bounceCount = trap->PointContents( NPCS.NPC->r.currentOrigin, -1 );
 
 		if ( ( contents & CONTENTS_NODROP ) ) 
 		{
@@ -655,7 +655,7 @@ void NPC_ShowDebugInfo (void)
 
 		while( (found = G_Find( found, FOFS(classname), "NPC" ) ) != NULL )
 		{
-			if ( gi.InPVS( found->r.currentOrigin, g_entities[0].r.currentOrigin ) )
+			if ( trap->InPVS( found->r.currentOrigin, g_entities[0].r.currentOrigin ) )
 			{
 				VectorAdd( found->r.currentOrigin, found->r.mins, mins );
 				VectorAdd( found->r.currentOrigin, found->r.maxs, maxs );
@@ -1481,7 +1481,7 @@ void NPC_RunBehavior( int team, int bState )
 				break;
 			}
 
-			if ( NPCS.NPC->enemy && NPCS.NPC->s.weapon == WP_NONE && bState != BS_HUNT_AND_KILL && !gi.ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) )
+			if ( NPCS.NPC->enemy && NPCS.NPC->s.weapon == WP_NONE && bState != BS_HUNT_AND_KILL && !trap->ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) )
 			{//if in battle and have no weapon, run away, fixme: when in BS_HUNT_AND_KILL, they just stand there
 				if ( bState != BS_FLEE )
 				{
@@ -1763,7 +1763,7 @@ void NPC_CheckInSolid(void)
 	VectorCopy(NPCS.NPC->r.currentOrigin, point);
 	point[2] -= 0.25;
 
-	gi.Trace(&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, point, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0);
+	trap->Trace(&trace, NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, point, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0);
 	if(!trace.startsolid && !trace.allsolid)
 	{
 		VectorCopy(NPCS.NPC->r.currentOrigin, NPCS.NPCInfo->lastClearOrigin);
@@ -1774,7 +1774,7 @@ void NPC_CheckInSolid(void)
 		{
 //			Com_Printf("%s stuck in solid at %s: fixing...\n", NPC->script_targetname, vtos(NPC->r.currentOrigin));
 			G_SetOrigin(NPCS.NPC, NPCS.NPCInfo->lastClearOrigin);
-			gi.LinkEntity((sharedEntity_t *)NPCS.NPC);
+			trap->LinkEntity((sharedEntity_t *)NPCS.NPC);
 		}
 	}
 }
@@ -1850,7 +1850,7 @@ void NPC_Think ( gentity_t *self)//, int msec )
 		DeadThink();
 		if ( NPCS.NPCInfo->nextBStateThink <= level.time )
 		{
-			gi.ICARUS_MaintainTaskManager(self->s.number);
+			trap->ICARUS_MaintainTaskManager(self->s.number);
 		}
 		VectorCopy(self->r.currentOrigin, self->client->ps.origin);
 		return;
@@ -1898,7 +1898,7 @@ void NPC_Think ( gentity_t *self)//, int msec )
 		if (self->client->ps.m_iVehicleNum)
 		{//we don't think on our own
 			//well, run scripts, though...
-			gi.ICARUS_MaintainTaskManager(self->s.number);
+			trap->ICARUS_MaintainTaskManager(self->s.number);
 			return;
 		}
 		else
@@ -1971,23 +1971,23 @@ void NPC_Think ( gentity_t *self)//, int msec )
 		//VectorCopy(self->s.origin, self->s.origin2 );
 	}
 	//must update icarus *every* frame because of certain animation completions in the pmove stuff that can leave a 50ms gap between ICARUS animation commands
-	gi.ICARUS_MaintainTaskManager(self->s.number);
+	trap->ICARUS_MaintainTaskManager(self->s.number);
 	VectorCopy(self->r.currentOrigin, self->client->ps.origin);
 }
 
 void NPC_InitAI ( void ) 
 {
 	/*
-	gi.Cvar_Register(&g_saberRealisticCombat, "g_saberRealisticCombat", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&g_saberRealisticCombat, "g_saberRealisticCombat", "0", CVAR_CHEAT);
 
-	gi.Cvar_Register(&debugNoRoam, "d_noroam", "0", CVAR_CHEAT);
-	gi.Cvar_Register(&debugNPCAimingBeam, "d_npcaiming", "0", CVAR_CHEAT);
-	gi.Cvar_Register(&debugBreak, "d_break", "0", CVAR_CHEAT);
-	gi.Cvar_Register(&d_npcai, "d_npcai", "0", CVAR_CHEAT);
-	gi.Cvar_Register(&debugNPCFreeze, "d_npcfreeze", "0", CVAR_CHEAT);
-	gi.Cvar_Register(&d_JediAI, "d_JediAI", "0", CVAR_CHEAT);
-	gi.Cvar_Register(&d_noGroupAI, "d_noGroupAI", "0", CVAR_CHEAT);
-	gi.Cvar_Register(&d_asynchronousGroupAI, "d_asynchronousGroupAI", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&debugNoRoam, "d_noroam", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&debugNPCAimingBeam, "d_npcaiming", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&debugBreak, "d_break", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&d_npcai, "d_npcai", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&debugNPCFreeze, "d_npcfreeze", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&d_JediAI, "d_JediAI", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&d_noGroupAI, "d_noGroupAI", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&d_asynchronousGroupAI, "d_asynchronousGroupAI", "0", CVAR_CHEAT);
 	
 	//0 = never (BORING)
 	//1 = kyle only
@@ -1997,11 +1997,11 @@ void NPC_InitAI ( void )
 	//5 = kyle and any enemy
 	//6 = also when kyle takes pain or enemy jedi dodges player saber swing or does an acrobatic evasion
 
-	gi.Cvar_Register(&d_slowmodeath, "d_slowmodeath", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&d_slowmodeath, "d_slowmodeath", "0", CVAR_CHEAT);
 
-	gi.Cvar_Register(&d_saberCombat, "d_saberCombat", "0", CVAR_CHEAT);
+	trap->Cvar_Register(&d_saberCombat, "d_saberCombat", "0", CVAR_CHEAT);
 
-	gi.Cvar_Register(&g_npcspskill, "g_npcspskill", "0", CVAR_ARCHIVE | CVAR_USERINFO);
+	trap->Cvar_Register(&g_npcspskill, "g_npcspskill", "0", CVAR_ARCHIVE | CVAR_USERINFO);
 	*/
 }
 
@@ -2037,8 +2037,8 @@ void NPC_InitAnimTable( void )
 
 void NPC_InitGame( void ) 
 {
-//	globals.NPCs = (gNPC_t *) gi.TagMalloc(game.maxclients * sizeof(game.bots[0]), TAG_GAME);
-//	gi.Cvar_Register(&debugNPCName, "d_npc", "0", CVAR_CHEAT);
+//	globals.NPCs = (gNPC_t *) trap->TagMalloc(game.maxclients * sizeof(game.bots[0]), TAG_GAME);
+//	trap->Cvar_Register(&debugNPCName, "d_npc", "0", CVAR_CHEAT);
 
 	NPC_LoadParms();
 	NPC_InitAI();

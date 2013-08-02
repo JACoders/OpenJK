@@ -177,7 +177,7 @@ void CG_TestLine( vec3_t start, vec3_t end, int time, unsigned int color, int ra
 
 	re->reType = RT_LINE;
 	re->radius = 0.5*radius;
-	re->customShader = cgs.media.whiteShader; //cgi.R_RegisterShaderNoMip("textures/colombia/canvas_doublesided");
+	re->customShader = cgs.media.whiteShader; //trap->R_RegisterShaderNoMip("textures/colombia/canvas_doublesided");
 
 	re->shaderTexCoord[0] = re->shaderTexCoord[1] = 1.0f;
 
@@ -361,7 +361,7 @@ static void CG_DoGlassQuad( vec3_t p[4], vec2_t uv[4], qboolean stick, int time,
 	apArgs.shader = cgs.media.glassShardShader;
 	apArgs.flags = (FX_APPLY_PHYSICS | FX_ALPHA_NONLINEAR | FX_USE_ALPHA);
 
-	cgi.FX_AddPoly(&apArgs);
+	trap->FX_AddPoly(&apArgs);
 }
 
 static void CG_CalcBiLerp( vec3_t verts[4], vec3_t subVerts[4], vec2_t uv[4] )
@@ -474,7 +474,7 @@ void CG_DoGlass( vec3_t verts[4], vec3_t normal, vec3_t dmgPt, vec3_t dmgDir, fl
 	//	hopefully be sufficient.
 	CG_CalcHeightWidth( verts, &height, &width );
 
-	cgi.S_StartSound( dmgPt, -1, CHAN_AUTO, cgi.S_RegisterSound("sound/effects/glassbreak1.wav"));
+	trap->S_StartSound( dmgPt, -1, CHAN_AUTO, trap->S_RegisterSound("sound/effects/glassbreak1.wav"));
 
 	// Pick "LOD" for height
 	if ( height < 100 )
@@ -659,7 +659,7 @@ void CG_GlassShatter(int entnum, vec3_t dmgPt, vec3_t dmgDir, float dmgRadius, i
 
 	if (cgs.inlineDrawModel[cg_entities[entnum].currentState.modelindex])
 	{
-		cgi.R_GetBModelVerts(cgs.inlineDrawModel[cg_entities[entnum].currentState.modelindex], verts, normal);
+		trap->R_GetBModelVerts(cgs.inlineDrawModel[cg_entities[entnum].currentState.modelindex], verts, normal);
 		CG_DoGlass(verts, normal, dmgPt, dmgDir, dmgRadius, maxShards);
 	}
 	//otherwise something awful has happened.
@@ -678,7 +678,7 @@ void CG_GlassShatter_Old(int entnum, vec3_t org, vec3_t mins, vec3_t maxs)
 	float shardsthrow = 0;
 	char chunkname[256];
 
-	cgi.S_StartSound(org, entnum, CHAN_BODY, cgi.S_RegisterSound("sound/effects/glassbreak1.wav"));
+	trap->S_StartSound(org, entnum, CHAN_BODY, trap->S_RegisterSound("sound/effects/glassbreak1.wav"));
 
 	VectorSubtract(maxs, mins, a);
 
@@ -741,7 +741,7 @@ void CG_GlassShatter_Old(int entnum, vec3_t org, vec3_t mins, vec3_t maxs)
 
 		//CG_TestLine(org, shardorg, 5000, 0x0000ff, 3);
 
-		CG_ThrowChunk( shardorg, velocity, cgi.R_RegisterModel( chunkname ), 0, 254 );
+		CG_ThrowChunk( shardorg, velocity, trap->R_RegisterModel( chunkname ), 0, 254 );
 
 		shardsthrow += 10;
 	}
@@ -777,46 +777,46 @@ void CG_CreateDebris(int entnum, vec3_t org, vec3_t mins, vec3_t maxs, int debri
 
 	if (omodel == DEBRIS_SPECIALCASE_GLASS && !dbModels_Glass[0])
 	{ //glass no longer exists, using it for metal.
-		dbModels_Glass[0] = cgi.R_RegisterModel("models/chunks/metal/metal1_1.md3");
-		dbModels_Glass[1] = cgi.R_RegisterModel("models/chunks/metal/metal1_2.md3");
-		dbModels_Glass[2] = cgi.R_RegisterModel("models/chunks/metal/metal1_3.md3");
-		dbModels_Glass[3] = cgi.R_RegisterModel("models/chunks/metal/metal1_4.md3");
-		dbModels_Glass[4] = cgi.R_RegisterModel("models/chunks/metal/metal2_1.md3");
-		dbModels_Glass[5] = cgi.R_RegisterModel("models/chunks/metal/metal2_2.md3");
-		dbModels_Glass[6] = cgi.R_RegisterModel("models/chunks/metal/metal2_3.md3");
-		dbModels_Glass[7] = cgi.R_RegisterModel("models/chunks/metal/metal2_4.md3");
+		dbModels_Glass[0] = trap->R_RegisterModel("models/chunks/metal/metal1_1.md3");
+		dbModels_Glass[1] = trap->R_RegisterModel("models/chunks/metal/metal1_2.md3");
+		dbModels_Glass[2] = trap->R_RegisterModel("models/chunks/metal/metal1_3.md3");
+		dbModels_Glass[3] = trap->R_RegisterModel("models/chunks/metal/metal1_4.md3");
+		dbModels_Glass[4] = trap->R_RegisterModel("models/chunks/metal/metal2_1.md3");
+		dbModels_Glass[5] = trap->R_RegisterModel("models/chunks/metal/metal2_2.md3");
+		dbModels_Glass[6] = trap->R_RegisterModel("models/chunks/metal/metal2_3.md3");
+		dbModels_Glass[7] = trap->R_RegisterModel("models/chunks/metal/metal2_4.md3");
 	}
 	if (omodel == DEBRIS_SPECIALCASE_WOOD && !dbModels_Wood[0])
 	{
-		dbModels_Wood[0] = cgi.R_RegisterModel("models/chunks/crate/crate1_1.md3");
-		dbModels_Wood[1] = cgi.R_RegisterModel("models/chunks/crate/crate1_2.md3");
-		dbModels_Wood[2] = cgi.R_RegisterModel("models/chunks/crate/crate1_3.md3");
-		dbModels_Wood[3] = cgi.R_RegisterModel("models/chunks/crate/crate1_4.md3");
-		dbModels_Wood[4] = cgi.R_RegisterModel("models/chunks/crate/crate2_1.md3");
-		dbModels_Wood[5] = cgi.R_RegisterModel("models/chunks/crate/crate2_2.md3");
-		dbModels_Wood[6] = cgi.R_RegisterModel("models/chunks/crate/crate2_3.md3");
-		dbModels_Wood[7] = cgi.R_RegisterModel("models/chunks/crate/crate2_4.md3");
+		dbModels_Wood[0] = trap->R_RegisterModel("models/chunks/crate/crate1_1.md3");
+		dbModels_Wood[1] = trap->R_RegisterModel("models/chunks/crate/crate1_2.md3");
+		dbModels_Wood[2] = trap->R_RegisterModel("models/chunks/crate/crate1_3.md3");
+		dbModels_Wood[3] = trap->R_RegisterModel("models/chunks/crate/crate1_4.md3");
+		dbModels_Wood[4] = trap->R_RegisterModel("models/chunks/crate/crate2_1.md3");
+		dbModels_Wood[5] = trap->R_RegisterModel("models/chunks/crate/crate2_2.md3");
+		dbModels_Wood[6] = trap->R_RegisterModel("models/chunks/crate/crate2_3.md3");
+		dbModels_Wood[7] = trap->R_RegisterModel("models/chunks/crate/crate2_4.md3");
 	}
 	if (omodel == DEBRIS_SPECIALCASE_CHUNKS && !dbModels_Chunks[0])
 	{
-		dbModels_Chunks[0] = cgi.R_RegisterModel("models/chunks/generic/chunks_1.md3");
-		dbModels_Chunks[1] = cgi.R_RegisterModel("models/chunks/generic/chunks_2.md3");
+		dbModels_Chunks[0] = trap->R_RegisterModel("models/chunks/generic/chunks_1.md3");
+		dbModels_Chunks[1] = trap->R_RegisterModel("models/chunks/generic/chunks_2.md3");
 	}
 	if (omodel == DEBRIS_SPECIALCASE_ROCK && !dbModels_Rocks[0])
 	{
-		dbModels_Rocks[0] = cgi.R_RegisterModel("models/chunks/rock/rock1_1.md3");
-		dbModels_Rocks[1] = cgi.R_RegisterModel("models/chunks/rock/rock1_2.md3");
-		dbModels_Rocks[2] = cgi.R_RegisterModel("models/chunks/rock/rock1_3.md3");
-		dbModels_Rocks[3] = cgi.R_RegisterModel("models/chunks/rock/rock1_4.md3");
+		dbModels_Rocks[0] = trap->R_RegisterModel("models/chunks/rock/rock1_1.md3");
+		dbModels_Rocks[1] = trap->R_RegisterModel("models/chunks/rock/rock1_2.md3");
+		dbModels_Rocks[2] = trap->R_RegisterModel("models/chunks/rock/rock1_3.md3");
+		dbModels_Rocks[3] = trap->R_RegisterModel("models/chunks/rock/rock1_4.md3");
 		/*
-		dbModels_Rocks[4] = cgi.R_RegisterModel("models/chunks/rock/rock2_1.md3");
-		dbModels_Rocks[5] = cgi.R_RegisterModel("models/chunks/rock/rock2_2.md3");
-		dbModels_Rocks[6] = cgi.R_RegisterModel("models/chunks/rock/rock2_3.md3");
-		dbModels_Rocks[7] = cgi.R_RegisterModel("models/chunks/rock/rock2_4.md3");
-		dbModels_Rocks[8] = cgi.R_RegisterModel("models/chunks/rock/rock3_1.md3");
-		dbModels_Rocks[9] = cgi.R_RegisterModel("models/chunks/rock/rock3_2.md3");
-		dbModels_Rocks[10] = cgi.R_RegisterModel("models/chunks/rock/rock3_3.md3");
-		dbModels_Rocks[11] = cgi.R_RegisterModel("models/chunks/rock/rock3_4.md3");
+		dbModels_Rocks[4] = trap->R_RegisterModel("models/chunks/rock/rock2_1.md3");
+		dbModels_Rocks[5] = trap->R_RegisterModel("models/chunks/rock/rock2_2.md3");
+		dbModels_Rocks[6] = trap->R_RegisterModel("models/chunks/rock/rock2_3.md3");
+		dbModels_Rocks[7] = trap->R_RegisterModel("models/chunks/rock/rock2_4.md3");
+		dbModels_Rocks[8] = trap->R_RegisterModel("models/chunks/rock/rock3_1.md3");
+		dbModels_Rocks[9] = trap->R_RegisterModel("models/chunks/rock/rock3_2.md3");
+		dbModels_Rocks[10] = trap->R_RegisterModel("models/chunks/rock/rock3_3.md3");
+		dbModels_Rocks[11] = trap->R_RegisterModel("models/chunks/rock/rock3_4.md3");
 		*/
 	}
 
@@ -1019,12 +1019,12 @@ void CG_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunk
 	// FIXME: real precache .. VERify that these need to be here...don't think they would because the effects should be registered in g_breakable
 	//rww - No they don't.. indexed effects gameside get precached on load clientside, as server objects are setup before client asset load time.
 	//However, we need to index them, so..
-	eID1 = cgi.FX_RegisterEffect( effect );
+	eID1 = trap->FX_RegisterEffect( effect );
 
 	if ( effect2 && effect2[0] )
 	{
 		// FIXME: real precache
-		eID2 = cgi.FX_RegisterEffect( effect2 );
+		eID2 = trap->FX_RegisterEffect( effect2 );
 	}
 
 	// spawn chunk roughly in the bbox of the thing..
@@ -1043,11 +1043,11 @@ void CG_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunk
 
 		if ( effect2 && effect2[0] && ( rand() & 1 ))
 		{
-			cgi.FX_PlayEffectID( eID2, org, dir, -1, -1, qfalse );
+			trap->FX_PlayEffectID( eID2, org, dir, -1, -1, qfalse );
 		}
 		else
 		{
-			cgi.FX_PlayEffectID( eID1, org, dir, -1, -1, qfalse );
+			trap->FX_PlayEffectID( eID1, org, dir, -1, -1, qfalse );
 		}
 	}
 }
@@ -1084,15 +1084,15 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 	default:
 		break;
 	case MAT_GLASS:
-		cgi.S_StartSound( NULL, owner, CHAN_BODY, cgs.media.glassChunkSound );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.glassChunkSound );
 		return;
 		break;
 	case MAT_GRATE1:
-		cgi.S_StartSound( NULL, owner, CHAN_BODY, cgs.media.grateSound );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.grateSound );
 		return;
 		break;
 	case MAT_ELECTRICAL:// (sparks)
-		cgi.S_StartSound( NULL, owner, CHAN_BODY, cgi.S_RegisterSound (va("sound/ambience/spark%d.wav", Q_irand(1, 6))) );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, trap->S_RegisterSound (va("sound/ambience/spark%d.wav", Q_irand(1, 6))) );
 		return;
 		break;
 	case MAT_DRK_STONE:
@@ -1100,28 +1100,28 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 	case MAT_GREY_STONE:
 	case MAT_WHITE_METAL:  // not quite sure what this stuff is supposed to be...it's for Stu
 	case MAT_SNOWY_ROCK:
-		cgi.S_StartSound( NULL, owner, CHAN_BODY, cgs.media.rockBreakSound );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.rockBreakSound );
 		bounce = LEBS_ROCK;
 		speedMod = 0.5f; // rock blows up less
 		break;
 	case MAT_GLASS_METAL:
-		cgi.S_StartSound( NULL, owner, CHAN_BODY, cgs.media.glassChunkSound ); // FIXME: should probably have a custom sound
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.glassChunkSound ); // FIXME: should probably have a custom sound
 		bounce = LEBS_METAL;
 		break;
 	case MAT_CRATE1:
 	case MAT_CRATE2:
-		cgi.S_StartSound( NULL, owner, CHAN_BODY, cgs.media.crateBreakSound[Q_irand(0,1)] );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.crateBreakSound[Q_irand(0,1)] );
 		break;
 	case MAT_METAL:
 	case MAT_METAL2:
 	case MAT_METAL3:
 	case MAT_ELEC_METAL:// FIXME: maybe have its own sound?
-		cgi.S_StartSound( NULL, owner, CHAN_BODY, cgs.media.chunkSound );
+		trap->S_StartSound( NULL, owner, CHAN_BODY, cgs.media.chunkSound );
 		bounce = LEBS_METAL;
 		speedMod = 0.8f; // metal blows up a bit more
 		break;
 	case MAT_ROPE:
-//		cgi.S_StartSound( NULL, owner, CHAN_BODY, cgi_S_RegisterSound( "" ));  FIXME:  needs a sound
+//		trap->S_StartSound( NULL, owner, CHAN_BODY, cgi_S_RegisterSound( "" ));  FIXME:  needs a sound
 		return;
 		break;
 	}
@@ -1291,7 +1291,7 @@ void CG_ScorePlum( int client, vec3_t org, int score ) {
 		le->pos.trBase[2] -= 20;
 	}
 
-	//cgi.Print( "Plum origin %i %i %i -- %i\n", (int)org[0], (int)org[1], (int)org[2], (int)Distance(org, lastPos));
+	//trap->Print( "Plum origin %i %i %i -- %i\n", (int)org[0], (int)org[1], (int)org[2], (int)Distance(org, lastPos));
 	VectorCopy(org, lastPos);
 
 
@@ -1319,7 +1319,7 @@ localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 	vec3_t			tmpVec, newOrigin;
 
 	if ( msec <= 0 ) {
-		cgi.Error( ERR_DROP, "CG_MakeExplosion: msec = %i", msec );
+		trap->Error( ERR_DROP, "CG_MakeExplosion: msec = %i", msec );
 	}
 
 	// skew the time a bit so they aren't all in sync

@@ -176,7 +176,6 @@
     <ClCompile Include="cg_servercmds.c" />
     <ClCompile Include="cg_snapshot.c" />
     <ClCompile Include="cg_spawn.c" />
-    <ClCompile Include="cg_strap.c" />
     <ClCompile Include="cg_syscalls.c" />
     <ClCompile Include="cg_turret.c" />
     <ClCompile Include="cg_view.c" />
@@ -204,7 +203,6 @@
     <ClInclude Include="..\game\bg_local.h" />
     <ClInclude Include="..\game\bg_public.h" />
     <ClInclude Include="..\game\bg_saga.h" />
-    <ClInclude Include="..\game\bg_strap.h" />
     <ClInclude Include="..\game\bg_weapons.h" />
     <ClInclude Include="cg_lights.h" />
     <ClInclude Include="cg_local.h" />

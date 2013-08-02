@@ -1049,4 +1049,4 @@ typedef struct postGameInfo_s {
 	int baseScore;
 } postGameInfo_t;
 
-extern uiImport_t uii;
+extern uiImport_t *trap;

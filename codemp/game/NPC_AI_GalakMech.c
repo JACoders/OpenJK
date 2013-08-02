@@ -103,7 +103,7 @@ static void GM_CreateExplosion( gentity_t *self, const int boltID, qboolean doSm
 		mdxaBone_t	boltMatrix;
 		vec3_t		org, dir;
 
-		gi.G2API_GetBoltMatrix( self->ghoul2, 0, 
+		trap->G2API_GetBoltMatrix( self->ghoul2, 0, 
 					boltID,
 					&boltMatrix, self->r.currentAngles, self->r.currentOrigin, level.time,
 					NULL, self->modelScale );
@@ -142,53 +142,53 @@ void GM_Dying( gentity_t *self )
 			{
 			// Find place to generate explosion
 			case 1:
-				if (!gi.G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "r_hand" ))
+				if (!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "r_hand" ))
 				{//r_hand still there
-					GM_CreateExplosion( self, gi.G2API_AddBolt(self->ghoul2, 0, "*flasha"), qtrue );
+					GM_CreateExplosion( self, trap->G2API_AddBolt(self->ghoul2, 0, "*flasha"), qtrue );
 					NPC_SetSurfaceOnOff( self, "r_hand", TURN_OFF );
 				}
-				else if (!gi.G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "r_arm_middle" ))
+				else if (!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "r_arm_middle" ))
 				{//r_arm_middle still there
-					newBolt = gi.G2API_AddBolt( self->ghoul2, 0, "*r_arm_elbow" );
+					newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*r_arm_elbow" );
 					NPC_SetSurfaceOnOff( self, "r_arm_middle", TURN_OFF );
 				}
 				break;
 			case 2:
 				//FIXME: do only once?
-				if (!gi.G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "l_hand" ))
+				if (!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "l_hand" ))
 				{//l_hand still there
-					GM_CreateExplosion( self, gi.G2API_AddBolt(self->ghoul2, 0, "*flashc"), qfalse );
+					GM_CreateExplosion( self, trap->G2API_AddBolt(self->ghoul2, 0, "*flashc"), qfalse );
 					NPC_SetSurfaceOnOff( self, "l_hand", TURN_OFF );
 				}
-				else if (!gi.G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "l_arm_wrist" ))
+				else if (!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "l_arm_wrist" ))
 				{//l_arm_wrist still there
-					newBolt = gi.G2API_AddBolt( self->ghoul2, 0, "*l_arm_cap_l_hand" );
+					newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*l_arm_cap_l_hand" );
 					NPC_SetSurfaceOnOff( self, "l_arm_wrist", TURN_OFF );
 				}
-				else if (!gi.G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "l_arm_middle" ))
+				else if (!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "l_arm_middle" ))
 				{//l_arm_middle still there
-					newBolt = gi.G2API_AddBolt( self->ghoul2, 0, "*l_arm_cap_l_hand" );
+					newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*l_arm_cap_l_hand" );
 					NPC_SetSurfaceOnOff( self, "l_arm_middle", TURN_OFF );
 				}
-				else if (!gi.G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "l_arm_augment" ))
+				else if (!trap->G2API_GetSurfaceRenderStatus( self->ghoul2, 0, "l_arm_augment" ))
 				{//l_arm_augment still there
-					newBolt = gi.G2API_AddBolt( self->ghoul2, 0, "*l_arm_elbow" );
+					newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*l_arm_elbow" );
 					NPC_SetSurfaceOnOff( self, "l_arm_augment", TURN_OFF );
 				}
 				break;
 			case 3:
 			case 4:
-				newBolt = gi.G2API_AddBolt( self->ghoul2, 0, "*hip_fr" );
+				newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*hip_fr" );
 				GM_CreateExplosion( self, newBolt, qfalse );
 				break;
 			case 5:
 			case 6:
-				newBolt = gi.G2API_AddBolt( self->ghoul2, 0, "*shldr_l" );
+				newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*shldr_l" );
 				GM_CreateExplosion( self, newBolt, qfalse );
 				break;
 			case 7:
 			case 8:
-				newBolt = gi.G2API_AddBolt( self->ghoul2, 0, "*uchest_r" );
+				newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*uchest_r" );
 				GM_CreateExplosion( self, newBolt, qfalse );
 				break;
 			case 9:
@@ -196,19 +196,19 @@ void GM_Dying( gentity_t *self )
 				GM_CreateExplosion( self, self->client->renderInfo.headBolt, qfalse );
 				break;
 			case 11:
-				newBolt = gi.G2API_AddBolt( self->ghoul2, 0, "*l_leg_knee" );
+				newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*l_leg_knee" );
 				GM_CreateExplosion( self, newBolt, qtrue );
 				break;
 			case 12:
-				newBolt = gi.G2API_AddBolt( self->ghoul2, 0, "*r_leg_knee" );
+				newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*r_leg_knee" );
 				GM_CreateExplosion( self, newBolt, qtrue );
 				break;
 			case 13:
-				newBolt = gi.G2API_AddBolt( self->ghoul2, 0, "*l_leg_foot" );
+				newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*l_leg_foot" );
 				GM_CreateExplosion( self, newBolt, qtrue );
 				break;
 			case 14:
-				newBolt = gi.G2API_AddBolt( self->ghoul2, 0, "*r_leg_foot" );
+				newBolt = trap->G2API_AddBolt( self->ghoul2, 0, "*r_leg_foot" );
 				GM_CreateExplosion( self, newBolt, qtrue );
 				break;
 			}
@@ -249,7 +249,7 @@ void NPC_GM_Pain(gentity_t *self, gentity_t *attacker, int damage)
 		/*
 		if ( (hitLoc==HL_GENERIC1) && (self->locationDamage[HL_GENERIC1] > GENERATOR_HEALTH) )
 		{
-			int newBolt = gi.G2API_AddBolt( &self->ghoul2[self->playerModel], "*antenna_base" );
+			int newBolt = trap->G2API_AddBolt( &self->ghoul2[self->playerModel], "*antenna_base" );
 			if ( newBolt != -1 )
 			{
 				GM_CreateExplosion( self, newBolt, qfalse );
@@ -362,7 +362,7 @@ GM_HoldPosition
 static void GM_HoldPosition( void )
 {
 	NPC_FreeCombatPoint( NPCS.NPCInfo->combatPoint, qtrue );
-	if ( !gi.ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) )
+	if ( !trap->ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) )
 	{//don't have a script waiting for me to get to my point, okay to stop trying and stand
 		NPCS.NPCInfo->goalEntity = NULL;
 	}
@@ -398,7 +398,7 @@ static qboolean GM_Move( void )
 	//If our move failed, then reset
 	if ( moved == qfalse )
 	{//FIXME: if we're going to a combat point, need to pick a different one
-		if ( !gi.ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) )
+		if ( !trap->ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) )
 		{//can't transfer movegoal or stop when a script we're running is waiting to complete
 			GM_HoldPosition();
 		}
@@ -439,7 +439,7 @@ GM_CheckMoveState
 
 static void GM_CheckMoveState( void )
 {
-	if ( gi.ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) )
+	if ( trap->ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) )
 	{//moving toward a goal that a script is waiting on, so don't stop for anything!
 		move4 = qtrue;
 	}
@@ -449,7 +449,7 @@ static void GM_CheckMoveState( void )
 	{
 		//Did we make it?
 		if ( NAV_HitNavGoal( NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPCInfo->goalEntity->r.currentOrigin, 16, qfalse ) || 
-			( !gi.ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) && enemyLOS4 && enemyDist4 <= 10000 ) )
+			( !trap->ICARUS_TaskIDPending( (sharedEntity_t *)NPCS.NPC, TID_MOVE_NAV ) && enemyLOS4 && enemyDist4 <= 10000 ) )
 		{//either hit our navgoal or our navgoal was not a crucial (scripted) one (maybe a combat point) and we're scouting and found our enemy
 			NPC_ReachedGoal();
 			//don't attack right away
@@ -499,7 +499,7 @@ static void GM_CheckFireState( void )
 					vec3_t	forward, end;
 					AngleVectors( NPCS.NPC->client->ps.viewangles, forward, NULL, NULL );
 					VectorMA( muzzle, 8192, forward, end );
-					gi.Trace( &tr, muzzle, vec3_origin, vec3_origin, end, NPCS.NPC->s.number, MASK_SHOT, qfalse, 0, 0 );
+					trap->Trace( &tr, muzzle, vec3_origin, vec3_origin, end, NPCS.NPC->s.number, MASK_SHOT, qfalse, 0, 0 );
 					VectorCopy( tr.endpos, impactPos4 );
 				}
 
@@ -777,7 +777,7 @@ void NPC_BSGM_Attack( void )
 				trace_t	trace;
 				vec3_t	end, mins={-3,-3,-3}, maxs={3,3,3};
 				VectorMA( NPCS.NPC->client->renderInfo.muzzlePoint, 1024, NPCS.NPC->client->renderInfo.muzzleDir, end );
-				gi.Trace( &trace, NPCS.NPC->client->renderInfo.muzzlePoint, mins, maxs, end, NPCS.NPC->s.number, MASK_SHOT, qfalse, 0, 0 );
+				trap->Trace( &trace, NPCS.NPC->client->renderInfo.muzzlePoint, mins, maxs, end, NPCS.NPC->s.number, MASK_SHOT, qfalse, 0, 0 );
 				if ( trace.allsolid || trace.startsolid )
 				{//oops, in a wall
 					if ( NPCS.NPCInfo->coverTarg )
@@ -935,7 +935,7 @@ void NPC_BSGM_Attack( void )
 			}
 		}
 	}
-	else if ( gi.InPVS( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin ) )
+	else if ( trap->InPVS( NPCS.NPC->enemy->r.currentOrigin, NPCS.NPC->r.currentOrigin ) )
 	{
 		int hit;
 		gentity_t *hitEnt;
@@ -1262,7 +1262,7 @@ void NPC_BSGM_Default( void )
 		{//armor regenerated, turn shield back on
 			//do a trace and make sure we can turn this back on?
 			trace_t	tr;
-			gi.Trace( &tr, NPCS.NPC->r.currentOrigin, shieldMins, shieldMaxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0 );
+			trap->Trace( &tr, NPCS.NPC->r.currentOrigin, shieldMins, shieldMaxs, NPCS.NPC->r.currentOrigin, NPCS.NPC->s.number, NPCS.NPC->clipmask, qfalse, 0, 0 );
 			if ( !tr.startsolid )
 			{
 				VectorCopy( shieldMins, NPCS.NPC->r.mins );

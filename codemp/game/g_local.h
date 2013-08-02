@@ -1470,4 +1470,4 @@ void Svcmd_ToggleUserinfoValidation_f( void );
 void G_RegisterCvars( void );
 void G_UpdateCvars( void );
 
-extern gameImport_t gi;
+extern gameImport_t *trap;

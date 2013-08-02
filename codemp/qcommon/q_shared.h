@@ -24,8 +24,6 @@
 					//	between base<->modbase clients and servers (mismatching events, powerups, etc)
 					// leave this defined to ensure compatibility
 
-#define OJK_NEW_VM_API
-
 #include "qcommon/disablewarnings.h"
 
 #include "game/teams.h" //npc team stuff
