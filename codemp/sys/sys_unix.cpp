@@ -265,11 +265,20 @@ sysEvent_t Sys_GetEvent( void ) {
 }
 
 /*
+==============================================================
+
+DIRECTORY SCANNING
+
+==============================================================
+*/
+
+#define MAX_FOUND_FILES 0x1000
+
+/*
 ==================
 Sys_ListFiles
 ==================
 */
-#define	MAX_FOUND_FILES	0x1000
 void Sys_ListFilteredFiles( const char *basedir, char *subdirs, char *filter, char **list, int *numfiles ) {
 	char		search[MAX_OSPATH], newsubdirs[MAX_OSPATH];
 	char		filename[MAX_OSPATH];
@@ -324,15 +333,13 @@ void Sys_ListFilteredFiles( const char *basedir, char *subdirs, char *filter, ch
 char **Sys_ListFiles( const char *directory, const char *extension, char *filter, int *numfiles, qboolean wantsubs )
 {
 	struct dirent *d;
-	// char *p; // bk001204 - unused
 	DIR		*fdir;
 	qboolean dironly = wantsubs;
 	char		search[MAX_OSPATH];
 	int			nfiles;
 	char		**listCopy;
 	char		*list[MAX_FOUND_FILES];
-	//int			flag; // bk001204 - unused
-	int			i;
+	int			i, extLen;
 	struct stat st;
 
 	if (filter) {
@@ -346,7 +353,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 		if (!nfiles)
 			return NULL;
 
-		listCopy = (char **)Z_Malloc( ( nfiles + 1 ) * sizeof( *listCopy ),TAG_FILESYS,qfalse );
+		listCopy = (char **)Z_Malloc( ( nfiles + 1 ) * sizeof( *listCopy ), TAG_FILESYS, qfalse );
 		for ( i = 0 ; i < nfiles ; i++ ) {
 			listCopy[i] = list[i];
 		}
@@ -362,6 +369,8 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 		extension = "";
 		dironly = qtrue;
 	}
+
+	extLen = strlen( extension );
 
 	// search
 	nfiles = 0;
@@ -380,9 +389,9 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 			continue;
 
 		if (*extension) {
-			if ( strlen( d->d_name ) < strlen( extension ) ||
+			if ( strlen( d->d_name ) < extLen ||
 				Q_stricmp(
-					d->d_name + strlen( d->d_name ) - strlen( extension ),
+					d->d_name + strlen( d->d_name ) - extLen,
 					extension ) ) {
 				continue; // didn't match
 			}
@@ -414,18 +423,18 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 	return listCopy;
 }
 
-void	Sys_FreeFileList( char **list ) {
+void	Sys_FreeFileList( char **fileList ) {
 	int		i;
 
-	if ( !list ) {
+	if ( !fileList ) {
 		return;
 	}
 
-	for ( i = 0 ; list[i] ; i++ ) {
-		Z_Free( list[i] );
+	for ( i = 0 ; fileList[i] ; i++ ) {
+		Z_Free( fileList[i] );
 	}
 
-	Z_Free( list );
+	Z_Free( fileList );
 }
 
 /*
