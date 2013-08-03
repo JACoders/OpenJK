@@ -560,24 +560,20 @@ Com_Filter
 int Com_Filter(const char *filter, const char *name, int casesensitive) {
 	char buf[MAX_TOKEN_CHARS];
 	const char *ptr;
-	int i;
+	int i, found;
 
 	while(*filter) {
 		if (*filter == '*') {
 			filter++;
 			for (i = 0; *filter; i++) {
-				if (*filter == '*' || *filter == '?') {
-					break;
-				}
+				if (*filter == '*' || *filter == '?') break;
 				buf[i] = *filter;
 				filter++;
 			}
 			buf[i] = '\0';
 			if (strlen(buf)) {
 				ptr = Com_StringContains(name, buf, casesensitive);
-				if (!ptr) {
-					return qfalse;
-				}
+				if (!ptr) return qfalse;
 				name = ptr + strlen(buf);
 			}
 		}
@@ -585,22 +581,86 @@ int Com_Filter(const char *filter, const char *name, int casesensitive) {
 			filter++;
 			name++;
 		}
-		else {
-			if (casesensitive) {
-				if (*filter != *name) {
-					return qfalse;
+		else if (*filter == '[' && *(filter+1) == '[') {
+			filter++;
+		}
+		else if (*filter == '[') {
+			filter++;
+			found = qfalse;
+			while(*filter && !found) {
+				if (*filter == ']' && *(filter+1) != ']') break;
+				if (*(filter+1) == '-' && *(filter+2) && (*(filter+2) != ']' || *(filter+3) == ']')) {
+					if (casesensitive) {
+						if (*name >= *filter && *name <= *(filter+2)) found = qtrue;
+					}
+					else {
+						if (toupper(*name) >= toupper(*filter) &&
+							toupper(*name) <= toupper(*(filter+2))) found = qtrue;
+					}
+					filter += 3;
+				}
+				else {
+					if (casesensitive) {
+						if (*filter == *name) found = qtrue;
+					}
+					else {
+						if (toupper(*filter) == toupper(*name)) found = qtrue;
+					}
+					filter++;
 				}
 			}
+			if (!found) return qfalse;
+			while(*filter) {
+				if (*filter == ']' && *(filter+1) != ']') break;
+				filter++;
+			}
+			filter++;
+			name++;
+		}
+		else {
+			if (casesensitive) {
+				if (*filter != *name) return qfalse;
+			}
 			else {
-				if (toupper(*filter) != toupper(*name)) {
-					return qfalse;
-				}
+				if (toupper(*filter) != toupper(*name)) return qfalse;
 			}
 			filter++;
 			name++;
 		}
 	}
 	return qtrue;
+}
+
+/*
+============
+Com_FilterPath
+============
+*/
+int Com_FilterPath(const char *filter, const char *name, int casesensitive)
+{
+	int i;
+	char new_filter[MAX_QPATH];
+	char new_name[MAX_QPATH];
+
+	for (i = 0; i < MAX_QPATH-1 && filter[i]; i++) {
+		if ( filter[i] == '\\' || filter[i] == ':' ) {
+			new_filter[i] = '/';
+		}
+		else {
+			new_filter[i] = filter[i];
+		}
+	}
+	new_filter[i] = '\0';
+	for (i = 0; i < MAX_QPATH-1 && name[i]; i++) {
+		if ( name[i] == '\\' || name[i] == ':' ) {
+			new_name[i] = '/';
+		}
+		else {
+			new_name[i] = name[i];
+		}
+	}
+	new_name[i] = '\0';
+	return Com_Filter(new_filter, new_name, casesensitive);
 }
 
 

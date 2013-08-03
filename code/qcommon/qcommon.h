@@ -533,6 +533,7 @@ int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
 unsigned	Com_BlockChecksum( const void *buffer, int length );
 int			Com_Filter(const char *filter, const char *name, int casesensitive);
+int			Com_FilterPath(const char *filter, const char *name, int casesensitive);
 qboolean	Com_SafeMode( void );
 
 void		Com_StartupVariable( const char *match );
@@ -814,7 +815,7 @@ char	*Sys_DefaultHomePath(void);
 const char *Sys_Dirname( char *path );
 const char *Sys_Basename( char *path );
 
-char **Sys_ListFiles( const char *directory, const char *extension, int *numfiles, qboolean wantsubs );
+char **Sys_ListFiles( const char *directory, const char *extension, char *filter, int *numfiles, qboolean wantsubs );
 void	Sys_FreeFileList( char **filelist );
 
 void	Sys_BeginProfiling( void );

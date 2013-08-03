@@ -298,15 +298,103 @@ DIRECTORY SCANNING
 
 #define	MAX_FOUND_FILES	0x1000
 
-char **Sys_ListFiles( const char *directory, const char *extension, int *numfiles, qboolean wantsubs ) {
+void Sys_ListFilteredFiles( const char *basedir, char *subdirs, char *filter, char **psList, int *numfiles ) {
+	char		search[MAX_OSPATH], newsubdirs[MAX_OSPATH];
+	char		filename[MAX_OSPATH];
+	intptr_t	findhandle;
+	struct _finddata_t findinfo;
+
+	if ( *numfiles >= MAX_FOUND_FILES - 1 ) {
+		return;
+	}
+
+	if (strlen(subdirs)) {
+		Com_sprintf( search, sizeof(search), "%s\\%s\\*", basedir, subdirs );
+	}
+	else {
+		Com_sprintf( search, sizeof(search), "%s\\*", basedir );
+	}
+
+	findhandle = _findfirst (search, &findinfo);
+	if (findhandle == -1) {
+		return;
+	}
+
+	do {
+		if (findinfo.attrib & _A_SUBDIR) {
+			if (Q_stricmp(findinfo.name, ".") && Q_stricmp(findinfo.name, "..")) {
+				if (strlen(subdirs)) {
+					Com_sprintf( newsubdirs, sizeof(newsubdirs), "%s\\%s", subdirs, findinfo.name);
+				}
+				else {
+					Com_sprintf( newsubdirs, sizeof(newsubdirs), "%s", findinfo.name);
+				}
+				Sys_ListFilteredFiles( basedir, newsubdirs, filter, psList, numfiles );
+			}
+		}
+		if ( *numfiles >= MAX_FOUND_FILES - 1 ) {
+			break;
+		}
+		Com_sprintf( filename, sizeof(filename), "%s\\%s", subdirs, findinfo.name );
+		if (!Com_FilterPath( filter, filename, qfalse ))
+			continue;
+		psList[ *numfiles ] = CopyString( filename );
+		(*numfiles)++;
+	} while ( _findnext (findhandle, &findinfo) != -1 );
+
+	_findclose (findhandle);
+}
+
+static qboolean strgtr(const char *s0, const char *s1) {
+	int l0, l1, i;
+
+	l0 = strlen(s0);
+	l1 = strlen(s1);
+
+	if (l1<l0) {
+		l0 = l1;
+	}
+
+	for(i=0;i<l0;i++) {
+		if (s1[i] > s0[i]) {
+			return qtrue;
+		}
+		if (s1[i] < s0[i]) {
+			return qfalse;
+		}
+	}
+	return qfalse;
+}
+
+char **Sys_ListFiles( const char *directory, const char *extension, char *filter, int *numfiles, qboolean wantsubs ) {
 	char		search[MAX_OSPATH];
 	int			nfiles;
 	char		**listCopy;
 	char		*list[MAX_FOUND_FILES];
 	struct _finddata_t findinfo;
-	int			findhandle;
+	intptr_t	findhandle;
 	int			flag;
 	int			i;
+
+	if (filter) {
+
+		nfiles = 0;
+		Sys_ListFilteredFiles( directory, "", filter, list, &nfiles );
+
+		list[ nfiles ] = 0;
+		*numfiles = nfiles;
+
+		if (!nfiles)
+			return NULL;
+
+		listCopy = (char **)Z_Malloc( ( nfiles + 1 ) * sizeof( *listCopy ), TAG_LISTFILES, qfalse );
+		for ( i = 0 ; i < nfiles ; i++ ) {
+			listCopy[i] = list[i];
+		}
+		listCopy[i] = NULL;
+
+		return listCopy;
+	}
 
 	if ( !extension) {
 		extension = "";
@@ -357,6 +445,18 @@ char **Sys_ListFiles( const char *directory, const char *extension, int *numfile
 		listCopy[i] = list[i];
 	}
 	listCopy[i] = NULL;
+
+	do {
+		flag = 0;
+		for(i=1; i<nfiles; i++) {
+			if (strgtr(listCopy[i-1], listCopy[i])) {
+				char *temp = listCopy[i];
+				listCopy[i] = listCopy[i-1];
+				listCopy[i-1] = temp;
+				flag = 1;
+			}
+		}
+	} while(flag);
 
 	return listCopy;
 }
