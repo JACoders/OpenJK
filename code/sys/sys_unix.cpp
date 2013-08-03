@@ -296,7 +296,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 	int			nfiles;
 	char		**listCopy;
 	char		*list[MAX_FOUND_FILES];
-	int			i, extLen;
+	int			i;
 	struct stat st;
 
 	if (filter) {
@@ -327,7 +327,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 		dironly = qtrue;
 	}
 
-	extLen = strlen( extension );
+	size_t extLen = strlen( extension );
 
 	// search
 	nfiles = 0;
