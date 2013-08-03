@@ -749,7 +749,6 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 	int		size;
 	char	*psExt;
 	char	sLoadName[MAX_QPATH];
-	ALuint  Buffer;
 	
 	int		len = strlen(sfx->sSoundName);
 	if (len<5)
@@ -859,6 +858,7 @@ static qboolean S_LoadSound_Actual( sfx_t *sfx )
 							alGetError();
 
 							// Generate AL Buffer
+							ALuint Buffer;
 							alGenBuffers(1, &Buffer);
 							if (alGetError() == AL_NO_ERROR)
 							{
