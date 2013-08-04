@@ -775,16 +775,12 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 	float		fovOffset;
 	vec3_t		angles;
 	weaponInfo_t	*weapon;
-	float	cgFov = cg_fov.value;
+	float cgFov = cg_fovViewmodel.integer ? cg_fovViewmodel.value : cg_fov.value;
 
 	if (cgFov < 1)
-	{
 		cgFov = 1;
-	}
-	if (cgFov > 97)
-	{
-		cgFov = 97;
-	}
+	if (cgFov > 130)
+		cgFov = 130;
 
 	if ( ps->persistant[PERS_TEAM] == TEAM_SPECTATOR ) {
 		return;
@@ -819,11 +815,10 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 	}
 
 	// drop gun lower at higher fov
-	if ( cgFov > 90 ) {
-		fovOffset = -0.2 * ( cgFov - 90 );
-	} else {
+	if ( cg_fovViewmodelAdjust.integer && cgFov > 90 )
+		fovOffset = -0.2f * ( cgFov - 90 );
+	else
 		fovOffset = 0;
-	}
 
 	cent = &cg_entities[cg.predictedPlayerState.clientNum];
 	CG_RegisterWeapon( ps->weapon );
@@ -839,6 +834,13 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 	VectorMA( hand.origin, (cg_gunZ.value+fovOffset), cg.refdef.viewaxis[2], hand.origin );
 
 	AnglesToAxis( angles, hand.axis );
+
+	if ( cg_fovViewmodel.integer )
+	{
+		float fracDistFOV = tanf( cg.refdef.fov_x * ( M_PI/180 ) * 0.5f );
+		float fracWeapFOV = ( 1.0f / fracDistFOV ) * tanf( cgFov * ( M_PI/180 ) * 0.5f );
+		VectorScale( hand.axis[0], fracWeapFOV, hand.axis[0] );
+	}
 
 	// map torso animations to weapon animations
 	if ( cg_debugGun.integer ) {
