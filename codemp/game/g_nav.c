@@ -842,7 +842,7 @@ qboolean NAV_ResolveEntityCollision( gentity_t *self, gentity_t *blocker, vec3_t
 //		return qtrue;
 	
 	//See if we can get around the blocker at all (only for player!)
-	if ( blocker->s.number == 0 )
+	if ( blocker->s.number >= 0 && blocker->s.number < MAX_CLIENTS )
 	{
 		if ( NAV_StackedCanyon( self, blocker, pathDir ) )
 		{
@@ -1120,7 +1120,7 @@ int	NAV_MoveToGoal( gentity_t *self, navInfo_t *info )
 		return WAYPOINT_NONE;
 
 	//Check special player optimizations
-	if ( self->NPC->goalEntity->s.number == 0 )
+	if ( self->NPC->goalEntity->s.number >= 0 && self->NPC->goalEntity->s.number < MAX_CLIENTS )
 	{
 		//If we couldn't find the point, then we won't be able to this turn
 		if ( self->NPC->goalEntity->waypoint == WAYPOINT_NONE )
