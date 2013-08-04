@@ -14,12 +14,12 @@
 #include "bg_weapons.h"
 #include "bg_public.h"
 
-#if defined(_GAME)
+#ifdef _GAME
 	#include "g_local.h"
-#elif defined(_CGAME)
-	#include "cg_local.h"
-#elif defined(_UI)
-	#include "ui_local.h"
+#elif _CGAME
+	#include "cgame/cg_local.h"
+#elif _UI
+	#include "ui/ui_local.h"
 #endif
 
 #define SIEGECHAR_TAB 9 //perhaps a bit hacky, but I don't think there's any define existing for "tab"
@@ -752,11 +752,6 @@ char *classTitles[SPC_MAX] =
 "heavy_weapons",	// SPC_HEAVY_WEAPONS
 };
 
-#ifdef _GAME
-#elif _CGAME
-#elif _UI
-#endif
-
 void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 {
 	fileHandle_t f;
@@ -765,34 +760,16 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 	char classInfo[4096];
 	char parseBuf[4096];
 
-#ifdef _GAME
 	len = trap->FS_Open( filename, &f, FS_READ );
-#elif _CGAME
-	len = trap->FS_Open( filename, &f, FS_READ );
-#elif _UI
-	len = trap->FS_Open( filename, &f, FS_READ );
-#endif
 
 	if (!f || len >= 4096)
 	{
 		return;
 	}
 
-#ifdef _GAME
 	trap->FS_Read( classInfo, len, f );
-#elif _CGAME
-	trap->FS_Read( classInfo, len, f );
-#elif _UI
-	trap->FS_Read( classInfo, len, f );
-#endif
 
-#ifdef _GAME
 	trap->FS_Close( f );
-#elif _CGAME
-	trap->FS_Close( f );
-#elif _UI
-	trap->FS_Close( f );
-#endif
 
 	classInfo[len] = 0;
 
@@ -1212,13 +1189,7 @@ void BG_SiegeLoadClasses(siegeClassDesc_t *descBuffer)
 
 	bgNumSiegeClasses = 0;
 
-	#if defined(_GAME)
-		numFiles = trap->FS_GetFileList("ext_data/Siege/Classes", ".scl", filelist, sizeof( filelist ) );
-	#elif defined(_CGAME)
-		numFiles = trap->FS_GetFileList("ext_data/Siege/Classes", ".scl", filelist, sizeof( filelist ) );
-	#elif defined(_UI)
-		numFiles = trap->FS_GetFileList("ext_data/Siege/Classes", ".scl", filelist, sizeof( filelist ) );
-	#endif
+	numFiles = trap->FS_GetFileList("ext_data/Siege/Classes", ".scl", filelist, sizeof( filelist ) );
 
 	fileptr = filelist;
 
@@ -1272,29 +1243,15 @@ void BG_SiegeParseTeamFile(const char *filename)
 	int i = 1;
 	qboolean success = qtrue;
 
-	#if defined(_GAME)
-		len = trap->FS_Open(filename, &f, FS_READ);
-	#elif defined(_CGAME)
-		len = trap->FS_Open(filename, &f, FS_READ);
-	#elif defined(_UI)
-		len = trap->FS_Open(filename, &f, FS_READ);
-	#endif
+	len = trap->FS_Open(filename, &f, FS_READ);
 
 	if (!f || len >= 2048)
 	{
 		return;
 	}
 
-	#if defined(_GAME)
-		trap->FS_Read( teamInfo, len, f );
-		trap->FS_Close( f );
-	#elif defined(_CGAME)
-		trap->FS_Read( teamInfo, len, f );
-		trap->FS_Close( f );
-	#elif defined(_UI)
-		trap->FS_Read( teamInfo, len, f );
-		trap->FS_Close( f );
-	#endif
+	trap->FS_Read( teamInfo, len, f );
+	trap->FS_Close( f );
 
 	teamInfo[len] = 0;
 
@@ -1363,13 +1320,7 @@ void BG_SiegeLoadTeams(void)
 
 	bgNumSiegeTeams = 0;
 
-	#if defined(_GAME)
-		numFiles = trap->FS_GetFileList("ext_data/Siege/Teams", ".team", filelist, sizeof( filelist ) );
-	#elif defined(_CGAME)
-		numFiles = trap->FS_GetFileList("ext_data/Siege/Teams", ".team", filelist, sizeof( filelist ) );
-	#elif defined(_UI)
-		numFiles = trap->FS_GetFileList("ext_data/Siege/Teams", ".team", filelist, sizeof( filelist ) );
-	#endif
+	numFiles = trap->FS_GetFileList("ext_data/Siege/Teams", ".team", filelist, sizeof( filelist ) );
 
 	fileptr = filelist;
 
@@ -1552,4 +1503,3 @@ int BG_SiegeFindClassIndexByName(const char *classname)
 //======================================
 //End misc/utility functions
 //======================================
-

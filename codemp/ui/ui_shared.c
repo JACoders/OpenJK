@@ -2,9 +2,9 @@
 // string allocation/managment
 
 #ifdef _CGAME
-	#include "cg_local.h"
+	#include "cgame/cg_local.h"
 #elif _UI
-	#include "ui_local.h"
+	#include "ui/ui_local.h"
 #endif
 
 #include "ui_shared.h"

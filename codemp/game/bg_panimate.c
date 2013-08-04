@@ -7,10 +7,12 @@
 #include "anims.h"
 #include "cgame/animtable.h"
 
-#if defined(_GAME)
+#ifdef _GAME
 	#include "g_local.h"
-#elif defined(_CGAME)
-	#include "cg_local.h"
+#elif _CGAME
+	#include "cgame/cg_local.h"
+#elif _UI
+	#include "ui/ui_local.h"
 #endif
 
 extern saberInfo_t *BG_MySaber( int clientNum, int saberNum );
@@ -2367,11 +2369,7 @@ int BG_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 	// load the file
 	if (!BGPAFtextLoaded || !isHumanoid)
 	{ //rww - We are always using the same animation config now. So only load it once.
-	#if defined(_CGAME)
 		len = trap->FS_Open( filename, &f, FS_READ );
-	#elif defined(_GAME)
-		len = trap->FS_Open( filename, &f, FS_READ );
-	#endif
 		if ( (len <= 0) || (len >= sizeof( BGPAFtext ) - 1) ) 
 		{
 			if (dynAlloc)
@@ -2385,18 +2383,10 @@ int BG_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 			return -1;
 		}
 
-	#if defined(_CGAME)
 		trap->FS_Read( BGPAFtext, len, f );
-	#elif defined(_GAME)
-		trap->FS_Read( BGPAFtext, len, f );
-	#endif
 
 		BGPAFtext[len] = 0;
-	#if defined(_CGAME)
 		trap->FS_Close( f );
-	#elif defined(_GAME)
-		trap->FS_Close( f );
-	#endif
 	}
 	else
 	{

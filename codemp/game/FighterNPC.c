@@ -1,12 +1,11 @@
-
-#ifdef _GAME //including game headers on cgame is FORBIDDEN ^_^
-	#include "g_local.h"
-#elif _CGAME
-	#include "cg_local.h"
-#endif
-
 #include "bg_public.h"
 #include "bg_vehicles.h"
+
+#ifdef _GAME
+	#include "g_local.h"
+#elif _CGAME
+	#include "cgame/cg_local.h"
+#endif
 
 extern float DotToSpot( vec3_t spot, vec3_t from, vec3_t fromAngles );
 #ifdef _GAME //SP or gameside MP
