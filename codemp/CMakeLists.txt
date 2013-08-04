@@ -222,9 +222,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/vm.cpp"
 		)
 	if(WIN32)
-		set(MPEngineAndDedCommonFiles
-			${MPEngineAndDedCommonFiles}
-			"${MPDir}/qcommon/vm_x86.cpp")
+		set(MPEngineAndDedCommonFiles ${MPEngineAndDedCommonFiles})
 	endif(WIN32)
 	source_group("common" FILES ${MPEngineAndDedCommonFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedCommonFiles})
