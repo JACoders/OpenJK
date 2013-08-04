@@ -7,10 +7,12 @@
 #include "bg_public.h"
 #include "bg_local.h"
 
-#ifdef _GAME //yeah, this is kind of bad
+#ifdef _GAME
 	#include "g_local.h"
 #elif _CGAME
-	#include "cg_local.h"
+	#include "cgame/cg_local.h"
+#elif _UI
+	#include "ui/ui_local.h"
 #endif
 
 /*

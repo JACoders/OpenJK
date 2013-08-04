@@ -6,13 +6,15 @@
 #include "bg_local.h"
 #include "w_saber.h"
 
-extern stringID_table_t animTable [MAX_ANIMATIONS+1];
-
 #ifdef _GAME
 	#include "g_local.h"
 #elif _CGAME
-	#include "cg_local.h"
+	#include "cgame/cg_local.h"
+#elif _UI
+	#include "ui/ui_local.h"
 #endif
+
+extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 int BG_SoundIndex(char *sound)
 {
@@ -729,11 +731,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber )
 			{
 				continue;
 			}
-		#ifdef _GAME
 			saber->skin = trap->R_RegisterSkin(value);
-		#elif _CGAME
-			saber->skin = trap->R_RegisterSkin(value);
-		#endif
 			continue;
 		}
 
@@ -2721,22 +2719,14 @@ void WP_SaberLoadParms( void )
 	*marker = 0;
 
 	//now load in the extra .sab extensions
-#ifdef _GAME
 	fileCnt = trap->FS_GetFileList("ext_data/sabers", ".sab", saberExtensionListBuf, sizeof(saberExtensionListBuf) );
-#elif _CGAME
-	fileCnt = trap->FS_GetFileList("ext_data/sabers", ".sab", saberExtensionListBuf, sizeof(saberExtensionListBuf) );
-#endif
 
 	holdChar = saberExtensionListBuf;
 	for ( i = 0; i < fileCnt; i++, holdChar += saberExtFNLen + 1 ) 
 	{
 		saberExtFNLen = strlen( holdChar );
 
-	#ifdef _GAME
 		len = trap->FS_Open(va( "ext_data/sabers/%s", holdChar), &f, FS_READ);
-	#elif _CGAME
-		len = trap->FS_Open(va( "ext_data/sabers/%s", holdChar), &f, FS_READ);
-	#endif
 
 		if ( len == -1 ) 
 		{
@@ -2748,21 +2738,13 @@ void WP_SaberLoadParms( void )
 				Com_Error(ERR_DROP, "Saber extensions (*.sab) are too large" );
 			}
 
-		#ifdef _GAME
 			trap->FS_Read(bgSaberParseTBuffer, len, f);
-		#elif _CGAME
-			trap->FS_Read(bgSaberParseTBuffer, len, f);
-		#endif
 			bgSaberParseTBuffer[len] = 0;
 
 			len = COM_Compress( bgSaberParseTBuffer );
 
 			Q_strcat( marker, MAX_SABER_DATA_SIZE-totallen, bgSaberParseTBuffer );
-		#ifdef _GAME
 			trap->FS_Close(f);
-		#elif _CGAME
-			trap->FS_Close(f);
-		#endif
 
 			//get around the stupid problem of not having an endline at the bottom
 			//of a sab file -rww

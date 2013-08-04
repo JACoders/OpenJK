@@ -8,9 +8,9 @@
 #ifdef _GAME
 	#include "g_local.h"
 #elif _CGAME
-	#include "cg_local.h"
+	#include "cgame/cg_local.h"
 #elif _UI
-	#include "ui_local.h"
+	#include "ui/ui_local.h"
 #endif
 
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
@@ -165,8 +165,6 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 			case VF_MODEL:// take the string, get the G_ModelIndex
 				#ifdef _GAME
 					*(int *)(b+vehWeaponFields[i].ofs) = G_ModelIndex( value );
-				#elif _CGAME
-					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterModel( value );
 				#else
 					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterModel( value );
 				#endif
@@ -174,8 +172,6 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 			case VF_MODEL_CLIENT:	// (MP cgame only) take the string, get the G_ModelIndex
 				#ifdef _GAME
 					*(int *)(b+vehWeaponFields[i].ofs) = G_ModelIndex( value );
-				#elif _CGAME
-					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterModel( value );
 				#else
 					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterModel( value );
 				#endif
@@ -202,17 +198,13 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 				#endif
 				break;
 			case VF_SHADER_NOMIP:// (cgame only) take the string, call trap_R_RegisterShaderNoMip
-				#if defined(_CGAME)
-					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
-				#elif defined(_UI)
+				#if defined(_CGAME) || defined(_UI)
 					*(int *)(b+vehWeaponFields[i].ofs) = trap->R_RegisterShaderNoMip( value );
 				#endif
 				break;
 			case VF_SOUND:	// take the string, get the G_SoundIndex
 				#ifdef _GAME
 					*(int *)(b+vehWeaponFields[i].ofs) = G_SoundIndex( value );
-				#elif _CGAME
-					*(int *)(b+vehWeaponFields[i].ofs) = trap->S_RegisterSound( value );
 				#else
 					*(int *)(b+vehWeaponFields[i].ofs) = trap->S_RegisterSound( value );
 				#endif
@@ -220,8 +212,6 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, char *parmNam
 			case VF_SOUND_CLIENT:	// (MP cgame only) take the string, get the index
 				#ifdef _GAME
 					//*(int *)(b+vehWeaponFields[i].ofs) = G_SoundIndex( value );
-				#elif _CGAME
-					*(int *)(b+vehWeaponFields[i].ofs) = trap->S_RegisterSound( value );
 				#else
 					*(int *)(b+vehWeaponFields[i].ofs) = trap->S_RegisterSound( value );
 				#endif
@@ -327,12 +317,6 @@ int VEH_LoadVehWeapon( const char *vehWeaponName )
 		//Hmm, no need fo have server register this, is there?
 		//G_SoundIndex( "sound/weapons/torpedo/tick.wav" );
 		//G_SoundIndex( "sound/weapons/torpedo/lock.wav" );
-#elif defined(_CGAME)
-		trap->S_RegisterSound( "sound/vehicles/weapons/common/tick.wav" );
-		trap->S_RegisterSound( "sound/vehicles/weapons/common/lock.wav" );
-		trap->S_RegisterSound( "sound/vehicles/common/lockalarm1.wav" );
-		trap->S_RegisterSound( "sound/vehicles/common/lockalarm2.wav" );
-		trap->S_RegisterSound( "sound/vehicles/common/lockalarm3.wav" );
 #else
 		trap->S_RegisterSound( "sound/vehicles/weapons/common/tick.wav" );
 		trap->S_RegisterSound( "sound/vehicles/weapons/common/lock.wav" );
@@ -825,8 +809,6 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, cha
 			case VF_MODEL:	// take the string, get the G_ModelIndex
 			#ifdef _GAME
 				*(int *)(b+vehicleFields[i].ofs) = G_ModelIndex( value );
-			#elif _CGAME
-				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterModel( value );
 			#else
 				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterModel( value );
 			#endif
@@ -834,8 +816,6 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, cha
 			case VF_MODEL_CLIENT:	// (MP cgame only) take the string, get the G_ModelIndex
 			#ifdef _GAME
 				//*(int *)(b+vehicleFields[i].ofs) = G_ModelIndex( value );
-			#elif _CGAME
-				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterModel( value );
 			#else
 				*(int *)(b+vehicleFields[i].ofs) = trap->R_RegisterModel( value );
 			#endif
@@ -871,8 +851,6 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, cha
 			case VF_SOUND:	// take the string, get the G_SoundIndex
 			#ifdef _GAME
 				*(int *)(b+vehicleFields[i].ofs) = G_SoundIndex( value );
-			#elif _CGAME
-				*(int *)(b+vehicleFields[i].ofs) = trap->S_RegisterSound( value );
 			#else
 				*(int *)(b+vehicleFields[i].ofs) = trap->S_RegisterSound( value );
 			#endif
@@ -880,8 +858,6 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, char *parmName, cha
 			case VF_SOUND_CLIENT:	// (MP cgame only) take the string, get the G_SoundIndex
 			#ifdef _GAME
 				//*(int *)(b+vehicleFields[i].ofs) = G_SoundIndex( value );
-			#elif _CGAME
-				*(int *)(b+vehicleFields[i].ofs) = trap->S_RegisterSound( value );
 			#else
 				*(int *)(b+vehicleFields[i].ofs) = trap->S_RegisterSound( value );
 			#endif
@@ -1181,17 +1157,12 @@ int VEH_LoadVehicle( const char *vehicleName )
 	{
 		#ifdef _GAME
 			vehicle->modelIndex = G_ModelIndex( va( "models/players/%s/model.glm", vehicle->model ) );
-		#elif _CGAME
-			vehicle->modelIndex = trap->R_RegisterModel( va( "models/players/%s/model.glm", vehicle->model ) );
 		#else
 			vehicle->modelIndex = trap->R_RegisterModel( va( "models/players/%s/model.glm", vehicle->model ) );
 		#endif
 	}
 
-	#if defined (_CGAME)
-		if ( VALIDSTRING( vehicle->skin ) )
-			trap->R_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, vehicle->skin) );
-	#elif defined(_UI)
+	#if defined(_CGAME) || defined(_UI)
 		if ( VALIDSTRING( vehicle->skin ) )
 			trap->R_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, vehicle->skin) );
 	#endif
@@ -1214,9 +1185,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 	{
 		#ifdef _GAME
 			G_SoundIndex( "sound/vehicles/common/fire_lp.wav" );
-		#elif defined(_CGAME)
-			trap->S_RegisterSound( "sound/vehicles/common/fire_lp.wav" );
-		#elif defined(_UI)
+		#else
 			trap->S_RegisterSound( "sound/vehicles/common/fire_lp.wav" );
 		#endif
 	}
@@ -1306,13 +1275,7 @@ void BG_VehWeaponLoadParms( void )
 	*marker = 0;
 
 	//now load in the extra .veh extensions
-	#ifdef _GAME
-		fileCnt = trap->FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
-	#elif _CGAME
-		fileCnt = trap->FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
-	#elif _UI
-		fileCnt = trap->FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
-	#endif
+	fileCnt = trap->FS_GetFileList("ext_data/vehicles/weapons", ".vwp", vehWeaponExtensionListBuf, sizeof(vehWeaponExtensionListBuf) );
 
 	holdChar = vehWeaponExtensionListBuf;
 
@@ -1328,13 +1291,7 @@ void BG_VehWeaponLoadParms( void )
 
 //		Com_Printf( "Parsing %s\n", holdChar );
 
-		#ifdef _GAME
-			len = trap->FS_Open(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
-		#elif _CGAME
-			len = trap->FS_Open(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
-		#elif _UI
-			len = trap->FS_Open(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
-		#endif
+		len = trap->FS_Open(va( "ext_data/vehicles/weapons/%s", holdChar), &f, FS_READ);
 
 		if ( len == -1 ) 
 		{
@@ -1342,13 +1299,7 @@ void BG_VehWeaponLoadParms( void )
 		}
 		else
 		{
-			#ifdef _GAME
-				trap->FS_Read(tempReadBuffer, len, f);
-			#elif _CGAME
-				trap->FS_Read(tempReadBuffer, len, f);
-			#elif _UI
-				trap->FS_Read(tempReadBuffer, len, f);
-			#endif
+			trap->FS_Read(tempReadBuffer, len, f);
 			tempReadBuffer[len] = 0;
 
 			// Don't let it end on a } because that should be a stand-alone token.
@@ -1363,13 +1314,7 @@ void BG_VehWeaponLoadParms( void )
 				Com_Error(ERR_DROP, "Vehicle Weapon extensions (*.vwp) are too large" );
 			}
 			strcat( marker, tempReadBuffer );
-			#ifdef _GAME
-				trap->FS_Close( f );
-			#elif _CGAME
-				trap->FS_Close( f );
-			#elif _UI
-				trap->FS_Close( f );
-			#endif
+			trap->FS_Close( f );
 
 			totallen += len;
 			marker = VehWeaponParms+totallen;
@@ -1396,13 +1341,7 @@ void BG_VehicleLoadParms( void )
 	*marker = 0;
 
 	//now load in the extra .veh extensions
-	#ifdef _GAME
-		fileCnt = trap->FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
-	#elif _CGAME
-		fileCnt = trap->FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
-	#elif _UI
-		fileCnt = trap->FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
-	#endif
+	fileCnt = trap->FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
 
 	holdChar = vehExtensionListBuf;
 
@@ -1418,13 +1357,7 @@ void BG_VehicleLoadParms( void )
 
 //		Com_Printf( "Parsing %s\n", holdChar );
 
-		#ifdef _GAME
-			len = trap->FS_Open(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
-		#elif _CGAME
-			len = trap->FS_Open(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
-		#elif _UI
-			len = trap->FS_Open(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
-		#endif
+		len = trap->FS_Open(va( "ext_data/vehicles/%s", holdChar), &f, FS_READ);
 
 		if ( len == -1 ) 
 		{
@@ -1432,13 +1365,7 @@ void BG_VehicleLoadParms( void )
 		}
 		else
 		{
-			#ifdef _GAME
-				trap->FS_Read(tempReadBuffer, len, f);
-			#elif _CGAME
-				trap->FS_Read(tempReadBuffer, len, f);
-			#elif _UI
-				trap->FS_Read(tempReadBuffer, len, f);
-			#endif
+			trap->FS_Read(tempReadBuffer, len, f);
 			tempReadBuffer[len] = 0;
 
 			// Don't let it end on a } because that should be a stand-alone token.
@@ -1453,13 +1380,7 @@ void BG_VehicleLoadParms( void )
 				Com_Error(ERR_DROP, "Vehicle extensions (*.veh) are too large" );
 			}
 			strcat( marker, tempReadBuffer );
-			#ifdef _GAME
-				trap->FS_Close( f );
-			#elif _CGAME
-				trap->FS_Close( f );
-			#elif _UI
-				trap->FS_Close( f );
-			#endif
+			trap->FS_Close( f );
 
 			totallen += len;
 			marker = VehicleParms+totallen;
@@ -1529,22 +1450,14 @@ void AttachRidersGeneric( Vehicle_t *pVeh )
 		vec3_t	yawOnlyAngles;
 		bgEntity_t *parent = pVeh->m_pParentEntity;
 		bgEntity_t *pilot = pVeh->m_pPilot;
-	#if defined(_GAME)
 		int crotchBolt = trap->G2API_AddBolt(parent->ghoul2, 0, "*driver");
-	#elif defined(_CGAME)
-		int crotchBolt = trap->G2API_AddBolt(parent->ghoul2, 0, "*driver");
-	#endif
 
 		assert(parent->playerState);
 
 		VectorSet(yawOnlyAngles, 0, parent->playerState->viewangles[YAW], 0);
 
 		// Get the driver tag.
-		#if defined(_GAME)
-			trap->G2API_GetBoltMatrix( parent->ghoul2, 0, crotchBolt, &boltMatrix, yawOnlyAngles, parent->playerState->origin, BG_GetTime(), NULL, parent->modelScale );
-		#elif defined(_CGAME)
-			trap->G2API_GetBoltMatrix( parent->ghoul2, 0, crotchBolt, &boltMatrix, yawOnlyAngles, parent->playerState->origin, BG_GetTime(), NULL, parent->modelScale );
-		#endif
+		trap->G2API_GetBoltMatrix( parent->ghoul2, 0, crotchBolt, &boltMatrix, yawOnlyAngles, parent->playerState->origin, BG_GetTime(), NULL, parent->modelScale );
 		BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, pilot->playerState->origin );
 	}
 }
