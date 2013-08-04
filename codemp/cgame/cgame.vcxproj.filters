@@ -104,9 +104,6 @@
     <ClCompile Include="cg_snapshot.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cg_strap.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="cg_syscalls.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -185,9 +182,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\game\bg_saga.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\game\bg_strap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\game\bg_weapons.h">

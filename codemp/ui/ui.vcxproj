@@ -164,7 +164,6 @@
     <ClInclude Include="..\game\bg_local.h" />
     <ClInclude Include="..\game\bg_public.h" />
     <ClInclude Include="..\game\bg_saga.h" />
-    <ClInclude Include="..\game\bg_strap.h" />
     <ClInclude Include="..\game\bg_weapons.h" />
     <ClInclude Include="..\qcommon\disablewarnings.h" />
     <ClInclude Include="..\qcommon\game_version.h" />
