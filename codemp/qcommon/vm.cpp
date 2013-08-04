@@ -311,6 +311,12 @@ void *VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue ) {
 	return (void *)intValue;
 }
 
+float _vmf( intptr_t x ) {
+	floatint_t fi;
+	fi.i = (int) x;
+	return fi.f;
+}
+
 /*
 ==============
 VM_Call

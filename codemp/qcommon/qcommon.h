@@ -306,26 +306,10 @@ void			 VM_Shifted_Alloc( void **ptr, int size );
 void			 VM_Shifted_Free( void **ptr );
 void			*VM_ArgPtr( intptr_t intValue );
 void			*VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue );
+float			_vmf( intptr_t x );
 
-void	VM_FreeRemaining();
-void	VM_DelayedFree ( vm_t *vm );
-void	VM_Free( vm_t *vm );
-void	VM_Clear(void);
-vm_t	*VM_Restart( vm_t *vm );
-
-intptr_t		QDECL VM_Call( vm_t *vm, int callNum, ... );
-
-void	VM_Debug( int level );
-
-void	VM_Shifted_Alloc(void **ptr, int size);
-void	VM_Shifted_Free(void **ptr);
-
-void	*VM_ArgPtr( intptr_t intValue );
-void	*VM_ExplicitArgPtr( vm_t *vm, intptr_t intValue );
-
-#define	VMA(x) VM_ArgPtr(args[x])
-float _vmf(intptr_t x);
-#define	VMF(x)	_vmf( args[x] )
+#define	VMA(x) VM_ArgPtr( args[x] )
+#define	VMF(x) _vmf( args[x] )
 
 /*
 ==============================================================

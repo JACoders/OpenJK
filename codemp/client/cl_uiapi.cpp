@@ -441,7 +441,8 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return 0;
 
 	case TRAP_STRNCPY:
-		return (int)strncpy( (char *)VMA(1), (const char *)VMA(2), args[3] );
+		strncpy( (char *)VMA(1), (const char *)VMA(2), args[3] );
+		return args[1];
 
 	case TRAP_SIN:
 		return FloatAsInt( sin( VMF(1) ) );
@@ -823,7 +824,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return SE_GetNumLanguages();
 
 	case UI_SP_GETLANGUAGENAME:
-		CL_SE_GetLanguageName( (const int)VMA(1), (char *)VMA(2) );
+		CL_SE_GetLanguageName( args[1], (char *)VMA(2) );
 		return 0;
 
 	case UI_SP_GETSTRINGTEXTSTRING:

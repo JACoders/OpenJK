@@ -316,8 +316,6 @@ float FloatSwap( const float *f );
 	// bk001205 - from Makefile
 	#define stricmp strcasecmp
 
-	#define QINLINE /*inline*/
-
 	#define	PATH_SEP '/'
 	#define RAND_MAX 2147483647
 
@@ -330,7 +328,7 @@ float FloatSwap( const float *f );
 	#ifdef __clang__
 		#define QINLINE static inline
 	#else
-		#define QINLINE inline
+		#define QINLINE /*inline*/
 	#endif
 
 	#define PATH_SEP '/'
@@ -431,10 +429,6 @@ float FloatSwap( const float *f );
 #if !defined(PATH_SEP)
 	#error "PATH_SEP not defined"
 #endif
-#if !defined(DLL_EXT)
-	#error "DLL_EXT not defined"
-#endif
-
 
 // endianness
 void CopyShortSwap( void *dest, void *src );
