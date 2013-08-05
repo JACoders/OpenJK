@@ -1098,6 +1098,22 @@ void Com_ExecuteCfg(void)
 
 /*
 =================
+Com_InitRand
+Seed the random number generator, if possible with an OS supplied random seed.
+=================
+*/
+static void Com_InitRand(void)
+{
+	unsigned int seed;
+
+	if(Sys_RandomBytes((byte *) &seed, sizeof(seed)))
+		srand(seed);
+	else
+		srand(time(NULL));
+}
+
+/*
+=================
 Com_Init
 =================
 */
@@ -1114,6 +1130,9 @@ void Com_Init( char *commandLine ) {
 		Cvar_Init ();
 
 		navigator.Init();
+
+		// initialize the weak pseudo-random number generator for use later.
+		Com_InitRand();
 
 		// prepare enough of the subsystems to handle
 		// cvar and command buffer management
