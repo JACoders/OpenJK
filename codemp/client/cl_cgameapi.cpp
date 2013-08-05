@@ -445,7 +445,7 @@ static void CL_RMG_Init( int terrainID, const char *terrainInfo ) {
 static qboolean CGFX_PlayBoltedEffectID( int id, vec3_t org, void *ghoul2, const int boltNum, const int entNum, const int modelNum, int iLooptime, qboolean isRelative ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
 	int boltInfo=0;
-	if ( re.G2API_AttachEnt( &boltInfo, &g2[modelNum], boltNum, entNum, modelNum ) )
+	if ( re->G2API_AttachEnt( &boltInfo, &g2[modelNum], boltNum, entNum, modelNum ) )
 	{
 		FX_PlayBoltedEffectID(id, org, boltInfo, g2.mItem, iLooptime, isRelative );
 		return qtrue;
@@ -470,73 +470,73 @@ static qboolean CL_SE_GetStringTextString( const char *text, char *buffer, int b
 }
 
 static void CL_G2API_ListModelSurfaces( void *ghlInfo ) {
-	re.G2API_ListSurfaces( (CGhoul2Info *)ghlInfo );
+	re->G2API_ListSurfaces( (CGhoul2Info *)ghlInfo );
 }
 
 static void CL_G2API_ListModelBones( void *ghlInfo, int frame ) {
-	re.G2API_ListBones( (CGhoul2Info *)ghlInfo, frame );
+	re->G2API_ListBones( (CGhoul2Info *)ghlInfo, frame );
 }
 
 static void CL_G2API_SetGhoul2ModelIndexes( void *ghoul2, qhandle_t *modelList, qhandle_t *skinList ) {
-	re.G2API_SetGhoul2ModelIndexes( *((CGhoul2Info_v *)ghoul2), modelList, skinList );
+	re->G2API_SetGhoul2ModelIndexes( *((CGhoul2Info_v *)ghoul2), modelList, skinList );
 }
 
 static qboolean CL_G2API_HaveWeGhoul2Models( void *ghoul2) {
-	return re.G2API_HaveWeGhoul2Models( *((CGhoul2Info_v *)ghoul2) );
+	return re->G2API_HaveWeGhoul2Models( *((CGhoul2Info_v *)ghoul2) );
 }
 
 static qboolean CL_G2API_GetBoltMatrix( void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale ) {
-	return re.G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
+	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }
 
 static qboolean CL_G2API_GetBoltMatrix_NoReconstruct( void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale ) {
-	re.G2API_BoltMatrixReconstruction( qfalse );
-	return re.G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
+	re->G2API_BoltMatrixReconstruction( qfalse );
+	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }
 
 static qboolean CL_G2API_GetBoltMatrix_NoRecNoRot( void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix, const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale ) {
-	re.G2API_BoltMatrixSPMethod( qtrue );
-	return re.G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
+	re->G2API_BoltMatrixSPMethod( qtrue );
+	return re->G2API_GetBoltMatrix( *((CGhoul2Info_v *)ghoul2), modelIndex, boltIndex, matrix, angles, position, frameNum, modelList, scale );
 }
 
 static int CL_G2API_InitGhoul2Model( void **ghoul2Ptr, const char *fileName, int modelIndex, qhandle_t customSkin, qhandle_t customShader, int modelFlags, int lodBias ) {
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-	return re.G2API_InitGhoul2Model( (CGhoul2Info_v **)ghoul2Ptr, fileName, modelIndex, customSkin, customShader, modelFlags, lodBias );
+	return re->G2API_InitGhoul2Model( (CGhoul2Info_v **)ghoul2Ptr, fileName, modelIndex, customSkin, customShader, modelFlags, lodBias );
 }
 
 static qboolean CL_G2API_SetSkin( void *ghoul2, int modelIndex, qhandle_t customSkin, qhandle_t renderSkin ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re.G2API_SetSkin( &g2[modelIndex], customSkin, renderSkin );
+	return re->G2API_SetSkin( &g2[modelIndex], customSkin, renderSkin );
 }
 
 static void CL_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) {
-	re.G2API_CollisionDetect( collRecMap, *((CGhoul2Info_v *)ghoul2), angles, position, frameNumber, entNum, rayStart, rayEnd, scale, G2VertSpaceClient, traceFlags, useLod, fRadius );
+	re->G2API_CollisionDetect( collRecMap, *((CGhoul2Info_v *)ghoul2), angles, position, frameNumber, entNum, rayStart, rayEnd, scale, G2VertSpaceClient, traceFlags, useLod, fRadius );
 }
 
 static void CL_G2API_CollisionDetectCache( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) {
-	re.G2API_CollisionDetectCache( collRecMap, *((CGhoul2Info_v *)ghoul2), angles, position, frameNumber, entNum, rayStart, rayEnd, scale, G2VertSpaceClient, traceFlags, useLod, fRadius );
+	re->G2API_CollisionDetectCache( collRecMap, *((CGhoul2Info_v *)ghoul2), angles, position, frameNumber, entNum, rayStart, rayEnd, scale, G2VertSpaceClient, traceFlags, useLod, fRadius );
 }
 
 static void CL_G2API_CleanGhoul2Models( void **ghoul2Ptr ) {
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-	re.G2API_CleanGhoul2Models( (CGhoul2Info_v **)ghoul2Ptr );
+	re->G2API_CleanGhoul2Models( (CGhoul2Info_v **)ghoul2Ptr );
 }
 
 static qboolean CL_G2API_SetBoneAngles( void *ghoul2, int modelIndex, const char *boneName, const vec3_t angles, const int flags, const int up, const int right, const int forward, qhandle_t *modelList, int blendTime , int currentTime ) {
-	return re.G2API_SetBoneAngles( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName, angles, flags, (const Eorientations)up, (const Eorientations)right, (const Eorientations)forward, modelList, blendTime , currentTime );
+	return re->G2API_SetBoneAngles( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName, angles, flags, (const Eorientations)up, (const Eorientations)right, (const Eorientations)forward, modelList, blendTime , currentTime );
 }
 
 static qboolean CL_G2API_SetBoneAnim( void *ghoul2, const int modelIndex, const char *boneName, const int startFrame, const int endFrame, const int flags, const float animSpeed, const int currentTime, const float setFrame, const int blendTime ) {
-	return re.G2API_SetBoneAnim( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName, startFrame, endFrame, flags, animSpeed, currentTime, setFrame, blendTime );
+	return re->G2API_SetBoneAnim( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName, startFrame, endFrame, flags, animSpeed, currentTime, setFrame, blendTime );
 }
 
 static qboolean CL_G2API_GetBoneAnim( void *ghoul2, const char *boneName, const int currentTime, float *currentFrame, int *startFrame, int *endFrame, int *flags, float *animSpeed, int *modelList, const int modelIndex ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re.G2API_GetBoneAnim( &g2[modelIndex], boneName, currentTime, currentFrame, startFrame, endFrame, flags, animSpeed, modelList );
+	return re->G2API_GetBoneAnim( &g2[modelIndex], boneName, currentTime, currentFrame, startFrame, endFrame, flags, animSpeed, modelList );
 }
 
 static qboolean CL_G2API_GetBoneFrame( void *ghoul2, const char *boneName, const int currentTime, float *currentFrame, int *modelList, const int modelIndex ) {
@@ -544,49 +544,49 @@ static qboolean CL_G2API_GetBoneFrame( void *ghoul2, const char *boneName, const
 	int iDontCare1 = 0, iDontCare2 = 0, iDontCare3 = 0;
 	float fDontCare1 = 0;
 
-	return re.G2API_GetBoneAnim(&g2[modelIndex], boneName, currentTime, currentFrame, &iDontCare1, &iDontCare2, &iDontCare3, &fDontCare1, modelList);
+	return re->G2API_GetBoneAnim(&g2[modelIndex], boneName, currentTime, currentFrame, &iDontCare1, &iDontCare2, &iDontCare3, &fDontCare1, modelList);
 }
 
 static void CL_G2API_GetGLAName( void *ghoul2, int modelIndex, char *fillBuf ) {
-	char *tmp = re.G2API_GetGLAName( *((CGhoul2Info_v *)ghoul2), modelIndex );
+	char *tmp = re->G2API_GetGLAName( *((CGhoul2Info_v *)ghoul2), modelIndex );
 	strcpy( fillBuf, tmp );
 }
 
 static int CL_G2API_CopyGhoul2Instance( void *g2From, void *g2To, int modelIndex ) {
-	return re.G2API_CopyGhoul2Instance( *((CGhoul2Info_v *)g2From), *((CGhoul2Info_v *)g2To), modelIndex );
+	return re->G2API_CopyGhoul2Instance( *((CGhoul2Info_v *)g2From), *((CGhoul2Info_v *)g2To), modelIndex );
 }
 
 static void CL_G2API_CopySpecificGhoul2Model( void *g2From, int modelFrom, void *g2To, int modelTo ) {
-	re.G2API_CopySpecificG2Model( *((CGhoul2Info_v *)g2From), modelFrom, *((CGhoul2Info_v *)g2To), modelTo );
+	re->G2API_CopySpecificG2Model( *((CGhoul2Info_v *)g2From), modelFrom, *((CGhoul2Info_v *)g2To), modelTo );
 }
 
 static void CL_G2API_DuplicateGhoul2Instance( void *g2From, void **g2To ) {
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-	re.G2API_DuplicateGhoul2Instance( *((CGhoul2Info_v *)g2From), (CGhoul2Info_v **)g2To );
+	re->G2API_DuplicateGhoul2Instance( *((CGhoul2Info_v *)g2From), (CGhoul2Info_v **)g2To );
 }
 
 static qboolean CL_G2API_HasGhoul2ModelOnIndex( void *ghlInfo, int modelIndex ) {
-	return re.G2API_HasGhoul2ModelOnIndex( (CGhoul2Info_v **)ghlInfo, modelIndex );
+	return re->G2API_HasGhoul2ModelOnIndex( (CGhoul2Info_v **)ghlInfo, modelIndex );
 }
 
 static qboolean CL_G2API_RemoveGhoul2Model( void *ghlInfo, int modelIndex ) {
 #ifdef _FULL_G2_LEAK_CHECKING
 		g_G2AllocServer = 0;
 #endif
-	return re.G2API_RemoveGhoul2Model( (CGhoul2Info_v **)ghlInfo, modelIndex );
+	return re->G2API_RemoveGhoul2Model( (CGhoul2Info_v **)ghlInfo, modelIndex );
 }
 
 static qboolean CL_G2API_SkinlessModel( void *ghlInfo, int modelIndex ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghlInfo);
-	return re.G2API_SkinlessModel( &g2[modelIndex] );
+	return re->G2API_SkinlessModel( &g2[modelIndex] );
 }
 
 static int CL_G2API_GetNumGoreMarks( void *ghlInfo, int modelIndex ) {
 #ifdef _G2_GORE
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghlInfo);
-	return re.G2API_GetNumGoreMarks( &g2[modelIndex] );
+	return re->G2API_GetNumGoreMarks( &g2[modelIndex] );
 #else
 	return 0;
 #endif
@@ -594,73 +594,73 @@ static int CL_G2API_GetNumGoreMarks( void *ghlInfo, int modelIndex ) {
 
 static void CL_G2API_AddSkinGore( void *ghlInfo, SSkinGoreData *gore ) {
 #ifdef _G2_GORE
-	re.G2API_AddSkinGore( *((CGhoul2Info_v *)ghlInfo), *(SSkinGoreData *)gore );
+	re->G2API_AddSkinGore( *((CGhoul2Info_v *)ghlInfo), *(SSkinGoreData *)gore );
 #endif
 }
 
 static void CL_G2API_ClearSkinGore( void *ghlInfo ) {
 #ifdef _G2_GORE
-	re.G2API_ClearSkinGore( *((CGhoul2Info_v *)ghlInfo) );
+	re->G2API_ClearSkinGore( *((CGhoul2Info_v *)ghlInfo) );
 #endif
 }
 
 static int CL_G2API_Ghoul2Size( void *ghlInfo ) {
-	return re.G2API_Ghoul2Size( *((CGhoul2Info_v *)ghlInfo) );
+	return re->G2API_Ghoul2Size( *((CGhoul2Info_v *)ghlInfo) );
 }
 
 static int CL_G2API_AddBolt( void *ghoul2, int modelIndex, const char *boneName ) {
-	return re.G2API_AddBolt( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName );
+	return re->G2API_AddBolt( *((CGhoul2Info_v *)ghoul2), modelIndex, boneName );
 }
 
 static qboolean CL_G2API_AttachEnt( int *boltInfo, void *ghlInfoTo, int toBoltIndex, int entNum, int toModelNum ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghlInfoTo);
-	return re.G2API_AttachEnt( boltInfo, &g2[0], toBoltIndex, entNum, toModelNum );
+	return re->G2API_AttachEnt( boltInfo, &g2[0], toBoltIndex, entNum, toModelNum );
 }
 
 static void CL_G2API_SetBoltInfo( void *ghoul2, int modelIndex, int boltInfo ) {
-	re.G2API_SetBoltInfo( *((CGhoul2Info_v *)ghoul2), modelIndex, boltInfo );
+	re->G2API_SetBoltInfo( *((CGhoul2Info_v *)ghoul2), modelIndex, boltInfo );
 }
 
 static qboolean CL_G2API_SetRootSurface( void *ghoul2, const int modelIndex, const char *surfaceName ) {
-	return re.G2API_SetRootSurface( *((CGhoul2Info_v *)ghoul2), modelIndex, surfaceName );
+	return re->G2API_SetRootSurface( *((CGhoul2Info_v *)ghoul2), modelIndex, surfaceName );
 }
 
 static qboolean CL_G2API_SetSurfaceOnOff( void *ghoul2, const char *surfaceName, const int flags ) {
-	return re.G2API_SetSurfaceOnOff( *((CGhoul2Info_v *)ghoul2), surfaceName, flags );
+	return re->G2API_SetSurfaceOnOff( *((CGhoul2Info_v *)ghoul2), surfaceName, flags );
 }
 
 static qboolean CL_G2API_SetNewOrigin( void *ghoul2, const int boltIndex ) {
-	return re.G2API_SetNewOrigin( *((CGhoul2Info_v *)ghoul2), boltIndex );
+	return re->G2API_SetNewOrigin( *((CGhoul2Info_v *)ghoul2), boltIndex );
 }
 
 static qboolean CL_G2API_DoesBoneExist( void *ghoul2, int modelIndex, const char *boneName ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re.G2API_DoesBoneExist( &g2[modelIndex], boneName );
+	return re->G2API_DoesBoneExist( &g2[modelIndex], boneName );
 }
 
 static int CL_G2API_GetSurfaceRenderStatus( void *ghoul2, const int modelIndex, const char *surfaceName ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re.G2API_GetSurfaceRenderStatus( &g2[modelIndex], surfaceName );
+	return re->G2API_GetSurfaceRenderStatus( &g2[modelIndex], surfaceName );
 }
 
 static int CL_G2API_GetTime( void ) {
-	return re.G2API_GetTime( 0 );
+	return re->G2API_GetTime( 0 );
 }
 
 static void CL_G2API_SetTime( int time, int clock ) {
-	re.G2API_SetTime( time, clock );
+	re->G2API_SetTime( time, clock );
 }
 
 static void CL_G2API_AbsurdSmoothing( void *ghoul2, qboolean status ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	re.G2API_AbsurdSmoothing( g2, status );
+	re->G2API_AbsurdSmoothing( g2, status );
 }
 
 static void CL_G2API_SetRagDoll( void *ghoul2, sharedRagDollParams_t *params ) {
 	CRagDollParams rdParams;
 
 	if ( !params ) {
-		re.G2API_ResetRagDoll( *((CGhoul2Info_v *)ghoul2) );
+		re->G2API_ResetRagDoll( *((CGhoul2Info_v *)ghoul2) );
 		return;
 	}
 
@@ -683,7 +683,7 @@ static void CL_G2API_SetRagDoll( void *ghoul2, sharedRagDollParams_t *params ) {
 	rdParams.RagPhase = (CRagDollParams::ERagPhase)params->RagPhase;
 	rdParams.effectorsToTurnOff = (CRagDollParams::ERagEffector)params->effectorsToTurnOff;
 
-	re.G2API_SetRagDoll( *((CGhoul2Info_v *)ghoul2), &rdParams );
+	re->G2API_SetRagDoll( *((CGhoul2Info_v *)ghoul2), &rdParams );
 }
 
 static void CL_G2API_AnimateG2Models( void *ghoul2, int time, sharedRagDollUpdateParams_t *params ) {
@@ -700,66 +700,66 @@ static void CL_G2API_AnimateG2Models( void *ghoul2, int time, sharedRagDollUpdat
 	rduParams.me = params->me;
 	rduParams.settleFrame = params->settleFrame;
 
-	re.G2API_AnimateG2ModelsRag( *((CGhoul2Info_v *)ghoul2), time, &rduParams );
+	re->G2API_AnimateG2ModelsRag( *((CGhoul2Info_v *)ghoul2), time, &rduParams );
 }
 
 static qboolean CL_G2API_RagPCJConstraint( void *ghoul2, const char *boneName, vec3_t min, vec3_t max ) {
-	return re.G2API_RagPCJConstraint( *((CGhoul2Info_v *)ghoul2), boneName, min, max );
+	return re->G2API_RagPCJConstraint( *((CGhoul2Info_v *)ghoul2), boneName, min, max );
 }
 
 static qboolean CL_G2API_RagPCJGradientSpeed( void *ghoul2, const char *boneName, const float speed ) {
-	return re.G2API_RagPCJGradientSpeed( *((CGhoul2Info_v *)ghoul2), boneName, speed );
+	return re->G2API_RagPCJGradientSpeed( *((CGhoul2Info_v *)ghoul2), boneName, speed );
 }
 
 static qboolean CL_G2API_RagEffectorGoal( void *ghoul2, const char *boneName, vec3_t pos ) {
-	return re.G2API_RagEffectorGoal( *((CGhoul2Info_v *)ghoul2), boneName, pos );
+	return re->G2API_RagEffectorGoal( *((CGhoul2Info_v *)ghoul2), boneName, pos );
 }
 
 static qboolean CL_G2API_GetRagBonePos( void *ghoul2, const char *boneName, vec3_t pos, vec3_t entAngles, vec3_t entPos, vec3_t entScale ) {
-	return re.G2API_GetRagBonePos( *((CGhoul2Info_v *)ghoul2), boneName, pos, entAngles, entPos, entScale );
+	return re->G2API_GetRagBonePos( *((CGhoul2Info_v *)ghoul2), boneName, pos, entAngles, entPos, entScale );
 }
 
 static qboolean CL_G2API_RagEffectorKick( void *ghoul2, const char *boneName, vec3_t velocity ) {
-	return re.G2API_RagEffectorKick( *((CGhoul2Info_v *)ghoul2), boneName, velocity );
+	return re->G2API_RagEffectorKick( *((CGhoul2Info_v *)ghoul2), boneName, velocity );
 }
 
 static qboolean CL_G2API_RagForceSolve( void *ghoul2, qboolean force ) {
-	return re.G2API_RagForceSolve( *((CGhoul2Info_v *)ghoul2), force );
+	return re->G2API_RagForceSolve( *((CGhoul2Info_v *)ghoul2), force );
 }
 
 static qboolean CL_G2API_SetBoneIKState( void *ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params ) {
-	return re.G2API_SetBoneIKState( *((CGhoul2Info_v *)ghoul2), time, boneName, ikState, params );
+	return re->G2API_SetBoneIKState( *((CGhoul2Info_v *)ghoul2), time, boneName, ikState, params );
 }
 
 static qboolean CL_G2API_IKMove( void *ghoul2, int time, sharedIKMoveParams_t *params ) {
-	return re.G2API_IKMove( *((CGhoul2Info_v *)ghoul2), time, params );
+	return re->G2API_IKMove( *((CGhoul2Info_v *)ghoul2), time, params );
 }
 
 static qboolean CL_G2API_RemoveBone( void *ghoul2, const char *boneName, int modelIndex ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	return re.G2API_RemoveBone( &g2[modelIndex], boneName );
+	return re->G2API_RemoveBone( &g2[modelIndex], boneName );
 }
 
 static void CL_G2API_AttachInstanceToEntNum( void *ghoul2, int entityNum, qboolean server ) {
-	re.G2API_AttachInstanceToEntNum( *((CGhoul2Info_v *)ghoul2), entityNum, server );
+	re->G2API_AttachInstanceToEntNum( *((CGhoul2Info_v *)ghoul2), entityNum, server );
 }
 
 static void CL_G2API_ClearAttachedInstance( int entityNum ) {
-	re.G2API_ClearAttachedInstance( entityNum );
+	re->G2API_ClearAttachedInstance( entityNum );
 }
 
 static void CL_G2API_CleanEntAttachments( void ) {
-	re.G2API_CleanEntAttachments();
+	re->G2API_CleanEntAttachments();
 }
 
 static qboolean CL_G2API_OverrideServer( void *serverInstance ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)serverInstance);
-	return re.G2API_OverrideServerWithClientData( &g2[0] );
+	return re->G2API_OverrideServerWithClientData( &g2[0] );
 }
 
 static void CL_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelIndex, char *fillBuf ) {
 	CGhoul2Info_v &g2 = *((CGhoul2Info_v *)ghoul2);
-	char *tmp = re.G2API_GetSurfaceName( &g2[modelIndex], surfNumber );
+	char *tmp = re->G2API_GetSurfaceName( &g2[modelIndex], surfNumber );
 	strcpy( fillBuf, tmp );
 }
 
@@ -956,7 +956,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_CM_MARKFRAGMENTS:
-		return re.MarkFragments( args[1], (const vec3_t *)VMA(2), (const float *)VMA(3), args[4], (float *)VMA(5), args[6], (markFragment_t *)VMA(7) );
+		return re->MarkFragments( args[1], (const vec3_t *)VMA(2), (const float *)VMA(3), args[4], (float *)VMA(5), args[6], (markFragment_t *)VMA(7) );
 
 	case CG_S_GETVOICEVOLUME:
 		return CL_S_GetVoiceVolume( args[1] );
@@ -1027,78 +1027,78 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return AS_GetBModelSound((const char *)VMA(1), args[2]);
 
 	case CG_R_LOADWORLDMAP:
-		re.LoadWorld( (const char *)VMA(1) );
+		re->LoadWorld( (const char *)VMA(1) );
 		return 0; 
 
 	case CG_R_REGISTERMODEL:
-		return re.RegisterModel( (const char *)VMA(1) );
+		return re->RegisterModel( (const char *)VMA(1) );
 
 	case CG_R_REGISTERSKIN:
-		return re.RegisterSkin( (const char *)VMA(1) );
+		return re->RegisterSkin( (const char *)VMA(1) );
 
 	case CG_R_REGISTERSHADER:
-		return re.RegisterShader( (const char *)VMA(1) );
+		return re->RegisterShader( (const char *)VMA(1) );
 
 	case CG_R_REGISTERSHADERNOMIP:
-		return re.RegisterShaderNoMip( (const char *)VMA(1) );
+		return re->RegisterShaderNoMip( (const char *)VMA(1) );
 
 	case CG_R_REGISTERFONT:
-		return re.RegisterFont( (const char *)VMA(1) );
+		return re->RegisterFont( (const char *)VMA(1) );
 
 	case CG_R_FONT_STRLENPIXELS:
-		return re.Font_StrLenPixels( (const char *)VMA(1), args[2], VMF(3) );
+		return re->Font_StrLenPixels( (const char *)VMA(1), args[2], VMF(3) );
 
 	case CG_R_FONT_STRLENCHARS:
-		return re.Font_StrLenChars( (const char *)VMA(1) );
+		return re->Font_StrLenChars( (const char *)VMA(1) );
 
 	case CG_R_FONT_STRHEIGHTPIXELS:
-		return re.Font_HeightPixels( args[1], VMF(2) );
+		return re->Font_HeightPixels( args[1], VMF(2) );
 
 	case CG_R_FONT_DRAWSTRING:
-		re.Font_DrawString( args[1], args[2], (const char *)VMA(3), (const float *) VMA(4), args[5], args[6], VMF(7) );
+		re->Font_DrawString( args[1], args[2], (const char *)VMA(3), (const float *) VMA(4), args[5], args[6], VMF(7) );
 		return 0;
 
 	case CG_LANGUAGE_ISASIAN:
-		return re.Language_IsAsian();
+		return re->Language_IsAsian();
 
 	case CG_LANGUAGE_USESSPACES:
-		return re.Language_UsesSpaces();
+		return re->Language_UsesSpaces();
 
 	case CG_ANYLANGUAGE_READCHARFROMSTRING:
-		return re.AnyLanguage_ReadCharFromString( (const char *) VMA(1), (int *) VMA(2), (qboolean *) VMA(3) );
+		return re->AnyLanguage_ReadCharFromString( (const char *) VMA(1), (int *) VMA(2), (qboolean *) VMA(3) );
 
 	case CG_R_CLEARSCENE:
-		re.ClearScene();
+		re->ClearScene();
 		return 0;
 
 	case CG_R_CLEARDECALS:
-		re.ClearDecals();
+		re->ClearDecals();
 		return 0;
 
 	case CG_R_ADDREFENTITYTOSCENE:
-		re.AddRefEntityToScene( (const refEntity_t *)VMA(1) );
+		re->AddRefEntityToScene( (const refEntity_t *)VMA(1) );
 		return 0;
 
 	case CG_R_ADDPOLYTOSCENE:
-		re.AddPolyToScene( args[1], args[2], (const polyVert_t *)VMA(3), 1 );
+		re->AddPolyToScene( args[1], args[2], (const polyVert_t *)VMA(3), 1 );
 		return 0;
 
 	case CG_R_ADDPOLYSTOSCENE:
-		re.AddPolyToScene( args[1], args[2], (const polyVert_t *)VMA(3), args[4] );
+		re->AddPolyToScene( args[1], args[2], (const polyVert_t *)VMA(3), args[4] );
 		return 0;
 
 	case CG_R_ADDDECALTOSCENE:
-		re.AddDecalToScene( (qhandle_t)args[1], (const float*)VMA(2), (const float*)VMA(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), (qboolean)args[9], VMF(10), (qboolean)args[11] );
+		re->AddDecalToScene( (qhandle_t)args[1], (const float*)VMA(2), (const float*)VMA(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), (qboolean)args[9], VMF(10), (qboolean)args[11] );
 		return 0;
 
 	case CG_R_LIGHTFORPOINT:
-		return re.LightForPoint( (float *)VMA(1), (float *)VMA(2), (float *)VMA(3), (float *)VMA(4) );
+		return re->LightForPoint( (float *)VMA(1), (float *)VMA(2), (float *)VMA(3), (float *)VMA(4) );
 
 	case CG_R_ADDLIGHTTOSCENE:
 #ifdef VV_LIGHTING
 		VVLightMan.RE_AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
 #else
-		re.AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
+		re->AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
 #endif
 		return 0;
 
@@ -1106,43 +1106,43 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 #ifdef VV_LIGHTING
 		VVLightMan.RE_AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
 #else
-		re.AddAdditiveLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
+		re->AddAdditiveLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
 #endif
 		return 0;
 
 	case CG_R_RENDERSCENE:
-		re.RenderScene( (const refdef_t *)VMA(1) );
+		re->RenderScene( (const refdef_t *)VMA(1) );
 		return 0;
 
 	case CG_R_SETCOLOR:
-		re.SetColor( (const float *)VMA(1) );
+		re->SetColor( (const float *)VMA(1) );
 		return 0;
 
 	case CG_R_DRAWSTRETCHPIC:
-		re.DrawStretchPic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), args[9] );
+		re->DrawStretchPic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), args[9] );
 		return 0;
 
 	case CG_R_MODELBOUNDS:
-		re.ModelBounds( args[1], (float *)VMA(2), (float *)VMA(3) );
+		re->ModelBounds( args[1], (float *)VMA(2), (float *)VMA(3) );
 		return 0;
 
 	case CG_R_LERPTAG:
-		return re.LerpTag( (orientation_t *)VMA(1), args[2], args[3], args[4], VMF(5), (const char *)VMA(6) );
+		return re->LerpTag( (orientation_t *)VMA(1), args[2], args[3], args[4], VMF(5), (const char *)VMA(6) );
 
 	case CG_R_DRAWROTATEPIC:
-		re.DrawRotatePic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), VMF(9), args[10] );
+		re->DrawRotatePic( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), VMF(9), args[10] );
 		return 0;
 
 	case CG_R_DRAWROTATEPIC2:
-		re.DrawRotatePic2( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), VMF(9), args[10] );
+		re->DrawRotatePic2( VMF(1), VMF(2), VMF(3), VMF(4), VMF(5), VMF(6), VMF(7), VMF(8), VMF(9), args[10] );
 		return 0;
 
 	case CG_R_SETRANGEFOG:
-		re.SetRangedFog( VMF(1) );
+		re->SetRangedFog( VMF(1) );
 		return 0;
 
 	case CG_R_SETREFRACTIONPROP:
-		re.SetRefractionProperties( VMF(1), VMF(2), (qboolean)args[3], (qboolean)args[4] );
+		re->SetRefractionProperties( VMF(1), VMF(2), (qboolean)args[3], (qboolean)args[4] );
 		return 0;
 
 	case CG_GETGLCONFIG:
@@ -1254,25 +1254,25 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_R_REMAP_SHADER:
-		re.RemapShader( (const char *)VMA(1), (const char *)VMA(2), (const char *)VMA(3) );
+		re->RemapShader( (const char *)VMA(1), (const char *)VMA(2), (const char *)VMA(3) );
 		return 0;
 
 	case CG_R_GET_LIGHT_STYLE:
-		re.GetLightStyle(args[1], (unsigned char *)VMA(2));
+		re->GetLightStyle(args[1], (unsigned char *)VMA(2));
 		return 0;
 
 	case CG_R_SET_LIGHT_STYLE:
-		re.SetLightStyle(args[1], args[2]);
+		re->SetLightStyle(args[1], args[2]);
 		return 0;
 
 	case CG_R_GET_BMODEL_VERTS:
-		re.GetBModelVerts( args[1], (float (*)[3])VMA(2), (float *)VMA(3) );
+		re->GetBModelVerts( args[1], (float (*)[3])VMA(2), (float *)VMA(3) );
 		return 0;
 
 	case CG_R_GETDISTANCECULL:
 		{
 			float *f = (float *)VMA(1);
-			*f = re.GetDistanceCull();
+			*f = re->GetDistanceCull();
 		}
 		return 0;
 
@@ -1280,22 +1280,22 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		{
 			int *w = (int *)VMA(1);
 			int *h = (int *)VMA(2);
-			re.GetRealRes( w, h );
+			re->GetRealRes( w, h );
 		}
 		return 0;
 
 	case CG_R_AUTOMAPELEVADJ:
-		re.AutomapElevationAdjustment(VMF(1));
+		re->AutomapElevationAdjustment(VMF(1));
 		return 0;
 
 	case CG_R_INITWIREFRAMEAUTO:
-		return re.InitializeWireframeAutomap();
+		return re->InitializeWireframeAutomap();
 
 	case CG_GET_ENTITY_TOKEN:
-		return re.GetEntityToken( (char *)VMA(1), args[2] );
+		return re->GetEntityToken( (char *)VMA(1), args[2] );
 
 	case CG_R_INPVS:
-		return re.inPVS( (const float *)VMA(1), (const float *)VMA(2), (byte *)VMA(3) );
+		return re->inPVS( (const float *)VMA(1), (const float *)VMA(2), (byte *)VMA(3) );
 
 #ifndef DEBUG_DISABLEFXCALLS
 	case CG_FX_ADDLINE:
@@ -1614,7 +1614,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_RE_INIT_RENDERER_TERRAIN:
-		re.InitRendererTerrain((const char *)VMA(1));
+		re->InitRendererTerrain((const char *)VMA(1));
 		return 0;
 
 	case CG_R_WEATHER_CONTENTS_OVERRIDE:
@@ -1622,11 +1622,11 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_R_WORLDEFFECTCOMMAND:
-		re.WorldEffectCommand((const char *)VMA(1));
+		re->WorldEffectCommand((const char *)VMA(1));
 		return 0;
 
 	case CG_WE_ADDWEATHERZONE:
-		re.AddWeatherZone( (vec_t *)VMA(1), (vec_t *)VMA(2) );
+		re->AddWeatherZone( (vec_t *)VMA(1), (vec_t *)VMA(2) );
 		return 0;
 
 	default:
@@ -1702,50 +1702,50 @@ void CL_BindCGame( void ) {
 		cgi.AS_AddPrecacheEntry					= AS_AddPrecacheEntry;
 		cgi.AS_GetBModelSound					= AS_GetBModelSound;
 		cgi.AS_ParseSets						= AS_ParseSets;
-		cgi.R_AddAdditiveLightToScene			= re.AddAdditiveLightToScene;
-		cgi.R_AddDecalToScene					= re.AddDecalToScene;
-		cgi.R_AddLightToScene					= re.AddLightToScene;
-		cgi.R_AddPolysToScene					= re.AddPolyToScene;
-		cgi.R_AddRefEntityToScene				= re.AddRefEntityToScene;
-		cgi.R_AnyLanguage_ReadCharFromString	= re.AnyLanguage_ReadCharFromString;
-		cgi.R_AutomapElevationAdjustment		= re.AutomapElevationAdjustment;
-		cgi.R_ClearDecals						= re.ClearDecals;
-		cgi.R_ClearScene						= re.ClearScene;
-		cgi.R_DrawStretchPic					= re.DrawStretchPic;
-		cgi.R_DrawRotatePic						= re.DrawRotatePic;
-		cgi.R_DrawRotatePic2					= re.DrawRotatePic2;
-		cgi.R_Font_DrawString					= re.Font_DrawString;
-		cgi.R_Font_HeightPixels					= re.Font_HeightPixels;
-		cgi.R_Font_StrLenChars					= re.Font_StrLenChars;
-		cgi.R_Font_StrLenPixels					= re.Font_StrLenPixels;
-		cgi.R_GetBModelVerts					= re.GetBModelVerts;
-		cgi.R_GetDistanceCull					= re.GetDistanceCull;
-		cgi.R_GetEntityToken					= re.GetEntityToken;
-		cgi.R_GetLightStyle						= re.GetLightStyle;
-		cgi.R_GetRealRes						= re.GetRealRes;
-		cgi.R_InitializeWireframeAutomap		= re.InitializeWireframeAutomap;
-		cgi.R_InPVS								= re.inPVS;
-		cgi.R_Language_IsAsian					= re.Language_IsAsian;
-		cgi.R_Language_UsesSpaces				= re.Language_UsesSpaces;
-		cgi.R_LerpTag							= re.LerpTag;
-		cgi.R_LightForPoint						= re.LightForPoint;
-		cgi.R_LoadWorld							= re.LoadWorld;
-		cgi.R_MarkFragments						= re.MarkFragments;
-		cgi.R_ModelBounds						= re.ModelBounds;
-		cgi.R_RegisterFont						= re.RegisterFont;
-		cgi.R_RegisterModel						= re.RegisterModel;
-		cgi.R_RegisterShader					= re.RegisterShader;
-		cgi.R_RegisterShaderNoMip				= re.RegisterShaderNoMip;
-		cgi.R_RegisterSkin						= re.RegisterSkin;
-		cgi.R_RemapShader						= re.RemapShader;
-		cgi.R_RenderScene						= re.RenderScene;
-		cgi.R_SetColor							= re.SetColor;
-		cgi.R_SetLightStyle						= re.SetLightStyle;
-		cgi.R_SetRangedFog						= re.SetRangedFog;
-		cgi.R_SetRefractionProperties			= re.SetRefractionProperties;
-		cgi.R_WorldEffectCommand				= re.WorldEffectCommand;
-		cgi.RE_InitRendererTerrain				= re.InitRendererTerrain;
-		cgi.WE_AddWeatherZone					= re.AddWeatherZone;
+		cgi.R_AddAdditiveLightToScene			= re->AddAdditiveLightToScene;
+		cgi.R_AddDecalToScene					= re->AddDecalToScene;
+		cgi.R_AddLightToScene					= re->AddLightToScene;
+		cgi.R_AddPolysToScene					= re->AddPolyToScene;
+		cgi.R_AddRefEntityToScene				= re->AddRefEntityToScene;
+		cgi.R_AnyLanguage_ReadCharFromString	= re->AnyLanguage_ReadCharFromString;
+		cgi.R_AutomapElevationAdjustment		= re->AutomapElevationAdjustment;
+		cgi.R_ClearDecals						= re->ClearDecals;
+		cgi.R_ClearScene						= re->ClearScene;
+		cgi.R_DrawStretchPic					= re->DrawStretchPic;
+		cgi.R_DrawRotatePic						= re->DrawRotatePic;
+		cgi.R_DrawRotatePic2					= re->DrawRotatePic2;
+		cgi.R_Font_DrawString					= re->Font_DrawString;
+		cgi.R_Font_HeightPixels					= re->Font_HeightPixels;
+		cgi.R_Font_StrLenChars					= re->Font_StrLenChars;
+		cgi.R_Font_StrLenPixels					= re->Font_StrLenPixels;
+		cgi.R_GetBModelVerts					= re->GetBModelVerts;
+		cgi.R_GetDistanceCull					= re->GetDistanceCull;
+		cgi.R_GetEntityToken					= re->GetEntityToken;
+		cgi.R_GetLightStyle						= re->GetLightStyle;
+		cgi.R_GetRealRes						= re->GetRealRes;
+		cgi.R_InitializeWireframeAutomap		= re->InitializeWireframeAutomap;
+		cgi.R_InPVS								= re->inPVS;
+		cgi.R_Language_IsAsian					= re->Language_IsAsian;
+		cgi.R_Language_UsesSpaces				= re->Language_UsesSpaces;
+		cgi.R_LerpTag							= re->LerpTag;
+		cgi.R_LightForPoint						= re->LightForPoint;
+		cgi.R_LoadWorld							= re->LoadWorld;
+		cgi.R_MarkFragments						= re->MarkFragments;
+		cgi.R_ModelBounds						= re->ModelBounds;
+		cgi.R_RegisterFont						= re->RegisterFont;
+		cgi.R_RegisterModel						= re->RegisterModel;
+		cgi.R_RegisterShader					= re->RegisterShader;
+		cgi.R_RegisterShaderNoMip				= re->RegisterShaderNoMip;
+		cgi.R_RegisterSkin						= re->RegisterSkin;
+		cgi.R_RemapShader						= re->RemapShader;
+		cgi.R_RenderScene						= re->RenderScene;
+		cgi.R_SetColor							= re->SetColor;
+		cgi.R_SetLightStyle						= re->SetLightStyle;
+		cgi.R_SetRangedFog						= re->SetRangedFog;
+		cgi.R_SetRefractionProperties			= re->SetRefractionProperties;
+		cgi.R_WorldEffectCommand				= re->WorldEffectCommand;
+		cgi.RE_InitRendererTerrain				= re->InitRendererTerrain;
+		cgi.WE_AddWeatherZone					= re->AddWeatherZone;
 		cgi.GetCurrentSnapshotNumber			= CL_GetCurrentSnapshotNumber;
 		cgi.GetCurrentCmdNumber					= CL_GetCurrentCmdNumber;
 		cgi.GetDefaultState						= CL_GetDefaultState;

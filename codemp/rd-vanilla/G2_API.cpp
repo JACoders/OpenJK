@@ -540,11 +540,7 @@ void G2API_CleanGhoul2Models(CGhoul2Info_v **ghoul2Ptr)
 
 qboolean G2_ShouldRegisterServer(void)
 {
-	if ( !ri->GetCurrentVM || !ri->GetGameVM )
-		return qfalse;
-
 	vm_t *currentVM = ri->GetCurrentVM();
-	vm_t *gvm = ri->GetGameVM();
 
 	if ( currentVM && currentVM->slot == VM_GAME )
 	{

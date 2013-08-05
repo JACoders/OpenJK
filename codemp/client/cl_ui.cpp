@@ -9,7 +9,7 @@
 CL_ShutdownUI
 ====================
 */
-void CL_ShutdownUI( void ) {
+void CL_ShutdownUI( qboolean delayFreeVM ) {
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_UI );
 
 	if ( !cls.uiStarted )
