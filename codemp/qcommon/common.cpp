@@ -69,10 +69,10 @@ int			com_frameTime;
 int			com_frameMsec;
 int			com_frameNumber;
 
-qboolean	com_errorEntered;
-qboolean	com_fullyInitialized;
+qboolean	com_errorEntered = qfalse;
+qboolean	com_fullyInitialized = qfalse;
 
-char	com_errorMessage[MAXPRINTMSG];
+char	com_errorMessage[MAXPRINTMSG] = {0};
 
 void Com_WriteConfig_f( void );
 
@@ -240,24 +240,16 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	static int	errorCount;
 	int			currentTime;
 
-#if defined(_WIN32) && defined(_DEBUG)
-	if ( code != ERR_DISCONNECT && code != ERR_NEED_CD ) {
-		if (com_noErrorInterrupt && !com_noErrorInterrupt->integer) {
-			__asm {
-				int 0x03
-			}
-		}
+	if ( com_errorEntered ) {
+		Sys_Error( "recursive error after: %s", com_errorMessage );
 	}
-#endif
+	com_errorEntered = qtrue;
 
 	// when we are running automated scripts, make sure we
 	// know if anything failed
 	if ( com_buildScript && com_buildScript->integer ) {
 		code = ERR_FATAL;
 	}
-
-	// make sure we can get at our local stuff
-	FS_PureServerSetLoadedPaks( "", "" );
 
 	// if we are getting a solid stream of ERR_DROP, do an ERR_FATAL
 	currentTime = Sys_Milliseconds();
@@ -270,31 +262,31 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	}
 	lastErrorTime = currentTime;
 
-	if ( com_errorEntered ) {
-		Sys_Error( "recursive error after: %s", com_errorMessage );
-	}
-	com_errorEntered = qtrue;
-
 	va_start (argptr,fmt);
 	Q_vsnprintf (com_errorMessage,sizeof(com_errorMessage), fmt,argptr);
 	va_end (argptr);
 
-	if ( code != ERR_DISCONNECT ) {
+	if ( code != ERR_DISCONNECT && code != ERR_NEED_CD ) {
 		Cvar_Get("com_errorMessage", "", CVAR_ROM);	//give com_errorMessage a default so it won't come back to life after a resetDefaults
 		Cvar_Set("com_errorMessage", com_errorMessage);
 	}
 
-	if ( code == ERR_SERVERDISCONNECT ) {
+	if ( code == ERR_DISCONNECT || code == ERR_SERVERDISCONNECT ) {
+		SV_Shutdown( "Server disconnected" );
 		CL_Disconnect( qtrue );
 		CL_FlushMemory( qtrue );
+		// make sure we can get at our local stuff
+		FS_PureServerSetLoadedPaks( "", "" );
 		com_errorEntered = qfalse;
 
 		throw ("DISCONNECTED\n");
-	} else if ( code == ERR_DROP || code == ERR_DISCONNECT ) {
+	} else if ( code == ERR_DROP ) {
 		Com_Printf ("********************\nERROR: %s\n********************\n", com_errorMessage);
 		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage));
 		CL_Disconnect( qtrue );
 		CL_FlushMemory( qtrue );
+		// make sure we can get at our local stuff
+		FS_PureServerSetLoadedPaks( "", "" );
 		com_errorEntered = qfalse;
 
 		throw ("DROPPED\n");
@@ -303,10 +295,13 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		if ( com_cl_running && com_cl_running->integer ) {
 			CL_Disconnect( qtrue );
 			CL_FlushMemory( qtrue );
-			com_errorEntered = qfalse;
+			
 		} else {
 			Com_Printf("Server didn't have CD\n" );
 		}
+		// make sure we can get at our local stuff
+		FS_PureServerSetLoadedPaks( "", "" );
+		com_errorEntered = qfalse;
 		throw ("NEED CD\n");
 	} else {
 		CL_Shutdown ();
