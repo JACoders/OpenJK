@@ -182,6 +182,8 @@ vm_t *VM_Create( vmSlots_t vmSlot ) {
 	return NULL;
 }
 
+//OJKFIXME: Add delayed free again
+#if 0
 /*
 ==============
 VM_DelayedFree
@@ -217,6 +219,7 @@ void VM_FreeRemaining()
 		}
 	}
 }
+#endif
 
 /*
 ==============

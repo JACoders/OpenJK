@@ -1167,7 +1167,6 @@ int VEH_LoadVehicle( const char *vehicleName )
 			trap->R_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, vehicle->skin) );
 	#endif
 
-#endif
 	//sanity check and clamp the vehicle's data
 	BG_VehicleClampData( vehicle );
 	// Setup the shared function pointers.

@@ -1303,7 +1303,7 @@ XI_ThumbFloat
 Gets the percentage going one way or the other (as normalized float)
 ===========
 */
-float ID_INLINE XI_ThumbFloat( signed short thumbValue )
+float QINLINE XI_ThumbFloat( signed short thumbValue )
 {
 	return (thumbValue < 0) ? (thumbValue / 32768.0f) : (thumbValue / 32767.0f);
 }

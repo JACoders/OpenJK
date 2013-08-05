@@ -1601,7 +1601,8 @@ try
 
 }//try
 	catch (const char* reason) {
-		VM_FreeRemaining();
+		//OJKFIXME: Add delayed free again
+	//	VM_FreeRemaining();
 		Com_Printf (reason);
 		return;			// an ERR_DROP was thrown
 	}

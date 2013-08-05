@@ -2672,9 +2672,7 @@ void Rag_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const v
 #ifdef _DEBUG
 	int ragPreTrace = ri->Milliseconds();
 #endif
-	// avoid symbol clash
-	vm_t *cgame_vm = ri->GetCgameVM();
-	if (cgame_vm)
+	if ( ri->CGVMLoaded() )
 	{
 		ragCallbackTraceLine_t *callData = (ragCallbackTraceLine_t *)ri->GetSharedMemory();
 
