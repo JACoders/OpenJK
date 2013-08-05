@@ -936,6 +936,3 @@ void IN_Restart( void )
 	IN_ShutdownJoystick( );
 	IN_Init( SDL_window );
 }
-
-void Sys_SendKeyEvents (void) {
-}
