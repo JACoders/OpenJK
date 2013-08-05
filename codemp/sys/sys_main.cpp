@@ -362,7 +362,7 @@ void *Sys_LoadMachOBundle( const char *name )
 
 //TODO: load mac dlls that are inside zip things inside pk3s.
 
-void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) )
+void *Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) )
 {
 	void	*libHandle = NULL;
 	void	(QDECL *dllEntry)( intptr_t (QDECL *syscallptr)(intptr_t, ...) );
@@ -466,15 +466,127 @@ void *Sys_LoadGameDll( const char *name, intptr_t (QDECL **entryPoint)(int, ...)
 	}
 
 	dllEntry = ( void (QDECL *)( intptr_t (QDECL *)( intptr_t, ... ) ) )Sys_LoadFunction( libHandle, "dllEntry" );
-	*entryPoint = (intptr_t (QDECL *)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
-	if ( !*entryPoint || !dllEntry ) {
+	*vmMain = (intptr_t (QDECL *)(int,...))Sys_LoadFunction( libHandle, "vmMain" );
+	if ( !*vmMain || !dllEntry ) {
 		Com_Printf ( "Sys_LoadGameDll(%s) failed to find vmMain function:\n\"%s\" !\n", name, Sys_LibraryError() );
 		Sys_UnloadLibrary( libHandle );
 		return NULL;
 	}
 
-	Com_Printf ( "Sys_LoadGameDll(%s) found vmMain function at %p\n", name, *entryPoint );
+	Com_Printf ( "Sys_LoadGameDll(%s) found vmMain function at %p\n", name, *vmMain );
 	dllEntry( systemcalls );
+
+	return libHandle;
+}
+
+void *Sys_LoadGameDll( const char *name, void *(QDECL **moduleAPI)(int, ...) )
+{
+	void	*libHandle = NULL;
+	char	*basepath;
+	char	*homepath;
+	char	*cdpath;
+	char	*gamedir;
+#ifdef MACOS_X
+    char    *apppath;
+#endif
+	char	*fn;
+	char	filename[MAX_OSPATH];
+
+	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
+
+#if 0
+	libHandle = Sys_LoadLibrary( filename );
+#endif
+    
+#ifdef MACOS_X
+    //First, look for the old-style mac .bundle that's inside a pk3
+    //It's actually zipped, and the zipfile has the same name as 'name'
+    libHandle = Sys_LoadMachOBundle( name );
+#endif
+
+	if (!libHandle) {
+		//Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", filename, Sys_LibraryError() );
+
+		basepath = Cvar_VariableString( "fs_basepath" );
+		homepath = Cvar_VariableString( "fs_homepath" );
+		cdpath = Cvar_VariableString( "fs_cdpath" );
+		gamedir = Cvar_VariableString( "fs_game" );
+#ifdef MACOS_X
+        apppath = Cvar_VariableString( "fs_apppath" );
+#endif
+
+		fn = FS_BuildOSPath( basepath, gamedir, filename );
+		libHandle = Sys_LoadLibrary( fn );
+
+		if ( !libHandle ) {
+			Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+			if( homepath[0] ) {
+				Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+				fn = FS_BuildOSPath( homepath, gamedir, filename );
+				libHandle = Sys_LoadLibrary( fn );
+			}
+			if ( !libHandle ) {
+				Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#ifdef MACOS_X
+                if( apppath[0] ) {
+					fn = FS_BuildOSPath( apppath, gamedir, filename );
+					libHandle = Sys_LoadLibrary( fn );
+				}
+                if ( !libHandle ) {
+                    Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#endif
+                    if( cdpath[0] ) {
+                        fn = FS_BuildOSPath( cdpath, gamedir, filename );
+                        libHandle = Sys_LoadLibrary( fn );
+                    }
+                    if ( !libHandle ) {
+                        Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+                        // now we try base
+                        fn = FS_BuildOSPath( basepath, BASEGAME, filename );
+                        libHandle = Sys_LoadLibrary( fn );
+                        if ( !libHandle ) {
+                            if( homepath[0] ) {
+                                Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+                                fn = FS_BuildOSPath( homepath, BASEGAME, filename );
+                                libHandle = Sys_LoadLibrary( fn );
+                            }
+                            if ( !libHandle ) {
+                                Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#ifdef MACOS_X
+                                if( apppath[0] ) {
+                                    fn = FS_BuildOSPath( apppath, BASEGAME, filename);
+                                    libHandle = Sys_LoadLibrary( fn );
+                                }
+                                if ( !libHandle ) {
+                                    Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+#endif
+                                    if( cdpath[0] ) {
+                                        fn = FS_BuildOSPath( cdpath, BASEGAME, filename );
+                                        libHandle = Sys_LoadLibrary( fn );
+                                    }
+                                    if ( !libHandle ) {
+                                        Com_Printf( "Sys_LoadGameDll(%s) failed: \"%s\"\n", fn, Sys_LibraryError() );
+                                        return NULL;
+                                    }
+#ifdef MACOS_X
+                                }
+#endif
+                            }
+                        }
+                    }
+#ifdef MACOS_X
+                }
+#endif
+			}
+		}
+	}
+
+	*moduleAPI = (void *(QDECL *)(int,...))Sys_LoadFunction( libHandle, "GetModuleAPI" );
+	if ( !*moduleAPI ) {
+		Com_Printf ( "Sys_LoadGameDll(%s) failed to find GetModuleAPI function:\n\"%s\" !\n", name, Sys_LibraryError() );
+		Sys_UnloadLibrary( libHandle );
+		return NULL;
+	}
 
 	return libHandle;
 }

@@ -65,6 +65,7 @@ intptr_t QDECL VM_DllSyscall( intptr_t arg, ... ) {
 #if !id386 || defined __clang__ || defined MACOS_X
   // rcg010206 - see commentary above
   intptr_t args[16];
+  unsigned int i;
   va_list ap;
   
   args[0] = arg;
@@ -345,13 +346,13 @@ locals from sp
 
 intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 	vm_t *oldVM = NULL;
-	intptr_t r = NULL;
-	int i = 0;
+	intptr_t r = 0;
+	unsigned int i = 0;
 	int args[16] = {0};
 
 	if ( !vm || !vm->name[0] ) {
 		Com_Error( ERR_FATAL, "VM_Call with NULL vm" );
-		return NULL;
+		return 0;
 	}
 
 	oldVM = currentVM;
