@@ -100,7 +100,7 @@ Minimize the game so that user is back at the desktop
 */
 void GLimp_Minimize(void)
 {
-	SDL_WM_IconifyWindow();
+	SDL_MinimizeWindow( screen );
 }
 
 void		GLimp_EndFrame( void )
