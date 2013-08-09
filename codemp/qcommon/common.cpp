@@ -54,9 +54,6 @@ cvar_t	*com_cameraMode;
 cvar_t	*com_unfocused;
 cvar_t	*com_minimized;
 cvar_t  *com_homepath;
-#if defined(_WIN32) && defined(_DEBUG)
-cvar_t	*com_noErrorInterrupt;
-#endif
 
 cvar_t	*com_RMG;
 
@@ -1246,10 +1243,6 @@ void Com_Init( char *commandLine ) {
 		Cvar_Get ("RMG_distancecull", "5000", CVAR_CHEAT );
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
-
-	#if defined(_WIN32) && defined(_DEBUG)
-		com_noErrorInterrupt = Cvar_Get( "com_noErrorInterrupt", "0", 0 );
-	#endif
 
 		if ( com_dedicated->integer ) {
 			if ( !com_viewlog->integer ) {
