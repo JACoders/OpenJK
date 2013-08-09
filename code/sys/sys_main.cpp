@@ -398,7 +398,7 @@ char *Sys_StripAppBundle( char *dir )
 
 int main (int argc, char **argv)
 {
-	inti;
+	int		i;
 	char	commandLine[ MAX_STRING_CHARS ] = { 0 };	
 	
 	// get the initial time base
