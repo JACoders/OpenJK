@@ -398,10 +398,8 @@ char *Sys_StripAppBundle( char *dir )
 
 int main (int argc, char **argv)
 {
-	int		len, i;
-	char	*cmdline;
-	void SetProgramPath(char *path);
-	
+	inti;
+	char	commandLine[ MAX_STRING_CHARS ] = { 0 };	
 	
 	// get the initial time base
 	Sys_Milliseconds();
@@ -409,17 +407,22 @@ int main (int argc, char **argv)
 	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
 	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
 
-	// merge the command line, this is kinda silly
-	for (len = 1, i = 1; i < argc; i++)
-		len += strlen(argv[i]) + 1;
-	cmdline = (char *)malloc(len);
-	*cmdline = 0;
-	for (i = 1; i < argc; i++) {
-		if (i > 1)
-			strcat(cmdline, " ");
-		strcat(cmdline, argv[i]);
+	// Concatenate the command line for passing to Com_Init
+	for( i = 1; i < argc; i++ )
+	{
+		const bool containsSpaces = (strchr(argv[i], ' ') != NULL);
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), argv[ i ] );
+
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), " " );
 	}
-	Com_Init(cmdline);
+
+	Com_Init(commandLine);
 		
     while (1)
     {
