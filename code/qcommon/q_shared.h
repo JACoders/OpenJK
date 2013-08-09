@@ -60,6 +60,8 @@ This file is part of Jedi Academy.
 #define HOMEPATH_NAME_WIN "OpenJK"
 #define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
 
+#define	BASEGAME "base"
+
 #define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
 
 #ifndef FINAL_BUILD
