@@ -2641,6 +2641,7 @@ void FS_Startup( const char *gameName ) {
 	// fs_homepath is somewhat particular to *nix systems, only add if relevant
 	// NOTE: same filtering below for mods and basegame
 	if (fs_homepath->string[0] && !Sys_PathCmp(fs_homepath->string, fs_basepath->string)) {
+		FS_CreatePath ( fs_homepath->string );
 		FS_AddGameDirectory ( fs_homepath->string, gameName );
 	}
         
@@ -3188,3 +3189,109 @@ const char *FS_GetCurrentGameDir(bool emptybase)
 
 	return emptybase ? "" : BASEGAME;
 }
+
+#ifdef MACOS_X
+bool FS_LoadMachOBundle( const char *name )
+{
+	void    *libHandle = NULL;
+	int     len;
+	void    *data;
+	fileHandle_t    f;
+	char    *fn;
+	unzFile dll;
+	byte* buf;
+	char    dllName[MAX_QPATH];
+	char    *tempName;
+	unz_s   *zfi;
+
+	//read zipped bundle from pk3
+	len = FS_ReadFile(name, &data);
+
+	if (len < 1) {
+		return false;
+	}
+
+	//write temporary file of zipped bundle to e.g. uixxxxxx
+	//unique filename to avoid any clashes
+	Com_sprintf( dllName, sizeof(dllName), "%sXXXXXX", name );
+
+	tempName = mktemp( dllName );
+
+	f = FS_FOpenFileWrite( dllName );
+
+	if ( !f )
+	{
+		FS_FreeFile(data);
+		return false;
+	}
+
+	if (FS_Write( data, len, f ) < len)
+	{
+		FS_FreeFile(data);
+		return false;
+	}
+
+	FS_FCloseFile( f );
+	FS_FreeFile(data);
+
+	//unzOpen zipped bundle, find the dylib, and try to write it
+	fn = FS_BuildOSPath( fs_homepath->string, fs_gamedir, dllName );
+
+	dll = unzOpen( fn );
+
+	Com_sprintf (dllName, sizeof(dllName), "%s.bundle/Contents/MacOS/%s", name, name);
+
+	if (unzLocateFile(dll, dllName, 0) != UNZ_OK)
+	{
+		unzClose(dll);
+		remove( fn );
+		return false;
+	}
+
+	unzOpenCurrentFile( dll );
+
+	Com_sprintf( dllName, sizeof(dllName), "%s_pk3" DLL_EXT, name );
+
+	f = FS_FOpenFileWrite( dllName );
+
+	if ( !f )
+	{
+		unzCloseCurrentFile( dll );
+		unzClose( dll );
+		remove( fn );
+		return false;
+	}
+
+	zfi = (unz_s *)dll;
+
+	len = zfi->cur_file_info.uncompressed_size;
+
+	buf = (byte*)Z_Malloc( len+1, TAG_FILESYS, qfalse);
+
+	if (unzReadCurrentFile( dll, buf, len ) < len)
+	{
+		FS_FCloseFile( f );
+		unzCloseCurrentFile( dll );
+		unzClose( dll );
+		return false;
+	}
+
+	if (FS_Write(buf, len, f) < len)
+	{
+		FS_FCloseFile( f );
+		unzCloseCurrentFile( dll );
+		unzClose( dll );
+		return false;
+	}
+
+	FS_FCloseFile( f );
+	unzCloseCurrentFile( dll );
+	unzClose( dll );
+	Z_Free( buf );
+
+	//remove temporary zipped bundle
+	remove( fn );
+
+	return true;
+}
+#endif
