@@ -1,7 +1,6 @@
 #include <dlfcn.h>
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
-#include "../qcommon/files.h"
 
 #include "sys_loadlib.h"
 #include "sys_local.h"
@@ -97,7 +96,6 @@ First try to load library name from system library path,
 from executable path, then fs_basepath.
 =================
 */
-extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 
 void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 {
@@ -245,9 +243,6 @@ void *Sys_GetGameAPI (void *parms)
 #ifdef MACOS_X
     apppath = Cvar_VariableString( "fs_apppath" );
 #endif
-	
-	if(!gamedir || !gamedir[0])
-		gamedir = BASEGAME;
 	
 	fn = FS_BuildOSPath( basepath, gamedir, gamename );
 	
