@@ -1113,7 +1113,9 @@ void R_Register( void )
 	//
 	// latched and archived variables
 	//
+#ifndef __NO_JK2
 	com_jk2 = ri.Cvar_Get( "com_jk2", "0", CVAR_INIT );
+#endif
 
 	r_allowExtensions = ri.Cvar_Get( "r_allowExtensions", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_ext_compressed_textures = ri.Cvar_Get( "r_ext_compress_textures", "1", CVAR_ARCHIVE | CVAR_LATCH );
