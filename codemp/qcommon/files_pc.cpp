@@ -3193,7 +3193,6 @@ const char *FS_GetCurrentGameDir(bool emptybase)
 #ifdef MACOS_X
 bool FS_LoadMachOBundle( const char *name )
 {
-	void    *libHandle = NULL;
 	int     len;
 	void    *data;
 	fileHandle_t    f;
