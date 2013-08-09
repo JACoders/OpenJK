@@ -362,6 +362,8 @@ const char *Key_KeynumToString( int keynum/*, qboolean bTranslate*/ ); //note: t
 //
 // cl_parse.c
 //
+extern int cl_connectedToCheatServer;
+
 void CL_SystemInfoChanged( void );
 void CL_ParseServerMessage( msg_t *msg );
 
