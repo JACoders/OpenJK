@@ -249,7 +249,7 @@ void *Sys_LoadMachOBundle( const char *name )
 	//load the unzipped library
 	char *fn = FS_BuildOSPath( homepath, gamedir, dllName );
 
-	libHandle = Sys_LoadLibrary( fn );
+	void    *libHandle = Sys_LoadLibrary( fn );
 
 	if ( libHandle != NULL ) {
 		Com_Printf( "Loaded pk3 bundle %s.\n", name );
