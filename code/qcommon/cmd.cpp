@@ -374,6 +374,29 @@ char	*Cmd_Args( void ) {
 	return cmd_args;
 }
 
+/*
+============
+Cmd_Args
+
+Returns a single string containing argv(arg) to argv(argc()-1)
+============
+*/
+char *Cmd_ArgsFrom( int arg ) {
+	static	char		cmd_args[BIG_INFO_STRING];
+	int		i;
+
+	cmd_args[0] = 0;
+	if (arg < 0)
+		arg = 0;
+	for ( i = arg ; i < cmd_argc ; i++ ) {
+		strcat( cmd_args, cmd_argv[i] );
+		if ( i != cmd_argc-1 ) {
+			strcat( cmd_args, " " );
+		}
+	}
+
+	return cmd_args;
+}
 
 /*
 ============

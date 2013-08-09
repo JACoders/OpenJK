@@ -317,6 +317,7 @@ int		Cmd_Argc (void);
 char	*Cmd_Argv (int arg);
 void	Cmd_ArgvBuffer( int arg, char *buffer, int bufferLength );
 char	*Cmd_Args (void);
+char	*Cmd_ArgsFrom( int arg );
 void	Cmd_ArgsBuffer( char *buffer, int bufferLength );
 // The functions that execute commands get their parameters with these
 // functions. Cmd_Argv () will return an empty string, not a NULL
@@ -373,6 +374,9 @@ void	Cvar_Update( vmCvar_t *vmCvar );
 void 	Cvar_Set( const char *var_name, const char *value );
 // will create the variable with no flags if it doesn't exist
 
+cvar_t	*Cvar_Set2(const char *var_name, const char *value, qboolean force);
+// same as Cvar_Set, but allows more control over setting of cvar
+
 void	Cvar_SetValue( const char *var_name, float value );
 // expands value to a string and calls Cvar_Set
 
@@ -380,9 +384,12 @@ float	Cvar_VariableValue( const char *var_name );
 int		Cvar_VariableIntegerValue( const char *var_name );
 // returns 0 if not defined or non numeric
 
-const char	*Cvar_VariableString( const char *var_name );
+char	*Cvar_VariableString( const char *var_name );
 void	Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize );
 // returns an empty string if not defined
+
+int	Cvar_Flags(const char *var_name);
+// returns CVAR_NONEXISTENT if cvar doesn't exist or the flags of that particular CVAR.
 
 char 	*Cvar_CompleteVariable( const char *partial );
 // attempts to match a partial variable name for command line completion
@@ -409,7 +416,9 @@ char	*Cvar_InfoString( int bit );
 // returns an info string containing all the cvars that have the given bit set
 // in their flags ( CVAR_USERINFO, CVAR_SERVERINFO, CVAR_SYSTEMINFO, etc )
 void	Cvar_InfoStringBuffer( int bit, char *buff, int buffsize );
+void Cvar_CheckRange( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
 
+void	Cvar_Restart(qboolean unsetVM);
 void	Cvar_Restart_f( void );
 
 extern	int			cvar_modifiedFlags;
@@ -439,6 +448,8 @@ char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles
 // the returned files will not include any directories or /
 
 void	FS_FreeFileList( char **filelist );
+
+char   *FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 
 int	FS_GetFileList(  const char *path, const char *extension, char *listbuf, int bufsize );
 

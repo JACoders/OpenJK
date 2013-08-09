@@ -78,6 +78,7 @@ This file is part of Jedi Academy.
 #include <time.h>
 #include <ctype.h>
 #include <limits.h>
+#include <errno.h>
 #include <stddef.h>
 //=======================================================================
 
@@ -1184,6 +1185,7 @@ int Q_isprint( int c );
 int Q_islower( int c );
 int Q_isupper( int c );
 int Q_isalpha( int c );
+qboolean Q_isanumber( const char *s );
 qboolean Q_isintegral( float f );
 
 #if 1
@@ -1297,6 +1299,13 @@ default values.
 #define CVAR_CHEAT			512	// can not be changed if cheats are disabled
 #define CVAR_NORESTART		1024	// do not clear when a cvar_restart is issued
 
+#define CVAR_SERVER_CREATED	2048	// cvar was created by a server the client connected to.
+#define CVAR_VM_CREATED		4096	// cvar was created exclusively in one of the VMs.
+#define CVAR_PROTECTED		8192	// prevent modifying this var from VMs or the server
+// These flags are only returned by the Cvar_Flags() function
+#define CVAR_MODIFIED		0x40000000		// Cvar was modified
+#define CVAR_NONEXISTENT	0x80000000		// Cvar doesn't exist.
+
 // nothing outside the Cvar_*() functions should modify these fields!
 typedef struct cvar_s {
 	char		*name;
@@ -1308,7 +1317,15 @@ typedef struct cvar_s {
 	int			modificationCount;	// incremented each time the cvar is changed
 	float		value;				// atof( string )
 	int			integer;			// atoi( string )
+	qboolean	validate;
+	qboolean	integral;
+	float		min;
+	float		max;
 	struct cvar_s *next;
+	struct cvar_s *prev;
+	struct cvar_s *hashNext;
+	struct cvar_s *hashPrev;
+	int			hashIndex;
 } cvar_t;
 
 #define	MAX_CVAR_VALUE_STRING	256
