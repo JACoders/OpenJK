@@ -1443,6 +1443,10 @@ void CL_InitCGame( void ) {
 	// init for this gamestate
 	VM_Call( CG_INIT, clc.serverCommandSequence );
 
+	// reset any CVAR_CHEAT cvars registered by cgame
+	if ( !cl_connectedToCheatServer )
+		Cvar_SetCheatState();
+
 	// we will send a usercmd this frame, which
 	// will cause the server to send us the first snapshot
 	cls.state = CA_PRIMED;

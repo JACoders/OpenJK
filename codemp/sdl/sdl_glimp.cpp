@@ -87,7 +87,16 @@ void ( APIENTRY * qglPointParameterfvEXT)( GLenum param, GLfloat *value );
 void ( * qglLockArraysEXT)( int, int);
 void ( * qglUnlockArraysEXT) ( void );
 
-void		GLimp_Minimize( void ) {
+/*
+===============
+GLimp_Minimize
+
+Minimize the game so that user is back at the desktop
+===============
+*/
+void GLimp_Minimize(void)
+{
+	SDL_MinimizeWindow( screen );
 }
 
 void		GLimp_EndFrame( void )

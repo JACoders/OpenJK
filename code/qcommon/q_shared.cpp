@@ -723,6 +723,22 @@ int Q_isalpha( int c )
 	return ( 0 );
 }
 
+qboolean Q_isanumber( const char *s )
+{
+	char *p;
+	double ret;
+
+	if( *s == '\0' )
+		return qfalse;
+
+	ret = strtod( s, &p );
+	
+	if ( ret == HUGE_VAL || errno == ERANGE )
+		return qfalse;
+
+	return (qboolean)(*p == '\0');
+}
+
 qboolean Q_isintegral( float f )
 {
 	return (qboolean)( (int)f == f );

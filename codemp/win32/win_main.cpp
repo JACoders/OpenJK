@@ -17,8 +17,6 @@
 
 #define MEM_THRESHOLD 128*1024*1024
 
-//static char		sys_cmdline[MAX_STRING_CHARS];
-
 /* win_shared.cpp */
 void Sys_SetBinaryPath(const char *path);
 char *Sys_BinaryPath(void);

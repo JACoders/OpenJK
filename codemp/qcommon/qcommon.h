@@ -616,6 +616,10 @@ void	FS_Flush( fileHandle_t f );
 
 const char *FS_GetCurrentGameDir(bool emptybase=false);
 
+#ifdef MACOS_X
+bool FS_LoadMachOBundle( const char *name );
+#endif
+
 void 	QDECL FS_Printf( fileHandle_t f, const char *fmt, ... );
 // like fprintf
 

@@ -1,7 +1,6 @@
 #include <dlfcn.h>
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
-#include "../qcommon/files.h"
 
 #include "sys_loadlib.h"
 #include "sys_local.h"
@@ -97,7 +96,6 @@ First try to load library name from system library path,
 from executable path, then fs_basepath.
 =================
 */
-extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 
 void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 {
@@ -245,9 +243,6 @@ void *Sys_GetGameAPI (void *parms)
 #ifdef MACOS_X
     apppath = Cvar_VariableString( "fs_apppath" );
 #endif
-	
-	if(!gamedir || !gamedir[0])
-		gamedir = BASEGAME;
 	
 	fn = FS_BuildOSPath( basepath, gamedir, gamename );
 	
@@ -398,10 +393,8 @@ char *Sys_StripAppBundle( char *dir )
 
 int main (int argc, char **argv)
 {
-	int		len, i;
-	char	*cmdline;
-	void SetProgramPath(char *path);
-	
+	int		i;
+	char	commandLine[ MAX_STRING_CHARS ] = { 0 };	
 	
 	// get the initial time base
 	Sys_Milliseconds();
@@ -409,17 +402,22 @@ int main (int argc, char **argv)
 	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
 	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
 
-	// merge the command line, this is kinda silly
-	for (len = 1, i = 1; i < argc; i++)
-		len += strlen(argv[i]) + 1;
-	cmdline = (char *)malloc(len);
-	*cmdline = 0;
-	for (i = 1; i < argc; i++) {
-		if (i > 1)
-			strcat(cmdline, " ");
-		strcat(cmdline, argv[i]);
+	// Concatenate the command line for passing to Com_Init
+	for( i = 1; i < argc; i++ )
+	{
+		const bool containsSpaces = (strchr(argv[i], ' ') != NULL);
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), argv[ i ] );
+
+		if (containsSpaces)
+			Q_strcat( commandLine, sizeof( commandLine ), "\"" );
+
+		Q_strcat( commandLine, sizeof( commandLine ), " " );
 	}
-	Com_Init(cmdline);
+
+	Com_Init(commandLine);
 		
     while (1)
     {
