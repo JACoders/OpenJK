@@ -2,7 +2,6 @@
 #include <sys/fcntl.h>
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
-#include "qcommon/files.h"
 
 #include "sys_loadlib.h"
 #ifdef DEDICATED
@@ -179,7 +178,6 @@ First try to load library name from system library path,
 from executable path, then fs_basepath.
 =================
 */
-extern char		*FS_BuildOSPath( const char *base, const char *game, const char *qpath );
 
 void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 {
@@ -243,116 +241,25 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 #ifdef MACOS_X
 void *Sys_LoadMachOBundle( const char *name )
 {
-    void    *libHandle = NULL;
-    int     len;
-    void    *data;
-    fileHandle_t    f;
-    char    *fn;
-    unzFile dll;
-    byte* buf;
-    char    dllName[MAX_QPATH];
-    char    *tempName;
-    unz_s   *zfi;
-    
-    //read zipped bundle from pk3
-    len = FS_ReadFile(name, &data);
-    
-    if (len < 1) {
-        return NULL;
-    }
-        
-    //write temporary file of zipped bundle to e.g. uixxxxxx
-    //unique filename to avoid any clashes
-    Com_sprintf( dllName, sizeof(dllName), "%sXXXXXX", name );
-    
-    tempName = mktemp( dllName );
+	if ( !FS_LoadMachOBundle(name) )
+		return NULL;
 
-    f = FS_FOpenFileWrite( dllName );
-    
-    if ( !f )
-    {
-        FS_FreeFile(data);
-            return NULL;
-    }
-        
-    if (FS_Write( data, len, f ) < len)
-    {
-        FS_FreeFile(data);
-        return NULL;
-    }
-        
-    FS_FCloseFile( f );
-    FS_FreeFile(data);
-    
-    
-    //unzOpen zipped bundle, find the dylib, and try to write it
-    fn = FS_BuildOSPath( fs_homepath->string, fs_gamedir, dllName );
+	char *homepath = Cvar_VariableString( "fs_homepath" );
+	char *gamedir = Cvar_VariableString( "fs_game" );
+	char dllName[MAX_QPATH];
 
-    dll = unzOpen( fn );
-    
-    Com_sprintf (dllName, sizeof(dllName), "%s.bundle/Contents/MacOS/%s", name, name);
+	Com_sprintf( dllName, sizeof(dllName), "%s_pk3" DLL_EXT, name );
 
-    if (unzLocateFile(dll, dllName, 0) != UNZ_OK)
-    {
-        unzClose(dll);
-        remove( fn );
-        return NULL;
-    }
-    
-    unzOpenCurrentFile( dll );
-        
-    Com_sprintf( dllName, sizeof(dllName), "%s_pk3.dylib", name );
-        
-    f = FS_FOpenFileWrite( dllName );
-    
-    if ( !f )
-    {
-        unzCloseCurrentFile( dll );
-        unzClose( dll );
-        remove( fn );
-        return NULL;
-    }
-    
-    zfi = (unz_s *)dll;
-    
-    len = zfi->cur_file_info.uncompressed_size;
-    
-    buf = (byte*)Z_Malloc( len+1, TAG_FILESYS, qfalse);
-    
-    if (unzReadCurrentFile( dll, buf, len ) < len)
-    {
-        FS_FCloseFile( f );
-        unzCloseCurrentFile( dll );
-        unzClose( dll );
-        return NULL;
-    }
-        
-    if (FS_Write(buf, len, f) < len)
-    {
-        FS_FCloseFile( f );
-        unzCloseCurrentFile( dll );
-        unzClose( dll );
-        return NULL;
-    }
-    
-    FS_FCloseFile( f );
-    unzCloseCurrentFile( dll );
-    unzClose( dll );
-    Z_Free( buf );
-    
-    //remove temporary zipped bundle
-    remove( fn );
-    
-    //load the unzipped library
-    fn = FS_BuildOSPath( fs_homepath->string, fs_gamedir, dllName );
-    
-    libHandle = Sys_LoadLibrary( fn );
-    
-    if (libHandle != NULL){
-        Com_Printf("Loaded pk3 bundle %s.\n", name);
-    }
-    
-    return libHandle;
+	//load the unzipped library
+	char *fn = FS_BuildOSPath( homepath, gamedir, dllName );
+
+	void    *libHandle = Sys_LoadLibrary( fn );
+
+	if ( libHandle != NULL ) {
+		Com_Printf( "Loaded pk3 bundle %s.\n", name );
+	}
+
+	return libHandle;
 }
 #endif
 
@@ -688,11 +595,6 @@ int main ( int argc, char* argv[] )
 
 		Q_strcat( commandLine, sizeof( commandLine ), " " );
 	}
-
-#if 0
-	// if we find the CD, add a +set cddir xxx command line
-	Sys_ScanForCD();
-#endif
 
 	Com_Init (commandLine);
     

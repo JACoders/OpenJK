@@ -29,7 +29,6 @@ This file is part of Jedi Academy.
 #include "unzip.h"
 
 #define MAX_ZPATH			256
-#define	BASEGAME			"base"
 
 
 

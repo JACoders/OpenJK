@@ -1113,7 +1113,9 @@ void R_Register( void )
 	//
 	// latched and archived variables
 	//
+#ifndef __NO_JK2
 	com_jk2 = ri.Cvar_Get( "com_jk2", "0", CVAR_INIT );
+#endif
 
 	r_allowExtensions = ri.Cvar_Get( "r_allowExtensions", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_ext_compressed_textures = ri.Cvar_Get( "r_ext_compress_textures", "1", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1309,6 +1311,7 @@ extern void R_WorldEffect_f(void);	//TR_WORLDEFFECTS.CPP
 	ri.Cmd_AddCommand( "r_we", R_WorldEffect_f );
 extern void R_ReloadFonts_f(void);
 	ri.Cmd_AddCommand( "r_reloadfonts", R_ReloadFonts_f );
+	ri.Cmd_AddCommand( "minimize", GLimp_Minimize );
 	// make sure all the commands added above are also
 	// removed in R_Shutdown
 }
@@ -1435,6 +1438,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	ri.Cmd_RemoveCommand ("imagecacheinfo");
 	ri.Cmd_RemoveCommand ("r_we");
 	ri.Cmd_RemoveCommand ("r_reloadfonts");
+	ri.Cmd_RemoveCommand ("minimize");
 
 	R_ShutdownWorldEffects();
 	R_TerrainShutdown();
