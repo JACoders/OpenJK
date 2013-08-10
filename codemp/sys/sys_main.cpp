@@ -141,7 +141,11 @@ void Sys_Error( const char *error, ... )
 }
 
 void Sys_Quit (void) {
-    CL_Shutdown ();
+	IN_Shutdown();
+
+	Com_ShutdownZoneMemory();
+	Com_ShutdownHunkMemory();
+
     fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
     Sys_Exit(0);
 }
