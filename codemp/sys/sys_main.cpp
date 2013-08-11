@@ -1,5 +1,7 @@
 #include <dlfcn.h>
+#ifdef DEDICATED
 #include <sys/fcntl.h>
+#endif
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
 
@@ -145,7 +147,10 @@ void Sys_Quit (void) {
 	Com_ShutdownZoneMemory();
 	Com_ShutdownHunkMemory();
 
-	Sys_Exit(0);
+#ifdef DEDICATED
+	fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
+#endif
+    Sys_Exit(0);
 }
 
 /*
