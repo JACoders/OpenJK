@@ -1,6 +1,7 @@
 This file will generally summarise the Github repo commit history
 Key: - removed, + added, * modified
 
+* OpenJK now writes configs/screenshots/etc to fs_homepath directory. No longer have to run as administrator on Windows.
 + The Jedi Academy singleplayer now searches for jagamex86.dll in the mod's folder, too, meaning SP Code mods are possible.
 * Increased Command Buffer from 16384 to 128*1024
 * Increased max cvars from 1224 to 2048 (MP)
@@ -71,3 +72,10 @@ Key: - removed, + added, * modified
 + New cgame command, clientlist displays clients by id/name/ and if they are a bot. (Shows real client id unlike serverstatus)
 + Added XInput support for XBOX 360 controllers (Windows only, in_joystick 2). SDL on *nix supports this as well.
 + Updated the JPG library
+* svsay command prints to dedicated console
+* Drastically improved (dedicated server) status command
+* Alt-tab works properly
+* Cvars will be sorted alphabetically when saved to disk
++ Added ja_guid userinfo field to uniquely track players for statistics
++ Added cg_fovAspectAdjust to correct field of view on non-4:3 aspect ratios
++ Added cg_fovViewmodel to adjust the field of view for first-person weapons
