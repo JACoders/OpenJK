@@ -272,38 +272,8 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		Cvar_Set("com_errorMessage", com_errorMessage);
 	}
 
-	if ( code == ERR_DISCONNECT || code == ERR_SERVERDISCONNECT ) {
-		SV_Shutdown( "Server disconnected" );
-		CL_Disconnect( qtrue );
-		CL_FlushMemory( qtrue );
-		// make sure we can get at our local stuff
-		FS_PureServerSetLoadedPaks( "", "" );
-		com_errorEntered = qfalse;
-
-		throw ("DISCONNECTED\n");
-	} else if ( code == ERR_DROP ) {
-		Com_Printf ("********************\nERROR: %s\n********************\n", com_errorMessage);
-		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage));
-		CL_Disconnect( qtrue );
-		CL_FlushMemory( qtrue );
-		// make sure we can get at our local stuff
-		FS_PureServerSetLoadedPaks( "", "" );
-		com_errorEntered = qfalse;
-
-		throw ("DROPPED\n");
-	} else if ( code == ERR_NEED_CD ) {
-		SV_Shutdown( "Server didn't have CD\n" );
-		if ( com_cl_running && com_cl_running->integer ) {
-			CL_Disconnect( qtrue );
-			CL_FlushMemory( qtrue );
-			
-		} else {
-			Com_Printf("Server didn't have CD\n" );
-		}
-		// make sure we can get at our local stuff
-		FS_PureServerSetLoadedPaks( "", "" );
-		com_errorEntered = qfalse;
-		throw ("NEED CD\n");
+	if ( code == ERR_DISCONNECT || code == ERR_SERVERDISCONNECT || code == ERR_DROP ) {
+		throw code;
 	} else {
 		CL_Shutdown ();
 		SV_Shutdown (va("Server fatal crashed: %s\n", com_errorMessage));
@@ -1115,6 +1085,57 @@ static void Com_InitRand(void)
 
 /*
 =================
+Com_ErrorString
+Error string for the given error code (from Com_Error).
+=================
+*/
+static const char *Com_ErrorString ( int code )
+{
+	switch ( code )
+	{
+		case ERR_DISCONNECT:
+		// fallthrough
+		case ERR_SERVERDISCONNECT:
+			return "DISCONNECTED";
+
+		case ERR_DROP:
+			return "DROPPED";
+
+		default:
+			return "UNKNOWN";
+	}
+}
+
+/*
+=================
+Com_CatchError
+Handles freeing up of resources when Com_Error is called.
+=================
+*/
+static void Com_CatchError ( int code )
+{
+	if ( code == ERR_DISCONNECT || code == ERR_SERVERDISCONNECT ) {
+		SV_Shutdown( "Server disconnected" );
+		CL_Disconnect( qtrue );
+		CL_FlushMemory( qtrue );
+		// make sure we can get at our local stuff
+		FS_PureServerSetLoadedPaks( "", "" );
+		com_errorEntered = qfalse;
+	} else if ( code == ERR_DROP ) {
+		Com_Printf ("********************\n"
+					"ERROR: %s\n"
+					"********************\n", com_errorMessage);
+		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage));
+		CL_Disconnect( qtrue );
+		CL_FlushMemory( qtrue );
+		// make sure we can get at our local stuff
+		FS_PureServerSetLoadedPaks( "", "" );
+		com_errorEntered = qfalse;
+	}
+}
+
+/*
+=================
 Com_Init
 =================
 */
@@ -1317,9 +1338,10 @@ void Com_Init( char *commandLine ) {
 		Com_Printf ("--- Common Initialization Complete ---\n");	
 
 	}
-
-	catch (const char* reason) {
-		Sys_Error ("Error during initialization: %s", reason);
+	catch ( int code )
+	{
+		Com_CatchError (code);
+		Sys_Error ("Error during initialization: %s", Com_ErrorString (code));
 	}
 }
 
@@ -1612,11 +1634,10 @@ try
 	com_frameNumber++;
 
 }//try
-	catch (const char* reason) {
-		//OJKFIXME: Add delayed free again
-	//	VM_FreeRemaining();
-		Com_Printf (reason);
-		return;			// an ERR_DROP was thrown
+	catch (int code) {
+		Com_CatchError (code);
+		Com_Printf ("%s\n", Com_ErrorString (code));
+		return;
 	}
 
 #ifdef G2_PERFORMANCE_ANALYSIS
