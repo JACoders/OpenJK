@@ -29,7 +29,7 @@ void Use_Target_Give( gentity_t *ent, gentity_t *other, gentity_t *activator ) {
 
 		// make sure it isn't going to respawn or show any events
 		t->nextthink = 0;
-		trap_UnlinkEntity( t );
+		trap->UnlinkEntity( (sharedEntity_t *)t );
 	}
 }
 
@@ -193,11 +193,11 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 		{//make sure there's a valid client ent to send it to
 			if (ent->message[0] == '@' && ent->message[1] != '@')
 			{
-				trap_SendServerCommand( activator-g_entities, va("cps \"%s\"", ent->message ));
+				trap->SendServerCommand( activator-g_entities, va("cps \"%s\"", ent->message ));
 			}
 			else
 			{
-				trap_SendServerCommand( activator-g_entities, va("cp \"%s\"", ent->message ));
+				trap->SendServerCommand( activator-g_entities, va("cp \"%s\"", ent->message ));
 			}
 		}
 		//NOTE: change in functionality - if there *is* no valid client ent, it won't send it to anyone at all
@@ -230,11 +230,11 @@ void Use_Target_Print (gentity_t *ent, gentity_t *other, gentity_t *activator)
 
 	if (ent->message[0] == '@' && ent->message[1] != '@')
 	{
-		trap_SendServerCommand( -1, va("cps \"%s\"", ent->message ));
+		trap->SendServerCommand( -1, va("cps \"%s\"", ent->message ));
 	}
 	else
 	{
-		trap_SendServerCommand( -1, va("cp \"%s\"", ent->message ));
+		trap->SendServerCommand( -1, va("cp \"%s\"", ent->message ));
 	}
 }
 
@@ -297,12 +297,12 @@ void SP_target_speaker( gentity_t *ent ) {
 		ent->s.soundSetIndex = G_SoundSetIndex(s);
 		ent->s.eFlags = EF_PERMANENT;
 		VectorCopy( ent->s.origin, ent->s.pos.trBase );
-		trap_LinkEntity (ent);
+		trap->LinkEntity ((sharedEntity_t *)ent);
 		return;
 	}
 
 	if ( !G_SpawnString( "noise", "NOSOUND", &s ) ) {
-		G_Error( "target_speaker without a noise key at %s", vtos( ent->s.origin ) );
+		trap->Error( ERR_DROP, "target_speaker without a noise key at %s", vtos( ent->s.origin ) );
 	}
 
 	// force all client reletive sounds to be "activator" speakers that
@@ -338,7 +338,7 @@ void SP_target_speaker( gentity_t *ent ) {
 
 	// must link the entity so we get areas and clusters so
 	// the server can determine who to send updates to
-	trap_LinkEntity( ent );
+	trap->LinkEntity( (sharedEntity_t *)ent );
 }
 
 
@@ -364,7 +364,7 @@ void target_laser_think (gentity_t *self) {
 	// fire forward and see what we hit
 	VectorMA (self->s.origin, 2048, self->movedir, end);
 
-	trap_Trace( &tr, self->s.origin, NULL, NULL, end, self->s.number, CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_CORPSE);
+	trap->Trace( &tr, self->s.origin, NULL, NULL, end, self->s.number, CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_CORPSE, qfalse, 0, 0);
 
 	if ( tr.entityNum ) {
 		// hurt it if we can
@@ -374,7 +374,7 @@ void target_laser_think (gentity_t *self) {
 
 	VectorCopy (tr.endpos, self->s.origin2);
 
-	trap_LinkEntity( self );
+	trap->LinkEntity( (sharedEntity_t *)self );
 	self->nextthink = level.time + FRAMETIME;
 }
 
@@ -387,7 +387,7 @@ void target_laser_on (gentity_t *self)
 
 void target_laser_off (gentity_t *self)
 {
-	trap_UnlinkEntity( self );
+	trap->UnlinkEntity( (sharedEntity_t *)self );
 	self->nextthink = 0;
 }
 
@@ -409,7 +409,7 @@ void target_laser_start (gentity_t *self)
 	if (self->target) {
 		ent = G_Find (NULL, FOFS(targetname), self->target);
 		if (!ent) {
-			G_Printf ("%s at %s: %s is a bad target\n", self->classname, vtos(self->s.origin), self->target);
+			trap->Print ("%s at %s: %s is a bad target\n", self->classname, vtos(self->s.origin), self->target);
 		}
 		self->enemy = ent;
 	} else {
@@ -449,7 +449,7 @@ void target_teleporter_use( gentity_t *self, gentity_t *other, gentity_t *activa
 
 	dest = 	G_PickTarget( self->target );
 	if (!dest) {
-		G_Printf ("Couldn't find teleporter destination\n");
+		trap->Print ("Couldn't find teleporter destination\n");
 		return;
 	}
 
@@ -461,7 +461,7 @@ The activator will be teleported away.
 */
 void SP_target_teleporter( gentity_t *self ) {
 	if (!self->targetname)
-		G_Printf("untargeted %s at %s\n", self->classname, vtos(self->s.origin));
+		trap->Print("untargeted %s at %s\n", self->classname, vtos(self->s.origin));
 
 	self->use = target_teleporter_use;
 }
@@ -565,7 +565,7 @@ static void target_location_linkup(gentity_t *ent)
 
 	level.locationHead = NULL;
 
-	trap_SetConfigstring( CS_LOCATIONS, "unknown" );
+	trap->SetConfigstring( CS_LOCATIONS, "unknown" );
 
 	for (i = 0, ent = g_entities, n = 1;
 			i < level.num_entities;
@@ -573,7 +573,7 @@ static void target_location_linkup(gentity_t *ent)
 		if (ent->classname && !Q_stricmp(ent->classname, "target_location")) {
 			// lets overload some variables!
 			ent->health = n; // use for location marking
-			trap_SetConfigstring( CS_LOCATIONS + n, ent->message );
+			trap->SetConfigstring( CS_LOCATIONS + n, ent->message );
 			n++;
 			ent->nextTrain = level.locationHead;
 			level.locationHead = ent;
@@ -617,7 +617,7 @@ void target_counter_use( gentity_t *self, gentity_t *other, gentity_t *activator
 		return;
 	}
 	
-	//gi.Printf("target_counter %s used by %s, entnum %d\n", self->targetname, activator->targetname, activator->s.number );
+	//trap->Printf("target_counter %s used by %s, entnum %d\n", self->targetname, activator->targetname, activator->s.number );
 	self->count--;
 
 	if ( activator )
@@ -629,7 +629,7 @@ void target_counter_use( gentity_t *self, gentity_t *other, gentity_t *activator
 	{
 		if ( self->target2 )
 		{
-			//gi.Printf("target_counter %s firing target2 from %s, entnum %d\n", self->targetname, activator->targetname, activator->s.number );
+			//trap->Printf("target_counter %s firing target2 from %s, entnum %d\n", self->targetname, activator->targetname, activator->s.number );
 			G_UseTargets2( self, activator, self->target2 );
 		}
 		return;
@@ -685,7 +685,7 @@ void target_random_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 	int			t_count = 0, pick;
 	gentity_t	*t = NULL;
 
-	//gi.Printf("target_random %s used by %s (entnum %d)\n", self->targetname, activator->targetname, activator->s.number );
+	//trap->Printf("target_random %s used by %s (entnum %d)\n", self->targetname, activator->targetname, activator->s.number );
 	G_ActivateBehavior(self,BSET_USE);
 
 	if(self->spawnflags & 1)
@@ -728,7 +728,7 @@ void target_random_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 		
 		if (t == self)
 		{
-//				gi.Printf ("WARNING: Entity used itself.\n");
+//				trap->Printf ("WARNING: Entity used itself.\n");
 		}
 		else if(t_count == pick)
 		{
@@ -794,7 +794,7 @@ void scriptrunner_run (gentity_t *self)
 			}
 
 			//if ( !self->activator->sequencer || !self->activator->taskManager )
-			if (!trap_ICARUS_IsInitialized(self->s.number))
+			if (!trap->ICARUS_IsInitialized(self->s.number))
 			{//Need to be initialized through ICARUS
 				if ( !self->activator->script_targetname || !self->activator->script_targetname[0] )
 				{
@@ -802,9 +802,9 @@ void scriptrunner_run (gentity_t *self)
 					self->activator->script_targetname = va( "newICARUSEnt%d", numNewICARUSEnts++ );
 				}
 
-				if ( trap_ICARUS_ValidEnt( self->activator ) )
+				if ( trap->ICARUS_ValidEnt( (sharedEntity_t *)self->activator ) )
 				{
-					trap_ICARUS_InitEnt( self->activator );
+					trap->ICARUS_InitEnt( (sharedEntity_t *)self->activator );
 				}
 				else
 				{
@@ -820,7 +820,7 @@ void scriptrunner_run (gentity_t *self)
 			{
 				Com_Printf( "target_scriptrunner running %s on activator %s\n", self->behaviorSet[BSET_USE], self->activator->targetname );
 			}
-			trap_ICARUS_RunScript( self->activator, va( "%s/%s", Q3_SCRIPT_DIR, self->behaviorSet[BSET_USE] ) );
+			trap->ICARUS_RunScript( (sharedEntity_t *)self->activator, va( "%s/%s", Q3_SCRIPT_DIR, self->behaviorSet[BSET_USE] ) );
 		}
 		else
 		{
@@ -948,7 +948,7 @@ void target_level_change_use(gentity_t *self, gentity_t *other, gentity_t *activ
 {
 	G_ActivateBehavior(self,BSET_USE);
 
-	trap_SendConsoleCommand(EXEC_NOW, va("map %s", self->message));
+	trap->SendConsoleCommand(EXEC_NOW, va("map %s", self->message));
 }
 
 /*QUAKED target_level_change (1 0 0) (-4 -4 -4) (4 4 4)
@@ -963,7 +963,7 @@ void SP_target_level_change( gentity_t *self )
 
 	if ( !self->message || !self->message[0] )
 	{
-		G_Error( "target_level_change with no mapname!\n");
+		trap->Error( ERR_DROP, "target_level_change with no mapname!\n");
 		return;
 	}
 
@@ -974,7 +974,7 @@ void SP_target_level_change( gentity_t *self )
 void target_play_music_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 {
 	G_ActivateBehavior(self,BSET_USE);
-	trap_SetConfigstring( CS_MUSIC, self->message );
+	trap->SetConfigstring( CS_MUSIC, self->message );
 }
 
 /*QUAKED target_play_music (1 0 0) (-4 -4 -4) (4 4 4)
@@ -995,7 +995,7 @@ void SP_target_play_music( gentity_t *self )
 	G_SetOrigin( self, self->s.origin );
 	if (!G_SpawnString( "music", "", &s ))
 	{
-		G_Error( "target_play_music without a music key at %s", vtos( self->s.origin ) );
+		trap->Error( ERR_DROP, "target_play_music without a music key at %s", vtos( self->s.origin ) );
 	}
 
 	self->message = G_NewString(s);

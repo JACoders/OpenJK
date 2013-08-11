@@ -4,6 +4,7 @@
 // console.c
 
 #include "client.h"
+#include "cl_cgameapi.h"
 #include "qcommon/stringed_ingame.h"
 #include "qcommon/game_version.h"
 
@@ -73,13 +74,13 @@ Con_MessageMode3_f
 */
 void Con_MessageMode3_f (void)
 {		//target chat
-	if (!cgvm)
+	if (!cls.cgameStarted)
 	{
 		assert(!"null cgvm");
 		return;
 	}
 
-	chat_playerNum = VM_Call( cgvm, CG_CROSSHAIR_PLAYER );
+	chat_playerNum = CGVM_CrosshairPlayer();
 	if ( chat_playerNum < 0 || chat_playerNum >= MAX_CLIENTS ) {
 		chat_playerNum = -1;
 		return;
@@ -97,13 +98,13 @@ Con_MessageMode4_f
 */
 void Con_MessageMode4_f (void)
 {	//attacker
-	if (!cgvm)
+	if (!cls.cgameStarted)
 	{
 		assert(!"null cgvm");
 		return;
 	}
 
-	chat_playerNum = VM_Call( cgvm, CG_LAST_ATTACKER );
+	chat_playerNum = CGVM_LastAttacker();
 	if ( chat_playerNum < 0 || chat_playerNum >= MAX_CLIENTS ) {
 		chat_playerNum = -1;
 		return;

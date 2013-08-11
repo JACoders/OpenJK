@@ -6,20 +6,22 @@
 #include "qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_local.h"
-#include "bg_strap.h"
 #include "ghoul2/G2.h"
 
-#ifdef QAGAME
-#include "g_local.h" //ahahahahhahahaha@$!$!
+#ifdef _GAME
+	#include "g_local.h"
+#elif _CGAME
+	#include "cgame/cg_local.h"
+#elif _UI
+	#include "ui/ui_local.h"
 #endif
 
 #define MAX_WEAPON_CHARGE_TIME 5000
 
-#ifdef QAGAME
-extern void G_CheapWeaponFire(int entNum, int ev);
-extern qboolean TryGrapple(gentity_t *ent); //g_cmds.c
-extern void trap_FX_PlayEffect( const char *file, vec3_t org, vec3_t fwd, int vol, int rad );
-#endif
+#ifdef _GAME
+	extern void G_CheapWeaponFire(int entNum, int ev);
+	extern qboolean TryGrapple(gentity_t *ent); //g_cmds.c
+#endif // _GAME
 
 extern qboolean BG_FullBodyTauntAnim( int anim );
 extern float PM_WalkableGroundDistance(void);
@@ -235,15 +237,8 @@ qboolean BG_KnockDownable(playerState_t *ps)
 	return qtrue;
 }
 
-//I should probably just do a global inline sometime.
-#ifndef __LCC__
-#define PM_INLINE ID_INLINE
-#else
-#define PM_INLINE //none
-#endif
-
 //hacky assumption check, assume any client non-humanoid is a rocket trooper
-qboolean PM_INLINE PM_IsRocketTrooper(void)
+qboolean QINLINE PM_IsRocketTrooper(void)
 {
 	/*
 	if (pm->ps->clientNum < MAX_CLIENTS &&
@@ -425,7 +420,7 @@ void PM_pitch_roll_for_slope( bgEntity_t *forwhom, vec3_t pass_slope, vec3_t sto
 			//FIXME: trace?
 			pm->ps->origin[2] += (oldmins2 - pm->mins[2]);
 			//forwhom->currentOrigin[2] = forwhom->client->ps.origin[2];
-			//gi.linkentity( forwhom );
+			//trap->linkentity( forwhom );
 		}
 	}
 	/*
@@ -633,44 +628,9 @@ static void PM_SetVehicleAngles( vec3_t normal )
 	}
 }
 
-#ifndef QAGAME
+#ifdef _CGAME
 extern vmCvar_t cg_paused;
 #endif
-
-void BG_ExternThisSoICanRecompileInDebug( Vehicle_t *pVeh, playerState_t *riderPS )
-{
-/*
-	float pitchSubtract, pitchDelta, yawDelta;
-	//Com_Printf( S_COLOR_RED"PITCH: %4.2f, YAW: %4.2f, ROLL: %4.2f\n", riderPS->viewangles[0],riderPS->viewangles[1],riderPS->viewangles[2]);
-	yawDelta = AngleSubtract(riderPS->viewangles[YAW],pVeh->m_vPrevRiderViewAngles[YAW]);
-#ifndef QAGAME
-	if ( !cg_paused.integer )
-	{
-		//Com_Printf( "%d - yawDelta %4.2f\n", pm->cmd.serverTime, yawDelta );
-	}
-#endif
-	yawDelta *= (4.0f*pVeh->m_fTimeModifier);
-	pVeh->m_vOrientation[ROLL] -= yawDelta;
-
-	pitchDelta = AngleSubtract(riderPS->viewangles[PITCH],pVeh->m_vPrevRiderViewAngles[PITCH]);
-	pitchDelta *= (2.0f*pVeh->m_fTimeModifier);
-	pitchSubtract = pitchDelta * (fabs(pVeh->m_vOrientation[ROLL])/90.0f);
-	pVeh->m_vOrientation[PITCH] += pitchDelta-pitchSubtract;
-	if ( pVeh->m_vOrientation[ROLL] > 0 )
-	{
-		pVeh->m_vOrientation[YAW] += pitchSubtract;
-	}
-	else
-	{
-		pVeh->m_vOrientation[YAW] -= pitchSubtract;
-	}
-	pVeh->m_vOrientation[PITCH] = AngleNormalize180( pVeh->m_vOrientation[PITCH] );
-	pVeh->m_vOrientation[YAW] = AngleNormalize360( pVeh->m_vOrientation[YAW] );
-	pVeh->m_vOrientation[ROLL] = AngleNormalize180( pVeh->m_vOrientation[ROLL] );
-
-	VectorCopy( riderPS->viewangles, pVeh->m_vPrevRiderViewAngles );
-*/
-}
 
 void BG_VehicleTurnRateForSpeed( Vehicle_t *pVeh, float speed, float *mPitchOverride, float *mYawOverride )
 {
@@ -706,7 +666,7 @@ void BG_VehicleTurnRateForSpeed( Vehicle_t *pVeh, float speed, float *mPitchOver
 
 
 // Following couple things don't belong in the DLL namespace!
-#ifdef QAGAME
+#ifdef _GAME
 	#if !defined(MACOS_X) && !defined(__GCC__) && !defined(__GNUC__)
 		typedef struct gentity_s gentity_t;
 	#endif
@@ -772,14 +732,14 @@ void PM_HoverTrace( void )
 					{
 						wakeOrg[2] = pm->ps->origin[2];
 					}
-#ifdef QAGAME //yeah, this is kind of crappy and makes no use of prediction whatsoever
-					if ( pVeh->m_pVehicleInfo->iWakeFX )
-					{
-						//G_PlayEffectID( pVeh->m_pVehicleInfo->iWakeFX, wakeOrg, fxAxis[0] );
-						//tempent use bad!
-						G_AddEvent((gentity_t *)pEnt, EV_PLAY_EFFECT_ID, pVeh->m_pVehicleInfo->iWakeFX);
-					}
-#endif
+					#ifdef _GAME //yeah, this is kind of crappy and makes no use of prediction whatsoever
+						if ( pVeh->m_pVehicleInfo->iWakeFX )
+						{
+							//G_PlayEffectID( pVeh->m_pVehicleInfo->iWakeFX, wakeOrg, fxAxis[0] );
+							//tempent use bad!
+							G_AddEvent((gentity_t *)pEnt, EV_PLAY_EFFECT_ID, pVeh->m_pVehicleInfo->iWakeFX);
+						}
+					#endif
 				}
 			}
 		}
@@ -838,7 +798,7 @@ void PM_HoverTrace( void )
 							vAng[PITCH] = vAng[ROLL] = 0;
 							vAng[YAW] = pVeh->m_vOrientation[YAW];
 							AngleVectors( vAng, fxAxis[2], fxAxis[1], fxAxis[0] );
-#ifdef QAGAME
+#ifdef _GAME
 							if ( pVeh->m_pVehicleInfo->iWakeFX )
 							{
 								G_PlayEffectID( pVeh->m_pVehicleInfo->iWakeFX, trace->endpos, fxAxis[0] );
@@ -2961,7 +2921,7 @@ static void PM_FlyVehicleMove( void )
 		//--------------------------------------------------------------------------------------------
 		if ((fmove!=0.0f || smove!=0.0f) &&	VectorCompare(pm->ps->moveDir, vec3_origin))
 		{
-			//gi.Printf("Generating MoveDir\n");
+			//trap->Printf("Generating MoveDir\n");
 			for ( i = 0 ; i < 3 ; i++ ) 
 			{
 				wishvel[i] = pml.forward[i]*fmove + pml.right[i]*smove;
@@ -3366,7 +3326,7 @@ static void PM_WalkMove( void ) {
 			//--------------------------------------------------------------------------------------------
 			if ((fmove!=0.0f || smove!=0.0f) &&	VectorCompare(pm->ps->moveDir, vec3_origin))
 			{
-				//gi.Printf("Generating MoveDir\n");
+				//trap->Printf("Generating MoveDir\n");
 				for ( i = 0 ; i < 3 ; i++ ) 
 				{
 					wishvel[i] = pml.forward[i]*fmove + pml.right[i]*smove;
@@ -3446,7 +3406,7 @@ static void PM_WalkMove( void ) {
 	/*
 	if (pm->ps->clientNum >= MAX_CLIENTS)
 	{
-#ifdef QAGAME
+#ifdef _GAME
 		Com_Printf("^1S: %f, %f\n", wishspeed, pm->ps->speed);
 #else
 		Com_Printf("^2C: %f, %f\n", wishspeed, pm->ps->speed);
@@ -3679,7 +3639,7 @@ static int PM_TryRoll( void )
 	return 0;
 }
 
-#ifdef QAGAME
+#ifdef _GAME
 static void PM_CrashLandEffect( void )
 {
 	float delta;
@@ -3754,7 +3714,7 @@ static void PM_CrashLand( void ) {
 	delta = vel + t * acc;
 	delta = delta*delta * 0.0001;
 
-#ifdef QAGAME
+#ifdef _GAME
 	PM_CrashLandEffect();
 #endif
 	// ducking while falling doubles damage
@@ -4228,7 +4188,7 @@ static void PM_GroundTrace( void ) {
 		
 		PM_CrashLand();
 
-#ifdef QAGAME
+#ifdef _GAME
 		if (pm->ps->clientNum < MAX_CLIENTS &&
 			!pm->ps->m_iVehicleNum &&
 			trace.entityNum < ENTITYNUM_WORLD &&
@@ -4474,7 +4434,7 @@ static void PM_CheckDuck (void)
 			{ //whoops, can't fit here. Down to 0!
 				VectorClear(pm->mins);
 				VectorClear(pm->maxs);
-#ifdef QAGAME
+#ifdef _GAME
 				{
 					gentity_t *me = &g_entities[pm->ps->clientNum];
 					if (me->inuse && me->client)
@@ -4722,16 +4682,12 @@ void PM_FootSlopeTrace( float *pDiff, float *pInterval )
 
 	interval = 4;//?
 
-	strap_G2API_GetBoltMatrix( pm->ghoul2, 0, pm->g2Bolts_LFoot, 
-			&boltMatrix, G2Angles, pm->ps->origin, pm->cmd.serverTime, 
-					NULL, pm->modelScale );
+	trap->G2API_GetBoltMatrix( pm->ghoul2, 0, pm->g2Bolts_LFoot, &boltMatrix, G2Angles, pm->ps->origin, pm->cmd.serverTime, NULL, pm->modelScale );
 	footLPoint[0] = boltMatrix.matrix[0][3];
 	footLPoint[1] = boltMatrix.matrix[1][3];
 	footLPoint[2] = boltMatrix.matrix[2][3];
 	
-	strap_G2API_GetBoltMatrix( pm->ghoul2, 0, pm->g2Bolts_RFoot, 
-					&boltMatrix, G2Angles, pm->ps->origin, pm->cmd.serverTime, 
-					NULL, pm->modelScale );
+	trap->G2API_GetBoltMatrix( pm->ghoul2, 0, pm->g2Bolts_RFoot, &boltMatrix, G2Angles, pm->ps->origin, pm->cmd.serverTime, NULL, pm->modelScale );
 	footRPoint[0] = boltMatrix.matrix[0][3];
 	footRPoint[1] = boltMatrix.matrix[1][3];
 	footRPoint[2] = boltMatrix.matrix[2][3];
@@ -5459,7 +5415,7 @@ static void PM_Footsteps( void ) {
 					desiredAnim = BOTH_WALK1;
 				}
 			}
-#ifdef QAGAME
+#ifdef _GAME
 			else if ( pm->ps->clientNum >= MAX_CLIENTS &&
 				pm_entSelf &&
 				pm_entSelf->s.NPC_class == CLASS_JAWA)
@@ -5748,14 +5704,14 @@ Generate sound events for entering and leaving water
 ==============
 */
 static void PM_WaterEvents( void ) {		// FIXME?
-#ifdef QAGAME
+#ifdef _GAME
 	qboolean impact_splash = qfalse;
 #endif
 	//
 	// if just entered a water volume, play a sound
 	//
 	if (!pml.previous_waterlevel && pm->waterlevel) {
-#ifdef QAGAME
+#ifdef _GAME
 		if ( VectorLengthSquared( pm->ps->velocity ) > 40000 )
 		{
 			impact_splash = qtrue;
@@ -5768,7 +5724,7 @@ static void PM_WaterEvents( void ) {		// FIXME?
 	// if just completely exited a water volume, play a sound
 	//
 	if (pml.previous_waterlevel && !pm->waterlevel) {
-#ifdef QAGAME
+#ifdef _GAME
 		if ( VectorLengthSquared( pm->ps->velocity ) > 40000 )
 		{
 			impact_splash = qtrue;
@@ -5777,7 +5733,7 @@ static void PM_WaterEvents( void ) {		// FIXME?
 		PM_AddEvent( EV_WATER_LEAVE );
 	}
 
-#ifdef QAGAME
+#ifdef _GAME
 	if ( impact_splash )
 	{
 		//play the splash effect
@@ -5904,7 +5860,7 @@ void PM_FinishWeaponChange( void ) {
 	pm->ps->weaponTime += 250;
 }
 
-#ifdef QAGAME
+#ifdef _GAME
 extern void WP_GetVehicleCamPos( gentity_t *ent, gentity_t *pilot, vec3_t camPos );
 #else
 extern void CG_GetVehicleCamPos( vec3_t camPos );
@@ -5916,7 +5872,7 @@ int BG_VehTraceFromCamPos( trace_t *camTrace, bgEntity_t *bgEnt, const vec3_t en
 	vec3_t	viewDir2End, extraEnd, camPos;
 	float	minAutoAimDist;
 
-#ifdef QAGAME
+#ifdef _GAME
 	WP_GetVehicleCamPos( (gentity_t *)bgEnt, (gentity_t *)bgEnt->m_pVehicle->m_pPilot, camPos );
 #else
 	CG_GetVehicleCamPos( camPos );
@@ -5929,13 +5885,7 @@ int BG_VehTraceFromCamPos( trace_t *camTrace, bgEntity_t *bgEnt, const vec3_t en
 	VectorNormalize( viewDir2End );
 	VectorMA( camPos, MAX_XHAIR_DIST_ACCURACY, viewDir2End, extraEnd );
 
-#ifdef QAGAME
-	trap_Trace( camTrace, camPos, vec3_origin, vec3_origin, extraEnd, 
-		bgEnt->s.number, CONTENTS_SOLID|CONTENTS_BODY );
-#else
-	pm->trace( camTrace, camPos, vec3_origin, vec3_origin, extraEnd, 
-		bgEnt->s.number, CONTENTS_SOLID|CONTENTS_BODY );
-#endif
+	pm->trace( camTrace, camPos, vec3_origin, vec3_origin, extraEnd, bgEnt->s.number, CONTENTS_SOLID|CONTENTS_BODY );
 
 	if ( !camTrace->allsolid
 		&& !camTrace->startsolid
@@ -6726,7 +6676,7 @@ static void PM_Weapon( void )
 	bgEntity_t *veh = NULL;
 	qboolean vehicleRocketLock = qfalse;
 
-#ifdef QAGAME
+#ifdef _GAME
 	if (pm->ps->clientNum >= MAX_CLIENTS &&
 		pm->ps->weapon == WP_NONE &&
 		pm->cmd.weapon == WP_NONE &&
@@ -6775,7 +6725,7 @@ static void PM_Weapon( void )
 		{//riding a walker/fighter
 			//keep saber off, do no weapon stuff at all!
 			pm->ps->saberHolstered = 2;
-#ifdef QAGAME
+#ifdef _GAME
 			pm->cmd.buttons &= ~(BUTTON_ATTACK|BUTTON_ALT_ATTACK);
 #else
 			if ( g_vehWeaponInfo[veh->m_pVehicle->m_pVehicleInfo->weapon[0].ID].fHoming
@@ -7474,7 +7424,7 @@ static void PM_Weapon( void )
 	{ //a vehicle NPC that has a pilot
 		pm->ps->weaponstate = WEAPON_FIRING;
 		pm->ps->weaponTime += 100;
-#ifdef QAGAME //hack, only do it game-side. vehicle weapons don't really need predicting I suppose.
+#ifdef _GAME //hack, only do it game-side. vehicle weapons don't really need predicting I suppose.
 		if ( (pm->cmd.buttons & BUTTON_ALT_ATTACK) )
 		{
 			G_CheapWeaponFire(pm->ps->clientNum, EV_ALT_FIRE);
@@ -7557,7 +7507,7 @@ static void PM_Weapon( void )
 					}
 				}
 #else
-	#ifdef QAGAME
+	#ifdef _GAME
 				if (pm_entSelf)
 				{
 					if (TryGrapple((gentity_t *)pm_entSelf))
@@ -8697,19 +8647,19 @@ void BG_IK_MoveArm(void *ghoul2, int lHandBolt, int time, entityState_t *ent, in
 		//we want to call with a null bone name first. This will init all of the
 		//ik system stuff on the g2 instance, because we need ragdoll effectors
 		//in order for our pcj's to know how to angle properly.
-		if (!strap_G2API_SetBoneIKState(ghoul2, time, NULL, IKS_DYNAMIC, &ikP))
+		if (!trap->G2API_SetBoneIKState(ghoul2, time, NULL, IKS_DYNAMIC, &ikP))
 		{
 			assert(!"Failed to init IK system for g2 instance!");
 		}
 
 		//Now, create our IK bone state.
-		if (strap_G2API_SetBoneIKState(ghoul2, time, "lhumerus", IKS_DYNAMIC, &ikP))
+		if (trap->G2API_SetBoneIKState(ghoul2, time, "lhumerus", IKS_DYNAMIC, &ikP))
 		{
 			//restrict the elbow joint
 			VectorSet(ikP.pcjMins,-90.0f,-20.0f,-20.0f);
 			VectorSet(ikP.pcjMaxs,30.0f,20.0f,-20.0f);
 
-			if (strap_G2API_SetBoneIKState(ghoul2, time, "lradius", IKS_DYNAMIC, &ikP))
+			if (trap->G2API_SetBoneIKState(ghoul2, time, "lradius", IKS_DYNAMIC, &ikP))
 			{ //everything went alright.
 				*ikInProgress = qtrue;
 			}
@@ -8728,7 +8678,8 @@ void BG_IK_MoveArm(void *ghoul2, int lHandBolt, int time, entityState_t *ent, in
 		VectorCopy(angles, tAngles);
 		tAngles[PITCH] = tAngles[ROLL] = 0;
 
-		strap_G2API_GetBoltMatrix(ghoul2, 0, lHandBolt, &lHandMatrix, tAngles, origin, time, 0, scale);
+		trap->G2API_GetBoltMatrix(ghoul2, 0, lHandBolt, &lHandMatrix, tAngles, origin, time, 0, scale);
+
 		//Get the point position from the matrix.
 		lHand[0] = lHandMatrix.matrix[0][3];
 		lHand[1] = lHandMatrix.matrix[1][3];
@@ -8762,7 +8713,7 @@ void BG_IK_MoveArm(void *ghoul2, int lHandBolt, int time, entityState_t *ent, in
 		VectorCopy(origin, ikM.origin); //our position in the world.
 
 		ikM.boneName[0] = 0;
-		if (strap_G2API_IKMove(ghoul2, time, &ikM))
+		if (trap->G2API_IKMove(ghoul2, time, &ikM))
 		{
 			//now do the standard model animate stuff with ragdoll update params.
 			VectorCopy(angles, tuParms.angles);
@@ -8774,7 +8725,7 @@ void BG_IK_MoveArm(void *ghoul2, int lHandBolt, int time, entityState_t *ent, in
 			tuParms.me = ent->number;
 			VectorClear(tuParms.velocity);
 
-			strap_G2API_AnimateG2Models(ghoul2, time, &tuParms);
+			trap->G2API_AnimateG2Models(ghoul2, time, &tuParms);
 		}
 		else
 		{
@@ -8786,20 +8737,20 @@ void BG_IK_MoveArm(void *ghoul2, int lHandBolt, int time, entityState_t *ent, in
 		float cFrame, animSpeed;
 		int sFrame, eFrame, flags;
 
-		strap_G2API_SetBoneIKState(ghoul2, time, "lhumerus", IKS_NONE, NULL);
-		strap_G2API_SetBoneIKState(ghoul2, time, "lradius", IKS_NONE, NULL);
+		trap->G2API_SetBoneIKState(ghoul2, time, "lhumerus", IKS_NONE, NULL);
+		trap->G2API_SetBoneIKState(ghoul2, time, "lradius", IKS_NONE, NULL);
 		
 		//then reset the angles/anims on these PCJs
-		strap_G2API_SetBoneAngles(ghoul2, 0, "lhumerus", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, time);
-		strap_G2API_SetBoneAngles(ghoul2, 0, "lradius", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, time);
+		trap->G2API_SetBoneAngles(ghoul2, 0, "lhumerus", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, time);
+		trap->G2API_SetBoneAngles(ghoul2, 0, "lradius", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, time);
 
 		//Get the anim/frames that the pelvis is on exactly, and match the left arm back up with them again.
-		strap_G2API_GetBoneAnim(ghoul2, "pelvis", (const int)time, &cFrame, &sFrame, &eFrame, &flags, &animSpeed, 0, 0);
-		strap_G2API_SetBoneAnim(ghoul2, 0, "lhumerus", sFrame, eFrame, flags, animSpeed, time, sFrame, 300);
-		strap_G2API_SetBoneAnim(ghoul2, 0, "lradius", sFrame, eFrame, flags, animSpeed, time, sFrame, 300);
+		trap->G2API_GetBoneAnim(ghoul2, "pelvis", (const int)time, &cFrame, &sFrame, &eFrame, &flags, &animSpeed, 0, 0);
+		trap->G2API_SetBoneAnim(ghoul2, 0, "lhumerus", sFrame, eFrame, flags, animSpeed, time, sFrame, 300);
+		trap->G2API_SetBoneAnim(ghoul2, 0, "lradius", sFrame, eFrame, flags, animSpeed, time, sFrame, 300);
 
 		//And finally, get rid of all the ik state effector data by calling with null bone name (similar to how we init it).
-		strap_G2API_SetBoneIKState(ghoul2, time, NULL, IKS_NONE, NULL);
+		trap->G2API_SetBoneIKState(ghoul2, time, NULL, IKS_NONE, NULL);
 		
 		*ikInProgress = qfalse;
 	}
@@ -8936,9 +8887,9 @@ static void BG_G2ClientNeckAngles( void *ghoul2, int time, const vec3_t lookAngl
 	}
 	*/
 
-	strap_G2API_SetBoneAngles(ghoul2, 0, "cranium", headAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-	strap_G2API_SetBoneAngles(ghoul2, 0, "cervical", neckAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-	strap_G2API_SetBoneAngles(ghoul2, 0, "thoracic", thoracicAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+	trap->G2API_SetBoneAngles(ghoul2, 0, "cranium", headAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+	trap->G2API_SetBoneAngles(ghoul2, 0, "cervical", neckAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+	trap->G2API_SetBoneAngles(ghoul2, 0, "thoracic", thoracicAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
 }
 
 //rww - Finally decided to convert all this stuff to BG form.
@@ -9028,7 +8979,7 @@ static void BG_G2ClientSpineAngles( void *ghoul2, int motionBolt, vec3_t cent_le
 		vec3_t		motionRt, tempAng;
 		int			ang;
 
-		strap_G2API_GetBoltMatrix_NoRecNoRot( ghoul2, 0, motionBolt, &boltMatrix, vec3_origin, cent_lerpOrigin, time, 0, modelScale);
+		trap->G2API_GetBoltMatrix_NoRecNoRot( ghoul2, 0, motionBolt, &boltMatrix, vec3_origin, cent_lerpOrigin, time, 0, modelScale);
 		//BG_GiveMeVectorFromMatrix( &boltMatrix, NEGATIVE_Y, motionFwd );
 		motionFwd[0] = -boltMatrix.matrix[0][1];
 		motionFwd[1] = -boltMatrix.matrix[1][1];
@@ -9197,11 +9148,11 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 
 		if (cent->number < MAX_CLIENTS)
 		{
-			strap_G2API_SetBoneAngles(ghoul2, 0, "lower_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-			strap_G2API_SetBoneAngles(ghoul2, 0, "upper_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-			strap_G2API_SetBoneAngles(ghoul2, 0, "cranium", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-			strap_G2API_SetBoneAngles(ghoul2, 0, "thoracic", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-			strap_G2API_SetBoneAngles(ghoul2, 0, "cervical", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+			trap->G2API_SetBoneAngles(ghoul2, 0, "lower_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+			trap->G2API_SetBoneAngles(ghoul2, 0, "upper_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+			trap->G2API_SetBoneAngles(ghoul2, 0, "cranium", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+			trap->G2API_SetBoneAngles(ghoul2, 0, "thoracic", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+			trap->G2API_SetBoneAngles(ghoul2, 0, "cervical", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
 		}
 		return;
 	}
@@ -9461,12 +9412,10 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 					*crazySmoothFactor = time + 1000;
 				}
 
-				BG_G2ClientSpineAngles(ghoul2, motionBolt, cent_lerpOrigin, cent_lerpAngles, cent, time,
-					viewAngles, ciLegs, ciTorso, angles, thoracicAngles, ulAngles, llAngles, modelScale,
-					tPitchAngle, tYawAngle, corrTime);
-				strap_G2API_SetBoneAngles(ghoul2, 0, "lower_lumbar", llAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-				strap_G2API_SetBoneAngles(ghoul2, 0, "upper_lumbar", ulAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-				strap_G2API_SetBoneAngles(ghoul2, 0, "cranium", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+				BG_G2ClientSpineAngles(ghoul2, motionBolt, cent_lerpOrigin, cent_lerpAngles, cent, time, viewAngles, ciLegs, ciTorso, angles, thoracicAngles, ulAngles, llAngles, modelScale, tPitchAngle, tYawAngle, corrTime);
+				trap->G2API_SetBoneAngles(ghoul2, 0, "lower_lumbar", llAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+				trap->G2API_SetBoneAngles(ghoul2, 0, "upper_lumbar", ulAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+				trap->G2API_SetBoneAngles(ghoul2, 0, "cranium", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
 
 				VectorAdd(facingAngles, thoracicAngles, facingAngles);
 
@@ -9477,22 +9426,19 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 			}
 			else
 			{
-				//strap_G2API_SetBoneAngles(ghoul2, 0, "lower_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-				//strap_G2API_SetBoneAngles(ghoul2, 0, "upper_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-				strap_G2API_SetBoneAngles(ghoul2, 0, "cranium", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time);
+			//	trap->G2API_SetBoneAngles(ghoul2, 0, "lower_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+			//	trap->G2API_SetBoneAngles(ghoul2, 0, "upper_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+				trap->G2API_SetBoneAngles(ghoul2, 0, "cranium", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time);
 			}
 
-			VectorScale(facingAngles, 0.6f, facingAngles);
-			strap_G2API_SetBoneAngles(ghoul2, 0, "lower_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-			VectorScale(facingAngles, 0.8f, facingAngles);
-			strap_G2API_SetBoneAngles(ghoul2, 0, "upper_lumbar", facingAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-			VectorScale(facingAngles, 0.8f, facingAngles);
-			strap_G2API_SetBoneAngles(ghoul2, 0, "thoracic", facingAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+			VectorScale(facingAngles, 0.6f, facingAngles);	trap->G2API_SetBoneAngles(ghoul2, 0, "lower_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+			VectorScale(facingAngles, 0.8f, facingAngles);	trap->G2API_SetBoneAngles(ghoul2, 0, "upper_lumbar", facingAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+			VectorScale(facingAngles, 0.8f, facingAngles);	trap->G2API_SetBoneAngles(ghoul2, 0, "thoracic", facingAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
 
 			//Now we want the head angled toward where we are facing
 			VectorSet(facingAngles, 0.0f, dif, 0.0f);
 			VectorScale(facingAngles, 0.6f, facingAngles);
-			strap_G2API_SetBoneAngles(ghoul2, 0, "cervical", facingAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+			trap->G2API_SetBoneAngles(ghoul2, 0, "cervical", facingAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
 
 			return; //don't have to bother with the rest then
 		}
@@ -9528,15 +9474,16 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 		}
 	}
 #endif
-	strap_G2API_SetBoneAngles(ghoul2, 0, "lower_lumbar", llAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-	strap_G2API_SetBoneAngles(ghoul2, 0, "upper_lumbar", ulAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-	strap_G2API_SetBoneAngles(ghoul2, 0, "thoracic", thoracicAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
-	//strap_G2API_SetBoneAngles(ghoul2, 0, "cervical", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time);
+
+	trap->G2API_SetBoneAngles(ghoul2, 0, "lower_lumbar", llAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+	trap->G2API_SetBoneAngles(ghoul2, 0, "upper_lumbar", ulAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+	trap->G2API_SetBoneAngles(ghoul2, 0, "thoracic", thoracicAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+//	trap->G2API_SetBoneAngles(ghoul2, 0, "cervical", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time);
 }
 
 void BG_G2ATSTAngles(void *ghoul2, int time, vec3_t cent_lerpAngles )
 {//																							up			right		fwd
-	strap_G2API_SetBoneAngles(ghoul2, 0, "thoracic", cent_lerpAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time); 
+	trap->G2API_SetBoneAngles( ghoul2, 0, "thoracic", cent_lerpAngles, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, 0, 0, time ); 
 }
 
 static qboolean PM_AdjustAnglesForDualJumpAttack( playerState_t *ps, usercmd_t *ucmd )
@@ -9546,23 +9493,14 @@ static qboolean PM_AdjustAnglesForDualJumpAttack( playerState_t *ps, usercmd_t *
 	return qtrue;
 }
 
-#ifdef __LCC__
-static void PM_CmdForSaberMoves(usercmd_t *ucmd)
-#else
-static ID_INLINE void PM_CmdForSaberMoves(usercmd_t *ucmd)
-#endif
+static QINLINE void PM_CmdForSaberMoves(usercmd_t *ucmd)
 {
 	//DUAL FORWARD+JUMP+ATTACK
-	if ( ( pm->ps->legsAnim == BOTH_JUMPATTACK6
-			&& pm->ps->saberMove == LS_JUMPATTACK_DUAL )
-		|| ( pm->ps->legsAnim == BOTH_BUTTERFLY_FL1 
-			&& pm->ps->saberMove == LS_JUMPATTACK_STAFF_LEFT ) 
-		|| ( pm->ps->legsAnim == BOTH_BUTTERFLY_FR1 
-			&& pm->ps->saberMove == LS_JUMPATTACK_STAFF_RIGHT )
-		|| ( pm->ps->legsAnim == BOTH_BUTTERFLY_RIGHT
-			&& pm->ps->saberMove == LS_BUTTERFLY_RIGHT ) 
-		|| ( pm->ps->legsAnim == BOTH_BUTTERFLY_LEFT 
-			&& pm->ps->saberMove == LS_BUTTERFLY_LEFT ) )
+	if ( (pm->ps->legsAnim == BOTH_JUMPATTACK6		&& pm->ps->saberMove == LS_JUMPATTACK_DUAL) ||
+		 (pm->ps->legsAnim == BOTH_BUTTERFLY_FL1	&& pm->ps->saberMove == LS_JUMPATTACK_STAFF_LEFT) ||
+		 (pm->ps->legsAnim == BOTH_BUTTERFLY_FR1	&& pm->ps->saberMove == LS_JUMPATTACK_STAFF_RIGHT) ||
+		 (pm->ps->legsAnim == BOTH_BUTTERFLY_RIGHT	&& pm->ps->saberMove == LS_BUTTERFLY_RIGHT) ||
+		 (pm->ps->legsAnim == BOTH_BUTTERFLY_LEFT	&& pm->ps->saberMove == LS_BUTTERFLY_LEFT) )
 	{
 		int aLen = PM_AnimLength(0, BOTH_JUMPATTACK6);
 
@@ -10155,7 +10093,6 @@ PmoveSingle
 
 ================
 */
-extern void trap_SnapVector( float *v );
 extern int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float constraint);
 extern qboolean BG_FighterUpdate(Vehicle_t *pVeh, const usercmd_t *pUcmd, vec3_t trMins, vec3_t trMaxs, float gravity,
 					  void (*traceFunc)( trace_t *results, const vec3_t start, const vec3_t lmins, const vec3_t lmaxs, const vec3_t end, int passEntityNum, int contentMask )); //FighterNPC.c
@@ -10630,7 +10567,7 @@ void PmoveSingle (pmove_t *pmove) {
 	/*
 	if (pm->ps->clientNum >= MAX_CLIENTS)
 	{
-#ifdef QAGAME
+#ifdef _GAME
 		Com_Printf( "^1 SERVER N%i msec %d\n", pm->ps->clientNum, pml.msec );
 #else
 		Com_Printf( "^2 CLIENT N%i msec %d\n", pm->ps->clientNum, pml.msec );
@@ -10929,7 +10866,7 @@ void PmoveSingle (pmove_t *pmove) {
 	PM_DropTimers();
 
 #ifdef _TESTING_VEH_PREDICTION
-#ifndef QAGAME
+#ifndef _GAME
 	{
 		vec3_t blah;
 		VectorMA(pm->ps->origin, 128.0f, pm->ps->moveDir, blah);
@@ -10972,7 +10909,7 @@ void PmoveSingle (pmove_t *pmove) {
 				pm->cmd.upmove = 127;
 			}
 		}
-#ifdef QAGAME
+#ifdef _GAME
 		else if ( !pm->ps->zoomMode &&
 			pm_entSelf //I exist
 			&& pEnt->m_pVehicle )//ent has a vehicle
@@ -11004,7 +10941,7 @@ void PmoveSingle (pmove_t *pmove) {
 
 		if (!pm->ps->m_iVehicleNum)
 		{ //no one is driving, just update and get out
-#ifdef QAGAME
+#ifdef _GAME
 			veh->m_pVehicle->m_pVehicleInfo->Update(veh->m_pVehicle, &pm->cmd);
 		    veh->m_pVehicle->m_pVehicleInfo->Animate(veh->m_pVehicle);
 #endif
@@ -11012,7 +10949,7 @@ void PmoveSingle (pmove_t *pmove) {
 		else
 		{
 			bgEntity_t *self = pm_entVeh;
-#ifdef QAGAME
+#ifdef _GAME
 			int i = 0;
 #endif
 
@@ -11029,7 +10966,7 @@ void PmoveSingle (pmove_t *pmove) {
 				PM_VehicleViewAngles(self->playerState, veh, &veh->m_pVehicle->m_ucmd);
 			}
 
-#ifdef QAGAME
+#ifdef _GAME
 			veh->m_pVehicle->m_pVehicleInfo->Update(veh->m_pVehicle, &veh->m_pVehicle->m_ucmd);
 			veh->m_pVehicle->m_pVehicleInfo->Animate(veh->m_pVehicle);
 
@@ -11212,7 +11149,7 @@ void PmoveSingle (pmove_t *pmove) {
 
 	// snap velocity to integer coordinates to save network bandwidth
 	if ( !pm->pmove_float )
-		trap_SnapVector( pm->ps->velocity );
+		trap->SnapVector( pm->ps->velocity );
 
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
 	{

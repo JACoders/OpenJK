@@ -8,6 +8,7 @@ Ghoul2 Insert Start
 #include "ghoul2/G2.h"
 #include "qcommon/MiniHeap.h"
 #include "qcommon/stringed_ingame.h"
+#include "sv_gameapi.h"
 
 /*
 ===============
@@ -389,14 +390,8 @@ void SV_TouchCGame(void) {
 	fileHandle_t	f;
 	char filename[MAX_QPATH];
 
-	if (Cvar_VariableValue( "vm_cgame" ))
-	{
-		Com_sprintf( filename, sizeof(filename), "vm/%s.qvm", "cgame" );
-	}
-	else
-	{
-		Com_sprintf( filename, sizeof(filename), "cgamex86.dll" );
-	}
+	Com_sprintf( filename, sizeof(filename), "cgamex86.dll" );
+
 	FS_FOpenFileRead( filename, &f, qfalse );
 	if ( f ) {
 		FS_FCloseFile( f );
@@ -444,6 +439,7 @@ void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload
 
 	// shut down the existing game if it is running
 	SV_ShutdownGameProgs();
+	svs.gameStarted = qfalse;
 
 	Com_Printf ("------ Server Initialization ------\n");
 	Com_Printf ("Server: %s\n",server);
@@ -603,7 +599,7 @@ Ghoul2 Insert End
 		//rww - RAGDOLL_BEGIN
 		re->G2API_SetTime(sv.time,0);
 		//rww - RAGDOLL_END
-		VM_Call( gvm, GAME_RUN_FRAME, sv.time );
+		GVM_RunFrame( sv.time );
 		SV_BotFrame( sv.time );
 		sv.time += 100;
 		svs.time += 100;
@@ -632,7 +628,7 @@ Ghoul2 Insert End
 			}
 
 			// connect the client again
-			denied = (char *)VM_ExplicitArgPtr( gvm, VM_Call( gvm, GAME_CLIENT_CONNECT, i, qfalse, isBot ) );	// firstTime = qfalse
+			denied = GVM_ClientConnect( i, qfalse, isBot );	// firstTime = qfalse
 			if ( denied ) {
 				// this generally shouldn't happen, because the client
 				// was connected before the level change
@@ -656,14 +652,14 @@ Ghoul2 Insert End
 					client->deltaMessage = -1;
 					client->nextSnapshotTime = svs.time;	// generate a snapshot immediately
 
-					VM_Call( gvm, GAME_CLIENT_BEGIN, i );
+					GVM_ClientBegin( i, qfalse );
 				}
 			}
 		}
 	}	
 
 	// run another frame to allow things to look at all the players
-	VM_Call( gvm, GAME_RUN_FRAME, sv.time );
+	GVM_RunFrame( sv.time );
 	SV_BotFrame( sv.time );
 	sv.time += 100;
 	svs.time += 100;
@@ -785,9 +781,6 @@ static void CM_SetCachedMapDiskImage( void *ptr ) { gpvCachedMapDiskImage = ptr;
 static void CM_SetUsingCache( qboolean usingCache ) { gbUsingCachedMapDataRightNow = usingCache; }
 
 //server stuff D:
-extern vm_t *currentVM;
-extern vm_t *gvm;
-static vm_t *GetGameVM( void ) { return gvm; }
 extern void SV_GetConfigstring( int index, char *buffer, int bufferSize );
 extern void SV_SetConfigstring( int index, const char *val );
 
@@ -856,7 +849,6 @@ static void SV_InitRef( void ) {
 	ri.CM_LeafCluster = CM_LeafCluster;
 	ri.CM_PointLeafnum = CM_PointLeafnum;
 	ri.CM_PointContents = CM_PointContents;
-	ri.VM_Call = VM_Call;
 	ri.Com_TheHunkMarkHasBeenMade = Com_TheHunkMarkHasBeenMade;
 	ri.SV_GetConfigstring = SV_GetConfigstring;
 	ri.SV_SetConfigstring = SV_SetConfigstring;
@@ -869,9 +861,11 @@ static void SV_InitRef( void ) {
 
 	// g2 data access
 	ri.GetSharedMemory = GetSharedMemory;
-//	ri.GetCgameVM = GetCgameVM;
-	ri.GetGameVM = GetGameVM;
+
+	// (c)g vm callbacks
 	ri.GetCurrentVM = GetCurrentVM;
+//	ri.CGVMLoaded = CGVMLoaded;
+//	ri.CGVM_RagCallback = CGVM_RagCallback;
 
 	// ugly win32 backend
 	ri.CM_GetCachedMapDiskImage = CM_GetCachedMapDiskImage;
@@ -1034,6 +1028,7 @@ void SV_Shutdown( char *finalmsg )
 	SV_RemoveOperatorCommands();
 	SV_MasterShutdown();
 	SV_ShutdownGameProgs();
+	svs.gameStarted = qfalse;
 /*
 Ghoul2 Insert Start
 */

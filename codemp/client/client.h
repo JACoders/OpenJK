@@ -4,12 +4,12 @@
 
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
-#include "ui/ui_public.h"
 #include "rd-common/tr_public.h"
 #include "keys.h"
 #include "snd_public.h"
-#include "cgame/cg_public.h"
 #include "game/bg_public.h"
+#include "cgame/cg_public.h"
+#include "ui/ui_public.h"
 
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
@@ -340,10 +340,6 @@ typedef struct {
 
 extern	clientStatic_t		cls;
 
-//=============================================================================
-
-extern	vm_t			*cgvm;	// interface to cgame dll or vm
-extern	vm_t			*uivm;	// interface to ui dll or vm
 extern	refexport_t		*re;		// interface to refresh .dll
 
 //
@@ -407,6 +403,12 @@ void CL_AddReliableCommand( const char *cmd, qboolean isDisconnectCmd );
 
 void CL_StartHunkUsers( void );
 
+qboolean CL_GetSnapshot( int snapshotNumber, snapshot_t *snapshot );
+qboolean CL_GetDefaultState( int index, entityState_t *state );
+qboolean CL_GetServerCommand( int serverCommandNumber );
+qboolean CL_GetUserCmd( int cmdNumber, usercmd_t *ucmd );
+void CL_SetUserCmdValue( int userCmdValue, float sensitivityScale, float mPitchOverride, float mYawOverride, float mSensitivityOverride, int fpSel, int invenSel );
+
 void CL_Disconnect_f (void);
 void CL_GetChallengePacket (void);
 void CL_Vid_Restart_f( void );
@@ -426,7 +428,7 @@ int CL_GetPingQueueCount( void );
 void CL_ShutdownRef( void );
 void CL_InitRef( void );
 
-int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen );
+int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int maxLen );
 
 qboolean CL_CheckPaused(void);
 

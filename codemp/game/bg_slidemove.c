@@ -1,13 +1,18 @@
 // Copyright (C) 1999-2000 Id Software, Inc.
 //
 // bg_slidemove.c -- part of bg_pmove functionality
+// game and cgame, NOT ui
 
 #include "qcommon/q_shared.h"
 #include "bg_public.h"
 #include "bg_local.h"
 
-#ifdef QAGAME //yeah, this is kind of bad
-#include "g_local.h"
+#ifdef _GAME
+	#include "g_local.h"
+#elif _CGAME
+	#include "cgame/cg_local.h"
+#elif _UI
+	#include "ui/ui_local.h"
 #endif
 
 /*
@@ -21,9 +26,9 @@ output: origin, velocity, impacts, stairup boolean
 
 //do vehicle impact stuff
 // slight rearrangement by BTO (VV) so that we only have one namespace include
-#ifdef QAGAME
-extern void G_FlyVehicleSurfaceDestruction(gentity_t *veh, trace_t *trace, int magnitude, qboolean force ); //g_vehicle.c
-extern qboolean G_CanBeEnemy(gentity_t *self, gentity_t *enemy); //w_saber.c
+#ifdef _GAME
+	extern void G_FlyVehicleSurfaceDestruction(gentity_t *veh, trace_t *trace, int magnitude, qboolean force ); //g_vehicle.c
+	extern qboolean G_CanBeEnemy(gentity_t *self, gentity_t *enemy); //w_saber.c
 #endif
 
 extern qboolean BG_UnrestrainedPitchRoll( playerState_t *ps, Vehicle_t *pVeh );
@@ -33,12 +38,8 @@ extern bgEntity_t *pm_entSelf;
 extern bgEntity_t *pm_entVeh;
 
 //vehicle impact stuff continued...
-#ifndef QAGAME //kind of hacky
-extern void trap_FX_PlayEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad );
-#endif
-
-#ifdef QAGAME
-extern qboolean FighterIsLanded( Vehicle_t *pVeh, playerState_t *parentPS );
+#ifdef _GAME
+	extern qboolean FighterIsLanded( Vehicle_t *pVeh, playerState_t *parentPS );
 #endif
 
 extern void PM_SetPMViewAngle(playerState_t *ps, vec3_t angle, usercmd_t *ucmd);
@@ -50,7 +51,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 	Vehicle_t *pSelfVeh = pEnt->m_pVehicle;
 	float magnitude = VectorLength( pm->ps->velocity ) * pSelfVeh->m_pVehicleInfo->mass / 50.0f;
 	qboolean forceSurfDestruction = qfalse;
-#ifdef QAGAME
+#ifdef _GAME
 	gentity_t *hitEnt = trace!=NULL?&g_entities[trace->entityNum]:NULL;
 
 	if (!hitEnt || 
@@ -124,7 +125,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 	}
 	else if ( (fabs(pm->ps->velocity[0])+fabs(pm->ps->velocity[1])) < 100.0f
 		&& pm->ps->velocity[2] > -100.0f )
-#else
+#elif defined(_CGAME)
 	if ( (fabs(pm->ps->velocity[0])+fabs(pm->ps->velocity[1])) < 100.0f
 		&& pm->ps->velocity[2] > -100.0f )
 #endif
@@ -139,16 +140,16 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 		if ( pSelfVeh->m_pVehicleInfo->iImpactFX )
 		{
 			vec3_t up = {0,0,1};
-#ifdef QAGAME
+#ifdef _GAME
 			G_PlayEffectID( pSelfVeh->m_pVehicleInfo->iImpactFX, pm->ps->origin, up );
 #else
-			trap_FX_PlayEffectID( pSelfVeh->m_pVehicleInfo->iImpactFX, pm->ps->origin, up, -1, -1 );
+			trap->FX_PlayEffectID( pSelfVeh->m_pVehicleInfo->iImpactFX, pm->ps->origin, up, -1, -1, qfalse );
 #endif
 		}
 		*/
 		//this was annoying me -rww
 		//FIXME: this shouldn't even be getting called when the vehicle is at rest!
-#ifdef QAGAME
+#ifdef _GAME
 		if (hitEnt && (hitEnt->s.eType == ET_PLAYER || hitEnt->s.eType == ET_NPC) && pSelfVeh->m_pVehicleInfo->type == VH_FIGHTER)
 		{ //always smack players
 		}
@@ -168,7 +169,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 			//FIXME: impact sound and effect should be gotten from g_vehicleInfo...?
 			//FIXME: should pass in trace.endpos and trace.plane.normal
 			vec3_t	vehUp;
-#ifndef QAGAME
+#ifdef _CGAME
 			bgEntity_t *hitEnt;
 #endif
 
@@ -177,7 +178,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 				qboolean turnFromImpact = qfalse, turnHitEnt = qfalse;
 				float l = pm->ps->speed*0.5f;
 				vec3_t	bounceDir;
-#ifndef QAGAME
+#ifdef _CGAME
 				bgEntity_t *hitEnt = PM_BGEntForNum(trace->entityNum);
 #endif
 				if ( (trace->entityNum == ENTITYNUM_WORLD || hitEnt->s.solid == SOLID_BMODEL)//bounce off any brush
@@ -205,7 +206,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 				}
 				else if ( pSelfVeh->m_pVehicleInfo->type == VH_FIGHTER )
 				{//check for impact with another fighter
-#ifndef QAGAME
+#ifdef _CGAME
 					bgEntity_t *hitEnt = PM_BGEntForNum(trace->entityNum);
 #endif
 					if ( hitEnt->s.NPC_class == CLASS_VEHICLE
@@ -215,11 +216,11 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 					{//two vehicles hit each other, turn away from the impact
 						turnFromImpact = qtrue;
 						turnHitEnt = qtrue;
-#ifndef QAGAME
-						VectorSubtract( pm->ps->origin, hitEnt->s.origin, bounceDir );
-#else
-						VectorSubtract( pm->ps->origin, hitEnt->r.currentOrigin, bounceDir );
-#endif
+						#ifdef _GAME
+							VectorSubtract( pm->ps->origin, hitEnt->r.currentOrigin, bounceDir );
+						#else
+							VectorSubtract( pm->ps->origin, hitEnt->s.origin, bounceDir );
+						#endif
 						VectorNormalize( bounceDir );
 					}
 				}
@@ -236,18 +237,18 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 					}
 					else
 					{//hit another fighter
-#ifndef QAGAME
-						VectorScale( bounceDir, (pm->ps->speed+hitEnt->s.speed)*0.5f, bounceDir );
-#else
-						if ( hitEnt->client )
-						{
-							VectorScale( bounceDir, (pm->ps->speed+hitEnt->client->ps.speed)*0.5f, pushDir );
-						}
-						else
-						{
-							VectorScale( bounceDir, (pm->ps->speed+hitEnt->s.speed)*0.5f, pushDir );
-						}
-#endif
+						#ifdef _GAME
+							if ( hitEnt->client )
+							{
+								VectorScale( bounceDir, (pm->ps->speed+hitEnt->client->ps.speed)*0.5f, pushDir );
+							}
+							else
+							{
+								VectorScale( bounceDir, (pm->ps->speed+hitEnt->s.speed)*0.5f, pushDir );
+							}
+						#else
+							VectorScale( bounceDir, (pm->ps->speed+hitEnt->s.speed)*0.5f, bounceDir );
+						#endif
 						VectorScale(pushDir, (l/pSelfVeh->m_pVehicleInfo->mass), pushDir);
 						VectorScale(pushDir, 0.1f, pushDir);
 					}
@@ -331,7 +332,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 						}
 					}
 					*/
-#ifdef QAGAME//server-side, turn the guy we hit away from us, too
+#ifdef _GAME//server-side, turn the guy we hit away from us, too
 					if ( turnHitEnt//make the other guy turn and get pushed
 						&& hitEnt->client //must be a valid client
 						&& !FighterIsLanded( hitEnt->m_pVehicle, &hitEnt->client->ps )//but not if landed
@@ -420,7 +421,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 				}
 			}
 
-#ifdef QAGAME
+#ifdef _GAME
 			if (!hitEnt)
 			{
 				return;
@@ -541,7 +542,7 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 			{ //don't hit your own missiles!
 				AngleVectors( pSelfVeh->m_vOrientation, NULL, NULL, vehUp );
 				pEnt->m_pVehicle->m_iHitDebounce = pm->cmd.serverTime + 200;
-				trap_FX_PlayEffectID( pSelfVeh->m_pVehicleInfo->iImpactFX, pm->ps->origin, vehUp, -1, -1 );
+				trap->FX_PlayEffectID( pSelfVeh->m_pVehicleInfo->iImpactFX, pm->ps->origin, vehUp, -1, -1, qfalse );
 
 				pSelfVeh->m_ulFlags |= VEH_CRASHING;
 			}
@@ -579,7 +580,7 @@ qboolean PM_ClientImpact( trace_t *trace, qboolean damageSelf )
 
 ===============
 */
-#ifdef QAGAME
+#ifdef _GAME
 extern void Client_CheckImpactBBrush( gentity_t *self, gentity_t *other );
 qboolean PM_ClientImpact( trace_t *trace )
 {
@@ -715,7 +716,7 @@ qboolean	PM_SlideMove( qboolean gravity ) {
 				PM_VehicleImpact(pEnt, &trace);
 			}
 		}
-#ifdef QAGAME
+#ifdef _GAME
 		else
 		{
 			if ( PM_ClientImpact( &trace ) )

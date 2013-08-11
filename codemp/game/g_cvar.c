@@ -41,7 +41,7 @@ void G_RegisterCvars( void ) {
 	const cvarTable_t *cv = NULL;
 
 	for ( i=0, cv=gameCvarTable; i<gameCvarTableSize; i++, cv++ ) {
-		trap_Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
+		trap->Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
 		if ( cv->update )
 			cv->update();
 	}
@@ -54,13 +54,13 @@ void G_UpdateCvars( void ) {
 	for ( i=0, cv=gameCvarTable; i<gameCvarTableSize; i++, cv++ ) {
 		if ( cv->vmCvar ) {
 			int modCount = cv->vmCvar->modificationCount;
-			trap_Cvar_Update( cv->vmCvar );
+			trap->Cvar_Update( cv->vmCvar );
 			if ( cv->vmCvar->modificationCount != modCount ) {
 				if ( cv->update )
 					cv->update();
 
 				if ( cv->trackChange )
-					trap_SendServerCommand( -1, va("print \"Server: %s changed to %s\n\"", cv->cvarName, cv->vmCvar->string ) );
+					trap->SendServerCommand( -1, va("print \"Server: %s changed to %s\n\"", cv->cvarName, cv->vmCvar->string ) );
 			}
 		}
 	}

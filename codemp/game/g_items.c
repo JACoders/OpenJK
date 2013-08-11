@@ -180,12 +180,12 @@ void ShieldGoSolid(gentity_t *self)
 		return;
 	}
 	
-	trap_Trace (&tr, self->r.currentOrigin, self->r.mins, self->r.maxs, self->r.currentOrigin, self->s.number, CONTENTS_BODY );
+	trap->Trace (&tr, self->r.currentOrigin, self->r.mins, self->r.maxs, self->r.currentOrigin, self->s.number, CONTENTS_BODY, qfalse, 0, 0 );
 	if(tr.startsolid)
 	{	// gah, we can't activate yet
 		self->nextthink = level.time + 200;
 		self->think = ShieldGoSolid;
-		trap_LinkEntity(self);
+		trap->LinkEntity((sharedEntity_t *)self);
 	}
 	else
 	{ // get hard... huh-huh...
@@ -195,7 +195,7 @@ void ShieldGoSolid(gentity_t *self)
 		self->nextthink = level.time + 1000;
 		self->think = ShieldThink;
 		self->takedamage = qtrue;
-		trap_LinkEntity(self);
+		trap->LinkEntity((sharedEntity_t *)self);
 
 		// Play raising sound...
 		G_AddEvent(self, EV_GENERAL_SOUND, shieldActivateSound);
@@ -217,7 +217,7 @@ void ShieldGoNotSolid(gentity_t *self)
 	self->nextthink = level.time + 200;
 	self->think = ShieldGoSolid;
 	self->takedamage = qfalse;
-	trap_LinkEntity(self);
+	trap->LinkEntity((sharedEntity_t *)self);
 
 	// Play kill sound...
 	G_AddEvent(self, EV_GENERAL_SOUND, shieldDeactivateSound);
@@ -263,7 +263,7 @@ void CreateShield(gentity_t *ent)
 	// trace upward to find height of shield
 	VectorCopy(ent->r.currentOrigin, end);
 	end[2] += MAX_SHIELD_HEIGHT;
-	trap_Trace (&tr, ent->r.currentOrigin, NULL, NULL, end, ent->s.number, MASK_SHOT );
+	trap->Trace (&tr, ent->r.currentOrigin, NULL, NULL, end, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 	height = (int)(MAX_SHIELD_HEIGHT * tr.fraction);
 
 	// use angles to find the proper axis along which to align the shield
@@ -289,10 +289,10 @@ void CreateShield(gentity_t *ent)
 	// positive trace
 	VectorCopy(ent->r.currentOrigin, start);
 	start[2] += (height>>1);
-	trap_Trace (&tr, start, 0, 0, posTraceEnd, ent->s.number, MASK_SHOT );
+	trap->Trace (&tr, start, 0, 0, posTraceEnd, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 	posWidth = MAX_SHIELD_HALFWIDTH * tr.fraction;
 	// negative trace
-	trap_Trace (&tr, start, 0, 0, negTraceEnd, ent->s.number, MASK_SHOT );
+	trap->Trace (&tr, start, 0, 0, negTraceEnd, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 	negWidth = MAX_SHIELD_HALFWIDTH * tr.fraction;
 
 	// kef -- monkey with dimensions and place origin in center
@@ -345,7 +345,7 @@ void CreateShield(gentity_t *ent)
 	ent->touch = ShieldTouch;
 
 	// see if we're valid
-	trap_Trace (&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, ent->s.number, CONTENTS_BODY ); 
+	trap->Trace (&tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, ent->r.currentOrigin, ent->s.number, CONTENTS_BODY, qfalse, 0, 0 ); 
 
 	if (tr.startsolid)
 	{	// Something in the way!
@@ -356,7 +356,7 @@ void CreateShield(gentity_t *ent)
 		ent->nextthink = level.time + 200;
 		ent->think = ShieldGoSolid;
 		ent->takedamage = qfalse;
-		trap_LinkEntity(ent);
+		trap->LinkEntity((sharedEntity_t *)ent);
 	}
 	else
 	{	// Get solid.
@@ -366,7 +366,7 @@ void CreateShield(gentity_t *ent)
 		ent->think = ShieldThink;
 
 		ent->takedamage = qtrue;
-		trap_LinkEntity(ent);
+		trap->LinkEntity((sharedEntity_t *)ent);
 
 		// Play raising sound...
 		G_AddEvent(ent, EV_GENERAL_SOUND, shieldActivateSound);
@@ -402,13 +402,13 @@ qboolean PlaceShield(gentity_t *playerent)
 	AngleVectors (playerent->client->ps.viewangles, fwd, NULL, NULL);
 	fwd[2] = 0;
 	VectorMA(playerent->client->ps.origin, SHIELD_PLACEDIST, fwd, dest);
-	trap_Trace (&tr, playerent->client->ps.origin, mins, maxs, dest, playerent->s.number, MASK_SHOT );
+	trap->Trace (&tr, playerent->client->ps.origin, mins, maxs, dest, playerent->s.number, MASK_SHOT, qfalse, 0, 0 );
 	if (tr.fraction > 0.9)
 	{//room in front
 		VectorCopy(tr.endpos, pos);
 		// drop to floor
 		VectorSet( dest, pos[0], pos[1], pos[2] - 4096 );
-		trap_Trace( &tr, pos, mins, maxs, dest, playerent->s.number, MASK_SOLID );
+		trap->Trace( &tr, pos, mins, maxs, dest, playerent->s.number, MASK_SOLID, qfalse, 0, 0 );
 		if ( !tr.startsolid && !tr.allsolid )
 		{
 			// got enough room so place the portable shield
@@ -448,7 +448,7 @@ qboolean PlaceShield(gentity_t *playerent)
 			shield->s.eFlags &= ~EF_NODRAW;
 			shield->r.svFlags &= ~SVF_NOCLIENT;
 
-			trap_LinkEntity (shield);
+			trap->LinkEntity ((sharedEntity_t *)shield);
 
 			shield->s.owner = playerent->s.number;
 			shield->s.shouldtarget = qtrue;
@@ -591,7 +591,7 @@ static qboolean pas_find_enemies( gentity_t *self )
 		{
 			continue;
 		}
-		if ( !trap_InPVS( org2, target->r.currentOrigin ))
+		if ( !trap->InPVS( org2, target->r.currentOrigin ))
 		{
 			continue;
 		}
@@ -611,7 +611,7 @@ static qboolean pas_find_enemies( gentity_t *self )
 			VectorCopy( target->r.currentOrigin, org );
 		}
 
-		trap_Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT );
+		trap->Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 		if ( !tr.allsolid && !tr.startsolid && ( tr.fraction == 1.0 || tr.entityNum == target->s.number ))
 		{
@@ -667,7 +667,7 @@ void pas_adjust_enemy( gentity_t *ent )
 			VectorCopy( ent->enemy->r.currentOrigin, org );
 		}
 
-		trap_Trace( &tr, org2, NULL, NULL, org, ent->s.number, MASK_SHOT );
+		trap->Trace( &tr, org2, NULL, NULL, org, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 		if ( tr.allsolid || tr.startsolid || tr.fraction < 0.9f || tr.entityNum == ent->s.number )
 		{
@@ -729,7 +729,7 @@ void pas_think( gentity_t *ent )
 	testMaxs[1] = ent->r.currentOrigin[1] + ent->r.maxs[1]-4;
 	testMaxs[2] = ent->r.currentOrigin[2] + ent->r.maxs[2]-4;
 
-	numListedEntities = trap_EntitiesInBox( testMins, testMaxs, iEntityList, MAX_GENTITIES );
+	numListedEntities = trap->EntitiesInBox( testMins, testMaxs, iEntityList, MAX_GENTITIES );
 
 	while (i < numListedEntities)
 	{
@@ -737,7 +737,7 @@ void pas_think( gentity_t *ent )
 		{ //client stuck inside me. go nonsolid.
 			int clNum = iEntityList[i];
 
-			numListedEntities = trap_EntitiesInBox( g_entities[clNum].r.absmin, g_entities[clNum].r.absmax, iEntityList, MAX_GENTITIES );
+			numListedEntities = trap->EntitiesInBox( g_entities[clNum].r.absmin, g_entities[clNum].r.absmax, iEntityList, MAX_GENTITIES );
 
 			i = 0;
 			while (i < numListedEntities)
@@ -1078,7 +1078,7 @@ void ItemUse_Sentry( gentity_t *ent )
 
 	ent->client->ps.fd.sentryDeployed = qtrue;
 
-	trap_LinkEntity(sentry);
+	trap->LinkEntity((sharedEntity_t *)sentry);
 
 	sentry->s.owner = ent->s.number;
 	sentry->s.shouldtarget = qtrue;
@@ -1394,7 +1394,7 @@ void ItemUse_UseDisp(gentity_t *ent, int type)
 
 		G_SetOrigin(eItem, pos);
 		VectorCopy(eItem->r.currentOrigin, eItem->s.origin);
-		trap_LinkEntity(eItem);
+		trap->LinkEntity((sharedEntity_t *)eItem);
 
 		G_SpecialSpawnItem(eItem, item);
 
@@ -1579,7 +1579,7 @@ void EWeb_SetBoneAngles(gentity_t *ent, char *bone, vec3_t angles)
 	//first 3 bits is forward, second 3 bits is right, third 3 bits is up
 	ent->s.boneOrient = ((forward)|(right<<3)|(up<<6));
 
-	trap_G2API_SetBoneAngles( ent->ghoul2,
+	trap->G2API_SetBoneAngles( ent->ghoul2,
 					0,
 					bone,
 					angles, 
@@ -1610,7 +1610,7 @@ void EWeb_SetBoneAnim(gentity_t *eweb, int startFrame, int endFrame)
 
 	//now set the animation on the server ghoul2 instance.
 	assert(eweb->ghoul2);
-	trap_G2API_SetBoneAnim(eweb->ghoul2, 0, "model_root", startFrame, endFrame,
+	trap->G2API_SetBoneAnim(eweb->ghoul2, 0, "model_root", startFrame, endFrame,
 		(BONE_ANIM_OVERRIDE_FREEZE|BONE_ANIM_BLEND), 1.0f, level.time, -1, 100);
 }
 
@@ -1629,7 +1629,7 @@ void EWebFire(gentity_t *owner, gentity_t *eweb)
 	}
 
 	//get the muzzle point
-	trap_G2API_GetBoltMatrix(eweb->ghoul2, 0, eweb->genericValue10, &boltMatrix, eweb->s.apos.trBase, eweb->r.currentOrigin, level.time, NULL, eweb->modelScale);
+	trap->G2API_GetBoltMatrix(eweb->ghoul2, 0, eweb->genericValue10, &boltMatrix, eweb->s.apos.trBase, eweb->r.currentOrigin, level.time, NULL, eweb->modelScale);
 	BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, p);
 	BG_GiveMeVectorFromMatrix(&boltMatrix, NEGATIVE_Y, d);
 
@@ -1665,7 +1665,7 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 	vec3_t p, d;
 	trace_t tr;
 
-	trap_G2API_GetBoltMatrix(eweb->ghoul2, 0, eweb->genericValue9, &boltMatrix, eweb->s.apos.trBase, eweb->r.currentOrigin, level.time, NULL, eweb->modelScale);
+	trap->G2API_GetBoltMatrix(eweb->ghoul2, 0, eweb->genericValue9, &boltMatrix, eweb->s.apos.trBase, eweb->r.currentOrigin, level.time, NULL, eweb->modelScale);
 	BG_GiveMeVectorFromMatrix(&boltMatrix, ORIGIN, p);
 	BG_GiveMeVectorFromMatrix(&boltMatrix, NEGATIVE_X, d);
 
@@ -1674,7 +1674,7 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 
 	p[2] += 4.0f;
 
-	trap_Trace(&tr, owner->client->ps.origin, owner->r.mins, owner->r.maxs, p, owner->s.number, MASK_PLAYERSOLID);
+	trap->Trace(&tr, owner->client->ps.origin, owner->r.mins, owner->r.maxs, p, owner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	if (!tr.startsolid && !tr.allsolid && tr.fraction == 1.0f)
 	{ //all clear, we can move there
@@ -1682,7 +1682,7 @@ void EWebPositionUser(gentity_t *owner, gentity_t *eweb)
 
 		VectorCopy(p, pDown);
 		pDown[2] -= 7.0f;
-		trap_Trace(&tr, p, owner->r.mins, owner->r.maxs, pDown, owner->s.number, MASK_PLAYERSOLID);
+		trap->Trace(&tr, p, owner->r.mins, owner->r.maxs, pDown, owner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 		if (!tr.startsolid && !tr.allsolid)
 		{
@@ -1870,7 +1870,7 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 
 	VectorMA(s, 48.0f, fwd, pos);
 
-	trap_Trace(&tr, s, mins, maxs, pos, spawner->s.number, MASK_PLAYERSOLID);
+	trap->Trace(&tr, s, mins, maxs, pos, spawner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	if (tr.allsolid || tr.startsolid || tr.fraction != 1.0f)
 	{ //can't spawn here, we are in solid
@@ -1890,7 +1890,7 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 
 	VectorCopy(pos, downPos);
 	downPos[2] -= 18.0f;
-	trap_Trace(&tr, pos, mins, maxs, downPos, spawner->s.number, MASK_PLAYERSOLID);
+	trap->Trace(&tr, pos, mins, maxs, downPos, spawner->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	if (tr.startsolid || tr.allsolid || tr.fraction == 1.0f || tr.entityNum < ENTITYNUM_WORLD)
 	{ //didn't hit ground.
@@ -1932,7 +1932,7 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 	ent->s.g2radius = 128;
 	ent->s.modelindex = G_ModelIndex((char *)modelName);
 
-	trap_G2API_InitGhoul2Model(&ent->ghoul2, modelName, 0, 0, 0, 0, 0);
+	trap->G2API_InitGhoul2Model(&ent->ghoul2, modelName, 0, 0, 0, 0, 0);
 
 	if (!ent->ghoul2)
 	{ //should not happen, but just to be safe.
@@ -1944,8 +1944,8 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 	EWeb_SetBoneAngles(ent, "cannon_Yrot", vec3_origin);
 	EWeb_SetBoneAngles(ent, "cannon_Xrot", vec3_origin);
 
-	ent->genericValue10 = trap_G2API_AddBolt(ent->ghoul2, 0, "*cannonflash"); //muzzle bolt
-	ent->genericValue9 = trap_G2API_AddBolt(ent->ghoul2, 0, "cannon_Yrot"); //for placing the owner relative to rotation
+	ent->genericValue10 = trap->G2API_AddBolt(ent->ghoul2, 0, "*cannonflash"); //muzzle bolt
+	ent->genericValue9 = trap->G2API_AddBolt(ent->ghoul2, 0, "cannon_Yrot"); //for placing the owner relative to rotation
 
 	//set the constraints for this guy as an emplaced weapon, and his constraint angles
 	ent->s.origin2[0] = 360.0f; //360 degrees in either direction
@@ -1956,7 +1956,7 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 	ent->angle = 0.0f;
 
 	ent->r.ownerNum = spawner->s.number;
-	trap_LinkEntity(ent);
+	trap->LinkEntity((sharedEntity_t *)ent);
 
 	//store off the owner's current weapons, we will be forcing him to use the "emplaced" weapon
 	ent->genericValue11 = spawner->client->ps.stats[STAT_WEAPONS];
@@ -2081,7 +2081,7 @@ int Pickup_Powerup( gentity_t *ent, gentity_t *other ) {
 		}
 
 		// if not line of sight, no sound
-		trap_Trace( &tr, client->ps.origin, NULL, NULL, ent->s.pos.trBase, ENTITYNUM_NONE, CONTENTS_SOLID );
+		trap->Trace( &tr, client->ps.origin, NULL, NULL, ent->s.pos.trBase, ENTITYNUM_NONE, CONTENTS_SOLID, qfalse, 0, 0 );
 		if ( tr.fraction != 1.0 ) {
 			continue;
 		}
@@ -2293,7 +2293,7 @@ void RespawnItem( gentity_t *ent ) {
 		int choice;
 
 		if ( !ent->teammaster ) {
-			G_Error( "RespawnItem: bad teammaster");
+			trap->Error( ERR_DROP, "RespawnItem: bad teammaster");
 		}
 		master = ent->teammaster;
 
@@ -2310,7 +2310,7 @@ void RespawnItem( gentity_t *ent ) {
 	//ent->s.eFlags &= ~EF_NODRAW;
 	ent->s.eFlags &= ~(EF_NODRAW | EF_ITEMPLACEHOLDER);
 	ent->r.svFlags &= ~SVF_NOCLIENT;
-	trap_LinkEntity (ent);
+	trap->LinkEntity ((sharedEntity_t *)ent);
 
 	if ( ent->item->giType == IT_POWERUP ) {
 		// play powerup spawn sound to all clients
@@ -2642,7 +2642,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		ent->nextthink = level.time + respawn * 1000;
 		ent->think = RespawnItem;
 	}
-	trap_LinkEntity( ent );
+	trap->LinkEntity( (sharedEntity_t *)ent );
 }
 
 
@@ -2727,7 +2727,7 @@ gentity_t *LaunchItem( gitem_t *item, vec3_t origin, vec3_t velocity ) {
 
 	dropped->physicsObject = qtrue;
 
-	trap_LinkEntity (dropped);
+	trap->LinkEntity ((sharedEntity_t *)dropped);
 
 	return dropped;
 }
@@ -2906,7 +2906,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 /*	item = &bg_itemlist[ ent->s.modelindex ];
 	if (!stricmp(&item->world_model[0][strlen(item->world_model[0]) - 4], ".glm"))
 	{
-		trap_G2API_InitGhoul2Model(&ent->s, item->world_model[0], G_ModelIndex(item->world_model[0] ), 0, 0, 0, 0);
+		trap->G2API_InitGhoul2Model(&ent->s, item->world_model[0], G_ModelIndex(item->world_model[0] ), 0, 0, 0, 0);
 		ent->s.radius = 60;
 	}
 */
@@ -2922,9 +2922,9 @@ void FinishSpawningItem( gentity_t *ent ) {
 		ent->r.maxs[2] -= 0.1f;
 
 		VectorSet( dest, ent->s.origin[0], ent->s.origin[1], ent->s.origin[2] - 4096 );
-		trap_Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID );
+		trap->Trace( &tr, ent->s.origin, ent->r.mins, ent->r.maxs, dest, ent->s.number, MASK_SOLID, qfalse, 0, 0 );
 		if ( tr.startsolid ) {
-			G_Printf ("FinishSpawningItem: %s startsolid at %s\n", ent->classname, vtos(ent->s.origin));
+			trap->Print ("FinishSpawningItem: %s startsolid at %s\n", ent->classname, vtos(ent->s.origin));
 			G_FreeEntity( ent );
 			return;
 		}
@@ -2959,7 +2959,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 	}
 	*/
 
-	trap_LinkEntity (ent);
+	trap->LinkEntity ((sharedEntity_t *)ent);
 }
 
 
@@ -2981,11 +2981,11 @@ void G_CheckTeamItems( void ) {
 		// check for the two flags
 		item = BG_FindItem( "team_CTF_redflag" );
 		if ( !item || !itemRegistered[ item - bg_itemlist ] ) {
-			G_Printf( S_COLOR_YELLOW "WARNING: No team_CTF_redflag in map\n" );
+			trap->Print( S_COLOR_YELLOW "WARNING: No team_CTF_redflag in map\n" );
 		}
 		item = BG_FindItem( "team_CTF_blueflag" );
 		if ( !item || !itemRegistered[ item - bg_itemlist ] ) {
-			G_Printf( S_COLOR_YELLOW "WARNING: No team_CTF_blueflag in map\n" );
+			trap->Print( S_COLOR_YELLOW "WARNING: No team_CTF_blueflag in map\n" );
 		}
 	}
 }
@@ -3019,7 +3019,7 @@ The item will be added to the precache list
 */
 void RegisterItem( gitem_t *item ) {
 	if ( !item ) {
-		G_Error( "RegisterItem: NULL" );
+		trap->Error( ERR_DROP, "RegisterItem: NULL" );
 	}
 	itemRegistered[ item - bg_itemlist ] = qtrue;
 }
@@ -3049,8 +3049,8 @@ void SaveRegisteredItems( void ) {
 	}
 	string[ bg_numItems ] = 0;
 
-//	G_Printf( "%i items registered\n", count );
-	trap_SetConfigstring(CS_ITEMS, string);
+//	trap->Print( "%i items registered\n", count );
+	trap->SetConfigstring(CS_ITEMS, string);
 }
 
 /*
@@ -3063,7 +3063,7 @@ int G_ItemDisabled( gitem_t *item ) {
 	char name[128];
 
 	Com_sprintf(name, sizeof(name), "disable_%s", item->classname);
-	return trap_Cvar_VariableIntegerValue( name );
+	return trap->Cvar_VariableIntegerValue( name );
 }
 
 /*
@@ -3209,8 +3209,7 @@ void G_RunItem( gentity_t *ent ) {
 	} else {
 		mask = MASK_PLAYERSOLID & ~CONTENTS_BODY;//MASK_SOLID;
 	}
-	trap_Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, 
-		ent->r.ownerNum, mask );
+	trap->Trace( &tr, ent->r.currentOrigin, ent->r.mins, ent->r.maxs, origin, ent->r.ownerNum, mask, qfalse, 0, 0 );
 
 	VectorCopy( tr.endpos, ent->r.currentOrigin );
 
@@ -3219,7 +3218,7 @@ void G_RunItem( gentity_t *ent ) {
 		tr.fraction = 0;
 	}
 
-	trap_LinkEntity( ent );	// FIXME: avoid this for stationary?
+	trap->LinkEntity( (sharedEntity_t *)ent );	// FIXME: avoid this for stationary?
 
 	// check think function
 	G_RunThink( ent );
@@ -3229,7 +3228,7 @@ void G_RunItem( gentity_t *ent ) {
 	}
 
 	// if it is in a nodrop volume, remove it
-	contents = trap_PointContents( ent->r.currentOrigin, -1 );
+	contents = trap->PointContents( ent->r.currentOrigin, -1 );
 	if ( contents & CONTENTS_NODROP ) {
 		if (ent->item && ent->item->giType == IT_TEAM) {
 			Team_FreeEntity(ent);

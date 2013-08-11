@@ -32,7 +32,6 @@
 		56E4CE5F121EFF71004E7206 /* cg_scoreboard.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE3D121EFF71004E7206 /* cg_scoreboard.c */; };
 		56E4CE60121EFF71004E7206 /* cg_servercmds.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE3E121EFF71004E7206 /* cg_servercmds.c */; };
 		56E4CE61121EFF71004E7206 /* cg_snapshot.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE3F121EFF71004E7206 /* cg_snapshot.c */; };
-		56E4CE62121EFF71004E7206 /* cg_strap.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE40121EFF71004E7206 /* cg_strap.c */; };
 		56E4CE63121EFF71004E7206 /* cg_syscalls.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE41121EFF71004E7206 /* cg_syscalls.c */; };
 		56E4CE64121EFF71004E7206 /* cg_turret.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE42121EFF71004E7206 /* cg_turret.c */; };
 		56E4CE65121EFF71004E7206 /* cg_view.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CE43121EFF71004E7206 /* cg_view.c */; };
@@ -91,7 +90,6 @@
 		56E4CE3D121EFF71004E7206 /* cg_scoreboard.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cg_scoreboard.c; path = ../cgame/cg_scoreboard.c; sourceTree = SOURCE_ROOT; };
 		56E4CE3E121EFF71004E7206 /* cg_servercmds.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cg_servercmds.c; path = ../cgame/cg_servercmds.c; sourceTree = SOURCE_ROOT; };
 		56E4CE3F121EFF71004E7206 /* cg_snapshot.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cg_snapshot.c; path = ../cgame/cg_snapshot.c; sourceTree = SOURCE_ROOT; };
-		56E4CE40121EFF71004E7206 /* cg_strap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cg_strap.c; path = ../cgame/cg_strap.c; sourceTree = SOURCE_ROOT; };
 		56E4CE41121EFF71004E7206 /* cg_syscalls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cg_syscalls.c; path = ../cgame/cg_syscalls.c; sourceTree = SOURCE_ROOT; };
 		56E4CE42121EFF71004E7206 /* cg_turret.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cg_turret.c; path = ../cgame/cg_turret.c; sourceTree = SOURCE_ROOT; };
 		56E4CE43121EFF71004E7206 /* cg_view.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = cg_view.c; path = ../cgame/cg_view.c; sourceTree = SOURCE_ROOT; };
@@ -188,7 +186,6 @@
 				56E4CE3D121EFF71004E7206 /* cg_scoreboard.c */,
 				56E4CE3E121EFF71004E7206 /* cg_servercmds.c */,
 				56E4CE3F121EFF71004E7206 /* cg_snapshot.c */,
-				56E4CE40121EFF71004E7206 /* cg_strap.c */,
 				56E4CE41121EFF71004E7206 /* cg_syscalls.c */,
 				56E4CE42121EFF71004E7206 /* cg_turret.c */,
 				56E4CE43121EFF71004E7206 /* cg_view.c */,
@@ -345,7 +342,6 @@
 				56E4CE5F121EFF71004E7206 /* cg_scoreboard.c in Sources */,
 				56E4CE60121EFF71004E7206 /* cg_servercmds.c in Sources */,
 				56E4CE61121EFF71004E7206 /* cg_snapshot.c in Sources */,
-				56E4CE62121EFF71004E7206 /* cg_strap.c in Sources */,
 				56E4CE63121EFF71004E7206 /* cg_syscalls.c in Sources */,
 				56E4CE64121EFF71004E7206 /* cg_turret.c in Sources */,
 				56E4CE65121EFF71004E7206 /* cg_view.c in Sources */,

@@ -622,7 +622,8 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	Com_DPrintf( "CM_LoadMap( %s, %i )\n", name, clientload );
 
 	if ( !strcmp( cm.name, name ) && clientload ) {
-		*checksum = last_checksum;
+		if ( checksum )
+			*checksum = last_checksum;
 		return;
 	}
 
@@ -643,7 +644,8 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 		cm.numClusters = 1;
 		cm.numAreas = 1;
 		cm.cmodels = (struct cmodel_s *)Hunk_Alloc( sizeof( *cm.cmodels ), h_high );
-		*checksum = 0;
+		if ( checksum )
+			*checksum = 0;
 		return;
 	}
 
@@ -692,7 +694,8 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	}
 
 	last_checksum = LittleLong (Com_BlockChecksum (buf, iBSPLen));
-	*checksum = last_checksum;
+	if ( checksum )
+		*checksum = last_checksum;
 
 	header = *(dheader_t *)buf;
 	for (size_t i=0 ; i<sizeof(dheader_t)/4 ; i++) {

@@ -122,9 +122,6 @@
     <ClCompile Include="g_spawn.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="g_strap.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="g_svcmds.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -310,16 +307,10 @@
     <ClInclude Include="bg_saga.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bg_strap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="bg_vehicles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="bg_weapons.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\cgame\cg_local.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\cgame\cg_public.h">

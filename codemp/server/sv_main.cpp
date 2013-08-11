@@ -7,9 +7,10 @@
 #include "ghoul2/ghoul2_shared.h"
 //rww - RAGDOLL_END
 
+#include "sv_gameapi.h"
+
 serverStatic_t	svs;				// persistant server info
 server_t		sv;					// local server
-vm_t			*gvm = NULL;				// game virtual machine // bk001212 init
 
 cvar_t	*sv_snapsMin;			// minimum snapshots/sec a client can request, also limited by sv_snapsMax
 cvar_t	*sv_snapsMax;			// maximum snapshots/sec a client can request, also limited by sv_fps
@@ -1097,7 +1098,7 @@ void SV_Frame( int msec ) {
 		sv.time += frameMsec;
 
 		// let everything in the world think and move
-		VM_Call( gvm, GAME_RUN_FRAME, sv.time );
+		GVM_RunFrame( sv.time );
 	}
 
 	//rww - RAGDOLL_BEGIN

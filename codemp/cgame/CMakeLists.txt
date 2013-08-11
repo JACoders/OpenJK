@@ -9,7 +9,7 @@ set(MPCGameIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPCGameLibraries "odbc32" "odbccp32") # what are these even?
 endif(WIN32)
-set(MPCGameDefines ${MPSharedDefines} "CGAME" "MISSIONPACK" )
+set(MPCGameDefines ${MPSharedDefines} "_CGAME" )
 set(MPCGameGameFiles
 	"${MPDir}/game/AnimalNPC.c"
 	"${MPDir}/game/bg_g2_utils.c"
@@ -29,7 +29,6 @@ set(MPCGameGameFiles
 	"${MPDir}/game/bg_local.h"
 	"${MPDir}/game/bg_public.h"
 	"${MPDir}/game/bg_saga.h"
-	"${MPDir}/game/bg_strap.h"
 	"${MPDir}/game/bg_weapons.h"
 	"${MPDir}/game/surfaceflags.h"
 	)
@@ -57,7 +56,6 @@ set(MPCGameCgameFiles
 	"${MPDir}/cgame/cg_servercmds.c"
 	"${MPDir}/cgame/cg_snapshot.c"
 	"${MPDir}/cgame/cg_spawn.c"
-	"${MPDir}/cgame/cg_strap.c"
 	"${MPDir}/cgame/cg_syscalls.c"
 	"${MPDir}/cgame/cg_turret.c"
 	"${MPDir}/cgame/cg_view.c"

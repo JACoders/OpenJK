@@ -2,6 +2,7 @@
 #include "qcommon/exe_headers.h"
 
 #include "client.h"
+#include "cl_cgameapi.h"
 #include "FxScheduler.h"
 #include "qcommon/q_shared.h"
 
@@ -125,7 +126,7 @@ void CFxScheduler::AddLoopedEffects()
 			TCGVectorData	*data = (TCGVectorData*)cl.mSharedMemory;
 
 			data->mEntityNum = entNum;
-			VM_Call( cgvm, CG_GET_LERP_ORIGIN );
+			CGVM_GetLerpOrigin();
 
 			PlayEffect( mLoopedEffectArray[i].mId, data->mPoint, 0, mLoopedEffectArray[i].mBoltInfo, mLoopedEffectArray[i].mGhoul2.mItem, -1, mLoopedEffectArray[i].mPortalEffect, false, mLoopedEffectArray[i].mIsRelative );	//very important to send FALSE to not recursively add me!
 			mLoopedEffectArray[i].mNextTime = theFxHelper.mTime + mEffectTemplates[mLoopedEffectArray[i].mId].mRepeatDelay;
@@ -929,7 +930,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 					TCGVectorData	*data = (TCGVectorData*)cl.mSharedMemory;
 
 					data->mEntityNum = entityNum;
-					VM_Call( cgvm, CG_GET_LERP_ORIGIN );
+					CGVM_GetLerpOrigin();
 					CreateEffect( prim, data->mPoint, axis, -delay, fxParm );
 				}
 				else
@@ -1099,7 +1100,7 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 						TCGVectorData	*data = (TCGVectorData*)cl.mSharedMemory;
 
 						data->mEntityNum = (*itr)->mEntNum;
-						VM_Call( cgvm, CG_GET_LERP_ORIGIN );
+						CGVM_GetLerpOrigin();
 						CreateEffect( (*itr)->mpTemplate, 
 									data->mPoint, (*itr)->mAxis, 
 									theFxHelper.mTime - (*itr)->mStartTime );
