@@ -6099,13 +6099,17 @@ bool HasStringLanguageChanged ( const itemDef_t *item )
 		return false;
 	}
 
-	int modificationCount = se_language->modificationCount;
+	int modificationCount;
 #ifndef __NO_JK2
 	if ( com_jk2 && com_jk2->integer )
 	{
 		modificationCount = sp_language->modificationCount;
 	}
+	else
 #endif
+	{
+		modificationCount = se_language->modificationCount;
+	}
 
 	return item->asset != modificationCount;
 }

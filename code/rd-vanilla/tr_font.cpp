@@ -701,6 +701,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 			{
 				uiLetter = (psString[0] * 256) + psString[1];
 				psText += 2;
+				*piAdvanceCount = 2;
 
 				// not going to bother testing for korean punctuation here, since korean already 
 				//	uses spaces, and I don't have the punctuation glyphs defined, only the basic 2350 hanguls
@@ -720,6 +721,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 			{
 				uiLetter = (psString[0] * 256) + psString[1];
 				psText += 2;
+				*piAdvanceCount = 2;
 
 				// need to ask if this is a trailing (ie like a comma or full-stop) punctuation?...
 				//
@@ -738,6 +740,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 			{
 				uiLetter = (psString[0] * 256) + psString[1];
 				psText += 2;
+				*piAdvanceCount = 2;
 
 				// need to ask if this is a trailing (ie like a comma or full-stop) punctuation?...
 				//
@@ -754,6 +757,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 		//
 		uiLetter = psString[0];
 		psText += 1;	// NOT ++
+		*piAdvanceCount = 1;
 
 		if (pbIsTrailingPunctuation)
 		{
@@ -901,7 +905,10 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 unsigned int AnyLanguage_ReadCharFromString( char **psText, qboolean *pbIsTrailingPunctuation /* = NULL */)
 {	
 	int advance = 0;
-	return AnyLanguage_ReadCharFromString (*psText, &advance, pbIsTrailingPunctuation);
+	unsigned int advance2 = AnyLanguage_ReadCharFromString (*psText, &advance, pbIsTrailingPunctuation);
+	*psText += advance;
+
+	return advance2;
 }
 #endif
 
