@@ -67,9 +67,6 @@
     <ClInclude Include="..\game\bg_saga.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\game\bg_strap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\game\bg_weapons.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -48,7 +48,7 @@ const char *GetStringForID( stringID_table_t *table, int id )
 	return NULL;
 }
 
-ID_INLINE int Com_Clampi( int min, int max, int value ) 
+QINLINE int Com_Clampi( int min, int max, int value ) 
 {
 	if ( value < min ) 
 	{
@@ -61,7 +61,7 @@ ID_INLINE int Com_Clampi( int min, int max, int value )
 	return value;
 }
 
-ID_INLINE float Com_Clamp( float min, float max, float value ) {
+QINLINE float Com_Clamp( float min, float max, float value ) {
 	if ( value < min ) {
 		return min;
 	}
@@ -72,7 +72,7 @@ ID_INLINE float Com_Clamp( float min, float max, float value ) {
 }
 
 // some fucking joker deleted my code for ABSCLAMP, precisely before I was going to use it. so I added this --eez
-ID_INLINE int Com_AbsClampi( int min, int max, int value )
+QINLINE int Com_AbsClampi( int min, int max, int value )
 {
 	if( value < 0 )
 	{
@@ -84,7 +84,7 @@ ID_INLINE int Com_AbsClampi( int min, int max, int value )
 	}
 }
 
-ID_INLINE float Com_AbsClamp( float min, float max, float value )
+QINLINE float Com_AbsClamp( float min, float max, float value )
 {
 	if( value < 0.0f )
 	{

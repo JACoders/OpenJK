@@ -105,7 +105,7 @@ void ImperialProbe_MaintainHeight( void )
 
 		// Stay at a given height until we take on an enemy
 /*		VectorSet( endPos, NPC->r.currentOrigin[0], NPC->r.currentOrigin[1], NPC->r.currentOrigin[2] - 512 );
-		trap_Trace( &trace, NPC->r.currentOrigin, NULL, NULL, endPos, NPC->s.number, MASK_SOLID );
+		trap->Trace( &trace, NPC->r.currentOrigin, NULL, NULL, endPos, NPC->s.number, MASK_SOLID );
 
 		if ( trace.fraction != 1.0f )
 		{
@@ -179,7 +179,7 @@ void ImperialProbe_Strafe( void )
 	dir = ( rand() & 1 ) ? -1 : 1;
 	VectorMA( NPCS.NPC->r.currentOrigin, HUNTER_STRAFE_DIS * dir, right, end );
 
-	trap_Trace( &tr, NPCS.NPC->r.currentOrigin, NULL, NULL, end, NPCS.NPC->s.number, MASK_SOLID );
+	trap->Trace( &tr, NPCS.NPC->r.currentOrigin, NULL, NULL, end, NPCS.NPC->s.number, MASK_SOLID, qfalse, 0, 0 );
 
 	// Close enough
 	if ( tr.fraction > 0.9f )
@@ -261,10 +261,10 @@ void ImperialProbe_FireBlaster(void)
 	gentity_t	*missile;
 	mdxaBone_t	boltMatrix;
 
-	genBolt1 = trap_G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash");
+	genBolt1 = trap->G2API_AddBolt(NPCS.NPC->ghoul2, 0, "*flash");
 
 	//FIXME: use {0, NPC->client->ps.legsYaw, 0}
-	trap_G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0, 
+	trap->G2API_GetBoltMatrix( NPCS.NPC->ghoul2, 0, 
 				genBolt1,
 				&boltMatrix, NPCS.NPC->r.currentAngles, NPCS.NPC->r.currentOrigin, level.time,
 				NULL, NPCS.NPC->modelScale );
@@ -430,7 +430,7 @@ void NPC_Probe_Pain(gentity_t *self, gentity_t *attacker, int damage)
 		trace_t	trace;
 
 		VectorSet( endPos, self->r.currentOrigin[0], self->r.currentOrigin[1], self->r.currentOrigin[2] - 128 );
-		trap_Trace( &trace, self->r.currentOrigin, NULL, NULL, endPos, self->s.number, MASK_SOLID );
+		trap->Trace( &trace, self->r.currentOrigin, NULL, NULL, endPos, self->s.number, MASK_SOLID, qfalse, 0, 0 );
 
 		if ( trace.fraction == 1.0f || mod == MOD_DEMP2 ) // demp2 always does this
 		{
@@ -556,7 +556,7 @@ void ImperialProbe_Wait(void)
 		NPCS.NPCInfo->desiredYaw = AngleNormalize360( NPCS.NPCInfo->desiredYaw + 25 );
 
 		VectorSet( endPos, NPCS.NPC->r.currentOrigin[0], NPCS.NPC->r.currentOrigin[1], NPCS.NPC->r.currentOrigin[2] - 32 );
-		trap_Trace( &trace, NPCS.NPC->r.currentOrigin, NULL, NULL, endPos, NPCS.NPC->s.number, MASK_SOLID );
+		trap->Trace( &trace, NPCS.NPC->r.currentOrigin, NULL, NULL, endPos, NPCS.NPC->s.number, MASK_SOLID, qfalse, 0, 0 );
 
 		if ( trace.fraction != 1.0f )
 		{

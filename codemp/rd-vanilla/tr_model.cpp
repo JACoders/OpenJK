@@ -1377,7 +1377,7 @@ qhandle_t RE_RegisterModel( const char *name )
 	const qboolean bWhatitwas = gbInsideRegisterModel;
 	gbInsideRegisterModel = qtrue;	// !!!!!!!!!!!!!!
 
-		qhandle_t q = RE_RegisterModel_Actual( name );
+	qhandle_t q = RE_RegisterModel_Actual( name );
 
 	gbInsideRegisterModel = bWhatitwas;
 

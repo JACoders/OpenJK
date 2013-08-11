@@ -9,7 +9,7 @@ set(MPGameIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPGameLibraries "winmm")
 endif(WIN32)
-set(MPGameDefines ${MPSharedDefines} "QAGAME" "MISSIONPACK" )
+set(MPGameDefines ${MPSharedDefines} "_GAME" )
 set(MPGameGameFiles
 	"${MPDir}/game/ai_main.c"
 	"${MPDir}/game/ai_util.c"
@@ -47,7 +47,6 @@ set(MPGameGameFiles
 	"${MPDir}/game/g_saga.c"
 	"${MPDir}/game/g_session.c"
 	"${MPDir}/game/g_spawn.c"
-	"${MPDir}/game/g_strap.c"
 	"${MPDir}/game/g_svcmds.c"
 	"${MPDir}/game/g_syscalls.c"
 	"${MPDir}/game/g_target.c"
@@ -105,7 +104,6 @@ set(MPGameGameFiles
 	"${MPDir}/game/bg_local.h"
 	"${MPDir}/game/bg_public.h"
 	"${MPDir}/game/bg_saga.h"
-	"${MPDir}/game/bg_strap.h"
 	"${MPDir}/game/bg_vehicles.h"
 	"${MPDir}/game/bg_weapons.h"
 	"${MPDir}/game/chars.h"
@@ -138,7 +136,6 @@ set(MPGameFiles ${MPGameFiles} ${MPGameCommonFiles})
 
 set(MPGameCgameFiles
 	"${MPDir}/cgame/animtable.h"
-	"${MPDir}/cgame/cg_local.h"
 	"${MPDir}/cgame/cg_public.h"
 	)
 source_group("cgame" FILES ${MPGameCgameFiles})

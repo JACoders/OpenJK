@@ -546,13 +546,12 @@ void G2API_CleanGhoul2Models(CGhoul2Info_v **ghoul2Ptr)
 
 qboolean G2_ShouldRegisterServer(void)
 {
-	if ( !ri->GetCurrentVM || !ri->GetGameVM )
+	if ( !ri->GetCurrentVM )
 		return qfalse;
 
 	vm_t *currentVM = ri->GetCurrentVM();
-	vm_t *gvm = ri->GetGameVM();
 
-	if (currentVM && currentVM == gvm)
+	if ( currentVM && currentVM->slot == VM_GAME )
 	{
 		if ( ri->Cvar_VariableIntegerValue( "cl_running" ) &&
 			ri->Com_TheHunkMarkHasBeenMade() && ShaderHashTableExists())
@@ -565,16 +564,12 @@ qboolean G2_ShouldRegisterServer(void)
 	return qfalse;
 }
 
-qhandle_t G2API_PrecacheGhoul2Model(const char *fileName)
+qhandle_t G2API_PrecacheGhoul2Model( const char *fileName )
 {
-	if (G2_ShouldRegisterServer())
-	{
-		return RE_RegisterServerModel((char *)fileName);
-	}
+	if ( G2_ShouldRegisterServer() )
+		return RE_RegisterServerModel( fileName );
 	else
-	{
-		return RE_RegisterModel((char *)fileName);
-	}
+		return RE_RegisterModel( fileName );
 }
 
 void CL_InitRef( void );

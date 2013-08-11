@@ -81,7 +81,7 @@ void Interrogator_PartsMove(void)
 			NPCS.NPC->pos1[1]=Q_irand( 0, 60 );	// Pitch	
 		}
 
-	//	gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+	//	trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone1, NPC->pos1, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
 		NPC_SetBoneAngles(NPCS.NPC, "left_arm", NPCS.NPC->pos1);
 
 		TIMER_Set( NPCS.NPC, "syringeDelay", Q_irand( 100, 1000 ) );
@@ -112,7 +112,7 @@ void Interrogator_PartsMove(void)
 		}
 
 		NPCS.NPC->pos2[0] = AngleNormalize360( NPCS.NPC->pos2[0]);
-	//	gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone2, NPC->pos2, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+	//	trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone2, NPC->pos2, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
 
 		NPC_SetBoneAngles(NPCS.NPC, "right_arm", NPCS.NPC->pos2);
 	}
@@ -120,7 +120,7 @@ void Interrogator_PartsMove(void)
 	// Claw
 	NPCS.NPC->pos3[1] += Q_irand( 10, 30 );
 	NPCS.NPC->pos3[1] = AngleNormalize360( NPCS.NPC->pos3[1]);
-	//gi.G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone3, NPC->pos3, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
+	//trap->G2API_SetBoneAnglesIndex( &NPC->ghoul2[NPC->playerModel], NPC->genericBone3, NPC->pos3, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL ); 
 
 	NPC_SetBoneAngles(NPCS.NPC, "claw", NPCS.NPC->pos3);
 
@@ -249,7 +249,7 @@ void Interrogator_Strafe( void )
 	dir = ( rand() & 1 ) ? -1 : 1;
 	VectorMA( NPCS.NPC->r.currentOrigin, HUNTER_STRAFE_DIS * dir, right, end );
 
-	trap_Trace( &tr, NPCS.NPC->r.currentOrigin, NULL, NULL, end, NPCS.NPC->s.number, MASK_SOLID );
+	trap->Trace( &tr, NPCS.NPC->r.currentOrigin, NULL, NULL, end, NPCS.NPC->s.number, MASK_SOLID, qfalse, 0, 0 );
 
 	// Close enough
 	if ( tr.fraction > 0.9f )

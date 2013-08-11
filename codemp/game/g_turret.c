@@ -132,7 +132,7 @@ static void turret_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	vec3_t		org;
 	gentity_t	*bolt;
 
-	if ( (trap_PointContents( start, ent->s.number )&MASK_SHOT) )
+	if ( (trap->PointContents( start, ent->s.number )&MASK_SHOT) )
 	{
 		return;
 	}
@@ -206,13 +206,13 @@ void turret_head_think( gentity_t *self )
 		mdxaBone_t	boltMatrix;
 
 		// Getting the flash bolt here
-		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
 					self->torsoBolt,
 					&boltMatrix, self->r.currentAngles, self->r.currentOrigin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
 
-		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, org );
-		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, POSITIVE_Y, fwd );
+		trap->G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, org );
+		trap->G2API_GiveMeVectorFromMatrix( boltMatrix, POSITIVE_Y, fwd );
 		*/
 		VectorCopy( top->r.currentOrigin, org );
 		org[2] += top->r.maxs[2]-8;
@@ -280,12 +280,12 @@ static void turret_aim( gentity_t *self )
 		mdxaBone_t	boltMatrix;
 
 		// Getting the "eye" here
-		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		trap->G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
 					self->torsoBolt,
 					&boltMatrix, self->r.currentAngles, self->s.origin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
 
-		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, org2 );
+		trap->G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, org2 );
 		*/
 		VectorCopy( top->r.currentOrigin, org2 );
 
@@ -459,7 +459,7 @@ static qboolean turret_find_enemies( gentity_t *self )
 				continue;
 			}
 		}
-		if ( !trap_InPVS( org2, target->r.currentOrigin ))
+		if ( !trap->InPVS( org2, target->r.currentOrigin ))
 		{
 			continue;
 		}
@@ -467,7 +467,7 @@ static qboolean turret_find_enemies( gentity_t *self )
 		VectorCopy( target->r.currentOrigin, org );
 		org[2] += target->r.maxs[2]*0.5f;
 
-		trap_Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT );
+		trap->Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 		if ( !tr.allsolid && !tr.startsolid && ( tr.fraction == 1.0 || tr.entityNum == target->s.number ))
 		{
@@ -558,7 +558,7 @@ void turret_base_think( gentity_t *self )
 			if ( enemyDist < (self->radius * self->radius) )
 			{
 				// was in valid radius
-				if ( trap_InPVS( self->r.currentOrigin, self->enemy->r.currentOrigin ) )
+				if ( trap->InPVS( self->r.currentOrigin, self->enemy->r.currentOrigin ) )
 				{
 					// Every now and again, check to see if we can even trace to the enemy
 					trace_t tr;
@@ -580,7 +580,7 @@ void turret_base_think( gentity_t *self )
 					{
 						org2[2] -= 10;
 					}
-					trap_Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT );
+					trap->Trace( &tr, org2, NULL, NULL, org, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 					if ( !tr.allsolid && !tr.startsolid && tr.entityNum == self->enemy->s.number )
 					{
@@ -676,11 +676,11 @@ void SP_misc_turret( gentity_t *base )
 
 	base->s.modelindex2 = G_ModelIndex( "models/map_objects/hoth/turret_bottom.md3" );
 	base->s.modelindex = G_ModelIndex( "models/map_objects/hoth/turret_base.md3" );
-	//base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/turret_canon.glm", base->s.modelindex );
+	//base->playerModel = trap->G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/turret_canon.glm", base->s.modelindex );
 	//base->s.radius = 80.0f;
 
-	//gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL ); 
-	//base->torsoBolt = gi.G2API_AddBolt( &base->ghoul2[base->playerModel], "*flash03" );
+	//trap->G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL ); 
+	//base->torsoBolt = trap->G2API_AddBolt( &base->ghoul2[base->playerModel], "*flash03" );
 
 	G_SpawnString( "icon", "", &s );
 	if (s && s[0])
@@ -703,7 +703,7 @@ void SP_misc_turret( gentity_t *base )
 	// don't start working right away
 	base->nextthink = level.time + FRAMETIME * 5;
 
-	trap_LinkEntity( base );
+	trap->LinkEntity( (sharedEntity_t *)base );
 
 	if ( !turret_base_spawn_top( base ) )
 	{
@@ -865,6 +865,6 @@ qboolean turret_base_spawn_top( gentity_t *base )
 	// But set us as a turret so that we can be identified as a turret
 	top->s.weapon = WP_EMPLACED_GUN;
 
-	trap_LinkEntity( top );
+	trap->LinkEntity( (sharedEntity_t *)top );
 	return qtrue;
 }

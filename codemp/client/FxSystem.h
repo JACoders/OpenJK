@@ -1,5 +1,6 @@
 #pragma once
 
+#include "client/cl_cgameapi.h"
 #include "ghoul2/G2.h"
 
 extern cvar_t	*fx_debug;
@@ -121,7 +122,7 @@ public:
 		td->mSkipNumber = skipEntNum;
 		td->mMask = flags;
 
-		VM_Call( cgvm, CG_TRACE );
+		CGVM_Trace();
 
 		tr = td->mResult;
 	}
@@ -148,7 +149,7 @@ public:
 		td->mSkipNumber = skipEntNum;
 		td->mMask = flags;
 
-		VM_Call( cgvm, CG_G2TRACE );
+		CGVM_G2Trace();
 
 		tr = td->mResult;
 	}
@@ -162,7 +163,7 @@ public:
 		VectorCopy(start, td->start);
 		VectorCopy(dir, td->dir);
 
-		VM_Call(cgvm, CG_G2MARK);
+		CGVM_G2Mark();
 	}
 
 	inline	void	AddFxToScene( refEntity_t *ent )

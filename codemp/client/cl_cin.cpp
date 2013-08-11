@@ -17,6 +17,7 @@
  *****************************************************************************/
 
 #include "client.h"
+#include "cl_uiapi.h"
 #include "snd_local.h"
 #ifndef _WIN32
 #include <cmath>
@@ -1445,8 +1446,8 @@ int CIN_PlayCinematic( const char *arg, int x, int y, int w, int h, int systemBi
 
 	if (cinTable[currentHandle].alterGameState) {
 		// close the menu
-		if ( uivm ) {
-			VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_NONE );
+		if ( cls.uiStarted ) {
+			UIVM_SetActiveMenu( UIMENU_NONE );
 		}
 	} else {
 		cinTable[currentHandle].playonwalls = cl_inGameVideo->integer;

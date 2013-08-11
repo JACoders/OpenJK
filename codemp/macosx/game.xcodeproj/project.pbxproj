@@ -47,7 +47,6 @@
 		56E4CF24121F0005004E7206 /* g_saga.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CECB121F0005004E7206 /* g_saga.c */; };
 		56E4CF25121F0005004E7206 /* g_session.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CECC121F0005004E7206 /* g_session.c */; };
 		56E4CF26121F0005004E7206 /* g_spawn.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CECD121F0005004E7206 /* g_spawn.c */; };
-		56E4CF27121F0005004E7206 /* g_strap.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CECE121F0005004E7206 /* g_strap.c */; };
 		56E4CF28121F0005004E7206 /* g_svcmds.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CECF121F0005004E7206 /* g_svcmds.c */; };
 		56E4CF29121F0005004E7206 /* g_syscalls.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CED0121F0005004E7206 /* g_syscalls.c */; };
 		56E4CF2A121F0005004E7206 /* g_target.c in Sources */ = {isa = PBXBuildFile; fileRef = 56E4CED1121F0005004E7206 /* g_target.c */; };
@@ -143,7 +142,6 @@
 		56E4CECB121F0005004E7206 /* g_saga.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = g_saga.c; path = ../game/g_saga.c; sourceTree = SOURCE_ROOT; };
 		56E4CECC121F0005004E7206 /* g_session.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = g_session.c; path = ../game/g_session.c; sourceTree = SOURCE_ROOT; };
 		56E4CECD121F0005004E7206 /* g_spawn.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = g_spawn.c; path = ../game/g_spawn.c; sourceTree = SOURCE_ROOT; };
-		56E4CECE121F0005004E7206 /* g_strap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = g_strap.c; path = ../game/g_strap.c; sourceTree = SOURCE_ROOT; };
 		56E4CECF121F0005004E7206 /* g_svcmds.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = g_svcmds.c; path = ../game/g_svcmds.c; sourceTree = SOURCE_ROOT; };
 		56E4CED0121F0005004E7206 /* g_syscalls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = g_syscalls.c; path = ../game/g_syscalls.c; sourceTree = SOURCE_ROOT; };
 		56E4CED1121F0005004E7206 /* g_target.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = g_target.c; path = ../game/g_target.c; sourceTree = SOURCE_ROOT; };
@@ -284,7 +282,6 @@
 				56E4CECB121F0005004E7206 /* g_saga.c */,
 				56E4CECC121F0005004E7206 /* g_session.c */,
 				56E4CECD121F0005004E7206 /* g_spawn.c */,
-				56E4CECE121F0005004E7206 /* g_strap.c */,
 				56E4CECF121F0005004E7206 /* g_svcmds.c */,
 				56E4CED0121F0005004E7206 /* g_syscalls.c */,
 				56E4CED1121F0005004E7206 /* g_target.c */,
@@ -456,7 +453,6 @@
 				56E4CF24121F0005004E7206 /* g_saga.c in Sources */,
 				56E4CF25121F0005004E7206 /* g_session.c in Sources */,
 				56E4CF26121F0005004E7206 /* g_spawn.c in Sources */,
-				56E4CF27121F0005004E7206 /* g_strap.c in Sources */,
 				56E4CF28121F0005004E7206 /* g_svcmds.c in Sources */,
 				56E4CF29121F0005004E7206 /* g_syscalls.c in Sources */,
 				56E4CF2A121F0005004E7206 /* g_target.c in Sources */,

@@ -19,8 +19,8 @@ void CG_TargetCommand_f( void ) {
 		return;
 	}
 
-	trap_Argv( 1, test, 4 );
-	trap_SendConsoleCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
+	trap->Cmd_Argv( 1, test, 4 );
+	trap->SendConsoleCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
 }
 
 
@@ -33,7 +33,7 @@ Keybinding command
 =================
 */
 static void CG_SizeUp_f (void) {
-	trap_Cvar_Set("cg_viewsize", va("%i",(int)(cg_viewsize.integer+10)));
+	trap->Cvar_Set("cg_viewsize", va("%i",(int)(cg_viewsize.integer+10)));
 }
 
 
@@ -45,7 +45,7 @@ Keybinding command
 =================
 */
 static void CG_SizeDown_f (void) {
-	trap_Cvar_Set("cg_viewsize", va("%i",(int)(cg_viewsize.integer-10)));
+	trap->Cvar_Set("cg_viewsize", va("%i",(int)(cg_viewsize.integer-10)));
 }
 
 
@@ -57,7 +57,7 @@ Debugging command to print the current position
 =============
 */
 static void CG_Viewpos_f (void) {
-	CG_Printf ("%s (%i %i %i) : %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
+	trap->Print ("%s (%i %i %i) : %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
 		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], 
 		(int)cg.refdef.viewangles[YAW]);
 }
@@ -70,7 +70,7 @@ static void CG_ScoresDown_f( void ) {
 		// the scores are more than two seconds out of data,
 		// so request new ones
 		cg.scoresRequestTime = cg.time;
-		trap_SendClientCommand( "score" );
+		trap->SendClientCommand( "score" );
 
 		// leave the current scores up if they were already
 		// displayed, but if this is the first hit, clear them out
@@ -114,22 +114,22 @@ static void CG_scrollScoresUp_f( void) {
 
 #if 0
 static void CG_spWin_f( void) {
-	trap_Cvar_Set("cg_cameraOrbit", "2");
-	trap_Cvar_Set("cg_cameraOrbitDelay", "35");
-	trap_Cvar_Set("cg_thirdPerson", "1");
-	trap_Cvar_Set("cg_thirdPersonAngle", "0");
-	trap_Cvar_Set("cg_thirdPersonRange", "100");
+	trap->Cvar_Set("cg_cameraOrbit", "2");
+	trap->Cvar_Set("cg_cameraOrbitDelay", "35");
+	trap->Cvar_Set("cg_thirdPerson", "1");
+	trap->Cvar_Set("cg_thirdPersonAngle", "0");
+	trap->Cvar_Set("cg_thirdPersonRange", "100");
 	CG_AddBufferedSound(cgs.media.winnerSound);
 	//trap_S_StartLocalSound(cgs.media.winnerSound, CHAN_ANNOUNCER);
 	CG_CenterPrint(CG_GetStringEdString("MP_INGAME", "YOU_WIN"), SCREEN_HEIGHT * .30, 0);
 }
 
 static void CG_spLose_f( void) {
-	trap_Cvar_Set("cg_cameraOrbit", "2");
-	trap_Cvar_Set("cg_cameraOrbitDelay", "35");
-	trap_Cvar_Set("cg_thirdPerson", "1");
-	trap_Cvar_Set("cg_thirdPersonAngle", "0");
-	trap_Cvar_Set("cg_thirdPersonRange", "100");
+	trap->Cvar_Set("cg_cameraOrbit", "2");
+	trap->Cvar_Set("cg_cameraOrbitDelay", "35");
+	trap->Cvar_Set("cg_thirdPerson", "1");
+	trap->Cvar_Set("cg_thirdPersonAngle", "0");
+	trap->Cvar_Set("cg_thirdPersonRange", "100");
 	CG_AddBufferedSound(cgs.media.loserSound);
 	//trap_S_StartLocalSound(cgs.media.loserSound, CHAN_ANNOUNCER);
 	CG_CenterPrint(CG_GetStringEdString("MP_INGAME", "YOU_LOSE"), SCREEN_HEIGHT * .30, 0);
@@ -187,9 +187,9 @@ static void CG_TellTarget_f( void ) {
 		return;
 	}
 
-	trap_Args( message, 128 );
+	trap->Cmd_Args( message, 128 );
 	Com_sprintf( command, 128, "tell %i %s", clientNum, message );
-	trap_SendClientCommand( command );
+	trap->SendClientCommand( command );
 }
 
 static void CG_TellAttacker_f( void ) {
@@ -202,9 +202,9 @@ static void CG_TellAttacker_f( void ) {
 		return;
 	}
 
-	trap_Args( message, 128 );
+	trap->Cmd_Args( message, 128 );
 	Com_sprintf( command, 128, "tell %i %s", clientNum, message );
-	trap_SendClientCommand( command );
+	trap->SendClientCommand( command );
 }
 
 
@@ -217,18 +217,18 @@ CG_StartOrbit_f
 static void CG_StartOrbit_f( void ) {
 	char var[MAX_TOKEN_CHARS];
 
-	trap_Cvar_VariableStringBuffer( "developer", var, sizeof( var ) );
+	trap->Cvar_VariableStringBuffer( "developer", var, sizeof( var ) );
 	if ( !atoi(var) ) {
 		return;
 	}
 	if (cg_cameraOrbit.value != 0) {
-		trap_Cvar_Set ("cg_cameraOrbit", "0");
-		trap_Cvar_Set("cg_thirdPerson", "0");
+		trap->Cvar_Set ("cg_cameraOrbit", "0");
+		trap->Cvar_Set("cg_thirdPerson", "0");
 	} else {
-		trap_Cvar_Set("cg_cameraOrbit", "5");
-		trap_Cvar_Set("cg_thirdPerson", "1");
-		trap_Cvar_Set("cg_thirdPersonAngle", "0");
-		trap_Cvar_Set("cg_thirdPersonRange", "100");
+		trap->Cvar_Set("cg_cameraOrbit", "5");
+		trap->Cvar_Set("cg_thirdPerson", "1");
+		trap->Cvar_Set("cg_thirdPersonAngle", "0");
+		trap->Cvar_Set("cg_thirdPersonRange", "100");
 	}
 }
 
@@ -292,7 +292,7 @@ static void CG_Camera_f( void ) {
 		cg.cameraMode = qtrue;
 		trap_startCamera(cg.time);
 	} else {
-		CG_Printf ("Unable to load camera %s\n",name);
+		trap->Print ("Unable to load camera %s\n",name);
 	}
 }
 */
@@ -412,12 +412,12 @@ void CG_InitConsoleCommands( void ) {
 	int		i;
 
 	for ( i = 0 ; i < numCommands ; i++ )
-		trap_AddCommand( commands[i].cmd );
+		trap->AddCommand( commands[i].cmd );
 
 	//
 	// the game server will interpret these commands, which will be automatically
 	// forwarded to the server after they are not recognized locally
 	//
 	for( i = 0; i < numgcmds; i++ )
-		trap_AddCommand( gcmds[i] );
+		trap->AddCommand( gcmds[i] );
 }

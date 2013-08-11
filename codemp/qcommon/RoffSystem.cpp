@@ -3,6 +3,8 @@
 
 #include "RoffSystem.h"
 #include "client/client.h"
+#include "client/cl_cgameapi.h"
+#include "server/sv_gameapi.h"
 
 // The one and only instance...
 CROFFSystem theROFFSystem;
@@ -834,11 +836,11 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 	{
 #ifndef DEDICATED
 		vec3_t		originTemp, angleTemp;
-		originTrajectory = (trajectory_t *)VM_Call( cgvm, CG_GET_ORIGIN_TRAJECTORY, roff_ent->mEntID );
-		angleTrajectory = (trajectory_t *)VM_Call( cgvm, CG_GET_ANGLE_TRAJECTORY, roff_ent->mEntID );
-		VM_Call( cgvm, CG_GET_ORIGIN, roff_ent->mEntID, originTemp );
+		originTrajectory = CGVM_GetOriginTrajectory( roff_ent->mEntID );
+		angleTrajectory = CGVM_GetAngleTrajectory( roff_ent->mEntID );
+		CGVM_GetOrigin( roff_ent->mEntID, originTemp );
 		origin = originTemp;
-		VM_Call( cgvm, CG_GET_ANGLES, roff_ent->mEntID, angleTemp );
+		CGVM_GetAngles( roff_ent->mEntID, angleTemp );
 		angle = angleTemp;
 #endif
 	}
@@ -949,12 +951,12 @@ void CROFFSystem::ProcessNote(SROFFEntity *roff_ent, char *note)
 			if (roff_ent->mIsClient)
 			{
 #ifndef DEDICATED
-				VM_Call( cgvm, CG_ROFF_NOTETRACK_CALLBACK, roff_ent->mEntID, temp );
+				CGVM_ROFF_NotetrackCallback( roff_ent->mEntID, temp );
 #endif
 			}
 			else
 			{
-				VM_Call( gvm, GAME_ROFF_NOTETRACK_CALLBACK, roff_ent->mEntID, temp );
+				GVM_ROFF_NotetrackCallback( roff_ent->mEntID, temp );
 			}
 		}
 	}
@@ -980,11 +982,11 @@ qboolean CROFFSystem::ClearLerp( SROFFEntity *roff_ent )
 	{
 #ifndef DEDICATED
 		vec3_t		originTemp, angleTemp;
-		originTrajectory = (trajectory_t *)VM_Call( cgvm, CG_GET_ORIGIN_TRAJECTORY, roff_ent->mEntID );
-		angleTrajectory = (trajectory_t *)VM_Call( cgvm, CG_GET_ANGLE_TRAJECTORY, roff_ent->mEntID );
-		VM_Call( cgvm, CG_GET_ORIGIN, roff_ent->mEntID, originTemp );
+		originTrajectory = CGVM_GetOriginTrajectory( roff_ent->mEntID );
+		angleTrajectory = CGVM_GetAngleTrajectory( roff_ent->mEntID );
+		CGVM_GetOrigin( roff_ent->mEntID, originTemp );
 		origin = originTemp;
-		VM_Call( cgvm, CG_GET_ANGLES, roff_ent->mEntID, angleTemp );
+		CGVM_GetAngles( roff_ent->mEntID, angleTemp );
 		angle = angleTemp;
 #endif
 	}

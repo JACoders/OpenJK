@@ -394,7 +394,7 @@ void SpewDebugStuffToFile(animation_t *anims)
 	fileHandle_t f;
 	int i = 0;
 
-	trap_FS_FOpenFile("file_of_debug_stuff_SP.txt", &f, FS_WRITE);
+	trap->FS_Open("file_of_debug_stuff_SP.txt", &f, FS_WRITE);
 
 	if (!f)
 	{
@@ -409,8 +409,8 @@ void SpewDebugStuffToFile(animation_t *anims)
 		i++;
 	}
 
-	trap_FS_Write(BGPAFtext, strlen(BGPAFtext), f);
-	trap_FS_FCloseFile(f);
+	trap->FS_Write(BGPAFtext, strlen(BGPAFtext), f);
+	trap->FS_Close(f);
 }
 #endif
 
@@ -512,10 +512,10 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 			char	*slash = NULL;
 			char	*strippedName;
 			
-			int handle = gi.G2API_PrecacheGhoul2Model( va( "models/players/%s/model.glm", value ) );
+			int handle = trap->G2API_PrecacheGhoul2Model( va( "models/players/%s/model.glm", value ) );
 			if ( handle > 0 )//FIXME: isn't 0 a valid handle?
 			{
-				GLAName = gi.G2API_GetAnimFileNameIndex( handle );
+				GLAName = trap->G2API_GetAnimFileNameIndex( handle );
 				if ( GLAName )
 				{
 					Q_strncpyz( animName, GLAName, sizeof( animName ), qtrue );
@@ -577,7 +577,7 @@ void NPC_PrecacheWeapons( team_t playerTeam, int spawnflags, char *NPCtype )
 				}
 				strcat (weaponModel, ".glm");	//and change to ghoul2
 			}
-			gi.G2API_PrecacheGhoul2Model( weaponModel ); // correct way is item->world_model
+			trap->G2API_PrecacheGhoul2Model( weaponModel ); // correct way is item->world_model
 		}
 	}
 #endif
@@ -1976,16 +1976,16 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					VectorCopy(NPC->s.origin, NPC->client->ps.origin);
 					VectorCopy(NPC->s.origin, NPC->r.currentOrigin);
 					G_SetOrigin( NPC, NPC->s.origin );
-					trap_LinkEntity(NPC);
+					trap->LinkEntity((sharedEntity_t *)NPC);
 					//now trace down
 					/*
 					VectorCopy( NPC->s.origin, bottom );
 					bottom[2] -= adjust;
-					trap_Trace( &tr, NPC->s.origin, NPC->r.mins, NPC->r.maxs, bottom, NPC->s.number, MASK_NPCSOLID );
+					trap->Trace( &tr, NPC->s.origin, NPC->r.mins, NPC->r.maxs, bottom, NPC->s.number, MASK_NPCSOLID );
 					if ( !tr.allsolid && !tr.startsolid )
 					{
 						G_SetOrigin( NPC, tr.endpos );
-						trap_LinkEntity(NPC);
+						trap->LinkEntity((sharedEntity_t *)NPC);
 					}
 					*/
 				}
@@ -3242,7 +3242,7 @@ void NPC_LoadParms( void )
 	*marker = 0;
 
 	//now load in the extra .npc extensions
-	fileCnt = trap_FS_GetFileList("ext_data/NPCs", ".npc", npcExtensionListBuf, sizeof(npcExtensionListBuf) );
+	fileCnt = trap->FS_GetFileList("ext_data/NPCs", ".npc", npcExtensionListBuf, sizeof(npcExtensionListBuf) );
 
 	holdChar = npcExtensionListBuf;
 	for ( i = 0; i < fileCnt; i++, holdChar += npcExtFNLen + 1 ) 
@@ -3251,7 +3251,7 @@ void NPC_LoadParms( void )
 
 //		Com_Printf( "Parsing %s\n", holdChar );
 
-		len = trap_FS_FOpenFile(va( "ext_data/NPCs/%s", holdChar), &f, FS_READ);
+		len = trap->FS_Open(va( "ext_data/NPCs/%s", holdChar), &f, FS_READ);
 
 		if ( len == -1 ) 
 		{
@@ -3260,9 +3260,9 @@ void NPC_LoadParms( void )
 		else
 		{
 			if ( totallen + len >= MAX_NPC_DATA_SIZE ) {
-				G_Error( "NPC extensions (*.npc) are too large" );
+				trap->Error( ERR_DROP, "NPC extensions (*.npc) are too large" );
 			}
-			trap_FS_Read(npcParseBuffer, len, f);
+			trap->FS_Read(npcParseBuffer, len, f);
 			npcParseBuffer[len] = 0;
 
 			len = COM_Compress( npcParseBuffer );
@@ -3270,7 +3270,7 @@ void NPC_LoadParms( void )
 			strcat( marker, npcParseBuffer );
 			strcat(marker, "\n");
 			len++;
-			trap_FS_FCloseFile(f);
+			trap->FS_Close(f);
 
 			totallen += len;
 			marker = NPCParms+totallen;

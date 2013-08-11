@@ -101,7 +101,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;DEDICATED;_JK2;BOTLIB;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;DEDICATED;BOTLIB;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>$(IntDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
@@ -155,7 +155,6 @@
     <ClInclude Include="qcommon\tags.h" />
     <ClInclude Include="qcommon\timing.h" />
     <ClInclude Include="qcommon\unzip.h" />
-    <ClInclude Include="qcommon\vm_local.h" />
     <ClInclude Include="ghoul2\G2.h" />
     <ClInclude Include="ghoul2\G2_gore.h" />
     <ClInclude Include="rd-dedicated\G2_local.h" />
@@ -284,8 +283,6 @@
     <ClCompile Include="qcommon\stringed_interface.cpp" />
     <ClCompile Include="qcommon\unzip.cpp" />
     <ClCompile Include="qcommon\vm.cpp" />
-    <ClCompile Include="qcommon\vm_interpreted.cpp" />
-    <ClCompile Include="qcommon\vm_x86.cpp" />
     <ClCompile Include="qcommon\z_memman_pc.cpp" />
     <ClCompile Include="server\sv_bot.cpp" />
     <ClCompile Include="server\sv_ccmds.cpp" />
@@ -296,7 +293,7 @@
     <ClCompile Include="server\sv_net_chan.cpp" />
     <ClCompile Include="server\sv_snapshot.cpp" />
     <ClCompile Include="server\sv_world.cpp" />
-    <ClCompile Include="server\NPCNav\gameCallbacks.cpp" />
+    <ClCompile Include="server\sv_gameapi.cpp" />
     <ClCompile Include="server\NPCNav\navigator.cpp" />
     <ClCompile Include="null\null_client.cpp" />
     <ClCompile Include="null\null_input.cpp" />

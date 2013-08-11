@@ -48,12 +48,12 @@
 #define WINDOW_INTRANSITIONMODEL	0x04000000	// delayed script waiting to run
 
 
-// CGAME cursor type bits
+// cgame cursor type bits
 #define CURSOR_NONE					0x00000001
 #define CURSOR_ARROW				0x00000002
 #define CURSOR_SIZER				0x00000004
 
-#ifdef CGAME
+#ifdef _CGAME
 	#define STRING_POOL_SIZE 128*1024
 #else
 	#define STRING_POOL_SIZE 384*1024
@@ -520,88 +520,6 @@ qboolean UI_OutOfMemory();
 
 void Controls_GetConfig( void );
 void Controls_SetConfig(qboolean restart);
-
-
-int			trap_PC_AddGlobalDefine			( char *define );
-int			trap_PC_LoadSource				( const char *filename );
-int			trap_PC_FreeSource				( int handle );
-int			trap_PC_ReadToken				( int handle, pc_token_t *pc_token );
-int			trap_PC_SourceFileAndLine		( int handle, char *filename, int *line );
-int			trap_PC_LoadGlobalDefines		( const char* filename );
-void		trap_PC_RemoveAllGlobalDefines	( void );
-
-int			trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale);
-int			trap_R_Font_StrLenChars(const char *text);
-int			trap_R_Font_HeightPixels(const int iFontIndex, const float scale);
-void		trap_R_Font_DrawString(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iCharLimit, const float scale);
-qboolean	trap_Language_IsAsian(void);
-qboolean	trap_Language_UsesSpaces(void);
-unsigned int trap_AnyLanguage_ReadCharFromString( const char *psText, int *piAdvanceCount, qboolean *pbIsTrailingPunctuation );
-
-int trap_SP_GetStringTextString(const char *text, char *buffer, int bufferLength);
-int trap_SP_GetNumLanguages( void );
-void trap_GetLanguageName( const int languageIndex, char *buffer );
-
-//these traps must exist both on the cgame and ui
-/*
-Ghoul2 Insert Start
-*/
-// UI specific API access
-void		trap_G2API_CollisionDetect		( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,int frameNumber, int entNum, const vec3_t rayStart, const vec3_t rayEnd, const vec3_t scale, int traceFlags, int useLod, float fRadius );
-void		trap_G2API_CollisionDetectCache		( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position,int frameNumber, int entNum, const vec3_t rayStart, const vec3_t rayEnd, const vec3_t scale, int traceFlags, int useLod, float fRadius );
-
-
-void		trap_G2_ListModelSurfaces(void *ghlInfo);
-void		trap_G2_ListModelBones(void *ghlInfo, int frame);
-void		trap_G2_SetGhoul2ModelIndexes(void *ghoul2, qhandle_t *modelList, qhandle_t *skinList);
-qboolean	trap_G2_HaveWeGhoul2Models(void *ghoul2);
-qboolean	trap_G2API_GetBoltMatrix(void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix,
-								const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale);
-qboolean	trap_G2API_GetBoltMatrix_NoReconstruct(void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix,
-								const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale);
-qboolean	trap_G2API_GetBoltMatrix_NoRecNoRot(void *ghoul2, const int modelIndex, const int boltIndex, mdxaBone_t *matrix,
-								const vec3_t angles, const vec3_t position, const int frameNum, qhandle_t *modelList, vec3_t scale);
-int			trap_G2API_InitGhoul2Model(void **ghoul2Ptr, const char *fileName, int modelIndex, qhandle_t customSkin,
-						  qhandle_t customShader, int modelFlags, int lodBias);
-qboolean	trap_G2API_SetSkin(void *ghoul2, int modelIndex, qhandle_t customSkin, qhandle_t renderSkin);
-qboolean	trap_G2API_AttachG2Model(void *ghoul2From, int modelIndexFrom, void *ghoul2To, int toBoltIndex, int toModel);
-
-
-int			trap_G2API_CopyGhoul2Instance(void *g2From, void *g2To, int modelIndex);
-void		trap_G2API_CopySpecificGhoul2Model(void *g2From, int modelFrom, void *g2To, int modelTo);
-void		trap_G2API_DuplicateGhoul2Instance(void *g2From, void **g2To);
-qboolean	trap_G2API_HasGhoul2ModelOnIndex(void *ghlInfo, int modelIndex);
-qboolean	trap_G2API_RemoveGhoul2Model(void *ghlInfo, int modelIndex);
-
-int			trap_G2API_AddBolt(void *ghoul2, int modelIndex, const char *boneName);
-//qboolean	trap_G2API_RemoveBolt(void *ghoul2, int index);
-void		trap_G2API_SetBoltInfo(void *ghoul2, int modelIndex, int boltInfo);
-void		trap_G2API_CleanGhoul2Models(void **ghoul2Ptr);
-qboolean	trap_G2API_SetBoneAngles(void *ghoul2, int modelIndex, const char *boneName, const vec3_t angles, const int flags,
-								const int up, const int right, const int forward, qhandle_t *modelList,
-								int blendTime , int currentTime );
-void		trap_G2API_GetGLAName(void *ghoul2, int modelIndex, char *fillBuf);
-qboolean	trap_G2API_SetBoneAnim(void *ghoul2, const int modelIndex, const char *boneName, const int startFrame, const int endFrame,
-							  const int flags, const float animSpeed, const int currentTime, const float setFrame , const int blendTime );
-qboolean	trap_G2API_GetBoneAnim(void *ghoul2, const char *boneName, const int currentTime, float *currentFrame, int *startFrame,
-								int *endFrame, int *flags, float *animSpeed, int *modelList, const int modelIndex);
-qboolean	trap_G2API_GetBoneFrame(void *ghoul2, const char *boneName, const int currentTime, float *currentFrame, int *modelList, const int modelIndex);
-
-qboolean	trap_G2API_SetRootSurface(void *ghoul2, const int modelIndex, const char *surfaceName);
-qboolean	trap_G2API_SetSurfaceOnOff(void *ghoul2, const char *surfaceName, const int flags);
-qboolean	trap_G2API_SetNewOrigin(void *ghoul2, const int boltIndex);
-
-int			trap_G2API_GetTime(void);
-void		trap_G2API_SetTime(int time, int clock);
-
-void		trap_G2API_SetRagDoll(void *ghoul2, sharedRagDollParams_t *params);
-void		trap_G2API_AnimateG2Models(void *ghoul2, int time, sharedRagDollUpdateParams_t *params);
-
-qboolean	trap_G2API_SetBoneIKState(void *ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params);
-qboolean	trap_G2API_IKMove(void *ghoul2, int time, sharedIKMoveParams_t *params);
-
-void		trap_G2API_GetSurfaceName(void *ghoul2, int surfNumber, int modelIndex, char *fillBuf);
-
 
 /*
 Ghoul2 Insert End

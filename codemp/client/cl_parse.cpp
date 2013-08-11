@@ -4,6 +4,7 @@
 // cl_parse.c  -- parse a message received from the server
 
 #include "client.h"
+#include "cl_cgameapi.h"
 #include "qcommon/stringed_ingame.h"
 #ifdef _DONETPROFILE_
 #include "qcommon/INetProfile.h"
@@ -947,10 +948,8 @@ void CL_ParseServerMessage( msg_t *msg ) {
 			CL_ParseDownload( msg );
 			break;
 		case svc_mapchange:
-			if (cgvm)
-			{
-				VM_Call( cgvm, CG_MAP_CHANGE );
-			}
+			if ( cls.cgameStarted )
+				CGVM_MapChange();
 			break;
 		}
 	}

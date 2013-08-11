@@ -22,15 +22,7 @@
 unsigned int timeGetTime(void);
 #endif
 
-extern qboolean GNavCallback_NAV_ClearPathToPoint( sharedEntity_t *self, vec3_t pmins, vec3_t pmaxs, vec3_t point, int clipmask, int okToHitEntNum );
-extern qboolean GNavCallback_NPC_ClearLOS( sharedEntity_t *ent, const vec3_t end );
-extern int GNavCallback_NAVNEW_ClearPathBetweenPoints(vec3_t start, vec3_t end, vec3_t mins, vec3_t maxs, int ignore, int clipmask);
-extern qboolean GNavCallback_NAV_CheckNodeFailedForEnt( sharedEntity_t *ent, int nodeNum );
-extern qboolean GNavCallback_G_EntIsUnlockedDoor( int entityNum );
-extern qboolean GNavCallback_G_EntIsDoor( int entityNum );
-extern qboolean GNavCallback_G_EntIsBreakable( int entityNum );
-extern qboolean GNavCallback_G_EntIsRemovableUsable( int entNum );
-extern void GNavCallback_CP_FindCombatPointWaypoints( void );
+#include "../sv_gameapi.h"
 
 //Global navigator
 CNavigator		navigator;
@@ -911,7 +903,7 @@ void CNavigator::CalculatePaths( qboolean recalc )
 		
 	if(!recalc)	//Mike says doesn't need to happen on recalc
 	{
-		GNavCallback_CP_FindCombatPointWaypoints();
+		GVM_NAV_FindCombatPointWaypoints();
 	}
 
 	pathsCalculated = qtrue;
@@ -1076,20 +1068,20 @@ void CNavigator::CheckBlockedEdges( void )
 
 				if ( trace.entityNum < ENTITYNUM_WORLD && (trace.fraction < 1.0f || trace.startsolid == qtrue || trace.allsolid == qtrue) )
 				{//could be assumed, since failed before
-					if ( GNavCallback_G_EntIsDoor( trace.entityNum ) )
+					if ( GVM_NAV_EntIsDoor( trace.entityNum ) )
 					{//door
-						if ( !GNavCallback_G_EntIsUnlockedDoor( trace.entityNum ) )
+						if ( !GVM_NAV_EntIsUnlockedDoor( trace.entityNum ) )
 						{//locked door
 							failed = qtrue;
 						}
 					}
 					else
 					{
-						if ( GNavCallback_G_EntIsBreakable( trace.entityNum ) )
+						if ( GVM_NAV_EntIsBreakable( trace.entityNum ) )
 						{//do same for breakable brushes/models/glass?
 							failed = qtrue;
 						}
-						else if ( GNavCallback_G_EntIsRemovableUsable( trace.entityNum ) )
+						else if ( GVM_NAV_EntIsRemovableUsable( trace.entityNum ) )
 						{
 							failed = qtrue;
 						}
@@ -1166,7 +1158,7 @@ int CNavigator::TestNodePath( sharedEntity_t *ent, int okToHitEntNum, vec3_t pos
 		clipmask &= ~CONTENTS_BODY;
 	}
 	//Check the path
-	if ( GNavCallback_NAV_ClearPathToPoint( ent, ent->r.mins, ent->r.maxs, position, clipmask, okToHitEntNum ) == false )
+	if ( GVM_NAV_ClearPathToPoint( ent->s.number, ent->r.mins, ent->r.maxs, position, clipmask, okToHitEntNum ) == false )
 		return false;
 	
 	return true;
@@ -1180,7 +1172,7 @@ TestNodeLOS
 
 int CNavigator::TestNodeLOS( sharedEntity_t *ent, vec3_t position )
 {
-	return GNavCallback_NPC_ClearLOS( ent, position );
+	return GVM_NPC_ClearLOS2( ent->s.number, position );
 }
 
 /*
@@ -1751,13 +1743,13 @@ void CNavigator::CheckFailedNodes( sharedEntity_t *ent )
 				failed++;
 				//-1 because 0 is a valid node but also the default, so we add one when we add one
 				m_nodes[ent->failedWaypoints[j]-1]->GetPosition( nodePos );
-				if ( !GNavCallback_NAV_ClearPathToPoint( ent, ent->r.mins, ent->r.maxs, nodePos, (CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP), ENTITYNUM_NONE ) )
+				if ( !GVM_NAV_ClearPathToPoint( ent->s.number, ent->r.mins, ent->r.maxs, nodePos, (CONTENTS_SOLID|CONTENTS_MONSTERCLIP|CONTENTS_BOTCLIP), ENTITYNUM_NONE ) )
 				{//no path clear of architecture, so clear this since we can't check against entities
 					ent->failedWaypoints[j] = 0;
 					failed--;
 				}
 				//have clear architectural path, now check against ents only
-				else if ( GNavCallback_NAV_ClearPathToPoint( ent, ent->r.mins, ent->r.maxs, nodePos, CONTENTS_BODY, ENTITYNUM_NONE ) )
+				else if ( GVM_NAV_ClearPathToPoint( ent->s.number, ent->r.mins, ent->r.maxs, nodePos, CONTENTS_BODY, ENTITYNUM_NONE ) )
 				{//clear of ents, too, so all clear, clear this one out
 					ent->failedWaypoints[j] = 0;
 					failed--;
@@ -2127,7 +2119,7 @@ qboolean CNavigator::CheckFailedEdge( failedEdge_t *failedEdge )
 			hitEntNum = trace.entityNum;
 #endif
 			//if we did hit something, see if it's just an auto-door and allow it
-			if ( hitEntNum != ENTITYNUM_NONE && GNavCallback_G_EntIsUnlockedDoor( hitEntNum ) )
+			if ( hitEntNum != ENTITYNUM_NONE && GVM_NAV_EntIsUnlockedDoor( hitEntNum ) )
 			{
 				hitEntNum = ENTITYNUM_NONE;
 			}

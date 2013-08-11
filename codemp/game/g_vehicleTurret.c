@@ -267,14 +267,14 @@ static qboolean VEH_TurretFindEnemies( Vehicle_t *pVeh,
 				continue;
 			}
 		}
-		if ( !trap_InPVS( org2, target->r.currentOrigin ))
+		if ( !trap->InPVS( org2, target->r.currentOrigin ))
 		{
 			continue;
 		}
 
 		VectorCopy( target->r.currentOrigin, org );
 
-		trap_Trace( &tr, org2, NULL, NULL, org, parent->s.number, MASK_SHOT );
+		trap->Trace( &tr, org2, NULL, NULL, org, parent->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 		if ( tr.entityNum == target->s.number
 			|| (!tr.allsolid && !tr.startsolid && tr.fraction == 1.0 ) )
@@ -408,7 +408,7 @@ void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum )
 			if ( enemyDist < rangeSq )
 			{
 				// was in valid radius
-				if ( trap_InPVS( pVeh->m_vMuzzlePos[curMuzzle], turretEnemy->r.currentOrigin ) )
+				if ( trap->InPVS( pVeh->m_vMuzzlePos[curMuzzle], turretEnemy->r.currentOrigin ) )
 				{
 					// Every now and again, check to see if we can even trace to the enemy
 					trace_t tr;
@@ -416,7 +416,7 @@ void VEH_TurretThink( Vehicle_t *pVeh, gentity_t *parent, int turretNum )
 					VectorCopy( pVeh->m_vMuzzlePos[curMuzzle], start );
 
 					VectorCopy( turretEnemy->r.currentOrigin, end );
-					trap_Trace( &tr, start, NULL, NULL, end, parent->s.number, MASK_SHOT );
+					trap->Trace( &tr, start, NULL, NULL, end, parent->s.number, MASK_SHOT, qfalse, 0, 0 );
 
 					if ( tr.entityNum == turretEnemy->s.number
 						|| (!tr.allsolid && !tr.startsolid ) )

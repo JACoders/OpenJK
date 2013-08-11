@@ -2,7 +2,7 @@
 #include "qcommon/exe_headers.h"
 // this include must remain at the top of every CPP file
 #include "client.h"
-
+#include "cl_cgameapi.h"
 #include "FxScheduler.h"
 #include "ghoul2/G2.h"
 
@@ -88,7 +88,7 @@ void SFxHelper::CameraShake( vec3_t origin, float intensity, int radius, int tim
 	data->mRadius = radius;
 	data->mTime = time;
 
-	VM_Call( cgvm, CG_FX_CAMERASHAKE ); 
+	CGVM_CameraShake();
 }
 
 //------------------------------------------------------
@@ -98,7 +98,7 @@ qboolean SFxHelper::GetOriginAxisFromBolt(CGhoul2Info_v *pGhoul2, int mEntNum, i
 	mdxaBone_t 		boltMatrix;
 	TCGGetBoltData	*data = (TCGGetBoltData*)cl.mSharedMemory;
 	data->mEntityNum = mEntNum;
-	VM_Call( cgvm, CG_GET_LERP_DATA );//this func will zero out pitch and roll for players, and ridable vehicles
+	CGVM_GetLerpData();//this func will zero out pitch and roll for players, and ridable vehicles
 
 	//Fixme: optimize these VM calls away by storing 
 
