@@ -1248,10 +1248,6 @@ void Com_Init( char *commandLine ) {
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
 
-	#if defined(_WIN32) && defined(_DEBUG)
-		com_noErrorInterrupt = Cvar_Get( "com_noErrorInterrupt", "0", 0 );
-	#endif
-
 #ifdef _DEBUG
 		vm_legacy = Cvar_Get( "vm_legacy", "0", 0 );
 #endif
