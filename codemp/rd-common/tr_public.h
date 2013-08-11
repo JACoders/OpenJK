@@ -6,7 +6,7 @@
 #include "../qcommon/qcommon.h"
 #include "../ghoul2/ghoul2_shared.h"
 
-#define	REF_API_VERSION 1
+#define	REF_API_VERSION 2
 
 //
 // these are the functions exported by the refresh module
@@ -304,11 +304,13 @@ typedef struct {
 
 	// g2 data access
 	char *			(*GetSharedMemory)					( void ); // cl.mSharedMemory
-	vm_t *			(*GetCgameVM)						( void ); // cgvm
-	vm_t *			(*GetCurrentVM)						( void ); // currentVM
+
+	// (c)g vm callbacks
+	vm_t *			(*GetCurrentVM)						( void );
+	qboolean		(*CGVMLoaded)						( void );
+	int				(*CGVM_RagCallback)					( int callType );
 
 	// server only stuff
-	vm_t *			(*GetGameVM)						( void ); // gvm
 	void			(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
 	void			(*SV_SetConfigstring)				( int index, const char *val );
 

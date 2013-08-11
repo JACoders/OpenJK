@@ -14,6 +14,7 @@
 #include "GameInterface.h"
 #include "Q3_Interface.h"
 #include "Q3_Registers.h"
+#include "server/sv_gameapi.h"
 
 #define stringIDExpand(str, strEnum)	str, strEnum, ENUM2STRING(strEnum)
 //#define stringIDExpand(str, strEnum)	str,strEnum
@@ -317,7 +318,7 @@ static int Q3_PlaySound( int taskID, int entID, const char *name, const char *ch
 	strcpy(sharedMem->name, name);
 	strcpy(sharedMem->channel, channel);
 
-	return VM_Call(gvm, GAME_ICARUS_PLAYSOUND);
+	return GVM_ICARUS_PlaySound();
 }
 
 
@@ -392,7 +393,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 	strcpy(sharedMem->type_name, type_name);
 	strcpy(sharedMem->data, data);
 
-	if (VM_Call(gvm, GAME_ICARUS_SET))
+	if ( GVM_ICARUS_Set() )
 	{
 		gTaskManagers[entID]->Completed( taskID );
 	}
@@ -777,7 +778,7 @@ static void Q3_Lerp2Pos( int taskID, int entID, vec3_t origin, vec3_t angles, fl
 	}
 	sharedMem->duration = duration;
 
-	VM_Call(gvm, GAME_ICARUS_LERP2POS);
+	GVM_ICARUS_Lerp2Pos();
 	//We do this in case the values are modified in the game. It would be expected by icarus that
 	//the values passed in here are modified equally.
 	VectorCopy(sharedMem->origin, origin);
@@ -797,7 +798,7 @@ static void Q3_Lerp2Origin( int taskID, int entID, vec3_t origin, float duration
 	VectorCopy(origin, sharedMem->origin);
 	sharedMem->duration = duration;
 
-	VM_Call(gvm, GAME_ICARUS_LERP2ORIGIN);
+	GVM_ICARUS_Lerp2Origin();
 	VectorCopy(sharedMem->origin, origin);
 }
 
@@ -810,7 +811,7 @@ static void Q3_Lerp2Angles( int taskID, int entID, vec3_t angles, float duration
 	VectorCopy(angles, sharedMem->angles);
 	sharedMem->duration = duration;
 
-	VM_Call(gvm, GAME_ICARUS_LERP2ANGLES);
+	GVM_ICARUS_Lerp2Angles();
 	VectorCopy(sharedMem->angles, angles);
 }
 
@@ -824,7 +825,7 @@ static int	Q3_GetTag( int entID, const char *name, int lookup, vec3_t info )
 	sharedMem->lookup = lookup;
 	VectorCopy(info, sharedMem->info);
 
-	r = VM_Call(gvm, GAME_ICARUS_GETTAG);
+	r = GVM_ICARUS_GetTag();
 	VectorCopy(sharedMem->info, info);
 	return r;
 }
@@ -837,7 +838,7 @@ static void Q3_Lerp2Start( int entID, int taskID, float duration )
 	sharedMem->entID = entID;
 	sharedMem->duration = duration;
 
-	VM_Call(gvm, GAME_ICARUS_LERP2START);
+	GVM_ICARUS_Lerp2Start();
 }
 
 static void Q3_Lerp2End( int entID, int taskID, float duration )
@@ -848,7 +849,7 @@ static void Q3_Lerp2End( int entID, int taskID, float duration )
 	sharedMem->entID = entID;
 	sharedMem->duration = duration;
 
-	VM_Call(gvm, GAME_ICARUS_LERP2END);
+	GVM_ICARUS_Lerp2End();
 }
 
 static void Q3_Use( int entID, const char *target )
@@ -858,7 +859,7 @@ static void Q3_Use( int entID, const char *target )
 	sharedMem->entID = entID;
 	strcpy(sharedMem->target, target);
 
-	VM_Call(gvm, GAME_ICARUS_USE);
+	GVM_ICARUS_Use();
 }
 
 static void Q3_Kill( int entID, const char *name )
@@ -868,7 +869,7 @@ static void Q3_Kill( int entID, const char *name )
 	sharedMem->entID = entID;
 	strcpy(sharedMem->name, name);
 
-	VM_Call(gvm, GAME_ICARUS_KILL);
+	GVM_ICARUS_Kill();
 }
 
 static void Q3_Remove( int entID, const char *name )
@@ -878,7 +879,7 @@ static void Q3_Remove( int entID, const char *name )
 	sharedMem->entID = entID;
 	strcpy(sharedMem->name, name);
 
-	VM_Call(gvm, GAME_ICARUS_REMOVE);
+	GVM_ICARUS_Remove();
 }
 
 static void Q3_Play( int taskID, int entID, const char *type, const char *name )
@@ -890,7 +891,7 @@ static void Q3_Play( int taskID, int entID, const char *type, const char *name )
 	strcpy(sharedMem->type, type);
 	strcpy(sharedMem->name, name);
 
-	VM_Call(gvm, GAME_ICARUS_PLAY);
+	GVM_ICARUS_Play();
 }
 
 static int Q3_GetFloat( int entID, int type, const char *name, float *value )
@@ -903,7 +904,7 @@ static int Q3_GetFloat( int entID, int type, const char *name, float *value )
 	strcpy(sharedMem->name, name);
 	sharedMem->value = 0;//*value;
 
-	r = VM_Call(gvm, GAME_ICARUS_GETFLOAT);
+	r = GVM_ICARUS_GetFloat();
 	*value = sharedMem->value;
 	return r;
 }
@@ -918,7 +919,7 @@ static int Q3_GetVector( int entID, int type, const char *name, vec3_t value )
 	strcpy(sharedMem->name, name);
 	VectorCopy(value, sharedMem->value);
 
-	r = VM_Call(gvm, GAME_ICARUS_GETVECTOR);
+	r = GVM_ICARUS_GetVector();
 	VectorCopy(sharedMem->value, value);
 	return r;
 }
@@ -932,7 +933,7 @@ static int Q3_GetString( int entID, int type, const char *name, char **value )
 	sharedMem->type = type;
 	strcpy(sharedMem->name, name);
 
-	r = VM_Call(gvm, GAME_ICARUS_GETSTRING);
+	r = GVM_ICARUS_GetString();
 	//rww - careful with this, next time shared memory is altered this will get stomped
 	*value = &sharedMem->value[0];
 	return r;

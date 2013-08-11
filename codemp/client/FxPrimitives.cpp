@@ -3,6 +3,7 @@
 #include "qcommon/exe_headers.h"
 
 #include "client.h"
+#include "cl_cgameapi.h"
 #include "FxScheduler.h"
 
 #ifdef VV_LIGHTING
@@ -111,7 +112,7 @@ void CParticle::Draw(void)
 		color[2] = mRefEnt.shaderRGBA[2] / 255.0;
 		color[3] = mRefEnt.shaderRGBA[3] / 255.0;
 
-		// add this 2D effect to the proper list. it will get drawn after the cgi.RenderScene call
+		// add this 2D effect to the proper list. it will get drawn after the trap->RenderScene call
 		theFxScheduler.Add2DEffect(mOrigin1[0], mOrigin1[1], mRefEnt.radius, mRefEnt.radius, color, mRefEnt.customShader);
 	}
 	else
@@ -229,7 +230,7 @@ bool CParticle::UpdateOrigin(void)
 				data->mPassEntityNum = ENTITYNUM_WORLD;
 
 				// if this returns solid, we need to do a trace
-				solid = !!(VM_Call( cgvm, CG_POINT_CONTENTS ) & MASK_SOLID); 
+				solid = !!(CGVM_PointContents() & MASK_SOLID); 
 			}
 			else
 			{
@@ -2302,7 +2303,7 @@ void CFlash::Draw( void )
 		color[2] = mRefEnt.shaderRGBA[2] / 255.0;
 		color[3] = mRefEnt.shaderRGBA[3] / 255.0;
 
-		// add this 2D effect to the proper list. it will get drawn after the cgi.RenderScene call
+		// add this 2D effect to the proper list. it will get drawn after the trap->RenderScene call
 		theFxScheduler.Add2DEffect(mScreenX, mScreenY, mRefEnt.radius, mRefEnt.radius, color, mRefEnt.customShader);
 	}
 	else

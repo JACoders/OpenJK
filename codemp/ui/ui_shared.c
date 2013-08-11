@@ -1,8 +1,10 @@
 // 
 // string allocation/managment
 
-#ifndef CGAME
-	#include "ui_local.h"
+#ifdef _CGAME
+	#include "cgame/cg_local.h"
+#elif _UI
+	#include "ui/ui_local.h"
 #endif
 
 #include "ui_shared.h"
@@ -29,30 +31,20 @@ typedef struct scrollInfo_s {
 	qboolean scrollDir;
 } scrollInfo_t;
 
-#ifndef CGAME	// Defined in ui_main.c, not in the namespace
-extern vmCvar_t	ui_char_color_red;
-extern vmCvar_t	ui_char_color_green;
-extern vmCvar_t	ui_char_color_blue;
-extern vmCvar_t	se_language;
-
-// Some extern functions hoisted from the middle of this file to get all the non-cgame,
-// non-namespace stuff together
-extern void UI_SaberDrawBlades( itemDef_t *item, vec3_t origin, vec3_t angles );
-
-extern void UI_SaberLoadParms( void );
-extern qboolean ui_saber_parms_parsed;
-extern void UI_CacheSaberGlowGraphics( void );
-
+#ifdef _UI // Defined in ui_main.c, not in the namespace
+	extern vmCvar_t	ui_char_color_red;
+	extern vmCvar_t	ui_char_color_green;
+	extern vmCvar_t	ui_char_color_blue;
+	extern vmCvar_t	se_language;
+	
+	// Some extern functions hoisted from the middle of this file to get all the non-cgame,
+	// non-namespace stuff together
+	extern void UI_SaberDrawBlades( itemDef_t *item, vec3_t origin, vec3_t angles );
+	
+	extern void UI_SaberLoadParms( void );
+	extern qboolean ui_saber_parms_parsed;
+	extern void UI_CacheSaberGlowGraphics( void );
 #endif //
-
-
-#ifdef CGAME
-
-extern int trap_Key_GetCatcher( void ) ;
-extern void trap_Key_SetCatcher( int catcher );
-extern void trap_Cvar_Set( const char *var_name, const char *value );
-
-#endif
 
 qboolean Item_SetFocus(itemDef_t *item, float x, float y);
 
@@ -95,17 +87,17 @@ extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int 
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
 
 
-#ifdef CGAME
-#define MEM_POOL_SIZE  128 * 1024
-#define UI_ALLOCATION_TAG	TAG_CG_UI_ALLOC
+#ifdef _CGAME
+	#define MEM_POOL_SIZE  128 * 1024
+	#define UI_ALLOCATION_TAG	TAG_CG_UI_ALLOC
 #else
-//#define MEM_POOL_SIZE  1024 * 1024
-#define MEM_POOL_SIZE  2048 * 1024
-#define	UI_ALLOCATION_TAG	TAG_UI_ALLOC
+//	#define MEM_POOL_SIZE  1024 * 1024
+	#define MEM_POOL_SIZE  2048 * 1024
+	#define	UI_ALLOCATION_TAG	TAG_UI_ALLOC
 #endif
 
-static char		memoryPool[MEM_POOL_SIZE];
-static int		allocPoint, outOfMemory;
+static char memoryPool[MEM_POOL_SIZE];
+static int allocPoint, outOfMemory;
 
 
 typedef struct  itemFlagsDef_s {
@@ -119,46 +111,42 @@ itemFlagsDef_t itemFlags [] = {
 };
 
 char *styles [] = {
-"WINDOW_STYLE_EMPTY",
-"WINDOW_STYLE_FILLED",
-"WINDOW_STYLE_GRADIENT",
-"WINDOW_STYLE_SHADER",
-"WINDOW_STYLE_TEAMCOLOR",
-"WINDOW_STYLE_CINEMATIC",
-NULL
+	"WINDOW_STYLE_EMPTY",
+	"WINDOW_STYLE_FILLED",
+	"WINDOW_STYLE_GRADIENT",
+	"WINDOW_STYLE_SHADER",
+	"WINDOW_STYLE_TEAMCOLOR",
+	"WINDOW_STYLE_CINEMATIC",
+	NULL
 };
 
 char *alignment [] = {
-"ITEM_ALIGN_LEFT",
-"ITEM_ALIGN_CENTER",
-"ITEM_ALIGN_RIGHT",
-NULL
+	"ITEM_ALIGN_LEFT",
+	"ITEM_ALIGN_CENTER",
+	"ITEM_ALIGN_RIGHT",
+	NULL
 };
 
 char *types [] = {
-"ITEM_TYPE_TEXT",
-"ITEM_TYPE_BUTTON",
-"ITEM_TYPE_RADIOBUTTON",
-"ITEM_TYPE_CHECKBOX",
-"ITEM_TYPE_EDITFIELD",
-"ITEM_TYPE_COMBO",
-"ITEM_TYPE_LISTBOX",
-"ITEM_TYPE_MODEL",
-"ITEM_TYPE_OWNERDRAW",
-"ITEM_TYPE_NUMERICFIELD",
-"ITEM_TYPE_SLIDER",
-"ITEM_TYPE_YESNO",
-"ITEM_TYPE_MULTI",
-"ITEM_TYPE_BIND",
-"ITEM_TYPE_TEXTSCROLL",
-NULL
+	"ITEM_TYPE_TEXT",
+	"ITEM_TYPE_BUTTON",
+	"ITEM_TYPE_RADIOBUTTON",
+	"ITEM_TYPE_CHECKBOX",
+	"ITEM_TYPE_EDITFIELD",
+	"ITEM_TYPE_COMBO",
+	"ITEM_TYPE_LISTBOX",
+	"ITEM_TYPE_MODEL",
+	"ITEM_TYPE_OWNERDRAW",
+	"ITEM_TYPE_NUMERICFIELD",
+	"ITEM_TYPE_SLIDER",
+	"ITEM_TYPE_YESNO",
+	"ITEM_TYPE_MULTI",
+	"ITEM_TYPE_BIND",
+	"ITEM_TYPE_TEXTSCROLL",
+	NULL
 };
 
-
 extern int MenuFontToHandle(int iMenuFont);
-
-
-
 
 /*
 ===============
@@ -173,7 +161,6 @@ void *UI_Alloc( int size ) {
 		if (DC->Print) {
 			DC->Print("UI_Alloc: Failure. Out of memory!\n");
 		}
-    //DC->trap_Print(S_COLOR_YELLOW"WARNING: UI Out of Memory!\n");
 		return NULL;
 	}
 
@@ -342,7 +329,7 @@ void PC_SourceWarning(int handle, char *format, ...) {
 
 	filename[0] = '\0';
 	line = 0;
-	trap_PC_SourceFileAndLine(handle, filename, &line);
+	trap->PC_SourceFileAndLine(handle, filename, &line);
 
 	Com_Printf(S_COLOR_YELLOW "WARNING: %s, line %d: %s\n", filename, line, string);
 }
@@ -364,7 +351,7 @@ void PC_SourceError(int handle, char *format, ...) {
 
 	filename[0] = '\0';
 	line = 0;
-	trap_PC_SourceFileAndLine(handle, filename, &line);
+	trap->PC_SourceFileAndLine(handle, filename, &line);
 
 	Com_Printf(S_COLOR_RED "ERROR: %s, line %d: %s\n", filename, line, string);
 }
@@ -414,10 +401,11 @@ qboolean PC_Float_Parse(int handle, float *f) {
 	pc_token_t token;
 	int negative = qfalse;
 
-	if (!trap_PC_ReadToken(handle, &token))
+	if ( !trap->PC_ReadToken( handle, &token ) )
 		return qfalse;
-	if (token.string[0] == '-') {
-		if (!trap_PC_ReadToken(handle, &token))
+
+	if ( token.string[0] == '-' ) {
+		if ( !trap->PC_ReadToken( handle, &token ) )
 			return qfalse;
 		negative = qtrue;
 	}
@@ -494,10 +482,10 @@ qboolean PC_Int_Parse(int handle, int *i) {
 	pc_token_t token;
 	int negative = qfalse;
 
-	if (!trap_PC_ReadToken(handle, &token))
+	if (!trap->PC_ReadToken(handle, &token))
 		return qfalse;
 	if (token.string[0] == '-') {
-		if (!trap_PC_ReadToken(handle, &token))
+		if (!trap->PC_ReadToken(handle, &token))
 			return qfalse;
 		negative = qtrue;
 	}
@@ -573,7 +561,7 @@ qboolean PC_String_Parse(int handle, const char **out)
 	static char*	squiggy = "}";
 	pc_token_t		token;
 
-	if (!trap_PC_ReadToken(handle, &token))
+	if (!trap->PC_ReadToken(handle, &token))
 	{
 		return qfalse;
 	}
@@ -603,14 +591,14 @@ qboolean PC_Script_Parse(int handle, const char **out) {
 	// scripts start with { and have ; separated command lists.. commands are command, arg.. 
 	// basically we want everything between the { } as it will be interpreted at run time
   
-	if (!trap_PC_ReadToken(handle, &token))
+	if (!trap->PC_ReadToken(handle, &token))
 		return qfalse;
 	if (Q_stricmp(token.string, "{") != 0) {
 	    return qfalse;
 	}
 
 	while ( 1 ) {
-		if (!trap_PC_ReadToken(handle, &token))
+		if (!trap->PC_ReadToken(handle, &token))
 			return qfalse;
 
 		if (Q_stricmp(token.string, "}") == 0) {
@@ -741,7 +729,7 @@ void Window_Paint(Window *w, float fadeAmount, float fadeClamp, float fadeCycle)
 	} 
 	else if (w->style == WINDOW_STYLE_SHADER) 
 	{
-#ifndef CGAME
+#ifndef _CGAME
 		if (w->flags & WINDOW_PLAYERCOLOR) 
 		{
 			vec4_t	color;
@@ -3701,9 +3689,8 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 			}
 		}
 
-		/* Raz: Don't get stuck in overstrike/insert mode
-		if ( key == A_ENTER || key == A_KP_ENTER || key == A_ESCAPE)  {
-			*/
+		//Raz: Don't get stuck in overstrike/insert mode
+	//	if ( key == A_ENTER || key == A_KP_ENTER || key == A_ESCAPE)  {
 		if ( key == A_ENTER || key == A_KP_ENTER || key == A_ESCAPE || (key == A_MOUSE1 && !Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) )) {
 			DC->setOverstrikeMode( qfalse );
 			return qfalse;
@@ -4519,7 +4506,7 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 
 	// keeps us from computing the widths and heights more than once
 	if (*width == 0 || (item->type == ITEM_TYPE_OWNERDRAW && item->textalignment == ITEM_ALIGN_CENTER)
-#ifndef CGAME
+#ifndef _CGAME
 		|| (item->text && item->text[0]=='@' && item->asset != se_language.modificationCount )	//string package language changed
 #endif
 		)
@@ -4551,7 +4538,7 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 		}
 
 		ToWindowCoords(&item->textRect.x, &item->textRect.y, &item->window);
-#ifndef CGAME
+#ifndef _CGAME
 		if (item->text && item->text[0]=='@' )//string package
 		{//mark language
 			item->asset = se_language.modificationCount;
@@ -4620,7 +4607,7 @@ void Item_Text_AutoWrapped_Paint(itemDef_t *item) {
 	}
 	if (*textPtr == '@')	// string reference
 	{
-		trap_SP_GetStringTextString( &textPtr[1], text, sizeof(text));
+		trap->SE_GetStringTextString( &textPtr[1], text, sizeof(text));
 		textPtr = text;
 	}
 	if (*textPtr == '\0') {
@@ -4703,7 +4690,7 @@ void Item_Text_Wrapped_Paint(itemDef_t *item) {
 	}
 	if (*textPtr == '@')	// string reference
 	{
-		trap_SP_GetStringTextString( &textPtr[1], text, sizeof(text));
+		trap->SE_GetStringTextString( &textPtr[1], text, sizeof(text));
 		textPtr = text;
 	}
 	if (*textPtr == '\0') {
@@ -4757,7 +4744,7 @@ void Item_Text_Paint(itemDef_t *item) {
 	}
 	if (*textPtr == '@')	// string reference
 	{
-		trap_SP_GetStringTextString( &textPtr[1], text, sizeof(text));
+		trap->SE_GetStringTextString( &textPtr[1], text, sizeof(text));
 		textPtr = text;
 	}
 
@@ -4778,7 +4765,7 @@ void Item_Text_Paint(itemDef_t *item) {
 		textPtr = item->text2;
 		if (*textPtr == '@')	// string reference
 		{
-			trap_SP_GetStringTextString( &textPtr[1], text, sizeof(text));
+			trap->SE_GetStringTextString( &textPtr[1], text, sizeof(text));
 			textPtr = text;
 		}
 		Item_TextColor(item, &color);
@@ -4787,9 +4774,6 @@ void Item_Text_Paint(itemDef_t *item) {
 }
 
 
-
-//float			trap_Cvar_VariableValue( const char *var_name );
-//void			trap_Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize );
 
 void Item_TextField_Paint(itemDef_t *item) {
 	char buff[1024];
@@ -4806,7 +4790,7 @@ void Item_TextField_Paint(itemDef_t *item) {
 		DC->getCVarString(item->cvar, buff, sizeof(buff));
 		if (buff[0] == '@')	// string reference
 		{
-			trap_SP_GetStringTextString( &buff[1], buff, sizeof(buff));
+			trap->SE_GetStringTextString( &buff[1], buff, sizeof(buff));
 		}
 	} 
 
@@ -4851,9 +4835,8 @@ void Item_YesNo_Paint(itemDef_t *item) {
 		memcpy(&newColor, &item->window.foreColor, sizeof(vec4_t));
 	}
 
-
-	trap_SP_GetStringTextString("MENUS_YES",sYES, sizeof(sYES));
-	trap_SP_GetStringTextString("MENUS_NO", sNO,  sizeof(sNO));
+	trap->SE_GetStringTextString("MENUS_YES",sYES, sizeof(sYES));
+	trap->SE_GetStringTextString("MENUS_NO", sNO,  sizeof(sNO));
 
 //JLFYESNO MPMOVED
 	if (item->invertYesNo)
@@ -4902,7 +4885,7 @@ void Item_Multi_Paint(itemDef_t *item) {
 	text = Item_Multi_Setting(item);
 	if (*text == '@')	// string reference
 	{
-		trap_SP_GetStringTextString( &text[1]  , temp, sizeof(temp));
+		trap->SE_GetStringTextString( &text[1]  , temp, sizeof(temp));
 		text = temp;
 	}
 	// Is is specifying a cvar to get the item name from?
@@ -5126,22 +5109,6 @@ void Controls_SetConfig(qboolean restart)
 				DC->setBinding( g_bindings[i].bind2, g_bindings[i].command );
 		}
 	}
-
-	//if ( s_controls.invertmouse.curvalue )
-	//	DC->setCVar("m_pitch", va("%f),-fabs( DC->getCVarValue( "m_pitch" ) ) );
-	//else
-	//	trap_Cvar_SetValue( "m_pitch", fabs( trap_Cvar_VariableValue( "m_pitch" ) ) );
-
-	//trap_Cvar_SetValue( "m_filter", s_controls.smoothmouse.curvalue );
-	//trap_Cvar_SetValue( "cl_run", s_controls.alwaysrun.curvalue );
-	//trap_Cvar_SetValue( "cg_autoswitch", s_controls.autoswitch.curvalue );
-	//trap_Cvar_SetValue( "sensitivity", s_controls.sensitivity.curvalue );
-	//trap_Cvar_SetValue( "in_joystick", s_controls.joyenable.curvalue );
-	//trap_Cvar_SetValue( "joy_threshold", s_controls.joythreshold.curvalue );
-	//trap_Cvar_SetValue( "cl_freelook", s_controls.freelook.curvalue );
-//
-//	DC->executeText(EXEC_APPEND, "in_restart\n");
-// ^--this is bad, it shows the cursor during map load, if you need to, add it as an exec cmd to use_joy or something.
 }
 
 
@@ -5181,7 +5148,7 @@ void BindingFromName(const char *cvar) {
 					DC->keynumToStringBuf( b2, g_nameBind2, 32 );
 // do NOT do this or it corrupts asian text!!!					Q_strupr(g_nameBind2);
 
-					trap_SP_GetStringTextString("MENUS_KEYBIND_OR",sOR, sizeof(sOR));
+					trap->SE_GetStringTextString("MENUS_KEYBIND_OR",sOR, sizeof(sOR));
 
 					strcat( g_nameBind1, va(" %s ",sOR));
 					strcat( g_nameBind1, g_nameBind2 );
@@ -5437,7 +5404,7 @@ void UI_ScaleModelAxis(refEntity_t	*ent)
 		}
 }
 
-#ifndef CGAME
+#ifndef _CGAME
 extern void UI_SaberAttachToChar( itemDef_t *item );
 #endif
 
@@ -5456,7 +5423,7 @@ void Item_Model_Paint(itemDef_t *item)
 	}
 
 	// a moves datapad anim is playing
-#ifndef CGAME
+#ifdef _UI
 	if (uiInfo.moveAnimTime && (uiInfo.moveAnimTime < uiInfo.uiDC.realTime))
 	{
 		modelDef_t *modelPtr;
@@ -5495,19 +5462,19 @@ void Item_Model_Paint(itemDef_t *item)
 				uiInfo.moveAnimTime += uiInfo.uiDC.realTime;
 				break;
 			case BOTH_KNOCKDOWN3://on front - into force getup
-				trap_S_StartLocalSound( uiInfo.uiDC.Assets.moveJumpSound, CHAN_LOCAL );
+				trap->S_StartLocalSound( uiInfo.uiDC.Assets.moveJumpSound, CHAN_LOCAL );
 				ItemParse_model_g2anim_go( item, animTable[BOTH_FORCE_GETUP_F1].name );
 				ItemParse_asset_model_go( item, modelPath, &uiInfo.moveAnimTime );
 				uiInfo.moveAnimTime += uiInfo.uiDC.realTime;
 				break;
 			case BOTH_KNOCKDOWN2://on back - kick forward getup
-				trap_S_StartLocalSound( uiInfo.uiDC.Assets.moveJumpSound, CHAN_LOCAL );
+				trap->S_StartLocalSound( uiInfo.uiDC.Assets.moveJumpSound, CHAN_LOCAL );
 				ItemParse_model_g2anim_go( item, animTable[BOTH_GETUP_BROLL_F].name );
 				ItemParse_asset_model_go( item, modelPath, &uiInfo.moveAnimTime );
 				uiInfo.moveAnimTime += uiInfo.uiDC.realTime;
 				break;
 			case BOTH_KNOCKDOWN1://on back - roll-away
-				trap_S_StartLocalSound( uiInfo.uiDC.Assets.moveRollSound, CHAN_LOCAL );
+				trap->S_StartLocalSound( uiInfo.uiDC.Assets.moveRollSound, CHAN_LOCAL );
 				ItemParse_model_g2anim_go( item, animTable[BOTH_GETUP_BROLL_R].name );
 				ItemParse_asset_model_go( item, modelPath, &uiInfo.moveAnimTime );
 				uiInfo.moveAnimTime += uiInfo.uiDC.realTime;
@@ -5618,7 +5585,7 @@ void Item_Model_Paint(itemDef_t *item)
 
 		VectorCopy(modelPtr->g2scale, ent.modelScale);
 		UI_ScaleModelAxis(&ent);
-#ifndef CGAME
+#ifndef _CGAME
 		if ( (item->flags&ITF_ISCHARACTER) )
 		{
 			ent.shaderRGBA[0] = ui_char_color_red.integer;
@@ -5808,7 +5775,7 @@ void Item_ListBox_Paint(itemDef_t *item) {
 				image = DC->feederItemImage(item->special, i);
 				if (image) 
 				{
-#ifndef CGAME
+#ifndef _CGAME
 					if (item->window.flags & WINDOW_PLAYERCOLOR) 
 					{
 						vec4_t	color;
@@ -5914,7 +5881,7 @@ void Item_ListBox_Paint(itemDef_t *item) {
 						image = DC->feederItemImage(item->special, i);
 						if (image) 
 						{
-		#ifndef CGAME
+		#ifndef _CGAME
 							if (item->window.flags & WINDOW_PLAYERCOLOR) 
 							{
 								vec4_t	color;
@@ -6020,7 +5987,7 @@ void Item_ListBox_Paint(itemDef_t *item) {
 
 						if (text[0]=='@')
 						{
-							trap_SP_GetStringTextString( &text[1]  , temp, sizeof(temp));
+							trap->SE_GetStringTextString( &text[1]  , temp, sizeof(temp));
 							text = temp;
 						}
 
@@ -6612,8 +6579,8 @@ void Item_Paint(itemDef_t *item)
 				const char *textPtr = item->descText;
 				if (*textPtr == '@')	// string reference
 				{
-					char	temp[MAX_STRING_CHARS];
-					trap_SP_GetStringTextString( &textPtr[1]  , temp, sizeof(temp));
+					char temp[MAX_STRING_CHARS];
+					trap->SE_GetStringTextString( &textPtr[1]  , temp, sizeof(temp));
 					textPtr = temp;
 				}
 
@@ -7104,7 +7071,7 @@ qboolean ItemParse_name( itemDef_t *item, int handle ) {
 // name <string>
 qboolean ItemParse_focusSound( itemDef_t *item, int handle ) {
 	pc_token_t token;
-	if (!trap_PC_ReadToken(handle, &token)) {
+	if (!trap->PC_ReadToken(handle, &token)) {
 		return qfalse;
 	}
 	item->focusSound = DC->registerSound(token.string);
@@ -7259,10 +7226,8 @@ void UI_CleanupGhoul2(void)
 
 	while (next)
 	{
-		if (next->ghoul2 && trap_G2_HaveWeGhoul2Models(next->ghoul2))
-		{ //found a g2 instance, clean it.
-			trap_G2API_CleanGhoul2Models(&next->ghoul2);
-		}
+		if (next->ghoul2 && trap->G2_HaveWeGhoul2Models(next->ghoul2)) //found a g2 instance, clean it.
+			trap->G2API_CleanGhoul2Models(&next->ghoul2);
 
 		next = next->next;
 	}
@@ -7279,7 +7244,7 @@ ItemParse_asset_model
 */
 qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTimeLength ) 
 {
-#ifndef CGAME
+#ifdef _UI
 	int g2Model;
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
@@ -7291,11 +7256,11 @@ qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTim
 		if ( item->ghoul2 )
 		{
 			UI_ClearG2Pointer(item->ghoul2);	//remove from tracking list
-			trap_G2API_CleanGhoul2Models(&item->ghoul2);	//remove ghoul info
+			trap->G2API_CleanGhoul2Models(&item->ghoul2);	//remove ghoul info
 			item->flags &= ~ITF_G2VALID;
 		}
 
-		g2Model = trap_G2API_InitGhoul2Model(&item->ghoul2, name, 0, modelPtr->g2skin, 0, 0, 0);
+		g2Model = trap->G2API_InitGhoul2Model(&item->ghoul2, name, 0, modelPtr->g2skin, 0, 0, 0);
 		if (g2Model >= 0)
 		{
 			UI_InsertG2Pointer(item->ghoul2); //remember it so we can free it when the ui shuts down.
@@ -7308,7 +7273,7 @@ qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTim
 				char GLAName[MAX_QPATH];	
 
 				GLAName[0] = 0;
-				trap_G2API_GetGLAName(item->ghoul2, 0, GLAName);
+				trap->G2API_GetGLAName(item->ghoul2, 0, GLAName);
 
 				if (GLAName[0])
 				{
@@ -7338,7 +7303,7 @@ qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTim
 								flags |= BONE_ANIM_OVERRIDE_LOOP;
 							}
 
-							trap_G2API_SetBoneAnim(item->ghoul2, 0, "model_root", sFrame, eFrame, flags, animSpeed, time, -1, blendTime);
+							trap->G2API_SetBoneAnim(item->ghoul2, 0, "model_root", sFrame, eFrame, flags, animSpeed, time, -1, blendTime);
 							*runTimeLength =((anim->frameLerp * (anim->numFrames-2)));					
 						}
 					}
@@ -7348,9 +7313,9 @@ qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTim
 			if ( modelPtr->g2skin )
 			{
 //					DC->g2_SetSkin( &item->ghoul2[0], 0, modelPtr->g2skin );//this is going to set the surfs on/off matching the skin file
-				//trap_G2API_InitGhoul2Model(&item->ghoul2, name, 0, modelPtr->g2skin, 0, 0, 0);
+				//trap->G2API_InitGhoul2Model(&item->ghoul2, name, 0, modelPtr->g2skin, 0, 0, 0);
 				//ahh, what are you doing?!
-				trap_G2API_SetSkin(item->ghoul2, 0, modelPtr->g2skin, modelPtr->g2skin);
+				trap->G2API_SetSkin(item->ghoul2, 0, modelPtr->g2skin, modelPtr->g2skin);
 			}
 		}
 		/*
@@ -7378,17 +7343,17 @@ qboolean ItemParse_asset_model( itemDef_t *item, int handle ) {
 	Item_ValidateTypeData(item);
 	modelPtr = (modelDef_t*)item->typeData;
 
-	if (!trap_PC_ReadToken(handle, &token)) {
+	if (!trap->PC_ReadToken(handle, &token)) {
 		return qfalse;
 	}
 	temp = token.string;
 
-#ifndef CGAME
+#ifdef _UI
 	if (!stricmp(token.string,"ui_char_model") )
 	{
 		char modelPath[MAX_QPATH];
 		char ui_char_model[MAX_QPATH];
-		trap_Cvar_VariableStringBuffer("ui_char_model", ui_char_model, sizeof(ui_char_model) );
+		trap->Cvar_VariableStringBuffer("ui_char_model", ui_char_model, sizeof(ui_char_model) );
 		Com_sprintf( modelPath, sizeof( modelPath ), "models/players/%s/model.glm", ui_char_model );
 		temp = modelPath;
 	}
@@ -7399,7 +7364,7 @@ qboolean ItemParse_asset_model( itemDef_t *item, int handle ) {
 // asset_shader <string>
 qboolean ItemParse_asset_shader( itemDef_t *item, int handle ) {
 	pc_token_t token;
-	if (!trap_PC_ReadToken(handle, &token)) {
+	if (!trap->PC_ReadToken(handle, &token)) {
 		return qfalse;
 	}
 	item->asset = DC->registerShaderNoMip(token.string);
@@ -7518,9 +7483,6 @@ qboolean ItemParse_model_g2scale( itemDef_t *item, int handle ) {
 	return qfalse;
 }
 
-// model_g2skin <string>
-qhandle_t trap_R_RegisterSkin( const char *name );
-
 qboolean ItemParse_model_g2skin( itemDef_t *item, int handle ) {
 	modelDef_t *modelPtr;
 	pc_token_t token;
@@ -7528,7 +7490,7 @@ qboolean ItemParse_model_g2skin( itemDef_t *item, int handle ) {
 	Item_ValidateTypeData(item);
 	modelPtr = (modelDef_t*)item->typeData;
 
-	if (!trap_PC_ReadToken(handle, &token)) {
+	if (!trap->PC_ReadToken(handle, &token)) {
 		return qfalse;
 	}
 
@@ -7537,7 +7499,7 @@ qboolean ItemParse_model_g2skin( itemDef_t *item, int handle ) {
 		return qtrue;
 	}
 
-	modelPtr->g2skin = trap_R_RegisterSkin(token.string);
+	modelPtr->g2skin = trap->R_RegisterSkin(token.string);
 
 	return qtrue;
 }
@@ -7551,7 +7513,7 @@ qboolean ItemParse_model_g2anim( itemDef_t *item, int handle ) {
 	Item_ValidateTypeData(item);
 	modelPtr = (modelDef_t*)item->typeData;
 
-	if (!trap_PC_ReadToken(handle, &token)) {
+	if (!trap->PC_ReadToken(handle, &token)) {
 		return qfalse;
 	}
 
@@ -7588,7 +7550,7 @@ qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName )
 	if (!skinName || !skinName[0])
 	{ //it was parsed correctly so still return true.
 		modelPtr->g2skin = 0;
-		trap_G2API_SetSkin(item->ghoul2, 0, 0, 0);
+		trap->G2API_SetSkin(item->ghoul2, 0, 0, 0);
 
 		return qtrue;
 	}
@@ -7596,8 +7558,8 @@ qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName )
 	// set skin
 	if ( item->ghoul2 )
 	{
-		defSkin = trap_R_RegisterSkin(skinName);
-		trap_G2API_SetSkin(item->ghoul2, 0, defSkin, defSkin);
+		defSkin = trap->R_RegisterSkin(skinName);
+		trap->G2API_SetSkin(item->ghoul2, 0, defSkin, defSkin);
 	}
 
 	return qtrue;
@@ -7640,7 +7602,7 @@ qboolean ItemParse_rectcvar( itemDef_t *item, int handle )
 
 	// get Cvar name
 	pc_token_t token;
-	if (!trap_PC_ReadToken(handle, &token))
+	if (!trap->PC_ReadToken(handle, &token))
 	{
 		return qfalse;
 	}
@@ -7687,23 +7649,21 @@ ItemParse_flag
 */
 qboolean ItemParse_flag( itemDef_t *item, int handle) 
 {
-	int		i;
+	int i;
 	pc_token_t token;
 
-	if (!trap_PC_ReadToken(handle, &token))
+	if (!trap->PC_ReadToken(handle, &token))
 	{
 		return qfalse;
 	}
 
-	i=0;
-	while (styles[i])
+	for ( i=0; styles[i]; i++ )
 	{
 		if (Q_stricmp(token.string,itemFlags[i].string)==0)
 		{
 			item->window.flags |= itemFlags[i].value;
 			break;
 		}
-		i++;
 	}
 
 	if (itemFlags[i].string == NULL)
@@ -8089,7 +8049,7 @@ qboolean ItemParse_outlinecolor( itemDef_t *item, int handle ) {
 qboolean ItemParse_background( itemDef_t *item, int handle ) {
 	pc_token_t token;
 
-	if (!trap_PC_ReadToken(handle, &token)) {
+	if (!trap->PC_ReadToken(handle, &token)) {
 		return qfalse;
 	}
 	item->window.background = DC->registerShaderNoMip(token.string);
@@ -8326,14 +8286,14 @@ qboolean ItemParse_cvarStrList( itemDef_t *item, int handle ) {
 	multiPtr->count = 0;
 	multiPtr->strDef = qtrue;
 
-	if (!trap_PC_ReadToken(handle, &token))
+	if (!trap->PC_ReadToken(handle, &token))
 	{
 		return qfalse;
 	}
 
 	if (!Q_stricmp(token.string,"feeder") && item->special == FEEDER_PLAYER_SPECIES) 
 	{
-#ifndef CGAME
+#ifndef _CGAME
 		for (; multiPtr->count < uiInfo.playerSpeciesCount; multiPtr->count++)
 		{
 			multiPtr->cvarList[multiPtr->count] = String_Alloc(Q_strupr(va("@MENUS_%s",uiInfo.playerSpecies[multiPtr->count].Name )));	//look up translation
@@ -8345,14 +8305,14 @@ qboolean ItemParse_cvarStrList( itemDef_t *item, int handle ) {
 	// languages
 	if (!Q_stricmp(token.string,"feeder") && item->special == FEEDER_LANGUAGES) 
 	{
-#ifndef CGAME
+#ifdef _UI
 		for (; multiPtr->count < uiInfo.languageCount; multiPtr->count++)
 		{
 			// The displayed text
-			trap_GetLanguageName( (const int) multiPtr->count,(char *) currLanguage[multiPtr->count]  );	// eg "English"
+			trap->SE_GetLanguageName( (const int) multiPtr->count,(char *) currLanguage[multiPtr->count]  );	// eg "English"
 			multiPtr->cvarList[multiPtr->count] = languageString;
 			// The cvar value that goes into se_language
-			trap_GetLanguageName( (const int) multiPtr->count,(char *) currLanguage[multiPtr->count] );
+			trap->SE_GetLanguageName( (const int) multiPtr->count,(char *) currLanguage[multiPtr->count] );
 			multiPtr->cvarStr[multiPtr->count] = currLanguage[multiPtr->count];
 		}
 #endif
@@ -8366,11 +8326,6 @@ qboolean ItemParse_cvarStrList( itemDef_t *item, int handle ) {
 	pass = 0;
 	while ( 1 ) {
 		char* psString;
-
-//		if (!trap_PC_ReadToken(handle, &token)) {
-//			PC_SourceError(handle, "end of file inside menu item\n");
-//			return qfalse;
-//		}		   
 
 		if (!PC_String_Parse(handle, (const char **)&psString)) 
 		{
@@ -8421,7 +8376,7 @@ qboolean ItemParse_cvarFloatList( itemDef_t *item, int handle )
 	multiPtr->count = 0;
 	multiPtr->strDef = qfalse;
 
-	if (!trap_PC_ReadToken(handle, &token))
+	if (!trap->PC_ReadToken(handle, &token))
 	{
 		return qfalse;
 	}
@@ -8545,7 +8500,7 @@ qboolean ItemParse_Appearance_slot( itemDef_t *item, int handle )
 
 qboolean ItemParse_isSaber( itemDef_t *item, int handle  )
 {
-#ifndef CGAME
+#ifndef _CGAME
 
 	int	i;
 
@@ -8577,7 +8532,7 @@ qboolean ItemParse_isSaber( itemDef_t *item, int handle  )
 
 qboolean ItemParse_isSaber2( itemDef_t *item, int handle  )
 {
-#ifndef CGAME
+#ifndef _CGAME
 	int	i;
 	if (PC_Int_Parse(handle, &i)) 
 	{
@@ -8724,13 +8679,14 @@ qboolean Item_Parse(int handle, itemDef_t *item) {
 	keywordHash_t *key;
 
 
-	if (!trap_PC_ReadToken(handle, &token))
+	if (!trap->PC_ReadToken(handle, &token))
 		return qfalse;
+
 	if (*token.string != '{') {
 		return qfalse;
 	}
 	while ( 1 ) {
-		if (!trap_PC_ReadToken(handle, &token)) {
+		if (!trap->PC_ReadToken(handle, &token)) {
 			PC_SourceError(handle, "end of file inside menu item\n");
 			return qfalse;
 		}
@@ -8776,7 +8732,7 @@ static void Item_TextScroll_BuildLines ( itemDef_t* item )
 
 	if (*psText == '@')	// string reference
 	{
-		trap_SP_GetStringTextString( &psText[1], text, sizeof(text));
+		trap->SE_GetStringTextString( &psText[1], text, sizeof(text));
 		psText = text;
 	}
 
@@ -8802,7 +8758,7 @@ static void Item_TextScroll_BuildLines ( itemDef_t* item )
 
 			// read letter...
 			//
-			uiLetter = trap_AnyLanguage_ReadCharFromString(psCurrentTextReadPos, &iAdvanceCount, &bIsTrailingPunctuation);
+			uiLetter = trap->R_AnyLanguage_ReadCharFromString(psCurrentTextReadPos, &iAdvanceCount, &bIsTrailingPunctuation);
 			psCurrentTextReadPos += iAdvanceCount;
 
 			// concat onto string so far...
@@ -8840,7 +8796,7 @@ static void Item_TextScroll_BuildLines ( itemDef_t* item )
 			{					
 				// reached screen edge, so cap off string at bytepos after last good position...
 				//
-				if (uiLetter > 255 && bIsTrailingPunctuation && !trap_Language_UsesSpaces())
+				if (uiLetter > 255 && bIsTrailingPunctuation && !trap->R_Language_UsesSpaces())
 				{
 					// Special case, don't consider line breaking if you're on an asian punctuation char of
 					//	a language that doesn't use spaces...
@@ -8872,7 +8828,7 @@ static void Item_TextScroll_BuildLines ( itemDef_t* item )
 
 			// record last-good linebreak pos...  (ie if we've just concat'd a punctuation point (western or asian) or space)
 			//
-			if (bIsTrailingPunctuation || uiLetter == ' ' || (uiLetter > 255 && !trap_Language_UsesSpaces()))
+			if (bIsTrailingPunctuation || uiLetter == ' ' || (uiLetter > 255 && !trap->R_Language_UsesSpaces()))
 			{
 				psBestLineBreakSrcPos = psCurrentTextReadPos;
 			}
@@ -9307,7 +9263,7 @@ qboolean MenuParse_background( itemDef_t *item, int handle ) {
 	pc_token_t token;
 	menuDef_t *menu = (menuDef_t*)item;
 
-	if (!trap_PC_ReadToken(handle, &token)) {
+	if (!trap->PC_ReadToken(handle, &token)) {
 		return qfalse;
 	}
 	menu->window.background = DC->registerShaderNoMip(token.string);
@@ -9492,14 +9448,14 @@ qboolean Menu_Parse(int handle, menuDef_t *menu) {
 	pc_token_t token;
 	keywordHash_t *key;
 
-	if (!trap_PC_ReadToken(handle, &token))
+	if (!trap->PC_ReadToken(handle, &token))
 		return qfalse;
 	if (*token.string != '{') {
 		return qfalse;
 	}
     
 	while ( 1 ) {
-		if (!trap_PC_ReadToken(handle, &token)) {
+		if (!trap->PC_ReadToken(handle, &token)) {
 			PC_SourceError(handle, "end of file inside menu\n");
 			return qfalse;
 		}

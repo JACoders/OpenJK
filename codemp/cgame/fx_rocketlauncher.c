@@ -17,7 +17,7 @@ void FX_RocketProjectileThink( centity_t *cent, const struct weaponInfo_s *weapo
 		forward[2] = 1.0f;
 	}
 
-	trap_FX_PlayEffectID( cgs.effects.rocketShotEffect, cent->lerpOrigin, forward, -1, -1 );
+	trap->FX_PlayEffectID( cgs.effects.rocketShotEffect, cent->lerpOrigin, forward, -1, -1, qfalse );
 }
 
 /*
@@ -28,7 +28,7 @@ FX_RocketHitWall
 
 void FX_RocketHitWall( vec3_t origin, vec3_t normal )
 {
-	trap_FX_PlayEffectID( cgs.effects.rocketExplosionEffect, origin, normal, -1, -1 );
+	trap->FX_PlayEffectID( cgs.effects.rocketExplosionEffect, origin, normal, -1, -1, qfalse );
 }
 
 /*
@@ -39,7 +39,7 @@ FX_RocketHitPlayer
 
 void FX_RocketHitPlayer( vec3_t origin, vec3_t normal, qboolean humanoid )
 {
-	trap_FX_PlayEffectID( cgs.effects.rocketExplosionEffect, origin, normal, -1, -1 );
+	trap->FX_PlayEffectID( cgs.effects.rocketExplosionEffect, origin, normal, -1, -1, qfalse );
 }
 
 /*
@@ -57,5 +57,5 @@ void FX_RocketAltProjectileThink( centity_t *cent, const struct weaponInfo_s *we
 		forward[2] = 1.0f;
 	}
 
-	trap_FX_PlayEffectID( cgs.effects.rocketShotEffect, cent->lerpOrigin, forward, -1, -1 );
+	trap->FX_PlayEffectID( cgs.effects.rocketShotEffect, cent->lerpOrigin, forward, -1, -1, qfalse );
 }

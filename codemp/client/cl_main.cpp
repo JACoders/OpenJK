@@ -7,6 +7,8 @@
 #include "qcommon/stringed_ingame.h"
 #include <limits.h>
 #include "snd_local.h"
+#include "cl_cgameapi.h"
+#include "cl_uiapi.h"
 
 //rwwRMG - added:
 #include "qcommon/cm_local.h"
@@ -87,7 +89,6 @@ vec3_t cl_windVec;
 clientActive_t		cl;
 clientConnection_t	clc;
 clientStatic_t		cls;
-vm_t				*cgvm;
 
 netadr_t rcon_address;
 
@@ -435,7 +436,7 @@ void CL_DemoCompleted( void ) {
 	//after a demo is finished playing instead.
 	CL_Disconnect_f();
 	S_StopAllSounds();
-	VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
+	UIVM_SetActiveMenu( UIMENU_MAIN );
 
 	CL_NextDemo();
 }
@@ -775,8 +776,8 @@ void CL_Disconnect( qboolean showMainMenu ) {
 		clc.demofile = 0;
 	}
 
-	if ( uivm && showMainMenu ) {
-		VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_NONE );
+	if ( cls.uiStarted && showMainMenu ) {
+		UIVM_SetActiveMenu( UIMENU_NONE );
 	}
 
 	SCR_StopCinematic ();
@@ -2087,10 +2088,10 @@ void CL_Frame ( int msec ) {
 									//	of course this still doesn't work for menus...
 
 	if ( cls.state == CA_DISCONNECTED && !( Key_GetCatcher( ) & KEYCATCH_UI )
-		&& !com_sv_running->integer && uivm ) {
+		&& !com_sv_running->integer && cls.uiStarted ) {
 		// if disconnected, bring up the menu
 		S_StopAllSounds();
-		VM_Call( uivm, UI_SET_ACTIVE_MENU, UIMENU_MAIN );
+		UIVM_SetActiveMenu( UIMENU_MAIN );
 	}
 
 	// if recording an avi, lock to a fixed fps
@@ -2286,8 +2287,6 @@ CL_InitRef
 */
 qboolean Com_TheHunkMarkHasBeenMade(void);
 
-//qcommon/vm.cpp
-extern vm_t *currentVM;
 #ifdef _WIN32
 	//win32/win_main.cpp
 	#include "win32/win_local.h"
@@ -2298,8 +2297,8 @@ extern void *gpvCachedMapDiskImage;
 extern qboolean gbUsingCachedMapDataRightNow;
 
 static char *GetSharedMemory( void ) { return cl.mSharedMemory; }
-static vm_t *GetCgameVM( void ) { return cgvm; }
 static vm_t *GetCurrentVM( void ) { return currentVM; }
+static qboolean CGVMLoaded( void ) { return (qboolean)cls.cgameStarted; }
 #ifdef _WIN32
 	static void *GetWinVars( void ) { return (void *)&g_wv; }
 #endif
@@ -2308,9 +2307,6 @@ static void CM_SetCachedMapDiskImage( void *ptr ) { gpvCachedMapDiskImage = ptr;
 static void CM_SetUsingCache( qboolean usingCache ) { gbUsingCachedMapDataRightNow = usingCache; }
 
 // for listen servers
-extern vm_t *currentVM;
-extern vm_t *gvm;
-static vm_t *GetGameVM( void ) { return gvm; }
 extern void SV_GetConfigstring( int index, char *buffer, int bufferSize );
 extern void SV_SetConfigstring( int index, const char *val );
 
@@ -2409,7 +2405,6 @@ void CL_InitRef( void ) {
 	ri.CM_LeafCluster = CM_LeafCluster;
 	ri.CM_PointLeafnum = CM_PointLeafnum;
 	ri.CM_PointContents = CM_PointContents;
-	ri.VM_Call = VM_Call;
 	ri.Com_TheHunkMarkHasBeenMade = Com_TheHunkMarkHasBeenMade;
 	ri.SV_GetConfigstring = SV_GetConfigstring;
 	ri.SV_SetConfigstring = SV_SetConfigstring;
@@ -2422,9 +2417,11 @@ void CL_InitRef( void ) {
 
 	// g2 data access
 	ri.GetSharedMemory = GetSharedMemory;
-	ri.GetCgameVM = GetCgameVM;
-	ri.GetGameVM = GetGameVM;
+
+	// (c)g vm callbacks
 	ri.GetCurrentVM = GetCurrentVM;
+	ri.CGVMLoaded = CGVMLoaded;
+	ri.CGVM_RagCallback = CGVM_RagCallback;
 
 	// ugly win32 backend
 #ifdef _WIN32
@@ -3029,7 +3026,7 @@ serverStatus_t *CL_GetServerStatus( netadr_t from ) {
 CL_ServerStatus
 ===================
 */
-int CL_ServerStatus( char *serverAddress, char *serverStatusString, int maxLen ) {
+int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int maxLen ) {
 	int i;
 	netadr_t	to;
 	serverStatus_t *serverStatus;

@@ -285,7 +285,7 @@ void ThrowSaberToAttacker(gentity_t *self, gentity_t *attacker)
 		self->client->ps.saberIndex = ent->s.number;
 	}
 
-	trap_SetConfigstring ( CS_CLIENT_JEDIMASTER, "-1" );
+	trap->SetConfigstring ( CS_CLIENT_JEDIMASTER, "-1" );
 
 	if (attacker && attacker->client && self->client->ps.saberInFlight)
 	{ //someone killed us and we had the saber thrown, so actually move this saber to the saber location
@@ -321,7 +321,7 @@ void ThrowSaberToAttacker(gentity_t *self, gentity_t *attacker)
 		VectorCopy(ent->s.origin2, ent->s.origin);
 		VectorCopy(ent->s.origin2, ent->r.currentOrigin);
 		ent->pos2[0] = 0;
-		trap_LinkEntity(ent);
+		trap->LinkEntity((sharedEntity_t *)ent);
 		return;
 	}
 
@@ -340,7 +340,7 @@ void ThrowSaberToAttacker(gentity_t *self, gentity_t *attacker)
 		ent->s.pos.trDelta[2] = 256;
 	}
 
-	trap_LinkEntity(ent);
+	trap->LinkEntity((sharedEntity_t *)ent);
 }
 
 void JMSaberThink(gentity_t *ent)
@@ -362,7 +362,7 @@ void JMSaberThink(gentity_t *ent)
 
 			ent->pos2[0] = 1;
 			ent->pos2[1] = 0; //respawn next think
-			trap_LinkEntity(ent);
+			trap->LinkEntity((sharedEntity_t *)ent);
 		}
 		else
 		{
@@ -375,7 +375,7 @@ void JMSaberThink(gentity_t *ent)
 		VectorCopy(ent->s.origin2, ent->s.origin);
 		VectorCopy(ent->s.origin2, ent->r.currentOrigin);
 		ent->pos2[0] = 0;
-		trap_LinkEntity(ent);
+		trap->LinkEntity((sharedEntity_t *)ent);
 	}
 
 	ent->nextthink = level.time + 50;
@@ -419,7 +419,7 @@ void JMSaberTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 	G_AddEvent(other, EV_BECOME_JEDIMASTER, 0);
 
 	// Track the jedi master 
-	trap_SetConfigstring ( CS_CLIENT_JEDIMASTER, va("%i", other->s.number ) );
+	trap->SetConfigstring ( CS_CLIENT_JEDIMASTER, va("%i", other->s.number ) );
 
 	if (g_spawnInvulnerability.integer)
 	{
@@ -427,7 +427,7 @@ void JMSaberTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 		other->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;
 	}
 
-	trap_SendServerCommand( -1, va("cp \"%s %s\n\"", other->client->pers.netname, G_GetStringEdString("MP_SVGAME", "BECOMEJM")) );
+	trap->SendServerCommand( -1, va("cp \"%s %s\n\"", other->client->pers.netname, G_GetStringEdString("MP_SVGAME", "BECOMEJM")) );
 
 	other->client->ps.isJediMaster = qtrue;
 	other->client->ps.saberIndex = self->s.number;
@@ -509,7 +509,7 @@ void SP_info_jedimaster_start(gentity_t *ent)
 
 	ent->touch = JMSaberTouch;
 
-	trap_LinkEntity(ent);
+	trap->LinkEntity((sharedEntity_t *)ent);
 
 	ent->think = JMSaberThink;
 	ent->nextthink = level.time + 50;
@@ -537,7 +537,7 @@ qboolean SpotWouldTelefrag( gentity_t *spot ) {
 
 	VectorAdd( spot->s.origin, playerMins, mins );
 	VectorAdd( spot->s.origin, playerMaxs, maxs );
-	num = trap_EntitiesInBox( mins, maxs, touch, MAX_GENTITIES );
+	num = trap->EntitiesInBox( mins, maxs, touch, MAX_GENTITIES );
 
 	for (i=0 ; i<num ; i++) {
 		hit = &g_entities[touch[i]];
@@ -560,7 +560,7 @@ qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest )
 
 	VectorAdd( dest, mover->r.mins, mins );
 	VectorAdd( dest, mover->r.maxs, maxs );
-	num = trap_EntitiesInBox( mins, maxs, touch, MAX_GENTITIES );
+	num = trap->EntitiesInBox( mins, maxs, touch, MAX_GENTITIES );
 
 	for (i=0 ; i<num ; i++) 
 	{
@@ -739,7 +739,7 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 		if (!numSpots) {
 			spot = G_Find( NULL, FOFS(classname), "info_player_deathmatch");
 			if (!spot)
-				G_Error( "Couldn't find a spawn point" );
+				trap->Error( ERR_DROP, "Couldn't find a spawn point" );
 			VectorCopy (spot->s.origin, origin);
 			origin[2] += 9;
 			VectorCopy (spot->s.angles, angles);
@@ -827,7 +827,7 @@ tryAgain:
 		//If we got here we found no free duel or DM spots, just try the first DM spot
 		spot = G_Find( NULL, FOFS(classname), "info_player_deathmatch");
 		if (!spot)
-			G_Error( "Couldn't find a spawn point" );
+			trap->Error( ERR_DROP, "Couldn't find a spawn point" );
 		VectorCopy (spot->s.origin, origin);
 		origin[2] += 9;
 		VectorCopy (spot->s.angles, angles);
@@ -872,7 +872,7 @@ gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, vec3_t origin, vec3_t angles, t
 
 	// find a single player start spot
 	if (!spot) {
-		G_Error( "Couldn't find a spawn point" );
+		trap->Error( ERR_DROP, "Couldn't find a spawn point" );
 	}
 
 	VectorCopy (spot->s.origin, origin);
@@ -973,7 +973,7 @@ After sitting around for five seconds, fall into the ground and dissapear
 void BodySink( gentity_t *ent ) {
 	if ( level.time - ent->timestamp > BODY_SINK_TIME + 2500 ) {
 		// the body ques are never actually freed, they are just unlinked
-		trap_UnlinkEntity( ent );
+		trap->UnlinkEntity( (sharedEntity_t *)ent );
 		ent->physicsObject = qfalse;
 		return;	
 	}
@@ -1003,10 +1003,10 @@ static qboolean CopyToBodyQue( gentity_t *ent ) {
 		return qfalse;
 	}
 
-	trap_UnlinkEntity (ent);
+	trap->UnlinkEntity ((sharedEntity_t *)ent);
 
 	// if client is in a nodrop area, don't leave the body
-	contents = trap_PointContents( ent->s.origin, -1 );
+	contents = trap->PointContents( ent->s.origin, -1 );
 	if ( contents & CONTENTS_NODROP ) {
 		return qfalse;
 	}
@@ -1020,7 +1020,7 @@ static qboolean CopyToBodyQue( gentity_t *ent ) {
 	body = level.bodyQue[ level.bodyQueIndex ];
 	level.bodyQueIndex = (level.bodyQueIndex + 1) % BODY_QUEUE_SIZE;
 
-	trap_UnlinkEntity (body);
+	trap->UnlinkEntity ((sharedEntity_t *)body);
 	body->s = ent->s;
 
 	//avoid oddly angled corpses floating around
@@ -1067,7 +1067,7 @@ static qboolean CopyToBodyQue( gentity_t *ent ) {
 	{
 		islight = 1;
 	}
-	trap_SendServerCommand(-1, va("ircg %i %i %i %i", ent->s.number, body->s.number, body->s.weapon, islight));
+	trap->SendServerCommand(-1, va("ircg %i %i %i %i", ent->s.number, body->s.number, body->s.weapon, islight));
 
 	body->r.svFlags = ent->r.svFlags | SVF_BROADCAST;
 	VectorCopy (ent->r.mins, body->r.mins);
@@ -1099,7 +1099,7 @@ static qboolean CopyToBodyQue( gentity_t *ent ) {
 	}
 
 	VectorCopy ( body->s.pos.trBase, body->r.currentOrigin );
-	trap_LinkEntity (body);
+	trap->LinkEntity ((sharedEntity_t *)body);
 
 	return qtrue;
 }
@@ -1154,7 +1154,7 @@ void MaintainBodyQueue(gentity_t *ent)
 
 	if (doRCG)
 	{ //bodyque func didn't manage to call ircg so call this to assure our limbs and ragdoll states are proper on the client.
-		trap_SendServerCommand(-1, va("rcg %i", ent->s.clientNum));
+		trap->SendServerCommand(-1, va("rcg %i", ent->s.clientNum));
 	}
 }
 
@@ -1180,7 +1180,7 @@ void respawn( gentity_t *ent ) {
 		return;
 	}
 
-	trap_UnlinkEntity (ent);
+	trap->UnlinkEntity ((sharedEntity_t *)ent);
 
 	if (level.gametype == GT_SIEGE)
 	{
@@ -1200,7 +1200,7 @@ void respawn( gentity_t *ent ) {
 				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] = 0;
 				ent->client->ps.stats[STAT_HOLDABLE_ITEM] = 0;
 				ent->takedamage = qfalse;
-				trap_LinkEntity(ent);
+				trap->LinkEntity((sharedEntity_t *)ent);
 
 				// Respawn time.
 				if ( ent->s.number < MAX_CLIENTS )
@@ -1395,9 +1395,9 @@ void G_DebugWrite(const char *path, const char *text)
 {
 	fileHandle_t f;
 
-	trap_FS_FOpenFile( path, &f, FS_APPEND );
-	trap_FS_Write(text, strlen(text), f);
-	trap_FS_FCloseFile(f);
+	trap->FS_Open( path, &f, FS_APPEND );
+	trap->FS_Write(text, strlen(text), f);
+	trap->FS_Close(f);
 }
 #endif
 
@@ -1413,9 +1413,9 @@ qboolean G_SaberModelSetup(gentity_t *ent)
 			//first kill it off if we've already got it
 			if (ent->client->weaponGhoul2[i])
 			{
-				trap_G2API_CleanGhoul2Models(&(ent->client->weaponGhoul2[i]));
+				trap->G2API_CleanGhoul2Models(&(ent->client->weaponGhoul2[i]));
 			}
-			trap_G2API_InitGhoul2Model(&ent->client->weaponGhoul2[i], ent->client->saber[i].model, 0, 0, -20, 0, 0);
+			trap->G2API_InitGhoul2Model(&ent->client->weaponGhoul2[i], ent->client->saber[i].model, 0, 0, -20, 0, 0);
 
 			if (ent->client->weaponGhoul2[i])
 			{
@@ -1425,29 +1425,29 @@ qboolean G_SaberModelSetup(gentity_t *ent)
 
 				if (ent->client->saber[i].skin)
 				{
-					trap_G2API_SetSkin(ent->client->weaponGhoul2[i], 0, ent->client->saber[i].skin, ent->client->saber[i].skin);
+					trap->G2API_SetSkin(ent->client->weaponGhoul2[i], 0, ent->client->saber[i].skin, ent->client->saber[i].skin);
 				}
 
 				if (ent->client->saber[i].saberFlags & SFL_BOLT_TO_WRIST)
 				{
-					trap_G2API_SetBoltInfo(ent->client->weaponGhoul2[i], 0, 3+i);
+					trap->G2API_SetBoltInfo(ent->client->weaponGhoul2[i], 0, 3+i);
 				}
 				else
 				{ // bolt to right hand for 0, or left hand for 1
-					trap_G2API_SetBoltInfo(ent->client->weaponGhoul2[i], 0, i);
+					trap->G2API_SetBoltInfo(ent->client->weaponGhoul2[i], 0, i);
 				}
 
 				//Add all the bolt points
 				while (j < ent->client->saber[i].numBlades)
 				{
 					tagName = va("*blade%i", j+1);
-					tagBolt = trap_G2API_AddBolt(ent->client->weaponGhoul2[i], 0, tagName);
+					tagBolt = trap->G2API_AddBolt(ent->client->weaponGhoul2[i], 0, tagName);
 
 					if (tagBolt == -1)
 					{
 						if (j == 0)
 						{ //guess this is an 0ldsk3wl saber
-							tagBolt = trap_G2API_AddBolt(ent->client->weaponGhoul2[i], 0, "*flash");
+							tagBolt = trap->G2API_AddBolt(ent->client->weaponGhoul2[i], 0, "*flash");
 							fallbackForSaber = qfalse;
 							break;
 						}
@@ -1465,7 +1465,7 @@ qboolean G_SaberModelSetup(gentity_t *ent)
 				}
 
 				//Copy it into the main instance
-				trap_G2API_CopySpecificGhoul2Model(ent->client->weaponGhoul2[i], 0, ent->ghoul2, i+1); 
+				trap->G2API_CopySpecificGhoul2Model(ent->client->weaponGhoul2[i], 0, ent->ghoul2, i+1); 
 			}
 		}
 		else
@@ -1515,9 +1515,9 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 	}
 
 	// First things first.  If this is a ghoul2 model, then let's make sure we demolish this first.
-	if (ent->ghoul2 && trap_G2_HaveWeGhoul2Models(ent->ghoul2))
+	if (ent->ghoul2 && trap->G2API_HaveWeGhoul2Models(ent->ghoul2))
 	{
-		trap_G2API_CleanGhoul2Models(&(ent->ghoul2));
+		trap->G2API_CleanGhoul2Models(&(ent->ghoul2));
 	}
 
 	//rww - just load the "standard" model for the server"
@@ -1526,18 +1526,18 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 		int defSkin;
 
 		Com_sprintf( afilename, sizeof( afilename ), "models/players/kyle/model.glm" );
-		handle = trap_G2API_InitGhoul2Model(&precachedKyle, afilename, 0, 0, -20, 0, 0);
+		handle = trap->G2API_InitGhoul2Model(&precachedKyle, afilename, 0, 0, -20, 0, 0);
 
 		if (handle<0)
 		{
 			return;
 		}
 
-		defSkin = trap_R_RegisterSkin("models/players/kyle/model_default.skin");
-		trap_G2API_SetSkin(precachedKyle, 0, defSkin, defSkin);
+		defSkin = trap->R_RegisterSkin("models/players/kyle/model_default.skin");
+		trap->G2API_SetSkin(precachedKyle, 0, defSkin, defSkin);
 	}
 
-	if (precachedKyle && trap_G2_HaveWeGhoul2Models(precachedKyle))
+	if (precachedKyle && trap->G2API_HaveWeGhoul2Models(precachedKyle))
 	{
 		if (d_perPlayerGhoul2.integer || ent->s.number >= MAX_CLIENTS ||
 			G_PlayerHasCustomSkeleton(ent))
@@ -1562,11 +1562,11 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 					&& ent->m_pVehicle->m_pVehicleInfo->skin
 					&& ent->m_pVehicle->m_pVehicleInfo->skin[0] )
 				{
-					skinHandle = trap_R_RegisterSkin(va("models/players/%s/model_%s.skin", modelname, ent->m_pVehicle->m_pVehicleInfo->skin));
+					skinHandle = trap->R_RegisterSkin(va("models/players/%s/model_%s.skin", modelname, ent->m_pVehicle->m_pVehicleInfo->skin));
 				}
 				else
 				{
-					skinHandle = trap_R_RegisterSkin(va("models/players/%s/model_default.skin", modelname));
+					skinHandle = trap->R_RegisterSkin(va("models/players/%s/model_default.skin", modelname));
 				}
 			}
 			else
@@ -1650,34 +1650,34 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 					useSkinName = va("models/players/%s/model_%s.skin", truncModelName, skin);
 				}
 
-				skinHandle = trap_R_RegisterSkin(useSkinName);
+				skinHandle = trap->R_RegisterSkin(useSkinName);
 			}
 
 			strcpy(modelFullPath, va("models/players/%s/model.glm", truncModelName));
-			handle = trap_G2API_InitGhoul2Model(&ent->ghoul2, modelFullPath, 0, skinHandle, -20, 0, 0);
+			handle = trap->G2API_InitGhoul2Model(&ent->ghoul2, modelFullPath, 0, skinHandle, -20, 0, 0);
 
 			if (handle<0)
 			{ //Huh. Guess we don't have this model. Use the default.
 
-				if (ent->ghoul2 && trap_G2_HaveWeGhoul2Models(ent->ghoul2))
+				if (ent->ghoul2 && trap->G2API_HaveWeGhoul2Models(ent->ghoul2))
 				{
-					trap_G2API_CleanGhoul2Models(&(ent->ghoul2));
+					trap->G2API_CleanGhoul2Models(&(ent->ghoul2));
 				}
 				ent->ghoul2 = NULL;
-				trap_G2API_DuplicateGhoul2Instance(precachedKyle, &ent->ghoul2);
+				trap->G2API_DuplicateGhoul2Instance(precachedKyle, &ent->ghoul2);
 			}
 			else
 			{
-				trap_G2API_SetSkin(ent->ghoul2, 0, skinHandle, skinHandle);
+				trap->G2API_SetSkin(ent->ghoul2, 0, skinHandle, skinHandle);
 
 				GLAName[0] = 0;
-				trap_G2API_GetGLAName( ent->ghoul2, 0, GLAName);
+				trap->G2API_GetGLAName( ent->ghoul2, 0, GLAName);
 
 				if (!GLAName[0] || (!strstr(GLAName, "players/_humanoid/") && ent->s.number < MAX_CLIENTS && !G_PlayerHasCustomSkeleton(ent)))
 				{ //a bad model
-					trap_G2API_CleanGhoul2Models(&(ent->ghoul2));
+					trap->G2API_CleanGhoul2Models(&(ent->ghoul2));
 					ent->ghoul2 = NULL;
-					trap_G2API_DuplicateGhoul2Instance(precachedKyle, &ent->ghoul2);
+					trap->G2API_DuplicateGhoul2Instance(precachedKyle, &ent->ghoul2);
 				}
 
 				if (ent->s.number >= MAX_CLIENTS)
@@ -1702,7 +1702,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 		}
 		else
 		{
-			trap_G2API_DuplicateGhoul2Instance(precachedKyle, &ent->ghoul2);
+			trap->G2API_DuplicateGhoul2Instance(precachedKyle, &ent->ghoul2);
 		}
 	}
 	else
@@ -1712,7 +1712,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 
 	//Attach the instance to this entity num so we can make use of client-server
 	//shared operations if possible.
-	trap_G2API_AttachInstanceToEntNum(ent->ghoul2, ent->s.number, qtrue);
+	trap->G2API_AttachInstanceToEntNum(ent->ghoul2, ent->s.number, qtrue);
 
 	// The model is now loaded.
 
@@ -1732,7 +1732,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 		ent->localAnimIndex = -1;
 
 		GLAName[0] = 0;
-		trap_G2API_GetGLAName(ent->ghoul2, 0, GLAName);
+		trap->G2API_GetGLAName(ent->ghoul2, 0, GLAName);
 
 		if (GLAName[0] &&
 			!strstr(GLAName, "players/_humanoid/") /*&&
@@ -1766,7 +1766,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 	else
 	{
 		GLAName[0] = 0;
-		trap_G2API_GetGLAName(ent->ghoul2, 0, GLAName);
+		trap->G2API_GetGLAName(ent->ghoul2, 0, GLAName);
 
 		if (strstr(GLAName, "players/rockettrooper/"))
 		{
@@ -1786,27 +1786,27 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 		int i;
 
 		// Setup the default first bolt
-		i = trap_G2API_AddBolt( ent->ghoul2, 0, "model_root" );
+		i = trap->G2API_AddBolt( ent->ghoul2, 0, "model_root" );
 
 		// Setup the droid unit.
-		ent->m_pVehicle->m_iDroidUnitTag = trap_G2API_AddBolt( ent->ghoul2, 0, "*droidunit" );
+		ent->m_pVehicle->m_iDroidUnitTag = trap->G2API_AddBolt( ent->ghoul2, 0, "*droidunit" );
 
 		// Setup the Exhausts.
 		for ( i = 0; i < MAX_VEHICLE_EXHAUSTS; i++ )
 		{
 			Com_sprintf( strTemp, 128, "*exhaust%i", i + 1 );
-			ent->m_pVehicle->m_iExhaustTag[i] = trap_G2API_AddBolt( ent->ghoul2, 0, strTemp );
+			ent->m_pVehicle->m_iExhaustTag[i] = trap->G2API_AddBolt( ent->ghoul2, 0, strTemp );
 		}
 
 		// Setup the Muzzles.
 		for ( i = 0; i < MAX_VEHICLE_MUZZLES; i++ )
 		{
 			Com_sprintf( strTemp, 128, "*muzzle%i", i + 1 );
-			ent->m_pVehicle->m_iMuzzleTag[i] = trap_G2API_AddBolt( ent->ghoul2, 0, strTemp );
+			ent->m_pVehicle->m_iMuzzleTag[i] = trap->G2API_AddBolt( ent->ghoul2, 0, strTemp );
 			if ( ent->m_pVehicle->m_iMuzzleTag[i] == -1 )
 			{//ergh, try *flash?
 				Com_sprintf( strTemp, 128, "*flash%i", i + 1 );
-				ent->m_pVehicle->m_iMuzzleTag[i] = trap_G2API_AddBolt( ent->ghoul2, 0, strTemp );
+				ent->m_pVehicle->m_iMuzzleTag[i] = trap->G2API_AddBolt( ent->ghoul2, 0, strTemp );
 			}
 		}
 
@@ -1815,7 +1815,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 		{
 			if ( ent->m_pVehicle->m_pVehicleInfo->turret[i].gunnerViewTag )
 			{
-				ent->m_pVehicle->m_iGunnerViewTag[i] = trap_G2API_AddBolt( ent->ghoul2, 0, ent->m_pVehicle->m_pVehicleInfo->turret[i].gunnerViewTag );
+				ent->m_pVehicle->m_iGunnerViewTag[i] = trap->G2API_AddBolt( ent->ghoul2, 0, ent->m_pVehicle->m_pVehicleInfo->turret[i].gunnerViewTag );
 			}
 			else
 			{
@@ -1826,31 +1826,31 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 	
 	if (ent->client->ps.weapon == WP_SABER || ent->s.number < MAX_CLIENTS)
 	{ //a player or NPC saber user
-		trap_G2API_AddBolt(ent->ghoul2, 0, "*r_hand");
-		trap_G2API_AddBolt(ent->ghoul2, 0, "*l_hand");
+		trap->G2API_AddBolt(ent->ghoul2, 0, "*r_hand");
+		trap->G2API_AddBolt(ent->ghoul2, 0, "*l_hand");
 
 		//rhand must always be first bolt. lhand always second. Whichever you want the
 		//jetpack bolted to must always be third.
-		trap_G2API_AddBolt(ent->ghoul2, 0, "*chestg");
+		trap->G2API_AddBolt(ent->ghoul2, 0, "*chestg");
 
 		//claw bolts
-		trap_G2API_AddBolt(ent->ghoul2, 0, "*r_hand_cap_r_arm");
-		trap_G2API_AddBolt(ent->ghoul2, 0, "*l_hand_cap_l_arm");
+		trap->G2API_AddBolt(ent->ghoul2, 0, "*r_hand_cap_r_arm");
+		trap->G2API_AddBolt(ent->ghoul2, 0, "*l_hand_cap_l_arm");
 
-		trap_G2API_SetBoneAnim(ent->ghoul2, 0, "model_root", 0, 12, BONE_ANIM_OVERRIDE_LOOP, 1.0f, level.time, -1, -1);
-		trap_G2API_SetBoneAngles(ent->ghoul2, 0, "upper_lumbar", tempVec, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, level.time);
-		trap_G2API_SetBoneAngles(ent->ghoul2, 0, "cranium", tempVec, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_Y, POSITIVE_X, NULL, 0, level.time);
+		trap->G2API_SetBoneAnim(ent->ghoul2, 0, "model_root", 0, 12, BONE_ANIM_OVERRIDE_LOOP, 1.0f, level.time, -1, -1);
+		trap->G2API_SetBoneAngles(ent->ghoul2, 0, "upper_lumbar", tempVec, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, level.time);
+		trap->G2API_SetBoneAngles(ent->ghoul2, 0, "cranium", tempVec, BONE_ANGLES_POSTMULT, POSITIVE_Z, NEGATIVE_Y, POSITIVE_X, NULL, 0, level.time);
 
 		if (!g2SaberInstance)
 		{
-			trap_G2API_InitGhoul2Model(&g2SaberInstance, "models/weapons2/saber/saber_w.glm", 0, 0, -20, 0, 0);
+			trap->G2API_InitGhoul2Model(&g2SaberInstance, "models/weapons2/saber/saber_w.glm", 0, 0, -20, 0, 0);
 
 			if (g2SaberInstance)
 			{
 				// indicate we will be bolted to model 0 (ie the player) on bolt 0 (always the right hand) when we get copied
-				trap_G2API_SetBoltInfo(g2SaberInstance, 0, 0);
+				trap->G2API_SetBoltInfo(g2SaberInstance, 0, 0);
 				// now set up the gun bolt on it
-				trap_G2API_AddBolt(g2SaberInstance, 0, "*blade1");
+				trap->G2API_AddBolt(g2SaberInstance, 0, "*blade1");
 			}
 		}
 
@@ -1858,14 +1858,14 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 		{
 			if (g2SaberInstance)
 			{
-				trap_G2API_CopySpecificGhoul2Model(g2SaberInstance, 0, ent->ghoul2, 1); 
+				trap->G2API_CopySpecificGhoul2Model(g2SaberInstance, 0, ent->ghoul2, 1); 
 			}
 		}
 	}
 
 	if (ent->s.number >= MAX_CLIENTS)
 	{ //some extra NPC stuff
-		if (trap_G2API_AddBolt(ent->ghoul2, 0, "lower_lumbar") == -1)
+		if (trap->G2API_AddBolt(ent->ghoul2, 0, "lower_lumbar") == -1)
 		{ //check now to see if we have this bone for setting anims and such
 			ent->noLumbar = qtrue;
 		}
@@ -1882,7 +1882,7 @@ ClientUserInfoChanged
 Called from ClientConnect when the player first connects and
 directly by the server system when the player updates a userinfo variable.
 
-The game can override any of the settings and call trap_SetUserinfo
+The game can override any of the settings and call trap->SetUserinfo
 if desired.
 ============
 */
@@ -1929,15 +1929,15 @@ static const char *userinfoValidateExtra[USERINFO_VALIDATION_MAX] = {
 };
 
 void Svcmd_ToggleUserinfoValidation_f( void ) {
-	if ( trap_Argc() == 1 ) {
+	if ( trap->Argc() == 1 ) {
 		int i=0;
 		for ( i=0; i<numUserinfoFields; i++ ) {
-			if ( (g_userinfoValidate.integer & (1<<i)) )	G_Printf( "%2d [X] %s\n", i, userinfoFields[i].fieldClean );
-			else											G_Printf( "%2d [ ] %s\n", i, userinfoFields[i].fieldClean );
+			if ( (g_userinfoValidate.integer & (1<<i)) )	trap->Print( "%2d [X] %s\n", i, userinfoFields[i].fieldClean );
+			else											trap->Print( "%2d [ ] %s\n", i, userinfoFields[i].fieldClean );
 		}
 		for ( ; i<numUserinfoFields+USERINFO_VALIDATION_MAX; i++ ) {
-			if ( (g_userinfoValidate.integer & (1<<i)) )	G_Printf( "%2d [X] %s\n", i, userinfoValidateExtra[i-numUserinfoFields] );
-			else											G_Printf( "%2d [ ] %s\n", i, userinfoValidateExtra[i-numUserinfoFields] );
+			if ( (g_userinfoValidate.integer & (1<<i)) )	trap->Print( "%2d [X] %s\n", i, userinfoValidateExtra[i-numUserinfoFields] );
+			else											trap->Print( "%2d [ ] %s\n", i, userinfoValidateExtra[i-numUserinfoFields] );
 		}
 		return;
 	}
@@ -1945,7 +1945,7 @@ void Svcmd_ToggleUserinfoValidation_f( void ) {
 		char arg[8]={0};
 		int index;
 
-		trap_Argv( 1, arg, sizeof( arg ) );
+		trap->Argv( 1, arg, sizeof( arg ) );
 		index = atoi( arg );
 
 		if ( index < 0 || index > numUserinfoFields+USERINFO_VALIDATION_MAX-1 ) {
@@ -1953,8 +1953,8 @@ void Svcmd_ToggleUserinfoValidation_f( void ) {
 			return;
 		}
 
-		trap_Cvar_Set( "g_userinfoValidate", va( "%i", (1<<index) ^ g_userinfoValidate.integer ) );
-		trap_Cvar_Update( &g_userinfoValidate );
+		trap->Cvar_Set( "g_userinfoValidate", va( "%i", (1<<index) ^ g_userinfoValidate.integer ) );
+		trap->Cvar_Update( &g_userinfoValidate );
 
 		if ( index < numUserinfoFields )	Com_Printf( "%s %s\n", userinfoFields[index].fieldClean,				((g_userinfoValidate.integer & (1<<index)) ? "Validated" : "Ignored") );
 		else								Com_Printf( "%s %s\n", userinfoValidateExtra[index-numUserinfoFields],	((g_userinfoValidate.integer & (1<<index)) ? "Validated" : "Ignored") );
@@ -2043,14 +2043,14 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 				className[MAX_QPATH]={0},		color1[MAX_INFO_STRING]={0},	color2[MAX_INFO_STRING]={0};
 	qboolean	modelChanged = qfalse, female = qfalse;
 
-	trap_GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
+	trap->GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
 
 	// check for malformed or illegal info strings
 	s = G_ValidateUserinfo( userinfo );
 	if ( s && *s )
 	{
 		G_SecurityLogPrintf( "Client %d (%s) failed userinfo validation: %s [IP: %s]\n", clientNum, ent->client->pers.netname, s, client->sess.IP );
-		trap_DropClient( clientNum, va( "Failed userinfo validation: %s", s ) );
+		trap->DropClient( clientNum, va( "Failed userinfo validation: %s", s ) );
 		return qfalse;
 	}
 
@@ -2078,15 +2078,15 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		{
 			if ( client->pers.netnameTime > level.time  )
 			{
-				trap_SendServerCommand( clientNum, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NONAMECHANGE")) );
+				trap->SendServerCommand( clientNum, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NONAMECHANGE")) );
 
 				Info_SetValueForKey( userinfo, "name", oldname );
-				trap_SetUserinfo( clientNum, userinfo );			
+				trap->SetUserinfo( clientNum, userinfo );			
 				Q_strncpyz( client->pers.netname, oldname, sizeof( client->pers.netname ) );
 			}
 			else
 			{				
-				trap_SendServerCommand( -1, va( "print \"%s"S_COLOR_WHITE" %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
+				trap->SendServerCommand( -1, va( "print \"%s"S_COLOR_WHITE" %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
 				client->pers.netnameTime = level.time + 5000;
 			}
 		}
@@ -2284,8 +2284,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		Q_strcat( buf, sizeof( buf ), va( "sdt\\%i\\", className ) );
 	}
 
-	trap_GetConfigstring( CS_PLAYERS+clientNum, oldClientinfo, sizeof( oldClientinfo ) );
-	trap_SetConfigstring( CS_PLAYERS+clientNum, buf );
+	trap->GetConfigstring( CS_PLAYERS+clientNum, oldClientinfo, sizeof( oldClientinfo ) );
+	trap->SetConfigstring( CS_PLAYERS+clientNum, buf );
 
 	if ( modelChanged ) //only going to be true for allowable server-side custom skeleton cases
 	{ //update the server g2 instance if appropriate
@@ -2359,7 +2359,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	ent->s.number = clientNum;
 	ent->classname = "connecting";
 
-	trap_GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
+	trap->GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
 
 	value = Info_ValueForKey( userinfo, "ja_guid" );
 	if( value[0] )
@@ -2451,7 +2451,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	{ //if this is the first time then auto-assign a desired siege team and show briefing for that team
 		client->sess.siegeDesiredTeam = 0;//PickTeam(ent->s.number);
 		/*
-		trap_SendServerCommand(ent->s.number, va("sb %i", client->sess.siegeDesiredTeam));
+		trap->SendServerCommand(ent->s.number, va("sb %i", client->sess.siegeDesiredTeam));
 		*/
 		//don't just show it - they'll see it if they switch to a team on purpose.
 	}
@@ -2497,7 +2497,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 
 	// don't do the "xxx connected" messages if they were caried over from previous level
 	if ( firstTime ) {
-		trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLCONNECT")) );
+		trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLCONNECT")) );
 	}
 
 	if ( level.gametype >= GT_TEAM &&
@@ -2515,7 +2515,7 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	// for statistics
 //	client->areabits = areabits;
 //	if ( !client->areabits )
-//		client->areabits = G_Alloc( (trap_AAS_PointReachabilityAreaIndex( NULL ) + 7) / 8 );
+//		client->areabits = G_Alloc( (trap->AAS_PointReachabilityAreaIndex( NULL ) + 7) / 8 );
 
 	return NULL;
 }
@@ -2556,7 +2556,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 
 			//SetTeam(ent, "");
 			ent->client->sess.sessionTeam = PickTeam(-1);
-			trap_GetUserinfo(clientNum, userinfo, MAX_INFO_STRING);
+			trap->GetUserinfo(clientNum, userinfo, MAX_INFO_STRING);
 
 			if (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
 			{
@@ -2574,7 +2574,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 
 			Info_SetValueForKey( userinfo, "team", team );
 
-			trap_SetUserinfo( clientNum, userinfo );
+			trap->SetUserinfo( clientNum, userinfo );
 
 			ent->client->ps.persistant[ PERS_TEAM ] = ent->client->sess.sessionTeam;
 
@@ -2592,7 +2592,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	client = level.clients + clientNum;
 
 	if ( ent->r.linked ) {
-		trap_UnlinkEntity( ent );
+		trap->UnlinkEntity( (sharedEntity_t *)ent );
 	}
 	G_InitGentity( ent );
 	ent->touch = 0;
@@ -2650,7 +2650,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	WP_SaberInitBladeData( ent );
 
 	// First time model setup for that player.
-	trap_GetUserinfo( clientNum, userinfo, sizeof(userinfo) );
+	trap->GetUserinfo( clientNum, userinfo, sizeof(userinfo) );
 	modelname = Info_ValueForKey (userinfo, "model");
 	SetupGameGhoul2Model(ent, modelname, NULL);
 
@@ -2674,7 +2674,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 		tent->s.clientNum = ent->s.clientNum;
 
 		if ( level.gametype != GT_DUEL || level.gametype == GT_POWERDUEL ) {
-			trap_SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLENTER")) );
+			trap->SendServerCommand( -1, va("print \"%s" S_COLOR_WHITE " %s\n\"", client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLENTER")) );
 		}
 	}
 	G_LogPrintf( "ClientBegin: %i\n", clientNum );
@@ -2784,9 +2784,9 @@ void G_UpdateClientAnims(gentity_t *self, float animSpeedScale)
 
 	if (self->client->ps.saberLockFrame)
 	{
-		trap_G2API_SetBoneAnim(self->ghoul2, 0, "model_root", self->client->ps.saberLockFrame, self->client->ps.saberLockFrame+1, BONE_ANIM_OVERRIDE_FREEZE|BONE_ANIM_BLEND, animSpeedScale, level.time, -1, 150);
-		trap_G2API_SetBoneAnim(self->ghoul2, 0, "lower_lumbar", self->client->ps.saberLockFrame, self->client->ps.saberLockFrame+1, BONE_ANIM_OVERRIDE_FREEZE|BONE_ANIM_BLEND, animSpeedScale, level.time, -1, 150);
-		trap_G2API_SetBoneAnim(self->ghoul2, 0, "Motion", self->client->ps.saberLockFrame, self->client->ps.saberLockFrame+1, BONE_ANIM_OVERRIDE_FREEZE|BONE_ANIM_BLEND, animSpeedScale, level.time, -1, 150);
+		trap->G2API_SetBoneAnim(self->ghoul2, 0, "model_root", self->client->ps.saberLockFrame, self->client->ps.saberLockFrame+1, BONE_ANIM_OVERRIDE_FREEZE|BONE_ANIM_BLEND, animSpeedScale, level.time, -1, 150);
+		trap->G2API_SetBoneAnim(self->ghoul2, 0, "lower_lumbar", self->client->ps.saberLockFrame, self->client->ps.saberLockFrame+1, BONE_ANIM_OVERRIDE_FREEZE|BONE_ANIM_BLEND, animSpeedScale, level.time, -1, 150);
+		trap->G2API_SetBoneAnim(self->ghoul2, 0, "Motion", self->client->ps.saberLockFrame, self->client->ps.saberLockFrame+1, BONE_ANIM_OVERRIDE_FREEZE|BONE_ANIM_BLEND, animSpeedScale, level.time, -1, 150);
 		return;
 	}
 
@@ -2824,7 +2824,7 @@ void G_UpdateClientAnims(gentity_t *self, float animSpeedScale)
 
 		aFlags |= BONE_ANIM_BLEND; //since client defaults to blend. Not sure if this will make much difference if any on server position, but it's here just for the sake of matching them.
 
-		trap_G2API_SetBoneAnim(self->ghoul2, 0, "model_root", firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
+		trap->G2API_SetBoneAnim(self->ghoul2, 0, "model_root", firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
 		self->client->legsAnimExecute = legsAnim;
 		self->client->legsLastFlip = self->client->ps.legsFlip;
 	}
@@ -2878,7 +2878,7 @@ tryTorso:
 			lastFrame = bgAllAnims[self->localAnimIndex].anims[f].firstFrame + bgAllAnims[self->localAnimIndex].anims[f].numFrames;
 		}
 
-		trap_G2API_SetBoneAnim(self->ghoul2, 0, "lower_lumbar", firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, /*firstFrame why was it this before?*/-1, 150);
+		trap->G2API_SetBoneAnim(self->ghoul2, 0, "lower_lumbar", firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, /*firstFrame why was it this before?*/-1, 150);
 
 		self->client->torsoAnimExecute = torsoAnim;
 		self->client->torsoLastFlip = self->client->ps.torsoFlip;
@@ -2889,7 +2889,7 @@ tryTorso:
 	if (setTorso &&
 		self->localAnimIndex <= 1)
 	{ //only set the motion bone for humanoids.
-		trap_G2API_SetBoneAnim(self->ghoul2, 0, "Motion", firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
+		trap->G2API_SetBoneAnim(self->ghoul2, 0, "Motion", firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
 	}
 
 #if 0 //disabled for now
@@ -2914,7 +2914,7 @@ tryTorso:
 			armAnimSpeed = 50.0f / armAnim->frameLerp;
 			armFlags = (BONE_ANIM_OVERRIDE_LOOP|BONE_ANIM_BLEND);
 
-			trap_G2API_SetBoneAnim(self->ghoul2, 0, brokenBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, level.time, -1, 150);
+			trap->G2API_SetBoneAnim(self->ghoul2, 0, brokenBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, level.time, -1, 150);
 		}
 		else if (self->localAnimIndex <= 1 && self->client->ps.brokenLimbs &&
 			(self->client->ps.brokenLimbs & (1 << BROKENLIMB_RARM)))
@@ -2950,11 +2950,11 @@ tryTorso:
 					armAnimSpeed = 50.0f / armAnim->frameLerp;
 					armFlags = (BONE_ANIM_OVERRIDE_LOOP|BONE_ANIM_BLEND);
 
-					trap_G2API_SetBoneAnim(self->ghoul2, 0, brokenBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, level.time, -1, 150);
+					trap->G2API_SetBoneAnim(self->ghoul2, 0, brokenBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, level.time, -1, 150);
 				}
 				else
 				{ //we want to keep the broken bone updated for some cases
-					trap_G2API_SetBoneAnim(self->ghoul2, 0, brokenBone, firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
+					trap->G2API_SetBoneAnim(self->ghoul2, 0, brokenBone, firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
 				}
 
 				if (self->client->ps.torsoAnim != BOTH_MELEE1 &&
@@ -2968,17 +2968,17 @@ tryTorso:
 					armAnimSpeed = 50.0f / armAnim->frameLerp;
 					armFlags = (BONE_ANIM_OVERRIDE_LOOP|BONE_ANIM_BLEND);
 
-					trap_G2API_SetBoneAnim(self->ghoul2, 0, supportBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, level.time, -1, 150);
+					trap->G2API_SetBoneAnim(self->ghoul2, 0, supportBone, armFirstFrame, armLastFrame, armFlags, armAnimSpeed, level.time, -1, 150);
 				}
 				else
 				{ //we want to keep the support bone updated for some cases
-					trap_G2API_SetBoneAnim(self->ghoul2, 0, supportBone, firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
+					trap->G2API_SetBoneAnim(self->ghoul2, 0, supportBone, firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
 				}
 			}
 			else
 			{ //otherwise, keep it set to the same as the torso
-				trap_G2API_SetBoneAnim(self->ghoul2, 0, brokenBone, firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
-				trap_G2API_SetBoneAnim(self->ghoul2, 0, supportBone, firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
+				trap->G2API_SetBoneAnim(self->ghoul2, 0, brokenBone, firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
+				trap->G2API_SetBoneAnim(self->ghoul2, 0, supportBone, firstFrame, lastFrame, aFlags, lAnimSpeedScale, level.time, -1, 150);
 			}
 		}
 		else if (self->client->brokenLimbs)
@@ -2999,17 +2999,17 @@ tryTorso:
 				broken |= (1<<BROKENLIMB_RARM);
 
 				//want to remove the support bone too then
-				trap_G2API_SetBoneAnim(self->ghoul2, 0, "lhumerus", 0, 1, 0, 0, level.time, -1, 0);
-				trap_G2API_RemoveBone(self->ghoul2, "lhumerus", 0);
+				trap->G2API_SetBoneAnim(self->ghoul2, 0, "lhumerus", 0, 1, 0, 0, level.time, -1, 0);
+				trap->G2API_RemoveBone(self->ghoul2, "lhumerus", 0);
 			}
 
 			assert(brokenBone);
 
 			//Set the flags and stuff to 0, so that the remove will succeed
-			trap_G2API_SetBoneAnim(self->ghoul2, 0, brokenBone, 0, 1, 0, 0, level.time, -1, 0);
+			trap->G2API_SetBoneAnim(self->ghoul2, 0, brokenBone, 0, 1, 0, 0, level.time, -1, 0);
 
 			//Now remove it
-			trap_G2API_RemoveBone(self->ghoul2, brokenBone, 0);
+			trap->G2API_RemoveBone(self->ghoul2, brokenBone, 0);
 			self->client->brokenLimbs &= ~broken;
 		}
 	}
@@ -3045,7 +3045,7 @@ void ClientSpawn(gentity_t *ent) {
 	client = ent->client;
 
 	//first we want the userinfo so we can see if we should update this client's saber -rww
-	trap_GetUserinfo( index, userinfo, sizeof( userinfo ) );
+	trap->GetUserinfo( index, userinfo, sizeof( userinfo ) );
 
 	for ( i=0; i<MAX_SABERS; i++ )
 	{
@@ -3079,7 +3079,7 @@ void ClientSpawn(gentity_t *ent) {
 			if ( Q_stricmp( value, saber ) )
 			{// they don't match up, force the user info
 				Info_SetValueForKey( userinfo, key, saber );
-				trap_SetUserinfo( ent->s.number, userinfo );
+				trap->SetUserinfo( ent->s.number, userinfo );
 			}
 		}
 
@@ -3424,7 +3424,7 @@ void ClientSpawn(gentity_t *ent) {
 	}
 	else
 	{//jediVmerc is incompatible with this gametype, turn it off!
-		trap_Cvar_Set( "g_jediVmerc", "0" );
+		trap->Cvar_Set( "g_jediVmerc", "0" );
 		if (level.gametype == GT_HOLOCRON)
 		{
 			//always get free saber level 1 in holocron
@@ -3688,14 +3688,14 @@ void ClientSpawn(gentity_t *ent) {
 	// the respawned flag will be cleared after the attack and jump keys come up
 	client->ps.pm_flags |= PMF_RESPAWNED;
 
-	trap_GetUsercmd( client - level.clients, &ent->client->pers.cmd );
+	trap->GetUsercmd( client - level.clients, &ent->client->pers.cmd );
 	SetClientViewAngle( ent, spawn_angles );
 
 	if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
 
 	} else {
 		G_KillBox( ent );
-		trap_LinkEntity (ent);
+		trap->LinkEntity ((sharedEntity_t *)ent);
 
 		// force the base weapon up
 		//client->ps.weapon = WP_BRYAR_PISTOL;
@@ -3788,7 +3788,7 @@ void ClientSpawn(gentity_t *ent) {
 	if ( ent->client->sess.sessionTeam != TEAM_SPECTATOR ) {
 		BG_PlayerStateToEntityState( &client->ps, &ent->s, qtrue );
 		VectorCopy( ent->client->ps.origin, ent->r.currentOrigin );
-		trap_LinkEntity( ent );
+		trap->LinkEntity( (sharedEntity_t *)ent );
 	}
 
 	if (g_spawnInvulnerability.integer)
@@ -3805,8 +3805,8 @@ void ClientSpawn(gentity_t *ent) {
 	BG_PlayerStateToEntityState( &client->ps, &ent->s, qtrue );
 
 	//rww - make sure client has a valid icarus instance
-	trap_ICARUS_FreeEnt( ent );
-	trap_ICARUS_InitEnt( ent );
+	trap->ICARUS_FreeEnt( (sharedEntity_t *)ent );
+	trap->ICARUS_InitEnt( (sharedEntity_t *)ent );
 }
 
 
@@ -3818,7 +3818,7 @@ Called when a player drops from the server.
 Will not be called between levels.
 
 This should NOT be called directly by any game logic,
-call trap_DropClient(), which will call this and do
+call trap->DropClient(), which will call this and do
 server system housekeeping.
 ============
 */
@@ -3829,11 +3829,11 @@ void G_ClearVote( gentity_t *ent ) {
 		if ( ent->client->mGameFlags & PSG_VOTED ) {
 			if ( ent->client->pers.vote == 1 ) {
 				level.voteYes--;
-				trap_SetConfigstring( CS_VOTE_YES, va( "%i", level.voteYes ) );
+				trap->SetConfigstring( CS_VOTE_YES, va( "%i", level.voteYes ) );
 			}
 			else if ( ent->client->pers.vote == 2 ) {
 				level.voteNo--;
-				trap_SetConfigstring( CS_VOTE_NO, va( "%i", level.voteNo ) );
+				trap->SetConfigstring( CS_VOTE_NO, va( "%i", level.voteNo ) );
 			}
 		}
 		ent->client->mGameFlags &= ~(PSG_VOTED);
@@ -3851,11 +3851,11 @@ void G_ClearTeamVote( gentity_t *ent, int team ) {
 		if ( ent->client->mGameFlags & PSG_TEAMVOTED ) {
 			if ( ent->client->pers.teamvote == 1 ) {
 				level.teamVoteYes[voteteam]--;
-				trap_SetConfigstring( CS_TEAMVOTE_YES, va( "%i", level.teamVoteYes[voteteam] ) );
+				trap->SetConfigstring( CS_TEAMVOTE_YES, va( "%i", level.teamVoteYes[voteteam] ) );
 			}
 			else if ( ent->client->pers.teamvote == 2 ) {
 				level.teamVoteNo[voteteam]--;
-				trap_SetConfigstring( CS_TEAMVOTE_NO, va( "%i", level.teamVoteNo[voteteam] ) );
+				trap->SetConfigstring( CS_TEAMVOTE_NO, va( "%i", level.teamVoteNo[voteteam] ) );
 			}
 		}
 		ent->client->mGameFlags &= ~(PSG_TEAMVOTED);
@@ -3954,16 +3954,16 @@ void ClientDisconnect( int clientNum ) {
 		}
 	}
 
-	if (ent->ghoul2 && trap_G2_HaveWeGhoul2Models(ent->ghoul2))
+	if (ent->ghoul2 && trap->G2API_HaveWeGhoul2Models(ent->ghoul2))
 	{
-		trap_G2API_CleanGhoul2Models(&ent->ghoul2);
+		trap->G2API_CleanGhoul2Models(&ent->ghoul2);
 	}
 	i = 0;
 	while (i < MAX_SABERS)
 	{
-		if (ent->client->weaponGhoul2[i] && trap_G2_HaveWeGhoul2Models(ent->client->weaponGhoul2[i]))
+		if (ent->client->weaponGhoul2[i] && trap->G2API_HaveWeGhoul2Models(ent->client->weaponGhoul2[i]))
 		{
-			trap_G2API_CleanGhoul2Models(&ent->client->weaponGhoul2[i]);
+			trap->G2API_CleanGhoul2Models(&ent->client->weaponGhoul2[i]);
 		}
 		i++;
 	}
@@ -3971,7 +3971,7 @@ void ClientDisconnect( int clientNum ) {
 	G_ClearVote( ent );
 	G_ClearTeamVote( ent, ent->client->sess.sessionTeam );
 
-	trap_UnlinkEntity (ent);
+	trap->UnlinkEntity ((sharedEntity_t *)ent);
 	ent->s.modelindex = 0;
 	ent->inuse = qfalse;
 	ent->classname = "disconnected";
@@ -3990,7 +3990,7 @@ void ClientDisconnect( int clientNum ) {
 		}
 	}
 
-	trap_SetConfigstring( CS_PLAYERS + clientNum, "");
+	trap->SetConfigstring( CS_PLAYERS + clientNum, "");
 
 	CalculateRanks();
 

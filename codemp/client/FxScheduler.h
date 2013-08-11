@@ -479,7 +479,7 @@ public:
 
 	// kef -- called for a 2D effect instead of addRefToScene
 	bool	Add2DEffect(float x, float y, float w, float h, vec4_t color, qhandle_t shaderHandle);
-	// kef -- called once per cgame frame AFTER cgi.RenderScene
+	// kef -- called once per cgame frame AFTER trap->RenderScene
 	void	Draw2DEffects(float screenXScale, float screenYScale);
 
 	int		NumScheduledFx()	{ return mFxSchedule.size();	}

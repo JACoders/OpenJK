@@ -9,7 +9,7 @@ set(MPUIIncludeDirectories "${MPDir}")
 if(WIN32)
 	set(MPUILibraries "odbc32" "odbccp32") # what are these even?
 endif(WIN32)
-set(MPUIDefines ${MPSharedDefines} "UI_EXPORTS" "MISSIONPACK" "_USRDLL")
+set(MPUIDefines ${MPSharedDefines} "_UI" "_USRDLL")
 
 set(MPUIGameFiles
 	"${MPDir}/game/bg_misc.c"
@@ -20,7 +20,6 @@ set(MPUIGameFiles
 	"${MPDir}/game/bg_local.h"
 	"${MPDir}/game/bg_public.h"
 	"${MPDir}/game/bg_saga.h"
-	"${MPDir}/game/bg_strap.h"
 	"${MPDir}/game/bg_weapons.h"
 	"${MPDir}/game/surfaceflags.h"
 	)

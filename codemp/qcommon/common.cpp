@@ -57,6 +57,10 @@ cvar_t  *com_homepath;
 
 cvar_t	*com_RMG;
 
+#ifdef _DEBUG
+cvar_t	*vm_legacy;
+#endif
+
 // com_speeds times
 int		time_game;
 int		time_frontend;		// renderer frontend time
@@ -1244,6 +1248,14 @@ void Com_Init( char *commandLine ) {
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
 
+	#if defined(_WIN32) && defined(_DEBUG)
+		com_noErrorInterrupt = Cvar_Get( "com_noErrorInterrupt", "0", 0 );
+	#endif
+
+#ifdef _DEBUG
+		vm_legacy = Cvar_Get( "vm_legacy", "0", 0 );
+#endif
+
 		if ( com_dedicated->integer ) {
 			if ( !com_viewlog->integer ) {
 				Cvar_Set( "viewlog", "1" );
@@ -1266,7 +1278,6 @@ void Com_Init( char *commandLine ) {
 
 		Sys_Init();
 		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
-		VM_Init();
 		SV_Init();
 
 		com_dedicated->modified = qfalse;
@@ -1606,7 +1617,8 @@ try
 
 }//try
 	catch (const char* reason) {
-		VM_FreeRemaining();
+		//OJKFIXME: Add delayed free again
+	//	VM_FreeRemaining();
 		Com_Printf (reason);
 		return;			// an ERR_DROP was thrown
 	}

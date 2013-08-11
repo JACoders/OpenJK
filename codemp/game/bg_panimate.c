@@ -1,18 +1,18 @@
 // BG_PAnimate.c
+// game and cgame, NOT ui
 
 #include "qcommon/q_shared.h"
 #include "bg_public.h"
-#include "bg_strap.h"
 #include "bg_local.h"
 #include "anims.h"
 #include "cgame/animtable.h"
-#ifdef QAGAME
-#include "g_local.h"
-#endif
 
-#ifdef CGAME
-extern sfxHandle_t trap_S_RegisterSound( const char *sample);
-extern int trap_FX_RegisterEffect( const char *file);
+#ifdef _GAME
+	#include "g_local.h"
+#elif _CGAME
+	#include "cgame/cg_local.h"
+#elif _UI
+	#include "ui/ui_local.h"
 #endif
 
 extern saberInfo_t *BG_MySaber( int clientNum, int saberNum );
@@ -1662,34 +1662,6 @@ void BG_FlipPart(playerState_t *ps, int part)
 qboolean	BGPAFtextLoaded = qfalse;
 animation_t	bgHumanoidAnimations[MAX_TOTALANIMATIONS]; //humanoid animations are the only ones that are statically allocated.
 
-//#define CONVENIENT_ANIMATION_FILE_DEBUG_THING
-
-#ifdef CONVENIENT_ANIMATION_FILE_DEBUG_THING
-void SpewDebugStuffToFile()
-{
-	fileHandle_t f;
-	int i = 0;
-
-	trap_FS_FOpenFile("file_of_debug_stuff_MP.txt", &f, FS_WRITE);
-
-	if (!f)
-	{
-		return;
-	}
-
-	BGPAFtext[0] = 0;
-
-	while (i < MAX_ANIMATIONS)
-	{
-		strcat(BGPAFtext, va("%i %i\n", i, bgHumanoidAnimations[i].frameLerp));
-		i++;
-	}
-
-	trap_FS_Write(BGPAFtext, strlen(BGPAFtext), f);
-	trap_FS_FCloseFile(f);
-}
-#endif
-
 bgLoadedAnim_t bgAllAnims[MAX_ANIM_FILES];
 int bgNumAllAnims = 2; //start off at 2, because 0 will always be assigned to humanoid, and 1 will always be rockettrooper
 
@@ -1744,8 +1716,7 @@ void BG_AnimsetFree(animation_t *animset)
 	*/
 }
 
-#ifndef QAGAME //none of this is actually needed serverside. Could just be moved to cgame code but it's here since it
-			   //used to tie in a lot with the anim loading stuff.
+#ifdef _CGAME //none of this is actually needed serverside. Could just be moved to cgame code but it's here since it used to tie in a lot with the anim loading stuff.
 stringID_table_t animEventTypeTable[MAX_ANIM_EVENTS+1] = 
 {
 	ENUM2STRING(AEV_SOUND),			//# animID AEV_SOUND framenum soundpath randomlow randomhi chancetoplay
@@ -1961,7 +1932,7 @@ void ParseAnimationEvtBlock(const char *aeb_filename, animevent_t *animEvents, a
 					}
 					else
 					{
-						animEvents[curAnimEvent].eventData[num] = trap_S_RegisterSound( va( stringData, n ) );
+						animEvents[curAnimEvent].eventData[num] = trap->S_RegisterSound( va( stringData, n ) );
 					}
 				}
 				animEvents[curAnimEvent].eventData[AED_SOUND_NUMRANDOMSNDS] = num - 1;
@@ -1974,7 +1945,7 @@ void ParseAnimationEvtBlock(const char *aeb_filename, animevent_t *animEvents, a
 				}
 				else
 				{
-					animEvents[curAnimEvent].eventData[AED_SOUNDINDEX_START] = trap_S_RegisterSound( stringData );
+					animEvents[curAnimEvent].eventData[AED_SOUNDINDEX_START] = trap->S_RegisterSound( stringData );
 				}
 #ifndef FINAL_BUILD
 				if ( !animEvents[curAnimEvent].eventData[AED_SOUNDINDEX_START] &&
@@ -2066,7 +2037,7 @@ void ParseAnimationEvtBlock(const char *aeb_filename, animevent_t *animEvents, a
 			{
 				break;
 			}
-			animEvents[curAnimEvent].eventData[AED_EFFECTINDEX] = trap_FX_RegisterEffect( token );
+			animEvents[curAnimEvent].eventData[AED_EFFECTINDEX] = trap->FX_RegisterEffect( token );
 			//get bolt index
 			token = COM_Parse( text_p );
 			if ( !token ) 
@@ -2082,7 +2053,7 @@ void ParseAnimationEvtBlock(const char *aeb_filename, animevent_t *animEvents, a
 				strcpy(animEvents[curAnimEvent].stringData, token);
 			}
 			//NOTE: this string will later be used to add a bolt and store the index, as below:
-			//animEvent->eventData[AED_BOLTINDEX] = gi.G2API_AddBolt( &cent->gent->ghoul2[cent->gent->playerModel], animEvent->stringData );
+			//animEvent->eventData[AED_BOLTINDEX] = trap->G2API_AddBolt( &cent->gent->ghoul2[cent->gent->playerModel], animEvent->stringData );
 			//get probability
 			token = COM_Parse( text_p );
 			if ( !token ) 
@@ -2237,14 +2208,14 @@ int BG_ParseAnimationEvtFile( const char *as_filename, int animFileIndex, int ev
 	}
 
 	// load the file
-	len = trap_FS_FOpenFile( sfilename, &f, FS_READ );
+	len = trap->FS_Open( sfilename, &f, FS_READ );
 	if ( len <= 0 ) 
 	{//no file
 		goto fin;
 	}
 	if ( len >= sizeof( text ) - 1 ) 
 	{
-		trap_FS_FCloseFile(f);
+		trap->FS_Close(f);
 #ifndef FINAL_BUILD
 		Com_Error(ERR_DROP, "File %s too long\n", sfilename );
 #else
@@ -2253,9 +2224,9 @@ int BG_ParseAnimationEvtFile( const char *as_filename, int animFileIndex, int ev
 		goto fin;
 	}
 
-	trap_FS_Read( text, len, f );
+	trap->FS_Read( text, len, f );
 	text[len] = 0;
-	trap_FS_FCloseFile( f );
+	trap->FS_Close( f );
 
 	// parse the text
 	text_p = text;
@@ -2398,7 +2369,7 @@ int BG_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 	// load the file
 	if (!BGPAFtextLoaded || !isHumanoid)
 	{ //rww - We are always using the same animation config now. So only load it once.
-		len = trap_FS_FOpenFile( filename, &f, FS_READ );
+		len = trap->FS_Open( filename, &f, FS_READ );
 		if ( (len <= 0) || (len >= sizeof( BGPAFtext ) - 1) ) 
 		{
 			if (dynAlloc)
@@ -2412,9 +2383,10 @@ int BG_ParseAnimationFile(const char *filename, animation_t *animset, qboolean i
 			return -1;
 		}
 
-		trap_FS_Read( BGPAFtext, len, f );
+		trap->FS_Read( BGPAFtext, len, f );
+
 		BGPAFtext[len] = 0;
-		trap_FS_FCloseFile( f );
+		trap->FS_Close( f );
 	}
 	else
 	{
@@ -2597,7 +2569,7 @@ static void BG_StartLegsAnim( playerState_t *ps, int anim )
 	{
 		BG_FlipPart(ps, SETANIM_LEGS);
 	}
-#ifdef QAGAME
+#ifdef _GAME
 	else if (g_entities[ps->clientNum].s.legsAnim == anim)
 	{ //toggled anim to one anim then back to the one we were at previously in
 		//one frame, indicating that anim should be restarted.
@@ -2664,7 +2636,7 @@ void BG_StartTorsoAnim( playerState_t *ps, int anim )
 	{
 		BG_FlipPart(ps, SETANIM_TORSO);
 	}
-#ifdef QAGAME
+#ifdef _GAME
 	else if (g_entities[ps->clientNum].s.torsoAnim == anim)
 	{ //toggled anim to one anim then back to the one we were at previously in
 		//one frame, indicating that anim should be restarted.
