@@ -1019,6 +1019,7 @@ void Com_Init( char *commandLine ) {
 		Com_StartupVariable( NULL );
 
 #ifndef __NO_JK2
+		Com_StartupVariable( "com_jk2" );
 		com_jk2 = Cvar_Get( "com_jk2", "0", CVAR_INIT );
 #endif
 
