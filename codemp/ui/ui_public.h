@@ -362,6 +362,7 @@ typedef struct uiExport_s {
 	void		(*SetActiveMenu)		( uiMenuCommand_t menu );
 	qboolean	(*ConsoleCommand)		( int realTime );
 	void		(*DrawConnectScreen)	( qboolean overlay );
+	void		(*MenuReset)			( void );
 } uiExport_t;
 
 //linking of ui library

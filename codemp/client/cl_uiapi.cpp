@@ -36,11 +36,13 @@ void UIVM_Init( qboolean inGameLoad ) {
 void UIVM_Shutdown( void ) {
 	if ( uivm->isLegacy ) {
 		VM_Call( uivm, UI_SHUTDOWN );
+		VM_Call( uivm, UI_MENU_RESET );
 		return;
 	}
 	currentVM = uivm;
 
 	uie->Shutdown();
+	uie->MenuReset();
 }
 
 void UIVM_KeyEvent( int key, qboolean down ) {

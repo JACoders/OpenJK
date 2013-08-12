@@ -1055,7 +1055,6 @@ void UI_CleanupGhoul2(void);
 void _UI_Shutdown( void ) {
 	trap->LAN_SaveCachedServers();
 	UI_CleanupGhoul2();
-	Menu_Reset();
 }
 
 char *defaultMenu = NULL;
@@ -10994,6 +10993,7 @@ Q_EXPORT uiExport_t* QDECL GetModuleAPI( int apiVersion, uiImport_t *import )
 	uie.SetActiveMenu		= _UI_SetActiveMenu;
 	uie.ConsoleCommand		= UI_ConsoleCommand;
 	uie.DrawConnectScreen	= UI_DrawConnectScreen;
+	uie.MenuReset			= Menu_Reset;
 
 	return &uie;
 }
@@ -11038,6 +11038,7 @@ Q_EXPORT intptr_t vmMain( int command, int arg0, int arg1, int arg2, int arg3, i
 		return 0;
 
 	case UI_MENU_RESET:
+		Menu_Reset();
 		return 0;
 	}
 

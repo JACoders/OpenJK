@@ -492,7 +492,7 @@ int Menu_Count();
 void Menu_New(int handle);
 void Menu_PaintAll();
 menuDef_t *Menus_ActivateByName(const char *p);
-void Menu_Reset();
+void Menu_Reset(void);
 qboolean Menus_AnyFullScreenVisible();
 void  Menus_Activate(menuDef_t *menu);
 itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *p);

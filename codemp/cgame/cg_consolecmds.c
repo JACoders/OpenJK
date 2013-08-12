@@ -93,7 +93,7 @@ static void CG_ScoresUp_f( void ) {
 }
 
 extern menuDef_t *menuScoreboard;
-void Menu_Reset();			// FIXME: add to right include file
+void Menu_Reset(void);			// FIXME: add to right include file
 
 static void CG_scrollScoresDown_f( void) {
 	if (menuScoreboard && cg.scoreBoardShowing) {
