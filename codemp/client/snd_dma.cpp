@@ -2825,10 +2825,6 @@ void S_GetSoundtime(void)
 void S_Update_(void) {
 	unsigned        endtime;
 	int				samps;
-	channel_t		*ch;
-	int i,j;
-	int			source;
-	float		pos[3];
 
 	if ( !s_soundStarted || s_soundMuted ) {
 		return;
