@@ -1097,10 +1097,14 @@ void Com_Init( char *commandLine ) {
 		if(com_jk2 && com_jk2->integer)
 		{
 			JK2SP_Init();
+			Com_Printf("Running Jedi Outcast Mode\n");
 		}
 		else
 #endif
-		SE_Init();	// Initialize StringEd
+		{
+			SE_Init();	// Initialize StringEd
+			Com_Printf("Running Jedi Academy Mode\n");
+		}
 	
 		Sys_Init();	// this also detects CPU type, so I can now do this CPU check below...
 
