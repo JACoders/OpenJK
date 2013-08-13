@@ -2212,7 +2212,7 @@ CL_ShutdownRef
 ============
 */
 void CL_ShutdownRef( void ) {
-	if ( !re->Shutdown ) {
+	if ( !re || !re->Shutdown ) {
 		return;
 	}
 	re->Shutdown( qtrue );
