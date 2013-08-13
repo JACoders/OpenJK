@@ -279,6 +279,7 @@ vmCvar_t	cg_drawGun;
 vmCvar_t	cg_autoswitch;
 vmCvar_t	cg_simpleItems;
 vmCvar_t	cg_fov;
+vmCvar_t	cg_fovAspectAdjust;
 vmCvar_t	cg_endcredits;
 vmCvar_t	cg_updatedDataPadForcePower1;
 vmCvar_t	cg_updatedDataPadForcePower2;
@@ -345,7 +346,8 @@ typedef struct {
 static cvarTable_t cvarTable[] = {
 	{ &cg_autoswitch, "cg_autoswitch", "1", CVAR_ARCHIVE },
 	{ &cg_drawGun, "cg_drawGun", "1", CVAR_ARCHIVE },
-	{ &cg_fov, "cg_fov", "80", CVAR_ARCHIVE },//must be 80
+	{ &cg_fov, "cg_fov", "80", CVAR_ARCHIVE },
+	{ &cg_fovAspectAdjust, "cg_fovAspectAdjust", "0", CVAR_ARCHIVE },
 	{ &cg_stereoSeparation, "cg_stereoSeparation", "0.4", CVAR_ARCHIVE  },
 	{ &cg_shadows, "cg_shadows", "1", CVAR_ARCHIVE  },
 	{ &cg_renderToTextureFX, "cg_renderToTextureFX", "1", CVAR_ARCHIVE  },
@@ -559,8 +561,6 @@ void CG_TargetCommand_f( void ) {
 	cgi_SendConsoleCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
 }
 
-
-
 void CG_Printf( const char *msg, ... ) {
 	va_list		argptr;
 	char		text[1024];
@@ -583,7 +583,6 @@ void CG_Error( const char *msg, ... ) {
 	cgi_Error( text );
 }
 
-
 /*
 ================
 CG_Argv
@@ -596,7 +595,6 @@ const char *CG_Argv( int arg ) {
 
 	return buffer;
 }
-
 
 //========================================================================
 
@@ -660,7 +658,6 @@ void CG_LoadingString( const char *s ) {
 	cgi_UpdateScreen();
 }
 
-
 static inline void CG_AS_Register(void)
 {
 	CG_LoadingString( "ambient sound sets" );
@@ -679,7 +676,6 @@ static inline void CG_AS_Register(void)
 
 	cgi_AS_ParseSets();
 }
-
 
 /*
 =================
