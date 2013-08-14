@@ -28,7 +28,7 @@ keyGlobals_t	kg;
 //	in the CFG files, they're also prepended with "KEYNAME_" when looking up StringEd references
 //
 keyname_t keynames[MAX_KEYS] =							
-{														
+{
 	{ 0x00, 0x00, NULL, A_NULL, false									},					  
 	{ 0x01, 0x01, "SHIFT", A_SHIFT, false 								},					       
 	{ 0x02, 0x02, "CTRL", A_CTRL, false   								},					       
@@ -359,6 +359,7 @@ keyname_t keynames[MAX_KEYS] =
 	{ 0x13e, 0x13e, "AUX30", A_AUX30, false								},
 	{ 0x13f, 0x13f, "AUX31", A_AUX31, false								}
 };
+static const size_t numKeynames = ARRAY_LEN( keynames );
 
 
 
@@ -1057,7 +1058,7 @@ void Key_Bind_f( void ) {
 
 	if ( c == 2 ) {
 		if ( kg.keys[b].binding )
-			Com_Printf( "\"%s\" = \"%s\"\n", Key_KeynumToString( b ), kg.keys[b].binding );
+			Com_Printf( S_COLOR_GREY"Bind "S_COLOR_WHITE"%s = \"%s\"\n", Key_KeynumToString( b ), kg.keys[b].binding );
 		else
 			Com_Printf( "\"%s\" is not bound\n", Key_KeynumToString( b ) );
 		return;
@@ -1115,8 +1116,10 @@ Key_KeynameCompletion
 ============
 */
 void Key_KeynameCompletion( void(*callback)( const char *s ) ) {
-	for ( int i=0; keynames[i].name != NULL; i++ )
-		callback( keynames[i].name );
+	for ( unsigned int i=0; i<numKeynames; i++ ) {
+		if ( keynames[i].name )
+			callback( keynames[i].name );
+	}
 }
 
 /*

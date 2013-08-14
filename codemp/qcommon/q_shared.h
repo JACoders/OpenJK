@@ -1350,8 +1350,10 @@ extern	vec4_t		colorLtBlue;
 extern	vec4_t		colorDkBlue;
 
 #define Q_COLOR_ESCAPE	'^'
+#define Q_COLOR_BITS 0xF // was 7
+
 // you MUST have the last bit on here about colour strings being less than 7 or taiwanese strings register as colour!!!!
-#define Q_IsColorString(p)	( p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE && *((p)+1) <= '7' && *((p)+1) >= '0' )
+#define Q_IsColorString(p)	( p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE && *((p)+1) <= '9' && *((p)+1) >= '0' )
 // Correct version of the above for Q_StripColor
 #define Q_IsColorStringExt(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) >= '0' && *((p)+1) <= '9') // ^[0-9]
 
@@ -1364,7 +1366,8 @@ extern	vec4_t		colorDkBlue;
 #define COLOR_CYAN		'5'
 #define COLOR_MAGENTA	'6'
 #define COLOR_WHITE		'7'
-#define ColorIndex(c)	( ( (c) - '0' ) & 7 )
+#define COLOR_GREY		'8'
+#define ColorIndex(c)	( ( (c) - '0' ) & Q_COLOR_BITS )
 
 #define S_COLOR_BLACK	"^0"
 #define S_COLOR_RED		"^1"
@@ -1374,8 +1377,9 @@ extern	vec4_t		colorDkBlue;
 #define S_COLOR_CYAN	"^5"
 #define S_COLOR_MAGENTA	"^6"
 #define S_COLOR_WHITE	"^7"
+#define S_COLOR_GREY	"^8"
 
-extern vec4_t	g_color_table[8];
+extern vec4_t g_color_table[Q_COLOR_BITS+1];
 
 #define	MAKERGB( v, r, g, b ) v[0]=r;v[1]=g;v[2]=b
 #define	MAKERGBA( v, r, g, b, a ) v[0]=r;v[1]=g;v[2]=b;v[3]=a

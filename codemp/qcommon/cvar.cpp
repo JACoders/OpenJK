@@ -463,23 +463,17 @@ Prints the value, default, and latched string of the given variable
 ============
 */
 void Cvar_Print( cvar_t *v ) {
-	Com_Printf ("\"%s\" is:\"%s" S_COLOR_WHITE "\"",
-			v->name, v->string );
+	Com_Printf(S_COLOR_GREY"Cvar "S_COLOR_WHITE"%s = "S_COLOR_GREY"["S_COLOR_WHITE"%s"S_COLOR_GREY"]"S_COLOR_WHITE, v->name, v->string );
 
-	if ( !( v->flags & CVAR_ROM ) ) {
-		if ( !Q_stricmp( v->string, v->resetString ) ) {
-			Com_Printf (", the default" );
-		} else {
-			Com_Printf (" default:\"%s" S_COLOR_WHITE "\"",
-					v->resetString );
-		}
+	if ( !(v->flags & CVAR_ROM) ) {
+		if ( Q_stricmp( v->string, v->resetString ) )
+			Com_Printf(" "S_COLOR_RED"was "S_COLOR_GREY"["S_COLOR_WHITE"%s"S_COLOR_GREY"]"S_COLOR_WHITE, v->resetString );
 	}
 
-	Com_Printf ("\n");
+	Com_Printf( "\n" );
 
-	if ( v->latchedString ) {
-		Com_Printf( "latched: \"%s\"\n", v->latchedString );
-	}
+	if ( v->latchedString )
+		Com_Printf( " latched: \"%s\"\n", v->latchedString );
 }
 
 /*

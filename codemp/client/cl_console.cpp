@@ -564,9 +564,9 @@ void Con_DrawNotify (void)
 			char sTemp[4096]={0};	// ott
 			for (x = 0 ; x < con.linewidth ; x++) 
 			{
-				if ( ( (text[x]>>8)&7 ) != currentColor ) {
-					currentColor = (text[x]>>8)&7;
-					strcat(sTemp,va("^%i", (text[x]>>8)&7) );
+				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
+					currentColor = (text[x]>>8)&Q_COLOR_BITS;
+					strcat(sTemp,va("^%i", (text[x]>>8)&Q_COLOR_BITS) );
 				}
 				strcat(sTemp,va("%c",text[x] & 0xFF));				
 			}
@@ -583,8 +583,8 @@ void Con_DrawNotify (void)
 				if ( ( text[x] & 0xff ) == ' ' ) {
 					continue;
 				}
-				if ( ( (text[x]>>8)&7 ) != currentColor ) {
-					currentColor = (text[x]>>8)&7;
+				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
+					currentColor = (text[x]>>8)&Q_COLOR_BITS;
 					re->SetColor( g_color_table[currentColor] );
 				}
 				if (!cl_conXOffset)
@@ -733,9 +733,9 @@ void Con_DrawSolidConsole( float frac ) {
 			char sTemp[4096]={0};	// ott
 			for (x = 0 ; x < con.linewidth ; x++) 
 			{
-				if ( ( (text[x]>>8)&7 ) != currentColor ) {
-					currentColor = (text[x]>>8)&7;
-					strcat(sTemp,va("^%i", (text[x]>>8)&7) );
+				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
+					currentColor = (text[x]>>8)&Q_COLOR_BITS;
+					strcat(sTemp,va("^%i", (text[x]>>8)&Q_COLOR_BITS) );
 				}
 				strcat(sTemp,va("%c",text[x] & 0xFF));				
 			}
@@ -751,8 +751,8 @@ void Con_DrawSolidConsole( float frac ) {
 					continue;
 				}
 
-				if ( ( (text[x]>>8)&7 ) != currentColor ) {
-					currentColor = (text[x]>>8)&7;
+				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
+					currentColor = (text[x]>>8)&Q_COLOR_BITS;
 					re->SetColor( g_color_table[currentColor] );
 				}
 				SCR_DrawSmallChar(  (int) (con.xadjust + (x+1)*SMALLCHAR_WIDTH), y, text[x] & 0xff );

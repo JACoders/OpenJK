@@ -863,6 +863,23 @@ static void SV_KillServer_f( void ) {
 
 /*
 ==================
+SV_CompleteMapName
+==================
+*/
+static void SV_CompleteMapName( char *args, int argNum ) {
+	if ( argNum == 2 ) {
+		char *s=args;
+		const char *token=s;
+
+		for ( int i=0; i<argNum; i++ )
+			s = COM_Parse( &token );
+
+		Field_CompleteFilename( "maps", "bsp", qtrue, qfalse );
+	}
+}
+
+/*
+==================
 SV_AddOperatorCommands
 ==================
 */
@@ -887,10 +904,14 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("map_restart", SV_MapRestart_f);
 	Cmd_AddCommand ("sectorlist", SV_SectorList_f);
 	Cmd_AddCommand ("map", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "map", SV_CompleteMapName );
 	Cmd_AddCommand ("devmap", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmap", SV_CompleteMapName );
 //	Cmd_AddCommand ("devmapbsp", SV_Map_f);	// not used in MP codebase, no server BSP_cacheing
 	Cmd_AddCommand ("devmapmdl", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapmdl", SV_CompleteMapName );
 	Cmd_AddCommand ("devmapall", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapall", SV_CompleteMapName );
 	Cmd_AddCommand ("killserver", SV_KillServer_f);
 	Cmd_AddCommand ("svsay", SV_ConSay_f);
 
