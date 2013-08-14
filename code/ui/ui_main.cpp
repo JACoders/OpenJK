@@ -3806,7 +3806,7 @@ int UI_OwnerDrawWidth(int ownerDraw, float scale)
 		if (Display_KeyBindPending()) 
 		{
 #ifndef __NO_JK2
-			if( Cvar_VariableIntegerValue( "com_jk2 " ) )
+			if( com_jk2 && com_jk2->integer )
 				s = ui.SP_GetStringTextString("MENUS_WAITINGFORKEY");
 			else
 #endif
