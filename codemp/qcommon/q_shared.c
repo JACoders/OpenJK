@@ -1301,6 +1301,24 @@ char * QDECL va( const char *format, ... )
 	return buf;
 }
 
+/*
+============
+Com_TruncateLongString
+
+Assumes buffer is atleast TRUNCATE_LENGTH big
+============
+*/
+void Com_TruncateLongString( char *buffer, const char *s ) {
+	int length = strlen( s );
+
+	if ( length <= TRUNCATE_LENGTH )
+		Q_strncpyz( buffer, s, TRUNCATE_LENGTH );
+	else {
+		Q_strncpyz( buffer, s, (TRUNCATE_LENGTH/2) - 3 );
+		Q_strcat( buffer, TRUNCATE_LENGTH, " ... " );
+		Q_strcat( buffer, TRUNCATE_LENGTH, s + length - (TRUNCATE_LENGTH/2) + 3 );
+	}
+}
 
 /*
 =====================================================================
@@ -1627,4 +1645,63 @@ void Info_SetValueForKey_Big( char *s, const char *key, const char *value ) {
 	}
 
 	strcat (s, newi);
+}
+
+/*
+==================
+Com_CharIsOneOfCharset
+==================
+*/
+static qboolean Com_CharIsOneOfCharset( char c, char *set ) {
+	unsigned int i;
+
+	for ( i=0; i<strlen( set ); i++ ) {
+		if ( set[i] == c )
+			return qtrue;
+	}
+
+	return qfalse;
+}
+
+/*
+==================
+Com_SkipCharset
+==================
+*/
+char *Com_SkipCharset( char *s, char *sep ) {
+	char *p = s;
+
+	while ( p ) {
+		if ( Com_CharIsOneOfCharset( *p, sep ) )
+			p++;
+		else
+			break;
+	}
+
+	return p;
+}
+
+/*
+==================
+Com_SkipTokens
+==================
+*/
+char *Com_SkipTokens( char *s, int numTokens, char *sep ) {
+	int sepCount = 0;
+	char *p = s;
+
+	while ( sepCount < numTokens ) {
+		if ( Com_CharIsOneOfCharset( *p++, sep ) ) {
+			sepCount++;
+			while ( Com_CharIsOneOfCharset( *p, sep ) )
+				p++;
+		}
+		else if ( *p == '\0' )
+			break;
+	}
+
+	if ( sepCount == numTokens )
+		return p;
+	else
+		return s;
 }

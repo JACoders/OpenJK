@@ -367,9 +367,13 @@ void	Cmd_AddCommand( const char *cmd_name, xcommand_t function );
 // as a clc_clientCommand instead of executed locally
 
 void	Cmd_RemoveCommand( const char *cmd_name );
+typedef void (*completionFunc_t)( char *args, int argNum );
 
 void	Cmd_CommandCompletion( callbackFunc_t callback );
 // callback with each valid string
+void Cmd_SetCommandCompletionFunc( const char *command, completionFunc_t complete );
+void Cmd_CompleteArgument( const char *command, char *args, int argNum );
+void Cmd_CompleteCfgName( char *args, int argNum );
 
 int		Cmd_Argc (void);
 char	*Cmd_Argv (int arg);
@@ -614,6 +618,8 @@ int		FS_FTell( fileHandle_t f );
 
 void	FS_Flush( fileHandle_t f );
 
+void	FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt, void(*callback)( const char *s ), qboolean allowNonPureFilesOnDisk );
+
 const char *FS_GetCurrentGameDir(bool emptybase=false);
 
 #ifdef MACOS_X
@@ -658,6 +664,32 @@ qboolean FS_CheckDirTraversal(const char *checkdir);
 qboolean FS_idPak( char *pak, char *base );
 qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring );
 void FS_Rename( const char *from, const char *to );
+
+
+/*
+==============================================================
+
+Edit fields and command line history/completion
+
+==============================================================
+*/
+
+#define CONSOLE_PROMPT_CHAR ']'
+#define	MAX_EDIT_LINE		256
+#define COMMAND_HISTORY		32
+
+typedef struct {
+	int		cursor;
+	int		scroll;
+	int		widthInChars;
+	char	buffer[MAX_EDIT_LINE];
+} field_t;
+
+void Field_Clear( field_t *edit );
+void Field_AutoComplete( field_t *edit );
+void Field_CompleteKeyname( void );
+void Field_CompleteFilename( const char *dir, const char *ext, qboolean stripExt, qboolean allowNonPureFilesOnDisk );
+void Field_CompleteCommand( char *cmd, qboolean doCommands, qboolean doCvars );
 
 /*
 ==============================================================
@@ -891,6 +923,9 @@ void CL_FlushMemory( qboolean delayFlushVM );
 
 void CL_StartHunkUsers( void );
 // start all the client stuff using the hunk
+
+void Key_KeynameCompletion ( void(*callback)( const char *s ) );
+// for keyname autocompletion
 
 void Key_WriteBindings( fileHandle_t f );
 // for writing the config files
