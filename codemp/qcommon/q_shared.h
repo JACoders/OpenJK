@@ -1340,6 +1340,7 @@ extern	vec4_t		colorRed;
 extern	vec4_t		colorGreen;
 extern	vec4_t		colorBlue;
 extern	vec4_t		colorYellow;
+extern	vec4_t		colorOrange;
 extern	vec4_t		colorMagenta;
 extern	vec4_t		colorCyan;
 extern	vec4_t		colorWhite;
@@ -1366,7 +1367,8 @@ extern	vec4_t		colorDkBlue;
 #define COLOR_CYAN		'5'
 #define COLOR_MAGENTA	'6'
 #define COLOR_WHITE		'7'
-#define COLOR_GREY		'8'
+#define COLOR_ORANGE	'8'
+#define COLOR_GREY		'9'
 #define ColorIndex(c)	( ( (c) - '0' ) & Q_COLOR_BITS )
 
 #define S_COLOR_BLACK	"^0"
@@ -1377,7 +1379,8 @@ extern	vec4_t		colorDkBlue;
 #define S_COLOR_CYAN	"^5"
 #define S_COLOR_MAGENTA	"^6"
 #define S_COLOR_WHITE	"^7"
-#define S_COLOR_GREY	"^8"
+#define S_COLOR_ORANGE	"^8"
+#define S_COLOR_GREY	"^9"
 
 extern vec4_t g_color_table[Q_COLOR_BITS+1];
 
