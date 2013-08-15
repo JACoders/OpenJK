@@ -1106,7 +1106,8 @@ Key_Bindlist_f
 void Key_Bindlist_f( void ) {
 	for ( int i=0; i<MAX_KEYS; i++ ) {
 		if ( kg.keys[i].binding && kg.keys[i].binding[0] )
-			Com_Printf( "Key : %s (%s) \"%s\"\n", Key_KeynumToAscii( i ), Key_KeynumToString( i ), kg.keys[i].binding );
+			Com_Printf( S_COLOR_GREY"Key "S_COLOR_WHITE"%s (%s) = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", Key_KeynumToAscii( i ), Key_KeynumToString( i ), kg.keys[i].binding );
+			//Com_Printf( "Key : %s (%s) \"%s\"\n", Key_KeynumToAscii( i ), Key_KeynumToString( i ), kg.keys[i].binding );
 	}
 }
 
