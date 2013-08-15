@@ -549,7 +549,10 @@ static qboolean CL_G2API_GetBoneFrame( void *ghoul2, const char *boneName, const
 
 static void CL_G2API_GetGLAName( void *ghoul2, int modelIndex, char *fillBuf ) {
 	char *tmp = re->G2API_GetGLAName( *((CGhoul2Info_v *)ghoul2), modelIndex );
-	strcpy( fillBuf, tmp );
+	if ( tmp )
+		strcpy( fillBuf, tmp );
+	else
+		fillBuf[0] = '\0';
 }
 
 static int CL_G2API_CopyGhoul2Instance( void *g2From, void *g2To, int modelIndex ) {

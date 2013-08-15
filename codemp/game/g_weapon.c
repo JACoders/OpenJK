@@ -2549,7 +2549,7 @@ void CreateLaserTrap( gentity_t *laserTrap, vec3_t start, gentity_t *owner )
 	VectorSet( laserTrap->r.maxs, LT_SIZE, LT_SIZE, LT_SIZE );
 	laserTrap->clipmask = MASK_SHOT;
 	laserTrap->s.solid = 2;
-	laserTrap->s.modelindex = G_ModelIndex( "models/weapons2/laser_trap/laser_trap->w.glm" );
+	laserTrap->s.modelindex = G_ModelIndex( "models/weapons2/laser_trap/laser_trap_w.glm" );
 	laserTrap->s.modelGhoul2 = 1;
 	laserTrap->s.g2radius = 40;
 
