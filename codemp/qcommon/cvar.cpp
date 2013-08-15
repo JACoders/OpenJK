@@ -1018,7 +1018,7 @@ void Cvar_List_f( void ) {
 		if (var->flags & CVAR_CHEAT)		Com_Printf( "C" );	else Com_Printf( " " );
 		if (var->flags & CVAR_USER_CREATED)	Com_Printf( "?" );	else Com_Printf( " " );
 
-		Com_Printf( S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, var->name, var->string );
+		Com_Printf( S_COLOR_WHITE" %s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, var->name, var->string );
 		if ( var->latchedString )
 			Com_Printf( ", latched = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, var->latchedString );
 		Com_Printf( "\n" );
