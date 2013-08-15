@@ -2394,7 +2394,6 @@ void CG_LoadMenus(const char *menuFile)
 		len = trap->FS_Open( "ui/jahud.txt", &f, FS_READ );
 		if (!f)
 		{
-			trap->FS_Close( f );
 			trap->Error( ERR_DROP, S_COLOR_RED "default hud menu file not found: ui/jahud.txt, unable to continue!" );
 		}
 	}
