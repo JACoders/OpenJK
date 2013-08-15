@@ -463,7 +463,7 @@ Prints the value, default, and latched string of the given variable
 ============
 */
 void Cvar_Print( cvar_t *v ) {
-	Com_Printf(S_COLOR_GREY"Cvar "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, v->name, v->string );
+	Com_Printf( S_COLOR_GREY"Cvar "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, v->name, v->string );
 
 	if ( !(v->flags & CVAR_ROM) ) {
 		if ( Q_stricmp( v->string, v->resetString ) )
@@ -994,78 +994,74 @@ Cvar_List_f
 ============
 */
 void Cvar_List_f( void ) {
-	cvar_t	*var;
-	int		i;
-	char	*match;
+	cvar_t *var = NULL;
+	int i = 0;
+	char *match = NULL;
 
-	if ( Cmd_Argc() > 1 ) {
+	if ( Cmd_Argc() > 1 )
 		match = Cmd_Argv( 1 );
-	} else {
-		match = NULL;
-	}
 
-	i = 0;
-	for (var = cvar_vars ; var ; var = var->next, i++)
+	for ( var=cvar_vars, i=0;
+		var;
+		var=var->next, i++ )
 	{
-		// Dont show internal cvars
-		if ( var->flags & CVAR_INTERNAL )
-		{
+		if ( !var->name || (match && !Com_Filter( match, var->name, qfalse )) )
 			continue;
-		}
 
-		if (!var->name || (match && !Com_Filter(match, var->name, qfalse))) continue;
+		if (var->flags & CVAR_SERVERINFO)	Com_Printf( "S" );	else Com_Printf( " " );
+		if (var->flags & CVAR_SYSTEMINFO)	Com_Printf( "s" );	else Com_Printf( " " );
+		if (var->flags & CVAR_USERINFO)		Com_Printf( "U" );	else Com_Printf( " " );
+		if (var->flags & CVAR_ROM)			Com_Printf( "R" );	else Com_Printf( " " );
+		if (var->flags & CVAR_INIT)			Com_Printf( "I" );	else Com_Printf( " " );
+		if (var->flags & CVAR_ARCHIVE)		Com_Printf( "A" );	else Com_Printf( " " );
+		if (var->flags & CVAR_LATCH)		Com_Printf( "L" );	else Com_Printf( " " );
+		if (var->flags & CVAR_CHEAT)		Com_Printf( "C" );	else Com_Printf( " " );
+		if (var->flags & CVAR_USER_CREATED)	Com_Printf( "?" );	else Com_Printf( " " );
 
-		if (var->flags & CVAR_SERVERINFO) {
-			Com_Printf("S");
-		} else {
-			Com_Printf(" ");
-		}
-		if (var->flags & CVAR_SYSTEMINFO) {
-			Com_Printf("s");
-		} else {
-			Com_Printf(" ");
-		}
-		if (var->flags & CVAR_USERINFO) {
-			Com_Printf("U");
-		} else {
-			Com_Printf(" ");
-		}
-		if (var->flags & CVAR_ROM) {
-			Com_Printf("R");
-		} else {
-			Com_Printf(" ");
-		}
-		if (var->flags & CVAR_INIT) {
-			Com_Printf("I");
-		} else {
-			Com_Printf(" ");
-		}
-		if (var->flags & CVAR_ARCHIVE) {
-			Com_Printf("A");
-		} else {
-			Com_Printf(" ");
-		}
-		if (var->flags & CVAR_LATCH) {
-			Com_Printf("L");
-		} else {
-			Com_Printf(" ");
-		}
-		if (var->flags & CVAR_CHEAT) {
-			Com_Printf("C");
-		} else {
-			Com_Printf(" ");
-		}
-		if (var->flags & CVAR_USER_CREATED) {
-			Com_Printf("?");
-		} else {
-			Com_Printf(" ");
-		}
-
-		Com_Printf (" %s \"%s\"\n", var->name, var->string);
+		Com_Printf( S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, var->name, var->string );
+		if ( var->latchedString )
+			Com_Printf( ", latched = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, var->latchedString );
+		Com_Printf( "\n" );
 	}
 
-	Com_Printf ("\n%i total cvars\n", i);
-	Com_Printf ("%i cvar indexes\n", cvar_numIndexes);
+	Com_Printf( "\n%i total cvars\n", i );
+	if ( i != cvar_numIndexes )
+		Com_Printf( "%i cvar indexes\n", cvar_numIndexes );
+}
+
+void Cvar_ListModified_f( void ) {
+	cvar_t *var = NULL;
+	int i = 0;
+	cvarvec_t cvar_vec;
+
+	// build a list of cvars that are modified
+	for ( var=cvar_vars, i=0;
+		var;
+		var=var->next, i++ )
+	{
+		char *value = var->latchedString ? var->latchedString : var->string;
+		if ( !var->name || !var->modificationCount || !strcmp( value, var->resetString ) )
+			continue;
+
+		cvar_vec.push_back( var );
+	}
+
+	// sort list alphabetically
+	std::sort( cvar_vec.begin(), cvar_vec.end(), CvarSort );
+
+	// print them
+	cvarvec_t::const_iterator itr;
+	for ( itr = cvar_vec.begin();
+		itr != cvar_vec.end();
+		++itr )
+	{
+		char *value = (*itr)->latchedString ? (*itr)->latchedString : (*itr)->string;
+
+		Com_Printf( S_COLOR_GREY"Cvar "
+			S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE", "
+			S_COLOR_WHITE"default = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n",
+			(*itr)->name, value, (*itr)->resetString );
+	}
 }
 
 /*
@@ -1334,21 +1330,22 @@ Reads in all archived cvars
 ============
 */
 void Cvar_Init (void) {
-	Com_Memset(cvar_indexes, '\0', sizeof(cvar_indexes));
-	Com_Memset(hashTable, '\0', sizeof(hashTable));
+	memset( cvar_indexes, 0, sizeof( cvar_indexes ) );
+	memset( hashTable, 0, sizeof( hashTable ) );
 
-	cvar_cheats = Cvar_Get("sv_cheats", "1", CVAR_ROM | CVAR_SYSTEMINFO );
+	cvar_cheats = Cvar_Get( "sv_cheats", "1", CVAR_ROM|CVAR_SYSTEMINFO );
 
-	Cmd_AddCommand ("print", Cvar_Print_f);
-	Cmd_AddCommand ("toggle", Cvar_Toggle_f);
-	Cmd_AddCommand ("set", Cvar_Set_f);
-	Cmd_AddCommand ("sets", Cvar_Set_f);
-	Cmd_AddCommand ("setu", Cvar_Set_f);
-	Cmd_AddCommand ("seta", Cvar_Set_f);
-	Cmd_AddCommand ("reset", Cvar_Reset_f);
-	Cmd_AddCommand ("unset", Cvar_Unset_f);
-	Cmd_AddCommand ("cvarlist", Cvar_List_f);
-	Cmd_AddCommand ("cvar_restart", Cvar_Restart_f);
+	Cmd_AddCommand( "print", Cvar_Print_f );
+	Cmd_AddCommand( "toggle", Cvar_Toggle_f );
+	Cmd_AddCommand( "set", Cvar_Set_f );
+	Cmd_AddCommand( "sets", Cvar_Set_f );
+	Cmd_AddCommand( "setu", Cvar_Set_f );
+	Cmd_AddCommand( "seta", Cvar_Set_f );
+	Cmd_AddCommand( "reset", Cvar_Reset_f );
+	Cmd_AddCommand( "unset", Cvar_Unset_f );
+	Cmd_AddCommand( "cvarlist", Cvar_List_f );
+	Cmd_AddCommand( "cvar_modified", Cvar_ListModified_f );
+	Cmd_AddCommand( "cvar_restart", Cvar_Restart_f );
 }
 
 
