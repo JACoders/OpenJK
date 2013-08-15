@@ -65,7 +65,6 @@ intptr_t QDECL VM_DllSyscall( intptr_t arg, ... ) {
 #if !id386 || defined __clang__ || defined MACOS_X
   // rcg010206 - see commentary above
   intptr_t args[16];
-  unsigned int i;
   va_list ap;
   
   args[0] = arg;
@@ -130,7 +129,7 @@ vm_t *VM_CreateLegacy( vmSlots_t vmSlot, intptr_t (*systemCalls)(intptr_t *) ) {
 	Q_strncpyz( vm->name, vmNames[vmSlot], sizeof( vm->name ) );
 	vm->legacy.syscall = systemCalls;
 
-	// try to load as a system dll
+	// find the legacy syscall api
 	FS_FindPureDLL( vm->name );
 	Com_Printf( "VM_CreateLegacy: %s"ARCH_STRING DLL_EXT, vm->name );
 	vm->dllHandle = Sys_LoadLegacyGameDll( vm->name, &vm->legacy.main, VM_DllSyscall );
