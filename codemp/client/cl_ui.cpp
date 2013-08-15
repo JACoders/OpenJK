@@ -27,8 +27,7 @@ CL_InitUI
 */
 
 void CL_InitUI( void ) {
-	// load the dll or bytecode
-	//OJKFIXME: pure servers
+	// load the dll
 	CL_BindUI();
 
 	// init for this gamestate

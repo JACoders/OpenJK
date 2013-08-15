@@ -535,8 +535,7 @@ void CL_InitCGame( void ) {
 	mapname = Info_ValueForKey( info, "mapname" );
 	Com_sprintf( cl.mapname, sizeof( cl.mapname ), "maps/%s.bsp", mapname );
 
-	// load the dll or bytecode
-	//OJKFIXME: pure servers
+	// load the dll
 	CL_BindCGame();
 
 	cls.state = CA_LOADING;
