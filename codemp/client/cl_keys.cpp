@@ -1251,7 +1251,8 @@ void CL_KeyEvent( int key, qboolean down, unsigned time ) {
 	if ( key == A_CONSOLE || (kg.keys[A_SHIFT].down && key == A_ESCAPE) ) {
 		if ( !down )
 			return;
-	    Con_ToggleConsole_f();
+		Con_ToggleConsole_f();
+		Key_ClearStates ();
 		return;
 	}
 
@@ -1265,9 +1266,10 @@ void CL_KeyEvent( int key, qboolean down, unsigned time ) {
 
 	// escape is always handled special
 	if ( key == A_ESCAPE && down ) {
-		if ( Key_GetCatcher() & KEYCATCH_CONSOLE ) {
+		if ( !kg.keys[A_SHIFT].down && Key_GetCatcher( ) & KEYCATCH_CONSOLE ) {
 			Con_ToggleConsole_f();
-			// purposely fall through
+			Key_ClearStates();
+			return;
 		}
 
 		if ( Key_GetCatcher() & KEYCATCH_MESSAGE ) {
