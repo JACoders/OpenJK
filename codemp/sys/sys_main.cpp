@@ -114,6 +114,10 @@ void	Sys_Init (void) {
 
 void Sys_Exit( int ex ) __attribute__((noreturn));
 void Sys_Exit( int ex ) {
+#ifndef DEDICATED
+	SDL_Quit( );
+#endif
+
 #ifdef NDEBUG // regular behavior
     // We can't do this
     //  as long as GL DLL's keep installing with atexit...
