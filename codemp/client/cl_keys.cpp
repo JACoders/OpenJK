@@ -1058,7 +1058,7 @@ void Key_Bind_f( void ) {
 
 	if ( c == 2 ) {
 		if ( kg.keys[b].binding )
-			Com_Printf( S_COLOR_GREY"Bind "S_COLOR_WHITE"%s = \"%s\"\n", Key_KeynumToString( b ), kg.keys[b].binding );
+			Com_Printf( S_COLOR_GREY"Bind "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", Key_KeynumToString( b ), kg.keys[b].binding );
 		else
 			Com_Printf( "\"%s\" is not bound\n", Key_KeynumToString( b ) );
 		return;
