@@ -1764,7 +1764,7 @@ static void PrintCvarMatches( const char *s ) {
 
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
 		Com_TruncateLongString( value, Cvar_VariableString( s ) );
-		Com_Printf( S_COLOR_GREY"Cvar "S_COLOR_WHITE"%s = "S_COLOR_GREY"["S_COLOR_WHITE"%s"S_COLOR_GREY"]"S_COLOR_WHITE"\n", s, value );
+		Com_Printf( S_COLOR_GREY"Cvar "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", s, value );
 	}
 }
 
