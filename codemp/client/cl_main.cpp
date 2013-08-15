@@ -2212,16 +2212,20 @@ CL_ShutdownRef
 ============
 */
 void CL_ShutdownRef( void ) {
-	if ( !re || !re->Shutdown ) {
-		return;
+	if ( re )
+	{
+		if ( re->Shutdown )
+		{
+			re->Shutdown( qtrue );
+		}
 	}
-	re->Shutdown( qtrue );
+
+	re = NULL;
 
 	if ( rendererLib != NULL ) {
 		Sys_UnloadDll (rendererLib);
 		rendererLib = NULL;
 	}
-	Com_Memset( &re, 0, sizeof( re ) );
 }
 
 /*
