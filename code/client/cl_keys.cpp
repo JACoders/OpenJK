@@ -814,7 +814,7 @@ int Key_StringToKeynum( char *str ) {
 
 	// scan for a text match
 	for ( int i=0; i<MAX_KEYS; i++ ) {
-		if ( keynames[i].name && !stricmp( str, keynames[i].name ) )
+		if ( keynames[i].name && !Q_stricmp( str, keynames[i].name ) )
 			return keynames[i].keynum;
 	}
 
