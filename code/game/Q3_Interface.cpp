@@ -7857,7 +7857,7 @@ int 	CQuake3GameInterface::PlayIcarusSound( int taskID, int entID, const char *n
 	Q_strlwr(finalName);
 	G_AddSexToPlayerString( finalName, qtrue );
 
-	COM_StripExtension( (const char *)finalName, finalName );
+	COM_StripExtension( (const char *)finalName, finalName, sizeof(finalName) );
 
 	int soundHandle = G_SoundIndex( (char *) finalName );
 	bool bBroadcast = false;
@@ -11194,7 +11194,7 @@ void	CQuake3GameInterface::PrecacheScript( const char *name )
 {
 	char	newname[1024];	//static char newname[1024];
 	// Strip the extension since we want the real name of the script.
-	COM_StripExtension( name, (char *) newname );
+	COM_StripExtension( name, (char *) newname, sizeof(newname) );
 
 	char *pBuf = NULL;
 	int iLength = 0;
@@ -11277,7 +11277,7 @@ void	CQuake3GameInterface::PrecacheFromSet( const char *setname, const char *fil
 				} else {
 					Com_sprintf ( name, sizeof(name), "%s", filename );
 				}
-				COM_StripExtension( name, name );
+				COM_StripExtension( name, name, sizeof(name) );
 				COM_DefaultExtension( name, sizeof( name ), ".roq" );
 
 				gi.FS_FOpenFile( name, &file, FS_READ );	// trigger the file copy

@@ -45,17 +45,16 @@ Con_ToggleConsole_f
 */
 void Con_ToggleConsole_f (void) {
 	// closing a full screen console restarts the demo loop
-	if ( cls.state == CA_DISCONNECTED && cls.keyCatchers == KEYCATCH_CONSOLE ) {
+	if ( cls.state == CA_DISCONNECTED && Key_GetCatcher( ) == KEYCATCH_CONSOLE ) {
 //		CL_StartDemoLoop();
 		return;
 	}
 
-	Field_Clear( &kg.g_consoleField );
-	kg.g_consoleField.widthInChars = g_console_field_width;
+	Field_Clear( &g_consoleField );
+	g_consoleField.widthInChars = g_console_field_width;
 
 	Con_ClearNotify ();
-
-	cls.keyCatchers ^= KEYCATCH_CONSOLE;
+	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
 }
 
 /*
@@ -251,6 +250,16 @@ void Con_CheckResize (void)
 
 
 /*
+==================
+Cmd_CompleteTxtName
+==================
+*/
+void Cmd_CompleteTxtName( char *args, int argNum ) {
+	if ( argNum == 2 )
+		Field_CompleteFilename( "", "txt", qfalse, qtrue );
+}
+
+/*
 ================
 Con_Init
 ================
@@ -262,16 +271,17 @@ void Con_Init (void) {
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
 	con_conAlpha = Cvar_Get( "conAlpha", "1.6", CVAR_ARCHIVE );
 	
-	Field_Clear( &kg.g_consoleField );
-	kg.g_consoleField.widthInChars = g_console_field_width;
+	Field_Clear( &g_consoleField );
+	g_consoleField.widthInChars = g_console_field_width;
 	for ( i = 0 ; i < COMMAND_HISTORY ; i++ ) {
-		Field_Clear( &kg.historyEditLines[i] );
-		kg.historyEditLines[i].widthInChars = g_console_field_width;
+		Field_Clear( &historyEditLines[i] );
+		historyEditLines[i].widthInChars = g_console_field_width;
 	}
 
 	Cmd_AddCommand ("toggleconsole", Con_ToggleConsole_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
+	Cmd_SetCommandCompletionFunc( "condump", Cmd_CompleteTxtName );
 }
 
 
@@ -398,7 +408,7 @@ Draw the editline after a ] prompt
 void Con_DrawInput (void) {
 	int		y;
 
-	if ( cls.state != CA_DISCONNECTED && !(cls.keyCatchers & KEYCATCH_CONSOLE ) ) {
+	if ( cls.state != CA_DISCONNECTED && !(Key_GetCatcher( ) & KEYCATCH_CONSOLE ) ) {
 		return;
 	}
 
@@ -406,9 +416,9 @@ void Con_DrawInput (void) {
 
 	re.SetColor( con.color );
 
-	SCR_DrawSmallChar( con.xadjust + 1 * SMALLCHAR_WIDTH, y, ']' );
+	SCR_DrawSmallChar( con.xadjust + 1 * SMALLCHAR_WIDTH, y, CONSOLE_PROMPT_CHAR );
 
-	Field_Draw( &kg.g_consoleField, con.xadjust + 2 * SMALLCHAR_WIDTH, y,
+	Field_Draw( &g_consoleField, con.xadjust + 2 * SMALLCHAR_WIDTH, y,
 		SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, qtrue, qtrue );
 }
 
@@ -459,9 +469,9 @@ void Con_DrawNotify (void)
 			char sTemp[4096]={0};	// ott
 			for (x = 0 ; x < con.linewidth ; x++) 
 			{
-				if ( ( (text[x]>>8)&7 ) != currentColor ) {
-					currentColor = (text[x]>>8)&7;
-					strcat(sTemp,va("^%i", (text[x]>>8)&7) );
+				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
+					currentColor = (text[x]>>8)&Q_COLOR_BITS;
+					strcat(sTemp,va("^%i", (text[x]>>8)&Q_COLOR_BITS) );
 				}
 				strcat(sTemp,va("%c",text[x] & 0xFF));				
 			}
@@ -478,8 +488,8 @@ void Con_DrawNotify (void)
 				if ( ( text[x] & 0xff ) == ' ' ) {
 					continue;
 				}
-				if ( ( (text[x]>>8)&7 ) != currentColor ) {
-					currentColor = (text[x]>>8)&7;
+				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
+					currentColor = (text[x]>>8)&Q_COLOR_BITS;
 					re.SetColor( g_color_table[currentColor] );
 				}
 				SCR_DrawSmallChar( con.xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
@@ -608,9 +618,9 @@ void Con_DrawSolidConsole( float frac )
 			char sTemp[4096]={0};	// ott
 			for (x = 0 ; x < con.linewidth ; x++) 
 			{
-				if ( ( (text[x]>>8)&7 ) != currentColor ) {
-					currentColor = (text[x]>>8)&7;
-					strcat(sTemp,va("^%i", (text[x]>>8)&7) );
+				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
+					currentColor = (text[x]>>8)&Q_COLOR_BITS;
+					strcat(sTemp,va("^%i", (text[x]>>8)&Q_COLOR_BITS) );
 				}
 				strcat(sTemp,va("%c",text[x] & 0xFF));				
 			}
@@ -626,8 +636,8 @@ void Con_DrawSolidConsole( float frac )
 					continue;
 				}
 
-				if ( ( (text[x]>>8)&7 ) != currentColor ) {
-					currentColor = (text[x]>>8)&7;
+				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
+					currentColor = (text[x]>>8)&Q_COLOR_BITS;
 					re.SetColor( g_color_table[currentColor] );
 				}
 				SCR_DrawSmallChar(  con.xadjust + (x+1)*SMALLCHAR_WIDTH, y, text[x] & 0xff );
@@ -654,7 +664,7 @@ void Con_DrawConsole( void ) {
 
 	// if disconnected, render console full screen
 	if ( cls.state == CA_DISCONNECTED ) {
-		if ( !( cls.keyCatchers & KEYCATCH_UI ) ) {
+		if ( !( Key_GetCatcher( ) & KEYCATCH_UI) ) {
 			Con_DrawSolidConsole( 1.0 );
 			return;
 		}
@@ -681,7 +691,7 @@ Scroll it up or down
 */
 void Con_RunConsole (void) {
 	// decide on the destination height of the console
-	if ( cls.keyCatchers & KEYCATCH_CONSOLE )
+	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
 		con.finalFrac = 0.5;		// half screen
 	else
 		con.finalFrac = 0;				// none visible
@@ -731,9 +741,9 @@ void Con_Bottom( void ) {
 
 
 void Con_Close( void ) {
-	Field_Clear( &kg.g_consoleField );
+	Field_Clear( &g_consoleField );
 	Con_ClearNotify ();
-	cls.keyCatchers &= ~KEYCATCH_CONSOLE;
+	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CONSOLE );
 	con.finalFrac = 0;				// none visible
 	con.displayFrac = 0;
 }

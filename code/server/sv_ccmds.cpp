@@ -476,6 +476,26 @@ static void SV_DumpUser_f( void ) {
 
 /*
 ==================
+SV_CompleteMapName
+==================
+*/
+static void SV_CompleteMapName( char *args, int argNum ) {
+	if ( argNum == 2 )
+		Field_CompleteFilename( "maps", "bsp", qtrue, qfalse );
+}
+
+/*
+==================
+SV_CompleteMapName
+==================
+*/
+static void SV_CompleteSaveName( char *args, int argNum ) {
+	if ( argNum == 2 )
+		Field_CompleteFilename( "saves", "sav", qtrue, qtrue );
+}
+
+/*
+==================
 SV_AddOperatorCommands
 ==================
 */
@@ -493,13 +513,20 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("dumpuser", SV_DumpUser_f);
 	Cmd_AddCommand ("sectorlist", SV_SectorList_f);
 	Cmd_AddCommand ("map", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "map", SV_CompleteMapName );
 	Cmd_AddCommand ("devmap", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmap", SV_CompleteMapName );
 	Cmd_AddCommand ("devmapbsp", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapbsp", SV_CompleteMapName );
 	Cmd_AddCommand ("devmapmdl", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapmdl", SV_CompleteMapName );
 	Cmd_AddCommand ("devmapsnd", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapsnd", SV_CompleteMapName );
 	Cmd_AddCommand ("devmapall", SV_Map_f);
+	Cmd_SetCommandCompletionFunc( "devmapall", SV_CompleteMapName );
 	Cmd_AddCommand ("maptransition", SV_MapTransition_f);
 	Cmd_AddCommand ("load", SV_LoadGame_f);
+	Cmd_SetCommandCompletionFunc( "load", SV_CompleteSaveName );
 	Cmd_AddCommand ("loadtransition", SV_LoadTransition_f);
 	Cmd_AddCommand ("save", SV_SaveGame_f);
 	Cmd_AddCommand ("wipe", SV_WipeGame_f);

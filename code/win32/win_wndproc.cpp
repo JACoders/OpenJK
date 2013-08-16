@@ -41,50 +41,10 @@ static UINT MSH_MOUSEWHEEL;
 // Console variables that we need to access from this module
 cvar_t		*vid_xpos;			// X coordinate of window position
 cvar_t		*vid_ypos;			// Y coordinate of window position
-cvar_t		*sr_fullscreen;
 
 #define VID_NUM_MODES ( sizeof( vid_modes ) / sizeof( vid_modes[0] ) )
 
 LONG WINAPI MainWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
-
-static qboolean s_alttab_disabled;
-
-static void WIN_DisableAltTab( void )
-{
-	if ( s_alttab_disabled )
-		return;
-
-	if ( !Q_stricmp( Cvar_VariableString( "arch" ), "winnt" ) )
-	{
-		RegisterHotKey( 0, 0, MOD_ALT, VK_TAB );
-	}
-	else
-	{
-		BOOL old;
-
-		SystemParametersInfo( SPI_SCREENSAVERRUNNING, 1, &old, 0 );
-	}
-	s_alttab_disabled = qtrue;
-}
-
-static void WIN_EnableAltTab( void )
-{
-	if ( s_alttab_disabled )
-	{
-		if ( !Q_stricmp( Cvar_VariableString( "arch" ), "winnt" ) )
-		{
-			UnregisterHotKey( 0, 0 );
-		}
-		else
-		{
-			BOOL old;
-
-			SystemParametersInfo( SPI_SCREENSAVERRUNNING, 0, &old, 0 );
-		}
-
-		s_alttab_disabled = qfalse;
-	}
-}
 
 /*
 ==================
@@ -369,42 +329,13 @@ LONG WINAPI MainWndProc (
 
 		vid_xpos = Cvar_Get ("vid_xpos", "3", CVAR_ARCHIVE);
 		vid_ypos = Cvar_Get ("vid_ypos", "22", CVAR_ARCHIVE);
-		sr_fullscreen = Cvar_Get ("r_fullscreen", "0", CVAR_ARCHIVE | CVAR_LATCH );
 
 		MSH_MOUSEWHEEL = RegisterWindowMessage("MSWHEEL_ROLLMSG");
-#if 0
-		if ( sr_fullscreen->integer )
-		{
-			WIN_DisableAltTab();
-		}
-		else
-		{
-			WIN_EnableAltTab();
-		}
-#endif
 
 		break;
-#if 0
-	case WM_DISPLAYCHANGE:
-		Com_DPrintf( "WM_DISPLAYCHANGE\n" );
-		// we need to force a vid_restart if the user has changed
-		// their desktop resolution while the game is running,
-		// but don't do anything if the message is a result of
-		// our own calling of ChangeDisplaySettings
-		if ( com_insideVidInit ) {
-			break;		// we did this on purpose
-		}
-		// something else forced a mode change, so restart all our gl stuff
-		Cbuf_AddText( "vid_restart\n" );
-		break;
-#endif
 	case WM_DESTROY:
 		// let sound and input know about this?
 		g_wv.hWnd = NULL;
-		if ( sr_fullscreen->integer )
-		{
-			WIN_EnableAltTab();
-		}
 		break;
 
 	case WM_CLOSE:
@@ -429,7 +360,7 @@ LONG WINAPI MainWndProc (
 			RECT r;
 			int		style;
 
-			if (!sr_fullscreen->integer )
+			if (!Cvar_VariableIntegerValue("r_fullscreen") )
 			{
 				xPos = (short) LOWORD(lParam);    // horizontal position 
 				yPos = (short) HIWORD(lParam);    // vertical position 
@@ -515,9 +446,9 @@ LONG WINAPI MainWndProc (
 	case WM_SYSKEYDOWN:
 		if ( wParam == VK_RETURN )	//alt-enter
 		{
-			if ( sr_fullscreen && !ge || (ge->GameAllowedToSaveHere() && !(cls.keyCatchers&KEYCATCH_UI)) )
+			if ( !ge || (ge->GameAllowedToSaveHere() && !(Key_GetCatcher( )&KEYCATCH_UI)) )
 			{//okay, don't switch if the game is running while in a cinematic or in the menu
-				Cvar_SetValue( "r_fullscreen", !sr_fullscreen->integer );
+				Cvar_SetValue( "r_fullscreen", !Cvar_VariableIntegerValue("r_fullscreen") );
 				Cbuf_AddText( "vid_restart\n" );
 			}
 			return 0;

@@ -2395,7 +2395,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 				}
 
 				filelen = strlen(fileptr);
-				COM_StripExtension(fileptr,skinname);
+				COM_StripExtension(fileptr,skinname, sizeof(skinname));
 
 				if (bIsImageFile(dirptr, skinname, building))
 				{ //if it exists
@@ -6146,7 +6146,7 @@ static void UI_UpdateSaberHilt( qboolean secondSaber )
 	{//successfully found a model
 		ItemParse_asset_model_go( item, modelPath );//set the model
 		//get the customSkin, if any
-		//COM_StripExtension( modelPath, skinPath );
+		//COM_StripExtension( modelPath, skinPath, sizeof(skinPath) );
 		//COM_DefaultExtension( skinPath, sizeof( skinPath ), ".skin" );
 		if ( UI_SaberSkinForSaber( model, skinPath ) )
 		{

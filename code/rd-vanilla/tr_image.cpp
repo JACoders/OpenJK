@@ -1719,7 +1719,7 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GL
 	}
 
 	*format = GL_RGBA;
-	COM_StripExtension(name,name);
+	COM_StripExtension(name,name, sizeof(name));
 	COM_DefaultExtension(name, sizeof(name), ".jpg");
 
 	//First try .jpg
@@ -1729,7 +1729,7 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GL
 		return;
 	}
 
-	COM_StripExtension(name,name);
+	COM_StripExtension(name,name, sizeof(name));
 	COM_DefaultExtension(name, sizeof(name), ".png");	
 
 	//No .jpg existed, try .png
@@ -1739,7 +1739,7 @@ void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GL
 		return;
 	}
 
-	COM_StripExtension(name,name);
+	COM_StripExtension(name,name, sizeof(name));
 	COM_DefaultExtension(name, sizeof(name), ".tga");
 
 	//No .jpg existed and no .png existed, try .tga as a last resort.

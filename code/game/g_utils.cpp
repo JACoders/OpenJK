@@ -94,7 +94,7 @@ int G_ModelIndex( const char *name ) {
 int G_SoundIndex( const char *name ) {
 	assert( name && name[0] );
 	char stripped[MAX_QPATH]; 
-	COM_StripExtension(name, stripped);
+	COM_StripExtension(name, stripped, sizeof(stripped));
 
 	return G_FindConfigstringIndex (stripped, CS_SOUNDS, MAX_SOUNDS, qtrue);
 }
@@ -104,7 +104,7 @@ int G_EffectIndex( const char *name )
 	char temp[MAX_QPATH];
 
 	// We just don't want extensions on the things we are registering
-	COM_StripExtension( name, temp );
+	COM_StripExtension( name, temp, sizeof(temp) );
 
 	return G_FindConfigstringIndex( temp, CS_EFFECTS, MAX_FX, qtrue );
 }

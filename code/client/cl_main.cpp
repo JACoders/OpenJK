@@ -213,7 +213,7 @@ void CL_MapLoading( void ) {
 	}
 
 	Con_Close();
-	cls.keyCatchers = 0;
+	Key_SetCatcher( 0 );
 
 	// if we are already connected to the local host, stay connected
 	if ( cls.state >= CA_CONNECTED && !Q_stricmp( cls.servername, "localhost" ) )  {
@@ -229,7 +229,7 @@ void CL_MapLoading( void ) {
 		CL_Disconnect();
 		Q_strncpyz( cls.servername, "localhost", sizeof(cls.servername) );
 		cls.state = CA_CHALLENGING;		// so the connect screen is drawn
-		cls.keyCatchers = 0;
+		Key_SetCatcher( 0 );
 		SCR_UpdateScreen();
 		clc.connectTime = -RETRANSMIT_TIMEOUT;
 		NET_StringToAdr( cls.servername, &clc.serverAddress);
@@ -537,7 +537,7 @@ void CL_CheckForResend( void ) {
 
 	case CA_CHALLENGING:
 	// sending back the challenge
-		port = Cvar_VariableIntegerValue("qport");
+		port = Cvar_VariableIntegerValue("net_qport");
 
 		UI_UpdateConnectionString( va("(%i)", clc.connectPacketCount ) );
 
@@ -645,7 +645,7 @@ void CL_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 				NET_AdrToString( clc.serverAddress ) );
 			return;
 		}
-		Netchan_Setup (NS_CLIENT, &clc.netchan, from, Cvar_VariableIntegerValue( "qport" ) );
+		Netchan_Setup (NS_CLIENT, &clc.netchan, from, Cvar_VariableIntegerValue( "net_qport" ) );
 		cls.state = CA_CONNECTED;
 		clc.lastPacketSentTime = -9999;		// send first packet immediately
 		return;
@@ -784,7 +784,7 @@ void CL_Frame ( int msec,float fractionMsec ) {
 	// load the ref / cgame if needed
 	CL_StartHunkUsers();
 
-	if ( cls.state == CA_DISCONNECTED && !( cls.keyCatchers & KEYCATCH_UI )
+	if ( cls.state == CA_DISCONNECTED && !( Key_GetCatcher( ) & KEYCATCH_UI )
 		&& !com_sv_running->integer ) {		
 		// if disconnected, bring up the menu
 		if (!CL_CheckPendingCinematic())	// this avoid having the menu flash for one frame before pending cinematics
@@ -985,12 +985,11 @@ void CL_StartHunkUsers( void ) {
 		re.BeginRegistration( &cls.glconfig );
 
 		// load character sets
-//		cls.charSetShader = re.RegisterShaderNoMip( "gfx/2d/bigchars" );
 		cls.charSetShader = re.RegisterShaderNoMip( "gfx/2d/charsgrid_med" );
 		cls.whiteShader = re.RegisterShader( "white" );
 		cls.consoleShader = re.RegisterShader( "console" );
 		g_console_field_width = cls.glconfig.vidWidth / SMALLCHAR_WIDTH - 2;
-		kg.g_consoleField.widthInChars = g_console_field_width;
+		g_consoleField.widthInChars = g_console_field_width;
 	}
 
 	if ( !cls.soundStarted ) {
@@ -1276,7 +1275,7 @@ void CL_Init( void ) {
 	CL_ClearState ();
 
 	cls.state = CA_DISCONNECTED;	// no longer CA_UNINITIALIZED
-	cls.keyCatchers = KEYCATCH_CONSOLE;
+	//cls.keyCatchers = KEYCATCH_CONSOLE;
 	cls.realtime = 0;
 	cls.realtimeFraction=0.0f;	// fraction of a msec accumulated
 

@@ -120,26 +120,6 @@ void Key_GetBindingBuf( int keynum, char *buf, int buflen ) {
 
 /*
 ====================
-Key_GetCatcher
-====================
-*/
-int Key_GetCatcher( void ) 
-{
-	return cls.keyCatchers;
-}
-
-/*
-====================
-Key_GetCatcher
-====================
-*/
-void Key_SetCatcher( int catcher ) 
-{
-	cls.keyCatchers = catcher;
-}
-
-/*
-====================
 FloatAsInt
 ====================
 */
@@ -176,7 +156,7 @@ CL_ShutdownUI
 ====================
 */
 void CL_ShutdownUI( void ) {
-	cls.keyCatchers &= ~KEYCATCH_UI;
+	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_UI );
 	cls.uiStarted = qfalse;
 }
 

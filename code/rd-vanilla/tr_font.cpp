@@ -1010,7 +1010,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 	}
 
 	Q_strncpyz(m_sFontName, fontName, sizeof(m_sFontName));
-	COM_StripExtension( m_sFontName, m_sFontName );	// so we get better error printing if failed to load shader (ie lose ".fontdat")
+	COM_StripExtension( m_sFontName, m_sFontName, sizeof(m_sFontName) );	// so we get better error printing if failed to load shader (ie lose ".fontdat")
 	mShader = RE_RegisterShaderNoMip(m_sFontName);
 
 	FlagNoAsianGlyphs();

@@ -991,6 +991,27 @@ static void Com_Crash_f( void ) {
 }
 
 /*
+==================
+Com_ExecuteCfg
+==================
+*/
+
+void Com_ExecuteCfg(void)
+{
+	Cbuf_ExecuteText(EXEC_NOW, "exec default.cfg\n");
+	Cbuf_Execute(); // Always execute after exec to prevent text buffer overflowing
+
+	if(!Com_SafeMode())
+	{
+		// skip the q3config.cfg and autoexec.cfg if "safe" is on the command line
+		Cbuf_ExecuteText(EXEC_NOW, "exec " Q3CONFIG_NAME "\n");
+		Cbuf_Execute();
+		Cbuf_ExecuteText(EXEC_NOW, "exec autoexec.cfg\n");
+		Cbuf_Execute();
+	}
+}
+
+/*
 =================
 Com_Init
 =================
@@ -1015,7 +1036,7 @@ void Com_Init( char *commandLine ) {
 
 		Cmd_Init ();
 
-		// get the commandline cvars set
+		// override anything from the config files with command line args
 		Com_StartupVariable( NULL );
 
 #ifndef __NO_JK2
@@ -1031,16 +1052,7 @@ void Com_Init( char *commandLine ) {
 		FS_InitFilesystem ();	//uses z_malloc
 		//re.R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
 		
-		Cbuf_AddText ("exec default.cfg\n");
-
-		// skip the openjk_sp.cfg if "safe" is on the command line
-		if ( !Com_SafeMode() ) {
-			Cbuf_AddText ("exec "Q3CONFIG_NAME"\n");
-		}
-
-		Cbuf_AddText ("exec autoexec.cfg\n");
-		
-		Cbuf_Execute ();
+		Com_ExecuteCfg();
 
 		// override anything from the config files with command line args
 		Com_StartupVariable( NULL );
@@ -1208,6 +1220,13 @@ void Com_WriteConfig_f( void ) {
 
 	Q_strncpyz( filename, Cmd_Argv(1), sizeof( filename ) );
 	COM_DefaultExtension( filename, sizeof( filename ), ".cfg" );
+
+	if(!COM_CompareExtension(filename, ".cfg"))
+	{
+		Com_Printf( "Com_WriteConfig_f: Only the \".cfg\" extension is supported by this command!\n" );
+		return;
+	}
+
 	Com_Printf( "Writing %s.\n", filename );
 	Com_WriteConfigToFile( filename );
 }
@@ -1518,6 +1537,277 @@ void Com_Shutdown (void) {
 
 	extern void Netchan_Shutdown();
 	Netchan_Shutdown();
+}
+
+/*
+==================
+Field_Clear
+==================
+*/
+void Field_Clear( field_t *edit ) {
+	edit->buffer[0] = 0;
+	edit->cursor = 0;
+	edit->scroll = 0;
+}
+
+/*
+=============================================================================
+
+CONSOLE LINE EDITING
+
+==============================================================================
+*/
+
+static const char *completionString;
+static char shortestMatch[MAX_TOKEN_CHARS];
+static int	matchCount;
+// field we are working on, passed to Field_AutoComplete(&g_consoleCommand for instance)
+static field_t *completionField;
+
+/*
+===============
+FindMatches
+
+===============
+*/
+static void FindMatches( const char *s ) {
+	int		i;
+
+	if ( Q_stricmpn( s, completionString, strlen( completionString ) ) ) {
+		return;
+	}
+	matchCount++;
+	if ( matchCount == 1 ) {
+		Q_strncpyz( shortestMatch, s, sizeof( shortestMatch ) );
+		return;
+	}
+
+	// cut shortestMatch to the amount common with s
+	for ( i = 0 ; s[i] ; i++ ) {
+		if ( tolower(shortestMatch[i]) != tolower(s[i]) ) {
+			shortestMatch[i] = 0;
+			break;
+		}
+	}
+	if (!s[i])
+	{
+		shortestMatch[i] = 0;
+	}
+}
+
+/*
+===============
+PrintMatches
+
+===============
+*/
+static void PrintMatches( const char *s ) {
+	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
+		Com_Printf( S_COLOR_GREY"Cmd  "S_COLOR_WHITE"%s\n", s );
+	}
+}
+
+/*
+===============
+PrintArgMatches
+
+===============
+*/
+static void PrintArgMatches( const char *s ) {
+	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
+		Com_Printf( S_COLOR_WHITE"  %s\n", s );
+	}
+}
+
+/*
+===============
+PrintKeyMatches
+
+===============
+*/
+static void PrintKeyMatches( const char *s ) {
+	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
+		Com_Printf( S_COLOR_GREY"Key  "S_COLOR_WHITE"%s\n", s );
+	}
+}
+
+/*
+===============
+PrintFileMatches
+
+===============
+*/
+static void PrintFileMatches( const char *s ) {
+	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
+		Com_Printf( S_COLOR_GREY"File "S_COLOR_WHITE"%s\n", s );
+	}
+}
+
+/*
+===============
+PrintCvarMatches
+
+===============
+*/
+static void PrintCvarMatches( const char *s ) {
+	char value[TRUNCATE_LENGTH] = {0};
+
+	if ( !Q_stricmpn( s, shortestMatch, (int)strlen( shortestMatch ) ) ) {
+		Com_TruncateLongString( value, Cvar_VariableString( s ) );
+		Com_Printf( S_COLOR_GREY"Cvar "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", s, value );
+	}
+}
+
+/*
+===============
+Field_FindFirstSeparator
+===============
+*/
+static char *Field_FindFirstSeparator( char *s ) {
+	for ( size_t i=0; i<strlen( s ); i++ ) {
+		if ( s[i] == ';' )
+			return &s[ i ];
+	}
+
+	return NULL;
+}
+
+/*
+===============
+Field_Complete
+===============
+*/
+static qboolean Field_Complete( void ) {
+	int completionOffset;
+
+	if ( matchCount == 0 )
+		return qtrue;
+
+	completionOffset = strlen( completionField->buffer ) - strlen( completionString );
+
+	Q_strncpyz( &completionField->buffer[completionOffset], shortestMatch, sizeof( completionField->buffer ) - completionOffset );
+
+	completionField->cursor = strlen( completionField->buffer );
+
+	if ( matchCount == 1 ) {
+		Q_strcat( completionField->buffer, sizeof( completionField->buffer ), " " );
+		completionField->cursor++;
+		return qtrue;
+	}
+
+	Com_Printf( "%c%s\n", CONSOLE_PROMPT_CHAR, completionField->buffer );
+
+	return qfalse;
+}
+
+/*
+===============
+Field_CompleteKeyname
+===============
+*/
+void Field_CompleteKeyname( void )
+{
+	matchCount = 0;
+	shortestMatch[ 0 ] = 0;
+
+	Key_KeynameCompletion( FindMatches );
+
+	if( !Field_Complete( ) )
+		Key_KeynameCompletion( PrintKeyMatches );
+}
+
+/*
+===============
+Field_CompleteFilename
+===============
+*/
+void Field_CompleteFilename( const char *dir, const char *ext, qboolean stripExt, qboolean allowNonPureFilesOnDisk )
+{
+	matchCount = 0;
+	shortestMatch[ 0 ] = 0;
+
+	FS_FilenameCompletion( dir, ext, stripExt, FindMatches, allowNonPureFilesOnDisk );
+
+	if ( !Field_Complete() )
+		FS_FilenameCompletion( dir, ext, stripExt, PrintFileMatches, allowNonPureFilesOnDisk );
+}
+
+/*
+===============
+Field_CompleteCommand
+===============
+*/
+void Field_CompleteCommand( char *cmd, qboolean doCommands, qboolean doCvars )
+{
+	int completionArgument = 0;
+
+	// Skip leading whitespace and quotes
+	cmd = Com_SkipCharset( cmd, " \"" );
+
+	Cmd_TokenizeStringIgnoreQuotes( cmd );
+	completionArgument = Cmd_Argc();
+
+	// If there is trailing whitespace on the cmd
+	if ( *(cmd + strlen( cmd )-1) == ' ' ) {
+		completionString = "";
+		completionArgument++;
+	}
+	else
+		completionString = Cmd_Argv( completionArgument - 1 );
+
+	if ( completionArgument > 1 ) {
+		const char *baseCmd = Cmd_Argv( 0 );
+		char *p;
+
+		if ( baseCmd[0] == '\\' || baseCmd[0] == '/' )
+			baseCmd++;
+
+		if( ( p = Field_FindFirstSeparator( cmd ) ) )
+			Field_CompleteCommand( p + 1, qtrue, qtrue ); // Compound command
+		else
+			Cmd_CompleteArgument( baseCmd, cmd, completionArgument ); 
+	}
+	else {
+		if ( completionString[0] == '\\' || completionString[0] == '/' )
+			completionString++;
+
+		matchCount = 0;
+		shortestMatch[ 0 ] = 0;
+
+		if ( strlen( completionString ) == 0 )
+			return;
+
+		if ( doCommands )
+			Cmd_CommandCompletion( FindMatches );
+
+		if ( doCvars )
+			Cvar_CommandCompletion( FindMatches );
+
+		if ( !Field_Complete() ) {
+			// run through again, printing matches
+			if ( doCommands )
+				Cmd_CommandCompletion( PrintMatches );
+
+			if ( doCvars )
+				Cvar_CommandCompletion( PrintCvarMatches );
+		}
+	}
+}
+
+/*
+===============
+Field_AutoComplete
+
+Perform Tab expansion
+===============
+*/
+void Field_AutoComplete( field_t *field ) {
+	if ( !field || !field->buffer[0] )
+		return;
+
+	completionField = field;
+
+	Field_CompleteCommand( completionField->buffer, qtrue, qtrue );
 }
 
 /*

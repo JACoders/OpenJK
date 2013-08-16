@@ -324,7 +324,7 @@ static void CG_RegisterCustomSounds(clientInfo_t *ci, int iSoundEntryBase,
 	{
 		char	s[MAX_QPATH]={0};
 		const char *pS = GetCustomSound_VariantCapped(ppsTable,i, qfalse);
-		COM_StripExtension( pS, s );
+		COM_StripExtension( pS, s, sizeof(s) );
 
 		sfxHandle_t hSFX = 0;
 		if ( g_sex->string[0] == 'f' )
@@ -340,7 +340,7 @@ static void CG_RegisterCustomSounds(clientInfo_t *ci, int iSoundEntryBase,
 			// hmmm... variant in table was missing, so forcibly-retry with %1 version (which we may have just tried, but wtf?)...
 			//
 			pS = GetCustomSound_VariantCapped(ppsTable,i, qtrue);
-			COM_StripExtension( pS, s );
+			COM_StripExtension( pS, s, sizeof(s) );
 			if ( g_sex->string[0] == 'f' )
 			{
 				hSFX = cgi_S_RegisterSound( va("sound/chars/%s/misc/%s_f.wav", psDir, s + 1) );

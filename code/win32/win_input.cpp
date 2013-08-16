@@ -890,13 +890,19 @@ void IN_Frame (void) {
 		return;
 	}
 
-	if ( cls.keyCatchers & KEYCATCH_CONSOLE ) {
+	// If not DISCONNECTED (main menu) or ACTIVE (in game), we're loading
+	qboolean loading = (qboolean)( cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE );
+
+	if( !Cvar_VariableIntegerValue("r_fullscreen") && ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) ) {
 		// temporarily deactivate if not in the game and
 		// running on the desktop
-		if (Cvar_VariableIntegerValue ("r_fullscreen") == 0 )	{
-			IN_DeactivateMouse ();
-			return;
-		}
+		IN_DeactivateMouse ();
+		return;
+	}
+
+	if( !Cvar_VariableIntegerValue("r_fullscreen") && loading ) {
+		IN_DeactivateMouse ();
+		return;
 	}
 
 	if ( !in_appactive ) {
