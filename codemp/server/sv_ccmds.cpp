@@ -867,15 +867,8 @@ SV_CompleteMapName
 ==================
 */
 static void SV_CompleteMapName( char *args, int argNum ) {
-	if ( argNum == 2 ) {
-		char *s=args;
-		const char *token=s;
-
-		for ( int i=0; i<argNum; i++ )
-			s = COM_Parse( &token );
-
+	if ( argNum == 2 )
 		Field_CompleteFilename( "maps", "bsp", qtrue, qfalse );
-	}
 }
 
 /*

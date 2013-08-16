@@ -497,7 +497,7 @@ void Con_DrawInput (void) {
 
 	re->SetColor( con.color );
 
-	SCR_DrawSmallChar( (int)(con.xadjust + 1 * SMALLCHAR_WIDTH), y, ']' );
+	SCR_DrawSmallChar( (int)(con.xadjust + 1 * SMALLCHAR_WIDTH), y, CONSOLE_PROMPT_CHAR );
 
 	Field_Draw( &g_consoleField, (int)(con.xadjust + 2 * SMALLCHAR_WIDTH), y,
 				SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, qtrue, qtrue );
