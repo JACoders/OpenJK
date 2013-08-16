@@ -684,6 +684,11 @@ void Console_Key( int key ) {
 			Cbuf_AddText( "\n" );
 		}
 
+		if (!g_consoleField.buffer[0])
+		{
+			return; // empty lines just scroll the console without adding to history
+		}
+
 		// copy line to history buffer
 		historyEditLines[nextHistoryLine % COMMAND_HISTORY] = g_consoleField;
 		nextHistoryLine++;
@@ -1057,7 +1062,7 @@ void Key_Bind_f( void ) {
 	}
 
 	if ( c == 2 ) {
-		if ( kg.keys[b].binding )
+		if ( kg.keys[b].binding && kg.keys[b].binding[0] )
 			Com_Printf( S_COLOR_GREY"Bind "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", Key_KeynumToString( b ), kg.keys[b].binding );
 		else
 			Com_Printf( "\"%s\" is not bound\n", Key_KeynumToString( b ) );
@@ -1107,7 +1112,6 @@ void Key_Bindlist_f( void ) {
 	for ( int i=0; i<MAX_KEYS; i++ ) {
 		if ( kg.keys[i].binding && kg.keys[i].binding[0] )
 			Com_Printf( S_COLOR_GREY"Key "S_COLOR_WHITE"%s (%s) = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", Key_KeynumToAscii( i ), Key_KeynumToString( i ), kg.keys[i].binding );
-			//Com_Printf( "Key : %s (%s) \"%s\"\n", Key_KeynumToAscii( i ), Key_KeynumToString( i ), kg.keys[i].binding );
 	}
 }
 
@@ -1266,7 +1270,7 @@ void CL_KeyEvent( int key, qboolean down, unsigned time ) {
 
 	// escape is always handled special
 	if ( key == A_ESCAPE && down ) {
-		if ( !kg.keys[A_SHIFT].down && Key_GetCatcher( ) & KEYCATCH_CONSOLE ) {
+		if ( !kg.keys[A_SHIFT].down && ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) ) {
 			Con_ToggleConsole_f();
 			Key_ClearStates();
 			return;
