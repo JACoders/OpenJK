@@ -543,7 +543,7 @@ void SCR_PrecacheScreenshot()
 		return;
 	}
 
-	if (cls.keyCatchers == 0)
+	if (!Key_GetCatcher( ))
 	{
 		// in-game...
 		//

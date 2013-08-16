@@ -203,7 +203,7 @@ static	void R_LoadLightmaps( lump_t *l, const char *psMapName, world_t &worldDat
 	}
 
 	char sMapName[MAX_QPATH];
-	COM_StripExtension(psMapName,sMapName);	// will already by MAX_QPATH legal, so no length check
+	COM_StripExtension(psMapName,sMapName, sizeof(sMapName));
 
 	for ( i = 0 ; i < count ; i++ ) {
 		// expand the 24 bit on-disk to 32 bit
@@ -1386,9 +1386,9 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 	}
 
 	memset( &worldData, 0, sizeof( worldData ) );
-	
+
 	Q_strncpyz( tr.worldDir, name, sizeof( tr.worldDir ) );
-	COM_StripExtension( tr.worldDir, tr.worldDir );
+	COM_StripExtension( tr.worldDir, tr.worldDir, sizeof( tr.worldDir ) );
 
 	c_gridVerts = 0;
 

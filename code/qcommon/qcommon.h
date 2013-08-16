@@ -297,6 +297,7 @@ then searches for a command or variable that matches the first token.
 */
 
 typedef void (*xcommand_t) (void);
+typedef void ( *callbackFunc_t )( const char *s );
 
 void	Cmd_Init (void);
 
@@ -308,10 +309,13 @@ void	Cmd_AddCommand( const char *cmd_name, xcommand_t function );
 // as a clc_clientCommand instead of executed locally
 
 void	Cmd_RemoveCommand( const char *cmd_name );
+typedef void (*completionFunc_t)( char *args, int argNum );
 
-char 	*Cmd_CompleteCommand( const char *partial );
-// attempts to match a partial command for automatic command line completion
-// returns NULL if nothing fits
+void	Cmd_CommandCompletion( callbackFunc_t callback );
+// callback with each valid string
+void Cmd_SetCommandCompletionFunc( const char *command, completionFunc_t complete );
+void Cmd_CompleteArgument( const char *command, char *args, int argNum );
+void Cmd_CompleteCfgName( char *args, int argNum );
 
 int		Cmd_Argc (void);
 char	*Cmd_Argv (int arg);
@@ -324,6 +328,7 @@ void	Cmd_ArgsBuffer( char *buffer, int bufferLength );
 // if arg > argc, so string operations are allways safe.
 
 void	Cmd_TokenizeString( const char *text );
+void	Cmd_TokenizeStringIgnoreQuotes( const char *text_in );
 // Takes a null terminated string.  Does not need to be /n terminated.
 // breaks the string up into arg tokens.
 
@@ -391,9 +396,8 @@ void	Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize 
 int	Cvar_Flags(const char *var_name);
 // returns CVAR_NONEXISTENT if cvar doesn't exist or the flags of that particular CVAR.
 
-char 	*Cvar_CompleteVariable( const char *partial );
-// attempts to match a partial variable name for command line completion
-// returns NULL if nothing fits
+void	Cvar_CommandCompletion( callbackFunc_t callback );
+// callback with each valid string
 
 void 	Cvar_Reset( const char *var_name );
 void 	Cvar_ForceReset( const char *var_name );
@@ -504,6 +508,8 @@ int		FS_FTell( fileHandle_t f );
 
 void	FS_Flush( fileHandle_t f );
 
+void	FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt, void(*callback)( const char *s ), qboolean allowNonPureFilesOnDisk );
+
 void 	QDECL FS_Printf( fileHandle_t f, const char *fmt, ... );
 // like fprintf
 
@@ -519,6 +525,31 @@ qboolean FS_FilenameCompare( const char *s1, const char *s2 );
 //
 void		FS_DeleteUserGenFile( const char *filename );
 qboolean	FS_MoveUserGenFile  ( const char *filename_src, const char *filename_dst );
+
+/*
+==============================================================
+
+Edit fields and command line history/completion
+
+==============================================================
+*/
+
+#define CONSOLE_PROMPT_CHAR ']'
+#define	MAX_EDIT_LINE		256
+#define COMMAND_HISTORY		32
+
+typedef struct {
+	int		cursor;
+	int		scroll;
+	int		widthInChars;
+	char	buffer[MAX_EDIT_LINE];
+} field_t;
+
+void Field_Clear( field_t *edit );
+void Field_AutoComplete( field_t *edit );
+void Field_CompleteKeyname( void );
+void Field_CompleteFilename( const char *dir, const char *ext, qboolean stripExt, qboolean allowNonPureFilesOnDisk );
+void Field_CompleteCommand( char *cmd, qboolean doCommands, qboolean doCvars );
 
 /*
 ==============================================================
@@ -707,6 +738,9 @@ void CL_FlushMemory( void );
 // dump all memory on an error
 
 void CL_StartHunkUsers( void );
+
+void Key_KeynameCompletion ( void(*callback)( const char *s ) );
+// for keyname autocompletion
 
 void Key_WriteBindings( fileHandle_t f );
 // for writing the config files

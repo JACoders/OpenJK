@@ -147,9 +147,9 @@ void CG_RegisterWeapon( int weaponNum ) {
 	}
 
 	// set up the hand that holds the in view weapon - assuming we have one
-	strcpy( path, weaponData[weaponNum].weaponMdl );
-	COM_StripExtension( path, path );
-	strcat( path, "_hand.md3" );
+	Q_strncpyz( path, weaponData[weaponNum].weaponMdl, sizeof(path) );
+	COM_StripExtension( path, path, sizeof(path) );
+	Q_strcat( path, sizeof(path), "_hand.md3" );
 	weaponInfo->handsModel = cgi_R_RegisterModel( path );
 
 	if ( !weaponInfo->handsModel ) {

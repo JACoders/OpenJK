@@ -204,7 +204,6 @@ typedef struct {
 
 typedef struct {
 	connstate_t	state;				// connection status
-	int			keyCatchers;		// bit flags
 
 	char		servername[MAX_OSPATH];		// name of server from original connect (used by reconnect)
 
@@ -456,5 +455,7 @@ void CL_ShutdownUI( void );
 void CL_GenericMenu_f(void);
 void CL_DataPad_f(void);
 void CL_EndScreenDissolve_f(void);
+int Key_GetCatcher( void );
+void Key_SetCatcher( int catcher );
 
 #endif //__CLIENT_H__

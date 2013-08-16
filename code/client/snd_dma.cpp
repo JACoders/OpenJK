@@ -808,7 +808,7 @@ sfx_t *S_FindName( const char *name ) {
 	}
 
 	char sSoundNameNoExt[MAX_QPATH];
-	COM_StripExtension(name,sSoundNameNoExt);
+	COM_StripExtension(name,sSoundNameNoExt, sizeof(sSoundNameNoExt));
 
 	hash = S_HashSFXName(sSoundNameNoExt);
 
@@ -961,7 +961,7 @@ static void EALFileInit(const char *level)
 
 	// Try and load an EAL file for the new level
 	char		name[MAX_QPATH];
-	COM_StripExtension(level, name);
+	COM_StripExtension(level, name, sizeof(name));
 
 	char		szEALFilename[MAX_QPATH];
 	Com_sprintf(szEALFilename, MAX_QPATH, "eagle/%s.eal", name);

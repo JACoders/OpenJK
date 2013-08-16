@@ -231,7 +231,7 @@ void CFxScheduler::StopEffect( const char *file, int boltInfo, bool isPortal )
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 	const int id = mEffectIDs[sfile];
 #ifndef FINAL_BUILD
 	if ( id == 0 )
@@ -419,11 +419,11 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 			p++;
 		}
 
-		COM_StripExtension( last, sfile );
+		COM_StripExtension( last, sfile, sizeof(sfile) );
 	}
 	else
 	{
-		COM_StripExtension( file, sfile );
+		COM_StripExtension( file, sfile, sizeof(sfile) );
 	}
 
 	// see if the specified file is already registered.  If it is, just return the id of that file
@@ -451,7 +451,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	else
 	{
 		// Add on our extension and prepend the file with the default path
-		sprintf( temp, "%s/%s.efx", FX_FILE_PATH, sfile );
+		Com_sprintf( temp, sizeof(temp), "%s/%s.efx", FX_FILE_PATH, sfile );
 		pfile = temp;
 	}
 
@@ -858,7 +858,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t axis[3], 
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	// This is a horribly dumb thing to have to do, but QuakeIII might not have calc'd the lerpOrigin
 	//	for the entity we may be trying to bolt onto.  We like having the correct origin, so we are
@@ -897,7 +897,7 @@ void CFxScheduler::PlayEffect( const char *file, int clientID, bool isPortal )
 	int		id;
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 	id = mEffectIDs[sfile];
 
 #ifndef FINAL_BUILD
@@ -1351,7 +1351,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, bool isPortal )
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	PlayEffect( mEffectIDs[sfile], origin, isPortal );
 
@@ -1380,7 +1380,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t forward, 
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	PlayEffect( mEffectIDs[sfile], origin, forward, isPortal );
 

@@ -92,49 +92,69 @@ char *COM_SkipPath (char *pathname)
 
 /*
 ============
+COM_GetExtension
+============
+*/
+const char *COM_GetExtension( const char *name )
+{
+	const char *dot = strrchr(name, '.'), *slash;
+	if (dot && (!(slash = strrchr(name, '/')) || slash < dot))
+		return dot + 1;
+	else
+		return "";
+}
+
+/*
+============
 COM_StripExtension
 ============
 */
-void COM_StripExtension( const char *in, char *out ) {
-	while ( *in && *in != '.' ) {
-		*out++ = *in++;
-	}
-	*out = 0;
+void COM_StripExtension( const char *in, char *out, int destsize )
+{
+	const char *dot = strrchr(in, '.'), *slash;
+	if (dot && (!(slash = strrchr(in, '/')) || slash < dot))
+		Q_strncpyz(out, in, (destsize < dot-in+1 ? destsize : dot-in+1));
+	else
+		Q_strncpyz(out, in, destsize);
 }
 
+/*
+============
+COM_CompareExtension
+
+string compare the end of the strings and return qtrue if strings match
+============
+*/
+qboolean COM_CompareExtension(const char *in, const char *ext)
+{
+	int inlen, extlen;
+
+	inlen = strlen(in);
+	extlen = strlen(ext);
+
+	if(extlen <= inlen)
+	{
+		in += inlen - extlen;
+
+		if(!Q_stricmp(in, ext))
+			return qtrue;
+	}
+
+	return qfalse;
+}
 
 /*
 ==================
 COM_DefaultExtension
 ==================
 */
-void COM_DefaultExtension (char *path, int maxSize, const char *extension ) {
-	char    *src;
-
-	if (path[0])	// or the strlen()-1 stuff gets a bad ptr for blank string
-	{
-	//
-	// if path doesn't have a .EXT, append extension
-	// (extension should include the .)
-	//
-		src = path + strlen(path) - 1;
-
-		while (*src != '/' && src != path) {
-			if ( *src == '.' ) {
-				return;                 // it has an extension
-			}
-			src--;
-		}
-	}
-
-	if (strlen(path)+strlen(extension) >= (unsigned int)maxSize)
-	{
-		Com_Printf ("COM_DefaultExtension: overflow adding %s to %s\n", extension, path);
-	}
+void COM_DefaultExtension( char *path, int maxSize, const char *extension )
+{
+	const char *dot = strrchr(path, '.'), *slash;
+	if (dot && (!(slash = strrchr(path, '/')) || slash < dot))
+		return;
 	else
-	{
-		strcat(path, extension);
-	}
+		Q_strcat(path, maxSize, extension);
 }
 
 /*
@@ -1076,6 +1096,25 @@ char * QDECL va( const char *format, ... )
 }
 
 /*
+============
+Com_TruncateLongString
+
+Assumes buffer is atleast TRUNCATE_LENGTH big
+============
+*/
+void Com_TruncateLongString( char *buffer, const char *s ) {
+	int length = strlen( s );
+
+	if ( length <= TRUNCATE_LENGTH )
+		Q_strncpyz( buffer, s, TRUNCATE_LENGTH );
+	else {
+		Q_strncpyz( buffer, s, (TRUNCATE_LENGTH/2) - 3 );
+		Q_strcat( buffer, TRUNCATE_LENGTH, " ... " );
+		Q_strcat( buffer, TRUNCATE_LENGTH, s + length - (TRUNCATE_LENGTH/2) + 3 );
+	}
+}
+
+/*
 =====================================================================
 
   INFO STRINGS
@@ -1305,6 +1344,66 @@ void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 }
 
 /*
+==================
+Com_CharIsOneOfCharset
+==================
+*/
+static qboolean Com_CharIsOneOfCharset( char c, char *set ) {
+	size_t i;
+
+	for ( i=0; i<strlen( set ); i++ ) {
+		if ( set[i] == c )
+			return qtrue;
+	}
+
+	return qfalse;
+}
+
+/*
+==================
+Com_SkipCharset
+==================
+*/
+char *Com_SkipCharset( char *s, char *sep ) {
+	char *p = s;
+
+	while ( p ) {
+		if ( Com_CharIsOneOfCharset( *p, sep ) )
+			p++;
+		else
+			break;
+	}
+
+	return p;
+}
+
+/*
+==================
+Com_SkipTokens
+==================
+*/
+char *Com_SkipTokens( char *s, int numTokens, char *sep ) {
+	int sepCount = 0;
+	char *p = s;
+
+	while ( sepCount < numTokens ) {
+		if ( Com_CharIsOneOfCharset( *p++, sep ) ) {
+			sepCount++;
+			while ( Com_CharIsOneOfCharset( *p, sep ) )
+				p++;
+		}
+		else if ( *p == '\0' )
+			break;
+	}
+
+	if ( sepCount == numTokens )
+		return p;
+	else
+		return s;
+}
+
+
+/*
 ========================================================================
 
 String ID Tables
@@ -1318,8 +1417,6 @@ String ID Tables
 GetIDForString 
 -------------------------
 */
-
-#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
 int GetIDForString ( const stringID_table_t *table, const char *string )
 {

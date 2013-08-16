@@ -159,12 +159,12 @@ R_CreateExtendedName
 ===============
 */
 
-void R_CreateExtendedName(char *extendedName, const char *name, const int *lightmapIndex, const byte *styles)
+void R_CreateExtendedName(char *extendedName, int extendedNameSize, const char *name, const int *lightmapIndex, const byte *styles)
 {
 	int		i;
 
 	// Set the basename
-	COM_StripExtension( name, extendedName );
+	COM_StripExtension( name, extendedName, extendedNameSize );
 
 	// Add in lightmaps
 	if(lightmapIndex && styles)
@@ -290,7 +290,7 @@ shader_t *R_FindShaderByName( const char *name ) {
 		return tr.defaultShader;
 	}
 
-	COM_StripExtension( name, strippedName );
+	COM_StripExtension( name, strippedName, sizeof(strippedName) );
 
 	hash = generateHashValue(strippedName);
 
@@ -341,7 +341,7 @@ void R_RemapShader(const char *shaderName, const char *newShaderName, const char
 
 	// remap all the shaders with the given name
 	// even tho they might have different lightmaps
-	COM_StripExtension( shaderName, strippedName );
+	COM_StripExtension( shaderName, strippedName, sizeof(strippedName) );
 	hash = generateHashValue(strippedName);
 	for (sh = sh_hashTable[hash]; sh; sh = sh->next) {
 		if (Q_stricmp(sh->name, strippedName) == 0) {
@@ -3335,7 +3335,7 @@ static inline const int *R_FindLightmap( const int *lightmapIndex )
 	//R_SyncRenderThread(); 
 
 	// attempt to load an external lightmap 
-	sprintf( fileName, "$%s/" EXTERNAL_LIGHTMAP, tr.worldDir, *lightmapIndex ); 
+	Com_sprintf( fileName, sizeof(fileName), "$%s/" EXTERNAL_LIGHTMAP, tr.worldDir, *lightmapIndex ); 
 	image = R_FindImageFile( fileName, qfalse, qfalse, r_ext_compressed_lightmaps->integer, GL_CLAMP ); 
 	if( image == NULL ) 
 	{ 
@@ -3399,7 +3399,7 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 */
 	lightmapIndex = R_FindLightmap(lightmapIndex);
 
-	COM_StripExtension( name, strippedName );
+	COM_StripExtension( name, strippedName, sizeof(strippedName) );
 
 	hash = generateHashValue(strippedName);
 
@@ -3888,7 +3888,7 @@ qhandle_t R_CreateBlendedShader(qhandle_t a, qhandle_t b, qhandle_t c, bool surf
 	}
 
 	// Find if this shader has already been created
-	R_CreateExtendedName(extendedName, blendedName, lightmapsVertex, stylesDefault);
+	R_CreateExtendedName(extendedName, sizeof(extendedName), blendedName, lightmapsVertex, stylesDefault);
 	work = sh_hashTable[generateHashValue(extendedName/*, FILE_HASH_SIZE*/)];
 	for ( ; work; work = work->next) 
 	{

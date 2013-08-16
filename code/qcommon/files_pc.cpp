@@ -1899,4 +1899,23 @@ int		FS_FTell( fileHandle_t f ) {
 	return pos;
 }
 
+void FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt, void(*callback)( const char *s ), qboolean allowNonPureFilesOnDisk ) {
+	int nfiles;
+	char **filenames, filename[MAX_STRING_CHARS];
 
+	filenames = FS_ListFilteredFiles( dir, ext, NULL, &nfiles );
+
+	FS_SortFileList( filenames, nfiles );
+
+	// pass all the files to callback (FindMatches)
+	for ( int i=0; i<nfiles; i++ ) {
+		FS_ConvertPath( filenames[i] );
+		Q_strncpyz( filename, filenames[i], MAX_STRING_CHARS );
+
+		if ( stripExt )
+			COM_StripExtension( filename, filename, sizeof( filename ) );
+
+		callback( filename );
+	}
+	FS_FreeFileList( filenames );
+}
