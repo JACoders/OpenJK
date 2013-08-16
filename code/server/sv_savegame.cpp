@@ -289,7 +289,7 @@ void SV_WipeGame_f(void)
 	}
 	if (!Q_stricmp (Cmd_Argv(1), "auto") )
 	{
-		Com_Printf (S_COLOR_RED "Can't wipe INT_ID('a','u','t','o')\n");
+		Com_Printf (S_COLOR_RED "Can't wipe 'auto'\n");
 		return;
 	}
 	SG_WipeSavegame(Cmd_Argv(1));
@@ -326,7 +326,7 @@ void SV_LoadGame_f(void)
 {
 	if (gbAlreadyDoingLoad)
 	{
-		Com_DPrintf ("( Already loading, ignoring extra INT_ID('l','o','a','d') commands... )\n");
+		Com_DPrintf ("( Already loading, ignoring extra 'load' commands... )\n");
 		return;
 	}
 
