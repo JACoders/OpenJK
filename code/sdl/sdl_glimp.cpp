@@ -23,20 +23,7 @@ typedef enum
 } rserr_t;
 
 static SDL_Window *screen = NULL;
-//static SDL_DisplayMode *videoInfo = NULL;
-
-/* Just hack it for now. */
-#ifdef MACOS_X
-#include <OpenGL/OpenGL.h>
-typedef CGLContextObj QGLContext;
-#define GLimp_GetCurrentContext() CGLGetCurrentContext()
-#define GLimp_SetCurrentContext(ctx) CGLSetCurrentContext(ctx)
-#else
-typedef void *QGLContext;
-#define GLimp_GetCurrentContext() (NULL)
-#define GLimp_SetCurrentContext(ctx)
-#endif
-static QGLContext opengl_context;
+static SDL_GLContext opengl_context;
 
 bool g_bTextureRectangleHack = false;
 
@@ -103,9 +90,9 @@ void GLimp_Minimize(void)
 	SDL_MinimizeWindow( screen );
 }
 
-void		GLimp_EndFrame( void )
+void GLimp_EndFrame( void )
 {
-  SDL_GL_SwapWindow(screen);
+	SDL_GL_SwapWindow(screen);
 }
 
 /*
@@ -139,7 +126,7 @@ static int GLimp_CompareModes( const void *a, const void *b )
 GLimp_DetectAvailableModes
 ===============
 */
-static void GLimp_DetectAvailableModes(void)
+static bool GLimp_DetectAvailableModes(void)
 {
 	int i;
 	char buf[ MAX_STRING_CHARS ] = { 0 };
@@ -151,11 +138,12 @@ static void GLimp_DetectAvailableModes(void)
 
 	if( SDL_GetWindowDisplayMode( screen, &windowMode ) < 0 )
 	{
-		Com_Printf( "Couldn't get window display mode, no resolutions detected\n" );
-		return;
+		Com_Printf( "Couldn't get window display mode, no resolutions detected (%s).\n", SDL_GetError() );
+		return false;
 	}
 
-	for( i = 0; i < SDL_GetNumDisplayModes( display ); i++ )
+	int numDisplayModes = SDL_GetNumDisplayModes( display );
+	for( i = 0; i < numDisplayModes; i++ )
 	{
 		SDL_DisplayMode mode;
 
@@ -165,7 +153,7 @@ static void GLimp_DetectAvailableModes(void)
 		if( !mode.w || !mode.h )
 		{
 			Com_Printf( "Display supports any resolution\n" );
-			return;
+			return true;
 		}
 
 		if( windowMode.format != mode.format )
@@ -195,6 +183,8 @@ static void GLimp_DetectAvailableModes(void)
 		Com_Printf( "Available modes: '%s'\n", buf );
 		ri.Cvar_Set( "r_availableModes", buf );
 	}
+
+	return true;
 }
 
 /*
@@ -202,14 +192,14 @@ static void GLimp_DetectAvailableModes(void)
 GLimp_SetMode
 ===============
 */
-static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
+static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 {
 	const char *glstring;
 	int perChannelColorBits;
 	int colorBits, depthBits, stencilBits;
 	//int samples;
 	int i = 0;
-	SDL_Surface *icon = NULL;
+	//SDL_Surface *icon = NULL;
 	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
 	SDL_DisplayMode desktopMode;
 	int display = 0;
@@ -217,7 +207,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 	Com_Printf( "Initializing OpenGL display\n");
 
-	if ( r_allowResize->integer )
+	if ( r_allowResize->integer && !fullscreen )
 		flags |= SDL_WINDOW_RESIZABLE;
 
 	/*icon = SDL_CreateRGBSurfaceFrom(
@@ -421,7 +411,7 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 			SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
 
 		if( ( screen = SDL_CreateWindow( CLIENT_WINDOW_TITLE, x, y,
-				glConfig.vidWidth, glConfig.vidHeight, flags ) ) == 0 )
+				glConfig.vidWidth, glConfig.vidHeight, flags ) ) == NULL )
 		{
 			Com_DPrintf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
 			continue;
@@ -451,9 +441,9 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		}
 
 		SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
-		SDL_SetWindowIcon( screen, icon );
+		//SDL_SetWindowIcon( screen, icon );
 
-		if( ( opengl_context = (QGLContext)SDL_GL_CreateContext( screen ) ) == NULL )
+		if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
 		{
 			Com_Printf( "SDL_GL_CreateContext failed: %s\n", SDL_GetError( ) );
 			continue;
@@ -478,7 +468,10 @@ static int GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 	/*SDL_FreeSurface( icon );*/
 
-	GLimp_DetectAvailableModes();
+	if (!GLimp_DetectAvailableModes())
+	{
+		return RSERR_UNKNOWN;
+	}
 
 	glstring = (char *) qglGetString (GL_RENDERER);
 	Com_Printf( "GL_RENDERER: %s\n", glstring );
@@ -794,7 +787,7 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 		fullscreen = qfalse;
 	}
 
-	err = (rserr_t)GLimp_SetMode(mode, fullscreen, noborder);
+	err = GLimp_SetMode(mode, fullscreen, noborder);
 
 	switch ( err )
 	{
@@ -803,6 +796,9 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 			return qfalse;
 		case RSERR_INVALID_MODE:
 			Com_Printf( "...WARNING: could not set the given mode (%d)\n", mode );
+			return qfalse;
+		case RSERR_UNKNOWN:
+			Com_Printf( "...ERROR: no display modes could be found.\n" );
 			return qfalse;
 		default:
 			break;
@@ -1274,7 +1270,8 @@ static void GLimp_InitExtensions( void )
 	// Find out how many general combiners they have.
 	#define GL_MAX_GENERAL_COMBINERS_NV       0x854D
 	GLint iNumGeneralCombiners = 0;
-	qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
+	if(bNVRegisterCombiners)
+		qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
 
 	// Only allow dynamic glows/flares if they have the hardware
 	if ( bTexRectSupported && bARBVertexProgram /*whee && bHasRenderTexture*/ && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
@@ -1355,9 +1352,9 @@ success:
 
 	// get our config strings
     glConfig.vendor_string = (const char *) qglGetString (GL_VENDOR);
-    glConfig.renderer_string = (const char *) qglGetString (GL_RENDERER);
-    glConfig.version_string = (const char *) qglGetString (GL_VERSION);
-    glConfig.extensions_string = (const char *) qglGetString (GL_EXTENSIONS);
+	glConfig.renderer_string = (const char *) qglGetString (GL_RENDERER);
+	glConfig.version_string = (const char *) qglGetString (GL_VERSION);
+	glConfig.extensions_string = (const char *) qglGetString (GL_EXTENSIONS);
 
 	// OpenGL driver constants
 	qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &glConfig.maxTextureSize );
