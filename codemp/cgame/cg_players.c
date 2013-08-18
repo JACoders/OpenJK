@@ -6099,11 +6099,11 @@ void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, in
 		{
 			if (saberNum == 0)
 			{
-				scolor = (cent->currentState.boltToPlayer & 0x0F) - 1;
+				scolor = (cent->currentState.boltToPlayer & 0x07) - 1;
 			}
 			else
 			{
-				scolor = ((cent->currentState.boltToPlayer & 0xF0) >> 4) - 1;
+				scolor = ((cent->currentState.boltToPlayer & 0x38) >> 3) - 1;
 			}
 		}
 		else
