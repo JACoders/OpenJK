@@ -15,6 +15,8 @@
 
 #if defined(_DEBUG)
 	#define	JK_VERSION		"(debug)OpenJK-MP: v"VERSION_STRING_DOTTED
+	#define JK_VERSION_OLD	"(debug)JAmp: v"VERSION_STRING_DOTTED
 #else
 	#define	JK_VERSION		"OpenJK-MP: v"VERSION_STRING_DOTTED
+	#define JK_VERSION_OLD	"JAmp: v"VERSION_STRING_DOTTED
 #endif

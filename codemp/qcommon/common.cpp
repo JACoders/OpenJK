@@ -1288,7 +1288,7 @@ void Com_Init( char *commandLine ) {
 		Cmd_AddCommand ("changeVectors", MSG_ReportChangeVectors_f );
 		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
 
-		s = va("%s %s %s", JK_VERSION, PLATFORM_STRING, __DATE__ );
+		s = va("%s %s %s", JK_VERSION_OLD, PLATFORM_STRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
 		SE_Init();
