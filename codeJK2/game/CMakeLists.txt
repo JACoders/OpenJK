@@ -233,7 +233,6 @@ set(JK2SPGameIcarusFiles
 	"${JK2SPDir}/icarus/Sequencer.cpp"
 	"${JK2SPDir}/icarus/TaskManager.cpp"
 	"${JK2SPDir}/icarus/blockstream.h"
-	"${JK2SPDir}/icarus/IcarusInterface.h"
 	"${JK2SPDir}/icarus/sequence.h"
 	"${JK2SPDir}/icarus/sequencer.h"
 	"${JK2SPDir}/icarus/taskmanager.h"
