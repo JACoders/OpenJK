@@ -5,9 +5,9 @@
 #pragma warning( disable : 4663) 
 #include <windows.h>
 
-#include "..\smartheap\smrtheap.h"
+#include "../smartheap/smrtheap.h"
 #include "../game/q_shared.h"
-#include "..\qcommon\qcommon.h"
+#include "../qcommon/qcommon.h"
 
 #include <stdio.h>
 #include <map>
@@ -15,7 +15,7 @@
 using namespace std;
 
 #if MEM_DEBUG
-#include "..\smartheap\heapagnt.h"
+#include "../smartheap/heapagnt.h"
 
 static const int maxStack=2048;
 static int TotalMem;

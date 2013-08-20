@@ -22,7 +22,7 @@ This file is part of Jedi Knight 2.
 
 #include "g_local.h"
 #include "g_functions.h"
-#include "..\cgame\cg_media.h"
+#include "../cgame/cg_media.h"
 
 extern team_t TranslateTeamName( const char *name );
 

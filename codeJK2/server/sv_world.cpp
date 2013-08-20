@@ -10,10 +10,10 @@ Ghoul2 Insert Start
 */
 
 #if !defined(GHOUL2_SHARED_H_INC)
-	#include "..\game\ghoul2_shared.h"	//for CGhoul2Info_v
+	#include "../game/ghoul2_shared.h"	//for CGhoul2Info_v
 #endif
 #if !defined(G2_H_INC)
-	#include "..\ghoul2\G2.h"
+	#include "../ghoul2/G2.h"
 #endif
 #if !defined (MINIHEAP_H_INC)
 	#include "../qcommon/miniheap.h"
@@ -26,7 +26,7 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 #if MEM_DEBUG
-#include "..\smartheap\heapagnt.h"
+#include "../smartheap/heapagnt.h"
 #define SV_TRACE_PROFILE (0)
 #endif
 

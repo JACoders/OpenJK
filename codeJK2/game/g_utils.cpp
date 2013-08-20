@@ -29,7 +29,7 @@ This file is part of Jedi Knight 2.
 #include "g_icarus.h"
 #include "b_local.h"
 #include "anims.h"
-#include "..\renderer\mdx_format.h"
+#include "../renderer/mdx_format.h"
 
 #define ACT_ACTIVE		qtrue
 #define ACT_INACTIVE	qfalse
@@ -227,7 +227,7 @@ void G_PlayEffect( const char *name,  const int modelIndex, const int boltIndex,
 //===Bypass network for sounds on specific channels====================
 
 extern void cgi_S_StartSound( vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx );
-#include "..\cgame\cg_media.h"	//access to cgs
+#include "../cgame/cg_media.h"	//access to cgs
 extern void CG_TryPlayCustomSound( vec3_t origin, int entityNum, soundChannel_t channel, const char *soundName, int customSoundSet );
 //NOTE: Do NOT Try to use this before the cgame DLL is valid, it will NOT work!
 void G_SoundOnEnt (gentity_t *ent, soundChannel_t channel, const char *soundPath)

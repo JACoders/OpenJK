@@ -23,7 +23,7 @@ This file is part of Jedi Knight 2.
 
 #include "cg_media.h"
 
-#include "..\game\g_roff.h"
+#include "../game/g_roff.h"
 
 bool		in_camera = false;
 camera_t	client_camera={0};
