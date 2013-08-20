@@ -34,7 +34,7 @@ This file is part of Jedi Knight 2.
 
 using namespace std;
 
-#include <windows.h>
+//#include <windows.h>
 
 typedef unsigned char byte;
 typedef unsigned short word;

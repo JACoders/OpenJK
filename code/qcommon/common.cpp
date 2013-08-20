@@ -1041,7 +1041,7 @@ void Com_Init( char *commandLine ) {
 
 #ifndef __NO_JK2
 		Com_StartupVariable( "com_jk2" );
-		com_jk2 = Cvar_Get( "com_jk2", "0", CVAR_INIT );
+		com_jk2 = Cvar_Get( "com_jk2", "1", CVAR_INIT );
 #endif
 
 		// done early so bind command exists
