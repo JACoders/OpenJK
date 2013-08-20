@@ -91,10 +91,10 @@ set(JK2SPGameFiles
 	"${JK2SPDir}/game/q_math.cpp" #TODO should be using shared qcommon
 	"${JK2SPDir}/game/q_shared.cpp"  #TODO should be using shared qcommon
 	"${JK2SPDir}/game/wp_atst.cpp"
-	"${JK2SPDir}/game/wp_blaster_pistol.cpp"
+	"${JK2SPDir}/game/wp_blaster_rifle.cpp"
 	"${JK2SPDir}/game/wp_bot_laser.cpp"
 	"${JK2SPDir}/game/wp_bowcaster.cpp"
-	"${JK2SPDir}/game/wp_bryar_rifle.cpp"
+	"${JK2SPDir}/game/wp_bryar_pistol.cpp"
 	"${JK2SPDir}/game/wp_demp2.cpp"
 	"${JK2SPDir}/game/wp_det_pack.cpp"
 	"${JK2SPDir}/game/wp_disruptor.cpp"
