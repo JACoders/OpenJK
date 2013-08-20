@@ -20,6 +20,12 @@ This file is part of Jedi Knight 2.
 
 #include "cg_local.h"
 
+#ifdef _NO_PCH // (mrw) not sure how to make cmake use PCH, so they can be deactivated
+#include "../game/g_local.h"
+#include "../game/g_functions.h"
+#include "../game/b_local.h"
+#endif
+
 //#include "CGEntity.h"
 //#include "../game/SpawnSystem.h"
 //#include "../game/EntitySystem.h"
