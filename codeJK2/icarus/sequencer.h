@@ -21,10 +21,10 @@ This file is part of Jedi Knight 2.
 #ifndef __SEQUENCER__
 #define __SEQUENCER__
 
-#include "BlockStream.h"
-#include "Interface.h"
-#include "TaskManager.h"
-#include "Sequence.h"
+#include "blockstream.h"
+#include "interface.h"
+#include "taskmanager.h"
+#include "sequence.h"
 
 #pragma warning(disable : 4786)	//identifier was truncated 
 
