@@ -22,9 +22,9 @@ This file is part of Jedi Knight 2.
 //#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
-#include "..\game\wp_saber.h"
+#include "../game/wp_saber.h"
 
-#include "..\game\anims.h"
+#include "../game/anims.h"
 
 extern void CG_LightningBolt( centity_t *cent, vec3_t origin );
 

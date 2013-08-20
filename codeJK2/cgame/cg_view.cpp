@@ -26,7 +26,7 @@ This file is part of Jedi Knight 2.
 #include "cg_media.h"
 #include "FxScheduler.h"
 #include "cg_lights.h"
-#include "..\game\wp_saber.h"
+#include "../game/wp_saber.h"
 
 #define MASK_CAMERACLIP (MASK_SOLID)
 #define CAMERA_SIZE	4

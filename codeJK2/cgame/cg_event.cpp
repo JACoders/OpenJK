@@ -25,7 +25,7 @@ This file is part of Jedi Knight 2.
 #include "cg_media.h"
 #include "FxScheduler.h"
 
-#include "..\game\anims.h"
+#include "../game/anims.h"
 
 extern void CG_TryPlayCustomSound( vec3_t origin, int entityNum, soundChannel_t channel, const char *soundName, int customSoundSet );
 
