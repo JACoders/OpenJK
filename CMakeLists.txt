@@ -19,9 +19,12 @@ option(BuildMPCGame "Whether to create projects for the MP clientside gamecode (
 option(BuildMPUI "Whether to create projects for the MP UI code (uix86.dll)" ON)
 option(BuildSPEngine "Whether to create projects for the SP engine (openjk_sp.exe)" ON)
 option(BuildSPGame "Whether to create projects for the SP gamecode (jagamex86.dll)" ON)
-# (mrw) jk2 has some weird PCH fuckery I cannot replicate with cmake without too much work
-set(BuildJK2SPGame OFF)
-#option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
+
+if(BuildJK2Support)
+	option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" ON)
+else(BuildJK2Support)
+	set(BuildJK2SPGame OFF)
+endif(BuildJK2Support)
 
 # Customizable libraries
 if(WIN32)

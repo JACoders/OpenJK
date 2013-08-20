@@ -325,7 +325,7 @@ set(SPGameRendererFiles
 	"${SPDir}/renderer/mdx_format.h"
 	"${SPDir}/renderer/tr_types.h"
 	)
-source_group("rufl" FILES ${SPGameRendererFiles})
+source_group("renderer" FILES ${SPGameRendererFiles})
 set(SPGameFiles ${SPGameFiles} ${SPGameRendererFiles})
 
 set(SPGameClientFiles
