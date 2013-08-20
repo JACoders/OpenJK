@@ -229,16 +229,13 @@ set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonFiles})
 
 set(JK2SPGameIcarusFiles
 	"${JK2SPDir}/icarus/BlockStream.cpp"
-	"${JK2SPDir}/icarus/IcarusImplementation.cpp"
 	"${JK2SPDir}/icarus/Sequence.cpp"
 	"${JK2SPDir}/icarus/Sequencer.cpp"
 	"${JK2SPDir}/icarus/TaskManager.cpp"
 	"${JK2SPDir}/icarus/blockstream.h"
-	"${JK2SPDir}/icarus/IcarusImplementation.h"
 	"${JK2SPDir}/icarus/IcarusInterface.h"
 	"${JK2SPDir}/icarus/sequence.h"
 	"${JK2SPDir}/icarus/sequencer.h"
-	"${JK2SPDir}/icarus/StdAfx.h"
 	"${JK2SPDir}/icarus/taskmanager.h"
 	)
 source_group("icarus" FILES ${JK2SPGameIcarusFiles})
@@ -246,7 +243,7 @@ set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameIcarusFiles})
 
 set(JK2SPGameG2Files
 	"${JK2SPDir}/ghoul2/G2.h"
-	"${JK2SPDir}/ghoul2/ghoul2_gore.h"
+	#"${JK2SPDir}/ghoul2/ghoul2_gore.h"
 	)
 source_group("ghoul2" FILES ${JK2SPGameG2Files})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameG2Files})
