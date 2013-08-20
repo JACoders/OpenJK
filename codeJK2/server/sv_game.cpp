@@ -8,14 +8,14 @@
 
 
 #include "server.h"
-#include "..\client\vmachine.h"
-#include "..\client\client.h"
-#include "..\renderer\tr_local.h"
+#include "../client/vmachine.h"
+#include "../client/client.h"
+#include "../renderer/tr_local.h"
 /*
 Ghoul2 Insert Start
 */
 #if !defined(G2_H_INC)
-	#include "..\ghoul2\G2.h"
+	#include "../ghoul2/G2.h"
 #endif
 
 /*

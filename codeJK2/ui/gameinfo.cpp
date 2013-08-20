@@ -27,7 +27,7 @@ This file is part of Jedi Knight 2.
 
 
 #include "gameinfo.h"
-#include "..\game\weapons.h"
+#include "../game/weapons.h"
 
 
 gameinfo_import_t	gi;

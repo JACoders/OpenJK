@@ -25,7 +25,7 @@ This file is part of Jedi Knight 2.
 #endif
 
 #if !defined(GHOUL2_SHARED_H_INC)
-	#include "..\game\ghoul2_shared.h"	//for CGhoul2Info_v
+	#include "../game/ghoul2_shared.h"	//for CGhoul2Info_v
 #endif
 
 #if !defined(G2_H_INC)

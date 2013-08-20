@@ -4,7 +4,7 @@
 
 
 
-#include "..\client\vmachine.h"
+#include "../client/vmachine.h"
 #include "server.h"
 
 

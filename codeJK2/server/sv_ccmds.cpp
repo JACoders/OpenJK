@@ -5,9 +5,9 @@
 
 
 #include "server.h"
-#include "..\game\weapons.h"
-#include "..\game\g_items.h"
-#include "..\game\statindex.h"
+#include "../game/weapons.h"
+#include "../game/g_items.h"
+#include "../game/statindex.h"
 
 
 /*
