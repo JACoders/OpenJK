@@ -24,7 +24,7 @@
 #endif
 
 #if !defined(MINIHEAP_H_INC)
-	#include "..\qcommon\MiniHeap.h"
+	#include "../qcommon/MiniHeap.h"
 #endif
 
 
