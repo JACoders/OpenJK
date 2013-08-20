@@ -21,7 +21,7 @@ This file is part of Jedi Knight 2.
 #ifndef __TASK_MANAGER__
 #define __TASK_MANAGER__
 
-#include "Sequencer.h"
+#include "sequencer.h"
 
 #define MAX_TASK_NAME	64
 

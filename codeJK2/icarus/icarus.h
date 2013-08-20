@@ -40,12 +40,12 @@ enum WL_e {
 #define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )
 #define STL_INSERT( a, b )		a.insert( a.end(), b );
 
-#include "Tokenizer.h"
-#include "BlockStream.h"
-#include "Interpreter.h"
-#include "Sequencer.h"
-#include "TaskManager.h"
-#include "Instance.h"
+#include "tokenizer.h"
+#include "blockstream.h"
+#include "interpreter.h"
+#include "sequencer.h"
+#include "taskmanager.h"
+#include "instance.h"
 
 #pragma warning( pop )	//restore
 

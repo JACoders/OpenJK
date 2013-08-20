@@ -21,9 +21,9 @@ This file is part of Jedi Knight 2.
 #ifndef __SEQUENCE__
 #define __SEQUENCE__
 
-#include "BlockStream.h"
-#include "Interface.h"
-#include "TaskManager.h"
+#include "blockstream.h"
+#include "interface.h"
+#include "taskmanager.h"
 
 class ICARUS_Instance;
 
