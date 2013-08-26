@@ -677,7 +677,7 @@ void SetTeam( gentity_t *ent, char *s ) {
 	specState = SPECTATOR_NOT;
 	if ( !Q_stricmp( s, "scoreboard" ) || !Q_stricmp( s, "score" )  ) {
 		team = TEAM_SPECTATOR;
-		specState = SPECTATOR_SCOREBOARD;
+		specState = SPECTATOR_FREE; // SPECTATOR_SCOREBOARD disabling this for now since it is totally broken on client side
 	} else if ( !Q_stricmp( s, "follow1" ) ) {
 		team = TEAM_SPECTATOR;
 		specState = SPECTATOR_FOLLOW;
