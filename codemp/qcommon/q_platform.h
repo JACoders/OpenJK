@@ -25,7 +25,7 @@
 	#if defined(_M_ALPHA)
 		#define ARCH_STRING "AXP"
 	#else
-		#define ARCH_STRING "x84_64"
+		#define ARCH_STRING "x86_64"
 	#endif
 
 	#define Q3_LITTLE_ENDIAN
