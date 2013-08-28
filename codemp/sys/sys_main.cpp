@@ -12,6 +12,10 @@
 #include "sys_local.h"
 #endif
 
+#if defined(MACOS_X) || defined(__linux__) || defined(__FreeBSD_kernel__)
+	#include <unistd.h>
+#endif
+
 static char binaryPath[ MAX_OSPATH ] = { 0 };
 static char installPath[ MAX_OSPATH ] = { 0 };
 
