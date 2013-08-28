@@ -422,7 +422,7 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 		grpName = primitiveGroup->GetName();
 
 		type = None;
-		for ( int i=0; i<numPrimitiveTypes; i++ ) {
+		for ( unsigned int i=0; i<numPrimitiveTypes; i++ ) {
 			if ( !Q_stricmp( grpName, primitiveTypes[i].name ) ) {
 				type = primitiveTypes[i].type;
 				break;
