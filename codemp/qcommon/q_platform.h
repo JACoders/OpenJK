@@ -63,8 +63,6 @@
 // MAC OS X
 #elif defined(MACOS_X) || defined(__APPLE_CC__)
 
-	#include <unistd.h>
-
 	// make sure this is defined, just for sanity's sake...
 	#ifndef MACOS_X
 		#define MACOS_X
