@@ -489,7 +489,7 @@ LONG WINAPI MainWndProc (
 	case WM_INPUT:
 		{
 			RAWINPUT raw;
-			size_t rawSize = sizeof(raw);
+			UINT rawSize = sizeof(raw);
 
 			GetRawInputData( (HRAWINPUT) lParam, RID_INPUT, &raw, &rawSize, sizeof(RAWINPUTHEADER) );
 

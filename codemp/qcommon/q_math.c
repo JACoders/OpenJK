@@ -853,7 +853,7 @@ QINLINE qboolean VectorCompare( const vec3_t vec1, const vec3_t vec2 ) {
 }
 
 QINLINE void SnapVector( float *v ) {
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(idx64)
 	// pitiful attempt to reduce _ftol2 calls -rww
 	static int i;
 	static float f;
