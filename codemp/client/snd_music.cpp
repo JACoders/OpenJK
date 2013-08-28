@@ -205,7 +205,7 @@ static sboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 				const char *psKey	= pValue->GetName();
 				const char *psValue	= pValue->GetTopValue();
 
-				//if (!strncmp(psKey,sKEY_MARKER,strlen(sKEY_MARKER)))	// for now, assume anything is a marker
+				//if (!Q_strncmp(psKey,sKEY_MARKER,strlen(sKEY_MARKER)))	// for now, assume anything is a marker
 				{
 					MusicFile.MusicEntryTimes[psKey] = atof(psValue);
 					bEntryFound = qtrue;						// harmless to keep setting
@@ -246,7 +246,7 @@ static sboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 						MusicExitPoint.sNextMark = psValue;
 					}
 					else
-					if (!strncmp(psKey,sKEY_TIME,strlen(sKEY_TIME)))
+					if (!Q_strncmp(psKey,sKEY_TIME,strlen(sKEY_TIME)))
 					{
 						MusicExitTime_t MusicExitTime;
 										MusicExitTime.fTime		= atof(psValue);
@@ -633,7 +633,7 @@ static sboolean Music_ParseLeveldata(const char *psLevelName)
 
 			// kludge up an enum, only interested in boss or not at the moment, so...
 			//
-			MusicState_e eMusicState = !stricmp(psMusicStateType,"boss") ? eBGRNDTRACK_BOSS : !stricmp(psMusicStateType,"death") ? eBGRNDTRACK_DEATH : eBGRNDTRACK_EXPLORE;
+			MusicState_e eMusicState = !Q_stricmp(psMusicStateType,"boss") ? eBGRNDTRACK_BOSS : !Q_stricmp(psMusicStateType,"death") ? eBGRNDTRACK_DEATH : eBGRNDTRACK_EXPLORE;
 
 			if (!MusicFile.MusicExitTimes.empty())
 			{

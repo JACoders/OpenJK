@@ -151,7 +151,7 @@ bool CRMManager::LoadMission ( qboolean IsServer )
 		if(Com_ParseTextFile(va("ext_data/rmg/%s.teams", temp), parser))
 		{
 			root = parser.GetBaseParseGroup()->GetSubGroups();
-			if (0 == stricmp(root->GetName(), "teams"))
+			if (0 == Q_stricmp(root->GetName(), "teams"))
 			{
 				/*
 				SV_SetConfigstring( CS_GAMETYPE_REDTEAM, root->FindPairValue ( "red", "marine" ));

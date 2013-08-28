@@ -61,7 +61,7 @@ void CCMLandScape::LoadTerrainDef(const char *td)
 		items = classes->GetSubGroups();
 		while(items)
 		{
-			if(!stricmp(items->GetName(), "altitudetexture"))
+			if(!Q_stricmp(items->GetName(), "altitudetexture"))
 			{
 				int			height;
 				const char	*shaderName;
@@ -81,7 +81,7 @@ void CCMLandScape::LoadTerrainDef(const char *td)
 					}
 				}
 			}
-			else if(!stricmp(items->GetName(), "water"))
+			else if(!Q_stricmp(items->GetName(), "water"))
 			{
 				const char	*shaderName;
 				CCMShader	*shader;

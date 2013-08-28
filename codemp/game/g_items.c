@@ -2904,7 +2904,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 
 	// create a Ghoul2 model if the world model is a glm
 /*	item = &bg_itemlist[ ent->s.modelindex ];
-	if (!stricmp(&item->world_model[0][strlen(item->world_model[0]) - 4], ".glm"))
+	if (!Q_stricmp(&item->world_model[0][strlen(item->world_model[0]) - 4], ".glm"))
 	{
 		trap->G2API_InitGhoul2Model(&ent->s, item->world_model[0], G_ModelIndex(item->world_model[0] ), 0, 0, 0, 0);
 		ent->s.radius = 60;

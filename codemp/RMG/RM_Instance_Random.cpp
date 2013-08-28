@@ -39,7 +39,7 @@ CRMRandomInstance::CRMRandomInstance ( CGPGroup *instGroup, CRMInstanceFile& ins
 		  group = group->GetNext ( ) )
 	{
 		// If this isnt an instance group then skip it
-		if ( stricmp ( group->GetName ( ), "instance" ) )
+		if ( Q_stricmp ( group->GetName ( ), "instance" ) )
 		{
 			continue;
 		}

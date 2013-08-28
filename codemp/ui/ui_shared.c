@@ -7349,7 +7349,7 @@ qboolean ItemParse_asset_model( itemDef_t *item, int handle ) {
 	temp = token.string;
 
 #ifdef _UI
-	if (!stricmp(token.string,"ui_char_model") )
+	if (!Q_stricmp(token.string,"ui_char_model") )
 	{
 		char modelPath[MAX_QPATH];
 		char ui_char_model[MAX_QPATH];

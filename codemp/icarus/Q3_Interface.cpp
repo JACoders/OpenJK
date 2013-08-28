@@ -278,7 +278,7 @@ static qboolean G_AddSexToMunroString ( char *string, qboolean qDoBoth )
 			} else {
 				start = strrchr( string, '/' );		//get the last slash before the wav
 				if (start != NULL) {
-					if (!strncmp( start, "/mr_", 4) ) {
+					if (!Q_strncmp( start, "/mr_", 4) ) {
 						if (qDoBoth) {	//we want to change mr to ms
 							start[2] = 's';	//change mr to ms
 							return qtrue;
@@ -292,7 +292,7 @@ static qboolean G_AddSexToMunroString ( char *string, qboolean qDoBoth )
 		else {	//i'm male
 			start = strrchr( string, '/' );		//get the last slash before the wav
 			if (start != NULL) {
-				if (!strncmp( start, "/ms_", 4) ) {
+				if (!Q_strncmp( start, "/ms_", 4) ) {
 					return qfalse;	//don't want this one
 				}
 			}	//IF found slash
@@ -491,7 +491,7 @@ static int Q3_Evaluate( int p1Type, const char *p1, int p2Type, const char *p2, 
 
 		case TK_STRING:
 		case TK_IDENTIFIER:
-			return (int) !stricmp( c1, c2 );	//NOTENOTE: The script uses proper string comparison logic (ex. ( a == a ) == true )
+			return (int) !Q_stricmp( c1, c2 );	//NOTENOTE: The script uses proper string comparison logic (ex. ( a == a ) == true )
 			break;
 
 		default:
@@ -591,7 +591,7 @@ static int Q3_Evaluate( int p1Type, const char *p1, int p2Type, const char *p2, 
 
 		case TK_STRING:
 		case TK_IDENTIFIER:
-			return (int) stricmp( c1, c2 );
+			return (int) Q_stricmp( c1, c2 );
 			break;
 
 		default:

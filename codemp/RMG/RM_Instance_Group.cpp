@@ -61,7 +61,7 @@ CRMGroupInstance::CRMGroupInstance ( CGPGroup *instGroup, CRMInstanceFile& instF
 		//float		 maxrange;
 
 		// Make sure only instances are specified as sub groups
-		assert ( 0 == stricmp ( instGroup->GetName ( ), "instance" ) );
+		assert ( 0 == Q_stricmp ( instGroup->GetName ( ), "instance" ) );
 
 		// Grab the name
 		name     = instGroup->FindPairValue ( "name", "" );

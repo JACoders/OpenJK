@@ -278,7 +278,7 @@ void R_Splash()
 {
 	image_t *pImage;
 /*	const char* s = ri->Cvar_VariableString("se_language");
-	if (stricmp(s,"english"))
+	if (Q_stricmp(s,"english"))
 	{
 		pImage = R_FindImageFile( "menu/splash_eur", qfalse, qfalse, qfalse, GL_CLAMP);
 	}

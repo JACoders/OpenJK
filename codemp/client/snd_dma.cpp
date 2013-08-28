@@ -3817,34 +3817,35 @@ void S_SoundList_f( void ) {
 	int		size, total;
 	int		iVariantCap = -1;	// for %d-inquiry stuff
 	int		iTotalBytes = 0;
+	char	*arg = NULL;
 
 	sboolean bWavOnly = qfalse;
 	sboolean bShouldBeMP3 = qfalse;
 
 	if ( Cmd_Argc() == 2 ) 
 	{
-		if (!stricmp(Cmd_Argv(1), "shouldbeMP3"))
+		arg = Cmd_Argv(1);
+		if (!Q_stricmp(arg, "shouldbeMP3"))
 		{
 			bShouldBeMP3 = qtrue;
 		}
-		else
-		if (!stricmp(Cmd_Argv(1), "wavonly"))
+		else if (!Q_stricmp(arg, "wavonly"))
 		{
 			bWavOnly = qtrue;
 		}
 		else
 		{
-			if (!stricmp(Cmd_Argv(1), "1"))
+			if (!Q_stricmp(arg, "1"))
 			{
 				iVariantCap = 1;
 			}
 			else
-			if (!stricmp(Cmd_Argv(1), "2"))
+			if (!Q_stricmp(arg, "2"))
 			{
 				iVariantCap = 2;
 			}
 			else
-			if (!stricmp(Cmd_Argv(1), "3"))
+			if (!Q_stricmp(arg, "3"))
 			{
 				iVariantCap = 3;
 			}
@@ -3895,7 +3896,7 @@ void S_SoundList_f( void ) {
 						sfx_t *sfx2;
 						for (sfx2 = s_knownSfx, i2=0 ; i2<s_numSfx ; i2++, sfx2++) 
 						{
-							if (!stricmp(sFindName,sfx2->sSoundName))
+							if (!Q_stricmp(sFindName,sfx2->sSoundName))
 							{
 								bDumpThisOne = qfalse;	// found a %1-variant of this, so use variant capping and ignore this sfx_t
 								break;
@@ -5028,7 +5029,7 @@ static void S_UpdateBackgroundTrack( void )
 		// standard / non-dynamic one-track music...
 		//
 		const char *psCommand = S_Music_GetRequestedState();	// special check just for "silence" case...
-		sboolean bShouldBeSilent = (psCommand && !stricmp(psCommand,"silence"));
+		sboolean bShouldBeSilent = (psCommand && !Q_stricmp(psCommand,"silence"));
 		float fDesiredVolume = bShouldBeSilent ? 0.0f : s_musicVolume->value;
 		//
 		// internal to this code is a volume-smoother...
