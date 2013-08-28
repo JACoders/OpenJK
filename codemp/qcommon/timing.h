@@ -12,7 +12,7 @@ public:
 	}
 	void Start()
 	{
-#ifdef _WIN32
+#if defined(_MSC_VER) && !defined(idx64)
 		const int64_t *s = &start;
 		__asm
 		{
@@ -34,7 +34,7 @@ public:
 	int End()
 	{
 		int64_t	time;
-#ifdef _WIN32
+#if defined(_MSC_VER) && !defined(idx64)
 		const int64_t *e = &end;
 		__asm
 		{

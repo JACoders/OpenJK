@@ -73,6 +73,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/botlib/l_struct.h"
 		"${MPDir}/botlib/l_utils.h"
 		"${MPDir}/qcommon/q_shared.h"
+		"${MPDir}/qcommon/q_platform.h"
 		"${MPDir}/qcommon/qcommon.h"
 		"${MPDir}/qcommon/qfiles.h"
 		"${MPDir}/server/server.h"
@@ -172,6 +173,7 @@ if(BuildMPEngine OR BuildMPDed)
 	
 	set(MPEngineAndDedCommonFiles
 		"${MPDir}/qcommon/q_shared.h"
+		"${MPDir}/qcommon/q_platform.h"
 		"${MPDir}/qcommon/chash.h"
 		"${MPDir}/qcommon/cm_draw.cpp"
 		"${MPDir}/qcommon/cm_draw.h"

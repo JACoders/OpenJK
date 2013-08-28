@@ -32,6 +32,7 @@ set(MPUICommonFiles
 	"${MPDir}/qcommon/disablewarnings.h"
 	"${MPDir}/qcommon/game_version.h"
 	"${MPDir}/qcommon/q_shared.h"
+	"${MPDir}/qcommon/q_platform.h"
 	"${MPDir}/qcommon/qfiles.h"
 	"${MPDir}/qcommon/tags.h"
 	)
