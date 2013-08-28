@@ -6483,62 +6483,30 @@ static void CG_DrawVote(void) {
 		sec = 0;
 	}
 
-	if (strncmp(cgs.voteString, "map_restart", 11)==0)
-	{
-		trap->SE_GetStringTextString("MENUS_RESTART_MAP", sCmd, sizeof(sCmd) );
+	if ( !Q_strncmp( cgs.voteString, "map_restart", 11 ) )
+		trap->SE_GetStringTextString( "MENUS_RESTART_MAP", sCmd, sizeof( sCmd ) );
+	else if ( !Q_strncmp( cgs.voteString, "vstr nextmap", 12 ) )
+		trap->SE_GetStringTextString( "MENUS_NEXT_MAP", sCmd, sizeof( sCmd ) );
+	else if ( !Q_strncmp( cgs.voteString, "g_doWarmup", 10 ) )
+		trap->SE_GetStringTextString( "MENUS_WARMUP", sCmd, sizeof( sCmd ) );
+	else if ( !Q_strncmp( cgs.voteString, "g_gametype", 10 ) ) {
+		trap->SE_GetStringTextString( "MENUS_GAME_TYPE", sCmd, sizeof( sCmd ) );
+
+			 if ( !Q_stricmp( "Free For All", cgs.voteString+11 ) )				sParm = CG_GetStringEdString( "MENUS", "FREE_FOR_ALL" );
+		else if ( !Q_stricmp( "Duel", cgs.voteString+11 ) )						sParm = CG_GetStringEdString( "MENUS", "DUEL" );
+		else if ( !Q_stricmp( "Holocron FFA", cgs.voteString+11 ) )				sParm = CG_GetStringEdString( "MENUS", "HOLOCRON_FFA" );
+		else if ( !Q_stricmp( "Power Duel", cgs.voteString+11 ) )				sParm = CG_GetStringEdString( "MENUS", "POWERDUEL" );
+		else if ( !Q_stricmp( "Team FFA", cgs.voteString+11 ) ) 				sParm = CG_GetStringEdString( "MENUS", "TEAM_FFA" );
+		else if ( !Q_stricmp( "Siege", cgs.voteString+11 ) )					sParm = CG_GetStringEdString( "MENUS", "SIEGE" );
+		else if ( !Q_stricmp( "Capture the Flag", cgs.voteString+11 )  )		sParm = CG_GetStringEdString( "MENUS", "CAPTURE_THE_FLAG" );
+		else if ( !Q_stricmp( "Capture the Ysalamiri", cgs.voteString+11 ) )	sParm = CG_GetStringEdString( "MENUS", "CAPTURE_THE_YSALIMARI" );
 	}
-	else if (strncmp(cgs.voteString, "vstr nextmap", 12)==0)
-	{
-		trap->SE_GetStringTextString("MENUS_NEXT_MAP", sCmd, sizeof(sCmd) );
-	}
-	else if (strncmp(cgs.voteString, "g_doWarmup", 10)==0)
-	{
-		trap->SE_GetStringTextString("MENUS_WARMUP", sCmd, sizeof(sCmd) );
-	}
-	else if (strncmp(cgs.voteString, "g_gametype", 10)==0)
-	{
-		trap->SE_GetStringTextString("MENUS_GAME_TYPE", sCmd, sizeof(sCmd) );
-		if      ( stricmp("Free For All", cgs.voteString+11)==0 ) 
-		{
-			sParm = CG_GetStringEdString("MENUS", "FREE_FOR_ALL");
-		}
-		else if ( stricmp("Duel", cgs.voteString+11)==0 ) 
-		{
-			sParm = CG_GetStringEdString("MENUS", "DUEL");
-		}
-		else if ( stricmp("Holocron FFA", cgs.voteString+11)==0  ) 
-		{
-			sParm = CG_GetStringEdString("MENUS", "HOLOCRON_FFA");
-		}
-		else if ( stricmp("Power Duel", cgs.voteString+11)==0  ) 
-		{
-			sParm = CG_GetStringEdString("MENUS", "POWERDUEL");
-		}
-		else if ( stricmp("Team FFA", cgs.voteString+11)==0  ) 
-		{
-			sParm = CG_GetStringEdString("MENUS", "TEAM_FFA");
-		}
-		else if ( stricmp("Siege", cgs.voteString+11)==0  ) 
-		{
-			sParm = CG_GetStringEdString("MENUS", "SIEGE");
-		}
-		else if ( stricmp("Capture the Flag", cgs.voteString+11)==0  ) 
-		{
-			sParm = CG_GetStringEdString("MENUS", "CAPTURE_THE_FLAG");
-		}
-		else if ( stricmp("Capture the Ysalamiri", cgs.voteString+11)==0  ) 
-		{
-			sParm = CG_GetStringEdString("MENUS", "CAPTURE_THE_YSALIMARI");
-		} 
-	}
-	else if (strncmp(cgs.voteString, "map", 3)==0)
-	{
-		trap->SE_GetStringTextString("MENUS_NEW_MAP", sCmd, sizeof(sCmd) );
+	else if ( !Q_strncmp( cgs.voteString, "map", 3 ) ) {
+		trap->SE_GetStringTextString( "MENUS_NEW_MAP", sCmd, sizeof( sCmd ) );
 		sParm = cgs.voteString+4;
 	}
-	else if (strncmp(cgs.voteString, "kick", 4)==0)
-	{
-		trap->SE_GetStringTextString("MENUS_KICK_PLAYER", sCmd, sizeof(sCmd) );
+	else if ( !Q_strncmp( cgs.voteString, "kick", 4 ) ) {
+		trap->SE_GetStringTextString( "MENUS_KICK_PLAYER", sCmd, sizeof( sCmd ) );
 		sParm = cgs.voteString+5;
 	}
 	else
@@ -6548,20 +6516,16 @@ static void CG_DrawVote(void) {
 
 
 
-	trap->SE_GetStringTextString("MENUS_VOTE", sVote, sizeof(sVote) );
-	trap->SE_GetStringTextString("MENUS_YES", sYes, sizeof(sYes) );
-	trap->SE_GetStringTextString("MENUS_NO",  sNo,  sizeof(sNo) );
+	trap->SE_GetStringTextString( "MENUS_VOTE", sVote, sizeof( sVote ) );
+	trap->SE_GetStringTextString( "MENUS_YES", sYes, sizeof( sYes ) );
+	trap->SE_GetStringTextString( "MENUS_NO", sNo, sizeof( sNo ) );
 
 	if (sParm && sParm[0])
-	{
-		s = va("%s(%i):<%s %s> %s:%i %s:%i", sVote, sec, sCmd, sParm, sYes, cgs.voteYes, sNo, cgs.voteNo);
-	}
+		s = va( "%s(%i):<%s %s> %s:%i %s:%i", sVote, sec, sCmd, sParm, sYes, cgs.voteYes, sNo, cgs.voteNo);
 	else
-	{
-		s = va("%s(%i):<%s> %s:%i %s:%i",    sVote, sec, sCmd,        sYes, cgs.voteYes, sNo, cgs.voteNo);
-	}
+		s = va( "%s(%i):<%s> %s:%i %s:%i",    sVote, sec, sCmd,        sYes, cgs.voteYes, sNo, cgs.voteNo);
 	CG_DrawSmallString( 4, 58, s, 1.0F );
-	s = CG_GetStringEdString("MP_INGAME", "OR_PRESS_ESC_THEN_CLICK_VOTE");	//	s = "or press ESC then click Vote";
+	s = CG_GetStringEdString( "MP_INGAME", "OR_PRESS_ESC_THEN_CLICK_VOTE" );	//	s = "or press ESC then click Vote";
 	CG_DrawSmallString( 4, 58 + SMALLCHAR_HEIGHT + 2, s, 1.0F );
 }
 

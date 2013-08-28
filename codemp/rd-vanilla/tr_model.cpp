@@ -423,7 +423,7 @@ static void RE_RegisterModels_DumpNonPure(void)
 
 		if (iInPak == -1 || iCheckSum != CachedModel.iPAKFileCheckSum)
 		{
-			if (stricmp(sDEFAULT_GLA_NAME ".gla" , psModelName))	// don't dump "*default.gla", that's program internal anyway
+			if (Q_stricmp(sDEFAULT_GLA_NAME ".gla" , psModelName))	// don't dump "*default.gla", that's program internal anyway
 			{
 				// either this is not from a PAK, or it's from a non-pure one, so ditch it...
 				//					

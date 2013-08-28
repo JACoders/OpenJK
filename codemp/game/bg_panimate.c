@@ -1859,37 +1859,23 @@ void ParseAnimationEvtBlock(const char *aeb_filename, animevent_t *animEvents, a
 		case AEV_SOUNDCHAN:		//# animID AEV_SOUNDCHAN framenum CHANNEL soundpath randomlow randomhi chancetoplay
 			token = COM_Parse( text_p );
 			if ( !token ) 
-			{
 				break;
-			}
-			if ( stricmp( token, "CHAN_VOICE_ATTEN" ) == 0 )
-			{
+
+				 if ( !Q_stricmp( token, "CHAN_VOICE_ATTEN" ) )
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_VOICE_ATTEN;
-			}
-			else if ( stricmp( token, "CHAN_VOICE_GLOBAL" ) == 0 )
-			{
+			else if ( !Q_stricmp( token, "CHAN_VOICE_GLOBAL" ) )
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_VOICE_GLOBAL;
-			}
-			else if ( stricmp( token, "CHAN_ANNOUNCER" ) == 0 )
-			{
+			else if ( !Q_stricmp( token, "CHAN_ANNOUNCER" ) )
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_ANNOUNCER;
-			}
-			else if ( stricmp( token, "CHAN_BODY" ) == 0 )
-			{
+			else if ( !Q_stricmp( token, "CHAN_BODY" ) )
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_BODY;
-			}
-			else if ( stricmp( token, "CHAN_WEAPON" ) == 0 )
-			{
+			else if ( !Q_stricmp( token, "CHAN_WEAPON" ) )
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_WEAPON;
-			}
-			else if ( stricmp( token, "CHAN_VOICE" ) == 0 )
-			{
+			else if ( !Q_stricmp( token, "CHAN_VOICE" ) )
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_VOICE;
-			} 
 			else
-			{
 				animEvents[curAnimEvent].eventData[AED_SOUNDCHANNEL] = CHAN_AUTO;
-			}
+
 			//fall through to normal sound
 		case AEV_SOUND:			//# animID AEV_SOUND framenum soundpath randomlow randomhi chancetoplay
 			//get soundstring

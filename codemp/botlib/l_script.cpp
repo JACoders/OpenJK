@@ -787,7 +787,7 @@ int PS_ReadPunctuation(script_t *script, token_t *token)
 		if (script->script_p + len <= script->end_p)
 		{
 			//if the script contains the punctuation
-			if (!strncmp(script->script_p, p, len))
+			if (!Q_strncmp(script->script_p, p, len))
 			{
 				strncpy(token->string, p, MAX_TOKEN);
 				script->script_p += len;
@@ -1272,7 +1272,7 @@ int ScriptSkipTo(script_t *script, char *value)
 		if (!PS_ReadWhiteSpace(script)) return 0;
 		if (*script->script_p == firstchar)
 		{
-			if (!strncmp(script->script_p, value, len))
+			if (!Q_strncmp(script->script_p, value, len))
 			{
 				return 1;
 			} //end if

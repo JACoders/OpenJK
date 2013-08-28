@@ -246,7 +246,7 @@ void CStringEdPackage::SetupNewFileParse( const char *psFileName, SE_BOOL bLoadD
 
 	m_strCurrentFileRef_ParseOnly = sString;	// eg "OBJECTIVES"
 	m_strLoadingLanguage_ParseOnly = ExtractLanguageFromPath( psFileName );
-	m_bLoadingEnglish_ParseOnly = (!stricmp( m_strLoadingLanguage_ParseOnly.c_str(), "english" )) ? SE_TRUE : SE_FALSE;
+	m_bLoadingEnglish_ParseOnly = (!Q_stricmp( m_strLoadingLanguage_ParseOnly.c_str(), "english" )) ? SE_TRUE : SE_FALSE;
 	m_bLoadDebug = bLoadDebug;
 }
 
@@ -497,14 +497,13 @@ static char *CopeWithDumbStringData( const char *psSentence, const char *psThisL
 	// Ok, bollocks to it, this will have to do. Any other languages that come later and have bugs in their text can
 	//	get fixed by them typing it in properly in the first place...
 	//
-	if (!stricmp(psThisLanguage,"ENGLISH") ||
-		!stricmp(psThisLanguage,"FRENCH") ||
-		!stricmp(psThisLanguage,"GERMAN") ||
-		!stricmp(psThisLanguage,"ITALIAN") ||
-		!stricmp(psThisLanguage,"SPANISH") ||
-		!stricmp(psThisLanguage,"POLISH") ||
-		!stricmp(psThisLanguage,"RUSSIAN")
-		)
+	if ( !Q_stricmp( psThisLanguage, "ENGLISH" ) ||
+		 !Q_stricmp( psThisLanguage, "FRENCH" ) ||
+		 !Q_stricmp( psThisLanguage, "GERMAN" ) ||
+		 !Q_stricmp( psThisLanguage, "ITALIAN" ) ||
+		 !Q_stricmp( psThisLanguage, "SPANISH" ) ||
+		 !Q_stricmp( psThisLanguage, "POLISH" ) ||
+		 !Q_stricmp( psThisLanguage, "RUSSIAN" ) )
 	{
 		char *p;
 
@@ -694,7 +693,7 @@ const char *CStringEdPackage::ParseLine( const char *psLine )
 				{
 					// if loading a foreign language...
 					//
-					SE_BOOL bSentenceIsEnglish = (!stricmp(sThisLanguage,"english")) ? SE_TRUE: SE_FALSE;	// see whether this is the english master or not
+					SE_BOOL bSentenceIsEnglish = (!Q_stricmp(sThisLanguage,"english")) ? SE_TRUE: SE_FALSE;	// see whether this is the english master or not
 
 					// this check can be omitted, I'm just being extra careful here...
 					//
@@ -702,7 +701,7 @@ const char *CStringEdPackage::ParseLine( const char *psLine )
 					{
 						// basically this is just checking that an .STE file override is the same language as the .STR...
 						//
-						if (stricmp( m_strLoadingLanguage_ParseOnly.c_str(), sThisLanguage ))
+						if (Q_stricmp( m_strLoadingLanguage_ParseOnly.c_str(), sThisLanguage ))
 						{
 							psErrorMessage = va("Language \"%s\" found when expecting \"%s\"!\n", sThisLanguage, m_strLoadingLanguage_ParseOnly.c_str());
 						}
@@ -801,7 +800,7 @@ void CStringEdPackage::SetString( const char *psLocalReference, const char *psNe
 		{				
 			// then this is foreign text (so check for "#same" resolving)...
 			//
-			if (!stricmp(psNewString, sSE_EXPORT_SAME))
+			if (!Q_stricmp(psNewString, sSE_EXPORT_SAME))
 			{
 				Entry.m_strString = m_strCurrentEntryEnglish_ParseOnly;	// foreign "#same" is now english
 				if (m_bLoadDebug)
@@ -1104,7 +1103,7 @@ int SE_GetNumLanguages(void)
 
 				// if english is available, it should always be first... ( I suppose )
 				//
-				if (!stricmp(psLanguage,"english"))
+				if (!Q_stricmp(psLanguage,"english"))
 				{
 					gvLanguagesAvailable.insert( gvLanguagesAvailable.begin(), psLanguage );
 				}
@@ -1224,7 +1223,7 @@ const char *SE_LoadLanguage( const char *psLanguage, SE_BOOL bLoadDebug /* = SE_
 		{
 			const char *psThisLang = TheStringPackage.ExtractLanguageFromPath( p );
 
-			if ( !stricmp( psLanguage, psThisLang ) )
+			if ( !Q_stricmp( psLanguage, psThisLang ) )
 			{
 				psErrorMessage = SE_Load( p, bLoadDebug );
 			}

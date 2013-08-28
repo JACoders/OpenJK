@@ -64,7 +64,7 @@ int G2_IsSurfaceLegal(void *mod, const char *surfaceName, int *flags)
 
 	for ( int i = 0 ; i < mod_m->mdxm->numSurfaces ; i++) 
 	{
-	 	if (!stricmp(surfaceName, surf->name))
+	 	if (!Q_stricmp(surfaceName, surf->name))
 	 	{
 			*flags = surf->flags;
 			return i;
@@ -118,7 +118,7 @@ mdxmSurface_t *G2_FindSurface(CGhoul2Info *ghlInfo, surfaceInfo_v &slist, const 
 			surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surf->thisSurfaceIndex]);
 
   			// are these the droids we're looking for?
-			if (!stricmp (surfInfo->name, surfaceName))
+			if (!Q_stricmp (surfInfo->name, surfaceName))
 			{
 				// yup
 				if (surfIndex)
@@ -244,7 +244,7 @@ int G2_IsSurfaceOff (CGhoul2Info *ghlInfo, surfaceInfo_v &slist, const char *sur
 
 	for ( int i = 0 ; i < mod->mdxm->numSurfaces ; i++) 
 	{
-	 	if (!stricmp(surfaceName, surface->name))
+	 	if (!Q_stricmp(surfaceName, surface->name))
 	 	{
 			return surface->flags;
 		}

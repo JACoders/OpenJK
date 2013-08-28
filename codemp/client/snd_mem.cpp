@@ -77,7 +77,7 @@ void FindNextChunk(char *name)
 		}
 		data_p -= 8;
 		last_chunk = data_p + 8 + ( (iff_chunk_len + 1) & ~1 );
-		if (!strncmp((char *)data_p, name, 4))
+		if (!Q_strncmp((char *)data_p, name, 4))
 			return;
 	}
 }
@@ -125,7 +125,7 @@ wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength)
 
 // find "RIFF" chunk
 	FindChunk("RIFF");
-	if (!(data_p && !strncmp((char *)data_p+8, "WAVE", 4)))
+	if (!(data_p && !Q_strncmp((char *)data_p+8, "WAVE", 4)))
 	{
 		Com_Printf("Missing RIFF/WAVE chunks\n");
 		return info;
@@ -621,17 +621,15 @@ static sboolean S_LoadSound_FileLoadAndNameAdjuster(char *psFilename, byte **pDa
 		// account for foreign voices...
 		//		
 		extern cvar_t* s_language;
-		if (s_language && stricmp("DEUTSCH",s_language->string)==0)
-		{				
-			strncpy(psVoice,"chr_d",5);	// same number of letters as "chars"
-		}
-		else if (s_language && stricmp("FRANCAIS",s_language->string)==0)
-		{				
-			strncpy(psVoice,"chr_f",5);	// same number of letters as "chars"
-		}
-		else if (s_language && stricmp("ESPANOL",s_language->string)==0)
-		{				
-			strncpy(psVoice,"chr_e",5);	// same number of letters as "chars"
+		if ( s_language ) {
+				 if ( !Q_stricmp( "DEUTSCH", s_language->string ) )
+				strncpy( psVoice, "chr_d", 5 );	// same number of letters as "chars"
+			else if ( !Q_stricmp( "FRANCAIS", s_language->string ) )
+				strncpy( psVoice, "chr_f", 5 );	// same number of letters as "chars"
+			else if ( !Q_stricmp( "ESPANOL", s_language->string ) )
+				strncpy( psVoice, "chr_e", 5 );	// same number of letters as "chars"
+			else
+				psVoice = NULL;
 		}
 		else
 		{
