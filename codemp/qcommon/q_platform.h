@@ -100,7 +100,7 @@
 	#ifdef __clang__
 		#define QINLINE static inline
 	#else
-		#define QINLINE inline
+		#define QINLINE /*inline*/
 	#endif
 
 	#define PATH_SEP '/'
