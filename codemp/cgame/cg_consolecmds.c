@@ -4,12 +4,14 @@
 // executed by a key binding
 
 #include "cg_local.h"
-#include "ui/ui_shared.h"
 #include "game/bg_saga.h"
-extern menuDef_t *menuScoreboard;
 
+/*
+=================
+CG_TargetCommand_f
 
-
+=================
+*/
 void CG_TargetCommand_f( void ) {
 	int		targetNum;
 	char	test[4];
@@ -23,8 +25,6 @@ void CG_TargetCommand_f( void ) {
 	trap->SendConsoleCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
 }
 
-
-
 /*
 =================
 CG_SizeUp_f
@@ -36,7 +36,6 @@ static void CG_SizeUp_f (void) {
 	trap->Cvar_Set("cg_viewsize", va("%i",(int)(cg_viewsize.integer+10)));
 }
 
-
 /*
 =================
 CG_SizeDown_f
@@ -47,7 +46,6 @@ Keybinding command
 static void CG_SizeDown_f (void) {
 	trap->Cvar_Set("cg_viewsize", va("%i",(int)(cg_viewsize.integer-10)));
 }
-
 
 /*
 =============
@@ -62,7 +60,12 @@ static void CG_Viewpos_f (void) {
 		(int)cg.refdef.viewangles[YAW]);
 }
 
+/*
+=================
+CG_ScoresDown_f
 
+=================
+*/
 static void CG_ScoresDown_f( void ) {
 
 	CG_BuildSpectatorString();
@@ -85,30 +88,16 @@ static void CG_ScoresDown_f( void ) {
 	}
 }
 
+/*
+=================
+CG_ScoresUp_f
+
+=================
+*/
 static void CG_ScoresUp_f( void ) {
 	if ( cg.showScores ) {
 		cg.showScores = qfalse;
 		cg.scoreFadeTime = cg.time;
-	}
-}
-
-extern menuDef_t *menuScoreboard;
-void Menu_Reset(void);			// FIXME: add to right include file
-
-static void CG_scrollScoresDown_f( void) {
-	if (menuScoreboard && cg.scoreBoardShowing) {
-		Menu_ScrollFeeder(menuScoreboard, FEEDER_SCOREBOARD, qtrue);
-		Menu_ScrollFeeder(menuScoreboard, FEEDER_REDTEAM_LIST, qtrue);
-		Menu_ScrollFeeder(menuScoreboard, FEEDER_BLUETEAM_LIST, qtrue);
-	}
-}
-
-
-static void CG_scrollScoresUp_f( void) {
-	if (menuScoreboard && cg.scoreBoardShowing) {
-		Menu_ScrollFeeder(menuScoreboard, FEEDER_SCOREBOARD, qfalse);
-		Menu_ScrollFeeder(menuScoreboard, FEEDER_REDTEAM_LIST, qfalse);
-		Menu_ScrollFeeder(menuScoreboard, FEEDER_BLUETEAM_LIST, qfalse);
 	}
 }
 
@@ -207,7 +196,6 @@ static void CG_TellAttacker_f( void ) {
 	trap->SendClientCommand( command );
 }
 
-
 /*
 ==================
 CG_StartOrbit_f
@@ -272,9 +260,9 @@ static void CG_SiegeCvarUpdate_f(void)
 
 	CG_SiegeBriefingDisplay(team, 1);
 }
+
 static void CG_SiegeCompleteCvarUpdate_f(void)
 {
-
 	if (cgs.gametype != GT_SIEGE)
 	{ //Cannot be displayed unless in this gametype
 		return;
@@ -284,19 +272,6 @@ static void CG_SiegeCompleteCvarUpdate_f(void)
 	CG_SiegeBriefingDisplay(SIEGETEAM_TEAM1, 1);
 	CG_SiegeBriefingDisplay(SIEGETEAM_TEAM2, 1);
 }
-/*
-static void CG_Camera_f( void ) {
-	char name[1024];
-	trap_Argv( 1, name, sizeof(name));
-	if (trap_loadCamera(name)) {
-		cg.cameraMode = qtrue;
-		trap_startCamera(cg.time);
-	} else {
-		trap->Print ("Unable to load camera %s\n",name);
-	}
-}
-*/
-
 
 typedef struct {
 	char	*cmd;
@@ -325,10 +300,7 @@ static consoleCommand_t	commands[] = {
 	//JAC - Disable spWin and spLose as they're just used to troll people.
 	//{ "spWin", CG_spWin_f },
 	//{ "spLose", CG_spLose_f },
-	{ "scoresDown", CG_scrollScoresDown_f },
-	{ "scoresUp", CG_scrollScoresUp_f },
 	{ "startOrbit", CG_StartOrbit_f },
-	//{ "camera", CG_Camera_f },
 	{ "loaddeferred", CG_LoadDeferredPlayers },
 	{ "invnext", CG_NextInventory_f },
 	{ "invprev", CG_PrevInventory_f },
