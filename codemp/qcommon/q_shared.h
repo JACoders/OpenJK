@@ -1112,58 +1112,58 @@ void ByteToDir( int b, vec3_t dir );
 #define DEG2RAD( deg ) ( ((deg)*M_PI) / 180.0f )
 #define RAD2DEG( rad ) ( ((rad)*180.0f) / M_PI )
 
-extern QINLINE void		VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-extern QINLINE void		VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-extern QINLINE void		VectorScale( const vec3_t vecIn, vec_t scale, vec3_t vecOut );
-extern QINLINE void		VectorScale4( const vec4_t vecIn, vec_t scale, vec4_t vecOut );
-extern QINLINE void		VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3_t vecOut );
-extern QINLINE vec_t		VectorLength( const vec3_t vec );
-extern QINLINE vec_t		VectorLengthSquared( const vec3_t vec );
-extern QINLINE vec_t		Distance( const vec3_t p1, const vec3_t p2 );
-extern QINLINE vec_t		DistanceSquared( const vec3_t p1, const vec3_t p2 );
-extern QINLINE void		VectorNormalizeFast( vec3_t vec );
-extern QINLINE vec_t		VectorNormalize( vec3_t vec );
-extern QINLINE vec_t		VectorNormalize2( const vec3_t vec, vec3_t vecOut );
-extern QINLINE void		VectorCopy( const vec3_t vecIn, vec3_t vecOut );
-extern QINLINE void		VectorCopy4( const vec4_t vecIn, vec4_t vecOut );
-extern QINLINE void		VectorSet( vec3_t vec, vec_t x, vec_t y, vec_t z );
-extern QINLINE void		VectorSet4( vec4_t vec, vec_t x, vec_t y, vec_t z, vec_t w );
-extern QINLINE void		VectorSet5( vec5_t vec, vec_t x, vec_t y, vec_t z, vec_t w, vec_t u );
-extern QINLINE void		VectorClear( vec3_t vec );
-extern QINLINE void		VectorClear4( vec4_t vec );
-extern QINLINE void		VectorInc( vec3_t vec );
-extern QINLINE void		VectorDec( vec3_t vec );
-extern QINLINE void		VectorInverse( vec3_t vec );
-extern QINLINE void		CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-extern QINLINE vec_t		DotProduct( const vec3_t vec1, const vec3_t vec2 );
-extern QINLINE qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
-extern QINLINE void		SnapVector( float *v );
+void		VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
+void		VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
+void		VectorScale( const vec3_t vecIn, vec_t scale, vec3_t vecOut );
+void		VectorScale4( const vec4_t vecIn, vec_t scale, vec4_t vecOut );
+void		VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3_t vecOut );
+vec_t		VectorLength( const vec3_t vec );
+vec_t		VectorLengthSquared( const vec3_t vec );
+vec_t		Distance( const vec3_t p1, const vec3_t p2 );
+vec_t		DistanceSquared( const vec3_t p1, const vec3_t p2 );
+void		VectorNormalizeFast( vec3_t vec );
+vec_t		VectorNormalize( vec3_t vec );
+vec_t		VectorNormalize2( const vec3_t vec, vec3_t vecOut );
+void		VectorCopy( const vec3_t vecIn, vec3_t vecOut );
+void		VectorCopy4( const vec4_t vecIn, vec4_t vecOut );
+void		VectorSet( vec3_t vec, vec_t x, vec_t y, vec_t z );
+void		VectorSet4( vec4_t vec, vec_t x, vec_t y, vec_t z, vec_t w );
+void		VectorSet5( vec5_t vec, vec_t x, vec_t y, vec_t z, vec_t w, vec_t u );
+void		VectorClear( vec3_t vec );
+void		VectorClear4( vec4_t vec );
+void		VectorInc( vec3_t vec );
+void		VectorDec( vec3_t vec );
+void		VectorInverse( vec3_t vec );
+void		CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
+vec_t		DotProduct( const vec3_t vec1, const vec3_t vec2 );
+qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
+void		SnapVector( float *v );
 
-#define				VectorAddM( vec1, vec2, vecOut )		((vecOut)[0]=(vec1)[0]+(vec2)[0], (vecOut)[1]=(vec1)[1]+(vec2)[1], (vecOut)[2]=(vec1)[2]+(vec2)[2])
-#define				VectorSubtractM( vec1, vec2, vecOut )	((vecOut)[0]=(vec1)[0]-(vec2)[0], (vecOut)[1]=(vec1)[1]-(vec2)[1], (vecOut)[2]=(vec1)[2]-(vec2)[2])
-#define				VectorScaleM( vecIn, scale, vecOut )	((vecOut)[0]=(vecIn)[0]*(scale), (vecOut)[1]=(vecIn)[1]*(scale), (vecOut)[2]=(vecIn)[2]*(scale))
-#define				VectorScale4M( vecIn, scale, vecOut )	((vecOut)[0]=(vecIn)[0]*(scale), (vecOut)[1]=(vecIn)[1]*(scale), (vecOut)[2]=(vecIn)[2]*(scale), (vecOut)[3]=(vecIn)[3]*(scale))
-#define				VectorMAM( vec1, scale, vec2, vecOut )	((vecOut)[0]=(vec1)[0]+(vec2)[0]*(scale), (vecOut)[1]=(vec1)[1]+(vec2)[1]*(scale), (vecOut)[2]=(vec1)[2]+(vec2)[2]*(scale))
-#define				VectorLengthM( vec )					VectorLength( vec )
-#define				VectorLengthSquaredM( vec )				VectorLengthSquared( vec )
-#define				DistanceM( vec )						Distance( vec )
-#define				DistanceSquaredM( p1, p2 )				DistanceSquared( p1, p2 )
-#define				VectorNormalizeFastM( vec )				VectorNormalizeFast( vec )
-#define				VectorNormalizeM( vec )					VectorNormalize( vec )
-#define				VectorNormalize2M( vec, vecOut )		VectorNormalize2( vec, vecOut )
-#define				VectorCopyM( vecIn, vecOut )			((vecOut)[0]=(vecIn)[0], (vecOut)[1]=(vecIn)[1], (vecOut)[2]=(vecIn)[2])
-#define				VectorCopy4M( vecIn, vecOut )			((vecOut)[0]=(vecIn)[0], (vecOut)[1]=(vecIn)[1], (vecOut)[2]=(vecIn)[2], (vecOut)[3]=(vecIn)[3])
-#define				VectorSetM( vec, x, y, z )				((vec)[0]=(x), (vec)[1]=(y), (vec)[2]=(z))
-#define				VectorSet4M( vec, x, y, z, w )			((vec)[0]=(x), (vec)[1]=(y), (vec)[2]=(z), (vec)[3]=(w))
-#define				VectorSet5M( vec, x, y, z, w, u )		((vec)[0]=(x), (vec)[1]=(y), (vec)[2]=(z), (vec)[3]=(w), (vec)[4]=(u))
-#define				VectorClearM( vec )						((vec)[0]=(vec)[1]=(vec)[2]=0)
-#define				VectorClear4M( vec )					((vec)[0]=(vec)[1]=(vec)[2]=(vec)[3]=0)
-#define				VectorIncM( vec )						((vec)[0]+=1.0f, (vec)[1]+=1.0f, (vec)[2]+=1.0f)
-#define				VectorDecM( vec )						((vec)[0]-=1.0f, (vec)[1]-=1.0f, (vec)[2]-=1.0f)
-#define				VectorInverseM( vec )					((vec)[0]=-(vec)[0], (vec)[1]=-(vec)[1], (vec)[2]=-(vec)[2])
-#define				CrossProductM( vec1, vec2, vecOut )		((vecOut)[0]=((vec1)[1]*(vec2)[2])-((vec1)[2]*(v2)[1]), (vecOut)[1]=((vec1)[2]*(vec2)[0])-((vec1)[0]*(vec2)[2]), (vecOut)[2]=((vec1)[0]*(vec2)[1])-((vec1)[1]*(vec2)[0]))
-#define				DotProductM( x, y )						((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
-#define				VectorCompareM( vec1, vec2 )			(!!((vec1)[0]==(vec2)[0] && (vec1)[1]==(vec2)[1] && (vec1)[2]==(vec2)[2]))
+#define		VectorAddM( vec1, vec2, vecOut )		((vecOut)[0]=(vec1)[0]+(vec2)[0], (vecOut)[1]=(vec1)[1]+(vec2)[1], (vecOut)[2]=(vec1)[2]+(vec2)[2])
+#define		VectorSubtractM( vec1, vec2, vecOut )	((vecOut)[0]=(vec1)[0]-(vec2)[0], (vecOut)[1]=(vec1)[1]-(vec2)[1], (vecOut)[2]=(vec1)[2]-(vec2)[2])
+#define		VectorScaleM( vecIn, scale, vecOut )	((vecOut)[0]=(vecIn)[0]*(scale), (vecOut)[1]=(vecIn)[1]*(scale), (vecOut)[2]=(vecIn)[2]*(scale))
+#define		VectorScale4M( vecIn, scale, vecOut )	((vecOut)[0]=(vecIn)[0]*(scale), (vecOut)[1]=(vecIn)[1]*(scale), (vecOut)[2]=(vecIn)[2]*(scale), (vecOut)[3]=(vecIn)[3]*(scale))
+#define		VectorMAM( vec1, scale, vec2, vecOut )	((vecOut)[0]=(vec1)[0]+(vec2)[0]*(scale), (vecOut)[1]=(vec1)[1]+(vec2)[1]*(scale), (vecOut)[2]=(vec1)[2]+(vec2)[2]*(scale))
+#define		VectorLengthM( vec )					VectorLength( vec )
+#define		VectorLengthSquaredM( vec )				VectorLengthSquared( vec )
+#define		DistanceM( vec )						Distance( vec )
+#define		DistanceSquaredM( p1, p2 )				DistanceSquared( p1, p2 )
+#define		VectorNormalizeFastM( vec )				VectorNormalizeFast( vec )
+#define		VectorNormalizeM( vec )					VectorNormalize( vec )
+#define		VectorNormalize2M( vec, vecOut )		VectorNormalize2( vec, vecOut )
+#define		VectorCopyM( vecIn, vecOut )			((vecOut)[0]=(vecIn)[0], (vecOut)[1]=(vecIn)[1], (vecOut)[2]=(vecIn)[2])
+#define		VectorCopy4M( vecIn, vecOut )			((vecOut)[0]=(vecIn)[0], (vecOut)[1]=(vecIn)[1], (vecOut)[2]=(vecIn)[2], (vecOut)[3]=(vecIn)[3])
+#define		VectorSetM( vec, x, y, z )				((vec)[0]=(x), (vec)[1]=(y), (vec)[2]=(z))
+#define		VectorSet4M( vec, x, y, z, w )			((vec)[0]=(x), (vec)[1]=(y), (vec)[2]=(z), (vec)[3]=(w))
+#define		VectorSet5M( vec, x, y, z, w, u )		((vec)[0]=(x), (vec)[1]=(y), (vec)[2]=(z), (vec)[3]=(w), (vec)[4]=(u))
+#define		VectorClearM( vec )						((vec)[0]=(vec)[1]=(vec)[2]=0)
+#define		VectorClear4M( vec )					((vec)[0]=(vec)[1]=(vec)[2]=(vec)[3]=0)
+#define		VectorIncM( vec )						((vec)[0]+=1.0f, (vec)[1]+=1.0f, (vec)[2]+=1.0f)
+#define		VectorDecM( vec )						((vec)[0]-=1.0f, (vec)[1]-=1.0f, (vec)[2]-=1.0f)
+#define		VectorInverseM( vec )					((vec)[0]=-(vec)[0], (vec)[1]=-(vec)[1], (vec)[2]=-(vec)[2])
+#define		CrossProductM( vec1, vec2, vecOut )		((vecOut)[0]=((vec1)[1]*(vec2)[2])-((vec1)[2]*(v2)[1]), (vecOut)[1]=((vec1)[2]*(vec2)[0])-((vec1)[0]*(vec2)[2]), (vecOut)[2]=((vec1)[0]*(vec2)[1])-((vec1)[1]*(vec2)[0]))
+#define		DotProductM( x, y )						((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
+#define		VectorCompareM( vec1, vec2 )			(!!((vec1)[0]==(vec2)[0] && (vec1)[1]==(vec2)[1] && (vec1)[2]==(vec2)[2]))
 
 // TODO
 #define VectorScaleVector(a,b,c)		(((c)[0]=(a)[0]*(b)[0]),((c)[1]=(a)[1]*(b)[1]),((c)[2]=(a)[2]*(b)[2]))
@@ -1232,10 +1232,10 @@ void NormalToLatLong( const vec3_t normal, byte bytes[2] ); //rwwRMG - added
 
 //=============================================
 
-extern QINLINE int Com_Clampi( int min, int max, int value ); //rwwRMG - added
-extern QINLINE float Com_Clamp( float min, float max, float value );
-extern QINLINE int Com_AbsClampi( int min, int max, int value );
-extern QINLINE float Com_AbsClamp( float min, float max, float value );
+int Com_Clampi( int min, int max, int value ); //rwwRMG - added
+float Com_Clamp( float min, float max, float value );
+int Com_AbsClampi( int min, int max, int value );
+float Com_AbsClamp( float min, float max, float value );
 
 char	*COM_SkipPath( char *pathname );
 const char	*COM_GetExtension( const char *name );
