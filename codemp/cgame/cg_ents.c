@@ -133,6 +133,8 @@ void CG_S_AddLoopingSound(int entityNum, const vec3_t origin, const vec3_t veloc
 			alreadyPlaying = qtrue;
 			break;
 		}
+
+		i++;
 	}
 	
 	if (alreadyPlaying && cSound)
