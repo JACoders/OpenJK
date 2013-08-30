@@ -1915,12 +1915,8 @@ void CG_UpdateSoundTrackers()
 			if (cg.snap && cent->currentState.trickedentindex == cg.snap->ps.clientNum)
 			{ //this is actually the player, so center the sound origin right on top of us
 				VectorCopy(cg.refdef.vieworg, cent->lerpOrigin);
-				trap->S_UpdateEntityPosition( cent->currentState.number, cent->lerpOrigin );
 			}
-			else
-			{
-				trap->S_UpdateEntityPosition( cent->currentState.number, cg_entities[cent->currentState.trickedentindex].lerpOrigin );
-			}
+			trap->S_UpdateEntityPosition( cent->currentState.number, cent->lerpOrigin );
 		}
 
 		if (cent->currentState.number == num)
