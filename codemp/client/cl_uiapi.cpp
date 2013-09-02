@@ -130,7 +130,7 @@ static int CL_Milliseconds( void ) {
 }
 
 static void CL_Cvar_Get( const char *var_name, const char *value, int flags ) {
-	Cvar_Get( var_name, value, flags );
+	Cvar_Register( NULL, var_name, value, flags );
 }
 
 static void CL_GetClientState( uiClientState_t *state ) {
