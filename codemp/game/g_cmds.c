@@ -980,6 +980,8 @@ void StopFollowing( gentity_t *ent ) {
 	ent->client->ps.jetpackFuel = 100; // so that fuel goes away after stop following them
 	ent->health = ent->client->ps.stats[STAT_HEALTH] = 100; // so that you don't keep dead angles if you were spectating a dead person
 	ent->client->ps.bobCycle = 0;
+	ent->client->ps.pm_type = PM_SPECTATOR;
+	ent->client->ps.eFlags &= ~EF_DISINTEGRATION;
 	for ( i=0; i<PW_NUM_POWERUPS; i++ )
 		ent->client->ps.powerups[i] = 0;
 }
