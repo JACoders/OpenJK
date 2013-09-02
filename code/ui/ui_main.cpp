@@ -4083,9 +4083,9 @@ interface versions of the cvars.
 */
 void UI_GetVideoSetup ( void )
 {
-	// Make sure the cvars are registered as read only.
-	Cvar_Register ( NULL, "ui_r_glCustom",				"4", CVAR_ROM|CVAR_ARCHIVE );
+	Cvar_Register ( NULL, "ui_r_glCustom",				"4", CVAR_ARCHIVE );
 
+	// Make sure the cvars are registered as read only.
 	Cvar_Register ( NULL, "ui_r_mode",					"0", CVAR_ROM );
 	Cvar_Register ( NULL, "ui_r_fullscreen",			"0", CVAR_ROM );
 	Cvar_Register ( NULL, "ui_r_colorbits",				"0", CVAR_ROM );

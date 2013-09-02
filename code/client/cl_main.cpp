@@ -1177,6 +1177,7 @@ void CL_InitRef( void ) {
 	RIT(Cvar_Get);
 	RIT(Cvar_Set);
 	RIT(Cvar_SetValue);
+	RIT(Cvar_CheckRange);
 	RIT(Cvar_VariableIntegerValue);
 	RIT(Cvar_VariableString);
 	RIT(Cvar_VariableStringBuffer);
