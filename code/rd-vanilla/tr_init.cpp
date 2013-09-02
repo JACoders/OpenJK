@@ -203,7 +203,9 @@ cvar_t	*broadsword_dircap=0;
 cvar_t	*sv_mapname;
 cvar_t	*sv_mapChecksum;
 cvar_t	*se_language;			// JKA
+#ifndef __NO_JK2
 cvar_t	*sp_language;			// JK2
+#endif
 cvar_t	*com_buildScript;
 
 
@@ -283,41 +285,6 @@ PFNGLISPROGRAMARBPROC qglIsProgramARB = NULL;
 #endif
 
 void RE_SetLightStyle(int style, int color);
-
-static void AssertCvarRange( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral,  qboolean shouldBeMult2)
-{
-	if ( shouldBeIntegral )
-	{
-		if ( ( int ) cv->value != cv->integer )
-		{
-			VID_Printf( PRINT_WARNING, "WARNING: cvar '%s' must be integral (%f)\n", cv->name, cv->value );
-			ri.Cvar_Set( cv->name, va( "%d", cv->integer ) );
-		}
-	}
-
-	if ( cv->value < minVal )
-	{
-		VID_Printf( PRINT_WARNING, "WARNING: cvar '%s' out of range (%f < %f)\n", cv->name, cv->value, minVal );
-		ri.Cvar_Set( cv->name, va( "%f", minVal ) );
-	}
-	else if ( cv->value > maxVal )
-	{
-		VID_Printf( PRINT_WARNING, "WARNING: cvar '%s' out of range (%f > %f)\n", cv->name, cv->value, maxVal );
-		ri.Cvar_Set( cv->name, va( "%f", maxVal ) );
-	}
-
-	if (shouldBeMult2)
-	{
-		if ( (cv->integer&(cv->integer-1)) )
-		{
-			int newvalue;
-			for (newvalue = 1 ; newvalue < cv->integer ; newvalue<<=1)
-				;
-			VID_Printf( PRINT_WARNING, "WARNING: cvar '%s' must be multiple of 2(%f)\n", cv->name, cv->value );
-			ri.Cvar_Set( cv->name, va( "%d", newvalue ) );
-		}
-	}
-}
 
 void R_Splash()
 {
@@ -1103,6 +1070,13 @@ void R_FogColor_f(void)
 			                          atof(ri.Cmd_Argv(3)) * tr.identityLight, 1.0 );
 }
 
+#ifdef _DEBUG
+#define MIN_PRIMITIVES -1
+#else
+#define MIN_PRIMITIVES 0
+#endif
+#define MAX_PRIMITIVES 3
+
 /*
 ===============
 R_Register
@@ -1140,8 +1114,8 @@ void R_Register( void )
 	r_ext_nv_point_sprite = ri.Cvar_Get( "r_ext_nv_point_sprite", "1", CVAR_ARCHIVE );
 
 	r_picmip = ri.Cvar_Get ("r_picmip", "0", CVAR_ARCHIVE | CVAR_LATCH );
+	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
 	r_colorMipLevels = ri.Cvar_Get ("r_colorMipLevels", "0", CVAR_LATCH );
-	AssertCvarRange( r_picmip, 0, 16, qtrue, qfalse );
 	r_detailTextures = ri.Cvar_Get( "r_detailtextures", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_texturebits = ri.Cvar_Get( "r_texturebits", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_texturebitslm = ri.Cvar_Get( "r_texturebitslm", "0", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1167,7 +1141,7 @@ void R_Register( void )
 	// temporary latched variables that can only change over a restart
 	//
 	r_displayRefresh = ri.Cvar_Get( "r_displayRefresh", "0", CVAR_LATCH );
-	AssertCvarRange( r_displayRefresh, 0, 200, qtrue, qfalse );
+	ri.Cvar_CheckRange( r_displayRefresh, 0, 200, qtrue );
 	r_fullbright = ri.Cvar_Get ("r_fullbright", "0", CVAR_CHEAT );
 	r_singleShader = ri.Cvar_Get ("r_singleShader", "0", CVAR_CHEAT | CVAR_LATCH );
 
@@ -1180,7 +1154,7 @@ void R_Register( void )
 	r_lodscale = ri.Cvar_Get( "r_lodscale", "10", CVAR_ARCHIVE );
 
 	r_znear = ri.Cvar_Get( "r_znear", "4", CVAR_CHEAT );	//if set any lower, you lose a lot of precision in the distance
-	AssertCvarRange( r_znear, 0.001f, 200, qfalse, qfalse );
+	ri.Cvar_CheckRange( r_znear, 0.001f, 200, qfalse ); // was qtrue in JA, is qfalse properly in ioq3
 	r_ignoreGLErrors = ri.Cvar_Get( "r_ignoreGLErrors", "1", CVAR_ARCHIVE );
 	r_fastsky = ri.Cvar_Get( "r_fastsky", "0", CVAR_ARCHIVE );
 	r_drawSun = ri.Cvar_Get( "r_drawSun", "0", CVAR_ARCHIVE );
@@ -1205,6 +1179,7 @@ void R_Register( void )
 	r_windPointY = ri.Cvar_Get ("r_windPointY", "0", 0);
 
 	r_primitives = ri.Cvar_Get( "r_primitives", "0", CVAR_ARCHIVE );
+	ri.Cvar_CheckRange( r_primitives, MIN_PRIMITIVES, MAX_PRIMITIVES, qtrue );
 
 	r_ambientScale = ri.Cvar_Get( "r_ambientScale", "0.5", CVAR_CHEAT );
 	r_directedScale = ri.Cvar_Get( "r_directedScale", "1", CVAR_CHEAT );
@@ -1282,7 +1257,9 @@ Ghoul2 Insert End
 	sv_mapname = ri.Cvar_Get ( "mapname", "nomap", CVAR_SERVERINFO | CVAR_ROM );
 	sv_mapChecksum = ri.Cvar_Get ( "sv_mapChecksum", "", CVAR_ROM );
 	se_language = ri.Cvar_Get ( "se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART );
+#ifndef __NO_JK2
 	sp_language = ri.Cvar_Get ( "sp_language", va("%d", SP_LANGUAGE_ENGLISH), CVAR_ARCHIVE | CVAR_NORESTART );
+#endif
 	com_buildScript = ri.Cvar_Get ( "com_buildScript", "0", 0 );
 
 	r_modelpoolmegs = ri.Cvar_Get("r_modelpoolmegs", "20", CVAR_ARCHIVE);

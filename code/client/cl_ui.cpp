@@ -131,7 +131,7 @@ static int FloatAsInt( float f )
 }
 
 static void UI_Cvar_Create( const char *var_name, const char *var_value, int flags ) {
-	Cvar_Get( var_name, var_value, flags );
+	Cvar_Register( NULL, var_name, var_value, flags );
 }
 
 static int GetConfigString(int index, char *buf, int size)

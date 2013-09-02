@@ -38,9 +38,6 @@ This file is part of Jedi Academy.
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
 	void				(QDECL *Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
-#ifdef __MP_CROSS_DLL
-	void				*unused1;	// OPrintf
-#endif
 
 	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
 	int					(*Milliseconds)						( void );
@@ -61,9 +58,7 @@ typedef struct {
 	void				(*Cvar_Set)							( const char *var_name, const char *value );
 	cvar_t *			(*Cvar_Get)							( const char *var_name, const char *value, int flags );
 	void				(*Cvar_SetValue)					( const char *name, float value );
-#ifdef __MP_CROSS_DLL
-	void				*unused2;	// Cvar_CheckRange
-#endif
+	void				(*Cvar_CheckRange)					( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
 	void				(*Cvar_VariableStringBuffer)		( const char *var_name, char *buffer, int bufsize );
 	char *				(*Cvar_VariableString)				( const char *var_name );
 	float				(*Cvar_VariableValue)				( const char *var_name );
@@ -88,10 +83,6 @@ typedef struct {
 	int					(*FS_Write)							( const void *buffer, int len, fileHandle_t f );
 	void				(*FS_WriteFile)						( const char *qpath, const void *buffer, int size );
 
-
-#ifdef __MP_CROSS_DLL
-	void				*unused3;	// CM_BoxTrace
-#endif
 	void				(*CM_DrawDebugSurface)				( void (*drawPoly)( int color, int numPoints, float *points ) );
 	bool				(*CM_CullWorldBox)					( const cplane_t *frustrum, const vec3pair_t bounds );
 	void				(*CM_TerrainPatchIterate)			( const class CCMLandScape *landscape, void (*IterateFunc)( CCMPatch *, void * ),
@@ -99,16 +90,7 @@ typedef struct {
 	CCMLandScape *		(*CM_RegisterTerrain)				( const char *config, bool server );
 	void				(*CM_ShutdownTerrain)				( thandle_t terrainId );
 	byte*				(*CM_ClusterPVS)					( int cluster );
-#ifdef __MP_CROSS_DLL
-	void				*unused4;	// CM_LeafArea
-	void				*unused5;	// CM_LeafCluster
-	void				*unused6;	// CM_PointLeafNum
-#endif
 	int					(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
-#ifdef __MP_CROSS_DLL
-	void				*unused7;	// VM_Call
-	void				*unused8;	// Com_TheHunkMarkHasBeenMade
-#endif
 	void				(*S_RestartMusic)					( void );
 	qboolean			(*SND_RegisterAudio_LevelLoadEnd)	( qboolean bDeleteEverythingNotUsedThisLevel );
 
@@ -116,15 +98,6 @@ typedef struct {
 	int					(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height, 
 															int bits, const char *psAudioFile /* = NULL */ );
 	void				(*CIN_UploadCinematic)				( int handle );
-
-#ifdef __MP_CROSS_DLL
-	void				*unused9;	// CL_WriteAVIVideoFrame
-
-	void				*unused10;	// GetSharedMemory
-	void				*unused11;	// GetCgameVM
-	void				*unused12;	// GetCurrentVM
-	void				*unused13;	// GetGameVM
-#endif
 
 	void				(*SV_GetConfigstring)				( int index, char *buffer, int bufferSize );
 	void				(*SV_SetConfigstring)				( int index, const char *value );
@@ -137,12 +110,6 @@ typedef struct {
 	void            (*IN_Init)                          ( void *windowData );
 	void            (*IN_Shutdown)                      ( void );
 	void            (*IN_Restart)                       ( void );
-
-#ifdef __MP_CROSS_DLL
-	void				*unused14;	// CM_GetCachedMapDiskImage
-	void				*unused15;	// CM_SetCachedMapDiskImage
-	void				*unused16;	// CM_SetUsingCache
-#endif
 
 	CMiniHeap *			(*GetG2VertSpaceServer)				( void );
 
