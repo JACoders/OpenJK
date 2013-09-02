@@ -181,7 +181,6 @@ void	Cmd_ExecuteString( const char *text ) {
 	CL_ForwardCommandToServer ( text );
 }
 
-
 /*
 ============
 Cmd_List_f
