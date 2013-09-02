@@ -17,7 +17,6 @@ int			cmd_wait;
 cmd_t		cmd_text;
 byte		cmd_text_buf[MAX_CMD_BUFFER];
 
-
 //=============================================================================
 
 /*
@@ -419,6 +418,18 @@ void	Cmd_ArgsBuffer( char *buffer, int bufferLength ) {
 
 /*
 ============
+Cmd_ArgsFromBuffer
+
+The interpreted versions use this because
+they can't have pointers returned to them
+============
+*/
+void	Cmd_ArgsFromBuffer( int arg, char *buffer, int bufferLength ) {
+	Q_strncpyz( buffer, Cmd_ArgsFrom(arg), bufferLength );
+}
+
+/*
+============
 Cmd_Cmd
 
 Retrieve the unmodified command string
@@ -586,6 +597,17 @@ void Cmd_TokenizeStringIgnoreQuotes( const char *text_in ) {
 }
 
 /*
+==================
+Cmd_CompleteCfgName
+==================
+*/
+void Cmd_CompleteCfgName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		Field_CompleteFilename( "", "cfg", qfalse, qtrue );
+	}
+}
+
+/*
 ============
 Cmd_Init
 ============
@@ -595,7 +617,10 @@ void Cmd_Init (void) {
 	Cmd_AddCommand ("cmdlist",Cmd_List_f);
 	Cmd_AddCommand ("exec",Cmd_Exec_f);
 	Cmd_AddCommand ("execq",Cmd_Exec_f);
+	Cmd_SetCommandCompletionFunc( "exec", Cmd_CompleteCfgName );
+	Cmd_SetCommandCompletionFunc( "execq", Cmd_CompleteCfgName );
 	Cmd_AddCommand ("vstr",Cmd_Vstr_f);
+	Cmd_SetCommandCompletionFunc( "vstr", Cvar_CompleteCvarName );
 	Cmd_AddCommand ("echo",Cmd_Echo_f);
 	Cmd_AddCommand ("wait", Cmd_Wait_f);
 }

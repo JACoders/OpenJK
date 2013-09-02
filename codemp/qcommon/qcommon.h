@@ -381,6 +381,7 @@ void	Cmd_ArgvBuffer( int arg, char *buffer, int bufferLength );
 char	*Cmd_Args (void);
 char	*Cmd_ArgsFrom( int arg );
 void	Cmd_ArgsBuffer( char *buffer, int bufferLength );
+void	Cmd_ArgsFromBuffer( int arg, char *buffer, int bufferLength );
 char	*Cmd_Cmd (void);
 void	Cmd_Args_Sanitize( void );
 // The functions that execute commands get their parameters with these
@@ -500,6 +501,8 @@ void Cvar_CheckRange( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeI
 
 void	Cvar_Restart(qboolean unsetVM);
 void	Cvar_Restart_f( void );
+
+void Cvar_CompleteCvarName( char *args, int argNum );
 
 extern	int			cvar_modifiedFlags;
 // whenever a cvar is modifed, its flags will be OR'd into this, so

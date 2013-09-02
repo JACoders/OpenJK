@@ -466,7 +466,9 @@ void Cvar_Print( cvar_t *v ) {
 	Com_Printf( S_COLOR_GREY"Cvar "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, v->name, v->string );
 
 	if ( !(v->flags & CVAR_ROM) ) {
-		if ( Q_stricmp( v->string, v->resetString ) )
+		if ( !Q_stricmp( v->string, v->resetString ) )
+			Com_Printf( ", "S_COLOR_WHITE"the default" );
+		else
 			Com_Printf( ", "S_COLOR_WHITE"default = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, v->resetString );
 	}
 
@@ -1099,7 +1101,7 @@ cvar_t *Cvar_Unset(cvar_t *cv)
 	if(cv->hashNext)
 		cv->hashNext->hashPrev = cv->hashPrev;
 
-	Com_Memset(cv, '\0', sizeof(*cv));
+	memset(cv, 0, sizeof(*cv));
 
 	return next;
 }
