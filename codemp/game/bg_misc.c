@@ -1907,7 +1907,10 @@ void BG_CycleForce(playerState_t *ps, int direction)
 	int presel = i;
 	int foundnext = -1;
 
-	if (!(ps->fd.forcePowersKnown & (1 << x)) ||
+	// This is actually correct otherwise breaks some forcepower strings from working with cycle
+	// If there is a better fix for correcting the bad code + fixing warning on linux please investigate
+	if (!ps->fd.forcePowersKnown & (1 << x) ||
+	//if (!(ps->fd.forcePowersKnown & (1 << x)) ||
 		x >= NUM_FORCE_POWERS ||
 		x == -1)
 	{ //apparently we have no valid force powers
