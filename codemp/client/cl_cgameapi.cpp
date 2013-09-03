@@ -1098,19 +1098,11 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return re->LightForPoint( (float *)VMA(1), (float *)VMA(2), (float *)VMA(3), (float *)VMA(4) );
 
 	case CG_R_ADDLIGHTTOSCENE:
-#ifdef VV_LIGHTING
-		VVLightMan.RE_AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
-#else
 		re->AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
-#endif
 		return 0;
 
 	case CG_R_ADDADDITIVELIGHTTOSCENE:
-#ifdef VV_LIGHTING
-		VVLightMan.RE_AddLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
-#else
 		re->AddAdditiveLightToScene( (const float *)VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
-#endif
 		return 0;
 
 	case CG_R_RENDERSCENE:

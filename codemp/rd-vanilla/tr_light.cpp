@@ -37,7 +37,6 @@ R_DlightBmodel
 Determine which dynamic lights may effect this bmodel
 =============
 */
-#ifndef VV_LIGHTING
 void R_DlightBmodel( bmodel_t *bmodel, bool NoLight )
 { //rwwRMG - modified args
 	int			i, j;
@@ -87,7 +86,6 @@ void R_DlightBmodel( bmodel_t *bmodel, bool NoLight )
 		}
 	}
 }
-#endif
 
 
 /*
@@ -110,11 +108,7 @@ R_SetupEntityLightingGrid
 
 =================
 */
-#ifdef VV_LIGHTING
-void R_SetupEntityLightingGrid( trRefEntity_t *ent) {
-#else
 static void R_SetupEntityLightingGrid( trRefEntity_t *ent ) {
-#endif
 	vec3_t			lightOrigin;
 	int				pos[3];
 	int				i, j;
@@ -285,7 +279,6 @@ by the Calc_* functions
 =================
 */
 void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
-#ifndef VV_LIGHTING
 	int				i;
 	dlight_t		*dl;
 	float			power;
@@ -393,7 +386,6 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	ent->lightDir[0] = DotProduct( lightDir, ent->e.axis[0] );
 	ent->lightDir[1] = DotProduct( lightDir, ent->e.axis[1] );
 	ent->lightDir[2] = DotProduct( lightDir, ent->e.axis[2] );
-#endif // VV_LIGHTING
 }
 
 /*

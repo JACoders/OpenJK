@@ -7,10 +7,6 @@
 	#include "tr_WorldEffects.h"
 #endif
 
-#ifdef VV_LIGHTING
-#include "tr_lightmanager.h"
-#endif
-
 backEndData_t	*backEndData;
 backEndState_t	backEnd;
 
@@ -895,11 +891,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 				// set up the dynamic lighting if needed
 				if ( backEnd.currentEntity->needDlights ) {
-#ifdef VV_LIGHTING
-					VVLightMan.R_TransformDlights( &backEnd.ori );
-#else
 					R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
-#endif
 				}
 
 				if ( backEnd.currentEntity->e.renderfx & RF_NODEPTH ) {
@@ -917,11 +909,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 				// we have to reset the shaderTime as well otherwise image animations on
 				// the world (like water) continue with the wrong frame
 				tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
-#ifdef VV_LIGHTING
-				VVLightMan.R_TransformDlights( &backEnd.ori );
-#else
 				R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
-#endif
 			}
 
 			qglLoadMatrixf( backEnd.ori.modelMatrix );
@@ -997,11 +985,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 				// the world (like water) continue with the wrong frame
 				tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
 
-#ifdef VV_LIGHTING
-				VVLightMan.R_TransformDlights( &backEnd.ori );
-#else
 				R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
-#endif
 			}
 			else
 			*/
@@ -1018,11 +1002,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 				// set up the dynamic lighting if needed
 				if ( backEnd.currentEntity->needDlights ) {
-#ifdef VV_LIGHTING
-					VVLightMan.R_TransformDlights( &backEnd.ori );
-#else
 					R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
-#endif
 				}
 			}
 
@@ -1203,8 +1183,6 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		RB_ShadowFinish();
 		didShadowPass = true;
 	}
-
-	//HDREffect.Render();
 
 	// add light flares on lights that aren't obscured
 

@@ -1584,10 +1584,9 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 	re.AddPolyToScene						= RE_AddPolyToScene;
 	re.AddDecalToScene						= RE_AddDecalToScene;
 	re.LightForPoint						= R_LightForPoint;
-#ifndef VV_LIGHTING
 	re.AddLightToScene						= RE_AddLightToScene;
 	re.AddAdditiveLightToScene				= RE_AddAdditiveLightToScene;
-#endif
+
 	re.RenderScene							= RE_RenderScene;
 	re.SetColor								= RE_SetColor;
 	re.DrawStretchPic						= RE_StretchPic;

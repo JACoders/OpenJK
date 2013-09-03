@@ -5,9 +5,6 @@
 
 #include "tr_local.h"
 
-#ifdef VV_LIGHTING
-#include "tr_lightmanager.h"
-#endif
 
 float ProjectRadius( float r, vec3_t location )
 {
