@@ -8,10 +8,6 @@
 #include "ghoul2/G2_gore.h"
 #endif
 
-#ifdef VV_LIGHTING
-#include "tr_lightmanager.h"
-#endif
-
 #ifdef _MSC_VER
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
 #endif
@@ -3247,13 +3243,8 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
 	modelList[255]=548;
 
 	// set up lighting now that we know we aren't culled
-#ifdef VV_LIGHTING
-	if ( !personalModel ) {
-		VVLightMan.R_SetupEntityLighting( &tr.refdef, ent );
-#else
 	if ( !personalModel || r_shadows->integer > 1 ) {
 		R_SetupEntityLighting( &tr.refdef, ent );
-#endif
 	}
 
 	// see if we are in a fog volume
@@ -3585,12 +3576,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 
 #ifndef _G2_GORE //we use this later, for gore
 	delete surf;
-#endif
-
-#ifdef VV_LIGHTING
-	// Set any dynamic lighting needed
-	if(backEnd.currentEntity->dlightBits)
-		tess.dlightBits = backEnd.currentEntity->dlightBits;
 #endif
 
 	// first up, sanity check our numbers

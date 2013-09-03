@@ -15,10 +15,6 @@
 #include "qcommon/INetProfile.h"
 #endif
 
-#ifdef VV_LIGHTING
-#include "renderer/tr_lightmanager.h"
-#endif
-
 /*
 Ghoul2 Insert Start
 */

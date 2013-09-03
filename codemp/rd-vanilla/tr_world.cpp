@@ -1,9 +1,5 @@
 #include "tr_local.h"
 
-#ifdef VV_LIGHTING
-#include "tr_lightmanager.h"
-#endif
-
 inline void Q_CastShort2Float(float *f, const short *s)
 {
 	*f = ((float)*s);
@@ -231,7 +227,6 @@ static qboolean	R_CullSurface( surfaceType_t *surface, shader_t *shader ) {
 	return qfalse;
 }
 
-#ifndef VV_LIGHTING
 static int R_DlightFace( srfSurfaceFace_t *face, int dlightBits ) {
 	float		d;
 	int			i;
@@ -345,7 +340,6 @@ static int R_DlightSurface( msurface_t *surf, int dlightBits ) {
 
 	return dlightBits;
 }
-#endif // VV_LIGHTING
 
 
 
@@ -359,11 +353,7 @@ static float g_playerHeight = 0.0f;
 R_AddWorldSurface
 ======================
 */
-#ifdef VV_LIGHTING
-void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noViewCount ) 
-#else
 static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noViewCount = qfalse )
-#endif
 {
 	if (!noViewCount)
 	{
@@ -410,11 +400,7 @@ static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noView
 
 	// check for dlighting
 	if ( dlightBits ) {
-#ifdef VV_LIGHTING
-		dlightBits = VVLightMan.R_DlightSurface( surf, dlightBits );
-#else
 		dlightBits = R_DlightSurface( surf, dlightBits );
-#endif
 		dlightBits = ( dlightBits != 0 );
 	}
 
@@ -541,21 +527,13 @@ void R_AddBrushModelSurfaces ( trRefEntity_t *ent ) {
 	
 	if(pModel->bspInstance)
 	{ //rwwRMG - added
-#ifdef VV_LIGHTING
-		VVLightMan.R_SetupEntityLighting(&tr.refdef, ent);
-#else
 		R_SetupEntityLighting(&tr.refdef, ent);
-#endif
 	}
 
 	//rww - Take this into account later?
 //	if ( !ri->Cvar_VariableIntegerValue( "com_RMG" ) )
 //	{	// don't dlight bmodels on rmg, as multiple copies of the same instance will light up
-#ifdef VV_LIGHTING
-		VVLightMan.R_DlightBmodel( bmodel, false );
-#else
 		R_DlightBmodel( bmodel, false );
-#endif
 //	}
 //	else
 //	{
@@ -1351,7 +1329,6 @@ const void *R_DrawWireframeAutomap(const void *data)
 R_RecursiveWorldNode
 ================
 */
-#ifndef VV_LIGHTING
 static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits ) {
 
 	do
@@ -1513,8 +1490,6 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits )
 	}
 
 }
-#endif // VV_LIGHTING
-
 
 /*
 ===============
