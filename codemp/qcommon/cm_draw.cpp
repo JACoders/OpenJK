@@ -1072,7 +1072,7 @@ void CDraw32::DrawCircleAve(long xc, long yc, long r, CPixel32 edge, CPixel32 fi
 //			pixel_write(x, y, pixelvalue);
 //	}
 
-typedef struct
+typedef struct POLYEDGE_s
 {	   	        // a polygon edge
              	// these are fixed point long ints for some accuracy & speed
 	long   x;		// x coordinate of edge's intersection with current scanline

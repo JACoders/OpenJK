@@ -83,8 +83,7 @@ bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *heigh
 //
 //---------------------------------------------------
 #pragma pack(push,1)
-typedef struct
-{
+typedef struct TGAHeader_s {
 	byte	byIDFieldLength;	// must be 0
 	byte	byColourmapType;	// 0 = truecolour, 1 = paletted, else bad
 	byte	byImageType;		// 1 = colour mapped (palette), uncompressed, 2 = truecolour, uncompressed, else bad

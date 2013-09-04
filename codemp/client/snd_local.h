@@ -33,7 +33,7 @@ extern void AS_Free( void );
 
 
 // !!! if this is changed, the asm code must change !!!
-typedef struct {
+typedef struct portable_samplepair_s {
 	int			left;	// the final values will be clamped to +/- 0x00ffff00 and shifted down
 	int			right;
 } portable_samplepair_t;
@@ -70,7 +70,7 @@ typedef struct sfx_s {
 	struct sfx_s	*next;					// only used because of hash table when registering
 } sfx_t;
 
-typedef struct {
+typedef struct dma_s {
 	int			channels;
 	int			samples;				// mono samples in buffer
 	int			submission_chunk;		// don't mix less than this #
@@ -83,8 +83,7 @@ typedef struct {
 #define START_SAMPLE_IMMEDIATE	0x7fffffff
 
 // Open AL specific
-typedef struct
-{
+typedef struct STREAMINGBUFFER_s {
 	ALuint	BufferID;
 	ALuint	Status;
 	char	*Data;
@@ -97,8 +96,7 @@ typedef struct
 #define UNQUEUED	2
 
 
-typedef struct
-{
+typedef struct channel_s {
 // back-indented fields new in TA codebase, will re-format when MP3 code finished -ste
 // note: field missing in TA: sboolean	loopSound;		// from an S_AddLoopSound call, cleared each frame
 //
@@ -140,7 +138,7 @@ typedef struct
 #define WAV_FORMAT_MP3		3	// not actually used this way, but just ensures we don't match one of the legit formats
 
 
-typedef struct {
+typedef struct wavinfo_s {
 	int			format;
 	int			rate;
 	int			width;

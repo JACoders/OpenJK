@@ -28,14 +28,12 @@ void R_InvertImage(byte *data, int width, int height, int depth)
 #define	LANCZOS3	(3.0f)
 #define M_PI_OVER_3	(M_PI / 3.0f)
 
-typedef struct
-{
+typedef struct contrib_s {
 	int		pixel;
 	float	weight;
 } contrib_t;
 
-typedef struct
-{
+typedef struct contrib_list_s {
 	int			n;		// number of contributors
 	contrib_t	*p;		// pointer to list of contributions
 } contrib_list_t;

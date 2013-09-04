@@ -1198,8 +1198,7 @@ void AAS_UnlinkFromAreas(aas_link_t *areas)
 // Changes Globals:		-
 //===========================================================================
 
-typedef struct
-{
+typedef struct aas_linkstack_s {
 	int nodenum;		//node found after splitting
 } aas_linkstack_t;
 

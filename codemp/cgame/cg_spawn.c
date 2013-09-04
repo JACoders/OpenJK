@@ -249,7 +249,7 @@ void SP_misc_weather_zone( void ) {
 
 	trap->WE_AddWeatherZone( mins, maxs );
 }
-typedef struct {
+typedef struct spawn_s {
 	char *name;
 	void ( *spawn )( void );
 } spawn_t;

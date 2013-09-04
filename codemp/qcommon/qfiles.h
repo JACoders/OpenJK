@@ -23,7 +23,7 @@ PCX files are used for 8 bit images
 ========================================================================
 */
 
-typedef struct {
+typedef struct pcx_s {
     char	manufacturer;
     char	version;
     char	encoding;
@@ -86,7 +86,7 @@ typedef struct md3Tag_s {
 ** st				sizeof( md3St_t ) * numVerts
 ** XyzNormals		sizeof( md3XyzNormal_t ) * numVerts * numFrames
 */
-typedef struct {
+typedef struct md3Surface_s {
 	int		ident;				// 
 
 	char	name[MAX_QPATH];	// polyset name
@@ -107,25 +107,25 @@ typedef struct {
 	int		ofsEnd;				// next surface follows
 } md3Surface_t;
 
-typedef struct {
+typedef struct md3Shader_s {
 	char			name[MAX_QPATH];
 	int				shaderIndex;	// for in-game use
 } md3Shader_t;
 
-typedef struct {
+typedef struct md3Triangle_s {
 	int			indexes[3];
 } md3Triangle_t;
 
-typedef struct {
+typedef struct md3St_s {
 	float		st[2];
 } md3St_t;
 
-typedef struct {
+typedef struct md3XyzNormal_s {
 	short		xyz[3];
 	short		normal;
 } md3XyzNormal_t;
 
-typedef struct {
+typedef struct md3Header_s {
 	int			ident;
 	int			version;
 
@@ -202,7 +202,7 @@ typedef struct {
 
 //=============================================================================
 
-typedef struct {
+typedef struct lump_s {
 	int		fileofs, filelen;
 } lump_t;
 
@@ -226,20 +226,20 @@ typedef struct {
 #define LUMP_LIGHTARRAY		17
 #define	HEADER_LUMPS		18
 
-typedef struct {
+typedef struct dheader_s {
 	int			ident;
 	int			version;
 
 	lump_t		lumps[HEADER_LUMPS];
 } dheader_t;
 
-typedef struct {
+typedef struct dmodel_s {
 	float		mins[3], maxs[3];
 	int			firstSurface, numSurfaces;
 	int			firstBrush, numBrushes;
 } dmodel_t;
 
-typedef struct {
+typedef struct dshader_s {
 	char		shader[MAX_QPATH];
 	int			surfaceFlags;
 	int			contentFlags;
@@ -247,19 +247,19 @@ typedef struct {
 
 // planes x^1 is allways the opposite of plane x
 
-typedef struct {
+typedef struct dplane_s {
 	float		normal[3];
 	float		dist;
 } dplane_t;
 
-typedef struct {
+typedef struct dnode_s {
 	int			planeNum;
 	int			children[2];	// negative numbers are -(leafs+1), not nodes
 	int			mins[3];		// for frustom culling
 	int			maxs[3];
 } dnode_t;
 
-typedef struct {
+typedef struct dleaf_s {
 	int			cluster;			// -1 = opaque cluster (do I still store these?)
 	int			area;
 
@@ -273,19 +273,19 @@ typedef struct {
 	int			numLeafBrushes;
 } dleaf_t;
 
-typedef struct {
+typedef struct dbrushside_s {
 	int			planeNum;			// positive plane side faces out of the leaf
 	int			shaderNum;
 	int			drawSurfNum;
 } dbrushside_t;
 
-typedef struct {
+typedef struct dbrush_s {
 	int			firstSide;
 	int			numSides;
 	int			shaderNum;		// the shader that determines the contents flags
 } dbrush_t;
 
-typedef struct {
+typedef struct dfog_s {
 	char		shader[MAX_QPATH];
 	int			brushNum;
 	int			visibleSide;	// the brush side that ray tests need to clip against (-1 == none)
@@ -298,7 +298,7 @@ typedef struct {
 #define	LS_LSNONE		0xff //rww - changed name because it unhappily conflicts with a lightsaber state name and changing this is just easier
 #define MAX_LIGHT_STYLES		64
 
-typedef struct {
+typedef struct mapVert_s {
 	vec3_t		xyz;
 	float		st[2];
 	float		lightmap[MAXLIGHTMAPS][2];
@@ -306,7 +306,7 @@ typedef struct {
 	byte		color[MAXLIGHTMAPS][4];
 } mapVert_t;
 
-typedef struct {
+typedef struct drawVert_s {
 	vec3_t		xyz;
 	float		st[2];
 	float		lightmap[MAXLIGHTMAPS][2];
@@ -314,13 +314,12 @@ typedef struct {
 	byte		color[MAXLIGHTMAPS][4];
 } drawVert_t;
 
-typedef struct
-{
+typedef struct dgrid_s {
 	byte		ambientLight[MAXLIGHTMAPS][3];
 	byte		directLight[MAXLIGHTMAPS][3];
 	byte		styles[MAXLIGHTMAPS];
 	byte		latLong[2];
-}  dgrid_t;
+} dgrid_t;
 
 typedef enum {
 	MST_BAD,
@@ -330,7 +329,7 @@ typedef enum {
 	MST_FLARE
 } mapSurfaceType_t;
 
-typedef struct {
+typedef struct dsurface_s {
 	int			shaderNum;
 	int			fogNum;
 	int			surfaceType;

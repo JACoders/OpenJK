@@ -172,7 +172,7 @@ typedef struct bot_chatstate_s
 	bot_chat_t *chat;
 } bot_chatstate_t;
 
-typedef struct {
+typedef struct bot_ichatdata_s {
 	bot_chat_t	*chat;
 	char		filename[MAX_QPATH];
 	char		chatname[MAX_QPATH];

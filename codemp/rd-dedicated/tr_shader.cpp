@@ -2278,7 +2278,7 @@ void ParseMaterial( const char **text )
 
 // this table is also present in q3map
 
-typedef struct {
+typedef struct infoParm_s {
 	const char	*name;
 	int		clearSolid, surfaceFlags, contents;
 } infoParm_t;
@@ -2614,7 +2614,7 @@ SHADER OPTIMIZATION AND FOGGING
 ========================================================================================
 */
 
-typedef struct {
+typedef struct collapse_s {
 	int		blendA;
 	int		blendB;
 

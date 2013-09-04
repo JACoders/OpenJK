@@ -650,7 +650,7 @@ Initializes a window structure ( windowDef_t ) with defaults
  
 ==================
 */
-void Window_Init(Window *w) {
+void Window_Init(windowDef_t *w) {
 	memset(w, 0, sizeof(windowDef_t));
 	w->borderSize = 1;
 	w->foreColor[0] = w->foreColor[1] = w->foreColor[2] = w->foreColor[3] = 1.0;
@@ -681,7 +681,7 @@ void Fade(int *flags, float *f, float clamp, int *nextTime, int offsetTime, qboo
 
 
 
-void Window_Paint(Window *w, float fadeAmount, float fadeClamp, float fadeCycle) 
+void Window_Paint(windowDef_t *w, float fadeAmount, float fadeClamp, float fadeCycle) 
 {
 	//float bordersize = 0;
 	vec4_t color;
@@ -4905,7 +4905,7 @@ void Item_Multi_Paint(itemDef_t *item) {
 }
 
 
-typedef struct {
+typedef struct bind_s {
 	char	*command;
 	int		id;
 	int		defaultbind1;
@@ -4914,8 +4914,7 @@ typedef struct {
 	int		bind2;
 } bind_t;
 
-typedef struct
-{
+typedef struct configcvar_s {
 	char*	name;
 	float	defaultvalue;
 	float	value;	

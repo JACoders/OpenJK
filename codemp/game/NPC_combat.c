@@ -2577,8 +2577,7 @@ void CP_FindCombatPointWaypoints( void )
 NPC_CollectCombatPoints
 -------------------------
 */
-typedef struct
-{
+typedef struct combatPt_s {
 	float dist;
 	int index;
 } combatPt_t;

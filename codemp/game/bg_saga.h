@@ -44,13 +44,11 @@ typedef enum
 
 
 #define SIEGE_CLASS_DESC_LEN  4096
-typedef struct
-{
+typedef struct siegeClassDesc_s {
 	char		desc[SIEGE_CLASS_DESC_LEN];
 } siegeClassDesc_t;
 
-typedef struct
-{
+typedef struct siegeClass_s {
 	char		name[512];
 	char		forcedModel[256];
 	char		forcedSkin[256];
@@ -77,8 +75,7 @@ typedef struct
 	short		playerClass;		// SPC_INFANTRY . .. 
 } siegeClass_t;
 
-typedef struct
-{
+typedef struct siegeTeam_s {
 	char		name[512];
 	siegeClass_t	*classes[MAX_SIEGE_CLASSES_PER_TEAM];
 	int			numClasses;

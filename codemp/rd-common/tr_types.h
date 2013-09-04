@@ -69,7 +69,7 @@ extern int	drawskyboxportal;
 
 typedef byte color4ub_t[4];
 
-typedef struct {
+typedef struct polyVert_s {
 	vec3_t		xyz;
 	float		st[2];
 	byte		modulate[4];
@@ -133,7 +133,7 @@ typedef struct miniRefEntity_s
 #ifdef _MSC_VER
 #pragma warning (disable : 4201 )
 #endif
-typedef struct {
+typedef struct refEntity_s {
 	// this stucture must remain identical as the miniRefEntity_t
 	//
 	//
@@ -263,7 +263,7 @@ Ghoul2 Insert Start
 // skins allow models to be retextured without modifying the model file
 //Raz: this is a mock copy, renderers may have their own implementation.
 // try not to break the ghoul2 code which is very implicit :/
-typedef struct {
+typedef struct _skinSurface_s {
 	char		name[MAX_QPATH];
 	void	*shader;
 } _skinSurface_t;
@@ -314,7 +314,7 @@ Ghoul2 Insert End
 #define	MAX_RENDER_STRINGS			8
 #define	MAX_RENDER_STRING_LENGTH	32
 
-typedef struct {
+typedef struct refdef_s {
 	int			x, y, width, height;
 	float		fov_x, fov_y;
 	vec3_t		vieworg;
@@ -356,7 +356,7 @@ typedef enum { // r_ext_preferred_tc_method
 	TC_S3TC_DXT
 } textureCompression_t;
 
-typedef struct {
+typedef struct glconfig_s {
 	const char				*renderer_string;
 	const char				*vendor_string;
 	const char				*version_string;

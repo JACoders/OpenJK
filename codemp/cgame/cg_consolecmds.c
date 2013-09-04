@@ -273,7 +273,7 @@ static void CG_SiegeCompleteCvarUpdate_f(void)
 	CG_SiegeBriefingDisplay(SIEGETEAM_TEAM2, 1);
 }
 
-typedef struct {
+typedef struct consoleCommand_s {
 	char	*cmd;
 	void	(*function)(void);
 } consoleCommand_t;

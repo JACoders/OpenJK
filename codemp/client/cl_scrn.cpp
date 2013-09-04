@@ -310,8 +310,7 @@ DEBUG GRAPH
 ===============================================================================
 */
 
-typedef struct
-{
+typedef struct graphsamp_s {
 	float	value;
 	int		color;
 } graphsamp_t;

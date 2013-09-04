@@ -831,14 +831,13 @@ entityState_t communication
 */
 
 
-typedef struct {
+typedef struct netField_s {
 	const char	*name;
 	int		offset;
 	int		bits;		// 0 = float
 #ifndef FINAL_BUILD
 	unsigned	mCount;
 #endif
-
 } netField_t;
 
 // using the stringizing operator to save typing...

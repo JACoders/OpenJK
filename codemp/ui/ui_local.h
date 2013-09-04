@@ -135,8 +135,7 @@ extern vmCvar_t ui_bypassMainMenuLoad;
 #define QM_LOSTFOCUS			2
 #define QM_ACTIVATED			3
 
-typedef struct _tag_menuframework
-{
+typedef struct menuframework_s {
 	int	cursor;
 	int cursor_prev;
 
@@ -149,10 +148,9 @@ typedef struct _tag_menuframework
 	qboolean	wrapAround;
 	qboolean	fullscreen;
 	qboolean	showlogo;
-} menuframework_s;
+} menuframework_t;
 
-typedef struct
-{
+typedef struct menucommon_s {
 	int type;
 	const char *name;
 	int	id;
@@ -161,16 +159,16 @@ typedef struct
 	int	top;
 	int	right;
 	int	bottom;
-	menuframework_s *parent;
+	menuframework_t *parent;
 	int menuPosition;
 	unsigned flags;
 
 	void (*callback)( void *self, int event );
 	void (*statusbar)( void *self );
 	void (*ownerdraw)( void *self );
-} menucommon_s;
+} menucommon_t;
 
-typedef struct {
+typedef struct mfield_s {
 	int		cursor;
 	int		scroll;
 	int		widthInChars;
@@ -178,26 +176,23 @@ typedef struct {
 	int		maxchars;
 } mfield_t;
 
-typedef struct
-{
-	menucommon_s	generic;
+typedef struct menufield_s {
+	menucommon_t	generic;
 	mfield_t		field;
-} menufield_s;
+} menufield_t;
 
-typedef struct 
-{
-	menucommon_s generic;
+typedef struct menuslider_s {
+	menucommon_t generic;
 
 	float minvalue;
 	float maxvalue;
 	float curvalue;
 
 	float range;
-} menuslider_s;
+} menuslider_t;
 
-typedef struct
-{
-	menucommon_s generic;
+typedef struct menulist_s {
+	menucommon_t generic;
 
 	int	oldvalue;
 	int curvalue;
@@ -210,22 +205,19 @@ typedef struct
 	int height;
 	int	columns;
 	int	seperation;
-} menulist_s;
+} menulist_t;
 
-typedef struct
-{
-	menucommon_s generic;
-} menuaction_s;
+typedef struct menuaction_s {
+	menucommon_t generic;
+} menuaction_t;
 
-typedef struct
-{
-	menucommon_s generic;
+typedef struct menuradiobutton_s {
+	menucommon_t generic;
 	int curvalue;
-} menuradiobutton_s;
+} menuradiobutton_t;
 
-typedef struct
-{
-	menucommon_s	generic;
+typedef struct menubitmap_s {
+	menucommon_t	generic;
 	char*			focuspic;	
 	char*			errorpic;
 	qhandle_t		shader;
@@ -233,30 +225,29 @@ typedef struct
 	int				width;
 	int				height;
 	float*			focuscolor;
-} menubitmap_s;
+} menubitmap_t;
 
-typedef struct
-{
-	menucommon_s	generic;
+typedef struct menutext_s {
+	menucommon_t	generic;
 	char*			string;
 	int				style;
 	float*			color;
-} menutext_s;
+} menutext_t;
 
 extern void			Menu_Cache( void );
-extern void			Menu_Focus( menucommon_s *m );
-extern void			Menu_AddItem( menuframework_s *menu, void *item );
-extern void			Menu_AdjustCursor( menuframework_s *menu, int dir );
-extern void			Menu_Draw( menuframework_s *menu );
-extern void			*Menu_ItemAtCursor( menuframework_s *m );
-extern sfxHandle_t	Menu_ActivateItem( menuframework_s *s, menucommon_s* item );
-extern void			Menu_SetCursor( menuframework_s *s, int cursor );
-extern void			Menu_SetCursorToItem( menuframework_s *m, void* ptr );
-extern sfxHandle_t	Menu_DefaultKey( menuframework_s *s, int key );
-extern void			Bitmap_Init( menubitmap_s *b );
-extern void			Bitmap_Draw( menubitmap_s *b );
-extern void			ScrollList_Draw( menulist_s *l );
-extern sfxHandle_t	ScrollList_Key( menulist_s *l, int key );
+extern void			Menu_Focus( menucommon_t *m );
+extern void			Menu_AddItem( menuframework_t *menu, void *item );
+extern void			Menu_AdjustCursor( menuframework_t *menu, int dir );
+extern void			Menu_Draw( menuframework_t *menu );
+extern void			*Menu_ItemAtCursor( menuframework_t *m );
+extern sfxHandle_t	Menu_ActivateItem( menuframework_t *s, menucommon_t *item );
+extern void			Menu_SetCursor( menuframework_t *s, int cursor );
+extern void			Menu_SetCursorToItem( menuframework_t *m, void* ptr );
+extern sfxHandle_t	Menu_DefaultKey( menuframework_t *s, int key );
+extern void			Bitmap_Init( menubitmap_t *b );
+extern void			Bitmap_Draw( menubitmap_t *b );
+extern void			ScrollList_Draw( menulist_t *l );
+extern sfxHandle_t	ScrollList_Key( menulist_t *l, int key );
 extern sfxHandle_t	menu_in_sound;
 extern sfxHandle_t	menu_move_sound;
 extern sfxHandle_t	menu_out_sound;
@@ -295,9 +286,9 @@ extern void			MField_Clear( mfield_t *edit );
 extern void			MField_KeyDownEvent( mfield_t *edit, int key );
 extern void			MField_CharEvent( mfield_t *edit, int ch );
 extern void			MField_Draw( mfield_t *edit, int x, int y, int style, vec4_t color );
-extern void			MenuField_Init( menufield_s* m );
-extern void			MenuField_Draw( menufield_s *f );
-extern sfxHandle_t	MenuField_Key( menufield_s* m, int* key );
+extern void			MenuField_Init( menufield_t* m );
+extern void			MenuField_Draw( menufield_t *f );
+extern sfxHandle_t	MenuField_Key( menufield_t* m, int* key );
 
 //
 // ui_main.c
@@ -445,7 +436,7 @@ extern void DriverInfo_Cache( void );
 //
 
 //FIXME ripped from cg_local.h
-typedef struct {
+typedef struct lerpFrame_s {
 	int			oldFrame;
 	int			oldFrameTime;		// time when ->oldFrame was exactly on
 
@@ -464,7 +455,7 @@ typedef struct {
 	int			animationTime;		// time when the first frame of the animation will be exact
 } lerpFrame_t;
 
-typedef struct {
+typedef struct playerInfo_s {
 	// model info
 	qhandle_t		legsModel;
 	qhandle_t		legsSkin;
@@ -522,7 +513,7 @@ typedef struct {
 // ui_atoms.c
 //
 // this is only used in the old ui, the new ui has it's own version
-typedef struct {
+typedef struct uiStatic_s {
 	int					frametime;
 	int					realtime;
 	int					cursorx;
@@ -599,22 +590,22 @@ typedef struct {
 #define MAX_SCROLLTEXT_SIZE		4096
 #define MAX_SCROLLTEXT_LINES		64
 
-typedef struct {
+typedef struct characterInfo_s {
 	const char *name;
 	const char *imageName;
 	qhandle_t headImage;
 	const char *base;
 	qboolean active;
 	int reference;
-} characterInfo;
+} characterInfo_t;
 
-typedef struct {
+typedef struct aliasInfo_s {
 	const char *name;
 	const char *ai;
 	const char *action;
-} aliasInfo;
+} aliasInfo_t;
 
-typedef struct {
+typedef struct teamInfo_s {
 	const char *teamName;
 	const char *imageName;
 	const char *teamMembers[TEAM_MEMBERS];
@@ -622,14 +613,14 @@ typedef struct {
 	qhandle_t teamIcon_Metal;
 	qhandle_t teamIcon_Name;
 	int cinematic;
-} teamInfo;
+} teamInfo_t;
 
-typedef struct {
+typedef struct gameTypeInfo_s {
 	const char *gameType;
 	int gtEnum;
-} gameTypeInfo;
+} gameTypeInfo_t;
 
-typedef struct {
+typedef struct mapInfo_s {
 	const char *mapName;
 	const char *mapLoadName;
 	const char *imageName;
@@ -640,21 +631,21 @@ typedef struct {
 	int timeToBeat[MAX_GAMETYPES];
 	qhandle_t levelShot;
 	qboolean active;
-} mapInfo;
+} mapInfo_t;
 
-typedef struct {
+typedef struct tierInfo_s {
 	const char *tierName;
 	const char *maps[MAPS_PER_TIER];
 	int gameTypes[MAPS_PER_TIER];
 	qhandle_t mapHandles[MAPS_PER_TIER];
-} tierInfo;
+} tierInfo_t;
 
 typedef struct serverFilter_s {
 	const char *description;
 	const char *basedir;
 } serverFilter_t;
 
-typedef struct {
+typedef struct pinglist_s {
 	char	adrstr[MAX_ADDRESSLENGTH];
 	int		start;
 } pinglist_t;
@@ -690,7 +681,7 @@ typedef struct serverStatus_s {
 } serverStatus_t;
 
 
-typedef struct {
+typedef struct pendingServer_s {
 	char		adrstr[MAX_ADDRESSLENGTH];
 	char		name[MAX_ADDRESSLENGTH];
 	int			startTime;
@@ -698,12 +689,12 @@ typedef struct {
 	qboolean	valid;
 } pendingServer_t;
 
-typedef struct {
+typedef struct pendingServerStatus_s {
 	int num;
 	pendingServer_t server[MAX_SERVERSTATUSREQUESTS];
 } pendingServerStatus_t;
 
-typedef struct {
+typedef struct serverStatusInfo_s {
 	char address[MAX_ADDRESSLENGTH];
 	char *lines[MAX_SERVERSTATUS_LINES][4];
 	char text[MAX_SERVERSTATUS_TEXT];
@@ -711,12 +702,12 @@ typedef struct {
 	int numLines;
 } serverStatusInfo_t;
 
-typedef struct {
+typedef struct modInfo_s {
 	const char *modName;
 	const char *modDescr;
 } modInfo_t;
 
-typedef struct {
+typedef struct playerSpeciesInfo_s {
 	char		Name[64];
 	int			SkinHeadCount;
 	char		SkinHeadNames[MAX_PLAYERMODELS][16];
@@ -729,7 +720,7 @@ typedef struct {
 	char		ColorActionText[MAX_PLAYERMODELS][128];
 } playerSpeciesInfo_t;
 
-typedef struct {
+typedef struct uiInfo_s {
 	displayContextDef_t uiDC;
 	int newHighScoreTime;
 	int newBestTime;
@@ -743,16 +734,16 @@ typedef struct {
 	//	characterInfo characterList[MAX_HEADS];
 
 	int aliasCount;
-	aliasInfo aliasList[MAX_ALIASES];
+	aliasInfo_t aliasList[MAX_ALIASES];
 
 	int teamCount;
-	teamInfo teamList[MAX_TEAMS];
+	teamInfo_t teamList[MAX_TEAMS];
 
 	int numGameTypes;
-	gameTypeInfo gameTypes[MAX_GAMETYPES];
+	gameTypeInfo_t gameTypes[MAX_GAMETYPES];
 
 	int numJoinGameTypes;
-	gameTypeInfo joinGameTypes[MAX_GAMETYPES];
+	gameTypeInfo_t joinGameTypes[MAX_GAMETYPES];
 
 	int redBlue;
 	int playerCount;
@@ -769,11 +760,11 @@ typedef struct {
 	int playerIndexes[MAX_CLIENTS]; //so we can vote-kick by index
 
 	int mapCount;
-	mapInfo mapList[MAX_MAPS];
+	mapInfo_t mapList[MAX_MAPS];
 
 
 	int tierCount;
-	tierInfo tierList[MAX_TIERS];
+	tierInfo_t tierList[MAX_TIERS];
 
 	int skillIndex;
 
@@ -842,7 +833,7 @@ typedef struct {
 	int			languageCount;
 	int			languageCountIndex;
 
-}	uiInfo_t;
+} uiInfo_t;
 
 extern uiInfo_t uiInfo;
 
@@ -873,7 +864,7 @@ extern qboolean 	UI_CursorInRect (int x, int y, int width, int height);
 extern void			UI_DrawTextBox (int x, int y, int width, int lines);
 extern qboolean		UI_IsFullscreen( void );
 extern void			UI_SetActiveMenu( uiMenuCommand_t menu );
-extern void			UI_PushMenu ( menuframework_s *menu );
+extern void			UI_PushMenu ( menuframework_t *menu );
 extern void			UI_PopMenu (void);
 extern void			UI_ForceMenuOff (void);
 extern char			*UI_Argv( int arg );

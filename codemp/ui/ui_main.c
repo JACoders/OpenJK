@@ -7307,8 +7307,7 @@ static void UI_BuildServerDisplayList(qboolean force) {
 //	}
 }
 
-typedef struct
-{
+typedef struct serverStatusCvar_s {
 	char *name, *altName;
 } serverStatusCvar_t;
 
@@ -10578,7 +10577,7 @@ cvars
 ================
 */
 
-typedef struct {
+typedef struct cvarTable_s {
 	vmCvar_t	*vmCvar;
 	char		*cvarName;
 	char		*defaultString;

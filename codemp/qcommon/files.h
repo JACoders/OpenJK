@@ -25,7 +25,7 @@ typedef struct fileInPack_s {
 	struct	fileInPack_s*	next;		// next file in the hash
 } fileInPack_t;
 
-typedef struct {
+typedef struct pack_s {
 	char			pakPathname[MAX_OSPATH];	// c:\jediacademy\gamedata\base
 	char			pakFilename[MAX_OSPATH];	// c:\jediacademy\gamedata\base\assets0.pk3
 	char			pakBasename[MAX_OSPATH];	// assets0
@@ -40,7 +40,7 @@ typedef struct {
 	fileInPack_t*	buildBuffer;				// buffer with the filenames etc.
 } pack_t;
 
-typedef struct {
+typedef struct directory_s {
 	char		path[MAX_OSPATH];		// c:\jediacademy\gamedata
 	char		fullpath[MAX_OSPATH];	// c:\jediacademy\gamedata\base
 	char		gamedir[MAX_OSPATH];	// base
@@ -65,7 +65,7 @@ typedef struct qfile_us {
 } qfile_ut;
 
 
-typedef struct {
+typedef struct fileHandleData_s {
 	qfile_ut	handleFiles;
 	qboolean	handleSync;
 	int			baseOffset;
