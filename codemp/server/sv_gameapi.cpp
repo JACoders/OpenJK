@@ -1235,10 +1235,6 @@ static void SV_BotUserCommand( int clientNum, usercmd_t *ucmd ) {
 	SV_ClientThink( &svs.clients[clientNum], ucmd );
 }
 
-static void SV_BotUpdateWaypoints( int wpnum, wpobject_t **wps ) {
-	SV_BotUpdateWaypoints( wpnum, wps );
-}
-
 static int SV_AAS_EnableRoutingArea( int areanum, int enable ) {
 	return botlib_export->aas.AAS_EnableRoutingArea( areanum, enable );
 }
