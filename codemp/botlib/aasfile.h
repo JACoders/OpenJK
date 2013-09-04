@@ -207,8 +207,7 @@ typedef struct aas_node_s
 //=========== aas file ===============
 
 //header lump
-typedef struct
-{
+typedef struct aas_lump_s {
 	int fileofs;
 	int filelen;
 } aas_lump_t;

@@ -6,8 +6,7 @@
 
 #include <windows.h>
 
-typedef struct
-{
+typedef struct glwstate_s {
 	WNDPROC		wndproc;
 
 	HDC     hDC;			// handle to device context

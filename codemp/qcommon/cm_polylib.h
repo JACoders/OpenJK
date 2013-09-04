@@ -2,8 +2,7 @@
 
 // this is only used for visualization tools in cm_ debug functions
 
-typedef struct
-{
+typedef struct winding_s {
 	int		numpoints;
 	vec3_t	p[4];		// variable sized
 } winding_t;

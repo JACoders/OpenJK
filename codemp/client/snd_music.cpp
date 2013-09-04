@@ -54,8 +54,7 @@ extern sboolean S_FileExists( const char *psFilename );
 #define MUSIC_PARSE_ERROR(_string)		Music_Parse_Error(_string)	// only use during parse, not run-time use, and bear in mid that data is zapped after error message, so exit any loops immediately
 #define MUSIC_PARSE_WARNING(_string)	Music_Parse_Warning(_string)
 
-typedef struct
-{
+typedef struct MusicExitPoint_s {
 	sstring_t	sNextFile;
 	sstring_t	sNextMark;		// blank if used for an explore piece, name of marker point to enter new file at
 
@@ -77,8 +76,7 @@ typedef vector	<MusicExitPoint_t>	MusicExitPoints_t;
 typedef vector	<MusicExitTime_t>	MusicExitTimes_t;
 typedef map		<sstring_t, float>	MusicEntryTimes_t;	// key eg "marker1"
 
-typedef struct
-{
+typedef struct MusicFile_s {
 	sstring_t			sFileNameBase;
 	MusicEntryTimes_t	MusicEntryTimes;
 	MusicExitPoints_t	MusicExitPoints;

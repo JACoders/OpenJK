@@ -626,8 +626,7 @@ RB_RenderDrawSurfList
 //so it's slower.
 #define MAX_POST_RENDERS	128
 
-typedef struct
-{
+typedef struct postRender_s {
 	int			fogNum;
 	int			entNum;
 	int			dlighted;

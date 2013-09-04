@@ -462,12 +462,12 @@ LOOPBACK BUFFERS FOR LOCAL PLAYER
 // gamestate of maximum size
 #define	MAX_LOOPBACK	16
 
-typedef struct {
+typedef struct loopmsg_s {
 	byte	data[MAX_PACKETLEN];
 	int		datalen;
 } loopmsg_t;
 
-typedef struct {
+typedef struct loopback_s {
 	loopmsg_t	msgs[MAX_LOOPBACK];
 	int			get, send;
 } loopback_t;

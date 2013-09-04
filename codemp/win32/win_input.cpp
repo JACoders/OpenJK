@@ -7,7 +7,7 @@
 #include "win_local.h"
 
 
-typedef struct {
+typedef struct WinMouseVars_s {
 	int			oldButtonState;
 
 	qboolean	mouseActive;
@@ -26,7 +26,7 @@ static void IN_ShutdownMIDI( void );
 
 #define MAX_MIDIIN_DEVICES	8
 
-typedef struct {
+typedef struct MidiInfo_s {
 	int			numDevices;
 	MIDIINCAPS	caps[MAX_MIDIIN_DEVICES];
 
@@ -40,7 +40,7 @@ static MidiInfo_t s_midiInfo;
 //
 #define	JOY_MAX_AXES		6				// X, Y, Z, R, U, V
 
-typedef struct {
+typedef struct joystickInfo_s {
 	qboolean	avail;
 	int			id;			// joystick number
 	JOYCAPS		jc;

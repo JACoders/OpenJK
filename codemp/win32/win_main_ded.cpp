@@ -819,7 +819,7 @@ void Sys_StreamSeek( fileHandle_t f, int offset, int origin ) {
 
 #else
 
-typedef struct {
+typedef struct streamsIO_s {
 	fileHandle_t	file;
 	byte	*buffer;
 	qboolean	eof;
@@ -829,7 +829,7 @@ typedef struct {
 	int		threadPosition;	// next byte to be read from file
 } streamsIO_t;
 
-typedef struct {
+typedef struct streamState_s {
 	HANDLE				threadHandle;
 	int					threadId;
 	CRITICAL_SECTION	crit;

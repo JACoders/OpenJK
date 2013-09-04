@@ -329,8 +329,7 @@ typedef struct animevent_s
 	char			*stringData;		//we allow storage of one string, temporarily (in case we have to look up an index later, then make sure to set stringData to NULL so we only do the look-up once)
 } animevent_t;
 
-typedef struct
-{
+typedef struct bgLoadedAnim_s {
 	char			filename[MAX_QPATH];
 	animation_t		*anims;
 //	animsounds_t	torsoAnimSnds[MAX_ANIM_SOUNDS];
@@ -338,8 +337,7 @@ typedef struct
 //	qboolean		soundsCached;
 } bgLoadedAnim_t;
 
-typedef struct
-{
+typedef struct bgLoadedEvents_s {
 	char			filename[MAX_QPATH];
 	animevent_t		torsoAnimEvents[MAX_ANIM_EVENTS];
 	animevent_t		legsAnimEvents[MAX_ANIM_EVENTS];
@@ -438,7 +436,7 @@ typedef struct bgEntity_s
 	} bgEntity_t;
 #endif
 
-typedef struct {
+typedef struct pmove_s {
 	// state (in / out)
 	playerState_t	*ps;
 
@@ -1425,8 +1423,7 @@ typedef enum {
 	Q_NUM_QUADS
 } saberQuadrant_t;
 
-typedef struct
-{
+typedef struct saberMoveData_s {
 	char *name;
 	int animToUse;
 	int	startQuad;

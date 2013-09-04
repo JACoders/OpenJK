@@ -10,7 +10,7 @@
 //
 // msg.c
 //
-typedef struct {
+typedef struct msg_s {
 	qboolean	allowoverflow;	// if false, do a Com_Error
 	qboolean	overflowed;		// set to true if the buffer size failed (with allowoverflow set)
 	qboolean	oob;			// set to true if the buffer size failed (with allowoverflow set)
@@ -115,7 +115,7 @@ typedef enum {
 	NS_SERVER
 } netsrc_t;
 
-typedef struct {
+typedef struct netadr_s {
 	netadrtype_t	type;
 
 	byte	ip[4];
@@ -155,7 +155,7 @@ void		NET_Sleep(int msec);
 Netchan handles packet fragmentation and out of order / duplicate suppression
 */
 
-typedef struct {
+typedef struct netchan_s {
 	netsrc_t	sock;
 
 	int			dropped;			// between last packet and previous
@@ -681,7 +681,7 @@ Edit fields and command line history/completion
 #define	MAX_EDIT_LINE		256
 #define COMMAND_HISTORY		32
 
-typedef struct {
+typedef struct field_s {
 	int		cursor;
 	int		scroll;
 	int		widthInChars;
@@ -986,7 +986,7 @@ typedef enum {
 	SE_PACKET	// evPtr is a netadr_t followed by data bytes to evPtrLength
 } sysEventType_t;
 
-typedef struct {
+typedef struct sysEvent_s {
 	int				evTime;
 	sysEventType_t	evType;
 	int				evValue, evValue2;
@@ -1097,7 +1097,7 @@ typedef struct nodetype {
 
 #define HMAX 256 /* Maximum symbol */
 
-typedef struct {
+typedef struct huff_s {
 	int			blocNode;
 	int			blocPtrs;
 
@@ -1111,7 +1111,7 @@ typedef struct {
 	node_t*		nodePtrs[768];
 } huff_t;
 
-typedef struct {
+typedef struct huffman_s {
 	huff_t		compressor;
 	huff_t		decompressor;
 } huffman_t;

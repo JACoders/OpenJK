@@ -62,7 +62,7 @@ static	unsigned short		vq4[256*64*4];
 static	unsigned short		vq8[256*256*4];
 
 
-typedef struct {
+typedef struct cinematics_s {
 	byte				linbuf[DEFAULT_CIN_WIDTH*DEFAULT_CIN_HEIGHT*4*2];
 	byte				file[65536];
 	short				sqrTable[256];
@@ -75,7 +75,7 @@ typedef struct {
 	int					currentHandle;
 } cinematics_t;
 
-typedef struct {
+typedef struct cin_cache_s {
 	char				fileName[MAX_OSPATH];
 	int					CIN_WIDTH, CIN_HEIGHT;
 	int					xpos, ypos, width, height;
@@ -113,10 +113,10 @@ typedef struct {
 	int					playonwalls;
 	byte*				buf;
 	long				drawX, drawY;
-} cin_cache;
+} cin_cache_t;
 
 static cinematics_t		cin;
-static cin_cache		cinTable[MAX_VIDEO_HANDLES];
+static cin_cache_t		cinTable[MAX_VIDEO_HANDLES];
 static int				currentHandle = -1;
 static int				CL_handle = -1;
 

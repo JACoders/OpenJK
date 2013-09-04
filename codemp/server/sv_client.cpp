@@ -1282,7 +1282,7 @@ static void SV_UpdateUserinfo_f( client_t *cl ) {
 	GVM_ClientUserinfoChanged( cl - svs.clients );
 }
 
-typedef struct {
+typedef struct ucmd_s {
 	const char	*name;
 	void	(*func)( client_t *cl );
 } ucmd_t;

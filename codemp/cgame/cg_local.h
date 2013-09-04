@@ -123,7 +123,7 @@ typedef enum {
 
 // when changing animation, set animationTime to frameTime + lerping time
 // The current lerp will finish out, then it will lerp to the new animation
-typedef struct {
+typedef struct lerpFrame_s {
 	int			oldFrame;
 	int			oldFrameTime;		// time when ->oldFrame was exactly on
 
@@ -154,7 +154,7 @@ typedef struct {
 } lerpFrame_t;
 
 
-typedef struct {
+typedef struct playerEntity_s {
 	lerpFrame_t		legs, torso, flag;
 	int				painTime;
 	int				painDirection;	// flip from 0 to 1
@@ -182,7 +182,7 @@ typedef struct {
 #define	MAX_CUSTOM_SOUNDS	40 //rww - Note that for now these must all be the same, because of the way I am
 							   //cycling through them and comparing for custom sounds.
 
-typedef struct {
+typedef struct clientInfo_s {
 	qboolean		infoValid;
 
 	float			colorOverride[3];
@@ -609,7 +609,7 @@ typedef struct localEntity_s {
 //======================================================================
 
 
-typedef struct {
+typedef struct score_s {
 	int				client;
 	int				score;
 	int				ping;
@@ -687,7 +687,7 @@ typedef struct weaponInfo_s {
 // each IT_* item has an associated itemInfo_t
 // that constains media references necessary to present the
 // item and its effects
-typedef struct {
+typedef struct itemInfo_s {
 	qboolean		registered;
 	qhandle_t		models[MAX_ITEM_MODELS];
 	qhandle_t		icon;
@@ -702,14 +702,14 @@ Ghoul2 Insert End
 } itemInfo_t;
 
 
-typedef struct {
+typedef struct powerupInfo_s {
 	int				itemNum;
 } powerupInfo_t;
 
 
 #define MAX_SKULLTRAIL		10
 
-typedef struct {
+typedef struct skulltrail_s {
 	vec3_t positions[MAX_SKULLTRAIL];
 	int numpositions;
 } skulltrail_t;
@@ -734,7 +734,7 @@ typedef struct chatBoxItem_s
 	int		lines;
 } chatBoxItem_t;
 
-typedef struct {
+typedef struct cg_s {
 	int			clientFrame;		// incremented each frame
 
 	int			clientNum;
@@ -1051,7 +1051,7 @@ enum
 // loaded at gamestate time are stored in cgMedia_t
 // Other media that can be tied to clients, weapons, or items are
 // stored in the clientInfo_t, itemInfo_t, weaponInfo_t, and powerupInfo_t
-typedef struct {
+typedef struct cgMedia_s {
 	qhandle_t	charsetShader;
 	qhandle_t	whiteShader;
 
@@ -1369,8 +1369,7 @@ typedef struct {
 
 // Stored FX handles
 //--------------------
-typedef struct
-{
+typedef struct cgEffects_s {
 	//concussion
 	fxHandle_t	concussionShotEffect;
 	fxHandle_t	concussionImpactEffect;
@@ -1509,7 +1508,7 @@ typedef struct cg_staticmodel_s {
 // loaded or calculated from the gamestate.  It will NOT
 // be cleared when a tournement restart is done, allowing
 // all clients to begin playing instantly
-typedef struct {
+typedef struct cgs_s {
 	gameState_t		gameState;			// gamestate from server
 	glconfig_t		glconfig;			// rendering configuration
 	float			screenXScale;		// derived from glconfig

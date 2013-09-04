@@ -21,7 +21,7 @@
 extern vec3_t cl_windVec;
 
 // snapshots are a view of the server at a given time
-typedef struct {
+typedef struct clSnapshot_s {
 	qboolean		valid;			// cleared if delta parsing was invalid
 	int				snapFlags;		// rate delayed and dropped commands
 
@@ -54,7 +54,7 @@ new gamestate_t, potentially several times during an established connection
 =============================================================================
 */
 
-typedef struct {
+typedef struct outPacket_s {
 	int		p_cmdNumber;		// cl.cmdNumber when packet was sent
 	int		p_serverTime;		// usercmd->serverTime when packet was sent
 	int		p_realtime;			// cls.realtime when packet was sent
@@ -67,7 +67,7 @@ typedef struct {
 
 extern int g_console_field_width;
 
-typedef struct {
+typedef struct clientActive_s {
 	int			timeoutcount;		// it requres several frames in a timeout condition
 									// to disconnect, preventing debugging breaks from
 									// causing immediate disconnects on continue
@@ -158,7 +158,7 @@ demo through a file.
 */
 
 
-typedef struct {
+typedef struct clientConnection_s {
 
 	int			clientNum;
 	int			lastPacketSentTime;			// for retransmits during connection
@@ -237,14 +237,14 @@ no client connection is active at all
 ==================================================================
 */
 
-typedef struct {
+typedef struct ping_s {
 	netadr_t	adr;
 	int			start;
 	int			time;
 	char		info[MAX_INFO_STRING];
 } ping_t;
 
-typedef struct {
+typedef struct serverInfo_s {
 	netadr_t	adr;
 	char	  	hostName[MAX_NAME_LENGTH];
 	char	  	mapName[MAX_NAME_LENGTH];
@@ -265,7 +265,7 @@ typedef struct {
 //	qboolean	pure;
 } serverInfo_t;
 
-typedef struct {
+typedef struct clientStatic_s {
 	connstate_t	state;				// connection status
 
 	char		servername[MAX_OSPATH];		// name of server from original connect (used by reconnect)
@@ -314,7 +314,7 @@ typedef struct {
 #define	CON_TEXTSIZE	0x30000 //was 32768
 #define	NUM_CON_TIMES	4
 
-typedef struct {
+typedef struct console_s {
 	qboolean	initialized;
 
 	short	text[CON_TEXTSIZE];
@@ -435,7 +435,7 @@ qboolean CL_CheckPaused(void);
 //
 // cl_input
 //
-typedef struct {
+typedef struct kbutton_s {
 	int			down[2];		// key nums holding it down
 	unsigned	downtime;		// msec timestamp
 	unsigned	msec;			// msec down this frame if both a down and up happened

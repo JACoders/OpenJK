@@ -7,7 +7,7 @@
 #define	MAX_CMD_BUFFER	128*1024
 #define	MAX_CMD_LINE	1024
 
-typedef struct {
+typedef struct cmd_s {
 	byte	*data;
 	int		maxsize;
 	int		cursize;

@@ -40,8 +40,7 @@ extern qboolean Sys_LowPhysicalMemory();
 const int iMP3MusicStream_DiskBytesToRead = 10000;//4096;
 const int iMP3MusicStream_DiskBufferSize = iMP3MusicStream_DiskBytesToRead*2; //*10;
 
-typedef struct
-{	
+typedef struct MusicInfo_s {	
 	sboolean	bIsMP3;
 	//
 	// MP3 specific...
@@ -99,7 +98,6 @@ typedef struct
 		MP3Stream_SeekTo( &chMP3_Bgrnd, fTime );
 		s_backgroundSamples = sfxMP3_Bgrnd.iSoundLengthInSamples;
 	}
-
 } MusicInfo_t;
 
 static void S_SetDynamicMusicState( MusicState_e musicState );
@@ -230,8 +228,7 @@ void S_SetLipSyncs();
 
 // EAX Related
 
-typedef struct
-{
+typedef struct ENVTABLE_s {
 	ALuint		ulNumApertures;
 	ALint		lFXSlotID;
 	ALboolean	bUsed;
@@ -243,15 +240,13 @@ typedef struct
 	} Aperture[64];
 } ENVTABLE, *LPENVTABLE;
 
-typedef struct
-{
+typedef struct REVERBDATA_s {
 	long lEnvID;
 	long lApertureNum;
 	float flDist;
 } REVERBDATA, *LPREVERBDATA;
 
-typedef struct
-{
+typedef struct FXSLOTINFO_s {
 	GUID	FXSlotGuid;
 	ALint	lEnvID;
 } FXSLOTINFO, *LPFXSLOTINFO;

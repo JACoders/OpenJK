@@ -18,7 +18,7 @@ static char		*g_arenaInfos[MAX_ARENAS];
 
 #define BOT_SPAWN_QUEUE_DEPTH	16
 
-typedef struct {
+typedef struct botSpawnQueue_s {
 	int		clientNum;
 	int		spawnTime;
 } botSpawnQueue_t;

@@ -1,7 +1,6 @@
 #pragma once
 
-typedef struct
-{
+typedef struct clightstyle_s {
 	int				length;
 	color4ub_t		value;
 	color4ub_t		map[MAX_QPATH];

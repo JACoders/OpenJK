@@ -121,15 +121,13 @@ void Z_Validate(void)
 //
 #pragma pack(push)
 #pragma pack(1)
-typedef struct
-{
+typedef struct StaticZeroMem_s {
 	zoneHeader_t	Header;	
 //	byte mem[0];
 	zoneTail_t		Tail;
 } StaticZeroMem_t;
 
-typedef struct
-{
+typedef struct StaticMem_s {
 	zoneHeader_t	Header;	
 	byte mem[2];
 	zoneTail_t		Tail;

@@ -56,7 +56,7 @@ typedef struct failedEdge_e
 	int	entID;
 } failedEdge_t;
 
-typedef struct {
+typedef struct entityShared_s {
 	qboolean	linked;				// qfalse if not in any good cluster
 	int			linkcount;
 
@@ -178,8 +178,7 @@ typedef enum //# bSet_e
 
 #define	MAX_PARMS	16
 #define	MAX_PARM_STRING_LENGTH	MAX_QPATH//was 16, had to lengthen it so they could take a valid file path
-typedef struct
-{	
+typedef struct parms_s {	
 	char	parm[MAX_PARMS][MAX_PARM_STRING_LENGTH];
 } parms_t;
 
@@ -191,7 +190,7 @@ typedef struct Vehicle_s Vehicle_t;
 
 // the server looks at a sharedEntity, which is the start of the game's gentity_t structure
 //mod authors should not touch this struct
-typedef struct {
+typedef struct sharedEntity_s {
 	entityState_t	s;				// communicated by server to clients
 	playerState_t	*playerState;	//needs to be in the gentity for bg entity access
 									//if you want to actually see the contents I guess
@@ -247,8 +246,7 @@ extern CTaskManager	*gTaskManagers[MAX_GENTITIES];
 #include "icarus/taskmanager.h"
 #endif
 
-typedef struct
-{
+typedef struct T_G_ICARUS_PLAYSOUND_s {
 	int taskID;
 	int entID;
 	char name[2048];
@@ -256,16 +254,14 @@ typedef struct
 } T_G_ICARUS_PLAYSOUND;
 
 
-typedef struct
-{
+typedef struct T_G_ICARUS_SET_s {
 	int taskID;
 	int entID;
 	char type_name[2048];
 	char data[2048];
 } T_G_ICARUS_SET;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_LERP2POS_s {
 	int taskID;
 	int entID; 
 	vec3_t origin;
@@ -274,100 +270,86 @@ typedef struct
 	qboolean nullAngles; //special case
 } T_G_ICARUS_LERP2POS;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_LERP2ORIGIN_s {
 	int taskID;
 	int entID;
 	vec3_t origin;
 	float duration;
 } T_G_ICARUS_LERP2ORIGIN;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_LERP2ANGLES_s {
 	int taskID;
 	int entID;
 	vec3_t angles;
 	float duration;
 } T_G_ICARUS_LERP2ANGLES;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_GETTAG_s {
 	int entID;
 	char name[2048];
 	int lookup;
 	vec3_t info;
 } T_G_ICARUS_GETTAG;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_LERP2START_s {
 	int entID;
 	int taskID;
 	float duration;
 } T_G_ICARUS_LERP2START;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_LERP2END_s {
 	int entID;
 	int taskID;
 	float duration;
 } T_G_ICARUS_LERP2END;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_USE_s {
 	int entID;
 	char target[2048];
 } T_G_ICARUS_USE;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_KILL_s {
 	int entID;
 	char name[2048];
 } T_G_ICARUS_KILL;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_REMOVE_s {
 	int entID;
 	char name[2048];
 } T_G_ICARUS_REMOVE;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_PLAY_s {
 	int taskID;
 	int entID;
 	char type[2048];
 	char name[2048];
 } T_G_ICARUS_PLAY;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_GETFLOAT_s {
 	int entID;
 	int type;
 	char name[2048];
 	float value;
 } T_G_ICARUS_GETFLOAT;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_GETVECTOR_s {
 	int entID;
 	int type;
 	char name[2048];
 	vec3_t value;
 } T_G_ICARUS_GETVECTOR;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_GETSTRING_s {
 	int entID;
 	int type;
 	char name[2048];
 	char value[2048];
 } T_G_ICARUS_GETSTRING;
 
-typedef struct
-{
+typedef struct T_G_ICARUS_SOUNDINDEX_s {
 	char filename[2048];
 } T_G_ICARUS_SOUNDINDEX;
-typedef struct
-{
+typedef struct T_G_ICARUS_GETSETIDFORSTRING_s {
 	char string[2048];
 } T_G_ICARUS_GETSETIDFORSTRING;
 

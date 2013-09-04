@@ -6,7 +6,7 @@
 #include "bg_saga.h"
 #include "qcommon/q_shared.h"
 
-typedef struct {
+typedef struct shaderRemap_s {
   char oldShader[MAX_QPATH];
   char newShader[MAX_QPATH];
   float timeOffset;

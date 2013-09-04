@@ -15,7 +15,7 @@ static void CVU_Derpity( void ) {
 // Cvar table
 //
 
-typedef struct {
+typedef struct cvarTable_s {
 	vmCvar_t	*vmCvar;
 	char		*cvarName;
 	char		*defaultString;

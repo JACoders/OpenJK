@@ -25,8 +25,7 @@
 #define EDIT_ID			100
 #define INPUT_ID		101
 
-typedef struct
-{
+typedef struct WinConData_s {
 	HWND		hWnd;
 	HWND		hwndBuffer;
 

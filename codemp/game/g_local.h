@@ -385,7 +385,7 @@ typedef enum {
 	TEAM_ACTIVE		// Now actively playing
 } playerTeamStateState_t;
 
-typedef struct {
+typedef struct playerTeamState_s {
 	playerTeamStateState_t	state;
 
 	int			location;
@@ -412,7 +412,7 @@ typedef struct {
 // this is achieved by writing all the data to cvar strings at game shutdown
 // time and reading them back at connection time.  Anything added here
 // MUST be dealt with in G_InitSessionData() / G_ReadSessionData() / G_WriteSessionData()
-typedef struct {
+typedef struct clientSession_s {
 	team_t		sessionTeam;
 	int			spectatorTime;		// for determining next-in-line to play
 	spectatorState_t	spectatorState;
@@ -441,7 +441,7 @@ typedef struct {
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
-typedef struct {
+typedef struct clientPersistant_s {
 	clientConnected_t	connected;	
 	usercmd_t	cmd;				// we would lose angles if not persistant
 	qboolean	localClient;		// true if "ip" info key is "localhost"
@@ -819,8 +819,7 @@ typedef struct alertEvent_s
 //
 // this structure is cleared as each map is entered
 //
-typedef struct
-{
+typedef struct waypointData_s {
 	char	targetname[MAX_QPATH];
 	char	target[MAX_QPATH];
 	char	target2[MAX_QPATH];
@@ -829,7 +828,7 @@ typedef struct
 	int		nodeID;
 } waypointData_t;
 
-typedef struct {
+typedef struct level_locals_s {
 	struct gclient_s	*clients;		// [maxclients]
 
 	struct gentity_s	*gentities;

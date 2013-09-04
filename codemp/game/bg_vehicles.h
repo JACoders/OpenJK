@@ -29,8 +29,7 @@ extern stringID_table_t VehicleTable[VH_NUM_VEHICLES+1];
 //===========================================================================================================
 //START VEHICLE WEAPONS
 //===========================================================================================================
-typedef struct
-{
+typedef struct vehWeaponInfo_s {
 //*** IMPORTANT!!! *** the number of variables in the vehWeaponStats_t struct (including all elements of arrays) must be reflected by NUM_VWEAP_PARMS!!!
 //*** IMPORTANT!!! *** vWeapFields table correponds to this structure!
 	char	*name;
@@ -81,8 +80,7 @@ extern int	numVehicleWeapons;
 #define		MAX_VEHICLE_TURRETS			2
 #define		MAX_VEHICLE_TURRET_MUZZLES	2
 
-typedef struct
-{
+typedef struct turretStats_s {
 	int			iWeapon;	//what vehWeaponInfo index to use
 	int			iDelay;		//delay between turret muzzle shots
 	int			iAmmoMax;	//how much ammo it has
@@ -104,8 +102,7 @@ typedef struct
 	int			passengerNum;//which passenger, if any, has control of this turret (overrides AI)
 } turretStats_t;
 
-typedef struct
-{
+typedef struct vehWeaponStats_s {
 //*** IMPORTANT!!! *** See note at top of next structure!!! ***
 	// Weapon stuff.
 	int			ID;//index into the weapon data
@@ -123,8 +120,7 @@ typedef struct
 	int			soundNoAmmo;
 } vehWeaponStats_t;
 
-typedef struct
-{
+typedef struct vehicleInfo_s {
 //*** IMPORTANT!!! *** vehFields table correponds to this structure!
 	char		*name;	//unique name of the vehicle
 
@@ -440,8 +436,7 @@ typedef enum
 #define SHIPSURF_BROKEN_F	(1<<5) //wing 4
 #define SHIPSURF_BROKEN_G	(1<<6) //front
 
-typedef struct
-{
+typedef struct vehWeaponStatus_s {
 	//linked firing mode
 	qboolean	linked;//weapon 1's muzzles are in linked firing mode
 	//current weapon ammo
@@ -452,8 +447,7 @@ typedef struct
 	int			nextMuzzle;
 } vehWeaponStatus_t;
 
-typedef struct
-{
+typedef struct vehTurretStatus_s {
 	//current weapon ammo
 	int			ammo;
 	//debouncer for ammo recharge

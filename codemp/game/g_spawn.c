@@ -96,8 +96,7 @@ typedef enum {
 	F_PARM16			// Special case for parms
 } fieldtype_t;
 
-typedef struct
-{
+typedef struct field_s {
 	char	*name;
 	int		ofs;
 	fieldtype_t	type;
@@ -192,7 +191,7 @@ field_t fields[] = {
 	{ "wait",					FOFS( wait ),							F_FLOAT },
 };
 
-typedef struct {
+typedef struct spawn_s {
 	char	*name;
 	void	(*spawn)(gentity_t *ent);
 } spawn_t;

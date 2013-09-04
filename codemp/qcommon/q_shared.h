@@ -523,8 +523,7 @@ typedef struct
 							//	..then we'll need the normal to project a mark blob onto the impact point
 } saberTrail_t;
 
-typedef struct
-{
+typedef struct bladeInfo_s {
 	qboolean	active;
 	saber_colors_t	color;
 	float		radius;
@@ -606,8 +605,7 @@ typedef enum
 #define SFL2_NO_MANUAL_DEACTIVATE2	(1<<16)//if set, the blades cannot manually be toggled on and off
 #define SFL2_TRANSITION_DAMAGE2		(1<<17)//if set, the blade does damage in start, transition and return anims (like strong style does)
 
-typedef struct
-{
+typedef struct saberInfo_s {
 	char		name[64];						//entry in sabers.cfg, if any
 	char		fullName[64];				//the "Proper Name" of the saber, shown in UI
 	saberType_t	type;						//none, single or staff
@@ -767,8 +765,7 @@ enum sharedERagEffector
 	RE_CEYEBROW=			0x01000000 //"ceyebrow"
 };
 
-typedef struct
-{
+typedef struct sharedRagDollParams_s {
 	vec3_t angles;
 	vec3_t position;
 	vec3_t scale;
@@ -796,8 +793,7 @@ typedef struct
 } sharedRagDollParams_t;
 
 //And one for updating during model animation.
-typedef struct
-{
+typedef struct sharedRagDollUpdateParams_s {
 	vec3_t angles;
 	vec3_t position;
 	vec3_t scale;
@@ -807,8 +803,7 @@ typedef struct
 } sharedRagDollUpdateParams_t;
 
 //rww - update parms for ik bone stuff
-typedef struct
-{
+typedef struct sharedIKMoveParams_s {
 	char boneName[512]; //name of bone
 	vec3_t desiredOrigin; //world coordinate that this bone should be attempting to reach
 	vec3_t origin; //world coordinate of the entity who owns the g2 instance that owns the bone
@@ -816,8 +811,7 @@ typedef struct
 } sharedIKMoveParams_t;
 
 
-typedef struct
-{
+typedef struct sharedSetBoneIKStateParams_s {
 	vec3_t pcjMins; //ik joint limit
 	vec3_t pcjMaxs; //ik joint limit
 	vec3_t origin; //origin of caller
@@ -1345,8 +1339,7 @@ const char *Q_strchrs( const char *string, const char *search );
 
 // 64-bit integers for global rankings interface
 // implemented as a struct for qvm compatibility
-typedef struct
-{
+typedef struct qint64_s {
 	byte	b0;
 	byte	b1;
 	byte	b2;
@@ -1466,7 +1459,7 @@ typedef int	cvarHandle_t;
 
 // the modules that run in the virtual machine can't access the cvar_t directly,
 // so they must ask for structured updates
-typedef struct {
+typedef struct vmCvar_s {
 	cvarHandle_t	handle;
 	int			modificationCount;
 	float		value;
@@ -1512,8 +1505,7 @@ typedef struct cplane_s {
 /*
 Ghoul2 Insert Start
 */
-typedef struct
-{
+typedef struct CollisionRecord_s {
 	float		mDistance;
 	int			mEntityNum;
 	int			mModelIndex;
@@ -1526,7 +1518,7 @@ typedef struct
 	int			mLocation;
 	float		mBarycentricI; // two barycentic coodinates for the hit point
 	float		mBarycentricJ; // K = 1-I-J
-}CollisionRecord_t;
+} CollisionRecord_t;
 
 #define MAX_G2_COLLISIONS 16
 
@@ -1536,7 +1528,7 @@ typedef CollisionRecord_t G2Trace_t[MAX_G2_COLLISIONS];	// map that describes al
 Ghoul2 Insert End
 */
 // a trace is returned when a box is swept through the world
-typedef struct {
+typedef struct trace_s {
 	byte		allsolid;	// if true, plane is not valid
 	byte		startsolid;	// if true, the initial point was in a solid area
 	short		entityNum;	// entity the contacted sirface is a part of
@@ -1561,14 +1553,14 @@ Ghoul2 Insert End
 
 
 // markfragments are returned by CM_MarkFragments()
-typedef struct {
+typedef struct markFragment_s {
 	int		firstPoint;
 	int		numPoints;
 } markFragment_t;
 
 
 
-typedef struct {
+typedef struct orientation_s {
 	vec3_t		origin;
 	vec3_t		axis[3];
 } orientation_t;
@@ -1680,7 +1672,7 @@ Ghoul2 Insert End
 #define	RESERVED_CONFIGSTRINGS	2	// game can't modify below this, only the system can
 
 #define	MAX_GAMESTATE_CHARS	16000
-typedef struct {
+typedef struct gameState_s {
 	int			stringOffsets[MAX_CONFIGSTRINGS];
 	char		stringData[MAX_GAMESTATE_CHARS];
 	int			dataCount;
@@ -2226,8 +2218,7 @@ typedef struct addspriteArgStruct_s
 	int flags;
 } addspriteArgStruct_t;
 
-typedef struct
-{
+typedef struct effectTrailVertStruct_s {
 	vec3_t	origin;
 
 	// very specifc case, we can modulate the color and the alpha
@@ -2253,8 +2244,7 @@ typedef struct effectTrailArgStruct_s {
 	int							mKillTime;
 } effectTrailArgStruct_t;
 
-typedef struct
-{
+typedef struct addElectricityArgStruct_s {
 	vec3_t start;
 	vec3_t end;
 	float size1;
@@ -2285,7 +2275,7 @@ typedef enum {
 	TR_GRAVITY
 } trType_t;
 
-typedef struct {
+typedef struct trajectory_s {
 	trType_t	trType;
 	int		trTime;
 	int		trDuration;			// if non 0, trTime + trDuration = stop time
@@ -2534,7 +2524,7 @@ int Q_irand(int value1, int value2);
 Ghoul2 Insert Start
 */
 
-typedef struct {
+typedef struct mdxaBone_s {
 	float		matrix[3][4];
 } mdxaBone_t;
 

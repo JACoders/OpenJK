@@ -66,8 +66,7 @@ typedef enum {
 	VF_SOUND_CLIENT	// (cgame only) take the string, get the index
 } vehFieldType_t;
 
-typedef struct
-{
+typedef struct vehField_s {
 	char	*name;
 	int		ofs;
 	vehFieldType_t	type;

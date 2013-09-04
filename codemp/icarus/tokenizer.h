@@ -77,8 +77,7 @@ enum
 	TK_USERDEF,
 };
 
-typedef struct
-{
+typedef struct keywordArray_s {
 	char*		m_keyword;
 	int			m_tokenvalue;
 } keywordArray_t;
