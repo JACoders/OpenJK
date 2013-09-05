@@ -488,9 +488,13 @@ void Menu_New(int handle);
 void Menu_PaintAll();
 menuDef_t *Menus_ActivateByName(const char *p);
 void Menu_Reset(void);
-qboolean Menus_AnyFullScreenVisible();
+qboolean Menus_AnyFullScreenVisible( void );
 void  Menus_Activate(menuDef_t *menu);
 itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *p);
+void Menu_ShowGroup (menuDef_t *menu, char *itemName, qboolean showFlag);
+void Menu_ItemDisable(menuDef_t *menu, char *name,int disableFlag);
+int Menu_ItemsMatchingGroup(menuDef_t *menu, const char *name);
+itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, int index, const char *name);
 
 displayContextDef_t *Display_GetContext();
 void *Display_CaptureItem(int x, int y);

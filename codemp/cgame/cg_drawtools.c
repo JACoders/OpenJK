@@ -7,7 +7,7 @@
 
 /*
 ================
-UI_DrawRect
+CG_DrawRect
 
 Coordinates are 640*480 virtual values
 =================
@@ -592,7 +592,7 @@ void CG_DrawNumField (int x, int y, int width, int value,int charWidth,int charH
 }
 
 #include "ui/ui_shared.h"	// for some text style junk
-void UI_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color ) 
+void CG_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color ) 
 {
 	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff) 
 	//	is dumb, but for now...
@@ -635,7 +635,7 @@ void UI_DrawProportionalString( int x, int y, const char* str, int style, vec4_t
 	CG_Text_Paint(x, y, 1.0, color, str, 0, 0, iStyle, iMenuFont);
 }
 
-void UI_DrawScaledProportionalString( int x, int y, const char* str, int style, vec4_t color, float scale) 
+void CG_DrawScaledProportionalString( int x, int y, const char* str, int style, vec4_t color, float scale) 
 {
 	// having all these different style defines (1 for UI, one for CG, and now one for the re->font stuff) 
 	//	is dumb, but for now...

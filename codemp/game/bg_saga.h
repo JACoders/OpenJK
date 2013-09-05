@@ -103,5 +103,11 @@ qboolean BG_SiegeCheckClassLegality(int team, char *classname);
 void BG_SiegeSetTeamTheme(int team, char *themeName);
 int BG_SiegeFindClassIndexByName(const char *classname);
 
+// for ui
+int BG_GetUIPortrait( const int team, const short classIndex, const short cntIndex );
+char *BG_GetUIPortraitFile( const int team, const short classIndex, const short cntIndex );
+siegeClass_t *BG_GetClassOnBaseClass( const int team, const short classIndex, const short cntIndex );
+int BG_SiegeCountBaseClass( const int team, const short classIndex );
+
 extern char	siege_info[MAX_SIEGE_INFO_SIZE];
 extern int	siege_valid;

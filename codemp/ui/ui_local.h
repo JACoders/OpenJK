@@ -78,358 +78,20 @@ extern vmCvar_t ui_serverStatusTimeOut;
 
 extern vmCvar_t ui_bypassMainMenuLoad;
 
-//
-// ui_qmenu.c
-//
-
-#define RCOLUMN_OFFSET			( BIGCHAR_WIDTH )
-#define LCOLUMN_OFFSET			(-BIGCHAR_WIDTH )
-
-#define SLIDER_RANGE			10
-#define	MAX_EDIT_LINE			256
-
-#define MAX_MENUDEPTH			16 //Raz: was 8
-//#define MAX_MENUITEMS			256
-
 #define MAX_FORCE_CONFIGS		128
-
-//JAC: Moved from ui_main.c and ui_saber.c, also increased drastically
 #define MAX_SABER_HILTS			256 //64
-
-#define MTYPE_NULL				0
-#define MTYPE_SLIDER			1	
-#define MTYPE_ACTION			2
-#define MTYPE_SPINCONTROL		3
-#define MTYPE_FIELD				4
-#define MTYPE_RADIOBUTTON		5
-#define MTYPE_BITMAP			6	
-#define MTYPE_TEXT				7
-#define MTYPE_SCROLLLIST		8
-#define MTYPE_PTEXT				9
-#define MTYPE_BTEXT				10
-
-#define QMF_BLINK				0x00000001
-#define QMF_SMALLFONT			0x00000002
-#define QMF_LEFT_JUSTIFY		0x00000004
-#define QMF_CENTER_JUSTIFY		0x00000008
-#define QMF_RIGHT_JUSTIFY		0x00000010
-#define QMF_NUMBERSONLY			0x00000020	// edit field is only numbers
-#define QMF_HIGHLIGHT			0x00000040
-#define QMF_HIGHLIGHT_IF_FOCUS	0x00000080	// steady focus
-#define QMF_PULSEIFFOCUS		0x00000100	// pulse if focus
-#define QMF_HASMOUSEFOCUS		0x00000200
-#define QMF_NOONOFFTEXT			0x00000400
-#define QMF_MOUSEONLY			0x00000800	// only mouse input allowed
-#define QMF_HIDDEN				0x00001000	// skips drawing
-#define QMF_GRAYED				0x00002000	// grays and disables
-#define QMF_INACTIVE			0x00004000	// disables any input
-#define QMF_NODEFAULTINIT		0x00008000	// skip default initialization
-#define QMF_OWNERDRAW			0x00010000
-#define QMF_PULSE				0x00020000
-#define QMF_LOWERCASE			0x00040000	// edit field is all lower case
-#define QMF_UPPERCASE			0x00080000	// edit field is all upper case
-#define QMF_SILENT				0x00100000
-
-// callback notifications
-#define QM_GOTFOCUS				1
-#define QM_LOSTFOCUS			2
-#define QM_ACTIVATED			3
-
-typedef struct menuframework_s {
-	int	cursor;
-	int cursor_prev;
-
-	int	nitems;
-	void *items[MAX_MENUITEMS];
-
-	void (*draw) (void);
-	sfxHandle_t (*key) (int key);
-
-	qboolean	wrapAround;
-	qboolean	fullscreen;
-	qboolean	showlogo;
-} menuframework_t;
-
-typedef struct menucommon_s {
-	int type;
-	const char *name;
-	int	id;
-	int x, y;
-	int left;
-	int	top;
-	int	right;
-	int	bottom;
-	menuframework_t *parent;
-	int menuPosition;
-	unsigned flags;
-
-	void (*callback)( void *self, int event );
-	void (*statusbar)( void *self );
-	void (*ownerdraw)( void *self );
-} menucommon_t;
-
-typedef struct mfield_s {
-	int		cursor;
-	int		scroll;
-	int		widthInChars;
-	char	buffer[MAX_EDIT_LINE];
-	int		maxchars;
-} mfield_t;
-
-typedef struct menufield_s {
-	menucommon_t	generic;
-	mfield_t		field;
-} menufield_t;
-
-typedef struct menuslider_s {
-	menucommon_t generic;
-
-	float minvalue;
-	float maxvalue;
-	float curvalue;
-
-	float range;
-} menuslider_t;
-
-typedef struct menulist_s {
-	menucommon_t generic;
-
-	int	oldvalue;
-	int curvalue;
-	int	numitems;
-	int	top;
-		
-	const char **itemnames;
-
-	int width;
-	int height;
-	int	columns;
-	int	seperation;
-} menulist_t;
-
-typedef struct menuaction_s {
-	menucommon_t generic;
-} menuaction_t;
-
-typedef struct menuradiobutton_s {
-	menucommon_t generic;
-	int curvalue;
-} menuradiobutton_t;
-
-typedef struct menubitmap_s {
-	menucommon_t	generic;
-	char*			focuspic;	
-	char*			errorpic;
-	qhandle_t		shader;
-	qhandle_t		focusshader;
-	int				width;
-	int				height;
-	float*			focuscolor;
-} menubitmap_t;
-
-typedef struct menutext_s {
-	menucommon_t	generic;
-	char*			string;
-	int				style;
-	float*			color;
-} menutext_t;
-
-extern void			Menu_Cache( void );
-extern void			Menu_Focus( menucommon_t *m );
-extern void			Menu_AddItem( menuframework_t *menu, void *item );
-extern void			Menu_AdjustCursor( menuframework_t *menu, int dir );
-extern void			Menu_Draw( menuframework_t *menu );
-extern void			*Menu_ItemAtCursor( menuframework_t *m );
-extern sfxHandle_t	Menu_ActivateItem( menuframework_t *s, menucommon_t *item );
-extern void			Menu_SetCursor( menuframework_t *s, int cursor );
-extern void			Menu_SetCursorToItem( menuframework_t *m, void* ptr );
-extern sfxHandle_t	Menu_DefaultKey( menuframework_t *s, int key );
-extern void			Bitmap_Init( menubitmap_t *b );
-extern void			Bitmap_Draw( menubitmap_t *b );
-extern void			ScrollList_Draw( menulist_t *l );
-extern sfxHandle_t	ScrollList_Key( menulist_t *l, int key );
-extern sfxHandle_t	menu_in_sound;
-extern sfxHandle_t	menu_move_sound;
-extern sfxHandle_t	menu_out_sound;
-extern sfxHandle_t	menu_buzz_sound;
-extern sfxHandle_t	menu_null_sound;
-extern sfxHandle_t	weaponChangeSound;
-extern vec4_t		menu_text_color;
-extern vec4_t		menu_grayed_color;
-extern vec4_t		menu_dark_color;
-extern vec4_t		menu_highlight_color;
-extern vec4_t		menu_red_color;
-extern vec4_t		menu_black_color;
-extern vec4_t		menu_dim_color;
-extern vec4_t		color_black;
-extern vec4_t		color_white;
-extern vec4_t		color_yellow;
-extern vec4_t		color_blue;
-extern vec4_t		color_orange;
-extern vec4_t		color_red;
-extern vec4_t		color_dim;
-extern vec4_t		name_color;
-extern vec4_t		list_color;
-extern vec4_t		listbar_color;
-extern vec4_t		text_color_disabled; 
-extern vec4_t		text_color_normal;
-extern vec4_t		text_color_highlight;
-
-extern char	*ui_medalNames[];
-extern char	*ui_medalPicNames[];
-extern char	*ui_medalSounds[];
-
-//
-// ui_mfield.c
-//
-extern void			MField_Clear( mfield_t *edit );
-extern void			MField_KeyDownEvent( mfield_t *edit, int key );
-extern void			MField_CharEvent( mfield_t *edit, int ch );
-extern void			MField_Draw( mfield_t *edit, int x, int y, int style, vec4_t color );
-extern void			MenuField_Init( menufield_t* m );
-extern void			MenuField_Draw( menufield_t *f );
-extern sfxHandle_t	MenuField_Key( menufield_t* m, int* key );
 
 //
 // ui_main.c
 //
 qboolean UI_FeederSelection( float feederID, int index, itemDef_t *item );
-void UI_Report();
-void UI_Load();
-void UI_LoadMenus(const char *menuFile, qboolean reset);
-void _UI_SetActiveMenu( uiMenuCommand_t menu );
-int UI_AdjustTimeByGame(int time);
-void UI_ShowPostGame(qboolean newHigh);
-void UI_ClearScores();
-void UI_LoadArenas(void);
+void UI_Report( void );
+void UI_Load( void );
+void UI_LoadMenus( const char *menuFile, qboolean reset );
+void UI_ShowPostGame( qboolean newHigh );
+void UI_ClearScores( void );
+void UI_LoadArenas( void );
 void UI_LoadForceConfig_List( void );
-
-//
-// ui_menu.c
-//
-extern void MainMenu_Cache( void );
-extern void UI_MainMenu(void);
-extern void UI_RegisterCvars( void );
-extern void UI_UpdateCvars( void );
-
-//
-// ui_credits.c
-//
-extern void UI_CreditMenu( void );
-
-//
-// ui_ingame.c
-//
-extern void InGame_Cache( void );
-extern void UI_InGameMenu(void);
-
-//
-// ui_confirm.c
-//
-extern void ConfirmMenu_Cache( void );
-extern void UI_ConfirmMenu( const char *question, void (*draw)( void ), void (*action)( qboolean result ) );
-
-//
-// ui_setup.c
-//
-extern void UI_SetupMenu_Cache( void );
-extern void UI_SetupMenu(void);
-
-//
-// ui_team.c
-//
-extern void UI_TeamMainMenu( void );
-extern void TeamMain_Cache( void );
-
-//
-// ui_connect.c
-//
-extern void UI_DrawConnectScreen( qboolean overlay );
-
-//
-// ui_controls2.c
-//
-extern void UI_ControlsMenu( void );
-extern void Controls_Cache( void );
-
-//
-// ui_demo2.c
-//
-extern void UI_DemosMenu( void );
-extern void Demos_Cache( void );
-
-//
-// ui_cinematics.c
-//
-extern void UI_CinematicsMenu( void );
-extern void UI_CinematicsMenu_f( void );
-extern void UI_CinematicsMenu_Cache( void );
-
-//
-// ui_mods.c
-//
-extern void UI_ModsMenu( void );
-extern void UI_ModsMenu_Cache( void );
-
-//
-// ui_playermodel.c
-//
-extern void UI_PlayerModelMenu( void );
-extern void PlayerModel_Cache( void );
-
-//
-// ui_playersettings.c
-//
-extern void UI_PlayerSettingsMenu( void );
-extern void PlayerSettings_Cache( void );
-
-//
-// ui_preferences.c
-//
-extern void UI_PreferencesMenu( void );
-extern void Preferences_Cache( void );
-
-//
-// ui_specifyleague.c
-//
-extern void UI_SpecifyLeagueMenu( void );
-extern void SpecifyLeague_Cache( void );
-
-//
-// ui_specifyserver.c
-//
-extern void UI_SpecifyServerMenu( void );
-extern void SpecifyServer_Cache( void );
-
-//
-// ui_servers2.c
-//
-#define MAX_FAVORITESERVERS 16
-
-extern void UI_ArenaServersMenu( void );
-extern void ArenaServers_Cache( void );
-
-//
-// ui_startserver.c
-//
-extern void UI_StartServerMenu( qboolean multiplayer );
-extern void StartServer_Cache( void );
-extern void ServerOptions_Cache( void );
-extern void UI_BotSelectMenu( char *bot );
-extern void UI_BotSelectMenu_Cache( void );
-
-//
-// ui_serverinfo.c
-//
-extern void UI_ServerInfoMenu( void );
-extern void ServerInfo_Cache( void );
-
-//
-// ui_video.c
-//
-extern void UI_GraphicsOptionsMenu( void );
-extern void GraphicsOptions_Cache( void );
-extern void DriverInfo_Cache( void );
 
 //
 // ui_players.c
@@ -504,83 +166,25 @@ typedef struct playerInfo_s {
 	int				realWeapon;
 } playerInfo_t;
 
-//void UI_DrawPlayer( float x, float y, float w, float h, playerInfo_t *pi, int time );
-//void UI_PlayerInfo_SetModel( playerInfo_t *pi, const char *model, const char *headmodel, char *teamName );
-//void UI_PlayerInfo_SetInfo( playerInfo_t *pi, int legsAnim, int torsoAnim, vec3_t viewAngles, vec3_t moveAngles, weapon_t weaponNum, qboolean chat );
-//qboolean UI_RegisterClientModelname( playerInfo_t *pi, const char *modelSkinName , const char *headName, const char *teamName);
-
-//
-// ui_atoms.c
-//
-// this is only used in the old ui, the new ui has it's own version
-typedef struct uiStatic_s {
-	int					frametime;
-	int					realtime;
-	int					cursorx;
-	int					cursory;
-	glconfig_t 	glconfig;
-	qboolean		debug;
-	qhandle_t		whiteShader;
-	qhandle_t		menuBackShader;
-	qhandle_t		menuBackShader2;
-	qhandle_t		menuBackNoLogoShader;
-	qhandle_t		charset;
-	qhandle_t		cursor;
-	qhandle_t		rb_on;
-	qhandle_t		rb_off;
-	float				scale;
-	float				bias;
-	qboolean		demoversion;
-	qboolean		firstdraw;
-} uiStatic_t;
-
-
 // new ui stuff
-#define UI_NUMFX 7
-#define MAX_HEADS 64
-#define MAX_ALIASES 64
-#define MAX_HEADNAME  32
-#define MAX_TEAMS 64
-#define MAX_GAMETYPES 16
-#define MAX_MAPS 512 //Raz: was 128
-#define MAX_SPMAPS 16
-#define PLAYERS_PER_TEAM 8//5
+#define MAX_ALIASES				64
+#define MAX_TEAMS				64
+#define MAX_GAMETYPES			16
+#define MAX_MAPS				512 // 128
+#define PLAYERS_PER_TEAM		8 //5
 #define MAX_PINGREQUESTS		32
-
-/* Raz: Moving some of this to q_shared.h
-#define MAX_ADDRESSLENGTH		64
-#define MAX_HOSTNAMELENGTH		22
-#define MAX_MAPNAMELENGTH		16
-#define MAX_STATUSLENGTH		64
-*/
-
-#define MAX_LISTBOXWIDTH		256 //59
-#define UI_FONT_THRESHOLD		0.1
 #define MAX_DISPLAY_SERVERS		2048
 #define MAX_SERVERSTATUS_LINES	128
 #define MAX_SERVERSTATUS_TEXT	4096 //1024
 #define MAX_FOUNDPLAYER_SERVERS	16
-#define TEAM_MEMBERS 8//5
-#define GAMES_ALL			0
-#define GAMES_FFA			1
-#define GAMES_HOLOCRON		2
-#define GAMES_TEAMPLAY		3
-#define GAMES_TOURNEY		4
-#define GAMES_CTF			5
-#define MAPS_PER_TIER 3
-#define MAX_TIERS 16
-#define MAX_MODS 64
-
-/* Raz: Drastically increasing some of these
-#define MAX_DEMOS 256
-#define MAX_MOVIES 256
-#define MAX_Q3PLAYERMODELS 256
-#define MAX_PLAYERMODELS 32
-*/
-#define MAX_DEMOS 2048
-#define MAX_MOVIES 2048
-#define MAX_Q3PLAYERMODELS 1024
-#define MAX_PLAYERMODELS 512
+#define TEAM_MEMBERS			8//5
+#define MAPS_PER_TIER			3
+#define MAX_TIERS				16
+#define MAX_MODS				64
+#define MAX_DEMOS				2048 // 256
+#define MAX_MOVIES				2048 // 256
+#define MAX_Q3PLAYERMODELS		1024 //256
+#define MAX_PLAYERMODELS		512 //32
 
 //JAC: Added
 #define DEMO_DIRECTORY "demos"
@@ -588,16 +192,7 @@ typedef struct uiStatic_s {
 #define MAX_DEMOLIST (MAX_DEMOS * MAX_QPATH)
 
 #define MAX_SCROLLTEXT_SIZE		4096
-#define MAX_SCROLLTEXT_LINES		64
-
-typedef struct characterInfo_s {
-	const char *name;
-	const char *imageName;
-	qhandle_t headImage;
-	const char *base;
-	qboolean active;
-	int reference;
-} characterInfo_t;
+#define MAX_SCROLLTEXT_LINES	64
 
 typedef struct aliasInfo_s {
 	const char *name;
@@ -650,7 +245,6 @@ typedef struct pinglist_s {
 	int		start;
 } pinglist_t;
 
-
 typedef struct serverStatus_s {
 	pinglist_t pingList[MAX_PINGREQUESTS];
 	int		numqueriedservers;
@@ -679,7 +273,6 @@ typedef struct serverStatus_s {
 	int		motdTime;
 	char	motd[MAX_STRING_CHARS];
 } serverStatus_t;
-
 
 typedef struct pendingServer_s {
 	char		adrstr[MAX_ADDRESSLENGTH];
@@ -721,304 +314,141 @@ typedef struct playerSpeciesInfo_s {
 } playerSpeciesInfo_t;
 
 typedef struct uiInfo_s {
-	displayContextDef_t uiDC;
-	int newHighScoreTime;
-	int newBestTime;
-	int showPostGameTime;
-	qboolean newHighScore;
-	qboolean demoAvailable;
-	qboolean soundHighScore;
+	displayContextDef_t		uiDC;
+	int						newHighScoreTime;
+	int						newBestTime;
+	qboolean				newHighScore;
+	qboolean				demoAvailable;
+	qboolean				soundHighScore;
 
-	int characterCount;
-	int botIndex;
-	//	characterInfo characterList[MAX_HEADS];
+	int						characterCount;
+	int						botIndex;
 
-	int aliasCount;
-	aliasInfo_t aliasList[MAX_ALIASES];
+	int						aliasCount;
+	aliasInfo_t				aliasList[MAX_ALIASES];
 
-	int teamCount;
-	teamInfo_t teamList[MAX_TEAMS];
+	int						teamCount;
+	teamInfo_t				teamList[MAX_TEAMS];
 
-	int numGameTypes;
-	gameTypeInfo_t gameTypes[MAX_GAMETYPES];
+	int						numGameTypes;
+	gameTypeInfo_t			gameTypes[MAX_GAMETYPES];
 
-	int numJoinGameTypes;
-	gameTypeInfo_t joinGameTypes[MAX_GAMETYPES];
+	int						numJoinGameTypes;
+	gameTypeInfo_t			joinGameTypes[MAX_GAMETYPES];
 
-	int redBlue;
-	int playerCount;
-	int myTeamCount;
-	int teamIndex;
-	int playerRefresh;
-	int playerIndex;
-	int playerNumber; 
-	qboolean teamLeader;
-	char playerNames[MAX_CLIENTS][MAX_NETNAME];
-	char teamNames[MAX_CLIENTS][MAX_NETNAME];
-	int teamClientNums[MAX_CLIENTS];
+	int						redBlue;
+	int						playerCount;
+	int						myTeamCount;
+	int						teamIndex;
+	int						playerRefresh;
+	int						playerIndex;
+	int						playerNumber; 
+	qboolean				teamLeader;
+	char					playerNames[MAX_CLIENTS][MAX_NETNAME];
+	char					teamNames[MAX_CLIENTS][MAX_TEAMNAME];
+	int						teamClientNums[MAX_CLIENTS];
 
-	int playerIndexes[MAX_CLIENTS]; //so we can vote-kick by index
+	int						playerIndexes[MAX_CLIENTS]; //so we can vote-kick by index
 
-	int mapCount;
-	mapInfo_t mapList[MAX_MAPS];
+	int						mapCount;
+	mapInfo_t				mapList[MAX_MAPS];
 
 
-	int tierCount;
-	tierInfo_t tierList[MAX_TIERS];
+	int						tierCount;
+	tierInfo_t				tierList[MAX_TIERS];
 
-	int skillIndex;
+	int						skillIndex;
 
-	modInfo_t modList[MAX_MODS];
-	int modCount;
-	int modIndex;
+	modInfo_t				modList[MAX_MODS];
+	int						modCount;
+	int						modIndex;
 
-	char demoList[MAX_DEMOS][MAX_QPATH];
-	int demoCount;
-	int demoIndex;
-	int loadedDemos;
+	char					demoList[MAX_DEMOS][MAX_QPATH];
+	int						demoCount;
+	int						demoIndex;
+	int						loadedDemos;
 
-	const char *movieList[MAX_MOVIES];
-	int movieCount;
-	int movieIndex;
-	int previewMovie;
+	const char				*movieList[MAX_MOVIES];
+	int						movieCount;
+	int						movieIndex;
+	int						previewMovie;
 
-	char scrolltext[MAX_SCROLLTEXT_SIZE];
-	const char *scrolltextLine[MAX_SCROLLTEXT_LINES];
-	int scrolltextLineCount;
+	char					scrolltext[MAX_SCROLLTEXT_SIZE];
+	const char				*scrolltextLine[MAX_SCROLLTEXT_LINES];
+	int						scrolltextLineCount;
 
-	serverStatus_t serverStatus;
+	serverStatus_t			serverStatus;
 
 	// for the showing the status of a server
-	char serverStatusAddress[MAX_ADDRESSLENGTH];
-	serverStatusInfo_t serverStatusInfo;
-	int nextServerStatusRefresh;
+	char					serverStatusAddress[MAX_ADDRESSLENGTH];
+	serverStatusInfo_t		serverStatusInfo;
+	int						nextServerStatusRefresh;
 
 	// to retrieve the status of server to find a player
-	pendingServerStatus_t pendingServerStatus;
-	char findPlayerName[MAX_STRING_CHARS];
-	char foundPlayerServerAddresses[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
-	char foundPlayerServerNames[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
-	int currentFoundPlayerServer;
-	int numFoundPlayerServers;
-	int nextFindPlayerRefresh;
+	pendingServerStatus_t	pendingServerStatus;
+	char					findPlayerName[MAX_STRING_CHARS];
+	char					foundPlayerServerAddresses[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
+	char					foundPlayerServerNames[MAX_FOUNDPLAYER_SERVERS][MAX_ADDRESSLENGTH];
+	int						currentFoundPlayerServer;
+	int						numFoundPlayerServers;
+	int						nextFindPlayerRefresh;
 
-	int currentCrosshair;
-	int startPostGameTime;
-	sfxHandle_t newHighScoreSound;
+	int						currentCrosshair;
 
-	int				q3HeadCount;
-	char			q3HeadNames[MAX_Q3PLAYERMODELS][64];
-	qhandle_t		q3HeadIcons[MAX_Q3PLAYERMODELS];
-	int				q3SelectedHead;
+	int						q3HeadCount;
+	char					q3HeadNames[MAX_Q3PLAYERMODELS][64];
+	qhandle_t				q3HeadIcons[MAX_Q3PLAYERMODELS];
+	int						q3SelectedHead;
 
-	int				forceConfigCount;
-	int				forceConfigSelected;
-	char			forceConfigNames[MAX_FORCE_CONFIGS][128];
-	qboolean		forceConfigSide[MAX_FORCE_CONFIGS]; //true if it's a light side config, false if dark side
-	int				forceConfigDarkIndexBegin; //mark the index number dark configs start at
-	int				forceConfigLightIndexBegin; //mark the index number light configs start at
+	int						forceConfigCount;
+	int						forceConfigSelected;
+	char					forceConfigNames[MAX_FORCE_CONFIGS][128];
+	qboolean				forceConfigSide[MAX_FORCE_CONFIGS]; //true if it's a light side config, false if dark side
+	int						forceConfigDarkIndexBegin; //mark the index number dark configs start at
+	int						forceConfigLightIndexBegin; //mark the index number light configs start at
 
-	int effectsColor;
+	int						effectsColor;
 
-	qboolean inGameLoad;
+	qboolean				inGameLoad;
 
-	int					playerSpeciesCount;
-	playerSpeciesInfo_t	playerSpecies[MAX_PLAYERMODELS];
-	int					playerSpeciesIndex;
+	int						playerSpeciesCount;
+	playerSpeciesInfo_t		playerSpecies[MAX_PLAYERMODELS];
+	int						playerSpeciesIndex;
 
-	short		movesTitleIndex;
-	const char	*movesBaseAnim;
-	int			moveAnimTime;
+	short					movesTitleIndex;
+	const char				*movesBaseAnim;
+	int						moveAnimTime;
 
-	int			languageCount;
-	int			languageCountIndex;
-
+	int						languageCount;
+	int						languageCountIndex;
 } uiInfo_t;
-
 extern uiInfo_t uiInfo;
 
+qboolean	UI_ConsoleCommand( int realTime );
+void		UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader ); 
+void		UI_FillRect( float x, float y, float width, float height, const float *color );
+char		*UI_Cvar_VariableString( const char *var_name );
+void		UI_LoadBestScores( const char *map, int game );
 
-extern void			UI_Init( void );
-extern void			UI_Shutdown( void );
-extern void			UI_KeyEvent( int key );
-extern void			UI_MouseEvent( int dx, int dy );
-extern void			UI_Refresh( int realtime );
-extern qboolean		UI_ConsoleCommand( int realTime );
-extern float		UI_ClampCvar( float min, float max, float value );
-extern void			UI_DrawNamedPic( float x, float y, float width, float height, const char *picname );
-extern void			UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader ); 
-extern void			UI_FillRect( float x, float y, float width, float height, const float *color );
-extern void			UI_DrawRect( float x, float y, float width, float height, const float *color );
-extern void     UI_DrawTopBottom(float x, float y, float w, float h);
-extern void     UI_DrawSides(float x, float y, float w, float h);
-extern void			UI_UpdateScreen( void );
-extern void			UI_SetColor( const float *rgba );
-extern void			UI_LerpColor(vec4_t a, vec4_t b, vec4_t c, float t);
-extern void			UI_DrawBannerString( int x, int y, const char* str, int style, vec4_t color );
-extern float		UI_ProportionalSizeScale( int style );
-extern void			UI_DrawProportionalString( int x, int y, const char* str, int style, vec4_t color );
-extern int			UI_ProportionalStringWidth( const char* str );
-extern void			UI_DrawString( int x, int y, const char* str, int style, vec4_t color );
-extern void			UI_DrawChar( int x, int y, int ch, int style, vec4_t color );
-extern qboolean 	UI_CursorInRect (int x, int y, int width, int height);
-extern void			UI_DrawTextBox (int x, int y, int width, int lines);
-extern qboolean		UI_IsFullscreen( void );
-extern void			UI_SetActiveMenu( uiMenuCommand_t menu );
-extern void			UI_PushMenu ( menuframework_t *menu );
-extern void			UI_PopMenu (void);
-extern void			UI_ForceMenuOff (void);
-extern char			*UI_Argv( int arg );
-extern char			*UI_Cvar_VariableString( const char *var_name );
-extern void			UI_Refresh( int time );
-extern void			UI_KeyEvent( int key );
-extern void			UI_StartDemoLoop( void );
-extern qboolean		m_entersound;
-void UI_LoadBestScores(const char *map, int game);
-extern uiStatic_t	uis;
-
-//
-// ui_spLevel.c
-//
-void UI_SPLevelMenu_Cache( void );
-void UI_SPLevelMenu( void );
-void UI_SPLevelMenu_f( void );
-void UI_SPLevelMenu_ReInit( void );
-
-//
-// ui_spArena.c
-//
-void UI_SPArena_Start( const char *arenaInfo );
-
-//
-// ui_spPostgame.c
-//
-void UI_SPPostgameMenu_Cache( void );
-void UI_SPPostgameMenu_f( void );
-
-//
-// ui_spSkill.c
-//
-void UI_SPSkillMenu( const char *arenaInfo );
-void UI_SPSkillMenu_Cache( void );
-
-//
-// ui_syscalls.c
-//
-
-void trap_Print( const char *string );
-void trap_Error( const char *string );
-
-//
-// ui_addbots.c
-//
-void UI_AddBots_Cache( void );
-void UI_AddBotsMenu( void );
-
-//
-// ui_removebots.c
-//
-void UI_RemoveBots_Cache( void );
-void UI_RemoveBotsMenu( void );
-
-//
-// ui_teamorders.c
-//
-extern void UI_TeamOrdersMenu( void );
-extern void UI_TeamOrdersMenu_f( void );
-extern void UI_TeamOrdersMenu_Cache( void );
-
-//
-// ui_loadconfig.c
-//
-void UI_LoadConfig_Cache( void );
-void UI_LoadConfigMenu( void );
-
-//
-// ui_saveconfig.c
-//
-void UI_SaveConfigMenu_Cache( void );
-void UI_SaveConfigMenu( void );
-
-//
-// ui_display.c
-//
-void UI_DisplayOptionsMenu_Cache( void );
-void UI_DisplayOptionsMenu( void );
-
-//
-// ui_sound.c
-//
-void UI_SoundOptionsMenu_Cache( void );
-void UI_SoundOptionsMenu( void );
-
-//
-// ui_network.c
-//
-void UI_NetworkOptionsMenu_Cache( void );
-void UI_NetworkOptionsMenu( void );
 
 //
 // ui_gameinfo.c
 //
-typedef enum {
-	AWARD_ACCURACY,
-	AWARD_IMPRESSIVE,
-	AWARD_EXCELLENT,
-	AWARD_GAUNTLET,
-	AWARD_FRAGS,
-	AWARD_PERFECT
-} awardType_t;
 
-const char *UI_GetArenaInfoByNumber( int num );
-const char *UI_GetArenaInfoByMap( const char *map );
-const char *UI_GetSpecialArenaInfo( const char *tag );
-int UI_GetNumArenas( void );
-int UI_GetNumSPArenas( void );
-int UI_GetNumSPTiers( void );
-
-char *UI_GetBotInfoByNumber( int num );
-char *UI_GetBotInfoByName( const char *name );
 int UI_GetNumBots( void );
 void UI_LoadBots( void );
 char *UI_GetBotNameByNumber( int num );
 
-void UI_GetBestScore( int level, int *score, int *skill );
-void UI_SetBestScore( int level, int score );
-int UI_TierCompleted( int levelWon );
-qboolean UI_ShowTierVideo( int tier );
-qboolean UI_CanShowTierVideo( int tier );
-int  UI_GetCurrentGame( void );
-void UI_NewGame( void );
-void UI_LogAwardData( int award, int data );
-int UI_GetAwardLevel( int award );
-
-void UI_SPUnlock_f( void );
-void UI_SPUnlockMedals_f( void );
-
-void UI_InitGameinfo( void );
 
 //
-// ui_login.c
+// ui_saber.c
 //
-void Login_Cache( void );
-void UI_LoginMenu( void );
 
-//
-// ui_signup.c
-//
-void Signup_Cache( void );
-void UI_SignupMenu( void );
-
-//
-// ui_rankstatus.c
-//
-void RankStatus_Cache( void );
-void UI_RankStatusMenu( void );
+qboolean UI_SaberModelForSaber( const char *saberName, char *saberModel );
+qboolean UI_SaberTypeForSaber( const char *saberName, char *saberType );
 
 
 // new ui 
-
-#define ASSET_BACKGROUND "uiBackground"
 
 // for tracking sp game info in Team Arena
 typedef struct postGameInfo_s {
