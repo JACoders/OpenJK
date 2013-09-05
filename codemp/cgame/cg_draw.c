@@ -953,7 +953,7 @@ static void CG_DrawAmmo( centity_t	*cent,menuDef_t *menuHUD)
 		trap->R_SetColor( colorTable[CT_YELLOW] );
 		if (focusItem)
 		{
-			UI_DrawProportionalString(focusItem->window.rect.x, focusItem->window.rect.y, "--", NUM_FONT_SMALL, focusItem->window.foreColor);
+			CG_DrawProportionalString(focusItem->window.rect.x, focusItem->window.rect.y, "--", NUM_FONT_SMALL, focusItem->window.foreColor);
 		}
 	}
 	else
@@ -1200,11 +1200,9 @@ void CG_DrawHUD(centity_t	*cent)
 
 		if (cg.predictedPlayerState.pm_type != PM_SPECTATOR)
 		{
-			UI_DrawProportionalString( x+16, y+40, va( "%i", cg.snap->ps.stats[STAT_HEALTH] ),
-				UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_RED] );
+			CG_DrawProportionalString( x+16, y+40, va( "%i", cg.snap->ps.stats[STAT_HEALTH] ), UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_RED] );
 
-			UI_DrawProportionalString( x+18+14, y+40+14, va( "%i", cg.snap->ps.stats[STAT_ARMOR] ),
-				UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_GREEN] );
+			CG_DrawProportionalString( x+18+14, y+40+14, va( "%i", cg.snap->ps.stats[STAT_ARMOR] ), UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_GREEN] );
 
 			if (cg.snap->ps.weapon == WP_SABER)
 			{
@@ -1242,11 +1240,9 @@ void CG_DrawHUD(centity_t	*cent)
 				Com_sprintf(ammoString, sizeof(ammoString), "%i", cg.snap->ps.ammo[weaponData[cent->currentState.weapon].ammoIndex]);
 			}
 		
-			UI_DrawProportionalString( SCREEN_WIDTH-(weapX+16+32), y+40, va( "%s", ammoString ),
-				UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_ORANGE] );
+			CG_DrawProportionalString( SCREEN_WIDTH-(weapX+16+32), y+40, va( "%s", ammoString ), UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_ORANGE] );
 
-			UI_DrawProportionalString( SCREEN_WIDTH-(x+18+14+32), y+40+14, va( "%i", cg.snap->ps.fd.forcePower),
-				UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_ICON_BLUE] );
+			CG_DrawProportionalString( SCREEN_WIDTH-(x+18+14+32), y+40+14, va( "%i", cg.snap->ps.fd.forcePower), UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_ICON_BLUE] );
 		}
 
 		return;
@@ -1347,7 +1343,7 @@ void CG_DrawHUD(centity_t	*cent)
 				focusItem = Menu_FindItemByName(menuHUD, "score_line");
 				if (focusItem)
 				{
-					UI_DrawScaledProportionalString(
+					CG_DrawScaledProportionalString(
 						focusItem->window.rect.x, 
 						focusItem->window.rect.y, 
 						scoreStr, 
@@ -1576,7 +1572,7 @@ void CG_DrawForceSelect( void )
 
 	if ( showPowersName[cg.forceSelect] ) 
 	{
-		UI_DrawProportionalString(320, y + 30 + yOffset, CG_GetStringEdString("SP_INGAME", showPowersName[cg.forceSelect]), UI_CENTER | UI_SMALLFONT, colorTable[CT_ICON_BLUE]);
+		CG_DrawProportionalString(320, y + 30 + yOffset, CG_GetStringEdString("SP_INGAME", showPowersName[cg.forceSelect]), UI_CENTER | UI_SMALLFONT, colorTable[CT_ICON_BLUE]);
 	}
 }
 
@@ -1633,7 +1629,7 @@ void CG_DrawInvenSelect( void )
 	if (!count)
 	{
 		y2 = 0; //err?
-		UI_DrawProportionalString(320, y2 + 22, "EMPTY INVENTORY", UI_CENTER | UI_SMALLFONT, colorTable[CT_ICON_BLUE]);
+		CG_DrawProportionalString(320, y2 + 22, "EMPTY INVENTORY", UI_CENTER | UI_SMALLFONT, colorTable[CT_ICON_BLUE]);
 		return;
 	}
 
@@ -1732,11 +1728,11 @@ void CG_DrawInvenSelect( void )
 			
 			if ( trap->SE_GetStringTextString( va("SP_INGAME_%s",Q_strupr(upperKey)), text, sizeof( text )))
 			{
-				UI_DrawProportionalString(320, y+45, text, UI_CENTER | UI_SMALLFONT, textColor);
+				CG_DrawProportionalString(320, y+45, text, UI_CENTER | UI_SMALLFONT, textColor);
 			}
 			else
 			{
-				UI_DrawProportionalString(320, y+45, bg_itemlist[itemNdex].classname, UI_CENTER | UI_SMALLFONT, textColor);
+				CG_DrawProportionalString(320, y+45, bg_itemlist[itemNdex].classname, UI_CENTER | UI_SMALLFONT, textColor);
 			}
 		}
 	}
@@ -3970,7 +3966,7 @@ static void CG_DrawPowerupIcons(int y)
 
 				if (j != PW_REDFLAG && j != PW_BLUEFLAG && secondsleft < 999)
 				{
-					UI_DrawProportionalString((640-(ico_size*1.1))+(ico_size/2) + xOffset, y-8, va("%i", secondsleft), UI_CENTER | UI_BIGFONT | UI_DROPSHADOW, colorTable[CT_WHITE]);
+					CG_DrawProportionalString((640-(ico_size*1.1))+(ico_size/2) + xOffset, y-8, va("%i", secondsleft), UI_CENTER | UI_BIGFONT | UI_DROPSHADOW, colorTable[CT_WHITE]);
 				}
 
 				y += (ico_size/3);
@@ -6361,11 +6357,11 @@ static void CG_DrawCrosshairNames( void ) {
 	{
 		char str[MAX_STRING_CHARS];
 		Com_sprintf(str, MAX_STRING_CHARS, "%s (pilot)", name);
-		UI_DrawProportionalString(320, 170, str, UI_CENTER, tcolor);
+		CG_DrawProportionalString(320, 170, str, UI_CENTER, tcolor);
 	}
 	else
 	{
-		UI_DrawProportionalString(320, 170, name, UI_CENTER, tcolor);
+		CG_DrawProportionalString(320, 170, name, UI_CENTER, tcolor);
 	}
 
 	trap->R_SetColor( NULL );
@@ -7219,13 +7215,12 @@ static void CG_DrawSiegeTimer(int timeRemaining, qboolean isMyTeam)
 
 //	trap->Cvar_Set("ui_siegeTimer", timeStr);
 
-//	UI_DrawProportionalString( x+16, y+40, timeStr,
-//		UI_SMALLFONT|UI_DROPSHADOW, colorTable[fColor] );
+//	CG_DrawProportionalString( x+16, y+40, timeStr, UI_SMALLFONT|UI_DROPSHADOW, colorTable[fColor] );
 
 	item = Menu_FindItemByName(menuHUD, "timer");
 	if (item)
 	{
-		UI_DrawProportionalString( 
+		CG_DrawProportionalString( 
 			item->window.rect.x, 
 			item->window.rect.y, 
 			timeStr,
@@ -7282,7 +7277,7 @@ static void CG_DrawSiegeDeathTimer( int timeRemaining )
 	item = Menu_FindItemByName(menuHUD, "deathtimer");
 	if (item)
 	{
-		UI_DrawProportionalString( 
+		CG_DrawProportionalString( 
 			item->window.rect.x, 
 			item->window.rect.y, 
 			timeStr,
