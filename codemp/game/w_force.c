@@ -977,9 +977,9 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 		addTot = 1;
 	}
 	attacked->client->ps.fd.forcePower += addTot;
-	if (attacked->client->ps.fd.forcePower > 100)
+	if (attacked->client->ps.fd.forcePower > attacked->client->ps.fd.forcePowerMax)
 	{
-		attacked->client->ps.fd.forcePower = 100;
+		attacked->client->ps.fd.forcePower = attacked->client->ps.fd.forcePowerMax;
 	}
 
 	//play sound indicating that attack was absorbed
@@ -1499,9 +1499,9 @@ void ForceTeamForceReplenish( gentity_t *self )
 	while (i < numpl)
 	{
 		g_entities[pl[i]].client->ps.fd.forcePower += poweradd;
-		if (g_entities[pl[i]].client->ps.fd.forcePower > 100)
+		if (g_entities[pl[i]].client->ps.fd.forcePower > g_entities[pl[i]].client->ps.fd.forcePowerMax)
 		{
-			g_entities[pl[i]].client->ps.fd.forcePower = 100;
+			g_entities[pl[i]].client->ps.fd.forcePower = g_entities[pl[i]].client->ps.fd.forcePowerMax;
 		}
 
 		//At this point we know we got one, so add him into the collective event client bitflag
@@ -1830,9 +1830,9 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 			if (traceEnt->client->noLightningTime >= level.time)
 			{ //give them power and don't hurt them.
 				traceEnt->client->ps.fd.forcePower++;
-				if (traceEnt->client->ps.fd.forcePower > 100)
+				if (traceEnt->client->ps.fd.forcePower > traceEnt->client->ps.fd.forcePowerMax)
 				{
-					traceEnt->client->ps.fd.forcePower = 100;
+					traceEnt->client->ps.fd.forcePower = traceEnt->client->ps.fd.forcePowerMax;
 				}
 				return;
 			}
