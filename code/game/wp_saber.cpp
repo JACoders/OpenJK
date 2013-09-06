@@ -12543,9 +12543,9 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 		addTot = 1;
 	}
 	attacked->client->ps.forcePower += addTot;
-	if (attacked->client->ps.forcePower > 100)
+	if (attacked->client->ps.forcePower > attacked->client->ps.forcePowerMax)
 	{
-		attacked->client->ps.forcePower = 100;
+		attacked->client->ps.forcePower = attacked->client->ps.forcePowerMax;
 	}
 
 	G_SoundOnEnt( attacked, CHAN_ITEM, "sound/weapons/force/absorbhit.wav" );
