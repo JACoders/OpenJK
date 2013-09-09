@@ -450,9 +450,6 @@ cvar_t	*Cvar_Set2Safe( const char *var_name, const char *value, qboolean force )
 // same as Cvar_Set, but allows more control over setting of cvar
 // sometimes we set variables from an untrusted source: fail if flags & CVAR_PROTECTED
 
-void Cvar_SetLatched( const char *var_name, const char *value);
-// don't set the cvar immediately
-
 void	Cvar_SetValue( const char *var_name, float value );
 void	Cvar_SetValueSafe( const char *var_name, float value );
 // expands value to a string and calls Cvar_Set/Cvar_SetSafe
