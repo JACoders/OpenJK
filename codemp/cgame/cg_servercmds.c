@@ -113,7 +113,7 @@ and whenever the server updates any serverinfo flagged cvars
 void CG_ParseServerinfo( void ) {
 	const char *info = NULL, *tinfo = NULL;
 	char *mapname;
-	int i;
+	int i, value;
 
 	info = CG_ConfigString( CS_SERVERINFO );
 
@@ -122,18 +122,33 @@ void CG_ParseServerinfo( void ) {
 
 	cgs.noSpecMove = atoi( Info_ValueForKey( info, "g_noSpecMove" ) );
 
-	trap->Cvar_Set("bg_fighterAltControl", Info_ValueForKey( info, "bg_fighterAltControl" ));
-
 	cgs.siegeTeamSwitch = atoi( Info_ValueForKey( info, "g_siegeTeamSwitch" ) );
 
 	cgs.showDuelHealths = atoi( Info_ValueForKey( info, "g_showDuelHealths" ) );
 
 	cgs.gametype = atoi( Info_ValueForKey( info, "g_gametype" ) );
 	trap->Cvar_Set("g_gametype", va("%i", cgs.gametype));
-	cgs.needpass = atoi( Info_ValueForKey( info, "needpass" ) );
+	cgs.needpass = atoi( Info_ValueForKey( info, "g_needpass" ) );
 	cgs.jediVmerc = atoi( Info_ValueForKey( info, "g_jediVmerc" ) );
-	cgs.wDisable = atoi( Info_ValueForKey( info, "wdisable" ) );
-	cgs.fDisable = atoi( Info_ValueForKey( info, "fdisable" ) );
+
+	// this changes on map_restart, attempt to precache weapons
+	value = atoi( Info_ValueForKey( info, "g_weaponDisable" ) );
+	if ( cgs.wDisable != value ) {
+		gitem_t *item = NULL;
+		itemInfo_t *itemInfo = NULL;
+
+		cgs.wDisable = value;
+
+		for ( i=1, item=bg_itemlist, itemInfo = cg_items;
+			i<bg_numItems;
+			i++, item++, itemInfo++ )
+		{// register all weapons that aren't disabled
+			if ( item->giType == IT_WEAPON )
+				CG_RegisterWeapon( item->giTag );
+		}
+	}
+
+	cgs.fDisable = atoi( Info_ValueForKey( info, "g_forcePowerDisable" ) );
 	cgs.dmflags = atoi( Info_ValueForKey( info, "dmflags" ) );
 	cgs.duel_fraglimit = atoi( Info_ValueForKey( info, "duel_fraglimit" ) );
 	cgs.capturelimit = atoi( Info_ValueForKey( info, "capturelimit" ) );
