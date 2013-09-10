@@ -11,7 +11,7 @@
 	#define XCVAR_DEF( name, defVal, update, flags ) { & name , #name , defVal , update , flags },
 #endif
 
-XCVAR_DEF( bg_fighterAltControl,				"0",					NULL,					CVAR_SERVERINFO )
+XCVAR_DEF( bg_fighterAltControl,				"0",					NULL,					CVAR_SYSTEMINFO )
 XCVAR_DEF( broadsword,							"0",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cg_animBlend,						"1",					NULL,					CVAR_NONE )
 XCVAR_DEF( cg_animSpeed,						"1",					NULL,					CVAR_CHEAT )
