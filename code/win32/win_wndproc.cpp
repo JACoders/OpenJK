@@ -437,7 +437,7 @@ LONG WINAPI MainWndProc (
 		break;
 
 	case WM_SYSCOMMAND:
-		if ( (wParam&0xFFF0) == SC_SCREENSAVE || (wParam&0xFFF0) == SC_MONITORPOWER)
+		if ( (wParam&0xFFF0) == SC_SCREENSAVE || (wParam&0xFFF0) == SC_MONITORPOWER || (wParam&0xFFF0) == SC_KEYMENU )
 		{
 			return 0;
 		}
