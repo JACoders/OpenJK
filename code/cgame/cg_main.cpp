@@ -2212,6 +2212,23 @@ void CG_Init( int serverCommandSequence ) {
 	cgi_AddCommand ("use_lightamp_goggles");
 	cgi_AddCommand ("use_sentry");
 
+	cgi_AddCommand ("force_throw");
+	cgi_AddCommand ("force_pull");
+	cgi_AddCommand ("force_speed");
+	cgi_AddCommand ("force_heal");
+	cgi_AddCommand ("force_grip");
+	cgi_AddCommand ("force_distract");
+	cgi_AddCommand ("force_rage");
+	cgi_AddCommand ("force_protect");
+	cgi_AddCommand ("force_absorb");
+	cgi_AddCommand ("force_sight");
+
+	cgi_AddCommand ("taunt");
+	cgi_AddCommand ("bow");
+	cgi_AddCommand ("meditate");
+	cgi_AddCommand ("flourish");
+	cgi_AddCommand ("gloat");
+
 	cg.weaponPickupTextTime = 0;
 
 	cg.missionInfoFlashTime = 0;
