@@ -215,15 +215,6 @@ void CG_ToggleLAGoggles( void )
 	}
 }
 
-static void CG_InfoDown_f( void ) {
-//	cg.showInformation = qtrue;
-}
-
-static void CG_InfoUp_f( void ) 
-{
-//	cg.showInformation = qfalse;
-}
-
 typedef struct {
 	const char	*cmd;
 	void	(*function)(void);
@@ -251,8 +242,6 @@ Ghoul2 Insert End
 */
 	{ "viewpos", CG_Viewpos_f },
 	{ "writecam", CG_WriteCam_f },
-	{ "+info", CG_InfoDown_f },
-	{ "-info", CG_InfoUp_f },
 	{ "weapnext", CG_NextWeapon_f },
 	{ "weapprev", CG_PrevWeapon_f },
 	{ "weapon", CG_Weapon_f },
@@ -278,7 +267,7 @@ Ghoul2 Insert End
 
 
 //extern menuDef_t *menuScoreboard;
-void Menu_Reset();	
+//void Menu_Reset();	
 
 void CG_LoadHud_f( void) 
 {
