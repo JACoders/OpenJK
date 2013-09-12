@@ -57,7 +57,7 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 
 ### If you wish to base your work off OpenJK (mod or engine) ###
 * [Fork](https://github.com/JACoders/OpenJK/fork) the project on Github
-* Change the GAMEVERSION define in codemp/game/g_local.h from "basejka_modbase" to your project name
+* Change the GAMEVERSION define in codemp/game/g_local.h from "OpenJK" to your project name
 * If you make a nice change, please consider backporting to upstream via pull request as described above. This is so everyone benefits without having to reinvent the wheel for every project.
 
 ### Reserved renderer names ###
