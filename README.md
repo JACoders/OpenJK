@@ -51,12 +51,12 @@ OpenJK is licensed under GPLv2 as free software. You are free to use, modify and
 Please be aware of the implications of the GPLv2 licence. In short, be prepared to share your code.
 
 ### If you wish to contribute to OpenJK, please do the following ###
-* [Fork](https://github.com/Razish/OpenJK/fork) the project on Github
+* [Fork](https://github.com/JACoders/OpenJK/fork) the project on Github
 * Create a new branch and make your changes
 * Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to upstream (Razish/OpenJK)
 
 ### If you wish to base your work off OpenJK (mod or engine) ###
-* [Fork](https://github.com/Razish/OpenJK/fork) the project on Github
+* [Fork](https://github.com/JACoders/OpenJK/fork) the project on Github
 * Change the GAMEVERSION define in codemp/game/g_local.h from "basejka_modbase" to your project name
 * If you make a nice change, please consider backporting to upstream via pull request as described above. This is so everyone benefits without having to reinvent the wheel for every project.
 
