@@ -3221,13 +3221,12 @@ void SV_UnbindGame( void ) {
 void SV_RestartGame( void ) {
 	GVM_ShutdownGame( qtrue );
 
-#if 0
 	gvm = VM_Restart( gvm );
+	SV_BindGame();
 	if ( !gvm ) {
 		Com_Error( ERR_DROP, "VM_Restart on game failed" );
 		return;
 	}
-#endif
 	
 	SV_InitGame( qtrue );
 }
