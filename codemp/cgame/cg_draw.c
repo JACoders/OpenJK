@@ -1505,7 +1505,7 @@ void CG_DrawForceSelect( void )
 	i = BG_ProperForceIndex(cg.forceSelect) - 1;
 	if (i < 0)
 	{
-		i = MAX_SHOWPOWERS;
+		i = MAX_SHOWPOWERS - 1;
 	}
 
 	trap->R_SetColor(NULL);
@@ -1515,7 +1515,7 @@ void CG_DrawForceSelect( void )
 	{
 		if (i < 0)
 		{
-			i = MAX_SHOWPOWERS;
+			i = MAX_SHOWPOWERS - 1;
 		}
 
 		if (!ForcePower_Valid(forcePowerSorted[i]))	// Does he have this power?
@@ -1542,7 +1542,7 @@ void CG_DrawForceSelect( void )
 	}
 
 	i = BG_ProperForceIndex(cg.forceSelect) + 1;
-	if (i>MAX_SHOWPOWERS)
+	if (i>=MAX_SHOWPOWERS)
 	{
 		i = 0;
 	}
@@ -1551,7 +1551,7 @@ void CG_DrawForceSelect( void )
 	holdX = x + (bigIconSize/2) + pad;
 	for (iconCnt=1;iconCnt<(sideRightIconCnt+1);i++)
 	{
-		if (i>MAX_SHOWPOWERS)
+		if (i>=MAX_SHOWPOWERS)
 		{
 			i = 0;
 		}
