@@ -2141,8 +2141,7 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 		if (item->giTag == WP_THERMAL || item->giTag == WP_TRIP_MINE || item->giTag == WP_DET_PACK)
 		{ //check to see if full on ammo for this, if so, then..
 			int ammoIndex = weaponData[item->giTag].ammoIndex;
-			//JAC: Only restrict pickups on full ammo if the player already has this weapon.
-			if (ps->ammo[ammoIndex] >= ammoData[ammoIndex].max && ps->stats[STAT_WEAPONS] & ( 1 << item->giTag ) )
+			if (ps->ammo[ammoIndex] >= ammoData[ammoIndex].max)
 			{ //don't need it
 				return qfalse;
 			}
@@ -2537,13 +2536,7 @@ void BG_AddPredictableEventToPlayerstate( int newEvent, int eventParm, playerSta
 
 		if (!isRegistered)
 		{
-		#ifdef _GAME
 			trap->Cvar_Register(&showEvents, "showevents", "0", 0);
-		#elif _CGAME
-			trap->Cvar_Register(&showEvents, "showevents", "0", 0);
-		#elif _UI
-			trap->Cvar_Register(&showEvents, "showevents", "0", 0);
-		#endif
 			isRegistered = qtrue;
 		}
 
