@@ -52,8 +52,7 @@ typedef struct siegeClass_s {
 	char		name[512];
 	char		forcedModel[256];
 	char		forcedSkin[256];
-	char		saber1[64];
-	char		saber2[64];
+	char		saber1[SABER_NAME_LENGTH], saber2[SABER_NAME_LENGTH];
 	int			saberStance;
 	int			weapons;
 	int			forcePowerLevels[NUM_FORCE_POWERS];

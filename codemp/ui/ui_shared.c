@@ -7004,7 +7004,7 @@ typedef struct keywordHash_s
 	struct keywordHash_s *next;
 } keywordHash_t;
 
-int KeywordHash_Key(char *keyword) {
+static int KeywordHash_Key(char *keyword) {
 	int register hash, i;
 
 	hash = 0;
@@ -7018,7 +7018,7 @@ int KeywordHash_Key(char *keyword) {
 	return hash;
 }
 
-void KeywordHash_Add(keywordHash_t *table[], keywordHash_t *key) {
+static void KeywordHash_Add(keywordHash_t *table[], keywordHash_t *key) {
 	int hash;
 
 	hash = KeywordHash_Key(key->keyword);
@@ -7031,7 +7031,7 @@ void KeywordHash_Add(keywordHash_t *table[], keywordHash_t *key) {
 	table[hash] = key;
 }
 
-keywordHash_t *KeywordHash_Find(keywordHash_t *table[], char *keyword)
+static keywordHash_t *KeywordHash_Find(keywordHash_t *table[], char *keyword)
 {
 	keywordHash_t *key;
 	int hash;
