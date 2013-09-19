@@ -2355,11 +2355,12 @@ static qboolean CompareIPs( const char *ip1, const char *ip2 )
 }
 
 char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
-	char		*value;
+	char		*s = NULL, *value = NULL;
 	gentity_t	*ent = NULL, *te = NULL;
 	gclient_t	*client;
 	char		userinfo[MAX_INFO_STRING] = {0},
 				tmpIP[NET_ADDRSTRMAXLEN] = {0},
+				name[MAX_NETNAME] = {0},
 				guid[33] = {0};
 
 	ent = &g_entities[ clientNum ];
@@ -2382,6 +2383,17 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	Q_strncpyz( tmpIP, isBot ? "Bot" : value, sizeof( tmpIP ) );
 	if ( G_FilterPacket( value ) ) {
 		return "Banned.";
+	}
+
+	// check for malformed or illegal info strings
+	s = G_ValidateUserinfo( userinfo );
+	if ( s && *s )
+	{
+		value = Info_ValueForKey (userinfo, "name");
+		if( value[0] )
+			Q_strncpyz( name, value, sizeof( name ) );
+		G_SecurityLogPrintf( "Connecting Client %d (%s) failed userinfo validation: %s [IP: %s]\n", clientNum, name, s, tmpIP );
+		return va( "Failed userinfo validation: %s", s );
 	}
 
 	if ( !isBot && g_needpass.integer ) {
