@@ -2087,6 +2087,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 			else
 			{				
 				trap->SendServerCommand( -1, va( "print \"%s"S_COLOR_WHITE" %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
+				G_LogPrintf( "ClientRename: %i [%s] (%s) \"%s^7\" -> \"%s^7\"\n", clientNum, ent->client->sess.IP, ent->client->pers.guid, oldname, ent->client->pers.netname );
 				client->pers.netnameTime = level.time + 5000;
 			}
 		}
