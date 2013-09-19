@@ -2392,6 +2392,8 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		value = Info_ValueForKey (userinfo, "name");
 		if( value[0] )
 			Q_strncpyz( name, value, sizeof( name ) );
+		else
+			Q_strncpyz( name, "Padawan", sizeof( name ) );
 		G_SecurityLogPrintf( "Connecting Client %d (%s) failed userinfo validation: %s [IP: %s]\n", clientNum, name, s, tmpIP );
 		return va( "Failed userinfo validation: %s", s );
 	}
