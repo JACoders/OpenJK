@@ -2512,8 +2512,10 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 			G_SecurityLogPrintf( "Client %i (%s) sent no IP when connecting.\n", clientNum, client->pers.netname );
 			return "Invalid userinfo detected";
 		}
-		Q_strncpyz( client->sess.IP, tmpIP, sizeof( client->sess.IP ) );
 	}
+
+	if ( firstTime )
+		Q_strncpyz( client->sess.IP, tmpIP, sizeof( client->sess.IP ) );
 
 	G_LogPrintf( "ClientConnect: %i [%s] (%s) \"%s^7\"\n", clientNum, tmpIP, guid, client->pers.netname );
 
