@@ -17,12 +17,12 @@ void CG_TargetCommand_f( void ) {
 	char	test[4];
 
 	targetNum = CG_CrosshairPlayer();
-	if (!targetNum ) {
+	if ( targetNum == -1 ) {
 		return;
 	}
 
 	trap->Cmd_Argv( 1, test, 4 );
-	trap->SendConsoleCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
+	trap->SendClientCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
 }
 
 /*
