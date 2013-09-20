@@ -138,7 +138,7 @@ void CalcEntitySpot ( const gentity_t *ent, const spot_t spot, vec3_t point )
 
 	case SPOT_GROUND:
 		// if entity is on the ground, just use it's absmin
-		if ( ent->s.groundEntityNum != -1 ) 
+		if ( ent->s.groundEntityNum != ENTITYNUM_NONE ) 
 		{
 			VectorCopy( ent->r.currentOrigin, point );
 			point[2] = ent->r.absmin[2];
