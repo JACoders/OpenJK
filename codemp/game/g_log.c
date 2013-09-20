@@ -335,8 +335,7 @@ void G_LogWeaponOutput(void)
 
 	// Write out the level name
 	trap->GetServerinfo(info, sizeof(info));
-	strncpy(mapname, Info_ValueForKey( info, "mapname" ), sizeof(mapname)-1);
-	mapname[sizeof(mapname)-1] = '\0';
+	Q_strncpyz(mapname, Info_ValueForKey( info, "mapname" ), sizeof(mapname));
 
 	Com_sprintf(string, sizeof(string), "\n\n\nLevel:\t%s\n\n\n", mapname);
 	trap->FS_Write( string, strlen( string ), weaponfile);
