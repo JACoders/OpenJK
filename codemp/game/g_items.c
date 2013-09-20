@@ -974,6 +974,19 @@ void turret_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int 
 	G_FreeEntity( self );
 }
 
+void turret_free(gentity_t *self)
+{
+	if (!g_entities[self->genericValue3].inuse || !g_entities[self->genericValue3].client)
+	{
+		G_FreeEntity(self);
+		return;
+	}
+
+	g_entities[self->genericValue3].client->ps.fd.sentryDeployed = qfalse;
+
+	G_FreeEntity( self );
+}
+
 #define TURRET_AMMO_COUNT 40
 
 //---------------------------------
@@ -1057,6 +1070,7 @@ void ItemUse_Sentry( gentity_t *ent )
 	VectorCopy(maxs, sentry->r.maxs);
 	sentry->genericValue3 = ent->s.number;
 	sentry->genericValue2 = ent->client->sess.sessionTeam; //so we can remove ourself if our owner changes teams
+	sentry->genericValue15 = HI_SENTRY_GUN;
 	sentry->r.absmin[0] = sentry->s.pos.trBase[0] + sentry->r.mins[0];
 	sentry->r.absmin[1] = sentry->s.pos.trBase[1] + sentry->r.mins[1];
 	sentry->r.absmin[2] = sentry->s.pos.trBase[2] + sentry->r.mins[2];
@@ -3232,6 +3246,8 @@ void G_RunItem( gentity_t *ent ) {
 	if ( contents & CONTENTS_NODROP ) {
 		if (ent->item && ent->item->giType == IT_TEAM) {
 			Team_FreeEntity(ent);
+		} else if(ent->genericValue15 == HI_SENTRY_GUN) {
+			turret_free(ent);
 		} else {
 			G_FreeEntity( ent );
 		}
