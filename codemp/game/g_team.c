@@ -772,9 +772,8 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	// fix: captures after timelimit hit could 
 	// cause game ending with tied score
-	if ( level.intermissionQueued ) {
+	if (level.intermissionQueued)
 		return 0;
-	}
 
 	// check for enemy closer to grab the flag
 	VectorSubtract( ent->s.pos.trBase, minFlagRange, mins );
@@ -782,20 +781,21 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 
 	num = trap->EntitiesInBox( mins, maxs, touch, MAX_GENTITIES );
 
-	dist = Distance(ent->s.pos.trBase, other->client->ps.origin);
+	dist = Distance( ent->s.pos.trBase, other->client->ps.origin );
 		
-	if (other->client->sess.sessionTeam == TEAM_RED){
+	if (other->client->sess.sessionTeam == TEAM_RED)
 		enemyTeam = TEAM_BLUE;
-	} else {
+	else
 		enemyTeam = TEAM_RED;
-	}	
 
-	for ( j=0 ; j<num ; j++ ) {
+	for (j = 0; j < num; j++) {
 		enemy = (g_entities + touch[j]);
 
-		if (!enemy || !enemy->inuse || !enemy->client){
+		if (!enemy || !enemy->inuse || !enemy->client)
 			continue;
-		}
+
+		if (enemy->client->pers.connected != CON_CONNECTED)
+			continue;
 
 		//check if its alive
 		if (enemy->health < 1)
@@ -812,8 +812,8 @@ int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 		}
 			
 		//check if enemy is closer to our flag than us
-		enemyDist = Distance(ent->s.pos.trBase,enemy->client->ps.origin);
-		if (enemyDist < dist){
+		enemyDist = Distance(ent->s.pos.trBase, enemy->client->ps.origin);
+		if (enemyDist < dist) {
 			// possible recursion is hidden in this, but 
 			// infinite recursion wont happen, because we cant 
 			// have a < b and b < a at the same time
