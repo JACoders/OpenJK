@@ -5502,7 +5502,7 @@ static void UI_UpdateSaberColor( qboolean secondSaber )
 {
 }
 
-extern char * SaberColorToString(saber_colors_t color);
+const char *SaberColorToString( saber_colors_t color );
 
 static void UI_GetSaberCvars ( void )
 {
@@ -5626,8 +5626,7 @@ const char *saberSingleHiltInfo [MAX_SABER_HILTS];
 const char *saberStaffHiltInfo [MAX_SABER_HILTS];
 
 qboolean UI_SaberProperNameForSaber( const char *saberName, char *saberProperName );
-void UI_SaberGetHiltInfo( const char *singleHilts[MAX_SABER_HILTS], const char *staffHilts[MAX_SABER_HILTS] );
-
+void WP_SaberGetHiltInfo( const char *singleHilts[MAX_SABER_HILTS], const char *staffHilts[MAX_SABER_HILTS] );
 
 static void UI_UpdateCharacter( qboolean changedModel )
 {
@@ -6242,7 +6241,7 @@ static void UI_RunMenuScript(char **args)
 		}
 		else if (Q_stricmp(name, "getsaberhiltinfo") == 0) 
 		{
-			UI_SaberGetHiltInfo(saberSingleHiltInfo,saberStaffHiltInfo);
+			WP_SaberGetHiltInfo(saberSingleHiltInfo, saberStaffHiltInfo);
 		}
 		// On the solo game creation screen, we can't see siege maps
 		else if (Q_stricmp(name, "checkforsiege") == 0) 
