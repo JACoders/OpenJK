@@ -27,12 +27,11 @@ extern vmCvar_t	ui_ctf_friendly;
 
 extern vmCvar_t	ui_arenasFile;
 extern vmCvar_t	ui_botsFile;
+extern vmCvar_t	ui_spSkill;
 
-extern vmCvar_t	ui_browserMaster;
-extern vmCvar_t	ui_browserGameType;
-extern vmCvar_t	ui_browserSortKey;
 extern vmCvar_t	ui_browserShowFull;
 extern vmCvar_t	ui_browserShowEmpty;
+extern vmCvar_t	ui_browserShowPasswordProtected;
 
 extern vmCvar_t	ui_drawCrosshair;
 extern vmCvar_t	ui_drawCrosshairNames;
