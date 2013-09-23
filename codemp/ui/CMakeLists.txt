@@ -13,6 +13,7 @@ set(MPUIDefines ${MPSharedDefines} "_UI" "_USRDLL")
 
 set(MPUIGameFiles
 	"${MPDir}/game/bg_misc.c"
+	"${MPDir}/game/bg_saberLoad.c"
 	"${MPDir}/game/bg_saga.c"
 	"${MPDir}/game/bg_vehicleLoad.c"
 	"${MPDir}/game/bg_weapons.c"

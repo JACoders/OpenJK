@@ -19,7 +19,7 @@ extern stringID_table_t animTable[MAX_ANIMATIONS+1];
 int BG_SoundIndex( const char *sound ) {
 #ifdef _GAME
 	return G_SoundIndex( sound );
-#elif defined(_CGAME)
+#elif defined(_CGAME) || defined(_UI)
 	return trap->S_RegisterSound( sound );
 #endif
 }
@@ -127,6 +127,22 @@ qboolean BG_ParseLiteral( const char **data, const char *string ) {
 	return qfalse;
 }
 
+qboolean BG_ParseLiteralSilent( const char **data, const char *string ) {
+	const char *token;
+
+	token = COM_ParseExt( data, qtrue );
+	if ( !token[0] ) {
+		return qtrue;
+	}
+
+	if ( Q_stricmp( token, string ) ) {
+
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
 saber_colors_t TranslateSaberColor( const char *name ) {
 	if ( !Q_stricmp( name, "red" ) ) 
 		return SABER_RED;
@@ -146,6 +162,17 @@ saber_colors_t TranslateSaberColor( const char *name ) {
 	return SABER_BLUE;
 }
 
+const char *SaberColorToString( saber_colors_t color ) {
+	if ( color == SABER_RED )		return "red";
+	if ( color == SABER_ORANGE )	return "orange";
+	if ( color == SABER_YELLOW )	return "yellow";
+	if ( color == SABER_GREEN )		return "green";
+	if ( color == SABER_BLUE )		return "blue";
+	if ( color == SABER_PURPLE )	return "purple";
+
+	return NULL;
+}
+
 saber_styles_t TranslateSaberStyle( const char *name ) {
 	if ( !Q_stricmp( name, "fast" ) )		return SS_FAST;
 	if ( !Q_stricmp( name, "medium" ) ) 	return SS_MEDIUM;
@@ -156,6 +183,23 @@ saber_styles_t TranslateSaberStyle( const char *name ) {
 	if ( !Q_stricmp( name, "staff" ) )		return SS_STAFF;
 
 	return SS_NONE;
+}
+
+saberType_t TranslateSaberType( const char *name ) {
+	if ( !Q_stricmp( name, "SABER_SINGLE" ) )		return SABER_SINGLE;
+	if ( !Q_stricmp( name, "SABER_STAFF" ) ) 		return SABER_STAFF;
+	if ( !Q_stricmp( name, "SABER_DAGGER" ) ) 		return SABER_DAGGER;
+	if ( !Q_stricmp( name, "SABER_BROAD" ) ) 		return SABER_BROAD;
+	if ( !Q_stricmp( name, "SABER_PRONG" ) ) 		return SABER_PRONG;
+	if ( !Q_stricmp( name, "SABER_ARC" ) )			return SABER_ARC;
+	if ( !Q_stricmp( name, "SABER_SAI" ) )			return SABER_SAI;
+	if ( !Q_stricmp( name, "SABER_CLAW" ) )			return SABER_CLAW;
+	if ( !Q_stricmp( name, "SABER_LANCE" ) )		return SABER_LANCE;
+	if ( !Q_stricmp( name, "SABER_STAR" ) )			return SABER_STAR;
+	if ( !Q_stricmp( name, "SABER_TRIDENT" ) )		return SABER_TRIDENT;
+	if ( !Q_stricmp( name, "SABER_SITH_SWORD" ) )	return SABER_SITH_SWORD;
+
+	return SABER_SINGLE;
 }
 
 qboolean WP_SaberBladeUseSecondBladeStyle( saberInfo_t *saber, int bladeNum ) {
@@ -2216,12 +2260,16 @@ void WP_SaberLoadParms( void )
 		len = trap->FS_Open( va( "ext_data/sabers/%s", holdChar ), &f, FS_READ );
 
 		if ( len == -1 ) {
-			Com_Printf( "error reading file\n" );
+			Com_Printf( "WP_SaberLoadParms: error reading file: %s\n", holdChar );
 			continue;
 		}
 
 		if ( (totallen + len+1) >= MAX_SABER_DATA_SIZE ) {
-			Com_Error( ERR_DROP, "Saber extensions (*.sab) are too large" );
+#ifdef _UI
+			Com_Error( ERR_FATAL, "WP_SaberLoadParms: Saber extensions (*.sab) are too large!\nRan out of space before reading %s", holdChar );
+#else
+			Com_Error( ERR_DROP, "WP_SaberLoadParms: Saber extensions (*.sab) are too large!\nRan out of space before reading %s", holdChar );
+#endif
 		}
 
 		trap->FS_Read(bgSaberParseTBuffer, len, f);
@@ -2241,6 +2289,86 @@ void WP_SaberLoadParms( void )
 		marker = saberParms+totallen;
 	}
 }
+
+#ifdef _UI
+qboolean WP_IsSaberTwoHanded( const char *saberName )
+{
+	int twoHanded;
+	char	twoHandedString[8]={0};
+	WP_SaberParseParm( saberName, "twoHanded", twoHandedString );
+	if ( !twoHandedString[0] )
+	{//not defined defaults to "no"
+		return qfalse;
+	}
+	twoHanded = atoi( twoHandedString );
+	return ((qboolean)(twoHanded!=0));
+}
+
+void WP_SaberGetHiltInfo( const char *singleHilts[MAX_SABER_HILTS], const char *staffHilts[MAX_SABER_HILTS] )
+{
+	int	numSingleHilts = 0, numStaffHilts = 0;
+	const char	*saberName;
+	const char	*token;
+	const char	*p;
+
+	//go through all the loaded sabers and put the valid ones in the proper list
+	p = saberParms;
+	COM_BeginParseSession("saberlist");
+
+	// look for a saber
+	while ( p )
+	{
+		token = COM_ParseExt( &p, qtrue );
+		if ( token[0] == 0 )
+		{//invalid name
+			continue;
+		}
+		saberName = String_Alloc( token );
+		//see if there's a "{" on the next line
+		SkipRestOfLine( &p );
+
+		if ( BG_ParseLiteralSilent( &p, "{" ) ) 
+		{//nope, not a name, keep looking
+			continue;
+		}
+
+		//this is a saber name
+		if ( !WP_SaberValidForPlayerInMP( saberName ) )
+		{
+			SkipBracedSection( &p );
+			continue;
+		}
+
+		if ( WP_IsSaberTwoHanded( saberName ) )
+		{
+			if ( numStaffHilts < MAX_SABER_HILTS-1 )//-1 because we have to NULL terminate the list
+			{
+				staffHilts[numStaffHilts++] = saberName;
+			}
+			else
+			{
+				Com_Printf( "WARNING: too many two-handed sabers, ignoring saber '%s'\n", saberName );
+			}
+		}
+		else
+		{
+			if ( numSingleHilts < MAX_SABER_HILTS-1 )//-1 because we have to NULL terminate the list
+			{
+				singleHilts[numSingleHilts++] = saberName;
+			}
+			else
+			{
+				Com_Printf( "WARNING: too many one-handed sabers, ignoring saber '%s'\n", saberName );
+			}
+		}
+		//skip the whole braced section and move on to the next entry
+		SkipBracedSection( &p );
+	}
+	//null terminate the list so the UI code knows where to stop listing them
+	singleHilts[numSingleHilts] = NULL;
+	staffHilts[numStaffHilts] = NULL;
+}
+#endif
 
 /*
 rww -
