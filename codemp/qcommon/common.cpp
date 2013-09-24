@@ -24,7 +24,6 @@ fileHandle_t	com_journalDataFile;		// config files are written here
 cvar_t	*com_viewlog;
 cvar_t	*com_speeds;
 cvar_t	*com_developer;
-cvar_t	*com_vmdebug;
 cvar_t	*com_dedicated;
 cvar_t	*com_timescale;
 cvar_t	*com_fixedtime;
@@ -1216,7 +1215,6 @@ void Com_Init( char *commandLine ) {
 		//
 		com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE);
 
-		com_vmdebug = Cvar_Get ("vmdebug", "0", CVAR_TEMP );
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
 
 		com_timescale = Cvar_Get ("timescale", "1", CVAR_CHEAT | CVAR_SYSTEMINFO );
