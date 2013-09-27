@@ -439,7 +439,7 @@ retryModel:
 			Com_Printf("WARNING: Attempted to load an unsupported multiplayer model %s! (bad or missing bone, or missing animation sequence)\n", modelName);
 		}
 
-		modelName = "kyle";
+		modelName = DEFAULT_MODEL;
 		skinName = "default";
 
 		badModel = qfalse;
@@ -453,7 +453,7 @@ retryModel:
 
 	if (!BG_IsValidCharacterModel(modelName, skinName))
 	{
-		modelName = "kyle";
+		modelName = DEFAULT_MODEL;
 		skinName = "default";
 	}
 
@@ -1016,10 +1016,10 @@ void CG_LoadClientInfo( clientInfo_t *ci ) {
 	int			i;
 	char		teamname[MAX_QPATH];
 	//Raz: Show jan for unknown female skins
-	char		*fallbackModel = "kyle";
+	char		*fallbackModel = DEFAULT_MODEL;
 	
 	if ( ci->gender == GENDER_FEMALE )
-		fallbackModel = "jan";
+		fallbackModel = DEFAULT_MODEL_FEMALE;
 
 	clientNum = ci - cgs.clientinfo;
 
