@@ -860,7 +860,7 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 
 	key = "model";
 	model = Info_ValueForKey( botinfo, key );
-	if ( !*model )	model = "kyle/default";
+	if ( !*model )	model = DEFAULT_MODEL"/default";
 	Info_SetValueForKey( userinfo, key, model );
 
 	key = "sex";
@@ -1110,7 +1110,7 @@ void Svcmd_BotList_f( void ) {
 		}
 		Q_strncpyz(model, Info_ValueForKey( g_botInfos[i], "model" ), sizeof( model ));
 		if ( !*model ) {
-			Q_strncpyz(model, "kyle/default", sizeof( model ));
+			Q_strncpyz(model, DEFAULT_MODEL"/default", sizeof( model ));
 		}
 		Q_strncpyz(personality, Info_ValueForKey( g_botInfos[i], "personality"), sizeof( personality ));
 		if (!*personality ) {

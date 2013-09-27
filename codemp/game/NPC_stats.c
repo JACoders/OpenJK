@@ -3177,7 +3177,7 @@ Ghoul2 Insert Start
 		if (npcSaber1 == 0)
 		{ //use "kyle" for a default then
 			npcSaber1 = G_ModelIndex("@Kyle");
-			WP_SaberParseParms( "Kyle", &NPC->client->saber[0] );
+			WP_SaberParseParms( DEFAULT_SABER, &NPC->client->saber[0] );
 		}
 
 		NPC->s.npcSaber1 = npcSaber1;

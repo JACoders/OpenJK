@@ -1607,7 +1607,7 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 
 					if (!BG_IsValidCharacterModel(truncModelName, skin))
 					{
-						strcpy(truncModelName, "kyle");
+						strcpy(truncModelName, DEFAULT_MODEL);
 						strcpy(skin, "default");
 					}
 

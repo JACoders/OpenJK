@@ -2737,7 +2737,7 @@ void CL_Init( void ) {
 	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("snaps", "40", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("model", "kyle/default", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("model", DEFAULT_MODEL"/default", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("forcepowers", "7-1-032330000000001333", CVAR_USERINFO | CVAR_ARCHIVE );
 //	Cvar_Get ("g_redTeam", "Empire", CVAR_SERVERINFO | CVAR_ARCHIVE);
 //	Cvar_Get ("g_blueTeam", "Rebellion", CVAR_SERVERINFO | CVAR_ARCHIVE);
@@ -2750,7 +2750,7 @@ void CL_Init( void ) {
 	Cvar_Get ("cg_predictItems", "1", CVAR_USERINFO | CVAR_ARCHIVE );
 
 	//default sabers
-	Cvar_Get ("saber1",  "single_1", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("saber1",  DEFAULT_SABER, CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("saber2",  "none", CVAR_USERINFO | CVAR_ARCHIVE );
 
 	//skin color
