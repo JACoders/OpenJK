@@ -19,9 +19,13 @@
 #define	GAME_VERSION		"basejka-1"
 
 #define DEFAULT_SABER			"Kyle"
+#define DEFAULT_SABER_STAFF		"dual_1"
 #define DEFAULT_SABER_MODEL		"models/weapons2/saber/saber_w.glm"
 #define	DEFAULT_MODEL			"kyle"
 #define DEFAULT_MODEL_FEMALE	"jan"
+
+#define DEFAULT_REDTEAM_NAME	"Empire"
+#define DEFAULT_BLUETEAM_NAME	"Rebellion"
 
 #define	STEPSIZE		18
 

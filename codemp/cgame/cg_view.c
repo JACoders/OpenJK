@@ -168,29 +168,24 @@ Sets the coordinates of the rendered window
 =================
 */
 static void CG_CalcVrect (void) {
-	int		size;
+	int size = 100;
 
 	// the intermission should allways be full screen
-	if ( cg.snap->ps.pm_type == PM_INTERMISSION ) {
-		size = 100;
-	} else {
+	if ( cg.snap->ps.pm_type != PM_INTERMISSION ) {
 		// bound normal viewsize
-		if (cg_viewsize.integer < 30) {
-			trap->Cvar_Set ("cg_viewsize","30");
-			size = 30;
-		} else if (cg_viewsize.integer > 100) {
-			trap->Cvar_Set ("cg_viewsize","100");
-			size = 100;
-		} else {
-			size = cg_viewsize.integer;
+		if ( cg_viewsize.integer < 30 ) {
+			trap->Cvar_Set( "cg_viewsize", "30" );
+			trap->Cvar_Update( &cg_viewsize );
 		}
-
+		else if ( cg_viewsize.integer > 100 ) {
+			trap->Cvar_Set( "cg_viewsize", "100" );
+			trap->Cvar_Update( &cg_viewsize );
+		}
+		size = cg_viewsize.integer;
 	}
-	cg.refdef.width = cgs.glconfig.vidWidth*size/100;
-	cg.refdef.width &= ~1;
 
-	cg.refdef.height = cgs.glconfig.vidHeight*size/100;
-	cg.refdef.height &= ~1;
+	cg.refdef.width = (cgs.glconfig.vidWidth*size/100) & 1;
+	cg.refdef.height = (cgs.glconfig.vidHeight*size/100) & 1;
 
 	cg.refdef.x = (cgs.glconfig.vidWidth - cg.refdef.width)/2;
 	cg.refdef.y = (cgs.glconfig.vidHeight - cg.refdef.height)/2;
