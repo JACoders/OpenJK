@@ -23,7 +23,6 @@ int uiForceAvailable=0;
 extern const char *UI_TeamName(int team);
 
 qboolean gTouchedForce = qfalse;
-vmCvar_t	ui_freeSaber, ui_forcePowerDisable;
 
 void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow);
 
