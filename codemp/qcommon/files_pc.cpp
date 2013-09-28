@@ -1940,6 +1940,9 @@ static char** Sys_ConcatenateFileLists( char **list0, char **list1, char **list2
 }
 //#endif
 
+// For base game mod listing
+const char *SE_GetString( const char *psPackageAndStringReference );
+
 /*
 ================
 FS_GetModList
@@ -1992,8 +1995,8 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 		if (bDrop) {
 			continue;
 		}
-		// we drop "base" "." and ".."
-		if (Q_stricmp(name, BASEGAME) && Q_stricmpn(name, ".", 1)) {
+		// we drop "." and ".."
+		if (Q_stricmpn(name, ".", 1)) {
 			// now we need to find some .pk3 files to validate the mod
 			// NOTE TTimo: (actually I'm not sure why .. what if it's a mod under developement with no .pk3?)
 			// we didn't keep the information when we merged the directory names, as to what OS Path it was found under
@@ -2022,7 +2025,8 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 			}
 
 			if (nPaks > 0) {
-				nLen = strlen(name) + 1;
+				bool isBase = !Q_stricmp( name, BASEGAME );
+				nLen = isBase ? 1 : strlen(name) + 1;
 				// nLen is the length of the mod path
 				// we need to see if there is a description available
 				descPath[0] = '\0';
@@ -2038,13 +2042,18 @@ int	FS_GetModList( char *listbuf, int bufsize ) {
 						descPath[nDescLen] = '\0';
 					}
 					FS_FCloseFile(descHandle);
+				} else if ( isBase ) {
+					strcpy(descPath, SE_GetString("MENUS_JEDI_ACADEMY"));
 				} else {
 					strcpy(descPath, name);
 				}
 				nDescLen = strlen(descPath) + 1;
 
 				if (nTotal + nLen + 1 + nDescLen + 1 < bufsize) {
-					strcpy(listbuf, name);
+					if ( isBase )
+						strcpy(listbuf, "");
+					else
+						strcpy(listbuf, name);
 					listbuf += nLen;
 					strcpy(listbuf, descPath);
 					listbuf += nDescLen;
