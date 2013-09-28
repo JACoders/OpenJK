@@ -451,7 +451,6 @@ void Menu_ShowItemByName(menuDef_t *menu, const char *p, qboolean bShow);
 void UpdateForceUsed();
 
 char holdSPString[MAX_STRING_CHARS]={0};
-char holdSPString2[MAX_STRING_CHARS]={0};
 
 uiInfo_t uiInfo;
 
@@ -469,16 +468,9 @@ static const char *UI_SelectedMap(int index, int *actual);
 static int UI_GetIndexFromSelection(int actual);
 static void UI_SiegeClassCnt( const int team );
 
-
 int ProcessNewUI( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6 );
 int	uiSkinColor=TEAM_FREE;
 int	uiHoldSkinColor=TEAM_FREE;	// Stores the skin color so that in non-team games, the player screen remembers the team you chose, in case you're coming back from the force powers screen.
-
-static const serverFilter_t serverFilters[] = {
-	{"MENUS_ALL", "" },
-	{"MENUS_JEDI_ACADEMY", "" },
-};
-static const int numServerFilters = ARRAY_LEN( serverFilters );
 
 static const char *skillLevels[] = {
   "SKILL1",//"I Can Win",
@@ -1473,7 +1465,24 @@ void UI_Load( void ) {
 	UI_LoadMenus(menuSet, qtrue);
 	Menus_CloseAll();
 	Menus_ActivateByName(lastName);
+}
 
+char	sAll[15] = {0};
+char	sJediAcademy[30] = {0};
+const char *UI_FilterDescription( int value ) {
+	if ( value <= 0 || value > uiInfo.modCount ) {
+		return sAll;
+	}
+
+	return uiInfo.modList[value - 1].modDescr;
+}
+
+const char *UI_FilterDir( int value ) {
+	if ( value <= 0 || value > uiInfo.modCount ) {
+		return "";
+	}
+
+	return uiInfo.modList[value - 1].modName;
 }
 
 static const char *handicapValues[] = {"None","95","90","85","80","75","70","65","60","55","50","45","40","35","30","25","20","15","10","5",NULL};
@@ -2328,17 +2337,9 @@ static void UI_DrawNetMapCinematic(rectDef_t *rect, float scale, vec4_t color) {
 
 static void UI_DrawNetFilter(rectDef_t *rect, float scale, vec4_t color, int textStyle, int iMenuFont) 
 {
-	if (ui_serverFilterType.integer < 0 || ui_serverFilterType.integer > numServerFilters) 
-	{
-		trap->Cvar_Set("ui_serverFilterType", "0");
-		trap->Cvar_Update(&ui_serverFilterType);
-	}
-
 	trap->SE_GetStringTextString("MENUS_GAME", holdSPString, sizeof(holdSPString));
-	trap->SE_GetStringTextString(serverFilters[ui_serverFilterType.integer].description, holdSPString2, sizeof(holdSPString2));
 
-	Text_Paint(rect->x, rect->y, scale, color, va("%s %s",holdSPString,
-		holdSPString2), 0, 0, textStyle, iMenuFont);
+	Text_Paint(rect->x, rect->y, scale, color, va("%s %s",holdSPString, UI_FilterDescription( ui_serverFilterType.integer )), 0, 0, textStyle, iMenuFont);
 }
 
 static void UI_DrawTier(rectDef_t *rect, float scale, vec4_t color, int textStyle, int iMenuFont) {
@@ -2756,14 +2757,8 @@ static int UI_OwnerDrawWidth(int ownerDraw, float scale) {
 			s = va("%s %s", holdSPString, GetNetSourceString(ui_netSource.integer));
 			break;
 		case UI_NETFILTER:
-			if (ui_serverFilterType.integer < 0 || ui_serverFilterType.integer > numServerFilters) {
-				trap->Cvar_Set("ui_serverFilterType", "0");
-				trap->Cvar_Update(&ui_serverFilterType);
-			}
 			trap->SE_GetStringTextString("MENUS_GAME", holdSPString, sizeof(holdSPString));
-			trap->SE_GetStringTextString(serverFilters[ui_serverFilterType.integer].description, holdSPString2, sizeof(holdSPString2));
-
-			s = va("%s %s", holdSPString, holdSPString2 );
+			s = va("%s %s", holdSPString, UI_FilterDescription( ui_serverFilterType.integer ) );
 			break;
 		case UI_TIER:
 			break;
@@ -4050,10 +4045,10 @@ static qboolean UI_NetFilter_HandleKey(int flags, float *special, int key) {
 			value++;
 		}
 
-		if (value >= numServerFilters) {
+		if (value > uiInfo.modCount) {
 			value = 0;
 		} else if (value < 0) {
-			value = numServerFilters - 1;
+			value = uiInfo.modCount;
 		}
 
 		trap->Cvar_Set( "ui_serverFilterType", va("%d", value));
@@ -4396,6 +4391,8 @@ void UI_ServersSort(int column, qboolean force) {
 	qsort( &uiInfo.serverStatus.displayServers[0], uiInfo.serverStatus.numDisplayServers, sizeof(int), UI_ServersQsortCompare);
 }
 
+#define MODSBUFSIZE (MAX_MODS * MAX_QPATH)
+
 /*
 ===============
 UI_LoadMods
@@ -4403,13 +4400,26 @@ UI_LoadMods
 */
 static void UI_LoadMods() {
 	int		numdirs;
-	char	dirlist[2048];
+	char	dirlist[MODSBUFSIZE];
 	char	*dirptr;
-	char  *descptr;
+	char	*descptr;
 	int		i;
 	int		dirlen;
+	char	version[MAX_CVAR_VALUE_STRING] = {0};
 
-	uiInfo.modCount = 0;
+	trap->SE_GetStringTextString("MENUS_ALL", sAll, sizeof(sAll));
+
+	// To still display base game with old engine
+	Q_strncpyz( version, UI_Cvar_VariableString( "version" ), sizeof(version) );
+	if ( strstr( version, "2003" ) ) {
+		trap->SE_GetStringTextString("MENUS_JEDI_ACADEMY", sJediAcademy, sizeof(sJediAcademy));
+		uiInfo.modList[0].modName = String_Alloc("");
+		uiInfo.modList[0].modDescr = String_Alloc(sJediAcademy);
+		uiInfo.modCount = 1;
+	}
+	else
+		uiInfo.modCount = 0;
+
 	numdirs = trap->FS_GetFileList( "$modlist", "", dirlist, sizeof(dirlist) );
 	dirptr  = dirlist;
 	for( i = 0; i < numdirs; i++ ) {
@@ -4454,8 +4464,6 @@ static void UI_LoadMovies() {
 	}
 }
 
-
-
 /*
 ===============
 UI_LoadDemos
@@ -4463,12 +4471,6 @@ UI_LoadDemos
 */
 
 #if 1
-
-/*
-===============
-UI_LoadDemos
-===============
-*/
 
 static void UI_LoadDemosInDirectory( const char *directory )
 {
@@ -6126,6 +6128,8 @@ static void UI_RunMenuScript(char **args)
 			}
 			UI_BuildServerDisplayList(qtrue);
 			UI_FeederSelection(FEEDER_SERVERS, 0, NULL );
+
+			UI_LoadMods();
 		} else if (Q_stricmp(name, "ServerStatus") == 0) {
 			trap->LAN_GetServerAddressString(ui_netSource.integer, uiInfo.serverStatus.displayServers[uiInfo.serverStatus.currentServer], uiInfo.serverStatusAddress, sizeof(uiInfo.serverStatusAddress));
 			UI_BuildServerStatus(qtrue);
@@ -7517,8 +7521,8 @@ static void UI_BuildServerDisplayList(int force) {
 				}
 			}
 				
-			if (ui_serverFilterType.integer > 0) {
-				if (Q_stricmp(Info_ValueForKey(info, "game"), serverFilters[ui_serverFilterType.integer].basedir) != 0) {
+			if (ui_serverFilterType.integer > 0 && ui_serverFilterType.integer <= uiInfo.modCount) {
+				if (Q_stricmp(Info_ValueForKey(info, "game"), UI_FilterDir( ui_serverFilterType.integer ) ) != 0) {
 					trap->LAN_MarkServerVisible(ui_netSource.integer, i, qfalse);
 					continue;
 				}
