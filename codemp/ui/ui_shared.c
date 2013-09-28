@@ -32,11 +32,6 @@ typedef struct scrollInfo_s {
 } scrollInfo_t;
 
 #ifdef _UI // Defined in ui_main.c, not in the namespace
-	extern vmCvar_t	ui_char_color_red;
-	extern vmCvar_t	ui_char_color_green;
-	extern vmCvar_t	ui_char_color_blue;
-	extern vmCvar_t	se_language;
-	
 	// Some extern functions hoisted from the middle of this file to get all the non-cgame,
 	// non-namespace stuff together
 	extern void UI_SaberDrawBlades( itemDef_t *item, vec3_t origin, vec3_t angles );
@@ -5022,11 +5017,9 @@ static bind_t g_bindings[] =
 	{"automap_button",	-1,					-1,		-1,	-1},
 	{"automap_toggle",	-1,					-1,		-1,	-1},
 	{"voicechat",		-1,					-1,		-1,	-1},
-
 };
 
-
-static const int g_bindCount = sizeof(g_bindings) / sizeof(bind_t);
+static const size_t g_bindCount = ARRAY_LEN(g_bindings);// sizeof(g_bindings) / sizeof(bind_t);
 
 /*
 =================
@@ -5065,13 +5058,12 @@ Controls_GetConfig
 */
 void Controls_GetConfig( void )
 {
-	int		i;
+	size_t	i;
 	int		twokeys[2];
 
 	// iterate each command, get its numeric binding
 	for (i=0; i < g_bindCount; i++)
 	{
-
 		Controls_GetKeyAssignment(g_bindings[i].command, twokeys);
 
 		g_bindings[i].bind1 = twokeys[0];
@@ -5086,7 +5078,7 @@ Controls_SetConfig
 */
 void Controls_SetConfig(qboolean restart)
 {
-	int		i;
+	size_t	i;
 
 	// iterate each command, get its numeric binding
 	for (i=0; i < g_bindCount; i++)
@@ -5103,8 +5095,8 @@ void Controls_SetConfig(qboolean restart)
 
 
 int BindingIDFromName(const char *name) {
-	int i;
-  for (i=0; i < g_bindCount; i++)
+	size_t i;
+	for (i=0; i < g_bindCount; i++)
 	{
 		if (Q_stricmp(name, g_bindings[i].command) == 0) {
 			return i;
@@ -5117,9 +5109,9 @@ char g_nameBind1[32];
 char g_nameBind2[32];
 
 void BindingFromName(const char *cvar) {
-	int		i, b1, b2;
+	size_t	i;
+	int		b1, b2;
 	char	sOR[32];
-
 
 	// iterate each command, set its default binding
 	for (i=0; i < g_bindCount; i++)
@@ -5260,7 +5252,6 @@ qboolean Display_KeyBindPending() {
 
 qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down) {
 	int			id;
-	int			i;
 
 	if (key == A_MOUSE1 && Rect_ContainsPoint(&item->window.rect, DC->cursorx, DC->cursory) && !g_waitingForKey)
 	{
@@ -5324,10 +5315,10 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down) {
 
 	if (key != -1)
 	{
+		size_t	i;
 
 		for (i=0; i < g_bindCount; i++)
 		{
-
 			if (g_bindings[i].bind2 == key) {
 				g_bindings[i].bind2 = -1;
 			}

@@ -10,72 +10,12 @@
 #include "game/bg_public.h"
 #include "ui_shared.h"
 
-// global display context
-
-extern vmCvar_t	ui_ffa_fraglimit;
-extern vmCvar_t	ui_ffa_timelimit;
-
-extern vmCvar_t ui_selectedModelIndex;
-
-extern vmCvar_t	ui_team_fraglimit;
-extern vmCvar_t	ui_team_timelimit;
-extern vmCvar_t	ui_team_friendly;
-
-extern vmCvar_t	ui_ctf_capturelimit;
-extern vmCvar_t	ui_ctf_timelimit;
-extern vmCvar_t	ui_ctf_friendly;
-
-extern vmCvar_t	ui_arenasFile;
-extern vmCvar_t	ui_botsFile;
-extern vmCvar_t	ui_spSkill;
-
-extern vmCvar_t	ui_browserShowFull;
-extern vmCvar_t	ui_browserShowEmpty;
-extern vmCvar_t	ui_browserShowPasswordProtected;
-
-extern vmCvar_t	ui_drawCrosshair;
-extern vmCvar_t	ui_drawCrosshairNames;
-extern vmCvar_t	ui_marks;
-
-extern vmCvar_t	ui_captureLimit;
-extern vmCvar_t	ui_fragLimit;
-extern vmCvar_t	ui_gameType;
-extern vmCvar_t	ui_netGameType;
-extern vmCvar_t	ui_actualNetGameType;
-extern vmCvar_t	ui_joinGameType;
-extern vmCvar_t	ui_netSource;
-extern vmCvar_t	ui_serverFilterType;
-extern vmCvar_t	ui_dedicated;
-extern vmCvar_t	ui_opponentName;
-extern vmCvar_t	ui_menuFiles;
-extern vmCvar_t	ui_currentMap;
-extern vmCvar_t	ui_currentNetMap;
-extern vmCvar_t	ui_mapIndex;
-extern vmCvar_t	ui_currentOpponent;
-extern vmCvar_t	ui_selectedPlayer;
-extern vmCvar_t	ui_selectedPlayerName;
-extern vmCvar_t	ui_lastServerRefresh_0;
-extern vmCvar_t	ui_lastServerRefresh_1;
-extern vmCvar_t	ui_lastServerRefresh_2;
-extern vmCvar_t	ui_lastServerRefresh_3;
-extern vmCvar_t	ui_singlePlayerActive;
-extern vmCvar_t	ui_scoreAccuracy;
-extern vmCvar_t	ui_scoreImpressives;
-extern vmCvar_t	ui_scoreExcellents;
-extern vmCvar_t	ui_scoreDefends;
-extern vmCvar_t	ui_scoreAssists;
-extern vmCvar_t	ui_scoreGauntlets;
-extern vmCvar_t	ui_scoreScore;
-extern vmCvar_t	ui_scorePerfect;
-extern vmCvar_t	ui_scoreTeam;
-extern vmCvar_t	ui_scoreBase;
-extern vmCvar_t	ui_scoreTimeBonus;
-extern vmCvar_t	ui_scoreSkillBonus;
-extern vmCvar_t	ui_scoreShutoutBonus;
-extern vmCvar_t	ui_scoreTime;
-extern vmCvar_t ui_serverStatusTimeOut;
-
-extern vmCvar_t ui_bypassMainMenuLoad;
+// ui_cvar.c
+#define XCVAR_PROTO
+	#include "ui_xcvar.h"
+#undef XCVAR_PROTO
+void UI_RegisterCvars( void );
+void UI_UpdateCvars( void );
 
 #define MAX_FORCE_CONFIGS		128
 #define MAX_SABER_HILTS			256 //64
