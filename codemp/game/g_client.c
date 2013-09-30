@@ -2075,9 +2075,14 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	Q_strncpyz( oldname, client->pers.netname, sizeof( oldname ) );
 	s = Info_ValueForKey( userinfo, "name" );
 	ClientCleanName( s, client->pers.netname, sizeof( client->pers.netname ) );
+	Q_strncpyz( client->pers.netname_nocolor, client->pers.netname, sizeof( client->pers.netname_nocolor ) );
+	Q_StripColor( client->pers.netname_nocolor );
 
 	if ( client->sess.sessionTeam == TEAM_SPECTATOR && client->sess.spectatorState == SPECTATOR_SCOREBOARD )
+	{
 		Q_strncpyz( client->pers.netname, "scoreboard", sizeof( client->pers.netname ) );
+		Q_strncpyz( client->pers.netname_nocolor, "scoreboard", sizeof( client->pers.netname_nocolor ) );
+	}
 
 	if ( client->pers.connected == CON_CONNECTED )
 	{
@@ -2090,6 +2095,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 				Info_SetValueForKey( userinfo, "name", oldname );
 				trap->SetUserinfo( clientNum, userinfo );			
 				Q_strncpyz( client->pers.netname, oldname, sizeof( client->pers.netname ) );
+				Q_strncpyz( client->pers.netname_nocolor, oldname, sizeof( client->pers.netname_nocolor ) );
+				Q_StripColor( client->pers.netname_nocolor );
 			}
 			else
 			{				
