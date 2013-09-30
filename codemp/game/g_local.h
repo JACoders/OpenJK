@@ -449,6 +449,7 @@ typedef struct clientPersistant_s {
 	qboolean	predictItemPickup;	// based on cg_predictItems userinfo
 	qboolean	pmoveFixed;			//
 	char		netname[MAX_NETNAME];
+	char		netname_nocolor[MAX_NETNAME];
 	int			netnameTime;				// Last time the name was changed
 	int			maxHealth;			// for handicapping
 	int			enterTime;			// level.time the client entered the game
