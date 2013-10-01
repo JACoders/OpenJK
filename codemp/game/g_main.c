@@ -2686,34 +2686,40 @@ void CheckTeamVote( int team ) {
 	else
 		return;
 
+	if ( level.teamVoteExecuteTime[cs_offset] && level.teamVoteExecuteTime[cs_offset] < level.time ) {
+		level.teamVoteExecuteTime[cs_offset] = 0;
+		if ( !Q_strncmp( "leader", level.teamVoteString[cs_offset], 6) ) {
+			//set the team leader
+			SetLeader(team, atoi(level.teamVoteString[cs_offset] + 7));
+		}
+		else {
+			trap->SendConsoleCommand( EXEC_APPEND, va("%s\n", level.teamVoteString[cs_offset] ) );
+		}
+	}
+
 	if ( !level.teamVoteTime[cs_offset] ) {
 		return;
 	}
-	if ( level.time - level.teamVoteTime[cs_offset] >= VOTE_TIME ) {
-		trap->SendServerCommand( -1, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEFAILED")) );
-	} else {
+
+	if ( level.time-level.teamVoteTime[cs_offset] >= VOTE_TIME || level.teamVoteYes[cs_offset] + level.teamVoteNo[cs_offset] == 0 ) {
+		trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEFAILED"), level.teamVoteStringClean[cs_offset]) );
+	}
+	else {
 		if ( level.teamVoteYes[cs_offset] > level.numteamVotingClients[cs_offset]/2 ) {
 			// execute the command, then remove the vote
-			trap->SendServerCommand( -1, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEPASSED")) );
-			//
-			if ( !Q_strncmp( "leader", level.teamVoteString[cs_offset], 6) ) {
-				//set the team leader
-				SetLeader(team, atoi(level.teamVoteString[cs_offset] + 7));
-			}
-			else {
-				trap->SendConsoleCommand( EXEC_APPEND, va("%s\n", level.teamVoteString[cs_offset] ) );
-			}
-		} else if ( level.teamVoteNo[cs_offset] >= (level.numteamVotingClients[cs_offset]+1)/2 ) {
-			// same behavior as a timeout
-			trap->SendServerCommand( -1, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEFAILED")) );
-		} else {
-			// still waiting for a majority
-			return;
+			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEPASSED"), level.teamVoteStringClean[cs_offset]) );
+			level.voteExecuteTime = level.time + 3000;
 		}
+
+		// same behavior as a timeout
+		else if ( level.teamVoteNo[cs_offset] >= (level.numteamVotingClients[cs_offset]+1)/2 )
+			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEFAILED"), level.teamVoteStringClean[cs_offset]) );
+
+		else // still waiting for a majority
+			return;
 	}
 	level.teamVoteTime[cs_offset] = 0;
 	trap->SetConfigstring( CS_TEAMVOTE_TIME + cs_offset, "" );
-
 }
 
 

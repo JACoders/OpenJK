@@ -884,7 +884,10 @@ typedef struct level_locals_s {
 
 	// team voting state
 	char		teamVoteString[2][MAX_STRING_CHARS];
+	char		teamVoteStringClean[2][MAX_STRING_CHARS];
+	char		teamVoteDisplayString[2][MAX_STRING_CHARS];
 	int			teamVoteTime[2];		// level.time vote was called
+	int			teamVoteExecuteTime[2];		// time the vote is executed
 	int			teamVoteYes[2];
 	int			teamVoteNo[2];
 	int			numteamVotingClients[2];// set by CalculateRanks
