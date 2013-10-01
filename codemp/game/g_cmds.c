@@ -2023,7 +2023,6 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d", arg1, gt );
 		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %s", arg1, gameNames[gt] );
-		Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
 	}
 	else if ( !Q_stricmp( arg1, "map" ) ) 
 	{
@@ -2222,8 +2221,7 @@ Cmd_CallTeamVote_f
 */
 void Cmd_CallTeamVote_f( gentity_t *ent ) {
 	int		i, team, cs_offset;
-	char	arg1[MAX_STRING_TOKENS];
-	char	arg2[MAX_STRING_TOKENS];
+	char	arg1[MAX_CVAR_VALUE_STRING], *arg2 = NULL;
 
 	team = ent->client->sess.sessionTeam;
 	if ( team == TEAM_RED )
@@ -2249,81 +2247,57 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 
 	// make sure it is a valid command to vote on
 	trap->Argv( 1, arg1, sizeof( arg1 ) );
-	arg2[0] = '\0';
-	for ( i = 2; i < trap->Argc(); i++ ) {
-		if (i > 2)
-			strcat(arg2, " ");
-		trap->Argv( i, &arg2[strlen(arg2)], sizeof( arg2 ) - strlen(arg2) );
+
+	arg2 = ConcatArgs( 2 );
+
+	if ( strlen( arg2 ) > MAX_CVAR_VALUE_STRING )
+	{
+		arg2[MAX_CVAR_VALUE_STRING-1] = '\0';
+		G_SecurityLogPrintf( "Cmd_CallTeamVote_f from %d (%s) has been truncated: %s\n", ent->s.number, ent->client->pers.netname, arg2 );
 	}
 
 	if ( strchr( arg1, ';' ) || strchr( arg2, ';' ) ||
 		 strchr( arg1, '\r' ) || strchr( arg2, '\r' ) ||
 		 strchr( arg1, '\n' ) || strchr( arg2, '\n' ) )
 	{
-		trap->SendServerCommand( ent-g_entities, "print \"Invalid vote string.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Invalid team vote string.\n\"" );
 		return;
 	}
 
-	if ( !Q_stricmp( arg1, "leader" ) ) {
-		char netname[MAX_NETNAME], leader[MAX_NETNAME];
+	if ( !Q_stricmp ( arg1, "leader" ) )
+	{
+		int clientid = -1;
+		if ( trap->Argc() == 2 )
+			clientid = ent->s.number;
+		else
+			ClientNumberFromString( ent, arg2 );
 
-		if ( !arg2[0] ) {
-			i = ent->client->ps.clientNum;
-		}
-		else {
-			// numeric values are just slot numbers
-			for (i = 0; i < 3; i++) {
-				if ( !arg2[i] || arg2[i] < '0' || arg2[i] > '9' )
-					break;
-			}
-			if ( i >= 3 || !arg2[i]) {
-				i = atoi( arg2 );
-				if ( i < 0 || i >= level.maxclients ) {
-					trap->SendServerCommand( ent-g_entities, va("print \"Bad client slot: %i\n\"", i) );
-					return;
-				}
+		if ( clientid == -1 )
+			return;
 
-				if ( !g_entities[i].inuse ) {
-					trap->SendServerCommand( ent-g_entities, va("print \"Client %i is not active\n\"", i) );
-					return;
-				}
-			}
-			else {
-				Q_strncpyz(leader, arg2, sizeof(leader));
-				Q_StripColor(leader);
-				//Q_CleanStr(leader);
-				for ( i = 0 ; i < level.maxclients ; i++ ) {
-					if ( level.clients[i].pers.connected == CON_DISCONNECTED )
-						continue;
-					if (level.clients[i].sess.sessionTeam != team)
-						continue;
-					Q_strncpyz(netname, level.clients[i].pers.netname, sizeof(netname));
-					Q_StripColor(netname);
-					//Q_CleanStr(netname);
-					if ( !Q_stricmp(netname, leader) ) {
-						break;
-					}
-				}
-				if ( i >= level.maxclients ) {
-					trap->SendServerCommand( ent-g_entities, va("print \"%s is not a valid player on your team.\n\"", arg2) );
-					return;
-				}
-			}
+		if ( level.clients[i].sess.sessionTeam != team )
+		{
+			trap->SendServerCommand( ent-g_entities, va( "print \"User %s is not on your team\n\"", arg2 ) );
+			return;
 		}
-		Com_sprintf(arg2, sizeof(arg2), "%d", i);
-	} else {
-		trap->SendServerCommand( ent-g_entities, "print \"Invalid vote string.\n\"" );
+
+		Com_sprintf ( level.teamVoteString[cs_offset], sizeof( level.teamVoteString[cs_offset] ), "leader %d", clientid );
+		Q_strncpyz( level.teamVoteDisplayString[cs_offset], level.teamVoteString[cs_offset], sizeof( level.teamVoteDisplayString[cs_offset] ) );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Invalid team vote string.\n\"" );
 		trap->SendServerCommand( ent-g_entities, "print \"Team vote commands are: leader <player>.\n\"" );
 		return;
 	}
 
-	Com_sprintf( level.teamVoteString[cs_offset], sizeof( level.teamVoteString[cs_offset] ), "%s %s", arg1, arg2 );
+	Q_strstrip( level.teamVoteStringClean[cs_offset], "\"\n\r", NULL );
 
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
 		if ( level.clients[i].pers.connected == CON_DISCONNECTED )
 			continue;
 		if (level.clients[i].sess.sessionTeam == team)
-			trap->SendServerCommand( i, va("print \"%s called a team vote.\n\"", ent->client->pers.netname ) );
+			trap->SendServerCommand( i, va("print \"%s^7 called a team vote.\n\"", ent->client->pers.netname ) );
 	}
 
 	// start the voting, the caller autoamtically votes yes
@@ -2341,7 +2315,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 	ent->client->pers.teamvote = 1;
 
 	trap->SetConfigstring( CS_TEAMVOTE_TIME + cs_offset, va("%i", level.teamVoteTime[cs_offset] ) );
-	trap->SetConfigstring( CS_TEAMVOTE_STRING + cs_offset, level.teamVoteString[cs_offset] );
+	trap->SetConfigstring( CS_TEAMVOTE_STRING + cs_offset, level.teamVoteDisplayString[cs_offset] );
 	trap->SetConfigstring( CS_TEAMVOTE_YES + cs_offset, va("%i", level.teamVoteYes[cs_offset] ) );
 	trap->SetConfigstring( CS_TEAMVOTE_NO + cs_offset, va("%i", level.teamVoteNo[cs_offset] ) );
 }
