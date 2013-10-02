@@ -431,6 +431,8 @@ void	Svcmd_ForceTeam_f( void ) {
 }
 
 char *ConcatArgs( int start );
+void G_CheckFields( void );
+void G_CheckSpawns( void );
 
 /*
 =================
@@ -485,6 +487,16 @@ qboolean	ConsoleCommand( void ) {
 
 	if ( !Q_stricmp( cmd, "toggleuserinfovalidation" ) ) {
 		Svcmd_ToggleUserinfoValidation_f();
+		return qtrue;
+	}
+
+	if ( !Q_stricmp( cmd, "checkfields" ) ) {
+		G_CheckFields();
+		return qtrue;
+	}
+
+	if ( !Q_stricmp( cmd, "checkspawns" ) ) {
+		G_CheckSpawns();
 		return qtrue;
 	}
 

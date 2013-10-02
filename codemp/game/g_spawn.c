@@ -191,6 +191,25 @@ field_t fields[] = {
 	{ "wait",					FOFS( wait ),							F_FLOAT },
 };
 
+static int sortfield( const void *a, const void *b ) {
+	return Q_stricmp( ((field_t*)a)->name, ((field_t*)b)->name );
+}
+
+void G_CheckFields( void ) {
+	field_t sorted[ARRAY_LEN(fields)];
+	int i;
+
+	for ( i = 0 ; i < ARRAY_LEN(fields) ; i++ ) {
+		sorted[i] = fields[i];
+	}
+
+	qsort( sorted, ARRAY_LEN(sorted), sizeof( sorted[0] ), sortfield );
+
+	for ( i = 0; i < ARRAY_LEN(fields) ; i++ ) {
+		trap->Print("%s%s %s\n", Q_stricmp(fields[i].name, sorted[i].name) != 0 ? "*" : "", fields[i].name, sorted[i].name);
+	}
+}
+
 typedef struct spawn_s {
 	char	*name;
 	void	(*spawn)(gentity_t *ent);
@@ -661,6 +680,25 @@ spawn_t	spawns[] = {
 	{ "waypoint_navgoal_8",					SP_waypoint_navgoal_8 },
 	{ "waypoint_small",						SP_waypoint_small },
 };
+
+static int sortspawn( const void *a, const void *b ) {
+	return Q_stricmp( ((spawn_t*)a)->name, ((spawn_t*)b)->name );
+}
+
+void G_CheckSpawns( void ) {
+	spawn_t sorted[ARRAY_LEN(spawns)];
+	int i;
+
+	for ( i = 0 ; i < ARRAY_LEN(spawns) ; i++ ) {
+		sorted[i] = spawns[i];
+	}
+
+	qsort( sorted, ARRAY_LEN(sorted), sizeof( sorted[0] ), sortspawn );
+
+	for ( i = 0; i < ARRAY_LEN(spawns) ; i++ ) {
+		trap->Print("%s%s %s\n", Q_stricmp(spawns[i].name, sorted[i].name) != 0 ? "*" : "", sorted[i].name, spawns[i].name, sorted[i].name);
+	}
+}
 
 /*
 ===============
