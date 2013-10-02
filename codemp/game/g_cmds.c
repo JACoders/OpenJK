@@ -2022,7 +2022,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	{
 		// special case for map changes, we want to reset the nextmap setting
 		// this allows a player to change maps, but not upset the map rotation
-		char	s[MAX_STRING_CHARS];
+		char	s[MAX_CVAR_VALUE_STRING];
 
 		if (!G_DoesMapSupportGametype(arg2, level.gametype))
 		{
