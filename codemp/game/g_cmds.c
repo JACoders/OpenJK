@@ -157,10 +157,10 @@ Returns a player number for either a number or name string
 Returns -1 if invalid
 ==================
 */
-int ClientNumberFromString( gentity_t *to, char *s ) {
+int ClientNumberFromString( gentity_t *to, const char *s ) {
 	gclient_t	*cl;
 	int			idnum;
-	char		cleanName[MAX_NETNAME];
+	char		cleanInput[MAX_NETNAME];
 
 	if ( StringIsInteger( s ) )
 	{// numeric values could be slot numbers
@@ -173,15 +173,15 @@ int ClientNumberFromString( gentity_t *to, char *s ) {
 		}
 	}
 
+	Q_strncpyz( cleanInput, s, sizeof(cleanInput) );
+	Q_StripColor( cleanInput );
+
 	for ( idnum=0,cl=level.clients; idnum < level.maxclients; idnum++,cl++ )
 	{// check for a name match
 		if ( cl->pers.connected != CON_CONNECTED )
 			continue;
 
-		Q_strncpyz( cleanName, cl->pers.netname, sizeof( cleanName ) );
-		Q_StripColor( cleanName );
-		//Q_CleanStr( cleanName );
-		if ( !Q_stricmp( cleanName, s ) )
+		if ( !Q_stricmp( cl->pers.netname_nocolor, s ) )
 			return idnum;
 	}
 
@@ -1900,7 +1900,6 @@ Finds the client number of the client with the given name
 int G_ClientNumberFromName ( const char* name )
 {
 	char		cleanInput[MAX_NETNAME];
-	char		cleanName[MAX_NETNAME];
 	int			i;
 	gclient_t*	cl;
 
@@ -1910,9 +1909,7 @@ int G_ClientNumberFromName ( const char* name )
 	{// check for a name match
 		if ( cl->pers.connected != CON_CONNECTED )
 			continue;
-		Q_strncpyz( cleanName, cl->pers.netname, sizeof( cleanName ) );
-		Q_StripColor( cleanName );
-		if ( !Q_stricmp( cleanName, cleanInput ) )
+		if ( !Q_stricmp( cl->pers.netname_nocolor, cleanInput ) )
 		{
 			return i;
 		}
