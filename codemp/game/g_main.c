@@ -507,9 +507,8 @@ void AddTournamentPlayer( void ) {
 			continue;
 		}
 
-		if ( !nextInLine || client->sess.spectatorTime < nextInLine->sess.spectatorTime ) {
+		if ( !nextInLine || client->sess.spectatorNum > nextInLine->sess.spectatorNum )
 			nextInLine = client;
-		}
 	}
 
 	if ( !nextInLine ) {
@@ -520,6 +519,33 @@ void AddTournamentPlayer( void ) {
 
 	// set them to free-for-all team
 	SetTeam( &g_entities[ nextInLine - level.clients ], "f" );
+}
+
+/*
+=======================
+AddTournamentQueue
+
+Add client to end of tournament queue
+=======================
+*/
+
+void AddTournamentQueue( gclient_t *client )
+{
+	int index;
+	gclient_t *curclient;
+	
+	for( index = 0; index < level.maxclients; index++ )
+	{
+		curclient = &level.clients[index];
+		
+		if ( curclient->pers.connected != CON_DISCONNECTED )
+		{
+			if ( curclient == client )
+				curclient->sess.spectatorNum = 0;
+			else if ( curclient->sess.sessionTeam == TEAM_SPECTATOR )
+				curclient->sess.spectatorNum++;
+		}
+	}
 }
 
 /*
@@ -634,9 +660,8 @@ void AddPowerDuelPlayers( void )
 			continue;
 		}
 
-		if ( !nextInLine || client->sess.spectatorTime < nextInLine->sess.spectatorTime ) {
+		if ( !nextInLine || client->sess.spectatorNum > nextInLine->sess.spectatorNum )
 			nextInLine = client;
-		}
 	}
 
 	if ( !nextInLine ) {
@@ -671,7 +696,7 @@ void RemovePowerDuelLosers(void)
 			if ((cl->ps.stats[STAT_HEALTH] <= 0 || cl->iAmALoser) &&
 				(cl->sess.sessionTeam != TEAM_SPECTATOR || cl->iAmALoser))
 			{ //he was dead or he was spectating as a loser
-                remClients[remNum] = cl->ps.clientNum;
+                remClients[remNum] = i;
 				remNum++;
 			}
 		}
@@ -889,10 +914,10 @@ int QDECL SortRanks( const void *a, const void *b ) {
 
 	// then spectators
 	if ( ca->sess.sessionTeam == TEAM_SPECTATOR && cb->sess.sessionTeam == TEAM_SPECTATOR ) {
-		if ( ca->sess.spectatorTime < cb->sess.spectatorTime ) {
+		if ( ca->sess.spectatorNum > cb->sess.spectatorNum ) {
 			return -1;
 		}
-		if ( ca->sess.spectatorTime > cb->sess.spectatorTime ) {
+		if ( ca->sess.spectatorNum < cb->sess.spectatorNum ) {
 			return 1;
 		}
 		return 0;
@@ -2662,11 +2687,13 @@ void CheckTeamLeader( int team ) {
 				break;
 			}
 		}
-		for ( i = 0 ; i < level.maxclients ; i++ ) {
-			if (level.clients[i].sess.sessionTeam != team)
-				continue;
-			level.clients[i].sess.teamLeader = qtrue;
-			break;
+		if ( i >= level.maxclients ) {
+			for ( i = 0 ; i < level.maxclients ; i++ ) {
+				if ( level.clients[i].sess.sessionTeam != team )
+					continue;
+				level.clients[i].sess.teamLeader = qtrue;
+				break;
+			}
 		}
 	}
 }

@@ -49,7 +49,7 @@ void G_WriteClientSessionData( gclient_t *client )
 
 	// Make sure there is no space on the last entry
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.sessionTeam ) );
-	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.spectatorTime ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.spectatorNum ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.spectatorState ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.spectatorClient ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.wins ) );
@@ -86,7 +86,7 @@ void G_ReadSessionData( gclient_t *client )
 
 	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %s %s",
 		&tempSessionTeam, //&client->sess.sessionTeam,
-		&client->sess.spectatorTime,
+		&client->sess.spectatorNum,
 		&tempSpectatorState, //&client->sess.spectatorState,
 		&client->sess.spectatorClient,
 		&client->sess.wins,
@@ -219,7 +219,7 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 	}
 
 	sess->spectatorState = SPECTATOR_FREE;
-	sess->spectatorTime = level.time;
+	AddTournamentQueue(client);
 
 	sess->siegeClass[0] = 0;
 
