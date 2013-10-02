@@ -494,7 +494,6 @@ spawn_t	spawns[] = {
 	{ "fx_snow",							SP_CreateSnow },
 	{ "fx_spacedust",						SP_CreateSpaceDust },
 	{ "gametype_item",						SP_gametype_item },
-	{ "item_botroam",						SP_item_botroam },
 	{ "info_camp",							SP_info_camp },
 	{ "info_jedimaster_start",				SP_info_jedimaster_start },
 	{ "info_notnull",						SP_info_notnull }, // use target_position instead
@@ -514,6 +513,7 @@ spawn_t	spawns[] = {
 	{ "info_siege_decomplete",				SP_info_siege_decomplete },
 	{ "info_siege_objective",				SP_info_siege_objective },
 	{ "info_siege_radaricon",				SP_info_siege_radaricon },
+	{ "item_botroam",						SP_item_botroam },
 	{ "light",								SP_light },
 	{ "misc_ammo_floor_unit",				SP_misc_ammo_floor_unit },
 	{ "misc_bsp",							SP_misc_bsp },
