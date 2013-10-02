@@ -180,12 +180,12 @@ field_t fields[] = {
 	{ "target5",				FOFS( target5 ),						F_STRING },
 	{ "target6",				FOFS( target6 ),						F_STRING },
 	{ "targetname",				FOFS( targetname ),						F_STRING },
+	{ "targetshadername",		FOFS( targetShaderName ),				F_STRING },
+	{ "targetshadernewname",	FOFS( targetShaderNewName ),			F_STRING },
 	{ "team",					FOFS( team ),							F_STRING },
 	{ "teamnodmg",				FOFS( teamnodmg ),						F_INT },
 	{ "teamowner",				FOFS( s.teamowner ),					F_INT },
 	{ "teamuser",				FOFS( alliedTeam ),						F_INT },
-	{ "targetshadername",		FOFS( targetShaderName ),				F_STRING },
-	{ "targetshadernewname",	FOFS( targetShaderNewName ),			F_STRING },
 	{ "usescript",				FOFS( behaviorSet[BSET_USE] ),			F_STRING },//name of script to run
 	{ "victoryscript",			FOFS( behaviorSet[BSET_VICTORY] ),		F_STRING },//name of script to run
 	{ "wait",					FOFS( wait ),							F_FLOAT },
