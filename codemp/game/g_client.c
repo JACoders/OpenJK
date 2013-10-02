@@ -3828,7 +3828,8 @@ void ClientSpawn(gentity_t *ent) {
 		ent->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;
 	}
 
-	// run the presend to set anything else
+	// run the presend to set anything else, follow spectators wait
+	// until all clients have been reconnected after map_restart
 	if ( ent->client->sess.spectatorState != SPECTATOR_FOLLOW )
 		ClientEndFrame( ent );
 
