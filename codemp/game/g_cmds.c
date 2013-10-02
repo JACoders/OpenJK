@@ -3317,7 +3317,7 @@ void ClientCommand( int clientNum ) {
 	}
 
 	else if ( (command->flags & CMD_NOINTERMISSION)
-		&& level.intermissiontime )
+		&& ( level.intermissionQueued || level.intermissiontime ) )
 	{
 		trap->SendServerCommand( clientNum, va( "print \"%s (%s)\n\"", G_GetStringEdString( "MP_SVGAME", "CANNOT_TASK_INTERMISSION" ), cmd ) );
 		return;
