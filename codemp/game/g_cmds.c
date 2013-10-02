@@ -1576,9 +1576,9 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 
 	if (locMsg)
 	{
-		trap->SendServerCommand( other-g_entities, va("%s \"%s\" \"%s\" \"%c\" \"%s\"", 
+		trap->SendServerCommand( other-g_entities, va("%s \"%s\" \"%s\" \"%c\" \"%s\" %i", 
 			mode == SAY_TEAM ? "ltchat" : "lchat",
-			name, locMsg, color, message));
+			name, locMsg, color, message, ent->s.number));
 	}
 	else
 	{
