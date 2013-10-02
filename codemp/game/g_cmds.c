@@ -896,11 +896,8 @@ void SetTeam( gentity_t *ent, char *s ) {
 
 	}
 	// they go to the end of the line for tournements
-	if ( team == TEAM_SPECTATOR ) {
-		if ( (level.gametype != GT_DUEL) || (oldTeam != TEAM_SPECTATOR) )	{//so you don't get dropped to the bottom of the queue for changing skins, etc.
-			client->sess.spectatorTime = level.time;
-		}
-	}
+	if ( team == TEAM_SPECTATOR && oldTeam != team )
+		AddTournamentQueue( client );
 
 	// clear votes if going to spectator (specs can't vote)
 	if ( team == TEAM_SPECTATOR )
@@ -908,7 +905,7 @@ void SetTeam( gentity_t *ent, char *s ) {
 	// also clear team votes if switching red/blue or going to spec
 	G_ClearTeamVote( ent, oldTeam );
 
-	client->sess.sessionTeam = team;
+	client->sess.sessionTeam = (team_t)team;
 	client->sess.spectatorState = specState;
 	client->sess.spectatorClient = specClient;
 

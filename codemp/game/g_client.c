@@ -1174,7 +1174,7 @@ void respawn( gentity_t *ent ) {
 		ent->client->sess.spectatorClient = 0;
 
 		ent->client->pers.teamState.state = TEAM_BEGIN;
-		ent->client->sess.spectatorTime = level.time;
+		AddTournamentQueue(ent->client);
 		ClientSpawn(ent);
 		ent->client->iAmALoser = qtrue;
 		return;
