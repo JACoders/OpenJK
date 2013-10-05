@@ -2269,7 +2269,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 		if ( clientid == -1 )
 			return;
 
-		if ( level.clients[i].sess.sessionTeam != team )
+		if ( level.clients[clientid].sess.sessionTeam != team )
 		{
 			trap->SendServerCommand( ent-g_entities, va( "print \"User %s is not on your team\n\"", arg2 ) );
 			return;
