@@ -2264,7 +2264,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 		if ( trap->Argc() == 2 )
 			clientid = ent->s.number;
 		else
-			ClientNumberFromString( ent, arg2 );
+			clientid = ClientNumberFromString( ent, arg2 );
 
 		if ( clientid == -1 )
 			return;
