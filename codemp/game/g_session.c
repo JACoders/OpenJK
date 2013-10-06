@@ -44,8 +44,6 @@ void G_WriteClientSessionData( gclient_t *client )
 		if (IP[i] == ' ')
 			IP[i] = 1;
 	}
-	if ( !IP[0] )
-		Q_strncpyz( IP, "none", sizeof( IP ) );
 
 	// Make sure there is no space on the last entry
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.sessionTeam ) );
