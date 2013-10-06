@@ -3224,6 +3224,7 @@ void SV_RestartGame( void ) {
 	gvm = VM_Restart( gvm );
 	SV_BindGame();
 	if ( !gvm ) {
+		svs.gameStarted = qfalse;
 		Com_Error( ERR_DROP, "VM_Restart on game failed" );
 		return;
 	}
