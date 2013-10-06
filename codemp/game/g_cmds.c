@@ -2106,7 +2106,11 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			trap->SendServerCommand( ent-g_entities, "print \"Usage: /callvote timelimit <time>.\n\"" );
 			return;
 		}
-		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %.3f", arg1, tl );
+		if ( Q_isintegral( tl ) )
+			Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, (int)tl );
+		else
+			Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %.3f", arg1, tl );
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
 	}
 	else if ( !Q_stricmp( arg1, "fraglimit" ) )
 	{
@@ -2117,6 +2121,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			return;
 		}
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, n );
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
 	}
 	else if ( !Q_stricmp( arg1, "capturelimit" ) )
 	{
@@ -2127,6 +2132,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			return;
 		}
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, n );
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
 	}
 	else if ( !Q_stricmp( arg1, "map_restart" ) )
 	{
@@ -2134,6 +2140,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		if ( trap->Argc() < 3 )
 			n = 5;
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, n );
+		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
 	}
 	else
 	{
