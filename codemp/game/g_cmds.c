@@ -181,7 +181,7 @@ int ClientNumberFromString( gentity_t *to, const char *s ) {
 		if ( cl->pers.connected != CON_CONNECTED )
 			continue;
 
-		if ( !Q_stricmp( cl->pers.netname_nocolor, s ) )
+		if ( !Q_stricmp( cl->pers.netname_nocolor, cleanInput ) )
 			return idnum;
 	}
 
