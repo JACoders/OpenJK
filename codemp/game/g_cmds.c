@@ -2285,6 +2285,7 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 		return;
 	}
 
+	Q_strncpyz( level.teamVoteStringClean[cs_offset], level.teamVoteString[cs_offset], sizeof( level.teamVoteStringClean[cs_offset] ) );
 	Q_strstrip( level.teamVoteStringClean[cs_offset], "\"\n\r", NULL );
 
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
