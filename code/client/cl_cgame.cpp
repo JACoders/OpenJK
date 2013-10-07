@@ -25,11 +25,6 @@ This file is part of Jedi Academy.
 
 #include "../RMG/RM_Headers.h"
 
-#ifdef VV_LIGHTING
-#include "../renderer/tr_lightmanager.h"
-#endif
-	   		
-
 #include "client.h"
 #include "vmachine.h"
 
@@ -1014,11 +1009,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		re.AddPolyToScene( args[1], args[2], (const polyVert_t *) VMA(3) );
 		return 0;
 	case CG_R_ADDLIGHTTOSCENE:
-#ifdef VV_LIGHTING
-		VVLightMan.RE_AddLightToScene ( (const float *) VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
-#else
 		re.AddLightToScene( (const float *) VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
-#endif
 		return 0;
 	case CG_R_RENDERSCENE:
 		re.RenderScene( (const refdef_t *) VMA(1) );
