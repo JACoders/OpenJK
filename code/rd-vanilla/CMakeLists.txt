@@ -105,7 +105,6 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/qgl.h"
 	"${SPDir}/rd-vanilla/qgl_linked.h"
 	"${SPDir}/rd-vanilla/ref_trin.def"
-	"${SPDir}/rd-vanilla/tr_animation.cpp"
 	"${SPDir}/rd-vanilla/tr_arioche.cpp"
 	"${SPDir}/rd-vanilla/tr_backend.cpp"
 	"${SPDir}/rd-vanilla/tr_bsp.cpp"
