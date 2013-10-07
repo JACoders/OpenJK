@@ -46,11 +46,11 @@ int			drawskyboxportal;
 
 /*
 ====================
-R_ToggleSmpFrame
+R_InitNextFrame
 
 ====================
 */
-void R_ToggleSmpFrame( void ) {
+void R_InitNextFrame( void ) {
 
 	backEndData->commands.used = 0;
 

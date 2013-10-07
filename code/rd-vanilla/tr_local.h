@@ -1595,7 +1595,7 @@ SCENE GENERATION
 ============================================================
 */
 
-void R_ToggleSmpFrame( void );
+void R_InitNextFrame( void );
 
 void RE_ClearScene( void );
 void RE_AddRefEntityToScene( const refEntity_t *ent );
@@ -1733,7 +1733,6 @@ RENDERER BACK END FUNCTIONS
 =============================================================
 */
 
-void RB_RenderThread( void );
 void RB_ExecuteRenderCommands( const void *data );
 
 /*
@@ -1838,8 +1837,7 @@ typedef enum {
 #define	MAX_POLYVERTS	( MAX_POLYS * 4 )
 
 // all of the information needed by the back end must be
-// contained in a backEndData_t.  left over from SMP duplications, 
-// could optimize to point directly at frontend data instead of copying?
+// contained in a backEndData_t.
 typedef struct {
 	drawSurf_t	drawSurfs[MAX_DRAWSURFS];
 #ifndef VV_LIGHTING

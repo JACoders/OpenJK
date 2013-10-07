@@ -493,7 +493,7 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec ) {
 
 	// use the other buffers next frame, because another CPU
 	// may still be rendering into the current ones
-	R_ToggleSmpFrame();
+	R_InitNextFrame();
 
 	if ( frontEndMsec ) {
 		*frontEndMsec = tr.frontEndMsec;
