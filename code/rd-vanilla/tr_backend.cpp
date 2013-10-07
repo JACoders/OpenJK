@@ -23,10 +23,6 @@ This file is part of Jedi Academy.
 
 #include "tr_local.h"
 
-#ifdef VV_LIGHTING
-#include "tr_lightmanager.h"
-#endif
-
 backEndData_t	*backEndData;
 backEndState_t	backEnd;
 
@@ -806,11 +802,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 				// set up the dynamic lighting if needed
 				if ( backEnd.currentEntity->needDlights ) {
-#ifdef VV_LIGHTING
-					VVLightMan.R_TransformDlights( &backEnd.ori );
-#else
 					R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
-#endif
 				}
 
 				if ( backEnd.currentEntity->e.renderfx & RF_NODEPTH ) {
@@ -825,11 +817,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 				backEnd.currentEntity = &tr.worldEntity;
 				backEnd.refdef.floatTime = originalTime;
 				backEnd.ori = backEnd.viewParms.world;
-#ifdef VV_LIGHTING
-				VVLightMan.R_TransformDlights( &backEnd.ori );
-#else
 				R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
-#endif
 			}
 
 			qglLoadMatrixf( backEnd.ori.modelMatrix );
@@ -896,11 +884,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			// set up the dynamic lighting if needed
 			if ( backEnd.currentEntity->needDlights )
 			{
-#ifdef VV_LIGHTING
-				VVLightMan.R_TransformDlights( &backEnd.ori );
-#else
 				R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
-#endif
 			}
 
 			qglLoadMatrixf( backEnd.ori.modelMatrix );

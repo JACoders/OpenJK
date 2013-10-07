@@ -20,14 +20,7 @@ This file is part of Jedi Academy.
 //
 #include "../server/exe_headers.h"
 
-
 #include "tr_local.h"
-
-#ifdef VV_LIGHTING
-#include "tr_lightmanager.h"
-#include "../win32/win_stencilshadow.h"
-#endif
-
 
 /*
 
