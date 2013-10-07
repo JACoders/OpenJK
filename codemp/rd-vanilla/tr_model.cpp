@@ -1023,7 +1023,7 @@ Ghoul2 Insert End
 	Q_strncpyz( mod->name, name, sizeof( mod->name ) );
 
 	// make sure the render thread is stopped
-	R_SyncRenderThread();
+	R_IssuePendingRenderCommands();
 
 	int iLODStart = 0;
 	if (strstr (name, ".md3")) {
@@ -1238,7 +1238,7 @@ Ghoul2 Insert End
 	Q_strncpyz( mod->name, name, sizeof( mod->name ) );
 
 	// make sure the render thread is stopped
-	R_SyncRenderThread();
+	R_IssuePendingRenderCommands();
 
 	int iLODStart = 0;
 	if (strstr (name, ".md3")) {
@@ -1597,7 +1597,7 @@ void RE_BeginRegistration( glconfig_t *glconfigOut ) {
 
 	*glconfigOut = glConfig;
 
-	R_SyncRenderThread();
+	R_IssuePendingRenderCommands();
 
 	tr.viewCluster = -1;		// force markleafs to regenerate
 
