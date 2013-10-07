@@ -1357,7 +1357,7 @@ void R_DebugGraphics( void ) {
 	}
 
 	// the render thread can't make callbacks to the main thread
-	R_SyncRenderThread();
+	R_IssuePendingRenderCommands();
 
 	GL_Bind( tr.whiteImage);
 	GL_Cull( CT_FRONT_SIDED );

@@ -1187,17 +1187,13 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	// rww - 9-13-01 [1-26-01-sof2]
 //	RB_RenderFlares();
-
-#ifdef __MACOS__
-	Sys_PumpEvents();		// crutch up the mac's limited buffer queue size
-#endif
 }
 
 
 /*
 ============================================================================
 
-RENDER BACK END THREAD FUNCTIONS
+RENDER BACK END FUNCTIONS
 
 ============================================================================
 */
@@ -1249,7 +1245,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	if ( !tr.registered ) {
 		return;
 	}
-	R_SyncRenderThread();
+	R_IssuePendingRenderCommands();
 
 	// we definately want to sync every frame for the cinematics
 	qglFinish();
@@ -1826,9 +1822,6 @@ const void	*RB_WorldEffects( const void *data )
 /*
 ====================
 RB_ExecuteRenderCommands
-
-This function will be called syncronously if running without
-smp extensions, or asyncronously by another thread.
 ====================
 */
 extern const void *R_DrawWireframeAutomap(const void *data); //tr_world.cpp
@@ -1873,7 +1866,7 @@ void RB_ExecuteRenderCommands( const void *data ) {
 			break;
 		case RC_END_OF_LIST:
 		default:
-			// stop rendering on this thread
+			// stop rendering
 			t2 = ri->Milliseconds()*ri->Cvar_VariableValue( "timescale" );
 			backEnd.pc.msec = t2 - t1;
 			return;

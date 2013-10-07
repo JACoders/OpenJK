@@ -165,7 +165,7 @@ static	void R_LoadLightmaps( lump_t *l, const char *psMapName, world_t &worldDat
 	buf = fileBase + l->fileofs;
 
 	// we are about to upload textures
-	R_SyncRenderThread();
+	R_IssuePendingRenderCommands();
 
 	// create all the lightmaps
 	tr.numLightmaps = len / (LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3);

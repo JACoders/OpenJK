@@ -4475,7 +4475,7 @@ static qhandle_t R_MergeShaders(const char *blendedName, qhandle_t a, qhandle_t 
 	shader_t	*work;
 	int			current, i;
 
-	R_SyncRenderThread();
+	R_IssuePendingRenderCommands();
 
 	// Set up default parameters
 	ClearGlobalShader();
