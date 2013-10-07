@@ -508,7 +508,7 @@ static void ProjectDlightTexture( void ) {
 	float	*texCoords;
 	byte	*colors;
 	byte	clipBits[SHADER_MAX_VERTEXES];
-	MAC_STATIC float	texCoordsArray[SHADER_MAX_VERTEXES][2];
+	float	texCoordsArray[SHADER_MAX_VERTEXES][2];
 	byte	colorArray[SHADER_MAX_VERTEXES][4];
 	unsigned	hitIndexes[SHADER_MAX_INDEXES];
 
@@ -657,9 +657,9 @@ static void ProjectDlightTexture2( void ) {
 	int		i, l;
 	vec3_t	origin;
 	byte	clipBits[SHADER_MAX_VERTEXES];
-	MAC_STATIC float	texCoordsArray[SHADER_MAX_VERTEXES][2];
-	MAC_STATIC float	oldTexCoordsArray[SHADER_MAX_VERTEXES][2];
-	MAC_STATIC float	vertCoordsArray[SHADER_MAX_VERTEXES][4];
+	float	texCoordsArray[SHADER_MAX_VERTEXES][2];
+	float	oldTexCoordsArray[SHADER_MAX_VERTEXES][2];
+	float	vertCoordsArray[SHADER_MAX_VERTEXES][4];
 	unsigned int		colorArray[SHADER_MAX_VERTEXES];
 	glIndex_t	hitIndexes[SHADER_MAX_INDEXES];
 	int		numIndexes;
@@ -978,7 +978,7 @@ static void ProjectDlightTexture( void ) {
 	float	*texCoords;
 	byte	*colors;
 	byte	clipBits[SHADER_MAX_VERTEXES];
-	MAC_STATIC float	texCoordsArray[SHADER_MAX_VERTEXES][2];
+	float	texCoordsArray[SHADER_MAX_VERTEXES][2];
 	byte	colorArray[SHADER_MAX_VERTEXES][4];
 	glIndex_t	hitIndexes[SHADER_MAX_INDEXES];
 	int		numIndexes;

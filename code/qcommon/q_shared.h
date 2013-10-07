@@ -134,8 +134,6 @@ This file is part of Jedi Academy.
 // Win64
 #if defined(_WIN64) || defined(__WIN64__)
 
-  #define	MAC_STATIC
-
   #define idx64
 
   #undef QDECL
@@ -207,8 +205,6 @@ This file is part of Jedi Academy.
 
 #if defined(MACOS_X)
 
-  #define MAC_STATIC
-
   #ifdef __ppc__
   #define CPUSTRING	"MacOSX-ppc"
   #elif defined __i386__
@@ -244,13 +240,9 @@ This file is part of Jedi Academy.
 
 #ifdef __MACOS__
 
-  #define	MAC_STATIC	static
-
   #define	CPUSTRING	"MacOS-PPC"
 
   #define	PATH_SEP ':'
-
-  void Sys_PumpEvents( void );
 
 #endif
 
@@ -261,8 +253,6 @@ This file is part of Jedi Academy.
 #ifdef __linux__
 
   #include <unistd.h>
-
-  #define	MAC_STATIC
 
   #ifdef __i386__
   #define	CPUSTRING	"linux-i386"
