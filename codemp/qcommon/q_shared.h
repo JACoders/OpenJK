@@ -125,10 +125,6 @@
 	#define idppc	0
 #endif
 
-// the mac compiler can't handle >32k of locals, so we
-// just waste space and make big arrays static...
-#define MAC_STATIC //RAZFIXME
-
 short ShortSwap( short l );
 int LongSwap( int l );
 float FloatSwap( const float *f );
