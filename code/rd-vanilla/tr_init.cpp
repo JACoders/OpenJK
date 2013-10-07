@@ -1365,7 +1365,7 @@ void R_Init( void ) {
 	R_Register();
 
 	backEndData = (backEndData_t *) Hunk_Alloc( sizeof( backEndData_t ), qtrue );
-	R_ToggleSmpFrame();	//r_smp
+	R_InitNextFrame();
 
 	const color4ub_t	color = {0xff, 0xff, 0xff, 0xff};
 	for(i=0;i<MAX_LIGHT_STYLES;i++)
