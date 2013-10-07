@@ -1380,32 +1380,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				}
 			}
 		}
-#ifdef VV_LIGHTING
-		//
-		// specularmap <name>
-		//
-		else if ( !Q_stricmp( token, "specularmap" ) )
-		{
-			token = COM_ParseExt( text, qfalse );
-			if ( !token[0] )
-			{
-				VID_Printf( PRINT_WARNING, "WARNING: missing parameter for 'specularmap' keyword in shader '%s'\n", shader.name );
-				return qfalse;
-			}
-
-			stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, !shader.noTC, GL_REPEAT );
-			if ( !stage->bundle[0].image )
-			{
-				VID_Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
-				return qfalse;
-			}
-
-			stage->isSpecular = qtrue;
-
-			shader.needsNormal = true;
-			shader.needsTangent = true;
-		}
-#endif // VV_LIGHTING
 		//
 		// clampmap <name>
 		//

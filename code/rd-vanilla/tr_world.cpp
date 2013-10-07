@@ -22,12 +22,6 @@ This file is part of Jedi Academy.
 
 #include "tr_local.h"
 
-#ifdef VV_LIGHTING
-#include "tr_lightmanager.h"
-#endif
-
-static const bool lookingForWorstLeaf = false;
-
 /*
 =================
 R_CullTriSurf
@@ -164,8 +158,6 @@ static qboolean	R_CullSurface( surfaceType_t *surface, shader_t *shader ) {
 	return qfalse;
 }
 
-
-#ifndef VV_LIGHTING
 static int R_DlightFace( srfSurfaceFace_t *face, int dlightBits ) {
 	float		d;
 	int			i;
@@ -190,9 +182,7 @@ static int R_DlightFace( srfSurfaceFace_t *face, int dlightBits ) {
 	face->dlightBits = dlightBits;
 	return dlightBits;
 }
-#endif // VV_LIGHTING
 
-#ifndef VV_LIGHTING
 static int R_DlightGrid( srfGridMesh_t *grid, int dlightBits ) {
 	int			i;
 	dlight_t	*dl;
@@ -220,10 +210,7 @@ static int R_DlightGrid( srfGridMesh_t *grid, int dlightBits ) {
 	grid->dlightBits = dlightBits;
 	return dlightBits;
 }
-#endif // VV_LIGHTING
 
-
-#ifndef VV_LIGHTING
 static int R_DlightTrisurf( srfTriangles_t *surf, int dlightBits ) {
 	// FIXME: more dlight culling to trisurfs...
 	surf->dlightBits = dlightBits;
@@ -256,7 +243,6 @@ static int R_DlightTrisurf( srfTriangles_t *surf, int dlightBits ) {
 	return dlightBits;
 #endif
 }
-#endif // VV_LIGHTING
 
 /*
 ====================
@@ -267,7 +253,6 @@ that is touched by one or more dlights, so try to throw out
 more dlights if possible.
 ====================
 */
-#ifndef VV_LIGHTING
 static int R_DlightSurface( msurface_t *surf, int dlightBits ) {
 	if ( *surf->data == SF_FACE ) {
 		dlightBits = R_DlightFace( (srfSurfaceFace_t *)surf->data, dlightBits );
@@ -285,20 +270,13 @@ static int R_DlightSurface( msurface_t *surf, int dlightBits ) {
 
 	return dlightBits;
 }
-#endif // VV_LIGHTING
-
-
 
 /*
 ======================
 R_AddWorldSurface
 ======================
 */
-#ifdef VV_LIGHTING
-void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noViewCount ) {
-#else
 static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noViewCount = qfalse ) {
-#endif
 	/*
 	if ( surf->viewCount == tr.viewCount ) {
 		return;		// already in this view
@@ -341,11 +319,7 @@ static void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noView
 
 	// check for dlighting
 	if ( dlightBits ) {
-#ifdef VV_LIGHTING
-		dlightBits = VVLightMan.R_DlightSurface( surf, dlightBits );
-#else
 		dlightBits = R_DlightSurface( surf, dlightBits );
-#endif
 		dlightBits = ( dlightBits != 0 );
 	}
 
@@ -382,18 +356,10 @@ void R_AddBrushModelSurfaces ( trRefEntity_t *ent ) {
 	
 	if(pModel->bspInstance)
 	{
-#ifdef VV_LIGHTING
-		VVLightMan.R_SetupEntityLighting(&tr.refdef, ent);
-#else
 		R_SetupEntityLighting(&tr.refdef, ent);
-#endif
 	}
 
-#ifdef VV_LIGHTING
-	VVLightMan.R_DlightBmodel( bmodel, qfalse );
-#else
 	R_DlightBmodel( bmodel, qfalse );
-#endif
 
 	for ( i = 0 ; i < bmodel->numSurfaces ; i++ ) {
 		R_AddWorldSurface( bmodel->firstSurface + i, tr.currentEntity->dlightBits, qtrue );
@@ -511,7 +477,6 @@ void RE_GetBModelVerts( int bmodelIndex, vec3_t *verts, vec3_t normal )
 R_RecursiveWorldNode
 ================
 */
-#ifndef VV_LIGHTING
 static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits ) {
 
 	do {
@@ -665,8 +630,6 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits )
 	}
 
 }
-#endif // VV_LIGHTING
-
 
 /*
 ===============

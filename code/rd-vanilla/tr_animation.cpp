@@ -6,10 +6,6 @@
 #include "tr_local.h"
 #include "matcomp.h"
 
-#ifdef VV_LIGHTING
-#include "tr_lightmanager.h"
-#endif
-
 extern int R_ComputeLOD( trRefEntity_t *ent );
 
 /*

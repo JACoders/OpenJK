@@ -1295,11 +1295,6 @@ void RB_SurfaceMesh(md3Surface_t *surface) {
 		backlerp = backEnd.currentEntity->e.backlerp;
 	}
 
-#ifdef VV_LIGHTING
-	if(backEnd.currentEntity->dlightBits)
-		tess.dlightBits = backEnd.currentEntity->dlightBits;
-#endif
-
 	RB_CHECKOVERFLOW( surface->numVerts, surface->numTriangles*3 );
 
 	LerpMeshVertexes (surface, backlerp);

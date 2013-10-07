@@ -94,10 +94,8 @@ typedef struct {
 	int			num_entities;
 	trRefEntity_t	*entities;
 
-#ifndef VV_LIGHTING
 	int			num_dlights;
 	struct dlight_s	*dlights;
-#endif
 
 	int			numPolys;
 	struct srfPoly_s	*polys;
@@ -376,10 +374,6 @@ typedef struct {
 typedef struct {
 	bool			active;
 	bool			isDetail;
-#ifdef VV_LIGHTING
-	byte			isSpecular;
-	byte			isBumpMap;
-#endif 
 	byte			index;						// index of stage
 	byte			lightmapStyle;
 	
@@ -1271,11 +1265,6 @@ int R_CullLocalPointAndRadius( const vec3_t pt, float radius );
 
 void R_RotateForEntity( const trRefEntity_t *ent, const viewParms_t *viewParms, orientationr_t *ori );
 
-#ifdef VV_LIGHTING
-void R_SetupEntityLightingGrid( trRefEntity_t *ent );
-void R_AddWorldSurface( msurface_t *surf, int dlightBits, qboolean noViewCount = qfalse );
-#endif
-
 /*
 ** GL wrapper/helper functions
 */
@@ -1840,9 +1829,7 @@ typedef enum {
 // contained in a backEndData_t.
 typedef struct {
 	drawSurf_t	drawSurfs[MAX_DRAWSURFS];
-#ifndef VV_LIGHTING
 	dlight_t	dlights[MAX_DLIGHTS];
-#endif
 	trRefEntity_t	entities[MAX_ENTITIES];
 	srfPoly_t	polys[MAX_POLYS];
 	polyVert_t	polyVerts[MAX_POLYVERTS];

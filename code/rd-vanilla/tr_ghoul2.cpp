@@ -41,10 +41,6 @@ This file is part of Jedi Academy.
 #include "../ghoul2/ghoul2_gore.h"
 #endif
 
-#ifdef VV_LIGHTING
-#include "tr_lightmanager.h"
-#endif
-
 #define	LL(x) x=LittleLong(x)
 
 #ifdef G2_PERFORMANCE_ANALYSIS
@@ -2285,9 +2281,7 @@ void RenderSurfaces(CRenderSurface &RS)
 		//using z-fail now so can do personal models -rww
 		if ( /*!RS.personalModel
 			&& */r_shadows->integer == 2 
-#ifndef VV_LIGHTING
 //			&& RS.fogNum == 0
-#endif
 			&& (RS.renderfx & RF_SHADOW_PLANE )
 			&& !(RS.renderfx & ( RF_NOSHADOW | RF_DEPTHHACK ) ) 
 			&& shader->sort == SS_OPAQUE ) 
@@ -2593,13 +2587,8 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
 	modelList[31]=548;
 
 	// set up lighting now that we know we aren't culled
-#ifdef VV_LIGHTING
-	if ( !personalModel ) {
-		VVLightMan.R_SetupEntityLighting( &tr.refdef, ent );
-#else
 	if ( !personalModel || r_shadows->integer > 1 ) {
 		R_SetupEntityLighting( &tr.refdef, ent );
-#endif
 	}
 
 	// see if we are in a fog volume
@@ -2895,13 +2884,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	mdxmSurface_t	*surface = surf->surfaceData;
 
 	CBoneCache *bones = surf->boneCache;
-
-
-#ifdef VV_LIGHTING
-	// Set any dynamic lighting needed
-	if(backEnd.currentEntity->dlightBits)
-		tess.dlightBits = backEnd.currentEntity->dlightBits;
-#endif
 
 	// first up, sanity check our numbers
 	RB_CheckOverflow( surface->numVerts, surface->numTriangles );
