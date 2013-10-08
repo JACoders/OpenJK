@@ -496,7 +496,7 @@ typedef struct shader_s {
 	struct	shader_s	*next;
 } shader_t;
 
-static ID_INLINE qboolean ShaderRequiresCPUDeforms(const shader_t * shader)
+static QINLINE qboolean ShaderRequiresCPUDeforms(const shader_t * shader)
 {
 	if(shader->numDeforms)
 	{

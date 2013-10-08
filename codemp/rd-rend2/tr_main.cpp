@@ -1790,7 +1790,7 @@ DRAWSURF SORTING
 R_Radix
 ===============
 */
-static ID_INLINE void R_Radix( int byte, int size, drawSurf_t *source, drawSurf_t *dest )
+static QINLINE void R_Radix( int byte, int size, drawSurf_t *source, drawSurf_t *dest )
 {
   int           count[ 256 ] = { 0 };
   int           index[ 256 ];
