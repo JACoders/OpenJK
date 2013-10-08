@@ -29,7 +29,7 @@ static qboolean IQM_CheckRange( iqmHeader_t *header, int offset,
 				int count,int size ) {
 	// return true if the range specified by offset, count and size
 	// doesn't fit into the file
-	return ( count <= 0 ||
+	return (qboolean)( count <= 0 ||
 		 offset < 0 ||
 		 offset > header->filesize ||
 		 offset + count * size < 0 ||
@@ -789,11 +789,11 @@ void R_AddIQMSurfaces( trRefEntity_t *ent ) {
 	shader_t		*shader;
 	skin_t			*skin;
 
-	data = tr.currentModel->modelData;
+	data = (iqmData_t *)tr.currentModel->modelData;
 	surface = data->surfaces;
 
 	// don't add third_person objects if not in a portal
-	personalModel = (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal;
+	personalModel = (qboolean)((ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal);
 
 	if ( ent->e.renderfx & RF_WRAP_FRAMES ) {
 		ent->e.frame %= data->num_frames;

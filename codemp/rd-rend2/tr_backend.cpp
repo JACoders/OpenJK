@@ -166,15 +166,15 @@ void GL_Cull( int cullType ) {
 		qboolean cullFront;
 		qglEnable( GL_CULL_FACE );
 
-		cullFront = (cullType == CT_FRONT_SIDED);
+		cullFront = (qboolean)(cullType == CT_FRONT_SIDED);
 		if ( backEnd.viewParms.isMirror )
 		{
-			cullFront = !cullFront;
+			cullFront = (qboolean)(!cullFront);
 		}
 
 		if ( backEnd.currentEntity && backEnd.currentEntity->mirrored )
 		{
-			cullFront = !cullFront;
+			cullFront = (qboolean)(!cullFront);
 		}
 
 		qglCullFace( cullFront ? GL_FRONT : GL_BACK );
@@ -1414,7 +1414,7 @@ RB_ColorMask
 */
 const void *RB_ColorMask(const void *data)
 {
-	const colorMaskCommand_t *cmd = data;
+	const colorMaskCommand_t *cmd = (colorMaskCommand_t *)data;
 
 	// finish any 2D drawing if needed
 	if(tess.numIndexes)
@@ -1423,10 +1423,10 @@ const void *RB_ColorMask(const void *data)
 	if (glRefConfig.framebufferObject)
 	{
 		// reverse color mask, so 0 0 0 0 is the default
-		backEnd.colorMask[0] = !cmd->rgba[0];
-		backEnd.colorMask[1] = !cmd->rgba[1];
-		backEnd.colorMask[2] = !cmd->rgba[2];
-		backEnd.colorMask[3] = !cmd->rgba[3];
+		backEnd.colorMask[0] = (qboolean)(!cmd->rgba[0]);
+		backEnd.colorMask[1] = (qboolean)(!cmd->rgba[1]);
+		backEnd.colorMask[2] = (qboolean)(!cmd->rgba[2]);
+		backEnd.colorMask[3] = (qboolean)(!cmd->rgba[3]);
 	}
 
 	qglColorMask(cmd->rgba[0], cmd->rgba[1], cmd->rgba[2], cmd->rgba[3]);
@@ -1442,7 +1442,7 @@ RB_ClearDepth
 */
 const void *RB_ClearDepth(const void *data)
 {
-	const clearDepthCommand_t *cmd = data;
+	const clearDepthCommand_t *cmd = (clearDepthCommand_t *)data;
 	
 	// finish any 2D drawing if needed
 	if(tess.numIndexes)
@@ -1506,7 +1506,7 @@ const void	*RB_SwapBuffers( const void *data ) {
 		long sum = 0;
 		unsigned char *stencilReadback;
 
-		stencilReadback = ri->Hunk_AllocateTempMemory( glConfig.vidWidth * glConfig.vidHeight );
+		stencilReadback = (unsigned char *)ri->Hunk_AllocateTempMemory( glConfig.vidWidth * glConfig.vidHeight );
 		qglReadPixels( 0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, stencilReadback );
 
 		for ( i = 0; i < glConfig.vidWidth * glConfig.vidHeight; i++ ) {
@@ -1575,7 +1575,7 @@ RB_CapShadowMap
 */
 const void *RB_CapShadowMap(const void *data)
 {
-	const capShadowmapCommand_t *cmd = data;
+	const capShadowmapCommand_t *cmd = (const capShadowmapCommand_t *)data;
 
 	// finish any 2D drawing if needed
 	if(tess.numIndexes)
@@ -1608,7 +1608,7 @@ RB_PostProcess
 */
 const void *RB_PostProcess(const void *data)
 {
-	const postProcessCommand_t *cmd = data;
+	const postProcessCommand_t *cmd = (const postProcessCommand_t *)data;
 	FBO_t *srcFbo;
 	vec4i_t srcBox, dstBox;
 	qboolean autoExposure;
@@ -1662,7 +1662,7 @@ const void *RB_PostProcess(const void *data)
 	{
 		if (r_hdr->integer && (r_toneMap->integer || r_forceToneMap->integer))
 		{
-			autoExposure = r_autoExposure->integer || r_forceAutoExposure->integer;
+			autoExposure = (qboolean)(r_autoExposure->integer || r_forceAutoExposure->integer);
 			RB_ToneMap(srcFbo, srcBox, tr.screenScratchFbo, dstBox, autoExposure);
 		}
 		else if (r_cameraExposure->value == 0.0f)

@@ -156,7 +156,7 @@ R_AddDrawSurfCmd
 void	R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	drawSurfsCommand_t	*cmd;
 
-	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
+	cmd = (drawSurfsCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
 	}
@@ -179,7 +179,7 @@ R_AddCapShadowmapCmd
 void	R_AddCapShadowmapCmd( int map, int cubeSide ) {
 	capShadowmapCommand_t	*cmd;
 
-	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
+	cmd = (capShadowmapCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
 	}
@@ -199,7 +199,7 @@ R_PostProcessingCmd
 void	R_AddPostProcessCmd( ) {
 	postProcessCommand_t	*cmd;
 
-	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
+	cmd = (postProcessCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
 	}
@@ -222,7 +222,7 @@ void	RE_SetColor( const float *rgba ) {
   if ( !tr.registered ) {
     return;
   }
-	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
+	cmd = (setColorCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
 	}
@@ -252,7 +252,7 @@ void RE_StretchPic ( float x, float y, float w, float h,
   if (!tr.registered) {
     return;
   }
-	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
+	cmd = (stretchPicCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
 	}
@@ -400,7 +400,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 	}
 
 	if (glConfig.stereoEnabled) {
-		if( !(cmd = R_GetCommandBuffer(sizeof(*cmd))) )
+		if( !(cmd = (drawBufferCommand_t *)R_GetCommandBuffer(sizeof(*cmd))) )
 			return;
 			
 		cmd->commandId = RC_DRAW_BUFFER;
@@ -421,10 +421,10 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 			{
 				// clear both, front and backbuffer.
 				qglColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-				backEnd.colorMask[0] = GL_FALSE;
-				backEnd.colorMask[1] = GL_FALSE;
-				backEnd.colorMask[2] = GL_FALSE;
-				backEnd.colorMask[3] = GL_FALSE;
+				backEnd.colorMask[0] = qfalse;
+				backEnd.colorMask[1] = qfalse;
+				backEnd.colorMask[2] = qfalse;
+				backEnd.colorMask[3] = qfalse;
 				qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 								
 				if (glRefConfig.framebufferObject)
@@ -461,22 +461,22 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 			
 			if(stereoFrame == STEREO_LEFT)
 			{
-				if( !(cmd = R_GetCommandBuffer(sizeof(*cmd))) )
+				if( !(cmd = (drawBufferCommand_t *)R_GetCommandBuffer(sizeof(*cmd))) )
 					return;
 				
-				if( !(colcmd = R_GetCommandBuffer(sizeof(*colcmd))) )
+				if( !(colcmd = (colorMaskCommand_t *)R_GetCommandBuffer(sizeof(*colcmd))) )
 					return;
 			}
 			else if(stereoFrame == STEREO_RIGHT)
 			{
 				clearDepthCommand_t *cldcmd;
 				
-				if( !(cldcmd = R_GetCommandBuffer(sizeof(*cldcmd))) )
+				if( !(cldcmd = (clearDepthCommand_t *)R_GetCommandBuffer(sizeof(*cldcmd))) )
 					return;
 
 				cldcmd->commandId = RC_CLEARDEPTH;
 
-				if( !(colcmd = R_GetCommandBuffer(sizeof(*colcmd))) )
+				if( !(colcmd = (colorMaskCommand_t *)R_GetCommandBuffer(sizeof(*colcmd))) )
 					return;
 			}
 			else
@@ -490,7 +490,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 			if(stereoFrame != STEREO_CENTER)
 				ri->Error( ERR_FATAL, "RE_BeginFrame: Stereo is disabled, but stereoFrame was %i", stereoFrame );
 
-			if( !(cmd = R_GetCommandBuffer(sizeof(*cmd))) )
+			if( !(cmd = (drawBufferCommand_t *)R_GetCommandBuffer(sizeof(*cmd))) )
 				return;
 		}
 
@@ -501,10 +501,10 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 			if(r_anaglyphMode->modified)
 			{
 				qglColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-				backEnd.colorMask[0] = 0;
-				backEnd.colorMask[1] = 0;
-				backEnd.colorMask[2] = 0;
-				backEnd.colorMask[3] = 0;
+				backEnd.colorMask[0] = qfalse;
+				backEnd.colorMask[1] = qfalse;
+				backEnd.colorMask[2] = qfalse;
+				backEnd.colorMask[3] = qfalse;
 				r_anaglyphMode->modified = qfalse;
 			}
 
@@ -532,7 +532,7 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec ) {
 	if ( !tr.registered ) {
 		return;
 	}
-	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
+	cmd = (swapBuffersCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
 	}
@@ -566,7 +566,7 @@ void RE_TakeVideoFrame( int width, int height,
 		return;
 	}
 
-	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
+	cmd = (videoFrameCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if( !cmd ) {
 		return;
 	}

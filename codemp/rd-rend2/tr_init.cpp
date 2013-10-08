@@ -435,9 +435,9 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 	padwidth = PAD(linelen, packAlign);
 	
 	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = ri->Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
+	buffer = (byte *)ri->Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
 	
-	bufstart = PADP((intptr_t) buffer + *offset, packAlign);
+	bufstart = (byte*)(PADP((intptr_t) buffer + *offset, packAlign));
 	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
 	
 	*offset = bufstart - buffer;
@@ -561,7 +561,7 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *name, qboolean
 	static char	fileName[MAX_OSPATH]; // bad things if two screenshots per frame?
 	screenshotCommand_t	*cmd;
 
-	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
+	cmd = (screenshotCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
 	if ( !cmd ) {
 		return;
 	}
@@ -651,7 +651,7 @@ void R_LevelShot( void ) {
 	allsource = RB_ReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, &offset, &padlen);
 	source = allsource + offset;
 
-	buffer = ri->Hunk_AllocateTempMemory(128 * 128*3 + 18);
+	buffer = (byte *)ri->Hunk_AllocateTempMemory(128 * 128*3 + 18);
 	Com_Memset (buffer, 0, 18);
 	buffer[2] = 2;		// uncompressed type
 	buffer[12] = 128;
@@ -843,7 +843,7 @@ const void *RB_TakeVideoFrameCmd( const void *data )
 	avipadwidth = PAD(linelen, AVI_LINE_PADDING);
 	avipadlen = avipadwidth - linelen;
 
-	cBuf = PADP(cmd->captureBuffer, packAlign);
+	cBuf = (byte*)(PADP(cmd->captureBuffer, packAlign));
 		
 	qglReadPixels(0, 0, cmd->width, cmd->height, GL_RGB,
 		GL_UNSIGNED_BYTE, cBuf);
@@ -1404,7 +1404,7 @@ void R_Init( void ) {
 	if (max_polyverts < MAX_POLYVERTS)
 		max_polyverts = MAX_POLYVERTS;
 
-	ptr = ri->Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
+	ptr = (byte*)ri->Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
 	backEndData = (backEndData_t *) ptr;
 	backEndData->polys = (srfPoly_t *) ((char *) ptr + sizeof( *backEndData ));
 	backEndData->polyVerts = (polyVert_t *) ((char *) ptr + sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys);
@@ -1516,7 +1516,7 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 
 	static refexport_t	re;
 
-	ri = *rimp;
+	ri = rimp;
 
 	Com_Memset( &re, 0, sizeof( re ) );
 

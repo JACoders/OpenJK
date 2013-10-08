@@ -226,7 +226,7 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 	backEndData->entities[r_numentities].lightingCalculated = qfalse;
 
 	CrossProduct(ent->axis[0], ent->axis[1], cross);
-	backEndData->entities[r_numentities].mirrored = (DotProduct(ent->axis[2], cross) < 0.f);
+	backEndData->entities[r_numentities].mirrored = (qboolean)(DotProduct(ent->axis[2], cross) < 0.f);
 
 	r_numentities++;
 }

@@ -1289,7 +1289,7 @@ static void R_MipMap2( byte *in, int inWidth, int inHeight ) {
 
 	outWidth = inWidth >> 1;
 	outHeight = inHeight >> 1;
-	temp = ri->Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
+	temp = (unsigned int *)ri->Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
 
 	inWidthMask = inWidth - 1;
 	inHeightMask = inHeight - 1;
@@ -1336,7 +1336,7 @@ static void R_MipMapsRGB( byte *in, int inWidth, int inHeight)
 
 	outWidth = inWidth >> 1;
 	outHeight = inHeight >> 1;
-	temp = ri->Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
+	temp = (byte *)ri->Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
 
 	for ( i = 0 ; i < outHeight ; i++ ) {
 		byte *outbyte = temp + (  i          * outWidth ) * 4;
@@ -1573,9 +1573,9 @@ static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_he
 	int height =        *inout_height;
 	int scaled_width;
 	int scaled_height;
-	qboolean picmip = flags & IMGFLAG_PICMIP;
-	qboolean mipmap = flags & IMGFLAG_MIPMAP;
-	qboolean clampToEdge = flags & IMGFLAG_CLAMPTOEDGE;
+	qboolean picmip = (qboolean)(flags & IMGFLAG_PICMIP);
+	qboolean mipmap = (qboolean)(flags & IMGFLAG_MIPMAP);
+	qboolean clampToEdge = (qboolean)(flags & IMGFLAG_CLAMPTOEDGE);
 
 	//
 	// convert to exact power of 2 sizes

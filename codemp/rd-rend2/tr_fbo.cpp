@@ -125,7 +125,7 @@ FBO_t          *FBO_Create(const char *name, int width, int height)
 		ri->Error(ERR_DROP, "FBO_Create: MAX_FBOS hit");
 	}
 
-	fbo = tr.fbos[tr.numFBOs] = ri->Hunk_Alloc(sizeof(*fbo), h_low);
+	fbo = tr.fbos[tr.numFBOs] = (FBO_t *)ri->Hunk_Alloc(sizeof(*fbo), h_low);
 	Q_strncpyz(fbo->name, name, sizeof(fbo->name));
 	fbo->index = tr.numFBOs++;
 	fbo->width = width;
@@ -188,7 +188,7 @@ void FBO_CreateBuffer(FBO_t *fbo, int format, int index, int multisample)
 			return;
 	}
 
-	absent = *pRenderBuffer == 0;
+	absent = (qboolean)(*pRenderBuffer == 0);
 	if (absent)
 		qglGenRenderbuffersEXT(1, pRenderBuffer);
 

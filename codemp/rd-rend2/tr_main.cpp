@@ -2186,7 +2186,7 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 		shadowParms.fovX = 90;
 		shadowParms.fovY = 90;
 
-		shadowParms.flags = VPF_SHADOWMAP | VPF_DEPTHSHADOW;
+		shadowParms.flags = (viewParmFlags_t)(VPF_SHADOWMAP | VPF_DEPTHSHADOW);
 		shadowParms.zFar = tr.refdef.dlights[i].radius;
 
 		VectorCopy( tr.refdef.dlights[i].origin, shadowParms.or.origin );
@@ -2302,7 +2302,7 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 				case MOD_IQM:
 				{
 					// FIXME: never actually tested this
-					iqmData_t *data = model->modelData;
+					iqmData_t *data = (iqmData_t *)model->modelData;
 					vec3_t diag;
 					float *framebounds;
 
@@ -2490,7 +2490,7 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 		if (glRefConfig.framebufferObject)
 			shadowParms.targetFbo = tr.pshadowFbos[i];
 
-		shadowParms.flags = VPF_SHADOWMAP | VPF_DEPTHSHADOW;
+		shadowParms.flags = (viewParmFlags_t)(VPF_SHADOWMAP | VPF_DEPTHSHADOW);
 		shadowParms.zFar = shadow->lightRadius;
 
 		VectorCopy(shadow->lightOrigin, shadowParms.or.origin);
@@ -2835,7 +2835,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 		if (glRefConfig.framebufferObject)
 			shadowParms.targetFbo = tr.sunShadowFbo[level];
 
-		shadowParms.flags = VPF_DEPTHSHADOW | VPF_DEPTHCLAMP | VPF_ORTHOGRAPHIC;
+		shadowParms.flags = (viewParmFlags_t)(VPF_DEPTHSHADOW | VPF_DEPTHCLAMP | VPF_ORTHOGRAPHIC);
 		shadowParms.zFar = lightviewBounds[1][0];
 
 		VectorCopy(lightOrigin, shadowParms.or.origin);
