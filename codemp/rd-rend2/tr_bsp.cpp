@@ -233,7 +233,7 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 		tr.worldDeluxeMapping = qtrue;
 		for( i = 0, surf = (dsurface_t *)(fileBase + surfs->fileofs);
 			i < surfs->filelen / sizeof(dsurface_t); i++, surf++ ) {
-			int lightmapNum = LittleLong( surf->lightmapNum );
+			int lightmapNum = LittleLong( surf->lightmapNum[0] );
 
 			if ( lightmapNum >= 0 && (lightmapNum & 1) != 0 ) {
 				tr.worldDeluxeMapping = qfalse;
@@ -669,7 +669,7 @@ static void ParseFace( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors, 
 	int			numVerts, numTriangles, badTriangles;
 	int realLightmapNum;
 
-	realLightmapNum = LittleLong( ds->lightmapNum );
+	realLightmapNum = LittleLong( ds->lightmapNum[0] );
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
@@ -718,8 +718,8 @@ static void ParseFace( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors, 
 			cv->verts[i].st[j] = LittleFloat(verts[i].st[j]);
 			//cv->verts[i].lightmap[j] = LittleFloat(verts[i].lightmap[j]);
 		}
-		cv->verts[i].lightmap[0] = FatPackU(LittleFloat(verts[i].lightmap[0]), realLightmapNum);
-		cv->verts[i].lightmap[1] = FatPackV(LittleFloat(verts[i].lightmap[1]), realLightmapNum);
+		cv->verts[i].lightmap[0] = FatPackU(LittleFloat(verts[i].lightmap[0][0]), realLightmapNum);
+		cv->verts[i].lightmap[1] = FatPackV(LittleFloat(verts[i].lightmap[0][1]), realLightmapNum);
 
 		if (hdrVertColors)
 		{
@@ -732,19 +732,19 @@ static void ParseFace( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors, 
 			//hack: convert LDR vertex colors to HDR
 			if (r_hdr->integer)
 			{
-				color[0] = verts[i].color[0] + 1.0f;
-				color[1] = verts[i].color[1] + 1.0f;
-				color[2] = verts[i].color[2] + 1.0f;
+				color[0] = verts[i].color[0][0] + 1.0f;
+				color[1] = verts[i].color[0][1] + 1.0f;
+				color[2] = verts[i].color[0][2] + 1.0f;
 			}
 			else
 			{
-				color[0] = verts[i].color[0];
-				color[1] = verts[i].color[1];
-				color[2] = verts[i].color[2];
+				color[0] = verts[i].color[0][0];
+				color[1] = verts[i].color[0][1];
+				color[2] = verts[i].color[0][2];
 			}
 
 		}
-		color[3] = verts[i].color[3] / 255.0f;
+		color[3] = verts[i].color[0][3] / 255.0f;
 
 		R_ColorShiftLightingFloats( color, cv->verts[i].vertexColors, 1.0f / 255.0f );
 	}
@@ -821,7 +821,7 @@ static void ParseMesh ( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors,
 	static surfaceType_t	skipData = SF_SKIP;
 	int realLightmapNum;
 
-	realLightmapNum = LittleLong( ds->lightmapNum );
+	realLightmapNum = LittleLong( ds->lightmapNum[0] );
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
@@ -862,8 +862,8 @@ static void ParseMesh ( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors,
 			points[i].st[j] = LittleFloat(verts[i].st[j]);
 			//points[i].lightmap[j] = LittleFloat(verts[i].lightmap[j]);
 		}
-		points[i].lightmap[0] = FatPackU(LittleFloat(verts[i].lightmap[0]), realLightmapNum);
-		points[i].lightmap[1] = FatPackV(LittleFloat(verts[i].lightmap[1]), realLightmapNum);
+		points[i].lightmap[0] = FatPackU(LittleFloat(verts[i].lightmap[0][0]), realLightmapNum);
+		points[i].lightmap[1] = FatPackV(LittleFloat(verts[i].lightmap[0][1]), realLightmapNum);
 
 		if (hdrVertColors)
 		{
@@ -876,18 +876,18 @@ static void ParseMesh ( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors,
 			//hack: convert LDR vertex colors to HDR
 			if (r_hdr->integer)
 			{
-				color[0] = verts[i].color[0] + 1.0f;
-				color[1] = verts[i].color[1] + 1.0f;
-				color[2] = verts[i].color[2] + 1.0f;
+				color[0] = verts[i].color[0][0] + 1.0f;
+				color[1] = verts[i].color[0][1] + 1.0f;
+				color[2] = verts[i].color[0][2] + 1.0f;
 			}
 			else
 			{
-				color[0] = verts[i].color[0];
-				color[1] = verts[i].color[1];
-				color[2] = verts[i].color[2];
+				color[0] = verts[i].color[0][0];
+				color[1] = verts[i].color[0][1];
+				color[2] = verts[i].color[0][2];
 			}
 		}
-		color[3] = verts[i].color[3] / 255.0f;
+		color[3] = verts[i].color[0][3] / 255.0f;
 
 		R_ColorShiftLightingFloats( color, points[i].vertexColors, 1.0f / 255.0f );
 	}
@@ -963,7 +963,7 @@ static void ParseTriSurf( dsurface_t *ds, drawVert_t *verts, float *hdrVertColor
 		for(j = 0; j < 2; j++)
 		{
 			cv->verts[i].st[j] = LittleFloat(verts[i].st[j]);
-			cv->verts[i].lightmap[j] = LittleFloat(verts[i].lightmap[j]);
+			cv->verts[i].lightmap[j] = LittleFloat(verts[i].lightmap[0][j]);
 		}
 
 		if (hdrVertColors)
@@ -977,18 +977,18 @@ static void ParseTriSurf( dsurface_t *ds, drawVert_t *verts, float *hdrVertColor
 			//hack: convert LDR vertex colors to HDR
 			if (r_hdr->integer)
 			{
-				color[0] = verts[i].color[0] + 1.0f;
-				color[1] = verts[i].color[1] + 1.0f;
-				color[2] = verts[i].color[2] + 1.0f;
+				color[0] = verts[i].color[0][0] + 1.0f;
+				color[1] = verts[i].color[0][1] + 1.0f;
+				color[2] = verts[i].color[0][2] + 1.0f;
 			}
 			else
 			{
-				color[0] = verts[i].color[0];
-				color[1] = verts[i].color[1];
-				color[2] = verts[i].color[2];
+				color[0] = verts[i].color[0][0];
+				color[1] = verts[i].color[0][1];
+				color[2] = verts[i].color[0][2];
 			}
 		}
-		color[3] = verts[i].color[3] / 255.0f;
+		color[3] = verts[i].color[0][3] / 255.0f;
 
 		R_ColorShiftLightingFloats( color, cv->verts[i].vertexColors, 1.0f / 255.0f );
 	}
