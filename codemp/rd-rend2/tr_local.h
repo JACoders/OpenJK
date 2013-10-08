@@ -62,6 +62,206 @@ typedef unsigned int glIndex_t;
 
 #define USE_VERT_TANGENT_SPACE
 
+/*
+=====================================================
+
+Renderer-side Cvars
+In Q3, these are defined in tr_common.h, which isn't very logical really
+In JA, we define these in the tr_local.h, which is much more logical
+
+=====================================================
+*/
+
+extern cvar_t	*r_flareSize;
+extern cvar_t	*r_flareFade;
+extern cvar_t	*r_flareCoeff;
+
+extern cvar_t	*r_railWidth;
+extern cvar_t	*r_railCoreWidth;
+extern cvar_t	*r_railSegmentLength;
+
+extern cvar_t	*r_verbose;
+extern cvar_t	*r_ignore;
+
+extern cvar_t	*r_detailTextures;
+
+extern cvar_t	*r_znear;
+extern cvar_t	*r_zproj;
+extern cvar_t	*r_stereoSeparation;
+
+extern cvar_t	*r_skipBackEnd;
+
+extern cvar_t	*r_stereoEnabled;
+extern cvar_t	*r_anaglyphMode;
+
+extern cvar_t	*r_greyscale;
+
+extern cvar_t	*r_ignorehwgamma;
+extern cvar_t	*r_measureOverdraw;
+
+extern cvar_t	*r_inGameVideo;
+extern cvar_t	*r_fastsky;
+extern cvar_t	*r_drawSun;
+extern cvar_t	*r_dynamiclight;
+extern cvar_t	*r_dlightBacks;
+
+extern cvar_t	*r_lodbias;
+extern cvar_t	*r_lodscale;
+
+extern cvar_t	*r_norefresh;
+extern cvar_t	*r_drawentities;
+extern cvar_t	*r_drawworld;
+extern cvar_t	*r_speeds;
+extern cvar_t	*r_fullbright;
+extern cvar_t	*r_novis;
+extern cvar_t	*r_nocull;
+extern cvar_t	*r_facePlaneCull;
+extern cvar_t	*r_showcluster;
+extern cvar_t	*r_nocurves;
+
+extern cvar_t	*r_allowExtensions;
+
+extern cvar_t	*r_ext_compressed_textures;
+extern cvar_t	*r_ext_multitexture;
+extern cvar_t	*r_ext_compiled_vertex_array;
+extern cvar_t	*r_ext_texture_env_add;
+extern cvar_t	*r_ext_texture_filter_anisotropic;
+extern cvar_t	*r_ext_max_anisotropy;
+
+extern cvar_t  *r_ext_draw_range_elements;
+extern cvar_t  *r_ext_multi_draw_arrays;
+extern cvar_t  *r_ext_framebuffer_object;
+extern cvar_t  *r_ext_texture_float;
+extern cvar_t  *r_arb_half_float_pixel;
+extern cvar_t  *r_ext_framebuffer_multisample;
+
+extern cvar_t  *r_mergeMultidraws;
+extern cvar_t  *r_mergeLeafSurfaces;
+
+extern cvar_t  *r_cameraExposure;
+
+extern cvar_t  *r_softOverbright;
+
+extern cvar_t  *r_hdr;
+extern cvar_t  *r_postProcess;
+
+extern cvar_t  *r_toneMap;
+extern cvar_t  *r_forceToneMap;
+extern cvar_t  *r_forceToneMapMin;
+extern cvar_t  *r_forceToneMapAvg;
+extern cvar_t  *r_forceToneMapMax;
+
+extern cvar_t  *r_autoExposure;
+extern cvar_t  *r_forceAutoExposure;
+extern cvar_t  *r_forceAutoExposureMin;
+extern cvar_t  *r_forceAutoExposureMax;
+
+extern cvar_t  *r_srgb;
+
+extern cvar_t  *r_depthPrepass;
+extern cvar_t  *r_ssao;
+
+extern cvar_t  *r_normalMapping;
+extern cvar_t  *r_specularMapping;
+extern cvar_t  *r_deluxeMapping;
+extern cvar_t  *r_parallaxMapping;
+extern cvar_t  *r_normalAmbient;
+extern cvar_t  *r_recalcMD3Normals;
+extern cvar_t  *r_mergeLightmaps;
+extern cvar_t  *r_dlightMode;
+extern cvar_t  *r_pshadowDist;
+extern cvar_t  *r_imageUpsample;
+extern cvar_t  *r_imageUpsampleMaxSize;
+extern cvar_t  *r_imageUpsampleType;
+extern cvar_t  *r_genNormalMaps;
+extern cvar_t  *r_forceSun;
+extern cvar_t  *r_forceSunMapLightScale;
+extern cvar_t  *r_forceSunLightScale;
+extern cvar_t  *r_forceSunAmbientScale;
+extern cvar_t  *r_sunlightMode;
+extern cvar_t  *r_drawSunRays;
+extern cvar_t  *r_sunShadows;
+extern cvar_t  *r_shadowFilter;
+extern cvar_t  *r_shadowMapSize;
+extern cvar_t  *r_shadowCascadeZNear;
+extern cvar_t  *r_shadowCascadeZFar;
+extern cvar_t  *r_shadowCascadeZBias;
+
+extern cvar_t	*r_ignoreGLErrors;
+extern cvar_t	*r_logFile;
+
+extern cvar_t	*r_stencilbits;
+extern cvar_t	*r_depthbits;
+extern cvar_t	*r_colorbits;
+extern cvar_t	*r_texturebits;
+extern cvar_t  *r_ext_multisample;
+
+extern cvar_t	*r_drawBuffer;
+extern cvar_t	*r_lightmap;
+extern cvar_t	*r_vertexLight;
+extern cvar_t	*r_uiFullScreen;
+extern cvar_t	*r_shadows;
+extern cvar_t	*r_flares;
+extern cvar_t	*r_mode;
+extern cvar_t	*r_nobind;
+extern cvar_t	*r_singleShader;
+extern cvar_t	*r_roundImagesDown;
+extern cvar_t	*r_colorMipLevels;
+extern cvar_t	*r_picmip;
+extern cvar_t	*r_showtris;
+extern cvar_t	*r_showsky;
+extern cvar_t	*r_shownormals;
+extern cvar_t	*r_finish;
+extern cvar_t	*r_clear;
+extern cvar_t	*r_swapInterval;
+extern cvar_t	*r_textureMode;
+extern cvar_t	*r_offsetFactor;
+extern cvar_t	*r_offsetUnits;
+extern cvar_t	*r_gamma;
+extern cvar_t	*r_intensity;
+extern cvar_t	*r_lockpvs;
+extern cvar_t	*r_noportals;
+extern cvar_t	*r_portalOnly;
+
+extern cvar_t	*r_subdivisions;
+extern cvar_t	*r_lodCurveError;
+
+extern cvar_t	*r_fullscreen;
+extern cvar_t  *r_noborder;
+
+extern cvar_t	*r_customwidth;
+extern cvar_t	*r_customheight;
+extern cvar_t	*r_customPixelAspect;
+
+extern cvar_t	*r_overBrightBits;
+extern cvar_t	*r_mapOverBrightBits;
+
+extern cvar_t	*r_debugSurface;
+extern cvar_t	*r_simpleMipMaps;
+
+extern cvar_t	*r_showImages;
+
+extern cvar_t	*r_ambientScale;
+extern cvar_t	*r_directedScale;
+extern cvar_t	*r_debugLight;
+extern cvar_t	*r_debugSort;
+extern cvar_t	*r_printShaders;
+extern cvar_t	*r_saveFontData;
+
+extern cvar_t	*r_marksOnTriangleMeshes;
+
+extern cvar_t	*r_aviMotionJpegQuality;
+extern cvar_t	*r_screenshotJpegQuality;
+
+extern cvar_t	*r_maxpolys;
+extern int		max_polys;
+extern cvar_t	*r_maxpolyverts;
+extern int		max_polyverts;
+
+/*
+End Cvars
+*/
+
 typedef enum
 {
 	IMGTYPE_COLORALPHA, // for color, lightmap, diffuse, and specular
