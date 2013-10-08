@@ -204,7 +204,7 @@ int R_ComputeLOD( trRefEntity_t *ent ) {
 
 		if ( ( projectedRadius = ProjectRadius( radius, ent->e.origin ) ) != 0 )
 		{
-			lodscale = r_lodscale->value;
+			lodscale = (r_lodscale->value+r_autolodscalevalue->integer);
 			if (lodscale > 20) lodscale = 20;
 			flod = 1.0f - projectedRadius * lodscale;
 		}

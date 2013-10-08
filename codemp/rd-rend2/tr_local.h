@@ -103,6 +103,7 @@ extern cvar_t	*r_dlightBacks;
 
 extern cvar_t	*r_lodbias;
 extern cvar_t	*r_lodscale;
+extern cvar_t	*r_autolodscalevalue;
 
 extern cvar_t	*r_norefresh;
 extern cvar_t	*r_drawentities;
