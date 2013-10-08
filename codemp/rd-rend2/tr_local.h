@@ -256,6 +256,40 @@ extern cvar_t	*r_maxpolyverts;
 extern int		max_polyverts;
 
 /*
+Ghoul2 Insert Start
+*/
+#ifdef _DEBUG
+extern cvar_t	*r_noPrecacheGLA;
+#endif
+
+extern cvar_t	*r_noServerGhoul2;
+extern cvar_t	*r_Ghoul2AnimSmooth;
+extern cvar_t	*r_Ghoul2UnSqashAfterSmooth;
+//extern cvar_t	*r_Ghoul2UnSqash;
+//extern cvar_t	*r_Ghoul2TimeBase=0; from single player
+//extern cvar_t	*r_Ghoul2NoLerp;
+//extern cvar_t	*r_Ghoul2NoBlend;
+//extern cvar_t	*r_Ghoul2BlendMultiplier=0;
+
+extern cvar_t	*broadsword;
+extern cvar_t	*broadsword_kickbones;
+extern cvar_t	*broadsword_kickorigin;
+extern cvar_t	*broadsword_playflop;
+extern cvar_t	*broadsword_dontstopanim;
+extern cvar_t	*broadsword_waitforshot;
+extern cvar_t	*broadsword_smallbbox;
+extern cvar_t	*broadsword_extra1;
+extern cvar_t	*broadsword_extra2;
+
+extern cvar_t	*broadsword_effcorr;
+extern cvar_t	*broadsword_ragtobase;
+extern cvar_t	*broadsword_dircap;
+
+/*
+Ghoul2 Insert End
+*/
+
+/*
 End Cvars
 */
 

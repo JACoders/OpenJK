@@ -211,6 +211,40 @@ cvar_t	*r_debugSort;
 cvar_t	*r_printShaders;
 cvar_t	*r_saveFontData;
 
+/*
+Ghoul2 Insert Start
+*/
+#ifdef _DEBUG
+cvar_t	*r_noPrecacheGLA;
+#endif
+
+cvar_t	*r_noServerGhoul2;
+cvar_t	*r_Ghoul2AnimSmooth=0;
+cvar_t	*r_Ghoul2UnSqashAfterSmooth=0;
+//cvar_t	*r_Ghoul2UnSqash;
+//cvar_t	*r_Ghoul2TimeBase=0; from single player
+//cvar_t	*r_Ghoul2NoLerp;
+//cvar_t	*r_Ghoul2NoBlend;
+//cvar_t	*r_Ghoul2BlendMultiplier=0;
+
+cvar_t	*broadsword=0;
+cvar_t	*broadsword_kickbones=0;
+cvar_t	*broadsword_kickorigin=0;
+cvar_t	*broadsword_playflop=0;
+cvar_t	*broadsword_dontstopanim=0;
+cvar_t	*broadsword_waitforshot=0;
+cvar_t	*broadsword_smallbbox=0;
+cvar_t	*broadsword_extra1=0;
+cvar_t	*broadsword_extra2=0;
+
+cvar_t	*broadsword_effcorr=0;
+cvar_t	*broadsword_ragtobase=0;
+cvar_t	*broadsword_dircap=0;
+
+/*
+Ghoul2 Insert End
+*/
+
 cvar_t	*r_marksOnTriangleMeshes;
 
 cvar_t	*r_aviMotionJpegQuality;
@@ -1293,6 +1327,31 @@ void R_Register( void )
 
 	r_maxpolys = ri->Cvar_Get( "r_maxpolys", va("%d", MAX_POLYS), 0);
 	r_maxpolyverts = ri->Cvar_Get( "r_maxpolyverts", va("%d", MAX_POLYVERTS), 0);
+
+/*
+Ghoul2 Insert Start
+*/
+#ifdef _DEBUG
+	r_noPrecacheGLA						= ri->Cvar_Get( "r_noPrecacheGLA",					"0",						CVAR_CHEAT );
+#endif
+	r_noServerGhoul2					= ri->Cvar_Get( "r_noserverghoul2",					"0",						CVAR_CHEAT );
+	r_Ghoul2AnimSmooth					= ri->Cvar_Get( "r_ghoul2animsmooth",				"0.3",						CVAR_NONE );
+	r_Ghoul2UnSqashAfterSmooth			= ri->Cvar_Get( "r_ghoul2unsqashaftersmooth",		"1",						CVAR_NONE );
+	broadsword							= ri->Cvar_Get( "broadsword",						"0",						CVAR_NONE );
+	broadsword_kickbones				= ri->Cvar_Get( "broadsword_kickbones",				"1",						CVAR_NONE );
+	broadsword_kickorigin				= ri->Cvar_Get( "broadsword_kickorigin",			"1",						CVAR_NONE );
+	broadsword_dontstopanim				= ri->Cvar_Get( "broadsword_dontstopanim",			"0",						CVAR_NONE );
+	broadsword_waitforshot				= ri->Cvar_Get( "broadsword_waitforshot",			"0",						CVAR_NONE );
+	broadsword_playflop					= ri->Cvar_Get( "broadsword_playflop",				"1",						CVAR_NONE );
+	broadsword_smallbbox				= ri->Cvar_Get( "broadsword_smallbbox",				"0",						CVAR_NONE );
+	broadsword_extra1					= ri->Cvar_Get( "broadsword_extra1",				"0",						CVAR_NONE );
+	broadsword_extra2					= ri->Cvar_Get( "broadsword_extra2",				"0",						CVAR_NONE );
+	broadsword_effcorr					= ri->Cvar_Get( "broadsword_effcorr",				"1",						CVAR_NONE );
+	broadsword_ragtobase				= ri->Cvar_Get( "broadsword_ragtobase",				"2",						CVAR_NONE );
+	broadsword_dircap					= ri->Cvar_Get( "broadsword_dircap",				"64",						CVAR_NONE );
+/*
+Ghoul2 Insert End
+*/
 
 	// make sure all the commands added here are also
 	// removed in R_Shutdown
