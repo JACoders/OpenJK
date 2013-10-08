@@ -58,7 +58,7 @@ VBO_t          *R_CreateVBO(const char *name, byte * vertexes, int vertexesSize,
 
 	R_IssuePendingRenderCommands();
 
-	vbo = tr.vbos[tr.numVBOs] = ri->Hunk_Alloc(sizeof(*vbo), h_low);
+	vbo = tr.vbos[tr.numVBOs] = (VBO_t *)ri->Hunk_Alloc(sizeof(*vbo), h_low);
 	tr.numVBOs++;
 
 	memset(vbo, 0, sizeof(*vbo));
@@ -126,7 +126,7 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 
 	R_IssuePendingRenderCommands();
 
-	vbo = tr.vbos[tr.numVBOs] = ri->Hunk_Alloc(sizeof(*vbo), h_low);
+	vbo = tr.vbos[tr.numVBOs] = (VBO_t *)ri->Hunk_Alloc(sizeof(*vbo), h_low);
 	tr.numVBOs++;
 
 	memset(vbo, 0, sizeof(*vbo));
@@ -196,7 +196,7 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 
 		// create VBO
 		dataSize *= numVertexes;
-		data = ri->Hunk_AllocateTempMemory(dataSize);
+		data = (VBO_t *)ri->Hunk_AllocateTempMemory(dataSize);
 		dataOfs = 0;
 
 		//ri->Printf(PRINT_ALL, "CreateVBO: %d, %d %d %d %d %d, %d %d %d %d %d\n", dataSize, vbo->ofs_xyz, vbo->ofs_normal, vbo->ofs_st, vbo->ofs_lightmap, vbo->ofs_vertexcolor,
@@ -304,7 +304,7 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 
 		// create VBO
 		dataSize *= numVertexes;
-		data = ri->Hunk_AllocateTempMemory(dataSize);
+		data = (VBO_t *)ri->Hunk_AllocateTempMemory(dataSize);
 		dataOfs = 0;
 
 		vbo->ofs_xyz            = 0;
@@ -475,7 +475,7 @@ IBO_t          *R_CreateIBO(const char *name, byte * indexes, int indexesSize, v
 
 	R_IssuePendingRenderCommands();
 
-	ibo = tr.ibos[tr.numIBOs] = ri->Hunk_Alloc(sizeof(*ibo), h_low);
+	ibo = tr.ibos[tr.numIBOs] = (IBO_t *)ri->Hunk_Alloc(sizeof(*ibo), h_low);
 	tr.numIBOs++;
 
 	Q_strncpyz(ibo->name, name, sizeof(ibo->name));
@@ -543,13 +543,13 @@ IBO_t          *R_CreateIBO2(const char *name, int numTriangles, srfTriangle_t *
 
 	R_IssuePendingRenderCommands();
 
-	ibo = tr.ibos[tr.numIBOs] = ri->Hunk_Alloc(sizeof(*ibo), h_low);
+	ibo = tr.ibos[tr.numIBOs] = (IBO_t *)ri->Hunk_Alloc(sizeof(*ibo), h_low);
 	tr.numIBOs++;
 
 	Q_strncpyz(ibo->name, name, sizeof(ibo->name));
 
 	indexesSize = numTriangles * 3 * sizeof(int);
-	indexes = ri->Hunk_AllocateTempMemory(indexesSize);
+	indexes = (byte *)ri->Hunk_AllocateTempMemory(indexesSize);
 	indexesOfs = 0;
 
 	for(i = 0, tri = triangles; i < numTriangles; i++, tri++)
