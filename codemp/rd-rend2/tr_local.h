@@ -2407,7 +2407,13 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 ====================================================================
 */
 
+void		GLimp_Init( void );
+void		GLimp_Shutdown( void );
+void		GLimp_EndFrame( void );
+void		GLimp_LogComment( char *comment );
 void		GLimp_InitExtraExtensions( void );
+void		GLimp_Minimize( void );
+void		GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] );
 
 /*
 ====================================================================
@@ -2924,6 +2930,19 @@ size_t RE_SaveJPGToBuffer(byte *buffer, size_t bufSize, int quality,
 		          int image_width, int image_height, byte *image_buffer, int padding);
 void RE_TakeVideoFrame( int width, int height,
 		byte *captureBuffer, byte *encodeBuffer, qboolean motionJpeg );
+
+/*
+Ghoul2 Insert Start
+*/
+// tr_ghoul2.cpp
+void		Multiply_3x4Matrix(mdxaBone_t *out, mdxaBone_t *in2, mdxaBone_t *in);
+extern qboolean R_LoadMDXM (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
+extern qboolean R_LoadMDXA (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
+bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *height);
+void		RE_InsertModelIntoHash(const char *name, model_t *mod);
+/*
+Ghoul2 Insert End
+*/
 
 
 #endif //TR_LOCAL_H

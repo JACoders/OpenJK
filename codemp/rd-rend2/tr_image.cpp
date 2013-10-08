@@ -1640,7 +1640,7 @@ static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_he
 			scaled_width <<= 1;
 			scaled_height <<= 1;
 
-			FCBIByBlock(*resampledBuffer, scaled_width, scaled_height, clampToEdge, (type == IMGTYPE_NORMAL || type == IMGTYPE_NORMALHEIGHT));
+			FCBIByBlock(*resampledBuffer, scaled_width, scaled_height, clampToEdge, (qboolean)(type == IMGTYPE_NORMAL || type == IMGTYPE_NORMALHEIGHT));
 		}
 
 		if (type == IMGTYPE_COLORALPHA)

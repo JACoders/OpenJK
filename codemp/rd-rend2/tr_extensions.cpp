@@ -580,7 +580,7 @@ void GLimp_InitExtraExtensions()
 	glRefConfig.framebufferMultisample = qfalse;
 	if (GLimp_HaveExtension(extension))
 	{
-		qglRenderbufferStorageMultisampleEXT = (void __stdcall *)SDL_GL_GetProcAddress("glRenderbufferStorageMultisampleEXT");
+		qglRenderbufferStorageMultisampleEXT = SDL_GL_GetProcAddress("glRenderbufferStorageMultisampleEXT");
 		glRefConfig.framebufferMultisample = qtrue;
 		ri->Printf(PRINT_ALL, result[glRefConfig.framebufferMultisample], extension);
 	}

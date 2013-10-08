@@ -3673,7 +3673,7 @@ static void ScanAndLoadShaderFiles( void )
 	p = s_shaderText;
 	// look for shader names
 	while ( 1 ) {
-		oldp = p;
+		oldp = (char *)p;
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 ) {
 			break;

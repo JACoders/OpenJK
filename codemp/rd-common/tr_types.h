@@ -320,7 +320,8 @@ typedef int stereoFrame_t;
 typedef enum { // r_ext_preferred_tc_method
 	TC_NONE,
 	TC_S3TC,
-	TC_S3TC_DXT
+	TC_S3TC_DXT,
+	TC_S3TC_ARB
 } textureCompression_t;
 
 typedef struct glconfig_s {

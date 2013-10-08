@@ -581,7 +581,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	int				entityNum, oldEntityNum;
 	int				dlighted, oldDlighted;
 	int				pshadowed, oldPshadowed;
-	qboolean		depthRange, oldDepthRange, isCrosshair, wasCrosshair;
+	qboolean		depthRange, oldDepthRange;
 	int				i;
 	drawSurf_t		*drawSurf;
 	int				oldSort;
@@ -603,7 +603,6 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	oldShader = NULL;
 	oldFogNum = -1;
 	oldDepthRange = qfalse;
-	wasCrosshair = qfalse;
 	oldDlighted = qfalse;
 	oldPshadowed = qfalse;
 	oldSort = -1;
@@ -650,7 +649,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		//
 		if ( entityNum != oldEntityNum ) {
 			qboolean sunflare = qfalse;
-			depthRange = isCrosshair = qfalse;
+			depthRange = qfalse;
 
 			if ( entityNum != REFENTITYNUM_WORLD ) {
 				backEnd.currentEntity = &backEnd.refdef.entities[entityNum];
@@ -671,9 +670,6 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 				{
 					// hack the depth range to prevent view model from poking into walls
 					depthRange = qtrue;
-					
-					if(backEnd.currentEntity->e.renderfx & RF_CROSSHAIR)
-						isCrosshair = qtrue;
 				}
 			} else {
 				backEnd.currentEntity = &tr.worldEntity;
@@ -691,28 +687,17 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			// change depthrange. Also change projection matrix so first person weapon does not look like coming
 			// out of the screen.
 			//
-			if (oldDepthRange != depthRange || wasCrosshair != isCrosshair)
+			if (oldDepthRange != depthRange)
 			{
 				if (depthRange)
 				{
 					if(backEnd.viewParms.stereoFrame != STEREO_CENTER)
 					{
-						if(isCrosshair)
-						{
-							if(oldDepthRange)
-							{
-								// was not a crosshair but now is, change back proj matrix
-								GL_SetProjectionMatrix( backEnd.viewParms.projectionMatrix );
-							}
-						}
-						else
-						{
-							viewParms_t temp = backEnd.viewParms;
+						viewParms_t temp = backEnd.viewParms;
 
-							R_SetupProjection(&temp, r_znear->value, 0, qfalse);
+						R_SetupProjection(&temp, r_znear->value, 0, qfalse);
 
-							GL_SetProjectionMatrix( temp.projectionMatrix );
-						}
+						GL_SetProjectionMatrix( temp.projectionMatrix );
 					}
 
  					if(!oldDepthRange)
@@ -724,7 +709,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 				}
 				else
 				{
-					if(!wasCrosshair && backEnd.viewParms.stereoFrame != STEREO_CENTER)
+					if(backEnd.viewParms.stereoFrame != STEREO_CENTER)
 					{
 						GL_SetProjectionMatrix( backEnd.viewParms.projectionMatrix );
 					}
@@ -737,7 +722,6 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 				}
 
 				oldDepthRange = depthRange;
-				wasCrosshair = isCrosshair;
 			}
 
 			oldEntityNum = entityNum;
