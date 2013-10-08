@@ -1507,6 +1507,15 @@ typedef struct model_s {
 	mdvModel_t	*mdv[MD3_MAX_LODS];	// only if type == MOD_MESH
 	void	*modelData;			// only if type == (MOD_MD4 | MOD_MDR | MOD_IQM)
 
+/*
+Ghoul2 Insert Start
+*/
+	mdxmHeader_t *mdxm;				// only if type == MOD_GL2M which is a GHOUL II Mesh file NOT a GHOUL II animation file
+	mdxaHeader_t *mdxa;				// only if type == MOD_GL2A which is a GHOUL II Animation file
+/*
+Ghoul2 Insert End
+*/
+
 	int			 numLods;
 } model_t;
 
