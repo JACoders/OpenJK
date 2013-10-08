@@ -99,7 +99,7 @@ void R_AddPolygonSurfaces( void ) {
 
 	for ( i = 0, poly = tr.refdef.polys; i < tr.refdef.numPolys ; i++, poly++ ) {
 		sh = R_GetShaderByHandle( poly->hShader );
-		R_AddDrawSurf( ( void * )poly, sh, poly->fogIndex & fogMask, qfalse, qfalse );
+		R_AddDrawSurf( ( surfaceType_t * )poly, sh, poly->fogIndex & fogMask, qfalse, qfalse );
 	}
 }
 
@@ -376,7 +376,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 		}
 		else
 		{
-			float scale = pow(2, r_mapOverBrightBits->integer - tr.overbrightBits - 8);
+			float scale = pow(2.0f, r_mapOverBrightBits->integer - tr.overbrightBits - 8);
 			if (r_forceSun->integer)
 			{
 				VectorScale(tr.sunLight, scale * r_forceSunLightScale->value,   tr.refdef.sunCol);

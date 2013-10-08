@@ -1346,10 +1346,10 @@ static void R_MipMapsRGB( byte *in, int inWidth, int inHeight)
 			for ( k = 0 ; k < 3 ; k++ ) {
 				float total, current;
 
-				current = ByteToFloat(inbyte1[0]); total  = sRGBtoRGB(current);
-				current = ByteToFloat(inbyte1[4]); total += sRGBtoRGB(current);
-				current = ByteToFloat(inbyte2[0]); total += sRGBtoRGB(current);
-				current = ByteToFloat(inbyte2[4]); total += sRGBtoRGB(current);
+				current = ByteToFloat(inbyte1[0]); total  = sRGBtoRGB((double)current);
+				current = ByteToFloat(inbyte1[4]); total += sRGBtoRGB((double)current);
+				current = ByteToFloat(inbyte2[0]); total += sRGBtoRGB((double)current);
+				current = ByteToFloat(inbyte2[4]); total += sRGBtoRGB((double)current);
 
 				total *= 0.25f;
 

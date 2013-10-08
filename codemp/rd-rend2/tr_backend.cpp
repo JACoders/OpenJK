@@ -1539,7 +1539,7 @@ const void	*RB_SwapBuffers( const void *data ) {
 
 			color[0] =
 			color[1] =
-			color[2] = pow(2, tr.overbrightBits); //exp2(tr.overbrightBits);
+			color[2] = pow(2.0f, tr.overbrightBits); //exp2(tr.overbrightBits);
 			color[3] = 1.0f;
 
 			// turn off colormask when copying final image

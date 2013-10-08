@@ -117,7 +117,7 @@ void R_RemapShader(const char *shaderName, const char *newShaderName, const char
 ParseVector
 ===============
 */
-static qboolean ParseVector( char **text, int count, float *v ) {
+static qboolean ParseVector( const char **text, int count, float *v ) {
 	char	*token;
 	int		i;
 
@@ -306,7 +306,7 @@ static genFunc_t NameToGenFunc( const char *funcname )
 ParseWaveForm
 ===================
 */
-static void ParseWaveForm( char **text, waveForm_t *wave )
+static void ParseWaveForm( const char **text, waveForm_t *wave )
 {
 	char *token;
 
@@ -361,7 +361,7 @@ ParseTexMod
 static void ParseTexMod( char *_text, shaderStage_t *stage )
 {
 	const char *token;
-	char **text = &_text;
+	const char **text = &_text;
 	texModInfo_t *tmi;
 
 	if ( stage->bundle[0].numTexMods == TR_MAX_TEXMODS ) {
@@ -588,7 +588,7 @@ static void ParseTexMod( char *_text, shaderStage_t *stage )
 ParseStage
 ===================
 */
-static qboolean ParseStage( shaderStage_t *stage, char **text )
+static qboolean ParseStage( shaderStage_t *stage, const char **text )
 {
 	char *token;
 	int depthMaskBits = GLS_DEPTHMASK_TRUE, blendSrcBits = 0, blendDstBits = 0, atestBits = 0, depthFuncBits = 0;
@@ -1228,7 +1228,7 @@ deformVertexes autoSprite2
 deformVertexes text[0-7]
 ===============
 */
-static void ParseDeform( char **text ) {
+static void ParseDeform( const char **text ) {
 	char	*token;
 	deformStage_t	*ds;
 
@@ -1376,7 +1376,7 @@ ParseSkyParms
 skyParms <outerbox> <cloudheight> <innerbox>
 ===============
 */
-static void ParseSkyParms( char **text ) {
+static void ParseSkyParms( const char **text ) {
 	char		*token;
 	static char	*suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
 	char		pathname[MAX_QPATH];
@@ -1443,7 +1443,7 @@ static void ParseSkyParms( char **text ) {
 ParseSort
 =================
 */
-void ParseSort( char **text ) {
+void ParseSort( const char **text ) {
 	char	*token;
 
 	token = COM_ParseExt( text, qfalse );
@@ -1535,7 +1535,7 @@ ParseSurfaceParm
 surfaceparm <name>
 ===============
 */
-static void ParseSurfaceParm( char **text ) {
+static void ParseSurfaceParm( const char **text ) {
 	char	*token;
 	int		numInfoParms = ARRAY_LEN( infoParms );
 	int		i;
@@ -1564,7 +1564,7 @@ shader.  Parse it into the global shader variable.  Later functions
 will optimize it.
 =================
 */
-static qboolean ParseShader( char **text )
+static qboolean ParseShader( const char **text )
 {
 	char *token;
 	int s;

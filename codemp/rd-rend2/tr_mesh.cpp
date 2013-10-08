@@ -215,7 +215,7 @@ int R_ComputeLOD( trRefEntity_t *ent ) {
 		}
 
 		flod *= tr.currentModel->numLods;
-		lod = ri->ftol(flod);
+		lod = Q_ftol(flod);
 
 		if ( lod < 0 )
 		{
@@ -387,7 +387,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 		{
 			srfVBOMDVMesh_t *vboSurface = &model->vboSurfaces[i];
 
-			R_AddDrawSurf((void *)vboSurface, shader, fogNum, qfalse, qfalse );
+			R_AddDrawSurf((surfaceType_t *)vboSurface, shader, fogNum, qfalse, qfalse );
 		}
 
 		surface++;
