@@ -50,6 +50,10 @@
 #define	SURF_NOMISCENTS			0x01000000	// no client models allowed on this surface
 #define	SURF_FORCESIGHT			0x02000000	// not visible without Force Sight
 
+// NEW for rend2
+#define SURF_LIGHTFILTER		0x04000000	// filter light going through the object
+#define SURF_ALPHASHADOW		0x08000000	// test light on a per-pixel basis
+
 #define MATERIAL_BITS			5
 #define MATERIAL_MASK			0x1f	// mask to get the material type
 
