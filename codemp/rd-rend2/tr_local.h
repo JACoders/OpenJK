@@ -76,10 +76,6 @@ extern cvar_t	*r_flareSize;
 extern cvar_t	*r_flareFade;
 extern cvar_t	*r_flareCoeff;
 
-extern cvar_t	*r_railWidth;
-extern cvar_t	*r_railCoreWidth;
-extern cvar_t	*r_railSegmentLength;
-
 extern cvar_t	*r_verbose;
 extern cvar_t	*r_ignore;
 

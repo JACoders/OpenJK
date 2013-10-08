@@ -42,10 +42,6 @@ cvar_t	*r_flareSize;
 cvar_t	*r_flareFade;
 cvar_t	*r_flareCoeff;
 
-cvar_t	*r_railWidth;
-cvar_t	*r_railCoreWidth;
-cvar_t	*r_railSegmentLength;
-
 cvar_t	*r_verbose;
 cvar_t	*r_ignore;
 
