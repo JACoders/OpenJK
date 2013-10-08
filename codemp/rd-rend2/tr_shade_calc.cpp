@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #endif
 
 
-#define	WAVEVALUE( table, base, amplitude, phase, freq )  ((base) + table[ ri.ftol( ( ( (phase) + tess.shaderTime * (freq) ) * FUNCTABLE_SIZE ) ) & FUNCTABLE_MASK ] * (amplitude))
+#define	WAVEVALUE( table, base, amplitude, phase, freq )  ((base) + table[ ri->ftol( ( ( (phase) + tess.shaderTime * (freq) ) * FUNCTABLE_SIZE ) ) & FUNCTABLE_MASK ] * (amplitude))
 
 static float *TableForFunc( genFunc_t func ) 
 {
@@ -48,7 +48,7 @@ static float *TableForFunc( genFunc_t func )
 		break;
 	}
 
-	ri.Error( ERR_DROP, "TableForFunc called with invalid function '%d' in shader '%s'", func, tess.shader->name );
+	ri->Error( ERR_DROP, "TableForFunc called with invalid function '%d' in shader '%s'", func, tess.shader->name );
 	return NULL;
 }
 
@@ -378,10 +378,10 @@ static void AutospriteDeform( void ) {
 	vec3_t	leftDir, upDir;
 
 	if ( tess.numVertexes & 3 ) {
-		ri.Printf( PRINT_WARNING, "Autosprite shader %s had odd vertex count\n", tess.shader->name );
+		ri->Printf( PRINT_WARNING, "Autosprite shader %s had odd vertex count\n", tess.shader->name );
 	}
 	if ( tess.numIndexes != ( tess.numVertexes >> 2 ) * 6 ) {
-		ri.Printf( PRINT_WARNING, "Autosprite shader %s had odd index count\n", tess.shader->name );
+		ri->Printf( PRINT_WARNING, "Autosprite shader %s had odd index count\n", tess.shader->name );
 	}
 
 	oldVerts = tess.numVertexes;
@@ -456,10 +456,10 @@ static void Autosprite2Deform( void ) {
 	vec3_t	forward;
 
 	if ( tess.numVertexes & 3 ) {
-		ri.Printf( PRINT_WARNING, "Autosprite2 shader %s had odd vertex count\n", tess.shader->name );
+		ri->Printf( PRINT_WARNING, "Autosprite2 shader %s had odd vertex count\n", tess.shader->name );
 	}
 	if ( tess.numIndexes != ( tess.numVertexes >> 2 ) * 6 ) {
-		ri.Printf( PRINT_WARNING, "Autosprite2 shader %s had odd index count\n", tess.shader->name );
+		ri->Printf( PRINT_WARNING, "Autosprite2 shader %s had odd index count\n", tess.shader->name );
 	}
 
 	if ( backEnd.currentEntity != &tr.worldEntity ) {
@@ -736,7 +736,7 @@ void RB_CalcWaveColor( const waveForm_t *wf, unsigned char *dstColors )
 
 	glow = RB_CalcWaveColorSingle( wf );
 
-	v = ri.ftol(255 * glow);
+	v = ri->ftol(255 * glow);
 	color[0] = color[1] = color[2] = v;
 	color[3] = 255;
 	v = *(int *)color;
@@ -1299,19 +1299,19 @@ static void RB_CalcDiffuseColor_scalar( unsigned char *colors )
 			*(int *)&colors[i*4] = ambientLightInt;
 			continue;
 		} 
-		j = ri.ftol(ambientLight[0] + incoming * directedLight[0]);
+		j = ri->ftol(ambientLight[0] + incoming * directedLight[0]);
 		if ( j > 255 ) {
 			j = 255;
 		}
 		colors[i*4+0] = j;
 
-		j = ri.ftol(ambientLight[1] + incoming * directedLight[1]);
+		j = ri->ftol(ambientLight[1] + incoming * directedLight[1]);
 		if ( j > 255 ) {
 			j = 255;
 		}
 		colors[i*4+1] = j;
 
-		j = ri.ftol(ambientLight[2] + incoming * directedLight[2]);
+		j = ri->ftol(ambientLight[2] + incoming * directedLight[2]);
 		if ( j > 255 ) {
 			j = 255;
 		}

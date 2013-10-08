@@ -607,7 +607,7 @@ static mnode_t *R_PointInLeaf( const vec3_t p ) {
 	cplane_t	*plane;
 	
 	if ( !tr.world ) {
-		ri.Error (ERR_DROP, "R_PointInLeaf: bad model");
+		ri->Error (ERR_DROP, "R_PointInLeaf: bad model");
 	}
 
 	node = tr.world->nodes;
@@ -650,7 +650,7 @@ qboolean R_inPVS( const vec3_t p1, const vec3_t p2 ) {
 	byte	*vis;
 
 	leaf = R_PointInLeaf( p1 );
-	vis = ri.CM_ClusterPVS( leaf->cluster ); // why not R_ClusterPVS ??
+	vis = ri->CM_ClusterPVS( leaf->cluster ); // why not R_ClusterPVS ??
 	leaf = R_PointInLeaf( p2 );
 
 	if ( !(vis[leaf->cluster>>3] & (1<<(leaf->cluster&7))) ) {
@@ -700,7 +700,7 @@ static void R_MarkLeaves (void) {
 	{
 		if(tr.visClusters[i] != tr.visClusters[tr.visIndex] && r_showcluster->integer)
 		{
-			ri.Printf(PRINT_ALL, "found cluster:%i  area:%i  index:%i\n", cluster, leaf->area, i);
+			ri->Printf(PRINT_ALL, "found cluster:%i  area:%i  index:%i\n", cluster, leaf->area, i);
 		}
 		tr.visIndex = i;
 		return;
@@ -720,7 +720,7 @@ static void R_MarkLeaves (void) {
 	if ( r_showcluster->modified || r_showcluster->integer ) {
 		r_showcluster->modified = qfalse;
 		if ( r_showcluster->integer ) {
-			ri.Printf( PRINT_ALL, "cluster:%i  area:%i\n", cluster, leaf->area );
+			ri->Printf( PRINT_ALL, "cluster:%i  area:%i\n", cluster, leaf->area );
 		}
 	}
 

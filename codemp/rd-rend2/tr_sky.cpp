@@ -160,7 +160,7 @@ static void ClipSkyPolygon (int nump, vec3_t vecs, int stage)
 	int		i, j;
 
 	if (nump > MAX_CLIP_VERTS-2)
-		ri.Error (ERR_DROP, "ClipSkyPolygon: MAX_CLIP_VERTS");
+		ri->Error (ERR_DROP, "ClipSkyPolygon: MAX_CLIP_VERTS");
 	if (stage == 6)
 	{	// fully clipped, so draw it
 		AddSkyPolygon (nump, vecs);
@@ -393,7 +393,7 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 
 			if(tess.numVertexes >= SHADER_MAX_VERTEXES)
 			{
-				ri.Error(ERR_DROP, "SHADER_MAX_VERTEXES hit in DrawSkySideVBO()");
+				ri->Error(ERR_DROP, "SHADER_MAX_VERTEXES hit in DrawSkySideVBO()");
 			}
 		}
 	}
@@ -404,7 +404,7 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 		{
 			if (tess.numIndexes + 6 >= SHADER_MAX_INDEXES)
 			{
-				ri.Error(ERR_DROP, "SHADER_MAX_INDEXES hit in DrawSkySideVBO()");
+				ri->Error(ERR_DROP, "SHADER_MAX_INDEXES hit in DrawSkySideVBO()");
 			}
 
 			tess.indexes[tess.numIndexes++] =  s +       t      * (maxs[0] - mins[0] + 1) + firstVertex;
@@ -571,7 +571,7 @@ static void FillCloudySkySide( const int mins[2], const int maxs[2], qboolean ad
 
 			if ( tess.numVertexes >= SHADER_MAX_VERTEXES )
 			{
-				ri.Error( ERR_DROP, "SHADER_MAX_VERTEXES hit in FillCloudySkySide()" );
+				ri->Error( ERR_DROP, "SHADER_MAX_VERTEXES hit in FillCloudySkySide()" );
 			}
 		}
 	}
@@ -649,10 +649,10 @@ static void FillCloudBox( const shader_t *shader, int stage )
 			continue;
 		}
 
-		sky_mins_subd[0] = ri.ftol(sky_mins[0][i] * HALF_SKY_SUBDIVISIONS);
-		sky_mins_subd[1] = ri.ftol(sky_mins[1][i] * HALF_SKY_SUBDIVISIONS);
-		sky_maxs_subd[0] = ri.ftol(sky_maxs[0][i] * HALF_SKY_SUBDIVISIONS);
-		sky_maxs_subd[1] = ri.ftol(sky_maxs[1][i] * HALF_SKY_SUBDIVISIONS);
+		sky_mins_subd[0] = ri->ftol(sky_mins[0][i] * HALF_SKY_SUBDIVISIONS);
+		sky_mins_subd[1] = ri->ftol(sky_mins[1][i] * HALF_SKY_SUBDIVISIONS);
+		sky_maxs_subd[0] = ri->ftol(sky_maxs[0][i] * HALF_SKY_SUBDIVISIONS);
+		sky_maxs_subd[1] = ri->ftol(sky_maxs[1][i] * HALF_SKY_SUBDIVISIONS);
 
 		if ( sky_mins_subd[0] < -HALF_SKY_SUBDIVISIONS ) 
 			sky_mins_subd[0] = -HALF_SKY_SUBDIVISIONS;

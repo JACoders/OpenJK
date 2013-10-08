@@ -51,42 +51,42 @@ qboolean R_CheckFBO(const FBO_t * fbo)
 			break;
 
 		case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-			ri.Printf(PRINT_WARNING, "R_CheckFBO: (%s) Unsupported framebuffer format\n", fbo->name);
+			ri->Printf(PRINT_WARNING, "R_CheckFBO: (%s) Unsupported framebuffer format\n", fbo->name);
 			break;
 
 		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
-			ri.Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete attachment\n", fbo->name);
+			ri->Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete attachment\n", fbo->name);
 			break;
 
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
-			ri.Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, missing attachment\n", fbo->name);
+			ri->Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, missing attachment\n", fbo->name);
 			break;
 
 			//case GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT:
-			//  ri.Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, duplicate attachment\n", fbo->name);
+			//  ri->Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, duplicate attachment\n", fbo->name);
 			//  break;
 
 		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-			ri.Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, attached images must have same dimensions\n",
+			ri->Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, attached images must have same dimensions\n",
 					  fbo->name);
 			break;
 
 		case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-			ri.Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, attached images must have same format\n",
+			ri->Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, attached images must have same format\n",
 					  fbo->name);
 			break;
 
 		case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
-			ri.Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, missing draw buffer\n", fbo->name);
+			ri->Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, missing draw buffer\n", fbo->name);
 			break;
 
 		case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
-			ri.Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, missing read buffer\n", fbo->name);
+			ri->Printf(PRINT_WARNING, "R_CheckFBO: (%s) Framebuffer incomplete, missing read buffer\n", fbo->name);
 			break;
 
 		default:
-			ri.Printf(PRINT_WARNING, "R_CheckFBO: (%s) unknown error 0x%X\n", fbo->name, code);
-			//ri.Error(ERR_FATAL, "R_CheckFBO: (%s) unknown error 0x%X", fbo->name, code);
+			ri->Printf(PRINT_WARNING, "R_CheckFBO: (%s) unknown error 0x%X\n", fbo->name, code);
+			//ri->Error(ERR_FATAL, "R_CheckFBO: (%s) unknown error 0x%X", fbo->name, code);
 			//assert(0);
 			break;
 	}
@@ -107,25 +107,25 @@ FBO_t          *FBO_Create(const char *name, int width, int height)
 
 	if(strlen(name) >= MAX_QPATH)
 	{
-		ri.Error(ERR_DROP, "FBO_Create: \"%s\" is too long", name);
+		ri->Error(ERR_DROP, "FBO_Create: \"%s\" is too long", name);
 	}
 
 	if(width <= 0 || width > glRefConfig.maxRenderbufferSize)
 	{
-		ri.Error(ERR_DROP, "FBO_Create: bad width %i", width);
+		ri->Error(ERR_DROP, "FBO_Create: bad width %i", width);
 	}
 
 	if(height <= 0 || height > glRefConfig.maxRenderbufferSize)
 	{
-		ri.Error(ERR_DROP, "FBO_Create: bad height %i", height);
+		ri->Error(ERR_DROP, "FBO_Create: bad height %i", height);
 	}
 
 	if(tr.numFBOs == MAX_FBOS)
 	{
-		ri.Error(ERR_DROP, "FBO_Create: MAX_FBOS hit");
+		ri->Error(ERR_DROP, "FBO_Create: MAX_FBOS hit");
 	}
 
-	fbo = tr.fbos[tr.numFBOs] = ri.Hunk_Alloc(sizeof(*fbo), h_low);
+	fbo = tr.fbos[tr.numFBOs] = ri->Hunk_Alloc(sizeof(*fbo), h_low);
 	Q_strncpyz(fbo->name, name, sizeof(fbo->name));
 	fbo->index = tr.numFBOs++;
 	fbo->width = width;
@@ -184,7 +184,7 @@ void FBO_CreateBuffer(FBO_t *fbo, int format, int index, int multisample)
 			break;
 
 		default:
-			ri.Printf(PRINT_WARNING, "FBO_CreateBuffer: invalid format %d\n", format);
+			ri->Printf(PRINT_WARNING, "FBO_CreateBuffer: invalid format %d\n", format);
 			return;
 	}
 
@@ -224,7 +224,7 @@ void R_AttachFBOTexture1D(int texId, int index)
 {
 	if(index < 0 || index >= glRefConfig.maxColorAttachments)
 	{
-		ri.Printf(PRINT_WARNING, "R_AttachFBOTexture1D: invalid attachment index %i\n", index);
+		ri->Printf(PRINT_WARNING, "R_AttachFBOTexture1D: invalid attachment index %i\n", index);
 		return;
 	}
 
@@ -240,13 +240,13 @@ void R_AttachFBOTexture2D(int target, int texId, int index)
 {
 	if(target != GL_TEXTURE_2D && (target < GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB || target > GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB))
 	{
-		ri.Printf(PRINT_WARNING, "R_AttachFBOTexture2D: invalid target %i\n", target);
+		ri->Printf(PRINT_WARNING, "R_AttachFBOTexture2D: invalid target %i\n", target);
 		return;
 	}
 
 	if(index < 0 || index >= glRefConfig.maxColorAttachments)
 	{
-		ri.Printf(PRINT_WARNING, "R_AttachFBOTexture2D: invalid attachment index %i\n", index);
+		ri->Printf(PRINT_WARNING, "R_AttachFBOTexture2D: invalid attachment index %i\n", index);
 		return;
 	}
 
@@ -262,7 +262,7 @@ void R_AttachFBOTexture3D(int texId, int index, int zOffset)
 {
 	if(index < 0 || index >= glRefConfig.maxColorAttachments)
 	{
-		ri.Printf(PRINT_WARNING, "R_AttachFBOTexture3D: invalid attachment index %i\n", index);
+		ri->Printf(PRINT_WARNING, "R_AttachFBOTexture3D: invalid attachment index %i\n", index);
 		return;
 	}
 
@@ -294,7 +294,7 @@ void FBO_AttachTextureImage(image_t *img, int index)
 {
 	if (!glState.currentFBO)
 	{
-		ri.Printf(PRINT_WARNING, "FBO: attempted to attach a texture image with no FBO bound!\n");
+		ri->Printf(PRINT_WARNING, "FBO: attempted to attach a texture image with no FBO bound!\n");
 		return;
 	}
 
@@ -361,7 +361,7 @@ void FBO_Init(void)
 	// int             width, height, hdrFormat, multisample;
 	int             hdrFormat, multisample;
 
-	ri.Printf(PRINT_ALL, "------- FBO_Init -------\n");
+	ri->Printf(PRINT_ALL, "------- FBO_Init -------\n");
 
 	if(!glRefConfig.framebufferObject)
 		return;
@@ -401,7 +401,7 @@ void FBO_Init(void)
 
 	if (multisample != r_ext_framebuffer_multisample->integer)
 	{
-		ri.Cvar_SetValue("r_ext_framebuffer_multisample", (float)multisample);
+		ri->Cvar_SetValue("r_ext_framebuffer_multisample", (float)multisample);
 	}
 	
 	// only create a render FBO if we need to resolve MSAA or do HDR
@@ -594,7 +594,7 @@ void FBO_Shutdown(void)
 	int             i, j;
 	FBO_t          *fbo;
 
-	ri.Printf(PRINT_ALL, "------- FBO_Shutdown -------\n");
+	ri->Printf(PRINT_ALL, "------- FBO_Shutdown -------\n");
 
 	if(!glRefConfig.framebufferObject)
 		return;
@@ -634,21 +634,21 @@ void R_FBOList_f(void)
 
 	if(!glRefConfig.framebufferObject)
 	{
-		ri.Printf(PRINT_ALL, "GL_EXT_framebuffer_object is not available.\n");
+		ri->Printf(PRINT_ALL, "GL_EXT_framebuffer_object is not available.\n");
 		return;
 	}
 
-	ri.Printf(PRINT_ALL, "             size       name\n");
-	ri.Printf(PRINT_ALL, "----------------------------------------------------------\n");
+	ri->Printf(PRINT_ALL, "             size       name\n");
+	ri->Printf(PRINT_ALL, "----------------------------------------------------------\n");
 
 	for(i = 0; i < tr.numFBOs; i++)
 	{
 		fbo = tr.fbos[i];
 
-		ri.Printf(PRINT_ALL, "  %4i: %4i %4i %s\n", i, fbo->width, fbo->height, fbo->name);
+		ri->Printf(PRINT_ALL, "  %4i: %4i %4i %s\n", i, fbo->width, fbo->height, fbo->name);
 	}
 
-	ri.Printf(PRINT_ALL, " %i FBOs\n", tr.numFBOs);
+	ri->Printf(PRINT_ALL, " %i FBOs\n", tr.numFBOs);
 }
 
 // FIXME

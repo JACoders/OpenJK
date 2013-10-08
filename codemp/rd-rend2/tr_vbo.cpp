@@ -49,16 +49,16 @@ VBO_t          *R_CreateVBO(const char *name, byte * vertexes, int vertexesSize,
 
 	if(strlen(name) >= MAX_QPATH)
 	{
-		ri.Error(ERR_DROP, "R_CreateVBO: \"%s\" is too long", name);
+		ri->Error(ERR_DROP, "R_CreateVBO: \"%s\" is too long", name);
 	}
 
 	if ( tr.numVBOs == MAX_VBOS ) {
-		ri.Error( ERR_DROP, "R_CreateVBO: MAX_VBOS hit");
+		ri->Error( ERR_DROP, "R_CreateVBO: MAX_VBOS hit");
 	}
 
 	R_IssuePendingRenderCommands();
 
-	vbo = tr.vbos[tr.numVBOs] = ri.Hunk_Alloc(sizeof(*vbo), h_low);
+	vbo = tr.vbos[tr.numVBOs] = ri->Hunk_Alloc(sizeof(*vbo), h_low);
 	tr.numVBOs++;
 
 	memset(vbo, 0, sizeof(*vbo));
@@ -117,16 +117,16 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 
 	if(strlen(name) >= MAX_QPATH)
 	{
-		ri.Error(ERR_DROP, "R_CreateVBO2: \"%s\" is too long", name);
+		ri->Error(ERR_DROP, "R_CreateVBO2: \"%s\" is too long", name);
 	}
 
 	if ( tr.numVBOs == MAX_VBOS ) {
-		ri.Error( ERR_DROP, "R_CreateVBO2: MAX_VBOS hit");
+		ri->Error( ERR_DROP, "R_CreateVBO2: MAX_VBOS hit");
 	}
 
 	R_IssuePendingRenderCommands();
 
-	vbo = tr.vbos[tr.numVBOs] = ri.Hunk_Alloc(sizeof(*vbo), h_low);
+	vbo = tr.vbos[tr.numVBOs] = ri->Hunk_Alloc(sizeof(*vbo), h_low);
 	tr.numVBOs++;
 
 	memset(vbo, 0, sizeof(*vbo));
@@ -196,10 +196,10 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 
 		// create VBO
 		dataSize *= numVertexes;
-		data = ri.Hunk_AllocateTempMemory(dataSize);
+		data = ri->Hunk_AllocateTempMemory(dataSize);
 		dataOfs = 0;
 
-		//ri.Printf(PRINT_ALL, "CreateVBO: %d, %d %d %d %d %d, %d %d %d %d %d\n", dataSize, vbo->ofs_xyz, vbo->ofs_normal, vbo->ofs_st, vbo->ofs_lightmap, vbo->ofs_vertexcolor,
+		//ri->Printf(PRINT_ALL, "CreateVBO: %d, %d %d %d %d %d, %d %d %d %d %d\n", dataSize, vbo->ofs_xyz, vbo->ofs_normal, vbo->ofs_st, vbo->ofs_lightmap, vbo->ofs_vertexcolor,
 			//vbo->stride_xyz, vbo->stride_normal, vbo->stride_st, vbo->stride_lightmap, vbo->stride_vertexcolor);
 
 		for (i = 0; i < numVertexes; i++)
@@ -304,7 +304,7 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 
 		// create VBO
 		dataSize *= numVertexes;
-		data = ri.Hunk_AllocateTempMemory(dataSize);
+		data = ri->Hunk_AllocateTempMemory(dataSize);
 		dataOfs = 0;
 
 		vbo->ofs_xyz            = 0;
@@ -329,7 +329,7 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 		vbo->stride_lightmap    = sizeof(verts[0].lightmap);
 		vbo->stride_lightdir    = sizeof(verts[0].lightdir);
 
-		//ri.Printf(PRINT_ALL, "2CreateVBO: %d, %d %d %d %d %d, %d %d %d %d %d\n", dataSize, vbo->ofs_xyz, vbo->ofs_normal, vbo->ofs_st, vbo->ofs_lightmap, vbo->ofs_vertexcolor,
+		//ri->Printf(PRINT_ALL, "2CreateVBO: %d, %d %d %d %d %d, %d %d %d %d %d\n", dataSize, vbo->ofs_xyz, vbo->ofs_normal, vbo->ofs_st, vbo->ofs_lightmap, vbo->ofs_vertexcolor,
 			//vbo->stride_xyz, vbo->stride_normal, vbo->stride_st, vbo->stride_lightmap, vbo->stride_vertexcolor);
 
 		// xyz
@@ -433,7 +433,7 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 
 	GL_CheckErrors();
 
-	ri.Hunk_FreeTempMemory(data);
+	ri->Hunk_FreeTempMemory(data);
 
 	return vbo;
 }
@@ -466,16 +466,16 @@ IBO_t          *R_CreateIBO(const char *name, byte * indexes, int indexesSize, v
 
 	if(strlen(name) >= MAX_QPATH)
 	{
-		ri.Error(ERR_DROP, "R_CreateIBO: \"%s\" is too long", name);
+		ri->Error(ERR_DROP, "R_CreateIBO: \"%s\" is too long", name);
 	}
 
 	if ( tr.numIBOs == MAX_IBOS ) {
-		ri.Error( ERR_DROP, "R_CreateIBO: MAX_IBOS hit");
+		ri->Error( ERR_DROP, "R_CreateIBO: MAX_IBOS hit");
 	}
 
 	R_IssuePendingRenderCommands();
 
-	ibo = tr.ibos[tr.numIBOs] = ri.Hunk_Alloc(sizeof(*ibo), h_low);
+	ibo = tr.ibos[tr.numIBOs] = ri->Hunk_Alloc(sizeof(*ibo), h_low);
 	tr.numIBOs++;
 
 	Q_strncpyz(ibo->name, name, sizeof(ibo->name));
@@ -534,22 +534,22 @@ IBO_t          *R_CreateIBO2(const char *name, int numTriangles, srfTriangle_t *
 
 	if(strlen(name) >= MAX_QPATH)
 	{
-		ri.Error(ERR_DROP, "R_CreateIBO2: \"%s\" is too long", name);
+		ri->Error(ERR_DROP, "R_CreateIBO2: \"%s\" is too long", name);
 	}
 
 	if ( tr.numIBOs == MAX_IBOS ) {
-		ri.Error( ERR_DROP, "R_CreateIBO2: MAX_IBOS hit");
+		ri->Error( ERR_DROP, "R_CreateIBO2: MAX_IBOS hit");
 	}
 
 	R_IssuePendingRenderCommands();
 
-	ibo = tr.ibos[tr.numIBOs] = ri.Hunk_Alloc(sizeof(*ibo), h_low);
+	ibo = tr.ibos[tr.numIBOs] = ri->Hunk_Alloc(sizeof(*ibo), h_low);
 	tr.numIBOs++;
 
 	Q_strncpyz(ibo->name, name, sizeof(ibo->name));
 
 	indexesSize = numTriangles * 3 * sizeof(int);
-	indexes = ri.Hunk_AllocateTempMemory(indexesSize);
+	indexes = ri->Hunk_AllocateTempMemory(indexesSize);
 	indexesOfs = 0;
 
 	for(i = 0, tri = triangles; i < numTriangles; i++, tri++)
@@ -575,7 +575,7 @@ IBO_t          *R_CreateIBO2(const char *name, int numTriangles, srfTriangle_t *
 
 	GL_CheckErrors();
 
-	ri.Hunk_FreeTempMemory(indexes);
+	ri->Hunk_FreeTempMemory(indexes);
 
 	return ibo;
 }
@@ -590,7 +590,7 @@ void R_BindVBO(VBO_t * vbo)
 	if(!vbo)
 	{
 		//R_BindNullVBO();
-		ri.Error(ERR_DROP, "R_BindNullVBO: NULL vbo");
+		ri->Error(ERR_DROP, "R_BindNullVBO: NULL vbo");
 		return;
 	}
 
@@ -643,7 +643,7 @@ void R_BindIBO(IBO_t * ibo)
 	if(!ibo)
 	{
 		//R_BindNullIBO();
-		ri.Error(ERR_DROP, "R_BindIBO: NULL ibo");
+		ri->Error(ERR_DROP, "R_BindIBO: NULL ibo");
 		return;
 	}
 
@@ -690,7 +690,7 @@ void R_InitVBOs(void)
 	int             dataSize;
 	int             offset;
 
-	ri.Printf(PRINT_ALL, "------- R_InitVBOs -------\n");
+	ri->Printf(PRINT_ALL, "------- R_InitVBOs -------\n");
 
 	tr.numVBOs = 0;
 	tr.numIBOs = 0;
@@ -756,7 +756,7 @@ void R_ShutdownVBOs(void)
 	VBO_t          *vbo;
 	IBO_t          *ibo;
 
-	ri.Printf(PRINT_ALL, "------- R_ShutdownVBOs -------\n");
+	ri->Printf(PRINT_ALL, "------- R_ShutdownVBOs -------\n");
 
 	R_BindNullVBO();
 	R_BindNullIBO();
@@ -771,7 +771,7 @@ void R_ShutdownVBOs(void)
 			qglDeleteBuffersARB(1, &vbo->vertexesVBO);
 		}
 
-		//ri.Free(vbo);
+		//ri->Free(vbo);
 	}
 
 	for(i = 0; i < tr.numIBOs; i++)
@@ -783,7 +783,7 @@ void R_ShutdownVBOs(void)
 			qglDeleteBuffersARB(1, &ibo->indexesVBO);
 		}
 
-		//ri.Free(ibo);
+		//ri->Free(ibo);
 	}
 
 	tr.numVBOs = 0;
@@ -803,14 +803,14 @@ void R_VBOList_f(void)
 	int             vertexesSize = 0;
 	int             indexesSize = 0;
 
-	ri.Printf(PRINT_ALL, " size          name\n");
-	ri.Printf(PRINT_ALL, "----------------------------------------------------------\n");
+	ri->Printf(PRINT_ALL, " size          name\n");
+	ri->Printf(PRINT_ALL, "----------------------------------------------------------\n");
 
 	for(i = 0; i < tr.numVBOs; i++)
 	{
 		vbo = tr.vbos[i];
 
-		ri.Printf(PRINT_ALL, "%d.%02d MB %s\n", vbo->vertexesSize / (1024 * 1024),
+		ri->Printf(PRINT_ALL, "%d.%02d MB %s\n", vbo->vertexesSize / (1024 * 1024),
 				  (vbo->vertexesSize % (1024 * 1024)) * 100 / (1024 * 1024), vbo->name);
 
 		vertexesSize += vbo->vertexesSize;
@@ -820,18 +820,18 @@ void R_VBOList_f(void)
 	{
 		ibo = tr.ibos[i];
 
-		ri.Printf(PRINT_ALL, "%d.%02d MB %s\n", ibo->indexesSize / (1024 * 1024),
+		ri->Printf(PRINT_ALL, "%d.%02d MB %s\n", ibo->indexesSize / (1024 * 1024),
 				  (ibo->indexesSize % (1024 * 1024)) * 100 / (1024 * 1024), ibo->name);
 
 		indexesSize += ibo->indexesSize;
 	}
 
-	ri.Printf(PRINT_ALL, " %i total VBOs\n", tr.numVBOs);
-	ri.Printf(PRINT_ALL, " %d.%02d MB total vertices memory\n", vertexesSize / (1024 * 1024),
+	ri->Printf(PRINT_ALL, " %i total VBOs\n", tr.numVBOs);
+	ri->Printf(PRINT_ALL, " %d.%02d MB total vertices memory\n", vertexesSize / (1024 * 1024),
 			  (vertexesSize % (1024 * 1024)) * 100 / (1024 * 1024));
 
-	ri.Printf(PRINT_ALL, " %i total IBOs\n", tr.numIBOs);
-	ri.Printf(PRINT_ALL, " %d.%02d MB total triangle indices memory\n", indexesSize / (1024 * 1024),
+	ri->Printf(PRINT_ALL, " %i total IBOs\n", tr.numIBOs);
+	ri->Printf(PRINT_ALL, " %d.%02d MB total triangle indices memory\n", indexesSize / (1024 * 1024),
 			  (indexesSize % (1024 * 1024)) * 100 / (1024 * 1024));
 }
 
@@ -860,46 +860,46 @@ void RB_UpdateVBOs(unsigned int attribBits)
 		{
 			if(attribBits & ATTR_POSITION)
 			{
-				//ri.Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_xyz, tess.numVertexes * sizeof(tess.xyz[0]));
+				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_xyz, tess.numVertexes * sizeof(tess.xyz[0]));
 				qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_xyz,         tess.numVertexes * sizeof(tess.xyz[0]),              tess.xyz);
 			}
 
 			if(attribBits & ATTR_TEXCOORD || attribBits & ATTR_LIGHTCOORD)
 			{
 				// these are interleaved, so we update both if either need it
-				//ri.Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_st, tess.numVertexes * sizeof(tess.texCoords[0][0]) * 2);
+				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_st, tess.numVertexes * sizeof(tess.texCoords[0][0]) * 2);
 				qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_st,          tess.numVertexes * sizeof(tess.texCoords[0][0]) * 2, tess.texCoords);
 			}
 
 			if(attribBits & ATTR_NORMAL)
 			{
-				//ri.Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_normal, tess.numVertexes * sizeof(tess.normal[0]));
+				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_normal, tess.numVertexes * sizeof(tess.normal[0]));
 				qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_normal,      tess.numVertexes * sizeof(tess.normal[0]),           tess.normal);
 			}
 
 #ifdef USE_VERT_TANGENT_SPACE
 			if(attribBits & ATTR_TANGENT)
 			{
-				//ri.Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_tangent, tess.numVertexes * sizeof(tess.tangent[0]));
+				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_tangent, tess.numVertexes * sizeof(tess.tangent[0]));
 				qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_tangent,     tess.numVertexes * sizeof(tess.tangent[0]),          tess.tangent);
 			}
 
 			if(attribBits & ATTR_BITANGENT)
 			{
-				//ri.Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_bitangent, tess.numVertexes * sizeof(tess.bitangent[0]));
+				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_bitangent, tess.numVertexes * sizeof(tess.bitangent[0]));
 				qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_bitangent,   tess.numVertexes * sizeof(tess.bitangent[0]),        tess.bitangent);
 			}
 #endif
 
 			if(attribBits & ATTR_COLOR)
 			{
-				//ri.Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_vertexcolor, tess.numVertexes * sizeof(tess.vertexColors[0]));
+				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_vertexcolor, tess.numVertexes * sizeof(tess.vertexColors[0]));
 				qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_vertexcolor, tess.numVertexes * sizeof(tess.vertexColors[0]),     tess.vertexColors);
 			}
 
 			if(attribBits & ATTR_LIGHTDIRECTION)
 			{
-				//ri.Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_lightdir, tess.numVertexes * sizeof(tess.lightdir[0]));
+				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_lightdir, tess.numVertexes * sizeof(tess.lightdir[0]));
 				qglBufferSubDataARB(GL_ARRAY_BUFFER_ARB, tess.vbo->ofs_lightdir,    tess.numVertexes * sizeof(tess.lightdir[0]),         tess.lightdir);
 			}
 		}
