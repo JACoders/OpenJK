@@ -1969,9 +1969,12 @@ static void R_AddEntitySurface (int entityNum)
 		break;		// don't draw anything
 	case RT_SPRITE:
 	case RT_BEAM:
-	case RT_LIGHTNING:
-	case RT_RAIL_CORE:
-	case RT_RAIL_RINGS:
+	case RT_ORIENTED_QUAD:
+	case RT_ELECTRICITY:
+	case RT_LINE:
+	case RT_ORIENTEDLINE:
+	case RT_CYLINDER:
+	case RT_SABER_GLOW:
 		// self blood sprites, talk balloons, etc should not be drawn in the primary
 		// view.  We can't just do this check for all entities, because md3
 		// entities may still want to cast shadows from them
@@ -2006,10 +2009,31 @@ static void R_AddEntitySurface (int entityNum)
 			case MOD_BRUSH:
 				R_AddBrushModelSurfaces( ent );
 				break;
+			/*
+			Ghoul 2 Insert Start
+			*/
+			case MOD_MDXM:
+				//g2r
+				if (ent->e.ghoul2)
+					R_AddGhoulSurfaces(ent);
+			/*
+			Ghoul 2 Insert End
+			*/
 			case MOD_BAD:		// null model axis
 				if ( (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal) {
 					break;
 				}
+				/*
+				Ghoul 2 Insert Start
+				*/
+				if( ent->e.ghoul2 && G2API_HaveWeGhoul2Models(*((CGhoul2Info_v *)ent->e.ghoul2)) )
+				{
+					R_AddGhoulSurfaces( ent );
+					break;
+				}
+				/*
+				Ghoul 2 Insert End
+				*/
 				R_AddDrawSurf( &entitySurface, tr.defaultShader, 0, 0, 0 );
 				break;
 			default:
@@ -2018,6 +2042,10 @@ static void R_AddEntitySurface (int entityNum)
 			}
 		}
 		break;
+	case RT_ENT_CHAIN:
+			shader = R_GetShaderByHandle( ent->e.customShader );
+			R_AddDrawSurf( &entitySurface, shader, R_SpriteFogNum( ent ), false );
+			break;
 	default:
 		ri->Error( ERR_DROP, "R_AddEntitySurfaces: Bad reType" );
 	}
