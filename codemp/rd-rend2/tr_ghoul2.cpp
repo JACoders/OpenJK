@@ -2456,7 +2456,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 				newSurf->surfaceData = surface;
 			}
 			newSurf->boneCache = RS.boneCache;
-			R_AddDrawSurf( (surfaceType_t *)newSurf, tr.shadowShader, 0, qfalse );
+			R_AddDrawSurf( (surfaceType_t *)newSurf, tr.shadowShader, 0, qfalse, qfalse );
 		}
 
 		// projection shadows work fine with personal models
@@ -2468,7 +2468,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 			CRenderableSurface *newSurf = new CRenderableSurface;
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
-			R_AddDrawSurf( (surfaceType_t *)newSurf, tr.projectionShadowShader, 0, qfalse );
+			R_AddDrawSurf( (surfaceType_t *)newSurf, tr.projectionShadowShader, 0, qfalse, qfalse );
 		}
 
 		// don't add third_person objects if not viewing through a portal
@@ -2477,7 +2477,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 			CRenderableSurface *newSurf = new CRenderableSurface;
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
-			R_AddDrawSurf( (surfaceType_t *)newSurf, (shader_t *)shader, RS.fogNum, qfalse );
+			R_AddDrawSurf( (surfaceType_t *)newSurf, (shader_t *)shader, RS.fogNum, qfalse, qfalse );
 
 #ifdef _G2_GORE
 			if (RS.gore_set && drawGore)
@@ -2557,7 +2557,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 
 						last->goreChain=newSurf2;
 						last=newSurf2;
-						R_AddDrawSurf( (surfaceType_t *)newSurf2,gshader, RS.fogNum, qfalse );
+						R_AddDrawSurf( (surfaceType_t *)newSurf2,gshader, RS.fogNum, qfalse, qfalse );
 					}
 				}
 			}
@@ -3178,8 +3178,8 @@ static void RootMatrix(CGhoul2Info_v &ghoul2,int time,const vec3_t scale,mdxaBon
 extern cvar_t	*r_shadowRange;
 static inline bool bInShadowRange(vec3_t location)
 {
-	const float c = DotProduct( tr.viewParms.ori.axis[0], tr.viewParms.ori.origin );
-	const float dist = DotProduct( tr.viewParms.ori.axis[0], location ) - c;
+	const float c = DotProduct( tr.viewParms.or.axis[0], tr.viewParms.or.origin );
+	const float dist = DotProduct( tr.viewParms.or.axis[0], location ) - c;
 
 //	return (dist < tr.distanceCull/1.5f);
 	return (dist < r_shadowRange->value);
@@ -3782,16 +3782,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 			assert(0); 
 		}
 
-	}
-
-	// NOTE: This is required because a ghoul model might need to be rendered twice a frame (don't cringe,
-	// it's not THAT bad), so we only delete it when doing the glow pass. Warning though, this assumes that
-	// the glow is rendered _second_!!! If that changes, change this!
-	extern bool g_bRenderGlowingObjects;
-	extern bool g_bDynamicGlowSupported;
-	if ( !tess.shader->hasGlow || g_bRenderGlowingObjects || !g_bDynamicGlowSupported || !r_DynamicGlow->integer )
-	{
-		delete storeSurf;
 	}
 #endif
 

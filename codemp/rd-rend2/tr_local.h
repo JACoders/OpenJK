@@ -1174,6 +1174,13 @@ typedef enum {
 	SF_MD4,
 	SF_MDR,
 	SF_IQM,
+/*
+Ghoul2 Insert Start
+*/
+	SF_MDX,
+/*
+Ghoul2 Insert End
+*/
 	SF_FLARE,
 	SF_ENTITY,				// beams, rails, lightning, etc that can be determined by entity
 	SF_DISPLAY_LIST,
@@ -2476,6 +2483,9 @@ typedef struct shaderCommands_s
 	int			numPasses;
 	void		(*currentStageIteratorFunc)( void );
 	shaderStage_t	**xstages;
+
+	// JA specific
+	bool		fading;
 } shaderCommands_t;
 
 extern	shaderCommands_t	tess;
@@ -2702,6 +2712,74 @@ void RB_IQMSurfaceAnim( surfaceType_t *surface );
 int R_IQMLerpTag( orientation_t *tag, iqmData_t *data,
                   int startFrame, int endFrame,
                   float frac, const char *tagName );
+
+/*
+Ghoul2 Insert Start
+*/
+#ifdef _MSC_VER
+#pragma warning (disable: 4512)	//default assignment operator could not be gened
+#endif
+class CRenderableSurface
+{
+public:
+#ifdef _G2_GORE
+	int				ident;
+#else
+	const int		ident;			// ident of this surface - required so the materials renderer knows what sort of surface this refers to 
+#endif
+	CBoneCache 		*boneCache;
+	mdxmSurface_t	*surfaceData;	// pointer to surface data loaded into file - only used by client renderer DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of wack on the game
+#ifdef _G2_GORE
+	float			*alternateTex;		// alternate texture coordinates.
+	void			*goreChain;
+
+	float			scale;
+	float			fade;
+	float			impactTime; // this is a number between 0 and 1 that dictates the progression of the bullet impact
+#endif
+
+#ifdef _G2_GORE
+	CRenderableSurface& operator= ( const CRenderableSurface& src )
+	{
+		ident	 = src.ident;
+		boneCache = src.boneCache;
+		surfaceData = src.surfaceData;
+		alternateTex = src.alternateTex;
+		goreChain = src.goreChain;
+
+		return *this;
+	}
+#endif
+
+CRenderableSurface():	
+	ident(SF_MDX),
+	boneCache(0),
+#ifdef _G2_GORE
+	surfaceData(0),
+	alternateTex(0),
+	goreChain(0)
+#else
+	surfaceData(0)
+#endif
+	{}
+
+#ifdef _G2_GORE
+	void Init()
+	{
+		ident = SF_MDX;
+		boneCache=0;
+		surfaceData=0;
+		alternateTex=0;
+		goreChain=0;
+	}
+#endif
+};
+
+void R_AddGhoulSurfaces( trRefEntity_t *ent );
+void RB_SurfaceGhoul( CRenderableSurface *surface );
+/*
+Ghoul2 Insert End
+*/
 
 /*
 =============================================================
