@@ -2944,5 +2944,9 @@ void		RE_InsertModelIntoHash(const char *name, model_t *mod);
 Ghoul2 Insert End
 */
 
+image_t	*R_FindImageFile( const char *name, imgType_t type, int flags );
+qhandle_t RE_RegisterShader( const char *name );
+qhandle_t RE_RegisterShaderNoMip( const char *name );
+
 
 #endif //TR_LOCAL_H

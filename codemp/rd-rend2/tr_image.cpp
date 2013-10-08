@@ -1560,7 +1560,7 @@ RawImage_ScaleToPower2
 
 ===============
 */
-static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_height, int *inout_scaled_width, int *inout_scaled_height, imgType_t type, imgFlags_t flags, byte **resampledBuffer)
+static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_height, int *inout_scaled_width, int *inout_scaled_height, imgType_t type, int flags, byte **resampledBuffer)
 {
 	int width =         *inout_width;
 	int height =        *inout_height;
@@ -1909,7 +1909,7 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 }
 
 
-static void RawImage_UploadTexture( byte *data, int x, int y, int width, int height, GLenum internalFormat, imgType_t type, imgFlags_t flags, qboolean subtexture )
+static void RawImage_UploadTexture( byte *data, int x, int y, int width, int height, GLenum internalFormat, imgType_t type, int flags, qboolean subtexture )
 {
 	int dataFormat, dataType;
 
@@ -2530,7 +2530,7 @@ Finds or loads the given image.
 Returns NULL if it fails, not a default image.
 ==============
 */
-image_t	*R_FindImageFile( const char *name, imgType_t type, imgFlags_t flags )
+image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 {
 	image_t	*image;
 	int		width, height;
