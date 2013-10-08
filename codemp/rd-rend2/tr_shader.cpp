@@ -361,7 +361,7 @@ ParseTexMod
 static void ParseTexMod( char *_text, shaderStage_t *stage )
 {
 	const char *token;
-	const char **text = &_text;
+	const char **text = (const char **)&_text;
 	texModInfo_t *tmi;
 
 	if ( stage->bundle[0].numTexMods == TR_MAX_TEXMODS ) {
@@ -655,7 +655,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			else
 			{
 				imgType_t type = IMGTYPE_COLORALPHA;
-				imgFlags_t flags = IMGFLAG_NONE;
+				int flags = IMGFLAG_NONE;
 
 				if (!shader.noMipMaps)
 					flags |= IMGFLAG_MIPMAP;
@@ -695,7 +695,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		else if ( !Q_stricmp( token, "clampmap" ) )
 		{
 			imgType_t type = IMGTYPE_COLORALPHA;
-			imgFlags_t flags = IMGFLAG_CLAMPTOEDGE;
+			int flags = IMGFLAG_CLAMPTOEDGE;
 
 			token = COM_ParseExt( text, qfalse );
 			if ( !token[0] )
@@ -758,7 +758,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				}
 				num = stage->bundle[0].numImageAnimations;
 				if ( num < MAX_IMAGE_ANIMATIONS ) {
-					imgFlags_t flags = IMGFLAG_NONE;
+					int flags = IMGFLAG_NONE;
 
 					if (!shader.noMipMaps)
 						flags |= IMGFLAG_MIPMAP;
@@ -1381,7 +1381,7 @@ static void ParseSkyParms( const char **text ) {
 	static char	*suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
 	char		pathname[MAX_QPATH];
 	int			i;
-	imgFlags_t imgFlags = (imgFlags_t)(IMGFLAG_MIPMAP | IMGFLAG_PICMIP);
+	int imgFlags = IMGFLAG_MIPMAP | IMGFLAG_PICMIP;
 
 	if (r_srgb->integer)
 		imgFlags |= IMGFLAG_SRGB;
@@ -2202,7 +2202,7 @@ static void CollapseStagesToLightall(shaderStage_t *diffuse,
 		{
 			char normalName[MAX_QPATH];
 			image_t *normalImg;
-			imgFlags_t normalFlags = (diffuseImg->flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_SRGB)) | IMGFLAG_NOLIGHTSCALE;
+			imgFlags_t normalFlags = (imgFlags_t)((diffuseImg->flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_SRGB)) | IMGFLAG_NOLIGHTSCALE);
 
 			COM_StripExtension(diffuseImg->imgName, normalName, MAX_QPATH);
 			Q_strcat(normalName, MAX_QPATH, "_n");
@@ -2509,7 +2509,7 @@ static qboolean CollapseStagesToGLSL(void)
 		}
 	}
 
-	return numStages;
+	return (qboolean)numStages;
 }
 
 /*
@@ -2639,7 +2639,7 @@ static shader_t *GeneratePermanentShader( void ) {
 		return tr.defaultShader;
 	}
 
-	newShader = ri->Hunk_Alloc( sizeof( shader_t ), h_low );
+	newShader = (shader_t *)ri->Hunk_Alloc( sizeof( shader_t ), h_low );
 
 	*newShader = shader;
 
@@ -2661,12 +2661,12 @@ static shader_t *GeneratePermanentShader( void ) {
 		if ( !stages[i].active ) {
 			break;
 		}
-		newShader->stages[i] = ri->Hunk_Alloc( sizeof( stages[i] ), h_low );
+		newShader->stages[i] = (shaderStage_t *)ri->Hunk_Alloc( sizeof( stages[i] ), h_low );
 		*newShader->stages[i] = stages[i];
 
 		for ( b = 0 ; b < NUM_TEXTURE_BUNDLES ; b++ ) {
 			size = newShader->stages[i]->bundle[b].numTexMods * sizeof( texModInfo_t );
-			newShader->stages[i]->bundle[b].texMods = ri->Hunk_Alloc( size, h_low );
+			newShader->stages[i]->bundle[b].texMods = (texModInfo_t *)ri->Hunk_Alloc( size, h_low );
 			Com_Memcpy( newShader->stages[i]->bundle[b].texMods, stages[i].bundle[b].texMods, size );
 		}
 	}
@@ -2974,9 +2974,10 @@ return NULL if not found
 If found, it will return a valid shader
 =====================
 */
-static char *FindShaderInShaderText( const char *shadername ) {
+static const char *FindShaderInShaderText( const char *shadername ) {
 
-	char *token, *p;
+	char *token;
+	const char *p;
 
 	int i, hash;
 
@@ -3012,7 +3013,7 @@ static char *FindShaderInShaderText( const char *shadername ) {
 		}
 		else {
 			// skip the definition
-			SkipBracedSection( &p, 0 );
+			SkipBracedSection( &p );
 		}
 	}
 
@@ -3089,8 +3090,8 @@ most world construction surfaces.
 */
 shader_t *R_FindShader( const char *name, int lightmapIndex, qboolean mipRawImage ) {
 	char		strippedName[MAX_QPATH];
-	int			i, hash;
-	char		*shaderText;
+	int			i, hash, flags;
+	const char	*shaderText;
 	image_t		*image;
 	shader_t	*sh;
 
@@ -3160,32 +3161,29 @@ shader_t *R_FindShader( const char *name, int lightmapIndex, qboolean mipRawImag
 	// if not defined in the in-memory shader descriptions,
 	// look for a single supported image file
 	//
+
+	flags = IMGFLAG_NONE;
+
+	if (r_srgb->integer)
+		flags |= IMGFLAG_SRGB;
+
+	if (mipRawImage)
 	{
-		imgFlags_t flags;
+		flags |= IMGFLAG_MIPMAP | IMGFLAG_PICMIP;
 
-		flags = IMGFLAG_NONE;
+		if (r_genNormalMaps->integer)
+			flags |= IMGFLAG_GENNORMALMAP;
+	}
+	else
+	{
+		flags |= IMGFLAG_CLAMPTOEDGE;
+	}
 
-		if (r_srgb->integer)
-			flags |= IMGFLAG_SRGB;
-
-		if (mipRawImage)
-		{
-			flags |= IMGFLAG_MIPMAP | IMGFLAG_PICMIP;
-
-			if (r_genNormalMaps->integer)
-				flags |= IMGFLAG_GENNORMALMAP;
-		}
-		else
-		{
-			flags |= IMGFLAG_CLAMPTOEDGE;
-		}
-
-		image = R_FindImageFile( name, IMGTYPE_COLORALPHA, flags );
-		if ( !image ) {
-			ri->Printf( PRINT_DEVELOPER, "Couldn't find image file for shader %s\n", name );
-			shader.defaultShader = qtrue;
-			return FinishShader();
-		}
+	image = R_FindImageFile( name, IMGTYPE_COLORALPHA, flags );
+	if ( !image ) {
+		ri->Printf( PRINT_DEVELOPER, "Couldn't find image file for shader %s\n", name );
+		shader.defaultShader = qtrue;
+		return FinishShader();
 	}
 
 	//
@@ -3531,7 +3529,7 @@ static void ScanAndLoadShaderFiles( void )
 {
 	char **shaderFiles;
 	char *buffers[MAX_SHADER_FILES];
-	char *p;
+	const char *p;
 	int numShaderFiles;
 	int i;
 	char *oldp, *token, *hashMem, *textEnd;
@@ -3607,7 +3605,7 @@ static void ScanAndLoadShaderFiles( void )
 				break;
 			}
 
-			if(!SkipBracedSection(&p, 1))
+			if(!SkipBracedSection(&p))
 			{
 				ri->Printf(PRINT_WARNING, "WARNING: Ignoring shader file %s. Shader \"%s\" on line %d missing closing brace.\n",
 							filename, shaderName, shaderLine);
@@ -3623,7 +3621,7 @@ static void ScanAndLoadShaderFiles( void )
 	}
 
 	// build single large buffer
-	s_shaderText = ri->Hunk_Alloc( sum + numShaderFiles*2, h_low );
+	s_shaderText = (char *)ri->Hunk_Alloc( sum + numShaderFiles*2, h_low );
 	s_shaderText[ 0 ] = '\0';
 	textEnd = s_shaderText;
  
@@ -3658,12 +3656,12 @@ static void ScanAndLoadShaderFiles( void )
 		hash = generateHashValue(token, MAX_SHADERTEXT_HASH);
 		shaderTextHashTableSizes[hash]++;
 		size++;
-		SkipBracedSection(&p, 0);
+		SkipBracedSection(&p);
 	}
 
 	size += MAX_SHADERTEXT_HASH;
 
-	hashMem = ri->Hunk_Alloc( size * sizeof(char *), h_low );
+	hashMem = (char *)ri->Hunk_Alloc( size * sizeof(char *), h_low );
 
 	for (i = 0; i < MAX_SHADERTEXT_HASH; i++) {
 		shaderTextHashTable[i] = (char **) hashMem;
@@ -3684,7 +3682,7 @@ static void ScanAndLoadShaderFiles( void )
 		hash = generateHashValue(token, MAX_SHADERTEXT_HASH);
 		shaderTextHashTable[hash][shaderTextHashTableSizes[hash]++] = oldp;
 
-		SkipBracedSection(&p, 0);
+		SkipBracedSection(&p);
 	}
 
 	return;

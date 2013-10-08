@@ -850,7 +850,7 @@ void R_AddIQMSurfaces( trRefEntity_t *ent ) {
 			{
 				if (!strcmp(skin->surfaces[j]->name, surface->name))
 				{
-					shader = skin->surfaces[j]->shader;
+					shader = (shader_t *)skin->surfaces[j]->shader;
 					break;
 				}
 			}

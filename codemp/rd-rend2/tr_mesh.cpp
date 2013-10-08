@@ -363,7 +363,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 			for ( j = 0 ; j < skin->numSurfaces ; j++ ) {
 				// the names have both been lowercased
 				if ( !strcmp( skin->surfaces[j]->name, surface->name ) ) {
-					shader = skin->surfaces[j]->shader;
+					shader = (shader_t *)skin->surfaces[j]->shader;
 					break;
 				}
 			}

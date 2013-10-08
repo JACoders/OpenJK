@@ -854,7 +854,7 @@ static qboolean R_LoadMDR( model_t *mod, void *buffer, int filesize, const char 
 	}
 
 	mod->dataSize += size;
-	mod->modelData = mdr = ri->Hunk_Alloc( size, h_low );
+	mod->modelData = mdr = (mdrHeader_t*)ri->Hunk_Alloc( size, h_low );
 
 	// Copy all the values over from the file and fix endian issues in the process, if necessary.
 	
@@ -1164,7 +1164,7 @@ static qboolean R_LoadMD4( model_t *mod, void *buffer, const char *mod_name ) {
 	mod->type = MOD_MD4;
 	size = LittleLong(pinmodel->ofsEnd);
 	mod->dataSize += size;
-	mod->modelData = md4 = ri->Hunk_Alloc( size, h_low );
+	mod->modelData = md4 = (md4Header_t *)ri->Hunk_Alloc( size, h_low );
 
 	Com_Memcpy(md4, buffer, size);
 
@@ -1465,7 +1465,7 @@ int R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFram
 			R_GetAnimTag((mdrHeader_t *) model->modelData, endFrame, tagName, end);
 		}
 		else if( model->type == MOD_IQM ) {
-			return R_IQMLerpTag( tag, model->modelData,
+			return R_IQMLerpTag( tag, (iqmData_t *)model->modelData,
 					startFrame, endFrame,
 					frac, tagName );
 		} else {
@@ -1554,7 +1554,7 @@ void R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs ) {
 	} else if(model->type == MOD_IQM) {
 		iqmData_t *iqmData;
 		
-		iqmData = model->modelData;
+		iqmData = (iqmData_t *)model->modelData;
 
 		if(iqmData->bounds)
 		{
