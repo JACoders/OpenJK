@@ -179,7 +179,7 @@ static void GLSL_PrintInfoLog(GLhandleARB object, qboolean developerOnly)
 			ri->Printf(printLevel, "%s\n", msgPart);
 		}
 
-		ri->Free(msg);
+		Z_Free(msg);
 	}
 }
 
@@ -202,7 +202,7 @@ static void GLSL_PrintShaderSource(GLhandleARB object)
 		ri->Printf(PRINT_ALL, "%s\n", msgPart);
 	}
 
-	ri->Free(msg);
+	Z_Free(msg);
 }
 
 static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, char *dest, int size )
@@ -856,7 +856,7 @@ void GLSL_DeleteGPUShader(shaderProgram_t *program)
 
 		if (program->uniformBuffer)
 		{
-			ri->Free(program->uniformBuffer);
+			Z_Free(program->uniformBuffer);
 		}
 
 		Com_Memset(program, 0, sizeof(*program));

@@ -495,11 +495,11 @@ R_FreeSurfaceGridMesh
 =================
 */
 void R_FreeSurfaceGridMesh( srfGridMesh_t *grid ) {
-	ri->Free(grid->widthLodError);
-	ri->Free(grid->heightLodError);
-	ri->Free(grid->triangles);
-	ri->Free(grid->verts);
-	ri->Free(grid);
+	Z_Free(grid->widthLodError);
+	Z_Free(grid->heightLodError);
+	Z_Free(grid->triangles);
+	Z_Free(grid->verts);
+	Z_Free(grid);
 }
 
 /*
