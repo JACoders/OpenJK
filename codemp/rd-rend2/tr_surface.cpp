@@ -478,7 +478,7 @@ static qboolean RB_SurfaceVbo(VBO_t *vbo, IBO_t *ibo, int numVerts, int numIndex
 	else if (mergeBack == -1 && mergeForward != -1)
 	{
 		tess.multiDrawNumIndexes[mergeForward] += numIndexes;
-		tess.multiDrawFirstIndex[mergeForward]  = firstIndexOffset;
+		tess.multiDrawFirstIndex[mergeForward]  = (glIndex_t *)firstIndexOffset;
 		tess.multiDrawLastIndex[mergeForward]   = tess.multiDrawFirstIndex[mergeForward] + tess.multiDrawNumIndexes[mergeForward];
 		tess.multiDrawMinIndex[mergeForward] = MIN(tess.multiDrawMinIndex[mergeForward], minIndex);
 		tess.multiDrawMaxIndex[mergeForward] = MAX(tess.multiDrawMaxIndex[mergeForward], maxIndex);
@@ -502,8 +502,8 @@ static qboolean RB_SurfaceVbo(VBO_t *vbo, IBO_t *ibo, int numVerts, int numIndex
 	else if (mergeBack == -1 && mergeForward == -1)
 	{
 		tess.multiDrawNumIndexes[tess.multiDrawPrimitives] = numIndexes;
-		tess.multiDrawFirstIndex[tess.multiDrawPrimitives] = firstIndexOffset;
-		tess.multiDrawLastIndex[tess.multiDrawPrimitives] = lastIndexOffset;
+		tess.multiDrawFirstIndex[tess.multiDrawPrimitives] = (glIndex_t *)firstIndexOffset;
+		tess.multiDrawLastIndex[tess.multiDrawPrimitives] = (glIndex_t *)lastIndexOffset;
 		tess.multiDrawMinIndex[tess.multiDrawPrimitives] = minIndex;
 		tess.multiDrawMaxIndex[tess.multiDrawPrimitives] = maxIndex;
 		tess.multiDrawPrimitives++;
@@ -628,217 +628,6 @@ static void RB_SurfaceBeam( void )
 }
 
 //================================================================================
-
-static void DoRailCore( const vec3_t start, const vec3_t end, const vec3_t up, float len, float spanWidth )
-{
-	float		spanWidth2;
-	int			vbase;
-	float		t = len / 256.0f;
-
-	vbase = tess.numVertexes;
-
-	spanWidth2 = -spanWidth;
-
-	// FIXME: use quad stamp?
-	VectorMA( start, spanWidth, up, tess.xyz[tess.numVertexes] );
-	tess.texCoords[tess.numVertexes][0][0] = 0;
-	tess.texCoords[tess.numVertexes][0][1] = 0;
-	tess.vertexColors[tess.numVertexes][0] = backEnd.currentEntity->e.shaderRGBA[0] * 0.25 / 255.0f;
-	tess.vertexColors[tess.numVertexes][1] = backEnd.currentEntity->e.shaderRGBA[1] * 0.25 / 255.0f;
-	tess.vertexColors[tess.numVertexes][2] = backEnd.currentEntity->e.shaderRGBA[2] * 0.25 / 255.0f;
-	tess.numVertexes++;
-
-	VectorMA( start, spanWidth2, up, tess.xyz[tess.numVertexes] );
-	tess.texCoords[tess.numVertexes][0][0] = 0;
-	tess.texCoords[tess.numVertexes][0][1] = 1;
-	tess.vertexColors[tess.numVertexes][0] = backEnd.currentEntity->e.shaderRGBA[0] / 255.0f;
-	tess.vertexColors[tess.numVertexes][1] = backEnd.currentEntity->e.shaderRGBA[1] / 255.0f;
-	tess.vertexColors[tess.numVertexes][2] = backEnd.currentEntity->e.shaderRGBA[2] / 255.0f;
-	tess.numVertexes++;
-
-	VectorMA( end, spanWidth, up, tess.xyz[tess.numVertexes] );
-
-	tess.texCoords[tess.numVertexes][0][0] = t;
-	tess.texCoords[tess.numVertexes][0][1] = 0;
-	tess.vertexColors[tess.numVertexes][0] = backEnd.currentEntity->e.shaderRGBA[0] / 255.0f;
-	tess.vertexColors[tess.numVertexes][1] = backEnd.currentEntity->e.shaderRGBA[1] / 255.0f;
-	tess.vertexColors[tess.numVertexes][2] = backEnd.currentEntity->e.shaderRGBA[2] / 255.0f;
-	tess.numVertexes++;
-
-	VectorMA( end, spanWidth2, up, tess.xyz[tess.numVertexes] );
-	tess.texCoords[tess.numVertexes][0][0] = t;
-	tess.texCoords[tess.numVertexes][0][1] = 1;
-	tess.vertexColors[tess.numVertexes][0] = backEnd.currentEntity->e.shaderRGBA[0] / 255.0f;
-	tess.vertexColors[tess.numVertexes][1] = backEnd.currentEntity->e.shaderRGBA[1] / 255.0f;
-	tess.vertexColors[tess.numVertexes][2] = backEnd.currentEntity->e.shaderRGBA[2] / 255.0f;
-	tess.numVertexes++;
-
-	tess.indexes[tess.numIndexes++] = vbase;
-	tess.indexes[tess.numIndexes++] = vbase + 1;
-	tess.indexes[tess.numIndexes++] = vbase + 2;
-
-	tess.indexes[tess.numIndexes++] = vbase + 2;
-	tess.indexes[tess.numIndexes++] = vbase + 1;
-	tess.indexes[tess.numIndexes++] = vbase + 3;
-}
-
-static void DoRailDiscs( int numSegs, const vec3_t start, const vec3_t dir, const vec3_t right, const vec3_t up )
-{
-	int i;
-	vec3_t	pos[4];
-	vec3_t	v;
-	int		spanWidth = r_railWidth->integer;
-	float c, s;
-	float		scale;
-
-	if ( numSegs > 1 )
-		numSegs--;
-	if ( !numSegs )
-		return;
-
-	scale = 0.25;
-
-	for ( i = 0; i < 4; i++ )
-	{
-		c = cos( DEG2RAD( 45 + i * 90 ) );
-		s = sin( DEG2RAD( 45 + i * 90 ) );
-		v[0] = ( right[0] * c + up[0] * s ) * scale * spanWidth;
-		v[1] = ( right[1] * c + up[1] * s ) * scale * spanWidth;
-		v[2] = ( right[2] * c + up[2] * s ) * scale * spanWidth;
-		VectorAdd( start, v, pos[i] );
-
-		if ( numSegs > 1 )
-		{
-			// offset by 1 segment if we're doing a long distance shot
-			VectorAdd( pos[i], dir, pos[i] );
-		}
-	}
-
-	for ( i = 0; i < numSegs; i++ )
-	{
-		int j;
-
-		RB_CHECKOVERFLOW( 4, 6 );
-
-		for ( j = 0; j < 4; j++ )
-		{
-			VectorCopy( pos[j], tess.xyz[tess.numVertexes] );
-			tess.texCoords[tess.numVertexes][0][0] = ( j < 2 );
-			tess.texCoords[tess.numVertexes][0][1] = ( j && j != 3 );
-			tess.vertexColors[tess.numVertexes][0] = backEnd.currentEntity->e.shaderRGBA[0] / 255.0f;
-			tess.vertexColors[tess.numVertexes][1] = backEnd.currentEntity->e.shaderRGBA[1] / 255.0f;
-			tess.vertexColors[tess.numVertexes][2] = backEnd.currentEntity->e.shaderRGBA[2] / 255.0f;
-			tess.numVertexes++;
-
-			VectorAdd( pos[j], dir, pos[j] );
-		}
-
-		tess.indexes[tess.numIndexes++] = tess.numVertexes - 4 + 0;
-		tess.indexes[tess.numIndexes++] = tess.numVertexes - 4 + 1;
-		tess.indexes[tess.numIndexes++] = tess.numVertexes - 4 + 3;
-		tess.indexes[tess.numIndexes++] = tess.numVertexes - 4 + 3;
-		tess.indexes[tess.numIndexes++] = tess.numVertexes - 4 + 1;
-		tess.indexes[tess.numIndexes++] = tess.numVertexes - 4 + 2;
-	}
-}
-
-/*
-** RB_SurfaceRailRinges
-*/
-static void RB_SurfaceRailRings( void ) {
-	refEntity_t *e;
-	int			numSegs;
-	int			len;
-	vec3_t		vec;
-	vec3_t		right, up;
-	vec3_t		start, end;
-
-	e = &backEnd.currentEntity->e;
-
-	VectorCopy( e->oldorigin, start );
-	VectorCopy( e->origin, end );
-
-	// compute variables
-	VectorSubtract( end, start, vec );
-	len = VectorNormalize( vec );
-	MakeNormalVectors( vec, right, up );
-	numSegs = ( len ) / r_railSegmentLength->value;
-	if ( numSegs <= 0 ) {
-		numSegs = 1;
-	}
-
-	VectorScale( vec, r_railSegmentLength->value, vec );
-
-	DoRailDiscs( numSegs, start, vec, right, up );
-}
-
-/*
-** RB_SurfaceRailCore
-*/
-static void RB_SurfaceRailCore( void ) {
-	refEntity_t *e;
-	int			len;
-	vec3_t		right;
-	vec3_t		vec;
-	vec3_t		start, end;
-	vec3_t		v1, v2;
-
-	e = &backEnd.currentEntity->e;
-
-	VectorCopy( e->oldorigin, start );
-	VectorCopy( e->origin, end );
-
-	VectorSubtract( end, start, vec );
-	len = VectorNormalize( vec );
-
-	// compute side vector
-	VectorSubtract( start, backEnd.viewParms.or.origin, v1 );
-	VectorNormalize( v1 );
-	VectorSubtract( end, backEnd.viewParms.or.origin, v2 );
-	VectorNormalize( v2 );
-	CrossProduct( v1, v2, right );
-	VectorNormalize( right );
-
-	DoRailCore( start, end, right, len, r_railCoreWidth->integer );
-}
-
-/*
-** RB_SurfaceLightningBolt
-*/
-static void RB_SurfaceLightningBolt( void ) {
-	refEntity_t *e;
-	int			len;
-	vec3_t		right;
-	vec3_t		vec;
-	vec3_t		start, end;
-	vec3_t		v1, v2;
-	int			i;
-
-	e = &backEnd.currentEntity->e;
-
-	VectorCopy( e->oldorigin, end );
-	VectorCopy( e->origin, start );
-
-	// compute variables
-	VectorSubtract( end, start, vec );
-	len = VectorNormalize( vec );
-
-	// compute side vector
-	VectorSubtract( start, backEnd.viewParms.or.origin, v1 );
-	VectorNormalize( v1 );
-	VectorSubtract( end, backEnd.viewParms.or.origin, v2 );
-	VectorNormalize( v2 );
-	CrossProduct( v1, v2, right );
-	VectorNormalize( right );
-
-	for ( i = 0 ; i < 4 ; i++ ) {
-		vec3_t	temp;
-
-		DoRailCore( start, end, right, len, 8 );
-		RotatePointAroundVector( temp, vec, right, 45 );
-		VectorCopy( temp, right );
-	}
-}
 
 /*
 ** VectorArrayNormalize
@@ -1549,15 +1338,7 @@ static void RB_SurfaceEntity( surfaceType_t *surfType ) {
 	case RT_BEAM:
 		RB_SurfaceBeam();
 		break;
-	case RT_RAIL_CORE:
-		RB_SurfaceRailCore();
-		break;
-	case RT_RAIL_RINGS:
-		RB_SurfaceRailRings();
-		break;
-	case RT_LIGHTNING:
-		RB_SurfaceLightningBolt();
-		break;
+#pragma error("HALT! You need to add cases for RT_ORIENTED_QUAD, RT_ELECTRICITY, RT_LINE, RT_ORIENTEDLINE, RT_SABER_GLOW, RT_CYLINDER and RT_ENT_CHAIN to RB_SurfaceEntity!!")
 	default:
 		RB_SurfaceAxis();
 		break;
