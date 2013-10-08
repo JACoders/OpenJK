@@ -172,7 +172,7 @@ based on Tess_InstantQuad from xreal
 */
 void RB_InstantQuad2(vec4_t quadVerts[4], vec2_t texCoords[4])
 {
-	GLimp_LogComment("--- RB_InstantQuad2 ---\n");
+//	GLimp_LogComment("--- RB_InstantQuad2 ---\n");					// FIXME: REIMPLEMENT (wasn't implemented in ioq3 to begin with) --eez
 
 	tess.numVertexes = 0;
 	tess.numIndexes = 0;
@@ -1367,7 +1367,7 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	//mdvSurface_t   *mdvSurface;
 	refEntity_t    *refEnt;
 
-	GLimp_LogComment("--- RB_SurfaceVBOMDVMesh ---\n");
+//	GLimp_LogComment("--- RB_SurfaceVBOMDVMesh ---\n");					// FIXME: REIMPLEMENT (wasn't implemented in ioq3 to begin with) --eez
 
 	if(!surface->vbo || !surface->ibo)
 		return;

@@ -594,11 +594,11 @@ void R_BindVBO(VBO_t * vbo)
 		return;
 	}
 
-	if(r_logFile->integer)
+/*	if(r_logFile->integer)
 	{
 		// don't just call LogComment, or we will get a call to va() every frame!
 		GLimp_LogComment(va("--- R_BindVBO( %s ) ---\n", vbo->name));
-	}
+	}						*/			// FIXME: REIMPLEMENT (wasn't implemented in ioq3 to begin with) --eez
 
 	if(glState.currentVBO != vbo)
 	{
@@ -622,7 +622,7 @@ R_BindNullVBO
 */
 void R_BindNullVBO(void)
 {
-	GLimp_LogComment("--- R_BindNullVBO ---\n");
+//	GLimp_LogComment("--- R_BindNullVBO ---\n");		// FIXME: REIMPLEMENT (wasn't implemented in ioq3 to begin with) --eez
 
 	if(glState.currentVBO)
 	{
@@ -647,11 +647,11 @@ void R_BindIBO(IBO_t * ibo)
 		return;
 	}
 
-	if(r_logFile->integer)
+/*	if(r_logFile->integer)
 	{
 		// don't just call LogComment, or we will get a call to va() every frame!
 		GLimp_LogComment(va("--- R_BindIBO( %s ) ---\n", ibo->name));
-	}
+	}						*/		// FIXME: REIMPLEMENT (wasn't implemented in ioq3 to begin with) --eez
 
 	if(glState.currentIBO != ibo)
 	{
@@ -670,7 +670,7 @@ R_BindNullIBO
 */
 void R_BindNullIBO(void)
 {
-	GLimp_LogComment("--- R_BindNullIBO ---\n");
+//	GLimp_LogComment("--- R_BindNullIBO ---\n");		// FIXME: REIMPLEMENT (wasn't implemented in ioq3 to begin with) --eez
 
 	if(glState.currentIBO)
 	{
@@ -847,7 +847,7 @@ Update the default VBO to replace the client side vertex arrays
 */
 void RB_UpdateVBOs(unsigned int attribBits)
 {
-	GLimp_LogComment("--- RB_UpdateVBOs ---\n");
+//	GLimp_LogComment("--- RB_UpdateVBOs ---\n");					// FIXME: REIMPLEMENT (wasn't implemented in ioq3 to begin with) --eez
 
 	backEnd.pc.c_dynamicVboDraws++;
 
