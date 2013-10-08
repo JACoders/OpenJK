@@ -27,6 +27,11 @@ if(BuildMPEngine)
 	add_subdirectory("${MPDir}/rd-vanilla")
 endif(BuildMPEngine)
 
+#	Add rend2 JKA Renderer Project
+if(BuildMPRend2)
+	add_subdirectory("${MPDir}/rd-rend2")
+endif(BuildMPRend2)
+
 
 #    Common things between Engine and Dedicated Server
 if(BuildMPEngine OR BuildMPDed)
