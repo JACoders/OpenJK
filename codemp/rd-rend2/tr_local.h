@@ -419,6 +419,13 @@ typedef enum
 	ST_GLSL
 } stageType_t;
 
+// any change in the LIGHTMAP_* defines here MUST be reflected in
+// R_FindShader() in tr_bsp.c
+#define LIGHTMAP_2D         -4	// shader is for 2D rendering
+#define LIGHTMAP_BY_VERTEX  -3	// pre-lit triangle models
+#define LIGHTMAP_WHITEIMAGE -2
+#define LIGHTMAP_NONE       -1
+
 typedef struct {
 	qboolean		active;
 	
@@ -904,18 +911,6 @@ typedef struct {
 
 
 //=================================================================================
-
-// skins allow models to be retextured without modifying the model file
-typedef struct {
-	char		name[MAX_QPATH];
-	shader_t	*shader;
-} skinSurface_t;
-
-typedef struct skin_s {
-	char		name[MAX_QPATH];		// game path, including extension
-	int			numSurfaces;
-	skinSurface_t	*surfaces[MD3_MAX_SURFACES];
-} skin_t;
 
 
 typedef struct {
