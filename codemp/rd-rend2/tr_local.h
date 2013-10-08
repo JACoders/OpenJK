@@ -62,6 +62,44 @@ typedef unsigned int glIndex_t;
 
 #define USE_VERT_TANGENT_SPACE
 
+typedef enum
+{
+	IMGTYPE_COLORALPHA, // for color, lightmap, diffuse, and specular
+	IMGTYPE_NORMAL,
+	IMGTYPE_NORMALHEIGHT,
+	IMGTYPE_DELUXE, // normals are swizzled, deluxe are not
+} imgType_t;
+
+typedef enum
+{
+	IMGFLAG_NONE           = 0x0000,
+	IMGFLAG_MIPMAP         = 0x0001,
+	IMGFLAG_PICMIP         = 0x0002,
+	IMGFLAG_CUBEMAP        = 0x0004,
+	IMGFLAG_NO_COMPRESSION = 0x0010,
+	IMGFLAG_NOLIGHTSCALE   = 0x0020,
+	IMGFLAG_CLAMPTOEDGE    = 0x0040,
+	IMGFLAG_SRGB           = 0x0080,
+	IMGFLAG_GENNORMALMAP   = 0x0100,
+} imgFlags_t;
+
+typedef struct image_s {
+	char		imgName[MAX_QPATH];		// game path, including extension
+	int			width, height;				// source image
+	int			uploadWidth, uploadHeight;	// after power of two and picmip but not including clamp to MAX_TEXTURE_SIZE
+	GLuint		texnum;					// gl texture binding
+
+	int			frameUsed;			// for texture usage in frame statistics
+
+	int			internalFormat;
+	int			TMU;				// only needed for voodoo2
+
+	imgType_t   type;
+	imgFlags_t  flags;
+
+	struct image_s*	next;
+} image_t;
+
 typedef struct dlight_s {
 	vec3_t	origin;
 	vec3_t	color;				// range from 0.0 to 1.0, should be color normalized
@@ -335,7 +373,6 @@ typedef struct {
 	float			rotateSpeed;
 
 } texModInfo_t;
-
 
 #define	MAX_IMAGE_ANIMATIONS	8
 
@@ -1449,7 +1486,15 @@ typedef enum {
 	MOD_MESH,
 	MOD_MD4,
 	MOD_MDR,
-	MOD_IQM
+	MOD_IQM,
+/*
+Ghoul2 Insert Start
+*/
+   	MOD_MDXM,
+	MOD_MDXA
+/*
+Ghoul2 Insert End
+*/
 } modtype_t;
 
 typedef struct model_s {
