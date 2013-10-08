@@ -1612,7 +1612,7 @@ static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_he
 			finalheight >>= 1;
 		}
 
-		*resampledBuffer = ri->Hunk_AllocateTempMemory( finalwidth * finalheight * 4 );
+		*resampledBuffer = (byte *)ri->Hunk_AllocateTempMemory( finalwidth * finalheight * 4 );
 
 		if (scaled_width != width || scaled_height != height)
 		{
@@ -1664,7 +1664,7 @@ static void RawImage_ScaleToPower2( byte **data, int *inout_width, int *inout_he
 	else if ( scaled_width != width || scaled_height != height ) {
 		if (data && resampledBuffer)
 		{
-			*resampledBuffer = ri->Hunk_AllocateTempMemory( scaled_width * scaled_height * 4 );
+			*resampledBuffer = (byte *)ri->Hunk_AllocateTempMemory( scaled_width * scaled_height * 4 );
 			ResampleTexture (*data, width, height, *resampledBuffer, scaled_width, scaled_height);
 			*data = *resampledBuffer;
 		}
@@ -1730,8 +1730,8 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 {
 	int samples = 3;
 	GLenum internalFormat = GL_RGB;
-	qboolean forceNoCompression = (flags & IMGFLAG_NO_COMPRESSION);
-	qboolean normalmap = (type == IMGTYPE_NORMAL || type == IMGTYPE_NORMALHEIGHT);
+	qboolean forceNoCompression = (qboolean)(flags & IMGFLAG_NO_COMPRESSION);
+	qboolean normalmap = (qboolean)(type == IMGTYPE_NORMAL || type == IMGTYPE_NORMALHEIGHT);
 
 	if(normalmap)
 	{
@@ -2000,7 +2000,7 @@ Upload32
 ===============
 */
 extern qboolean charSet;
-static void Upload32( byte *data, int width, int height, imgType_t type, imgFlags_t flags,
+static void Upload32( byte *data, int width, int height, imgType_t type, int flags,
 	qboolean lightMap, GLenum internalFormat, int *pUploadWidth, int *pUploadHeight)
 {
 	byte		*scaledBuffer = NULL;
@@ -2011,7 +2011,7 @@ static void Upload32( byte *data, int width, int height, imgType_t type, imgFlag
 
 	RawImage_ScaleToPower2(&data, &width, &height, &scaled_width, &scaled_height, type, flags, &resampledBuffer);
 
-	scaledBuffer = ri->Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
+	scaledBuffer = (byte *)ri->Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
 
 	//
 	// scan the texture for each channel's max values
@@ -2050,7 +2050,7 @@ static void Upload32( byte *data, int width, int height, imgType_t type, imgFlag
 		{
 			for (i = 0; i < 3; i++)
 			{
-				float x = ByteToFloat(in[i]);
+				double x = ByteToFloat(in[i]);
 				x = sRGBtoRGB(x);
 				in[i] = FloatToByte(x);
 			}
@@ -2121,7 +2121,7 @@ static void Upload32( byte *data, int width, int height, imgType_t type, imgFlag
 	}
 
 	if (!(flags & IMGFLAG_NOLIGHTSCALE))
-		R_LightScaleTexture (scaledBuffer, scaled_width, scaled_height, !(flags & IMGFLAG_MIPMAP) );
+		R_LightScaleTexture (scaledBuffer, scaled_width, scaled_height, (qboolean)(!(flags & IMGFLAG_MIPMAP)) );
 
 	*pUploadWidth = scaled_width;
 	*pUploadHeight = scaled_height;
@@ -2214,7 +2214,7 @@ R_CreateImage
 This is the only way any image_t are created
 ================
 */
-image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgType_t type, imgFlags_t flags, int internalFormat ) {
+image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgType_t type, int flags, int internalFormat ) {
 	image_t		*image;
 	qboolean	isLightmap = qfalse;
 	long		hash;
@@ -2231,12 +2231,12 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 		ri->Error( ERR_DROP, "R_CreateImage: MAX_DRAWIMAGES hit");
 	}
 
-	image = tr.images[tr.numImages] = ri->Hunk_Alloc( sizeof( image_t ), h_low );
+	image = tr.images[tr.numImages] = (image_t *)ri->Hunk_Alloc( sizeof( image_t ), h_low );
 	image->texnum = 1024 + tr.numImages;
 	tr.numImages++;
 
 	image->type = type;
-	image->flags = flags;
+	image->flags = (imgFlags_t)flags;
 
 	strcpy (image->imgName, name);
 
@@ -2347,7 +2347,7 @@ void R_UpdateSubImage( image_t *image, byte *pic, int x, int y, int width, int h
 
 	RawImage_ScaleToPower2(&pic, &width, &height, &scaled_width, &scaled_height, image->type, image->flags, &resampledBuffer);
 
-	scaledBuffer = ri->Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
+	scaledBuffer = (byte *)ri->Hunk_AllocateTempMemory( sizeof( unsigned ) * scaled_width * scaled_height );
 
 	if ( qglActiveTextureARB ) {
 		GL_SelectTexture( image->TMU );
@@ -2399,7 +2399,7 @@ void R_UpdateSubImage( image_t *image, byte *pic, int x, int y, int width, int h
 	}
 
 	if (!(image->flags & IMGFLAG_NOLIGHTSCALE))
-		R_LightScaleTexture (scaledBuffer, scaled_width, scaled_height, !(image->flags & IMGFLAG_MIPMAP) );
+		R_LightScaleTexture (scaledBuffer, scaled_width, scaled_height, (qboolean)(!(image->flags & IMGFLAG_MIPMAP)) );
 
 	scaled_x = x * scaled_width / width;
 	scaled_y = y * scaled_height / height;
@@ -2571,7 +2571,7 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, imgFlags_t flags )
 		char normalName[MAX_QPATH];
 		image_t *normalImage;
 		int normalWidth, normalHeight;
-		imgFlags_t normalFlags;
+		int normalFlags;
 
 		normalFlags = (flags & ~(IMGFLAG_GENNORMALMAP | IMGFLAG_SRGB)) | IMGFLAG_NOLIGHTSCALE;
 
@@ -2589,8 +2589,8 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, imgFlags_t flags )
 
 			normalWidth = width;
 			normalHeight = height;
-			normalPic = ri->Malloc(width * height * 4);
-			RGBAtoNormal(pic, normalPic, width, height, flags & IMGFLAG_CLAMPTOEDGE);
+			normalPic = (byte *)Z_Malloc(width * height * 4, TAG_GENERAL);
+			RGBAtoNormal(pic, normalPic, width, height, (qboolean)(flags & IMGFLAG_CLAMPTOEDGE));
 
 			// Brighten up the original image to work with the normal map
 			RGBAtoYCoCgA(pic, pic, width, height);
@@ -2609,12 +2609,12 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, imgFlags_t flags )
 			YCoCgAtoRGBA(pic, pic, width, height);
 
 			R_CreateImage( normalName, normalPic, normalWidth, normalHeight, IMGTYPE_NORMAL, normalFlags, 0 );
-			ri->Free( normalPic );	
+			Z_Free( normalPic );	
 		}
 	}
 
 	image = R_CreateImage( ( char * ) name, pic, width, height, type, flags, 0 );
-	ri->Free( pic );
+	Z_Free( pic );
 	return image;
 }
 
@@ -2720,7 +2720,7 @@ static void R_CreateFogImage( void ) {
 	float	d;
 	float	borderColor[4];
 
-	data = ri->Hunk_AllocateTempMemory( FOG_S * FOG_T * 4 );
+	data = (byte *)ri->Hunk_AllocateTempMemory( FOG_S * FOG_T * 4 );
 
 	// S is distance, T is depth
 	for (x=0 ; x<FOG_S ; x++) {
@@ -2888,9 +2888,9 @@ void R_CreateBuiltinImages( void ) {
 				p = data;
 			}
 
-			tr.calcLevelsImage =   R_CreateImage("*calcLevels",    p, 1, 1, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
-			tr.targetLevelsImage = R_CreateImage("*targetLevels",  p, 1, 1, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
-			tr.fixedLevelsImage =  R_CreateImage("*fixedLevels",   p, 1, 1, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
+			tr.calcLevelsImage =   R_CreateImage("*calcLevels",    (byte *)p, 1, 1, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
+			tr.targetLevelsImage = R_CreateImage("*targetLevels",  (byte *)p, 1, 1, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
+			tr.fixedLevelsImage =  R_CreateImage("*fixedLevels",   (byte *)p, 1, 1, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
 		}
 
 		for (x = 0; x < 2; x++)
@@ -3233,7 +3233,7 @@ qhandle_t RE_RegisterSkin( const char *name ) {
 		return 0;
 	}
 	tr.numSkins++;
-	skin = ri->Hunk_Alloc( sizeof( skin_t ), h_low );
+	skin = (skin_t *)ri->Hunk_Alloc( sizeof( skin_t ), h_low );
 	tr.skins[hSkin] = skin;
 	Q_strncpyz( skin->name, name, sizeof( skin->name ) );
 	skin->numSurfaces = 0;
@@ -3243,7 +3243,7 @@ qhandle_t RE_RegisterSkin( const char *name ) {
 	// If not a .skin file, load as a single shader
 	if ( strcmp( name + strlen( name ) - 5, ".skin" ) ) {
 		skin->numSurfaces = 1;
-		skin->surfaces[0] = ri->Hunk_Alloc( sizeof(skin->surfaces[0]), h_low );
+		skin->surfaces[0] = (_skinSurface_t *)ri->Hunk_Alloc( sizeof(skin->surfaces[0]), h_low );
 		skin->surfaces[0]->shader = R_FindShader( name, LIGHTMAP_NONE, qtrue );
 		return hSkin;
 	}
@@ -3277,7 +3277,7 @@ qhandle_t RE_RegisterSkin( const char *name ) {
 		// parse the shader name
 		token = CommaParse( &text_p );
 
-		surf = skin->surfaces[ skin->numSurfaces ] = ri->Hunk_Alloc( sizeof( *skin->surfaces[0] ), h_low );
+		surf = skin->surfaces[ skin->numSurfaces ] = (_skinSurface_t *)ri->Hunk_Alloc( sizeof( *skin->surfaces[0] ), h_low );
 		Q_strncpyz( surf->name, surfName, sizeof( surf->name ) );
 		surf->shader = R_FindShader( token, LIGHTMAP_NONE, qtrue );
 		skin->numSurfaces++;
@@ -3306,10 +3306,10 @@ void	R_InitSkins( void ) {
 	tr.numSkins = 1;
 
 	// make the default skin have all default shaders
-	skin = tr.skins[0] = ri->Hunk_Alloc( sizeof( skin_t ), h_low );
+	skin = tr.skins[0] = (skin_t *)ri->Hunk_Alloc( sizeof( skin_t ), h_low );
 	Q_strncpyz( skin->name, "<default skin>", sizeof( skin->name )  );
 	skin->numSurfaces = 1;
-	skin->surfaces[0] = ri->Hunk_Alloc( sizeof( *skin->surfaces ), h_low );
+	skin->surfaces[0] = (_skinSurface_t *)ri->Hunk_Alloc( sizeof( *skin->surfaces ), h_low );
 	skin->surfaces[0]->shader = tr.defaultShader;
 }
 

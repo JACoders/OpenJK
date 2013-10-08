@@ -283,11 +283,11 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 		tr.numLightmaps = numLightmaps;
 	}
 
-	tr.lightmaps = ri->Hunk_Alloc( tr.numLightmaps * sizeof(image_t *), h_low );
+	tr.lightmaps = (image_t **)ri->Hunk_Alloc( tr.numLightmaps * sizeof(image_t *), h_low );
 
 	if (tr.worldDeluxeMapping)
 	{
-		tr.deluxemaps = ri->Hunk_Alloc( tr.numLightmaps * sizeof(image_t *), h_low );
+		tr.deluxemaps = (image_t **)ri->Hunk_Alloc( tr.numLightmaps * sizeof(image_t *), h_low );
 	}
 
 	if (r_hdr->integer && glRefConfig.textureFloat && glRefConfig.halfFloatPixel)
@@ -382,7 +382,7 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 					buf_p = buf + i * tr.lightmapSize * tr.lightmapSize * 3;
 			}
 
-			lightScale = pow(2, r_mapOverBrightBits->integer - tr.overbrightBits - 8); //exp2(r_mapOverBrightBits->integer - tr.overbrightBits - 8);
+			lightScale = pow(2.0f, r_mapOverBrightBits->integer - tr.overbrightBits - 8); //exp2(r_mapOverBrightBits->integer - tr.overbrightBits - 8);
 
 			for ( j = 0 ; j < tr.lightmapSize * tr.lightmapSize; j++ ) 
 			{
@@ -512,7 +512,7 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 		ri->Printf( PRINT_ALL, "Brightest lightmap value: %d\n", ( int ) ( maxIntensity * 255 ) );
 	}
 
-	ri->Free(image);
+	Z_Free(image);
 }
 
 
@@ -596,7 +596,7 @@ static	void R_LoadVisibility( lump_t *l ) {
 	byte	*buf;
 
 	len = ( s_worldData.numClusters + 63 ) & ~63;
-	s_worldData.novis = ri->Hunk_Alloc( len, h_low );
+	s_worldData.novis = (byte *)ri->Hunk_Alloc( len, h_low );
 	Com_Memset( s_worldData.novis, 0xff, len );
 
     len = l->filelen;
@@ -615,7 +615,7 @@ static	void R_LoadVisibility( lump_t *l ) {
 	} else {
 		byte	*dest;
 
-		dest = ri->Hunk_Alloc( len - 8, h_low );
+		dest = (byte *)ri->Hunk_Alloc( len - 8, h_low );
 		Com_Memcpy( dest, buf + 8, len - 8 );
 		s_worldData.vis = dest;
 	}
@@ -639,7 +639,7 @@ static shader_t *ShaderForShaderNum( int shaderNum, int lightmapNum ) {
 	}
 	dsh = &s_worldData.shaders[ _shaderNum ];
 
-	if ( r_vertexLight->integer || glConfig.hardwareType == GLHW_PERMEDIA2 ) {
+	if ( r_vertexLight->integer ) {
 		lightmapNum = LIGHTMAP_BY_VERTEX;
 	}
 
@@ -690,14 +690,14 @@ static void ParseFace( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors, 
 	numTriangles = LittleLong(ds->numIndexes) / 3;
 
 	//cv = ri->Hunk_Alloc(sizeof(*cv), h_low);
-	cv = (void *)surf->data;
+	cv = (srfSurfaceFace_t *)surf->data;
 	cv->surfaceType = SF_FACE;
 
 	cv->numTriangles = numTriangles;
-	cv->triangles = ri->Hunk_Alloc(numTriangles * sizeof(cv->triangles[0]), h_low);
+	cv->triangles = (srfTriangle_t *)ri->Hunk_Alloc(numTriangles * sizeof(cv->triangles[0]), h_low);
 
 	cv->numVerts = numVerts;
-	cv->verts = ri->Hunk_Alloc(numVerts * sizeof(cv->verts[0]), h_low);
+	cv->verts = (srfVert_t *)ri->Hunk_Alloc(numVerts * sizeof(cv->verts[0]), h_low);
 
 	// copy vertexes
 	surf->cullinfo.type = CULLINFO_PLANE | CULLINFO_BOX;
@@ -933,14 +933,14 @@ static void ParseTriSurf( dsurface_t *ds, drawVert_t *verts, float *hdrVertColor
 	numTriangles = LittleLong(ds->numIndexes) / 3;
 
 	//cv = ri->Hunk_Alloc(sizeof(*cv), h_low);
-	cv = (void *)surf->data;
+	cv = (srfTriangles_t *)surf->data;
 	cv->surfaceType = SF_TRIANGLES;
 
 	cv->numTriangles = numTriangles;
-	cv->triangles = ri->Hunk_Alloc(numTriangles * sizeof(cv->triangles[0]), h_low);
+	cv->triangles = (srfTriangle_t *)ri->Hunk_Alloc(numTriangles * sizeof(cv->triangles[0]), h_low);
 
 	cv->numVerts = numVerts;
-	cv->verts = ri->Hunk_Alloc(numVerts * sizeof(cv->verts[0]), h_low);
+	cv->verts = (srfVert_t *)ri->Hunk_Alloc(numVerts * sizeof(cv->verts[0]), h_low);
 
 	surf->data = (surfaceType_t *) cv;
 
@@ -1057,7 +1057,7 @@ static void ParseFlare( dsurface_t *ds, drawVert_t *verts, msurface_t *surf, int
 	}
 
 	//flare = ri->Hunk_Alloc( sizeof( *flare ), h_low );
-	flare = (void *)surf->data;
+	flare = (srfFlare_t *)surf->data;
 	flare->surfaceType = SF_FLARE;
 
 	surf->data = (surfaceType_t *)flare;
@@ -1314,7 +1314,7 @@ int R_StitchPatches( int grid1num, int grid2num ) {
 					grid2 = R_GridInsertColumn( grid2, l+1, row,
 									grid1->verts[k + 1 + offset1].xyz, grid1->widthLodError[k+1]);
 					grid2->lodStitched = qfalse;
-					s_worldData.surfaces[grid2num].data = (void *) grid2;
+					s_worldData.surfaces[grid2num].data = (surfaceType_t *) grid2;
 					return qtrue;
 				}
 			}
@@ -1358,7 +1358,7 @@ int R_StitchPatches( int grid1num, int grid2num ) {
 					grid2 = R_GridInsertRow( grid2, l+1, column,
 										grid1->verts[k + 1 + offset1].xyz, grid1->widthLodError[k+1]);
 					grid2->lodStitched = qfalse;
-					s_worldData.surfaces[grid2num].data = (void *) grid2;
+					s_worldData.surfaces[grid2num].data = (surfaceType_t *) grid2;
 					return qtrue;
 				}
 			}
@@ -1411,7 +1411,7 @@ int R_StitchPatches( int grid1num, int grid2num ) {
 					grid2 = R_GridInsertColumn( grid2, l+1, row,
 									grid1->verts[grid1->width * (k + 1) + offset1].xyz, grid1->heightLodError[k+1]);
 					grid2->lodStitched = qfalse;
-					s_worldData.surfaces[grid2num].data = (void *) grid2;
+					s_worldData.surfaces[grid2num].data = (surfaceType_t *) grid2;
 					return qtrue;
 				}
 			}
@@ -1455,7 +1455,7 @@ int R_StitchPatches( int grid1num, int grid2num ) {
 					grid2 = R_GridInsertRow( grid2, l+1, column,
 									grid1->verts[grid1->width * (k + 1) + offset1].xyz, grid1->heightLodError[k+1]);
 					grid2->lodStitched = qfalse;
-					s_worldData.surfaces[grid2num].data = (void *) grid2;
+					s_worldData.surfaces[grid2num].data = (surfaceType_t *) grid2;
 					return qtrue;
 				}
 			}
@@ -1509,7 +1509,7 @@ int R_StitchPatches( int grid1num, int grid2num ) {
 					grid2 = R_GridInsertColumn( grid2, l+1, row,
 										grid1->verts[k - 1 + offset1].xyz, grid1->widthLodError[k+1]);
 					grid2->lodStitched = qfalse;
-					s_worldData.surfaces[grid2num].data = (void *) grid2;
+					s_worldData.surfaces[grid2num].data = (surfaceType_t *) grid2;
 					return qtrue;
 				}
 			}
@@ -1555,7 +1555,7 @@ int R_StitchPatches( int grid1num, int grid2num ) {
 					if (!grid2)
 						break;
 					grid2->lodStitched = qfalse;
-					s_worldData.surfaces[grid2num].data = (void *) grid2;
+					s_worldData.surfaces[grid2num].data = (surfaceType_t *) grid2;
 					return qtrue;
 				}
 			}
@@ -1608,7 +1608,7 @@ int R_StitchPatches( int grid1num, int grid2num ) {
 					grid2 = R_GridInsertColumn( grid2, l+1, row,
 										grid1->verts[grid1->width * (k - 1) + offset1].xyz, grid1->heightLodError[k+1]);
 					grid2->lodStitched = qfalse;
-					s_worldData.surfaces[grid2num].data = (void *) grid2;
+					s_worldData.surfaces[grid2num].data = (surfaceType_t *) grid2;
 					return qtrue;
 				}
 			}
@@ -1652,7 +1652,7 @@ int R_StitchPatches( int grid1num, int grid2num ) {
 					grid2 = R_GridInsertRow( grid2, l+1, column,
 										grid1->verts[grid1->width * (k - 1) + offset1].xyz, grid1->heightLodError[k+1]);
 					grid2->lodStitched = qfalse;
-					s_worldData.surfaces[grid2num].data = (void *) grid2;
+					s_worldData.surfaces[grid2num].data = (surfaceType_t *) grid2;
 					return qtrue;
 				}
 			}
@@ -1750,26 +1750,26 @@ void R_MovePatchSurfacesToHunk(void) {
 			continue;
 		//
 		size = sizeof(*grid);
-		hunkgrid = ri->Hunk_Alloc(size, h_low);
+		hunkgrid = (srfGridMesh_t *)ri->Hunk_Alloc(size, h_low);
 		Com_Memcpy(hunkgrid, grid, size);
 
-		hunkgrid->widthLodError = ri->Hunk_Alloc( grid->width * 4, h_low );
+		hunkgrid->widthLodError = (float *)ri->Hunk_Alloc( grid->width * 4, h_low );
 		Com_Memcpy( hunkgrid->widthLodError, grid->widthLodError, grid->width * 4 );
 
-		hunkgrid->heightLodError = ri->Hunk_Alloc( grid->height * 4, h_low );
+		hunkgrid->heightLodError = (float *)ri->Hunk_Alloc( grid->height * 4, h_low );
 		Com_Memcpy( hunkgrid->heightLodError, grid->heightLodError, grid->height * 4 );
 
 		hunkgrid->numTriangles = grid->numTriangles;
-		hunkgrid->triangles = ri->Hunk_Alloc(grid->numTriangles * sizeof(srfTriangle_t), h_low);
+		hunkgrid->triangles = (srfTriangle_t *)ri->Hunk_Alloc(grid->numTriangles * sizeof(srfTriangle_t), h_low);
 		Com_Memcpy(hunkgrid->triangles, grid->triangles, grid->numTriangles * sizeof(srfTriangle_t));
 
 		hunkgrid->numVerts = grid->numVerts;
-		hunkgrid->verts = ri->Hunk_Alloc(grid->numVerts * sizeof(srfVert_t), h_low);
+		hunkgrid->verts = (srfVert_t *)ri->Hunk_Alloc(grid->numVerts * sizeof(srfVert_t), h_low);
 		Com_Memcpy(hunkgrid->verts, grid->verts, grid->numVerts * sizeof(srfVert_t));
 
 		R_FreeSurfaceGridMesh( grid );
 
-		s_worldData.surfaces[i].data = (void *) hunkgrid;
+		s_worldData.surfaces[i].data = (surfaceType_t *) hunkgrid;
 	}
 }
 
@@ -1906,12 +1906,12 @@ static void R_CreateWorldVBO(void)
 
 	// create arrays
 
-	verts = ri->Hunk_AllocateTempMemory(numVerts * sizeof(srfVert_t));
+	verts = (srfVert_t *)ri->Hunk_AllocateTempMemory(numVerts * sizeof(srfVert_t));
 
-	triangles = ri->Hunk_AllocateTempMemory(numTriangles * sizeof(srfTriangle_t));
+	triangles = (srfTriangle_t *)ri->Hunk_AllocateTempMemory(numTriangles * sizeof(srfTriangle_t));
 
 	// presort surfaces
-	surfacesSorted = ri->Malloc(numSurfaces * sizeof(*surfacesSorted));
+	surfacesSorted = (msurface_t **)Z_Malloc(numSurfaces * sizeof(*surfacesSorted), TAG_BSP);
 
 	j = 0;
 	for(k = 0, surface = &s_worldData.surfaces[0]; k < s_worldData.numsurfaces; k++, surface++)
@@ -2123,7 +2123,7 @@ static void R_CreateWorldVBO(void)
 	}
 
 
-	ri->Free(surfacesSorted);
+	Z_Free(surfacesSorted);
 
 	ri->Hunk_FreeTempMemory(triangles);
 	ri->Hunk_FreeTempMemory(verts);
@@ -2153,21 +2153,21 @@ static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump ) {
 		ri->Error (ERR_DROP, "LoadMap: funny lump size in %s",s_worldData.name);
 	count = surfs->filelen / sizeof(*in);
 
-	dv = (void *)(fileBase + verts->fileofs);
+	dv = (drawVert_t *)(fileBase + verts->fileofs);
 	if (verts->filelen % sizeof(*dv))
 		ri->Error (ERR_DROP, "LoadMap: funny lump size in %s",s_worldData.name);
 
-	indexes = (void *)(fileBase + indexLump->fileofs);
+	indexes = (int *)(fileBase + indexLump->fileofs);
 	if ( indexLump->filelen % sizeof(*indexes))
 		ri->Error (ERR_DROP, "LoadMap: funny lump size in %s",s_worldData.name);
 
-	out = ri->Hunk_Alloc ( count * sizeof(*out), h_low );	
+	out = (msurface_t *)ri->Hunk_Alloc ( count * sizeof(*out), h_low );	
 
 	s_worldData.surfaces = out;
 	s_worldData.numsurfaces = count;
-	s_worldData.surfacesViewCount = ri->Hunk_Alloc ( count * sizeof(*s_worldData.surfacesViewCount), h_low );
-	s_worldData.surfacesDlightBits = ri->Hunk_Alloc ( count * sizeof(*s_worldData.surfacesDlightBits), h_low );
-	s_worldData.surfacesPshadowBits = ri->Hunk_Alloc ( count * sizeof(*s_worldData.surfacesPshadowBits), h_low );
+	s_worldData.surfacesViewCount = (int *)ri->Hunk_Alloc ( count * sizeof(*s_worldData.surfacesViewCount), h_low );
+	s_worldData.surfacesDlightBits = (int *)ri->Hunk_Alloc ( count * sizeof(*s_worldData.surfacesDlightBits), h_low );
+	s_worldData.surfacesPshadowBits = (int *)ri->Hunk_Alloc ( count * sizeof(*s_worldData.surfacesPshadowBits), h_low );
 
 	// load hdr vertex colors
 	if (r_hdr->integer)
@@ -2192,7 +2192,7 @@ static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump ) {
 	// Two passes, allocate surfaces first, then load them full of data
 	// This ensures surfaces are close together to reduce L2 cache misses when using VBOs,
 	// which don't actually use the verts and tris
-	in = (void *)(fileBase + surfs->fileofs);
+	in = (dsurface_t *)(fileBase + surfs->fileofs);
 	out = s_worldData.surfaces;
 	for ( i = 0 ; i < count ; i++, in++, out++ ) {
 		switch ( LittleLong( in->surfaceType ) ) {
@@ -2200,20 +2200,20 @@ static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump ) {
 				// FIXME: do this
 				break;
 			case MST_TRIANGLE_SOUP:
-				out->data = ri->Hunk_Alloc( sizeof(srfTriangles_t), h_low);
+				out->data = (surfaceType_t *)ri->Hunk_Alloc( sizeof(srfTriangles_t), h_low);
 				break;
 			case MST_PLANAR:
-				out->data = ri->Hunk_Alloc( sizeof(srfSurfaceFace_t), h_low);
+				out->data = (surfaceType_t *)ri->Hunk_Alloc( sizeof(srfSurfaceFace_t), h_low);
 				break;
 			case MST_FLARE:
-				out->data = ri->Hunk_Alloc( sizeof(srfFlare_t), h_low);
+				out->data = (surfaceType_t *)ri->Hunk_Alloc( sizeof(srfFlare_t), h_low);
 				break;
 			default:
 				break;
 		}
 	}
 
-	in = (void *)(fileBase + surfs->fileofs);
+	in = (dsurface_t *)(fileBase + surfs->fileofs);
 	out = s_worldData.surfaces;
 	for ( i = 0 ; i < count ; i++, in++, out++ ) {
 		switch ( LittleLong( in->surfaceType ) ) {
@@ -2281,13 +2281,13 @@ static	void R_LoadSubmodels( lump_t *l ) {
 	bmodel_t	*out;
 	int			i, j, count;
 
-	in = (void *)(fileBase + l->fileofs);
+	in = (dmodel_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		ri->Error (ERR_DROP, "LoadMap: funny lump size in %s",s_worldData.name);
 	count = l->filelen / sizeof(*in);
 
 	s_worldData.numBModels = count;
-	s_worldData.bmodels = out = ri->Hunk_Alloc( count * sizeof(*out), h_low );
+	s_worldData.bmodels = out = (bmodel_t *)ri->Hunk_Alloc( count * sizeof(*out), h_low );
 
 	for ( i=0 ; i<count ; i++, in++, out++ ) {
 		model_t *model;
@@ -2349,7 +2349,7 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump) {
 	mnode_t 	*out;
 	int			numNodes, numLeafs;
 
-	in = (void *)(fileBase + nodeLump->fileofs);
+	in = (dnode_t *)(fileBase + nodeLump->fileofs);
 	if (nodeLump->filelen % sizeof(dnode_t) ||
 		leafLump->filelen % sizeof(dleaf_t) ) {
 		ri->Error (ERR_DROP, "LoadMap: funny lump size in %s",s_worldData.name);
@@ -2357,7 +2357,7 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump) {
 	numNodes = nodeLump->filelen / sizeof(dnode_t);
 	numLeafs = leafLump->filelen / sizeof(dleaf_t);
 
-	out = ri->Hunk_Alloc ( (numNodes + numLeafs) * sizeof(*out), h_low);	
+	out = (mnode_t *)ri->Hunk_Alloc ( (numNodes + numLeafs) * sizeof(*out), h_low);	
 
 	s_worldData.nodes = out;
 	s_worldData.numnodes = numNodes + numLeafs;
@@ -2388,7 +2388,7 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump) {
 	}
 	
 	// load leafs
-	inLeaf = (void *)(fileBase + leafLump->fileofs);
+	inLeaf = (dleaf_t *)(fileBase + leafLump->fileofs);
 	for ( i=0 ; i<numLeafs ; i++, inLeaf++, out++)
 	{
 		for (j=0 ; j<3 ; j++)
@@ -2423,11 +2423,11 @@ static	void R_LoadShaders( lump_t *l ) {
 	int		i, count;
 	dshader_t	*in, *out;
 	
-	in = (void *)(fileBase + l->fileofs);
+	in = (dshader_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		ri->Error (ERR_DROP, "LoadMap: funny lump size in %s",s_worldData.name);
 	count = l->filelen / sizeof(*in);
-	out = ri->Hunk_Alloc ( count*sizeof(*out), h_low );
+	out = (dshader_t *)ri->Hunk_Alloc ( count*sizeof(*out), h_low );
 
 	s_worldData.shaders = out;
 	s_worldData.numShaders = count;
@@ -2452,11 +2452,11 @@ static	void R_LoadMarksurfaces (lump_t *l)
 	int		*in;
 	int     *out;
 	
-	in = (void *)(fileBase + l->fileofs);
+	in = (int *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		ri->Error (ERR_DROP, "LoadMap: funny lump size in %s",s_worldData.name);
 	count = l->filelen / sizeof(*in);
-	out = ri->Hunk_Alloc ( count*sizeof(*out), h_low);	
+	out = (int *)ri->Hunk_Alloc ( count*sizeof(*out), h_low);	
 
 	s_worldData.marksurfaces = out;
 	s_worldData.nummarksurfaces = count;
@@ -2481,11 +2481,11 @@ static	void R_LoadPlanes( lump_t *l ) {
 	int			count;
 	int			bits;
 	
-	in = (void *)(fileBase + l->fileofs);
+	in = (dplane_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		ri->Error (ERR_DROP, "LoadMap: funny lump size in %s",s_worldData.name);
 	count = l->filelen / sizeof(*in);
-	out = ri->Hunk_Alloc ( count*2*sizeof(*out), h_low);	
+	out = (cplane_t *)ri->Hunk_Alloc ( count*2*sizeof(*out), h_low);	
 	
 	s_worldData.planes = out;
 	s_worldData.numplanes = count;
@@ -2524,7 +2524,7 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump ) {
 	float		d;
 	int			firstSide;
 
-	fogs = (void *)(fileBase + l->fileofs);
+	fogs = (dfog_t *)(fileBase + l->fileofs);
 	if (l->filelen % sizeof(*fogs)) {
 		ri->Error (ERR_DROP, "LoadMap: funny lump size in %s",s_worldData.name);
 	}
@@ -2532,20 +2532,20 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump ) {
 
 	// create fog strucutres for them
 	s_worldData.numfogs = count + 1;
-	s_worldData.fogs = ri->Hunk_Alloc ( s_worldData.numfogs*sizeof(*out), h_low);
+	s_worldData.fogs = (fog_t *)ri->Hunk_Alloc ( s_worldData.numfogs*sizeof(*out), h_low);
 	out = s_worldData.fogs + 1;
 
 	if ( !count ) {
 		return;
 	}
 
-	brushes = (void *)(fileBase + brushesLump->fileofs);
+	brushes = (dbrush_t *)(fileBase + brushesLump->fileofs);
 	if (brushesLump->filelen % sizeof(*brushes)) {
 		ri->Error (ERR_DROP, "LoadMap: funny lump size in %s",s_worldData.name);
 	}
 	brushesCount = brushesLump->filelen / sizeof(*brushes);
 
-	sides = (void *)(fileBase + sidesLump->fileofs);
+	sides = (dbrushside_t *)(fileBase + sidesLump->fileofs);
 	if (sidesLump->filelen % sizeof(*sides)) {
 		ri->Error (ERR_DROP, "LoadMap: funny lump size in %s",s_worldData.name);
 	}
@@ -2656,7 +2656,7 @@ void R_LoadLightGrid( lump_t *l ) {
 		return;
 	}
 
-	w->lightGridData = ri->Hunk_Alloc( l->filelen, h_low );
+	w->lightGridData = (byte *)ri->Hunk_Alloc( l->filelen, h_low );
 	Com_Memcpy( w->lightGridData, (void *)(fileBase + l->fileofs), l->filelen );
 
 	// deal with overbright bits
@@ -2679,7 +2679,7 @@ void R_LoadLightGrid( lump_t *l ) {
 
 		if (hdrLightGrid)
 		{
-			float lightScale = pow(2, r_mapOverBrightBits->integer - tr.overbrightBits);
+			float lightScale = pow(2.0f, r_mapOverBrightBits->integer - tr.overbrightBits);
 
 			//ri->Printf(PRINT_ALL, "found!\n");
 
@@ -2688,7 +2688,7 @@ void R_LoadLightGrid( lump_t *l ) {
 				ri->Error(ERR_DROP, "Bad size for %s (%i, expected %i)!", filename, size, (int)(sizeof(float)) * 6 * numGridPoints);
 			}
 
-			w->hdrLightGrid = ri->Hunk_Alloc(size, h_low);
+			w->hdrLightGrid = (float *)ri->Hunk_Alloc(size, h_low);
 
 			for (i = 0; i < numGridPoints ; i++)
 			{
@@ -2712,7 +2712,8 @@ R_LoadEntities
 ================
 */
 void R_LoadEntities( lump_t *l ) {
-	char *p, *token, *s;
+	const char *p;
+	char *token, *s;
 	char keyname[MAX_TOKEN_CHARS];
 	char value[MAX_TOKEN_CHARS];
 	world_t	*w;
@@ -2725,7 +2726,7 @@ void R_LoadEntities( lump_t *l ) {
 	p = (char *)(fileBase + l->fileofs);
 
 	// store for reference by the cgame
-	w->entityString = ri->Hunk_Alloc( l->filelen + 1, h_low );
+	w->entityString = (char *)ri->Hunk_Alloc( l->filelen + 1, h_low );
 	strcpy( w->entityString, p );
 	w->entityParsePoint = w->entityString;
 
@@ -2798,9 +2799,9 @@ R_GetEntityToken
 =================
 */
 qboolean R_GetEntityToken( char *buffer, int size ) {
-	const char	*s;
+	char	*s;
 
-	s = COM_Parse( &s_worldData.entityParsePoint );
+	s = COM_Parse( (const char **)&s_worldData.entityParsePoint );
 	Q_strncpyz( buffer, s, size );
 	if ( !s_worldData.entityParsePoint || !s[0] ) {
 		s_worldData.entityParsePoint = s_worldData.entityString;
@@ -2845,12 +2846,12 @@ void R_MergeLeafSurfaces(void)
 	}
 
 	// create ibo
-	ibo = tr.ibos[tr.numIBOs++] = ri->Hunk_Alloc(sizeof(*ibo), h_low);
+	ibo = tr.ibos[tr.numIBOs++] = (IBO_t *)ri->Hunk_Alloc(sizeof(*ibo), h_low);
 	memset(ibo, 0, sizeof(*ibo));
 	Q_strncpyz(ibo->name, "staticWorldMesh_IBO_mergedSurfs", sizeof(ibo->name));
 
 	// allocate more than we need
-	iboIndexes = outIboIndexes = ri->Malloc(s_worldData.ibo->indexesSize);
+	iboIndexes = outIboIndexes = (glIndex_t *)Z_Malloc(s_worldData.ibo->indexesSize, TAG_GENERAL);
 
 	// mark matching surfaces
 	for (i = 0; i < s_worldData.numnodes - s_worldData.numDecisionNodes; i++)
@@ -2961,15 +2962,15 @@ void R_MergeLeafSurfaces(void)
 	}
 
 	// Allocate merged surfaces
-	s_worldData.mergedSurfaces = ri->Hunk_Alloc(sizeof(*s_worldData.mergedSurfaces) * numMergedSurfaces, h_low);
-	s_worldData.mergedSurfacesViewCount = ri->Hunk_Alloc(sizeof(*s_worldData.mergedSurfacesViewCount) * numMergedSurfaces, h_low);
-	s_worldData.mergedSurfacesDlightBits = ri->Hunk_Alloc(sizeof(*s_worldData.mergedSurfacesDlightBits) * numMergedSurfaces, h_low);
-	s_worldData.mergedSurfacesPshadowBits = ri->Hunk_Alloc(sizeof(*s_worldData.mergedSurfacesPshadowBits) * numMergedSurfaces, h_low);
+	s_worldData.mergedSurfaces = (msurface_t *)ri->Hunk_Alloc(sizeof(*s_worldData.mergedSurfaces) * numMergedSurfaces, h_low);
+	s_worldData.mergedSurfacesViewCount = (int *)ri->Hunk_Alloc(sizeof(*s_worldData.mergedSurfacesViewCount) * numMergedSurfaces, h_low);
+	s_worldData.mergedSurfacesDlightBits = (int *)ri->Hunk_Alloc(sizeof(*s_worldData.mergedSurfacesDlightBits) * numMergedSurfaces, h_low);
+	s_worldData.mergedSurfacesPshadowBits = (int *)ri->Hunk_Alloc(sizeof(*s_worldData.mergedSurfacesPshadowBits) * numMergedSurfaces, h_low);
 	s_worldData.numMergedSurfaces = numMergedSurfaces;
 	
 	// view surfaces are like mark surfaces, except negative ones represent merged surfaces
 	// -1 represents 0, -2 represents 1, and so on
-	s_worldData.viewSurfaces = ri->Hunk_Alloc(sizeof(*s_worldData.viewSurfaces) * s_worldData.nummarksurfaces, h_low);
+	s_worldData.viewSurfaces = (int *)ri->Hunk_Alloc(sizeof(*s_worldData.viewSurfaces) * s_worldData.nummarksurfaces, h_low);
 
 	// copy view surfaces into mark surfaces
 	for (i = 0; i < s_worldData.nummarksurfaces; i++)
@@ -3127,7 +3128,7 @@ void R_MergeLeafSurfaces(void)
 			}
 		}
 
-		vboSurf = ri->Hunk_Alloc(sizeof(*vboSurf), h_low);
+		vboSurf = (srfVBOMesh_t *)ri->Hunk_Alloc(sizeof(*vboSurf), h_low);
 		memset(vboSurf, 0, sizeof(*vboSurf));
 		vboSurf->surfaceType = SF_VBO_MESH;
 
@@ -3194,7 +3195,7 @@ void R_MergeLeafSurfaces(void)
 
 	GL_CheckErrors();
 
-	ri->Free(iboIndexes);
+	Z_Free(iboIndexes);
 
 	endTime = ri->Milliseconds();
 
@@ -3315,7 +3316,7 @@ void RE_LoadWorldMap( const char *name ) {
 	Q_strncpyz( s_worldData.baseName, COM_SkipPath( s_worldData.name ), sizeof( s_worldData.name ) );
 	COM_StripExtension(s_worldData.baseName, s_worldData.baseName, sizeof(s_worldData.baseName));
 
-	startMarker = ri->Hunk_Alloc(0, h_low);
+	startMarker = (byte *)ri->Hunk_Alloc(0, h_low);
 	c_gridVerts = 0;
 
 	header = (dheader_t *)buffer.b;
@@ -3359,7 +3360,7 @@ void RE_LoadWorldMap( const char *name ) {
 		int i;
 
 		lightGridSize = w->lightGridBounds[0] * w->lightGridBounds[1] * w->lightGridBounds[2];
-		primaryLightGrid = ri->Malloc(lightGridSize * sizeof(*primaryLightGrid));
+		primaryLightGrid = (uint8_t *)Z_Malloc(lightGridSize * sizeof(*primaryLightGrid), TAG_GENERAL);
 
 		memset(primaryLightGrid, 0, lightGridSize * sizeof(*primaryLightGrid));
 
@@ -3405,7 +3406,7 @@ void RE_LoadWorldMap( const char *name ) {
 		if (0)
 		{
 			int i;
-			byte *buffer = ri->Malloc(w->lightGridBounds[0] * w->lightGridBounds[1] * 3 + 18);
+			byte *buffer = (byte *)Z_Malloc(w->lightGridBounds[0] * w->lightGridBounds[1] * 3 + 18, TAG_GENERAL);
 			byte *out;
 			uint8_t *in;
 			char fileName[MAX_QPATH];
@@ -3452,7 +3453,7 @@ void RE_LoadWorldMap( const char *name ) {
 				ri->FS_WriteFile(fileName, buffer, w->lightGridBounds[0] * w->lightGridBounds[1] * 3 + 18);
 			}
 
-			ri->Free(buffer);
+			Z_Free(buffer);
 		}
 
 		for (i = 0; i < w->numWorldSurfaces; i++)
@@ -3532,7 +3533,7 @@ void RE_LoadWorldMap( const char *name ) {
 			}
 		}
 
-		ri->Free(primaryLightGrid);
+		Z_Free(primaryLightGrid);
 	}
 
 	// create static VBOS from the world
