@@ -649,7 +649,7 @@ static void FillCloudBox( const shader_t *shader, int stage )
 			continue;
 		}
 
-		sky_mins_subd[0] = ri->ftol(sky_mins[0][i] * HALF_SKY_SUBDIVISIONS);
+		sky_mins_subd[0] = ftol(sky_mins[0][i] * HALF_SKY_SUBDIVISIONS);
 		sky_mins_subd[1] = ri->ftol(sky_mins[1][i] * HALF_SKY_SUBDIVISIONS);
 		sky_maxs_subd[0] = ri->ftol(sky_maxs[0][i] * HALF_SKY_SUBDIVISIONS);
 		sky_maxs_subd[1] = ri->ftol(sky_maxs[1][i] * HALF_SKY_SUBDIVISIONS);
@@ -691,7 +691,7 @@ static void FillCloudBox( const shader_t *shader, int stage )
 		}
 
 		// only add indexes for first stage
-		FillCloudySkySide( sky_mins_subd, sky_maxs_subd, ( stage == 0 ) );
+		FillCloudySkySide( sky_mins_subd, sky_maxs_subd, (qboolean)( stage == 0 ) );
 	}
 }
 

@@ -37,6 +37,8 @@ static	shader_t*		hashTable[FILE_HASH_SIZE];
 #define MAX_SHADERTEXT_HASH		2048
 static char **shaderTextHashTable[MAX_SHADERTEXT_HASH];
 
+qhandle_t RE_RegisterShaderLightMap( const char *name, int lightmapIndex );
+
 /*
 ================
 return a hash value for the filename
