@@ -196,7 +196,7 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 
 		// create VBO
 		dataSize *= numVertexes;
-		data = (VBO_t *)ri->Hunk_AllocateTempMemory(dataSize);
+		data = (byte *)ri->Hunk_AllocateTempMemory(dataSize);
 		dataOfs = 0;
 
 		//ri->Printf(PRINT_ALL, "CreateVBO: %d, %d %d %d %d %d, %d %d %d %d %d\n", dataSize, vbo->ofs_xyz, vbo->ofs_normal, vbo->ofs_st, vbo->ofs_lightmap, vbo->ofs_vertexcolor,
@@ -304,7 +304,7 @@ VBO_t          *R_CreateVBO2(const char *name, int numVertexes, srfVert_t * vert
 
 		// create VBO
 		dataSize *= numVertexes;
-		data = (VBO_t *)ri->Hunk_AllocateTempMemory(dataSize);
+		data = (byte *)ri->Hunk_AllocateTempMemory(dataSize);
 		dataOfs = 0;
 
 		vbo->ofs_xyz            = 0;
