@@ -1031,17 +1031,9 @@ void GfxInfo_f( void )
 	ri->Printf( PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0 ] );
 	ri->Printf( PRINT_ALL, "texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0] );
 	ri->Printf( PRINT_ALL, "compressed textures: %s\n", enablestrings[glConfig.textureCompression!=TC_NONE] );
-	if ( r_vertexLight->integer || glConfig.hardwareType == GLHW_PERMEDIA2 )
+	if ( r_vertexLight->integer )
 	{
 		ri->Printf( PRINT_ALL, "HACK: using vertex lightmap approximation\n" );
-	}
-	if ( glConfig.hardwareType == GLHW_RAGEPRO )
-	{
-		ri->Printf( PRINT_ALL, "HACK: ragePro approximations\n" );
-	}
-	if ( glConfig.hardwareType == GLHW_RIVA128 )
-	{
-		ri->Printf( PRINT_ALL, "HACK: riva128 approximations\n" );
 	}
 	if ( r_finish->integer ) {
 		ri->Printf( PRINT_ALL, "Forcing glFinish\n" );

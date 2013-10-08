@@ -2066,14 +2066,6 @@ static qboolean CollapseMultitexture( void ) {
 		return qfalse;
 	}
 
-	// on voodoo2, don't combine different tmus
-	if ( glConfig.driverType == GLDRV_VOODOO ) {
-		if ( stages[0].bundle[0].image[0]->TMU ==
-			 stages[1].bundle[0].image[0]->TMU ) {
-			return qfalse;
-		}
-	}
-
 	abits = stages[0].stateBits;
 	bbits = stages[1].stateBits;
 
@@ -2929,7 +2921,7 @@ static shader_t *FinishShader( void ) {
 	//
 	// if we are in r_vertexLight mode, never use a lightmap texture
 	//
-	if ( stage > 1 && ( (r_vertexLight->integer && !r_uiFullScreen->integer) || glConfig.hardwareType == GLHW_PERMEDIA2 ) ) {
+	if ( stage > 1 && (r_vertexLight->integer && !r_uiFullScreen->integer) ) {
 		VertexLightingCollapse();
 		hasLightmapStage = qfalse;
 	}
