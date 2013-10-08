@@ -242,7 +242,7 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 		}
 	}
 
-	image = Z_Malloc(tr.lightmapSize * tr.lightmapSize * 4 * 2);
+	image = Z_Malloc(tr.lightmapSize * tr.lightmapSize * 4 * 2, TAG_BSP); // don't want to use TAG_BSP :< but it's the only one that fits
 
 	if (tr.worldDeluxeMapping)
 		numLightmaps >>= 1;
