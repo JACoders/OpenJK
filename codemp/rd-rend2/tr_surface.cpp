@@ -321,7 +321,7 @@ static void RB_SurfaceOrientedQuad( void )
 		VectorSubtract( vec3_origin, left, left );
 	}
 
-	RB_AddQuadStamp( backEnd.currentEntity->e.origin, left, up, backEnd.currentEntity->e.shaderRGBA );
+	RB_AddQuadStamp( backEnd.currentEntity->e.origin, left, up, (float *)backEnd.currentEntity->e.shaderRGBA );
 }
 
 /*
@@ -689,18 +689,18 @@ static void DoSprite( vec3_t origin, float radius, float rotation )
 	s = sin( ang );
 	c = cos( ang );
 
-	VectorScale( backEnd.viewParms.ori.axis[1], c * radius, left );
-	VectorMA( left, -s * radius, backEnd.viewParms.ori.axis[2], left );
+	VectorScale( backEnd.viewParms.or.axis[1], c * radius, left );
+	VectorMA( left, -s * radius, backEnd.viewParms.or.axis[2], left );
 
-	VectorScale( backEnd.viewParms.ori.axis[2], c * radius, up );
-	VectorMA( up, s * radius, backEnd.viewParms.ori.axis[1], up );
+	VectorScale( backEnd.viewParms.or.axis[2], c * radius, up );
+	VectorMA( up, s * radius, backEnd.viewParms.or.axis[1], up );
 
 	if ( backEnd.viewParms.isMirror ) 
 	{
 		VectorSubtract( vec3_origin, left, left );
 	}
 
-	RB_AddQuadStamp( origin, left, up, backEnd.currentEntity->e.shaderRGBA );
+	RB_AddQuadStamp( origin, left, up, (float *)backEnd.currentEntity->e.shaderRGBA );
 }
 
 //------------------
@@ -930,8 +930,8 @@ static void RB_SurfaceLine( void )
 	VectorCopy( e->origin, start );
 
 	// compute side vector
-	VectorSubtract( start, backEnd.viewParms.ori.origin, v1 );
-	VectorSubtract( end, backEnd.viewParms.ori.origin, v2 );
+	VectorSubtract( start, backEnd.viewParms.or.origin, v1 );
+	VectorSubtract( end, backEnd.viewParms.or.origin, v2 );
 	CrossProduct( v1, v2, right );
 	VectorNormalize( right );
 
@@ -1015,7 +1015,7 @@ static void RB_SurfaceCylinder( void )
 	VectorAdd( e->origin, e->oldorigin, midpoint );
 	VectorScale(midpoint, 0.5f, midpoint);		// Average start and end
 
-	VectorSubtract( midpoint, backEnd.viewParms.ori.origin, midpoint );
+	VectorSubtract( midpoint, backEnd.viewParms.or.origin, midpoint );
 	length = VectorNormalize( midpoint );
 
 	// this doesn't need to be perfect....just a rough compensation for zoom level is enough
@@ -1309,8 +1309,8 @@ static void RB_SurfaceElectricity()
 	VectorCopy( e->oldorigin, end );
 
 	// compute side vector
-	VectorSubtract( start, backEnd.viewParms.ori.origin, v1 );
-	VectorSubtract( end, backEnd.viewParms.ori.origin, v2 );
+	VectorSubtract( start, backEnd.viewParms.or.origin, v1 );
+	VectorSubtract( end, backEnd.viewParms.or.origin, v2 );
 	CrossProduct( v1, v2, right );
 	VectorNormalize( right );
 
@@ -2063,7 +2063,7 @@ static void RB_SurfaceEntity( surfaceType_t *surfType ) {
 
 			for(i=0;i<count;i++)
 			{
-				memcpy(&backEnd.currentEntity->e, &backEnd.refdef.miniEntities[start+i], sizeof(backEnd.refdef.miniEntities[start+i]));
+				memcpy(&backEnd.currentEntity->e, &backEnd.refdef.entities[start+i].e, sizeof(backEnd.refdef.entities[start+i].e));
 			
 				assert(backEnd.currentEntity->e.renderfx >= 0);
 

@@ -2044,7 +2044,7 @@ static void R_AddEntitySurface (int entityNum)
 		break;
 	case RT_ENT_CHAIN:
 			shader = R_GetShaderByHandle( ent->e.customShader );
-			R_AddDrawSurf( &entitySurface, shader, R_SpriteFogNum( ent ), false );
+			R_AddDrawSurf( &entitySurface, shader, R_SpriteFogNum( ent ), false, qfalse );
 			break;
 	default:
 		ri->Error( ERR_DROP, "R_AddEntitySurfaces: Bad reType" );

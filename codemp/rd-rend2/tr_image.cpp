@@ -3342,7 +3342,7 @@ void	R_SkinList_f( void ) {
 		ri->Printf( PRINT_ALL, "%3i:%s\n", i, skin->name );
 		for ( j = 0 ; j < skin->numSurfaces ; j++ ) {
 			ri->Printf( PRINT_ALL, "       %s = %s\n", 
-				skin->surfaces[j]->name, skin->surfaces[j]->shader->name );
+				skin->surfaces[j]->name, ((shader_t*)skin->surfaces[j]->shader)->name );
 		}
 	}
 	ri->Printf (PRINT_ALL, "------------------\n");

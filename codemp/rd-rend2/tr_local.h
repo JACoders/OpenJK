@@ -305,7 +305,6 @@ typedef struct dlight_s {
 	int		additive;			// texture detail is lost tho when the lightmap is dark
 } dlight_t;
 
-
 // a trRefEntity_t has all the information passed in by
 // the client game, as well as some locally derived info
 typedef struct {
@@ -2949,5 +2948,7 @@ qhandle_t RE_RegisterShader( const char *name );
 qhandle_t RE_RegisterShaderNoMip( const char *name );
 image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgType_t type, int flags, int internalFormat );
 
+extern qboolean    textureFilterAnisotropic;
+extern int         maxAnisotropy;
 
 #endif //TR_LOCAL_H

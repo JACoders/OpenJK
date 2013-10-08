@@ -3607,14 +3607,15 @@ static void ScanAndLoadShaderFiles( void )
 				break;
 			}
 
-			if(!SkipBracedSection(&p))
+			SkipBracedSection(&p);
+			/*if(!SkipBracedSection(&p))
 			{
 				ri->Printf(PRINT_WARNING, "WARNING: Ignoring shader file %s. Shader \"%s\" on line %d missing closing brace.\n",
 							filename, shaderName, shaderLine);
 				ri->FS_FreeFile(buffers[i]);
 				buffers[i] = NULL;
 				break;
-			}
+			}*/
 		}
 			
 		
