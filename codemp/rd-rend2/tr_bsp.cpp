@@ -242,7 +242,7 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 		}
 	}
 
-	image = ri->Malloc(tr.lightmapSize * tr.lightmapSize * 4 * 2);
+	image = Z_Malloc(tr.lightmapSize * tr.lightmapSize * 4 * 2);
 
 	if (tr.worldDeluxeMapping)
 		numLightmaps >>= 1;

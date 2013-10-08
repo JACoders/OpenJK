@@ -432,21 +432,21 @@ srfGridMesh_t *R_CreateSurfaceGridMesh(int width, int height,
 	size = (width * height - 1) * sizeof( srfVert_t ) + sizeof( *grid );
 
 #ifdef PATCH_STITCHING
-	grid = /*ri->Hunk_Alloc*/ ri->Malloc( size );
+	grid = /*ri->Hunk_Alloc*/ Z_Malloc( size );
 	Com_Memset(grid, 0, size);
 
-	grid->widthLodError = /*ri->Hunk_Alloc*/ ri->Malloc( width * 4 );
+	grid->widthLodError = /*ri->Hunk_Alloc*/ Z_Malloc( width * 4 );
 	Com_Memcpy( grid->widthLodError, errorTable[0], width * 4 );
 
-	grid->heightLodError = /*ri->Hunk_Alloc*/ ri->Malloc( height * 4 );
+	grid->heightLodError = /*ri->Hunk_Alloc*/ Z_Malloc( height * 4 );
 	Com_Memcpy( grid->heightLodError, errorTable[1], height * 4 );
 
 	grid->numTriangles = numTriangles;
-	grid->triangles = ri->Malloc(grid->numTriangles * sizeof(srfTriangle_t));
+	grid->triangles = Z_Malloc(grid->numTriangles * sizeof(srfTriangle_t));
 	Com_Memcpy(grid->triangles, triangles, numTriangles * sizeof(srfTriangle_t));
 
 	grid->numVerts = (width * height);
-	grid->verts = ri->Malloc(grid->numVerts * sizeof(srfVert_t));
+	grid->verts = Z_Malloc(grid->numVerts * sizeof(srfVert_t));
 #else
 	grid = ri->Hunk_Alloc( size );
 	Com_Memset(grid, 0, size);

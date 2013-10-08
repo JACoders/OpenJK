@@ -725,7 +725,7 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, int bufferSize, 
 			ofs_st = dataSize;
 			dataSize += surf->numVerts * sizeof(*texcoords);
 
-			data = ri->Malloc(dataSize);
+			Z_Malloc(dataSize);
 
 			verts =      (void *)(data + ofs_xyz);
 			normals =    (void *)(data + ofs_normal);
