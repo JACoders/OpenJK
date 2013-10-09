@@ -66,6 +66,7 @@ set(MPRend2RdCommonFiles
 	"${MPDir}/rd-common/tr_types.h"
 	"${MPDir}/rd-common/tr_font.cpp"
 	"${MPDir}/rd-common/tr_font.h"
+	"${MPDir}/rd-common/tr_noise.cpp"
 	"${MPDir}/rd-common/tr_public.h")
 source_group("rd-common" FILES ${MPRend2RdCommonFiles})
 set(MPRend2Files ${MPRend2Files} ${MPRend2RdCommonFiles})

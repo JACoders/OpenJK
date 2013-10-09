@@ -1554,6 +1554,8 @@ extern qboolean gG2_GBMNoReconstruct;
 extern qboolean gG2_GBMUseSPMethod;
 static void G2API_BoltMatrixReconstruction( qboolean reconstruct ) { gG2_GBMNoReconstruct = (qboolean)!reconstruct; }
 static void G2API_BoltMatrixSPMethod( qboolean spMethod ) { gG2_GBMUseSPMethod = spMethod; }
+extern IGhoul2InfoArray &TheGhoul2InfoArray();
+const CGhoul2Info NullG2;
 
 /*
 @@@@@@@@@@@@@@@@@@@@@
