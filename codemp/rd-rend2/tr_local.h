@@ -2391,7 +2391,7 @@ extern glconfig_t  glConfig;
 typedef _skinSurface_t skinSurface_t;
 
 void	RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty);
-void	RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty);
+void	RE_UploadCinematic (int cols, int rows, const byte *data, int client, qboolean dirty);
 
 void		RE_BeginFrame( stereoFrame_t stereoFrame );
 void		RE_BeginRegistration( glconfig_t *glconfig );
@@ -2555,7 +2555,7 @@ WORLD MAP
 
 void R_AddBrushModelSurfaces( trRefEntity_t *e );
 void R_AddWorldSurfaces( void );
-qboolean R_inPVS( const vec3_t p1, const vec3_t p2 );
+qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask );
 
 
 /*

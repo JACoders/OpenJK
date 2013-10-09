@@ -645,17 +645,21 @@ static const byte *R_ClusterPVS (int cluster) {
 R_inPVS
 =================
 */
-qboolean R_inPVS( const vec3_t p1, const vec3_t p2 ) {
-	mnode_t *leaf;
-	byte	*vis;
+qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask ) {
+	int		leafnum;
+	int		cluster;
 
-	leaf = R_PointInLeaf( p1 );
-	vis = ri->CM_ClusterPVS( leaf->cluster ); // why not R_ClusterPVS ??
-	leaf = R_PointInLeaf( p2 );
+	leafnum = ri->CM_PointLeafnum (p1);
+	cluster = ri->CM_LeafCluster (leafnum);
 
-	if ( !(vis[leaf->cluster>>3] & (1<<(leaf->cluster&7))) ) {
+	//agh, the damn snapshot mask doesn't work for this
+	mask = (byte *) ri->CM_ClusterPVS (cluster);
+
+	leafnum = ri->CM_PointLeafnum (p2);
+	cluster = ri->CM_LeafCluster (leafnum);
+	if ( mask && (!(mask[cluster>>3] & (1<<(cluster&7)) ) ) )
 		return qfalse;
-	}
+
 	return qtrue;
 }
 
