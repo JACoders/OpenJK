@@ -2860,7 +2860,7 @@ void ClientThink_real( gentity_t *ent ) {
 			//player_die(ent, ent, ent, 100000, MOD_FALLING);
 	//		if (!ent->NPC)
 	//		{
-	//			respawn(ent);
+	//			ClientRespawn(ent);
 	//		}
 	//		ent->client->ps.fallingToDeath = 0;
 
@@ -3553,13 +3553,13 @@ void ClientThink_real( gentity_t *ent ) {
 
 			if ( forceRes > 0 && 
 				( level.time - client->respawnTime ) > forceRes * 1000 ) {
-				respawn( ent );
+				ClientRespawn( ent );
 				return;
 			}
 		
 			// pressing attack or use is the normal respawn method
 			if ( ucmd->buttons & ( BUTTON_ATTACK | BUTTON_USE_HOLDABLE ) ) {
-				respawn( ent );
+				ClientRespawn( ent );
 			}
 		}
 		else if (gDoSlowMoDuel)

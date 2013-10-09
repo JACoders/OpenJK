@@ -1331,7 +1331,7 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace ) {
 	if (self->damage == -1 && other && other->client && other->health < 1)
 	{
 		other->client->ps.fallingToDeath = 0;
-		respawn(other);
+		ClientRespawn(other);
 		return;
 	}
 

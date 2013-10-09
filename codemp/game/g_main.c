@@ -971,8 +971,7 @@ qboolean g_noPDuelCheck = qfalse;
 void G_ResetDuelists(void)
 {
 	int i;
-	gentity_t *ent;
-	gentity_t *tent;
+	gentity_t *ent = NULL;
 
 	i = 0;
 	while (i < 3)
@@ -984,10 +983,6 @@ void G_ResetDuelists(void)
 		g_noPDuelCheck = qfalse;
 		trap->UnlinkEntity ((sharedEntity_t *)ent);
 		ClientSpawn(ent);
-
-		// add a teleportation effect
-		tent = G_TempEntity( ent->client->ps.origin, EV_PLAYER_TELEPORT_IN );
-		tent->s.clientNum = ent->s.clientNum;
 		i++;
 	}
 }
@@ -1206,7 +1201,7 @@ void MoveClientToIntermission( gentity_t *ent ) {
 		StopFollowing( ent );
 	}
 
-
+	FindIntermissionPoint();
 	// move to the spot
 	VectorCopy( level.intermission_origin, ent->s.origin );
 	VectorCopy( level.intermission_origin, ent->client->ps.origin );
@@ -1276,7 +1271,7 @@ void FindIntermissionPoint( void ) {
 		ent = G_Find (NULL, FOFS(classname), "info_player_intermission");
 	}
 	if ( !ent ) {	// the map creator forgot to put in an intermission point...
-		SelectSpawnPoint ( vec3_origin, level.intermission_origin, level.intermission_angle, TEAM_SPECTATOR );
+		SelectSpawnPoint ( vec3_origin, level.intermission_origin, level.intermission_angle, TEAM_SPECTATOR, qfalse );
 	} else {
 		VectorCopy (ent->s.origin, level.intermission_origin);
 		VectorCopy (ent->s.angles, level.intermission_angle);
@@ -1289,7 +1284,6 @@ void FindIntermissionPoint( void ) {
 			}
 		}
 	}
-
 }
 
 qboolean DuelLimitHit(void);
@@ -1326,7 +1320,6 @@ void BeginIntermission( void ) {
 	}
 
 	level.intermissiontime = level.time;
-	FindIntermissionPoint();
 
 	// move all clients to the intermission point
 	for (i=0 ; i< level.maxclients ; i++) {
@@ -1339,7 +1332,7 @@ void BeginIntermission( void ) {
 				!client->client ||
 				client->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{ //don't respawn spectators in powerduel or it will mess the line order all up
-				respawn(client);
+				ClientRespawn(client);
 			}
 		}
 		MoveClientToIntermission( client );
@@ -1347,7 +1340,6 @@ void BeginIntermission( void ) {
 
 	// send the current scoring to all clients
 	SendScoreboardMessageToAllClients();
-
 }
 
 qboolean DuelLimitHit(void)
@@ -2919,7 +2911,7 @@ void G_RunFrame( int levelTime ) {
 				clEnt->client->tempSpectate > level.time &&
 				clEnt->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{
-				respawn(clEnt);
+				ClientRespawn(clEnt);
 				clEnt->client->tempSpectate = 0;
 			}
 		}
