@@ -1047,7 +1047,7 @@ qboolean Team_GetLocationMsg(gentity_t *ent, char *loc, int loclen)
 
 /*
 ================
-SelectRandomDeathmatchSpawnPoint
+SelectRandomTeamSpawnPoint
 
 go to a random point that doesn't telefrag
 ================
@@ -1151,13 +1151,13 @@ SelectCTFSpawnPoint
 
 ============
 */
-gentity_t *SelectCTFSpawnPoint ( team_t team, int teamstate, vec3_t origin, vec3_t angles ) {
+gentity_t *SelectCTFSpawnPoint ( team_t team, int teamstate, vec3_t origin, vec3_t angles, qboolean isbot ) {
 	gentity_t	*spot;
 
 	spot = SelectRandomTeamSpawnPoint ( teamstate, team, -1 );
 
 	if (!spot) {
-		return SelectSpawnPoint( vec3_origin, origin, angles, team );
+		return SelectSpawnPoint( vec3_origin, origin, angles, team, isbot );
 	}
 
 	VectorCopy (spot->s.origin, origin);
@@ -1173,13 +1173,13 @@ SelectSiegeSpawnPoint
 
 ============
 */
-gentity_t *SelectSiegeSpawnPoint ( int siegeClass, team_t team, int teamstate, vec3_t origin, vec3_t angles ) {
+gentity_t *SelectSiegeSpawnPoint ( int siegeClass, team_t team, int teamstate, vec3_t origin, vec3_t angles, qboolean isbot ) {
 	gentity_t	*spot;
 
 	spot = SelectRandomTeamSpawnPoint ( teamstate, team, siegeClass );
 
 	if (!spot) {
-		return SelectSpawnPoint( vec3_origin, origin, angles, team );
+		return SelectSpawnPoint( vec3_origin, origin, angles, team, isbot );
 	}
 
 	VectorCopy (spot->s.origin, origin);

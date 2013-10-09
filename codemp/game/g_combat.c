@@ -2075,7 +2075,6 @@ extern void saberBackToOwner(gentity_t *saberent);
 void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath ) {
 	gentity_t	*ent;
 	int			anim;
-	int			contents;
 	int			killer;
 	int			i;
 	char		*killerName, *obit;
@@ -2670,9 +2669,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		}
 	}
 
-	// if client is in a nodrop area, don't drop anything (but return CTF flags!)
-	contents = trap->PointContents( self->r.currentOrigin, -1 );
-	if ( !( contents & CONTENTS_NODROP ) && !self->client->ps.fallingToDeath) {
+	if (!self->client->ps.fallingToDeath) {
 		if (self->s.eType != ET_NPC)
 		{
 			TossClientItems( self );
@@ -2681,12 +2678,15 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	else {
 		if ( self->client->ps.powerups[PW_NEUTRALFLAG] ) {		// only happens in One Flag CTF
 			Team_ReturnFlag( TEAM_FREE );
+			self->client->ps.powerups[PW_NEUTRALFLAG] = 0;
 		}
 		else if ( self->client->ps.powerups[PW_REDFLAG] ) {		// only happens in standard CTF
 			Team_ReturnFlag( TEAM_RED );
+			self->client->ps.powerups[PW_REDFLAG] = 0;
 		}
 		else if ( self->client->ps.powerups[PW_BLUEFLAG] ) {	// only happens in standard CTF
 			Team_ReturnFlag( TEAM_BLUE );
+			self->client->ps.powerups[PW_BLUEFLAG] = 0;
 		}
 	}
 
@@ -2878,7 +2878,9 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	}
 
 	// Start any necessary death fx for this entity
-	DeathFX( self );
+	// ensiform - only call if they are an npc
+	if ( self->NPC )
+		DeathFX( self );
 
 
 	if (level.gametype == GT_POWERDUEL && !g_noPDuelCheck)
