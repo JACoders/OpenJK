@@ -3064,4 +3064,6 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 extern qboolean    textureFilterAnisotropic;
 extern int         maxAnisotropy;
 
+float ProjectRadius( float r, vec3_t location );
+
 #endif //TR_LOCAL_H

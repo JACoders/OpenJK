@@ -4264,7 +4264,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 		shader_t	*sh;
 		// get the shader name
-		sh = R_FindShader( surfInfo->shader, lightmapsNone, stylesDefault, qtrue );
+		sh = R_FindShader( surfInfo->shader, LIGHTMAP_NONE, qtrue );
 		// insert it in the surface list
 		if ( sh->defaultShader ) 
 		{

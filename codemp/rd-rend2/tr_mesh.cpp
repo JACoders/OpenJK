@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tr_local.h"
 
-static float ProjectRadius( float r, vec3_t location )
+float ProjectRadius( float r, vec3_t location )
 {
 	float pr;
 	float dist;
