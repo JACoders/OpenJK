@@ -26,7 +26,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef __QGL_H__
 #define __QGL_H__
 
+#ifndef _WIN32
 #include "SDL/SDL_opengl.h"
+#else
+#include <Windows.h>
+#include <gl/GL.h>
+#include "glext.h"
+
+#define APIENTRYP
+#define GLsizeiptrARB	size_t *
+#define GLintptrARB		int *
+#define GLhandleARB		unsigned int
+#define GLcharARB		char
+#endif
 
 extern void (APIENTRYP qglActiveTextureARB) (GLenum texture);
 extern void (APIENTRYP qglClientActiveTextureARB) (GLenum texture);
@@ -377,7 +389,7 @@ extern void (APIENTRYP qglUnlockArraysEXT) (void);
 extern void     (APIENTRY * qglDrawRangeElementsEXT) (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
 
 // GL_EXT_multi_draw_arrays
-extern void     (APIENTRY * qglMultiDrawArraysEXT) (GLenum, GLint *, GLsizei *, GLsizei);
+extern void     (APIENTRY * qglMultiDrawArraysEXT) (GLenum, const GLint *, const GLsizei *, GLsizei);
 extern void     (APIENTRY * qglMultiDrawElementsEXT) (GLenum, const GLsizei *, GLenum, const GLvoid **, GLsizei);
 
 // GL_ARB_shading_language_100

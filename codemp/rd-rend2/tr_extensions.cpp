@@ -40,7 +40,7 @@ extern glwstate_t glw_state;
 void            (APIENTRY * qglDrawRangeElementsEXT) (GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *indices);
 
 // GL_EXT_multi_draw_arrays
-void            (APIENTRY * qglMultiDrawArraysEXT) (GLenum mode, GLint *first, GLsizei *count, GLsizei primcount);
+void            (APIENTRY * qglMultiDrawArraysEXT) (GLenum mode, const GLint *first, const GLsizei *count, GLsizei primcount);
 void            (APIENTRY * qglMultiDrawElementsEXT) (GLenum mode, const GLsizei *count, GLenum type, const GLvoid **indices, GLsizei primcount);
 
 // GL_ARB_vertex_shader
@@ -282,9 +282,9 @@ void GLimp_InitExtraExtensions()
 		qglDeleteBuffersARB = (PFNGLDELETEBUFFERSARBPROC) GETADDRESS("glDeleteBuffersARB");
 		qglGenBuffersARB = (PFNGLGENBUFFERSARBPROC) GETADDRESS("glGenBuffersARB");
 		qglIsBufferARB = (PFNGLISBUFFERARBPROC) GETADDRESS("glIsBufferARB");
-		qglBufferDataARB = (PFNGLBUFFERDATAARBPROC) GETADDRESS("glBufferDataARB");
-		qglBufferSubDataARB = (PFNGLBUFFERSUBDATAARBPROC) GETADDRESS("glBufferSubDataARB");
-		qglGetBufferSubDataARB = (PFNGLGETBUFFERSUBDATAARBPROC) GETADDRESS("glGetBufferSubDataARB");
+		qglBufferDataARB = (void (__stdcall *)(GLenum,GLsizeiptrARB,const GLvoid *,GLenum)) GETADDRESS("glBufferDataARB");
+		qglBufferSubDataARB = (void (__stdcall *)(GLenum,GLintptrARB,GLsizeiptrARB,const GLvoid *)) GETADDRESS("glBufferSubDataARB");
+		qglGetBufferSubDataARB = (void (__stdcall *)(GLenum,GLintptrARB,GLsizeiptrARB,GLvoid*)) GETADDRESS("glGetBufferSubDataARB");
 		qglGetBufferParameterivARB = (PFNGLGETBUFFERPARAMETERIVARBPROC) GETADDRESS("glGetBufferParameterivARB");
 		qglGetBufferPointervARB = (PFNGLGETBUFFERPOINTERVARBPROC) GETADDRESS("glGetBufferPointervARB");
 		ri->Printf(PRINT_ALL, result[1], extension);

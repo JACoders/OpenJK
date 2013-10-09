@@ -29,7 +29,7 @@ typedef unsigned int glIndex_t;
 #define MAX_STATES_PER_SHADER 32
 #define MAX_STATE_NAME 32
 
-glconfig_t	glConfig;
+extern glconfig_t	glConfig;
 
 typedef enum
 {
