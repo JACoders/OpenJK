@@ -87,7 +87,7 @@ extern cvar_t	*r_stereoSeparation;
 
 extern cvar_t	*r_skipBackEnd;
 
-extern cvar_t	*r_stereoEnabled;
+extern cvar_t	*r_stereo;
 extern cvar_t	*r_anaglyphMode;
 
 extern cvar_t	*r_greyscale;

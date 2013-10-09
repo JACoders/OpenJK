@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_local.h"
 #include "G2_local.h"
 
+bool g_bDynamicGlowSupported = false;		// Not used. Put here to keep *_glimp from whining at us. --eez
+
 glconfig_t  glConfig;
 glRefConfig_t glRefConfig;
 qboolean    textureFilterAnisotropic = qfalse;
@@ -54,7 +56,7 @@ cvar_t	*r_stereoSeparation;
 
 cvar_t	*r_skipBackEnd;
 
-cvar_t	*r_stereoEnabled;
+cvar_t	*r_stereo;
 cvar_t	*r_anaglyphMode;
 
 cvar_t	*r_greyscale;
@@ -1178,7 +1180,7 @@ void R_Register( void )
 	r_vertexLight = ri->Cvar_Get( "r_vertexLight", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_uiFullScreen = ri->Cvar_Get( "r_uifullscreen", "0", 0);
 	r_subdivisions = ri->Cvar_Get ("r_subdivisions", "4", CVAR_ARCHIVE | CVAR_LATCH);
-	r_stereoEnabled = ri->Cvar_Get( "r_stereoEnabled", "0", CVAR_ARCHIVE | CVAR_LATCH);
+	r_stereo = ri->Cvar_Get( "r_stereo", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_greyscale = ri->Cvar_Get("r_greyscale", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	ri->Cvar_CheckRange(r_greyscale, 0, 1, qfalse);
 
@@ -1264,10 +1266,6 @@ void R_Register( void )
 					CVAR_ARCHIVE | CVAR_LATCH );
 	r_gamma = ri->Cvar_Get( "r_gamma", "1", CVAR_ARCHIVE );
 	r_facePlaneCull = ri->Cvar_Get ("r_facePlaneCull", "1", CVAR_ARCHIVE );
-
-	r_railWidth = ri->Cvar_Get( "r_railWidth", "16", CVAR_ARCHIVE );
-	r_railCoreWidth = ri->Cvar_Get( "r_railCoreWidth", "6", CVAR_ARCHIVE );
-	r_railSegmentLength = ri->Cvar_Get( "r_railSegmentLength", "32", CVAR_ARCHIVE );
 
 	r_ambientScale = ri->Cvar_Get( "r_ambientScale", "0.6", CVAR_CHEAT );
 	r_directedScale = ri->Cvar_Get( "r_directedScale", "1", CVAR_CHEAT );
