@@ -39,6 +39,15 @@ static char **shaderTextHashTable[MAX_SHADERTEXT_HASH];
 
 qhandle_t RE_RegisterShaderLightMap( const char *name, int lightmapIndex );
 
+qboolean ShaderHashTableExists(void)
+{
+	if (shaderTextHashTable[0][0])
+	{
+		return qtrue;
+	}
+	return qfalse;
+}
+
 /*
 ================
 return a hash value for the filename

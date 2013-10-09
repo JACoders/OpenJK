@@ -27,4 +27,7 @@ unsigned int AnyLanguage_ReadCharFromString( const char *psText, int *piAdvanceC
 qboolean Language_IsAsian(void);
 qboolean Language_UsesSpaces(void);
 
+void R_InitFreeType(void);
+void R_DoneFreeType(void);
+
 // end

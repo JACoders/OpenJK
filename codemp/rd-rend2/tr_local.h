@@ -3065,5 +3065,7 @@ extern qboolean    textureFilterAnisotropic;
 extern int         maxAnisotropy;
 
 float ProjectRadius( float r, vec3_t location );
+void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke);
+qboolean ShaderHashTableExists(void);
 
 #endif //TR_LOCAL_H

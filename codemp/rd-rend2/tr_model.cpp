@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_models.c -- model loading and caching
 
 #include "tr_local.h"
+#include <qcommon/sstring.h>
 
 #define	LL(x) x=LittleLong(x)
 
@@ -370,6 +371,65 @@ qhandle_t RE_RegisterModel( const char *name ) {
 	}
 
 	return hModel;
+}
+
+/*
+====================
+RE_RegisterModels_StoreShaderRequest
+
+Cache shaders used by a model
+
+This stuff looks a bit messy, but it's kept here as black box, and nothing appears in any .H files for other 
+modules to worry about. I may make another module for this sometime.
+====================
+*/
+
+typedef pair<int,int> StringOffsetAndShaderIndexDest_t;
+typedef vector <StringOffsetAndShaderIndexDest_t> ShaderRegisterData_t;
+struct CachedEndianedModelBinary_s
+{
+	void	*pModelDiskImage;
+	int		iAllocSize;		// may be useful for mem-query, but I don't actually need it
+	ShaderRegisterData_t ShaderRegisterData;	
+	int		iLastLevelUsedOn;
+	int		iPAKFileCheckSum;	// else -1 if not from PAK
+
+
+	CachedEndianedModelBinary_s()
+	{
+		pModelDiskImage		= 0;
+		iAllocSize			= 0;
+		ShaderRegisterData.clear();
+		iLastLevelUsedOn	= -1;
+		iPAKFileCheckSum	= -1;
+	}
+};
+typedef struct CachedEndianedModelBinary_s CachedEndianedModelBinary_t;
+typedef map <sstring_t,CachedEndianedModelBinary_t>	CachedModels_t;
+CachedModels_t *CachedModels = NULL;	// the important cache item.
+
+void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke)
+{
+	char sModelName[MAX_QPATH];
+	
+	assert(CachedModels);
+
+	Q_strncpyz(sModelName,psModelFileName,sizeof(sModelName));
+	Q_strlwr  (sModelName);
+
+	CachedEndianedModelBinary_t &ModelBin = (*CachedModels)[sModelName];
+
+	if (ModelBin.pModelDiskImage == NULL)
+	{	
+		assert(0);	// should never happen, means that we're being called on a model that wasn't loaded
+	}
+	else
+	{
+		int iNameOffset =		  psShaderName		- (char *)ModelBin.pModelDiskImage;
+		int iPokeOffset = (char*) piShaderIndexPoke	- (char *)ModelBin.pModelDiskImage;
+
+		ModelBin.ShaderRegisterData.push_back( StringOffsetAndShaderIndexDest_t( iNameOffset,iPokeOffset) );
+	}
 }
 
 /*
