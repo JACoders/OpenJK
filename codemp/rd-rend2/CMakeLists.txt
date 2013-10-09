@@ -29,6 +29,7 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/tr_fbo.cpp"
 	"${MPDir}/rd-rend2/tr_fbo.h"
 	"${MPDir}/rd-rend2/tr_flares.cpp"
+	"${MPDir}/rd-rend2/tr_ghoul2.cpp"
 	"${MPDir}/rd-rend2/tr_glsl.cpp"
 	"${MPDir}/rd-rend2/tr_image.cpp"
 	"${MPDir}/rd-rend2/tr_init.cpp"
@@ -63,6 +64,8 @@ set(MPRend2Files ${MPRend2Files} ${MPRend2Ghoul2Files})
 set(MPRend2RdCommonFiles
 	"${MPDir}/rd-common/mdx_format.h"
 	"${MPDir}/rd-common/tr_types.h"
+	"${MPDir}/rd-common/tr_font.cpp"
+	"${MPDir}/rd-common/tr_font.h"
 	"${MPDir}/rd-common/tr_public.h")
 source_group("rd-common" FILES ${MPRend2RdCommonFiles})
 set(MPRend2Files ${MPRend2Files} ${MPRend2RdCommonFiles})
