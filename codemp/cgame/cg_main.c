@@ -467,14 +467,11 @@ static void CG_ForceModelChange( void ) {
 	int i;
 
 	for ( i=0; i<MAX_CLIENTS; i++ ) {
-		const char *clientInfo;
-		void *oldGhoul2;
+		const char *clientInfo = CG_ConfigString( CS_PLAYERS+i );
 
-		clientInfo = CG_ConfigString( CS_PLAYERS+i );
 		if ( !VALIDSTRING( clientInfo ) )
 			continue;
 
-		oldGhoul2 = cgs.clientinfo[i].ghoul2Model;
 		CG_NewClientInfo( i, qtrue );
 	}
 }

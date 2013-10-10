@@ -62,7 +62,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	/************************************************************************************/
 
 	//Client sets ucmds and such for speed alterations
-	float speedInc, speedIdleDec, speedIdle, speedIdleAccel, speedMin, speedMax;
+	float speedInc, speedIdleDec, speedIdle, speedMin, speedMax;
 	float fWalkSpeedMax;
 	bgEntity_t *parent = pVeh->m_pParentEntity;
 	playerState_t *parentPS = parent->playerState;
@@ -71,7 +71,6 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 	speedMax = pVeh->m_pVehicleInfo->speedMax;
 
 	speedIdle = pVeh->m_pVehicleInfo->speedIdle;
-	speedIdleAccel = pVeh->m_pVehicleInfo->accelIdle * pVeh->m_fTimeModifier;
 	speedMin = pVeh->m_pVehicleInfo->speedMin;
 
 	if ( !parentPS->m_iVehicleNum  )
@@ -237,7 +236,6 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 	/********************************************************************************/
 	/*	BEGIN	Here is where make sure the vehicle is properly oriented.	BEGIN	*/
 	/********************************************************************************/
-	float speed;
 	bgEntity_t *parent = pVeh->m_pParentEntity;
 	playerState_t *parentPS, *riderPS;
 
@@ -254,8 +252,6 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 
 	parentPS = parent->playerState;
 	riderPS = rider->playerState;
-
-	speed = VectorLength( parentPS->velocity );
 
 	// If the player is the rider...
 	if ( rider->s.number < MAX_CLIENTS )
@@ -348,12 +344,12 @@ static void AnimateVehicle( Vehicle_t *pVeh )
 
 	// If we're moving...
 	if ( fSpeedPercToMax > 0.0f ) //fSpeedPercToMax >= 0.85f )
-	{  
-		float fYawDelta;
+	{
+	//	float fYawDelta;
 
 		iBlend = 300;
 		iFlags = SETANIM_FLAG_OVERRIDE;
-		fYawDelta = pVeh->m_vPrevOrientation[YAW] - pVeh->m_vOrientation[YAW];
+	//	fYawDelta = pVeh->m_vPrevOrientation[YAW] - pVeh->m_vOrientation[YAW];
 
 		// NOTE: Mikes suggestion for fixing the stuttering walk (left/right) is to maintain the
 		// current frame between animations. I have no clue how to do this and have to work on other

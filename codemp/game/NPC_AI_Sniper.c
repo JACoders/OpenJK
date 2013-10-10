@@ -345,14 +345,14 @@ static void Sniper_CheckMoveState( void )
 		if ( NAV_HitNavGoal( NPCS.NPC->r.currentOrigin, NPCS.NPC->r.mins, NPCS.NPC->r.maxs, NPCS.NPCInfo->goalEntity->r.currentOrigin, 16, FlyingCreature( NPCS.NPC ) ) || 
 			( NPCS.NPCInfo->squadState == SQUAD_SCOUT && enemyLOS2 && enemyDist2 <= 10000 ) )
 		{
-			int	newSquadState = SQUAD_STAND_AND_SHOOT;
+		//	int	newSquadState = SQUAD_STAND_AND_SHOOT;
 			//we got where we wanted to go, set timers based on why we were running
 			switch ( NPCS.NPCInfo->squadState )
 			{
 			case SQUAD_RETREAT://was running away
 				TIMER_Set( NPCS.NPC, "duck", (NPCS.NPC->client->pers.maxHealth - NPCS.NPC->health) * 100 );
 				TIMER_Set( NPCS.NPC, "hideTime", Q_irand( 3000, 7000 ) );
-				newSquadState = SQUAD_COVER;
+			//	newSquadState = SQUAD_COVER;
 				break;
 			case SQUAD_TRANSITION://was heading for a combat point
 				TIMER_Set( NPCS.NPC, "hideTime", Q_irand( 2000, 4000 ) );

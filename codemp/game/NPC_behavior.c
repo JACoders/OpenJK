@@ -621,16 +621,14 @@ void NPC_BSFollowLeader (void)
 		if ( NPCS.enemyVisibility > VIS_PVS )
 		{//face
 			vec3_t	enemy_org, muzzle, delta, angleToEnemy;
-			float	distanceToEnemy;
 
 			CalcEntitySpot( NPCS.NPC->enemy, SPOT_HEAD, enemy_org );
 			NPC_AimWiggle( enemy_org );
 
 			CalcEntitySpot( NPCS.NPC, SPOT_WEAPON, muzzle );
-			
+
 			VectorSubtract( enemy_org, muzzle, delta);
 			vectoangles( delta, angleToEnemy );
-			distanceToEnemy = VectorNormalize( delta );
 
 			NPCS.NPCInfo->desiredYaw = angleToEnemy[YAW];
 			NPCS.NPCInfo->desiredPitch = angleToEnemy[PITCH];

@@ -1369,8 +1369,6 @@ extern void NPC_BSWampa_Default( void );
 extern qboolean Jedi_CultistDestroyer( gentity_t *self );
 void NPC_RunBehavior( int team, int bState )
 {
-	qboolean dontSetAim = qfalse;
-
 	if (NPCS.NPC->s.NPC_class == CLASS_VEHICLE &&
 		NPCS.NPC->m_pVehicle)
 	{ //vehicles don't do AI!
@@ -1393,7 +1391,6 @@ void NPC_RunBehavior( int team, int bState )
 		NPCS.NPC->client->ps.weapon == WP_SABER )
 	{//jedi
 		NPC_BehaviorSet_Jedi( bState );
-		dontSetAim = qtrue;
 	}
 	else if ( NPCS.NPC->client->NPC_class == CLASS_WAMPA )
 	{//wampa
@@ -1421,12 +1418,10 @@ void NPC_RunBehavior( int team, int bState )
 		{
 			NPC_BehaviorSet_Jedi( bState );
 		}
-		dontSetAim = qtrue;
 	}
 	else if ( Jedi_CultistDestroyer( NPCS.NPC ) )
 	{
 		NPC_BSJedi_Default();
-		dontSetAim = qtrue;
 	}
 	else if ( NPCS.NPCInfo->scriptFlags & SCF_FORCED_MARCH )
 	{//being forced to march
@@ -1551,7 +1546,6 @@ void NPC_RunBehavior( int team, int bState )
 					NPC_BehaviorSet_Default( bState );
 				}
 				NPC_CheckCharmed();
-				dontSetAim = qtrue;
 			}
 			break;
 		}

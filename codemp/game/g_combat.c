@@ -47,7 +47,7 @@ int G_GetHitLocation(gentity_t *target, vec3_t ppoint)
 	vec3_t			point, point_dir;
 	vec3_t			forward, right, up;
 	vec3_t			tangles, tcenter;
-	float			tradius;
+//	float			tradius;
 	float			udot, fdot, rdot;
 	int				Vertical, Forward, Lateral;
 	int				HitLoc;
@@ -66,7 +66,7 @@ int G_GetHitLocation(gentity_t *target, vec3_t ppoint)
 	VectorScale(tcenter, 0.5, tcenter);
 
 	// Get radius width of target.
-	tradius = (fabs(target->r.maxs[0]) + fabs(target->r.maxs[1]) + fabs(target->r.mins[0]) + fabs(target->r.mins[1]))/4;
+//	tradius = (fabs(target->r.maxs[0]) + fabs(target->r.maxs[1]) + fabs(target->r.mins[0]) + fabs(target->r.mins[1]))/4;
 
 	// Get impact point.
 	if(ppoint && !VectorCompare(ppoint, vec3_origin))
@@ -641,22 +641,17 @@ LookAtKiller
 */
 void LookAtKiller( gentity_t *self, gentity_t *inflictor, gentity_t *attacker ) {
 	vec3_t		dir;
-	vec3_t		angles;
 
-	if ( attacker && attacker != self ) {
+	if ( attacker && attacker != self )
 		VectorSubtract (attacker->s.pos.trBase, self->s.pos.trBase, dir);
-	} else if ( inflictor && inflictor != self ) {
+	else if ( inflictor && inflictor != self )
 		VectorSubtract (inflictor->s.pos.trBase, self->s.pos.trBase, dir);
-	} else {
+	else {
 		self->client->ps.stats[STAT_DEAD_YAW] = self->s.angles[YAW];
 		return;
 	}
 
 	self->client->ps.stats[STAT_DEAD_YAW] = vectoyaw ( dir );
-
-	angles[YAW] = vectoyaw ( dir );
-	angles[PITCH] = 0; 
-	angles[ROLL] = 0;
 }
 
 /*
@@ -4427,18 +4422,10 @@ int gPainMOD = 0;
 int gPainHitLoc = -1;
 vec3_t gPainPoint;
 
-void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
-			   vec3_t dir, vec3_t point, int damage, int dflags, int mod ) {
+void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod ) {
 	gclient_t	*client;
-	int			take;
-	int			save;
-	int			asave;
-	int			knockback;
-	int			max;
-	int			subamt = 0;
-	float		famt = 0;
-	float		hamt = 0;
-	float		shieldAbsorbed = 0;
+	int			take, asave, max, subamt = 0, knockback;
+	float		famt = 0, hamt = 0, shieldAbsorbed = 0;
 
 	if (!targ)
 		return;
@@ -4963,7 +4950,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,
 		damage = 1;
 	}
 	take = damage;
-	save = 0;
 
 	// save some from armor
 	asave = CheckArmor (targ, take, dflags);
