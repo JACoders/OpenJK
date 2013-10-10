@@ -5919,7 +5919,6 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 	int meleestrafe = 0;
 	int useTheForce = 0;
 	int forceHostile = 0;
-	int cBAI = 0;
 	gentity_t *friendInLOF = 0;
 	float mLen;
 	int visResult = 0;
@@ -6861,7 +6860,7 @@ void StandardBotAI(bot_state_t *bs, float thinktime)
 	{
 		if (bs->frame_Enemy_Vis)
 		{
-			cBAI = CombatBotAI(bs, thinktime);
+			CombatBotAI(bs, thinktime);
 		}
 		else if (bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT)
 		{ //keep charging in case we see him again before we lose track of him

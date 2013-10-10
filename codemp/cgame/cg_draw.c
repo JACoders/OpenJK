@@ -1429,14 +1429,10 @@ void CG_DrawForceSelect( void )
 	int		i;
 	int		count;
 	int		smallIconSize,bigIconSize;
-	int		holdX,x,y,x2,y2,pad,length;
+	int		holdX, x, y, pad;
 	int		sideLeftIconCnt,sideRightIconCnt;
 	int		sideMax,holdCount,iconCnt;
 	int		yOffset = 0;
-
-
-	x2 = 0;
-	y2 = 0;
 
 	// don't display if dead
 	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 ) 
@@ -1498,10 +1494,6 @@ void CG_DrawForceSelect( void )
 	x = 320;
 	y = 425;
 
-	// Background
-	length = (sideLeftIconCnt * smallIconSize) + (sideLeftIconCnt*pad) +
-			bigIconSize + (sideRightIconCnt * smallIconSize) + (sideRightIconCnt*pad) + 12;
-	
 	i = BG_ProperForceIndex(cg.forceSelect) - 1;
 	if (i < 0)
 	{
@@ -1588,9 +1580,8 @@ void CG_DrawInvenSelect( void )
 	int				smallIconSize,bigIconSize;
 	int				sideLeftIconCnt,sideRightIconCnt;
 	int				count;
-	int				holdX,x,y,y2,pad;
-	int				height;
-	float			addX;
+	int				holdX, x, y, y2, pad;
+//	float			addX;
 
 	// don't display if dead
 	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 ) 
@@ -1669,8 +1660,7 @@ void CG_DrawInvenSelect( void )
 	// Left side ICONS
 	// Work backwards from current icon
 	holdX = x - ((bigIconSize/2) + pad + smallIconSize);
-	height = smallIconSize * cg.iconHUDPercent;
-	addX = (float) smallIconSize * .75;
+//	addX = (float) smallIconSize * .75;
 
 	for (iconCnt=0;iconCnt<sideLeftIconCnt;i--)
 	{
@@ -1706,13 +1696,12 @@ void CG_DrawInvenSelect( void )
 	}
 
 	// Current Center Icon
-	height = bigIconSize * cg.iconHUDPercent;
 	if (cgs.media.invenIcons[cg.itemSelect] && BG_IsItemSelectable(&cg.predictedPlayerState, cg.itemSelect))
 	{
 		int itemNdex;
 		trap->R_SetColor(NULL);
 		CG_DrawPic( x-(bigIconSize/2), (y-((bigIconSize-smallIconSize)/2))+10, bigIconSize, bigIconSize, cgs.media.invenIcons[cg.itemSelect] );
-		addX = (float) bigIconSize * .75;
+	//	addX = (float) bigIconSize * .75;
 		trap->R_SetColor(colorTable[CT_ICON_BLUE]);
 		/*CG_DrawNumField ((x-(bigIconSize/2)) + addX, y, 2, cg.snap->ps.inventory[cg.inventorySelect], 6, 12, 
 			NUM_FONT_SMALL,qfalse);*/
@@ -1746,8 +1735,7 @@ void CG_DrawInvenSelect( void )
 	// Right side ICONS
 	// Work forwards from current icon
 	holdX = x + (bigIconSize/2) + pad;
-	height = smallIconSize * cg.iconHUDPercent;
-	addX = (float) smallIconSize * .75;
+//	addX = (float) smallIconSize * .75;
 	for (iconCnt=0;iconCnt<sideRightIconCnt;i++)
 	{
 		if (i> HI_NUM_HOLDABLE-1)
@@ -4501,7 +4489,6 @@ void CG_DrawSiegeInfo(centity_t *cent, float chX, float chY, float chW, float ch
 	const char *configstring, *v;
 	siegeClass_t *siegeClass;
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x;
 	float y;
@@ -4566,12 +4553,6 @@ void CG_DrawSiegeInfo(centity_t *cent, float chX, float chY, float chW, float ch
 	aColor[2] = 0.0f;
 	aColor[3] = 0.4f;
 
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
-
 	//color of greyed out "missing health"
 	cColor[0] = 0.5f;
 	cColor[1] = 0.5f;
@@ -4614,12 +4595,6 @@ void CG_DrawSiegeInfo(centity_t *cent, float chX, float chY, float chW, float ch
 	aColor[2] = 0.0f;
 	aColor[3] = 0.4f;
 
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
-
 	//color of greyed out "missing health"
 	cColor[0] = 0.5f;
 	cColor[1] = 0.5f;
@@ -4640,7 +4615,6 @@ void CG_DrawSiegeInfo(centity_t *cent, float chX, float chY, float chW, float ch
 void CG_DrawHealthBar(centity_t *cent, float chX, float chY, float chW, float chH)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = chX+((chW/2)-(HEALTH_WIDTH/2));
 	float y = (chY+chH) + 8.0f;
@@ -4673,12 +4647,6 @@ void CG_DrawHealthBar(centity_t *cent, float chX, float chY, float chW, float ch
 		aColor[3] = 0.4f;
 	}
 
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
-
 	//color of greyed out "missing health"
 	cColor[0] = 0.5f;
 	cColor[1] = 0.5f;
@@ -4699,7 +4667,6 @@ void CG_DrawHealthBar(centity_t *cent, float chX, float chY, float chW, float ch
 void CG_DrawHaqrBar(float chX, float chY, float chW, float chH)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = chX+((chW/2)-(HEALTH_WIDTH/2));
 	float y = (chY+chH) + 8.0f;
@@ -4716,12 +4683,6 @@ void CG_DrawHaqrBar(float chX, float chY, float chW, float chH)
 	aColor[1] = 1.0f;
 	aColor[2] = 0.0f;
 	aColor[3] = 0.4f;
-
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
 
 	//color of greyed out done area
 	cColor[0] = 0.5f;
@@ -4753,7 +4714,6 @@ vec4_t cg_genericTimerColor;
 void CG_DrawGenericTimerBar(void)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = CGTIMERBAR_X;
 	float y = CGTIMERBAR_Y;
@@ -4774,12 +4734,6 @@ void CG_DrawGenericTimerBar(void)
 	aColor[1] = cg_genericTimerColor[1];
 	aColor[2] = cg_genericTimerColor[2];
 	aColor[3] = cg_genericTimerColor[3];
-
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
 
 	//color of greyed out "missing fuel"
 	cColor[0] = 0.5f;
@@ -6728,11 +6682,8 @@ CG_DrawWarmup
 =================
 */
 static void CG_DrawWarmup( void ) {
-	int			w;
-	int			sec;
-	int			i;
-	float scale;
-	int			cw;
+	int			w, sec, i;
+	float		scale;
 	const char	*s;
 
 	sec = cg.warmup;
@@ -6850,19 +6801,15 @@ static void CG_DrawWarmup( void ) {
 	scale = 0.45f;
 	switch ( cg.warmupCount ) {
 	case 0:
-		cw = 28;
 		scale = 1.25f;
 		break;
 	case 1:
-		cw = 24;
 		scale = 1.15f;
 		break;
 	case 2:
-		cw = 20;
 		scale = 1.05f;
 		break;
 	default:
-		cw = 16;
 		scale = 0.9f;
 		break;
 	}
@@ -6960,7 +6907,6 @@ void CG_DrawFlagStatus()
 void CG_DrawJetpackFuel(void)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = JPFUELBAR_X;
 	float y = JPFUELBAR_Y;
@@ -6981,12 +6927,6 @@ void CG_DrawJetpackFuel(void)
 	aColor[1] = 0.0f;
 	aColor[2] = 0.0f;
 	aColor[3] = 0.8f;
-
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
 
 	//color of greyed out "missing fuel"
 	cColor[0] = 0.5f;
@@ -7012,7 +6952,6 @@ void CG_DrawJetpackFuel(void)
 void CG_DrawEWebHealth(void)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = EWEBHEALTH_X;
 	float y = EWEBHEALTH_Y;
@@ -7045,12 +6984,6 @@ void CG_DrawEWebHealth(void)
 	aColor[2] = 0.0f;
 	aColor[3] = 0.8f;
 
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
-
 	//color of greyed out "missing fuel"
 	cColor[0] = 0.5f;
 	cColor[1] = 0.5f;
@@ -7075,7 +7008,6 @@ void CG_DrawEWebHealth(void)
 void CG_DrawCloakFuel(void)
 {
 	vec4_t aColor;
-	vec4_t bColor;
 	vec4_t cColor;
 	float x = CLFUELBAR_X;
 	float y = CLFUELBAR_Y;
@@ -7101,12 +7033,6 @@ void CG_DrawCloakFuel(void)
 	aColor[1] = 0.0f;
 	aColor[2] = 0.6f;
 	aColor[3] = 0.8f;
-
-	//color of the border
-	bColor[0] = 0.0f;
-	bColor[1] = 0.0f;
-	bColor[2] = 0.0f;
-	bColor[3] = 0.3f;
 
 	//color of greyed out "missing fuel"
 	cColor[0] = 0.1f;

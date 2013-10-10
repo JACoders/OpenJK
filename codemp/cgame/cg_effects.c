@@ -1398,16 +1398,15 @@ void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shak
 	vec3_t			direction, new_org;
 	vec3_t			velocity		= { 0, 0, 0 };
 	vec3_t			temp_org, temp_vel;
-	float			scale, dscale;
+//	float			scale;
 	int				i, numSparks;
 
 	//Sparks
 	numSparks = 16 + (random() * 16.0f);
-	
+
 	for ( i = 0; i < numSparks; i++ )
 	{	
-		scale = 0.25f + (random() * 2.0f);
-		dscale = -scale*0.5;
+	//	scale = 0.25f + (random() * 2.0f);
 
 /*		particle = FX_AddTrail( origin,
 								NULL,

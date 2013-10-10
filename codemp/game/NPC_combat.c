@@ -2586,7 +2586,6 @@ static int NPC_CollectCombatPoints( const vec3_t origin, const float radius, com
 	float	radiusSqr = (radius*radius);
 	float	distance;
 	float	bestDistance = Q3_INFINITE;
-	int		bestPoint = 0;
 	int		numPoints = 0;
 	int		i;
 
@@ -2640,7 +2639,6 @@ static int NPC_CollectCombatPoints( const vec3_t origin, const float radius, com
 			if (distance < bestDistance)
 			{
 				bestDistance = distance;
-				bestPoint = numPoints;
 			}
 
 			points[numPoints].dist = distance;
@@ -2649,7 +2647,7 @@ static int NPC_CollectCombatPoints( const vec3_t origin, const float radius, com
 		}
 	}
 
-	return numPoints;//bestPoint;
+	return numPoints;
 }
 
 /*

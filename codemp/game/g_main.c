@@ -1001,11 +1001,11 @@ void CalculateRanks( void ) {
 	int		rank;
 	int		score;
 	int		newScore;
-	int		preNumSpec = 0;
+//	int		preNumSpec = 0;
 	//int		nonSpecIndex = -1;
 	gclient_t	*cl;
 
-	preNumSpec = level.numNonSpectatorClients;
+//	preNumSpec = level.numNonSpectatorClients;
 
 	level.follow1 = -1;
 	level.follow2 = -1;
@@ -1500,11 +1500,10 @@ void QDECL G_SecurityLogPrintf( const char *fmt, ... ) {
 	va_list		argptr;
 	char		string[1024] = {0};
 	time_t		rawtime;
-	struct tm	*timeinfo;
 	int			timeLen=0;
 
 	time( &rawtime );
-	timeinfo = localtime( &rawtime );
+	localtime( &rawtime );
 	strftime( string, sizeof( string ), "[%Y-%m-%d] [%H:%M:%S] ", gmtime( &rawtime ) );
 	timeLen = strlen( string );
 
@@ -2884,7 +2883,6 @@ void SetMoverState( gentity_t *ent, moverState_t moverState, int time );
 void G_RunFrame( int levelTime ) {
 	int			i;
 	gentity_t	*ent;
-	int			msec;
 #ifdef _G_FRAME_PERFANAL
 	int			iTimer_ItemRun = 0;
 	int			iTimer_ROFF = 0;
@@ -2984,7 +2982,6 @@ void G_RunFrame( int levelTime ) {
 	level.framenum++;
 	level.previousTime = level.time;
 	level.time = levelTime;
-	msec = level.time - level.previousTime;
 
 	if (g_allowNPC.integer)
 	{

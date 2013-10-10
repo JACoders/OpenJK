@@ -1136,7 +1136,7 @@ gentity_t *SelectRandomTeamSpawnPoint( int teamstate, team_t team, int siegeClas
 		if (classCount > 0)
 		{ //found at least one
 			selection = rand() % classCount;
-			return spots[ selection ];
+			return classSpots[ selection ];
 		}
 	}
 

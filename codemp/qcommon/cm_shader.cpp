@@ -221,57 +221,56 @@ surfaceparm <name>
 typedef struct 
 {
 	const char	*name;
-	int		clearSolid, surfaceFlags, contents;
+	uint32_t clearSolid, surfaceFlags, contents;
 } infoParm_t;
 
-infoParm_t	svInfoParms[] =
-{
+infoParm_t	svInfoParms[] = {
 	// Game surface flags
-	{"sky",					-1,					SURF_SKY,			0 },						// emit light from an environment map
-	{"slick",				-1,					SURF_SLICK,			0 },						
-																								
-	{"nodamage",			-1,					SURF_NODAMAGE,		0 },						
-	{"noimpact",			-1,					SURF_NOIMPACT,		0 },						// don't make impact explosions or marks
-	{"nomarks",				-1,					SURF_NOMARKS,		0 },						// don't make impact marks, but still explode
-	{"nodraw",				-1,					SURF_NODRAW,		0 },						// don't generate a drawsurface (or a lightmap)
-	{"nosteps",				-1,					SURF_NOSTEPS,		0 },						
-	{"nodlight",			-1,					SURF_NODLIGHT,		0 },						// don't ever add dynamic lights
+	{ "sky",				CONTENTS_ALL,		SURF_SKY,			CONTENTS_NONE },		// emit light from an environment map
+	{ "slick",				CONTENTS_ALL,		SURF_SLICK,			CONTENTS_NONE },		// 
+
+	{ "nodamage",			CONTENTS_ALL,		SURF_NODAMAGE,		CONTENTS_NONE },		// 
+	{ "noimpact",			CONTENTS_ALL,		SURF_NOIMPACT,		CONTENTS_NONE },		// don't make impact explosions or marks
+	{ "nomarks",			CONTENTS_ALL,		SURF_NOMARKS,		CONTENTS_NONE },		// don't make impact marks, but still explode
+	{ "nodraw",				CONTENTS_ALL,		SURF_NODRAW,		CONTENTS_NONE },		// don't generate a drawsurface (or a lightmap)
+	{ "nosteps",			CONTENTS_ALL,		SURF_NOSTEPS,		CONTENTS_NONE },		// 
+	{ "nodlight",			CONTENTS_ALL,		SURF_NODLIGHT,		CONTENTS_NONE },		// don't ever add dynamic lights
 
 	// Game content flags
-	{"nonsolid", 			~CONTENTS_SOLID,	0, 					0 },						// special hack to clear solid flag
-	{"nonopaque", 			~CONTENTS_OPAQUE,	0, 					0 },						// special hack to clear opaque flag
-	{"lava",				~CONTENTS_SOLID,	0,					CONTENTS_LAVA },			// very damaging
-	{"water",				~CONTENTS_SOLID,	0,					CONTENTS_WATER },
-	{"fog",					~CONTENTS_SOLID,	0,					CONTENTS_FOG},				// carves surfaces entering
-	{"playerclip",			~CONTENTS_SOLID,	0,					CONTENTS_PLAYERCLIP },
-	{"monsterclip",			~CONTENTS_SOLID,	0,					CONTENTS_MONSTERCLIP },
-	{"botclip",				~CONTENTS_SOLID,	0,					CONTENTS_BOTCLIP },			// for bots
-	{"shotclip",			~CONTENTS_SOLID,	0,					CONTENTS_SHOTCLIP },
-	{"trigger",				~CONTENTS_SOLID,	0,					CONTENTS_TRIGGER },
-	{"nodrop",				~CONTENTS_SOLID,	0,					CONTENTS_NODROP },			// don't drop items or leave bodies (death fog, lava, etc)
-	{"terrain",				~CONTENTS_SOLID,	0,					CONTENTS_TERRAIN },			// use special terrain collsion
-	{"ladder",				~CONTENTS_SOLID,	0,					CONTENTS_LADDER },			// climb up in it like water
-	{"abseil",				~CONTENTS_SOLID,	0,					CONTENTS_ABSEIL },			// can abseil down this brush
-	{"outside",				~CONTENTS_SOLID,	0,					CONTENTS_OUTSIDE },			// volume is considered to be in the outside (i.e. not indoors)
-	{"inside",				~CONTENTS_SOLID,	0,					CONTENTS_INSIDE },			// volume is considered to be inside (i.e. indoors)
-																	
-	{"detail",				-1,					0,					CONTENTS_DETAIL },			// don't include in structural bsp
-	{"trans",				-1,					0,					CONTENTS_TRANSLUCENT },		// surface has an alpha component
+	{ "nonsolid", 			~CONTENTS_SOLID,	SURF_NONE, 			CONTENTS_NONE },		// special hack to clear solid flag
+	{ "nonopaque", 			~CONTENTS_OPAQUE,	SURF_NONE, 			CONTENTS_NONE },		// special hack to clear opaque flag
+	{ "lava",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_LAVA },		// very damaging
+	{ "water",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_WATER },		// 
+	{ "fog",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_FOG},			// carves surfaces entering
+	{ "playerclip",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_PLAYERCLIP },	// 
+	{ "monsterclip",		~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_MONSTERCLIP },	// 
+	{ "botclip",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_BOTCLIP },		// for bots
+	{ "shotclip",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_SHOTCLIP },	// 
+	{ "trigger",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_TRIGGER },		// 
+	{ "nodrop",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_NODROP },		// don't drop items or leave bodies (death fog, lava, etc)
+	{ "terrain",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_TERRAIN },		// use special terrain collsion
+	{ "ladder",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_LADDER },		// climb up in it like water
+	{ "abseil",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_ABSEIL },		// can abseil down this brush
+	{ "outside",			~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_OUTSIDE },		// volume is considered to be in the outside (i.e. not indoors)
+	{ "inside",				~CONTENTS_SOLID,	SURF_NONE,			CONTENTS_INSIDE },		// volume is considered to be inside (i.e. indoors)
+
+	{ "detail",				CONTENTS_ALL,		SURF_NONE,			CONTENTS_DETAIL },		// don't include in structural bsp
+	{ "trans",				CONTENTS_ALL,		SURF_NONE,			CONTENTS_TRANSLUCENT },	// surface has an alpha component
 
 	/* Game surface flags */
-	{"sky",			-1,					SURF_SKY,		0 },					   	/* emit light from an environment map */
-	{"slick",		-1,					SURF_SLICK,		0 },
+	{ "sky",				CONTENTS_ALL,		SURF_SKY,			CONTENTS_NONE },		// emit light from an environment map
+	{ "slick",				CONTENTS_ALL,		SURF_SLICK,			CONTENTS_NONE },		// 
 
-	{"nodamage",	-1,					SURF_NODAMAGE,	0 },					   	   																	
-	{"noimpact",	-1,					SURF_NOIMPACT,	0 },					   	/* don't make impact explosions or marks */
-	{"nomarks",		-1,					SURF_NOMARKS,	0 },					   	/* don't make impact marks, but still explode */
-	{"nodraw",		-1,					SURF_NODRAW,	0 },					   	/* don't generate a drawsurface (or a lightmap) */
-	{"nosteps",		-1,					SURF_NOSTEPS,	0 },
-	{"nodlight",	-1,					SURF_NODLIGHT,	0 },					   	/* don't ever add dynamic lights */
-	{"metalsteps",	-1,					SURF_METALSTEPS,0 },
-	{"nomiscents",	-1,					SURF_NOMISCENTS,0 },						/* No misc ents on this surface */
-	{"forcefield",	-1,					SURF_FORCEFIELD,0 },
-	{"forcesight",	-1,					SURF_FORCESIGHT,0 },						// only visible with force sight
+	{ "nodamage",			CONTENTS_ALL,		SURF_NODAMAGE,		CONTENTS_NONE },		// 
+	{ "noimpact",			CONTENTS_ALL,		SURF_NOIMPACT,		CONTENTS_NONE },		// don't make impact explosions or marks
+	{ "nomarks",			CONTENTS_ALL,		SURF_NOMARKS,		CONTENTS_NONE },		// don't make impact marks, but still explode
+	{ "nodraw",				CONTENTS_ALL,		SURF_NODRAW,		CONTENTS_NONE },		// don't generate a drawsurface (or a lightmap)
+	{ "nosteps",			CONTENTS_ALL,		SURF_NOSTEPS,		CONTENTS_NONE },		// 
+	{ "nodlight",			CONTENTS_ALL,		SURF_NODLIGHT,		CONTENTS_NONE },		// don't ever add dynamic lights
+	{ "metalsteps",			CONTENTS_ALL,		SURF_METALSTEPS,	CONTENTS_NONE },		// 
+	{ "nomiscents",			CONTENTS_ALL,		SURF_NOMISCENTS,	CONTENTS_NONE },		// No misc ents on this surface
+	{ "forcefield",			CONTENTS_ALL,		SURF_FORCEFIELD,	CONTENTS_NONE },		// 
+	{ "forcesight",			CONTENTS_ALL,		SURF_FORCESIGHT,	CONTENTS_NONE },		// only visible with force sight
 };
 
 void SV_ParseSurfaceParm( CCMShader * shader, const char **text ) 

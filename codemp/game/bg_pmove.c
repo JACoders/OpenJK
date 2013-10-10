@@ -5162,7 +5162,6 @@ PM_Footsteps
 static void PM_Footsteps( void ) {
 	float		bobmove;
 	int			old;
-	qboolean	footstep;
 	int			setAnimFlags = 0;
 
 	if ( (PM_InSaberAnim( (pm->ps->legsAnim) ) && !BG_SpinningSaberAnim( (pm->ps->legsAnim) )) 
@@ -5291,9 +5290,6 @@ static void PM_Footsteps( void ) {
 		}
 		return;
 	}
-	
-
-	footstep = qfalse;
 
 	if (pm->ps->saberMove == LS_SPINATTACK)
 	{
@@ -5538,7 +5534,6 @@ static void PM_Footsteps( void ) {
 				}
 #endif
 			}
-			footstep = qtrue;
 		}
 		else
 		{
