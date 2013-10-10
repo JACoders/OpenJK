@@ -2818,20 +2818,6 @@ Ghoul2 Insert End
 
 /*
 =============================================================
-
-IMAGE LOADERS
-
-=============================================================
-*/
-
-void R_LoadBMP( const char *name, byte **pic, int *width, int *height );
-void R_LoadJPG( const char *name, byte **pic, int *width, int *height );
-void R_LoadPCX( const char *name, byte **pic, int *width, int *height );
-void R_LoadPNG( const char *name, byte **pic, int *width, int *height );
-void R_LoadTGA( const char *name, byte **pic, int *width, int *height );
-
-/*
-=============================================================
 =============================================================
 */
 void	R_TransformModelToClip( const vec3_t src, const float *modelMatrix, const float *projectionMatrix,
@@ -3067,5 +3053,6 @@ extern int         maxAnisotropy;
 float ProjectRadius( float r, vec3_t location );
 void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke);
 qboolean ShaderHashTableExists(void);
+extern void R_ImageLoader_Init(void);
 
 #endif //TR_LOCAL_H

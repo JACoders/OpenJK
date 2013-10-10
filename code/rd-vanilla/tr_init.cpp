@@ -1575,7 +1575,7 @@ GetRefAPI
 */
 extern void R_Resample(byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
 extern void R_LoadDataImage( const char *name, byte **pic, int *width, int *height);
-extern void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLenum *format );
+extern void R_LoadImage( const char *shortname, byte **pic, int *width, int *height );
 extern void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, 
 					   qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
 extern void R_InvertImage(byte *data, int width, int height, int depth);

@@ -3189,7 +3189,7 @@ void R_MergeLeafSurfaces(void)
 
 	R_BindIBO(ibo);
 
-	qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, (size_t *)(numIboIndexes * sizeof(*iboIndexes)), iboIndexes, GL_STATIC_DRAW_ARB);
+	qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, (GLint)(numIboIndexes * sizeof(*iboIndexes)), iboIndexes, GL_STATIC_DRAW_ARB);
 
 	R_BindNullIBO();
 

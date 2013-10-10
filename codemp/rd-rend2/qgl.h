@@ -33,7 +33,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <gl/GL.h>
 #include "glext.h"
 
-#define APIENTRYP
 #define GLsizeiptrARB	size_t *
 #define GLintptrARB		int *
 #define GLhandleARB		unsigned int
@@ -411,8 +410,8 @@ extern void     (APIENTRY * qglBindBufferARB) (GLenum target, GLuint buffer);
 extern void     (APIENTRY * qglDeleteBuffersARB) (GLsizei n, const GLuint * buffers);
 extern void     (APIENTRY * qglGenBuffersARB) (GLsizei n, GLuint * buffers);
 extern          GLboolean(APIENTRY * qglIsBufferARB) (GLuint buffer);
-extern void     (APIENTRY * qglBufferDataARB) (GLenum target, GLsizeiptrARB size, const GLvoid * data, GLenum usage);
-extern void     (APIENTRY * qglBufferSubDataARB) (GLenum target, GLintptrARB offset, GLsizeiptrARB size, const GLvoid * data);
+extern void     (APIENTRY * qglBufferDataARB) (GLenum target, GLint size, const GLvoid * data, GLenum usage);
+extern void     (APIENTRY * qglBufferSubDataARB) (GLenum target, GLint offset, GLint size, const GLvoid * data);
 extern void     (APIENTRY * qglGetBufferSubDataARB) (GLenum target, GLintptrARB offset, GLsizeiptrARB size, GLvoid * data);
 extern void     (APIENTRY * qglGetBufferParameterivARB) (GLenum target, GLenum pname, GLint * params);
 extern void     (APIENTRY * qglGetBufferPointervARB) (GLenum target, GLenum pname, GLvoid * *params);

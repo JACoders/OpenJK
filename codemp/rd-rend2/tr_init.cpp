@@ -1441,7 +1441,7 @@ void R_Init( void ) {
 	R_InitFogTable();
 
 	R_NoiseInit();
-
+	R_ImageLoader_Init();
 	R_Register();
 
 	max_polys = r_maxpolys->integer;

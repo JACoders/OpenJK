@@ -63,8 +63,8 @@ void (APIENTRY * qglDeleteBuffersARB) (GLsizei n, const GLuint * buffers);
 void (APIENTRY * qglGenBuffersARB) (GLsizei n, GLuint * buffers);
 
 GLboolean(APIENTRY * qglIsBufferARB) (GLuint buffer);
-void (APIENTRY * qglBufferDataARB) (GLenum target, GLsizeiptrARB size, const GLvoid * data, GLenum usage);
-void (APIENTRY * qglBufferSubDataARB) (GLenum target, GLintptrARB offset, GLsizeiptrARB size, const GLvoid * data);
+void (APIENTRY * qglBufferDataARB) (GLenum target, GLint size, const GLvoid * data, GLenum usage);
+void (APIENTRY * qglBufferSubDataARB) (GLenum target, GLint offset, GLint size, const GLvoid * data);
 void (APIENTRY * qglGetBufferSubDataARB) (GLenum target, GLintptrARB offset, GLsizeiptrARB size, GLvoid * data);
 
 void (APIENTRY * qglGetBufferParameterivARB) (GLenum target, GLenum pname, GLint * params);
@@ -282,8 +282,8 @@ void GLimp_InitExtraExtensions()
 		qglDeleteBuffersARB = (PFNGLDELETEBUFFERSARBPROC) GETADDRESS("glDeleteBuffersARB");
 		qglGenBuffersARB = (PFNGLGENBUFFERSARBPROC) GETADDRESS("glGenBuffersARB");
 		qglIsBufferARB = (PFNGLISBUFFERARBPROC) GETADDRESS("glIsBufferARB");
-		qglBufferDataARB = (void (__stdcall *)(GLenum,GLsizeiptrARB,const GLvoid *,GLenum)) GETADDRESS("glBufferDataARB");
-		qglBufferSubDataARB = (void (__stdcall *)(GLenum,GLintptrARB,GLsizeiptrARB,const GLvoid *)) GETADDRESS("glBufferSubDataARB");
+		qglBufferDataARB = (void (__stdcall *)(GLenum,GLint,const GLvoid *,GLenum)) GETADDRESS("glBufferDataARB");
+		qglBufferSubDataARB = (void (__stdcall *)(GLenum,GLint,GLint,const GLvoid *)) GETADDRESS("glBufferSubDataARB");
 		qglGetBufferSubDataARB = (void (__stdcall *)(GLenum,GLintptrARB,GLsizeiptrARB,GLvoid*)) GETADDRESS("glGetBufferSubDataARB");
 		qglGetBufferParameterivARB = (PFNGLGETBUFFERPARAMETERIVARBPROC) GETADDRESS("glGetBufferParameterivARB");
 		qglGetBufferPointervARB = (PFNGLGETBUFFERPOINTERVARBPROC) GETADDRESS("glGetBufferPointervARB");
