@@ -337,7 +337,6 @@ if(BuildSPEngine)
 			"${SPDir}/win32/win_shared.cpp"
 			"${SPDir}/win32/win_snd.cpp"
 			"${SPDir}/win32/win_syscon.cpp"
-			"${SPDir}/win32/win_video.cpp"
 			"${SPDir}/win32/win_wndproc.cpp"
 			"${SPDir}/win32/win_local.h"
 			"${SPDir}/win32/AutoVersion.h"
