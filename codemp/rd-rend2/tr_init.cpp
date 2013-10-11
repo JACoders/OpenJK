@@ -1413,16 +1413,12 @@ void R_Init( void ) {
 	Com_Memset( &tr, 0, sizeof( tr ) );
 	Com_Memset( &backEnd, 0, sizeof( backEnd ) );
 	Com_Memset( &tess, 0, sizeof( tess ) );
-
-	if(sizeof(glconfig_t) != 11332)
-		ri->Error( ERR_FATAL, "Mod ABI incompatible: sizeof(glconfig_t) == %u != 11332", (unsigned int) sizeof(glconfig_t));
+	
+#ifdef _WIN32
+	tr.wv = (WinVars_t *)ri->GetWinVars();
+#endif
 
 //	Swap_Init();
-
-	if ( (intptr_t)tess.xyz & 15 ) {
-		ri->Printf( PRINT_WARNING, "tess.xyz not 16 byte aligned\n" );
-	}
-	//Com_Memset( tess.constantColor255, 255, sizeof( tess.constantColor255 ) );
 
 	//
 	// init function tables
@@ -1576,6 +1572,7 @@ GetRefAPI
 
 @@@@@@@@@@@@@@@@@@@@@
 */
+extern "C" {
 #ifdef USE_RENDERER_DLOPEN
 Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 #else
@@ -1734,4 +1731,5 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	*/
 
 	return &re;
+}
 }
