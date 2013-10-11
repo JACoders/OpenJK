@@ -69,6 +69,13 @@ extern bool g_bDynamicGlowSupported;
 // reason it acts different on radeon! It's against the spec!).
 bool g_bTextureRectangleHack = false;
 
+// nasty -- we need to extern some crap
+extern cvar_t *r_centerWindow;
+extern cvar_t *r_displayRefresh;
+extern cvar_t *r_ext_preferred_tc_method;
+
+extern qboolean R_GetModeInfo( int *width, int *height, int mode );
+
 /*
 ** GLW_StartDriverAndSetMode
 */

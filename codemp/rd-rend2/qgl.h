@@ -39,6 +39,40 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define GLcharARB		char
 #endif
 
+typedef void (APIENTRY *PFNGLCOMBINERPARAMETERFVNV) (GLenum pname,const GLfloat *params);
+typedef void (APIENTRY *PFNGLCOMBINERPARAMETERIVNV) (GLenum pname,const GLint *params);
+typedef void (APIENTRY *PFNGLCOMBINERPARAMETERFNV) (GLenum pname,GLfloat param);
+typedef void (APIENTRY *PFNGLCOMBINERPARAMETERINV) (GLenum pname,GLint param);
+typedef void (APIENTRY *PFNGLCOMBINERINPUTNV) (GLenum stage,GLenum portion,GLenum variable,GLenum input,GLenum mapping,
+											   GLenum componentUsage);
+typedef void (APIENTRY *PFNGLCOMBINEROUTPUTNV) (GLenum stage,GLenum portion,GLenum abOutput,GLenum cdOutput,GLenum sumOutput,
+												GLenum scale, GLenum bias,GLboolean abDotProduct,GLboolean cdDotProduct,
+												GLboolean muxSum);
+typedef void (APIENTRY *PFNGLFINALCOMBINERINPUTNV) (GLenum variable,GLenum input,GLenum mapping,GLenum componentUsage);
+
+typedef void (APIENTRY *PFNGLGETCOMBINERINPUTPARAMETERFVNV) (GLenum stage,GLenum portion,GLenum variable,GLenum pname,GLfloat *params);
+typedef void (APIENTRY *PFNGLGETCOMBINERINPUTPARAMETERIVNV) (GLenum stage,GLenum portion,GLenum variable,GLenum pname,GLint *params);
+typedef void (APIENTRY *PFNGLGETCOMBINEROUTPUTPARAMETERFVNV) (GLenum stage,GLenum portion,GLenum pname,GLfloat *params);
+typedef void (APIENTRY *PFNGLGETCOMBINEROUTPUTPARAMETERIVNV) (GLenum stage,GLenum portion,GLenum pname,GLint *params);
+typedef void (APIENTRY *PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV) (GLenum variable,GLenum pname,GLfloat *params);
+typedef void (APIENTRY *PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV) (GLenum variable,GLenum pname,GLfloat *params);
+/***********************************************************************************************************/
+
+// Declare Register Combiners function pointers.
+extern PFNGLCOMBINERPARAMETERFVNV				qglCombinerParameterfvNV;
+extern PFNGLCOMBINERPARAMETERIVNV				qglCombinerParameterivNV;
+extern PFNGLCOMBINERPARAMETERFNV				qglCombinerParameterfNV;
+extern PFNGLCOMBINERPARAMETERINV				qglCombinerParameteriNV;
+extern PFNGLCOMBINERINPUTNV						qglCombinerInputNV;
+extern PFNGLCOMBINEROUTPUTNV					qglCombinerOutputNV;
+extern PFNGLFINALCOMBINERINPUTNV				qglFinalCombinerInputNV;
+extern PFNGLGETCOMBINERINPUTPARAMETERFVNV		qglGetCombinerInputParameterfvNV;
+extern PFNGLGETCOMBINERINPUTPARAMETERIVNV		qglGetCombinerInputParameterivNV;
+extern PFNGLGETCOMBINEROUTPUTPARAMETERFVNV		qglGetCombinerOutputParameterfvNV;
+extern PFNGLGETCOMBINEROUTPUTPARAMETERIVNV		qglGetCombinerOutputParameterivNV;
+extern PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV	qglGetFinalCombinerInputParameterfvNV;
+extern PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV	qglGetFinalCombinerInputParameterivNV;
+
 extern void (APIENTRYP qglActiveTextureARB) (GLenum texture);
 extern void (APIENTRYP qglClientActiveTextureARB) (GLenum texture);
 extern void (APIENTRYP qglMultiTexCoord2fARB) (GLenum target, GLfloat s, GLfloat t);
@@ -1123,3 +1157,173 @@ extern GLXContext	(APIENTRY * qglXCreateContextAttribsARB) (Display *dpy, GLXFBC
 #endif
 
 #endif
+
+#ifdef _WIN32
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Pixel Format extension definitions. - AReis
+/***********************************************************************************************************/
+#define WGL_COLOR_BITS_ARB             0x2014
+#define WGL_ALPHA_BITS_ARB             0x201B
+#define WGL_DEPTH_BITS_ARB             0x2022
+#define WGL_STENCIL_BITS_ARB           0x2023
+
+typedef BOOL (WINAPI * PFNWGLGETPIXELFORMATATTRIBIVARBPROC) (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int *piAttributes, int *piValues);
+typedef BOOL (WINAPI * PFNWGLGETPIXELFORMATATTRIBFVARBPROC) (HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int *piAttributes, FLOAT *pfValues);
+typedef BOOL (WINAPI * PFNWGLCHOOSEPIXELFORMATARBPROC) (HDC hdc, const int *piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats);
+/***********************************************************************************************************/
+
+// Declare Pixel Format function pointers.
+extern PFNWGLGETPIXELFORMATATTRIBIVARBPROC		qwglGetPixelFormatAttribivARB;
+extern PFNWGLGETPIXELFORMATATTRIBFVARBPROC		qwglGetPixelFormatAttribfvARB;
+extern PFNWGLCHOOSEPIXELFORMATARBPROC			qwglChoosePixelFormatARB;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Pixel Buffer extension definitions. - AReis
+/***********************************************************************************************************/
+DECLARE_HANDLE(HPBUFFERARB);
+
+#define WGL_SUPPORT_OPENGL_ARB         0x2010
+#define WGL_DOUBLE_BUFFER_ARB          0x2011
+#define WGL_DRAW_TO_PBUFFER_ARB        0x202D
+#define WGL_PBUFFER_WIDTH_ARB          0x2034
+#define WGL_PBUFFER_HEIGHT_ARB         0x2035
+#define WGL_RED_BITS_ARB               0x2015
+#define WGL_GREEN_BITS_ARB             0x2017
+#define WGL_BLUE_BITS_ARB              0x2019
+
+typedef HPBUFFERARB (WINAPI * PFNWGLCREATEPBUFFERARBPROC) (HDC hDC, int iPixelFormat, int iWidth, int iHeight, const int *piAttribList);
+typedef HDC (WINAPI * PFNWGLGETPBUFFERDCARBPROC) (HPBUFFERARB hPbuffer);
+typedef int (WINAPI * PFNWGLRELEASEPBUFFERDCARBPROC) (HPBUFFERARB hPbuffer, HDC hDC);
+typedef BOOL (WINAPI * PFNWGLDESTROYPBUFFERARBPROC) (HPBUFFERARB hPbuffer);
+typedef BOOL (WINAPI * PFNWGLQUERYPBUFFERARBPROC) (HPBUFFERARB hPbuffer, int iAttribute, int *piValue);
+/***********************************************************************************************************/
+
+// Declare Pixel Buffer function pointers.
+extern PFNWGLCREATEPBUFFERARBPROC				qwglCreatePbufferARB;
+extern PFNWGLGETPBUFFERDCARBPROC				qwglGetPbufferDCARB;
+extern PFNWGLRELEASEPBUFFERDCARBPROC			qwglReleasePbufferDCARB;
+extern PFNWGLDESTROYPBUFFERARBPROC				qwglDestroyPbufferARB;
+extern PFNWGLQUERYPBUFFERARBPROC				qwglQueryPbufferARB;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Render-Texture extension definitions. - AReis
+/***********************************************************************************************************/
+#define WGL_BIND_TO_TEXTURE_RGBA_ARB       0x2071
+#define WGL_TEXTURE_FORMAT_ARB             0x2072
+#define WGL_TEXTURE_TARGET_ARB             0x2073
+#define WGL_TEXTURE_RGB_ARB                0x2075
+#define WGL_TEXTURE_RGBA_ARB               0x2076
+#define WGL_TEXTURE_2D_ARB                 0x207A
+#define WGL_FRONT_LEFT_ARB                 0x2083
+
+typedef BOOL (WINAPI * PFNWGLBINDTEXIMAGEARBPROC) (HPBUFFERARB hPbuffer, int iBuffer);
+typedef BOOL (WINAPI * PFNWGLRELEASETEXIMAGEARBPROC) (HPBUFFERARB hPbuffer, int iBuffer);
+typedef BOOL (WINAPI * PFNWGLSETPBUFFERATTRIBARBPROC) (HPBUFFERARB hPbuffer, const int * piAttribList);
+/***********************************************************************************************************/
+
+// Declare Render-Texture function pointers.
+extern PFNWGLBINDTEXIMAGEARBPROC			qwglBindTexImageARB;
+extern PFNWGLRELEASETEXIMAGEARBPROC			qwglReleaseTexImageARB;
+extern PFNWGLSETPBUFFERATTRIBARBPROC		qwglSetPbufferAttribARB;
+
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Vertex and Fragment Program extension definitions. - AReis
+/***********************************************************************************************************/
+#ifndef GL_ARB_fragment_program
+#define GL_FRAGMENT_PROGRAM_ARB           0x8804
+#define GL_PROGRAM_ALU_INSTRUCTIONS_ARB   0x8805
+#define GL_PROGRAM_TEX_INSTRUCTIONS_ARB   0x8806
+#define GL_PROGRAM_TEX_INDIRECTIONS_ARB   0x8807
+#define GL_PROGRAM_NATIVE_ALU_INSTRUCTIONS_ARB 0x8808
+#define GL_PROGRAM_NATIVE_TEX_INSTRUCTIONS_ARB 0x8809
+#define GL_PROGRAM_NATIVE_TEX_INDIRECTIONS_ARB 0x880A
+#define GL_MAX_PROGRAM_ALU_INSTRUCTIONS_ARB 0x880B
+#define GL_MAX_PROGRAM_TEX_INSTRUCTIONS_ARB 0x880C
+#define GL_MAX_PROGRAM_TEX_INDIRECTIONS_ARB 0x880D
+#define GL_MAX_PROGRAM_NATIVE_ALU_INSTRUCTIONS_ARB 0x880E
+#define GL_MAX_PROGRAM_NATIVE_TEX_INSTRUCTIONS_ARB 0x880F
+#define GL_MAX_PROGRAM_NATIVE_TEX_INDIRECTIONS_ARB 0x8810
+#define GL_MAX_TEXTURE_COORDS_ARB         0x8871
+#define GL_MAX_TEXTURE_IMAGE_UNITS_ARB    0x8872
+#endif
+
+// NOTE: These are obviously not all the vertex program flags (have you seen how many there actually are!). I'm
+// only including the ones I use (to reduce code clutter), so if you need any of the other flags, just add them.
+#define GL_VERTEX_PROGRAM_ARB                       0x8620
+#define GL_PROGRAM_FORMAT_ASCII_ARB                 0x8875
+
+typedef void (APIENTRY * PFNGLPROGRAMSTRINGARBPROC) (GLenum target, GLenum format, GLsizei len, const GLvoid *string); 
+typedef void (APIENTRY * PFNGLBINDPROGRAMARBPROC) (GLenum target, GLuint program);
+typedef void (APIENTRY * PFNGLDELETEPROGRAMSARBPROC) (GLsizei n, const GLuint *programs);
+typedef void (APIENTRY * PFNGLGENPROGRAMSARBPROC) (GLsizei n, GLuint *programs);
+typedef void (APIENTRY * PFNGLPROGRAMENVPARAMETER4DARBPROC) (GLenum target, GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
+typedef void (APIENTRY * PFNGLPROGRAMENVPARAMETER4DVARBPROC) (GLenum target, GLuint index, const GLdouble *params);
+typedef void (APIENTRY * PFNGLPROGRAMENVPARAMETER4FARBPROC) (GLenum target, GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+typedef void (APIENTRY * PFNGLPROGRAMENVPARAMETER4FVARBPROC) (GLenum target, GLuint index, const GLfloat *params);
+typedef void (APIENTRY * PFNGLPROGRAMLOCALPARAMETER4DARBPROC) (GLenum target, GLuint index, GLdouble x, GLdouble y, GLdouble z, GLdouble w);
+typedef void (APIENTRY * PFNGLPROGRAMLOCALPARAMETER4DVARBPROC) (GLenum target, GLuint index, const GLdouble *params);
+typedef void (APIENTRY * PFNGLPROGRAMLOCALPARAMETER4FARBPROC) (GLenum target, GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+typedef void (APIENTRY * PFNGLPROGRAMLOCALPARAMETER4FVARBPROC) (GLenum target, GLuint index, const GLfloat *params);
+typedef void (APIENTRY * PFNGLGETPROGRAMENVPARAMETERDVARBPROC) (GLenum target, GLuint index, GLdouble *params);
+typedef void (APIENTRY * PFNGLGETPROGRAMENVPARAMETERFVARBPROC) (GLenum target, GLuint index, GLfloat *params);
+typedef void (APIENTRY * PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC) (GLenum target, GLuint index, GLdouble *params);
+typedef void (APIENTRY * PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC) (GLenum target, GLuint index, GLfloat *params);
+typedef void (APIENTRY * PFNGLGETPROGRAMIVARBPROC) (GLenum target, GLenum pname, GLint *params);
+typedef void (APIENTRY * PFNGLGETPROGRAMSTRINGARBPROC) (GLenum target, GLenum pname, GLvoid *string);
+typedef GLboolean (APIENTRY * PFNGLISPROGRAMARBPROC) (GLuint program);
+/***********************************************************************************************************/
+
+// Declare Vertex and Fragment Program function pointers.
+extern PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB;
+extern PFNGLBINDPROGRAMARBPROC qglBindProgramARB;
+extern PFNGLDELETEPROGRAMSARBPROC qglDeleteProgramsARB;
+extern PFNGLGENPROGRAMSARBPROC qglGenProgramsARB;
+extern PFNGLPROGRAMENVPARAMETER4DARBPROC qglProgramEnvParameter4dARB;
+extern PFNGLPROGRAMENVPARAMETER4DVARBPROC qglProgramEnvParameter4dvARB;
+extern PFNGLPROGRAMENVPARAMETER4FARBPROC qglProgramEnvParameter4fARB;
+extern PFNGLPROGRAMENVPARAMETER4FVARBPROC qglProgramEnvParameter4fvARB;
+extern PFNGLPROGRAMLOCALPARAMETER4DARBPROC qglProgramLocalParameter4dARB;
+extern PFNGLPROGRAMLOCALPARAMETER4DVARBPROC qglProgramLocalParameter4dvARB;
+extern PFNGLPROGRAMLOCALPARAMETER4FARBPROC qglProgramLocalParameter4fARB;
+extern PFNGLPROGRAMLOCALPARAMETER4FVARBPROC qglProgramLocalParameter4fvARB;
+extern PFNGLGETPROGRAMENVPARAMETERDVARBPROC qglGetProgramEnvParameterdvARB;
+extern PFNGLGETPROGRAMENVPARAMETERFVARBPROC qglGetProgramEnvParameterfvARB;
+extern PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC qglGetProgramLocalParameterdvARB;
+extern PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC qglGetProgramLocalParameterfvARB;
+extern PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB;
+extern PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB;
+extern PFNGLISPROGRAMARBPROC qglIsProgramARB;
+
+
+/*
+** extension constants
+*/
+
+
+// S3TC compression constants
+#define GL_RGB_S3TC							0x83A0
+#define GL_RGB4_S3TC						0x83A1
+
+
+// extensions will be function pointers on all platforms
+
+extern	void ( APIENTRY * qglMultiTexCoord2fARB )( GLenum texture, GLfloat s, GLfloat t );
+extern	void ( APIENTRY * qglActiveTextureARB )( GLenum texture );
+extern	void ( APIENTRY * qglClientActiveTextureARB )( GLenum texture );
+
+extern	void ( APIENTRY * qglLockArraysEXT) (GLint, GLint);
+extern	void ( APIENTRY * qglUnlockArraysEXT) (void);
+
+extern	void ( APIENTRY * qglPointParameterfEXT)( GLenum, GLfloat);
+extern	void ( APIENTRY * qglPointParameterfvEXT)( GLenum, GLfloat *);
+
+//3d textures -rww
+extern	void ( APIENTRY * qglTexImage3DEXT) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *);
+extern	void ( APIENTRY * qglTexSubImage3DEXT) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *);
+
+#define GL_MAX_ACTIVE_TEXTURES_ARB          0x84E2

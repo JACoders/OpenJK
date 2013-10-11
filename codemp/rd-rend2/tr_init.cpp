@@ -37,9 +37,7 @@ glstate_s	glState;
 static void GfxInfo_f( void );
 static void GfxMemInfo_f( void );
 
-#ifdef USE_RENDERER_DLOPEN
 cvar_t  *com_altivec;
-#endif
 
 cvar_t	*se_language;
 
@@ -1140,9 +1138,7 @@ R_Register
 */
 void R_Register( void ) 
 {
-	#ifdef USE_RENDERER_DLOPEN
 	com_altivec = ri->Cvar_Get("com_altivec", "1", CVAR_ARCHIVE);
-	#endif	
 
 	//
 	// latched and archived variables
@@ -1181,7 +1177,7 @@ void R_Register( void )
 	r_mode = ri->Cvar_Get( "r_mode", "-2", CVAR_ARCHIVE | CVAR_LATCH );
 	r_fullscreen = ri->Cvar_Get( "r_fullscreen", "1", CVAR_ARCHIVE );
 	r_noborder = ri->Cvar_Get("r_noborder", "0", CVAR_ARCHIVE);
-	r_noborder = ri->Cvar_Get( "r_noborder", "0", CVAR_ARCHIVE|CVAR_LATCH );
+	r_centerWindow = ri->Cvar_Get( "r_centerWindow", "0", CVAR_ARCHIVE|CVAR_LATCH );
 	r_customwidth = ri->Cvar_Get( "r_customwidth", "1600", CVAR_ARCHIVE | CVAR_LATCH );
 	r_customheight = ri->Cvar_Get( "r_customheight", "1024", CVAR_ARCHIVE | CVAR_LATCH );
 	r_customPixelAspect = ri->Cvar_Get( "r_customPixelAspect", "1", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1566,6 +1562,26 @@ static void G2API_BoltMatrixSPMethod( qboolean spMethod ) { gG2_GBMUseSPMethod =
 extern IGhoul2InfoArray &TheGhoul2InfoArray();
 const CGhoul2Info NullG2;
 
+// STUBS, REPLACEME
+qhandle_t stub_RegisterServerModel( const char *name )
+{
+	ri->Printf( PRINT_ALL, "stub_RegisterServerModel\n" );
+	return 0;
+}
+
+qhandle_t stub_RegisterServerSkin( const char *name )
+{
+	ri->Printf( PRINT_ALL, "stub_RegisterServerSkin\n" );
+	return 0;
+}
+
+const char *stub_ShaderNameFromIndex( int index )
+{
+	ri->Printf( PRINT_ALL, "stub_ShaderNameFromIndex\n" );
+	return NULL;
+}
+
+
 /*
 @@@@@@@@@@@@@@@@@@@@@
 GetRefAPI
@@ -1573,14 +1589,10 @@ GetRefAPI
 @@@@@@@@@@@@@@@@@@@@@
 */
 extern "C" {
-#ifdef USE_RENDERER_DLOPEN
 Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
-#else
-refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
-#endif
-
 	static refexport_t	re;
 
+	assert( rimp );
 	ri = rimp;
 
 	Com_Memset( &re, 0, sizeof( re ) );
@@ -1597,9 +1609,15 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 
 	re.BeginRegistration = RE_BeginRegistration;
 	re.RegisterModel = RE_RegisterModel;
+	// RE_RegisterServerModel
+	re.RegisterServerModel = stub_RegisterServerModel;
 	re.RegisterSkin = RE_RegisterSkin;
+	// RE_RegisterServerSkin
+	re.RegisterServerSkin = stub_RegisterServerSkin;
 	re.RegisterShader = RE_RegisterShader;
 	re.RegisterShaderNoMip = RE_RegisterShaderNoMip;
+	// RE_ShaderNameFromIndex
+	re.ShaderNameFromIndex = stub_ShaderNameFromIndex;
 	re.LoadWorld = RE_LoadWorldMap;
 	re.SetWorldVisData = RE_SetWorldVisData;
 	re.EndRegistration = RE_EndRegistration;
@@ -1611,9 +1629,15 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.LerpTag = R_LerpTag;
 	re.ModelBounds = R_ModelBounds;
 
+	// RE_RotatePic
+	// RE_RotatePic2
+
 	re.ClearScene = RE_ClearScene;
+	// RE_ClearDecals
 	re.AddRefEntityToScene = RE_AddRefEntityToScene;
+	// RE_AddMiniRefEntityToScene
 	re.AddPolyToScene = RE_AddPolyToScene;
+	// RE_AddDecalToScene
 	re.LightForPoint = R_LightForPoint;
 	re.AddLightToScene = RE_AddLightToScene;
 	re.AddAdditiveLightToScene = RE_AddAdditiveLightToScene;
@@ -1625,9 +1649,35 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.UploadCinematic = RE_UploadCinematic;
 
 	re.RegisterFont = RE_RegisterFont;
+	// RE_Font_StrLenPixels
+	// RE_Font_StrLenChars
+	// RE_Font_HeightPixels
+	// RE_Font_DrawString
+	// Language_IsAsian
+	// Language_UsesSpaces
+	// AnyLanguage_ReadCharFromString
 	re.RemapShader = R_RemapShader;
 	re.GetEntityToken = R_GetEntityToken;
 	re.inPVS = R_inPVS;
+
+	// RE_GetLightStyle
+	// RE_SetLightStyle
+	// RE_GetBModelVerts
+
+	// SetRangedFog
+	// SetRefractionProperties
+	// GetDistanceCull
+	// GetRealRes
+	// R_AutomapElevationAdjustment
+	// R_InitializeWireframeAutomap
+	// RE_AddWeatherZone
+	// RE_WorldEffectCommand
+	// RE_InitRendererTerrain
+	// RE_RegisterMedia_LevelLoadBegin
+	// RE_RegisterMedia_LevelLoadEnd
+	// RE_RegisterMedia_GetLevel
+	// RE_RegisterImages_LevelLoadEnd
+	// RE_RegisterModels_LevelLoadEnd
 
 	re.TakeVideoFrame = RE_TakeVideoFrame;
 
@@ -1729,6 +1779,16 @@ refexport_t *GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	/*
 	Ghoul2 Insert End
 	*/
+
+	// R_LoadDataImage
+	// R_InvertImage
+	// R_Resample
+	// R_LoadImage
+	// R_CreateAutomapImage
+	// RE_SavePNG
+
+	// TheGhoul2InfoArray
+	// G2VertSpaceServer
 
 	return &re;
 }
