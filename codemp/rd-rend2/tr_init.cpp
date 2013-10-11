@@ -1581,6 +1581,33 @@ const char *stub_ShaderNameFromIndex( int index )
 	return NULL;
 }
 
+void stub_RegisterMedia_LevelLoadBegin( const char *mapname, ForceReload_e eForceReload )
+{
+	ri->Printf( PRINT_ALL, "stub_LevelLoadBegin\n");
+}
+
+void stub_RegisterMedia_LevelLoadEnd( void )
+{
+	ri->Printf( PRINT_ALL, "stub_LevelLoadEnd\n");
+}
+
+int stub_RegisterMedia_GetLevel( void )
+{
+	ri->Printf( PRINT_ALL, "stub_RegisterMedia_GetLevel\n");
+	return 0;
+}
+
+qboolean stub_RegisterImages_LevelLoadEnd( void )
+{
+	ri->Printf( PRINT_ALL, "stub_RegisterImages_LevelLoadEnd\n");
+	return qtrue;
+}
+
+qboolean stub_RegisterModels_LevelLoadEnd( qboolean bDeleteEverythingNotUsedThisLevel )
+{
+	ri->Printf( PRINT_ALL, "stub_RegisterModels_LevelLoadEnd\n");
+	return qtrue;
+}
 
 /*
 @@@@@@@@@@@@@@@@@@@@@
@@ -1649,13 +1676,13 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.UploadCinematic = RE_UploadCinematic;
 
 	re.RegisterFont = RE_RegisterFont;
-	// RE_Font_StrLenPixels
-	// RE_Font_StrLenChars
-	// RE_Font_HeightPixels
-	// RE_Font_DrawString
-	// Language_IsAsian
-	// Language_UsesSpaces
-	// AnyLanguage_ReadCharFromString
+	re.Font_StrLenPixels = RE_Font_StrLenPixels;
+	re.Font_StrLenChars = RE_Font_StrLenChars;
+	re.Font_HeightPixels = RE_Font_HeightPixels;
+	re.Font_DrawString = RE_Font_DrawString;
+	re.Language_IsAsian = Language_IsAsian;
+	re.Language_UsesSpaces = Language_UsesSpaces;
+	re.AnyLanguage_ReadCharFromString = AnyLanguage_ReadCharFromString;
 	re.RemapShader = R_RemapShader;
 	re.GetEntityToken = R_GetEntityToken;
 	re.inPVS = R_inPVS;
@@ -1674,10 +1701,15 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	// RE_WorldEffectCommand
 	// RE_InitRendererTerrain
 	// RE_RegisterMedia_LevelLoadBegin
+	re.RegisterMedia_LevelLoadBegin = stub_RegisterMedia_LevelLoadBegin;
 	// RE_RegisterMedia_LevelLoadEnd
+	re.RegisterMedia_LevelLoadEnd = stub_RegisterMedia_LevelLoadEnd;
 	// RE_RegisterMedia_GetLevel
+	re.RegisterMedia_GetLevel = stub_RegisterMedia_GetLevel;
 	// RE_RegisterImages_LevelLoadEnd
+	re.RegisterImages_LevelLoadEnd = stub_RegisterImages_LevelLoadEnd;
 	// RE_RegisterModels_LevelLoadEnd
+	re.RegisterModels_LevelLoadEnd = stub_RegisterModels_LevelLoadEnd;
 
 	re.TakeVideoFrame = RE_TakeVideoFrame;
 

@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	LL(x) x=LittleLong(x)
 
+
 static qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, int bufferSize, const char *modName);
 static qboolean R_LoadMD4(model_t *mod, void *buffer, const char *name );
 static qboolean R_LoadMDR(model_t *mod, void *buffer, int filesize, const char *name );
@@ -203,12 +204,16 @@ static modelExtToLoaderMap_t modelLoaders[ ] =
 	{ "iqm", R_RegisterIQM },
 	{ "mdr", R_RegisterMDR },
 	{ "md4", R_RegisterMD3 },
-	{ "md3", R_RegisterMD3 }
+	{ "md3", R_RegisterMD3 },
+	/* 
+	Ghoul 2 Insert Start
+	*/
+	/*
+	Ghoul 2 Insert End
+	*/
 };
 
 static int numModelLoaders = ARRAY_LEN(modelLoaders);
-
-//===============================================================================
 
 /*
 ** R_GetModelByHandle

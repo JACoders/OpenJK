@@ -35,6 +35,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_postprocess.h"
 #include "iqm.h"
 #include "qgl.h"
+#include <vector>
+#include <map>
 
 #ifdef _WIN32
 #include "win32\win_local.h"
@@ -2131,6 +2133,9 @@ typedef struct trGlobals_s {
 #ifdef _WIN32
 	WinVars_t *wv;
 #endif
+
+	// Specific to Jedi Academy
+	int						numBSPModels;
 } trGlobals_t;
 
 extern backEndState_t	backEnd;
@@ -3058,5 +3063,6 @@ float ProjectRadius( float r, vec3_t location );
 void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke);
 qboolean ShaderHashTableExists(void);
 extern void R_ImageLoader_Init(void);
+
 
 #endif //TR_LOCAL_H
