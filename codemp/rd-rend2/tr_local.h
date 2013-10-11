@@ -1828,7 +1828,7 @@ typedef struct {
 
 
 // the renderer front end should never modify glstate_t
-typedef struct {
+typedef struct glstate_s {
 	int			currenttextures[NUM_TEXTURE_BUNDLES];
 	int			currenttmu;
 	qboolean	finishCalled;
@@ -1954,7 +1954,7 @@ typedef struct {
 ** but may read fields that aren't dynamically modified
 ** by the frontend.
 */
-typedef struct {
+typedef struct trGlobals_s {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
 
 	int						visIndex;
@@ -2127,7 +2127,7 @@ typedef struct {
 
 extern backEndState_t	backEnd;
 extern trGlobals_t	tr;
-extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
+extern glstate_s	glState;		// outside of TR since it shouldn't be cleared during ref re-init
 extern glRefConfig_t glRefConfig;
 
 //
@@ -3022,10 +3022,6 @@ void RE_StretchPic ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2, qhandle_t hShader );
 void RE_BeginFrame( stereoFrame_t stereoFrame );
 void RE_EndFrame( int *frontEndMsec, int *backEndMsec );
-void RE_SaveJPG(char * filename, int quality, int image_width, int image_height,
-                unsigned char *image_buffer, int padding);
-size_t RE_SaveJPGToBuffer(byte *buffer, size_t bufSize, int quality,
-		          int image_width, int image_height, byte *image_buffer, int padding);
 void RE_TakeVideoFrame( int width, int height,
 		byte *captureBuffer, byte *encodeBuffer, qboolean motionJpeg );
 

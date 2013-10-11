@@ -379,6 +379,73 @@ void ( APIENTRY * qglVertex4sv )(const GLshort *v);
 void ( APIENTRY * qglVertexPointer )(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 void ( APIENTRY * qglViewport )(GLint x, GLint y, GLsizei width, GLsizei height);
 
+// Some from tr_init.cpp in rd-vanilla that really do belong here --eez
+void ( APIENTRY * qglMultiTexCoord2fARB )( GLenum texture, GLfloat s, GLfloat t ) = NULL;
+void ( APIENTRY * qglActiveTextureARB )( GLenum texture ) = NULL;
+void ( APIENTRY * qglClientActiveTextureARB )( GLenum texture ) = NULL;
+
+void ( APIENTRY * qglLockArraysEXT)( GLint, GLint) = NULL;
+void ( APIENTRY * qglUnlockArraysEXT) ( void ) = NULL;
+
+void ( APIENTRY * qglPointParameterfEXT)( GLenum, GLfloat) = NULL;
+void ( APIENTRY * qglPointParameterfvEXT)( GLenum, GLfloat *) = NULL;
+
+//3d textures -rww
+void ( APIENTRY * qglTexImage3DEXT) (GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *) = NULL;
+void ( APIENTRY * qglTexSubImage3DEXT) (GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *) = NULL;
+
+// Declare Register Combiners function pointers.
+PFNGLCOMBINERPARAMETERFVNV				qglCombinerParameterfvNV = NULL;
+PFNGLCOMBINERPARAMETERIVNV				qglCombinerParameterivNV = NULL;
+PFNGLCOMBINERPARAMETERFNV				qglCombinerParameterfNV = NULL;
+PFNGLCOMBINERPARAMETERINV				qglCombinerParameteriNV = NULL;
+PFNGLCOMBINERINPUTNV					qglCombinerInputNV = NULL;
+PFNGLCOMBINEROUTPUTNV					qglCombinerOutputNV = NULL;
+PFNGLFINALCOMBINERINPUTNV				qglFinalCombinerInputNV = NULL;
+PFNGLGETCOMBINERINPUTPARAMETERFVNV		qglGetCombinerInputParameterfvNV = NULL;
+PFNGLGETCOMBINERINPUTPARAMETERIVNV		qglGetCombinerInputParameterivNV = NULL;
+PFNGLGETCOMBINEROUTPUTPARAMETERFVNV		qglGetCombinerOutputParameterfvNV = NULL;
+PFNGLGETCOMBINEROUTPUTPARAMETERIVNV		qglGetCombinerOutputParameterivNV = NULL;
+PFNGLGETFINALCOMBINERINPUTPARAMETERFVNV	qglGetFinalCombinerInputParameterfvNV = NULL;
+PFNGLGETFINALCOMBINERINPUTPARAMETERIVNV	qglGetFinalCombinerInputParameterivNV = NULL;
+
+// Declare Pixel Format function pointers.
+PFNWGLGETPIXELFORMATATTRIBIVARBPROC		qwglGetPixelFormatAttribivARB = NULL;
+PFNWGLGETPIXELFORMATATTRIBFVARBPROC		qwglGetPixelFormatAttribfvARB = NULL;
+PFNWGLCHOOSEPIXELFORMATARBPROC			qwglChoosePixelFormatARB = NULL;
+
+// Declare Pixel Buffer function pointers.
+PFNWGLCREATEPBUFFERARBPROC				qwglCreatePbufferARB = NULL;
+PFNWGLGETPBUFFERDCARBPROC				qwglGetPbufferDCARB = NULL;
+PFNWGLRELEASEPBUFFERDCARBPROC			qwglReleasePbufferDCARB = NULL;
+PFNWGLDESTROYPBUFFERARBPROC				qwglDestroyPbufferARB = NULL;
+PFNWGLQUERYPBUFFERARBPROC				qwglQueryPbufferARB = NULL;
+
+// Declare Render-Texture function pointers.
+PFNWGLBINDTEXIMAGEARBPROC				qwglBindTexImageARB = NULL;
+PFNWGLRELEASETEXIMAGEARBPROC			qwglReleaseTexImageARB = NULL;
+PFNWGLSETPBUFFERATTRIBARBPROC			qwglSetPbufferAttribARB = NULL;
+
+// Declare Vertex and Fragment Program function pointers.
+PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB = NULL;
+PFNGLBINDPROGRAMARBPROC qglBindProgramARB = NULL;
+PFNGLDELETEPROGRAMSARBPROC qglDeleteProgramsARB = NULL;
+PFNGLGENPROGRAMSARBPROC qglGenProgramsARB = NULL;
+PFNGLPROGRAMENVPARAMETER4DARBPROC qglProgramEnvParameter4dARB = NULL;
+PFNGLPROGRAMENVPARAMETER4DVARBPROC qglProgramEnvParameter4dvARB = NULL;
+PFNGLPROGRAMENVPARAMETER4FARBPROC qglProgramEnvParameter4fARB = NULL;
+PFNGLPROGRAMENVPARAMETER4FVARBPROC qglProgramEnvParameter4fvARB = NULL;
+PFNGLPROGRAMLOCALPARAMETER4DARBPROC qglProgramLocalParameter4dARB = NULL;
+PFNGLPROGRAMLOCALPARAMETER4DVARBPROC qglProgramLocalParameter4dvARB = NULL;
+PFNGLPROGRAMLOCALPARAMETER4FARBPROC qglProgramLocalParameter4fARB = NULL;
+PFNGLPROGRAMLOCALPARAMETER4FVARBPROC qglProgramLocalParameter4fvARB = NULL;
+PFNGLGETPROGRAMENVPARAMETERDVARBPROC qglGetProgramEnvParameterdvARB = NULL;
+PFNGLGETPROGRAMENVPARAMETERFVARBPROC qglGetProgramEnvParameterfvARB = NULL;
+PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC qglGetProgramLocalParameterdvARB = NULL;
+PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC qglGetProgramLocalParameterfvARB = NULL;
+PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB = NULL;
+PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB = NULL;
+PFNGLISPROGRAMARBPROC qglIsProgramARB = NULL;
 
 
 static void ( APIENTRY * dllAccum )(GLenum op, GLfloat value);

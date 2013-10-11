@@ -507,8 +507,8 @@ void GLimp_InitExtraExtensions()
 	glRefConfig.framebufferObject = qfalse;
 	if( GLimp_HaveExtension( extension ) )
 	{
-		glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE_EXT, &glRefConfig.maxRenderbufferSize);
-		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &glRefConfig.maxColorAttachments);
+		qglGetIntegerv(GL_MAX_RENDERBUFFER_SIZE_EXT, &glRefConfig.maxRenderbufferSize);
+		qglGetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, &glRefConfig.maxColorAttachments);
 
 		qglIsRenderbufferEXT = (PFNGLISRENDERBUFFEREXTPROC) GETADDRESS("glIsRenderbufferEXT");
 		qglBindRenderbufferEXT = (PFNGLBINDRENDERBUFFEREXTPROC) GETADDRESS("glBindRenderbufferEXT");

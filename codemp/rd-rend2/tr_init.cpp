@@ -32,7 +32,7 @@ qboolean    textureFilterAnisotropic = qfalse;
 int         maxAnisotropy = 0;
 float       displayAspect = 0.0f;
 
-glstate_t	glState;
+glstate_s	glState;
 
 static void GfxInfo_f( void );
 static void GfxMemInfo_f( void );
@@ -41,9 +41,13 @@ static void GfxMemInfo_f( void );
 cvar_t  *com_altivec;
 #endif
 
+cvar_t	*se_language;
+
 cvar_t	*r_flareSize;
 cvar_t	*r_flareFade;
 cvar_t	*r_flareCoeff;
+
+cvar_t	*r_displayRefresh;
 
 cvar_t	*r_verbose;
 cvar_t	*r_ignore;
@@ -93,6 +97,7 @@ cvar_t	*r_ext_compiled_vertex_array;
 cvar_t	*r_ext_texture_env_add;
 cvar_t	*r_ext_texture_filter_anisotropic;
 cvar_t	*r_ext_max_anisotropy;
+cvar_t	*r_ext_preferred_tc_method;
 
 cvar_t  *r_ext_draw_range_elements;
 cvar_t  *r_ext_multi_draw_arrays;
@@ -194,6 +199,7 @@ cvar_t	*r_lodCurveError;
 
 cvar_t	*r_fullscreen;
 cvar_t  *r_noborder;
+cvar_t	*r_centerWindow;
 
 cvar_t	*r_customwidth;
 cvar_t	*r_customheight;
@@ -377,7 +383,7 @@ vidmode_t r_vidModes[] =
 };
 static int	s_numVidModes = ARRAY_LEN( r_vidModes );
 
-qboolean R_GetModeInfo( int *width, int *height, float *windowAspect, int mode ) {
+qboolean R_GetModeInfo( int *width, int *height, int mode ) {
 	vidmode_t	*vm;
 	float			pixelAspect;
 
@@ -399,8 +405,6 @@ qboolean R_GetModeInfo( int *width, int *height, float *windowAspect, int mode )
 		*height = vm->height;
 		pixelAspect = vm->pixelAspect;
 	}
-
-	*windowAspect = (float)*width / ( *height * pixelAspect );
 
 	return qtrue;
 }
@@ -1069,6 +1073,9 @@ void GfxInfo_f( void )
 	{
 		ri->Printf( PRINT_ALL, "HACK: using vertex lightmap approximation\n" );
 	}
+	if ( r_displayRefresh ->integer ) {
+		ri->Printf( PRINT_ALL, "Display refresh set to %d\n", r_displayRefresh->integer );
+	}
 	if ( r_finish->integer ) {
 		ri->Printf( PRINT_ALL, "Forcing glFinish\n" );
 	}
@@ -1145,6 +1152,7 @@ void R_Register( void )
 	r_ext_multitexture = ri->Cvar_Get( "r_ext_multitexture", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_ext_compiled_vertex_array = ri->Cvar_Get( "r_ext_compiled_vertex_array", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_ext_texture_env_add = ri->Cvar_Get( "r_ext_texture_env_add", "1", CVAR_ARCHIVE | CVAR_LATCH);
+	r_ext_preferred_tc_method = ri->Cvar_Get( "r_ext_preferred_tc_method", "0", CVAR_ARCHIVE | CVAR_LATCH );
 
 	r_ext_draw_range_elements = ri->Cvar_Get( "r_ext_draw_range_elements", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_ext_multi_draw_arrays = ri->Cvar_Get( "r_ext_multi_draw_arrays", "1", CVAR_ARCHIVE | CVAR_LATCH);
@@ -1173,6 +1181,7 @@ void R_Register( void )
 	r_mode = ri->Cvar_Get( "r_mode", "-2", CVAR_ARCHIVE | CVAR_LATCH );
 	r_fullscreen = ri->Cvar_Get( "r_fullscreen", "1", CVAR_ARCHIVE );
 	r_noborder = ri->Cvar_Get("r_noborder", "0", CVAR_ARCHIVE);
+	r_noborder = ri->Cvar_Get( "r_noborder", "0", CVAR_ARCHIVE|CVAR_LATCH );
 	r_customwidth = ri->Cvar_Get( "r_customwidth", "1600", CVAR_ARCHIVE | CVAR_LATCH );
 	r_customheight = ri->Cvar_Get( "r_customheight", "1024", CVAR_ARCHIVE | CVAR_LATCH );
 	r_customPixelAspect = ri->Cvar_Get( "r_customPixelAspect", "1", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1242,6 +1251,8 @@ void R_Register( void )
 	r_mapOverBrightBits = ri->Cvar_Get ("r_mapOverBrightBits", "2", CVAR_LATCH );
 	r_intensity = ri->Cvar_Get ("r_intensity", "1", CVAR_LATCH );
 	r_singleShader = ri->Cvar_Get ("r_singleShader", "0", CVAR_CHEAT | CVAR_LATCH );
+	r_displayRefresh = ri->Cvar_Get( "r_displayRefresh", "0", CVAR_LATCH );
+	ri->Cvar_CheckRange( r_displayRefresh, 0, 200, qtrue );
 
 	//
 	// archived variables that can change at any time
@@ -1351,6 +1362,8 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+
+	se_language = ri->Cvar_Get ( "se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART );
 
 	// make sure all the commands added here are also
 	// removed in R_Shutdown
