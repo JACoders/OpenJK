@@ -1478,9 +1478,9 @@ void R_Init( void ) {
 
 	R_InitSkins();
 
-	R_ModelInit();
+	R_InitFonts();
 
-	R_InitFreeType();
+	R_ModelInit();
 
 	R_InitQueries();
 
@@ -1526,7 +1526,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 		GLSL_ShutdownGPUShaders();
 	}
 
-	R_DoneFreeType();
+	R_ShutdownFonts();
 
 	// shut down platform specific OpenGL stuff
 	if ( destroyWindow ) {
