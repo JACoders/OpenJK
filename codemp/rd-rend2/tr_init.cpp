@@ -1559,6 +1559,14 @@ extern qboolean gG2_GBMNoReconstruct;
 extern qboolean gG2_GBMUseSPMethod;
 static void G2API_BoltMatrixReconstruction( qboolean reconstruct ) { gG2_GBMNoReconstruct = (qboolean)!reconstruct; }
 static void G2API_BoltMatrixSPMethod( qboolean spMethod ) { gG2_GBMUseSPMethod = spMethod; }
+
+static float GetDistanceCull( void ) { return 6000/*tr.distanceCull*/; }
+
+static void GetRealRes( int *w, int *h ) {
+	*w = glConfig.vidWidth;
+	*h = glConfig.vidHeight;
+}
+
 extern IGhoul2InfoArray &TheGhoul2InfoArray();
 const CGhoul2Info NullG2;
 
@@ -1812,14 +1820,14 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	Ghoul2 Insert End
 	*/
 
-	// R_LoadDataImage
-	// R_InvertImage
-	// R_Resample
-	// R_LoadImage
-	// R_CreateAutomapImage
-	// RE_SavePNG
+	re.LoadDataImage						= R_LoadDataImage;
+	re.InvertImage							= R_InvertImage;
+	re.Resample								= R_Resample;
+	re.LoadImageJA							= R_LoadImage;
+	//re.CreateAutomapImage					= R_CreateAutomapImage;
+	re.SavePNG								= RE_SavePNG;
 
-	// TheGhoul2InfoArray
+	re.TheGhoul2InfoArray					= TheGhoul2InfoArray;
 	// G2VertSpaceServer
 
 	return &re;
