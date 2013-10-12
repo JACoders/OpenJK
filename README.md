@@ -64,6 +64,7 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 * rd-vanilla (JA's original renderer)
 * rd-dedicated (Stripped down renderer for use with dedicated server)
 * rd-raspberry (OpenGL ES compliant renderer for use with Raspberry Pi - feel free to maintain!)
+* rd-rend2 (Maintainer: eezstreet)
 * rd-strawberry (Maintainer: Xycaleth)
 * rd-vader (Maintainer: mrwonko)
 
