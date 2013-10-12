@@ -176,10 +176,13 @@ TELEPORTERS
 void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	gentity_t	*tent;
 	qboolean	isNPC = qfalse;
+	qboolean	noAngles;
 	if (player->s.eType == ET_NPC)
 	{
 		isNPC = qtrue;
 	}
+
+	noAngles = (angles[0] > 999999.0) ? qtrue : qfalse;
 
 	// use temp events at source and destination to prevent the effect
 	// from getting dropped by a second player event
@@ -198,16 +201,18 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	player->client->ps.origin[2] += 1;
 
 	// spit the player out
-	AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
-	VectorScale( player->client->ps.velocity, 400, player->client->ps.velocity );
-	player->client->ps.pm_time = 160;		// hold time
-	player->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
+	if ( !noAngles ) {
+		AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
+		VectorScale( player->client->ps.velocity, 400, player->client->ps.velocity );
+		player->client->ps.pm_time = 160;		// hold time
+		player->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
+
+		// set angles
+		SetClientViewAngle( player, angles );
+	}
 
 	// toggle the teleport bit so the client knows to not lerp
 	player->client->ps.eFlags ^= EF_TELEPORT_BIT;
-
-	// set angles
-	SetClientViewAngle( player, angles );
 
 	// kill anything at the destination
 	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR ) {
@@ -1922,7 +1927,6 @@ ammo_power_converter_use
 void ammo_power_converter_use( gentity_t *self, gentity_t *other, gentity_t *activator)
 {
 	int			add = 0.0f;//,highest;
-	qboolean	overcharge;
 //	int			difBlaster,difPowerCell,difMetalBolts;
 	int			stop = 1;
 
@@ -1933,8 +1937,6 @@ void ammo_power_converter_use( gentity_t *self, gentity_t *other, gentity_t *act
 
 	if (self->setTime < level.time)
 	{
-		overcharge = qfalse;
-
 		if (!self->s.loopSound)
 		{
 			self->s.loopSound = G_SoundIndex("sound/player/pickupshield.wav");
@@ -3435,8 +3437,6 @@ target		- use to point the tag at something for angles
 
 void ref_link ( gentity_t *ent )
 {
-	reference_tag_t	*tag;
-
 	if ( ent->target )
 	{
 		//TODO: Find the target and set our angles to that direction
@@ -3459,7 +3459,7 @@ void ref_link ( gentity_t *ent )
 	}
 	
 	//Add the tag
-	tag = TAG_Add( ent->targetname, ent->ownername, ent->s.origin, ent->s.angles, 16, 0 );
+	TAG_Add( ent->targetname, ent->ownername, ent->s.origin, ent->s.angles, 16, 0 );
 
 	//Delete immediately, cannot be refered to as an entity again
 	//NOTE: this means if you wanted to link them in a chain for, say, a path, you can't

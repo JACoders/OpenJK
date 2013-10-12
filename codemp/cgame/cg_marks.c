@@ -1082,9 +1082,7 @@ void CG_AddParticles (void)
 	float			alpha;
 	float			time, time2;
 	vec3_t			org;
-	int				color;
 	cparticle_t		*active, *tail;
-	int				type;
 	vec3_t			rotate_ang;
 
 	if (!initparticles)
@@ -1189,15 +1187,11 @@ void CG_AddParticles (void)
 		if (alpha > 1.0)
 			alpha = 1;
 
-		color = p->color;
-
 		time2 = time*time;
 
 		org[0] = p->org[0] + p->vel[0]*time + p->accel[0]*time2;
 		org[1] = p->org[1] + p->vel[1]*time + p->accel[1]*time2;
 		org[2] = p->org[2] + p->vel[2]*time + p->accel[2]*time2;
-
-		type = p->type;
 
 		CG_AddParticleToScene (p, org, alpha);
 	}
@@ -1553,25 +1547,24 @@ void CG_AddParticleShrapnel (localEntity_t *le)
 
 int CG_NewParticleArea (int num)
 {
-	// const char *str;
-	char *str;
-	char *token;
+#if 1
+	return 0;
+#else
+	char *str, *token;
 	int type;
 	vec3_t origin, origin2;
 	int		i;
 	float range = 0;
-	int turb;
-	int	numparticles;
-	int	snum;
-	
+	int turb, numparticles, snum;
+
 	str = (char *) CG_ConfigString (num);
 	if (!str[0])
 		return (0);
-	
+
 	// returns type 128 64 or 32
 	token = COM_Parse ((const char **)&str);
 	type = atoi (token);
-	
+
 	if (type == 1)
 		range = 128;
 	else if (type == 2)
@@ -1622,6 +1615,7 @@ int CG_NewParticleArea (int num)
 	*/
 
 	return (1);
+#endif
 }
 
 void	CG_SnowLink (centity_t *cent, qboolean particleOn)

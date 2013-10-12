@@ -600,7 +600,7 @@ delta functions with keys
 =============================================================================
 */
 
-int kbitmask[32] = {
+uint32_t kbitmask[32] = {
 	0x00000001, 0x00000003, 0x00000007, 0x0000000F,
 	0x0000001F,	0x0000003F,	0x0000007F,	0x000000FF,
 	0x000001FF,	0x000003FF,	0x000007FF,	0x00000FFF,
@@ -1307,7 +1307,7 @@ plyer_state_t communication
 */
 
 // using the stringizing operator to save typing...
-#define	PSF(x) #x,(size_t)&((playerState_t*)0)->x
+#define	PSF(x) #x,offsetof(playerState_t, x)
 
 //rww - Remember to update ext_data/MP/psf_overrides.txt if you change any of this!
 //(for the sake of being consistent)

@@ -1459,8 +1459,7 @@ int DoorBlockingSection(int start, int end)
 int RepairPaths(qboolean behindTheScenes)
 {
 	int i;
-	int preAmount = 0;
-	int ctRet;
+//	int ctRet;
 	vec3_t a;
 	float maxDistFactor = 400;
 
@@ -1475,8 +1474,6 @@ int RepairPaths(qboolean behindTheScenes)
 	}
 
 	i = 0;
-
-	preAmount = gWPNum;
 
 	trap->Cvar_Update(&bot_wp_distconnect);
 	trap->Cvar_Update(&bot_wp_visconnect);
@@ -1494,7 +1491,7 @@ int RepairPaths(qboolean behindTheScenes)
 				((bot_wp_distconnect.value && VectorLength(a) > maxDistFactor) || (!OrgVisible(gWPArray[i]->origin, gWPArray[i+1]->origin, ENTITYNUM_NONE) && bot_wp_visconnect.value) ) &&
 				!DoorBlockingSection(i, i+1))
 			{
-				ctRet = ConnectTrail(i, i+1, behindTheScenes);
+				/*ctRet = */ConnectTrail(i, i+1, behindTheScenes);
 
 				if (gWPNum >= MAX_WPARRAY_SIZE)
 				{ //Bad!
@@ -1502,10 +1499,10 @@ int RepairPaths(qboolean behindTheScenes)
 					break;
 				}
 
-				/*if (!ctRet)
-				{
+				/* we still want to write it..
+				if ( !ctRet )
 					return 0;
-				}*/ //we still want to write it..
+				*/
 			}
 		}
 
@@ -2368,11 +2365,10 @@ int SavePathData(const char *filename)
 	char *routePath;
 	vec3_t a;
 	float flLen;
-	int i, s, n;
+	int i, n;
 
 	fileString = NULL;
 	i = 0;
-	s = 0;
 
 	if (!gWPNum)
 	{

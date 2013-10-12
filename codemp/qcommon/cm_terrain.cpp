@@ -159,16 +159,14 @@ CCMLandScape::CCMLandScape(const char *configstring, bool server)
 
 	if(strlen(heightMap))
 	{
-		byte	*imageData;
 #ifndef DEDICATED
-		int		iWidth, iHeight;
+		int iWidth, iHeight;
+		byte *imageData;
 #endif
 
 		Com_DPrintf("CM_Terrain: Loading heightmap %s.....\n", heightMap);
 		mRandomTerrain = 0;
-#ifdef DEDICATED
-		imageData=NULL;
-#else
+#ifndef DEDICATED
 		re->LoadDataImage(heightMap, &imageData, &iWidth, &iHeight); 
 		if(imageData)
 		{
