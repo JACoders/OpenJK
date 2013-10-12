@@ -262,6 +262,53 @@ int		max_polys;
 cvar_t	*r_maxpolyverts;
 int		max_polyverts;
 
+
+extern void	RB_SetGL2D (void);
+void R_Splash()
+{
+	image_t *pImage = R_FindImageFile( "menu/splash", IMGTYPE_COLORALPHA, IMGFLAG_NONE);
+	qglViewport( 0, 0, glConfig.vidWidth, glConfig.vidHeight );
+	qglScissor( 0, 0, glConfig.vidWidth, glConfig.vidHeight );
+	qglMatrixMode(GL_PROJECTION);
+    qglLoadIdentity ();
+	qglOrtho (0, 640, 480, 0, 0, 1);
+	qglMatrixMode(GL_MODELVIEW);
+    qglLoadIdentity ();
+
+	GL_State( GLS_DEPTHTEST_DISABLE |
+			  GLS_SRCBLEND_SRC_ALPHA |
+			  GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA );
+
+	qglDisable( GL_CULL_FACE );
+	qglDisable( GL_CLIP_PLANE0 );
+	if (pImage )
+	{//invalid paths?
+		GL_Bind( pImage );
+	}
+	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
+
+	const int width = 640;
+	const int height = 480;
+	const float x1 = 320 - width / 2;
+	const float x2 = 320 + width / 2;
+	const float y1 = 240 - height / 2;
+	const float y2 = 240 + height / 2;
+
+
+	qglBegin (GL_TRIANGLE_STRIP);
+		qglTexCoord2f( 0,  0 );
+		qglVertex2f(x1, y1);
+		qglTexCoord2f( 1 ,  0 );
+		qglVertex2f(x2, y1);
+		qglTexCoord2f( 0, 1 );
+		qglVertex2f(x1, y2);
+		qglTexCoord2f( 1, 1 );
+		qglVertex2f(x2, y2);
+	qglEnd();
+
+	GLimp_EndFrame();
+}
+
 /*
 ** InitOpenGL
 **
@@ -304,10 +351,17 @@ static void InitOpenGL( void )
 		{
 			glConfig.maxTextureSize = 0;
 		}
-	}
 
-	// set default state
-	GL_SetDefaultState();
+		// set default state
+		GL_SetDefaultState();
+		R_Splash();	//get something on screen asap
+		GfxInfo_f();
+	}
+	else
+	{
+		// set default state
+		GL_SetDefaultState();
+	}
 }
 
 /*
