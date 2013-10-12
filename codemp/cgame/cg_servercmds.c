@@ -1194,7 +1194,6 @@ static void CG_BodyQueueCopy(centity_t *cent, int clientNum, int knownWeapon)
 	animation_t		*anim;
 	float			animSpeed;
 	int				flags=BONE_ANIM_OVERRIDE_FREEZE;
-	clientInfo_t	*ci;
 
 	if (cent->ghoul2)
 	{
@@ -1207,7 +1206,6 @@ static void CG_BodyQueueCopy(centity_t *cent, int clientNum, int knownWeapon)
 	}
 
 	source = &cg_entities[ clientNum ];
-	ci = &cgs.clientinfo[ clientNum ];
 
 	if (!source)
 	{

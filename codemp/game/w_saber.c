@@ -2203,7 +2203,6 @@ int G_KnockawayForParry( int move )
 //For strong attacks, we ramp damage based on the point in the attack animation
 static QINLINE int G_GetAttackDamage(gentity_t *self, int minDmg, int maxDmg, float multPoint)
 {
-	int peakDif = 0;
 	int speedDif = 0;
 	int totalDamage = maxDmg;
 	float peakPoint = 0;
@@ -2221,15 +2220,6 @@ static QINLINE int G_GetAttackDamage(gentity_t *self, int minDmg, int maxDmg, fl
 
 	//we treat torsoTimer as the point in the animation (closer it is to attackAnimLength, closer it is to beginning)
 	currentPoint = self->client->ps.torsoTimer;
-
-	if (peakPoint > currentPoint)
-	{
-		peakDif = (peakPoint - currentPoint);
-	}
-	else
-	{
-		peakDif = (currentPoint - peakPoint);
-	}
 
 	damageFactor = (float)((currentPoint/peakPoint));
 	if (damageFactor > 1)

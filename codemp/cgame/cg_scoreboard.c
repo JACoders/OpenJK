@@ -296,7 +296,7 @@ Draw the normal in-game scoreboard
 */
 int cg_siegeWinTeam = 0;
 qboolean CG_DrawOldScoreboard( void ) {
-	int		x, y, w, i, n1, n2;
+	int		x, y, i, n1, n2;
 	float	fade;
 	float	*fadeColor;
 	char	*s;
@@ -400,7 +400,7 @@ qboolean CG_DrawOldScoreboard( void ) {
 				cg.numScores,
 				sWith,
 				cg.snap->ps.persistant[PERS_SCORE] );
-			w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
+		//	w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
 			x = ( SCREEN_WIDTH ) / 2;
 			y = 60;
 			//CG_DrawBigString( x, y, s, fade );

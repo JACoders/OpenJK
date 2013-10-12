@@ -2027,7 +2027,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		if (!G_DoesMapSupportGametype(arg2, level.gametype))
 		{
 			//trap->SendServerCommand( ent-g_entities, "print \"You can't vote for this map, it isn't supported by the current gametype.\n\"" );
-			trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTE_MAPNOTSUPPORTEDBYGAME")) );
+			trap->SendServerCommand( ent-g_entities, va("print \"%s\"", G_GetStringEdString("MP_SVGAME", "NOVOTE_MAPNOTSUPPORTEDBYGAME")) );
 			return;
 		}
 

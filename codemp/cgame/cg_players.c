@@ -7738,13 +7738,10 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 	int bolt=-1;
 	int iter=0;
 	int torsoBolt = -1;
-	int crotchBolt = -1;
 	int elbowLBolt = -1;
 	int elbowRBolt = -1;
 	int handLBolt = -1;
 	int handRBolt = -1;
-	int kneeLBolt = -1;
-	int kneeRBolt = -1;
 	int footLBolt = -1;
 	int footRBolt = -1;
 
@@ -7753,26 +7750,20 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 	if (cent->localAnimIndex <= 1)
 	{ //humanoid
 		torsoBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "lower_lumbar");
-		crotchBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "pelvis");
 		elbowLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*l_arm_elbow");
 		elbowRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*r_arm_elbow");
 		handLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*l_hand");
 		handRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*r_hand");
-		kneeLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*hips_l_knee");
-		kneeRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*hips_r_knee");
 		footLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*l_leg_foot");
 		footRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*r_leg_foot");
 	}
 	else if (cent->currentState.NPC_class == CLASS_PROTOCOL)
 	{ //any others that can use these bolts too?
 		torsoBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "lower_lumbar");
-		crotchBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "pelvis");
 		elbowLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*bicep_lg");
 		elbowRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*bicep_rg");
 		handLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*hand_l");
 		handRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*weapon");
-		kneeLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*thigh_lg");
-		kneeRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*thigh_rg");
 		footLBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*foot_lg");
 		footRBolt = trap->G2API_AddBolt(cent->ghoul2, 0, "*foot_rg");
 	}
@@ -8443,7 +8434,6 @@ void CG_Player( centity_t *cent ) {
 	int				renderfx;
 	qboolean		shadow = qfalse;
 	float			shadowPlane = 0;
-	qboolean		dead = qfalse;
 	vec3_t			rootAngles;
 	float			angle;
 	vec3_t			angles, dir, elevated, enang, seekorg;
@@ -9308,7 +9298,6 @@ void CG_Player( centity_t *cent ) {
 
 	if (cent->currentState.eFlags & EF_DEAD)
 	{
-		dead = qtrue;
 		//rww - since our angles are fixed when we're dead this shouldn't be an issue anyway
 		//we need to render the dying/dead player because we are now spawning the body on respawn instead of death
 		//return;

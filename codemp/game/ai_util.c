@@ -160,15 +160,12 @@ void B_CleanupAlloc(void)
 int GetValueGroup(char *buf, char *group, char *outbuf)
 {
 	char *place, *placesecond;
-	int iplace;
 	int failure;
 	int i;
 	int startpoint, startletter;
 	int subg = 0;
 
 	i = 0;
-
-	iplace = 0;
 
 	place = strstr(buf, group);
 

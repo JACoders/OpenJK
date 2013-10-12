@@ -1131,23 +1131,19 @@ int PM_SaberLockResultAnim( playerState_t *duelist, qboolean superBreak, qboolea
 
 void PM_SaberLockBreak( playerState_t *genemy, qboolean victory, int strength )
 {
-	int	winAnim = BOTH_STAND1, loseAnim = BOTH_STAND1;
 	//qboolean punishLoser = qfalse;
 	qboolean noKnockdown = qfalse;
-	qboolean singleVsSingle = qtrue;
 	qboolean superBreak = (strength+pm->ps->saberLockHits > Q_irand(2,4));
 
-	winAnim = PM_SaberLockWinAnim( victory, superBreak );
-	if ( winAnim != -1 )
-	{//a single vs. single break
-		loseAnim = PM_SaberLockLoseAnim( genemy, victory, superBreak );
-	}
-	else
-	{//must be a saberlock that's not between single and single...
-		singleVsSingle = qfalse;
-		winAnim = PM_SaberLockResultAnim( pm->ps, superBreak, qtrue );
+	//a single vs. single break
+	if ( PM_SaberLockWinAnim( victory, superBreak ) != -1 )
+		PM_SaberLockLoseAnim( genemy, victory, superBreak );
+
+	//must be a saberlock that's not between single and single...
+	else {
+		PM_SaberLockResultAnim( pm->ps, superBreak, qtrue );
 		pm->ps->weaponstate = WEAPON_FIRING;
-		loseAnim = PM_SaberLockResultAnim( genemy, superBreak, qfalse );
+		PM_SaberLockResultAnim( genemy, superBreak, qfalse );
 		genemy->weaponstate = WEAPON_READY;
 	}
 
@@ -2731,7 +2727,7 @@ qboolean BG_SuperBreakLoseAnim( int anim );
 qboolean BG_SuperBreakWinAnim( int anim );
 void PM_WeaponLightsaber(void)
 {
-	int			addTime,amount;
+	int			addTime;
 	qboolean	delayed_fire = qfalse;
 	int			anim=-1, curmove, newmove=LS_NONE;
 
@@ -3682,8 +3678,6 @@ weapChecks:
 	// *********************************************************
 
 	pm->ps->weaponstate = WEAPON_FIRING;
-
-	amount = weaponData[pm->ps->weapon].energyPerShot;
 
 	addTime = pm->ps->weaponTime;
 
