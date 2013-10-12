@@ -17,6 +17,7 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/G2_local.h"
 	"${MPDir}/rd-rend2/G2_misc.cpp"
 	"${MPDir}/rd-rend2/G2_surfaces.cpp"
+	"${MPDir}/rd-rend2/glsl_shaders.cpp"
 	"${MPDir}/rd-rend2/tr_animation.cpp"
 	"${MPDir}/rd-rend2/tr_backend.cpp"
 	"${MPDir}/rd-rend2/tr_bsp.cpp"
@@ -63,9 +64,14 @@ set(MPRend2Files ${MPRend2Files} ${MPRend2Ghoul2Files})
 
 set(MPRend2RdCommonFiles
 	"${MPDir}/rd-common/mdx_format.h"
-	"${MPDir}/rd-common/tr_types.h"
+	"${MPDir}/rd-common/tr_common.h"
 	"${MPDir}/rd-common/tr_font.cpp"
 	"${MPDir}/rd-common/tr_font.h"
+	"${MPDir}/rd-common/tr_image_load.cpp"
+	"${MPDir}/rd-common/tr_image_manipulation.cpp"
+	"${MPDir}/rd-common/tr_image_jpg.cpp"
+	"${MPDir}/rd-common/tr_image_tga.cpp"
+	"${MPDir}/rd-common/tr_image_png.cpp"
 	"${MPDir}/rd-common/tr_noise.cpp"
 	"${MPDir}/rd-common/tr_public.h")
 source_group("rd-common" FILES ${MPRend2RdCommonFiles})
