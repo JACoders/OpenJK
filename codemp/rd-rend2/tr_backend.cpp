@@ -793,7 +793,7 @@ void	RB_SetGL2D (void) {
 	qglViewport( 0, 0, width, height );
 	qglScissor( 0, 0, width, height );
 
-	Matrix16Ortho(0, width, height, 0, 0, 1, matrix);
+	Matrix16Ortho(0, 640, 480, 0, 0, 1, matrix);
 	GL_SetProjectionMatrix(matrix);
 	Matrix16Identity(matrix);
 	GL_SetModelviewMatrix(matrix);
