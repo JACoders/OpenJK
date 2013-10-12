@@ -75,14 +75,26 @@ qhandle_t R_RegisterMD3(const char *name, model_t *mod)
 			continue;
 		
 		ident = LittleLong(* (unsigned *) buf.u);
-		if (ident == MD4_IDENT)
-			loaded = R_LoadMD4(mod, buf.u, name);
-		else
+		// HACK until we get the model/image caching to mirror JKA --eez
+		qboolean temp = qtrue;
+		qboolean &temp2 = temp;
+		switch(ident)
 		{
-			if (ident == MD3_IDENT)
+			case MD4_IDENT:
+				loaded = R_LoadMD4(mod, buf.u, name);
+				break;
+			case MD3_IDENT:
 				loaded = R_LoadMD3(mod, lod, buf.u, size, name);
-			else
-				ri->Printf(PRINT_WARNING,"R_RegisterMD3: unknown fileid for %s\n", name);
+				break;
+			case MDXA_IDENT:
+				loaded = R_LoadMDXA(mod, buf.u, name, temp2);
+				break;
+			case MDXM_IDENT:
+				loaded = R_LoadMDXM(mod, buf.u, name, temp2);
+				break;
+			default:
+				ri->Printf(PRINT_WARNING, "R_RegisterMD3: unknown ident for %s\n", name);
+				break;
 		}
 		
 		ri->FS_FreeFile(buf.v);
@@ -208,6 +220,7 @@ static modelExtToLoaderMap_t modelLoaders[ ] =
 	/* 
 	Ghoul 2 Insert Start
 	*/
+	{ "glm", R_RegisterMD3 },
 	/*
 	Ghoul 2 Insert End
 	*/
