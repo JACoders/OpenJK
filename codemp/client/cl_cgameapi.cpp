@@ -765,6 +765,11 @@ static void CL_G2API_GetSurfaceName( void *ghoul2, int surfNumber, int modelInde
 	strcpy( fillBuf, tmp );
 }
 
+static void CL_Key_SetCatcher( int catcher ) {
+	// Don't allow the cgame module to close the console
+	Key_SetCatcher( catcher | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
+}
+
 // legacy syscall
 
 intptr_t CL_CgameSystemCalls( intptr_t *args ) {
@@ -1191,7 +1196,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return Key_GetCatcher();
 
 	case CG_KEY_SETCATCHER:
-		Key_SetCatcher( args[1] );
+		CL_Key_SetCatcher( args[1] );
 		return 0;
 
 	case CG_KEY_GETKEY:
@@ -1754,7 +1759,7 @@ void CL_BindCGame( void ) {
 		cgi.Key_GetCatcher						= Key_GetCatcher;
 		cgi.Key_GetKey							= Key_GetKey;
 		cgi.Key_IsDown							= Key_IsDown;
-		cgi.Key_SetCatcher						= Key_SetCatcher;
+		cgi.Key_SetCatcher						= CL_Key_SetCatcher;
 		cgi.PC_AddGlobalDefine					= botlib_export->PC_AddGlobalDefine;
 		cgi.PC_FreeSource						= botlib_export->PC_FreeSourceHandle;
 		cgi.PC_LoadGlobalDefines				= botlib_export->PC_LoadGlobalDefines;

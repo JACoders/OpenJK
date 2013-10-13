@@ -427,6 +427,11 @@ static qboolean CL_G2API_AttachG2Model( void *ghoul2From, int modelIndexFrom, vo
 	return re->G2API_AttachG2Model(*g2From, modelIndexFrom, *g2To, toBoltIndex, toModel);
 }
 
+static void CL_Key_SetCatcher( int catcher ) {
+	// Don't allow the ui module to close the console
+	Key_SetCatcher( catcher | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
+}
+
 // legacy syscall
 
 intptr_t CL_UISystemCalls( intptr_t *args ) {
@@ -653,7 +658,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return Key_GetCatcher();
 
 	case UI_KEY_SETCATCHER:
-		Key_SetCatcher( args[1] );
+		CL_Key_SetCatcher( args[1] );
 		return 0;
 
 	case UI_GETCLIPBOARDDATA:
@@ -1062,7 +1067,7 @@ void CL_BindUI( void ) {
 		uii.Key_SetBinding						= Key_SetBinding;
 		uii.Key_GetCatcher						= Key_GetCatcher;
 		uii.Key_GetOverstrikeMode				= Key_GetOverstrikeMode;
-		uii.Key_SetCatcher						= Key_SetCatcher;
+		uii.Key_SetCatcher						= CL_Key_SetCatcher;
 		uii.Key_SetOverstrikeMode				= Key_SetOverstrikeMode;
 
 		uii.PC_AddGlobalDefine					= botlib_export->PC_AddGlobalDefine;
