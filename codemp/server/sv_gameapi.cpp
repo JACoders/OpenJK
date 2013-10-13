@@ -2883,7 +2883,7 @@ void SV_BindGame( void ) {
 	memset( &gi, 0, sizeof( gi ) );
 
 	gvm = VM_Create( VM_GAME );
-	if ( gvm ) {
+	if ( gvm && !gvm->isLegacy ) {
 		gi.Print								= Com_Printf;
 		gi.Error								= Com_Error;
 		gi.Milliseconds							= Com_Milliseconds;
@@ -3202,6 +3202,8 @@ void SV_BindGame( void ) {
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
 		ge = ret;
+
+		return;
 	}
 
 	// fall back to legacy syscall/vm_call api

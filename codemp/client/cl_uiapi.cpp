@@ -1022,7 +1022,7 @@ void CL_BindUI( void ) {
 	memset( &uii, 0, sizeof( uii ) );
 
 	uivm = VM_Create( VM_UI );
-	if ( uivm ) {
+	if ( uivm && !uivm->isLegacy ) {
 		uii.Print								= Com_Printf;
 		uii.Error								= Com_Error;
 		uii.Milliseconds						= CL_Milliseconds;
@@ -1175,6 +1175,8 @@ void CL_BindUI( void ) {
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
 		uie = ret;
+		
+		return;
 	}
 
 	// fall back to legacy syscall/vm_call api

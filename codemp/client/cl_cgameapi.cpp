@@ -22,7 +22,6 @@ static vm_t *cgvm; // cgame vm, valid for legacy and new api
 //
 // cgame vmMain calls
 //
-
 void CGVM_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 	if ( cgvm->isLegacy ) {
 		VM_Call( cgvm, CG_INIT, serverMessageNum, serverCommandSequence, clientNum );
@@ -1640,7 +1639,7 @@ void CL_BindCGame( void ) {
 	memset( &cgi, 0, sizeof( cgi ) );
 
 	cgvm = VM_Create( VM_CGAME );
-	if ( cgvm ) {
+	if ( cgvm && !cgvm->isLegacy ) {
 		cgi.Print								= Com_Printf;
 		cgi.Error								= Com_Error;
 		cgi.SnapVector							= Sys_SnapVector;
@@ -1854,6 +1853,8 @@ void CL_BindCGame( void ) {
 			Com_Error( ERR_FATAL, "GetGameAPI failed on %s", dllName );
 		}
 		cge = ret;
+
+		return;
 	}
 
 	// fall back to legacy syscall/vm_call api
