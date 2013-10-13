@@ -169,11 +169,15 @@ static unsigned NameToAFunc( const char *funcname )
 	}
 	else if ( !Q_stricmp( funcname, "LT128" ) )
 	{
-		return GLS_ATEST_LT_80;
+		return GLS_ATEST_LT_128;
 	}
 	else if ( !Q_stricmp( funcname, "GE128" ) )
 	{
-		return GLS_ATEST_GE_80;
+		return GLS_ATEST_GE_128;
+	}
+	else if ( !Q_stricmp( funcname, "GE192" ) )
+	{
+		return GLS_ATEST_GE_192;
 	}
 
 	ri->Printf( PRINT_WARNING, "WARNING: invalid alphaFunc name '%s' in shader '%s'\n", funcname, shader.name );
@@ -747,7 +751,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		//
 		// animMap <frequency> <image1> .... <imageN>
 		//
-		else if ( !Q_stricmp( token, "animMap" ) )
+		else if ( !Q_stricmp( token, "animMap" ) || !Q_stricmp( token, "clampanimMap" ) || !Q_stricmp( token, "oneshotanimMap" ) )
 		{
 			token = COM_ParseExt( text, qfalse );
 			if ( !token[0] )
@@ -836,6 +840,10 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			else if ( !Q_stricmp( token, "equal" ) )
 			{
 				depthFuncBits = GLS_DEPTHFUNC_EQUAL;
+			}
+			else if ( !Q_stricmp( token, "disable" ) )
+			{
+				depthFuncBits = GLS_DEPTHTEST_DISABLE;
 			}
 			else
 			{
@@ -1026,6 +1034,14 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			{
 				stage->rgbGen = CGEN_LIGHTING_DIFFUSE;
 			}
+			else if ( !Q_stricmp( token, "lightingDiffuseEntity" ) )
+			{
+				//if (shader.lightmapIndex[0] != LIGHTMAP_NONE)
+				//{
+				//	Com_Printf( S_COLOR_RED "ERROR: rgbGen lightingDiffuseEntity used on a misc_model! in shader '%s'\n", shader.name );
+				//}
+				//stage->rgbGen = CGEN_LIGHTING_DIFFUSE_ENTITY;
+			}
 			else if ( !Q_stricmp( token, "oneMinusVertex" ) )
 			{
 				stage->rgbGen = CGEN_ONE_MINUS_VERTEX;
@@ -1082,6 +1098,14 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			else if ( !Q_stricmp( token, "oneMinusVertex" ) )
 			{
 				stage->alphaGen = AGEN_ONE_MINUS_VERTEX;
+			}
+			else if ( !Q_stricmp( token, "dot" ) )
+			{
+				//stage->alphaGen = AGEN_DOT;
+			}
+			else if ( !Q_stricmp( token, "oneMinusDot" ) )
+			{
+				//stage->alphaGen = AGEN_ONE_MINUS_DOT;
 			}
 			else if ( !Q_stricmp( token, "portal" ) )
 			{
@@ -1170,6 +1194,67 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		{
 			depthMaskBits = GLS_DEPTHMASK_TRUE;
 			depthMaskExplicit = qtrue;
+
+			continue;
+		}
+		// If this stage has glow...	GLOWXXX
+		else if ( Q_stricmp( token, "glow" ) == 0 )
+		{
+			//stage->glow = true;
+
+			continue;
+		}
+		//
+		// surfaceSprites <type> ...
+		//
+		else if ( !Q_stricmp( token, "surfaceSprites" ) )
+		{
+			SkipRestOfLine( text );
+			/*char buffer[1024] = "";
+
+			while ( 1 )
+			{
+				token = COM_ParseExt( text, qfalse );
+				if ( token[0] == 0 )
+					break;
+				strcat( buffer, token );
+				strcat( buffer, " " );
+			}
+
+			ParseSurfaceSprites( buffer, stage );*/
+
+			continue;
+		}
+		//
+		// ssFademax <fademax>
+		// ssFadescale <fadescale>
+		// ssVariance <varwidth> <varheight>
+		// ssHangdown
+		// ssAnyangle
+		// ssFaceup
+		// ssWind <wind>
+		// ssWindIdle <windidle>
+		// ssDuration <duration>
+		// ssGrow <growwidth> <growheight>
+		// ssWeather
+		//
+		else if (!Q_stricmpn(token, "ss", 2))	// <--- NOTE ONLY COMPARING FIRST TWO LETTERS
+		{
+			SkipRestOfLine( text );
+			/*char buffer[1024] = "";
+			char param[128];
+			strcpy(param,token);
+
+			while ( 1 )
+			{
+				token = COM_ParseExt( text, qfalse );
+				if ( token[0] == 0 )
+					break;
+				strcat( buffer, token );
+				strcat( buffer, " " );
+			}
+
+			ParseSurfaceSpritesOptional( param, buffer, stage );*/
 
 			continue;
 		}
@@ -1467,7 +1552,7 @@ void ParseSort( const char **text ) {
 		shader.sort = SS_ENVIRONMENT;
 	} else if ( !Q_stricmp( token, "opaque" ) ) {
 		shader.sort = SS_OPAQUE;
-	}else if ( !Q_stricmp( token, "decal" ) ) {
+	} else if ( !Q_stricmp( token, "decal" ) ) {
 		shader.sort = SS_DECAL;
 	} else if ( !Q_stricmp( token, "seeThrough" ) ) {
 		shader.sort = SS_SEE_THROUGH;
@@ -1479,17 +1564,58 @@ void ParseSort( const char **text ) {
 		shader.sort = SS_NEAREST;
 	} else if ( !Q_stricmp( token, "underwater" ) ) {
 		shader.sort = SS_UNDERWATER;
-	} else {
+	} else if ( !Q_stricmp( token, "inside" ) ) {
+		//shader.sort = SS_INSIDE;
+	} else if ( !Q_stricmp( token, "mid_inside" ) ) {
+		//shader.sort = SS_MID_INSIDE;
+	} else if ( !Q_stricmp( token, "middle" ) ) {
+		//shader.sort = SS_MIDDLE;
+	} else if ( !Q_stricmp( token, "mid_outside" ) ) {
+		//shader.sort = SS_MID_OUTSIDE;
+	} else if ( !Q_stricmp( token, "outside" ) ) {
+		//shader.sort = SS_OUTSIDE;
+	}	
+	else {
 		shader.sort = atof( token );
 	}
 }
 
+/*
+=================
+ParseMaterial
+=================
+*/
+const char *materialNames[MATERIAL_LAST] =
+{
+	MATERIALS
+};
+
+void ParseMaterial( const char **text ) 
+{
+	char	*token;
+	int		i;
+
+	token = COM_ParseExt( text, qfalse );
+	if ( token[0] == 0 ) 
+	{
+		Com_Printf (S_COLOR_YELLOW  "WARNING: missing material in shader '%s'\n", shader.name );
+		return;
+	}
+	for(i = 0; i < MATERIAL_LAST; i++)
+	{
+		if ( !Q_stricmp( token, materialNames[i] ) ) 
+		{
+			shader.surfaceFlags |= i;
+			break;
+		}
+	}
+}
 
 
 // this table is also present in q3map
 
-typedef struct {
-	char	*name;
+typedef struct infoParm_s {
+	const char	*name;
 	int		clearSolid, surfaceFlags, contents;
 } infoParm_t;
 
@@ -1556,11 +1682,7 @@ static void ParseSurfaceParm( const char **text ) {
 		if ( !Q_stricmp( token, infoParms[i].name ) ) {
 			shader.surfaceFlags |= infoParms[i].surfaceFlags;
 			shader.contentFlags |= infoParms[i].contents;
-#if 0
-			if ( infoParms[i].clearSolid ) {
-				si->contents &= ~CONTENTS_SOLID;
-			}
-#endif
+			shader.contentFlags &= infoParms[i].clearSolid;
 			break;
 		}
 	}
@@ -1625,6 +1747,12 @@ static qboolean ParseShader( const char **text )
 			SkipRestOfLine( text );
 			continue;
 		}
+		// material deprecated as of 11 Jan 01
+		// material undeprecated as of 7 May 01 - q3map_material deprecated
+		else if ( !Q_stricmp( token, "material" ) || !Q_stricmp( token, "q3map_material" ) )
+		{
+			ParseMaterial( text );
+		}	
 		// sun parms
 		else if ( !Q_stricmp( token, "q3map_sun" ) || !Q_stricmp( token, "q3map_sunExt" ) || !Q_stricmp( token, "q3gl2_sun" ) ) {
 			float	a, b;
@@ -1690,7 +1818,7 @@ static qboolean ParseShader( const char **text )
 			SkipRestOfLine( text );
 			continue;
 		}
-		else if ( !Q_stricmp( token, "deformVertexes" ) ) {
+		else if ( !Q_stricmp( token, "deformvertexes" ) || !Q_stricmp( token, "deform" ) ) {
 			ParseDeform( text );
 			continue;
 		}
@@ -1727,10 +1855,20 @@ static qboolean ParseShader( const char **text )
 			shader.noPicMip = qtrue;
 			continue;
 		}
+		else if ( !Q_stricmp( token, "noglfog" ) )
+		{
+			//shader.fogPass = FP_NONE;
+			continue;
+		}
 		// polygonOffset
 		else if ( !Q_stricmp( token, "polygonOffset" ) )
 		{
 			shader.polygonOffset = qtrue;
+			continue;
+		}
+		else if ( !Q_stricmp( token, "noTC" ) )
+		{
+			//shader.noTC = true;
 			continue;
 		}
 		// entityMergable, allowing sprite surfaces from multiple entities
@@ -2973,6 +3111,8 @@ static shader_t *FinishShader( void ) {
 
 //========================================================================================
 
+qboolean SkipBracedSection_Depth (const char **program, int depth);
+
 /*
 ====================
 FindShaderInShaderText
@@ -3024,7 +3164,7 @@ static const char *FindShaderInShaderText( const char *shadername ) {
 		}
 		else {
 			// skip the definition
-			SkipBracedSection( &p );
+			SkipBracedSection_Depth( &p, 0 );
 		}
 	}
 
@@ -3443,6 +3583,13 @@ qhandle_t RE_RegisterShaderNoMip( const char *name ) {
 	return sh->index;
 }
 
+//added for ui -rww
+const char *RE_ShaderNameFromIndex(int index)
+{
+	assert(index >= 0 && index < tr.numShaders && tr.shaders[index]);
+	return tr.shaders[index]->name;
+}
+
 /*
 ====================
 R_GetShaderByHandle
@@ -3616,15 +3763,14 @@ static void ScanAndLoadShaderFiles( void )
 				break;
 			}
 
-			SkipBracedSection(&p);
-			/*if(!SkipBracedSection(&p))
+			if(!SkipBracedSection_Depth(&p, 1))
 			{
 				ri->Printf(PRINT_WARNING, "WARNING: Ignoring shader file %s. Shader \"%s\" on line %d missing closing brace.\n",
 							filename, shaderName, shaderLine);
 				ri->FS_FreeFile(buffers[i]);
 				buffers[i] = NULL;
 				break;
-			}*/
+			}
 		}
 			
 		

@@ -883,12 +883,12 @@ enum
 	GLS_ATEST_GT_0						= (1 << 22),
 	GLS_ATEST_LT_128					= (1 << 23),
 	GLS_ATEST_GE_128					= (1 << 24),
-//	GLS_ATEST_GE_CUSTOM					= (1 << 25),
+	GLS_ATEST_GE_192					= (1 << 25),
 
 	GLS_ATEST_BITS						= GLS_ATEST_GT_0
 											| GLS_ATEST_LT_128
-											| GLS_ATEST_GE_128,
-//											| GLS_ATEST_GT_CUSTOM,
+											| GLS_ATEST_GE_128
+											| GLS_ATEST_GE_192,
 
 	GLS_REDMASK_FALSE					= (1 << 26),
 	GLS_GREENMASK_FALSE					= (1 << 27),
@@ -2392,7 +2392,8 @@ void	GL_Cull( int cullType );
 #define GLS_ATEST_GT_0							0x10000000
 #define GLS_ATEST_LT_80							0x20000000
 #define GLS_ATEST_GE_80							0x40000000
-#define		GLS_ATEST_BITS						0x70000000
+#define GLS_ATEST_GE_C0							0x80000000
+#define		GLS_ATEST_BITS						0xF0000000
 
 #define GLS_DEFAULT			GLS_DEPTHMASK_TRUE
 
@@ -2426,6 +2427,7 @@ void		R_GammaCorrect( byte *buffer, int bufSize );
 
 void	R_ImageList_f( void );
 void	R_SkinList_f( void );
+void	R_FontList_f( void );
 // https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=516
 const void *RB_TakeScreenshotCmd( const void *data );
 void	R_ScreenShot_f( void );
@@ -3054,6 +3056,7 @@ Ghoul2 Insert End
 image_t	*R_FindImageFile( const char *name, imgType_t type, int flags );
 qhandle_t RE_RegisterShader( const char *name );
 qhandle_t RE_RegisterShaderNoMip( const char *name );
+const char		*RE_ShaderNameFromIndex(int index);
 image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgType_t type, int flags, int internalFormat );
 
 extern qboolean    textureFilterAnisotropic;

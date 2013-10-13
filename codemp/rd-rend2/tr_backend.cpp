@@ -391,13 +391,17 @@ void GL_State( unsigned long stateBits )
 			qglEnable( GL_ALPHA_TEST );
 			qglAlphaFunc( GL_GREATER, 0.0f );
 			break;
-		case GLS_ATEST_LT_80:
+		case GLS_ATEST_LT_128:
 			qglEnable( GL_ALPHA_TEST );
 			qglAlphaFunc( GL_LESS, 0.5f );
 			break;
-		case GLS_ATEST_GE_80:
+		case GLS_ATEST_GE_128:
 			qglEnable( GL_ALPHA_TEST );
 			qglAlphaFunc( GL_GEQUAL, 0.5f );
+			break;
+		case GLS_ATEST_GE_192:
+			qglEnable( GL_ALPHA_TEST );
+			qglAlphaFunc( GL_GEQUAL, 0.75f );
 			break;
 		default:
 			assert( 0 );

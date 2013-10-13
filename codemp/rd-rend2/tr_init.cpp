@@ -355,7 +355,6 @@ static void InitOpenGL( void )
 		// set default state
 		GL_SetDefaultState();
 		R_Splash();	//get something on screen asap
-		GfxInfo_f();
 	}
 	else
 	{
@@ -1420,6 +1419,7 @@ Ghoul2 Insert End
 	ri->Cmd_AddCommand( "imagelist", R_ImageList_f );
 	ri->Cmd_AddCommand( "shaderlist", R_ShaderList_f );
 	ri->Cmd_AddCommand( "skinlist", R_SkinList_f );
+	ri->Cmd_AddCommand( "fontlist", R_FontList_f );
 	ri->Cmd_AddCommand( "modellist", R_Modellist_f );
 	ri->Cmd_AddCommand( "modelist", R_ModeList_f );
 	ri->Cmd_AddCommand( "screenshot", R_ScreenShot_f );
@@ -1563,6 +1563,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	ri->Cmd_RemoveCommand ("imagelist");
 	ri->Cmd_RemoveCommand ("shaderlist");
 	ri->Cmd_RemoveCommand ("skinlist");
+	ri->Cmd_RemoveCommand ("fontlist");
 	ri->Cmd_RemoveCommand ("gfxinfo");
 	ri->Cmd_RemoveCommand("minimize");
 	ri->Cmd_RemoveCommand( "modelist" );
@@ -1627,47 +1628,41 @@ const CGhoul2Info NullG2;
 // STUBS, REPLACEME
 qhandle_t stub_RegisterServerModel( const char *name )
 {
-	ri->Printf( PRINT_ALL, "stub_RegisterServerModel\n" );
+	//ri->Printf( PRINT_ALL, "stub_RegisterServerModel\n" );
 	return 0;
 }
 
 qhandle_t stub_RegisterServerSkin( const char *name )
 {
-	ri->Printf( PRINT_ALL, "stub_RegisterServerSkin\n" );
+	//ri->Printf( PRINT_ALL, "stub_RegisterServerSkin\n" );
 	return 0;
-}
-
-const char *stub_ShaderNameFromIndex( int index )
-{
-	ri->Printf( PRINT_ALL, "stub_ShaderNameFromIndex\n" );
-	return NULL;
 }
 
 void stub_RegisterMedia_LevelLoadBegin( const char *mapname, ForceReload_e eForceReload )
 {
-	ri->Printf( PRINT_ALL, "stub_LevelLoadBegin\n");
+	//ri->Printf( PRINT_ALL, "stub_LevelLoadBegin\n");
 }
 
 void stub_RegisterMedia_LevelLoadEnd( void )
 {
-	ri->Printf( PRINT_ALL, "stub_LevelLoadEnd\n");
+	//ri->Printf( PRINT_ALL, "stub_LevelLoadEnd\n");
 }
 
 int stub_RegisterMedia_GetLevel( void )
 {
-	ri->Printf( PRINT_ALL, "stub_RegisterMedia_GetLevel\n");
+	//ri->Printf( PRINT_ALL, "stub_RegisterMedia_GetLevel\n");
 	return 0;
 }
 
 qboolean stub_RegisterImages_LevelLoadEnd( void )
 {
-	ri->Printf( PRINT_ALL, "stub_RegisterImages_LevelLoadEnd\n");
+	//ri->Printf( PRINT_ALL, "stub_RegisterImages_LevelLoadEnd\n");
 	return qtrue;
 }
 
 qboolean stub_RegisterModels_LevelLoadEnd( qboolean bDeleteEverythingNotUsedThisLevel )
 {
-	ri->Printf( PRINT_ALL, "stub_RegisterModels_LevelLoadEnd\n");
+	//ri->Printf( PRINT_ALL, "stub_RegisterModels_LevelLoadEnd\n");
 	return qtrue;
 }
 
@@ -1705,8 +1700,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.RegisterServerSkin = stub_RegisterServerSkin;
 	re.RegisterShader = RE_RegisterShader;
 	re.RegisterShaderNoMip = RE_RegisterShaderNoMip;
-	// RE_ShaderNameFromIndex
-	re.ShaderNameFromIndex = stub_ShaderNameFromIndex;
+	re.ShaderNameFromIndex = RE_ShaderNameFromIndex;
 	re.LoadWorld = RE_LoadWorldMap;
 	re.SetWorldVisData = RE_SetWorldVisData;
 	re.EndRegistration = RE_EndRegistration;
@@ -1755,8 +1749,8 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 
 	// SetRangedFog
 	// SetRefractionProperties
-	// GetDistanceCull
-	// GetRealRes
+	re.GetDistanceCull = GetDistanceCull;
+	re.GetRealRes = GetRealRes;
 	// R_AutomapElevationAdjustment
 	// R_InitializeWireframeAutomap
 	// RE_AddWeatherZone
