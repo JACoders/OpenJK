@@ -116,7 +116,7 @@ vm_t *VM_CreateLegacy( vmSlots_t vmSlot, intptr_t (*systemCalls)(intptr_t *) ) {
 	}
 
 	// see if we already have the VM
-	if ( vmTable[vmSlot] )
+	if ( vmTable[vmSlot] && vmTable[vmSlot]->isLegacy )
 		return vmTable[vmSlot];
 
 	// find a free vm
@@ -154,7 +154,7 @@ vm_t *VM_Create( vmSlots_t vmSlot ) {
 #endif
 
 	// see if we already have the VM
-	if ( vmTable[vmSlot] )
+	if ( vmTable[vmSlot] && !vmTable[vmSlot]->isLegacy )
 		return vmTable[vmSlot];
 
 	// find a free vm
