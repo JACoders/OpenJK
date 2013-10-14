@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	LL(x) x=LittleLong(x)
 
 
-static qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, int bufferSize, const char *modName);
+static qboolean R_LoadMD3(model_t *mod, int lod, void *buffer, const char *modName);
 static qboolean R_LoadMD4(model_t *mod, void *buffer, const char *name );
 static qboolean R_LoadMDR(model_t *mod, void *buffer, int filesize, const char *name );
 
@@ -42,7 +42,6 @@ qhandle_t R_RegisterMD3(const char *name, model_t *mod)
 		unsigned *u;
 		void *v;
 	} buf;
-	int         size;
 	int			lod;
 	int			ident;
 	qboolean	loaded = qfalse;
@@ -70,27 +69,24 @@ qhandle_t R_RegisterMD3(const char *name, model_t *mod)
 		else
 			Com_sprintf(namebuf, sizeof(namebuf), "%s.%s", filename, fext);
 
-		size = ri->FS_ReadFile( namebuf, &buf.v );
-		if(!buf.u)
+		qboolean bAlreadyCached = qfalse;
+		if( !CModelCache->LoadFile( namebuf, &buf.v, &bAlreadyCached ) )
 			continue;
 		
 		ident = LittleLong(* (unsigned *) buf.u);
-		// HACK until we get the model/image caching to mirror JKA --eez
-		qboolean temp = qtrue;
-		qboolean &temp2 = temp;
 		switch(ident)
 		{
 			case MD4_IDENT:
 				loaded = R_LoadMD4(mod, buf.u, name);
 				break;
 			case MD3_IDENT:
-				loaded = R_LoadMD3(mod, lod, buf.u, size, name);
+				loaded = R_LoadMD3(mod, lod, buf.u, name);
 				break;
 			case MDXA_IDENT:
-				loaded = R_LoadMDXA(mod, buf.u, name, temp2);
+				loaded = R_LoadMDXA(mod, buf.u, name, bAlreadyCached);
 				break;
 			case MDXM_IDENT:
-				loaded = R_LoadMDXM(mod, buf.u, name, temp2);
+				loaded = R_LoadMDXM(mod, buf.u, name, bAlreadyCached);
 				break;
 			default:
 				ri->Printf(PRINT_WARNING, "R_RegisterMD3: unknown ident for %s\n", name);
@@ -296,18 +292,18 @@ qhandle_t RE_RegisterModel( const char *name ) {
 		return 0;
 	}
 
+	if( name[0] == '#' )
+	{
+		// TODO: BSP models
+		return 0;
+	}
+
 	//
 	// search the currently loaded models
 	//
-	for ( hModel = 1 ; hModel < tr.numModels; hModel++ ) {
-		mod = tr.models[hModel];
-		if ( !strcmp( mod->name, name ) ) {
-			if( mod->type == MOD_BAD ) {
-				return 0;
-			}
-			return hModel;
-		}
-	}
+	if( ( hModel = CModelCache->SearchLoaded( name ) ) != -1 )
+		return hModel;
+
 
 	// allocate a new model_t
 
@@ -455,7 +451,7 @@ void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const cha
 R_LoadMD3
 =================
 */
-static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, int bufferSize, const char *modName)
+static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modName)
 {
 	int             f, i, j, k;
 
@@ -493,19 +489,23 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, int bufferSize, 
 	mod->type = MOD_MESH;
 	size = LittleLong(md3Model->ofsEnd);
 	mod->dataSize += size;
-	mdvModel = mod->mdv[lod] = (mdvModel_t *)ri->Hunk_Alloc(sizeof(mdvModel_t), h_low);
+	//mdvModel = mod->mdv[lod] = (mdvModel_t *)ri->Hunk_Alloc(sizeof(mdvModel_t), h_low);
+	qboolean bAlreadyFound = qfalse;
+	mdvModel = mod->mdv[lod] = (mdvModel_t *)CModelCache->Allocate( size, buffer, modName, &bAlreadyFound, TAG_MODEL_MD3 );
 
 //  Com_Memcpy(mod->md3[lod], buffer, LittleLong(md3Model->ofsEnd));
-
-	LL(md3Model->ident);
-	LL(md3Model->version);
-	LL(md3Model->numFrames);
-	LL(md3Model->numTags);
-	LL(md3Model->numSurfaces);
-	LL(md3Model->ofsFrames);
-	LL(md3Model->ofsTags);
-	LL(md3Model->ofsSurfaces);
-	LL(md3Model->ofsEnd);
+	if( !bAlreadyFound )
+	{	// HACK
+		LL(md3Model->ident);
+		LL(md3Model->version);
+		LL(md3Model->numFrames);
+		LL(md3Model->numTags);
+		LL(md3Model->numSurfaces);
+		LL(md3Model->ofsFrames);
+		LL(md3Model->ofsTags);
+		LL(md3Model->ofsSurfaces);
+		LL(md3Model->ofsEnd);
+	}
 
 	if(md3Model->numFrames < 1)
 	{

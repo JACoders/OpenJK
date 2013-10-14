@@ -4181,7 +4181,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	mod->dataSize += size;	
 	
 	qboolean bAlreadyFound = qfalse;
-	mdxm = mod->mdxm = (mdxmHeader_t*)ri->Hunk_Alloc( size, h_dontcare );
+	mdxm = (mdxmHeader_t*)CModelCache->Allocate(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
 	//RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
 
 	assert(bAlreadyCached == bAlreadyFound);
@@ -4625,7 +4625,8 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	size += (childNumber*(CHILD_PADDING*8)); //Allocate us some extra space so we can shift memory down.
 #endif //CREATE_LIMB_HIERARCHY
 
-	mdxa = mod->mdxa = (mdxaHeader_t*)ri->Hunk_Alloc( size, h_dontcare );
+	//mdxa = mod->mdxa = (mdxaHeader_t*)ri->Hunk_Alloc( size, h_dontcare );
+	mdxa = mod->mdxa = (mdxaHeader_t*)CModelCache->Allocate( size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLA );
 
 	assert(bAlreadyCached == bAlreadyFound);	// I should probably eliminate 'bAlreadyFound', but wtf?
 

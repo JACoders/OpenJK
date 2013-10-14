@@ -1638,34 +1638,6 @@ qhandle_t stub_RegisterServerSkin( const char *name )
 	return 0;
 }
 
-void stub_RegisterMedia_LevelLoadBegin( const char *mapname, ForceReload_e eForceReload )
-{
-	//ri->Printf( PRINT_ALL, "stub_LevelLoadBegin\n");
-}
-
-void stub_RegisterMedia_LevelLoadEnd( void )
-{
-	//ri->Printf( PRINT_ALL, "stub_LevelLoadEnd\n");
-}
-
-int stub_RegisterMedia_GetLevel( void )
-{
-	//ri->Printf( PRINT_ALL, "stub_RegisterMedia_GetLevel\n");
-	return 0;
-}
-
-qboolean stub_RegisterImages_LevelLoadEnd( void )
-{
-	//ri->Printf( PRINT_ALL, "stub_RegisterImages_LevelLoadEnd\n");
-	return qtrue;
-}
-
-qboolean stub_RegisterModels_LevelLoadEnd( qboolean bDeleteEverythingNotUsedThisLevel )
-{
-	//ri->Printf( PRINT_ALL, "stub_RegisterModels_LevelLoadEnd\n");
-	return qtrue;
-}
-
 /*
 @@@@@@@@@@@@@@@@@@@@@
 GetRefAPI
@@ -1757,15 +1729,15 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	// RE_WorldEffectCommand
 	// RE_InitRendererTerrain
 	// RE_RegisterMedia_LevelLoadBegin
-	re.RegisterMedia_LevelLoadBegin = stub_RegisterMedia_LevelLoadBegin;
+	re.RegisterMedia_LevelLoadBegin = C_LevelLoadBegin;
 	// RE_RegisterMedia_LevelLoadEnd
-	re.RegisterMedia_LevelLoadEnd = stub_RegisterMedia_LevelLoadEnd;
+	re.RegisterMedia_LevelLoadEnd = C_LevelLoadEnd;
 	// RE_RegisterMedia_GetLevel
-	re.RegisterMedia_GetLevel = stub_RegisterMedia_GetLevel;
+	re.RegisterMedia_GetLevel = C_GetLevel;
 	// RE_RegisterImages_LevelLoadEnd
-	re.RegisterImages_LevelLoadEnd = stub_RegisterImages_LevelLoadEnd;
+	re.RegisterImages_LevelLoadEnd = C_Images_LevelLoadEnd;
 	// RE_RegisterModels_LevelLoadEnd
-	re.RegisterModels_LevelLoadEnd = stub_RegisterModels_LevelLoadEnd;
+	re.RegisterModels_LevelLoadEnd = C_Models_LevelLoadEnd;
 
 	re.TakeVideoFrame = RE_TakeVideoFrame;
 

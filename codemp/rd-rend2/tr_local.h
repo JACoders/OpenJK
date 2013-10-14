@@ -37,9 +37,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qgl.h"
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 #ifdef _WIN32
 #include "win32\win_local.h"
+#include "qcommon\sstring.h"
 #endif
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
@@ -2136,6 +2138,7 @@ typedef struct trGlobals_s {
 
 	// Specific to Jedi Academy
 	int						numBSPModels;
+	int						currentLevel;
 } trGlobals_t;
 
 extern backEndState_t	backEnd;
@@ -3067,5 +3070,95 @@ void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const cha
 qboolean ShaderHashTableExists(void);
 extern void R_ImageLoader_Init(void);
 
+// tr_cache.cpp
+
+/*
+ * FileHash_t
+ * This stores the loaded file information that we need on retrieval
+ */
+typedef struct FileHash_s
+{
+	char			fileName[MAX_QPATH];
+	qhandle_t		handle;
+} FileHash_t;
+
+/*
+ * CacheType_e
+ * Cache information specific to each file (FIXME: do we need?)
+ */
+enum CacheType_e
+{
+	CACHE_NONE,
+	CACHE_IMAGE,
+	CACHE_MODEL
+};
+
+/*
+ * CachedFile_t
+ * The actual data stored in the cache
+ */
+typedef struct CachedFile_s
+{
+	void			*pDiskImage;			// pointer to data loaded from disk
+	char			fileName[MAX_QPATH];	// filename
+	int				iLevelLastUsedOn;		// level we last used this on
+	int				iPAKChecksum;			// -1 = not from PAK
+	int				iAllocSize;				//
+
+	CacheType_e		eCacheType;				// determine which member of the uCache we're going to use
+
+	CachedFile_s()
+	{
+		pDiskImage = NULL;
+		iLevelLastUsedOn = 0;
+		iPAKChecksum = -1;
+		eCacheType = CACHE_NONE;
+		memset(fileName, '\0', sizeof(fileName));
+		iAllocSize = 0;
+	}
+} CachedFile_t;
+
+/* assetCache_t and loadedMap_t are two definitions that are needed for the manager */
+typedef std::map<const char *, CachedFile_t *> assetCache_t;
+typedef std::unordered_map<const char *, FileHash_t *> loadedMap_t;
+
+/* The actual manager itself, which is used in the model and image loading routines. */
+class CCacheManager
+{
+public:
+	qhandle_t			SearchLoaded( const char *fileName );
+	void				InsertLoaded( const char *fileName, qhandle_t handle );
+
+	qboolean			LoadFile( const char *pFileName, void **ppFileBuffer, qboolean *pbAlreadyCached );
+	void				*Allocate( int iSize, void *pvDiskBuffer, const char *psModelFileName, qboolean *bAlreadyFound, memtag_t eTag );
+	void				DeleteAll( void );
+	void				DumpNonPure( void );
+
+	virtual qboolean	LevelLoadEnd( qboolean bDeleteEverythingNotUsedInThisLevel ) = 0;
+protected:
+	loadedMap_t loaded;
+	assetCache_t cache;
+};
+
+class CImageCacheManager : public CCacheManager
+{
+public:
+	qboolean			LevelLoadEnd( qboolean bDeleteEverythingNotUsedInThisLevel );
+};
+
+class CModelCacheManager : public CCacheManager
+{
+public:
+	qboolean			LevelLoadEnd( qboolean bDeleteEverythingNotUsedInThisLevel );
+};
+
+extern CImageCacheManager *CImgCache;
+extern CModelCacheManager *CModelCache;
+
+qboolean C_Models_LevelLoadEnd( qboolean bDeleteEverythingNotUsedInThisLevel );
+qboolean C_Images_LevelLoadEnd( void );
+void C_LevelLoadBegin(const char *psMapName, ForceReload_e eForceReload);
+int C_GetLevel( void );
+void C_LevelLoadEnd( void );
 
 #endif //TR_LOCAL_H
