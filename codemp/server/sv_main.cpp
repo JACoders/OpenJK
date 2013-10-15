@@ -991,8 +991,8 @@ void SV_CheckCvars( void ) {
 		lastModSnapsMax = sv_snapsMax->modificationCount;
 
 		for ( i=0, cl=svs.clients; i<sv_maxclients->integer; i++, cl++ ) {
-			if ( cl->wishSnaps < minSnaps )		cl->snapshotMsec = 1000/minSnaps;
-			if ( cl->wishSnaps > maxSnaps )		cl->snapshotMsec = 1000/maxSnaps;
+			int val = Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
+			cl->snapshotMsec = 1000/val;
 		}
 	}
 }
