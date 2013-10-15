@@ -353,7 +353,7 @@ void RB_RenderFlare( flare_t *f ) {
 	VectorScale(f->color, f->drawIntensity * intensity, color);
 
 // Calculations for fogging
-	if(tr.world && f->fogNum < tr.world->numfogs)
+	if(tr.world && f->fogNum > 0 && f->fogNum < tr.world->numfogs)
 	{
 		tess.numVertexes = 1;
 		VectorCopy(f->origin, tess.xyz[0]);
