@@ -112,6 +112,7 @@ cvar_t  *r_cameraExposure;
 cvar_t  *r_softOverbright;
 
 cvar_t  *r_hdr;
+cvar_t  *r_floatLightmap;
 cvar_t  *r_postProcess;
 
 cvar_t  *r_toneMap;
@@ -134,7 +135,11 @@ cvar_t  *r_normalMapping;
 cvar_t  *r_specularMapping;
 cvar_t  *r_deluxeMapping;
 cvar_t  *r_parallaxMapping;
-cvar_t  *r_normalAmbient;
+cvar_t  *r_cubeMapping; 
+cvar_t  *r_deluxeSpecular; 
+cvar_t  *r_specularIsMetallic; 
+cvar_t  *r_baseSpecular; 
+cvar_t  *r_baseGloss;
 cvar_t  *r_recalcMD3Normals;
 cvar_t  *r_mergeLightmaps;
 cvar_t  *r_dlightMode;
@@ -217,6 +222,7 @@ cvar_t	*r_debugLight;
 cvar_t	*r_debugSort;
 cvar_t	*r_printShaders;
 cvar_t	*r_saveFontData;
+cvar_t  *r_arb_seamless_cube_map;
 
 /*
 Ghoul2 Insert Start
@@ -1035,15 +1041,8 @@ void GL_SetDefaultState( void )
 	qglDisable( GL_CULL_FACE );
 	qglDisable( GL_BLEND );
 
-	qglColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );
-	qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
-	qglClearDepth( 1.0 );
-
-	qglDrawBuffer( GL_FRONT );
-	qglClear( GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ACCUM_BUFFER_BIT|GL_STENCIL_BUFFER_BIT );
-
-	qglDrawBuffer( GL_BACK );
-	qglClear( GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_ACCUM_BUFFER_BIT|GL_STENCIL_BUFFER_BIT );
+	if (glRefConfig.seamlessCubeMap)
+		qglEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
 /*
@@ -1209,6 +1208,7 @@ void R_Register( void )
 	r_ext_texture_float = ri->Cvar_Get( "r_ext_texture_float", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_arb_half_float_pixel = ri->Cvar_Get( "r_arb_half_float_pixel", "1", CVAR_ARCHIVE | CVAR_LATCH);
 	r_ext_framebuffer_multisample = ri->Cvar_Get( "r_ext_framebuffer_multisample", "0", CVAR_ARCHIVE | CVAR_LATCH);
+	r_arb_seamless_cube_map = ri->Cvar_Get( "r_arb_seamless_cube_map", "0", CVAR_ARCHIVE | CVAR_LATCH);
 
 	r_ext_texture_filter_anisotropic = ri->Cvar_Get( "r_ext_texture_filter_anisotropic",
 			"0", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1245,6 +1245,7 @@ void R_Register( void )
 	r_softOverbright = ri->Cvar_Get( "r_softOverbright", "1", CVAR_ARCHIVE | CVAR_LATCH );
 
 	r_hdr = ri->Cvar_Get( "r_hdr", "1", CVAR_ARCHIVE | CVAR_LATCH );
+	r_floatLightmap = ri->Cvar_Get( "r_floatLightmap", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_postProcess = ri->Cvar_Get( "r_postProcess", "1", CVAR_ARCHIVE );
 
 	r_toneMap = ri->Cvar_Get( "r_toneMap", "1", CVAR_ARCHIVE | CVAR_LATCH );
@@ -1269,7 +1270,11 @@ void R_Register( void )
 	r_specularMapping = ri->Cvar_Get( "r_specularMapping", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_deluxeMapping = ri->Cvar_Get( "r_deluxeMapping", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_parallaxMapping = ri->Cvar_Get( "r_parallaxMapping", "0", CVAR_ARCHIVE | CVAR_LATCH );
-	r_normalAmbient = ri->Cvar_Get( "r_normalAmbient", "0", CVAR_ARCHIVE | CVAR_LATCH );
+	r_cubeMapping = ri->Cvar_Get( "r_cubeMapping", "0", CVAR_ARCHIVE | CVAR_LATCH ); 
+   	r_deluxeSpecular = ri->Cvar_Get( "r_deluxeSpecular", "0.3", CVAR_ARCHIVE | CVAR_LATCH ); 
+   	r_specularIsMetallic = ri->Cvar_Get( "r_specularIsMetallic", "0", CVAR_ARCHIVE | CVAR_LATCH ); 
+   	r_baseSpecular = ri->Cvar_Get( "r_baseSpecular", "0.04", CVAR_ARCHIVE | CVAR_LATCH ); 
+   	r_baseGloss = ri->Cvar_Get( "r_baseGloss", "0.3", CVAR_ARCHIVE | CVAR_LATCH );
 	r_dlightMode = ri->Cvar_Get( "r_dlightMode", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	r_pshadowDist = ri->Cvar_Get( "r_pshadowDist", "128", CVAR_ARCHIVE );
 	r_recalcMD3Normals = ri->Cvar_Get( "r_recalcMD3Normals", "0", CVAR_ARCHIVE | CVAR_LATCH );

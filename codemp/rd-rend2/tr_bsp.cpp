@@ -143,47 +143,27 @@ static void R_ColorShiftLightingFloats(float in[4], float out[4], float scale )
 }
 
 
-void ColorToRGBE(const vec3_t color, unsigned char rgbe[4])
+// Modified from http://graphicrants.blogspot.jp/2009/04/rgbm-color-encoding.html
+void ColorToRGBM(const vec3_t color, unsigned char rgbm[4])
 {
 	vec3_t          sample;
 	float			maxComponent;
-	int				e;
 
-	VectorCopy(color, sample);
+	VectorScale(color, 1.0f / 32.0f, sample);
 
-	maxComponent = sample[0];
-	if(sample[1] > maxComponent)
-		maxComponent = sample[1];
-	if(sample[2] > maxComponent)
-		maxComponent = sample[2];
+	maxComponent = MAX(sample[0], sample[1]);
+	maxComponent = MAX(maxComponent, sample[2]);
+	maxComponent = CLAMP(maxComponent, 1.0f/255.0f, 1.0f);
 
-	if(maxComponent < 1e-32)
-	{
-		rgbe[0] = 0;
-		rgbe[1] = 0;
-		rgbe[2] = 0;
-		rgbe[3] = 0;
-	}
-	else
-	{
-#if 0
-		maxComponent = frexp(maxComponent, &e) * 255.0 / maxComponent;
-		rgbe[0] = (unsigned char) (sample[0] * maxComponent);
-		rgbe[1] = (unsigned char) (sample[1] * maxComponent);
-		rgbe[2] = (unsigned char) (sample[2] * maxComponent);
-		rgbe[3] = (unsigned char) (e + 128);
-#else
-		e = ceil(log(maxComponent) / log(2.0f));//ceil(log2(maxComponent));
-		VectorScale(sample, 1.0 / pow(2.0f, e)/*exp2(e)*/, sample);
+	rgbm[3] = (unsigned char) ceil(maxComponent * 255.0f);
+	maxComponent = 255.0f / rgbm[3];
 
-		rgbe[0] = (unsigned char) (sample[0] * 255);
-		rgbe[1] = (unsigned char) (sample[1] * 255);
-		rgbe[2] = (unsigned char) (sample[2] * 255);
-		rgbe[3] = (unsigned char) (e + 128);
-#endif
-	}
+	VectorScale(sample, maxComponent, sample);
+
+	rgbm[0] = (unsigned char) (sample[0] * 255);
+	rgbm[1] = (unsigned char) (sample[1] * 255);
+	rgbm[2] = (unsigned char) (sample[2] * 255);
 }
-
 
 void ColorToRGBA16F(const vec3_t color, unsigned short rgba16f[4])
 {
@@ -290,8 +270,13 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 		tr.deluxemaps = (image_t **)ri->Hunk_Alloc( tr.numLightmaps * sizeof(image_t *), h_low );
 	}
 
-	if (r_hdr->integer && glRefConfig.textureFloat && glRefConfig.halfFloatPixel)
-		textureInternalFormat = GL_RGBA16F_ARB;
+	if (r_hdr->integer)
+	{
+		if (glRefConfig.textureFloat && glRefConfig.halfFloatPixel && r_floatLightmap->integer)
+			textureInternalFormat = GL_RGBA16F_ARB;
+		else
+			textureInternalFormat = GL_RGBA8;
+	}
 
 	if (r_mergeLightmaps->integer)
 	{
@@ -426,10 +411,10 @@ static	void R_LoadLightmaps( lump_t *l, lump_t *surfs ) {
 
 					VectorScale(color, lightScale, color);
 
-					if (glRefConfig.textureFloat && glRefConfig.halfFloatPixel)
+					if (glRefConfig.textureFloat && glRefConfig.halfFloatPixel && r_floatLightmap->integer)
 						ColorToRGBA16F(color, (unsigned short *)(&image[j*8]));
 					else
-						ColorToRGBE(color, &image[j*4]);
+						ColorToRGBM(color, &image[j*4]);
 				}
 				else
 				{
@@ -524,11 +509,13 @@ static float FatPackU(float input, int lightmapnum)
 	if (tr.worldDeluxeMapping)
 		lightmapnum >>= 1;
 
-	lightmapnum %= (tr.fatLightmapStep * tr.fatLightmapStep);
-
 	if(tr.fatLightmapSize > 0)
 	{
-		int             x = lightmapnum % tr.fatLightmapStep;
+		int             x;
+
+		lightmapnum %= (tr.fatLightmapStep * tr.fatLightmapStep);
+
+		x = lightmapnum % tr.fatLightmapStep;
 
 		return (input / ((float)tr.fatLightmapStep)) + ((1.0 / ((float)tr.fatLightmapStep)) * (float)x);
 	}
@@ -544,11 +531,13 @@ static float FatPackV(float input, int lightmapnum)
 	if (tr.worldDeluxeMapping)
 		lightmapnum >>= 1;
 
-	lightmapnum %= (tr.fatLightmapStep * tr.fatLightmapStep);
-
 	if(tr.fatLightmapSize > 0)
 	{
-		int             y = lightmapnum / tr.fatLightmapStep;
+		int             y;
+
+		lightmapnum %= (tr.fatLightmapStep * tr.fatLightmapStep);
+
+		y = lightmapnum / tr.fatLightmapStep;
 
 		return (input / ((float)tr.fatLightmapStep)) + ((1.0 / ((float)tr.fatLightmapStep)) * (float)y);
 	}
@@ -1801,6 +1790,12 @@ static int BSPSurfaceCompare(const void *a, const void *b)
 	else if(aa->fogIndex > bb->fogIndex)
 		return 1;
 
+	// by cubemapIndex
+	if(aa->cubemapIndex < bb->cubemapIndex)
+		return 1;
+	else if(aa->cubemapIndex > bb->cubemapIndex)
+		return 1;
+
 	return 0;
 }
 
@@ -1835,10 +1830,10 @@ static void CopyVert(const srfVert_t * in, srfVert_t * out)
 
 /*
 ===============
-R_CreateWorldVBO
+R_CreateWorldVBOs
 ===============
 */
-static void R_CreateWorldVBO(void)
+static void R_CreateWorldVBOs(void)
 {
 	int             i, j, k;
 
@@ -1848,73 +1843,28 @@ static void R_CreateWorldVBO(void)
 	int             numTriangles;
 	srfTriangle_t  *triangles;
 
-    int             numSurfaces;
-	msurface_t   *surface;
+    int             numSortedSurfaces, numSurfaces;
+	msurface_t   *surface, **firstSurf, **lastSurf, **currSurf;
 	msurface_t  **surfacesSorted;
+
+	VBO_t *vbo;
+	IBO_t *ibo;
 
 	int             startTime, endTime;
 
 	startTime = ri->Milliseconds();
 
-	numVerts = 0;
-	numTriangles = 0;
-	numSurfaces = 0;
-	for(k = 0, surface = &s_worldData.surfaces[0]; k < s_worldData.numsurfaces /* s_worldData.numWorldSurfaces */; k++, surface++)
+	for(surface = &s_worldData.surfaces[0]; surface < &s_worldData.surfaces[s_worldData.numsurfaces]; surface++)
 	{
-		if(*surface->data == SF_FACE)
-		{
-			srfSurfaceFace_t *face = (srfSurfaceFace_t *) surface->data;
-
-			if(face->numVerts)
-				numVerts += face->numVerts;
-
-			if(face->numTriangles)
-				numTriangles += face->numTriangles;
-
-			numSurfaces++;
-		}
-		else if(*surface->data == SF_GRID)
-		{
-			srfGridMesh_t  *grid = (srfGridMesh_t *) surface->data;
-
-			if(grid->numVerts)
-				numVerts += grid->numVerts;
-
-			if(grid->numTriangles)
-				numTriangles += grid->numTriangles;
-
-			numSurfaces++;
-		}
-		else if(*surface->data == SF_TRIANGLES)
-		{
-			srfTriangles_t *tri = (srfTriangles_t *) surface->data;
-
-			if(tri->numVerts)
-				numVerts += tri->numVerts;
-
-			if(tri->numTriangles)
-				numTriangles += tri->numTriangles;
-
-			numSurfaces++;
-		}
+		if(*surface->data == SF_FACE || *surface->data == SF_GRID || *surface->data == SF_TRIANGLES)
+			numSortedSurfaces++;
 	}
 
-	if(!numVerts || !numTriangles)
-		return;
-
-	ri->Printf(PRINT_ALL, "...calculating world VBO ( %i verts %i tris )\n", numVerts, numTriangles);
-
-	// create arrays
-
-	verts = (srfVert_t *)ri->Hunk_AllocateTempMemory(numVerts * sizeof(srfVert_t));
-
-	triangles = (srfTriangle_t *)ri->Hunk_AllocateTempMemory(numTriangles * sizeof(srfTriangle_t));
-
 	// presort surfaces
-	surfacesSorted = (msurface_t **)Z_Malloc(numSurfaces * sizeof(*surfacesSorted), TAG_BSP);
+	surfacesSorted = (msurface_t **)Z_Malloc(numSortedSurfaces * sizeof(*surfacesSorted), TAG_BSP);
 
 	j = 0;
-	for(k = 0, surface = &s_worldData.surfaces[0]; k < s_worldData.numsurfaces; k++, surface++)
+	for(surface = &s_worldData.surfaces[0]; surface < &s_worldData.surfaces[s_worldData.numsurfaces]; surface++)
 	{
 		if(*surface->data == SF_FACE || *surface->data == SF_GRID || *surface->data == SF_TRIANGLES)
 		{
@@ -1922,211 +1872,271 @@ static void R_CreateWorldVBO(void)
 		}
 	}
 
-	qsort(surfacesSorted, numSurfaces, sizeof(*surfacesSorted), BSPSurfaceCompare);
+	qsort(surfacesSorted, numSortedSurfaces, sizeof(*surfacesSorted), BSPSurfaceCompare);
 
-	// set up triangle indices
-	numVerts = 0;
-	numTriangles = 0;
-	for(k = 0, surface = surfacesSorted[k]; k < numSurfaces; k++, surface = surfacesSorted[k])
+	k = 0;
+	for(firstSurf = lastSurf = surfacesSorted; firstSurf < &surfacesSorted[numSortedSurfaces]; firstSurf = lastSurf)
 	{
-		if(*surface->data == SF_FACE)
+		while(lastSurf < &surfacesSorted[numSortedSurfaces] && (*lastSurf)->shader->sortedIndex == (*firstSurf)->shader->sortedIndex)
+			lastSurf++;
+		numVerts = numTriangles = numSurfaces = 0;
+		for (currSurf = firstSurf; currSurf < lastSurf; currSurf++)
 		{
-			srfSurfaceFace_t *srf = (srfSurfaceFace_t *) surface->data;
-
-			srf->firstIndex = numTriangles * 3;
-
-			if(srf->numTriangles)
+			surface = *currSurf;
+			if(*surface->data == SF_FACE)
 			{
-				srfTriangle_t  *tri;
+				srfSurfaceFace_t *face = (srfSurfaceFace_t *) surface->data;
+			
+				if(face->numVerts)
+					numVerts += face->numVerts;
 
-				srf->minIndex = numVerts + srf->triangles->indexes[0];
-				srf->maxIndex = numVerts + srf->triangles->indexes[0];
+				if(face->numTriangles)
+					numTriangles += face->numTriangles;
 
-				for(i = 0, tri = srf->triangles; i < srf->numTriangles; i++, tri++)
+				numSurfaces++;
+			}
+			else if(*surface->data == SF_GRID)
+			{
+				srfGridMesh_t  *grid = (srfGridMesh_t *) surface->data;
+
+				if(grid->numVerts)
+					numVerts += grid->numVerts;
+
+				if(grid->numTriangles)
+					numTriangles += grid->numTriangles;
+
+				numSurfaces++;
+			}
+			else if(*surface->data == SF_TRIANGLES)
+			{
+				srfTriangles_t *tri = (srfTriangles_t *) surface->data;
+
+				if(tri->numVerts)
+					numVerts += tri->numVerts;
+
+				if(tri->numTriangles)
+					numTriangles += tri->numTriangles;
+
+				numSurfaces++;
+			}
+		}
+
+		if(!numVerts || !numTriangles)
+			continue;
+
+		ri->Printf(PRINT_ALL, "...calculating world VBO %d ( %i verts %i tris )\n", k, numVerts, numTriangles);
+
+		// create arrays
+		verts = (srfVert_t *)ri->Hunk_AllocateTempMemory(numVerts * sizeof(srfVert_t)); 
+		triangles = (srfTriangle_t *)ri->Hunk_AllocateTempMemory(numTriangles * sizeof(srfTriangle_t)); 
+
+		// set up triangle indices 
+		numVerts = 0; 
+		numTriangles = 0; 
+		for (currSurf = firstSurf; currSurf < lastSurf; currSurf++) 
+		{ 
+			surface = *currSurf; 
+   			if(*surface->data == SF_FACE)
+			{
+				srfSurfaceFace_t *srf = (srfSurfaceFace_t *) surface->data;
+
+				srf->firstIndex = numTriangles * 3;
+
+				if(srf->numTriangles)
 				{
-					for(j = 0; j < 3; j++)
+					srfTriangle_t  *tri; 
+					
+					srf->minIndex = numVerts + srf->triangles->indexes[0]; 
+					srf->maxIndex = numVerts + srf->triangles->indexes[0]; 
+					
+					for(i = 0, tri = srf->triangles; i < srf->numTriangles; i++, tri++)
 					{
-						triangles[numTriangles + i].indexes[j] = numVerts + tri->indexes[j];
-						srf->minIndex = MIN(srf->minIndex, numVerts + tri->indexes[j]);
-						srf->maxIndex = MAX(srf->maxIndex, numVerts + tri->indexes[j]);
+						for(j = 0; j < 3; j++) 
+						{ 
+							triangles[numTriangles + i].indexes[j] = numVerts + tri->indexes[j]; 
+							srf->minIndex = MIN(srf->minIndex, numVerts + tri->indexes[j]); 
+							srf->maxIndex = MAX(srf->maxIndex, numVerts + tri->indexes[j]); 
+						}
 					}
+
+					numTriangles += srf->numTriangles;
 				}
 
-				numTriangles += srf->numTriangles;
+				if(srf->numVerts)
+					numVerts += srf->numVerts;
 			}
-
-			if(srf->numVerts)
-				numVerts += srf->numVerts;
-		}
-		else if(*surface->data == SF_GRID)
-		{
-			srfGridMesh_t  *srf = (srfGridMesh_t *) surface->data;
-
-			srf->firstIndex = numTriangles * 3;
-
-			if(srf->numTriangles)
+			else if(*surface->data == SF_GRID)
 			{
-				srfTriangle_t  *tri;
+				srfGridMesh_t  *srf = (srfGridMesh_t *) surface->data;
+				srf->firstIndex = numTriangles * 3;
 
-				srf->minIndex = numVerts + srf->triangles->indexes[0];
-				srf->maxIndex = numVerts + srf->triangles->indexes[0];
-
-				for(i = 0, tri = srf->triangles; i < srf->numTriangles; i++, tri++)
+				if(srf->numTriangles)
 				{
-					for(j = 0; j < 3; j++)
+					srfTriangle_t  *tri; 
+
+					srf->minIndex = numVerts + srf->triangles->indexes[0]; 
+					srf->maxIndex = numVerts + srf->triangles->indexes[0];
+
+					for(i = 0, tri = srf->triangles; i < srf->numTriangles; i++, tri++) 
+					{ 
+						for(j = 0; j < 3; j++) 
+						{ 
+							triangles[numTriangles + i].indexes[j] = numVerts + tri->indexes[j]; 
+							srf->minIndex = MIN(srf->minIndex, numVerts + tri->indexes[j]); 
+							srf->maxIndex = MAX(srf->maxIndex, numVerts + tri->indexes[j]); 
+						} 
+					} 
+
+					numTriangles += srf->numTriangles; 
+				} 
+
+				if(srf->numVerts) 
+					numVerts += srf->numVerts; 
+			} 
+			else if(*surface->data == SF_TRIANGLES)
+			{
+				srfTriangles_t *srf = (srfTriangles_t *) surface->data;
+
+				srf->firstIndex = numTriangles * 3;
+
+				if(srf->numTriangles)
+				{
+					srfTriangle_t  *tri; 
+
+					srf->minIndex = numVerts + srf->triangles->indexes[0]; 
+					srf->maxIndex = numVerts + srf->triangles->indexes[0]; 
+
+					for(i = 0, tri = srf->triangles; i < srf->numTriangles; i++, tri++)
 					{
-						triangles[numTriangles + i].indexes[j] = numVerts + tri->indexes[j];
-						srf->minIndex = MIN(srf->minIndex, numVerts + tri->indexes[j]);
-						srf->maxIndex = MAX(srf->maxIndex, numVerts + tri->indexes[j]);
+						for(j = 0; j < 3; j++) 
+						{ 
+							triangles[numTriangles + i].indexes[j] = numVerts + tri->indexes[j]; 
+							srf->minIndex = MIN(srf->minIndex, numVerts + tri->indexes[j]); 
+							srf->maxIndex = MAX(srf->maxIndex, numVerts + tri->indexes[j]); 
+						}
 					}
+					numTriangles += srf->numTriangles;
 				}
 
-				numTriangles += srf->numTriangles;
+				if(srf->numVerts)
+					numVerts += srf->numVerts;
 			}
-
-			if(srf->numVerts)
-				numVerts += srf->numVerts;
 		}
-		else if(*surface->data == SF_TRIANGLES)
+
+		// build vertices 
+   		numVerts = 0; 
+   		for (currSurf = firstSurf; currSurf < lastSurf; currSurf++)
 		{
-			srfTriangles_t *srf = (srfTriangles_t *) surface->data;
+			surface = *currSurf; 
+   			if(*surface->data == SF_FACE) 
+   			{ 
+				srfSurfaceFace_t *srf = (srfSurfaceFace_t *) surface->data;
 
-			srf->firstIndex = numTriangles * 3;
+				srf->firstVert = numVerts;
 
-			if(srf->numTriangles)
-			{
-				srfTriangle_t  *tri;
-
-				srf->minIndex = numVerts + srf->triangles->indexes[0];
-				srf->maxIndex = numVerts + srf->triangles->indexes[0];
-
-				for(i = 0, tri = srf->triangles; i < srf->numTriangles; i++, tri++)
+				if(srf->numVerts)
 				{
-					for(j = 0; j < 3; j++)
+					for(i = 0; i < srf->numVerts; i++)
 					{
-						triangles[numTriangles + i].indexes[j] = numVerts + tri->indexes[j];
-						srf->minIndex = MIN(srf->minIndex, numVerts + tri->indexes[j]);
-						srf->maxIndex = MAX(srf->maxIndex, numVerts + tri->indexes[j]);
+						CopyVert(&srf->verts[i], &verts[numVerts + i]);
 					}
+
+					numVerts += srf->numVerts;
 				}
-
-				numTriangles += srf->numTriangles;
 			}
-
-			if(srf->numVerts)
-				numVerts += srf->numVerts;
-		}
-	}
-
-	// build vertices
-	numVerts = 0;
-	for(k = 0, surface = surfacesSorted[k]; k < numSurfaces; k++, surface = surfacesSorted[k])
-	{
-		if(*surface->data == SF_FACE)
-		{
-			srfSurfaceFace_t *srf = (srfSurfaceFace_t *) surface->data;
-
-			srf->firstVert = numVerts;
-
-			if(srf->numVerts)
+			else if(*surface->data == SF_GRID)
 			{
-				for(i = 0; i < srf->numVerts; i++)
+				srfGridMesh_t  *srf = (srfGridMesh_t *) surface->data;
+
+				srf->firstVert = numVerts;
+
+				if(srf->numVerts)
 				{
-					CopyVert(&srf->verts[i], &verts[numVerts + i]);
+					for(i = 0; i < srf->numVerts; i++)
+					{
+						CopyVert(&srf->verts[i], &verts[numVerts + i]);
+					}
+
+					numVerts += srf->numVerts;
 				}
-
-				numVerts += srf->numVerts;
 			}
-		}
-		else if(*surface->data == SF_GRID)
-		{
-			srfGridMesh_t  *srf = (srfGridMesh_t *) surface->data;
-
-			srf->firstVert = numVerts;
-
-			if(srf->numVerts)
+			else if(*surface->data == SF_TRIANGLES)
 			{
-				for(i = 0; i < srf->numVerts; i++)
-				{
-					CopyVert(&srf->verts[i], &verts[numVerts + i]);
-				}
+				srfTriangles_t *srf = (srfTriangles_t *) surface->data;
 
-				numVerts += srf->numVerts;
+				srf->firstVert = numVerts;
+
+				if(srf->numVerts)
+				{
+					for(i = 0; i < srf->numVerts; i++)
+					{
+						CopyVert(&srf->verts[i], &verts[numVerts + i]);
+					}
+
+					numVerts += srf->numVerts;
+				}
 			}
 		}
-		else if(*surface->data == SF_TRIANGLES)
-		{
-			srfTriangles_t *srf = (srfTriangles_t *) surface->data;
-
-			srf->firstVert = numVerts;
-
-			if(srf->numVerts)
-			{
-				for(i = 0; i < srf->numVerts; i++)
-				{
-					CopyVert(&srf->verts[i], &verts[numVerts + i]);
-				}
-
-				numVerts += srf->numVerts;
-			}
-		}
-	}
 
 #ifdef USE_VERT_TANGENT_SPACE
-	s_worldData.vbo = R_CreateVBO2(va("staticBspModel0_VBO %i", 0), numVerts, verts,
+		vbo = R_CreateVBO2(va("staticBspModel0_VBO %i", k), numVerts, verts,
 								   ATTR_POSITION | ATTR_TEXCOORD | ATTR_LIGHTCOORD | ATTR_TANGENT | ATTR_BITANGENT |
 								   ATTR_NORMAL | ATTR_COLOR | ATTR_LIGHTDIRECTION, VBO_USAGE_STATIC);
 #else
-	s_worldData.vbo = R_CreateVBO2(va("staticBspModel0_VBO %i", 0), numVerts, verts,
+		vbo = R_CreateVBO2(va("staticBspModel0_VBO %i", k), numVerts, verts,
 								   ATTR_POSITION | ATTR_TEXCOORD | ATTR_LIGHTCOORD |
 								   ATTR_NORMAL | ATTR_COLOR | ATTR_LIGHTDIRECTION, VBO_USAGE_STATIC);
 #endif
 
-	s_worldData.ibo = R_CreateIBO2(va("staticBspModel0_IBO %i", 0), numTriangles, triangles, VBO_USAGE_STATIC);
+		ibo = R_CreateIBO2(va("staticBspModel0_IBO %i", k), numTriangles, triangles, VBO_USAGE_STATIC);
 
-	endTime = ri->Milliseconds();
-	ri->Printf(PRINT_ALL, "world VBO calculation time = %5.2f seconds\n", (endTime - startTime) / 1000.0);
-
-	// point triangle surfaces to world VBO
-	for(k = 0, surface = surfacesSorted[k]; k < numSurfaces; k++, surface = surfacesSorted[k])
-	{
-		if(*surface->data == SF_FACE)
+		// point triangle surfaces to VBO
+		for (currSurf = firstSurf; currSurf < lastSurf; currSurf++)
 		{
-			srfSurfaceFace_t *srf = (srfSurfaceFace_t *) surface->data;
-
-			if( srf->numVerts && srf->numTriangles)
+			surface = *currSurf;
+			if(*surface->data == SF_FACE)
 			{
-				srf->vbo = s_worldData.vbo;
-				srf->ibo = s_worldData.ibo;
-			}
-		}
-		else if(*surface->data == SF_GRID)
-		{
-			srfGridMesh_t  *srf = (srfGridMesh_t *) surface->data;
+				srfSurfaceFace_t *srf = (srfSurfaceFace_t *) surface->data;
 
-			if( srf->numVerts && srf->numTriangles)
-			{
-				srf->vbo = s_worldData.vbo;
-				srf->ibo = s_worldData.ibo;
+				if( srf->numVerts && srf->numTriangles)
+				{
+					srf->vbo = vbo;
+					srf->ibo = ibo;
+				}
 			}
-		}
-		else if(*surface->data == SF_TRIANGLES)
-		{
-			srfTriangles_t *srf = (srfTriangles_t *) surface->data;
+			else if(*surface->data == SF_GRID)
+			{
+				srfGridMesh_t  *srf = (srfGridMesh_t *) surface->data;
 
-			if( srf->numVerts && srf->numTriangles)
-			{
-				srf->vbo = s_worldData.vbo;
-				srf->ibo = s_worldData.ibo;
+				if( srf->numVerts && srf->numTriangles)
+				{
+					srf->vbo = vbo;
+					srf->ibo = ibo;
+				}
 			}
+			else if(*surface->data == SF_TRIANGLES)
+			{
+				srfTriangles_t *srf = (srfTriangles_t *) surface->data;
+
+				if( srf->numVerts && srf->numTriangles)
+				{
+					srf->vbo = vbo;
+					srf->ibo = ibo;
+				}
+			}
+
 		}
+
+		ri->Hunk_FreeTempMemory(triangles);
+		ri->Hunk_FreeTempMemory(verts);
+
+		k++;
 	}
-
 
 	Z_Free(surfacesSorted);
 
-	ri->Hunk_FreeTempMemory(triangles);
-	ri->Hunk_FreeTempMemory(verts);
+	endTime = ri->Milliseconds();
+	ri->Printf(PRINT_ALL, "world VBOs calculation time = %5.2f seconds\n", (endTime - startTime) / 1000.0);
 }
 
 /*
@@ -2811,6 +2821,192 @@ qboolean R_GetEntityToken( char *buffer, int size ) {
 	}
 }
 
+#ifndef MAX_SPAWN_VARS
+#define MAX_SPAWN_VARS 64
+#endif
+
+// derived from G_ParseSpawnVars() in g_spawn.c
+qboolean R_ParseSpawnVars( char *spawnVarChars, int maxSpawnVarChars, int *numSpawnVars, char *spawnVars[MAX_SPAWN_VARS][2] )
+{
+	char    keyname[MAX_TOKEN_CHARS];
+	char	com_token[MAX_TOKEN_CHARS];
+	int		numSpawnVarChars = 0;
+
+	*numSpawnVars = 0;
+
+	// parse the opening brace
+	if ( !R_GetEntityToken( com_token, sizeof( com_token ) ) ) {
+		// end of spawn string
+		return qfalse;
+	}
+	if ( com_token[0] != '{' ) {
+		ri->Printf( PRINT_ALL, "R_ParseSpawnVars: found %s when expecting {",com_token );
+	}
+
+	// go through all the key / value pairs
+	while ( 1 ) {  
+		int keyLength, tokenLength;
+
+		// parse key
+		if ( !R_GetEntityToken( keyname, sizeof( keyname ) ) ) {
+			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: EOF without closing brace" );
+		}
+
+		if ( keyname[0] == '}' ) {
+			break;
+		}
+
+		// parse value  
+		if ( !R_GetEntityToken( com_token, sizeof( com_token ) ) ) {
+			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: EOF without closing brace" );
+			break;
+		}
+
+		if ( com_token[0] == '}' ) {
+			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: closing brace without data" );
+			break;
+		}
+
+		if ( *numSpawnVars == MAX_SPAWN_VARS ) {
+			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: MAX_SPAWN_VARS" );
+			break;
+		}
+
+		keyLength = strlen(keyname) + 1;
+		tokenLength = strlen(com_token) + 1;
+
+		if (numSpawnVarChars + keyLength + tokenLength > maxSpawnVarChars)
+		{
+			ri->Printf( PRINT_ALL, "R_ParseSpawnVars: MAX_SPAWN_VAR_CHARS" );
+			break;
+		}
+
+		strcpy(spawnVarChars + numSpawnVarChars, keyname);
+		spawnVars[ *numSpawnVars ][0] = spawnVarChars + numSpawnVarChars;
+		numSpawnVarChars += keyLength;
+
+		strcpy(spawnVarChars + numSpawnVarChars, com_token);
+		spawnVars[ *numSpawnVars ][1] = spawnVarChars + numSpawnVarChars;
+		numSpawnVarChars += tokenLength;
+
+		(*numSpawnVars)++;
+	}
+
+	return qtrue;
+}
+
+void R_LoadCubemapEntities(char *cubemapEntityName)
+{
+	char spawnVarChars[2048];
+	int numSpawnVars; 
+	char *spawnVars[MAX_SPAWN_VARS][2]; 
+	int numCubemaps = 0;
+
+	// count cubemaps 
+	numCubemaps = 0; 
+   	 
+	while(R_ParseSpawnVars(spawnVarChars, sizeof(spawnVarChars), &numSpawnVars, spawnVars)) 
+	{ 
+		int i; 
+   	 
+		for (i = 0; i < numSpawnVars; i++) 
+		{ 
+			if (!Q_stricmp(spawnVars[i][0], "classname") && !Q_stricmp(spawnVars[i][1], cubemapEntityName)) 
+				numCubemaps++; 
+		} 
+	} 
+   	 
+	if (!numCubemaps) 
+		return; 
+   	 
+	tr.numCubemaps = numCubemaps; 
+	tr.cubemapOrigins = (vec3_t *)ri->Hunk_Alloc( tr.numCubemaps * sizeof(*tr.cubemapOrigins), h_low); 
+	tr.cubemaps = (image_t **)ri->Hunk_Alloc( tr.numCubemaps * sizeof(*tr.cubemaps), h_low); 
+   	 
+	numCubemaps = 0; 
+	while(R_ParseSpawnVars(spawnVarChars, sizeof(spawnVarChars), &numSpawnVars, spawnVars)) 
+	{ 
+		int i; 
+		qboolean isCubemap = qfalse; 
+		qboolean positionSet = qfalse; 
+		vec3_t origin; 
+   	 
+		for (i = 0; i < numSpawnVars; i++) 
+		{ 
+			if (!Q_stricmp(spawnVars[i][0], "classname") && !Q_stricmp(spawnVars[i][1], cubemapEntityName)) 
+				isCubemap = qtrue; 
+   	 
+			if (!Q_stricmp(spawnVars[i][0], "origin")) 
+			{ 
+				sscanf(spawnVars[i][1], "%f %f %f", &origin[0], &origin[1], &origin[2]); 
+				positionSet = qtrue; 
+			} 
+		} 
+   	 
+		if (isCubemap && positionSet) 
+		{ 
+			//ri.Printf(PRINT_ALL, "cubemap at %f %f %f\n", origin[0], origin[1], origin[2]); 
+			VectorCopy(origin, tr.cubemapOrigins[numCubemaps]); 
+			numCubemaps++; 
+		} 
+	}
+}
+
+void R_AssignCubemapsToWorldSurfaces(void) 
+{ 
+	world_t  *w; 
+	int i; 
+
+	w = &s_worldData; 
+
+	for (i = 0; i < w->numsurfaces; i++) 
+	{ 
+		msurface_t *surf = &w->surfaces[i]; 
+		vec3_t surfOrigin; 
+
+		if (surf->cullinfo.type & CULLINFO_SPHERE) 
+		{ 
+			VectorCopy(surf->cullinfo.localOrigin, surfOrigin); 
+		} 
+		else if (surf->cullinfo.type & CULLINFO_BOX) 
+		{ 
+			surfOrigin[0] = (surf->cullinfo.bounds[0][0] + surf->cullinfo.bounds[1][0]) * 0.5f; 
+			surfOrigin[1] = (surf->cullinfo.bounds[0][1] + surf->cullinfo.bounds[1][1]) * 0.5f; 
+			surfOrigin[2] = (surf->cullinfo.bounds[0][2] + surf->cullinfo.bounds[1][2]) * 0.5f; 
+		} 
+		else 
+		{ 
+			//ri.Printf(PRINT_ALL, "surface %d has no cubemap\n", i); 
+			continue; 
+		} 
+
+		surf->cubemapIndex = R_CubemapForPoint(surfOrigin); 
+		//ri.Printf(PRINT_ALL, "surface %d has cubemap %d\n", i, surf->cubemapIndex); 
+	} 
+} 
+
+ 
+void R_RenderAllCubemaps(void) 
+{ 
+	int i, j; 
+
+	for (i = 0; i < tr.numCubemaps; i++) 
+	{ 
+		tr.cubemaps[i] = R_CreateImage(va("*cubeMap%d", i), NULL, CUBE_MAP_SIZE, CUBE_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGFLAG_MIPMAP | IMGFLAG_CUBEMAP, GL_RGBA8); 
+	} 
+
+	for (i = 0; i < tr.numCubemaps; i++) 
+	{ 
+		for (j = 0; j < 6; j++) 
+		{ 
+			RE_ClearScene(); 
+			R_RenderCubemapSide(i, j, qfalse); 
+			R_IssuePendingRenderCommands(); 
+			R_InitNextFrame(); 
+		} 
+	} 
+}
+
 
 /*
 =================
@@ -2826,6 +3022,7 @@ void R_MergeLeafSurfaces(void)
 	int mergedSurfIndex;
 	int numMergedSurfaces;
 	int numUnmergedSurfaces;
+	VBO_t *vbo;
 	IBO_t *ibo;
 
 	msurface_t *mergedSurf;
@@ -2845,14 +3042,6 @@ void R_MergeLeafSurfaces(void)
 		s_worldData.surfacesViewCount[i] = -1;
 	}
 
-	// create ibo
-	ibo = tr.ibos[tr.numIBOs++] = (IBO_t *)ri->Hunk_Alloc(sizeof(*ibo), h_low);
-	memset(ibo, 0, sizeof(*ibo));
-	Q_strncpyz(ibo->name, "staticWorldMesh_IBO_mergedSurfs", sizeof(ibo->name));
-
-	// allocate more than we need
-	iboIndexes = outIboIndexes = (glIndex_t *)Z_Malloc(s_worldData.ibo->indexesSize, TAG_GENERAL);
-
 	// mark matching surfaces
 	for (i = 0; i < s_worldData.numnodes - s_worldData.numDecisionNodes; i++)
 	{
@@ -2863,6 +3052,7 @@ void R_MergeLeafSurfaces(void)
 			msurface_t *surf1;
 			shader_t *shader1;
 			int fogIndex1;
+			int cubemapIndex1;
 			int surfNum1;
 
 			surfNum1 = *(s_worldData.marksurfaces + leaf->firstmarksurface + j);
@@ -2887,6 +3077,7 @@ void R_MergeLeafSurfaces(void)
 				continue;
 
 			fogIndex1 = surf1->fogIndex;
+			cubemapIndex1 = surf1->cubemapIndex;
 
 			s_worldData.surfacesViewCount[surfNum1] = surfNum1;
 
@@ -2895,6 +3086,7 @@ void R_MergeLeafSurfaces(void)
 				msurface_t *surf2;
 				shader_t *shader2;
 				int fogIndex2;
+				int cubemapIndex2;
 				int surfNum2;
 
 				surfNum2 = *(s_worldData.marksurfaces + leaf->firstmarksurface + k);
@@ -2915,6 +3107,11 @@ void R_MergeLeafSurfaces(void)
 				fogIndex2 = surf2->fogIndex;
 
 				if (fogIndex1 != fogIndex2)
+					continue;
+
+				cubemapIndex2 = surf2->cubemapIndex;
+
+				if (cubemapIndex1 != cubemapIndex2)
 					continue;
 
 				s_worldData.surfacesViewCount[surfNum2] = surfNum1;
@@ -2978,6 +3175,9 @@ void R_MergeLeafSurfaces(void)
 		s_worldData.viewSurfaces[i] = s_worldData.marksurfaces[i];
 	}
 
+	// need to be synched here
+	R_IssuePendingRenderCommands();
+
 	// actually merge surfaces
 	numIboIndexes = 0;
 	mergedSurfIndex = 0;
@@ -2999,6 +3199,26 @@ void R_MergeLeafSurfaces(void)
 			continue;
 
 		surf1 = s_worldData.surfaces + i;
+
+		// retrieve vbo 
+   		switch(*surf1->data) 
+   		{ 
+   			case SF_FACE: 
+   				vbo = ((srfSurfaceFace_t *)(surf1->data))->vbo; 
+   				break; 
+   	 
+   			case SF_GRID: 
+   				vbo = ((srfGridMesh_t *)(surf1->data))->vbo; 
+   				break; 
+   	 
+   			case SF_TRIANGLES: 
+   				vbo = ((srfTriangles_t *)(surf1->data))->vbo; 
+				break; 
+   	 
+   			default: 
+   				vbo = NULL; 
+   				break; 
+   		}
 
 		// count verts, indexes, and surfaces
 		numSurfsToMerge = 0;
@@ -3056,6 +3276,15 @@ void R_MergeLeafSurfaces(void)
 		{
 			continue;
 		}
+
+		// create ibo 
+   		ibo = tr.ibos[tr.numIBOs] = ri.Hunk_Alloc(sizeof(*ibo), h_low); 
+   		memset(ibo, 0, sizeof(*ibo)); 
+   		Q_strncpyz(ibo->name, va("staticWorldMesh_IBO_mergedSurfs%i", tr.numIBOs++), sizeof(ibo->name)); 
+   		numIboIndexes = 0; 
+   	 
+   		 // allocate indexes 
+   		iboIndexes = outIboIndexes = ri.Malloc(numTriangles * 3 * sizeof(*outIboIndexes));
 
 		// Merge surfaces (indexes) and calculate bounds
 		ClearBounds(bounds[0], bounds[1]);
@@ -3132,7 +3361,7 @@ void R_MergeLeafSurfaces(void)
 		memset(vboSurf, 0, sizeof(*vboSurf));
 		vboSurf->surfaceType = SF_VBO_MESH;
 
-		vboSurf->vbo = s_worldData.vbo;
+		vboSurf->vbo = vbo;
 		vboSurf->ibo = ibo;
 
 		vboSurf->numIndexes = numTriangles * 3;
@@ -3150,6 +3379,7 @@ void R_MergeLeafSurfaces(void)
 
 		vboSurf->shader = surf1->shader;
 		vboSurf->fogIndex = surf1->fogIndex;
+		vboSurf->cubemapIndex = surf1->cubemapIndex;
 
 		VectorCopy(bounds[0], vboSurf->bounds[0]);
 		VectorCopy(bounds[1], vboSurf->bounds[1]);
@@ -3160,7 +3390,19 @@ void R_MergeLeafSurfaces(void)
 		mergedSurf->cullinfo.type = CULLINFO_BOX;
 		mergedSurf->data          = (surfaceType_t *)vboSurf;
 		mergedSurf->fogIndex      = surf1->fogIndex;
+		mergedSurf->cubemapIndex  = surf1->cubemapIndex;
 		mergedSurf->shader        = surf1->shader;
+
+		// finish up the ibo 
+   		qglGenBuffersARB(1, &ibo->indexesVBO); 
+   	 
+   		R_BindIBO(ibo); 
+   		qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, numIboIndexes * sizeof(*iboIndexes), iboIndexes, GL_STATIC_DRAW_ARB); 
+   		R_BindNullIBO(); 
+   	 
+   		GL_CheckErrors(); 
+   	 
+   		Z_Free(iboIndexes);
 
 		// redirect view surfaces to this surf
 		for (j = 0; j < numWorldSurfaces; j++)
@@ -3181,21 +3423,6 @@ void R_MergeLeafSurfaces(void)
 		mergedSurfIndex++;
 		mergedSurf++;
 	}
-
-	// finish up the ibo
-	R_IssuePendingRenderCommands();
-
-	qglGenBuffersARB(1, &ibo->indexesVBO);
-
-	R_BindIBO(ibo);
-
-	qglBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, (GLint)(numIboIndexes * sizeof(*iboIndexes)), iboIndexes, GL_STATIC_DRAW_ARB);
-
-	R_BindNullIBO();
-
-	GL_CheckErrors();
-
-	Z_Free(iboIndexes);
 
 	endTime = ri->Milliseconds();
 
@@ -3354,10 +3581,11 @@ void RE_LoadWorldMap( const char *name ) {
 	{
 		world_t	*w;
 
-		w = &s_worldData;
 		uint8_t *primaryLightGrid, *data;
 		int lightGridSize;
 		int i;
+
+		w = &s_worldData;
 
 		lightGridSize = w->lightGridBounds[0] * w->lightGridBounds[1] * w->lightGridBounds[2];
 		primaryLightGrid = (uint8_t *)Z_Malloc(lightGridSize * sizeof(*primaryLightGrid), TAG_GENERAL);
@@ -3536,8 +3764,24 @@ void RE_LoadWorldMap( const char *name ) {
 		Z_Free(primaryLightGrid);
 	}
 
+	// load cubemaps 
+   	if (r_cubeMapping->integer) 
+   	{ 
+   		R_LoadCubemapEntities("misc_cubemap"); 
+   		if (!tr.numCubemaps) 
+   		{ 
+   			// use deathmatch spawn points as cubemaps 
+   			R_LoadCubemapEntities("info_player_deathmatch"); 
+   		} 
+   	
+   		if (tr.numCubemaps) 
+   		{ 
+   			R_AssignCubemapsToWorldSurfaces(); 
+   		} 
+   	}
+
 	// create static VBOS from the world
-	R_CreateWorldVBO();
+	R_CreateWorldVBOs();
 	if (r_mergeLeafSurfaces->integer)
 	{
 		R_MergeLeafSurfaces();
@@ -3551,6 +3795,12 @@ void RE_LoadWorldMap( const char *name ) {
 	// make sure the VBO glState entries are safe
 	R_BindNullVBO();
 	R_BindNullIBO();
+
+	// Render all cubemaps 
+   	if (r_cubeMapping->integer && tr.numCubemaps) 
+   	{ 
+   		R_RenderAllCubemaps(); 
+   	}
 
     ri->FS_FreeFile( buffer.v );
 }

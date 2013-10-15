@@ -4,21 +4,16 @@ attribute vec4 attr_TexCoord1;
 #endif
 attribute vec4 attr_Color;
 
-attribute vec4 attr_Position;
+attribute vec3 attr_Position;
 attribute vec3 attr_Normal;
-
-#if defined(USE_VERT_TANGENT_SPACE)
 attribute vec3 attr_Tangent;
 attribute vec3 attr_Bitangent;
-#endif
 
 #if defined(USE_VERTEX_ANIMATION)
-attribute vec4 attr_Position2;
+attribute vec3 attr_Position2;
 attribute vec3 attr_Normal2;
-  #if defined(USE_VERT_TANGENT_SPACE)
 attribute vec3 attr_Tangent2;
 attribute vec3 attr_Bitangent2;
-  #endif
 #endif
 
 #if defined(USE_LIGHT) && !defined(USE_LIGHT_VECTOR)
@@ -27,6 +22,7 @@ attribute vec3 attr_LightDirection;
 
 #if defined(USE_TCGEN) || defined(USE_NORMALMAP) || defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 uniform vec3   u_ViewOrigin;
+uniform vec3   u_LocalViewOrigin;
 #endif
 
 #if defined(USE_TCGEN)
@@ -54,52 +50,38 @@ uniform float  u_VertexLerp;
 
 #if defined(USE_LIGHT_VECTOR)
 uniform vec4   u_LightOrigin;
-  #if defined(USE_FAST_LIGHT)
-uniform vec3   u_DirectedLight;
-uniform vec3   u_AmbientLight;
 uniform float  u_LightRadius;
+uniform vec3   u_DirectedLight;
+  #if defined(USE_FAST_LIGHT)
+uniform vec3   u_AmbientLight;
   #endif
 #endif
 
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
 uniform vec4  u_PrimaryLightOrigin;
+uniform float u_PrimaryLightRadius;
 #endif
 
-varying vec2   var_DiffuseTex;
-
-#if defined(USE_LIGHTMAP)
-varying vec2   var_LightTex;
-#endif
-
-#if defined(USE_TCGEN) || defined(USE_NORMALMAP) || (defined(USE_LIGHT) && !defined(USE_FAST_LIGHT))
-varying vec3   var_SampleToView;
-#endif
+varying vec4   var_TexCoords;
 
 varying vec4   var_Color;
 
-#if defined(USE_NORMALMAP) && !defined(USE_VERT_TANGENT_SPACE)
-varying vec3   var_Position;
-#endif
-
-
-#if !defined(USE_FAST_LIGHT)
-varying vec3   var_Normal;
-  #if defined(USE_VERT_TANGENT_SPACE)
-varying vec3   var_Tangent;
-varying vec3   var_Bitangent;
-  #endif
+#if (defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)) || defined(USE_PARALLAXMAP)
+varying vec4   var_Normal;
+varying vec4   var_Tangent;
+varying vec4   var_Bitangent;
 #endif
 
 #if defined(USE_LIGHT_VERTEX) && !defined(USE_FAST_LIGHT)
-varying vec3   var_VertLight;
+varying vec3   var_LightColor;
 #endif
 
 #if defined(USE_LIGHT) && !defined(USE_DELUXEMAP) && !defined(USE_FAST_LIGHT)
-varying vec3   var_LightDirection;
+varying vec4   var_LightDir;
 #endif
 
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
-varying vec3   var_PrimaryLightDirection;
+varying vec4   var_PrimaryLightDir;
 #endif
 
 #if defined(USE_TCGEN)
@@ -113,7 +95,7 @@ vec2 GenTexCoords(int TCGen, vec3 position, vec3 normal, vec3 TCGenVector0, vec3
 	}
 	else if (TCGen == TCGEN_ENVIRONMENT_MAPPED)
 	{
-		vec3 viewer = normalize(u_ViewOrigin - position);
+		vec3 viewer = normalize(u_LocalViewOrigin - position);
 		tex = -reflect(viewer, normal).yz * vec2(0.5, -0.5) + 0.5;
 	}
 	else if (TCGen == TCGEN_VECTOR)
@@ -132,7 +114,7 @@ vec2 ModTexCoords(vec2 st, vec3 position, vec4 texMatrix, vec4 offTurb)
 	float phase = offTurb.w;
 	vec2 st2 = vec2(dot(st, texMatrix.xz), dot(st, texMatrix.yw)) + offTurb.xy;
 
-	vec3 offsetPos = vec3(0); //position / 1024.0;
+	vec3 offsetPos = position / 1024.0;
 	offsetPos.x += offsetPos.z;
 	
 	vec2 texOffset = sin((offsetPos.xy + vec2(phase)) * 2.0 * M_PI);
@@ -142,104 +124,127 @@ vec2 ModTexCoords(vec2 st, vec3 position, vec4 texMatrix, vec4 offTurb)
 #endif
 
 
+float CalcLightAttenuation(vec3 dir, float sqrRadius)
+{
+	// point light at >0 radius, directional otherwise
+	float point = float(sqrRadius > 0.0);
+
+	// inverse square light
+	float attenuation = sqrRadius / dot(dir, dir);
+
+	// zero light at radius, approximating q3 style
+	// also don't attenuate directional light
+	attenuation = (0.5 * attenuation - 1.5) * point + 1.0;
+	
+	// clamp attenuation
+	#if defined(NO_LIGHT_CLAMP)
+	attenuation = max(attenuation, 0.0);
+	#else
+	attenuation = clamp(attenuation, 0.0, 1.0);
+	#endif
+	
+	return attenuation;
+}
+
+
 void main()
 {
 #if defined(USE_VERTEX_ANIMATION)
-	vec4 position  = mix(attr_Position, attr_Position2, u_VertexLerp);
+	vec3 position  = mix(attr_Position, attr_Position2, u_VertexLerp);
 	vec3 normal    = normalize(mix(attr_Normal,    attr_Normal2,    u_VertexLerp));
-  #if defined(USE_VERT_TANGENT_SPACE)
 	vec3 tangent   = normalize(mix(attr_Tangent,   attr_Tangent2,   u_VertexLerp));
 	vec3 bitangent = normalize(mix(attr_Bitangent, attr_Bitangent2, u_VertexLerp));
-  #endif
 #else
-	vec4 position  = attr_Position;
+	vec3 position  = attr_Position;
 	vec3 normal    = attr_Normal;
-  #if defined(USE_VERT_TANGENT_SPACE)
 	vec3 tangent   = attr_Tangent;
 	vec3 bitangent = attr_Bitangent;
-  #endif
-#endif
-
-	gl_Position = u_ModelViewProjectionMatrix * position;
-
-#if (defined(USE_LIGHTMAP) || defined(USE_LIGHT_VERTEX)) && !defined(USE_DELUXEMAP) && !defined(USE_FAST_LIGHT)
-	vec3 L = attr_LightDirection;
-#endif
-	
-#if defined(USE_MODELMATRIX)
-	position  = u_ModelMatrix * position;
-	normal    = (u_ModelMatrix * vec4(normal, 0.0)).xyz;
-  #if defined(USE_VERT_TANGENT_SPACE)
-	tangent   = (u_ModelMatrix * vec4(tangent, 0.0)).xyz;
-	bitangent = (u_ModelMatrix * vec4(bitangent, 0.0)).xyz;
-  #endif
-
-  #if defined(USE_LIGHTMAP) && !defined(USE_DELUXEMAP) && !defined(USE_FAST_LIGHT)
-	L = (u_ModelMatrix * vec4(L, 0.0)).xyz;
-  #endif
-#endif
-
-#if defined(USE_NORMALMAP) && !defined(USE_VERT_TANGENT_SPACE)
-	var_Position = position.xyz;
-#endif
-
-#if defined(USE_TCGEN) || defined(USE_NORMALMAP) || (defined(USE_LIGHT) && !defined(USE_FAST_LIGHT))
-	var_SampleToView = u_ViewOrigin - position.xyz;
 #endif
 
 #if defined(USE_TCGEN)
-	vec2 texCoords = GenTexCoords(u_TCGen0, position.xyz, normal, u_TCGen0Vector0, u_TCGen0Vector1);
+	vec2 texCoords = GenTexCoords(u_TCGen0, position, normal, u_TCGen0Vector0, u_TCGen0Vector1);
 #else
 	vec2 texCoords = attr_TexCoord0.st;
 #endif
 
 #if defined(USE_TCMOD)
-	var_DiffuseTex = ModTexCoords(texCoords, position.xyz, u_DiffuseTexMatrix, u_DiffuseTexOffTurb);
+	var_TexCoords.xy = ModTexCoords(texCoords, position, u_DiffuseTexMatrix, u_DiffuseTexOffTurb);
 #else
-	var_DiffuseTex = texCoords;
+	var_TexCoords.xy = texCoords;
+#endif
+
+	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
+
+#if defined(USE_MODELMATRIX)
+	position  = (u_ModelMatrix * vec4(position,  1.0)).xyz;
+	normal    = (u_ModelMatrix * vec4(normal,    0.0)).xyz;
+	tangent   = (u_ModelMatrix * vec4(tangent,   0.0)).xyz;
+	bitangent = (u_ModelMatrix * vec4(bitangent, 0.0)).xyz;
+#endif
+
+#if defined(USE_LIGHT_VECTOR)
+	vec3 L = u_LightOrigin.xyz - (position * u_LightOrigin.w);
+#elif defined(USE_LIGHT) && !defined(USE_DELUXEMAP)
+	vec3 L = attr_LightDirection;
+  #if defined(USE_MODELMATRIX)
+	L = (u_ModelMatrix * vec4(L, 0.0)).xyz;
+  #endif
 #endif
 
 #if defined(USE_LIGHTMAP)
-	var_LightTex = attr_TexCoord1.st;
-#endif
-
-#if !defined(USE_FAST_LIGHT)
-	var_Normal = normal;
-  #if defined(USE_VERT_TANGENT_SPACE)
-	var_Tangent = tangent;
-	var_Bitangent = bitangent;
-  #endif
-#endif
-
-#if defined(USE_LIGHT) && !defined(USE_DELUXEMAP)
-  #if defined(USE_LIGHT_VECTOR)
-	vec3 L = u_LightOrigin.xyz - (position.xyz * u_LightOrigin.w);
-  #endif
-  #if !defined(USE_FAST_LIGHT)
-	var_LightDirection = L;
-  #endif
+	var_TexCoords.zw = attr_TexCoord1.st;
 #endif
 	
-#if defined(USE_LIGHT_VERTEX) && !defined(USE_FAST_LIGHT)
-	var_VertLight = u_VertColor.rgb * attr_Color.rgb;
-	var_Color.rgb = vec3(1.0);
-	var_Color.a = u_VertColor.a * attr_Color.a + u_BaseColor.a;
-#else
 	var_Color = u_VertColor * attr_Color + u_BaseColor;
+#if defined(USE_LIGHT_VERTEX) && !defined(USE_FAST_LIGHT)
+	var_LightColor = var_Color.rgb;
+	var_Color.rgb = vec3(1.0);
 #endif
 
 #if defined(USE_LIGHT_VECTOR) && defined(USE_FAST_LIGHT)
-  #if defined(USE_INVSQRLIGHT)
-	float intensity = 1.0 / dot(L, L);
-  #else
-	float intensity = clamp((1.0 - dot(L, L) / (u_LightRadius * u_LightRadius)) * 1.07, 0.0, 1.0);
-  #endif
+	float attenuation = CalcLightAttenuation(L, u_LightRadius * u_LightRadius);
 	float NL = clamp(dot(normal, normalize(L)), 0.0, 1.0);
 
-	var_Color.rgb *= u_DirectedLight * intensity * NL + u_AmbientLight;
+	var_Color.rgb *= u_DirectedLight * attenuation * NL + u_AmbientLight;
 #endif
 
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
-	var_PrimaryLightDirection = u_PrimaryLightOrigin.xyz - (position.xyz * u_PrimaryLightOrigin.w);
-#endif	
+	var_PrimaryLightDir.xyz = u_PrimaryLightOrigin.xyz - (position * u_PrimaryLightOrigin.w);
+	var_PrimaryLightDir.w = u_PrimaryLightRadius * u_PrimaryLightRadius;
+#endif
+
+#if defined(USE_LIGHT) && !defined(USE_DELUXEMAP) && !defined(USE_FAST_LIGHT)
+  #if defined(USE_LIGHT_VECTOR)
+	var_LightDir = vec4(L, u_LightRadius * u_LightRadius);
+  #else
+	var_LightDir = vec4(L, 0.0);
+  #endif
+#endif
+
+#if (defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)) || defined(USE_PARALLAXMAP)
+	vec3 viewDir = u_ViewOrigin - position;
+#endif
+
+#if defined(USE_TANGENT_SPACE_LIGHT)
+	mat3 tangentToWorld = mat3(tangent, bitangent, normal);
+
+  #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
+	var_PrimaryLightDir.xyz = var_PrimaryLightDir.xyz * tangentToWorld;
+  #endif
+  
+  #if defined(USE_LIGHT) && !defined(USE_DELUXEMAP) && !defined(USE_FAST_LIGHT)
+	var_LightDir.xyz = var_LightDir.xyz * tangentToWorld;
+  #endif
+
+  #if (defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)) || defined(USE_PARALLAXMAP)
+	viewDir = viewDir * tangentToWorld;
+  #endif
+#endif
+
+#if (defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)) || defined(USE_PARALLAXMAP)
+	// store view direction in tangent space to save on varyings
+	var_Normal    = vec4(normal,    viewDir.x);
+	var_Tangent   = vec4(tangent,   viewDir.y);
+	var_Bitangent = vec4(bitangent, viewDir.z);
+#endif
 }

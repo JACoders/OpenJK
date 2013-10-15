@@ -8,6 +8,8 @@
 #include "ghoul2/G2_gore.h"
 #endif
 
+// FIXME: ghoul2 doesn't use cubemaps :(
+
 #ifdef _MSC_VER
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
 #endif
@@ -2456,7 +2458,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 				newSurf->surfaceData = surface;
 			}
 			newSurf->boneCache = RS.boneCache;
-			R_AddDrawSurf( (surfaceType_t *)newSurf, tr.shadowShader, 0, qfalse, qfalse );
+			R_AddDrawSurf( (surfaceType_t *)newSurf, tr.shadowShader, 0, qfalse, qfalse, 0 );
 		}
 
 		// projection shadows work fine with personal models
@@ -2468,7 +2470,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 			CRenderableSurface *newSurf = new CRenderableSurface;
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
-			R_AddDrawSurf( (surfaceType_t *)newSurf, tr.projectionShadowShader, 0, qfalse, qfalse );
+			R_AddDrawSurf( (surfaceType_t *)newSurf, tr.projectionShadowShader, 0, qfalse, qfalse, 0 );
 		}
 
 		// don't add third_person objects if not viewing through a portal
@@ -2477,7 +2479,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 			CRenderableSurface *newSurf = new CRenderableSurface;
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
-			R_AddDrawSurf( (surfaceType_t *)newSurf, (shader_t *)shader, RS.fogNum, qfalse, qfalse );
+			R_AddDrawSurf( (surfaceType_t *)newSurf, (shader_t *)shader, RS.fogNum, qfalse, qfalse, 0 );
 
 #ifdef _G2_GORE
 			if (RS.gore_set && drawGore)
@@ -2557,7 +2559,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 
 						last->goreChain=newSurf2;
 						last=newSurf2;
-						R_AddDrawSurf( (surfaceType_t *)newSurf2,gshader, RS.fogNum, qfalse, qfalse );
+						R_AddDrawSurf( (surfaceType_t *)newSurf2,gshader, RS.fogNum, qfalse, qfalse, 0 );
 					}
 				}
 			}
