@@ -25,7 +25,7 @@ qhandle_t CCacheManager::SearchLoaded( const char *fileName )
 	loadedMap_t::iterator it = loaded.find(fileName);
 	if( it == loaded.end() )
 		return -1; // asset not found
-	return it->second->handle;
+	return it->second.handle;
 }
 
 /*
@@ -37,8 +37,7 @@ void CCacheManager::InsertLoaded( const char *fileName, qhandle_t handle )
 	FileHash_t *fh = (FileHash_t *)ri->Hunk_Alloc( sizeof(FileHash_t), h_low );
 	fh->handle = handle;
 	Q_strncpyz( fh->fileName, fileName, sizeof(fh->fileName) );
-	pair<const char *, FileHash_t *> fPair (fileName, fh);
-	loaded.insert(fPair);
+	loaded.insert(make_pair<std::string, FileHash_t>(fileName, *fh));
 }
 
 /*
@@ -54,10 +53,10 @@ qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qb
 	Q_strncpyz(sFileName, pFileName, MAX_QPATH);
 	Q_strlwr  (sFileName);
 
-	CachedFile_t *pFile;
+	CachedFile_t pFile;
 	pFile = cache[sFileName];	// this might cause an assert?? (I dunno, works fine in Raven code..)
 
-	if(!pFile)
+	if(1)
 	{
 		*pbAlreadyCached = qfalse;
 		ri->FS_ReadFile( pFileName, ppFileBuffer );
@@ -70,7 +69,7 @@ qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qb
 	}
 	else
 	{
-		*ppFileBuffer = pFile->pDiskImage;
+		*ppFileBuffer = pFile.pDiskImage;
 		*pbAlreadyCached = qtrue;
 		return qtrue;
 	}
@@ -97,12 +96,9 @@ void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psMode
 	Q_strncpyz(sModelName, psModelFileName, MAX_QPATH);
 	Q_strlwr  (sModelName);
 
-	CachedFile_t *pFile = cache[sModelName];
+	CachedFile_t pFile = cache[sModelName];
 
-	if( !pFile ) /* Doesn't exist, so we'll create a new object */
-		pFile			= new CachedFile_t();
-
-	if( !pFile->pDiskImage )
+	if( !pFile.pDiskImage )
 	{ /* Create this image. */
 		/* 
 		 * We aren't going to do that ugly VV hack that supposedly reduces mem overhead.
@@ -112,11 +108,11 @@ void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psMode
 		 * on mem usage on machines that ran with like 64MB RAM... --eez
 		 */
 		pvDiskBuffer		= Z_Malloc(iSize, eTag, qfalse);
-		pFile->pDiskImage	= pvDiskBuffer;
-		pFile->iAllocSize	= iSize;
+		pFile.pDiskImage	= pvDiskBuffer;
+		pFile.iAllocSize	= iSize;
 
 		if( ri->FS_FileIsInPAK( psModelFileName, &iChecksum ) )
-			pFile->iPAKChecksum = iChecksum;  /* Otherwise, it will be -1. */
+			pFile.iPAKChecksum = iChecksum;  /* Otherwise, it will be -1. */
 
 		*bAlreadyFound = qfalse;
 	}
@@ -129,7 +125,7 @@ void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psMode
 		*bAlreadyFound = qtrue;
 	}
 
-	return pFile->pDiskImage;
+	return pFile.pDiskImage;
 }
 
 /*
@@ -140,8 +136,8 @@ void CCacheManager::DeleteAll( void )
 {
 	for( auto it = cache.begin(); it != cache.end(); ++it )
 	{
-		Z_Free(it->second->pDiskImage);
-		cache.erase(it);
+		Z_Free(it->second.pDiskImage);
+		it = cache.erase(it);
 	}
 }
 
@@ -157,18 +153,18 @@ void CCacheManager::DumpNonPure( void )
 	for(assetCache_t::iterator it = cache.begin(); it != cache.end(); /* empty */ )
 	{
 		int iChecksum;
-		int iInPak = ri->FS_FileIsInPAK( it->first, &iChecksum );
+		int iInPak = ri->FS_FileIsInPAK( it->first.c_str(), &iChecksum );
 		qboolean bEraseOccurred = qfalse;
 
-		if( iInPak == -1 || iChecksum != it->second->iPAKChecksum )
+		if( iInPak == -1 || iChecksum != it->second.iPAKChecksum )
 		{
 			/* Erase the file because it doesn't match the checksum */
 			ri->Printf( PRINT_DEVELOPER, "Dumping none pure model \"%s\"", it->first );
 
-			if( it->second->pDiskImage )
-				Z_Free( it->second->pDiskImage );
+			if( it->second.pDiskImage )
+				Z_Free( it->second.pDiskImage );
 
-			cache.erase(it++);
+			it = cache.erase(it++);
 			bEraseOccurred = qtrue;
 		}
 
@@ -205,27 +201,27 @@ qboolean CModelCacheManager::LevelLoadEnd( qboolean bDeleteEverythingNotUsedThis
 
 	for(auto it = cache.begin(); it != cache.end(); ++it)
 	{
-		CachedFile_t *pFile			= it->second;
+		CachedFile_t pFile			= it->second;
 		bool bDeleteThis			= false;
 
 		if( bDeleteEverythingNotUsedThisLevel )
-			bDeleteThis = ( pFile->iLevelLastUsedOn != tr.currentLevel );
+			bDeleteThis = ( pFile.iLevelLastUsedOn != tr.currentLevel );
 		else
-			bDeleteThis = ( pFile->iLevelLastUsedOn < tr.currentLevel );
+			bDeleteThis = ( pFile.iLevelLastUsedOn < tr.currentLevel );
 
 		if( bDeleteThis )
 		{
-			const char *psModelName = it->first;
+			const char *psModelName = it->first.c_str();
 
 			ri->Printf( PRINT_DEVELOPER, S_COLOR_GREEN "Dumping \"%s\"", psModelName);
 
-			if( pFile->pDiskImage )
+			if( pFile.pDiskImage )
 			{
-				Z_Free( pFile->pDiskImage );
+				Z_Free( pFile.pDiskImage );
 				bAtLeastOneModelFreed = qtrue;	// FIXME: is this correct? shouldn't it be in the next lower scope?
 			}
 			// FIXME: like right here?
-			cache.erase(it);
+			it = cache.erase(it);
 		}
 	}
 

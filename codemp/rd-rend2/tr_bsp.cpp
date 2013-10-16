@@ -3278,13 +3278,13 @@ void R_MergeLeafSurfaces(void)
 		}
 
 		// create ibo 
-   		ibo = tr.ibos[tr.numIBOs] = ri.Hunk_Alloc(sizeof(*ibo), h_low); 
+   		ibo = tr.ibos[tr.numIBOs] = (IBO_t*)ri->Hunk_Alloc(sizeof(*ibo), h_low); 
    		memset(ibo, 0, sizeof(*ibo)); 
    		Q_strncpyz(ibo->name, va("staticWorldMesh_IBO_mergedSurfs%i", tr.numIBOs++), sizeof(ibo->name)); 
    		numIboIndexes = 0; 
    	 
    		 // allocate indexes 
-   		iboIndexes = outIboIndexes = ri.Malloc(numTriangles * 3 * sizeof(*outIboIndexes));
+   		iboIndexes = outIboIndexes = (glIndex_t*)Z_Malloc(numTriangles * 3 * sizeof(*outIboIndexes), TAG_BSP);
 
 		// Merge surfaces (indexes) and calculate bounds
 		ClearBounds(bounds[0], bounds[1]);

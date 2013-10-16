@@ -38,6 +38,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <string>
 
 #ifdef _WIN32
 #include "win32\win_local.h"
@@ -3150,8 +3151,8 @@ typedef struct CachedFile_s
 } CachedFile_t;
 
 /* assetCache_t and loadedMap_t are two definitions that are needed for the manager */
-typedef std::map<const char *, CachedFile_t *> assetCache_t;
-typedef std::unordered_map<const char *, FileHash_t *> loadedMap_t;
+typedef std::map<std::string, CachedFile_t> assetCache_t;
+typedef std::unordered_map<std::string, FileHash_t> loadedMap_t;
 
 /* The actual manager itself, which is used in the model and image loading routines. */
 class CCacheManager
