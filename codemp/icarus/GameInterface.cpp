@@ -185,7 +185,7 @@ void ICARUS_Shutdown( void )
 	}
 
 	//Clear out all precached scripts
-	for ( ei = ICARUS_BufferList.begin(); ei != ICARUS_BufferList.end(); ei++ )
+	for ( ei = ICARUS_BufferList.begin(); ei != ICARUS_BufferList.end(); ++ei )
 	{
 		//gi.Free( (*ei).second->buffer );
 		ICARUS_Free((*ei).second->buffer);
