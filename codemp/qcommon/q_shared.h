@@ -53,7 +53,7 @@
 #define G2_EHNANCEMENTS
 
 #ifdef G2_EHNANCEMENTS
-//these two will probably explode if they're defined independant of one another.
+//these two will probably explode if they're defined independent of one another.
 //rww - RAGDOLL_BEGIN
 #define JK2_RAGDOLL
 //rww - RAGDOLL_END

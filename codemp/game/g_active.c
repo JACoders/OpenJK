@@ -24,7 +24,7 @@ void P_SetTwitchInfo(gclient_t	*client)
 G_DamageFeedback
 
 Called just before a snapshot is sent to the given player.
-Totals up all damage and generates both the player_state_t
+Totals up all damage and generates both the playerState_t
 damage values to that client for pain blends and kicks, and
 global pain sound events for all clients.
 ===============
@@ -74,7 +74,7 @@ void P_DamageFeedback( gentity_t *player ) {
 		}
 	}
 
-	// play an apropriate pain sound
+	// play an appropriate pain sound
 	if ( (level.time > player->pain_debounce_time) && !(player->flags & FL_GODMODE) && !(player->s.eFlags & EF_DEAD) ) {
 
 		// don't do more than two pain sounds a second

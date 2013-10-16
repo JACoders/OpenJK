@@ -160,7 +160,7 @@ void CStringEdPackage::Clear( SE_BOOL bChangingLanguages )
 // loses anything after the path (if any), (eg) "dir/name.bmp" becomes "dir"
 // (copes with either slash-scheme for names)
 //
-// (normally I'd call another function for this, but this is supposed to be engine-independant,
+// (normally I'd call another function for this, but this is supposed to be engine-independent,
 //	 so a certain amount of re-invention of the wheel is to be expected...)
 //
 char *CStringEdPackage::Filename_PathOnly(const char *psFilename)
@@ -182,7 +182,7 @@ char *CStringEdPackage::Filename_PathOnly(const char *psFilename)
 // returns (eg) "dir/name" for "dir/name.bmp"
 // (copes with either slash-scheme for names)
 //
-// (normally I'd call another function for this, but this is supposed to be engine-independant,
+// (normally I'd call another function for this, but this is supposed to be engine-independent,
 //	 so a certain amount of re-invention of the wheel is to be expected...)
 //
 char *CStringEdPackage::Filename_WithoutExt(const char *psFilename)
@@ -209,7 +209,7 @@ char *CStringEdPackage::Filename_WithoutExt(const char *psFilename)
 // returns actual filename only, no path
 // (copes with either slash-scheme for names)
 //
-// (normally I'd call another function for this, but this is supposed to be engine-independant,
+// (normally I'd call another function for this, but this is supposed to be engine-independent,
 //	 so a certain amount of re-invention of the wheel is to be expected...)
 //
 char *CStringEdPackage::Filename_WithoutPath(const char *psFilename)

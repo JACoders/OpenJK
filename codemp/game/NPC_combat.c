@@ -2094,7 +2094,7 @@ gentity_t *NPC_CheckEnemy( qboolean findNew, qboolean tooFarOk, qboolean setEnem
 			
 			NPCS.NPC->cantHitEnemyCounter = 0;
 		}
-		//FIXME: if we can't find any at all, go into INdependant NPC AI, pursue and kill
+		//FIXME: if we can't find any at all, go into independent NPC AI, pursue and kill
 	}
 
 	if ( NPCS.NPC->enemy && NPCS.NPC->enemy->client ) 

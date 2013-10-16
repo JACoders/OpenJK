@@ -235,7 +235,7 @@ animation_t *UI_AnimsetAlloc(void)
 ======================
 UI_ParseAnimationFile
 
-Read a configuration file containing animation coutns and rates
+Read a configuration file containing animation counts and rates
 models/players/visor/animation.cfg, etc
 
 ======================

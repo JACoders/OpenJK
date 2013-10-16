@@ -244,7 +244,7 @@ typedef enum direction_e
 
 PMOVE MODULE
 
-The pmove code takes a player_state_t and a usercmd_t and generates a new player_state_t
+The pmove code takes a playerState_t and a usercmd_t and generates a new playerState_t
 and some other output data.  Used for local prediction on the client game and true
 movement on the server game.
 ===================================================================================
@@ -524,7 +524,7 @@ void Pmove (pmove_t *pmove);
 //===================================================================================
 
 
-// player_state->stats[] indexes
+// playerState_t->stats[] indexes
 // NOTE: may not have more than 16
 typedef enum {
 	STAT_HEALTH,
@@ -541,8 +541,8 @@ typedef enum {
 } statIndex_t;
 
 
-// player_state->persistant[] indexes
-// these fields are the only part of player_state that isn't
+// playerState_t->persistant[] indexes
+// these fields are the only part of playerState_t that isn't
 // cleared on respawn
 // NOTE: may not have more than 16
 typedef enum {
@@ -560,7 +560,7 @@ typedef enum {
 	PERS_EXCELLENT_COUNT,			// two successive kills in a short amount of time
 	PERS_DEFEND_COUNT,				// defend awards
 	PERS_ASSIST_COUNT,				// assist awards
-	PERS_GAUNTLET_FRAG_COUNT,		// kills with the guantlet
+	PERS_GAUNTLET_FRAG_COUNT,		// kills with the gauntlet
 	PERS_CAPTURES					// captures
 } persEnum_t;
 

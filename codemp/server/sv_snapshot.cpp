@@ -495,7 +495,7 @@ copies off the playerstate and areabits.
 This properly handles multiple recursive portals, but the render
 currently doesn't.
 
-For viewing through other player's eyes, clent can be something other than client->gentity
+For viewing through other player's eyes, client can be something other than client->gentity
 =============
 */
 static void SV_BuildClientSnapshot( client_t *client ) {

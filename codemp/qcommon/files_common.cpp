@@ -348,7 +348,7 @@ char *FS_BuildOSPath( const char *base, const char *game, const char *qpath ) {
 ===========
 FS_FilenameCompare
 
-Ignore case and seprator char distinctions
+Ignore case and separator char distinctions
 ===========
 */
 qboolean FS_FilenameCompare( const char *s1, const char *s2 ) {

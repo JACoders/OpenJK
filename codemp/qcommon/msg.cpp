@@ -1086,7 +1086,7 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 	}
 
 	lc = 0;
-	// build the change vector as bytes so it is endien independent
+	// build the change vector as bytes so it is endian independent
 	// TODO: OPTIMIZE: How about we do this in reverse order so we can
 	// just break out at the first changed field we find?
 	for ( i = 0, field = entityStateFields ; i < numFields ; i++, field++ ) {
@@ -1301,7 +1301,7 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 /*
 ============================================================================
 
-plyer_state_t communication
+playerState_t communication
 
 ============================================================================
 */

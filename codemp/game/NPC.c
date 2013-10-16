@@ -1603,7 +1603,7 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 //	}
 
 	//Here we need to see what the scripted stuff told us to do
-//Only process snapshot if independant and in combat mode- this would pick enemies and go after needed items
+//Only process snapshot if independent and in combat mode- this would pick enemies and go after needed items
 //	ProcessSnapshot();
 
 //Ignore my needs if I'm under script control- this would set needs for items

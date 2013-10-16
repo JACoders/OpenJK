@@ -1301,7 +1301,7 @@ void BeginIntermission( void ) {
 		return;		// already active
 	}
 
-	// if in tournement mode, change the wins / losses
+	// if in tournament mode, change the wins / losses
 	if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL ) {
 		trap->SetConfigstring ( CS_CLIENT_DUELWINNER, "-1" );
 
@@ -1393,7 +1393,7 @@ void ExitLevel (void) {
 	int		i;
 	gclient_t *cl;
 
-	// if we are running a tournement map, kick the loser to spectator status,
+	// if we are running a tournament map, kick the loser to spectator status,
 	// which will automatically grab the next spectator and restart
 	if ( level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL ) {
 		if (!DuelLimitHit())
@@ -1648,7 +1648,7 @@ void CheckIntermissionExit( void ) {
 				level.clients[level.sortedClients[1]].sess.wins,
 				level.clients[level.sortedClients[1]].sess.losses );
 		}
-		// if we are running a tournement map, kick the loser to spectator status,
+		// if we are running a tournament map, kick the loser to spectator status,
 		// which will automatically grab the next spectator and restart
 		if (!DuelLimitHit())
 		{
@@ -2222,7 +2222,7 @@ void G_RemoveDuelist(int team)
 =============
 CheckTournament
 
-Once a frame, check for changes in tournement player state
+Once a frame, check for changes in tournament player state
 =============
 */
 int g_duelPrintTimer = 0;
@@ -3351,7 +3351,7 @@ void G_RunFrame( int levelTime ) {
 #ifdef _G_FRAME_PERFANAL
 	trap->PrecisionTimer_Start(&timer_GameChecks);
 #endif
-	// see if it is time to do a tournement restart
+	// see if it is time to do a tournament restart
 	CheckTournament();
 
 	// see if it is time to end the level

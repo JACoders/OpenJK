@@ -895,7 +895,7 @@ void SetTeam( gentity_t *ent, char *s ) {
 		g_dontPenalizeTeam = qfalse;
 
 	}
-	// they go to the end of the line for tournements
+	// they go to the end of the line for tournaments
 	if ( team == TEAM_SPECTATOR && oldTeam != team )
 		AddTournamentQueue( client );
 
@@ -1023,7 +1023,7 @@ void Cmd_Team_f( gentity_t *ent ) {
 		return;
 	}
 
-	// if they are playing a tournement game, count as a loss
+	// if they are playing a tournament game, count as a loss
 	if ( level.gametype == GT_DUEL
 		&& ent->client->sess.sessionTeam == TEAM_FREE ) {//in a tournament game
 		//disallow changing teams
@@ -1416,7 +1416,7 @@ void Cmd_Follow_f( gentity_t *ent ) {
 		return;
 	}
 
-	// if they are playing a tournement game, count as a loss
+	// if they are playing a tournament game, count as a loss
 	if ( (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 		&& ent->client->sess.sessionTeam == TEAM_FREE ) {
 		//WTF???
@@ -1450,7 +1450,7 @@ void Cmd_FollowCycle_f( gentity_t *ent, int dir ) {
 		return;
 	}
 
-	// if they are playing a tournement game, count as a loss
+	// if they are playing a tournament game, count as a loss
 	if ( (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 		&& ent->client->sess.sessionTeam == TEAM_FREE ) {\
 		//WTF???
@@ -1556,7 +1556,7 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 		return;
 	}
 	/*
-	// no chatting to players in tournements
+	// no chatting to players in tournaments
 	if ( (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 		&& other->client->sess.sessionTeam == TEAM_FREE
 		&& ent->client->sess.sessionTeam != TEAM_FREE ) {
@@ -1652,7 +1652,7 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 		trap->Print( "%s%s\n", name, text);
 	}
 
-	// send it to all the apropriate clients
+	// send it to all the appropriate clients
 	for (j = 0; j < level.maxclients; j++) {
 		other = &g_entities[j];
 		G_SayTo( ent, other, mode, color, name, text, locMsg );
