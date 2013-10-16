@@ -3154,6 +3154,10 @@ typedef struct CachedFile_s
 typedef std::map<std::string, CachedFile_t> assetCache_t;
 typedef std::unordered_map<std::string, FileHash_t> loadedMap_t;
 
+/* and shaderCache_t is needed for the model cache manager */
+typedef std::pair<int,int> shaderCacheEntry_t;
+typedef std::vector<shaderCacheEntry_t> shaderCache_t;
+
 /* The actual manager itself, which is used in the model and image loading routines. */
 class CCacheManager
 {
@@ -3167,6 +3171,7 @@ public:
 	void				DumpNonPure( void );
 
 	virtual qboolean	LevelLoadEnd( qboolean bDeleteEverythingNotUsedInThisLevel ) = 0;
+
 protected:
 	loadedMap_t loaded;
 	assetCache_t cache;
@@ -3182,6 +3187,10 @@ class CModelCacheManager : public CCacheManager
 {
 public:
 	qboolean			LevelLoadEnd( qboolean bDeleteEverythingNotUsedInThisLevel );
+	void				StoreShaderRequest( const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke );
+	void				AllocateShaders( const char *psFileName );
+private:
+	shaderCache_t		shaderCache;
 };
 
 extern CImageCacheManager *CImgCache;

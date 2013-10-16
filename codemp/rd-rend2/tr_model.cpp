@@ -38,10 +38,7 @@ R_RegisterMD3
 */
 qhandle_t R_RegisterMD3(const char *name, model_t *mod)
 {
-	union {
-		unsigned *u;
-		void *v;
-	} buf;
+	unsigned	*buf;
 	int			lod;
 	int			ident;
 	qboolean	loaded = qfalse;
@@ -70,30 +67,34 @@ qhandle_t R_RegisterMD3(const char *name, model_t *mod)
 			Com_sprintf(namebuf, sizeof(namebuf), "%s.%s", filename, fext);
 
 		qboolean bAlreadyCached = qfalse;
-		if( !CModelCache->LoadFile( namebuf, &buf.v, &bAlreadyCached ) )
+		if( !CModelCache->LoadFile( namebuf, (void**)&buf, &bAlreadyCached ) )
 			continue;
+
+		const char *blah = (const char *)(*buf);
+		ident = *(unsigned *)buf;
+		if( !bAlreadyCached )
+			ident = LittleLong(ident);
 		
-		ident = LittleLong(* (unsigned *) buf.u);
 		switch(ident)
 		{
 			case MD4_IDENT:
-				loaded = R_LoadMD4(mod, buf.u, name);
+				loaded = R_LoadMD4(mod, buf, name);
 				break;
 			case MD3_IDENT:
-				loaded = R_LoadMD3(mod, lod, buf.u, name);
+				loaded = R_LoadMD3(mod, lod, buf, name);
 				break;
 			case MDXA_IDENT:
-				loaded = R_LoadMDXA(mod, buf.u, name, bAlreadyCached);
+				loaded = R_LoadMDXA(mod, buf, name, bAlreadyCached);
 				break;
 			case MDXM_IDENT:
-				loaded = R_LoadMDXM(mod, buf.u, name, bAlreadyCached);
+				loaded = R_LoadMDXM(mod, buf, name, bAlreadyCached);
 				break;
 			default:
 				ri->Printf(PRINT_WARNING, "R_RegisterMD3: unknown ident for %s\n", name);
 				break;
 		}
 		
-		ri->FS_FreeFile(buf.v);
+		ri->FS_FreeFile(buf);
 
 		if(loaded)
 		{
@@ -217,6 +218,7 @@ static modelExtToLoaderMap_t modelLoaders[ ] =
 	Ghoul 2 Insert Start
 	*/
 	{ "glm", R_RegisterMD3 },
+	{ "gla", R_RegisterMD3 },
 	/*
 	Ghoul 2 Insert End
 	*/
@@ -388,65 +390,6 @@ qhandle_t RE_RegisterModel( const char *name ) {
 }
 
 /*
-====================
-RE_RegisterModels_StoreShaderRequest
-
-Cache shaders used by a model
-
-This stuff looks a bit messy, but it's kept here as black box, and nothing appears in any .H files for other 
-modules to worry about. I may make another module for this sometime.
-====================
-*/
-
-typedef pair<int,int> StringOffsetAndShaderIndexDest_t;
-typedef vector <StringOffsetAndShaderIndexDest_t> ShaderRegisterData_t;
-struct CachedEndianedModelBinary_s
-{
-	void	*pModelDiskImage;
-	int		iAllocSize;		// may be useful for mem-query, but I don't actually need it
-	ShaderRegisterData_t ShaderRegisterData;	
-	int		iLastLevelUsedOn;
-	int		iPAKFileCheckSum;	// else -1 if not from PAK
-
-
-	CachedEndianedModelBinary_s()
-	{
-		pModelDiskImage		= 0;
-		iAllocSize			= 0;
-		ShaderRegisterData.clear();
-		iLastLevelUsedOn	= -1;
-		iPAKFileCheckSum	= -1;
-	}
-};
-typedef struct CachedEndianedModelBinary_s CachedEndianedModelBinary_t;
-typedef map <sstring_t,CachedEndianedModelBinary_t>	CachedModels_t;
-CachedModels_t *CachedModels = NULL;	// the important cache item.
-
-void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke)
-{
-	char sModelName[MAX_QPATH];
-	
-	assert(CachedModels);
-
-	Q_strncpyz(sModelName,psModelFileName,sizeof(sModelName));
-	Q_strlwr  (sModelName);
-
-	CachedEndianedModelBinary_t &ModelBin = (*CachedModels)[sModelName];
-
-	if (ModelBin.pModelDiskImage == NULL)
-	{	
-		assert(0);	// should never happen, means that we're being called on a model that wasn't loaded
-	}
-	else
-	{
-		int iNameOffset =		  psShaderName		- (char *)ModelBin.pModelDiskImage;
-		int iPokeOffset = (char*) piShaderIndexPoke	- (char *)ModelBin.pModelDiskImage;
-
-		ModelBin.ShaderRegisterData.push_back( StringOffsetAndShaderIndexDest_t( iNameOffset,iPokeOffset) );
-	}
-}
-
-/*
 =================
 R_LoadMD3
 =================
@@ -505,6 +448,10 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 		LL(md3Model->ofsTags);
 		LL(md3Model->ofsSurfaces);
 		LL(md3Model->ofsEnd);
+	}
+	else
+	{
+		CModelCache->AllocateShaders( modName );
 	}
 
 	if(md3Model->numFrames < 1)

@@ -53,17 +53,19 @@ qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qb
 	Q_strncpyz(sFileName, pFileName, MAX_QPATH);
 	Q_strlwr  (sFileName);
 
-	CachedFile_t pFile;
-	pFile = cache[sFileName];	// this might cause an assert?? (I dunno, works fine in Raven code..)
+	CachedFile_t &pFile = cache[sFileName];
 
 	if(!pFile.pDiskImage)
 	{
 		*pbAlreadyCached = qfalse;
-		ri->FS_ReadFile( pFileName, ppFileBuffer );
+		int len = ri->FS_ReadFile( pFileName, ppFileBuffer );
 		qboolean bSuccess = !!(*ppFileBuffer)?qtrue:qfalse;
+		const char **blah = (const char**)ppFileBuffer;
 
 		if( bSuccess )
+		{
 			ri->Printf( PRINT_DEVELOPER, "C_LoadFile(): Loaded %s from disk\n", pFileName );
+		}
 
 		return bSuccess;
 	}
@@ -96,23 +98,19 @@ void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psMode
 	Q_strncpyz(sModelName, psModelFileName, MAX_QPATH);
 	Q_strlwr  (sModelName);
 
-	CachedFile_t pFile = cache[sModelName];
+	CachedFile_t *pFile = &cache[sModelName];
 
-	if( !pFile.pDiskImage )
+	if( !pFile->pDiskImage )
 	{ /* Create this image. */
-		/* 
-		 * We aren't going to do that ugly VV hack that supposedly reduces mem overhead.
-		 * Said hack can cause heap corruption (!) if not properly checked, and I suspect
-		 * that I'll forget to do it later. Forgive me for not cutting down on overhead,
-		 * but I figured it was marginal, considering it was designed in order to cut back
-		 * on mem usage on machines that ran with like 64MB RAM... --eez
-		 */
-		pvDiskBuffer		= Z_Malloc(iSize, eTag, qfalse);
-		pFile.pDiskImage	= pvDiskBuffer;
-		pFile.iAllocSize	= iSize;
+		if( pvDiskBuffer )
+			Z_MorphMallocTag( pvDiskBuffer, eTag );
+		else
+			pvDiskBuffer		= Z_Malloc(iSize, eTag, qfalse);
+		pFile->pDiskImage	= pvDiskBuffer;
+		pFile->iAllocSize	= iSize;
 
 		if( ri->FS_FileIsInPAK( psModelFileName, &iChecksum ) )
-			pFile.iPAKChecksum = iChecksum;  /* Otherwise, it will be -1. */
+			pFile->iPAKChecksum = iChecksum;  /* Otherwise, it will be -1. */
 
 		*bAlreadyFound = qfalse;
 	}
@@ -125,7 +123,9 @@ void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psMode
 		*bAlreadyFound = qtrue;
 	}
 
-	return pFile.pDiskImage;
+	pFile->iLevelLastUsedOn = tr.currentLevel;
+
+	return pFile->pDiskImage;
 }
 
 /*
@@ -187,15 +187,7 @@ void CCacheManager::DumpNonPure( void )
  */
 qboolean CModelCacheManager::LevelLoadEnd( qboolean bDeleteEverythingNotUsedThisLevel )
 {
-	//int iLoadedModelBytes			=	GetModelDataAllocSize();
-	//const int iMaxModelBytes		=	r_modelpoolmegs->integer * 1024 * 1024;
 	qboolean bAtLeastOneModelFreed	= qfalse;
-
-	/*if( iLoadedModelBytes > iMaxModelBytes )
-	{
-		Com_Printf("CModelCacheManager::LevelLoadEnd(): iLoadedModelBytes > iMaxModelBytes (raise r_modelpoolmegs?)\n");
-		return bAtLeastOneModelFreed;
-	}*/
 
 	ri->Printf( PRINT_DEVELOPER, S_COLOR_GREEN "CModelCacheManager::LevelLoadEnd():\n");
 
@@ -247,6 +239,67 @@ qboolean C_Models_LevelLoadEnd( qboolean bDeleteEverythingNotUsedInThisLevel )
 qboolean C_Images_LevelLoadEnd( void )
 {
 	return CImgCache->LevelLoadEnd( qfalse );
+}
+
+/*
+ * Shader storage and retrieval, unique to the model caching
+ */
+
+void CModelCacheManager::StoreShaderRequest( const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke )
+{
+	char sModelName[MAX_QPATH];
+
+	Q_strncpyz(sModelName, psModelFileName, sizeof(sModelName));
+	Q_strlwr  (sModelName);
+
+	CachedFile_t &rFile = cache[sModelName];
+
+	if( rFile.pDiskImage == NULL )
+	{
+		/* Shouldn't even happen. */
+		assert(0);
+		return;
+	}
+	
+	int iNameOffset =		  psShaderName		- (char *)rFile.pDiskImage;
+	int iPokeOffset = (char*) piShaderIndexPoke	- (char *)rFile.pDiskImage;
+
+	shaderCache.push_back( make_pair<int,int>( iNameOffset, iPokeOffset ) );
+}
+
+void CModelCacheManager::AllocateShaders( const char *psFileName )
+{
+	// if we already had this model entry, then re-register all the shaders it wanted...
+	//
+	char sModelName[MAX_QPATH];
+
+	Q_strncpyz(sModelName, psFileName, sizeof(sModelName));
+	Q_strlwr  (sModelName);
+
+	CachedFile_t &rFile = cache[sModelName];
+
+	if( rFile.pDiskImage == NULL )
+	{
+		/* Shouldn't even happen. */
+		assert(0);
+		return;
+	}
+
+	for( auto it = shaderCache.begin(); it != shaderCache.end(); ++it )
+	{
+		int iShaderNameOffset	= it->first;
+		int iShaderPokeOffset	= it->second;
+
+		char *psShaderName		=		  &((char*)rFile.pDiskImage)[iShaderNameOffset];
+		int  *piShaderPokePtr	= (int *) &((char*)rFile.pDiskImage)[iShaderPokeOffset];
+
+		shader_t *sh = R_FindShader( psShaderName, 0, qtrue );
+	            
+		if ( sh->defaultShader ) 
+			*piShaderPokePtr = 0;
+		else 
+			*piShaderPokePtr = sh->index;
+	}
 }
 
 /*
