@@ -1414,7 +1414,7 @@ CArea *CCMLandScape::GetFirstObjectiveArea(void)
 		{
 			return (*mAreasIt);
 		}
-		mAreasIt++;
+		++mAreasIt;
 	}
 	return(NULL);
 }
@@ -1434,15 +1434,14 @@ CArea *CCMLandScape::GetPlayerArea(void)
 		{
 			return (*mAreasIt);
 		}
-		mAreasIt++;
+		++mAreasIt;
 	}
 	return(NULL);
 }
 
 CArea *CCMLandScape::GetNextArea(void)
 {
-	mAreasIt++;
-	if(mAreasIt == mAreas.end())
+	if(++mAreasIt == mAreas.end())
 	{
 		return(NULL);
 	}
@@ -1451,7 +1450,7 @@ CArea *CCMLandScape::GetNextArea(void)
 
 CArea *CCMLandScape::GetNextObjectiveArea(void)
 {
-	mAreasIt++;
+	++mAreasIt;
 
 	while (mAreasIt != mAreas.end())
 	{
@@ -1460,7 +1459,7 @@ CArea *CCMLandScape::GetNextObjectiveArea(void)
 		{
 			return (*mAreasIt);
 		}
-		mAreasIt++;
+		++mAreasIt;
 	}
 	return(NULL);
 }
@@ -1587,7 +1586,7 @@ CCMLandScape::~CCMLandScape(void)
 		delete mRandomTerrain;
 	}
 
-	for(mAreasIt=mAreas.begin(); mAreasIt != mAreas.end(); mAreasIt++)
+	for(mAreasIt=mAreas.begin(); mAreasIt != mAreas.end(); ++mAreasIt)
 	{
 		delete (*mAreasIt);
 	}

@@ -144,7 +144,7 @@ void DeleteGoreSet(int goreSetTag)
 CGoreSet::~CGoreSet()
 {
 	multimap<int,SGoreSurface>::iterator i;
-	for (i=mGoreRecords.begin();i!=mGoreRecords.end();i++)
+	for (i=mGoreRecords.begin();i!=mGoreRecords.end();++i)
 	{
 		DeleteGoreRecord((*i).second.mGoreTag);
 	}
