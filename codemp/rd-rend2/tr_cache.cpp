@@ -56,7 +56,7 @@ qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qb
 	CachedFile_t pFile;
 	pFile = cache[sFileName];	// this might cause an assert?? (I dunno, works fine in Raven code..)
 
-	if(1)
+	if(!pFile.pDiskImage)
 	{
 		*pbAlreadyCached = qfalse;
 		ri->FS_ReadFile( pFileName, ppFileBuffer );
