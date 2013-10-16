@@ -4458,7 +4458,7 @@ FireWeapon
 int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float constraint);
 
 void FireWeapon( gentity_t *ent, qboolean altFire ) {
-	// track shots taken for accuracy tracking.  Grapple is not a weapon and gauntet is just not tracked
+	// track shots taken for accuracy tracking. melee weapons are not tracked.
 	if( ent->s.weapon != WP_SABER && ent->s.weapon != WP_STUN_BATON && ent->s.weapon != WP_MELEE ) 
 	{
 		if( ent->s.weapon == WP_FLECHETTE ) {

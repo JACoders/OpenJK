@@ -1425,7 +1425,7 @@ void CL_CharEvent( int key ) {
 	if ( key == 127 )
 		return;
 
-	// distribute the key down event to the apropriate handler
+	// distribute the key down event to the appropriate handler
 		 if ( Key_GetCatcher() & KEYCATCH_CONSOLE )		Field_CharEvent( &g_consoleField, key );
 	else if ( Key_GetCatcher() & KEYCATCH_UI )			UIVM_KeyEvent( key|K_CHAR_FLAG, qtrue );
 	else if ( Key_GetCatcher() & KEYCATCH_CGAME )		CGVM_KeyEvent( key|K_CHAR_FLAG, qtrue );

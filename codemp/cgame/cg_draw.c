@@ -4139,7 +4139,7 @@ void CG_AddLagometerSnapshotInfo( snapshot_t *snap ) {
 ==============
 CG_DrawDisconnect
 
-Should we draw something differnet for long lag vs no packets?
+Should we draw something different for long lag vs no packets?
 ==============
 */
 static void CG_DrawDisconnect( void ) {
@@ -8322,7 +8322,7 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 		return;
 	}
 
-	// optionally draw the tournement scoreboard instead
+	// optionally draw the tournament scoreboard instead
 	if ( cg.snap->ps.persistant[PERS_TEAM] == TEAM_SPECTATOR &&
 		( cg.snap->ps.pm_flags & PMF_SCOREBOARD ) ) {
 		CG_DrawTourneyScoreboard();

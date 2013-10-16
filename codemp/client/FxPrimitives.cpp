@@ -1440,7 +1440,7 @@ bool CEmitter::Update(void)
 
 	if ( mFlags & FX_PAPER_PHYSICS )
 	{
-		// do this in a more framerate independant manner
+		// do this in a more framerate independent manner
 		float sc = ( 20.0f / theFxHelper.mFrameTime);
 
 		// bah, evil clamping

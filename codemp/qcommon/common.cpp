@@ -109,7 +109,7 @@ void Com_EndRedirect (void)
 Com_Printf
 
 Both client and server can use this, and it will output
-to the apropriate place.
+to the appropriate place.
 
 A raw string should NEVER be passed as fmt, because of "%f" type crashers.
 =============
@@ -231,7 +231,7 @@ void QDECL Com_OPrintf( const char *fmt, ...)
 Com_Error
 
 Both client and server can use this, and it will
-do the apropriate things.
+do the appropriate things.
 =============
 */
 void QDECL Com_Error( int code, const char *fmt, ... ) {
@@ -289,7 +289,7 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 Com_Quit_f
 
 Both client and server can use this, and it will
-do the apropriate things.
+do the appropriate things.
 =============
 */
 void Com_Quit_f( void ) {

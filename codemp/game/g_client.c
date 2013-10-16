@@ -999,7 +999,7 @@ void InitBodyQue (void) {
 =============
 BodySink
 
-After sitting around for five seconds, fall into the ground and dissapear
+After sitting around for five seconds, fall into the ground and disappear
 =============
 */
 void BodySink( gentity_t *ent ) {
@@ -2357,7 +2357,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 ClientConnect
 
 Called when a player begins connecting to the server.
-Called again for every map change or tournement restart.
+Called again for every map change or tournament restart.
 
 The session information will be valid after exit.
 
@@ -2368,7 +2368,7 @@ Otherwise, the client will be sent the current gamestate
 and will eventually get to ClientBegin.
 
 firstTime will be qtrue the very first time a client connects
-to the server machine, but qfalse on map changes and tournement
+to the server machine, but qfalse on map changes and tournament
 restarts.
 ============
 */

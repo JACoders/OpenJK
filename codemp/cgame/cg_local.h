@@ -614,7 +614,7 @@ typedef struct score_s {
 	int				accuracy;
 	int				impressiveCount;
 	int				excellentCount;
-	int				guantletCount;
+	int				gauntletCount;
 	int				defendCount;
 	int				assistCount;
 	int				captures;
@@ -1501,7 +1501,7 @@ typedef struct cg_staticmodel_s {
 
 // The client game static (cgs) structure hold everything
 // loaded or calculated from the gamestate.  It will NOT
-// be cleared when a tournement restart is done, allowing
+// be cleared when a tournament restart is done, allowing
 // all clients to begin playing instantly
 typedef struct cgs_s {
 	gameState_t		gameState;			// gamestate from server

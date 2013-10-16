@@ -46,7 +46,7 @@ static void CG_ParseScores( void ) {
 		cg.scores[i].accuracy			= atoi( CG_Argv( i*SCORE_OFFSET + 10 ) );
 		cg.scores[i].impressiveCount	= atoi( CG_Argv( i*SCORE_OFFSET + 11 ) );
 		cg.scores[i].excellentCount		= atoi( CG_Argv( i*SCORE_OFFSET + 12 ) );
-		cg.scores[i].guantletCount		= atoi( CG_Argv( i*SCORE_OFFSET + 13 ) );
+		cg.scores[i].gauntletCount		= atoi( CG_Argv( i*SCORE_OFFSET + 13 ) );
 		cg.scores[i].defendCount		= atoi( CG_Argv( i*SCORE_OFFSET + 14 ) );
 		cg.scores[i].assistCount		= atoi( CG_Argv( i*SCORE_OFFSET + 15 ) );
 		cg.scores[i].perfect			= atoi( CG_Argv( i*SCORE_OFFSET + 16 ) );
@@ -1050,7 +1050,7 @@ CG_MapRestart
 The server has issued a map_restart, so the next snapshot
 is completely new and should not be interpolated to.
 
-A tournement restart will clear everything, but doesn't
+A tournament restart will clear everything, but doesn't
 require a reload of all the media
 ===============
 */
