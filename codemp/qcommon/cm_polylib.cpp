@@ -38,7 +38,7 @@ winding_t	*AllocWinding (int points)
 	if (c_active_windings > c_peak_windings)
 		c_peak_windings = c_active_windings;
 
-	s = sizeof(vec_t)*3*points + sizeof(int);
+	s = sizeof(float)*3*points + sizeof(int);
 	w = (winding_t *)Z_Malloc (s, TAG_BSP, qtrue);
 //	Com_Memset (w, 0, s); // qtrue param in Z_Malloc does this
 	return w;
@@ -97,7 +97,7 @@ void	RemoveColinearPoints (winding_t *w)
 WindingPlane
 ============
 */
-void WindingPlane (winding_t *w, vec3_t normal, vec_t *dist)
+void WindingPlane (winding_t *w, vec3_t normal, float *dist)
 {
 	vec3_t	v1, v2;
 
@@ -114,11 +114,11 @@ void WindingPlane (winding_t *w, vec3_t normal, vec_t *dist)
 WindingArea
 =============
 */
-vec_t	WindingArea (winding_t *w)
+float	WindingArea (winding_t *w)
 {
 	int		i;
 	vec3_t	d1, d2, cross;
-	vec_t	total;
+	float	total;
 
 	total = 0;
 	for (i=2 ; i<w->numpoints ; i++)
@@ -133,7 +133,7 @@ vec_t	WindingArea (winding_t *w)
 
 void	WindingBounds (winding_t *w, vec3_t mins, vec3_t maxs)
 {
-	vec_t	v;
+	float	v;
 	int		i,j;
 
 	mins[0] = mins[1] = mins[2] = MAX_MAP_BOUNDS;
@@ -175,10 +175,10 @@ void	WindingCenter (winding_t *w, vec3_t center)
 BaseWindingForPlane
 =================
 */
-winding_t *BaseWindingForPlane (vec3_t normal, vec_t dist)
+winding_t *BaseWindingForPlane (vec3_t normal, float dist)
 {
 	int		i, x;
-	vec_t	max, v;
+	float	max, v;
 	vec3_t	org, vright, vup;
 	winding_t	*w;
 	
@@ -282,15 +282,15 @@ winding_t	*ReverseWinding (winding_t *w)
 ClipWindingEpsilon
 =============
 */
-void	ClipWindingEpsilon (winding_t *in, vec3_t normal, vec_t dist, 
-				vec_t epsilon, winding_t **front, winding_t **back)
+void	ClipWindingEpsilon (winding_t *in, vec3_t normal, float dist, 
+				float epsilon, winding_t **front, winding_t **back)
 {
-	vec_t	dists[MAX_POINTS_ON_WINDING+4];
+	float	dists[MAX_POINTS_ON_WINDING+4];
 	int		sides[MAX_POINTS_ON_WINDING+4];
 	int		counts[3];
-	static	vec_t	dot;		// VC 4.2 optimizer bug if not static
+	static	float	dot;		// VC 4.2 optimizer bug if not static
 	int		i, j;
-	vec_t	*p1, *p2;
+	float	*p1, *p2;
 	vec3_t	mid;
 	winding_t	*f, *b;
 	int		maxpts;
@@ -394,15 +394,15 @@ void	ClipWindingEpsilon (winding_t *in, vec3_t normal, vec_t dist,
 ChopWindingInPlace
 =============
 */
-void ChopWindingInPlace (winding_t **inout, vec3_t normal, vec_t dist, vec_t epsilon)
+void ChopWindingInPlace (winding_t **inout, vec3_t normal, float dist, float epsilon)
 {
 	winding_t	*in;
-	vec_t	dists[MAX_POINTS_ON_WINDING+4];
+	float	dists[MAX_POINTS_ON_WINDING+4];
 	int		sides[MAX_POINTS_ON_WINDING+4];
 	int		counts[3];
-	static	vec_t	dot;		// VC 4.2 optimizer bug if not static
+	static	float	dot;		// VC 4.2 optimizer bug if not static
 	int		i, j;
-	vec_t	*p1, *p2;
+	float	*p1, *p2;
 	vec3_t	mid;
 	winding_t	*f;
 	int		maxpts;
@@ -499,7 +499,7 @@ Returns the fragment of in that is on the front side
 of the cliping plane.  The original is freed.
 =================
 */
-winding_t	*ChopWinding (winding_t *in, vec3_t normal, vec_t dist)
+winding_t	*ChopWinding (winding_t *in, vec3_t normal, float dist)
 {
 	winding_t	*f, *b;
 
@@ -520,11 +520,11 @@ CheckWinding
 void CheckWinding (winding_t *w)
 {
 	int		i, j;
-	vec_t	*p1, *p2;
-	vec_t	d, edgedist;
+	float	*p1, *p2;
+	float	d, edgedist;
 	vec3_t	dir, edgenormal, facenormal;
-	vec_t	area;
-	vec_t	facedist;
+	float	area;
+	float	facedist;
 
 	if (w->numpoints < 3)
 		Com_Error (ERR_DROP, "CheckWinding: %i points",w->numpoints);
@@ -580,11 +580,11 @@ void CheckWinding (winding_t *w)
 WindingOnPlaneSide
 ============
 */
-int		WindingOnPlaneSide (winding_t *w, vec3_t normal, vec_t dist)
+int		WindingOnPlaneSide (winding_t *w, vec3_t normal, float dist)
 {
 	qboolean	front, back;
 	int			i;
-	vec_t		d;
+	float		d;
 
 	front = qfalse;
 	back = qfalse;

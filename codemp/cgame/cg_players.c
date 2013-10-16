@@ -4210,7 +4210,7 @@ qboolean CG_G2PlayerHeadAnims( centity_t *cent )
 }
 
 
-static void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t legsAngles)
+static void CG_G2PlayerAngles( centity_t *cent, matrix3_t legs, vec3_t legsAngles)
 {
 	clientInfo_t *ci;
 
@@ -4361,7 +4361,7 @@ CG_TrailItem
 static void CG_TrailItem( centity_t *cent, qhandle_t hModel ) {
 	refEntity_t		ent;
 	vec3_t			angles;
-	vec3_t			axis[3];
+	matrix3_t		axis;
 
 	VectorCopy( cent->lerpAngles, angles );
 	angles[PITCH] = 0;
@@ -4388,7 +4388,7 @@ CG_PlayerFlag
 static void CG_PlayerFlag( centity_t *cent, qhandle_t hModel ) {
 	refEntity_t		ent;
 	vec3_t			angles;
-	vec3_t			axis[3];
+	matrix3_t		axis;
 	vec3_t			boltOrg, tAng, getAng, right;
 	mdxaBone_t		boltMatrix;
 	clientInfo_t	*ci;
@@ -5458,7 +5458,7 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 //
 // Can pass in NULL for the axis
 //--------------------------------------------------------------
-void CG_GetTagWorldPosition( refEntity_t *model, char *tag, vec3_t pos, vec3_t axis[3] )
+void CG_GetTagWorldPosition( refEntity_t *model, char *tag, vec3_t pos, matrix3_t axis )
 {
 	orientation_t	orientation;
 	int i = 0;
@@ -5488,7 +5488,8 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 //	byte			colors[4];
 	int				i, j;
 	int				numFragments;
-	vec3_t			axis[3], originalPoints[4], mid;
+	matrix3_t		axis;
+	vec3_t			originalPoints[4], mid;
 	vec3_t			markPoints[MAX_MARK_POINTS], projection;
 	polyVert_t		*v, verts[MAX_VERTS_ON_POLY];
 	markPoly_t		*mark;
@@ -9394,7 +9395,7 @@ void CG_Player( centity_t *cent ) {
 	if (cent->currentState.activeForcePass > FORCE_LEVEL_3
 		&& cent->currentState.NPC_class != CLASS_VEHICLE)
 	{
-		vec3_t axis[3];
+		matrix3_t axis;
 		vec3_t tAng, fAng, fxDir;
 		vec3_t efOrg;
 
@@ -9454,7 +9455,7 @@ void CG_Player( centity_t *cent ) {
 	else if ( cent->currentState.activeForcePass 
 		&& cent->currentState.NPC_class != CLASS_VEHICLE)
 	{//doing the electrocuting
-		vec3_t axis[3];
+		matrix3_t axis;
 		vec3_t tAng, fAng, fxDir;
 		vec3_t efOrg;
 
@@ -9719,7 +9720,7 @@ void CG_Player( centity_t *cent ) {
 		{
 			vec3_t efOrg;
 			vec3_t tAng, fxAng;
-			vec3_t axis[3];
+			matrix3_t axis;
 
 			//VectorSet( tAng, 0, cent->pe.torso.yawAngle, 0 );
 			VectorSet( tAng, cent->turAngles[PITCH], cent->turAngles[YAW], cent->turAngles[ROLL] );

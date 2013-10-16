@@ -388,22 +388,11 @@ MATHLIB
 */
 
 
-typedef float vec_t;
-typedef vec_t vec2_t[2];
-typedef vec_t vec3_t[3];
-typedef vec_t vec4_t[4];
-typedef vec_t vec5_t[5];
+typedef float	 vec2_t[2],	 vec3_t[3],	 vec4_t[4],	 vec5_t[5];
+typedef int		ivec2_t[2],	ivec3_t[3],	ivec4_t[4],	ivec5_t[5];
+typedef vec3_t vec3pair_t[2], matrix3_t[3];
 
-//rwwRMG - new vec types
-typedef vec3_t	vec3pair_t[2];
-
-typedef int ivec3_t[3];
-typedef int ivec4_t[4];
-typedef int ivec5_t[5];
-
-typedef	int	fixed4_t;
-typedef	int	fixed8_t;
-typedef	int	fixed16_t;
+typedef	int	fixed4_t, fixed8_t, fixed16_t;
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846f	// matches value in gcc v2 math.h
@@ -817,8 +806,8 @@ extern vec4_t g_color_table[Q_COLOR_BITS+1];
 
 struct cplane_s;
 
-extern	vec3_t	vec3_origin;
-extern	vec3_t	axisDefault[3];
+extern	vec3_t		vec3_origin;
+extern	matrix3_t	axisDefault;
 
 #define	nanmask (255<<23)
 #define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
@@ -877,28 +866,28 @@ void ByteToDir( int b, vec3_t dir );
 
 void		VectorAdd( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
 void		VectorSubtract( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-void		VectorScale( const vec3_t vecIn, vec_t scale, vec3_t vecOut );
-void		VectorScale4( const vec4_t vecIn, vec_t scale, vec4_t vecOut );
+void		VectorScale( const vec3_t vecIn, float scale, vec3_t vecOut );
+void		VectorScale4( const vec4_t vecIn, float scale, vec4_t vecOut );
 void		VectorMA( const vec3_t vec1, float scale, const vec3_t vec2, vec3_t vecOut );
-vec_t		VectorLength( const vec3_t vec );
-vec_t		VectorLengthSquared( const vec3_t vec );
-vec_t		Distance( const vec3_t p1, const vec3_t p2 );
-vec_t		DistanceSquared( const vec3_t p1, const vec3_t p2 );
+float		VectorLength( const vec3_t vec );
+float		VectorLengthSquared( const vec3_t vec );
+float		Distance( const vec3_t p1, const vec3_t p2 );
+float		DistanceSquared( const vec3_t p1, const vec3_t p2 );
 void		VectorNormalizeFast( vec3_t vec );
-vec_t		VectorNormalize( vec3_t vec );
-vec_t		VectorNormalize2( const vec3_t vec, vec3_t vecOut );
+float		VectorNormalize( vec3_t vec );
+float		VectorNormalize2( const vec3_t vec, vec3_t vecOut );
 void		VectorCopy( const vec3_t vecIn, vec3_t vecOut );
 void		VectorCopy4( const vec4_t vecIn, vec4_t vecOut );
-void		VectorSet( vec3_t vec, vec_t x, vec_t y, vec_t z );
-void		VectorSet4( vec4_t vec, vec_t x, vec_t y, vec_t z, vec_t w );
-void		VectorSet5( vec5_t vec, vec_t x, vec_t y, vec_t z, vec_t w, vec_t u );
+void		VectorSet( vec3_t vec, float x, float y, float z );
+void		VectorSet4( vec4_t vec, float x, float y, float z, float w );
+void		VectorSet5( vec5_t vec, float x, float y, float z, float w, float u );
 void		VectorClear( vec3_t vec );
 void		VectorClear4( vec4_t vec );
 void		VectorInc( vec3_t vec );
 void		VectorDec( vec3_t vec );
 void		VectorInverse( vec3_t vec );
 void		CrossProduct( const vec3_t vec1, const vec3_t vec2, vec3_t vecOut );
-vec_t		DotProduct( const vec3_t vec1, const vec3_t vec2 );
+float		DotProduct( const vec3_t vec1, const vec3_t vec2 );
 qboolean	VectorCompare( const vec3_t vec1, const vec3_t vec2 );
 void		SnapVector( float *v );
 
@@ -943,10 +932,10 @@ float NormalizeColor( const vec3_t in, vec3_t out );
 
 float RadiusFromBounds( const vec3_t mins, const vec3_t maxs );
 void ClearBounds( vec3_t mins, vec3_t maxs );
-vec_t DistanceHorizontal( const vec3_t p1, const vec3_t p2 );
-vec_t DistanceHorizontalSquared( const vec3_t p1, const vec3_t p2 );
+float DistanceHorizontal( const vec3_t p1, const vec3_t p2 );
+float DistanceHorizontalSquared( const vec3_t p1, const vec3_t p2 );
 void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs );
-void VectorRotate( const vec3_t in, vec3_t matrix[3], vec3_t out );
+void VectorRotate( const vec3_t in, matrix3_t matrix, vec3_t out );
 int Q_log2(int val);
 
 qboolean Q_isnan(float f);
@@ -961,10 +950,10 @@ float	Q_crandom( int *seed );
 #define crandom()	(2.0 * (random() - 0.5))
 
 void vectoangles( const vec3_t value1, vec3_t angles);
-void AnglesToAxis( const vec3_t angles, vec3_t axis[3] );
+void AnglesToAxis( const vec3_t angles, matrix3_t axis );
 
-void AxisClear( vec3_t axis[3] );
-void AxisCopy( vec3_t in[3], vec3_t out[3] );
+void AxisClear( matrix3_t axis );
+void AxisCopy( matrix3_t in, matrix3_t out );
 
 void SetPlaneSignbits( struct cplane_s *out );
 int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
@@ -982,7 +971,7 @@ float AngleDelta ( float angle1, float angle2 );
 qboolean PlaneFromPoints( vec4_t plane, const vec3_t a, const vec3_t b, const vec3_t c );
 void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal );
 void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, float degrees );
-void RotateAroundDirection( vec3_t axis[3], float yaw );
+void RotateAroundDirection( matrix3_t axis, float yaw );
 void MakeNormalVectors( const vec3_t forward, vec3_t right, vec3_t up );
 // perpendicular vector could be replaced by this
 
@@ -1331,7 +1320,7 @@ typedef struct markFragment_s {
 
 typedef struct orientation_s {
 	vec3_t		origin;
-	vec3_t		axis[3];
+	matrix3_t	axis;
 } orientation_t;
 
 //=====================================================================

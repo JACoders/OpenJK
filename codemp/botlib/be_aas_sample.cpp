@@ -196,7 +196,7 @@ void AAS_FreeAASLinkedEntities(void)
 int AAS_PointAreaNum(vec3_t point)
 {
 	int nodenum;
-	vec_t	dist;
+	float	dist;
 	aas_node_t *node;
 	aas_plane_t *plane;
 
@@ -346,7 +346,7 @@ int AAS_PointPresenceType(vec3_t point)
 // Returns:					-
 // Changes Globals:		-
 //===========================================================================
-vec_t AAS_BoxOriginDistanceFromPlane(vec3_t normal, vec3_t mins, vec3_t maxs, int side)
+float AAS_BoxOriginDistanceFromPlane(vec3_t normal, vec3_t mins, vec3_t maxs, int side)
 {
 	vec3_t v1, v2;
 	int i;
@@ -961,7 +961,7 @@ qboolean AAS_InsideFace(aas_face_t *face, vec3_t pnormal, vec3_t point, float ep
 qboolean AAS_PointInsideFace(int facenum, vec3_t point, float epsilon)
 {
 	int i, firstvertex, edgenum;
-	vec_t *v1, *v2;
+	float *v1, *v2;
 	vec3_t edgevec, pointvec, sepnormal;
 	aas_edge_t *edge;
 	aas_plane_t *plane;

@@ -36,7 +36,7 @@ BASIC MATH
 RotatePoint
 ================
 */
-void RotatePoint(vec3_t point, /*const*/ vec3_t matrix[3]) { // bk: FIXME 
+void RotatePoint(vec3_t point, /*const*/ matrix3_t matrix) { // bk: FIXME 
 	vec3_t tvec;
 
 	VectorCopy(point, tvec);
@@ -50,7 +50,7 @@ void RotatePoint(vec3_t point, /*const*/ vec3_t matrix[3]) { // bk: FIXME
 TransposeMatrix
 ================
 */
-void TransposeMatrix(/*const*/ vec3_t matrix[3], vec3_t transpose[3]) { // bk: FIXME
+void TransposeMatrix(/*const*/ matrix3_t matrix, matrix3_t transpose) { // bk: FIXME
 	int i, j;
 	for (i = 0; i < 3; i++) {
 		for (j = 0; j < 3; j++) {
@@ -64,7 +64,7 @@ void TransposeMatrix(/*const*/ vec3_t matrix[3], vec3_t transpose[3]) { // bk: F
 CreateRotationMatrix
 ================
 */
-void CreateRotationMatrix(const vec3_t angles, vec3_t matrix[3]) {
+void CreateRotationMatrix(const vec3_t angles, matrix3_t matrix) {
 	AngleVectors(angles, matrix[0], matrix[1], matrix[2]);
 	VectorInverse(matrix[1]);
 }
@@ -1812,7 +1812,7 @@ void CM_TransformedBoxTrace( trace_t *trace, const vec3_t start, const vec3_t en
 	qboolean	rotated;
 	vec3_t		offset;
 	vec3_t		symetricSize[2];
-	vec3_t		matrix[3], transpose[3];
+	matrix3_t	matrix, transpose;
 	int			i;
 	float		halfwidth;
 	float		halfheight;

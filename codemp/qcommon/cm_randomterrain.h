@@ -14,7 +14,7 @@ class CPathInfo
 {
 private:
 	vec4_t		*mPoints, *mWork;
-	vec_t		*mWeights;
+	float		*mWeights;
 	int			mNumPoints;
 	float		mInc;
 	float		mDepth, mBreadth;

@@ -1728,7 +1728,7 @@ void CM_DrawDebugSurface( void (*drawPoly)(int color, int numPoints, float *poin
 
 	// draw the debug block
 	{
-		vec3_t			v[3];
+		matrix3_t v;
 
 		VectorCopy( debugBlockPoints[0], v[0] );
 		VectorCopy( debugBlockPoints[1], v[1] );

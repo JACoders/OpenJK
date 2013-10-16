@@ -142,12 +142,12 @@ char    *vtos( const vec3_t v ) {
 }
 void SP_misc_model_static( void ) {
 	char* model;
-	vec_t angle;
+	float angle;
 	vec3_t angles;
-	vec_t scale;
+	float scale;
 	vec3_t vScale;
 	vec3_t org;
-	vec_t zoffset;
+	float zoffset;
 	int i;
 	int modelIndex;
 	cg_staticmodel_t *staticmodel;
@@ -221,7 +221,7 @@ vec3_t cg_skyOriPos;
 float cg_skyOriScale = 0.0f;
 void SP_misc_skyportal_orient( void ) {
 	vec3_t org;
-	vec_t scale;
+	float scale;
 
 	if( cg_skyOri ) {
 		trap->Error( ERR_DROP, "ERROR: multiple misc_skyportal_orients found" );

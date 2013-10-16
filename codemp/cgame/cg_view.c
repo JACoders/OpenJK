@@ -2364,7 +2364,7 @@ qboolean CG_CullPoint( vec3_t pt ) {
 	return( qfalse );
 }
 
-qboolean CG_CullPointAndRadius( const vec3_t pt, vec_t radius ) {
+qboolean CG_CullPointAndRadius( const vec3_t pt, float radius ) {
 	int i;
 	plane_t *frust;
 

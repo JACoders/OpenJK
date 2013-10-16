@@ -805,9 +805,9 @@ typedef struct cg_s {
 
 	// auto rotating items
 	vec3_t		autoAngles;
-	vec3_t		autoAxis[3];
+	matrix3_t	autoAxis;
 	vec3_t		autoAnglesFast;
-	vec3_t		autoAxisFast[3];
+	matrix3_t	autoAxisFast;
 
 	// view rendering
 	refdef_t	refdef;
@@ -1494,8 +1494,8 @@ typedef struct cgEffects_s {
 typedef struct cg_staticmodel_s {
 	qhandle_t		model;
 	vec3_t			org;
-	vec3_t			axes[3];
-	vec_t			radius;
+	matrix3_t		axes;
+	float			radius;
 	float			zoffset;
 } cg_staticmodel_t;
 

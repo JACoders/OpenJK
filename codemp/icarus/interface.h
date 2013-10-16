@@ -2,8 +2,7 @@
 
 // ICARUS Interface header file
 
-typedef	float	vec_t;
-typedef	vec_t	vec3_t[3];
+typedef	float vec3_t[3];
 
 class CSequencer;
 class CTaskManager;
