@@ -315,6 +315,8 @@ qhandle_t RE_RegisterModel( const char *name ) {
 		return 0;
 	}
 
+	CModelCache->InsertLoaded( name, mod->index );
+
 	// only set the name after the model has been successfully loaded
 	Q_strncpyz( mod->name, name, sizeof( mod->name ) );
 
