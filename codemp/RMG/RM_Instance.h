@@ -101,7 +101,7 @@ public:
 	const char			*GetTeamFilter		( )		{ return mTeamFilter; }
 	
 	CRMArea&			GetArea				( )		{ return *mArea; }
-	vec_t*				GetOrigin			( ) 	{return mArea->GetOrigin(); }
+	float*				GetOrigin			( ) 	{return mArea->GetOrigin(); }
 	float				GetAngle			( )		{return mArea->GetAngle();}
 	void				SetAngle(float ang )		{ mArea->SetAngle(ang);}
 	const vec3pair_t&	GetBounds(void) const		{ return(mBounds); }

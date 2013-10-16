@@ -153,7 +153,7 @@ void trap_S_AddRealLoopingSound( int entityNum, const vec3_t origin, const vec3_
 void trap_S_StopLoopingSound( int entityNum ) {
 	Q_syscall( CG_S_STOPLOOPINGSOUND, entityNum );
 }
-void trap_S_Respatialize( int entityNum, const vec3_t origin, vec3_t axis[3], int inwater ) {
+void trap_S_Respatialize( int entityNum, const vec3_t origin, matrix3_t axis, int inwater ) {
 	Q_syscall( CG_S_RESPATIALIZE, entityNum, origin, axis, inwater );
 }
 void trap_S_ShutUp(qboolean shutUpFactor) {
@@ -416,7 +416,7 @@ int	trap_FX_RegisterEffect(const char *file) {
 void trap_FX_PlayEffect( const char *file, vec3_t org, vec3_t fwd, int vol, int rad ) {
 	Q_syscall( CG_FX_PLAY_EFFECT, file, org, fwd, vol, rad);
 }
-void trap_FX_PlayEntityEffect( const char *file, vec3_t org, vec3_t axis[3], const int boltInfo, const int entNum, int vol, int rad ) {
+void trap_FX_PlayEntityEffect( const char *file, vec3_t org, matrix3_t axis, const int boltInfo, const int entNum, int vol, int rad ) {
 	Q_syscall( CG_FX_PLAY_ENTITY_EFFECT, file, org, axis, boltInfo, entNum, vol, rad );
 }
 void trap_FX_PlayEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad ) {
@@ -425,7 +425,7 @@ void trap_FX_PlayEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad ) {
 void trap_FX_PlayPortalEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad ) {
 	Q_syscall( CG_FX_PLAY_PORTAL_EFFECT_ID, id, org, fwd);
 }
-void trap_FX_PlayEntityEffectID( int id, vec3_t org, vec3_t axis[3], const int boltInfo, const int entNum, int vol, int rad ) {
+void trap_FX_PlayEntityEffectID( int id, vec3_t org, matrix3_t axis, const int boltInfo, const int entNum, int vol, int rad ) {
 	Q_syscall( CG_FX_PLAY_ENTITY_EFFECT_ID, id, org, axis, boltInfo, entNum, vol, rad );
 }
 qboolean trap_FX_PlayBoltedEffectID( int id, vec3_t org, void *ghoul2, const int boltNum, const int entNum, const int modelNum, int iLooptime, qboolean isRelative ) {

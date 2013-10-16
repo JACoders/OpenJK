@@ -714,7 +714,7 @@ static QINLINE qboolean G_CheckLookTarget( gentity_t *ent, vec3_t	lookAngles, fl
 //This is primarily droid stuff I guess, I'm going to try to handle all humanoid
 //NPC stuff in with the actual player stuff if possible.
 void NPC_SetBoneAngles(gentity_t *ent, char *bone, vec3_t angles);
-static QINLINE void G_G2NPCAngles(gentity_t *ent, vec3_t legs[3], vec3_t angles)
+static QINLINE void G_G2NPCAngles(gentity_t *ent, matrix3_t legs, vec3_t angles)
 {
 	char *craniumBone = "cranium";
 	char *thoracicBone = "thoracic"; //only used by atst so doesn't need a case
@@ -863,7 +863,7 @@ static QINLINE void G_G2NPCAngles(gentity_t *ent, vec3_t legs[3], vec3_t angles)
 	}
 }
 
-static QINLINE void G_G2PlayerAngles( gentity_t *ent, vec3_t legs[3], vec3_t legsAngles)
+static QINLINE void G_G2PlayerAngles( gentity_t *ent, matrix3_t legs, vec3_t legsAngles)
 {
 	qboolean tPitching = qfalse,
 			 tYawing = qfalse,
@@ -8077,7 +8077,7 @@ void WP_SaberPositionUpdate( gentity_t *self, usercmd_t *ucmd )
 	vec3_t properAngles, properOrigin;
 	vec3_t boltAngles, boltOrigin;
 	vec3_t end;
-	vec3_t legAxis[3];
+	matrix3_t legAxis;
 	vec3_t addVel;
 	vec3_t rawAngles;
 	float fVSpeed = 0;

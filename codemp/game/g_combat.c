@@ -3170,7 +3170,7 @@ void G_GetDismemberBolt(gentity_t *self, vec3_t boltPoint, int limbType)
 {
 	int useBolt = self->genericValue5;
 	vec3_t properOrigin, properAngles, addVel;
-	//vec3_t legAxis[3];
+	//matrix3_t legAxis;
 	mdxaBone_t	boltMatrix;
 	float fVSpeed = 0;
 	char *rotateBone = NULL;

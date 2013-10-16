@@ -80,7 +80,7 @@ typedef struct trRefEntity_s {
 
 typedef struct orientationr_s {
 	vec3_t		origin;			// in world coordinates
-	vec3_t		axis[3];		// orientation in world
+	matrix3_t	axis;		// orientation in world
 	vec3_t		viewOrigin;		// viewParms->or.origin in local coordinates
 	float		modelMatrix[16];
 } orientationr_t;
@@ -502,7 +502,7 @@ typedef struct trRefdef_s {
 	int			x, y, width, height;
 	float		fov_x, fov_y;
 	vec3_t		vieworg;
-	vec3_t		viewaxis[3];		// transformation matrix
+	matrix3_t	viewaxis;		// transformation matrix
 
 	int			time;				// time in milliseconds for shader effects and other time dependent rendering issues
 	int			frametime;

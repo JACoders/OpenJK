@@ -115,7 +115,7 @@ gentity_t	*G_TestEntityPosition( gentity_t *ent ) {
 G_CreateRotationMatrix
 ================
 */
-void G_CreateRotationMatrix(vec3_t angles, vec3_t matrix[3]) {
+void G_CreateRotationMatrix(vec3_t angles, matrix3_t matrix) {
 	AngleVectors(angles, matrix[0], matrix[1], matrix[2]);
 	VectorInverse(matrix[1]);
 }
@@ -125,7 +125,7 @@ void G_CreateRotationMatrix(vec3_t angles, vec3_t matrix[3]) {
 G_TransposeMatrix
 ================
 */
-void G_TransposeMatrix(vec3_t matrix[3], vec3_t transpose[3]) {
+void G_TransposeMatrix(matrix3_t matrix, matrix3_t transpose) {
 	int i, j;
 	for (i = 0; i < 3; i++) {
 		for (j = 0; j < 3; j++) {
@@ -139,7 +139,7 @@ void G_TransposeMatrix(vec3_t matrix[3], vec3_t transpose[3]) {
 G_RotatePoint
 ================
 */
-void G_RotatePoint(vec3_t point, vec3_t matrix[3]) {
+void G_RotatePoint(vec3_t point, matrix3_t matrix) {
 	vec3_t tvec;
 
 	VectorCopy(point, tvec);
@@ -156,7 +156,7 @@ Returns qfalse if the move is blocked
 ==================
 */
 qboolean	G_TryPushingEntity( gentity_t *check, gentity_t *pusher, vec3_t move, vec3_t amove ) {
-	vec3_t		matrix[3], transpose[3];
+	matrix3_t	matrix, transpose;
 	vec3_t		org, org2, move2;
 	gentity_t	*block;
 

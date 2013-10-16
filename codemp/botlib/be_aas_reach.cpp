@@ -96,7 +96,7 @@ float AAS_FaceArea(aas_face_t *face)
 {
 	int i, edgenum, side;
 	float total;
-	vec_t *v;
+	float *v;
 	vec3_t d1, d2, cross;
 	aas_edge_t *edge;
 
@@ -128,7 +128,7 @@ float AAS_FaceArea(aas_face_t *face)
 float AAS_AreaVolume(int areanum)
 {
 	int i, edgenum, facenum, side;
-	vec_t d, a, volume;
+	float d, a, volume;
 	vec3_t corner;
 	aas_plane_t *plane;
 	aas_edge_t *edge;
@@ -2090,7 +2090,7 @@ int AAS_Reachability_Jump(int area1num, int area2num)
 	int i, j, k, l, face1num, face2num, edge1num, edge2num, traveltype;
 	int stopevent, areas[10], numareas;
 	float phys_jumpvel, maxjumpdistance, maxjumpheight, height, bestdist, speed;
-	vec_t *v1, *v2, *v3, *v4;
+	float *v1, *v2, *v3, *v4;
 	vec3_t beststart, beststart2, bestend, bestend2;
 	vec3_t teststart, testend, dir, velocity, cmdmove, up = {0, 0, 1}, sidewards;
 	aas_area_t *area1, *area2;
@@ -2923,7 +2923,7 @@ void AAS_Reachability_Elevator(void)
 	vec3_t mins, maxs, origin, angles = {0, 0, 0};
 	vec3_t pos1, pos2, mids, platbottom, plattop;
 	vec3_t bottomorg, toporg, start, end, dir;
-	vec_t xvals[8], yvals[8], xvals_top[8], yvals_top[8];
+	float xvals[8], yvals[8], xvals_top[8], yvals_top[8];
 	aas_lreachability_t *lreach;
 	aas_trace_t trace;
 
@@ -3770,7 +3770,7 @@ int AAS_Reachability_Grapple(int area1num, int area2num)
 	aas_area_t *area1, *area2;
 	aas_lreachability_t *lreach;
 	vec3_t areastart, facecenter, start, end, dir, down = {0, 0, -1};
-	vec_t *v;
+	float *v;
 
 	//only grapple when on the ground or swimming
 	if (!AAS_AreaGrounded(area1num) && !AAS_AreaSwim(area1num)) return qfalse;
@@ -4103,7 +4103,7 @@ void AAS_Reachability_WalkOffLedge(int areanum)
 	aas_face_t *face1, *face2, *face3;
 	aas_edge_t *edge;
 	aas_plane_t *plane;
-	vec_t *v1, *v2;
+	float *v1, *v2;
 	vec3_t sharededgevec, mid, dir, testend;
 	aas_lreachability_t *lreach;
 	aas_trace_t trace;

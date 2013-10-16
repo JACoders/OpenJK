@@ -824,7 +824,7 @@ qboolean CROFFSystem::ApplyROFF( SROFFEntity *roff_ent, CROFFSystem::CROFF *roff
 	vec3_t			f, r, u, result;
 	sharedEntity_t	*ent = NULL;
 	trajectory_t	*originTrajectory, *angleTrajectory;
-	vec_t			*origin, *angle;
+	float			*origin, *angle;
 
 
 	if ( svs.time < roff_ent->mNextROFFTime )
@@ -976,7 +976,7 @@ qboolean CROFFSystem::ClearLerp( SROFFEntity *roff_ent )
 {
 	sharedEntity_t	*ent;
 	trajectory_t	*originTrajectory = NULL, *angleTrajectory = NULL;
-	vec_t			*origin = NULL, *angle = NULL;
+	float			*origin = NULL, *angle = NULL;
 
 	if (roff_ent->mIsClient)
 	{

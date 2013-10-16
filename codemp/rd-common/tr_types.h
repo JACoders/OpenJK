@@ -106,7 +106,7 @@ typedef struct miniRefEntity_s
 	qhandle_t			hModel;				// opaque type outside refresh
 
 	// most recent data
-	vec3_t				axis[3];			// rotation vectors
+	matrix3_t			axis;			// rotation vectors
 	qboolean			nonNormalizedAxes;	// axis are not normalized, i.e. they have scale
 	vec3_t				origin;				// also used as MODEL_BEAM's "from"
 
@@ -143,7 +143,7 @@ typedef struct refEntity_s {
 	qhandle_t			hModel;				// opaque type outside refresh
 
 	// most recent data
-	vec3_t				axis[3];			// rotation vectors
+	matrix3_t			axis;			// rotation vectors
 	qboolean			nonNormalizedAxes;	// axis are not normalized, i.e. they have scale
 	vec3_t				origin;				// also used as MODEL_BEAM's "from"
 
@@ -319,7 +319,7 @@ typedef struct refdef_s {
 	float		fov_x, fov_y;
 	vec3_t		vieworg;
 	vec3_t		viewangles;
-	vec3_t		viewaxis[3];		// transformation matrix
+	matrix3_t	viewaxis;		// transformation matrix
 	int			viewContents;		// world contents at vieworg
 
 	// time in milliseconds for shader effects and other time dependent rendering issues

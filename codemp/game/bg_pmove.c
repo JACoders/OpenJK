@@ -9102,7 +9102,7 @@ qboolean BG_InRoll2( entityState_t *es )
 
 extern qboolean BG_SaberLockBreakAnim( int anim ); //bg_panimate.c
 void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int time, vec3_t cent_lerpOrigin,
-					   vec3_t cent_lerpAngles, vec3_t legs[3], vec3_t legsAngles, qboolean *tYawing,
+					   vec3_t cent_lerpAngles, matrix3_t legs, vec3_t legsAngles, qboolean *tYawing,
 					   qboolean *tPitching, qboolean *lYawing, float *tYawAngle, float *tPitchAngle,
 					   float *lYawAngle, int frametime, vec3_t turAngles, vec3_t modelScale, int ciLegs,
 					   int ciTorso, int *corrTime, vec3_t lookAngles, vec3_t lastHeadAngles, int lookTime,
@@ -9233,7 +9233,7 @@ void BG_G2PlayerAngles(void *ghoul2, int motionBolt, entityState_t *cent, int ti
 	// --------- roll -------------
 
 	if ( speed ) {
-		vec3_t	axis[3];
+		matrix3_t	axis;
 		float	side;
 
 		speed *= 0.05f;
@@ -10020,10 +10020,10 @@ void BG_VehicleAdjustBBoxForOrientation( Vehicle_t *veh, vec3_t origin, vec3_t m
 	}
 	else
 	{
-		vec3_t	axis[3], point[8];
-		vec3_t	newMins, newMaxs;
-		int		curAxis = 0, i;
-		trace_t trace;
+		matrix3_t	axis;
+		vec3_t		point[8], newMins, newMaxs;
+		int			curAxis = 0, i;
+		trace_t		trace;
 
 		AnglesToAxis( veh->m_vOrientation, axis );
 		VectorMA( origin, veh->m_pVehicleInfo->length/2.0f, axis[0], point[0] );

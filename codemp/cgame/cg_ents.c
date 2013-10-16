@@ -56,7 +56,7 @@ void CG_PositionRotatedEntityOnTag( refEntity_t *entity, const refEntity_t *pare
 							qhandle_t parentModel, char *tagName ) {
 	int				i;
 	orientation_t	lerped;
-	vec3_t			tempAxis[3];
+	matrix3_t		tempAxis;
 
 //AxisClear( entity->axis );
 	// lerp the tag

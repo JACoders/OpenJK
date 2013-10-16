@@ -5,7 +5,7 @@ int	FX_RegisterEffect(const char *file);
 void FX_PlayEffect( const char *file, vec3_t org, vec3_t fwd, int vol, int rad );		// builds arbitrary perp. right vector, does a cross product to define up
 
 void FX_PlayEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad, qboolean isPortal = qfalse );		// builds arbitrary perp. right vector, does a cross product to define up
-void FX_PlayEntityEffectID( int id, vec3_t org, vec3_t axis[3], const int boltInfo, const int entNum, int vol, int rad );
+void FX_PlayEntityEffectID( int id, vec3_t org, matrix3_t axis, const int boltInfo, const int entNum, int vol, int rad );
 void FX_PlayBoltedEffectID( int id, vec3_t org, const int boltInfo, int iGhoul2, int iLooptime, qboolean isRelative );
 
 void FX_AddScheduledEffects( qboolean portal );

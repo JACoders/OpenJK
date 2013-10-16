@@ -5195,9 +5195,9 @@ static void CG_DrawCrosshair( vec3_t worldPoint, int chEntValid ) {
 qboolean CG_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y)
 {
     vec3_t trans;
-    vec_t xc, yc;
-    vec_t px, py;
-    vec_t z;
+    float xc, yc;
+    float px, py;
+    float z;
 
     px = tan(cg.refdef.fov_x * (M_PI / 360) );
     py = tan(cg.refdef.fov_y * (M_PI / 360) );
@@ -8253,7 +8253,7 @@ static void CG_Draw2D( void ) {
 	CG_ChatBox_DrawStrings();
 }
 
-qboolean CG_CullPointAndRadius( const vec3_t pt, vec_t radius);
+qboolean CG_CullPointAndRadius( const vec3_t pt, float radius);
 void CG_DrawMiscStaticModels( void ) {
 	int i, j;
 	refEntity_t ent;

@@ -140,7 +140,7 @@ bool CParticle::Update(void)
 		}
 
 		vec3_t	org;
-		vec3_t	ax[3];
+		matrix3_t	ax;
 
 		// Get our current position and direction
 		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, org, ax))
@@ -711,7 +711,7 @@ bool COrientedParticle::Update(void)
 			return false;
 		}
 		vec3_t	org;
-		vec3_t	ax[3];
+		matrix3_t	ax;
 
 		// Get our current position and direction
 		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, org, ax))
@@ -750,7 +750,7 @@ bool COrientedParticle::Update(void)
 		//vec3_t	offsetAngles;
 		//VectorSet( offsetAngles, 0, 90, 90 );
 
-		vec3_t	offsetAxis[3];
+		matrix3_t	offsetAxis;
 		//NOTE: mNormal is actually PITCH YAW and ROLL offsets
 		AnglesToAxis( mNormal, offsetAxis );
 		MatrixMultiply( offsetAxis, ax, mRefEnt.axis );
@@ -817,7 +817,7 @@ bool CLine::Update(void)
 			return false;
 		}
 
-		vec3_t	ax[3];
+		matrix3_t	ax;
 		// Get our current position and direction
 		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
 		{	//could not get bolt
@@ -909,7 +909,7 @@ bool CElectricity::Update(void)
 			return false;
 		}
 
-		vec3_t	ax[3];
+		matrix3_t	ax;
 		// Get our current position and direction
 		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
 		{	//could not get bolt
@@ -977,7 +977,7 @@ bool CTail::Update(void)
 			return false;
 		}
 		vec3_t	org;
-		vec3_t	ax[3];
+		matrix3_t	ax;
 		if (mModelNum>=0 && mBoltNum>=0)	//bolt style
 		{
 			if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, org, ax))
@@ -1274,7 +1274,7 @@ bool CCylinder::Update(void)
 			return false;
 		}
 
-		vec3_t	ax[3];
+		matrix3_t	ax;
 		// Get our current position and direction
 		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
 		{	//could not get bolt
@@ -1514,7 +1514,7 @@ bool CLight::Update(void)
 			return false;
 		}
 
-		vec3_t	ax[3];
+		matrix3_t	ax;
 		// Get our current position and direction
 		if (!theFxHelper.GetOriginAxisFromBolt(&mGhoul2, mEntNum, mModelNum, mBoltNum, mOrigin1, ax))
 		{	//could not get bolt

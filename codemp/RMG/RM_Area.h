@@ -56,9 +56,9 @@ public:
 	float	GetConfineRadius()	{ return mConfineRadius; }
 	float	GetAngle()			{ return mAngle; }
 	int		GetMoveCount()		{ return mMoveCount; }
-	vec_t*	GetOrigin()			{ return mOrigin; }
-	vec_t*	GetConfineOrigin()	{ return mConfineOrigin; }
-	vec_t*	GetLookAtOrigin()	{ return mLookAtOrigin; }
+	float*	GetOrigin()			{ return mOrigin; }
+	float*	GetConfineOrigin()	{ return mConfineOrigin; }
+	float*	GetLookAtOrigin()	{ return mLookAtOrigin; }
 	bool	GetLookAt()			{ return mLookAt;}
 	bool	GetLockOrigin()		{ return mLockOrigin; }
 	int		GetSymmetric()		{ return mSymmetric; }

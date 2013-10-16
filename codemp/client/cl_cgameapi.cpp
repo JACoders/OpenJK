@@ -1625,7 +1625,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_WE_ADDWEATHERZONE:
-		re->AddWeatherZone( (vec_t *)VMA(1), (vec_t *)VMA(2) );
+		re->AddWeatherZone( (float *)VMA(1), (float *)VMA(2) );
 		return 0;
 
 	default:

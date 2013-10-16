@@ -73,7 +73,7 @@ typedef struct md3Frame_s {
 typedef struct md3Tag_s {
 	char		name[MAX_QPATH];	// tag name
 	vec3_t		origin;
-	vec3_t		axis[3];
+	matrix3_t	axis;
 } md3Tag_t;
 
 /*
@@ -346,7 +346,7 @@ typedef struct dsurface_s {
 	int			lightmapWidth, lightmapHeight;
 
 	vec3_t		lightmapOrigin;
-	vec3_t		lightmapVecs[3];	// for patches, [0] and [1] are lodbounds
+	matrix3_t	lightmapVecs;	// for patches, [0] and [1] are lodbounds
 
 	int			patchWidth;
 	int			patchHeight;
