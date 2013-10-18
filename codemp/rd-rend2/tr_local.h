@@ -3202,4 +3202,6 @@ void C_LevelLoadBegin(const char *psMapName, ForceReload_e eForceReload);
 int C_GetLevel( void );
 void C_LevelLoadEnd( void );
 
+void RB_SurfaceGhoul( CRenderableSurface *surf );
+
 #endif //TR_LOCAL_H
