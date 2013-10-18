@@ -68,7 +68,7 @@ int strcmp( const char *string1, const char *string2 ) {
 	return *string1 - *string2;
 }
 
-
+#ifdef _MSC_VER
 char *strchr( const char *string, int c ) {
 	do {
 		if ( *string == c ) {
@@ -95,6 +95,7 @@ char *strstr( const char *string, const char *strCharSet ) {
 	}
 	return (char *)0;
 }
+#endif
 
 #ifndef _MSC_VER
 

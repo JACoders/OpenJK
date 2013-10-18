@@ -23,7 +23,7 @@ This file is part of Jedi Knight 2.
 
 // this include must remain at the top of every Icarus CPP file
 #include "icarus.h"
-
+#include "g_local.h"
 
 
 #include <assert.h>

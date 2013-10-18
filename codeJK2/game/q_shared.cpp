@@ -670,7 +670,7 @@ void Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooL
 	strncpy( dest, src, destsize-1 );
     dest[destsize-1] = 0;
 }
-/*                 
+                
 int Q_stricmpn (const char *s1, const char *s2, int n) {
 	int		c1, c2;
 	
@@ -717,8 +717,6 @@ int Q_strncmp (const char *s1, const char *s2, int n) {
 	return 0;		// strings are equal
 }
 
-
-
 char *Q_strlwr( char *s1 ) {
     char	*s;
 
@@ -740,7 +738,6 @@ char *Q_strupr( char *s1 ) {
 	}
     return s1;
 }
-*/
 
 // never goes past bounds or leaves without a terminating 0
 void Q_strcat( char *dest, int size, const char *src ) {
@@ -1234,6 +1231,13 @@ qboolean COM_ParseVec4( const char **buffer, vec4_t *c)
 		(*c)[i] = f;
 	}
 	return qfalse;
+}
+
+unsigned int timeGetTime() 
+{
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	return now.tv_usec/1000;
 }
 
 

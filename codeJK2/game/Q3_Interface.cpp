@@ -45,6 +45,10 @@ This file is part of Jedi Knight 2.
 #include "g_icarus.h"
 #include "wp_saber.h"
 
+#ifndef _WIN32
+#include <cstdlib>
+#endif
+
 extern int ICARUS_LinkEntity( int entID, CSequencer *sequencer, CTaskManager *taskManager );
 
 extern void InitMover( gentity_t *ent );
@@ -918,7 +922,7 @@ static gentity_t *Q3_GetEntityByName( const char *name )
 	strncpy( (char *) temp, name, sizeof(temp) );
 	temp[sizeof(temp)-1] = 0;
 
-	ei = ICARUS_EntList.find( strupr( (char *) temp ) );
+	ei = ICARUS_EntList.find( Q_strupr( (char *) temp ) );
 
 	if ( ei == ICARUS_EntList.end() )
 		return NULL;
@@ -1008,7 +1012,7 @@ static int Q3_PlaySound( int taskID, int entID, const char *name, const char *ch
 	qboolean		type_voice = qfalse;
 
 	Q_strncpyz( finalName, name, MAX_QPATH, 0 );
-	strupr(finalName);
+	Q_strupr(finalName);
 	//G_AddSexToMunroString( finalName, qtrue );
 
 	COM_StripExtension( (const char *)finalName, finalName );

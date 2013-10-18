@@ -19,8 +19,8 @@ This file is part of Jedi Knight 2.
 // Precompiled header file for the game dll
 
 #include "g_headers.h"
-#include "icarus.h"
-#include "NPC_Headers.h"
+#include "../icarus/icarus.h"
+#include "npc_headers.h"
 #include "../cgame/cg_headers.h"
 
 

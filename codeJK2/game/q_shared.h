@@ -324,6 +324,38 @@ static inline long Q_ftol(float f)
 }
 #endif
 
+#if defined (_MSC_VER) && (_MSC_VER >= 1600)
+
+	#include <stdint.h>
+
+	// vsnprintf is ISO/IEC 9899:1999
+	// abstracting this to make it portable
+	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+
+#elif defined (_MSC_VER)
+
+	#include <io.h>
+
+	typedef signed __int64 int64_t;
+	typedef signed __int32 int32_t;
+	typedef signed __int16 int16_t;
+	typedef signed __int8  int8_t;
+	typedef unsigned __int64 uint64_t;
+	typedef unsigned __int32 uint32_t;
+	typedef unsigned __int16 uint16_t;
+	typedef unsigned __int8  uint8_t;
+
+	// vsnprintf is ISO/IEC 9899:1999
+	// abstracting this to make it portable
+	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+#else // not using MSVC
+
+	#include <stdint.h>
+
+	#define Q_vsnprintf vsnprintf
+
+#endif
+
 #define NUMVERTEXNORMALS	162
 extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
 
@@ -704,6 +736,14 @@ inline vec_t VectorNormalize2( const vec3_t v, vec3_t out) {
 
 int Q_log2(int val);
 
+inline qboolean Q_isnan ( float f ) {
+#ifdef _WIN32
+	return _isnan (f);
+#else
+	return isnan (f);
+#endif
+}
+
 inline int Q_rand( int *seed ) {
 	*seed = (69069 * *seed + 1);
 	return *seed;
@@ -719,19 +759,28 @@ inline float Q_crandom( int *seed ) {
 
 //  Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max
 inline float Q_flrand(float min, float max) {
-	return ((rand() * (max - min)) / 32768.0F) + min;
+	return ((rand() * (max - min)) / ((float)RAND_MAX)) + min;
 }
 
 // Returns an integer min <= x <= max (ie inclusive)
 inline int Q_irand(int min, int max) {
 	max++; //so it can round down
+#ifdef _WIN32
 	return ((rand() * (max - min)) >> 15) + min;
+#else
+	//rand() returns much larger values on OSX/Linux, so make the result smaller
+	return (((rand() % 0x7fff) * (max - min)) >> 15) + min;
+#endif
 }
 
+#ifdef _WIN32
 //returns a float between 0 and 1.0
 inline float random() {
 	return (rand() / ((float)0x7fff));
 }
+#else
+#define random() (rand() / ((float)RAND_MAX))
+#endif
 
 //returns a float between -1 and 1.0
 inline float crandom() {
@@ -943,21 +992,29 @@ int Q_islower( int c );
 int Q_isupper( int c );
 int Q_isalpha( int c );
 
-// portable case insensitive compare
-//inline  int Q_stricmp (const char *s1, const char *s2) {return Q_stricmpn (s1, s2, 99999);}
-//int		Q_strncmp (const char *s1, const char *s2, int n);
-//int		Q_stricmpn (const char *s1, const char *s2, int n);
-//char	*Q_strlwr( char *s1 );
-//char	*Q_strupr( char *s1 );
-//char	*Q_strrchr( const char* string, int c );
+#ifndef _WIN32
+#include <sys/time.h>
+unsigned int timeGetTime();
+#endif
+#include <time.h>
 
+#if 1
+// portable case insensitive compare
+int		Q_strncmp (const char *s1, const char *s2, int n);
+int		Q_stricmpn (const char *s1, const char *s2, int n);
+inline  int Q_stricmp (const char *s1, const char *s2) {return Q_stricmpn (s1, s2, 99999);}
+char	*Q_strlwr( char *s1 );
+char	*Q_strupr( char *s1 );
+char	*Q_strrchr( const char* string, int c );
+#else
 // NON-portable (but faster) versions
 inline int	Q_stricmp (const char *s1, const char *s2) { return stricmp(s1, s2); }
 inline int	Q_strncmp (const char *s1, const char *s2, int n) { return strncmp(s1, s2, n); }
 inline int	Q_stricmpn (const char *s1, const char *s2, int n) { return strnicmp(s1, s2, n); }
 inline char	*Q_strlwr( char *s1 ) { return strlwr(s1); }
 inline char	*Q_strupr( char *s1 ) { return strupr(s1); }
-inline char	*Q_strrchr( const char* str, int c ) { return (char *)strrchr(str, c); }
+inline const char	*Q_strrchr( const char* str, int c ) { return strrchr(str, c); }
+#endif
 
 
 // buffer size safe library replacements
