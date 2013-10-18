@@ -461,7 +461,7 @@ void CG_CaptionText( const char *str, int sound )
 	{	
 #ifndef FINAL_BUILD
 		// we only care about some sound dirs...
-		if (!strnicmp(str,"sound/chars/",12))	// whichever language it is, it'll be pathed as english at this point
+		if (!Q_strncmp(str,"sound/chars/",12))	// whichever language it is, it'll be pathed as english at this point
 		{
 			Com_Printf("WARNING: CG_CaptionText given invalid text key :'%s'\n",str);
 		}

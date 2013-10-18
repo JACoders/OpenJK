@@ -28,6 +28,7 @@ This file is part of Jedi Knight 2.
 #include "g_shared.h"
 #include "anims.h"
 #include "dmstates.h"
+#include "time.h"
 
 //==================================================================
 

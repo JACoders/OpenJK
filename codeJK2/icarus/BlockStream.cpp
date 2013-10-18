@@ -28,7 +28,8 @@ This file is part of Jedi Knight 2.
 #pragma warning(disable : 4710)  //member not inlined
 
 #include <string.h>
-#include "BlockStream.h"
+#include "blockstream.h"
+#include "g_local.h"
 
 /*
 ===================================================================================================

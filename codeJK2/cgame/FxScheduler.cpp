@@ -38,6 +38,10 @@ This file is part of Jedi Knight 2.
 
 #include "cg_media.h"
 
+#ifndef _WIN32
+    #include <cmath>
+#endif
+
 
 CFxScheduler	theFxScheduler;
 
