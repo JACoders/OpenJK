@@ -8295,14 +8295,13 @@ static const char *UI_FeederItemText(float feederID, int index, int column,
 					if (ping <= 0) {
 						return Info_ValueForKey(info, "addr");
 					} else {
-					//	int gametype = atoi( Info_ValueForKey( info, "gametype" ) );
+						int gametype = atoi( Info_ValueForKey( info, "gametype" ) );
 						//check for password
 						if ( atoi(Info_ValueForKey(info, "needpass")) )
 						{
 							*handle3 = uiInfo.uiDC.Assets.needPass;
 						}
 						//check for saberonly and restricted force powers
-#if 0
 						if ( gametype != GT_JEDIMASTER )
 						{
 							qboolean saberOnly = qtrue;
@@ -8349,7 +8348,6 @@ static const char *UI_FeederItemText(float feederID, int index, int column,
 								}
 							}
 						}
-#endif
 						if ( ui_netSource.integer == AS_LOCAL ) {
 							int nettype = atoi(Info_ValueForKey(info, "nettype"));
 
