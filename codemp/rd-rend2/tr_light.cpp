@@ -354,11 +354,29 @@ void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent ) {
 	}
 
 	// bonus items and view weapons have a fixed minimum add
-	if ( !r_hdr->integer /* ent->e.renderfx & RF_MINLIGHT */ ) {
+	if ( !r_hdr->integer ) {
 		// give everything a minimum light add
 		ent->ambientLight[0] += tr.identityLight * 32;
 		ent->ambientLight[1] += tr.identityLight * 32;
 		ent->ambientLight[2] += tr.identityLight * 32;
+	}
+
+	if ( ent->e.renderfx & RF_MINLIGHT )
+	{ //the minlight flag is now for items rotating on their holo thing
+		if (ent->e.shaderRGBA[0] == 255 &&
+			ent->e.shaderRGBA[1] == 255 &&
+			ent->e.shaderRGBA[2] == 0)
+		{
+			ent->ambientLight[0] += tr.identityLight * 255;
+			ent->ambientLight[1] += tr.identityLight * 255;
+			ent->ambientLight[2] += tr.identityLight * 0;
+		}
+		else
+		{
+			ent->ambientLight[0] += tr.identityLight * 16;
+			ent->ambientLight[1] += tr.identityLight * 96;
+			ent->ambientLight[2] += tr.identityLight * 150;
+		}
 	}
 
 	//
