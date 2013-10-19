@@ -403,7 +403,7 @@ int main (int argc, char **argv)
 	// This is passed if we are launched by double-clicking
 	if ( argc >= 2 && Q_strncmp ( argv[1], "-psn", 4 ) == 0 )
 		argc = 1;
-+#endif
+#endif
 	
 	Sys_SetBinaryPath( Sys_Dirname( argv[ 0 ] ) );
 	Sys_SetDefaultInstallPath( DEFAULT_BASEDIR );
