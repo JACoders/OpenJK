@@ -100,8 +100,8 @@ GLimp_CompareModes
 static int GLimp_CompareModes( const void *a, const void *b )
 {
 	const float ASPECT_EPSILON = 0.001f;
-	SDL_Rect *modeA = (SDL_Rect *)&a;
-	SDL_Rect *modeB = (SDL_Rect *)&b;
+	SDL_Rect *modeA = (SDL_Rect *)a;
+	SDL_Rect *modeB = (SDL_Rect *)b;
 	float aspectA = (float)modeA->w / (float)modeA->h;
 	float aspectB = (float)modeB->w / (float)modeB->h;
 	int areaA = modeA->w * modeA->h;
@@ -196,7 +196,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	int colorBits, depthBits, stencilBits;
 	//int samples;
 	int i = 0;
-	//SDL_Surface *icon = NULL;
 	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
 	SDL_DisplayMode desktopMode;
 	int display = 0;
@@ -206,19 +205,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 
 	if ( r_allowResize->integer && !fullscreen )
 		flags |= SDL_WINDOW_RESIZABLE;
-
-	/*icon = SDL_CreateRGBSurfaceFrom(
-			(void *)CLIENT_WINDOW_ICON.pixel_data,
-			CLIENT_WINDOW_ICON.width,
-			CLIENT_WINDOW_ICON.height,
-			CLIENT_WINDOW_ICON.bytes_per_pixel * 8,
-			CLIENT_WINDOW_ICON.bytes_per_pixel * CLIENT_WINDOW_ICON.width,
-#ifdef Q3_LITTLE_ENDIAN
-			0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
-#else
-			0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF
-#endif
-			);*/
 
 	// If a window exists, note its display index
 	if( screen != NULL )
@@ -438,7 +424,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		}
 
 		SDL_SetWindowTitle( screen, CLIENT_WINDOW_TITLE );
-		//SDL_SetWindowIcon( screen, icon );
 
         if( ( opengl_context = SDL_GL_CreateContext( screen ) ) == NULL )
 		{
@@ -463,8 +448,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 		break;
 	}
 
-	/*SDL_FreeSurface( icon );*/
-
 	if (!GLimp_DetectAvailableModes())
 	{
 		return RSERR_UNKNOWN;
@@ -474,269 +457,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	Com_Printf( "GL_RENDERER: %s\n", glstring );
 
 	return RSERR_OK;
-#if 0
-	const char*   glstring;
-	int sdlcolorbits;
-	int colorbits, depthbits, stencilbits;
-	int tcolorbits, tdepthbits, tstencilbits;
-	int samples;
-	int i = 0;
-	Uint32 flags = SDL_WINDOW_OPENGL;
-
-	Com_Printf( "Initializing OpenGL display\n");
-
-	if ( r_allowResize->integer )
-		flags |= SDL_WINDOW_RESIZABLE;
-
-	if( videoInfo == NULL )
-	{
-		static SDL_DisplayMode sVideoInfo;
-		static SDL_PixelFormat sPixelFormat;
-
-		if (SDL_GetCurrentDisplayMode( 0, &sVideoInfo ) < 0)
-		  Com_Error(ERR_FATAL, "SDL_GetCurrentDisplayMode failed : %s\n", SDL_GetError());
-
-		// Take a copy of the videoInfo
-		sPixelFormat.format = sVideoInfo.format;
-		sPixelFormat.palette = NULL; // Should already be the case
-		//Com_Memcpy( &sVideoInfo, videoInfo, sizeof( SDL_DisplayMode ) );
-		sVideoInfo.format = sPixelFormat.format;
-		videoInfo = &sVideoInfo;
-
-		if( videoInfo->h > 0 )
-		{
-			glConfig.displayWidth = videoInfo->w;
-			glConfig.displayHeight = videoInfo->h;
-
-			// Guess the display aspect ratio through the desktop resolution
-			// by assuming (relatively safely) that it is set at or close to
-			// the display's native aspect ratio
-			glConfig.displayAspect = (float)videoInfo->w / (float)videoInfo->h;
-
-			Com_Printf( "Estimated display aspect: %.3f\n", glConfig.displayAspect );
-		}
-		else
-		{
-			glConfig.displayWidth = 480;
-			glConfig.displayHeight = 640;
-			glConfig.displayAspect = 1.333f;
-
-			Com_Printf(
-					"Cannot estimate display resolution/aspect, assuming 640x480/1.333\n" );
-		}
-	}
-
-	Com_Printf( "...setting mode %d:", mode );
-
-	if (mode == -2)
-	{
-		// use desktop video resolution
-		if( videoInfo->h > 0 )
-		{
-			glConfig.vidWidth = videoInfo->w;
-			glConfig.vidHeight = videoInfo->h;
-		}
-		else
-		{
-			glConfig.vidWidth = 640;
-			glConfig.vidHeight = 480;
-			Com_Printf(
-					"Cannot determine display resolution, assuming 640x480\n" );
-		}
-
-		glConfig.displayAspect = (float)glConfig.vidWidth / (float)glConfig.vidHeight;
-	}
-	else if ( !R_GetModeInfo( &glConfig.vidWidth, &glConfig.vidHeight, /*&glConfig.displayAspect,*/ mode ) )
-	{
-		Com_Printf( " invalid mode\n" );
-		return RSERR_INVALID_MODE;
-	}
-	Com_Printf( " %d %d\n", glConfig.vidWidth, glConfig.vidHeight);
-
-	if (fullscreen)
-	{
-		flags |= SDL_WINDOW_FULLSCREEN;
-		glConfig.isFullscreen = qtrue;
-	}
-	else
-	{
-		if (noborder)
-			flags |= SDL_WINDOW_BORDERLESS;
-
-		glConfig.isFullscreen = qfalse;
-	}
-
-	colorbits = r_colorbits->value;
-	if ((!colorbits) || (colorbits >= 32))
-		colorbits = 24;
-
-	if (!r_depthbits->value)
-		depthbits = 24;
-	else
-		depthbits = r_depthbits->value;
-	stencilbits = r_stencilbits->value;
-	//samples = r_ext_multisample->value;
-
-	for (i = 0; i < 16; i++)
-	{
-		// 0 - default
-		// 1 - minus colorbits
-		// 2 - minus depthbits
-		// 3 - minus stencil
-		if ((i % 4) == 0 && i)
-		{
-			// one pass, reduce
-			switch (i / 4)
-			{
-				case 2 :
-					if (colorbits == 24)
-						colorbits = 16;
-					break;
-				case 1 :
-					if (depthbits == 24)
-						depthbits = 16;
-					else if (depthbits == 16)
-						depthbits = 8;
-				case 3 :
-					if (stencilbits == 24)
-						stencilbits = 16;
-					else if (stencilbits == 16)
-						stencilbits = 8;
-			}
-		}
-
-		tcolorbits = colorbits;
-		tdepthbits = depthbits;
-		tstencilbits = stencilbits;
-
-		if ((i % 4) == 3)
-		{ // reduce colorbits
-			if (tcolorbits == 24)
-				tcolorbits = 16;
-		}
-
-		if ((i % 4) == 2)
-		{ // reduce depthbits
-			if (tdepthbits == 24)
-				tdepthbits = 16;
-			else if (tdepthbits == 16)
-				tdepthbits = 8;
-		}
-
-		if ((i % 4) == 1)
-		{ // reduce stencilbits
-			if (tstencilbits == 24)
-				tstencilbits = 16;
-			else if (tstencilbits == 16)
-				tstencilbits = 8;
-			else
-				tstencilbits = 0;
-		}
-
-		sdlcolorbits = 4;
-		if (tcolorbits == 24)
-			sdlcolorbits = 8;
-
-#ifdef __sgi /* Fix for SGIs grabbing too many bits of color */
-		if (sdlcolorbits == 4)
-			sdlcolorbits = 0; /* Use minimum size for 16-bit color */
-
-		/* Need alpha or else SGIs choose 36+ bit RGB mode */
-		SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 1);
-#endif
-
-		SDL_GL_SetAttribute( SDL_GL_RED_SIZE, sdlcolorbits );
-		SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, sdlcolorbits );
-		SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, sdlcolorbits );
-		SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, tdepthbits );
-		SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, tstencilbits );
-
-		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, samples ? 1 : 0 );
-		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, samples );
-
-		/*if(r_stereoEnabled->integer)
-		{
-			glConfig.stereoEnabled = qtrue;
-			SDL_GL_SetAttribute(SDL_GL_STEREO, 1);
-		}
-		else
-		{*/
-			glConfig.stereoEnabled = qfalse;
-			SDL_GL_SetAttribute(SDL_GL_STEREO, 0);
-		//}
-
-		SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-
-#if 0 // See http://bugzilla.icculus.org/show_bug.cgi?id=3526
-		// If not allowing software GL, demand accelerated
-		if( !r_allowSoftwareGL->integer )
-		{
-			if( SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 ) < 0 )
-			{
-				Com_Printf( "Unable to guarantee accelerated "
-						"visual with libSDL < 1.2.10\n" );
-			}
-		}
-#endif
-
-		if( SDL_GL_SetSwapInterval(r_swapInterval->integer ) < 0 )
-			Com_Printf( "SDL_GL_SetSwapInterval not supported\n" );
-
-#ifdef USE_ICON
-		{
-			SDL_Surface *icon = SDL_CreateRGBSurfaceFrom(
-					(void *)CLIENT_WINDOW_ICON.pixel_data,
-					CLIENT_WINDOW_ICON.width,
-					CLIENT_WINDOW_ICON.height,
-					CLIENT_WINDOW_ICON.bytes_per_pixel * 8,
-					CLIENT_WINDOW_ICON.bytes_per_pixel * CLIENT_WINDOW_ICON.width,
-#ifdef Q3_LITTLE_ENDIAN
-					0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
-#else
-					0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF
-#endif
-					);
-
-			SDL_WM_SetIcon( icon, NULL );
-			SDL_FreeSurface( icon );
-		}
-#endif
-
-		SDL_ShowCursor(0);
-
-		if (!(window = SDL_CreateWindow(CLIENT_WINDOW_TITLE, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, glConfig.vidWidth, glConfig.vidHeight, flags)))
-		{
-			Com_Printf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
-			continue;
-		}
-
-		opengl_context = SDL_GL_CreateContext(window);
-
-		Com_Printf( "Using %d/%d/%d Color bits, %d depth, %d stencil display.\n",
-				sdlcolorbits, sdlcolorbits, sdlcolorbits, tdepthbits, tstencilbits);
-
-		glConfig.colorBits = tcolorbits;
-		glConfig.depthBits = tdepthbits;
-		glConfig.stencilBits = tstencilbits;
-		break;
-	}
-
-	GLimp_DetectAvailableModes();
-
-	if (!window)
-	{
-		Com_Printf( "Couldn't get a visual\n" );
-		return RSERR_INVALID_MODE;
-	}
-
-	screen = window;
-
-	// FIXME: Defines needed here
-	glstring = (char *) qglGetString (GL_RENDERER);
-	Com_Printf( "GL_RENDERER: %s\n", glstring );
-
-	return RSERR_OK;
-#endif
 }
 
 /*
