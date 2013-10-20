@@ -311,7 +311,7 @@ locals from sp
 intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 	vm_t *oldVM = NULL;
 	intptr_t r = 0;
-	int args[16] = {0};
+	intptr_t args[16] = {0};
 
 	if ( !vm || !vm->name[0] ) {
 		Com_Error( ERR_FATAL, "VM_Call with NULL vm" );
@@ -326,7 +326,7 @@ intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 	va_list ap;
 	va_start(ap, callnum);
 	for ( size_t i=0; i<ARRAY_LEN( args ); i++ )
-		args[i] = va_arg( ap, int );
+		args[i] = va_arg( ap, intptr_t );
 	va_end(ap);
 
 	r = vm->legacy.main( callnum, args[ 0], args[ 1], args[ 2], args[ 3], args[ 4], args[ 5], args[ 6], args[ 7],
