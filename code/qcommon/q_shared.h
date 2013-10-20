@@ -216,7 +216,7 @@ This file is part of Jedi Academy.
   #define	PATH_SEP	'/'
           
   #if defined(__i386__)
-      #define ARCH_STRING "i386"
+      #define ARCH_STRING "x86"
   #elif defined(__x86_64__)
       #define idx64
       #define ARCH_STRING "x86_64"
