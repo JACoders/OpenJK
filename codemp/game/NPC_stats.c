@@ -599,7 +599,7 @@ void NPC_Precache ( gentity_t *spawner )
 	qboolean	md3Model = qfalse;
 	char	playerModel[MAX_QPATH];
 	char	customSkin[MAX_QPATH];
-	char	sessionName[MAX_QPATH+13];
+	char	sessionName[MAX_QPATH+15];
 
 	if ( !Q_stricmp( "random", spawner->NPC_type ) )
 	{//sorry, can't precache a random just yet
@@ -976,7 +976,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	char	sound[MAX_QPATH];
 	char	playerModel[MAX_QPATH];
 	char	customSkin[MAX_QPATH];
-	char	sessionName[MAX_QPATH+13];
+	char	sessionName[MAX_QPATH+17];
 	renderInfo_t	*ri = &NPC->client->renderInfo;
 	gNPCstats_t		*stats = NULL;
 	qboolean	md3Model = qtrue;
