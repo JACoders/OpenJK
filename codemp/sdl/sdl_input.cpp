@@ -346,11 +346,11 @@ IN_InitKeyLockStates
 */
 void IN_InitKeyLockStates( void )
 {
-	unsigned char *keystate = SDL_GetKeyboardState(NULL);
+	const unsigned char *keystate = SDL_GetKeyboardState(NULL);
 
-	kg.keys[A_SCROLLLOCK].down = keystate[SDL_SCANCODE_SCROLLLOCK];
-	kg.keys[A_NUMLOCK].down = keystate[SDL_SCANCODE_NUMLOCKCLEAR];
-	kg.keys[A_CAPSLOCK].down = keystate[SDL_SCANCODE_CAPSLOCK];
+	kg.keys[A_SCROLLLOCK].down = (qboolean)!!(keystate[SDL_SCANCODE_SCROLLLOCK]);
+	kg.keys[A_NUMLOCK].down = (qboolean)!!(keystate[SDL_SCANCODE_NUMLOCKCLEAR]);
+	kg.keys[A_CAPSLOCK].down = (qboolean)!!(keystate[SDL_SCANCODE_CAPSLOCK]);
 }
 
 // We translate axes movement into keypresses
