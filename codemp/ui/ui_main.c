@@ -7254,15 +7254,12 @@ static int UI_MapCountByGameType(qboolean singlePlayer) {
 	int i, c, game;
 	c = 0;
 	game = singlePlayer ? uiInfo.gameTypes[ui_gametype.integer].gtEnum : uiInfo.gameTypes[ui_netGametype.integer].gtEnum;
-	if (game == GT_SINGLE_PLAYER) {
-		game++;
-	} 
-	if (game == GT_TEAM) {
+	if (game == GT_TEAM)
 		game = GT_FFA;
-	}
-	if (game == GT_HOLOCRON || game == GT_JEDIMASTER) {
-		game = GT_FFA;
-	}
+
+	//Since GT_CTY uses the same entities as CTF, use the same map sets
+	if ( game == GT_CTY )
+		game = GT_CTF;
 
 	for (i = 0; i < uiInfo.mapCount; i++) {
 		uiInfo.mapList[i].active = qfalse;

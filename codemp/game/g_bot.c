@@ -127,6 +127,7 @@ int G_GetMapTypeBits(char *type)
 		if( strstr( type, "ffa" ) ) {
 			typeBits |= (1 << GT_FFA);
 			typeBits |= (1 << GT_TEAM);
+			typeBits |= (1 << GT_JEDIMASTER);
 		}
 		if( strstr( type, "holocron" ) ) {
 			typeBits |= (1 << GT_HOLOCRON);
@@ -147,12 +148,14 @@ int G_GetMapTypeBits(char *type)
 		}
 		if( strstr( type, "ctf" ) ) {
 			typeBits |= (1 << GT_CTF);
+			typeBits |= (1 << GT_CTY);
 		}
 		if( strstr( type, "cty" ) ) {
 			typeBits |= (1 << GT_CTY);
 		}
 	} else {
 		typeBits |= (1 << GT_FFA);
+		typeBits |= (1 << GT_JEDIMASTER);
 	}
 
 	return typeBits;
