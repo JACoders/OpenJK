@@ -169,14 +169,19 @@ cvar_t		*s_language;	// note that this is distinct from "g_language"
 cvar_t		*s_dynamix;
 cvar_t		*s_debugdynamic;
 
+cvar_t		*s_doppler;
+
 typedef struct 
 { 
 	unsigned char	volume;
 	vec3_t			origin;
 	vec3_t			velocity;
-/*	const*/ sfx_t		*sfx;
+	sfx_t		*sfx;
 	int				mergeFrame;
 	int			entnum;
+
+	qboolean	doppler;
+	float		dopplerScale;
 
 	// For Open AL
 	bool	bProcessed;
@@ -445,6 +450,8 @@ void S_Init( void ) {
 	s_lip_threshold_4 = Cvar_Get("s_threshold4" , "8.0",0);
 
 	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART);
+
+	s_doppler = Cvar_Get("s_doppler", "1", CVAR_ARCHIVE);
 
 	MP3_InitCvars();
 
@@ -1923,6 +1930,8 @@ void S_StopLoopingSound( int entityNum )
 	}
 }
 
+#define MAX_DOPPLER_SCALE 50.0f //arbitrary
+
 /*
 ==================
 S_AddLoopingSound
@@ -1946,7 +1955,7 @@ void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocit
 	}
 
 	sfx = &s_knownSfx[ sfxHandle ];
-	if (sfx->bInMemory == qfalse){
+	if (sfx->bInMemory == qfalse) {
 		S_memoryLoad(sfx);
 	}
 	SND_TouchSFX(sfx);
@@ -1957,9 +1966,29 @@ void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocit
 	assert(!sfx->pMP3StreamHeader);
 	VectorCopy( origin, loopSounds[numLoopSounds].origin );
 	VectorCopy( velocity, loopSounds[numLoopSounds].velocity );
+	loopSounds[numLoopSounds].doppler = qfalse;
+	loopSounds[numLoopSounds].dopplerScale = 1.0;
 	loopSounds[numLoopSounds].sfx = sfx;
 	loopSounds[numLoopSounds].volume = SOUND_MAXVOL;
 	loopSounds[numLoopSounds].entnum = entityNum;
+
+	if ( s_doppler->integer && VectorLengthSquared(velocity) > 0.0 ) {
+		vec3_t	out;
+		float	lena, lenb;
+
+		loopSounds[numLoopSounds].doppler = qtrue;
+		lena = DistanceSquared(listener_origin, loopSounds[numLoopSounds].origin);
+		VectorAdd(loopSounds[numLoopSounds].origin, loopSounds[numLoopSounds].velocity, out);
+		lenb = DistanceSquared(listener_origin, out);
+
+		loopSounds[numLoopSounds].dopplerScale = lenb/(lena*100);
+		if (loopSounds[numLoopSounds].dopplerScale > MAX_DOPPLER_SCALE) {
+			loopSounds[numLoopSounds].dopplerScale = MAX_DOPPLER_SCALE;
+		} else if (loopSounds[numLoopSounds].dopplerScale <= 1.0) {
+			loopSounds[numLoopSounds].doppler = qfalse;			// don't bother doing the math
+		}
+	}
+
 	numLoopSounds++;
 }
 
@@ -2002,6 +2031,8 @@ void S_AddAmbientLoopingSound( const vec3_t origin, unsigned char volume, sfxHan
 		Com_Error( ERR_DROP, "%s has length 0", sfx->sSoundName );
 	}
 	VectorCopy( origin, loopSounds[numLoopSounds].origin );
+	loopSounds[numLoopSounds].doppler = qfalse;
+	loopSounds[numLoopSounds].dopplerScale = 1.0;
 	loopSounds[numLoopSounds].sfx = sfx;
 	assert(!sfx->pMP3StreamHeader);
 	
@@ -2068,6 +2099,9 @@ void S_AddLoopSounds (void)
 		ch->rightvol = right_total;
 		ch->loopSound = qtrue;	// remove next frame
 		ch->thesfx = loop->sfx;
+
+		ch->doppler = loop->doppler;
+		ch->dopplerScale = loop->dopplerScale;
 
 		// you cannot use MP3 files here because they offer only streaming access, not random
 		//
