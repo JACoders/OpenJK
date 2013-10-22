@@ -138,6 +138,8 @@ G_InitGame
 */
 extern void RemoveAllWP(void);
 extern void BG_ClearVehicleParseParms(void);
+gentity_t *SelectRandomDeathmatchSpawnPoint( void );
+void SP_info_jedimaster_start( gentity_t *ent );
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	int					i;
 	vmCvar_t	mapname;
@@ -367,6 +369,29 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			}
 			G_SoundIndex((char *)bg_customSiegeSoundNames[i]);
 			i++;
+		}
+	}
+
+	if ( level.gametype == GT_JEDIMASTER ) { 
+		gentity_t *ent = NULL;
+		int i=0;
+		for ( i=0, ent=g_entities; i<level.num_entities; i++, ent++ ) {
+			if ( ent->isSaberEntity )
+				break;
+		}
+
+		if ( i == level.num_entities ) {
+			// no JM saber found. drop one at one of the player spawnpoints
+			gentity_t *spawnpoint = SelectRandomDeathmatchSpawnPoint();
+
+			if( !spawnpoint ) {
+				trap->Error( ERR_DROP, "Couldn't find an FFA spawnpoint to drop the jedimaster saber at!\n" );
+				return;
+			}
+
+			ent = G_Spawn();
+			G_SetOrigin( ent, spawnpoint->s.origin );
+			SP_info_jedimaster_start( ent );
 		}
 	}
 }
