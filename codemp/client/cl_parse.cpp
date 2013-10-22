@@ -364,7 +364,13 @@ void CL_ParseSetGame( msg_t *msg )
 		return;
 	}
 
-	Cvar_Set("fs_game", newGameDir);
+	if(!FS_FilenameCompare(newGameDir, BASEGAME))
+		Cvar_Set("fs_game", "");
+	else
+		Cvar_Set("fs_game", newGameDir);
+
+	if(!(Cvar_Flags("fs_game") & CVAR_MODIFIED))
+		return;
 
 	//Update the search path for the mod dir
 	FS_UpdateGamedir();
@@ -443,6 +449,12 @@ void CL_SystemInfoChanged( void ) {
 			{
 				Com_Printf(S_COLOR_YELLOW "WARNING: Server sent invalid fs_game value %s\n", value);
 				continue;
+			}
+
+			if(!FS_FilenameCompare(value, BASEGAME))
+			{
+				Com_Printf(S_COLOR_YELLOW "WARNING: Server sent \"%s\" fs_game value, clearing.\n", value);
+				Q_strncpyz(value, "", sizeof(value));
 			}
 
 			gameSet = qtrue;
