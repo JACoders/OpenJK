@@ -311,7 +311,7 @@ void G_LoadArenas( void ) {
 		strcat(filename, dirptr);
 		G_LoadArenasFromFile(filename);
 	}
-//	trap->Print( va( "%i arenas parsed\n", g_numArenas ) );
+//	trap->Print( "%i arenas parsed\n", g_numArenas );
 	
 	for( n = 0; n < g_numArenas; n++ ) {
 		Info_SetValueForKey( g_arenaInfos[n], "num", va( "%i", n ) );
@@ -345,7 +345,7 @@ void G_LoadArenas( void ) {
 		G_LoadArenasFromFile(filename);
 		fileptr += len + 1;
 	}
-//	trap->Print( va( "%i arenas parsed\n", g_numArenas ) );
+//	trap->Print( "%i arenas parsed\n", g_numArenas );
 	
 	for( n = 0; n < g_numArenas; n++ ) {
 		Info_SetValueForKey( g_arenaInfos[n], "num", va( "%i", n ) );
@@ -1244,7 +1244,7 @@ static void G_LoadBots( void ) {
 		strcat(filename, dirptr);
 		G_LoadBotsFromFile(filename);
 	}
-//	trap->Print( va( "%i bots parsed\n", g_numBots ) );
+//	trap->Print( "%i bots parsed\n", g_numBots );
 }
 
 /*
