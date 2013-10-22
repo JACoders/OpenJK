@@ -523,3 +523,5 @@ void Controls_SetConfig(qboolean restart);
 /*
 Ghoul2 Insert End
 */
+
+extern const char *HolocronIcons[NUM_FORCE_POWERS];

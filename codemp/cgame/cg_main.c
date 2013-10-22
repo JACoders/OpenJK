@@ -106,8 +106,6 @@ vec4_t colorTable[CT_MAX] =
 
 };
 
-#include "holocronicons.h"
-
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
 void CG_Shutdown( void );
 

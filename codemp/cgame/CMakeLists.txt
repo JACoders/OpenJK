@@ -76,7 +76,6 @@ set(MPCGameCgameFiles
 	"${MPDir}/cgame/cg_public.h"
 	"${MPDir}/cgame/cg_xcvar.h"
 	"${MPDir}/cgame/fx_local.h"
-	"${MPDir}/cgame/holocronicons.h"
 	)
 source_group("cgame" FILES ${MPCGameCgameFiles})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameCgameFiles})
