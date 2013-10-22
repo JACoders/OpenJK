@@ -132,7 +132,7 @@ static void	UI_Cache_f() {
 	if (trap->Cmd_Argc() == 2) {
 		for (i = 0; i < uiInfo.q3HeadCount; i++)
 		{
-			trap->Print( va("model %s\n", uiInfo.q3HeadNames[i]) );
+			trap->Print( "model %s\n", uiInfo.q3HeadNames[i] );
 		}
 	}
 }
