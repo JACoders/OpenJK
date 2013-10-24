@@ -20,7 +20,7 @@ This file is part of Jedi Knight 2.
 #include "g_headers.h"
 
 
-#include "G_Local.h"
+#include "g_local.h"
 
 typedef map		< string, int >	timer_m;
 

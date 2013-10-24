@@ -23,9 +23,6 @@ This file is part of Jedi Knight 2.
 #include "b_local.h"
 #include "g_navigator.h"
 #include "g_nav.h"
-#include <time.h>
-
-
 
 extern int NAVNEW_ClearPathBetweenPoints(vec3_t start, vec3_t end, vec3_t mins, vec3_t maxs, int ignore, int clipmask);
 extern qboolean NAV_CheckNodeFailedForEnt( gentity_t *ent, int nodeNum );
@@ -282,7 +279,7 @@ GetEdgeFlags
 -------------------------
 */
 
-BYTE CNode::GetEdgeFlags( int edgeNum )
+unsigned char CNode::GetEdgeFlags( int edgeNum )
 {
 	if ( edgeNum > m_numEdges )
 		return 0;
@@ -798,10 +795,10 @@ void CNavigator::CalculatePath( CNode *node )
 	int	i;
 
 	CPriorityQueue	*pathList = new CPriorityQueue();
-	BYTE			*checked;
+	unsigned char			*checked;
 
 	//Init the completion table
-	checked = new BYTE[ m_nodes.size() ];
+	checked = new unsigned char[ m_nodes.size() ];
 	memset( checked, 0, m_nodes.size() );
 
 	//Mark this node as checked
@@ -985,7 +982,7 @@ void CNavigator::ShowEdges( void )
 			if ( drawMap[(*ni)->GetID()].find( id ) != drawMap[(*ni)->GetID()].end() )
 				continue;
 
-			BYTE flags = (*ni)->GetEdgeFlags( i );
+			unsigned char flags = (*ni)->GetEdgeFlags( i );
 
 			CNode	*node = m_nodes[id];
 

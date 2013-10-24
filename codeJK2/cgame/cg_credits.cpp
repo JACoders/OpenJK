@@ -35,6 +35,8 @@ This file is part of Jedi Knight 2.
 
 #define MAX_LINE_BYTES 2048
 
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+
 qhandle_t ghFontHandle = 0;
 float gfFontScale = 1.0f;
 vec4_t gv4Color = {0};
@@ -129,7 +131,7 @@ static LPCSTR Capitalize(LPCSTR psTest)
 	
 	if (!cgi_Language_IsAsian())
 	{
-		strupr(sTemp);	// capitalise titles (if not asian!!!!)
+		Q_strupr(sTemp);	// capitalise titles (if not asian!!!!)
 	}
 
 	return sTemp;
@@ -147,7 +149,7 @@ static LPCSTR UpperCaseFirstLettersOnly(LPCSTR psTest)
 	
 	if (!cgi_Language_IsAsian())
 	{
-		strlwr(sTemp);
+		Q_strlwr(sTemp);
 
 		char *p = sTemp;
 		while (*p)
@@ -306,7 +308,7 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 			{
 				// have we got a command word?...
 				//
-				if (!strnicmp(sLine,"(#",2))
+				if (!Q_stricmpn(sLine,"(#",2))
 				{
 					// yep...
 					//

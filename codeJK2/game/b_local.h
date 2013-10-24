@@ -332,7 +332,7 @@ extern qboolean NPC_FacePosition( vec3_t position, qboolean doPitch = qtrue );
 extern qboolean NPC_FaceEntity( gentity_t *ent, qboolean doPitch = qtrue );
 extern qboolean NPC_FaceEnemy( qboolean doPitch = qtrue );
 
-extern BYTE G_AddBoltOn( gentity_t *NPC, const char *boltOnName );
+extern unsigned char G_AddBoltOn( gentity_t *NPC, const char *boltOnName );
 
 //Skill level cvar
 extern cvar_t	*g_spskill;
