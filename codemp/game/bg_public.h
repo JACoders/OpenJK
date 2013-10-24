@@ -206,6 +206,21 @@ typedef enum {
 	GT_MAX_GAME_TYPE
 } gametype_t;
 
+// gametype bits
+#define GTB_NONE			0x000 // invalid
+#define GTB_FFA				0x001 // free for all
+#define GTB_HOLOCRON		0x002 // holocron ffa
+#define GTB_JEDIMASTER		0x004 // jedi master
+#define GTB_DUEL			0x008 // one on one tournament
+#define GTB_POWERDUEL		0x010 // two on one tournament
+#define GTB_SINGLE_PLAYER	0x020 // single player ffa
+#define GTB_NOTTEAM			0x03F // **SPECIAL: All of the above gametypes, i.e. not team-based
+#define GTB_TEAM			0x040 // team deathmatch
+#define GTB_SIEGE			0x080 // siege
+#define GTB_CTF				0x100 // capture the flag
+#define GTB_CTY				0x200 // capture the ysalimiri
+#define GTB_ALL				0x1FF // all
+
 typedef enum _flag_status {
 	FLAG_ATBASE = 0,
 	FLAG_TAKEN,			// CTF
