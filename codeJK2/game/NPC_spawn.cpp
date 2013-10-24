@@ -1259,7 +1259,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 	}
 	else
 	{
-		ent->NPC_type = strlwr( G_NewString( ent->NPC_type ) );
+		ent->NPC_type = Q_strlwr( G_NewString( ent->NPC_type ) );
 	}
 
 	if ( ent->svFlags & SVF_NO_BASIC_SOUNDS )

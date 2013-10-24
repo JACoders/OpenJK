@@ -160,6 +160,9 @@ void WPN_SplashRadius(const char **holdBuf);
 void WPN_AltSplashDamage(const char **holdBuf);
 void WPN_AltSplashRadius(const char **holdBuf);
 
+// Legacy weapons.dat force fields
+void WPN_FuncSkip(const char **holdBuf);
+
 typedef struct 
 {
 	char	*parmName;
@@ -368,9 +371,20 @@ wpnParms_t WpnParms[] =
 	"splashRadius",		WPN_SplashRadius,
 	"altSplashDamage",	WPN_AltSplashDamage,
 	"altSplashRadius",	WPN_AltSplashRadius,
+	
+	// Old legacy files contain these, so we skip them to shut up warnings
+	"firingforce",		WPN_FuncSkip,
+	"chargeforce",		WPN_FuncSkip,
+	"altchargeforce",	WPN_FuncSkip,
+	"selectforce",		WPN_FuncSkip,
 };
 
 const int WPN_PARM_MAX =  sizeof(WpnParms) / sizeof(WpnParms[0]);
+
+void WPN_FuncSkip( const char **holdBuf)
+{
+	SkipRestOfLine(holdBuf);
+}
 
 void WPN_WeaponType( const char **holdBuf)
 {

@@ -72,6 +72,7 @@ set(JK2SPGameFiles
 	"${JK2SPDir}/game/g_mover.cpp"
 	"${JK2SPDir}/game/g_nav.cpp"
 	"${JK2SPDir}/game/g_navnew.cpp"
+	"${JK2SPDir}/game/g_navigator.cpp"
 	"${JK2SPDir}/game/g_object.cpp"
 	"${JK2SPDir}/game/g_objectives.cpp"
 	"${JK2SPDir}/game/g_ref.cpp"
@@ -232,10 +233,12 @@ set(JK2SPGameIcarusFiles
 	"${JK2SPDir}/icarus/Sequence.cpp"
 	"${JK2SPDir}/icarus/Sequencer.cpp"
 	"${JK2SPDir}/icarus/TaskManager.cpp"
+	"${JK2SPDir}/icarus/Instance.cpp"
 	"${JK2SPDir}/icarus/blockstream.h"
 	"${JK2SPDir}/icarus/sequence.h"
 	"${JK2SPDir}/icarus/sequencer.h"
 	"${JK2SPDir}/icarus/taskmanager.h"
+	"${JK2SPDir}/icarus/instance.h"
 	)
 source_group("icarus" FILES ${JK2SPGameIcarusFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameIcarusFiles})

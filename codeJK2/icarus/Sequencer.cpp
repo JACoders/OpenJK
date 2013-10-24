@@ -23,6 +23,7 @@ This file is part of Jedi Knight 2.
 // this include must remain at the top of every Icarus CPP file
 #include "icarus.h"
 #include "g_headers.h"
+#include "g_shared.h"
 
 #include "assert.h"
 
@@ -2283,7 +2284,13 @@ int CSequencer::DestroySequence( CSequence *sequence )
 	{
 		if((*tsi).second == sequence)
 		{
+#ifdef _WIN32
 			tsi = m_taskSequences.erase(tsi);
+#else
+			taskSequence_m::iterator itTemp = tsi;
+			tsi++;
+			m_taskSequences.erase(itTemp);
+#endif
 		}
 		else
 		{
