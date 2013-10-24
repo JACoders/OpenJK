@@ -875,6 +875,7 @@ typedef struct level_locals_s {
 	char		voteDisplayString[MAX_STRING_CHARS];
 	int			voteTime;				// level.time vote was called
 	int			voteExecuteTime;		// time the vote is executed
+	int			voteExecuteDelay;		// set per-vote
 	int			voteYes;
 	int			voteNo;
 	int			numVotingClients;		// set by CalculateRanks
@@ -945,6 +946,16 @@ typedef struct level_locals_s {
 	struct {
 		fileHandle_t	log;
 	} security;
+
+	struct {
+		int num;
+		char *infos[MAX_BOTS];
+	} bots;
+
+	struct {
+		int num;
+		char *infos[MAX_ARENAS];
+	} arenas;
 
 	gametype_t	gametype;
 } level_locals_t;

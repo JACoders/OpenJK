@@ -2553,7 +2553,7 @@ CheckVote
 void CheckVote( void ) {
 	if ( level.voteExecuteTime && level.voteExecuteTime < level.time ) {
 		level.voteExecuteTime = 0;
-		trap->SendConsoleCommand( EXEC_APPEND, va("%s\n", level.voteString ) );
+		trap->SendConsoleCommand( EXEC_APPEND, va( "%s\n", level.voteString ) );
 
 		if (level.votingGametype)
 		{
@@ -2619,7 +2619,7 @@ void CheckVote( void ) {
 		if ( level.voteYes > level.numVotingClients/2 ) {
 			// execute the command, then remove the vote
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
-			level.voteExecuteTime = level.time + 3000;
+			level.voteExecuteTime = level.time + level.voteExecuteDelay;
 		}
 
 		// same behavior as a timeout
@@ -2628,7 +2628,7 @@ void CheckVote( void ) {
 			if you have odd amount of players, lets say 3 for example,
 			and vote is called, then only 1 vote of No will fail the vote,
 			i.e. if player A calls vote, player B votes No, then vote fails,
-			even if player C would vote Yes and it should have been 2:1 and passed */
+			even if player C would vote Yes and it should have been 2:1 and passed" */
 	//	else if ( level.voteNo >= level.numVotingClients/2 )
 		else if ( level.voteNo >= (level.numVotingClients+1)/2 )
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
