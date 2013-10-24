@@ -25,10 +25,7 @@ This file is part of Jedi Knight 2.
 #pragma warning(disable : 4514)  //unreffed inline func removed
 
 #include <stdio.h>
-
-#if !defined(_WIN32) && !defined(MACOS_X)
-#include <malloc.h>
-#endif
+#include <stdlib.h>
 
 #pragma warning (push, 3)	//go back down to 3 for the stl include
 #include <list>
