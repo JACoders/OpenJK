@@ -21,6 +21,8 @@ This file is part of Jedi Knight 2.
 #ifndef __INTERFACE__
 #define __INTERFACE__
 
+#include "g_shared.h"
+
 typedef unsigned long       DWORD;
 
 typedef	float	vec_t;

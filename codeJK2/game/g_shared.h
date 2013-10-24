@@ -29,6 +29,10 @@ This file is part of Jedi Knight 2.
 
 #define	FOFS(x) offsetof(gentity_t, x)
 
+typedef struct centity_s centity_t;
+class CSequencer;
+class CTaskManager;
+
 typedef enum 
 {
 	HL_NONE = 0,
@@ -526,6 +530,7 @@ typedef struct
 	char	parm[MAX_PARMS][MAX_PARM_STRING_LENGTH];
 } parms_t;
 
+#define GAME_INCLUDE
 #ifdef GAME_INCLUDE
 //these hold the place for the enums in functions.h so i don't have to recompile everytime it changes
 #define thinkFunc_t int

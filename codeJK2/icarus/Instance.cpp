@@ -22,6 +22,7 @@ This file is part of Jedi Knight 2.
 
 // this include must remain at the top of every Icarus CPP file
 #include "icarus.h"
+#include "instance.h"
 
 #include <assert.h>
 
@@ -60,7 +61,7 @@ ICARUS_Instance *ICARUS_Instance::Create( interface_export_t *ie )
 	ICARUS_Instance *instance = new ICARUS_Instance;
 	instance->m_interface = ie;
 
-	OutputDebugString( "ICARUS Instance successfully created\n" );
+	//OutputDebugString( "ICARUS Instance successfully created\n" );
 
 	return instance;
 }
@@ -122,7 +123,7 @@ int ICARUS_Instance::Delete( void )
 
 	Free();
 
-#ifdef _DEBUG
+#if 0
 	
 	char	buffer[1024];
 

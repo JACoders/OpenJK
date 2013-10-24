@@ -61,7 +61,7 @@ void CG_ParseServerinfo( void ) {
 	}
 	char *p = strrchr(mapname,'/');
 	strcpy( cgs.stripLevelName[0], p?p+1:mapname );
-	strupr( cgs.stripLevelName[0] );
+	Q_strupr( cgs.stripLevelName[0] );
 	for (int i=1; i<STRIPED_LEVELNAME_VARIATIONS; i++)	// clear retry-array
 	{
 		cgs.stripLevelName[i][0]='\0';

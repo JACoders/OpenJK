@@ -842,8 +842,8 @@ void	G_TouchTriggersLerped( gentity_t *ent ) {
 #ifdef _DEBUG
 	for ( int j = 0; j < 3; j++ )
 	{
-		assert( !_isnan(ent->currentOrigin[j]));
-		assert( !_isnan(ent->lastOrigin[j]));
+		assert( !Q_isnan(ent->currentOrigin[j]));
+		assert( !Q_isnan(ent->lastOrigin[j]));
 	}
 #endif// _DEBUG
 	VectorSubtract( ent->currentOrigin, ent->lastOrigin, diff );
