@@ -26,7 +26,7 @@ This file is part of Jedi Knight 2.
 
 #include <stdio.h>
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(MACOS_X)
 #include <malloc.h>
 #endif
 
