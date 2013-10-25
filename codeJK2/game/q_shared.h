@@ -160,6 +160,7 @@ This file is part of Jedi Knight 2.
   #define Q3_LITTLE_ENDIAN
 
   #define DLL_EXT ".dll"
+#endif
 
 //======================= WIN32 DEFINES =================================
 
