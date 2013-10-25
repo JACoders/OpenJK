@@ -600,8 +600,6 @@ extern int fatalErrors;
 #endif
 void InitGame(  const char *mapname, const char *spawntarget, int checkSum, const char *entities, int levelTime, int randomSeed, int globalTime, SavedGameJustLoaded_e eSavedGameJustLoaded, qboolean qbLoadTransition )
 {
-	int		i;
-
 	giMapChecksum = checkSum;
 	g_eSavedGameJustLoaded = eSavedGameJustLoaded;
 	g_qbLoadTransition = qbLoadTransition;
@@ -684,14 +682,6 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 //	SaveRegisteredItems();
 
 	gi.Printf ("-----------------------------------\n");
-
-	//randomize the rand functions
-	byte num_calls = (byte)timeGetTime();
-
-	for(i = 0; i < (int)num_calls; i++)
-	{
-		rand();
-	}
 
 	if ( navCalculatePaths )
 	{//not loaded - need to calc paths

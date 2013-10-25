@@ -43,22 +43,6 @@ static byte CHECKED_NO = 0;
 static byte CHECKED_FAILED = 1;
 static byte CHECKED_PASSED = 2;
 
-
-int GetTime ( int lastTime )
-{
-	int			curtime;
-	static int	timeBase = 0;
-	static qboolean	initialized = qfalse;
-
-	if (!initialized) {
-		timeBase = timeGetTime();
-		initialized = qtrue;
-	}
-	curtime = timeGetTime() - timeBase - lastTime;
-
-	return curtime;
-}
-
 /*
 -------------------------
 CEdge
@@ -863,7 +847,7 @@ extern void CP_FindCombatPointWaypoints( void );
 void CNavigator::CalculatePaths( bool	recalc )
 {
 #ifndef FINAL_BUILD
-	int	startTime = GetTime(0);
+	int	startTime = gi.Milliseconds();
 #endif
 #if _HARD_CONNECT
 #else
@@ -884,7 +868,7 @@ void CNavigator::CalculatePaths( bool	recalc )
 #ifndef FINAL_BUILD
 	if ( pathsCalculated )
 	{
-		gi.Printf( S_COLOR_CYAN"%s recalced paths in %d ms\n", (NPC!=NULL?NPC->targetname:"NULL"), GetTime(startTime) );
+		gi.Printf( S_COLOR_CYAN"%s recalced paths in %d ms\n", (NPC!=NULL?NPC->targetname:"NULL"), gi.Milliseconds()-startTime );
 	}
 #endif
 	
