@@ -1015,7 +1015,7 @@ static int Q3_PlaySound( int taskID, int entID, const char *name, const char *ch
 	Q_strupr(finalName);
 	//G_AddSexToMunroString( finalName, qtrue );
 
-	COM_StripExtension( (const char *)finalName, finalName );
+	COM_StripExtension( (const char *)finalName, finalName, sizeof(finalName) );
 
 	int soundHandle = G_SoundIndex( (char *) finalName );
 	bool bBroadcast = false;

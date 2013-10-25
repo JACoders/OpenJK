@@ -112,20 +112,22 @@ vec4_t colorTable[CT_MAX] =
 {   1.0f,   .658f,  .062f, 1},	// CT_HUD_ORANGE
 };
 
+vec4_t g_color_table[Q_COLOR_BITS+1] = {
+	{ 0.0, 0.0, 0.0, 1.0 },	// black
+	{ 1.0, 0.0, 0.0, 1.0 },	// red
+	{ 0.0, 1.0, 0.0, 1.0 },	// green
+	{ 1.0, 1.0, 0.0, 1.0 },	// yellow
+	{ 0.0, 0.0, 1.0, 1.0 },	// blue
+	{ 0.0, 1.0, 1.0, 1.0 },	// cyan
+	{ 1.0, 0.0, 1.0, 1.0 },	// magenta
+	{ 1.0, 1.0, 1.0, 1.0 },	// white
+	{ 1.0, 0.5, 0.0, 1.0 }, // orange
+	{ 0.5, 0.5, 0.5, 1.0 },	// md.grey
+};
 
-vec4_t	g_color_table[8] =
-	{
-	{0.0, 0.0, 0.0, 1.0},
-	{1.0, 0.0, 0.0, 1.0},
-	{0.0, 1.0, 0.0, 1.0},
-	{1.0, 1.0, 0.0, 1.0},
-	{0.0, 0.0, 1.0, 1.0},
-	{0.0, 1.0, 1.0, 1.0},
-	{1.0, 0.0, 1.0, 1.0},
-	{1.0, 1.0, 1.0, 1.0},
-	};
-
+#ifdef _MSC_VER
 #pragma warning(disable : 4305)		// truncation from const double to float
+#endif
 
 vec3_t	bytedirs[NUMVERTEXNORMALS] =
 {
@@ -211,7 +213,9 @@ vec3_t	bytedirs[NUMVERTEXNORMALS] =
 {-0.425325, 0.688191, -0.587785}, {-0.425325, -0.688191, -0.587785}, 
 {-0.587785, -0.425325, -0.688191}, {-0.688191, -0.587785, -0.425325}
 };
+#ifdef _MSC_VER
 #pragma warning(default : 4305)		// truncation from const double to float
+#endif
 
 //==============================================================
 
@@ -330,6 +334,12 @@ float NormalizeColor( const vec3_t in, vec3_t out ) {
 	return max;
 }
 
+void VectorAdvance( const vec3_t veca, const float scale, const vec3_t vecb, vec3_t vecc)
+{
+	vecc[0] = veca[0] + (scale * (vecb[0] - veca[0]));
+	vecc[1] = veca[1] + (scale * (vecb[1] - veca[1]));
+	vecc[2] = veca[2] + (scale * (vecb[2] - veca[2]));
+}
 
 //============================================================================
 
@@ -530,25 +540,27 @@ void MakeNormalVectors( const vec3_t forward, vec3_t right, vec3_t up) {
 */
 float Q_rsqrt( float number )
 {
-	long i;
+	floatint_t t;
 	float x2, y;
 	const float threehalfs = 1.5F;
 
 	x2 = number * 0.5F;
 	y  = number;
-	i  = * ( long * ) &y;						// evil floating point bit level hacking
-	i  = 0x5f3759df - ( i >> 1 );               // what the fuck?
-	y  = * ( float * ) &i;
+	t.f  = number;
+	t.i  = 0x5f3759df - ( t.i >> 1 );               // what the fuck?
+	y  = t.f;
 	y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
 //	y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
 
+	assert( !Q_isnan(y) ); // bk010122 - FPE?
 	return y;
 }
 
 float Q_fabs( float f ) {
-	int tmp = * ( int * ) &f;
-	tmp &= 0x7FFFFFFF;
-	return * ( float * ) &tmp;
+	floatint_t fi;
+	fi.f = f;
+	fi.i &= 0x7FFFFFFF;
+	return fi.f;
 }
 
 //============================================================
@@ -636,8 +648,8 @@ float RadiusFromBounds( const vec3_t mins, const vec3_t maxs ) {
 	float	a, b;
 
 	for (i=0 ; i<3 ; i++) {
-		a = fabs( mins[i] );
-		b = fabs( maxs[i] );
+		a = Q_fabs( mins[i] );
+		b = Q_fabs( maxs[i] );
 		corner[i] = a > b ? a : b;
 	}
 
@@ -674,7 +686,6 @@ int Q_log2( int val ) {
 	}
 	return answer;
 }
-
 
 /*
 =================
@@ -775,10 +786,10 @@ void PerpendicularVector( vec3_t dst, const vec3_t src )
 	*/
 	for ( pos = 0, i = 2; i >= 0; i-- )
 	{
-		if ( fabs( src[i] ) < minelem )
+		if ( Q_fabs( src[i] ) < minelem )
 		{
 			pos = i;
-			minelem = fabs( src[i] );
+			minelem = Q_fabs( src[i] );
 		}
 	}
 	tempvec[0] = tempvec[1] = tempvec[2] = 0.0F;

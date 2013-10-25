@@ -22,17 +22,7 @@ This file is part of Jedi Knight 2.
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
-#if (defined _MSC_VER)
-	#define Q_EXPORT __declspec(dllexport)
-#elif (defined __SUNPRO_C)
-	#define Q_EXPORT __global
-#elif ((__GNUC__ >= 3) && (!__EMX__) && (!sun))
-	#define Q_EXPORT __attribute__((visibility("default")))
-#else
-	#define Q_EXPORT
-#endif
-
-#ifdef _WIN32
+#ifdef _MSC_VER
 
 #pragma warning(disable : 4018)     // signed/unsigned mismatch
 //#pragma warning(disable : 4032)		//formal parameter 'number' has different type when promoted
@@ -55,19 +45,71 @@ This file is part of Jedi Knight 2.
 #pragma warning(disable : 4711)		// selected for automatic inline expansion
 #pragma warning(disable : 4786)		// identifier was truncated
 
+#pragma warning(disable : 4996)		// This function or variable may be unsafe.
+
 #endif
 
+//rww - conveniently toggle "gore" code, for model decals and stuff.
 #define _G2_GORE
+
+#define PRODUCT_NAME			"openjk_sp"
+
+#define CLIENT_WINDOW_TITLE "OpenJK (SP)"
+#define CLIENT_CONSOLE_TITLE "OpenJK Console (SP)"
+#define HOMEPATH_NAME_UNIX ".openjk"
+#define HOMEPATH_NAME_WIN "OpenJK"
+#define HOMEPATH_NAME_MACOSX HOMEPATH_NAME_WIN
+
+#define	BASEGAME "base"
+
+#define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
+
+#ifndef FINAL_BUILD
+#ifdef _WIN32
+#define G2_PERFORMANCE_ANALYSIS
+#endif
+#endif
 
 #include <assert.h>
 #include <math.h>
+#include <float.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 #include <ctype.h>
+#include <limits.h>
+#include <errno.h>
 #include <stddef.h>
+//=======================================================================
+
+//Ignore __attribute__ on non-gcc platforms
+#if !defined(__GNUC__) && !defined(__attribute__)
+	#define __attribute__(x)
+#endif
+
+#if defined(__GNUC__)
+	#define UNUSED_VAR __attribute__((unused))
+#else
+	#define UNUSED_VAR
+#endif
+
+#if (defined _MSC_VER)
+	#define Q_EXPORT __declspec(dllexport)
+#elif (defined __SUNPRO_C)
+	#define Q_EXPORT __global
+#elif ((__GNUC__ >= 3) && (!__EMX__) && (!sun))
+	#define Q_EXPORT __attribute__((visibility("default")))
+#else
+	#define Q_EXPORT
+#endif
+
+#if defined(__linux__) && !defined(__GCC__)
+#define Q_EXPORT_C extern "C"
+#else
+#define Q_EXPORT_C
+#endif
 
 // this is the define for determining if we have an asm version of a C function
 #if (defined _M_IX86 || defined __i386__) && !defined __sun__  && !defined __LCC__
@@ -79,55 +121,115 @@ This file is part of Jedi Knight 2.
 // for windows fastcall option
 
 #define	QDECL
+#define QCALL
+
+#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
+
+//JAC: Added
+#define ARRAY_LEN( x ) ( sizeof( x ) / sizeof( *(x) ) )
+#define STRING( a ) #a
+
+// Win64
+
+// Win64
+#if defined(_WIN64) || defined(__WIN64__)
+
+  #define idx64
+
+  #undef QDECL
+  #define QDECL __cdecl
+
+  #undef QCALL
+  #define QCALL __stdcall
+
+  #if defined(_MSC_VER)
+  	#define OS_STRING "win_msvc64"
+  #elif defined(__MINGW64__)
+  	#define OS_STRING "win_mingw64"
+  #endif
+
+  #define QINLINE __inline
+  #define PATH_SEP '\\'
+
+  #if defined(__WIN64__)
+  	#define ARCH_STRING "x84_64"
+  #elif defined(_M_ALPHA)
+  	#define ARCH_STRING "AXP"
+  #endif
+
+  #define Q3_LITTLE_ENDIAN
+
+  #define DLL_EXT ".dll"
 
 //======================= WIN32 DEFINES =================================
 
 #ifdef WIN32
 
-#define	MAC_STATIC
+  #undef QDECL
+  #define	QDECL	__cdecl
 
-#undef QDECL
-#define	QDECL	__cdecl
-
-// buildstring will be incorporated into the version string
-#ifdef NDEBUG
-#ifdef _M_IX86
-#define	CPUSTRING	"win-x86"
-#elif defined _M_ALPHA
-#define	CPUSTRING	"win-AXP"
-#endif
-#else
-#ifdef _M_IX86
-#define	CPUSTRING	"win-x86-debug"
-#elif defined _M_ALPHA
-#define	CPUSTRING	"win-AXP-debug"
-#endif
-#endif
+  // buildstring will be incorporated into the version string
+  #ifdef NDEBUG
+  #ifdef _M_IX86
+  #define	CPUSTRING	"win-x86"
+  #elif defined _M_ALPHA
+  #define	CPUSTRING	"win-AXP"
+  #endif
+  #else
+  #ifdef _M_IX86
+  #define	CPUSTRING	"win-x86-debug"
+  #elif defined _M_ALPHA
+  #define	CPUSTRING	"win-AXP-debug"
+  #endif
+  #endif
 
 
-#define	PATH_SEP '\\'
+  #define	PATH_SEP '\\'
+
+  #if defined(_M_IX86) || defined(__i386__)
+  	#define ARCH_STRING "x86"
+  #elif defined _M_ALPHA
+  	#define ARCH_STRING "AXP"
+  #endif
+
+  #define Q3_LITTLE_ENDIAN
+
+  #define DLL_EXT ".dll"
 
 #endif
 
 //======================= MAC OS X SERVER DEFINES =====================
 
-#if defined(__MACH__) && defined(__APPLE__)
+#if defined(MACOS_X)
 
-#define MAC_STATIC
+  #ifdef __ppc__
+  #define CPUSTRING	"MacOSX-ppc"
+  #elif defined __i386__
+  #define CPUSTRING	"MacOSX-i386"
+  #else
+  #define CPUSTRING	"MacOSX-other"
+  #endif
 
-#ifdef __ppc__
-#define CPUSTRING	"MacOSXS-ppc"
-#elif defined __i386__
-#define CPUSTRING	"MacOSXS-i386"
-#else
-#define CPUSTRING	"MacOSXS-other"
-#endif
+  #define	PATH_SEP	'/'
+          
+  #if defined(__i386__)
+      #define ARCH_STRING "x86"
+  #elif defined(__x86_64__)
+      #define idx64
+      #define ARCH_STRING "x86_64"
+  #elif defined(__powerpc64__)
+      #define ARCH_STRING "ppc64"
+  #elif defined(__powerpc__)
+      #define ARCH_STRING "ppc"
+  #endif
 
-#define	PATH_SEP	'/'
+  #define DLL_EXT ".dylib"
 
-#define	GAME_HARD_LINKED
-#define	CGAME_HARD_LINKED
-#define	UI_HARD_LINKED
+  #if BYTE_ORDER == BIG_ENDIAN
+    #define Q3_BIG_ENDIAN
+  #else
+    #define Q3_LITTLE_ENDIAN
+  #endif
 
 #endif
 
@@ -135,17 +237,9 @@ This file is part of Jedi Knight 2.
 
 #ifdef __MACOS__
 
-#define	MAC_STATIC	static
+  #define	CPUSTRING	"MacOS-PPC"
 
-#define	CPUSTRING	"MacOS-PPC"
-
-#define	PATH_SEP ':'
-
-#define	GAME_HARD_LINKED
-#define	CGAME_HARD_LINKED
-#define	UI_HARD_LINKED
-
-void Sys_PumpEvents( void );
+  #define	PATH_SEP ':'
 
 #endif
 
@@ -155,17 +249,56 @@ void Sys_PumpEvents( void );
 // just waste space and make big arrays static...
 #ifdef __linux__
 
-#define	MAC_STATIC
+  #include <unistd.h>
 
-#ifdef __i386__
-#define	CPUSTRING	"linux-i386"
-#elif defined __axp__
-#define	CPUSTRING	"linux-alpha"
-#else
-#define	CPUSTRING	"linux-other"
-#endif
+  #ifdef __i386__
+  #define	CPUSTRING	"linux-i386"
+  #elif defined __axp__
+  #define	CPUSTRING	"linux-alpha"
+  #else
+  #define	CPUSTRING	"linux-other"
+  #endif
 
-#define	PATH_SEP '/'
+  #define	PATH_SEP '/'
+
+  #if defined(__i386__)
+      #define ARCH_STRING "i386"
+  #elif defined(__x86_64__)
+      #define idx64
+      #define ARCH_STRING "x86_64"
+  #elif defined(__powerpc64__)
+      #define ARCH_STRING "ppc64"
+  #elif defined(__powerpc__)
+      #define ARCH_STRING "ppc"
+  #elif defined(__s390__)
+      #define ARCH_STRING "s390"
+  #elif defined(__s390x__)
+      #define ARCH_STRING "s390x"
+  #elif defined(__ia64__)
+      #define ARCH_STRING "ia64"
+  #elif defined(__alpha__)
+      #define ARCH_STRING "alpha"
+  #elif defined(__sparc__)
+      #define ARCH_STRING "sparc"
+  #elif defined(__arm__)
+      #define ARCH_STRING "arm"
+  #elif defined(__cris__)
+      #define ARCH_STRING "cris"
+  #elif defined(__hppa__)
+      #define ARCH_STRING "hppa"
+  #elif defined(__mips__)
+      #define ARCH_STRING "mips"
+  #elif defined(__sh__)
+      #define ARCH_STRING "sh"
+  #endif
+
+  #if __FLOAT_WORD_ORDER == __BIG_ENDIAN
+    #define Q3_BIG_ENDIAN
+  #else
+    #define Q3_LITTLE_ENDIAN
+  #endif
+
+  #define DLL_EXT ".so"
 
 #endif
 
@@ -173,26 +306,79 @@ void Sys_PumpEvents( void );
 
 typedef unsigned long		ulong;
 typedef unsigned short		word;
-
 typedef unsigned char 		byte;
 
 typedef enum {qfalse, qtrue}	qboolean;
 #define	qboolean	int		//don't want strict type checking on the qboolean
 
+typedef union {
+	float f;
+	int i;
+	unsigned int ui;
+} floatint_t;
+
 typedef int		qhandle_t;
+typedef int		thandle_t;
 typedef int		fxHandle_t;
 typedef int		sfxHandle_t;
 typedef int		fileHandle_t;
 typedef int		clipHandle_t;
 
+#define NULL_HANDLE   ((qhandle_t) 0)
+#define NULL_SOUND    ((sfxHandle_t) 0)
+#define NULL_FX       ((fxHandle_t) 0)
+#define NULL_SFX      ((sfxHandle_t) 0)
+#define NULL_FILE     ((fileHandle_t) 0)
+#define NULL_CLIP     ((clipHandle_t) 0)
+
+//Raz: can't think of a better place to put this atm,
+//		should probably be in the platform specific definitions
+#if defined (_MSC_VER) && (_MSC_VER >= 1600)
+
+	#include <stdint.h>
+
+	// vsnprintf is ISO/IEC 9899:1999
+	// abstracting this to make it portable
+	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+
+#elif defined (_MSC_VER)
+
+	#include <io.h>
+
+	typedef signed __int64 int64_t;
+	typedef signed __int32 int32_t;
+	typedef signed __int16 int16_t;
+	typedef signed __int8  int8_t;
+	typedef unsigned __int64 uint64_t;
+	typedef unsigned __int32 uint32_t;
+	typedef unsigned __int16 uint16_t;
+	typedef unsigned __int8  uint8_t;
+
+	// vsnprintf is ISO/IEC 9899:1999
+	// abstracting this to make it portable
+	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
+#else // not using MSVC
+
+	#include <stdint.h>
+
+	#define Q_vsnprintf vsnprintf
+
+#endif
+
+#define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
+#define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
+
+#define PADP(base, alignment)	((void *) PAD((intptr_t) (base), (alignment)))
 
 #ifndef NULL
+// NOTE: This is all c++ so casting to void * is wrong
 #define NULL ((void *)0)
 #endif
 
 #define	MAX_QINT			0x7fffffff
 #define	MIN_QINT			(-MAX_QINT-1)
 
+#define INT_ID( a, b, c, d ) (uint32_t)((((a) & 0xff) << 24) | (((b) & 0xff) << 16) | (((c) & 0xff) << 8) | ((d) & 0xff))
 
 // angle indexes
 #define	PITCH				0		// up / down
@@ -202,16 +388,23 @@ typedef int		clipHandle_t;
 // the game guarantees that no string from the network will ever
 // exceed MAX_STRING_CHARS
 #define	MAX_STRING_CHARS	1024	// max length of a string passed to Cmd_TokenizeString
-#define	MAX_STRING_TOKENS	256		// max tokens resulting from Cmd_TokenizeString
+#define	MAX_STRING_TOKENS	1024	// max tokens resulting from Cmd_TokenizeString
 #define	MAX_TOKEN_CHARS		1024	// max length of an individual token
 
 #define	MAX_INFO_STRING		1024
 #define	MAX_INFO_KEY		1024
 #define	MAX_INFO_VALUE		1024
 
+#define	BIG_INFO_STRING		8192  // used for system info key only
+#define	BIG_INFO_KEY		  8192
+#define	BIG_INFO_VALUE		8192
 
 #define	MAX_QPATH			64		// max length of a quake game pathname
-#define	MAX_OSPATH			128		// max length of a filesystem pathname
+#ifdef PATH_MAX
+#define MAX_OSPATH			PATH_MAX
+#else
+#define	MAX_OSPATH			256		// max length of a filesystem pathname
+#endif
 
 #define	MAX_NAME_LENGTH		32		// max length of a client name
 
@@ -290,6 +483,9 @@ typedef enum {
 #define UI_TINYFONT		0x00010000
 
 
+#define Com_Memset memset
+#define Com_Memcpy memcpy
+
 // stuff for TA's ROQ cinematic code...
 //
 #define CIN_system	1
@@ -314,6 +510,13 @@ typedef vec_t vec3_t[3];
 typedef vec_t vec4_t[4];
 typedef vec_t vec5_t[5];
 
+typedef vec3_t	vec3pair_t[2];
+
+typedef int ivec2_t[2];
+typedef int ivec3_t[3];
+typedef int ivec4_t[4];
+typedef int ivec5_t[5];
+
 typedef	int	fixed4_t;
 typedef	int	fixed8_t;
 typedef	int	fixed16_t;
@@ -332,38 +535,6 @@ static inline long Q_ftol(float f)
 {
 	return (long)f;
 }
-#endif
-
-#if defined (_MSC_VER) && (_MSC_VER >= 1600)
-
-	#include <stdint.h>
-
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-
-#elif defined (_MSC_VER)
-
-	#include <io.h>
-
-	typedef signed __int64 int64_t;
-	typedef signed __int32 int32_t;
-	typedef signed __int16 int16_t;
-	typedef signed __int8  int8_t;
-	typedef unsigned __int64 uint64_t;
-	typedef unsigned __int32 uint32_t;
-	typedef unsigned __int16 uint16_t;
-	typedef unsigned __int8  uint8_t;
-
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-#else // not using MSVC
-
-	#include <stdint.h>
-
-	#define Q_vsnprintf vsnprintf
-
 #endif
 
 #define NUMVERTEXNORMALS	162
@@ -473,10 +644,12 @@ CT_MAX
 
 extern vec4_t colorTable[CT_MAX];
 
-
 #define Q_COLOR_ESCAPE	'^'
+#define Q_COLOR_BITS 0xF // was 7
+
 // you MUST have the last bit on here about colour strings being less than 7 or taiwanese strings register as colour!!!!
-#define Q_IsColorString(p)	( p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE && *((p)+1) <= '7' )
+#define Q_IsColorString(p)	( p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE && *((p)+1) <= '9' && *((p)+1) >= '0' )
+#define Q_IsColorStringExt(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) >= '0' && *((p)+1) <= '9') // ^[0-9]
 
 #define COLOR_BLACK		'0'
 #define COLOR_RED		'1'
@@ -486,7 +659,9 @@ extern vec4_t colorTable[CT_MAX];
 #define COLOR_CYAN		'5'
 #define COLOR_MAGENTA	'6'
 #define COLOR_WHITE		'7'
-#define ColorIndex(c)	( ( (c) - '0' ) & 7 )
+#define COLOR_ORANGE	'8'
+#define COLOR_GREY		'9'
+#define ColorIndex(c)	( ( (c) - '0' ) & Q_COLOR_BITS )
 
 #define S_COLOR_BLACK	"^0"
 #define S_COLOR_RED		"^1"
@@ -496,8 +671,10 @@ extern vec4_t colorTable[CT_MAX];
 #define S_COLOR_CYAN	"^5"
 #define S_COLOR_MAGENTA	"^6"
 #define S_COLOR_WHITE	"^7"
+#define S_COLOR_ORANGE	"^8"
+#define S_COLOR_GREY	"^9"
 
-extern vec4_t	g_color_table[8];
+extern vec4_t g_color_table[Q_COLOR_BITS+1];
 
 #define	MAKERGB( v, r, g, b ) v[0]=r;v[1]=g;v[2]=b
 #define	MAKERGBA( v, r, g, b, a ) v[0]=r;v[1]=g;v[2]=b;v[3]=a
@@ -516,10 +693,19 @@ typedef enum
 
 #define MAX_BATTERIES	2500
 
-#define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0F )
-#define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
+#define PI_DIV_180		0.017453292519943295769236907684886
+#define INV_PI_DIV_180	57.295779513082320876798154814105
 
-#define ENUM2STRING(arg)   #arg,arg
+// Punish Aurelio if you don't like these performance enhancements. :-)
+#define DEG2RAD( a ) ( ( (a) * PI_DIV_180 ) )
+#define RAD2DEG( a ) ( ( (a) * INV_PI_DIV_180 ) )
+
+// A divide can be avoided by just multiplying by PI_DIV_180 which is PI divided by 180. - Aurelio
+//#define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0F )
+// A divide can be avoided by just multiplying by INV_PI_DIV_180(inverse of PI/180) which is 180 divided by PI. - Aurelio
+//#define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
+
+#define ENUM2STRING(arg)   { #arg,arg }
 
 struct cplane_s;
 
@@ -549,17 +735,6 @@ void ByteToDir( int b, vec3_t dir );
 #define	_VectorScale(v, s, o)	((o)[0]=(v)[0]*(s),(o)[1]=(v)[1]*(s),(o)[2]=(v)[2]*(s))
 #define	_VectorMA(v, s, b, o)	((o)[0]=(v)[0]+(b)[0]*(s),(o)[1]=(v)[1]+(b)[1]*(s),(o)[2]=(v)[2]+(b)[2]*(s))
 
-
-#ifdef __LCC__
-#ifdef VectorCopy
-#undef VectorCopy
-// this is a little hack to get more efficient copies
-typedef struct {
-	float	v[3];
-} vec3struct_t;
-#define VectorCopy(a,b)	*(vec3struct_t *)b=*(vec3struct_t *)a;
-#endif
-#endif
 
 #define VectorClear(a)			((a)[0]=(a)[1]=(a)[2]=0)
 #define VectorNegate(a,b)		((b)[0]=-(a)[0],(b)[1]=-(a)[1],(b)[2]=-(a)[2])
@@ -951,13 +1126,21 @@ void PerpendicularVector( vec3_t dst, const vec3_t src );
 
 //=============================================
 
+int Com_Clampi( int min, int max, int value );
 float Com_Clamp( float min, float max, float value );
+int Com_AbsClampi( int min, int max, int value );
+float Com_AbsClamp( float min, float max, float value );
 
 char	*COM_SkipPath( char *pathname );
-void	COM_StripExtension( const char *in, char *out );
+const char	*COM_GetExtension( const char *name );
+void	COM_StripExtension( const char *in, char *out, int destsize );
+qboolean COM_CompareExtension(const char *in, const char *ext);
 void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 
+//JLFCALLOUT include MPNOTUSED
 void	 COM_BeginParseSession( void );
+void	 COM_EndParseSession( void );
+
 int		 COM_GetCurrentParseLine( void );
 char	*COM_Parse( const char **data_p );
 char	*COM_ParseExt( const char **data_p, qboolean allowLineBreak );
@@ -977,8 +1160,12 @@ void SkipRestOfLine ( const char **data );
 void Parse1DMatrix (const char **buf_p, int x, float *m);
 void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
+int Com_HexStrToInt( const char *str );
 
-void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
+int	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
+
+char *Com_SkipTokens( char *s, int numTokens, char *sep );
+char *Com_SkipCharset( char *s, char *sep );
 
 
 // mode parm for FS_FOpenFile
@@ -1001,12 +1188,8 @@ int Q_isprint( int c );
 int Q_islower( int c );
 int Q_isupper( int c );
 int Q_isalpha( int c );
-
-#ifndef _WIN32
-#include <sys/time.h>
-unsigned int timeGetTime();
-#endif
-#include <time.h>
+qboolean Q_isanumber( const char *s );
+qboolean Q_isintegral( float f );
 
 #if 1
 // portable case insensitive compare
@@ -1028,17 +1211,25 @@ inline const char	*Q_strrchr( const char* str, int c ) { return strrchr(str, c);
 
 
 // buffer size safe library replacements
-void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong=qfalse );
+#ifdef __cplusplus
+void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong = qfalse );
+#else
+void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong );
+#endif
 void	Q_strcat( char *dest, int size, const char *src );
+
+const char *Q_stristr( const char *s, const char *find );
 
 // strlen that discounts Quake color sequences
 int Q_PrintStrlen( const char *string );
 // removes color sequences from string
 char *Q_CleanStr( char *string );
-
+void Q_StripColor ( char *string );
+void Q_strstrip( char *string, const char *strip, const char *repl );
+const char *Q_strchrs( const char *string, const char *search );
 //=============================================
 
-#ifdef _M_IX86
+#ifdef id386
 //
 // optimised stuff for Intel, since most of our data is in that format anyway...
 //
@@ -1066,12 +1257,15 @@ float	LittleFloat (float l);
 void	Swap_Init (void);
 char	* QDECL va(const char *format, ...);
 
+#define TRUNCATE_LENGTH	64
+void Com_TruncateLongString( char *buffer, const char *s );
+
 //=============================================
 
 //
 // key / value info strings
 //
-char *Info_ValueForKey( const char *s, const char *key );
+const char *Info_ValueForKey( const char *s, const char *key );
 void Info_RemoveKey( char *s, const char *key );
 void Info_SetValueForKey( char *s, const char *key, const char *value );
 qboolean Info_Validate( const char *s );
@@ -1093,6 +1287,7 @@ default values.
 ==========================================================
 */
 
+#define	CVAR_TEMP			0	// can be set even when cheats are disabled, but is not archived
 #define	CVAR_ARCHIVE		1	// set to cause it to be saved to vars.rc
 								// used for system variables, not for player
 								// specific configurations
@@ -1108,9 +1303,16 @@ default values.
 								// changed yet
 #define	CVAR_ROM			64	// display only, cannot be set by user at all
 #define	CVAR_USER_CREATED	128	// created by a set command
-#define	CVAR_TEMP			256	// can be set even when cheats are disabled, but is not archived
+#define	CVAR_SAVEGAME		256	// store this in the savegame
 #define CVAR_CHEAT			512	// can not be changed if cheats are disabled
 #define CVAR_NORESTART		1024	// do not clear when a cvar_restart is issued
+
+#define CVAR_SERVER_CREATED	2048	// cvar was created by a server the client connected to.
+#define CVAR_VM_CREATED		4096	// cvar was created exclusively in one of the VMs.
+#define CVAR_PROTECTED		8192	// prevent modifying this var from VMs or the server
+// These flags are only returned by the Cvar_Flags() function
+#define CVAR_MODIFIED		0x40000000		// Cvar was modified
+#define CVAR_NONEXISTENT	0x80000000		// Cvar doesn't exist.
 
 // nothing outside the Cvar_*() functions should modify these fields!
 typedef struct cvar_s {
@@ -1123,7 +1325,15 @@ typedef struct cvar_s {
 	int			modificationCount;	// incremented each time the cvar is changed
 	float		value;				// atof( string )
 	int			integer;			// atoi( string )
+	qboolean	validate;
+	qboolean	integral;
+	float		min;
+	float		max;
 	struct cvar_s *next;
+	struct cvar_s *prev;
+	struct cvar_s *hashNext;
+	struct cvar_s *hashPrev;
+	int			hashIndex;
 } cvar_t;
 
 #define	MAX_CVAR_VALUE_STRING	256
@@ -1224,7 +1434,6 @@ typedef struct {
 // if none of the catchers are active, bound key strings will be executed
 #define KEYCATCH_CONSOLE	1
 #define	KEYCATCH_UI			2
-#define	KEYCATCH_MESSAGE	4
 
 
 // sound channels
@@ -1252,7 +1461,6 @@ typedef struct {
 //
 #define	MAX_CLIENTS			1 // 128		// absolute limit
 #define MAX_TERRAINS		1 //32
-#define MAX_LOCATIONS		64
 
 #define	GENTITYNUM_BITS		10		// don't need to send any more
 #define	MAX_GENTITIES		(1<<GENTITYNUM_BITS)
@@ -1265,15 +1473,15 @@ typedef struct {
 #define	ENTITYNUM_MAX_NORMAL	(MAX_GENTITIES-2)
 
 
-#define	MAX_MODELS			256		// these are sent over the net as 8 bits
-#define	MAX_SOUNDS			380		// so they cannot be blindly increased
+#define	MAX_MODELS			256
+#define	MAX_SOUNDS			380
 
 #define MAX_SUB_BSP			32
 
 #define	MAX_SUBMODELS		512		// nine bits
 
 #define MAX_FX				128
-#define MAX_WORLD_FX		66
+#define MAX_WORLD_FX		66		// was 16 // was 4
 
 /*
 Ghoul2 Insert Start
@@ -1283,7 +1491,7 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
-#define	MAX_CONFIGSTRINGS	1300//1024
+#define	MAX_CONFIGSTRINGS	1300//1024 //rww - I had to up this for terrains
 
 // these are the only configstrings that the system reserves, all the
 // other ones are strictly for servergame to clientgame communication
@@ -1523,6 +1731,7 @@ typedef enum
 #define SFL2_NO_MANUAL_DEACTIVATE2	(1<<16)//if set, the blades cannot manually be toggled on and off
 #define SFL2_TRANSITION_DAMAGE2		(1<<17)//if set, the blade does damage in start, transition and return anims (like strong style does)
 
+// !!!!!!!!!!!! loadsave affecting struct !!!!!!!!!!!!!!!!!!!!!!!!!!
 typedef struct
 {
 	char		*name;						//entry in sabers.cfg, if any
@@ -2101,7 +2310,7 @@ String ID Tables
 */
 typedef struct stringID_table_s
 {
-	char	*name;
+	const char	*name;
 	int		id;
 } stringID_table_t;
 
@@ -2147,7 +2356,10 @@ typedef struct parseData_s
 	const char	*bufferCurrent;					// Where data is currently being parsed from buffer
 } parseData_t;
 
-extern parseData_t parseData;
+//JFLCALLOUT include
+//changed to array
+extern parseData_t  parseData[];
+extern int parseDataCount;
 
 
 // cinematic states
@@ -2165,9 +2377,10 @@ typedef enum {
 // define the new memory tags for the zone, used by all modules now
 //
 #define TAGDEF(blah) TAG_ ## blah
-typedef enum {
+enum {
 	#include "../qcommon/tags.h"
-} memtag_t;
+};
+typedef unsigned memtag_t;
 
 // stuff to help out during development process, force reloading/uncacheing of certain filetypes...
 //

@@ -23,7 +23,21 @@ This file is part of Jedi Knight 2.
 
 //#include "q_shared.h"
 
-float Com_Clamp( float min, float max, float value ) {
+int Com_Clampi( int min, int max, int value ) 
+{
+	if ( value < min ) 
+	{
+		return min;
+	}
+	if ( value > max ) 
+	{
+		return max;
+	}
+	return value;
+}
+
+float Com_Clamp( float min, float max, float value )
+{
 	if ( value < min ) {
 		return min;
 	}
@@ -31,6 +45,30 @@ float Com_Clamp( float min, float max, float value ) {
 		return max;
 	}
 	return value;
+}
+
+int Com_AbsClampi( int min, int max, int value )
+{
+	if( value < 0 )
+	{
+		return Com_Clampi( -max, -min, value );
+	}
+	else
+	{
+		return Com_Clampi( min, max, value );
+	}
+}
+
+float Com_AbsClamp( float min, float max, float value )
+{
+	if( value < 0.0f )
+	{
+		return Com_Clamp( -max, -min, value );
+	}
+	else
+	{
+		return Com_Clamp( min, max, value );
+	}
 }
 
 
@@ -55,49 +93,69 @@ char *COM_SkipPath (char *pathname)
 
 /*
 ============
+COM_GetExtension
+============
+*/
+const char *COM_GetExtension( const char *name )
+{
+	const char *dot = strrchr(name, '.'), *slash;
+	if (dot && (!(slash = strrchr(name, '/')) || slash < dot))
+		return dot + 1;
+	else
+		return "";
+}
+
+/*
+============
 COM_StripExtension
 ============
 */
-void COM_StripExtension( const char *in, char *out ) {
-	while ( *in && *in != '.' ) {
-		*out++ = *in++;
-	}
-	*out = 0;
+void COM_StripExtension( const char *in, char *out, int destsize )
+{
+	const char *dot = strrchr(in, '.'), *slash;
+	if (dot && (!(slash = strrchr(in, '/')) || slash < dot))
+		Q_strncpyz(out, in, (destsize < dot-in+1 ? destsize : dot-in+1));
+	else
+		Q_strncpyz(out, in, destsize);
 }
 
+/*
+============
+COM_CompareExtension
+
+string compare the end of the strings and return qtrue if strings match
+============
+*/
+qboolean COM_CompareExtension(const char *in, const char *ext)
+{
+	int inlen, extlen;
+
+	inlen = strlen(in);
+	extlen = strlen(ext);
+
+	if(extlen <= inlen)
+	{
+		in += inlen - extlen;
+
+		if(!Q_stricmp(in, ext))
+			return qtrue;
+	}
+
+	return qfalse;
+}
 
 /*
 ==================
 COM_DefaultExtension
 ==================
 */
-void COM_DefaultExtension (char *path, int maxSize, const char *extension ) {
-	char    *src;
-
-	if (path[0])	// or the strlen()-1 stuff gets a bad ptr for blank string
-	{
-	//
-	// if path doesn't have a .EXT, append extension
-	// (extension should include the .)
-	//
-		src = path + strlen(path) - 1;
-
-		while (*src != '/' && src != path) {
-			if ( *src == '.' ) {
-				return;                 // it has an extension
-			}
-			src--;
-		}
-	}
-
-	if (strlen(path)+strlen(extension) >= maxSize)
-	{
-		Com_Printf ("COM_DefaultExtension: overflow adding %s to %s\n", extension, path);
-	}
+void COM_DefaultExtension( char *path, int maxSize, const char *extension )
+{
+	const char *dot = strrchr(path, '.'), *slash;
+	if (dot && (!(slash = strrchr(path, '/')) || slash < dot))
+		return;
 	else
-	{
-		strcat(path, extension);
-	}
+		Q_strcat(path, maxSize, extension);
 }
 
 /*
@@ -117,7 +175,7 @@ static int		(*_LittleLong) (int l);
 static float	(*_BigFloat) (float l);
 static float	(*_LittleFloat) (float l);
 
-#ifdef _M_IX86
+#ifdef id386 // _M_IX86
 //
 // optimised stuff for Intel, since most of our data is in that format anyway...
 //
@@ -236,24 +294,45 @@ PARSING
 */
 
 static	char	com_token[MAX_TOKEN_CHARS];
-
-parseData_t parseData;
+//JLFCALLOUT MPNOTUSED
+//#include functionality for files
+int parseDataCount = -1;
+const int MAX_PARSE_DATA = 5;
+parseData_t parseData[MAX_PARSE_DATA];
 
 void COM_ParseInit( void )
 {
-	memset(&parseData,0,sizeof(parseData_t));
-	COM_BeginParseSession();
+	memset(parseData, 0, sizeof(parseData));
+	parseDataCount = -1;
 }
 
 void COM_BeginParseSession( void )
 {
-	parseData.com_lines = 1;
+	parseDataCount++;
+#ifdef _DEBUG
+	if ( parseDataCount >= MAX_PARSE_DATA )
+	{
+		Com_Error (ERR_FATAL, "COM_BeginParseSession: cannot nest more than %d parsing sessions.\n", MAX_PARSE_DATA);
+	}
+#endif
+
+	parseData[parseDataCount].com_lines = 1;
 }
 
+void COM_EndParseSession( void )
+{
+	parseDataCount--;
+#ifdef _DEBUG
+	assert (parseDataCount >= -1 && "COM_EndParseSession: called without a starting COM_BeginParseSession.\n");
+#endif
+}
 
 int COM_GetCurrentParseLine( int index )
 {
-	return parseData.com_lines;
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "COM_GetCurrentParseLine: parseDataCount < 0 (be sure to call COM_BeginParseSession!)");
+
+	return parseData[parseDataCount].com_lines;
 }
 
 char *COM_Parse( const char **data_p )
@@ -273,11 +352,14 @@ string will be returned if the next token is
 a newline.
 ==============
 */
-static const char *SkipWhitespace( const char *data, qboolean *hasNewLines ) 
+const char *SkipWhitespace( const char *data, qboolean *hasNewLines ) 
 {
 	int c;
 
-	while( (c = *data) <= ' ') 
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "SkipWhitespace: parseDataCount < 0");
+
+	while( (c = *(const unsigned char* /*eurofix*/)data) <= ' ') 
 	{
 		if( !c ) 
 		{
@@ -285,7 +367,7 @@ static const char *SkipWhitespace( const char *data, qboolean *hasNewLines )
 		}
 		if( c == '\n' ) 
 		{
-			parseData.com_lines++;
+			parseData[parseDataCount].com_lines++;
 			*hasNewLines = qtrue;
 		}
 		data++;
@@ -294,128 +376,11 @@ static const char *SkipWhitespace( const char *data, qboolean *hasNewLines )
 	return data;
 }
 
-char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
-{
-	int c = 0, len;
-	qboolean hasNewLines = qfalse;
-	const char *data;
-
-	data = *data_p;
-	len = 0;
-	com_token[0] = 0;
-
-	// make sure incoming data is valid
-	if ( !data )
-	{
-		*data_p = NULL;
-		return com_token;
-	}
-
-	while ( 1 )
-	{
-		// skip whitespace
-		data = SkipWhitespace( data, &hasNewLines );
-		if ( !data )
-		{
-			*data_p = NULL;
-			return com_token;
-		}
-		if ( hasNewLines && !allowLineBreaks )
-		{
-			*data_p = data;
-			return com_token;
-		}
-
-		c = *data;
-
-		// skip double slash comments
-		if ( c == '/' && data[1] == '/' )
-		{
-			while (*data && *data != '\n')	// Advance to the end of the line
-			{
-				data++;
-			}
-		}
-		// skip /* */ comments
-		else if ( c=='/' && data[1] == '*' ) 
-		{
-			while ( *data && ( *data != '*' || data[1] != '/' ) )	// Advance to the */ characters
-			{
-				data++;
-			}
-
-			if ( *data ) 
-			{
-				data += 2;
-			}
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	// handle quoted strings
-	if (c == '\"')
-	{
-		data++;
-		while (1)
-		{
-			c = *data++;
-			if (c=='\"' || !c)
-			{
-				com_token[len] = 0;
-				*data_p = ( char * ) data;
-				return com_token;
-			}
-			if (len < MAX_TOKEN_CHARS)
-			{
-				com_token[len] = c;
-				len++;
-			}
-		}
-	}
-
-	// parse a regular word
-	do
-	{
-		if (len < MAX_TOKEN_CHARS)
-		{
-			com_token[len] = c;
-			len++;
-		}
-		data++;
-		c = *data;
-		if ( c == '\n' )
-		{
-			parseData.com_lines++;
-		}
-	} while (c>32);
-
-	if (len == MAX_TOKEN_CHARS)
-	{
-		Com_Printf ("Token exceeded %i chars, discarded.\n", MAX_TOKEN_CHARS);
-		len = 0;
-	}
-	com_token[len] = 0;
-
-	*data_p = ( char * ) data;
-	return com_token;
-}
-
-
-/*
-==============
-COM_Compress
-remove blank space and comments from source
-==============
-*/
-
 int COM_Compress( char *data_p ) {
 	char *in, *out;
 	int c;
 	qboolean newline = qfalse, whitespace = qfalse;
-	
+
 	in = out = data_p;
 	if (in) {
 		while ((c = *in) != 0) {
@@ -424,7 +389,7 @@ int COM_Compress( char *data_p ) {
 				while (*in && *in != '\n') {
 					in++;
 				}
-				// skip /* */ comments
+			// skip /* */ comments
 			} else if ( c == '/' && in[1] == '*' ) {
 				while ( *in && ( *in != '*' || in[1] != '/' ) ) 
 					in++;
@@ -449,7 +414,7 @@ int COM_Compress( char *data_p ) {
 					*out++ = ' ';
 					whitespace = qfalse;
 				}
-				
+
 				// copy quoted strings unmolested
 				if (c == '"') {
 					*out++ = c;
@@ -474,11 +439,117 @@ int COM_Compress( char *data_p ) {
 				}
 			}
 		}
+
+		*out = 0;
 	}
-	*out = 0;
 	return out - data_p;
 }
 
+char *COM_ParseExt( const char **data_p, qboolean allowLineBreaks )
+{
+	int c = 0, len;
+	qboolean hasNewLines = qfalse;
+	const char *data;
+
+	data = *data_p;
+	len = 0;
+	com_token[0] = 0;
+
+	// make sure incoming data is valid
+	if ( !data )
+	{
+		*data_p = NULL;
+		return com_token;
+	}
+
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "COM_ParseExt: parseDataCount < 0 (be sure to call COM_BeginParseSession!)");
+
+	while ( 1 )
+	{
+		// skip whitespace
+		data = SkipWhitespace( data, &hasNewLines );
+		if ( !data )
+		{
+			*data_p = NULL;
+			return com_token;
+		}
+		if ( hasNewLines && !allowLineBreaks )
+		{
+			*data_p = data;
+			return com_token;
+		}
+
+		c = *data;
+
+		// skip double slash comments
+		if ( c == '/' && data[1] == '/' )
+		{
+			data += 2;
+			while (*data && *data != '\n')
+			{
+				data++;
+			}
+		}
+		// skip /* */ comments
+		else if ( c=='/' && data[1] == '*' ) 
+		{
+			data += 2;
+			while ( *data && ( *data != '*' || data[1] != '/' ) ) 
+			{
+				data++;
+			}
+			if ( *data ) 
+			{
+				data += 2;
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	// handle quoted strings
+	if (c == '\"')
+	{
+		data++;
+		while (1)
+		{
+			c = *data++;
+			if (c=='\"' || !c)
+			{
+				com_token[len] = 0;
+				*data_p = ( char * ) data;
+				return com_token;
+			}
+			if (len < MAX_TOKEN_CHARS - 1)
+			{
+				com_token[len] = c;
+				len++;
+			}
+		}
+	}
+
+	// parse a regular word
+	do
+	{
+		if (len < MAX_TOKEN_CHARS -1)
+		{
+			com_token[len] = c;
+			len++;
+		}
+		data++;
+		c = *data;
+		if ( c == '\n' )
+			parseData[parseDataCount].com_lines++;
+	} while (c>32);
+
+	com_token[len] = 0;
+
+	*data_p = ( char * ) data;
+	return com_token;
+}
 
 /*
 ==================
@@ -536,10 +607,13 @@ void SkipRestOfLine ( const char **data ) {
 	const char	*p;
 	int		c;
 
+	if(parseDataCount < 0)
+		Com_Error(ERR_FATAL, "SkipRestOfLine: parseDataCount < 0");
+
 	p = *data;
 	while ( (c = *p++) != 0 ) {
 		if ( c == '\n' ) {
-			parseData.com_lines++;
+			parseData[parseDataCount].com_lines++;
 			break;
 		}
 	}
@@ -586,6 +660,45 @@ void Parse3DMatrix ( const char **buf_p, int z, int y, int x, float *m) {
 	COM_MatchToken( buf_p, ")" );
 }
 
+/*
+ ===================
+ Com_HexStrToInt
+ ===================
+ */
+int Com_HexStrToInt( const char *str )
+{
+	if ( !str || !str[ 0 ] )
+		return -1;
+	
+	// check for hex code
+	if( str[ 0 ] == '0' && str[ 1 ] == 'x' )
+	{
+		size_t i, n = 0;
+		
+		for( i = 2; i < strlen( str ); i++ )
+		{
+			char digit;
+			
+			n *= 16;
+			
+			digit = tolower( str[ i ] );
+			
+			if( digit >= '0' && digit <= '9' )
+				digit -= '0';
+			else if( digit >= 'a' && digit <= 'f' )
+				digit = digit - 'a' + 10;
+			else
+				return -1;
+			
+			n += digit;
+		}
+		
+		return n;
+	}
+	
+	return -1;
+}
+
 
 /*
 ============================================================================
@@ -623,6 +736,27 @@ int Q_isalpha( int c )
 	return ( 0 );
 }
 
+qboolean Q_isanumber( const char *s )
+{
+	char *p;
+	double ret;
+
+	if( *s == '\0' )
+		return qfalse;
+
+	ret = strtod( s, &p );
+	
+	if ( ret == HUGE_VAL || errno == ERANGE )
+		return qfalse;
+
+	return (qboolean)(*p == '\0');
+}
+
+qboolean Q_isintegral( float f )
+{
+	return (qboolean)( (int)f == f );
+}
+
 /*
 char* Q_strrchr( const char* string, int c )
 {
@@ -653,6 +787,9 @@ Safe strncpy that ensures a trailing zero
 */
 void Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong/* = qfalse */ )
 {
+	if ( !dest ) {
+		Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
+	}
 	if ( !src ) {
 		Com_Error( ERR_FATAL, "Q_strncpyz: NULL src" );
 	}
@@ -662,15 +799,15 @@ void Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooL
 
 	if (bBarfIfTooLong)
 	{
-		if ( strlen(src)+1 > destsize)
+		if ( strlen(src)+1 > (size_t)destsize)
 		{
-			Com_Error(ERR_FATAL,"String dest buffer too small to hold string \"%s\"",src);
+			Com_Error(ERR_FATAL,"String dest buffer too small to hold string \"%s\" %d > %d\n(source addr = %x, dest addr = %x",src, strlen(src)+1, destsize, src, dest);
 		}
 	}
 	strncpy( dest, src, destsize-1 );
     dest[destsize-1] = 0;
 }
-                
+#if 1         
 int Q_stricmpn (const char *s1, const char *s2, int n) {
 	int		c1, c2;
 	
@@ -738,6 +875,7 @@ char *Q_strupr( char *s1 ) {
 	}
     return s1;
 }
+#endif
 
 // never goes past bounds or leaves without a terminating 0
 void Q_strcat( char *dest, int size, const char *src ) {
@@ -747,9 +885,44 @@ void Q_strcat( char *dest, int size, const char *src ) {
 	if ( l1 >= size ) {
 		Com_Error( ERR_FATAL, "Q_strcat: already overflowed" );
 	}
+	if ( strlen(src)+1 > (size_t)(size - l1))
+	{	//do the error here instead of in Q_strncpyz to get a meaningful msg
+		Com_Error(ERR_FATAL,"Q_strcat: cannot append \"%s\" to \"%s\"", src, dest);
+	}
 	Q_strncpyz( dest + l1, src, size - l1 );
 }
 
+/*
+* Find the first occurrence of find in s.
+*/
+const char *Q_stristr( const char *s, const char *find )
+{
+  char c, sc;
+  size_t len;
+
+  if ((c = *find++) != 0)
+  {
+    if (c >= 'a' && c <= 'z')
+    {
+      c -= ('a' - 'A');
+    }
+    len = strlen(find);
+    do
+    {
+      do
+      {
+        if ((sc = *s++) == 0)
+          return NULL;
+        if (sc >= 'a' && sc <= 'z')
+        {
+          sc -= ('a' - 'A');
+        }
+      } while (sc != c);
+    } while (Q_stricmpn(s, find, len) != 0);
+    s--;
+  }
+  return s;
+}
 
 int Q_PrintStrlen( const char *string ) {
 	int			len;
@@ -795,6 +968,113 @@ char *Q_CleanStr( char *string ) {
 	return string;
 }
 
+/*
+==================
+Q_StripColor
+ 
+Strips coloured strings in-place using multiple passes: "fgs^^56fds" -> "fgs^6fds" -> "fgsfds"
+
+(Also strips ^8 and ^9)
+==================
+*/
+void Q_StripColor(char *text)
+{
+	qboolean doPass = qtrue;
+	char *read;
+	char *write;
+
+	while ( doPass )
+	{
+		doPass = qfalse;
+		read = write = text;
+		while ( *read )
+		{
+			if ( Q_IsColorStringExt(read) )
+			{
+				doPass = qtrue;
+				read += 2;
+			}
+			else
+			{
+				// Avoid writing the same data over itself
+				if (write != read)
+				{
+					*write = *read;
+				}
+				write++;
+				read++;
+			}
+		}
+		if ( write < read )
+		{
+			// Add trailing NUL byte if string has shortened
+			*write = '\0';
+		}
+	}
+}
+
+/*
+Q_strstrip
+
+	Description:	Replace strip[x] in string with repl[x] or remove characters entirely
+	Mutates:		string
+	Return:			--
+
+	Examples:		Q_strstrip( "Bo\nb is h\rairy!!", "\n\r!", "123" );	// "Bo1b is h2airy33"
+					Q_strstrip( "Bo\nb is h\rairy!!", "\n\r!", "12" );	// "Bo1b is h2airy"
+					Q_strstrip( "Bo\nb is h\rairy!!", "\n\r!", NULL );	// "Bob is hairy"
+*/
+
+void Q_strstrip( char *string, const char *strip, const char *repl )
+{
+	char		*out=string, *p=string, c;
+	const char	*s=strip;
+	int			replaceLen = repl?strlen( repl ):0, offset=0;
+
+	while ( (c = *p++) != '\0' )
+	{
+		for ( s=strip; *s; s++ )
+		{
+			offset = s-strip;
+			if ( c == *s )
+			{
+				if ( !repl || offset >= replaceLen )
+					c = *p++;
+				else
+					c = repl[offset];
+				break;
+			}
+		}
+		*out++ = c;
+	}
+	*out = '\0';
+}
+
+/*
+Q_strchrs
+
+	Description:	Find any characters in a string. Think of it as a shorthand strchr loop.
+	Mutates:		--
+	Return:			first instance of any characters found
+					 otherwise NULL
+*/
+
+const char *Q_strchrs( const char *string, const char *search )
+{
+	const char *p = string, *s = search;
+
+	while ( *p != '\0' )
+	{
+		for ( s=search; *s; s++ )
+		{
+			if ( *p == *s )
+				return p;
+		}
+		p++;
+	}
+
+	return NULL;
+}
 
 #ifdef _MSC_VER
 /*
@@ -831,7 +1111,7 @@ int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 
 //Raz: Patched version of Com_sprintf
 //Ensiform: But this is better
-void QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
+int QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	int		len;
 	va_list		argptr;
 
@@ -842,7 +1122,7 @@ void QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	if(len >= size)
 		Com_Printf("Com_sprintf: Output length %d too short, require %d bytes.\n", size, len + 1);
 	
-	return;
+	return len;
 }
 
 /*
@@ -866,12 +1146,29 @@ char * QDECL va( const char *format, ... )
 
 	va_start( argptr, format );
 	buf = (char *)&string[index++ & 3];
-	Q_vsnprintf( buf, MAX_VA_STRING-1, format, argptr );
+	Q_vsnprintf( buf, sizeof(*string), format, argptr );
 	va_end( argptr );
-
 	return buf;
 }
 
+/*
+============
+Com_TruncateLongString
+
+Assumes buffer is atleast TRUNCATE_LENGTH big
+============
+*/
+void Com_TruncateLongString( char *buffer, const char *s ) {
+	int length = strlen( s );
+
+	if ( length <= TRUNCATE_LENGTH )
+		Q_strncpyz( buffer, s, TRUNCATE_LENGTH );
+	else {
+		Q_strncpyz( buffer, s, (TRUNCATE_LENGTH/2) - 3 );
+		Q_strcat( buffer, TRUNCATE_LENGTH, " ... " );
+		Q_strcat( buffer, TRUNCATE_LENGTH, s + length - (TRUNCATE_LENGTH/2) + 3 );
+	}
+}
 
 /*
 =====================================================================
@@ -890,7 +1187,7 @@ key and returns the associated value, or an empty string.
 FIXME: overflow check?
 ===============
 */
-char *Info_ValueForKey( const char *s, const char *key ) {
+const char *Info_ValueForKey( const char *s, const char *key ) {
 	char	pkey[MAX_INFO_KEY];
 	static	char value[2][MAX_INFO_VALUE];	// use two buffers so compares
 											// work without stomping on each other
@@ -1071,19 +1368,19 @@ void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 
 	if (strchr (key, '\\') || strchr (value, '\\'))
 	{
-		Com_Printf ("Can't use keys or values with a \\\n");
+		Com_Printf ("Can't use keys or values with a \\(%s, %s)\n",key,value);
 		return;
 	}
 
 	if (strchr (key, ';') || strchr (value, ';'))
 	{
-		Com_Printf ("Can't use keys or values with a semicolon\n");
+		Com_Printf ("Can't use keys or values with a semicolon(%s, %s)\n",key,value);
 		return;
 	}
 
 	if (strchr (key, '\"') || strchr (value, '\"'))
 	{
-		Com_Printf ("Can't use keys or values with a \"\n");
+		Com_Printf ("Can't use keys or values with a \"(%s, %s)\n",key,value);
 		return;
 	}
 
@@ -1103,6 +1400,66 @@ void Info_SetValueForKey( char *s, const char *key, const char *value ) {
 }
 
 /*
+==================
+Com_CharIsOneOfCharset
+==================
+*/
+static qboolean Com_CharIsOneOfCharset( char c, char *set ) {
+	size_t i;
+
+	for ( i=0; i<strlen( set ); i++ ) {
+		if ( set[i] == c )
+			return qtrue;
+	}
+
+	return qfalse;
+}
+
+/*
+==================
+Com_SkipCharset
+==================
+*/
+char *Com_SkipCharset( char *s, char *sep ) {
+	char *p = s;
+
+	while ( p ) {
+		if ( Com_CharIsOneOfCharset( *p, sep ) )
+			p++;
+		else
+			break;
+	}
+
+	return p;
+}
+
+/*
+==================
+Com_SkipTokens
+==================
+*/
+char *Com_SkipTokens( char *s, int numTokens, char *sep ) {
+	int sepCount = 0;
+	char *p = s;
+
+	while ( sepCount < numTokens ) {
+		if ( Com_CharIsOneOfCharset( *p++, sep ) ) {
+			sepCount++;
+			while ( Com_CharIsOneOfCharset( *p, sep ) )
+				p++;
+		}
+		else if ( *p == '\0' )
+			break;
+	}
+
+	if ( sepCount == numTokens )
+		return p;
+	else
+		return s;
+}
+
+
+/*
 ========================================================================
 
 String ID Tables
@@ -1116,8 +1473,6 @@ String ID Tables
 GetIDForString 
 -------------------------
 */
-
-#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != NULL ) )
 
 int GetIDForString ( const stringID_table_t *table, const char *string )
 {
@@ -1166,7 +1521,7 @@ qboolean COM_ParseString( const char **data, const char **s )
 	*s = COM_ParseExt( data, qfalse );
 	if ( s[0] == 0 ) 
 	{
-		Com_Printf("unexpected EOF\n");
+		Com_Printf("unexpected EOF in COM_ParseString\n");
 		return qtrue;
 	}
 	return qfalse;
@@ -1184,7 +1539,7 @@ qboolean COM_ParseInt( const char **data, int *i )
 	token = COM_ParseExt( data, qfalse );
 	if ( token[0] == 0 ) 
 	{
-		Com_Printf( "unexpected EOF\n" );
+		Com_Printf( "unexpected EOF in COM_ParseInt\n" );
 		return qtrue;
 	}
 
@@ -1204,7 +1559,7 @@ qboolean COM_ParseFloat( const char **data, float *f )
 	token = COM_ParseExt( data, qfalse );
 	if ( token[0] == 0 ) 
 	{
-		Com_Printf( "unexpected EOF\n" );
+		Com_Printf( "unexpected EOF in COM_ParseFloat\n" );
 		return qtrue;
 	}
 
@@ -1231,13 +1586,6 @@ qboolean COM_ParseVec4( const char **buffer, vec4_t *c)
 		(*c)[i] = f;
 	}
 	return qfalse;
-}
-
-unsigned int timeGetTime() 
-{
-	struct timeval now;
-	gettimeofday(&now, NULL);
-	return now.tv_usec/1000;
 }
 
 
