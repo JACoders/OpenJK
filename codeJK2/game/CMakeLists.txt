@@ -45,7 +45,6 @@ set(JK2SPGameFiles
 	"${JK2SPDir}/game/NPC_utils.cpp"
 	"${JK2SPDir}/game/Q3_Interface.cpp"
 	"${JK2SPDir}/game/Q3_Registers.cpp"
-	"${JK2SPDir}/game/bg_lib.cpp"
 	"${JK2SPDir}/game/bg_misc.cpp"
 	"${JK2SPDir}/game/bg_pangles.cpp"
 	"${JK2SPDir}/game/bg_panimate.cpp"
