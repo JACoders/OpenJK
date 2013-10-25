@@ -2136,10 +2136,15 @@ void CL_Frame ( int msec ) {
 			CL_TakeVideoFrame( );
 
 			// fixed time for next frame'
-			msec = (int)ceil( (1000.0f / cl_aviFrameRate->value) * com_timescale->value );
-			if (msec == 0) {
-				msec = 1;
-			}
+			float fps = cl_aviFrameRate->value * com_timescale->value;
+			if ( fps > 1000.0f )
+				fps = 1000.0f;
+			float frameTime = ( 1000.0f / fps );
+			if ( frameTime < 1 )
+				frameTime = 1;
+			frameTime += clc.aviDemoRemain;
+			msec = (int)frameTime;
+			clc.aviDemoRemain = frameTime - msec;
 		}
 	}
 
