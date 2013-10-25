@@ -2038,7 +2038,8 @@ void Cmd_MapList_f( gentity_t *ent ) {
 }
 
 qboolean G_VoteMap( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
-	char s[MAX_CVAR_VALUE_STRING] = {0}, *mapName = NULL, *mapName2 = NULL;
+	char s[MAX_CVAR_VALUE_STRING] = {0}, bspName[MAX_QPATH] = {0}, *mapName = NULL, *mapName2 = NULL;
+	fileHandle_t fp = NULL_FILE;
 	const char *arenaInfo;
 
 	// didn't specify a map, show available maps
@@ -2046,6 +2047,18 @@ qboolean G_VoteMap( gentity_t *ent, int numArgs, const char *arg1, const char *a
 		Cmd_MapList_f( ent );
 		return qfalse;
 	}
+
+	if ( strchr( arg2, '\\' ) ) {
+		trap->SendServerCommand( ent-g_entities, "print \"Can't have mapnames with a \\\n\"" );
+		return qfalse;
+	}
+
+	Com_sprintf( bspName, sizeof(bspName), "maps/%s.bsp", arg2 );
+	if ( trap->FS_Open( bspName, &fp, FS_READ ) <= 0 ) {
+		trap->SendServerCommand( ent-g_entities, va( "print \"Can't find map %s on server\n\"", bspName ) );
+		return qfalse;
+	}
+	trap->FS_Close( fp );
 
 	if ( !G_DoesMapSupportGametype( arg2, level.gametype ) ) {
 		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOVOTE_MAPNOTSUPPORTEDBYGAME" ) ) );
@@ -2115,7 +2128,7 @@ qboolean G_VoteTimelimit( gentity_t *ent, int numArgs, const char *arg1, const c
 qboolean G_VoteWarmup( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 	int n = Com_Clampi( 0, 1, atoi( arg2 ) );
 	Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, n );
-	Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
+	Q_strncpyz( level.voteDisplayString, level.voteString, sizeof( level.voteDisplayString ) );
 	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
 	return qtrue;
 }
@@ -2263,7 +2276,7 @@ validVote:
 	// otherwise assume it's a command
 	else {
 		Com_sprintf( level.voteString, sizeof( level.voteString ), "%s \"%s\"", arg1, arg2 );
-		Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
+		Q_strncpyz( level.voteDisplayString, level.voteString, sizeof( level.voteDisplayString ) );
 		Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
 	}
 	Q_strstrip( level.voteStringClean, "\"\n\r", NULL );
