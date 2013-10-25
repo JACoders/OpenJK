@@ -2114,8 +2114,9 @@ qboolean G_VoteTimelimit( gentity_t *ent, int numArgs, const char *arg1, const c
 
 qboolean G_VoteWarmup( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 	int n = Com_Clampi( 0, 1, atoi( arg2 ) );
-	Com_sprintf( level.voteString, sizeof( level.voteString ), "g_doWarmup %i", arg1, n );
+	Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %i", arg1, n );
 	Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s", level.voteString );
+	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
 	return qtrue;
 }
 
@@ -2125,7 +2126,7 @@ typedef struct voteString_s {
 	qboolean	(*func)(gentity_t *ent, int numArgs, const char *arg1, const char *arg2);
 	int			numArgs;	// number of REQUIRED arguments, not total/optional arguments
 	uint32_t	validGT;	// bit-flag of valid gametypes
-	qboolean	voteDelay;	// if true, will delay executing the vote string after it's accepted by japp_voteDelay
+	qboolean	voteDelay;	// if true, will delay executing the vote string after it's accepted by g_voteDelay
 	const char	*shortHelp;	// NULL if no arguments needed
 } voteString_t;
 
@@ -2134,13 +2135,13 @@ static voteString_t validVoteStrings[] = {
 	{	"capturelimit",			"caps",				G_VoteCapturelimit,		1,		GTB_CTF|GTB_CTY,						qtrue,			"<num>" },
 	{	"clientkick",			NULL,				G_VoteClientkick,		1,		GTB_ALL,								qfalse,			"<clientnum>" },
 	{	"fraglimit",			"frags",			G_VoteFraglimit,		1,		GTB_ALL & ~(GTB_SIEGE|GTB_CTF|GTB_CTY),	qtrue,			"<num>" },
+	{	"g_doWarmup",			"dowarmup warmup",	G_VoteWarmup,			1,		GTB_ALL,								qtrue,			"<0-1>" },
 	{	"g_gametype",			"gametype gt mode",	G_VoteGametype,			1,		GTB_ALL,								qtrue,			"<num or name>" },
 	{	"kick",					NULL,				G_VoteKick,				1,		GTB_ALL,								qfalse,			"<client name>" },
 	{	"map",					NULL,				G_VoteMap,				0,		GTB_ALL,								qtrue,			"<name>" },
 	{	"map_restart",			"restart",			G_VoteMapRestart,		0,		GTB_ALL,								qtrue,			"<optional delay>" },
 	{	"nextmap",				NULL,				G_VoteNextmap,			0,		GTB_ALL,								qtrue,			NULL },
 	{	"timelimit",			"time",				G_VoteTimelimit,		1,		GTB_ALL,								qtrue,			"<num>" },
-	{	"warmup",				"dowarmup",			G_VoteWarmup,			1,		GTB_ALL,								qtrue,			"<0-1>" },
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
 
@@ -2157,7 +2158,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	}
 
 	// vote in progress
-	else if ( level.voteTime || level.voteExecuteTime >= level.time ) {
+	else if ( level.voteTime ) {
 		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "VOTEINPROGRESS" ) ) );
 		return;
 	}
@@ -2294,7 +2295,7 @@ Cmd_Vote_f
 ==================
 */
 void Cmd_Vote_f( gentity_t *ent ) {
-	char		msg[64];
+	char		msg[64] = {0};
 
 	if ( !level.voteTime ) {
 		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEINPROG")) );
@@ -2332,16 +2333,40 @@ void Cmd_Vote_f( gentity_t *ent ) {
 	// for players entering or leaving
 }
 
+qboolean G_TeamVoteLeader( gentity_t *ent, int cs_offset, team_t team, int numArgs, const char *arg1, const char *arg2 ) {
+	int clientid = numArgs == 2 ? ent->s.number : ClientNumberFromString( ent, arg2 );
+	gentity_t *target = NULL;
+
+	if ( clientid == -1 )
+		return qfalse;
+
+	target = &g_entities[clientid];
+	if ( !target || !target->inuse || !target->client )
+		return qfalse;
+
+	if ( target->client->sess.sessionTeam != team )
+	{
+		trap->SendServerCommand( ent-g_entities, va( "print \"User %s is not on your team\n\"", arg2 ) );
+		return qfalse;
+	}
+
+	Com_sprintf( level.teamVoteString[cs_offset], sizeof( level.teamVoteString[cs_offset] ), "leader %d", clientid );
+	Q_strncpyz( level.teamVoteDisplayString[cs_offset], level.teamVoteString[cs_offset], sizeof( level.teamVoteDisplayString[cs_offset] ) );
+	Q_strncpyz( level.teamVoteStringClean[cs_offset], level.teamVoteString[cs_offset], sizeof( level.teamVoteStringClean[cs_offset] ) );
+	return qtrue;
+}
+
 /*
 ==================
 Cmd_CallTeamVote_f
 ==================
 */
 void Cmd_CallTeamVote_f( gentity_t *ent ) {
-	int		i, team, cs_offset;
-	char	arg1[MAX_CVAR_VALUE_STRING], *arg2 = NULL;
+	team_t	team = ent->client->sess.sessionTeam;
+	int		i=0, cs_offset=0, numArgs=0;
+	char	arg1[MAX_CVAR_VALUE_STRING] = {0};
+	char	arg2[MAX_CVAR_VALUE_STRING] = {0};
 
-	team = ent->client->sess.sessionTeam;
 	if ( team == TEAM_RED )
 		cs_offset = 0;
 	else if ( team == TEAM_BLUE )
@@ -2349,74 +2374,54 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 	else
 		return;
 
-	if ( !g_allowVote.integer ) {
+	// not allowed to vote at all
+	if ( !g_allowTeamVote.integer ) {
 		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTE")) );
 		return;
 	}
 
-	if ( level.teamVoteTime[cs_offset] ) {
+	// vote in progress
+	else if ( level.teamVoteTime[cs_offset] ) {
 		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "TEAMVOTEALREADY")) );
 		return;
 	}
-	if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
+
+	// can't vote as a spectator
+	else if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR ) {
 		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOSPECVOTE")) );
 		return;
 	}
 
 	// make sure it is a valid command to vote on
+	numArgs = trap->Argc();
 	trap->Argv( 1, arg1, sizeof( arg1 ) );
+	if ( numArgs > 1 )
+		Q_strncpyz( arg2, ConcatArgs( 2 ), sizeof( arg2 ) );
 
-	arg2 = ConcatArgs( 2 );
-
-	if ( strlen( arg2 ) >= MAX_CVAR_VALUE_STRING )
-	{
-		arg2[MAX_CVAR_VALUE_STRING-1] = '\0';
-		G_SecurityLogPrintf( "Cmd_CallTeamVote_f from %d (%s) has been truncated: %s\n", ent->s.number, ent->client->pers.netname, arg2 );
-	}
-
-	if ( strchr( arg1, ';' ) || strchr( arg2, ';' ) ||
-		 strchr( arg1, '\r' ) || strchr( arg2, '\r' ) ||
-		 strchr( arg1, '\n' ) || strchr( arg2, '\n' ) )
-	{
+	// filter ; \n \r
+	if ( Q_strchrs( arg1, ";\r\n" ) || Q_strchrs( arg2, ";\r\n" ) ) {
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid team vote string.\n\"" );
 		return;
 	}
 
-	if ( !Q_stricmp ( arg1, "leader" ) )
-	{
-		int clientid = -1;
-		if ( trap->Argc() == 2 )
-			clientid = ent->s.number;
-		else
-			clientid = ClientNumberFromString( ent, arg2 );
-
-		if ( clientid == -1 )
+	// pass the args onto vote-specific handlers for parsing/filtering
+	if ( !Q_stricmp( arg1, "leader" ) ) {
+		if ( !G_TeamVoteLeader( ent, cs_offset, team, numArgs, arg1, arg2 ) )
 			return;
-
-		if ( level.clients[clientid].sess.sessionTeam != team )
-		{
-			trap->SendServerCommand( ent-g_entities, va( "print \"User %s is not on your team\n\"", arg2 ) );
-			return;
-		}
-
-		Com_sprintf ( level.teamVoteString[cs_offset], sizeof( level.teamVoteString[cs_offset] ), "leader %d", clientid );
-		Q_strncpyz( level.teamVoteDisplayString[cs_offset], level.teamVoteString[cs_offset], sizeof( level.teamVoteDisplayString[cs_offset] ) );
 	}
-	else
-	{
+	else {
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid team vote string.\n\"" );
-		trap->SendServerCommand( ent-g_entities, "print \"Team vote commands are: leader <player>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, va("print \"Allowed team vote strings are: ^%c%s %s\n\"", COLOR_GREEN, "leader", "<optional client name or number>" ));
 		return;
 	}
 
-	Q_strncpyz( level.teamVoteStringClean[cs_offset], level.teamVoteString[cs_offset], sizeof( level.teamVoteStringClean[cs_offset] ) );
 	Q_strstrip( level.teamVoteStringClean[cs_offset], "\"\n\r", NULL );
 
-	for ( i = 0 ; i < level.maxclients ; i++ ) {
+	for ( i=0; i<level.maxclients; i++ ) {
 		if ( level.clients[i].pers.connected == CON_DISCONNECTED )
 			continue;
-		if (level.clients[i].sess.sessionTeam == team)
-			trap->SendServerCommand( i, va("print \"%s^7 called a team vote.\n\"", ent->client->pers.netname ) );
+		if ( level.clients[i].sess.sessionTeam == team )
+			trap->SendServerCommand( i, va("print \"%s^7 called a team vote (%s)\n\"", ent->client->pers.netname, level.teamVoteStringClean[cs_offset] ) );
 	}
 
 	// start the voting, the caller autoamtically votes yes
@@ -2424,8 +2429,10 @@ void Cmd_CallTeamVote_f( gentity_t *ent ) {
 	level.teamVoteYes[cs_offset] = 1;
 	level.teamVoteNo[cs_offset] = 0;
 
-	for ( i = 0 ; i < level.maxclients ; i++ ) {
-		if (level.clients[i].sess.sessionTeam == team) {
+	for ( i=0; i<level.maxclients; i++ ) {
+		if ( level.clients[i].pers.connected == CON_DISCONNECTED )
+			continue;
+		if ( level.clients[i].sess.sessionTeam == team ) {
 			level.clients[i].mGameFlags &= ~PSG_TEAMVOTED;
 			level.clients[i].pers.teamvote = 0;
 		}
@@ -2445,10 +2452,10 @@ Cmd_TeamVote_f
 ==================
 */
 void Cmd_TeamVote_f( gentity_t *ent ) {
-	int			team, cs_offset;
-	char		msg[64];
+	team_t		team = ent->client->sess.sessionTeam;
+	int			cs_offset=0;
+	char		msg[64] = {0};
 
-	team = ent->client->sess.sessionTeam;
 	if ( team == TEAM_RED )
 		cs_offset = 0;
 	else if ( team == TEAM_BLUE )
