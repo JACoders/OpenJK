@@ -195,11 +195,11 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 			p++;
 		}
 
-		COM_StripExtension( last, sfile );
+		COM_StripExtension( last, sfile, sizeof(sfile) );
 	}
 	else
 	{
-		COM_StripExtension( file, sfile );
+		COM_StripExtension( file, sfile, sizeof(sfile) );
 	}
 
 	// see if the specified file is already registered.  If it is, just return the id of that file
@@ -619,7 +619,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t axis[3], 
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	// This is a horribly dumb thing to have to do, but QuakeIII might not have calc'd the lerpOrigin
 	//	for the entity we may be trying to bolt onto.  We like having the correct origin, so we are
@@ -658,7 +658,7 @@ void CFxScheduler::PlayEffect( const char *file, int clientID )
 	int		id;
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 	id = mEffectIDs[sfile];
 
 #ifndef FINAL_BUILD
@@ -1085,7 +1085,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin )
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	PlayEffect( mEffectIDs[sfile], origin );
 
@@ -1114,7 +1114,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, vec3_t forward )
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	PlayEffect( mEffectIDs[sfile], origin, forward );
 
