@@ -1643,6 +1643,13 @@ qhandle_t stub_RegisterServerSkin( const char *name )
 	return 0;
 }
 
+qboolean stub_InitializeWireframeAutomap() { return qtrue; }
+void stub_RE_GetLightStyle (int style, byte *color){}
+void stub_RE_SetLightStyle (int style, int color){}
+void stub_RE_GetBModelVerts (int bModel, vec3_t *vec, vec_t *normal) {}
+void stub_RE_WorldEffectCommand ( const char *cmd ){}
+void stub_RE_AddMiniRefEntityToScene ( const miniRefEntity_t *ent ) {}
+
 /*
 @@@@@@@@@@@@@@@@@@@@@
 GetRefAPI
@@ -1695,7 +1702,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.ClearScene = RE_ClearScene;
 	// RE_ClearDecals
 	re.AddRefEntityToScene = RE_AddRefEntityToScene;
-	// RE_AddMiniRefEntityToScene
+	re.AddMiniRefEntityToScene = stub_RE_AddMiniRefEntityToScene;
 	re.AddPolyToScene = RE_AddPolyToScene;
 	// RE_AddDecalToScene
 	re.LightForPoint = R_LightForPoint;
@@ -1720,28 +1727,23 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.GetEntityToken = R_GetEntityToken;
 	re.inPVS = R_inPVS;
 
-	// RE_GetLightStyle
-	// RE_SetLightStyle
-	// RE_GetBModelVerts
+	re.GetLightStyle = stub_RE_GetLightStyle;
+	re.SetLightStyle = stub_RE_SetLightStyle;
+	re.GetBModelVerts = stub_RE_GetBModelVerts;
 
 	// SetRangedFog
 	// SetRefractionProperties
 	re.GetDistanceCull = GetDistanceCull;
 	re.GetRealRes = GetRealRes;
 	// R_AutomapElevationAdjustment
-	// R_InitializeWireframeAutomap
-	// RE_AddWeatherZone
-	// RE_WorldEffectCommand
+	re.InitializeWireframeAutomap = stub_InitializeWireframeAutomap;
+	// RE_AddWeatherZone;
+	re.WorldEffectCommand = stub_RE_WorldEffectCommand;
 	// RE_InitRendererTerrain
-	// RE_RegisterMedia_LevelLoadBegin
 	re.RegisterMedia_LevelLoadBegin = C_LevelLoadBegin;
-	// RE_RegisterMedia_LevelLoadEnd
 	re.RegisterMedia_LevelLoadEnd = C_LevelLoadEnd;
-	// RE_RegisterMedia_GetLevel
 	re.RegisterMedia_GetLevel = C_GetLevel;
-	// RE_RegisterImages_LevelLoadEnd
 	re.RegisterImages_LevelLoadEnd = C_Images_LevelLoadEnd;
-	// RE_RegisterModels_LevelLoadEnd
 	re.RegisterModels_LevelLoadEnd = C_Models_LevelLoadEnd;
 
 	re.TakeVideoFrame = RE_TakeVideoFrame;

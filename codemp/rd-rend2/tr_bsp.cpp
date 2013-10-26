@@ -2813,6 +2813,12 @@ R_GetEntityToken
 qboolean R_GetEntityToken( char *buffer, int size ) {
 	char	*s;
 
+	if (size == -1)
+	{ //force reset
+		s_worldData.entityParsePoint = s_worldData.entityString;
+		return qtrue;
+	}
+
 	s = COM_Parse( (const char **)&s_worldData.entityParsePoint );
 	Q_strncpyz( buffer, s, size );
 	if ( !s_worldData.entityParsePoint || !s[0] ) {
