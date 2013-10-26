@@ -2756,6 +2756,13 @@ static void FixRenderCommandList( int newShader ) {
 				curCmd = (const void *)(sp_cmd + 1);
 				break;
 				}
+			case RC_ROTATE_PIC:
+			case RC_ROTATE_PIC2:
+				{
+					const rotatePicCommand_t *sp_cmd = (const rotatePicCommand_t *)curCmd;
+					curCmd = (const void *)(sp_cmd + 1);
+					break;
+				}
 			case RC_DRAW_SURFS:
 				{
 				int i;

@@ -239,6 +239,57 @@ void	RE_SetColor( const float *rgba ) {
 	cmd->color[3] = rgba[3];
 }
 
+/*
+=============
+RE_RotatePic
+=============
+*/
+void RE_RotatePic ( float x, float y, float w, float h, 
+					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) {
+	rotatePicCommand_t	*cmd;
+
+	cmd = (rotatePicCommand_t *) R_GetCommandBuffer( sizeof( *cmd ) );
+	if ( !cmd ) {
+		return;
+	}
+	cmd->commandId = RC_ROTATE_PIC;
+	cmd->shader = R_GetShaderByHandle( hShader );
+	cmd->x = x;
+	cmd->y = y;
+	cmd->w = w;
+	cmd->h = h;
+	cmd->s1 = s1;
+	cmd->t1 = t1;
+	cmd->s2 = s2;
+	cmd->t2 = t2;
+	cmd->a = a;
+}
+
+/*
+=============
+RE_RotatePic2
+=============
+*/
+void RE_RotatePic2 ( float x, float y, float w, float h, 
+					  float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) {
+	rotatePicCommand_t	*cmd;
+
+	cmd = (rotatePicCommand_t *) R_GetCommandBuffer( sizeof( *cmd ) );
+	if ( !cmd ) {
+		return;
+	}
+	cmd->commandId = RC_ROTATE_PIC2;
+	cmd->shader = R_GetShaderByHandle( hShader );
+	cmd->x = x;
+	cmd->y = y;
+	cmd->w = w;
+	cmd->h = h;
+	cmd->s1 = s1;
+	cmd->t1 = t1;
+	cmd->s2 = s2;
+	cmd->t2 = t2;
+	cmd->a = a;
+}
 
 /*
 =============

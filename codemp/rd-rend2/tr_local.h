@@ -2967,6 +2967,16 @@ typedef struct {
 	float	s2, t2;
 } stretchPicCommand_t;
 
+typedef struct rotatePicCommand_s {
+	int		commandId;
+	shader_t	*shader;
+	float	x, y;
+	float	w, h;
+	float	s1, t1;
+	float	s2, t2;
+	float	a;
+} rotatePicCommand_t;
+
 typedef struct {
 	int		commandId;
 	trRefdef_t	refdef;
@@ -3022,6 +3032,8 @@ typedef enum {
 	RC_END_OF_LIST,
 	RC_SET_COLOR,
 	RC_STRETCH_PIC,
+	RC_ROTATE_PIC,
+	RC_ROTATE_PIC2,
 	RC_DRAW_SURFS,
 	RC_DRAW_BUFFER,
 	RC_SWAP_BUFFERS,
