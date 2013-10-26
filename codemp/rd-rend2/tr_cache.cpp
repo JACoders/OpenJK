@@ -339,10 +339,10 @@ void CModelCacheManager::AllocateShaders( const char *psFileName )
 		return;
 	}
 
-	for( auto storedShader : rFile.shaderCache )
+	for( auto storedShader = rFile.shaderCache.begin(); storedShader != rFile.shaderCache.end(); ++storedShader )
 	{
-		int iShaderNameOffset	= storedShader.first;
-		int iShaderPokeOffset	= storedShader.second;
+		int iShaderNameOffset	= storedShader->first;
+		int iShaderPokeOffset	= storedShader->second;
 
 		char *psShaderName		=		  &((char*)rFile.pDiskImage)[iShaderNameOffset];
 		int  *piShaderPokePtr	= (int *) &((char*)rFile.pDiskImage)[iShaderPokeOffset];
