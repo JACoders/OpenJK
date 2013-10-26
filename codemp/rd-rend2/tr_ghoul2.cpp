@@ -2003,7 +2003,7 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 
 	assert(ghoul2.aHeader);
 	assert(ghoul2.currentModel);
-	assert(ghoul2.currentModel->mdxm);
+	assert(ghoul2.currentModel->modelData);
 	if (!aHeader->numBones)
 	{
 		assert(0); // this would be strange
@@ -2388,10 +2388,10 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 #endif
 
 	assert(RS.currentModel);
-	assert(RS.currentModel->mdxm);
+	assert(RS.currentModel->modelData);
 	// back track and get the surfinfo struct for this surface
 	mdxmSurface_t			*surface = (mdxmSurface_t *)G2_FindSurface(RS.currentModel, RS.surfaceNum, RS.lod);
-	mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)RS.currentModel->mdxm + sizeof(mdxmHeader_t));
+	mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)RS.currentModel->modelData + sizeof(mdxmHeader_t));
 	mdxmSurfHierarchy_t		*surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
 	
 	// see if we have an override surface in the surface list
@@ -2558,7 +2558,7 @@ void ProcessModelBoltSurfaces(int surfaceNum, surfaceInfo_v &rootSList,
 	
 	// back track and get the surfinfo struct for this surface
 	mdxmSurface_t			*surface = (mdxmSurface_t *)G2_FindSurface((void *)currentModel, surfaceNum, 0);
-	mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)currentModel->mdxm + sizeof(mdxmHeader_t));
+	mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)currentModel->modelData + sizeof(mdxmHeader_t));
 	mdxmSurfHierarchy_t		*surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
 	
 	// see if we have an override surface in the surface list
@@ -2608,13 +2608,15 @@ void G2_ConstructUsedBoneList(CConstructBoneList &CBL)
 {
 	int	 		i, j;
 	int			offFlags = 0;
+	mdxmHeader_t *mdxm = (mdxmHeader_t *)CBL.currentModel->modelData;
 
 	// back track and get the surfinfo struct for this surface
 	const mdxmSurface_t			*surface = (mdxmSurface_t *)G2_FindSurface((void *)CBL.currentModel, CBL.surfaceNum, 0);
-	const mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)CBL.currentModel->mdxm + sizeof(mdxmHeader_t));
+	const mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)mdxm + sizeof(mdxmHeader_t));
 	const mdxmSurfHierarchy_t	*surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
-	const model_t				*mod_a = R_GetModelByHandle(CBL.currentModel->mdxm->animIndex);
-	const mdxaSkelOffsets_t		*offsets = (mdxaSkelOffsets_t *)((byte *)mod_a->mdxa + sizeof(mdxaHeader_t));
+	const model_t				*mod_a = R_GetModelByHandle(mdxm->animIndex);
+	mdxaHeader_t				*mdxa = (mdxaHeader_t *)mod_a->modelData;
+	const mdxaSkelOffsets_t		*offsets = (mdxaSkelOffsets_t *)((byte *)mdxa + sizeof(mdxaHeader_t));
 	const mdxaSkel_t			*skel, *childSkel;
 
 	// see if we have an override surface in the surface list
@@ -2640,13 +2642,13 @@ void G2_ConstructUsedBoneList(CConstructBoneList &CBL)
 			CBL.boneUsedList[iBoneIndex] = 1;
 
 			// now go and check all the descendant bones attached to this bone and see if any have the always flag on them. If so, activate them
- 			skel = (mdxaSkel_t *)((byte *)mod_a->mdxa + sizeof(mdxaHeader_t) + offsets->offsets[iBoneIndex]);
+ 			skel = (mdxaSkel_t *)((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[iBoneIndex]);
 
 			// for every child bone...
 			for (j=0; j< skel->numChildren; j++)
 			{
 				// get the skel data struct for each child bone of the referenced bone
- 				childSkel = (mdxaSkel_t *)((byte *)mod_a->mdxa + sizeof(mdxaHeader_t) + offsets->offsets[skel->children[j]]);
+ 				childSkel = (mdxaSkel_t *)((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[skel->children[j]]);
 
 				// does it have the always on flag on?
 				if (childSkel->flags & G2BONEFLAG_ALWAYSXFORM)
@@ -2664,7 +2666,7 @@ void G2_ConstructUsedBoneList(CConstructBoneList &CBL)
 				if (CBL.boneUsedList[iParentBone])	// no need to go higher
 					break;
 				CBL.boneUsedList[iParentBone] = 1;
-				skel = (mdxaSkel_t *)((byte *)mod_a->mdxa + sizeof(mdxaHeader_t) + offsets->offsets[iParentBone]);				
+				skel = (mdxaSkel_t *)((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[iParentBone]);				
 				iParentBone = skel->parent;
 			}
 		}
@@ -2762,15 +2764,16 @@ static void G2_Sort_Models(CGhoul2Info_v &ghoul2, int * const modelList, int * c
 
 void *G2_FindSurface_BC(const model_s *mod, int index, int lod)
 {
+	mdxmHeader_t *mdxm = (mdxmHeader_t *)mod->modelData;
 	assert(mod);
-	assert(mod->mdxm);
+	assert(mdxm);
 
 	// point at first lod list
-	byte	*current = (byte*)((intptr_t)mod->mdxm + (intptr_t)mod->mdxm->ofsLODs);
+	byte	*current = (byte*)((intptr_t)mdxm + (intptr_t)mdxm->ofsLODs);
 	int i;
 
 	//walk the lods
-	assert(lod>=0&&lod<mod->mdxm->numLODs);
+	assert(lod>=0&&lod<mdxm->numLODs);
 	for (i=0; i<lod; i++)
 	{
 		mdxmLOD_t *lodData = (mdxmLOD_t *)current;
@@ -2782,7 +2785,7 @@ void *G2_FindSurface_BC(const model_s *mod, int index, int lod)
 
 	mdxmLODSurfOffset_t *indexes = (mdxmLODSurfOffset_t *)current;
 	// we are now looking at the offset array
-	assert(index>=0&&index<mod->mdxm->numSurfaces);
+	assert(index>=0&&index<mdxm->numSurfaces);
 	current += indexes->offsets[index];
 
 	return (void *)current;
@@ -4144,7 +4147,8 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	mod->dataSize += size;	
 	
 	qboolean bAlreadyFound = qfalse;
-	mdxm = mod->mdxm = (mdxmHeader_t*)CModelCache->Allocate(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
+	mdxm = (mdxmHeader_t*)CModelCache->Allocate(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
+	mod->modelData = mdxm;
 	//RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
 
 	assert(bAlreadyCached == bAlreadyFound);
@@ -4332,6 +4336,13 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		// find the next LOD
 		lod = (mdxmLOD_t *)( (byte *)lod + lod->ofsEnd );
 	}
+
+	// Make a copy on the GPU
+	for ( l = 0; i < mdxm->numLODs; l++ )
+	{
+		
+	}
+
 	return qtrue;
 }
 
@@ -4589,7 +4600,8 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 #endif //CREATE_LIMB_HIERARCHY
 
 	//mdxa = mod->mdxa = (mdxaHeader_t*)ri->Hunk_Alloc( size, h_dontcare );
-	mdxa = mod->mdxa = (mdxaHeader_t*)CModelCache->Allocate( size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLA );
+	mdxa = (mdxaHeader_t*)CModelCache->Allocate( size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLA );
+	mod->modelData = mdxa;
 
 	assert(bAlreadyCached == bAlreadyFound);	// I should probably eliminate 'bAlreadyFound', but wtf?
 

@@ -254,11 +254,12 @@ void G2_List_Model_Surfaces(const char *fileName)
 	int			i, x;
   	model_t		*mod_m = R_GetModelByHandle(RE_RegisterModel(fileName));
 	mdxmSurfHierarchy_t	*surf;
+	mdxmHeader_t *mdxm = (mdxmHeader_t *)mod_m->modelData;
 
-	surf = (mdxmSurfHierarchy_t *) ( (byte *)mod_m->mdxm + mod_m->mdxm->ofsSurfHierarchy );
-	mdxmSurface_t *surface = (mdxmSurface_t *)((byte *)mod_m->mdxm + mod_m->mdxm->ofsLODs + sizeof(mdxmLOD_t));
+	surf = (mdxmSurfHierarchy_t *) ( (byte *)mdxm + mdxm->ofsSurfHierarchy );
+	mdxmSurface_t *surface = (mdxmSurface_t *)((byte *)mdxm + mdxm->ofsLODs + sizeof(mdxmLOD_t));
 
-	for ( x = 0 ; x < mod_m->mdxm->numSurfaces ; x++) 
+	for ( x = 0 ; x < mdxm->numSurfaces ; x++) 
 	{
 		Com_Printf("Surface %i Name %s\n", x, surf->name);
 		if ( r_verbose->integer )
@@ -283,10 +284,10 @@ void G2_List_Model_Bones(const char *fileName, int frame)
 	mdxaSkel_t		*skel;
 	mdxaSkelOffsets_t	*offsets;
   	model_t			*mod_m = R_GetModelByHandle(RE_RegisterModel(fileName)); 
-	model_t			*mod_a = R_GetModelByHandle(mod_m->mdxm->animIndex);
+	model_t			*mod_a = R_GetModelByHandle(((mdxmHeader_t *)mod_m->modelData)->animIndex);
 // 	mdxaFrame_t		*aframe=0;
 //	int				frameSize;
-	mdxaHeader_t	*header = mod_a->mdxa;
+	mdxaHeader_t	*header = (mdxaHeader_t *)mod_a->modelData;
 
 	// figure out where the offset list is
 	offsets = (mdxaSkelOffsets_t *)((byte *)header + sizeof(mdxaHeader_t));
@@ -295,7 +296,7 @@ void G2_List_Model_Bones(const char *fileName, int frame)
 
 //	aframe = (mdxaFrame_t *)((byte *)header + header->ofsFrames + (frame * frameSize));
 	// walk each bone and list it's name
-	for (x=0; x< mod_a->mdxa->numBones; x++)
+	for (x=0; x< header->numBones; x++)
 	{
 		skel = (mdxaSkel_t *)((byte *)header + sizeof(mdxaHeader_t) + offsets->offsets[x]);
 		Com_Printf("Bone %i Name %s\n", x, skel->name);
@@ -331,10 +332,14 @@ qboolean G2_GetAnimFileName(const char *fileName, char **filename)
 	// find the model we want
 	model_t				*mod = R_GetModelByHandle(RE_RegisterModel(fileName));
 
-	if (mod && mod->mdxm && (mod->mdxm->animName[0] != 0))
+	if (mod)
 	{
-		*filename = mod->mdxm->animName;
-		return qtrue;
+		mdxmHeader_t *mdxm = (mdxmHeader_t *)mod->modelData;
+		if (mdxm && mdxm->animName[0] != 0)
+		{
+			*filename = mdxm->animName;
+			return qtrue;
+		}
 	}
 	return qfalse;
 }
@@ -357,14 +362,15 @@ int G2_DecideTraceLod(CGhoul2Info &ghoul2, int useLod)
    	}
 //	assert(G2_MODEL_OK(&ghoul2));
 	
+	mdxmHeader_t *mdxm = (mdxmHeader_t *)ghoul2.currentModel->modelData;
 	assert(ghoul2.currentModel);
-	assert(ghoul2.currentModel->mdxm);
+	assert(mdxm);
 	//what about r_lodBias?
 
 	// now ensure that we haven't selected a lod that doesn't exist for this model
-	if ( returnLod >= ghoul2.currentModel->mdxm->numLODs )
+	if ( returnLod >= mdxm->numLODs )
  	{
- 		returnLod = ghoul2.currentModel->mdxm->numLODs - 1;
+ 		returnLod = mdxm->numLODs - 1;
  	}
 
 	return returnLod;
@@ -486,10 +492,10 @@ void G2_TransformSurfaces(int surfaceNum, surfaceInfo_v &rootSList,
 {
 	int	i;
 	assert(currentModel);
-	assert(currentModel->mdxm);
+	assert(currentModel->modelData);
 	// back track and get the surfinfo struct for this surface
 	const mdxmSurface_t			*surface = (mdxmSurface_t *)G2_FindSurface((void*)currentModel, surfaceNum, lod);
-	const mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)currentModel->mdxm + sizeof(mdxmHeader_t));
+	const mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)currentModel->modelData + sizeof(mdxmHeader_t));
 	const mdxmSurfHierarchy_t		*surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
 	
 	// see if we have an override surface in the surface list
@@ -600,17 +606,19 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 		}
 #endif
 
+		mdxmHeader_t *mdxm = (mdxmHeader_t *)g.currentModel->modelData;
+
 		// give us space for the transformed vertex array to be put in
 		if (!(g.mFlags & GHOUL2_ZONETRANSALLOC))
 		{ //do not stomp if we're using zone space
-			g.mTransformedVertsArray = (size_t*)G2VertSpace->MiniHeapAlloc(g.currentModel->mdxm->numSurfaces * sizeof (size_t));
+			g.mTransformedVertsArray = (size_t*)G2VertSpace->MiniHeapAlloc(mdxm->numSurfaces * sizeof (size_t));
 			if (!g.mTransformedVertsArray)
 			{
 				Com_Error(ERR_DROP, "Ran out of transform space for Ghoul2 Models. Adjust MiniHeapSize in SV_SpawnServer.\n");
 			}
 		}
 
-		memset(g.mTransformedVertsArray, 0,g.currentModel->mdxm->numSurfaces * sizeof (size_t)); 
+		memset(g.mTransformedVertsArray, 0,mdxm->numSurfaces * sizeof (size_t)); 
 
 		G2_FindOverrideSurface(-1,g.mSlist); //reset the quick surface override lookup;
 		// recursively call the model surface transform
@@ -1391,9 +1399,9 @@ static void G2_TraceSurfaces(CTraceSurface &TS)
 	int	i;
 	// back track and get the surfinfo struct for this surface
 	assert(TS.currentModel);
-	assert(TS.currentModel->mdxm);
+	assert(TS.currentModel->modelData);
 	const mdxmSurface_t		*surface = (mdxmSurface_t *)G2_FindSurface(TS.currentModel, TS.surfaceNum, TS.lod);
-	const mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)TS.currentModel->mdxm + sizeof(mdxmHeader_t));
+	const mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)TS.currentModel->modelData + sizeof(mdxmHeader_t));
 	const mdxmSurfHierarchy_t		*surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
 	
 	// see if we have an override surface in the surface list
@@ -1651,9 +1659,10 @@ void *G2_FindSurface(void *mod_t, int index, int lod)
 {
 	// damn include file dependancies
 	model_t	*mod = (model_t *)mod_t;
+	mdxmHeader_t *mdxm = (mdxmHeader_t *)mod->modelData;
 
 	// point at first lod list
-	byte	*current = (byte*)((size_t)mod->mdxm + (size_t)mod->mdxm->ofsLODs);
+	byte	*current = (byte*)((size_t)mdxm + (size_t)mdxm->ofsLODs);
 	int i;
 
 	//walk the lods
