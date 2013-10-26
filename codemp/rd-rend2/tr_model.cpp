@@ -87,7 +87,7 @@ qhandle_t R_RegisterMD3(const char *name, model_t *mod)
 				break;
 			// Ghoul2 is hax, doesn't free the file buffer and doesn't afraid of anything
 			case MDXA_IDENT:
-				loaded = R_LoadMDXA(mod, buf, name, bAlreadyCached);
+				loaded = R_LoadMDXA(mod, buf, namebuf, bAlreadyCached);
 				break;
 			case MDXM_IDENT:
 				loaded = R_LoadMDXM(mod, buf, name, bAlreadyCached);
@@ -295,31 +295,32 @@ qhandle_t RE_RegisterModel( const char *name ) {
 		return 0;
 	}
 
+	// search the currently loaded models
+	if( ( hModel = CModelCache->SearchLoaded( name ) ) != -1 )
+		return hModel;
+
+	if ( name[0] == '*' )
+	{
+		if ( strcmp (name, "*default.gla") != 0 )
+		{
+			return 0;
+		}
+	}
+
 	if( name[0] == '#' )
 	{
 		// TODO: BSP models
 		return 0;
 	}
 
-	//
-	// search the currently loaded models
-	//
-	if( ( hModel = CModelCache->SearchLoaded( name ) ) != -1 )
-		return hModel;
-
-
 	// allocate a new model_t
-
 	if ( ( mod = R_AllocModel() ) == NULL ) {
 		ri->Printf( PRINT_WARNING, "RE_RegisterModel: R_AllocModel() failed for '%s'\n", name);
 		return 0;
 	}
 
-	CModelCache->InsertLoaded( name, mod->index );
-
 	// only set the name after the model has been successfully loaded
 	Q_strncpyz( mod->name, name, sizeof( mod->name ) );
-
 
 	R_IssuePendingRenderCommands();
 
@@ -360,6 +361,7 @@ qhandle_t RE_RegisterModel( const char *name ) {
 			else
 			{
 				// Something loaded
+				CModelCache->InsertLoaded( name, hModel );
 				return mod->index;
 			}
 		}
@@ -389,6 +391,7 @@ qhandle_t RE_RegisterModel( const char *name ) {
 		}
 	}
 
+	CModelCache->InsertLoaded( name, hModel );
 	return hModel;
 }
 
@@ -1358,6 +1361,8 @@ void R_ModelInit( void ) {
 
 	// leave a space for NULL model
 	tr.numModels = 0;
+
+	CModelCache->DeleteAll();
 
 	mod = R_AllocModel();
 	mod->type = MOD_BAD;
