@@ -82,7 +82,7 @@ qhandle_t R_RegisterMD3(const char *name, model_t *mod)
 				ri->FS_FreeFile(buf);
 				break;
 			case MD3_IDENT:
-				loaded = R_LoadMD3(mod, lod, buf, name);
+				loaded = R_LoadMD3(mod, lod, buf, namebuf);
 				ri->FS_FreeFile(buf);
 				break;
 			// Ghoul2 is hax, doesn't free the file buffer and doesn't afraid of anything

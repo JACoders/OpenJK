@@ -3125,6 +3125,10 @@ enum CacheType_e
 	CACHE_MODEL
 };
 
+/* and shaderCache_t is needed for the model cache manager */
+typedef std::pair<int,int> shaderCacheEntry_t;
+typedef std::vector<shaderCacheEntry_t> shaderCache_t;
+
 /*
  * CachedFile_t
  * The actual data stored in the cache
@@ -3138,6 +3142,7 @@ typedef struct CachedFile_s
 	int				iAllocSize;				//
 
 	CacheType_e		eCacheType;				// determine which member of the uCache we're going to use
+	shaderCache_t	shaderCache;
 
 	CachedFile_s()
 	{
@@ -3145,7 +3150,7 @@ typedef struct CachedFile_s
 		iLevelLastUsedOn = 0;
 		iPAKChecksum = -1;
 		eCacheType = CACHE_NONE;
-		memset(fileName, '\0', sizeof(fileName));
+		fileName[0] = '\0';
 		iAllocSize = 0;
 	}
 } CachedFile_t;
@@ -3153,10 +3158,6 @@ typedef struct CachedFile_s
 /* assetCache_t and loadedMap_t are two definitions that are needed for the manager */
 typedef std::map<std::string, CachedFile_t> assetCache_t;
 typedef std::unordered_map<std::string, FileHash_t> loadedMap_t;
-
-/* and shaderCache_t is needed for the model cache manager */
-typedef std::pair<int,int> shaderCacheEntry_t;
-typedef std::vector<shaderCacheEntry_t> shaderCache_t;
 
 /* The actual manager itself, which is used in the model and image loading routines. */
 class CCacheManager
@@ -3189,8 +3190,6 @@ public:
 	qboolean			LevelLoadEnd( qboolean bDeleteEverythingNotUsedInThisLevel );
 	void				StoreShaderRequest( const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke );
 	void				AllocateShaders( const char *psFileName );
-private:
-	shaderCache_t		shaderCache;
 };
 
 extern CImageCacheManager *CImgCache;

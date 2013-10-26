@@ -1843,7 +1843,7 @@ static void R_CreateWorldVBOs(void)
 	int             numTriangles;
 	srfTriangle_t  *triangles;
 
-    int             numSortedSurfaces, numSurfaces;
+    int             numSortedSurfaces = 0, numSurfaces;
 	msurface_t   *surface, **firstSurf, **lastSurf, **currSurf;
 	msurface_t  **surfacesSorted;
 

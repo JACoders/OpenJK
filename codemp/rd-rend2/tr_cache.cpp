@@ -37,7 +37,7 @@ void CCacheManager::InsertLoaded( const char *fileName, qhandle_t handle )
 	FileHash_t *fh = (FileHash_t *)ri->Hunk_Alloc( sizeof(FileHash_t), h_low );
 	fh->handle = handle;
 	Q_strncpyz( fh->fileName, fileName, sizeof(fh->fileName) );
-	loaded.insert(make_pair<std::string, FileHash_t>(fileName, *fh));
+	loaded.insert(make_pair(fileName, *fh));
 }
 
 /*
@@ -53,28 +53,26 @@ qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qb
 	Q_strncpyz(sFileName, pFileName, MAX_QPATH);
 	Q_strlwr  (sFileName);
 
-	CachedFile_t &pFile = cache[sFileName];
-
-	if(!pFile.pDiskImage)
+	auto cacheEntry = cache.find (sFileName);
+	if ( cacheEntry != cache.end() )
 	{
-		*pbAlreadyCached = qfalse;
-		int len = ri->FS_ReadFile( pFileName, ppFileBuffer );
-		qboolean bSuccess = !!(*ppFileBuffer)?qtrue:qfalse;
-		const char **blah = (const char**)ppFileBuffer;
-
-		if( bSuccess )
-		{
-			ri->Printf( PRINT_DEVELOPER, "C_LoadFile(): Loaded %s from disk\n", pFileName );
-		}
-
-		return bSuccess;
-	}
-	else
-	{
-		*ppFileBuffer = pFile.pDiskImage;
+		*ppFileBuffer = cacheEntry->second.pDiskImage;
 		*pbAlreadyCached = qtrue;
+
 		return qtrue;
 	}
+
+	*pbAlreadyCached = qfalse;
+
+	int len = ri->FS_ReadFile( pFileName, ppFileBuffer );
+	if ( *ppFileBuffer == nullptr )
+	{
+		return qfalse;
+	}
+
+	ri->Printf( PRINT_DEVELOPER, "C_LoadFile(): Loaded %s from disk\n", pFileName );
+
+	return qtrue;
 }
 
 /*
@@ -98,10 +96,13 @@ void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psMode
 	Q_strncpyz(sModelName, psModelFileName, MAX_QPATH);
 	Q_strlwr  (sModelName);
 
-	CachedFile_t *pFile = &cache[sModelName];
+	CachedFile_t *pFile;
+	auto cacheEntry = cache.find (sModelName);
 
-	if( !pFile->pDiskImage )
+	if (cacheEntry == cache.end())
 	{ /* Create this image. */
+		pFile = &cache[sModelName];
+
 		if( pvDiskBuffer )
 			Z_MorphMallocTag( pvDiskBuffer, eTag );
 		else
@@ -121,6 +122,7 @@ void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psMode
 		 * TODO: shader caching.
 		 */
 		*bAlreadyFound = qtrue;
+		pFile = &cacheEntry->second;
 	}
 
 	pFile->iLevelLastUsedOn = tr.currentLevel;
@@ -137,7 +139,6 @@ void CCacheManager::DeleteAll( void )
 	for( auto it = cache.begin(); it != cache.end(); ++it )
 	{
 		Z_Free(it->second.pDiskImage);
-		it = cache.erase(it);
 	}
 }
 
@@ -164,12 +165,12 @@ void CCacheManager::DumpNonPure( void )
 			if( it->second.pDiskImage )
 				Z_Free( it->second.pDiskImage );
 
-			it = cache.erase(it++);
-			bEraseOccurred = qtrue;
+			it = cache.erase(it);
 		}
-
-		if( !bEraseOccurred )
+		else
+		{
 			++it;
+		}
 	}
 
 	ri->Printf( PRINT_DEVELOPER, "CCacheManager::DumpNonPure(): Ok\n");	
@@ -191,7 +192,7 @@ qboolean CModelCacheManager::LevelLoadEnd( qboolean bDeleteEverythingNotUsedThis
 
 	ri->Printf( PRINT_DEVELOPER, S_COLOR_GREEN "CModelCacheManager::LevelLoadEnd():\n");
 
-	for(auto it = cache.begin(); it != cache.end(); ++it)
+	for(auto it = cache.begin(); it != cache.end(); /* empty */)
 	{
 		CachedFile_t pFile			= it->second;
 		bool bDeleteThis			= false;
@@ -212,8 +213,12 @@ qboolean CModelCacheManager::LevelLoadEnd( qboolean bDeleteEverythingNotUsedThis
 				Z_Free( pFile.pDiskImage );
 				bAtLeastOneModelFreed = qtrue;	// FIXME: is this correct? shouldn't it be in the next lower scope?
 			}
-			// FIXME: like right here?
+
 			it = cache.erase(it);
+		}
+		else
+		{
+			++it;
 		}
 	}
 
@@ -252,8 +257,13 @@ void CModelCacheManager::StoreShaderRequest( const char *psModelFileName, const 
 	Q_strncpyz(sModelName, psModelFileName, sizeof(sModelName));
 	Q_strlwr  (sModelName);
 
-	CachedFile_t &rFile = cache[sModelName];
+	auto cacheEntry = cache.find (sModelName);
+	if ( cacheEntry == cache.end() )
+	{
+		return;
+	}
 
+	CachedFile_t &rFile = cacheEntry->second;
 	if( rFile.pDiskImage == NULL )
 	{
 		/* Shouldn't even happen. */
@@ -264,7 +274,7 @@ void CModelCacheManager::StoreShaderRequest( const char *psModelFileName, const 
 	int iNameOffset =		  psShaderName		- (char *)rFile.pDiskImage;
 	int iPokeOffset = (char*) piShaderIndexPoke	- (char *)rFile.pDiskImage;
 
-	shaderCache.push_back( make_pair<int,int>( iNameOffset, iPokeOffset ) );
+	rFile.shaderCache.push_back( make_pair( iNameOffset, iPokeOffset ) );
 }
 
 void CModelCacheManager::AllocateShaders( const char *psFileName )
@@ -276,7 +286,13 @@ void CModelCacheManager::AllocateShaders( const char *psFileName )
 	Q_strncpyz(sModelName, psFileName, sizeof(sModelName));
 	Q_strlwr  (sModelName);
 
-	CachedFile_t &rFile = cache[sModelName];
+	auto cacheEntry = cache.find (sModelName);
+	if ( cacheEntry == cache.end() )
+	{
+		return;
+	}
+
+	CachedFile_t &rFile = cacheEntry->second;
 
 	if( rFile.pDiskImage == NULL )
 	{
@@ -285,10 +301,10 @@ void CModelCacheManager::AllocateShaders( const char *psFileName )
 		return;
 	}
 
-	for( auto it = shaderCache.begin(); it != shaderCache.end(); ++it )
+	for( auto storedShader : rFile.shaderCache )
 	{
-		int iShaderNameOffset	= it->first;
-		int iShaderPokeOffset	= it->second;
+		int iShaderNameOffset	= storedShader.first;
+		int iShaderPokeOffset	= storedShader.second;
 
 		char *psShaderName		=		  &((char*)rFile.pDiskImage)[iShaderNameOffset];
 		int  *piShaderPokePtr	= (int *) &((char*)rFile.pDiskImage)[iShaderPokeOffset];
