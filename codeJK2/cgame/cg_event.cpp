@@ -32,7 +32,7 @@ extern void CG_TryPlayCustomSound( vec3_t origin, int entityNum, soundChannel_t 
 //==========================================================================
 
 qboolean CG_IsFemale( const char *infostring ) {
-	char		*sex;
+	const char		*sex;
 
 	sex = Info_ValueForKey( infostring, "s" );
 	if (sex[0] == 'f' || sex[0] == 'F')

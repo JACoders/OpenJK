@@ -309,7 +309,8 @@ void COM_ParseInit( void )
 void COM_BeginParseSession( void )
 {
 	parseDataCount++;
-#ifdef _DEBUG
+	//Disabling this, as the game seems to work fine without it and crashes with it enabled. What is this even for?
+#if 0
 	if ( parseDataCount >= MAX_PARSE_DATA )
 	{
 		Com_Error (ERR_FATAL, "COM_BeginParseSession: cannot nest more than %d parsing sessions.\n", MAX_PARSE_DATA);
