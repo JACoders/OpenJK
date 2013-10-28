@@ -1046,7 +1046,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 		Svcmd_Nav_f ();
 		return qtrue;
@@ -1057,7 +1057,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 		Svcmd_NPC_f ();
 		return qtrue;
@@ -1068,7 +1068,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 		Svcmd_Use_f ();
 		return qtrue;
@@ -1079,7 +1079,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 
 		Quake3Game()->Svcmd();
@@ -1092,7 +1092,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 		Svcmd_SaberColor_f();
 		return qtrue;
@@ -1103,7 +1103,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 		Svcmd_Saber_f();
 		return qtrue;
@@ -1114,7 +1114,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 		Svcmd_SaberBlade_f();
 		return qtrue;
