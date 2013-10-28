@@ -194,6 +194,17 @@ static void Svcmd_Saber_f()
 {
 	const char *saber = gi.argv(1);
 	const char *saber2 = gi.argv(2);
+	char name[MAX_CVAR_VALUE_STRING] = {0};
+
+	if ( gi.argc() < 2 )
+	{
+		gi.Printf( "Usage: saber <saber1> <saber2>\n" );
+		gi.Cvar_VariableStringBuffer( "g_saber", name, sizeof(name) );
+		gi.Printf("g_saber is set to %s\n", name);
+		gi.Cvar_VariableStringBuffer( "g_saber2", name, sizeof(name) );
+		gi.Printf("g_saber2 is set to %s\n", name);
+		return;
+	}
 
 	if ( !g_entities[0].client || !saber || !saber[0] )
 	{
