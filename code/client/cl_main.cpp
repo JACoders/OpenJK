@@ -64,9 +64,6 @@ cvar_t	*cl_sensitivity;
 
 cvar_t	*cl_mouseAccel;
 cvar_t	*cl_showMouseRate;
-cvar_t  *cl_VideoQuality;
-cvar_t	*cl_VidFadeUp;	// deliberately kept as "Vid" rather than "Video" so tab-matching matches only VideoQuality
-cvar_t	*cl_VidFadeDown;
 cvar_t	*cl_framerate;
 
 cvar_t	*m_pitch;
@@ -77,7 +74,6 @@ cvar_t	*m_filter;
 
 cvar_t	*cl_activeAction;
 
-cvar_t	*cl_updateInfoString;
 
 cvar_t	*cl_inGameVideo;
 
@@ -1317,9 +1313,6 @@ void CL_Init( void ) {
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 
 	cl_inGameVideo = Cvar_Get ("cl_inGameVideo", "1", CVAR_ARCHIVE);
-	cl_VideoQuality = Cvar_Get ("cl_VideoQuality", "0", CVAR_ARCHIVE);
-	cl_VidFadeUp	= Cvar_Get ("cl_VidFadeUp", "1", CVAR_TEMP);
-	cl_VidFadeDown	= Cvar_Get ("cl_VidFadeDown", "1", CVAR_TEMP);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
 
 	cl_thumbStickMode = Cvar_Get ("ui_thumbStickMode", "0", CVAR_ARCHIVE);
@@ -1338,8 +1331,6 @@ void CL_Init( void ) {
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
 #endif
-
-	cl_updateInfoString = Cvar_Get( "cl_updateInfoString", "", CVAR_ROM );
 
 	// userinfo
 	Cvar_Get ("name", "Jaden", CVAR_USERINFO | CVAR_ARCHIVE );
