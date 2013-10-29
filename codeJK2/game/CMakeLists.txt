@@ -215,14 +215,8 @@ source_group("ui" FILES ${JK2SPGameUIFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameUIFiles})
 
 set(JK2SPGameCommonFiles
-	"${JK2SPDir}/qcommon/tri_coll_test.cpp"
-	"${JK2SPDir}/qcommon/sstring.h"
-	"${JK2SPDir}/qcommon/tags.h"
-	# JK2 doesn't have these here yet
-	#"${JK2SPDir}/qcommon/timing.h"
-	#"${JK2SPDir}/qcommon/q_math.cpp"
-	#"${JK2SPDir}/qcommon/q_shared.cpp"
-	#"${JK2SPDir}/qcommon/q_shared.h"
+	#We only have JKA qcommon files now.
+	"${JK2SPDir}/../code/qcommon/tri_coll_test.cpp"
 	)
 source_group("common" FILES ${JK2SPGameCommonFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonFiles})
