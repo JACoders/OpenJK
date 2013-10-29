@@ -2379,7 +2379,7 @@ typedef enum {
 //
 #define TAGDEF(blah) TAG_ ## blah
 enum {
-	#include "../qcommon/tags.h"
+	#include "../../code/qcommon/tags.h"
 };
 typedef unsigned memtag_t;
 

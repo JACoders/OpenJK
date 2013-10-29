@@ -24,6 +24,7 @@ This file is part of Jedi Knight 2.
 #include "g_nav.h"
 #include "anims.h"
 #include "wp_saber.h"
+#include "../../code/qcommon/tri_coll_test.h"
 
 extern void CG_DrawAlert( vec3_t origin, float rating );
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
@@ -2352,7 +2353,6 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 	return evasionType;
 }
 
-extern float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2, vec3_t end2, vec3_t close_pnt1, vec3_t close_pnt2 );
 extern int WPDEBUG_SaberColor( saber_colors_t saberColor );
 static qboolean Jedi_SaberBlock( void )
 {

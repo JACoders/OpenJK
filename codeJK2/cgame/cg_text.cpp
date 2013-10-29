@@ -712,7 +712,7 @@ void CG_ScrollText( const char *str, int iPixelWidth )
 	//
 	// malloc space to hold it...
 	//
-	char *psText = (char *) cgi_Z_Malloc( i+1, TAG_STRING );
+	char *psText = (char *) cgi_Z_Malloc( i+1, TAG_TEMP_WORKSPACE );
 	//
 	// now get the string...
 	//	

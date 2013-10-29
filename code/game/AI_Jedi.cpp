@@ -24,6 +24,7 @@ This file is part of Jedi Academy.
 #include "g_nav.h"
 #include "anims.h"
 #include "wp_saber.h"
+#include "../qcommon/tri_coll_test.h"
 
 //Externs
 extern qboolean G_ValidEnemy( gentity_t *self, gentity_t *enemy );
@@ -3847,7 +3848,6 @@ static evasionType_t Jedi_CheckEvadeSpecialAttacks( void )
 	return EVASION_NONE;
 }
 
-extern float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2, vec3_t end2, vec3_t close_pnt1, vec3_t close_pnt2 );
 extern int WPDEBUG_SaberColor( saber_colors_t saberColor );
 static qboolean Jedi_SaberBlock( void )
 {
