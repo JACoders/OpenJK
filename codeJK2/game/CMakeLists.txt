@@ -205,8 +205,8 @@ source_group("cgame" FILES ${JK2SPGameCGameFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCGameFiles})
 
 set(JK2SPGameUIFiles
-	"${JK2SPDir}/ui/gameinfo.cpp"
-	"${JK2SPDir}/ui/gameinfo.h"
+	"${JK2SPDir}/../code/ui/gameinfo.cpp"
+	"${JK2SPDir}/../code/ui/gameinfo.h"
 	)
 source_group("ui" FILES ${JK2SPGameUIFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameUIFiles})
