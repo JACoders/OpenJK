@@ -23,7 +23,7 @@ This file is part of Jedi Knight 2.
 // short, server-visible gclient_t and gentity_t structures,
 // because we define the full size ones in this file
 #define GAME_INCLUDE
-#include "q_shared.h"
+#include "../../code/qcommon/q_shared.h"
 #include "g_shared.h"
 #include "bg_local.h"
 #include "anims.h"
