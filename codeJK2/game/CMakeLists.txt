@@ -88,8 +88,6 @@ set(JK2SPGameFiles
 	"${JK2SPDir}/game/g_weapon.cpp"
 	"${JK2SPDir}/game/g_weaponLoad.cpp"
 	"${JK2SPDir}/game/genericparser2.cpp"
-	"${JK2SPDir}/game/q_math.cpp" #TODO should be using shared qcommon
-	"${JK2SPDir}/game/q_shared.cpp"  #TODO should be using shared qcommon
 	"${JK2SPDir}/game/wp_atst.cpp"
 	"${JK2SPDir}/game/wp_blaster_rifle.cpp"
 	"${JK2SPDir}/game/wp_bot_laser.cpp"
@@ -137,7 +135,6 @@ set(JK2SPGameFiles
 	"${JK2SPDir}/game/ghoul2_shared.h"
 	"${JK2SPDir}/game/npc_headers.h"
 	"${JK2SPDir}/game/objectives.h"
-	"${JK2SPDir}/game/q_shared.h"
 	"${JK2SPDir}/game/say.h"
 	"${JK2SPDir}/game/statindex.h"
 	"${JK2SPDir}/game/surfaceflags.h"
@@ -216,6 +213,8 @@ set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameUIFiles})
 
 set(JK2SPGameCommonFiles
 	#We only have JKA qcommon files now.
+	"${JK2SPDir}/../code/qcommon/q_math.cpp"
+	"${JK2SPDir}/../code/qcommon/q_shared.cpp"
 	"${JK2SPDir}/../code/qcommon/tri_coll_test.cpp"
 	)
 source_group("common" FILES ${JK2SPGameCommonFiles})
@@ -235,26 +234,6 @@ set(JK2SPGameIcarusFiles
 	)
 source_group("icarus" FILES ${JK2SPGameIcarusFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameIcarusFiles})
-
-set(JK2SPGameG2Files
-	"${JK2SPDir}/ghoul2/G2.h"
-	#"${JK2SPDir}/ghoul2/ghoul2_gore.h"
-	)
-source_group("ghoul2" FILES ${JK2SPGameG2Files})
-set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameG2Files})
-
-set(JK2SPGameRendererFiles
-	"${JK2SPDir}/renderer/mdx_format.h"
-	"${JK2SPDir}/renderer/tr_types.h"
-	)
-source_group("renderer" FILES ${JK2SPGameRendererFiles})
-set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2JK2SPGameRendererFiles})
-
-set(JK2SPGameClientFiles
-	"${JK2SPDir}/client/vmachine.h"
-	)
-source_group("client" FILES ${JK2SPGameClientFiles})
-set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameClientFiles})
 
 if(WIN32)
 	set(JK2SPGameWin32Files

@@ -20,7 +20,7 @@ This file is part of Jedi Knight 2.
 #define __GAMEINFO_H__
 
 
-#include "../game/q_shared.h"
+#include "../../code/qcommon/q_shared.h"
 #include <stdio.h>
 
 

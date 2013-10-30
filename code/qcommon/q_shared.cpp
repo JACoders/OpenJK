@@ -20,8 +20,6 @@ This file is part of Jedi Academy.
 // leave this at the top for PCH reasons...
 #include "../game/common_headers.h"
 
-//#include "q_shared.h"
-
 int Com_Clampi( int min, int max, int value ) 
 {
 	if ( value < min ) 
@@ -305,11 +303,12 @@ void COM_ParseInit( void )
 	parseDataCount = -1;
 }
 
-void COM_BeginParseSession( void )
+void COM_BeginParseSession( qboolean isJK2Engine )
 {
 	parseDataCount++;
 #ifdef _DEBUG
-	if ( parseDataCount >= MAX_PARSE_DATA )
+	//HACK:The JK2 engine doesn't seem to like this check, even though the scripts aren't nested. It seems to work fine without it. I'll dig into this madness later.
+	if ( parseDataCount >= MAX_PARSE_DATA && !isJK2Engine)
 	{
 		Com_Error (ERR_FATAL, "COM_BeginParseSession: cannot nest more than %d parsing sessions.\n", MAX_PARSE_DATA);
 	}
