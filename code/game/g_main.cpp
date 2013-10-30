@@ -630,11 +630,7 @@ void G_InitCvars( void ) {
 
 	g_bobaDebug = gi.cvar ( "g_bobaDebug", "", 0 );
 
-#if defined(FINAL_BUILD)
 	g_delayedShutdown = gi.cvar ( "g_delayedShutdown", "0", 0 );
-#else
-	g_delayedShutdown = gi.cvar ( "g_delayedShutdown", "1", 0 );
-#endif
 
 	g_inactivity = gi.cvar ("g_inactivity", "0", 0);
 	g_debugMove = gi.cvar ("g_debugMove", "0", CVAR_CHEAT );
