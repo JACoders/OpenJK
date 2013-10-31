@@ -840,9 +840,7 @@ Ghoul2 Insert End
 #endif //#ifdef GAME_INCLUDE
 
 extern	gentity_t		g_entities[MAX_GENTITIES];
-#ifndef _USRDLL
 extern	game_import_t	gi;
-#endif
 
 // each WP_* weapon enum has an associated weaponInfo_t
 // that contains media references necessary to present the
