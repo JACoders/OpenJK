@@ -971,8 +971,19 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-force_lightning", IN_Button1Up);
 	Cmd_AddCommand ("+useforce", IN_Button2Down);	//use current force power
 	Cmd_AddCommand ("-useforce", IN_Button2Up);
+#ifndef __NO_JK2
+	if ( com_jk2 && com_jk2->integer ) {
+		Cmd_AddCommand ("+block", IN_Button3Down);//manual blocking
+		Cmd_AddCommand ("-block", IN_Button3Up);
+	}
+	else {
+		Cmd_AddCommand ("+force_drain", IN_Button3Down);//force drain
+		Cmd_AddCommand ("-force_drain", IN_Button3Up);
+	}
+#else
 	Cmd_AddCommand ("+force_drain", IN_Button3Down);//force drain
 	Cmd_AddCommand ("-force_drain", IN_Button3Up);
+#endif
 	Cmd_AddCommand ("+walk", IN_Button4Down);//walking
 	Cmd_AddCommand ("-walk", IN_Button4Up);
 	Cmd_AddCommand ("+use", IN_Button5Down);//use object
@@ -981,10 +992,19 @@ void CL_InitInput( void ) {
 	Cmd_AddCommand ("-force_grip", IN_Button6Up);
 	Cmd_AddCommand ("+altattack", IN_Button7Down);//altattack
 	Cmd_AddCommand ("-altattack", IN_Button7Up);
+#ifndef __NO_JK2
+	if ( !com_jk2 || !com_jk2->integer ) {
+		Cmd_AddCommand ("+forcefocus", IN_Button8Down);//special saber attacks
+		Cmd_AddCommand ("-forcefocus", IN_Button8Up);
+		Cmd_AddCommand ("+block", IN_Button8Down);//manual blocking
+		Cmd_AddCommand ("-block", IN_Button8Up);
+	}
+#else
 	Cmd_AddCommand ("+forcefocus", IN_Button8Down);//special saber attacks
 	Cmd_AddCommand ("-forcefocus", IN_Button8Up);
 	Cmd_AddCommand ("+block", IN_Button8Down);//manual blocking
 	Cmd_AddCommand ("-block", IN_Button8Up);
+#endif
 
 	Cmd_AddCommand ("+button0", IN_Button0Down);
 	Cmd_AddCommand ("-button0", IN_Button0Up);
