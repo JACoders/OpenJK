@@ -212,7 +212,7 @@ CTextPool::~CTextPool(void)
 #endif
 }
 
-char *CTextPool::AllocText(char *text, bool addNULL, CTextPool **poolPtr)
+char *CTextPool::AllocText(const char *text, bool addNULL, CTextPool **poolPtr)
 {
 	int	length = strlen(text) + (addNULL ? 1 : 0);
 

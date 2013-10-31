@@ -22,7 +22,7 @@ This file is part of Jedi Knight 2.
 #define __TASK_MANAGER__
 
 #include "sequencer.h"
-#include "q_shared.h"
+#include "../../code/qcommon/q_shared.h"
 
 #define MAX_TASK_NAME	64
 

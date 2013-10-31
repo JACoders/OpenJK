@@ -24,7 +24,7 @@ This file is part of Jedi Knight 2.
 //#include "cg_local.h"
 #include "cg_media.h"
 #include "../game/g_functions.h"
-#include "../ghoul2/G2.h"
+#include "../../code/ghoul2/G2.h"
 #include "FxScheduler.h"
 #include "../game/wp_saber.h"
 

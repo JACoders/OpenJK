@@ -1143,7 +1143,7 @@ qboolean COM_CompareExtension(const char *in, const char *ext);
 void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 
 //JLFCALLOUT include MPNOTUSED
-void	 COM_BeginParseSession( void );
+void	 COM_BeginParseSession( qboolean isJK2Engine = qfalse);
 void	 COM_EndParseSession( void );
 
 int		 COM_GetCurrentParseLine( void );
@@ -2399,6 +2399,7 @@ typedef struct playerState_s {
 #define	BUTTON_FORCE_LIGHTNING	2			// displays talk balloon and disables actions
 #define	BUTTON_USE_FORCE	4
 #define	BUTTON_FORCE_DRAIN	8			// draining
+#define	BUTTON_BLOCKING		8
 #define	BUTTON_VEH_SPEED	8			// used for some horrible vehicle hack... :)
 #define	BUTTON_WALKING		16			// walking can't just be infered from MOVE_RUN because a key pressed late in the frame will
 										// only generate a small move value for that frame walking will use different animations and

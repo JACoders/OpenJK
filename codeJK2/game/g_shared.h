@@ -23,7 +23,7 @@ This file is part of Jedi Knight 2.
 #include "g_public.h"
 #include "b_public.h"
 #include "../icarus/icarus.h"
-#include "../renderer/tr_types.h"
+#include "../../code/renderer/tr_types.h"
 #include "../cgame/cg_public.h"
 #include "bset.h"
 
@@ -388,24 +388,6 @@ typedef struct {
 
 	playerTeamState_t teamState;	// status in teamplay games
 } clientPersistant_t;
-
-#define MAX_SABER_TRAIL_SEGS 8
-
-typedef struct 
-{
-	// Actual trail stuff
-	int		inAction;	// controls whether should we even consider starting one
-	int		duration;	// how long each trail seg stays in existence
-	int		lastTime;	// time a saber segement was last stored
-	vec3_t	base;
-	vec3_t	tip;
-
-	// Marks stuff
-	qboolean	haveOldPos[2];
-	vec3_t		oldPos[2];		
-	vec3_t		oldNormal[2];	// store this in case we don't have a connect-the-dots situation
-							//	..then we'll need the normal to project a mark blob onto the impact point
-} saberTrail_t;
 
 typedef enum {
 	BLK_NO,
