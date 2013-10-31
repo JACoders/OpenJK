@@ -413,6 +413,7 @@ qboolean G_ParseAnimationFile( const char *af_filename )
 	}
 
 	// read information for each frame
+	COM_BeginParseSession();
 	while(1) 
 	{
 		token = COM_Parse( &text_p );
@@ -474,6 +475,7 @@ qboolean G_ParseAnimationFile( const char *af_filename )
 
 		animations[animNum].initialLerp = ceil(1000.0f / fabs(fps));
 	}
+	COM_EndParseSession();
 
 #ifdef CONVENIENT_ANIMATION_FILE_DEBUG_THING
 	if (strstr(af_filename, "humanoid"))
@@ -588,7 +590,7 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 	}
 
 	p = NPCParms;
-	COM_BeginParseSession(qtrue);
+	COM_BeginParseSession();
 
 	// look for the right NPC
 	while ( p ) 
@@ -596,6 +598,7 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
 		{
+			COM_EndParseSession(  );
 			return;
 		}
 
@@ -609,11 +612,13 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 
 	if ( !p ) 
 	{
+		COM_EndParseSession(  );
 		return;
 	}
 
 	if ( G_ParseLiteral( &p, "{" ) ) 
 	{
+		COM_EndParseSession(  );
 		return;
 	}
 
@@ -624,6 +629,7 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 		if ( !token[0] ) 
 		{
 			gi.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", NPC_type );
+			COM_EndParseSession(  ); 
 			return;
 		}
 
@@ -642,6 +648,7 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 			//must copy data out of this pointer into a different part of memory because the funcs we're about to call will call COM_ParseExt
 			Q_strncpyz( filename, value, sizeof( filename ), qtrue );
 			G_ParseAnimFileSet( filename, filename, &junk );
+			COM_EndParseSession(  );
 			return;
 		}
 
@@ -674,12 +681,14 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 					//must copy data out of this pointer into a different part of memory because the funcs we're about to call will call COM_ParseExt
 					Q_strncpyz( filename, value, sizeof( filename ), qtrue );
 					G_ParseAnimFileSet( value, strippedName, &junk );//qfalse );
+					COM_EndParseSession(  );
 					//FIXME: still not precaching the animsounds.cfg?
 					return;
 				}
 			}
 		}
 	}
+	COM_EndParseSession(  );
 }
 
 extern int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type );
@@ -739,7 +748,7 @@ void NPC_Precache ( gentity_t *spawner )
 	strcpy(customSkin,"default");
 
 	p = NPCParms;
-	COM_BeginParseSession(qtrue);
+	COM_BeginParseSession();
 
 	// look for the right NPC
 	while ( p ) 
@@ -747,6 +756,7 @@ void NPC_Precache ( gentity_t *spawner )
 		token = COM_ParseExt( &p, qtrue );
 		if ( token[0] == 0 )
 		{
+			COM_EndParseSession(  );
 			return;
 		}
 
@@ -760,21 +770,26 @@ void NPC_Precache ( gentity_t *spawner )
 
 	if ( !p ) 
 	{
+		COM_EndParseSession(  );
 		return;
 	}
 
 	if ( G_ParseLiteral( &p, "{" ) ) 
 	{
+		COM_EndParseSession(  );
 		return;
 	}
 
 	// parse the NPC info block
 	while ( 1 ) 
 	{
+		COM_EndParseSession();	// if still in session (or using continue;)
+		COM_BeginParseSession();
 		token = COM_ParseExt( &p, qtrue );
 		if ( !token[0] ) 
 		{
 			gi.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", spawner->NPC_type );
+			COM_EndParseSession(  );
 			return;
 		}
 
@@ -944,6 +959,8 @@ void NPC_Precache ( gentity_t *spawner )
 			continue;
 		}
 	}
+	
+	COM_EndParseSession(  );
 
 	if ( md3Model )
 	{
@@ -1185,7 +1202,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	else
 	{
 		p = NPCParms;
-		COM_BeginParseSession(qtrue);
+		COM_BeginParseSession();
 
 		// look for the right NPC
 		while ( p ) 
@@ -1193,6 +1210,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			token = COM_ParseExt( &p, qtrue );
 			if ( token[0] == 0 )
 			{
+				COM_EndParseSession(  );
 				return qfalse;
 			}
 
@@ -1205,11 +1223,13 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 		}
 		if ( !p ) 
 		{
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 
 		if ( G_ParseLiteral( &p, "{" ) ) 
 		{
+			COM_EndParseSession(  );
 			return qfalse;
 		}
 			
@@ -1220,6 +1240,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			if ( !token[0] ) 
 			{
 				gi.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", NPCName );
+				COM_EndParseSession(  );
 				return qfalse;
 			}
 
@@ -2198,6 +2219,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 			gi.Printf( "WARNING: unknown keyword '%s' while parsing '%s'\n", token, NPCName );
 			SkipRestOfLine( &p );
 		}
+		COM_EndParseSession(  );
 	}
 
 	ci->infoValid = qfalse;

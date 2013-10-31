@@ -1526,8 +1526,10 @@ void CG_StartMusic( qboolean bForceStart ) {
 
 	// start the background music
 	s = (char *)CG_ConfigString( CS_MUSIC );
+	COM_BeginParseSession();
 	Q_strncpyz( parm1, COM_Parse( &s ), sizeof( parm1 ) );
 	Q_strncpyz( parm2, COM_Parse( &s ), sizeof( parm2 ) );
+	COM_EndParseSession();
 
 	cgi_S_StartBackgroundTrack( parm1, parm2, !bForceStart );
 }
@@ -2376,6 +2378,7 @@ void CG_LoadMenus(const char *menuFile)
 
 	p = buf;
 
+	COM_BeginParseSession();
 	while ( 1 ) 
 	{
 		token = COM_ParseExt( &p, qtrue );
@@ -2401,6 +2404,7 @@ void CG_LoadMenus(const char *menuFile)
 			}
 		}
 	}
+	COM_EndParseSession();
 
 	Com_Printf("UI menu load time = %d milli seconds\n", cgi_Milliseconds() - start);
 }

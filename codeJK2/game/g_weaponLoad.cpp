@@ -1385,6 +1385,8 @@ static void WP_ParseParms(const char *buffer)
 		 
 	}
 
+	COM_EndParseSession(  );
+
 }
 
 //--------------------------------------------

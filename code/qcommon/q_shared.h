@@ -166,8 +166,6 @@ This file is part of Jedi Academy.
 
 #ifdef WIN32
 
-  #define	MAC_STATIC
-
   #undef QDECL
   #define	QDECL	__cdecl
 
@@ -1143,7 +1141,7 @@ qboolean COM_CompareExtension(const char *in, const char *ext);
 void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 
 //JLFCALLOUT include MPNOTUSED
-void	 COM_BeginParseSession( qboolean isJK2Engine = qfalse);
+void	 COM_BeginParseSession( void );
 void	 COM_EndParseSession( void );
 
 int		 COM_GetCurrentParseLine( void );

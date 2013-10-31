@@ -801,6 +801,7 @@ void CG_ParseAnimationSndFile( const char *as_filename, int animFileIndex )
 	lower_i =0;
 
 	// read information for batches of sounds (UPPER or LOWER)
+	COM_BeginParseSession();
 	while ( 1 ) 
 	{
 		// Get base frame of sequence
@@ -820,6 +821,7 @@ void CG_ParseAnimationSndFile( const char *as_filename, int animFileIndex )
 			ParseAnimationSndBlock( as_filename, legsAnimSnds, animations, &lower_i, &text_p ); 
 		}
 	}
+	COM_EndParseSession(  );
 }
 /*
 ===============
