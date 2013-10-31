@@ -27,6 +27,7 @@ This file is part of Jedi Knight 2.
 #include "bg_local.h"			   
 #include "g_functions.h"
 #include "wp_saber.h"
+#include "../../code/qcommon/tri_coll_test.h"
 
 #define MAX_SABER_VICTIMS 16
 static int		victimEntityNum[MAX_SABER_VICTIMS];
@@ -1145,7 +1146,6 @@ qboolean WP_SabersIntersect( gentity_t *ent1, gentity_t *ent2, qboolean checkDir
 	return qfalse;
 }
 
-extern float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2, vec3_t end2, vec3_t close_pnt1, vec3_t close_pnt2 );
 float WP_SabersDistance( gentity_t *ent1, gentity_t *ent2 )
 {
 	vec3_t	saberBaseNext1, saberTipNext1, saberPoint1;

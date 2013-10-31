@@ -253,7 +253,7 @@ void CG_Credits_Init( LPCSTR psStripReference, vec4_t *pv4Color)
 	//
 	// malloc space to hold it...
 	//
-	char *psMallocText = (char *) cgi_Z_Malloc( iStrLen+1, TAG_STRING );
+	char *psMallocText = (char *) cgi_Z_Malloc( iStrLen+1, TAG_TEMP_WORKSPACE );
 	//
 	// now get the string...
 	//	

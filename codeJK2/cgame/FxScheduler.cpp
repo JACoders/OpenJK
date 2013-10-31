@@ -19,7 +19,6 @@ This file is part of Jedi Knight 2.
 // this include must remain at the top of every CPP file
 #include "common_headers.h"
 
-
 #if !defined(FX_SCHEDULER_H_INC)
 	#include "FxScheduler.h"
 #endif
@@ -29,7 +28,7 @@ This file is part of Jedi Knight 2.
 #endif
 
 #if !defined(G2_H_INC)
-	#include "../ghoul2/G2.h"
+	#include "../../code/ghoul2/G2.h"
 #endif
 
 #if !defined(__Q_SHARED_H)

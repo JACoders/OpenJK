@@ -24,11 +24,11 @@ This file is part of Jedi Knight 2.
 #include "cg_media.h"
 #include "FxScheduler.h"
 
-#include "../client/vmachine.h"
+#include "../../code/client/vmachine.h"
 #include "../game/characters.h"
 #include "cg_lights.h"
 
-#include "../qcommon/sstring.h"
+#include "../../code/qcommon/sstring.h"
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
 typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char >  >	namePrecache_m;
 extern namePrecache_m	*as_preCacheMap;

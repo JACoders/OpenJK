@@ -588,7 +588,7 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 	}
 
 	p = NPCParms;
-	COM_BeginParseSession();
+	COM_BeginParseSession(qtrue);
 
 	// look for the right NPC
 	while ( p ) 
@@ -739,7 +739,7 @@ void NPC_Precache ( gentity_t *spawner )
 	strcpy(customSkin,"default");
 
 	p = NPCParms;
-	COM_BeginParseSession();
+	COM_BeginParseSession(qtrue);
 
 	// look for the right NPC
 	while ( p ) 
@@ -1185,7 +1185,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	else
 	{
 		p = NPCParms;
-		COM_BeginParseSession();
+		COM_BeginParseSession(qtrue);
 
 		// look for the right NPC
 		while ( p ) 

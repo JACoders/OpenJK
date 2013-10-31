@@ -21,7 +21,7 @@ This file is part of Jedi Knight 2.
 #endif
 
 
-#include "../qcommon/sstring.h"
+#include "../../code/qcommon/sstring.h"
 typedef sstring_t fxString_t;
 
 #if !defined(FX_PARSING_H_INC)

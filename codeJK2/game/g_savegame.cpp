@@ -29,7 +29,7 @@ This file is part of Jedi Knight 2.
 #include "objectives.h"
 #include "../cgame/cg_camera.h"
 #include "g_icarus.h"
-#include "../qcommon/sstring.h"
+#include "../../code/qcommon/sstring.h"
 
 extern void OBJ_LoadTacticalInfo(void);
 
