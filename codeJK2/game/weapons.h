@@ -137,7 +137,6 @@ typedef struct weaponData_s
 
 	char	missileHitSound[64];	// Missile impact sound
 	char	altmissileHitSound[64];	// alt Missile impact sound
-#ifndef _USRDLL
 	void	*func;
 	void	*altfunc;
 
@@ -145,8 +144,6 @@ typedef struct weaponData_s
 	int		mMuzzleEffectID;
 	char	mAltMuzzleEffect[64];
 	int		mAltMuzzleEffectID;
-
-#endif
 
 	// OPENJK ADD
 	int		damage;
