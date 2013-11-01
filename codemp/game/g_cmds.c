@@ -2056,6 +2056,8 @@ qboolean G_VoteMap( gentity_t *ent, int numArgs, const char *arg1, const char *a
 	Com_sprintf( bspName, sizeof(bspName), "maps/%s.bsp", arg2 );
 	if ( trap->FS_Open( bspName, &fp, FS_READ ) <= 0 ) {
 		trap->SendServerCommand( ent-g_entities, va( "print \"Can't find map %s on server\n\"", bspName ) );
+		if( fp != NULL_FILE )
+			trap->FS_Close( fp );
 		return qfalse;
 	}
 	trap->FS_Close( fp );
