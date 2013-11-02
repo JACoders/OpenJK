@@ -23,7 +23,7 @@ This file is part of Jedi Academy.
 #include "../server/exe_headers.h"
 
 #include "tr_local.h"
-#include "matcomp.h"
+#include "qcommon/matcomp.h"
 #include "../qcommon/sstring.h"
 
 #define	LL(x) x=LittleLong(x)

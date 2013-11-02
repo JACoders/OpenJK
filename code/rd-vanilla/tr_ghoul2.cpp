@@ -29,7 +29,7 @@ This file is part of Jedi Academy.
 	#include "tr_local.h"
 #endif
 
-#include "matcomp.h"
+#include "qcommon/matcomp.h"
 #if !defined(_QCOMMON_H_)
 	#include "../qcommon/qcommon.h"
 #endif

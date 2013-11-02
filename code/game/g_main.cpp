@@ -922,9 +922,6 @@ void QDECL G_Error( const char *fmt, ... ) {
 	gi.Error( ERR_DROP, "%s", text);
 }
 
-#ifndef GAME_HARD_LINKED
-// this is only here so the functions in q_shared.c and bg_*.c can link
-
 /*
 -------------------------
 Com_Error
@@ -958,8 +955,6 @@ void Com_Printf( const char *msg, ... ) {
 
 	gi.Printf ("%s", text);
 }
-
-#endif
 
 /*
 ========================================================================

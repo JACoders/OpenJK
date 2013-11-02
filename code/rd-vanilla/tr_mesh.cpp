@@ -23,7 +23,7 @@ This file is part of Jedi Academy.
 #include "../server/exe_headers.h"
 
 #include "tr_local.h"
-#include "matcomp.h"
+#include "qcommon/matcomp.h"
 
 float ProjectRadius( float r, vec3_t location )
 {

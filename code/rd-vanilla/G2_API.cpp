@@ -18,7 +18,7 @@ This file is part of Jedi Academy.
 
 // leave this as first line for PCH reasons...
 //
-#include "../../server/exe_headers.h"
+#include "../server/exe_headers.h"
 
 #ifdef _MSC_VER
 #pragma warning( disable : 4786) 
@@ -34,19 +34,19 @@ This file is part of Jedi Academy.
 #endif
 
 #ifndef __Q_SHARED_H
-	#include "../../qcommon/q_shared.h"
+	#include "../qcommon/q_shared.h"
 #endif
 
 #if !defined(TR_LOCAL_H)
-	#include "../tr_local.h"
+	#include "tr_local.h"
 #endif
 
 #if !defined(G2_H_INC)
-	#include "../../ghoul2/G2.h"
+	#include "../ghoul2/G2.h"
 #endif
 
 #if !defined(MINIHEAP_H_INC)
-	#include "../../qcommon/MiniHeap.h"
+	#include "../qcommon/MiniHeap.h"
 #endif
 
 
@@ -61,7 +61,7 @@ This file is part of Jedi Academy.
 #endif
 
 //rww - RAGDOLL_BEGIN
-#include "../../ghoul2/ghoul2_gore.h"
+#include "../ghoul2/ghoul2_gore.h"
 //rww - RAGDOLL_END
 
 using namespace std;
