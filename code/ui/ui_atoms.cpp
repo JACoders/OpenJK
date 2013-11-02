@@ -308,49 +308,6 @@ void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 	_UI_Init(inGameLoad);
 }
 
-// these are only here so the functions in q_shared.c can link
-
-#ifndef UI_HARD_LINKED
-
-/*
-================
-Com_Error
-=================
-*/
-/*
-void Com_Error( int level, const char *error, ... ) 
-{
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, error);
-	vsprintf (text, error, argptr);
-	va_end (argptr);
-
-	ui.Error( level, "%s", text);
-}
-*/
-/*
-================
-Com_Printf
-=================
-*/
-/*
-void Com_Printf( const char *msg, ... ) 
-{
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, msg);
-	vsprintf (text, msg, argptr);
-	va_end (argptr);
-
-	ui.Printf( "%s", text);
-}
-*/
-#endif
-
-
 /*
 ================
 UI_DrawNamedPic

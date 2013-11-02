@@ -1,21 +1,3 @@
-/*
-This file is part of Jedi Academy.
-
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
-
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
-*/
-// Copyright 2001-2013 Raven Software
-
 #include "matcomp.h"
 #include <assert.h>
 #include <math.h>
@@ -234,27 +216,6 @@ void MC_UnCompress(float mat[3][4],const unsigned char * comp)
 
 }
 
-/* ROTATION/TRANSLATION COMPRESSION DEBUG CODE (RTCDC)
-unsigned short comp_rot_maskx = 0xfff0;
-unsigned short comp_rot_masky = 0xfff0;
-unsigned short comp_rot_maskz = 0xfff0;
-unsigned short comp_rot_maskw = 0xfff0;
-
-unsigned short comp_tra_maskf1 = 0xfff0;
-unsigned short comp_tra_maskf2 = 0xfff0;
-unsigned short comp_tra_maskf3 = 0xfff0;
-
-int use_comp_rot_mask = 0;
-int use_comp_tra_mask = 0;
-unsigned short cw;
-unsigned short cx;
-unsigned short cy;
-unsigned short cz;
-unsigned short f1;
-unsigned short f2;
-unsigned short f3;
-*/
-
 void MC_UnCompressQuat(float mat[3][4],const unsigned char * comp)
 {
 	float w,x,y,z,f;
@@ -272,61 +233,17 @@ void MC_UnCompressQuat(float mat[3][4],const unsigned char * comp)
     float fTzz;
 	
 	const unsigned short *pwIn = (unsigned short *) comp;
-	
-
-	/* RTCDC
-	if(use_comp_rot_mask)
-	{
-		cw = *pwIn++;
-		cx = *pwIn++;
-		cy = *pwIn++;
-		cz = *pwIn++;
-
-		cw &= comp_rot_maskw;
-		cx &= comp_rot_maskx;
-		cy &= comp_rot_masky;
-		cz &= comp_rot_maskz;
-	}
-	else
-	{
-		cw = *pwIn++;
-		cx = *pwIn++;
-		cy = *pwIn++;
-		cz = *pwIn++;
-	}
-
-	if(use_comp_tra_mask)
-	{
-		f1 = *pwIn++;
-		f2 = *pwIn++;
-		f3 = *pwIn++;
-
-		f1 &= comp_tra_maskf1;
-		f2 &= comp_tra_maskf2;
-		f3 &= comp_tra_maskf3;
-	}
-	else
-	{
-		f1 = *pwIn++;
-		f2 = *pwIn++;
-		f3 = *pwIn++;
-	}
-	*/
 
 	w = *pwIn++;
-	// RTCDC w = cw;
 	w/=16383.0f;
 	w-=2.0f;
 	x = *pwIn++;
-	// RTCDC x = cx;
 	x/=16383.0f;
 	x-=2.0f;
 	y = *pwIn++;
-	// RTCDC y = cy;
 	y/=16383.0f;
 	y-=2.0f;
 	z = *pwIn++;
-	// RTCDC z = cz;
 	z/=16383.0f;
 	z-=2.0f;
 
@@ -358,19 +275,16 @@ void MC_UnCompressQuat(float mat[3][4],const unsigned char * comp)
 	// xlat...
 	//
 	f = *pwIn++;
-	// RTCDC f = f1;
 	f/=64;
 	f-=512;
 	mat[0][3] = f;
 
 	f = *pwIn++;
-	// RTCDC f = f2;
 	f/=64;
 	f-=512;
 	mat[1][3] = f;
 
 	f = *pwIn++;
-	// RTCDC f = f3;
 	f/=64;
 	f-=512;
 	mat[2][3] = f;

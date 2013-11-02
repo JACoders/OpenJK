@@ -18,20 +18,20 @@ This file is part of Jedi Academy.
 
 // leave this as first line for PCH reasons...
 //
-#include "../../server/exe_headers.h"
+#include "../server/exe_headers.h"
 
 
 
 #ifndef __Q_SHARED_H
-	#include "../../qcommon/q_shared.h"
+	#include "../qcommon/q_shared.h"
 #endif
 
 #if !defined(TR_LOCAL_H)
-	#include "../tr_local.h"
+	#include "tr_local.h"
 #endif
 
 #if !defined(G2_H_INC)
-	#include "../../ghoul2/G2.h"
+	#include "../ghoul2/G2.h"
 #endif
 
 #define G2_MODEL_OK(g) ((g)&&(g)->mValid&&(g)->aHeader&&(g)->currentModel&&(g)->animModel)
