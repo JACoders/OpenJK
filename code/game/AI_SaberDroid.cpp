@@ -29,7 +29,6 @@ This file is part of Jedi Academy.
 #include "g_navigator.h"
 #include "wp_saber.h"
 
-//extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
 extern void WP_DeactivateSaber( gentity_t *self, qboolean clearLength = qfalse );
 extern int PM_AnimLength( int index, animNumber_t anim );
 

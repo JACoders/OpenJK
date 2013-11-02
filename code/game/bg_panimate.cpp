@@ -24,7 +24,6 @@ This file is part of Jedi Academy.
 // short, server-visible gclient_t and gentity_t structures,
 // because we define the full size ones in this file
 #define GAME_INCLUDE
-//#include "../renderer/tr_local.h"
 
 #include "../qcommon/q_shared.h"
 #include "g_shared.h"

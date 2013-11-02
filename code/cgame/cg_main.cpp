@@ -18,9 +18,7 @@ This file is part of Jedi Academy.
 
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
-//#include "../ui/ui_shared.h"
 
-//#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 
@@ -33,7 +31,6 @@ typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char
 extern namePrecache_m	*as_preCacheMap;
 extern void CG_RegisterNPCCustomSounds( clientInfo_t *ci );
 extern qboolean G_AddSexToMunroString ( char *string, qboolean qDoBoth );
-//extern void CG_RegisterNPCEffects( team_t team );
 extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0);
 extern void CG_DrawDataPadInventorySelect( void );
 

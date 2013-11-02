@@ -196,9 +196,6 @@ extern qboolean InFOV( vec3_t spot, vec3_t from, vec3_t fromAngles, int hFOV, in
 extern visibility_t NPC_CheckVisibility ( gentity_t *ent, int flags );
 extern qboolean InVisrange ( gentity_t *ent );
 
-//NPC_sounds
-//extern void NPC_AngerSound(void);
-
 //NPC_spawn
 extern void NPC_Spawn( gentity_t *self );
 

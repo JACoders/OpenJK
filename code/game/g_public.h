@@ -416,9 +416,6 @@ typedef struct {
 	// and parameters.  Return qfalse if the game doesn't recognize it as a command.
 	qboolean	(*ConsoleCommand)( void );
 
-	//void		(*PrintEntClassname)( int clientNum );
-	//int			(*ValidateAnimRange)( int startFrame, int endFrame, float animSpeed );
-
 	void		(*GameSpawnRMGEntity)(char *s);
 	//
 	// global variables shared between game and server

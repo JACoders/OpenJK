@@ -23,13 +23,6 @@ This file is part of Jedi Academy.
 #include "../client/snd_music.h"	// didn't want to put this in snd_local because of rebuild times etc.
 #include "server.h"
 
-/*
-Ghoul2 Insert Start
-*/
-/*#if !defined(TR_LOCAL_H)
-	#include "../renderer/tr_local.h"
-#endif*/
-
 #if !defined (MINIHEAP_H_INC)
 	#include "../qcommon/MiniHeap.h"
 #endif

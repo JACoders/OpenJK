@@ -23,7 +23,6 @@ This file is part of Jedi Academy.
 #include "b_local.h"
 #include "g_nav.h"
 
-//#define AMMO_POD_HEALTH				40
 #define AMMO_POD_HEALTH				1
 #define TURN_OFF					0x00000100
 

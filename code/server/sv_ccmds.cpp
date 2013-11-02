@@ -247,7 +247,6 @@ void SV_Player_EndOfLevelSave(void)
 
 // Restart the server on a different map
 //
-//extern void	SCR_PrecacheScreenshot();  //scr_scrn.cpp
 static void SV_MapTransition_f(void)
 {		
 	const char	*spawntarget;
@@ -276,7 +275,6 @@ Restart the server on a different map, but clears a cvar so that typing "map bla
 player weapons/ammo/etc from the previous level that you haven't really exited (ie ignores KEEP_PREV on spawn points)
 ==================
 */
-//void SCR_UnprecacheScreenshot();	//scr_scrn.cpp
 static void SV_Map_f( void ) 
 {
 	Cvar_Set( sCVARNAME_PLAYERSAVE, "");

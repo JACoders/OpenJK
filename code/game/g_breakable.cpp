@@ -25,7 +25,6 @@ This file is part of Jedi Academy.
 #include "../cgame/cg_media.h"
 
 //client side shortcut hacks from cg_local.h
-//extern void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shake_speed, qboolean smoke );
 extern void CG_MiscModelExplosion( vec3_t mins, vec3_t maxs, int size, material_t chunkType );
 extern void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins, const vec3_t maxs,
 							float speed, int numChunks, material_t chunkType, int customChunk, float baseScale, int customSound = 0 );

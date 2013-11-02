@@ -44,7 +44,6 @@ extern	cvar_t	*com_buildScript;
 
 extern void InitMover( gentity_t *ent );
 extern void MatchTeam( gentity_t *teamLeader, int moverState, int time );
-//extern void SetMoverState( gentity_t *ent, moverState_t moverState, int time );
 extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 extern char *G_GetLocationForEnt( gentity_t *ent );
 extern void NPC_BSSearchStart( int homeWp, bState_t bState );
@@ -53,7 +52,6 @@ extern qboolean SpotWouldTelefrag2( gentity_t *mover, vec3_t dest );
 extern cvar_t *g_sex;
 extern cvar_t *g_timescale;
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
-//extern void FX_BorgTeleport( vec3_t org );
 static void Q3_SetWeapon (int entID, const char *wp_name);
 static void Q3_SetItem (int entID, const char *item_name);
 extern void CG_ChangeWeapon( int num );
@@ -84,13 +82,6 @@ extern cvar_t	*g_skippingcin;
 extern qboolean	stop_icarus;
 
 #define stringIDExpand(str, strEnum)	{ str, strEnum }, ENUM2STRING(strEnum)
-//#define stringIDExpand(str, strEnum)	str,strEnum
-
-/*
-stringID_table_t tagsTable [] = 
-{
-}
-*/
 
 stringID_table_t BSTable[] =
 {
@@ -9402,7 +9393,6 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 	// Set a Saboteur to cloak (true) or un-cloak (false).
 	case SET_CLOAK:		// Created: 01/08/03 by AReis.
-//extern void Jedi_Cloak( gentity_t *self );
 extern void Saboteur_Cloak( gentity_t *self );
 		if( Q_stricmp("true", ((char *)data)) == 0 )
 		{

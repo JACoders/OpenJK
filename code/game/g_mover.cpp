@@ -557,7 +557,6 @@ G_RunMover
 
 ================
 */
-//void rebolt_turret( gentity_t *base );
 void G_RunMover( gentity_t *ent ) {
 	// if not a team captain, don't do anything, because
 	// the captain will handle everything

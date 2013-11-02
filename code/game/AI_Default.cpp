@@ -20,11 +20,6 @@ This file is part of Jedi Academy.
 
 #include "Q3_Interface.h"
 
-//#include "anims.h"
-//extern int PM_AnimLength( int index, animNumber_t anim );
-//extern qboolean PM_HasAnimation( gentity_t *ent, int animation );
-//extern int PM_AnimLength( int index, animNumber_t anim );
-//#define	MAX_IDLE_ANIMS	8
 extern int g_crosshairEntNum;
 
 /*

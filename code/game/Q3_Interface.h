@@ -653,11 +653,8 @@ public:
 	//DWORD	GetTimeScale(void );
 	int 	PlayIcarusSound( int taskID, int entID, const char *name, const char *channel );	
 	void	Lerp2Pos( int taskID, int entID, vec3_t origin, vec3_t angles, float duration );
-	//void	Lerp2Origin( int taskID, int entID, vec3_t origin, float duration );
 	void	Lerp2Angles( int taskID, int entID, vec3_t angles, float duration );
 	int		GetTag( int entID, const char *name, int lookup, vec3_t info );
-	//void	Lerp2Start( int taskID, int entID, float duration );
-	//void	Lerp2End( int taskID, int entID, float duration );
 	void	Set( int taskID, int entID, const char *type_name, const char *data );
 	void	Use( int entID, const char *name );
 	void	Activate( int entID, const char *name );

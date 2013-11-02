@@ -32,8 +32,6 @@ extern qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3
 extern qboolean FlyingCreature( gentity_t *ent );
 extern void Saboteur_Cloak( gentity_t *self );
 
-//extern	CNavigator	navigator;
-
 #define	SPF_NO_HIDE			2
 
 #define	MAX_VIEW_DIST		1024

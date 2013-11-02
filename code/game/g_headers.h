@@ -24,17 +24,9 @@ This file is part of Jedi Academy.
 	#include "../game/g_local.h"
 #endif
 
-//#if !defined(G_WRAITH_H_INC)
-//	#include "../game/g_Wraith.h"
-//#endif
-
 #if !defined(TEAMS_H_INC)
 	#include "../game/teams.h"
 #endif
-
-//#if !defined(IGINTERFACE_H_INC)
-//	#include "../game/IGInterface.h"
-//#endif
 
 // More stuff that we "need" on Xbox, as we don't use PCH
 #ifdef _NO_PCH // (mrw) not sure how to make cmake use PCH, so they can be deactivated

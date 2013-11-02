@@ -22,9 +22,6 @@ This file is part of Jedi Academy.
 
 //g_camera.cpp
 #include "g_local.h"
-//#include "Q3_Interface.h"
-//#include "anims.h"
-//#include "b_local.h"
 #include "../cgame/cg_camera.h"
 #include "g_functions.h"
 

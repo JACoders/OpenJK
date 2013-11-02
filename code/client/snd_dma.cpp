@@ -1093,12 +1093,6 @@ static qboolean S_CheckChannelStomp( int chan1, int chan2 )
 S_PickChannel
 =================
 */
-// there were 2 versions of this, one for A3D and one normal, but the normal one wouldn't compile because
-//	it hadn't been updated for some time, so rather than risk anything weird/out of date, I just removed the 
-//	A3D lines from this version and deleted the other one. 
-//
-// If this really bothers you then feel free to play with it. -Ste.
-//
 channel_t *S_PickChannel(int entnum, int entchannel)
 {
     int			ch_idx;

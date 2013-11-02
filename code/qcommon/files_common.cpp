@@ -170,14 +170,6 @@ or configs will never get loaded from disk!
 
 */
 
-// if this is defined, the executable positively won't work with any paks other
-// than the demo pak, even if productid is present.  This is only used for our
-// last demo release to prevent the mac and linux users from using the demo
-// executable with the production windows pak before the mac/linux products
-// hit the shelves a little later
-//#define	PRE_RELEASE_DEMO
-
-
 char		fs_gamedir[MAX_OSPATH];	// this will be a single file name with no separators
 cvar_t		*fs_debug;
 cvar_t		*fs_homepath;

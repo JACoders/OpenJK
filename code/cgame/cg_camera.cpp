@@ -560,7 +560,6 @@ void CG_CameraAutoAim( const char *name )
 CGCam_Track
 -------------------------
 */
-//void CGCam_Track( char *trackName, float speed, float duration )
 void CGCam_Track( const char *trackName, float speed, float initLerp )
 {
 	gentity_t	*trackEnt = NULL;

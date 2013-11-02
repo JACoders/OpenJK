@@ -1672,18 +1672,6 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 	pakfile = FS_BuildOSPath( path, dir, "" );
 	pakfile[ strlen(pakfile) - 1 ] = 0;	// strip the trailing slash
 
-#ifdef PRE_RELEASE_DEMO
-	pakfile = FS_BuildOSPath( path, dir, "asset0.pksp" );
-	if ( ( pak = FS_LoadZipFile( pakfile ) ) == 0 )
-		return;
-	if ( (pak->numfiles^ 0x84268436u) != (DEMO_PAK_MAXFILES^ 0x84268436u))	//don't let them use the full version, even if renamed!
-		return;
-	search = (searchpath_t*)Z_Malloc(sizeof(searchpath_t), TAG_FILESYS, qtrue );
-	search->pack = pak;
-	search->dir = 0;
-	search->next = fs_searchpaths;
-	fs_searchpaths = search;		
-#else
 	pakfiles = Sys_ListFiles( pakfile, ".pk3", NULL, &numfiles, qfalse );
 
 	// sort them so that later alphabetic matches override
@@ -1710,7 +1698,6 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 
 	// done
 	Sys_FreeFileList( pakfiles );
-#endif
 }
 
 

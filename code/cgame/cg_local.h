@@ -818,7 +818,6 @@ void CG_RegisterItemVisuals( int itemNum );
 void CG_RegisterItemSounds( int itemNum );
 
 void CG_FireWeapon( centity_t *cent, qboolean alt_fire );
-//void CG_ChargeWeapon( centity_t *cent );
 
 void CG_AddViewWeapon (playerState_t *ps);
 void CG_DrawWeaponSelect( void );
@@ -1032,7 +1031,6 @@ void	cgi_R_RenderScene( const refdef_t *fd );
 void	cgi_R_SetColor( const float *rgba );	// NULL = 1,1,1,1
 void	cgi_R_DrawStretchPic( float x, float y, float w, float h, 
 	float s1, float t1, float s2, float t2, qhandle_t hShader );
-//void	cgi_R_DrawScreenShot( float x, float y, float w, float h);
 
 void	cgi_R_ModelBounds( qhandle_t model, vec3_t mins, vec3_t maxs );
 void	cgi_R_LerpTag( orientation_t *tag, qhandle_t mod, int startFrame, int endFrame, 

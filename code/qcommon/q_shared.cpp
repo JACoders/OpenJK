@@ -292,7 +292,6 @@ PARSING
 
 static	char	com_token[MAX_TOKEN_CHARS];
 //JLFCALLOUT MPNOTUSED
-//#include functionality for files
 int parseDataCount = -1;
 const int MAX_PARSE_DATA = 5;
 parseData_t parseData[MAX_PARSE_DATA];

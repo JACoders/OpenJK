@@ -22,7 +22,6 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 #include "cg_lights.h"
@@ -1336,7 +1335,6 @@ CG_CalcFov
 Fixed fov at intermissions, otherwise account for fov variable and zooms.
 ====================
 */
-//extern float	g_fov;
 static qboolean	CG_CalcFov( void ) {
 	float	fov_x;
 	float	f;
@@ -1572,7 +1570,6 @@ static qboolean CG_CalcViewValues( void ) {
 	playerState_t	*ps;
 	qboolean		viewEntIsHumanoid = qfalse;
 	qboolean		viewEntIsCam = qfalse;
-	//extern vec3_t	cgRefdefVieworg;
 
 	memset( &cg.refdef, 0, sizeof( cg.refdef ) );
 
