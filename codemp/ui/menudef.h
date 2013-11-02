@@ -60,10 +60,8 @@
 #define LISTBOX_IMAGE 0x01
 
 // list feeders
-//#define FEEDER_HEADS						0x00			// model heads
 #define FEEDER_MAPS							0x01			// text maps based on game type
 #define FEEDER_SERVERS						0x02			// servers
-//#define FEEDER_CLANS						0x03			// clan names
 #define FEEDER_ALLMAPS						0x04			// all maps available, in graphic format
 #define FEEDER_REDTEAM_LIST					0x05			// red team members
 #define FEEDER_BLUETEAM_LIST				0x06			// blue team members

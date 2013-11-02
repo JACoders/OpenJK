@@ -29,8 +29,6 @@ struct model_s;
 #define G2T_CG_TIME (1)
 #define NUM_G2T_TIME (2)
 
-//void		G2API_SetTime(int currentTime,int clock);
-//int		G2API_GetTime(int argTime); // this may or may not return arg depending on ghoul2_time cvar
 //rww - RAGDOLL_END
 
 //===================================================================

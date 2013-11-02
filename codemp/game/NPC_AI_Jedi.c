@@ -16,7 +16,6 @@ extern void ForceJump( gentity_t *self, usercmd_t *ucmd );
 #define	JEDI_MAX_LIGHT_THRESHOLD 50
 
 #define	DISTANCE_SCALE		0.25f
-//#define	DISTANCE_THRESHOLD	0.075f
 #define	SPEED_SCALE			0.25f
 #define	FOV_SCALE			0.5f
 #define	LIGHT_SCALE			0.25f
@@ -48,7 +47,6 @@ extern qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePowe
 extern void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower );
 extern void WP_DeactivateSaber( gentity_t *self, qboolean clearLength ); //clearLength = qfalse
 extern void WP_ActivateSaber( gentity_t *self );
-//extern void WP_SaberBlock(gentity_t *saber, vec3_t hitloc);
 
 extern qboolean PM_SaberInStart( int move );
 extern qboolean BG_SaberInSpecialAttack( int anim );
@@ -415,7 +413,6 @@ void Boba_FireFlameThrower( gentity_t *self )
 	}
 }
 
-//extern void SP_fx_explosion_trail( gentity_t *ent );
 void Boba_StartFlameThrower( gentity_t *self )
 {
 	int	flameTime = 4000;//Q_irand( 1000, 3000 );

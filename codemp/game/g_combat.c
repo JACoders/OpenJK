@@ -2,7 +2,6 @@
 //
 // g_combat.c
 
-//#include "g_local.h"
 #include "b_local.h"
 #include "bg_saga.h"
 

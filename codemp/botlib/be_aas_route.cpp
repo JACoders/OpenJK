@@ -916,9 +916,6 @@ typedef struct routecacheheader_s
 #define RCID						(('C'<<24)+('R'<<16)+('E'<<8)+'M')
 #define RCVERSION					2
 
-//void AAS_DecompressVis(byte *in, int numareas, byte *decompressed);
-//int AAS_CompressVis(byte *vis, int numareas, byte *dest);
-
 void AAS_WriteRouteCache(void)
 {
 	int i, j, numportalcache, numareacache, totalsize;

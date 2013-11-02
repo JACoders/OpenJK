@@ -2486,8 +2486,6 @@ int SavePathData(const char *filename)
 	return 1;
 }
 
-//#define PAINFULLY_DEBUGGING_THROUGH_VM
-
 #define MAX_SPAWNPOINT_ARRAY 64
 int gSpawnPointNum = 0;
 gentity_t *gSpawnPoints[MAX_SPAWNPOINT_ARRAY];
@@ -3015,9 +3013,6 @@ qboolean G_BackwardAttachment(int start, int finalDestination, int insertAfter)
 		}
 		else
 		{
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-			Com_Printf("WAYPOINTS FULL\n");
-#endif
 			return qfalse;
 		}
 
@@ -3109,10 +3104,6 @@ void G_RMGPathing(void)
 		placeY += gridSpacing;
 	}
 
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("NODE GRID PLACED ON TERRAIN\n");
-#endif
-
 	G_NodeClearForNext();
 
 	//The grid has been placed down, now use it to connect the points in the level.
@@ -3126,10 +3117,6 @@ void G_RMGPathing(void)
 
 		nearestIndex = G_NearestNodeToPoint(gSpawnPoints[i]->s.origin);
 		nearestIndexForNext = G_NearestNodeToPoint(gSpawnPoints[i+1]->s.origin);
-
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-		Com_Printf("%i GOT %i INDEX WITH %i INDEX FOR NEXT\n", nearestIndex, nearestIndexForNext);
-#endif
 
 		if (nearestIndex == -1 || nearestIndexForNext == -1)
 		{ //Looks like there is no grid data near one of the points. Ideally, this will never happen.
@@ -3152,15 +3139,8 @@ void G_RMGPathing(void)
 		{ //failed to branch to where we want. Oh well, try it without trace checks.
 			G_NodeClearForNext();
 
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-			Com_Printf("FAILED RECURSIVE WITH TRACES\n");
-#endif
-
 			if (G_RecursiveConnection(nearestIndex, nearestIndexForNext, 0, qfalse, terrain->r.absmin[2]) != nearestIndexForNext)
 			{ //still failed somehow. Just disregard this point.
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-				Com_Printf("FAILED RECURSIVE -WITHOUT- TRACES (?!?!)\n");
-#endif
 				G_NodeClearForNext();
 				i++;
 				continue;
@@ -3187,15 +3167,9 @@ void G_RMGPathing(void)
 				}
 			}
 
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-			Com_Printf("BACKWARD ATTACHMENT %i SUCCESS\n", i);
-#endif
 		}
 		else
 		{
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-			Com_Printf("BACKWARD ATTACHMENT FAILED\n");
-#endif
 			break;
 		}
 
@@ -3207,17 +3181,7 @@ void G_RMGPathing(void)
 		i++;
 	}
 
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("FINISHED RMG AUTOPATH\n");
-#endif
-
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("BEGINNING PATH REPAIR...\n");
-#endif
 	RepairPaths(qtrue); //this has different behaviour for RMG and will just flag all points one way that don't trace to each other.
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("FINISHED PATH REPAIR.\n");
-#endif
 
 #ifdef PATH_TIME_DEBUG
 	endTime = trap->Milliseconds();
@@ -3268,30 +3232,15 @@ void BeginAutoPathRoutine(void)
 	}
 
 	G_RMGPathing();
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("LINKING PATHS...\n");
-#endif
 	
 	//rww - Using a faster in-engine version because we're having to wait for this stuff to get done as opposed to just saving it once.
 	trap->BotUpdateWaypoints(gWPNum, gWPArray);
 	trap->BotCalculatePaths(RMG.integer);
 	//CalculatePaths(); //make everything nice and connected
 
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("FINISHED LINKING PATHS.\n");
-#endif
 
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("FLAGGING OBJECTS...\n");
-#endif
 	FlagObjects(); //currently only used for flagging waypoints nearest CTF flags
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("FINISHED FLAGGING OBJECTS.\n");
-#endif
 
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("CALCULATING WAYPOINT DISTANCES...\n");
-#endif
 	i = 0;
 
 	while (i < gWPNum-1)
@@ -3300,24 +3249,8 @@ void BeginAutoPathRoutine(void)
 		gWPArray[i]->disttonext = VectorLength(v);
 		i++;
 	}
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("FINISHED CALCULATING.\n");
-#endif
 
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("FINAL STEP...\n");
-#endif
 	RemoveWP(); //remove the dummy point at the end of the trail
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("COMPLETE.\n");
-#endif
-
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	if (gWPNum >= 4096-1)
-	{
-		Com_Printf("%i waypoints say that YOU ARE A TERRIBLE MAN.\n", gWPNum);
-	}
-#endif
 }
 
 extern vmCvar_t bot_normgpath;
@@ -3390,10 +3323,6 @@ void LoadPath_ThisLevel(void)
 
 		i++;
 	}
-
-#ifdef PAINFULLY_DEBUGGING_THROUGH_VM
-	Com_Printf("BOT PATHING IS COMPLETE.\n");
-#endif
 }
 
 gentity_t *GetClosestSpawn(gentity_t *ent)

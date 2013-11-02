@@ -438,7 +438,6 @@ qboolean AI_ValidateGroupMember( AIGroupInfo_t *group, gentity_t *member )
 AI_GetGroup
 -------------------------
 */
-//#define MAX_WAITERS	128
 void AI_GetGroup( gentity_t *self )
 {
 	int	i;

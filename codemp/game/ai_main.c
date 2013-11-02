@@ -37,8 +37,6 @@
 #define BOT_CTF_DEBUG	1
 */
 
-//#define MAX_PATH		144
-
 #define BOT_THINK_TIME	0
 
 //bot states

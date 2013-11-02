@@ -3125,12 +3125,10 @@ void CG_DrawDuelistHealth ( float x, float y, float w, float h, int duelist )
 CG_DrawRadar
 =====================
 */
-//#define RADAR_RANGE				2500
 float	cg_radarRange = 2500.0f;
 
 #define RADAR_RADIUS			60
 #define RADAR_X					(580 - RADAR_RADIUS)
-//#define RADAR_Y					10 //dynamic based on passed Y val
 #define RADAR_CHAT_DURATION		6000
 static int radarLockSoundDebounceTime = 0;
 static int impactSoundDebounceTime = 0;

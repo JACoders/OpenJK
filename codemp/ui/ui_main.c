@@ -5456,9 +5456,7 @@ static void UI_GetSaberCvars ( void )
 	trap->Cvar_Set ( "ui_saber2_color", UI_Cvar_VariableString ( "g_saber2_color" ) );
 }
 
-//extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName );
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
-//extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
 
 void UI_UpdateCharacterSkin( void )
 {
@@ -5555,8 +5553,6 @@ static void UI_ResetCharacterListBoxes( void )
 		}
 	}
 }
-
-//#define MAX_SABER_HILTS	64
 
 const char *saberSingleHiltInfo [MAX_SABER_HILTS];
 const char *saberStaffHiltInfo [MAX_SABER_HILTS];
