@@ -214,8 +214,8 @@ typedef struct clientConnection_s {
 	int			timeDemoStart;		// cls.realtime before first frame
 	int			timeDemoBaseTime;	// each frame will be at this time + frameNum * 50
 
-	float		aviDemoRemain;		// Used for accurate fps recording
-	float		aviSoundRemain;		// Used for accurate fps recording
+	float		aviVideoFrameRemainder;
+	float		aviSoundFrameRemainder;
 
 	// big stuff at end of structure so most offsets are 15 bits or less
 	netchan_t	netchan;
