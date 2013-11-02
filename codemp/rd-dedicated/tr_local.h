@@ -1347,13 +1347,11 @@ void		RE_RegisterMedia_LevelLoadBegin(const char *psMapName, ForceReload_e eForc
 void		RE_RegisterMedia_LevelLoadEnd(void);
 int			RE_RegisterMedia_GetLevel(void);
 //
-//void		RE_RegisterModels_LevelLoadBegin(const char *psMapName);
 qboolean	RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel = qfalse);
 void*		RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const char *psModelFileName, qboolean *pqbAlreadyFound, memtag_t eTag);
 void		RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke);
 void		RE_RegisterModels_Info_f(void);
 //
-//void		RE_RegisterImages_LevelLoadBegin(const char *psMapName);
 qboolean	RE_RegisterImages_LevelLoadEnd(void);
 void		RE_RegisterImages_Info_f(void);
 

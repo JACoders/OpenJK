@@ -27,8 +27,6 @@ extern CMiniHeap *G2VertSpaceClient;
 #include "snd_ambient.h"
 #include "qcommon/timing.h"
 
-//extern int contentOverride;
-
 /*
 Ghoul2 Insert End
 */

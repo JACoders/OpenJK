@@ -878,10 +878,6 @@ static void SV_InitRef( void ) {
 
 	ret = GetRefAPI( REF_API_VERSION, &ri );
 
-#if defined __USEA3D && defined __A3D_GEOM
-	hA3Dg_ExportRenderGeom (ret);
-#endif
-
 //	Com_Printf( "-------------------------------\n");
 
 	if ( !ret ) {

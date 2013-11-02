@@ -33,8 +33,6 @@ void SHOWNET( msg_t *msg, char *s) {
 	}
 }
 
-//void CL_SP_Print(const word ID, byte *Data); //, char* color)
-
 /*
 =========================================================================
 

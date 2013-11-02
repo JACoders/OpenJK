@@ -169,7 +169,6 @@ void Wampa_Move( qboolean visible )
 }
 
 //---------------------------------------------------------
-//extern void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t pushDir, float strength, qboolean breakSaberLock );
 extern void G_Knockdown( gentity_t *victim );
 extern void G_Dismember( gentity_t *ent, gentity_t *enemy, vec3_t point, int limbType, float limbRollBase, float limbPitchBase, int deathAnim, qboolean postDeath );
 extern int NPC_GetEntsNearBolt( int *radiusEnts, float radius, int boltIndex, vec3_t boltOrg );
@@ -429,7 +428,6 @@ void Wampa_Combat( void )
 NPC_Wampa_Pain
 -------------------------
 */
-//void NPC_Wampa_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
 void NPC_Wampa_Pain( gentity_t *self, gentity_t *attacker, int damage ) 
 {
 	qboolean hitByWampa = qfalse;

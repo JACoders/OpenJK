@@ -6,7 +6,6 @@
 
 //Node flags
 #define	NF_ANY			0
-//#define	NF_CLEAR_LOS	0x00000001
 #define NF_CLEAR_PATH	0x00000002
 #define NF_RECALC		0x00000004
 
@@ -232,7 +231,6 @@ protected:
 	float	GetFloat( fileHandle_t file );
 	long	GetLong( fileHandle_t file );
 
-	//void	ConnectNodes( void );
 	void	SetEdgeCost( int ID1, int ID2, int cost );
 	int		GetEdgeCost( CNode *first, CNode *second );
 	void	AddNodeEdges( CNode *node, int addDist, edge_l &edgeList, bool *checkedNodes );

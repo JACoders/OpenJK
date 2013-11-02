@@ -121,10 +121,6 @@ int serverStatusCount;
 
 CMiniHeap *G2VertSpaceClient = 0;
 
-#if defined __USEA3D && defined __A3D_GEOM
-	void hA3Dg_ExportRenderGeom (refexport_t *incoming_re);
-#endif
-
 extern void SV_BotFrame( int time );
 void CL_CheckForResend( void );
 void CL_ShowIP_f(void);
@@ -2485,10 +2481,6 @@ void CL_InitRef( void ) {
 	G2VertSpaceServer = &CMiniHeap_singleton;
 
 	ret = GetRefAPI( REF_API_VERSION, &ri );
-
-#if defined __USEA3D && defined __A3D_GEOM
-	hA3Dg_ExportRenderGeom (ret);
-#endif
 
 //	Com_Printf( "-------------------------------\n");
 

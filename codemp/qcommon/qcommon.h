@@ -207,7 +207,6 @@ PROTOCOL
 
 #define	PORT_MASTER			29060
 #define	PORT_UPDATE			29061
-//#define	PORT_AUTHORIZE		29062
 #define	PORT_SERVER			29070	//...+9 more for multiple servers
 #define	NUM_SERVER_PORTS	4		// broadcast scan this many ports after PORT_SERVER so a single machine can run multiple servers
 

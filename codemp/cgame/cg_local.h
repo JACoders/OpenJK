@@ -171,7 +171,7 @@ typedef struct playerEntity_s {
 #define	MAX_CUSTOM_COMBAT_SOUNDS	40
 #define	MAX_CUSTOM_EXTRA_SOUNDS	40
 #define	MAX_CUSTOM_JEDI_SOUNDS	40
-//#define MAX_CUSTOM_SIEGE_SOUNDS..defined in bg_public.h
+// MAX_CUSTOM_SIEGE_SOUNDS defined in bg_public.h
 #define MAX_CUSTOM_DUEL_SOUNDS	40
 
 #define	MAX_CUSTOM_SOUNDS	40 //rww - Note that for now these must all be the same, because of the way I am

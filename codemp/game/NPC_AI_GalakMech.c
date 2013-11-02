@@ -12,8 +12,6 @@ extern void G_SoundOnEnt (gentity_t *ent, soundChannel_t channel, const char *so
 
 extern qboolean BG_CrouchAnim( int anim );
 
-//extern void NPC_Mark1_Part_Explode(gentity_t *self,int bolt);
-
 #define MELEE_DIST_SQUARED 6400//80*80
 #define MIN_LOB_DIST_SQUARED 65536//256*256
 #define MAX_LOB_DIST_SQUARED 200704//448*448

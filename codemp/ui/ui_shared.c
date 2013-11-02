@@ -1607,7 +1607,6 @@ qboolean Script_Close(itemDef_t *item, char **args)
 	return qtrue;
 }
 
-//void Menu_TransitionItemByName(menuDef_t *menu, const char *p, rectDef_t rectFrom, rectDef_t rectTo, int time, float amt) 
 void Menu_TransitionItemByName(menuDef_t *menu, const char *p, const rectDef_t *rectFrom, const rectDef_t *rectTo, int time, float amt) 
 {
 	itemDef_t *item;
@@ -8508,10 +8507,6 @@ qboolean ItemParse_isSaber( itemDef_t *item, int handle  )
 #endif
 	return qfalse;
 }
-
-//extern void UI_SaberLoadParms( void );
-//extern qboolean ui_saber_parms_parsed;
-//extern void UI_CacheSaberGlowGraphics( void );
 
 qboolean ItemParse_isSaber2( itemDef_t *item, int handle  )
 {
