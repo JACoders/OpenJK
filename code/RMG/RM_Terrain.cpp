@@ -23,8 +23,6 @@ This file is part of Jedi Academy.
 #include "../renderer/tr_types.h"
 #include "RM_Headers.h"
 
-//#include "../qcommon/q_imath.h"
-
 #ifdef _MSC_VER
 #pragma optimize("", off)
 

@@ -31,7 +31,6 @@ int PC_ReadTokenHandle(int handle, struct pc_token_s *pc_token);
 intptr_t CL_UISystemCalls( intptr_t *args );
 
 //prototypes
-//extern qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress );
 extern int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *sMapName);
 extern qboolean SG_GameAllowedToSaveHere(qboolean inCamera);
 extern void SG_StoreSaveGameComment(const char *sComment);

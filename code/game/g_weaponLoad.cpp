@@ -122,8 +122,6 @@ void WPN_FireTime (const char **holdBuf);
 void WPN_FiringSnd (const char **holdBuf);
 void WPN_AltFiringSnd(const char **holdBuf );
 void WPN_StopSnd( const char **holdBuf );
-//void WPN_FlashSnd (char **holdBuf);
-//void WPN_AltFlashSnd (char **holdBuf);
 void WPN_ChargeSnd (const char **holdBuf);
 void WPN_AltChargeSnd (const char **holdBuf);
 void WPN_SelectSnd (const char **holdBuf);

@@ -357,7 +357,6 @@ static int MoveTypeNameToEnum( const char *name )
 extern void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri);
 extern void CG_RegisterClientModels (int entityNum);
 extern void CG_RegisterNPCCustomSounds( clientInfo_t *ci );
-//extern void CG_RegisterNPCEffects( team_t team );
 
 //#define CONVENIENT_ANIMATION_FILE_DEBUG_THING
 

@@ -874,9 +874,6 @@ qboolean Sys_CopyFile(const char *lpExistingFileName, const char *lpNewFileName,
 
 
 byte*	SCR_GetScreenshot(qboolean *qValid);
-//void	SCR_SetScreenshot(const byte *pbData, int w, int h);
-//byte*	SCR_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, int *piHeight, byte *pbReSampleBuffer, qboolean qbVertFlip);
-//void	SCR_TempRawImage_CleanUp();
 
 inline int Round(float value)
 {

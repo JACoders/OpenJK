@@ -34,7 +34,6 @@ This file is part of Jedi Academy.
 
 extern vec3_t playerMins;
 extern vec3_t playerMaxs;
-//extern void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,int type,int anim,int priority,int *torsoAnimTimer,int *legsAnimTimer,gentity_t *gent);
 extern void PM_SetTorsoAnimTimer( gentity_t *ent, int *torsoAnimTimer, int time );
 extern void PM_SetLegsAnimTimer( gentity_t *ent, int *legsAnimTimer, int time );
 extern void NPC_BSNoClip ( void );

@@ -418,9 +418,6 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
 //
 // g_weapon.c
 //
-//void CalcMuzzlePoint ( gentity_t *ent, vec3_t forward, vec3_t right, vec3_t up, vec3_t muzzlePoint );
-//void SnapVectorTowards( vec3_t v, vec3_t to );
-//qboolean CheckGauntletAttack( gentity_t *ent );
 void WP_LoadWeaponParms (void);
 
 void IT_LoadItemParms( void );

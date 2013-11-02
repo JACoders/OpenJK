@@ -19,7 +19,6 @@ This file is part of Jedi Academy.
 // this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
-//#include "cg_local.h"
 
 // this file is only included when building a dll
 
@@ -340,10 +339,6 @@ void	cgi_R_DrawStretchPic( float x, float y, float w, float h,
 							   float s1, float t1, float s2, float t2, qhandle_t hShader ) {
 	Q_syscall( CG_R_DRAWSTRETCHPIC, PASSFLOAT(x), PASSFLOAT(y), PASSFLOAT(w), PASSFLOAT(h), PASSFLOAT(s1), PASSFLOAT(t1), PASSFLOAT(s2), PASSFLOAT(t2), hShader );
 }
-
-//void	cgi_R_DrawScreenShot( float x, float y, float w, float h){
-//	Q_syscall( CG_R_DRAWSCREENSHOT, PASSFLOAT(x), PASSFLOAT(y), PASSFLOAT(w), PASSFLOAT(h) );
-//}
 
 void	cgi_R_ModelBounds( qhandle_t model, vec3_t mins, vec3_t maxs ) {
 	Q_syscall( CG_R_MODELBOUNDS, model, mins, maxs );

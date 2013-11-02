@@ -449,12 +449,6 @@ enum
 	VEH_ARMORGONE = 0x00004000
 };
 //externed functions
-//extern void G_DriveVehicle( gentity_t *ent, gentity_t *vehEnt, char *vehicleName );
-/*extern void G_VehicleStartExplosionDelay( gentity_t *self );
-extern void VehicleExplosionDelay( gentity_t *self );
-extern void G_VehicleRegisterAssets( int vehicleIndex );
-extern void G_DriveATST( gentity_t *ent, gentity_t *atst );
-extern void G_VehicleInitialize( gentity_t *vehEnt );*/
 extern void G_VehicleSpawn( gentity_t *self );
 
 // A vehicle weapon muzzle.

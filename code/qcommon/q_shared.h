@@ -447,8 +447,7 @@ typedef enum {
 } errorParm_t;
 
 // font rendering values used by ui and cgame
-#define PROP_GAP_WIDTH			2
-//#define PROP_GAP_WIDTH			3
+#define PROP_GAP_WIDTH			2 // 3
 #define PROP_SPACE_WIDTH		4
 #define PROP_HEIGHT				16
 

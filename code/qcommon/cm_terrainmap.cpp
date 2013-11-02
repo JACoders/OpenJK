@@ -22,8 +22,6 @@ This file is part of Jedi Academy.
 #include "cm_patch.h"
 #include "cm_landscape.h"
 #include "../game/genericparser2.h"
-//#include "image.h"
-//#include "../qcommon/q_imath.h"
 #include "cm_terrainmap.h"
 #include "cm_draw.h"
 

@@ -341,7 +341,6 @@ ExplodeDeath
 
 //FIXME: all hacked up...
 
-//void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shake_speed, qboolean smoke );
 void ExplodeDeath( gentity_t *self ) 
 {
 //	gentity_t	*tent;
@@ -2389,11 +2388,7 @@ qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, 
 	// dismemberment -- FIXME: should have a check for how long npc has been dead so people can't
 	// continue to dismember a dead body long after it's been dead
 	//NOTE that you can only cut one thing off unless the debug_subdivisions is on
-#ifdef GERMAN_CENSORED
-	if ( 0 ) //germany == censorship
-#else
-	if ( /*!g_iscensored->integer &&*/ ( g_dismemberment->integer || g_saberRealisticCombat->integer > 1 ) && mod == MOD_SABER )//only lightsaber
-#endif
+	if ( ( g_dismemberment->integer || g_saberRealisticCombat->integer > 1 ) && mod == MOD_SABER )//only lightsaber
 	{//FIXME: don't do strcmps here
 		if ( G_StandardHumanoid( self ) 
 			&& (force||g_dismemberProbabilities->value>0.0f||G_Dismemberable2( self, hitLoc )) )

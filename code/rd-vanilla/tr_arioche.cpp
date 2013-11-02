@@ -26,7 +26,6 @@ This file is part of Jedi Academy.
 // Remap sky to contents of the cvar ar_sky
 // Grab sunlight properties from the indirected sky
 
-//void R_RemapShader(const char *shaderName, const char *newShaderName, const char *timeOffset);
 void R_ColorShiftLightingBytes( byte in[4], byte out[4] );
 
 void NormalToLatLong( const vec3_t normal, byte bytes[2] )

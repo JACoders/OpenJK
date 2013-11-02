@@ -30,9 +30,4 @@ This file is part of Jedi Academy.
 #include "../game/b_local.h"
 #endif
 
-//#include "CGEntity.h"
-//#include "../game/SpawnSystem.h"
-//#include "../game/EntitySystem.h"
-//#include "../game/CScheduleSystem.h"
-
 // end

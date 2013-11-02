@@ -35,8 +35,6 @@ This file is part of Jedi Academy.
 #endif
 #endif
 
-//#include "disablewarnings.h"
-
 #ifdef _JK2EXE
 #define trap_Z_Malloc(x, y)		Z_Malloc(x,y,qtrue)
 #define trap_Z_Free(x)			Z_Free(x)

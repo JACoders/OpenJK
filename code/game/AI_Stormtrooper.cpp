@@ -42,7 +42,6 @@ extern qboolean FlyingCreature( gentity_t *ent );
 extern void NPC_EvasionSaber( void );
 extern qboolean RT_Flying( gentity_t *self );
 
-//extern	CNavigator	navigator;
 extern	cvar_t		*d_asynchronousGroupAI;
 
 #define	MAX_VIEW_DIST		1024

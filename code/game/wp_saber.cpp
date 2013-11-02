@@ -2068,7 +2068,6 @@ qboolean WP_SabersIntersection( gentity_t *ent1, gentity_t *ent2, vec3_t interse
 const char *hit_blood_sparks = "sparks/blood_sparks2"; // could have changed this effect directly, but this is just safer in case anyone anywhere else is using the old one for something?
 const char *hit_sparks = "saber/saber_cut";
 
-//extern char *hitLocName[];
 qboolean WP_SaberDamageEffects( trace_t *tr, const vec3_t start, float length, float dmg, vec3_t dmgDir, vec3_t bladeVec, int enemyTeam, saberType_t saberType, saberInfo_t *saber, int bladeNum )
 {
 

@@ -30,7 +30,6 @@ This file is part of Jedi Academy.
 
 #include "RM_Headers.h"
 
-//#include "RM_instance_npc.h"
 #include "RM_Instance_BSP.h"
 #include "RM_Instance_Random.h"
 #include "RM_Instance_Group.h"

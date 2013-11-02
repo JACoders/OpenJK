@@ -144,7 +144,6 @@ void CGCam_SetAngles( vec3_t ang );
 void CGCam_SetFOV( float FOV );
 
 void CGCam_Zoom( float FOV, float duration );
-//void CGCam_Pan( vec3_t	dest, float duration );
 void CGCam_Pan( vec3_t dest, vec3_t panDirection, float duration );
 void CGCam_Move( vec3_t dest, float duration );
 void CGCam_Fade( vec4_t source, vec4_t dest, float duration );

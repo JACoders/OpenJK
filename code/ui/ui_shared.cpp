@@ -240,11 +240,6 @@ void PC_SourceError(int handle, char *format, ...)
 PC_ParseStringMem
 =================
 */
-//static vector<string> RetryPool;
-//void AddMenuPackageRetryKey(const char *psSPPackage)
-//{
-//	RetryPool.push_back(psSPPackage);
-//}
 qboolean PC_ParseStringMem(const char **out) 
 {
 	const char *temp;

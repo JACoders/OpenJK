@@ -884,12 +884,6 @@ void RE_RegisterImages_Info_f( void )
 	VID_Printf( PRINT_DEVELOPER, "RE_RegisterMedia_GetLevel(): %d",RE_RegisterMedia_GetLevel());
 }
 
-
-// implement this if you need to, do a find for the caller. I don't need it though, so far.
-//
-//void		RE_RegisterImages_LevelLoadBegin(const char *psMapName);
-
-
 // currently, this just goes through all the images and dumps any not referenced on this level...
 //
 qboolean RE_RegisterImages_LevelLoadEnd(void)

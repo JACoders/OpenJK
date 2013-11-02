@@ -20,7 +20,6 @@ This file is part of Jedi Academy.
 #include "cg_headers.h"
 
 #define	CG_PLAYERS_CPP
-//#include "cg_local.h"
 #include "cg_media.h"
 #include "FxScheduler.h"
 #include "../game/ghoul2_shared.h"

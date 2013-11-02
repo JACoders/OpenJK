@@ -17,7 +17,6 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 // this include must remain at the top of every CPP file
-//#include "../game/q_math.h"
 #include "tr_local.h"
 
 // tr_QuickSprite.h: interface for the CQuickSprite class.

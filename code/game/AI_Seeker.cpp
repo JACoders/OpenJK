@@ -58,7 +58,7 @@ void NPC_Seeker_Precache(void)
 void NPC_Seeker_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
 {
 	if ( !(self->svFlags & SVF_CUSTOM_GRAVITY ))
-	{//void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod, int hitLoc=HL_NONE );
+	{
 		G_Damage( self, NULL, NULL, vec3_origin, (float*)vec3_origin, 999, 0, MOD_FALLING );
 	}
 

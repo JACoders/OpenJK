@@ -90,7 +90,6 @@ char	com_errorMessage[MAXPRINTMSG] = {0};
 
 void Com_WriteConfig_f( void );
 //JLF
-//void G_DemoFrame();
 
 //============================================================================
 
@@ -248,7 +247,6 @@ do the apropriate things.
 
 void SG_WipeSavegame(const char *name);	// pretty sucky, but that's how SoF did it...<g>
 void SG_Shutdown();
-//void SCR_UnprecacheScreenshot();
 
 void QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;

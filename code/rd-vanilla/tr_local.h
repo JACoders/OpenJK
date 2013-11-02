@@ -1258,7 +1258,6 @@ void R_AddDrawSurf( const surfaceType_t *surface, const shader_t *shader, int fo
 void R_LocalNormalToWorld (const vec3_t local, vec3_t world);
 void R_LocalPointToWorld (const vec3_t local, vec3_t world);
 void R_WorldNormalToEntity (const vec3_t localVec, vec3_t world); 
-//void R_WorldPointToEntity (const vec3_t localVec, vec3_t world);
 int R_CullLocalBox (const vec3_t bounds[2]);
 int R_CullPointAndRadius( const vec3_t pt, float radius );
 int R_CullLocalPointAndRadius( const vec3_t pt, float radius );
@@ -1331,13 +1330,10 @@ void		RE_Shutdown( qboolean destroyWindow );
 void		RE_RegisterMedia_LevelLoadBegin(const char *psMapName, ForceReload_e eForceReload, qboolean bAllowScreenDissolve);
 void		RE_RegisterMedia_LevelLoadEnd(void);
 int			RE_RegisterMedia_GetLevel(void);
-//
-//void		RE_RegisterModels_LevelLoadBegin(const char *psMapName);
 qboolean	RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel = qfalse );
 void*		RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const char *psModelFileName, qboolean *pqbAlreadyFound, memtag_t eTag);
 void		RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, const int *piShaderIndexPoke);
 void		RE_RegisterModels_Info_f(void);
-//void		RE_RegisterImages_LevelLoadBegin(const char *psMapName);
 qboolean	RE_RegisterImages_LevelLoadEnd(void);
 void		RE_RegisterImages_Info_f(void);
 

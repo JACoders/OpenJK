@@ -25,7 +25,6 @@ This file is part of Jedi Academy.
 
 
 #include "tr_local.h"
-//#include "assert.h"
 
 #define MAX_VERTS_ON_POLY		64
 

@@ -33,7 +33,6 @@ This file is part of Jedi Academy.
 #define	MAX_RADIUS_ENTS		128
 #define	DEFAULT_RADIUS		45
 
-//extern	CNavigator	navigator;
 extern cvar_t		*d_noGroupAI;
 qboolean AI_ValidateGroupMember( AIGroupInfo_t *group, gentity_t *member );
 
@@ -429,7 +428,6 @@ qboolean AI_ValidateGroupMember( AIGroupInfo_t *group, gentity_t *member )
 AI_GetGroup
 -------------------------
 */
-//#define MAX_WAITERS	128
 void AI_GetGroup( gentity_t *self )
 {
 	int	i;
