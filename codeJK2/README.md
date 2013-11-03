@@ -1,5 +1,4 @@
 # OpenJK "Jedi Outcast" Singleplayer Code #
 
-_BROKEN_
-
-This folder is not meant to be compiled as a full jk2 source, only the mod code with CMake when it is functioning as an extended dll to openjk SP as JK2 mode.
+This folder contains the source to build the JK2 shared library capable of running JK2 game. 
+This cannot be build an a standalone executable, and requires OpenJK proper to function.
