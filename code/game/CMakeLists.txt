@@ -5,6 +5,7 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
+set(SPGameDefines ${SharedDefines})
 set(SPGameIncludeDirectories "${SPDir}/game")
 if(WIN32)
 	set(SPGameLibraries "winmm")
