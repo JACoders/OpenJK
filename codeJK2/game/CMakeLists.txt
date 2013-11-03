@@ -155,8 +155,6 @@ set(JK2SPGameCGameFiles
 	"${JK2SPDir}/cgame/FX_Flechette.cpp"
 	"${JK2SPDir}/cgame/FX_HeavyRepeater.cpp"
 	"${JK2SPDir}/cgame/FX_RocketLauncher.cpp"
-	"${JK2SPDir}/cgame/FxParsing.cpp"
-	"${JK2SPDir}/cgame/FxParsing.h"
 	"${JK2SPDir}/cgame/FxPrimitives.cpp"
 	"${JK2SPDir}/cgame/FxPrimitives.h"
 	"${JK2SPDir}/cgame/FxScheduler.cpp"
