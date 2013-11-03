@@ -21,6 +21,7 @@ First, install Jedi Academy. If you don't already own the game you can buy it fr
 
 * eezstreet
 * Ensiform
+* ImperatorPrime
 * mrwonko
 * Raz0r
 * redsaurus
