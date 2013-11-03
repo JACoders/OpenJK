@@ -17,11 +17,11 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 //wp_saberLoad.cpp
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
 
 #include "../qcommon/q_shared.h"
+#include "g_local.h"
 #include "wp_saber.h"
+#include "../cgame/cg_local.h"
 
 extern qboolean G_ParseLiteral( const char **data, const char *string );
 extern saber_colors_t TranslateSaberColor( const char *name );

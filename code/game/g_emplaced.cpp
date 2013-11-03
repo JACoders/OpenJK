@@ -16,15 +16,13 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
 #include "g_local.h"
 #include "g_functions.h"
 #include "anims.h"
 #include "wp_saber.h"
+#include "../cgame/cg_local.h"
+#include "b_local.h"
+#include "g_navigator.h"
 
 extern Vehicle_t *G_IsRidingVehicle( gentity_t *pEnt );
 

@@ -21,11 +21,6 @@ This file is part of Jedi Academy.
 // for use with NPCs who's logic has been overriden from the original
 // AI code, and who's code resides in files with the AI_ prefix.
 
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
-
-
-
 #include "b_local.h"
 #include "g_nav.h"
 #include "g_navigator.h"

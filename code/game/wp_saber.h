@@ -19,6 +19,8 @@ This file is part of Jedi Academy.
 #ifndef __WP_SABER_H
 #define __WP_SABER_H
 
+#include "b_public.h"
+
 #define ARMOR_EFFECT_TIME	500
 
 #define JSF_AMBUSH		16	//ambusher Jedi

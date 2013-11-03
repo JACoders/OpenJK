@@ -16,13 +16,12 @@ This file is part of OpenJK.
 */
 // Copyright 2013 OpenJK
 
-#include "g_headers.h"
-
 #include "g_local.h"
 #include "b_local.h"
 #include "g_functions.h"
 #include "wp_saber.h"
 #include "w_local.h"
+#include "../cgame/cg_local.h"
 
 static void WP_FireConcussionAlt( gentity_t *ent )
 {//a rail-gun-like beam

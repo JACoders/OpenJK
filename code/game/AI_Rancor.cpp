@@ -15,12 +15,12 @@ This file is part of Jedi Academy.
     along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Copyright 2001-2013 Raven Software
-
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
-
-	    
+    
 #include "b_local.h"
+#include "../cgame/cg_local.h"
+#include "g_functions.h"
+#include "g_navigator.h"
+#include "g_nav.h"
 
 // These define the working combat range for these suckers
 #define MIN_DISTANCE		128

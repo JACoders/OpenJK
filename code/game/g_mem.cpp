@@ -19,11 +19,6 @@ This file is part of Jedi Academy.
 //
 // g_mem.c
 //
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
 
 #include "g_local.h"
 

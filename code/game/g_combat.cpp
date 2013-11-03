@@ -18,12 +18,6 @@ This file is part of Jedi Academy.
 
 // g_combat.c
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
-
 #include "g_local.h"
 #include "b_local.h"
 #include "g_functions.h"
@@ -33,6 +27,7 @@ This file is part of Jedi Academy.
 #include "wp_saber.h"
 #include "g_vehicles.h"
 #include "Q3_Interface.h"
+#include "g_navigator.h"
 
 #define TURN_OFF			0x00000100
 

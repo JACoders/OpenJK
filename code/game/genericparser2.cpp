@@ -24,8 +24,6 @@ This file is part of Jedi Academy.
 
 #ifdef _JK2EXE
 #include "../qcommon/qcommon.h"
-#else
-#include "g_headers.h"
 #endif
 
 

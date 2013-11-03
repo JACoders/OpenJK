@@ -16,7 +16,6 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-#include "g_headers.h"
 #include "b_local.h"
 extern qboolean PM_FlippingAnim( int anim );
 extern void NPC_BSST_Patrol( void );

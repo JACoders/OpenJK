@@ -28,6 +28,7 @@ This file is part of Jedi Academy.
 #include "g_vehicles.h"
 #include "hitlocs.h"
 #include "bset.h"
+#include "../cgame/cg_main.h"
 
 #define	FOFS(x) offsetof(gentity_t, x)
 
