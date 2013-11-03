@@ -20,7 +20,7 @@ This file is part of Jedi Academy.
 #define __CG_MEDIA_H_
 
 #include "../qcommon/q_shared.h"
-#include "../renderer/tr_types.h"
+#include "../rd-common/tr_types.h"
 #include "../cgame/cg_local.h"
 #include "g_shared.h"
 
