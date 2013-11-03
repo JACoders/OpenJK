@@ -23,7 +23,7 @@ This file is part of Jedi Knight 2.
 #include "g_public.h"
 #include "b_public.h"
 #include "../icarus/icarus.h"
-#include "../../code/renderer/tr_types.h"
+#include "../../code/rd-common/tr_types.h"
 #include "../cgame/cg_public.h"
 #include "bset.h"
 

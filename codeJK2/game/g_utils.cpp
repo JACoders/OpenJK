@@ -29,7 +29,7 @@ This file is part of Jedi Knight 2.
 #include "g_icarus.h"
 #include "b_local.h"
 #include "anims.h"
-#include "../../code/renderer/mdx_format.h"
+#include "../../code/rd-common/mdx_format.h"
 
 #define ACT_ACTIVE		qtrue
 #define ACT_INACTIVE	qfalse
