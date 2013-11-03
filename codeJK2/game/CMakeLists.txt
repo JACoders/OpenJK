@@ -9,8 +9,7 @@ set(JK2SPGameIncludeDirectories "${JK2SPDir}/game")
 if(WIN32)
 	set(JK2SPGameLibraries "winmm")
 endif(WIN32)
-# TODO do we actually want _IMMERSION? I thought we don't have those files?
-set(JK2SPGameDefines ${SharedDefines} "_IMMERSION" "_NO_PCH" )
+
 set(JK2SPGameFiles
 	"${JK2SPDir}/game/AI_Atst.cpp"
 	"${JK2SPDir}/game/AI_Default.cpp"

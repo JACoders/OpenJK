@@ -9,8 +9,6 @@ set(SPGameIncludeDirectories "${SPDir}/game")
 if(WIN32)
 	set(SPGameLibraries "winmm")
 endif(WIN32)
-# TODO do we actually want _IMMERSION? I thought we don't have those files?
-set(SPGameDefines ${SharedDefines} "_IMMERSION" "_NO_PCH")
 
 set(SPGameGameFiles
 	"${SPDir}/game/AI_Animal.cpp"
