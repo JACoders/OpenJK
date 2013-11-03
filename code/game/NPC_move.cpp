@@ -20,12 +20,10 @@ This file is part of Jedi Academy.
 // NPC_move.cpp
 //
 
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
-
 #include "b_local.h"
 #include "g_nav.h"
 #include "anims.h"
+#include "g_navigator.h"
 
 extern qboolean NPC_ClearPathToGoal( vec3_t dir, gentity_t *goal );
 extern qboolean NAV_MoveDirSafe( gentity_t *self, usercmd_t *cmd, float distScale = 1.0f );

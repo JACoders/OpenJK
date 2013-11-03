@@ -16,8 +16,6 @@ This file is part of OpenJK.
 */
 // Copyright 2013 OpenJK
 
-#include "g_headers.h"
-
 #include "g_local.h"
 #include "b_local.h"
 #include "g_functions.h"

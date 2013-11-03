@@ -17,10 +17,6 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 //g_inventory.cpp
-
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
 #include "g_local.h"
 
 /*

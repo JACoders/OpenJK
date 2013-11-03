@@ -18,14 +18,12 @@ This file is part of Jedi Academy.
 
 // g_misc.c
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 #include "g_local.h"
 #include "g_functions.h"
 #include "g_nav.h"
 #include "g_items.h"
+#include "../cgame/cg_local.h"
+#include "b_local.h"
 
 extern gentity_t *G_FindDoorTrigger( gentity_t *door );
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );

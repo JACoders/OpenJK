@@ -19,13 +19,6 @@ This file is part of Jedi Academy.
 // Filename:-	g_functions.cpp
 //
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
-
-
 // This file contains the 8 (so far) function calls that replace the 8 function ptrs in the gentity_t structure
 
 #include "g_local.h"

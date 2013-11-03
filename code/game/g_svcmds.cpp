@@ -16,15 +16,12 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
+#include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 
 #include "g_local.h"
 #include "wp_saber.h"
+#include "g_functions.h"
 
 extern void G_NextTestAxes( void );
 extern void G_ChangePlayerModel( gentity_t *ent, const char *newModel );

@@ -16,13 +16,11 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
 #include "g_local.h"
 #include "g_roff.h"
 #include "Q3_Interface.h"
+#include "../cgame/cg_local.h"
+#include "g_functions.h"
 // The list of precached ROFFs
 roff_list_t	roffs[MAX_ROFFS];
 int			num_roffs = 0;
