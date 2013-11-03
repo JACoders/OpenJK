@@ -416,6 +416,7 @@ void JMSaberTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 	other->client->ps.stats[STAT_WEAPONS] = (1 << WP_SABER);
 	other->client->ps.weapon = WP_SABER;
 	other->s.weapon = WP_SABER;
+	other->playerState->zoomMode = 0;
 	G_AddEvent(other, EV_BECOME_JEDIMASTER, 0);
 
 	// Track the jedi master 
