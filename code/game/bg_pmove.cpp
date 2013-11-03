@@ -19,7 +19,7 @@ This file is part of Jedi Academy.
 // this include must remain at the top of every bg_xxxx CPP file
 #include "common_headers.h"
 
-#include "../renderer/tr_public.h"
+#include "../rd-common/tr_public.h"
 
 
 // bg_pmove.c -- both games player movement code

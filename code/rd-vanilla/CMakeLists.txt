@@ -94,9 +94,13 @@ set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonFiles})
 
 # main files
 set(SPRDVanillaMainFiles
-	"${SPDir}/renderer/mdx_format.h"
-	"${SPDir}/renderer/tr_public.h"
-	"${SPDir}/renderer/tr_types.h"
+	"${SPDir}/rd-common/mdx_format.h"
+	"${SPDir}/rd-common/tr_common.h"
+	"${SPDir}/rd-common/tr_font.cpp"
+	"${SPDir}/rd-common/tr_font.h"
+	"${SPDir}/rd-common/tr_noise.cpp"
+	"${SPDir}/rd-common/tr_public.h"
+	"${SPDir}/rd-common/tr_types.h"
 
 	"${SPDir}/rd-vanilla/glext.h"
 	"${SPDir}/rd-vanilla/qgl.h"
@@ -107,8 +111,6 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/tr_curve.cpp"
 	"${SPDir}/rd-vanilla/tr_draw.cpp"
 	"${SPDir}/rd-vanilla/tr_flares.cpp"
-	"${SPDir}/rd-vanilla/tr_font.cpp"
-	"${SPDir}/rd-vanilla/tr_font.h"
 	"${SPDir}/rd-vanilla/tr_ghoul2.cpp"
 	"${SPDir}/rd-vanilla/tr_image.cpp"
 	"${SPDir}/rd-vanilla/tr_init.cpp"
@@ -121,7 +123,6 @@ set(SPRDVanillaMainFiles
 	"${SPDir}/rd-vanilla/tr_marks.cpp"
 	"${SPDir}/rd-vanilla/tr_mesh.cpp"
 	"${SPDir}/rd-vanilla/tr_model.cpp"
-	"${SPDir}/rd-vanilla/tr_noise.cpp"
 	"${SPDir}/rd-vanilla/tr_quicksprite.cpp"
 	"${SPDir}/rd-vanilla/tr_quicksprite.h"
 	"${SPDir}/rd-vanilla/tr_scene.cpp"

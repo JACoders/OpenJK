@@ -213,7 +213,7 @@ const static StaticMem_t gNumberString[] = {
 
 qboolean gbMemFreeupOccured = qfalse;
 
-#include "../renderer/tr_public.h"	// sorta hack sorta not
+#include "../rd-common/tr_public.h"	// sorta hack sorta not
 extern refexport_t re;
 
 #ifdef DEBUG_ZONE_ALLOCS

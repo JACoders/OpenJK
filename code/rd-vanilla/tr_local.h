@@ -22,8 +22,8 @@ This file is part of Jedi Academy.
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qfiles.h"
-#include "../renderer/tr_public.h"
-#include "../renderer/mdx_format.h"
+#include "../rd-common/tr_public.h"
+#include "../rd-common/mdx_format.h"
 #ifdef _WIN32
 #include "qgl.h"
 #include "glext.h"
@@ -1230,9 +1230,6 @@ Ghoul2 Insert End
 extern cvar_t	*r_ext_point_parameters;
 extern cvar_t	*r_ext_nv_point_sprite;
 
-
-float R_NoiseGet4f( float x, float y, float z, float t );
-void  R_NoiseInit( void );
 
 void R_SwapBuffers( int );
 
