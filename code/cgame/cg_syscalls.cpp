@@ -27,11 +27,7 @@ extern void CG_PreInit();
 
 static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
 
-#if !defined(_WIN32)
-extern "C" Q_EXPORT void dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg,... ) ) {
-#else
-Q_EXPORT void dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg,... ) ) {
-#endif
+extern "C" Q_EXPORT void QDECL dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg, ... ) ) {
 	Q_syscall = syscallptr;
 	CG_PreInit();
 }
