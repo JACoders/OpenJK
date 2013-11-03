@@ -19,11 +19,6 @@ This file is part of Jedi Academy.
 // g_weapon.c 
 // perform the server side effects of a weapon firing
 
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
 #include "g_local.h"
 #include "g_functions.h"
 #include "anims.h"
@@ -31,6 +26,7 @@ This file is part of Jedi Academy.
 #include "wp_saber.h"
 #include "g_vehicles.h"
 #include "w_local.h"
+#include "../cgame/cg_local.h"
 
 vec3_t	forwardVec, vrightVec, up;
 vec3_t	muzzle;

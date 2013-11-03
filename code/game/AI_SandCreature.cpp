@@ -15,11 +15,10 @@ This file is part of Jedi Academy.
     along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Copyright 2001-2013 Raven Software
-
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
-   
 #include "b_local.h"
+#include "../cgame/cg_camera.h"
+#include "../cgame/cg_local.h"
+#include "g_functions.h"
 
 extern void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t pushDir, float strength, qboolean breakSaberLock );
 

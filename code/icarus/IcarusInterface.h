@@ -20,6 +20,8 @@ This file is part of Jedi Academy.
 #ifndef ICARUSINTERFACE_DEFINED
 #define ICARUSINTERFACE_DEFINED
 
+#include "../qcommon/q_shared.h"
+
 // IcarusInterface.h: ICARUS Interface header file.
 // -Date: ~October, 2002
 // -Created by: Mike Crowns and Aurelio Reis.

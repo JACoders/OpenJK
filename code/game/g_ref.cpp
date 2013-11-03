@@ -17,11 +17,6 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 // Reference tag utility functions
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
 #include "g_local.h"
 #include "g_functions.h"
 #include "g_nav.h"

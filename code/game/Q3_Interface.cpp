@@ -22,10 +22,6 @@ This file is part of Jedi Academy.
 //	is not directly portable from engine to engine.
 //
 //	-- jweier
-
-// leave this line at the top for PCH reasons...
-#include "g_headers.h"
-
 #include "g_local.h"
 #include "g_functions.h"
 #include "Q3_Interface.h"
@@ -39,6 +35,7 @@ This file is part of Jedi Academy.
 #include "../cgame/cg_local.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "g_navigator.h"
 
 extern	cvar_t	*com_buildScript;
 

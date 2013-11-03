@@ -24,6 +24,8 @@ This file is part of Jedi Academy.
 #ifndef __WEAPONS_H__
 #define __WEAPONS_H__
 
+#include "../qcommon/q_shared.h"
+
 typedef enum //# weapon_e
 {
 	WP_NONE,

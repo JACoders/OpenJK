@@ -17,14 +17,12 @@ This file is part of Jedi Academy.
 // Copyright 2001-2013 Raven Software
 
 //NPC_stats.cpp
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
-
 #include "b_local.h"
 #include "b_public.h"
 #include "anims.h"
 #include "wp_saber.h"
 #include "g_vehicles.h"
+#include "../cgame/cg_local.h"
 #if !defined(RUFL_HSTRING_INC)
 	#include "../Rufl/hstring.h"
 #endif

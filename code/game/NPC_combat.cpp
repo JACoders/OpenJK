@@ -18,15 +18,11 @@ This file is part of Jedi Academy.
 
 //NPC_combat.cpp
 
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
 #include "b_local.h"
 #include "g_nav.h"
 #include "g_navigator.h"
 #include "wp_saber.h"
+#include "g_functions.h"
 
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
