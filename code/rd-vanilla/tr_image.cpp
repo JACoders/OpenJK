@@ -25,6 +25,7 @@ This file is part of Jedi Academy.
 
 
 #include "tr_local.h"
+#include "../rd-common/tr_common.h"
 #include "tr_jpeg_interface.h"
 #include "../qcommon/sstring.h"
 #include <png.h>

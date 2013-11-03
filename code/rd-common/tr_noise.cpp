@@ -24,7 +24,7 @@ This file is part of Jedi Academy.
 
 
 
-#include "tr_local.h"
+#include "tr_common.h"
 
 #define NOISE_SIZE 256
 #define NOISE_MASK ( NOISE_SIZE - 1 )

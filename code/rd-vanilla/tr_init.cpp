@@ -25,9 +25,10 @@ This file is part of Jedi Academy.
 
 
 #include "tr_local.h"
+#include "../rd-common/tr_common.h"
 #include "tr_stl.h"
 #include "tr_jpeg_interface.h"
-#include "tr_font.h"
+#include "../rd-common/tr_font.h"
 #include "tr_WorldEffects.h"
 
 glconfig_t	glConfig;

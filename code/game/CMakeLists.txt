@@ -316,8 +316,8 @@ source_group("ghoul2" FILES ${SPGameG2Files})
 set(SPGameFiles ${SPGameFiles} ${SPGameG2Files})
 
 set(SPGameRendererFiles
-	"${SPDir}/renderer/mdx_format.h"
-	"${SPDir}/renderer/tr_types.h"
+	"${SPDir}/rd-common/mdx_format.h"
+	"${SPDir}/rd-common/tr_types.h"
 	)
 source_group("renderer" FILES ${SPGameRendererFiles})
 set(SPGameFiles ${SPGameFiles} ${SPGameRendererFiles})
@@ -330,8 +330,7 @@ set(SPGameFiles ${SPGameFiles} ${SPGameClientFiles})
 
 if(WIN32)
 	set(SPGameWin32Files
-		"${SPDir}/win32/game.rc"
-		"${SPDir}/game/game.def")
+		"${SPDir}/win32/game.rc")
 	source_group("win32" FILES ${SPGameWin32Files})
 	set(SPGameFiles ${SPGameFiles} ${SPGameWin32Files})
 endif(WIN32)

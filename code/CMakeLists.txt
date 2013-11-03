@@ -254,9 +254,9 @@ if(BuildSPEngine)
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineMP3Files})
 
 	set(SPEngineRendererFiles
-		"${SPDir}/renderer/mdx_format.h"
-		"${SPDir}/renderer/tr_public.h"
-		"${SPDir}/renderer/tr_types.h"
+		"${SPDir}/rd-common/mdx_format.h"
+		"${SPDir}/rd-common/tr_public.h"
+		"${SPDir}/rd-common/tr_types.h"
 		)
 
 

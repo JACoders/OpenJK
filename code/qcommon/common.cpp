@@ -24,7 +24,7 @@ This file is part of Jedi Academy.
 #include "stv_version.h"
 
 // Because renderer.
-#include "../renderer/tr_public.h"
+#include "../rd-common/tr_public.h"
 extern refexport_t re;
 
 #define	MAXPRINTMSG	4096
