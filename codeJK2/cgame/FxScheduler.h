@@ -24,10 +24,6 @@ This file is part of Jedi Knight 2.
 #include "../../code/qcommon/sstring.h"
 typedef sstring_t fxString_t;
 
-#if !defined(FX_PARSING_H_INC)
-	#include "FxParsing.h"
-#endif
-
 #ifndef FX_SCHEDULER_H_INC
 #define FX_SCHEDULER_H_INC
 
