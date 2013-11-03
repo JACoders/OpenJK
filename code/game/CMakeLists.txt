@@ -216,7 +216,6 @@ set(SPGameCGameFiles
 	"${SPDir}/cgame/cg_media.h"
 	"${SPDir}/cgame/cg_public.h"
 	"${SPDir}/cgame/common_headers.h"
-	"${SPDir}/cgame/FxParsing.h"
 	"${SPDir}/cgame/FxPrimitives.h"
 	"${SPDir}/cgame/FxScheduler.h"
 	"${SPDir}/cgame/FxSystem.h"
