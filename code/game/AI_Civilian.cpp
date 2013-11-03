@@ -16,8 +16,8 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// leave this line at the top of all AI_xxxx.cpp files for PCH reasons...
-#include "g_headers.h"
+#include "../cgame/cg_local.h"
+#include "b_local.h"
 #include "Q3_Interface.h"
 
 extern qboolean NPC_CheckSurrender( void );

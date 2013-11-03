@@ -24,10 +24,13 @@ things in a snapshot or just go through the snapshot every frame and save the in
 we need it...
 */
 
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
+#include "../qcommon/q_shared.h"
+#include "../cgame/cg_local.h"
 #include "g_navigator.h"
 #include "Q3_Interface.h"
+#include "b_local.h"
+#include "g_functions.h"
+#include "g_nav.h"
 
 extern cvar_t	*g_AIsurrender;
 extern	qboolean	showBBoxes;

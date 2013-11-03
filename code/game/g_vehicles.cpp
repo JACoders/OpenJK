@@ -15,10 +15,6 @@ This file is part of Jedi Academy.
     along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
 */
 // Copyright 2001-2013 Raven Software
-
-// leave this line at the top for all g_xxxx.cpp files...
-#include "g_headers.h"
-
 #include "../qcommon/q_shared.h"
 #include "g_local.h"
 

@@ -19,11 +19,7 @@ This file is part of Jedi Academy.
 //b_spawn.cpp
 //added by MCG
 
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
+#include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "b_local.h"
 #include "anims.h"

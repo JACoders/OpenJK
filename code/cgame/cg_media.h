@@ -19,6 +19,11 @@ This file is part of Jedi Academy.
 #ifndef __CG_MEDIA_H_
 #define __CG_MEDIA_H_
 
+#include "../qcommon/q_shared.h"
+#include "../renderer/tr_types.h"
+#include "../cgame/cg_local.h"
+#include "g_shared.h"
+
 #define	NUM_CROSSHAIRS		9
 
 typedef enum {

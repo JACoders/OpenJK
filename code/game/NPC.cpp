@@ -20,11 +20,6 @@ This file is part of Jedi Academy.
 // NPC.cpp - generic functions
 //
 
-// leave this line at the top for all NPC_xxxx.cpp files...
-#include "g_headers.h"
-
-
-
 #include "b_local.h"
 #include "anims.h"
 #include "g_functions.h"

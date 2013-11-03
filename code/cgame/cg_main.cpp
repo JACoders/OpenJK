@@ -16,14 +16,12 @@ This file is part of Jedi Academy.
 */
 // Copyright 2001-2013 Raven Software
 
-// this line must stay at top so the whole PCH thing works...
-#include "cg_headers.h"
-
 #include "cg_media.h"
 #include "FxScheduler.h"
 
 #include "../client/vmachine.h"
 #include "cg_lights.h"
+#include "g_local.h"
 
 #include "../qcommon/sstring.h"
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
