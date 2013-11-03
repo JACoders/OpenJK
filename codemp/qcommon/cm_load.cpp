@@ -882,9 +882,8 @@ CM_InlineModel
 ==================
 */
 clipHandle_t	CM_InlineModel( int index ) {
-	if ( index < 0 || index >= TotalSubModels )
-	{
-		Com_Error (ERR_DROP, "CM_InlineModel: bad number: %d > %d", index, TotalSubModels);
+	if ( index < 0 || index >= TotalSubModels ) {
+		Com_Error( ERR_DROP, "CM_InlineModel: bad number: %d >= %d (may need to re-BSP map?)", index, TotalSubModels );
 	}
 	return index;
 }
