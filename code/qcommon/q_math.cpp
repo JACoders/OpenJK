@@ -803,6 +803,13 @@ void PerpendicularVector( vec3_t dst, const vec3_t src )
 	VectorNormalize( dst );
 }
 
+float Q_powf( float x, int y ) {
+	float r = x;
+	for ( y--; y>0; y-- )
+		r *= x;
+	return r;
+}
+
 /*
 -------------------------
 DotProductNormalize
