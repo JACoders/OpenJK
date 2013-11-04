@@ -87,6 +87,7 @@ set(SPRDVanillaCommonFiles
 	"${SPDir}/qcommon/q_math.cpp"
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
+	"${SPDir}/qcommon/q_platform.h"
 	"${SPDir}/qcommon/cm_landscape.h"
 	)
 source_group("common" FILES ${SPRDVanillaCommonFiles})

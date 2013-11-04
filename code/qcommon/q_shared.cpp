@@ -162,39 +162,23 @@ void COM_DefaultExtension( char *path, int maxSize, const char *extension )
 
 ============================================================================
 */
-
+/*
 // can't just use function pointers, or dll linkage can
 // mess up when qcommon is included in multiple places
 static short	(*_BigShort) (short l);
 static short	(*_LittleShort) (short l);
 static int		(*_BigLong) (int l);
 static int		(*_LittleLong) (int l);
-static float	(*_BigFloat) (float l);
-static float	(*_LittleFloat) (float l);
+static float	(*_BigFloat) (const float *l);
+static float	(*_LittleFloat) (const float *l);
 
-#ifdef id386 // _M_IX86
-//
-// optimised stuff for Intel, since most of our data is in that format anyway...
-//
-short	BigShort(short l){return _BigShort(l);}
-int		BigLong (int l) {return _BigLong(l);}
-float	BigFloat (float l) {return _BigFloat(l);}
-//short	LittleShort(short l) {return _LittleShort(l);}	// these are now macros in q_shared.h
-//int		LittleLong (int l) {return _LittleLong(l);}	//
-//float	LittleFloat (float l) {return _LittleFloat(l);}	//
-//
-#else
-//
-// standard smart-swap code...
-//
 short	BigShort(short l){return _BigShort(l);}
 short	LittleShort(short l) {return _LittleShort(l);}
 int		BigLong (int l) {return _BigLong(l);}
 int		LittleLong (int l) {return _LittleLong(l);}
-float	BigFloat (float l) {return _BigFloat(l);}
-float	LittleFloat (float l) {return _LittleFloat(l);}
-//
-#endif
+float	BigFloat (const float *l) {return _BigFloat(l);}
+float	LittleFloat (const float *l) {return _LittleFloat(l);}
+*/
 
 short   ShortSwap (short l)
 {
@@ -228,26 +212,18 @@ int	LongNoSwap (int l)
 	return l;
 }
 
-float FloatSwap (float f)
-{
-	union
-	{
-		float	f;
-		byte	b[4];
-	} dat1, dat2;
-	
-	
-	dat1.f = f;
-	dat2.b[0] = dat1.b[3];
-	dat2.b[1] = dat1.b[2];
-	dat2.b[2] = dat1.b[1];
-	dat2.b[3] = dat1.b[0];
-	return dat2.f;
+float FloatSwap (const float *f) {
+	floatint_t out;
+
+	out.f = *f;
+	out.ui = LongSwap(out.ui);
+
+	return out.f;
 }
 
-float FloatNoSwap (float f)
+float FloatNoSwap (const float *f)
 {
-	return f;
+	return *f;
 }
 
 /*
@@ -255,6 +231,7 @@ float FloatNoSwap (float f)
 Swap_Init
 ================
 */
+/*
 void Swap_Init (void)
 {
 	byte	swaptest[2] = {1,0};
@@ -280,6 +257,7 @@ void Swap_Init (void)
 	}
 
 }
+*/
 
 
 /*
