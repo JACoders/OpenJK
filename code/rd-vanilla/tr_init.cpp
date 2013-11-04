@@ -1808,7 +1808,7 @@ extern "C" Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *
 	re.G2Time_ResetTimers = G2Time_ResetTimers;
 #endif
 
-	Swap_Init();
+	//Swap_Init();
 
 	return &re;
 }

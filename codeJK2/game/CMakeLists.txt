@@ -202,17 +202,19 @@ source_group("cgame" FILES ${JK2SPGameCGameFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCGameFiles})
 
 set(JK2SPGameUIFiles
-	"${JK2SPDir}/../code/ui/gameinfo.cpp"
-	"${JK2SPDir}/../code/ui/gameinfo.h"
+	"${SPDir}/ui/gameinfo.cpp"
+	"${SPDir}/ui/gameinfo.h"
 	)
 source_group("ui" FILES ${JK2SPGameUIFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameUIFiles})
 
 set(JK2SPGameCommonFiles
 	#We only have JKA qcommon files now.
-	"${JK2SPDir}/../code/qcommon/q_math.cpp"
-	"${JK2SPDir}/../code/qcommon/q_shared.cpp"
-	"${JK2SPDir}/../code/qcommon/tri_coll_test.cpp"
+	"${SPDir}/qcommon/tri_coll_test.cpp"
+	"${SPDir}/qcommon/q_math.cpp"
+	"${SPDir}/qcommon/q_shared.cpp"
+	"${SPDir}/qcommon/q_shared.h"
+	"${SPDir}/qcommon/q_platform.h"
 	)
 source_group("common" FILES ${JK2SPGameCommonFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonFiles})
@@ -234,8 +236,7 @@ set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameIcarusFiles})
 
 if(WIN32)
 	set(JK2SPGameWin32Files
-		"${JK2SPDir}/win32/game.rc"
-		"${JK2SPDir}/game/game.def")
+		"${JK2SPDir}/win32/game.rc")
 	source_group("win32" FILES ${JK2SPGameWin32Files})
 	set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameWin32Files})
 endif(WIN32)

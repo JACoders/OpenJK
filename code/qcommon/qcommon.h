@@ -95,34 +95,6 @@ void MSG_WriteEntity( msg_t *msg, entityState_t *to, int removeNum);
 void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
 void MSG_ReadDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
 
-
-//============================================================================
-
-#ifdef id386
-//
-// optimised stuff for Intel, since most of our data is in that format anyway...
-//
-extern	short	BigShort (short l);
-extern	int		BigLong (int l);
-extern	float	BigFloat (float l);
-#define LittleShort(l) l
-#define LittleLong(l) l
-#define LittleFloat(l) l
-//
-#else
-//
-// standard smart-swap code...
-//
-extern	short	BigShort (short l);
-extern	short	LittleShort (short l);
-extern	int		BigLong (int l);
-extern	int		LittleLong (int l);
-extern	float	BigFloat (float l);
-extern	float	LittleFloat (float l);
-//
-#endif
-
-
 /*
 ==============================================================
 

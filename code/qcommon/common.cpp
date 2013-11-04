@@ -1018,7 +1018,7 @@ extern void Com_InitZoneMemory();
 void Com_Init( char *commandLine ) {
 	char	*s;
 
-	Com_Printf( "%s %s %s\n", Q3_VERSION, CPUSTRING, __DATE__ );
+	Com_Printf( "%s %s %s\n", Q3_VERSION, PLATFORM_STRING, __DATE__ );
 
 	try {
 		Cvar_Init ();
@@ -1027,7 +1027,7 @@ void Com_Init( char *commandLine ) {
 		// cvar and command buffer management
 		Com_ParseCommandLine( commandLine );
 
-		Swap_Init ();
+		//Swap_Init ();
 		Cbuf_Init ();
 
 		Com_InitZoneMemory();
@@ -1100,7 +1100,7 @@ void Com_Init( char *commandLine ) {
 			Cmd_AddCommand ("freeze", Com_Freeze_f);
 		}
 		
-		s = va("%s %s %s", Q3_VERSION, CPUSTRING, __DATE__ );
+		s = va("%s %s %s", Q3_VERSION, PLATFORM_STRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
 #ifndef __NO_JK2

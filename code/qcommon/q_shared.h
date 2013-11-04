@@ -64,6 +64,12 @@ This file is part of Jedi Academy.
 
 #define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
 
+#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
+
+//JAC: Added
+#define ARRAY_LEN( x ) ( sizeof( x ) / sizeof( *(x) ) )
+#define STRING( a ) #a
+
 #ifndef FINAL_BUILD
 #ifdef _WIN32
 #define G2_PERFORMANCE_ANALYSIS
@@ -82,7 +88,6 @@ This file is part of Jedi Academy.
 #include <limits.h>
 #include <errno.h>
 #include <stddef.h>
-//=======================================================================
 
 //Ignore __attribute__ on non-gcc platforms
 #if !defined(__GNUC__) && !defined(__attribute__)
@@ -105,205 +110,29 @@ This file is part of Jedi Academy.
 	#define Q_EXPORT
 #endif
 
-#if defined(__linux__) && !defined(__GCC__)
-#define Q_EXPORT_C extern "C"
-#else
-#define Q_EXPORT_C
-#endif
-
 // this is the define for determining if we have an asm version of a C function
-#if (defined _M_IX86 || defined __i386__) && !defined __sun__  && !defined __LCC__
-#define id386	1
+#if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__)
+	#define id386	1
 #else
-#define id386	0
+	#define id386	0
 #endif
 
-// for windows fastcall option
-
-#define	QDECL
-#define QCALL
-
-#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
-
-//JAC: Added
-#define ARRAY_LEN( x ) ( sizeof( x ) / sizeof( *(x) ) )
-#define STRING( a ) #a
-
-// Win64
-
-// Win64
-#if defined(_WIN64) || defined(__WIN64__)
-
-  #define idx64
-
-  #undef QDECL
-  #define QDECL __cdecl
-
-  #undef QCALL
-  #define QCALL __stdcall
-
-  #if defined(_MSC_VER)
-  	#define OS_STRING "win_msvc64"
-  #elif defined(__MINGW64__)
-  	#define OS_STRING "win_mingw64"
-  #endif
-
-  #define QINLINE __inline
-  #define PATH_SEP '\\'
-
-  #if defined(__WIN64__)
-  	#define ARCH_STRING "x84_64"
-  #elif defined(_M_ALPHA)
-  	#define ARCH_STRING "AXP"
-  #endif
-
-  #define Q3_LITTLE_ENDIAN
-
-  #define DLL_EXT ".dll"
+#if (defined(powerc) || defined(powerpc) || defined(ppc) || defined(__ppc) || defined(__ppc__)) && !defined(C_ONLY)
+	#define idppc	1
+#else
+	#define idppc	0
 #endif
 
-//======================= WIN32 DEFINES =================================
-
-#ifdef WIN32
-
-  #undef QDECL
-  #define	QDECL	__cdecl
-
-  // buildstring will be incorporated into the version string
-  #ifdef NDEBUG
-  #ifdef _M_IX86
-  #define	CPUSTRING	"win-x86"
-  #elif defined _M_ALPHA
-  #define	CPUSTRING	"win-AXP"
-  #endif
-  #else
-  #ifdef _M_IX86
-  #define	CPUSTRING	"win-x86-debug"
-  #elif defined _M_ALPHA
-  #define	CPUSTRING	"win-AXP-debug"
-  #endif
-  #endif
+short ShortSwap( short l );
+int LongSwap( int l );
+float FloatSwap( const float *f );
 
 
-  #define	PATH_SEP '\\'
+#include "../qcommon/q_platform.h"
 
-  #if defined(_M_IX86) || defined(__i386__)
-  	#define ARCH_STRING "x86"
-  #elif defined _M_ALPHA
-  	#define ARCH_STRING "AXP"
-  #endif
-
-  #define Q3_LITTLE_ENDIAN
-
-  #define DLL_EXT ".dll"
-
-#endif
-
-//======================= MAC OS X SERVER DEFINES =====================
-
-#if defined(MACOS_X)
-
-  #ifdef __ppc__
-  #define CPUSTRING	"MacOSX-ppc"
-  #elif defined __i386__
-  #define CPUSTRING	"MacOSX-i386"
-  #else
-  #define CPUSTRING	"MacOSX-other"
-  #endif
-
-  #define	PATH_SEP	'/'
-          
-  #if defined(__i386__)
-      #define ARCH_STRING "x86"
-  #elif defined(__x86_64__)
-      #define idx64
-      #define ARCH_STRING "x86_64"
-  #elif defined(__powerpc64__)
-      #define ARCH_STRING "ppc64"
-  #elif defined(__powerpc__)
-      #define ARCH_STRING "ppc"
-  #endif
-
-  #define DLL_EXT ".dylib"
-
-  #if BYTE_ORDER == BIG_ENDIAN
-    #define Q3_BIG_ENDIAN
-  #else
-    #define Q3_LITTLE_ENDIAN
-  #endif
-
-#endif
-
-//======================= MAC DEFINES =================================
-
-#ifdef __MACOS__
-
-  #define	CPUSTRING	"MacOS-PPC"
-
-  #define	PATH_SEP ':'
-
-#endif
-
-//======================= LINUX DEFINES =================================
-
-// the mac compiler can't handle >32k of locals, so we
-// just waste space and make big arrays static...
-#ifdef __linux__
-
-  #include <unistd.h>
-
-  #ifdef __i386__
-  #define	CPUSTRING	"linux-i386"
-  #elif defined __axp__
-  #define	CPUSTRING	"linux-alpha"
-  #else
-  #define	CPUSTRING	"linux-other"
-  #endif
-
-  #define	PATH_SEP '/'
-
-  #if defined(__i386__)
-      #define ARCH_STRING "i386"
-  #elif defined(__x86_64__)
-      #define idx64
-      #define ARCH_STRING "x86_64"
-  #elif defined(__powerpc64__)
-      #define ARCH_STRING "ppc64"
-  #elif defined(__powerpc__)
-      #define ARCH_STRING "ppc"
-  #elif defined(__s390__)
-      #define ARCH_STRING "s390"
-  #elif defined(__s390x__)
-      #define ARCH_STRING "s390x"
-  #elif defined(__ia64__)
-      #define ARCH_STRING "ia64"
-  #elif defined(__alpha__)
-      #define ARCH_STRING "alpha"
-  #elif defined(__sparc__)
-      #define ARCH_STRING "sparc"
-  #elif defined(__arm__)
-      #define ARCH_STRING "arm"
-  #elif defined(__cris__)
-      #define ARCH_STRING "cris"
-  #elif defined(__hppa__)
-      #define ARCH_STRING "hppa"
-  #elif defined(__mips__)
-      #define ARCH_STRING "mips"
-  #elif defined(__sh__)
-      #define ARCH_STRING "sh"
-  #endif
-
-  #if __FLOAT_WORD_ORDER == __BIG_ENDIAN
-    #define Q3_BIG_ENDIAN
-  #else
-    #define Q3_LITTLE_ENDIAN
-  #endif
-
-  #define DLL_EXT ".so"
-
-#endif
-
-//=============================================================
+// ================================================================
+// TYPE DEFINITIONS
+// ================================================================
 
 typedef unsigned long		ulong;
 typedef unsigned short		word;
@@ -370,6 +199,12 @@ typedef int		clipHandle_t;
 #define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
 
 #define PADP(base, alignment)	((void *) PAD((intptr_t) (base), (alignment)))
+
+#ifdef __GNUC__
+#define QALIGN(x) __attribute__((aligned(x)))
+#else
+#define QALIGN(x)
+#endif
 
 #ifndef NULL
 // NOTE: This is all c++ so casting to void * is wrong
@@ -1229,32 +1064,20 @@ char *Q_CleanStr( char *string );
 void Q_StripColor ( char *string );
 //=============================================
 
-#ifdef id386
-//
-// optimised stuff for Intel, since most of our data is in that format anyway...
-//
-short	BigShort(short l);
-int		BigLong (int l);
-float	BigFloat (float l);
-#define LittleShort(l) l
-#define LittleLong(l)  l
-#define LittleFloat(l) l
-//
-#else
-//
-// standard smart-swap code...
-//
+//=============================================
+/*
 short	BigShort(short l);
 short	LittleShort(short l);
 int		BigLong (int l);
 int		LittleLong (int l);
-float	BigFloat (float l);
-float	LittleFloat (float l);
-//
-#endif
-
+qint64  BigLong64 (qint64 l);
+qint64  LittleLong64 (qint64 l);
+float	BigFloat (const float *l);
+float	LittleFloat (const float *l);
 
 void	Swap_Init (void);
+*/
+
 char	* QDECL va(const char *format, ...);
 
 #define TRUNCATE_LENGTH	64
