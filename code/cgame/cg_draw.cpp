@@ -3903,7 +3903,7 @@ static void CG_Draw2D( void )
 			
 			int x_pos = 0;
 			y_pos = 20;
-			w = cgi_R_Font_StrLenPixels(text,cgs.media.qhFontSmall, 1.0f);
+			w = cgi_R_Font_StrLenPixels(text,cgs.media.qhFontMedium, 1.0f);
 			x_pos = (SCREEN_WIDTH/2)-(w/2);
 			cgi_R_Font_DrawString(x_pos, y_pos, text,  colorTable[CT_LTRED1], cgs.media.qhFontMedium, -1, 1.0f);
 		}
@@ -3915,7 +3915,7 @@ static void CG_Draw2D( void )
 		y_pos = 5;
 		gi.Cvar_VariableStringBuffer( "cg_WeaponPickupText", text, sizeof(text) );
 
-		w = cgi_R_Font_StrLenPixels(text,cgs.media.qhFontSmall, 0.8f);
+		w = cgi_R_Font_StrLenPixels(text,cgs.media.qhFontMedium, 0.8f);
 		x_pos = (SCREEN_WIDTH/2)-(w/2);
 
 		cgi_R_Font_DrawString(x_pos, y_pos, text,  colorTable[CT_WHITE], cgs.media.qhFontMedium, -1, 0.8f);
