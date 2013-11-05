@@ -1434,6 +1434,12 @@ qboolean	ConsoleCommand( void ) {
 	
 	if (Q_stricmp (cmd, "iknowkungfu") == 0)
 	{
+		if ( !g_cheats->integer ) 
+		{
+			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
+			return qtrue;
+		}
+
 		gi.cvar_set( "g_debugMelee", "1" );
 		G_SetWeapon( &g_entities[0], WP_MELEE );
 		for ( int i = FP_FIRST; i < NUM_FORCE_POWERS; i++ )
