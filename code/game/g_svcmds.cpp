@@ -1215,7 +1215,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 
 		Svcmd_ForceJump_f();
@@ -1250,7 +1250,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 		const char *cmd2 = gi.argv(1);
 
@@ -1288,7 +1288,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 		const char	*cmd2 = gi.argv(1);
 		int		n;
@@ -1330,7 +1330,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 		const char	*cmd2 = gi.argv(1);
 		if ( !*cmd2 || !cmd2[0] )
@@ -1352,7 +1352,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 		const char	*cmd2 = gi.argv(1);
 		if ( !*cmd2 || !cmd2[0] )
@@ -1374,7 +1374,7 @@ qboolean	ConsoleCommand( void ) {
 		if ( !g_cheats->integer ) 
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
-			return qfalse;
+			return qtrue;
 		}
 		G_Knockdown( &g_entities[0], &g_entities[0], vec3_origin, 300, qtrue );
 		return qtrue;
