@@ -199,7 +199,8 @@ static void Svcmd_Saber_f()
 		gi.Cvar_VariableStringBuffer( "g_saber", name, sizeof(name) );
 		gi.Printf("g_saber is set to %s\n", name);
 		gi.Cvar_VariableStringBuffer( "g_saber2", name, sizeof(name) );
-		gi.Printf("g_saber2 is set to %s\n", name);
+		if ( name[0] )
+			gi.Printf("g_saber2 is set to %s\n", name);
 		return;
 	}
 
