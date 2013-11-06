@@ -2852,7 +2852,7 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 	}
 	if ( !cg_forceCrosshair )
 	{
-		if ( 1 ) //(cg_dynamicCrosshair.integer )
+		if ( cg_dynamicCrosshair.integer )
 		{//100% accurate
 			vec3_t d_f, d_rt, d_up;
 			// If you're riding a vehicle and not being drawn.
@@ -2896,7 +2896,7 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 		{//old way
 			VectorCopy( cg.refdef.vieworg, start );
 			//FIXME: increase this?  Increase when zoom in?
-			VectorMA( start, 4096, cg.refdef.viewaxis[0], end );//was 8192
+			VectorMA( start, 131072, cg.refdef.viewaxis[0], end );//was 8192
 		}
 		//YES!  This is very very bad... but it works!  James made me do it.  Really, he did.  Blame James.
 		gi.trace( &trace, start, vec3_origin, vec3_origin, end, 
@@ -2926,11 +2926,8 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 		return;
 	}
 */
-	//CROSSHAIR is now always drawn from this trace so it's 100% accurate
-	if ( 1 )	//(cg_dynamicCrosshair.integer )
-	{//draw crosshair at endpoint
-		CG_DrawCrosshair( trace.endpos );
-	}
+	//draw crosshair at endpoint
+	CG_DrawCrosshair( trace.endpos );
 
 	g_crosshairEntNum = trace.entityNum;
 	g_crosshairEntDist = 4096*trace.fraction;
@@ -3001,7 +2998,7 @@ static void CG_DrawCrosshairNames( void )
 	qboolean	scanAll = qfalse;
 	centity_t	*player = &cg_entities[0];
 
-	if ( 1 ) //cg_dynamicCrosshair.integer )
+	if ( cg_dynamicCrosshair.integer )
 	{
 		// still need to scan for dynamic crosshair
 		CG_ScanForCrosshairEntity( scanAll );
