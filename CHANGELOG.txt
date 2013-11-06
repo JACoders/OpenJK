@@ -58,7 +58,7 @@ Key: - removed, + added, * modified
 [SP/MP] * Improved command line parsing based off of ioquake3 patches.
 [SP/MP] * Improved echo command by preserving colors based off of ioquake3 patches.
 [SP/MP] * Improved GL_Extensions using ioquake3 to prevent crashes on newer cards.
-[SP/MP] * Removed cheat protection from r_we cmd, r_dyanamicGlow* cvars
+[SP/MP] * Removed cheat protection from r_we cmd, r_dynamicGlow* cvars
 [MP] * Fixed invalid r_textureBitsLM resulting in fullbright mode without cheats
 [SP/MP] - Removed CD Check Code
 [MP] - Removed demo restriction code.
@@ -66,7 +66,7 @@ Key: - removed, + added, * modified
 [SP/MP] - Removed force feedback code
 [SP/MP] * Shift-Escape will now also open the console as an alternate (e.g.: keyboard doesn't support the normal console key)
 [SP/MP] * Removed shift key requirement to open console
-[MP] + Raw Mouse Input added to windows (in_mouse 2). An in_restart required if changed while game is running.
+[SP/MP] + Raw Mouse Input added to windows (in_mouse 2). An in_restart required if changed while game is running.
 [MP] + gamecode: /clientlist displays clients by id/name and if they are a bot. (Shows real client id unlike serverstatus)
 [SP/MP] + Added XInput support for XBOX 360 controllers (Windows only, in_joystick 2). SDL on *nix supports this as well.
 [SP/MP] + Updated the JPG library
@@ -95,3 +95,9 @@ Key: - removed, + added, * modified
 [MP] * gamecode: Default/missing model+saber is now "kyle"
 [MP] * gamecode: Fixed tournament queueing (for duel/power duel)
 [MP] * gamecode: Fixed issues where spectators had trouble flying through doors close together
+[MP] + gamecode: Added JK2 gametypes
+[MP] + Added s_doppler sound effect for moving sound sources (rockets)
+[MP] * gamecode: Fix cg_smoothClients affecting local player negatively
+[MP] * gamecode: Rewrote callvote code to allow disabling specific votes, added more options (e.g. display map list)
+[SP] + gamecode: Added cg_smoothCamera (default 1)
+[SP] + gamecode: Added cg_dynamicCrosshair (default 1)
