@@ -185,7 +185,7 @@ int R_ComputeLOD( trRefEntity_t *ent ) {
 		if(tr.currentModel->type == MOD_MDR)
 		{
 			int frameSize;
-			mdr = (mdrHeader_t *) tr.currentModel->modelData;
+			mdr = tr.currentModel->data.mdr;
 			frameSize = (size_t) (&((mdrFrame_t *)0)->bones[mdr->numBones]);
 			
 			mdrframe = (mdrFrame_t *) ((byte *) mdr + mdr->ofsFrames + frameSize * ent->e.frame);
@@ -195,7 +195,7 @@ int R_ComputeLOD( trRefEntity_t *ent ) {
 		else
 		{
 			//frame = ( md3Frame_t * ) ( ( ( unsigned char * ) tr.currentModel->md3[0] ) + tr.currentModel->md3[0]->ofsFrames );
-			frame = tr.currentModel->mdv[0]->frames;
+			frame = tr.currentModel->data.mdv[0]->frames;
 
 			frame += ent->e.frame;
 
@@ -296,8 +296,8 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 	                 || (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))));
 
 	if ( ent->e.renderfx & RF_WRAP_FRAMES ) {
-		ent->e.frame %= tr.currentModel->mdv[0]->numFrames;
-		ent->e.oldframe %= tr.currentModel->mdv[0]->numFrames;
+		ent->e.frame %= tr.currentModel->data.mdv[0]->numFrames;
+		ent->e.oldframe %= tr.currentModel->data.mdv[0]->numFrames;
 	}
 
 	//
@@ -306,9 +306,9 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 	// when the surfaces are rendered, they don't need to be
 	// range checked again.
 	//
-	if ( (ent->e.frame >= tr.currentModel->mdv[0]->numFrames) 
+	if ( (ent->e.frame >= tr.currentModel->data.mdv[0]->numFrames) 
 		|| (ent->e.frame < 0)
-		|| (ent->e.oldframe >= tr.currentModel->mdv[0]->numFrames)
+		|| (ent->e.oldframe >= tr.currentModel->data.mdv[0]->numFrames)
 		|| (ent->e.oldframe < 0) ) {
 			ri->Printf( PRINT_DEVELOPER, "R_AddMD3Surfaces: no such frame %d to %d for '%s'\n",
 				ent->e.oldframe, ent->e.frame,
@@ -322,7 +322,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 	//
 	lod = R_ComputeLOD( ent );
 
-	model = tr.currentModel->mdv[lod];
+	model = tr.currentModel->data.mdv[lod];
 
 	//
 	// cull the entire model if merged bounding box of both frames

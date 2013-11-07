@@ -2310,7 +2310,7 @@ static	void R_LoadSubmodels( lump_t *l ) {
 		}
 
 		model->type = MOD_BRUSH;
-		model->bmodel = out;
+		model->data.bmodel = out;
 		Com_sprintf( model->name, sizeof( model->name ), "*%d", i );
 
 		for (j=0 ; j<3 ; j++) {

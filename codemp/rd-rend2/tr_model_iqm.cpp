@@ -454,7 +454,7 @@ qboolean R_LoadIQM( model_t *mod, void *buffer, int filesize, const char *mod_na
 
 	mod->type = MOD_IQM;
 	iqmData = (iqmData_t *)ri->Hunk_Alloc( size, h_low );
-	mod->modelData = iqmData;
+	mod->data.iqm = iqmData;
 
 	// fill header
 	iqmData->num_vertexes = header->num_vertexes;
@@ -790,7 +790,7 @@ void R_AddIQMSurfaces( trRefEntity_t *ent ) {
 	shader_t		*shader;
 	skin_t			*skin;
 
-	data = (iqmData_t *)tr.currentModel->modelData;
+	data = tr.currentModel->data.iqm;
 	surface = data->surfaces;
 
 	// don't add third_person objects if not in a portal

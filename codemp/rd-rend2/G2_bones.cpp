@@ -25,7 +25,7 @@ int G2_Find_Bone(const model_t *mod, boneInfo_v &blist, const char *boneName)
 {
 	mdxaSkel_t			*skel;
 	mdxaSkelOffsets_t	*offsets;
-	mdxaHeader_t *mdxa = (mdxaHeader_t *)mod->modelData;
+	mdxaHeader_t *mdxa = mod->data.gla;
    	offsets = (mdxaSkelOffsets_t *)((byte *)mdxa + sizeof(mdxaHeader_t));
 	skel = (mdxaSkel_t *)((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[0]);
 
@@ -59,7 +59,7 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 	mdxaSkel_t			*skel;
 	mdxaSkelOffsets_t	*offsets;
 	boneInfo_t			tempBone;
-	mdxaHeader_t *mdxa = (mdxaHeader_t *)mod->modelData;
+	mdxaHeader_t *mdxa = mod->data.gla;
 
 	//rww - RAGDOLL_BEGIN
 	memset(&tempBone, 0, sizeof(tempBone));
@@ -301,7 +301,7 @@ void G2_Generate_Matrix(const model_t *mod, boneInfo_v &blist, int index, const 
 		Create_Matrix(newAngles, boneOverride);
 
 		// figure out where the bone hirearchy info is
-		mdxaHeader_t *mdxa = (mdxaHeader_t *)mod->modelData;
+		mdxaHeader_t *mdxa = mod->data.gla;
 		offsets = (mdxaSkelOffsets_t *)((byte *)mdxa + sizeof(mdxaHeader_t));
 		skel = (mdxaSkel_t *)((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[blist[index].boneNumber]);
 
@@ -570,7 +570,7 @@ qboolean G2_Set_Bone_Angles_Matrix(const char *fileName, boneInfo_v &blist, cons
 	{
 		mod_m = R_GetModelByHandle(RE_RegisterModel(fileName));
 	}
-	model_t		*mod_a = R_GetModelByHandle(((mdxmHeader_t *)mod_m->modelData)->animIndex); 
+	model_t		*mod_a = R_GetModelByHandle(mod_m->data.glm->animIndex); 
 	int			index = G2_Find_Bone(mod_a, blist, boneName);
  
 	if (index != -1)
@@ -965,7 +965,7 @@ qboolean G2_Pause_Bone_Anim(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char 
 qboolean	G2_IsPaused(const char *fileName, boneInfo_v &blist, const char *boneName)
 {
   	model_t		*mod_m = R_GetModelByHandle(RE_RegisterModel(fileName)); 
-	model_t		*mod_a = R_GetModelByHandle(((mdxmHeader_t *)mod_m->modelData)->animIndex); 
+	model_t		*mod_a = R_GetModelByHandle(mod_m->data.glm->animIndex); 
 	int			index = G2_Find_Bone(mod_a, blist, boneName);
  
 	// did we find it?
@@ -1003,7 +1003,7 @@ qboolean G2_Stop_Bone_Anim_Index(boneInfo_v &blist, const int index)
 qboolean G2_Stop_Bone_Anim(const char *fileName, boneInfo_v &blist, const char *boneName)
 {
   	model_t		*mod_m = R_GetModelByHandle(RE_RegisterModel(fileName)); 
-	model_t		*mod_a = R_GetModelByHandle(((mdxmHeader_t *)mod_m->modelData)->animIndex); 
+	model_t		*mod_a = R_GetModelByHandle(mod_m->data.glm->animIndex); 
 	int			index = G2_Find_Bone(mod_a, blist, boneName);
  
 	// did we find it?
@@ -1039,7 +1039,7 @@ qboolean G2_Stop_Bone_Angles_Index(boneInfo_v &blist, const int index)
 qboolean G2_Stop_Bone_Angles(const char *fileName, boneInfo_v &blist, const char *boneName)
 {
   	model_t		*mod_m = R_GetModelByHandle(RE_RegisterModel(fileName)); 
-	model_t		*mod_a = R_GetModelByHandle(((mdxmHeader_t *)mod_m->modelData)->animIndex); 
+	model_t		*mod_a = R_GetModelByHandle(mod_m->data.glm->animIndex); 
 	int			index = G2_Find_Bone(mod_a, blist, boneName);
  
 	// did we find it?
@@ -4862,7 +4862,7 @@ void G2_RemoveRedundantBoneOverrides(boneInfo_v &blist, int *activeBones)
 int	G2_Get_Bone_Index(CGhoul2Info *ghoul2, const char *boneName)
 {
   	model_t		*mod_m = R_GetModelByHandle(RE_RegisterModel(ghoul2->mFileName)); 
-	model_t		*mod_a = R_GetModelByHandle(((mdxmHeader_t *)mod_m->modelData)->animIndex); 
+	model_t		*mod_a = R_GetModelByHandle(mod_m->data.glm->animIndex); 
 
 	return (G2_Find_Bone(mod_a, ghoul2->mBlist, boneName));
 }

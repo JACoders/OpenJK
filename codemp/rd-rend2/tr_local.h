@@ -1754,9 +1754,16 @@ typedef struct model_s {
 	int			index;		// model = tr.models[model->index]
 
 	int			dataSize;	// just for listing purposes
-	bmodel_t	*bmodel;		// only if type == MOD_BRUSH
-	mdvModel_t	*mdv[MD3_MAX_LODS];	// only if type == MOD_MESH
-	void	*modelData;			// only if type == (MOD_MD4 | MOD_MDR | MOD_IQM)
+	union
+	{
+		bmodel_t	*bmodel;		// only if type == MOD_BRUSH
+		mdvModel_t	*mdv[MD3_MAX_LODS];	// only if type == MOD_MESH
+		md4Header_t	*md4; // only if type == MOD_MD4
+		mdrHeader_t	*mdr; // only if type == MOD_MDR
+		iqmData_t	*iqm; // only if type == MOD_IQM
+		mdxmHeader_t *glm; // only if type == MOD_MDXM
+		mdxaHeader_t *gla; // only if type == MOD_MDXA
+	} data;
 
 	int			 numLods;
 } model_t;

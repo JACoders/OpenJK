@@ -110,7 +110,7 @@ qhandle_t R_RegisterMD3(const char *name, model_t *mod)
 		for(lod--; lod >= 0; lod--)
 		{
 			mod->numLods++;
-			mod->mdv[lod] = mod->mdv[lod + 1];
+			mod->data.mdv[lod] = mod->data.mdv[lod + 1];
 		}
 
 		return mod->index;
@@ -437,7 +437,7 @@ static qboolean R_LoadMD3(model_t * mod, int lod, void *buffer, const char *modN
 	mod->dataSize += size;
 	//mdvModel = mod->mdv[lod] = (mdvModel_t *)ri->Hunk_Alloc(sizeof(mdvModel_t), h_low);
 	qboolean bAlreadyFound = qfalse;
-	mdvModel = mod->mdv[lod] = (mdvModel_t *)CModelCache->Allocate( size, buffer, modName, &bAlreadyFound, TAG_MODEL_MD3 );
+	mdvModel = mod->data.mdv[lod] = (mdvModel_t *)CModelCache->Allocate( size, buffer, modName, &bAlreadyFound, TAG_MODEL_MD3 );
 
 //  Com_Memcpy(mod->md3[lod], buffer, LittleLong(md3Model->ofsEnd));
 	if( !bAlreadyFound )
@@ -882,7 +882,7 @@ static qboolean R_LoadMDR( model_t *mod, void *buffer, int filesize, const char 
 	}
 
 	mod->dataSize += size;
-	mod->modelData = mdr = (mdrHeader_t*)ri->Hunk_Alloc( size, h_low );
+	mod->data.mdr = mdr = (mdrHeader_t*)ri->Hunk_Alloc( size, h_low );
 
 	// Copy all the values over from the file and fix endian issues in the process, if necessary.
 	
@@ -1192,7 +1192,7 @@ static qboolean R_LoadMD4( model_t *mod, void *buffer, const char *mod_name ) {
 	mod->type = MOD_MD4;
 	size = LittleLong(pinmodel->ofsEnd);
 	mod->dataSize += size;
-	mod->modelData = md4 = (md4Header_t *)ri->Hunk_Alloc( size, h_low );
+	mod->data.md4 = md4 = (md4Header_t *)ri->Hunk_Alloc( size, h_low );
 
 	Com_Memcpy(md4, buffer, size);
 
@@ -1382,7 +1382,7 @@ void R_Modellist_f( void ) {
 		mod = tr.models[i];
 		lods = 1;
 		for ( j = 1 ; j < MD3_MAX_LODS ; j++ ) {
-			if ( mod->mdv[j] && mod->mdv[j] != mod->mdv[j-1] ) {
+			if ( mod->data.mdv[j] && mod->data.mdv[j] != mod->data.mdv[j-1] ) {
 				lods++;
 			}
 		}
@@ -1485,17 +1485,17 @@ int R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFram
 	model_t		*model;
 
 	model = R_GetModelByHandle( handle );
-	if ( !model->mdv[0] )
+	if ( !model->data.mdv[0] )
 	{
 		if(model->type == MOD_MDR)
 		{
 			start = &start_space;
 			end = &end_space;
-			R_GetAnimTag((mdrHeader_t *) model->modelData, startFrame, tagName, start);
-			R_GetAnimTag((mdrHeader_t *) model->modelData, endFrame, tagName, end);
+			R_GetAnimTag((mdrHeader_t *) model->data.mdr, startFrame, tagName, start);
+			R_GetAnimTag((mdrHeader_t *) model->data.mdr, endFrame, tagName, end);
 		}
 		else if( model->type == MOD_IQM ) {
-			return R_IQMLerpTag( tag, (iqmData_t *)model->modelData,
+			return R_IQMLerpTag( tag, (iqmData_t *)model->data.iqm,
 					startFrame, endFrame,
 					frac, tagName );
 		} else {
@@ -1508,8 +1508,8 @@ int R_LerpTag( orientation_t *tag, qhandle_t handle, int startFrame, int endFram
 	}
 	else
 	{
-		start = R_GetTag( model->mdv[0], startFrame, tagName );
-		end = R_GetTag( model->mdv[0], endFrame, tagName );
+		start = R_GetTag( model->data.mdv[0], startFrame, tagName );
+		end = R_GetTag( model->data.mdv[0], endFrame, tagName );
 		if ( !start || !end ) {
 			AxisClear( tag->axis );
 			VectorClear( tag->origin );
@@ -1544,15 +1544,15 @@ void R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs ) {
 	model = R_GetModelByHandle( handle );
 
 	if(model->type == MOD_BRUSH) {
-		VectorCopy( model->bmodel->bounds[0], mins );
-		VectorCopy( model->bmodel->bounds[1], maxs );
+		VectorCopy( model->data.bmodel->bounds[0], mins );
+		VectorCopy( model->data.bmodel->bounds[1], maxs );
 		
 		return;
 	} else if (model->type == MOD_MESH) {
 		mdvModel_t	*header;
 		mdvFrame_t	*frame;
 
-		header = model->mdv[0];
+		header = model->data.mdv[0];
 		frame = header->frames;
 
 		VectorCopy( frame->bounds[0], mins );
@@ -1563,7 +1563,7 @@ void R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs ) {
 		md4Header_t	*header;
 		md4Frame_t	*frame;
 
-		header = (md4Header_t *)model->modelData;
+		header = model->data.md4;
 		frame = (md4Frame_t *) ((byte *)header + header->ofsFrames);
 
 		VectorCopy( frame->bounds[0], mins );
@@ -1574,7 +1574,7 @@ void R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs ) {
 		mdrHeader_t	*header;
 		mdrFrame_t	*frame;
 
-		header = (mdrHeader_t *)model->modelData;
+		header = model->data.mdr;
 		frame = (mdrFrame_t *) ((byte *)header + header->ofsFrames);
 
 		VectorCopy( frame->bounds[0], mins );
@@ -1584,7 +1584,7 @@ void R_ModelBounds( qhandle_t handle, vec3_t mins, vec3_t maxs ) {
 	} else if(model->type == MOD_IQM) {
 		iqmData_t *iqmData;
 		
-		iqmData = (iqmData_t *)model->modelData;
+		iqmData = model->data.iqm;
 
 		if(iqmData->bounds)
 		{

@@ -152,7 +152,7 @@ int G2_Add_Bolt(CGhoul2Info *ghlInfo, boltInfo_v &bltlist, surfaceInfo_v &slist,
 
 	// no, check to see if it's a bone then
 
-	mdxaHeader_t *mdxa = (mdxaHeader_t *)mod_a->modelData;
+	mdxaHeader_t *mdxa = mod_a->data.gla;
    	offsets = (mdxaSkelOffsets_t *)((byte *)mdxa + sizeof(mdxaHeader_t));
 
  	// walk the entire list of bones in the gla file for this model and see if any match the name of the bone we want to find

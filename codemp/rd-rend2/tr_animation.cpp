@@ -46,7 +46,7 @@ void R_AddAnimSurfaces( trRefEntity_t *ent ) {
 	int             cubemapIndex;
 	int				i;
 
-	header = (md4Header_t *) tr.currentModel->modelData;
+	header = (md4Header_t *) tr.currentModel->data.md4;
 	lod = (md4LOD_t *)( (byte *)header + header->ofsLODs );
 	cubemapIndex = R_CubemapForPoint(ent->e.origin);
 
@@ -328,7 +328,7 @@ void R_MDRAddAnimSurfaces( trRefEntity_t *ent ) {
 	int             cubemapIndex;
 	qboolean	personalModel;
 
-	header = (mdrHeader_t *)tr.currentModel->modelData;
+	header = (mdrHeader_t *)tr.currentModel->data.md4;
 	
 	personalModel = (qboolean)((ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal);
 	
