@@ -4809,7 +4809,8 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 
 	// FORCE speed does blur trails
 	//------------------------------------------------------
-	if ( (gent->client->ps.forcePowersActive & (1 << FP_SPEED) //in force speed 
+	if ( cg_speedTrail.integer
+		&& (gent->client->ps.forcePowersActive & (1 << FP_SPEED) //in force speed 
 		|| cent->gent->client->ps.legsAnim == BOTH_FORCELONGLEAP_START//or force long jump - FIXME: only 1st half of that anim?
 		|| cent->gent->client->ps.legsAnim == BOTH_FORCELONGLEAP_ATTACK )//or force long jump attack
 		&& (gent->s.number || cg.renderingThirdPerson) ) // looks dumb doing this with first peron mode on
