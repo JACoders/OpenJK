@@ -640,7 +640,7 @@ static void CG_DrawVehicleSheild( const centity_t *cent, const Vehicle_t *pVeh )
 	inc = (float) maxHealth / MAX_VHUD_SHIELD_TICS;
 	for (i=1;i <= MAX_VHUD_SHIELD_TICS;i++)
 	{
-		sprintf( itemName, "shield_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "shield_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -755,7 +755,7 @@ static void CG_DrawVehicleSpeed( const centity_t *cent, const Vehicle_t *pVeh, c
 	inc = (float) maxSpeed / MAX_VHUD_SPEED_TICS;
 	for (i=1;i<=MAX_VHUD_SPEED_TICS;i++)
 	{
-		sprintf( itemName, "speed_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "speed_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			entHud,
@@ -850,7 +850,7 @@ static void CG_DrawVehicleArmor( const centity_t *cent, const Vehicle_t *pVeh )
 	inc = (float) maxArmor / MAX_VHUD_ARMOR_TICS;
 	for (i=1;i<=MAX_VHUD_ARMOR_TICS;i++)
 	{
-		sprintf( itemName, "armor_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "armor_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -912,7 +912,7 @@ static void CG_DrawVehicleAmmo( const centity_t *cent, const Vehicle_t *pVeh )
 	inc = (float) maxAmmo / MAX_VHUD_AMMO_TICS;
 	for (i=1;i<=MAX_VHUD_AMMO_TICS;i++)
 	{
-		sprintf( itemName, "ammo_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "ammo_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -974,7 +974,7 @@ static void CG_DrawVehicleAmmoUpper( const centity_t *cent, const Vehicle_t *pVe
 	inc = (float) maxAmmo / MAX_VHUD_AMMO_TICS;
 	for (i=1;i<MAX_VHUD_AMMO_TICS;i++)
 	{
-		sprintf( itemName, "ammoupper_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "ammoupper_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -1036,7 +1036,7 @@ static void CG_DrawVehicleAmmoLower( const centity_t *cent, const Vehicle_t *pVe
 	inc = (float) maxAmmo / MAX_VHUD_AMMO_TICS;
 	for (i=1;i<MAX_VHUD_AMMO_TICS;i++)
 	{
-		sprintf( itemName, "ammolower_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "ammolower_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -1231,7 +1231,7 @@ static void CG_DrawEmplacedGunHealth( const centity_t *cent )
 	inc = (float) maxHealth / MAX_VHUD_SHIELD_TICS;
 	for (i=1;i <= MAX_VHUD_SHIELD_TICS;i++)
 	{
-		sprintf( itemName, "shield_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "shield_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",
@@ -1334,7 +1334,7 @@ static void CG_DrawItemHealth( float currValue, float maxHealth )
 	inc = (float) maxHealth / MAX_VHUD_SHIELD_TICS;
 	for (i=1;i <= MAX_VHUD_SHIELD_TICS;i++)
 	{
-		sprintf( itemName, "shield_tic%d",	i );
+		Com_sprintf( itemName, sizeof(itemName), "shield_tic%d",	i );
 
 		if (!cgi_UI_GetMenuItemInfo(
 			"swoopvehiclehud",

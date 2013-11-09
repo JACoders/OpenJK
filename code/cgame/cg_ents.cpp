@@ -2586,7 +2586,7 @@ void CG_ROFF_NotetrackCallback( centity_t *cent, const char *notetrack)
 
 		if (posoffsetGathered < 3)
 		{
-			sprintf(errMsg, "Offset position argument for 'effect' type is invalid.");
+			Q_strncpyz(errMsg, "Offset position argument for 'effect' type is invalid.", sizeof(errMsg));
 			goto functionend;
 		}
 

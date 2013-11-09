@@ -89,12 +89,12 @@ static void CG_Viewpos_f (void) {
 void CG_WriteCam_f (void)
 {
 	char	text[1024];
-	char	*targetname;
+	const char	*targetname;
 	static	int	numCams;
 
 	numCams++;
 	
-	targetname = (char	*)CG_Argv(1);
+	targetname = CG_Argv(1);
 
 	if( !targetname || !targetname[0] )
 	{
@@ -102,7 +102,7 @@ void CG_WriteCam_f (void)
 	}
 
 	CG_Printf( "Camera #%d ('%s') written to: ", numCams, targetname );
-	sprintf( text, "//entity %d\n{\n\"classname\"	\"ref_tag\"\n\"targetname\"	\"%s\"\n\"origin\" \"%i %i %i\"\n\"angles\" \"%i %i %i\"\n\"fov\" \"%i\"\n}\n", numCams, targetname, (int)cg.refdef.vieworg[0], (int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], (int)cg.refdefViewAngles[0], (int)cg.refdefViewAngles[1], (int)cg.refdefViewAngles[2], cg_fov.integer );
+	Com_sprintf( text, sizeof(text), "//entity %d\n{\n\"classname\"	\"ref_tag\"\n\"targetname\"	\"%s\"\n\"origin\" \"%i %i %i\"\n\"angles\" \"%i %i %i\"\n\"fov\" \"%i\"\n}\n", numCams, targetname, (int)cg.refdef.vieworg[0], (int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], (int)cg.refdefViewAngles[0], (int)cg.refdefViewAngles[1], (int)cg.refdefViewAngles[2], cg_fov.integer );
 	gi.WriteCam( text );
 }
 
