@@ -3453,7 +3453,7 @@ void CG_DrawInventorySelect( void )
 			{
 				char itemName[256], data[1024]; // FIXME: do these really need to be this large??  does it matter?
 
-				sprintf( itemName, "SP_INGAME_%s",	item->classname );
+				Com_sprintf( itemName, sizeof(itemName), "SP_INGAME_%s",	item->classname );
 			
 				if ( cgi_SP_GetStringTextString( itemName, data, sizeof( data )))
 				{

@@ -601,7 +601,7 @@ int G2API_InitGhoul2Model(CGhoul2Info_v &ghoul2, const char *fileName, int, qhan
 	{
 		assert(model < 8);	//arb, just catching run-away models
 		CGhoul2Info info;
-		Q_strncpyz(info.mFileName, fileName, 64);
+		Q_strncpyz(info.mFileName, fileName, sizeof(info.mFileName));
 		info.mModelindex = 0;
 		if(G2_TestModelPointers(&info)) {
 		ghoul2.push_back(CGhoul2Info());
@@ -610,7 +610,7 @@ int G2API_InitGhoul2Model(CGhoul2Info_v &ghoul2, const char *fileName, int, qhan
 		}
 	}
 
-	Q_strncpyz(ghoul2[model].mFileName, fileName, 64);
+	Q_strncpyz(ghoul2[model].mFileName, fileName, sizeof(ghoul2[model].mFileName));
 	ghoul2[model].mModelindex = model;
 	if (!G2_TestModelPointers(&ghoul2[model]))
 	{
