@@ -1345,84 +1345,90 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 
 void WPN_Damage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].damage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].damage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_AltDamage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].altDamage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].altDamage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_SplashDamage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].splashDamage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].splashDamage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_SplashRadius(const char **holdBuf)
 {
-	const char *tokenStr;
+	float	tokenFlt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseFloat(holdBuf,&tokenFlt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].splashRadius = (float)atof( tokenStr );
+	weaponData[wpnParms.weaponNum].splashRadius = tokenFlt;
 }
 
 //--------------------------------------------
 
 void WPN_AltSplashDamage(const char **holdBuf)
 {
-	const char *tokenStr;
+	int		tokenInt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseInt(holdBuf,&tokenInt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].altSplashDamage = atoi( tokenStr );
+	weaponData[wpnParms.weaponNum].altSplashDamage = tokenInt;
 }
 
 //--------------------------------------------
 
 void WPN_AltSplashRadius(const char **holdBuf)
 {
-	const char *tokenStr;
+	float	tokenFlt;
 
-	if( COM_ParseString(holdBuf,&tokenStr))
+	if( COM_ParseFloat(holdBuf,&tokenFlt))
 	{
+		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	weaponData[wpnParms.weaponNum].altSplashRadius = (float)atof( tokenStr );
+	weaponData[wpnParms.weaponNum].altSplashRadius = tokenFlt;
 }
 
 //--------------------------------------------
