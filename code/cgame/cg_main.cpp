@@ -329,6 +329,7 @@ vmCvar_t	fx_expensivePhysics;
 vmCvar_t	cg_debugHealthBars;
 
 vmCvar_t	cg_smoothCamera;
+vmCvar_t	cg_speedTrail;
 
 typedef struct {
 	vmCvar_t	*vmCvar;
@@ -443,6 +444,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_debugHealthBars,	"cg_debugHealthBars",	"0", CVAR_CHEAT },
 
 	{ &cg_smoothCamera, "cg_smoothCamera", "1", CVAR_ARCHIVE },
+	{ &cg_speedTrail, "cg_speedTrail", "1", CVAR_ARCHIVE },
 };
 
 static int cvarTableSize = sizeof( cvarTable ) / sizeof( cvarTable[0] );

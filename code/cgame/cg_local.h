@@ -646,6 +646,7 @@ extern	vmCvar_t		cg_smoothPlayerPlat;
 extern	vmCvar_t		cg_smoothPlayerPlatAccel;
 
 extern	vmCvar_t		cg_smoothCamera;
+extern	vmCvar_t		cg_speedTrail;
 
 void CG_NewClientinfo( int clientNum );
 //
