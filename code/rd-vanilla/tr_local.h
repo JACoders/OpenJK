@@ -1224,6 +1224,8 @@ extern	cvar_t	*r_noGhoul2;
 /*
 Ghoul2 Insert End
 */
+
+extern	cvar_t	*r_environmentMapping;
 //====================================================================
 
 // Point sprite stuff.
