@@ -72,7 +72,6 @@ typedef struct fileHandleData_s {
 	int			fileSize;
 	int			zipFilePos;
 	qboolean	zipFile;
-	qboolean	streamed;
 	char		name[MAX_ZPATH];
 } fileHandleData_t;
 

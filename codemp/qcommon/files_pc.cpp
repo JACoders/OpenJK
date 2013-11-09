@@ -468,9 +468,6 @@ void FS_FCloseFile( fileHandle_t f ) {
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
 	}
 
-	if (fsh[f].streamed) {
-		Sys_EndStreamedFile(f);
-	}
 	if (fsh[f].zipFile == qtrue) {
 		unzCloseCurrentFile( fsh[f].handleFiles.file.z );
 		if ( fsh[f].handleFiles.unique ) {
@@ -1036,15 +1033,8 @@ int FS_Read2( void *buffer, int len, fileHandle_t f ) {
 	if ( !f ) {
 		return 0;
 	}
-	if (fsh[f].streamed) {
-		int r;
-		fsh[f].streamed = qfalse;
-		r = Sys_StreamedRead( buffer, len, 1, f);
-		fsh[f].streamed = qtrue;
-		return r;
-	} else {
-		return FS_Read( buffer, len, f);
-	}
+
+	return FS_Read( buffer, len, f);
 }
 
 int FS_Read( void *buffer, int len, fileHandle_t f ) {
@@ -1159,12 +1149,6 @@ int FS_Seek( fileHandle_t f, long offset, int origin ) {
 	if ( !fs_searchpaths ) {
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
 		return -1;
-	}
-
-	if (fsh[f].streamed) {
-		fsh[f].streamed = qfalse;
-		Sys_StreamSeek( f, offset, origin );
-		fsh[f].streamed = qtrue;
 	}
 
 	if (fsh[f].zipFile == qtrue) {
@@ -3165,12 +3149,6 @@ int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode ) {
 			fsh[*f].baseOffset = ftell(fsh[*f].handleFiles.file.o);
 		}
 		fsh[*f].fileSize = r;
-		fsh[*f].streamed = qfalse;
-
-		if (mode == FS_READ) {
-			Sys_BeginStreamedFile( *f, 0x4000 );
-			fsh[*f].streamed = qtrue;
-		}
 	}
 	fsh[*f].handleSync = sync;
 
