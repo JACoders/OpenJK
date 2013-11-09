@@ -209,6 +209,7 @@ cvar_t	*sp_language;			// JK2
 #endif
 cvar_t	*com_buildScript;
 
+cvar_t	*r_environmentMapping;
 
 /*
 Ghoul2 Insert End
@@ -1268,6 +1269,8 @@ Ghoul2 Insert End
 	{
 		ri.Cvar_Set("r_modelpoolmegs", "0");
 	}
+
+	r_environmentMapping = ri.Cvar_Get( "r_environmentMapping", "1", CVAR_ARCHIVE );
 
 	// make sure all the commands added here are also
 	// removed in R_Shutdown
