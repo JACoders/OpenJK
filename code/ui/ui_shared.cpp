@@ -10134,7 +10134,7 @@ void Menus_HandleOOBClick(menuDef_t *menu, int key, qboolean down)
 			{
 				Menu_RunCloseScript(menu);
 				menu->window.flags &= ~(WINDOW_HASFOCUS | WINDOW_VISIBLE);
-				Menus_Activate(&Menus[i]);
+			//	Menus_Activate(&Menus[i]);
 				Menu_HandleMouseMove(&Menus[i], DC->cursorx, DC->cursory);
 				Menu_HandleKey(&Menus[i], key, down);
 			}
