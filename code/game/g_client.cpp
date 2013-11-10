@@ -1974,7 +1974,10 @@ void G_SetSabersFromCVars( gentity_t *ent )
 void G_InitPlayerFromCvars( gentity_t *ent )
 {
 	//set model based on cvars
-	G_ChangePlayerModel( ent, va("%s|%s|%s|%s", g_char_model->string, g_char_skin_head->string, g_char_skin_torso->string, g_char_skin_legs->string) );
+	if(Q_stricmp(g_char_skin_head->string, "model_default") == 0 && Q_stricmp(g_char_skin_torso->string, "model_default") == 0 && Q_stricmp(g_char_skin_legs->string, "model_default") == 0)
+		G_ChangePlayerModel( ent, va("%s|model_default", g_char_model->string) );
+	else
+		G_ChangePlayerModel( ent, va("%s|%s|%s|%s", g_char_model->string, g_char_skin_head->string, g_char_skin_torso->string, g_char_skin_legs->string) );
 
 	//FIXME: parse these 2 from some cvar or require playermodel to be in a *.npc?
 	if( ent->NPC_type && gi.bIsFromZone(ent->NPC_type, TAG_G_ALLOC) ) {
@@ -2047,7 +2050,10 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 		*p=0;
 		p++;
 
-		G_SetG2PlayerModel( ent, name, p, NULL, NULL );
+		if ( strstr(p, "model_default" ) )
+			G_SetG2PlayerModel( ent, name, NULL, NULL, NULL );
+		else
+			G_SetG2PlayerModel( ent, name, p, NULL, NULL );
 	}
 	else
 	{

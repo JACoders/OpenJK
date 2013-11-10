@@ -9455,6 +9455,10 @@ extern cvar_t	*g_char_skin_legs;
 			{
 				Com_sprintf( strSkin, sizeof( strSkin ), "models/players/%s/|%s|%s|%s", g_char_model->string, g_char_skin_head->string, "torso_g1", "lower_e1" );
 			}
+			else if(Q_stricmp(g_char_skin_head->string, "model_default") == 0 && Q_stricmp(g_char_skin_torso->string, "model_default") == 0 && Q_stricmp(g_char_skin_legs->string, "model_default") == 0)
+			{
+				Com_sprintf( strSkin, sizeof( strSkin ), "models/players/%s/model_default.skin", g_char_model->string );
+			}
 			else
 			{
 				Com_sprintf( strSkin, sizeof( strSkin ), "models/players/%s/|%s|%s|%s", g_char_model->string, g_char_skin_head->string, g_char_skin_torso->string, g_char_skin_legs->string );
