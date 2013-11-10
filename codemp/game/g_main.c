@@ -179,6 +179,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.time = levelTime;
 	level.startTime = levelTime;
 
+	level.follow1 = level.follow2 = -1;
+
 	level.snd_fry = G_SoundIndex("sound/player/fry.wav");	// FIXME standing in lava / slime
 
 	level.snd_hack = G_SoundIndex("sound/player/hacking.wav");
