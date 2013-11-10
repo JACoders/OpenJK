@@ -142,9 +142,6 @@ if(BuildMPEngine OR BuildMPDed)
 		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${ZLIB_INCLUDE_DIR})
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZLIB_LIBRARY})
 	endif(UseInternalZlib)
-
-	file(GLOB_RECURSE J_SRC "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
-	source_group("jpeg-8c" FILES ${J_SRC})
 	
 	set(MPEngineAndDedCgameFiles
 		"${MPDir}/cgame/cg_public.h"
@@ -399,11 +396,6 @@ if(BuildMPEngine)
 	endif(WIN32)
 	
 	#    Source Files
-	
-	# TODO: Allow for use of external library
-	file(GLOB_RECURSE MPEngineJpegFiles "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
-	source_group("jpeg-8c" FILES ${MPEngineJpegFiles})
-	set(MPEngineFiles ${MPEngineFiles} ${MPEngineJpegFiles})
 	
 	set(MPEngineClientFiles
 		"${MPDir}/client/cl_avi.cpp"
