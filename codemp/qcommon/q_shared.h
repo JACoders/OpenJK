@@ -106,12 +106,6 @@
 	#define Q_EXPORT
 #endif
 
-#if defined(__linux__) && !defined(__GCC__)
-#define Q_EXPORT_C// extern "C"
-#else
-#define Q_EXPORT_C
-#endif
-
 // this is the define for determining if we have an asm version of a C function
 #if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__)
 	#define id386	1
