@@ -667,62 +667,7 @@ usercmd_t communication
 
 /*
 =====================
-MSG_WriteDeltaUsercmd
-=====================
-*/
-void MSG_WriteDeltaUsercmd( msg_t *msg, usercmd_t *from, usercmd_t *to ) {
-	if ( to->serverTime - from->serverTime < 256 ) {
-		MSG_WriteBits( msg, 1, 1 );
-		MSG_WriteBits( msg, to->serverTime - from->serverTime, 8 );
-	} else {
-		MSG_WriteBits( msg, 0, 1 );
-		MSG_WriteBits( msg, to->serverTime, 32 );
-	}
-	MSG_WriteDelta( msg, from->angles[0], to->angles[0], 16 );
-	MSG_WriteDelta( msg, from->angles[1], to->angles[1], 16 );
-	MSG_WriteDelta( msg, from->angles[2], to->angles[2], 16 );
-	MSG_WriteDelta( msg, from->forwardmove, to->forwardmove, 8 );
-	MSG_WriteDelta( msg, from->rightmove, to->rightmove, 8 );
-	MSG_WriteDelta( msg, from->upmove, to->upmove, 8 );
-	MSG_WriteDelta( msg, from->buttons, to->buttons, 16 );
-	MSG_WriteDelta( msg, from->weapon, to->weapon, 8 );
-
-	MSG_WriteDelta( msg, from->forcesel, to->forcesel, 8 );
-	MSG_WriteDelta( msg, from->invensel, to->invensel, 8 );
-
-	MSG_WriteDelta( msg, from->generic_cmd, to->generic_cmd, 8 );
-}
-
-
-/*
-=====================
-MSG_ReadDeltaUsercmd
-=====================
-*/
-void MSG_ReadDeltaUsercmd( msg_t *msg, usercmd_t *from, usercmd_t *to ) {
-	if ( MSG_ReadBits( msg, 1 ) ) {
-		to->serverTime = from->serverTime + MSG_ReadBits( msg, 8 );
-	} else {
-		to->serverTime = MSG_ReadBits( msg, 32 );
-	}
-	to->angles[0] = MSG_ReadDelta( msg, from->angles[0], 16);
-	to->angles[1] = MSG_ReadDelta( msg, from->angles[1], 16);
-	to->angles[2] = MSG_ReadDelta( msg, from->angles[2], 16);
-	to->forwardmove = MSG_ReadDelta( msg, from->forwardmove, 8);
-	to->rightmove = MSG_ReadDelta( msg, from->rightmove, 8);
-	to->upmove = MSG_ReadDelta( msg, from->upmove, 8);
-	to->buttons = MSG_ReadDelta( msg, from->buttons, 16);
-	to->weapon = MSG_ReadDelta( msg, from->weapon, 8);
-
-	to->forcesel = MSG_ReadDelta( msg, from->forcesel, 8);
-	to->invensel = MSG_ReadDelta( msg, from->invensel, 8);
-
-	to->generic_cmd = MSG_ReadDelta( msg, from->generic_cmd, 8);
-}
-
-/*
-=====================
-MSG_WriteDeltaUsercmd
+MSG_WriteDeltaUsercmdKey
 =====================
 */
 void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to ) {
@@ -765,10 +710,9 @@ void MSG_WriteDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *
 	MSG_WriteDeltaKey( msg, key, from->generic_cmd, to->generic_cmd, 8 );
 }
 
-
 /*
 =====================
-MSG_ReadDeltaUsercmd
+MSG_ReadDeltaUsercmdKey
 =====================
 */
 void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *to ) {
