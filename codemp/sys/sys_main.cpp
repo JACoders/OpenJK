@@ -177,11 +177,6 @@ void Sys_UnloadDll( void *dllHandle )
 	Sys_UnloadLibrary(dllHandle);
 }
 
-char *Sys_DefaultCDPath(void)
-{
-	return "";
-}
-
 /*
 =================
 Sys_LoadDll
