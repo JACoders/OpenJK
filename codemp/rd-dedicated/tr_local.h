@@ -450,27 +450,9 @@ typedef struct shader_s {
 	// True if this shader has a stage with glow in it (just an optimization).
 	bool hasGlow;
 
-/*
-  int numStates;                                    // if non-zero this is a state shader
-  struct shader_s *currentShader;                   // current state if this is a state shader
-  struct shader_s *parentShader;                    // current state if this is a state shader
-  int currentState;                                 // current state index for cycle purposes
-  long expireTime;                                  // time in milliseconds this expires
-
-  int shaderStates[MAX_STATES_PER_SHADER];          // index to valid shader states
-*/
-
 	struct shader_s *remappedShader;                  // current shader this one is remapped too
 	struct	shader_s	*next;
 } shader_t;
-
-typedef struct shaderState_s {
-  char shaderName[MAX_QPATH];     // name of shader this state belongs to
-  char name[MAX_STATE_NAME];      // name of this state
-  char stateShader[MAX_QPATH];    // shader this name invokes
-  int cycleTime;                  // time this cycle lasts, <= 0 is forever
-  shader_t *shader;
-} shaderState_t;
 
 /*
 Ghoul2 Insert Start
