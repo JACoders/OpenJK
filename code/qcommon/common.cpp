@@ -319,6 +319,7 @@ void Com_Quit_f( void ) {
 		SV_Shutdown ("Server quit\n");
 		CL_Shutdown ();
 		Com_Shutdown ();
+		FS_Shutdown();
 	}
 	Sys_Quit ();
 }
