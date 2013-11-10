@@ -574,11 +574,6 @@ int cgi_SP_GetStringTextString(const char *text, char *buffer, int bufferLength)
 	return Q_syscall( CG_SP_GETSTRINGTEXTSTRING, text, buffer, bufferLength );
 }
 
-int cgi_EndGame(void)
-{
-	return Q_syscall( CG_SENDCONSOLECOMMAND, "cam_disable; disconnect\n" );//; cinematic outcast
-}
-
 /*
 OpenJK Add
 Since the modules are incompatible, might as well break base compat even further amirite?
