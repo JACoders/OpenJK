@@ -42,8 +42,8 @@
 #define	VALIDATEB( a )	if ( a == NULL ) {	assert(0);	return qfalse;	}
 #define VALIDATEP( a )	if ( a == NULL ) {	assert(0);	return NULL;	}
 
-#define VALIDSTRING( a )	( ( a != 0 ) && ( a[0] != '\0' ) )
-#define VALIDENT( e )		( ( e != 0 ) && ( (e)->inuse ) )
+#define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
+#define VALIDENT( e )		( ( e != NULL ) && ( (e)->inuse ) )
 
 //JAC: Added
 #define ARRAY_LEN( x ) ( sizeof( x ) / sizeof( *(x) ) )
@@ -801,10 +801,6 @@ struct cplane_s;
 
 extern	vec3_t		vec3_origin;
 extern	matrix3_t	axisDefault;
-
-#define	nanmask (255<<23)
-#define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
-
 
 #if idppc
 
