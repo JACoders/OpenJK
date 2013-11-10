@@ -16,9 +16,6 @@ typedef unsigned int glIndex_t;
 
 #define LL(x) x=LittleLong(x)
 
-//for 3d textures -rww
-#define GL_TEXTURE_3D                     0x806F
-
 // 14 bits
 // can't be increased without changing bit packing for drawsurfs
 // see QSORT_SHADERNUM_SHIFT
@@ -1268,7 +1265,6 @@ void R_RotateForEntity( const trRefEntity_t *ent, const viewParms_t *viewParms, 
 ** GL wrapper/helper functions
 */
 void	GL_Bind( image_t *image );
-void	GL_Bind3D( image_t *image );
 void	GL_SetDefaultState (void);
 void	GL_SelectTexture( int unit );
 void	GL_TextureMode( const char *string );
