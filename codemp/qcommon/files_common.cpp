@@ -493,6 +493,9 @@ void FS_InitFilesystem( void ) {
 	Com_StartupVariable( "fs_game" );
 	Com_StartupVariable( "fs_copyfiles" );
 	Com_StartupVariable( "fs_dirbeforepak" );
+#ifdef MACOS_X
+	Com_StartupVariable( "fs_apppath" );
+#endif
 
 	if(!FS_FilenameCompare(Cvar_VariableString("fs_game"), BASEGAME))
 		Cvar_Set("fs_game", "");
