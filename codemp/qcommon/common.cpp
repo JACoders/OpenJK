@@ -10,12 +10,6 @@
 
 #define	MAXPRINTMSG	4096
 
-#define MAX_NUM_ARGVS	50
-
-int		com_argc;
-char	*com_argv[MAX_NUM_ARGVS+1];
-
-
 FILE *debuglogfile;
 fileHandle_t logfile;
 fileHandle_t	com_journalFile;			// events are written here
