@@ -1756,15 +1756,15 @@ CG_ClearDataPadCvars
 */
 void CG_ClearDataPadCvars( void )
 {
-	cg_updatedDataPadForcePower1.integer = 0; //don't wait for the cvar-refresh.
-	cg_updatedDataPadForcePower2.integer = 0; //don't wait for the cvar-refresh.
-	cg_updatedDataPadForcePower3.integer = 0; //don't wait for the cvar-refresh.
 	cgi_Cvar_Set( "cg_updatedDataPadForcePower1", "0" );
+	cgi_Cvar_Update( &cg_updatedDataPadForcePower1 );
 	cgi_Cvar_Set( "cg_updatedDataPadForcePower2", "0" );
+	cgi_Cvar_Update( &cg_updatedDataPadForcePower2 );
 	cgi_Cvar_Set( "cg_updatedDataPadForcePower3", "0" );
+	cgi_Cvar_Update( &cg_updatedDataPadForcePower3 );
 
-	cg_updatedDataPadObjective.integer = 0; //don't wait for the cvar-refresh.
 	cgi_Cvar_Set( "cg_updatedDataPadObjective", "0" );
+	cgi_Cvar_Update( &cg_updatedDataPadObjective );
 }
 
 /*
