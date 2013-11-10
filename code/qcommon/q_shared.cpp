@@ -998,6 +998,69 @@ void Q_StripColor(char *text)
 	}
 }
 
+/*
+Q_strstrip
+
+	Description:	Replace strip[x] in string with repl[x] or remove characters entirely
+	Mutates:		string
+	Return:			--
+
+	Examples:		Q_strstrip( "Bo\nb is h\rairy!!", "\n\r!", "123" );	// "Bo1b is h2airy33"
+					Q_strstrip( "Bo\nb is h\rairy!!", "\n\r!", "12" );	// "Bo1b is h2airy"
+					Q_strstrip( "Bo\nb is h\rairy!!", "\n\r!", NULL );	// "Bob is hairy"
+*/
+
+void Q_strstrip( char *string, const char *strip, const char *repl )
+{
+	char		*out=string, *p=string, c;
+	const char	*s=strip;
+	int			replaceLen = repl?strlen( repl ):0, offset=0;
+
+	while ( (c = *p++) != '\0' )
+	{
+		for ( s=strip; *s; s++ )
+		{
+			offset = s-strip;
+			if ( c == *s )
+			{
+				if ( !repl || offset >= replaceLen )
+					c = *p++;
+				else
+					c = repl[offset];
+				break;
+			}
+		}
+		*out++ = c;
+	}
+	*out = '\0';
+}
+
+/*
+Q_strchrs
+
+	Description:	Find any characters in a string. Think of it as a shorthand strchr loop.
+	Mutates:		--
+	Return:			first instance of any characters found
+					 otherwise NULL
+*/
+
+const char *Q_strchrs( const char *string, const char *search )
+{
+	const char *p = string, *s = search;
+
+	while ( *p != '\0' )
+	{
+		for ( s=search; *s; s++ )
+		{
+			if ( *p == *s )
+				return p;
+		}
+		p++;
+	}
+
+	return NULL;
+}
+
 #ifdef _MSC_VER
 /*
 =============
