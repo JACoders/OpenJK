@@ -60,29 +60,6 @@ void GL_Bind( image_t *image ) {
 	}
 }
 
-//bind 3D texture -rww
-void GL_Bind3D( image_t *image )
-{
-	int texnum;
-
-	if ( !image ) {
-		Com_Printf (S_COLOR_YELLOW  "GL_Bind: NULL image\n" );
-		texnum = tr.defaultImage->texnum;
-	} else {
-		texnum = image->texnum;
-	}
-
-	if ( r_nobind->integer && tr.dlightImage ) {		// performance evaluation option
-		texnum = tr.dlightImage->texnum;
-	}
-
-	if ( glState.currenttextures[glState.currenttmu] != texnum ) {
-		image->frameUsed = tr.frameCount;
-		glState.currenttextures[glState.currenttmu] = texnum;
-		qglBindTexture (GL_TEXTURE_3D, texnum);
-	}
-}
-
 /*
 ** GL_SelectTexture
 */
@@ -137,7 +114,7 @@ void GL_Cull( int cullType ) {
 		return;
 	}
 	glState.faceCulling = cullType;
-	if (backEnd.projection2D){	//don't care, we're in 2d when it's always disabled
+	if (backEnd.projection2D) {	//don't care, we're in 2d when it's always disabled
 		return;	
 	}
 
