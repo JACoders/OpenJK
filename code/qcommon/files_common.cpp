@@ -630,6 +630,9 @@ void FS_InitFilesystem( void ) {
 	Com_StartupVariable( "fs_homepath" );
 	Com_StartupVariable( "fs_game" );
 	Com_StartupVariable( "fs_copyfiles" );
+#ifdef MACOS_X
+	Com_StartupVariable( "fs_apppath" );
+#endif
 
 	// try to start up normally
 	FS_Startup( BASEGAME );
