@@ -451,8 +451,6 @@ typedef struct shader_s {
 	bool		explicitlyDefined;		// found in a .shader file
 	bool		entityMergable;			// merge across entites optimizable (smoke, blood)
 
-	bool		isBumpMap;
-
 	skyParms_t	*sky;
 	fogParms_t	*fogParms;
 
