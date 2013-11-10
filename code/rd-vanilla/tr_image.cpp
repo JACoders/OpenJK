@@ -1537,7 +1537,7 @@ struct PNGFileReader
 		}
 	}
 
-	int Read ( byte **data, unsigned int *width, unsigned int *height )
+	int Read ( byte **data, int *width, int *height )
 	{
 		// Setup the pointers
 		*data = NULL;
@@ -1678,17 +1678,17 @@ void user_read_data( png_structp png_ptr, png_bytep data, png_size_t length ) {
 }
 
 // Loads a PNG image from file.
-static int LoadPNG ( const char *filename, byte **data, unsigned int *width, unsigned int *height )
+static void LoadPNG ( const char *filename, byte **data, int *width, int *height )
 {
 	char *buf = NULL;
 	int len = ri.FS_ReadFile (filename, (void **)&buf);
 	if ( len < 0 || buf == NULL )
 	{
-		return 0;
+		return;
 	}
 
 	PNGFileReader reader (buf);
-	return reader.Read (data, width, height);
+	reader.Read (data, width, height);
 }
 
 /*
@@ -1699,45 +1699,59 @@ Loads any of the supported image types into a cannonical
 32 bit format.
 =================
 */
-void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLenum *format ) {
-	char	name[MAX_QPATH];
-
+void R_LoadImage( const char *shortname, byte **pic, int *width, int *height ) {
 	*pic = NULL;
 	*width = 0;
 	*height = 0;
 
 	//handle external LMs
-	if (shortname[0] == '$') {
-		Q_strncpyz( name, shortname+1, sizeof( name ) );
-	} else {
-		Q_strncpyz( name, shortname, sizeof( name ) );
+	if ( shortname[0] == '$' )
+		shortname++;
+
+	// Try loading the image with the original extension (if possible).
+	const char *extension = COM_GetExtension (shortname);
+	if ( !Q_stricmp(extension, "jpg" ) )
+	{
+		LoadJPG( shortname, pic, width, height );
+		if ( *pic )
+		{
+			return;
+		}
+	}
+	else if ( !Q_stricmp(extension, "png" ) )
+	{ 
+		LoadPNG( shortname, pic, width, height );
+		if ( *pic )
+		{
+			return;
+		}
+	}
+	else if ( !Q_stricmp(extension, "tga" ) )
+	{ 
+		LoadTGA( shortname, pic, width, height );
+		if ( *pic )
+		{
+			return;
+		}
 	}
 
-	*format = GL_RGBA;
-	COM_StripExtension(name,name, sizeof(name));
-	COM_DefaultExtension(name, sizeof(name), ".jpg");
-
-	//First try .jpg
+	char extensionlessName[MAX_QPATH];
+	COM_StripExtension(shortname, extensionlessName, sizeof( extensionlessName ));
+	const char *name = va( "%s.jpg", extensionlessName );
 	LoadJPG( name, pic, width, height );
 	if (*pic)
 	{
 		return;
 	}
 
-	COM_StripExtension(name,name, sizeof(name));
-	COM_DefaultExtension(name, sizeof(name), ".png");	
-
-	//No .jpg existed, try .png
-	LoadPNG( name, pic, (unsigned int *)width, (unsigned int *)height );
+	name = va( "%s.png", extensionlessName );
+	LoadPNG( name, pic, width, height );
 	if (*pic)
 	{
 		return;
 	}
 
-	COM_StripExtension(name,name, sizeof(name));
-	COM_DefaultExtension(name, sizeof(name), ".tga");
-
-	//No .jpg existed and no .png existed, try .tga as a last resort.
+	name = va( "%s.tga", extensionlessName );
 	LoadTGA( name, pic, width, height );
 }
 
@@ -2006,8 +2020,6 @@ image_t	*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmi
 	image_t	*image;
 	int		width, height;
 	byte	*pic;
-	GLenum	format;
-//	long	hash;
    
 	if (!name) {
 		return NULL;
@@ -2028,12 +2040,12 @@ image_t	*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmi
 	//
 	// load the pic from disk
 	//
-	R_LoadImage( name, &pic, &width, &height, &format );
+	R_LoadImage( name, &pic, &width, &height );
 	if ( !pic ) {
         return NULL;            
 	}
 
-	image = R_CreateImage( ( char * ) name, pic, width, height, format, mipmap, allowPicmip, allowTC, glWrapClampMode );
+	image = R_CreateImage( ( char * ) name, pic, width, height, GL_RGBA, mipmap, allowPicmip, allowTC, glWrapClampMode );
 	Z_Free( pic );
 	return image;
 }
@@ -2086,9 +2098,8 @@ static void R_CreateDlightImage( void )
 {
 	int		width, height;
 	byte	*pic;
-	GLenum	format;
 
-	R_LoadImage("gfx/2d/dlight", &pic, &width, &height, &format);
+	R_LoadImage("gfx/2d/dlight", &pic, &width, &height);
 	if (pic)
 	{                                    
 		tr.dlightImage = R_CreateImage("*dlight", pic, width, height, GL_RGBA, qfalse, qfalse, qfalse, GL_CLAMP );

@@ -162,7 +162,7 @@ typedef struct {
 	qhandle_t (*RegisterShader)( const char *name );
 	qhandle_t (*RegisterShaderNoMip)( const char *name );
 	void	(*LoadWorld)( const char *name );
-	void	(*LoadImageJA)( const char *name, byte **pic, int *width, int *height, int *format );
+	void	(*R_LoadImage)( const char *name, byte **pic, int *width, int *height );
 
 	// these two functions added to help with the new model alloc scheme...
 	//

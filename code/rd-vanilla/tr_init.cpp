@@ -1558,8 +1558,6 @@ void RE_SetRangedFog( float dist )
 	}
 }
 
-static void RE_LoadImage( const char *shortname, byte **pic, int *width, int *height, int *format ) { R_LoadImage( shortname, pic, width, height, (GLenum*)format ); }
-
 void RE_SVModelInit( void )
 {
 	//ri.CM_ShaderTableCleanup();
@@ -1579,7 +1577,7 @@ GetRefAPI
 */
 extern void R_Resample(byte *source, int swidth, int sheight, byte *dest, int dwidth, int dheight, int components);
 extern void R_LoadDataImage( const char *name, byte **pic, int *width, int *height);
-extern void R_LoadImage( const char *shortname, byte **pic, int *width, int *height, GLenum *format );
+extern void R_LoadImage( const char *shortname, byte **pic, int *width, int *height );
 extern void R_CreateAutomapImage( const char *name, const byte *pic, int width, int height, 
 					   qboolean mipmap, qboolean allowPicmip, qboolean allowTC, int glWrapClampMode );
 extern void R_InvertImage(byte *data, int width, int height, int depth);
@@ -1635,7 +1633,7 @@ extern "C" Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *
 	REX(RegisterShader);
 	REX(RegisterShaderNoMip);
 	re.LoadWorld = RE_LoadWorldMap;
-	re.LoadImageJA = RE_LoadImage;
+	re.R_LoadImage = R_LoadImage;
 
 	REX(RegisterMedia_LevelLoadBegin);
 	REX(RegisterMedia_LevelLoadEnd);
