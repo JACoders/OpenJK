@@ -1262,7 +1262,7 @@ This is also used for spectator spawns
 */
 extern qboolean	gSiegeRoundBegun;
 extern qboolean	gSiegeRoundEnded;
-extern qboolean	gSiegeRoundWinningTeam;
+extern int	gSiegeRoundWinningTeam;
 void FindIntermissionPoint( void ) {
 	gentity_t	*ent = NULL;
 	gentity_t	*target;
