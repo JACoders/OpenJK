@@ -155,15 +155,6 @@ char *Sys_Cwd( void ) {
 	return cwd;
 }
 
-/*
-==============
-Sys_DefaultCDPath
-==============
-*/
-char *Sys_DefaultCDPath( void ) {
-	return "";
-}
-
 /* Resolves path names and determines if they are the same */
 /* For use with full OS paths not quake paths */
 /* Returns true if resulting paths are valid and the same, otherwise false */
