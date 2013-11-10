@@ -2006,11 +2006,11 @@ static void UI_DrawMapPreview(rectDef_t *rect, float scale, vec4_t color, qboole
 	int map = (net) ? ui_currentNetMap.integer : ui_currentMap.integer;
 	if (map < 0 || map > uiInfo.mapCount) {
 		if (net) {
-			ui_currentNetMap.integer = 0;
 			trap->Cvar_Set("ui_currentNetMap", "0");
+			trap->Cvar_Update(&ui_currentNetMap);
 		} else {
-			ui_currentMap.integer = 0;
 			trap->Cvar_Set("ui_currentMap", "0");
+			trap->Cvar_Update(&ui_currentMap);
 		}
 		map = 0;
 	}
@@ -6038,8 +6038,8 @@ static void UI_RunMenuScript(char **args)
 		} else if (Q_stricmp(name, "updateSPMenu") == 0) {
 			UI_SetCapFragLimits(qtrue);
 			UI_MapCountByGameType(qtrue);
-			ui_mapIndex.integer = UI_GetIndexFromSelection(ui_currentMap.integer);
-			trap->Cvar_Set("ui_mapIndex", va("%d", ui_mapIndex.integer));
+			trap->Cvar_SetValue("ui_mapIndex", UI_GetIndexFromSelection(ui_currentMap.integer));
+			trap->Cvar_Update(&ui_mapIndex);
 			Menu_SetFeederSelection(NULL, FEEDER_MAPS, ui_mapIndex.integer, "skirmish");
 			UI_GameType_HandleKey(0, 0, A_MOUSE1, qfalse);
 			UI_GameType_HandleKey(0, 0, A_MOUSE2, qfalse);
