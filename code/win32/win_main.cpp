@@ -717,11 +717,13 @@ static HINSTANCE Sys_RetrieveDLL( const char *gamename )
 			goto successful;
 	}
 
+#ifdef _DEBUG
 	// Try exepath (cwd)
 	fn = NULL;
 	retVal = LoadLibrary( gamename );
 	if(retVal)
 		goto successful;
+#endif
 
 successful:
 	Com_DPrintf("LoadLibrary (%s)\n", fn?fn:gamename);
