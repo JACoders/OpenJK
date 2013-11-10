@@ -29,11 +29,6 @@ extern refexport_t re;
 
 #define	MAXPRINTMSG	4096
 
-#define MAX_NUM_ARGVS	50
-
-int		com_argc;
-char	*com_argv[MAX_NUM_ARGVS+1];
-
 static fileHandle_t	logfile;
 static fileHandle_t	speedslog;
 static fileHandle_t	camerafile;
