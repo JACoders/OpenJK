@@ -319,26 +319,36 @@ FS_CreatePath
 Creates any directories needed to store the given filename
 ============
 */
-void	FS_CreatePath (char *OSPath) {
+qboolean FS_CreatePath (char *OSPath) {
 	char	*ofs;
+	char	path[MAX_OSPATH];
 	
 	// make absolutely sure that it can't back up the path
 	// FIXME: is c: allowed???
 	if ( strstr( OSPath, ".." ) || strstr( OSPath, "::" ) ) {
 		Com_Printf( "WARNING: refusing to create relative path \"%s\"\n", OSPath );
-		return;
+		return qtrue;
 	}
 
-	Q_strlwr(OSPath);
+	Q_strncpyz( path, OSPath, sizeof( path ) );
+	FS_ReplaceSeparators( path );
 
-	for (ofs = OSPath+1 ; *ofs ; ofs++) {
-		if (*ofs == PATH_SEP) {	
+	// Skip creation of the root directory as it will always be there
+	ofs = strchr( path, PATH_SEP );
+	ofs++;
+
+	for (; ofs != NULL && *ofs ; ofs++) {
+		if (*ofs == PATH_SEP) {
 			// create the directory
 			*ofs = 0;
-			Sys_Mkdir (OSPath);
+			if (!Sys_Mkdir (path)) {
+				Com_Error( ERR_FATAL, "FS_CreatePath: failed to create path \"%s\"",
+					path );
+			}
 			*ofs = PATH_SEP;
 		}
 	}
+	return qfalse;
 }
 
 

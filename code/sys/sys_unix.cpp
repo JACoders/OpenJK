@@ -433,14 +433,14 @@ void Sys_Sleep( int msec )
 Sys_Mkdir
 ==================
 */
-/*qboolean*/void Sys_Mkdir( const char *path )
+qboolean Sys_Mkdir( const char *path )
 {
-	/*int result = */mkdir( path, 0750 );
+	int result = mkdir( path, 0750 );
 
-/*	if( result != 0 )
+	if( result != 0 )
 		return (qboolean)(errno == EEXIST);
 
-	return qtrue;*/
+	return qtrue;
 }
 
 char *Sys_Cwd( void )
@@ -451,6 +451,28 @@ char *Sys_Cwd( void )
 	cwd[MAX_OSPATH-1] = 0;
 
 	return cwd;
+}
+
+/* Resolves path names and determines if they are the same */
+/* For use with full OS paths not quake paths */
+/* Returns true if resulting paths are valid and the same, otherwise false */
+bool Sys_PathCmp( const char *path1, const char *path2 )
+{
+	char *r1, *r2;
+
+	r1 = realpath(path1, NULL);
+	r2 = realpath(path2, NULL);
+
+	if(r1 && r2 && !Q_stricmp(r1, r2))
+	{
+		free(r1);
+		free(r2);
+		return true;
+	}
+
+	free(r1);
+	free(r2);
+	return false;
 }
 
 /*

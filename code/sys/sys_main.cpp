@@ -5,7 +5,6 @@
 #include "sys_loadlib.h"
 #include "sys_local.h"
 
-static char cdPath[ MAX_OSPATH ] = { 0 };
 static char binaryPath[ MAX_OSPATH ] = { 0 };
 static char installPath[ MAX_OSPATH ] = { 0 };
 
@@ -76,16 +75,6 @@ void Sys_UnloadDll( void *dllHandle )
 	}
 
 	Sys_UnloadLibrary(dllHandle);
-}
-
-void Sys_SetDefaultCDPath(const char *path)
-{
-	Q_strncpyz(cdPath, path, sizeof(cdPath));
-}
-
-char *Sys_DefaultCDPath(void)
-{
-        return cdPath;
 }
 
 /*
