@@ -430,8 +430,6 @@ typedef struct shader_s {
 	bool		explicitlyDefined;		// found in a .shader file
 	bool		entityMergable;			// merge across entites optimizable (smoke, blood)
 
-	bool		isBumpMap;
-
 	skyParms_t	*sky;
 	fogParms_t	*fogParms;
 
@@ -446,8 +444,6 @@ typedef struct shader_s {
 	bool		noTC;					// for images that don't want to be texture compressed (eg skies)
 
 	fogPass_t	fogPass;				// draw a blended pass, possibly with depth test equals
-
-	vec3_t		bumpVector;				// The given light vector for bump-mapping
 
 	deformStage_t	*deforms[MAX_SHADER_DEFORMS];
 	short		numDeforms;
