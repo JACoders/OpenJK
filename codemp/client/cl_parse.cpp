@@ -383,9 +383,6 @@ void CL_ParseSetGame( msg_t *msg )
 
 int cl_connectedToPureServer;
 int cl_connectedToCheatServer;
-int cl_connectedGAME;
-int cl_connectedCGAME;
-int cl_connectedUI;
 
 /*
 ==================
@@ -483,10 +480,6 @@ void CL_SystemInfoChanged( void ) {
 		Cvar_Set( "fs_game", "" );
 	}
 	cl_connectedToPureServer = Cvar_VariableValue( "sv_pure" );
-
-	cl_connectedGAME = atoi(Info_ValueForKey( systemInfo, "vm_game" ));
-	cl_connectedCGAME = atoi(Info_ValueForKey( systemInfo, "vm_cgame" ));
-	cl_connectedUI = atoi(Info_ValueForKey( systemInfo, "vm_ui" ));
 }
 
 void CL_ParseAutomapSymbols ( msg_t* msg )

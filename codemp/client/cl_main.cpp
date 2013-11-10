@@ -820,9 +820,6 @@ void CL_Disconnect( qboolean showMainMenu ) {
 
 	// not connected to a pure server anymore
 	cl_connectedToPureServer = qfalse;
-	cl_connectedGAME = 0;
-	cl_connectedCGAME = 0;
-	cl_connectedUI = 0;
 
 	// Stop recording any video
 	if( CL_VideoRecording( ) ) {
