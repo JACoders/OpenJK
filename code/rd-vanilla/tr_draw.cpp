@@ -352,8 +352,7 @@ byte* RE_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, in
 	{
 		int	 iLoadedWidth, iLoadedHeight;
 
-		GLenum format;	// VVFIXME
-		R_LoadImage( psLocalFilename, &pbLoadedPic, &iLoadedWidth, &iLoadedHeight, &format);
+		R_LoadImage( psLocalFilename, &pbLoadedPic, &iLoadedWidth, &iLoadedHeight);
 		if ( pbLoadedPic )
 		{
 			pbReturn = RE_ReSample(	pbLoadedPic,		iLoadedWidth,	iLoadedHeight,
