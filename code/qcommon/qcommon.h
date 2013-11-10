@@ -419,6 +419,7 @@ issues.
 qboolean FS_Initialized();
 
 void	FS_InitFilesystem (void);
+void	FS_Shutdown( void );
 
 char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles );
 // directory should not have either a leading or trailing /
@@ -483,6 +484,8 @@ int		FS_FTell( fileHandle_t f );
 void	FS_Flush( fileHandle_t f );
 
 void	FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt, void(*callback)( const char *s ), qboolean allowNonPureFilesOnDisk );
+
+const char *FS_GetCurrentGameDir(bool emptybase=false);
 
 void 	QDECL FS_Printf( fileHandle_t f, const char *fmt, ... );
 // like fprintf
@@ -814,12 +817,11 @@ void	Sys_DisplaySystemConsole( qboolean show );
 void	Sys_ShowConsole( int level, qboolean quitOnClose );
 void	Sys_SetErrorText( const char *text );
 
-void	Sys_Mkdir( const char *path );
+qboolean	Sys_Mkdir( const char *path );
 char	*Sys_Cwd( void );
 char	*Sys_DefaultCDPath(void);
 void	Sys_SetDefaultInstallPath(const char *path);
 char	*Sys_DefaultInstallPath(void);
-char	*Sys_DefaultBasePath(void);
 
 #ifdef MACOS_X
 char    *Sys_DefaultAppPath(void);

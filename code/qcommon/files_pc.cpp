@@ -1714,7 +1714,7 @@ void FS_Startup( const char *gameName ) {
 
 	fs_debug = Cvar_Get( "fs_debug", "0", 0 );
 	fs_copyfiles = Cvar_Get( "fs_copyfiles", "0", CVAR_INIT );
-	fs_cdpath = Cvar_Get ("fs_cdpath", Sys_DefaultCDPath(), CVAR_INIT);
+	fs_cdpath = Cvar_Get ("fs_cdpath", "", CVAR_INIT);
 	fs_basepath = Cvar_Get ("fs_basepath", Sys_DefaultInstallPath(), CVAR_INIT);
 	fs_basegame = Cvar_Get ("fs_basegame", "", CVAR_INIT );
 	homePath = Sys_DefaultHomePath();
@@ -1744,6 +1744,7 @@ void FS_Startup( const char *gameName ) {
 	// fs_homepath is somewhat particular to *nix systems, only add if relevant
 	// NOTE: same filtering below for mods and basegame
 	if (fs_homepath->string[0] && Q_stricmp(fs_homepath->string,fs_basepath->string)) {
+		FS_CreatePath ( fs_homepath->string );
 		FS_AddGameDirectory( fs_homepath->string, gameName );
 	}
 
@@ -1905,4 +1906,12 @@ void FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt,
 		callback( filename );
 	}
 	FS_FreeFileList( filenames );
+}
+
+const char *FS_GetCurrentGameDir(bool emptybase)
+{
+	if(fs_gamedirvar->string[0])
+		return fs_gamedirvar->string;
+
+	return emptybase ? "" : BASEGAME;
 }

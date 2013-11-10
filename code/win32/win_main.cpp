@@ -250,8 +250,13 @@ void Sys_Print( const char *msg ) {
 Sys_Mkdir
 ==============
 */
-void Sys_Mkdir( const char *path ) {
-	_mkdir (path);
+qboolean Sys_Mkdir( const char *path ) {
+	if( !CreateDirectory( path, NULL ) )
+	{
+		if( GetLastError( ) != ERROR_ALREADY_EXISTS )
+			return qfalse;
+	}
+	return qtrue;
 }
 
 /*
@@ -266,24 +271,6 @@ char *Sys_Cwd( void ) {
 	cwd[MAX_OSPATH-1] = 0;
 
 	return cwd;
-}
-
-/*
-==============
-Sys_DefaultCDPath
-==============
-*/
-char *Sys_DefaultCDPath( void ) {
-	return "";
-}
-
-/*
-==============
-Sys_DefaultBasePath
-==============
-*/
-char *Sys_DefaultBasePath( void ) {
-	return Sys_Cwd();
 }
 
 /*
