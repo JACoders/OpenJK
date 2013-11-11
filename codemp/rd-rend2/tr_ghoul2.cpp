@@ -2003,7 +2003,7 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 
 	assert(ghoul2.aHeader);
 	assert(ghoul2.currentModel);
-	assert(ghoul2.currentModel->data.glm);
+	assert(ghoul2.currentModel->data.glm && ghoul2.currentModel->data.glm->header);
 	if (!aHeader->numBones)
 	{
 		assert(0); // this would be strange
@@ -2388,10 +2388,10 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 #endif
 
 	assert(RS.currentModel);
-	assert(RS.currentModel->data.glm);
+	assert(RS.currentModel->data.glm && RS.currentModel->data.glm->header);
 	// back track and get the surfinfo struct for this surface
 	mdxmSurface_t			*surface = (mdxmSurface_t *)G2_FindSurface(RS.currentModel, RS.surfaceNum, RS.lod);
-	mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)RS.currentModel->data.glm + sizeof(mdxmHeader_t));
+	mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)RS.currentModel->data.glm->header + sizeof(mdxmHeader_t));
 	mdxmSurfHierarchy_t		*surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
 	
 	// see if we have an override surface in the surface list
@@ -2558,7 +2558,7 @@ void ProcessModelBoltSurfaces(int surfaceNum, surfaceInfo_v &rootSList,
 	
 	// back track and get the surfinfo struct for this surface
 	mdxmSurface_t			*surface = (mdxmSurface_t *)G2_FindSurface((void *)currentModel, surfaceNum, 0);
-	mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)currentModel->data.glm + sizeof(mdxmHeader_t));
+	mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)currentModel->data.glm->header + sizeof(mdxmHeader_t));
 	mdxmSurfHierarchy_t		*surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
 	
 	// see if we have an override surface in the surface list
@@ -2608,7 +2608,7 @@ void G2_ConstructUsedBoneList(CConstructBoneList &CBL)
 {
 	int	 		i, j;
 	int			offFlags = 0;
-	mdxmHeader_t *mdxm = CBL.currentModel->data.glm;
+	mdxmHeader_t *mdxm = CBL.currentModel->data.glm->header;
 
 	// back track and get the surfinfo struct for this surface
 	const mdxmSurface_t			*surface = (mdxmSurface_t *)G2_FindSurface((void *)CBL.currentModel, CBL.surfaceNum, 0);
@@ -2764,7 +2764,7 @@ static void G2_Sort_Models(CGhoul2Info_v &ghoul2, int * const modelList, int * c
 
 void *G2_FindSurface_BC(const model_s *mod, int index, int lod)
 {
-	mdxmHeader_t *mdxm = mod->data.glm;
+	mdxmHeader_t *mdxm = mod->data.glm->header;
 	assert(mod);
 	assert(mdxm);
 
@@ -4148,7 +4148,9 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	
 	qboolean bAlreadyFound = qfalse;
 	mdxm = (mdxmHeader_t*)CModelCache->Allocate(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
-	mod->data.glm = mdxm;
+	mod->data.glm = (mdxmData_t *)ri->Hunk_Alloc (sizeof (mdxmData_t), h_low);
+	mod->data.glm->header = mdxm;
+
 	//RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
 
 	assert(bAlreadyCached == bAlreadyFound);

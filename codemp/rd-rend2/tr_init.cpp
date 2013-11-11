@@ -1649,6 +1649,7 @@ void stub_RE_SetLightStyle (int style, int color){}
 void stub_RE_GetBModelVerts (int bModel, vec3_t *vec, vec_t *normal) {}
 void stub_RE_WorldEffectCommand ( const char *cmd ){}
 void stub_RE_AddMiniRefEntityToScene ( const miniRefEntity_t *ent ) {}
+void stub_RE_AddWeatherZone ( vec3_t mins, vec3_t maxs ) {}
 
 /*
 @@@@@@@@@@@@@@@@@@@@@
@@ -1737,7 +1738,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.GetRealRes = GetRealRes;
 	// R_AutomapElevationAdjustment
 	re.InitializeWireframeAutomap = stub_InitializeWireframeAutomap;
-	// RE_AddWeatherZone;
+	re.AddWeatherZone = stub_RE_AddWeatherZone;
 	re.WorldEffectCommand = stub_RE_WorldEffectCommand;
 	// RE_InitRendererTerrain
 	re.RegisterMedia_LevelLoadBegin = C_LevelLoadBegin;

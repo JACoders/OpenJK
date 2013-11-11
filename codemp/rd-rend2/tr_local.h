@@ -466,7 +466,8 @@ typedef enum {
 	GF_SAWTOOTH, 
 	GF_INVERSE_SAWTOOTH, 
 
-	GF_NOISE
+	GF_NOISE,
+	GF_RAND
 
 } genFunc_t;
 
@@ -1228,13 +1229,7 @@ typedef enum {
 	SF_MD4,
 	SF_MDR,
 	SF_IQM,
-/*
-Ghoul2 Insert Start
-*/
 	SF_MDX,
-/*
-Ghoul2 Insert End
-*/
 	SF_FLARE,
 	SF_ENTITY,				// beams, rails, lightning, etc that can be determined by entity
 	SF_DISPLAY_LIST,
@@ -1748,6 +1743,13 @@ Ghoul2 Insert End
 */
 } modtype_t;
 
+typedef struct mdxmData_s
+{
+	mdxmHeader_t *header;
+
+
+} mdxmData_t;
+
 typedef struct model_s {
 	char		name[MAX_QPATH];
 	modtype_t	type;
@@ -1756,13 +1758,13 @@ typedef struct model_s {
 	int			dataSize;	// just for listing purposes
 	union
 	{
-		bmodel_t	*bmodel;		// only if type == MOD_BRUSH
-		mdvModel_t	*mdv[MD3_MAX_LODS];	// only if type == MOD_MESH
-		md4Header_t	*md4; // only if type == MOD_MD4
-		mdrHeader_t	*mdr; // only if type == MOD_MDR
-		iqmData_t	*iqm; // only if type == MOD_IQM
-		mdxmHeader_t *glm; // only if type == MOD_MDXM
-		mdxaHeader_t *gla; // only if type == MOD_MDXA
+		bmodel_t		*bmodel;			// type == MOD_BRUSH
+		mdvModel_t		*mdv[MD3_MAX_LODS];	// type == MOD_MESH
+		md4Header_t		*md4;				// type == MOD_MD4
+		mdrHeader_t		*mdr;				// type == MOD_MDR
+		iqmData_t		*iqm;				// type == MOD_IQM
+		mdxmData_t		*glm;				// type == MOD_MDXM
+		mdxaHeader_t	*gla;				// type == MOD_MDXA
 	} data;
 
 	int			 numLods;

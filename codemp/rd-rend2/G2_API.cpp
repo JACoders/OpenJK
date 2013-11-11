@@ -1933,7 +1933,7 @@ void G2API_SetGhoul2ModelIndexes(CGhoul2Info_v &ghoul2, qhandle_t *modelList, qh
 char *G2API_GetAnimFileNameIndex(qhandle_t modelIndex)
 {
 	model_t		*mod_m = R_GetModelByHandle(modelIndex);
-	return mod_m->data.glm->animName;
+	return mod_m->data.glm->header->animName;
 }
 
 /************************************************************************************************
@@ -2035,7 +2035,7 @@ void G2API_CollisionDetectCache(CollisionRecord_t *collRecMap, CGhoul2Info_v &gh
 				{ //reworked so we only alloc once!
 					//if we have a pointer, but not a ghoul2_zonetransalloc flag, then that means
 					//it is a miniheap pointer. Just stomp over it.
-					int iSize = g2.currentModel->data.glm->numSurfaces * 4;
+					int iSize = g2.currentModel->data.glm->header->numSurfaces * 4;
 					g2.mTransformedVertsArray = (size_t *)Z_Malloc(iSize, TAG_GHOUL2, qtrue);
 				}
 
@@ -2341,13 +2341,13 @@ char *G2API_GetSurfaceName(CGhoul2Info *ghlInfo, int surfNumber)
 		mdxmHeader_t *mdxm;
 
 #ifndef FINAL_BUILD
-		if (!mod || !mod->data.glm)
+		if (!mod || !mod->data.glm || !mod->data.glm->header)
 		{
 			Com_Error(ERR_DROP, "G2API_GetSurfaceName: Bad model on instance %s.", ghlInfo->mFileName);
 		}
 #endif
 
-		mdxm = (mdxmHeader_t *)mod->data.glm;
+		mdxm = mod->data.glm->header;
 
 		//ok, I guess it's semi-valid for the user to be passing in surface > numSurfs because they don't know how many surfs a model
 		//may have.. but how did they get that surf index to begin with? Oh well.
@@ -2395,7 +2395,7 @@ char *G2API_GetGLAName(CGhoul2Info_v &ghoul2, int modelIndex)
 			//return mod->mdxm->animName;
 
 			assert(ghoul2[modelIndex].currentModel && ghoul2[modelIndex].currentModel->data.glm);
-			return ghoul2[modelIndex].currentModel->data.glm->animName;
+			return ghoul2[modelIndex].currentModel->data.glm->header->animName;
 		}
 	}
 	return NULL;
@@ -2479,11 +2479,12 @@ qboolean G2API_SkinlessModel(CGhoul2Info *g2)
 		model_t	*mod = (model_t *)g2->currentModel;
 
 		if (mod &&
-			mod->data.glm)
+			mod->data.glm &&
+			mod->data.glm->header)
 		{
             mdxmSurfHierarchy_t	*surf;
 			int i;
-			mdxmHeader_t *mdxm = mod->data.glm;
+			mdxmHeader_t *mdxm = mod->data.glm->header;
 
 			surf = (mdxmSurfHierarchy_t *) ( (byte *)mdxm + mdxm->ofsSurfHierarchy );
 
@@ -2603,9 +2604,10 @@ qboolean G2_TestModelPointers(CGhoul2Info *ghlInfo) // returns true if the model
 		ghlInfo->currentModel = R_GetModelByHandle(ghlInfo->mModel);
 		if (ghlInfo->currentModel)
 		{
-			if (ghlInfo->currentModel->data.glm)
+			if (ghlInfo->currentModel->data.glm &&
+				ghlInfo->currentModel->data.glm->header)
 			{
-				mdxmHeader_t *mdxm = (mdxmHeader_t *)ghlInfo->currentModel->data.glm;
+				mdxmHeader_t *mdxm = ghlInfo->currentModel->data.glm->header;
 				if (ghlInfo->currentModelSize)
 				{
 					if (ghlInfo->currentModelSize!=mdxm->ofsEnd)
@@ -2700,9 +2702,10 @@ qboolean G2_SetupModelPointers(CGhoul2Info *ghlInfo) // returns true if the mode
 		if (ghlInfo->currentModel)
 		{
 			G2ERROR(ghlInfo->currentModel->modelData,va("Model has no mdxm (glm) %s",ghlInfo->mFileName));
-			if (ghlInfo->currentModel->data.glm)
+			if (ghlInfo->currentModel->data.glm &&
+				ghlInfo->currentModel->data.glm->header)
 			{
-				mdxmHeader_t *mdxm = ghlInfo->currentModel->data.glm;
+				mdxmHeader_t *mdxm = ghlInfo->currentModel->data.glm->header;
 				if (ghlInfo->currentModelSize)
 				{
 					if (ghlInfo->currentModelSize!=mdxm->ofsEnd)
