@@ -729,8 +729,8 @@ qboolean Hunk_CheckMark( void ) {
 	return qfalse;
 }
 
-void CL_ShutdownCGame( qboolean delayFreeVM );
-void CL_ShutdownUI( qboolean delayFreeVM );
+void CL_ShutdownCGame( void );
+void CL_ShutdownUI( void );
 void SV_ShutdownGameProgs( void );
 
 /*
@@ -748,8 +748,8 @@ void G2_DEBUG_ReportLeaks(void);
 void Hunk_Clear( void ) {
 
 #ifndef DEDICATED
-	CL_ShutdownCGame(qfalse);
-	CL_ShutdownUI(qfalse);
+	CL_ShutdownCGame();
+	CL_ShutdownUI();
 #endif
 	SV_ShutdownGameProgs();
 

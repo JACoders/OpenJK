@@ -465,7 +465,7 @@ Ghoul2 Insert End
 
 #ifndef DEDICATED
 	// make sure all the client stuff is unloaded
-	CL_ShutdownAll( qfalse, qfalse );
+	CL_ShutdownAll( qfalse );
 #endif
 
 	CM_ClearMap();

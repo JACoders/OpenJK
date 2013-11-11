@@ -910,10 +910,10 @@ void	CL_ForwardCommandToServer( const char *string );
 // things like godmode, noclip, etc, are commands directed to the server,
 // so when they are typed in at the console, they will need to be forwarded.
 
-void CL_ShutdownAll( qboolean shutdownRef, qboolean delayFreeVM );
+void CL_ShutdownAll( qboolean shutdownRef );
 // shutdown all the client stuff
 
-void CL_FlushMemory( qboolean delayFlushVM );
+void CL_FlushMemory( void );
 // dump all memory on an error
 
 void CL_StartHunkUsers( void );
