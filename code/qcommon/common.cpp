@@ -239,12 +239,17 @@ Both client and server can use this, and it will
 do the apropriate things.
 =============
 */
-
-void SG_WipeSavegame(const char *name);	// pretty sucky, but that's how SoF did it...<g>
 void SG_Shutdown();
-
 void QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;
+	static int	lastErrorTime;
+	static int	errorCount;
+	int			currentTime;
+
+	if ( com_errorEntered ) {
+		Sys_Error( "recursive error after: %s", com_errorMessage );
+	}
+	com_errorEntered = qtrue;
 
 	// when we are running automated scripts, make sure we
 	// know if anything failed
@@ -252,14 +257,16 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		code = ERR_FATAL;
 	}
 
-	if ( com_errorEntered ) {
-		Sys_Error( "recursive error after: %s", com_errorMessage );
+	// if we are getting a solid stream of ERR_DROP, do an ERR_FATAL
+	currentTime = Sys_Milliseconds();
+	if ( currentTime - lastErrorTime < 100 ) {
+		if ( ++errorCount > 3 ) {
+			code = ERR_FATAL;
+		}
+	} else {
+		errorCount = 0;
 	}
-	
-	com_errorEntered = qtrue;
-
-	//reset some game stuff here
-//	SCR_UnprecacheScreenshot();
+	lastErrorTime = currentTime;
 
 	va_start (argptr,fmt);
 	Q_vsnprintf (com_errorMessage, sizeof(com_errorMessage), fmt, argptr);
@@ -270,28 +277,12 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 		Cvar_Set("com_errorMessage", com_errorMessage);
 	}
 
-	SG_Shutdown();				// close any file pointers
-	if ( code == ERR_DISCONNECT ) {
-		SV_Shutdown("Disconnect", qtrue);
-		CL_Disconnect();
-		CL_FlushMemory();
-		CL_StartHunkUsers();
-		com_errorEntered = qfalse;
-		throw ("DISCONNECTED\n");
-	} else if ( code == ERR_DROP ) {
-		// If loading/saving caused the crash/error - delete the temp file
-		SG_WipeSavegame("current");	// delete file
-
-		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage), qtrue);
-		CL_Disconnect();
-		CL_FlushMemory();
-		CL_StartHunkUsers();
-		Com_Printf (S_COLOR_RED"********************\n"S_COLOR_MAGENTA"ERROR: %s\n"S_COLOR_RED"********************\n", com_errorMessage);
-		com_errorEntered = qfalse;
-		throw ("DROPPED\n");
+	SG_Shutdown();	// close any file pointers
+	if ( code == ERR_DISCONNECT || code == ERR_DROP ) {
+		throw code;
 	} else {
 		CL_Shutdown ();
-		SV_Shutdown (va(S_COLOR_RED"Server fatal crashed: %s\n", com_errorMessage), qtrue);
+		SV_Shutdown (va("Server fatal crashed: %s\n", com_errorMessage));
 	}
 
 	Com_Shutdown ();
@@ -1007,6 +998,55 @@ void Com_ExecuteCfg(void)
 
 /*
 =================
+Com_ErrorString
+Error string for the given error code (from Com_Error).
+=================
+*/
+static const char *Com_ErrorString ( int code )
+{
+	switch ( code )
+	{
+		case ERR_DISCONNECT:
+			return "DISCONNECTED";
+
+		case ERR_DROP:
+			return "DROPPED";
+
+		default:
+			return "UNKNOWN";
+	}
+}
+
+/*
+=================
+Com_CatchError
+Handles freeing up of resources when Com_Error is called.
+=================
+*/
+void SG_WipeSavegame(const char *name);	// pretty sucky, but that's how SoF did it...<g>
+static void Com_CatchError ( int code )
+{
+	if ( code == ERR_DISCONNECT ) {
+		SV_Shutdown( "Server disconnected" );
+		CL_Disconnect( );
+		CL_FlushMemory(  );
+		com_errorEntered = qfalse;
+	} else if ( code == ERR_DROP ) {
+		// If loading/saving caused the crash/error - delete the temp file
+		SG_WipeSavegame("current");	// delete file
+
+		Com_Printf ("********************\n"
+					"ERROR: %s\n"
+					"********************\n", com_errorMessage);
+		SV_Shutdown (va("Server crashed: %s\n",  com_errorMessage));
+		CL_Disconnect( );
+		CL_FlushMemory( );
+		com_errorEntered = qfalse;
+	}
+}
+
+/*
+=================
 Com_Init
 =================
 */
@@ -1149,11 +1189,11 @@ void Com_Init( char *commandLine ) {
 		//	Cvar_Set( "g_dismemberment", "0");	//just in case it was archived
 		//}
 	}
-
-	catch (const char* reason) {
-		Sys_Error ("Error during initialization %s", reason);
+	catch ( int code )
+	{
+		Com_CatchError (code);
+		Sys_Error ("Error during initialization %s", Com_ErrorString (code));
 	}
-
 }
 
 //==================================================================
@@ -1297,181 +1337,180 @@ void G2Time_ResetTimers(void);
 void G2Time_ReportTimers(void);
 #endif
 
-void Sys_UnloadGamePending();
-
 #ifdef _MSC_VER
 #pragma warning (disable: 4701)	//local may have been used without init (timing info vars)
 #endif
 void Com_Frame( void ) {
-try 
-{
-	int		timeBeforeFirstEvents, timeBeforeServer, timeBeforeEvents, timeBeforeClient, timeAfter;
-	int		msec, minMsec;
-	static int	lastTime;
-
-	// write config file if anything changed
-	Com_WriteConfiguration(); 
-
-	// if "viewlog" has been modified, show or hide the log console
-	if ( com_viewlog->modified ) {
-		Sys_ShowConsole( com_viewlog->integer, qfalse );
-		com_viewlog->modified = qfalse;
-	}
-
-	//
-	// main event loop
-	//
-	if ( com_speeds->integer ) {
-		timeBeforeFirstEvents = Sys_Milliseconds ();
-	}
-
-	// we may want to spin here if things are going too fast
-	if ( com_maxfps->integer > 0 ) {
-		minMsec = 1000 / com_maxfps->integer;
-	} else {
-		minMsec = 1;
-	}
-	do {
-		com_frameTime = Com_EventLoop();
-		if ( lastTime > com_frameTime ) {
-			lastTime = com_frameTime;		// possible on first frame
-		}
-		msec = com_frameTime - lastTime;
-	} while ( msec < minMsec );
-	Cbuf_Execute ();
-
-	lastTime = com_frameTime;
-
-	// mess with msec if needed
-	com_frameMsec = msec;
-	float fractionMsec=0.0f;
-	msec = Com_ModifyMsec( msec, fractionMsec);
-	
-	//
-	// server side
-	//
-	if ( com_speeds->integer ) {
-		timeBeforeServer = Sys_Milliseconds ();
-	}
-
-	SV_Frame (msec, fractionMsec);
-
-
-	//
-	// client system
-	//
-
-
-//	if ( !com_dedicated->integer ) 
+	try 
 	{
+		int		timeBeforeFirstEvents, timeBeforeServer, timeBeforeEvents, timeBeforeClient, timeAfter;
+		int		msec, minMsec;
+		static int	lastTime = 0;
+
+		// write config file if anything changed
+		Com_WriteConfiguration(); 
+
+		// if "viewlog" has been modified, show or hide the log console
+		if ( com_viewlog->modified ) {
+			Sys_ShowConsole( com_viewlog->integer, qfalse );
+			com_viewlog->modified = qfalse;
+		}
+
 		//
-		// run event loop a second time to get server to client packets
-		// without a frame of latency
+		// main event loop
 		//
 		if ( com_speeds->integer ) {
-			timeBeforeEvents = Sys_Milliseconds ();
+			timeBeforeFirstEvents = Sys_Milliseconds ();
 		}
-		Com_EventLoop();
+
+		// we may want to spin here if things are going too fast
+		if ( com_maxfps->integer > 0 ) {
+			minMsec = 1000 / com_maxfps->integer;
+		} else {
+			minMsec = 1;
+		}
+		do {
+			com_frameTime = Com_EventLoop();
+			if ( lastTime > com_frameTime ) {
+				lastTime = com_frameTime;		// possible on first frame
+			}
+			msec = com_frameTime - lastTime;
+		} while ( msec < minMsec );
 		Cbuf_Execute ();
 
+		lastTime = com_frameTime;
 
+		// mess with msec if needed
+		com_frameMsec = msec;
+		float fractionMsec=0.0f;
+		msec = Com_ModifyMsec( msec, fractionMsec);
+	
 		//
-		// client side
+		// server side
 		//
 		if ( com_speeds->integer ) {
-			timeBeforeClient = Sys_Milliseconds ();
+			timeBeforeServer = Sys_Milliseconds ();
 		}
 
-		CL_Frame (msec, fractionMsec);
-
-		if ( com_speeds->integer ) {
-			timeAfter = Sys_Milliseconds ();
-		}
-	}
+		SV_Frame (msec, fractionMsec);
 
 
-	//
-	// report timing information
-	//
-	if ( com_speeds->integer ) {
-		int			all, sv, ev, cl;
+		//
+		// client system
+		//
 
-		all = timeAfter - timeBeforeServer;
-		sv = timeBeforeEvents - timeBeforeServer;
-		ev = timeBeforeServer - timeBeforeFirstEvents + timeBeforeClient - timeBeforeEvents;
-		cl = timeAfter - timeBeforeClient;
-		sv -= time_game;
-		cl -= time_frontend + time_backend;
 
-		Com_Printf("fr:%i all:%3i sv:%3i ev:%3i cl:%3i gm:%3i tr:%3i pvs:%3i rf:%3i bk:%3i\n", 
-					com_frameNumber, all, sv, ev, cl, time_game, timeInTrace, timeInPVSCheck, time_frontend, time_backend);
-
-		// speedslog
-		if ( com_speedslog && com_speedslog->integer )
+	//	if ( !com_dedicated->integer ) 
 		{
-			if(!speedslog)
-			{
-				speedslog = FS_FOpenFileWrite("speeds.log");
-				FS_Write("data={\n", strlen("data={\n"), speedslog);
-				bComma=false;
-				if ( com_speedslog->integer > 1 ) 
-				{
-					// force it to not buffer so we get valid
-					// data even if we are crashing
-					FS_ForceFlush(logfile);
-				}
+			//
+			// run event loop a second time to get server to client packets
+			// without a frame of latency
+			//
+			if ( com_speeds->integer ) {
+				timeBeforeEvents = Sys_Milliseconds ();
 			}
-			if (speedslog)
-			{
-				char		msg[MAXPRINTMSG];
+			Com_EventLoop();
+			Cbuf_Execute ();
 
-				if(bComma)
-				{
-					FS_Write(",\n", strlen(",\n"), speedslog);
-					bComma=false;
-				}
-				FS_Write("{", strlen("{"), speedslog);
-				Com_sprintf(msg,sizeof(msg),
-							"%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,",corg[0],corg[1],corg[2],cangles[0],cangles[1],cangles[2]);
-				FS_Write(msg, strlen(msg), speedslog);
-				Com_sprintf(msg,sizeof(msg),
-					"%i,%3i,%3i,%3i,%3i,%3i,%3i,%3i,%3i,%3i}", 
-					com_frameNumber, all, sv, ev, cl, time_game, timeInTrace, timeInPVSCheck, time_frontend, time_backend);
-				FS_Write(msg, strlen(msg), speedslog);
-				bComma=true;
+
+			//
+			// client side
+			//
+			if ( com_speeds->integer ) {
+				timeBeforeClient = Sys_Milliseconds ();
+			}
+
+			CL_Frame (msec, fractionMsec);
+
+			if ( com_speeds->integer ) {
+				timeAfter = Sys_Milliseconds ();
 			}
 		}
 
-		timeInTrace = timeInPVSCheck = 0;
-	}
 
-	//
-	// trace optimization tracking
-	//
-	if ( com_showtrace->integer ) {
-		extern	int c_traces, c_brush_traces, c_patch_traces;
-		extern	int	c_pointcontents;
+		//
+		// report timing information
+		//
+		if ( com_speeds->integer ) {
+			int			all, sv, ev, cl;
 
-		/*
-		Com_Printf( "%4i non-sv_traces, %4i sv_traces, %4i ms, ave %4.2f ms\n", c_traces - numTraces, numTraces, timeInTrace, (float)timeInTrace/(float)numTraces );
-		timeInTrace = numTraces = 0;
-		c_traces = 0;
-		*/
+			all = timeAfter - timeBeforeServer;
+			sv = timeBeforeEvents - timeBeforeServer;
+			ev = timeBeforeServer - timeBeforeFirstEvents + timeBeforeClient - timeBeforeEvents;
+			cl = timeAfter - timeBeforeClient;
+			sv -= time_game;
+			cl -= time_frontend + time_backend;
+
+			Com_Printf("fr:%i all:%3i sv:%3i ev:%3i cl:%3i gm:%3i tr:%3i pvs:%3i rf:%3i bk:%3i\n", 
+						com_frameNumber, all, sv, ev, cl, time_game, timeInTrace, timeInPVSCheck, time_frontend, time_backend);
+
+			// speedslog
+			if ( com_speedslog && com_speedslog->integer )
+			{
+				if(!speedslog)
+				{
+					speedslog = FS_FOpenFileWrite("speeds.log");
+					FS_Write("data={\n", strlen("data={\n"), speedslog);
+					bComma=false;
+					if ( com_speedslog->integer > 1 ) 
+					{
+						// force it to not buffer so we get valid
+						// data even if we are crashing
+						FS_ForceFlush(logfile);
+					}
+				}
+				if (speedslog)
+				{
+					char		msg[MAXPRINTMSG];
+
+					if(bComma)
+					{
+						FS_Write(",\n", strlen(",\n"), speedslog);
+						bComma=false;
+					}
+					FS_Write("{", strlen("{"), speedslog);
+					Com_sprintf(msg,sizeof(msg),
+								"%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,",corg[0],corg[1],corg[2],cangles[0],cangles[1],cangles[2]);
+					FS_Write(msg, strlen(msg), speedslog);
+					Com_sprintf(msg,sizeof(msg),
+						"%i,%3i,%3i,%3i,%3i,%3i,%3i,%3i,%3i,%3i}", 
+						com_frameNumber, all, sv, ev, cl, time_game, timeInTrace, timeInPVSCheck, time_frontend, time_backend);
+					FS_Write(msg, strlen(msg), speedslog);
+					bComma=true;
+				}
+			}
+
+			timeInTrace = timeInPVSCheck = 0;
+		}
+
+		//
+		// trace optimization tracking
+		//
+		if ( com_showtrace->integer ) {
+			extern	int c_traces, c_brush_traces, c_patch_traces;
+			extern	int	c_pointcontents;
+
+			/*
+			Com_Printf( "%4i non-sv_traces, %4i sv_traces, %4i ms, ave %4.2f ms\n", c_traces - numTraces, numTraces, timeInTrace, (float)timeInTrace/(float)numTraces );
+			timeInTrace = numTraces = 0;
+			c_traces = 0;
+			*/
 		
-		Com_Printf ("%4i traces  (%ib %ip) %4i points\n", c_traces,
-			c_brush_traces, c_patch_traces, c_pointcontents);
-		c_traces = 0;
-		c_brush_traces = 0;
-		c_patch_traces = 0;
-		c_pointcontents = 0;
-	}
+			Com_Printf ("%4i traces  (%ib %ip) %4i points\n", c_traces,
+				c_brush_traces, c_patch_traces, c_pointcontents);
+			c_traces = 0;
+			c_brush_traces = 0;
+			c_patch_traces = 0;
+			c_pointcontents = 0;
+		}
 
-	com_frameNumber++;
-}//try
-	catch (const char* reason) {
-		Sys_UnloadGamePending();
-		Com_Printf (reason);
-		return;			// an ERR_DROP was thrown
+		com_frameNumber++;
+	}
+	catch ( int code )
+	{
+		Com_CatchError (code);
+		Com_Printf ("%s\n", Com_ErrorString (code));
+		return;
 	}
 
 #ifdef G2_PERFORMANCE_ANALYSIS

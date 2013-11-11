@@ -608,32 +608,6 @@ void Sys_UnloadGame( void ) {
 
 /*
 =================
-Sys_UnloadGamePending
-This function is kind of redundant in Windows, but the extra
-function is needed because of Linux/Mac version being different.
-=================
-*/
-void Sys_UnloadGamePending() {
-	Sys_UnloadGame();
-}
-
-/*
-=================
-Sys_DelayedUnloadGame
-=================
-*/
-void Sys_DelayedUnloadGame()
-{
-	HINSTANCE save = game_library;
-	game_library = NULL;
-
-	Sys_UnloadGame();
-
-	game_library = save;
-}
-
-/*
-=================
 Sys_RetrieveDLL
 
 OpenJK Function.
