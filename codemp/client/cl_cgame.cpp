@@ -492,7 +492,7 @@ CL_ShutdonwCGame
 
 ====================
 */
-void CL_ShutdownCGame( qboolean delayFreeVM ) {
+void CL_ShutdownCGame( void ) {
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CGAME );
 
 	if ( !cls.cgameStarted )
@@ -832,6 +832,3 @@ void CL_SetCGameTime( void ) {
 		}
 	}
 }
-
-
-
