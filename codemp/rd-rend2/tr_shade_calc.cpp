@@ -61,6 +61,16 @@ static float EvalWaveForm( const waveForm_t *wf )
 {
 	float	*table;
 
+	if ( wf->func == GF_NOISE ) {
+		return  ( wf->base + R_NoiseGet4f( 0, 0, 0, ( backEnd.refdef.floatTime + wf->phase ) * wf->frequency ) * wf->amplitude );
+	} else if (wf->func == GF_RAND) {
+		if( GetNoiseTime( backEnd.refdef.time + wf->phase ) <= wf->frequency ) {
+			return (wf->base + wf->amplitude);
+		} else {
+			return wf->base;
+		}
+	}
+
 	table = TableForFunc( wf->func );
 
 	return WAVEVALUE( table, wf->base, wf->amplitude, wf->phase, wf->frequency );
