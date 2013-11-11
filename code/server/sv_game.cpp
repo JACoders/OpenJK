@@ -44,7 +44,6 @@ Ghoul2 Insert End
 
 //prototypes
 extern void	Sys_UnloadGame( void );
-extern void Sys_DelayedUnloadGame();
 extern void	*Sys_GetGameAPI( void *parms);
 extern void Com_WriteCam ( const char *text );
 extern void Com_FlushCamFile();
@@ -407,7 +406,7 @@ Called when either the entire server is being killed, or
 it is changing to a different game directory.
 ===============
 */
-void SV_ShutdownGameProgs (qboolean shutdownCin, qboolean delayFreeGame) {
+void SV_ShutdownGameProgs (qboolean shutdownCin) {
 	if (!ge) {
 		return;
 	}
@@ -416,14 +415,7 @@ void SV_ShutdownGameProgs (qboolean shutdownCin, qboolean delayFreeGame) {
 	SCR_StopCinematic();
 	CL_ShutdownCGame();	//we have cgame burried in here.
 	
-	if ( delayFreeGame )
-	{
-		Sys_DelayedUnloadGame();
-	}
-	else
-	{
-		Sys_UnloadGame ();	//this kills cgame as well.
-	}
+	Sys_UnloadGame ();	//this kills cgame as well.
 
 	ge = NULL;
 	cgvm.entryPoint = 0;

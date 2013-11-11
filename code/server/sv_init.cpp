@@ -461,7 +461,7 @@ Called when each game quits,
 before Sys_Quit or Sys_Error
 ================
 */
-void SV_Shutdown( const char *finalmsg, qboolean delayFreeGame ) {
+void SV_Shutdown( const char *finalmsg ) {
 	int i;
 
 	if ( !com_sv_running || !com_sv_running->integer ) {
@@ -475,7 +475,7 @@ void SV_Shutdown( const char *finalmsg, qboolean delayFreeGame ) {
 	}
 
 	SV_RemoveOperatorCommands();
-	SV_ShutdownGameProgs(qfalse, delayFreeGame);
+	SV_ShutdownGameProgs(qfalse);
 
 	if (svs.snapshotEntities)
 	{
