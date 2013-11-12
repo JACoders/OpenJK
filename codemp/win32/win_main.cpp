@@ -439,7 +439,7 @@ bool Sys_UnpackDLL(const char *name)
 		return true;
 	}
 
-	f = FS_FOpenFileWrite( name );
+	f = FS_FOpenFileWrite( name, qfalse );
 	if ( !f )
 	{ //can't open for writing? Might be in use.
 		//This is possibly a malicious user attempt to circumvent dll

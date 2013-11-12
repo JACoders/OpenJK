@@ -7,7 +7,10 @@
 #include "qcommon/GenericParser2.h"
 #include "cm_terrainmap.h"
 #include "cm_draw.h"
-#include "client/client.h" // good enough for now
+//#include "client/client.h" // good enough for now
+#include "rd-common/tr_public.h"
+
+extern	refexport_t		*re;					// interface to refresh .dll
 
 static CTerrainMap	*TerrainMap = 0;
 

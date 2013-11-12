@@ -267,10 +267,10 @@ typedef struct refimport_s {
 	void			(*FS_FreeFile)						( void *buffer );
 	void			(*FS_FreeFileList)					( char **fileList );
 	int				(*FS_Read)							( void *buffer, int len, fileHandle_t f );
-	int				(*FS_ReadFile)						( const char *qpath, void **buffer );
+	long				(*FS_ReadFile)						( const char *qpath, void **buffer );
 	void			(*FS_FCloseFile)					( fileHandle_t f );
-	int				(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
-	fileHandle_t	(*FS_FOpenFileWrite)				( const char *qpath );
+	long				(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+	fileHandle_t	(*FS_FOpenFileWrite)				( const char *qpath, qboolean safe );
 	int				(*FS_FOpenFileByMode)				( const char *qpath, fileHandle_t *f, fsMode_t mode );
 	qboolean		(*FS_FileExists)					( const char *file );
 	int				(*FS_FileIsInPAK)					( const char *filename, int *pChecksum );

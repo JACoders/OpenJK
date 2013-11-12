@@ -717,9 +717,11 @@ void SV_SendClientSnapshot( client_t *client ) {
 
 		MSG_WriteByte (&msg, svc_setgame);
 
-		while (fs_gamedirvar->string[i])
+		const char *gamedir = FS_GetCurrentGameDir(true);
+
+		while (gamedir[i])
 		{
-			MSG_WriteByte(&msg, fs_gamedirvar->string[i]);
+			MSG_WriteByte(&msg, gamedir[i]);
 			i++;
 		}
 		MSG_WriteByte(&msg, 0);

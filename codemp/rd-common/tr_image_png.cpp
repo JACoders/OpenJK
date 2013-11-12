@@ -25,7 +25,7 @@ int RE_SavePNG( const char *filename, byte *buf, size_t width, size_t height, in
 	*/
 	int depth = 8;
 
-	fp = ri->FS_FOpenFileWrite( filename );
+	fp = ri->FS_FOpenFileWrite( filename, qtrue );
 	if ( !fp ) {
 		goto fopen_failed;
 	}

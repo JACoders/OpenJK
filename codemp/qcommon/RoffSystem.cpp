@@ -2,8 +2,10 @@
 #include "qcommon/exe_headers.h"
 
 #include "RoffSystem.h"
-#include "client/client.h"
+//#include "client/client.h"
+#ifndef DEDICATED
 #include "client/cl_cgameapi.h"
+#endif
 #include "server/sv_gameapi.h"
 
 // The one and only instance...
