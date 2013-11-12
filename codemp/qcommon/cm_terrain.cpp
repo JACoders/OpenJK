@@ -6,7 +6,10 @@
 #include "cm_landscape.h"
 #include "qcommon/GenericParser2.h"
 #include "cm_randomterrain.h"
-#include "client/client.h" // this will do for now. we're not a lib
+//#include "client/client.h" // this will do for now. we're not a lib
+#include "rd-common/tr_public.h"
+
+extern	refexport_t		*re;					// interface to refresh .dll
 
 #if defined(_WIN32) && defined(_MSC_VER) && (_MSC_VER < 1600)
 #pragma optimize("p", on)
