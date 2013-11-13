@@ -1607,15 +1607,12 @@ static qboolean GLW_CheckOSVersion( void )
 */
 static qboolean GLW_LoadOpenGL()
 {
-	char buffer[1024];
 	qboolean cdsFullscreen;
-
-	strlwr( strcpy( buffer, OPENGL_DRIVER_NAME ) );
 
 	//
 	// load the driver and bind our function pointers to it
 	// 
-	if ( QGL_Init( buffer ) ) 
+	if ( QGL_Init( "opengl32" ) ) 
 	{
 		cdsFullscreen = r_fullscreen->integer;
 
@@ -1625,7 +1622,7 @@ static qboolean GLW_LoadOpenGL()
 			// if we're on a 24/32-bit desktop and we're going fullscreen
 			// try it again but with a 16-bit desktop
 			if ( r_colorbits->integer != 16 ||
-				 cdsFullscreen != (int)qtrue ||
+				 cdsFullscreen != qtrue ||
 				 r_mode->integer != 3 )
 			{
 				if ( !GLW_StartDriverAndSetMode( 3, 16, qtrue ) )
