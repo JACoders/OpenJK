@@ -1277,7 +1277,6 @@ RB_SurfaceFace
 */
 void RB_SurfaceFace( srfSurfaceFace_t *surf ) {
 	int			i, k;
-	// VVFIXME : Sooper hack. Indices in the surface are still 32-bit, we need to make them 16 bit here.
 	unsigned int *indices;
 	glIndex_t	*tessIndexes;
 	float		*v;
