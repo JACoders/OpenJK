@@ -7,7 +7,7 @@ The purpose of this project is to maintain and improve the Jedi Academy and Jedi
 
 Major enhancement changes are very low priority at this time unless patches are made available and which do not alter the core functionality of gameplay or the stock renderer itself.
 
-Please use discrection when making issue requests on github. The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for larger discussions on changes that aren't actually bugs.
+Please use discretion when making issue requests on github. The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for larger discussions on changes that aren't actually bugs.
 
 ## 64-Bit Support (lack there-of)
 
@@ -22,14 +22,14 @@ First, install Jedi Academy. If you don't already own the game you can buy it fr
 * eezstreet
 * Ensiform
 * ImperatorPrime
-* mrwonko
-* Raz0r
+* Razish
 * redsaurus
 * Xycaleth
 
 ## Significant contributors (in alphabetical order) ##
 
 * exidl
+* mrwonko
 * Scooper
 * Sil
 
@@ -54,7 +54,7 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 ### If you wish to contribute to OpenJK, please do the following ###
 * [Fork](https://github.com/JACoders/OpenJK/fork) the project on Github
 * Create a new branch and make your changes
-* Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to upstream (Razish/OpenJK)
+* Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to upstream (JACoders/OpenJK)
 
 ### If you wish to base your work off OpenJK (mod or engine) ###
 * [Fork](https://github.com/JACoders/OpenJK/fork) the project on Github
