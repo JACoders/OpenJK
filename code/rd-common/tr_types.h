@@ -238,16 +238,4 @@ typedef struct {
 	qboolean				stereoEnabled;
 } glconfig_t;
 
-
-#if !defined _WIN32
-
-#define OPENGL_DRIVER_NAME	"libGL.so"
-
-#else
-
-#define OPENGL_DRIVER_NAME	"opengl32"
-
-#endif	// !defined _WIN32
-
-
 #endif	// __TR_TYPES_H
