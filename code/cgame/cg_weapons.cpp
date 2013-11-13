@@ -1063,17 +1063,17 @@ void CG_AddViewWeapon( playerState_t *ps )
 	}
 	else
 	{
-		actualFOV = (cg.overrides.active&CG_OVERRIDE_FOV) ? cg.overrides.fov : cg_fov.value;
+		if ( cg.overrides.active & CG_OVERRIDE_FOV )
+			actualFOV = cg.overrides.fov;
+		else {
+			actualFOV = cg_fovViewmodel.integer ? cg_fovViewmodel.value : cg_fov.value;
+		}
 	}
 
-	if ( actualFOV > 80 ) 
-	{
+	if ( cg_fovViewmodelAdjust.integer && actualFOV > 90 )
 		fovOffset = -0.1 * ( actualFOV - 80 );
-	} 
 	else 
-	{
 		fovOffset = 0;
-	}
 
 	if ( ps->leanofs != 0 )
 	{	//add leaning offset
@@ -1120,6 +1120,13 @@ void CG_AddViewWeapon( playerState_t *ps )
 	//VectorMA( hand.origin, (0+fovOffset), cg.refdef.viewaxis[2], hand.origin );
 
 	AnglesToAxis( angles, hand.axis );
+
+
+	if ( cg_fovViewmodel.integer ) {
+		float fracDistFOV = tanf( cg.refdef.fov_x * ( M_PI/180 ) * 0.5f );
+		float fracWeapFOV = (1.0f / fracDistFOV) * tanf( actualFOV * (M_PI / 180) * 0.5f );
+		VectorScale( hand.axis[0], fracWeapFOV, hand.axis[0] );
+	}
 
 	// map torso animations to weapon animations
 #ifndef FINAL_BUILD
