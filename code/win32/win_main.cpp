@@ -558,22 +558,7 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 			
 			if(!dllhandle)
 			{
-				const char *cdPath = Cvar_VariableString("fs_cdpath");
-
-				if(!basePath || !*basePath)
-					basePath = ".";
-
-				if(FS_FilenameCompare(topDir, cdPath))
-				{
-					Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, cdPath);
-					Com_sprintf(libPath, sizeof(libPath), "%s%c%s", cdPath, PATH_SEP, name);
-					dllhandle = Sys_LoadLibrary(libPath);
-				}
-
-				if(!dllhandle)
-				{
-					Com_Printf("Loading \"%s\" failed\n", name);
-				}
+				Com_Printf("Loading \"%s\" failed\n", name);
 			}
 		}
 	}
