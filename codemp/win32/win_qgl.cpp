@@ -3166,7 +3166,7 @@ qboolean QGL_Init( const char *dllname )
 
 //	Com_Printf ("...calling LoadLibrary( '%s.dll' ): ", dllname );
 
-	if ( ( glw_state.hinstOpenGL = LoadLibraryEx( dllname, 0, 0 ) ) == 0 )
+	if ( ( glw_state.hinstOpenGL = LoadLibrary( dllname ) ) == 0 )
 	{
 	    DWORD dw = GetLastError();
 		Com_Printf ("failed %u\n", dw );
