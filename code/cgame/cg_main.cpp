@@ -388,9 +388,9 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_gun_frame, "gun_frame", "0", CVAR_CHEAT },
 	{ &cg_debugAnimTarget, "cg_debugAnimTarget", "0", CVAR_CHEAT },
 #endif	
-	{ &cg_gun_x, "cg_gunX", "0", CVAR_CHEAT },
-	{ &cg_gun_y, "cg_gunY", "0", CVAR_CHEAT },
-	{ &cg_gun_z, "cg_gunZ", "0", CVAR_CHEAT },
+	{ &cg_gun_x, "cg_gunX", "0", CVAR_ARCHIVE },
+	{ &cg_gun_y, "cg_gunY", "0", CVAR_ARCHIVE },
+	{ &cg_gun_z, "cg_gunZ", "0", CVAR_ARCHIVE },
 	{ &cg_debugSaber, "cg_debugsaber", "0", CVAR_CHEAT },
 	{ &cg_debugEvents, "cg_debugevents", "0", CVAR_CHEAT },
 	{ &cg_errorDecay, "cg_errordecay", "100", 0 },
@@ -404,7 +404,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_roffval4, "cg_roffval4", "0" },
 #endif
 	{ &cg_thirdPerson, "cg_thirdPerson", "1", CVAR_SAVEGAME },
-	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "80", 0 },
+	{ &cg_thirdPersonRange, "cg_thirdPersonRange", "80", CVAR_ARCHIVE },
 	{ &cg_thirdPersonMaxRange, "cg_thirdPersonMaxRange", "150", 0 },
 	{ &cg_thirdPersonAngle, "cg_thirdPersonAngle", "0", 0 },
 	{ &cg_thirdPersonPitchOffset, "cg_thirdPersonPitchOffset", "0", 0 },
@@ -413,7 +413,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_thirdPersonTargetDamp, "cg_thirdPersonTargetDamp", "0.5", 0},
 	
 	{ &cg_thirdPersonHorzOffset, "cg_thirdPersonHorzOffset", "0", 0},
-	{ &cg_thirdPersonAlpha,	"cg_thirdPersonAlpha",	"1.0", CVAR_CHEAT },
+	{ &cg_thirdPersonAlpha, "cg_thirdPersonAlpha", "1.0", CVAR_ARCHIVE },
 	{ &cg_thirdPersonAutoAlpha,	"cg_thirdPersonAutoAlpha",	"0", 0 },
 	// NOTE: also declare this in UI_Init
 	{ &cg_gunAutoFirst, "cg_gunAutoFirst", "1", CVAR_ARCHIVE },
