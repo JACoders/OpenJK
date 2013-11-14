@@ -33,6 +33,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
   This file deals with applying shaders to surface data in the tess struct.
 */
 
+color4ub_t	styleColors[MAX_LIGHT_STYLES];
+
 
 /*
 ==================
@@ -1018,6 +1020,18 @@ static unsigned int RB_CalcShaderVertexAttribs( shaderCommands_t *input )
 	return vertexAttribs;
 }
 
+static void ForceAlpha (unsigned char *dstColors, int forceEntAlpha)
+{
+	int	i;
+
+	dstColors += 3;
+
+	for ( i = 0; i < tess.numVertexes; i++, dstColors += 4 )
+	{
+		*dstColors = forceEntAlpha;
+	}
+}
+
 static void RB_IterateStagesGeneric( shaderCommands_t *input )
 {
 	int stage;
@@ -1038,6 +1052,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		shaderProgram_t *sp;
 		vec4_t texMatrix;
 		vec4_t texOffTurb;
+		int stateBits;
+		int forceRGBGen = 0;
 
 		if ( !pStage )
 		{
@@ -1140,7 +1156,23 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			GLSL_SetUniformFloat(sp, UNIFORM_FOGEYET, eyeT);
 		}
 
-		GL_State( pStage->stateBits );
+		stateBits = pStage->stateBits;
+
+		if ( backEnd.currentEntity )
+		{
+			assert(backEnd.currentEntity->e.renderfx >= 0);
+
+			if ( backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE1 )
+			{
+				// we want to be able to rip a hole in the thing being disintegrated, and by doing the depth-testing it avoids some kinds of artefacts, but will probably introduce others?
+				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHMASK_TRUE | GLS_ATEST_GE_C0;
+			}
+
+			if ( backEnd.currentEntity->e.renderfx & RF_RGB_TINT )
+			{//want to use RGBGen from ent
+				forceRGBGen = CGEN_ENTITY;
+			}
+		}
 
 		{
 			vec4_t baseColor;
@@ -1339,6 +1371,24 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		//
 		if (!(tr.viewParms.flags & VPF_NOCUBEMAPS) && input->cubemapIndex && r_cubeMapping->integer)
 			GL_BindToTMU( tr.cubemaps[input->cubemapIndex - 1], TB_CUBEMAP);
+
+		if (backEnd.currentEntity && (backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA))
+		{
+			ForceAlpha((unsigned char *) tess.svars.colors, backEnd.currentEntity->e.shaderRGBA[3]);
+			if (backEnd.currentEntity->e.renderfx & RF_ALPHA_DEPTH)
+			{ //depth write, so faces through the model will be stomped over by nearer ones. this works because
+				//we draw RF_FORCE_ENT_ALPHA stuff after everything else, including standard alpha surfs.
+				GL_State(GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHMASK_TRUE);
+			}
+			else
+			{
+				GL_State(GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
+			}
+		}
+		else
+		{
+			GL_State( stateBits );
+		}
 
 		//
 		// draw

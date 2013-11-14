@@ -1582,15 +1582,15 @@ void ParseSort( const char **text ) {
 	} else if ( !Q_stricmp( token, "underwater" ) ) {
 		shader.sort = SS_UNDERWATER;
 	} else if ( !Q_stricmp( token, "inside" ) ) {
-		//shader.sort = SS_INSIDE;
+		shader.sort = SS_INSIDE;
 	} else if ( !Q_stricmp( token, "mid_inside" ) ) {
-		//shader.sort = SS_MID_INSIDE;
+		shader.sort = SS_MID_INSIDE;
 	} else if ( !Q_stricmp( token, "middle" ) ) {
-		//shader.sort = SS_MIDDLE;
+		shader.sort = SS_MIDDLE;
 	} else if ( !Q_stricmp( token, "mid_outside" ) ) {
-		//shader.sort = SS_MID_OUTSIDE;
+		shader.sort = SS_MID_OUTSIDE;
 	} else if ( !Q_stricmp( token, "outside" ) ) {
-		//shader.sort = SS_OUTSIDE;
+		shader.sort = SS_OUTSIDE;
 	}	
 	else {
 		shader.sort = atof( token );
@@ -3122,7 +3122,15 @@ static shader_t *FinishShader( void ) {
 				if ( pStage->stateBits & GLS_DEPTHMASK_TRUE ) {
 					shader.sort = SS_SEE_THROUGH;
 				} else {
-					shader.sort = SS_BLEND0;
+					if (( blendSrcBits == GLS_SRCBLEND_ONE ) && ( blendDstBits == GLS_DSTBLEND_ONE ))
+					{
+						// GL_ONE GL_ONE needs to come a bit later
+						shader.sort = SS_BLEND1;
+					}
+					else
+					{
+						shader.sort = SS_BLEND0;
+					}
 				}
 			}
 		}

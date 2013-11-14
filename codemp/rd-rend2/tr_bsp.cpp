@@ -2641,7 +2641,6 @@ R_LoadLightGrid
 void R_LoadLightGrid( lump_t *l ) {
 	int		i;
 	vec3_t	maxs;
-	int		numGridPoints;
 	world_t	*w;
 	float	*wMins, *wMaxs;
 
@@ -2660,21 +2659,23 @@ void R_LoadLightGrid( lump_t *l ) {
 		w->lightGridBounds[i] = (maxs[i] - w->lightGridOrigin[i])/w->lightGridSize[i] + 1;
 	}
 
-	numGridPoints = w->lightGridBounds[0] * w->lightGridBounds[1] * w->lightGridBounds[2];
+	int numGridDataElements = l->filelen / sizeof(*w->lightGridData);
 
-	if ( l->filelen != numGridPoints * 8 ) {
-		ri->Printf( PRINT_WARNING, "WARNING: light grid mismatch\n" );
-		w->lightGridData = NULL;
-		return;
-	}
-
-	w->lightGridData = (byte *)ri->Hunk_Alloc( l->filelen, h_low );
+	w->lightGridData = (mgrid_t *)ri->Hunk_Alloc( l->filelen, h_low );
 	Com_Memcpy( w->lightGridData, (void *)(fileBase + l->fileofs), l->filelen );
 
 	// deal with overbright bits
-	for ( i = 0 ; i < numGridPoints ; i++ ) {
-		R_ColorShiftLightingBytes( &w->lightGridData[i*8], &w->lightGridData[i*8] );
-		R_ColorShiftLightingBytes( &w->lightGridData[i*8+3], &w->lightGridData[i*8+3] );
+	for ( i = 0 ; i < numGridDataElements ; i++ ) 
+	{
+		for(int j = 0; j < MAXLIGHTMAPS; j++)
+		{
+			R_ColorShiftLightingBytes(
+				w->lightGridData[i].ambientLight[j],
+				w->lightGridData[i].ambientLight[j]);
+			R_ColorShiftLightingBytes(
+				w->lightGridData[i].directLight[j],
+				w->lightGridData[i].directLight[j]);
+		}
 	}
 
 	// load hdr lightgrid
@@ -2695,14 +2696,14 @@ void R_LoadLightGrid( lump_t *l ) {
 
 			//ri->Printf(PRINT_ALL, "found!\n");
 
-			if (size != sizeof(float) * 6 * numGridPoints)
+			if (size != sizeof(float) * 6 * numGridDataElements)
 			{
-				ri->Error(ERR_DROP, "Bad size for %s (%i, expected %i)!", filename, size, (int)(sizeof(float)) * 6 * numGridPoints);
+				ri->Error(ERR_DROP, "Bad size for %s (%i, expected %i)!", filename, size, (int)(sizeof(float)) * 6 * numGridDataElements);
 			}
 
 			w->hdrLightGrid = (float *)ri->Hunk_Alloc(size, h_low);
 
-			for (i = 0; i < numGridPoints ; i++)
+			for (i = 0; i < numGridDataElements ; i++)
 			{
 				w->hdrLightGrid[i * 6    ] = hdrLightGrid[i * 6    ] * lightScale;
 				w->hdrLightGrid[i * 6 + 1] = hdrLightGrid[i * 6 + 1] * lightScale;
@@ -2716,6 +2717,29 @@ void R_LoadLightGrid( lump_t *l ) {
 		if (hdrLightGrid)
 			ri->FS_FreeFile(hdrLightGrid);
 	}
+}
+
+/*
+================
+R_LoadLightGridArray
+
+================
+*/
+void R_LoadLightGridArray( lump_t *l ) {
+	world_t	*w;
+
+	w = &s_worldData;
+
+	w->numGridArrayElements = w->lightGridBounds[0] * w->lightGridBounds[1] * w->lightGridBounds[2];
+
+	if ( (unsigned)l->filelen != w->numGridArrayElements * sizeof(*w->lightGridArray) ) {
+		Com_Printf (S_COLOR_YELLOW  "WARNING: light grid array mismatch\n" );
+		w->lightGridData = NULL;
+		return;
+	}
+
+	w->lightGridArray = (unsigned short *)Hunk_Alloc( l->filelen, h_low );
+	memcpy( w->lightGridArray, (void *)(fileBase + l->fileofs), l->filelen );
 }
 
 /*
@@ -3580,11 +3604,10 @@ void RE_LoadWorldMap( const char *name ) {
 	R_LoadSubmodels (&header->lumps[LUMP_MODELS]);
 	R_LoadVisibility( &header->lumps[LUMP_VISIBILITY] );
 	R_LoadLightGrid( &header->lumps[LUMP_LIGHTGRID] );
-
-	// determine vertex light directions
-	R_CalcVertexLightDirs();
+	R_LoadLightGridArray( &header->lumps[LUMP_LIGHTARRAY] );
 
 	// determine which parts of the map are in sunlight
+#if 0
 	if (0)
 	{
 		world_t	*w;
@@ -3771,6 +3794,7 @@ void RE_LoadWorldMap( const char *name ) {
 
 		Z_Free(primaryLightGrid);
 	}
+#endif
 
 	// load cubemaps 
    	if (r_cubeMapping->integer) 
@@ -3799,6 +3823,9 @@ void RE_LoadWorldMap( const char *name ) {
 
 	// only set tr.world now that we know the entire level has loaded properly
 	tr.world = &s_worldData;
+
+	// determine vertex light directions
+	R_CalcVertexLightDirs();
 
 	// make sure the VBO glState entries are safe
 	R_BindNullVBO();

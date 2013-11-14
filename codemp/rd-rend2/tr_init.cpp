@@ -1644,8 +1644,32 @@ qhandle_t stub_RegisterServerSkin( const char *name )
 }
 
 qboolean stub_InitializeWireframeAutomap() { return qtrue; }
-void stub_RE_GetLightStyle (int style, byte *color){}
-void stub_RE_SetLightStyle (int style, int color){}
+
+void RE_GetLightStyle(int style, color4ub_t color)
+{
+	if (style >= MAX_LIGHT_STYLES)
+	{
+	    Com_Error( ERR_FATAL, "RE_GetLightStyle: %d is out of range", (int)style );
+		return;
+	}
+
+	*(int *)color = *(int *)styleColors[style];
+}
+
+void RE_SetLightStyle(int style, int color)
+{
+	if (style >= MAX_LIGHT_STYLES)
+	{
+	    Com_Error( ERR_FATAL, "RE_SetLightStyle: %d is out of range", (int)style );
+		return;
+	}
+
+	if (*(int*)styleColors[style] != color)
+	{
+		*(int *)styleColors[style] = color;
+	}
+}
+
 void stub_RE_GetBModelVerts (int bModel, vec3_t *vec, vec_t *normal) {}
 void stub_RE_WorldEffectCommand ( const char *cmd ){}
 void stub_RE_AddMiniRefEntityToScene ( const miniRefEntity_t *ent ) {}
@@ -1728,8 +1752,8 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.GetEntityToken = R_GetEntityToken;
 	re.inPVS = R_inPVS;
 
-	re.GetLightStyle = stub_RE_GetLightStyle;
-	re.SetLightStyle = stub_RE_SetLightStyle;
+	re.GetLightStyle = RE_GetLightStyle;
+	re.SetLightStyle = RE_SetLightStyle;
 	re.GetBModelVerts = stub_RE_GetBModelVerts;
 
 	// SetRangedFog

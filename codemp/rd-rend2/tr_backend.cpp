@@ -563,7 +563,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	int				dlighted, oldDlighted;
 	int				pshadowed, oldPshadowed;
 	int             cubemapIndex, oldCubemapIndex;
-	qboolean		depthRange, oldDepthRange;
+	int		depthRange, oldDepthRange;
 	int				i;
 	drawSurf_t		*drawSurf;
 	int				oldSort;
@@ -584,7 +584,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	backEnd.currentEntity = &tr.worldEntity;
 	oldShader = NULL;
 	oldFogNum = -1;
-	oldDepthRange = qfalse;
+	oldDepthRange = 0;
 	oldDlighted = qfalse;
 	oldPshadowed = qfalse;
 	oldCubemapIndex = -1;
@@ -634,7 +634,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		//
 		if ( entityNum != oldEntityNum ) {
 			qboolean sunflare = qfalse;
-			depthRange = qfalse;
+			depthRange = 0;
 
 			if ( entityNum != REFENTITYNUM_WORLD ) {
 				backEnd.currentEntity = &backEnd.refdef.entities[entityNum];
@@ -651,10 +651,13 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 					R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.or );
 				}
 
-				if(backEnd.currentEntity->e.renderfx & RF_DEPTHHACK)
-				{
+				if ( backEnd.currentEntity->e.renderfx & RF_NODEPTH ) {
+					// No depth at all, very rare but some things for seeing through walls
+					depthRange = 2;
+				}
+				else if ( backEnd.currentEntity->e.renderfx & RF_DEPTHHACK ) {
 					// hack the depth range to prevent view model from poking into walls
-					depthRange = qtrue;
+					depthRange = 1;
 				}
 			} else {
 				backEnd.currentEntity = &tr.worldEntity;
@@ -674,36 +677,56 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			//
 			if (oldDepthRange != depthRange)
 			{
-				if (depthRange)
-				{
-					if(backEnd.viewParms.stereoFrame != STEREO_CENTER)
-					{
-						viewParms_t temp = backEnd.viewParms;
+				switch ( depthRange ) {
+					default:
+					case 0:
+						if(backEnd.viewParms.stereoFrame != STEREO_CENTER)
+						{
+							GL_SetProjectionMatrix( backEnd.viewParms.projectionMatrix );
+						}
 
-						R_SetupProjection(&temp, r_znear->value, 0, qfalse);
+						if (!sunflare)
+							qglDepthRange (0, 1);
 
-						GL_SetProjectionMatrix( temp.projectionMatrix );
-					}
-
- 					if(!oldDepthRange)
-					{
 						depth[0] = 0;
-						depth[1] = 0.3f;
- 						qglDepthRange (depth[0], depth[1]);
-	 				}
-				}
-				else
-				{
-					if(backEnd.viewParms.stereoFrame != STEREO_CENTER)
-					{
-						GL_SetProjectionMatrix( backEnd.viewParms.projectionMatrix );
-					}
+						depth[1] = 1;
+						break;
 
-					if (!sunflare)
-						qglDepthRange (0, 1);
+					case 1:
+						if(backEnd.viewParms.stereoFrame != STEREO_CENTER)
+						{
+							viewParms_t temp = backEnd.viewParms;
 
-					depth[0] = 0;
-					depth[1] = 1;
+							R_SetupProjection(&temp, r_znear->value, 0, qfalse);
+
+							GL_SetProjectionMatrix( temp.projectionMatrix );
+						}
+
+ 						if(!oldDepthRange)
+						{
+							depth[0] = 0;
+							depth[1] = 0.3f;
+ 							qglDepthRange (depth[0], depth[1]);
+	 					}
+						break;
+
+					case 2:
+						if(backEnd.viewParms.stereoFrame != STEREO_CENTER)
+						{
+							viewParms_t temp = backEnd.viewParms;
+
+							R_SetupProjection(&temp, r_znear->value, 0, qfalse);
+
+							GL_SetProjectionMatrix( temp.projectionMatrix );
+						}
+
+ 						if(!oldDepthRange)
+						{
+							depth[0] = 0.0f;
+							depth[1] = 0.0f;
+ 							qglDepthRange (depth[0], depth[1]);
+	 					}
+						break;
 				}
 
 				oldDepthRange = depthRange;
@@ -734,7 +757,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	GL_SetModelviewMatrix( backEnd.viewParms.world.modelMatrix );
 
-	qglDepthRange (0, 1);
+	//qglDepthRange (0, 1);
 }
 
 

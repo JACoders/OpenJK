@@ -438,6 +438,12 @@ typedef enum {
 						// in addition to alpha test
 	SS_BANNER,
 
+	SS_INSIDE,			// inside body parts (i.e. heart)
+	SS_MID_INSIDE,
+	SS_MIDDLE,
+	SS_MID_OUTSIDE,
+	SS_OUTSIDE,			// outside body parts (i.e. ribs)
+
 	SS_FOG,
 
 	SS_UNDERWATER,		// for items that should be drawn in front of the water plane
@@ -1589,6 +1595,15 @@ typedef struct {
 	int			numSurfaces;
 } bmodel_t;
 
+typedef struct 
+{
+	byte		ambientLight[MAXLIGHTMAPS][3];
+	byte		directLight[MAXLIGHTMAPS][3];
+	byte		styles[MAXLIGHTMAPS];
+	byte		latLong[2];
+//	byte		pad[2];								// to align to a cache line
+} mgrid_t;
+
 typedef struct {
 	char		name[MAX_QPATH];		// ie: maps/tim_dm2.bsp
 	char		baseName[MAX_QPATH];	// ie: tim_dm2
@@ -1633,8 +1648,15 @@ typedef struct {
 	vec3_t		lightGridSize;
 	vec3_t		lightGridInverseSize;
 	int			lightGridBounds[3];
-	byte		*lightGridData;
 	float		*hdrLightGrid;
+	int			lightGridOffsets[8];
+
+	vec3_t		lightGridStep;
+
+	mgrid_t		*lightGridData;
+	word		*lightGridArray;
+	int			numGridArrayElements;
+
 
 
 	int			numClusters;
@@ -2571,6 +2593,7 @@ typedef struct shaderCommands_s
 } shaderCommands_t;
 
 extern	shaderCommands_t	tess;
+extern	color4ub_t	styleColors[MAX_LIGHT_STYLES];
 
 void RB_BeginSurface(shader_t *shader, int fogNum, int cubemapIndex );
 void RB_EndSurface(void);

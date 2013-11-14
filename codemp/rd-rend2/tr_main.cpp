@@ -1853,6 +1853,16 @@ void R_AddDrawSurf( surfaceType_t *surface, shader_t *shader,
 					int cubemap) {
 	int			index;
 
+	if (tr.refdef.rdflags & RDF_NOFOG)
+	{
+		fogIndex = 0;
+	}
+
+	if ( (shader->surfaceFlags & SURF_FORCESIGHT) /*&& !(tr.refdef.rdflags & RDF_ForceSightOn)*/ )
+	{	//if shader is only seen with ForceSight and we don't have ForceSight on, then don't draw
+		return;
+	}
+
 	// instead of checking for overflow, we just mask the index
 	// so it wraps around
 	index = tr.refdef.numDrawSurfs & DRAWSURF_MASK;
