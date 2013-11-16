@@ -367,9 +367,6 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 	// and any configstring changes should be reliably transmitted
 	// to all clients
 	sv.state = SS_GAME;
-	
-	// send a heartbeat now so the master will get up to date info
-	svs.nextHeartbeatTime = -9999999;
 
 	Hunk_SetMark();
 	Z_Validate();
