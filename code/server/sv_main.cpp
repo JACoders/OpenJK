@@ -135,7 +135,7 @@ void SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 	// The actual cause of the bug is probably further downstream
 	// and should maybe be addressed later, but this certainly
 	// fixes the problem for now
-	if ( strlen ((char *)message) > (1022 + 1) ) {
+	if ( strlen ((char *)message+1) > 1022 ) {
 		return;
 	}
 
