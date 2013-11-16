@@ -459,7 +459,7 @@ qboolean SV_CheckPaused( void ) {
 		return qfalse;
 	}
 
-	sv_paused->integer = 1;
+	Cvar_Set("sv_paused", "1");
 	return qtrue;
 }
 
