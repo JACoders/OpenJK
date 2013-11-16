@@ -141,9 +141,14 @@ void CrystalAmmoSettings(gentity_t *ent)
 //------------------------------------------------------------
 
 //------------------------------------------------------------
-/*QUAKED misc_model_ghoul (1 0 0) (-16 -16 -37) (16 16 32)
-"model"		arbitrary .glm file to display
-"health" - how much health the model has - default 60 (zero makes non-breakable)
+/*QUAKED misc_model_ghoul (1 0 0) (-16 -16 0) (16 16 16)
+"model" - arbitrary .glm file to display
+"modelscale" - uniform scale
+"modelscale_vec" - "x y z" scale model in each axis
+
+Non-solid and does NOT work with .skin files. Texture names & paths are stored inside the .glm, the same way as .md3. For animated models, use NPC_spawner & ICARUS.
+
+Loaded as a model in the renderer - does not take up precious bsp space!
 */
 //------------------------------------------------------------
 #include "anims.h"
@@ -182,8 +187,40 @@ void SP_misc_model_ghoul( gentity_t *ent )
 	gi.G2API_InitGhoul2Model(ent->ghoul2, ent->model, ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0);
 	ent->s.radius = 50;
 
+	//DT EDIT: enable origin & angles to be set via radiant
 	G_SetOrigin( ent, ent->s.origin );
 	G_SetAngles( ent, ent->s.angles );
+
+	//DT EDIT: enable modelscale & modelscale_vec to be set via radiant
+	qboolean bHasScale = G_SpawnVector("modelscale_vec", "0 0 0", ent->s.modelScale);
+	if (!bHasScale)
+	{
+		float temp;
+		G_SpawnFloat( "modelscale", "0", &temp);
+		if (temp != 0.0f)
+		{
+			ent->s.modelScale[ 0 ] = ent->s.modelScale[ 1 ] = ent->s.modelScale[ 2 ] = temp;
+			bHasScale = qtrue;
+		}
+	}
+
+	if (bHasScale)
+	{
+		//scale the x axis of the bbox up.
+		ent->maxs[0] *= ent->s.modelScale[0];//*scaleFactor;
+		ent->mins[0] *= ent->s.modelScale[0];//*scaleFactor;
+		
+		//scale the y axis of the bbox up.
+		ent->maxs[1] *= ent->s.modelScale[1];//*scaleFactor;
+		ent->mins[1] *= ent->s.modelScale[1];//*scaleFactor;
+		
+		//scale the z axis of the bbox up and adjust origin accordingly
+		ent->maxs[2] *= ent->s.modelScale[2];
+		float oldMins2 = ent->mins[2];
+		ent->mins[2] *= ent->s.modelScale[2];
+		ent->s.origin[2] += (oldMins2-ent->mins[2]);
+	}
+
 	gi.linkentity (ent);
 #else
 	char name1[200] = "models/players/kyle/model.glm";

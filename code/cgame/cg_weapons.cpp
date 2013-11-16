@@ -760,6 +760,8 @@ int CG_MapTorsoToWeaponFrame( const clientInfo_t *ci, int frame, int animNum, in
 	case TORSO_WEAPONREADY3:
 	case TORSO_WEAPONREADY4:
 	case TORSO_WEAPONREADY10:
+	//DT EDIT: DF2 - WP_MELEE idle 1 frame anim
+	case BOTH_STAND6:
 		ret = 0;
 		break;
 
@@ -792,6 +794,32 @@ int CG_MapTorsoToWeaponFrame( const clientInfo_t *ci, int frame, int animNum, in
 		if ( frame >= animations[animNum].firstFrame && frame < animations[animNum].firstFrame + 6 ) 
 		{
 			ret = 1 + ( frame - animations[animNum].firstFrame );
+		}
+		else
+		{
+//			assert(0);
+		}
+		break;
+
+	//DT EDIT: DF2 - WP_MELEE attack 8 frame anim
+	case BOTH_MELEE1:
+		if ( frame >= animations[animNum].firstFrame && frame < animations[animNum].firstFrame + 8 ) 
+		{
+			//DT EDIT: DF2 - Put this in to have BOTH_MELEE2 anim play after .MD3 frame 15
+			ret = frame - animations[animNum].firstFrame + 6 + 5 + 4;
+		}
+		else
+		{
+//			assert(0);
+		}
+		break;
+
+	//DT EDIT: DF2 - WP_MELEE attack 13 frame anim
+	case BOTH_MELEE2:
+		if ( frame >= animations[animNum].firstFrame && frame < animations[animNum].firstFrame + 13 ) 
+		{
+			//DT EDIT: DF2 - Put this in to have BOTH_MELEE2 anim play after .MD3 frame 23
+			ret = frame - animations[animNum].firstFrame + 6 + 5 + 4 + 8;
 		}
 		else
 		{

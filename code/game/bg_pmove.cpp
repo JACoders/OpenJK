@@ -8023,7 +8023,9 @@ static void PM_Footsteps( void )
 			}
 			else if ( pm->ps->waterHeightLevel >= WHL_TORSO 
 				&& ((pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer())
-					||pm->ps->weapon==WP_SABER||pm->ps->weapon==WP_NONE||pm->ps->weapon==WP_MELEE) )//pm->waterlevel > 1 )	//in deep water
+					//DT EDIT: DF2 - removed WP_MELEE as it normally accompanies WP_SABER and it probably shouldn't for it to act like normal 1P weapons
+					//||pm->ps->weapon==WP_SABER||pm->ps->weapon==WP_NONE||pm->ps->weapon==WP_MELEE) )//pm->waterlevel > 1 )	//in deep water
+					||pm->ps->weapon==WP_SABER||pm->ps->weapon==WP_NONE) )//pm->waterlevel > 1 )	//in deep water
 			{
 				if ( !PM_ForceJumpingUp( pm->gent ) )
 				{
