@@ -151,7 +151,6 @@ typedef struct {
 	int			numSnapshotEntities;		// sv_maxclients->integer*PACKET_BACKUP*MAX_PACKET_ENTITIES
 	int			nextSnapshotEntities;		// next snapshotEntities to use
 	entityState_t	*snapshotEntities;		// [numSnapshotEntities]
-	int			nextHeartbeatTime;
 } serverStatic_t;
 
 //=============================================================================
