@@ -725,7 +725,7 @@ void CL_CheckTimeout( void ) {
 	//
 	// check timeout
 	//
-	if ( ( !cl_paused->integer || !sv_paused->integer ) 
+	if ( ( !CL_CheckPaused() || !sv_paused->integer ) 
 //		&& cls.state >= CA_CONNECTED && cls.state != CA_CINEMATIC
 		&& cls.state >= CA_CONNECTED && (cls.state != CA_CINEMATIC && !CL_IsRunningInGameCinematic())
 		&& cls.realtime - clc.lastPacketTime > cl_timeout->value*1000) {
@@ -739,6 +739,22 @@ void CL_CheckTimeout( void ) {
 	}
 }
 
+/*
+==================
+CL_CheckPaused
+Check whether client has been paused.
+==================
+*/
+qboolean CL_CheckPaused(void)
+{
+	// if cl_paused->modified is set, the cvar has only been changed in
+	// this frame. Keep paused in this frame to ensure the server doesn't
+	// lag behind.
+	if(cl_paused->integer || cl_paused->modified)
+		return qtrue;
+
+	return qfalse;
+}
 
 //============================================================================
 
@@ -752,7 +768,10 @@ void CL_CheckUserinfo( void ) {
 	if ( cls.state < CA_CHALLENGING ) {
 		return;
 	}
-
+	// don't overflow the reliable command buffer when paused
+	if ( CL_CheckPaused() ) {
+		return;
+	}
 	// send a reliable userinfo update if needed
 	if ( cvar_modifiedFlags & CVAR_USERINFO ) {
 		cvar_modifiedFlags &= ~CVAR_USERINFO;

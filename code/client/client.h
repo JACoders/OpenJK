@@ -327,6 +327,8 @@ void CL_GetPing( int n, char *adrstr, int *pingtime );
 void CL_ClearPing( int n );
 int CL_GetPingQueueCount( void );
 
+qboolean CL_CheckPaused(void);
+
 //
 // cl_input
 //
