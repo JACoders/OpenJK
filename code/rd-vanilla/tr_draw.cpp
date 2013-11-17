@@ -81,7 +81,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 		if ( r_ignore->integer ) 
 		{
 			end = ri.Milliseconds();
-			VID_Printf( PRINT_ALL, "qglTexImage2D %i, %i: %i msec\n", cols, rows, end - start );
+			ri.Printf( PRINT_ALL, "qglTexImage2D %i, %i: %i msec\n", cols, rows, end - start );
 		}
 #endif
 	} 
@@ -105,7 +105,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 			if ( r_ignore->integer ) 
 			{
 				end = ri.Milliseconds();
-				VID_Printf( PRINT_ALL, "qglTexSubImage2D %i, %i: %i msec\n", cols, rows, end - start );
+				ri.Printf( PRINT_ALL, "qglTexSubImage2D %i, %i: %i msec\n", cols, rows, end - start );
 			}
 	#endif
 		}
@@ -533,7 +533,7 @@ qboolean RE_ProcessDissolve(void)
 		
 		int iDissolvePercentage = ((ri.Milliseconds() - Dissolve.iStartTime)*100) / (1000.0f * fDISSOLVE_SECONDS);
 
-//		VID_Printf(PRINT_ALL,"iDissolvePercentage %d\n",iDissolvePercentage);
+//		ri.Printf(PRINT_ALL,"iDissolvePercentage %d\n",iDissolvePercentage);
 
 		if (iDissolvePercentage <= 100)
 		{
@@ -800,7 +800,7 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 {
 	R_SyncRenderThread();
 
-//	VID_Printf( PRINT_ALL, "RE_InitDissolve()\n");
+//	ri.Printf( PRINT_ALL, "RE_InitDissolve()\n");
 	qboolean bReturn = qfalse;
 
 	if (//Dissolve.iStartTime == 0	// no point in interruping an existing one

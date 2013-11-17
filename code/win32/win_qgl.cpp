@@ -2801,11 +2801,11 @@ static void APIENTRY logViewport(GLint x, GLint y, GLsizei width, GLsizei height
 */
 void QGL_Shutdown( void )
 {
-	VID_Printf( PRINT_ALL, "...shutting down QGL\n" );
+	ri.Printf( PRINT_ALL, "...shutting down QGL\n" );
 
 	if ( glw_state.hinstOpenGL )
 	{
-		VID_Printf( PRINT_ALL, "...unloading OpenGL DLL\n" );
+		ri.Printf( PRINT_ALL, "...unloading OpenGL DLL\n" );
 		FreeLibrary( glw_state.hinstOpenGL );
 	}
 
@@ -3182,16 +3182,16 @@ qboolean QGL_Init( const char *dllname )
 {
 	assert( glw_state.hinstOpenGL == 0 );
 
-	VID_Printf( PRINT_ALL, "...initializing QGL\n" );
+	ri.Printf( PRINT_ALL, "...initializing QGL\n" );
 
-	//VID_Printf( PRINT_ALL, "...calling LoadLibrary( '%s.dll' ): ", dllname );
+	//ri.Printf( PRINT_ALL, "...calling LoadLibrary( '%s.dll' ): ", dllname );
 
 	if ( ( glw_state.hinstOpenGL = LoadLibrary( dllname ) ) == 0 )
 	{
-		VID_Printf( PRINT_ALL, "failed\n" );
+		ri.Printf( PRINT_ALL, "failed\n" );
 		return qfalse;
 	}
-	VID_Printf( PRINT_ALL, "succeeded\n" );
+	ri.Printf( PRINT_ALL, "succeeded\n" );
 
 	qglAccum                     = dllAccum = (void (__stdcall *)(unsigned int,float))GPA( "glAccum" );
 	qglAlphaFunc                 = dllAlphaFunc = (void (__stdcall *)(unsigned int,float))GPA( "glAlphaFunc" );
