@@ -387,7 +387,7 @@ typedef struct {
 
 	byte			constantColor[4];			// for CGEN_CONST and AGEN_CONST
 
-	unsigned int	stateBits;					// GLS_xxxx mask
+	uint32_t		stateBits;					// GLS_xxxx mask
 
 	acff_t			adjustColorsForFog;
 
