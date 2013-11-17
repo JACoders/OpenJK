@@ -360,7 +360,7 @@ static void LogLight( trRefEntity_t *ent ) {
 	}
 	*/
 
-	VID_Printf( PRINT_ALL, "amb:%i  dir:%i  direction: (%4.2f, %4.2f, %4.2f)\n", max1, max2, ent->lightDir[0], ent->lightDir[1], ent->lightDir[2] );
+	ri.Printf( PRINT_ALL, "amb:%i  dir:%i  direction: (%4.2f, %4.2f, %4.2f)\n", max1, max2, ent->lightDir[0], ent->lightDir[1], ent->lightDir[2] );
 }
 
 /*

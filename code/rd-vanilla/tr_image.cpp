@@ -124,9 +124,9 @@ void GL_TextureMode( const char *string ) {
 	}
 
 	if ( i == 6 ) {
-		VID_Printf (PRINT_ALL, "bad filter name\n");
+		ri.Printf (PRINT_ALL, "bad filter name\n");
 		for ( i=0 ; i< 6 ; i++ ) {
-			VID_Printf( PRINT_ALL, "%s\n",modes[i].name);
+			ri.Printf( PRINT_ALL, "%s\n",modes[i].name);
 			}
 		return;
 	}
@@ -259,7 +259,7 @@ void R_ImageList_f( void ) {
 	float	texBytes = 0.0f;
 	const char *yesno[] = {"no ", "yes"};
 
-	VID_Printf (PRINT_ALL, "\n      -w-- -h-- -fsK- -mm- -if- wrap --name-------\n");
+	ri.Printf (PRINT_ALL, "\n      -w-- -h-- -fsK- -mm- -if- wrap --name-------\n");
 
 	int iNumImages = R_Images_StartIteration();
 	while ( (image = R_Images_GetNextIteration()) != NULL)
@@ -267,73 +267,73 @@ void R_ImageList_f( void ) {
 		texels   += image->width*image->height;
 		texBytes += image->width*image->height * R_BytesPerTex (image->internalFormat);
 //		totalFileSizeK += (image->imgfileSize+1023)/1024;
-		//VID_Printf (PRINT_ALL,  "%4i: %4i %4i %5i  %s ",
+		//ri.Printf (PRINT_ALL,  "%4i: %4i %4i %5i  %s ",
 		//	i, image->width, image->height,(image->fileSize+1023)/1024, yesno[image->mipmap] );
-		VID_Printf (PRINT_ALL,  "%4i: %4i %4i  %s ",
+		ri.Printf (PRINT_ALL,  "%4i: %4i %4i  %s ",
 			i, image->width, image->height,yesno[image->mipmap] );
 
 		switch ( image->internalFormat ) {
 		case 1:
-			VID_Printf( PRINT_ALL, "I    " );
+			ri.Printf( PRINT_ALL, "I    " );
 			break;
 		case 2:
-			VID_Printf( PRINT_ALL, "IA   " );
+			ri.Printf( PRINT_ALL, "IA   " );
 			break;
 		case 3:
-			VID_Printf( PRINT_ALL, "RGB  " );
+			ri.Printf( PRINT_ALL, "RGB  " );
 			break;
 		case 4:
-			VID_Printf( PRINT_ALL, "RGBA " );
+			ri.Printf( PRINT_ALL, "RGBA " );
 			break;
 		case GL_RGBA8:
-			VID_Printf( PRINT_ALL, "RGBA8" );
+			ri.Printf( PRINT_ALL, "RGBA8" );
 			break;
 		case GL_RGB8:
-			VID_Printf( PRINT_ALL, "RGB8 " );
+			ri.Printf( PRINT_ALL, "RGB8 " );
 			break;
 		case GL_RGB4_S3TC:
-			VID_Printf( PRINT_ALL, "S3TC " );
+			ri.Printf( PRINT_ALL, "S3TC " );
 			break;
 		case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-			VID_Printf( PRINT_ALL, "DXT1 " );
+			ri.Printf( PRINT_ALL, "DXT1 " );
 			break;
 		case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-			VID_Printf( PRINT_ALL, "DXT5 " );
+			ri.Printf( PRINT_ALL, "DXT5 " );
 			break;
 		case GL_RGBA4:
-			VID_Printf( PRINT_ALL, "RGBA4" );
+			ri.Printf( PRINT_ALL, "RGBA4" );
 			break;
 		case GL_RGB5:
-			VID_Printf( PRINT_ALL, "RGB5 " );
+			ri.Printf( PRINT_ALL, "RGB5 " );
 			break;
 		default:
-			VID_Printf( PRINT_ALL, "???? " );
+			ri.Printf( PRINT_ALL, "???? " );
 		}
 
 		switch ( image->wrapClampMode ) {
 		case GL_REPEAT:
-			VID_Printf( PRINT_ALL, "rept " );
+			ri.Printf( PRINT_ALL, "rept " );
 			break;
 		case GL_CLAMP:
-			VID_Printf( PRINT_ALL, "clmp " );
+			ri.Printf( PRINT_ALL, "clmp " );
 			break;
 		case GL_CLAMP_TO_EDGE:
-			VID_Printf( PRINT_ALL, "clpE " );
+			ri.Printf( PRINT_ALL, "clpE " );
 			break;
 		default:
-			VID_Printf( PRINT_ALL, "%4i ", image->wrapClampMode );
+			ri.Printf( PRINT_ALL, "%4i ", image->wrapClampMode );
 			break;
 		}
 		
-		VID_Printf( PRINT_ALL, "%s\n", image->imgName );
+		ri.Printf( PRINT_ALL, "%s\n", image->imgName );
 		i++;
 	}
-	VID_Printf (PRINT_ALL, " ---------\n");
-	VID_Printf (PRINT_ALL, "      -w-- -h-- -mm- -if- wrap --name-------\n");
-	VID_Printf (PRINT_ALL, " %i total texels (not including mipmaps)\n", texels );
-//	VID_Printf (PRINT_ALL, " %iMB total filesize\n", (totalFileSizeK+1023)/1024 );
-	VID_Printf (PRINT_ALL, " %.2fMB total texture mem (not including mipmaps)\n", texBytes/1048576.0f );
-	VID_Printf (PRINT_ALL, " %i total images\n\n", iNumImages );
+	ri.Printf (PRINT_ALL, " ---------\n");
+	ri.Printf (PRINT_ALL, "      -w-- -h-- -mm- -if- wrap --name-------\n");
+	ri.Printf (PRINT_ALL, " %i total texels (not including mipmaps)\n", texels );
+//	ri.Printf (PRINT_ALL, " %iMB total filesize\n", (totalFileSizeK+1023)/1024 );
+	ri.Printf (PRINT_ALL, " %.2fMB total texture mem (not including mipmaps)\n", texBytes/1048576.0f );
+	ri.Printf (PRINT_ALL, " %i total images\n\n", iNumImages );
 }
 
 //=======================================================================
@@ -874,22 +874,22 @@ void RE_RegisterImages_Info_f( void )
 	int iNumImages	= R_Images_StartIteration();
 	while ( (pImage	= R_Images_GetNextIteration()) != NULL)
 	{
-		VID_Printf( PRINT_ALL, "%d: (%4dx%4dy) \"%s\"",iImage, pImage->width, pImage->height, pImage->imgName);
-		VID_Printf( PRINT_ALL, ", levused %d",pImage->iLastLevelUsedOn);
-		VID_Printf( PRINT_ALL, "\n");
+		ri.Printf( PRINT_ALL, "%d: (%4dx%4dy) \"%s\"",iImage, pImage->width, pImage->height, pImage->imgName);
+		ri.Printf( PRINT_ALL, ", levused %d",pImage->iLastLevelUsedOn);
+		ri.Printf( PRINT_ALL, "\n");
 
 		iTexels += pImage->width * pImage->height;
 		iImage++;
 	}
-	VID_Printf( PRINT_ALL, "%d Images. %d (%.2fMB) texels total, (not including mipmaps)\n",iNumImages, iTexels, (float)iTexels / 1024.0f / 1024.0f);
-	VID_Printf( PRINT_DEVELOPER, "RE_RegisterMedia_GetLevel(): %d",RE_RegisterMedia_GetLevel());
+	ri.Printf( PRINT_ALL, "%d Images. %d (%.2fMB) texels total, (not including mipmaps)\n",iNumImages, iTexels, (float)iTexels / 1024.0f / 1024.0f);
+	ri.Printf( PRINT_DEVELOPER, "RE_RegisterMedia_GetLevel(): %d",RE_RegisterMedia_GetLevel());
 }
 
 // currently, this just goes through all the images and dumps any not referenced on this level...
 //
 qboolean RE_RegisterImages_LevelLoadEnd(void)
 {
-	//VID_Printf( PRINT_DEVELOPER, "RE_RegisterImages_LevelLoadEnd():\n");
+	//ri.Printf( PRINT_DEVELOPER, "RE_RegisterImages_LevelLoadEnd():\n");
 
 	qboolean bEraseOccured = qfalse;
 	for (AllocatedImages_t::iterator itImage = AllocatedImages.begin(); itImage != AllocatedImages.end(); bEraseOccured?itImage:++itImage)
@@ -905,7 +905,7 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 			//
 			if ( pImage->iLastLevelUsedOn != RE_RegisterMedia_GetLevel() )
 			{	// nope, so dump it...
-				//VID_Printf( PRINT_DEVELOPER, "Dumping image \"%s\"\n",pImage->imgName);
+				//ri.Printf( PRINT_DEVELOPER, "Dumping image \"%s\"\n",pImage->imgName);
 				R_Images_DeleteImageContents(pImage);
 #ifdef _WIN32
 				itImage = AllocatedImages.erase(itImage);
@@ -919,7 +919,7 @@ qboolean RE_RegisterImages_LevelLoadEnd(void)
 		}
 	}
 
-	//VID_Printf( PRINT_DEVELOPER, "RE_RegisterImages_LevelLoadEnd(): Ok\n");	
+	//ri.Printf( PRINT_DEVELOPER, "RE_RegisterImages_LevelLoadEnd(): Ok\n");	
 
 	GL_ResetBinds();
 
@@ -953,13 +953,13 @@ static image_t *R_FindImageFile_NoLoad(const char *name, qboolean mipmap, qboole
 		//
 		if ( strcmp( pName, "*white" ) ) {
 			if ( pImage->mipmap != !!mipmap ) {
-				VID_Printf( PRINT_WARNING, "WARNING: reused image %s with mixed mipmap parm\n", pName );
+				ri.Printf( PRINT_WARNING, "WARNING: reused image %s with mixed mipmap parm\n", pName );
 			}
 			if ( pImage->allowPicmip != !!allowPicmip ) {
-				VID_Printf( PRINT_WARNING, "WARNING: reused image %s with mixed allowPicmip parm\n", pName );
+				ri.Printf( PRINT_WARNING, "WARNING: reused image %s with mixed allowPicmip parm\n", pName );
 			}
 			if ( pImage->wrapClampMode != glWrapClampMode ) {
-				VID_Printf( PRINT_WARNING, "WARNING: reused image %s with mixed glWrapClampMode parm\n", pName );
+				ri.Printf( PRINT_WARNING, "WARNING: reused image %s with mixed glWrapClampMode parm\n", pName );
 			}
 		}
 			  
@@ -2742,7 +2742,7 @@ qhandle_t RE_RegisterSkin( const char *name) {
 	}
 
 	if ( tr.numSkins == MAX_SKINS )	{
-		VID_Printf( PRINT_WARNING, "WARNING: RE_RegisterSkin( '%s' ) MAX_SKINS hit\n", name );
+		ri.Printf( PRINT_WARNING, "WARNING: RE_RegisterSkin( '%s' ) MAX_SKINS hit\n", name );
 		return 0;
 	}
 	// allocate a new skin
@@ -2794,7 +2794,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 	// load and parse the skin file
     ri.FS_ReadFile( name, (void **)&text );
 	if ( !text ) {
-		VID_Printf( PRINT_ERROR, "WARNING: RE_RegisterSkin( '%s' ) failed to load!\n", name );
+		ri.Printf( PRINT_ERROR, "WARNING: RE_RegisterSkin( '%s' ) failed to load!\n", name );
 		return 0;
 	}
 
@@ -2836,7 +2836,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 		if ((int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) <= skin->numSurfaces)
 		{
 			assert( (int)(sizeof( skin->surfaces) / sizeof( skin->surfaces[0] )) > skin->numSurfaces );
-			VID_Printf( PRINT_ERROR, "WARNING: RE_RegisterSkin( '%s' ) more than %d surfaces!\n", name, sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) );
+			ri.Printf( PRINT_ERROR, "WARNING: RE_RegisterSkin( '%s' ) more than %d surfaces!\n", name, sizeof( skin->surfaces) / sizeof( skin->surfaces[0] ) );
 			break;
 		}
 		surf = skin->surfaces[ skin->numSurfaces ] = (skinSurface_t *) Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
@@ -2896,15 +2896,15 @@ void	R_SkinList_f (void) {
 	int			i, j;
 	skin_t		*skin;
 
-	VID_Printf (PRINT_ALL, "------------------\n");
+	ri.Printf (PRINT_ALL, "------------------\n");
 
 	for ( i = 0 ; i < tr.numSkins ; i++ ) {
 		skin = tr.skins[i];
-		VID_Printf( PRINT_ALL, "%3i:%s\n", i, skin->name );
+		ri.Printf( PRINT_ALL, "%3i:%s\n", i, skin->name );
 		for ( j = 0 ; j < skin->numSurfaces ; j++ ) {
-			VID_Printf( PRINT_ALL, "       %s = %s\n", 
+			ri.Printf( PRINT_ALL, "       %s = %s\n", 
 				skin->surfaces[j]->name, skin->surfaces[j]->shader->name );
 		}
 	}
-	VID_Printf (PRINT_ALL, "------------------\n");
+	ri.Printf (PRINT_ALL, "------------------\n");
 }

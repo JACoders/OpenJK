@@ -651,7 +651,7 @@ public:
 		}
 		else
 		{
-			VID_Printf( PRINT_WARNING, "(Unable to open weather file \"%s\" for writing!)\n",GenCachedWeatherFilename());
+			ri.Printf( PRINT_WARNING, "(Unable to open weather file \"%s\" for writing!)\n",GenCachedWeatherFilename());
 		}
 
 		return 0;
@@ -679,12 +679,12 @@ public:
 				return f;
 			}
 
-            VID_Printf( PRINT_WARNING, "( Cached weather file \"%s\" out of date, regenerating... )\n",GenCachedWeatherFilename());
+            ri.Printf( PRINT_WARNING, "( Cached weather file \"%s\" out of date, regenerating... )\n",GenCachedWeatherFilename());
 			ri.FS_FCloseFile( f );
 		}
 		else
 		{
-			VID_Printf( PRINT_WARNING, "( No cached weather file found, generating... )\n");
+			ri.Printf( PRINT_WARNING, "( No cached weather file found, generating... )\n");
 		}
 
 		return 0;

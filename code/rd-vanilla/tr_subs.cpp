@@ -4,10 +4,6 @@
 // tr_subs.cpp - common function replacements for modular renderer
 #include "tr_local.h"
 
-#ifdef _MSC_VER
-extern int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap);
-#endif
-
 void QDECL Com_Printf( const char *msg, ... )
 {
 	va_list         argptr;
@@ -49,32 +45,6 @@ void Com_DPrintf(const char *format, ...)
 	va_end(argptr);
 
 	ri.Printf(PRINT_DEVELOPER, "%s", text);
-}
-
-/*
-================
-VID_Printf
-
-DLL glue
-================
-*/
-#define	MAXPRINTMSG	4096
-void VID_Printf (int print_level, const char *fmt, ...)
-{
-	va_list		argptr;
-	char		msg[MAXPRINTMSG];
-	
-	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
-	va_end (argptr);
-
-	if ( print_level == PRINT_ALL ) {
-		Com_Printf ("%s", msg);
-	} else if ( print_level == PRINT_WARNING ) {
-		Com_Printf (S_COLOR_YELLOW "%s", msg);		// yellow
-	} else if ( print_level == PRINT_DEVELOPER ) {
-		Com_DPrintf (S_COLOR_RED"%s", msg);
-	}
 }
 
 // HUNK

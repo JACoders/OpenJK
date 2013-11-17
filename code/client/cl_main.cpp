@@ -913,36 +913,7 @@ void CL_Frame ( int msec,float fractionMsec ) {
 	cls.framecount++;
 }
 
-
 //============================================================================
-
-/*
-================
-VID_Printf
-
-DLL glue
-================
-*/
-#define	MAXPRINTMSG	4096
-void VID_Printf (int print_level, const char *fmt, ...)
-{
-	va_list		argptr;
-	char		msg[MAXPRINTMSG];
-	
-	va_start (argptr,fmt);
-	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
-	va_end (argptr);
-
-	if ( print_level == PRINT_ALL ) {
-		Com_Printf ("%s", msg);
-	} else if ( print_level == PRINT_WARNING ) {
-		Com_Printf (S_COLOR_YELLOW "%s", msg);		// yellow
-	} else if ( print_level == PRINT_DEVELOPER ) {
-		Com_DPrintf (S_COLOR_RED"%s", msg);
-	}
-}
-
-
 
 /*
 ============
@@ -1039,7 +1010,6 @@ DLL glue
 ================
 */
 #define	MAXPRINTMSG	4096
-extern int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap);
 void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];

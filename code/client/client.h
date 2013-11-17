@@ -367,12 +367,6 @@ void CL_ParseServerMessage( msg_t *msg );
 
 //====================================================================
 
-void	VID_MenuInit( void );
-void	VID_MenuDraw( void );
-const char *VID_MenuKey( int );
-void VID_Printf (int print_level, const char *fmt, ...);
-
-
 //
 // console
 //

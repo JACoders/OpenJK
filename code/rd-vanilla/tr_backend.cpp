@@ -57,7 +57,7 @@ void GL_Bind( image_t *image ) {
 	int texnum;
 
 	if ( !image ) {
-		VID_Printf( PRINT_WARNING, "GL_Bind: NULL image\n" );
+		ri.Printf( PRINT_WARNING, "GL_Bind: NULL image\n" );
 		texnum = tr.defaultImage->texnum;
 	} else {
 		texnum = image->texnum;
@@ -1445,7 +1445,7 @@ void RB_ShowImages( void ) {
 	qglFinish();
 
 	//end = ri.Milliseconds();
-	//VID_Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
+	//ri.Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
 }
 
 

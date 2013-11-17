@@ -447,10 +447,10 @@ static void Autosprite2Deform( void ) {
 	vec3_t	forward;
 
 	if ( tess.numVertexes & 3 ) {
-		VID_Printf( PRINT_WARNING, "Autosprite shader %s had odd vertex count", tess.shader->name );
+		ri.Printf( PRINT_WARNING, "Autosprite shader %s had odd vertex count", tess.shader->name );
 	}
 	if ( tess.numIndexes != ( tess.numVertexes >> 2 ) * 6 ) {
-		VID_Printf( PRINT_WARNING, "Autosprite shader %s had odd index count", tess.shader->name );
+		ri.Printf( PRINT_WARNING, "Autosprite shader %s had odd index count", tess.shader->name );
 	}
 
 	if ( backEnd.currentEntity != &tr.worldEntity ) {
