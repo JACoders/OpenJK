@@ -151,7 +151,7 @@ void CQuickSpriteSystem::Flush(void)
 }
 
 
-void CQuickSpriteSystem::StartGroup(textureBundle_t *bundle, unsigned long glbits, int fogIndex )
+void CQuickSpriteSystem::StartGroup(textureBundle_t *bundle, uint32_t glbits, int fogIndex )
 {
 	mNextVert = 0;
 
@@ -200,7 +200,7 @@ void CQuickSpriteSystem::Add(float *pointdata, color4ub_t color, vec2_t fog)
 {
 	float *curcoord;
 	float *curfogtexcoord;
-	unsigned long *curcolor;
+	uint32_t *curcolor;
 
 	if (mNextVert>SHADER_MAX_VERTEXES-4)
 	{
@@ -212,10 +212,10 @@ void CQuickSpriteSystem::Add(float *pointdata, color4ub_t color, vec2_t fog)
 
 	// Set up color
 	curcolor = &mColors[mNextVert];
-	*curcolor++ = *(unsigned long *)color;
-	*curcolor++ = *(unsigned long *)color;
-	*curcolor++ = *(unsigned long *)color;
-	*curcolor++ = *(unsigned long *)color;
+	*curcolor++ = *(uint32_t *)color;
+	*curcolor++ = *(uint32_t *)color;
+	*curcolor++ = *(uint32_t *)color;
+	*curcolor++ = *(uint32_t *)color;
 
 	if (fog)
 	{
