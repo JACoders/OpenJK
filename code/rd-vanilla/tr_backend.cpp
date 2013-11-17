@@ -204,9 +204,9 @@ void GL_TexEnv( int env )
 ** This routine is responsible for setting the most commonly changed state
 ** in Q3.
 */
-void GL_State( unsigned long stateBits )
+void GL_State( uint32_t stateBits )
 {
-	unsigned long diff = stateBits ^ glState.glStateBits;
+	uint32_t diff = stateBits ^ glState.glStateBits;
 
 	if ( !diff )
 	{
