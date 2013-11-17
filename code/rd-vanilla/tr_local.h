@@ -903,7 +903,7 @@ typedef struct {
 	qboolean	finishCalled;
 	int			texEnv[2];
 	int			faceCulling;
-	unsigned int	glStateBits;
+	uint32_t	glStateBits;
 } glstate_t;
 
 
