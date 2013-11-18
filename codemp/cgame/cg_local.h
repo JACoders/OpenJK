@@ -1463,7 +1463,7 @@ typedef struct cgEffects_s {
 	fxHandle_t	mStunBatonFleshImpact;
 	fxHandle_t	mAltDetonate;
 	fxHandle_t	mSparksExplodeNoSound;
-	fxHandle_t	mTripMineLaster;
+	fxHandle_t	mTripMineLaser;
 	fxHandle_t	mEmplacedMuzzleFlash;
 	fxHandle_t	mConcussionAltRing;
 	fxHandle_t	mHyperspaceStars;

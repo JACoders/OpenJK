@@ -1326,7 +1326,7 @@ static void CG_RegisterGraphics( void ) {
 	cgs.effects.mStunBatonFleshImpact = trap->FX_RegisterEffect("stunBaton/flesh_impact.efx");
 	cgs.effects.mAltDetonate = trap->FX_RegisterEffect("demp2/altDetonate.efx");
 	cgs.effects.mSparksExplodeNoSound = trap->FX_RegisterEffect("sparks/spark_exp_nosnd");
-	cgs.effects.mTripMineLaster = trap->FX_RegisterEffect("tripMine/laser.efx");
+	cgs.effects.mTripMineLaser = trap->FX_RegisterEffect("tripMine/laser.efx");
 	cgs.effects.mEmplacedMuzzleFlash = trap->FX_RegisterEffect( "effects/emplaced/muzzle_flash" );
 	cgs.effects.mConcussionAltRing = trap->FX_RegisterEffect("concussion/alt_ring");
 
