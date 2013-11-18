@@ -2720,7 +2720,7 @@ Ghoul2 Insert End
 		vec3_t	beamOrg;
 
 		VectorMA( ent.origin, 8, ent.axis[0], beamOrg );// forward
-		trap->FX_PlayEffectID( cgs.effects.mTripMineLaster, beamOrg, ent.axis[0], -1, -1, qfalse );
+		trap->FX_PlayEffectID( cgs.effects.mTripMineLaser, beamOrg, ent.axis[0], -1, -1, qfalse );
 	}
 }
 
