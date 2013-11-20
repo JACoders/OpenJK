@@ -3505,6 +3505,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	tess.numVertexes += surface->numVertexes;
 	tess.minIndex = surface->minIndex;
 	tess.maxIndex = surface->maxIndex;
+	tess.firstIndex = surface->indexOffset;
 
 	for ( int i = 0; i < surf->boneCache->mFinalBones.size(); i++ )
 	{
@@ -4679,11 +4680,11 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			vboMeshes[n].vbo = vbo;
 			vboMeshes[n].ibo = ibo;
 
-			vboMeshes[n].indexOffset = 0;//indexOffsets[n];
-			vboMeshes[n].minIndex = 0;//baseVertexes[n];
-			vboMeshes[n].maxIndex = numVerts;//baseVertexes[n + 1];
-			vboMeshes[n].numVertexes = numVerts;//surf->numVerts;
-			vboMeshes[n].numIndexes = numTriangles * 3;//surf->numTriangles * 3;
+			vboMeshes[n].indexOffset = indexOffsets[n];
+			vboMeshes[n].minIndex = baseVertexes[n];
+			vboMeshes[n].maxIndex = baseVertexes[n + 1];
+			vboMeshes[n].numVertexes = surf->numVerts * 5;
+			vboMeshes[n].numIndexes = surf->numTriangles * 3;
 
 			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);
 		}
