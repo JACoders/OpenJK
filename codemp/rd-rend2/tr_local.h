@@ -400,6 +400,9 @@ typedef struct VBO_s
 	uint32_t        ofs_tangent;
 	uint32_t        ofs_bitangent;
 #endif
+	uint32_t		ofs_boneweights;
+	uint32_t		ofs_boneindexes;
+
 	uint32_t        stride_xyz;
 	uint32_t        stride_normal;
 	uint32_t        stride_st;
@@ -410,6 +413,9 @@ typedef struct VBO_s
 	uint32_t        stride_tangent;
 	uint32_t        stride_bitangent;
 #endif
+	uint32_t		stride_boneweights;
+	uint32_t		stride_boneindexes;
+
 	uint32_t        size_xyz;
 	uint32_t        size_normal;
 
@@ -965,16 +971,18 @@ enum
 	GENERICDEF_USE_FOG              = 0x0008,
 	GENERICDEF_USE_RGBAGEN          = 0x0010,
 	GENERICDEF_USE_LIGHTMAP         = 0x0020,
-	GENERICDEF_ALL                  = 0x003F,
-	GENERICDEF_COUNT                = 0x0040,
+	GENERICDEF_USE_SKELETAL_ANIMATION = 0x0040,
+	GENERICDEF_ALL                  = 0x007F,
+	GENERICDEF_COUNT                = 0x0080,
 };
 
 enum
 {
 	FOGDEF_USE_DEFORM_VERTEXES  = 0x0001,
 	FOGDEF_USE_VERTEX_ANIMATION = 0x0002,
-	FOGDEF_ALL                  = 0x0003,
-	FOGDEF_COUNT                = 0x0004,
+	FOGDEF_USE_SKELETAL_ANIMATION = 0x0004,
+	FOGDEF_ALL                  = 0x0007,
+	FOGDEF_COUNT                = 0x0008,
 };
 
 enum
@@ -996,8 +1004,10 @@ enum
 	LIGHTDEF_USE_PARALLAXMAP     = 0x0020,
 	LIGHTDEF_USE_SHADOWMAP       = 0x0040,
 	LIGHTDEF_USE_CUBEMAP         = 0x0080,
-	LIGHTDEF_ALL                 = 0x00FF,
-	LIGHTDEF_COUNT               = 0x0100
+	LIGHTDEF_USE_VERTEX_ANIMATION= 0x0100,
+	LIGHTDEF_USE_SKELETAL_ANIMATION = 0x0200,
+	LIGHTDEF_ALL                 = 0x03FF,
+	LIGHTDEF_COUNT               = 0x0400
 };
 
 enum
@@ -1090,6 +1100,8 @@ typedef enum
 	UNIFORM_PRIMARYLIGHTCOLOR,
 	UNIFORM_PRIMARYLIGHTAMBIENT,
 	UNIFORM_PRIMARYLIGHTRADIUS,
+
+	UNIFORM_BONE_MATRICES,
 
 	UNIFORM_COUNT
 } uniform_t;
@@ -1765,11 +1777,35 @@ Ghoul2 Insert End
 */
 } modtype_t;
 
+typedef struct mdxmVBOMesh_s
+{
+	surfaceType_t surfaceType;
+
+	int indexOffset;
+	int minIndex;
+	int maxIndex;
+	int numIndexes;
+	int numVertexes;
+
+	VBO_t *vbo;
+	IBO_t *ibo;
+} mdxmVBOMesh_t;
+
+typedef struct mdxmVBOModel_s
+{
+	int numVBOMeshes;
+	mdxmVBOMesh_t *vboMeshes;
+
+	VBO_t *vbo;
+	IBO_t *ibo;
+} mdxmVBOModel_t;
+
 typedef struct mdxmData_s
 {
 	mdxmHeader_t *header;
 
-
+	// int numLODs; // available in header->numLODs
+	mdxmVBOModel_t *vboModels;
 } mdxmData_t;
 
 typedef struct model_s {
@@ -1882,6 +1918,8 @@ typedef struct glstate_s {
 	uint32_t        vertexAttribsOldFrame;
 	float           vertexAttribsInterpolation;
 	qboolean        vertexAnimation;
+	qboolean		skeletalAnimation;
+	matrix_t       *boneMatrices;
 	shaderProgram_t *currentProgram;
 	FBO_t          *currentFBO;
 	VBO_t          *currentVBO;
@@ -2759,7 +2797,7 @@ void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_
 void GLSL_SetUniformVec2(shaderProgram_t *program, int uniformNum, const vec2_t v);
 void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t v);
 void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t v);
-void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const matrix_t matrix);
+void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const float *matrix);
 
 shaderProgram_t *GLSL_GetGenericShaderProgram(int stage);
 
@@ -2836,6 +2874,7 @@ public:
 	const int		ident;			// ident of this surface - required so the materials renderer knows what sort of surface this refers to 
 #endif
 	CBoneCache 		*boneCache;
+	mdxmVBOMesh_t	*vboMesh;
 	mdxmSurface_t	*surfaceData;	// pointer to surface data loaded into file - only used by client renderer DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of wack on the game
 #ifdef _G2_GORE
 	float			*alternateTex;		// alternate texture coordinates.
@@ -2854,6 +2893,7 @@ public:
 		surfaceData = src.surfaceData;
 		alternateTex = src.alternateTex;
 		goreChain = src.goreChain;
+		vboMesh = src.vboMesh;
 
 		return *this;
 	}
@@ -2879,6 +2919,7 @@ CRenderableSurface():
 		surfaceData=0;
 		alternateTex=0;
 		goreChain=0;
+		vboMesh = NULL;
 	}
 #endif
 };

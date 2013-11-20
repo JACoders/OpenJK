@@ -609,6 +609,7 @@ void R_BindVBO(VBO_t * vbo)
 		glState.vertexAttribsOldFrame = 0;
 		glState.vertexAttribsNewFrame = 0;
 		glState.vertexAnimation = qfalse;
+		glState.skeletalAnimation = qfalse;
 
 		qglBindBufferARB(GL_ARRAY_BUFFER_ARB, vbo->vertexesVBO);
 

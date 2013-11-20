@@ -949,6 +949,9 @@ static void RB_FogPass( void ) {
 
 		if (glState.vertexAnimation)
 			index |= FOGDEF_USE_VERTEX_ANIMATION;
+
+		if (glState.skeletalAnimation)
+			index |= FOGDEF_USE_SKELETAL_ANIMATION;
 		
 		sp = &tr.fogShader[index];
 	}
@@ -1015,6 +1018,12 @@ static unsigned int RB_CalcShaderVertexAttribs( shaderCommands_t *input )
 			vertexAttribs |= ATTR_BITANGENT2;
 #endif
 		}
+	}
+
+	if (glState.skeletalAnimation)
+	{
+		vertexAttribs |= ATTR_BONE_WEIGHTS;
+		vertexAttribs |= ATTR_BONE_INDEXES;
 	}
 
 	return vertexAttribs;
@@ -1092,6 +1101,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 					shaderAttribs |= GENERICDEF_USE_VERTEX_ANIMATION;
 				}
 
+				if (glState.skeletalAnimation)
+				{
+					shaderAttribs |= GENERICDEF_USE_SKELETAL_ANIMATION;
+				}
+
 				if (pStage->stateBits & GLS_ATEST_BITS)
 				{
 					shaderAttribs |= GENERICDEF_USE_TCGEN_AND_TCMOD;
@@ -1107,6 +1121,16 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
 			{
 				index |= LIGHTDEF_ENTITY;
+
+				if (glState.vertexAnimation)
+				{
+					index |= LIGHTDEF_USE_VERTEX_ANIMATION;
+				}
+
+				if (glState.skeletalAnimation)
+				{
+					index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
+				} 
 			}
 
 			if (r_sunlightMode->integer && (backEnd.viewParms.flags & VPF_USESUNLIGHT) && (index & LIGHTDEF_LIGHTTYPE_MASK))
@@ -1140,6 +1164,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 		GLSL_SetUniformVec3(sp, UNIFORM_VIEWORIGIN, backEnd.viewParms.or.origin);
 		GLSL_SetUniformVec3(sp, UNIFORM_LOCALVIEWORIGIN, backEnd.or.viewOrigin);
+
+		if (glState.skeletalAnimation)
+		{
+			GLSL_SetUniformMatrix16 (sp, UNIFORM_BONE_MATRICES, &glState.boneMatrices[0][0]);
+		}
 
 		GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
 		

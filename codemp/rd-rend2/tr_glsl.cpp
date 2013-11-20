@@ -57,89 +57,92 @@ typedef struct uniformInfo_s
 {
 	char *name;
 	int type;
+	int size;
 }
 uniformInfo_t;
 
 // These must be in the same order as in uniform_t in tr_local.h.
 static uniformInfo_t uniformsInfo[] =
 {
-	{ "u_DiffuseMap",  GLSL_INT },
-	{ "u_LightMap",    GLSL_INT },
-	{ "u_NormalMap",   GLSL_INT },
-	{ "u_DeluxeMap",   GLSL_INT },
-	{ "u_SpecularMap", GLSL_INT },
+	{ "u_DiffuseMap",  GLSL_INT, 1 },
+	{ "u_LightMap",    GLSL_INT, 1 },
+	{ "u_NormalMap",   GLSL_INT, 1 },
+	{ "u_DeluxeMap",   GLSL_INT, 1 },
+	{ "u_SpecularMap", GLSL_INT, 1 },
 
-	{ "u_TextureMap", GLSL_INT },
-	{ "u_LevelsMap",  GLSL_INT },
-	{ "u_CubeMap",    GLSL_INT },
+	{ "u_TextureMap", GLSL_INT, 1 },
+	{ "u_LevelsMap",  GLSL_INT, 1 },
+	{ "u_CubeMap",    GLSL_INT, 1 },
 
-	{ "u_ScreenImageMap", GLSL_INT },
-	{ "u_ScreenDepthMap", GLSL_INT },
+	{ "u_ScreenImageMap", GLSL_INT, 1 },
+	{ "u_ScreenDepthMap", GLSL_INT, 1 },
 
-	{ "u_ShadowMap",  GLSL_INT },
-	{ "u_ShadowMap2", GLSL_INT },
-	{ "u_ShadowMap3", GLSL_INT },
+	{ "u_ShadowMap",  GLSL_INT, 1 },
+	{ "u_ShadowMap2", GLSL_INT, 1 },
+	{ "u_ShadowMap3", GLSL_INT, 1 },
 
-	{ "u_ShadowMvp",  GLSL_MAT16 },
-	{ "u_ShadowMvp2", GLSL_MAT16 },
-	{ "u_ShadowMvp3", GLSL_MAT16 },
+	{ "u_ShadowMvp",  GLSL_MAT16, 1 },
+	{ "u_ShadowMvp2", GLSL_MAT16, 1 },
+	{ "u_ShadowMvp3", GLSL_MAT16, 1 },
 
-	{ "u_DiffuseTexMatrix",  GLSL_VEC4 },
-	{ "u_DiffuseTexOffTurb", GLSL_VEC4 },
-	{ "u_Texture1Env",       GLSL_INT },
+	{ "u_DiffuseTexMatrix",  GLSL_VEC4, 1 },
+	{ "u_DiffuseTexOffTurb", GLSL_VEC4, 1 },
+	{ "u_Texture1Env",       GLSL_INT, 1 },
 
-	{ "u_TCGen0",        GLSL_INT },
-	{ "u_TCGen0Vector0", GLSL_VEC3 },
-	{ "u_TCGen0Vector1", GLSL_VEC3 },
+	{ "u_TCGen0",        GLSL_INT, 1 },
+	{ "u_TCGen0Vector0", GLSL_VEC3, 1 },
+	{ "u_TCGen0Vector1", GLSL_VEC3, 1 },
 
-	{ "u_DeformGen",    GLSL_INT },
-	{ "u_DeformParams", GLSL_FLOAT5 },
+	{ "u_DeformGen",    GLSL_INT, 1 },
+	{ "u_DeformParams", GLSL_FLOAT5, 1 },
 
-	{ "u_ColorGen",  GLSL_INT },
-	{ "u_AlphaGen",  GLSL_INT },
-	{ "u_Color",     GLSL_VEC4 },
-	{ "u_BaseColor", GLSL_VEC4 },
-	{ "u_VertColor", GLSL_VEC4 },
+	{ "u_ColorGen",  GLSL_INT, 1 },
+	{ "u_AlphaGen",  GLSL_INT, 1 },
+	{ "u_Color",     GLSL_VEC4, 1 },
+	{ "u_BaseColor", GLSL_VEC4, 1 },
+	{ "u_VertColor", GLSL_VEC4, 1 },
 
-	{ "u_DlightInfo",    GLSL_VEC4 },
-	{ "u_LightForward",  GLSL_VEC3 },
-	{ "u_LightUp",       GLSL_VEC3 },
-	{ "u_LightRight",    GLSL_VEC3 },
-	{ "u_LightOrigin",   GLSL_VEC4 },
-	{ "u_ModelLightDir", GLSL_VEC3 },
-	{ "u_LightRadius",   GLSL_FLOAT },
-	{ "u_AmbientLight",  GLSL_VEC3 },
-	{ "u_DirectedLight", GLSL_VEC3 },
+	{ "u_DlightInfo",    GLSL_VEC4, 1 },
+	{ "u_LightForward",  GLSL_VEC3, 1 },
+	{ "u_LightUp",       GLSL_VEC3, 1 },
+	{ "u_LightRight",    GLSL_VEC3, 1 },
+	{ "u_LightOrigin",   GLSL_VEC4, 1 },
+	{ "u_ModelLightDir", GLSL_VEC3, 1 },
+	{ "u_LightRadius",   GLSL_FLOAT, 1 },
+	{ "u_AmbientLight",  GLSL_VEC3, 1 },
+	{ "u_DirectedLight", GLSL_VEC3, 1 },
 
-	{ "u_PortalRange", GLSL_FLOAT },
+	{ "u_PortalRange", GLSL_FLOAT, 1 },
 
-	{ "u_FogDistance",  GLSL_VEC4 },
-	{ "u_FogDepth",     GLSL_VEC4 },
-	{ "u_FogEyeT",      GLSL_FLOAT },
-	{ "u_FogColorMask", GLSL_VEC4 },
+	{ "u_FogDistance",  GLSL_VEC4, 1 },
+	{ "u_FogDepth",     GLSL_VEC4, 1 },
+	{ "u_FogEyeT",      GLSL_FLOAT, 1 },
+	{ "u_FogColorMask", GLSL_VEC4, 1 },
 
-	{ "u_ModelMatrix",               GLSL_MAT16 },
-	{ "u_ModelViewProjectionMatrix", GLSL_MAT16 },
+	{ "u_ModelMatrix",               GLSL_MAT16, 1 },
+	{ "u_ModelViewProjectionMatrix", GLSL_MAT16, 1 },
 
-	{ "u_Time",         GLSL_FLOAT },
-	{ "u_VertexLerp"  , GLSL_FLOAT },
-	{ "u_MaterialInfo", GLSL_VEC2 },
+	{ "u_Time",         GLSL_FLOAT, 1 },
+	{ "u_VertexLerp"  , GLSL_FLOAT, 1 },
+	{ "u_MaterialInfo", GLSL_VEC2, 1 },
 
-	{ "u_ViewInfo",				GLSL_VEC4 },
-	{ "u_ViewOrigin",			GLSL_VEC3 },
-	{ "u_LocalViewOrigin",		GLSL_VEC3 },
-	{ "u_ViewForward",			GLSL_VEC3 },
-	{ "u_ViewLeft",				GLSL_VEC3 },
-	{ "u_ViewUp",				GLSL_VEC3 },
+	{ "u_ViewInfo",				GLSL_VEC4, 1 },
+	{ "u_ViewOrigin",			GLSL_VEC3, 1 },
+	{ "u_LocalViewOrigin",		GLSL_VEC3, 1 },
+	{ "u_ViewForward",			GLSL_VEC3, 1 },
+	{ "u_ViewLeft",				GLSL_VEC3, 1 },
+	{ "u_ViewUp",				GLSL_VEC3, 1 },
 
-	{ "u_InvTexRes",           GLSL_VEC2 },
-	{ "u_AutoExposureMinMax",  GLSL_VEC2 },
-	{ "u_ToneMinAvgMaxLinear", GLSL_VEC3 },
+	{ "u_InvTexRes",           GLSL_VEC2, 1 },
+	{ "u_AutoExposureMinMax",  GLSL_VEC2, 1 },
+	{ "u_ToneMinAvgMaxLinear", GLSL_VEC3, 1 },
 
-	{ "u_PrimaryLightOrigin",  GLSL_VEC4  },
-	{ "u_PrimaryLightColor",   GLSL_VEC3  },
-	{ "u_PrimaryLightAmbient", GLSL_VEC3  },
-	{ "u_PrimaryLightRadius",  GLSL_FLOAT }
+	{ "u_PrimaryLightOrigin",  GLSL_VEC4, 1  },
+	{ "u_PrimaryLightColor",   GLSL_VEC3, 1  },
+	{ "u_PrimaryLightAmbient", GLSL_VEC3, 1  },
+	{ "u_PrimaryLightRadius",  GLSL_FLOAT, 1 },
+
+	{ "u_BoneMatrices",			GLSL_MAT16, 80 },
 };
 
 
@@ -557,6 +560,12 @@ static int GLSL_InitGPUShader2(shaderProgram_t * program, const char *name, int 
 		qglBindAttribLocationARB(program->program, ATTR_INDEX_BITANGENT2, "attr_Bitangent2");
 #endif
 
+	if(attribs & ATTR_BONE_INDEXES)
+		qglBindAttribLocationARB(program->program, ATTR_INDEX_BONE_INDEXES, "attr_BoneIndexes");
+
+	if(attribs & ATTR_BONE_WEIGHTS)
+		qglBindAttribLocationARB(program->program, ATTR_INDEX_BONE_WEIGHTS, "attr_BoneWeights");
+
 	GLSL_LinkProgram(program->program);
 
 	return 1;
@@ -633,25 +642,25 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 		switch(uniformsInfo[i].type)
 		{
 			case GLSL_INT:
-				size += sizeof(GLint);
+				size += sizeof(GLint) * uniformsInfo[i].size;
 				break;
 			case GLSL_FLOAT:
-				size += sizeof(GLfloat);
+				size += sizeof(GLfloat) * uniformsInfo[i].size;
 				break;
 			case GLSL_FLOAT5:
-				size += sizeof(vec_t) * 5;
+				size += sizeof(vec_t) * 5 * uniformsInfo[i].size;
 				break;
 			case GLSL_VEC2:
-				size += sizeof(vec_t) * 2;
+				size += sizeof(vec_t) * 2 * uniformsInfo[i].size;
 				break;
 			case GLSL_VEC3:
-				size += sizeof(vec_t) * 3;
+				size += sizeof(vec_t) * 3 * uniformsInfo[i].size;
 				break;
 			case GLSL_VEC4:
-				size += sizeof(vec_t) * 4;
+				size += sizeof(vec_t) * 4 * uniformsInfo[i].size;
 				break;
 			case GLSL_MAT16:
-				size += sizeof(vec_t) * 16;
+				size += sizeof(vec_t) * 16 * uniformsInfo[i].size;
 				break;
 			default:
 				break;
@@ -813,7 +822,7 @@ void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_
 	qglUniform1fvARB(uniforms[uniformNum], 5, v);
 }
 
-void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const matrix_t matrix)
+void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const float *matrix)
 {
 	GLint *uniforms = program->uniforms;
 	vec_t *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
@@ -827,14 +836,18 @@ void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const mat
 		return;
 	}
 
-	if (Matrix16Compare(matrix, compare))
+	if (memcmp (matrix, compare, sizeof (vec_t) * 16 * uniformsInfo[uniformNum].size) == 0)
 	{
 		return;
 	}
 
-	Matrix16Copy(matrix, compare);
+	const matrix_t *m = (matrix_t *)matrix;
+	for (int i = 0; i < uniformsInfo[uniformNum].size; i++)
+	{
+		Matrix16Copy(m[i], compare);
+	}
 
-	qglUniformMatrix4fvARB(uniforms[uniformNum], 1, GL_FALSE, matrix);
+	qglUniformMatrix4fvARB(uniforms[uniformNum], uniformsInfo[uniformNum].size, GL_FALSE, matrix);
 }
 
 void GLSL_DeleteGPUShader(shaderProgram_t *program)
@@ -864,6 +877,16 @@ void GLSL_DeleteGPUShader(shaderProgram_t *program)
 	}
 }
 
+static qboolean GLSL_ContainsInvalidPermutationForGeneric (int shaderCaps)
+{
+	if ((shaderCaps & (GENERICDEF_USE_VERTEX_ANIMATION | GENERICDEF_USE_SKELETAL_ANIMATION)) == (GENERICDEF_USE_VERTEX_ANIMATION | GENERICDEF_USE_SKELETAL_ANIMATION))
+	{
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
 void GLSL_InitGPUShaders(void)
 {
 	int             startTime, endTime;
@@ -879,7 +902,12 @@ void GLSL_InitGPUShaders(void)
 	startTime = ri->Milliseconds();
 
 	for (i = 0; i < GENERICDEF_COUNT; i++)
-	{	
+	{
+		if (GLSL_ContainsInvalidPermutationForGeneric (i))
+		{
+			continue;
+		}
+
 		attribs = ATTR_POSITION | ATTR_TEXCOORD | ATTR_LIGHTCOORD | ATTR_NORMAL | ATTR_COLOR;
 		extradefines[0] = '\0';
 
@@ -896,6 +924,12 @@ void GLSL_InitGPUShaders(void)
 		{
 			Q_strcat(extradefines, 1024, "#define USE_VERTEX_ANIMATION\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
+		}
+
+		if (i & GENERICDEF_USE_SKELETAL_ANIMATION)
+		{
+			Q_strcat(extradefines, 1024, "#define USE_SKELETAL_ANIMATION\n");
+			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
 
 		if (i & GENERICDEF_USE_FOG)
@@ -947,6 +981,11 @@ void GLSL_InitGPUShaders(void)
 
 	for (i = 0; i < FOGDEF_COUNT; i++)
 	{
+		if ((i & (FOGDEF_USE_VERTEX_ANIMATION | FOGDEF_USE_SKELETAL_ANIMATION)) == (FOGDEF_USE_VERTEX_ANIMATION | FOGDEF_USE_SKELETAL_ANIMATION))
+		{
+			continue;
+		}
+
 		attribs = ATTR_POSITION | ATTR_POSITION2 | ATTR_NORMAL | ATTR_NORMAL2 | ATTR_TEXCOORD;
 		extradefines[0] = '\0';
 
@@ -955,6 +994,9 @@ void GLSL_InitGPUShaders(void)
 
 		if (i & FOGDEF_USE_VERTEX_ANIMATION)
 			Q_strcat(extradefines, 1024, "#define USE_VERTEX_ANIMATION\n");
+
+		if (i & FOGDEF_USE_SKELETAL_ANIMATION)
+			Q_strcat(extradefines, 1024, "#define USE_SKELETAL_ANIMATION\n");
 
 		if (!GLSL_InitGPUShader(&tr.fogShader[i], "fogpass", attribs, qtrue, extradefines, qtrue, fallbackShader_fogpass_vp, fallbackShader_fogpass_fp))
 		{
@@ -1009,6 +1051,12 @@ void GLSL_InitGPUShaders(void)
 
 		if (!((i & LIGHTDEF_LIGHTTYPE_MASK) == LIGHTDEF_USE_LIGHTMAP) && (i & LIGHTDEF_USE_DELUXEMAP))
 			continue;
+
+		if ((i & (LIGHTDEF_USE_VERTEX_ANIMATION | LIGHTDEF_USE_SKELETAL_ANIMATION)) == (LIGHTDEF_USE_VERTEX_ANIMATION | LIGHTDEF_USE_SKELETAL_ANIMATION))
+			continue;
+
+		//if ((i & LIGHTDEF_ENTITY) && (i & (LIGHTDEF_USE_VERTEX_ANIMATION | LIGHTDEF_USE_SKELETAL_ANIMATION)) == 0)
+			//continue;
 
 		if (!(i & LIGHTDEF_LIGHTTYPE_MASK))
 		{
@@ -1136,7 +1184,17 @@ void GLSL_InitGPUShaders(void)
 
 		if (i & LIGHTDEF_ENTITY)
 		{
-			Q_strcat(extradefines, 1024, "#define USE_VERTEX_ANIMATION\n#define USE_MODELMATRIX\n");
+			if (i & LIGHTDEF_USE_VERTEX_ANIMATION)
+			{
+				Q_strcat(extradefines, 1024, "#define USE_VERTEX_ANIMATION\n");
+			}
+			else if (i & LIGHTDEF_USE_SKELETAL_ANIMATION)
+			{
+				Q_strcat(extradefines, 1024, "#define USE_SKELETAL_ANIMATION\n");
+				attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
+			}
+
+			Q_strcat(extradefines, 1024, "#define USE_MODELMATRIX\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 
 #ifdef USE_VERT_TANGENT_SPACE
@@ -1418,6 +1476,8 @@ void GLSL_ShutdownGPUShaders(void)
 #endif
 	qglDisableVertexAttribArrayARB(ATTR_INDEX_COLOR);
 	qglDisableVertexAttribArrayARB(ATTR_INDEX_LIGHTDIRECTION);
+	qglDisableVertexAttribArrayARB(ATTR_INDEX_BONE_INDEXES);
+	qglDisableVertexAttribArrayARB(ATTR_INDEX_BONE_WEIGHTS);
 	GLSL_BindNullProgram();
 
 	for ( i = 0; i < GENERICDEF_COUNT; i++)
@@ -1676,6 +1736,34 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	}
 #endif
 
+	if(diff & ATTR_BONE_INDEXES)
+	{
+		if(stateBits & ATTR_BONE_INDEXES)
+		{
+			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_BONE_INDEXES )\n");
+			qglEnableVertexAttribArrayARB(ATTR_INDEX_BONE_INDEXES);
+		}
+		else
+		{
+			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_BONE_INDEXES )\n");
+			qglDisableVertexAttribArrayARB(ATTR_INDEX_BONE_INDEXES);
+		}
+	}
+
+	if(diff & ATTR_BONE_WEIGHTS)
+	{
+		if(stateBits & ATTR_BONE_WEIGHTS)
+		{
+			GLimp_LogComment("qglEnableVertexAttribArrayARB( ATTR_INDEX_BONE_WEIGHTS )\n");
+			qglEnableVertexAttribArrayARB(ATTR_INDEX_BONE_WEIGHTS);
+		}
+		else
+		{
+			GLimp_LogComment("qglDisableVertexAttribArrayARB( ATTR_INDEX_BONE_WEIGHTS )\n");
+			qglDisableVertexAttribArrayARB(ATTR_INDEX_BONE_WEIGHTS);
+		}
+	}
+
 	glState.vertexAttribsState = stateBits;
 }
 
@@ -1798,6 +1886,22 @@ void GLSL_VertexAttribPointers(uint32_t attribBits)
 	}
 #endif
 
+	if((attribBits & ATTR_BONE_INDEXES) && !(glState.vertexAttribPointersSet & ATTR_BONE_INDEXES))
+	{
+		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_BONE_INDEXES )\n");
+
+		qglVertexAttribPointerARB(ATTR_INDEX_BONE_INDEXES, 4, GL_FLOAT, 0, glState.currentVBO->stride_boneindexes, BUFFER_OFFSET(glState.currentVBO->ofs_boneindexes));
+		glState.vertexAttribPointersSet |= ATTR_BONE_INDEXES;
+	}
+
+	if((attribBits & ATTR_BONE_WEIGHTS) && !(glState.vertexAttribPointersSet & ATTR_BONE_WEIGHTS))
+	{
+		GLimp_LogComment("qglVertexAttribPointerARB( ATTR_INDEX_BONE_WEIGHTS )\n");
+
+		qglVertexAttribPointerARB(ATTR_INDEX_BONE_WEIGHTS, 4, GL_FLOAT, 0, glState.currentVBO->stride_boneweights, BUFFER_OFFSET(glState.currentVBO->ofs_boneweights));
+		glState.vertexAttribPointersSet |= ATTR_BONE_WEIGHTS;
+	}
+
 }
 
 
@@ -1848,6 +1952,11 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 	if (glState.vertexAnimation)
 	{
 		shaderAttribs |= GENERICDEF_USE_VERTEX_ANIMATION;
+	}
+
+	if (glState.skeletalAnimation)
+	{
+		shaderAttribs |= GENERICDEF_USE_SKELETAL_ANIMATION;
 	}
 
 	if (pStage->bundle[0].numTexMods)

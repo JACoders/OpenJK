@@ -740,11 +740,11 @@ public:
 #ifdef _G2_GORE
 	boltInfo_v		&initboltList,
 	shader_t		*initgore_shader,
-	CGoreSet		*initgore_set):
+	CGoreSet		*initgore_set
 #else
-	boltInfo_v		&initboltList):
+	boltInfo_v		&initboltList
 #endif
-
+	):
 	surfaceNum(initsurfaceNum),
 	rootSList(initrootSList),
 	cust_shader(initcust_shader),
@@ -2408,7 +2408,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 
 	// if this surface is not off, add it to the shader render list
 	if (!offFlags)
-	{	
+	{
  		if ( RS.cust_shader ) 
 		{
 			shader = RS.cust_shader;
@@ -2438,8 +2438,11 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 		if ( !RS.personalModel ) 
 		{		// set the surface info to point at the where the transformed bone list is going to be for when the surface gets rendered out
 			CRenderableSurface *newSurf = new CRenderableSurface;
+			newSurf->vboMesh = &RS.currentModel->data.glm->vboModels[RS.lod].vboMeshes[RS.surfaceNum];
+			assert (newSurf->vboMesh != NULL && RS.surfaceNum == surface->thisSurfaceIndex);
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
+
 			R_AddDrawSurf( (surfaceType_t *)newSurf, (shader_t *)shader, RS.fogNum, qfalse, qfalse, 0 );
 
 #ifdef _G2_GORE
@@ -3151,6 +3154,7 @@ static inline bool bInShadowRange(vec3_t location)
 R_AddGHOULSurfaces
 ==============
 */
+
 void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_R_AddGHOULSurfaces.Start();
@@ -3283,14 +3287,37 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
 				}
 			}
 
-			CRenderSurface RS(ghoul2[i].mSurfaceRoot, ghoul2[i].mSlist, cust_shader, fogNum, personalModel, ghoul2[i].mBoneCache, ent->e.renderfx, skin, (model_t *)ghoul2[i].currentModel, whichLod, ghoul2[i].mBltlist, gore_shader, gore);
+			CRenderSurface RS (ghoul2[i].mSurfaceRoot,
+				ghoul2[i].mSlist,
+				cust_shader,
+				fogNum,
+				personalModel,
+				ghoul2[i].mBoneCache,
+				ent->e.renderfx,
+				skin,
+				(model_t *)ghoul2[i].currentModel,
+				whichLod,
+				ghoul2[i].mBltlist,
+				gore_shader,
+				gore);
 #else
-			CRenderSurface RS(ghoul2[i].mSurfaceRoot, ghoul2[i].mSlist, cust_shader, fogNum, personalModel, ghoul2[i].mBoneCache, ent->e.renderfx, skin, (model_t *)ghoul2[i].currentModel, whichLod, ghoul2[i].mBltlist);
+			CRenderSurface RS(ghoul2[i].mSurfaceRoot,
+				ghoul2[i].mSlist,
+				cust_shader,
+				fogNum,
+				personalModel,
+				ghoul2[i].mBoneCache,
+				ent->e.renderfx,
+				skin,
+				(model_t *)ghoul2[i].currentModel,
+				whichLod,
+				ghoul2[i].mBltlist);
 #endif
 			if (!personalModel && (RS.renderfx & RF_SHADOW_PLANE) && !bInShadowRange(ent->e.origin))
 			{
 				RS.renderfx |= RF_NOSHADOW;
 			}
+
 			RenderSurfaces(RS);
 		}
 	}
@@ -3400,10 +3427,99 @@ static inline float G2_GetVertBoneWeightNotSlow( const mdxmVertex_t *pVert, cons
 	return fBoneWeight;
 }
 
+static void MDXABoneToMatrix ( const mdxaBone_t& bone, matrix_t& matrix )
+{
+	matrix[0] = bone.matrix[0][0];
+	matrix[1] = bone.matrix[1][0];
+	matrix[2] = bone.matrix[2][0];
+	matrix[3] = 0.0f;
+
+	matrix[4] = bone.matrix[0][1];
+	matrix[5] = bone.matrix[1][1];
+	matrix[6] = bone.matrix[2][1];
+	matrix[7] = 0.0f;
+
+	matrix[8] = bone.matrix[0][2];
+	matrix[9] = bone.matrix[1][2];
+	matrix[10] = bone.matrix[2][2];
+	matrix[11] = 0.0f;
+
+	matrix[12] = bone.matrix[0][3];
+	matrix[13] = bone.matrix[1][3];
+	matrix[14] = bone.matrix[2][3];
+	matrix[15] = 1.0f;
+}
+
+void myGlMultMatrix( const float *a, const float *b, float *out );
+void R_MDXMRotateForEntity( const matrix_t *xform, const viewParms_t *viewParms,
+					   orientationr_t *ori ) {
+//	float	glMatrix[16];
+	vec3_t	delta;
+	float	axisLength;
+
+
+	myGlMultMatrix( (float *)xform, viewParms->world.modelMatrix, ori->modelMatrix );
+
+	// calculate the viewer origin in the model's space
+	// needed for fog, specular, and environment mapping
+	VectorSubtract( viewParms->or.origin, ori->origin, delta );
+
+	// compensate for scale in the axes if necessary
+	/*if ( ent->e.nonNormalizedAxes ) {
+		axisLength = VectorLength( ent->e.axis[0] );
+		if ( !axisLength ) {
+			axisLength = 0;
+		} else {
+			axisLength = 1.0f / axisLength;
+		}
+	} else */{
+		axisLength = 1.0f;
+	}
+
+	ori->viewOrigin[0] = DotProduct( delta, ori->axis[0] ) * axisLength;
+	ori->viewOrigin[1] = DotProduct( delta, ori->axis[1] ) * axisLength;
+	ori->viewOrigin[2] = DotProduct( delta, ori->axis[2] ) * axisLength;
+}
+
 //This is a slightly mangled version of the same function from the sof2sp base.
 //It provides a pretty significant performance increase over the existing one.
 void RB_SurfaceGhoul( CRenderableSurface *surf ) 
 {
+#if 1
+	static matrix_t boneMatrices[80] = {};
+
+	mdxmVBOMesh_t *surface = surf->vboMesh;
+
+	if(!surface->vbo || !surface->ibo)
+		return;
+
+	RB_EndSurface();
+	RB_BeginSurface(tess.shader, tess.fogNum, tess.cubemapIndex);
+
+	R_BindVBO(surface->vbo);
+	R_BindIBO(surface->ibo);
+
+	tess.useInternalVBO = qfalse;
+
+	tess.numIndexes += surface->numIndexes;
+	tess.numVertexes += surface->numVertexes;
+	tess.minIndex = surface->minIndex;
+	tess.maxIndex = surface->maxIndex;
+
+	for ( int i = 0; i < surf->boneCache->mFinalBones.size(); i++ )
+	{
+		const mdxaBone_t& bone = surf->boneCache->EvalRender (i);
+		MDXABoneToMatrix (bone, boneMatrices[i]);
+	}
+
+	glState.boneMatrices = boneMatrices;
+	glState.skeletalAnimation = qtrue;
+
+	RB_EndSurface();
+
+	// So we don't lerp surfaces that shouldn't be lerped
+	glState.skeletalAnimation = qfalse;
+#else
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_RB_SurfaceGhoul.Start();
 #endif
@@ -3750,6 +3866,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2Time_RB_SurfaceGhoul += G2PerformanceTimer_RB_SurfaceGhoul.End();
+#endif
 #endif
 }
  
@@ -4232,7 +4349,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		CModelCache->StoreShaderRequest(mod_name, &surfInfo->shader[0], &surfInfo->shaderIndex);		
 
 		// find the next surface
-		surfInfo = (mdxmSurfHierarchy_t *)( (byte *)surfInfo + (size_t)( &((mdxmSurfHierarchy_t *)0)->childIndexes[ surfInfo->numChildren ] ));
+		surfInfo = (mdxmSurfHierarchy_t *)( (byte *)surfInfo + offsetof (mdxmSurfHierarchy_t, childIndexes[surfInfo->numChildren]) );
   	}
 	
 	// swap all the LOD's	(we need to do the middle part of this even for intel, because of shader reg and err-check)
@@ -4321,7 +4438,6 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 				int *boneRef = (int *) ( (byte *)surf + surf->ofsBoneReferences );
 				for ( j = 0 ; j < surf->numBoneReferences ; j++ ) 
 				{
-					assert(boneRef[j] >= 0 && boneRef[j] < 72);
 					if (boneRef[j] >= 0 && boneRef[j] < 72)
 					{
 						boneRef[j]=OldToNewRemapTable[boneRef[j]];
@@ -4340,9 +4456,245 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	}
 
 	// Make a copy on the GPU
-	for ( l = 0; i < mdxm->numLODs; l++ )
+	lod = (mdxmLOD_t *)((byte *)mdxm + mdxm->ofsLODs);
+
+	mod->data.glm->vboModels = (mdxmVBOModel_t *)ri->Hunk_Alloc (sizeof (mdxmVBOModel_t) * mdxm->numLODs, h_low);
+	for ( l = 0; l < mdxm->numLODs; l++ )
 	{
-		
+		mdxmVBOModel_t *vboModel = &mod->data.glm->vboModels[l];
+		mdxmVBOMesh_t *vboMeshes;
+
+		vec3_t *verts;
+		vec3_t *normals;
+		vec2_t *texcoords;
+		vec4_t *bonerefs;
+		vec4_t *weights;
+#ifdef USE_VERT_TANGENT_SPACE
+		vec3_t *tangents;
+		vec3_t *bitangents;
+#endif
+
+		byte *data;
+		int dataSize = 0;
+		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights;
+#ifdef USE_VERT_TANGENT_SPACE
+		int ofs_tangent, ofs_bitangent;
+#endif
+		int stride = 0;
+		int numVerts = 0;
+		int numTriangles = 0;
+
+		// +1 to add total vertex count
+		int *baseVertexes = (int *)ri->Hunk_AllocateTempMemory (sizeof (int) * (mdxm->numSurfaces + 1));
+		int *indexOffsets = (int *)ri->Hunk_AllocateTempMemory (sizeof (int) * mdxm->numSurfaces);
+
+		vboModel->numVBOMeshes = mdxm->numSurfaces;
+		vboModel->vboMeshes = (mdxmVBOMesh_t *)ri->Hunk_Alloc (sizeof (mdxmVBOMesh_t) * mdxm->numSurfaces, h_low);
+		vboMeshes = vboModel->vboMeshes;
+
+		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
+
+		// Calculate the required size of the vertex buffer.
+		for ( int n = 0; n < mdxm->numSurfaces; n++ )
+		{
+			baseVertexes[n] = numVerts;
+			indexOffsets[n] = numTriangles * 3;
+
+			numVerts += surf->numVerts;
+			numTriangles += surf->numTriangles;
+
+			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);
+		}
+
+		baseVertexes[mdxm->numSurfaces] = numVerts;
+
+		dataSize += numVerts * sizeof (*verts);
+		dataSize += numVerts * sizeof (*normals);
+		dataSize += numVerts * sizeof (*texcoords);
+		dataSize += numVerts * sizeof (*weights);
+		dataSize += numVerts * sizeof (*bonerefs);
+#ifdef USE_VERT_TANGENT_SPACE
+		dataSize += numVerts * sizeof (*tangents);
+		dataSize += numVerts * sizeof (*bitangents);
+#endif
+
+		// Allocate and write to memory
+		data = (byte *)ri->Hunk_AllocateTempMemory (dataSize);
+
+		verts = (vec3_t *)(data + stride);
+		ofsPosition = stride;
+		stride += sizeof (*verts);
+
+		normals = (vec3_t *)(data + stride);
+		ofsNormals = stride;
+		stride += sizeof (*normals);
+
+		texcoords = (vec2_t *)(data + stride);
+		ofsTexcoords = stride;
+		stride += sizeof (*texcoords);
+
+		bonerefs = (vec4_t *)(data + stride);
+		ofsBoneRefs = stride;
+		stride += sizeof (*bonerefs);
+
+		weights = (vec4_t *)(data + stride);
+		ofsWeights = stride;
+		stride += sizeof (*weights);
+
+#ifdef USE_VERT_TANGENT_SPACE
+		tangents = (vec3_t *)(data + stride);
+		ofs_tangent = stride;
+		stride += sizeof (*tangents);
+
+		bitangents = (vec3_t *)(data + stride);
+		ofs_bitangent = stride;
+		stride += sizeof (*bitangents);
+#endif
+
+		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
+
+		for ( int n = 0; n < mdxm->numSurfaces; n++ )
+		{
+			// Positions and normals
+			mdxmVertex_t *v = (mdxmVertex_t *)((byte *)surf + surf->ofsVerts);
+			for ( int k = 0; k < surf->numVerts; k++ )
+			{
+				VectorCopy (v[k].vertCoords, *verts);
+				VectorCopy (v[k].normal, *normals);
+#ifdef USE_VERT_TANGENT_SPACE
+				VectorCopy (v[k].normal, *tangents);
+				VectorCopy (v[k].normal, *bitangents);
+#endif
+
+				verts = (vec3_t *)((byte *)verts + stride);
+				normals = (vec3_t *)((byte *)normals + stride);
+#ifdef USE_VERT_TANGENT_SPACE
+				tangents = (vec3_t *)((byte *)tangents + stride);
+				bitangents = (vec3_t *)((byte *)bitangents + stride);
+#endif
+			}
+
+			// Weights
+			int *boneRefs = (int *)((byte *)surf + surf->ofsBoneReferences);
+			for ( int k = 0; k < surf->numVerts; k++ )
+			{
+				int numWeights = G2_GetVertWeights (&v[k]);
+				for ( int w = 0; w < numWeights; w++ )
+				{
+					(*weights)[w] = G2_GetVertBoneWeightNotSlow (&v[k], w);
+					(*bonerefs)[w] = (float)boneRefs[G2_GetVertBoneIndex (&v[k], w)];
+				}
+
+				// Fill in the rest of the info with zeroes.
+				for ( int w = numWeights; w < 4; w++ )
+				{
+					(*weights)[w] = 0.0f;
+					(*bonerefs)[w] = 0.0f;
+				}
+				
+				weights = (vec4_t *)((byte *)weights + stride);
+				bonerefs = (vec4_t *)((byte *)bonerefs + stride);
+			}
+
+			// Texture coordinates
+			mdxmVertexTexCoord_t *tc = (mdxmVertexTexCoord_t *)(v + surf->numVerts);
+			for ( int k = 0; k < surf->numVerts; k++ )
+			{
+				(*texcoords)[0] = tc[k].texCoords[0];
+				(*texcoords)[1] = tc[k].texCoords[1];
+
+				texcoords = (vec2_t *)((byte *)texcoords + stride);
+			}
+
+			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);
+		}
+
+		assert ((byte *)verts == (data + dataSize));
+
+		const char *modelName = strrchr (mdxm->name, '/');
+		if (modelName == NULL)
+		{
+			modelName = mdxm->name;
+		}
+
+		VBO_t *vbo = R_CreateVBO (va ("MDXM VBO LOD %d '%s'", l, modelName), data, dataSize, VBO_USAGE_STATIC);
+
+		ri->Hunk_FreeTempMemory (data);
+
+		vbo->ofs_xyz = ofsPosition;
+		vbo->ofs_normal = ofsNormals;
+		vbo->ofs_st = ofsTexcoords;
+		vbo->ofs_boneindexes = ofsBoneRefs;
+		vbo->ofs_boneweights = ofsWeights;
+#ifdef USE_VERT_TANGENT_SPACE
+		vbo->ofs_tangent = ofs_tangent;
+		vbo->ofs_bitangent = ofs_bitangent;
+#endif
+
+		vbo->stride_xyz = stride;
+		vbo->stride_normal = stride;
+		vbo->stride_st = stride;
+		vbo->stride_boneindexes = stride;
+		vbo->stride_boneweights = stride;
+#ifdef USE_VERT_TANGENT_SPACE
+		vbo->stride_tangent = stride;
+		vbo->stride_bitangent = stride;
+#endif
+
+		// Fill in the index buffer
+		srfTriangle_t *triangles = (srfTriangle_t *)ri->Hunk_AllocateTempMemory (sizeof (srfTriangle_t) * numTriangles);
+		srfTriangle_t *triangle = triangles;
+
+		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
+
+		for ( int n = 0; n < mdxm->numSurfaces; n++ )
+		{
+			mdxmTriangle_t *t = (mdxmTriangle_t *)((byte *)surf + surf->ofsTriangles);
+
+			for ( int k = 0; k < surf->numTriangles; k++, triangle++ )
+			{
+				triangle->indexes[0] = t[k].indexes[0] + baseVertexes[n];
+				assert (triangle->indexes[0] >= 0 && triangle->indexes[0] < numVerts);
+
+				triangle->indexes[1] = t[k].indexes[1] + baseVertexes[n];
+				assert (triangle->indexes[1] >= 0 && triangle->indexes[1] < numVerts);
+
+				triangle->indexes[2] = t[k].indexes[2] + baseVertexes[n];
+				assert (triangle->indexes[2] >= 0 && triangle->indexes[2] < numVerts);
+			}
+
+			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);
+		}
+
+		assert (triangle == (triangles + numTriangles));
+
+		IBO_t *ibo = R_CreateIBO2 (va ("MDXM IBO LOD %d '%s'", l, modelName), numTriangles, triangles, VBO_USAGE_STATIC);
+
+		ri->Hunk_FreeTempMemory (triangles);
+
+		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
+
+		for ( int n = 0; n < mdxm->numSurfaces; n++ )
+		{
+			vboMeshes[n].vbo = vbo;
+			vboMeshes[n].ibo = ibo;
+
+			vboMeshes[n].indexOffset = 0;//indexOffsets[n];
+			vboMeshes[n].minIndex = 0;//baseVertexes[n];
+			vboMeshes[n].maxIndex = numVerts;//baseVertexes[n + 1];
+			vboMeshes[n].numVertexes = numVerts;//surf->numVerts;
+			vboMeshes[n].numIndexes = numTriangles * 3;//surf->numTriangles * 3;
+
+			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);
+		}
+
+		vboModel->vbo = vbo;
+		vboModel->ibo = ibo;
+
+		ri->Hunk_FreeTempMemory (indexOffsets);
+		ri->Hunk_FreeTempMemory (baseVertexes);
+
+		lod = (mdxmLOD_t *)((byte *)lod + lod->ofsEnd);
 	}
 
 	return qtrue;

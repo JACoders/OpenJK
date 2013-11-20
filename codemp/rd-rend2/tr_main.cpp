@@ -2025,31 +2025,20 @@ static void R_AddEntitySurface (int entityNum)
 			case MOD_BRUSH:
 				R_AddBrushModelSurfaces( ent );
 				break;
-			/*
-			Ghoul 2 Insert Start
-			*/
 			case MOD_MDXM:
-				//g2r
 				if (ent->e.ghoul2)
 					R_AddGhoulSurfaces(ent);
-			/*
-			Ghoul 2 Insert End
-			*/
 			case MOD_BAD:		// null model axis
 				if ( (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal) {
 					break;
 				}
-				/*
-				Ghoul 2 Insert Start
-				*/
+
 				if( ent->e.ghoul2 && G2API_HaveWeGhoul2Models(*((CGhoul2Info_v *)ent->e.ghoul2)) )
 				{
 					R_AddGhoulSurfaces( ent );
 					break;
 				}
-				/*
-				Ghoul 2 Insert End
-				*/
+
 				R_AddDrawSurf( &entitySurface, tr.defaultShader, 0, 0, 0, 0 /* cubeMap */ );
 				break;
 			default:
