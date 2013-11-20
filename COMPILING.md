@@ -39,16 +39,10 @@ Compile (Visual Studio)
 Linux
 =====
 
-OpenJK currently only supports 32-bit on both Mac and Linux. Due to the difficulties of setting up 32-bit dependencies on 64-bit linux, it may be easiest to setup a virtual machine running 32-bit linux and building there.
-
 Install Dependencies
 --------------------
 
 	sudo apt-get install build-essential cmake git libopenal-dev zlib1g-dev libpng12-dev
-
-If installing on 64-bit linux, the following dependencies are also needed:
-
-	sudo apt-get install libc6:i386 libgcc1:i386 gcc-4.8-base:i386 libstdc++5:i386 libstdc++6:i386 gcc-multilib g++-multilib libopenal-dev:i386 libsdl2-dev libsdl2-2.0-0:i386 ia32-libs
 
 Install SDL2 Development Files
 ------------------------------
@@ -128,7 +122,7 @@ Configure Build (make)
 
 	mkdir build
 	cd build
-	cmake -G 'Unix Makefiles' -DCMAKE_OSX_ARCHITECTURES=i386 -DCMAKE_BUILD_TYPE=Release -DUseInternalPNG=1 ..
+	cmake -G 'Unix Makefiles' -DUseInternalPNG=1 ..
 
 You can also use `cmake -G 'Unix Makefiles' -i`, which will interactively prompt you for various options.
 
@@ -137,7 +131,7 @@ Configure Build (Xcode)
 
 If you'd rather use Xcode for editing, then change the above cmake command to be:
 
-	cmake -G Xcode -DCMAKE_OSX_ARCHITECTURES=i386 -DCMAKE_BUILD_TYPE=Release -DUseInternalPNG=1 ..
+	cmake -G Xcode -DUseInternalPNG=1 ..
 
 Please note that while compilation via Xcode works, running via is not configured properly. But that likely does not stop you from attaching to a running process in Xcode.
 
@@ -161,7 +155,7 @@ Compiling on the command line using the Xcode toolchain:
 
 The above would run jobs in parallel.
 
-Compiling within in Xcode is as simple as clicking the big Play button.
+Compiling within Xcode is as simple as clicking the big Play button.
 
 Copy Assets
 -----------
@@ -188,8 +182,8 @@ Running
 -------
 
 	# Single player
-	./openjk_sp.x86.app/Contents/MacOS/openjk_sp.x86
+	./openjk_sp.x86_64.app/Contents/MacOS/openjk_sp.x86_64
 
 	# Multiplayer
-	./openjk.x86.app/Contents/MacOS/openjk.x86
+	./openjk.x86_64.app/Contents/MacOS/openjk.x86_64
 
