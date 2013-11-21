@@ -1167,7 +1167,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 
 		if (glState.skeletalAnimation)
 		{
-			GLSL_SetUniformMatrix16 (sp, UNIFORM_BONE_MATRICES, &glState.boneMatrices[0][0]);
+			GLSL_SetUniformMatrix16 (sp, UNIFORM_BONE_MATRICES, &glState.boneMatrices[0][0], glState.numBones);
 		}
 
 		GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);

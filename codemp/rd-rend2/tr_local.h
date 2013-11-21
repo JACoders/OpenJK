@@ -1920,6 +1920,7 @@ typedef struct glstate_s {
 	qboolean        vertexAnimation;
 	qboolean		skeletalAnimation;
 	matrix_t       *boneMatrices;
+	int				numBones;
 	shaderProgram_t *currentProgram;
 	FBO_t          *currentFBO;
 	VBO_t          *currentVBO;
@@ -2797,7 +2798,7 @@ void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_
 void GLSL_SetUniformVec2(shaderProgram_t *program, int uniformNum, const vec2_t v);
 void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t v);
 void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t v);
-void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const float *matrix);
+void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements = 1);
 
 shaderProgram_t *GLSL_GetGenericShaderProgram(int stage);
 

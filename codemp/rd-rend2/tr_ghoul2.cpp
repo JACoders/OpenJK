@@ -3450,37 +3450,6 @@ static void MDXABoneToMatrix ( const mdxaBone_t& bone, matrix_t& matrix )
 	matrix[15] = 1.0f;
 }
 
-void myGlMultMatrix( const float *a, const float *b, float *out );
-void R_MDXMRotateForEntity( const matrix_t *xform, const viewParms_t *viewParms,
-					   orientationr_t *ori ) {
-//	float	glMatrix[16];
-	vec3_t	delta;
-	float	axisLength;
-
-
-	myGlMultMatrix( (float *)xform, viewParms->world.modelMatrix, ori->modelMatrix );
-
-	// calculate the viewer origin in the model's space
-	// needed for fog, specular, and environment mapping
-	VectorSubtract( viewParms->or.origin, ori->origin, delta );
-
-	// compensate for scale in the axes if necessary
-	/*if ( ent->e.nonNormalizedAxes ) {
-		axisLength = VectorLength( ent->e.axis[0] );
-		if ( !axisLength ) {
-			axisLength = 0;
-		} else {
-			axisLength = 1.0f / axisLength;
-		}
-	} else */{
-		axisLength = 1.0f;
-	}
-
-	ori->viewOrigin[0] = DotProduct( delta, ori->axis[0] ) * axisLength;
-	ori->viewOrigin[1] = DotProduct( delta, ori->axis[1] ) * axisLength;
-	ori->viewOrigin[2] = DotProduct( delta, ori->axis[2] ) * axisLength;
-}
-
 //This is a slightly mangled version of the same function from the sof2sp base.
 //It provides a pretty significant performance increase over the existing one.
 void RB_SurfaceGhoul( CRenderableSurface *surf ) 
@@ -3488,6 +3457,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 #if 1
 	static matrix_t boneMatrices[80] = {};
 
+	mdxmSurface_t *surfData = surf->surfaceData;
 	mdxmVBOMesh_t *surface = surf->vboMesh;
 
 	if(!surface->vbo || !surface->ibo)
@@ -3507,13 +3477,15 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	tess.maxIndex = surface->maxIndex;
 	tess.firstIndex = surface->indexOffset;
 
-	for ( int i = 0; i < surf->boneCache->mFinalBones.size(); i++ )
+	int *boneReferences = (int *)((byte *)surfData + surfData->ofsBoneReferences);
+	for ( int i = 0; i < surfData->numBoneReferences; i++ )
 	{
-		const mdxaBone_t& bone = surf->boneCache->EvalRender (i);
+		const mdxaBone_t& bone = surf->boneCache->EvalRender (boneReferences[i]);
 		MDXABoneToMatrix (bone, boneMatrices[i]);
 	}
 
 	glState.boneMatrices = boneMatrices;
+	glState.numBones = surfData->numBoneReferences;
 	glState.skeletalAnimation = qtrue;
 
 	RB_EndSurface();
@@ -4576,14 +4548,13 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			}
 
 			// Weights
-			int *boneRefs = (int *)((byte *)surf + surf->ofsBoneReferences);
 			for ( int k = 0; k < surf->numVerts; k++ )
 			{
 				int numWeights = G2_GetVertWeights (&v[k]);
 				for ( int w = 0; w < numWeights; w++ )
 				{
 					(*weights)[w] = G2_GetVertBoneWeightNotSlow (&v[k], w);
-					(*bonerefs)[w] = (float)boneRefs[G2_GetVertBoneIndex (&v[k], w)];
+					(*bonerefs)[w] = (float)G2_GetVertBoneIndex (&v[k], w);
 				}
 
 				// Fill in the rest of the info with zeroes.

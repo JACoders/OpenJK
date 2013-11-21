@@ -822,10 +822,10 @@ void GLSL_SetUniformFloat5(shaderProgram_t *program, int uniformNum, const vec5_
 	qglUniform1fvARB(uniforms[uniformNum], 5, v);
 }
 
-void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const float *matrix)
+void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements)
 {
 	GLint *uniforms = program->uniforms;
-	vec_t *compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
+	vec_t *compare;
 
 	if (uniforms[uniformNum] == -1)
 		return;
@@ -836,18 +836,18 @@ void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const flo
 		return;
 	}
 
-	if (memcmp (matrix, compare, sizeof (vec_t) * 16 * uniformsInfo[uniformNum].size) == 0)
+	if (uniformsInfo[uniformNum].size < numElements)
+		return;
+
+	compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
+	if (memcmp (matrix, compare, sizeof (vec_t) * 16 * numElements) == 0)
 	{
 		return;
 	}
 
-	const matrix_t *m = (matrix_t *)matrix;
-	for (int i = 0; i < uniformsInfo[uniformNum].size; i++)
-	{
-		Matrix16Copy(m[i], compare);
-	}
+	Com_Memcpy (compare, matrix, sizeof (vec_t) * 16 * numElements);
 
-	qglUniformMatrix4fvARB(uniforms[uniformNum], uniformsInfo[uniformNum].size, GL_FALSE, matrix);
+	qglUniformMatrix4fvARB(uniforms[uniformNum], numElements, GL_FALSE, matrix);
 }
 
 void GLSL_DeleteGPUShader(shaderProgram_t *program)
