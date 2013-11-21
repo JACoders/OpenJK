@@ -203,7 +203,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
 	SDL_DisplayMode desktopMode;
 	int display = 0;
-	int x = 0, y = 0;
+	int x = SDL_WINDOWPOS_UNDEFINED, y = SDL_WINDOWPOS_UNDEFINED;
 
 	Com_Printf( "Initializing OpenGL display\n");
 
@@ -449,12 +449,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 			continue;
 		}
 
-		if( SDL_GL_MakeCurrent( screen, opengl_context ) < 0 )
-		{
-			Com_Printf( "SDL_GL_MakeCurrent failed: %s\n", SDL_GetError( ) );
-			continue;
-		}
-
 		SDL_GL_SetSwapInterval( r_swapInterval->integer );
 
 		glConfig.colorBits = testColorBits;
@@ -477,272 +471,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	Com_Printf( "GL_RENDERER: %s\n", glstring );
 
 	return RSERR_OK;
-#if 0
-	const char*   glstring;
-	int sdlcolorbits;
-	int colorbits, depthbits, stencilbits;
-	int tcolorbits, tdepthbits, tstencilbits;
-	int samples;
-	int i = 0;
-	Uint32 flags = SDL_WINDOW_OPENGL;
-
-	Com_Printf( "Initializing OpenGL display\n");
-
-	if ( r_allowResize->integer )
-		flags |= SDL_WINDOW_RESIZABLE;
-
-	if( videoInfo == NULL )
-	{
-		static SDL_DisplayMode sVideoInfo;
-		static SDL_PixelFormat sPixelFormat;
-
-		if (SDL_GetCurrentDisplayMode( 0, &sVideoInfo ) < 0)
-		  Com_Error(ERR_FATAL, "SDL_GetCurrentDisplayMode failed : %s\n", SDL_GetError());
-
-		// Take a copy of the videoInfo
-		sPixelFormat.format = sVideoInfo.format;
-		sPixelFormat.palette = NULL; // Should already be the case
-		//Com_Memcpy( &sVideoInfo, videoInfo, sizeof( SDL_DisplayMode ) );
-		sVideoInfo.format = sPixelFormat.format;
-		videoInfo = &sVideoInfo;
-
-		if( videoInfo->h > 0 )
-		{
-			glConfig.displayWidth = videoInfo->w;
-			glConfig.displayHeight = videoInfo->h;
-
-			// Guess the display aspect ratio through the desktop resolution
-			// by assuming (relatively safely) that it is set at or close to
-			// the display's native aspect ratio
-			glConfig.displayAspect = (float)videoInfo->w / (float)videoInfo->h;
-
-			Com_Printf( "Estimated display aspect: %.3f\n", glConfig.displayAspect );
-		}
-		else
-		{
-			glConfig.displayWidth = 480;
-			glConfig.displayHeight = 640;
-			glConfig.displayAspect = 1.333f;
-
-			Com_Printf(
-					"Cannot estimate display resolution/aspect, assuming 640x480/1.333\n" );
-		}
-	}
-
-	Com_Printf( "...setting mode %d:", mode );
-
-	if (mode == -2)
-	{
-		// use desktop video resolution
-		if( videoInfo->h > 0 )
-		{
-			glConfig.vidWidth = videoInfo->w;
-			glConfig.vidHeight = videoInfo->h;
-		}
-		else
-		{
-			glConfig.vidWidth = 640;
-			glConfig.vidHeight = 480;
-			Com_Printf(
-					"Cannot determine display resolution, assuming 640x480\n" );
-		}
-
-		glConfig.displayAspect = (float)glConfig.vidWidth / (float)glConfig.vidHeight;
-	}
-	else if ( !R_GetModeInfo( &glConfig.vidWidth, &glConfig.vidHeight, /*&glConfig.displayAspect,*/ mode ) )
-	{
-		Com_Printf( " invalid mode\n" );
-		return RSERR_INVALID_MODE;
-	}
-	Com_Printf( " %d %d\n", glConfig.vidWidth, glConfig.vidHeight);
-
-	if (fullscreen)
-	{
-		flags |= SDL_WINDOW_FULLSCREEN;
-		glConfig.isFullscreen = qtrue;
-	}
-	else
-	{
-		if (noborder)
-			flags |= SDL_WINDOW_BORDERLESS;
-
-		glConfig.isFullscreen = qfalse;
-	}
-
-	colorbits = r_colorbits->value;
-	if ((!colorbits) || (colorbits >= 32))
-		colorbits = 24;
-
-	if (!r_depthbits->value)
-		depthbits = 24;
-	else
-		depthbits = r_depthbits->value;
-	stencilbits = r_stencilbits->value;
-	//samples = r_ext_multisample->value;
-
-	for (i = 0; i < 16; i++)
-	{
-		// 0 - default
-		// 1 - minus colorbits
-		// 2 - minus depthbits
-		// 3 - minus stencil
-		if ((i % 4) == 0 && i)
-		{
-			// one pass, reduce
-			switch (i / 4)
-			{
-				case 2 :
-					if (colorbits == 24)
-						colorbits = 16;
-					break;
-				case 1 :
-					if (depthbits == 24)
-						depthbits = 16;
-					else if (depthbits == 16)
-						depthbits = 8;
-				case 3 :
-					if (stencilbits == 24)
-						stencilbits = 16;
-					else if (stencilbits == 16)
-						stencilbits = 8;
-			}
-		}
-
-		tcolorbits = colorbits;
-		tdepthbits = depthbits;
-		tstencilbits = stencilbits;
-
-		if ((i % 4) == 3)
-		{ // reduce colorbits
-			if (tcolorbits == 24)
-				tcolorbits = 16;
-		}
-
-		if ((i % 4) == 2)
-		{ // reduce depthbits
-			if (tdepthbits == 24)
-				tdepthbits = 16;
-			else if (tdepthbits == 16)
-				tdepthbits = 8;
-		}
-
-		if ((i % 4) == 1)
-		{ // reduce stencilbits
-			if (tstencilbits == 24)
-				tstencilbits = 16;
-			else if (tstencilbits == 16)
-				tstencilbits = 8;
-			else
-				tstencilbits = 0;
-		}
-
-		sdlcolorbits = 4;
-		if (tcolorbits == 24)
-			sdlcolorbits = 8;
-
-#ifdef __sgi /* Fix for SGIs grabbing too many bits of color */
-		if (sdlcolorbits == 4)
-			sdlcolorbits = 0; /* Use minimum size for 16-bit color */
-
-		/* Need alpha or else SGIs choose 36+ bit RGB mode */
-		SDL_GL_SetAttribute( SDL_GL_ALPHA_SIZE, 1);
-#endif
-
-		SDL_GL_SetAttribute( SDL_GL_RED_SIZE, sdlcolorbits );
-		SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, sdlcolorbits );
-		SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, sdlcolorbits );
-		SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, tdepthbits );
-		SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, tstencilbits );
-
-		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, samples ? 1 : 0 );
-		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, samples );
-
-		/*if(r_stereoEnabled->integer)
-		{
-			glConfig.stereoEnabled = qtrue;
-			SDL_GL_SetAttribute(SDL_GL_STEREO, 1);
-		}
-		else
-		{*/
-			glConfig.stereoEnabled = qfalse;
-			SDL_GL_SetAttribute(SDL_GL_STEREO, 0);
-		//}
-
-		SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-
-#if 0 // See http://bugzilla.icculus.org/show_bug.cgi?id=3526
-		// If not allowing software GL, demand accelerated
-		if( !r_allowSoftwareGL->integer )
-		{
-			if( SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 ) < 0 )
-			{
-				Com_Printf( "Unable to guarantee accelerated "
-						"visual with libSDL < 1.2.10\n" );
-			}
-		}
-#endif
-
-		if( SDL_GL_SetSwapInterval(r_swapInterval->integer ) < 0 )
-			Com_Printf( "SDL_GL_SetSwapInterval not supported\n" );
-
-#ifdef USE_ICON
-		{
-			SDL_Surface *icon = SDL_CreateRGBSurfaceFrom(
-					(void *)CLIENT_WINDOW_ICON.pixel_data,
-					CLIENT_WINDOW_ICON.width,
-					CLIENT_WINDOW_ICON.height,
-					CLIENT_WINDOW_ICON.bytes_per_pixel * 8,
-					CLIENT_WINDOW_ICON.bytes_per_pixel * CLIENT_WINDOW_ICON.width,
-#ifdef Q3_LITTLE_ENDIAN
-					0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000
-#else
-					0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF
-#endif
-					);
-
-			SDL_WM_SetIcon( icon, NULL );
-			SDL_FreeSurface( icon );
-		}
-#endif
-
-		// FIXME: Product name
-		cvar_t *com_productName = ri.Cvar_Get("com_productName", "OpenJK" /* PRODUCT_NAME */, CVAR_ROM);
-		//SDL_SetWindowTitle(com_productName->string, com_productName->string);
-		SDL_ShowCursor(0);
-
-		if (!(window = SDL_CreateWindow(com_productName->string, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, glConfig.vidWidth, glConfig.vidHeight, flags)))
-		{
-			Com_Printf( "SDL_CreateWindow failed: %s\n", SDL_GetError( ) );
-			continue;
-		}
-
-		opengl_context = SDL_GL_CreateContext(window);
-
-		Com_Printf( "Using %d/%d/%d Color bits, %d depth, %d stencil display.\n",
-				sdlcolorbits, sdlcolorbits, sdlcolorbits, tdepthbits, tstencilbits);
-
-		glConfig.colorBits = tcolorbits;
-		glConfig.depthBits = tdepthbits;
-		glConfig.stencilBits = tstencilbits;
-		break;
-	}
-
-	GLimp_DetectAvailableModes();
-
-	if (!window)
-	{
-		Com_Printf( "Couldn't get a visual\n" );
-		return RSERR_INVALID_MODE;
-	}
-
-	screen = window;
-
-	// FIXME: Defines needed here
-	glstring = (char *) qglGetString (GL_RENDERER);
-	Com_Printf( "GL_RENDERER: %s\n", glstring );
-
-	return RSERR_OK;
-#endif
 }
 
 /*
@@ -807,35 +535,28 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 	return qtrue;
 }
 
-static int
-SDL_SetGamma(SDL_Window *win, float red, float green, float blue)
-{
-    Uint16 red_ramp[256];
-    Uint16 green_ramp[256];
-    Uint16 blue_ramp[256];
+/*
+** GLW_CheckForExtension
 
-    SDL_CalculateGammaRamp(red, red_ramp);
-    if (green == red) {
-        memcpy(&green_ramp, &red_ramp, sizeof(red_ramp));
-    } else {
-        SDL_CalculateGammaRamp(green, green_ramp);
-    }
-    if (blue == red) {
-    	memcpy(blue_ramp, red_ramp, sizeof(red_ramp));
-    } else {
-        SDL_CalculateGammaRamp(blue, blue_ramp);
-    }
-    return SDL_SetWindowGammaRamp(win, red_ramp, green_ramp, blue_ramp);
+  Cannot use strstr directly to differentiate between (for eg) reg_combiners and reg_combiners2
+*/
+
+bool GL_CheckForExtension(const char *ext)
+{
+	const char *ptr = Q_stristr( glConfig.extensions_string, ext );
+	if (ptr == NULL)
+		return false;
+	ptr += strlen(ext);
+	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
 }
 
 static void GLW_InitTextureCompression( void )
 {
-	qboolean newer_tc, old_tc;
+	bool newer_tc, old_tc;
 
 	// Check for available tc methods.
-	newer_tc = ( strstr( glConfig.extensions_string, "ARB_texture_compression" )
-		&& strstr( glConfig.extensions_string, "EXT_texture_compression_s3tc" )) ? qtrue : qfalse;
-	old_tc = ( strstr( glConfig.extensions_string, "GL_S3_s3tc" )) ? qtrue : qfalse;
+	newer_tc = GL_CheckForExtension("ARB_texture_compression") && GL_CheckForExtension("EXT_texture_compression_s3tc");
+	old_tc = GL_CheckForExtension("GL_S3_s3tc");
 
 	if ( old_tc )
 	{
@@ -959,7 +680,7 @@ static void GLimp_InitExtensions( void )
 
 	// GL_EXT_texture_env_add
 	glConfig.textureEnvAddAvailable = qfalse;
-	if ( strstr( glConfig.extensions_string, "EXT_texture_env_add" ) )
+	if ( GL_CheckForExtension( "EXT_texture_env_add" ) )
 	{
 		if ( r_ext_texture_env_add->integer )
 		{
@@ -979,13 +700,13 @@ static void GLimp_InitExtensions( void )
 
 	// GL_EXT_texture_filter_anisotropic
 	glConfig.maxTextureFilterAnisotropy = 0;
-	if ( strstr( glConfig.extensions_string, "EXT_texture_filter_anisotropic" ) )
+	if ( GL_CheckForExtension( "EXT_texture_filter_anisotropic" ) )
 	{
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF	//can't include glext.h here ... sigh
 		qglGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &glConfig.maxTextureFilterAnisotropy );
 		Com_Printf ("...GL_EXT_texture_filter_anisotropic available\n" );
 
-		if ( r_ext_texture_filter_anisotropic->integer>1 )
+		if ( r_ext_texture_filter_anisotropic->integer > 1 )
 		{
 			Com_Printf ("...using GL_EXT_texture_filter_anisotropic\n" );
 		}
@@ -1007,7 +728,7 @@ static void GLimp_InitExtensions( void )
 
 	// GL_EXT_clamp_to_edge
 	glConfig.clampToEdgeAvailable = qfalse;
-	if ( strstr( glConfig.extensions_string, "GL_EXT_texture_edge_clamp" ) )
+	if ( GL_CheckForExtension( "GL_EXT_texture_edge_clamp" ) )
 	{
 		glConfig.clampToEdgeAvailable = qtrue;
 		Com_Printf ("...Using GL_EXT_texture_edge_clamp\n" );
@@ -1017,7 +738,7 @@ static void GLimp_InitExtensions( void )
 	qglMultiTexCoord2fARB = NULL;
 	qglActiveTextureARB = NULL;
 	qglClientActiveTextureARB = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_ARB_multitexture" )  )
+	if ( GL_CheckForExtension( "GL_ARB_multitexture" ) )
 	{
 		if ( r_ext_multitexture->integer )
 		{
@@ -1055,7 +776,7 @@ static void GLimp_InitExtensions( void )
 	// GL_EXT_compiled_vertex_array
 	qglLockArraysEXT = NULL;
 	qglUnlockArraysEXT = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_EXT_compiled_vertex_array" ) )
+	if ( GL_CheckForExtension( "GL_EXT_compiled_vertex_array" ) )
 	{
 		if ( r_ext_compiled_vertex_array->integer )
 		{
@@ -1083,7 +804,7 @@ static void GLimp_InitExtensions( void )
 	qglTexImage3DEXT = NULL;
 	qglTexSubImage3DEXT = NULL;
 
-	if ( strstr( glConfig.extensions_string, "GL_EXT_point_parameters" ) )
+	if ( GL_CheckForExtension( "GL_EXT_point_parameters" ) )
 	{
 		if ( r_ext_compiled_vertex_array->integer )
 		{
@@ -1137,7 +858,7 @@ static void GLimp_InitExtensions( void )
 
 	bool bNVRegisterCombiners = false;
 	// Register Combiners.
-	if ( strstr( glConfig.extensions_string, "GL_NV_register_combiners" ) )
+	if ( GL_CheckForExtension( "GL_NV_register_combiners" ) )
 	{
 		// NOTE: This extension requires multitexture support (over 2 units).
 		if ( glConfig.maxActiveTextures >= 2 )
@@ -1190,7 +911,7 @@ static void GLimp_InitExtensions( void )
 
 	// Vertex Programs.
 	bool bARBVertexProgram = false;
-	if ( strstr( glConfig.extensions_string, "GL_ARB_vertex_program" ) )
+	if ( GL_CheckForExtension( "GL_ARB_vertex_program" ) )
 	{
 		bARBVertexProgram = true;
 	}
@@ -1202,7 +923,7 @@ static void GLimp_InitExtensions( void )
 
 	// Fragment Programs.
 	bool bARBFragmentProgram = false;
-	if ( strstr( glConfig.extensions_string, "GL_ARB_fragment_program" ) )
+	if ( GL_CheckForExtension( "GL_ARB_fragment_program" ) )
 	{
 		bARBFragmentProgram = true;
 	}
@@ -1261,8 +982,7 @@ static void GLimp_InitExtensions( void )
 		g_bTextureRectangleHack = true;
 	}
 
-	if ( strstr( glConfig.extensions_string, "GL_NV_texture_rectangle" )
-		   || strstr( glConfig.extensions_string, "GL_EXT_texture_rectangle" ) )
+	if ( GL_CheckForExtension( "GL_NV_texture_rectangle" ) || GL_CheckForExtension( "GL_EXT_texture_rectangle" ) )
 	{
 		bTexRectSupported = true;
 	}
@@ -1274,7 +994,7 @@ static void GLimp_InitExtensions( void )
 		qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
 
 	// Only allow dynamic glows/flares if they have the hardware
-	if ( bTexRectSupported && bARBVertexProgram /*whee && bHasRenderTexture*/ && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
+	if ( bTexRectSupported && bARBVertexProgram && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
 		( ( bNVRegisterCombiners && iNumGeneralCombiners >= 2 ) || bARBFragmentProgram ) )
 	{
 		g_bDynamicGlowSupported = true;
@@ -1307,8 +1027,6 @@ void 		GLimp_Init( void )
 		ri.Cvar_Set( "com_abnormalExit", "0" );
 		}*/
 
-	Sys_SetEnv( "SDL_VIDEO_CENTERED", r_centerWindow->integer ? "1" : "" );
-
 	// Create the window and set up the context
 	if(GLimp_StartDriverAndSetMode(r_mode->integer, r_fullscreen->integer, r_noborder->integer))
 		goto success;
@@ -1336,19 +1054,8 @@ success:
 	// This values force the UI to disable driver selection
 	//	glConfig.driverType = GLDRV_ICD;
 	//	glConfig.hardwareType = GLHW_GENERIC;
-	glConfig.deviceSupportsGamma = (qboolean)(SDL_SetGamma( screen, 1.0f, 1.0f, 1.0f ) >= 0);
-
-	// Mysteriously, if you use an NVidia graphics card and multiple monitors,
-	// SDL_SetGamma will incorrectly return false... the first time; ask
-	// again and you get the correct answer. This is a suspected driver bug, see
-	// http://bugzilla.icculus.org/show_bug.cgi?id=4316
-	glConfig.deviceSupportsGamma = (qboolean)(SDL_SetGamma( screen, 1.0f, 1.0f, 1.0f ) >= 0);
-
-	if ( -1 == r_ignorehwgamma->integer)
-		glConfig.deviceSupportsGamma = 1;
-
-	if ( 1 == r_ignorehwgamma->integer)
-		glConfig.deviceSupportsGamma = 0;
+	glConfig.deviceSupportsGamma = !r_ignorehwgamma->integer &&
+		SDL_SetWindowBrightness( SDL_window, 1.0f ) >= 0;
 
 	// get our config strings
     glConfig.vendor_string = (const char *) qglGetString (GL_VENDOR);
