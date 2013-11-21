@@ -199,7 +199,7 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL;
 	SDL_DisplayMode desktopMode;
 	int display = 0;
-	int x = 0, y = 0;
+	int x = SDL_WINDOWPOS_UNDEFINED, y = SDL_WINDOWPOS_UNDEFINED;
 
 	Com_Printf( "Initializing OpenGL display\n");
 
@@ -431,12 +431,6 @@ static rserr_t GLimp_SetMode(int mode, qboolean fullscreen, qboolean noborder)
 			continue;
 		}
 
-		if( SDL_GL_MakeCurrent( screen, opengl_context ) < 0 )
-		{
-			Com_Printf( "SDL_GL_MakeCurrent failed: %s\n", SDL_GetError( ) );
-			continue;
-		}
-
 		SDL_GL_SetSwapInterval( r_swapInterval->integer );
 
 		glConfig.colorBits = testColorBits;
@@ -521,35 +515,28 @@ static qboolean GLimp_StartDriverAndSetMode(int mode, qboolean fullscreen, qbool
 	return qtrue;
 }
 
-static int
-SDL_SetGamma(SDL_Window *win, float red, float green, float blue)
-{
-    Uint16 red_ramp[256];
-    Uint16 green_ramp[256];
-    Uint16 blue_ramp[256];
+/*
+** GLW_CheckForExtension
 
-    SDL_CalculateGammaRamp(red, red_ramp);
-    if (green == red) {
-        Com_Memcpy(&green_ramp, &red_ramp, sizeof(red_ramp));
-    } else {
-        SDL_CalculateGammaRamp(green, green_ramp);
-    }
-    if (blue == red) {
-    	Com_Memcpy(blue_ramp, red_ramp, sizeof(red_ramp));
-    } else {
-        SDL_CalculateGammaRamp(blue, blue_ramp);
-    }
-    return SDL_SetWindowGammaRamp(win, red_ramp, green_ramp, blue_ramp);
+  Cannot use strstr directly to differentiate between (for eg) reg_combiners and reg_combiners2
+*/
+
+bool GL_CheckForExtension(const char *ext)
+{
+	const char *ptr = Q_stristr( glConfig.extensions_string, ext );
+	if (ptr == NULL)
+		return false;
+	ptr += strlen(ext);
+	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
 }
 
 static void GLW_InitTextureCompression( void )
 {
-	qboolean newer_tc, old_tc;
+	bool newer_tc, old_tc;
 
 	// Check for available tc methods.
-	newer_tc = ( strstr( glConfig.extensions_string, "ARB_texture_compression" )
-		&& strstr( glConfig.extensions_string, "EXT_texture_compression_s3tc" )) ? qtrue : qfalse;
-	old_tc = ( strstr( glConfig.extensions_string, "GL_S3_s3tc" )) ? qtrue : qfalse;
+	newer_tc = GL_CheckForExtension("ARB_texture_compression") && GL_CheckForExtension("EXT_texture_compression_s3tc");
+	old_tc = GL_CheckForExtension("GL_S3_s3tc");
 
 	if ( old_tc )
 	{
@@ -673,7 +660,7 @@ static void GLimp_InitExtensions( void )
 
 	// GL_EXT_texture_env_add
 	glConfig.textureEnvAddAvailable = qfalse;
-	if ( strstr( glConfig.extensions_string, "EXT_texture_env_add" ) )
+	if ( GL_CheckForExtension( "EXT_texture_env_add" ) )
 	{
 		if ( r_ext_texture_env_add->integer )
 		{
@@ -693,13 +680,13 @@ static void GLimp_InitExtensions( void )
 
 	// GL_EXT_texture_filter_anisotropic
 	glConfig.maxTextureFilterAnisotropy = 0;
-	if ( strstr( glConfig.extensions_string, "EXT_texture_filter_anisotropic" ) )
+	if ( GL_CheckForExtension( "EXT_texture_filter_anisotropic" ) )
 	{
 #define GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT 0x84FF	//can't include glext.h here ... sigh
 		qglGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &glConfig.maxTextureFilterAnisotropy );
 		Com_Printf ("...GL_EXT_texture_filter_anisotropic available\n" );
 
-		if ( r_ext_texture_filter_anisotropic->integer>1 )
+		if ( r_ext_texture_filter_anisotropic->integer > 1 )
 		{
 			Com_Printf ("...using GL_EXT_texture_filter_anisotropic\n" );
 		}
@@ -721,7 +708,7 @@ static void GLimp_InitExtensions( void )
 
 	// GL_EXT_clamp_to_edge
 	glConfig.clampToEdgeAvailable = qfalse;
-	if ( strstr( glConfig.extensions_string, "GL_EXT_texture_edge_clamp" ) )
+	if ( GL_CheckForExtension( "GL_EXT_texture_edge_clamp" ) )
 	{
 		glConfig.clampToEdgeAvailable = qtrue;
 		Com_Printf ("...Using GL_EXT_texture_edge_clamp\n" );
@@ -731,7 +718,7 @@ static void GLimp_InitExtensions( void )
 	qglMultiTexCoord2fARB = NULL;
 	qglActiveTextureARB = NULL;
 	qglClientActiveTextureARB = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_ARB_multitexture" )  )
+	if ( GL_CheckForExtension( "GL_ARB_multitexture" ) )
 	{
 		if ( r_ext_multitexture->integer )
 		{
@@ -769,7 +756,7 @@ static void GLimp_InitExtensions( void )
 	// GL_EXT_compiled_vertex_array
 	qglLockArraysEXT = NULL;
 	qglUnlockArraysEXT = NULL;
-	if ( strstr( glConfig.extensions_string, "GL_EXT_compiled_vertex_array" ) )
+	if ( GL_CheckForExtension( "GL_EXT_compiled_vertex_array" ) )
 	{
 		if ( r_ext_compiled_vertex_array->integer )
 		{
@@ -797,7 +784,7 @@ static void GLimp_InitExtensions( void )
 	qglTexImage3DEXT = NULL;
 	qglTexSubImage3DEXT = NULL;
 
-	if ( strstr( glConfig.extensions_string, "GL_EXT_point_parameters" ) )
+	if ( GL_CheckForExtension( "GL_EXT_point_parameters" ) )
 	{
 		if ( r_ext_compiled_vertex_array->integer )
 		{
@@ -826,7 +813,7 @@ static void GLimp_InitExtensions( void )
 
 	bool bNVRegisterCombiners = false;
 	// Register Combiners.
-	if ( strstr( glConfig.extensions_string, "GL_NV_register_combiners" ) )
+	if ( GL_CheckForExtension( "GL_NV_register_combiners" ) )
 	{
 		// NOTE: This extension requires multitexture support (over 2 units).
 		if ( glConfig.maxActiveTextures >= 2 )
@@ -879,7 +866,7 @@ static void GLimp_InitExtensions( void )
 
 	// Vertex Programs.
 	bool bARBVertexProgram = false;
-	if ( strstr( glConfig.extensions_string, "GL_ARB_vertex_program" ) )
+	if ( GL_CheckForExtension( "GL_ARB_vertex_program" ) )
 	{
 		bARBVertexProgram = true;
 	}
@@ -891,7 +878,7 @@ static void GLimp_InitExtensions( void )
 
 	// Fragment Programs.
 	bool bARBFragmentProgram = false;
-	if ( strstr( glConfig.extensions_string, "GL_ARB_fragment_program" ) )
+	if ( GL_CheckForExtension( "GL_ARB_fragment_program" ) )
 	{
 		bARBFragmentProgram = true;
 	}
@@ -950,8 +937,7 @@ static void GLimp_InitExtensions( void )
 		g_bTextureRectangleHack = true;
 	}
 
-	if ( strstr( glConfig.extensions_string, "GL_NV_texture_rectangle" )
-		   || strstr( glConfig.extensions_string, "GL_EXT_texture_rectangle" ) )
+	if ( GL_CheckForExtension( "GL_NV_texture_rectangle" ) || GL_CheckForExtension( "GL_EXT_texture_rectangle" ) )
 	{
 		bTexRectSupported = true;
 	}
@@ -996,8 +982,6 @@ void 		GLimp_Init( void )
 		Cvar_Set( "com_abnormalExit", "0" );
 		}*/
 
-	Sys_SetEnv( "SDL_VIDEO_CENTERED", r_centerWindow->integer ? "1" : "" );
-
 	// Create the window and set up the context
 	if(GLimp_StartDriverAndSetMode(r_mode->integer, (qboolean)r_fullscreen->integer, (qboolean)r_noborder->integer))
 		goto success;
@@ -1025,28 +1009,10 @@ success:
 	// This values force the UI to disable driver selection
 	//	glConfig.driverType = GLDRV_ICD;
 	//	glConfig.hardwareType = GLHW_GENERIC;
-	glConfig.deviceSupportsGamma = (qboolean)(SDL_SetGamma( screen, 1.0f, 1.0f, 1.0f ) >= 0);
-
-	// Mysteriously, if you use an NVidia graphics card and multiple monitors,
-	// SDL_SetGamma will incorrectly return false... the first time; ask
-	// again and you get the correct answer. This is a suspected driver bug, see
-	// http://bugzilla.icculus.org/show_bug.cgi?id=4316
-	glConfig.deviceSupportsGamma = (qboolean)(SDL_SetGamma( screen, 1.0f, 1.0f, 1.0f ) >= 0);
-
-	if ( -1 == r_ignorehwgamma->integer)
-		glConfig.deviceSupportsGamma = qtrue;
-
-	if ( 1 == r_ignorehwgamma->integer)
-		glConfig.deviceSupportsGamma = qfalse;
+	glConfig.deviceSupportsGamma = !r_ignorehwgamma->integer &&
+		SDL_SetWindowBrightness( SDL_window, 1.0f ) >= 0;
 
 	// get our config strings
-/*	Q_strncpyz( glConfig.vendor_string, (char *) qglGetString (GL_VENDOR), sizeof( glConfig.vendor_string ) );
-	Q_strncpyz( glConfig.renderer_string, (char *) qglGetString (GL_RENDERER), sizeof( glConfig.renderer_string ) );
-	if (*glConfig.renderer_string && glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] == '\n')
-		glConfig.renderer_string[strlen(glConfig.renderer_string) - 1] = 0;
-	Q_strncpyz( glConfig.version_string, (char *) qglGetString (GL_VERSION), sizeof( glConfig.version_string ) );
-	Q_strncpyz( glConfig.extensions_string, (char *) qglGetString (GL_EXTENSIONS), sizeof( glConfig.extensions_string ) );*/
-
     glConfig.vendor_string = (const char *) qglGetString (GL_VENDOR);
 	glConfig.renderer_string = (const char *) qglGetString (GL_RENDERER);
 	glConfig.version_string = (const char *) qglGetString (GL_VERSION);
