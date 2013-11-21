@@ -82,7 +82,6 @@ void     QGL_Shutdown( void );
 glwstate_t glw_state;
 
 cvar_t	*r_allowSoftwareGL;		// don't abort out if the pixelformat claims software
-cvar_t	*r_maskMinidriver;		// allow a different dll name to be treated as if it were opengl32.dll
 
 // Whether the current hardware supports dynamic glows/flares.
 extern bool g_bDynamicGlowSupported;
