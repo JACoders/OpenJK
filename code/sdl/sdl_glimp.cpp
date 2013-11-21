@@ -1055,7 +1055,7 @@ success:
 	//	glConfig.driverType = GLDRV_ICD;
 	//	glConfig.hardwareType = GLHW_GENERIC;
 	glConfig.deviceSupportsGamma = !r_ignorehwgamma->integer &&
-		SDL_SetWindowBrightness( SDL_window, 1.0f ) >= 0;
+		SDL_SetWindowBrightness( screen, 1.0f ) >= 0;
 
 	// get our config strings
     glConfig.vendor_string = (const char *) qglGetString (GL_VENDOR);
