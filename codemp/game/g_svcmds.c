@@ -484,6 +484,7 @@ int svcmdcmp( const void *a, const void *b ) {
 void G_CheckFields( void );
 void G_CheckSpawns( void );
 
+/* This array MUST be sorted correctly by alphabetical name field */
 svcmd_t svcmds[] = {
 	{ "addbot",						Svcmd_AddBot_f,						qfalse },
 	{ "addip",						Svcmd_AddIP_f,						qfalse },
