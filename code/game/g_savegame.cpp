@@ -221,7 +221,7 @@ static intptr_t GetGEntityNum(gentity_t* ent)
 	//	way that the level_locals_t alertEvents struct contains a count of which ones are valid, so I'm guessing
 	//	that some of them aren't (valid)...
 	//
-	int iReturnIndex = ent - g_entities;
+	ptrdiff_t iReturnIndex = ent - g_entities;
 
 	if (iReturnIndex < 0 || iReturnIndex >= MAX_GENTITIES)
 	{	
@@ -279,7 +279,7 @@ static AIGroupInfo_t *GetGroupPtr(intptr_t iGroupNum)
 /////////// gclient_t * ////////
 //
 //
-static int GetGClientNum(gclient_t *c, gentity_t *ent)
+static intptr_t GetGClientNum(gclient_t *c, gentity_t *ent)
 {
 	// unfortunately, I now need to see if this is a INT_ID('r','e','a','l') client (and therefore resolve to an enum), or
 	//	whether it's one of the NPC or SP_misc_weapon_shooter
@@ -301,7 +301,7 @@ static int GetGClientNum(gclient_t *c, gentity_t *ent)
 	}
 }
 
-static gclient_t *GetGClientPtr(int c)
+static gclient_t *GetGClientPtr(intptr_t c)
 {
 	if (c == -1)
 	{
@@ -394,7 +394,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 		break;
 
 	case F_GENTITY:
-		*(int *)pv = GetGEntityNum(*(gentity_t **)pv);
+		*(intptr_t *)pv = GetGEntityNum(*(gentity_t **)pv);
 		break;
 
 	case F_GROUP:
@@ -402,7 +402,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 		break;
 
 	case F_GCLIENT:
-		*(int *)pv = GetGClientNum(*(gclient_t **)pv, (gentity_t *) pbBase);
+		*(intptr_t *)pv = GetGClientNum(*(gclient_t **)pv, (gentity_t *) pbBase);
 		break;
 
 	case F_ITEM:
@@ -539,7 +539,7 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 		break;
 
 	case F_GENTITY:
-		*(gentity_t **)pv = GetGEntityPtr(*(int *)pv);
+		*(gentity_t **)pv = GetGEntityPtr(*(intptr_t *)pv);
 		break;
 
 	case F_GROUP:
@@ -547,7 +547,7 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 		break;
 
 	case F_GCLIENT:
-		*(gclient_t **)pv = GetGClientPtr(*(int *)pv);
+		*(gclient_t **)pv = GetGClientPtr(*(intptr_t *)pv);
 		break;
 
 	case F_ITEM:
