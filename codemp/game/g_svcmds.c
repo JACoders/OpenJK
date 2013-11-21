@@ -284,6 +284,22 @@ void Svcmd_RemoveIP_f (void)
 	trap->Print ( "Didn't find %s.\n", str );
 }
 
+void Svcmd_ListIP_f (void)
+{
+	int		i, count = 0;
+	byte	b[4];
+
+	for(i = 0; i < numIPFilters; i++) {
+		if ( ipFilters[i].compare == 0xffffffffu )
+			continue;
+
+		*(unsigned *)b = ipFilters[i].compare;
+		trap->Print ("%i.%i.%i.%i\n", b[0], b[1], b[2], b[3]);
+		count++;
+	}
+	trap->Print ("%i bans.\n", count);
+}
+
 /*
 ===================
 Svcmd_EntityList_f
@@ -431,8 +447,58 @@ void	Svcmd_ForceTeam_f( void ) {
 }
 
 char *ConcatArgs( int start );
+void Svcmd_Say_f( void ) {
+	char *p = NULL;
+	// don't let text be too long for malicious reasons
+	char text[MAX_SAY_TEXT] = {0};
+
+	if ( trap->Argc () < 2 )
+		return;
+
+	p = ConcatArgs( 1 );
+
+	//Raz: BOF
+	if ( strlen( p ) >= MAX_SAY_TEXT )
+	{
+		p[MAX_SAY_TEXT-1] = '\0';
+		G_SecurityLogPrintf( "Cmd_Say_f from -1 (server) has been truncated: %s\n", p );
+	}
+
+	Q_strncpyz( text, p, sizeof(text) );
+	Q_strstrip( text, "\n\r", "  " );
+
+	//G_LogPrintf( "say: server: %s\n", text );
+	trap->SendServerCommand( -1, va("print \"server: %s\n\"", text ) );
+}
+
+typedef struct svcmd_s {
+	const char	*name;
+	void		(*func)(void);
+	qboolean	dedicated;
+} svcmd_t;
+
+int svcmdcmp( const void *a, const void *b ) {
+	return Q_stricmp( (const char *)a, ((svcmd_t*)b)->name );
+}
+
 void G_CheckFields( void );
 void G_CheckSpawns( void );
+
+svcmd_t svcmds[] = {
+	{ "addbot",						Svcmd_AddBot_f,						qfalse },
+	{ "addip",						Svcmd_AddIP_f,						qfalse },
+	{ "botlist",					Svcmd_BotList_f,					qfalse },
+	{ "checkfields",				G_CheckFields,						qfalse },
+	{ "checkspawns",				G_CheckSpawns,						qfalse },
+	{ "entitylist",					Svcmd_EntityList_f,					qfalse },
+	{ "forceteam",					Svcmd_ForceTeam_f,					qfalse },
+	{ "game_memory",				Svcmd_GameMem_f,					qfalse },
+	{ "listip",						Svcmd_ListIP_f,						qfalse },
+	{ "removeip",					Svcmd_RemoveIP_f,					qfalse },
+	{ "say",						Svcmd_Say_f,						qtrue },
+	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
+};
+static const size_t numsvcmds = ARRAY_LEN( svcmds );
 
 /*
 =================
@@ -441,75 +507,19 @@ ConsoleCommand
 =================
 */
 qboolean	ConsoleCommand( void ) {
-	char	cmd[MAX_TOKEN_CHARS];
+	char	cmd[MAX_TOKEN_CHARS] = {0};
+	svcmd_t	*command = NULL;
 
 	trap->Argv( 0, cmd, sizeof( cmd ) );
 
-	if ( Q_stricmp (cmd, "entitylist") == 0 ) {
-		Svcmd_EntityList_f();
-		return qtrue;
-	}
+	command = (svcmd_t *)bsearch( cmd, svcmds, numsvcmds, sizeof( svcmds[0] ), svcmdcmp );
+	if ( !command )
+		return qfalse;
 
-	if ( Q_stricmp (cmd, "forceteam") == 0 ) {
-		Svcmd_ForceTeam_f();
-		return qtrue;
-	}
+	if ( command->dedicated && !dedicated.integer )
+		return qfalse;
 
-	if (Q_stricmp (cmd, "game_memory") == 0) {
-		Svcmd_GameMem_f();
-		return qtrue;
-	}
-
-	if (Q_stricmp (cmd, "addbot") == 0) {
-		Svcmd_AddBot_f();
-		return qtrue;
-	}
-
-	if (Q_stricmp (cmd, "botlist") == 0) {
-		Svcmd_BotList_f();
-		return qtrue;
-	}
-
-	if (Q_stricmp (cmd, "addip") == 0) {
-		Svcmd_AddIP_f();
-		return qtrue;
-	}
-
-	if (Q_stricmp (cmd, "removeip") == 0) {
-		Svcmd_RemoveIP_f();
-		return qtrue;
-	}
-
-	if (Q_stricmp (cmd, "listip") == 0) {
-		trap->SendConsoleCommand( EXEC_NOW, "g_banIPs\n" );
-		return qtrue;
-	}
-
-	if ( !Q_stricmp( cmd, "toggleuserinfovalidation" ) ) {
-		Svcmd_ToggleUserinfoValidation_f();
-		return qtrue;
-	}
-
-	if ( !Q_stricmp( cmd, "checkfields" ) ) {
-		G_CheckFields();
-		return qtrue;
-	}
-
-	if ( !Q_stricmp( cmd, "checkspawns" ) ) {
-		G_CheckSpawns();
-		return qtrue;
-	}
-
-	if (dedicated.integer) {
-		if (Q_stricmp (cmd, "say") == 0) {
-			trap->SendServerCommand( -1, va("print \"server: %s\n\"", ConcatArgs(1) ) );
-			return qtrue;
-		}
-		// everything else will NOT also be printed as a say command
-		//trap->SendServerCommand( -1, va("print \"server: %s\n\"", ConcatArgs(0) ) );
-		//return qtrue;
-	}
-
-	return qfalse;
+	command->func();
+	return qtrue;
 }
 
