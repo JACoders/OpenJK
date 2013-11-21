@@ -15,15 +15,17 @@
 #include <io.h>
 #include <conio.h>
 
-#define COPY_ID			1
-#define QUIT_ID			2
-#define CLEAR_ID		3
+enum {
+	COPY_ID = 1,
+	QUIT_ID,
+	CLEAR_ID,
 
-#define ERRORBOX_ID		10
-#define ERRORTEXT_ID	11
+	ERRORBOX_ID = 10,
+	ERRORTEXT_ID,
 
-#define EDIT_ID			100
-#define INPUT_ID		101
+	EDIT_ID = 100,
+	INPUT_ID
+};
 
 typedef struct WinConData_s {
 	HWND		hWnd;
@@ -60,7 +62,7 @@ typedef struct WinConData_s {
 
 static WinConData s_wcd;
 
-static LONG WINAPI ConWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK ConWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
 	const char *cmdString;
 	static qboolean s_timePolarity;
@@ -180,7 +182,7 @@ static LONG WINAPI ConWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
     return DefWindowProc( hWnd, uMsg, wParam, lParam );
 }
 
-LONG WINAPI InputLineWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK InputLineWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
 	char inputBuffer[1024];
 
