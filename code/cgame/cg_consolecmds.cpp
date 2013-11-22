@@ -31,48 +31,26 @@ void CG_NextInventory_f( void );
 void CG_PrevInventory_f( void );
 void CG_NextForcePower_f( void );
 void CG_PrevForcePower_f( void );
-void CG_LoadHud_f( void );
 
 /*
-====================
-CG_ColorFromString
-====================
+=================
+CG_TargetCommand_f
+
+=================
 */
-/*
-static void CG_SetColor_f( void) {
+void CG_TargetCommand_f( void ) {
+	int		targetNum;
+	char	test[4];
 
-	if (cgi_Argc()==4)
-	{
-		g_entities[0].client->renderInfo.customRGBA[0] = atoi( CG_Argv(1) );
-		g_entities[0].client->renderInfo.customRGBA[1] = atoi( CG_Argv(2) );
-		g_entities[0].client->renderInfo.customRGBA[2] = atoi( CG_Argv(3) );
+	targetNum = CG_CrosshairPlayer();
+	if ( targetNum == -1 ) {
+		return;
 	}
-	if (cgi_Argc()==2)
-	{
-		int val = atoi( CG_Argv(1) );
-				
-		if ( val < 1 || val > 7 ) {
-			g_entities[0].client->renderInfo.customRGBA[0] = 255;
-			g_entities[0].client->renderInfo.customRGBA[1] = 255;
-			g_entities[0].client->renderInfo.customRGBA[2] = 255;
-			return;
-		}
-		g_entities[0].client->renderInfo.customRGBA[0]=0;
-		g_entities[0].client->renderInfo.customRGBA[1]=0;
-		g_entities[0].client->renderInfo.customRGBA[2]=0;
-		
-		if ( val & 1 ) {
-			g_entities[0].client->renderInfo.customRGBA[2] = 255;
-		}
-		if ( val & 2 ) {
-			g_entities[0].client->renderInfo.customRGBA[1] = 255;
-		}
-		if ( val & 4 ) {
-			g_entities[0].client->renderInfo.customRGBA[0] = 255;
-		}
-	}
+
+	cgi_Argv( 1, test, 4 );
+	cgi_SendClientCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
 }
-*/
+
 /*
 =============
 CG_Viewpos_f
@@ -214,11 +192,23 @@ void CG_ToggleLAGoggles( void )
 	}
 }
 
+void CG_LoadHud_f( void ) 
+{
+	const char *hudSet;
+
+	hudSet = cg_hudFiles.string;
+	if (hudSet[0] == '\0') 
+	{
+		hudSet = "ui/jahud.txt";
+	}
+
+	CG_LoadMenus(hudSet);
+}
+
 typedef struct {
 	const char	*cmd;
 	void	(*function)(void);
 } consoleCommand_t;
-
 
 static consoleCommand_t	commands[] = {
 	{ "testmodel", CG_TestModel_f },
@@ -261,28 +251,9 @@ Ghoul2 Insert End
 	{ "dpinvprev", CG_DPPrevInventory_f },
 	{ "dpforcenext", CG_DPNextForcePower_f },
 	{ "dpforceprev", CG_DPPrevForcePower_f },
-//	{ "color", CG_SetColor_f },
 };
 
-
-void CG_LoadHud_f( void) 
-{
-	const char *hudSet;
-
-//	cgi_UI_String_Init();
-
-//	cgi_UI_Menu_Reset();
-	
-	hudSet = cg_hudFiles.string;
-	if (hudSet[0] == '\0') 
-	{
-		hudSet = "ui/jahud.txt";
-	}
-
-	CG_LoadMenus(hudSet);
-//	menuScoreboard = NULL;
-
-}
+static const size_t numCommands = ARRAY_LEN( commands );
 
 /*
 =================
@@ -294,11 +265,11 @@ Cmd_Argc() / Cmd_Argv()
 */
 qboolean CG_ConsoleCommand( void ) {
 	const char	*cmd;
-	unsigned int i;
+	size_t		i;
 
 	cmd = CG_Argv(0);
 
-	for ( i = 0 ; i < sizeof( commands ) / sizeof( commands[0] ) ; i++ ) {
+	for ( i = 0 ; i < numCommands ; i++ ) {
 		if ( !Q_stricmp( cmd, commands[i].cmd ) ) {
 			commands[i].function();
 			return qtrue;
@@ -308,6 +279,49 @@ qboolean CG_ConsoleCommand( void ) {
 	return qfalse;
 }
 
+static const char *gcmds[] = {
+	"bow",
+	"entitylist",
+	"flourish",
+	"force_absorb",
+	"force_distract",
+	"force_grip",
+	"force_heal",
+	"force_protect",
+	"force_pull",
+	"force_rage",
+	"force_sight",
+	"force_speed",
+	"force_throw",
+	"give",
+	"gloat",
+	"god",
+	"kill",
+	"meditate",
+	"nav",
+	"noclip",
+	"notarget",
+	"npc",
+	"playermodel",
+	"playerteam",
+	"runscript",
+	"saber",
+	"saberAttackCycle",
+	"saberColor",
+	"saberblade",
+	"setForceAll",
+	"setobjective",
+	"setviewpos",
+	"taunt",
+	"undying",
+	"use_bacta",
+	"use_electrobinoculars",
+	"use_lightamp_goggles",
+	"use_seeker",
+	"use_sentry",
+	"viewobjective"
+};
+static const size_t numgcmds = ARRAY_LEN( gcmds );
 
 /*
 =================
@@ -318,9 +332,15 @@ so it can perform tab completion
 =================
 */
 void CG_InitConsoleCommands( void ) {
-	unsigned int i;
+	size_t i;
 
-	for ( i = 0 ; i < sizeof( commands ) / sizeof( commands[0] ) ; i++ ) {
+	for ( i = 0 ; i < numCommands ; i++ )
 		cgi_AddCommand( commands[i].cmd );
-	}
+
+	//
+	// the game server will interpret these commands, which will be automatically
+	// forwarded to the server after they are not recognized locally
+	//
+	for( i = 0; i < numgcmds; i++ )
+		cgi_AddCommand( gcmds[i] );
 }

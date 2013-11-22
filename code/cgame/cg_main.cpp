@@ -550,19 +550,6 @@ int CG_GetCameraAng( vec3_t cameraang )
 	}
 }
 
-void CG_TargetCommand_f( void ) {
-	int		targetNum;
-	char	test[4];
-
-	targetNum = CG_CrosshairPlayer();
-	if (targetNum <= 0) {
-		return;
-	}
-
-	cgi_Argv( 1, test, 4 );	//FIXME: this is now an exec_now command - in case we start using it... JFM
-	cgi_SendConsoleCommand( va( "gc %i %i", targetNum, atoi( test ) ) );
-}
-
 void CG_Printf( const char *msg, ... ) {
 	va_list		argptr;
 	char		text[1024];
@@ -2175,61 +2162,6 @@ void CG_Init( int serverCommandSequence ) {
 	CG_GameStateReceived();
 
 	CG_InitConsoleCommands();
-
-	//
-	// the game server will interpret these commands, which will be automatically
-	// forwarded to the server after they are not recognized locally
-	//
-	cgi_AddCommand ("kill");
-	cgi_AddCommand ("give");
-	cgi_AddCommand ("god");
-	cgi_AddCommand ("notarget");
-	cgi_AddCommand ("noclip");
-	cgi_AddCommand ("undying");
-	cgi_AddCommand ("setviewpos");
-	cgi_AddCommand ("setobjective");
-	cgi_AddCommand ("viewobjective");
-
-
-//ConsoleCommand in g_svcmds.cpp
-	cgi_AddCommand ("entitylist");
-	cgi_AddCommand ("nav");
-	cgi_AddCommand ("npc");
-
-	cgi_AddCommand ("saberColor");
-	cgi_AddCommand ("saber");
-	cgi_AddCommand ("saberblade");
-	cgi_AddCommand ("setForceAll");
-
-	cgi_AddCommand ("runscript");
-
-	cgi_AddCommand ("playerteam");
-	cgi_AddCommand ("playermodel");
-
-	cgi_AddCommand ("saberAttackCycle");
-
-	cgi_AddCommand ("use_electrobinoculars");
-	cgi_AddCommand ("use_bacta");
-	cgi_AddCommand ("use_seeker");
-	cgi_AddCommand ("use_lightamp_goggles");
-	cgi_AddCommand ("use_sentry");
-
-	cgi_AddCommand ("force_throw");
-	cgi_AddCommand ("force_pull");
-	cgi_AddCommand ("force_speed");
-	cgi_AddCommand ("force_heal");
-	cgi_AddCommand ("force_grip");
-	cgi_AddCommand ("force_distract");
-	cgi_AddCommand ("force_rage");
-	cgi_AddCommand ("force_protect");
-	cgi_AddCommand ("force_absorb");
-	cgi_AddCommand ("force_sight");
-
-	cgi_AddCommand ("taunt");
-	cgi_AddCommand ("bow");
-	cgi_AddCommand ("meditate");
-	cgi_AddCommand ("flourish");
-	cgi_AddCommand ("gloat");
 
 	cg.weaponPickupTextTime = 0;
 
