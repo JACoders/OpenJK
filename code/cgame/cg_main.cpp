@@ -838,30 +838,6 @@ CLIENT INFO
 =============================================================================
 */
 
-qhandle_t CG_RegisterHeadSkin( const char *headModelName, const char *headSkinName, qboolean *extensions )
-{
-	char		hfilename[MAX_QPATH];
-	qhandle_t	headSkin;
-
-	Com_sprintf( hfilename, sizeof( hfilename ), "models/players/%s/head_%s.skin", headModelName, headSkinName );
-	headSkin = cgi_R_RegisterSkin( hfilename );
-	if ( headSkin < 0 ) 
-	{	//have extensions
-		*extensions = qtrue;
-		headSkin = -headSkin;
-	} 
-	else 
-	{
-		*extensions = qfalse;	//just to be sure.
-	}
-
-	if ( !headSkin )
-	{
-		Com_Printf( "Failed to load skin file: %s : %s\n", headModelName, headSkinName );
-	}
-	return headSkin;
-}
-
 /*
 ==========================
 CG_RegisterClientSkin
