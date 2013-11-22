@@ -121,6 +121,11 @@ void GL_Cull( int cullType ) {
 
 	glState.faceCulling = cullType;
 
+	if ( backEnd.projection2D )
+	{
+		return;
+	}
+
 	if ( cullType == CT_TWO_SIDED ) 
 	{
 		qglDisable( GL_CULL_FACE );
