@@ -1304,6 +1304,330 @@ static void CG_BodyQueueCopy(centity_t *cent, int clientNum, int knownWeapon)
 	}
 }
 
+void CG_SiegeBriefingDisplay(int team, int dontshow);
+void CG_ParseSiegeExtendedData(void);
+static void CG_SiegeBriefingDisplay_f( void ) {
+	CG_SiegeBriefingDisplay( atoi( CG_Argv( 1 ) ), 0 );
+}
+
+static void CG_SiegeClassSelect_f( void ) {
+	//if (!( trap->Key_GetCatcher() & KEYCATCH_UI ))
+	//Well, I want it to come up even if the briefing display is up.
+	trap->OpenUIMenu( UIMENU_CLASSSEL ); //UIMENU_CLASSSEL
+}
+
+static void CG_SiegeProfileMenu_f( void ) {
+	trap->Cvar_Set( "ui_myteam", "3" );
+	trap->OpenUIMenu( UIMENU_PLAYERCONFIG ); //UIMENU_CLASSSEL
+}
+
+static void CG_NewForceRank_f( void ) {
+	//"nfr" == "new force rank" (want a short string)
+	int doMenu = 0;
+	int setTeam = 0;
+	int newRank = 0;
+
+	if ( trap->Cmd_Argc() < 3 ) {
+#ifdef _DEBUG
+		trap->Print("WARNING: Invalid newForceRank string\n");
+#endif
+		return;
+	}
+
+	newRank = atoi( CG_Argv( 1 ) );
+	doMenu = atoi( CG_Argv( 2 ) );
+	setTeam = atoi( CG_Argv( 3 ) );
+
+	trap->Cvar_Set( "ui_rankChange", va( "%i", newRank ) );
+
+	trap->Cvar_Set( "ui_myteam", va( "%i", setTeam ) );
+
+	if ( !( trap->Key_GetCatcher() & KEYCATCH_UI ) && doMenu )
+		trap->OpenUIMenu( UIMENU_PLAYERCONFIG );
+}
+
+static void CG_KillGhoul2_f( void ) {
+	//Kill a ghoul2 instance in this slot.
+	//If it has been occupied since this message was sent somehow, the worst that can (should) happen
+	//is the instance will have to reinit with its current info.
+	int indexNum = 0;
+	int argNum = trap->Cmd_Argc();
+	int i;
+
+	if ( argNum < 1 )
+		return;
+	
+	for ( i=1; i<argNum; i++ ) {
+		indexNum = atoi( CG_Argv( i ) );
+
+		if ( cg_entities[indexNum].ghoul2 && trap->G2_HaveWeGhoul2Models( cg_entities[indexNum].ghoul2 ) ) {
+			if ( indexNum < MAX_CLIENTS ) { //You try to do very bad thing!
+#ifdef _DEBUG
+				Com_Printf("WARNING: Tried to kill a client ghoul2 instance with a kg2 command!\n");
+#endif
+				return;
+			}
+
+			CG_KillCEntityG2( indexNum );
+		}
+	}
+}
+
+static void CG_KillLoopSounds_f( void ) {
+	//kill looping sounds
+	int indexNum = 0;
+	int argNum = trap->Cmd_Argc();
+	centity_t *clent = NULL;
+	centity_t *trackerent = NULL;
+
+	if ( argNum < 1 ) {
+		assert( 0 );
+		return;
+	}
+
+	indexNum = atoi( CG_Argv( 1 ) );
+
+	if ( indexNum >= 0 && indexNum < MAX_GENTITIES )
+		clent = &cg_entities[indexNum];
+
+	if ( argNum >= 2 ) {
+		indexNum = atoi( CG_Argv( 2 ) );
+
+		if ( indexNum >= 0 && indexNum < MAX_GENTITIES )
+			trackerent = &cg_entities[indexNum];
+	}
+
+	if ( clent )
+		CG_S_StopLoopingSound( clent->currentState.number, -1 );
+	if ( trackerent )
+		CG_S_StopLoopingSound( trackerent->currentState.number, -1 );
+}
+
+static void CG_RestoreClientGhoul_f( void ) {
+	//rcg - Restore Client Ghoul (make sure limbs are reattached and ragdoll state is reset - this must be done reliably)
+	int			indexNum = 0;
+	int			argNum = trap->Cmd_Argc();
+	centity_t	*clent;
+	qboolean	IRCG = qfalse;
+
+	if ( !strcmp( CG_Argv( 0 ), "ircg" ) )
+		IRCG = qtrue;
+
+	if ( argNum < 1 ) {
+		assert( 0 );
+		return;
+	}
+
+	indexNum = atoi( CG_Argv( 1 ) );
+	if ( indexNum < 0 || indexNum >= MAX_CLIENTS ) {
+		assert( 0 );
+		return;
+	}
+
+	clent = &cg_entities[indexNum];
+
+	//assert( clent->ghoul2 );
+	//this can happen while connecting as a client
+	if ( !clent->ghoul2 )
+		return;
+
+#ifdef _DEBUG
+	if ( !trap->G2_HaveWeGhoul2Models( clent->ghoul2 ) )
+		assert( !"Tried to reset state on a bad instance. Crash is inevitable." );
+#endif
+
+	if ( IRCG ) {
+		int bodyIndex = 0;
+		int weaponIndex = 0;
+		int side = 0;
+		centity_t *body;
+
+		assert( argNum >= 3 );
+		bodyIndex = atoi( CG_Argv( 2 ) );
+		weaponIndex = atoi( CG_Argv( 3 ) );
+		side = atoi( CG_Argv( 4 ) );
+
+		body = &cg_entities[bodyIndex];
+
+		if ( side )
+			body->teamPowerType = qtrue; //light side
+		else
+			body->teamPowerType = qfalse; //dark side
+
+		CG_BodyQueueCopy( body, clent->currentState.number, weaponIndex );
+	}
+
+	//reattach any missing limbs
+	if ( clent->torsoBolt )
+		CG_ReattachLimb(clent);
+
+	//make sure ragdoll state is reset
+	if ( clent->isRagging ) {
+		clent->isRagging = qfalse;
+		trap->G2API_SetRagDoll( clent->ghoul2, NULL ); //calling with null parms resets to no ragdoll.
+	}
+		
+	//clear all the decals as well
+	trap->G2API_ClearSkinGore( clent->ghoul2 );
+
+	clent->weapon = 0;
+	clent->ghoul2weapon = NULL; //force a weapon reinit
+}
+
+static void CG_CenterPrint_f( void ) {
+	char strEd[MAX_STRINGED_SV_STRING] = {0};
+
+	CG_CheckSVStringEdRef( strEd, CG_Argv( 1 ) );
+	CG_CenterPrint( strEd, SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
+}
+
+static void CG_CenterPrintSE_f( void ) {
+	char strEd[MAX_STRINGED_SV_STRING] = {0};
+	char *x = (char *)CG_Argv( 1 );
+
+	if ( x[0] == '@' )
+		x++;
+
+	trap->SE_GetStringTextString( x, strEd, MAX_STRINGED_SV_STRING );
+	CG_CenterPrint( strEd, SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
+}
+
+static void CG_Print_f( void ) {
+	char strEd[MAX_STRINGED_SV_STRING] = {0};
+
+	CG_CheckSVStringEdRef( strEd, CG_Argv( 1 ) );
+	trap->Print( "%s", strEd );
+}
+
+void CG_ChatBox_AddString(char *chatStr);
+static void CG_Chat_f( void ) {
+	char cmd[MAX_STRING_CHARS] = {0}, text[MAX_SAY_TEXT] = {0};
+	
+	trap->Cmd_Argv( 0, cmd, sizeof( cmd ) );
+
+	if ( !strcmp( cmd, "chat" ) ) {
+		if ( !cg_teamChatsOnly.integer ) {
+			if( cg_chatBeep.integer )
+				trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
+			trap->Cmd_Argv( 1, text, sizeof( text ) );
+			CG_RemoveChatEscapeChar( text );
+			CG_ChatBox_AddString( text );
+			trap->Print( "*%s\n", text );
+		}
+	}
+	else if ( !strcmp( cmd, "lchat" ) ) {
+		if ( !cg_teamChatsOnly.integer ) {
+			char	name[MAX_NETNAME]={0},	loc[MAX_STRING_CHARS]={0},
+					color[8]={0},			message[MAX_STRING_CHARS]={0};
+
+			if ( trap->Cmd_Argc() < 4 )
+				return;
+
+			trap->Cmd_Argv( 1, name, sizeof( name ) );
+			trap->Cmd_Argv( 2, loc, sizeof( loc ) );
+			trap->Cmd_Argv( 3, color, sizeof( color ) );
+			trap->Cmd_Argv( 4, message, sizeof( message ) );
+
+			//get localized text
+			if ( loc[0] == '@' )
+				trap->SE_GetStringTextString( loc+1, loc, sizeof( loc ) );
+
+			if( cg_chatBeep.integer )
+				trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
+			Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
+			CG_RemoveChatEscapeChar( text );
+			CG_ChatBox_AddString( text );
+			trap->Print( "*%s\n", text );
+		}
+	}
+	else if ( !strcmp( cmd, "tchat" ) ) {
+		if( cg_teamChatBeep.integer )
+			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
+		trap->Cmd_Argv( 1, text, sizeof( text ) );
+		CG_RemoveChatEscapeChar( text );
+		CG_ChatBox_AddString( text );
+		trap->Print( "*%s\n", text );
+	}
+	else if ( !strcmp( cmd, "ltchat" ) ) {
+		char	name[MAX_NETNAME]={0},	loc[MAX_STRING_CHARS]={0},
+				color[8]={0},			message[MAX_STRING_CHARS]={0};
+
+		if ( trap->Cmd_Argc() < 4 )
+			return;
+
+		trap->Cmd_Argv( 1, name, sizeof( name ) );
+		trap->Cmd_Argv( 2, loc, sizeof( loc ) );
+		trap->Cmd_Argv( 3, color, sizeof( color ) );
+		trap->Cmd_Argv( 4, message, sizeof( message ) );
+
+		//get localized text
+		if ( loc[0] == '@' )
+			trap->SE_GetStringTextString( loc+1, loc, sizeof( loc ) );
+
+		if( cg_teamChatBeep.integer )
+			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
+		Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
+		CG_RemoveChatEscapeChar( text );
+		CG_ChatBox_AddString( text );
+		trap->Print( "*%s\n", text );
+	}
+}
+
+static void CG_RemapShader_f( void ) {
+	if ( trap->Cmd_Argc() == 4 ) {
+		char shader1[MAX_QPATH]={0},	shader2[MAX_QPATH]={0};
+
+		trap->Cmd_Argv( 1, shader1, sizeof( shader1 ) );
+		trap->Cmd_Argv( 2, shader2, sizeof( shader2 ) );
+		trap->R_RemapShader( shader1, shader2, CG_Argv( 3 ) );
+	}
+}
+
+static void CG_ClientLevelShot_f( void ) {
+	// clientLevelShot is sent before taking a special screenshot for
+	// the menu system during development
+	cg.levelShot = qtrue;
+}
+
+typedef struct serverCommand_s {
+	const char	*cmd;
+	void		(*func)(void);
+} serverCommand_t;
+
+int svcmdcmp( const void *a, const void *b ) {
+	return Q_stricmp( (const char *)a, ((serverCommand_t*)b)->cmd );
+}
+
+/* This array MUST be sorted correctly by alphabetical name field */
+static serverCommand_t	commands[] = {
+	{ "chat",				CG_Chat_f },
+	{ "clientLevelShot",	CG_ClientLevelShot_f },
+	{ "cp",					CG_CenterPrint_f },
+	{ "cps",				CG_CenterPrintSE_f },
+	{ "cs",					CG_ConfigStringModified },
+	{ "ircg",				CG_RestoreClientGhoul_f },
+	{ "kg2",				CG_KillGhoul2_f },
+	{ "kls",				CG_KillLoopSounds_f },
+	{ "lchat",				CG_Chat_f },
+	// loaddeferred can be both a servercmd and a consolecmd
+	{ "loaddefered",		CG_LoadDeferredPlayers }, // FIXME: spelled wrong, but not changing for demo
+	{ "ltchat",				CG_Chat_f },
+	{ "map_restart",		CG_MapRestart },
+	{ "nfr",				CG_NewForceRank_f },
+	{ "print",				CG_Print_f },
+	{ "rcg",				CG_RestoreClientGhoul_f },
+	{ "remapShader",		CG_RemapShader_f },
+	{ "sb",					CG_SiegeBriefingDisplay_f },
+	{ "scl",				CG_SiegeClassSelect_f },
+	{ "scores",				CG_ParseScores },
+	{ "spc",				CG_SiegeProfileMenu_f },
+	{ "sxd",				CG_ParseSiegeExtendedData },
+	{ "tchat",				CG_Chat_f },
+	{ "tinfo",				CG_ParseTeamInfo },
+};
+
+static const size_t numCommands = ARRAY_LEN( commands );
+
 /*
 =================
 CG_ServerCommand
@@ -1312,445 +1636,19 @@ The string has been tokenized and can be retrieved with
 Cmd_Argc() / Cmd_Argv()
 =================
 */
-void CG_SiegeBriefingDisplay(int team, int dontshow);
-void CG_ParseSiegeExtendedData(void);
-extern void CG_ChatBox_AddString(char *chatStr); //cg_draw.c
 static void CG_ServerCommand( void ) {
-	const char	*cmd;
-	char		text[MAX_SAY_TEXT];
-	qboolean	IRCG = qfalse;
+	const char		*cmd = CG_Argv( 0 );
+	serverCommand_t	*command = NULL;
 
-	cmd = CG_Argv(0);
+	command = (serverCommand_t *)bsearch( cmd, commands, numCommands, sizeof( commands[0] ), svcmdcmp );
 
-	if ( !cmd[0] ) {
-		// server claimed the command
-		return;
-	}
-
-#if 0
-	// never seems to get used -Ste
-	if ( !strcmp( cmd, "spd" ) ) 
-	{
-		const char *ID;
-		int holdInt,count,i;
-		char string[1204];
-
-		count = trap->Cmd_Argc();
-
-		ID =  CG_Argv(1);
-		holdInt = atoi(ID);
-
-		memset( &string, 0, sizeof( string ) );
-
-		Com_sprintf( string,sizeof(string)," \"%s\"", (const char *) CG_Argv(2));
-
-		for (i=3;i<count;i++)
-		{
-			Com_sprintf( string,sizeof(string)," %s \"%s\"", string, (const char *) CG_Argv(i));
-		}
-
-		trap->SP_Print(holdInt, (byte *)string);
-		return;
-	}
-#endif
-
-	if (!strcmp(cmd, "sxd"))
-	{ //siege extended data, contains extra info certain classes may want to know about other clients
-        CG_ParseSiegeExtendedData();
-		return;
-	}
-
-	if (!strcmp(cmd, "sb"))
-	{ //siege briefing display
-		CG_SiegeBriefingDisplay(atoi(CG_Argv(1)), 0);
-		return;
-	}
-
-	if ( !strcmp( cmd, "scl" ) )
-	{
-		//if (!( trap->Key_GetCatcher() & KEYCATCH_UI ))
-		//Well, I want it to come up even if the briefing display is up.
-		{
-			trap->OpenUIMenu(UIMENU_CLASSSEL); //UIMENU_CLASSSEL
-		}
-		return;
-	}
-
-	if ( !strcmp( cmd, "spc" ) )
-	{
-		trap->Cvar_Set("ui_myteam", "3");
-		trap->OpenUIMenu(UIMENU_PLAYERCONFIG); //UIMENU_CLASSSEL
-		return;
-	}
-
-	if ( !strcmp( cmd, "nfr" ) )
-	{ //"nfr" == "new force rank" (want a short string)
-		int doMenu = 0;
-		int setTeam = 0;
-		int newRank = 0;
-
-		if (trap->Cmd_Argc() < 3)
-		{
-#ifdef _DEBUG
-			Com_Printf("WARNING: Invalid newForceRank string\n");
-#endif
-			return;
-		}
-
-		newRank = atoi(CG_Argv(1));
-		doMenu = atoi(CG_Argv(2));
-		setTeam = atoi(CG_Argv(3));
-
-		trap->Cvar_Set("ui_rankChange", va("%i", newRank));
-
-		trap->Cvar_Set("ui_myteam", va("%i", setTeam));
-
-		if (!( trap->Key_GetCatcher() & KEYCATCH_UI ) && doMenu)
-		{
-			trap->OpenUIMenu(UIMENU_PLAYERCONFIG);
-		}
-
-		return;
-	}
-
-	if ( !strcmp( cmd, "kg2" ) )
-	{ //Kill a ghoul2 instance in this slot.
-	  //If it has been occupied since this message was sent somehow, the worst that can (should) happen
-	  //is the instance will have to reinit with its current info.
-		int indexNum = 0;
-		int argNum = trap->Cmd_Argc();
-		int i = 1;
-		
-		if (argNum < 1)
-		{
-			return;
-		}
-
-		while (i < argNum)
-		{
-			indexNum = atoi(CG_Argv(i));
-
-			if (cg_entities[indexNum].ghoul2 && trap->G2_HaveWeGhoul2Models(cg_entities[indexNum].ghoul2))
-			{
-				if (indexNum < MAX_CLIENTS)
-				{ //You try to do very bad thing!
-#ifdef _DEBUG
-					Com_Printf("WARNING: Tried to kill a client ghoul2 instance with a kg2 command!\n");
-#endif
-					return;
-				}
-
-				CG_KillCEntityG2(indexNum);
-			}
-
-			i++;
-		}
-		
-		return;
-	}
-
-	if (!strcmp(cmd, "kls"))
-	{ //kill looping sounds
-		int indexNum = 0;
-		int argNum = trap->Cmd_Argc();
-		centity_t *clent = NULL;
-		centity_t *trackerent = NULL;
-		
-		if (argNum < 1)
-		{
-			assert(0);
-			return;
-		}
-
-		indexNum = atoi(CG_Argv(1));
-
-		if (indexNum != -1)
-		{
-			clent = &cg_entities[indexNum];
-		}
-
-		if (argNum >= 2)
-		{
-			indexNum = atoi(CG_Argv(2));
-
-			if (indexNum != -1)
-			{
-				trackerent = &cg_entities[indexNum];
-			}
-		}
-
-		if (clent)
-		{
-			CG_S_StopLoopingSound(clent->currentState.number, -1);
-		}
-		if (trackerent)
-		{
-			CG_S_StopLoopingSound(trackerent->currentState.number, -1);
-		}
-
-		return;
-	}
-
-	if (!strcmp(cmd, "ircg"))
-	{ //this means param 2 is the body index and we want to copy to bodyqueue on it
-		IRCG = qtrue;
-	}
-
-	if (!strcmp(cmd, "rcg") || IRCG)
-	{ //rcg - Restore Client Ghoul (make sure limbs are reattached and ragdoll state is reset - this must be done reliably)
-		int indexNum = 0;
-		int argNum = trap->Cmd_Argc();
-		centity_t *clent;
-		
-		if (argNum < 1)
-		{
-			assert(0);
-			return;
-		}
-
-		indexNum = atoi(CG_Argv(1));
-		if (indexNum < 0 || indexNum >= MAX_CLIENTS)
-		{
-			assert(0);
-			return;
-		}
-
-		clent = &cg_entities[indexNum];
-
-		//assert(clent->ghoul2);
-		if (!clent->ghoul2)
-		{ //this can happen while connecting as a client
-			return;
-		}
-
-#ifdef _DEBUG
-		if (!trap->G2_HaveWeGhoul2Models(clent->ghoul2))
-		{
-			assert(!"Tried to reset state on a bad instance. Crash is inevitable.");
-		}
-#endif
-
-		if (IRCG)
-		{
-			int bodyIndex = 0;
-			int weaponIndex = 0;
-			int side = 0;
-			centity_t *body;
-
-			assert(argNum >= 3);
-			bodyIndex = atoi(CG_Argv(2));
-			weaponIndex = atoi(CG_Argv(3));
-			side = atoi(CG_Argv(4));
-
-			body = &cg_entities[bodyIndex];
-
-			if (side)
-			{
-				body->teamPowerType = qtrue; //light side
-			}
-			else
-			{
-				body->teamPowerType = qfalse; //dark side
-			}
-
-			CG_BodyQueueCopy(body, clent->currentState.number, weaponIndex);
-		}
-
-		//reattach any missing limbs
-		if (clent->torsoBolt)
-		{
-			CG_ReattachLimb(clent);
-		}
-
-		//make sure ragdoll state is reset
-		if (clent->isRagging)
-		{
-			clent->isRagging = qfalse;
-			trap->G2API_SetRagDoll(clent->ghoul2, NULL); //calling with null parms resets to no ragdoll.
-		}
-		
-		//clear all the decals as well
-		trap->G2API_ClearSkinGore(clent->ghoul2);
-
-		clent->weapon = 0;
-		clent->ghoul2weapon = NULL; //force a weapon reinit
-
-		return;
-	}
-
-	if ( !strcmp( cmd, "cp" ) ) {
-		char strEd[MAX_STRINGED_SV_STRING];
-		CG_CheckSVStringEdRef(strEd, CG_Argv(1));
-		CG_CenterPrint( strEd, SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
-		return;
-	}
-
-	if ( !strcmp( cmd, "cps" ) ) {
-		char strEd[MAX_STRINGED_SV_STRING];
-		char *x = (char *)CG_Argv(1);
-		if (x[0] == '@')
-		{
-			x++;
-		}
-		trap->SE_GetStringTextString(x, strEd, MAX_STRINGED_SV_STRING);
-		CG_CenterPrint( strEd, SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
-		return;
-	}
-
-	if ( !strcmp( cmd, "cs" ) ) {
-		CG_ConfigStringModified();
-		return;
-	}
-
-	if ( !strcmp( cmd, "print" ) ) {
-		char strEd[MAX_STRINGED_SV_STRING];
-		CG_CheckSVStringEdRef(strEd, CG_Argv(1));
-		trap->Print( "%s", strEd );
-		return;
-	}
-
-	if ( !strcmp( cmd, "chat" ) ) {
-		if ( !cg_teamChatsOnly.integer ) {
-			if( cg_chatBeep.integer )
-				trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
-			Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
-			CG_RemoveChatEscapeChar( text );
-			CG_ChatBox_AddString(text);
-			trap->Print( "*%s\n", text );
-		}
-		return;
-	}
-
-	if ( !strcmp( cmd, "tchat" ) ) {
-		if( cg_teamChatBeep.integer )
-			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
-		Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
-		CG_RemoveChatEscapeChar( text );
-		CG_ChatBox_AddString(text);
-		trap->Print( "*%s\n", text );
-
-		return;
-	}
-
-	//chat with location, possibly localized.
-	if ( !strcmp( cmd, "lchat" ) ) {
-		if ( !cg_teamChatsOnly.integer ) {
-			char name[MAX_STRING_CHARS];
-			char loc[MAX_STRING_CHARS];
-			char color[8];
-			char message[MAX_STRING_CHARS];
-
-			if (trap->Cmd_Argc() < 4)
-			{
-				return;
-			}
-
-			Q_strncpyz( name, CG_Argv( 1 ), sizeof( name ) );
-			Q_strncpyz( loc, CG_Argv( 2 ), sizeof( loc ) );
-			Q_strncpyz( color, CG_Argv( 3 ), sizeof( color ) );
-			Q_strncpyz( message, CG_Argv( 4 ), sizeof( message ) );
-
-			if (loc[0] == '@')
-			{ //get localized text
-				trap->SE_GetStringTextString(loc+1, loc, sizeof( loc ) );
-			}
-
-			if( cg_chatBeep.integer )
-				trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
-			//Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
-			Com_sprintf(text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message);
-			CG_RemoveChatEscapeChar( text );
-			CG_ChatBox_AddString(text);
-			trap->Print( "*%s\n", text );
-		}
-		return;
-	}
-	if ( !strcmp( cmd, "ltchat" ) ) {
-		char name[MAX_STRING_CHARS];
-		char loc[MAX_STRING_CHARS];
-		char color[8];
-		char message[MAX_STRING_CHARS];
-
-		if (trap->Cmd_Argc() < 4)
-		{
-			return;
-		}
-
-		Q_strncpyz( name, CG_Argv( 1 ), sizeof( name ) );
-		Q_strncpyz( loc, CG_Argv( 2 ), sizeof( loc ) );
-		Q_strncpyz( color, CG_Argv( 3 ), sizeof( color ) );
-		Q_strncpyz( message, CG_Argv( 4 ), sizeof( message ) );
-
-		if (loc[0] == '@')
-		{ //get localized text
-			trap->SE_GetStringTextString(loc+1, loc, sizeof( loc ) );
-		}
-
-		if( cg_teamChatBeep.integer )
-			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
-		//Q_strncpyz( text, CG_Argv(1), MAX_SAY_TEXT );
-		Com_sprintf(text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message);
-		CG_RemoveChatEscapeChar( text );
-		CG_ChatBox_AddString(text);
-		trap->Print( "*%s\n", text );
-
-		return;
-	}
-
-	if ( !strcmp( cmd, "scores" ) ) {
-		CG_ParseScores();
-		return;
-	}
-
-	if ( !strcmp( cmd, "tinfo" ) ) {
-		CG_ParseTeamInfo();
-		return;
-	}
-
-	if ( !strcmp( cmd, "map_restart" ) ) {
-		CG_MapRestart();
-		return;
-	}
-
-	//Raz: Buffer overflow fix
-#if 0
-	if ( Q_stricmp (cmd, "remapShader") == 0 ) {
-		if (trap->Argc() == 4) {
-			trap->R_RemapShader(CG_Argv(1), CG_Argv(2), CG_Argv(3));
-		}
-	}
-#else
-	if ( !Q_stricmp( cmd, "remapShader" ) )
-	{
-		if ( trap->Cmd_Argc() == 4 )
-		{
-			char shader1[MAX_QPATH];
-			char shader2[MAX_QPATH];
-			Q_strncpyz( shader1, CG_Argv( 1 ), sizeof( shader1 ) );
-			Q_strncpyz( shader2, CG_Argv( 2 ), sizeof( shader2 ) );
-			trap->R_RemapShader( shader1, shader2, CG_Argv( 3 ) );
-			return;
-		}
-		return;
-	}
-#endif
-
-	// loaddeferred can be both a servercmd and a consolecmd
-	if ( !strcmp( cmd, "loaddefered" ) ) {	// FIXME: spelled wrong, but not changing for demo
-		CG_LoadDeferredPlayers();
-		return;
-	}
-
-	// clientLevelShot is sent before taking a special screenshot for
-	// the menu system during development
-	if ( !strcmp( cmd, "clientLevelShot" ) ) {
-		cg.levelShot = qtrue;
+	if ( command ) {
+		command->func();
 		return;
 	}
 
 	trap->Print( "Unknown client game command: %s\n", cmd );
 }
-
 
 /*
 ====================
