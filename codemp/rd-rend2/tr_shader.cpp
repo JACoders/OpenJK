@@ -308,6 +308,10 @@ static genFunc_t NameToGenFunc( const char *funcname )
 	{
 		return GF_NOISE;
 	}
+	else if ( !Q_stricmp( funcname, "random" ) )
+	{
+		return GF_RAND;
+	}
 
 	ri->Printf( PRINT_WARNING, "WARNING: invalid genfunc name '%s' in shader '%s'\n", funcname, shader.name );
 	return GF_SIN;

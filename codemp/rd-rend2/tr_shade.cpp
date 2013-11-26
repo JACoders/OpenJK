@@ -1078,6 +1078,16 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 				if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
 				{
 					index |= LIGHTDEF_ENTITY;
+
+					if (glState.vertexAnimation)
+					{
+						index |= LIGHTDEF_USE_VERTEX_ANIMATION;
+					}
+
+					if (glState.skeletalAnimation)
+					{
+						index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
+					}
 				}
 
 				if (pStage->stateBits & GLS_ATEST_BITS)
