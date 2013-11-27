@@ -207,50 +207,49 @@ void CG_LoadHud_f( void )
 
 typedef struct {
 	const char	*cmd;
-	void	(*function)(void);
+	void		(*func)(void);
 } consoleCommand_t;
 
+int cmdcmp( const void *a, const void *b ) {
+	return Q_stricmp( (const char *)a, ((consoleCommand_t*)b)->cmd );
+}
+
+/* This array MUST be sorted correctly by alphabetical name field */
 static consoleCommand_t	commands[] = {
-	{ "testmodel", CG_TestModel_f },
-	{ "nextframe", CG_TestModelNextFrame_f },
-	{ "prevframe", CG_TestModelPrevFrame_f },
-	{ "nextskin", CG_TestModelNextSkin_f },
-	{ "prevskin", CG_TestModelPrevSkin_f },
-/*
-Ghoul2 Insert Start
-*/
-	{ "testG2Model", CG_TestG2Model_f},
-	{ "testsurface", CG_TestModelSurfaceOnOff_f },
-	{ "testanglespre", CG_TestModelSetAnglespre_f},
-	{ "testanglespost", CG_TestModelSetAnglespost_f},
-	{ "testanimate", CG_TestModelAnimate_f},
-	{ "testlistbones", CG_ListModelBones_f},
-	{ "testlistsurfaces", CG_ListModelSurfaces_f},
-/*
-Ghoul2 Insert End
-*/
-	{ "viewpos", CG_Viewpos_f },
-	{ "writecam", CG_WriteCam_f },
-	{ "weapnext", CG_NextWeapon_f },
-	{ "weapprev", CG_PrevWeapon_f },
-	{ "weapon", CG_Weapon_f },
-	{ "tcmd", CG_TargetCommand_f },
-	{ "cam_disable", CMD_CGCam_Disable },	//gets out of camera mode for debuggin
-	{ "cam_enable", CGCam_Enable },	//gets into camera mode for precise camera placement
-	{ "lock_disable", Lock_Disable },	//player can move now
-	{ "zoom", CG_ToggleBinoculars },
-	{ "la_zoom", CG_ToggleLAGoggles },
-	{ "invnext", CG_NextInventory_f },
-	{ "invprev", CG_PrevInventory_f },
-	{ "forcenext", CG_NextForcePower_f },
-	{ "forceprev", CG_PrevForcePower_f },
-	{ "loadhud", CG_LoadHud_f },
-	{ "dpweapnext", CG_DPNextWeapon_f },
-	{ "dpweapprev", CG_DPPrevWeapon_f },
-	{ "dpinvnext", CG_DPNextInventory_f },
-	{ "dpinvprev", CG_DPPrevInventory_f },
-	{ "dpforcenext", CG_DPNextForcePower_f },
-	{ "dpforceprev", CG_DPPrevForcePower_f },
+	{ "cam_disable",		CMD_CGCam_Disable },	//gets out of camera mode for debuggin
+	{ "cam_enable",			CGCam_Enable },	//gets into camera mode for precise camera placement
+	{ "dpforcenext",		CG_DPNextForcePower_f },
+	{ "dpforceprev",		CG_DPPrevForcePower_f },
+	{ "dpinvnext",			CG_DPNextInventory_f },
+	{ "dpinvprev",			CG_DPPrevInventory_f },
+	{ "dpweapnext",			CG_DPNextWeapon_f },
+	{ "dpweapprev",			CG_DPPrevWeapon_f },
+	{ "forcenext",			CG_NextForcePower_f },
+	{ "forceprev",			CG_PrevForcePower_f },
+	{ "invnext",			CG_NextInventory_f },
+	{ "invprev",			CG_PrevInventory_f },
+	{ "la_zoom",			CG_ToggleLAGoggles },
+	{ "loadhud",			CG_LoadHud_f },
+	{ "lock_disable",		Lock_Disable },	//player can move now
+	{ "nextframe",			CG_TestModelNextFrame_f },
+	{ "nextskin",			CG_TestModelNextSkin_f },
+	{ "prevframe",			CG_TestModelPrevFrame_f },
+	{ "prevskin",			CG_TestModelPrevSkin_f },
+	{ "tcmd",				CG_TargetCommand_f },
+	{ "testG2Model",		CG_TestG2Model_f},
+	{ "testanglespost",		CG_TestModelSetAnglespost_f},
+	{ "testanglespre",		CG_TestModelSetAnglespre_f},
+	{ "testanimate",		CG_TestModelAnimate_f},
+	{ "testlistbones",		CG_ListModelBones_f},
+	{ "testlistsurfaces",	CG_ListModelSurfaces_f},
+	{ "testmodel",			CG_TestModel_f },
+	{ "testsurface",		CG_TestModelSurfaceOnOff_f },
+	{ "viewpos",			CG_Viewpos_f },
+	{ "weapnext",			CG_NextWeapon_f },
+	{ "weapon",				CG_Weapon_f },
+	{ "weapprev",			CG_PrevWeapon_f },
+	{ "writecam",			CG_WriteCam_f },
+	{ "zoom",				CG_ToggleBinoculars },
 };
 
 static const size_t numCommands = ARRAY_LEN( commands );
@@ -264,19 +263,15 @@ Cmd_Argc() / Cmd_Argv()
 =================
 */
 qboolean CG_ConsoleCommand( void ) {
-	const char	*cmd;
-	size_t		i;
+	consoleCommand_t	*command = NULL;
 
-	cmd = CG_Argv(0);
+	command = (consoleCommand_t *)bsearch( CG_Argv( 0 ), commands, numCommands, sizeof( commands[0] ), cmdcmp );
 
-	for ( i = 0 ; i < numCommands ; i++ ) {
-		if ( !Q_stricmp( cmd, commands[i].cmd ) ) {
-			commands[i].function();
-			return qtrue;
-		}
-	}
+	if ( !command )
+		return qfalse;
 
-	return qfalse;
+	command->func();
+	return qtrue;
 }
 
 static const char *gcmds[] = {
