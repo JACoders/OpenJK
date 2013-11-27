@@ -140,7 +140,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 		skin->surfaces[skin->numSurfaces] = (_skinSurface_t *)surf;
 
 		Q_strncpyz( surf->name, surfName, sizeof( surf->name ) );
-		surf->shader = R_FindShader( token, 0, qtrue );
+		surf->shader = R_FindShader( token, LIGHTMAP_NONE, qtrue );
 		skin->numSurfaces++;
 	}
 

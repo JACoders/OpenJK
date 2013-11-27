@@ -347,7 +347,7 @@ void CModelCacheManager::AllocateShaders( const char *psFileName )
 		char *psShaderName		=		  &((char*)rFile.pDiskImage)[iShaderNameOffset];
 		int  *piShaderPokePtr	= (int *) &((char*)rFile.pDiskImage)[iShaderPokeOffset];
 
-		shader_t *sh = R_FindShader( psShaderName, 0, qtrue );
+		shader_t *sh = R_FindShader( psShaderName, LIGHTMAP_NONE, qtrue );
 	            
 		if ( sh->defaultShader ) 
 			*piShaderPokePtr = 0;
