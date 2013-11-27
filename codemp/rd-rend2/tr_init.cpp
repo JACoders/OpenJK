@@ -188,6 +188,7 @@ cvar_t	*r_shownormals;
 cvar_t	*r_finish;
 cvar_t	*r_clear;
 cvar_t	*r_swapInterval;
+cvar_t	*r_markcount;
 cvar_t	*r_textureMode;
 cvar_t	*r_offsetFactor;
 cvar_t	*r_offsetUnits;
@@ -1329,6 +1330,7 @@ void R_Register( void )
 	r_textureMode = ri->Cvar_Get( "r_textureMode", "GL_LINEAR_MIPMAP_NEAREST", CVAR_ARCHIVE );
 	r_swapInterval = ri->Cvar_Get( "r_swapInterval", "0",
 					CVAR_ARCHIVE | CVAR_LATCH );
+	r_markcount = ri->Cvar_Get( "r_markcount", "100", CVAR_ARCHIVE );
 	r_gamma = ri->Cvar_Get( "r_gamma", "1", CVAR_ARCHIVE );
 	r_facePlaneCull = ri->Cvar_Get ("r_facePlaneCull", "1", CVAR_ARCHIVE );
 
@@ -1729,7 +1731,7 @@ Q_EXPORT refexport_t* QDECL GetRefAPI ( int apiVersion, refimport_t *rimp ) {
 	re.AddRefEntityToScene = RE_AddRefEntityToScene;
 	re.AddMiniRefEntityToScene = stub_RE_AddMiniRefEntityToScene;
 	re.AddPolyToScene = RE_AddPolyToScene;
-	// RE_AddDecalToScene
+	re.AddDecalToScene = RE_AddDecalToScene;
 	re.LightForPoint = R_LightForPoint;
 	re.AddLightToScene = RE_AddLightToScene;
 	re.AddAdditiveLightToScene = RE_AddAdditiveLightToScene;

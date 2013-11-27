@@ -968,7 +968,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				ri->Printf( PRINT_WARNING, "WARNING: missing parameter for specular exponent in shader '%s'\n", shader.name );
 				continue;
 			}
-			stage->materialInfo[1] = atof( token );
+			exponent = atof( token );
 
 			// Change shininess to gloss 
 			// FIXME: assumes max exponent of 8192 and min of 1, must change here if altered in lightall_fp.glsl 
@@ -2865,7 +2865,7 @@ static shader_t *GeneratePermanentShader( void ) {
 
 	*newShader = shader;
 
-	if ( shader.sort <= SS_OPAQUE ) {
+	if ( shader.sort <= SS_SEE_THROUGH ) {
 		newShader->fogPass = FP_EQUAL;
 	} else if ( shader.contentFlags & CONTENTS_FOG ) {
 		newShader->fogPass = FP_LE;

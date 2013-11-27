@@ -283,6 +283,7 @@ static void RB_SurfaceOrientedQuad( void )
 {
 	vec3_t	left, up;
 	float	radius;
+	float	color[4];
 
 	// calculate the xyz locations for the four corners
 	radius = backEnd.currentEntity->e.radius;
@@ -321,7 +322,9 @@ static void RB_SurfaceOrientedQuad( void )
 		VectorSubtract( vec3_origin, left, left );
 	}
 
-	RB_AddQuadStamp( backEnd.currentEntity->e.origin, left, up, (float *)backEnd.currentEntity->e.shaderRGBA );
+	VectorScale4 (backEnd.currentEntity->e.shaderRGBA, 1.0f / 255.0f, color);
+
+	RB_AddQuadStamp( backEnd.currentEntity->e.origin, left, up, color);
 }
 
 /*
@@ -684,6 +687,7 @@ static void DoSprite( vec3_t origin, float radius, float rotation )
 	float	s, c;
 	float	ang;
 	vec3_t	left, up;
+	float	color[4];
 	
 	ang = M_PI * rotation / 180.0f;
 	s = sin( ang );
@@ -700,7 +704,9 @@ static void DoSprite( vec3_t origin, float radius, float rotation )
 		VectorSubtract( vec3_origin, left, left );
 	}
 
-	RB_AddQuadStamp( origin, left, up, (float *)backEnd.currentEntity->e.shaderRGBA );
+	VectorScale4(backEnd.currentEntity->e.shaderRGBA, 1.0f / 255.0f, color);
+
+	RB_AddQuadStamp( origin, left, up, color );
 }
 
 //------------------

@@ -2566,41 +2566,50 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump ) {
 	for ( i=0 ; i<count ; i++, fogs++) {
 		out->originalBrushNumber = LittleLong( fogs->brushNum );
 
-		if ( (unsigned)out->originalBrushNumber >= brushesCount ) {
-			ri->Error( ERR_DROP, "fog brushNumber out of range" );
+		if ( out->originalBrushNumber == -1 )
+		{
+			out->bounds[0][0] = out->bounds[0][1] = out->bounds[0][2] = MIN_WORLD_COORD;
+			out->bounds[1][0] = out->bounds[1][1] = out->bounds[1][2] = MAX_WORLD_COORD;
+			firstSide = -1;
 		}
-		brush = brushes + out->originalBrushNumber;
+		else
+		{
+			if ( (unsigned)out->originalBrushNumber >= brushesCount ) {
+				ri->Error( ERR_DROP, "fog brushNumber out of range" );
+			}
+			brush = brushes + out->originalBrushNumber;
 
-		firstSide = LittleLong( brush->firstSide );
+			firstSide = LittleLong( brush->firstSide );
 
-			if ( (unsigned)firstSide > sidesCount - 6 ) {
-			ri->Error( ERR_DROP, "fog brush sideNumber out of range" );
+				if ( (unsigned)firstSide > sidesCount - 6 ) {
+				ri->Error( ERR_DROP, "fog brush sideNumber out of range" );
+			}
+
+			// brushes are always sorted with the axial sides first
+			sideNum = firstSide + 0;
+			planeNum = LittleLong( sides[ sideNum ].planeNum );
+			out->bounds[0][0] = -s_worldData.planes[ planeNum ].dist;
+
+			sideNum = firstSide + 1;
+			planeNum = LittleLong( sides[ sideNum ].planeNum );
+			out->bounds[1][0] = s_worldData.planes[ planeNum ].dist;
+
+			sideNum = firstSide + 2;
+			planeNum = LittleLong( sides[ sideNum ].planeNum );
+			out->bounds[0][1] = -s_worldData.planes[ planeNum ].dist;
+
+			sideNum = firstSide + 3;
+			planeNum = LittleLong( sides[ sideNum ].planeNum );
+			out->bounds[1][1] = s_worldData.planes[ planeNum ].dist;
+
+			sideNum = firstSide + 4;
+			planeNum = LittleLong( sides[ sideNum ].planeNum );
+			out->bounds[0][2] = -s_worldData.planes[ planeNum ].dist;
+
+			sideNum = firstSide + 5;
+			planeNum = LittleLong( sides[ sideNum ].planeNum );
+			out->bounds[1][2] = s_worldData.planes[ planeNum ].dist;
 		}
-
-		// brushes are always sorted with the axial sides first
-		sideNum = firstSide + 0;
-		planeNum = LittleLong( sides[ sideNum ].planeNum );
-		out->bounds[0][0] = -s_worldData.planes[ planeNum ].dist;
-
-		sideNum = firstSide + 1;
-		planeNum = LittleLong( sides[ sideNum ].planeNum );
-		out->bounds[1][0] = s_worldData.planes[ planeNum ].dist;
-
-		sideNum = firstSide + 2;
-		planeNum = LittleLong( sides[ sideNum ].planeNum );
-		out->bounds[0][1] = -s_worldData.planes[ planeNum ].dist;
-
-		sideNum = firstSide + 3;
-		planeNum = LittleLong( sides[ sideNum ].planeNum );
-		out->bounds[1][1] = s_worldData.planes[ planeNum ].dist;
-
-		sideNum = firstSide + 4;
-		planeNum = LittleLong( sides[ sideNum ].planeNum );
-		out->bounds[0][2] = -s_worldData.planes[ planeNum ].dist;
-
-		sideNum = firstSide + 5;
-		planeNum = LittleLong( sides[ sideNum ].planeNum );
-		out->bounds[1][2] = s_worldData.planes[ planeNum ].dist;
 
 		// get information from the shader for fog parameters
 		shader = R_FindShader( fogs->shader, LIGHTMAP_NONE, qtrue );
@@ -2617,10 +2626,8 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump ) {
 		// set the gradient vector
 		sideNum = LittleLong( fogs->visibleSide );
 
-		if ( sideNum == -1 ) {
-			out->hasSurface = qfalse;
-		} else {
-			out->hasSurface = qtrue;
+		out->hasSurface = qtrue;
+		if ( sideNum != -1 ) {
 			planeNum = LittleLong( sides[ firstSide + sideNum ].planeNum );
 			VectorSubtract( vec3_origin, s_worldData.planes[ planeNum ].normal, out->surface );
 			out->surface[3] = -s_worldData.planes[ planeNum ].dist;
