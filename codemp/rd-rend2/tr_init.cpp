@@ -1543,6 +1543,8 @@ void R_Init( void ) {
 
 	R_ModelInit();
 
+	R_InitDecals();
+
 	R_InitQueries();
 
 

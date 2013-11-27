@@ -582,7 +582,7 @@ This is called to remove all decals from the world
 ===================
 */
 
-void RE_ClearDecals ( void ) 
+static void RE_ClearDecals ( void ) 
 {
 	memset( re_decalPolys, 0, sizeof(re_decalPolys) );
 	memset( re_decalPolyHead, 0, sizeof(re_decalPolyHead) );
@@ -594,7 +594,7 @@ void R_InitDecals ( void )
 	RE_ClearDecals ( );
 }
 
-void RE_FreeDecal ( int type, int index )
+static void RE_FreeDecal ( int type, int index )
 {
 	if ( !re_decalPolys[type][index].time )
 	{
@@ -625,7 +625,7 @@ RE_AllocDecal
 Will allways succeed, even if it requires freeing an old active mark
 ===================
 */
-decalPoly_t* RE_AllocDecal( int type ) 
+static decalPoly_t* RE_AllocDecal( int type ) 
 {
 	decalPoly_t	*le;
 	
