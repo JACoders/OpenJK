@@ -885,7 +885,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return FS_FOpenFileByMode( (const char *)VMA(1), (int *)VMA(2), (fsMode_t)args[3] );
 
 	case CG_FS_READ:
-		FS_Read2( VMA(1), args[2], args[3] );
+		FS_Read( VMA(1), args[2], args[3] );
 		return 0;
 
 	case CG_FS_WRITE:
@@ -1670,7 +1670,7 @@ void CL_BindCGame( void ) {
 		cgi.FS_Close							= FS_FCloseFile;
 		cgi.FS_GetFileList						= FS_GetFileList;
 		cgi.FS_Open								= FS_FOpenFileByMode;
-		cgi.FS_Read								= FS_Read2;
+		cgi.FS_Read								= FS_Read;
 		cgi.FS_Write							= FS_Write;
 		cgi.UpdateScreen						= SCR_UpdateScreen;
 		cgi.CM_InlineModel						= CM_InlineModel;
