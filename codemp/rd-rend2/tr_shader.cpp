@@ -608,7 +608,7 @@ ParseStage
 static qboolean ParseStage( shaderStage_t *stage, const char **text )
 {
 	char *token;
-	int depthMaskBits = GLS_DEPTHMASK_TRUE, blendSrcBits = 0, blendDstBits = 0, atestBits = 0, depthFuncBits = 0;
+	unsigned depthMaskBits = GLS_DEPTHMASK_TRUE, blendSrcBits = 0, blendDstBits = 0, atestBits = 0, depthFuncBits = 0;
 	qboolean depthMaskExplicit = qfalse;
 
 	stage->active = qtrue;

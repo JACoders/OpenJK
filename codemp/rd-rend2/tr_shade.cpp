@@ -1204,7 +1204,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			if ( backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE1 )
 			{
 				// we want to be able to rip a hole in the thing being disintegrated, and by doing the depth-testing it avoids some kinds of artefacts, but will probably introduce others?
-				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHMASK_TRUE | GLS_ATEST_GE_C0;
+				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHMASK_TRUE | GLS_ATEST_GE_192;
 			}
 
 			if ( backEnd.currentEntity->e.renderfx & RF_RGB_TINT )

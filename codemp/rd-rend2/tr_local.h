@@ -897,31 +897,33 @@ enum
 
 	GLS_DEPTHFUNC_LESS					= (1 << 20),
 	GLS_DEPTHFUNC_EQUAL					= (1 << 21),
+	GLS_DEPTHFUNC_GREATER				= (1 << 22),
 
 	GLS_DEPTHFUNC_BITS					= GLS_DEPTHFUNC_LESS
-											| GLS_DEPTHFUNC_EQUAL,
+											| GLS_DEPTHFUNC_EQUAL
+											| GLS_DEPTHFUNC_GREATER,
 
-	GLS_ATEST_GT_0						= (1 << 22),
-	GLS_ATEST_LT_128					= (1 << 23),
-	GLS_ATEST_GE_128					= (1 << 24),
-	GLS_ATEST_GE_192					= (1 << 25),
+	GLS_ATEST_GT_0						= (1 << 23),
+	GLS_ATEST_LT_128					= (1 << 24),
+	GLS_ATEST_GE_128					= (1 << 25),
+	GLS_ATEST_GE_192					= (1 << 26),
 
 	GLS_ATEST_BITS						= GLS_ATEST_GT_0
 											| GLS_ATEST_LT_128
 											| GLS_ATEST_GE_128
 											| GLS_ATEST_GE_192,
 
-	GLS_REDMASK_FALSE					= (1 << 26),
-	GLS_GREENMASK_FALSE					= (1 << 27),
-	GLS_BLUEMASK_FALSE					= (1 << 28),
-	GLS_ALPHAMASK_FALSE					= (1 << 29),
+	GLS_REDMASK_FALSE					= (1 << 27),
+	GLS_GREENMASK_FALSE					= (1 << 28),
+	GLS_BLUEMASK_FALSE					= (1 << 29),
+	GLS_ALPHAMASK_FALSE					= (1 << 30),
 
 	GLS_COLORMASK_BITS					= GLS_REDMASK_FALSE
 											| GLS_GREENMASK_FALSE
 											| GLS_BLUEMASK_FALSE
 											| GLS_ALPHAMASK_FALSE,
 
-	GLS_STENCILTEST_ENABLE				= (1 << 30),
+	GLS_STENCILTEST_ENABLE				= (1 << 31),
 
 	GLS_DEFAULT							= GLS_DEPTHMASK_TRUE
 };
@@ -2453,44 +2455,6 @@ void    GL_SetProjectionMatrix(matrix_t matrix);
 void    GL_SetModelviewMatrix(matrix_t matrix);
 void	GL_TexEnv( int env );
 void	GL_Cull( int cullType );
-
-#define GLS_SRCBLEND_ZERO						0x00000001
-#define GLS_SRCBLEND_ONE						0x00000002
-#define GLS_SRCBLEND_DST_COLOR					0x00000003
-#define GLS_SRCBLEND_ONE_MINUS_DST_COLOR		0x00000004
-#define GLS_SRCBLEND_SRC_ALPHA					0x00000005
-#define GLS_SRCBLEND_ONE_MINUS_SRC_ALPHA		0x00000006
-#define GLS_SRCBLEND_DST_ALPHA					0x00000007
-#define GLS_SRCBLEND_ONE_MINUS_DST_ALPHA		0x00000008
-#define GLS_SRCBLEND_ALPHA_SATURATE				0x00000009
-#define		GLS_SRCBLEND_BITS					0x0000000f
-
-#define GLS_DSTBLEND_ZERO						0x00000010
-#define GLS_DSTBLEND_ONE						0x00000020
-#define GLS_DSTBLEND_SRC_COLOR					0x00000030
-#define GLS_DSTBLEND_ONE_MINUS_SRC_COLOR		0x00000040
-#define GLS_DSTBLEND_SRC_ALPHA					0x00000050
-#define GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA		0x00000060
-#define GLS_DSTBLEND_DST_ALPHA					0x00000070
-#define GLS_DSTBLEND_ONE_MINUS_DST_ALPHA		0x00000080
-#define		GLS_DSTBLEND_BITS					0x000000f0
-
-#define GLS_DEPTHMASK_TRUE						0x00000100
-
-#define GLS_POLYMODE_LINE						0x00001000
-
-#define GLS_DEPTHTEST_DISABLE					0x00010000
-#define GLS_DEPTHFUNC_EQUAL						0x00020000
-#define GLS_DEPTHFUNC_GREATER                   0x00040000
-#define GLS_DEPTHFUNC_BITS                      0x00060000
-
-#define GLS_ATEST_GT_0							0x10000000
-#define GLS_ATEST_LT_80							0x20000000
-#define GLS_ATEST_GE_80							0x40000000
-#define GLS_ATEST_GE_C0							0x80000000
-#define		GLS_ATEST_BITS						0xF0000000
-
-#define GLS_DEFAULT			GLS_DEPTHMASK_TRUE
 
 #define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )
 #define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
