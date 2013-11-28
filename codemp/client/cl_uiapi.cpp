@@ -554,7 +554,7 @@ intptr_t CL_UISystemCalls( intptr_t *args ) {
 		return FS_FOpenFileByMode( (const char *)VMA(1), (int *)VMA(2), (fsMode_t)args[3] );
 
 	case UI_FS_READ:
-		FS_Read2( VMA(1), args[2], args[3] );
+		FS_Read( VMA(1), args[2], args[3] );
 		return 0;
 
 	case UI_FS_WRITE:
@@ -1051,7 +1051,7 @@ void CL_BindUI( void ) {
 		uii.FS_Close							= FS_FCloseFile;
 		uii.FS_GetFileList						= FS_GetFileList;
 		uii.FS_Open								= FS_FOpenFileByMode;
-		uii.FS_Read								= FS_Read2;
+		uii.FS_Read								= FS_Read;
 		uii.FS_Write							= FS_Write;
 
 		uii.GetClientState						= CL_GetClientState;
